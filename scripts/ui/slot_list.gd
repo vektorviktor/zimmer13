@@ -74,8 +74,9 @@ func _row(slot: int) -> Control:
 		text.add_child(_small("– leer –"))
 	else:
 		var alive: Array = info["alive"]
-		text.add_child(_small("%s · Spielzeit %s · Gäste: %s" % [UiKit.date_text(int(info["saved_at"])),
-			UiKit.playtime_text(float(info["playtime"])), ", ".join(alive) if not alive.is_empty() else "keiner mehr"]))
+		text.add_child(_small("%s · %s · Spielzeit %s · Gäste: %s" % [Calendar.date_text(float(info["playtime"])),
+			UiKit.date_text(int(info["saved_at"])), UiKit.playtime_text(float(info["playtime"])),
+			", ".join(alive) if not alive.is_empty() else "keiner mehr"]))
 		var entry := _small("„%s“" % String(info["text"]))
 		entry.add_theme_color_override("font_color", UiKit.INK)
 		entry.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS

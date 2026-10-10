@@ -11,7 +11,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 
 **Kernfrage für den Spieler:** *Vertraue ich den anderen Gästen – oder nehme ich mir, was ich zum Überleben brauche?*
 
-**Spielziel:** Dem Horrorhotel **entkommen**. Die Zeit läuft **durchgängig** (keine Level/Nächte). Grafik: **Low-Poly im PS1-Look**.
+**Spielziel:** Dem Horrorhotel **entkommen**. Die Zeit läuft **durchgängig** (keine Level), gezählt in **Ingame-Tagen vom 1. Oktober bis Halloween** – draußen ist immer Nacht (siehe 2.1). Grafik: **Low-Poly im PS1-Look**.
 
 ---
 
@@ -20,6 +20,25 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Genre:** First-Person-Horror / Survival mit sozialer Simulation
 - **Tonalität:** Unterschwelliger, atmosphärischer Horror statt Dauer-Jumpscares. Halloween-Ästhetik (Kürbisse, Kerzen, Girlanden) als warmer Kontrast zur kalten, bedrohlichen Hotelkulisse.
 - **Inspirationen (Richtung):** Andeutungs-Horror à la „Alien: Isolation“ (Bedrohung präsent, aber selten sichtbar), Retro-Hotel-Atmosphäre à la „The Shining“, soziale Dynamik ähnlich „Animal Crossing“-Beziehungen – nur mit Paranoia.
+
+### 2.1 Zeit & Dramaturgie: Vom 1. Oktober bis Halloween (entschieden 2026-10-10)
+- **Kalender:** Das Spiel beginnt am **1. Oktober**. Die Zeit läuft durchgängig und wird in **Ingame-Tagen** gezählt. Draußen ist **immer Nacht** – der „Tag“ ist nur die Zähleinheit, kein Wechsel von Hell und Dunkel.
+- **Tageslänge: ca. 5 Minuten Echtzeit** → 31 Tage ≈ 2,5 Stunden bis Halloween. Zentral einstellbar (Tuning-Wert, `Calendar.DAY_SECONDS`).
+- **Datum sichtbar:** Abreißkalender an der Wand von Zimmer 13, im Spielmenü und kurz eingeblendet, wenn ein neuer Tag beginnt. Spielstände zeigen das Ingame-Datum.
+- **Der friedliche Anfang:** Zu Beginn wirkt alles wie ein **gemütliches Hotel-Party-Spiel** – Gäste kennenlernen, Deko basteln, Kürbisse ziehen, Würfeln, Feiern. Keine Vorwarnung, kein Rauschen, nichts Bedrohliches. Auch Einführungstext und Gäste deuten nichts an. Der Spieler soll glauben, es sei ein friedliches Halloween-Spiel.
+- **Der erste Angriff bricht das – am 3. oder 4. Oktober während einer Feier in der Lobby:** Musik, alle sind fröhlich, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich.
+- **Die ersten ein bis zwei Angriffe sind noch nicht tödlich:** Das Monster holt **niemanden**. Erwischt es den Spieler, **steht es direkt vor ihm, starrt ihn an und verschwindet im Flackern** – man sieht es zum ersten Mal und weiß: Es ist real. Erst danach wird es gefährlich.
+- **Halloween (31. Oktober):** In einem Zimmer **taucht ein Schlüssel auf** – der Weg hinaus. Es ist **sehr schwer**, an ihn heranzukommen.
+
+**Ideen zum Schlüssel (Auswahl offen)**
+- Er liegt **im Keller, im Versteck des Monsters** – und es ist gerade dort.
+- Er liegt in **Zimmer 18**, das seit Spielbeginn verschlossen ist; dafür braucht man vorher Hilfe.
+- Er erscheint in einem **zufälligen Zimmer** – und das Monster weiß es auch.
+- **Man braucht die Gäste:** einer lenkt ab, einer hält Wache – belohnt gute Beziehungen.
+
+**Ideen für das Scheitern (Auswahl offen)**
+- **Zeitschleife:** Nach Halloween beginnt alles wieder am 1. Oktober – nur schlimmer.
+- **Das Hotel behält einen:** schlechtes Ende.
 
 ---
 
@@ -227,7 +246,43 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Durch Fenster (7.3) | normal; **Milchglas**: nur Umriss, keine Jagd |
 
 - Verstecken (3.4) bleibt der wichtigste Ausweg: Wer **ungesehen** in ein Versteck kommt, ist vorerst sicher.
-- **Beobachteter Fehler im Prototyp:** Spieler steht im Flur hinter einer Deko-Zone → das Monster jagt ihn, wird an der Deko „abgewiesen“, zieht sich zurück und läuft dabei durch den Spieler hindurch, ohne ihn anzugreifen. Die drei Regeln oben beheben das.
+- **Beobachteter Fehler im Prototyp:** Spieler steht im Flur hinter einer Deko-Zone → das Monster jagt ihn, wird an der Deko „abgewiesen“, zieht sich zurück und läuft dabei durch den Spieler hindurch, ohne ihn anzugreifen. Die drei Regeln oben beheben das. *(umgesetzt)*
+
+### 4.13 Ständige Präsenz (entschieden 2026-10-10)
+> Ersetzt langfristig die globale Vorwarnung (4.2) und die feste Route (4.3). Noch nicht umgesetzt (Kalender aus 2.1 schon).
+
+**Entschieden**
+- **Das Monster patrouilliert im ganzen Hotel** (Flure, Zimmer, Lobby, Küche, Bar, Garten, Keller) und **bleibt dabei oft verborgen**: bewegt sich bevorzugt außerhalb des Blickfelds und im Dunkeln.
+- **Langsamer Einstieg:** In den **ersten Minuten bzw. ersten Phasen kommt es nicht**. Anfangs **zieht es sich regelmäßig in den Keller zurück**; die Ruhephasen werden mit der Zeit kürzer (passt zu 4.8).
+- **Rauschen nach Entfernung:** Das Rauschen beginnt, wenn das Monster eine bestimmte Distanz zum Spieler unterschreitet, und **wird langsam lauter**, je näher es kommt (Vorschlag: ab ca. 20 m, am stärksten bei ca. 4 m) – auch durch Wände.
+- **Halluzination:** Ist ein Gast gestorben (Schock/Trauer, 6.8), kommt das Rauschen **manchmal auch ohne Monster**.
+- **Der friedliche Anfang** und die **ersten harmlosen Angriffe**: siehe 2.1.
+- **Spuren des Monsters** (entschieden):
+
+| Spur | Was sie verrät |
+|------|----------------|
+| **Ausgehende Kerzen** (und Kürbisse) auf seinem Weg | wo es gerade vorbeiging |
+| **Kratzspuren** an Türen, Wänden, Schränken | dass es *hier* etwas wollte |
+| **Fußspuren** (dunkel, nass) | Weg und Richtung |
+| **Blutspuren** | dass jemand verletzt oder geholt wurde |
+| **Geprüfte Verstecke** (offene Schranktür) | dass es gesucht hat |
+| **Aufgewühlte Betten** | es war im Zimmer, hat unter/im Bett gesucht |
+| **Handabdrücke** (z. B. auf dem Milchglas) | es stand direkt vor diesem Raum |
+| **Warnungszettel** | jemand (früherer Gast?) will warnen – auch Story-Hinweis |
+| **Kleidungsstücke** | von Verschwundenen – Andeutung statt Gore |
+
+- **Klopfen an der Tür – mit Geschrei** (entschieden), in zwei Varianten:
+  - **Meistens der echte Gast:** Er klopft panisch und schreit „Mach auf!“, weil das Monster hinter ihm ist. Öffnet man nicht, hört man einen Schrei – danach ist es still.
+  - **Manchmal nicht:** Es klopft, man hört eine bekannte Stimme. Öffnet man, ist niemand da – nur ein Kleidungsstück auf dem Boden.
+- **Warnungszettel** stammen von **früheren Gästen**, die es nicht hinausgeschafft haben. Sie liegen in verlassenen Zimmern, im Keller, unter Matratzen, geben Tipps zum Monster und deuten den Schlüssel an Halloween an – zugleich der Story-Faden (offene Frage 4).
+- **Lampen flackern nur noch lokal** in der Nähe des Monsters: Flackern zeigt, *wo* es ist; Rauschen zeigt, *wie nah*.
+- **Spuren:** Fußspuren **verblassen** über einige Minuten (man liest ab, wie frisch sie sind), Kratzspuren **bleiben**. Spuren am eigenen Zimmer kann man wegputzen.
+- **Das Hotel verändert sich** (Punkt „unzuverlässiges Hotel“): Kleine Veränderungen, wenn man nicht hinsieht – teils durch das Monster, teils bleibt offen, wer es war.
+- **Gäste als Quelle der Angst:** Gäste berichten von Spuren und Geräuschen, nicht immer zuverlässig.
+- **Technische Atmosphäre:** mehr Nebel, Lichtkegel statt gleichmäßigen Lichts, Brummen mit dem Rauschen, engerer Blick unter Stress.
+
+**Offen**
+- Was steht konkret auf den Warnungszetteln (Story)?
 
 ---
 
@@ -692,7 +747,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 ## 10. Offene Fragen für die Detaildiskussion
 
 1. ~~Ziel~~ → **Dem Horrorhotel entkommen** (entschieden). Offen: Wie genau? (Schlüssel für die Lobbytür zusammensuchen, Rätsel, Hilfe der Gäste?)
-2. ~~Zeitstruktur~~ → **durchgängig**, keine Nächte/Level (entschieden).
+2. ~~Zeitstruktur~~ → **durchgängig**, keine Level; Ingame-Tage à ca. 5 min vom 1. Oktober bis Halloween, draußen immer Nacht (2.1, entschieden).
 3. ~~Monster-Kontakt~~ → Jumpscare + Sterbebildschirm, danach letzten Spielstand laden (entschieden, siehe 8).
 3a. **„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren?
 3b. **Spieler-Lichtquelle:** Hat der Spieler eine Taschenlampe/Laterne? (Schützt vor dem Monster, aber verrät die eigene Position?)

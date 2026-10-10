@@ -22,6 +22,7 @@ var _autosave_flame: ColorRect
 var _autosave_time := 0.0
 var _caption: Label
 var _caption_time := 0.0
+var _day := -1
 var _debug_timer := 0.0
 
 
@@ -104,6 +105,11 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if Game.director:
+		var day := Calendar.today()
+		if _day != -1 and day != _day:
+			show_message(Calendar.date_text(Game.director.elapsed), 3.0)
+		_day = day
 	if _autosave_time > 0.0:
 		_autosave_time -= delta
 		_autosave_flame.size.y = randf_range(3.5, 5.5)

@@ -202,8 +202,9 @@ func diary_sentence() -> String:
 	if Game.player and Game.player.shock > 0.3:
 		parts.append("Ich kann nicht aufhören zu zittern.")
 	if parts.is_empty():
-		parts.append("Noch eine Stunde in diesem Hotel. Es ist still. Zu still.")
-	return " ".join(parts.slice(0, 3))
+		parts.append("Noch ein Abend in diesem Hotel. Es ist still. Zu still.")
+	var date := Calendar.date_text(Game.director.elapsed) + ". " if Game.director else ""
+	return date + " ".join(parts.slice(0, 3))
 
 
 # --- Zustand einsammeln ------------------------------------------------------------------

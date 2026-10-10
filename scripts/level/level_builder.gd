@@ -189,6 +189,10 @@ func _room(data: Dictionary) -> void:
 			diary.position = table_top + Vector3(0.25, 0, 0.05)
 			diary.rotation.y = 0.3
 			root.add_child(diary)
+			var calendar := Calendar.new()
+			calendar.position = Vector3(x1 - 0.11, 1.7, 3.7)
+			calendar.rotation.y = -PI / 2.0
+			root.add_child(calendar)
 			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.2, 0.02, 5.9))
 			var chest := Chest.new()
 			chest.position = Vector3(x1 - 0.45, 0, 2.6)

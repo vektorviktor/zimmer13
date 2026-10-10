@@ -7,6 +7,7 @@ extends Node3D
 ##   --load=n                    Spielstand n laden (0 = Autosave)
 ##   --savetest                  Speichern → Laden → Vergleichen (Ausgabe in der Konsole)
 ##   --diary=n                   nach 2 s wie am Tagebuch in Slot n speichern
+##   --day=n                     zu Tag n im Oktober springen
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, controls)
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
 ##   --pos=x,y,z[,blickwinkel]   Spieler versetzen
@@ -274,6 +275,9 @@ func _parse_debug_args() -> void:
 ", " ")))
 		elif arg == "--debug":
 			Game.hud.debug_enabled = true
+		elif arg.begins_with("--day="):
+			# zu einem Tag im Oktober springen (1–31)
+			Game.director.elapsed = (clampi(arg.substr(6).to_int(), 1, Calendar.HALLOWEEN) - 1) * Calendar.DAY_SECONDS
 		elif arg.begins_with("--bulb-thief="):
 			# Gast klaut sofort eine Glühbirne aus Zimmer 13
 			var thief := Game.social.guest_by_id(arg.substr(13))
