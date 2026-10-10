@@ -4,7 +4,7 @@ First-Person-Horror im Hotel. Konzept: [SPIELKONZEPT.md](SPIELKONZEPT.md) · Eng
 
 ## Starten
 
-Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten, oder direkt:
+Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelbildschirm), oder direkt:
 
 ```bash
 "/c/Users/vikto/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64.exe" --path .
@@ -18,13 +18,13 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten, oder d
 | Shift | Rennen (macht Lärm → Monster wird neugierig) |
 | Leertaste | Springen |
 | Strg / C (halten) | Ducken – nötig für die Kellertür (1,80 m) |
-| E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Tür/Truhe öffnen, mit Gästen reden, Verstecken |
+| E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Tür/Truhe öffnen, Licht schalten, Vorhang ziehen, Glühbirne heraus-/eindrehen, mit Gästen reden, Verstecken, ins Tagebuch schreiben |
 | 1–9 / Maus | Im Gespräch Antwort wählen (Esc beendet) |
 | G / Q | Gegenstand ablegen (Kürbis vor die Tür stellen …) |
 | Rechtsklick (halten) | Im Versteck Luft anhalten |
 | F3 | Debug: versteckte Monster-Werte |
 | F5 | Monster sofort rufen |
-| Esc | Maus freigeben |
+| Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel |
 
 ## Was drin ist
 
@@ -35,6 +35,8 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten, oder d
 - **Monster:** feste Patrouillenroute ab dem Keller, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Ankündigung (Flackern, Rauschen, Lampen), „weiß“ wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt
 - **Gäste (Edna, Bruno, Mila):** eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
 - **Mäxchen an der Hotelbar:** Bluff-Würfeln gegen Gäste um Geld oder Gegenstände (Einsätze liegen echt auf dem Tisch), Herausforderungen & Revanche, Gäste würfeln untereinander (zuschauen verrät ihre Ticks), gezinkte Würfel aus Zimmer 17, Abbruch bei Vorwarnung
+- **Licht & Fenster:** ein Lichtschalter pro Raum, Decken- und Wandlampen, Glühbirnen herausdrehen und woanders einsetzen (auch Gäste klauen sie), Birnen brennen bei starkem Flackern oder in Monsternähe selten durch · Licht aus lockt das Monster an · Außenfenster mit Vorhängen (Mondlicht, Sicht in beide Richtungen), Milchglas zwischen Flur und Zimmern (nur Umrisse)
+- **Menüs & Speichern:** Titelbildschirm, Spielmenü (Esc), Einstellungen (Helligkeit mit Testbild, PS1-Look, Ton, Maus, weniger Flackern, Untertitel) · Speichern nur am **Tagebuch in Zimmer 13** (3 Slots, nicht während Vorwarnung/Monster) · Autosave bei wichtigen Ereignissen in sicheren Momenten · nach dem Tod letzten Spielstand laden
 - **Feiern:** Plattenspieler in der Lobby (selbst ausrichten) oder spontan von Gästen – laut, also lockt es das Monster an; währenddessen sind die Zimmer leer
 - **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion
 
@@ -57,22 +59,34 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--challenge=bruno` | Gast fordert dich heraus |
 | `--pos=x,y,z,winkel` · `--monster=x,y,z` | Spieler versetzen · Monster erscheinen lassen |
 | `--shot=pfad.png --frames=n` · `--nointro` · `--debug` | Screenshot · ohne Intro · Debug-Werte |
+| `--title` · `--new=2` · `--load=1` | trotz Parametern Titelbildschirm · neues Spiel in Slot 2 · Slot laden (0 = Autosave) |
+| `--diary=3` · `--savetest` | nach 2 s in Slot 3 speichern · Speichern → Laden → Vergleichen |
+| `--menu=pause` | Menü öffnen (`pause`, `diary`, `settings`, `load`, `controls`) |
+| `--bulb-thief=bruno` | Gast klaut sofort eine Glühbirne aus Zimmer 13 |
+
+Ohne Parameter startet das Spiel mit dem Titelbildschirm; mit Parametern direkt im Hotel.
+Spielstände liegen in `%APPDATA%/Godot/app_userdata/Zimmer 13/saves/`, Einstellungen in `settings.cfg` daneben.
 
 ## Aufbau
 
 ```
-scenes/main.tscn            Einstiegsszene
+scenes/title.tscn           Einstiegsszene: Titelbildschirm
+scenes/main.tscn            das Hotel
 scripts/main.gd             baut alles zusammen, Debug-Startparameter
-scripts/autoload/game.gd    globaler Zustand, Geld, Tastenbelegung
+scripts/autoload/game.gd    globaler Zustand, Geld, Tastenbelegung, Szenenwechsel
+scripts/autoload/settings.gd       Einstellungen (user://settings.cfg)
+scripts/autoload/save_manager.gd   Speichern/Laden, Autosave, Tagebuchsatz
 scripts/level/              LevelBuilder (Räume, Maße, Zonen, Patrouillenroute)
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
-                            PumpkinPlant, ResourceSpot, RecordPlayer
+                            PumpkinPlant, ResourceSpot, RecordPlayer,
+                            Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang/Milchglas), Diary
 scripts/guests/             Guest (Verhalten), GuestProfiles (Persönlichkeiten, Sätze),
                             Social (Beziehungen, Gerüchte, Diebstahl, Tod, Feiern)
 scripts/player/             Player
 scripts/monster/            Monster (Zustände), MonsterDirector (versteckte Werte, Effekte)
 scripts/minigames/          Mäxchen: Regeln, Partie (Ablauf, Gast-KI, Einsätze), Würfeltisch
-scripts/ui/                 HUD, Dialog, Sterbebildschirm
+scripts/ui/                 HUD, Dialog, Sterbebildschirm, Titelbildschirm, Menüs (Esc, Tagebuch),
+                            Einstellungen, Slot-Übersicht, UiKit (Meldezettel-Optik)
 scripts/util/               PS1-Materialien, Platzhalter-Geometrie/-Texturen, Synth-Sound
 shaders/                    PS1-Oberfläche, Post-Effekt, Versteck-Overlay
 ```

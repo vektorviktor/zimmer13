@@ -23,6 +23,9 @@ var _time := 0.0
 var _lp_fast := 0.0
 var _lp_slow := 0.0
 var _shots: Array[Dictionary] = []
+var _music_volume := 1.0
+var _effects_volume := 1.0
+var _damp := 1.0   ## im Pausenmenü gedämpft
 
 
 func _ready() -> void:
@@ -44,6 +47,9 @@ func play_shot(kind: String, volume: float = 1.0) -> void:
 func _process(_delta: float) -> void:
 	if _playback == null:
 		return
+	_music_volume = Settings.music_volume
+	_effects_volume = Settings.effects_volume
+	_damp = move_toward(_damp, 0.25 if get_tree().paused else 1.0, 0.05)
 	var frames := _playback.get_frames_available()
 	var dt := 1.0 / RATE
 	for i in frames:
@@ -61,8 +67,9 @@ func _sample(dt: float) -> float:
 		s += (sin(TAU * 46.0 * _time) * 0.5 + sin(TAU * 93.0 * _time) * 0.2 + _lp_slow * 2.0) * hum
 	if static_noise > 0.001:
 		s += _lp_fast * static_noise
+	var m := 0.0
 	if music > 0.001:
-		s += _music_sample() * music
+		m = _music_sample() * music
 	if heart > 0.001:
 		var beat := fmod(_time, 60.0 / heart_bpm)
 		s += (_thump(beat) + _thump(beat - 0.22) * 0.6) * heart
@@ -76,6 +83,7 @@ func _sample(dt: float) -> float:
 		else:
 			s += _shot_sample(shot, t, dt, white) * float(shot["vol"])
 		i -= 1
+	s = (s * _effects_volume + m * _music_volume) * _damp
 	return s / (1.0 + absf(s))
 
 

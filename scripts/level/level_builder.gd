@@ -6,8 +6,10 @@ extends RefCounted
 ##   Ausgang ┃ Lobby (x −14…0, z −7…7, Decke 5 m) ┃ Flur (x 0…30, z ±1,6) ┃ Keller (x 30…34)
 ##            Küche (x −14…−6, z 7…13)              Zimmer 12–18 (Nord) / 11–17 (Süd)
 ##
-## Kollisionsebenen: 1 statisch/NavMesh · 2 Türen · 3 Gegenstände · 4 Spieler · 5 Decke
-##                   · 6 Monster · 7 Glas · 8 Gäste
+## Kollisionsebenen: 1 statisch/NavMesh · 2 Türen/zugezogene Vorhänge · 3 Gegenstände · 4 Spieler
+##                   · 5 Decke · 6 Monster · 7 Glas · 8 Gäste · 9 Milchglas
+##
+## Licht (Spielkonzept 7.3): Jede Lampe gehört zu einem Raum; ein Lichtschalter pro Raum.
 
 const H := 3.5
 const LOBBY_H := 5.0
@@ -16,6 +18,21 @@ const DOOR_W := 1.2
 const DOOR_H := 2.1
 const LAYER_CEILING := 16
 const LAYER_GLASS := 64
+## Außenfenster der Zimmer: Unterkante, Oberkante, Breite
+const WINDOW_SILL := 0.9
+const WINDOW_TOP := 2.3
+const WINDOW_W := 1.4
+## Milchglas zwischen Flur und Zimmer (versetzt neben der Tür)
+const FROSTED_OFFSET := -1.9
+const FROSTED_W := 1.0
+const FROSTED_SILL := 1.0
+const FROSTED_TOP := 2.2
+## Flurabschnitte mit eigenem Lichtschalter: [Raum-ID, x von, x bis]
+const CORRIDOR_SECTIONS := [
+	["flur_west", -1.0, 10.0],
+	["flur_mitte", 10.0, 20.0],
+	["flur_ost", 20.0, 31.0],
+]
 
 ## Zimmer am Flur. side +1 = Süd, −1 = Nord. kind bestimmt die Einrichtung.
 const ROOM_LAYOUT := [
@@ -47,6 +64,7 @@ var player_door_front := Vector3(13.0, 0.0, 0.7)
 var record_player_pos := Vector3(-1.5, 0.8, 5.8)
 var game_table: GameTable
 var bar_spots: Array[Vector3] = [Vector3(-1.4, 0, 8.6), Vector3(-1.4, 0, 11.8), Vector3(-5.0, 0, 8.4)]
+var diary: Diary
 
 var _wallpaper: Material
 var _concrete: Material
@@ -90,16 +108,29 @@ func _corridor() -> void:
 	var south_doors: Array = []
 	for data in ROOM_LAYOUT:
 		var cx: float = (float(data["x0"]) + float(data["x1"])) / 2.0
-		var opening := Vector4(cx, DOOR_W, DOOR_H, 0.0)
-		if int(data["side"]) > 0:
-			south_doors.append(opening)
-		else:
-			north_doors.append(opening)
+		var s := float(data["side"])
+		var openings: Array = south_doors if s > 0 else north_doors
+		var fx := cx + FROSTED_OFFSET
+		# Öffnungen nach x sortiert: erst das Milchglas (links der Tür), dann die Tür
+		openings.append(Vector4(fx, FROSTED_W, FROSTED_TOP, FROSTED_SILL))
+		openings.append(Vector4(cx, DOOR_W, DOOR_H, 0.0))
+		# Milchglasfenster zwischen Flur und Zimmer, +Z zeigt ins Zimmer
+		var win := HotelWindow.new().setup(FROSTED_W, FROSTED_TOP - FROSTED_SILL, true, false, String(data["no"]))
+		win.position = Vector3(fx, (FROSTED_SILL + FROSTED_TOP) / 2.0, s * 1.6)
+		win.rotation.y = 0.0 if s > 0 else PI
+		root.add_child(win)
 	_wall_x(-1.6, 0.1, 30.1, north_doors)
 	_wall_x(1.6, 0.1, 30.1, south_doors)
 	for x in [3.0, 9.0, 15.0, 21.0]:
-		_lamp(Vector3(x, H - 0.08, 0.0), 1.2, 7.0, false)
-	_lamp(Vector3(27.0, H - 0.08, 0.0), 1.2, 7.0, true)   # defekt → dunkles Flurende
+		_lamp(Vector3(x, H - 0.08, 0.0), 1.2, 7.0, false, _corridor_section(x))
+	_lamp(Vector3(27.0, H - 0.08, 0.0), 1.2, 7.0, true, "flur_ost")   # defekt → dunkles Flurende
+	# Wandleuchten an der Nordwand
+	for x in [6.5, 12.5, 18.5, 25.5]:
+		_wall_lamp(Vector3(x, 2.1, -1.5), 0.0, 0.6, 4.5, _corridor_section(x))
+	# Ein Lichtschalter je Flurabschnitt
+	_switch("flur_west", "Flur West", Vector3(1.0, 1.3, 1.5), PI)
+	_switch("flur_mitte", "Flur Mitte", Vector3(13.0, 1.3, -1.5), 0.0)
+	_switch("flur_ost", "Flur Ost", Vector3(19.2, 1.3, -1.5), 0.0)
 	# Möbel im Flur – zwischen den Türen
 	_hide_spot(HideSpot.Type.WARDROBE, Vector3(8.0, 0, -1.2), 0.0)
 	_hide_spot(HideSpot.Type.WARDROBE, Vector3(20.0, 0, -1.2), 0.0)
@@ -133,7 +164,10 @@ func _room(data: Dictionary) -> void:
 	info["door"] = door
 	_sign(no, Vector3(cx, 2.35, s * 1.49), 180.0 if s > 0 else 0.0)
 	var dark := kind == "abandoned" or kind == "laundry"
-	_lamp(Vector3(cx, H - 0.08, s * 4.2), 1.0 if kind != "locked" else 0.6, 6.0, dark)
+	_lamp(Vector3(cx, H - 0.08, s * 4.2), 1.0 if kind != "locked" else 0.6, 6.0, dark, no)
+	# Wandleuchte an der Flurwand innen, Lichtschalter neben der Tür
+	_wall_lamp(Vector3(cx + 2.0 * s, 2.0, s * 1.72), 0.0 if s > 0 else PI, 0.45, 4.0, no, dark)
+	_switch(no, "Zimmer " + no, Vector3(cx + 0.95 * s, 1.3, s * 1.72), 0.0 if s > 0 else PI)
 
 	# Möbel: Süd → Bett an der Westwand, Schrank an der Ostwand; Nord gespiegelt
 	var bed_pos := Vector3(x0 + 0.85, 0, 5.45) if s > 0 else Vector3(x1 - 0.85, 0, -5.45)
@@ -151,6 +185,10 @@ func _room(data: Dictionary) -> void:
 	match kind:
 		"player":
 			_item(Item.Kind.CANDLE, table_top)
+			diary = Diary.new()
+			diary.position = table_top + Vector3(0.25, 0, 0.05)
+			diary.rotation.y = 0.3
+			root.add_child(diary)
 			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.2, 0.02, 5.9))
 			var chest := Chest.new()
 			chest.position = Vector3(x1 - 0.45, 0, 2.6)
@@ -205,7 +243,19 @@ func _room_walls() -> void:
 		var z1: float = 6.7 if s > 0 else -1.6
 		for x in bounds.keys():
 			_wall_z(x, z0, z1, [])
-		_wall_x(s * 6.6, x_min - 0.1, x_max + 0.1, [])
+		# Außenfenster in der Rückwand (nicht in der Wäscherei – dort steht das Regal)
+		var windows: Array = []
+		for data in ROOM_LAYOUT:
+			if float(data["side"]) != s or data["kind"] == "laundry":
+				continue
+			var cx := (float(data["x0"]) + float(data["x1"])) / 2.0
+			windows.append(Vector4(cx, WINDOW_W, WINDOW_TOP, WINDOW_SILL))
+			var win := HotelWindow.new().setup(WINDOW_W, WINDOW_TOP - WINDOW_SILL, false, true, String(data["no"]))
+			win.position = Vector3(cx, (WINDOW_SILL + WINDOW_TOP) / 2.0, s * 6.6)
+			win.rotation.y = PI if s > 0 else 0.0
+			root.add_child(win)
+		windows.sort_custom(func(a: Vector4, b: Vector4) -> bool: return a.x < b.x)
+		_wall_x(s * 6.6, x_min - 0.1, x_max + 0.1, windows)
 		var wood_floor := Mat.psx(Color(1, 1, 1), "wood", 1.0)
 		Geo.solid(root, Vector3(x_max - x_min + 0.2, 0.2, 5.1), Vector3((x_min + x_max) / 2.0, -0.1, s * 4.15), wood_floor)
 
@@ -222,7 +272,8 @@ func _cellar() -> void:
 	door.rotation.y = deg_to_rad(-90.0)
 	root.add_child(door)
 	_sign("KELLER", Vector3(29.89, 2.0, 0.0), -90.0)
-	_lamp(Vector3(32.1, 2.12, 0.0), 0.9, 4.5, true)   # kaputte Birne, blitzt nur auf
+	_lamp(Vector3(32.1, 2.12, 0.0), 0.9, 4.5, true, "keller")   # kaputte Birne, blitzt nur auf
+	_switch("keller", "Keller", Vector3(30.12, 1.3, 0.85), PI / 2.0)
 	Geo.solid(root, Vector3(0.7, 0.7, 0.7), Vector3(33.5, 0.35, -1.4), _dark_wood)
 	Geo.solid(root, Vector3(0.6, 0.6, 0.6), Vector3(33.6, 0.3, 1.45), _dark_wood)
 	Geo.solid(root, Vector3(0.6, 0.45, 0.6), Vector3(32.9, 0.225, 1.55), _dark_wood)
@@ -242,7 +293,9 @@ func _lobby() -> void:
 	_wall_x(-7.0, -14.1, 0.1, [Vector4(-11.0, 1.6, 2.7, 0.9), Vector4(-7.0, 1.8, 2.4, 0.0), Vector4(-3.0, 1.6, 2.7, 0.9)], null, LOBBY_H)
 	_wall_x(7.0, -14.1, 0.1, [Vector4(-10.0, DOOR_W, DOOR_H, 0.0), Vector4(-3.0, 2.0, 2.6, 0.0)], null, LOBBY_H)   # Küche, Bar
 	for x in [-11.0, -3.0]:
-		Geo.solid(root, Vector3(1.6, 1.8, 0.04), Vector3(x, 1.8, -7.0), Mat.glass(), LAYER_GLASS)
+		var win := HotelWindow.new().setup(1.6, 1.8, false, true, "lobby")
+		win.position = Vector3(x, 1.8, -7.0)
+		root.add_child(win)
 
 	# Ausgang: riesige, verriegelte Doppeltür
 	var exit := Door.new().setup(2.5, 2.5, -90.0, true)
@@ -284,7 +337,10 @@ func _lobby() -> void:
 	_painting(Vector3(-13.89, 2.2, -4.5), 90.0, Color(0.18, 0.1, 0.12))
 	_painting(Vector3(-13.89, 2.2, 4.0), 90.0, Color(0.1, 0.14, 0.18))
 	for p in [Vector3(-7.0, LOBBY_H - 0.08, 0.0), Vector3(-11.0, LOBBY_H - 0.08, 0.0), Vector3(-3.0, LOBBY_H - 0.08, -3.5), Vector3(-3.0, LOBBY_H - 0.08, 3.5)]:
-		_lamp(p, 1.5, 9.0, false)
+		_lamp(p, 1.5, 9.0, false, "lobby")
+	for z in [-3.5, 3.5]:
+		_wall_lamp(Vector3(-13.9, 2.4, z), PI / 2.0, 0.6, 5.0, "lobby")
+	_switch("lobby", "Lobby", Vector3(-0.12, 1.3, 2.2), -PI / 2.0)
 	for i in 6:
 		var a := TAU * i / 6.0
 		party_spots.append(Vector3(-4.0 + cos(a) * 1.6, 0, sin(a) * 1.6))
@@ -298,7 +354,8 @@ func _kitchen() -> void:
 	Geo.solid(root, Vector3(6.0, 0.9, 0.6), Vector3(-10.6, 0.45, 12.6), Mat.psx(Color(0.55, 0.5, 0.42)))   # Arbeitsplatte
 	Geo.solid(root, Vector3(0.8, 0.95, 0.62), Vector3(-7.1, 0.475, 12.6), Mat.psx(Color(0.2, 0.2, 0.22)))   # Herd
 	Geo.solid(root, Vector3(1.6, 0.78, 0.9), Vector3(-10.0, 0.39, 9.6), _wood)                              # Tisch
-	_lamp(Vector3(-10.0, H - 0.08, 10.0), 1.0, 6.0, false)
+	_lamp(Vector3(-10.0, H - 0.08, 10.0), 1.0, 6.0, false, "kueche")
+	_switch("kueche", "Küche", Vector3(-9.0, 1.3, 7.12), 0.0)
 	_item(Item.Kind.KNIFE, Vector3(-12.5, 0.91, 12.6))
 	var candles := ResourceSpot.new().setup(Item.Kind.CANDLE, "Kerze aus dem Vorrat", 3, 150.0)
 	candles.position = Vector3(-9.0, 0.9, 12.6)
@@ -320,8 +377,10 @@ func _bar() -> void:
 		var stool := Geo.mesh(root, Geo.cylinder(0.18, 0.05, 8), Mat.psx(Color(0.4, 0.1, 0.1)), Vector3(-1.2, 0.7, z))
 		Geo.mesh(stool, Geo.cylinder(0.04, 0.7, 5), _dark_wood, Vector3(0, -0.35, 0))
 	_painting(Vector3(-5.89, 1.9, 10.0), 90.0, Color(0.25, 0.1, 0.1))
-	_lamp(Vector3(-3.0, H - 0.08, 8.8), 0.9, 5.5, false)
-	_lamp(Vector3(-3.0, H - 0.08, 11.8), 0.7, 5.0, false)
+	_lamp(Vector3(-3.0, H - 0.08, 8.8), 0.9, 5.5, false, "bar")
+	_lamp(Vector3(-3.0, H - 0.08, 11.8), 0.7, 5.0, false, "bar")
+	_wall_lamp(Vector3(-5.88, 2.1, 11.6), PI / 2.0, 0.35, 3.5, "bar")
+	_switch("bar", "Bar", Vector3(-1.6, 1.3, 7.12), 0.0)
 	game_table = GameTable.new()
 	game_table.position = Vector3(-3.5, 0, 10.5)
 	root.add_child(game_table)
@@ -489,19 +548,36 @@ func _sign(text: String, pos: Vector3, yaw: float) -> void:
 	root.add_child(label)
 
 
-func _lamp(pos: Vector3, energy: float, light_range: float, broken: bool) -> void:
-	var mat := Mat.psx(Color(1, 0.95, 0.8), "", 1.0, Color(1.0, 0.85, 0.6), 2.5, false)
-	Geo.mesh(root, Geo.box(Vector3(0.45, 0.06, 0.45)), mat, pos)
-	var light := FlickerLight.new()
-	light.position = pos + Vector3(0, -0.25, 0)
-	light.base_energy = energy
-	light.omni_range = light_range
-	light.light_color = Color(1.0, 0.8, 0.55)
-	light.shadow_enabled = true
-	light.broken = broken
-	light.lamp_material = mat
-	light.add_to_group("lamps")
-	root.add_child(light)
+## Deckenlampe mit Glühbirne, gehört zum Raum room_id.
+func _lamp(pos: Vector3, energy: float, light_range: float, broken: bool, room_id: String) -> Lamp:
+	var lamp := Lamp.new().setup(Lamp.Style.CEILING, room_id, energy, light_range, broken)
+	lamp.position = pos
+	root.add_child(lamp)
+	return lamp
+
+
+## Wandleuchte; yaw dreht die lokale +Z-Achse (von der Wand weg) in den Raum.
+func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, room_id: String, broken: bool = false) -> Lamp:
+	var lamp := Lamp.new().setup(Lamp.Style.WALL, room_id, energy, light_range, broken)
+	lamp.position = pos
+	lamp.rotation.y = yaw
+	root.add_child(lamp)
+	return lamp
+
+
+func _switch(room_id: String, label: String, pos: Vector3, yaw: float) -> LightSwitch:
+	var sw := LightSwitch.new().setup(room_id, label)
+	sw.position = pos
+	sw.rotation.y = yaw
+	root.add_child(sw)
+	return sw
+
+
+func _corridor_section(x: float) -> String:
+	for section in CORRIDOR_SECTIONS:
+		if x >= float(section[1]) and x < float(section[2]):
+			return section[0]
+	return "flur_ost"
 
 
 func _hide_spot(type: HideSpot.Type, pos: Vector3, yaw: float) -> HideSpot:

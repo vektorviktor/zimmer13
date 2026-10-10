@@ -134,6 +134,18 @@ func on_guest_noticed_missing(guest: Guest, count: int) -> void:
 	guest.say(guest.line("missing"))
 
 
+## Ein Gast merkt, dass in seinem Zimmer eine Glühbirne fehlt.
+func on_guest_noticed_missing_bulb(guest: Guest) -> void:
+	change_relation(guest, -5.0)
+	guest.say("Wer hat meine Glühbirne herausgedreht?! Das warst doch du …")
+
+
+func on_guest_stole_bulb(guest: Guest, lamp: Lamp, room_id: String) -> void:
+	if room_id == "13" and Game.player and Game.director.player_can_see(lamp.global_position) \
+			and Game.player.global_position.distance_to(guest.global_position) < 15.0:
+		Game.say("%s dreht deine Glühbirne heraus!" % guest.display_name, 4.0)
+
+
 func on_guest_stole(guest: Guest, item: Item, victim: String) -> void:
 	if victim == "player" and Game.player and Game.director.player_can_see(guest.global_position + Vector3.UP * 1.4) \
 			and Game.player.global_position.distance_to(guest.global_position) < 15.0:
@@ -170,6 +182,7 @@ func on_guest_died(guest: Guest) -> void:
 	get_tree().create_timer(5.0).timeout.connect(func() -> void:
 		Game.say("%s ist verschwunden." % guest.display_name, 4.0))
 	_memorial_doors.append(guest.home["door_front"])
+	SaveManager.request_autosave("Tod eines Gastes")
 	if party_active and party_host == guest.id:
 		end_party("")
 	# Schock, wenn es ein Freund war – stärker, wenn man ihn vorher bestohlen hat (Schuld)
@@ -274,6 +287,7 @@ func end_party(message: String) -> void:
 	_party_cooldown = PARTY_COOLDOWN
 	if message != "":
 		Game.say(message, 3.5)
+	SaveManager.request_autosave("Ende einer Feier")
 
 
 func _update_party(delta: float) -> void:

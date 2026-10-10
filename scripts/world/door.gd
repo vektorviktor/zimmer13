@@ -58,6 +58,7 @@ func interact(player: Player) -> void:
 			Game.say("Aufgeschlossen.")
 			Game.play_sound("blip")
 			set_open(true)
+			SaveManager.request_autosave("Tür aufgeschlossen")
 		else:
 			Game.say(locked_text)
 			Game.play_sound("thud", 0.6)
@@ -69,7 +70,7 @@ func interact(player: Player) -> void:
 	set_open(not is_open)
 
 
-func set_open(open: bool, fast: bool = false) -> void:
+func set_open(open: bool, fast: bool = false, quiet: bool = false) -> void:
 	is_open = open
 	if _tween:
 		_tween.kill()
@@ -78,7 +79,8 @@ func set_open(open: bool, fast: bool = false) -> void:
 		var side := 1.0 if i == 0 else -1.0
 		var target := open_angle * side if open else 0.0
 		_tween.tween_property(_pivots[i], "rotation:y", target, 0.25 if fast else 0.6).set_trans(Tween.TRANS_SINE)
-	Game.play_sound("creak", 0.5)
+	if not quiet:
+		Game.play_sound("creak", 0.5)
 
 
 ## Das Monster reißt die Tür auf (auch abgeschlossene – außer der Lobbytür).

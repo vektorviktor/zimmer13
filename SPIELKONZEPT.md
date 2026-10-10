@@ -493,7 +493,7 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
 - **Eingeschlossen:** Ausgänge verriegelt – warum? (Story-Frage, siehe offene Punkte)
 
 ### 7.3 Fenster, Vorhänge & Wandlampen
-> Stand: 2026-10-10 · Konzept, noch nicht umgesetzt
+> Stand: 2026-10-10 · im Prototyp umgesetzt (Außenfenster mit Vorhängen in Lobby und Zimmern, Milchglas zwischen Flur und Zimmern, Wandleuchten, ein Lichtschalter pro Raum/Flurabschnitt, Glühbirnen als Gegenstand)
 
 Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(actor)` wie Türen und Truhen (9.1) – **Gäste benutzen sie genauso wie der Spieler**.
 
@@ -529,15 +529,19 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
     - Kaputte Birnen sind nutzlos (Vorschlag: bleiben als Scherben in der Fassung, müssen herausgedreht und ersetzt werden). Ersatzbirnen werden dadurch wertvoll.
 - **Gäste schalten Licht** ebenfalls: in ihrem Tagesablauf (Schlafen → Licht aus) – oder als **Sabotage** im Flur vor fremden Türen (4.11). Umgekehrt kann der Spieler einem Gast das Licht ausmachen und so das Monster auf ihn lenken.
 
+**Für später vorgemerkt**
+- **Zerbrechende Fenster** – wird in einer späteren Runde geplant (bis dahin sind Fenster unzerbrechlich).
+
 **Zu klären**
-- Können Fenster zerbrechen? (Vorschlag: nein, sonst sind sie keine Barriere mehr.)
-- Brauchen Glühbirnen eine heiße Lampe / Verbrennungsgefahr beim Herausdrehen bei eingeschaltetem Licht? (Vorschlag: erst ausschalten, sonst kurz „Autsch“ und Birne fällt evtl.)
+- Brauchen Glühbirnen eine heiße Lampe / Verbrennungsgefahr beim Herausdrehen bei eingeschaltetem Licht? (Vorschlag: erst ausschalten, sonst kurz „Autsch“ und Birne fällt evtl.) – im Prototyp noch ohne.
+- Zerspringt eine heruntergefallene Birne? – im Prototyp noch nicht.
 
 ---
 
 ## 8. Menüs, Speichern & Laden
 
-> Stand: 2026-10-10 · Konzept abgestimmt, bereit zur Umsetzung · Ausbau-Ideen siehe 8.9
+> Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9
+> Nicht umgesetzt: Lautstärke „Stimmen“ (es gibt noch keine Sprachausgabe), Tastenbelegung ändern, Fortschritt Fluchtweg als Autosave-Auslöser (Fluchtweg fehlt noch – bis dahin löst das Aufschließen einer Tür den Autosave aus).
 
 **Leitgedanke:** Speichern ist Teil des Horrors. Man kann **nur im eigenen Zimmer** speichern – jeder Ausflug in Flur, Keller oder Garten ist also ein echtes Risiko. Ein Tod kostet den Fortschritt seit dem letzten Tagebucheintrag.
 
@@ -721,5 +725,6 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 6. Puppe („Halloween-Jury“) inkl. Deko-Wettbewerb bei Feiern
 7. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
-9. **Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden** (siehe 8)
+9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen
+11. Zerbrechende Fenster (7.3, für später vorgemerkt)

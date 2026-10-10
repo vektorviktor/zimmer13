@@ -7,14 +7,14 @@ extends RigidBody3D
 ## Handwerk: Messer in der Hand + Kürbis → schnitzen; Kerze in der Hand + geschnitzter
 ## Kürbis ohne Licht → Kerze hineinstellen.
 
-enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE }
+enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB }
 
 const LAYER := 4
-const MASK := 1 | 2 | 4 | 16 | 64
+const MASK := 1 | 2 | 4 | 16 | 64 | 256
 ## Grundpreise für den Handel mit Gästen
 const PRICES := {
 	Kind.PUMPKIN: 4, Kind.CARVED_PUMPKIN: 10, Kind.CANDLE: 3, Kind.COBWEB: 3,
-	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6,
+	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4,
 }
 
 var kind: Kind = Kind.PUMPKIN
@@ -29,6 +29,8 @@ var owner_id := ""
 var lit := false
 var light: FlickerLight
 var burn_time := 0.0
+## Glühbirne: durchgebrannt (nutzlos, nur noch Scherben im Glas)
+var broken := false
 
 var _glow_material: ShaderMaterial
 
@@ -54,7 +56,23 @@ func _process(delta: float) -> void:
 
 
 func price() -> int:
+	if broken:
+		return 0
 	return int(PRICES.get(kind, 1))
+
+
+## Zusatzangabe für Item.create(), mit der sich der Gegenstand nachbauen lässt (Speichern).
+func create_extra() -> String:
+	match kind:
+		Kind.KEY:
+			return key_id
+		Kind.COINS:
+			return str(coin_value)
+		Kind.BULB:
+			return "broken" if broken else ""
+		Kind.CARVED_PUMPKIN:
+			return "" if lit else "unlit"
+	return ""
 
 
 func get_prompt(player: Player) -> String:
@@ -222,6 +240,14 @@ func _build(extra: String) -> void:
 			for i in 2:
 				Geo.mesh(self, Geo.box(Vector3(0.025, 0.025, 0.025)), Mat.psx(Color(0.95, 0.9, 0.85)), Vector3(-0.02 + i * 0.04, 0.013, 0))
 				Geo.mesh(self, Geo.box(Vector3(0.008, 0.002, 0.008)), Mat.psx(Color(0.7, 0.05, 0.05)), Vector3(-0.02 + i * 0.04, 0.026, 0))
+		Kind.BULB:
+			broken = extra == "broken"
+			display_name = "Kaputte Glühbirne" if broken else "Glühbirne"
+			mass = 0.05
+			size = Vector3(0.07, 0.11, 0.07)
+			Geo.mesh(self, Geo.cylinder(0.018, 0.03, 6), Mat.psx(Color(0.7, 0.68, 0.6)), Vector3(0, 0.015, 0))
+			var glass := Color(0.35, 0.33, 0.3) if broken else Color(1.0, 0.97, 0.85)
+			Geo.mesh(self, Geo.sphere(0.032, 0.07, 6, 3), Mat.psx(glass), Vector3(0, 0.065, 0))
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size

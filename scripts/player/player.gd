@@ -46,6 +46,7 @@ var _bob := 0.0
 var _hide_yaw := 0.0
 var _hide_pitch := 0.0
 var _breath_locked := false
+var _crouch_toggled := false
 var _shock_drop_timer := 0.0
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -53,7 +54,7 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 func _ready() -> void:
 	add_to_group("player")
 	collision_layer = 8
-	collision_mask = 1 | 2 | 4 | 16 | 64 | 128
+	collision_mask = 1 | 2 | 4 | 16 | 64 | 128 | 256
 	_shape = CapsuleShape3D.new()
 	_shape.radius = RADIUS
 	_shape.height = HEIGHT
@@ -65,7 +66,8 @@ func _ready() -> void:
 	head.position.y = EYE_HEIGHT
 	add_child(head)
 	camera = Camera3D.new()
-	camera.fov = 72.0
+	camera.fov = Settings.fov
+	Settings.changed.connect(func() -> void: camera.fov = Settings.fov)
 	camera.near = 0.03
 	camera.far = 60.0
 	head.add_child(camera)
@@ -75,7 +77,7 @@ func _ready() -> void:
 	camera.add_child(_hand)
 	_ray = RayCast3D.new()
 	_ray.target_position = Vector3(0, 0, -REACH)
-	_ray.collision_mask = 1 | 2 | 4 | 64 | 128
+	_ray.collision_mask = 1 | 2 | 4 | 64 | 128 | 256
 	_ray.add_exception(self)
 	camera.add_child(_ray)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -85,7 +87,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if dead or in_dialog:
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		var rel: Vector2 = (event as InputEventMouseMotion).screen_relative * MOUSE_SENSITIVITY
+		var rel: Vector2 = (event as InputEventMouseMotion).screen_relative * MOUSE_SENSITIVITY * Settings.mouse_sensitivity
+		if Settings.invert_y:
+			rel.y = -rel.y
 		if hiding:
 			_hide_yaw = clampf(_hide_yaw - rel.x, -0.45, 0.45)
 			_hide_pitch = clampf(_hide_pitch - rel.y, -0.3, 0.3)
@@ -95,8 +99,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			head.rotation.x = clampf(head.rotation.x - rel.y, -1.45, 1.45)
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	elif event.is_action_pressed("pause"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event.is_action_pressed("interact"):
 		if hiding:
 			exit_hide()
@@ -322,6 +324,10 @@ func _update_focus() -> void:
 
 func _update_crouch() -> void:
 	var want := Input.is_action_pressed("crouch")
+	if Settings.crouch_toggle:
+		if Input.is_action_just_pressed("crouch"):
+			_crouch_toggled = not crouching
+		want = _crouch_toggled
 	if want and not crouching:
 		_set_crouch(true)
 	elif not want and crouching and _can_stand():

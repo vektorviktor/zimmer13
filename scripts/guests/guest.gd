@@ -5,6 +5,8 @@ extends CharacterBody3D
 ## Stellt Deko vor die eigene Tür, erntet und schnitzt Kürbisse, klaut, wenn er dich
 ## nicht mag (oder in Panik ist), feiert in der Lobby – und kann vom Monster geholt werden.
 ## Der Koffer („stock“) ist abstrakt; was er in der Hand hat, ist echt.
+## Licht & Vorhänge (7.3): schaltet sein Zimmerlicht, zieht Vorhänge zu, wenn er Angst hat,
+## ersetzt fehlende Glühbirnen – und klaut selbst welche.
 
 enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD }
 
@@ -46,6 +48,8 @@ var _label: Label3D
 var _target := Vector3.ZERO
 var _timer := 0.0
 var _steal_item: Item
+var _steal_lamp: Lamp
+var _resting := false        ## ruht im Zimmer bei ausgeschaltetem Licht
 var _plant: PumpkinPlant
 var _hide_spot: HideSpot
 var _deco_timer := 0.0
@@ -165,7 +169,7 @@ func can_see_point(p: Vector3) -> bool:
 		return false
 	if dist > 2.5 and (-global_transform.basis.z).dot(to / dist) < 0.0:
 		return false
-	var query := PhysicsRayQueryParameters3D.create(eye, p, 1 | 2)
+	var query := PhysicsRayQueryParameters3D.create(eye, p, Monster.SIGHT_MASK)
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 
@@ -267,6 +271,9 @@ func _set_idle(duration: float) -> void:
 
 
 func _next_activity() -> void:
+	if _resting:
+		_resting = false
+		_set_room_light(true)
 	if Game.social.party_active and invited:
 		join_party(Game.social.free_party_spot())
 		return
@@ -307,6 +314,9 @@ func _arrive() -> void:
 			_set_idle(randf_range(15.0, 40.0))
 			if _is_home():
 				_at_home()
+				if fear < 30.0 and float(profile["brave"]) >= 0.4 and randf() < 0.3:
+					_resting = true
+					_set_room_light(false)
 		State.CARRY_HOME:
 			if held:
 				var kind := held.kind
@@ -335,8 +345,10 @@ func _arrive() -> void:
 				_go_hide()
 
 
-## Zu Hause: Deko kontrollieren, Kürbisse schnitzen, Deko vor die Tür stellen.
+## Zu Hause: Licht, Vorhänge und Glühbirnen prüfen, Deko kontrollieren, Kürbisse
+## schnitzen, Deko vor die Tür stellen.
 func _at_home() -> void:
+	_check_lights()
 	var placed := own_deco_near_door()
 	if placed.size() < expected_deco:
 		Game.social.on_guest_noticed_missing(self, expected_deco - placed.size())
@@ -351,6 +363,44 @@ func _at_home() -> void:
 				_take_into_hand(Item.create(kind))
 				_walk_to(deco_place_point(), State.PLACE_DECO)
 				return
+
+
+func _home_lamps() -> Array[Lamp]:
+	var result: Array[Lamp] = []
+	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
+		var lamp := node as Lamp
+		if lamp.room_id == home["no"]:
+			result.append(lamp)
+	return result
+
+
+func _set_room_light(on: bool) -> void:
+	var sw := LightSwitch.find(get_tree(), home["no"])
+	if sw:
+		sw.set_on(on)
+
+
+func _check_lights() -> void:
+	# Ängstlich → Vorhänge zu (nicht gesehen werden – macht das Zimmer aber dunkler)
+	for node in get_tree().get_nodes_in_group("windows"):
+		var win := node as HotelWindow
+		if win.room_id == home["no"] and win.has_curtains():
+			win.set_closed(fear >= 30.0)
+	_set_room_light(true)
+	for lamp in _home_lamps():
+		if lamp.has_bulb and not lamp.bulb_broken:
+			continue
+		if lamp.has_bulb and lamp.bulb_broken and lamp.sparking:
+			continue   # alter Wackelkontakt – daran hat er sich gewöhnt
+		if int(stock.get(Item.Kind.BULB, 0)) > 0:
+			stock[Item.Kind.BULB] = int(stock[Item.Kind.BULB]) - 1
+			if lamp.has_bulb:
+				lamp.take_bulb()
+			lamp.insert_bulb(Item.create(Item.Kind.BULB))
+		elif not lamp.has_bulb:
+			Game.social.on_guest_noticed_missing_bulb(self)
+		else:
+			say("Meine Lampe ist durchgebrannt … jetzt sitze ich im Dunkeln.")
 
 
 ## Platz neben der eigenen Tür (im Flur), an dem Deko steht.
@@ -388,6 +438,13 @@ func _try_steal() -> bool:
 		if d < best_dist:
 			best_dist = d
 			best = item
+	if best == null or randf() < 0.35:
+		var lamp := _bulb_to_steal(hostile)
+		if lamp:
+			_steal_lamp = lamp
+			_steal_item = null
+			_walk_to(Vector3(lamp.global_position.x, 0, lamp.global_position.z) + _toward_room(lamp), State.STEAL)
+			return true
 	if best == null:
 		return false
 	_steal_item = best
@@ -395,7 +452,49 @@ func _try_steal() -> bool:
 	return true
 
 
+## Eine Lampe, deren Birne er klauen würde: feindlich → aus dem Zimmer des Spielers,
+## in Panik → irgendeine (nicht die eigene), um das eigene Zimmer hell zu halten.
+func _bulb_to_steal(hostile: bool) -> Lamp:
+	var best: Lamp = null
+	var best_dist := INF
+	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
+		var lamp := node as Lamp
+		if not lamp.has_bulb or lamp.bulb_broken or lamp.room_id == home["no"]:
+			continue
+		if lamp.global_position.y > 3.6:
+			continue   # Lobbydecke – zu hoch
+		if hostile and lamp.room_id != "13":
+			continue
+		if Game.player and Game.player.global_position.distance_to(lamp.global_position) < 8.0:
+			continue
+		var d := global_position.distance_to(lamp.global_position)
+		if d < best_dist:
+			best_dist = d
+			best = lamp
+	return best
+
+
+## Kleiner Schritt von der Wand weg, damit der Gast unter der Wandleuchte stehen kann.
+func _toward_room(lamp: Lamp) -> Vector3:
+	if lamp.style == Lamp.Style.WALL:
+		var out := lamp.global_transform.basis.z
+		return Vector3(out.x, 0, out.z).normalized() * 0.6
+	return Vector3.ZERO
+
+
 func _finish_steal() -> void:
+	if _steal_lamp != null:
+		var lamp := _steal_lamp
+		_steal_lamp = null
+		if not is_instance_valid(lamp) or not lamp.has_bulb or held:
+			_set_idle(randf_range(3.0, 6.0))
+			return
+		var victim := lamp.room_id
+		var bulb := lamp.take_bulb()
+		_take_into_hand(bulb)
+		Game.social.on_guest_stole_bulb(self, lamp, victim)
+		_walk_to(_room_point(), State.CARRY_HOME)
+		return
 	var item := _steal_item
 	_steal_item = null
 	if item == null or not is_instance_valid(item) or item.is_held:
@@ -427,7 +526,7 @@ func _watch_monster() -> void:
 	var monster_head := monster.global_position + Vector3.UP * 1.7
 	if eye.distance_to(monster_head) > 15.0:
 		return
-	var query := PhysicsRayQueryParameters3D.create(eye, monster_head, 1 | 2)
+	var query := PhysicsRayQueryParameters3D.create(eye, monster_head, Monster.SIGHT_MASK)
 	if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
 		return
 	_monster_cooldown = 10.0

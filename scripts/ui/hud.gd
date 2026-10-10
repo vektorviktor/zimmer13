@@ -2,6 +2,7 @@ class_name Hud
 extends CanvasLayer
 ## Minimales HUD: Fadenkreuz, Interaktions-Hinweis, Gegenstand in der Hand, Geld,
 ## Meldungen, Versteck-Ansicht mit Atem-Anzeige und Debug-Werte (F3).
+## Dazu: flackernde Kerze beim Autosave (Spielkonzept 8.6) und Untertitel für Geräusche.
 
 var debug_enabled := false
 
@@ -16,6 +17,11 @@ var _hide_material: ShaderMaterial
 var _breath_bg: ColorRect
 var _breath_fill: ColorRect
 var _message_time := 0.0
+var _autosave: Control
+var _autosave_flame: ColorRect
+var _autosave_time := 0.0
+var _caption: Label
+var _caption_time := 0.0
 var _debug_timer := 0.0
 
 
@@ -60,12 +66,54 @@ func _ready() -> void:
 	_breath_fill.size = Vector2(78, 2)
 	_breath_bg.visible = false
 
+	# Autosave: kleine Kerze in der Ecke
+	_autosave = Control.new()
+	_autosave.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_autosave)
+	_place(_autosave, Vector4(1, 1, 1, 1), Vector4(-62, -40, -6, -22))
+	var wax := ColorRect.new()
+	wax.color = Color(0.9, 0.86, 0.72)
+	wax.position = Vector2(2, 7)
+	wax.size = Vector2(4, 9)
+	_autosave.add_child(wax)
+	_autosave_flame = ColorRect.new()
+	_autosave_flame.color = Color(1.0, 0.65, 0.2)
+	_autosave_flame.position = Vector2(2.5, 2)
+	_autosave_flame.size = Vector2(3, 5)
+	_autosave.add_child(_autosave_flame)
+	var saved := _label(8, HORIZONTAL_ALIGNMENT_LEFT)
+	saved.text = "Gespeichert"
+	remove_child(saved)
+	_autosave.add_child(saved)
+	saved.position = Vector2(9, 4)
+	_autosave.visible = false
+	SaveManager.autosaved.connect(func() -> void:
+		_autosave_time = 2.5
+		_autosave.visible = true)
+
+	_caption = _label(8, HORIZONTAL_ALIGNMENT_LEFT)
+	_caption.label_settings.font_color = Color(0.85, 0.85, 0.75)
+	_place(_caption, Vector4(0, 1, 0.6, 1), Vector4(8, -32, 0, -20))
+	Game.caption_posted.connect(func(text: String) -> void:
+		_caption.text = text
+		_caption_time = 2.5)
+
 	Game.money_changed.connect(_on_money_changed)
 	Game.message_posted.connect(show_message)
 	_on_money_changed(Game.money)
 
 
 func _process(delta: float) -> void:
+	if _autosave_time > 0.0:
+		_autosave_time -= delta
+		_autosave_flame.size.y = randf_range(3.5, 5.5)
+		_autosave.modulate.a = clampf(_autosave_time, 0.0, 1.0)
+		_autosave.visible = _autosave_time > 0.0
+	if _caption_time > 0.0:
+		_caption_time -= delta
+		_caption.modulate.a = clampf(_caption_time, 0.0, 1.0)
+		if _caption_time <= 0.0:
+			_caption.text = ""
 	if _message_time > 0.0:
 		_message_time -= delta
 		_message.modulate.a = clampf(_message_time, 0.0, 1.0)

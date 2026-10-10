@@ -43,9 +43,16 @@ func interact(player: Player) -> void:
 	if player.hands_blocked():
 		Game.say("Mit vollen Händen geht das nicht.")
 		return
-	is_open = not is_open
+	set_open(not is_open)
+
+
+func set_open(open: bool, instant: bool = false) -> void:
+	is_open = open
 	_lid_shape.set_deferred("disabled", is_open)
 	var target := deg_to_rad(-105.0) if is_open else 0.0
+	if instant:
+		_lid_pivot.rotation.x = target
+		return
 	create_tween().tween_property(_lid_pivot, "rotation:x", target, 0.4).set_trans(Tween.TRANS_SINE)
 	Game.play_sound("creak", 0.4)
 

@@ -13,6 +13,11 @@ const CHASE_SPEED := 4.3
 const KILL_DISTANCE := 1.1
 const MAX_ACTIVE_TIME := 300.0
 const EYE_HEIGHT := 1.85
+## Sichtweite (Spielkonzept 4.12): im Dunkeln ~8 m, im Hellen ~18 m
+const SIGHT_DARK := 8.0
+const SIGHT_LIGHT_BONUS := 10.0
+## Sichtlinie: Wände, Türen, Vorhänge und Milchglas (klares Glas lässt den Blick durch)
+const SIGHT_MASK := 1 | 2 | 256
 
 var state := State.INACTIVE
 var noticed := false
@@ -178,11 +183,13 @@ func can_see_actor(actor) -> bool:
 		return false
 	var target: Vector3 = actor.global_position + Vector3.UP * (0.95 if actor.crouching else 1.5)
 	var light := Game.director.light_at(target)
-	var sight := 3.0 + 11.0 * light
+	var sight := SIGHT_DARK + SIGHT_LIGHT_BONUS * light
 	if actor.running:
 		sight += 3.0
 	if actor.crouching:
-		sight -= 1.5
+		sight -= 2.0
+	elif Vector2(actor.velocity.x, actor.velocity.z).length() < 0.1:
+		sight -= 1.0   # wer still steht, fällt weniger auf
 	if state == State.CHASE:
 		sight += 5.0
 	if global_position.distance_to(actor.global_position) > sight:
@@ -216,7 +223,7 @@ func _visible_actor():
 
 
 func _los(a: Vector3, b: Vector3) -> bool:
-	var query := PhysicsRayQueryParameters3D.create(a, b, 1 | 2)
+	var query := PhysicsRayQueryParameters3D.create(a, b, SIGHT_MASK)
 	query.exclude = [get_rid()]
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
@@ -300,7 +307,11 @@ func _physics_process(delta: float) -> void:
 			if _state_timer > 1.6:
 				_start_retreat()
 		State.RETREAT:
-			if _move_to(_target, SEARCH_SPEED, delta) or _state_timer > 30.0 or _can_vanish():
+			# Kein sicherer Rückzug (4.12): Wen es sieht, den jagt es wieder – außer es ist satt
+			# oder der Gesehene steht im Schutz von Deko und Licht.
+			if seen != null and Game.director.satiation <= 0.0 and not Game.director.is_protected(seen.global_position):
+				_start_chase(seen)
+			elif _move_to(_target, SEARCH_SPEED, delta) or _state_timer > 30.0 or _can_vanish():
 				Game.director.on_monster_gone()
 				deactivate()
 				return
@@ -444,6 +455,10 @@ func _check_deterrence(delta: float) -> void:
 	_deter_timer = 0.25
 	var ahead := global_position + (-global_transform.basis.z) * 0.9
 	if not Game.director.is_blocked(ahead, state == State.CHASE):
+		return
+	# Deko schützt nur, wer drinsteht (4.12): Steht der Gejagte außerhalb des Schutzes,
+	# geht das Monster durch die Deko hindurch.
+	if state == State.CHASE and _chase_target != null and is_instance_valid(_chase_target) 			and not Game.director.is_protected(_chase_target.global_position):
 		return
 	Game.director.on_monster_repelled()
 	if state == State.CHASE:

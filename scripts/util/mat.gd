@@ -5,6 +5,7 @@ static var _shader: Shader
 static var _cache := {}
 static var _cobweb: StandardMaterial3D
 static var _glass: StandardMaterial3D
+static var _frosted: StandardMaterial3D
 
 
 ## Gemeinsam genutztes Material. Mit shared = false entsteht ein eigenes Material,
@@ -49,3 +50,16 @@ static func glass() -> StandardMaterial3D:
 		_glass.roughness = 0.1
 		_glass.cull_mode = BaseMaterial3D.CULL_DISABLED
 	return _glass
+
+
+## Milchglas: lässt Licht und Umrisse durch, aber keinen klaren Blick.
+static func frosted_glass() -> StandardMaterial3D:
+	if _frosted == null:
+		_frosted = StandardMaterial3D.new()
+		_frosted.albedo_color = Color(0.82, 0.84, 0.8, 0.86)
+		_frosted.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_frosted.roughness = 1.0
+		_frosted.cull_mode = BaseMaterial3D.CULL_DISABLED
+		_frosted.emission_enabled = true
+		_frosted.emission = Color(0.05, 0.05, 0.045)
+	return _frosted

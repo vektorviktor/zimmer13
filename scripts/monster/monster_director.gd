@@ -18,6 +18,9 @@ const CHASE_BONUS := 12.0
 const WARNING_DURATION := 8.0
 const FIRST_GRACE := 40.0
 const MIN_COOLDOWN := 50.0
+const MOONLIGHT := 0.3                 ## Helligkeit direkt am offenen Außenfenster
+const MOONLIGHT_RANGE := 5.0
+const LIGHTS_OFF_CURIOSITY := 30.0     ## Licht aus = das Monster kommt (4.4)
 
 var phase := Phase.CALM
 var boldness := BOLDNESS_START
@@ -100,6 +103,11 @@ func is_blocked(p: Vector3, chasing: bool) -> bool:
 	return deterrence_at(p) > pressure_at(p, chasing)
 
 
+## Steht jemand hier im Schutz von Deko und Licht – auch gegen ein jagendes Monster?
+func is_protected(p: Vector3) -> bool:
+	return is_blocked(p, true)
+
+
 func deco_strength_at(p: Vector3) -> float:
 	var total := 0.0
 	for node in get_tree().get_nodes_in_group("items"):
@@ -129,6 +137,18 @@ func light_at(p: Vector3) -> float:
 			continue
 		var att := 1.0 - d / light.omni_range
 		total += light.light_energy * att * att * 1.6
+	# Mondlicht durch Außenfenster mit offenen Vorhängen
+	for node in get_tree().get_nodes_in_group("windows"):
+		var win := node as HotelWindow
+		if not win.lets_moonlight():
+			continue
+		var wp := win.inside_point()
+		var wd := wp.distance_to(p)
+		if wd > MOONLIGHT_RANGE:
+			continue
+		var moon_query := PhysicsRayQueryParameters3D.create(wp, p, 1 | 2)
+		if space.intersect_ray(moon_query).is_empty():
+			total += MOONLIGHT * (1.0 - wd / MOONLIGHT_RANGE)
 	return clampf(total, 0.0, 1.0)
 
 
@@ -226,6 +246,13 @@ func on_monster_noticed() -> void:
 func on_monster_talk(pos: Vector3) -> void:
 	boldness = minf(100.0, boldness + 3.0)
 	add_curiosity(pos, 10.0)
+
+
+## Licht ausgeschaltet, Birne herausgedreht oder durchgebrannt: Dunkelheit lockt es an.
+func on_lights_off(pos: Vector3) -> void:
+	add_curiosity(pos, LIGHTS_OFF_CURIOSITY)
+	if _monster.is_active() and _monster.global_position.distance_to(pos) < 20.0:
+		_monster.investigate(pos)
 
 
 func on_monster_repelled() -> void:
@@ -350,7 +377,7 @@ func player_can_see(p: Vector3) -> bool:
 	var cam := Game.player.camera
 	if not cam.is_position_in_frustum(p):
 		return false
-	var query := PhysicsRayQueryParameters3D.create(cam.global_position, p, 1 | 2)
+	var query := PhysicsRayQueryParameters3D.create(cam.global_position, p, Monster.SIGHT_MASK)
 	return _monster.get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 
@@ -397,6 +424,7 @@ func _update_effects(delta: float) -> void:
 		_pulse = randf_range(0.3, 0.9)
 	# Konzentriert beim Spielen fällt die Vorwarnung weniger auf (Spielkonzept 6.10)
 	var focus := 0.45 if player and player.focused and _jumpscare <= 0.0 else 1.0
+	focus *= Settings.flicker_intensity   # Barrierefreiheit: weniger Flackern und Rauschen
 	if post_material:
 		post_material.set_shader_parameter("noise_amount", _noise * focus)
 		post_material.set_shader_parameter("flicker", _pulse * 0.6 * focus)

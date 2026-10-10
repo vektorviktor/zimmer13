@@ -7,6 +7,7 @@ var base_energy := 1.0
 var broken := false        ## Defekte Lampe: meist aus, selten ein Funke.
 var soft := false          ## Kerzenlicht: leichtes, ständiges Flackern.
 var burn_out := false      ## Abgebrannt (Kerze, Kürbis).
+var switched_off := false  ## Lichtschalter aus, Birne fehlt oder ist durchgebrannt.
 var flicker := 0.0
 var lamp_material: ShaderMaterial
 
@@ -30,13 +31,14 @@ func _process(delta: float) -> void:
 
 
 func _pick_level() -> float:
-	if burn_out:
+	if burn_out or switched_off:
 		return 0.0
 	if broken:
 		return randf_range(0.3, 0.8) if randf() < 0.025 else 0.0
 	var level := randf_range(0.82, 1.0) if soft else 1.0
-	if flicker > 0.0:
-		if randf() < flicker * 0.35:
+	var f := flicker * Settings.flicker_intensity
+	if f > 0.0:
+		if randf() < f * 0.35:
 			return randf_range(0.0, 0.15)
-		level -= randf() * flicker * 0.3
+		level -= randf() * f * 0.3
 	return level

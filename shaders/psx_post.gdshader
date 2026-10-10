@@ -9,6 +9,7 @@ uniform float noise_amount = 0.0;
 uniform float flicker = 0.0;
 uniform float vignette = 0.6;
 uniform float red_tint = 0.0;
+uniform float gamma = 1.0;   // Einstellungen → Helligkeit
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -38,6 +39,8 @@ void fragment() {
 	col += roll * n2 * 0.15;
 	// Bild-Flackern
 	col *= 1.0 - flicker;
+	// Helligkeit (vor Vignette und Farbreduktion)
+	col = pow(max(col, vec3(0.0)), vec3(1.0 / gamma));
 	// Vignette
 	vec2 d = uv - 0.5;
 	col *= clamp(1.0 - dot(d, d) * vignette * 2.0, 0.0, 1.0);

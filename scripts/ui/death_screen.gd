@@ -1,6 +1,7 @@
 class_name DeathScreen
 extends CanvasLayer
-## Sterbebildschirm nach dem Jumpscare: verrauschtes Standbild, Neustart / Beenden.
+## Sterbebildschirm nach dem Jumpscare: verrauschtes Standbild. Danach den letzten
+## Spielstand laden, einen anderen wählen oder zurück ins Hauptmenü (Spielkonzept 8.7).
 
 const NOISE_SHADER := """
 shader_type canvas_item;
@@ -35,7 +36,9 @@ func _ready() -> void:
 	root.add_child(noise)
 	noise.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
+	_root = root
 	var box := VBoxContainer.new()
+	_box = box
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 6)
 	root.add_child(box)
@@ -44,8 +47,12 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 10)
 	box.add_child(spacer)
-	box.add_child(_button("Neu starten", _on_restart))
-	box.add_child(_button("Beenden", _on_quit))
+	if SaveManager.has_any_save():
+		box.add_child(_button("Letzten Spielstand laden", _on_load_newest))
+		box.add_child(_button("Spielstand wählen", _on_choose))
+	else:
+		box.add_child(_button("Neu beginnen", _on_restart))
+	box.add_child(_button("Hauptmenü", _on_title))
 	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER, Control.PRESET_MODE_MINSIZE)
 	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	box.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -53,6 +60,10 @@ func _ready() -> void:
 	root.modulate.a = 0.0
 	create_tween().tween_property(root, "modulate:a", 1.0, 0.8)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+var _root: Control
+var _box: VBoxContainer
 
 
 func _label(text: String, font_size: int, color: Color) -> Label:
@@ -77,8 +88,23 @@ func _button(text: String, callback: Callable) -> Button:
 
 
 func _on_restart() -> void:
-	get_tree().reload_current_scene()
+	Game.start_new_game(0)
 
 
-func _on_quit() -> void:
-	get_tree().quit()
+func _on_load_newest() -> void:
+	SaveManager.load_newest()
+
+
+func _on_choose() -> void:
+	_box.visible = false
+	var sheet := UiKit.sheet(_root, "Spielstand wählen", Vector2(330, 0))
+	var list := SlotList.new().setup(SlotList.Mode.LOAD, Game.current_slot)
+	list.picked.connect(func(slot: int) -> void: SaveManager.load_slot(slot))
+	sheet.add_child(list)
+	sheet.add_child(UiKit.button("Zurück", func() -> void:
+		sheet.get_parent().queue_free()
+		_box.visible = true))
+
+
+func _on_title() -> void:
+	Game.go_to_title()
