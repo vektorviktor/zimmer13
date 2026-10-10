@@ -87,7 +87,7 @@ func why_not(p_guest: Guest) -> String:
 		return "Der Würfelbecher fehlt am Tisch."
 	if p_guest.fear >= 60.0:
 		return p_guest.line("panic")
-	if Game.director.phase != MonsterDirector.Phase.CALM:
+	if not Game.director.is_quiet(table.global_position, 20.0):
 		return "Jetzt? Hörst du das nicht?"
 	return ""
 
@@ -137,12 +137,12 @@ func _process(delta: float) -> void:
 		_abort("%s springt auf und rennt davon! Die Einsätze liegen noch auf dem Tisch …" % guest.display_name)
 		return
 	# Vorwarnung: je mutiger der Gast, desto später bemerkt er sie
-	if not _over and Game.director.phase != MonsterDirector.Phase.CALM:
+	if not _over and not Game.director.is_quiet(table.global_position, 20.0):
 		if _abort_timer < 0.0:
 			_abort_timer = 0.5 + float(guest.profile["brave"]) * 4.5
 		_abort_timer -= delta
 		if _abort_timer <= 0.0:
-			guest.say(guest.line("panic"))
+			guest.say_panic()
 			guest.end_game()
 			_abort("%s springt auf und rennt davon! Die Einsätze liegen noch auf dem Tisch …" % guest.display_name)
 

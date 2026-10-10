@@ -1,17 +1,24 @@
 class_name Monster
 extends CharacterBody3D
-## Das Monster. Läuft eine feste Patrouillenroute (Start im Keller) und biegt an
-## Zimmertüren ab, wenn Neugier und Dreistigkeit groß genug sind und keine Deko es
-## aufhält. Sieht es jemanden (Spieler oder Gast), jagt es ihn.
+## Das Monster (Spielkonzept 4, 4.13). Streift im ganzen Hotel umher – gewichtet nach Druck
+## (Dunkelheit, Neugier, wenig Deko) – und biegt in Zimmer ab, wenn Neugier und Dreistigkeit
+## groß genug sind. Es bleibt meist verborgen: Sieht der Spieler es, verschwindet es aus
+## seinem Blickfeld. Sieht es jemanden, jagt es ihn. Es hinterlässt Spuren (Fußspuren,
+## Kratzspuren, ausgehende Kerzen, Handabdrücke, geprüfte Verstecke).
 ## Lokale −Z-Achse = Blickrichtung. Bewegt sich ruckartig („Stop-Motion“).
 
-enum State { INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL }
+enum State { INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK, REVEAL }
 
 const WALK_SPEED := 1.6
 const SEARCH_SPEED := 2.0
 const CHASE_SPEED := 4.3
 const KILL_DISTANCE := 1.1
-const MAX_ACTIVE_TIME := 300.0
+## Wird es länger als so lange gesehen, verschwindet es aus dem Blickfeld
+const SEEN_BEFORE_SLINK := 0.35
+const STEP_LENGTH := 0.85          ## Abstand der Fußspuren
+const CANDLE_RANGE := 2.0          ## Kerzen in dieser Nähe gehen aus
+const HANDPRINT_RANGE := 1.4       ## Abstand zum Milchglas für einen Handabdruck
+const HANDPRINT_CHANCE := 0.35
 const EYE_HEIGHT := 1.85
 ## Sichtweite (Spielkonzept 4.12): im Dunkeln ~8 m, im Hellen ~18 m
 const SIGHT_DARK := 8.0
@@ -31,13 +38,19 @@ var _arm_r: Node3D
 var _eye_mat: ShaderMaterial
 var _face_light: OmniLight3D
 var _target := Vector3.ZERO
-var _patrol_index := 0
-var _patrol_left := 0
+var _roam: Dictionary = {}       ## aktuelles Ziel beim Umherstreifen {pos, room}
+var _seen_timer := 0.0
+var _step_dist := 0.0
+var _foot_side := 1.0
+var _trace_timer := 0.0
+var _handprinted: Array = []
+var _scratched := false
 var _search: Array[Dictionary] = []
 var _hide_target: HideSpot
 var _chase_target = null          ## Player oder Guest
 var _last_seen := Vector3.ZERO
 var _lose_timer := 0.0
+var _calm_retreat := false      ## nach einem harmlosen Schreck: niemanden mehr jagen
 var _state_timer := 0.0
 var _idle_timer := 0.0
 var _active_time := 0.0
@@ -78,21 +91,34 @@ func is_active() -> bool:
 
 # --- Steuerung von außen ----------------------------------------------------
 
-## Erscheint an einem Wegpunkt der Route und läuft sie einmal komplett ab.
-func start_patrol(start_index: int) -> void:
-	var route := Game.director.patrol
-	_patrol_index = start_index
-	_patrol_left = route.size()
-	_appear(route[start_index]["pos"])
-	_set_state(State.PATROL)
-
-
-## Für Tests: an einer beliebigen Stelle erscheinen und von dort patrouillieren.
-func spawn_at(pos: Vector3) -> void:
-	_patrol_index = Game.director.nearest_patrol_index(pos)
-	_patrol_left = Game.director.patrol.size()
+## Erscheint (meist im Keller) und streift umher, bis der Director es heimschickt.
+func start_roaming(pos: Vector3) -> void:
 	_appear(pos)
-	_set_state(State.PATROL)
+	_handprinted.clear()
+	_next_roam()
+
+
+## Für Tests: an einer beliebigen Stelle erscheinen.
+func spawn_at(pos: Vector3) -> void:
+	Game.director.first_attack_done = true
+	Game.director.phase = MonsterDirector.Phase.ACTIVE
+	Game.director._phase_left = MonsterDirector.ACTIVE_TIME.x
+	start_roaming(pos)
+
+
+## Hinter jemandem auftauchen, den der Spieler gerade nicht sieht (Klopfen, Tür zu).
+func spawn_near_unseen(pos: Vector3) -> void:
+	if not is_active():
+		_appear(pos + Vector3(1.4, 0, 0))
+		_set_state(State.PATROL)
+	else:
+		global_position = pos + Vector3(1.4, 0, 0)
+
+
+## Ende der Aktivphase: zurück in den Keller.
+func go_home() -> void:
+	if not state in [State.RETREAT, State.INACTIVE, State.KILL, State.REVEAL]:
+		_start_retreat()
 
 
 func deactivate() -> void:
@@ -111,7 +137,7 @@ func deactivate() -> void:
 
 ## Geräusch gehört → nachsehen, danach weiter auf der Route.
 func investigate(pos: Vector3) -> void:
-	if state in [State.PATROL, State.LURK, State.SEARCH, State.INVESTIGATE]:
+	if state in [State.PATROL, State.LURK, State.SEARCH, State.INVESTIGATE, State.SLINK]:
 		_target = pos
 		_set_state(State.INVESTIGATE)
 
@@ -154,8 +180,38 @@ func after_feeding() -> void:
 	_start_retreat()
 
 
+## Harmloser Angriff (die ersten Male): den Gast erschreckt, dann zurück in den Keller.
+func after_scare() -> void:
+	_chase_target = null
+	_start_retreat()
+	_calm_retreat = true
+
+
+## Harmloser Angriff auf den Spieler: Es steht direkt vor ihm und starrt ihn an.
+func reveal(cam: Camera3D) -> void:
+	_set_state(State.REVEAL)
+	visible = true
+	_collider.disabled = true
+	velocity = Vector3.ZERO
+	var forward := -cam.global_transform.basis.z
+	forward.y = 0.0
+	if forward.length() < 0.01:
+		forward = Vector3.FORWARD
+	forward = forward.normalized()
+	var base := cam.global_position - Vector3.UP * (EYE_HEIGHT - 0.1)
+	global_position = Vector3(base.x, cam.global_position.y - 1.7, base.z) + forward * 1.3
+	rotation = Vector3(0, atan2(forward.x, forward.z), 0)
+	_eye_mat.set_shader_parameter("emission_energy", 6.0)
+	_face_light.light_energy = 0.9
+	_head.rotation = Vector3(0.15, 0, 0.2)
+	if "--shot-reveal" in OS.get_cmdline_user_args():
+		Game._shot_at = Game._shot_frames + 25
+
+
 func _appear(pos: Vector3) -> void:
 	global_position = pos
+	_scratched = false
+	_last_pos = pos
 	visible = true
 	_collider.disabled = false
 	_active_time = 0.0
@@ -230,7 +286,7 @@ func _los(a: Vector3, b: Vector3) -> bool:
 
 ## Schaut der Spieler das Monster ~0,8 s direkt an, „weiß“ es, dass es bemerkt wurde.
 func _update_noticed(delta: float) -> void:
-	if noticed or not (state in [State.PATROL, State.INVESTIGATE, State.LURK, State.SEARCH]):
+	if noticed or not (state in [State.PATROL, State.INVESTIGATE, State.LURK, State.SEARCH, State.SLINK]):
 		return
 	var p := Game.player
 	if p == null or p.dead:
@@ -253,18 +309,27 @@ func _physics_process(delta: float) -> void:
 	if state == State.INACTIVE:
 		return
 	_animate(delta)
-	if state == State.KILL:
+	if state == State.KILL or state == State.REVEAL:
 		return
 	_active_time += delta
+	_update_traces(delta)
 	_state_timer += delta
 	var seen = _visible_actor()
 	_update_noticed(delta)
+	if state in [State.PATROL, State.INVESTIGATE] and seen == null:
+		_check_seen(delta)
 	match state:
 		State.PATROL:
 			if seen != null:
 				_start_chase(seen)
 			else:
 				_patrol_step(delta)
+		State.SLINK:
+			# Gesehen worden – aus dem Blickfeld verschwinden, dann weiter
+			if seen != null and global_position.distance_to(seen.global_position) < 4.0:
+				_start_chase(seen)
+			elif _move_to(_target, SEARCH_SPEED, delta) or _state_timer > 8.0:
+				_next_roam()
 		State.INVESTIGATE:
 			if seen != null:
 				_start_chase(seen)
@@ -283,8 +348,7 @@ func _physics_process(delta: float) -> void:
 				if _lurk_count >= 4:
 					_start_retreat()
 				else:
-					_advance_patrol()
-					_set_state(State.PATROL)
+					_next_roam()
 		State.STARE:
 			_stop(delta)
 			if Game.player:
@@ -308,15 +372,14 @@ func _physics_process(delta: float) -> void:
 				_start_retreat()
 		State.RETREAT:
 			# Kein sicherer Rückzug (4.12): Wen es sieht, den jagt es wieder – außer es ist satt
-			# oder der Gesehene steht im Schutz von Deko und Licht.
-			if seen != null and Game.director.satiation <= 0.0 and not Game.director.is_protected(seen.global_position):
+			# oder der Gesehene steht im Schutz von Deko und Licht. Nach einem harmlosen Schreck
+			# verschwindet es einfach – sonst erschreckt es denselben Gast immer wieder.
+			if seen != null and not _calm_retreat and Game.director.satiation <= 0.0 and not Game.director.is_protected(seen.global_position):
 				_start_chase(seen)
 			elif _move_to(_target, SEARCH_SPEED, delta) or _state_timer > 30.0 or _can_vanish():
 				Game.director.on_monster_gone()
 				deactivate()
 				return
-	if _active_time > MAX_ACTIVE_TIME and state in [State.PATROL, State.INVESTIGATE, State.SEARCH]:
-		_start_retreat()
 	_check_deterrence(delta)
 	_open_doors()
 
@@ -328,25 +391,43 @@ func _set_state(new_state: State) -> void:
 
 
 func _patrol_step(delta: float) -> void:
-	var route := Game.director.patrol
-	var waypoint := route[_patrol_index]
-	if not _move_to(waypoint["pos"], WALK_SPEED, delta):
+	if _roam.is_empty():
+		_next_roam()
 		return
-	var room: String = waypoint["room"]
+	if not _move_to(_roam["pos"], WALK_SPEED, delta):
+		return
+	var room: String = _roam["room"]
 	if room != "" and Game.director.wants_to_enter_room(room):
 		_search = Game.director.room_search_points(room)
-		_advance_patrol()
+		_roam = {}
 		_set_state(State.SEARCH)
-		Game.play_sound("growl", 0.4)
+		if Game.player and Game.player.global_position.distance_to(global_position) < 12.0:
+			Game.play_sound("growl", 0.4)
 	else:
-		_advance_patrol()
+		_next_roam()
 
 
-func _advance_patrol() -> void:
-	_patrol_index = (_patrol_index + 1) % Game.director.patrol.size()
-	_patrol_left -= 1
-	if _patrol_left <= 0:
-		_start_retreat()
+## Neues Ziel irgendwo im Hotel.
+func _next_roam() -> void:
+	_roam = Game.director.next_roam_target(global_position)
+	_set_state(State.PATROL)
+
+
+## Bleibt verborgen: Sieht der Spieler es (und jagt es nicht), verschwindet es aus dem Blick.
+func _check_seen(delta: float) -> void:
+	var p := Game.player
+	if p == null or p.dead or noticed:
+		_seen_timer = 0.0
+		return
+	var head := global_position + Vector3.UP * 1.6
+	if head.distance_to(p.camera.global_position) > 6.0 and Game.director.player_can_see(head):
+		_seen_timer += delta
+		if _seen_timer > SEEN_BEFORE_SLINK:
+			_seen_timer = 0.0
+			_target = Game.director.hidden_point_near(global_position)
+			_set_state(State.SLINK)
+	else:
+		_seen_timer = maxf(0.0, _seen_timer - delta)
 
 
 func _start_chase(actor) -> void:
@@ -382,6 +463,7 @@ func _start_search(center: Vector3) -> void:
 
 
 func _start_retreat() -> void:
+	_calm_retreat = false
 	_target = Game.director.retreat_point(global_position)
 	_set_state(State.RETREAT)
 
@@ -397,7 +479,7 @@ func _can_vanish() -> bool:
 
 func _search_step(delta: float) -> void:
 	if _search.is_empty():
-		_set_state(State.PATROL)   # zurück auf die Route
+		_next_roam()
 		return
 	var point := _search[0]
 	if _move_to(point["pos"], SEARCH_SPEED, delta):
@@ -427,6 +509,7 @@ func _check_hide_step(delta: float) -> void:
 	if _state_timer > 2.2:
 		var spot := _hide_target
 		_hide_target = null
+		spot.set_checked(true)   # Spur: offene Schranktür / zerwühltes Bett
 		if not _search.is_empty():
 			_search.pop_front()
 		_set_state(State.SEARCH)
@@ -461,6 +544,8 @@ func _check_deterrence(delta: float) -> void:
 	if state == State.CHASE and _chase_target != null and is_instance_valid(_chase_target) 			and not Game.director.is_protected(_chase_target.global_position):
 		return
 	Game.director.on_monster_repelled()
+	if not _scratched and Game.traces:
+		_scratched = Game.traces.scratch_wall_ahead(self)
 	if state == State.CHASE:
 		Game.play_sound("growl", 0.7)
 		_set_state(State.REPELLED)
@@ -477,6 +562,38 @@ func _open_doors() -> void:
 			continue
 		if door.center().distance_to(global_position + Vector3.UP) < 1.5:
 			door.monster_open()
+			if Game.traces and randf() < 0.6:
+				Game.traces.add_door_scratch(door, global_position)
+
+
+# --- Spuren --------------------------------------------------------------------
+
+## Fußspuren, ausgehende Kerzen, Handabdrücke am Milchglas (Spielkonzept 4.13).
+func _update_traces(delta: float) -> void:
+	var moved := Vector2(velocity.x, velocity.z).length() * delta
+	_step_dist += moved
+	if _step_dist >= STEP_LENGTH and Game.traces and is_on_floor():
+		_step_dist = 0.0
+		_foot_side = -_foot_side
+		var side := global_transform.basis.x * 0.13 * _foot_side
+		Game.traces.add_footprint(global_position + side, rotation.y)
+	_trace_timer -= delta
+	if _trace_timer > 0.0:
+		return
+	_trace_timer = 0.4
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.lit and not item.is_held and item.global_position.distance_to(global_position) < CANDLE_RANGE:
+			item.blow_out()
+	for node in get_tree().get_nodes_in_group("windows"):
+		var win := node as HotelWindow
+		if not win.frosted or win in _handprinted:
+			continue
+		var outside := win.global_transform * Vector3(0, 0, -0.5)
+		if Vector2(outside.x - global_position.x, outside.z - global_position.z).length() < HANDPRINT_RANGE:
+			_handprinted.append(win)
+			if randf() < HANDPRINT_CHANCE and Game.traces:
+				Game.traces.add_handprint(win)
 
 
 # --- Bewegung -------------------------------------------------------------------

@@ -9,7 +9,7 @@ const MUSIC_BEAT := 60.0 / 132.0
 const MUSIC_CHORDS := [[220.0, 261.6, 329.6], [174.6, 220.0, 261.6], [196.0, 246.9, 293.7], [164.8, 207.7, 246.9]]
 const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
-	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25,
+	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6,
 }
 
 var hum := 0.0
@@ -132,4 +132,10 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			return (fmod(ph2, 1.0) * 2.0 - 1.0) * sin(PI * k) * 0.12
 		"thud":
 			return sin(TAU * 75.0 * t) * exp(-t * 16.0) * 0.8
+		"knock":
+			# drei kurze, dumpfe Schläge gegen Holz
+			var kt := fmod(t, 0.2)
+			if t > 0.58:
+				return 0.0
+			return (sin(TAU * 140.0 * kt) * 0.7 + white * 0.4) * exp(-kt * 38.0)
 	return 0.0

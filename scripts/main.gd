@@ -8,6 +8,9 @@ extends Node3D
 ##   --savetest                  Speichern → Laden → Vergleichen (Ausgabe in der Konsole)
 ##   --diary=n                   nach 2 s wie am Tagebuch in Slot n speichern
 ##   --day=n                     zu Tag n im Oktober springen
+##   --attacks=n                 so viele Angriffe gab es schon (> 2: es holt jemanden)
+##   --first-attack              Feier starten, kurz darauf der erste Angriff
+##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, controls)
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
 ##   --pos=x,y,z[,blickwinkel]   Spieler versetzen
@@ -25,7 +28,8 @@ extends Node3D
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
 
-const INTRO := "Zimmer 13. Der Ausgang ist verriegelt – und irgendetwas schleicht durch die Flure.\nHalte es mit Deko und Licht fern. Freunde dich mit den anderen Gästen an.\nSpeichern kannst du nur am Tagebuch auf deinem Schreibtisch.\n\n[WASD] Laufen  [Shift] Rennen  [Leertaste] Springen  [Strg] Ducken\n[E] Nehmen / Benutzen  [G] Ablegen  [Rechtsklick] Luft anhalten  [Esc] Menü"
+## Der Anfang wirkt friedlich – nichts deutet auf das Monster hin (Spielkonzept 2.1).
+const INTRO := "Willkommen im Hotel – zur Halloween-Woche! Heute ist der 1. Oktober.\nLerne die anderen Gäste kennen, schmücke deine Tür und feiere mit.\nDein Tagebuch liegt auf dem Schreibtisch in Zimmer 13.\n\n[WASD] Laufen  [Shift] Rennen  [Leertaste] Springen  [Strg] Ducken\n[E] Nehmen / Benutzen  [G] Ablegen  [Rechtsklick] Luft anhalten  [Esc] Menü"
 const START_ENTRY := "Ich bin in Zimmer 13 aufgewacht. Die Tür nach draußen ist verriegelt."
 
 var _post: ShaderMaterial
@@ -50,6 +54,11 @@ func _ready() -> void:
 	audio.name = "SynthAudio"
 	add_child(audio)
 	Game.audio = audio
+
+	var traces := Traces.new()
+	traces.name = "Traces"
+	add_child(traces)
+	Game.traces = traces
 
 	var player := Player.new()
 	player.name = "Player"
@@ -161,7 +170,12 @@ func _setup_environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.02, 0.02, 0.03)
-	env.fog_density = 0.07
+	env.fog_density = 0.09
+	# Lichtschein im Dunst: Lampen werfen sichtbare Lichtkegel, dazwischen bleibt es finster
+	env.volumetric_fog_enabled = true
+	env.volumetric_fog_density = 0.035
+	env.volumetric_fog_albedo = Color(0.6, 0.6, 0.65)
+	env.volumetric_fog_length = 24.0
 	var world_env := WorldEnvironment.new()
 	world_env.environment = env
 	add_child(world_env)
@@ -230,6 +244,7 @@ func _parse_debug_args() -> void:
 				friend.relation = 80.0
 		elif arg.begins_with("--kill="):
 			var victim := Game.social.guest_by_id(arg.substr(7))
+			Game.director.attacks = MonsterDirector.HARMLESS_ATTACKS + 1   # wirklich holen
 			get_tree().create_timer(3.0).timeout.connect(func() -> void:
 				Game.monster.spawn_at(victim.global_position + Vector3(1, 0, 0))
 				Game.director.phase = MonsterDirector.Phase.ACTIVE
@@ -269,6 +284,25 @@ func _parse_debug_args() -> void:
 				Game.dialog.open(partner))
 		elif arg == "--warn":
 			Game.director.start_warning()
+		elif arg.begins_with("--attacks="):
+			# so viele Angriffe gab es schon (über 2 = gefährlich)
+			Game.director.first_attack_done = true
+			Game.director.attacks = arg.substr(10).to_int()
+		elif arg == "--first-attack":
+			# Feier starten, kurz darauf der erste Angriff
+			Game.social.start_party("mila")
+			get_tree().create_timer(3.0).timeout.connect(Game.director._first_attack_at_party)
+		elif arg == "--knock":
+			# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
+			Game.director.first_attack_done = true
+			Game.player.global_position = Vector3(13.0, 0.05, 3.5)
+			Game.monster.spawn_at(Vector3(24.0, 0.05, 0.0))
+			Game.social._knock_cooldown = 1.0
+			Game.social.debug_fake_knock = "--knock-fake" in OS.get_cmdline_user_args()
+			if "--answer" in OS.get_cmdline_user_args():
+				# nach 4 s öffnet der Spieler die Tür
+				get_tree().create_timer(4.0).timeout.connect(func() -> void:
+					(Game.social.builder.rooms["13"]["door"] as Door).set_open(true))
 		elif arg == "--trace":
 			_trace = true
 			Game.message_posted.connect(func(text: String, _d: float) -> void: print("  » " + text.replace("
@@ -302,7 +336,7 @@ func _parse_debug_args() -> void:
 					if which != "pause":
 						Game.menus.call("_show_" + which))
 		elif arg == "--savetest":
-			get_tree().create_timer(3.0).timeout.connect(_save_test)
+			get_tree().create_timer(6.0).timeout.connect(_save_test)
 
 
 ## --savetest: Speichern und Laden ohne Datei durchspielen und Unterschiede ausgeben.
@@ -337,7 +371,8 @@ func _save_test() -> void:
 				continue
 			print("[savetest] Unterschied in „%s“:\n  vorher  %s\n  nachher %s" % [key,
 				JSON.stringify(before[key]).left(400), JSON.stringify(after.get(key)).left(400)])
-	print("[savetest] %d Gegenstände, %d Gäste – %s" % [(before["items"] as Array).size(), (before["guests"] as Dictionary).size(),
+	print("[savetest] %d Gegenstände, %d Gäste, %d Spuren, Angriffe %d – %s" % [(before["items"] as Array).size(), (before["guests"] as Dictionary).size(),
+		(before["traces"] as Array).size(), int(before["director"]["state"]["attacks"]),
 		"alles gleich" if problems == 0 else "%d Unterschiede" % problems])
 
 

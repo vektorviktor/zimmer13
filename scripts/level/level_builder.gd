@@ -205,6 +205,7 @@ func _room(data: Dictionary) -> void:
 			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.5, 0.02, 3.5))
 			_item(Item.Kind.COINS, table_top, "2")
 			_item(Item.Kind.LOADED_DICE, table_top + Vector3(0.3, 0, 0.1))
+			_note("1987", table_top + Vector3(-0.25, 0, 0.1))
 			_resource_web(Vector3(x1 - 0.12, 2.2, 6.3), -135.0)
 			_resource_web(Vector3(x0 + 0.12, 2.4, 2.0), 45.0)
 		"laundry":
@@ -218,6 +219,7 @@ func _room(data: Dictionary) -> void:
 			_resource_web(Vector3(x1 - 0.12, 2.3, -2.2), -45.0)
 			_resource_web(Vector3(x0 + 0.12, 2.6, -6.3), 135.0)
 			_item(Item.Kind.CANDLE, Vector3(cx + 0.5, 2.02, -6.2))
+			_note("1994", Vector3(x1 - 0.8, 0.51, -5.6))
 		"locked":
 			door.locked = true
 			door.key_id = "zimmer_18"
@@ -227,6 +229,7 @@ func _room(data: Dictionary) -> void:
 			_item(Item.Kind.LEAVES, Vector3(cx + 1.0, 0.02, -2.6))
 		"empty":
 			_item(Item.Kind.CANDLE, table_top)
+			_note("2003", Vector3(x1 - 1.95, 0.01, -5.0))   # neben dem Bett, halb darunter
 	rooms[no] = info
 
 
@@ -283,6 +286,7 @@ func _cellar() -> void:
 	Geo.solid(root, Vector3(0.6, 0.45, 0.6), Vector3(32.9, 0.225, 1.55), _dark_wood)
 	_item(Item.Kind.KEY, Vector3(33.5, 0.72, -1.4), "zimmer_18")
 	_item(Item.Kind.COINS, Vector3(31.4, 0.02, 1.2), "2")
+	_note("2011", Vector3(33.6, 0.61, 1.45))
 	_resource_web(Vector3(33.9, 1.7, -2.08), 0.0)
 	_resource_web(Vector3(30.5, 1.7, 2.08), 180.0)
 
@@ -329,6 +333,7 @@ func _lobby() -> void:
 	Geo.solid(root, Vector3(3.0, 1.1, 0.7), Vector3(-11.5, 0.55, 5.4), _dark_wood)      # Rezeption
 	Geo.solid(root, Vector3(0.7, 1.1, 1.4), Vector3(-9.65, 0.55, 4.75), _dark_wood)
 	_item(Item.Kind.CARVED_PUMPKIN, Vector3(-12.2, 1.12, 5.4))
+	_note("2019", Vector3(-10.8, 1.11, 5.35))
 	for z in [-2.6, 2.6]:
 		var back: float = 0.45 if z > 0 else -0.45
 		Geo.solid(root, Vector3(2.2, 0.45, 0.9), Vector3(-10.5, 0.225, z), red)          # Sofas
@@ -567,6 +572,13 @@ func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, roo
 	lamp.rotation.y = yaw
 	root.add_child(lamp)
 	return lamp
+
+
+## Warnungszettel eines früheren Gastes (erscheint erst nach dem ersten Angriff).
+func _note(id: String, pos: Vector3) -> void:
+	var note := WarningNote.new().setup(id)
+	note.position = pos
+	root.add_child(note)
 
 
 func _switch(room_id: String, label: String, pos: Vector3, yaw: float) -> LightSwitch:

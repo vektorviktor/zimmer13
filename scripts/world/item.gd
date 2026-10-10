@@ -7,14 +7,14 @@ extends RigidBody3D
 ## Handwerk: Messer in der Hand + Kürbis → schnitzen; Kerze in der Hand + geschnitzter
 ## Kürbis ohne Licht → Kerze hineinstellen.
 
-enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB }
+enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
 ## Grundpreise für den Handel mit Gästen
 const PRICES := {
 	Kind.PUMPKIN: 4, Kind.CARVED_PUMPKIN: 10, Kind.CANDLE: 3, Kind.COBWEB: 3,
-	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4,
+	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4, Kind.CLOTHING: 0,
 }
 
 var kind: Kind = Kind.PUMPKIN
@@ -31,6 +31,8 @@ var light: FlickerLight
 var burn_time := 0.0
 ## Glühbirne: durchgebrannt (nutzlos, nur noch Scherben im Glas)
 var broken := false
+## Kleidungsstück: wem es gehörte (Gast-ID) – Spur von Verschwundenen
+var clothing_of := ""
 
 var _glow_material: ShaderMaterial
 
@@ -72,6 +74,8 @@ func create_extra() -> String:
 			return "broken" if broken else ""
 		Kind.CARVED_PUMPKIN:
 			return "" if lit else "unlit"
+		Kind.CLOTHING:
+			return clothing_of
 	return ""
 
 
@@ -126,6 +130,15 @@ func light_up(with_sound: bool = true) -> void:
 		_glow_material.set_shader_parameter("emission_energy", 3.0)
 	if with_sound:
 		Game.play_sound("blip", 0.4)
+
+
+## Das Monster geht vorbei: Kerze oder Kürbis erlischt (Spur, Spielkonzept 4.13).
+func blow_out() -> void:
+	if not lit:
+		return
+	_extinguish()
+	if Game.player and Game.player.global_position.distance_to(global_position) < 6.0:
+		Game.caption("[Eine Kerze erlischt]")
 
 
 func _extinguish() -> void:
@@ -240,6 +253,16 @@ func _build(extra: String) -> void:
 			for i in 2:
 				Geo.mesh(self, Geo.box(Vector3(0.025, 0.025, 0.025)), Mat.psx(Color(0.95, 0.9, 0.85)), Vector3(-0.02 + i * 0.04, 0.013, 0))
 				Geo.mesh(self, Geo.box(Vector3(0.008, 0.002, 0.008)), Mat.psx(Color(0.7, 0.05, 0.05)), Vector3(-0.02 + i * 0.04, 0.026, 0))
+		Kind.CLOTHING:
+			clothing_of = extra
+			var profile: Dictionary = GuestProfiles.ALL.get(extra, {})
+			display_name = String(profile.get("clothing", "Ein Kleidungsstück"))
+			mass = 0.2
+			size = Vector3(0.36, 0.04, 0.24)
+			var cloth := Mat.psx(profile.get("coat", Color(0.3, 0.25, 0.25)))
+			var folded := Geo.mesh(self, Geo.box(Vector3(0.34, 0.025, 0.2)), cloth, Vector3(0, 0.013, 0))
+			folded.rotation.y = 0.2
+			Geo.mesh(self, Geo.box(Vector3(0.12, 0.02, 0.26)), cloth, Vector3(0.1, 0.03, 0.02))
 		Kind.BULB:
 			broken = extra == "broken"
 			display_name = "Kaputte Glühbirne" if broken else "Glühbirne"

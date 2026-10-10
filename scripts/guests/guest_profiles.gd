@@ -8,6 +8,9 @@ class_name GuestProfiles
 ##   dice   – Mäxchen: likes (Lieblingsspiel), honesty (sagt die Wahrheit, wenn möglich),
 ##            jump (wie weit beim Bluffen überboten wird), perception (durchschaut Bluffs
 ##            und Schummeleien), pride (gekränkt, wenn er verliert), tell (verräterische Geste)
+##   reliable – wie zuverlässig sie von Spuren berichten (Rest: verwechselt, erfunden, übertrieben)
+##   report   – wie sie davon erzählen (%s = was, %s = wo)
+##   clothing – was von ihnen zurückbleibt, wenn sie verschwinden
 
 const ALL := {
 	"edna": {
@@ -20,13 +23,19 @@ const ALL := {
 		"start_deco": [Item.Kind.CANDLE, Item.Kind.LEAVES],
 		"activities": {"room": 3.0, "lobby": 4.0, "kitchen": 2.0, "garden": 0.5, "wander": 0.5, "bar": 0.7},
 		"money": 12,
+		"reliable": 0.5, "clothing": "Ednas Strickschal",
+		"report": "Ich habe %s gesehen … bei %s. Glaube ich. Oder habe ich das geträumt?",
 		"dice": {"likes": false, "honesty": 0.9, "jump": 1, "perception": 0.15, "pride": 0.1, "tell": "Edna kichert nervös und schaut weg."},
 		"lines": {
 			"greet_friend": ["Ach, du bist es! Schön, ein freundliches Gesicht zu sehen."],
 			"greet": ["Oh! Du hast mich erschreckt.", "Guten Abend … falls es Abend ist. Die Uhren hier stehen alle."],
 			"greet_enemy": ["Was willst du denn noch?"],
 			"smalltalk": ["Ich wohne seit Jahren jeden Oktober hier. Aber so still war es noch nie.", "Kerzen beruhigen mich. Ich habe immer welche dabei.", "Früher gab es hier jeden Abend Musik in der Lobby."],
-			"monster": ["Ich habe Schritte gehört … im Keller. Dort ist doch niemand!", "Es mag kein Licht, glaube ich. Ich lasse meine Kerzen immer brennen.", "Wenn die Lampen flackern, verstecke ich mich. Sofort."],
+			"monster": ["Ich habe Schritte gehört … im Keller. Dort ist doch niemand!", "Es mag kein Licht, glaube ich. Ich lasse meine Kerzen immer brennen.", "Wenn die Lampen flackern, verstecke ich mich. Sofort.", "Hörst du das Rauschen auch? Je lauter es wird, desto näher ist es."],
+			"odd": ["Die Uhren hier stehen alle still. Seltsam, nicht?", "Ich freue mich so auf Halloween! Dieses Jahr schmücke ich meine Tür besonders schön.", "Hast du den Keller gesehen? Ich gehe da nicht hinunter. Zu staubig."],
+			"knock": ["Mach auf! Bitte, mach auf!", "Es ist hinter mir! Lass mich rein!"],
+			"sheltered": ["Danke … danke. Ich bleibe nur kurz, versprochen."],
+			"left_outside": ["Du hast mich einfach draußen stehen lassen …"],
 			"insult": ["Wie unhöflich!", "So etwas muss ich mir nicht anhören."],
 			"thanks": ["Oh, wie lieb von dir!", "Das hätte es nicht gebraucht … danke!"],
 			"thanks_like": ["Eine Kerze! Du weißt, was mir gefällt."],
@@ -57,13 +66,19 @@ const ALL := {
 		"start_deco": [Item.Kind.CARVED_PUMPKIN],
 		"activities": {"room": 3.0, "lobby": 2.0, "kitchen": 1.0, "garden": 2.0, "wander": 1.0, "bar": 3.0},
 		"money": 30,
+		"reliable": 0.9, "clothing": "Brunos Hut",
+		"report": "Da waren %s, bei %s. Na und? Wahrscheinlich nur Dreck.",
 		"dice": {"likes": true, "honesty": 0.45, "jump": 2, "perception": 0.35, "pride": 0.85, "tell": "Bruno zieht den Mundwinkel hoch."},
 		"lines": {
 			"greet_friend": ["Na, Partner. Was brauchst du?"],
 			"greet": ["Hm. Was gibt's?", "Mach's kurz."],
 			"greet_enemy": ["Verschwinde, bevor ich ungemütlich werde."],
 			"smalltalk": ["Alles hat seinen Preis. Auch hier drin.", "Ich hole mir die Kürbisse aus dem Garten, bevor es die anderen tun.", "Die Lobbytür kriegst du nicht auf. Hab's versucht."],
-			"monster": ["Das Ding hält sich an seine Wege. Jede Runde dieselbe. Fängt im Keller an.", "Starr es bloß nicht an. Dann weiß es Bescheid.", "Wenn es dich in einen Schrank springen sieht, bist du erledigt."],
+			"monster": ["Das Ding schläft im Keller. Wenn's ruhig ist, ist es dort unten.", "Starr es bloß nicht an. Dann weiß es Bescheid.", "Wenn es dich in einen Schrank springen sieht, bist du erledigt.", "Folg den nassen Spuren nicht. Die sind frisch, wenn sie glänzen."],
+			"odd": ["Für die Halloween-Woche zahlt man hier ein Vermögen. Da will ich auch was davon haben.", "Der Hausmeister ist nie da. Wer schraubt eigentlich die Birnen rein?", "Ruhig hier. Gefällt mir."],
+			"knock": ["Aufmachen! Sofort!", "Mach die verdammte Tür auf!"],
+			"sheltered": ["Hm. Danke. Erzähl's keinem."],
+			"left_outside": ["Das vergess ich dir nicht. Du hast mich draußen gelassen."],
 			"insult": ["Pass auf, was du sagst.", "Das merk ich mir."],
 			"thanks": ["Hm. Nicht schlecht.", "Gutes Geschäft – für mich."],
 			"thanks_like": ["Jetzt reden wir! Das ist was wert."],
@@ -94,13 +109,19 @@ const ALL := {
 		"start_deco": [Item.Kind.CARVED_PUMPKIN, Item.Kind.LEAVES],
 		"activities": {"room": 2.0, "lobby": 3.0, "kitchen": 1.0, "garden": 3.0, "wander": 1.0, "bar": 1.5},
 		"money": 8,
+		"reliable": 0.65, "clothing": "Milas Halstuch",
+		"report": "Ich schwör's dir: %s, bei %s! Riesig! Überall!",
 		"dice": {"likes": true, "honesty": 0.6, "jump": 1, "perception": 0.55, "pride": 0.4, "tell": "Mila spielt auffällig mit einer Haarsträhne."},
 		"lines": {
 			"greet_friend": ["Hey du! Ich hab gerade einen neuen Kürbis geschnitzt – willst du sehen?"],
 			"greet": ["Oh, hi! Bist du auch hier gestrandet?", "Hallo! Hast du schon gehört, was Edna erzählt?"],
 			"greet_enemy": ["Ah. Du. Alle wissen, was du getan hast."],
 			"smalltalk": ["Ich schnitze Kürbisse, seit ich klein bin. Mit Messer aus der Küche geht's am besten.", "Bruno ist ein Geizhals, aber er hat immer Kürbisse.", "Im Garten wachsen die Kürbisse nach. Man muss nur schneller sein als Bruno."],
-			"monster": ["Ich glaube, Gerede lockt es an. Je mehr wir darüber reden, desto frecher wird es.", "In der Wäscherei hängen Spinnweben. Die hält es angeblich auch fern.", "Es kriecht durch die dunklen Zimmer. Zimmer 17 ist schon lange verlassen …"],
+			"monster": ["Ich glaube, Gerede lockt es an. Je mehr wir darüber reden, desto frecher wird es.", "In der Wäscherei hängen Spinnweben. Die hält es angeblich auch fern.", "Es kriecht durch die dunklen Zimmer. Zimmer 17 ist schon lange verlassen …", "Hast du die Zettel gefunden? Da waren schon andere vor uns hier."],
+			"odd": ["Ich mache die beste Halloween-Deko im ganzen Hotel. Wetten?", "Zimmer 17 steht leer, seit ich hier bin. Ob da jemand ausgezogen ist?", "Wir sollten bald eine richtige Party feiern! Mit Musik und allem!"],
+			"knock": ["Bitte! Mach auf, es kommt!", "Hilfe! Lass mich rein!"],
+			"sheltered": ["Okay … okay. Danke. Ich zittere total."],
+			"left_outside": ["Du hast mich nicht reingelassen. Das erzähl ich allen."],
 			"insult": ["Wow. Okay.", "Das erzähl ich weiter, nur damit du's weißt."],
 			"thanks": ["Für mich? Wie süß!", "Danke! Das kann ich gut gebrauchen."],
 			"thanks_like": ["Perfekt, daraus mach ich was Gruseliges!"],

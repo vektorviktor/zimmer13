@@ -47,6 +47,7 @@ var _hide_yaw := 0.0
 var _hide_pitch := 0.0
 var _breath_locked := false
 var _crouch_toggled := false
+var _dread_time := 0.0
 var _shock_drop_timer := 0.0
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -112,6 +113,7 @@ func _physics_process(delta: float) -> void:
 	if dead:
 		return
 	_update_shock(delta)
+	_update_dread(delta)
 	if in_dialog:
 		velocity = Vector3.ZERO
 		return
@@ -175,6 +177,15 @@ func stand_up() -> void:
 	_collider.disabled = false
 	head.position.y = EYE_HEIGHT
 	head.rotation.x = 0.0
+
+
+# --- Angst: engerer Blick, schwerer Atem (Spielkonzept 4.13) ---------------------------
+
+func _update_dread(delta: float) -> void:
+	var threat := Game.director.player_threat if Game.director else 0.0
+	camera.fov = lerpf(camera.fov, Settings.fov - 10.0 * threat, minf(1.0, 2.0 * delta))
+	_dread_time += delta * (1.5 + threat * 1.5)
+	camera.position.y = sin(_dread_time) * 0.012 * threat
 
 
 # --- Schock (Spielkonzept 6.8) -------------------------------------------------

@@ -8,10 +8,14 @@ extends CharacterBody3D
 ## Licht & Vorhänge (7.3): schaltet sein Zimmerlicht, zieht Vorhänge zu, wenn er Angst hat,
 ## ersetzt fehlende Glühbirnen – und klaut selbst welche.
 
-enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD }
+enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER }
 
 const WALK_SPEED := 1.4
 const RUN_SPEED := 3.3
+## Hört das Monster (Rauschen) ab dieser Entfernung – vorsichtige Gäste verstecken sich
+const HEAR_DISTANCE := 15.0
+## Erst wieder aus dem Versteck, wenn das Monster so weit weg ist
+const SAFE_DISTANCE := 22.0
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
 
 var id := ""
@@ -55,6 +59,7 @@ var _hide_spot: HideSpot
 var _deco_timer := 0.0
 var _steal_timer := 0.0
 var _monster_cooldown := 0.0
+var _panic_quiet := 0.0      ## Panik-Satz nicht ständig wiederholen
 var _warned := false
 var _anim := 0.0
 var _game_look := Vector3.ZERO
@@ -125,8 +130,49 @@ func say(text: String) -> void:
 		Game.say("%s: „%s“" % [display_name, text], 4.0)
 
 
+## Panik-Satz – höchstens alle 45 s, sonst klingt er wie eine Schallplatte mit Sprung.
+func say_panic() -> void:
+	if _panic_quiet > 0.0:
+		return
+	_panic_quiet = 45.0
+	say(line("panic"))
+
+
 func line(key: String) -> String:
 	return GuestProfiles.line(profile, key)
+
+
+## An Zimmer 13 klopfen (Spielkonzept 4.13). Die Tür ist zu – ist der Gast weit weg,
+## steht er einfach schon davor.
+func start_knock(door_front: Vector3) -> void:
+	if hiding:
+		_leave_hide()
+	_drop_held()
+	if global_position.distance_to(door_front) > 6.0:
+		global_position = door_front + Vector3(randf_range(-0.3, 0.3), 0.05, -0.15)
+	_target = door_front
+	fear = maxf(fear, 70.0)
+	state = State.KNOCK
+
+
+## Der Spieler hat aufgemacht: hinein ins Zimmer 13, dort eine Weile bleiben.
+func enter_shelter(room_center: Vector3) -> void:
+	_target = room_center + _jitter(0.8)
+	_timer = randf_range(25.0, 45.0)
+	fear = maxf(0.0, fear - 30.0)
+	state = State.SHELTER
+
+
+## Harmloser Angriff: zu Tode erschrocken, aber nicht geholt – rennt davon.
+func scared_by_monster() -> void:
+	if dead:
+		return
+	if hiding:
+		_leave_hide()
+	fear = 100.0
+	say_panic()
+	_monster_cooldown = 10.0
+	_go_hide()
 
 
 func join_party(spot: Vector3) -> void:
@@ -226,6 +272,7 @@ func _physics_process(delta: float) -> void:
 			Game.social.on_challenge_ignored(self)
 	gift_cooldown = maxf(0.0, gift_cooldown - delta)
 	_monster_cooldown -= delta
+	_panic_quiet -= delta
 	match state:
 		State.TALKING:
 			_stop(delta)
@@ -234,6 +281,19 @@ func _physics_process(delta: float) -> void:
 			return
 		State.HIDING:
 			_hiding_step(delta)
+			return
+		State.KNOCK:
+			# klopft an Zimmer 13 und wartet, dass jemand aufmacht
+			_stop(delta)
+			_face(_target + Vector3(0, 0, 1.0), delta)
+			return
+		State.SHELTER:
+			# Schutz in Zimmer 13 gefunden – eine Weile bleiben
+			if _move_to(_target, WALK_SPEED, delta):
+				_timer -= delta
+				if _timer <= 0.0:
+					_set_idle(randf_range(2.0, 5.0))
+			_open_doors()
 			return
 	_watch_monster()
 	running = state == State.HIDE_GO
@@ -509,18 +569,21 @@ func _finish_steal() -> void:
 # --- Monster & Verstecken -------------------------------------------------------------
 
 func _watch_monster() -> void:
-	var director := Game.director
-	if director.phase == MonsterDirector.Phase.WARNING and not _warned:
+	var monster := Game.monster
+	if not monster.is_active():
+		_warned = false
+		return
+	var d := global_position.distance_to(monster.global_position)
+	if d > SAFE_DISTANCE:
+		_warned = false
+	elif d < HEAR_DISTANCE and not _warned and state != State.HIDE_GO:
 		_warned = true
-		# Vorsichtige Gäste verstecken sich schon beim ersten Flackern
+		# Sie hören es (Rauschen, Flackern) – vorsichtige Gäste verstecken sich sofort
 		if randf() > float(profile["brave"]) and state != State.PARTY:
 			fear = minf(100.0, fear + 15.0)
 			_go_hide()
-		return
-	if director.phase == MonsterDirector.Phase.CALM:
-		_warned = false
-	var monster := Game.monster
-	if not monster.is_active() or _monster_cooldown > 0.0 or state == State.HIDE_GO:
+			return
+	if _monster_cooldown > 0.0 or state == State.HIDE_GO:
 		return
 	var eye := global_position + Vector3.UP * 1.6
 	var monster_head := monster.global_position + Vector3.UP * 1.7
@@ -562,16 +625,26 @@ func _enter_hide(spot: HideSpot) -> void:
 
 func _hiding_step(delta: float) -> void:
 	_timer += delta
-	var calm := Game.director.phase == MonsterDirector.Phase.CALM or Game.director.phase == MonsterDirector.Phase.COOLDOWN
-	if calm and not Game.monster.is_active() and _timer > 8.0:
-		var spot := hiding
-		hiding = null
-		spot.occupant = null
-		spot.on_exit()
-		visible = true
-		_collider.disabled = false
-		global_position = spot.exit_point.global_position
+	var monster := Game.monster
+	var calm := not monster.is_active() or monster.global_position.distance_to(global_position) > SAFE_DISTANCE
+	if not calm:
+		_timer = minf(_timer, 0.0)
+	if calm and _timer > 8.0:
+		_leave_hide()
 		_set_idle(randf_range(2.0, 5.0))
+
+
+func _leave_hide() -> void:
+	var spot := hiding
+	if spot == null:
+		return
+	hiding = null
+	spot.occupant = null
+	spot.on_exit()
+	visible = true
+	_collider.disabled = false
+	global_position = spot.exit_point.global_position
+	state = State.IDLE
 
 
 # --- Hände ------------------------------------------------------------------------

@@ -111,7 +111,10 @@ func _show_main() -> void:
 	if guest.challenge_time > 0.0:
 		_option("Herausforderung annehmen", _show_stakes)
 	_option("Plaudern", _chat)
-	_option("Über das Monster reden", _talk_monster)
+	if Game.director.first_attack_done:
+		_option("Über das Monster reden", _talk_monster)
+	else:
+		_option("Ist dir hier etwas aufgefallen?", _talk_odd)
 	_option("Handeln", _show_trade)
 	if Game.dice and Game.dice.table.has_cup(player) and not Game.dice.table.busy:
 		_option("Mäxchen an der Bar spielen", _show_stakes)
@@ -200,10 +203,22 @@ func _chat() -> void:
 	_show_main()
 
 
+## Vor dem ersten Angriff: alles wirkt harmlos (Spielkonzept 2.1).
+func _talk_odd() -> void:
+	_say(guest.line("odd"))
+	Game.social.change_relation(guest, 1.0)
+	_show_main()
+
+
 func _talk_monster() -> void:
-	var lines: Array = guest.profile["lines"]["monster"]
-	_say(lines[guest.monster_line % lines.size()])
-	guest.monster_line += 1
+	# Manchmal erzählt der Gast von Spuren – nicht immer zuverlässig (4.13)
+	var report := Game.social.report_line(guest)
+	if report != "" and randf() < 0.5:
+		_say(report)
+	else:
+		var lines: Array = guest.profile["lines"]["monster"]
+		_say(lines[guest.monster_line % lines.size()])
+		guest.monster_line += 1
 	Game.social.change_relation(guest, 3.0)
 	guest.fear = minf(100.0, guest.fear + 12.0 * (1.2 - float(guest.profile["brave"])))
 	Game.social.on_monster_talk(guest)

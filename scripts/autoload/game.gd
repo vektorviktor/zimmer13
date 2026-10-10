@@ -22,6 +22,7 @@ var social: Social
 var dialog: DialogUI
 var dice: DiceMatch
 var menus: Menus
+var traces: Traces
 var game_over := false
 ## Spielstand, der beim nächsten Start der Hauptszene geladen wird (siehe SaveManager)
 var pending_load: Dictionary = {}
@@ -74,6 +75,7 @@ func reset() -> void:
 	dialog = null
 	dice = null
 	menus = null
+	traces = null
 
 
 func say(text: String, duration: float = 3.5) -> void:

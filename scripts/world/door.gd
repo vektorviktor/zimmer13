@@ -14,8 +14,11 @@ var locked_text := "Abgeschlossen."
 var monster_can_open := true
 var glass := false          ## Glastür: man sieht hindurch (Ebene 7 statt 2)
 var is_open := false
+## Zuletzt vom Monster aufgerissen (nicht vom Spieler oder einem Gast)
+var opened_by_monster := false
 
 var _pivots: Array[Node3D] = []
+var _bodies: Array[Node3D] = []
 var _tween: Tween
 
 
@@ -72,6 +75,7 @@ func interact(player: Player) -> void:
 
 func set_open(open: bool, fast: bool = false, quiet: bool = false) -> void:
 	is_open = open
+	opened_by_monster = false
 	if _tween:
 		_tween.kill()
 	_tween = create_tween().set_parallel(true)
@@ -89,7 +93,18 @@ func monster_open() -> void:
 		return
 	locked = false
 	set_open(true, true)
+	opened_by_monster = true
 	Game.play_sound("bang", 0.8)
+
+
+## Spur auf dem (ersten) Türflügel anbringen; side = Seite der Tür (lokale ±Z).
+func attach_mark(mark: TraceMark, side: float) -> void:
+	var leaf_width := width / 2.0 if double else width
+	mark.solid = false
+	mark.set_meta("door_side", side)
+	_bodies[0].add_child(mark)
+	mark.position = Vector3(leaf_width * 0.45, 1.35, side * 0.04)
+	mark.rotation.y = 0.0 if side > 0.0 else PI
 
 
 func _rattle() -> void:
@@ -111,6 +126,7 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 	body.sync_to_physics = false
 	body.set_meta("interactable", self)
 	pivot.add_child(body)
+	_bodies.append(body)
 	var leaf_size := Vector3(leaf_width - 0.02, height - 0.02, 0.06)
 	var cx := dir * leaf_width / 2.0
 	if glass:

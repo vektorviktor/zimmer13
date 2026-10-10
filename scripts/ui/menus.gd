@@ -66,6 +66,16 @@ func open_diary() -> void:
 	_show_diary()
 
 
+## Einen Zettel lesen (pausiert, Esc oder Knopf schließt).
+func open_note(title: String, text: String) -> void:
+	_open()
+	var box := _new_sheet("note", title, 260.0)
+	box.add_child(UiKit.wrap_label(text, 9, UiKit.INK))
+	var back := UiKit.button("Weglegen", close)
+	box.add_child(back)
+	back.grab_focus.call_deferred()
+
+
 func close() -> void:
 	_screen = ""
 	UiKit.clear(_root)
@@ -177,6 +187,7 @@ func _write_diary(slot: int) -> void:
 	close()
 	if SaveManager.save_to(slot, _diary_text, _diary_thumb):
 		Game.current_slot = slot
+		Game.director.strange_diary = false
 		Game.say("Du schreibst ein paar Zeilen in dein Tagebuch. (Gespeichert – Slot %d)" % slot, 3.0)
 		Game.play_sound("creak", 0.2)
 	else:

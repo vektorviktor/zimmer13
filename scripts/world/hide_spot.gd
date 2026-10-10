@@ -10,12 +10,15 @@ var type := Type.WARDROBE
 var occupant: Node = null
 ## Das Monster hat gesehen, wie jemand hineingegangen ist → es holt ihn.
 var seen_entering := false
+## Vom Monster geprüft (Spur): Schranktür steht offen / Bett ist zerwühlt.
+var checked := false
 var view_point: Marker3D
 var exit_point: Marker3D
 var check_point: Marker3D
 
 var _visual: Node3D
 var _leaves: Array[Node3D] = []
+var _blanket: MeshInstance3D
 
 
 func setup(p_type: Type) -> HideSpot:
@@ -42,6 +45,8 @@ func _ready() -> void:
 func get_prompt(player: Player) -> String:
 	if occupant != null and occupant != player:
 		return "Besetzt"
+	if checked and type == HideSpot.Type.BED:
+		return "Das Bett ist zerwühlt … Unters Bett kriechen [E]"
 	return "Im Schrank verstecken [E]" if type == Type.WARDROBE else "Unters Bett kriechen [E]"
 
 
@@ -51,6 +56,7 @@ func interact(player: Player) -> void:
 
 
 func on_enter() -> void:
+	set_checked(false)
 	_set_leaves(deg_to_rad(7.0))
 	Game.play_sound("creak", 0.35)
 
@@ -58,6 +64,25 @@ func on_enter() -> void:
 func on_exit() -> void:
 	_set_leaves(0.0)
 	seen_entering = false
+
+
+## Spur „geprüftes Versteck“: Schranktüren bleiben halb offen, das Bett zerwühlt.
+func set_checked(value: bool) -> void:
+	checked = value
+	if type == Type.WARDROBE:
+		_set_leaves(deg_to_rad(38.0) if value else 0.0)
+	elif _blanket:
+		_blanket.position = Vector3(0.1, 0.56, 0.12) if value else Vector3(0.3, 0.54, 0)
+		_blanket.rotation = Vector3(0.12, 0.35, 0.08) if value else Vector3.ZERO
+
+
+func save_state() -> Dictionary:
+	return {"checked": checked}
+
+
+func load_state(data: Dictionary) -> void:
+	if bool(data.get("checked", false)) != checked:
+		set_checked(bool(data.get("checked", false)))
 
 
 ## Das Monster reißt das Versteck auf.
@@ -114,7 +139,7 @@ func _build_bed() -> void:
 	var blanket := Mat.psx(Color(0.35, 0.08, 0.08))
 	Geo.mesh(_visual, Geo.box(Vector3(2.05, 0.08, 1.45)), wood, Vector3(0, 0.33, 0))
 	Geo.mesh(_visual, Geo.box(Vector3(2.0, 0.16, 1.4)), sheet, Vector3(0, 0.45, 0))
-	Geo.mesh(_visual, Geo.box(Vector3(1.3, 0.04, 1.44)), blanket, Vector3(0.3, 0.54, 0))
+	_blanket = Geo.mesh(_visual, Geo.box(Vector3(1.3, 0.04, 1.44)), blanket, Vector3(0.3, 0.54, 0))
 	Geo.mesh(_visual, Geo.box(Vector3(0.35, 0.1, 0.9)), sheet, Vector3(-0.75, 0.58, 0))
 	Geo.mesh(_visual, Geo.box(Vector3(0.08, 1.0, 1.45)), wood, Vector3(-1.02, 0.5, 0))
 	for x in [-0.95, 0.95]:

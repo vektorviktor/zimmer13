@@ -91,13 +91,15 @@ func has_any_save() -> bool:
 
 # --- Speichern ---------------------------------------------------------------------
 
-## Am Tagebuch: gesperrt während Vorwarnung und Manifestation (8.5).
+## Am Tagebuch: gesperrt, solange das Monster in der Nähe ist (Rauschen) oder jagt (8.5, 4.13).
 func can_save() -> bool:
-	if Game.director == null or Game.game_over:
+	if Game.director == null or Game.game_over or Game.player == null:
 		return false
-	var phase := Game.director.phase
-	return phase != MonsterDirector.Phase.WARNING and phase != MonsterDirector.Phase.ACTIVE \
-		and not Game.monster.is_active()
+	var monster := Game.monster
+	if not monster.is_active():
+		return true
+	return monster.state != Monster.State.CHASE \
+		and monster.global_position.distance_to(Game.player.global_position) >= MonsterDirector.NOISE_START
 
 
 func save_to(slot: int, text: String, thumb: Image) -> bool:
@@ -125,8 +127,7 @@ func is_safe_for_autosave() -> bool:
 		return false
 	if Game.menus and Game.menus.is_open():
 		return false
-	var phase := Game.director.phase
-	if phase == MonsterDirector.Phase.WARNING or phase == MonsterDirector.Phase.ACTIVE:
+	if not can_save():
 		return false
 	if Game.monster.is_active() and Game.monster.global_position.distance_to(p.global_position) < AUTOSAVE_MONSTER_DISTANCE:
 		return false
@@ -201,6 +202,10 @@ func diary_sentence() -> String:
 		parts.append("Vor meiner Tür steht nichts. Gar nichts.")
 	if Game.player and Game.player.shock > 0.3:
 		parts.append("Ich kann nicht aufhören zu zittern.")
+	if Game.director and Game.director.strange_diary:
+		# Zimmer 13 bleibt nicht unberührt (4.13): eine Zeile, die man nicht geschrieben hat
+		return (Calendar.date_text(Game.director.elapsed) + ". " if Game.director else "") \
+			+ " ".join(parts.slice(0, 2)) + " – Darunter, in fremder Schrift: »Ich sehe dir beim Schreiben zu.«"
 	if parts.is_empty():
 		parts.append("Noch ein Abend in diesem Hotel. Es ist still. Zu still.")
 	var date := Calendar.date_text(Game.director.elapsed) + ". " if Game.director else ""
@@ -273,8 +278,10 @@ func collect() -> Dictionary:
 	data["director"] = {
 		"boldness": director.boldness, "boldness_dip": director.boldness_dip,
 		"satiation": director.satiation, "elapsed": director.elapsed,
-		"cooldown": maxf(director._cooldown, 15.0), "curiosity": curiosity,
+		"curiosity": curiosity, "state": director.save_state(),
 	}
+	data["traces"] = Game.traces.save_state() if Game.traces else []
+	data["hide_spots"] = _collect_group("hide_spots", func(n: Node) -> Dictionary: return n.save_state())
 	data["doors"] = _collect_group("doors", func(n: Node) -> Dictionary:
 		return {"open": n.is_open, "locked": n.locked})
 	data["chests"] = _collect_group("chests", func(n: Node) -> Dictionary:
@@ -333,6 +340,9 @@ func apply(data: Dictionary) -> void:
 	_apply_group("light_switches", data.get("switches", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("lamp_fixtures", data.get("lamps", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("windows", data.get("windows", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	_apply_group("hide_spots", data.get("hide_spots", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	if Game.traces:
+		Game.traces.load_state(data.get("traces", []))
 	if Game.dice and Game.dice.table:
 		Game.dice.table.loaded = bool(data.get("table_loaded", false))
 
@@ -343,7 +353,6 @@ func apply(data: Dictionary) -> void:
 	director.boldness_dip = float(dd.get("boldness_dip", 0.0))
 	director.satiation = float(dd.get("satiation", 0.0))
 	director.elapsed = float(dd.get("elapsed", 0.0))
-	director._cooldown = float(dd.get("cooldown", MonsterDirector.FIRST_GRACE))
 	director.phase = MonsterDirector.Phase.CALM
 	var curiosity: Array = dd.get("curiosity", [])
 	for i in mini(curiosity.size(), director.zones.size()):
@@ -420,6 +429,8 @@ func apply(data: Dictionary) -> void:
 	for id in sd.get("watched", []):
 		social._watched[id] = true
 	social._party_cooldown = float(sd.get("party_cooldown", 150.0))
+	# Monster zuletzt: ggf. wieder unterwegs an seiner gespeicherten Stelle
+	director.load_state(dd.get("state", {}))
 	last_save_msec = Time.get_ticks_msec()
 
 

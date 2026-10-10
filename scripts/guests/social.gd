@@ -2,9 +2,20 @@ class_name Social
 extends Node
 ## Das soziale Gefüge im Hotel (Spielkonzept 6 + 7.1): Gäste, Beziehungen, Gerüchte,
 ## Diebstahl (mit Zeugen), Panik, Tod & Schock, Gedenken und Feiern in der Lobby.
+## Dazu (4.13): Gäste berichten von Spuren – nicht immer zuverlässig – und klopfen nachts
+## an Zimmer 13. Manchmal klopft auch etwas anderes …
 
 const PARTY_DURATION := 90.0
 const PARTY_COOLDOWN := 240.0
+## Klopfen an Zimmer 13
+const KNOCK_COOLDOWN := Vector2(120.0, 240.0)
+const KNOCK_WAIT := 10.0          ## so lange klopft es, bevor es still wird
+const FAKE_KNOCK_CHANCE := 0.3
+const HIDE_MONSTER_DISTANCE := 8.0  ## Verstecke so nah am Monster meiden Gäste
+const TRACE_TEXT := {
+	"footprint": "nasse Fußspuren", "scratch": "Kratzspuren", "blood": "Blut",
+	"handprint": "einen Handabdruck am Milchglas",
+}
 
 var guests: Array[Guest] = []
 var builder: LevelBuilder
@@ -29,6 +40,12 @@ var _rematches: Array[Guest] = []
 var _challenge_timer := 45.0
 var _bar_game := {}                      ## laufende Partie zweier Gäste
 var _bar_timer := 25.0
+## Spuren, von denen die Gäste erzählen: {kind, zone, time}
+var _reports: Array[Dictionary] = []
+## Klopfen an Zimmer 13: {guest, fake, time, opened}
+var _knock: Dictionary = {}
+var _knock_cooldown := 90.0
+var debug_fake_knock := false
 
 const BAR_LINES := [
 	"%s: „Zweiundsechzig!“ – %s: „Glaub ich dir nicht!“",
@@ -167,7 +184,7 @@ func _spread_gossip(amount: float, exclude: Array) -> void:
 # --- Monster, Tod, Schock ---------------------------------------------------------------
 
 func on_guest_saw_monster(guest: Guest) -> void:
-	guest.say(guest.line("panic"))
+	guest.say_panic()
 
 
 ## Über das Monster reden: hilfreich – aber es hört mit (Spielkonzept 4.7).
@@ -203,6 +220,9 @@ func find_hide_spot(guest: Guest) -> HideSpot:
 		var d := guest.global_position.distance_to(spot.global_position)
 		if d > 25.0:
 			continue
+		# Nicht direkt vor dem Monster hineinklettern – es sähe ihn und reißt die Tür gleich wieder auf
+		if Game.monster.is_active() and Game.monster.global_position.distance_to(spot.global_position) < HIDE_MONSTER_DISTANCE:
+			continue
 		var score := d - (6.0 if spot in own_spots else 0.0)
 		if score < best_score:
 			best_score = score
@@ -226,6 +246,11 @@ func is_in_closed_chest(item: Item) -> bool:
 
 # --- Feiern ---------------------------------------------------------------------------
 
+## Wie lange läuft die Feier schon?
+func party_age() -> float:
+	return PARTY_DURATION - _party_time if party_active else 0.0
+
+
 func party_center() -> Vector3:
 	return Vector3(-4.0, 0, 0)
 
@@ -238,7 +263,7 @@ func free_party_spot() -> Vector3:
 func start_party(host: String) -> bool:
 	if party_active:
 		return false
-	if Game.director.phase != MonsterDirector.Phase.CALM:
+	if not Game.director.is_quiet(party_center(), 25.0):
 		Game.say("Jetzt nicht – es ist zu unruhig im Hotel.")
 		return false
 	party_active = true
@@ -301,7 +326,7 @@ func _update_party(delta: float) -> void:
 		if _party_noise <= 0.0:
 			_party_noise = 8.0
 			Game.director.on_noise(party_center(), 1.5)
-		if Game.director.phase != MonsterDirector.Phase.CALM:
+		if not Game.director.is_quiet(party_center(), 22.0):
 			end_party("Die Musik verstummt abrupt.")
 		elif _party_time <= 0.0:
 			end_party("Die Feier ist vorbei.")
@@ -312,7 +337,12 @@ func _update_party(delta: float) -> void:
 		return
 	_spontaneous_timer = 30.0
 	var alive := living_guests()
-	if _party_cooldown > 0.0 or alive.size() < 2 or Game.director.phase != MonsterDirector.Phase.CALM:
+	# Der erste Angriff passiert bei einer Feier (Spielkonzept 2.1): an diesem Tag lädt jemand ein
+	if Game.director.wants_first_attack_party() and alive.size() >= 1:
+		var party_host_guest: Guest = alive[randi() % alive.size()]
+		start_party(party_host_guest.id)
+		return
+	if _party_cooldown > 0.0 or alive.size() < 2 or not Game.director.is_quiet(party_center(), 30.0):
 		return
 	var total_fear := 0.0
 	for guest in alive:
@@ -356,7 +386,7 @@ func _update_challenges(delta: float) -> void:
 		return
 	_challenge_timer = 20.0
 	var p := Game.player
-	if p == null or p.in_dialog or (Game.dice and Game.dice.active) or Game.director.phase != MonsterDirector.Phase.CALM:
+	if p == null or p.in_dialog or (Game.dice and Game.dice.active) or not Game.director.is_quiet(p.global_position, 25.0):
 		return
 	for guest in living_guests():
 		var g: Guest = guest
@@ -384,7 +414,7 @@ func _update_bar_game(delta: float) -> void:
 		if _bar_timer > 0.0:
 			return
 		_bar_timer = 20.0
-		if table.busy or not table.has_cup(null) or Game.director.phase != MonsterDirector.Phase.CALM:
+		if table.busy or not table.has_cup(null) or not Game.director.is_quiet(table.global_position, 25.0):
 			return
 		var free: Array = []
 		for guest in living_guests():
@@ -404,7 +434,7 @@ func _update_bar_game(delta: float) -> void:
 	var ga: Guest = _bar_game["a"]
 	var gb: Guest = _bar_game["b"]
 	if ga.dead or gb.dead or ga.state != Guest.State.MINIGAME or gb.state != Guest.State.MINIGAME \
-			or Game.director.phase != MonsterDirector.Phase.CALM:
+			or not Game.director.is_quiet(table.global_position, 22.0):
 		_end_bar_game(false)
 		return
 	if not (ga.seated and gb.seated):
@@ -460,6 +490,7 @@ func _process(delta: float) -> void:
 			_gossip.remove_at(i)
 		i -= 1
 	_update_party(delta)
+	_update_knocking(delta)
 	_update_bar_game(delta)
 	_update_challenges(delta)
 	_check_timer -= delta
@@ -488,3 +519,147 @@ func _update_memorials() -> void:
 	if party_active and p.global_position.x < 0.0:
 		mult = maxf(mult, 2.0)
 	p.shock_recovery = mult
+
+
+
+# --- Spuren & Berichte (Spielkonzept 4.13) -----------------------------------------------------
+
+func note_trace(kind: String, pos: Vector3) -> void:
+	_reports.append({"kind": kind, "zone": Game.director.zone_name_at(pos), "time": _time})
+	if _reports.size() > 12:
+		_reports.pop_front()
+
+
+## Was ein Gast über Spuren erzählt – je nach Persönlichkeit zuverlässig oder nicht.
+## Leer, wenn es nichts zu berichten gibt.
+func report_line(guest: Guest) -> String:
+	var recent: Array[Dictionary] = []
+	for r in _reports:
+		if _time - float(r["time"]) < 600.0:
+			recent.append(r)
+	if recent.is_empty():
+		return ""
+	var r: Dictionary = recent[randi() % recent.size()]
+	var zone: String = r["zone"]
+	var what: String = TRACE_TEXT.get(r["kind"], "etwas Seltsames")
+	if randf() > float(guest.profile.get("reliable", 0.7)):
+		# Falsch erinnert, erfunden oder übertrieben
+		var names: Array = Game.director.zones.map(func(z: Dictionary) -> String: return z["name"])
+		zone = names[randi() % names.size()]
+		what = TRACE_TEXT.values()[randi() % TRACE_TEXT.size()]
+	var template: String = guest.profile.get("report", "Ich habe %s gesehen. %s.")
+	return template % [what, zone]
+
+
+# --- Klopfen an Zimmer 13 -----------------------------------------------------------------------
+
+## Meistens ein echter Gast in Panik („Mach auf!“) – manchmal nicht (bekannte Stimme,
+## aber draußen ist niemand, nur ein Kleidungsstück).
+func _update_knocking(delta: float) -> void:
+	if not _knock.is_empty():
+		_knock_step(delta)
+		return
+	_knock_cooldown -= delta
+	var director := Game.director
+	var p := Game.player
+	if _knock_cooldown > 0.0 or not director.first_attack_done or p == null or p.dead:
+		return
+	var door: Door = builder.rooms["13"]["door"]
+	if door.is_open or director.zone_name_at(p.global_position) != "Zimmer 13":
+		return
+	if not Game.monster.is_active() or Game.monster.global_position.distance_to(door.center()) > 28.0:
+		return
+	_knock_cooldown = randf_range(KNOCK_COOLDOWN.x, KNOCK_COOLDOWN.y)
+	var fake := debug_fake_knock or randf() < FAKE_KNOCK_CHANCE
+	var guest: Guest = null
+	if not fake:
+		# auch Versteckte: Sie halten es nicht mehr aus und rennen zu deiner Tür
+		var candidates: Array = living_guests().filter(func(g: Guest) -> bool:
+			return not g.state in [Guest.State.TALKING, Guest.State.MINIGAME, Guest.State.KNOCK, Guest.State.SHELTER])
+		if candidates.is_empty():
+			fake = true
+		else:
+			guest = candidates[randi() % candidates.size()]
+	if fake:
+		# Am liebsten die Stimme eines Verschwundenen – sonst die eines Gastes (der woanders ist)
+		var voices: Array = guests.filter(func(g: Guest) -> bool: return g.dead)
+		if voices.is_empty():
+			voices = guests.duplicate()
+		guest = voices[randi() % voices.size()]
+	_knock = {"guest": guest, "fake": fake, "time": 0.0, "next": 0.0, "said": 0}
+	if not fake:
+		guest.start_knock(builder.rooms["13"]["door_front"])
+
+
+func _knock_step(delta: float) -> void:
+	var guest: Guest = _knock["guest"]
+	var fake: bool = _knock["fake"]
+	var door: Door = builder.rooms["13"]["door"]
+	_knock["time"] = float(_knock["time"]) + delta
+	var t := float(_knock["time"])
+	if not fake and (guest.dead or guest.state != Guest.State.KNOCK):
+		_knock = {}
+		return
+	if door.is_open:
+		if door.opened_by_monster:
+			_knock_ignored(guest, fake)   # nicht der Spieler hat aufgemacht – es war schneller
+		else:
+			_knock_answered(guest, fake)
+		return
+	if t >= KNOCK_WAIT:
+		_knock_ignored(guest, fake)
+		return
+	_knock["next"] = float(_knock["next"]) - delta
+	if float(_knock["next"]) <= 0.0:
+		_knock["next"] = randf_range(1.0, 1.6) if not fake else 2.4
+		Game.play_sound("knock", 0.7)
+		Game.caption("[Es klopft an deiner Tür]")
+	var said := int(_knock["said"])
+	if fake and said == 0 and t > 1.5:
+		_knock["said"] = 1
+		Game.say("%s: „Ich bin's … mach bitte auf.“" % guest.display_name, 4.0)
+	elif not fake and said < 2 and t > 0.8 + said * 4.0:
+		_knock["said"] = said + 1
+		Game.say("%s: „%s“" % [guest.display_name, guest.line("knock")], 3.5)
+		if said == 1:
+			# Das Geschrei lockt es an – jetzt bleibt nicht mehr viel Zeit
+			Game.play_sound("scream", 0.35)
+			Game.monster.investigate(guest.global_position)
+
+
+func _knock_answered(guest: Guest, fake: bool) -> void:
+	_knock = {}
+	var front: Vector3 = builder.rooms["13"]["door_front"]
+	if fake:
+		# Niemand da. Nur ein Kleidungsstück auf dem Boden.
+		var cloth := Item.create(Item.Kind.CLOTHING, guest.id)
+		get_parent().add_child(cloth)
+		cloth.global_position = front + Vector3(0, 0.02, -0.2)
+		Game.play_sound("sting", 0.6)
+		Game.say("Draußen ist niemand.", 3.0)
+		Game.director.add_curiosity(front, 30.0)
+		if Game.monster.is_active():
+			Game.monster.investigate(front)
+		return
+	guest.enter_shelter(builder.rooms["13"]["center"])
+	change_relation(guest, 15.0)
+	guest.say(guest.line("sheltered"))
+
+
+func _knock_ignored(guest: Guest, fake: bool) -> void:
+	_knock = {}
+	if fake:
+		# Stille. Später findet man Kratzspuren an der Tür.
+		if Game.traces:
+			Game.traces.add_door_scratch(builder.rooms["13"]["door"], builder.rooms["13"]["door_front"] + Vector3(0, 0, -1.0))
+		return
+	Game.play_sound("scream", 0.8)
+	if Game.director.is_harmless() or randf() < 0.5:
+		guest.scared_by_monster()
+		change_relation(guest, -20.0)
+		get_tree().create_timer(4.0, false).timeout.connect(func() -> void:
+			if not guest.dead:
+				guest.say(guest.line("left_outside")))
+	else:
+		Game.monster.spawn_near_unseen(guest.global_position)
+		Game.director.kill_guest(guest, null)
