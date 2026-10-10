@@ -255,7 +255,7 @@ func _build(extra: String) -> void:
 				Geo.mesh(self, Geo.box(Vector3(0.008, 0.002, 0.008)), Mat.psx(Color(0.7, 0.05, 0.05)), Vector3(-0.02 + i * 0.04, 0.026, 0))
 		Kind.CLOTHING:
 			clothing_of = extra
-			var profile: Dictionary = GuestProfiles.ALL.get(extra, {})
+			var profile: Dictionary = GuestProfiles.get_profile(extra)
 			display_name = String(profile.get("clothing", "Ein Kleidungsstück"))
 			mass = 0.2
 			size = Vector3(0.36, 0.04, 0.24)

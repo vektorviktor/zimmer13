@@ -63,6 +63,11 @@ func _ready() -> void:
 	light.omni_range = light_range
 	light.light_color = Color(1.0, 0.8, 0.55)
 	light.shadow_enabled = true
+	# Viele Zimmer → weit entfernte Lampen und ihre Schatten ausblenden (spart Leistung)
+	light.distance_fade_enabled = true
+	light.distance_fade_begin = 26.0
+	light.distance_fade_length = 6.0
+	light.distance_fade_shadow = 16.0
 	light.lamp_material = _bulb_material
 	light.add_to_group("lamps")
 	add_child(light)

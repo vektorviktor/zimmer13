@@ -12,6 +12,11 @@ const KNOCK_COOLDOWN := Vector2(120.0, 240.0)
 const KNOCK_WAIT := 10.0          ## so lange klopft es, bevor es still wird
 const FAKE_KNOCK_CHANCE := 0.3
 const HIDE_MONSTER_DISTANCE := 8.0  ## Verstecke so nah am Monster meiden Gäste
+## Gäste: zum Start so viele, und nie dauerhaft weniger als MIN_GUESTS Lebende –
+## nach einem Todesfall wacht irgendwann ein neuer Gast in einem freien Zimmer auf.
+const START_GUESTS := 12
+const MIN_GUESTS := 10
+const ARRIVAL_DELAY := Vector2(150.0, 360.0)
 const TRACE_TEXT := {
 	"footprint": "nasse Fußspuren", "scratch": "Kratzspuren", "blood": "Blut",
 	"handprint": "einen Handabdruck am Milchglas",
@@ -46,6 +51,9 @@ var _reports: Array[Dictionary] = []
 var _knock: Dictionary = {}
 var _knock_cooldown := 90.0
 var debug_fake_knock := false
+var _world: Node3D
+var _arrival_timer := -1.0
+var _next_guest := 1                     ## laufende Nummer für IDs erzeugter Gäste
 
 const BAR_LINES := [
 	"%s: „Zweiundsechzig!“ – %s: „Glaub ich dir nicht!“",
@@ -70,24 +78,124 @@ static func relation_word(value: float) -> String:
 
 func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	builder = p_builder
+	_world = world
+	GuestProfiles.generated.clear()
 	for id in GuestProfiles.ALL:
-		var profile: Dictionary = GuestProfiles.ALL[id]
-		var info: Dictionary = builder.rooms[profile["room"]]
-		var guest := Guest.new().setup(id, info)
-		guest.name = "Gast_" + String(id)
-		guest.position = (info["center"] as Vector3) + Vector3(0, 0.05, 0)
-		world.add_child(guest)
-		guests.append(guest)
-		# Start-Deko vor der Tür
+		_spawn(id, true)
+	while guests.size() < START_GUESTS:
+		if _add_generated(randi(), "", false) == null:
+			break
+	record_player = RecordPlayer.new()
+	record_player.position = builder.record_player_pos
+	world.add_child(record_player)
+
+
+## Gast ins Hotel setzen (Profil muss schon bekannt sein); mit Start-Deko vor der Tür.
+func _spawn(id: String, with_deco: bool) -> Guest:
+	var profile := GuestProfiles.get_profile(id)
+	var info: Dictionary = builder.rooms[profile["room"]]
+	info["kind"] = "guest"
+	var guest := Guest.new().setup(id, info)
+	guest.name = "Gast_" + id
+	guest.position = (info["center"] as Vector3) + Vector3(0, 0.05, 0)
+	_world.add_child(guest)
+	guests.append(guest)
+	if with_deco:
 		for kind in profile["start_deco"]:
 			var item := Item.create(kind)
 			item.owner_id = id
 			item.position = guest.deco_place_point() + Vector3(0, 0.02, 0)
-			world.add_child(item)
+			_world.add_child(item)
 		guest.expected_deco = (profile["start_deco"] as Array).size()
-	record_player = RecordPlayer.new()
-	record_player.position = builder.record_player_pos
-	world.add_child(record_player)
+	return guest
+
+
+## Einen zufälligen Gast erzeugen. room = "": ein freies Zimmer wählen.
+## arrived: neu aufgewacht (eigene Sätze, Licht geht sofort an). Beim Laden (restoring)
+## bleibt das Licht, wie es ist – der Spielstand setzt die Schalter selbst.
+func _add_generated(gen_seed: int, room: String, arrived: bool, id: String = "", restoring: bool = false) -> Guest:
+	if room == "":
+		room = _free_room()
+		if room == "":
+			return null
+		# Jeder Name nur einmal im Hotel
+		var taken := guests.map(func(g: Guest) -> String: return g.display_name)
+		var tries := 0
+		while GuestGenerator.name_for(gen_seed) in taken and tries < 60:
+			gen_seed += 1
+			tries += 1
+	if id == "":
+		id = "gast%d" % _next_guest
+	_next_guest = maxi(_next_guest, int(id.trim_prefix("gast")) + 1)
+	GuestProfiles.generated[id] = GuestGenerator.make(gen_seed, room, room if arrived else "")
+	var guest := _spawn(id, true)
+	guest.gen_seed = gen_seed
+	guest.set_meta("arrived", arrived)
+	var sw := LightSwitch.find(get_tree(), room)
+	if sw and not restoring:
+		if arrived:
+			sw.set_on(true, true)
+		else:
+			sw.set_on.call_deferred(true, true)   # nach dem „Licht aus“ des LevelBuilders
+	return guest
+
+
+## Ein unbewohntes Zimmer (nie das eines Verschwundenen), möglichst weit weg vom Spieler.
+func _free_room() -> String:
+	var free: Array[String] = []
+	for no in builder.rooms:
+		if builder.rooms[no]["kind"] == "vacant":
+			free.append(no)
+	if free.is_empty():
+		return ""
+	free.shuffle()
+	if Game.player:
+		for no in free:
+			var c: Vector3 = builder.rooms[no]["center"]
+			if c.distance_to(Game.player.global_position) > 12.0 and not Game.director.player_can_see(c + Vector3.UP):
+				return no
+	return free[0]
+
+
+## Nach Todesfällen: Ist das Hotel zu leer, taucht irgendwann jemand Neues auf.
+func _update_arrivals(delta: float) -> void:
+	if living_guests().size() >= MIN_GUESTS:
+		_arrival_timer = -1.0
+		return
+	if _arrival_timer < 0.0:
+		_arrival_timer = randf_range(ARRIVAL_DELAY.x, ARRIVAL_DELAY.y)
+		return
+	_arrival_timer -= delta
+	if _arrival_timer > 0.0:
+		return
+	_arrival_timer = -1.0
+	var guest := _add_generated(randi(), "", true)
+	if guest:
+		Game.say("Irgendwo im Hotel fällt eine Tür ins Schloss. In Zimmer %s brennt plötzlich Licht." % guest.home["no"], 5.0)
+
+
+## Für Spielstände: die erzeugten Gäste (lebend und verschwunden) mit Seed und Zimmer.
+func roster_state() -> Array:
+	var list: Array = []
+	for guest in guests:
+		if guest.gen_seed >= 0:
+			list.append({"id": guest.id, "seed": guest.gen_seed, "room": guest.home["no"], "arrived": bool(guest.get_meta("arrived", false))})
+	return list
+
+
+## Spielstand laden: erzeugte Gäste der frischen Partie durch die gespeicherten ersetzen.
+func restore_roster(list: Array) -> void:
+	for guest in guests.duplicate():
+		if guest.gen_seed < 0:
+			continue
+		builder.rooms[guest.home["no"]]["kind"] = "vacant"
+		GuestProfiles.generated.erase(guest.id)
+		guests.erase(guest)
+		guest.queue_free()
+	_reserved.clear()
+	for entry in list:
+		var room := String(entry["room"])
+		_add_generated(int(entry["seed"]), room, bool(entry.get("arrived", false)), String(entry["id"]), true)
 
 
 func living_guests() -> Array:
@@ -490,6 +598,7 @@ func _process(delta: float) -> void:
 			_gossip.remove_at(i)
 		i -= 1
 	_update_party(delta)
+	_update_arrivals(delta)
 	_update_knocking(delta)
 	_update_bar_game(delta)
 	_update_challenges(delta)

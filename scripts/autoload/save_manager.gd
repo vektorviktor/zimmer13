@@ -9,13 +9,16 @@ extends Node
 signal autosaved
 
 const DIR := "user://saves/"
-const VERSION := 1
+## 2: größeres Hotel (Kreuzungen, 30 Zimmer, Kellertreppe) – ältere Stände passen nicht mehr
+## 3: zufällig erzeugte Gäste (Seed + Zimmer im Spielstand)
+const VERSION := 3
+const MIN_VERSION := 3
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
 const AUTOSAVE_MONSTER_DISTANCE := 25.0
 ## Bereiche, deren erster Besuch einen Autosave auslöst
-const NEW_AREAS := ["Lobby", "Küche", "Bar", "Garten", "Keller", "Zimmer 16", "Zimmer 17", "Zimmer 18"]
+const NEW_AREAS := ["Lobby", "Küche", "Bar", "Garten", "Südflügel", "Nordflügel", "Keller", "Zimmer 16", "Zimmer 17", "Zimmer 18"]
 
 ## Zeitpunkt (Ticks in ms) des letzten Speicherns oder Ladens in dieser Sitzung
 var last_save_msec := -1
@@ -269,7 +272,8 @@ func collect() -> Dictionary:
 		memorials.append(_v(door_front))
 	data["social"] = {
 		"thefts_ago": thefts, "memorials": memorials, "watched": social._watched.keys(),
-		"party_cooldown": social._party_cooldown,
+		"party_cooldown": social._party_cooldown, "roster": social.roster_state(),
+		"arrival_timer": social._arrival_timer,
 	}
 	var director := Game.director
 	var curiosity: Array = []
@@ -321,6 +325,8 @@ func apply(data: Dictionary) -> void:
 	visited = (data.get("visited", []) as Array).duplicate()
 	Game.money = int(data.get("money", 5))
 	Game.current_slot = int(data.get("current_slot", Game.current_slot))
+	# Zuerst die zufällig erzeugten Gäste – alles Weitere bezieht sich auf ihre IDs
+	Game.social.restore_roster((data.get("social", {}) as Dictionary).get("roster", []))
 
 	# Welt
 	_apply_group("doors", data.get("doors", []), func(n: Node, d: Dictionary) -> void:
@@ -429,6 +435,7 @@ func apply(data: Dictionary) -> void:
 	for id in sd.get("watched", []):
 		social._watched[id] = true
 	social._party_cooldown = float(sd.get("party_cooldown", 150.0))
+	social._arrival_timer = float(sd.get("arrival_timer", -1.0))
 	# Monster zuletzt: ggf. wieder unterwegs an seiner gespeicherten Stelle
 	director.load_state(dd.get("state", {}))
 	last_save_msec = Time.get_ticks_msec()
@@ -480,7 +487,8 @@ func _read(slot: int) -> Dictionary:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return {}
 	var data: Dictionary = parsed
-	if int(data.get("version", 0)) > VERSION:
+	var version := int(data.get("version", 0))
+	if version > VERSION or version < MIN_VERSION:
 		return {}
 	return data
 

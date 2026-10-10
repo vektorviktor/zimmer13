@@ -20,7 +20,7 @@ extends Node3D
 ##   --trace                     Monster-Zustand alle 2 s in die Konsole schreiben
 ##   --warn                      sofort Vorwarnung → Monster erscheint
 ##   --bold=n                    Dreistigkeit setzen (0–100)
-##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila)
+##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
 ##   --kill=id                   Gast nach 3 s vom Monster holen lassen
 ##   --party                     sofort eine Feier in der Lobby starten
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
@@ -152,7 +152,7 @@ func _process(_delta: float) -> void:
 			print("[%ds] Monster %s @ %s | Phase %s | Dreistigkeit %.1f" % [_trace_frames / 60,
 				Monster.State.keys()[Game.monster.state], Game.monster.global_position.snapped(Vector3.ONE * 0.1),
 				MonsterDirector.Phase.keys()[Game.director.phase], Game.director.effective_boldness()])
-			print("      Spieler: Schock %.2f | Geld %d | Hand: %s" % [Game.player.shock, Game.money, Game.player.held.display_name if Game.player.held else "-"])
+			print("      Spieler @ %s | Schock %.2f | Geld %d | Hand: %s" % [Game.player.global_position.snapped(Vector3.ONE * 0.1), Game.player.shock, Game.money, Game.player.held.display_name if Game.player.held else "-"])
 			for guest in Game.social.guests:
 				print("      %s: %s @ %s | Angst %.0f | Beziehung %.0f | Hand: %s" % [guest.display_name,
 					Guest.State.keys()[guest.state], guest.global_position.snapped(Vector3.ONE * 0.1), guest.fear,
@@ -296,7 +296,7 @@ func _parse_debug_args() -> void:
 		elif arg == "--knock":
 			# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
 			Game.director.first_attack_done = true
-			Game.player.global_position = Vector3(13.0, 0.05, 3.5)
+			Game.player.global_position = (Game.social.builder.rooms["13"]["center"] as Vector3) + Vector3(0, 0.05, -0.6)
 			Game.monster.spawn_at(Vector3(24.0, 0.05, 0.0))
 			Game.social._knock_cooldown = 1.0
 			Game.social.debug_fake_knock = "--knock-fake" in OS.get_cmdline_user_args()

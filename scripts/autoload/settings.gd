@@ -29,10 +29,11 @@ var crouch_toggle := false
 var flicker_intensity := 1.0     ## Flackern und Bildrauschen (0,2 … 1)
 var subtitles := false
 var warning_shown := false       ## Hinweis zur Lichtempfindlichkeit schon gezeigt
+var age_notice_shown := false    ## Hinweis mit Altersempfehlung schon gezeigt
 
 const KEYS := ["gamma", "fullscreen", "vsync", "fov", "resolution", "vertex_wobble", "dithering",
 	"master_volume", "music_volume", "effects_volume", "mouse_sensitivity", "invert_y",
-	"crouch_toggle", "flicker_intensity", "subtitles", "warning_shown"]
+	"crouch_toggle", "flicker_intensity", "subtitles", "warning_shown", "age_notice_shown"]
 
 
 func _ready() -> void:

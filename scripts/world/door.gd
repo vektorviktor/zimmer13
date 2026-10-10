@@ -4,6 +4,9 @@ extends Node3D
 ## Boden auf y = 0. Türen liegen auf Kollisionsebene 2 und gehen nicht ins NavMesh ein,
 ## damit das Monster durch Türöffnungen planen kann (es öffnet sie dann selbst).
 
+## Kollisionstiefe des Türblatts (= Wandstärke, siehe LevelBuilder.T)
+const COLLISION_DEPTH := 0.2
+
 var width := 1.2
 var height := 2.1
 var open_angle := deg_to_rad(-100.0)
@@ -143,7 +146,9 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 		var panel := Mat.psx(Color(0.24, 0.13, 0.08))
 		for y in [0.6, 1.5]:
 			Geo.mesh(body, Geo.box(Vector3(leaf_width * 0.6, 0.55, 0.075)), panel, Vector3(cx, y * height / 2.1, 0))
-	Geo.add_box_shape(body, leaf_size, Vector3(cx, height / 2.0, 0))
+	# Kollision so tief wie die Wand: Ein dünnes Türblatt bildet eine Nische, in der die
+	# Spielerkapsel beim schrägen Entlanglaufen an der Wand hängenbleibt.
+	Geo.add_box_shape(body, Vector3(leaf_size.x, leaf_size.y, COLLISION_DEPTH), Vector3(cx, height / 2.0, 0))
 	var brass := Mat.psx(Color(0.8, 0.65, 0.25))
 	for z in [0.05, -0.05]:
 		Geo.mesh(body, Geo.sphere(0.035, 0.07, 6, 3), brass, Vector3(dir * (leaf_width - 0.1), 1.0, z))

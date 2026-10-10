@@ -24,7 +24,7 @@ const EYE_HEIGHT := 1.85
 const SIGHT_DARK := 8.0
 const SIGHT_LIGHT_BONUS := 10.0
 ## Sichtlinie: Wände, Türen, Vorhänge und Milchglas (klares Glas lässt den Blick durch)
-const SIGHT_MASK := 1 | 2 | 256
+const SIGHT_MASK := 1 | 2 | 256 | HotelWindow.LAYER_BLOCK
 
 var state := State.INACTIVE
 var noticed := false

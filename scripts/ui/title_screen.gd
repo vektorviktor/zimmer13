@@ -19,6 +19,11 @@ void fragment() {
 }
 """
 const VP := Vector2(300, 118)       ## Fluchtpunkt
+## Selbst eingeschätzte Altersempfehlung – keine offizielle USK-/PEGI-Prüfung.
+## Begründung: dauerhafte Bedrohung und Schreckmomente, Figuren sterben (angedeutet,
+## Blutspuren statt Gore), Opfern anderer Gäste als Spielmechanik, Glücksspiel um Spielgeld.
+const AGE_RECOMMENDATION := 16
+const CONTENT_NOTES := "Horror und plötzliche Schreckmomente, Tod von Figuren (angedeutet, Blutspuren), Stehlen und das Opfern anderer Gäste, Würfelglücksspiel um Spielgeld"
 
 var _scene: Control
 var _menu: Control
@@ -59,10 +64,11 @@ func _ready() -> void:
 	var sub := UiKit.label("Ein Hotel. Ein Monster. Halloween.", 9, Color(0.7, 0.62, 0.5))
 	sub.position = Vector2(22, 52)
 	add_child(sub)
+	_add_age_badge()
 	_menu = Control.new()
 	add_child(_menu)
 	_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	if not Settings.warning_shown:
+	if not Settings.warning_shown or not Settings.age_notice_shown:
 		_show_warning()
 	else:
 		_show_main()
@@ -167,23 +173,45 @@ func _show_settings() -> void:
 	_reposition.call_deferred()
 
 
-## Hinweis zur Lichtempfindlichkeit beim ersten Start (Spielkonzept 8.4).
+## Hinweis beim ersten Start: Altersempfehlung, Inhalte und Lichtempfindlichkeit (Spielkonzept 8.4).
 func _show_warning() -> void:
-	var box := _sheet("Hinweis", 300.0)
-	box.add_child(UiKit.wrap_label("Dieses Spiel enthält flackernde Lichter, Bildrauschen und plötzliche Schreckmomente. "
+	var box := _sheet("Hinweis – empfohlen ab %d Jahren" % AGE_RECOMMENDATION, 300.0)
+	box.add_child(UiKit.wrap_label("Enthält: %s." % CONTENT_NOTES, 9, UiKit.INK))
+	box.add_child(UiKit.wrap_label("Außerdem flackernde Lichter und Bildrauschen. "
 		+ "Bei Lichtempfindlichkeit kannst du die Stärke des Flackerns in den Einstellungen (Barrierefreiheit) verringern.", 9, UiKit.INK))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
 	var ok := UiKit.button("Verstanden", func() -> void:
-		Settings.set_value("warning_shown", true)
+		_confirm_notice()
 		_show_main())
 	row.add_child(ok)
 	row.add_child(UiKit.button("Einstellungen", func() -> void:
-		Settings.set_value("warning_shown", true)
+		_confirm_notice()
 		_show_settings()))
 	ok.grab_focus.call_deferred()
 	_reposition.call_deferred()
+
+
+func _confirm_notice() -> void:
+	Settings.set_value("warning_shown", true)
+	Settings.set_value("age_notice_shown", true)
+
+
+## Kennzeichen unten rechts – im Stil des Spiels, bewusst kein nachgemachtes USK-Logo.
+func _add_age_badge() -> void:
+	var badge := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.04, 0.03, 0.85)
+	style.border_color = UiKit.PAPER_DARK
+	style.set_border_width_all(1)
+	style.set_content_margin_all(3)
+	badge.add_theme_stylebox_override("panel", style)
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge.tooltip_text = CONTENT_NOTES
+	badge.add_child(UiKit.label("ab %d" % AGE_RECOMMENDATION, 9, UiKit.PAPER, HORIZONTAL_ALIGNMENT_CENTER))
+	add_child(badge)
+	badge.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_MINSIZE, 8)
 
 
 func _unhandled_input(event: InputEvent) -> void:

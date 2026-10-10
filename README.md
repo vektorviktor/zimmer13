@@ -28,7 +28,7 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 
 ## Was drin ist
 
-- **Hotel (Graybox):** Lobby mit verriegeltem Ausgang, Küche, Hotelbar, Garten hinter der Glastür, Flur mit 8 Zimmern (11–18), Wäscherei, Keller
+- **Hotel (Graybox):** Lobby mit verriegeltem Ausgang, Küche, Hotelbar, Garten hinter der Glastür, Hauptflur mit zwei Flurkreuzungen und Seitenflügeln, **30 Zimmer** (11–28, 31–38, 41–44; Platz für 20–30 Gäste), Wäscherei, **Kellertreppe** hinab in den Keller
 - **Kein Inventar:** ein Gegenstand in der Hand; große Dinge blockieren Türen/Truhen; Münzen werden zu Geld
 - **Deko & Handwerk:** Kürbisse im Garten ernten · mit dem **Messer** (Küche) schnitzen · **Kerze** in den geschnitzten Kürbis stellen · Herbstlaub unter den Bäumen · Spinnweben in dunklen Ecken · Kerzenvorrat in der Küche
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
@@ -36,13 +36,14 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 - **Monster:** streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern nur in seiner Nähe, „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
 - **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke am Milchglas, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff
 - **Klopfen an Zimmer 13:** ein Gast in Panik bittet um Einlass – oder eine bekannte Stimme, hinter der niemand steht
-- **Gäste (Edna, Bruno, Mila):** eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
+- **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (12 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 10, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
 - **Mäxchen an der Hotelbar:** Bluff-Würfeln gegen Gäste um Geld oder Gegenstände (Einsätze liegen echt auf dem Tisch), Herausforderungen & Revanche, Gäste würfeln untereinander (zuschauen verrät ihre Ticks), gezinkte Würfel aus Zimmer 17, Abbruch bei Vorwarnung
 - **Licht & Fenster:** ein Lichtschalter pro Raum, Decken- und Wandlampen, Glühbirnen herausdrehen und woanders einsetzen (auch Gäste klauen sie), Birnen brennen bei starkem Flackern oder in Monsternähe selten durch · Licht aus lockt das Monster an · Außenfenster mit Vorhängen (Mondlicht, Sicht in beide Richtungen), Milchglas zwischen Flur und Zimmern (nur Umrisse)
 - **Kalender:** vom 1. Oktober bis Halloween, ein Ingame-Tag ≈ 5 Minuten, draußen immer Nacht · Abreißkalender in Zimmer 13, Datum im Spielmenü und in den Spielständen
 - **Menüs & Speichern:** Titelbildschirm, Spielmenü (Esc), Einstellungen (Helligkeit mit Testbild, PS1-Look, Ton, Maus, weniger Flackern, Untertitel) · Speichern nur am **Tagebuch in Zimmer 13** (3 Slots, nicht während Vorwarnung/Monster) · Autosave bei wichtigen Ereignissen in sicheren Momenten · nach dem Tod letzten Spielstand laden
 - **Feiern:** Plattenspieler in der Lobby (selbst ausrichten) oder spontan von Gästen – laut, also lockt es das Monster an; währenddessen sind die Zimmer leer
 - **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion
+- **Altersempfehlung ab 16** (selbst eingeschätzt, keine USK-Prüfung): Hinweis mit Inhalten beim ersten Start, Kennzeichen im Titelbildschirm (`scripts/ui/title_screen.gd`)
 
 Alle Modelle, Texturen und Sounds sind Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt.
 
@@ -75,6 +76,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 Ohne Parameter startet das Spiel mit dem Titelbildschirm; mit Parametern direkt im Hotel.
 Für lange Testläufe hilft Godots eigenes `--time-scale 3` (vor dem `--`), z. B. `--path . --time-scale 3 --quit-after 36000 -- --day=3 --nointro --trace`.
 Spielstände liegen in `%APPDATA%/Godot/app_userdata/Zimmer 13/saves/`, Einstellungen in `settings.cfg` daneben.
+Spielstände älterer Versionen (vor dem größeren Hotel bzw. den Zufallsgästen) werden nicht mehr geladen.
 
 ## Aufbau
 
@@ -85,12 +87,12 @@ scripts/main.gd             baut alles zusammen, Debug-Startparameter
 scripts/autoload/game.gd    globaler Zustand, Geld, Tastenbelegung, Szenenwechsel
 scripts/autoload/settings.gd       Einstellungen (user://settings.cfg)
 scripts/autoload/save_manager.gd   Speichern/Laden, Autosave, Tagebuchsatz
-scripts/level/              LevelBuilder (Räume, Maße, Zonen, Patrouillenroute)
+scripts/level/              LevelBuilder (Grundriss: Zimmerreihen in `ROWS`, Flure, Keller, Zonen, Wegpunkte)
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
                             PumpkinPlant, ResourceSpot, RecordPlayer,
                             Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang/Milchglas), Diary,
                             Traces + TraceMark (Spuren), WarningNote (Warnungszettel)
-scripts/guests/             Guest (Verhalten), GuestProfiles (Persönlichkeiten, Sätze),
+scripts/guests/             Guest (Verhalten), GuestProfiles (feste Gäste, Sätze), GuestGenerator (Zufallsgäste),
                             Social (Beziehungen, Gerüchte, Diebstahl, Tod, Feiern)
 scripts/player/             Player
 scripts/monster/            Monster (Zustände), MonsterDirector (Phasen, versteckte Werte, Effekte, Spuk)

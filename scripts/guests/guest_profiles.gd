@@ -145,6 +145,17 @@ const ALL := {
 }
 
 
+## Zufällig erzeugte Gäste dieser Partie (ID → Profil), siehe GuestGenerator.
+static var generated := {}
+
+
+## Profil eines Gastes – handgeschrieben oder erzeugt; {} wenn unbekannt.
+static func get_profile(id: String) -> Dictionary:
+	if ALL.has(id):
+		return ALL[id]
+	return generated.get(id, {})
+
+
 static func line(profile: Dictionary, key: String) -> String:
 	var lines: Dictionary = profile["lines"]
 	var options: Array = lines.get(key, ["…"])

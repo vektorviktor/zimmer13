@@ -55,7 +55,8 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 func _ready() -> void:
 	add_to_group("player")
 	collision_layer = 8
-	collision_mask = 1 | 2 | 4 | 16 | 64 | 128 | 256
+	# Ebene 4 (Gegenstände, Pflanzen, Schalter) blockiert nicht – lose Dinge werden weggeschoben
+	collision_mask = 1 | 2 | 16 | 64 | 128 | 256
 	_shape = CapsuleShape3D.new()
 	_shape.radius = RADIUS
 	_shape.height = HEIGHT
@@ -78,7 +79,7 @@ func _ready() -> void:
 	camera.add_child(_hand)
 	_ray = RayCast3D.new()
 	_ray.target_position = Vector3(0, 0, -REACH)
-	_ray.collision_mask = 1 | 2 | 4 | 64 | 128 | 256
+	_ray.collision_mask = 1 | 2 | 4 | 64 | 128 | 256 | HotelWindow.LAYER_BLOCK
 	_ray.add_exception(self)
 	camera.add_child(_ray)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -134,6 +135,7 @@ func _physics_process(delta: float) -> void:
 	velocity.x = dir.x * speed
 	velocity.z = dir.z * speed
 	move_and_slide()
+	_push_items(dir, speed)
 
 	var moving := is_on_floor() and input.length() > 0.1
 	if moving:
@@ -332,6 +334,25 @@ func _update_focus() -> void:
 
 
 # --- Ducken ---------------------------------------------------------------
+
+## Lose Gegenstände vor den Füßen beiseiteschieben, statt an ihnen hängenzubleiben.
+func _push_items(dir: Vector3, speed: float) -> void:
+	if dir.length() < 0.1:
+		return
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.is_held or item.freeze:
+			continue
+		var to := item.global_position - global_position
+		if to.y > 0.8 or to.y < -0.3:
+			continue   # liegt auf einem Tisch oder tiefer
+		var flat := Vector3(to.x, 0, to.z)
+		if flat.length() > RADIUS + 0.3 or flat.dot(dir) <= 0.0:
+			continue
+		var away := flat.normalized() if flat.length() > 0.01 else dir
+		item.sleeping = false
+		item.linear_velocity = (dir + away).normalized() * speed * 0.9 + Vector3.UP * 0.4
+
 
 func _update_crouch() -> void:
 	var want := Input.is_action_pressed("crouch")

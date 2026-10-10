@@ -3,13 +3,16 @@ extends Node3D
 ## Fenster (Spielkonzept 7.3): eine Barriere, durch die man hindurchsieht.
 ##   Klares Glas (Ebene 7): Blick in beide Richtungen – Monster und Gäste sehen auch hindurch.
 ##   Milchglas (Ebene 9): nur Licht und Umrisse – keine Sicht für Monster und Zeugen.
-## Außenfenster haben Vorhänge: zugezogen kein Blick und kein Mondlicht (Ebene 2 blockiert
-## Sicht- und Lichtprüfung). Spieler und Gäste ziehen sie auf und zu.
+## Außenfenster haben Vorhänge: zugezogen kein Blick und kein Mondlicht (Ebene 10 blockiert
+## nur Sicht- und Lichtprüfung, nicht die Bewegung). Spieler und Gäste ziehen sie auf und zu.
 ## Ursprung = Mitte der Fensteröffnung, lokale +Z zeigt in den Raum.
 
 const LAYER_GLASS := 64
 const LAYER_FROSTED := 256
-const LAYER_BLOCK := 2
+const LAYER_BLOCK := 512
+## Kollision der Scheibe so tief wie die Wand – eine Nische in der Wand fängt die
+## Spielerkapsel ein, wenn man schräg daran entlangläuft.
+const PANE_DEPTH := 0.2
 
 var width := 1.4
 var height := 1.4
@@ -41,7 +44,7 @@ func _ready() -> void:
 	add_child(pane)
 	var glass := Geo.mesh(pane, Geo.box(Vector3(width, height, 0.02)), Mat.frosted_glass() if frosted else Mat.glass(), Vector3.ZERO)
 	glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	Geo.add_box_shape(pane, Vector3(width, height, 0.06), Vector3.ZERO)
+	Geo.add_box_shape(pane, Vector3(width, height, PANE_DEPTH), Vector3.ZERO)
 	# Fensterkreuz und Rahmen
 	var frame := Mat.psx(Color(0.85, 0.82, 0.75))
 	Geo.mesh(pane, Geo.box(Vector3(width, 0.05, 0.05)), frame, Vector3.ZERO)

@@ -363,6 +363,11 @@ Deko ist **Schutzmittel und Währung** zugleich.
 | **Edna** | 11 | freundlich, sehr ängstlich | Kerzen, versteckt sich beim ersten Flackern |
 | **Bruno** | 12 | mürrischer Händler, mutig, gierig | teure Preise, erntet Kürbisse, klaut schnell, wenn er dich nicht mag |
 | **Mila** | 15 | junge Künstlerin, gesprächig | erntet und schnitzt Kürbisse, verbreitet Gerüchte am stärksten |
+| **zufällige Gäste** | freie Zimmer | einer von sechs Charakteren | siehe unten |
+
+**Zufällig erzeugte Gäste (umgesetzt 2026-10-11):** Neben den drei festen Figuren erzeugt das Spiel zu Beginn weitere Gäste, sodass **12** im Hotel sind. Jeder hat einen Namen, einen Charakter (**ängstlich, geschäftstüchtig, Plaudertasche, Skeptiker, Bastler, Griesgram**) mit passenden Werten (Mut, Gier, Tratsch, Preise, Zuverlässigkeit), eigene Sätze (gemischt mit einem gemeinsamen Grundstock), Vorrat und Start-Deko, Würfelstil mit verräterischer Geste, Kleidungsstück, Farben und Größe.
+- **Nie weniger als 10:** Sterben Gäste und sind weniger als 10 am Leben, **wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf** – das Hotel ist ja verschlossen. Er weiß nicht, wie er hergekommen ist („Ich bin in Zimmer 27 aufgewacht …“). Man hört eine Tür, in seinem Zimmer geht das Licht an. Zimmer von Verschwundenen bleiben leer.
+- Aus einem Seed entsteht immer derselbe Gast; Spielstände speichern nur Seed und Zimmer (`scripts/guests/guest_generator.gd`).
 
 ### 6.1 Rolle
 - Leben ebenfalls im Hotel, haben eigene Zimmer, eigene Deko, eigene Persönlichkeit.
@@ -511,13 +516,15 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 
 - **Bereiche (Vorschlag):** Lobby, Flure mehrerer Etagen, Gästezimmer, Speisesaal/Küche, Wäscherei, Keller, Treppenhaus, **Hotelgarten** (Kürbisbeete, Laubbäume, umzäunt), **Bibliothek / Salon** (Schachbrett, Kamin, Billard), **Hotelbar** (Würfel, Darts).
 - **Spinnenweben-Zonen:** verlassene Zimmer, Keller, Dachboden – dunkel und gefährlich.
-- **Im Prototyp umgesetzt (2026-10-10):**
+- **Im Prototyp umgesetzt (2026-10-10, Hotel vergrößert 2026-10-11):**
   - **Lobby** (West, 14 × 14 m, Decke 5 m): Rezeption, Sofas, Säulen, Plattenspieler, Ausgangs-Doppeltür (verriegelt)
   - **Küche** (südlich der Lobby): Messer, Kerzenvorrat
   - **Hotelgarten** hinter einer **Glastür** (plus Fenster in der Lobby-Nordwand): Kürbisbeete, Bäume mit Laubhaufen, Hecken, Laternen, Mondlicht
-  - **Flur** mit Zimmern 11 (Edna), 13 (Spieler), 15 (Mila), 17 (verlassen, dunkel) im Süden und 12 (Bruno), 14 (leer), 16 (Wäscherei, dunkel, Spinnweben), 18 (abgeschlossen) im Norden
-  - **Keller** (Ost): Versteck des Monsters, Schlüssel zu Zimmer 18
-  - Noch nicht gebaut: Bibliothek/Salon, Hotelbar, Speisesaal, weitere Etagen
+  - **Hauptflur** (58 m nach Osten) mit **zwei Flurkreuzungen**: Kreuzung A mit langem Nord- und Südflügel, Kreuzung B mit kurzen Flügeln – **30 Zimmer**, Platz für 20–30 Gäste
+  - Zimmer 11 (Edna), 13 (Spieler), 15 (Mila), 17 (verlassen, dunkel), 12 (Bruno), 14 (leer), 16 (Wäscherei, dunkel, Spinnweben), 18 (abgeschlossen); 19–28, 31–38 (Flügel an Kreuzung A) und 41–44 (Kreuzung B) sind **unbewohnt** – eingerichtet, Licht aus, hier und da eine Kerze oder Münzen. Zimmer, hinter deren Rückwand ein Flügel liegt, haben kein Außenfenster.
+  - **Kellertreppe** hinter der niedrigen Kellertür am Ostende: Treppenhaus 3,5 m hinab
+  - **Keller** unter der Erde: Versteck des Monsters, Schlüssel zu Zimmer 18, altes Regal
+  - Noch nicht gebaut: Bibliothek/Salon, Speisesaal, weitere Etagen; Gäste gibt es weiterhin nur drei
 
 ### 7.1 Die Lobby – Gemeinschaftsraum
 - Großer, zentraler Raum **in der Mitte des Hotels**; von hier aus gehen Flure und Treppen ab. Hinter der monumentalen Doppeltür (2,50 × 2,50 m) liegt der verschlossene Ausgang.
@@ -633,6 +640,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
   - **Laden** – Slot-Übersicht (siehe 8.5).
   - **Einstellungen** (siehe 8.4)
   - **Beenden**
+- **Altersempfehlung: ab 16 Jahren** (eingebaut 2026-10-11, selbst eingeschätzt – keine offizielle USK-/PEGI-Prüfung). Begründung: dauerhafte Bedrohung und Schreckmomente, Figuren sterben (angedeutet, Blutspuren statt Gore), Stehlen und das Opfern anderer Gäste als Spielmechanik, Würfelglücksspiel um Spielgeld. Hinweis beim ersten Start (zusammen mit dem Fotosensibilitäts-Hinweis, 8.4), dazu ein kleines Kennzeichen „ab 16“ unten rechts – im Stil des Spiels, kein nachgemachtes USK-Logo. Für eine Veröffentlichung: offizielle Einstufung über USK bzw. IARC (Steam, Konsolen-Stores) einholen.
 
 ### 8.3 Spielmenü (Esc)
 - **Esc** öffnet das Spielmenü, das Spiel **pausiert komplett** (Monster, Gäste, Spielzeit, Kerzen, Wachstum). Ton wird gedämpft (z. B. Tiefpass), das Bildrauschen darf weiterlaufen.

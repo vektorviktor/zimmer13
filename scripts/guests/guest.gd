@@ -41,6 +41,7 @@ var seated := false          ## sitzt am Spieltisch
 var challenge_time := 0.0    ## > 0: hat dich gerade herausgefordert (Sekunden bis es verfällt)
 var challenge_cooldown := 0.0
 var state := State.IDLE
+var gen_seed := -1           ## ≥ 0: zufällig erzeugter Gast (GuestGenerator)
 
 var agent: NavigationAgent3D
 var _collider: CollisionShape3D
@@ -70,7 +71,7 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func setup(p_id: String, p_home: Dictionary) -> Guest:
 	id = p_id
-	profile = GuestProfiles.ALL[p_id]
+	profile = GuestProfiles.get_profile(p_id)
 	display_name = profile["name"]
 	stock = (profile["stock"] as Dictionary).duplicate()
 	money = int(profile.get("money", 5))
@@ -360,7 +361,8 @@ func _next_activity() -> void:
 				var spots: Array[Vector3] = Game.social.builder.garden_spots
 				_walk_to(spots[randi() % spots.size()] + _jitter(1.5), State.WALK)
 		_:
-			_walk_to(Vector3(randf_range(2.0, 28.0), 0, randf_range(-0.6, 0.6)), State.WALK)
+			var corridor: Array[Vector3] = Game.social.builder.wander_points
+			_walk_to(corridor[randi() % corridor.size()] + _jitter(0.5), State.WALK)
 
 
 func _walk_to(point: Vector3, new_state: State) -> void:
@@ -466,9 +468,10 @@ func _check_lights() -> void:
 ## Platz neben der eigenen Tür (im Flur), an dem Deko steht.
 func deco_place_point() -> Vector3:
 	var door_front: Vector3 = home["door_front"]
-	var s: float = home["side"]
-	var x := door_front.x + (1.0 if randf() < 0.5 else -1.0) * randf_range(0.9, 1.3)
-	return Vector3(x, 0.0, s * 1.15)
+	var along: Vector3 = home["along"]
+	var into: Vector3 = home["into"]
+	var p := door_front + into * 0.45 + along * (1.0 if randf() < 0.5 else -1.0) * randf_range(0.9, 1.3)
+	return Vector3(p.x, 0.0, p.z)
 
 
 # --- Klauen -------------------------------------------------------------------------
@@ -771,6 +774,7 @@ func _face(pos: Vector3, delta: float) -> void:
 
 func _build_visual() -> void:
 	_visual = Node3D.new()
+	_visual.scale = Vector3.ONE * float(profile.get("height", 1.0))
 	add_child(_visual)
 	var coat := Mat.psx(profile["coat"])
 	var pants := Mat.psx(profile["pants"])
