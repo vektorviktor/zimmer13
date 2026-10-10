@@ -1,0 +1,138 @@
+class_name Hud
+extends CanvasLayer
+## Minimales HUD: Fadenkreuz, Interaktions-Hinweis, Gegenstand in der Hand, Geld,
+## Meldungen, Versteck-Ansicht mit Atem-Anzeige und Debug-Werte (F3).
+
+var debug_enabled := false
+
+var _prompt: Label
+var _held: Label
+var _money: Label
+var _message: Label
+var _debug: Label
+var _crosshair: ColorRect
+var _hide_overlay: ColorRect
+var _hide_material: ShaderMaterial
+var _breath_bg: ColorRect
+var _breath_fill: ColorRect
+var _message_time := 0.0
+var _debug_timer := 0.0
+
+
+func _ready() -> void:
+	layer = 10
+	_hide_material = ShaderMaterial.new()
+	_hide_material.shader = load("res://shaders/hide_overlay.gdshader")
+	_hide_overlay = ColorRect.new()
+	_hide_overlay.material = _hide_material
+	_hide_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hide_overlay.visible = false
+	add_child(_hide_overlay)
+	_hide_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	_crosshair = ColorRect.new()
+	_crosshair.color = Color(1, 1, 1, 0.6)
+	_crosshair.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_crosshair)
+	_place(_crosshair, Vector4(0.5, 0.5, 0.5, 0.5), Vector4(-1, -1, 1, 1))
+
+	_prompt = _label(10, HORIZONTAL_ALIGNMENT_CENTER)
+	_place(_prompt, Vector4(0, 1, 1, 1), Vector4(8, -46, -8, -32))
+	_held = _label(9, HORIZONTAL_ALIGNMENT_LEFT)
+	_place(_held, Vector4(0, 1, 0.6, 1), Vector4(8, -18, 0, -4))
+	_money = _label(9, HORIZONTAL_ALIGNMENT_RIGHT)
+	_place(_money, Vector4(0.6, 0, 1, 0), Vector4(0, 4, -8, 18))
+	_message = _label(10, HORIZONTAL_ALIGNMENT_CENTER)
+	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_place(_message, Vector4(0, 0.12, 1, 0.12), Vector4(16, 0, -16, 80))
+	_debug = _label(8, HORIZONTAL_ALIGNMENT_LEFT)
+	_place(_debug, Vector4(0, 0, 0.7, 0.7), Vector4(4, 4, 0, 0))
+	_debug.visible = false
+
+	_breath_bg = ColorRect.new()
+	_breath_bg.color = Color(0, 0, 0, 0.6)
+	add_child(_breath_bg)
+	_place(_breath_bg, Vector4(0.5, 1, 0.5, 1), Vector4(-40, -27, 40, -23))
+	_breath_fill = ColorRect.new()
+	_breath_fill.color = Color(0.7, 0.8, 0.9, 0.9)
+	_breath_bg.add_child(_breath_fill)
+	_breath_fill.position = Vector2(1, 1)
+	_breath_fill.size = Vector2(78, 2)
+	_breath_bg.visible = false
+
+	Game.money_changed.connect(_on_money_changed)
+	Game.message_posted.connect(show_message)
+	_on_money_changed(Game.money)
+
+
+func _process(delta: float) -> void:
+	if _message_time > 0.0:
+		_message_time -= delta
+		_message.modulate.a = clampf(_message_time, 0.0, 1.0)
+	if Input.is_action_just_pressed("debug_overlay"):
+		debug_enabled = not debug_enabled
+	_debug.visible = debug_enabled
+	if debug_enabled and Game.director:
+		_debug_timer -= delta
+		if _debug_timer <= 0.0:
+			_debug_timer = 0.25
+			_debug.text = Game.director.debug_text()
+
+
+func set_prompt(text: String) -> void:
+	_prompt.text = text
+
+
+func set_held(item_name: String) -> void:
+	_held.text = "" if item_name == "" else "In der Hand: %s" % item_name
+
+
+func show_message(text: String, duration: float = 3.5) -> void:
+	_message.text = text
+	_message_time = duration
+	_message.modulate.a = 1.0
+
+
+## 0 = kein Versteck, 1 = Schrank, 2 = unter dem Bett
+func set_hide_mode(mode: int) -> void:
+	_hide_overlay.visible = mode > 0
+	_hide_material.set_shader_parameter("mode", mode)
+	_crosshair.visible = mode == 0
+	if mode == 0:
+		_breath_bg.visible = false
+
+
+func set_hide_state(stress: float, breath_ratio: float, holding: bool) -> void:
+	_hide_material.set_shader_parameter("stress", stress)
+	_breath_bg.visible = holding or breath_ratio < 0.999
+	_breath_fill.size.x = 78.0 * breath_ratio
+	_breath_fill.color = Color(0.9, 0.4, 0.3, 0.9) if breath_ratio < 0.3 else Color(0.7, 0.8, 0.9, 0.9)
+
+
+func _on_money_changed(amount: int) -> void:
+	_money.text = "Geld: %d" % amount
+
+
+func _label(font_size: int, align: HorizontalAlignment) -> Label:
+	var label := Label.new()
+	var settings := LabelSettings.new()
+	settings.font_size = font_size
+	settings.outline_size = 3
+	settings.outline_color = Color.BLACK
+	label.label_settings = settings
+	label.horizontal_alignment = align
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(label)
+	return label
+
+
+## anchors/offsets jeweils als (links, oben, rechts, unten)
+func _place(control: Control, anchors: Vector4, offsets: Vector4) -> void:
+	control.anchor_left = anchors.x
+	control.anchor_top = anchors.y
+	control.anchor_right = anchors.z
+	control.anchor_bottom = anchors.w
+	control.offset_left = offsets.x
+	control.offset_top = offsets.y
+	control.offset_right = offsets.z
+	control.offset_bottom = offsets.w

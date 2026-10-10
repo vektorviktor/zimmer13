@@ -1,0 +1,673 @@
+class_name Guest
+extends CharacterBody3D
+## Hotelgast mit eigenem Tagesablauf (Spielkonzept 6). Nutzt dieselben Dinge wie der
+## Spieler: trägt Gegenstände in der Hand, öffnet Türen, versteckt sich in Schränken.
+## Stellt Deko vor die eigene Tür, erntet und schnitzt Kürbisse, klaut, wenn er dich
+## nicht mag (oder in Panik ist), feiert in der Lobby – und kann vom Monster geholt werden.
+## Der Koffer („stock“) ist abstrakt; was er in der Hand hat, ist echt.
+
+enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD }
+
+const WALK_SPEED := 1.4
+const RUN_SPEED := 3.3
+const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
+
+var id := ""
+var profile: Dictionary
+var display_name := ""
+var relation := 0.0          ## −100 (Feind) … +100 (Freund)
+var fear := 0.0              ## 0 … 100, ab 60 Panik
+var stock := {}              ## Item.Kind → Anzahl
+var home: Dictionary         ## Zimmer-Info vom LevelBuilder
+var dead := false
+var hiding: HideSpot
+var crouching := false
+var running := false
+var holding_breath := false
+var held: Item
+var invited := false
+var chat_cooldown := 0.0
+var gift_cooldown := 0.0
+var monster_line := 0
+var expected_deco := 0      ## so viel eigene Deko sollte vor der Tür stehen
+var money := 0
+var seated := false          ## sitzt am Spieltisch
+var challenge_time := 0.0    ## > 0: hat dich gerade herausgefordert (Sekunden bis es verfällt)
+var challenge_cooldown := 0.0
+var state := State.IDLE
+
+var agent: NavigationAgent3D
+var _collider: CollisionShape3D
+var _visual: Node3D
+var _hand: Node3D
+var _arm_l: Node3D
+var _arm_r: Node3D
+var _label: Label3D
+var _target := Vector3.ZERO
+var _timer := 0.0
+var _steal_item: Item
+var _plant: PumpkinPlant
+var _hide_spot: HideSpot
+var _deco_timer := 0.0
+var _steal_timer := 0.0
+var _monster_cooldown := 0.0
+var _warned := false
+var _anim := 0.0
+var _game_look := Vector3.ZERO
+var _stuck_time := 0.0
+var _last_pos := Vector3.ZERO
+var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+
+
+func setup(p_id: String, p_home: Dictionary) -> Guest:
+	id = p_id
+	profile = GuestProfiles.ALL[p_id]
+	display_name = profile["name"]
+	stock = (profile["stock"] as Dictionary).duplicate()
+	money = int(profile.get("money", 5))
+	home = p_home
+	return self
+
+
+func _ready() -> void:
+	collision_layer = 128
+	collision_mask = 1 | 16
+	set_meta("interactable", self)
+	add_to_group("guests")
+	_collider = CollisionShape3D.new()
+	var capsule := CapsuleShape3D.new()
+	capsule.radius = 0.25
+	capsule.height = 1.7
+	_collider.shape = capsule
+	_collider.position.y = 0.85
+	add_child(_collider)
+	agent = NavigationAgent3D.new()
+	agent.radius = 0.3
+	agent.height = 1.6
+	agent.path_desired_distance = 0.3
+	agent.target_desired_distance = 0.4
+	agent.path_height_offset = 0.2   # NavMesh liegt ~0,2 m über dem Boden
+	add_child(agent)
+	_build_visual()
+	_deco_timer = randf_range(30.0, 70.0)
+	_steal_timer = randf_range(30.0, 60.0)
+	_timer = randf_range(2.0, 6.0)
+
+
+# --- Für Dialog & Social ------------------------------------------------------
+
+func get_prompt(_player: Player) -> String:
+	if dead or hiding:
+		return ""
+	return "Mit %s sprechen [E]  (%s)" % [display_name, Social.relation_word(relation)]
+
+
+func interact(_player: Player) -> void:
+	if not dead and not hiding and Game.dialog:
+		Game.dialog.open(self)
+
+
+func begin_talk() -> void:
+	state = State.TALKING
+
+
+func end_talk() -> void:
+	if state == State.TALKING:
+		_set_idle(randf_range(2.0, 5.0))
+
+
+func say(text: String) -> void:
+	if Game.player and Game.player.global_position.distance_to(global_position) < 14.0:
+		Game.say("%s: „%s“" % [display_name, text], 4.0)
+
+
+func line(key: String) -> String:
+	return GuestProfiles.line(profile, key)
+
+
+func join_party(spot: Vector3) -> void:
+	if dead or hiding or fear >= 60.0:
+		return
+	_drop_held()
+	_target = spot
+	state = State.PARTY
+
+
+## Zum Spieltisch gehen und hinsetzen (Minispiel).
+func sit_for_game(seat: Vector3, look: Vector3) -> void:
+	_drop_held()
+	_target = seat
+	_game_look = look
+	seated = false
+	state = State.MINIGAME
+
+
+func end_game() -> void:
+	seated = false
+	if state == State.MINIGAME:
+		_set_idle(randf_range(3.0, 8.0))
+
+
+func leave_party() -> void:
+	if state == State.PARTY:
+		_set_idle(randf_range(2.0, 6.0))
+	invited = false
+
+
+## Ist der Spieler (Kopf) für diesen Gast sichtbar? Für Zeugen beim Diebstahl.
+func can_see_point(p: Vector3) -> bool:
+	if dead or hiding:
+		return false
+	var eye := global_position + Vector3.UP * 1.6
+	var to := p - eye
+	var dist := to.length()
+	if dist > 10.0:
+		return false
+	if dist > 2.5 and (-global_transform.basis.z).dot(to / dist) < 0.0:
+		return false
+	var query := PhysicsRayQueryParameters3D.create(eye, p, 1 | 2)
+	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+
+
+func own_deco_near_door() -> Array[Item]:
+	var result: Array[Item] = []
+	var door_front: Vector3 = home["door_front"]
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.owner_id == id and not item.is_held and item.global_position.distance_to(door_front) < 2.5:
+			result.append(item)
+	return result
+
+
+func die() -> void:
+	if dead:
+		return
+	dead = true
+	if hiding:
+		hiding.occupant = null
+		hiding = null
+	_drop_held()
+	state = State.DEAD
+	visible = false
+	_collider.disabled = true
+	collision_layer = 0
+	_label.visible = false
+	# Spuren statt Gore: Kratzer am Boden und ein einzelner Schuh
+	var traces := Node3D.new()
+	get_parent().add_child(traces)
+	traces.global_position = Vector3(global_position.x, 0.0, global_position.z)
+	for i in 3:
+		var scratch := Geo.mesh(traces, Geo.box(Vector3(1.1, 0.01, 0.05)), Mat.psx(Color(0.12, 0.02, 0.02)), Vector3(0, 0.012, -0.12 + i * 0.12))
+		scratch.rotation.y = 0.3
+	Geo.mesh(traces, Geo.box(Vector3(0.12, 0.08, 0.26)), Mat.psx(profile["pants"]), Vector3(0.5, 0.04, 0.3))
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.owner_id == id:
+			item.owner_id = ""
+
+
+# --- Ablauf ---------------------------------------------------------------------
+
+func _physics_process(delta: float) -> void:
+	if dead:
+		return
+	_animate(delta)
+	_update_label()
+	fear = maxf(0.0, fear - delta * 0.4)
+	chat_cooldown = maxf(0.0, chat_cooldown - delta)
+	challenge_cooldown = maxf(0.0, challenge_cooldown - delta)
+	if challenge_time > 0.0:
+		challenge_time -= delta
+		if challenge_time <= 0.0:
+			Game.social.on_challenge_ignored(self)
+	gift_cooldown = maxf(0.0, gift_cooldown - delta)
+	_monster_cooldown -= delta
+	match state:
+		State.TALKING:
+			_stop(delta)
+			if Game.player:
+				_face(Game.player.global_position, delta)
+			return
+		State.HIDING:
+			_hiding_step(delta)
+			return
+	_watch_monster()
+	running = state == State.HIDE_GO
+	var speed := RUN_SPEED if running else WALK_SPEED
+	match state:
+		State.IDLE:
+			_stop(delta)
+			_timer -= delta
+			_steal_timer -= delta
+			if _steal_timer <= 0.0:
+				_steal_timer = randf_range(30.0, 60.0)
+				if _try_steal():
+					return
+			if _timer <= 0.0:
+				_next_activity()
+		State.PARTY:
+			if _move_to(_target, WALK_SPEED, delta):
+				_face(Game.social.party_center(), delta)
+		State.MINIGAME:
+			if seated:
+				_stop(delta)
+				_face(_game_look, delta)
+			elif _move_to(_target, WALK_SPEED, delta):
+				global_position = Vector3(_target.x, global_position.y, _target.z)
+				seated = true
+		_:
+			if _move_to(_target, speed, delta):
+				_arrive()
+	_open_doors()
+
+
+func _set_idle(duration: float) -> void:
+	state = State.IDLE
+	_timer = duration
+
+
+func _next_activity() -> void:
+	if Game.social.party_active and invited:
+		join_party(Game.social.free_party_spot())
+		return
+	if fear >= 60.0:
+		_walk_to(_room_point(), State.WALK)
+		return
+	var choice := _weighted_choice(profile["activities"])
+	match choice:
+		"room":
+			_walk_to(_room_point(), State.WALK)
+		"lobby":
+			var seats: Array[Vector3] = Game.social.builder.lobby_seats
+			_walk_to(seats[randi() % seats.size()] + _jitter(0.3), State.WALK)
+		"kitchen":
+			_walk_to(Game.social.builder.kitchen_spot + _jitter(1.2), State.WALK)
+		"bar":
+			var bar_spots: Array[Vector3] = Game.social.builder.bar_spots
+			_walk_to(bar_spots[randi() % bar_spots.size()] + _jitter(0.3), State.WALK)
+		"garden":
+			_plant = _ripe_plant() if profile["harvester"] else null
+			if _plant:
+				_walk_to(_plant.global_position + Vector3(0, 0, 0.7), State.HARVEST)
+			else:
+				var spots: Array[Vector3] = Game.social.builder.garden_spots
+				_walk_to(spots[randi() % spots.size()] + _jitter(1.5), State.WALK)
+		_:
+			_walk_to(Vector3(randf_range(2.0, 28.0), 0, randf_range(-0.6, 0.6)), State.WALK)
+
+
+func _walk_to(point: Vector3, new_state: State) -> void:
+	_target = point
+	state = new_state
+
+
+func _arrive() -> void:
+	match state:
+		State.WALK:
+			_set_idle(randf_range(15.0, 40.0))
+			if _is_home():
+				_at_home()
+		State.CARRY_HOME:
+			if held:
+				var kind := held.kind
+				held.queue_free()
+				held = null
+				stock[kind] = int(stock.get(kind, 0)) + 1
+			_set_idle(randf_range(8.0, 20.0))
+			_at_home()
+		State.HARVEST:
+			if _plant and _plant.is_ripe() and held == null:
+				_take_into_hand(_plant.harvest())
+				Game.play_sound("thud", 0.3)
+				_walk_to(_room_point(), State.CARRY_HOME)
+			else:
+				_set_idle(randf_range(5.0, 10.0))
+		State.PLACE_DECO:
+			_drop_held()
+			expected_deco += 1
+			_set_idle(randf_range(5.0, 12.0))
+		State.STEAL:
+			_finish_steal()
+		State.HIDE_GO:
+			if _hide_spot and _hide_spot.occupant == null:
+				_enter_hide(_hide_spot)
+			else:
+				_go_hide()
+
+
+## Zu Hause: Deko kontrollieren, Kürbisse schnitzen, Deko vor die Tür stellen.
+func _at_home() -> void:
+	var placed := own_deco_near_door()
+	if placed.size() < expected_deco:
+		Game.social.on_guest_noticed_missing(self, expected_deco - placed.size())
+	expected_deco = placed.size()
+	if profile["carver"] and int(stock.get(Item.Kind.PUMPKIN, 0)) > 0:
+		stock[Item.Kind.PUMPKIN] = int(stock[Item.Kind.PUMPKIN]) - 1
+		stock[Item.Kind.CARVED_PUMPKIN] = int(stock.get(Item.Kind.CARVED_PUMPKIN, 0)) + 1
+	if placed.size() < 2 and held == null:
+		for kind in DECO_KINDS:
+			if int(stock.get(kind, 0)) > 0:
+				stock[kind] = int(stock[kind]) - 1
+				_take_into_hand(Item.create(kind))
+				_walk_to(deco_place_point(), State.PLACE_DECO)
+				return
+
+
+## Platz neben der eigenen Tür (im Flur), an dem Deko steht.
+func deco_place_point() -> Vector3:
+	var door_front: Vector3 = home["door_front"]
+	var s: float = home["side"]
+	var x := door_front.x + (1.0 if randf() < 0.5 else -1.0) * randf_range(0.9, 1.3)
+	return Vector3(x, 0.0, s * 1.15)
+
+
+# --- Klauen -------------------------------------------------------------------------
+
+## Mag uns nicht (und ist gierig) → klaut Deko des Spielers. In Panik ohne eigene Deko
+## → klaut irgendeine Deko, um sich zu schützen.
+func _try_steal() -> bool:
+	if held:
+		return false
+	var hostile := relation <= -30.0 and randf() < float(profile["greed"])
+	var desperate := fear >= 60.0 and own_deco_near_door().is_empty()
+	if not hostile and not desperate:
+		return false
+	var best: Item = null
+	var best_dist := INF
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.is_held or item.deco_strength <= 0.0 or item.owner_id == id:
+			continue
+		if hostile and item.owner_id != "player":
+			continue
+		if Game.player and Game.player.global_position.distance_to(item.global_position) < 8.0:
+			continue
+		if Game.social.is_in_closed_chest(item):
+			continue
+		var d := global_position.distance_to(item.global_position)
+		if d < best_dist:
+			best_dist = d
+			best = item
+	if best == null:
+		return false
+	_steal_item = best
+	_walk_to(best.global_position, State.STEAL)
+	return true
+
+
+func _finish_steal() -> void:
+	var item := _steal_item
+	_steal_item = null
+	if item == null or not is_instance_valid(item) or item.is_held:
+		_set_idle(randf_range(3.0, 6.0))
+		return
+	var victim := item.owner_id
+	_take_into_hand(item)
+	Game.social.on_guest_stole(self, item, victim)
+	_walk_to(deco_place_point(), State.PLACE_DECO)
+
+
+# --- Monster & Verstecken -------------------------------------------------------------
+
+func _watch_monster() -> void:
+	var director := Game.director
+	if director.phase == MonsterDirector.Phase.WARNING and not _warned:
+		_warned = true
+		# Vorsichtige Gäste verstecken sich schon beim ersten Flackern
+		if randf() > float(profile["brave"]) and state != State.PARTY:
+			fear = minf(100.0, fear + 15.0)
+			_go_hide()
+		return
+	if director.phase == MonsterDirector.Phase.CALM:
+		_warned = false
+	var monster := Game.monster
+	if not monster.is_active() or _monster_cooldown > 0.0 or state == State.HIDE_GO:
+		return
+	var eye := global_position + Vector3.UP * 1.6
+	var monster_head := monster.global_position + Vector3.UP * 1.7
+	if eye.distance_to(monster_head) > 15.0:
+		return
+	var query := PhysicsRayQueryParameters3D.create(eye, monster_head, 1 | 2)
+	if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
+		return
+	_monster_cooldown = 10.0
+	fear = minf(100.0, fear + 45.0 * (1.2 - float(profile["brave"])))
+	Game.social.on_guest_saw_monster(self)
+	_go_hide()
+
+
+func _go_hide() -> void:
+	_drop_held()
+	if state == State.PARTY:
+		state = State.IDLE
+	_hide_spot = Game.social.find_hide_spot(self)
+	if _hide_spot:
+		_walk_to(_hide_spot.exit_point.global_position, State.HIDE_GO)
+	else:
+		_walk_to(_room_point(), State.WALK)
+
+
+func _enter_hide(spot: HideSpot) -> void:
+	Game.director.on_actor_hid(spot, self)
+	Game.social.release_hide_spot(spot)
+	hiding = spot
+	spot.occupant = self
+	spot.on_enter()
+	visible = false
+	_collider.disabled = true
+	velocity = Vector3.ZERO
+	global_position = spot.global_position
+	state = State.HIDING
+	_timer = 0.0
+
+
+func _hiding_step(delta: float) -> void:
+	_timer += delta
+	var calm := Game.director.phase == MonsterDirector.Phase.CALM or Game.director.phase == MonsterDirector.Phase.COOLDOWN
+	if calm and not Game.monster.is_active() and _timer > 8.0:
+		var spot := hiding
+		hiding = null
+		spot.occupant = null
+		spot.on_exit()
+		visible = true
+		_collider.disabled = false
+		global_position = spot.exit_point.global_position
+		_set_idle(randf_range(2.0, 5.0))
+
+
+# --- Hände ------------------------------------------------------------------------
+
+func _take_into_hand(item: Item) -> void:
+	if item == null:
+		return
+	if not item.is_inside_tree():
+		get_parent().add_child(item)
+	item.owner_id = id
+	item.set_held(true)
+	item.reparent(_hand, false)
+	item.position = Vector3(0, -0.15, 0) if item.is_large else Vector3.ZERO
+	item.rotation = Vector3(0, PI, 0)
+	held = item
+
+
+func _drop_held() -> void:
+	if held == null:
+		return
+	var item := held
+	held = null
+	item.reparent(get_parent(), true)
+	var pos := Vector3(item.global_position.x, 0.02, item.global_position.z)
+	if state == State.PLACE_DECO:
+		pos = Vector3(_target.x, 0.02, _target.z)
+	item.global_position = pos
+	item.rotation = Vector3(0, rotation.y + PI, 0)
+	item.set_held(false)
+	item.linear_velocity = Vector3.ZERO
+
+
+# --- Hilfen ------------------------------------------------------------------------
+
+func _room_point() -> Vector3:
+	var c: Vector3 = home["center"]
+	return c + _jitter(1.0)
+
+
+func _is_home() -> bool:
+	var c: Vector3 = home["center"]
+	return global_position.distance_to(c) < 2.5
+
+
+func _ripe_plant() -> PumpkinPlant:
+	for node in get_tree().get_nodes_in_group("pumpkin_plants"):
+		var plant := node as PumpkinPlant
+		if plant.is_ripe():
+			return plant
+	return null
+
+
+func _jitter(r: float) -> Vector3:
+	return Vector3(randf_range(-r, r), 0, randf_range(-r, r))
+
+
+func _weighted_choice(weights: Dictionary) -> String:
+	var total := 0.0
+	for key in weights:
+		total += float(weights[key])
+	var r := randf() * total
+	for key in weights:
+		r -= float(weights[key])
+		if r <= 0.0:
+			return key
+	return weights.keys()[0]
+
+
+func _open_doors() -> void:
+	for node in get_tree().get_nodes_in_group("doors"):
+		var door := node as Door
+		if door.is_open or door.locked:
+			continue
+		if door.center().distance_to(global_position + Vector3.UP) < 1.2:
+			door.set_open(true)
+
+
+func _move_to(point: Vector3, speed: float, delta: float) -> bool:
+	if agent.target_position.distance_to(point) > 0.25:
+		agent.target_position = point
+	var flat := Vector3(point.x, global_position.y, point.z)
+	if global_position.distance_to(flat) < 0.6 or agent.is_navigation_finished():
+		_stop(delta)
+		return true
+	var next := agent.get_next_path_position()
+	var dir := next - global_position
+	dir.y = 0.0
+	if dir.length() > 0.01:
+		dir = dir.normalized()
+		rotation.y = lerp_angle(rotation.y, atan2(-dir.x, -dir.z), minf(1.0, 8.0 * delta))
+	velocity.x = dir.x * speed
+	velocity.z = dir.z * speed
+	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
+	move_and_slide()
+	# Festgefahren? Weg neu berechnen und kurz seitlich ausweichen.
+	if global_position.distance_to(_last_pos) < speed * delta * 0.2:
+		_stuck_time += delta
+		if _stuck_time > 1.0:
+			_stuck_time = 0.0
+			var side := Vector3(-dir.z, 0, dir.x) * (1.0 if randf() < 0.5 else -1.0)
+			global_position += side * 0.15
+			agent.target_position = point + Vector3(0.01, 0, 0)
+	else:
+		_stuck_time = 0.0
+	_last_pos = global_position
+	return false
+
+
+func _stop(delta: float) -> void:
+	velocity.x = 0.0
+	velocity.z = 0.0
+	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
+	move_and_slide()
+
+
+func _face(pos: Vector3, delta: float) -> void:
+	var to := pos - global_position
+	if Vector2(to.x, to.z).length() < 0.01:
+		return
+	rotation.y = lerp_angle(rotation.y, atan2(-to.x, -to.z), minf(1.0, 6.0 * delta))
+
+
+# --- Aussehen -------------------------------------------------------------------------
+
+func _build_visual() -> void:
+	_visual = Node3D.new()
+	add_child(_visual)
+	var coat := Mat.psx(profile["coat"])
+	var pants := Mat.psx(profile["pants"])
+	var skin := Mat.psx(Color(0.82, 0.66, 0.55))
+	var hair := Mat.psx(profile["hair"])
+	for side in [-1.0, 1.0]:
+		Geo.mesh(_visual, Geo.box(Vector3(0.13, 0.85, 0.15)), pants, Vector3(side * 0.09, 0.425, 0))
+	Geo.mesh(_visual, Geo.box(Vector3(0.4, 0.62, 0.24)), coat, Vector3(0, 1.15, 0))
+	_arm_l = _make_arm(-1.0, coat, skin)
+	_arm_r = _make_arm(1.0, coat, skin)
+	Geo.mesh(_visual, Geo.sphere(0.13, 0.28, 7, 4), skin, Vector3(0, 1.6, 0))
+	Geo.mesh(_visual, Geo.box(Vector3(0.28, 0.1, 0.28)), hair, Vector3(0, 1.72, 0.01))
+	Geo.mesh(_visual, Geo.box(Vector3(0.28, 0.2, 0.08)), hair, Vector3(0, 1.62, 0.12))
+	for side in [-1.0, 1.0]:
+		Geo.mesh(_visual, Geo.box(Vector3(0.03, 0.03, 0.02)), Mat.psx(Color(0.05, 0.05, 0.05)), Vector3(side * 0.05, 1.62, -0.12))
+	_hand = Node3D.new()
+	_hand.position = Vector3(0, 1.0, -0.35)
+	_visual.add_child(_hand)
+	_label = Label3D.new()
+	_label.text = display_name
+	_label.font_size = 28
+	_label.pixel_size = 0.005
+	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_label.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	_label.modulate = Color(0.9, 0.85, 0.7)
+	_label.position = Vector3(0, 2.0, 0)
+	_label.visible = false
+	add_child(_label)
+
+
+func _make_arm(side: float, coat: Material, skin: Material) -> Node3D:
+	var pivot := Node3D.new()
+	pivot.position = Vector3(side * 0.26, 1.42, 0)
+	_visual.add_child(pivot)
+	Geo.mesh(pivot, Geo.box(Vector3(0.1, 0.55, 0.11)), coat, Vector3(0, -0.27, 0))
+	Geo.mesh(pivot, Geo.box(Vector3(0.08, 0.1, 0.09)), skin, Vector3(0, -0.6, 0))
+	return pivot
+
+
+func _update_label() -> void:
+	var p := Game.player
+	var d := p.global_position.distance_to(global_position) if p else INF
+	_label.visible = hiding == null and d > 2.2 and d < 7.0 and state != State.TALKING
+
+
+func _animate(delta: float) -> void:
+	_anim += delta
+	var speed := Vector2(velocity.x, velocity.z).length()
+	if state == State.PARTY and speed < 0.1:
+		# Tanzen
+		_visual.position.y = absf(sin(_anim * 4.0)) * 0.08
+		_visual.rotation.y = sin(_anim * 2.0) * 0.4
+		_arm_l.rotation.x = -1.2 + sin(_anim * 4.0) * 0.6
+		_arm_r.rotation.x = -1.2 - sin(_anim * 4.0) * 0.6
+		return
+	_visual.position.y = 0.0
+	_visual.rotation.y = 0.0
+	if state == State.MINIGAME and seated:
+		_visual.position.y = -0.35   # sitzt
+		_arm_l.rotation.x = -1.1 + sin(_anim * 3.0) * 0.05
+		_arm_r.rotation.x = -1.1
+		return
+	if running:
+		_arm_l.rotation.x = -2.6 + sin(_anim * 14.0) * 0.3   # Arme hoch – Panik
+		_arm_r.rotation.x = -2.6 - sin(_anim * 14.0) * 0.3
+	elif held:
+		_arm_l.rotation.x = -1.2
+		_arm_r.rotation.x = -1.2
+	else:
+		var swing := sin(_anim * 6.0) * clampf(speed * 0.35, 0.0, 0.6)
+		_arm_l.rotation.x = swing
+		_arm_r.rotation.x = -swing
