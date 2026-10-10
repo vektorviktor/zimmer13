@@ -1,6 +1,6 @@
 # Spielkonzept – Arbeitstitel: „Zimmer 13“
 
-> Status: Grobkonzept · Stand: 2026-10-10
+> Status: Grobkonzept · Stand: 2026-10-11
 > Engine: **Godot 4.7** · 3D-Assets: **Blender (lokal)**
 
 ---
@@ -22,6 +22,8 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Inspirationen (Richtung):** Andeutungs-Horror à la „Alien: Isolation“ (Bedrohung präsent, aber selten sichtbar), Retro-Hotel-Atmosphäre à la „The Shining“, soziale Dynamik ähnlich „Animal Crossing“-Beziehungen – nur mit Paranoia.
 
 ### 2.1 Zeit & Dramaturgie: Vom 1. Oktober bis Halloween (entschieden 2026-10-10)
+> Im Prototyp umgesetzt (2026-10-11): Kalender, friedlicher Anfang, erster Angriff bei einer Feier am 3./4. Oktober (spätestens am 5.), zwei harmlose Angriffe. Noch offen: Schlüssel an Halloween und das Scheitern.
+
 - **Kalender:** Das Spiel beginnt am **1. Oktober**. Die Zeit läuft durchgängig und wird in **Ingame-Tagen** gezählt. Draußen ist **immer Nacht** – der „Tag“ ist nur die Zähleinheit, kein Wechsel von Hell und Dunkel.
 - **Tageslänge: ca. 5 Minuten Echtzeit** → 31 Tage ≈ 2,5 Stunden bis Halloween. Zentral einstellbar (Tuning-Wert, `Calendar.DAY_SECONDS`).
 - **Datum sichtbar:** Abreißkalender an der Wand von Zimmer 13, im Spielmenü und kurz eingeblendet, wenn ein neuer Tag beginnt. Spielstände zeigen das Ingame-Datum.
@@ -123,6 +125,8 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - Es **zeigt sich zufällig** (gewichteter Zufall, siehe unten) – nicht skriptgesteuert und nicht vorhersehbar.
 
 ### 4.2 Ankündigung („Manifestation“)
+> Im Prototyp durch 4.13 ersetzt: keine globale Vorwarnung mehr, stattdessen Rauschen nach Entfernung und lokales Flackern.
+
 Bevor das Monster erscheint, gibt es eine Vorwarnphase (z. B. 5–15 Sekunden):
 - **Flackerndes Bild** (Post-Processing-Shader: kurze Helligkeits-/Frame-Aussetzer)
 - **Dezent flackernde Lichter** in der Umgebung (OmniLights / SpotLights mit Flicker-Script)
@@ -130,6 +134,8 @@ Bevor das Monster erscheint, gibt es eine Vorwarnphase (z. B. 5–15 Sekunden):
 - Optional: Audio-Rauschen, tiefes Brummen, Verstummen der Umgebungsgeräusche
 
 ### 4.3 Verhalten
+> Die feste Patrouillenroute ist im Prototyp durch 4.13 ersetzt (Umherstreifen im ganzen Hotel, Ruhephasen im Keller). Abbiegen in Zimmer, Abschreckung durch Deko und die Abweichungen gelten weiter.
+
 - **Phasen:** `Latent` (Hintergrund) → `Vorwarnung` → `Manifestation` (sichtbar/aktiv) → `Rückzug`
 - **Feste Patrouillenroute** (entschieden): Das Monster startet im **Keller** und läuft immer dieselbe Runde – Ostflur an allen Zimmertüren vorbei → Lobby → Garten → Lobby → Küche → Flur → zurück in den Keller. *Wann* es kommt, bleibt zufällig; *wo* es langgeht, kann man lernen.
 - **An jeder Zimmertür** entscheidet es, ob es abbiegt (Neugier des Zimmers × Dreistigkeit). Im Zimmer prüft es Bett und Schrank. Deko vor der Tür hält es schon im Flur auf → es überspringt die Tür.
@@ -249,7 +255,9 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - **Beobachteter Fehler im Prototyp:** Spieler steht im Flur hinter einer Deko-Zone → das Monster jagt ihn, wird an der Deko „abgewiesen“, zieht sich zurück und läuft dabei durch den Spieler hindurch, ohne ihn anzugreifen. Die drei Regeln oben beheben das. *(umgesetzt)*
 
 ### 4.13 Ständige Präsenz (entschieden 2026-10-10)
-> Ersetzt langfristig die globale Vorwarnung (4.2) und die feste Route (4.3). Noch nicht umgesetzt (Kalender aus 2.1 schon).
+> Ersetzt die globale Vorwarnung (4.2) und die feste Route (4.3).
+> **Im Prototyp umgesetzt (2026-10-11):** Umherstreifen im ganzen Hotel im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht dem Blick des Spielers aus, Rauschen ab 20 m (am stärksten bei 4 m), Lampen flackern nur in seiner Nähe, Halluzinationen nach einem Todesfall, alle Spuren aus der Tabelle (Fußspuren verblassen, Kratzspuren bleiben, Spuren an Zimmer 13 lassen sich wegwischen), Klopfen in beiden Varianten, Warnungszettel ab dem ersten Angriff, kleine Veränderungen im Hotel, Gäste berichten (nicht immer zuverlässig) von Spuren, Brummen mit dem Rauschen. Spielstände sichern Monster, Spuren und geprüfte Verstecke.
+> **Noch nicht:** engerer Blick unter Stress.
 
 **Entschieden**
 - **Das Monster patrouilliert im ganzen Hotel** (Flure, Zimmer, Lobby, Küche, Bar, Garten, Keller) und **bleibt dabei oft verborgen**: bewegt sich bevorzugt außerhalb des Blickfelds und im Dunkeln.
@@ -281,8 +289,10 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - **Gäste als Quelle der Angst:** Gäste berichten von Spuren und Geräuschen, nicht immer zuverlässig.
 - **Technische Atmosphäre:** mehr Nebel, Lichtkegel statt gleichmäßigen Lichts, Brummen mit dem Rauschen, engerer Blick unter Stress.
 
+**Beobachteter Fehler im Prototyp (behoben 2026-10-11):** Nach einem harmlosen Angriff auf einen Gast jagte das Monster ihn beim Rückzug sofort wieder, oder der Gast kletterte direkt vor ihm zurück ins selbe Versteck. Folge: endloses Erschrecken, und Bruno rief in einem fort „Bleib weg!“. Jetzt gilt: Nach einem harmlosen Schreck verschwindet das Monster, ohne erneut zu jagen; Gäste meiden Verstecke in der Nähe des Monsters (8 m); denselben Panik-Satz sagt ein Gast höchstens alle 45 s.
+
 **Offen**
-- Was steht konkret auf den Warnungszetteln (Story)?
+- Was steht konkret auf den Warnungszetteln (Story)? (Im Prototyp gibt es fünf erste Zettel aus den Jahren 1987–2019, siehe `scripts/world/warning_note.gd`.)
 
 ---
 

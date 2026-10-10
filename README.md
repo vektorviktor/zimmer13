@@ -23,7 +23,7 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 | G / Q | Gegenstand ablegen (Kürbis vor die Tür stellen …) |
 | Rechtsklick (halten) | Im Versteck Luft anhalten |
 | F3 | Debug: versteckte Monster-Werte |
-| F5 | Monster sofort rufen |
+| F5 | Debug: Monster sofort rufen (wenn es gerade ruht) |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel |
 
 ## Was drin ist
@@ -32,7 +32,10 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 - **Kein Inventar:** ein Gegenstand in der Hand; große Dinge blockieren Türen/Truhen; Münzen werden zu Geld
 - **Deko & Handwerk:** Kürbisse im Garten ernten · mit dem **Messer** (Küche) schnitzen · **Kerze** in den geschnitzten Kürbis stellen · Herbstlaub unter den Bäumen · Spinnweben in dunklen Ecken · Kerzenvorrat in der Küche
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
-- **Monster:** feste Patrouillenroute ab dem Keller, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Ankündigung (Flackern, Rauschen, Lampen), „weiß“ wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt
+- **Dramaturgie:** friedlicher Anfang ohne Monster · erster Angriff am 3./4. Oktober während einer Feier (Licht und Musik aus, das Monster steht in der Lobby) · die ersten zwei Angriffe sind harmlos: es steht direkt vor dir, starrt dich an und verschwindet, Gäste werden nur erschreckt
+- **Monster:** streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern nur in seiner Nähe, „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
+- **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke am Milchglas, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff
+- **Klopfen an Zimmer 13:** ein Gast in Panik bittet um Einlass – oder eine bekannte Stimme, hinter der niemand steht
 - **Gäste (Edna, Bruno, Mila):** eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
 - **Mäxchen an der Hotelbar:** Bluff-Würfeln gegen Gäste um Geld oder Gegenstände (Einsätze liegen echt auf dem Tisch), Herausforderungen & Revanche, Gäste würfeln untereinander (zuschauen verrät ihre Ticks), gezinkte Würfel aus Zimmer 17, Abbruch bei Vorwarnung
 - **Licht & Fenster:** ein Lichtschalter pro Raum, Decken- und Wandlampen, Glühbirnen herausdrehen und woanders einsetzen (auch Gäste klauen sie), Birnen brennen bei starkem Flackern oder in Monsternähe selten durch · Licht aus lockt das Monster an · Außenfenster mit Vorhängen (Mondlicht, Sicht in beide Richtungen), Milchglas zwischen Flur und Zimmern (nur Umrisse)
@@ -54,12 +57,15 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--bold=90` | Dreistigkeit setzen |
 | `--friend=edna` / `--enemy=bruno` | Beziehung zu einem Gast setzen |
 | `--kill=mila` | Gast nach 3 s vom Monster holen lassen |
+| `--first-attack` · `--attacks=3` | Feier + erster Angriff nach 3 s · so viele Angriffe gab es schon (> 2: es holt jemanden) |
+| `--knock` · `--knock-fake` · `--answer` | Klopfen an Zimmer 13 · falsche Stimme · Spieler öffnet nach 4 s |
 | `--party` | Feier starten |
 | `--talk=edna` | Gespräch öffnen |
 | `--dice=bruno` · `--autoplay` | Mäxchen-Partie starten · Antworten automatisch wählen |
 | `--challenge=bruno` | Gast fordert dich heraus |
 | `--pos=x,y,z,winkel` · `--monster=x,y,z` | Spieler versetzen · Monster erscheinen lassen |
-| `--shot=pfad.png --frames=n` · `--nointro` · `--debug` | Screenshot · ohne Intro · Debug-Werte |
+| `--shot=pfad.png --frames=n` · `--shot-on=reveal` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler |
+| `--nointro` · `--debug` · `--trace-nav` | ohne Intro · Debug-Werte · mit `--trace` auch die Wegfindung der Gäste |
 | `--title` · `--new=2` · `--load=1` | trotz Parametern Titelbildschirm · neues Spiel in Slot 2 · Slot laden (0 = Autosave) |
 | `--diary=3` · `--savetest` | nach 2 s in Slot 3 speichern · Speichern → Laden → Vergleichen |
 | `--menu=pause` | Menü öffnen (`pause`, `diary`, `settings`, `load`, `controls`) |
@@ -67,6 +73,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--day=31` | zu einem Tag im Oktober springen (ein Tag ≈ 5 min, `Calendar.DAY_SECONDS`) |
 
 Ohne Parameter startet das Spiel mit dem Titelbildschirm; mit Parametern direkt im Hotel.
+Für lange Testläufe hilft Godots eigenes `--time-scale 3` (vor dem `--`), z. B. `--path . --time-scale 3 --quit-after 36000 -- --day=3 --nointro --trace`.
 Spielstände liegen in `%APPDATA%/Godot/app_userdata/Zimmer 13/saves/`, Einstellungen in `settings.cfg` daneben.
 
 ## Aufbau
@@ -81,11 +88,12 @@ scripts/autoload/save_manager.gd   Speichern/Laden, Autosave, Tagebuchsatz
 scripts/level/              LevelBuilder (Räume, Maße, Zonen, Patrouillenroute)
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
                             PumpkinPlant, ResourceSpot, RecordPlayer,
-                            Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang/Milchglas), Diary
+                            Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang/Milchglas), Diary,
+                            Traces + TraceMark (Spuren), WarningNote (Warnungszettel)
 scripts/guests/             Guest (Verhalten), GuestProfiles (Persönlichkeiten, Sätze),
                             Social (Beziehungen, Gerüchte, Diebstahl, Tod, Feiern)
 scripts/player/             Player
-scripts/monster/            Monster (Zustände), MonsterDirector (versteckte Werte, Effekte)
+scripts/monster/            Monster (Zustände), MonsterDirector (Phasen, versteckte Werte, Effekte, Spuk)
 scripts/minigames/          Mäxchen: Regeln, Partie (Ablauf, Gast-KI, Einsätze), Würfeltisch
 scripts/ui/                 HUD, Dialog, Sterbebildschirm, Titelbildschirm, Menüs (Esc, Tagebuch),
                             Einstellungen, Slot-Übersicht, UiKit (Meldezettel-Optik)

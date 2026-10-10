@@ -204,8 +204,7 @@ func reveal(cam: Camera3D) -> void:
 	_eye_mat.set_shader_parameter("emission_energy", 6.0)
 	_face_light.light_energy = 0.9
 	_head.rotation = Vector3(0.15, 0, 0.2)
-	if "--shot-reveal" in OS.get_cmdline_user_args():
-		Game._shot_at = Game._shot_frames + 25
+	Game.shot_event("reveal")
 
 
 func _appear(pos: Vector3) -> void:

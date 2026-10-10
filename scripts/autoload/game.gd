@@ -39,9 +39,11 @@ var money := 0:
 
 ## Debug: --shot=pfad.png speichert nach --frames=n Frames einen Screenshot und beendet
 ## das Spiel – auch im Titelbildschirm und bei offenem (pausierendem) Menü.
+## Mit --shot-on=ereignis stattdessen kurz nach einem Ereignis (siehe shot_event).
 var _shot_path := ""
 var _shot_at := 120
 var _shot_frames := 0
+var _shot_on := ""
 
 
 func _ready() -> void:
@@ -52,6 +54,9 @@ func _ready() -> void:
 			_shot_path = arg.substr(7)
 		elif arg.begins_with("--frames="):
 			_shot_at = arg.substr(9).to_int()
+		elif arg.begins_with("--shot-on="):
+			_shot_on = arg.substr(10)
+			_shot_at = -1   # erst beim Ereignis
 
 
 func _process(_delta: float) -> void:
@@ -61,6 +66,13 @@ func _process(_delta: float) -> void:
 	if _shot_frames == _shot_at:
 		get_viewport().get_texture().get_image().save_png(_shot_path)
 		get_tree().quit()
+
+
+## Debug: Ein Ereignis für --shot-on ist eingetreten (z. B. "reveal") – Screenshot
+## nach `frames` Frames, sobald es zu --shot-on passt.
+func shot_event(event: String, frames: int = 25) -> void:
+	if _shot_path != "" and event == _shot_on:
+		_shot_at = _shot_frames + frames
 
 
 func reset() -> void:
