@@ -358,6 +358,80 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Funktionieren die Telefone von Anfang an, oder muss erst die Telefonzentrale an der Rezeption eingeschaltet werden?
 - Freitext-Gespräche nein – Telefonate nutzen das bestehende Dialogsystem mit eigenen Sätzen.
 
+### 4.15 Lärm & Sichtbarkeit – ein gemeinsames System (vorgemerkt 2026-10-11)
+> **Stand im Prototyp:** Lärm kennt das Monster nur von sechs Aktionen (Rennen, Keuchen, Telefon, Feier, Würfeln), immer mit demselben Radius von 14 m, durch Wände ungedämpft; was man hört (Türen, Schranktüren, platzende Birnen …), macht für das Monster keinen Lärm; Gäste hören gar nichts. Sehen: Das Monster rechnet mit Licht, Haltung und Bewegung (4.12), Gäste als Zeugen und „beim Verstecken gesehen“ dagegen mit festen Entfernungen ohne Licht.
+
+**Grundsatz:** Jede Aktion hat eine **Lautstärke** und jeder Akteur eine **Auffälligkeit**. Spieler, Gäste und Monster benutzen dieselben Werte, und alle Beobachter (Monster *und* Gäste) rechnen gleich – nur mit eigenen Ohren und Augen. Die Werte stehen an **einer** Stelle und werden hier abgestimmt.
+
+#### Lärm
+- **Lautstärke = Hörweite in Metern.** Was man hört, ist zugleich Lärm in der Welt: Es gibt kein Geräusch mehr, das nur der Spieler hört (Ausnahme: Menüs, Meldungen, Monster-Stinger).
+- **Dämpfung (Vorschlag):** je Wand ×0,4, je geschlossene Tür ×0,6, offene Tür ungedämpft. Durch Decke/Boden zwischen den Geschossen ×0,3.
+- **Monster:** Innerhalb der Hörweite geht es nachsehen (wenn es unterwegs ist); bis zur doppelten Hörweite steigt nur die Neugier dort (4.9). Lautes zählt also auch, wenn es ruht.
+- **Gäste:** hören mit halber Reichweite. Leises ignorieren sie, Lautes (Schrei, Knall, aufgerissene Tür) erschreckt sie, sie sehen nach oder erzählen davon (Gerüchte, 6.5) – ängstliche Gäste geraten in Panik.
+- **Licht aus** (4.4) und **über das Monster reden** (4.7) bleiben eigene Regeln: Das ist kein Geräusch, sondern Einladung bzw. Lauschen.
+
+| Aktion | bisher | Hörweite (Vorschlag) | Anmerkung |
+|--------|--------|----------------------|-----------|
+| Gehen | – | 0 m (Teppich) · 2 m (Holz, Fliesen) | geduckt immer 0 |
+| Rennen | 1,0 alle 0,6 s | 10 m | |
+| Landen nach Sprung | – | 4 m | |
+| Tür öffnen/schließen (Knarren) | – | 5 m | |
+| Abgeschlossene Tür rütteln | – | 6 m | |
+| Aufschließen (Schlüssel klirren) | – | 3 m | |
+| Tür vom Monster aufgerissen | – | 20 m | Gäste erschrecken |
+| In ein Versteck gehen (Schranktür) | – | 4 m | |
+| Versteck vom Monster aufgerissen | – | 20 m | |
+| Gegenstand ablegen | – | 2 m · Kürbis 4 m | |
+| Vor Schreck fallen lassen (Schock, 6.8) | – | 6 m | |
+| Truhe öffnen | – | 4 m | |
+| Vorhang ziehen | – | 2 m | |
+| Glühbirne heraus-/eindrehen | – | 2 m | |
+| Glühbirne platzt | – | 8 m | |
+| Lichtschalter | – | 1 m | Licht aus zusätzlich nach 4.4 |
+| Kürbis ernten · schnitzen | – | 3 m | |
+| Spur wegwischen | – | 2 m | |
+| Kartenblatt blättern | – | 1 m | |
+| Gespräch mit einem Gast | – | 3 m | Lauschen nach 4.7 bleibt |
+| Nach Luft schnappen (Luft zu lange angehalten) | 1,5 einmal | 10 m | |
+| Atmen im Versteck | Sonderregel | – | bleibt: angehaltener Atem senkt die Chance, entdeckt zu werden (×0,35) |
+| Klopfen an eine Tür | – | 8 m | |
+| Telefon klingelt | 0,8 je Klingeln | 18 m | 4.14 |
+| Würfeln, Spiel am Tisch | 0,7 | 10 m | |
+| Feier mit Musik | 1,5 | 25 m | |
+| Gast schreit | – | 20 m | |
+
+#### Sichtbarkeit
+- **Sichtweite = Grundweite des Beobachters × Auffälligkeit des Gesehenen**, danach Sichtkegel und freie Sichtlinie.
+- **Auffälligkeit** (Faktor, 1,0 = steht normal im Dunkeln):
+
+| Einfluss | Faktor (Vorschlag) | Anmerkung |
+|----------|--------------------|-----------|
+| Licht am Ort | 1,0 (dunkel) … 2,2 (hell) | entspricht heute 8 m → 18 m beim Monster |
+| Eigenes Licht in der Hand | Kerze +0,6 · Kürbislaterne +0,8 | **neu:** wer Licht trägt, wird gesehen |
+| Rennen | +0,4 | heute +3 m |
+| Gehen | ±0 | |
+| Stillstehen | −0,1 | heute −1 m |
+| Ducken | −0,25 | heute −2 m |
+| Karte oder Kompass vor dem Gesicht | ±0 | leuchten zu schwach |
+| Im Versteck | unsichtbar | gesehen wird nur das Hineingehen |
+
+- **Beobachter:**
+
+| Beobachter | Grundweite | Sichtkegel | Besonderheiten |
+|------------|-----------|------------|----------------|
+| Monster | 8 m | ca. 145° | während der Jagd +5 m und kein Kegel (4.12) |
+| Gast | 5 m (heute fest 10 m) | 180° | abgelenkt (Gespräch, Würfeln, Panik) ×0,6 |
+
+- **Gilt überall gleich:** Jagd beginnen, „beim Verstecken gesehen“ (heute fest 16 m) und Zeugen beim Klauen (heute fest 10 m) nutzen dieselbe Rechnung. → Im Dunkeln und geduckt klaut man unbemerkter; wer mit Kerze in den Schrank steigt, wird gesehen.
+- Was der **Spieler** sieht (Verschwinden aus dem Blickfeld, 4.13), bleibt der Kamera-Ausschnitt.
+
+**Folgen fürs Spiel:** Türen, Schränke und Truhen werden zu Entscheidungen (leise und langsam oder schnell und laut). Licht in der Hand schützt nicht nur, es verrät auch. Gäste reagieren auf das, was im Hotel passiert, statt nur auf Gespräche.
+
+**Zu klären**
+- Dämpfungswerte und ob Gehen auf Holz und Fliesen überhaupt Lärm macht.
+- Wie stark Gäste auf Lärm reagieren (nur Gerüchte, oder auch nachsehen – und damit selbst in Gefahr geraten?).
+- Ob der Spieler sieht, wie laut er gerade ist (kein HUD – vielleicht nur über Untertitel wie „[Die Tür knarrt]“).
+
 ---
 
 ## 5. Halloween-Dekoration
@@ -919,6 +993,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 6. Puppe („Halloween-Jury“) inkl. Deko-Wettbewerb bei Feiern
 7. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen Zetteln (2.2)
 7a. Fahrstuhl reparieren, Tiefkeller mit Heizkeller und Lager (7.4) · ~~Zimmertelefone (4.14)~~ ✔ (2026-10-11)
+7b. Lärm & Sichtbarkeit als ein gemeinsames System (4.15)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen
