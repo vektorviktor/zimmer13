@@ -10,13 +10,17 @@ extends RigidBody3D
 ## Kompass: Die Nadel zeigt nach Norden (Welt −Z) und schwingt nach. In der Nähe des
 ## Monsters zittert sie, ganz nah dreht sie sich wild – ebenso bei Halluzinationen.
 ##
-## Karte: Hotelplan (HotelMap) aus Zimmer 13, wird wie der Kompass in der Hand angesehen.
+## Kompass, Kartenblätter und Schlüssel (außer dem Ausgangsschlüssel) liegen nur in der Welt,
+## bis man sie aufhebt – dann wandern sie an den Körper des Spielers (Player.has_compass,
+## map_pages, keyring; Spielkonzept 3.2).
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
-const MAP_WIDTH := 0.28   ## Karte: Breite des Blatts (m), Höhe nach Seitenverhältnis des Plans
+const MAP_WIDTH := 0.28   ## Kartenblatt: Breite (m), Höhe nach Seitenverhältnis des Plans
+## Schlüssel, die nicht an den Schlüsselbund passen – sie müssen in der Hand getragen werden
+const HAND_ONLY_KEYS := ["ausgang"]
 ## Grundpreise für den Handel mit Gästen
 const PRICES := {
 	Kind.PUMPKIN: 4, Kind.CARVED_PUMPKIN: 10, Kind.CANDLE: 3, Kind.COBWEB: 3,
@@ -47,8 +51,10 @@ var _needle_angle := 0.0
 var _needle_speed := 0.0
 var _needle_spin := 0.0
 var _needle_time := 0.0
-## Karte: Material des Plans (Textur kommt nach dem Rendern von HotelMap)
-var _map_material: StandardMaterial3D
+## Kartenblatt: welche Ebene (HotelMap.PAGES)
+var page_id := ""
+## Steckt beim Spieler in der Tasche (Kompass in der linken Hand) – nicht mehr in der Welt
+var pocketed := false
 
 
 static func create(p_kind: Kind, extra: String = "") -> Item:
@@ -66,8 +72,6 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _needle:
 		_update_needle(delta)
-	if _map_material:
-		_update_map_side()
 	if not lit or burn_time <= 0.0:
 		return
 	burn_time -= delta
@@ -75,9 +79,23 @@ func _process(delta: float) -> void:
 		_extinguish()
 
 
-## Lässt sich in der Hand vor die Augen heben (Rechtsklick halten)
-func can_inspect() -> bool:
-	return kind == Kind.COMPASS or kind == Kind.MAP
+## Beschriftung eines Schlüssels am Bund
+static func key_label(id: String) -> String:
+	return "Schlüssel" if id == "" else "Schlüssel %s" % id.replace("zimmer_", "Zimmer ")
+
+
+## Wandert beim Aufheben an den Körper statt in die Hand
+func goes_to_pocket() -> bool:
+	return kind == Kind.COMPASS or kind == Kind.MAP or (kind == Kind.KEY and not key_id in HAND_ONLY_KEYS)
+
+
+## Als Taschen-Gegenstand des Spielers: aus Gruppe und Interaktion heraus (wird nicht als
+## Welt-Gegenstand gespeichert).
+func make_pocketed() -> void:
+	pocketed = true
+	set_held(true)
+	remove_from_group("items")
+	remove_meta("interactable")
 
 
 func price() -> int:
@@ -99,6 +117,8 @@ func create_extra() -> String:
 			return "" if lit else "unlit"
 		Kind.CLOTHING:
 			return clothing_of
+		Kind.MAP:
+			return page_id
 	return ""
 
 
@@ -187,7 +207,7 @@ func _update_needle(delta: float) -> void:
 	var target := atan2(-north.x, -north.z)
 	var director := Game.director
 	var threat := director.threat_at(global_position) if director else 0.0
-	if is_held and director and director.is_hallucinating() and Game.player and Game.player.held == self:
+	if pocketed and director and director.is_hallucinating():
 		threat = maxf(threat, 0.8)
 	_needle_time += delta
 	if threat > 0.75:
@@ -252,7 +272,7 @@ func _build(extra: String) -> void:
 			light_up(false)
 		Kind.KEY:
 			key_id = extra
-			display_name = "Schlüssel" if extra == "" else "Schlüssel %s" % extra.replace("zimmer_", "Zimmer ")
+			display_name = key_label(extra)
 			mass = 0.1
 			size = Vector3(0.14, 0.03, 0.05)
 			var gold := Mat.psx(Color(0.85, 0.68, 0.25))
@@ -327,9 +347,10 @@ func _build(extra: String) -> void:
 			size = Vector3(0.11, 0.03, 0.11)
 			_build_compass()
 		Kind.MAP:
-			display_name = "Karte"
+			page_id = extra if extra != "" else "eg"
+			display_name = "Kartenblatt (%s)" % HotelMap.page_title(page_id)
 			mass = 0.05
-			size = Vector3(MAP_WIDTH, 0.01, MAP_WIDTH * HotelMap.FLOOR_SIZE.y / HotelMap.FLOOR_SIZE.x)
+			size = Vector3(MAP_WIDTH, 0.01, MAP_WIDTH * HotelMap.PAGE_SIZE.y / HotelMap.PAGE_SIZE.x)
 			_build_map()
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -360,39 +381,14 @@ func _build_compass() -> void:
 	Geo.mesh(_needle, Geo.cylinder(0.005, 0.005, 6), brass, Vector3(0, 0.002, 0))
 
 
-## Blatt auf Pappe, quer; der Plan zeigt nach oben (lokale +Y), Norden zur lokalen +Z – in
-## der Hand also vom Spieler weg. Beidseitig bedruckt: in der Hand ist die Seite des Geschosses
-## zu sehen, auf dem man steht. Leicht selbstleuchtend, damit man ihn im Dunkeln noch erkennt.
+## Loses Kartenblatt, flach mit dem Plan nach oben (lokale +Y), Norden zur lokalen +Z.
 func _build_map() -> void:
-	var depth := MAP_WIDTH * HotelMap.FLOOR_SIZE.y / HotelMap.FLOOR_SIZE.x
-	Geo.mesh(self, Geo.box(Vector3(MAP_WIDTH, 0.003, depth)), Mat.psx(Color(0.7, 0.64, 0.52)), Vector3(0, 0.0015, 0))
-	_map_material = StandardMaterial3D.new()
-	_map_material.albedo_color = HotelMap.PAPER
-	_map_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	_map_material.roughness = 1.0
-	_map_material.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
-	_map_material.emission_enabled = true
-	_map_material.emission_energy_multiplier = 0.12
-	_map_material.uv1_scale = Vector3(1.0, 0.5, 1.0)
+	var depth := MAP_WIDTH * HotelMap.PAGE_SIZE.y / HotelMap.PAGE_SIZE.x
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(MAP_WIDTH, depth)
-	var sheet := Geo.mesh(self, plane, _map_material, Vector3(0, 0.0032, 0))
+	var sheet := Geo.mesh(self, plane, HotelMap.material(page_id), Vector3(0, 0.002, 0))
 	sheet.rotation.y = PI   # PlaneMesh: Bildoberkante liegt bei −Z
-	HotelMap.request(self)
-
-
-## Welche Seite der Karte oben liegt: 0 = Erdgeschoss, 1 = Obergeschoss
-func _update_map_side() -> void:
-	var side := 0.0
-	if is_held and global_position.y > LevelBuilder.UP_Y / 2.0 + 1.0:
-		side = 0.5
-	_map_material.uv1_offset.y = side
-
-
-func set_map_texture(tex: Texture2D) -> void:
-	_map_material.albedo_color = Color.WHITE
-	_map_material.albedo_texture = tex
-	_map_material.emission_texture = tex
+	Geo.mesh(self, Geo.box(Vector3(MAP_WIDTH, 0.0015, depth)), Mat.psx(Color(0.7, 0.64, 0.52)), Vector3(0, 0.00075, 0))
 
 
 func _pumpkin(carved: bool) -> void:

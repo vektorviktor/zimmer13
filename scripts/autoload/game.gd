@@ -136,12 +136,13 @@ func _setup_input() -> void:
 	_bind_keys("crouch", [KEY_CTRL, KEY_C])
 	_bind_keys("interact", [KEY_E])
 	_bind_keys("drop", [KEY_G, KEY_Q])
+	_bind_keys("map", [KEY_TAB])        # Kartenblätter ansehen (halten)
+	_bind_keys("compass", [KEY_F])      # Kompass ansehen (halten)
 	_bind_keys("debug_overlay", [KEY_F3])
 	_bind_keys("debug_manifest", [KEY_F5])
 	_bind_keys("debug_teleport", [KEY_F6])
 	_bind_keys("pause", [KEY_ESCAPE])
 	_bind_mouse("hold_breath", MOUSE_BUTTON_RIGHT)
-	_bind_mouse("inspect", MOUSE_BUTTON_RIGHT)   # Kompass/Karte ansehen (außerhalb von Verstecken)
 
 
 func _ensure_action(action: StringName) -> void:

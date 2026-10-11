@@ -13,7 +13,9 @@ const DIR := "user://saves/"
 ## 3: zufällig erzeugte Gäste (Seed + Zimmer im Spielstand)
 ## 4: Obergeschoss, dritte Kreuzung, Spuren und Zettel der Gäste
 ## 5: Zimmertelefone (Gruppe phones) – Stände mit Version 4 laden weiter, alle Hörer liegen auf
-const VERSION := 5
+## 6: am Körper (player.compass/map_pages/keyring), Kartenblätter – ältere Stände laden weiter,
+##    Kompass, Karte und Schlüssel liegen dort noch in der Welt
+const VERSION := 6
 const MIN_VERSION := 4
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -233,6 +235,7 @@ func collect() -> Dictionary:
 			"pos": _v(p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
 			"crouch": p.crouching, "shock": p.shock,
 			"held": _item_data(p.held) if p.held else null,
+			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
 		},
 		"items": [],
 		"guests": {},
@@ -420,6 +423,7 @@ func apply(data: Dictionary) -> void:
 	p.rotation.y = float(pd["yaw"])
 	p.head.rotation.x = float(pd["pitch"])
 	p.shock = float(pd.get("shock", 0.0))
+	p.set_pockets(bool(pd.get("compass", false)), pd.get("map_pages", []), pd.get("keyring", []))
 	if pd.get("held") != null:
 		var held_item := _make_item(pd["held"])
 		held_item.owner_id = "player"

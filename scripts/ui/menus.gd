@@ -12,6 +12,8 @@ const CONTROLS := [
 	["E", "Nehmen, Benutzen, Türen, Licht, Vorhänge, Reden, Verstecken"],
 	["G / Q", "Gegenstand ablegen"],
 	["Rechtsklick (halten)", "Im Versteck Luft anhalten"],
+	["Tab (halten)", "Kartenblätter ansehen – Linksklick / Mausrad blättert"],
+	["F (halten)", "Kompass ansehen"],
 	["1–9", "Antwort im Gespräch wählen"],
 	["Esc", "Fenster schließen / Spielmenü"],
 	["F3 / F5 / F6", "Debug-Werte / Monster rufen / Teleport"],

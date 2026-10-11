@@ -49,8 +49,8 @@ func center() -> Vector3:
 
 func get_prompt(player: Player) -> String:
 	if locked:
-		if key_id != "" and player.held_key_id() == key_id:
-			return "Aufschließen [E]"
+		if player.has_key(key_id):
+			return "Hände voll" if player.hands_blocked() else "Aufschließen [E]"
 		return "Verschlossen"
 	if player.hands_blocked():
 		return "Hände voll"
@@ -59,10 +59,12 @@ func get_prompt(player: Player) -> String:
 
 func interact(player: Player) -> void:
 	if locked:
-		if key_id != "" and player.held_key_id() == key_id:
+		if player.has_key(key_id) and player.hands_blocked():
+			Game.say("Mit vollen Händen kommst du nicht an den Schlüssel.")
+		elif player.has_key(key_id):
 			locked = false
 			Game.say("Aufgeschlossen.")
-			Game.play_sound("blip")
+			Game.play_sound("jingle", 0.6)
 			set_open(true)
 			SaveManager.request_autosave("Tür aufgeschlossen")
 		else:

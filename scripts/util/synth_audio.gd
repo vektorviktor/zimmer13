@@ -10,6 +10,7 @@ const MUSIC_CHORDS := [[220.0, 261.6, 329.6], [174.6, 220.0, 261.6], [196.0, 246
 const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
+	"rustle": 0.3, "jingle": 0.45,
 }
 
 var hum := 0.0
@@ -144,4 +145,14 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 				return 0.0
 			var strike := exp(-fmod(t, 0.04) * 60.0)
 			return (sin(TAU * 1020.0 * t) + sin(TAU * 1290.0 * t) * 0.7) * strike * 0.22
+		"rustle":
+			# Papier: Rauschen in kurzen, unregelmäßigen Knistern
+			return white * (0.5 + 0.5 * sin(TAU * 23.0 * t) * sin(TAU * 37.0 * t)) * sin(PI * k) * 0.25
+		"jingle":
+			# Schlüsselbund: vier helle, kurz verklingende Metallschläge
+			var jt := fmod(t, 0.09)
+			if t > 0.36:
+				return 0.0
+			var jf: float = 2400.0 + 700.0 * floor(t / 0.09)
+			return (sin(TAU * jf * jt) + sin(TAU * jf * 1.48 * jt) * 0.6) * exp(-jt * 45.0) * 0.12
 	return 0.0

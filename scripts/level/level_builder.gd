@@ -433,7 +433,7 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 			diary.position = table_top + Vector3(0.25, 0, 0.05)
 			diary.rotation.y = 0.3
 			_parent.add_child(diary)
-			_item(Item.Kind.MAP, table_top + Vector3(-0.25, 0, 0.17)).rotation.y = -0.2
+			_item(Item.Kind.MAP, table_top + Vector3(-0.25, 0, 0.17), "eg").rotation.y = -0.2
 			var calendar := Calendar.new()
 			calendar.position = Vector3(x1 - 0.11, 1.7, 2.1)
 			calendar.rotation.y = -PI / 2.0
@@ -451,6 +451,7 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 			_item(Item.Kind.COINS, table_top, "2")
 			_item(Item.Kind.LOADED_DICE, table_top + Vector3(0.3, 0, 0.1))
 			_note("1987", table_top + Vector3(-0.25, 0, 0.1))
+			_item(Item.Kind.MAP, Vector3(cx + 0.4, 0.02, 3.3), "keller").rotation.y = 2.6   # Kellerskizze auf dem Boden
 			_resource_web(Vector3(x1 - 0.12, 2.2, 4.7), -135.0)
 			_resource_web(Vector3(x0 + 0.12, 2.4, 0.4), 45.0)
 		"laundry":
@@ -594,6 +595,7 @@ func _lobby() -> void:
 	Geo.solid(root, Vector3(0.7, 1.1, 1.4), Vector3(-9.65, 0.55, 4.75), _dark_wood)
 	_item(Item.Kind.CARVED_PUMPKIN, Vector3(-12.2, 1.12, 5.4))
 	_note("2019", Vector3(-10.8, 1.11, 5.35))
+	_item(Item.Kind.MAP, Vector3(-9.65, 1.11, 4.6), "og").rotation.y = PI / 2.0   # Kartenblatt Obergeschoss
 	var main_phone := HotelPhone.new().setup("lobby")   # Haupttelefon mit Gästeverzeichnis
 	main_phone.position = Vector3(-11.4, 1.1, 5.3)
 	main_phone.rotation.y = PI

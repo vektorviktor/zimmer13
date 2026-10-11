@@ -1,7 +1,8 @@
 class_name Player
 extends CharacterBody3D
 ## Ego-Perspektive-Spieler. Kapsel 1,80 m × 0,45 m (Spielkonzept 3.1).
-## Kein Inventar: genau ein Gegenstand in der Hand (3.2).
+## Kein Inventar: genau ein Gegenstand in der Hand (3.2). Ausnahme am Körper: Kompass,
+## Kartenblätter und Schlüsselbund – Karte (Tab) und Kompass (F) holt die linke Hand hervor.
 ## Kann sich in Schränken und unter Betten verstecken (3.4).
 
 const HEIGHT := 1.8
@@ -18,12 +19,14 @@ const MOUSE_SENSITIVITY := 0.0022
 const HIDE_COMFORT_TIME := 22.0   ## ab hier wird es im Versteck unangenehm
 const HIDE_MAX_TIME := 38.0       ## dann muss man raus (wie in „Doors“)
 const BREATH_MAX := 6.0
-## Hand mit dem Gegenstand: unten rechts – beim Ansehen (Kompass, Karte) vor die Brust gehoben
+## Hand mit dem Gegenstand: unten rechts
 const HAND_REST := Vector3(0.22, -0.22, -0.45)
-const HAND_INSPECT := Vector3(0.0, -0.12, -0.3)
-const INSPECT_TILT := 1.05        ## so weit kippt der Kompass zum Gesicht (rad)
-const MAP_INSPECT := Vector3(0.0, -0.005, -0.12)   ## die Karte fast senkrecht und bildfüllend vors Gesicht
-const MAP_TILT := 1.52            ## knapp unter 90°: das Blatt steht fast senkrecht
+## Linke Hand: Karte bildfüllend vors Gesicht, Kompass vor die Brust (Zifferblatt zum Gesicht
+## gekippt); beim Hervorholen kommt sie von unten
+const MAP_VIEW := Vector3(0.0, -0.005, -0.12)
+const COMPASS_VIEW := Vector3(-0.03, -0.12, -0.3)
+const COMPASS_TILT := 1.05
+const LEFT_DOWN := Vector3(0.0, -0.3, 0.05)
 const INSPECT_SPEED := 0.5        ## Laufen beim Draufschauen: halbe Geschwindigkeit
 
 var head: Node3D
@@ -42,10 +45,20 @@ var shock := 0.0
 var shock_recovery := 1.0   ## schneller durch Gedenken oder Feiern (Social)
 var in_dialog := false
 var focused := false   ## sitzt konzentriert am Spieltisch → Vorwarnungen fallen weniger auf
-var inspecting := false  ## schaut auf Kompass oder Karte in der Hand (Rechtsklick halten)
-var debug_inspect := false  ## --inspect: als würde Rechtsklick gehalten
+var inspecting := false  ## schaut auf Karte oder Kompass in der linken Hand
+## Am Körper (Spielkonzept 3.2): Kompass, Kartenblätter (HotelMap.PAGES-IDs), Schlüssel-IDs
+var has_compass := false
+var map_pages: Array[String] = []
+var keyring: Array[String] = []
+var debug_show := ""   ## --show=map|keys|compass: als würde die Taste gehalten (keys: Schlüsselblatt oben)
 
 var _hand: Node3D
+var _left_hand: Node3D
+var _pocket_map: PocketMap
+var _compass_holder: Node3D
+var _compass: Item
+var _left_shown := ""   ## "map", "compass" oder ""
+var _left_raise := 0.0
 var _shape: CapsuleShape3D
 var _collider: CollisionShape3D
 var _ray: RayCast3D
@@ -86,6 +99,14 @@ func _ready() -> void:
 	_hand = Node3D.new()
 	_hand.position = HAND_REST
 	camera.add_child(_hand)
+	_left_hand = Node3D.new()
+	_left_hand.visible = false
+	camera.add_child(_left_hand)
+	_pocket_map = PocketMap.new()
+	_left_hand.add_child(_pocket_map)
+	_compass_holder = Node3D.new()
+	_compass_holder.rotation.x = COMPASS_TILT
+	_left_hand.add_child(_compass_holder)
 	_ray = RayCast3D.new()
 	_ray.target_position = Vector3(0, 0, -REACH)
 	_ray.collision_mask = 1 | 2 | 4 | 64 | 128 | 256 | HotelWindow.LAYER_BLOCK
@@ -108,6 +129,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			rotate_y(-rel.x)
 			head.rotation.x = clampf(head.rotation.x - rel.y, -1.45, 1.45)
+	elif event is InputEventMouseButton and event.pressed and _left_shown == "map" and inspecting:
+		# Blättern: Linksklick / Mausrad runter = nächstes Blatt, Mausrad hoch = voriges
+		var button := (event as InputEventMouseButton).button_index
+		if button == MOUSE_BUTTON_LEFT or button == MOUSE_BUTTON_WHEEL_DOWN:
+			_pocket_map.flip(1)
+		elif button == MOUSE_BUTTON_WHEEL_UP:
+			_pocket_map.flip(-1)
+	elif event.is_action_pressed("map") or event.is_action_pressed("compass"):
+		_explain_left_hand("map" if event.is_action_pressed("map") else "compass")
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event.is_action_pressed("interact"):
@@ -166,19 +196,117 @@ func _physics_process(delta: float) -> void:
 	_update_focus()
 
 
-## Kompass oder Karte ansehen: Rechtsklick halten hebt sie vor die Brust, zum Gesicht gekippt.
-## Im Versteck bleibt Rechtsklick „Luft anhalten“.
+## Linke Hand: Karte (Tab) oder Kompass (F) halten hebt sie vor die Augen. Mit einem großen
+## Gegenstand sind beide Hände voll; im Gespräch geht es nicht.
 func _update_hand(delta: float) -> void:
-	inspecting = held != null and held.can_inspect() and (Input.is_action_pressed("inspect") or debug_inspect) 		and hiding == null and not in_dialog
-	var is_map := held != null and held.kind == Item.Kind.MAP
-	var pos := HAND_REST
-	var tilt := 0.0
-	if inspecting:
-		pos = MAP_INSPECT if is_map else HAND_INSPECT
-		tilt = MAP_TILT if is_map else INSPECT_TILT
-	var t := minf(1.0, 10.0 * delta)
-	_hand.position = _hand.position.lerp(pos, t)
-	_hand.rotation.x = lerpf(_hand.rotation.x, tilt, t)
+	var want := ""
+	if not in_dialog:
+		if (Input.is_action_pressed("map") or debug_show in ["map", "keys"]) and _can_show("map"):
+			want = "map"
+		elif (Input.is_action_pressed("compass") or debug_show == "compass") and _can_show("compass"):
+			want = "compass"
+	if want != "" and want != _left_shown:
+		_left_shown = want
+		_left_raise = 0.0
+		if want == "map":
+			_pocket_map.open_at(PocketMap.KEYS if debug_show == "keys" else HotelMap.page_at(global_position.y))
+			Game.play_sound("rustle", 0.4)
+	inspecting = want != ""
+	_left_raise = move_toward(_left_raise, 1.0 if inspecting else 0.0, delta * 5.0)
+	if _left_raise <= 0.0:
+		_left_shown = ""
+	var view := MAP_VIEW if _left_shown == "map" else COMPASS_VIEW
+	var t := ease(_left_raise, -2.0)
+	_left_hand.position = (view + LEFT_DOWN).lerp(view, t)
+	_left_hand.rotation.x = -0.9 * (1.0 - t)
+	_left_hand.visible = _left_shown != ""
+	_pocket_map.visible = _left_shown == "map"
+	_compass_holder.visible = _left_shown == "compass"
+	_hand.position = _hand.position.lerp(HAND_REST, minf(1.0, 10.0 * delta))
+
+
+func _can_show(what: String) -> bool:
+	if hands_blocked():
+		return false
+	if what == "map":
+		return not map_pages.is_empty() or not keyring.is_empty()
+	return has_compass
+
+
+## Taste gedrückt, aber nichts zu sehen: kurz sagen, warum
+func _explain_left_hand(what: String) -> void:
+	if in_dialog or _can_show(what):
+		return
+	if hands_blocked():
+		Game.say("Die Hände sind voll.")
+	elif what == "map":
+		Game.say("Du hast keine Karte.")
+	else:
+		Game.say("Du hast keinen Kompass.")
+
+
+# --- Am Körper: Kompass, Kartenblätter, Schlüsselbund (Spielkonzept 3.2) ------------------
+
+## Gegenstand aus der Welt an den Körper nehmen – er verschwindet aus der Welt.
+func _pocket(item: Item) -> void:
+	match item.kind:
+		Item.Kind.COMPASS:
+			give_compass()
+			Game.say("Ein alter Kompass – eingesteckt. [F] halten, um draufzuschauen.", 3.5)
+			Game.play_sound("blip", 0.5)
+		Item.Kind.MAP:
+			var first := map_pages.is_empty()
+			add_map_page(item.page_id)
+			if first:
+				Game.say("%s – eingesteckt. [Tab] halten zum Ansehen, [Linksklick] blättert." % item.display_name, 4.0)
+			else:
+				Game.say("%s – zu den anderen Blättern gesteckt." % item.display_name, 3.0)
+			Game.play_sound("rustle", 0.5)
+		Item.Kind.KEY:
+			add_key(item.key_id)
+			Game.say("%s – an den Schlüsselbund." % item.display_name, 3.0)
+			Game.play_sound("jingle", 0.6)
+	item.queue_free()
+
+
+func give_compass() -> void:
+	has_compass = true
+	if _compass:
+		return
+	_compass = Item.create(Item.Kind.COMPASS)
+	_compass_holder.add_child(_compass)
+	_compass.make_pocketed()
+	_compass.rotation = Vector3(0, PI, 0)
+
+
+func add_map_page(id: String) -> void:
+	if not id in map_pages:
+		map_pages.append(id)
+	_pocket_map.set_content(map_pages, keyring)
+
+
+func add_key(id: String) -> void:
+	if not id in keyring:
+		keyring.append(id)
+	_pocket_map.set_content(map_pages, keyring)
+
+
+## Spielstand: alles am Körper neu setzen
+func set_pockets(compass: bool, pages: Array, keys: Array) -> void:
+	has_compass = false
+	if _compass:
+		_compass.queue_free()
+		_compass = null
+	if compass:
+		give_compass()
+	map_pages.assign(pages)
+	keyring.assign(keys)
+	_pocket_map.set_content(map_pages, keyring)
+
+
+## Passt ein Schlüssel – am Bund oder (Ausgangsschlüssel) in der Hand?
+func has_key(id: String) -> bool:
+	return id != "" and (id in keyring or held_key_id() == id)
 
 
 # --- Am Spieltisch sitzen -------------------------------------------------------
@@ -251,11 +379,14 @@ func try_pick_up(item: Item) -> void:
 		Game.play_sound("blip")
 		item.queue_free()
 		return
-	if held:
+	if held and not item.goes_to_pocket():
 		Game.say("Du hast schon etwas in der Hand. Erst ablegen [G].")
 		return
 	if item.owner_id != "" and item.owner_id != "player" and Game.social:
 		Game.social.on_player_took(item)
+	if item.goes_to_pocket():
+		_pocket(item)
+		return
 	item.owner_id = "player"
 	held = item
 	item.set_held(true)
@@ -265,10 +396,6 @@ func try_pick_up(item: Item) -> void:
 	Game.play_sound("blip", 0.5)
 	if Game.hud:
 		Game.hud.set_held(item.display_name)
-	if item.kind == Item.Kind.COMPASS:
-		Game.say("Ein alter Kompass. [Rechtsklick] halten, um draufzuschauen.", 3.5)
-	elif item.kind == Item.Kind.MAP:
-		Game.say("Ein Lageplan des Hotels. [Rechtsklick] halten, um ihn anzusehen.", 3.5)
 
 
 func drop_held() -> void:
@@ -293,7 +420,7 @@ func receive_item(item: Item) -> bool:
 		return false
 	get_parent().add_child(item)
 	item.global_position = global_position + Vector3.UP
-	if held:
+	if held and not item.goes_to_pocket():
 		Game.say("Die Hände sind voll – %s liegt jetzt vor dir." % item.display_name)
 		item.global_position = _drop_position()
 		return false
