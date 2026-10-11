@@ -66,6 +66,70 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - Gilt die Schleife pro Spielstand-Slot (Vorschlag: ja, Zähler und Zettel im Spielstand) oder slotübergreifend?
 - Gibt es nach mehreren Schleifen ein Ende, oder endet es nur durch Flucht?
 
+### 2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)
+> Noch nicht umgesetzt. Gibt dem Spiel eine Richtung: Bisher überlebt man, kommt aber nirgendwohin. Verbindet Story (offene Frage 4), Zeitschleife (2.2), Warnungszettel (4.13), Fahrstuhl & Tiefkeller (7.4) und die Gäste (6).
+
+**Grundidee:** Nicht alle Bereiche des Hotels sind von Anfang an erreichbar. Einige sind verschlossen und müssen **verdient** werden. Hinter ihnen liegt nach und nach ein **großes Geheimnis**: warum man hier ist, was das Monster ist, was das Hotel mit den früheren Gästen zu tun hat. Man erfährt es aus **Dokumenten** und von **Mitwissern** – Gästen, die mehr wissen, als sie sagen.
+
+**Fortschritt: Bereiche verdienen statt finden**
+- **Offen bleibt der Alltag:** Erdgeschoss, Zimmerflure, Lobby, Bar, Garten, Keller. Gesperrt werden nur die **Geheimnis-Orte** – damit das Spiel eine Sandbox mit Gästen bleibt und kein Schlüssel-Parcours wird.
+- **Möglichst mehrere Wege hinein.** Was man aufbringt, um einen Bereich zu öffnen:
+
+| Art | Beispiel | baut auf |
+|-----|----------|----------|
+| **Vertrauen** | Ein Gast gibt den Schlüssel erst als Freund – oder man klaut ihn und riskiert Zeugen | Beziehungen, Diebstahl (6.2) |
+| **Wissen** | Die Kombination steht in einem Brief, der Code ist ein Datum aus einem Zeitungsausschnitt | Dokumente, Karte (3.2) |
+| **Wagnis** | Offen, aber dunkel und nah am Monster; man braucht Licht in der Hand – das verrät einen | Licht, Lärm & Sichtbarkeit (4.4, 4.15) |
+| **Zeit** | Manche Türen öffnen sich erst an bestimmten Tagen, andere schließen sich wieder (z. B. wenn ein Gast stirbt) | Kalender (2.1) |
+
+- **Erstes Beispiel steht schon:** Die Fahrstuhl-Reparatur (7.4) verlangt alle drei – Wagnis (Keller, Zimmer 18), Vertrauen (Hauptsicherung beim Gast), Lärm (Bremse).
+- **Kandidaten für Sperrbereiche:** Zimmer 18 · Personaltrakt bzw. Büro der Direktion · Tiefkeller (7.4) · Dachboden oder Turm.
+
+**Das Geheimnis: Das Abkommen und der Heizer (entschieden 2026-10-11)**
+- **Das Abkommen:** Die Gründerfamilie des Hotels hat **1987** einen Handel mit dem geschlossen, was unter dem Hotel lebt. Jedes Jahr gibt es eine **Halloween-Woche mit Gästen**, und es darf sich nehmen, wen es will. Dafür besteht das Hotel weiter, und die Familie lebt. Die Gäste werden eingeladen, ohne es zu wissen. Das Hotel ist ab dem 1. Oktober verschlossen.
+- **Der Heizer – das erste Opfer:** Halloween 1987 kam es im **Tiefkeller** zum Unglück (Kesselbrand). Der Heizer blieb beim Feuer, um andere hinauszubringen. Das Personal schloss die Tür hinter ihm ab – so wurde das Abkommen besiegelt. **Er ist zu dem geworden, was es jetzt verlangt.** Das Personal hält ihn seitdem mit Gästen ruhig und hinter dem Gitter (7.4). Bevor er starb, schrieb er den **ältesten Warnungszettel** (4.13); sein **Kesselbuch** liegt im Heizkeller (7.4).
+- **Was das erklärt:**
+  - **Deko schützt**, weil sie einmal Teil des Rituals war: Wer schmückt, gilt als *Gastgeber*, nicht als *Gabe*. Und weil sie ihn an das Fest erinnert, das er retten wollte – in geschmückten Bereichen zögert er.
+  - **Die Puppe** (5.5) ist die Jury des Abkommens: Sie bestimmt, wer zu wenig schmückt und damit „angeboten“ wird.
+  - **Kerzen gehen aus**, wenn er vorbeikommt: das Feuer, das ihn getötet hat.
+  - **Das Gitter wird lockerer** (7.4, 4.8): Das Abkommen hält jedes Jahr schlechter.
+  - **Der Schlüssel an Halloween** (2.1) öffnet die Tür für **genau einen**. Das Hotel behält immer einen. Fliehen heißt, jemanden zurückzulassen – Opfern (4.11) wird zur Kernfrage.
+- **Zwei Arten von Mitwissern:**
+  - **Täter, die schweigen:** der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält; der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht.
+  - **Angehörige, die suchen:** die **Tochter des Heizers**, nicht zufällig Gast in diesem Jahr. Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel.
+- **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** des Heizers mit Foto (die Statur passt) · **Kesselbuch** und die abgeschlossene **Werkstatt** im Tiefkeller · die Koffer früherer Gäste im Lager (7.4).
+- **Enden (Vorschlag):**
+  - **Flucht:** mit dem Schlüssel hinaus – jemand bleibt zurück.
+  - **Das Abkommen brechen:** den Vertrag im Kessel verbrennen (Ofenklappe, 7.4). Er ist nicht mehr gebunden – ob das gut ist, bleibt offen.
+  - **Ihn erlösen:** seine Sachen aus dem Fundsachen-Koffer zurückbringen und den Kessel ein letztes Mal anzünden – mitten in seinem Revier.
+- **Aus der verworfenen Variante „Zimmer 13 bist du“ bleibt nur ein Andeutungs-Twist:** ein Warnungszettel in der Handschrift des Spielers (2.2) – nie erklärt.
+
+**Das Geheimnis in Schichten** – man setzt es zusammen, statt es zu lesen:
+1. **Gerücht:** Gäste erzählen Halbwahres (Berichte, Telefon, 4.13/4.14).
+2. **Indiz:** Ein Dokument bestätigt das Gerücht – oder widerspricht ihm.
+3. **Beweis:** ein Ort, den man erst betreten muss.
+4. **Wahrheit:** Ein Mitwisser bricht sein Schweigen, wenn man ihm den Beweis vorlegt.
+
+**Mitwisser**
+- **Wenige Gäste wissen mehr**, als sie sagen. Sie schweigen aus Angst, Schuld oder Eigennutz.
+- **Zum Reden bringt man sie mit Beziehung *und* Beweis**, nicht mit Beziehung allein.
+- **Sie können lügen und sterben.** Holt das Monster einen Mitwisser, ist sein Wissen weg – oder es liegt nur noch als Notiz in seinem Zimmer. Gäste zu schützen (oder zu opfern, 4.11) bekommt dadurch Gewicht.
+- Idee: Das Monster **will gerade die Mitwisser**. Wen man beschützt, entscheidet dann auch, was man erfahren kann.
+
+**Dokumente (Lore)**
+- **Jedes Dokument zeigt auf etwas** – einen Ort, eine Person, einen Code. Lore, die nur Sammelgut ist, liest niemand.
+- **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch des Heizers (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Lager (7.4).
+- **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Wichtiges notiert der Spieler-Charakter **im Tagebuch** (8.5) – das Tagebuch wird so zum Notizbuch der Ermittlung.
+- **Zeitschleife (2.2):** Die Welt setzt sich zurück, Wissen kann bleiben – über die eigenen Zettel. Codes, Namen und wer lügt, gibt man sich selbst weiter. So wird jeder Durchgang schneller und tiefer, auch wenn man scheitert.
+
+**Zu klären**
+- **Mitwisser besetzen:** Sind Erbe, Page und Tochter eigene feste Figuren, oder steckt das in Edna, Bruno, Mila? Namen, Zimmer, wie man sie erkennt.
+- **Was ist das Ding unter dem Hotel** vor dem Abkommen gewesen – bleibt das bewusst offen?
+- Wie viel erfährt man **vor dem ersten Angriff** (2.1)? Vorschlag: nichts, was den friedlichen Anfang verrät – höchstens das Gästebuch.
+- **Was überlebt die Zeitschleife?** Nur die eigenen Zettel (2.2), oder erinnern sich auch Mitwisser an einen?
+- **Wie viele Sperrbereiche** für den Anfang? Vorschlag: drei bis vier (siehe Kandidaten oben).
+- Wie hängt das Geheimnis mit dem **Schlüssel an Halloween** (2.1) zusammen – ist die Wahrheit Voraussetzung für die Flucht, oder ein eigenes, besseres Ende?
+
 ---
 
 ## 3. Core Gameplay Loop
@@ -979,7 +1043,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 3k. **Minispiele (6.10):** Welche Spiele für den ersten Umfang? Echte Schachregeln (aufwendiger) oder zuerst ein einfaches Würfel-/Kartenspiel? Welche Möbel dürfen als Einsatz dienen?
 3h. **Truhen:** Abschließbar? Gibt es eine eigene Truhe im Spielerzimmer?
 3f. ~~Tragen~~ → kein Inventar, alles in den Händen, nur Geld als Wert (entschieden); Ausnahme am Körper: Kompass, Kartenblätter, Schlüsselbund (3.2, entschieden 2026-10-11). Offen: ein oder zwei Hände?
-4. **Story:** Warum ist man eingeschlossen? Was ist das Monster? Wer sind die Gäste?
+4. ~~Story~~ → **Das Abkommen und der Heizer** (2.3, entschieden 2026-10-11). Offen: Mitwisser besetzen, was das Ding vor 1987 war.
 5. **Anzahl & Tiefe der Gäste:** Wenige tiefe Charaktere (3–5) oder viele einfache?
 6. **Können Gäste sterben / verschwinden?** (starke emotionale Konsequenz)
 7. ~~Grafikstil~~ → **Low-Poly im PS1-Look** (entschieden).
@@ -997,7 +1061,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 4. ~~Ausbau~~ ✔ (2026-10-10): feste Patrouillenroute · Lobby, Küche, Garten mit Glastür, 8 Zimmer, Wäscherei · Kürbisbeet, Laub, Spinnweben, Kerzenvorrat · Schnitzen + Kerze einsetzen · 3 Gäste mit Tagesablauf, Dialog, Handel, Beziehung, Geschenken, Klauen (beidseitig), Zeugen & Gerüchten, Panik, Verstecken, Tod, Sättigung, Schock/Schuld, Gedenken · Feiern (spontan + selbst ausgerichtet)
 5. Minispiele mit Gästen (6.10): ~~Mäxchen an der Hotelbar~~ ✔ · als Nächstes Kürbis-Schnitz-Duell, Möbel-Einsätze, Bibliothek/Salon mit Schach
 6. Puppe („Halloween-Jury“) inkl. Deko-Wettbewerb bei Feiern
-7. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen Zetteln (2.2)
+7. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen Zetteln (2.2) · Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
 7a. Fahrstuhl reparieren, Tiefkeller mit Heizkeller und Lager (7.4) · ~~Zimmertelefone (4.14)~~ ✔ (2026-10-11)
 7b. ~~Lärm & Sichtbarkeit als ein gemeinsames System (4.15)~~ ✔ (2026-10-11)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
