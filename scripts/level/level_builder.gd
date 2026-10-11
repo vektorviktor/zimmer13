@@ -590,7 +590,7 @@ func _lobby() -> void:
 
 	# Einrichtung
 	var red := Mat.psx(Color(0.4, 0.08, 0.08))
-	Geo.mesh(root, Geo.box(Vector3(9.0, 0.02, 7.0)), Mat.psx(Color(0.32, 0.07, 0.08)), Vector3(-7.0, 0.01, 0.0))
+	Geo.mesh(root, Geo.box(Vector3(9.0, 0.02, 7.0)), Mat.layer(Color(0.32, 0.07, 0.08)), Vector3(-7.0, 0.01, 0.0))
 	Geo.solid(root, Vector3(3.0, 1.1, 0.7), Vector3(-11.5, 0.55, 5.4), _dark_wood)      # Rezeption
 	Geo.solid(root, Vector3(0.7, 1.1, 1.4), Vector3(-9.65, 0.55, 4.75), _dark_wood)
 	_item(Item.Kind.CARVED_PUMPKIN, Vector3(-12.2, 1.12, 5.4))

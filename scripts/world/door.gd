@@ -146,7 +146,7 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 	else:
 		Geo.mesh(body, Geo.box(leaf_size), Mat.psx(Color(0.3, 0.17, 0.1)), Vector3(cx, height / 2.0, 0))
 		# Kassetten als Relief
-		var panel := Mat.psx(Color(0.24, 0.13, 0.08))
+		var panel := Mat.layer(Color(0.24, 0.13, 0.08))
 		for y in [0.6, 1.5]:
 			Geo.mesh(body, Geo.box(Vector3(leaf_width * 0.6, 0.55, 0.075)), panel, Vector3(cx, y * height / 2.1, 0))
 	# Kollision so tief wie die Wand: Ein dünnes Türblatt bildet eine Nische, in der die

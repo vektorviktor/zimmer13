@@ -30,6 +30,18 @@ static func psx(color: Color, tex_id: String = "", tex_scale: float = 1.0, emiss
 	return m
 
 
+## Für flache Auflagen auf einer anderen Fläche (Teppich auf Fliesen, Kassetten auf dem Türblatt):
+## wird leicht zur Kamera gezogen, damit die Unterlage beim Vertex-Snapping nicht durchflimmert.
+static func layer(color: Color, tex_id: String = "", tex_scale: float = 1.0) -> ShaderMaterial:
+	var key := "layer|%s|%s|%.3f" % [color.to_html(), tex_id, tex_scale]
+	if _cache.has(key):
+		return _cache[key]
+	var m := psx(color, tex_id, tex_scale, Color.BLACK, 0.0, false)
+	m.set_shader_parameter("layer_pull", 0.01)
+	_cache[key] = m
+	return m
+
+
 static func cobweb() -> StandardMaterial3D:
 	if _cobweb == null:
 		_cobweb = StandardMaterial3D.new()

@@ -10,6 +10,10 @@ uniform float tex_scale = 1.0;
 uniform vec3 emission : source_color = vec3(0.0);
 uniform float emission_energy = 0.0;
 uniform float snap_resolution = 140.0;
+// Auflagen (Teppich, Türkassetten): rückt die Fläche um diesen Anteil der Entfernung zur Kamera
+// hin. Ändert nur die Tiefe, nicht die Bildposition – so kann das Snapping die Unterlage nicht
+// durch die Auflage drücken.
+uniform float layer_pull = 0.0;
 // Einstellungen → PS1-Look → Vertex-Wackeln (1 = an, 0 = aus)
 global uniform float psx_snap;
 
@@ -19,7 +23,9 @@ varying vec3 world_normal;
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
+	vec4 view = MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
+	view.xyz *= 1.0 - layer_pull;
+	vec4 clip = PROJECTION_MATRIX * view;
 	if (psx_snap > 0.5 && clip.w > 0.0001) {
 		vec2 ndc = clip.xy / clip.w;
 		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;

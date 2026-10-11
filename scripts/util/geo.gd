@@ -2,9 +2,17 @@ class_name Geo
 ## Helfer für Platzhalter-Geometrie (wird später durch Blender-Modelle ersetzt).
 
 
+## Größte Kantenlänge eines Dreiecks. Das Vertex-Snapping verschiebt jede Ecke um bis zu einen
+## Bildschirm-Rasterpunkt – bei riesigen Flächen (80-m-Flurboden) schwimmt sonst die ganze Fläche.
+const MAX_FACE := 1.0
+
+
 static func box(size: Vector3) -> BoxMesh:
 	var m := BoxMesh.new()
 	m.size = size
+	m.subdivide_width = maxi(0, ceili(size.x / MAX_FACE) - 1)
+	m.subdivide_height = maxi(0, ceili(size.y / MAX_FACE) - 1)
+	m.subdivide_depth = maxi(0, ceili(size.z / MAX_FACE) - 1)
 	return m
 
 

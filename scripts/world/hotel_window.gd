@@ -42,14 +42,18 @@ func _ready() -> void:
 	pane.collision_layer = LAYER_FROSTED if frosted else LAYER_GLASS
 	pane.collision_mask = 0
 	add_child(pane)
-	var glass := Geo.mesh(pane, Geo.box(Vector3(width, height, 0.02)), Mat.frosted_glass() if frosted else Mat.glass(), Vector3.ZERO)
+	# Eine einzelne Fläche statt einer dünnen Box: Vorder- und Rückseite einer durchsichtigen Box
+	# sortieren sich je nach Winkel falsch, und die Unterkante flimmert mit der Fensterbank.
+	var quad := QuadMesh.new()
+	quad.size = Vector2(width, height)
+	var glass := Geo.mesh(pane, quad, Mat.frosted_glass() if frosted else Mat.glass(), Vector3.ZERO)
 	glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	Geo.add_box_shape(pane, Vector3(width, height, PANE_DEPTH), Vector3.ZERO)
 	# Fensterkreuz und Rahmen
 	var frame := Mat.psx(Color(0.85, 0.82, 0.75))
 	Geo.mesh(pane, Geo.box(Vector3(width, 0.05, 0.05)), frame, Vector3.ZERO)
 	Geo.mesh(pane, Geo.box(Vector3(0.05, height, 0.05)), frame, Vector3.ZERO)
-	Geo.mesh(pane, Geo.box(Vector3(width + 0.1, 0.06, 0.22)), frame, Vector3(0, -height / 2.0 - 0.03, 0.05))
+	Geo.mesh(pane, Geo.box(Vector3(width + 0.1, 0.06, 0.22)), frame, Vector3(0, -height / 2.0 - 0.01, 0.05))   # 2 cm über der Laibung
 	if not has_curtains():
 		return
 	pane.set_meta("interactable", self)
