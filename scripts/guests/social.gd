@@ -712,6 +712,10 @@ func report_line(guest: Guest) -> String:
 
 # --- Klopfen an Zimmer 13 -----------------------------------------------------------------------
 
+func is_knocking() -> bool:
+	return not _knock.is_empty()
+
+
 ## Meistens ein echter Gast in Panik („Mach auf!“) – manchmal nicht (bekannte Stimme,
 ## aber draußen ist niemand, nur ein Kleidungsstück).
 func _update_knocking(delta: float) -> void:

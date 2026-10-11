@@ -18,8 +18,9 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 | Shift | Rennen (macht Lärm → Monster wird neugierig) |
 | Leertaste | Springen |
 | Strg / C (halten) | Ducken – nötig für die Kellertür (1,80 m) |
-| E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Tür/Truhe öffnen, Licht schalten, Vorhang ziehen, Glühbirne heraus-/eindrehen, mit Gästen reden, Verstecken, ins Tagebuch schreiben |
+| E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Tür/Truhe öffnen, Licht schalten, Vorhang ziehen, Glühbirne heraus-/eindrehen, mit Gästen reden, telefonieren, Verstecken, ins Tagebuch schreiben |
 | 1–9 / Maus | Im Gespräch Antwort wählen (Esc beendet) |
+| 0–9 · Enter · Rücktaste · H | Am Telefon: Zimmernummer wählen · anrufen · löschen · Hörer daneben legen (Esc legt auf) |
 | G / Q | Gegenstand ablegen (Kürbis vor die Tür stellen …) |
 | Rechtsklick (halten) | Im Versteck Luft anhalten · sonst den Kompass in der Hand ansehen |
 | F3 | Debug: versteckte Monster-Werte |
@@ -37,6 +38,7 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 - **Monster:** dürre, über zwei Meter große Gestalt auf zwei Beinen (Modell mit Skelett, ruckartige Stop-Motion-Bewegung) · duckt sich unter Türen, lauert halb geduckt, schleicht auf allen Vieren davon, wenn man es sieht · streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern nur in seiner Nähe, „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
 - **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke am Milchglas, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff · **Spuren der Gäste:** schlammige Schuhabdrücke nach dem Garten, Wachsflecken von Kerzen und Kürbislaternen, Blutstropfen und verlorene Münzen nach einem Angriff, Zettel an Türen und nach Todesfällen oder Sichtungen
 - **Klopfen an Zimmer 13:** ein Gast in Panik bittet um Einlass – oder eine bekannte Stimme, hinter der niemand steht
+- **Zimmertelefone:** Wählscheibentelefon in jedem Zimmer, Haupttelefon mit Gästeverzeichnis an der Rezeption (Zimmernummer wählen, 0 = Rezeption) · Freunde rufen an und warnen, wo es gerade ist (nicht immer richtig), Feinde lügen, Bekannte plaudern oder laden zur Feier ein · manchmal nur Atmen – danach liegt in einem leeren Zimmer ein Hörer neben dem Apparat · selbst anrufen: plaudern, fragen, einladen; **Klingeln ist Lärm** und lockt das Monster ins Zielzimmer · anrufen und sofort auflegen gilt als Telefonstreich · Hörer daneben legen: still, aber keine Warnungen mehr · ab und zu klingelt irgendwo im Hotel ein Telefon
 - **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (30 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 24, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
 - **Mäxchen an der Hotelbar:** Bluff-Würfeln gegen Gäste um Geld oder Gegenstände (Einsätze liegen echt auf dem Tisch), Herausforderungen & Revanche, Gäste würfeln untereinander (zuschauen verrät ihre Ticks), gezinkte Würfel aus Zimmer 17, Abbruch bei Vorwarnung
 - **Licht & Fenster:** ein Lichtschalter pro Raum, Decken- und Wandlampen, Glühbirnen herausdrehen und woanders einsetzen (auch Gäste klauen sie), Birnen brennen bei starkem Flackern oder in Monsternähe selten durch · Licht aus lockt das Monster an · Außenfenster mit Vorhängen (Mondlicht, Sicht in beide Richtungen), Milchglas zwischen Flur und Zimmern (nur Umrisse)
@@ -65,6 +67,8 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--kill=mila` | Gast nach 3 s vom Monster holen lassen |
 | `--first-attack` · `--attacks=3` | Feier + erster Angriff nach 3 s · so viele Angriffe gab es schon (> 2: es holt jemanden) |
 | `--knock` · `--knock-fake` · `--answer` | Klopfen an Zimmer 13 · falsche Stimme · Spieler öffnet nach 4 s |
+| `--call=edna` · `--call=creepy` / `dead` / `door` · `--answer` | Telefon in Zimmer 13 klingelt: Gast (warnt, wenn das Monster unterwegs ist) · Atmen · Verschwundener · es steht vor der Tür · Spieler nimmt nach 4 s ab |
+| `--dial=11` · `--dial=lobby` | aus Zimmer 13 eine Nummer anrufen (0 = Rezeption) · Wählseite am Haupttelefon |
 | `--party` | Feier starten |
 | `--talk=edna` | Gespräch öffnen |
 | `--dice=bruno` · `--autoplay` | Mäxchen-Partie starten · Antworten automatisch wählen |
@@ -96,14 +100,14 @@ scripts/level/              LevelBuilder (Grundriss: Zimmerreihen in `ROWS`, Flu
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
                             PumpkinPlant, ResourceSpot, RecordPlayer,
                             Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang/Milchglas), Diary,
-                            Traces + TraceMark (Spuren), WarningNote (Warnungszettel)
+                            Traces + TraceMark (Spuren), WarningNote (Warnungszettel), HotelPhone (Telefon)
 scripts/guests/             Guest (Verhalten), GuestProfiles (feste Gäste, Sätze), GuestGenerator (Zufallsgäste),
-                            Social (Beziehungen, Gerüchte, Diebstahl, Tod, Feiern)
+                            Social (Beziehungen, Gerüchte, Diebstahl, Tod, Feiern), PhoneCalls (Anrufe)
 scripts/player/             Player
 scripts/monster/            Monster (Zustände), MonsterDirector (Phasen, versteckte Werte, Effekte, Spuk)
 scripts/minigames/          Mäxchen: Regeln, Partie (Ablauf, Gast-KI, Einsätze), Würfeltisch
 scripts/ui/                 HUD, Dialog, Sterbebildschirm, Titelbildschirm, Menüs (Esc, Tagebuch),
-                            Einstellungen, Slot-Übersicht, UiKit (Meldezettel-Optik)
+                            Einstellungen, Slot-Übersicht, UiKit (Meldezettel-Optik), Telefon
 scripts/util/               PS1-Materialien, Platzhalter-Geometrie/-Texturen, Synth-Sound, ShadowBudget
 shaders/                    PS1-Oberfläche, Post-Effekt, Versteck-Overlay
 ```

@@ -23,6 +23,7 @@ var dialog: DialogUI
 var dice: DiceMatch
 var menus: Menus
 var traces: Traces
+var phones: PhoneCalls
 var game_over := false
 ## Spielstand, der beim nächsten Start der Hauptszene geladen wird (siehe SaveManager)
 var pending_load: Dictionary = {}
@@ -88,6 +89,7 @@ func reset() -> void:
 	dice = null
 	menus = null
 	traces = null
+	phones = null
 
 
 func say(text: String, duration: float = 3.5) -> void:

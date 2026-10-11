@@ -40,7 +40,7 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
 
 ### `Game` als Drehscheibe
 `main.gd` erzeugt die Systeme und trägt sie in `Game` ein: `player`, `monster`, `director`, `social`,
-`traces`, `audio`, `hud`, `dialog`, `dice`, `menus`. Systeme rufen sich **direkt** über diese
+`traces`, `audio`, `hud`, `dialog`, `phones`, `dice`, `menus`. Systeme rufen sich **direkt** über diese
 Referenzen auf (`Game.director.on_noise(...)`), nicht über Signale. Signale gibt es nur für
 UI-nahe Dinge (`Game.message_posted`, `money_changed`, `player_died`, `caption_posted`,
 `Settings.changed`, `SaveManager.autosaved`).
@@ -50,12 +50,12 @@ UI-nahe Dinge (`Game.message_posted`, `money_changed`, `player_died`, `caption_p
 - `Game.reset()` am Anfang von `main._ready()` leert alles.
 - Text für den Spieler: `Game.say(text, dauer)`. Geräusch: `Game.play_sound(kind, volume)` – setzt
   bei Lautstärke ≥ 0,3 auch Untertitel (`Game.SOUND_CAPTIONS`). Sound-Arten stehen in
-  `SynthAudio.play_shot` (`scream`, `sting`, `growl`, `gasp`, `bang`, `blip`, `creak`, `thud`, `knock`).
+  `SynthAudio.play_shot` (`scream`, `sting`, `growl`, `gasp`, `bang`, `blip`, `creak`, `thud`, `knock`, `ring`).
 
 ### Reihenfolge in `main._ready()`
 Umgebung → `LevelBuilder.build()` → NavMesh backen → SynthAudio → ShadowBudget → Traces → Player →
 Monster → MonsterDirector (`setup(builder, monster)`) → Post-FX → Social (`setup(builder, self)`,
-erzeugt die Gäste) → Dialog → DiceMatch → Hud → Menus → dann entweder Spielstand anwenden
+erzeugt die Gäste) → Dialog → PhoneCalls (findet die Telefone) → DiceMatch → Hud → Menus → dann entweder Spielstand anwenden
 (`_load_pending`, deferred) oder Neues Spiel (Intro, Startzustand speichern). Zum Schluss
 `_parse_debug_args` (deferred).
 
@@ -70,8 +70,8 @@ Main (Node3D, main.gd)
 │   ├─ Geschoss_0 / Geschoss_4       ← Flurnetze je Stockwerk
 │   └─ Zimmer_11 …                   ← gedrehte Zimmerreihen
 ├─ Items, Gäste, Plattenspieler      ← dynamisch, direkt unter Main (LevelBuilder.world)
-├─ SynthAudio, ShadowBudget, Traces, Player, Monster, MonsterDirector, Social
-└─ CanvasLayer: PostFx (5), Hud (10), Dialog/DiceMatch (15), DeathScreen (20), Menus (30)
+├─ SynthAudio, ShadowBudget, Traces, Player, Monster, MonsterDirector, Social, PhoneCalls
+└─ CanvasLayer: PostFx (5), Hud (10), Dialog/DiceMatch/PhoneUI (15), DeathScreen (20), Menus (30)
 ```
 
 ## 3. Konventionen
@@ -115,7 +115,7 @@ Sichtprüfungen (Monster, Zeugen) nutzen `1 | 2 | 256 | 512`, Lichtprüfungen `1
 `items`, `guests`, `player`, `doors`, `chests`, `hide_spots`, `lamp_fixtures` (die Lampen),
 `lamps` (deren Lichter), `light_source` (alles, was für die Helligkeit zählt – `FlickerLight`),
 `light_switches`, `windows`, `pumpkin_plants`, `resource_spots`, `trace_marks`, `warning_notes`,
-`guest_notes`, `diaries`.
+`guest_notes`, `diaries`, `phones`.
 
 ### Räume & IDs
 - **Raum-ID** = Zimmernummer (`"13"`, `"231"`) oder Bereichs-ID (`"lobby"`, `"flur_west"`,
@@ -252,7 +252,7 @@ Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick ver
 - Erzeugte Gäste: nur `{id, seed, room, arrived}` (`Social.roster_state` / `restore_roster`), wird
   **zuerst** angewendet, weil sich alles Weitere auf Gast-IDs bezieht. Danach Welt → Director-Werte →
   Gäste → Gegenstände → Spieler → Soziales → Monster zuletzt.
-- Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp,
+- Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp, HotelPhone,
   LightSwitch, HotelWindow) oder werden in `collect()` direkt ausgelesen (Door, Chest, Plant, Resource).
   Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()`.
 - Beim Laden: `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
@@ -271,6 +271,7 @@ Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick ver
 | Verstecke | `hide_spot.gd` | `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur |
 | Kompass | `item.gd` (`Kind.COMPASS`), `player.gd` (`_update_hand`) | Nadel = Feder Richtung Welt −Z (Norden), gestört über `director.threat_at()` und `is_hallucinating()`; Ansehen = Hand per Lerp vor die Brust (`HAND_INSPECT`), Aktion `inspect` (Rechtsklick, teilt sich die Taste mit `hold_breath` – im Versteck gilt nur das); liegt in `LevelBuilder.COMPASS_ROOM` |
 | Kalender | `calendar.gd` | statische Datumsfunktionen + Abreißkalender in Zimmer 13 |
+| Telefone | `world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd` | `HotelPhone` auf jedem Zimmertisch (nicht Wäscherei) + Haupttelefon an der Rezeption (`room_id` `"lobby"`, Nummer `"0"`); gespeichert wird nur `off_hook` (Gruppe `phones`, ab Spielstand-Version 5). `PhoneCalls` (`Game.phones`) hat die Anrufe: eingehend nur für Zimmer 13 (warnen/lügen/plaudern/unheimlich), ausgehend per Wählseite, ferne Telefone als Atmosphäre. Jedes Klingeln = `director.on_noise`. Telefonsätze in `PhoneCalls.LINES`, eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die Zufallsfolge). Unheimliche Anrufe hinterlassen einen Hörer neben dem Apparat im Herkunftszimmer. Laufende Anrufe werden nicht gespeichert |
 | Mäxchen | `minigames/` | `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI & Einsätze, `GameTable` = Tisch; Würfeln macht Lärm |
 | UI | `ui/` | `UiKit` = Meldezettel-Optik für Menüs; `Hud` Prompt/Meldungen/Debug (F3); `Menus` pausiert |
 | Optik | `util/mat.gd`, `shaders/` | Materialien immer über `Mat.psx(...)` (Vertex-Snapping über Shader-Global `psx_snap`); Post-FX: Gamma, Dithering, Rauschen, Flackern |

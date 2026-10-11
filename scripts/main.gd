@@ -11,6 +11,10 @@ extends Node3D
 ##   --attacks=n                 so viele Angriffe gab es schon (> 2: es holt jemanden)
 ##   --first-attack              Feier starten, kurz darauf der erste Angriff
 ##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
+##   --call=id|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast, Atmen, Verschwundener,
+##                               vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
+##   --dial=n|lobby              vom Telefon in Zimmer 13 aus Zimmer n anrufen (0 = Rezeption) ·
+##                               lobby: Wählseite am Haupttelefon mit Gästeverzeichnis
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, controls)
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
 ##   --pos=x,y,z[,blickwinkel]   Spieler versetzen
@@ -96,6 +100,12 @@ func _ready() -> void:
 	dialog.name = "Dialog"
 	add_child(dialog)
 	Game.dialog = dialog
+
+	var phones := PhoneCalls.new()
+	phones.name = "PhoneCalls"
+	add_child(phones)
+	phones.setup()
+	Game.phones = phones
 
 	var dice := DiceMatch.new()
 	dice.name = "DiceMatch"
@@ -308,6 +318,21 @@ func _parse_debug_args() -> void:
 				# nach 4 s öffnet der Spieler die Tür
 				get_tree().create_timer(4.0).timeout.connect(func() -> void:
 					(Game.social.builder.rooms["13"]["door"] as Door).set_open(true))
+		elif arg.begins_with("--call=") or arg.begins_with("--dial="):
+			# Telefon: Spieler steht in Zimmer 13 vor dem Schreibtisch und sieht auf den Apparat
+			var phone_pos := Game.phones.home_phone.global_position
+			Game.player.global_position = Vector3(phone_pos.x, 0.05, phone_pos.z + 0.9)
+			Game.player.rotation.y = 0.0
+			Game.player.head.rotation.x = -0.75
+			var value := arg.substr(7)
+			get_tree().create_timer(1.0).timeout.connect(func() -> void:
+				if arg.begins_with("--call="):
+					Game.phones.debug_call(value)
+					if "--answer" in OS.get_cmdline_user_args():
+						get_tree().create_timer(4.0).timeout.connect(func() -> void:
+							Game.phones.answer(Game.phones.home_phone))
+				else:
+					Game.phones.debug_dial(value))
 		elif arg == "--trace":
 			_trace = true
 			Game.message_posted.connect(func(text: String, _d: float) -> void: print("  » " + text.replace("

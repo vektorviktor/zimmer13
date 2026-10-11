@@ -232,6 +232,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | **Lärm machen** | Wecker / Spieluhr / Radio in seinem Zimmer oder Flur abstellen |
 | **Gerüchte & Panik säen** | Mit dem Gast über das Monster reden → er gerät in Panik, macht Lärm, versteckt sich auffällig |
 | **Ihn in den Keller / Garten schicken** | Per Dialog oder Auftrag in eine dunkle Gefahrenzone locken |
+| **Sein Zimmertelefon klingeln lassen** | Klingeln ist Lärm in seinem Zimmer → Neugier ↑ dort (4.14) |
 
 - **Risiko:** Wird man dabei erwischt (von dem Gast selbst oder anderen), **sinkt der Ruf bei allen** massiv. Das kann zu Diebstahl-Rache führen.
 - **Schuld:** Stirbt ein Gast, den man selbst „geopfert“ hat, gibt es eigene Folgen (6.8).
@@ -296,6 +297,36 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 **Offen**
 - Was steht konkret auf den Warnungszetteln (Story)? (Im Prototyp gibt es fünf erste Zettel aus den Jahren 1987–2019, siehe `scripts/world/warning_note.gd`.)
+
+### 4.14 Zimmertelefone (vorgemerkt 2026-10-11)
+> **Im Prototyp umgesetzt (2026-10-11):** Telefon in jedem Zimmer (außer Wäscherei), Haupttelefon mit Gästeverzeichnis an der Rezeption (Nummer 0). Anrufe für Zimmer 13: Freunde warnen (nicht immer richtig), Feinde lügen, Bekannte plaudern oder laden zur Feier ein, unheimliche Anrufe (Atmen aus einem leeren Zimmer oder Zimmer 18, Stimme eines Verschwundenen, es steht vor der Tür) – danach liegt dort ein Hörer daneben. Selbst anrufen: plaudern (halbe Beziehung), nach dem Monster fragen, einladen; Klingeln ist Lärm im Zielzimmer; Telefonstreiche sprechen sich herum; in leeren Zimmern nimmt manchmal doch jemand ab. Hörer daneben legen. Ferne Telefone klingeln als Atmosphäre (und Lärm).
+> **Noch nicht:** Gäste rufen sich gegenseitig an und verbreiten Gerüchte schneller, Panik-Anrufe ängstlicher Gäste, Telefonzentrale.
+
+**Grundidee:** In jedem Zimmer steht ein altes **Wählscheibentelefon**, an der Rezeption der Hauptapparat mit der Zimmerliste. Das Telefon verbindet das Klopfen (4.13), das Ablenken (4.11) und die Beziehungen zu den Gästen (6.2) – mit wenig neuer Technik.
+
+**Anrufe bekommen**
+- **Warnung von Freunden:** Ein Gast mit guter Beziehung ruft an: *„Es ist bei mir im Flur.“* oder *„Geh heute nicht zur Bar.“* Wie oft und wie zuverlässig, hängt von der Beziehung ab; Feinde rufen nie an – oder lügen.
+- **Alltägliches:** Einladung zur Feier, Handelsangebot, Bitte um Hilfe („Ich habe kein Licht mehr“).
+- **Die unheimliche Variante** (wie die falsche Stimme beim Klopfen):
+  - Atmen, dann Stille.
+  - Ein Anruf aus einem **unbewohnten Zimmer** oder aus dem abgeschlossenen **Zimmer 18**. Geht man hin, ist niemand da – der Hörer liegt neben dem Apparat.
+  - Nach einem Todesfall die **Stimme des Toten** (Halluzination, 6.8).
+  - Ganz selten: Es klingelt, während das Monster **direkt vor der Tür** steht.
+
+**Selbst anrufen**
+- Zimmernummer an der Wählscheibe wählen (Zifferntasten). Mit Gästen **auf Distanz reden** – sicherer als im dunklen Flur, aber die Beziehung steigt nur halb so stark wie im persönlichen Gespräch.
+- **Klingeln ist Lärm im Zielzimmer** → Neugier des Monsters dort ↑ (4.11). Wer immer wieder anruft und auflegt, wird verdächtigt; der Gast erzählt es weiter (Gerücht).
+- Über den Hauptapparat an der Rezeption kann man **jedes** Zimmer anrufen – auch unbewohnte, um das Monster dorthin zu locken.
+
+**Der Preis**
+- Auch das **eigene** Telefon klingelt laut – im falschen Moment (Versteck, Monster im Flur) verrät es einen.
+- **Hörer daneben legen** macht still, aber dann erreicht einen auch keine Warnung mehr.
+- Gäste nutzen die Telefone ebenfalls: Gerüchte verbreiten sich schneller, und ängstliche Gäste rufen in Panik herum.
+- Der **reparierte Fahrstuhl** hat ein Notruftelefon in der Kabine (7.4), das manchmal klingelt, wenn niemand darin ist.
+
+**Zu klären**
+- Funktionieren die Telefone von Anfang an, oder muss erst die Telefonzentrale an der Rezeption eingeschaltet werden?
+- Freitext-Gespräche nein – Telefonate nutzen das bestehende Dialogsystem mit eigenen Sätzen.
 
 ---
 
@@ -801,6 +832,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 5. Minispiele mit Gästen (6.10): ~~Mäxchen an der Hotelbar~~ ✔ · als Nächstes Kürbis-Schnitz-Duell, Möbel-Einsätze, Bibliothek/Salon mit Schach
 6. Puppe („Halloween-Jury“) inkl. Deko-Wettbewerb bei Feiern
 7. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste)
+7a. ~~Zimmertelefone (4.14)~~ ✔ (2026-10-11)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen

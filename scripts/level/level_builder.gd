@@ -420,6 +420,11 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 	if kind in ["guest", "player", "empty", "vacant"]:
 		info["spots"].append(_hide_spot(HideSpot.Type.WARDROBE, wardrobe_pos, -90.0))
 	var table_top := Vector3(table_pos.x, 0.76, table_pos.z)
+	if kind != "laundry":
+		# Wählscheibentelefon vorn links auf dem Tisch (Spielkonzept 4.14)
+		var phone := HotelPhone.new().setup(no)
+		phone.position = table_top + Vector3(-0.3, 0, -0.17)
+		_parent.add_child(phone)
 
 	match kind:
 		"player":
@@ -588,6 +593,10 @@ func _lobby() -> void:
 	Geo.solid(root, Vector3(0.7, 1.1, 1.4), Vector3(-9.65, 0.55, 4.75), _dark_wood)
 	_item(Item.Kind.CARVED_PUMPKIN, Vector3(-12.2, 1.12, 5.4))
 	_note("2019", Vector3(-10.8, 1.11, 5.35))
+	var main_phone := HotelPhone.new().setup("lobby")   # Haupttelefon mit Gästeverzeichnis
+	main_phone.position = Vector3(-11.4, 1.1, 5.3)
+	main_phone.rotation.y = PI
+	root.add_child(main_phone)
 	for z in [-2.6, 2.6]:
 		var back: float = 0.45 if z > 0 else -0.45
 		Geo.solid(root, Vector3(2.2, 0.45, 0.9), Vector3(-10.5, 0.225, z), red)          # Sofas

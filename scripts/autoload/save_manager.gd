@@ -12,7 +12,8 @@ const DIR := "user://saves/"
 ## 2: größeres Hotel (Kreuzungen, 30 Zimmer, Kellertreppe) – ältere Stände passen nicht mehr
 ## 3: zufällig erzeugte Gäste (Seed + Zimmer im Spielstand)
 ## 4: Obergeschoss, dritte Kreuzung, Spuren und Zettel der Gäste
-const VERSION := 4
+## 5: Zimmertelefone (Gruppe phones) – Stände mit Version 4 laden weiter, alle Hörer liegen auf
+const VERSION := 5
 const MIN_VERSION := 4
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -298,6 +299,7 @@ func collect() -> Dictionary:
 	data["lamps"] = _collect_group("lamp_fixtures", func(n: Node) -> Dictionary: return n.save_state())
 	data["switches"] = _collect_group("light_switches", func(n: Node) -> Dictionary: return n.save_state())
 	data["windows"] = _collect_group("windows", func(n: Node) -> Dictionary: return n.save_state())
+	data["phones"] = _collect_group("phones", func(n: Node) -> Dictionary: return n.save_state())
 	data["table_loaded"] = Game.dice.table.loaded if Game.dice and Game.dice.table else false
 	return data
 
@@ -348,6 +350,8 @@ func apply(data: Dictionary) -> void:
 	_apply_group("lamp_fixtures", data.get("lamps", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("windows", data.get("windows", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("hide_spots", data.get("hide_spots", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	if data.has("phones"):   # erst ab Version 5
+		_apply_group("phones", data["phones"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if Game.traces:
 		Game.traces.load_state(data.get("traces", []))
 	if Game.dice and Game.dice.table:
