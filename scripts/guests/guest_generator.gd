@@ -9,6 +9,10 @@ const NAMES := [
 	"Karl", "Lotte", "Malte", "Nora", "Otto", "Paula", "Rosa", "Sami", "Theo", "Uschi",
 	"Vera", "Walter", "Yara", "Zoe", "Henrik", "Greta", "Lena", "Kemal", "Ines", "Fritz",
 	"Marta", "Luis", "Selma", "Ole", "Johanna", "Enno", "Wilma", "Arne", "Tilda", "Konrad",
+	"Agnes", "Bastian", "Clara", "Detlef", "Emil", "Fiona", "Gerda", "Hugo", "Irma", "Jakob",
+	"Klara", "Leon", "Magda", "Niklas", "Olga", "Peter", "Ruth", "Simon", "Thea", "Ulrich",
+	"Viktor", "Wanda", "Xaver", "Yusuf", "Zita", "Alma", "Bernd", "Cem", "Doris", "Elias",
+	"Franz", "Gisela", "Hedwig", "Ivo", "Jule", "Kurt", "Liesel", "Moritz", "Nele", "Oskar",
 ]
 const CLOTHING := ["Mütze", "Schal", "Handschuh", "Brille", "Halstuch", "Strickjacke", "Taschenuhr", "Hut", "Haarspange"]
 const TELLS := [

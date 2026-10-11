@@ -4,11 +4,16 @@ extends Node3D
 ##   Fußspuren – dunkel und nass, verblassen über einige Minuten (zeigen Weg und Alter)
 ##   Kratzspuren an Wänden und Türen, Blut, Handabdrücke am Milchglas – bleiben (TraceMark)
 ## Jede neue Spur wird auch den Gästen bekannt, die davon erzählen (Social.note_trace).
+## Dazu Spuren der Gäste: schlammige Schuhabdrücke aus dem Garten (verblassen), Wachsflecken,
+## Blutstropfen nach einem Angriff (bleiben) und Zettel, die Gäste schreiben.
 
 const FOOTPRINT_LIFE := 240.0
 const MAX_FOOTPRINTS := 160
+const SHOEPRINT_LIFE := 150.0
+const MAX_GUEST_MARKS := 140        ## Wachs und Blutstropfen der Gäste – die ältesten verschwinden
 
-var _footprints: Array[Dictionary] = []   ## {node, material, age}
+var _footprints: Array[Dictionary] = []   ## {node, material, age, life, alpha}
+var _guest_marks: Array[TraceMark] = []
 
 
 func _process(delta: float) -> void:
@@ -16,12 +21,12 @@ func _process(delta: float) -> void:
 	while i >= 0:
 		var f := _footprints[i]
 		f["age"] = float(f["age"]) + delta
-		var k := 1.0 - float(f["age"]) / FOOTPRINT_LIFE
+		var k := 1.0 - float(f["age"]) / float(f.get("life", FOOTPRINT_LIFE))
 		if k <= 0.0:
 			(f["node"] as Node).queue_free()
 			_footprints.remove_at(i)
 		else:
-			(f["material"] as StandardMaterial3D).albedo_color.a = 0.85 * k
+			(f["material"] as StandardMaterial3D).albedo_color.a = float(f.get("alpha", 0.85)) * k
 		i -= 1
 
 
@@ -49,6 +54,51 @@ func add_footprint(pos: Vector3, yaw: float) -> void:
 	_footprints.append({"node": foot, "material": mat, "age": 0.0})
 	if _footprints.size() % 12 == 1:
 		_report("footprint", pos)
+
+
+## Schlammiger Schuhabdruck eines Gastes, der aus dem Garten kommt.
+func add_shoeprint(pos: Vector3, yaw: float) -> void:
+	if _footprints.size() >= MAX_FOOTPRINTS:
+		(_footprints[0]["node"] as Node).queue_free()
+		_footprints.remove_at(0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.2, 0.13, 0.07, 0.7)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.roughness = 1.0
+	var shoe := Node3D.new()
+	add_child(shoe)
+	shoe.global_position = Vector3(pos.x, _floor_y(pos) + 0.011, pos.z)
+	shoe.rotation.y = yaw
+	var sole := Geo.mesh(shoe, Geo.box(Vector3(0.09, 0.004, 0.17)), mat, Vector3(0, 0, -0.03))
+	sole.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var heel := Geo.mesh(shoe, Geo.box(Vector3(0.07, 0.004, 0.07)), mat, Vector3(0, 0, 0.1))
+	heel.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_footprints.append({"node": shoe, "material": mat, "age": 0.0, "life": SHOEPRINT_LIFE, "alpha": 0.7})
+
+
+## Wachsfleck oder Blutstropfen eines Gastes auf dem Boden.
+func add_guest_drop(kind: String, pos: Vector3) -> TraceMark:
+	if _guest_marks.size() >= MAX_GUEST_MARKS:
+		var old: TraceMark = _guest_marks.pop_front()
+		if is_instance_valid(old):
+			old.queue_free()
+	var mark := TraceMark.new().setup(kind)
+	add_child(mark)
+	mark.global_position = Vector3(pos.x, _floor_y(pos) + 0.006, pos.z)
+	mark.rotation = Vector3(-PI / 2.0, randf() * TAU, 0)
+	_guest_marks.append(mark)
+	if kind == "drops":
+		_report("drops", pos)
+	return mark
+
+
+## Ein Zettel, den ein Gast hinterlässt (vor seiner Tür, an einem Fundort …).
+func add_guest_note(pos: Vector3, title: String, text: String) -> WarningNote:
+	var note := WarningNote.new().setup_custom(title, text)
+	add_child(note)
+	note.global_position = Vector3(pos.x, _floor_y(pos) + 0.003, pos.z)
+	note.rotation.y = randf() * TAU
+	return note
 
 
 func _floor_y(pos: Vector3) -> float:
@@ -137,16 +187,29 @@ func save_state() -> Array:
 		else:
 			entry["global"] = _t(mark.global_transform)
 		list.append(entry)
+	for node in get_tree().get_nodes_in_group("guest_notes"):
+		var note := node as WarningNote
+		list.append({"kind": "note", "title": note.custom_title, "text": note.custom_text, "global": _t(note.global_transform)})
 	return list
 
 
 func load_state(list: Array) -> void:
 	for node in get_tree().get_nodes_in_group("trace_marks"):
 		node.queue_free()
+	for node in get_tree().get_nodes_in_group("guest_notes"):
+		node.queue_free()
+	_guest_marks.clear()
 	var doors := get_tree().get_nodes_in_group("doors")
 	var windows := get_tree().get_nodes_in_group("windows")
 	for entry in list:
+		if String(entry["kind"]) == "note":
+			var note := WarningNote.new().setup_custom(String(entry["title"]), String(entry["text"]))
+			add_child(note)
+			note.global_transform = _from_t(entry["global"])
+			continue
 		var mark := TraceMark.new().setup(String(entry["kind"]))
+		if String(entry["kind"]) in ["wax", "drops"]:
+			_guest_marks.append(mark)
 		if entry.has("window") and int(entry["window"]) >= 0 and int(entry["window"]) < windows.size():
 			windows[int(entry["window"])].add_child(mark)
 			mark.transform = _from_t(entry["local"])

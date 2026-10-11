@@ -11,14 +11,15 @@ signal autosaved
 const DIR := "user://saves/"
 ## 2: größeres Hotel (Kreuzungen, 30 Zimmer, Kellertreppe) – ältere Stände passen nicht mehr
 ## 3: zufällig erzeugte Gäste (Seed + Zimmer im Spielstand)
-const VERSION := 3
-const MIN_VERSION := 3
+## 4: Obergeschoss, dritte Kreuzung, Spuren und Zettel der Gäste
+const VERSION := 4
+const MIN_VERSION := 4
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
 const AUTOSAVE_MONSTER_DISTANCE := 25.0
 ## Bereiche, deren erster Besuch einen Autosave auslöst
-const NEW_AREAS := ["Lobby", "Küche", "Bar", "Garten", "Südflügel", "Nordflügel", "Keller", "Zimmer 16", "Zimmer 17", "Zimmer 18"]
+const NEW_AREAS := ["Lobby", "Küche", "Bar", "Garten", "Südflügel", "Nordflügel", "Ostflügel Süd", "Ostflügel Nord", "Treppenhaus", "OG Flur West", "Keller", "Zimmer 16", "Zimmer 17", "Zimmer 18"]
 
 ## Zeitpunkt (Ticks in ms) des letzten Speicherns oder Ladens in dieser Sitzung
 var last_save_msec := -1

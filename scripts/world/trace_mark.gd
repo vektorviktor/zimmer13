@@ -5,7 +5,8 @@ extends StaticBody3D
 ## kann der Spieler wegwischen.
 
 const WIPE_RANGE := 4.5   ## so nah an der Tür von Zimmer 13 darf man putzen
-const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck"}
+const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck",
+	"wax": "Wachsflecken", "drops": "Blutstropfen"}
 
 var kind := "scratch"
 ## Auf Türen nicht anklickbar (sonst ließe sich die Tür nicht mehr öffnen) – bleibt dort.
@@ -50,6 +51,20 @@ func _ready() -> void:
 			var thumb := Geo.mesh(self, Geo.box(Vector3(0.02, 0.06, 0.004)), smudge, Vector3(0.06, -0.01, 0.002))
 			thumb.rotation.z = -0.7
 			Geo.add_box_shape(self, Vector3(0.18, 0.2, 0.05), Vector3.ZERO)
+		"wax":
+			# Spur eines Gastes: getropftes Kerzenwachs
+			var wax := Mat.psx(Color(0.9, 0.85, 0.7))
+			for i in rng.randi_range(2, 4):
+				Geo.mesh(self, Geo.box(Vector3(rng.randf_range(0.02, 0.05), rng.randf_range(0.02, 0.05), 0.005)), wax,
+					Vector3(rng.randf_range(-0.08, 0.08), rng.randf_range(-0.08, 0.08), 0.0025))
+			Geo.add_box_shape(self, Vector3(0.25, 0.25, 0.04), Vector3.ZERO)
+		"drops":
+			# Spur eines verletzten Gastes: einzelne Blutstropfen
+			var red := Mat.psx(Color(0.3, 0.02, 0.02))
+			for i in rng.randi_range(2, 5):
+				var s := rng.randf_range(0.015, 0.035)
+				Geo.mesh(self, Geo.box(Vector3(s, s, 0.005)), red, Vector3(rng.randf_range(-0.1, 0.1), rng.randf_range(-0.1, 0.1), 0.0025))
+			Geo.add_box_shape(self, Vector3(0.25, 0.25, 0.04), Vector3.ZERO)
 
 
 func can_wipe() -> bool:

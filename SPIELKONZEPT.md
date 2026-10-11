@@ -287,6 +287,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - **Spuren:** Fußspuren **verblassen** über einige Minuten (man liest ab, wie frisch sie sind), Kratzspuren **bleiben**. Spuren am eigenen Zimmer kann man wegputzen.
 - **Das Hotel verändert sich** (Punkt „unzuverlässiges Hotel“): Kleine Veränderungen, wenn man nicht hinsieht – teils durch das Monster, teils bleibt offen, wer es war.
 - **Gäste als Quelle der Angst:** Gäste berichten von Spuren und Geräuschen, nicht immer zuverlässig.
+- **Spuren der Gäste (umgesetzt 2026-10-11):** Nicht jede Spur stammt vom Monster. Gäste hinterlassen **schlammige Schuhabdrücke** nach dem Garten (verblassen), **Wachsflecken**, wenn sie etwas Brennendes tragen, **Blutstropfen** nach einem Angriff (sie wurden verletzt) und **verlorene Münzen**, wenn sie in Panik fliehen. Dazu **Zettel**: an manchen Türen von Anfang an („Bitte nicht stören.“), nach einem Todesfall („Klopft dreimal, wenn ihr es seid.“) und manchmal am Ort einer Sichtung. Man muss lernen, Monster- und Gästespuren zu unterscheiden.
 - **Technische Atmosphäre:** mehr Nebel, Lichtkegel statt gleichmäßigen Lichts, Brummen mit dem Rauschen, engerer Blick unter Stress.
 
 **Beobachteter Fehler im Prototyp (behoben 2026-10-11):** Nach einem harmlosen Angriff auf einen Gast jagte das Monster ihn beim Rückzug sofort wieder, oder der Gast kletterte direkt vor ihm zurück ins selbe Versteck. Folge: endloses Erschrecken, und Bruno rief in einem fort „Bleib weg!“. Jetzt gilt: Nach einem harmlosen Schreck verschwindet das Monster, ohne erneut zu jagen; Gäste meiden Verstecke in der Nähe des Monsters (8 m); denselben Panik-Satz sagt ein Gast höchstens alle 45 s.
@@ -365,8 +366,8 @@ Deko ist **Schutzmittel und Währung** zugleich.
 | **Mila** | 15 | junge Künstlerin, gesprächig | erntet und schnitzt Kürbisse, verbreitet Gerüchte am stärksten |
 | **zufällige Gäste** | freie Zimmer | einer von sechs Charakteren | siehe unten |
 
-**Zufällig erzeugte Gäste (umgesetzt 2026-10-11):** Neben den drei festen Figuren erzeugt das Spiel zu Beginn weitere Gäste, sodass **12** im Hotel sind. Jeder hat einen Namen, einen Charakter (**ängstlich, geschäftstüchtig, Plaudertasche, Skeptiker, Bastler, Griesgram**) mit passenden Werten (Mut, Gier, Tratsch, Preise, Zuverlässigkeit), eigene Sätze (gemischt mit einem gemeinsamen Grundstock), Vorrat und Start-Deko, Würfelstil mit verräterischer Geste, Kleidungsstück, Farben und Größe.
-- **Nie weniger als 10:** Sterben Gäste und sind weniger als 10 am Leben, **wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf** – das Hotel ist ja verschlossen. Er weiß nicht, wie er hergekommen ist („Ich bin in Zimmer 27 aufgewacht …“). Man hört eine Tür, in seinem Zimmer geht das Licht an. Zimmer von Verschwundenen bleiben leer.
+**Zufällig erzeugte Gäste (umgesetzt 2026-10-11):** Neben den drei festen Figuren erzeugt das Spiel zu Beginn weitere Gäste, sodass **30** im Hotel sind. Jeder hat einen Namen, einen Charakter (**ängstlich, geschäftstüchtig, Plaudertasche, Skeptiker, Bastler, Griesgram**) mit passenden Werten (Mut, Gier, Tratsch, Preise, Zuverlässigkeit), eigene Sätze (gemischt mit einem gemeinsamen Grundstock), Vorrat und Start-Deko, Würfelstil mit verräterischer Geste, Kleidungsstück, Farben und Größe.
+- **Nie weniger als 24:** Sterben Gäste und sind weniger als 24 am Leben, **wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf** – das Hotel ist ja verschlossen. Er weiß nicht, wie er hergekommen ist („Ich bin in Zimmer 27 aufgewacht …“). Man hört eine Tür, in seinem Zimmer geht das Licht an. Zimmer von Verschwundenen bleiben leer.
 - Aus einem Seed entsteht immer derselbe Gast; Spielstände speichern nur Seed und Zimmer (`scripts/guests/guest_generator.gd`).
 
 ### 6.1 Rolle
@@ -520,9 +521,10 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
   - **Lobby** (West, 14 × 14 m, Decke 5 m): Rezeption, Sofas, Säulen, Plattenspieler, Ausgangs-Doppeltür (verriegelt)
   - **Küche** (südlich der Lobby): Messer, Kerzenvorrat
   - **Hotelgarten** hinter einer **Glastür** (plus Fenster in der Lobby-Nordwand): Kürbisbeete, Bäume mit Laubhaufen, Hecken, Laternen, Mondlicht
-  - **Hauptflur** (58 m nach Osten) mit **zwei Flurkreuzungen**: Kreuzung A mit langem Nord- und Südflügel, Kreuzung B mit kurzen Flügeln – **30 Zimmer**, Platz für 20–30 Gäste
-  - Zimmer 11 (Edna), 13 (Spieler), 15 (Mila), 17 (verlassen, dunkel), 12 (Bruno), 14 (leer), 16 (Wäscherei, dunkel, Spinnweben), 18 (abgeschlossen); 19–28, 31–38 (Flügel an Kreuzung A) und 41–44 (Kreuzung B) sind **unbewohnt** – eingerichtet, Licht aus, hier und da eine Kerze oder Münzen. Zimmer, hinter deren Rückwand ein Flügel liegt, haben kein Außenfenster.
-  - **Kellertreppe** hinter der niedrigen Kellertür am Ostende: Treppenhaus 3,5 m hinab
+  - **Erdgeschoss:** Hauptflur (78 m nach Osten) mit **drei Flurkreuzungen** – A und B mit langen Nord- und Südflügeln, C mit kurzen Flügeln – **44 Zimmer**
+  - **Obergeschoss** (4 m höher) über ein **Treppenhaus** mit Wendepodest am Ende des Nordflügels: Hauptflur mit zwei Kreuzungen, **30 Zimmer** (211–244), zwei davon verfallen (Tür offen, Spinnweben). Zusammen **74 Zimmer** für rund 30 Gäste
+  - Zimmer 11 (Edna), 13 (Spieler), 15 (Mila), 17 (verlassen, dunkel), 12 (Bruno), 14 (leer), 16 (Wäscherei, dunkel, Spinnweben), 18 (abgeschlossen); alle übrigen sind zu Beginn mit Zufallsgästen belegt oder **unbewohnt** – eingerichtet, Licht aus, hier und da eine Kerze oder Münzen. Zimmer, hinter deren Rückwand ein Flügel liegt, haben kein Außenfenster.
+  - **Kellertreppe** hinter der niedrigen Kellertür am Ostende des Erdgeschosses: 3,5 m hinab
   - **Keller** unter der Erde: Versteck des Monsters, Schlüssel zu Zimmer 18, altes Regal
   - Noch nicht gebaut: Bibliothek/Salon, Speisesaal, weitere Etagen; Gäste gibt es weiterhin nur drei
 

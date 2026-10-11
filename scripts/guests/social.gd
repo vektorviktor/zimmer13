@@ -14,13 +14,35 @@ const FAKE_KNOCK_CHANCE := 0.3
 const HIDE_MONSTER_DISTANCE := 8.0  ## Verstecke so nah am Monster meiden Gäste
 ## Gäste: zum Start so viele, und nie dauerhaft weniger als MIN_GUESTS Lebende –
 ## nach einem Todesfall wacht irgendwann ein neuer Gast in einem freien Zimmer auf.
-const START_GUESTS := 12
-const MIN_GUESTS := 10
+const START_GUESTS := 30
+const MIN_GUESTS := 24
 const ARRIVAL_DELAY := Vector2(150.0, 360.0)
 const TRACE_TEXT := {
 	"footprint": "nasse Fußspuren", "scratch": "Kratzspuren", "blood": "Blut",
-	"handprint": "einen Handabdruck am Milchglas",
+	"handprint": "einen Handabdruck am Milchglas", "drops": "Blutstropfen",
 }
+## Zettel, die Gäste hinterlassen ({name}, {room}, {dead}, {zone})
+const DEATH_NOTES := [
+	"{dead} ist fort. Ich habe den Schrei gehört. Wer das liest: Bleibt nicht allein im Flur.\n– {name}",
+	"Für {dead}. Wir zünden eine Kerze an, wenn es ruhig ist. Lobby.\n– {name}",
+	"Es hat {dead} geholt. Ich schließe ab und mache nicht mehr auf. Für niemanden.\n– {name}, Zimmer {room}",
+	"Klopft dreimal, wenn ihr es seid. Sonst bleibt die Tür zu.\n– {name}, Zimmer {room}",
+	"Wer hat {dead} zuletzt gesehen? Bitte meldet euch. Zimmer {room}.\n– {name}",
+]
+const SIGHT_NOTES := [
+	"Ich habe es gesehen. Hier. ({zone})\nKommt nicht allein hierher.\n– {name}",
+	"Es stand am Ende des Flurs und hat mich angesehen. {zone}. Ich schwöre es.\n– {name}",
+	"Nicht rennen. Nicht hinsehen. Verstecken.\n– {name}",
+]
+const DOOR_NOTES := [
+	"Bitte nicht stören.\n– {name}",
+	"Tausche Kerzen gegen Kürbisse. Einfach klopfen.\n– {name}, Zimmer {room}",
+	"Wer meine Deko anfasst, bekommt Ärger.\n– {name}",
+	"Bin in der Lobby. Oder an der Bar. Oder schlafe.\n– {name}",
+	"Halloween-Feier? Ich bin dabei!\n– {name}, Zimmer {room}",
+]
+const MAX_GUEST_NOTES := 30
+
 
 var guests: Array[Guest] = []
 var builder: LevelBuilder
@@ -85,6 +107,10 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	while guests.size() < START_GUESTS:
 		if _add_generated(randi(), "", false) == null:
 			break
+	# Manche Gäste haben schon einen Zettel an ihre Tür gelegt
+	for guest in guests:
+		if randf() < 0.25:
+			_leave_note(guest, DOOR_NOTES, (guest.home["door_front"] as Vector3) + (guest.home["into"] as Vector3) * 0.35, "")
 	record_player = RecordPlayer.new()
 	record_player.position = builder.record_player_pos
 	world.add_child(record_player)
@@ -198,6 +224,20 @@ func restore_roster(list: Array) -> void:
 		_add_generated(int(entry["seed"]), room, bool(entry.get("arrived", false)), String(entry["id"]), true)
 
 
+## Ein Zettel eines Gastes (Spur der Gäste): an pos, Text aus templates.
+func _leave_note(guest: Guest, templates: Array, pos: Vector3, dead: String) -> void:
+	if Game.traces == null:
+		return
+	var notes := get_tree().get_nodes_in_group("guest_notes")
+	if notes.size() >= MAX_GUEST_NOTES:
+		notes[0].queue_free()
+	var text := String(templates[randi() % templates.size()]).format({
+		"name": guest.display_name, "room": guest.home["no"], "dead": dead,
+		"zone": Game.director.zone_name_at(pos) if Game.director else "",
+	})
+	Game.traces.add_guest_note(pos + guest._jitter(0.3), "Zettel von %s" % guest.display_name, text)
+
+
 func living_guests() -> Array:
 	var list: Array = []
 	for guest in guests:
@@ -293,6 +333,8 @@ func _spread_gossip(amount: float, exclude: Array) -> void:
 
 func on_guest_saw_monster(guest: Guest) -> void:
 	guest.say_panic()
+	if randf() < 0.08:
+		_leave_note(guest, SIGHT_NOTES, guest.global_position, "")
 
 
 ## Über das Monster reden: hilfreich – aber es hört mit (Spielkonzept 4.7).
@@ -307,6 +349,14 @@ func on_guest_died(guest: Guest) -> void:
 	get_tree().create_timer(5.0).timeout.connect(func() -> void:
 		Game.say("%s ist verschwunden." % guest.display_name, 4.0))
 	_memorial_doors.append(guest.home["door_front"])
+	# Ein, zwei Gäste schreiben einen Zettel und legen ihn vor ihre Tür
+	var writers := living_guests()
+	writers.shuffle()
+	for writer in writers.slice(0, randi_range(1, 2)):
+		var w: Guest = writer
+		get_tree().create_timer(randf_range(20.0, 60.0)).timeout.connect(func() -> void:
+			if is_instance_valid(w) and not w.dead:
+				_leave_note(w, DEATH_NOTES, w.home["door_front"], guest.display_name))
 	SaveManager.request_autosave("Tod eines Gastes")
 	if party_active and party_host == guest.id:
 		end_party("")

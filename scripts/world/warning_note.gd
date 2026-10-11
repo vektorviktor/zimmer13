@@ -18,6 +18,9 @@ const NOTES := {
 }
 
 var note_id := "1987"
+## Zettel eines Gastes (statt eines festen Texts aus NOTES) – sofort sichtbar
+var custom_title := ""
+var custom_text := ""
 
 
 func setup(p_id: String) -> WarningNote:
@@ -25,11 +28,18 @@ func setup(p_id: String) -> WarningNote:
 	return self
 
 
+func setup_custom(title: String, text: String) -> WarningNote:
+	note_id = ""
+	custom_title = title
+	custom_text = text
+	return self
+
+
 func _ready() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	set_meta("interactable", self)
-	add_to_group("warning_notes")
+	add_to_group("guest_notes" if note_id == "" else "warning_notes")
 	var paper := Geo.mesh(self, Geo.box(Vector3(0.16, 0.004, 0.21)), Mat.psx(Color(0.82, 0.78, 0.66)), Vector3(0, 0.002, 0))
 	paper.rotation.y = randf_range(-0.4, 0.4)
 	Geo.mesh(self, Geo.box(Vector3(0.11, 0.005, 0.005)), Mat.psx(Color(0.25, 0.15, 0.1)), Vector3(0, 0.004, -0.04))
@@ -39,7 +49,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	var shown := Game.director != null and Game.director.first_attack_done
+	var shown := note_id == "" or (Game.director != null and Game.director.first_attack_done)
 	if shown != visible:
 		visible = shown
 		collision_layer = 4 if shown else 0
@@ -50,6 +60,6 @@ func get_prompt(_player: Player) -> String:
 
 
 func interact(_player: Player) -> void:
-	var note: Dictionary = NOTES.get(note_id, {})
+	var note: Dictionary = NOTES.get(note_id, {}) if note_id != "" else {"title": custom_title, "text": custom_text}
 	if Game.menus and not note.is_empty():
 		Game.menus.open_note(String(note["title"]), String(note["text"]))

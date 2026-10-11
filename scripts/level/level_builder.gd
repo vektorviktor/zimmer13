@@ -2,16 +2,16 @@ class_name LevelBuilder
 extends RefCounted
 ## Baut das Hotel als Graybox (Maße laut Spielkonzept 7.2, 1 Einheit = 1 m).
 ##
-##                         Nordflügel (Zimmer 35–38)
-##            Garten               ┃                       ┃ (41/44)
-##   Ausgang ┃ Lobby ┃ Hauptflur ━━╋━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━┃ Kellertür → Treppe → Keller
-##            Küche/Bar            ┃                       ┃ (42/43)
-##                         Südflügel (Zimmer 31–34)
-##
-##   Lobby x −14…0 · Hauptflur x 0…58,4 (z ±1,6) mit Zimmern 11–28 auf beiden Seiten
-##   Kreuzung A bei x 20 (Flügel bis z ±19, je 2 Zimmer pro Seite), Kreuzung B bei x 40
-##   (Flügel bis z ±12,9, je 1 Zimmer pro Seite) · Kellertreppe x 58,4…66,6 hinab auf −3,5 m
-##   30 Zimmer – Platz für 20–30 Gäste.
+##   Erdgeschoss (y 0)
+##     Garten · Lobby (x −14…0) · Küche/Bar
+##     Hauptflur x 0…78,4 (z ±1,6) mit Zimmern 11–28 und 51–56 auf beiden Seiten
+##     Kreuzung A (x 20): Flügel bis z ±19, Zimmer 31–38 – am Nordende das Treppenhaus
+##     Kreuzung B (x 40): Flügel bis z ±19, Zimmer 41–48
+##     Kreuzung C (x 60): kurze Flügel bis z ±12,9, Zimmer 61–64
+##     Ostende: niedrige Kellertür → Kellertreppe → Keller (y −3,5)
+##   Obergeschoss (y 4) – über das Treppenhaus am Ende des Nordflügels
+##     Hauptflur x 0…58,4, Kreuzung A (Zimmer 231–238) und B (241–244), Zimmer 211–228
+##   74 Zimmer – Platz für rund 30 Gäste und mehr.
 ##
 ## Kollisionsebenen: 1 statisch/NavMesh · 2 Türen · 3 Gegenstände · 4 Spieler · 5 Decke
 ##                   · 6 Monster · 7 Glas · 8 Gäste · 9 Milchglas · 10 zugezogene Vorhänge
@@ -36,44 +36,94 @@ const FROSTED_SILL := 1.0
 const FROSTED_TOP := 2.2
 ## Zimmertiefe: Flurwand → Rückwand (jeweils Wandmitte)
 const ROOM_DEPTH := 5.0
-## Hauptflur: x 0 … MAIN_END, z ±1,6
-const MAIN_END := 58.4
-## Querflure: Mitte x, Flügelende (|z|) und Lichtschalter-Raum je Flügel
-const WINGS := [
-	{"x": 20.0, "end": 19.0, "south": "fluegel_sued", "north": "fluegel_nord"},
-	{"x": 40.0, "end": 12.9, "south": "flur_ost", "north": "flur_ost"},
-]
+## Höhe des Obergeschosses (Oberkante Boden)
+const UP_Y := 4.0
+## Hauptflur im Erdgeschoss: x 0 … MAIN_END, z ±1,6
+const MAIN_END := 78.4
 ## Kellertreppe hinter der Kellertür am Ostende: Podest, Rampe, Keller 3,5 m tiefer
-const STAIR_TOP := 59.6
-const STAIR_BOTTOM := 66.6
+const STAIR_TOP := MAIN_END + 1.2
+const STAIR_BOTTOM := MAIN_END + 8.2
 const CELLAR_Y := -3.5
 const CELLAR_LEN := 8.0
 const CELLAR_H := 2.6
+## Treppenhaus zwischen den Geschossen am Nordende von Kreuzung A: zwei Läufe mit Wendepodest
+const STAIRWELL_X := 20.0
+const STAIRWELL_Z := -19.0          ## Flügelende = Eingang
+const STAIRWELL_LANDING := -25.9    ## Beginn des Podests
+const STAIRWELL_END := -28.4        ## Rückwand
 
-## Zimmerreihen. Ursprung = Anfang der Flurwand (Wandmitte); yaw dreht die Reihe so, dass
-## lokal +X am Flur entlang und +Z ins Zimmer zeigt. Zimmer: [Nummer, Breite, Art, Außenfenster]
-## Arten: player, guest, empty, vacant (unbewohnt, Licht aus), laundry, abandoned, locked.
+## Die Flurnetze der Geschosse. sections: [Raum-ID, Name, x von, x bis] für Lichtschalter
+## und Lampen des Hauptflurs. wings: Querflure (Mitte x, Ende |z|, Raum-IDs; stair = dort
+## liegt das Treppenhaus, statt eines Fensters). east/west: was am Ende des Hauptflurs ist.
+const FLOORS := [
+	{
+		"y": 0.0, "main_end": MAIN_END, "west": "lobby", "east": "cellar",
+		"sections": [["flur_west", "Flur West", 0.0, 18.4], ["flur_mitte", "Flur Mitte", 18.4, 38.4],
+			["flur_ost", "Flur Ost", 38.4, 58.4], ["flur_ostende", "Flur Ostende", 58.4, 80.0]],
+		"switches": [Vector3(0.45, 1.3, 1.5), Vector3(22.3, 1.3, -1.5), Vector3(42.3, 1.3, -1.5), Vector3(62.3, 1.3, -1.5)],
+		"wings": [
+			{"x": 20.0, "end": 19.0, "south": ["fluegel_sued", "Südflügel"], "north": ["fluegel_nord", "Nordflügel"], "stair": true, "sign": "→ 31–38"},
+			{"x": 40.0, "end": 19.0, "south": ["ostfluegel_sued", "Ostflügel Süd"], "north": ["ostfluegel_nord", "Ostflügel Nord"], "sign": "→ 41–48"},
+			{"x": 60.0, "end": 12.9, "south": ["flur_ostende", ""], "north": ["flur_ostende", ""], "sign": "→ 61–64"},
+		],
+	},
+	{
+		"y": UP_Y, "main_end": 58.4, "west": "wall", "east": "window",
+		"sections": [["og_west", "OG Flur West", 0.0, 18.4], ["og_mitte", "OG Flur Mitte", 18.4, 38.4],
+			["og_ost", "OG Flur Ost", 38.4, 60.0]],
+		"switches": [Vector3(0.45, 1.3, 1.5), Vector3(22.3, 1.3, -1.5), Vector3(42.3, 1.3, -1.5)],
+		"wings": [
+			{"x": 20.0, "end": 19.0, "south": ["og_fluegel_sued", "OG Südflügel"], "north": ["og_fluegel_nord", "OG Nordflügel"], "stair": true, "sign": "→ 231–238"},
+			{"x": 40.0, "end": 12.9, "south": ["og_ost", ""], "north": ["og_ost", ""], "sign": "→ 241–244"},
+		],
+	},
+]
+
+## Zimmerreihen. Ursprung = Anfang der Flurwand (Wandmitte, y = Geschoss); yaw dreht die Reihe
+## so, dass lokal +X am Flur entlang und +Z ins Zimmer zeigt. Zimmer: [Nummer, Breite, Art, Außenfenster]
+## Arten: player, guest, empty, vacant (unbewohnt, Licht aus), laundry, abandoned, derelict, locked.
 ## Kein Außenfenster, wo hinter der Rückwand ein Zimmer eines Querflügels liegt.
 const ROWS := [
-	# Hauptflur Süd (West → Ost)
+	# --- Erdgeschoss: Hauptflur Süd (West → Ost)
 	{"origin": Vector3(0.1, 0, 1.6), "yaw": 0.0, "rooms": [["11", 6.1, "guest", true], ["13", 6.1, "player", true], ["15", 6.1, "guest", false]]},
 	{"origin": Vector3(21.6, 0, 1.6), "yaw": 0.0, "rooms": [["17", 5.6, "abandoned", false], ["19", 5.6, "vacant", true], ["21", 5.6, "vacant", false]]},
-	{"origin": Vector3(41.6, 0, 1.6), "yaw": 0.0, "rooms": [["23", 5.6, "vacant", false], ["25", 5.6, "vacant", true], ["27", 5.6, "vacant", true]]},
+	{"origin": Vector3(41.6, 0, 1.6), "yaw": 0.0, "rooms": [["23", 5.6, "vacant", false], ["25", 5.6, "vacant", true], ["27", 5.6, "vacant", false]]},
+	{"origin": Vector3(61.6, 0, 1.6), "yaw": 0.0, "rooms": [["51", 5.6, "vacant", false], ["53", 5.6, "vacant", true], ["55", 5.6, "vacant", true]]},
 	# Hauptflur Nord (Ost → West)
 	{"origin": Vector3(18.4, 0, -1.6), "yaw": 180.0, "rooms": [["16", 6.1, "laundry", false], ["14", 6.1, "empty", true], ["12", 6.1, "guest", true]]},
 	{"origin": Vector3(38.4, 0, -1.6), "yaw": 180.0, "rooms": [["22", 5.6, "vacant", false], ["20", 5.6, "vacant", true], ["18", 5.6, "locked", false]]},
-	{"origin": Vector3(58.4, 0, -1.6), "yaw": 180.0, "rooms": [["28", 5.6, "vacant", true], ["26", 5.6, "vacant", true], ["24", 5.6, "vacant", false]]},
-	# Südflügel (Kreuzung A): Westseite nach Süden, Ostseite nach Norden
+	{"origin": Vector3(58.4, 0, -1.6), "yaw": 180.0, "rooms": [["28", 5.6, "vacant", false], ["26", 5.6, "vacant", true], ["24", 5.6, "vacant", false]]},
+	{"origin": Vector3(78.4, 0, -1.6), "yaw": 180.0, "rooms": [["56", 5.6, "vacant", true], ["54", 5.6, "vacant", true], ["52", 5.6, "vacant", false]]},
+	# Kreuzung A: Südflügel (Westseite nach Süden, Ostseite nach Norden), Nordflügel
 	{"origin": Vector3(18.4, 0, 6.8), "yaw": -90.0, "rooms": [["31", 6.1, "vacant", true], ["32", 6.1, "vacant", true]]},
 	{"origin": Vector3(21.6, 0, 19.0), "yaw": 90.0, "rooms": [["34", 6.1, "vacant", true], ["33", 6.1, "vacant", true]]},
-	# Nordflügel (Kreuzung A)
 	{"origin": Vector3(18.4, 0, -19.0), "yaw": -90.0, "rooms": [["38", 6.1, "vacant", true], ["37", 6.1, "vacant", true]]},
 	{"origin": Vector3(21.6, 0, -6.8), "yaw": 90.0, "rooms": [["35", 6.1, "vacant", true], ["36", 6.1, "vacant", true]]},
-	# Kreuzung B: je ein Zimmer pro Seite
-	{"origin": Vector3(38.4, 0, 6.8), "yaw": -90.0, "rooms": [["41", 6.1, "vacant", true]]},
-	{"origin": Vector3(41.6, 0, 12.9), "yaw": 90.0, "rooms": [["42", 6.1, "vacant", true]]},
-	{"origin": Vector3(38.4, 0, -12.9), "yaw": -90.0, "rooms": [["44", 6.1, "vacant", true]]},
-	{"origin": Vector3(41.6, 0, -6.8), "yaw": 90.0, "rooms": [["43", 6.1, "vacant", true]]},
+	# Kreuzung B: lange Flügel
+	{"origin": Vector3(38.4, 0, 6.8), "yaw": -90.0, "rooms": [["41", 6.1, "vacant", true], ["42", 6.1, "vacant", true]]},
+	{"origin": Vector3(41.6, 0, 19.0), "yaw": 90.0, "rooms": [["44", 6.1, "vacant", true], ["43", 6.1, "vacant", true]]},
+	{"origin": Vector3(38.4, 0, -19.0), "yaw": -90.0, "rooms": [["48", 6.1, "vacant", true], ["47", 6.1, "vacant", true]]},
+	{"origin": Vector3(41.6, 0, -6.8), "yaw": 90.0, "rooms": [["45", 6.1, "vacant", true], ["46", 6.1, "vacant", true]]},
+	# Kreuzung C: je ein Zimmer pro Seite
+	{"origin": Vector3(58.4, 0, 6.8), "yaw": -90.0, "rooms": [["61", 6.1, "vacant", true]]},
+	{"origin": Vector3(61.6, 0, 12.9), "yaw": 90.0, "rooms": [["62", 6.1, "vacant", true]]},
+	{"origin": Vector3(58.4, 0, -12.9), "yaw": -90.0, "rooms": [["64", 6.1, "vacant", true]]},
+	{"origin": Vector3(61.6, 0, -6.8), "yaw": 90.0, "rooms": [["63", 6.1, "vacant", true]]},
+	# --- Obergeschoss
+	{"origin": Vector3(0.1, UP_Y, 1.6), "yaw": 0.0, "rooms": [["211", 6.1, "vacant", true], ["213", 6.1, "vacant", true], ["215", 6.1, "vacant", false]]},
+	{"origin": Vector3(21.6, UP_Y, 1.6), "yaw": 0.0, "rooms": [["217", 5.6, "vacant", false], ["219", 5.6, "vacant", true], ["221", 5.6, "vacant", false]]},
+	{"origin": Vector3(41.6, UP_Y, 1.6), "yaw": 0.0, "rooms": [["223", 5.6, "vacant", false], ["225", 5.6, "vacant", true], ["227", 5.6, "vacant", true]]},
+	{"origin": Vector3(18.4, UP_Y, -1.6), "yaw": 180.0, "rooms": [["216", 6.1, "vacant", false], ["214", 6.1, "vacant", true], ["212", 6.1, "vacant", true]]},
+	{"origin": Vector3(38.4, UP_Y, -1.6), "yaw": 180.0, "rooms": [["222", 5.6, "vacant", false], ["220", 5.6, "vacant", true], ["218", 5.6, "vacant", false]]},
+	{"origin": Vector3(58.4, UP_Y, -1.6), "yaw": 180.0, "rooms": [["228", 5.6, "vacant", true], ["226", 5.6, "derelict", true], ["224", 5.6, "vacant", false]]},
+	{"origin": Vector3(18.4, UP_Y, 6.8), "yaw": -90.0, "rooms": [["231", 6.1, "vacant", true], ["232", 6.1, "vacant", true]]},
+	{"origin": Vector3(21.6, UP_Y, 19.0), "yaw": 90.0, "rooms": [["234", 6.1, "vacant", true], ["233", 6.1, "vacant", true]]},
+	{"origin": Vector3(18.4, UP_Y, -19.0), "yaw": -90.0, "rooms": [["238", 6.1, "vacant", true], ["237", 6.1, "derelict", true]]},
+	{"origin": Vector3(21.6, UP_Y, -6.8), "yaw": 90.0, "rooms": [["235", 6.1, "vacant", true], ["236", 6.1, "vacant", true]]},
+	{"origin": Vector3(38.4, UP_Y, 6.8), "yaw": -90.0, "rooms": [["241", 6.1, "vacant", true]]},
+	{"origin": Vector3(41.6, UP_Y, 12.9), "yaw": 90.0, "rooms": [["242", 6.1, "vacant", true]]},
+	{"origin": Vector3(38.4, UP_Y, -12.9), "yaw": -90.0, "rooms": [["244", 6.1, "vacant", true]]},
+	{"origin": Vector3(41.6, UP_Y, -6.8), "yaw": 90.0, "rooms": [["243", 6.1, "vacant", true]]},
 ]
 
 var root: Node3D     ## NavigationRegion3D – statische Geometrie, wird fürs NavMesh geparst
@@ -98,7 +148,7 @@ var game_table: GameTable
 var bar_spots: Array[Vector3] = [Vector3(-1.4, 0, 8.6), Vector3(-1.4, 0, 11.8), Vector3(-5.0, 0, 8.4)]
 var diary: Diary
 
-var _parent: Node3D  ## wohin die Bausteine gerade bauen (root oder eine gedrehte Zimmerreihe)
+var _parent: Node3D  ## wohin die Bausteine gerade bauen (root, ein Geschoss oder eine gedrehte Zimmerreihe)
 var _wallpaper: Material
 var _concrete: Material
 var _wood: Material
@@ -124,9 +174,11 @@ func build() -> void:
 	_hedge = Mat.psx(Color(1, 1, 1), "hedge", 1.0)
 	_carpet = Mat.psx(Color(1, 1, 1), "carpet", 1.0)
 	_wood_floor = Mat.psx(Color(1, 1, 1), "wood", 1.0)
-	_corridors()
+	for spec in FLOORS:
+		_corridors(spec)
 	for row in ROWS:
 		_room_row(row)
+	_stairwell()
 	_cellar()
 	_lobby()
 	_kitchen()
@@ -141,69 +193,153 @@ func build() -> void:
 
 # --- Flure ------------------------------------------------------------------------------
 
-func _corridors() -> void:
+## Das Flurnetz eines Geschosses: Hauptflur, Querflure, Lampen, Schalter, Möbel – gebaut
+## in einem eigenen Rahmen auf Geschosshöhe.
+func _corridors(spec: Dictionary) -> void:
+	var level := Node3D.new()
+	level.name = "Geschoss_%d" % int(spec["y"])
+	level.position.y = float(spec["y"])
+	root.add_child(level)
+	_parent = level
+	var main_end: float = spec["main_end"]
+	var sections: Array = spec["sections"]
 	# Hauptflur (Boden ab x −0,1: lückenlos an den Lobbyboden, sonst reißt das NavMesh ab)
-	Geo.solid(root, Vector3(MAIN_END + 0.1, 0.2, 3.2), Vector3((MAIN_END - 0.1) / 2.0, -0.1, 0.0), _carpet)
-	Geo.solid(root, Vector3(MAIN_END, 0.2, 3.2), Vector3(MAIN_END / 2.0, H + 0.1, 0.0), _ceiling, LAYER_CEILING)
-	for x in [3.0, 9.0, 15.0, 20.0]:
-		_lamp(Vector3(x, H - 0.08, 0.0), 1.2, 7.0, false, "flur_west" if x < 18.0 else "flur_mitte")
-	for x in [25.0, 31.0, 36.0]:
-		_lamp(Vector3(x, H - 0.08, 0.0), 1.2, 7.0, false, "flur_mitte")
-	for x in [40.0, 45.0, 51.0]:
-		_lamp(Vector3(x, H - 0.08, 0.0), 1.2, 7.0, false, "flur_ost")
-	_lamp(Vector3(56.0, H - 0.08, 0.0), 1.2, 7.0, true, "flur_ost")   # defekt → dunkles Flurende
-	_wall_lamp(Vector3(6.0, 2.1, -1.5), 0.0, 0.6, 4.5, "flur_west")
-	_wall_lamp(Vector3(28.0, 2.1, -1.5), 0.0, 0.6, 4.5, "flur_mitte")
-	_wall_lamp(Vector3(48.5, 2.1, -1.5), 0.0, 0.6, 4.5, "flur_ost")
-	_switch("flur_west", "Flur West", Vector3(0.45, 1.3, 1.5), PI)
-	_switch("flur_mitte", "Flur Mitte", Vector3(22.3, 1.3, -1.5), 0.0)
-	_switch("flur_ost", "Flur Ost", Vector3(42.3, 1.3, -1.5), 0.0)
-	# Möbel und Bilder zwischen den Türen
+	Geo.solid(level, Vector3(main_end + 0.1, 0.2, 3.2), Vector3((main_end - 0.1) / 2.0, -0.1, 0.0), _carpet)
+	Geo.solid(level, Vector3(main_end, 0.2, 3.2), Vector3(main_end / 2.0, H + 0.1, 0.0), _ceiling, LAYER_CEILING)
+	for x in [3.0, 9.0, 15.0, 20.0, 25.0, 31.0, 36.0, 40.0, 45.0, 51.0, 56.0, 60.0, 65.0, 71.0, 76.0]:
+		if x > main_end - 1.0:
+			break
+		var broken: bool = spec["east"] == "cellar" and x > main_end - 4.0   # dunkles Flurende vor dem Keller
+		_lamp(Vector3(x, H - 0.08, 0.0), 1.2, 7.0, broken, _section_at(sections, x))
+	for i in sections.size():
+		var section: Array = sections[i]
+		_switch(section[0], section[1], spec["switches"][i], PI if (spec["switches"][i] as Vector3).z > 0.0 else 0.0)
+	# Möbel, Bilder und Wandleuchten zwischen den Türen (Abschnitte West bis Ost sind gleich gebaut)
+	_wall_lamp(Vector3(6.0, 2.1, -1.5), 0.0, 0.6, 4.5, sections[0][0])
+	_wall_lamp(Vector3(28.0, 2.1, -1.5), 0.0, 0.6, 4.5, sections[1][0])
+	_wall_lamp(Vector3(48.5, 2.1, -1.5), 0.0, 0.6, 4.5, sections[2][0])
 	_hide_spot(HideSpot.Type.WARDROBE, Vector3(7.1, 0, -1.2), 0.0)
 	_hide_spot(HideSpot.Type.WARDROBE, Vector3(33.7, 0, -1.2), 0.0)
 	_hide_spot(HideSpot.Type.WARDROBE, Vector3(5.3, 0, 1.2), 180.0)
 	_hide_spot(HideSpot.Type.WARDROBE, Vector3(26.3, 0, 1.2), 180.0)
-	Geo.solid(root, Vector3(1.4, 0.45, 0.45), Vector3(13.2, 0.225, -1.25), _dark_wood)
+	Geo.solid(level, Vector3(1.4, 0.45, 0.45), Vector3(13.2, 0.225, -1.25), _dark_wood)
 	_painting(Vector3(13.2, 1.8, -1.49), 0.0, Color(0.22, 0.14, 0.12))
 	_painting(Vector3(53.7, 1.7, -1.49), 0.0, Color(0.16, 0.2, 0.15))
 	_painting(Vector3(11.4, 1.7, 1.49), 180.0, Color(0.12, 0.13, 0.2))
 	_painting(Vector3(46.3, 1.7, 1.49), 180.0, Color(0.2, 0.18, 0.1))
-	_sign("→ 31–38", Vector3(20.0, 2.9, -1.45), 0.0)
-	_sign("→ 41–44", Vector3(40.0, 2.9, -1.45), 0.0)
+	if main_end > 70.0:
+		_wall_lamp(Vector3(68.1, 2.1, -1.5), 0.0, 0.6, 4.5, sections[3][0])
+		_hide_spot(HideSpot.Type.WARDROBE, Vector3(66.3, 0, 1.2), 180.0)
 
 	# Querflure (ohne das Stück, das zum Hauptflur gehört), am Ende ein Außenfenster
-	for wing in WINGS:
-		var x: float = wing["x"]
+	for wing in spec["wings"]:
+		var wx: float = wing["x"]
 		var end: float = wing["end"]
 		var length := end - 1.6
+		_sign(wing["sign"], Vector3(wx, 2.9, -1.45), 0.0)
 		for s in [1.0, -1.0]:
-			var section: String = wing["south"] if s > 0 else wing["north"]
+			var room_info: Array = wing["south"] if s > 0 else wing["north"]
+			var section: String = room_info[0]
 			var mid: float = s * (1.6 + length / 2.0)
-			Geo.solid(root, Vector3(3.2, 0.2, length), Vector3(x, -0.1, mid), _carpet)
-			Geo.solid(root, Vector3(3.2, 0.2, length), Vector3(x, H + 0.1, mid), _ceiling, LAYER_CEILING)
-			_wall_x(s * end, x - 1.7, x + 1.7, [Vector4(x, WINDOW_W, WINDOW_TOP, WINDOW_SILL)])
-			var win := HotelWindow.new().setup(WINDOW_W, WINDOW_TOP - WINDOW_SILL, false, true, section)
-			win.position = Vector3(x, (WINDOW_SILL + WINDOW_TOP) / 2.0, s * end)
-			win.rotation.y = PI if s > 0 else 0.0
-			root.add_child(win)
+			Geo.solid(level, Vector3(3.2, 0.2, length), Vector3(wx, -0.1, mid), _carpet)
+			Geo.solid(level, Vector3(3.2, 0.2, length), Vector3(wx, H + 0.1, mid), _ceiling, LAYER_CEILING)
+			if wing.get("stair", false) and s < 0:
+				# Treppenhaus: unten der aufsteigende Lauf (Westhälfte), oben der ankommende (Osthälfte)
+				var lane := wx - 0.75 if float(spec["y"]) == 0.0 else wx + 0.75
+				_wall_x(s * end, wx - 1.7, wx + 1.7, [Vector4(lane, 1.4, 3.0, 0.0)])
+				_sign("TREPPE", Vector3(lane, 3.2, s * end + 0.11), 0.0)
+			else:
+				_wall_x(s * end, wx - 1.7, wx + 1.7, [Vector4(wx, WINDOW_W, WINDOW_TOP, WINDOW_SILL)])
+				var win := HotelWindow.new().setup(WINDOW_W, WINDOW_TOP - WINDOW_SILL, false, true, section)
+				win.position = Vector3(wx, (WINDOW_SILL + WINDOW_TOP) / 2.0, s * end)
+				win.rotation.y = PI if s > 0 else 0.0
+				level.add_child(win)
 			var z: float = s * 5.0
 			while absf(z) < end - 1.0:
-				_lamp(Vector3(x, H - 0.08, z), 1.0, 6.5, false, section)
+				_lamp(Vector3(wx, H - 0.08, z), 1.0, 6.5, false, section)
 				z += s * 5.5
-	# Lichtschalter und Verstecke in den langen Flügeln
-	_switch("fluegel_sued", "Südflügel", Vector3(21.48, 1.3, 7.6), -PI / 2.0)
-	_switch("fluegel_nord", "Nordflügel", Vector3(18.52, 1.3, -7.6), PI / 2.0)
-	_hide_spot(HideSpot.Type.WARDROBE, Vector3(18.85, 0, 12.0), 90.0)
-	_hide_spot(HideSpot.Type.WARDROBE, Vector3(18.85, 0, -13.8), 90.0)
+			# Lange Flügel: eigener Lichtschalter und ein Schrank zum Verstecken
+			if room_info[1] != "":
+				_switch(section, room_info[1], Vector3(wx + 1.48 * s, 1.3, s * 7.6), -PI / 2.0 if s > 0 else PI / 2.0)
+				_hide_spot(HideSpot.Type.WARDROBE, Vector3(wx - 1.15, 0, 12.0 if s > 0 else -13.8), 90.0)
 	_painting(Vector3(21.49, 1.7, -12.0), -90.0, Color(0.2, 0.1, 0.14))
 
-	# Ostende: die niedrige Kellertür
-	_wall_z(MAIN_END, -1.7, 1.7, [Vector4(0.0, 0.9, 1.8, 0.0)])
-	var door := Door.new().setup(0.9, 1.8, 90.0)
-	door.position = Vector3(MAIN_END, 0, -0.45)
-	door.rotation.y = deg_to_rad(-90.0)
-	root.add_child(door)
-	_sign("KELLER", Vector3(MAIN_END - 0.11, 2.0, 0.0), -90.0)
+	# Enden des Hauptflurs
+	match String(spec["west"]):
+		"wall":
+			_wall_z(0.0, -1.7, 1.7, [])
+	match String(spec["east"]):
+		"cellar":
+			# die niedrige Kellertür
+			_wall_z(main_end, -1.7, 1.7, [Vector4(0.0, 0.9, 1.8, 0.0)])
+			var door := Door.new().setup(0.9, 1.8, 90.0)
+			door.position = Vector3(main_end, 0, -0.45)
+			door.rotation.y = deg_to_rad(-90.0)
+			level.add_child(door)
+			_sign("KELLER", Vector3(main_end - 0.11, 2.0, 0.0), -90.0)
+		"window":
+			_wall_z(main_end, -1.7, 1.7, [Vector4(0.0, WINDOW_W, WINDOW_TOP, WINDOW_SILL)])
+			var win := HotelWindow.new().setup(WINDOW_W, WINDOW_TOP - WINDOW_SILL, false, true, sections[sections.size() - 1][0])
+			win.position = Vector3(main_end, (WINDOW_SILL + WINDOW_TOP) / 2.0, 0.0)
+			win.rotation.y = -PI / 2.0
+			level.add_child(win)
+	_parent = root
+
+
+func _section_at(sections: Array, x: float) -> String:
+	for section in sections:
+		if x >= float(section[2]) and x < float(section[3]):
+			return section[0]
+	return sections[sections.size() - 1][0]
+
+
+## Treppenhaus zwischen Erd- und Obergeschoss am Nordende von Kreuzung A: Lauf 1 (Westhälfte)
+## hinauf zum Wendepodest, Lauf 2 (Osthälfte) zurück nach Süden ins Obergeschoss.
+func _stairwell() -> void:
+	var x := STAIRWELL_X
+	var z0 := STAIRWELL_Z
+	var z1 := STAIRWELL_LANDING
+	var z2 := STAIRWELL_END
+	var top := UP_Y + H
+	var mid_y := UP_Y / 2.0
+	var length := z0 - z2
+	# Außenwände, Mittelwand zwischen den Läufen, Decke, Podest
+	for side in [-1.0, 1.0]:
+		Geo.solid(root, Vector3(T, top + 0.1, length + 0.1), Vector3(x + side * 1.6, top / 2.0, (z0 + z2) / 2.0), _wallpaper)
+	Geo.solid(root, Vector3(3.4, top + 0.1, T), Vector3(x, top / 2.0, z2), _wallpaper)
+	Geo.solid(root, Vector3(T, top + 0.1, z0 - z1), Vector3(x, top / 2.0, (z0 + z1) / 2.0), _wallpaper)
+	Geo.solid(root, Vector3(3.4, 0.2, length + 0.2), Vector3(x, top + 0.1, (z0 + z2) / 2.0), _ceiling, LAYER_CEILING)
+	Geo.solid(root, Vector3(3.0, 0.2, z1 - z2 - 0.1), Vector3(x, mid_y - 0.1, (z1 + z2) / 2.0), _wood_floor)
+	# Zwei Läufe: Rampe (Kollision, NavMesh) und Stufen (Optik)
+	# Die Läufe beginnen und enden bündig an der Flurkante – sonst entsteht eine Stolperkante
+	_flight(x - 0.8, z0, z1, 0.0, mid_y)
+	_flight(x + 0.8, z1, z0, mid_y, UP_Y)
+	_lamp(Vector3(x, mid_y + 3.2, (z1 + z2) / 2.0), 0.8, 7.0, false, "treppenhaus")
+	_wall_lamp(Vector3(x - 1.49, 1.9, (z0 + z1) / 2.0), PI / 2.0, 0.4, 4.0, "treppenhaus")
+	_wall_lamp(Vector3(x + 1.49, UP_Y + 1.9, (z0 + z1) / 2.0), -PI / 2.0, 0.4, 4.0, "treppenhaus")
+	_switch("treppenhaus", "Treppenhaus", Vector3(x - 1.48, 1.3, z0 - 0.5), PI / 2.0)
+
+
+## Ein gerader Treppenlauf entlang z von (z_from, y_from) nach (z_to, y_to), 1,4 m breit.
+func _flight(x: float, z_from: float, z_to: float, y_from: float, y_to: float) -> void:
+	var run := absf(z_to - z_from)
+	var rise := y_to - y_from
+	var angle := atan2(rise, run)
+	var dir := signf(z_to - z_from)   # Laufrichtung in z
+	var ramp := StaticBody3D.new()
+	ramp.collision_layer = 1
+	ramp.collision_mask = 0
+	ramp.rotation.x = angle * -dir
+	ramp.position = Vector3(x, (y_from + y_to) / 2.0, (z_from + z_to) / 2.0)
+	ramp.position -= ramp.transform.basis.y * 0.1
+	root.add_child(ramp)
+	Geo.add_box_shape(ramp, Vector3(1.4, 0.2, Vector2(run, rise).length()), Vector3.ZERO)
+	var steps := roundi(rise / 0.25)
+	var step_rise := rise / steps
+	for i in steps:
+		var top := y_from + step_rise * (i + 0.5)
+		var z := z_from + dir * run * (i + 0.5) / steps
+		Geo.mesh(root, Geo.box(Vector3(1.4, top - y_from + 0.05, run / steps)), _concrete, Vector3(x, (top + y_from - 0.05) / 2.0, z))
 
 
 # --- Zimmer ------------------------------------------------------------------------------
@@ -265,7 +401,7 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 		win.rotation.y = PI
 		_parent.add_child(win)
 	_sign(no, Vector3(cx, 2.35, -0.11), 180.0)
-	var dark := kind == "abandoned" or kind == "laundry"
+	var dark := kind in ["abandoned", "laundry", "derelict"]
 	_lamp(Vector3(cx, H - 0.08, 2.6), 1.0 if kind != "locked" else 0.6, 6.0, dark, no)
 	_wall_lamp(Vector3(cx + 2.0, 2.0, 0.12), 0.0, 0.45, 4.0, no, dark)
 	var sw := _switch(no, "Zimmer " + no, Vector3(cx + 0.95, 1.3, 0.12), 0.0)
@@ -331,6 +467,13 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 		"empty":
 			_item(Item.Kind.CANDLE, table_top)
 			_note("2003", Vector3(x0 + 1.95, 0.01, 3.4))   # neben dem Bett, halb darunter
+		"derelict":
+			# Verfallen: Tür offen, Spinnweben, ein paar Dinge liegen noch herum
+			door.set_open.call_deferred(true)
+			_resource_web(Vector3(x1 - 0.12, 2.2, 4.7), -135.0)
+			_resource_web(Vector3(x0 + 0.12, 2.4, 0.4), 45.0)
+			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.5, 0.02, 1.9))
+			_item(Item.Kind.COINS, table_top, "1")
 		"vacant":
 			# Unbewohnt – ab und zu hat jemand etwas liegen lassen
 			if int(no) % 3 == 0:
@@ -562,16 +705,25 @@ func _zones() -> void:
 		{"name": "Küche", "center": Vector3(-10.0, 0, 10.0), "radius": 4.0},
 		{"name": "Bar", "center": Vector3(-3.0, 0, 10.0), "radius": 3.2},
 		{"name": "Garten", "center": Vector3(-7.0, 0, -13.0), "radius": 6.0},
-		{"name": "Flur West", "center": Vector3(9.2, 0, 0), "radius": 9.5},
-		{"name": "Flur Mitte", "center": Vector3(29.0, 0, 0), "radius": 9.5},
-		{"name": "Flur Ost", "center": Vector3(49.0, 0, 0), "radius": 9.5},
-		{"name": "Südflügel", "center": Vector3(20.0, 0, 11.0), "radius": 8.5},
-		{"name": "Nordflügel", "center": Vector3(20.0, 0, -11.0), "radius": 8.5},
-		{"name": "Flur Ost", "center": Vector3(40.0, 0, 8.0), "radius": 4.5},
-		{"name": "Flur Ost", "center": Vector3(40.0, 0, -8.0), "radius": 4.5},
-		{"name": "Kellertreppe", "center": Vector3(62.5, 0, 0), "radius": 3.5},
+		{"name": "Kellertreppe", "center": Vector3(MAIN_END + 4.1, CELLAR_Y / 2.0, 0), "radius": 3.5},
 		{"name": "Keller", "center": Vector3(STAIR_BOTTOM + CELLAR_LEN / 2.0, CELLAR_Y, 0), "radius": 4.5},
+		{"name": "Treppenhaus", "center": Vector3(STAIRWELL_X, UP_Y / 2.0, (STAIRWELL_Z + STAIRWELL_END) / 2.0), "radius": 5.0},
 	]
+	# Flure je Geschoss: Abschnitte des Hauptflurs und lange Flügel
+	for spec in FLOORS:
+		var y: float = spec["y"]
+		for section in spec["sections"]:
+			var x0: float = section[2]
+			var x1: float = minf(section[3], spec["main_end"])
+			zones.append({"name": section[1], "center": Vector3((x0 + x1) / 2.0, y, 0), "radius": (x1 - x0) / 2.0 + 0.5})
+		for wing in spec["wings"]:
+			for s in [1.0, -1.0]:
+				var room_info: Array = wing["south"] if s > 0 else wing["north"]
+				var label: String = room_info[1]
+				if label == "":
+					label = _section_label(spec, room_info[0])
+				var end: float = wing["end"]
+				zones.append({"name": label, "center": Vector3(wing["x"], y, s * (1.6 + end) / 2.0), "radius": (end - 1.6) / 2.0 + 0.5})
 	for no in rooms:
 		var info: Dictionary = rooms[no]
 		zones.append({"name": "Zimmer " + String(no), "center": info["center"], "radius": 3.2})
@@ -585,25 +737,36 @@ func _zones() -> void:
 	]
 
 
-## Wegpunkte: Flure alle paar Meter, Türen, Treppe, Keller und die Gemeinschaftsräume.
-## Das Monster nutzt sie, um aus dem Blickfeld zu verschwinden; Gäste schlendern durch die Flure.
+func _section_label(spec: Dictionary, id: String) -> String:
+	for section in spec["sections"]:
+		if section[0] == id:
+			return section[1]
+	return id
+
+
+## Wegpunkte: Flure alle paar Meter (beide Geschosse), Türen, Treppen, Keller und die
+## Gemeinschaftsräume. Das Monster nutzt sie, um aus dem Blickfeld zu verschwinden; Gäste
+## schlendern durch die Flure.
 func _waypoints() -> void:
-	var x := 1.5
-	while x < MAIN_END - 0.5:
-		wander_points.append(Vector3(x, 0, 0))
-		x += 4.0
-	for wing in WINGS:
-		for s in [1.0, -1.0]:
-			var z := 3.5
-			while z < float(wing["end"]) - 0.8:
-				wander_points.append(Vector3(float(wing["x"]), 0, s * z))
-				z += 4.0
+	for spec in FLOORS:
+		var y: float = spec["y"]
+		var x := 1.5
+		while x < float(spec["main_end"]) - 0.5:
+			wander_points.append(Vector3(x, y, 0))
+			x += 4.0
+		for wing in spec["wings"]:
+			for s in [1.0, -1.0]:
+				var z := 3.5
+				while z < float(wing["end"]) - 0.8:
+					wander_points.append(Vector3(float(wing["x"]), y, s * z))
+					z += 4.0
 	for p in wander_points:
 		patrol.append({"pos": p, "room": ""})
 	for no in rooms:
 		patrol.append({"pos": rooms[no]["door_front"], "room": no})
-	for p in [Vector3(MAIN_END + 0.6, 0, 0), Vector3(63.0, -1.9, 0), Vector3(STAIR_BOTTOM + 1.5, CELLAR_Y, 0),
+	for p in [Vector3(MAIN_END + 0.6, 0, 0), Vector3(MAIN_END + 4.6, -1.9, 0), Vector3(STAIR_BOTTOM + 1.5, CELLAR_Y, 0),
 			Vector3(STAIR_BOTTOM + 5.0, CELLAR_Y, 0.5),
+			Vector3(STAIRWELL_X, UP_Y / 2.0, (STAIRWELL_LANDING + STAIRWELL_END) / 2.0),
 			Vector3(-2.0, 0, 0), Vector3(-7.0, 0, -5.5), Vector3(-7.0, 0, -11.0), Vector3(-11.0, 0, -17.0),
 			Vector3(-3.5, 0, -14.5), Vector3(-7.0, 0, -8.5), Vector3(-6.0, 0, 3.5), Vector3(-10.0, 0, 6.0),
 			Vector3(-11.0, 0, 10.5), Vector3(-3.0, 0, 6.0), Vector3(-2.0, 0, 9.3)]:

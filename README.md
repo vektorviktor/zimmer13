@@ -28,15 +28,15 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 
 ## Was drin ist
 
-- **Hotel (Graybox):** Lobby mit verriegeltem Ausgang, Küche, Hotelbar, Garten hinter der Glastür, Hauptflur mit zwei Flurkreuzungen und Seitenflügeln, **30 Zimmer** (11–28, 31–38, 41–44; Platz für 20–30 Gäste), Wäscherei, **Kellertreppe** hinab in den Keller
+- **Hotel (Graybox), zwei Geschosse, 74 Zimmer:** Erdgeschoss mit Lobby (verriegelter Ausgang), Küche, Hotelbar, Garten hinter der Glastür, 78 m Hauptflur mit **drei Flurkreuzungen** und Seitenflügeln (Zimmer 11–28, 31–38, 41–48, 51–56, 61–64), Wäscherei, **Kellertreppe** hinab in den Keller · **Obergeschoss** über das Treppenhaus am Ende des Nordflügels (Zimmer 211–228, 231–238, 241–244, zwei davon verfallen) · nur die nächsten sechs Lampen werfen Schatten (`ShadowBudget`)
 - **Kein Inventar:** ein Gegenstand in der Hand; große Dinge blockieren Türen/Truhen; Münzen werden zu Geld
 - **Deko & Handwerk:** Kürbisse im Garten ernten · mit dem **Messer** (Küche) schnitzen · **Kerze** in den geschnitzten Kürbis stellen · Herbstlaub unter den Bäumen · Spinnweben in dunklen Ecken · Kerzenvorrat in der Küche
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
 - **Dramaturgie:** friedlicher Anfang ohne Monster · erster Angriff am 3./4. Oktober während einer Feier (Licht und Musik aus, das Monster steht in der Lobby) · die ersten zwei Angriffe sind harmlos: es steht direkt vor dir, starrt dich an und verschwindet, Gäste werden nur erschreckt
 - **Monster:** streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern nur in seiner Nähe, „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
-- **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke am Milchglas, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff
+- **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke am Milchglas, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff · **Spuren der Gäste:** schlammige Schuhabdrücke nach dem Garten, Wachsflecken von Kerzen und Kürbislaternen, Blutstropfen und verlorene Münzen nach einem Angriff, Zettel an Türen und nach Todesfällen oder Sichtungen
 - **Klopfen an Zimmer 13:** ein Gast in Panik bittet um Einlass – oder eine bekannte Stimme, hinter der niemand steht
-- **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (12 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 10, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
+- **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (30 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 24, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
 - **Mäxchen an der Hotelbar:** Bluff-Würfeln gegen Gäste um Geld oder Gegenstände (Einsätze liegen echt auf dem Tisch), Herausforderungen & Revanche, Gäste würfeln untereinander (zuschauen verrät ihre Ticks), gezinkte Würfel aus Zimmer 17, Abbruch bei Vorwarnung
 - **Licht & Fenster:** ein Lichtschalter pro Raum, Decken- und Wandlampen, Glühbirnen herausdrehen und woanders einsetzen (auch Gäste klauen sie), Birnen brennen bei starkem Flackern oder in Monsternähe selten durch · Licht aus lockt das Monster an · Außenfenster mit Vorhängen (Mondlicht, Sicht in beide Richtungen), Milchglas zwischen Flur und Zimmern (nur Umrisse)
 - **Kalender:** vom 1. Oktober bis Halloween, ein Ingame-Tag ≈ 5 Minuten, draußen immer Nacht · Abreißkalender in Zimmer 13, Datum im Spielmenü und in den Spielständen
@@ -99,7 +99,7 @@ scripts/monster/            Monster (Zustände), MonsterDirector (Phasen, verste
 scripts/minigames/          Mäxchen: Regeln, Partie (Ablauf, Gast-KI, Einsätze), Würfeltisch
 scripts/ui/                 HUD, Dialog, Sterbebildschirm, Titelbildschirm, Menüs (Esc, Tagebuch),
                             Einstellungen, Slot-Übersicht, UiKit (Meldezettel-Optik)
-scripts/util/               PS1-Materialien, Platzhalter-Geometrie/-Texturen, Synth-Sound
+scripts/util/               PS1-Materialien, Platzhalter-Geometrie/-Texturen, Synth-Sound, ShadowBudget
 shaders/                    PS1-Oberfläche, Post-Effekt, Versteck-Overlay
 ```
 

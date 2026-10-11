@@ -600,8 +600,8 @@ func _update_traces(delta: float) -> void:
 func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 	if agent.target_position.distance_to(point) > 0.25:
 		agent.target_position = point
-	var flat := Vector3(point.x, global_position.y, point.z)
-	if global_position.distance_to(flat) < 0.7 or agent.is_navigation_finished():
+	var near := Vector2(point.x - global_position.x, point.z - global_position.z).length() < 0.7 		and absf(point.y - global_position.y) < 1.5
+	if near or agent.is_navigation_finished():
 		_stop(delta)
 		return true
 	var next := agent.get_next_path_position()

@@ -56,6 +56,10 @@ func _ready() -> void:
 	add_child(audio)
 	Game.audio = audio
 
+	var shadows := ShadowBudget.new()
+	shadows.name = "ShadowBudget"
+	add_child(shadows)
+
 	var traces := Traces.new()
 	traces.name = "Traces"
 	add_child(traces)

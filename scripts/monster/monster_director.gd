@@ -194,12 +194,15 @@ func add_curiosity(p: Vector3, amount: float) -> void:
 		zone["curiosity"] = clampf(float(zone["curiosity"]) + amount, 0.0, 100.0)
 
 
+## Zonen sind Kreise auf einem Stockwerk (Keller, Erdgeschoss, Obergeschoss).
 func _zone_at(p: Vector3) -> Dictionary:
 	var best: Dictionary = {}
 	var best_ratio := INF
 	for zone in zones:
 		var c: Vector3 = zone["center"]
 		var r: float = zone["radius"]
+		if absf(p.y - c.y) > 2.5:
+			continue
 		var ratio := Vector2(p.x - c.x, p.z - c.z).length() / r
 		if ratio < best_ratio:
 			best_ratio = ratio

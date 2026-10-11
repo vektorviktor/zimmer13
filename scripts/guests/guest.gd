@@ -16,6 +16,9 @@ const RUN_SPEED := 3.3
 const HEAR_DISTANCE := 15.0
 ## Erst wieder aus dem Versteck, wenn das Monster so weit weg ist
 const SAFE_DISTANCE := 22.0
+## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
+const MUD_STEPS := 14
+const BLEED_TIME := 45.0
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
 
 var id := ""
@@ -67,6 +70,12 @@ var _game_look := Vector3.ZERO
 var _stuck_time := 0.0
 var _last_pos := Vector3.ZERO
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var _door_timer := 0.0
+var _mud := 0
+var _bleeding := 0.0
+var _step_dist := 0.0
+var _foot_side := 1.0
+var _trace_pos := Vector3.ZERO
 
 
 func setup(p_id: String, p_home: Dictionary) -> Guest:
@@ -172,6 +181,10 @@ func scared_by_monster() -> void:
 		_leave_hide()
 	fear = 100.0
 	say_panic()
+	if randf() < 0.6:
+		_bleeding = BLEED_TIME   # verletzt – hinterlässt Blutstropfen
+	if randf() < 0.35:
+		_lose_coins()
 	_monster_cooldown = 10.0
 	_go_hide()
 
@@ -246,7 +259,7 @@ func die() -> void:
 	# Spuren statt Gore: Kratzer am Boden und ein einzelner Schuh
 	var traces := Node3D.new()
 	get_parent().add_child(traces)
-	traces.global_position = Vector3(global_position.x, 0.0, global_position.z)
+	traces.global_position = global_position
 	for i in 3:
 		var scratch := Geo.mesh(traces, Geo.box(Vector3(1.1, 0.01, 0.05)), Mat.psx(Color(0.12, 0.02, 0.02)), Vector3(0, 0.012, -0.12 + i * 0.12))
 		scratch.rotation.y = 0.3
@@ -264,6 +277,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_animate(delta)
 	_update_label()
+	_leave_traces(delta)
 	fear = maxf(0.0, fear - delta * 0.4)
 	chat_cooldown = maxf(0.0, chat_cooldown - delta)
 	challenge_cooldown = maxf(0.0, challenge_cooldown - delta)
@@ -471,7 +485,7 @@ func deco_place_point() -> Vector3:
 	var along: Vector3 = home["along"]
 	var into: Vector3 = home["into"]
 	var p := door_front + into * 0.45 + along * (1.0 if randf() < 0.5 else -1.0) * randf_range(0.9, 1.3)
-	return Vector3(p.x, 0.0, p.z)
+	return Vector3(p.x, door_front.y, p.z)
 
 
 # --- Klauen -------------------------------------------------------------------------
@@ -506,7 +520,7 @@ func _try_steal() -> bool:
 		if lamp:
 			_steal_lamp = lamp
 			_steal_item = null
-			_walk_to(Vector3(lamp.global_position.x, 0, lamp.global_position.z) + _toward_room(lamp), State.STEAL)
+			_walk_to(_floor_below(lamp.global_position) + _toward_room(lamp), State.STEAL)
 			return true
 	if best == null:
 		return false
@@ -524,7 +538,7 @@ func _bulb_to_steal(hostile: bool) -> Lamp:
 		var lamp := node as Lamp
 		if not lamp.has_bulb or lamp.bulb_broken or lamp.room_id == home["no"]:
 			continue
-		if lamp.global_position.y > 3.6:
+		if lamp.room_id == "lobby":
 			continue   # Lobbydecke – zu hoch
 		if hostile and lamp.room_id != "13":
 			continue
@@ -598,6 +612,8 @@ func _watch_monster() -> void:
 	_monster_cooldown = 10.0
 	fear = minf(100.0, fear + 45.0 * (1.2 - float(profile["brave"])))
 	Game.social.on_guest_saw_monster(self)
+	if randf() < 0.1:
+		_lose_coins()
 	_go_hide()
 
 
@@ -671,9 +687,9 @@ func _drop_held() -> void:
 	var item := held
 	held = null
 	item.reparent(get_parent(), true)
-	var pos := Vector3(item.global_position.x, 0.02, item.global_position.z)
+	var pos := Vector3(item.global_position.x, global_position.y + 0.02, item.global_position.z)
 	if state == State.PLACE_DECO:
-		pos = Vector3(_target.x, 0.02, _target.z)
+		pos = Vector3(_target.x, _target.y + 0.02, _target.z)
 	item.global_position = pos
 	item.rotation = Vector3(0, rotation.y + PI, 0)
 	item.set_held(false)
@@ -700,6 +716,54 @@ func _ripe_plant() -> PumpkinPlant:
 	return null
 
 
+# --- Spuren der Gäste ------------------------------------------------------------------
+
+## Schlammige Schuhabdrücke nach dem Garten, Wachs von etwas Brennendem in der Hand,
+## Blutstropfen nach einem Angriff.
+func _leave_traces(delta: float) -> void:
+	_bleeding = maxf(0.0, _bleeding - delta)
+	var in_garden := global_position.x < 0.0 and global_position.z < -7.2 and global_position.y < 1.0
+	if in_garden:
+		_mud = MUD_STEPS
+	var moved := Vector2(global_position.x - _trace_pos.x, global_position.z - _trace_pos.z).length()
+	_trace_pos = global_position
+	if moved > 1.0 or moved < 0.001 or hiding:
+		return   # versetzt (Versteck, Laden) oder steht still
+	_step_dist += moved
+	if _step_dist < 0.8:
+		return
+	_step_dist = 0.0
+	var traces := Game.traces
+	if traces == null:
+		return
+	if _mud > 0 and not in_garden:
+		_mud -= 1
+		_foot_side = -_foot_side
+		traces.add_shoeprint(global_position + global_transform.basis.x * 0.1 * _foot_side, rotation.y)
+	if _bleeding > 0.0 and randf() < 0.5:
+		traces.add_guest_drop("drops", global_position + _jitter(0.15))
+	if held and held.lit and randf() < 0.15:
+		traces.add_guest_drop("wax", global_position + _jitter(0.2))
+
+
+## In Panik fallen ein paar Münzen aus der Tasche – wer sie findet, darf sie behalten.
+func _lose_coins() -> void:
+	if money < 2:
+		return
+	var n := randi_range(1, mini(4, money))
+	money -= n
+	var coins := Item.create(Item.Kind.COINS, str(n))
+	get_parent().add_child(coins)
+	coins.global_position = global_position + _jitter(0.4) + Vector3.UP * 0.05
+
+
+## Boden unter einem Punkt (z. B. unter einer Lampe) – auf jedem Stockwerk.
+func _floor_below(p: Vector3) -> Vector3:
+	var query := PhysicsRayQueryParameters3D.create(p + Vector3.DOWN * 0.3, p + Vector3.DOWN * 4.0, 1)
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	return Vector3(p.x, global_position.y if hit.is_empty() else (hit["position"] as Vector3).y, p.z)
+
+
 func _jitter(r: float) -> Vector3:
 	return Vector3(randf_range(-r, r), 0, randf_range(-r, r))
 
@@ -717,6 +781,11 @@ func _weighted_choice(weights: Dictionary) -> String:
 
 
 func _open_doors() -> void:
+	# Bei vielen Gästen und Türen nicht jeden Frame alle Türen prüfen
+	_door_timer -= get_physics_process_delta_time()
+	if _door_timer > 0.0:
+		return
+	_door_timer = 0.15
 	for node in get_tree().get_nodes_in_group("doors"):
 		var door := node as Door
 		if door.is_open or door.locked:
@@ -728,8 +797,9 @@ func _open_doors() -> void:
 func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 	if agent.target_position.distance_to(point) > 0.25:
 		agent.target_position = point
-	var flat := Vector3(point.x, global_position.y, point.z)
-	if global_position.distance_to(flat) < 0.6 or agent.is_navigation_finished():
+	# Nur angekommen, wenn auch das Stockwerk stimmt (Zimmer liegen übereinander)
+	var near := Vector2(point.x - global_position.x, point.z - global_position.z).length() < 0.6 		and absf(point.y - global_position.y) < 1.5
+	if near or agent.is_navigation_finished():
 		_stop(delta)
 		return true
 	var next := agent.get_next_path_position()
