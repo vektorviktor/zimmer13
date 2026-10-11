@@ -123,6 +123,8 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 ### 4.1 Grundprinzip
 - Das Monster ist **fast immer unsichtbar oder nur angedeutet**: Silhouette am Flurende, Schatten hinter Milchglas, Geräusche hinter Wänden.
 - Es **zeigt sich zufällig** (gewichteter Zufall, siehe unten) – nicht skriptgesteuert und nicht vorhersehbar.
+- **Aussehen** (entschieden 2026-10-11): dürr, mit langen Gliedmaßen, Rippen und Stacheln am Rücken, langgezogenem Schädel, offenem Maul und langer Zunge. Es **geht aufrecht auf den Hinterbeinen** und ist dabei gut zwei Meter groß, gestreckt noch größer. Es kann **auf alle Viere** gehen: zum Schleichen, Lauern und an Verstecken. Unter Türen duckt es sich.
+  > Im Prototyp umgesetzt (2026-10-11): Meshy-Modell mit Skelett, Bewegung im Stop-Motion-Stil, Hocke beim Wegschleichen, Lauern und Prüfen von Verstecken.
 
 ### 4.2 Ankündigung („Manifestation“)
 > Im Prototyp durch 4.13 ersetzt: keine globale Vorwarnung mehr, stattdessen Rauschen nach Entfernung und lokales Flackern.

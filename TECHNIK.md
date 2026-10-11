@@ -14,7 +14,8 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
 
 - **Alles entsteht im Code.** Es gibt nur zwei winzige Szenen (`title.tscn`, `main.tscn`), beide
   hängen nur ein Skript an. Hotel, Möbel, Gäste und UI baut `main.gd` bzw. `LevelBuilder` zur Laufzeit.
-  Modelle, Texturen (`TexGen`) und Sounds (`SynthAudio`) sind prozedurale Platzhalter.
+  Modelle, Texturen (`TexGen`) und Sounds (`SynthAudio`) sind prozedurale Platzhalter. Ausnahme: das
+  Monster-Modell `assets/models/monster.glb` (siehe 5, „Aussehen & Animation“).
 - **Kein Inventar.** Ein Gegenstand in der Hand (`Player.held` / `Guest.held`), Geld ist der einzige
   abstrakte Besitz (`Game.money`). Gäste haben zusätzlich einen abstrakten Vorrat (`Guest.stock`).
   Darum ist **die Welt der Spielstand** (siehe 7).
@@ -196,6 +197,24 @@ Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `st
 `investigate`, `go_check`, `stare`, `go_home`, `spawn_at` (Tests), `spawn_near_unseen`, `deactivate`.
 Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick verschwinden).
 
+### Aussehen & Animation
+- **Modell:** `assets/models/monster.glb` wird von `tools/build_monster.py` (Blender 4.3) aus dem
+  Meshy-Original (`assets/source/`, nicht im Repo, `.gdignore`) gebaut: auf 8000 Dreiecke reduziert, Blick nach −Z, ~2,15 m hoch, 512er-Farbtextur,
+  Skelett mit 24 Knochen (`hips` … `toe.R`, linke Seite bei −X). **Grundpose = aufrecht**, die
+  ursprüngliche Hocke auf allen Vieren steckt als Animation `crouch` (ein Bild) in der Datei.
+  Neu bauen: `blender -b --python tools/build_monster.py -- <meshy.glb> assets/models/monster.glb`.
+  Die Augenpositionen druckt das Skript aus → `Monster.EYES`. Die von Godot entpackte Textur
+  (`assets/models/*.jpg`) ist in `.gitignore`.
+- **Animation ist Code:** `_animate()` setzt alle `ANIM_STEP` (0,09 s, Stop-Motion) eine neue Pose.
+  Pro Knochen wird aufrecht ↔ Hocke gemischt (`_crouch`, Ziel aus `_crouch_target()`: `SLINK` auf
+  allen Vieren, `LURK`/`CHECK_HIDE` halb, an Türen geduckt), darauf kommen mit `_turn(knochen, achse,
+  winkel)` Gang, Vorbeugen, Arme, Kopf, Kiefer und Zunge. `_turn` dreht um Achsen im **Modellraum**
+  (die Knochenachsen aus Blender sind uneinheitlich) – Eltern immer vor Kindern drehen.
+- Der `AnimationPlayer` aus der GLB wird nur ausgelesen und dann gelöscht. Material: `Mat.psx` mit
+  der Modelltextur. Augen hängen per `BoneAttachment3D` am Knochen `head`.
+- Kollision und NavMesh-Agent bleiben 1,6 m hoch. Türen sind 2,1 m hoch → `_near_door` lässt es
+  sich ducken. `EYE_HEIGHT` (2,1 m) ist auch die Höhe für seine Sichtprüfungen.
+
 ## 6. Gäste & Soziales
 
 - **`GuestProfiles`**: feste Gäste in `ALL`, erzeugte in `static var generated`; Zugriff immer über
@@ -286,6 +305,6 @@ Text für Gästeberichte in `Social.TRACE_TEXT`.
 - Start mit Godot 4.7.2 (Pfad im README), Parameter nach `--`. Schnelle Läufe ohne Fenster-Interaktion:
   `--time-scale 3`, `--quit-after N`, `--trace` (Zustand alle 2 s in die Konsole), `--day=n`,
   `--attacks=n`, `--kill=id`, `--knock` …
-- Screenshots zum Prüfen: `--shot=pfad.png --frames=n` oder `--shot-on=reveal`; Menüs mit `--menu=…`.
+- Screenshots zum Prüfen: `--shot=pfad.png --frames=n` oder `--shot-on=reveal|jumpscare`; Menüs mit `--menu=…`.
 - Nach Änderungen am Speichern oder an der Welt: `--savetest` laufen lassen (`alles gleich` erwartet).
 - Es gibt keine automatisierten Tests – Prüfung über Debug-Parameter, Konsole und Screenshots.

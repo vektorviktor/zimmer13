@@ -19,7 +19,12 @@ const STEP_LENGTH := 0.85          ## Abstand der Fußspuren
 const CANDLE_RANGE := 2.0          ## Kerzen in dieser Nähe gehen aus
 const HANDPRINT_RANGE := 1.4       ## Abstand zum Milchglas für einen Handabdruck
 const HANDPRINT_CHANCE := 0.35
-const EYE_HEIGHT := 1.85
+const EYE_HEIGHT := 2.1            ## Augenhöhe im Modell (aufrecht)
+## Modell aus tools/build_monster.py: aufrecht als Grundpose, die Hocke als Animation „crouch“
+const MODEL := "res://assets/models/monster.glb"
+const EYES: Array[Vector3] = [Vector3(-0.068, 2.1, -0.6), Vector3(0.068, 2.1, -0.6)]
+const ANIM_STEP := 0.09            ## Stop-Motion: so oft wird eine neue Pose gesetzt
+const LEG_LENGTH := 1.25
 ## Sichtweite (Spielkonzept 4.12): im Dunkeln ~8 m, im Hellen ~18 m
 const SIGHT_DARK := 8.0
 const SIGHT_LIGHT_BONUS := 10.0
@@ -32,9 +37,16 @@ var agent: NavigationAgent3D
 
 var _collider: CollisionShape3D
 var _visual: Node3D
-var _head: Node3D
-var _arm_l: Node3D
-var _arm_r: Node3D
+var _skeleton: Skeleton3D
+var _bone := {}                         ## Knochenname → Index
+var _rest: Array[Quaternion] = []       ## aufrecht
+var _crouch_rot: Array[Quaternion] = [] ## Hocke
+var _rot: Array[Quaternion] = []        ## Pose, die gerade gebaut wird
+var _rest_hips := Vector3.ZERO
+var _crouch_hips := Vector3.ZERO
+var _crouch := 0.0                      ## 0 = aufrecht, 1 = auf allen Vieren
+var _gait := 0.0                        ## Schrittphase
+var _near_door := false                 ## unter dem Türsturz (2,1 m) ducken
 var _eye_mat: ShaderMaterial
 var _face_light: OmniLight3D
 var _target := Vector3.ZERO
@@ -67,6 +79,7 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 func _ready() -> void:
 	collision_layer = 32
 	collision_mask = 1
+	# Kollision und Wegfindung bleiben 1,6 m hoch – durch Türen kommt es geduckt.
 	_collider = CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
 	capsule.radius = 0.3
@@ -162,16 +175,16 @@ func play_jumpscare(cam: Camera3D) -> void:
 	if forward.length() < 0.01:
 		forward = Vector3.FORWARD
 	forward = forward.normalized()
-	# Kopf auf Augenhöhe, dann ruckartig auf die Kamera zu
-	var base := cam.global_position - Vector3.UP * (EYE_HEIGHT - 0.05)
-	global_position = base + forward * 1.5
+	# Auf dem Boden, vorgebeugt – dann ruckartig mit dem Kopf auf die Kamera zu
+	var base := Vector3(cam.global_position.x, cam.global_position.y - 1.7, cam.global_position.z)
+	global_position = base + forward * 2.2
 	rotation = Vector3(0, atan2(forward.x, forward.z), 0)
 	_eye_mat.set_shader_parameter("emission_energy", 8.0)
 	_face_light.light_energy = 1.4
-	_head.rotation = Vector3(0.1, 0, 0.3)
-	_arm_l.rotation.x = -1.2
-	_arm_r.rotation.x = -1.3
-	create_tween().tween_property(self, "global_position", base + forward * 0.5, 0.22).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+	_crouch = 0.0
+	_anim_step = ANIM_STEP
+	create_tween().tween_property(self, "global_position", base + forward * 0.8, 0.22).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+	Game.shot_event("jumpscare", 12)
 
 
 ## Nach einem geholten Gast: satt, zurück ins Versteck.
@@ -203,7 +216,8 @@ func reveal(cam: Camera3D) -> void:
 	rotation = Vector3(0, atan2(forward.x, forward.z), 0)
 	_eye_mat.set_shader_parameter("emission_energy", 6.0)
 	_face_light.light_energy = 0.9
-	_head.rotation = Vector3(0.15, 0, 0.2)
+	_crouch = 0.0
+	_anim_step = ANIM_STEP
 	Game.shot_event("reveal")
 
 
@@ -555,14 +569,17 @@ func _check_deterrence(delta: float) -> void:
 
 
 func _open_doors() -> void:
+	_near_door = false
 	for node in get_tree().get_nodes_in_group("doors"):
 		var door := node as Door
+		if door.center().distance_to(global_position + Vector3.UP) >= 1.5:
+			continue
+		_near_door = true
 		if door.is_open or not door.monster_can_open:
 			continue
-		if door.center().distance_to(global_position + Vector3.UP) < 1.5:
-			door.monster_open()
-			if Game.traces and randf() < 0.6:
-				Game.traces.add_door_scratch(door, global_position)
+		door.monster_open()
+		if Game.traces and randf() < 0.6:
+			Game.traces.add_door_scratch(door, global_position)
 
 
 # --- Spuren --------------------------------------------------------------------
@@ -651,54 +668,142 @@ func _apply_gravity(delta: float) -> void:
 # --- Aussehen ----------------------------------------------------------------------
 
 func _build_visual() -> void:
-	_visual = Node3D.new()
+	_visual = (load(MODEL) as PackedScene).instantiate()
 	add_child(_visual)
-	var skin := Mat.psx(Color(0.02, 0.02, 0.025))
+	_skeleton = _visual.find_children("*", "Skeleton3D", true, false)[0]
+	for i in _skeleton.get_bone_count():
+		_bone[_skeleton.get_bone_name(i)] = i
+		_rest.append(_skeleton.get_bone_rest(i).basis.get_rotation_quaternion())
+	_crouch_rot = _rest.duplicate()
+	_rot = _rest.duplicate()
+	_rest_hips = _skeleton.get_bone_rest(_bone["hips"]).origin
+	_crouch_hips = _rest_hips
+	# Die Hocke wird nur als Pose gelesen, nicht abgespielt.
+	var player: AnimationPlayer = _visual.find_children("*", "AnimationPlayer", true, false)[0]
+	var crouch := player.get_animation("crouch")
+	for t in crouch.get_track_count():
+		var i: int = _bone[String(crouch.track_get_path(t).get_subname(0))]
+		match crouch.track_get_type(t):
+			Animation.TYPE_ROTATION_3D:
+				_crouch_rot[i] = crouch.track_get_key_value(t, 0)
+			Animation.TYPE_POSITION_3D:
+				if i == _bone["hips"]:
+					_crouch_hips = crouch.track_get_key_value(t, 0)
+	player.queue_free()
+
+	var mesh: MeshInstance3D = _visual.find_children("*", "MeshInstance3D", true, false)[0]
+	var skin := Mat.psx(Color(0.55, 0.55, 0.6), "", 1.0, Color.BLACK, 0.0, false)
+	skin.set_shader_parameter("albedo_tex", (mesh.get_active_material(0) as BaseMaterial3D).albedo_texture)
+	mesh.material_override = skin
 	_eye_mat = Mat.psx(Color(1, 1, 1), "", 1.0, Color(0.9, 0.85, 0.7), 1.2, false)
-	for side in [-1.0, 1.0]:
-		Geo.mesh(_visual, Geo.box(Vector3(0.07, 0.86, 0.07)), skin, Vector3(side * 0.1, 0.43, 0))
-	var torso := Geo.mesh(_visual, Geo.box(Vector3(0.3, 0.78, 0.16)), skin, Vector3(0, 1.22, -0.03))
-	torso.rotation.x = -0.12
-	_arm_l = _make_arm(-1.0, skin)
-	_arm_r = _make_arm(1.0, skin)
-	_head = Node3D.new()
-	_head.position = Vector3(0, 1.72, -0.08)
-	_visual.add_child(_head)
-	Geo.mesh(_head, Geo.sphere(0.13, 0.3, 6, 4), skin, Vector3(0, 0.13, 0))
-	for side in [-1.0, 1.0]:
-		Geo.mesh(_head, Geo.sphere(0.022, 0.03, 4, 2), _eye_mat, Vector3(side * 0.05, 0.16, -0.115))
+	var head := BoneAttachment3D.new()
+	head.bone_name = "head"
+	_skeleton.add_child(head)
+	var head_rest := _skeleton.get_bone_global_rest(_bone["head"])
+	for eye in EYES:
+		Geo.mesh(head, Geo.sphere(0.016, 0.022, 4, 2), _eye_mat, head_rest.affine_inverse() * eye)
 	_face_light = OmniLight3D.new()
-	_face_light.position = Vector3(0, 1.85, -0.6)
+	_face_light.position = Vector3(0, 1.9, -1.3)
 	_face_light.light_color = Color(0.75, 0.8, 1.0)
 	_face_light.omni_range = 1.6
 	_face_light.light_energy = 0.0
 	add_child(_face_light)
 
 
-func _make_arm(side: float, mat: Material) -> Node3D:
-	var pivot := Node3D.new()
-	pivot.position = Vector3(side * 0.2, 1.55, -0.03)
-	pivot.rotation.z = side * 0.08
-	_visual.add_child(pivot)
-	Geo.mesh(pivot, Geo.box(Vector3(0.05, 1.1, 0.05)), mat, Vector3(0, -0.55, 0))
-	for i in 3:
-		Geo.mesh(pivot, Geo.box(Vector3(0.012, 0.16, 0.012)), mat, Vector3((i - 1) * 0.018, -1.17, 0))
-	return pivot
+## Dreht einen Knochen um eine Achse im Modellraum (X = seitlich, Y = oben, −Z = vorn).
+## Positiver Winkel um X: hängende Glieder nach vorn, Oberkörper nach hinten.
+## Eltern vor Kindern drehen.
+func _turn(bone: String, axis: Vector3, angle: float) -> void:
+	var i: int = _bone[bone]
+	var parent_rot := Quaternion.IDENTITY
+	var p := _skeleton.get_bone_parent(i)
+	while p >= 0:
+		parent_rot = _rot[p] * parent_rot
+		p = _skeleton.get_bone_parent(p)
+	_rot[i] = Quaternion((parent_rot.inverse() * axis).normalized(), angle) * _rot[i]
 
 
+## Wie tief es geht: schleichend auf allen Vieren, lauernd halb geduckt, sonst aufrecht.
+func _crouch_target() -> float:
+	var c := 0.0
+	match state:
+		State.SLINK:
+			c = 0.6
+		State.LURK, State.CHECK_HIDE:
+			c = 0.4
+		State.SEARCH:
+			c = 0.15
+		State.KILL, State.REVEAL:
+			return 0.0
+	return maxf(c, 0.3) if _near_door else c
+
+
+## Pose aus aufrecht ↔ Hocke mischen, dann Gang, Haltung, Kopf und Kiefer daraufsetzen.
 func _animate(delta: float) -> void:
 	_anim_time += delta
 	_anim_step += delta
-	if _anim_step < 0.09:
+	if _anim_step < ANIM_STEP:
 		return
+	var dt := _anim_step
 	_anim_step = 0.0
-	if state == State.KILL:
-		_head.rotation.z = 0.3 + randf_range(-0.25, 0.25)
-	else:
-		var speed := Vector2(velocity.x, velocity.z).length()
-		var swing := sin(_anim_time * (1.5 + speed * 2.2)) * clampf(speed * 0.35, 0.05, 0.9)
-		_arm_l.rotation.x = swing + randf_range(-0.06, 0.06)
-		_arm_r.rotation.x = -swing + randf_range(-0.06, 0.06)
-		_head.rotation.z = sin(_anim_time * 0.6) * 0.3 + randf_range(-0.1, 0.1)
-		_head.rotation.x = randf_range(-0.05, 0.1)
-	_visual.rotation.z = sin(_anim_time * 1.1) * 0.05
+	var speed := Vector2(velocity.x, velocity.z).length()
+	_crouch = move_toward(_crouch, _crouch_target(), dt * 2.5)
+	_gait = fmod(_gait + dt * speed * PI / STEP_LENGTH, TAU)
+	for i in _rot.size():
+		_rot[i] = _rest[i].slerp(_crouch_rot[i], _crouch)
+	var hips := _rest_hips.lerp(_crouch_hips, _crouch)
+
+	var amp := clampf(speed * 0.2, 0.0, 0.55)
+	var s := sin(_gait)
+	var lean := 0.0    # vorbeugen
+	var reach := 0.0   # Arme nach vorn
+	var nod := randf_range(-0.05, 0.1)
+	var tilt := sin(_anim_time * 0.6) * 0.3 + randf_range(-0.1, 0.1)
+	var jaw := 0.05 + sin(_anim_time * 1.7) * 0.04 + randf_range(0.0, 0.04)
+	match state:
+		State.CHASE:
+			lean = 0.3
+			reach = 0.6
+			jaw += 0.1
+		State.KILL:
+			lean = 0.5
+			reach = 1.3
+			nod = 0.2
+			tilt = 0.3 + randf_range(-0.25, 0.25)
+			jaw = 0.4 + randf_range(-0.05, 0.05)
+		State.REVEAL, State.STARE, State.LURK:
+			nod = 0.3
+			tilt = sin(_anim_time * 0.4) * 0.45 + randf_range(-0.04, 0.04)
+		State.REPELLED:
+			lean = -0.2
+			reach = 0.5
+			tilt = randf_range(-0.4, 0.4)
+
+	# Rumpf
+	_turn("hips", Vector3.UP, s * amp * 0.3)
+	hips.y -= LEG_LENGTH * (1.0 - cos(s * amp)) * (1.0 - _crouch)
+	_turn("spine", Vector3.RIGHT, -lean * 0.5)
+	_turn("chest", Vector3.RIGHT, -lean * 0.5 + randf_range(-0.03, 0.03))
+	_turn("chest", Vector3.UP, -s * amp * 0.4)
+	_turn("neck", Vector3.RIGHT, -nod * 0.5)
+	_turn("head", Vector3.BACK, tilt)
+	_turn("head", Vector3.RIGHT, -nod * 0.5)
+	_turn("jaw", Vector3.RIGHT, -jaw)
+	_turn("tongue1", Vector3.UP, sin(_anim_time * 2.3) * 0.25)
+	_turn("tongue2", Vector3.RIGHT, sin(_anim_time * 3.1) * 0.3)
+	# Arme gegengleich zu den Beinen, Beine heben den Fuß beim Vorschwingen
+	for side in [["L", 1.0], ["R", -1.0]]:
+		var n: String = side[0]
+		var dir: float = side[1]
+		_turn("upperarm." + n, Vector3.RIGHT, reach - s * dir * amp * 0.7 + randf_range(-0.06, 0.06))
+		_turn("forearm." + n, Vector3.RIGHT, reach * 0.3 + randf_range(0.0, 0.12))
+		_turn("hand." + n, Vector3.RIGHT, randf_range(-0.1, 0.1))
+		var lift := maxf(0.0, cos(_gait) * dir) * amp
+		_turn("thigh." + n, Vector3.RIGHT, s * dir * amp + lift * 0.3)
+		_turn("shin." + n, Vector3.RIGHT, -lift * 1.4)
+		_turn("foot." + n, Vector3.RIGHT, lift * 0.8)
+
+	for i in _rot.size():
+		_skeleton.set_bone_pose_rotation(i, _rot[i])
+	_skeleton.set_bone_pose_position(_bone["hips"], hips)
+	_visual.rotation.z = sin(_anim_time * 1.1) * 0.03

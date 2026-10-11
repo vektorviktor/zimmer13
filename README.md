@@ -34,7 +34,7 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 - **Deko & Handwerk:** Kürbisse im Garten ernten · mit dem **Messer** (Küche) schnitzen · **Kerze** in den geschnitzten Kürbis stellen · Herbstlaub unter den Bäumen · Spinnweben in dunklen Ecken · Kerzenvorrat in der Küche
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
 - **Dramaturgie:** friedlicher Anfang ohne Monster · erster Angriff am 3./4. Oktober während einer Feier (Licht und Musik aus, das Monster steht in der Lobby) · die ersten zwei Angriffe sind harmlos: es steht direkt vor dir, starrt dich an und verschwindet, Gäste werden nur erschreckt
-- **Monster:** streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern nur in seiner Nähe, „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
+- **Monster:** dürre, über zwei Meter große Gestalt auf zwei Beinen (Modell mit Skelett, ruckartige Stop-Motion-Bewegung) · duckt sich unter Türen, lauert halb geduckt, schleicht auf allen Vieren davon, wenn man es sieht · streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern nur in seiner Nähe, „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
 - **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke am Milchglas, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff · **Spuren der Gäste:** schlammige Schuhabdrücke nach dem Garten, Wachsflecken von Kerzen und Kürbislaternen, Blutstropfen und verlorene Münzen nach einem Angriff, Zettel an Türen und nach Todesfällen oder Sichtungen
 - **Klopfen an Zimmer 13:** ein Gast in Panik bittet um Einlass – oder eine bekannte Stimme, hinter der niemand steht
 - **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (30 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 24, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
@@ -46,7 +46,11 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 - **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion
 - **Altersempfehlung ab 16** (selbst eingeschätzt, keine USK-Prüfung): Hinweis mit Inhalten beim ersten Start, Kennzeichen im Titelbildschirm (`scripts/ui/title_screen.gd`)
 
-Alle Modelle, Texturen und Sounds sind Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt.
+Bis auf das Monster sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_monster.py -- assets/source/Meshy_AI_Abyssal_Mawcrawler_1011084008_texture.glb assets/models/monster.glb
+```
 
 ## Debug-Startparameter
 
@@ -66,7 +70,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--dice=bruno` · `--autoplay` | Mäxchen-Partie starten · Antworten automatisch wählen |
 | `--challenge=bruno` | Gast fordert dich heraus |
 | `--pos=x,y,z,winkel` · `--monster=x,y,z` | Spieler versetzen · Monster erscheinen lassen |
-| `--shot=pfad.png --frames=n` · `--shot-on=reveal` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler |
+| `--shot=pfad.png --frames=n` · `--shot-on=reveal` · `--shot-on=jumpscare` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler · im Jumpscare |
 | `--nointro` · `--debug` · `--trace-nav` | ohne Intro · Debug-Werte · mit `--trace` auch die Wegfindung der Gäste |
 | `--title` · `--new=2` · `--load=1` | trotz Parametern Titelbildschirm · neues Spiel in Slot 2 · Slot laden (0 = Autosave) |
 | `--diary=3` · `--savetest` | nach 2 s in Slot 3 speichern · Speichern → Laden → Vergleichen |
