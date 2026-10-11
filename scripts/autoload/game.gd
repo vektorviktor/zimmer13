@@ -141,7 +141,7 @@ func _setup_input() -> void:
 	_bind_keys("debug_teleport", [KEY_F6])
 	_bind_keys("pause", [KEY_ESCAPE])
 	_bind_mouse("hold_breath", MOUSE_BUTTON_RIGHT)
-	_bind_mouse("inspect", MOUSE_BUTTON_RIGHT)   # Kompass ansehen (außerhalb von Verstecken)
+	_bind_mouse("inspect", MOUSE_BUTTON_RIGHT)   # Kompass/Karte ansehen (außerhalb von Verstecken)
 
 
 func _ensure_action(action: StringName) -> void:

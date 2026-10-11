@@ -18,10 +18,12 @@ const MOUSE_SENSITIVITY := 0.0022
 const HIDE_COMFORT_TIME := 22.0   ## ab hier wird es im Versteck unangenehm
 const HIDE_MAX_TIME := 38.0       ## dann muss man raus (wie in „Doors“)
 const BREATH_MAX := 6.0
-## Hand mit dem Gegenstand: unten rechts – beim Ansehen (Kompass) vor die Brust gehoben
+## Hand mit dem Gegenstand: unten rechts – beim Ansehen (Kompass, Karte) vor die Brust gehoben
 const HAND_REST := Vector3(0.22, -0.22, -0.45)
 const HAND_INSPECT := Vector3(0.0, -0.12, -0.3)
 const INSPECT_TILT := 1.05        ## so weit kippt der Kompass zum Gesicht (rad)
+const MAP_INSPECT := Vector3(0.0, -0.005, -0.12)   ## die Karte fast senkrecht und bildfüllend vors Gesicht
+const MAP_TILT := 1.52            ## knapp unter 90°: das Blatt steht fast senkrecht
 const INSPECT_SPEED := 0.5        ## Laufen beim Draufschauen: halbe Geschwindigkeit
 
 var head: Node3D
@@ -40,7 +42,8 @@ var shock := 0.0
 var shock_recovery := 1.0   ## schneller durch Gedenken oder Feiern (Social)
 var in_dialog := false
 var focused := false   ## sitzt konzentriert am Spieltisch → Vorwarnungen fallen weniger auf
-var inspecting := false  ## schaut auf den Kompass in der Hand (Rechtsklick halten)
+var inspecting := false  ## schaut auf Kompass oder Karte in der Hand (Rechtsklick halten)
+var debug_inspect := false  ## --inspect: als würde Rechtsklick gehalten
 
 var _hand: Node3D
 var _shape: CapsuleShape3D
@@ -163,13 +166,19 @@ func _physics_process(delta: float) -> void:
 	_update_focus()
 
 
-## Kompass ansehen: Rechtsklick halten hebt ihn vor die Brust, das Zifferblatt zum Gesicht
-## gekippt. Im Versteck bleibt Rechtsklick „Luft anhalten“.
+## Kompass oder Karte ansehen: Rechtsklick halten hebt sie vor die Brust, zum Gesicht gekippt.
+## Im Versteck bleibt Rechtsklick „Luft anhalten“.
 func _update_hand(delta: float) -> void:
-	inspecting = held != null and held.kind == Item.Kind.COMPASS and Input.is_action_pressed("inspect") 		and hiding == null and not in_dialog
+	inspecting = held != null and held.can_inspect() and (Input.is_action_pressed("inspect") or debug_inspect) 		and hiding == null and not in_dialog
+	var is_map := held != null and held.kind == Item.Kind.MAP
+	var pos := HAND_REST
+	var tilt := 0.0
+	if inspecting:
+		pos = MAP_INSPECT if is_map else HAND_INSPECT
+		tilt = MAP_TILT if is_map else INSPECT_TILT
 	var t := minf(1.0, 10.0 * delta)
-	_hand.position = _hand.position.lerp(HAND_INSPECT if inspecting else HAND_REST, t)
-	_hand.rotation.x = lerpf(_hand.rotation.x, INSPECT_TILT if inspecting else 0.0, t)
+	_hand.position = _hand.position.lerp(pos, t)
+	_hand.rotation.x = lerpf(_hand.rotation.x, tilt, t)
 
 
 # --- Am Spieltisch sitzen -------------------------------------------------------
@@ -258,6 +267,8 @@ func try_pick_up(item: Item) -> void:
 		Game.hud.set_held(item.display_name)
 	if item.kind == Item.Kind.COMPASS:
 		Game.say("Ein alter Kompass. [Rechtsklick] halten, um draufzuschauen.", 3.5)
+	elif item.kind == Item.Kind.MAP:
+		Game.say("Ein Lageplan des Hotels. [Rechtsklick] halten, um ihn anzusehen.", 3.5)
 
 
 func drop_held() -> void:

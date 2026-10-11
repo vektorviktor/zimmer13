@@ -19,6 +19,7 @@ extends Node3D
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
 ##   --pos=x,y,z[,blickwinkel]   Spieler versetzen
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
+##   --hold=map|compass [--inspect]  Gegenstand in die Hand · ansehen (wie Rechtsklick halten)
 ##   --debug                     Debug-Werte einblenden
 ##   --nointro                   ohne Einführungstext
 ##   --trace                     Monster-Zustand alle 2 s in die Konsole schreiben
@@ -256,6 +257,11 @@ func _parse_debug_args() -> void:
 			var pos := Vector3(m[0].to_float(), m[1].to_float(), m[2].to_float())
 			Game.monster.spawn_at(pos)
 			Game.director.phase = MonsterDirector.Phase.ACTIVE
+		elif arg.begins_with("--hold="):
+			var kind := Item.Kind.MAP if arg.substr(7) == "map" else Item.Kind.COMPASS
+			Game.player.drop_held()
+			Game.player.receive_item(Item.create(kind))
+			Game.player.debug_inspect = "--inspect" in OS.get_cmdline_user_args()
 		elif arg.begins_with("--bold="):
 			Game.director.boldness = arg.substr(7).to_float()
 		elif arg.begins_with("--friend="):

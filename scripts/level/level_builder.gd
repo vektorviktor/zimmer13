@@ -433,6 +433,7 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 			diary.position = table_top + Vector3(0.25, 0, 0.05)
 			diary.rotation.y = 0.3
 			_parent.add_child(diary)
+			_item(Item.Kind.MAP, table_top + Vector3(-0.25, 0, 0.17)).rotation.y = -0.2
 			var calendar := Calendar.new()
 			calendar.position = Vector3(x1 - 0.11, 1.7, 2.1)
 			calendar.rotation.y = -PI / 2.0

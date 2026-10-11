@@ -34,7 +34,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | 1–9 / Maus | Im Gespräch Antwort wählen (Esc beendet) |
 | 0–9 · Enter · Rücktaste · H | Am Telefon: Zimmernummer wählen · anrufen · löschen · Hörer daneben legen (Esc legt auf) |
 | G / Q | Gegenstand ablegen (Kürbis vor die Tür stellen …) |
-| Rechtsklick (halten) | Im Versteck Luft anhalten · sonst den Kompass in der Hand ansehen |
+| Rechtsklick (halten) | Im Versteck Luft anhalten · sonst Kompass oder Karte in der Hand ansehen |
 | F3 | Debug: versteckte Monster-Werte |
 | F5 | Debug: Monster sofort rufen (wenn es gerade ruht) |
 | F6 | Debug: Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller …) – pausiert, 1–9 / Maus |
@@ -45,6 +45,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 - **Hotel (Graybox), zwei Geschosse, 74 Zimmer:** Erdgeschoss mit Lobby (verriegelter Ausgang), Küche, Hotelbar, Garten hinter der Glastür, 78 m Hauptflur mit **drei Flurkreuzungen** und Seitenflügeln (Zimmer 11–28, 31–38, 41–48, 51–56, 61–64), Wäscherei, **Kellertreppe** hinab in den Keller · **Obergeschoss** über das Treppenhaus am Ende des Nordflügels (Zimmer 211–228, 231–238, 241–244, zwei davon verfallen) · nur die nächsten sechs Lampen werfen Schatten (`ShadowBudget`)
 - **Kein Inventar:** ein Gegenstand in der Hand; große Dinge blockieren Türen/Truhen; Münzen werden zu Geld
 - **Kompass:** liegt im verfallenen Zimmer 226 im Obergeschoss · wird in der Hand getragen, Rechtsklick halten hebt ihn vor die Augen (kein HUD) · leuchtende Nadel zeigt nach Norden (Nordflügel, Treppenhaus) · in der Nähe des Monsters zittert sie, ganz nah dreht sie sich im Kreis – auch bei Halluzinationen
+- **Karte:** Lageplan des Hotels auf dem Schreibtisch in Zimmer 13 · Rechtsklick halten hält ihn bildfüllend vors Gesicht · Norden oben, alle Zimmernummern, Zimmer 13 rot eingekreist · beidseitig bedruckt: zeigt das Geschoss, auf dem man gerade steht (Erdgeschoss mit Lobby, Küche, Bar, Garten, Keller gestrichelt)
 - **Deko & Handwerk:** Kürbisse im Garten ernten · mit dem **Messer** (Küche) schnitzen · **Kerze** in den geschnitzten Kürbis stellen · Herbstlaub unter den Bäumen · Spinnweben in dunklen Ecken · Kerzenvorrat in der Küche
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
 - **Dramaturgie:** friedlicher Anfang ohne Monster · erster Angriff am 3./4. Oktober während einer Feier (Licht und Musik aus, das Monster steht in der Lobby) · die ersten zwei Angriffe sind harmlos: es steht direkt vor dir, starrt dich an und verschwindet, Gäste werden nur erschreckt
@@ -87,6 +88,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--dice=bruno` · `--autoplay` | Mäxchen-Partie starten · Antworten automatisch wählen |
 | `--challenge=bruno` | Gast fordert dich heraus |
 | `--pos=x,y,z,winkel` · `--monster=x,y,z` | Spieler versetzen · Monster erscheinen lassen |
+| `--hold=map` · `--hold=compass` · `--inspect` | Karte bzw. Kompass in die Hand · ansehen wie mit gehaltenem Rechtsklick |
 | `--shot=pfad.png --frames=n` · `--shot-on=reveal` · `--shot-on=jumpscare` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler · im Jumpscare |
 | `--nointro` · `--debug` · `--trace-nav` | ohne Intro · Debug-Werte · mit `--trace` auch die Wegfindung der Gäste |
 | `--title` · `--new=2` · `--load=1` | trotz Parametern Titelbildschirm · neues Spiel in Slot 2 · Slot laden (0 = Autosave) |

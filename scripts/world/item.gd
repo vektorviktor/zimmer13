@@ -9,15 +9,18 @@ extends RigidBody3D
 ##
 ## Kompass: Die Nadel zeigt nach Norden (Welt −Z) und schwingt nach. In der Nähe des
 ## Monsters zittert sie, ganz nah dreht sie sich wild – ebenso bei Halluzinationen.
+##
+## Karte: Hotelplan (HotelMap) aus Zimmer 13, wird wie der Kompass in der Hand angesehen.
 
-enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS }
+enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
+const MAP_WIDTH := 0.28   ## Karte: Breite des Blatts (m), Höhe nach Seitenverhältnis des Plans
 ## Grundpreise für den Handel mit Gästen
 const PRICES := {
 	Kind.PUMPKIN: 4, Kind.CARVED_PUMPKIN: 10, Kind.CANDLE: 3, Kind.COBWEB: 3,
-	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4, Kind.CLOTHING: 0, Kind.COMPASS: 6,
+	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4, Kind.CLOTHING: 0, Kind.COMPASS: 6, Kind.MAP: 2,
 }
 
 var kind: Kind = Kind.PUMPKIN
@@ -44,6 +47,8 @@ var _needle_angle := 0.0
 var _needle_speed := 0.0
 var _needle_spin := 0.0
 var _needle_time := 0.0
+## Karte: Material des Plans (Textur kommt nach dem Rendern von HotelMap)
+var _map_material: StandardMaterial3D
 
 
 static func create(p_kind: Kind, extra: String = "") -> Item:
@@ -61,11 +66,18 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _needle:
 		_update_needle(delta)
+	if _map_material:
+		_update_map_side()
 	if not lit or burn_time <= 0.0:
 		return
 	burn_time -= delta
 	if burn_time <= 0.0:
 		_extinguish()
+
+
+## Lässt sich in der Hand vor die Augen heben (Rechtsklick halten)
+func can_inspect() -> bool:
+	return kind == Kind.COMPASS or kind == Kind.MAP
 
 
 func price() -> int:
@@ -314,6 +326,11 @@ func _build(extra: String) -> void:
 			mass = 0.15
 			size = Vector3(0.11, 0.03, 0.11)
 			_build_compass()
+		Kind.MAP:
+			display_name = "Karte"
+			mass = 0.05
+			size = Vector3(MAP_WIDTH, 0.01, MAP_WIDTH * HotelMap.FLOOR_SIZE.y / HotelMap.FLOOR_SIZE.x)
+			_build_map()
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size
@@ -341,6 +358,41 @@ func _build_compass() -> void:
 	Geo.mesh(_needle, Geo.box(Vector3(0.007, 0.003, 0.036)), Mat.psx(red, "", 1.0, red, 1.5), Vector3(0, 0, -0.018))
 	Geo.mesh(_needle, Geo.box(Vector3(0.007, 0.003, 0.034)), Mat.psx(Color(0.85, 0.85, 0.8), "", 1.0, glow, 0.4), Vector3(0, 0, 0.017))
 	Geo.mesh(_needle, Geo.cylinder(0.005, 0.005, 6), brass, Vector3(0, 0.002, 0))
+
+
+## Blatt auf Pappe, quer; der Plan zeigt nach oben (lokale +Y), Norden zur lokalen +Z – in
+## der Hand also vom Spieler weg. Beidseitig bedruckt: in der Hand ist die Seite des Geschosses
+## zu sehen, auf dem man steht. Leicht selbstleuchtend, damit man ihn im Dunkeln noch erkennt.
+func _build_map() -> void:
+	var depth := MAP_WIDTH * HotelMap.FLOOR_SIZE.y / HotelMap.FLOOR_SIZE.x
+	Geo.mesh(self, Geo.box(Vector3(MAP_WIDTH, 0.003, depth)), Mat.psx(Color(0.7, 0.64, 0.52)), Vector3(0, 0.0015, 0))
+	_map_material = StandardMaterial3D.new()
+	_map_material.albedo_color = HotelMap.PAPER
+	_map_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_map_material.roughness = 1.0
+	_map_material.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
+	_map_material.emission_enabled = true
+	_map_material.emission_energy_multiplier = 0.12
+	_map_material.uv1_scale = Vector3(1.0, 0.5, 1.0)
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(MAP_WIDTH, depth)
+	var sheet := Geo.mesh(self, plane, _map_material, Vector3(0, 0.0032, 0))
+	sheet.rotation.y = PI   # PlaneMesh: Bildoberkante liegt bei −Z
+	HotelMap.request(self)
+
+
+## Welche Seite der Karte oben liegt: 0 = Erdgeschoss, 1 = Obergeschoss
+func _update_map_side() -> void:
+	var side := 0.0
+	if is_held and global_position.y > LevelBuilder.UP_Y / 2.0 + 1.0:
+		side = 0.5
+	_map_material.uv1_offset.y = side
+
+
+func set_map_texture(tex: Texture2D) -> void:
+	_map_material.albedo_color = Color.WHITE
+	_map_material.albedo_texture = tex
+	_map_material.emission_texture = tex
 
 
 func _pumpkin(carved: bool) -> void:
