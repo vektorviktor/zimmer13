@@ -83,7 +83,7 @@ func interact(_player: Player) -> void:
 	remove_from_group("trace_marks")
 	set_meta("interactable", null)
 	collision_layer = 0
-	Game.play_sound("creak", 0.15)
+	Game.noise("wipe", global_position, Game.player)
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector3(1, 1, 0.01) * 0.2, 0.6)
 	tw.tween_callback(queue_free)

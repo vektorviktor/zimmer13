@@ -358,8 +358,10 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Funktionieren die Telefone von Anfang an, oder muss erst die Telefonzentrale an der Rezeption eingeschaltet werden?
 - Freitext-Gespräche nein – Telefonate nutzen das bestehende Dialogsystem mit eigenen Sätzen.
 
-### 4.15 Lärm & Sichtbarkeit – ein gemeinsames System (vorgemerkt 2026-10-11)
-> **Stand im Prototyp:** Lärm kennt das Monster nur von sechs Aktionen (Rennen, Keuchen, Telefon, Feier, Würfeln), immer mit demselben Radius von 14 m, durch Wände ungedämpft; was man hört (Türen, Schranktüren, platzende Birnen …), macht für das Monster keinen Lärm; Gäste hören gar nichts. Sehen: Das Monster rechnet mit Licht, Haltung und Bewegung (4.12), Gäste als Zeugen und „beim Verstecken gesehen“ dagegen mit festen Entfernungen ohne Licht.
+### 4.15 Lärm & Sichtbarkeit – ein gemeinsames System (entschieden 2026-10-11)
+> **Im Prototyp umgesetzt (2026-10-11):** Alle Werte stehen in `scripts/util/senses.gd`. Jedes Geräusch in der Welt läuft über einen Einstieg (`Game.noise`) und ist zugleich Lärm nach der Tabelle unten. Gedämpft wird über Sichtlinien-Strahlen: Wände ×0,4, geschlossene Türen (und klares Glas) ×0,6, je Geschossdecke ×0,3. Das Monster geht in Hörweite nachsehen, bis zur doppelten Hörweite wird es neugierig (0,25 Neugier je Meter Hörweite), ruhend zählt nur Lautes ab 8 m. Gäste hören erschreckende Geräusche (Schrei, aufgerissene Tür oder Schrank, platzende Birne) mit halber Reichweite: Angst steigt, ängstliche verstecken sich in Panik, mutige gehen nachsehen, die anderen erzählen davon („Hast du das gehört?“, nicht immer mit dem richtigen Ort). Gäste in Panik machen beim Rennen Lärm. Sehen: eine Rechnung für Jagd, „beim Verstecken gesehen“ und Zeugen beim Klauen, mit eigenem Licht in der Hand.
+> **Abweichungen beim Umsetzen:** Rasen schluckt Schritte wie Teppich. Neu in der Tabelle: Hörer abnehmen, auflegen oder daneben legen (2 m). Schritte von Gästen beim Gehen machen (noch) keinen Lärm, nur Rennen. Das Klopfen-Geschrei lockt das Monster nicht mehr fest an, sondern nur, wenn es in Hörweite ist.
+> **Noch nicht:** Untertitel wie „[Die Tür knarrt]“ für leise Geräusche; Gäste ärgern sich über Lärm des Spielers vor ihrer Tür (6.2).
 
 **Grundsatz:** Jede Aktion hat eine **Lautstärke** und jeder Akteur eine **Auffälligkeit**. Spieler, Gäste und Monster benutzen dieselben Werte, und alle Beobachter (Monster *und* Gäste) rechnen gleich – nur mit eigenen Ohren und Augen. Die Werte stehen an **einer** Stelle und werden hier abgestimmt.
 
@@ -372,7 +374,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 | Aktion | bisher | Hörweite (Vorschlag) | Anmerkung |
 |--------|--------|----------------------|-----------|
-| Gehen | – | 0 m (Teppich) · 2 m (Holz, Fliesen) | geduckt immer 0 |
+| Gehen | – | 0 m (Teppich, Rasen) · 2 m (Holz, Fliesen) | geduckt immer 0 |
 | Rennen | 1,0 alle 0,6 s | 10 m | |
 | Landen nach Sprung | – | 4 m | |
 | Tür öffnen/schließen (Knarren) | – | 5 m | |
@@ -396,6 +398,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Atmen im Versteck | Sonderregel | – | bleibt: angehaltener Atem senkt die Chance, entdeckt zu werden (×0,35) |
 | Klopfen an eine Tür | – | 8 m | |
 | Telefon klingelt | 0,8 je Klingeln | 18 m | 4.14 |
+| Hörer abnehmen, auflegen, daneben legen | – | 2 m | (beim Umsetzen ergänzt) |
 | Würfeln, Spiel am Tisch | 0,7 | 10 m | |
 | Feier mit Musik | 1,5 | 25 m | |
 | Gast schreit | – | 20 m | |
@@ -427,10 +430,13 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 **Folgen fürs Spiel:** Türen, Schränke und Truhen werden zu Entscheidungen (leise und langsam oder schnell und laut). Licht in der Hand schützt nicht nur, es verrät auch. Gäste reagieren auf das, was im Hotel passiert, statt nur auf Gespräche.
 
+**Entschieden beim Umsetzen (2026-10-11)**
+- Dämpfungswerte wie vorgeschlagen; Gehen auf Holz und Fliesen macht 2 m Lärm.
+- Gäste reagieren auf erschreckenden Lärm mit Gerüchten **und** gehen nachsehen (die mutigen) – sie können dabei selbst in Gefahr geraten.
+
 **Zu klären**
-- Dämpfungswerte und ob Gehen auf Holz und Fliesen überhaupt Lärm macht.
-- Wie stark Gäste auf Lärm reagieren (nur Gerüchte, oder auch nachsehen – und damit selbst in Gefahr geraten?).
 - Ob der Spieler sieht, wie laut er gerade ist (kein HUD – vielleicht nur über Untertitel wie „[Die Tür knarrt]“).
+- Die Dämpfung im Spiel nachhören: Reicht ×0,4 je Wand, oder hört man Zimmer nebenan zu gut bzw. zu schlecht?
 
 ---
 
@@ -993,7 +999,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 6. Puppe („Halloween-Jury“) inkl. Deko-Wettbewerb bei Feiern
 7. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen Zetteln (2.2)
 7a. Fahrstuhl reparieren, Tiefkeller mit Heizkeller und Lager (7.4) · ~~Zimmertelefone (4.14)~~ ✔ (2026-10-11)
-7b. Lärm & Sichtbarkeit als ein gemeinsames System (4.15)
+7b. ~~Lärm & Sichtbarkeit als ein gemeinsames System (4.15)~~ ✔ (2026-10-11)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen

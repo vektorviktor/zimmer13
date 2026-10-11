@@ -64,21 +64,22 @@ func interact(player: Player) -> void:
 		elif player.has_key(key_id):
 			locked = false
 			Game.say("Aufgeschlossen.")
-			Game.play_sound("jingle", 0.6)
-			set_open(true)
+			Game.noise("unlock", center(), player)
+			set_open(true, false, false, player)
 			SaveManager.request_autosave("Tür aufgeschlossen")
 		else:
 			Game.say(locked_text)
-			Game.play_sound("thud", 0.6)
+			Game.noise("rattle", center(), player)
 			_rattle()
 		return
 	if player.hands_blocked():
 		Game.say("Mit vollen Händen geht das nicht.")
 		return
-	set_open(not is_open)
+	set_open(not is_open, false, false, player)
 
 
-func set_open(open: bool, fast: bool = false, quiet: bool = false) -> void:
+## `source`: wer die Tür bewegt (hört das eigene Knarren nicht als Lärm, 4.15).
+func set_open(open: bool, fast: bool = false, quiet: bool = false, source: Node = null) -> void:
 	is_open = open
 	opened_by_monster = false
 	if _tween:
@@ -89,7 +90,7 @@ func set_open(open: bool, fast: bool = false, quiet: bool = false) -> void:
 		var target := open_angle * side if open else 0.0
 		_tween.tween_property(_pivots[i], "rotation:y", target, 0.25 if fast else 0.6).set_trans(Tween.TRANS_SINE)
 	if not quiet:
-		Game.play_sound("creak", 0.5)
+		Game.noise("door", center(), source)
 
 
 ## Das Monster reißt die Tür auf (auch abgeschlossene – außer der Lobbytür).
@@ -97,9 +98,9 @@ func monster_open() -> void:
 	if is_open or not monster_can_open:
 		return
 	locked = false
-	set_open(true, true)
+	set_open(true, true, true)
 	opened_by_monster = true
-	Game.play_sound("bang", 0.8)
+	Game.noise("door_burst", center(), Game.monster)
 
 
 ## Spur auf dem (ersten) Türflügel anbringen; side = Seite der Tür (lokale ±Z).

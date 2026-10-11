@@ -71,7 +71,7 @@ func interact(player: Player) -> void:
 	if not is_ripe() or player.held:
 		return
 	player.receive_item(harvest())
-	Game.play_sound("thud", 0.5)
+	Game.noise("harvest", global_position, player)
 
 
 func _update_visual() -> void:

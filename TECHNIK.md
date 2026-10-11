@@ -50,9 +50,11 @@ UI-nahe Dinge (`Game.message_posted`, `money_changed`, `player_died`, `caption_p
 - Referenzen können `null` sein (Titelbildschirm, Szenenwechsel) → bei Aufrufen aus Welt-Objekten
   mit `if Game.traces:` / `if Game.social:` absichern.
 - `Game.reset()` am Anfang von `main._ready()` leert alles.
-- Text für den Spieler: `Game.say(text, dauer)`. Geräusch: `Game.play_sound(kind, volume)` – setzt
-  bei Lautstärke ≥ 0,3 auch Untertitel (`Game.SOUND_CAPTIONS`). Sound-Arten stehen in
-  `SynthAudio.play_shot` (`scream`, `sting`, `growl`, `gasp`, `bang`, `blip`, `creak`, `thud`, `knock`, `ring`).
+- Text für den Spieler: `Game.say(text, dauer)`. **Geräusch in der Welt:** `Game.noise(art, ort, quelle)`
+  – Geräusch *und* Lärm in einem (siehe 8a). Nur reine UI-, Meldungs- und Monster-Stinger-Geräusche
+  gehen direkt über `Game.play_sound(kind, volume)` – setzt bei Lautstärke ≥ 0,3 auch Untertitel
+  (`Game.SOUND_CAPTIONS`). Sound-Arten stehen in `SynthAudio.play_shot` (`scream`, `sting`, `growl`,
+  `gasp`, `bang`, `blip`, `creak`, `thud`, `knock`, `ring`).
 
 ### Reihenfolge in `main._ready()`
 Umgebung → `LevelBuilder.build()` → NavMesh backen → SynthAudio → ShadowBudget → Traces → Player →
@@ -101,7 +103,8 @@ Main (Node3D, main.gd)
 | 9 | 256 | Milchglas | blockiert Sicht |
 | 10 | 512 | zugezogene Vorhänge (`HotelWindow.LAYER_BLOCK`) | nur Sicht-/Licht-Raycasts, nicht Bewegung |
 
-Sichtprüfungen (Monster, Zeugen) nutzen `1 | 2 | 256 | 512`, Lichtprüfungen `1 | 2`.
+Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` = `1 | 2 | 256 | 512`, Lichtprüfungen `1 | 2`,
+Lärm-Dämpfung `1 | 2 | 64`.
 
 ### Interaktion („Smart Objects“)
 - Ein Kollisionskörper bekommt `set_meta("interactable", objekt)`. Der Spieler-RayCast
@@ -180,7 +183,7 @@ Effekte), **`Monster`** führt aus (Zustandsautomat, Bewegung, Sicht, Spuren).
   Außenfenster mit offenem Vorhang. Teuer → sparsam aufrufen.
 
 ### Ereignis-Schnittstelle (andere Systeme melden, der Director reagiert)
-`on_noise(pos, stärke)` · `on_lights_off(pos)` · `on_actor_hid(spot, actor)` · `on_monster_talk(pos)` ·
+`on_noise(pos, hörweite, quelle)` (nur über `Game.noise`) · `on_lights_off(pos)` · `on_actor_hid(spot, actor)` · `on_monster_talk(pos)` ·
 `on_monster_noticed()` · `on_monster_repelled()` · `on_monster_gone()` · `kill_guest(guest, spot)` ·
 `kill_player(spot)`. Neue Spielmechaniken, die das Monster beeinflussen sollen, melden sich hier.
 
@@ -275,11 +278,50 @@ Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick ver
 | Kompass | `item.gd` (`Kind.COMPASS`) | Nadel = Feder Richtung Welt −Z (Norden), gestört über `director.threat_at()` und – nur eingesteckt (`pocketed`) – `is_hallucinating()`; der Kompass in der linken Hand ist ein `Item` mit `make_pocketed()` (raus aus Gruppe `items`); liegt in `LevelBuilder.COMPASS_ROOM` |
 | Karte | `world/hotel_map.gd`, `item.gd` (`Kind.MAP`, `extra` = Blatt-ID), `player/pocket_map.gd` | `HotelMap.PAGES` = Blätter (id, Titel, Höhenbereich, Geschoss oder eigene Zeichnung); gedruckte Pläne aus `LevelBuilder.FLOORS`/`ROWS` (neue Zimmer erscheinen von selbst), Kellerskizze von Hand gezittert. Alle Blätter einmal untereinander in einem SubViewport gerendert → geteilte `ImageTexture` (ohne Grafik: nur Papierfarbe); `HotelMap.material(id)` schneidet per `uv1_offset` aus. `PocketMap` = Blätterstapel in der linken Hand, Schlüsselblatt (`KEYS`) zuletzt; beim Hervorholen oben das Blatt zu `HotelMap.page_at(y)`. Neue Ebene: Eintrag in `PAGES`, Zeichnung in `_draw()`, Blatt im `LevelBuilder` auslegen |
 | Kalender | `calendar.gd` | statische Datumsfunktionen + Abreißkalender in Zimmer 13 |
-| Telefone | `world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd` | `HotelPhone` auf jedem Zimmertisch (nicht Wäscherei) + Haupttelefon an der Rezeption (`room_id` `"lobby"`, Nummer `"0"`); gespeichert wird nur `off_hook` (Gruppe `phones`, ab Spielstand-Version 5). `PhoneCalls` (`Game.phones`) hat die Anrufe: eingehend nur für Zimmer 13 (warnen/lügen/plaudern/unheimlich), ausgehend per Wählseite, ferne Telefone als Atmosphäre. Jedes Klingeln = `director.on_noise`. Telefonsätze in `PhoneCalls.LINES`, eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die Zufallsfolge). Unheimliche Anrufe hinterlassen einen Hörer neben dem Apparat im Herkunftszimmer. Laufende Anrufe werden nicht gespeichert |
-| Mäxchen | `minigames/` | `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI & Einsätze, `GameTable` = Tisch; Würfeln macht Lärm |
+| Telefone | `world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd` | `HotelPhone` auf jedem Zimmertisch (nicht Wäscherei) + Haupttelefon an der Rezeption (`room_id` `"lobby"`, Nummer `"0"`); gespeichert wird nur `off_hook` (Gruppe `phones`, ab Spielstand-Version 5). `PhoneCalls` (`Game.phones`) hat die Anrufe: eingehend nur für Zimmer 13 (warnen/lügen/plaudern/unheimlich), ausgehend per Wählseite, ferne Telefone als Atmosphäre. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`, eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die Zufallsfolge). Unheimliche Anrufe hinterlassen einen Hörer neben dem Apparat im Herkunftszimmer. Laufende Anrufe werden nicht gespeichert |
+| Mäxchen | `minigames/` | `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI & Einsätze, `GameTable` = Tisch; Würfeln macht Lärm (`dice`) |
 | UI | `ui/` | `UiKit` = Meldezettel-Optik für Menüs; `Hud` Prompt/Meldungen/Debug (F3); `Menus` pausiert; `TeleportUI` = Debug-Teleport (F6), Ziele in `_destinations()` aus dem `LevelBuilder` |
 | Optik | `util/mat.gd`, `shaders/` | Materialien immer über `Mat.psx(...)` (Vertex-Snapping über Shader-Global `psx_snap`); Post-FX: Gamma, Dithering, Rauschen, Flackern |
 | Geometrie | `util/geo.gd` | `Geo.solid(parent, größe, pos, mat, ebene)` für Kollisionskästen, `Geo.mesh` für reine Optik |
+
+## 8a. Lärm & Sichtbarkeit (`scripts/util/senses.gd`, Spielkonzept 4.15)
+
+Alle Werte stehen in `Senses`: die Lärmtabelle `NOISE` (Art → Hörweite in m, Geräusch, Lautstärke,
+`alarm`), Dämpfung, Auffälligkeit und Grundweiten der Beobachter.
+
+**Lärm:** `Game.noise(art, ort, quelle)` ist der einzige Einstieg.
+1. Spieler: hört fremde Geräusche bis zur doppelten gedämpften Hörweite (mindestens
+   `PLAYER_MIN_REACH`), linear leiser; eigene (`quelle == player`) in voller Lautstärke. Rückgabe =
+   gespielte Lautstärke (z. B. für Untertitel beim Telefon).
+2. `MonsterDirector.on_noise`: aktiv → innerhalb der gedämpften Hörweite `investigate`, bis zum
+   Doppelten nur Neugier (`Hörweite × NOISE_CURIOSITY`); ruhend → nur Lautes (≥ `Senses.LOUD`) als
+   Neugier. Eigene Geräusche (`quelle == monster`) ignoriert es.
+3. `Social.on_alarm` (nur Arten mit `alarm`): Gäste in halber gedämpfter Hörweite →
+   `Guest.hear_alarm` (Angst ↑, Panik → verstecken, mutig → hingehen, sonst Gerücht in `_reports`
+   mit `heard`, das `report_line` als „Hast du das gehört? …“ erzählt). 20 s Pause je Gast.
+
+**Dämpfung** (`Senses.audible_range`): Strahl von Ohrhöhe (1,2 m über dem Boden des Stockwerks) zu
+Ohrhöhe; jeder Treffer wird ausgeschlossen und neu geworfen (max. 4). Wand = Körper auf Ebene 1 mit
+Box ≥ 2,5 m Höhe (×0,4, Ergebnis je Körper gecacht), Tür = Vorfahr `Door` (geschlossen ×0,6, offen ×1),
+klares Glas ×0,6, je Geschossdecke ×0,3. Möbel, Böden und Brüstungen dämpfen nicht.
+→ Wer eine neue Wand baut, die niedriger als 2,5 m ist, dämpft keinen Lärm.
+
+**Neues Geräusch in der Welt:** Eintrag in `Senses.NOISE`, Aufruf `Game.noise(...)` mit `quelle`, wo
+bekannt (sonst hört sich z. B. das Monster selbst und läuft seinen eigenen Türen nach).
+Spielerschritte: `Player._on_soft_floor()` erkennt Teppich/Rasen an der `albedo_tex` des Bodens.
+Gäste machen nur beim Rennen (Panik) Schrittlärm.
+
+**Sichtbarkeit:** `Senses.can_see(beobachter, auge, blick, grundweite, kegel, akteur, bonus, …)`:
+Sichtweite = Grundweite × `conspicuity(akteur)` + Bonus, dann Kegel (näher als 2 m ohne Kegel) und
+freie Sichtlinie. Auffälligkeit = 1 + 1,2 × Licht am Ort (`light_at(p, skip)` ohne das eigene Licht
+in der Hand) + Licht in der Hand + Rennen/Stillstehen/Ducken. Benutzt von `Monster.can_see_actor`
+(auch für „beim Verstecken gesehen“: `at` = `exit_point` des Verstecks, Stillstehen zählt nicht) und
+`Guest.can_see_actor` (Zeugen beim Diebstahl, abgelenkt ×0,6). Unverändert eigene Regeln:
+`player_can_see` (Kamera), Gäste sehen das Monster (`_watch_monster`), Licht aus (4.4), Lauschen (4.7),
+angehaltener Atem (×0,35).
+
+**Debug:** `Game.noise_log` (letzte 5, im F3-Text des Directors), `--trace` druckt jedes Ereignis,
+`--noise=art` erzeugt alle 6 s Lärm am Spieler.
 
 ## 9. Rezepte
 

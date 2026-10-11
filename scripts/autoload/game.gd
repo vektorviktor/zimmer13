@@ -25,6 +25,9 @@ var menus: Menus
 var traces: Traces
 var phones: PhoneCalls
 var game_over := false
+## Debug: letzte Lärmereignisse (F3) und Ausgabe in die Konsole (--trace)
+var noise_log: Array[String] = []
+var noise_trace := false
 ## Spielstand, der beim nächsten Start der Hauptszene geladen wird (siehe SaveManager)
 var pending_load: Dictionary = {}
 ## Neues Spiel: in diesen Slot gleich den Startzustand schreiben (0 = keiner)
@@ -90,6 +93,7 @@ func reset() -> void:
 	menus = null
 	traces = null
 	phones = null
+	noise_log.clear()
 
 
 func say(text: String, duration: float = 3.5) -> void:
@@ -101,6 +105,47 @@ func play_sound(kind: String, volume: float = 1.0) -> void:
 		audio.play_shot(kind, volume)
 	if volume >= 0.3 and SOUND_CAPTIONS.has(kind):
 		caption(SOUND_CAPTIONS[kind])
+
+
+## Lärm (Spielkonzept 4.15): Geräusch und Lärm in einem. `kind` ist eine Art aus
+## `Senses.NOISE`; der Spieler hört es je nach Entfernung und Wänden, Monster und Gäste
+## reagieren in ihrer Hörweite. `source` (wer es macht) hört sich selbst nicht.
+## Gibt die Lautstärke zurück, mit der der Spieler es hört (0 = gar nicht).
+func noise(kind: String, pos: Vector3, source: Node = null) -> float:
+	var data: Dictionary = Senses.NOISE.get(kind, {})
+	if data.is_empty():
+		push_warning("Unbekannte Lärm-Art: " + kind)
+		return 0.0
+	var loudness: float = data["range"]
+	var volume := 0.0
+	if player and String(data["sound"]) != "":
+		volume = float(data["volume"])
+		if source != player:
+			# Der Spieler hört fremde Geräusche bis zur doppelten (gedämpften) Hörweite
+			var ear := player.camera.global_position
+			var d := ear.distance_to(pos)
+			var reach := 0.0
+			if d < maxf(2.0 * loudness, Senses.PLAYER_MIN_REACH):
+				var audible := Senses.audible_range(player.get_world_3d(), pos, ear, loudness)
+				reach = maxf(2.0 * audible, Senses.PLAYER_MIN_REACH * audible / loudness)
+			volume *= clampf(1.0 - d / reach, 0.0, 1.0) if reach > 0.0 else 0.0
+		if volume > 0.02:
+			play_sound(data["sound"], volume)
+	var heard: Array[String] = []
+	if director:
+		var r := director.on_noise(pos, loudness, source)
+		if r != "":
+			heard.append(r)
+	if social and data.get("alarm", false):
+		heard.append_array(social.on_alarm(kind, pos, loudness, source))
+	var line := "[%ds] Lärm %s %.0f m @ (%.1f, %.1f, %.1f)%s" % [int(director.elapsed) if director else 0,
+		kind, loudness, pos.x, pos.y, pos.z, "" if heard.is_empty() else " → " + ", ".join(heard)]
+	noise_log.append(line)
+	if noise_log.size() > 5:
+		noise_log.pop_front()
+	if noise_trace:
+		print(line)
+	return volume
 
 
 ## Untertitel für ein Geräusch – nur, wenn in den Einstellungen eingeschaltet.

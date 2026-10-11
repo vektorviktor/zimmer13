@@ -12,12 +12,10 @@ extends Node
 
 # --- Tuning -------------------------------------------------------------------
 const RING_INTERVAL := 3.0
-const RING_NOISE := 0.8                    ## Lärm pro Klingeln (MonsterDirector.on_noise)
 const INCOMING_RINGS := 6                  ## so oft klingelt es, bevor der Anrufer aufgibt
 const OUTGOING_RINGS := 5
 const CALL_COOLDOWN := Vector2(110.0, 240.0)
 const AMBIENT_COOLDOWN := Vector2(90.0, 200.0)
-const HEAR_RANGE := 18.0                   ## so weit hört man ein Telefon klingeln
 const PRANK_TIME := 2.0                    ## wer so schnell wieder auflegt, macht Telefonstreiche
 const QUICK_DIAL_MAX := 10                 ## Einträge der Zimmerliste an der Rezeption
 const CREEPY_PICKUP := 0.12                ## in einem leeren Zimmer nimmt doch jemand ab
@@ -82,30 +80,17 @@ func _process(delta: float) -> void:
 
 # --- Klingeln ---------------------------------------------------------------------------
 
-## Ein Klingeln: laut, wenn man in der Nähe ist – und immer Lärm für das Monster.
+## Ein Klingeln: laut, wenn man in der Nähe ist – und Lärm im ganzen Umkreis (4.14, 4.15).
 func _ring(phone: HotelPhone) -> void:
 	phone.ringing = true
-	var volume := _volume_at(phone.global_position)
-	if volume > 0.02:
-		Game.play_sound("ring", volume)
+	var volume := Game.noise("phone", phone.global_position)
 	if volume >= 0.15:
 		Game.caption("[Dein Telefon klingelt]" if phone == home_phone else "[Ein Telefon klingelt]")
-	Game.director.on_noise(phone.global_position, RING_NOISE)
 	# Wer sich im Zimmer versteckt, zuckt zusammen
 	for guest in Game.social.living_guests():
 		var g: Guest = guest
 		if g.hiding and g.home["no"] == phone.room_id:
 			g.fear = minf(100.0, g.fear + 8.0)
-
-
-func _volume_at(pos: Vector3) -> float:
-	var p := Game.player
-	if p == null:
-		return 0.0
-	var v := clampf(1.0 - p.global_position.distance_to(pos) / HEAR_RANGE, 0.0, 1.0)
-	if absf(p.global_position.y - pos.y) > 2.5:
-		v *= 0.3
-	return v * 0.7
 
 
 # --- Anrufe für Zimmer 13 -----------------------------------------------------------------
@@ -121,7 +106,7 @@ func _update_incoming(delta: float) -> void:
 	var p := Game.player
 	if p == null or p.dead or home_phone == null or home_phone.off_hook or is_busy():
 		return
-	if p.global_position.distance_to(home_phone.global_position) > HEAR_RANGE \
+	if p.global_position.distance_to(home_phone.global_position) > Senses.range_of("phone") \
 			or absf(p.global_position.y - home_phone.global_position.y) > 2.5:
 		return
 	if Game.social.is_knocking():
@@ -253,7 +238,8 @@ func answer(phone: HotelPhone) -> void:
 func _take_line(phone: HotelPhone) -> void:
 	_active_phone = phone
 	_call_id += 1
-	Game.play_sound("thud", 0.15)
+	if _active_phone:
+		Game.noise("handset", _active_phone.global_position, Game.player)
 
 
 func _take_incoming(call: Dictionary) -> void:
@@ -545,9 +531,10 @@ func hang_up() -> void:
 	_outgoing = {}
 	_talk = {}
 	_call_id += 1
+	if _active_phone:
+		Game.noise("handset", _active_phone.global_position, Game.player)
 	_active_phone = null
 	ui.close()
-	Game.play_sound("thud", 0.15)
 
 
 ## Den Hörer neben den Apparat legen: still – aber auch keine Warnungen mehr.

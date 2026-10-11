@@ -21,6 +21,16 @@ const TRACE_TEXT := {
 	"footprint": "nasse Fußspuren", "scratch": "Kratzspuren", "blood": "Blut",
 	"handprint": "einen Handabdruck am Milchglas", "drops": "Blutstropfen",
 }
+## Gerüchte über Gehörtes (4.15): was man gehört hat, und wie man davon erzählt
+const HEARD_TEXT := {
+	"scream": "Jemand hat geschrien", "door_burst": "Eine Tür ist aufgeflogen, mit einem Knall",
+	"hide_burst": "Ein Schrank ist aufgerissen worden", "bulb_burst": "Eine Glühbirne ist geplatzt",
+}
+const HEARD_LINES := [
+	"Hast du das auch gehört? %s – bei %s.",
+	"%s. Bei %s. Ich hab's genau gehört.",
+	"Da war was. %s, irgendwo bei %s.",
+]
 ## Zettel, die Gäste hinterlassen ({name}, {room}, {dead}, {zone})
 const DEATH_NOTES := [
 	"{dead} ist fort. Ich habe den Schrei gehört. Wer das liest: Bleibt nicht allein im Flur.\n– {name}",
@@ -270,10 +280,9 @@ func on_player_took(item: Item) -> void:
 	if owner_guest == null or owner_guest.dead:
 		return
 	_thefts[owner_guest.id] = _time
-	var head := Game.player.camera.global_position
 	var witnesses: Array[Guest] = []
 	for guest in guests:
-		if guest.can_see_point(head):
+		if guest.can_see_actor(Game.player):
 			witnesses.append(guest)
 	if witnesses.is_empty():
 		return   # unbemerkt – der Besitzer merkt es später an seiner Tür
@@ -483,7 +492,7 @@ func _update_party(delta: float) -> void:
 		_party_noise -= delta
 		if _party_noise <= 0.0:
 			_party_noise = 8.0
-			Game.director.on_noise(party_center(), 1.5)
+			Game.noise("party", party_center())
 		if not Game.director.is_quiet(party_center(), 22.0):
 			end_party("Die Musik verstummt abrupt.")
 		elif _party_time <= 0.0:
@@ -604,8 +613,7 @@ func _update_bar_game(delta: float) -> void:
 	_bar_game["noise"] = float(_bar_game["noise"]) - delta
 	if float(_bar_game["noise"]) <= 0.0:
 		_bar_game["noise"] = 7.0
-		Game.director.on_noise(table.global_position, 0.7)
-		Game.play_sound("thud", 0.25 if dist < 7.0 else 0.05)
+		Game.noise("dice", table.global_position)
 		if dist < 7.0:
 			var pair := [ga.display_name, gb.display_name]
 			pair.shuffle()
@@ -683,6 +691,31 @@ func _update_memorials() -> void:
 
 # --- Spuren & Berichte (Spielkonzept 4.13) -----------------------------------------------------
 
+## Ein erschreckendes Geräusch (Spielkonzept 4.15): Gäste hören mit halber Reichweite,
+## gedämpft durch Wände und Türen. Gibt die Reaktionen zurück (Debug).
+func on_alarm(kind: String, pos: Vector3, loudness: float, source: Node) -> Array[String]:
+	var result: Array[String] = []
+	var reach := loudness * Senses.GUEST_HEARING
+	var told := false
+	for guest in guests:
+		if guest == source or guest.dead or guest.hiding:
+			continue
+		var ear := guest.global_position + Vector3.UP * 1.5
+		var d := ear.distance_to(pos)
+		if d > reach or d > Senses.audible_range(guest.get_world_3d(), pos, ear, reach, d):
+			continue
+		var reaction := guest.hear_alarm(pos)
+		if reaction == "":
+			continue
+		result.append("%s %s" % [guest.display_name, reaction])
+		if reaction == "erzählt davon" and not told:
+			told = true
+			_reports.append({"kind": kind, "heard": true, "zone": Game.director.zone_name_at(pos), "time": _time})
+			if _reports.size() > 12:
+				_reports.pop_front()
+	return result
+
+
 func note_trace(kind: String, pos: Vector3) -> void:
 	_reports.append({"kind": kind, "zone": Game.director.zone_name_at(pos), "time": _time})
 	if _reports.size() > 12:
@@ -700,6 +733,12 @@ func report_line(guest: Guest) -> String:
 		return ""
 	var r: Dictionary = recent[randi() % recent.size()]
 	var zone: String = r["zone"]
+	if r.get("heard", false):
+		var heard: String = HEARD_TEXT.get(r["kind"], "Ein lautes Geräusch")
+		if randf() > float(guest.profile.get("reliable", 0.7)):
+			var zone_names: Array = Game.director.zones.map(func(z: Dictionary) -> String: return z["name"])
+			zone = zone_names[randi() % zone_names.size()]
+		return HEARD_LINES[randi() % HEARD_LINES.size()] % [heard, zone]
 	var what: String = TRACE_TEXT.get(r["kind"], "etwas Seltsames")
 	if randf() > float(guest.profile.get("reliable", 0.7)):
 		# Falsch erinnert, erfunden oder übertrieben
@@ -775,7 +814,7 @@ func _knock_step(delta: float) -> void:
 	_knock["next"] = float(_knock["next"]) - delta
 	if float(_knock["next"]) <= 0.0:
 		_knock["next"] = randf_range(1.0, 1.6) if not fake else 2.4
-		Game.play_sound("knock", 0.7)
+		Game.noise("knock", builder.rooms["13"]["door_front"], guest)
 		Game.caption("[Es klopft an deiner Tür]")
 	var said := int(_knock["said"])
 	if fake and said == 0 and t > 1.5:
@@ -786,8 +825,7 @@ func _knock_step(delta: float) -> void:
 		Game.say("%s: „%s“" % [guest.display_name, guest.line("knock")], 3.5)
 		if said == 1:
 			# Das Geschrei lockt es an – jetzt bleibt nicht mehr viel Zeit
-			Game.play_sound("scream", 0.35)
-			Game.monster.investigate(guest.global_position)
+			Game.noise("scream", guest.global_position, guest)
 
 
 func _knock_answered(guest: Guest, fake: bool) -> void:
@@ -816,7 +854,7 @@ func _knock_ignored(guest: Guest, fake: bool) -> void:
 		if Game.traces:
 			Game.traces.add_door_scratch(builder.rooms["13"]["door"], builder.rooms["13"]["door_front"] + Vector3(0, 0, -1.0))
 		return
-	Game.play_sound("scream", 0.8)
+	Game.noise("scream", guest.global_position, guest)
 	if Game.director.is_harmless() or randf() < 0.5:
 		guest.scared_by_monster()
 		change_relation(guest, -20.0)

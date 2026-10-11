@@ -27,7 +27,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | Taste | Aktion |
 |-------|--------|
 | WASD / Maus | Laufen / Umsehen |
-| Shift | Rennen (macht Lärm → Monster wird neugierig) |
+| Shift | Rennen (macht Lärm: 10 m statt 0–2 m beim Gehen) |
 | Leertaste | Springen |
 | Strg / C (halten) | Ducken – nötig für die Kellertür (1,80 m) |
 | E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Tür/Truhe öffnen, Licht schalten, Vorhang ziehen, Glühbirne heraus-/eindrehen, mit Gästen reden, telefonieren, Verstecken, ins Tagebuch schreiben |
@@ -37,7 +37,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | Rechtsklick (halten) | Im Versteck Luft anhalten |
 | Tab (halten) · Linksklick / Mausrad | Kartenblätter ansehen · weiterblättern |
 | F (halten) | Kompass ansehen |
-| F3 | Debug: versteckte Monster-Werte |
+| F3 | Debug: versteckte Monster-Werte und die letzten Lärmereignisse |
 | F5 | Debug: Monster sofort rufen (wenn es gerade ruht) |
 | F6 | Debug: Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller …) – pausiert, 1–9 / Maus |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel |
@@ -61,6 +61,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 - **Licht & Fenster:** ein Lichtschalter pro Raum, Decken- und Wandlampen, Glühbirnen herausdrehen und woanders einsetzen (auch Gäste klauen sie), Birnen brennen bei starkem Flackern oder in Monsternähe selten durch · Licht aus lockt das Monster an · Außenfenster mit Vorhängen (Mondlicht, Sicht in beide Richtungen), Milchglas zwischen Flur und Zimmern (nur Umrisse)
 - **Kalender:** vom 1. Oktober bis Halloween, ein Ingame-Tag ≈ 5 Minuten, draußen immer Nacht · Abreißkalender in Zimmer 13, Datum im Spielmenü und in den Spielständen
 - **Menüs & Speichern:** Titelbildschirm, Spielmenü (Esc), Einstellungen (Helligkeit mit Testbild, PS1-Look, Ton, Maus, weniger Flackern, Untertitel) · Speichern nur am **Tagebuch in Zimmer 13** (3 Slots, nicht während Vorwarnung/Monster) · Autosave bei wichtigen Ereignissen in sicheren Momenten · nach dem Tod letzten Spielstand laden
+- **Lärm & Sichtbarkeit:** jedes Geräusch in der Welt ist zugleich Lärm mit eigener Hörweite (Tür knarrt 5 m, Schranktür 4 m, Rennen 10 m, Telefon 18 m, Schrei 20 m, Feier 25 m …), gedämpft durch Wände, geschlossene Türen und Geschossdecken · Schritte hört man nur auf Holz und Fliesen, geduckt gar nicht · das Monster geht in Hörweite nachsehen, bis zur doppelten Hörweite wird es neugierig · Gäste hören Schreie und Knalle mit halber Reichweite: sie erschrecken, sehen nach, erzählen davon oder geraten in Panik · Monster und Gäste sehen nach derselben Rechnung: Licht am Ort, **Licht in der Hand**, Rennen, Ducken, Stillstehen – im Dunkeln und geduckt klaut man unbemerkter, wer mit Kerze in den Schrank steigt, wird gesehen
 - **Feiern:** Plattenspieler in der Lobby (selbst ausrichten) oder spontan von Gästen – laut, also lockt es das Monster an; währenddessen sind die Zimmer leer
 - **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion
 - **Altersempfehlung ab 16** (selbst eingeschätzt, keine USK-Prüfung): Hinweis mit Inhalten beim ersten Start, Kennzeichen im Titelbildschirm (`scripts/ui/title_screen.gd`)
@@ -77,7 +78,8 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 
 | Parameter | Wirkung |
 |-----------|---------|
-| `--trace` | Monster, Gäste und Meldungen alle 2 s in die Konsole |
+| `--trace` | Monster, Gäste und Meldungen alle 2 s in die Konsole, dazu jedes Lärmereignis (wer es hört und wie er reagiert) |
+| `--noise=door` | alle 6 s Lärm dieser Art am Spieler (`door`, `hide`, `run`, `scream` … – Tabelle in `scripts/util/senses.gd`) |
 | `--warn` | sofort Vorwarnung → Monster erscheint |
 | `--bold=90` | Dreistigkeit setzen |
 | `--friend=edna` / `--enemy=bruno` | Beziehung zu einem Gast setzen |
@@ -126,7 +128,8 @@ scripts/monster/            Monster (Zustände), MonsterDirector (Phasen, verste
 scripts/minigames/          Mäxchen: Regeln, Partie (Ablauf, Gast-KI, Einsätze), Würfeltisch
 scripts/ui/                 HUD, Dialog, Sterbebildschirm, Titelbildschirm, Menüs (Esc, Tagebuch),
                             Einstellungen, Slot-Übersicht, UiKit (Meldezettel-Optik), Telefon
-scripts/util/               PS1-Materialien, Platzhalter-Geometrie/-Texturen, Synth-Sound, ShadowBudget
+scripts/util/               PS1-Materialien, Platzhalter-Geometrie/-Texturen, Synth-Sound, ShadowBudget,
+                            Senses (Lärm & Sichtbarkeit: alle Werte)
 shaders/                    PS1-Oberfläche, Post-Effekt, Versteck-Overlay
 ```
 

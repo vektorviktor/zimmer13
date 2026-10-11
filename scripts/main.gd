@@ -23,7 +23,8 @@ extends Node3D
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
 ##   --debug                     Debug-Werte einblenden
 ##   --nointro                   ohne Einführungstext
-##   --trace                     Monster-Zustand alle 2 s in die Konsole schreiben
+##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
+##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort Vorwarnung → Monster erscheint
 ##   --bold=n                    Dreistigkeit setzen (0–100)
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
@@ -349,8 +350,18 @@ func _parse_debug_args() -> void:
 					Game.phones.debug_dial(value))
 		elif arg == "--trace":
 			_trace = true
+			Game.noise_trace = true
 			Game.message_posted.connect(func(text: String, _d: float) -> void: print("  » " + text.replace("
 ", " ")))
+		elif arg.begins_with("--noise="):
+			var kind := arg.substr(8)
+			var timer := Timer.new()
+			timer.wait_time = 6.0
+			timer.autostart = true
+			timer.timeout.connect(func() -> void:
+				if Game.player:
+					Game.noise(kind, Game.player.global_position, Game.player))
+			add_child(timer)
 		elif arg == "--debug":
 			Game.hud.debug_enabled = true
 		elif arg.begins_with("--day="):

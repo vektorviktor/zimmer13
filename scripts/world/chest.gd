@@ -54,7 +54,7 @@ func set_open(open: bool, instant: bool = false) -> void:
 		_lid_pivot.rotation.x = target
 		return
 	create_tween().tween_property(_lid_pivot, "rotation:x", target, 0.4).set_trans(Tween.TRANS_SINE)
-	Game.play_sound("creak", 0.4)
+	Game.noise("chest", global_position)
 
 
 func _part(size: Vector3, pos: Vector3, mat: Material) -> void:

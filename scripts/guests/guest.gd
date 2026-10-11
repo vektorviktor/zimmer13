@@ -14,6 +14,10 @@ const WALK_SPEED := 1.4
 const RUN_SPEED := 3.3
 ## Hört das Monster (Rauschen) ab dieser Entfernung – vorsichtige Gäste verstecken sich
 const HEAR_DISTANCE := 15.0
+## Erschreckendes Geräusch (4.15): Angst-Zuwachs (× (1,2 − Mut)) und Pause bis zur nächsten Reaktion
+const ALARM_FEAR := 25.0
+const ALARM_COOLDOWN := 20.0
+const ALARM_LINES := ["Was war das?!", "Hast du das gehört?", "Da war doch was …", "Hallo? Ist da jemand?"]
 ## Erst wieder aus dem Versteck, wenn das Monster so weit weg ist
 const SAFE_DISTANCE := 22.0
 ## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
@@ -64,6 +68,8 @@ var _deco_timer := 0.0
 var _steal_timer := 0.0
 var _monster_cooldown := 0.0
 var _panic_quiet := 0.0      ## Panik-Satz nicht ständig wiederholen
+var _alarm_cooldown := 0.0
+var _run_noise := 0.0
 var _warned := false
 var _anim := 0.0
 var _game_look := Vector3.ZERO
@@ -218,19 +224,41 @@ func leave_party() -> void:
 	invited = false
 
 
-## Ist der Spieler (Kopf) für diesen Gast sichtbar? Für Zeugen beim Diebstahl.
-func can_see_point(p: Vector3) -> bool:
-	if dead or hiding:
+## Sieht dieser Gast den Akteur? 5 m × Auffälligkeit, 180°, abgelenkt ×0,6 (Spielkonzept 4.15).
+## Für Zeugen beim Diebstahl.
+func can_see_actor(actor) -> bool:
+	if dead or hiding or actor == null or actor.dead or actor.hiding != null:
 		return false
-	var eye := global_position + Vector3.UP * 1.6
-	var to := p - eye
-	var dist := to.length()
-	if dist > 10.0:
-		return false
-	if dist > 2.5 and (-global_transform.basis.z).dot(to / dist) < 0.0:
-		return false
-	var query := PhysicsRayQueryParameters3D.create(eye, p, Monster.SIGHT_MASK)
-	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+	var base := Senses.GUEST_SIGHT * (Senses.DISTRACTED if is_distracted() else 1.0)
+	return Senses.can_see(self, global_position + Vector3.UP * 1.6, -global_transform.basis.z,
+		base, Senses.GUEST_FOV_DOT, actor)
+
+
+## Abgelenkt: im Gespräch, beim Würfeln, auf der Feier, in Panik.
+func is_distracted() -> bool:
+	return state in [State.TALKING, State.MINIGAME, State.PARTY] or fear >= 60.0
+
+
+## Ein erschreckendes Geräusch gehört (Spielkonzept 4.15). Ängstliche geraten in Panik,
+## Mutige sehen nach, die anderen erzählen davon. Gibt die Reaktion zurück (Debug), sonst "".
+func hear_alarm(pos: Vector3) -> String:
+	if dead or hiding or _alarm_cooldown > 0.0 or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDE_GO]:
+		return ""
+	_alarm_cooldown = ALARM_COOLDOWN
+	var brave := float(profile["brave"])
+	fear = minf(100.0, fear + ALARM_FEAR * (1.2 - brave))
+	if fear >= 60.0:
+		say_panic()
+		_go_hide()
+		return "Panik"
+	if state == State.PARTY:
+		return "erschrickt"
+	say(ALARM_LINES[randi() % ALARM_LINES.size()])
+	if randf() < brave:
+		_drop_held()
+		_walk_to(pos, State.WALK)
+		return "sieht nach"
+	return "erzählt davon"
 
 
 func own_deco_near_door() -> Array[Item]:
@@ -288,6 +316,7 @@ func _physics_process(delta: float) -> void:
 	gift_cooldown = maxf(0.0, gift_cooldown - delta)
 	_monster_cooldown -= delta
 	_panic_quiet -= delta
+	_alarm_cooldown -= delta
 	match state:
 		State.TALKING:
 			_stop(delta)
@@ -312,6 +341,12 @@ func _physics_process(delta: float) -> void:
 			return
 	_watch_monster()
 	running = state == State.HIDE_GO
+	if running:
+		# Wer in Panik rennt, macht Lärm (6.5, 4.15)
+		_run_noise -= delta
+		if _run_noise <= 0.0:
+			_run_noise = 0.6
+			Game.noise("run", global_position, self)
 	var speed := RUN_SPEED if running else WALK_SPEED
 	match state:
 		State.IDLE:
@@ -404,7 +439,7 @@ func _arrive() -> void:
 		State.HARVEST:
 			if _plant and _plant.is_ripe() and held == null:
 				_take_into_hand(_plant.harvest())
-				Game.play_sound("thud", 0.3)
+				Game.noise("harvest", global_position, self)
 				_walk_to(_room_point(), State.CARRY_HOME)
 			else:
 				_set_idle(randf_range(5.0, 10.0))
@@ -633,7 +668,7 @@ func _enter_hide(spot: HideSpot) -> void:
 	Game.social.release_hide_spot(spot)
 	hiding = spot
 	spot.occupant = self
-	spot.on_enter()
+	spot.on_enter(self)
 	visible = false
 	_collider.disabled = true
 	velocity = Vector3.ZERO
@@ -791,7 +826,7 @@ func _open_doors() -> void:
 		if door.is_open or door.locked:
 			continue
 		if door.center().distance_to(global_position + Vector3.UP) < 1.2:
-			door.set_open(true)
+			door.set_open(true, false, false, self)
 
 
 func _move_to(point: Vector3, speed: float, delta: float) -> bool:

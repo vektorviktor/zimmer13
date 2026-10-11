@@ -25,11 +25,9 @@ const MODEL := "res://assets/models/monster.glb"
 const EYES: Array[Vector3] = [Vector3(-0.068, 2.1, -0.6), Vector3(0.068, 2.1, -0.6)]
 const ANIM_STEP := 0.09            ## Stop-Motion: so oft wird eine neue Pose gesetzt
 const LEG_LENGTH := 1.25
-## Sichtweite (Spielkonzept 4.12): im Dunkeln ~8 m, im Hellen ~18 m
-const SIGHT_DARK := 8.0
-const SIGHT_LIGHT_BONUS := 10.0
-## Sichtlinie: Wände, Türen, Vorhänge und Milchglas (klares Glas lässt den Blick durch)
-const SIGHT_MASK := 1 | 2 | 256 | HotelWindow.LAYER_BLOCK
+## Sichtlinie: Wände, Türen, Vorhänge und Milchglas (klares Glas lässt den Blick durch).
+## Sichtweiten stehen in Senses (Spielkonzept 4.15).
+const SIGHT_MASK := Senses.SIGHT_MASK
 
 var state := State.INACTIVE
 var noticed := false
@@ -247,34 +245,16 @@ func _actors() -> Array:
 	return list
 
 
-func can_see_actor(actor) -> bool:
-	if actor == null or not is_instance_valid(actor) or actor.dead or actor.hiding != null:
+## Sichtweite = 8 m × Auffälligkeit, Kegel ca. 145°; während der Jagd +5 m ohne Kegel
+## (Spielkonzept 4.12, 4.15). `at`: Stelle vor einem Versteck – gesehen wird das Hineingehen.
+func can_see_actor(actor, at: Vector3 = Vector3.INF) -> bool:
+	var entering := at != Vector3.INF
+	if actor == null or not is_instance_valid(actor) or actor.dead or (actor.hiding != null and not entering):
 		return false
-	var target: Vector3 = actor.global_position + Vector3.UP * (0.95 if actor.crouching else 1.5)
-	var light := Game.director.light_at(target)
-	var sight := SIGHT_DARK + SIGHT_LIGHT_BONUS * light
-	if actor.running:
-		sight += 3.0
-	if actor.crouching:
-		sight -= 2.0
-	elif Vector2(actor.velocity.x, actor.velocity.z).length() < 0.1:
-		sight -= 1.0   # wer still steht, fällt weniger auf
-	if state == State.CHASE:
-		sight += 5.0
-	if global_position.distance_to(actor.global_position) > sight:
-		return false
-	return can_see_position(target, state != State.CHASE)
-
-
-func can_see_position(target: Vector3, check_fov: bool = true) -> bool:
-	var eye := global_position + Vector3.UP * EYE_HEIGHT
-	var to := target - eye
-	var dist := to.length()
-	if check_fov and dist > 2.0:
-		var forward := -global_transform.basis.z
-		if forward.dot(to / dist) < 0.3:
-			return false
-	return _los(eye, target)
+	var chasing := state == State.CHASE
+	return Senses.can_see(self, global_position + Vector3.UP * EYE_HEIGHT, -global_transform.basis.z,
+		Senses.MONSTER_SIGHT, -2.0 if chasing else Senses.MONSTER_FOV_DOT, actor,
+		Senses.CHASE_SIGHT_BONUS if chasing else 0.0, entering, at)
 
 
 func _visible_actor():

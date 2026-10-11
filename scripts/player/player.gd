@@ -28,6 +28,9 @@ const COMPASS_VIEW := Vector3(-0.03, -0.12, -0.3)
 const COMPASS_TILT := 1.05
 const LEFT_DOWN := Vector3(0.0, -0.3, 0.05)
 const INSPECT_SPEED := 0.5        ## Laufen beim Draufschauen: halbe Geschwindigkeit
+const STEP_LENGTH := 0.75         ## alle so viele Meter ein Schritt (Lärm auf Holz/Fliesen, 4.15)
+const LAND_SPEED := 2.5           ## ab dieser Fallgeschwindigkeit ist Landen zu hören
+const SOFT_FLOORS := ["carpet", "grass"]   ## Teppich und Rasen schlucken Schritte
 
 var head: Node3D
 var camera: Camera3D
@@ -64,6 +67,8 @@ var _collider: CollisionShape3D
 var _ray: RayCast3D
 var _focus = null
 var _noise_timer := 0.0
+var _step_dist := 0.0
+var _was_on_floor := true
 var _bob := 0.0
 var _hide_yaw := 0.0
 var _hide_pitch := 0.0
@@ -176,7 +181,11 @@ func _physics_process(delta: float) -> void:
 		speed *= INSPECT_SPEED
 	velocity.x = dir.x * speed
 	velocity.z = dir.z * speed
+	var fall_speed := -velocity.y
 	move_and_slide()
+	if is_on_floor() and not _was_on_floor and fall_speed > LAND_SPEED and Game.director:
+		Game.noise("land", global_position, self)
+	_was_on_floor = is_on_floor()
 	_push_items(dir, speed)
 
 	var moving := is_on_floor() and input.length() > 0.1
@@ -186,14 +195,36 @@ func _physics_process(delta: float) -> void:
 	var bob := sin(_bob) * 0.03 if moving else 0.0
 	head.position.y = lerpf(head.position.y, eye + bob, minf(1.0, 12.0 * delta))
 
-	# Rennen macht Lärm → das Monster wird neugierig
+	# Rennen macht Lärm, Gehen nur auf Holz und Fliesen, geduckt ist man still (4.15)
 	if running and moving:
 		_noise_timer -= delta
 		if _noise_timer <= 0.0:
 			_noise_timer = 0.6
 			if Game.director:
-				Game.director.on_noise(global_position, 1.0)
+				Game.noise("run", global_position, self)
+	elif moving and not crouching:
+		_step_dist += speed * delta
+		if _step_dist >= STEP_LENGTH:
+			_step_dist = 0.0
+			if Game.director and not _on_soft_floor():
+				Game.noise("step", global_position, self)
 	_update_focus()
+
+
+## Steht der Spieler auf Teppich oder Rasen? Dort sind Schritte still (4.15).
+func _on_soft_floor() -> bool:
+	var query := PhysicsRayQueryParameters3D.create(global_position + Vector3.UP * 0.1, global_position + Vector3.DOWN * 0.4, 1)
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return true
+	for child in (hit["collider"] as Node).get_children():
+		var mi := child as MeshInstance3D
+		if mi and mi.material_override is ShaderMaterial:
+			var tex = (mi.material_override as ShaderMaterial).get_shader_parameter("albedo_tex")
+			for id in SOFT_FLOORS:
+				if tex == TexGen.get_tex(id):
+					return true
+	return false
 
 
 ## Linke Hand: Karte (Tab) oder Kompass (F) halten hebt sie vor die Augen. Mit einem großen
@@ -210,7 +241,7 @@ func _update_hand(delta: float) -> void:
 		_left_raise = 0.0
 		if want == "map":
 			_pocket_map.open_at(PocketMap.KEYS if debug_show == "keys" else HotelMap.page_at(global_position.y))
-			Game.play_sound("rustle", 0.4)
+			Game.noise("map", global_position, self)
 	inspecting = want != ""
 	_left_raise = move_toward(_left_raise, 1.0 if inspecting else 0.0, delta * 5.0)
 	if _left_raise <= 0.0:
@@ -261,11 +292,11 @@ func _pocket(item: Item) -> void:
 				Game.say("%s – eingesteckt. [Tab] halten zum Ansehen, [Linksklick] blättert." % item.display_name, 4.0)
 			else:
 				Game.say("%s – zu den anderen Blättern gesteckt." % item.display_name, 3.0)
-			Game.play_sound("rustle", 0.5)
+			Game.noise("map", global_position, self)
 		Item.Kind.KEY:
 			add_key(item.key_id)
 			Game.say("%s – an den Schlüsselbund." % item.display_name, 3.0)
-			Game.play_sound("jingle", 0.6)
+			Game.noise("keys", global_position, self)
 	item.queue_free()
 
 
@@ -367,7 +398,7 @@ func _update_shock(delta: float) -> void:
 		_shock_drop_timer = 12.0
 		if held and not hiding and randf() < shock * 0.35:
 			Game.say("Deine Hände zittern – %s fällt dir herunter." % held.display_name)
-			drop_held()
+			drop_held(true)
 
 
 # --- Gegenstände -----------------------------------------------------------
@@ -398,7 +429,8 @@ func try_pick_up(item: Item) -> void:
 		Game.hud.set_held(item.display_name)
 
 
-func drop_held() -> void:
+## `shocked`: vor Schreck fallen gelassen – lauter (6.8, 4.15).
+func drop_held(shocked: bool = false) -> void:
 	if held == null:
 		return
 	var item := held
@@ -409,7 +441,8 @@ func drop_held() -> void:
 	item.rotation = Vector3(0, rotation.y, 0)
 	item.set_held(false)
 	item.linear_velocity = Vector3.ZERO
-	Game.play_sound("thud", 0.4)
+	var heavy := item.is_large or item.kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN]
+	Game.noise("shock_drop" if shocked else ("drop_heavy" if heavy else "drop"), place, self)
 	if Game.hud:
 		Game.hud.set_held("")
 
@@ -560,7 +593,7 @@ func enter_hide(spot: HideSpot) -> void:
 	_hide_yaw = 0.0
 	_hide_pitch = 0.0
 	head.position.y = EYE_HEIGHT
-	spot.on_enter()
+	spot.on_enter(self)
 	_apply_hide_view()
 	if Game.hud:
 		Game.hud.set_hide_mode(1 if spot.type == HideSpot.Type.WARDROBE else 2)
@@ -605,9 +638,7 @@ func _update_hiding(delta: float) -> void:
 			breath = 0.0
 			holding_breath = false
 			_breath_locked = true
-			Game.play_sound("gasp", 1.0)
-			if Game.director:
-				Game.director.on_noise(global_position, 1.5)
+			Game.noise("gasp", global_position, self)
 	else:
 		breath = minf(BREATH_MAX, breath + delta * 0.8)
 	# Unter Schock hält man es im Versteck kürzer aus
@@ -618,5 +649,5 @@ func _update_hiding(delta: float) -> void:
 		Game.hud.set_prompt("Verlassen [E]    Luft anhalten [Rechtsklick]")
 	if hide_stress >= 1.0:
 		Game.say("Du hältst es hier drin nicht mehr aus!")
-		Game.play_sound("gasp", 1.0)
+		Game.noise("gasp", global_position, self)
 		exit_hide()

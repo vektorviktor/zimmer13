@@ -115,8 +115,7 @@ func burn_out() -> void:
 	sparking = false
 	light.light_energy = energy * 3.0
 	_bulb_material.set_shader_parameter("emission_energy", 8.0)
-	var near := Game.player != null and Game.player.global_position.distance_to(global_position) < 14.0
-	Game.play_sound("bang", 0.35 if near else 0.08)
+	var near := Game.noise("bulb_burst", global_position) >= 0.1
 	if near:
 		Game.caption("Eine Glühbirne zerplatzt.")
 	get_tree().create_timer(0.08, false).timeout.connect(apply_state)
@@ -134,7 +133,7 @@ func take_bulb() -> Item:
 	bulb_broken = false
 	sparking = false
 	apply_state()
-	Game.play_sound("creak", 0.2)
+	Game.noise("bulb", global_position)
 	if switched_on and Game.director:
 		Game.director.on_lights_off(global_position)
 	return item
@@ -145,7 +144,7 @@ func insert_bulb(item: Item) -> void:
 	bulb_broken = item.broken
 	sparking = false
 	apply_state()
-	Game.play_sound("blip", 0.4)
+	Game.noise("bulb", global_position)
 
 
 func owner_guest() -> Guest:

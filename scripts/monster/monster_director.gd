@@ -27,6 +27,7 @@ const CHASE_BONUS := 12.0
 const MOONLIGHT := 0.3                 ## Helligkeit direkt am offenen Außenfenster
 const MOONLIGHT_RANGE := 5.0
 const LIGHTS_OFF_CURIOSITY := 30.0     ## Licht aus = das Monster kommt (4.4)
+const NOISE_CURIOSITY := 0.25          ## Neugier je Meter Hörweite (Rennen: +2,5 alle 0,6 s)
 ## Rauschen nach Entfernung zum Spieler (auch durch Wände)
 const NOISE_START := 20.0
 const NOISE_FULL := 4.0
@@ -152,12 +153,15 @@ func deco_strength_at(p: Vector3) -> float:
 
 
 ## Helligkeit 0..1 an einem Punkt – alle Lichtquellen mit freier Sichtlinie.
-func light_at(p: Vector3) -> float:
+## `skip`: dieses Licht nicht mitzählen (eigenes Licht in der Hand zählt in Senses extra).
+func light_at(p: Vector3, skip: Node = null) -> float:
 	var space := _monster.get_world_3d().direct_space_state
 	var total := 0.0
 	for node in get_tree().get_nodes_in_group("light_source"):
 		var light := node as OmniLight3D
 		if not light.is_visible_in_tree() or light.light_energy < 0.02:
+			continue
+		if skip != null and is_instance_valid(skip) and skip.is_ancestor_of(light):
 			continue
 		var lp := light.global_position
 		var d := lp.distance_to(p)
@@ -313,20 +317,39 @@ func start_warning() -> void:
 
 # --- Ereignisse -------------------------------------------------------------------------
 
-func on_noise(pos: Vector3, strength: float) -> void:
-	add_curiosity(pos, 3.0 * strength)
-	if _monster.is_active() and _monster.global_position.distance_to(pos) < 14.0:
+## Lärm (Spielkonzept 4.15, über `Game.noise`): Innerhalb der gedämpften Hörweite geht das
+## Monster nachsehen, bis zur doppelten Hörweite steigt nur die Neugier dort. Ruht es,
+## zählt nur Lautes. Gibt zurück, was es gehört hat (für --trace und F3), sonst "".
+func on_noise(pos: Vector3, loudness: float, source: Node = null) -> String:
+	if source == _monster:
+		return ""
+	var curiosity := loudness * NOISE_CURIOSITY
+	if not _monster.is_active():
+		if loudness >= Senses.LOUD:
+			add_curiosity(pos, curiosity)
+			return "Monster ruht: Neugier +%.0f" % curiosity
+		return ""
+	var ear := _monster.global_position + Vector3.UP * 1.5
+	var d := ear.distance_to(pos)
+	if d > 2.0 * loudness:
+		return ""
+	var heard := Senses.audible_range(_monster.get_world_3d(), pos, ear, loudness, d / 2.0)
+	if d <= heard:
+		add_curiosity(pos, curiosity)
 		_monster.investigate(pos)
+		return "Monster d=%.1f/%.1f m nachsehen" % [d, heard]
+	if d <= 2.0 * heard:
+		add_curiosity(pos, curiosity)
+		return "Monster d=%.1f/%.1f m Neugier" % [d, heard]
+	return ""
 
 
 ## Jemand (Spieler oder Gast) ist in ein Versteck gegangen. Hat das Monster es gesehen?
+## Dieselbe Rechnung wie beim Jagen (4.15) – gesehen wird nur das Hineingehen.
 func on_actor_hid(spot: HideSpot, actor: Node3D) -> void:
 	if not _monster.is_active() or _monster.state == Monster.State.KILL:
 		return
-	var head := actor.global_position + Vector3.UP * 1.5
-	if actor == Game.player:
-		head = Game.player.camera.global_position
-	if _monster.global_position.distance_to(head) < 16.0 and _monster.can_see_position(head):
+	if _monster.can_see_actor(actor, spot.exit_point.global_position):
 		spot.seen_entering = true
 		_monster.go_check(spot)
 
@@ -368,7 +391,7 @@ func kill_guest(guest, spot: HideSpot) -> void:
 		return
 	if spot != null:
 		spot.rip_open()
-	Game.play_sound("scream", 0.5 if Game.player and Game.player.global_position.distance_to(guest.global_position) > 12.0 else 0.9)
+	Game.noise("scream", guest.global_position, guest)
 	var where: Vector3 = guest.global_position
 	guest.die()
 	if Game.traces:
@@ -388,7 +411,7 @@ func kill_guest(guest, spot: HideSpot) -> void:
 func _scare_guest(guest, spot: HideSpot) -> void:
 	if spot != null:
 		spot.rip_open()
-	Game.play_sound("scream", 0.4 if Game.player and Game.player.global_position.distance_to(guest.global_position) > 12.0 else 0.8)
+	Game.noise("scream", guest.global_position, guest)
 	guest.scared_by_monster()
 	_monster.after_scare()
 
@@ -761,5 +784,7 @@ func debug_text() -> String:
 	for zone in zones:
 		var c: Vector3 = zone["center"]
 		s += "%-11s %5.0f %5.1f %5.1f\n" % [zone["name"], zone["curiosity"], pressure_at(c), deterrence_at(c)]
+	if not Game.noise_log.is_empty():
+		s += "Lärm:\n  " + "\n  ".join(Game.noise_log) + "\n"
 	s += "F5 = Monster losschicken"
 	return s

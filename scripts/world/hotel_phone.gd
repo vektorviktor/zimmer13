@@ -80,7 +80,7 @@ func interact(player: Player) -> void:
 		Game.phones.answer(self)
 	elif off_hook:
 		set_off_hook(false)
-		Game.play_sound("thud", 0.2)
+		Game.noise("handset", global_position, player)
 		Game.say("Du legst den Hörer auf.", 2.0)
 	elif player.hands_blocked():
 		Game.say("Mit vollen Händen kannst du nicht telefonieren.", 2.0)

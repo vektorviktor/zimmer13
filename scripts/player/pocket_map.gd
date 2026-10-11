@@ -79,7 +79,8 @@ func flip(step: int) -> void:
 		return
 	index = posmod(index + step, pages.size())
 	_refresh()
-	Game.play_sound("rustle", 0.5)
+	if Game.player:
+		Game.noise("map", Game.player.global_position, Game.player)
 
 
 func _refresh() -> void:

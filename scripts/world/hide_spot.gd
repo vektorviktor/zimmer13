@@ -55,10 +55,11 @@ func interact(player: Player) -> void:
 		player.enter_hide(self)
 
 
-func on_enter() -> void:
+## `actor`: wer hineingeht – die Schranktür ist Lärm (4.15).
+func on_enter(actor: Node = null) -> void:
 	set_checked(false)
 	_set_leaves(deg_to_rad(7.0))
-	Game.play_sound("creak", 0.35)
+	Game.noise("hide", global_position, actor)
 
 
 func on_exit() -> void:
@@ -87,7 +88,7 @@ func load_state(data: Dictionary) -> void:
 
 ## Das Monster reißt das Versteck auf.
 func rip_open() -> void:
-	Game.play_sound("bang", 1.0)
+	Game.noise("hide_burst", global_position, Game.monster)
 	var tw := create_tween().set_parallel(true)
 	if type == Type.WARDROBE:
 		for i in _leaves.size():

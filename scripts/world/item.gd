@@ -155,7 +155,7 @@ func carve() -> Item:
 	carved.owner_id = owner_id
 	get_parent().add_child(carved)
 	carved.global_transform = global_transform
-	Game.play_sound("creak", 0.6)
+	Game.noise("carve", carved.global_position)
 	queue_free()
 	return carved
 

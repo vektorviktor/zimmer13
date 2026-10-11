@@ -498,9 +498,8 @@ func _still_playing() -> bool:
 
 
 func _rattle() -> void:
-	Game.play_sound("thud", 0.4)
+	Game.noise("dice", table.global_position, Game.player)   # Würfeln ist laut (4.15)
 	Game.play_sound("blip", 0.2)
-	Game.director.on_noise(table.global_position, 0.7)   # Würfeln ist laut
 
 
 func _update_title() -> void:

@@ -93,8 +93,8 @@ func set_closed(value: bool, instant: bool = false) -> void:
 		return
 	closed = value
 	_apply(instant)
-	if not instant and Game.player and Game.player.global_position.distance_to(global_position) < 8.0:
-		Game.play_sound("creak", 0.15)
+	if not instant:
+		Game.noise("curtain", global_position)
 
 
 func _apply(instant: bool) -> void:

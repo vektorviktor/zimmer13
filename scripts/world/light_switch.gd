@@ -49,9 +49,7 @@ func set_on(value: bool, loading: bool = false) -> void:
 	_update_visual()
 	if loading:
 		return
-	var near := Game.player != null and Game.player.global_position.distance_to(global_position) < 10.0
-	if near:
-		Game.play_sound("blip", 0.5)
+	Game.noise("switch", global_position)
 	if not on and Game.director:
 		Game.director.on_lights_off(global_position)
 
