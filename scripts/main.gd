@@ -123,6 +123,11 @@ func _ready() -> void:
 	add_child(menus)
 	Game.menus = menus
 
+	var teleport := TeleportUI.new()   # nach den Menüs: bekommt Esc/F6 zuerst
+	teleport.name = "Teleport"
+	add_child(teleport)
+	teleport.setup(builder)
+
 	Game.player_died.connect(_on_player_died)
 	if not Game.pending_load.is_empty():
 		_load_pending.call_deferred()

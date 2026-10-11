@@ -138,6 +138,7 @@ func _setup_input() -> void:
 	_bind_keys("drop", [KEY_G, KEY_Q])
 	_bind_keys("debug_overlay", [KEY_F3])
 	_bind_keys("debug_manifest", [KEY_F5])
+	_bind_keys("debug_teleport", [KEY_F6])
 	_bind_keys("pause", [KEY_ESCAPE])
 	_bind_mouse("hold_breath", MOUSE_BUTTON_RIGHT)
 	_bind_mouse("inspect", MOUSE_BUTTON_RIGHT)   # Kompass ansehen (außerhalb von Verstecken)

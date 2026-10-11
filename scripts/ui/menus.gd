@@ -14,7 +14,7 @@ const CONTROLS := [
 	["Rechtsklick (halten)", "Im Versteck Luft anhalten"],
 	["1–9", "Antwort im Gespräch wählen"],
 	["Esc", "Fenster schließen / Spielmenü"],
-	["F3 / F5", "Debug-Werte / Monster rufen"],
+	["F3 / F5 / F6", "Debug-Werte / Monster rufen / Teleport"],
 ]
 
 var _root: Control

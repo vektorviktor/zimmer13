@@ -37,6 +37,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | Rechtsklick (halten) | Im Versteck Luft anhalten · sonst den Kompass in der Hand ansehen |
 | F3 | Debug: versteckte Monster-Werte |
 | F5 | Debug: Monster sofort rufen (wenn es gerade ruht) |
+| F6 | Debug: Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller …) – pausiert, 1–9 / Maus |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel |
 
 ## Was drin ist
