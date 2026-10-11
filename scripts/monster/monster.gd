@@ -61,6 +61,8 @@ var _chase_target = null          ## Player oder Guest
 var _last_seen := Vector3.ZERO
 var _lose_timer := 0.0
 var _calm_retreat := false      ## nach einem harmlosen Schreck: niemanden mehr jagen
+var _fleeing := false           ## vom UV-Licht vertrieben: rennt in den Keller (4.16)
+var _uv_slow := 0.0             ## steht im UV-Kegel: zögert, wird langsamer
 var _state_timer := 0.0
 var _idle_timer := 0.0
 var _active_time := 0.0
@@ -185,6 +187,29 @@ func play_jumpscare(cam: Camera3D) -> void:
 	Game.shot_event("jumpscare", 12)
 
 
+## Kann UV-Licht es gerade vertreiben? (nicht beim Holen, nicht schon auf dem Rückzug)
+func can_be_repelled_by_uv() -> bool:
+	return state in [State.PATROL, State.INVESTIGATE, State.LURK, State.STARE, State.SEARCH,
+		State.CHECK_HIDE, State.CHASE, State.SLINK]
+
+
+## Steht im UV-Kegel: zögert kurz.
+func uv_flinch() -> void:
+	_uv_slow = 0.2
+
+
+## UV hat es vertrieben: zurückzucken, dann fliehen – ohne unterwegs jemanden zu jagen.
+func uv_repel() -> void:
+	_chase_target = null
+	_hide_target = null
+	_search.clear()
+	_fleeing = true
+	_eye_mat.set_shader_parameter("emission_energy", 0.3)
+	Game.play_sound("growl", 1.0)
+	Game.caption("[Ein Kreischen]")
+	_set_state(State.REPELLED)
+
+
 ## Nach einem geholten Gast: satt, zurück ins Versteck.
 func after_feeding() -> void:
 	_chase_target = null
@@ -230,6 +255,8 @@ func _appear(pos: Vector3) -> void:
 	noticed = false
 	_look_timer = 0.0
 	_chase_target = null
+	_fleeing = false
+	_uv_slow = 0.0
 	_eye_mat.set_shader_parameter("emission_energy", 1.2)
 
 
@@ -305,6 +332,7 @@ func _physics_process(delta: float) -> void:
 	if state == State.KILL or state == State.REVEAL:
 		return
 	_active_time += delta
+	_uv_slow = maxf(0.0, _uv_slow - delta)
 	_update_traces(delta)
 	_state_timer += delta
 	var seen = _visible_actor()
@@ -361,15 +389,16 @@ func _physics_process(delta: float) -> void:
 			_chase_step(seen, delta)
 		State.REPELLED:
 			_stop(delta)
-			if _state_timer > 1.6:
+			if _state_timer > (0.5 if _fleeing else 1.6):
 				_start_retreat()
+				_calm_retreat = _fleeing
 		State.RETREAT:
 			# Kein sicherer Rückzug (4.12): Wen es sieht, den jagt es wieder – außer es ist satt
 			# oder der Gesehene steht im Schutz von Deko und Licht. Nach einem harmlosen Schreck
 			# verschwindet es einfach – sonst erschreckt es denselben Gast immer wieder.
 			if seen != null and not _calm_retreat and Game.director.satiation <= 0.0 and not Game.director.is_protected(seen.global_position):
 				_start_chase(seen)
-			elif _move_to(_target, SEARCH_SPEED, delta) or _state_timer > 30.0 or _can_vanish():
+			elif _move_to(_target, CHASE_SPEED if _fleeing else SEARCH_SPEED, delta) or _state_timer > 30.0 or _can_vanish():
 				Game.director.on_monster_gone()
 				deactivate()
 				return
@@ -607,6 +636,8 @@ func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 	if dir.length() > 0.01:
 		dir = dir.normalized()
 		rotation.y = lerp_angle(rotation.y, atan2(-dir.x, -dir.z), minf(1.0, 8.0 * delta))
+	if _uv_slow > 0.0:
+		speed *= 0.35
 	velocity.x = dir.x * speed
 	velocity.z = dir.z * speed
 	_apply_gravity(delta)

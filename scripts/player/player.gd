@@ -4,6 +4,7 @@ extends CharacterBody3D
 ## Kein Inventar: genau ein Gegenstand in der Hand (3.2). Ausnahme am Körper: Kompass,
 ## Kartenblätter und Schlüsselbund – Karte (Tab) und Kompass (F) holt die linke Hand hervor.
 ## Kann sich in Schränken und unter Betten verstecken (3.4).
+## Taschenlampe in der Hand: [Linksklick] an/aus, [R] normales Licht ↔ UV (4.16).
 
 const HEIGHT := 1.8
 const RADIUS := 0.225
@@ -152,6 +153,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_focus.interact(self)
 	elif event.is_action_pressed("drop") and not hiding:
 		drop_held()
+	elif event.is_action_pressed("use_item") or event.is_action_pressed("light_mode"):
+		_use_flashlight(event.is_action_pressed("light_mode"))
 
 
 func _physics_process(delta: float) -> void:
@@ -274,6 +277,19 @@ func _explain_left_hand(what: String) -> void:
 		Game.say("Du hast keine Karte.")
 	else:
 		Game.say("Du hast keinen Kompass.")
+
+
+## Taschenlampe in der Hand bedienen. Im Versteck bleibt sie aus – das Licht würde einen verraten.
+func _use_flashlight(mode: bool) -> void:
+	if held == null or held.flashlight == null:
+		return
+	if hiding:
+		Game.say("Nicht hier drin – das Licht würde dich verraten.")
+		return
+	if mode:
+		held.flashlight.switch_mode()
+	else:
+		held.flashlight.toggle()
 
 
 # --- Am Körper: Kompass, Kartenblätter, Schlüsselbund (Spielkonzept 3.2) ------------------
@@ -425,6 +441,8 @@ func try_pick_up(item: Item) -> void:
 	item.position = Vector3(-0.22, -0.28, -0.12) if item.is_large else Vector3.ZERO
 	item.rotation = Vector3(0, PI, 0)
 	Game.play_sound("blip", 0.5)
+	if item.flashlight:
+		Game.say("%s – [Linksklick] an/aus%s" % [item.display_name, ", [R] UV" if item.flashlight.has_uv else ""], 3.0)
 	if Game.hud:
 		Game.hud.set_held(item.display_name)
 
@@ -582,6 +600,8 @@ func enter_hide(spot: HideSpot) -> void:
 		Game.say("Du stellst %s ab." % held.display_name, 2.0)
 		drop_held()
 	_set_crouch(false)
+	if held and held.flashlight and held.flashlight.on:
+		held.flashlight.toggle()
 	hiding = spot
 	spot.occupant = self
 	hide_time = 0.0

@@ -10,11 +10,14 @@ extends RigidBody3D
 ## Kompass: Die Nadel zeigt nach Norden (Welt −Z) und schwingt nach. In der Nähe des
 ## Monsters zittert sie, ganz nah dreht sie sich wild – ebenso bei Halluzinationen.
 ##
+## Taschenlampe (Spielkonzept 4.16): Licht und Batterie stecken in einem Flashlight-Knoten.
+## Batterie oder UV-Aufsatz in der Hand + Taschenlampe (oder umgekehrt) → einsetzen.
+##
 ## Kompass, Kartenblätter und Schlüssel (außer dem Ausgangsschlüssel) liegen nur in der Welt,
 ## bis man sie aufhebt – dann wandern sie an den Körper des Spielers (Player.has_compass,
 ## map_pages, keyring; Spielkonzept 3.2).
 
-enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP }
+enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -25,6 +28,7 @@ const HAND_ONLY_KEYS := ["ausgang"]
 const PRICES := {
 	Kind.PUMPKIN: 4, Kind.CARVED_PUMPKIN: 10, Kind.CANDLE: 3, Kind.COBWEB: 3,
 	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4, Kind.CLOTHING: 0, Kind.COMPASS: 6, Kind.MAP: 2,
+	Kind.FLASHLIGHT: 8, Kind.BATTERY: 3, Kind.UV_FILTER: 12,
 }
 
 var kind: Kind = Kind.PUMPKIN
@@ -53,6 +57,8 @@ var _needle_spin := 0.0
 var _needle_time := 0.0
 ## Kartenblatt: welche Ebene (HotelMap.PAGES)
 var page_id := ""
+## Taschenlampe: Licht, Batterie, UV (nur bei Kind.FLASHLIGHT)
+var flashlight: Flashlight
 ## Steckt beim Spieler in der Tasche (Kompass in der linken Hand) – nicht mehr in der Welt
 var pocketed := false
 
@@ -119,6 +125,8 @@ func create_extra() -> String:
 			return clothing_of
 		Kind.MAP:
 			return page_id
+		Kind.FLASHLIGHT:
+			return flashlight.save_extra()
 	return ""
 
 
@@ -128,6 +136,9 @@ func get_prompt(player: Player) -> String:
 		return "Kürbis schnitzen [E]"
 	if kind == Kind.CARVED_PUMPKIN and not lit and held == Kind.CANDLE:
 		return "Kerze hineinstellen [E]"
+	var fitting := _fitting_prompt(held, player)
+	if fitting != "":
+		return fitting
 	if kind == Kind.COINS:
 		return "%s aufheben (+%d) [E]" % [display_name, coin_value]
 	if owner_id != "" and owner_id != "player" and Game.social:
@@ -146,7 +157,51 @@ func interact(player: Player) -> void:
 		light_up()
 		Game.say("Die Kerze flackert im Kürbis auf.", 2.5)
 		return
+	if _fitting_prompt(held, player) != "":
+		_fit(player)
+		return
 	player.try_pick_up(self)
+
+
+## Batterie bzw. UV-Aufsatz und Taschenlampe: eins in der Hand, das andere hier.
+func _fitting_prompt(held: int, player: Player) -> String:
+	var lamp := _lamp_pair(held, player)
+	if lamp == null:
+		return ""
+	if held == Kind.UV_FILTER or kind == Kind.UV_FILTER:
+		return "" if lamp.flashlight.has_uv else "UV-Aufsatz auf die Taschenlampe setzen [E]"
+	return "Batterie einlegen [E]"
+
+
+## Die Taschenlampe des Paars (in der Hand oder hier) – oder null, wenn nichts zusammenpasst.
+func _lamp_pair(held: int, player: Player) -> Item:
+	if owner_id != "" and owner_id != "player":
+		return null   # Fremdes erst nehmen (Zeugen, Spielkonzept 6.2)
+	if kind == Kind.FLASHLIGHT and held in [Kind.BATTERY, Kind.UV_FILTER]:
+		return self
+	if held == Kind.FLASHLIGHT and kind in [Kind.BATTERY, Kind.UV_FILTER]:
+		return player.held
+	return null
+
+
+func _fit(player: Player) -> void:
+	var held := player.held_kind()
+	var lamp := _lamp_pair(held, player)
+	var part := held if lamp == self else kind
+	if part == Kind.BATTERY:
+		lamp.flashlight.insert_battery()
+		Game.say("Neue Batterie eingelegt.", 2.0)
+	else:
+		lamp.flashlight.add_uv_filter()
+		lamp.display_name = "UV-Taschenlampe"
+		if lamp == player.held and Game.hud:
+			Game.hud.set_held(lamp.display_name)
+		Game.say("Der UV-Aufsatz rastet ein. [R] schaltet um.", 3.0)
+	Game.noise("drop", global_position, player)
+	if lamp == self:
+		player.consume_held()
+	else:
+		queue_free()
 
 
 ## Ersetzt diesen Kürbis durch einen geschnitzten (noch ohne Kerze).
@@ -352,6 +407,28 @@ func _build(extra: String) -> void:
 			mass = 0.05
 			size = Vector3(MAP_WIDTH, 0.01, MAP_WIDTH * HotelMap.PAGE_SIZE.y / HotelMap.PAGE_SIZE.x)
 			_build_map()
+		Kind.FLASHLIGHT:
+			display_name = "Taschenlampe"
+			mass = 0.3
+			size = Vector3(0.07, 0.07, 0.22)
+			flashlight = Flashlight.new().setup(extra)
+			add_child(flashlight)
+			if flashlight.has_uv:
+				display_name = "UV-Taschenlampe"
+		Kind.BATTERY:
+			display_name = "Batterie"
+			mass = 0.05
+			size = Vector3(0.04, 0.07, 0.04)
+			Geo.mesh(self, Geo.cylinder(0.017, 0.06, 6), Mat.psx(Color(0.15, 0.3, 0.6)), Vector3(0, 0.03, 0))
+			Geo.mesh(self, Geo.cylinder(0.007, 0.006, 6), Mat.psx(Color(0.7, 0.7, 0.68)), Vector3(0, 0.063, 0))
+		Kind.UV_FILTER:
+			display_name = "UV-Aufsatz"
+			mass = 0.1
+			size = Vector3(0.08, 0.04, 0.08)
+			var ring := Geo.mesh(self, Geo.cylinder(0.036, 0.035, 8), Mat.psx(Color(0.12, 0.12, 0.14)), Vector3(0, 0.018, 0))
+			ring.rotation.y = 0.2
+			var violet := Color(0.45, 0.22, 1.0)
+			Geo.mesh(self, Geo.cylinder(0.029, 0.004, 8), Mat.psx(Color(0.3, 0.15, 0.55), "", 1.0, violet, 0.6), Vector3(0, 0.037, 0))
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size

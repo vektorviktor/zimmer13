@@ -37,6 +37,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | Rechtsklick (halten) | Im Versteck Luft anhalten |
 | Tab (halten) · Linksklick / Mausrad | Kartenblätter ansehen · weiterblättern |
 | F (halten) | Kompass ansehen |
+| Linksklick · R | Taschenlampe in der Hand: an/aus · normales Licht ↔ UV (mit UV-Aufsatz) |
 | F3 | Debug: versteckte Monster-Werte und die letzten Lärmereignisse |
 | F5 | Debug: Monster sofort rufen (wenn es gerade ruht) |
 | F6 | Debug: Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller …) – pausiert, 1–9 / Maus |
@@ -58,6 +59,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 - **Zimmertelefone:** Wählscheibentelefon in jedem Zimmer, Haupttelefon mit Gästeverzeichnis an der Rezeption (Zimmernummer wählen, 0 = Rezeption) · Freunde rufen an und warnen, wo es gerade ist (nicht immer richtig), Feinde lügen, Bekannte plaudern oder laden zur Feier ein · manchmal nur Atmen – danach liegt in einem leeren Zimmer ein Hörer neben dem Apparat · selbst anrufen: plaudern, fragen, einladen; **Klingeln ist Lärm** und lockt das Monster ins Zielzimmer · anrufen und sofort auflegen gilt als Telefonstreich · Hörer daneben legen: still, aber keine Warnungen mehr · ab und zu klingelt irgendwo im Hotel ein Telefon
 - **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (30 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 24, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
 - **Mäxchen an der Hotelbar:** Bluff-Würfeln gegen Gäste um Geld oder Gegenstände (Einsätze liegen echt auf dem Tisch), Herausforderungen & Revanche, Gäste würfeln untereinander (zuschauen verrät ihre Ticks), gezinkte Würfel aus Zimmer 17, Abbruch bei Vorwarnung
+- **Taschenlampe:** an der Rezeption (halb leer) · Licht zum Sehen, aber kein Schutz – wer sie trägt, wird weiter gesehen · Batterien (Wäscherei, Keller, manche leeren Zimmer, Skeptiker verkaufen sie) einlegen wie eine Kerze in den Kürbis · flackert in Monsternähe, im Versteck bleibt sie aus · **UV-Aufsatz** in Zimmer 18: UV leert eine Batterie in ~9 s; steht das Monster ~1 s im Kegel, flieht es – kommt aber bald wieder, sucht rund um Zimmer 13 und braucht jedes Mal länger · UV zeigt verblasste Fußspuren, Schrift an Wänden und eine zweite Zeile auf jedem Warnungszettel
 - **Licht & Fenster:** ein Lichtschalter pro Raum, Decken- und Wandlampen, Glühbirnen herausdrehen und woanders einsetzen (auch Gäste klauen sie), Birnen brennen bei starkem Flackern oder in Monsternähe selten durch · Licht aus lockt das Monster an · Außenfenster mit Vorhängen (Mondlicht, Sicht in beide Richtungen), Milchglas zwischen Flur und Zimmern (nur Umrisse)
 - **Kalender:** vom 1. Oktober bis Halloween, ein Ingame-Tag ≈ 5 Minuten, draußen immer Nacht · Abreißkalender in Zimmer 13, Datum im Spielmenü und in den Spielständen
 - **Menüs & Speichern:** Titelbildschirm, Spielmenü (Esc), Einstellungen (Helligkeit mit Testbild, PS1-Look, Ton, Maus, weniger Flackern, Untertitel) · Speichern nur am **Tagebuch in Zimmer 13** (3 Slots, nicht während Vorwarnung/Monster) · Autosave bei wichtigen Ereignissen in sicheren Momenten · nach dem Tod letzten Spielstand laden
@@ -93,6 +95,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--dice=bruno` · `--autoplay` | Mäxchen-Partie starten · Antworten automatisch wählen |
 | `--challenge=bruno` | Gast fordert dich heraus |
 | `--pos=x,y,z,winkel` · `--monster=x,y,z` | Spieler versetzen · Monster erscheinen lassen |
+| `--flashlight` · `--flashlight=uv` | eingeschaltete Taschenlampe mit voller Batterie in die Hand · mit UV-Aufsatz im UV-Modus |
 | `--pocket` · `--show=map` / `keys` / `compass` | Kompass, alle Kartenblätter und Schlüssel 18 einstecken · Karte (Schlüsselblatt oben) bzw. Kompass hervorholen wie mit gehaltener Taste |
 | `--shot=pfad.png --frames=n` · `--shot-on=reveal` · `--shot-on=jumpscare` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler · im Jumpscare |
 | `--nointro` · `--debug` · `--trace-nav` | ohne Intro · Debug-Werte · mit `--trace` auch die Wegfindung der Gäste |
@@ -120,7 +123,8 @@ scripts/level/              LevelBuilder (Grundriss: Zimmerreihen in `ROWS`, Flu
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
                             PumpkinPlant, ResourceSpot, RecordPlayer,
                             Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang/Milchglas), Diary,
-                            Traces + TraceMark (Spuren), WarningNote (Warnungszettel), HotelPhone (Telefon)
+                            Traces + TraceMark (Spuren), WarningNote (Warnungszettel), HotelPhone (Telefon),
+                            Flashlight (Taschenlampe, UV), UvMark (nur unter UV sichtbar)
 scripts/guests/             Guest (Verhalten), GuestProfiles (feste Gäste, Sätze), GuestGenerator (Zufallsgäste),
                             Social (Beziehungen, Gerüchte, Diebstahl, Tod, Feiern), PhoneCalls (Anrufe)
 scripts/player/             Player

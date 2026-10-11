@@ -61,6 +61,8 @@ const PLAYER_MIN_REACH := 8.0
 const LIGHT_FACTOR := 1.2        ## Licht am Ort: 1,0 (dunkel) … 2,2 (hell)
 const CARRY_CANDLE := 0.6        ## eigenes Licht in der Hand
 const CARRY_LANTERN := 0.8       ## Kürbislaterne
+const CARRY_FLASHLIGHT := 0.9    ## Taschenlampe: der Kegel ist weit zu sehen (4.16)
+const CARRY_UV := 1.2            ## UV-Licht: grell und fremd
 const RUNNING := 0.4
 const STANDING := -0.1
 const CROUCHED := -0.25
@@ -74,7 +76,7 @@ const DISTRACTED := 0.6          ## Gast im Gespräch, beim Würfeln, auf der Fe
 ## So nah zählt der Kegel nicht (man spürt, wer direkt neben einem steht)
 const NEAR := 2.0
 ## Höchste mögliche Auffälligkeit – für die billige Vorprüfung
-const MAX_CONSPICUITY := 1.0 + LIGHT_FACTOR + CARRY_LANTERN + RUNNING
+const MAX_CONSPICUITY := 1.0 + LIGHT_FACTOR + CARRY_UV + RUNNING
 ## Sichtlinie: Wände, Türen, Milchglas, Vorhänge (klares Glas lässt den Blick durch)
 const SIGHT_MASK := 1 | 2 | 256 | HotelWindow.LAYER_BLOCK
 
@@ -161,8 +163,11 @@ static func _door_of(node: Node) -> Door:
 static func conspicuity(actor, light: float, entering_hide: bool = false) -> float:
 	var c := 1.0 + LIGHT_FACTOR * clampf(light, 0.0, 1.0)
 	var held = actor.held
-	if held != null and is_instance_valid(held) and held.lit:
-		c += CARRY_LANTERN if held.kind == Item.Kind.CARVED_PUMPKIN else CARRY_CANDLE
+	if held != null and is_instance_valid(held):
+		if held.flashlight:
+			c += held.flashlight.carried_conspicuity()
+		elif held.lit:
+			c += CARRY_LANTERN if held.kind == Item.Kind.CARVED_PUMPKIN else CARRY_CANDLE
 	if actor.running:
 		c += RUNNING
 	elif actor.crouching:

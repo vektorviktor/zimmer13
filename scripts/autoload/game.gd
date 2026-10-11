@@ -183,6 +183,8 @@ func _setup_input() -> void:
 	_bind_keys("drop", [KEY_G, KEY_Q])
 	_bind_keys("map", [KEY_TAB])        # Kartenblätter ansehen (halten)
 	_bind_keys("compass", [KEY_F])      # Kompass ansehen (halten)
+	_bind_keys("light_mode", [KEY_R])   # Taschenlampe: normales Licht ↔ UV
+	_bind_mouse("use_item", MOUSE_BUTTON_LEFT)   # Taschenlampe an/aus
 	_bind_keys("debug_overlay", [KEY_F3])
 	_bind_keys("debug_manifest", [KEY_F5])
 	_bind_keys("debug_teleport", [KEY_F6])

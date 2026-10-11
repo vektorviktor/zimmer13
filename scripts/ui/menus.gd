@@ -14,6 +14,7 @@ const CONTROLS := [
 	["Rechtsklick (halten)", "Im Versteck Luft anhalten"],
 	["Tab (halten)", "Kartenblätter ansehen – Linksklick / Mausrad blättert"],
 	["F (halten)", "Kompass ansehen"],
+	["Linksklick / R", "Taschenlampe an/aus / normales Licht ↔ UV"],
 	["1–9", "Antwort im Gespräch wählen"],
 	["Esc", "Fenster schließen / Spielmenü"],
 	["F3 / F5 / F6", "Debug-Werte / Monster rufen / Teleport"],

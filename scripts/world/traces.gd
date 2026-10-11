@@ -1,14 +1,16 @@
 class_name Traces
 extends Node3D
 ## Spuren des Monsters (Spielkonzept 4.13) an einer Stelle gesammelt:
-##   Fußspuren – dunkel und nass, verblassen über einige Minuten (zeigen Weg und Alter)
+##   Fußspuren – dunkel und nass, verblassen über einige Minuten (zeigen Weg und Alter);
+##     unter UV-Licht leuchten sie noch lange danach (UvMark, Spielkonzept 4.16)
 ##   Kratzspuren an Wänden und Türen, Blut, Handabdrücke am Milchglas – bleiben (TraceMark)
 ## Jede neue Spur wird auch den Gästen bekannt, die davon erzählen (Social.note_trace).
 ## Dazu Spuren der Gäste: schlammige Schuhabdrücke aus dem Garten (verblassen), Wachsflecken,
 ## Blutstropfen nach einem Angriff (bleiben) und Zettel, die Gäste schreiben.
 
 const FOOTPRINT_LIFE := 240.0
-const MAX_FOOTPRINTS := 160
+const FOOTPRINT_UV_LIFE := 900.0    ## so lange sieht man sie unter UV (drei Ingame-Tage)
+const MAX_FOOTPRINTS := 240
 const SHOEPRINT_LIFE := 150.0
 const MAX_GUEST_MARKS := 140        ## Wachs und Blutstropfen der Gäste – die ältesten verschwinden
 
@@ -22,11 +24,17 @@ func _process(delta: float) -> void:
 		var f := _footprints[i]
 		f["age"] = float(f["age"]) + delta
 		var k := 1.0 - float(f["age"]) / float(f.get("life", FOOTPRINT_LIFE))
-		if k <= 0.0:
+		if float(f["age"]) >= float(f.get("uv_life", 0.0)) and k <= 0.0:
 			(f["node"] as Node).queue_free()
 			_footprints.remove_at(i)
-		else:
+		elif k > 0.0:
 			(f["material"] as StandardMaterial3D).albedo_color.a = float(f.get("alpha", 0.85)) * k
+		elif not f.get("faded", false):
+			# Für das Auge verschwunden – nur der UV-Nachglanz bleibt
+			f["faded"] = true
+			for child in (f["node"] as Node).get_children():
+				if not child is UvMark:
+					(child as Node3D).visible = false
 		i -= 1
 
 
@@ -51,7 +59,14 @@ func add_footprint(pos: Vector3, yaw: float) -> void:
 		var toe := Geo.mesh(foot, Geo.box(Vector3(0.025, 0.004, 0.08)), mat, Vector3(-0.04 + t * 0.04, 0, -0.13))
 		toe.rotation.y = (t - 1) * 0.25
 		toe.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_footprints.append({"node": foot, "material": mat, "age": 0.0})
+	# Nachglanz unter UV – dieselbe Form, etwas darüber
+	var glow := UvMark.new()
+	foot.add_child(glow)
+	glow.position.y = 0.002
+	glow.add_box(Vector3(0.11, 0.003, 0.24), Vector3(0, 0, 0.02))
+	for t in 3:
+		glow.add_box(Vector3(0.025, 0.003, 0.08), Vector3(-0.04 + t * 0.04, 0, -0.13), (t - 1) * 0.25)
+	_footprints.append({"node": foot, "material": mat, "age": 0.0, "uv_life": FOOTPRINT_UV_LIFE})
 	if _footprints.size() % 12 == 1:
 		_report("footprint", pos)
 

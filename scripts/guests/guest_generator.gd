@@ -236,7 +236,7 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 	var base: Dictionary = arche["activities"]
 	for key in base:
 		activities[key] = float(base[key]) * rng.randf_range(0.6, 1.4)
-	return {
+	var profile := {
 		"name": guest_name, "room": room, "archetype": arche["kind"], "generated": true,
 		"coat": COATS[rng.randi() % COATS.size()], "pants": PANTS[rng.randi() % PANTS.size()],
 		"hair": HAIR[rng.randi() % HAIR.size()], "height": rng.randf_range(0.92, 1.07),
@@ -255,6 +255,12 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 		},
 		"lines": lines,
 	}
+	# Neue Zufallswerte nur hier anhängen (Spielstände speichern nur den Seed):
+	# Skeptiker haben Batterien für Taschenlampen (Spielkonzept 4.16)
+	var batteries := rng.randi_range(0, 2)
+	if arche["kind"] == "Skeptiker" and batteries > 0:
+		stock[Item.Kind.BATTERY] = batteries
+	return profile
 
 
 static func _range(rng: RandomNumberGenerator, r: Vector2) -> float:

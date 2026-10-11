@@ -120,7 +120,7 @@ Lärm-Dämpfung `1 | 2 | 64`.
 `items`, `guests`, `player`, `doors`, `chests`, `hide_spots`, `lamp_fixtures` (die Lampen),
 `lamps` (deren Lichter), `light_source` (alles, was für die Helligkeit zählt – `FlickerLight`),
 `light_switches`, `windows`, `pumpkin_plants`, `resource_spots`, `trace_marks`, `warning_notes`,
-`guest_notes`, `diaries`, `phones`.
+`guest_notes`, `diaries`, `phones`, `uv_marks` (nicht gespeichert).
 
 ### Räume & IDs
 - **Raum-ID** = Zimmernummer (`"13"`, `"231"`) oder Bereichs-ID (`"lobby"`, `"flur_west"`,
@@ -184,7 +184,7 @@ Effekte), **`Monster`** führt aus (Zustandsautomat, Bewegung, Sicht, Spuren).
 
 ### Ereignis-Schnittstelle (andere Systeme melden, der Director reagiert)
 `on_noise(pos, hörweite, quelle)` (nur über `Game.noise`) · `on_lights_off(pos)` · `on_actor_hid(spot, actor)` · `on_monster_talk(pos)` ·
-`on_monster_noticed()` · `on_monster_repelled()` · `on_monster_gone()` · `kill_guest(guest, spot)` ·
+`on_monster_noticed()` · `on_monster_repelled()` · `on_monster_uv()` · `on_monster_gone()` · `kill_guest(guest, spot)` ·
 `kill_player(spot)`. Neue Spielmechaniken, die das Monster beeinflussen sollen, melden sich hier.
 
 ### Dramaturgie
@@ -201,6 +201,8 @@ Effekte), **`Monster`** führt aus (Zustandsautomat, Bewegung, Sicht, Spuren).
 Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `start_roaming`,
 `investigate`, `go_check`, `stare`, `go_home`, `spawn_at` (Tests), `spawn_near_unseen`, `deactivate`.
 Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick verschwinden).
+UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, dann `RETREAT` mit
+`_fleeing` (Jagdtempo, `_calm_retreat`: jagt niemanden).
 
 ### Aussehen & Animation
 - **Modell:** `assets/models/monster.glb` wird von `tools/build_monster.py` (Blender 4.3) aus dem
@@ -277,6 +279,7 @@ Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick ver
 | Am Körper | `player.gd` (`_pocket`, `_update_hand`, `set_pockets`), `player/pocket_map.gd` | `Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den Welt-Gegenstand und trägt ihn in `has_compass`/`map_pages`/`keyring` ein – braucht keine freie Hand. Linke Hand (`_left_hand`) für Aktionen `map` (Tab) und `compass` (F), nicht bei `hands_blocked()` oder im Gespräch; `inspecting` halbiert das Tempo. Türen fragen `player.has_key(id)`. Gespeichert unter `player` |
 | Kompass | `item.gd` (`Kind.COMPASS`) | Nadel = Feder Richtung Welt −Z (Norden), gestört über `director.threat_at()` und – nur eingesteckt (`pocketed`) – `is_hallucinating()`; der Kompass in der linken Hand ist ein `Item` mit `make_pocketed()` (raus aus Gruppe `items`); liegt in `LevelBuilder.COMPASS_ROOM` |
 | Karte | `world/hotel_map.gd`, `item.gd` (`Kind.MAP`, `extra` = Blatt-ID), `player/pocket_map.gd` | `HotelMap.PAGES` = Blätter (id, Titel, Höhenbereich, Geschoss oder eigene Zeichnung); gedruckte Pläne aus `LevelBuilder.FLOORS`/`ROWS` (neue Zimmer erscheinen von selbst), Kellerskizze von Hand gezittert. Alle Blätter einmal untereinander in einem SubViewport gerendert → geteilte `ImageTexture` (ohne Grafik: nur Papierfarbe); `HotelMap.material(id)` schneidet per `uv1_offset` aus. `PocketMap` = Blätterstapel in der linken Hand, Schlüsselblatt (`KEYS`) zuletzt; beim Hervorholen oben das Blatt zu `HotelMap.page_at(y)`. Neue Ebene: Eintrag in `PAGES`, Zeichnung in `_draw()`, Blatt im `LevelBuilder` auslegen |
+| Taschenlampe | `world/flashlight.gd`, `world/uv_mark.gd`, `item.gd` (`FLASHLIGHT`, `BATTERY`, `UV_FILTER`) | `Flashlight` hängt als Kind am Item (`item.flashlight`), Zustand steckt in `create_extra()` (`"c=0.42;uv;m=uv;on"`), also kein eigener Speicher-Eintrag. Bewusst **ein `SpotLight3D` außerhalb von `light_source`** – zählt nicht für Helligkeit/Abschreckung (`light_at` castet ohnehin auf `OmniLight3D`) und nicht als `item.lit` (sonst bläst das Monster sie aus, Gäste tropfen Wachs …). Auffälligkeit über `flashlight.carried_conspicuity()` in `Senses.conspicuity`. Nur in der Hand des Spielers: UV prüft alle 0,1 s die Gruppe `uv_marks` (Kegel + Sichtlinie `SIGHT_MASK`, `UvMark.shine()`) und jeden Frame das Monster (`can_be_repelled_by_uv`, Brust im Kegel) → nach `director.uv_repel_time()` `on_monster_uv()`. Einsetzen von Batterie/UV-Aufsatz in `Item._fitting_prompt/_fit` (nur eigene oder herrenlose Teile). `UvMark`: Leuchtschrift (`setup_text`, im LevelBuilder `_uv_writing`) oder Kästen (`add_box`, Nachglanz der Fußspuren in `Traces`); läuft nur, solange es leuchtet. Warnungszettel: `NOTES[id]["uv"]` |
 | Kalender | `calendar.gd` | statische Datumsfunktionen + Abreißkalender in Zimmer 13 |
 | Telefone | `world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd` | `HotelPhone` auf jedem Zimmertisch (nicht Wäscherei) + Haupttelefon an der Rezeption (`room_id` `"lobby"`, Nummer `"0"`); gespeichert wird nur `off_hook` (Gruppe `phones`, ab Spielstand-Version 5). `PhoneCalls` (`Game.phones`) hat die Anrufe: eingehend nur für Zimmer 13 (warnen/lügen/plaudern/unheimlich), ausgehend per Wählseite, ferne Telefone als Atmosphäre. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`, eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die Zufallsfolge). Unheimliche Anrufe hinterlassen einen Hörer neben dem Apparat im Herkunftszimmer. Laufende Anrufe werden nicht gespeichert |
 | Mäxchen | `minigames/` | `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI & Einsätze, `GameTable` = Tisch; Würfeln macht Lärm (`dice`) |
@@ -314,7 +317,7 @@ Gäste machen nur beim Rennen (Panik) Schrittlärm.
 **Sichtbarkeit:** `Senses.can_see(beobachter, auge, blick, grundweite, kegel, akteur, bonus, …)`:
 Sichtweite = Grundweite × `conspicuity(akteur)` + Bonus, dann Kegel (näher als 2 m ohne Kegel) und
 freie Sichtlinie. Auffälligkeit = 1 + 1,2 × Licht am Ort (`light_at(p, skip)` ohne das eigene Licht
-in der Hand) + Licht in der Hand + Rennen/Stillstehen/Ducken. Benutzt von `Monster.can_see_actor`
+in der Hand) + Licht in der Hand (Kerze/Kürbis über `lit`, Taschenlampe über `flashlight`) + Rennen/Stillstehen/Ducken. Benutzt von `Monster.can_see_actor`
 (auch für „beim Verstecken gesehen“: `at` = `exit_point` des Verstecks, Stillstehen zählt nicht) und
 `Guest.can_see_actor` (Zeugen beim Diebstahl, abgelenkt ×0,6). Unverändert eigene Regeln:
 `player_can_see` (Kamera), Gäste sehen das Monster (`_watch_monster`), Licht aus (4.4), Lauschen (4.7),

@@ -3,18 +3,24 @@ extends StaticBody3D
 ## Warnungszettel früherer Gäste, die es nicht hinausgeschafft haben (Spielkonzept 4.13).
 ## Tipps zum Monster und eine Andeutung zum Schlüssel an Halloween – zugleich der
 ## Story-Faden. Sie tauchen erst nach dem ersten Angriff auf (vorher ist alles friedlich).
+## Unter UV-Licht zeigt jeder feste Zettel eine zweite, unsichtbare Zeile („uv“, 4.16).
 
 const NOTES := {
 	"1987": {"title": "Zettel, Oktober 1987",
-		"text": "Wer das liest: Lass das Licht an. Immer. Es kommt nur, wo es dunkel ist.\nIch habe die Birne in meinem Zimmer verloren. Jetzt höre ich es jede Nacht vor der Tür.\n– E. K., Zimmer 17"},
+		"text": "Wer das liest: Lass das Licht an. Immer. Es kommt nur, wo es dunkel ist.\nIch habe die Birne in meinem Zimmer verloren. Jetzt höre ich es jede Nacht vor der Tür.\n– E. K., Zimmer 17",
+		"uv": "Der Heizer war noch unten, als sie die Tür abgeschlossen haben. Ich habe den Schlüssel klirren hören."},
 	"1994": {"title": "Zerknitterte Seite, 1994",
-		"text": "Redet nicht über ES. Es hört zu. Jedes Mal, wenn wir in der Lobby darüber geflüstert haben, kam es näher.\nUnd wenn das Rauschen anfängt – nicht rennen. Verstecken. Aber nur, wenn es dich nicht sieht."},
+		"text": "Redet nicht über ES. Es hört zu. Jedes Mal, wenn wir in der Lobby darüber geflüstert haben, kam es näher.\nUnd wenn das Rauschen anfängt – nicht rennen. Verstecken. Aber nur, wenn es dich nicht sieht.",
+		"uv": "Wo die Kerzen ausgehen, ist es gerade vorbeigegangen. Zähl sie."},
 	"2003": {"title": "Notiz unter der Matratze",
-		"text": "Es hat an meine Tür geklopft. Mit der Stimme meiner Schwester.\nMeine Schwester ist seit drei Tagen fort.\nWENN DU DIE STIMME KENNST – MACH NICHT AUF."},
+		"text": "Es hat an meine Tür geklopft. Mit der Stimme meiner Schwester.\nMeine Schwester ist seit drei Tagen fort.\nWENN DU DIE STIMME KENNST – MACH NICHT AUF.",
+		"uv": "Im Gästebuch steht hinter jedem Namen ein Datum. Hinter manchen ein Kreuz."},
 	"2011": {"title": "Seite aus einem Tagebuch, 2011",
-		"text": "31. Oktober. Ich habe ihn gesehen: den Schlüssel. Er lag einfach da, als hätte er schon immer dort gelegen.\nAber ES lag daneben. Und ich war zu langsam.\nWer auch immer das findet: Du brauchst die anderen. Allein schaffst du es nicht."},
+		"text": "31. Oktober. Ich habe ihn gesehen: den Schlüssel. Er lag einfach da, als hätte er schon immer dort gelegen.\nAber ES lag daneben. Und ich war zu langsam.\nWer auch immer das findet: Du brauchst die anderen. Allein schaffst du es nicht.",
+		"uv": "Der Schlüssel lag im Keller. Ganz unten. Wo es warm ist."},
 	"2019": {"title": "Handschrift auf einer Serviette",
-		"text": "Die ersten Male tut es dir nichts. Es will nur, dass du es siehst.\nDanach ist es anders. Danach nimmt es jemanden mit.\nVerlass dich nicht darauf, dass es dich verschont."},
+		"text": "Die ersten Male tut es dir nichts. Es will nur, dass du es siehst.\nDanach ist es anders. Danach nimmt es jemanden mit.\nVerlass dich nicht darauf, dass es dich verschont.",
+		"uv": "Es hasst dieses Licht. Aber es merkt sich, wer es damit geblendet hat."},
 }
 
 var note_id := "1987"
@@ -55,11 +61,25 @@ func _process(_delta: float) -> void:
 		collision_layer = 4 if shown else 0
 
 
-func get_prompt(_player: Player) -> String:
-	return "Zettel lesen [E]"
+func get_prompt(player: Player) -> String:
+	return "Zettel lesen [E] – etwas schimmert" if _uv_text(player) != "" else "Zettel lesen [E]"
 
 
-func interact(_player: Player) -> void:
+func interact(player: Player) -> void:
 	var note: Dictionary = NOTES.get(note_id, {}) if note_id != "" else {"title": custom_title, "text": custom_text}
 	if Game.menus and not note.is_empty():
-		Game.menus.open_note(String(note["title"]), String(note["text"]))
+		var text := String(note["text"])
+		var hidden := _uv_text(player)
+		if hidden != "":
+			text += "\n\n[Im UV-Licht, zwischen den Zeilen:]\n" + hidden
+		Game.menus.open_note(String(note["title"]), text)
+
+
+## Die unsichtbare Zeile – nur, wenn der Spieler mit eingeschaltetem UV-Licht liest.
+func _uv_text(player: Player) -> String:
+	if note_id == "" or player == null or player.held == null or player.held.flashlight == null:
+		return ""
+	var lamp := player.held.flashlight
+	if not (lamp.on and lamp.uv_mode):
+		return ""
+	return String(NOTES.get(note_id, {}).get("uv", ""))

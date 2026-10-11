@@ -47,6 +47,13 @@ const HAUNT_INTERVAL := Vector2(80.0, 170.0)
 ## Halluzination: mittlere Sekunden zwischen zwei Rausch-Anfällen nach einem Todesfall
 const HALLUCINATION_EVERY := 70.0
 const GRIEF_TIME := 900.0
+## UV-Licht (Spielkonzept 4.16): so lange muss es im Kegel stehen – mit jedem Mal länger
+const UV_REPEL_TIME := 1.0
+const UV_HABITUATION := 0.5
+const UV_REPEL_MAX := 3.5
+const UV_BOLDNESS := 6.0               ## es merkt sich, wer es geblendet hat …
+const UV_CURIOSITY := 40.0             ## … und sucht rund um Zimmer 13
+const UV_REST_FACTOR := 0.4            ## vertrieben ruht es nur kurz
 
 var phase := Phase.CALM
 var boldness := BOLDNESS_START
@@ -67,6 +74,7 @@ var grief := 0.0            ## Sekunden „Trauerzeit“ nach einem Todesfall �
 var strange_diary := false  ## im Tagebuch steht beim nächsten Mal eine fremde Zeile
 ## Bedrohung beim Spieler (0..1) – Rauschen, Brummen, engerer Blick
 var player_threat := 0.0
+var uv_count := 0           ## so oft schon mit UV vertrieben (Gewöhnung, 4.8)
 
 var _monster: Monster
 var _phase_left := 0.0
@@ -76,6 +84,7 @@ var _pulse := 0.0
 var _jumpscare := 0.0
 var _hallucination := 0.0
 var _haunt_timer := 120.0
+var _uv_driven := false     ## die laufende Aktivphase endet, weil UV es vertrieben hat
 
 
 func setup(builder: LevelBuilder, monster: Monster) -> void:
@@ -306,6 +315,9 @@ func _day_lerp(range_value: Vector2) -> float:
 func on_monster_gone() -> void:
 	phase = Phase.CALM
 	_phase_left = _day_lerp(REST_TIME) * randf_range(0.8, 1.2) + satiation * 3.0
+	if _uv_driven:
+		_phase_left *= UV_REST_FACTOR
+		_uv_driven = false
 
 
 ## Debug (F5, --warn): sofort losschicken.
@@ -372,6 +384,21 @@ func on_lights_off(pos: Vector3) -> void:
 	add_curiosity(pos, LIGHTS_OFF_CURIOSITY)
 	if _monster.is_active() and _monster.global_position.distance_to(pos) < 20.0:
 		_monster.investigate(pos)
+
+
+## So lange muss das Monster im UV-Kegel stehen, bis es flieht.
+func uv_repel_time() -> float:
+	return minf(UV_REPEL_MAX, UV_REPEL_TIME + UV_HABITUATION * uv_count)
+
+
+## UV-Licht hat es vertrieben (Spielkonzept 4.16): Es flieht in den Keller und ruht nur kurz.
+## Dafür weiß es, wer es war – dreister, Neugier rund um Zimmer 13, und es gewöhnt sich daran.
+func on_monster_uv() -> void:
+	uv_count += 1
+	boldness = minf(100.0, boldness + UV_BOLDNESS)
+	add_curiosity(player_door_front, UV_CURIOSITY)
+	_uv_driven = true
+	_monster.uv_repel()
 
 
 func on_monster_repelled() -> void:
@@ -697,7 +724,7 @@ func save_state() -> Dictionary:
 	return {
 		"first_attack_done": first_attack_done, "first_attack_day": first_attack_day, "attacks": attacks,
 		"grief": grief, "strange_diary": strange_diary, "phase": int(phase), "phase_left": _phase_left,
-		"haunt_timer": _haunt_timer, "monster_active": _monster.is_active(),
+		"haunt_timer": _haunt_timer, "uv_count": uv_count, "monster_active": _monster.is_active(),
 		"monster_pos": [_monster.global_position.x, _monster.global_position.y, _monster.global_position.z],
 	}
 
@@ -710,6 +737,7 @@ func load_state(d: Dictionary) -> void:
 	strange_diary = bool(d.get("strange_diary", false))
 	_phase_left = float(d.get("phase_left", 60.0))
 	_haunt_timer = float(d.get("haunt_timer", 120.0))
+	uv_count = int(d.get("uv_count", 0))
 	phase = Phase.CALM
 	if bool(d.get("monster_active", false)):
 		var mp: Array = d.get("monster_pos", [32.8, 0.05, 0.2])
@@ -777,6 +805,7 @@ func debug_text() -> String:
 	var s := "%s · Phase %s (%ds) · Angriff %d%s\n" % [Calendar.date_text(elapsed), Phase.keys()[phase], int(_phase_left),
 		attacks, " harmlos" if is_harmless() else ""]
 	s += "Dreistigkeit %.1f (effektiv %.1f) · Bedrohung %.2f\n" % [boldness, effective_boldness(), player_threat]
+	s += "UV vertrieben: %d× (nötig %.1f s)\n" % [uv_count, uv_repel_time()]
 	s += "Monster: %s\n" % Monster.State.keys()[_monster.state]
 	if Game.player:
 		s += "Licht beim Spieler: %.2f\n" % light_at(Game.player.global_position + Vector3.UP)

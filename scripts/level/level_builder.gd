@@ -445,6 +445,7 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 			_parent.add_child(chest)
 			_item(Item.Kind.COINS, Vector3(x1 - 0.45, 0.07, 0.75), "3")
 			_item(Item.Kind.LEAVES, Vector3(x1 - 0.45, 0.07, 1.2))
+			_uv_writing("DU WARST SCHON\nEINMAL HIER", Vector3(x0 + 0.11, 1.45, 3.85), 90.0)
 		"abandoned":
 			door.set_open.call_deferred(true)
 			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.5, 0.02, 1.9))
@@ -454,6 +455,7 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 			_item(Item.Kind.MAP, Vector3(cx + 0.4, 0.02, 3.3), "keller").rotation.y = 2.6   # Kellerskizze auf dem Boden
 			_resource_web(Vector3(x1 - 0.12, 2.2, 4.7), -135.0)
 			_resource_web(Vector3(x0 + 0.12, 2.4, 0.4), 45.0)
+			_uv_writing("ICH HABE ES GEBLENDET.\nJETZT KENNT ES MEINE TÜR.\n– E. K.", Vector3(x1 - 0.11, 1.5, 2.6), -90.0)
 		"laundry":
 			# Waschmaschinen, Regal, Wäschekiste
 			for i in 3:
@@ -466,6 +468,7 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 			_resource_web(Vector3(x0 + 0.12, 2.6, 4.7), 135.0)
 			_item(Item.Kind.CANDLE, Vector3(cx + 0.5, 2.02, 4.6))
 			_note("1994", Vector3(x1 - 0.8, 0.51, 4.0))
+			_item(Item.Kind.BATTERY, Vector3(x1 - 0.55, 0.51, 3.75))
 		"locked":
 			door.locked = true
 			door.key_id = "zimmer_18"
@@ -473,6 +476,8 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 			_item(Item.Kind.CARVED_PUMPKIN, Vector3(cx - 1.0, 0.02, 1.6))
 			_item(Item.Kind.COINS, table_top, "5")
 			_item(Item.Kind.LEAVES, Vector3(cx + 1.0, 0.02, 1.0))
+			_item(Item.Kind.UV_FILTER, table_top + Vector3(0.25, 0, 0.12))   # späterer Fund (4.16)
+			_uv_writing("NUR EINER\nKOMMT HINAUS", Vector3(x1 - 0.11, 1.5, 2.8), -90.0)
 		"empty":
 			_item(Item.Kind.CANDLE, table_top)
 			_note("2003", Vector3(x0 + 1.95, 0.01, 3.4))   # neben dem Bett, halb darunter
@@ -491,6 +496,8 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 				_item(Item.Kind.CANDLE, table_top)
 			elif int(no) % 5 == 0:
 				_item(Item.Kind.COINS, table_top, "1")
+			elif int(no) % 7 == 0:
+				_item(Item.Kind.BATTERY, table_top)
 	rooms[no] = info
 
 
@@ -546,7 +553,9 @@ func _cellar() -> void:
 	Geo.solid(cellar, Vector3(1.8, 1.6, 0.5), Vector3(3.5, 0.8, -2.65), _wood)   # altes Regal
 	_item(Item.Kind.KEY, Vector3(L - 1.0, 0.72, -2.3), "zimmer_18")
 	_item(Item.Kind.COINS, Vector3(1.2, 0.02, 2.0), "2")
+	_item(Item.Kind.BATTERY, Vector3(3.1, 1.61, -2.6))   # auf dem alten Regal
 	_note("2011", Vector3(L - 0.9, 0.61, 2.4))
+	_uv_writing("31.10.1987\nSIE HABEN IHN\nEINGESCHLOSSEN", Vector3(L - 0.11, 1.5, 0.0), -90.0)
 	_resource_web(Vector3(L - 0.5, 1.7, -2.88), 0.0)
 	_resource_web(Vector3(1.0, 1.7, 2.88), 180.0)
 	_parent = root
@@ -595,6 +604,7 @@ func _lobby() -> void:
 	Geo.solid(root, Vector3(0.7, 1.1, 1.4), Vector3(-9.65, 0.55, 4.75), _dark_wood)
 	_item(Item.Kind.CARVED_PUMPKIN, Vector3(-12.2, 1.12, 5.4))
 	_note("2019", Vector3(-10.8, 1.11, 5.35))
+	_item(Item.Kind.FLASHLIGHT, Vector3(-12.75, 1.11, 5.3)).rotation.y = 2.4   # halb leer (4.16)
 	_item(Item.Kind.MAP, Vector3(-9.65, 1.11, 4.6), "og").rotation.y = PI / 2.0   # Kartenblatt Obergeschoss
 	var main_phone := HotelPhone.new().setup("lobby")   # Haupttelefon mit Gästeverzeichnis
 	main_phone.position = Vector3(-11.4, 1.1, 5.3)
@@ -854,6 +864,15 @@ func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, roo
 	lamp.rotation.y = yaw
 	_parent.add_child(lamp)
 	return lamp
+
+
+## Schrift, die nur unter UV-Licht leuchtet (Spielkonzept 4.16); yaw dreht die Schrift
+## (lokale +Z) von der Wand weg in den Raum.
+func _uv_writing(text: String, pos: Vector3, yaw: float) -> void:
+	var mark := UvMark.new().setup_text(text)
+	mark.position = pos
+	mark.rotation.y = deg_to_rad(yaw)
+	_parent.add_child(mark)
 
 
 ## Warnungszettel eines früheren Gastes (erscheint erst nach dem ersten Angriff).

@@ -20,6 +20,7 @@ extends Node3D
 ##   --pos=x,y,z[,blickwinkel]   Spieler versetzen
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
+##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
 ##   --debug                     Debug-Werte einblenden
 ##   --nointro                   ohne Einführungstext
@@ -264,6 +265,11 @@ func _parse_debug_args() -> void:
 			for page in HotelMap.PAGES:
 				Game.player.add_map_page(page["id"])
 			Game.player.add_key("zimmer_18")
+		elif arg.begins_with("--flashlight"):
+			var uv := arg == "--flashlight=uv"
+			var lamp := Item.create(Item.Kind.FLASHLIGHT, "c=1;on" + (";uv;m=uv" if uv else ""))
+			Game.player.drop_held()
+			Game.player.receive_item(lamp)
 		elif arg.begins_with("--show="):
 			Game.player.debug_show = arg.substr(7)
 		elif arg.begins_with("--bold="):

@@ -474,7 +474,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Einfluss | Faktor (Vorschlag) | Anmerkung |
 |----------|--------------------|-----------|
 | Licht am Ort | 1,0 (dunkel) … 2,2 (hell) | entspricht heute 8 m → 18 m beim Monster |
-| Eigenes Licht in der Hand | Kerze +0,6 · Kürbislaterne +0,8 | **neu:** wer Licht trägt, wird gesehen |
+| Eigenes Licht in der Hand | Kerze +0,6 · Kürbislaterne +0,8 · Taschenlampe +0,9 · UV +1,2 | **neu:** wer Licht trägt, wird gesehen (Taschenlampe: 4.16) |
 | Rennen | +0,4 | heute +3 m |
 | Gehen | ±0 | |
 | Stillstehen | −0,1 | heute −1 m |
@@ -501,6 +501,34 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 **Zu klären**
 - Ob der Spieler sieht, wie laut er gerade ist (kein HUD – vielleicht nur über Untertitel wie „[Die Tür knarrt]“).
 - Die Dämpfung im Spiel nachhören: Reicht ×0,4 je Wand, oder hört man Zimmer nebenan zu gut bzw. zu schlecht?
+
+### 4.16 Taschenlampe & UV-Licht (entschieden 2026-10-11)
+> **Im Prototyp umgesetzt (2026-10-11):** Taschenlampe an der Rezeption (halb leer), Batterien in Wäscherei, Keller und einigen unbewohnten Zimmern sowie bei Skeptikern im Handel, UV-Aufsatz in Zimmer 18. Werte in `scripts/world/flashlight.gd` und oben im `MonsterDirector`.
+
+**Grundsatz:** Die Taschenlampe ist Licht zum **Sehen**, kein Schutz. Erst der UV-Aufsatz macht sie zur Notwehr – teuer und mit Folgen. Deko und Verstecken bleiben der eigentliche Schutz (4.12, 3.4).
+
+- **Eine Lampe, zwei Modi:** Man findet früh eine normale Taschenlampe. Der **UV-Aufsatz** ist ein **späterer Fund** (Zimmer 18, Schlüssel im Keller – „Wagnis“ nach 2.3). Danach schaltet man um.
+- **Gegenstand in der Hand** (3.2), nicht am Körper: Mit Lampe trägt man keinen Kürbis. [Linksklick] an/aus, [R] normal ↔ UV.
+- **Batterien** sind kleine Gegenstände. Batterie in der Hand + Lampe (oder umgekehrt) → einlegen, wie die Kerze in den Kürbis. Eine Batterie reicht für **einen Ingame-Tag normales Licht** – oder für **etwa 9 Sekunden UV**. Skeptiker handeln damit.
+- **Kein Schutzbereich:** Die Lampe zählt nicht als Licht für die Abschreckung (4.9) – sonst wäre sie eine helle Zone zum Mitnehmen.
+- **Verrät einen** (4.15): Auffälligkeit normal **+0,9**, UV **+1,2** (Kerze +0,6).
+- **Flackert in der Nähe des Monsters** wie die Wandlampen; bei schwacher Batterie wird sie dunkel und unruhig.
+- **Im Versteck bleibt sie aus** – sie geht beim Hineinsteigen aus und lässt sich drinnen nicht einschalten.
+
+**UV gegen das Monster**
+- Steht es nah genug (≤ 6 m) etwa **1 Sekunde** mitten im UV-Kegel, zuckt es zurück, kreischt und **flieht in den Keller**. Im Kegel wird es langsamer. Auf der Flucht jagt es niemanden.
+- **Der Preis:** Es **weiß, wer es war** – Dreistigkeit +6, Neugier rund um Zimmer 13 +40 (wie „bemerkt“, 4.5). Es **ruht danach nur kurz** (Ruhephase ×0,4). Und es **gewöhnt sich daran** (4.8): Jedes weitere Mal muss es 0,5 s länger im Kegel stehen (höchstens 3,5 s) – irgendwann reicht eine Batterie nicht mehr.
+- Nicht, wenn es schon zupackt (Jumpscare) oder sich ohnehin zurückzieht.
+
+**UV zeigt Verborgenes**
+- **Fußspuren des Monsters** leuchten unter UV noch lange, nachdem sie für das Auge verblasst sind (drei Ingame-Tage).
+- **Schrift an Wänden**, nur unter UV: in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2), in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, der Heizer), in Zimmer 18 („Nur einer kommt hinaus“).
+- **Jeder Warnungszettel** hat eine unsichtbare zweite Zeile, die man nur mit eingeschaltetem UV-Licht liest – Hinweise auf das Abkommen und den Heizer (2.3).
+- **Warum UV?** Bewusst offen. Gäste und Zettel deuten an, dass es „dieses Licht hasst“ – eine Erklärung im Geheimnis (2.3) ist möglich, aber nicht nötig.
+
+**Zu klären**
+- Gäste mit eigener Taschenlampe (Bitte „Ich habe kein Licht mehr“, „Ich brauche Batterien“, 4.14/6.4)?
+- Zeigt UV später auch weggewischte Spuren an Zimmer 13?
 
 ---
 
@@ -1033,7 +1061,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 2. ~~Zeitstruktur~~ → **durchgängig**, keine Level; Ingame-Tage à ca. 5 min vom 1. Oktober bis Halloween, draußen immer Nacht (2.1, entschieden).
 3. ~~Monster-Kontakt~~ → Jumpscare + Sterbebildschirm, danach letzten Spielstand laden (entschieden, siehe 8).
 3a. **„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren?
-3b. **Spieler-Lichtquelle:** Hat der Spieler eine Taschenlampe/Laterne? (Schützt vor dem Monster, aber verrät die eigene Position?)
+3b. ~~Spieler-Lichtquelle~~ → **Taschenlampe**, verrät die eigene Position, schützt nicht; mit UV-Aufsatz (späterer Fund) kurz vertreiben, kostet Batterien und macht es dreister (4.16, entschieden 2026-10-11).
 3c. **Garten-Zeit:** Wie lange wächst ein Kürbis – Minuten Echtzeit oder Ingame-Tage?
 3d. **Kellertür vs. Hitbox:** Ducken, Tür erhöhen oder Hitbox verkleinern?
 3e. **Puppe:** Kann sie auch Deko verändern/umwerfen, oder nur beobachten? Kann der Spieler ihr Urteil irgendwie sehen?
@@ -1064,6 +1092,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 7. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen Zetteln (2.2) · Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
 7a. Fahrstuhl reparieren, Tiefkeller mit Heizkeller und Lager (7.4) · ~~Zimmertelefone (4.14)~~ ✔ (2026-10-11)
 7b. ~~Lärm & Sichtbarkeit als ein gemeinsames System (4.15)~~ ✔ (2026-10-11)
+7c. ~~Taschenlampe mit Batterien und UV-Aufsatz (4.16)~~ ✔ (2026-10-11)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen
