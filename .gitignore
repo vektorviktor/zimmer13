@@ -5,3 +5,6 @@
 assets/models/*.jpg
 # Rohmodelle (Meshy-Originale), aus denen tools/ die Spielmodelle baut – zu groß fürs Repo
 assets/source/*.glb
+
+# Exportierte Builds (export_presets.cfg)
+build/

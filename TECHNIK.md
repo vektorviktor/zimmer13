@@ -309,3 +309,16 @@ Text für Gästeberichte in `Social.TRACE_TEXT`.
 - Screenshots zum Prüfen: `--shot=pfad.png --frames=n` oder `--shot-on=reveal|jumpscare`; Menüs mit `--menu=…`.
 - Nach Änderungen am Speichern oder an der Welt: `--savetest` laufen lassen (`alles gleich` erwartet).
 - Es gibt keine automatisierten Tests – Prüfung über Debug-Parameter, Konsole und Screenshots.
+
+## 11. Export
+
+- Preset „Windows Desktop“ in `export_presets.cfg`, Befehl im README. `binary_format/embed_pck=true` →
+  eine einzelne `.exe`; Skripte als Binär-Tokens (`script_export_mode=2`); Ziel `build/` (Git-ignoriert).
+- Export-Filter „alle Ressourcen“: alles unter `res://` landet im Paket, außer `exclude_filter`
+  (`assets/source/*`, `tools/*`, `build/*`, `monster_idea.png`). Neue reine Arbeitsdateien dort ergänzen.
+- Nur `load()` mit festen `res://`-Pfaden verwenden – zusammengesetzte Pfade findet der Export nicht
+  immer, und `res://` ist im Export schreibgeschützt. Alles Veränderliche gehört nach `user://`
+  (Spielstände, `settings.cfg`), das im Export unter `%APPDATA%/Godot/app_userdata/Zimmer 13/` liegt.
+- Export-Vorlagen müssen exakt zur Editor-Version passen (4.7.2).
+- Debug-Tasten und Startparameter sind nicht an `OS.is_debug_build()` gebunden, also auch im
+  Release-Export aktiv.

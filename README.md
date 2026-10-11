@@ -10,6 +10,18 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 "/c/Users/vikto/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64.exe" --path .
 ```
 
+## Exportieren (eine einzelne .exe)
+
+Einmalig im Editor die Export-Vorlagen für **4.7.2** installieren (*Editor → Export-Vorlagen verwalten → Herunterladen*).
+Das Preset „Windows Desktop“ liegt in `export_presets.cfg` (PCK eingebettet, Rohmodelle und `tools/` ausgeschlossen):
+
+```bash
+mkdir -p build && "/c/Users/vikto/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64.exe" --headless --path . --export-release "Windows Desktop" build/Zimmer13.exe
+```
+
+Ergebnis: `build/Zimmer13.exe` (ignoriert von Git), läuft ohne weitere Dateien. Die Debug-Startparameter
+funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sind im Export ebenfalls aktiv.
+
 ## Steuerung
 
 | Taste | Aktion |
