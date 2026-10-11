@@ -34,7 +34,7 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
 ### Autoloads (`project.godot`)
 | Name | Datei | Aufgabe |
 |------|-------|---------|
-| `Settings` | `scripts/autoload/settings.gd` | Einstellungen, `user://settings.cfg`, Signal `changed` |
+| `Settings` | `scripts/autoload/settings.gd` | Einstellungen, `user://settings.cfg`, Signal `changed`; Vollbild steht nicht in `KEYS` (Start immer im Fenster) |
 | `Game` | `scripts/autoload/game.gd` | Referenzen auf alle Systeme, Geld, Meldungen, Tastenbelegung, Szenenwechsel, Screenshot-Debug |
 | `SaveManager` | `scripts/autoload/save_manager.gd` | Speichern/Laden, Autosave, Tagebuchsatz |
 

@@ -5,13 +5,16 @@ extends VBoxContainer
 
 signal closed
 
+## Höhe der scrollbaren Liste – im Startmenü kleiner, dort ist unter dem Titel weniger Platz
+var list_height := 175.0
+
 var _calibration: Array[ColorRect] = []
 
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 3)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(320, 175)
+	scroll.custom_minimum_size = Vector2(320, list_height)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)
 	var list := VBoxContainer.new()

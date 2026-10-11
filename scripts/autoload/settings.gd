@@ -10,7 +10,7 @@ const RESOLUTIONS: Array[Vector2i] = [Vector2i(480, 270), Vector2i(640, 360), Ve
 
 # Bild
 var gamma := 1.0                 ## Helligkeit (0,6 … 1,8)
-var fullscreen := false
+var fullscreen := false          ## wird nicht gespeichert – das Spiel startet immer im Fenster
 var vsync := true
 var fov := 72.0
 # PS1-Look
@@ -31,7 +31,7 @@ var subtitles := false
 var warning_shown := false       ## Hinweis zur Lichtempfindlichkeit schon gezeigt
 var age_notice_shown := false    ## Hinweis mit Altersempfehlung schon gezeigt
 
-const KEYS := ["gamma", "fullscreen", "vsync", "fov", "resolution", "vertex_wobble", "dithering",
+const KEYS := ["gamma", "vsync", "fov", "resolution", "vertex_wobble", "dithering",
 	"master_volume", "music_volume", "effects_volume", "mouse_sensitivity", "invert_y",
 	"crouch_toggle", "flicker_intensity", "subtitles", "warning_shown", "age_notice_shown"]
 

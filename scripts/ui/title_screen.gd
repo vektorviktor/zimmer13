@@ -168,6 +168,7 @@ func _show_load() -> void:
 func _show_settings() -> void:
 	var box := _sheet("Einstellungen", 330.0)
 	var panel := SettingsPanel.new()
+	panel.list_height = 135.0
 	panel.closed.connect(_show_main)
 	box.add_child(panel)
 	_reposition.call_deferred()
