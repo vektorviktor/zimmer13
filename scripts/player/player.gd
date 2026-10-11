@@ -18,6 +18,11 @@ const MOUSE_SENSITIVITY := 0.0022
 const HIDE_COMFORT_TIME := 22.0   ## ab hier wird es im Versteck unangenehm
 const HIDE_MAX_TIME := 38.0       ## dann muss man raus (wie in „Doors“)
 const BREATH_MAX := 6.0
+## Hand mit dem Gegenstand: unten rechts – beim Ansehen (Kompass) vor die Brust gehoben
+const HAND_REST := Vector3(0.22, -0.22, -0.45)
+const HAND_INSPECT := Vector3(0.0, -0.12, -0.3)
+const INSPECT_TILT := 1.05        ## so weit kippt der Kompass zum Gesicht (rad)
+const INSPECT_SPEED := 0.5        ## Laufen beim Draufschauen: halbe Geschwindigkeit
 
 var head: Node3D
 var camera: Camera3D
@@ -35,6 +40,7 @@ var shock := 0.0
 var shock_recovery := 1.0   ## schneller durch Gedenken oder Feiern (Social)
 var in_dialog := false
 var focused := false   ## sitzt konzentriert am Spieltisch → Vorwarnungen fallen weniger auf
+var inspecting := false  ## schaut auf den Kompass in der Hand (Rechtsklick halten)
 
 var _hand: Node3D
 var _shape: CapsuleShape3D
@@ -75,7 +81,7 @@ func _ready() -> void:
 	head.add_child(camera)
 	camera.make_current()
 	_hand = Node3D.new()
-	_hand.position = Vector3(0.22, -0.22, -0.45)
+	_hand.position = HAND_REST
 	camera.add_child(_hand)
 	_ray = RayCast3D.new()
 	_ray.target_position = Vector3(0, 0, -REACH)
@@ -115,6 +121,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_update_shock(delta)
 	_update_dread(delta)
+	_update_hand(delta)
 	if in_dialog:
 		velocity = Vector3.ZERO
 		return
@@ -132,6 +139,8 @@ func _physics_process(delta: float) -> void:
 	var speed := CROUCH_SPEED if crouching else (RUN_SPEED if running else WALK_SPEED)
 	if held and held.is_large:
 		speed *= 0.8
+	if inspecting:
+		speed *= INSPECT_SPEED
 	velocity.x = dir.x * speed
 	velocity.z = dir.z * speed
 	move_and_slide()
@@ -152,6 +161,15 @@ func _physics_process(delta: float) -> void:
 			if Game.director:
 				Game.director.on_noise(global_position, 1.0)
 	_update_focus()
+
+
+## Kompass ansehen: Rechtsklick halten hebt ihn vor die Brust, das Zifferblatt zum Gesicht
+## gekippt. Im Versteck bleibt Rechtsklick „Luft anhalten“.
+func _update_hand(delta: float) -> void:
+	inspecting = held != null and held.kind == Item.Kind.COMPASS and Input.is_action_pressed("inspect") 		and hiding == null and not in_dialog
+	var t := minf(1.0, 10.0 * delta)
+	_hand.position = _hand.position.lerp(HAND_INSPECT if inspecting else HAND_REST, t)
+	_hand.rotation.x = lerpf(_hand.rotation.x, INSPECT_TILT if inspecting else 0.0, t)
 
 
 # --- Am Spieltisch sitzen -------------------------------------------------------
@@ -238,6 +256,8 @@ func try_pick_up(item: Item) -> void:
 	Game.play_sound("blip", 0.5)
 	if Game.hud:
 		Game.hud.set_held(item.display_name)
+	if item.kind == Item.Kind.COMPASS:
+		Game.say("Ein alter Kompass. [Rechtsklick] halten, um draufzuschauen.", 3.5)
 
 
 func drop_held() -> void:

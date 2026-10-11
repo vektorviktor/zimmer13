@@ -21,7 +21,7 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 | E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Tür/Truhe öffnen, Licht schalten, Vorhang ziehen, Glühbirne heraus-/eindrehen, mit Gästen reden, Verstecken, ins Tagebuch schreiben |
 | 1–9 / Maus | Im Gespräch Antwort wählen (Esc beendet) |
 | G / Q | Gegenstand ablegen (Kürbis vor die Tür stellen …) |
-| Rechtsklick (halten) | Im Versteck Luft anhalten |
+| Rechtsklick (halten) | Im Versteck Luft anhalten · sonst den Kompass in der Hand ansehen |
 | F3 | Debug: versteckte Monster-Werte |
 | F5 | Debug: Monster sofort rufen (wenn es gerade ruht) |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel |
@@ -30,6 +30,7 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 
 - **Hotel (Graybox), zwei Geschosse, 74 Zimmer:** Erdgeschoss mit Lobby (verriegelter Ausgang), Küche, Hotelbar, Garten hinter der Glastür, 78 m Hauptflur mit **drei Flurkreuzungen** und Seitenflügeln (Zimmer 11–28, 31–38, 41–48, 51–56, 61–64), Wäscherei, **Kellertreppe** hinab in den Keller · **Obergeschoss** über das Treppenhaus am Ende des Nordflügels (Zimmer 211–228, 231–238, 241–244, zwei davon verfallen) · nur die nächsten sechs Lampen werfen Schatten (`ShadowBudget`)
 - **Kein Inventar:** ein Gegenstand in der Hand; große Dinge blockieren Türen/Truhen; Münzen werden zu Geld
+- **Kompass:** liegt im verfallenen Zimmer 226 im Obergeschoss · wird in der Hand getragen, Rechtsklick halten hebt ihn vor die Augen (kein HUD) · leuchtende Nadel zeigt nach Norden (Nordflügel, Treppenhaus) · in der Nähe des Monsters zittert sie, ganz nah dreht sie sich im Kreis – auch bei Halluzinationen
 - **Deko & Handwerk:** Kürbisse im Garten ernten · mit dem **Messer** (Küche) schnitzen · **Kerze** in den geschnitzten Kürbis stellen · Herbstlaub unter den Bäumen · Spinnweben in dunklen Ecken · Kerzenvorrat in der Küche
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
 - **Dramaturgie:** friedlicher Anfang ohne Monster · erster Angriff am 3./4. Oktober während einer Feier (Licht und Musik aus, das Monster steht in der Lobby) · die ersten zwei Angriffe sind harmlos: es steht direkt vor dir, starrt dich an und verschwindet, Gäste werden nur erschreckt

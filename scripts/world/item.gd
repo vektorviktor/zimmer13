@@ -6,15 +6,18 @@ extends RigidBody3D
 ##
 ## Handwerk: Messer in der Hand + Kürbis → schnitzen; Kerze in der Hand + geschnitzter
 ## Kürbis ohne Licht → Kerze hineinstellen.
+##
+## Kompass: Die Nadel zeigt nach Norden (Welt −Z) und schwingt nach. In der Nähe des
+## Monsters zittert sie, ganz nah dreht sie sich wild – ebenso bei Halluzinationen.
 
-enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING }
+enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
 ## Grundpreise für den Handel mit Gästen
 const PRICES := {
 	Kind.PUMPKIN: 4, Kind.CARVED_PUMPKIN: 10, Kind.CANDLE: 3, Kind.COBWEB: 3,
-	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4, Kind.CLOTHING: 0,
+	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4, Kind.CLOTHING: 0, Kind.COMPASS: 6,
 }
 
 var kind: Kind = Kind.PUMPKIN
@@ -35,6 +38,12 @@ var broken := false
 var clothing_of := ""
 
 var _glow_material: ShaderMaterial
+## Kompass: Nadel (dreht um die lokale Y-Achse), Winkel und Schwung der Feder
+var _needle: Node3D
+var _needle_angle := 0.0
+var _needle_speed := 0.0
+var _needle_spin := 0.0
+var _needle_time := 0.0
 
 
 static func create(p_kind: Kind, extra: String = "") -> Item:
@@ -50,6 +59,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _needle:
+		_update_needle(delta)
 	if not lit or burn_time <= 0.0:
 		return
 	burn_time -= delta
@@ -157,8 +168,35 @@ func _extinguish() -> void:
 			display_name = "Kerzenstummel"
 
 
+## Kompassnadel: gedämpfte Feder Richtung Norden; das Monster stört sie (Bedrohung wie beim
+## Rauschen, wirkt durch Wände), nach einem Todesfall auch Halluzinationen.
+func _update_needle(delta: float) -> void:
+	var north := global_basis.inverse() * Vector3.FORWARD
+	var target := atan2(-north.x, -north.z)
+	var director := Game.director
+	var threat := director.threat_at(global_position) if director else 0.0
+	if is_held and director and director.is_hallucinating() and Game.player and Game.player.held == self:
+		threat = maxf(threat, 0.8)
+	_needle_time += delta
+	if threat > 0.75:
+		# Ganz nah: die Nadel dreht sich im Kreis
+		_needle_spin += delta * (6.0 + 8.0 * threat)
+		target = _needle_spin
+	else:
+		_needle_spin = _needle_angle
+		target += sin(_needle_time * 13.0) * threat * 1.1 + randf_range(-1.0, 1.0) * threat * 0.9
+	var accel := wrapf(target - _needle_angle, -PI, PI) * 45.0 - _needle_speed * 5.0
+	_needle_speed += accel * delta
+	_needle_angle = wrapf(_needle_angle + _needle_speed * delta, -PI, PI)
+	_needle.rotation.y = _needle_angle
+
+
 func set_held(held: bool) -> void:
 	is_held = held
+	# In der Hand: statisch eingefroren – dann folgt der Körper seinem Elternknoten (Hand).
+	# Kinematisch eingefroren schrieb die Physik die alte Lage zurück: der Gegenstand drehte
+	# beim Umsehen nicht mit.
+	freeze_mode = RigidBody3D.FREEZE_MODE_STATIC if held else RigidBody3D.FREEZE_MODE_KINEMATIC
 	freeze = held
 	collision_layer = 0 if held else LAYER
 	collision_mask = 0 if held else MASK
@@ -271,12 +309,38 @@ func _build(extra: String) -> void:
 			Geo.mesh(self, Geo.cylinder(0.018, 0.03, 6), Mat.psx(Color(0.7, 0.68, 0.6)), Vector3(0, 0.015, 0))
 			var glass := Color(0.35, 0.33, 0.3) if broken else Color(1.0, 0.97, 0.85)
 			Geo.mesh(self, Geo.sphere(0.032, 0.07, 6, 3), Mat.psx(glass), Vector3(0, 0.065, 0))
+		Kind.COMPASS:
+			display_name = "Kompass"
+			mass = 0.15
+			size = Vector3(0.11, 0.03, 0.11)
+			_build_compass()
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size
 	cs.shape = box
 	cs.position.y = size.y / 2.0
 	add_child(cs)
+
+
+## Messingdose mit Zifferblatt; Nadel und Nordmarke leuchten schwach (Leuchtfarbe),
+## damit man sie auch im dunklen Flur ablesen kann. Zifferblatt oben (lokale +Y).
+func _build_compass() -> void:
+	var brass := Mat.psx(Color(0.62, 0.48, 0.22))
+	var glow := Color(0.55, 0.95, 0.6)
+	Geo.mesh(self, Geo.cylinder(0.05, 0.022, 10), brass, Vector3(0, 0.011, 0))
+	Geo.mesh(self, Geo.cylinder(0.043, 0.004, 10), Mat.psx(Color(0.82, 0.78, 0.66)), Vector3(0, 0.022, 0))
+	Geo.mesh(self, Geo.box(Vector3(0.014, 0.006, 0.014)), brass, Vector3(0, 0.024, 0.056))   # Öse
+	# Nordmarke bei der Öse (in der Hand oben, weg vom Spieler) und Striche für O, S, W
+	Geo.mesh(self, Geo.box(Vector3(0.008, 0.002, 0.012)), Mat.psx(glow, "", 1.0, glow, 1.2), Vector3(0, 0.025, 0.034))
+	for side in [Vector3(0.036, 0.025, 0), Vector3(0, 0.025, -0.036), Vector3(-0.036, 0.025, 0)]:
+		Geo.mesh(self, Geo.box(Vector3(0.004, 0.002, 0.004)), Mat.psx(Color(0.25, 0.2, 0.15)), side)
+	_needle = Node3D.new()
+	_needle.position = Vector3(0, 0.027, 0)
+	add_child(_needle)
+	var red := Color(0.95, 0.2, 0.12)
+	Geo.mesh(_needle, Geo.box(Vector3(0.007, 0.003, 0.036)), Mat.psx(red, "", 1.0, red, 1.5), Vector3(0, 0, -0.018))
+	Geo.mesh(_needle, Geo.box(Vector3(0.007, 0.003, 0.034)), Mat.psx(Color(0.85, 0.85, 0.8), "", 1.0, glow, 0.4), Vector3(0, 0, 0.017))
+	Geo.mesh(_needle, Geo.cylinder(0.005, 0.005, 6), brass, Vector3(0, 0.002, 0))
 
 
 func _pumpkin(carved: bool) -> void:

@@ -436,6 +436,11 @@ func _reveal_to_player(spot: HideSpot) -> void:
 
 # --- Unheimliche Kleinigkeiten ---------------------------------------------------------------
 
+## Gerade eine Halluzination (Rauschen ohne Monster)? Auch der Kompass spielt dann verrückt.
+func is_hallucinating() -> bool:
+	return _hallucination > 0.0
+
+
 ## Halluzination nach einem Todesfall: Rauschen ohne Monster.
 func _update_hallucination(delta: float) -> void:
 	if _hallucination > 0.0:

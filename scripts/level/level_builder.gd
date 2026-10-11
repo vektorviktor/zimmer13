@@ -51,6 +51,8 @@ const STAIRWELL_X := 20.0
 const STAIRWELL_Z := -19.0          ## Flügelende = Eingang
 const STAIRWELL_LANDING := -25.9    ## Beginn des Podests
 const STAIRWELL_END := -28.4        ## Rückwand
+## Hier liegt der Kompass: ein verfallenes Zimmer im Obergeschoss
+const COMPASS_ROOM := "226"
 
 ## Die Flurnetze der Geschosse. sections: [Raum-ID, Name, x von, x bis] für Lichtschalter
 ## und Lampen des Hauptflurs. wings: Querflure (Mitte x, Ende |z|, Raum-IDs; stair = dort
@@ -474,6 +476,8 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 			_resource_web(Vector3(x0 + 0.12, 2.4, 0.4), 45.0)
 			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.5, 0.02, 1.9))
 			_item(Item.Kind.COINS, table_top, "1")
+			if no == COMPASS_ROOM:
+				_item(Item.Kind.COMPASS, table_top + Vector3(0.25, 0, 0.1))
 		"vacant":
 			# Unbewohnt – ab und zu hat jemand etwas liegen lassen
 			if int(no) % 3 == 0:

@@ -106,6 +106,9 @@ Sichtprüfungen (Monster, Zeugen) nutzen `1 | 2 | 256 | 512`, Lichtprüfungen `1
   bei [E] `objekt.interact(player)` auf.
 - **Leerer Prompt = nicht interagierbar.** Zum Abschalten `set_meta("interactable", null)`.
 - Große Gegenstände blockieren Türen/Truhen: `player.hands_blocked()` prüfen.
+- **Gegenstände in der Hand** hängen als Kind am Hand-Knoten und sind über `Item.set_held(true)`
+  **statisch** eingefroren (`FREEZE_MODE_STATIC`). Kinematisch eingefroren schreibt die Physik die alte
+  Lage zurück – der Gegenstand dreht dann nicht mit. Immer `set_held()` benutzen, nie `freeze` direkt.
 
 ### Gruppen (zum Finden und Speichern)
 `items`, `guests`, `player`, `doors`, `chests`, `hide_spots`, `lamp_fixtures` (die Lampen),
@@ -247,6 +250,7 @@ Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick ver
 | Spuren | `traces.gd`, `trace_mark.gd` | zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`; Fußabdrücke verblassen, Marken bleiben |
 | Zettel | `warning_note.gd` | feste Warnungszettel (`warning_notes`, erst nach dem 1. Angriff sichtbar) und Gäste-Zettel (`guest_notes`, max. 30) |
 | Verstecke | `hide_spot.gd` | `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur |
+| Kompass | `item.gd` (`Kind.COMPASS`), `player.gd` (`_update_hand`) | Nadel = Feder Richtung Welt −Z (Norden), gestört über `director.threat_at()` und `is_hallucinating()`; Ansehen = Hand per Lerp vor die Brust (`HAND_INSPECT`), Aktion `inspect` (Rechtsklick, teilt sich die Taste mit `hold_breath` – im Versteck gilt nur das); liegt in `LevelBuilder.COMPASS_ROOM` |
 | Kalender | `calendar.gd` | statische Datumsfunktionen + Abreißkalender in Zimmer 13 |
 | Mäxchen | `minigames/` | `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI & Einsätze, `GameTable` = Tisch; Würfeln macht Lärm |
 | UI | `ui/` | `UiKit` = Meldezettel-Optik für Menüs; `Hud` Prompt/Meldungen/Debug (F3); `Menus` pausiert |
