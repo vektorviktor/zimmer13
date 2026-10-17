@@ -16,8 +16,10 @@ const DIR := "user://saves/"
 ## 6: am Körper (player.compass/map_pages/keyring), Kartenblätter – ältere Stände laden weiter,
 ##    Kompass, Karte und Schlüssel liegen dort noch in der Welt
 ## 7: Kommoden im Flur (Gruppe dressers) – ältere Stände laden weiter, alle Schubladen sind zu und unberührt
-const VERSION := 7
-const MIN_VERSION := 4
+## 8: Hotelkatzen (Gruppe cats) – ältere Stände laden weiter, die Katzen beginnen an ihren Startplätzen
+## 9: Milchglas zwischen Flur und Zimmern entfernt (Gruppe windows kleiner, Spuren hängen an Fenster-Indizes)
+const VERSION := 9
+const MIN_VERSION := 9
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
@@ -99,9 +101,10 @@ func has_any_save() -> bool:
 
 # --- Speichern ---------------------------------------------------------------------
 
-## Am Tagebuch: gesperrt, solange das Monster in der Nähe ist (Rauschen) oder jagt (8.5, 4.13).
+## Am Tagebuch: gesperrt, solange das Monster in der Nähe ist (Rauschen) oder jagt (8.5, 4.13)
+## und solange die Flackerwelle läuft (4.17).
 func can_save() -> bool:
-	if Game.director == null or Game.game_over or Game.player == null:
+	if Game.director == null or Game.game_over or Game.player == null or Game.director.is_signalling():
 		return false
 	var monster := Game.monster
 	if not monster.is_active():
@@ -280,6 +283,8 @@ func collect() -> Dictionary:
 		"thefts_ago": thefts, "memorials": memorials, "watched": social._watched.keys(),
 		"party_cooldown": social._party_cooldown, "roster": social.roster_state(),
 		"arrival_timer": social._arrival_timer,
+		"cat_thefts": social.cat_thefts, "cats_have_cried": social.cats_have_cried,
+		"sleep_active": social.sleep_active, "sleep_timer": social.sleep_timer,
 	}
 	var director := Game.director
 	var curiosity: Array = []
@@ -291,6 +296,7 @@ func collect() -> Dictionary:
 		"curiosity": curiosity, "state": director.save_state(),
 	}
 	data["traces"] = Game.traces.save_state() if Game.traces else []
+	data["ghost"] = Game.ghost.save_state() if Game.ghost else {}
 	data["hide_spots"] = _collect_group("hide_spots", func(n: Node) -> Dictionary: return n.save_state())
 	data["doors"] = _collect_group("doors", func(n: Node) -> Dictionary:
 		return {"open": n.is_open, "locked": n.locked})
@@ -305,6 +311,7 @@ func collect() -> Dictionary:
 	data["windows"] = _collect_group("windows", func(n: Node) -> Dictionary: return n.save_state())
 	data["phones"] = _collect_group("phones", func(n: Node) -> Dictionary: return n.save_state())
 	data["dressers"] = _collect_group("dressers", func(n: Node) -> Dictionary: return n.save_state())
+	data["cats"] = _collect_group("cats", func(n: Node) -> Dictionary: return n.save_state())
 	data["table_loaded"] = Game.dice.table.loaded if Game.dice and Game.dice.table else false
 	return data
 
@@ -361,6 +368,8 @@ func apply(data: Dictionary) -> void:
 		_apply_group("dressers", data["dressers"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if Game.traces:
 		Game.traces.load_state(data.get("traces", []))
+	if Game.ghost:
+		Game.ghost.load_state(data.get("ghost", {}))
 	if Game.dice and Game.dice.table:
 		Game.dice.table.loaded = bool(data.get("table_loaded", false))
 
@@ -420,6 +429,10 @@ func apply(data: Dictionary) -> void:
 		if held != null and not g.dead:
 			g._take_into_hand(_make_item(held))
 
+	# Katzen (nach den Gästen: Lieblingsgast; nach den Gegenständen: ihre Beute im Maul)
+	if data.has("cats"):   # erst ab Version 8
+		_apply_group("cats", data["cats"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
+
 	# Spieler
 	var pd: Dictionary = data["player"]
 	var p := Game.player
@@ -448,6 +461,10 @@ func apply(data: Dictionary) -> void:
 	for id in sd.get("watched", []):
 		social._watched[id] = true
 	social._party_cooldown = float(sd.get("party_cooldown", 150.0))
+	social.cat_thefts = (sd.get("cat_thefts", {}) as Dictionary).duplicate()
+	social.cats_have_cried = bool(sd.get("cats_have_cried", false))
+	social.sleep_active = bool(sd.get("sleep_active", false))
+	social.sleep_timer = float(sd.get("sleep_timer", 300.0))
 	social._arrival_timer = float(sd.get("arrival_timer", -1.0))
 	# Monster zuletzt: ggf. wieder unterwegs an seiner gespeicherten Stelle
 	director.load_state(dd.get("state", {}))

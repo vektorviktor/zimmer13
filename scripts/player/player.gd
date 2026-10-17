@@ -29,6 +29,7 @@ const COMPASS_VIEW := Vector3(-0.03, -0.12, -0.3)
 const COMPASS_TILT := 1.05
 const LEFT_DOWN := Vector3(0.0, -0.3, 0.05)
 const INSPECT_SPEED := 0.5        ## Laufen beim Draufschauen: halbe Geschwindigkeit
+const TRANCE_SLOW := 0.65         ## volle Hypnose des Lakengeists: so viel langsamer
 const STEP_LENGTH := 0.75         ## alle so viele Meter ein Schritt (Lärm auf Holz/Fliesen, 4.15)
 const LAND_SPEED := 2.5           ## ab dieser Fallgeschwindigkeit ist Landen zu hören
 const SOFT_FLOORS := ["carpet", "grass"]   ## Teppich und Rasen schlucken Schritte
@@ -50,6 +51,9 @@ var shock_recovery := 1.0   ## schneller durch Gedenken oder Feiern (Social)
 var in_dialog := false
 var focused := false   ## sitzt konzentriert am Spieltisch → Vorwarnungen fallen weniger auf
 var inspecting := false  ## schaut auf Karte oder Kompass in der linken Hand
+var trance := 0.0      ## Hypnose des Lakengeists (0..1) – macht langsamer (Spielkonzept 4.18)
+var gripped := false   ## wird gewürgt: steht fest, nur move_input zählt (Losreißen)
+var move_input := Vector2.ZERO   ## Bewegungstasten dieses Frames
 ## Am Körper (Spielkonzept 3.2): Kompass, Kartenblätter (HotelMap.PAGES-IDs), Schlüssel-IDs
 var has_compass := false
 var map_pages: Array[String] = []
@@ -99,7 +103,7 @@ func _ready() -> void:
 	camera.fov = Settings.fov
 	Settings.changed.connect(func() -> void: camera.fov = Settings.fov)
 	camera.near = 0.03
-	camera.far = 60.0
+	camera.far = 70.0   # knapp hinter dem Nebelende (main.gd) – weiter sieht man nichts, auch das Monster nicht
 	head.add_child(camera)
 	camera.make_current()
 	_hand = Node3D.new()
@@ -115,7 +119,7 @@ func _ready() -> void:
 	_left_hand.add_child(_compass_holder)
 	_ray = RayCast3D.new()
 	_ray.target_position = Vector3(0, 0, -REACH)
-	_ray.collision_mask = 1 | 2 | 4 | 64 | 128 | 256 | HotelWindow.LAYER_BLOCK
+	_ray.collision_mask = 1 | 2 | 4 | 64 | 128 | 256 | HotelWindow.LAYER_BLOCK | HotelCat.LAYER
 	_ray.add_exception(self)
 	camera.add_child(_ray)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -175,6 +179,10 @@ func _physics_process(delta: float) -> void:
 	elif Input.is_action_just_pressed("jump") and not crouching:
 		velocity.y = JUMP_VELOCITY
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	move_input = input
+	if gripped:
+		velocity = Vector3.ZERO
+		return
 	var dir := (transform.basis * Vector3(input.x, 0, input.y)).normalized()
 	running = Input.is_action_pressed("run") and not crouching and input.length() > 0.1
 	var speed := CROUCH_SPEED if crouching else (RUN_SPEED if running else WALK_SPEED)
@@ -182,6 +190,7 @@ func _physics_process(delta: float) -> void:
 		speed *= 0.8
 	if inspecting:
 		speed *= INSPECT_SPEED
+	speed *= 1.0 - TRANCE_SLOW * trance
 	velocity.x = dir.x * speed
 	velocity.z = dir.z * speed
 	var fall_speed := -velocity.y

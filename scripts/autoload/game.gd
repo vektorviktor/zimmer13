@@ -11,11 +11,13 @@ const TITLE_SCENE := "res://scenes/title.tscn"
 ## Untertitel für wichtige Geräusche (Einstellungen → Barrierefreiheit)
 const SOUND_CAPTIONS := {
 	"scream": "[Ein Schrei]", "growl": "[Knurren]", "bang": "[Ein Knall]", "sting": "[Schriller Ton]",
+	"cry": "[Eine Katze jammert]", "meow": "[Miau]",
 }
 
 var player: Player
 var director: MonsterDirector
 var monster: Monster
+var ghost: SheetGhost
 var hud: Hud
 var audio: SynthAudio
 var social: Social

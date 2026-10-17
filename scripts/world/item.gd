@@ -131,6 +131,8 @@ func create_extra() -> String:
 
 
 func get_prompt(player: Player) -> String:
+	if is_toppled():
+		return "%s aufstellen [E]" % display_name
 	var held := player.held_kind()
 	if kind == Kind.PUMPKIN and held == Kind.KNIFE:
 		return "Kürbis schnitzen [E]"
@@ -147,6 +149,10 @@ func get_prompt(player: Player) -> String:
 
 
 func interact(player: Player) -> void:
+	if is_toppled():
+		stand_up()
+		Game.noise("drop", global_position, player)
+		return
 	var held := player.held_kind()
 	if kind == Kind.PUMPKIN and held == Kind.KNIFE:
 		carve()
@@ -228,6 +234,36 @@ func light_up(with_sound: bool = true) -> void:
 		_glow_material.set_shader_parameter("emission_energy", 3.0)
 	if with_sound:
 		Game.play_sound("blip", 0.4)
+
+
+## Deko, die eine Katze umwerfen kann (Spielkonzept 6.11) – flache Dinge (Laub, Spinnweben) kippen nicht.
+const TOPPLE_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.CANDLE]
+
+
+## Liegt umgekippt da: zählt nicht als Deko, bis jemand sie wieder aufstellt.
+func is_toppled() -> bool:
+	return kind in TOPPLE_KINDS and not is_held and global_transform.basis.y.dot(Vector3.UP) < 0.6
+
+
+## Von einer Katze angestoßen: kippt um, eine Flamme geht dabei meistens aus.
+func knock_over(from: Vector3) -> void:
+	var push := global_position - from
+	push.y = 0.0
+	push = push.normalized() if push.length() > 0.01 else Vector3.RIGHT
+	sleeping = false
+	apply_central_impulse(push * mass * 1.2 + Vector3.UP * mass * 0.6)
+	apply_torque_impulse(Vector3.UP.cross(push) * mass * 0.35)
+	if lit and randf() < 0.6:
+		_extinguish()
+
+
+## Wieder aufrecht hinstellen (Spieler oder Gast).
+func stand_up() -> void:
+	global_rotation = Vector3(0.0, global_rotation.y, 0.0)
+	global_position.y += 0.03
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	sleeping = false
 
 
 ## Das Monster geht vorbei: Kerze oder Kürbis erlischt (Spur, Spielkonzept 4.13).

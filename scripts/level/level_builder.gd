@@ -30,15 +30,11 @@ const COUCH_SCALE := 0.55
 const BOTTLES_MODEL := "res://assets/models/bottles.glb"
 const LAYER_CEILING := 16
 const LAYER_GLASS := 64
-## Außenfenster der Zimmer: Unterkante, Oberkante, Breite
-const WINDOW_SILL := 0.9
-const WINDOW_TOP := 2.3
-const WINDOW_W := 1.4
-## Milchglas zwischen Flur und Zimmer (versetzt neben der Tür)
-const FROSTED_OFFSET := -1.9
-const FROSTED_W := 1.0
-const FROSTED_SILL := 1.0
-const FROSTED_TOP := 2.2
+## Außenfenster der Zimmer und Flurenden: Unterkante (bündig mit der Vertäfelung), Oberkante, Breite –
+## hohe, breite Hotelfenster (2026-10-17: vorher 0,9 / 2,3 / 1,4)
+const WINDOW_SILL := 0.75
+const WINDOW_TOP := 3.05
+const WINDOW_W := 1.9
 ## Zimmertiefe: Flurwand → Rückwand (jeweils Wandmitte)
 const ROOM_DEPTH := 5.0
 ## Höhe des Obergeschosses (Oberkante Boden)
@@ -146,6 +142,8 @@ var rooms := {}
 var lobby_center := Vector3(-6.0, 0, 0)
 var party_spots: Array[Vector3] = []
 var lobby_seats: Array[Vector3] = []
+## Liegeplätze der Hotelkatzen auf Möbeln (6.11): {"floor": davor auf dem Boden, "top": obendrauf}
+var cat_perches: Array[Dictionary] = []
 var kitchen_spot := Vector3(-10.0, 0, 9.0)
 var garden_spots: Array[Vector3] = []
 var player_spawn := Vector3.ZERO
@@ -157,6 +155,7 @@ var diary: Diary
 
 var _parent: Node3D  ## wohin die Bausteine gerade bauen (root, ein Geschoss oder eine gedrehte Zimmerreihe)
 var _wallpaper: Material
+var _lobby_wallpaper: Material
 var _concrete: Material
 var _wood: Material
 var _dark_wood: Material
@@ -173,7 +172,8 @@ func _init(p_root: Node3D, p_world: Node3D) -> void:
 
 
 func build() -> void:
-	_wallpaper = Mat.psx(Color(1, 1, 1), "wallpaper", 1.0)
+	_wallpaper = Mat.wallpaper(H, UP_Y)
+	_lobby_wallpaper = Mat.wallpaper(LOBBY_H, LOBBY_H + 1.0, "red")
 	_concrete = Mat.psx(Color(0.8, 0.8, 0.8), "concrete", 0.5)
 	_wood = Mat.psx(Color(0.45, 0.28, 0.15))
 	_dark_wood = Mat.psx(Color(0.22, 0.13, 0.08))
@@ -357,7 +357,7 @@ func _flight(x: float, z_from: float, z_to: float, y_from: float, y_to: float) -
 
 # --- Zimmer ------------------------------------------------------------------------------
 
-## Eine Reihe Zimmer an einer Flurwand. Baut Flurwand (Türen, Milchglas), Rückwand
+## Eine Reihe Zimmer an einer Flurwand. Baut Flurwand (Türen), Rückwand
 ## (Außenfenster), Trennwände, Boden und Decke – alles im gedrehten Rahmen der Reihe.
 func _room_row(row: Dictionary) -> void:
 	var holder := Node3D.new()
@@ -373,7 +373,6 @@ func _room_row(row: Dictionary) -> void:
 	for entry in row["rooms"]:
 		var width: float = entry[1]
 		var cx := x + width / 2.0
-		front.append(Vector4(cx + FROSTED_OFFSET, FROSTED_W, FROSTED_TOP, FROSTED_SILL))
 		front.append(Vector4(cx, DOOR_W, DOOR_H, 0.0))
 		if entry[3]:
 			back.append(Vector4(cx, WINDOW_W, WINDOW_TOP, WINDOW_SILL))
@@ -400,14 +399,11 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 		"into": basis.z.normalized(),    # vom Flur ins Zimmer
 		"spots": [],
 	}
-	# Tür, Milchglas, Außenfenster, Nummernschild, Lampen, Lichtschalter
+	# Tür, Außenfenster, Nummernschild, Lampen, Lichtschalter (das Milchglas zum Flur ist seit 2026-10-17 weg)
 	var door := Door.new().setup(DOOR_W, DOOR_H, -100.0)
 	door.position = Vector3(cx - DOOR_W / 2.0, 0, 0)
 	_parent.add_child(door)
 	info["door"] = door
-	var frosted := HotelWindow.new().setup(FROSTED_W, FROSTED_TOP - FROSTED_SILL, true, false, no)
-	frosted.position = Vector3(cx + FROSTED_OFFSET, (FROSTED_SILL + FROSTED_TOP) / 2.0, 0)
-	_parent.add_child(frosted)
 	if window:
 		var win := HotelWindow.new().setup(WINDOW_W, WINDOW_TOP - WINDOW_SILL, false, true, no)
 		win.position = Vector3(cx, (WINDOW_SILL + WINDOW_TOP) / 2.0, ROOM_DEPTH)
@@ -577,10 +573,10 @@ func _cellar() -> void:
 func _lobby() -> void:
 	Geo.solid(root, Vector3(14.0, 0.2, 14.2), Vector3(-7.1, -0.1, 0.0), Mat.psx(Color(1, 1, 1), "tiles", 0.5))
 	Geo.solid(root, Vector3(14.6, 0.2, 14.6), Vector3(-7.0, LOBBY_H + 0.1, 0.0), _ceiling, LAYER_CEILING)
-	_wall_z(0.0, -7.1, 7.1, [Vector4(0.0, 3.0, 3.0, 0.0)], null, LOBBY_H)                 # Durchgang zum Flur
-	_wall_z(-14.0, -7.1, 13.1, [Vector4(0.0, 2.5, 2.5, 0.0)], null, LOBBY_H)              # Ausgang
-	_wall_x(-7.0, -14.1, 0.1, [Vector4(-11.0, 1.6, 2.7, 0.9), Vector4(-7.0, 1.8, 2.4, 0.0), Vector4(-3.0, 1.6, 2.7, 0.9)], null, LOBBY_H)
-	_wall_x(7.0, -14.1, 0.1, [Vector4(-10.0, DOOR_W, DOOR_H, 0.0), Vector4(-3.0, 2.0, 2.6, 0.0)], null, LOBBY_H)   # Küche, Bar
+	_wall_z(0.0, -7.1, 7.1, [Vector4(0.0, 3.0, 3.0, 0.0)], _lobby_wallpaper, LOBBY_H)                 # Durchgang zum Flur
+	_wall_z(-14.0, -7.1, 13.1, [Vector4(0.0, 2.5, 2.5, 0.0)], _lobby_wallpaper, LOBBY_H)              # Ausgang
+	_wall_x(-7.0, -14.1, 0.1, [Vector4(-11.0, 1.6, 2.7, 0.9), Vector4(-7.0, 1.8, 2.4, 0.0), Vector4(-3.0, 1.6, 2.7, 0.9)], _lobby_wallpaper, LOBBY_H)
+	_wall_x(7.0, -14.1, 0.1, [Vector4(-10.0, DOOR_W, DOOR_H, 0.0), Vector4(-3.0, 2.0, 2.6, 0.0)], Mat.wallpaper_split(_lobby_wallpaper, _wallpaper, Vector3(0, 0, 1)), LOBBY_H)   # Küche, Bar (dort teal)
 	for x in [-11.0, -3.0]:
 		var win := HotelWindow.new().setup(1.6, 1.8, false, true, "lobby")
 		win.position = Vector3(x, 1.8, -7.0)
@@ -624,6 +620,10 @@ func _lobby() -> void:
 		var back: float = 0.45 if z > 0 else -0.45
 		_couch(Vector3(-10.5, 0, z), PI / 2.0 if z > 0 else -PI / 2.0)   # Sofas
 		lobby_seats.append(Vector3(-10.5, 0, z - back * 1.6))
+		for x in [-11.0, -10.0]:   # Sitzfläche ~0,45 m hoch, Polster etwas vor der Mitte
+			cat_perches.append({"floor": Vector3(x, 0, z - back * 1.5), "top": Vector3(x, 0.46, z - signf(z) * 0.07)})
+	# Auf der Rezeption, am freien Ende neben dem Telefon (Spielkonzept 6.11)
+	cat_perches.append({"floor": Vector3(-10.3, 0, 4.4), "top": Vector3(-10.3, 1.12, 5.4), "yaw": PI / 2.0})
 	Geo.solid(root, Vector3(1.2, 0.4, 0.7), Vector3(-10.5, 0.2, 0.0), _wood)             # Couchtisch
 	for z in [-5.2, 5.2]:
 		Geo.solid(root, Vector3(0.5, LOBBY_H, 0.5), Vector3(-4.5, LOBBY_H / 2.0, z), Mat.psx(Color(0.6, 0.57, 0.5)))

@@ -23,12 +23,21 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   `assets/models/record_player.glb` (`tools/build_record_player.py`: Objekte `body` und `record`, die
   Platte ist eine eigene runde Scheibe mit Ursprung auf der Drehachse, damit `RecordPlayer` sie drehen
   kann). Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh)` in ein `Mat.psx` (eins pro Modelldatei).
-  **Katzenmodell** `assets/models/cat.glb` (noch nicht im Spiel, Spielkonzept 6.11): `tools/build_cat.py` aus
+  **Tapeten** `assets/textures/wallpaper_<variante>.png` (teal, red) + gemeinsame Höhenkarte
+  `wallpaper_bump.png`, siehe „Optik“ in 9.
+  **Katzenmodell** `assets/models/cat.glb` (`HotelCat`, Spielkonzept 6.11): `tools/build_cat.py` aus
   Meshys Zip (Auto-Rigging-Preset „Hund“, in `assets/source/`). 27 Knochen (`Hips`, `chest`, `head`,
   `earend`/`R_earend`, `tail`…`tail3`, je Bein `frontleg`/`backleg` + `0`–`2`, rechts mit `R_`), ~2500
   Dreiecke, Animation `walk` (1 s). Das Skript hängt falsch zugeordnete Beingewichte um (Punkt gehört
   zum nächstgelegenen Beinknochen). Größe (0,34 m hoch) und Blick nach −Z stehen nur am Wurzelknoten
   der Armatur – angewendet würden die Translations-Schlüssel der Animation nicht mitskaliert.
+  **Lakengeist** `assets/models/ghost.glb` (Spielkonzept 4.18, `SheetGhost`): `tools/build_ghost.py` riggt
+  Meshys Modell selbst – Knochen `root` → `hem` · `spine` → `head` · je Seite `upper_arm`/`forearm`/`hand` +
+  `thumb|index|middle|ring|pinky` `1`–`3` (Suffix `.L`/`.R`, L = Geist-links). Finger werden über die Hautfarbe
+  der Textur gefunden (Spitzen = weiteste Punkte vom Handgelenk über die Oberfläche, Daumen = Finger zur
+  Körpermitte); lokal X der Hand-/Fingerknochen beugt zur Handfläche (positiv = krallen). Eigene Gewichte statt
+  Bone-Heat (das Netz ist nach dem Verschmelzen ein Stück, aber nicht sauber geschlossen). 10 159 Dreiecke,
+  1,9 m, Blick nach −Z, Ursprung mittig unten, keine Animationen.
 - **Kein Inventar.** Ein Gegenstand in der Hand (`Player.held` / `Guest.held`), Geld ist der einzige
   abstrakte Besitz (`Game.money`). Gäste haben zusätzlich einen abstrakten Vorrat (`Guest.stock`).
   Ausnahme am Körper des Spielers: Kompass, Kartenblätter, Schlüsselbund (`Player.has_compass`,
@@ -113,8 +122,9 @@ Main (Node3D, main.gd)
 | 6 | 32 | Monster | |
 | 7 | 64 | klares Glas (Fenster, Glastür) | Sicht geht durch |
 | 8 | 128 | Gäste | |
-| 9 | 256 | Milchglas | blockiert Sicht |
+| 9 | 256 | Milchglas (`HotelWindow` mit `frosted`, derzeit nicht verbaut) | blockiert Sicht |
 | 10 | 512 | zugezogene Vorhänge (`HotelWindow.LAYER_BLOCK`) | nur Sicht-/Licht-Raycasts, nicht Bewegung |
+| 11 | 1024 | Hotelkatzen (`HotelCat.LAYER`) | blockiert niemanden; nur der Spieler-Strahl trifft sie (Streicheln) |
 
 Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` = `1 | 2 | 256 | 512`, Lichtprüfungen `1 | 2`,
 Lärm-Dämpfung `1 | 2 | 64`.
@@ -133,7 +143,7 @@ Lärm-Dämpfung `1 | 2 | 64`.
 `items`, `guests`, `player`, `doors`, `chests`, `hide_spots`, `lamp_fixtures` (die Lampen),
 `lamps` (deren Lichter), `light_source` (alles, was für die Helligkeit zählt – `FlickerLight`),
 `light_switches`, `windows`, `pumpkin_plants`, `resource_spots`, `trace_marks`, `warning_notes`,
-`guest_notes`, `diaries`, `phones`, `dressers`, `uv_marks` (nicht gespeichert).
+`guest_notes`, `diaries`, `phones`, `dressers`, `cats`, `uv_marks` (nicht gespeichert).
 
 ### Räume & IDs
 - **Raum-ID** = Zimmernummer (`"13"`, `"231"`) oder Bereichs-ID (`"lobby"`, `"flur_west"`,
@@ -177,7 +187,7 @@ Lärm-Dämpfung `1 | 2 | 64`.
   `wander_points`, `player_spawn`, `player_door_front`, Lobby-/Bar-/Garten-/Feier-Punkte,
   `game_table`, `diary`.
 - NavMesh wird in `main._bake_navigation` zur Laufzeit gebacken (nur Ebene 1, Agent 0,3 m / 1,6 m).
-- Ein neues Zimmer: Eintrag in `ROWS` – Wände, Tür, Milchglas, Lampen, Schalter, Möbel, Zone und
+- Ein neues Zimmer: Eintrag in `ROWS` – Wände, Tür (mit Rahmen), Lampen, Schalter, Möbel, Zone und
   Wegpunkt entstehen automatisch. **Speicherformat beachten** (siehe 7).
 
 ## 5. Das Monster
@@ -207,6 +217,22 @@ Effekte), **`Monster`** führt aus (Zustandsautomat, Bewegung, Sicht, Spuren).
   `WARNING`/`COOLDOWN` sind Altlast und werden nicht mehr benutzt.
 - `attacks <= HARMLESS_ATTACKS` (2) → `is_harmless()`: es holt niemanden, `kill_*` werden zu
   Erschrecken (`_scare_guest`) bzw. Zeigen (`_reveal_to_player`).
+- **Absicht** (Spielkonzept 4.17): `_start_activity` → `_choose_intent` setzt `victims_left`: 0 (umsehen) oder – mit
+  `attack_chance()`, gleitend nach Tag aus `ATTACK_CHANCE` – `_draw_victims()` – n ∝ 1/n², höchstens `_max_victims()` (lebende Gäste + Spieler).
+  `intent` (`ROAM`/`ONE`/`RAMPAGE`) folgt nur daraus (`_intent_for`). `kill_*` holen nur, wenn `wants_victim()` (nicht harmlos und
+  `victims_left > 0`), sonst Erschrecken/Zeigen wie bei harmlosen Angriffen – gilt für Spieler und Gäste.
+  Raubzug: nach einem Opfer `Monster.after_kill_hunting()` (weiterstreifen, keine Sättigung), erst das
+  letzte macht satt (`after_feeding`). Satt (`satiation > SATED_ROAM`) → immer `ROAM`. Sichtung/Gerede
+  können `ROAM` per `_escalate` zu `ONE` machen. `victims_left` und `_uv_angry` stehen im Spielstand.
+- **Flackerwelle**: `_start_wave(ursprung, opfer)` – Dauer `SIGNAL_BASE + SIGNAL_PER_VICTIM × opfer` (1 + 2 × n s),
+  Stufe `_wave_level` 0 / 1 / ab 2 Opfern (Stärke, Untertitel, Gäste, `long_signal_near`); `wave_delay(p)` = Weg vom Ursprung (Keller)
+  über das Stockwerk, ins Obergeschoss über `_stairwell`, durch `WAVE_SPEED`. Jede Lampe bekommt
+  `FlickerLight.wave` (getrennt von `flicker`, damit die Welle keine Birnen durchbrennen lässt). Angezeigt
+  wird `shown_victims` – das kann gelogen sein (0) (`DECEIVE_CHANCE` × Dreistigkeit). Beim Spieler:
+  Bildflackern, `SynthAudio.buzz`, Untertitel. Gäste bekommen `Guest.on_flicker_signal(stufe, verzögerung)`.
+  Halluzination startet manchmal eine Welle mit `fake = true` (Gäste reagieren nicht). Nicht gespeichert.
+  Folgen: `is_signalling()` sperrt das Tagebuch, `long_signal_near()` bricht Würfelpartien ab.
+  Der erste Angriff bei der Feier hat keine Welle.
 - Haunting (Türen, Vorhänge, Licht, Betten, Zimmer 13) nur, wo der Spieler nicht hinsieht (`_unseen`).
 
 ### Monster-Zustände
@@ -216,6 +242,12 @@ Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `st
 Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick verschwinden).
 UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, dann `RETREAT` mit
 `_fleeing` (Jagdtempo, `_calm_retreat`: jagt niemanden).
+**Abschreckung** (`_check_deterrence`): Deko + Licht blockieren nur, wenn das Ziel (`_goal()`) selbst im
+Schutz liegt – vorbeigehen darf es (die Deko vor den Türen deckt sonst den ganzen Flur ab). Beim Jagen gilt
+`is_protected(Gejagter)`. Zurückgeschreckt ohne UV → anderes Ziel (`_next_roam`), der Gejagte kommt für
+`REBUFF_TIME` in `_rebuffed`; nach `LURK` ebenso weiter. **Rückzug (`RETREAT`) nur:** Ende der Aktivphase
+(`go_home`), satt (`after_feeding`), UV. Nach einem harmlosen Schreck `after_scare(opfer)` → `SLINK` und
+weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
 
 ### Aussehen & Animation
 - **Modell:** `assets/models/monster.glb` wird von `tools/build_monster.py` (Blender 4.3) aus dem
@@ -245,8 +277,14 @@ UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, 
   Zufallswerte nur **ans Ende** anhängen, sonst werden aus gespeicherten Seeds andere Gäste.
   `name_for(seed)` verlässt sich darauf, dass der Name die **erste** Zufallszahl ist.
 - **`Guest`**: Zustandsautomat (`IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING,
-  PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER`). In `IDLE` wählt `_next_activity()` gewichtet aus
+  PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP`). In `IDLE` wählt `_next_activity()` gewichtet aus
   `profile.activities`; `_arrive()` verarbeitet das Ankommen je Zustand.
+- **Nachtruhe** (Spielkonzept 4.18): `Social._update_sleep` startet sie zu zufälligen Zeiten (`SLEEP_GAP`,
+  nie in einer Feier) für `SLEEP_TIME` → `Guest.bedtime()`: ins Zimmer, Licht aus, still ins eigene Bett
+  (`hiding` = Bett, aber Zustand `SLEEP` – kein Versteck-Lärm, kein `_watch_monster`; das Monster kann sie im
+  Bett finden). Wer redet, spielt, klopft oder sich versteckt, geht danach (`_next_activity`). Ende →
+  `wake_up()`. `Social.all_asleep()` für den Lakengeist im Flur. Gespeichert: `sleep_active`, `sleep_timer`
+  (Gäste laden wach und gehen wieder ins Bett).
   Tanzen auf Feiern: `_dance_pose()` mit `DANCES` (hüpfen, wiegen, drehen, arme hoch, twist, schunkeln) –
   Lieblingstanz aus `hash(id)`, alle 7–15 s Wechsel (60 % Lieblingstanz). Arme drehen dabei auch um z
   (seitlich) – `_animate()` setzt das außerhalb des Tanzens zurück.
@@ -256,6 +294,24 @@ UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, 
   Feiern, Herausforderungen, Gäste-Mäxchen, Berichte über Spuren (`note_trace` → `report_line`),
   Klopfen an Zimmer 13, Zettel, Neuankömmlinge (`START_GUESTS` 30, `MIN_GUESTS` 24).
 - Gäste melden sich mit `Game.social.on_*` (Diebstahl, fehlende Deko/Birne, Monster gesehen …).
+- **`HotelCat`** (`guests/hotel_cat.gd`, Spielkonzept 6.11): drei Katzen aus `HotelCat.PROFILES`, erzeugt in
+  `main.gd` nach den Gästen (`place_at_start()`; Lieblingsgast = `hash(id)` über die lebenden Gäste).
+  Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH` (holt Gast-Deko, `Social.cat_thefts`); Bewegung wie Gäste (NavigationAgent,
+  Festgefahren-Erkennung). **Türen:** Kollisionsmaske ohne Türen (wie Gäste), geschlossene Türen erkennt
+  `_door_ahead()` → `WAIT_DOOR` (miaut, gibt nach 12–20 s auf und schläft) bzw. auf der Flucht `_cowering`.
+  **Möbel:** `perches()` = `LevelBuilder.cat_perches` (Sofas, Rezeption) + Betten und Fensterbänke aller
+  bewohnbaren Zimmer + Lobbyfenster (`{floor, top, yaw?, room?}`, feste Reihenfolge – der Index wird
+  gespeichert); gewählt wird über `_usable_perches()` (Lobby, Zimmer 13, bewohnte Zimmer); hoch/runter per Tween (`_hop`), oben ohne Schwerkraft. **Monster:** `_monster_near()`
+  auch, wenn es unsichtbar umherstreift → `FLEE` mit Lärm `cat_cry` (Art mit `alarm` → Gäste); der
+  Director ignoriert Lärm mit `quelle is HotelCat`, das Monster sieht Katzen nicht (eigene Ebene).
+  **Deko umwerfen:** `_check_surroundings()` alle 0,4 s, `Item.knock_over()` für `Item.TOPPLE_KINDS`;
+  `Item.is_toppled()` zählt nicht in `deco_strength_at`, Spieler stellt per [E] auf, Gäste in `_at_home()`.
+  **Aussehen:** Laufen = Animation `walk` (`speed_scale` nach Tempo), sonst `_player.stop()` und Posen aus
+  `POSES` per `_turn()` im Skelettraum (X = linke Seite, Y = oben, Z = Blickrichtung), weich überblendet;
+  Fell = `Mat.psx(tint)` mit der GLB-Textur. Geschenk hängt am Knoten `_mouth`. Gespeichert (Gruppe `cats`,
+  ab Version 8, angewendet nach den Gegenständen): Lage, Lieblingsgast, Zuneigung, Geschenk-Timer,
+  Liegeplatz, Schlaf, Beute im Maul (liegt nach dem Laden vor ihr). Gespräche: `Social.cat_line()`
+  (Plaudern), `Social.cat_monster_line()` (nach dem ersten Weinen, `cats_have_cried`).
 
 ## 7. Speichern & Laden
 
@@ -287,8 +343,9 @@ UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, 
 
 | System | Datei(en) | Merkpunkte |
 |--------|-----------|------------|
-| Licht | `lamp.gd`, `light_switch.gd`, `flicker_light.gd`, `util/shadow_budget.gd` | Lampe = Fassung + Birne (Item `BULB`); `flicker` setzt der Director; nur die 6 nächsten Lampen werfen Schatten; Licht aus → `on_lights_off` |
-| Fenster | `hotel_window.gd` | klares Glas / Milchglas / Vorhang (Ebene 10 nur für Sicht & Mond) |
+| Licht | `lamp.gd`, `light_switch.gd`, `flicker_light.gd`, `util/shadow_budget.gd` | Lampe = Fassung + Birne (Item `BULB`); `flicker` (Nähe des Monsters, kann Birnen durchbrennen) und `wave` (Flackerwelle, 4.17) setzt der Director; nur die 6 nächsten Lampen werfen Schatten; Licht aus → `on_lights_off` |
+| Fenster | `hotel_window.gd` | klares Glas / Vorhang (Ebene 10 nur für Sicht & Mond); Milchglas kann die Klasse noch, ist aber nicht mehr verbaut |
+| Türen | `door.gd` | Blatt auf Ebene 2 (Glastür 7); Rahmen `_build_frame()` auf beiden Wandseiten (Bekleidung + breiterer Sturz mit Überstand, nur Optik). Spuren über `attach_mark(mark, seite, at)` – Kratzer mittig, Handabdrücke (`Traces.add_door_handprint`) höher; `at` wird mitgespeichert |
 | Spuren | `traces.gd`, `trace_mark.gd` | zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`; Fußabdrücke verblassen, Marken bleiben |
 | Zettel | `warning_note.gd` | feste Warnungszettel (`warning_notes`, erst nach dem 1. Angriff sichtbar) und Gäste-Zettel (`guest_notes`, max. 30) |
 | Kommoden | `world/dresser.gd` | 8 Stück in den Hauptfluren (4 je Geschoss, `_corridors`). Drei Schubladen als eigene Körper; interagierbar ist je ein `Dresser.Handle` (leitet mit Index weiter). Hohler Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen einer Schublade (`searched`): leer / Münzen / Gegenstand aus `LOOT`. Beim Auf-/Zuschieben werden die darin liegenden Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“ – sie liegen nicht in der Hand). Lärm `drawer`. Gespeichert: `open`, `searched` (ab Version 7) |
@@ -296,12 +353,13 @@ UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, 
 | Am Körper | `player.gd` (`_pocket`, `_update_hand`, `set_pockets`), `player/pocket_map.gd` | `Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den Welt-Gegenstand und trägt ihn in `has_compass`/`map_pages`/`keyring` ein – braucht keine freie Hand. Linke Hand (`_left_hand`) für Aktionen `map` (Tab) und `compass` (F), nicht bei `hands_blocked()` oder im Gespräch; `inspecting` halbiert das Tempo. Türen fragen `player.has_key(id)`. Gespeichert unter `player` |
 | Kompass | `item.gd` (`Kind.COMPASS`) | Nadel = Feder Richtung Welt −Z (Norden), gestört über `director.threat_at()` und – nur eingesteckt (`pocketed`) – `is_hallucinating()`; der Kompass in der linken Hand ist ein `Item` mit `make_pocketed()` (raus aus Gruppe `items`); liegt in `LevelBuilder.COMPASS_ROOM` |
 | Karte | `world/hotel_map.gd`, `item.gd` (`Kind.MAP`, `extra` = Blatt-ID), `player/pocket_map.gd` | `HotelMap.PAGES` = Blätter (id, Titel, Höhenbereich, Geschoss oder eigene Zeichnung); gedruckte Pläne aus `LevelBuilder.FLOORS`/`ROWS` (neue Zimmer erscheinen von selbst), Kellerskizze von Hand gezittert. Alle Blätter einmal untereinander in einem SubViewport gerendert → geteilte `ImageTexture` (ohne Grafik: nur Papierfarbe); `HotelMap.material(id)` schneidet per `uv1_offset` aus. `PocketMap` = Blätterstapel in der linken Hand, Schlüsselblatt (`KEYS`) zuletzt; beim Hervorholen oben das Blatt zu `HotelMap.page_at(y)`. Neue Ebene: Eintrag in `PAGES`, Zeichnung in `_draw()`, Blatt im `LevelBuilder` auslegen |
+| Lakengeist | `monster/sheet_ghost.gd`, `shaders/psx_ghost.gdshader`, `traces.gd` (`add_window_handprints`) | Spielkonzept 4.18. `Game.ghost`, eigener Knoten neben dem Monster, kein NavMesh und keine Kollision (schwebt durch Glas und Vorhang). Prüft alle 0,5 s `_window_near()`: Außenfenster mit Vorhang, ≤ 7 m, freie Sicht, alle `lamp_fixtures` mit dieser `room_id` aus, Vorhang offen (ab `THROUGH_CURTAIN_FROM` egal). Gewürfelt wird einmal je neuem Fenster (`_last_window`), nicht während Rauschen (`player_threat`), nicht in Gesellschaft, erst nach dem ersten Angriff. `visits` = Stufe (gespeichert unter `ghost`, dazu die Abklingzeit; laufende Auftritte nicht). Zustände `APPROACH → HOVER → ENTER → STRANGLE`, Ende immer über `FADE` (0,5 s, Raster-Ausblenden im Shader statt Transparenz). Spieler: `trance` (macht langsamer, `TRANCE_SLOW`), `gripped` (steht fest), `move_input` (zählt Richtungswechsel fürs Losreißen). Tod über `Game.game_over` + `director.flash()` + `player_died`. Knochen werden pro Frame aus der Ruhepose gedreht (`_pose`: Schweben, Saum, Handkreisen, Krallen). Flur: ab `HALL_FROM` (6.) Mal, nur wenn `Social.all_asleep()` und der Spieler in einer „Flur“-Zone steht, `HALL_CHANCE` je Sekunde; taucht an einem Patrouillenpunkt 8–16 m entfernt außer Sicht auf und kommt gleich auf ihn zu. Noch nicht: Gäste als Opfer, Einstellung für den Blickzug |
 | Taschenlampe | `world/flashlight.gd`, `world/uv_mark.gd`, `item.gd` (`FLASHLIGHT`, `BATTERY`, `UV_FILTER`) | `Flashlight` hängt als Kind am Item (`item.flashlight`), Zustand steckt in `create_extra()` (`"c=0.42;uv;m=uv;on"`), also kein eigener Speicher-Eintrag. Bewusst **ein `SpotLight3D` außerhalb von `light_source`** – zählt nicht für Helligkeit/Abschreckung (`light_at` castet ohnehin auf `OmniLight3D`) und nicht als `item.lit` (sonst bläst das Monster sie aus, Gäste tropfen Wachs …). Auffälligkeit über `flashlight.carried_conspicuity()` in `Senses.conspicuity`. Nur in der Hand des Spielers: UV prüft alle 0,1 s die Gruppe `uv_marks` (Kegel + Sichtlinie `SIGHT_MASK`, `UvMark.shine()`) und jeden Frame das Monster (`can_be_repelled_by_uv`, Brust im Kegel) → nach `director.uv_repel_time()` `on_monster_uv()`. Einsetzen von Batterie/UV-Aufsatz in `Item._fitting_prompt/_fit` (nur eigene oder herrenlose Teile). `UvMark`: Leuchtschrift (`setup_text`, im LevelBuilder `_uv_writing`) oder Kästen (`add_box`, Nachglanz der Fußspuren in `Traces`); läuft nur, solange es leuchtet. Warnungszettel: `NOTES[id]["uv"]` |
 | Kalender | `calendar.gd` | statische Datumsfunktionen + Abreißkalender in Zimmer 13 |
 | Telefone | `world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd` | `HotelPhone` auf jedem Zimmertisch (nicht Wäscherei) + Haupttelefon an der Rezeption (`room_id` `"lobby"`, Nummer `"0"`); gespeichert wird nur `off_hook` (Gruppe `phones`, ab Spielstand-Version 5). `PhoneCalls` (`Game.phones`) hat die Anrufe: eingehend nur für Zimmer 13 (warnen/lügen/plaudern/unheimlich), ausgehend per Wählseite, ferne Telefone als Atmosphäre. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`, eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die Zufallsfolge). Unheimliche Anrufe hinterlassen einen Hörer neben dem Apparat im Herkunftszimmer. Laufende Anrufe werden nicht gespeichert |
 | Mäxchen | `minigames/` | `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI & Einsätze, `GameTable` = Tisch; Würfeln macht Lärm (`dice`) |
 | UI | `ui/` | `UiKit` = Meldezettel-Optik für Menüs; `Hud` Prompt/Meldungen/Debug (F3); `Menus` pausiert; `TeleportUI` = Debug-Teleport (F6), Ziele in `_destinations()` aus dem `LevelBuilder` |
-| Optik | `util/mat.gd`, `shaders/` | Materialien immer über `Mat.psx(...)` (Vertex-Snapping über Shader-Global `psx_snap`); flache Auflagen auf anderen Flächen (Teppich, Türkassetten) über `Mat.layer(...)`, sonst flimmert die Unterlage durch. `Geo.box` unterteilt Flächen in ≤ 1-m-Stücke, damit große Böden beim Snapping nicht schwimmen. Glasscheiben sind einzelne Flächen (`QuadMesh`), keine Boxen; Post-FX: Gamma, Dithering, Rauschen, Flackern |
+| Optik | `util/mat.gd`, `shaders/` | Materialien immer über `Mat.psx(...)` (Vertex-Snapping über Shader-Global `psx_snap`); flache Auflagen auf anderen Flächen (Teppich, Türkassetten) über `Mat.layer(...)`, sonst flimmert die Unterlage durch. `Geo.box` unterteilt Flächen in ≤ 1-m-Stücke, damit große Böden beim Snapping nicht schwimmen. Glasscheiben sind einzelne Flächen (`QuadMesh`), keine Boxen; Post-FX: Gamma, Dithering, Rauschen, Flackern. **Nebel** (`main._setup_environment`): Tiefennebel 4 → 66 m bis Schwarz, Volumennebel nur auf 12 m (sonst verschleiert Lampenlicht das Flurende beige); `camera.far` = 70 m knapp dahinter, weil `player_can_see` am Frustum hängt. **Tapete** = `Mat.wallpaper(wandhöhe, stockwerk, variante)` mit `shaders/psx_wall.gdshader`, einziges Material mit Glanz: Das Bild (512², Wandansicht) wird auf 256² verkleinert und in drei Bändern in Metern ab Stockwerksboden (`mod(y, stockwerk)`) aufgetragen – Vertäfelung unten, Rauten (eine 128-px-Wiederholung, `WALLPAPER_FIELD`) dazwischen, Leiste unter `wandhöhe`. Lobby hat ein eigenes Material (5 m, rot); ihre Wand zu Küche und Bar ist per `Mat.wallpaper_split(a, b, normale)` auf der Seite mit Normale +Z teal und 3,5 m hoch – so für jede Wand zwischen zwei Räumen mit anderer Tapete oder Deckenhöhe. Aus der Höhenkarte entsteht beim ersten Aufruf eine Oberflächentextur: R = Höhe → Normale aus dem Sprung zum Nachbar-Texel (Glanzkanten, `bump_depth`), G = Glanz je Graustufe (`WALLPAPER_GLOSS`) → Rauheit (`specular_toon`) und Rim-Schimmer. Flecken/abgegriffener Sockel per Rauschen im Shader. Neue Farbvariante: Bild mit gleichem Aufbau als `wallpaper_<name>.png` ablegen; neue Höhenstufe im Bild → Eintrag in `WALLPAPER_GLOSS` |
 | Geometrie | `util/geo.gd` | `Geo.solid(parent, größe, pos, mat, ebene)` für Kollisionskästen, `Geo.mesh` für reine Optik |
 
 ## 8a. Lärm & Sichtbarkeit (`scripts/util/senses.gd`, Spielkonzept 4.15)

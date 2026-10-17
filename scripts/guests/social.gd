@@ -19,12 +19,13 @@ const MIN_GUESTS := 24
 const ARRIVAL_DELAY := Vector2(150.0, 360.0)
 const TRACE_TEXT := {
 	"footprint": "nasse Fußspuren", "scratch": "Kratzspuren", "blood": "Blut",
-	"handprint": "einen Handabdruck am Milchglas", "drops": "Blutstropfen",
+	"handprint": "einen Handabdruck an einer Tür", "drops": "Blutstropfen",
 }
 ## Gerüchte über Gehörtes (4.15): was man gehört hat, und wie man davon erzählt
 const HEARD_TEXT := {
 	"scream": "Jemand hat geschrien", "door_burst": "Eine Tür ist aufgeflogen, mit einem Knall",
 	"hide_burst": "Ein Schrank ist aufgerissen worden", "bulb_burst": "Eine Glühbirne ist geplatzt",
+	"cat_cry": "Eine Katze hat jämmerlich geweint",
 }
 const HEARD_LINES := [
 	"Hast du das auch gehört? %s – bei %s.",
@@ -52,6 +53,10 @@ const DOOR_NOTES := [
 	"Halloween-Feier? Ich bin dabei!\n– {name}, Zimmer {room}",
 ]
 const MAX_GUEST_NOTES := 30
+## Nachtruhe zu zufälligen Zeiten: alle Gäste schlafen eine Weile in ihren Betten, das Licht ist aus
+## (Spielkonzept 4.18 – dann kommt der Lakengeist auch in den Flur). Abstand und Dauer in Sekunden.
+const SLEEP_GAP := Vector2(240.0, 540.0)
+const SLEEP_TIME := Vector2(70.0, 140.0)
 
 
 var guests: Array[Guest] = []
@@ -79,6 +84,11 @@ var _bar_game := {}                      ## laufende Partie zweier Gäste
 var _bar_timer := 25.0
 ## Spuren, von denen die Gäste erzählen: {kind, zone, time}
 var _reports: Array[Dictionary] = []
+## Hotelkatzen (6.11): Gast-ID → Name der Katze, die ihm etwas weggetragen hat; ob schon eine geweint hat
+var cat_thefts := {}
+var cats_have_cried := false
+var sleep_active := false
+var sleep_timer := 300.0                 ## bis zur nächsten Nachtruhe bzw. bis zu ihrem Ende
 ## Klopfen an Zimmer 13: {guest, fake, time, opened}
 var _knock: Dictionary = {}
 var _knock_cooldown := 90.0
@@ -303,6 +313,34 @@ func on_player_took(item: Item) -> void:
 
 
 ## Ein Gast merkt, dass Deko vor seiner Tür fehlt.
+## Plauderei über die Hotelkatzen (Spielkonzept 6.11) – Lieblingsgast, Diebin oder einfach so.
+func cat_line(guest: Guest) -> String:
+	var cats := get_tree().get_nodes_in_group("cats")
+	if cats.is_empty():
+		return ""
+	if cat_thefts.has(guest.id):
+		var thief: String = cat_thefts[guest.id]
+		cat_thefts.erase(guest.id)
+		return "%s hat mir meine Deko weggeschleppt! Ich dachte erst, das warst du." % thief
+	for cat in cats:
+		if cat.favourite == guest.id:
+			return (["%s läuft mir den ganzen Tag hinterher.", "%s schläft ständig auf meinem Bett. Ich hab's aufgegeben.",
+				"Ohne %s würde ich hier verrückt werden."] as Array).pick_random() % cat.display_name
+	var any = cats.pick_random()
+	return (["Hast du %s heute schon gesehen?", "%s hat mir eine Kerze umgeworfen. Frechheit.",
+		"Die Katzen haben es hier besser als wir. %s schläft einfach überall.",
+		"Neulich hat %s vor meiner Tür miaut, bis ich aufgemacht habe."] as Array).pick_random() % any.display_name
+
+
+## Nach dem ersten Weinen einer Katze wissen die Gäste: Die Katzen spüren es zuerst.
+func cat_monster_line() -> String:
+	if not cats_have_cried:
+		return ""
+	return (["Die Katzen spüren es. Wenn sie weinen, ist es in der Nähe.",
+		"Hör auf die Katzen. Wenn sie jammern und rennen, renn auch.",
+		"Es tut den Katzen nichts. Aber sie haben trotzdem Angst vor ihm."] as Array).pick_random()
+
+
 func on_guest_noticed_missing(guest: Guest, count: int) -> void:
 	change_relation(guest, -5.0 * count)
 	guest.say(guest.line("missing"))
@@ -459,6 +497,44 @@ func start_party(host: String) -> bool:
 			Game.say("Feier in der Lobby! Es kommen: %s" % ", ".join(coming), 4.0)
 	else:
 		Game.say("Aus der Lobby klingt Musik – %s feiert." % guest_name(host), 4.0)
+	return true
+
+
+## Nachtruhe: beginnt zu zufälligen Zeiten (nie mitten in einer Feier) und endet nach einer Weile.
+func _update_sleep(delta: float) -> void:
+	sleep_timer -= delta
+	if sleep_timer > 0.0:
+		return
+	if sleep_active:
+		sleep_active = false
+		sleep_timer = randf_range(SLEEP_GAP.x, SLEEP_GAP.y)
+		for guest in living_guests():
+			guest.wake_up()
+		Game.say("Türen gehen auf, Schritte im Flur – die Gäste sind wieder wach.", 3.5)
+	elif party_active:
+		sleep_timer = 20.0
+	else:
+		start_sleep()
+
+
+## instant (Debug): alle liegen sofort im Bett.
+func start_sleep(instant: bool = false) -> void:
+	sleep_active = true
+	sleep_timer = randf_range(SLEEP_TIME.x, SLEEP_TIME.y)
+	for guest in living_guests():
+		guest.bedtime(instant)
+	Game.say("Im Hotel wird es still – die Gäste gehen schlafen.", 3.5)
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Nachtruhe] für %d s" % int(sleep_timer))
+
+
+## Schlafen alle lebenden Gäste gerade?
+func all_asleep() -> bool:
+	if not sleep_active:
+		return false
+	for guest in living_guests():
+		if not guest.is_asleep():
+			return false
 	return true
 
 
@@ -660,6 +736,7 @@ func _process(delta: float) -> void:
 	_update_knocking(delta)
 	_update_bar_game(delta)
 	_update_challenges(delta)
+	_update_sleep(delta)
 	_check_timer -= delta
 	if _check_timer <= 0.0:
 		_check_timer = 2.0

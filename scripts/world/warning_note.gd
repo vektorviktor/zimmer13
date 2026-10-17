@@ -10,7 +10,8 @@ const NOTES := {
 		"text": "Wer das liest: Lass das Licht an. Immer. Es kommt nur, wo es dunkel ist.\nIch habe die Birne in meinem Zimmer verloren. Jetzt höre ich es jede Nacht vor der Tür.\n– E. K., Zimmer 17",
 		"uv": "Der Heizer war noch unten, als sie die Tür abgeschlossen haben. Ich habe den Schlüssel klirren hören."},
 	"1994": {"title": "Zerknitterte Seite, 1994",
-		"text": "Redet nicht über ES. Es hört zu. Jedes Mal, wenn wir in der Lobby darüber geflüstert haben, kam es näher.\nUnd wenn das Rauschen anfängt – nicht rennen. Verstecken. Aber nur, wenn es dich nicht sieht.",
+		"text": "Redet nicht über ES. Es hört zu. Jedes Mal, wenn wir in der Lobby darüber geflüstert haben, kam es näher.\nUnd wenn das Rauschen anfängt – nicht rennen. Verstecken. Aber nur, wenn es dich nicht sieht.
+Flackert das Licht im ganzen Haus lange, geh nicht mehr raus. Dann holt es mehr als einen.",
 		"uv": "Wo die Kerzen ausgehen, ist es gerade vorbeigegangen. Zähl sie."},
 	"2003": {"title": "Notiz unter der Matratze",
 		"text": "Es hat an meine Tür geklopft. Mit der Stimme meiner Schwester.\nMeine Schwester ist seit drei Tagen fort.\nWENN DU DIE STIMME KENNST – MACH NICHT AUF.",

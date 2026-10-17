@@ -226,7 +226,7 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 ## 4. Das Monster
 
 ### 4.1 Grundprinzip
-- Das Monster ist **fast immer unsichtbar oder nur angedeutet**: Silhouette am Flurende, Schatten hinter Milchglas, Geräusche hinter Wänden.
+- Das Monster ist **fast immer unsichtbar oder nur angedeutet**: Silhouette am Flurende, Schatten hinter einem Vorhang, Geräusche hinter Wänden.
 - Es **zeigt sich zufällig** (gewichteter Zufall, siehe unten) – nicht skriptgesteuert und nicht vorhersehbar.
 - **Aussehen** (entschieden 2026-10-11): dürr, mit langen Gliedmaßen, Rippen und Stacheln am Rücken, langgezogenem Schädel, offenem Maul und langer Zunge. Es **geht aufrecht auf den Hinterbeinen** und ist dabei gut zwei Meter groß, gestreckt noch größer. Es kann **auf alle Viere** gehen: zum Schleichen, Lauern und an Verstecken. Unter Türen duckt es sich.
   > Im Prototyp umgesetzt (2026-10-11): Meshy-Modell mit Skelett, Bewegung im Stop-Motion-Stil, Hocke beim Wegschleichen, Lauern und Prüfen von Verstecken.
@@ -384,7 +384,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | **Blutspuren** | dass jemand verletzt oder geholt wurde |
 | **Geprüfte Verstecke** (offene Schranktür) | dass es gesucht hat |
 | **Aufgewühlte Betten** | es war im Zimmer, hat unter/im Bett gesucht |
-| **Handabdrücke** (z. B. auf dem Milchglas) | es stand direkt vor diesem Raum |
+| **Handabdrücke** (an Zimmertüren, auf der Seite, von der es kam) | es stand direkt vor diesem Raum |
 | **Warnungszettel** | jemand (früherer Gast?) will warnen – auch Story-Hinweis |
 | **Kleidungsstücke** | von Verschwundenen – Andeutung statt Gore |
 
@@ -392,7 +392,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
   - **Meistens der echte Gast:** Er klopft panisch und schreit „Mach auf!“, weil das Monster hinter ihm ist. Öffnet man nicht, hört man einen Schrei – danach ist es still.
   - **Manchmal nicht:** Es klopft, man hört eine bekannte Stimme. Öffnet man, ist niemand da – nur ein Kleidungsstück auf dem Boden.
 - **Warnungszettel** stammen von **früheren Gästen**, die es nicht hinausgeschafft haben. Sie liegen in verlassenen Zimmern, im Keller, unter Matratzen, geben Tipps zum Monster und deuten den Schlüssel an Halloween an – zugleich der Story-Faden (offene Frage 4).
-- **Lampen flackern nur noch lokal** in der Nähe des Monsters: Flackern zeigt, *wo* es ist; Rauschen zeigt, *wie nah*.
+- **Lampen flackern nur noch lokal** in der Nähe des Monsters: Flackern zeigt, *wo* es ist; Rauschen zeigt, *wie nah*. (Umgesetzt 2026-10-17: Flackerwelle vom Keller aus beim Aufbruch, ihre Dauer verrät die Absicht, 4.17.)
 - **Spuren:** Fußspuren **verblassen** über einige Minuten (man liest ab, wie frisch sie sind), Kratzspuren **bleiben**. Spuren am eigenen Zimmer kann man wegputzen.
 - **Das Hotel verändert sich** (Punkt „unzuverlässiges Hotel“): Kleine Veränderungen, wenn man nicht hinsieht – teils durch das Monster, teils bleibt offen, wer es war.
 - **Gäste als Quelle der Angst:** Gäste berichten von Spuren und Geräuschen, nicht immer zuverlässig.
@@ -401,22 +401,19 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 **Beobachteter Fehler im Prototyp (behoben 2026-10-11):** Nach einem harmlosen Angriff auf einen Gast jagte das Monster ihn beim Rückzug sofort wieder, oder der Gast kletterte direkt vor ihm zurück ins selbe Versteck. Folge: endloses Erschrecken, und Bruno rief in einem fort „Bleib weg!“. Jetzt gilt: Nach einem harmlosen Schreck verschwindet das Monster, ohne erneut zu jagen; Gäste meiden Verstecke in der Nähe des Monsters (8 m); denselben Panik-Satz sagt ein Gast höchstens alle 45 s.
 
-**To-do: Angriffe sind zu kurz (beobachtet 2026-10-13, noch nicht behoben)**
-- **Beobachtung:** Kaum hat eine Aktivphase (ein „Angriff“) begonnen, geht das Monster nur ein paar Meter aus
-  dem Flur heraus und kehrt dann schon wieder um. Es kommt nicht im Hotel an – die Präsenz (oben) wirkt so nicht.
-- **Ziel:** Ein Angriff ist eine spürbare Zeit im Hotel unterwegs (Richtwert: `ACTIVE_TIME`, anfangs
-  70 s, später 210 s), durchstreift mehrere Bereiche und zieht sich erst danach zurück. Satt, UV-Licht
-  oder ein harmloser Schreck dürfen ihn weiter vorzeitig beenden.
-- **Zuerst die Ursache finden** (mit `--trace`, F3, `--warn`). Verdächtige im Code:
-  - `LURK` an Licht-/Deko-Grenzen: Nach 4 Mal Lauern (`_lurk_count >= 4`) zieht es sich zurück. Sind
-    die Flure hell, lauert es womöglich gleich hinter dem Startpunkt viermal und gibt auf.
-  - `SLINK`: Sieht der Spieler es länger als 0,35 s, verschwindet es aus dem Blick – führt das
-    direkt in den Rückzug?
-  - Zielwahl in `_next_roam()`: Liegen die ersten Ziele zu nah am Startpunkt bzw. am Keller?
-  - Sonstige Wege in `_start_retreat()` (Zurückgeschreckt, harmloser Schreck, Ende der Phase).
-- **Mögliche Lösungen** (nach der Ursache entscheiden): eine Mindestdauer bzw. Mindeststrecke pro Angriff,
-  bevor ein Rückzug erlaubt ist; Lauern zählt erst ab einer Entfernung vom Keller; das erste Ziel ist
-  weiter weg (anderer Flügel, Obergeschoss); Licht drängt es ab, statt es nach Hause zu schicken.
+**Angriffe waren zu kurz (beobachtet 2026-10-13, behoben 2026-10-17)**
+- **Beobachtung:** Kaum hatte eine Aktivphase begonnen, kam das Monster nur ein paar Meter aus dem Kellerflur
+  und verschwand wieder – auch mit F5 gerufen.
+- **Ursache:** (1) Die Deko der Gäste säumt die Flure; ihr Schutzradius (3 m) deckt den ganzen Flur ab. Das
+  Monster lauerte deshalb alle paar Meter. (2) Viermal Lauern oder einmal von Deko/Licht zurückgeschreckt
+  führte direkt in den Rückzug, und (3) der Rückzug endet sofort, wenn der Spieler weit weg ist. (4) Nach
+  einem harmlosen Schreck an einem Gast zog es sich ebenfalls zurück.
+- **Jetzt:** Deko und Licht **drängen es ab, statt es nach Hause zu schicken.** Vorbeigehen darf es; abgeschreckt
+  wird es nur, wenn sein **Ziel** im Schutz liegt (beim Jagen wie bisher, wenn der Gejagte im Schutz steht).
+  Zurückgeschreckt sucht es sich ein anderes Ziel und lässt den Geschützten ~15 s in Ruhe. Nach einem
+  harmlosen Schreck schleicht es aus dem Blick und streift weiter; den Erschreckten verschont es bis zur
+  nächsten Aktivphase. In den Keller geht es nur noch am Ende der Aktivphase, satt oder vom UV-Licht vertrieben.
+- Die **ersten beiden Angriffe bleiben harmlos** (2.1) – auch mit F5 gerufen. Erst ab dem dritten holt es jemanden.
 
 **Offen**
 - Was steht konkret auf den Warnungszetteln (Story)? (Im Prototyp gibt es fünf erste Zettel aus den Jahren 1987–2019, siehe `scripts/world/warning_note.gd`.)
@@ -480,6 +477,8 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Vor Schreck fallen lassen (Schock, 6.8) | – | 6 m | |
 | Truhe öffnen | – | 4 m | |
 | Schublade aufziehen/zuschieben | – | 3 m | |
+| Katze miaut · schnurrt · wirft Deko um | – | 8 m · 1,5 m · 5 m | das Monster überhört Katzen (6.11) |
+| Katze weint (Flucht vor dem Monster) | – | 16 m | Gäste werden unruhig; das Monster überhört es |
 | Vorhang ziehen | – | 2 m | |
 | Glühbirne heraus-/eindrehen | – | 2 m | |
 | Glühbirne platzt | – | 8 m | |
@@ -559,6 +558,166 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 **Zu klären**
 - Gäste mit eigener Taschenlampe (Bitte „Ich habe kein Licht mehr“, „Ich brauche Batterien“, 4.14/6.4)?
 - Zeigt UV später auch weggewischte Spuren an Zimmer 13?
+
+### 4.17 Angriffsabsicht & Flacker-Signal (entschieden 2026-10-17)
+> Ergänzt 4.13, ersetzt sie nicht: Das lokale Flackern bleibt.
+> **Im Prototyp umgesetzt (2026-10-17):** drei Absichten mit Flackerwelle vom Keller aus (über das
+> Treppenhaus ins Obergeschoss), Täuschung, Opferzahl nach 1/n² (Spieler zählt mit), Flackern 1 + 2 × n Sekunden, Umsehen wird
+> bei Sichtung oder Gerede zum Angriff, Gäste verstecken sich bei langem Flackern, Halluzination mit
+> langem Flackern, Tagebuch gesperrt, Würfelpartie bricht ab, Sirren im Stromnetz und Untertitel,
+> Hinweise bei Edna, Mila und auf dem Zettel von 1994. Werte oben im `MonsterDirector`.
+
+**Grundidee:** Bricht das Monster aus dem Keller auf, **läuft eine Flackerwelle durchs Haus**. Wie lange die
+Lichter flackern, verrät, **was es vorhat**. Kurzes Zucken: Es will sich umsehen, höchstens einen holen. Langes Flackern: Es hat
+Hunger und wird mehrere holen.
+
+**Warum das gut passt**
+- Bisher kommt jede Aktivphase gleich: lautlos aus dem Keller, erst das Rauschen verrät es. Damit wird aus dem
+  Flackern eine **Information, auf die man reagieren kann**: weitermachen oder sofort in Sicherheit. Das ist genau
+  der Kern-Loop „Ankündigung erkennen, rechtzeitig in Sicherheit gehen“ (3).
+- Die drei Signale ergänzen sich: **Flackerwelle = wie schlimm**, lokales Flackern = **wo**, Rauschen =
+  **wie nah** (4.13).
+- Die versteckten Werte (4.9) werden spürbar, ohne dass man sie anzeigt.
+
+**Drei Absichten** (gewählt beim Aufbruch, Werte als Vorschlag)
+
+| Absicht | Was es will | Flackern beim Aufbruch |
+|---------|-------------|------------------------|
+| **Umsehen** | streift umher, hinterlässt Spuren, spukt (Türen, Betten …), holt niemanden | ein kurzes Zucken (1 s) |
+| **Einen holen** | wie heute: holt einen (Gast oder Spieler), danach satt (4.10) | 3 s |
+| **Raubzug** | holt **n Opfer** (ab zwei); nach jedem Opfer gleich weiter, erst das letzte macht satt, bleibt länger draußen | 1 + 2 × n Sekunden (zwei: 5 s, drei: 7 s, vier: 9 s …), heftig, einzelne Lampen fallen kurz ganz aus |
+
+- **Wie viele Opfer** (entschieden 2026-10-17, ersetzt „höchstens zwei bis drei“): Greift es an, will es
+  **n Opfer mit Wahrscheinlichkeit ∝ 1/n²**, normiert. Etwa **61 % eins, 15 % zwei, 7 % drei, 4 % vier** …;
+  höchstens so viele, wie Gäste leben, plus den Spieler. Kein fester Deckel – sehr große Raubzüge sind selten,
+  aber möglich.
+- **Flackerdauer** (entschieden 2026-10-17): **Sekunden = 1 + 2 × n** (n = angezeigte Opfer, Umsehen n = 0).
+
+- **Was die Absicht bestimmt:** Satt → nur umsehen. Sonst greift es mit einer **Chance an, die von Tag zu Tag
+  steigt** (entschieden 2026-10-17), gleitend zwischen diesen Punkten, beim Angriff die Opferzahl wie oben:
+
+  | Tag | bis 4 | 7 | 10 | 20 | ab 30 |
+  |-----|-------|---|----|----|-------|
+  | will mindestens einen holen | 20 % | 50 % | 75 % | 90 % | 95 % |
+
+  Gedeckelt bei 95 %, damit ein kurzes Zucken auch an Halloween nicht immer gelogen ist. Die ersten Tage bleiben
+  ohne Monster, die ersten beiden Angriffe harmlos (2.1) – die Kurve gilt danach. **Vom UV-Licht vertrieben** (4.16) → beim nächsten Aufbruch mindestens zwei:
+  Es kommt wütend zurück. Bei den harmlosen Angriffen (2.1) wird gewürfelt und geflackert, geholt wird niemand.
+- **Unscharf, nicht ablesbar:** Die Dauer schwankt etwas. Wer genau hinsieht, unterscheidet kurz und lang, aber
+  „3 Opfer“ lässt sich nicht abzählen.
+- **Es täuscht manchmal** (entschieden): Selten zuckt das Licht nur kurz, obwohl es einen holen will oder auf
+  Raubzug geht. Je dreister es ist, desto öfter (Vorschlag: höchstens jedes fünfte Mal, nie bei den harmlosen
+  Angriffen). Umgekehrt flackert es nach einem Todesfall manchmal lang, ohne dass etwas kommt (Halluzination,
+  siehe unten). Auf ein kurzes Zucken ist also nie ganz Verlass.
+- **Als Welle vom Keller nach oben** (entschieden): Zuerst flackern die Kellerlampen, dann das Erdgeschoss vom
+  Kellerabgang aus, zuletzt das Obergeschoss über das Treppenhaus (Vorschlag: etwa 15 m pro Sekunde, jede Lampe
+  flackert die volle Dauer). Man sieht, dass es *jetzt* aufbricht, und wer weit weg wohnt, hat ein paar Sekunden
+  mehr.
+- **Die Absicht kann sich ändern:** Lärm, Sichtungen und Gespräche über das Monster (4.7) können aus „Umsehen“
+  einen Angriff machen. Die Lichter flackern dann noch einmal.
+- **Die Absicht gilt auch für den Spieler** (entschieden): Der Spieler zählt wie ein Gast.
+  - **Umsehen:** Es jagt dich trotzdem (4.12). Erwischt es dich, starrt es dich an und verschwindet wie bei den
+    harmlosen Angriffen (2.1).
+  - **Einen holen:** Du kannst der eine sein.
+  - **Raubzug:** Du bist eines der n Opfer.
+  - Weil es manchmal täuscht, ist ein kurzes Zucken trotzdem keine Garantie.
+
+**Drumherum**
+- **Gäste reagieren:** Bei langem Flackern verstecken sich die Ängstlichen sofort (Edna), Mutige ignorieren das
+  kurze Zucken. Ein Raubzug trifft also vor allem die Unvorsichtigen. Gäste sprechen darüber („Wenn es lange
+  flackert, geh nicht raus.“), ebenso ein Warnungszettel. So lernt der Spieler das Signal.
+- **Die ersten harmlosen Angriffe** (2.1) zeigen das Signal schon. Man lernt es kennen, bevor es ernst wird.
+  Der erste Angriff während der Feier behält seinen eigenen Auftakt (Licht aus, Musik aus).
+- **Halluzinationen** (4.13, 6.8): Nach einem Todesfall flackert es manchmal lang, ohne dass etwas kommt.
+- **Konzentration** (6.10): Beim Würfeln sieht man das Flackern nur halb so stark. Langes Flackern bricht die
+  Partie ab, wie die Vorwarnung.
+- **Tagebuch** (8.5): Während des Flackerns gesperrt.
+- **Barrierefreiheit** (8.4): Wer das Flackern abschwächt, braucht ein zweites Signal mit derselben Dauer: Die
+  Glühbirnen sirren und das Stromnetz knistert. Dazu kommt ein Untertitel („Die Lichter flackern lange.“).
+- **Satt:** Nach einem Opfer flackert beim nächsten Aufbruch nichts oder fast nichts (4.10: „Lichter flackern
+  nicht mehr“).
+
+**Technik (Skizze):** `MonsterDirector._start_activity` wählt die Absicht und startet die Flackerwelle für
+die passende Dauer (alle `lamps`, verzögert nach Abstand zum Kellerabgang, dazu Bild-Flackern). Wie viele Gäste es in dieser Phase schon geholt hat, zählt
+`kill_guest` bzw. `kill_player` mit. Die Sättigung je Opfer hängt von der Absicht ab. Absicht und Zähler kommen in den Spielstand
+des Directors. Die Zuordnung fester Weltobjekte ändert sich nicht.
+
+**Entschieden (2026-10-17):** Absicht gilt auch für den Spieler · das Signal täuscht manchmal · höchstens zwei
+bis drei Opfer pro Raubzug · Flackern als Welle vom Keller nach oben. Später am selben Tag geändert: Opferzahl
+nach 1/n² ohne festen Deckel, Flackern 1 + 2 × n Sekunden.
+
+**Noch offen:** genaue Tuning-Werte (Täuschungsrate, Angriffschance je Tag, ob die Opferzahl doch einen Deckel
+braucht), beim Ausprobieren festlegen.
+
+### 4.18 Der Lakengeist am Fenster (entschieden 2026-10-17)
+> **Im Prototyp umgesetzt (2026-10-17):** Erscheinen bei Licht aus und offenem Vorhang (70 % beim Betreten,
+> danach 90 s Pause), Stufen 1–4 inklusive Handabdrücken auf der Scheibe, Hypnose (langsamer, Blickzug), Hereinkommen
+> (ab dem 4. Mal durch den Vorhang), Würgen mit Losreißen (drei Richtungswechsel in 1,5 s) oder Tod, Zeugen
+> (ein wacher Gast mit Sicht) vertreiben ihn, Ausblenden in 0,5 s. Erst nach dem ersten Angriff des Monsters,
+> nicht während das Monster nah ist. Debug: F6 und `--ghost=n`.
+> **Später am Tag umgesetzt:** **Nachtruhe zu zufälligen Zeiten** (alle 4–9 min für 70–140 s: alle Gäste im
+> eigenen Bett, Licht aus; schlafende Gäste sind keine Zeugen und bemerken nichts) und der Geist **im Flur** ab
+> dem 6. Mal, wenn alle schlafen. Außerdem sind die Zimmerfenster jetzt **breiter und deutlich höher**
+> (1,9 m breit, 0,75–3,05 m statt 1,4 m breit, 0,9–2,3 m).
+> **Noch nicht:** Gäste als Opfer, Einstellung für den Blickzug. Modell: `temp/Meshy_AI_floating_ghost_3d_…glb` – Laken mit Mundloch, ~1,9 m, zwei
+> blutige Hände nach vorn gestreckt. **Gerigget (2026-10-17):** `tools/build_ghost.py` → `assets/models/ghost.glb`
+> (0,8 MB, 512er-Textur, alle 10 159 Dreiecke behalten, damit die Finger heil bleiben) mit Saum, Rumpf, Kopf,
+> Armen und je fünf Fingern à drei Gliedern. Schweben, Handkreisen und Würgen macht später der Code.
+
+**Grundidee:** Ein Lakengeist schwebt draußen vor den Außenfenstern heran. Er kommt nur, wenn man es ihm leicht
+macht: **Licht aus und Vorhang offen**. Mit jedem Erscheinen wird er dreister – vom Blick durchs Glas bis zum
+Würgen im Zimmer.
+
+**Wann er kommt**
+- Man betritt einen Raum mit Außenfenster (oder ist darin), **das Licht ist aus und der Vorhang offen** → er kommt
+  **sehr wahrscheinlich**. Ist eins davon nicht erfüllt, kommt er nicht.
+- Er taucht weit draußen im Dunkeln auf und schwebt auf **Fensterhöhe** heran – im Obergeschoss also frei über
+  dem Garten.
+- Milchglas (falls es wieder Milchglasfenster gibt): nur ein Umriss, keine Hypnose (wie 4.12).
+
+**Er wird von Mal zu Mal dreister** (Zähler über das ganze Spiel)
+
+| Mal | Was passiert |
+|-----|--------------|
+| **1.** | Er schwebt kurz auf das Fenster zu – und ist wieder weg. |
+| **2.** | Er fasst das Fenster an: **blutige Handabdrücke** auf der Scheibe (bleiben als Spur). Ab hier (2./3. Mal) **kreist er mit den Händen**, um dich zu hypnotisieren. |
+| **3.** | Ist der Vorhang offen, **kommt er herein** (durch die Scheibe). |
+| **4.** und danach | Er kommt **sicher** herein – **auch bei zugezogenem Vorhang**. |
+
+**Hypnose** (ab dem 2./3. Mal): Solange du ihn ansiehst, während er die Hände kreisen lässt, wirst du
+**langsamer**, und dein Blick wird sanft zu ihm gezogen. Wegsehen lässt die Hypnose wieder abklingen.
+Der Blickzug bekommt eine Einstellung zum Abschwächen (wie das Flackern, 8.4).
+
+**Im Zimmer: Er versucht, dich zu erwürgen.**
+- Er schwebt auf dich zu und greift nach deinem Hals.
+- **Befreien:** Nur wer sich **hin und her bewegt**, reißt sich los – und hat dafür **1,5 Sekunden**. Schafft
+  man es nicht, **stirbt man** (Sterbebildschirm wie beim Monster, 4.6).
+- **Er verschwindet, wenn mindestens ein bis zwei weitere Gäste zu sehen sind** – Zeugen vertreiben ihn.
+  Allein im dunklen Zimmer ist man ihm ausgeliefert; in Gesellschaft ist man sicher. Das stärkt die Gäste
+  (Kapitel 6): Wer Freunde hat, die mit ins Zimmer kommen, hat weniger zu fürchten.
+- **Verschwinden:** Er wird in **0,5 Sekunden durchsichtig** und ist weg – immer so, ob vertrieben oder am Ende
+  eines kurzen Auftritts (1. Mal).
+
+**Später auch im Flur** (ab dem **6.–7. Mal**): Wenn **alle Gäste schlafen**, taucht er wahrscheinlicher
+**im Flur** auf statt nur vor Fenstern. Dann gibt es keine Zeugen, die ihn vertreiben – der nächtliche Flur wird
+zum gefährlichsten Ort.
+- **Nachtruhe** (entschieden 2026-10-17): zu **zufälligen Zeiten** gehen alle Gäste schlafen – ins eigene Zimmer,
+  Licht aus, ins Bett. Schlafende zählen nicht als Zeugen und bemerken nichts (auch nicht das Monster, das sie
+  im Bett finden kann). Danach wachen alle wieder auf.
+
+**Passt zu den bestehenden Systemen**
+- **Licht aus** lockt schon das Monster an (4.4) – jetzt auch den Geist. Licht an schützt vor beidem.
+- **Vorhang zu** hält den Geist draußen, macht den Raum aber dunkler (weniger Mondlicht).
+- **Handabdrücke** gibt es schon an Türen (`Traces`); neu ist die Scheibe als Untergrund.
+
+**Zu klären**
+- **Herkunft:** Eigenes Wesen, einer der Verschwundenen (mit jedem geholten Gast häufiger?) oder Teil des
+  Monsters? Bisher kennt das Konzept *ein* Monster, und die Geschichte (2.3) hängt daran.
+- **Befreien genau:** Wie viel Hin-und-Her reicht (z. B. drei Richtungswechsel in 1,5 s)? Hilft UV-Licht?
+- **Wie viele Zeugen genau:** einer oder zwei? Reicht es, dass sie im Raum sind, oder müssen sie ihn sehen?
+- **Gäste:** Kommt er auch zu Gästen, die bei sich das Licht aus und den Vorhang offen haben?
+- **Zähler:** gilt er für das ganze Hotel oder pro Zimmer? Wird er zurückgesetzt?
+- **Wechselwirkung mit dem Monster:** Darf der Geist kommen, während das Monster unterwegs ist?
 
 ---
 
@@ -778,7 +937,21 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 
 ---
 
-### 6.11 Hotelkatzen (vorgemerkt 2026-10-14, noch nicht umgesetzt)
+### 6.11 Hotelkatzen (vorgemerkt 2026-10-14, umgesetzt 2026-10-17)
+> **Im Prototyp umgesetzt (2026-10-17):** drei Katzen – **Minka** (alt, verschlafen, startet auf dem Lobby-Sofa),
+> **Socke** (scheu, startet in der Küche), **Kasimir** (rot getigert, neugierig und tollpatschig, startet vor
+> Zimmer 13). Sie streifen umher, schlafen auf den Sofas und auf den Betten der Gäste und in Zimmer 13, folgen
+> ihrem Lieblingsgast, miauen vor geschlossenen Türen (können keine öffnen), lassen sich streicheln (Spieler:
+> Schock sinkt; Gäste im Vorbeigehen: Angst sinkt), fliehen weinend vor dem Monster (es überhört sie), werfen
+> Kürbisse und Kerzen um (Kerze geht meist aus; „aufstellen [E]“, Gäste stellen ihre eigene Deko wieder auf)
+> und bringen selten Laub, Spinnweben oder eine Kerze vor Zimmer 13. Wer oft streichelt, bekommt öfter Besuch
+> auf dem Bett. In Panik vor einer geschlossenen Tür duckt sich eine Katze und weint weiter.
+> **Ergänzt (2026-10-17):** Manchmal trägt eine Katze Deko eines Gastes vor Zimmer 13 (der Gast vermisst sie und
+> verdächtigt dich – bis er im Gespräch erzählt, wer es war). Liegeplätze auch auf der Rezeption und auf den
+> Fensterbänken (Lobby und bewohnte Zimmer). Gäste plaudern über die Katzen (Lieblingskatze, umgeworfene Kerze)
+> und wissen nach dem ersten Weinen: „Wenn die Katzen weinen, ist es in der Nähe.“ Das Weinen erzählen sie wie
+> andere Geräusche weiter.
+> **Noch nicht:** Heizkeller als Liegeplatz – den Tiefkeller (7.4) gibt es noch nicht.
 - **Ein paar Katzen gehören zum Hotel** (Vorschlag: 2–3, mit Namen, z. B. eine alte, eine scheue, eine neugierige).
 - **Sie laufen frei durchs Hotel:** NavMesh wie die Gäste, eigene Lieblingsplätze (Rezeption, Sofa in der
   Lobby, warm in der Küche, Fensterbank, Heizkeller), schlafen viel, schlüpfen durch offene Türen.
@@ -866,7 +1039,7 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
 - **Eingeschlossen:** Ausgänge verriegelt – warum? (Story-Frage, siehe offene Punkte)
 
 ### 7.3 Fenster, Vorhänge & Wandlampen
-> Stand: 2026-10-10 · im Prototyp umgesetzt (Außenfenster mit Vorhängen in Lobby und Zimmern, Milchglas zwischen Flur und Zimmern, Wandleuchten, ein Lichtschalter pro Raum/Flurabschnitt, Glühbirnen als Gegenstand)
+> Stand: 2026-10-10 · im Prototyp umgesetzt (Außenfenster mit Vorhängen in Lobby und Zimmern, Wandleuchten, ein Lichtschalter pro Raum/Flurabschnitt, Glühbirnen als Gegenstand)
 
 Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(actor)` wie Türen und Truhen (9.1) – **Gäste benutzen sie genauso wie der Spieler**.
 
@@ -875,10 +1048,10 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 - Vorhandene Grundlage: Die Glasscheiben in der Lobby-Nordwand (eigene Kollisionsebene „Glas“) blockieren Bewegung, lassen aber den Blick durch.
 - **Sicht in beide Richtungen (Vorschlag):** Auch Monster und Gäste sehen hindurch → das Monster kann einen durchs Fenster bemerken (4.5), Gäste können einen durchs Fenster beim Klauen beobachten und werden zu Zeugen (6.2).
 - Mondlicht fällt durch offene Fenster herein (Helligkeit der Zone, 4.4).
-- **Milchglasfenster im Flur** (entschieden): Innenfenster zwischen Flur und Räumen. Man sieht **nicht klar** hindurch, nur **Licht, Schatten und Umrisse** – genau dort zeigt sich das Monster gern als diffuser Schatten (4.1). Umgekehrt sieht man von innen, ob im Flur Licht brennt oder sich etwas bewegt. Milchglas lässt Licht durch, aber **keine Sicht für die „bemerkt“-Erkennung** (4.5) und keine Zeugenschaft – nur einen Hinweis „da war jemand“.
+- **Milchglasfenster im Flur** – **entfernt (2026-10-17):** Die Innenfenster zwischen Flur und Zimmern gibt es nicht mehr; Zimmertüren haben stattdessen einen Rahmen mit breiterem, überstehendem Sturz. Handabdrücke des Monsters landen auf den Türen. (Früher: Licht, Schatten und Umrisse sichtbar, keine Sicht für Monster und Zeugen.)
 
 **Vorhänge**
-- Jedes Außenfenster hat Vorhänge (Milchglas im Flur: Vorschlag ohne Vorhang), die man **aufziehen und zuziehen** kann.
+- Jedes Außenfenster hat Vorhänge, die man **aufziehen und zuziehen** kann.
 - **Zugezogen:** kein Blick hinein und hinaus, aber auch **kein Mondlicht** → der Raum wird dunkler (und damit für das Monster attraktiver).
 - **Aufgezogen:** Licht und Sicht – aber man ist auch von außen zu sehen.
 - **Gäste** nutzen Vorhänge ebenfalls, z. B. zieht die ängstliche Edna sie nachts zu, um nicht gesehen zu werden – und macht ihr Zimmer damit dunkler.
@@ -1182,8 +1355,10 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 7b. ~~Lärm & Sichtbarkeit als ein gemeinsames System (4.15)~~ ✔ (2026-10-11)
 7c. ~~Taschenlampe mit Batterien und UV-Aufsatz (4.16)~~ ✔ (2026-10-11)
 7d. Gäste bedienen Lichtschalter aktiv: Licht an im Dunkeln, beim Verlassen leerer Zimmer aus, manchmal vergessen (7.3, vorgemerkt 2026-10-13)
-7e. Angriffe zu kurz – das Monster kehrt nach wenigen Metern um: Ursache finden und beheben (4.13, beobachtet 2026-10-13)
-7f. Hotelkatzen: frei laufend, streicheln, Lieblingsgäste, vom Monster verschont, fliehen und weinen in seiner Nähe, werfen Deko um, bringen selten Deko und schlafen auf deinem Bett (6.11, vorgemerkt 2026-10-14)
+7e. ~~Angriffe zu kurz – das Monster kehrt nach wenigen Metern um~~ ✔ (4.13, behoben 2026-10-17)
+7f. ~~Hotelkatzen: frei laufend, streicheln, Lieblingsgäste, vom Monster verschont, fliehen und weinen in seiner Nähe, werfen Deko um, bringen selten Deko und schlafen auf deinem Bett (6.11)~~ ✔ (2026-10-17)
+7g. ~~Angriffsabsicht & Flacker-Signal: Eine Flackerwelle vom Keller aus verrät mit ihrer Dauer, ob es sich umsieht, einen holt oder auf Raubzug geht (n Opfer ∝ 1/n², Flackern 1 + 2 × n s, Spieler zählt mit, täuscht manchmal) (4.17)~~ ✔ (2026-10-17)
+7h. ~~Lakengeist am Fenster: kommt bei Licht aus und offenem Vorhang, wird von Mal zu Mal dreister (Handabdrücke auf der Scheibe, Hypnose, kommt herein und würgt), verschwindet vor Zeugen in 0,5 s, ab dem 6. Mal im Flur, wenn alle schlafen (Nachtruhe zu zufälligen Zeiten) (4.18)~~ ✔ (2026-10-17)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen

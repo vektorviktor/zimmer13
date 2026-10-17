@@ -24,6 +24,11 @@ const NOISE := {
 	"shock_drop": {"range": 6.0,  "sound": "thud",   "volume": 0.6},    ## vor Schreck fallen gelassen (6.8)
 	"chest":      {"range": 4.0,  "sound": "creak",  "volume": 0.4},
 	"drawer":     {"range": 3.0,  "sound": "creak",  "volume": 0.3},    ## Schublade einer Kommode
+	## Hotelkatzen (Spielkonzept 6.11) – das Monster überhört sie, es mag die Katzen
+	"cat_meow":   {"range": 8.0,  "sound": "meow",   "volume": 0.45},   ## miaut (vor einer Tür, Geschenk)
+	"cat_purr":   {"range": 1.5,  "sound": "purr",   "volume": 0.6},    ## schnurrt beim Streicheln
+	"cat_cry":    {"range": 16.0, "sound": "cry",    "volume": 0.6, "alarm": true},  ## weint auf der Flucht vor dem Monster
+	"cat_knock":  {"range": 5.0,  "sound": "thud",   "volume": 0.5},    ## wirft Deko um
 	"curtain":    {"range": 2.0,  "sound": "creak",  "volume": 0.15},
 	"bulb":       {"range": 2.0,  "sound": "creak",  "volume": 0.2},    ## Glühbirne heraus-/eindrehen
 	"bulb_burst": {"range": 8.0,  "sound": "bang",   "volume": 0.35, "alarm": true},

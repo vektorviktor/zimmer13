@@ -10,13 +10,14 @@ const MUSIC_CHORDS := [[220.0, 261.6, 329.6], [174.6, 220.0, 261.6], [196.0, 246
 const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
-	"rustle": 0.3, "jingle": 0.45,
+	"rustle": 0.3, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "cry": 1.5,
 }
 
 var hum := 0.0
 var static_noise := 0.0
 var heart := 0.0
 var heart_bpm := 70.0
+var buzz := 0.0    ## Sirren und Knistern im Stromnetz (Flackerwelle, Spielkonzept 4.17)
 var music := 0.0   ## Lautstärke der Feiermusik (Plattenspieler)
 
 var _playback: AudioStreamGeneratorPlayback
@@ -68,6 +69,9 @@ func _sample(dt: float) -> float:
 		s += (sin(TAU * 46.0 * _time) * 0.5 + sin(TAU * 93.0 * _time) * 0.2 + _lp_slow * 2.0) * hum
 	if static_noise > 0.001:
 		s += _lp_fast * static_noise
+	if buzz > 0.001:
+		var crackle := white * 1.6 if randf() < 0.004 else 0.0
+		s += (sin(TAU * 100.0 * _time) * 0.22 + sin(TAU * 200.0 * _time) * 0.1 + crackle) * buzz
 	var m := 0.0
 	if music > 0.001:
 		m = _music_sample() * music
@@ -155,4 +159,22 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 				return 0.0
 			var jf: float = 2400.0 + 700.0 * floor(t / 0.09)
 			return (sin(TAU * jf * jt) + sin(TAU * jf * 1.48 * jt) * 0.6) * exp(-jt * 45.0) * 0.12
+		"meow":
+			# Katze: „mi-au“ – Tonhöhe steigt und fällt, nasal (Sägezahn mit Oberton)
+			var mf := 520.0 + 380.0 * sin(PI * minf(k * 1.3, 1.0)) - 150.0 * k
+			var mph: float = shot["phase"] + mf * dt
+			shot["phase"] = mph
+			var nasal := (fmod(mph, 1.0) * 2.0 - 1.0) * 0.35 + sin(TAU * mph * 2.0) * 0.3
+			return nasal * sin(PI * k) * (0.8 + 0.2 * sin(TAU * 7.0 * t)) * 0.25
+		"purr":
+			# Schnurren: tiefes Brummen, 26-mal pro Sekunde an- und abschwellend
+			var pulse := 0.5 + 0.5 * sin(TAU * 26.0 * t)
+			return (_lp_slow * 2.5 + sin(TAU * 52.0 * t) * 0.3) * pulse * sin(PI * k) * 0.5
+		"cry":
+			# Weinen: langes, klagendes Jammern mit Zittern, am Ende abfallend
+			var cf := 430.0 + 260.0 * sin(PI * k) + 30.0 * sin(TAU * 5.5 * t)
+			var cph: float = shot["phase"] + cf * dt
+			shot["phase"] = cph
+			var wail := (fmod(cph, 1.0) * 2.0 - 1.0) * 0.3 + sin(TAU * cph) * 0.4 + white * 0.08
+			return wail * sqrt(sin(PI * k)) * 0.3
 	return 0.0

@@ -8,7 +8,7 @@ extends CharacterBody3D
 ## Licht & Vorhänge (7.3): schaltet sein Zimmerlicht, zieht Vorhänge zu, wenn er Angst hat,
 ## ersetzt fehlende Glühbirnen – und klaut selbst welche.
 
-enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER }
+enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP }
 
 const WALK_SPEED := 1.4
 const RUN_SPEED := 3.3
@@ -73,6 +73,8 @@ var _panic_quiet := 0.0      ## Panik-Satz nicht ständig wiederholen
 var _alarm_cooldown := 0.0
 var _run_noise := 0.0
 var _warned := false
+var _to_bed := false       ## Nachtruhe: auf dem Weg ins eigene Bett
+var _flicker_fear := 0.0   ## nach langem Flackern so lange im Versteck bleiben (Sekunden)
 var _anim := 0.0
 var _dance := -1   ## Index in DANCES, -1 = tanzt gerade nicht
 var _dance_timer := 0.0
@@ -265,6 +267,16 @@ func hear_alarm(pos: Vector3) -> String:
 	return "erzählt davon"
 
 
+## Streichelt eine Hotelkatze im Vorbeigehen (Spielkonzept 6.11) – das beruhigt.
+func pet_cat(cat: HotelCat) -> void:
+	fear = maxf(0.0, fear - 15.0)
+	_set_idle(randf_range(2.5, 4.0))
+	var to := cat.global_position - global_position
+	rotation.y = atan2(-to.x, -to.z)
+	if randf() < 0.4:
+		say(["Na, %s?", "Na du, %s.", "Hallo %s, meine Schöne.", "%s! Komm her."].pick_random() % cat.display_name)
+
+
 func own_deco_near_door() -> Array[Item]:
 	var result: Array[Item] = []
 	var door_front: Vector3 = home["door_front"]
@@ -330,6 +342,11 @@ func _physics_process(delta: float) -> void:
 		State.HIDING:
 			_hiding_step(delta)
 			return
+		State.SLEEP:
+			# schläft – bemerkt nichts (kein Rauschen, kein Monster) bis zum Ende der Nachtruhe
+			if not Game.social.sleep_active:
+				wake_up()
+			return
 		State.KNOCK:
 			# klopft an Zimmer 13 und wartet, dass jemand aufmacht
 			_stop(delta)
@@ -379,6 +396,63 @@ func _physics_process(delta: float) -> void:
 	_open_doors()
 
 
+# --- Nachtruhe --------------------------------------------------------------------------
+
+## Nachtruhe beginnt (Social): ins Zimmer, Licht aus, ins Bett. Wer gerade redet, spielt, klopft oder
+## sich versteckt, geht später (über _next_activity).
+## instant (Debug): sofort im eigenen Bett.
+func bedtime(instant: bool = false) -> void:
+	if instant and not dead and state != State.SLEEP:
+		if hiding:
+			_leave_hide()
+		global_position = _room_point()
+		_fall_asleep()
+		return
+	if dead or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDING, State.HIDE_GO, State.SLEEP]:
+		return
+	if state == State.PARTY:
+		leave_party()
+	_go_to_bed()
+
+
+func _go_to_bed() -> void:
+	_to_bed = true
+	_walk_to(_room_point(), State.WALK)
+
+
+## Licht aus, ins eigene Bett (still – kein Versteck-Geräusch). Ist es belegt, schläft er im Stehen.
+func _fall_asleep() -> void:
+	_to_bed = false
+	_set_room_light(false)
+	state = State.SLEEP
+	for spot in home["spots"]:
+		var bed := spot as HideSpot
+		if bed.type == HideSpot.Type.BED and bed.occupant == null:
+			hiding = bed
+			bed.occupant = self
+			bed.set_checked(false)
+			visible = false
+			_collider.disabled = true
+			velocity = Vector3.ZERO
+			global_position = bed.global_position
+			return
+
+
+func is_asleep() -> bool:
+	return state == State.SLEEP
+
+
+## Nachtruhe vorbei: aus dem Bett, Licht an.
+func wake_up() -> void:
+	_to_bed = false
+	if state != State.SLEEP:
+		return
+	if hiding:
+		_leave_hide()
+	_set_room_light(true)
+	_set_idle(randf_range(2.0, 8.0))
+
+
 func _set_idle(duration: float) -> void:
 	state = State.IDLE
 	_timer = duration
@@ -388,6 +462,9 @@ func _next_activity() -> void:
 	if _resting:
 		_resting = false
 		_set_room_light(true)
+	if Game.social.sleep_active:
+		_go_to_bed()
+		return
 	if Game.social.party_active and invited:
 		join_party(Game.social.free_party_spot())
 		return
@@ -426,6 +503,9 @@ func _walk_to(point: Vector3, new_state: State) -> void:
 func _arrive() -> void:
 	match state:
 		State.WALK:
+			if _to_bed and _is_home():
+				_fall_asleep()
+				return
 			_set_idle(randf_range(15.0, 40.0))
 			if _is_home():
 				_at_home()
@@ -465,6 +545,9 @@ func _arrive() -> void:
 func _at_home() -> void:
 	_check_lights()
 	var placed := own_deco_near_door()
+	for item in placed:
+		if item.is_toppled():
+			item.stand_up()   # von einer Katze umgeworfen (6.11)
 	if placed.size() < expected_deco:
 		Game.social.on_guest_noticed_missing(self, expected_deco - placed.size())
 	expected_deco = placed.size()
@@ -656,6 +739,25 @@ func _watch_monster() -> void:
 	_go_hide()
 
 
+## Flackerwelle beim Aufbruch des Monsters (Spielkonzept 4.17), erreicht den Gast nach `delay` s.
+## level 0 = kurzes Zucken, 1 = Flackern, 2 = langes Flackern.
+func on_flicker_signal(level: int, delay: float) -> void:
+	get_tree().create_timer(delay, false).timeout.connect(_react_to_flicker.bind(level))
+
+
+## Langes Flackern: Ängstliche verstecken sich sofort und bleiben eine Weile drin. Beim kurzen
+## Zucken bleiben fast alle, wo sie sind.
+func _react_to_flicker(level: int) -> void:
+	if dead or hiding != null or state in [State.HIDE_GO, State.PARTY, State.TALKING, State.MINIGAME, State.DEAD]:
+		return
+	var brave := float(profile["brave"])
+	fear = minf(100.0, fear + [2.0, 8.0, 20.0][level])
+	var threshold: float = [1.0, brave + 0.5, brave][level]
+	if randf() > threshold:
+		_flicker_fear = 15.0 * level * level
+		_go_hide()
+
+
 func _go_hide() -> void:
 	_drop_held()
 	if state == State.PARTY:
@@ -684,7 +786,8 @@ func _enter_hide(spot: HideSpot) -> void:
 func _hiding_step(delta: float) -> void:
 	_timer += delta
 	var monster := Game.monster
-	var calm := not monster.is_active() or monster.global_position.distance_to(global_position) > SAFE_DISTANCE
+	_flicker_fear = maxf(0.0, _flicker_fear - delta)
+	var calm := (not monster.is_active() or monster.global_position.distance_to(global_position) > SAFE_DISTANCE) and _flicker_fear <= 0.0
 	if not calm:
 		_timer = minf(_timer, 0.0)
 	if calm and _timer > 8.0:

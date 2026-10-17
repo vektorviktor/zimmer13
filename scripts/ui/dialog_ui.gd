@@ -199,7 +199,8 @@ func _chat() -> void:
 	else:
 		guest.chat_cooldown = CHAT_COOLDOWN
 		Game.social.change_relation(guest, 6.0 + (2.0 if guest.relation > 30.0 else 0.0))
-		_say(guest.line("smalltalk"))
+		var cat_talk := Game.social.cat_line(guest) if randf() < 0.3 or Game.social.cat_thefts.has(guest.id) else ""
+		_say(cat_talk if cat_talk != "" else guest.line("smalltalk"))
 	_show_main()
 
 
@@ -213,8 +214,11 @@ func _talk_odd() -> void:
 func _talk_monster() -> void:
 	# Manchmal erzählt der Gast von Spuren – nicht immer zuverlässig (4.13)
 	var report := Game.social.report_line(guest)
+	var cat_tip := Game.social.cat_monster_line()
 	if report != "" and randf() < 0.5:
 		_say(report)
+	elif cat_tip != "" and randf() < 0.3:
+		_say(cat_tip)
 	else:
 		var lines: Array = guest.profile["lines"]["monster"]
 		_say(lines[guest.monster_line % lines.size()])

@@ -30,7 +30,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | Shift | Rennen (macht Lärm: 10 m statt 0–2 m beim Gehen) |
 | Leertaste | Springen |
 | Strg / C (halten) | Ducken – nötig für die Kellertür (1,80 m) |
-| E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Tür/Truhe/Schublade öffnen, Licht schalten, Vorhang ziehen, Glühbirne heraus-/eindrehen, mit Gästen reden, telefonieren, Verstecken, ins Tagebuch schreiben |
+| E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Umgeworfenes aufstellen, Katzen streicheln, Tür/Truhe/Schublade öffnen, Licht schalten, Vorhang ziehen, Glühbirne heraus-/eindrehen, mit Gästen reden, telefonieren, Verstecken, ins Tagebuch schreiben |
 | 1–9 / Maus | Im Gespräch Antwort wählen (Esc beendet) |
 | 0–9 · Enter · Rücktaste · H | Am Telefon: Zimmernummer wählen · anrufen · löschen · Hörer daneben legen (Esc legt auf) |
 | G / Q | Gegenstand ablegen (Kürbis vor die Tür stellen …) |
@@ -39,8 +39,8 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | F (halten) | Kompass ansehen |
 | Linksklick · R | Taschenlampe in der Hand: an/aus · normales Licht ↔ UV (mit UV-Aufsatz) |
 | F3 | Debug: versteckte Monster-Werte und die letzten Lärmereignisse |
-| F5 | Debug: Monster sofort rufen (wenn es gerade ruht) |
-| F6 | Debug: Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller …) – pausiert, 1–9 / Maus |
+| F5 | Debug: Monster sofort rufen (wenn es gerade ruht; die ersten zwei Angriffe bleiben harmlos – `--attacks=3` für echte) |
+| F6 | Debug: Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller …) und Lakengeist zum 1.–4. Mal (in Zimmer 13) bzw. im Flur – pausiert, 1–9 / Maus |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel |
 
 ## Was drin ist
@@ -53,23 +53,25 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 - **Deko & Handwerk:** Kürbisse im Garten ernten · mit dem **Messer** (Küche) schnitzen · **Kerze** in den geschnitzten Kürbis stellen · Herbstlaub unter den Bäumen · Spinnweben in dunklen Ecken · Kerzenvorrat in der Küche
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
 - **Dramaturgie:** friedlicher Anfang ohne Monster · erster Angriff am 3./4. Oktober während einer Feier (Licht und Musik aus, das Monster steht in der Lobby) · die ersten zwei Angriffe sind harmlos: es steht direkt vor dir, starrt dich an und verschwindet, Gäste werden nur erschreckt
-- **Monster:** dürre, über zwei Meter große Gestalt auf zwei Beinen (Modell mit Skelett, ruckartige Stop-Motion-Bewegung) · duckt sich unter Türen, lauert halb geduckt, schleicht auf allen Vieren davon, wenn man es sieht · streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern nur in seiner Nähe, „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
-- **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke am Milchglas, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff · **Spuren der Gäste:** schlammige Schuhabdrücke nach dem Garten, Wachsflecken von Kerzen und Kürbislaternen, Blutstropfen und verlorene Münzen nach einem Angriff, Zettel an Türen und nach Todesfällen oder Sichtungen
+- **Monster:** dürre, über zwei Meter große Gestalt auf zwei Beinen (Modell mit Skelett, ruckartige Stop-Motion-Bewegung) · duckt sich unter Türen, lauert halb geduckt, schleicht auf allen Vieren davon, wenn man es sieht · streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), Deko und Licht drängen es ab, schicken es aber nicht nach Hause – es bleibt die ganze Aktivphase unterwegs, versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern in seiner Nähe, beim Aufbruch läuft eine Flackerwelle vom Keller durchs Haus – kurzes Zucken: es sieht sich nur um, je länger es flackert, desto mehr will es holen (1 + 2 s pro Opfer, manchmal täuscht es), „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
+- **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke an Zimmertüren, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff · **Spuren der Gäste:** schlammige Schuhabdrücke nach dem Garten, Wachsflecken von Kerzen und Kürbislaternen, Blutstropfen und verlorene Münzen nach einem Angriff, Zettel an Türen und nach Todesfällen oder Sichtungen
 - **Klopfen an Zimmer 13:** ein Gast in Panik bittet um Einlass – oder eine bekannte Stimme, hinter der niemand steht
 - **Zimmertelefone:** Wählscheibentelefon in jedem Zimmer, Haupttelefon mit Gästeverzeichnis an der Rezeption (Zimmernummer wählen, 0 = Rezeption) · Freunde rufen an und warnen, wo es gerade ist (nicht immer richtig), Feinde lügen, Bekannte plaudern oder laden zur Feier ein · manchmal nur Atmen – danach liegt in einem leeren Zimmer ein Hörer neben dem Apparat · selbst anrufen: plaudern, fragen, einladen; **Klingeln ist Lärm** und lockt das Monster ins Zielzimmer · anrufen und sofort auflegen gilt als Telefonstreich · Hörer daneben legen: still, aber keine Warnungen mehr · ab und zu klingelt irgendwo im Hotel ein Telefon
-- **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (30 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 24, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf, Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
+- **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (30 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 24, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf mit **Nachtruhe zu zufälligen Zeiten** (alle gehen ins Bett, Licht aus), Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
 - **Mäxchen an der Hotelbar:** Bluff-Würfeln gegen Gäste um Geld oder Gegenstände (Einsätze liegen echt auf dem Tisch), Herausforderungen & Revanche, Gäste würfeln untereinander (zuschauen verrät ihre Ticks), gezinkte Würfel aus Zimmer 17, Abbruch bei Vorwarnung
+- **Lakengeist:** kommt, wenn du einen Raum mit Außenfenster betrittst, in dem das Licht aus und der Vorhang offen ist · wird von Mal zu Mal dreister: schwebt heran → blutige Handabdrücke auf der Scheibe und Hypnose mit kreisenden Händen (macht langsamer, zieht den Blick) → kommt herein und würgt → ab dem 4. Mal auch durch den zugezogenen Vorhang · losreißen nur durch Hin-und-Her-Bewegen innerhalb von 1,5 s, sonst tot · Gäste als Zeugen vertreiben ihn, in Gesellschaft kommt er nicht · ab dem 6. Mal auch im Flur, wenn alle schlafen
 - **Taschenlampe:** an der Rezeption (halb leer) · Licht zum Sehen, aber kein Schutz – wer sie trägt, wird weiter gesehen · Batterien (Wäscherei, Keller, manche leeren Zimmer, Skeptiker verkaufen sie) einlegen wie eine Kerze in den Kürbis · flackert in Monsternähe, im Versteck bleibt sie aus · **UV-Aufsatz** in Zimmer 18: UV leert eine Batterie in ~9 s; steht das Monster ~1 s im Kegel, flieht es – kommt aber bald wieder, sucht rund um Zimmer 13 und braucht jedes Mal länger · UV zeigt verblasste Fußspuren, Schrift an Wänden und eine zweite Zeile auf jedem Warnungszettel
 - **Licht & Fenster:** ein Lichtschalter pro Raum, Decken- und Wandlampen, Glühbirnen herausdrehen und woanders einsetzen (auch Gäste klauen sie), Birnen brennen bei starkem Flackern oder in Monsternähe selten durch · Licht aus lockt das Monster an · Außenfenster mit Vorhängen (Mondlicht, Sicht in beide Richtungen), Milchglas zwischen Flur und Zimmern (nur Umrisse)
 - **Kalender:** vom 1. Oktober bis Halloween, ein Ingame-Tag ≈ 5 Minuten, draußen immer Nacht · Abreißkalender in Zimmer 13, Datum im Spielmenü und in den Spielständen
 - **Menüs & Speichern:** Titelbildschirm, Spielmenü (Esc), Einstellungen (Helligkeit mit Testbild, PS1-Look, Ton, Maus, weniger Flackern, Untertitel) · Speichern nur am **Tagebuch in Zimmer 13** (3 Slots, nicht während Vorwarnung/Monster) · Autosave bei wichtigen Ereignissen in sicheren Momenten · nach dem Tod letzten Spielstand laden
 - **Lärm & Sichtbarkeit:** jedes Geräusch in der Welt ist zugleich Lärm mit eigener Hörweite (Tür knarrt 5 m, Schranktür 4 m, Rennen 10 m, Telefon 18 m, Schrei 20 m, Feier 25 m …), gedämpft durch Wände, geschlossene Türen und Geschossdecken · Schritte hört man nur auf Holz und Fliesen, geduckt gar nicht · das Monster geht in Hörweite nachsehen, bis zur doppelten Hörweite wird es neugierig · Gäste hören Schreie und Knalle mit halber Reichweite: sie erschrecken, sehen nach, erzählen davon oder geraten in Panik · Monster und Gäste sehen nach derselben Rechnung: Licht am Ort, **Licht in der Hand**, Rennen, Ducken, Stillstehen – im Dunkeln und geduckt klaut man unbemerkter, wer mit Kerze in den Schrank steigt, wird gesehen
 - **Feiern:** Plattenspieler in der Lobby (selbst ausrichten) oder spontan von Gästen – laut, also lockt es das Monster an; währenddessen sind die Zimmer leer · Gäste tanzen verschieden (hüpfen, wiegen, drehen, Arme hoch, Twist, schunkeln), jeder hat seinen Lieblingstanz
+- **Hotelkatzen:** Minka, Socke und Kasimir streifen durchs Hotel, schlafen auf Sofas und Betten, folgen ihrem Lieblingsgast und miauen vor geschlossenen Türen · streicheln beruhigt (Spieler und Gäste) · das Monster tut ihnen nichts, aber sie fliehen und **weinen**, wenn es nah ist – eine Frühwarnung, auch durch Wände · sie werfen Kürbisse und Kerzen um (dann schützen sie nicht, bis man sie aufstellt) · selten bringen sie dir etwas vor die Tür (manchmal die Deko eines Gastes – der verdächtigt erst dich) oder legen sich auf dein Bett · Liegeplätze auch auf der Rezeption und auf Fensterbänken · Gäste reden über die Katzen
 - **Kommoden im Flur:** vier je Geschoss, jede Schublade lässt sich aufziehen – beim ersten Mal liegen manchmal Münzen oder ein Gegenstand darin (Kerze, Glühbirne, Batterie, Messer, gezinkte Würfel); was man hineinlegt, bleibt drin
-- **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion
+- **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion · Tapeten mit Vertäfelung, die im Licht unterschiedlich glänzen (Lack, Satin, stumpfe Rauten) und an Fugen und Leisten Glanzkanten zeigen, dazu fleckige, matte Stellen
 - **Altersempfehlung ab 16** (selbst eingeschätzt, keine USK-Prüfung): Hinweis mit Inhalten beim ersten Start, Kennzeichen im Titelbildschirm (`scripts/ui/title_screen.gd`)
 
-Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar und den Plattenspieler sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
+Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler und die Tapeten (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_monster.py -- assets/source/Meshy_AI_Abyssal_Mawcrawler_1011084008_texture.glb assets/models/monster.glb
@@ -85,10 +87,16 @@ Die Barflaschen (`assets/models/bottles.glb`) und der Plattenspieler (`assets/mo
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_record_player.py -- assets/source/vintage_record_player.glb assets/models/record_player.glb
 ```
 
-Das Katzenmodell (`assets/models/cat.glb`, noch nicht im Spiel) baut `tools/build_cat.py` aus Meshys geriggtem Paket:
+Das Katzenmodell (`assets/models/cat.glb`) baut `tools/build_cat.py` aus Meshys geriggtem Paket:
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_cat.py -- assets/source/Meshy_AI_Curious_Cat_quadruped.zip assets/models/cat.glb
+```
+
+Den Lakengeist (`assets/models/ghost.glb`, Spielkonzept 4.18) riggt `tools/build_ghost.py` selbst – mit Armen und Fingern. Ein optionaler dritter Pfad legt Vorschaubilder ab (Ruhe, gekrümmte Finger, gehobene Arme):
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_ghost.py -- assets/source/Meshy_AI_floating_ghost_3d_1017173231_image-to-3d-texture.glb assets/models/ghost.glb
 ```
 
 ## Debug-Startparameter
@@ -100,6 +108,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--trace` | Monster, Gäste und Meldungen alle 2 s in die Konsole, dazu jedes Lärmereignis (wer es hört und wie er reagiert) |
 | `--noise=door` | alle 6 s Lärm dieser Art am Spieler (`door`, `hide`, `run`, `scream` … – Tabelle in `scripts/util/senses.gd`) |
 | `--warn` | sofort Vorwarnung → Monster erscheint |
+| `--intent=roam` / `one` / `rampage` / `4` | Absicht beim Aufbruch erzwingen: umsehen, ein, zwei oder n Opfer (mit `--trace` stehen Absicht und Flackerwelle in der Konsole) |
 | `--bold=90` | Dreistigkeit setzen |
 | `--friend=edna` / `--enemy=bruno` | Beziehung zu einem Gast setzen |
 | `--kill=mila` | Gast nach 3 s vom Monster holen lassen |
@@ -108,13 +117,16 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--call=edna` · `--call=creepy` / `dead` / `door` · `--answer` | Telefon in Zimmer 13 klingelt: Gast (warnt, wenn das Monster unterwegs ist) · Atmen · Verschwundener · es steht vor der Tür · Spieler nimmt nach 4 s ab |
 | `--dial=11` · `--dial=lobby` | aus Zimmer 13 eine Nummer anrufen (0 = Rezeption) · Wählseite am Haupttelefon |
 | `--party` | Feier starten |
+| `--cat=minka` | Hotelkatze vor den Spieler setzen (`minka`, `socke`, `kasimir`) |
 | `--talk=edna` | Gespräch öffnen |
 | `--dice=bruno` · `--autoplay` | Mäxchen-Partie starten · Antworten automatisch wählen |
 | `--challenge=bruno` | Gast fordert dich heraus |
 | `--pos=x,y,z,winkel` · `--monster=x,y,z` | Spieler versetzen · Monster erscheinen lassen |
 | `--flashlight` · `--flashlight=uv` | eingeschaltete Taschenlampe mit voller Batterie in die Hand · mit UV-Aufsatz im UV-Modus |
 | `--pocket` · `--show=map` / `keys` / `compass` | Kompass, alle Kartenblätter und Schlüssel 18 einstecken · Karte (Schlüsselblatt oben) bzw. Kompass hervorholen wie mit gehaltener Taste |
-| `--shot=pfad.png --frames=n` · `--shot-on=reveal` · `--shot-on=jumpscare` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler · im Jumpscare |
+| `--shot=pfad.png --frames=n` · `--shot-on=reveal` · `--shot-on=jumpscare` · `--shot-on=strangle` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler · im Jumpscare · wenn der Lakengeist zupackt |
+| `--ghost=n` · `--ghost=flur` | Lakengeist zum n. Mal: Spieler in Zimmer 13, Licht aus, Vorhang auf (ab 4 zu), er kommt sicher (mit `--trace`: Erscheinen, Losreißen, Tod in der Konsole) · alle Gäste sofort im Bett, er kommt im Flur (mit `--pos` in einen Flur stellen) |
+| `--sleep` | Nachtruhe sofort beginnen |
 | `--nointro` · `--debug` · `--trace-nav` | ohne Intro · Debug-Werte · mit `--trace` auch die Wegfindung der Gäste |
 | `--title` · `--new=2` · `--load=1` | trotz Parametern Titelbildschirm · neues Spiel in Slot 2 · Slot laden (0 = Autosave) |
 | `--diary=3` · `--savetest` | nach 2 s in Slot 3 speichern · Speichern → Laden → Vergleichen |
@@ -139,7 +151,7 @@ scripts/autoload/save_manager.gd   Speichern/Laden, Autosave, Tagebuchsatz
 scripts/level/              LevelBuilder (Grundriss: Zimmerreihen in `ROWS`, Flure, Keller, Zonen, Wegpunkte)
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
                             PumpkinPlant, ResourceSpot, RecordPlayer,
-                            Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang/Milchglas), Diary,
+                            Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang), Diary,
                             Traces + TraceMark (Spuren), WarningNote (Warnungszettel), HotelPhone (Telefon),
                             Flashlight (Taschenlampe, UV), UvMark (nur unter UV sichtbar)
 scripts/guests/             Guest (Verhalten), GuestProfiles (feste Gäste, Sätze), GuestGenerator (Zufallsgäste),
@@ -151,7 +163,7 @@ scripts/ui/                 HUD, Dialog, Sterbebildschirm, Titelbildschirm, Men�
                             Einstellungen, Slot-Übersicht, UiKit (Meldezettel-Optik), Telefon
 scripts/util/               PS1-Materialien, Platzhalter-Geometrie/-Texturen, Synth-Sound, ShadowBudget,
                             Senses (Lärm & Sichtbarkeit: alle Werte)
-shaders/                    PS1-Oberfläche, Post-Effekt, Versteck-Overlay
+shaders/                    PS1-Oberfläche, Tapete mit Glanz, Post-Effekt, Versteck-Overlay
 ```
 
 Tuning-Werte des Monsters stehen oben in `scripts/monster/monster_director.gd`.

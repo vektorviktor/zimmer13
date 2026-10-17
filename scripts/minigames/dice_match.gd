@@ -89,6 +89,8 @@ func why_not(p_guest: Guest) -> String:
 		return p_guest.line("panic")
 	if not Game.director.is_quiet(table.global_position, 20.0):
 		return "Jetzt? Hörst du das nicht?"
+	if Game.director.long_signal_near(table.global_position):
+		return "Jetzt? Hast du das Licht gesehen?"
 	return ""
 
 
@@ -136,8 +138,8 @@ func _process(delta: float) -> void:
 	if not _over and (guest.dead or guest.state != Guest.State.MINIGAME):
 		_abort("%s springt auf und rennt davon! Die Einsätze liegen noch auf dem Tisch …" % guest.display_name)
 		return
-	# Vorwarnung: je mutiger der Gast, desto später bemerkt er sie
-	if not _over and not Game.director.is_quiet(table.global_position, 20.0):
+	# Vorwarnung: je mutiger der Gast, desto später bemerkt er sie – langes Flackern bricht ab (4.17)
+	if not _over and (not Game.director.is_quiet(table.global_position, 20.0) or Game.director.long_signal_near(table.global_position)):
 		if _abort_timer < 0.0:
 			_abort_timer = 0.5 + float(guest.profile["brave"]) * 4.5
 		_abort_timer -= delta

@@ -1,7 +1,34 @@
 class_name Mat
-## Materialien im PS1-Stil (Vertex-Snapping, Nearest-Filter, kein Glanz).
+## Materialien im PS1-Stil (Vertex-Snapping, Nearest-Filter, kein Glanz – außer auf der Tapete).
+
+# --- Tuning
+## Tapete: Farbbild je Variante (%s = teal, red …) und eine gemeinsame Höhenkarte (gleich groß,
+## pixelgenau übereinander), im Spiel auf diese Kantenlänge verkleinert (PS1-Look) und über so
+## viele Meter Wand gespannt
+const WALLPAPER_PATH := "res://assets/textures/wallpaper_%s.png"
+const WALLPAPER_BUMP_PATH := "res://assets/textures/wallpaper_bump.png"
+const WALLPAPER_SRC_SIZE := 512
+const WALLPAPER_SIZE := 256
+const WALLPAPER_METERS := 3.5
+## Bänder im Quellbild als Pixelzeilen [von, bis): Leiste, eine Wiederholung der Rauten, Vertäfelung
+const WALLPAPER_FRIEZE := Vector2(0, 12)
+const WALLPAPER_FIELD := Vector2(20, 148)
+const WALLPAPER_BASE := Vector2(404, 512)
+## Glanz je Graustufe der Höhenkarte (0 = stumpf, 1 = Lack); fremde Stufen nehmen die nächste
+const WALLPAPER_GLOSS := {
+	0: 0.0,      # Fugen zwischen den Rauten
+	103: 0.1,    # dunkle Rauten – Velours, stumpf
+	109: 0.65,   # helle Rauten – Satin
+	114: 0.4,    # vertiefte Kassettenrahmen
+	137: 0.6,    # Stufe unter dem Handlauf
+	149: 0.7,    # Vertäfelung, Grund
+	196: 0.9,    # Handlauf, Kassettenfüllung, Deckenleiste – Lack
+}
 
 static var _shader: Shader
+static var _wall_shader: Shader
+static var _wall_albedo := {}
+static var _wall_surface: ImageTexture
 static var _cache := {}
 static var _cobweb: StandardMaterial3D
 static var _glass: StandardMaterial3D
@@ -50,6 +77,77 @@ static func layer(color: Color, tex_id: String = "", tex_scale: float = 1.0) -> 
 	m.set_shader_parameter("layer_pull", 0.01)
 	_cache[key] = m
 	return m
+
+
+## Hoteltapete mit Vertäfelung und Glanz (Spielkonzept 7.2). wall_top = Wandhöhe (Leiste darunter),
+## storey = Stockwerkshöhe, ab deren Vielfachen die Vertäfelung neu beginnt; variant = Farbbild.
+static func wallpaper(wall_top: float, storey: float, variant: String = "teal") -> ShaderMaterial:
+	var key := "wallpaper|%s|%.2f|%.2f" % [variant, wall_top, storey]
+	if _cache.has(key):
+		return _cache[key]
+	if _wall_shader == null:
+		_wall_shader = load("res://shaders/psx_wall.gdshader")
+		_build_wall_surface()
+	if not _wall_albedo.has(variant):
+		_wall_albedo[variant] = _load_wall_albedo(variant)
+	var m := ShaderMaterial.new()
+	m.shader = _wall_shader
+	m.set_shader_parameter("albedo_tex", _wall_albedo[variant])
+	m.set_shader_parameter("surface_tex", _wall_surface)
+	m.set_shader_parameter("texels_per_m", WALLPAPER_SIZE / WALLPAPER_METERS)
+	var s := WALLPAPER_SIZE / float(WALLPAPER_SRC_SIZE)
+	m.set_shader_parameter("frieze_rows", WALLPAPER_FRIEZE * s)
+	m.set_shader_parameter("field_rows", WALLPAPER_FIELD * s)
+	m.set_shader_parameter("base_rows", WALLPAPER_BASE * s)
+	m.set_shader_parameter("wall_top", wall_top)
+	m.set_shader_parameter("storey", storey)
+	_cache[key] = m
+	return m
+
+
+## Wand zwischen zwei Räumen: Seite a wie wallpaper(...), Flächen mit Normale b_normal wie Seite b.
+static func wallpaper_split(a: ShaderMaterial, b: ShaderMaterial, b_normal: Vector3) -> ShaderMaterial:
+	var key := "wallsplit|%d|%d|%s" % [a.get_instance_id(), b.get_instance_id(), b_normal]
+	if not _cache.has(key):
+		var m := a.duplicate() as ShaderMaterial
+		m.set_shader_parameter("side_b_normal", b_normal)
+		m.set_shader_parameter("albedo_tex_b", b.get_shader_parameter("albedo_tex"))
+		m.set_shader_parameter("wall_top_b", b.get_shader_parameter("wall_top"))
+		m.set_shader_parameter("storey_b", b.get_shader_parameter("storey"))
+		_cache[key] = m
+	return _cache[key]
+
+
+## Farbbild der Variante, verkleinert.
+static func _load_wall_albedo(variant: String) -> ImageTexture:
+	var img := (load(WALLPAPER_PATH % variant) as Texture2D).get_image()
+	img.decompress()
+	img.convert(Image.FORMAT_RGB8)
+	img.resize(WALLPAPER_SIZE, WALLPAPER_SIZE, Image.INTERPOLATE_BILINEAR)
+	return ImageTexture.create_from_image(img)
+
+
+## Oberfläche aus der Höhenkarte: R = Höhe, G = Glanz der Stufe.
+static func _build_wall_surface() -> void:
+	var bump := (load(WALLPAPER_BUMP_PATH) as Texture2D).get_image()
+	bump.decompress()
+	bump.convert(Image.FORMAT_L8)
+	bump.resize(WALLPAPER_SIZE, WALLPAPER_SIZE, Image.INTERPOLATE_NEAREST)
+	var surf := Image.create(WALLPAPER_SIZE, WALLPAPER_SIZE, false, Image.FORMAT_RG8)
+	for y in WALLPAPER_SIZE:
+		for x in WALLPAPER_SIZE:
+			var level := bump.get_pixel(x, y).r8
+			surf.set_pixel(x, y, Color(level / 255.0, _gloss_for(level), 0.0))
+	_wall_surface = ImageTexture.create_from_image(surf)
+
+
+## Glanz der nächstgelegenen Stufe aus WALLPAPER_GLOSS.
+static func _gloss_for(level: int) -> float:
+	var best := 0
+	for l: int in WALLPAPER_GLOSS:
+		if absi(l - level) < absi(best - level):
+			best = l
+	return WALLPAPER_GLOSS[best]
 
 
 static func cobweb() -> StandardMaterial3D:

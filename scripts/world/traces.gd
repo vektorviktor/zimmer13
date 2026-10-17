@@ -168,13 +168,23 @@ func add_blood(pos: Vector3, yaw: float) -> TraceMark:
 
 
 ## Handabdruck auf der Flurseite eines Milchglasfensters.
-func add_handprint(win: HotelWindow) -> TraceMark:
+func add_door_handprint(door: Door, from_pos: Vector3) -> TraceMark:
+	var local := door.global_transform.affine_inverse() * from_pos
 	var mark := TraceMark.new().setup("handprint")
-	win.add_child(mark)
-	mark.position = Vector3(randf_range(-0.3, 0.3), randf_range(-0.2, 0.25), -0.035)
-	mark.rotation.y = PI
-	_report("handprint", win.global_position)
+	door.attach_mark(mark, 1.0 if local.z >= 0.0 else -1.0, Vector2(randf_range(0.55, 0.8), randf_range(1.35, 1.65)))
+	_report("handprint", door.center())
 	return mark
+
+
+## Blutige Handabdrücke des Lakengeists außen auf einer Fensterscheibe (Spielkonzept 4.18).
+func add_window_handprints(window: HotelWindow) -> void:
+	for side in [-1.0, 1.0]:
+		var mark := TraceMark.new().setup("bloody_hand")
+		mark.solid = false
+		window.add_child(mark)
+		mark.position = Vector3(side * randf_range(0.2, 0.3), randf_range(-0.12, 0.08), -0.015)
+		mark.rotation = Vector3(0, PI, side * randf_range(0.1, 0.3))
+	_report("handprint", window.global_position)
 
 
 func _report(kind: String, pos: Vector3) -> void:
@@ -199,6 +209,8 @@ func save_state() -> Array:
 		elif mark.has_meta("door_side") and door is Door:
 			entry["door"] = doors.find(door)
 			entry["side"] = float(mark.get_meta("door_side"))
+			var at: Vector2 = mark.get_meta("door_at", Vector2(0.45, 1.35))
+			entry["at"] = [at.x, at.y]
 		else:
 			entry["global"] = _t(mark.global_transform)
 		list.append(entry)
@@ -229,7 +241,8 @@ func load_state(list: Array) -> void:
 			windows[int(entry["window"])].add_child(mark)
 			mark.transform = _from_t(entry["local"])
 		elif entry.has("door") and int(entry["door"]) >= 0 and int(entry["door"]) < doors.size():
-			(doors[int(entry["door"])] as Door).attach_mark(mark, float(entry["side"]))
+			var at: Array = entry.get("at", [0.45, 1.35])
+			(doors[int(entry["door"])] as Door).attach_mark(mark, float(entry["side"]), Vector2(float(at[0]), float(at[1])))
 		elif entry.has("global"):
 			add_child(mark)
 			mark.global_transform = _from_t(entry["global"])

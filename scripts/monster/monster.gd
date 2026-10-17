@@ -17,7 +17,7 @@ const KILL_DISTANCE := 1.1
 const SEEN_BEFORE_SLINK := 0.35
 const STEP_LENGTH := 0.85          ## Abstand der Fußspuren
 const CANDLE_RANGE := 2.0          ## Kerzen in dieser Nähe gehen aus
-const HANDPRINT_RANGE := 1.4       ## Abstand zum Milchglas für einen Handabdruck
+const HANDPRINT_RANGE := 1.4       ## Abstand zur Zimmertür für einen Handabdruck
 const HANDPRINT_CHANCE := 0.35
 const EYE_HEIGHT := 2.1            ## Augenhöhe im Modell (aufrecht)
 ## Modell aus tools/build_monster.py: aufrecht als Grundpose, die Hocke als Animation „crouch“
@@ -59,6 +59,11 @@ var _search: Array[Dictionary] = []
 var _hide_target: HideSpot
 var _chase_target = null          ## Player oder Guest
 var _last_seen := Vector3.ZERO
+## Nach einem harmlosen Schreck verschont – bis zur nächsten Aktivphase (sonst erschreckt es ihn endlos)
+var _spared: Array = []
+## Wer im Schutz stand und es abgewiesen hat: Akteur → Spielzeit, so lange lässt es ihn in Ruhe
+var _rebuffed := {}
+const REBUFF_TIME := 15.0
 var _lose_timer := 0.0
 var _calm_retreat := false      ## nach einem harmlosen Schreck: niemanden mehr jagen
 var _fleeing := false           ## vom UV-Licht vertrieben: rennt in den Keller (4.16)
@@ -108,6 +113,7 @@ func is_active() -> bool:
 func start_roaming(pos: Vector3) -> void:
 	_appear(pos)
 	_handprinted.clear()
+	_spared.clear()
 	_next_roam()
 
 
@@ -216,11 +222,21 @@ func after_feeding() -> void:
 	_start_retreat()
 
 
-## Harmloser Angriff (die ersten Male): den Gast erschreckt, dann zurück in den Keller.
-func after_scare() -> void:
+## Raubzug (Spielkonzept 4.17): Nach einem Opfer gleich weiter zum nächsten.
+func after_kill_hunting() -> void:
 	_chase_target = null
-	_start_retreat()
-	_calm_retreat = true
+	_eye_mat.set_shader_parameter("emission_energy", 1.2)
+	_next_roam()
+
+
+## Harmloser Angriff (die ersten Male): den Gast erschreckt, dann aus dem Blick schleichen und
+## weiterstreifen – den Erschreckten lässt es für den Rest dieser Aktivphase in Ruhe.
+func after_scare(victim: Node) -> void:
+	_spared.append(victim)
+	_chase_target = null
+	_eye_mat.set_shader_parameter("emission_energy", 1.2)
+	_target = Game.director.hidden_point_near(global_position)
+	_set_state(State.SLINK)
 
 
 ## Harmloser Angriff auf den Spieler: Es steht direkt vor ihm und starrt ihn an.
@@ -290,6 +306,8 @@ func _visible_actor():
 	var best = null
 	var best_dist := INF
 	for actor in _actors():
+		if actor in _spared or Game.director.elapsed - float(_rebuffed.get(actor, -999.0)) < REBUFF_TIME:
+			continue
 		if can_see_actor(actor):
 			var d := global_position.distance_to(actor.global_position)
 			if d < best_dist:
@@ -366,10 +384,11 @@ func _physics_process(delta: float) -> void:
 			if seen != null and global_position.distance_to(seen.global_position) < 4.0:
 				_start_chase(seen)
 			elif _state_timer > 2.5:
+				# Licht drängt es ab, schickt es aber nicht nach Hause (Spielkonzept 4.13):
+				# nach mehrmaligem Lauern sucht es sich anderswo ein Ziel
 				if _lurk_count >= 4:
-					_start_retreat()
-				else:
-					_next_roam()
+					_lurk_count = 0
+				_next_roam()
 		State.STARE:
 			_stop(delta)
 			if Game.player:
@@ -390,8 +409,15 @@ func _physics_process(delta: float) -> void:
 		State.REPELLED:
 			_stop(delta)
 			if _state_timer > (0.5 if _fleeing else 1.6):
-				_start_retreat()
-				_calm_retreat = _fleeing
+				if _fleeing:   # UV-Licht: wirklich zurück in den Keller
+					_start_retreat()
+					_calm_retreat = true
+				else:          # Deko und Licht: abgedrängt – es sucht sich ein anderes Opfer
+					if _chase_target != null:
+						_rebuffed[_chase_target] = Game.director.elapsed
+					_chase_target = null
+					_eye_mat.set_shader_parameter("emission_energy", 1.2)
+					_next_roam()
 		State.RETREAT:
 			# Kein sicherer Rückzug (4.12): Wen es sieht, den jagt es wieder – außer es ist satt
 			# oder der Gesehene steht im Schutz von Deko und Licht. Nach einem harmlosen Schreck
@@ -427,6 +453,16 @@ func _patrol_step(delta: float) -> void:
 			Game.play_sound("growl", 0.4)
 	else:
 		_next_roam()
+
+
+## Wohin es gerade will (für die Abschreckung).
+func _goal() -> Vector3:
+	match state:
+		State.PATROL:
+			return _roam.get("pos", global_position)
+		State.SEARCH:
+			return _search[0]["pos"] if not _search.is_empty() else global_position
+	return _target
 
 
 ## Neues Ziel irgendwo im Hotel.
@@ -561,6 +597,10 @@ func _check_deterrence(delta: float) -> void:
 	var ahead := global_position + (-global_transform.basis.z) * 0.9
 	if not Game.director.is_blocked(ahead, state == State.CHASE):
 		return
+	# Vorbeigehen darf es: Deko vor den Türen säumt die Flure, sie hält es nur von einem Ziel
+	# fern, das selbst im Schutz liegt – sonst käme es nie durch den Flur (Spielkonzept 4.12, 4.13).
+	if state != State.CHASE and not Game.director.is_blocked(_goal(), false):
+		return
 	# Deko schützt nur, wer drinsteht (4.12): Steht der Gejagte außerhalb des Schutzes,
 	# geht das Monster durch die Deko hindurch.
 	if state == State.CHASE and _chase_target != null and is_instance_valid(_chase_target) 			and not Game.director.is_protected(_chase_target.global_position):
@@ -593,7 +633,7 @@ func _open_doors() -> void:
 
 # --- Spuren --------------------------------------------------------------------
 
-## Fußspuren, ausgehende Kerzen, Handabdrücke am Milchglas (Spielkonzept 4.13).
+## Fußspuren, ausgehende Kerzen, Handabdrücke an Zimmertüren (Spielkonzept 4.13).
 func _update_traces(delta: float) -> void:
 	var moved := Vector2(velocity.x, velocity.z).length() * delta
 	_step_dist += moved
@@ -610,15 +650,15 @@ func _update_traces(delta: float) -> void:
 		var item := node as Item
 		if item.lit and not item.is_held and item.global_position.distance_to(global_position) < CANDLE_RANGE:
 			item.blow_out()
-	for node in get_tree().get_nodes_in_group("windows"):
-		var win := node as HotelWindow
-		if not win.frosted or win in _handprinted:
+	for node in get_tree().get_nodes_in_group("doors"):
+		var door := node as Door
+		if door.glass or door in _handprinted:
 			continue
-		var outside := win.global_transform * Vector3(0, 0, -0.5)
-		if Vector2(outside.x - global_position.x, outside.z - global_position.z).length() < HANDPRINT_RANGE:
-			_handprinted.append(win)
+		var c := door.center()
+		if absf(c.y - 1.05 - global_position.y) < 1.5 				and Vector2(c.x - global_position.x, c.z - global_position.z).length() < HANDPRINT_RANGE:
+			_handprinted.append(door)
 			if randf() < HANDPRINT_CHANCE and Game.traces:
-				Game.traces.add_handprint(win)
+				Game.traces.add_door_handprint(door, global_position)
 
 
 # --- Bewegung -------------------------------------------------------------------

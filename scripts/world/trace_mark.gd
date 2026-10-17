@@ -6,7 +6,8 @@ extends StaticBody3D
 
 const WIPE_RANGE := 4.5   ## so nah an der Tür von Zimmer 13 darf man putzen
 const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck",
-	"wax": "Wachsflecken", "drops": "Blutstropfen"}
+	"wax": "Wachsflecken", "drops": "Blutstropfen",
+	"bloody_hand": "Blutige Handabdrücke"}
 
 var kind := "scratch"
 ## Auf Türen nicht anklickbar (sonst ließe sich die Tür nicht mehr öffnen) – bleibt dort.
@@ -55,6 +56,17 @@ func _ready() -> void:
 					Vector3(0.05 + rng.randf_range(-0.05, 0.05), -0.65 - i * 0.3, 0.0025))
 				seg.rotation.z = rng.randf_range(-0.12, 0.12)
 			Geo.add_box_shape(self, Vector3(1.6, 1.6, 0.05), Vector3.ZERO)
+		"bloody_hand":
+			# Lange Finger, verschmiert, mit Läufern nach unten (Lakengeist, 4.18)
+			var blood := Mat.psx(Color(0.35, 0.03, 0.03))
+			Geo.mesh(self, Geo.box(Vector3(0.1, 0.11, 0.003)), blood, Vector3(0, -0.04, 0))
+			for i in 5:
+				var finger := Geo.mesh(self, Geo.box(Vector3(0.018, rng.randf_range(0.11, 0.17), 0.003)), blood,
+					Vector3(-0.045 + i * 0.022, 0.07 + rng.randf_range(-0.01, 0.02), 0))
+				finger.rotation.z = (i - 2) * 0.12 if i > 0 else 0.7
+			for i in 3:
+				Geo.mesh(self, Geo.box(Vector3(0.008, rng.randf_range(0.08, 0.25), 0.003)), blood,
+					Vector3(rng.randf_range(-0.04, 0.04), -0.15 - rng.randf_range(0.0, 0.08), 0))
 		"handprint":
 			var smudge := Mat.psx(Color(0.12, 0.07, 0.06))
 			Geo.mesh(self, Geo.box(Vector3(0.09, 0.1, 0.004)), smudge, Vector3(0, -0.02, 0.002))

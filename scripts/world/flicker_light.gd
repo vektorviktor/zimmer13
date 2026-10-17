@@ -1,7 +1,8 @@
 class_name FlickerLight
 extends OmniLight3D
-## Lichtquelle mit Flackern. „flicker“ (0..1) wird vom MonsterDirector gesetzt
-## (Ankündigung des Monsters). Zählt für die Helligkeitsberechnung (Gruppe „light_source“).
+## Lichtquelle mit Flackern. „flicker“ (0..1, Nähe des Monsters) und „wave“ (0..1, Flackerwelle
+## beim Aufbruch, Spielkonzept 4.17) setzt der MonsterDirector. Nur „flicker“ lässt Birnen
+## durchbrennen. Zählt für die Helligkeitsberechnung (Gruppe „light_source“).
 
 var base_energy := 1.0
 var broken := false        ## Defekte Lampe: meist aus, selten ein Funke.
@@ -9,6 +10,7 @@ var soft := false          ## Kerzenlicht: leichtes, ständiges Flackern.
 var burn_out := false      ## Abgebrannt (Kerze, Kürbis).
 var switched_off := false  ## Lichtschalter aus, Birne fehlt oder ist durchgebrannt.
 var flicker := 0.0
+var wave := 0.0
 var lamp_material: ShaderMaterial
 
 var _level := 1.0
@@ -36,7 +38,7 @@ func _pick_level() -> float:
 	if broken:
 		return randf_range(0.3, 0.8) if randf() < 0.025 else 0.0
 	var level := randf_range(0.82, 1.0) if soft else 1.0
-	var f := flicker * Settings.flicker_intensity
+	var f := maxf(flicker, wave) * Settings.flicker_intensity
 	if f > 0.0:
 		if randf() < f * 0.35:
 			return randf_range(0.0, 0.15)

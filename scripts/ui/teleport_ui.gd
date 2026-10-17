@@ -2,9 +2,10 @@ class_name TeleportUI
 extends CanvasLayer
 ## Debug (F6): Liste wichtiger Orte zum Hinspringen. Pausiert das Spiel, solange das Fenster
 ## offen ist. Auswahl per Maus oder Zifferntasten 1–9, Esc oder F6 schließt.
-## Neue Orte: in `_destinations()` einen Eintrag ergänzen.
+## Neue Orte: in `_destinations()` einen Eintrag ergänzen. Ein vierter Eintrag (Callable) läuft nach dem
+## Sprung – so ruft das Menü auch den Lakengeist (Spielkonzept 4.18).
 
-## [Name, Standpunkt, Blickrichtung]
+## [Name, Standpunkt, Blickrichtung, optional: Aktion]
 var _targets: Array = []
 var _options: GridContainer
 
@@ -28,7 +29,19 @@ func _destinations(b: LevelBuilder) -> Array:
 		["Keller", cellar, Vector3.RIGHT],
 		_room(b, "17", "Zimmer 17 (verlassen)"),
 		_room(b, "16", "Zimmer 16 (Wäscherei)"),
+		_ghost(b, 1, "Lakengeist 1. Mal (Zimmer 13)"),
+		_ghost(b, 2, "Lakengeist 2. Mal: Handabdrücke, Hypnose"),
+		_ghost(b, 3, "Lakengeist 3. Mal: kommt herein"),
+		_ghost(b, 4, "Lakengeist 4. Mal: auch durch den Vorhang"),
+		["Lakengeist im Flur (alle schlafen)", Vector3(30.0, 0, 0), Vector3.RIGHT, Game.ghost.debug_summon_hall],
 	]
+
+
+## Zimmer 13: Licht aus, Vorhang auf (beim 4. Mal zu), der Geist kommt sicher zum n. Mal.
+func _ghost(b: LevelBuilder, stage: int, label: String) -> Array:
+	var entry := _room(b, "13", label)
+	entry.append(Game.ghost.debug_summon.bind(stage, "13"))
+	return entry
 
 
 ## Mitten im Zimmer, Blick zur Tür.
@@ -121,6 +134,8 @@ func _go(index: int) -> void:
 	p.head.rotation.x = 0.0
 	close()
 	Game.say("Teleport: %s" % entry[0], 2.0)
+	if entry.size() > 3:
+		(entry[3] as Callable).call()
 
 
 func _option(index: int, text: String) -> void:

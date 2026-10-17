@@ -12,10 +12,15 @@ extends Node
 ##   · Die ersten Angriffe sind harmlos: es holt niemanden, es zeigt sich nur.
 ##   · Rauschen nach Entfernung (ab ~20 m, lauter bis ~4 m), Lampen flackern nur in seiner Nähe.
 ##   · Halluzinationen nach einem Todesfall, kleine Veränderungen im Hotel, wenn niemand hinsieht.
+##   · Beim Aufbruch wählt es eine Absicht (Umsehen, einen holen, Raubzug), und eine Flackerwelle
+##     vom Keller aus verrät sie mit ihrer Dauer – manchmal täuscht es (4.17).
 
 ## CALM = ruht im Keller, ACTIVE = streift umher. WARNING/COOLDOWN gibt es nicht mehr
 ## (nur noch für alte Spielstände/Abfragen vorhanden).
 enum Phase { CALM, WARNING, ACTIVE, COOLDOWN }
+## Was es in dieser Aktivphase vorhat (Spielkonzept 4.17) – gilt für Gäste und Spieler
+enum Intent { ROAM, ONE, RAMPAGE }
+const INTENT_NAMES := ["Umsehen", "Einen holen", "Raubzug"]
 
 # --- Tuning -------------------------------------------------------------------
 const BOLDNESS_START := 25.0
@@ -54,6 +59,29 @@ const UV_REPEL_MAX := 3.5
 const UV_BOLDNESS := 6.0               ## es merkt sich, wer es geblendet hat …
 const UV_CURIOSITY := 40.0             ## … und sucht rund um Zimmer 13
 const UV_REST_FACTOR := 0.4            ## vertrieben ruht es nur kurz
+## Aufbruch (4.17): Chance, dass es angreifen will, steigt mit dem Tag – Stützpunkte (Tag, Chance),
+## dazwischen gleitend, davor/danach der erste/letzte Wert. Greift es an, will es n Opfer mit
+## Wahrscheinlichkeit ∝ 1/n² (≈ 61 % eins, 15 % zwei, 7 % drei …), höchstens alle Lebenden + Spieler
+const ATTACK_CHANCE := [Vector2(4, 0.2), Vector2(7, 0.5), Vector2(10, 0.75), Vector2(20, 0.9), Vector2(30, 0.95)]
+## Flackerwelle: Sekunden = SIGNAL_BASE + SIGNAL_PER_VICTIM × gezeigte Opfer, schwankt um
+## ± SIGNAL_JITTER; satt nur ein Zucken. Stärke je 0 / 1 / ab 2 Opfern. Läuft mit WAVE_SPEED m/s
+## vom Keller aus, ins Obergeschoss über das Treppenhaus.
+const SIGNAL_BASE := 1.0
+const SIGNAL_PER_VICTIM := 2.0
+const SIGNAL_TIME_SATED := 0.4
+const SIGNAL_JITTER := 0.15
+const SIGNAL_STRENGTH := [0.6, 0.75, 1.0]
+const WAVE_SPEED := 15.0
+## Täuschung: so oft zuckt es nur kurz, obwohl es angreift – × Dreistigkeit/100
+const DECEIVE_CHANCE := 0.2
+## Ab so viel Sättigung sieht es sich beim Aufbruch nur um
+const SATED_ROAM := 5.0
+## Umsehen wird zum Angriff: bei einer Sichtung / wenn es Gerede hört (mit dieser Chance)
+const ESCALATE_ON_SIGHT := 0.5
+const ESCALATE_ON_TALK := 0.15
+## Halluzination: so oft kommt mit dem Rauschen eine lange Flackerwelle ohne Monster (zeigt so viele Opfer)
+const FAKE_SIGNAL_CHANCE := 0.35
+const FAKE_SIGNAL_VICTIMS := 3
 
 var phase := Phase.CALM
 var boldness := BOLDNESS_START
@@ -75,6 +103,11 @@ var strange_diary := false  ## im Tagebuch steht beim nächsten Mal eine fremde 
 ## Bedrohung beim Spieler (0..1) – Rauschen, Brummen, engerer Blick
 var player_threat := 0.0
 var uv_count := 0           ## so oft schon mit UV vertrieben (Gewöhnung, 4.8)
+## Absicht der laufenden Aktivphase und wie viele es noch holen will (4.17)
+var intent := Intent.ONE
+var victims_left := 1
+var shown_victims := 1          ## so viele Opfer hat die letzte Flackerwelle angezeigt
+var debug_victims := -1         ## --intent=…: erzwungene Opferzahl (0 = umsehen)
 
 var _monster: Monster
 var _phase_left := 0.0
@@ -85,6 +118,15 @@ var _jumpscare := 0.0
 var _hallucination := 0.0
 var _haunt_timer := 120.0
 var _uv_driven := false     ## die laufende Aktivphase endet, weil UV es vertrieben hat
+var _uv_angry := false      ## vom UV vertrieben → beim nächsten Aufbruch eher ein Raubzug
+## Flackerwelle: Ausgangspunkt, Start (elapsed), Dauer je Lampe, Stärke
+var _wave_origin := Vector3.ZERO
+var _wave_start := -1000.0
+var _wave_time := 0.0
+var _wave_strength := 0.0
+var _wave_level := 0        ## 0 = Zucken, 1 = Flackern, 2 = langes Flackern (ab zwei Opfern)
+var _wave_told := true      ## Untertitel beim Spieler schon gezeigt
+var _stairwell := Vector3.ZERO
 
 
 func setup(builder: LevelBuilder, monster: Monster) -> void:
@@ -93,6 +135,7 @@ func setup(builder: LevelBuilder, monster: Monster) -> void:
 	patrol = builder.patrol
 	rooms = builder.rooms
 	player_door_front = builder.player_door_front
+	_stairwell = Vector3(LevelBuilder.STAIRWELL_X, 0.0, LevelBuilder.STAIRWELL_LANDING)
 	_monster = monster
 	first_attack_day = FIRST_ATTACK_DAYS[randi() % FIRST_ATTACK_DAYS.size()]
 
@@ -153,7 +196,7 @@ func deco_strength_at(p: Vector3) -> float:
 	var total := 0.0
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
-		if item.is_held or item.deco_strength <= 0.0:
+		if item.is_held or item.deco_strength <= 0.0 or item.is_toppled():
 			continue
 		var d := Vector2(item.global_position.x - p.x, item.global_position.z - p.z).length()
 		if d < DECO_RADIUS:
@@ -281,15 +324,151 @@ func _first_attack_at_party() -> void:
 	if Game.player and Game.player.global_position.x < 0.0:
 		Game.say("Das Licht geht aus. Die Musik verstummt.", 3.0)
 	# Es steht in der dunklen Ecke der Lobby, beim verriegelten Ausgang
-	_start_activity(Vector3(-12.8, 0.05, -5.8))
+	_start_activity(Vector3(-12.8, 0.05, -5.8), false)
 	_monster.investigate(Game.social.party_center())
 
 
-func _start_activity(spawn: Vector3) -> void:
+## Aufbruch: Absicht wählen, Flackerwelle vom Keller aus (der erste Angriff bei der Feier hat
+## seinen eigenen Auftakt), dann losstreifen.
+func _start_activity(spawn: Vector3, with_signal: bool = true) -> void:
 	attacks += 1
 	phase = Phase.ACTIVE
-	_phase_left = _day_lerp(ACTIVE_TIME) * randf_range(0.8, 1.2)
+	var sated := satiation > SATED_ROAM
+	_choose_intent(sated)
+	_phase_left = _day_lerp(ACTIVE_TIME) * randf_range(0.8, 1.2) * minf(2.0, 1.0 + 0.2 * maxi(0, victims_left - 1))
+	if with_signal:
+		shown_victims = victims_left
+		if not is_harmless() and victims_left > 0 and randf() < DECEIVE_CHANCE * effective_boldness() / 100.0:
+			shown_victims = 0   # es täuscht: nur ein Zucken
+		_start_wave(spawn_points[0], shown_victims, false, SIGNAL_TIME_SATED if sated else -1.0)
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Aufbruch] %s (%d Opfer) · Flackern zeigt %s" % [INTENT_NAMES[intent], victims_left, str(shown_victims) if with_signal else "-"])
 	_monster.start_roaming(spawn)
+
+
+## Absicht (4.17): satt → nur umsehen; sonst greift es mit attack_chance() an, dann n Opfer ∝ 1/n².
+## Vom UV-Licht vertrieben kommt es wütend zurück: mindestens zwei.
+func _choose_intent(sated: bool) -> void:
+	if debug_victims >= 0:
+		victims_left = debug_victims
+	elif sated or randf() >= attack_chance():
+		victims_left = 0
+	else:
+		victims_left = _draw_victims()
+		if _uv_angry:
+			victims_left = maxi(victims_left, mini(2, _max_victims()))
+	_uv_angry = false
+	intent = _intent_for(victims_left)
+
+
+## Chance, dass es bei einem Aufbruch jetzt angreift – steigt gleitend von Tag zu Tag (4.17).
+func attack_chance() -> float:
+	var day := Calendar.FIRST_DAY + elapsed / Calendar.DAY_SECONDS
+	var prev: Vector2 = ATTACK_CHANCE[0]
+	if day <= prev.x:
+		return prev.y
+	for point: Vector2 in ATTACK_CHANCE:
+		if day <= point.x:
+			return lerpf(prev.y, point.y, (day - prev.x) / (point.x - prev.x))
+		prev = point
+	return prev.y
+
+
+## Opferzahl n mit Wahrscheinlichkeit ∝ 1/n².
+func _draw_victims() -> int:
+	var top := _max_victims()
+	var total := 0.0
+	for n in range(1, top + 1):
+		total += 1.0 / (n * n)
+	var r := randf() * total
+	for n in range(1, top + 1):
+		r -= 1.0 / (n * n)
+		if r <= 0.0:
+			return n
+	return top
+
+
+## Mehr als alle Lebenden und den Spieler kann es nicht holen.
+func _max_victims() -> int:
+	var alive := 0
+	if Game.social:
+		for guest in Game.social.guests:
+			if not guest.dead:
+				alive += 1
+	return alive + 1
+
+
+func _intent_for(victims: int) -> Intent:
+	return Intent.ROAM if victims <= 0 else (Intent.ONE if victims == 1 else Intent.RAMPAGE)
+
+
+## Umsehen wird zum Angriff (Sichtung, Gerede): Die Lichter flackern noch einmal – vom Monster aus.
+func _escalate(chance: float) -> void:
+	if not _monster.is_active() or victims_left > 0 or is_harmless() or satiation > SATED_ROAM or randf() >= chance:
+		return
+	victims_left = 1
+	intent = Intent.ONE
+	shown_victims = 1
+	_start_wave(_monster.global_position, 1)
+
+
+# --- Flackerwelle (4.17) ---------------------------------------------------------------------
+
+## Welle, die `victims` Opfer anzeigt: Sekunden = 1 + 2 × n (duration > 0 überschreibt das).
+## fake = Halluzination: Lampen flackern, aber kein Gast reagiert.
+func _start_wave(origin: Vector3, victims: int, fake: bool = false, duration: float = -1.0) -> void:
+	if duration <= 0.0:
+		duration = SIGNAL_BASE + SIGNAL_PER_VICTIM * victims
+	_wave_origin = origin
+	_wave_start = elapsed
+	_wave_time = duration * randf_range(1.0 - SIGNAL_JITTER, 1.0 + SIGNAL_JITTER)
+	_wave_level = mini(victims, 2)
+	_wave_strength = SIGNAL_STRENGTH[_wave_level]
+	_wave_told = false
+	if fake or Game.social == null:
+		return
+	for guest in Game.social.guests:
+		guest.on_flicker_signal(_wave_level, wave_delay(guest.global_position))
+
+
+## Sekunden, bis die Welle diesen Ort erreicht: vom Ausgangspunkt übers Stockwerk, ins
+## Obergeschoss über das Treppenhaus.
+func wave_delay(p: Vector3) -> float:
+	var o := _wave_origin
+	var upper := LevelBuilder.UP_Y - 0.5
+	var d: float
+	if (p.y > upper) != (o.y > upper):
+		d = _flat(o, _stairwell) + absf(p.y - o.y) + _flat(_stairwell, p)
+	else:
+		d = _flat(o, p) + absf(p.y - o.y)
+	return d / WAVE_SPEED
+
+
+func _flat(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## Flackerstärke der Welle an diesem Ort (0 = vorbei oder noch nicht da).
+func wave_at(p: Vector3) -> float:
+	var t := elapsed - _wave_start - wave_delay(p)
+	if t < 0.0 or t > _wave_time:
+		return 0.0
+	return _wave_strength
+
+
+## Läuft gerade irgendwo eine Flackerwelle? (Tagebuch gesperrt, 8.5)
+func is_signalling() -> bool:
+	return elapsed - _wave_start < _wave_time + 8.0
+
+
+## Langes Flackern an diesem Ort (gerade oder vor Kurzem) – bricht Partien ab (6.10).
+func long_signal_near(p: Vector3) -> bool:
+	return _wave_level >= 2 and elapsed - _wave_start < _wave_time + wave_delay(p) + 2.0
+
+
+## Will es in dieser Aktivphase (noch) jemanden holen?
+func wants_victim() -> bool:
+	return not is_harmless() and victims_left > 0
 
 
 func _update_schedule(delta: float) -> void:
@@ -333,7 +512,7 @@ func start_warning() -> void:
 ## Monster nachsehen, bis zur doppelten Hörweite steigt nur die Neugier dort. Ruht es,
 ## zählt nur Lautes. Gibt zurück, was es gehört hat (für --trace und F3), sonst "".
 func on_noise(pos: Vector3, loudness: float, source: Node = null) -> String:
-	if source == _monster:
+	if source == _monster or source is HotelCat:   # Katzen überhört es – es mag sie (6.11)
 		return ""
 	var curiosity := loudness * NOISE_CURIOSITY
 	if not _monster.is_active():
@@ -371,12 +550,14 @@ func on_monster_noticed() -> void:
 	add_curiosity(player_door_front, 40.0)
 	Game.play_sound("sting", 1.0)
 	_monster.stare()
+	_escalate(ESCALATE_ON_SIGHT)
 
 
 ## Jemand redet über das Monster – es hört mit und wird dreister (Spielkonzept 4.7).
 func on_monster_talk(pos: Vector3) -> void:
 	boldness = minf(100.0, boldness + 3.0)
 	add_curiosity(pos, 10.0)
+	_escalate(ESCALATE_ON_TALK)
 
 
 ## Licht ausgeschaltet, Birne herausgedreht oder durchgebrannt: Dunkelheit lockt es an.
@@ -398,6 +579,7 @@ func on_monster_uv() -> void:
 	boldness = minf(100.0, boldness + UV_BOLDNESS)
 	add_curiosity(player_door_front, UV_CURIOSITY)
 	_uv_driven = true
+	_uv_angry = true
 	_monster.uv_repel()
 
 
@@ -413,7 +595,7 @@ func on_guest_taken() -> void:
 func kill_guest(guest, spot: HideSpot) -> void:
 	if guest == null or not is_instance_valid(guest) or guest.dead:
 		return
-	if is_harmless():
+	if not wants_victim():   # harmlos, oder es sieht sich nur um (4.17)
 		_scare_guest(guest, spot)
 		return
 	if spot != null:
@@ -427,9 +609,13 @@ func kill_guest(guest, spot: HideSpot) -> void:
 	var cloth := Item.create(Item.Kind.CLOTHING, guest.id)
 	_monster.get_parent().add_child(cloth)
 	cloth.global_position = Vector3(where.x + 0.4, 0.05, where.z + 0.2)
-	on_guest_taken()
 	grief = GRIEF_TIME
-	_monster.after_feeding()
+	victims_left -= 1
+	if victims_left > 0:   # Raubzug: weiter zum nächsten Opfer
+		_monster.after_kill_hunting()
+	else:
+		on_guest_taken()
+		_monster.after_feeding()
 	if Game.social:
 		Game.social.on_guest_died(guest)
 
@@ -440,13 +626,13 @@ func _scare_guest(guest, spot: HideSpot) -> void:
 		spot.rip_open()
 	Game.noise("scream", guest.global_position, guest)
 	guest.scared_by_monster()
-	_monster.after_scare()
+	_monster.after_scare(guest)
 
 
 func kill_player(spot: HideSpot) -> void:
 	if Game.game_over:
 		return
-	if is_harmless():
+	if not wants_victim():
 		_reveal_to_player(spot)
 		return
 	Game.game_over = true
@@ -464,6 +650,11 @@ func kill_player(spot: HideSpot) -> void:
 	Game.play_sound("scream", 1.0)
 	await get_tree().create_timer(1.5).timeout
 	Game.player_died.emit()
+
+
+## Rotes Aufblitzen mit Rauschen wie beim Jumpscare (auch für den Lakengeist).
+func flash(seconds: float) -> void:
+	_jumpscare = seconds
 
 
 ## Harmloser Angriff auf den Spieler: Es steht direkt vor dir, starrt dich an – und ist
@@ -501,6 +692,8 @@ func _update_hallucination(delta: float) -> void:
 		return
 	if (grief > 0.0 or p.shock > 0.15) and randf() < delta / HALLUCINATION_EVERY:
 		_hallucination = randf_range(6.0, 11.0)
+		if not _monster.is_active() and randf() < FAKE_SIGNAL_CHANCE:   # langes Flackern – und nichts kommt
+			_start_wave(spawn_points[0], FAKE_SIGNAL_VICTIMS, true)
 
 
 ## Das Hotel verändert sich, wenn niemand hinsieht (Spielkonzept 4.13).
@@ -725,6 +918,7 @@ func save_state() -> Dictionary:
 		"first_attack_done": first_attack_done, "first_attack_day": first_attack_day, "attacks": attacks,
 		"grief": grief, "strange_diary": strange_diary, "phase": int(phase), "phase_left": _phase_left,
 		"haunt_timer": _haunt_timer, "uv_count": uv_count, "monster_active": _monster.is_active(),
+		"victims_left": victims_left, "uv_angry": _uv_angry,
 		"monster_pos": [_monster.global_position.x, _monster.global_position.y, _monster.global_position.z],
 	}
 
@@ -738,6 +932,9 @@ func load_state(d: Dictionary) -> void:
 	_phase_left = float(d.get("phase_left", 60.0))
 	_haunt_timer = float(d.get("haunt_timer", 120.0))
 	uv_count = int(d.get("uv_count", 0))
+	victims_left = int(d.get("victims_left", 1))
+	intent = _intent_for(victims_left)
+	_uv_angry = bool(d.get("uv_angry", false))
 	phase = Phase.CALM
 	if bool(d.get("monster_active", false)):
 		var mp: Array = d.get("monster_pos", [32.8, 0.05, 0.2])
@@ -773,6 +970,16 @@ func _update_effects(delta: float) -> void:
 		if player.shock > 0.1:
 			noise_target += player.shock * 0.08
 			heart_target = maxf(heart_target, player.shock * 0.5)
+	# Flackerwelle beim Spieler: Bildflackern, Sirren im Stromnetz, Untertitel (Barrierefreiheit)
+	var wave := wave_at(player.global_position + Vector3.UP) if player else 0.0
+	if wave > 0.0:
+		flicker_target = maxf(flicker_target, wave * 0.9)
+		if not _wave_told:
+			_wave_told = true
+			if "--trace" in OS.get_cmdline_user_args():
+				var lit := get_tree().get_nodes_in_group("lamps").filter(func(l: Node) -> bool: return (l as FlickerLight).wave > 0.0).size()
+				print("[Flackerwelle] beim Spieler nach %.1f s, %.1f s lang · %d Lampen flackern gerade" % [elapsed - _wave_start, _wave_time, lit])
+			Game.caption(["[Die Lichter zucken kurz]", "[Die Lichter flackern]", "[Die Lichter flackern lange]"][_wave_level])
 	if _jumpscare > 0.0:
 		_jumpscare -= delta
 		noise_target = 0.45
@@ -788,17 +995,20 @@ func _update_effects(delta: float) -> void:
 		post_material.set_shader_parameter("noise_amount", _noise * focus)
 		post_material.set_shader_parameter("flicker", _pulse * 0.6 * focus)
 		post_material.set_shader_parameter("red_tint", 0.12 if _jumpscare > 0.0 else 0.0)
-	# Lampen flackern nur in der Nähe des Monsters
+	# Lampen flackern in der Nähe des Monsters – und wenn die Flackerwelle vorbeizieht
 	var active := _monster.is_active()
 	var mpos := _monster.global_position
+	var signalling := is_signalling()
 	for node in get_tree().get_nodes_in_group("lamps"):
 		var lamp := node as FlickerLight
 		lamp.flicker = clampf(1.0 - lamp.global_position.distance_to(mpos) / LAMP_FLICKER_RANGE, 0.0, 1.0) * 0.9 if active else 0.0
+		lamp.wave = wave_at(lamp.global_position) if signalling else 0.0
 	if Game.audio:
 		Game.audio.hum = move_toward(Game.audio.hum, hum_target, delta * 0.3)
 		Game.audio.static_noise = _noise * 0.3
 		Game.audio.heart = move_toward(Game.audio.heart, heart_target, delta * 0.5)
 		Game.audio.heart_bpm = 70.0 + heart_target * 60.0
+		Game.audio.buzz = move_toward(Game.audio.buzz, wave * 0.5, delta * 4.0)
 
 
 func debug_text() -> String:
@@ -806,6 +1016,7 @@ func debug_text() -> String:
 		attacks, " harmlos" if is_harmless() else ""]
 	s += "Dreistigkeit %.1f (effektiv %.1f) · Bedrohung %.2f\n" % [boldness, effective_boldness(), player_threat]
 	s += "UV vertrieben: %d× (nötig %.1f s)\n" % [uv_count, uv_repel_time()]
+	s += "Absicht: %s (noch %d Opfer) · Flackern zeigte %d · Angriffschance %.0f %%\n" % [INTENT_NAMES[intent], victims_left, shown_victims, attack_chance() * 100.0]
 	s += "Monster: %s\n" % Monster.State.keys()[_monster.state]
 	if Game.player:
 		s += "Licht beim Spieler: %.2f\n" % light_at(Game.player.global_position + Vector3.UP)

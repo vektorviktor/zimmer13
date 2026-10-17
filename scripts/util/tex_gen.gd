@@ -10,8 +10,6 @@ static func get_tex(id: String) -> Texture2D:
 		return _cache[id]
 	var img: Image
 	match id:
-		"wallpaper":
-			img = _wallpaper()
 		"carpet":
 			img = _carpet()
 		"wood":
@@ -37,22 +35,6 @@ static func _rng(seed_value: int) -> RandomNumberGenerator:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	return rng
-
-
-static func _wallpaper() -> Image:
-	var img := Image.create(32, 32, false, Image.FORMAT_RGB8)
-	var rng := _rng(1)
-	for y in 32:
-		for x in 32:
-			var c := Color(0.24, 0.29, 0.21)
-			if x % 8 == 0:
-				c = Color(0.32, 0.34, 0.22)
-			var dx := absi((x % 8) - 4)
-			var dy := absi((y % 8) - 4)
-			if dx + dy == 2:
-				c = Color(0.38, 0.32, 0.18)
-			img.set_pixel(x, y, c.darkened(rng.randf() * 0.15))
-	return img
 
 
 static func _carpet() -> Image:

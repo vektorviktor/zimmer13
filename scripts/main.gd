@@ -27,15 +27,20 @@ extends Node3D
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort Vorwarnung → Monster erscheint
+##   --ghost=n|flur              Lakengeist zum n. Mal: Zimmer 13, Licht aus, Vorhang auf, er kommt sicher (4.18) ·
+##                               flur: alle Gäste schlafen sofort, er kommt im Flur (Spieler vorher mit --pos hinstellen)
+##   --sleep                     Nachtruhe sofort beginnen (Gäste gehen ins Bett)
+##   --intent=roam|one|rampage|n Absicht beim Aufbruch erzwingen (umsehen, 1 oder 2 Opfer, oder n Opfer; 4.17)
 ##   --bold=n                    Dreistigkeit setzen (0–100)
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
 ##   --kill=id                   Gast nach 3 s vom Monster holen lassen
 ##   --party                     sofort eine Feier in der Lobby starten
+##   --cat=id                    Hotelkatze vor den Spieler setzen (minka, socke, kasimir)
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
 ##   --dice=id                   sofort Mäxchen mit dem Gast (Einsatz 3 Geld)
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
-##   --shot-on=reveal|jumpscare  Screenshot kurz nach einem Ereignis statt nach n Frames
+##   --shot-on=reveal|jumpscare|strangle  Screenshot kurz nach einem Ereignis statt nach n Frames
 
 ## Der Anfang wirkt friedlich – nichts deutet auf das Monster hin (Spielkonzept 2.1).
 const INTRO := "Willkommen im Hotel – zur Halloween-Woche! Heute ist der 1. Oktober.\nLerne die anderen Gäste kennen, schmücke deine Tür und feiere mit.\nDein Tagebuch liegt auf dem Schreibtisch in Zimmer 13.\n\n[WASD] Laufen  [Shift] Rennen  [Leertaste] Springen  [Strg] Ducken\n[E] Nehmen / Benutzen  [G] Ablegen  [Rechtsklick] Luft anhalten  [Esc] Menü"
@@ -84,6 +89,11 @@ func _ready() -> void:
 	add_child(monster)
 	Game.monster = monster
 
+	var ghost := SheetGhost.new()
+	ghost.name = "SheetGhost"
+	add_child(ghost)
+	Game.ghost = ghost
+
 	var director := MonsterDirector.new()
 	director.name = "MonsterDirector"
 	add_child(director)
@@ -99,6 +109,13 @@ func _ready() -> void:
 	add_child(social)
 	Game.social = social
 	social.setup(builder, self)
+
+	# Hotelkatzen (6.11) – nach den Gästen, sie suchen sich einen Lieblingsgast
+	for cat_id in HotelCat.PROFILES:
+		var cat := HotelCat.new().setup(cat_id, builder)
+		cat.name = "Katze_" + cat_id
+		add_child(cat)
+		cat.place_at_start()
 
 	var dialog := DialogUI.new()
 	dialog.name = "Dialog"
@@ -194,12 +211,17 @@ func _setup_environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.02, 0.02, 0.03)
-	env.fog_density = 0.09
+	# Nebel nach Entfernung: ab 4 m dichter, bei 66 m schwarz (Flurende verschwindet im Dunkel statt im Dunst)
+	env.fog_mode = Environment.FOG_MODE_DEPTH
+	env.fog_density = 1.0
+	env.fog_depth_begin = 4.0
+	env.fog_depth_end = 66.0
+	env.fog_depth_curve = 0.6
 	# Lichtschein im Dunst: Lampen werfen sichtbare Lichtkegel, dazwischen bleibt es finster
 	env.volumetric_fog_enabled = true
-	env.volumetric_fog_density = 0.035
+	env.volumetric_fog_density = 0.0175
 	env.volumetric_fog_albedo = Color(0.6, 0.6, 0.65)
-	env.volumetric_fog_length = 24.0
+	env.volumetric_fog_length = 12.0   # nur nah: weiter hinten würde das Lampenlicht den Flur beige verschleiern
 	var world_env := WorldEnvironment.new()
 	world_env.environment = env
 	add_child(world_env)
@@ -249,6 +271,10 @@ func _on_player_died() -> void:
 
 
 func _parse_debug_args() -> void:
+	for arg in OS.get_cmdline_user_args():   # vor allem, was einen Aufbruch auslöst (--warn …)
+		if arg.begins_with("--intent="):
+			var wanted := arg.substr(9)
+			Game.director.debug_victims = wanted.to_int() if wanted.is_valid_int() else ["roam", "one", "rampage"].find(wanted)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--pos="):
 			var v := arg.substr(6).split(",")
@@ -309,6 +335,11 @@ func _parse_debug_args() -> void:
 			Game.social.challenge(Game.social.guest_by_id(arg.substr(12)))
 		elif arg == "--autoplay":
 			_autoplay = true
+		elif arg.begins_with("--cat="):
+			# Katze vor den Spieler setzen (sitzt, zum Streicheln)
+			for cat in get_tree().get_nodes_in_group("cats"):
+				if cat.id == arg.substr(6):
+					cat.place_in_front_of(Game.player)
 		elif arg == "--party":
 			Game.social.start_party("player")
 		elif arg.begins_with("--talk="):
@@ -318,6 +349,14 @@ func _parse_debug_args() -> void:
 			get_tree().create_timer(1.0).timeout.connect(func() -> void:
 				Game.player.rotation.y = PI
 				Game.dialog.open(partner))
+		elif arg == "--ghost=flur":
+			Game.ghost.debug_summon_hall()
+		elif arg == "--sleep":
+			Game.social.start_sleep()
+		elif arg.begins_with("--ghost="):
+			var room: Dictionary = Game.director.rooms["13"]
+			Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)
+			Game.ghost.debug_summon(arg.substr(8).to_int(), "13")
 		elif arg == "--warn":
 			Game.director.start_warning()
 		elif arg.begins_with("--attacks="):
@@ -429,6 +468,11 @@ func _save_test() -> void:
 				var kinds := func(list: Array) -> String:
 					return ", ".join(list.map(func(e) -> String: return "%s@%s" % [e.get("kind"), str(e.get("pos"))]))
 				print("[savetest]   vorher  %d: %s\n[savetest]   nachher %d: %s" % [before[key].size(), kinds.call(before[key]), after[key].size(), kinds.call(after[key])])
+				continue
+			if before[key] is Dictionary and after.get(key) is Dictionary:
+				for sub in before[key]:
+					if not _same(before[key][sub], after[key].get(sub)):
+						print("[savetest]   %s.%s: %s → %s" % [key, sub, JSON.stringify(before[key][sub]).left(600), JSON.stringify(after[key].get(sub)).left(600)])
 				continue
 			print("[savetest] Unterschied in „%s“:\n  vorher  %s\n  nachher %s" % [key,
 				JSON.stringify(before[key]).left(400), JSON.stringify(after.get(key)).left(400)])
