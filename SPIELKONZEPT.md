@@ -1043,7 +1043,7 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
 - **Eingeschlossen:** Ausgänge verriegelt – warum? (Story-Frage, siehe offene Punkte)
 
 ### 7.3 Fenster, Vorhänge & Wandlampen
-> Stand: 2026-10-10 · im Prototyp umgesetzt (Außenfenster mit Vorhängen in Lobby und Zimmern, Wandleuchten, ein Lichtschalter pro Raum/Flurabschnitt, Glühbirnen als Gegenstand)
+> Stand: 2026-10-17 · im Prototyp umgesetzt (Außenfenster mit Vorhängen in Lobby und Zimmern, Wandleuchten und Kerzen statt Deckenlampen, ein Lichtschalter pro Raum/Flurabschnitt, Glühbirnen als Gegenstand)
 
 Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(actor)` wie Türen und Truhen (9.1) – **Gäste benutzen sie genauso wie der Spieler**.
 
@@ -1061,8 +1061,8 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 - **Gäste** nutzen Vorhänge ebenfalls, z. B. zieht die ängstliche Edna sie nachts zu, um nicht gesehen zu werden – und macht ihr Zimmer damit dunkler.
 
 **Wandlampen**
-- Zusätzliche Lichtquellen an den Wänden von Fluren und Zimmern, neben den Deckenlampen.
-- **Ein Lichtschalter pro Raum** (entschieden): schaltet alle Lampen des Raums bzw. Flurabschnitts gemeinsam (Decken- und Wandlampen) ein und aus.
+- **Keine Deckenlampen mehr (entschieden 2026-10-17):** Mit Deckenlampen wirkte das Hotel zu hell und zu gemütlich. Licht kommt nur noch von **vereinzelten, gedimmten Wandlampen** und **festen Kerzen** (Flurkommoden, Bank, Lobby, Theke, Zimmertische). Die hellsten Lichter sind Kerzen und Kürbisse; die Decken sind aus demselben Holz wie die Zimmerböden und nur schwach zu erkennen. Ein erster, noch dunklerer Stand war zu finster – jetzt bleiben dunkle Ecken als Umriss sichtbar.
+- **Ein Lichtschalter pro Raum** (entschieden): schaltet alle Wandlampen des Raums bzw. Flurabschnitts gemeinsam ein und aus. Die Deko-Kerzen brennen immer.
 - **Licht aus = das Monster kommt** (4.4). Ausschalten ist also eine bewusste Entscheidung – z. B. um nicht gesehen zu werden – mit hohem Preis.
 - **Flackern trotzdem:** Eingeschaltete Lampen flackern weiterhin, wenn das Monster sich ankündigt (4.2). Kaputte Lampen bleiben kaputt, egal wie der Schalter steht.
 - **Glühbirnen herausdrehen & mitnehmen** (entschieden): Jede Lampe hat eine Glühbirne, die man herausdrehen kann. Die Birne ist ein **normaler Gegenstand** (3.2): klein, einhändig, zerbrechlich (Vorschlag: fällt sie herunter, zerspringt sie).

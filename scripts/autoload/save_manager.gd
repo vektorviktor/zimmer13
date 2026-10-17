@@ -18,8 +18,9 @@ const DIR := "user://saves/"
 ## 7: Kommoden im Flur (Gruppe dressers) – ältere Stände laden weiter, alle Schubladen sind zu und unberührt
 ## 8: Hotelkatzen (Gruppe cats) – ältere Stände laden weiter, die Katzen beginnen an ihren Startplätzen
 ## 9: Milchglas zwischen Flur und Zimmern entfernt (Gruppe windows kleiner, Spuren hängen an Fenster-Indizes)
-const VERSION := 9
-const MIN_VERSION := 9
+## 10: Deckenlampen entfernt, dafür Wandleuchten, zwei je Zimmer (Gruppe lamp_fixtures anders)
+const VERSION := 10
+const MIN_VERSION := 10
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)

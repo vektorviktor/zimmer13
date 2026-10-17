@@ -207,7 +207,7 @@ func _setup_environment() -> void:
 	env.background_color = Color.BLACK
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.35, 0.38, 0.5)
-	env.ambient_light_energy = 0.06
+	env.ambient_light_energy = 0.1   # ohne Deckenlampen: dunkle Ecken bleiben als Umriss erkennbar
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.02, 0.02, 0.03)
