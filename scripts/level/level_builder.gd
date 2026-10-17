@@ -160,6 +160,7 @@ var diary: Diary
 
 var _parent: Node3D  ## wohin die Bausteine gerade bauen (root, ein Geschoss oder eine gedrehte Zimmerreihe)
 var _wallpaper: Material
+var _room_wallpaper: Material
 var _lobby_wallpaper: Material
 var _concrete: Material
 var _wood: Material
@@ -179,6 +180,7 @@ func _init(p_root: Node3D, p_world: Node3D) -> void:
 
 func build() -> void:
 	_wallpaper = Mat.wallpaper(H, UP_Y)
+	_room_wallpaper = Mat.wallpaper(H, UP_Y, "beige")   # nur in den Zimmern
 	_lobby_wallpaper = Mat.wallpaper(LOBBY_H, LOBBY_H + 1.0, "red")
 	_concrete = Mat.psx(Color(0.8, 0.8, 0.8), "concrete", 0.5)
 	_wood = Mat.psx(Color(0.45, 0.28, 0.15))
@@ -380,8 +382,15 @@ func _room_row(row: Dictionary) -> void:
 	var front: Array = []
 	var back: Array = []
 	var x := 0.0
-	_wall_z(0.0, -0.1, ROOM_DEPTH + 0.1, [])
-	for entry in row["rooms"]:
+	# Zimmer beige, Flure türkis: Wände, die an einen Flur grenzen können (Flurwand, Endwände),
+	# bekommen auf der Zimmerseite die Zimmertapete
+	var basis := holder.global_transform.basis
+	var room_side := func(local_normal: Vector3) -> Material:
+		return Mat.wallpaper_split(_wallpaper, _room_wallpaper, (basis * local_normal).round())
+	var count: int = row["rooms"].size()
+	_wall_z(0.0, -0.1, ROOM_DEPTH + 0.1, [], room_side.call(Vector3(1, 0, 0)))
+	for i in count:
+		var entry: Array = row["rooms"][i]
 		var width: float = entry[1]
 		var cx := x + width / 2.0
 		front.append(Vector4(cx, DOOR_W, DOOR_H, 0.0))
@@ -389,9 +398,13 @@ func _room_row(row: Dictionary) -> void:
 			back.append(Vector4(cx, WINDOW_W, WINDOW_TOP, WINDOW_SILL))
 		_room(String(entry[0]), x, x + width, String(entry[2]), bool(entry[3]))
 		x += width
-		_wall_z(x, -0.1, ROOM_DEPTH + 0.1, [])
-	_wall_x(0.0, -0.1, x + 0.1, front)
-	_wall_x(ROOM_DEPTH, -0.1, x + 0.1, back)
+		if i == count - 1:
+			_wall_z(x, -0.1, ROOM_DEPTH + 0.1, [], room_side.call(Vector3(-1, 0, 0)))
+		else:
+			# Trennwand endet in der Flurwand – sonst flimmert ihre beige Stirnseite im Flur durch
+			_wall_z(x, 0.0, ROOM_DEPTH + 0.1, [], _room_wallpaper)
+	_wall_x(0.0, -0.1, x + 0.1, front, room_side.call(Vector3(0, 0, 1)))
+	_wall_x(ROOM_DEPTH, -0.1, x + 0.1, back, _room_wallpaper)
 	Geo.solid(holder, Vector3(x, 0.2, ROOM_DEPTH), Vector3(x / 2.0, -0.1, ROOM_DEPTH / 2.0), _wood_floor)
 	Geo.solid(holder, Vector3(x + 0.2, 0.2, ROOM_DEPTH + 0.2), Vector3(x / 2.0, H + 0.1, ROOM_DEPTH / 2.0), _room_ceiling, LAYER_CEILING)
 	_parent = root
