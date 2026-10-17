@@ -1314,6 +1314,31 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
   - **Platzieren:** zunächst weiter per Code im LevelBuilder, der diese Szenen statt Platzhalter-Kästen setzt; später optional eine von Hand gebaute Hotel-Szene im Editor.
   - Vorteil: Ein Objekt funktioniert spielerisch schon als Platzhalter, das Modell wird später einfach ausgetauscht.
 
+**Wechsel zu Editor-Szenen – besprochen, bewusst verschoben (2026-10-17)**
+
+Der Code-Workflow funktioniert gut und bleibt vorerst. Erst ausbauen: **Untergeschoss (Keller)** und **Aufzug**.
+Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätestens wenn Räume eher *gestaltet* als
+*gebaut* werden (Deko nach Gefühl statt Koordinatenlisten im LevelBuilder), ist der richtige Zeitpunkt.
+
+- **Ziel:** eine `hotel.tscn`, die man im Editor öffnet und als Ganzes sieht. Darin stecken Raum-Szenen als
+  Instanzen (`rooms/lobby.tscn`, `rooms/guest_room.tscn` …), darin wiederum Asset-Szenen (`dresser.tscn` = Modell +
+  Kollision + Skript). Godot setzt das beim Laden selbst zusammen, es gibt kein eigenes Zusammenbauen zur Laufzeit.
+- **Warum verschachtelt statt einer flachen Datei:** gleiche Zimmer einmal einrichten und mehrfach verwenden (mit
+  Abweichungen pro Zimmer), kleine Dateien für Claude, und Spieler und Claude können parallel an verschiedenen
+  Räumen arbeiten, ohne sich zu überschreiben.
+- **Rohbau:** Wände, Böden und Türen erzeugt heute erst der LevelBuilder beim Spielstart, im Editor wäre das Hotel
+  leer. Geplant: den Rohbau **einmal per Werkzeug als `.tscn` speichern** und ab dann im Editor pflegen. Der
+  LevelBuilder schrumpft entsprechend. (Alternative `@tool`-LevelBuilder nur als Zwischenlösung.)
+- **Speicherformat:** Die Zuordnung über die Reihenfolge in Gruppen ist bei Editor-Szenen nicht verlässlich. Vorher
+  auf **feste `save_id`s** umstellen (siehe 9.1). Reine Deko ohne Zustand ist nicht betroffen.
+- **Reihenfolge:** 1. Asset-Szenen für vorhandene Modelle · 2. Rohbau exportieren + Raum-Szenen · 3. feste
+  Speicher-IDs · danach interaktive Objekte auch in Editor-Szenen.
+- **Zusammenarbeit:** Spieler platziert nach Gefühl im Editor, Claude bearbeitet dieselben `.tscn`-Dateien auf
+  Anweisung weiter (verschieben, drehen, ergänzen, umräumen). `.tscn` ist Text, Claude prüft das Ergebnis über
+  Screenshots aus dem Spiel. Dafür gilt: **sprechende Knotennamen** (`Candle_Left` statt `MeshInstance3D7`) und
+  **nicht gleichzeitig dieselbe Szene bearbeiten** (vorher speichern bzw. committen, Godot lädt die Datei neu).
+- Beim Wechsel die Regel „keine Editor-Szenen“ in CLAUDE.md und TECHNIK.md anpassen.
+
 ---
 
 ## 10. Offene Fragen für die Detaildiskussion
