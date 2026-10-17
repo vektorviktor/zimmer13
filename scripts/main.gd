@@ -17,7 +17,7 @@ extends Node3D
 ##                               lobby: Wählseite am Haupttelefon mit Gästeverzeichnis
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, controls)
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
-##   --pos=x,y,z[,blickwinkel]   Spieler versetzen
+##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
@@ -281,6 +281,8 @@ func _parse_debug_args() -> void:
 			Game.player.global_position = Vector3(v[0].to_float(), v[1].to_float(), v[2].to_float())
 			if v.size() > 3:
 				Game.player.rotation.y = deg_to_rad(v[3].to_float())
+			if v.size() > 4:
+				Game.player.head.rotation.x = deg_to_rad(v[4].to_float())
 		elif arg.begins_with("--monster="):
 			var m := arg.substr(10).split(",")
 			var pos := Vector3(m[0].to_float(), m[1].to_float(), m[2].to_float())

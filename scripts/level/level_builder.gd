@@ -260,7 +260,8 @@ func _corridors(spec: Dictionary) -> void:
 				# Treppenhaus: unten der aufsteigende Lauf (Westhälfte), oben der ankommende (Osthälfte)
 				var lane := wx - 0.75 if float(spec["y"]) == 0.0 else wx + 0.75
 				_wall_x(s * end, wx - 1.7, wx + 1.7, [Vector4(lane, 1.4, 3.0, 0.0)])
-				_sign("TREPPE", Vector3(lane, 3.2, s * end + 0.11), 0.0)
+				_frame_x(s * end, lane, 1.4, 3.0)
+				_sign("TREPPE", Vector3(lane, 3.3, s * end + 0.11), 0.0)
 			else:
 				_wall_x(s * end, wx - 1.7, wx + 1.7, [Vector4(wx, WINDOW_W, WINDOW_TOP, WINDOW_SILL)])
 				var win := HotelWindow.new().setup(WINDOW_W, WINDOW_TOP - WINDOW_SILL, false, true, section)
@@ -289,7 +290,7 @@ func _corridors(spec: Dictionary) -> void:
 			door.position = Vector3(main_end, 0, -0.45)
 			door.rotation.y = deg_to_rad(-90.0)
 			level.add_child(door)
-			_sign("KELLER", Vector3(main_end - 0.11, 2.0, 0.0), -90.0)
+			_sign("KELLER", Vector3(main_end - 0.11, 2.1, 0.0), -90.0)
 		"window":
 			_wall_z(main_end, -1.7, 1.7, [Vector4(0.0, WINDOW_W, WINDOW_TOP, WINDOW_SILL)])
 			var win := HotelWindow.new().setup(WINDOW_W, WINDOW_TOP - WINDOW_SILL, false, true, sections[sections.size() - 1][0])
@@ -409,7 +410,7 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 		win.position = Vector3(cx, (WINDOW_SILL + WINDOW_TOP) / 2.0, ROOM_DEPTH)
 		win.rotation.y = PI
 		_parent.add_child(win)
-	_sign(no, Vector3(cx, 2.35, -0.11), 180.0)
+	_sign(no, Vector3(cx, 2.45, -0.11), 180.0)
 	var dark := kind in ["abandoned", "laundry", "derelict"]
 	_lamp(Vector3(cx, H - 0.08, 2.6), 1.0 if kind != "locked" else 0.6, 6.0, dark, no)
 	_wall_lamp(Vector3(cx + 2.0, 2.0, 0.12), 0.0, 0.45, 4.0, no, dark)
@@ -577,6 +578,8 @@ func _lobby() -> void:
 	_wall_z(-14.0, -7.1, 13.1, [Vector4(0.0, 2.5, 2.5, 0.0)], _lobby_wallpaper, LOBBY_H)              # Ausgang
 	_wall_x(-7.0, -14.1, 0.1, [Vector4(-11.0, 1.6, 2.7, 0.9), Vector4(-7.0, 1.8, 2.4, 0.0), Vector4(-3.0, 1.6, 2.7, 0.9)], _lobby_wallpaper, LOBBY_H)
 	_wall_x(7.0, -14.1, 0.1, [Vector4(-10.0, DOOR_W, DOOR_H, 0.0), Vector4(-3.0, 2.0, 2.6, 0.0)], Mat.wallpaper_split(_lobby_wallpaper, _wallpaper, Vector3(0, 0, 1)), LOBBY_H)   # Küche, Bar (dort teal)
+	_frame_z(0.0, 0.0, 3.0, 3.0)
+	_frame_x(7.0, -3.0, 2.0, 2.6)
 	for x in [-11.0, -3.0]:
 		var win := HotelWindow.new().setup(1.6, 1.8, false, true, "lobby")
 		win.position = Vector3(x, 1.8, -7.0)
@@ -597,8 +600,8 @@ func _lobby() -> void:
 	var glass := Door.new().setup(1.8, 2.4, 90.0, true, true)
 	glass.position = Vector3(-7.9, 0, -7.0)
 	root.add_child(glass)
-	_sign("GARTEN", Vector3(-7.0, 2.6, -6.89), 0.0)
-	_sign("KÜCHE", Vector3(-10.0, 2.35, 6.89), 180.0)
+	_sign("GARTEN", Vector3(-7.0, 2.72, -6.89), 0.0)
+	_sign("KÜCHE", Vector3(-10.0, 2.45, 6.89), 180.0)
 	_sign("BAR", Vector3(-3.0, 2.9, 6.89), 180.0)
 	var kitchen_door := Door.new().setup(DOOR_W, DOOR_H, -100.0)
 	kitchen_door.position = Vector3(-10.0 - DOOR_W / 2.0, 0, 7.0)
@@ -816,38 +819,58 @@ func _waypoints() -> void:
 
 ## Wand entlang X bei z. Öffnungen als Vector4(Mitte x, Breite, Oberkante, Unterkante).
 func _wall_x(z: float, x0: float, x1: float, openings: Array, mat: Material = null, height: float = H, thick: float = T) -> void:
-	var m: Material = mat if mat else _wallpaper
-	var cursor := x0
-	for o in openings:
-		var op: Vector4 = o
-		var a := op.x - op.y / 2.0
-		if a > cursor:
-			Geo.solid(_parent, Vector3(a - cursor, height, thick), Vector3((cursor + a) / 2.0, height / 2.0, z), m)
-		if op.w > 0.0:
-			Geo.solid(_parent, Vector3(op.y, op.w, thick), Vector3(op.x, op.w / 2.0, z), m)
-		if op.z < height:
-			Geo.solid(_parent, Vector3(op.y, height - op.z, thick), Vector3(op.x, op.z + (height - op.z) / 2.0, z), m)
-		cursor = op.x + op.y / 2.0
-	if x1 > cursor:
-		Geo.solid(_parent, Vector3(x1 - cursor, height, thick), Vector3((cursor + x1) / 2.0, height / 2.0, z), m)
+	var holder := Node3D.new()
+	holder.position = Vector3(0, 0, z)
+	_parent.add_child(holder)
+	_wall(holder, x0, x1, openings, mat, height, thick)
 
 
 ## Wand entlang Z bei x. Öffnungen als Vector4(Mitte z, Breite, Oberkante, Unterkante).
 func _wall_z(x: float, z0: float, z1: float, openings: Array, mat: Material = null, height: float = H, thick: float = T) -> void:
-	var m: Material = mat if mat else _wallpaper
-	var cursor := z0
+	var holder := Node3D.new()
+	holder.position = Vector3(x, 0, 0)
+	holder.rotation.y = -PI / 2.0   # lokale +X zeigt entlang +Z
+	_parent.add_child(holder)
+	_wall(holder, z0, z1, openings, mat, height, thick)
+
+
+## Wand im lokalen Rahmen von holder (entlang X von a0 bis a1): Kollision als Kästen wie gehabt
+## (links, unter und über jeder Öffnung, rechts), die Optik als ein Mesh mit gemeinsamen Ecken (Geo.wall_mesh).
+## Laibungen in Rahmenholz: Rutscht die Zarge beim Vertex-Snapping weg, blitzt Holz statt Tapete durch
+## (nur der Kellerdurchgang im Beton hat keinen Rahmen).
+func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material, height: float, thick: float) -> void:
+	var cursor := a0
 	for o in openings:
 		var op: Vector4 = o
 		var a := op.x - op.y / 2.0
 		if a > cursor:
-			Geo.solid(_parent, Vector3(thick, height, a - cursor), Vector3(x, height / 2.0, (cursor + a) / 2.0), m)
+			Geo.collider(holder, Vector3(a - cursor, height, thick), Vector3((cursor + a) / 2.0, height / 2.0, 0))
 		if op.w > 0.0:
-			Geo.solid(_parent, Vector3(thick, op.w, op.y), Vector3(x, op.w / 2.0, op.x), m)
+			Geo.collider(holder, Vector3(op.y, op.w, thick), Vector3(op.x, op.w / 2.0, 0))
 		if op.z < height:
-			Geo.solid(_parent, Vector3(thick, height - op.z, op.y), Vector3(x, op.z + (height - op.z) / 2.0, op.x), m)
+			Geo.collider(holder, Vector3(op.y, height - op.z, thick), Vector3(op.x, op.z + (height - op.z) / 2.0, 0))
 		cursor = op.x + op.y / 2.0
-	if z1 > cursor:
-		Geo.solid(_parent, Vector3(thick, height, z1 - cursor), Vector3(x, height / 2.0, (cursor + z1) / 2.0), m)
+	if a1 > cursor:
+		Geo.collider(holder, Vector3(a1 - cursor, height, thick), Vector3((cursor + a1) / 2.0, height / 2.0, 0))
+	var wall := Geo.mesh(holder, Geo.wall_mesh(a0, a1, height, thick, openings), null, Vector3.ZERO)
+	var m: Material = mat if mat else _wallpaper
+	wall.set_surface_override_material(0, m)
+	if wall.mesh.get_surface_count() > 1:
+		wall.set_surface_override_material(1, m if m == _concrete else OpeningFrame.trim_material())
+
+
+## Rahmen um einen Durchgang ohne Tür: Wand entlang X bei z bzw. entlang Z bei x (Mitte c, Breite w, Höhe h).
+func _frame_x(z: float, c: float, w: float, h: float) -> void:
+	var f := OpeningFrame.new().setup(c - w / 2.0, 0.0, w, h, T)
+	f.position.z = z
+	_parent.add_child(f)
+
+
+func _frame_z(x: float, c: float, w: float, h: float) -> void:
+	var f := OpeningFrame.new().setup(c - w / 2.0, 0.0, w, h, T)
+	f.position.x = x
+	f.rotation.y = -PI / 2.0   # lokale +X zeigt dann entlang +Z
+	_parent.add_child(f)
 
 
 func _sign(text: String, pos: Vector3, yaw: float) -> void:

@@ -49,11 +49,11 @@ func _ready() -> void:
 	var glass := Geo.mesh(pane, quad, Mat.frosted_glass() if frosted else Mat.glass(), Vector3.ZERO)
 	glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	Geo.add_box_shape(pane, Vector3(width, height, PANE_DEPTH), Vector3.ZERO)
-	# Fensterkreuz und Rahmen
-	var frame := Mat.psx(Color(0.85, 0.82, 0.75))
+	# Zarge, Bekleidung, Fensterbank und Rahmen; dazu das Fensterkreuz
+	add_child(OpeningFrame.new().setup(-width / 2.0, -height / 2.0, width, height, PANE_DEPTH, true))
+	var frame := Mat.psx(OpeningFrame.COLOR)
 	Geo.mesh(pane, Geo.box(Vector3(width, 0.05, 0.05)), frame, Vector3.ZERO)
 	Geo.mesh(pane, Geo.box(Vector3(0.05, height, 0.05)), frame, Vector3.ZERO)
-	Geo.mesh(pane, Geo.box(Vector3(width + 0.1, 0.06, 0.22)), frame, Vector3(0, -height / 2.0 - 0.01, 0.05))   # 2 cm über der Laibung
 	if not has_curtains():
 		return
 	pane.set_meta("interactable", self)

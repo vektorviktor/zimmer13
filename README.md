@@ -71,7 +71,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 - **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion · Tapeten mit Vertäfelung, die im Licht unterschiedlich glänzen (Lack, Satin, stumpfe Rauten) und an Fugen und Leisten Glanzkanten zeigen, dazu fleckige, matte Stellen
 - **Altersempfehlung ab 16** (selbst eingeschätzt, keine USK-Prüfung): Hinweis mit Inhalten beim ersten Start, Kennzeichen im Titelbildschirm (`scripts/ui/title_screen.gd`)
 
-Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler und die Tapeten (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
+Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler, die Tür- und Fensterrahmen und die Tapeten (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_monster.py -- assets/source/Meshy_AI_Abyssal_Mawcrawler_1011084008_texture.glb assets/models/monster.glb
@@ -99,6 +99,12 @@ Den Lakengeist (`assets/models/ghost.glb`, Spielkonzept 4.18) riggt `tools/build
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_ghost.py -- assets/source/Meshy_AI_floating_ghost_3d_1017173231_image-to-3d-texture.glb assets/models/ghost.glb
 ```
 
+Die Tür- und Fensterrahmen (`assets/models/frames.glb`, Spielkonzept 7.2) braucht kein Ausgangsmodell: `tools/build_frames.py` zieht Profile im Craftsman-Stil aus. Ein optionaler zweiter Pfad rendert eine Vorschau-Tür:
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_frames.py -- assets/models/frames.glb
+```
+
 ## Debug-Startparameter
 
 Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
@@ -121,7 +127,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--talk=edna` | Gespräch öffnen |
 | `--dice=bruno` · `--autoplay` | Mäxchen-Partie starten · Antworten automatisch wählen |
 | `--challenge=bruno` | Gast fordert dich heraus |
-| `--pos=x,y,z,winkel` · `--monster=x,y,z` | Spieler versetzen · Monster erscheinen lassen |
+| `--pos=x,y,z,winkel[,neigung]` · `--monster=x,y,z` | Spieler versetzen (Neigung in Grad, positiv = nach oben) · Monster erscheinen lassen |
 | `--flashlight` · `--flashlight=uv` | eingeschaltete Taschenlampe mit voller Batterie in die Hand · mit UV-Aufsatz im UV-Modus |
 | `--pocket` · `--show=map` / `keys` / `compass` | Kompass, alle Kartenblätter und Schlüssel 18 einstecken · Karte (Schlüsselblatt oben) bzw. Kompass hervorholen wie mit gehaltener Taste |
 | `--shot=pfad.png --frames=n` · `--shot-on=reveal` · `--shot-on=jumpscare` · `--shot-on=strangle` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler · im Jumpscare · wenn der Lakengeist zupackt |
@@ -151,7 +157,7 @@ scripts/autoload/save_manager.gd   Speichern/Laden, Autosave, Tagebuchsatz
 scripts/level/              LevelBuilder (Grundriss: Zimmerreihen in `ROWS`, Flure, Keller, Zonen, Wegpunkte)
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
                             PumpkinPlant, ResourceSpot, RecordPlayer,
-                            Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang), Diary,
+                            Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang), OpeningFrame (Rahmen), Diary,
                             Traces + TraceMark (Spuren), WarningNote (Warnungszettel), HotelPhone (Telefon),
                             Flashlight (Taschenlampe, UV), UvMark (nur unter UV sichtbar)
 scripts/guests/             Guest (Verhalten), GuestProfiles (feste Gäste, Sätze), GuestGenerator (Zufallsgäste),

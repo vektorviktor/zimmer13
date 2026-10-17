@@ -6,12 +6,6 @@ extends Node3D
 
 ## Kollisionstiefe des Türblatts (= Wandstärke, siehe LevelBuilder.T)
 const COLLISION_DEPTH := 0.2
-## Türrahmen auf beiden Wandseiten: seitliche Bekleidung und ein breiterer Sturz, der übersteht
-const CASING_W := 0.09
-const CASING_D := 0.03
-const LINTEL_H := 0.15
-const LINTEL_D := 0.05
-const LINTEL_OVERHANG := 0.07
 
 var width := 1.2
 var height := 2.1
@@ -42,7 +36,7 @@ func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: b
 
 func _ready() -> void:
 	add_to_group("doors")
-	_build_frame()
+	add_child(OpeningFrame.new().setup(0.0, 0.0, width, height, COLLISION_DEPTH))   # Zarge und Bekleidung
 	if double:
 		_pivots.append(_make_leaf(Vector3.ZERO, width / 2.0, 1.0))
 		_pivots.append(_make_leaf(Vector3(width, 0, 0), width / 2.0, -1.0))
@@ -129,17 +123,6 @@ func _rattle() -> void:
 		var tw := create_tween()
 		for offset in [0.025, -0.025, 0.02, 0.0]:
 			tw.tween_property(pivot, "rotation:y", offset, 0.05)
-
-
-## Rahmen um die Wandöffnung (nur Optik, bewegt sich nicht mit dem Türblatt).
-func _build_frame() -> void:
-	var wood := Mat.psx(Color(0.2, 0.11, 0.06))
-	var face := COLLISION_DEPTH / 2.0
-	for side in [-1.0, 1.0]:
-		for x in [-CASING_W / 2.0, width + CASING_W / 2.0]:
-			Geo.mesh(self, Geo.box(Vector3(CASING_W, height, CASING_D)), wood, Vector3(x, height / 2.0, side * (face + CASING_D / 2.0)))
-		var lintel := Vector3(width + 2.0 * (CASING_W + LINTEL_OVERHANG), LINTEL_H, LINTEL_D)
-		Geo.mesh(self, Geo.box(lintel), wood, Vector3(width / 2.0, height + LINTEL_H / 2.0, side * (face + LINTEL_D / 2.0)))
 
 
 func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
