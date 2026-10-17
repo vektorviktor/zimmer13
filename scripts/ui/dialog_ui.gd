@@ -278,8 +278,9 @@ func _join_party() -> void:
 		guest.invited = true
 		_say(guest.line("party_yes"))
 		var spot: Vector3 = Game.social.free_party_spot()
+		var partner := guest   # close() setzt guest auf null
 		close()
-		guest.join_party(spot)
+		partner.join_party(spot)
 		return
 	_say(guest.line("party_no"))
 	_show_main()

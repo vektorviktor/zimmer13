@@ -23,6 +23,7 @@ const NOISE := {
 	"drop_heavy": {"range": 4.0,  "sound": "thud",   "volume": 0.5},    ## Kürbis oder großer Gegenstand
 	"shock_drop": {"range": 6.0,  "sound": "thud",   "volume": 0.6},    ## vor Schreck fallen gelassen (6.8)
 	"chest":      {"range": 4.0,  "sound": "creak",  "volume": 0.4},
+	"drawer":     {"range": 3.0,  "sound": "creak",  "volume": 0.3},    ## Schublade einer Kommode
 	"curtain":    {"range": 2.0,  "sound": "creak",  "volume": 0.15},
 	"bulb":       {"range": 2.0,  "sound": "creak",  "volume": 0.2},    ## Glühbirne heraus-/eindrehen
 	"bulb_burst": {"range": 8.0,  "sound": "bang",   "volume": 0.35, "alarm": true},

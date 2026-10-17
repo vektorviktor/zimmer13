@@ -3,8 +3,10 @@
 
 # Von Godot aus GLB-Dateien entpackte Texturen (entstehen beim Import neu)
 assets/models/*.jpg
+assets/models/*.png
 # Rohmodelle (Meshy-Originale), aus denen tools/ die Spielmodelle baut – zu groß fürs Repo
 assets/source/*.glb
+assets/source/*.zip
 
 # Exportierte Builds (export_presets.cfg)
 build/

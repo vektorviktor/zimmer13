@@ -35,13 +35,26 @@ func _ready() -> void:
 			Geo.add_box_shape(self, Vector3(0.35, 0.6, 0.05), Vector3.ZERO)
 		"blood":
 			var red := Mat.psx(Color(0.22, 0.02, 0.02))
+			# Lache aus überlappenden Flecken (~1 m)
 			for i in 6:
-				var splat := Geo.mesh(self, Geo.box(Vector3(rng.randf_range(0.06, 0.22), rng.randf_range(0.06, 0.18), 0.006)), red,
-					Vector3(rng.randf_range(-0.3, 0.3), rng.randf_range(-0.3, 0.3), 0.003))
-				splat.rotation.z = rng.randf() * TAU
-			# Schleifspur
-			Geo.mesh(self, Geo.box(Vector3(0.12, 1.4, 0.004)), red, Vector3(0.05, -0.9, 0.002))
-			Geo.add_box_shape(self, Vector3(0.7, 0.8, 0.05), Vector3.ZERO)
+				var pool := Geo.mesh(self, Geo.box(Vector3(rng.randf_range(0.3, 0.55), rng.randf_range(0.25, 0.5), 0.006)), red,
+					Vector3(rng.randf_range(-0.25, 0.25), rng.randf_range(-0.25, 0.25), 0.003))
+				pool.rotation.z = rng.randf() * TAU
+			# Spritzer drumherum
+			for i in 12:
+				var a := rng.randf() * TAU
+				var r := rng.randf_range(0.5, 1.1)
+				var s := rng.randf_range(0.04, 0.16)
+				var splat := Geo.mesh(self, Geo.box(Vector3(s, s * rng.randf_range(0.5, 2.5), 0.006)), red,
+					Vector3(cos(a) * r, sin(a) * r, 0.003))
+				splat.rotation.z = a
+			# Schleifspur: breit, mit Lücken, wird schmaler
+			for i in 7:
+				var w := lerpf(0.34, 0.12, i / 6.0) * rng.randf_range(0.8, 1.1)
+				var seg := Geo.mesh(self, Geo.box(Vector3(w, rng.randf_range(0.2, 0.32), 0.005)), red,
+					Vector3(0.05 + rng.randf_range(-0.05, 0.05), -0.65 - i * 0.3, 0.0025))
+				seg.rotation.z = rng.randf_range(-0.12, 0.12)
+			Geo.add_box_shape(self, Vector3(1.6, 1.6, 0.05), Vector3.ZERO)
 		"handprint":
 			var smudge := Mat.psx(Color(0.12, 0.07, 0.06))
 			Geo.mesh(self, Geo.box(Vector3(0.09, 0.1, 0.004)), smudge, Vector3(0, -0.02, 0.002))

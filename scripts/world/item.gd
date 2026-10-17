@@ -382,12 +382,18 @@ func _build(extra: String) -> void:
 			clothing_of = extra
 			var profile: Dictionary = GuestProfiles.get_profile(extra)
 			display_name = String(profile.get("clothing", "Ein Kleidungsstück"))
-			mass = 0.2
-			size = Vector3(0.36, 0.04, 0.24)
-			var cloth := Mat.psx(profile.get("coat", Color(0.3, 0.25, 0.25)))
-			var folded := Geo.mesh(self, Geo.box(Vector3(0.34, 0.025, 0.2)), cloth, Vector3(0, 0.013, 0))
-			folded.rotation.y = 0.2
-			Geo.mesh(self, Geo.box(Vector3(0.12, 0.02, 0.26)), cloth, Vector3(0.1, 0.03, 0.02))
+			mass = 0.4
+			size = Vector3(0.62, 0.08, 0.5)
+			# Zerknüllt liegengeblieben: ausgebreiteter Stoff, ein Knäuel darauf, ein Ärmel/Zipfel
+			var color: Color = profile.get("coat", Color(0.3, 0.25, 0.25))
+			var cloth := Mat.psx(color)
+			var shade := Mat.psx(color.darkened(0.25))
+			var spread := Geo.mesh(self, Geo.box(Vector3(0.5, 0.02, 0.38)), cloth, Vector3(0, 0.01, 0))
+			spread.rotation.y = 0.2
+			var lump := Geo.mesh(self, Geo.box(Vector3(0.3, 0.05, 0.22)), shade, Vector3(-0.06, 0.035, 0.03))
+			lump.rotation.y = -0.35
+			var sleeve := Geo.mesh(self, Geo.box(Vector3(0.11, 0.025, 0.42)), cloth, Vector3(0.2, 0.02, 0.06))
+			sleeve.rotation.y = 0.6
 		Kind.BULB:
 			broken = extra == "broken"
 			display_name = "Kaputte Glühbirne" if broken else "Glühbirne"

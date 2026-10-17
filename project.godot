@@ -33,6 +33,10 @@ window/stretch/mode="viewport"
 
 project/assembly_name="Zimmer 13"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/meshy-godot-plugin/plugin.cfg")
+
 [navigation]
 
 3d/default_cell_size=0.1

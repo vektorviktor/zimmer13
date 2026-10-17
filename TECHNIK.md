@@ -14,8 +14,21 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
 
 - **Alles entsteht im Code.** Es gibt nur zwei winzige Szenen (`title.tscn`, `main.tscn`), beide
   hängen nur ein Skript an. Hotel, Möbel, Gäste und UI baut `main.gd` bzw. `LevelBuilder` zur Laufzeit.
-  Modelle, Texturen (`TexGen`) und Sounds (`SynthAudio`) sind prozedurale Platzhalter. Ausnahme: das
-  Monster-Modell `assets/models/monster.glb` (siehe 5, „Aussehen & Animation“).
+  Modelle, Texturen (`TexGen`) und Sounds (`SynthAudio`) sind prozedurale Platzhalter. Ausnahmen: das
+  Monster-Modell `assets/models/monster.glb` (siehe 5, „Aussehen & Animation“) und die Lobby-Sofas
+  `assets/models/couch.glb` (`LevelBuilder._couch()`: Rohmodell in Blender-Einheiten, per
+  `COUCH_SCALE` auf ~2,4 m Länge gebracht; Kollision als zwei Boxen) und die Barflaschen
+  `assets/models/bottles.glb` (28 Objekte `bottle_NN` in Metern, Ursprung mittig unten; gebaut von
+  `tools/build_bottles.py` aus dem Paket in `assets/source/`) und der Plattenspieler
+  `assets/models/record_player.glb` (`tools/build_record_player.py`: Objekte `body` und `record`, die
+  Platte ist eine eigene runde Scheibe mit Ursprung auf der Drehachse, damit `RecordPlayer` sie drehen
+  kann). Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh)` in ein `Mat.psx` (eins pro Modelldatei).
+  **Katzenmodell** `assets/models/cat.glb` (noch nicht im Spiel, Spielkonzept 6.11): `tools/build_cat.py` aus
+  Meshys Zip (Auto-Rigging-Preset „Hund“, in `assets/source/`). 27 Knochen (`Hips`, `chest`, `head`,
+  `earend`/`R_earend`, `tail`…`tail3`, je Bein `frontleg`/`backleg` + `0`–`2`, rechts mit `R_`), ~2500
+  Dreiecke, Animation `walk` (1 s). Das Skript hängt falsch zugeordnete Beingewichte um (Punkt gehört
+  zum nächstgelegenen Beinknochen). Größe (0,34 m hoch) und Blick nach −Z stehen nur am Wurzelknoten
+  der Armatur – angewendet würden die Translations-Schlüssel der Animation nicht mitskaliert.
 - **Kein Inventar.** Ein Gegenstand in der Hand (`Player.held` / `Guest.held`), Geld ist der einzige
   abstrakte Besitz (`Game.money`). Gäste haben zusätzlich einen abstrakten Vorrat (`Guest.stock`).
   Ausnahme am Körper des Spielers: Kompass, Kartenblätter, Schlüsselbund (`Player.has_compass`,
@@ -120,7 +133,7 @@ Lärm-Dämpfung `1 | 2 | 64`.
 `items`, `guests`, `player`, `doors`, `chests`, `hide_spots`, `lamp_fixtures` (die Lampen),
 `lamps` (deren Lichter), `light_source` (alles, was für die Helligkeit zählt – `FlickerLight`),
 `light_switches`, `windows`, `pumpkin_plants`, `resource_spots`, `trace_marks`, `warning_notes`,
-`guest_notes`, `diaries`, `phones`, `uv_marks` (nicht gespeichert).
+`guest_notes`, `diaries`, `phones`, `dressers`, `uv_marks` (nicht gespeichert).
 
 ### Räume & IDs
 - **Raum-ID** = Zimmernummer (`"13"`, `"231"`) oder Bereichs-ID (`"lobby"`, `"flur_west"`,
@@ -234,6 +247,9 @@ UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, 
 - **`Guest`**: Zustandsautomat (`IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING,
   PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER`). In `IDLE` wählt `_next_activity()` gewichtet aus
   `profile.activities`; `_arrive()` verarbeitet das Ankommen je Zustand.
+  Tanzen auf Feiern: `_dance_pose()` mit `DANCES` (hüpfen, wiegen, drehen, arme hoch, twist, schunkeln) –
+  Lieblingstanz aus `hash(id)`, alle 7–15 s Wechsel (60 % Lieblingstanz). Arme drehen dabei auch um z
+  (seitlich) – `_animate()` setzt das außerhalb des Tanzens zurück.
 - **`Social`** ist der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`,
   `living_guests()`, `guest_by_id()`), Beziehungen (`change_relation`), Gerüchte mit Verzögerung,
   Diebstahl mit Zeugen, Reservierung von Verstecken (`find_hide_spot` / `release_hide_spot`),
@@ -260,7 +276,7 @@ UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, 
   **zuerst** angewendet, weil sich alles Weitere auf Gast-IDs bezieht. Danach Welt → Director-Werte →
   Gäste → Gegenstände → Spieler → Soziales → Monster zuletzt.
 - Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp, HotelPhone,
-  LightSwitch, HotelWindow) oder werden in `collect()` direkt ausgelesen (Door, Chest, Plant, Resource).
+  LightSwitch, HotelWindow, Dresser) oder werden in `collect()` direkt ausgelesen (Door, Chest, Plant, Resource).
   Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()`.
 - Beim Laden: `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
 - Speichern am Tagebuch gesperrt bei Jagd oder Monster näher als `NOISE_START`; Autosave nur in
@@ -275,6 +291,7 @@ UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, 
 | Fenster | `hotel_window.gd` | klares Glas / Milchglas / Vorhang (Ebene 10 nur für Sicht & Mond) |
 | Spuren | `traces.gd`, `trace_mark.gd` | zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`; Fußabdrücke verblassen, Marken bleiben |
 | Zettel | `warning_note.gd` | feste Warnungszettel (`warning_notes`, erst nach dem 1. Angriff sichtbar) und Gäste-Zettel (`guest_notes`, max. 30) |
+| Kommoden | `world/dresser.gd` | 8 Stück in den Hauptfluren (4 je Geschoss, `_corridors`). Drei Schubladen als eigene Körper; interagierbar ist je ein `Dresser.Handle` (leitet mit Index weiter). Hohler Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen einer Schublade (`searched`): leer / Münzen / Gegenstand aus `LOOT`. Beim Auf-/Zuschieben werden die darin liegenden Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“ – sie liegen nicht in der Hand). Lärm `drawer`. Gespeichert: `open`, `searched` (ab Version 7) |
 | Verstecke | `hide_spot.gd` | `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur |
 | Am Körper | `player.gd` (`_pocket`, `_update_hand`, `set_pockets`), `player/pocket_map.gd` | `Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den Welt-Gegenstand und trägt ihn in `has_compass`/`map_pages`/`keyring` ein – braucht keine freie Hand. Linke Hand (`_left_hand`) für Aktionen `map` (Tab) und `compass` (F), nicht bei `hands_blocked()` oder im Gespräch; `inspecting` halbiert das Tempo. Türen fragen `player.has_key(id)`. Gespeichert unter `player` |
 | Kompass | `item.gd` (`Kind.COMPASS`) | Nadel = Feder Richtung Welt −Z (Norden), gestört über `director.threat_at()` und – nur eingesteckt (`pocketed`) – `is_hallucinating()`; der Kompass in der linken Hand ist ein `Item` mit `make_pocketed()` (raus aus Gruppe `items`); liegt in `LevelBuilder.COMPASS_ROOM` |
@@ -364,7 +381,7 @@ Text für Gästeberichte in `Social.TRACE_TEXT`.
 - Preset „Windows Desktop“ in `export_presets.cfg`, Befehl im README. `binary_format/embed_pck=true` →
   eine einzelne `.exe`; Skripte als Binär-Tokens (`script_export_mode=2`); Ziel `build/` (Git-ignoriert).
 - Export-Filter „alle Ressourcen“: alles unter `res://` landet im Paket, außer `exclude_filter`
-  (`assets/source/*`, `tools/*`, `build/*`, `monster_idea.png`). Neue reine Arbeitsdateien dort ergänzen.
+  (`assets/source/*`, `tools/*`, `build/*`, `monster_idea.png`, `addons/meshy-godot-plugin/*`). Neue reine Arbeitsdateien dort ergänzen.
 - Nur `load()` mit festen `res://`-Pfaden verwenden – zusammengesetzte Pfade findet der Export nicht
   immer, und `res://` ist im Export schreibgeschützt. Alles Veränderliche gehört nach `user://`
   (Spielstände, `settings.cfg`), das im Export unter `%APPDATA%/Godot/app_userdata/Zimmer 13/` liegt.

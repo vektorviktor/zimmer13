@@ -15,7 +15,8 @@ const DIR := "user://saves/"
 ## 5: Zimmertelefone (Gruppe phones) – Stände mit Version 4 laden weiter, alle Hörer liegen auf
 ## 6: am Körper (player.compass/map_pages/keyring), Kartenblätter – ältere Stände laden weiter,
 ##    Kompass, Karte und Schlüssel liegen dort noch in der Welt
-const VERSION := 6
+## 7: Kommoden im Flur (Gruppe dressers) – ältere Stände laden weiter, alle Schubladen sind zu und unberührt
+const VERSION := 7
 const MIN_VERSION := 4
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -303,6 +304,7 @@ func collect() -> Dictionary:
 	data["switches"] = _collect_group("light_switches", func(n: Node) -> Dictionary: return n.save_state())
 	data["windows"] = _collect_group("windows", func(n: Node) -> Dictionary: return n.save_state())
 	data["phones"] = _collect_group("phones", func(n: Node) -> Dictionary: return n.save_state())
+	data["dressers"] = _collect_group("dressers", func(n: Node) -> Dictionary: return n.save_state())
 	data["table_loaded"] = Game.dice.table.loaded if Game.dice and Game.dice.table else false
 	return data
 
@@ -355,6 +357,8 @@ func apply(data: Dictionary) -> void:
 	_apply_group("hide_spots", data.get("hide_spots", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if data.has("phones"):   # erst ab Version 5
 		_apply_group("phones", data["phones"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	if data.has("dressers"):   # erst ab Version 7
+		_apply_group("dressers", data["dressers"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if Game.traces:
 		Game.traces.load_state(data.get("traces", []))
 	if Game.dice and Game.dice.table:

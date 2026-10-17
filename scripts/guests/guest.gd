@@ -23,6 +23,8 @@ const SAFE_DISTANCE := 22.0
 ## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
 const MUD_STEPS := 14
 const BLEED_TIME := 45.0
+## Tänze bei Feiern (`_dance_pose`)
+const DANCES := ["hüpfen", "wiegen", "drehen", "arme hoch", "twist", "schunkeln"]
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
 
 var id := ""
@@ -72,6 +74,8 @@ var _alarm_cooldown := 0.0
 var _run_noise := 0.0
 var _warned := false
 var _anim := 0.0
+var _dance := -1   ## Index in DANCES, -1 = tanzt gerade nicht
+var _dance_timer := 0.0
 var _game_look := Vector3.ZERO
 var _stuck_time := 0.0
 var _last_pos := Vector3.ZERO
@@ -910,6 +914,66 @@ func _build_visual() -> void:
 	add_child(_label)
 
 
+## Meist der Lieblingstanz des Gastes, ab und zu ein anderer (Spielkonzept 7.1).
+func _dance_pose(delta: float) -> void:
+	_dance_timer -= delta
+	if _dance < 0 or _dance_timer <= 0.0:
+		var favourite := absi(hash(id)) % DANCES.size()
+		_dance = favourite if randf() < 0.6 else randi() % DANCES.size()
+		_dance_timer = randf_range(7.0, 15.0)
+		_visual.rotation = Vector3.ZERO
+	var t := _anim
+	var beat := sin(t * 4.0)
+	_arm_l.rotation.z = 0.0
+	_arm_r.rotation.z = 0.0
+	match DANCES[_dance]:
+		"hüpfen":
+			_visual.position.y = absf(beat) * 0.08
+			_visual.rotation.y = sin(t * 2.0) * 0.4
+			_arm_l.rotation.x = -1.2 + beat * 0.6
+			_arm_r.rotation.x = -1.2 - beat * 0.6
+		"wiegen":
+			# Langsam von einer Seite zur anderen, Arme leicht ausgebreitet
+			_visual.position.y = 0.0
+			_visual.rotation.z = sin(t * 1.8) * 0.12
+			_visual.rotation.y = sin(t * 0.9) * 0.25
+			_arm_l.rotation.x = -0.3
+			_arm_r.rotation.x = -0.3
+			_arm_l.rotation.z = -0.6 + sin(t * 1.8) * 0.2
+			_arm_r.rotation.z = 0.6 + sin(t * 1.8) * 0.2
+		"drehen":
+			# Pirouetten mit ausgestreckten Armen
+			_visual.position.y = absf(sin(t * 3.0)) * 0.03
+			_visual.rotation.y += delta * 3.2
+			_arm_l.rotation.x = 0.0
+			_arm_r.rotation.x = 0.0
+			_arm_l.rotation.z = -1.4
+			_arm_r.rotation.z = 1.4
+		"arme hoch":
+			# Arme über dem Kopf, im Takt winken
+			_visual.position.y = absf(beat) * 0.05
+			_visual.rotation.y = sin(t * 1.0) * 0.2
+			_arm_l.rotation.x = -2.9 + beat * 0.15
+			_arm_r.rotation.x = -2.9 - beat * 0.15
+			_arm_l.rotation.z = -0.25 + beat * 0.2
+			_arm_r.rotation.z = 0.25 + beat * 0.2
+		"twist":
+			# Schnelles Hin- und Herdrehen, in die Knie gehen
+			_visual.position.y = -0.06 + sin(t * 3.0) * 0.05
+			_visual.rotation.y = sin(t * 9.0) * 0.6
+			_arm_l.rotation.x = -1.0 + sin(t * 9.0) * 0.3
+			_arm_r.rotation.x = -1.0 - sin(t * 9.0) * 0.3
+		"schunkeln":
+			# Seitlich wippen, Arme angewinkelt vor dem Körper
+			_visual.position.y = absf(sin(t * 2.5)) * 0.03
+			_visual.rotation.z = sin(t * 2.5) * 0.2
+			_visual.rotation.y = 0.0
+			_arm_l.rotation.x = -1.5
+			_arm_r.rotation.x = -1.5
+			_arm_l.rotation.z = -0.3
+			_arm_r.rotation.z = 0.3
+
+
 func _make_arm(side: float, coat: Material, skin: Material) -> Node3D:
 	var pivot := Node3D.new()
 	pivot.position = Vector3(side * 0.26, 1.42, 0)
@@ -929,14 +993,13 @@ func _animate(delta: float) -> void:
 	_anim += delta
 	var speed := Vector2(velocity.x, velocity.z).length()
 	if state == State.PARTY and speed < 0.1:
-		# Tanzen
-		_visual.position.y = absf(sin(_anim * 4.0)) * 0.08
-		_visual.rotation.y = sin(_anim * 2.0) * 0.4
-		_arm_l.rotation.x = -1.2 + sin(_anim * 4.0) * 0.6
-		_arm_r.rotation.x = -1.2 - sin(_anim * 4.0) * 0.6
+		_dance_pose(delta)
 		return
+	_dance = -1
 	_visual.position.y = 0.0
-	_visual.rotation.y = 0.0
+	_visual.rotation = Vector3.ZERO
+	_arm_l.rotation.z = 0.0
+	_arm_r.rotation.z = 0.0
 	if state == State.MINIGAME and seated:
 		_visual.position.y = -0.35   # sitzt
 		_arm_l.rotation.x = -1.1 + sin(_anim * 3.0) * 0.05

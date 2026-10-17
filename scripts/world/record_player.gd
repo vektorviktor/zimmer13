@@ -1,6 +1,11 @@
 class_name RecordPlayer
 extends StaticBody3D
-## Plattenspieler in der Lobby: Feier starten oder Musik ausschalten.
+## Plattenspieler in der Lobby: Feier starten oder Musik ausschalten (Spielkonzept 7.1).
+## Modell aus tools/build_record_player.py: „body“ und die drehbare Platte „record“.
+
+const MODEL := "res://assets/models/record_player.glb"
+## Das Modell ist 0,64 × 0,54 m (Trichter nach −X/−Z) – so verschoben steht es mittig auf dem Tisch.
+const MODEL_OFFSET := Vector3(0.16, 0, 0.02)
 
 var playing := false
 
@@ -11,14 +16,15 @@ func _ready() -> void:
 	collision_layer = 4
 	collision_mask = 0
 	set_meta("interactable", self)
-	Geo.mesh(self, Geo.box(Vector3(0.45, 0.12, 0.35)), Mat.psx(Color(0.35, 0.2, 0.1)), Vector3(0, 0.06, 0))
-	_disc = Geo.mesh(self, Geo.cylinder(0.14, 0.012, 12), Mat.psx(Color(0.05, 0.05, 0.05)), Vector3(-0.04, 0.13, 0))
-	Geo.mesh(_disc, Geo.cylinder(0.04, 0.014, 8), Mat.psx(Color(0.7, 0.15, 0.1)), Vector3.ZERO)
-	Geo.mesh(self, Geo.box(Vector3(0.02, 0.02, 0.2)), Mat.psx(Color(0.75, 0.75, 0.7)), Vector3(0.16, 0.15, 0.02))
-	# Trichter
-	var horn := Geo.mesh(self, Geo.cylinder(0.06, 0.3, 8), Mat.psx(Color(0.75, 0.6, 0.25)), Vector3(0.15, 0.3, -0.1))
-	horn.rotation.x = -0.6
-	Geo.add_box_shape(self, Vector3(0.45, 0.3, 0.35), Vector3(0, 0.15, 0))
+	var model: Node3D = (load(MODEL) as PackedScene).instantiate()
+	model.position = MODEL_OFFSET
+	add_child(model)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		m.material_override = Mat.model(MODEL, m)
+	_disc = model.find_child("record", true, false) as MeshInstance3D
+	# Gehäuse und Trichter
+	Geo.add_box_shape(self, Vector3(0.34, 0.2, 0.34), MODEL_OFFSET + Vector3(0, 0.1, 0))
+	Geo.add_box_shape(self, Vector3(0.37, 0.5, 0.42), MODEL_OFFSET + Vector3(-0.29, 0.45, -0.08))
 
 
 func _process(delta: float) -> void:

@@ -23,6 +23,11 @@ const LOBBY_H := 5.0
 const T := 0.2
 const DOOR_W := 1.2
 const DOOR_H := 2.1
+const COUCH_MODEL := "res://assets/models/couch.glb"
+## Rohmodell ist 4,34 Einheiten lang → ~2,4 m lang, Sitzhöhe ~0,45 m, Lehne ~0,92 m.
+const COUCH_SCALE := 0.55
+## 28 einzelne Flaschen „bottle_NN“ in Metern, Ursprung mittig unten (tools/build_bottles.py)
+const BOTTLES_MODEL := "res://assets/models/bottles.glb"
 const LAYER_CEILING := 16
 const LAYER_GLASS := 64
 ## Außenfenster der Zimmer: Unterkante, Oberkante, Breite
@@ -229,6 +234,12 @@ func _corridors(spec: Dictionary) -> void:
 	_painting(Vector3(53.7, 1.7, -1.49), 0.0, Color(0.16, 0.2, 0.15))
 	_painting(Vector3(11.4, 1.7, 1.49), 180.0, Color(0.12, 0.13, 0.2))
 	_painting(Vector3(46.3, 1.7, 1.49), 180.0, Color(0.2, 0.18, 0.1))
+	# Kommoden mit Schubladen (Spielkonzept 3.5) unter Bildern und Wandleuchten
+	for d in [[11.4, 1.0], [46.3, 1.0], [28.0, -1.0], [53.7, -1.0]]:
+		var dresser := Dresser.new()
+		dresser.position = Vector3(d[0], 0, d[1] * (1.6 - 0.1 - Dresser.SIZE.z / 2.0 - 0.01))
+		dresser.rotation.y = PI if d[1] > 0 else 0.0
+		level.add_child(dresser)
 	if main_end > 70.0:
 		_wall_lamp(Vector3(68.1, 2.1, -1.5), 0.0, 0.6, 4.5, sections[3][0])
 		_hide_spot(HideSpot.Type.WARDROBE, Vector3(66.3, 0, 1.2), 180.0)
@@ -598,7 +609,6 @@ func _lobby() -> void:
 	root.add_child(kitchen_door)
 
 	# Einrichtung
-	var red := Mat.psx(Color(0.4, 0.08, 0.08))
 	Geo.mesh(root, Geo.box(Vector3(9.0, 0.02, 7.0)), Mat.layer(Color(0.32, 0.07, 0.08)), Vector3(-7.0, 0.01, 0.0))
 	Geo.solid(root, Vector3(3.0, 1.1, 0.7), Vector3(-11.5, 0.55, 5.4), _dark_wood)      # Rezeption
 	Geo.solid(root, Vector3(0.7, 1.1, 1.4), Vector3(-9.65, 0.55, 4.75), _dark_wood)
@@ -612,8 +622,7 @@ func _lobby() -> void:
 	root.add_child(main_phone)
 	for z in [-2.6, 2.6]:
 		var back: float = 0.45 if z > 0 else -0.45
-		Geo.solid(root, Vector3(2.2, 0.45, 0.9), Vector3(-10.5, 0.225, z), red)          # Sofas
-		Geo.solid(root, Vector3(2.2, 0.5, 0.2), Vector3(-10.5, 0.7, z + back), red)
+		_couch(Vector3(-10.5, 0, z), PI / 2.0 if z > 0 else -PI / 2.0)   # Sofas
 		lobby_seats.append(Vector3(-10.5, 0, z - back * 1.6))
 	Geo.solid(root, Vector3(1.2, 0.4, 0.7), Vector3(-10.5, 0.2, 0.0), _wood)             # Couchtisch
 	for z in [-5.2, 5.2]:
@@ -655,9 +664,13 @@ func _bar() -> void:
 	_wall_x(13.0, -5.9, 0.1, [])
 	var counter := Geo.solid(root, Vector3(0.6, 1.1, 4.2), Vector3(-0.45, 0.55, 10.1), _dark_wood)
 	Geo.mesh(counter, Geo.box(Vector3(0.7, 0.05, 4.3)), _wood, Vector3(0, 0.57, 0))
-	var bottle_colors: Array[Color] = [Color(0.2, 0.45, 0.2), Color(0.45, 0.2, 0.1), Color(0.6, 0.55, 0.3), Color(0.25, 0.2, 0.4)]
-	for i in 9:
-		Geo.mesh(counter, Geo.cylinder(0.035, 0.25, 6), Mat.psx(bottle_colors[i % 4]), Vector3(0.1, 0.72, -1.8 + i * 0.45))
+	var pack := (load(BOTTLES_MODEL) as PackedScene).instantiate()
+	var bottles := pack.find_children("bottle_*", "MeshInstance3D", true, false)
+	for i in 12:   # jede Flasche nur einmal (5 und 28 sind teilerfremd)
+		var src: MeshInstance3D = bottles[i * 5 % bottles.size()]
+		var bottle := Geo.mesh(counter, src.mesh, Mat.model(BOTTLES_MODEL, src), Vector3(0.12, 0.595, -1.85 + i * 0.336))
+		bottle.rotation.y = i * 1.3
+	pack.free()
 	for z in [8.6, 10.1, 11.6]:
 		var stool := Geo.mesh(root, Geo.cylinder(0.18, 0.05, 8), Mat.psx(Color(0.4, 0.1, 0.1)), Vector3(-1.2, 0.7, z))
 		Geo.mesh(stool, Geo.cylinder(0.04, 0.7, 5), _dark_wood, Vector3(0, -0.35, 0))
@@ -905,6 +918,25 @@ func _painting(pos: Vector3, yaw: float, color: Color) -> void:
 	_parent.add_child(holder)
 	Geo.mesh(holder, Geo.box(Vector3(0.8, 0.6, 0.04)), _dark_wood, Vector3(0, 0, 0.02))
 	Geo.mesh(holder, Geo.box(Vector3(0.66, 0.46, 0.045)), Mat.psx(color), Vector3(0, 0, 0.025))
+
+
+## Ledercouch (`assets/models/couch.glb`, Rohmodell in Blender-Einheiten → `COUCH_SCALE`).
+## Lokal liegt die Lehne bei −X, die Sitzfläche zeigt nach +X; yaw dreht um Y.
+func _couch(pos: Vector3, yaw: float) -> void:
+	var body := StaticBody3D.new()
+	body.collision_mask = 0
+	body.position = pos
+	body.rotation.y = yaw
+	_parent.add_child(body)
+	var model: Node3D = (load(COUCH_MODEL) as PackedScene).instantiate()
+	model.scale = Vector3.ONE * COUCH_SCALE
+	model.position.y = 0.066 * COUCH_SCALE   # Unterkante des Modells liegt bei y = −0,066
+	body.add_child(model)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		m.material_override = Mat.model(COUCH_MODEL, m)
+	# Kollision (auch für das NavMesh): Sitzblock und Lehne, Maße aus dem skalierten Modell.
+	Geo.add_box_shape(body, Vector3(0.64, 0.45, 2.39), Vector3(0, 0.225, 0))
+	Geo.add_box_shape(body, Vector3(0.18, 0.47, 2.25), Vector3(-0.23, 0.685, 0))
 
 
 ## Spinnweben in einer Ecke, die man abnehmen kann (lokale +Z zeigt in den Raum).

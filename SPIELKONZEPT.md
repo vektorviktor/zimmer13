@@ -209,6 +209,18 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - **Luft anhalten** (Taste halten), wenn das Monster ganz nah ist – zu lange halten = Keuchen/Geräusch.
 - Gleiche Regeln gelten für **Gäste**: Sieht das Monster einen Gast ins Versteck gehen, holt es ihn (6.7).
 
+### 3.5 Kommoden im Flur (entschieden und umgesetzt 2026-10-14)
+- An einigen Stellen in den Hauptfluren stehen **Kommoden mit drei Schubladen** (im Prototyp vier je
+  Geschoss, unter Bildern und Wandleuchten).
+- Jede Schublade lässt sich **aufziehen und zuschieben**. Beim **ersten Öffnen** liegt manchmal etwas darin:
+  **Münzen** (1–4) oder ein **Gegenstand** (Kerze, Glühbirne, Batterie, Messer, gezinkte Würfel) –
+  oder nur Staub. Im Prototyp: 40 % leer, 30 % Münzen, 30 % Gegenstand.
+- Wie Truhen sind Schubladen **physische Behälter**: Was man hineinlegt, bleibt darin und fährt mit auf
+  und zu – ein Versteck für Dinge im Flur (3.2).
+- Eine offene Schublade verrät, dass hier schon jemand gesucht hat. Aufziehen macht leisen Lärm (3 m, 4.15).
+- **Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
+  Nachschub (z. B. der Hausmeister füllt nach)?
+
 ---
 
 ## 4. Das Monster
@@ -389,6 +401,23 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 **Beobachteter Fehler im Prototyp (behoben 2026-10-11):** Nach einem harmlosen Angriff auf einen Gast jagte das Monster ihn beim Rückzug sofort wieder, oder der Gast kletterte direkt vor ihm zurück ins selbe Versteck. Folge: endloses Erschrecken, und Bruno rief in einem fort „Bleib weg!“. Jetzt gilt: Nach einem harmlosen Schreck verschwindet das Monster, ohne erneut zu jagen; Gäste meiden Verstecke in der Nähe des Monsters (8 m); denselben Panik-Satz sagt ein Gast höchstens alle 45 s.
 
+**To-do: Angriffe sind zu kurz (beobachtet 2026-10-13, noch nicht behoben)**
+- **Beobachtung:** Kaum hat eine Aktivphase (ein „Angriff“) begonnen, geht das Monster nur ein paar Meter aus
+  dem Flur heraus und kehrt dann schon wieder um. Es kommt nicht im Hotel an – die Präsenz (oben) wirkt so nicht.
+- **Ziel:** Ein Angriff ist eine spürbare Zeit im Hotel unterwegs (Richtwert: `ACTIVE_TIME`, anfangs
+  70 s, später 210 s), durchstreift mehrere Bereiche und zieht sich erst danach zurück. Satt, UV-Licht
+  oder ein harmloser Schreck dürfen ihn weiter vorzeitig beenden.
+- **Zuerst die Ursache finden** (mit `--trace`, F3, `--warn`). Verdächtige im Code:
+  - `LURK` an Licht-/Deko-Grenzen: Nach 4 Mal Lauern (`_lurk_count >= 4`) zieht es sich zurück. Sind
+    die Flure hell, lauert es womöglich gleich hinter dem Startpunkt viermal und gibt auf.
+  - `SLINK`: Sieht der Spieler es länger als 0,35 s, verschwindet es aus dem Blick – führt das
+    direkt in den Rückzug?
+  - Zielwahl in `_next_roam()`: Liegen die ersten Ziele zu nah am Startpunkt bzw. am Keller?
+  - Sonstige Wege in `_start_retreat()` (Zurückgeschreckt, harmloser Schreck, Ende der Phase).
+- **Mögliche Lösungen** (nach der Ursache entscheiden): eine Mindestdauer bzw. Mindeststrecke pro Angriff,
+  bevor ein Rückzug erlaubt ist; Lauern zählt erst ab einer Entfernung vom Keller; das erste Ziel ist
+  weiter weg (anderer Flügel, Obergeschoss); Licht drängt es ab, statt es nach Hause zu schicken.
+
 **Offen**
 - Was steht konkret auf den Warnungszetteln (Story)? (Im Prototyp gibt es fünf erste Zettel aus den Jahren 1987–2019, siehe `scripts/world/warning_note.gd`.)
 
@@ -450,6 +479,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Gegenstand ablegen | – | 2 m · Kürbis 4 m | |
 | Vor Schreck fallen lassen (Schock, 6.8) | – | 6 m | |
 | Truhe öffnen | – | 4 m | |
+| Schublade aufziehen/zuschieben | – | 3 m | |
 | Vorhang ziehen | – | 2 m | |
 | Glühbirne heraus-/eindrehen | – | 2 m | |
 | Glühbirne platzt | – | 8 m | |
@@ -748,6 +778,38 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 
 ---
 
+### 6.11 Hotelkatzen (vorgemerkt 2026-10-14, noch nicht umgesetzt)
+- **Ein paar Katzen gehören zum Hotel** (Vorschlag: 2–3, mit Namen, z. B. eine alte, eine scheue, eine neugierige).
+- **Sie laufen frei durchs Hotel:** NavMesh wie die Gäste, eigene Lieblingsplätze (Rezeption, Sofa in der
+  Lobby, warm in der Küche, Fensterbank, Heizkeller), schlafen viel, schlüpfen durch offene Türen.
+- **Streicheln:** Spieler und Gäste können sie streicheln („Streicheln [E]“). Wer gestreichelt wird,
+  schnurrt (Geräusch) – Vorschlag: senkt beim Spieler die Anspannung kurz, bei Gästen die Angst (6.5).
+- **Mit Menschen:** Katzen suchen sich Lieblingsgäste, folgen ihnen ein Stück, legen sich in ihr Zimmer.
+  Gäste reden über die Katzen („Hast du Minka gesehen?“) und streicheln sie im Vorbeigehen.
+- **Das Monster greift keine Katzen an** (entschieden 2026-10-14): Katzen waren immer lieb zu ihm. Es jagt
+  sie nicht, holt sie nicht und sieht über sie hinweg (Sehen & Jagen, 4.12, gilt für sie nicht).
+- **Die Katzen haben trotzdem Angst vor ihm** (entschieden 2026-10-14): Kommt es in die Nähe, laufen sie
+  weg und fangen an zu **weinen** (klagendes Miauen/Jammern) – hörbar auch durch Wände.
+  - Das ist eine **Frühwarnung**: Eine weinende, fliehende Katze zeigt, dass es in der Nähe ist – oft
+    bevor das Rauschen beginnt (4.13). Ein Hinweis, keine Garantie.
+  - Vorschlag: Das Weinen ist **Lärm** (4.15) – das Monster ignoriert es aber (es mag die Katzen),
+    Gäste hören es dagegen und werden unruhig.
+- **Katzen werfen Dekoration um** (entschieden 2026-10-14): beim Herumstreifen, Spielen oder auf der Flucht.
+  Umgeworfene Deko (Kürbis, Kerze, 5.) **schützt nicht mehr**, bis jemand sie wieder aufstellt; eine
+  Kerze kann dabei ausgehen. Gäste können glauben, ein anderer Gast habe sabotiert (6.2, Gerüchte).
+  Das Umwerfen macht ein Geräusch (Lärm, 4.15).
+- **Geschenke und Gesellschaft** (entschieden 2026-10-14), beides mit **geringer Wahrscheinlichkeit**:
+  - Eine Katze **bringt dir Dekoration** – sie legt sie vor Zimmer 13 oder in dein Zimmer.
+    Vorschlag: kleine Deko (Spinnweben, Laub, eine Kerze), manchmal auch etwas, das einem Gast gehört –
+    der sucht es dann und verdächtigt vielleicht dich (6.2).
+  - Eine Katze **legt sich auf dein Bett** in Zimmer 13 und schläft dort eine Weile.
+  - Vorschlag: Je öfter man eine Katze streichelt, desto eher kommt sie zu einem.
+- **Ideen für später** (Vorschläge, noch offen):
+  - Miauen vor einer geschlossenen Tür kann einen im Versteck verraten – Gästen gegenüber, nicht dem Monster.
+- **Technik:** eigene Klasse ähnlich `Guest` (einfacher Zustandsautomat), interagierbar über
+  `set_meta("interactable", self)`. Katzen gehören in den Spielstand (Position, Zustand) → neue Liste,
+  kein Eingriff in die Reihenfolge der festen Welt-Objekte.
+
 ## 7. Spielwelt: Das Hotel
 
 - **Bereiche (Vorschlag):** Lobby, Flure mehrerer Etagen, Gästezimmer, Speisesaal/Küche, Wäscherei, Keller, Treppenhaus, **Hotelgarten** (Kürbisbeete, Laubbäume, umzäunt), **Bibliothek / Salon** (Schachbrett, Kamin, Billard), **Hotelbar** (Würfel, Darts).
@@ -777,6 +839,8 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
   - Ein Gast lädt ein → es spricht sich herum → Gäste kommen je nach Laune und Beziehung zum Gastgeber.
 - **Der Spieler kann selbst eine Feier ausrichten:**
   - Gäste persönlich einladen (Dialog) – ob sie kommen, hängt von der Beziehung ab.
+  - **Tänze** (umgesetzt 2026-10-14): Gäste tanzen verschieden – hüpfen, wiegen, drehen, Arme hoch, Twist,
+    schunkeln. Jeder hat einen Lieblingstanz und wechselt ab und zu.
   - Vorbereitung physisch in den Händen: Musik (Radio/Plattenspieler), Kerzen, Snacks aus der Küche, Deko in die Lobby tragen. Evtl. Geld für Extras.
   - Gelungene Feier → Beziehungen ↑ bei allen Gästen, Ruf ↑, Trauer/Schock ↓.
   - **Taktischer Einsatz:** Feier als Ablenkung, um in leere Zimmer zu schleichen – oder bewusst Lärm machen, um das Monster in die Lobby statt zum eigenen Zimmer zu locken (riskant für alle Anwesenden!).
@@ -837,6 +901,30 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
     - Folge: kurzes Aufblitzen, Knall/Klirren, die Lampe bleibt dunkel → die Zone wird dunkel → das Monster wird noch mehr angezogen (4.4). Eine sichere, helle Zone kann so mitten in einer Begegnung kippen.
     - Kaputte Birnen sind nutzlos (Vorschlag: bleiben als Scherben in der Fassung, müssen herausgedreht und ersetzt werden). Ersatzbirnen werden dadurch wertvoll.
 - **Gäste schalten Licht** ebenfalls: in ihrem Tagesablauf (Schlafen → Licht aus) – oder als **Sabotage** im Flur vor fremden Türen (4.11). Umgekehrt kann der Spieler einem Gast das Licht ausmachen und so das Monster auf ihn lenken.
+
+**To-do: Gäste bedienen Lichtschalter aktiv (vorgemerkt 2026-10-13, noch nicht umgesetzt)**
+> Stand im Prototyp: Gäste schalten nur das Licht **ihres eigenen Zimmers** – per Fernzugriff auf den
+> Schalter (`Guest._set_room_light()`), ohne hinzugehen: an beim Heimkommen (`_check_lights()`), aus zum
+> Ausruhen.
+- **Dunkelheit ist unangenehm:** Betritt ein Gast einen dunklen Raum oder Flurabschnitt, geht er zum
+  Schalter und macht das Licht an – in jedem Raum, nicht nur bei sich. Ängstliche Gäste schneller und
+  zuverlässiger, mutige lassen es auch mal dunkel.
+- **Beim Verlassen ausschalten:** Verlässt ein Gast ein **Hotelzimmer** und ist **sonst niemand mehr darin**
+  (kein Gast, nicht der Spieler), schaltet er das Licht aus. Flure, Lobby, Bar usw. bleiben an.
+- **Manchmal vergessen sie es** (Vorschlag: je nach Gast 10–30 %, in Panik oder auf der Flucht immer).
+- **Sichtbar und hörbar:** Der Gast geht wirklich zum Schalter (NavMesh-Weg, kurze Pause, Klick-Geräusch)
+  statt aus der Ferne zu schalten. Damit verraten Lichtwechsel, wo Gäste unterwegs sind.
+- **Wechselwirkungen:**
+  - **Licht aus = das Monster kommt** (4.4): Leere Zimmer werden dunkel und damit für das Monster
+    interessanter – ein vergessenes Licht schützt ein Zimmer, das niemand braucht.
+  - **Ausruhen** bleibt wie bisher (bewusst Licht aus im eigenen Zimmer, solange er drin ist).
+  - **Fehlende oder kaputte Birne:** Der Schalter hilft nicht → Gast beschwert sich, holt evtl. Ersatz
+    oder meidet den Raum (Anknüpfung an Birnen-Klau, 4.11).
+  - **Spieler im Zimmer:** Ist der Spieler noch drin, bleibt das Licht an. Ein Gast, der das Licht
+    ausmacht, während der Spieler sich darin versteckt, wäre ein eigener Schreckmoment (später).
+- **Technik-Ideen:** Wer ist im Raum? (Raum-Zuordnung über Position, wie bei `LightSwitch.find()`);
+  Schalter als Wegziel; neuer Gast-Zustand fürs Schalten; Spielstand ändert sich nicht (Schalter werden
+  schon gespeichert).
 
 **Für später vorgemerkt**
 - **Zerbrechende Fenster** – wird in einer späteren Runde geplant (bis dahin sind Fenster unzerbrechlich).
@@ -1000,7 +1088,7 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 |---------|--------|
 | **Spieler** | Position, Blickrichtung, geduckt, Gegenstand in der Hand, Geld, Schock/Trauer/Schuld (6.8) |
 | **Gegenstände** | Typ (inkl. Glühbirnen), Position/Rotation, Zustand (geschnitzt, Kerze drin, Brenndauer, Verfall), Ort (Boden, Truhe, Hand eines Gastes) |
-| **Welt** | Türen (offen/zu/abgeschlossen), Truhen-Inhalte, Lampen (intakt/kaputt, Birne drin/fehlt), Lichtschalter je Raum (an/aus), Vorhänge (offen/zu), Kürbisbeete (Stufe, Wachstum), Laub-/Spinnweben-Vorräte, Plattenspieler |
+| **Welt** | Türen (offen/zu/abgeschlossen), Truhen-Inhalte, Lampen (intakt/kaputt, Birne drin/fehlt), Lichtschalter je Raum (an/aus), Vorhänge (offen/zu), Kürbisbeete (Stufe, Wachstum), Laub-/Spinnweben-Vorräte, Plattenspieler, Kommoden (Schubladen offen/zu, schon durchsucht) |
 | **Gäste** | lebt/tot, Position, aktuelle Tätigkeit im Tagesablauf, Beziehung, Panik, Wissen/Gerüchte, Diebstahl-Erinnerungen, Wettschulden, getragener Gegenstand |
 | **Monster** | Position auf der Route, Dreistigkeit, Neugier je Zone, Sättigung, Deko-Anspruch und -Gewöhnung (4.8–4.10) |
 | **Puppe** | Position, bisherige Urteile |
@@ -1093,6 +1181,9 @@ Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegen
 7a. Fahrstuhl reparieren, Tiefkeller mit Heizkeller und Lager (7.4) · ~~Zimmertelefone (4.14)~~ ✔ (2026-10-11)
 7b. ~~Lärm & Sichtbarkeit als ein gemeinsames System (4.15)~~ ✔ (2026-10-11)
 7c. ~~Taschenlampe mit Batterien und UV-Aufsatz (4.16)~~ ✔ (2026-10-11)
+7d. Gäste bedienen Lichtschalter aktiv: Licht an im Dunkeln, beim Verlassen leerer Zimmer aus, manchmal vergessen (7.3, vorgemerkt 2026-10-13)
+7e. Angriffe zu kurz – das Monster kehrt nach wenigen Metern um: Ursache finden und beheben (4.13, beobachtet 2026-10-13)
+7f. Hotelkatzen: frei laufend, streicheln, Lieblingsgäste, vom Monster verschont, fliehen und weinen in seiner Nähe, werfen Deko um, bringen selten Deko und schlafen auf deinem Bett (6.11, vorgemerkt 2026-10-14)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen

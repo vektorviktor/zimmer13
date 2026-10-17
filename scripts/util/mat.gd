@@ -30,6 +30,16 @@ static func psx(color: Color, tex_id: String = "", tex_scale: float = 1.0, emiss
 	return m
 
 
+## PSX-Material mit der Farbtextur aus einer importierten GLB – eins pro Modelldatei.
+static func model(path: String, src: MeshInstance3D) -> ShaderMaterial:
+	var key := "model|" + path
+	if not _cache.has(key):
+		var m := psx(Color(0.8, 0.8, 0.8), "", 1.0, Color.BLACK, 0.0, false)
+		m.set_shader_parameter("albedo_tex", (src.get_active_material(0) as BaseMaterial3D).albedo_texture)
+		_cache[key] = m
+	return _cache[key]
+
+
 ## Für flache Auflagen auf einer anderen Fläche (Teppich auf Fliesen, Kassetten auf dem Türblatt):
 ## wird leicht zur Kamera gezogen, damit die Unterlage beim Vertex-Snapping nicht durchflimmert.
 static func layer(color: Color, tex_id: String = "", tex_scale: float = 1.0) -> ShaderMaterial:
