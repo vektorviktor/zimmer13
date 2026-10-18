@@ -3,7 +3,8 @@ extends Node3D
 ## Wird vom Titelbildschirm gestartet: neues Spiel (Game.new_game_slot) oder Laden
 ## eines Spielstands (Game.pending_load → SaveManager.apply nach dem Aufbau).
 ##
-## Debug-Startparameter (nach „--“ an Godot übergeben; ohne Titelbildschirm):
+## Debug-Startparameter (nach „--“ an Godot übergeben; ohne Titelbildschirm). Im Spiel dieselben Befehle
+## ohne „--“ in der Debug-Konsole ([^]/F1, DebugConsole) – ausgeführt von run_debug():
 ##   --load=n                    Spielstand n laden (0 = Autosave)
 ##   --savetest                  Speichern → Laden → Vergleichen (Ausgabe in der Konsole)
 ##   --diary=n                   nach 2 s wie am Tagebuch in Slot n speichern
@@ -18,6 +19,10 @@ extends Node3D
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, controls)
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
+##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, keller …), Zimmernummer, vor einen Gast
+##   --time=+n|-n                Spieltage vor- oder zurückspulen
+##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
+##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
@@ -156,6 +161,12 @@ func _ready() -> void:
 	add_child(teleport)
 	teleport.setup(builder)
 
+	if DebugConsole.enabled():   # Befehle wie die Startparameter, im Spiel getippt
+		var console := DebugConsole.new()
+		console.name = "DebugConsole"
+		add_child(console)
+		console.setup(run_debug)
+
 	Game.player_died.connect(_on_player_died)
 	if not Game.pending_load.is_empty():
 		_load_pending.call_deferred()
@@ -279,190 +290,252 @@ func _on_player_died() -> void:
 
 
 func _parse_debug_args() -> void:
-	for arg in OS.get_cmdline_user_args():   # vor allem, was einen Aufbruch auslöst (--warn …)
-		if arg.begins_with("--intent="):
-			var wanted := arg.substr(9)
-			Game.director.debug_victims = wanted.to_int() if wanted.is_valid_int() else ["roam", "one", "rampage"].find(wanted)
-	if "--no-psx" in OS.get_cmdline_user_args():
+	var args := OS.get_cmdline_user_args()
+	for arg in args:   # vor allem, was einen Aufbruch auslöst (--warn …)
+		if arg.begins_with("--intent=") or arg == "--no-psx":
+			run_debug(arg)
+	for arg in args:
+		if not (arg.begins_with("--intent=") or arg == "--no-psx"):
+			run_debug(arg)
+
+
+## Einen Debug-Befehl ausführen – beim Start für jeden Parameter, im Spiel aus der Debug-Konsole
+## (DebugConsole, dort ohne „--“ getippt). false = unbekannt. Neuer Befehl: hier ein Zweig, eine Zeile
+## im Kopfkommentar, in DebugConsole.COMMANDS und in der README.
+func run_debug(arg: String) -> bool:
+	if arg.begins_with("--intent="):
+		var wanted := arg.substr(9)
+		Game.director.debug_victims = wanted.to_int() if wanted.is_valid_int() else ["roam", "one", "rampage"].find(wanted)
+	elif arg == "--no-psx":
 		Settings.psx_look = false
 		Settings.apply()
-	for arg in OS.get_cmdline_user_args():
-		if arg.begins_with("--pos="):
-			var v := arg.substr(6).split(",")
-			Game.player.global_position = Vector3(v[0].to_float(), v[1].to_float(), v[2].to_float())
-			if v.size() > 3:
-				Game.player.rotation.y = deg_to_rad(v[3].to_float())
-			if v.size() > 4:
-				Game.player.head.rotation.x = deg_to_rad(v[4].to_float())
-		elif arg.begins_with("--monster="):
-			var m := arg.substr(10).split(",")
-			var pos := Vector3(m[0].to_float(), m[1].to_float(), m[2].to_float())
-			Game.monster.spawn_at(pos)
+	elif arg.begins_with("--tp="):
+		return _debug_teleport(arg.substr(5))
+	elif arg.begins_with("--time="):
+		# Spieltage vor- oder zurückspulen (+1, -2 …)
+		Game.director.elapsed = maxf(0.0, Game.director.elapsed + arg.substr(7).to_float() * Calendar.DAY_SECONDS)
+		Game.say(Calendar.date_text(Game.director.elapsed), 2.0)
+	elif arg.begins_with("--console"):
+		# Konsole nach 1 s öffnen, optional Befehle (mit ; getrennt) eintippen
+		var console := get_node_or_null("DebugConsole") as DebugConsole
+		if console == null:
+			return false
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:
+			console.open()
+			for line in arg.substr(10).split(";", false):
+				console.submit(line))
+	elif arg.begins_with("--load-slot="):
+		SaveManager.load_slot(arg.substr(12).to_int())
+	elif arg.begins_with("--pos="):
+		var v := arg.substr(6).split(",")
+		Game.player.global_position = Vector3(v[0].to_float(), v[1].to_float(), v[2].to_float())
+		if v.size() > 3:
+			Game.player.rotation.y = deg_to_rad(v[3].to_float())
+		if v.size() > 4:
+			Game.player.head.rotation.x = deg_to_rad(v[4].to_float())
+	elif arg.begins_with("--monster="):
+		var m := arg.substr(10).split(",")
+		var pos := Vector3(m[0].to_float(), m[1].to_float(), m[2].to_float())
+		Game.monster.spawn_at(pos)
+		Game.director.phase = MonsterDirector.Phase.ACTIVE
+	elif arg == "--pocket":
+		Game.player.give_compass()
+		for page in HotelMap.PAGES:
+			Game.player.add_map_page(page["id"])
+		Game.player.add_key("zimmer_18")
+	elif arg.begins_with("--flashlight"):
+		var uv := arg == "--flashlight=uv"
+		var lamp := Item.create(Item.Kind.FLASHLIGHT, "c=1;on" + (";uv;m=uv" if uv else ""))
+		Game.player.drop_held()
+		Game.player.receive_item(lamp)
+	elif arg.begins_with("--show="):
+		Game.player.debug_show = arg.substr(7)
+	elif arg.begins_with("--bold="):
+		Game.director.boldness = arg.substr(7).to_float()
+	elif arg.begins_with("--friend="):
+		var friend := Game.social.guest_by_id(arg.substr(9))
+		if friend:
+			friend.relation = 80.0
+	elif arg.begins_with("--kill="):
+		var victim := Game.social.guest_by_id(arg.substr(7))
+		Game.director.attacks = MonsterDirector.HARMLESS_ATTACKS + 1   # wirklich holen
+		get_tree().create_timer(3.0).timeout.connect(func() -> void:
+			Game.monster.spawn_at(victim.global_position + Vector3(1, 0, 0))
 			Game.director.phase = MonsterDirector.Phase.ACTIVE
-		elif arg == "--pocket":
-			Game.player.give_compass()
-			for page in HotelMap.PAGES:
-				Game.player.add_map_page(page["id"])
-			Game.player.add_key("zimmer_18")
-		elif arg.begins_with("--flashlight"):
-			var uv := arg == "--flashlight=uv"
-			var lamp := Item.create(Item.Kind.FLASHLIGHT, "c=1;on" + (";uv;m=uv" if uv else ""))
-			Game.player.drop_held()
-			Game.player.receive_item(lamp)
-		elif arg.begins_with("--show="):
-			Game.player.debug_show = arg.substr(7)
-		elif arg.begins_with("--bold="):
-			Game.director.boldness = arg.substr(7).to_float()
-		elif arg.begins_with("--friend="):
-			var friend := Game.social.guest_by_id(arg.substr(9))
-			if friend:
-				friend.relation = 80.0
-		elif arg.begins_with("--kill="):
-			var victim := Game.social.guest_by_id(arg.substr(7))
-			Game.director.attacks = MonsterDirector.HARMLESS_ATTACKS + 1   # wirklich holen
-			get_tree().create_timer(3.0).timeout.connect(func() -> void:
-				Game.monster.spawn_at(victim.global_position + Vector3(1, 0, 0))
-				Game.director.phase = MonsterDirector.Phase.ACTIVE
-				Game.director.kill_guest(victim, null))
-		elif arg == "--steal-test":
-			# Spieler nimmt Ednas Deko unbemerkt (für Schuld-Test)
-			for node in get_tree().get_nodes_in_group("items"):
-				if node.owner_id == "edna":
-					Game.player.try_pick_up(node)
-					break
-		elif arg.begins_with("--enemy="):
-			var enemy := Game.social.guest_by_id(arg.substr(8))
-			if enemy:
-				enemy.relation = -80.0
-		elif arg.begins_with("--player-deco="):
-			var xz := arg.substr(14).split(",")
-			var deco := Item.create(Item.Kind.CARVED_PUMPKIN)
-			deco.owner_id = "player"
-			deco.position = Vector3(xz[0].to_float(), 0.02, xz[1].to_float())
-			add_child(deco)
-		elif arg.begins_with("--dice="):
-			var opponent := Game.social.guest_by_id(arg.substr(7))
-			get_tree().create_timer(0.5).timeout.connect(func() -> void:
-				Game.dice.start(opponent, {"money": 3, "item": false}))
-		elif arg.begins_with("--challenge="):
-			Game.social.challenge(Game.social.guest_by_id(arg.substr(12)))
-		elif arg == "--autoplay":
-			_autoplay = true
-		elif arg.begins_with("--cat="):
-			# Katze vor den Spieler setzen (sitzt, zum Streicheln)
-			for cat in get_tree().get_nodes_in_group("cats"):
-				if cat.id == arg.substr(6):
-					cat.place_in_front_of(Game.player)
-		elif arg == "--party":
-			Game.social.start_party("player")
-		elif arg.begins_with("--look="):
-			var parts := arg.substr(7).split(",")
-			var guest := Game.social.guest_by_id(parts[0])
-			_debug_look(guest, parts[1] if parts.size() > 1 else "")
-		elif arg.begins_with("--shock="):
-			var parts := arg.substr(8).split(",")
-			_debug_shock(Game.social.guest_by_id(parts[0]), parts[1] if parts.size() > 1 else "blood")
-		elif arg.begins_with("--talk="):
-			var partner := Game.social.guest_by_id(arg.substr(7))
-			var after_shock := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--shock="))
-			if not after_shock:
-				Game.player.global_position = partner.global_position + Vector3(0, 0, -1.4)
-				Game.player.rotation.y = 0.0
-			get_tree().create_timer(8.0 if after_shock else 1.0).timeout.connect(func() -> void:
-				if after_shock:   # erst erschrecken lassen, dann hingehen
-					var front := -partner.global_transform.basis.z
-					Game.player.global_position = partner.global_position + front * 1.4
-				var to := partner.global_position - Game.player.global_position
-				Game.player.rotation.y = atan2(-to.x, -to.z)
-				Game.dialog.open(partner))
-		elif arg == "--ghost=flur":
-			Game.ghost.debug_summon_hall()
-		elif arg == "--sleep":
-			Game.social.start_sleep()
-		elif arg.begins_with("--ghost="):
-			var room: Dictionary = Game.director.rooms["13"]
-			Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)
-			Game.ghost.debug_summon(arg.substr(8).to_int(), "13")
-		elif arg == "--warn":
-			Game.director.start_warning()
-		elif arg.begins_with("--attacks="):
-			# so viele Angriffe gab es schon (über 2 = gefährlich)
-			Game.director.first_attack_done = true
-			Game.director.attacks = arg.substr(10).to_int()
-		elif arg == "--first-attack":
-			# Feier starten, kurz darauf der erste Angriff
-			Game.social.start_party("mila")
-			get_tree().create_timer(3.0).timeout.connect(Game.director._first_attack_at_party)
-		elif arg == "--knock":
-			# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
-			Game.director.first_attack_done = true
-			Game.player.global_position = (Game.social.builder.rooms["13"]["center"] as Vector3) + Vector3(0, 0.05, -0.6)
-			Game.monster.spawn_at(Vector3(24.0, 0.05, 0.0))
-			Game.social._knock_cooldown = 1.0
-			Game.social.debug_fake_knock = "--knock-fake" in OS.get_cmdline_user_args()
-			if "--answer" in OS.get_cmdline_user_args():
-				# nach 4 s öffnet der Spieler die Tür
-				get_tree().create_timer(4.0).timeout.connect(func() -> void:
-					(Game.social.builder.rooms["13"]["door"] as Door).set_open(true))
-		elif arg.begins_with("--call=") or arg.begins_with("--dial="):
-			# Telefon: Spieler steht in Zimmer 13 vor dem Schreibtisch und sieht auf den Apparat
-			var phone_pos := Game.phones.home_phone.global_position
-			Game.player.global_position = Vector3(phone_pos.x, 0.05, phone_pos.z + 0.9)
+			Game.director.kill_guest(victim, null))
+	elif arg == "--steal-test":
+		# Spieler nimmt Ednas Deko unbemerkt (für Schuld-Test)
+		for node in get_tree().get_nodes_in_group("items"):
+			if node.owner_id == "edna":
+				Game.player.try_pick_up(node)
+				break
+	elif arg.begins_with("--enemy="):
+		var enemy := Game.social.guest_by_id(arg.substr(8))
+		if enemy:
+			enemy.relation = -80.0
+	elif arg.begins_with("--player-deco="):
+		var xz := arg.substr(14).split(",")
+		var deco := Item.create(Item.Kind.CARVED_PUMPKIN)
+		deco.owner_id = "player"
+		deco.position = Vector3(xz[0].to_float(), 0.02, xz[1].to_float())
+		add_child(deco)
+	elif arg.begins_with("--dice="):
+		var opponent := Game.social.guest_by_id(arg.substr(7))
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			Game.dice.start(opponent, {"money": 3, "item": false}))
+	elif arg.begins_with("--challenge="):
+		Game.social.challenge(Game.social.guest_by_id(arg.substr(12)))
+	elif arg == "--autoplay":
+		_autoplay = true
+	elif arg.begins_with("--cat="):
+		# Katze vor den Spieler setzen (sitzt, zum Streicheln)
+		for cat in get_tree().get_nodes_in_group("cats"):
+			if cat.id == arg.substr(6):
+				cat.place_in_front_of(Game.player)
+	elif arg == "--party":
+		Game.social.start_party("player")
+	elif arg.begins_with("--look="):
+		var parts := arg.substr(7).split(",")
+		var guest := Game.social.guest_by_id(parts[0])
+		_debug_look(guest, parts[1] if parts.size() > 1 else "")
+	elif arg.begins_with("--shock="):
+		var parts := arg.substr(8).split(",")
+		_debug_shock(Game.social.guest_by_id(parts[0]), parts[1] if parts.size() > 1 else "blood")
+	elif arg.begins_with("--talk="):
+		var partner := Game.social.guest_by_id(arg.substr(7))
+		var after_shock := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--shock="))
+		if not after_shock:
+			Game.player.global_position = partner.global_position + Vector3(0, 0, -1.4)
 			Game.player.rotation.y = 0.0
-			Game.player.head.rotation.x = -0.75
-			var value := arg.substr(7)
-			get_tree().create_timer(1.0).timeout.connect(func() -> void:
-				if arg.begins_with("--call="):
-					Game.phones.debug_call(value)
-					if "--answer" in OS.get_cmdline_user_args():
-						get_tree().create_timer(4.0).timeout.connect(func() -> void:
-							Game.phones.answer(Game.phones.home_phone))
-				else:
-					Game.phones.debug_dial(value))
-		elif arg == "--trace":
-			_trace = true
-			Game.noise_trace = true
-			Game.message_posted.connect(func(text: String, _d: float) -> void: print("  » " + text.replace("
+		get_tree().create_timer(8.0 if after_shock else 1.0).timeout.connect(func() -> void:
+			if after_shock:   # erst erschrecken lassen, dann hingehen
+				var front := -partner.global_transform.basis.z
+				Game.player.global_position = partner.global_position + front * 1.4
+			var to := partner.global_position - Game.player.global_position
+			Game.player.rotation.y = atan2(-to.x, -to.z)
+			Game.dialog.open(partner))
+	elif arg == "--ghost=flur":
+		Game.ghost.debug_summon_hall()
+	elif arg == "--sleep":
+		Game.social.start_sleep()
+	elif arg.begins_with("--ghost="):
+		var room: Dictionary = Game.director.rooms["13"]
+		Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)
+		Game.ghost.debug_summon(arg.substr(8).to_int(), "13")
+	elif arg == "--warn":
+		Game.director.start_warning()
+	elif arg.begins_with("--attacks="):
+		# so viele Angriffe gab es schon (über 2 = gefährlich)
+		Game.director.first_attack_done = true
+		Game.director.attacks = arg.substr(10).to_int()
+	elif arg == "--first-attack":
+		# Feier starten, kurz darauf der erste Angriff
+		Game.social.start_party("mila")
+		get_tree().create_timer(3.0).timeout.connect(Game.director._first_attack_at_party)
+	elif arg == "--knock":
+		# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
+		Game.director.first_attack_done = true
+		Game.player.global_position = (Game.social.builder.rooms["13"]["center"] as Vector3) + Vector3(0, 0.05, -0.6)
+		Game.monster.spawn_at(Vector3(24.0, 0.05, 0.0))
+		Game.social._knock_cooldown = 1.0
+		Game.social.debug_fake_knock = "--knock-fake" in OS.get_cmdline_user_args()
+		if "--answer" in OS.get_cmdline_user_args():
+			# nach 4 s öffnet der Spieler die Tür
+			get_tree().create_timer(4.0).timeout.connect(func() -> void:
+				(Game.social.builder.rooms["13"]["door"] as Door).set_open(true))
+	elif arg.begins_with("--call=") or arg.begins_with("--dial="):
+		# Telefon: Spieler steht in Zimmer 13 vor dem Schreibtisch und sieht auf den Apparat
+		var phone_pos := Game.phones.home_phone.global_position
+		Game.player.global_position = Vector3(phone_pos.x, 0.05, phone_pos.z + 0.9)
+		Game.player.rotation.y = 0.0
+		Game.player.head.rotation.x = -0.75
+		var value := arg.substr(7)
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:
+			if arg.begins_with("--call="):
+				Game.phones.debug_call(value)
+				if "--answer" in OS.get_cmdline_user_args():
+					get_tree().create_timer(4.0).timeout.connect(func() -> void:
+						Game.phones.answer(Game.phones.home_phone))
+			else:
+				Game.phones.debug_dial(value))
+	elif arg == "--trace":
+		_trace = true
+		Game.noise_trace = true
+		Game.message_posted.connect(func(text: String, _d: float) -> void: print("  » " + text.replace("
 ", " ")))
-		elif arg.begins_with("--noise="):
-			var kind := arg.substr(8)
-			var timer := Timer.new()
-			timer.wait_time = 6.0
-			timer.autostart = true
-			timer.timeout.connect(func() -> void:
-				if Game.player:
-					Game.noise(kind, Game.player.global_position, Game.player))
-			add_child(timer)
-		elif arg == "--debug":
-			Game.hud.debug_enabled = true
-		elif arg.begins_with("--day="):
-			# zu einem Tag im Oktober springen (1–31)
-			Game.director.elapsed = (clampi(arg.substr(6).to_int(), 1, Calendar.HALLOWEEN) - 1) * Calendar.DAY_SECONDS
-		elif arg.begins_with("--bulb-thief="):
-			# Gast klaut sofort eine Glühbirne aus Zimmer 13
-			var thief := Game.social.guest_by_id(arg.substr(13))
-			var lamp := thief._bulb_to_steal(true)
-			if lamp:
-				thief._steal_lamp = lamp
-				thief._walk_to(Vector3(lamp.global_position.x, 0, lamp.global_position.z) + thief._toward_room(lamp), Guest.State.STEAL)
-		elif arg.begins_with("--diary="):
-			# wie am Tagebuch speichern (nach 2 s)
-			var slot := arg.substr(8).to_int()
-			get_tree().create_timer(2.0).timeout.connect(func() -> void:
-				var ok := SaveManager.save_to(slot, SaveManager.diary_sentence(), get_viewport().get_texture().get_image())
-				print("[diary] Slot %d gespeichert: %s – „%s“" % [slot, ok, SaveManager.diary_sentence()]))
-		elif arg.begins_with("--menu="):
-			# Menü für Screenshots öffnen: pause, diary, settings, load, controls
-			var which := arg.substr(7)
-			get_tree().create_timer(1.0).timeout.connect(func() -> void:
-				if which == "diary":
-					Game.menus.open_diary()
-				else:
-					Game.menus.open_pause()
-					if which != "pause":
-						Game.menus.call("_show_" + which))
-		elif arg == "--savetest":
-			get_tree().create_timer(6.0).timeout.connect(_save_test)
+	elif arg.begins_with("--noise="):
+		var kind := arg.substr(8)
+		var timer := Timer.new()
+		timer.wait_time = 6.0
+		timer.autostart = true
+		timer.timeout.connect(func() -> void:
+			if Game.player:
+				Game.noise(kind, Game.player.global_position, Game.player))
+		add_child(timer)
+	elif arg == "--debug":
+		Game.hud.debug_enabled = true
+	elif arg.begins_with("--day="):
+		# zu einem Tag im Oktober springen (1–31)
+		Game.director.elapsed = (clampi(arg.substr(6).to_int(), 1, Calendar.HALLOWEEN) - 1) * Calendar.DAY_SECONDS
+	elif arg.begins_with("--bulb-thief="):
+		# Gast klaut sofort eine Glühbirne aus Zimmer 13
+		var thief := Game.social.guest_by_id(arg.substr(13))
+		var lamp := thief._bulb_to_steal(true)
+		if lamp:
+			thief._steal_lamp = lamp
+			thief._walk_to(Vector3(lamp.global_position.x, 0, lamp.global_position.z) + thief._toward_room(lamp), Guest.State.STEAL)
+	elif arg.begins_with("--diary="):
+		# wie am Tagebuch speichern (nach 2 s)
+		var slot := arg.substr(8).to_int()
+		get_tree().create_timer(2.0).timeout.connect(func() -> void:
+			var ok := SaveManager.save_to(slot, SaveManager.diary_sentence(), get_viewport().get_texture().get_image())
+			print("[diary] Slot %d gespeichert: %s – „%s“" % [slot, ok, SaveManager.diary_sentence()]))
+	elif arg.begins_with("--menu="):
+		# Menü für Screenshots öffnen: pause, diary, settings, load, controls
+		var which := arg.substr(7)
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:
+			if which == "diary":
+				Game.menus.open_diary()
+			else:
+				Game.menus.open_pause()
+				if which != "pause":
+					Game.menus.call("_show_" + which))
+	elif arg == "--savetest":
+		get_tree().create_timer(6.0).timeout.connect(_save_test)
+	else:
+		return false
+	return true
+
+
+## --tp: zu einem Ort aus der F6-Liste (lobby, bar, küche, keller …), in ein Zimmer (Nummer) oder vor einen Gast.
+func _debug_teleport(where: String) -> bool:
+	var p := Game.player
+	var guest := Game.social.guest_by_id(where)
+	if guest and not guest.dead:
+		var front := -guest.global_transform.basis.z
+		_place_player(guest.global_position + front * 1.6, -front)
+		return true
+	var rooms: Dictionary = Game.social.builder.rooms
+	if rooms.has(where):
+		_place_player(rooms[where]["center"], -(rooms[where]["into"] as Vector3))
+		return true
+	var entry := (get_node("Teleport") as TeleportUI).find(where)
+	if entry.is_empty():
+		return false
+	if p.hiding:
+		p.exit_hide()
+	(get_node("Teleport") as TeleportUI).go_to(entry)
+	return true
+
+
+func _place_player(pos: Vector3, look: Vector3) -> void:
+	var p := Game.player
+	if p.hiding:
+		p.exit_hide()
+	p.global_position = pos + Vector3(0, 0.05, 0)
+	p.velocity = Vector3.ZERO
+	p.rotation = Vector3(0, atan2(-look.x, -look.z), 0)
+	p.head.rotation.x = 0.0
 
 
 ## --savetest: Speichern und Laden ohne Datei durchspielen und Unterschiede ausgeben.

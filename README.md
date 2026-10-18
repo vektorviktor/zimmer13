@@ -41,6 +41,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | F3 | Debug: versteckte Monster-Werte und die letzten Lärmereignisse |
 | F5 | Debug: Monster sofort rufen (wenn es gerade ruht; die ersten zwei Angriffe bleiben harmlos – `--attacks=3` für echte) |
 | F6 | Debug: Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller …) und Lakengeist zum 1.–4. Mal (in Zimmer 13) bzw. im Flur – pausiert, 1–9 / Maus |
+| ^ oder F1 | Debug-Konsole: Startparameter im Spiel tippen, ohne `--` (z. B. `shock edna,ghost3`, `tp lobby`, `guests`, `help`) – pausiert, ↑/↓ frühere Eingaben, Tab ergänzt · nur im Editor bzw. Debug-Build oder mit `--debug` |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel |
 
 ## Was drin ist
@@ -114,7 +115,7 @@ Die Tür- und Fensterrahmen (`assets/models/frames.glb`, Spielkonzept 7.2) brauc
 
 ## Debug-Startparameter
 
-Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
+Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen lassen sich auch im laufenden Spiel in der **Debug-Konsole** (^) tippen – dort ohne `--`, Wert mit Leerzeichen oder `=`.
 
 | Parameter | Wirkung |
 |-----------|---------|
@@ -131,6 +132,9 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--dial=11` · `--dial=lobby` | aus Zimmer 13 eine Nummer anrufen (0 = Rezeption) · Wählseite am Haupttelefon |
 | `--party` | Feier starten |
 | `--cat=minka` | Hotelkatze vor den Spieler setzen (`minka`, `socke`, `kasimir`) |
+| `--tp=lobby` · `--tp=12` · `--tp=edna` | hinspringen: Ort aus der F6-Liste (lobby, bar, küche, garten, keller, obergeschoss …), Zimmer, vor einen Gast |
+| `--time=+1` · `--load-slot=2` | Spieltage vor-/zurückspulen · Spielstand laden (in der Konsole: `load 2`, `save 2` = `--diary=2`) |
+| `--console` · `--console=guests;tp keller` | Debug-Konsole nach 1 s öffnen, optional Befehle (mit `;` getrennt) eintippen – für Screenshots |
 | `--talk=edna` | Gespräch öffnen |
 | `--look=gast1` · `--look=gast1,carry` | vor einen Gast stellen, ohne Dialog (er bleibt stehen) · mit Haltung: `carry`, `panic`, `dance`, `sit`, `walk` – zum Prüfen der Gastmodelle |
 | `--shock=bruno` · `--shock=mila,corpse` · `--shock=edna,ghost3` | Gast erschrecken: Blutlache bzw. Leiche vor ihm im Flur (Spieler sieht zu) · Lakengeist kommt zum n. Mal an sein dunkles Zimmerfenster (ab 3 würgt er; Zimmer ohne Außenfenster gehen nicht) · mit `--talk=bruno` erzählt er danach davon |

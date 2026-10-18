@@ -123,7 +123,25 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _go(index: int) -> void:
-	var entry: Array = _targets[index]
+	go_to(_targets[index])
+
+
+## Eintrag zu einem getippten Namen (Debug-Konsole, „tp keller“): erst ein Eintrag, dessen erstes Wort genau
+## passt, sonst einer, der so anfängt. Leer, wenn keiner passt.
+func find(query: String) -> Array:
+	query = query.to_lower()
+	var starts: Array = []
+	for entry in _targets:
+		var label := String(entry[0]).to_lower()
+		var first := label.split(" ")[0].trim_suffix(",")
+		if first == query:
+			return entry
+		if starts.is_empty() and label.begins_with(query):
+			starts = entry
+	return starts
+
+
+func go_to(entry: Array) -> void:
 	var p := Game.player
 	if p.hiding:
 		p.exit_hide()
