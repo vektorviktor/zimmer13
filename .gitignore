@@ -12,3 +12,7 @@ assets/source/anim/
 
 # Exportierte Builds (export_presets.cfg)
 build/
+
+# Arbeitsordner (Rohmodelle, Mixamo-Rohdateien, Vorlagen) und Referenzbilder – nicht fürs Repo
+temp/
+assets/*.avif
