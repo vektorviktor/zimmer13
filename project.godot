@@ -52,3 +52,7 @@ psx_snap={
 "type": "float",
 "value": 1.0
 }
+psx_smooth={
+"type": "float",
+"value": 0.0
+}

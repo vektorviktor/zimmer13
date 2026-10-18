@@ -1229,7 +1229,7 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 | Bereich | Optionen (Vorschlag) |
 |---------|----------------------|
 | **Bild** | **Helligkeit/Gamma mit Kalibrierbild** („Der Kürbis soll gerade noch erkennbar sein“) – wichtig, weil Dunkelheit Spielmechanik ist (4.4) · Vollbild/Fenster (Start immer im Fenster, 11.10.2026) · VSync · Sichtfeld (FOV) |
-| **PS1-Look** | Interne Auflösung · Vertex-Wackeln an/aus · Dithering an/aus |
+| **PS1-Look** | Hauptschalter an/aus · Interne Auflösung · Vertex-Wackeln an/aus · Dithering an/aus |
 | **Ton** | Gesamt · Musik · Effekte · Stimmen |
 | **Steuerung** | Mausempfindlichkeit · Y-Achse invertieren · Ducken halten/umschalten · später Tastenbelegung |
 | **Barrierefreiheit** | **Flacker- und Rausch-Intensität reduzieren** (Fotosensibilität – Warnhinweis beim ersten Start) · Untertitel für wichtige Geräusche („Schritte hinter der Wand“) |

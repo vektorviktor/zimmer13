@@ -36,6 +36,8 @@ uniform float stain_dark = 0.12;
 uniform float snap_resolution = 140.0;
 // Einstellungen → PS1-Look → Vertex-Wackeln (1 = an, 0 = aus)
 global uniform float psx_snap;
+// Einstellungen → PS1-Look aus: Farbbild bilinear statt Texel für Texel (1 = weich)
+global uniform float psx_smooth;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -67,6 +69,10 @@ ivec2 texel_at(float u, float h, float top, ivec2 size) {
 	}
 	int x = int(floor(mod(u * texels_per_m, float(size.x))));
 	return ivec2(x, clamp(int(ceil(row)) - 1, 0, size.y - 1));
+}
+
+vec3 wall_color(ivec2 t, bool side_b) {
+	return side_b ? texelFetch(albedo_tex_b, t, 0).rgb : texelFetch(albedo_tex, t, 0).rgb;
 }
 
 float hash(vec2 p) {
@@ -104,7 +110,17 @@ void fragment() {
 	}
 	ivec2 size = textureSize(albedo_tex, 0);
 	ivec2 t = texel_at(u, h, top, size);
-	vec3 tex = side_b ? texelFetch(albedo_tex_b, t, 0).rgb : texelFetch(albedo_tex, t, 0).rgb;
+	vec3 tex = wall_color(t, side_b);
+	if (psx_smooth > 0.5) {
+		// Bilinear von Hand (die Bänder machen texture() unbrauchbar): vier Nachbar-Texel gewichten
+		float half_m = 0.5 / texels_per_m;
+		vec2 f = fract(vec2(u, h) * texels_per_m - 0.5);
+		vec3 a = mix(wall_color(texel_at(u - half_m, h - half_m, top, size), side_b),
+			wall_color(texel_at(u + half_m, h - half_m, top, size), side_b), f.x);
+		vec3 b = mix(wall_color(texel_at(u - half_m, h + half_m, top, size), side_b),
+			wall_color(texel_at(u + half_m, h + half_m, top, size), side_b), f.x);
+		tex = mix(a, b, f.y);
+	}
 	vec2 surf = texelFetch(surface_tex, t, 0).rg;
 	float gloss = surf.g;
 

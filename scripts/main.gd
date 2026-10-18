@@ -22,6 +22,7 @@ extends Node3D
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
+##   --no-psx                    ohne PS1-Look (wie Einstellungen → PS1-Look aus, wird nicht gespeichert)
 ##   --debug                     Debug-Werte einblenden
 ##   --nointro                   ohne Einführungstext
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
@@ -183,7 +184,8 @@ func _save_start(slot: int) -> void:
 func _apply_settings() -> void:
 	if _post:
 		_post.set_shader_parameter("gamma", Settings.gamma)
-		_post.set_shader_parameter("dither", 1.0 if Settings.dithering else 0.0)
+		_post.set_shader_parameter("dither", 1.0 if Settings.dither_on() else 0.0)
+		_post.set_shader_parameter("color_levels", 28.0 if Settings.psx_look else 255.0)
 
 
 func _process(_delta: float) -> void:
@@ -278,6 +280,9 @@ func _parse_debug_args() -> void:
 		if arg.begins_with("--intent="):
 			var wanted := arg.substr(9)
 			Game.director.debug_victims = wanted.to_int() if wanted.is_valid_int() else ["roam", "one", "rampage"].find(wanted)
+	if "--no-psx" in OS.get_cmdline_user_args():
+		Settings.psx_look = false
+		Settings.apply()
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--pos="):
 			var v := arg.substr(6).split(",")

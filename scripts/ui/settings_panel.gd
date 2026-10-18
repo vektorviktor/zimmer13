@@ -30,12 +30,18 @@ func _ready() -> void:
 	_slider(list, "Sichtfeld (FOV)", "fov", 60.0, 95.0, 1.0)
 
 	_section(list, "PS1-Look")
+	var look := _check(list, "PS1-Look", "psx_look")
 	var res := _option(list, "Interne Auflösung", "resolution")
 	for r in Settings.RESOLUTIONS:
 		res.add_item("%d × %d" % [r.x, r.y])
 	res.select(Settings.resolution)
-	_check(list, "Vertex-Wackeln", "vertex_wobble")
-	_check(list, "Dithering", "dithering")
+	# Ohne PS1-Look gelten die Einzelschalter nicht – sie bleiben gespeichert, sind aber gesperrt
+	var parts: Array[BaseButton] = [res, _check(list, "Vertex-Wackeln", "vertex_wobble"), _check(list, "Dithering", "dithering")]
+	var lock := func(on: bool) -> void:
+		for part in parts:
+			part.disabled = not on
+	lock.call(Settings.psx_look)
+	look.toggled.connect(lock)
 
 	_section(list, "Ton")
 	_slider(list, "Gesamt", "master_volume", 0.0, 1.0, 0.05)
@@ -94,13 +100,14 @@ func _slider(list: VBoxContainer, text: String, key: String, min_value: float, m
 			_update_calibration())
 
 
-func _check(list: VBoxContainer, text: String, key: String) -> void:
+func _check(list: VBoxContainer, text: String, key: String) -> CheckBox:
 	var box := CheckBox.new()
 	box.text = text
 	box.button_pressed = bool(Settings.get(key))
 	box.add_theme_font_size_override("font_size", 9)
 	box.toggled.connect(func(on: bool) -> void: Settings.set_value(key, on))
 	list.add_child(box)
+	return box
 
 
 func _option(list: VBoxContainer, text: String, key: String) -> OptionButton:
