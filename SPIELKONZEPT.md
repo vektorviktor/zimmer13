@@ -1279,6 +1279,12 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man sc
 
 - **Plan statt Code:** Der Grundriss wird in Aseprite gezeichnet, **1 m = 10 px**, Wände 2 px (20 cm). Ein
   Skript liest daraus Wände, Türen, Fenster, Räume und Einbauten; Möbel setzt weiterhin der LevelBuilder.
+- **Vorlage für alle Stockwerke:** je Stockwerk eine Ebenengruppe (`EG`, `OG1` …, `Keller`) mit den Ebenen
+  „Grundriss“ und „Beschriftung“ (frei, wird nicht gelesen); in `OG1` liegt das EG als Referenzebene zum
+  Abzeichnen. Die **Legende steht als Farbnamen in der Palette**. Raumnamen, Bereiche, Treppen (mit Richtung)
+  und künftig einzelne Objekte (mit Vorderseite) werden als **benannte Slices** eingetragen, z. B.
+  „Raum: Küche“, „Treppe: Lobby“, „Objekt: Sofa“, im Obergeschoss mit Vorsatz: „OG1 Raum: Bibliothek“.
+  Der Luftraum über der Lobby ist im OG1 als eigene Farbe „Luftraum“ eingezeichnet.
 - **Legende:** Zimmer orange · Flure und Lobby hellblau-grau · Gärten hellgrün (draußen) · Terrassen vor den
   Gartenzimmern blassgrün · Pflanzen in ca. 60 cm hohen Steineinfassungen dunkelgrüne Quadrate · Bäume ·
   Striche auf der Wand: Flurtür hellgrün, Terrassentür knallgrün, Fenster blau, **Doppel-Glastür gelb**,

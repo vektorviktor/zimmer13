@@ -1,5 +1,7 @@
 {
 	"source": "map.aseprite",
+	"floor": "EG",
+	"level": 0,
 	"meters_per_pixel": 0.1,
 	"origin_px": [
 		1155,
@@ -8659,7 +8661,19 @@
 					-7.4,
 					-23.9,
 					7.4,
-					-10.0
+					-20.2
+				],
+				[
+					-7.4,
+					-20.2,
+					-3.7,
+					-15.0
+				],
+				[
+					0.1,
+					-20.2,
+					7.4,
+					-15.0
 				],
 				[
 					-69.4,
@@ -8696,6 +8710,12 @@
 					-15.9,
 					69.4,
 					-12.0
+				],
+				[
+					-7.4,
+					-15.0,
+					7.4,
+					-10.0
 				],
 				[
 					-69.4,
@@ -8823,8 +8843,7 @@
 					47.4,
 					-0.1
 				]
-			],
-			"name": "Flure und Lobby"
+			]
 		},
 		{
 			"id": "garden_1",
@@ -12062,7 +12081,7 @@
 			]
 		},
 		{
-			"id": "pool_vorraum",
+			"id": "vorraum",
 			"kind": "service",
 			"outdoor": false,
 			"rects": [
@@ -12087,7 +12106,7 @@
 					-104.1
 				]
 			],
-			"name": "Dusche"
+			"name": "Dusche West"
 		},
 		{
 			"id": "dusche_ost",
@@ -12101,7 +12120,7 @@
 					-104.1
 				]
 			],
-			"name": "Dusche"
+			"name": "Dusche Ost"
 		},
 		{
 			"id": "umkleide_west",
@@ -12115,7 +12134,7 @@
 					-98.1
 				]
 			],
-			"name": "Umkleide"
+			"name": "Umkleide West"
 		},
 		{
 			"id": "umkleide_ost",
@@ -12129,7 +12148,7 @@
 					-98.1
 				]
 			],
-			"name": "Umkleide"
+			"name": "Umkleide Ost"
 		},
 		{
 			"id": "kueche",
@@ -12216,7 +12235,7 @@
 			"name": "Bar"
 		},
 		{
-			"id": "party",
+			"id": "partyraum",
 			"kind": "party",
 			"outdoor": false,
 			"rects": [
@@ -12241,7 +12260,7 @@
 					-0.1
 				]
 			],
-			"name": "Toilette"
+			"name": "Toilette West"
 		},
 		{
 			"id": "toilette_ost",
@@ -12255,7 +12274,7 @@
 					-0.1
 				]
 			],
-			"name": "Toilette"
+			"name": "Toilette Ost"
 		},
 		{
 			"id": "becken",
@@ -17708,6 +17727,78 @@
 			]
 		}
 	],
+	"stairs": [
+		{
+			"id": "treppenhaus_west",
+			"name": "West",
+			"kind": "stairwell",
+			"rect": [
+				-47.4,
+				-103.9,
+				-43.6,
+				-98.1
+			],
+			"door": {
+				"pos": [
+					-46.5,
+					-97.95
+				],
+				"side": "south"
+			}
+		},
+		{
+			"id": "treppenhaus_ost",
+			"name": "Ost",
+			"kind": "stairwell",
+			"rect": [
+				43.6,
+				-103.9,
+				47.4,
+				-98.1
+			],
+			"door": {
+				"pos": [
+					44.5,
+					-97.95
+				],
+				"side": "south"
+			}
+		},
+		{
+			"id": "treppe_lobby",
+			"name": "Lobby",
+			"kind": "stair",
+			"rect": [
+				-3.7,
+				-20.2,
+				0.1,
+				-15.0
+			],
+			"up": "north"
+		}
+	],
+	"voids": [],
+	"open_above": [
+		[
+			-3.7,
+			-20.2,
+			3.7,
+			-0.1
+		]
+	],
+	"areas": [
+		{
+			"id": "lobby",
+			"name": "Lobby",
+			"rect": [
+				-7.4,
+				-30.0,
+				7.4,
+				0.0
+			]
+		}
+	],
+	"objects": [],
 	"planters": [
 		[
 			-65.5,
@@ -18742,58 +18833,5 @@
 			2.5,
 			-8.0
 		]
-	],
-	"lobby": {
-		"void": [
-			-3.7,
-			-20.2,
-			3.7,
-			-0.1
-		],
-		"stair": {
-			"rect": [
-				-3.7,
-				-20.2,
-				0.1,
-				-15.0
-			],
-			"up": "north"
-		}
-	},
-	"stairwells": [
-		{
-			"rect": [
-				-47.4,
-				-103.9,
-				-43.6,
-				-98.1
-			],
-			"wing": "west",
-			"id": "treppenhaus_west",
-			"door": {
-				"pos": [
-					-46.5,
-					-97.95
-				],
-				"side": "S"
-			}
-		},
-		{
-			"rect": [
-				43.6,
-				-103.9,
-				47.4,
-				-98.1
-			],
-			"wing": "ost",
-			"id": "treppenhaus_ost",
-			"door": {
-				"pos": [
-					44.5,
-					-97.95
-				],
-				"side": "S"
-			}
-		}
 	]
 }

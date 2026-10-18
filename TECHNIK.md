@@ -224,24 +224,34 @@ Lärm-Dämpfung `1 | 2 | 64`.
 - Ein neues Zimmer: Eintrag in `ROWS` – Wände, Tür (mit Rahmen), Lampen, Schalter, Möbel, Zone und
   Wegpunkt entstehen automatisch. **Speicherformat beachten** (siehe 7).
 
-### Gebäudeplan (`map.aseprite` → `tools/build_map.py` → `assets/maps/floor0.json`)
+### Gebäudeplan (`map.aseprite` → `tools/build_map.py` → `assets/maps/<stockwerk>.json`)
 Neuer Grundriss (Spielkonzept 7.5), wird schrittweise an die Stelle von `ROWS`/`FLOORS` treten; der alte
 Stand liegt unter dem Git-Tag `alte-karte`. Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
-dort), das Skript ist reines Python ohne Zusatzpakete und braucht ca. 10 s:
-`python tools/build_map.py [map.aseprite] [assets/maps/floor0.json] [vorschau.svg]`. Die Vorschau zeichnet
-das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Prüfen nach Planänderungen.
-- **Plan-Regeln:** 1 m = 10 px, Wände 2 px schwarz, Öffnungen als Farbstriche **auf** der Wandlinie, Flächen
-  als Füllfarben (`LEGEND`, `OPENINGS`, `GLASS`, `GALLERY` oben im Skript). Gelesen wird das Bild aller sichtbaren
-  Ebenen. Schrift ist erlaubt (wird über die Größe erkannt und mit der Umgebungsfarbe aufgefüllt), trägt aber
-  keine Bedeutung: Namen von Räumen stehen in `NAMES` als Pixelpunkt → ID/Name. **Ändert sich der Plan an
-  diesen Stellen, `NAMES` anpassen** – unbenannte Flächen heißen `<art>_<n>`.
+dort), das Skript ist reines Python ohne Zusatzpakete und braucht ca. 10 s je Stockwerk:
+`python tools/build_map.py [map.aseprite] [assets/maps] [vorschau-ordner]`. Die Vorschau (`<stockwerk>.svg`)
+zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Prüfen nach Planänderungen.
+- **Aufbau der Plandatei (Vorlage):** Jede Ebenengruppe der obersten Stufe ist ein Stockwerk (`EG`, `OG1` …,
+  `Keller`) und wird zu `eg.json`, `og1.json` … – sobald sie Wände enthält. Gezählt werden alle normalen
+  Ebenen der Gruppe, **egal ob sichtbar**; nicht gezählt werden Referenzebenen (`OG1/EG (Referenz)` zeigt das EG
+  zum Abzeichnen) und Ebenen, deren Name mit `Beschriftung`, `Skizze` oder `Notiz` beginnt.
+- **Legende = Palette mit Namen:** Die Bedeutung jeder Farbe kommt aus dem **Farbnamen in der Palette**
+  (`FILLS`, `OPENINGS`, `Wand`, `Glaswand` oben im Skript). Farben dürfen sich ändern, die Namen nicht.
+  Farben ohne Paletteneintrag meldet das Skript mit Pixelposition. 1 m = 10 px, Wände 2 px, Öffnungen als
+  Farbstriche **auf** der Wandlinie, Flächen als Füllfarben, `Luftraum` = hier kein Boden (wird beim
+  Stockwerk darunter zu `open_above`). Schrift in Wandfarbe im Grundriss wird über ihre Größe erkannt und
+  übermalt, gehört aber in die Ebene `Beschriftung`.
+- **Slices** (sprite-weit, daher Stockwerk als Vorsatz, ohne Vorsatz EG: `OG1 Raum: Bibliothek`):
+  `Raum: <Name>` benennt die Fläche mit den meisten Pixeln im Slice (ID = Name klein, Umlaute ausgeschrieben),
+  `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen Kante**) und `Treppenhaus: <Name>` →
+  `stairs`, `Objekt: <Name>` (Pivot an der Vorderseite) → `objects`. Unbenannte Flächen heißen `<art>_<n>`,
+  der einzige Flur `flure`.
 - **Ausgabe** (Meter, x Ost, z Süd, Ursprung = Mitte Haupteingang auf der Südwand, Rechtecke `[x0, z0, x1, z1]`):
   `walls` (`a`, `b`, `thickness`, optional `glass`, `openings` mit `kind`/`at` = Abstand ab `a`/`width`;
   waagerechte Wände laufen durch, senkrechte enden bündig an ihnen), `regions` (`id`, `kind`, `outdoor`,
-  `rects`, optional `name`; eine Fläche `flure` umfasst alle Flure **und** die Lobby), `rooms` (`no`, `sign`,
-  `wing`, `rects`, `center`, `door` mit `pos`/`normal` in den Flur, `windows`, `garden_doors`), `planters`,
-  `terrace_edges`, `trees`, `reception`, `lobby` (`void` = Luftraum, `stair` mit `up`), `stairwells`
-  (`rect`, `door`, `wing`).
+  `rects`, optional `name`; die Fläche `flure` umfasst alle Flure **und** die Lobby), `rooms` (`no`, `sign`,
+  `wing`, `rects`, `center`, `door` mit `pos`/`normal` in den Flur, `windows`, `garden_doors`), `stairs` (`id`,
+  `kind` `stair`/`stairwell`, `rect`, `up` bzw. `door`), `voids`, `open_above`, `areas`, `objects` (`name`,
+  `rect`, `facing`), `planters`, `terrace_edges`, `trees`, `reception`.
 - **Zimmernummern** entstehen im Skript (`WINGS`: Laufweg je Flügel als Flurmittellinien in Pixeln, dann
   Querflur; rechts ungerade). Liegt ein Zimmer an keinem bekannten Flur, bricht das Skript ab – dann `WINGS`
   ergänzen. `BROKEN_SIGNS`: abweichende Türschilder (0113 → „13“).

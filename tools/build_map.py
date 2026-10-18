@@ -1,420 +1,523 @@
-# Liest den Gebäudeplan map.aseprite (Spielkonzept 7.5) und schreibt daraus die Layout-Datei, aus der der
-# LevelBuilder das Erdgeschoss baut: Wände mit Öffnungen, Flächen (Zimmer, Flure, Gärten …), Zimmer mit
-# Nummer, Tür und Fenstern, dazu Pflanzkübel, Bäume, Treppen, Aufzüge, Rezeption und Pool.
+# Liest den Gebäudeplan map.aseprite (Spielkonzept 7.5) und schreibt je Stockwerk eine Layout-Datei, aus der
+# der LevelBuilder baut: Wände mit Öffnungen, Flächen (Zimmer, Flure, Gärten …), Zimmer mit Nummer, Tür und
+# Fenstern, dazu Pflanzkübel, Bäume, Treppen, Aufzüge, Rezeption, Luftraum, Bereiche und Objekte.
 #
-# Plan-Regeln (mit dem Zeichner abgestimmt):
-#   - Maßstab 1 m = 10 px. Wände sind 2 px dicke schwarze Linien (20 cm).
-#   - Gezählt wird das Bild aller sichtbaren Ebenen („alles flach“); ausgeblendete Ebenen fallen weg.
-#   - Öffnungen sind farbige Striche auf der Wandlinie, Flächen sind Füllfarben (Legende in LEGEND/OPENINGS).
-#   - Beschriftungen (schwarzer/roter Text) werden über ihre Größe erkannt und ignoriert; Namen von Räumen
-#     ohne eigene Farbe stehen deshalb in NAMES (Punkt im Raum → ID und Anzeigename).
+# Aufbau der Plandatei (Vorlage, mit dem Zeichner abgestimmt):
+#   - Maßstab 1 m = 10 px. Wände sind 2 px dicke Linien in der Palettenfarbe „Wand“ (20 cm).
+#   - Jede Ebenengruppe der obersten Stufe ist ein Stockwerk: „EG“, „OG1“, „OG2“ …, „Keller“. Gezählt werden
+#     alle normalen Ebenen der Gruppe, egal ob sichtbar. Nicht gezählt: Referenzebenen und Ebenen, deren Name
+#     mit „Beschriftung“, „Skizze“ oder „Notiz“ beginnt.
+#   - Die Bedeutung jeder Farbe steht als **Name in der Palette** (FILLS/OPENINGS unten). Farben, die nicht in
+#     der Palette stehen, werden gemeldet und übergangen.
+#   - Öffnungen sind Farbstriche auf der Wandlinie, Flächen sind Füllfarben.
+#   - Slices (Aseprite-Werkzeug „Slice“) tragen Namen: „Raum: Küche“, „Bereich: Lobby“, „Treppe: Lobby“
+#     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite). Ohne Vorsatz gelten sie
+#     im EG, sonst mit Stockwerk davor: „OG1 Raum: Bibliothek“.
 #
 # Koordinaten der Ausgabe: Meter, x nach Osten, z nach Süden (Norden = −Z wie in Godot), Ursprung = Mitte
 # des Haupteingangs auf der Mittellinie der Südwand. Rechtecke als [x0, z0, x1, z1].
 #
 # Aufruf (Python 3, keine Zusatzpakete):
-#   python tools/build_map.py [map.aseprite] [assets/maps/floor0.json] [vorschau.svg]
-import json, math, struct, sys, zlib
+#   python tools/build_map.py [map.aseprite] [assets/maps] [vorschau-ordner]
+import json, math, os, struct, sys, zlib
 from collections import deque
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else "map.aseprite"
-DST = sys.argv[2] if len(sys.argv) > 2 else "assets/maps/floor0.json"
-PREVIEW = sys.argv[3] if len(sys.argv) > 3 else ""
+DST_DIR = sys.argv[2] if len(sys.argv) > 2 else "assets/maps"
+PREVIEW_DIR = sys.argv[3] if len(sys.argv) > 3 else ""
 
 PX = 0.1                    ## Meter pro Pixel
 ORIGIN = (1155, 1810)       ## Pixel des Ursprungs (Mitte Haupteingang, Mittellinie Südwand)
 MIN_WALL_RUN = 6            ## kürzeste erkannte Wand in Pixeln (kürzere Läufe sind Querschnitte)
-MIN_WALL_NET = 300          ## kleinere schwarze Flecken sind Schrift, keine Wände
+MIN_WALL_NET = 300          ## kleinere Flecken in Wandfarbe sind Schrift, keine Wände
+IGNORED_LAYERS = ("Beschriftung", "Skizze", "Notiz")
 
-WALL = "000000"
-## Füllfarben → Flächenart. „outdoor“ = ohne Decke.
-LEGEND = {
-	"ff8855": ("room", False),
-	"d4e4f1": ("corridor", False),        # Flure und Lobby
-	"bef6b0": ("garden", True),           # Gärten und Innenhöfe (draußen)
-	"bfdfb7": ("terrace", True),          # Terrassen vor den Gartenzimmern
-	"256415": ("terrace_edge", True),     # Einfassung der Terrassen
-	"249e07": ("tree", True),
-	"6da95d": ("planter", False),         # Pflanzen in ca. 60 cm hoher Steineinfassung
-	"ffffff": ("service", False),         # Küche, Speisesaal, Duschen, Umkleiden (Name über NAMES)
-	"c5c5c5": ("storage", False),         # Tiefkühlraum, Lager, Kühlraum
-	"99b054": ("bar", False),
-	"ce91d3": ("party", False),
-	"00afff": ("toilet", False),
-	"008dff": ("pool_water", False),
-	"b2c6d5": ("pool_deck", False),
-	"91d3be": ("elevator", False),
-	"d8d8d8": ("stairwell", False),
-	"848484": ("stairwell", False),       # Stufenstriche im Treppenhaus
-	"df7126": ("reception", False),
+## Palettenname → (Flächenart, draußen = ohne Decke)
+FILLS = {
+	"Zimmer": ("room", False), "Flur": ("corridor", False), "Garten": ("garden", True),
+	"Terrasse": ("terrace", True), "Terrassenkante": ("terrace_edge", True), "Baum": ("tree", True),
+	"Pflanzkübel": ("planter", False), "Betriebsraum": ("service", False), "Lagerraum": ("storage", False),
+	"Bar": ("bar", False), "Partyraum": ("party", False), "Toilette": ("toilet", False),
+	"Pool Wasser": ("pool_water", False), "Pool Umgang": ("pool_deck", False), "Aufzug": ("elevator", False),
+	"Treppe": ("stairs", False), "Treppenstufe": ("stairs", False), "Rezeption": ("reception", False),
+	"Luftraum": ("void", False),
 }
-## Strichfarben auf der Wandlinie → Öffnungsart
+## Palettenname → Öffnungsart (Strich auf der Wandlinie)
 OPENINGS = {
-	"99e550": "door",                # Tür zum Flur
-	"35ff00": "garden_door",         # Tür vom Zimmer zur Terrasse
-	"50a3e5": "window",
-	"fbf236": "glass_double_door",
-	"dfdfdf": "service_door",
-	"00ffaf": "elevator_door",
-	"ff0000": "main_entrance",       # verschlossen
+	"Tür Flur": "door", "Tür Terrasse": "garden_door", "Fenster": "window", "Doppel-Glastür": "glass_double_door",
+	"Betriebstür": "service_door", "Aufzugtür": "elevator_door", "Haupteingang": "main_entrance",
 }
-GLASS = "ddf0ff"                     ## gestrichelte Glaswand (Pool)
-GALLERY = "9badb7"                   ## Lobby: Kante des Obergeschosses (Luftraum) und Treppe nach oben
-
-## Räume ohne eigene Farbe oder mit mehreren gleichfarbigen: Punkt (px) → (ID, Anzeigename)
-NAMES = [
-	((430, 1340), "tiefkuehlraum", "Tiefkühlraum"), ((430, 1400), "lager", "Lager"),
-	((430, 1460), "kuehlraum", "Kühlraum"), ((550, 1400), "kueche", "Küche"),
-	((750, 1400), "speisesaal", "Speisesaal"), ((1010, 1620), "bar", "Bar"),
-	((1300, 1620), "party", "Partyraum"), ((945, 1780), "toilette_west", "Toilette"),
-	((1035, 1780), "toilette_ost", "Toilette"), ((1230, 705), "pool", "Pool"),
-	((1340, 760), "becken", "Becken"), ((1530, 710), "pool_vorraum", "Vorraum"),
-	((1500, 750), "dusche_west", "Dusche"), ((1560, 750), "dusche_ost", "Dusche"),
-	((1500, 800), "umkleide_west", "Umkleide"), ((1560, 800), "umkleide_ost", "Umkleide"),
-	((1137, 1550), "aufzug_1", "Aufzug 1"), ((1172, 1550), "aufzug_2", "Aufzug 2"),
-	((1155, 1700), "flure", "Flure und Lobby"),
-]
+WALL_NAME, GLASS_NAME = "Wand", "Glaswand"
+## Einbauten, die keine eigenen Bodenflächen sind
+FIXTURES = ("tree", "planter", "reception", "terrace_edge", "stairs", "void")
 
 ## Zimmernummern (Spielkonzept 7.5): je Flügel ein Laufweg ab der Lobby um den Rundflur (Mittellinien in px),
-## danach der Querflur. Rechte Hand ungerade, linke gerade. Ost = 01xx, West = 02xx; die erste Ziffer ist das
-## Stockwerk (Erdgeschoss 0). Zimmer 0113 ist das Spielerzimmer: Schild abgebrochen, zu lesen ist nur „13“.
+## danach der Querflur. Rechte Hand ungerade, linke gerade. Ost = x1xx, West = x2xx; die erste Ziffer ist das
+## Stockwerk (EG 0, OG1 1 …). Stockwerke ohne eigenen Eintrag benutzen die Laufwege des EG.
 WINGS = {
-	"ost": dict(base=100, path=[(1150, 1730), (1830, 1730), (1830, 850), (1390, 850), (1390, 1730)],
-		cross=(1290, 1390, 1)),
-	"west": dict(base=200, path=[(1080, 1730), (480, 1730), (480, 850), (920, 850), (920, 1730)],
-		cross=(1290, 920, -1)),
+	"EG": {
+		"ost": dict(base=100, path=[(1150, 1730), (1830, 1730), (1830, 850), (1390, 850), (1390, 1730)],
+			cross=(1290, 1390, 1)),
+		"west": dict(base=200, path=[(1080, 1730), (480, 1730), (480, 850), (920, 850), (920, 1730)],
+			cross=(1290, 920, -1)),
+	},
 }
 WING_SPLIT_X = 1155   ## Zimmer westlich davon gehören zum Westflügel
+## Türschilder, die nicht die Nummer zeigen: 0113 ist das Spielerzimmer, das Schild ist abgebrochen
 BROKEN_SIGNS = {"0113": "13"}
 
 
 # --- Aseprite lesen --------------------------------------------------------------------------------
 
 def read_aseprite(path):
-	"""Gibt (Breite, Höhe, RGBA-Bytearray) des ersten Frames zurück, alle sichtbaren Ebenen übereinander."""
+	"""Erstes Frame einer RGBA-Datei: Ebenen (mit Gruppenstufe und Bild), Palette mit Namen, Slices, Größe."""
 	data = open(path, "rb").read()
-	_, magic, frames, w, h, depth = struct.unpack_from("<IHHHHH", data, 0)
+	_, magic, _, w, h, depth = struct.unpack_from("<IHHHHH", data, 0)
 	assert magic == 0xA5E0, "keine Aseprite-Datei"
 	assert depth == 32, "nur RGBA-Dateien werden unterstützt"
-	pos = 128
-	fsize, _, old_chunks, _, _, new_chunks = struct.unpack_from("<IHHH2sI", data, pos)
-	layers, cels = [], []
-	p = pos + 16
-	for _ in range(new_chunks or old_chunks):
-		csize, ctype = struct.unpack_from("<IH", data, p)
+	_, _, old, _, _, new = struct.unpack_from("<IHHH2sI", data, 128)
+	layers, palette, slices = [], [], []
+	p = 144
+	for _ in range(new or old):
+		size, ctype = struct.unpack_from("<IH", data, p)
 		cd = p + 6
 		if ctype == 0x2004:
-			flags = struct.unpack_from("<H", data, cd)[0]
-			layers.append(flags & 1)
+			flags, ltype, level = struct.unpack_from("<HHH", data, cd)
+			n = struct.unpack_from("<H", data, cd + 16)[0]
+			layers.append({"name": data[cd + 18:cd + 18 + n].decode(), "flags": flags, "type": ltype,
+				"level": level, "cel": None})
 		elif ctype == 0x2005:
 			li, x, y, _, ctyp = struct.unpack_from("<HhhBH", data, cd)
 			if ctyp in (0, 2):
 				cw, ch = struct.unpack_from("<HH", data, cd + 16)
-				raw = data[cd + 20:p + csize]
-				cels.append((li, x, y, cw, ch, raw if ctyp == 0 else zlib.decompress(raw)))
-		p += csize
-	img = bytearray(w * h * 4)
-	for li, x, y, cw, ch, px in sorted(cels):
-		if not layers[li]:
+				raw = data[cd + 20:p + size]
+				layers[li]["cel"] = (x, y, cw, ch, raw if ctyp == 0 else zlib.decompress(raw))
+		elif ctype == 0x2019:
+			first, last = struct.unpack_from("<II", data, cd + 4)
+			q = cd + 20
+			for _ in range(first, last + 1):
+				flags, r, g, b, _ = struct.unpack_from("<HBBBB", data, q)
+				q += 6
+				name = ""
+				if flags & 1:
+					n = struct.unpack_from("<H", data, q)[0]
+					name = data[q + 2:q + 2 + n].decode()
+					q += 2 + n
+				palette.append((name.strip(), "%02x%02x%02x" % (r, g, b)))
+		elif ctype == 0x2022:
+			keys, flags = struct.unpack_from("<II", data, cd)
+			n = struct.unpack_from("<H", data, cd + 12)[0]
+			name = data[cd + 14:cd + 14 + n].decode()
+			q = cd + 14 + n
+			_, x, y, sw, sh = struct.unpack_from("<IiiII", data, q)
+			q += 20 + (16 if flags & 1 else 0)
+			pivot = struct.unpack_from("<ii", data, q) if flags & 2 else None
+			slices.append({"name": name.strip(), "x": x, "y": y, "w": sw, "h": sh, "pivot": pivot})
+		p += size
+	return w, h, layers, palette, slices
+
+
+W, H, LAYERS, PALETTE, SLICES = read_aseprite(SRC)
+assert any(n for n, _ in PALETTE), "Die Palette hat keine Farbnamen – Legende fehlt (siehe Kopf dieses Skripts)"
+BY_NAME = {n: c for n, c in PALETTE if n}
+WALL = BY_NAME[WALL_NAME]
+GLASS = BY_NAME.get(GLASS_NAME, "-")
+FILL_OF = {BY_NAME[n]: k for n, k in FILLS.items() if n in BY_NAME}          # Farbe → (Art, draußen)
+OPENING_OF = {BY_NAME[n]: k for n, k in OPENINGS.items() if n in BY_NAME}    # Farbe → Öffnungsart
+DOOR = BY_NAME["Tür Flur"]
+KNOWN = set(FILL_OF) | set(OPENING_OF) | {WALL, GLASS}
+
+def floor_level(name):
+	if name == "EG":
+		return 0
+	if name.startswith("OG") and name[2:].isdigit():
+		return int(name[2:])
+	if name in ("Keller", "UG"):
+		return -1
+	return None
+
+def floor_images():
+	"""Stockwerksname → Farbliste (Hex, „“ = leer), zusammengesetzt aus den gezählten Ebenen der Gruppe."""
+	floors, group = {}, None
+	for layer in LAYERS:
+		if layer["level"] == 0:
+			group = layer["name"] if layer["type"] == 1 else None
+			if group:
+				assert floor_level(group) is not None, "Unbekannte Stockwerksgruppe „%s“ (EG, OG1 …, Keller)" % group
+				floors[group] = [""] * (W * H)
 			continue
+		if not group or layer["type"] != 0 or layer["flags"] & 64 or layer["cel"] is None:
+			continue
+		if layer["name"].startswith(IGNORED_LAYERS):
+			continue
+		x, y, cw, ch, px = layer["cel"]
+		img = floors[group]
 		for yy in range(ch):
 			Y = y + yy
-			if not 0 <= Y < h:
+			if not 0 <= Y < H:
 				continue
 			for xx in range(cw):
 				X = x + xx
 				s = (yy * cw + xx) * 4
-				if 0 <= X < w and px[s + 3] > 127:
-					o = (Y * w + X) * 4
-					img[o:o + 4] = px[s:s + 4]
-	return w, h, img
+				if 0 <= X < W and px[s + 3] > 127:
+					img[Y * W + X] = px[s:s + 3].hex()
+	assert floors, "Keine Stockwerksgruppen gefunden (Ebenengruppen „EG“, „OG1“ …)"
+	return floors
 
 
-W, H, IMG = read_aseprite(SRC)
-COL = [IMG[i * 4:i * 4 + 3].hex() if IMG[i * 4 + 3] else "" for i in range(W * H)]
+def slices_of(floor):
+	"""Slices dieses Stockwerks als (Art, Name, Slice); Vorsatz „OG1 “ usw. wählt das Stockwerk."""
+	out = []
+	for s in SLICES:
+		name = s["name"]
+		head = name.split(" ", 1)
+		target = "EG"
+		if len(head) == 2 and floor_level(head[0]) is not None:
+			target, name = head
+		if target != floor:
+			continue
+		if ":" not in name:
+			print("  Warnung: Slice „%s“ ohne Art (z. B. „Raum: …“) – übergangen" % s["name"])
+			continue
+		kind, label = (t.strip() for t in name.split(":", 1))
+		out.append((kind, label, s))
+	return out
 
-def col(x, y):
-	return COL[y * W + x] if 0 <= x < W and 0 <= y < H else ""
+
+def slug(text):
+	t = text.lower()
+	for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
+		t = t.replace(a, b)
+	return "_".join("".join(c if c.isalnum() else " " for c in t).split())
+
 
 def m(px, py):
 	"""Pixelkante → Meter (gerundet auf cm)."""
 	return [round((px - ORIGIN[0]) * PX, 2), round((py - ORIGIN[1]) * PX, 2)]
 
-def components(pred, conn8=False):
-	"""Zusammenhängende Pixelgruppen, für die pred(farbe) gilt."""
-	seen = bytearray(W * H)
-	out = []
-	steps = ((1, 0), (-1, 0), (0, 1), (0, -1)) + (((1, 1), (1, -1), (-1, 1), (-1, -1)) if conn8 else ())
-	for i in range(W * H):
-		if seen[i] or not pred(COL[i]):
-			continue
-		seen[i] = 1
-		q = deque([i])
-		pts = []
-		while q:
-			j = q.popleft()
-			pts.append(j)
-			x, y = j % W, j // W
-			for dx, dy in steps:
-				X, Y = x + dx, y + dy
-				if 0 <= X < W and 0 <= Y < H:
-					k = Y * W + X
-					if not seen[k] and pred(COL[k]):
-						seen[k] = 1
-						q.append(k)
-		out.append(pts)
-	return out
 
-def bbox(pts):
-	xs = [j % W for j in pts]
-	ys = [j // W for j in pts]
-	return min(xs), min(ys), max(xs) + 1, max(ys) + 1
-
-def rects(pts):
-	"""Zerlegt eine Pixelmenge in wenige Rechtecke (Zeilenstücke, senkrecht zusammengefasst), in Metern."""
-	rows = {}
-	for j in pts:
-		rows.setdefault(j // W, []).append(j % W)
-	spans = {}
-	for y, xs in rows.items():
-		xs.sort()
-		s = xs[0]
-		for a, b in zip(xs, xs[1:] + [None]):
-			if b != a + 1:
-				spans.setdefault((s, a + 1), []).append(y)
-				if b is not None:
-					s = b
-	out = []
-	for (x0, x1), ys in spans.items():
-		ys.sort()
-		s = ys[0]
-		for a, b in zip(ys, ys[1:] + [None]):
-			if b != a + 1:
-				out.append(m(x0, s) + m(x1, a + 1))
-				if b is not None:
-					s = b
-	return sorted(out, key=lambda r: (r[1], r[0]))
+def pivot_side(s):
+	"""Pivot eines Slices → Himmelsrichtung der Kante, an der er liegt (oder None)."""
+	if not s["pivot"]:
+		return None
+	px, py = s["pivot"]
+	d = {"north": py, "south": s["h"] - py, "west": px, "east": s["w"] - px}
+	return min(d, key=d.get)
 
 
-# --- Wände -----------------------------------------------------------------------------------------
+# --- Ein Stockwerk ---------------------------------------------------------------------------------
 
-# Wandnetz: schwarz + Öffnungen + Glas; kleine Flecken davon sind Schrift
-wallish = lambda c: c == WALL or c in OPENINGS or c == GLASS
-WALLMASK = bytearray(W * H)
-for comp in components(wallish, conn8=True):
-	if len(comp) >= MIN_WALL_NET:
-		for j in comp:
-			WALLMASK[j] = 1
+def build_floor(floor, COL, open_above):
+	level = floor_level(floor)
 
-def bands(horizontal):
-	"""Wandbänder: Läufe ≥ MIN_WALL_RUN in Zeilen (waagerecht) bzw. Spalten, benachbarte zusammengefasst."""
-	n_outer, n_inner = (H, W) if horizontal else (W, H)
-	idx = (lambda o, i: o * W + i) if horizontal else (lambda o, i: i * W + o)
-	open_bands = {}
-	result = []
-	for o in range(n_outer):
-		runs = []
-		i = 0
-		while i < n_inner:
-			if WALLMASK[idx(o, i)]:
-				s = i
-				while i < n_inner and WALLMASK[idx(o, i)]:
-					i += 1
-				if i - s >= MIN_WALL_RUN:
-					runs.append((s, i))
-			else:
-				i += 1
-		nxt = {}
-		for s, e in runs:
-			# an ein Band der vorigen Zeile anhängen, wenn es sich deutlich überlappt
-			hit = None
-			for (bs, be), band in open_bands.items():
-				if min(e, be) - max(s, bs) >= 0.8 * min(e - s, be - bs):
-					hit = (bs, be)
-					break
-			if hit:
-				band = open_bands.pop(hit)
-				band["o1"] = o + 1
-				band["s"], band["e"] = min(band["s"], s), max(band["e"], e)
-			else:
-				band = {"o0": o, "o1": o + 1, "s": s, "e": e}
-			nxt[(s, e)] = band
-		result.extend(open_bands.values())
-		open_bands = nxt
-	result.extend(open_bands.values())
-	return result
+	def col(x, y):
+		return COL[y * W + x] if 0 <= x < W and 0 <= y < H else ""
 
-h_bands = [b for b in bands(True) if b["o1"] - b["o0"] <= 3]
-# Pixel waagerechter Wände: senkrechte Wände enden bündig daran (keine doppelten Flächen an Ecken)
-HMASK = bytearray(W * H)
-for b in h_bands:
-	for y in range(b["o0"], b["o1"]):
-		for x in range(b["s"], b["e"]):
-			HMASK[y * W + x] = 1
-saved = WALLMASK[:]
-for i in range(W * H):
-	if HMASK[i]:
-		WALLMASK[i] = 0
-v_bands = [b for b in bands(False) if b["o1"] - b["o0"] <= 3]
-WALLMASK = saved
-
-def openings_along(b, horizontal):
-	"""Öffnungen in einem Wandband: zusammenhängende Läufe gleicher Öffnungsfarbe, Abstand ab Anfang."""
-	out = []
-	glass = 0
-	i = b["s"]
-	while i < b["e"]:
-		cs = [col(i, y) if horizontal else col(y, i) for y in range(b["o0"], b["o1"])]
-		c = next((c for c in cs if c in OPENINGS), None)
-		if any(c == GLASS for c in cs):
-			glass += 1
-		if c:
-			s = i
-			while i < b["e"] and c in [col(i, y) if horizontal else col(y, i) for y in range(b["o0"], b["o1"])]:
-				i += 1
-			out.append({"kind": OPENINGS[c], "at": round((s - b["s"]) * PX, 2), "width": round((i - s) * PX, 2)})
-		else:
-			i += 1
-	return out, glass / max(1, b["e"] - b["s"])
-
-walls = []
-for horizontal, bs in ((True, h_bands), (False, v_bands)):
-	for b in bs:
-		mid = (b["o0"] + b["o1"]) / 2
-		ops, glass = openings_along(b, horizontal)
-		a = m(b["s"], mid) if horizontal else m(mid, b["s"])
-		e = m(b["e"], mid) if horizontal else m(mid, b["e"])
-		wall = {"a": a, "b": e, "thickness": round((b["o1"] - b["o0"]) * PX, 2)}
-		if glass > 0.3:
-			wall["glass"] = True
-		if ops:
-			wall["openings"] = ops
-		walls.append(wall)
-walls.sort(key=lambda w: (w["a"][1], w["a"][0], w["b"][1], w["b"][0]))
-
-
-# --- Lobby: graue Linie = Kante des Obergeschossbodens um den Luftraum; die Stufen liegen im Luftraum ---
-
-gal = components(lambda c: c == GALLERY)
-assert len(gal) == 1, "Lobby-Galerie nicht eindeutig"
-gx0, gy0, gx1, gy1 = bbox(gal[0])
-steps_y = [y for y in range(gy0 + 2, gy1) if sum(1 for x in range(gx0, gx1) if col(x, y) == GALLERY) > 10]
-step_x1 = max(x for x in range(gx0 + 2, gx1 - 2) if any(col(x, y) == GALLERY for y in steps_y))
-lobby = {
-	"void": m(gx0, gy0) + m(gx1, gy1),
-	"stair": {"rect": m(gx0, gy0) + m(step_x1 + 1, max(steps_y) + 1), "up": "north"},
-}
-
-
-# --- Flächen ---------------------------------------------------------------------------------------
-
-# Schrift und Galerielinie sind keine Flächen: diese Pixel bekommen die Farbe ihrer Umgebung
-hole = lambda i: COL[i] == GALLERY or (COL[i] in (WALL, "ff0000") and not WALLMASK[i])
-q = deque(i for i in range(W * H) if not hole(i) and COL[i] in LEGEND)
-filled = bytearray(W * H)
-while q:
-	i = q.popleft()
-	x, y = i % W, i // W
-	for X, Y in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-		k = Y * W + X
-		if 0 <= X < W and 0 <= Y < H and not filled[k] and hole(k):
-			filled[k] = 1
-			COL[k] = COL[i]
-			q.append(k)
-
-def name_at(pts):
-	ps = set(pts)
-	for (x, y), rid, name in NAMES:
-		if y * W + x in ps:
-			return rid, name
-	return None, None
-
-regions, rooms_px = [], []
-kinds = {}
-for c, (kind, _) in LEGEND.items():
-	kinds.setdefault(kind, []).append(c)
-counter = {}
-for kind, cs in kinds.items():
-	for comp in components(lambda c, cs=cs: c in cs):
-		x0, y0, x1, y1 = bbox(comp)
-		if kind == "service" and (x0 == 0 or y0 == 0 or x1 == W or y1 == H):
-			continue   # Weiß außerhalb des Gebäudes
-		if len(comp) < 30:
-			continue   # Reste von Schrift
-		rid, name = name_at(comp)
-		counter[kind] = counter.get(kind, 0) + 1
-		region = {"id": rid or "%s_%d" % (kind, counter[kind]), "kind": kind,
-			"outdoor": LEGEND[cs[0]][1], "rects": rects(comp)}
-		if name:
-			region["name"] = name
-		if kind == "room":
-			rooms_px.append((comp, region))
-		regions.append(region)
-
-
-# --- Zimmer: Tür, Fenster, Nummer ------------------------------------------------------------------
-
-def touching(comp, colour, reach=3):
-	"""Pixel der Farbe, die höchstens reach Pixel neben der Fläche liegen."""
-	found = set()
-	ps = set(comp)
-	for j in comp:
-		x, y = j % W, j // W
-		for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-			X, Y = x + dx, y + dy
-			if Y * W + X in ps:
+	def components(pred, conn8=False):
+		seen = bytearray(W * H)
+		out = []
+		steps = ((1, 0), (-1, 0), (0, 1), (0, -1)) + (((1, 1), (1, -1), (-1, 1), (-1, -1)) if conn8 else ())
+		for i in range(W * H):
+			if seen[i] or not COL[i] or not pred(COL[i]):
 				continue
-			for k in range(1, reach + 1):
-				if col(x + dx * k, y + dy * k) == colour:
-					found.add((x + dx * k, y + dy * k))
-	return found
+			seen[i] = 1
+			q = deque([i])
+			pts = []
+			while q:
+				j = q.popleft()
+				pts.append(j)
+				x, y = j % W, j // W
+				for dx, dy in steps:
+					X, Y = x + dx, y + dy
+					if 0 <= X < W and 0 <= Y < H:
+						k = Y * W + X
+						if not seen[k] and COL[k] and pred(COL[k]):
+							seen[k] = 1
+							q.append(k)
+			out.append(pts)
+		return out
 
-def groups(pixels):
-	"""Pixel in zusammenhängende Striche teilen → [(mitte_x, mitte_y, breite_px)]."""
-	left = set(pixels)
-	out = []
-	while left:
-		p = left.pop()
-		st, g = [p], [p]
-		while st:
-			a, b = st.pop()
-			for q in ((a + 1, b), (a - 1, b), (a, b + 1), (a, b - 1)):
-				if q in left:
-					left.remove(q)
-					st.append(q)
-					g.append(q)
-		xs = [q[0] for q in g]
-		ys = [q[1] for q in g]
-		out.append(((min(xs) + max(xs) + 1) / 2, (min(ys) + max(ys) + 1) / 2, max(max(xs) - min(xs), max(ys) - min(ys)) + 1))
-	return out
+	def bbox(pts):
+		xs = [j % W for j in pts]
+		ys = [j // W for j in pts]
+		return min(xs), min(ys), max(xs) + 1, max(ys) + 1
 
-def opening_info(comp, colour, cx, cy):
-	out = []
-	for gx, gy, width in groups(touching(comp, colour)):
-		vx, vy = gx - cx, gy - cy
-		normal = [1 if vx > 0 else -1, 0] if abs(vx) > abs(vy) else [0, 1 if vy > 0 else -1]
-		out.append({"pos": m(gx, gy), "normal": normal, "width": round(width * PX, 2)})
-	return out
+	def rects(pts):
+		"""Zerlegt eine Pixelmenge in wenige Rechtecke (Zeilenstücke, senkrecht zusammengefasst), in Metern."""
+		rows = {}
+		for j in pts:
+			rows.setdefault(j // W, []).append(j % W)
+		spans = {}
+		for y, xs in rows.items():
+			xs.sort()
+			s = xs[0]
+			for a, b in zip(xs, xs[1:] + [None]):
+				if b != a + 1:
+					spans.setdefault((s, a + 1), []).append(y)
+					if b is not None:
+						s = b
+		out = []
+		for (x0, x1), ys in spans.items():
+			ys.sort()
+			s = ys[0]
+			for a, b in zip(ys, ys[1:] + [None]):
+				if b != a + 1:
+					out.append(m(x0, s) + m(x1, a + 1))
+					if b is not None:
+						s = b
+		return sorted(out, key=lambda r: (r[1], r[0]))
 
-rooms = []
-for comp, region in rooms_px:
-	xs = [j % W for j in comp]
-	ys = [j // W for j in comp]
-	cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
-	doors = opening_info(comp, "99e550", cx, cy)
-	assert len(doors) == 1, "Zimmer bei %s hat %d Flurtüren" % (m(cx, cy), len(doors))
-	rooms.append({"comp": comp, "region": region, "cx": cx, "cy": cy, "door": doors[0],
-		"windows": opening_info(comp, "50a3e5", cx, cy), "garden_doors": opening_info(comp, "35ff00", cx, cy)})
+	# Unbekannte Farben melden
+	unknown = {}
+	for i, c in enumerate(COL):
+		if c and c not in KNOWN:
+			unknown.setdefault(c, i)
+	for c, i in unknown.items():
+		print("  Warnung: Farbe #%s (z. B. bei Pixel %d,%d) steht nicht in der Palette – übergangen" % (c, i % W, i // W))
 
-def number_rooms():
-	for name, w in WINGS.items():
+	# --- Wände ---
+	wallish = lambda c: c == WALL or c in OPENING_OF or c == GLASS
+	WALLMASK = bytearray(W * H)
+	for comp in components(wallish, conn8=True):
+		if len(comp) >= MIN_WALL_NET:
+			for j in comp:
+				WALLMASK[j] = 1
+	if not any(WALLMASK):
+		return None
+
+	def bands(mask, horizontal):
+		"""Wandbänder: Läufe ≥ MIN_WALL_RUN in Zeilen (waagerecht) bzw. Spalten, benachbarte zusammengefasst."""
+		n_outer, n_inner = (H, W) if horizontal else (W, H)
+		idx = (lambda o, i: o * W + i) if horizontal else (lambda o, i: i * W + o)
+		open_bands, result = {}, []
+		for o in range(n_outer):
+			runs = []
+			i = 0
+			while i < n_inner:
+				if mask[idx(o, i)]:
+					s = i
+					while i < n_inner and mask[idx(o, i)]:
+						i += 1
+					if i - s >= MIN_WALL_RUN:
+						runs.append((s, i))
+				else:
+					i += 1
+			nxt = {}
+			for s, e in runs:
+				hit = None
+				for (bs, be) in open_bands:
+					if min(e, be) - max(s, bs) >= 0.8 * min(e - s, be - bs):
+						hit = (bs, be)
+						break
+				if hit:
+					band = open_bands.pop(hit)
+					band["o1"] = o + 1
+					band["s"], band["e"] = min(band["s"], s), max(band["e"], e)
+				else:
+					band = {"o0": o, "o1": o + 1, "s": s, "e": e}
+				nxt[(s, e)] = band
+			result.extend(open_bands.values())
+			open_bands = nxt
+		result.extend(open_bands.values())
+		return [b for b in result if b["o1"] - b["o0"] <= 3]
+
+	h_bands = bands(WALLMASK, True)
+	# Senkrechte Wände enden bündig an waagerechten (keine doppelten Flächen an Ecken)
+	vmask = WALLMASK[:]
+	for b in h_bands:
+		for y in range(b["o0"], b["o1"]):
+			for x in range(b["s"], b["e"]):
+				vmask[y * W + x] = 0
+	v_bands = bands(vmask, False)
+
+	def openings_along(b, horizontal):
+		out, glass = [], 0
+		at = (lambda i, y: col(i, y)) if horizontal else (lambda i, y: col(y, i))
+		i = b["s"]
+		while i < b["e"]:
+			cs = [at(i, y) for y in range(b["o0"], b["o1"])]
+			c = next((c for c in cs if c in OPENING_OF), None)
+			if GLASS in cs:
+				glass += 1
+			if c:
+				s = i
+				while i < b["e"] and c in [at(i, y) for y in range(b["o0"], b["o1"])]:
+					i += 1
+				out.append({"kind": OPENING_OF[c], "at": round((s - b["s"]) * PX, 2), "width": round((i - s) * PX, 2)})
+			else:
+				i += 1
+		return out, glass / max(1, b["e"] - b["s"])
+
+	walls = []
+	for horizontal, bs in ((True, h_bands), (False, v_bands)):
+		for b in bs:
+			mid = (b["o0"] + b["o1"]) / 2
+			ops, glass = openings_along(b, horizontal)
+			wall = {"a": m(b["s"], mid) if horizontal else m(mid, b["s"]),
+				"b": m(b["e"], mid) if horizontal else m(mid, b["e"]),
+				"thickness": round((b["o1"] - b["o0"]) * PX, 2)}
+			if glass > 0.3:
+				wall["glass"] = True
+			if ops:
+				wall["openings"] = ops
+			walls.append(wall)
+	walls.sort(key=lambda w: (w["a"][1], w["a"][0], w["b"][1], w["b"][0]))
+
+	# --- Flächen ---
+	# Schrift in Wandfarbe (kleine Flecken) bekommt die Farbe ihrer Umgebung
+	hole = lambda i: COL[i] in (WALL, BY_NAME.get("Haupteingang")) and not WALLMASK[i]
+	q = deque(i for i in range(W * H) if COL[i] in FILL_OF)
+	while q:
+		i = q.popleft()
+		x, y = i % W, i // W
+		for X, Y in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+			k = Y * W + X
+			if 0 <= X < W and 0 <= Y < H and hole(k):
+				COL[k] = COL[i]
+				q.append(k)
+
+	regions, comps_of = [], {}
+	kinds = {}
+	for c, (kind, _) in FILL_OF.items():
+		kinds.setdefault(kind, []).append(c)
+	counter = {}
+	for kind, cs in kinds.items():
+		for comp in components(lambda c, cs=cs: c in cs):
+			if len(comp) < 30:
+				continue   # Reste von Schrift
+			counter[kind] = counter.get(kind, 0) + 1
+			region = {"id": "%s_%d" % (kind, counter[kind]), "kind": kind, "outdoor": FILL_OF[cs[0]][1],
+				"rects": rects(comp)}
+			comps_of[id(region)] = (comp, bbox(comp))
+			regions.append(region)
+	corridors = [r for r in regions if r["kind"] == "corridor"]
+	if len(corridors) == 1:
+		corridors[0]["id"] = "flure"
+
+	def region_for(s, kinds=None):
+		"""Fläche mit den meisten Pixeln im Slice-Rechteck."""
+		best, best_n = None, 0
+		x0, y0, x1, y1 = s["x"], s["y"], s["x"] + s["w"], s["y"] + s["h"]
+		for r in regions:
+			if kinds and r["kind"] not in kinds:
+				continue
+			comp, (bx0, by0, bx1, by1) = comps_of[id(r)]
+			if bx1 <= x0 or bx0 >= x1 or by1 <= y0 or by0 >= y1:
+				continue
+			n = sum(1 for j in comp if x0 <= j % W < x1 and y0 <= j // W < y1)
+			if n > best_n:
+				best, best_n = r, n
+		return best
+
+	def slice_rect(s):
+		return m(s["x"], s["y"]) + m(s["x"] + s["w"], s["y"] + s["h"])
+
+	areas, objects, stairs = [], [], []
+	for kind, label, s in slices_of(floor):
+		if kind == "Raum":
+			r = region_for(s, [k for k, _ in FILLS.values() if k not in FIXTURES])
+			if r is None:
+				print("  Warnung: Slice „Raum: %s“ liegt auf keiner Fläche" % label)
+				continue
+			r["id"], r["name"] = slug(label), label
+		elif kind == "Bereich":
+			areas.append({"id": slug(label), "name": label, "rect": slice_rect(s)})
+		elif kind == "Objekt":
+			objects.append({"name": label, "rect": slice_rect(s), "facing": pivot_side(s)})
+		elif kind in ("Treppe", "Treppenhaus"):
+			r = region_for(s, ["stairs"])
+			rect = slice_rect(s)
+			if r:
+				r["claimed"] = True
+				_, (bx0, by0, bx1, by1) = comps_of[id(r)]
+				rect = m(bx0, by0) + m(bx1, by1)
+			stair = {"id": slug(("treppenhaus " if kind == "Treppenhaus" else "treppe ") + label), "name": label,
+				"kind": "stairwell" if kind == "Treppenhaus" else "stair", "rect": rect}
+			if kind == "Treppe":
+				stair["up"] = pivot_side(s)
+				if not stair["up"]:
+					print("  Warnung: „Treppe: %s“ ohne Pivot – Richtung nach oben unbekannt" % label)
+			stairs.append(stair)
+		else:
+			print("  Warnung: unbekannte Slice-Art „%s“ (Raum, Bereich, Treppe, Treppenhaus, Objekt)" % kind)
+	for r in regions:
+		if r["kind"] == "stairs" and not r.pop("claimed", False):
+			print("  Warnung: Treppe bei %s ohne Slice „Treppe: …“ oder „Treppenhaus: …“" % r["rects"][0][:2])
+
+	# Treppenhaustür: Flurtür an einer Kante
+	for s in stairs:
+		if s["kind"] != "stairwell":
+			continue
+		x0, z0, x1, z1 = [round(v / PX) for v in s["rect"]]
+		x0, x1, z0, z1 = x0 + ORIGIN[0], x1 + ORIGIN[0], z0 + ORIGIN[1], z1 + ORIGIN[1]
+		edge = {"south": [(x, z1 + 1) for x in range(x0, x1)], "north": [(x, z0 - 2) for x in range(x0, x1)],
+			"west": [(x0 - 2, y) for y in range(z0, z1)], "east": [(x1 + 1, y) for y in range(z0, z1)]}
+		for side, pts in edge.items():
+			hits = [p for p in pts if col(*p) == DOOR]
+			if hits:
+				s["door"] = {"pos": m(sum(p[0] for p in hits) / len(hits) + 0.5, sum(p[1] for p in hits) / len(hits) + 0.5),
+					"side": side}
+
+	# --- Zimmer: Tür, Fenster, Nummer ---
+	def touching(comp, colour, reach=3):
+		found, ps = set(), set(comp)
+		for j in comp:
+			x, y = j % W, j // W
+			for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+				if (y + dy) * W + x + dx in ps:
+					continue
+				for k in range(1, reach + 1):
+					if col(x + dx * k, y + dy * k) == colour:
+						found.add((x + dx * k, y + dy * k))
+		return found
+
+	def strokes(pixels):
+		left, out = set(pixels), []
+		while left:
+			p = left.pop()
+			st, g = [p], [p]
+			while st:
+				a, b = st.pop()
+				for nb in ((a + 1, b), (a - 1, b), (a, b + 1), (a, b - 1)):
+					if nb in left:
+						left.remove(nb)
+						st.append(nb)
+						g.append(nb)
+			xs = [v[0] for v in g]
+			ys = [v[1] for v in g]
+			out.append(((min(xs) + max(xs) + 1) / 2, (min(ys) + max(ys) + 1) / 2, max(max(xs) - min(xs), max(ys) - min(ys)) + 1))
+		return out
+
+	def opening_info(comp, name, cx, cy):
+		out = []
+		if name not in BY_NAME:
+			return out
+		for gx, gy, width in strokes(touching(comp, BY_NAME[name])):
+			vx, vy = gx - cx, gy - cy
+			normal = [1 if vx > 0 else -1, 0] if abs(vx) > abs(vy) else [0, 1 if vy > 0 else -1]
+			out.append({"pos": m(gx, gy), "normal": normal, "width": round(width * PX, 2)})
+		return out
+
+	rooms = []
+	for r in regions:
+		if r["kind"] != "room":
+			continue
+		comp, _ = comps_of[id(r)]
+		xs = [j % W for j in comp]
+		ys = [j // W for j in comp]
+		cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+		doors = opening_info(comp, "Tür Flur", cx, cy)
+		assert len(doors) == 1, "%s: Zimmer bei %s hat %d Flurtüren" % (floor, m(cx, cy), len(doors))
+		rooms.append({"region": r, "cx": cx, "cy": cy, "door": doors[0],
+			"windows": opening_info(comp, "Fenster", cx, cy), "garden_doors": opening_info(comp, "Tür Terrasse", cx, cy)})
+
+	for name, w in WINGS.get(floor, WINGS["EG"]).items():
 		loop, cross = [], []
 		for r in rooms:
 			if (r["cx"] < WING_SPLIT_X) != (name == "west"):
 				continue
-			# Punkt 2 m vor der Tür im Flur
 			dx, dz = r["door"]["normal"]
-			px = r["door"]["pos"][0] / PX + ORIGIN[0] + dx * 20
+			px = r["door"]["pos"][0] / PX + ORIGIN[0] + dx * 20   # Punkt 2 m vor der Tür im Flur
 			py = r["door"]["pos"][1] / PX + ORIGIN[1] + dz * 20
 			best, t0 = None, 0.0
 			for (ax, ay), (bx, by) in zip(w["path"], w["path"][1:]):
@@ -430,126 +533,106 @@ def number_rooms():
 				loop.append((best[1], best[2], r))
 			else:
 				y, x0, direction = w["cross"]
-				assert abs(py - y) < 30, "Zimmer bei %s liegt an keinem bekannten Flur" % m(r["cx"], r["cy"])
-				right = (r["cy"] > y) if direction > 0 else (r["cy"] < y)
-				cross.append(((px - x0) * direction, right, r))
+				assert abs(py - y) < 30, "%s: Zimmer bei %s liegt an keinem Flur aus WINGS" % (floor, m(r["cx"], r["cy"]))
+				cross.append(((px - x0) * direction, (r["cy"] > y) if direction > 0 else (r["cy"] < y), r))
 		odd, even = w["base"] + 1, w["base"] + 2
 		for _, right, r in sorted(loop, key=lambda e: e[0]) + sorted(cross, key=lambda e: e[0]):
 			if right:
-				r["no"], odd = "%04d" % odd, odd + 2
+				r["no"], odd = "%04d" % (level * 1000 + odd), odd + 2
 			else:
-				r["no"], even = "%04d" % even, even + 2
+				r["no"], even = "%04d" % (level * 1000 + even), even + 2
 			r["wing"] = name
 
-number_rooms()
-room_list = []
-for r in sorted(rooms, key=lambda r: r["no"]):
-	r["region"]["id"] = r["no"]
-	entry = {"no": r["no"], "sign": BROKEN_SIGNS.get(r["no"], r["no"]), "wing": r["wing"],
-		"rects": r["region"]["rects"], "center": m(r["cx"], r["cy"]), "door": r["door"]}
-	if r["windows"]:
-		entry["windows"] = r["windows"]
-	if r["garden_doors"]:
-		entry["garden_doors"] = r["garden_doors"]
-	room_list.append(entry)
+	room_list = []
+	for r in sorted(rooms, key=lambda r: r["no"]):
+		r["region"]["id"] = r["no"]
+		entry = {"no": r["no"], "sign": BROKEN_SIGNS.get(r["no"], r["no"]), "wing": r["wing"],
+			"rects": r["region"]["rects"], "center": m(r["cx"], r["cy"]), "door": r["door"]}
+		if r["windows"]:
+			entry["windows"] = r["windows"]
+		if r["garden_doors"]:
+			entry["garden_doors"] = r["garden_doors"]
+		room_list.append(entry)
+	assert len(room_list) == len({r["no"] for r in room_list}), "doppelte Zimmernummer"
+
+	# --- Einbauten ---
+	def take(kind):
+		return [r for r in regions if r["kind"] == kind]
+
+	def outer(rs):
+		return [min(r[0] for r in rs), min(r[1] for r in rs), max(r[2] for r in rs), max(r[3] for r in rs)]
+
+	trees = []
+	for t in take("tree"):
+		x0, z0, x1, z1 = outer(t["rects"])
+		trees.append({"center": [round((x0 + x1) / 2, 2), round((z0 + z1) / 2, 2)], "radius": round((x1 - x0) / 2, 2)})
+
+	layout = {
+		"source": SRC, "floor": floor, "level": level, "meters_per_pixel": PX, "origin_px": list(ORIGIN),
+		"walls": walls,
+		"regions": [r for r in regions if r["kind"] not in FIXTURES],
+		"rooms": room_list,
+		"stairs": stairs,
+		"voids": [rc for r in take("void") for rc in r["rects"]],
+		"open_above": open_above,
+		"areas": areas,
+		"objects": objects,
+		"planters": [outer(r["rects"]) for r in take("planter")],
+		"terrace_edges": [r["rects"] for r in take("terrace_edge")],
+		"trees": trees,
+		"reception": [rc for r in take("reception") for rc in r["rects"]],
+	}
+	n_ops = sum(len(w.get("openings", [])) for w in walls)
+	print("%s: %d Wände (%d Öffnungen), %d Flächen, %d Zimmer (Ost %d, West %d), %d Treppen, %d Kübel, %d Bäume, "
+		"%d Bereiche, %d Objekte" % (floor, len(walls), n_ops, len(layout["regions"]), len(room_list),
+		sum(r["wing"] == "ost" for r in room_list), sum(r["wing"] == "west" for r in room_list), len(stairs),
+		len(layout["planters"]), len(trees), len(areas), len(objects)))
+	return layout
 
 
-# --- Einbauten ---------------------------------------------------------------------------------------
-
-def take(kind):
-	return [r for r in regions if r["kind"] == kind]
-
-trees = []
-for t in take("tree"):
-	x0 = min(r[0] for r in t["rects"]); x1 = max(r[2] for r in t["rects"])
-	z0 = min(r[1] for r in t["rects"]); z1 = max(r[3] for r in t["rects"])
-	trees.append({"center": [round((x0 + x1) / 2, 2), round((z0 + z1) / 2, 2)], "radius": round((x1 - x0) / 2, 2)})
-
-def outer(rs):
-	return [min(r[0] for r in rs), min(r[1] for r in rs), max(r[2] for r in rs), max(r[3] for r in rs)]
-
-stairwells = []
-for s in take("stairwell"):
-	stairwells.append({"rect": outer(s["rects"])})
-# Treppenhäuser sind zusammengesetzt (Fläche + Stufenstriche): Teile mit überlappendem Rechteck vereinen
-merged = []
-for s in stairwells:
-	for t in merged:
-		r, q = s["rect"], t["rect"]
-		if r[0] <= q[2] + 0.2 and q[0] <= r[2] + 0.2 and r[1] <= q[3] + 0.2 and q[1] <= r[3] + 0.2:
-			t["rect"] = [min(r[0], q[0]), min(r[1], q[1]), max(r[2], q[2]), max(r[3], q[3])]
-			break
-	else:
-		merged.append(s)
-for s in merged:
-	cx = (s["rect"][0] + s["rect"][2]) / 2
-	s["wing"] = "west" if cx < 0 else "ost"
-	s["id"] = "treppenhaus_" + s["wing"]
-	# Tür: Flurtür auf einer der vier Kanten
-	x0, z0, x1, z1 = [v / PX for v in s["rect"]]
-	x0, z0, x1, z1 = x0 + ORIGIN[0], z0 + ORIGIN[1], x1 + ORIGIN[0], z1 + ORIGIN[1]
-	edge = {"S": [(x, int(z1) + 1) for x in range(int(x0), int(x1))], "N": [(x, int(z0) - 2) for x in range(int(x0), int(x1))],
-		"W": [(int(x0) - 2, y) for y in range(int(z0), int(z1))], "E": [(int(x1) + 1, y) for y in range(int(z0), int(z1))]}
-	for side, pts in edge.items():
-		hits = [p for p in pts if col(*p) == "99e550"]
-		if hits:
-			s["door"] = {"pos": m(sum(p[0] for p in hits) / len(hits) + 0.5, sum(p[1] for p in hits) / len(hits) + 0.5),
-				"side": side}
-regions = [r for r in regions if r["kind"] != "stairwell"]
-
-layout = {
-	"source": SRC, "meters_per_pixel": PX, "origin_px": list(ORIGIN),
-	"walls": walls,
-	"regions": [r for r in regions if r["kind"] not in ("tree", "planter", "reception", "terrace_edge")],
-	"rooms": room_list,
-	"planters": [outer(r["rects"]) for r in take("planter")],
-	"terrace_edges": [r["rects"] for r in take("terrace_edge")],
-	"trees": trees,
-	"reception": [rc for r in take("reception") for rc in r["rects"]],
-	"lobby": lobby,
-	"stairwells": merged,
-}
-
-# Prüfungen: Ergebnis muss zum Plan passen
-assert len(room_list) == len({r["no"] for r in room_list}), "doppelte Zimmernummer"
-assert any(r["no"] == "0113" for r in room_list), "Spielerzimmer 0113 fehlt"
-
-with open(DST, "w", encoding="utf-8", newline="\n") as f:
-	json.dump(layout, f, ensure_ascii=False, indent="\t")
-	f.write("\n")
-n_ops = sum(len(w.get("openings", [])) for w in walls)
-print("%s: %d Wände (%d Öffnungen), %d Flächen, %d Zimmer (Ost %d, West %d), %d Kübel, %d Bäume, %d Treppenhäuser"
-	% (DST, len(walls), n_ops, len(layout["regions"]), len(room_list),
-		sum(r["wing"] == "ost" for r in room_list), sum(r["wing"] == "west" for r in room_list),
-		len(layout["planters"]), len(trees), len(merged)))
+def voids_of(COL):
+	"""Luftraum eines Stockwerks als Rechtecke (für die Decke des Stockwerks darunter)."""
+	c = BY_NAME.get("Luftraum")
+	pts = [i for i, v in enumerate(COL) if v == c]
+	rows = {}
+	for i in pts:
+		rows.setdefault(i // W, []).append(i % W)
+	out = []
+	for y in sorted(rows):
+		xs = sorted(rows[y])
+		r = [xs[0], xs[-1] + 1]
+		if out and out[-1][0] == r and out[-1][2] == y:
+			out[-1][2] = y + 1
+		else:
+			out.append([r, y, y + 1])
+	return [m(r[0], y0) + m(r[1], y1) for r, y0, y1 in out]
 
 
 # --- Vorschau aus den Layout-Daten (zur Kontrolle, nicht aus dem Bild) ----------------------------------
 
-if PREVIEW:
+def preview(layout, path):
 	colors = {"room": "#ffb08a", "corridor": "#dde8f2", "garden": "#c8f5bd", "terrace": "#d5e8cf", "service": "#f4f4f4",
 		"storage": "#cfcfcf", "bar": "#b5c47a", "party": "#ddb0e0", "toilet": "#7fd6ff", "pool_water": "#3aa6ff",
 		"pool_deck": "#c3d2de", "elevator": "#a9dccb"}
 	op_colors = {"door": "#2e9e00", "garden_door": "#00d000", "window": "#2a7fd0", "glass_double_door": "#e0c000",
 		"service_door": "#999", "elevator_door": "#00c090", "main_entrance": "#e00000"}
 	out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -118 160 128" width="100%" style="background:#fff">']
+	box = '<rect x="%s" y="%s" width="%s" height="%s" %s/>'
 	for r in layout["regions"]:
 		for x0, z0, x1, z1 in r["rects"]:
-			out.append('<rect x="%s" y="%s" width="%s" height="%s" fill="%s"/>' % (x0, z0, x1 - x0, z1 - z0, colors.get(r["kind"], "#eee")))
+			out.append(box % (x0, z0, x1 - x0, z1 - z0, 'fill="%s"' % colors.get(r["kind"], "#eee")))
 	for x0, z0, x1, z1 in layout["planters"]:
-		out.append('<rect x="%s" y="%s" width="%s" height="%s" fill="#5c9a4c"/>' % (x0, z0, x1 - x0, z1 - z0))
-	for t in trees:
+		out.append(box % (x0, z0, x1 - x0, z1 - z0, 'fill="#5c9a4c"'))
+	for t in layout["trees"]:
 		out.append('<circle cx="%s" cy="%s" r="%s" fill="#2d8f12"/>' % (t["center"][0], t["center"][1], t["radius"]))
-	for s in merged:
+	for s in layout["stairs"]:
 		x0, z0, x1, z1 = s["rect"]
-		out.append('<rect x="%s" y="%s" width="%s" height="%s" fill="#bbb" stroke="#555" stroke-width=".1"/>' % (x0, z0, x1 - x0, z1 - z0))
-	v = lobby["void"]
-	out.append('<rect x="%s" y="%s" width="%s" height="%s" fill="none" stroke="#7a8d99" stroke-width=".2" stroke-dasharray=".6 .4"/>' % (v[0], v[1], v[2] - v[0], v[3] - v[1]))
-	s = lobby["stair"]["rect"]
-	out.append('<rect x="%s" y="%s" width="%s" height="%s" fill="#9badb7"/>' % (s[0], s[1], s[2] - s[0], s[3] - s[1]))
+		out.append(box % (x0, z0, x1 - x0, z1 - z0, 'fill="#bbb" stroke="#555" stroke-width=".1"'))
+	for x0, z0, x1, z1 in layout["open_above"]:
+		out.append(box % (x0, z0, x1 - x0, z1 - z0, 'fill="none" stroke="#3f3f74" stroke-width=".2" stroke-dasharray=".6 .4"'))
 	for x0, z0, x1, z1 in layout["reception"]:
-		out.append('<rect x="%s" y="%s" width="%s" height="%s" fill="#df7126"/>' % (x0, z0, x1 - x0, z1 - z0))
-	for w in walls:
+		out.append(box % (x0, z0, x1 - x0, z1 - z0, 'fill="#df7126"'))
+	for w in layout["walls"]:
 		(ax, az), (bx, bz) = w["a"], w["b"]
 		out.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width="%s"/>' % (ax, az, bx, bz, "#8cc" if w.get("glass") else "#000", w["thickness"]))
 		L = math.hypot(bx - ax, bz - az)
@@ -557,8 +640,34 @@ if PREVIEW:
 			f0, f1 = o["at"] / L, (o["at"] + o["width"]) / L
 			out.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width=".45"/>' % (
 				ax + (bx - ax) * f0, az + (bz - az) * f0, ax + (bx - ax) * f1, az + (bz - az) * f1, op_colors[o["kind"]]))
-	for r in room_list:
+	for r in layout["rooms"]:
 		fill = "#c00000" if r["sign"] != r["no"] else "#000"
 		out.append('<text x="%s" y="%s" font-size="1.5" text-anchor="middle" font-family="Arial" fill="%s">%s</text>' % (r["center"][0], r["center"][1] + 0.5, fill, r["no"]))
+	for r in layout["regions"]:
+		if "name" in r:
+			x0, z0, x1, z1 = r["rects"][0]
+			out.append('<text x="%s" y="%s" font-size="1.2" text-anchor="middle" font-family="Arial" fill="#333">%s</text>' % ((x0 + x1) / 2, (z0 + z1) / 2, r["name"]))
 	out.append("</svg>")
-	open(PREVIEW, "w", encoding="utf-8").write("\n".join(out))
+	with open(path, "w", encoding="utf-8") as f:
+		f.write("\n".join(out))
+
+
+# --- Ablauf ------------------------------------------------------------------------------------------
+
+floors = floor_images()
+order = sorted(floors, key=floor_level)
+for i, floor in enumerate(order):
+	above = order[i + 1] if i + 1 < len(order) and floor_level(order[i + 1]) == floor_level(floor) + 1 else None
+	layout = build_floor(floor, floors[floor], voids_of(floors[above]) if above else [])
+	if layout is None:
+		print("%s: noch keine Wände – keine Layout-Datei" % floor)
+		continue
+	path = os.path.join(DST_DIR, floor.lower() + ".json")
+	with open(path, "w", encoding="utf-8", newline="\n") as f:
+		json.dump(layout, f, ensure_ascii=False, indent="\t")
+		f.write("\n")
+	print("  -> " + path)
+	if PREVIEW_DIR:
+		preview(layout, os.path.join(PREVIEW_DIR, floor.lower() + ".svg"))
+eg = json.load(open(os.path.join(DST_DIR, "eg.json"), encoding="utf-8"))
+assert any(r["no"] == "0113" for r in eg["rooms"]), "Spielerzimmer 0113 fehlt"
