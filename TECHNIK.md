@@ -479,6 +479,11 @@ Tabelle im README.
   `--time-scale 3`, `--quit-after N`, `--trace` (Zustand alle 2 s in die Konsole), `--day=n`,
   `--attacks=n`, `--kill=id`, `--knock` …
 - Screenshots zum Prüfen: `--shot=pfad.png --frames=n` oder `--shot-on=reveal|jumpscare`; Menüs mit `--menu=…`.
+  Mit `--bg` (in `Game._ready`) nimmt das Fenster keinen Fokus und liegt außerhalb des Bildschirms – nicht
+  minimiert, sonst zeichnet Godot nicht und der Screenshot bleibt leer. Der Fokus würde schon beim Erstellen
+  des Fensters geklaut, deshalb startet jeder Lauf mit dem Editor-Binary ohne Fokus
+  (`window/size/no_focus.editor_runtime` in `project.godot`); ohne `--bg` holt `Game._ready` ihn sofort nach.
+  Exportierte Spiele betrifft das nicht.
 - Nach Änderungen am Speichern oder an der Welt: `--savetest` laufen lassen (`alles gleich` erwartet).
 - Es gibt keine automatisierten Tests – Prüfung über Debug-Parameter, Konsole und Screenshots.
 

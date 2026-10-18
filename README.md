@@ -144,6 +144,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--flashlight` · `--flashlight=uv` | eingeschaltete Taschenlampe mit voller Batterie in die Hand · mit UV-Aufsatz im UV-Modus |
 | `--pocket` · `--show=map` / `keys` / `compass` | Kompass, alle Kartenblätter und Schlüssel 18 einstecken · Karte (Schlüsselblatt oben) bzw. Kompass hervorholen wie mit gehaltener Taste |
 | `--shot=pfad.png --frames=n` · `--shot-on=reveal` · `--shot-on=jumpscare` · `--shot-on=strangle` · `--shot-on=shock` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler · im Jumpscare · wenn der Lakengeist zupackt · wenn ein Gast erschrickt |
+| `--bg` | Fenster im Hintergrund: nimmt keinen Fokus und liegt außerhalb des Bildschirms (für Screenshot-Läufe nebenher) |
 | `--ghost=n` · `--ghost=flur` | Lakengeist zum n. Mal: Spieler in Zimmer 13, Licht aus, Vorhang auf (ab 4 zu), er kommt sicher (mit `--trace`: Erscheinen, Losreißen, Tod in der Konsole) · alle Gäste sofort im Bett, er kommt im Flur (mit `--pos` in einen Flur stellen) |
 | `--sleep` | Nachtruhe sofort beginnen |
 | `--no-psx` | ohne PS1-Look starten (wie der Schalter in den Einstellungen, wird nicht gespeichert) |

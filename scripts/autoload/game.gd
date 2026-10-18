@@ -55,6 +55,10 @@ var _shot_on := ""
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_input()
+	# Entwicklungsläufe starten ohne Fokus (project.godot, no_focus.editor_runtime) – ohne --bg gleich nachholen
+	if OS.has_feature("editor_runtime") and not "--bg" in OS.get_cmdline_user_args():
+		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, false)
+		DisplayServer.window_move_to_foreground()
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--shot="):
 			_shot_path = arg.substr(7)
@@ -63,6 +67,15 @@ func _ready() -> void:
 		elif arg.begins_with("--shot-on="):
 			_shot_on = arg.substr(10)
 			_shot_at = -1   # erst beim Ereignis
+		elif arg == "--bg":
+			_to_background()
+
+
+## Debug: --bg – Fenster nimmt keinen Fokus und liegt außerhalb des Bildschirms, damit Testläufe
+## (Screenshots) nicht stören. Nicht minimieren: dann zeichnet Godot nicht mehr.
+func _to_background() -> void:
+	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
+	DisplayServer.window_set_position(Vector2i(-4000, 0))
 
 
 func _process(_delta: float) -> void:
