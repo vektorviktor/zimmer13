@@ -1307,6 +1307,16 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man sc
 - **Bis es Pläne für Obergeschoss und Keller gibt:** Galerie und Treppenhäuser enden oben an verschlossenen
   Türen; der bisherige Keller kommt sinngemäß unter das östliche Treppenhaus. Vorschlag für später: ein
   Kellergang unter der Nordseite verbindet beide Treppenhäuser.
+- **Umgesetzt (2026-10-18), erste Bauphase:** Das ganze Erdgeschoss steht; bewohnbar ist der **Ostflügel**.
+  Im Westflügel sind Flure, Innenhöfe und der **Küchenblock** (Küche, Speisesaal, Lager, Kühlräume) offen,
+  die Zimmer bleiben verschlossen (Vorhänge zu, auch das Monster kommt nicht hinein), ebenso das Treppenhaus West.
+  - **Sonderzimmer behalten ihre alten Nummern als Endziffern:** 0111 Edna, 0112 Bruno, 0113 Spieler,
+    0114 leer, 0115 Mila, 0116 Wäscherei, 0117 verlassen, 0118 verschlossen (Schlüssel im Keller), 0126
+    verfallen mit dem Kompass (vorher 226 im Obergeschoss), 0137 verfallen.
+  - **Feiern finden im Partyraum statt** (Plattenspieler, Tanzfläche) statt in der Lobby; dort beginnt auch der
+    erste Angriff. Würfeltisch in der Bar, Schachtisch in der Lobby unter der Galerie.
+  - Das Kartenblatt „Obergeschoss“ liegt vorerst nicht aus (es zeigt nur die Galerie); die Kellerskizze liegt
+    weiter im verlassenen Zimmer.
 
 ---
 

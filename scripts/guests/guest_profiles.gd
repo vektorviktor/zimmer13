@@ -15,7 +15,7 @@ class_name GuestProfiles
 
 const ALL := {
 	"edna": {
-		"name": "Edna", "room": "11",
+		"name": "Edna", "room": "0111",
 		"coat": Color(0.42, 0.28, 0.48), "pants": Color(0.2, 0.18, 0.22), "hair": Color(0.82, 0.82, 0.84),
 		"brave": 0.2, "greed": 0.15, "gossip": 0.5, "sell": 1.0, "buy": 0.6,
 		"harvester": false, "carver": false,
@@ -65,7 +65,7 @@ const ALL := {
 		},
 	},
 	"bruno": {
-		"name": "Bruno", "room": "12",
+		"name": "Bruno", "room": "0112",
 		"coat": Color(0.3, 0.25, 0.18), "pants": Color(0.15, 0.15, 0.17), "hair": Color(0.15, 0.1, 0.08),
 		"brave": 0.8, "greed": 0.9, "gossip": 0.2, "sell": 1.5, "buy": 0.5,
 		"harvester": true, "carver": false,
@@ -115,7 +115,7 @@ const ALL := {
 		},
 	},
 	"mila": {
-		"name": "Mila", "room": "15",
+		"name": "Mila", "room": "0115",
 		"coat": Color(0.2, 0.45, 0.4), "pants": Color(0.25, 0.2, 0.3), "hair": Color(0.55, 0.2, 0.1),
 		"brave": 0.5, "greed": 0.4, "gossip": 0.9, "sell": 1.1, "buy": 0.8,
 		"harvester": true, "carver": true,
@@ -133,8 +133,8 @@ const ALL := {
 			"greet": ["Oh, hi! Bist du auch hier gestrandet?", "Hallo! Hast du schon gehört, was Edna erzählt?"],
 			"greet_enemy": ["Ah. Du. Alle wissen, was du getan hast."],
 			"smalltalk": ["Ich schnitze Kürbisse, seit ich klein bin. Mit Messer aus der Küche geht's am besten.", "Bruno ist ein Geizhals, aber er hat immer Kürbisse.", "Im Garten wachsen die Kürbisse nach. Man muss nur schneller sein als Bruno."],
-			"monster": ["Ich glaube, Gerede lockt es an. Je mehr wir darüber reden, desto frecher wird es.", "In der Wäscherei hängen Spinnweben. Die hält es angeblich auch fern.", "Es kriecht durch die dunklen Zimmer. Zimmer 17 ist schon lange verlassen …", "Hast du die Zettel gefunden? Da waren schon andere vor uns hier.", "Verlass dich nicht auf ein kurzes Flackern. Ich glaube, manchmal lügt es."],
-			"odd": ["Ich mache die beste Halloween-Deko im ganzen Hotel. Wetten?", "Zimmer 17 steht leer, seit ich hier bin. Ob da jemand ausgezogen ist?", "Wir sollten bald eine richtige Party feiern! Mit Musik und allem!"],
+			"monster": ["Ich glaube, Gerede lockt es an. Je mehr wir darüber reden, desto frecher wird es.", "In der Wäscherei hängen Spinnweben. Die hält es angeblich auch fern.", "Es kriecht durch die dunklen Zimmer. Zimmer 0117 ist schon lange verlassen …", "Hast du die Zettel gefunden? Da waren schon andere vor uns hier.", "Verlass dich nicht auf ein kurzes Flackern. Ich glaube, manchmal lügt es."],
+			"odd": ["Ich mache die beste Halloween-Deko im ganzen Hotel. Wetten?", "Zimmer 0117 steht leer, seit ich hier bin. Ob da jemand ausgezogen ist?", "Wir sollten bald eine richtige Party feiern! Mit Musik und allem!"],
 			"knock": ["Bitte! Mach auf, es kommt!", "Hilfe! Lass mich rein!"],
 			"sheltered": ["Okay … okay. Danke. Ich zittere total."],
 			"phone_warn": ["Ich bin's, Mila! Es ist {where}, ich hab's gerade gesehen! Geh da bloß nicht hin!"],

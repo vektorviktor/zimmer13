@@ -125,8 +125,9 @@ Speicherformats (siehe 7).
 Main (Node3D, main.gd)
 ├─ WorldEnvironment, DirectionalLight (Mond)
 ├─ Level (NavigationRegion3D)        ← statische Geometrie, Türen, Lampen, Schalter, Verstecke …
-│   ├─ Geschoss_0 / Geschoss_4       ← Flurnetze je Stockwerk
-│   └─ Zimmer_11 …                   ← gedrehte Zimmerreihen
+│   ├─ Wände, Böden, Decken, Türen … ← aus assets/maps/eg.json, direkt unter Level
+│   ├─ Zimmer_0101 …                 ← je Zimmer ein gedrehter Rahmen (Ursprung = Türmitte)
+│   └─ Keller                        ← unter dem Treppenhaus Ost
 ├─ Items, Gäste, Plattenspieler      ← dynamisch, direkt unter Main (LevelBuilder.world)
 ├─ SynthAudio, ShadowBudget, Traces, Player, Monster, MonsterDirector, Social, PhoneCalls
 └─ CanvasLayer: PostFx (5), Hud (10), Dialog/DiceMatch/ChessMatch/PhoneUI (15), DeathScreen (20), Menus (30)
@@ -136,7 +137,8 @@ Main (Node3D, main.gd)
 
 ### Koordinaten & Ausrichtung
 - 1 Einheit = 1 m. Erdgeschoss y = 0, Obergeschoss y = `LevelBuilder.UP_Y` (4), Keller y = −3,5.
-- Hauptflur entlang +X (x 0 … 78,4, z ±1,6), Lobby bei negativem x.
+- Ursprung = Mitte des Haupteingangs auf der Südwand; x nach Osten, z nach Süden (Norden = −Z). Das Gebäude
+  reicht etwa von x −76 … 76 und z −112 … 0, die Lobby liegt in der Mitte (x ±7,4, z −28 … 0).
 - **Lokale +Z zeigt „nach vorn / in den Raum / von der Wand weg“** (Items: Vorderseite, Verstecke:
   heraus, Fenster/Schalter/Kalender/Spuren: in den Raum). Ausnahme: Monster schaut entlang **−Z**.
 - Ursprung von Gegenständen = Unterseite; von Türen = Scharnier am Boden; von Fenstern = Mitte der Öffnung.
@@ -209,24 +211,51 @@ Lärm-Dämpfung `1 | 2 | 64`.
 
 ## 4. Level (`scripts/level/level_builder.gd`)
 
-- **Datengetrieben:** `FLOORS` (Flurnetze je Stockwerk: Abschnitte mit Schalter, Querflügel) und
-  `ROWS` (Zimmerreihen: Ursprung, Drehung, Zimmer `[Nummer, Breite, Art, Außenfenster]`).
-- Zimmer-Arten: `player`, `guest`, `empty`, `vacant` (Licht aus, freie Zimmer für neue Gäste),
-  `laundry`, `abandoned`, `derelict`, `locked`.
-- Bauen in **lokalen Rahmen**: `_parent` ist das gerade aktive Bauteil (Geschoss oder gedrehte
-  Zimmerreihe); `_wall_x/_wall_z` mit Öffnungen als `Vector4(mitte, breite, oberkante, unterkante)`.
-  Gegenstände kommen dagegen in die Hauptszene (`world`), umgerechnet über `_global()`.
-- Ergebnisse für andere Systeme: `rooms` (Nummer → `{no, kind, center, door_front, door_inside,
+Baut das Erdgeschoss aus dem Gebäudeplan (`assets/maps/eg.json`, Abschnitt unten). Der alte, im Code
+festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
+- **Ablauf von `build()`:** Flächen-Raster (`_index_places`, 25 cm) → jede Wand des Plans (`_build_wall`) →
+  Böden und Decken je Fläche → Zimmer → Flurabschnitte → Lobby, Galerie, Bar, Partyraum, Küchenblock,
+  Nebenräume, Pool, Gärten → Treppenhäuser und Keller → Zonen, Wegpunkte.
+- **Wände:** Eine Planwand wird dort geteilt, wo sich die Räume an einer Seite ändern (abgetastet alle 25 cm,
+  30 cm neben der Mitte; kurze Läufe an Querwänden geglättet). Tapete je Seite über `Mat.wallpaper_split`
+  (Zimmer beige, Lobby rot, sonst teal); Seiten ohne Tapete (draußen = Fassade, Toilette/Pool = Fliesen,
+  Lager = Beton) bekommen eine 2-cm-Haut knapp vor der Wand. Glaswände (Pool) als Scheibe auf Ebene 7.
+- **Öffnungen → Objekte** (`_opening_object`): Türen gehen in Zimmer und Räume auf, nie in den Flur
+  (`_inner_side`); ab 1,5 m Breite Doppeltür. Terrassen- und Glastüren sind gläserne Doppeltüren, Aufzüge
+  verschlossen („Außer Betrieb“), der Haupteingang verriegelt. Fenster schauen von innen nach draußen; ihre
+  `room_id` ist die Fläche dahinter (Zimmernummer, Bereich oder Flurabschnitt, `_room_id_at`). Unter jeder
+  benutzbaren Tür liegt eine Schwelle – ohne Boden in der Wandlücke risse das NavMesh ab.
+- **Zimmer** (`_room`): Rahmen am Türmittelpunkt (+X an der Flurwand entlang, +Z ins Zimmer); Innenmaß aus
+  dem Rechteck an der Tür (Eckzimmer sind L-förmig). Möbel wie bisher (Bett links hinten, Schrank rechts
+  hinten, Tisch vorn auf der freieren Seite der Tür). Arten: `player`, `guest`, `empty`, `vacant`, `laundry`,
+  `abandoned`, `derelict`, `locked`; Sonderzimmer in `ROOM_KINDS` (Endziffern der alten Nummern,
+  `PLAYER_ROOM` 0113, `LOCKED_ROOM` 0118, `COMPASS_ROOM` 0126). **Bauphase:** Nur Flügel in `OPEN_WINGS`
+  sind bewohnbar; Zimmer anderer Flügel haben eine versiegelte Tür (`_seal`: abgeschlossen, auch für das
+  Monster) und dauerhaft zugezogene Vorhänge (`HotelWindow.sealed`), aber kein Inneres und keinen Boden.
+- **Flure** (`_corridors`): je Flurabschnitt des Plans ein Lichtschalter, alle 18 m eine Wandleuchte, im
+  Wechsel Kommoden (mit Kerze und Bild) und Schränke. `_corridor_wall_spot` sucht dafür ein freies Wandstück
+  zum Flur hin (keine Öffnung, nicht schon belegt).
+- **Lobby und Galerie:** Über dem Luftraum (`open_above`) fehlt die Decke; die Galerie ist ein 0,5 m dicker
+  Boden auf 3,5–4 m (zugleich Lobbydecke) mit Geländer, Wänden bis 7,5 m und zwei gesperrten Türen ins
+  Obergeschoss. Treppe aus dem Plan (`stairs`, `up` = oberes Ende).
+- **Treppenhaus Ost:** Schacht von −3,5 bis 7,5 m, je Geschoss zwei Läufe mit Wendepodest im Norden
+  (hinauf West/Ost, hinab Ost/West); unten die niedrige Kellertür, oben eine gesperrte Tür. Der Keller liegt
+  südlich davon unter dem Flur. Treppenhaus West ist verschlossen.
+- Bauen in **lokalen Rahmen**: `_parent` ist das gerade aktive Bauteil (root, Zimmerrahmen, Keller);
+  `_wall_x/_wall_z` mit Öffnungen als `Vector4(mitte, breite, oberkante, unterkante)`. Gegenstände kommen in
+  die Hauptszene (`world`), umgerechnet über `_global()`.
+- Ergebnisse für andere Systeme: `rooms` (Nummer → `{no, sign, kind, center, door_front, door_inside,
   along, into, door, spots}`), `zones`, `spawn_points` (`[0]` = Keller), `patrol` (`{pos, room}`),
-  `wander_points`, `player_spawn`, `player_door_front`, Lobby-/Bar-/Garten-/Feier-Punkte,
-  `game_table`, `diary`.
+  `wander_points`, `player_spawn`, `player_door_front`, Lobby-/Bar-/Garten-/Feier-Punkte, `party_corner`,
+  `stairwell_point`, `game_table`, `chess_table`, `diary`. Abfragen: `in_lobby(p)`, `in_area(p, id)`,
+  `is_outdoor(p)`, `cellar_center()`.
 - NavMesh wird in `main._bake_navigation` zur Laufzeit gebacken (nur Ebene 1, Agent 0,3 m / 1,6 m).
-- Ein neues Zimmer: Eintrag in `ROWS` – Wände, Tür (mit Rahmen), Lampen, Schalter, Möbel, Zone und
-  Wegpunkt entstehen automatisch. **Speicherformat beachten** (siehe 7).
+  `--navcheck` misst Bau- und Backzeit (EG: ca. 0,5 s + 0,4 s) und prüft die Wege zu allen wichtigen Orten.
+- Ein neues Zimmer: im Plan zeichnen, `tools/build_map.py` laufen lassen – Wände, Tür, Lampen, Schalter,
+  Möbel, Zone und Wegpunkt entstehen automatisch. **Speicherformat beachten** (siehe 7).
 
 ### Gebäudeplan (`map.aseprite` → `tools/build_map.py` → `assets/maps/<stockwerk>.json`)
-Neuer Grundriss (Spielkonzept 7.5), wird schrittweise an die Stelle von `ROWS`/`FLOORS` treten; der alte
-Stand liegt unter dem Git-Tag `alte-karte`. Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
+Grundriss seit Spielkonzept 7.5. Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
 dort), das Skript ist reines Python ohne Zusatzpakete und braucht ca. 10 s je Stockwerk:
 `python tools/build_map.py [map.aseprite] [assets/maps] [vorschau-ordner]`. Die Vorschau (`<stockwerk>.svg`)
 zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Prüfen nach Planänderungen.
@@ -251,7 +280,9 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
   `rects`, optional `name`; die Fläche `flure` umfasst alle Flure **und** die Lobby), `rooms` (`no`, `sign`,
   `wing`, `rects`, `center`, `door` mit `pos`/`normal` in den Flur, `windows`, `garden_doors`), `stairs` (`id`,
   `kind` `stair`/`stairwell`, `rect`, `up` bzw. `door`), `voids`, `open_above`, `areas`, `objects` (`name`,
-  `rect`, `facing`), `planters`, `terrace_edges`, `trees`, `reception`.
+  `rect`, `facing`), `corridors` (Flurabschnitte: `id`, `name`, `wing`, Mittellinie `a`–`b`), `floor_patches`
+  (Boden unter Kübeln, Bäumen, Rezeption und freien Treppen, mit der Art der umgebenden Fläche), `planters`,
+  `terrace_edges`, `trees`, `reception`.
 - **Zimmernummern** entstehen im Skript (`WINGS`: Laufweg je Flügel als Flurmittellinien in Pixeln, dann
   Querflur; rechts ungerade). Liegt ein Zimmer an keinem bekannten Flur, bricht das Skript ab – dann `WINGS`
   ergänzen. `BROKEN_SIGNS`: abweichende Türschilder (0113 → „13“).
@@ -471,11 +502,11 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
 | Türen | `door.gd` | Blatt auf Ebene 2 (Glastür 7); Rahmen über `OpeningFrame` (Zarge, Bekleidung, Kopfpartie auf beiden Wandseiten, nur Optik). Spuren über `attach_mark(mark, seite, at)` – Kratzer mittig, Handabdrücke (`Traces.add_door_handprint`) höher; `at` wird mitgespeichert |
 | Spuren | `traces.gd`, `trace_mark.gd` | zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`; Fußabdrücke verblassen, Marken bleiben |
 | Zettel | `warning_note.gd` | feste Warnungszettel (`warning_notes`, erst nach dem 1. Angriff sichtbar) und Gäste-Zettel (`guest_notes`, max. 30) |
-| Kommoden | `world/dresser.gd` | 8 Stück in den Hauptfluren (4 je Geschoss, `_corridors`). Drei Schubladen als eigene Körper; interagierbar ist je ein `Dresser.Handle` (leitet mit Index weiter). Hohler Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen einer Schublade (`searched`): leer / Münzen / Gegenstand aus `LOOT`. Beim Auf-/Zuschieben werden die darin liegenden Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“ – sie liegen nicht in der Hand). Lärm `drawer`. Gespeichert: `open`, `searched` (ab Version 7) |
+| Kommoden | `world/dresser.gd` | In den Flurabschnitten verteilt (`LevelBuilder._corridors`). Drei Schubladen als eigene Körper; interagierbar ist je ein `Dresser.Handle` (leitet mit Index weiter). Hohler Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen einer Schublade (`searched`): leer / Münzen / Gegenstand aus `LOOT`. Beim Auf-/Zuschieben werden die darin liegenden Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“ – sie liegen nicht in der Hand). Lärm `drawer`. Gespeichert: `open`, `searched` (ab Version 7) |
 | Verstecke | `hide_spot.gd` | `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur; `own_bed` = Bett in Zimmer 13 (Schlafen, 4.18); `rattle()`/`burst_open()` für den Lakengeist |
 | Am Körper | `player.gd` (`_pocket`, `_update_hand`, `set_pockets`), `player/pocket_map.gd` | `Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den Welt-Gegenstand und trägt ihn in `has_compass`/`map_pages`/`keyring` ein – braucht keine freie Hand. Linke Hand (`_left_hand`) für Aktionen `map` (Tab) und `compass` (F), nicht bei `hands_blocked()` oder im Gespräch; `inspecting` halbiert das Tempo. Türen fragen `player.has_key(id)`. Gespeichert unter `player` |
 | Kompass | `item.gd` (`Kind.COMPASS`) | Nadel = Feder Richtung Welt −Z (Norden), gestört über `director.threat_at()` und – nur eingesteckt (`pocketed`) – `is_hallucinating()`; der Kompass in der linken Hand ist ein `Item` mit `make_pocketed()` (raus aus Gruppe `items`); liegt in `LevelBuilder.COMPASS_ROOM` |
-| Karte | `world/hotel_map.gd`, `item.gd` (`Kind.MAP`, `extra` = Blatt-ID), `player/pocket_map.gd` | `HotelMap.PAGES` = Blätter (id, Titel, Höhenbereich, Geschoss oder eigene Zeichnung); gedruckte Pläne aus `LevelBuilder.FLOORS`/`ROWS` (neue Zimmer erscheinen von selbst), Kellerskizze von Hand gezittert. Alle Blätter einmal untereinander in einem SubViewport gerendert → geteilte `ImageTexture` (ohne Grafik: nur Papierfarbe); `HotelMap.material(id)` schneidet per `uv1_offset` aus. `PocketMap` = Blätterstapel in der linken Hand, Schlüsselblatt (`KEYS`) zuletzt; beim Hervorholen oben das Blatt zu `HotelMap.page_at(y)`. Neue Ebene: Eintrag in `PAGES`, Zeichnung in `_draw()`, Blatt im `LevelBuilder` auslegen |
+| Karte | `world/hotel_map.gd`, `item.gd` (`Kind.MAP`, `extra` = Blatt-ID), `player/pocket_map.gd` | `HotelMap.PAGES` = Blätter (id, Titel, Höhenbereich, Geschoss oder eigene Zeichnung); gedruckter EG-Plan aus `assets/maps/eg.json` (neue Zimmer erscheinen von selbst), OG-Blatt bislang nur mit der Galerie, Kellerskizze von Hand gezittert (Lage aus dem Treppenhaus Ost). Alle Blätter einmal untereinander in einem SubViewport gerendert → geteilte `ImageTexture` (ohne Grafik: nur Papierfarbe); `HotelMap.material(id)` schneidet per `uv1_offset` aus. `PocketMap` = Blätterstapel in der linken Hand, Schlüsselblatt (`KEYS`) zuletzt; beim Hervorholen oben das Blatt zu `HotelMap.page_at(y)`. Neue Ebene: Eintrag in `PAGES`, Zeichnung in `_draw()`, Blatt im `LevelBuilder` auslegen |
 | Lakengeist | `monster/sheet_ghost.gd`, `shaders/psx_ghost.gdshader`, `traces.gd` (`add_window_handprints`) | Spielkonzept 4.18. `Game.ghost`, eigener Knoten neben dem Monster, kein NavMesh und keine Kollision (schwebt durch Glas und Vorhang). Prüft alle 0,5 s `_window_near()`: Außenfenster mit Vorhang, ≤ 7 m, freie Sicht, alle `lamp_fixtures` mit dieser `room_id` aus, Vorhang offen (ab `THROUGH_CURTAIN_FROM` egal). Gewürfelt wird je neuem Fenster (`_last_window`, `SPAWN_CHANCE`) und, solange der Spieler dort bleibt, alle `STAY_EVERY` s erneut (`STAY_CHANCE`, `_stay`); nicht während Rauschen (`player_threat`), nicht in Gesellschaft, erst ab Tag `FROM_DAY` (2) oder nach dem ersten Angriff (`_haunting()`, gilt auch für Gäste). Abklingzeit `COOLDOWN` 45 s, Schweben `FLOAT_SPEED`/`INSIDE_SPEED` 1,6/1,1 m/s. `visits` = Stufe (gespeichert unter `ghost`, dazu die Abklingzeit; laufende Auftritte nicht). Zustände `APPROACH → HOVER → ENTER → STRANGLE` (dazu `LURK → FLY_IN` am Schrank), Ende immer über `FADE` (0,5 s, Raster-Ausblenden im Shader statt Transparenz). Spieler: `trance` (macht langsamer, `TRANCE_SLOW`), `gripped` (steht fest), `move_input` (auch im Versteck, solange `gripped`). **Losreißen** (`_struggle`): Balken `_escape`, je Richtungswechsel `ESCAPE_GAIN`, der Griff zieht `ESCAPE_GRIP` je Sekunde ab (ab dem 4. Mal fester), `ESCAPE_TIME` 3 s – erst ab ~6,5 Wechseln/s schaffbar; HUD-Balken `Hud.set_struggle()`. Solange `gripped`, gehen weder [E] noch die Versteck-Zeitgrenze. **Schrank** (`_lost_victim` → `_start_lurk`): Versteckt sich der Spieler in einem Schrank, wenn er ohnehin hereinkäme (ab `ENTER_FROM`, im Flur), wartet er `LURK_TIME` vor `check_point` und rüttelt (`HideSpot.rattle()`). Kommt der Spieler heraus → `ENTER` (packt sofort zu); keucht er (Atem leer) → sofort `FLY_IN`; sonst Wurf `FLY_IN_CHANCE` (ab `HALL_FROM` `FLY_IN_CHANCE_LATE`, + `FLY_IN_PER_NIGHT` je Nacht ohne Schlaf, angehaltene Luft senkt sie um bis zu `BREATH_SAVES`). `FLY_IN`: `HideSpot.burst_open()` (Lärm `rattle`, nicht `hide_burst` – lockt das Monster nicht), schwebt an den Hals, würgt im Schrank; losgerissen → `exit_hide()`. Unterm Bett verschwindet er wie bisher. Tod über `Game.game_over` + `director.flash()` + `player_died`. Knochen werden pro Frame aus der Ruhepose gedreht (`_pose`: Schweben, Saum, Handkreisen, Krallen). Flur: ab `HALL_FROM` (6.) Mal, nur wenn `Social.all_asleep()` und der Spieler in einer „Flur“-Zone steht, `HALL_CHANCE` je Sekunde; taucht an einem Patrouillenpunkt 8–16 m entfernt außer Sicht (auch keines wachen Gastes) auf und kommt gleich auf ihn zu. **Schlafmangel** (`Player.nights_awake`): Fensterchance + `AWAKE_CHANCE` je Nacht, Abklingzeit beim Spieler `COOLDOWN / (1 + n)`, Flurchance × (1 + n), ab `AWAKE_HALL_FROM` (2) auch vor dem 6. Mal, ab `AWAKE_SURE` (3) sicher im Flur, sobald kein wacher Gast den Spieler sieht – auch ohne Nachtruhe; Zeugen vertreiben ihn trotzdem. **Gäste als Opfer** (6.12): `_victim` (Player oder Guest), `_stage` = Zähler des Opfers (`visits` bzw. `Guest.ghost_visits`); `_check_guests()` würfelt wie beim Spieler je neuem Fenster pro Gast (`_guest_windows`), Augenpunkt `Guest.eye_height()`. Der Gast sieht ihn (`_guest_sees_me` → `shock("ghost", …, entranced)` ab Hypnose-Stufe: bleibt stehen), `ghost_grab()` → `GHOSTED`, Losreißen nach Zufall (`GUEST_ESCAPE`: 5 % + 20 % × `brave`), sonst `_kill_guest()`. Bei Gästen zählt der Spieler als Zeuge (außer `debug_ignore_player`); Zeugen, die ihn vertreiben, erschrecken. Noch nicht: Einstellung für den Blickzug |
 | Taschenlampe | `world/flashlight.gd`, `world/uv_mark.gd`, `item.gd` (`FLASHLIGHT`, `BATTERY`, `UV_FILTER`) | `Flashlight` hängt als Kind am Item (`item.flashlight`), Zustand steckt in `create_extra()` (`"c=0.42;uv;m=uv;on"`), also kein eigener Speicher-Eintrag. Bewusst **ein `SpotLight3D` außerhalb von `light_source`** – zählt nicht für Helligkeit/Abschreckung (`light_at` castet ohnehin auf `OmniLight3D`) und nicht als `item.lit` (sonst bläst das Monster sie aus, Gäste tropfen Wachs …). Auffälligkeit über `flashlight.carried_conspicuity()` in `Senses.conspicuity`. Nur in der Hand des Spielers: UV prüft alle 0,1 s die Gruppe `uv_marks` (Kegel + Sichtlinie `SIGHT_MASK`, `UvMark.shine()`) und jeden Frame das Monster (`can_be_repelled_by_uv`, Brust im Kegel) → nach `director.uv_repel_time()` `on_monster_uv()`. Einsetzen von Batterie/UV-Aufsatz in `Item._fitting_prompt/_fit` (nur eigene oder herrenlose Teile). `UvMark`: Leuchtschrift (`setup_text`, im LevelBuilder `_uv_writing`) oder Kästen (`add_box`, Nachglanz der Fußspuren in `Traces`); läuft nur, solange es leuchtet. Warnungszettel: `NOTES[id]["uv"]` |
 | Kalender | `calendar.gd` | statische Datumsfunktionen + Abreißkalender in Zimmer 13 |

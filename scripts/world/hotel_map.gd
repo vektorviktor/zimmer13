@@ -1,28 +1,26 @@
 class_name HotelMap
 extends Control
 ## Karte aus losen Blättern (Item.Kind.MAP, ein Blatt je Ebene, Spielkonzept 3.2): gedruckte
-## Lagepläne der Geschosse, Norden (Welt −Z) oben, gezeichnet aus den Bauplänen des
-## LevelBuilder (FLOORS, ROWS) – ändert sich das Hotel, stimmen auch die Blätter. Dazu
+## Lagepläne der Geschosse, Norden (Welt −Z) oben, gezeichnet aus dem Gebäudeplan
+## (assets/maps/eg.json, Spielkonzept 7.5) – ändert sich das Hotel, stimmen auch die Blätter. Dazu
 ## handgezeichnete Skizzen früherer Gäste. Neue Ebene = Eintrag in PAGES + Zeichnung in _draw().
 ##
 ## Alle Blätter liegen untereinander in einer Textur (PAGE_SIZE je Blatt), einmal in einem
 ## SubViewport gerendert; material() liefert je Blatt ein Material mit passendem UV-Ausschnitt.
 
-## id, Titel, Ebene (Spielerhöhe von … bis, für „passendes Blatt oben“), Geschoss in
-## LevelBuilder.FLOORS (gedruckter Plan) oder -1 (eigene Zeichnung in _draw())
+## id, Titel, Ebene (Spielerhöhe von … bis, für „passendes Blatt oben“)
 const PAGES := [
-	{"id": "eg", "title": "Erdgeschoss", "y_min": -1.0, "y_max": 2.5, "floor": 0},
-	{"id": "og", "title": "1. Obergeschoss", "y_min": 2.5, "y_max": 99.0, "floor": 1},
-	{"id": "keller", "title": "Keller", "y_min": -99.0, "y_max": -1.0, "floor": -1},
+	{"id": "eg", "title": "Erdgeschoss", "y_min": -1.0, "y_max": 2.5},
+	{"id": "og", "title": "1. Obergeschoss", "y_min": 2.5, "y_max": 99.0},
+	{"id": "keller", "title": "Keller", "y_min": -99.0, "y_max": -1.0},
 ]
 const PX := 9.0                      ## Pixel pro Meter (gedruckte Pläne)
-const X_MIN := -15.5
-const X_MAX := 96.0
-const Z_MIN := -30.0
-const Z_MAX := 20.0
+const X_MIN := -78.0
+const X_MAX := 78.0
+const Z_MIN := -122.0
+const Z_MAX := 4.0
 const PAGE_SIZE := Vector2i(int((X_MAX - X_MIN) * PX), int((Z_MAX - Z_MIN) * PX))
-## Kellerskizze: Ausschnitt ab x 64, größerer Maßstab
-const SKETCH_X := 64.0
+## Kellerskizze: Ausschnitt um Treppenhaus und Keller, größerer Maßstab
 const SKETCH_PX := PAGE_SIZE.x / 34.0
 const LINE := 2.0
 
@@ -134,22 +132,26 @@ static func _texture_size() -> Vector2i:
 
 func _draw() -> void:
 	var font := ThemeDB.fallback_font
+	var plan: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(LevelBuilder.MAP_PATH))
 	for i in PAGES.size():
 		var top := float(i * PAGE_SIZE.y)
 		var id: String = PAGES[i]["id"]
 		if id == "keller":
-			_draw_cellar_sketch(top, font)
+			_draw_cellar_sketch(plan, top, font)
 			continue
 		_origin = Vector2(X_MIN, Z_MIN)
 		_scale = PX
 		draw_rect(Rect2(Vector2(0, top), Vector2(PAGE_SIZE)), PAPER)
 		draw_rect(Rect2(Vector2(4, top + 4), Vector2(PAGE_SIZE) - Vector2(8, 8)), INK, false, LINE)
-		# Kopf in der leeren Ecke oben links, Geschoss und Nordpfeil oben rechts
+		# Kopf oben links, Geschoss und Nordpfeil oben rechts
 		draw_string(font, Vector2(16, top + 34), "HOTEL – Lageplan", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, INK)
 		draw_string(font, Vector2(16, top + 60), "für unsere Gäste", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, FADED)
 		draw_string(font, Vector2(PAGE_SIZE.x - 300, top + 40), page_title(id), HORIZONTAL_ALIGNMENT_RIGHT, 220, 26, INK)
 		_north_arrow(Vector2(PAGE_SIZE.x - 40, top + 14), INK, font)
-		_draw_floor(LevelBuilder.FLOORS[int(PAGES[i]["floor"])], top, font)
+		if id == "eg":
+			_draw_ground_floor(plan, top, font)
+		else:
+			_draw_upper_floor(plan, top, font)
 
 
 func _north_arrow(n: Vector2, color: Color, font: Font) -> void:
@@ -157,56 +159,99 @@ func _north_arrow(n: Vector2, color: Color, font: Font) -> void:
 	draw_string(font, n + Vector2(-8, 56), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, color)
 
 
-func _draw_floor(spec: Dictionary, top: float, font: Font) -> void:
-	var y: float = spec["y"]
-	var ground := y == 0.0
-	if ground:
-		_area(Rect2(-14.1, -19.1, 14.2, 12.0), GARDEN, "Garten", top, font)
-		_area(Rect2(-14.0, -7.0, 14.0, 14.0), CORRIDOR, "Lobby", top, font)
-		_area(Rect2(-14.0, 7.0, 8.0, 6.0), ROOM, "Küche", top, font)
-		_area(Rect2(-6.0, 7.0, 6.0, 6.0), ROOM, "Bar", top, font)
-		# Den Keller verschweigt der Hotelplan – nur die Tür am Flurende
-		var door := _rect(Rect2(LevelBuilder.MAIN_END, -1.0, 1.2, 2.0), top)
-		_dashed_rect(door)
-		_text(Rect2(door.position + Vector2(door.size.x + 8, -14), Vector2(110, 20)), "Personal", FADED, font, 16)
-		_text(Rect2(door.position + Vector2(door.size.x + 8, 8), Vector2(110, 20)), "kein Zutritt", FADED, font, 16)
-	# Flure
-	var main_end: float = spec["main_end"]
-	_box(Rect2(0.0, -1.6, main_end, 3.2), CORRIDOR, top)
-	for wing in spec["wings"]:
-		var wx: float = wing["x"]
-		var wend: float = wing["end"]
-		_box(Rect2(wx - 1.6, -wend, 3.2, 2.0 * wend), CORRIDOR, top)
-	var well := _box(Rect2(LevelBuilder.STAIRWELL_X - 1.6, LevelBuilder.STAIRWELL_END, 3.2,
-		LevelBuilder.STAIRWELL_Z - LevelBuilder.STAIRWELL_END), CORRIDOR, top)
-	for k in 6:   # Stufen
-		var sy := well.position.y + well.size.y * (k + 1) / 8.0
-		draw_line(Vector2(well.position.x, sy), Vector2(well.end.x, sy), FADED, LINE)
-	_text(well, "Treppe", INK, font, 18, -90.0)
-	# Zimmer
-	for row in LevelBuilder.ROWS:
-		var origin: Vector3 = row["origin"]
-		if not is_equal_approx(origin.y, y):
-			continue
-		var basis := Basis(Vector3.UP, deg_to_rad(float(row["yaw"])))
-		var x := 0.0
-		for entry in row["rooms"]:
-			var width: float = entry[1]
-			var a := origin + basis * Vector3(x, 0, 0)
-			var b := origin + basis * Vector3(x + width, 0, LevelBuilder.ROOM_DEPTH)
-			var world := Rect2(Vector2(minf(a.x, b.x), minf(a.z, b.z)), (Vector2(a.x, a.z) - Vector2(b.x, b.z)).abs())
-			var r := _box(world, ROOM, top)
-			var no := String(entry[0])
-			_text(r, no, INK, font, 18)
-			if no == "13":
-				draw_arc(r.get_center(), minf(r.size.x, r.size.y) * 0.45, 0.3, TAU + 0.1, 24, PEN, 3.0)
-			x += width
+## Erdgeschoss aus dem Gebäudeplan: Flächen, Wände mit Türen, Zimmernummern. Den Keller verschweigt
+## der Hotelplan – die Treppenhäuser sind nur Treppen.
+func _draw_ground_floor(plan: Dictionary, top: float, font: Font) -> void:
+	for r in plan["regions"]:
+		var fill := ROOM.darkened(0.08)
+		match String(r["kind"]):
+			"room":
+				fill = ROOM
+			"corridor":
+				fill = CORRIDOR
+			"garden":
+				fill = GARDEN
+			"terrace":
+				fill = GARDEN.lightened(0.15)
+		for rc in r["rects"]:
+			draw_rect(_rect(_world_rect(rc), top), fill)
+	for rs in plan["terrace_edges"]:
+		for rc in rs:
+			draw_rect(_rect(_world_rect(rc), top), GARDEN.darkened(0.2))
+	for p in plan["floor_patches"]:
+		for rc in p["rects"]:
+			draw_rect(_rect(_world_rect(rc), top), CORRIDOR if p["kind"] == "corridor" else GARDEN)
+	for w in plan["walls"]:
+		var a := _point(w["a"], top)
+		var b := _point(w["b"], top)
+		draw_line(a, b, INK, LINE)
+		var length := a.distance_to(b)
+		for o in w.get("openings", []):
+			var f0 := float(o["at"]) * _scale / length
+			var f1 := (float(o["at"]) + float(o["width"])) * _scale / length
+			draw_line(a.lerp(b, f0), a.lerp(b, f1), CORRIDOR if o["kind"] == "window" else PAPER, LINE + 1.0)
+	for s in plan["stairs"]:
+		var well := _rect(_world_rect(s["rect"]), top)
+		draw_rect(well, CORRIDOR)
+		draw_rect(well, INK, false, LINE)
+		for k in 6:   # Stufen
+			var sy := well.position.y + well.size.y * (k + 1) / 8.0
+			draw_line(Vector2(well.position.x, sy), Vector2(well.end.x, sy), FADED, LINE)
+	for r in plan["regions"]:
+		if r.has("name") and not r["kind"] in ["elevator", "corridor", "pool_water"]:
+			var box := _rect(_world_rect(_outer(r["rects"])), top)
+			var label := String(r["name"])
+			for font_size in [16, 11]:   # Name nur, wenn er in den Raum passt
+				if font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x < box.size.x - 6.0:
+					_text(box, label, INK, font, font_size)
+					break
+	for rm in plan["rooms"]:
+		var r := _rect(_world_rect(_outer(rm["rects"])), top)
+		var no := String(rm["no"])
+		_text(r, no, INK, font, 12)
+		if no == LevelBuilder.PLAYER_ROOM:
+			draw_arc(r.get_center(), minf(r.size.x, r.size.y) * 0.45, 0.3, TAU + 0.1, 24, PEN, 3.0)
+	for a in plan["areas"]:
+		_text(_rect(_world_rect(a["rect"]), top), String(a["name"]), INK, font, 18)
 
 
-## Skizze eines früheren Gastes auf einem Notizzettel: Flurende, Kellertür, Treppe, Keller
-## (Maße aus dem LevelBuilder, Linien von Hand gezittert).
-func _draw_cellar_sketch(top: float, font: Font) -> void:
-	_origin = Vector2(SKETCH_X, -PAGE_SIZE.y / SKETCH_PX / 2.0)
+## Obergeschoss: bislang nur die Galerie über der Lobby.
+func _draw_upper_floor(plan: Dictionary, top: float, font: Font) -> void:
+	for a in plan["areas"]:
+		if a["id"] == "lobby":
+			var hall := _box(_world_rect(a["rect"]), CORRIDOR, top)
+			for rc in plan["open_above"]:
+				_dashed_rect(_rect(_world_rect(rc), top))
+			_text(Rect2(hall.position + Vector2(0, -30), Vector2(hall.size.x, 24)), "Galerie", INK, font, 18)
+	draw_string(font, Vector2(16, top + PAGE_SIZE.y - 30), "Wegen Renovierung geschlossen.", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, FADED)
+
+
+func _world_rect(rc: Array) -> Rect2:
+	return Rect2(float(rc[0]), float(rc[1]), float(rc[2]) - float(rc[0]), float(rc[3]) - float(rc[1]))
+
+
+func _outer(rects: Array) -> Array:
+	var out: Array = (rects[0] as Array).duplicate()
+	for rc in rects:
+		out = [minf(out[0], rc[0]), minf(out[1], rc[1]), maxf(out[2], rc[2]), maxf(out[3], rc[3])]
+	return out
+
+
+func _point(p: Array, top: float) -> Vector2:
+	return Vector2((float(p[0]) - _origin.x) * _scale, top + (float(p[1]) - _origin.y) * _scale)
+
+
+## Skizze eines früheren Gastes auf einem Notizzettel: Treppenhaus Ost, Kellertür, Keller
+## (Maße aus dem Gebäudeplan und dem LevelBuilder, Linien von Hand gezittert).
+func _draw_cellar_sketch(plan: Dictionary, top: float, font: Font) -> void:
+	var well: Array = [0.0, 0.0, 1.0, 1.0]
+	for s in plan["stairs"]:
+		if s["id"] == "treppenhaus_ost":
+			well = s["rect"]
+	var mid := (float(well[0]) + float(well[2])) / 2.0
+	var zs := float(well[3]) + LevelBuilder.T
+	var L := LevelBuilder.CELLAR_LEN
+	_origin = Vector2(mid - PAGE_SIZE.x / SKETCH_PX / 2.0, float(well[1]) - 3.0)
 	_scale = SKETCH_PX
 	_rng.seed = 1994
 	draw_rect(Rect2(Vector2(0, top), Vector2(PAGE_SIZE)), NOTE_PAPER)
@@ -216,22 +261,19 @@ func _draw_cellar_sketch(top: float, font: Font) -> void:
 	draw_string(font, Vector2(20, top + 34), "Keller", HORIZONTAL_ALIGNMENT_LEFT, -1, 30, PENCIL)
 	draw_string(font, Vector2(130, top + 34), "(abgezeichnet, Okt. 1994)", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, PENCIL)
 	_north_arrow(Vector2(PAGE_SIZE.x - 40, top + 14), PENCIL, font)
-	var L := LevelBuilder.CELLAR_LEN
-	var cx := LevelBuilder.STAIR_BOTTOM
-	var corridor := _sketch_rect(Rect2(SKETCH_X - 1.0, -1.6, LevelBuilder.MAIN_END - SKETCH_X + 1.0, 3.2), top)
-	_text(corridor, "Flur (Ostende)", PENCIL, font, 20)
-	var door := _sketch_rect(Rect2(LevelBuilder.MAIN_END, -0.9, 0.3, 1.8), top)
-	_text(Rect2(door.position + Vector2(-60, door.size.y + 6), Vector2(150, 24)), "niedrig – ducken!", PENCIL, font, 16)
-	var stair := _sketch_rect(Rect2(LevelBuilder.MAIN_END + 0.3, -1.0, cx - LevelBuilder.MAIN_END - 0.3, 2.0), top)
-	for k in 9:   # Stufen
-		var sx := stair.position.x + stair.size.x * (k + 1) / 10.0
-		_wobbly_line(Vector2(sx, stair.position.y), Vector2(sx, stair.end.y), PENCIL)
-	_text(Rect2(stair.position + Vector2(0, -34), Vector2(stair.size.x, 24)), "Treppe runter →", PENCIL, font, 16)
-	var cellar := _sketch_rect(Rect2(cx, -3.0, L, 6.0), top)
-	_sketch_rect(Rect2(cx + 2.6, -2.9, 1.8, 0.5), top)                      # Regal
-	var crate := _sketch_rect(Rect2(cx + L - 1.35, -2.65, 0.7, 0.7), top)   # Kisten
-	_sketch_rect(Rect2(cx + L - 1.2, 2.1, 0.6, 0.6), top)
-	_sketch_rect(Rect2(cx + L - 1.9, 2.2, 0.6, 0.6), top)
+	var stair := _sketch_rect(_world_rect(well), top)
+	for k in 7:   # Stufen
+		var sy := stair.position.y + stair.size.y * (k + 1) / 8.0
+		_wobbly_line(Vector2(stair.position.x, sy), Vector2(stair.end.x, sy), PENCIL)
+	_text(Rect2(stair.position + Vector2(stair.size.x + 10, 0), Vector2(170, 24)), "Treppenhaus Ost", PENCIL, font, 18)
+	_text(Rect2(stair.position + Vector2(stair.size.x + 10, 28), Vector2(170, 24)), "ganz runter", PENCIL, font, 16)
+	var door := _sketch_rect(Rect2(mid - 0.45, zs - 0.3, 0.9, 0.3), top)
+	_text(Rect2(door.position + Vector2(door.size.x + 10, -8), Vector2(150, 24)), "niedrig – ducken!", PENCIL, font, 16)
+	var cellar := _sketch_rect(Rect2(mid - 3.0, zs, 6.0, L), top)
+	_sketch_rect(Rect2(mid + 2.4, zs + 2.6, 0.5, 1.8), top)                     # Regal
+	var crate := _sketch_rect(Rect2(mid + 1.95, zs + L - 1.35, 0.7, 0.7), top)  # Kisten
+	_sketch_rect(Rect2(mid - 2.7, zs + L - 1.2, 0.6, 0.6), top)
+	_sketch_rect(Rect2(mid - 2.8, zs + L - 1.9, 0.6, 0.6), top)
 	_text(Rect2(crate.position + Vector2(-50, 4), Vector2(40, 20)), "18?", PENCIL, font, 18)
 	_text(Rect2(cellar.position + Vector2(0, cellar.size.y + 10), Vector2(cellar.size.x, 30)), "hier unten schläft es", PEN, font, 22)
 
@@ -268,10 +310,6 @@ func _box(world: Rect2, fill: Color, top: float) -> Rect2:
 	draw_rect(r, fill)
 	draw_rect(r, INK, false, LINE)
 	return r
-
-
-func _area(world: Rect2, fill: Color, label: String, top: float, font: Font) -> void:
-	_text(_box(world, fill, top), label, INK, font, 22)
 
 
 func _dashed_rect(r: Rect2) -> void:

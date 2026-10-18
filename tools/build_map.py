@@ -54,14 +54,17 @@ FIXTURES = ("tree", "planter", "reception", "terrace_edge", "stairs", "void")
 ## Zimmernummern (Spielkonzept 7.5): je Flügel ein Laufweg ab der Lobby um den Rundflur (Mittellinien in px),
 ## danach der Querflur. Rechte Hand ungerade, linke gerade. Ost = x1xx, West = x2xx; die erste Ziffer ist das
 ## Stockwerk (EG 0, OG1 1 …). Stockwerke ohne eigenen Eintrag benutzen die Laufwege des EG.
+## legs: Name je Teilstück des Laufwegs (wird zu einem Flurabschnitt mit eigenem Lichtschalter); cross_end: Ende
+## des Querflurs.
 WINGS = {
 	"EG": {
 		"ost": dict(base=100, path=[(1150, 1730), (1830, 1730), (1830, 850), (1390, 850), (1390, 1730)],
-			cross=(1290, 1390, 1)),
+			legs=["Südflur", "Ostflur", "Nordflur", "Gartenflur"], cross=(1290, 1390, 1), cross_end=1830),
 		"west": dict(base=200, path=[(1080, 1730), (480, 1730), (480, 850), (920, 850), (920, 1730)],
-			cross=(1290, 920, -1)),
+			legs=["Südflur", "Westflur", "Nordflur", "Gartenflur"], cross=(1290, 920, -1), cross_end=480),
 	},
 }
+WING_NAMES = {"ost": "Ostflügel", "west": "Westflügel"}
 WING_SPLIT_X = 1155   ## Zimmer westlich davon gehören zum Westflügel
 ## Türschilder, die nicht die Nummer zeigen: 0113 ist das Spielerzimmer, das Schild ist abgebrochen
 BROKEN_SIGNS = {"0113": "13"}
@@ -421,7 +424,15 @@ def build_floor(floor, COL, open_above):
 				continue
 			r["id"], r["name"] = slug(label), label
 		elif kind == "Bereich":
-			areas.append({"id": slug(label), "name": label, "rect": slice_rect(s)})
+			# auf die überdeckte Fläche zusammenziehen (Slices dürfen großzügig gezogen sein)
+			rect = slice_rect(s)
+			r = region_for(s)
+			if r:
+				comp, _ = comps_of[id(r)]
+				inside = [j for j in comp if s["x"] <= j % W < s["x"] + s["w"] and s["y"] <= j // W < s["y"] + s["h"]]
+				x0, y0, x1, y1 = bbox(inside)
+				rect = m(x0, y0) + m(x1, y1)
+			areas.append({"id": slug(label), "name": label, "rect": rect})
 		elif kind == "Objekt":
 			objects.append({"name": label, "rect": slice_rect(s), "facing": pivot_side(s)})
 		elif kind in ("Treppe", "Treppenhaus"):
@@ -433,6 +444,8 @@ def build_floor(floor, COL, open_above):
 				rect = m(bx0, by0) + m(bx1, by1)
 			stair = {"id": slug(("treppenhaus " if kind == "Treppenhaus" else "treppe ") + label), "name": label,
 				"kind": "stairwell" if kind == "Treppenhaus" else "stair", "rect": rect}
+			if r and kind == "Treppenhaus":
+				r["shaft"] = True   # eigener Schacht, bekommt keinen Bodenflicken
 			if kind == "Treppe":
 				stair["up"] = pivot_side(s)
 				if not stair["up"]:
@@ -443,6 +456,25 @@ def build_floor(floor, COL, open_above):
 	for r in regions:
 		if r["kind"] == "stairs" and not r.pop("claimed", False):
 			print("  Warnung: Treppe bei %s ohne Slice „Treppe: …“ oder „Treppenhaus: …“" % r["rects"][0][:2])
+
+	# Bodenflicken: Einbauten (Kübel, Bäume, Rezeption, freie Treppen) sind Löcher in ihrer Fläche – der Boden
+	# darunter bekommt die Art der umgebenden Fläche
+	patches = []
+	for r in regions:
+		if r["kind"] not in ("tree", "planter", "reception", "stairs") or r.pop("shaft", False):
+			continue
+		comp, _ = comps_of[id(r)]
+		ps = set(comp)
+		around = {}
+		for j in comp:
+			x, y = j % W, j // W
+			for k in ((y * W + x + 1), (y * W + x - 1), ((y + 1) * W + x), ((y - 1) * W + x)):
+				c = COL[k] if 0 <= k < W * H else ""
+				if k not in ps and c in FILL_OF and FILL_OF[c][0] not in FIXTURES:
+					around[c] = around.get(c, 0) + 1
+		if around:
+			c = max(around, key=around.get)
+			patches.append({"kind": FILL_OF[c][0], "outdoor": FILL_OF[c][1], "under": r["kind"], "rects": r["rects"]})
 
 	# Treppenhaustür: Flurtür an einer Kante
 	for s in stairs:
@@ -543,6 +575,16 @@ def build_floor(floor, COL, open_above):
 				r["no"], even = "%04d" % (level * 1000 + even), even + 2
 			r["wing"] = name
 
+	# Flurabschnitte: Mittellinien der Laufwege, je Teilstück einer (Lichtschalter, Lampen, Wegpunkte)
+	corridors = []
+	for name, w in WINGS.get(floor, WINGS["EG"]).items():
+		for leg, (a, b) in zip(w["legs"], zip(w["path"], w["path"][1:])):
+			corridors.append({"id": slug("%s %s" % (name, leg)), "name": "%s, %s" % (WING_NAMES[name], leg),
+				"wing": name, "a": m(*a), "b": m(*b)})
+		y, x0, _ = w["cross"]
+		corridors.append({"id": slug("%s querflur" % name), "name": "%s, Querflur" % WING_NAMES[name],
+			"wing": name, "a": m(x0, y), "b": m(w["cross_end"], y)})
+
 	room_list = []
 	for r in sorted(rooms, key=lambda r: r["no"]):
 		r["region"]["id"] = r["no"]
@@ -572,7 +614,9 @@ def build_floor(floor, COL, open_above):
 		"walls": walls,
 		"regions": [r for r in regions if r["kind"] not in FIXTURES],
 		"rooms": room_list,
+		"corridors": corridors,
 		"stairs": stairs,
+		"floor_patches": patches,
 		"voids": [rc for r in take("void") for rc in r["rects"]],
 		"open_above": open_above,
 		"areas": areas,

@@ -164,7 +164,7 @@ func place_at_start() -> void:
 		"socke":
 			global_position = _builder.kitchen_spot + Vector3(0.6, 0.05, -0.4)
 		_:
-			global_position = _builder.player_door_front + Vector3(2.0, 0.05, 0.3)
+			global_position = _builder.player_door_front + (_builder.rooms[LevelBuilder.PLAYER_ROOM]["along"] as Vector3) * 2.0 + Vector3(0, 0.05, 0)
 	_last_pos = global_position
 
 
@@ -319,7 +319,7 @@ func _next_activity() -> void:
 		"bed":
 			var spots := perches()
 			for i in spots.size():
-				if spots[i].get("room", "") == "13":
+				if spots[i].get("room", "") == LevelBuilder.PLAYER_ROOM:
 					_go_perch(i)
 					return
 			_wander()
@@ -329,7 +329,7 @@ func _next_activity() -> void:
 
 ## Indizes der Liegeplätze, die gerade in Frage kommen: Lobby und bewohnte Zimmer (Zimmer 13, Gäste).
 func _usable_perches() -> Array[int]:
-	var occupied := {"13": true}
+	var occupied := {LevelBuilder.PLAYER_ROOM: true}
 	if Game.social:
 		for g in Game.social.living_guests():
 			occupied[String(g.home["no"])] = true
@@ -544,7 +544,7 @@ func _start_gift() -> void:
 
 ## Mit der Beute im Maul zu Zimmer 13.
 func _head_home() -> void:
-	var home: Dictionary = _builder.rooms["13"]
+	var home: Dictionary = _builder.rooms[LevelBuilder.PLAYER_ROOM]
 	var door: Door = home["door"]
 	_target = home["door_inside"] if door != null and door.is_open else home["door_front"]
 	_target += Vector3(randf_range(-0.3, 0.3), 0, randf_range(-0.3, 0.3))
@@ -554,7 +554,7 @@ func _head_home() -> void:
 
 ## Kleine Deko eines Gastes in der Nähe, die gerade niemand trägt (nicht schon vor Zimmer 13).
 func _guest_item_nearby() -> Item:
-	var door_13: Vector3 = _builder.rooms["13"]["door_front"]
+	var door_13: Vector3 = _builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"]
 	var best: Item = null
 	var best_d := 25.0
 	for node in get_tree().get_nodes_in_group("items"):

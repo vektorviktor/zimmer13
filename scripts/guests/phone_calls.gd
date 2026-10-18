@@ -59,7 +59,7 @@ func setup() -> void:
 	for node in get_tree().get_nodes_in_group("phones"):
 		var phone := node as HotelPhone
 		_phones["0" if phone.is_main() else phone.room_id] = phone
-	home_phone = _phones.get("13")
+	home_phone = _phones.get(LevelBuilder.PLAYER_ROOM)
 	ui = PhoneUI.new()
 	ui.name = "PhoneUI"
 	add_child(ui)
@@ -174,7 +174,7 @@ func _pick_incoming() -> Dictionary:
 func _creepy_call() -> Dictionary:
 	var door_front: Vector3 = Game.director.player_door_front
 	if Game.monster.is_active() and Game.monster.global_position.distance_to(door_front) < 6.0:
-		return {"kind": "creepy", "variant": "door", "room": "13"}
+		return {"kind": "creepy", "variant": "door", "room": LevelBuilder.PLAYER_ROOM}
 	var dead: Array = Game.social.guests.filter(func(g: Guest) -> bool: return g.dead)
 	var grieving := Game.director.grief > 0.0 or Game.director.is_hallucinating()
 	if not dead.is_empty() and (grieving or randf() < 0.3):
@@ -183,16 +183,16 @@ func _creepy_call() -> Dictionary:
 	return {"kind": "creepy", "variant": "breath", "room": _empty_room()}
 
 
-## Ein Zimmer, in dem niemand wohnt – am liebsten das abgeschlossene Zimmer 18.
+## Ein Zimmer, in dem niemand wohnt – am liebsten das abgeschlossene Zimmer 0118.
 func _empty_room() -> String:
-	if randf() < 0.35 and _phones.has("18"):
-		return "18"
+	if randf() < 0.35 and _phones.has(LevelBuilder.LOCKED_ROOM):
+		return LevelBuilder.LOCKED_ROOM
 	var rooms: Array = []
 	for no in Game.social.builder.rooms:
 		var kind: String = Game.social.builder.rooms[no]["kind"]
 		if kind in ["vacant", "abandoned", "derelict", "locked"] and _phones.has(no):
 			rooms.append(no)
-	return rooms[randi() % rooms.size()] if not rooms.is_empty() else "18"
+	return rooms[randi() % rooms.size()] if not rooms.is_empty() else LevelBuilder.LOCKED_ROOM
 
 
 func _incoming_step(delta: float) -> void:
@@ -617,11 +617,11 @@ func debug_call(who: String) -> void:
 	_end_incoming()
 	match who:
 		"creepy", "breath":
-			start_incoming({"kind": "creepy", "variant": "breath", "room": "18"})
+			start_incoming({"kind": "creepy", "variant": "breath", "room": LevelBuilder.LOCKED_ROOM})
 		"dead", "door":
 			var call := _creepy_call()
 			if who == "door":
-				call = {"kind": "creepy", "variant": "door", "room": "13"}
+				call = {"kind": "creepy", "variant": "door", "room": LevelBuilder.PLAYER_ROOM}
 			start_incoming(call)
 		_:
 			var guest := Game.social.guest_by_id(who)

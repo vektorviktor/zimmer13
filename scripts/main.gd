@@ -50,7 +50,7 @@ extends Node3D
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
 ##   --kill=id                   Gast nach 3 s vom Monster holen lassen
-##   --party                     sofort eine Feier in der Lobby starten
+##   --party                     sofort eine Feier im Partyraum starten
 ##   --cat=id                    Hotelkatze vor den Spieler setzen (minka, socke, kasimir)
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
@@ -67,6 +67,7 @@ extends Node3D
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
 ##   --shot-on=reveal|jumpscare|strangle|shock  Screenshot kurz nach einem Ereignis statt nach n Frames
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
+##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)
 
 ## Der Anfang wirkt friedlich – nichts deutet auf das Monster hin (Spielkonzept 2.1).
 const INTRO := "Willkommen im Hotel – zur Halloween-Woche! Heute ist der 1. Oktober.\nLerne die anderen Gäste kennen, schmücke deine Tür und feiere mit.\nDein Tagebuch liegt auf dem Schreibtisch in Zimmer 13.\n\n[WASD] Laufen  [Shift] Rennen  [Leertaste] Springen  [Strg] Ducken\n[E] Nehmen / Benutzen  [G] Ablegen  [Rechtsklick] Luft anhalten  [Esc] Menü"
@@ -77,6 +78,8 @@ var _post: ShaderMaterial
 var _trace := false
 var _trace_frames := 0
 var _autoplay := false
+## Dauer von LevelBuilder.build() und NavMesh-Backen in ms (--navcheck)
+var _load_times := Vector2i.ZERO
 
 
 func _ready() -> void:
@@ -87,8 +90,11 @@ func _ready() -> void:
 	level.name = "Level"
 	add_child(level)
 	var builder := LevelBuilder.new(level, self)
+	var t0 := Time.get_ticks_msec()
 	builder.build()
+	var t1 := Time.get_ticks_msec()
 	_bake_navigation(level)
+	_load_times = Vector2i(t1 - t0, Time.get_ticks_msec() - t1)
 
 	var audio := SynthAudio.new()
 	audio.name = "SynthAudio"
@@ -481,9 +487,9 @@ func run_debug(arg: String) -> bool:
 		Game.ghost.debug_summon_hall()
 	elif arg == "--ghost=schrank":
 		# kommt durch den Vorhang herein – du versteckst dich gleich im Schrank von Zimmer 13
-		var room: Dictionary = Game.director.rooms["13"]
+		var room: Dictionary = Game.director.rooms[LevelBuilder.PLAYER_ROOM]
 		Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)
-		Game.ghost.debug_summon(4, "13")
+		Game.ghost.debug_summon(4, LevelBuilder.PLAYER_ROOM)
 		get_tree().create_timer(1.5).timeout.connect(func() -> void:
 			for spot in room["spots"]:
 				if (spot as HideSpot).type == HideSpot.Type.WARDROBE and Game.player.hiding == null:
@@ -497,13 +503,13 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--sleep=bett":
 		# alle Gäste sofort im Bett, du schläfst im Bett von Zimmer 13
 		Game.social.start_sleep(true)
-		for spot in Game.director.rooms["13"]["spots"]:
+		for spot in Game.director.rooms[LevelBuilder.PLAYER_ROOM]["spots"]:
 			if (spot as HideSpot).own_bed:
 				Game.player.start_sleep(spot)
 	elif arg.begins_with("--ghost="):
-		var room: Dictionary = Game.director.rooms["13"]
+		var room: Dictionary = Game.director.rooms[LevelBuilder.PLAYER_ROOM]
 		Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)
-		Game.ghost.debug_summon(arg.substr(8).to_int(), "13")
+		Game.ghost.debug_summon(arg.substr(8).to_int(), LevelBuilder.PLAYER_ROOM)
 	elif arg == "--warn":
 		Game.director.start_warning()
 	elif arg.begins_with("--attacks="):
@@ -517,14 +523,14 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--knock":
 		# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
 		Game.director.first_attack_done = true
-		Game.player.global_position = (Game.social.builder.rooms["13"]["center"] as Vector3) + Vector3(0, 0.05, -0.6)
-		Game.monster.spawn_at(Vector3(24.0, 0.05, 0.0))
+		Game.player.global_position = (Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]["center"] as Vector3) + Vector3(0, 0.05, -0.6)
+		Game.monster.spawn_at(Game.social.builder.wander_points[8] + Vector3(0, 0.05, 0))
 		Game.social._knock_cooldown = 1.0
 		Game.social.debug_fake_knock = "--knock-fake" in OS.get_cmdline_user_args()
 		if "--answer" in OS.get_cmdline_user_args():
 			# nach 4 s öffnet der Spieler die Tür
 			get_tree().create_timer(4.0).timeout.connect(func() -> void:
-				(Game.social.builder.rooms["13"]["door"] as Door).set_open(true))
+				(Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]["door"] as Door).set_open(true))
 	elif arg.begins_with("--call=") or arg.begins_with("--dial="):
 		# Telefon: Spieler steht in Zimmer 13 vor dem Schreibtisch und sieht auf den Apparat
 		var phone_pos := Game.phones.home_phone.global_position
@@ -584,6 +590,8 @@ func run_debug(arg: String) -> bool:
 					Game.menus.call("_show_" + which))
 	elif arg == "--savetest":
 		get_tree().create_timer(6.0).timeout.connect(_save_test)
+	elif arg == "--navcheck":
+		get_tree().create_timer(2.0).timeout.connect(_nav_check)
 	else:
 		return false
 	return true
@@ -598,8 +606,14 @@ func _debug_teleport(where: String) -> bool:
 		_place_player(guest.global_position + front * 1.6, -front)
 		return true
 	var rooms: Dictionary = Game.social.builder.rooms
-	if rooms.has(where):
-		_place_player(rooms[where]["center"], -(rooms[where]["into"] as Vector3))
+	var no := where
+	if not rooms.has(no) and where.is_valid_int():
+		no = "%04d" % where.to_int()   # 113 → 0113
+	for key in rooms:
+		if rooms[key]["sign"] == where:   # 13 → 0113 (Türschild)
+			no = key
+	if rooms.has(no):
+		_place_player(rooms[no]["center"], -(rooms[no]["into"] as Vector3))
 		return true
 	var entry := (get_node("Teleport") as TeleportUI).find(where)
 	if entry.is_empty():
@@ -608,6 +622,32 @@ func _debug_teleport(where: String) -> bool:
 		p.exit_hide()
 	(get_node("Teleport") as TeleportUI).go_to(entry)
 	return true
+
+
+## --navcheck: Ladezeiten und ob die wichtigen Orte vom Spielerzimmer aus auf dem NavMesh erreichbar sind.
+func _nav_check() -> void:
+	var b := Game.social.builder
+	print("[navcheck] Bau %d ms, NavMesh %d ms" % [_load_times.x, _load_times.y])
+	var map := get_world_3d().navigation_map
+	var from := NavigationServer3D.map_get_closest_point(map, b.player_spawn)
+	var targets := {"Lobby": b.lobby_center, "Galerie": b.lobby_center + Vector3(-5.5, LevelBuilder.UP_Y, -2.0),
+		"Bar": b.bar_spots[0], "Partyraum": b.party_spots[0], "Küche": b.kitchen_spot, "Garten": b.garden_spots[0],
+		"Keller": b.cellar_center(), "Treppenhaus": b.stairwell_point + Vector3(0, 0, 2.2),
+		"Westflügel": b.wander_points[b.wander_points.size() - 1]}
+	for t in b._map["trees"]:
+		targets["Innenhof %.0f,%.0f" % [t["center"][0], t["center"][1]]] = Vector3(t["center"][0], 0, t["center"][1] + 7.0)
+	var bad := 0
+	for label in targets:
+		var to := NavigationServer3D.map_get_closest_point(map, targets[label])
+		var path := NavigationServer3D.map_get_path(map, from, to, true)
+		var reached := not path.is_empty() and path[path.size() - 1].distance_to(to) < 0.5 and to.distance_to(targets[label]) < 1.0
+		var length := 0.0
+		for i in range(1, path.size()):
+			length += path[i - 1].distance_to(path[i])
+		print("[navcheck]   %-22s %s" % [label, ("%.0f m" % length) if reached else "UNERREICHBAR (nächster Punkt %s)" % to])
+		bad += 0 if reached else 1
+	print("[navcheck] alles erreichbar" if bad == 0 else "[navcheck] %d Orte unerreichbar" % bad)
+	get_tree().quit()
 
 
 func _place_player(pos: Vector3, look: Vector3) -> void:
@@ -691,7 +731,7 @@ func _save_test() -> void:
 	# Etwas Unordnung, damit der Test mehr abdeckt: Vorhang zu, Licht aus, Birne in der Hand
 	(get_tree().get_nodes_in_group("windows").filter(func(w: Node) -> bool: return w.has_curtains())[0] as HotelWindow).set_closed(true)
 	LightSwitch.find(get_tree(), "keller").set_on(false)
-	var lamp: Lamp = get_tree().get_nodes_in_group("lamp_fixtures").filter(func(l: Node) -> bool: return l.room_id == "15")[0]
+	var lamp: Lamp = get_tree().get_nodes_in_group("lamp_fixtures").filter(func(l: Node) -> bool: return l.room_id == "0115")[0]
 	if Game.player.held == null:
 		Game.player.receive_item(lamp.take_bulb())
 	await get_tree().create_timer(0.5).timeout

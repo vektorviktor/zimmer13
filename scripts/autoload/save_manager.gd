@@ -25,14 +25,16 @@ const DIR := "user://saves/"
 ## 13: Schachbrett (Item.Kind.CHESS_BOARD) – in älteren Ständen bleibt das Brett vom Start auf dem Schachtisch
 ## 14: Freundschaftsstufen (Gast: deeds, chat_day, chats_today; Spieler: injury) – ältere Stände laden weiter,
 ##     es gab dann noch keine Taten (die Extreme müssen neu verdient werden)
-const VERSION := 14
-const MIN_VERSION := 10
+## 15: neuer Grundriss aus dem Gebäudeplan (Spielkonzept 7.5) – alle Gruppen neu, ältere Stände passen nicht mehr
+const VERSION := 15
+const MIN_VERSION := 15
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
 const AUTOSAVE_MONSTER_DISTANCE := 25.0
 ## Bereiche, deren erster Besuch einen Autosave auslöst
-const NEW_AREAS := ["Lobby", "Küche", "Bar", "Garten", "Südflügel", "Nordflügel", "Ostflügel Süd", "Ostflügel Nord", "Treppenhaus", "OG Flur West", "Keller", "Zimmer 16", "Zimmer 17", "Zimmer 18"]
+const NEW_AREAS := ["Lobby", "Galerie", "Küche", "Speisesaal", "Bar", "Partyraum", "Pool", "Garten", "Innenhof Nordost", "Innenhof Südost",
+	"Ostflügel, Nordflur", "Westflügel, Südflur", "Treppenhaus", "Keller", "Zimmer 0116", "Zimmer 0117", "Zimmer 0118"]
 
 ## Zeitpunkt (Ticks in ms) des letzten Speicherns oder Ladens in dieser Sitzung
 var last_save_msec := -1

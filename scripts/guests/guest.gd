@@ -948,7 +948,7 @@ func _bulb_to_steal(hostile: bool) -> Lamp:
 			continue
 		if lamp.room_id == "lobby":
 			continue   # Lobbydecke – zu hoch
-		if hostile and lamp.room_id != "13":
+		if hostile and lamp.room_id != LevelBuilder.PLAYER_ROOM:
 			continue
 		if Game.player and Game.player.global_position.distance_to(lamp.global_position) < 8.0:
 			continue
@@ -1299,7 +1299,7 @@ func _ripe_plant() -> PumpkinPlant:
 ## Blutstropfen nach einem Angriff.
 func _leave_traces(delta: float) -> void:
 	_bleeding = maxf(0.0, _bleeding - delta)
-	var in_garden := global_position.x < 0.0 and global_position.z < -7.2 and global_position.y < 1.0
+	var in_garden := Game.social != null and Game.social.builder.is_outdoor(global_position)
 	if in_garden:
 		_mud = MUD_STEPS
 	var moved := Vector2(global_position.x - _trace_pos.x, global_position.z - _trace_pos.z).length()

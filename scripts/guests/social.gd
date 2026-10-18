@@ -486,9 +486,9 @@ func on_guest_noticed_missing_bulb(guest: Guest) -> void:
 
 
 func on_guest_stole_bulb(guest: Guest, lamp: Lamp, room_id: String) -> void:
-	if room_id == "13":
+	if room_id == LevelBuilder.PLAYER_ROOM:
 		add_deed(guest, "revenge")
-	if room_id == "13" and Game.player and Game.director.player_can_see(lamp.global_position) \
+	if room_id == LevelBuilder.PLAYER_ROOM and Game.player and Game.director.player_can_see(lamp.global_position) \
 			and Game.player.global_position.distance_to(guest.global_position) < 15.0:
 		Game.say("%s dreht deine Glühbirne heraus!" % guest.display_name, 4.0)
 
@@ -599,7 +599,10 @@ func party_age() -> float:
 
 
 func party_center() -> Vector3:
-	return Vector3(-4.0, 0, 0)
+	var c := Vector3.ZERO
+	for spot in builder.party_spots:
+		c += spot
+	return c / builder.party_spots.size()
 
 
 func free_party_spot() -> Vector3:
@@ -706,7 +709,7 @@ func _update_party(delta: float) -> void:
 	if party_active:
 		_party_time -= delta
 		var p := Game.player
-		if p and p.global_position.x < 0.0 and absf(p.global_position.z) < 7.0:
+		if p and builder.in_area(p.global_position, "partyraum"):
 			_party_presence += delta
 		# Musik ist laut – das Monster wird neugierig auf die Lobby
 		_party_noise -= delta
@@ -994,7 +997,7 @@ func _update_memorials() -> void:
 			var item := node as Item
 			if item.lit and not item.is_held and item.global_position.distance_to(door_front) < 2.5:
 				mult = 3.0
-	if party_active and p.global_position.x < 0.0:
+	if party_active and builder.in_area(p.global_position, "partyraum"):
 		mult = maxf(mult, 2.0)
 	p.shock_recovery = mult
 
@@ -1088,7 +1091,7 @@ func _update_knocking(delta: float) -> void:
 	var p := Game.player
 	if _knock_cooldown > 0.0 or not director.first_attack_done or p == null or p.dead:
 		return
-	var door: Door = builder.rooms["13"]["door"]
+	var door: Door = builder.rooms[LevelBuilder.PLAYER_ROOM]["door"]
 	if door.is_open or director.zone_name_at(p.global_position) != "Zimmer 13":
 		return
 	if not Game.monster.is_active() or Game.monster.global_position.distance_to(door.center()) > 28.0:
@@ -1112,7 +1115,7 @@ func _update_knocking(delta: float) -> void:
 		guest = voices[randi() % voices.size()]
 	_knock = {"guest": guest, "fake": fake, "time": 0.0, "next": 0.0, "said": 0}
 	if not fake:
-		guest.start_knock(builder.rooms["13"]["door_front"])
+		guest.start_knock(builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"])
 
 
 func _knock_step(delta: float) -> void:
@@ -1121,7 +1124,7 @@ func _knock_step(delta: float) -> void:
 		return
 	var guest: Guest = _knock["guest"]
 	var fake: bool = _knock["fake"]
-	var door: Door = builder.rooms["13"]["door"]
+	var door: Door = builder.rooms[LevelBuilder.PLAYER_ROOM]["door"]
 	_knock["time"] = float(_knock["time"]) + delta
 	var t := float(_knock["time"])
 	if not fake and (guest.dead or guest.state != Guest.State.KNOCK):
@@ -1139,7 +1142,7 @@ func _knock_step(delta: float) -> void:
 	_knock["next"] = float(_knock["next"]) - delta
 	if float(_knock["next"]) <= 0.0:
 		_knock["next"] = randf_range(1.0, 1.6) if not fake else 2.4
-		Game.noise("knock", builder.rooms["13"]["door_front"], guest)
+		Game.noise("knock", builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"], guest)
 		Game.caption("[Es klopft an deiner Tür]")
 	var said := int(_knock["said"])
 	if fake and said == 0 and t > 1.5:
@@ -1155,7 +1158,7 @@ func _knock_step(delta: float) -> void:
 
 func _knock_answered(guest: Guest, fake: bool) -> void:
 	_knock = {}
-	var front: Vector3 = builder.rooms["13"]["door_front"]
+	var front: Vector3 = builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"]
 	if fake:
 		# Niemand da. Nur ein Kleidungsstück auf dem Boden.
 		var cloth := Item.create(Item.Kind.CLOTHING, guest.id)
@@ -1167,7 +1170,7 @@ func _knock_answered(guest: Guest, fake: bool) -> void:
 		if Game.monster.is_active():
 			Game.monster.investigate(front)
 		return
-	guest.enter_shelter(builder.rooms["13"]["center"])
+	guest.enter_shelter(builder.rooms[LevelBuilder.PLAYER_ROOM]["center"])
 	change_relation(guest, 15.0)
 	guest.say(guest.line("sheltered"))
 
@@ -1177,7 +1180,7 @@ func _knock_ignored(guest: Guest, fake: bool) -> void:
 	if fake:
 		# Stille. Später findet man Kratzspuren an der Tür.
 		if Game.traces:
-			Game.traces.add_door_scratch(builder.rooms["13"]["door"], builder.rooms["13"]["door_front"] + Vector3(0, 0, -1.0))
+			Game.traces.add_door_scratch(builder.rooms[LevelBuilder.PLAYER_ROOM]["door"], builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"] + Vector3(0, 0, -1.0))
 		return
 	Game.noise("scream", guest.global_position, guest)
 	if Game.director.is_harmless() or randf() < 0.5:
@@ -1227,12 +1230,12 @@ func _update_visits(delta: float) -> void:
 
 
 func start_visit(guest: Guest) -> void:
-	guest.start_visit(builder.rooms["13"]["door_front"])
+	guest.start_visit(builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"])
 
 
 ## Der Gast steht vor Zimmer 13: Bei offener Tür kommt er gleich herein, sonst klopft er.
 func on_visit_arrived(guest: Guest) -> void:
-	var door: Door = builder.rooms["13"]["door"]
+	var door: Door = builder.rooms[LevelBuilder.PLAYER_ROOM]["door"]
 	if door.is_open:
 		_visit_enter(guest)
 		return
@@ -1245,7 +1248,7 @@ func on_visit_arrived(guest: Guest) -> void:
 
 func _visit_step(delta: float) -> void:
 	var guest: Guest = _knock["guest"]
-	var door: Door = builder.rooms["13"]["door"]
+	var door: Door = builder.rooms[LevelBuilder.PLAYER_ROOM]["door"]
 	_knock["time"] = float(_knock["time"]) + delta
 	var t := float(_knock["time"])
 	if guest.dead or guest.state != Guest.State.KNOCK:
@@ -1264,7 +1267,7 @@ func _visit_step(delta: float) -> void:
 	_knock["next"] = float(_knock["next"]) - delta
 	if float(_knock["next"]) <= 0.0:
 		_knock["next"] = 2.6
-		Game.noise("knock", builder.rooms["13"]["door_front"], guest)
+		Game.noise("knock", builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"], guest)
 		Game.caption("[Es klopft leise an deiner Tür]")
 	if int(_knock["said"]) == 0 and t > 1.2:
 		_knock["said"] = 1
@@ -1272,7 +1275,7 @@ func _visit_step(delta: float) -> void:
 
 
 func _visit_enter(guest: Guest) -> void:
-	guest.enter_shelter(builder.rooms["13"]["center"])
+	guest.enter_shelter(builder.rooms[LevelBuilder.PLAYER_ROOM]["center"])
 	guest.say(VISIT_HELLO.pick_random())
 	change_relation(guest, 3.0)
 

@@ -135,7 +135,7 @@ func setup(builder: LevelBuilder, monster: Monster) -> void:
 	patrol = builder.patrol
 	rooms = builder.rooms
 	player_door_front = builder.player_door_front
-	_stairwell = Vector3(LevelBuilder.STAIRWELL_X, 0.0, LevelBuilder.STAIRWELL_LANDING)
+	_stairwell = builder.stairwell_point
 	_monster = monster
 	first_attack_day = FIRST_ATTACK_DAYS[randi() % FIRST_ATTACK_DAYS.size()]
 
@@ -316,15 +316,16 @@ func _check_first_attack() -> void:
 ## Mitten in der Feier: Licht aus, Musik aus, Stille – und es ist da.
 func _first_attack_at_party() -> void:
 	first_attack_done = true
-	var lobby := LightSwitch.find(get_tree(), "lobby")
-	if lobby:
-		lobby.set_on(false)
+	var builder := Game.social.builder
+	var party_light := LightSwitch.find(get_tree(), "partyraum")
+	if party_light:
+		party_light.set_on(false)
 	Game.social.end_party("")
 	Game.play_sound("bang", 0.6)
-	if Game.player and Game.player.global_position.x < 0.0:
+	if Game.player and builder.in_area(Game.player.global_position, "partyraum"):
 		Game.say("Das Licht geht aus. Die Musik verstummt.", 3.0)
-	# Es steht in der dunklen Ecke der Lobby, beim verriegelten Ausgang
-	_start_activity(Vector3(-12.8, 0.05, -5.8), false)
+	# Es steht in der dunklen Ecke des Partyraums
+	_start_activity(builder.party_corner + Vector3(0, 0.05, 0), false)
 	_monster.investigate(Game.social.party_center())
 
 
@@ -767,7 +768,7 @@ func _haunt_bed() -> bool:
 
 ## Zimmer 13 bleibt nicht unberührt: Bett zerwühlt, Vorhang zu, eine fremde Zeile im Tagebuch.
 func _haunt_room_13() -> bool:
-	var info: Dictionary = rooms.get("13", {})
+	var info: Dictionary = rooms.get(LevelBuilder.PLAYER_ROOM, {})
 	if info.is_empty():
 		return false
 	match randi() % 3:
@@ -780,7 +781,7 @@ func _haunt_room_13() -> bool:
 		1:
 			for node in get_tree().get_nodes_in_group("windows"):
 				var win := node as HotelWindow
-				if win.room_id == "13" and win.has_curtains() and not win.closed:
+				if win.room_id == LevelBuilder.PLAYER_ROOM and win.has_curtains() and not win.closed:
 					win.set_closed(true, true)
 					return true
 		_:

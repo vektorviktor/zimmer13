@@ -15,32 +15,31 @@ func setup(builder: LevelBuilder) -> void:
 
 
 func _destinations(b: LevelBuilder) -> Array:
-	var cellar := Vector3(LevelBuilder.STAIR_BOTTOM + LevelBuilder.CELLAR_LEN / 2.0, LevelBuilder.CELLAR_Y, 0.3)
+	var cellar := b.cellar_center()
 	return [
-		_room(b, "13", "Zimmer 13 (eigenes)"),
-		["Lobby", b.lobby_center, Vector3.LEFT],
+		_room(b, LevelBuilder.PLAYER_ROOM, "Zimmer 13 (eigenes, 0113)"),
+		["Lobby", b.lobby_center + Vector3(0, 0, 8.0), Vector3.FORWARD],
 		_room(b, LevelBuilder.COMPASS_ROOM, "Zimmer %s (Kompass)" % LevelBuilder.COMPASS_ROOM),
-		["Bar", Vector3(-3.0, 0, 8.2), Vector3.BACK],
-		["Küche", Vector3(-10.0, 0, 8.0), Vector3.BACK],
-		["Garten", Vector3(-6.0, 0, -8.2), Vector3.FORWARD],
-		["Treppenhaus (EG)", Vector3(LevelBuilder.STAIRWELL_X, 0, -3.0), Vector3.FORWARD],
-		["Obergeschoss, Flur", Vector3(18.0, LevelBuilder.UP_Y, 0), Vector3.RIGHT],
-		["Kellertreppe (oben)", Vector3(LevelBuilder.MAIN_END - 1.5, 0, 0), Vector3.RIGHT],
-		["Keller", cellar, Vector3.RIGHT],
-		_room(b, "17", "Zimmer 17 (verlassen)"),
-		_room(b, "16", "Zimmer 16 (Wäscherei)"),
+		["Bar", b.bar_spots[0] + Vector3(0, 0, 2.0), Vector3.FORWARD],
+		["Küche", b.kitchen_spot + Vector3(0, 0, 2.0), Vector3.FORWARD],
+		["Garten", b.garden_spots[0] + Vector3(0, 0, -2.0), Vector3.FORWARD],
+		["Galerie (Obergeschoss)", b.lobby_center + Vector3(-5.5, LevelBuilder.UP_Y, -2.0), Vector3.RIGHT],
+		["Treppenhaus Ost (EG)", b.stairwell_point + Vector3(0, 0, 2.2), Vector3.FORWARD],
+		["Keller", cellar, Vector3.BACK],
+		_room(b, "0117", "Zimmer 0117 (verlassen)"),
+		_room(b, "0116", "Zimmer 0116 (Wäscherei)"),
 		_ghost(b, 1, "Lakengeist 1. Mal (Zimmer 13)"),
 		_ghost(b, 2, "Lakengeist 2. Mal: Handabdrücke, Hypnose"),
 		_ghost(b, 3, "Lakengeist 3. Mal: kommt herein"),
 		_ghost(b, 4, "Lakengeist 4. Mal: auch durch den Vorhang"),
-		["Lakengeist im Flur (alle schlafen)", Vector3(30.0, 0, 0), Vector3.RIGHT, Game.ghost.debug_summon_hall],
+		["Lakengeist im Flur (alle schlafen)", b.wander_points[6], Vector3.RIGHT, Game.ghost.debug_summon_hall],
 	]
 
 
 ## Zimmer 13: Licht aus, Vorhang auf (beim 4. Mal zu), der Geist kommt sicher zum n. Mal.
 func _ghost(b: LevelBuilder, stage: int, label: String) -> Array:
-	var entry := _room(b, "13", label)
-	entry.append(Game.ghost.debug_summon.bind(stage, "13"))
+	var entry := _room(b, LevelBuilder.PLAYER_ROOM, label)
+	entry.append(Game.ghost.debug_summon.bind(stage, LevelBuilder.PLAYER_ROOM))
 	return entry
 
 

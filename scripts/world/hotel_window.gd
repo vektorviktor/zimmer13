@@ -20,6 +20,8 @@ var frosted := false
 var exterior := false
 var room_id := ""
 var closed := false
+## Fenster eines noch gesperrten Zimmers (Bauphase, Spielkonzept 7.5): Vorhang immer zu, nicht bedienbar
+var sealed := false
 
 var _left: Node3D
 var _right: Node3D
@@ -56,7 +58,10 @@ func _ready() -> void:
 	Geo.mesh(pane, Geo.box(Vector3(0.05, height, 0.05)), frame, Vector3.ZERO)
 	if not has_curtains():
 		return
-	pane.set_meta("interactable", self)
+	if sealed:
+		closed = true
+	else:
+		pane.set_meta("interactable", self)
 	var cloth := Mat.psx(Color(0.42, 0.12, 0.12), "", 1.0)
 	Geo.mesh(self, Geo.box(Vector3(width + 0.5, 0.04, 0.04)), Mat.psx(Color(0.35, 0.25, 0.12)), Vector3(0, height / 2.0 + 0.2, 0.2))
 	_left = _curtain(-1.0, cloth)
@@ -65,7 +70,8 @@ func _ready() -> void:
 	_block = StaticBody3D.new()
 	_block.collision_layer = 0
 	_block.collision_mask = 0
-	_block.set_meta("interactable", self)
+	if not sealed:
+		_block.set_meta("interactable", self)
 	add_child(_block)
 	Geo.add_box_shape(_block, Vector3(width + 0.3, height + 0.3, 0.05), Vector3(0, 0, 0.2))
 	_apply(true)
@@ -93,7 +99,7 @@ func interact(_player: Player) -> void:
 
 
 func set_closed(value: bool, instant: bool = false) -> void:
-	if not has_curtains() or (closed == value and not instant):
+	if not has_curtains() or sealed or (closed == value and not instant):
 		return
 	closed = value
 	_apply(instant)
@@ -133,6 +139,6 @@ func save_state() -> Dictionary:
 
 
 func load_state(data: Dictionary) -> void:
-	closed = bool(data.get("closed", false))
+	closed = sealed or bool(data.get("closed", false))
 	if has_curtains():
 		_apply(true)
