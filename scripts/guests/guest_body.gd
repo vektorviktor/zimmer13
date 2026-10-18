@@ -4,9 +4,9 @@ extends Node3D
 ## gebaut von tools/build_guest.py. Je Gast verschieden: Größe, Schulterbreite, Körperbau
 ## (Formschlüssel „build“) und die Farben von Oberteil, Hose und Haaren (psx_guest.gdshader).
 ##
-## Bewegung: Gehen/Rennen kommen aus der GLB, alles andere aus den Arm-Pivots des Gastes – die
-## Posen in Guest (Tragen, Panik, Tänze, Sitzen) drehen weiter nur _arm_l/_arm_r, hier zielen die
-## Oberarmknochen in dieselbe Richtung.
+## Bewegung: Gehen, Rennen und die Tänze (Mixamo, umgerechnet von tools/build_guest.py) kommen aus
+## der GLB, alles andere aus den Arm-Pivots des Gastes – die Posen in Guest (Tragen, Panik, Sitzen)
+## drehen weiter nur _arm_l/_arm_r, hier zielen die Oberarmknochen in dieselbe Richtung.
 
 ## Grundkörper. Werte gibt tools/build_guest.py aus (Höhe und Schulterbreite in m, Laufweite der
 ## Animationen in m/s, mittlere Helligkeit der Färbebereiche).
@@ -22,6 +22,8 @@ const WIDTH_LIMIT := Vector2(0.88, 1.15)
 const SIT_DROP := 0.27
 const ARMS := [["LeftArm", "LeftForeArm"], ["RightArm", "RightForeArm"]]
 const LEGS := [["LeftUpLeg", "LeftLeg", "LeftFoot"], ["RightUpLeg", "RightLeg", "RightFoot"]]
+## Tänze bei Feiern (Spielkonzept 7.1) – Animationen in jeder Gast-GLB (assets/source/anim/<name>.fbx)
+const DANCES := ["dance_chicken", "dance_macarena", "dance_hiphop"]
 
 static var _scenes := {}
 static var _material: Dictionary = {}
@@ -35,6 +37,7 @@ var _info: Dictionary
 var _scale := 1.0
 var _width := 1.0
 var _breath := 0.0
+var dance := ""   ## Name aus DANCES, solange der Gast tanzt (setzt Guest._dance_pose)
 
 
 ## Grundkörper für einen Gast – "" = keiner passt (dann bleibt die Klötzchenfigur). Feste Gäste
@@ -64,7 +67,7 @@ func setup(id: String, profile: Dictionary) -> void:
 	_skeleton = model.find_children("*", "Skeleton3D", true, false)[0]
 	_player = model.find_children("*", "AnimationPlayer", true, false)[0]
 	_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
-	for anim in ["walk", "run"]:
+	for anim in ["walk", "run"] + DANCES:
 		_player.get_animation(anim).loop_mode = Animation.LOOP_LINEAR
 	for i in _skeleton.get_bone_count():
 		_bone[_skeleton.get_bone_name(i)] = i
@@ -110,6 +113,11 @@ func animate(delta: float, speed: float, running: bool, arms: Array, arms_free: 
 		if _player.current_animation != anim:
 			_player.play(anim)
 		_player.advance(delta * speed / (float(_info[anim]) * _scale))
+	elif dance != "":
+		if _player.current_animation != dance:
+			_player.play(dance)
+			_player.seek(randf() * _player.current_animation_length, true)   # nicht alle im Gleichtakt
+		_player.advance(delta)
 	else:
 		if _player.is_playing():
 			_player.stop()
@@ -123,7 +131,7 @@ func animate(delta: float, speed: float, running: bool, arms: Array, arms_free: 
 		for leg in LEGS:
 			_aim(leg[0], leg[1], Vector3(0, -0.15, -1))
 			_aim(leg[1], leg[2], Vector3(0, -1, 0.1))
-	if not arms_free:
+	if not arms_free and dance == "":
 		for i in 2:
 			var pivot: Node3D = arms[i]
 			var dir := pivot.basis * Vector3.DOWN

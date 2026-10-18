@@ -49,6 +49,15 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   Oberteil, dunklere → Hose; Haut, Schuhe, Hände bleiben. **Formschlüssel `build`** (Körperbau, 1 = kräftig,
   negativ = schlank). Das Skript gibt die Zeile für `GuestBody.BODIES` aus (Höhe, Schulterbreite, Laufweite
   der Animationen, mittlere Helligkeit je Färbebereich) – nach jedem Neubau übernehmen.
+  **Mixamo-Animationen:** jede `assets/source/anim/<name>.fbx` (Mixamo, „Without Skin“, 30 fps, am
+  Standard-Charakter heruntergeladen) landet als Animation `<name>` in **jeder** Gast-GLB – ein Download gilt für
+  alle Grundkörper, solange sie Meshys Mixamo-Skelett haben. Umbenennen reicht nicht, weil Mixamo in T-Pose steht
+  und unsere Gäste mit hängenden Armen: `retarget()` dreht den Gast rechnerisch in die T-Pose der Quelle
+  (Knochenrichtung zum Kind, bei Hüfte und Händen zusätzlich die Querachse, `ALIGN`) und gibt jedem Knochen
+  dieselbe Weltdrehung gegenüber dieser Pose wie in der Quelle gegenüber ihrer Ruhepose. Hüfthöhe im Verhältnis
+  (Hüfte über Fuß), seitliches Wandern der Hüfte über `DRIFT_WINDOW` (2 s, als Schleife) gemittelt und abgezogen –
+  Wackeln bleibt, der Gast tanzt auf der Stelle. Szenen-Bildrate bleibt (der FBX-Import stellt sie um, sonst
+  liefen `walk`/`run` zu schnell). Die FBX liegen nicht im Repo (Mixamo-Lizenz: keine Weitergabe der Rohdateien).
   **Rahmen-Kit** `assets/models/frames.glb` (Spielkonzept 7.2, `OpeningFrame`): `tools/build_frames.py` zieht
   2D-Profile ohne Ausgangsmodell zu 1 m langen Teilen aus – `casing` (Seitenbekleidung), `fillet`, `frieze`,
   `cap` (Kopfpartie im Craftsman-Stil), `stool` (Fensterbank), `board` (Einheitswürfel für Zarge und
@@ -318,9 +327,12 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
   Bett finden). Wer redet, spielt, klopft oder sich versteckt, geht danach (`_next_activity`). Ende →
   `wake_up()`. `Social.all_asleep()` für den Lakengeist im Flur. Gespeichert: `sleep_active`, `sleep_timer`
   (Gäste laden wach und gehen wieder ins Bett).
-  Tanzen auf Feiern: `_dance_pose()` mit `DANCES` (hüpfen, wiegen, drehen, arme hoch, twist, schunkeln) –
-  Lieblingstanz aus `hash(id)`, alle 7–15 s Wechsel (60 % Lieblingstanz). Arme drehen dabei auch um z
-  (seitlich) – `_animate()` setzt das außerhalb des Tanzens zurück.
+  Tanzen auf Feiern: `_dance_pose()` – Lieblingstanz aus `hash(id)`, alle 7–15 s Wechsel (60 % Lieblingstanz).
+  Gastmodelle tanzen die Mixamo-Animationen aus `GuestBody.DANCES` (Chicken Dance, Macarena, Hip-Hop; Guest setzt
+  `_body.dance`, `GuestBody` spielt sie ab zufälliger Stelle, damit nicht alle im Gleichtakt sind, und lässt die
+  Arme dann in Ruhe). Die Klötzchenfigur tanzt weiter die Code-Posen aus `DANCES` (hüpfen, wiegen, drehen, arme
+  hoch, twist, schunkeln); Arme drehen dabei auch um z (seitlich) – `_animate()` setzt das außerhalb des Tanzens
+  zurück.
 - **Schreck & Erlebnisse** (Spielkonzept 6.12): Was erschreckt, steht in der Gruppe `shock_sights` mit Meta
   `sight_key`/`sight_kind` – Blutlachen (`Traces._as_sight`, Schlüssel aus dem Ort, auch nach dem Laden) und Leichen
   (`Guest._lie_down`, `corpse:<id>`). `Guest._scan_for_shock` alle 0,5 s (≤ 7 m, Blickfeld, Sichtlinie), jeder Schlüssel

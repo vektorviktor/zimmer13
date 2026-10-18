@@ -25,7 +25,7 @@ const SAFE_DISTANCE := 22.0
 ## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
 const MUD_STEPS := 14
 const BLEED_TIME := 45.0
-## Tänze bei Feiern (`_dance_pose`)
+## Tänze bei Feiern (`_dance_pose`) für die Klötzchenfigur – Gastmodelle tanzen GuestBody.DANCES
 const DANCES := ["hüpfen", "wiegen", "drehen", "arme hoch", "twist", "schunkeln"]
 ## Schreck (Spielkonzept 6.12): so weit sieht er Blut und Leichen, so oft schaut er sich um;
 ## Reaktion je Charakter (feste Gäste: profile["shock"])
@@ -100,7 +100,7 @@ var _warned := false
 var _to_bed := false       ## Nachtruhe: auf dem Weg ins eigene Bett
 var _flicker_fear := 0.0   ## nach langem Flackern so lange im Versteck bleiben (Sekunden)
 var _anim := 0.0
-var _dance := -1   ## Index in DANCES, -1 = tanzt gerade nicht
+var _dance := -1   ## Index in DANCES bzw. GuestBody.DANCES, -1 = tanzt gerade nicht
 var _dance_timer := 0.0
 var _game_look := Vector3.ZERO
 var _stuck_time := 0.0
@@ -1245,12 +1245,17 @@ func _build_blocks() -> void:
 
 ## Meist der Lieblingstanz des Gastes, ab und zu ein anderer (Spielkonzept 7.1).
 func _dance_pose(delta: float) -> void:
+	var dances: Array = GuestBody.DANCES if _body else DANCES
 	_dance_timer -= delta
 	if _dance < 0 or _dance_timer <= 0.0:
-		var favourite := absi(hash(id)) % DANCES.size()
-		_dance = favourite if randf() < 0.6 else randi() % DANCES.size()
+		var favourite := absi(hash(id)) % dances.size()
+		_dance = favourite if randf() < 0.6 else randi() % dances.size()
 		_dance_timer = randf_range(7.0, 15.0)
 		_visual.rotation = Vector3.ZERO
+	if _body:
+		_body.dance = dances[_dance]
+		_visual.position.y = 0.0
+		return
 	var t := _anim
 	var beat := sin(t * 4.0)
 	_arm_l.rotation.z = 0.0
@@ -1364,6 +1369,8 @@ func _pose(delta: float, speed: float) -> void:
 		_dance_pose(delta)
 		return
 	_dance = -1
+	if _body:
+		_body.dance = ""
 	_visual.position.y = 0.0
 	_visual.rotation = Vector3.ZERO
 	_arm_l.rotation.z = 0.0

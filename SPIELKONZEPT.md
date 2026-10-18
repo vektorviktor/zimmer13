@@ -1060,6 +1060,8 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
   - Gäste persönlich einladen (Dialog) – ob sie kommen, hängt von der Beziehung ab.
   - **Tänze** (umgesetzt 2026-10-14): Gäste tanzen verschieden – hüpfen, wiegen, drehen, Arme hoch, Twist,
     schunkeln. Jeder hat einen Lieblingstanz und wechselt ab und zu.
+    > 2026-10-18: Gäste mit Modell tanzen echte Tanzanimationen (Mixamo): Chicken Dance, Macarena, Hip-Hop –
+    > ein Download gilt für alle Grundkörper. Die Code-Tänze bleiben für die Klötzchenfiguren.
   - Vorbereitung physisch in den Händen: Musik (Radio/Plattenspieler), Kerzen, Snacks aus der Küche, Deko in die Lobby tragen. Evtl. Geld für Extras.
   - Gelungene Feier → Beziehungen ↑ bei allen Gästen, Ruf ↑, Trauer/Schock ↓.
   - **Taktischer Einsatz:** Feier als Ablenkung, um in leere Zimmer zu schleichen – oder bewusst Lärm machen, um das Monster in die Lobby statt zum eigenen Zimmer zu locken (riskant für alle Anwesenden!).

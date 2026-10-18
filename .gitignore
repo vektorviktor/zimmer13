@@ -7,6 +7,8 @@ assets/models/*.png
 # Rohmodelle (Meshy-Originale), aus denen tools/ die Spielmodelle baut – zu groß fürs Repo
 assets/source/*.glb
 assets/source/*.zip
+# Mixamo-Animationen (tools/build_guest.py) – Rohdateien dürfen nicht weitergegeben werden
+assets/source/anim/
 
 # Exportierte Builds (export_presets.cfg)
 build/
