@@ -224,6 +224,29 @@ Lärm-Dämpfung `1 | 2 | 64`.
 - Ein neues Zimmer: Eintrag in `ROWS` – Wände, Tür (mit Rahmen), Lampen, Schalter, Möbel, Zone und
   Wegpunkt entstehen automatisch. **Speicherformat beachten** (siehe 7).
 
+### Gebäudeplan (`map.aseprite` → `tools/build_map.py` → `assets/maps/floor0.json`)
+Neuer Grundriss (Spielkonzept 7.5), wird schrittweise an die Stelle von `ROWS`/`FLOORS` treten; der alte
+Stand liegt unter dem Git-Tag `alte-karte`. Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
+dort), das Skript ist reines Python ohne Zusatzpakete und braucht ca. 10 s:
+`python tools/build_map.py [map.aseprite] [assets/maps/floor0.json] [vorschau.svg]`. Die Vorschau zeichnet
+das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Prüfen nach Planänderungen.
+- **Plan-Regeln:** 1 m = 10 px, Wände 2 px schwarz, Öffnungen als Farbstriche **auf** der Wandlinie, Flächen
+  als Füllfarben (`LEGEND`, `OPENINGS`, `GLASS`, `GALLERY` oben im Skript). Gelesen wird das Bild aller sichtbaren
+  Ebenen. Schrift ist erlaubt (wird über die Größe erkannt und mit der Umgebungsfarbe aufgefüllt), trägt aber
+  keine Bedeutung: Namen von Räumen stehen in `NAMES` als Pixelpunkt → ID/Name. **Ändert sich der Plan an
+  diesen Stellen, `NAMES` anpassen** – unbenannte Flächen heißen `<art>_<n>`.
+- **Ausgabe** (Meter, x Ost, z Süd, Ursprung = Mitte Haupteingang auf der Südwand, Rechtecke `[x0, z0, x1, z1]`):
+  `walls` (`a`, `b`, `thickness`, optional `glass`, `openings` mit `kind`/`at` = Abstand ab `a`/`width`;
+  waagerechte Wände laufen durch, senkrechte enden bündig an ihnen), `regions` (`id`, `kind`, `outdoor`,
+  `rects`, optional `name`; eine Fläche `flure` umfasst alle Flure **und** die Lobby), `rooms` (`no`, `sign`,
+  `wing`, `rects`, `center`, `door` mit `pos`/`normal` in den Flur, `windows`, `garden_doors`), `planters`,
+  `terrace_edges`, `trees`, `reception`, `lobby` (`void` = Luftraum, `stair` mit `up`), `stairwells`
+  (`rect`, `door`, `wing`).
+- **Zimmernummern** entstehen im Skript (`WINGS`: Laufweg je Flügel als Flurmittellinien in Pixeln, dann
+  Querflur; rechts ungerade). Liegt ein Zimmer an keinem bekannten Flur, bricht das Skript ab – dann `WINGS`
+  ergänzen. `BROKEN_SIGNS`: abweichende Türschilder (0113 → „13“).
+- `export_presets.cfg` packt `assets/maps/*.json` mit ein (`include_filter`), weil JSON keine Godot-Ressource ist.
+
 ## 5. Das Monster
 
 Zwei Teile: **`MonsterDirector`** entscheidet *ob/wann/wohin* (versteckte Werte, Dramaturgie,

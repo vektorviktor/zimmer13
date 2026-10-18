@@ -1273,6 +1273,35 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man sc
 - Später weitere Halte (Dachboden über dem Obergeschoss)?
 - Bleibt der Fahrstuhl in einer Zeitschleife (2.2) repariert? (Vorschlag: nein.)
 
+### 7.5 Neuer Grundriss aus dem Gebäudeplan (entschieden 2026-10-18)
+> Der bisherige, im Code festgelegte Grundriss (7, „Im Prototyp umgesetzt“) ist mit dem Git-Tag `alte-karte`
+> gesichert. Das Hotel wird neu auf Grundlage des gezeichneten Plans `map.aseprite` gebaut.
+
+- **Plan statt Code:** Der Grundriss wird in Aseprite gezeichnet, **1 m = 10 px**, Wände 2 px (20 cm). Ein
+  Skript liest daraus Wände, Türen, Fenster, Räume und Einbauten; Möbel setzt weiterhin der LevelBuilder.
+- **Legende:** Zimmer orange · Flure und Lobby hellblau-grau · Gärten hellgrün (draußen) · Terrassen vor den
+  Gartenzimmern blassgrün · Pflanzen in ca. 60 cm hohen Steineinfassungen dunkelgrüne Quadrate · Bäume ·
+  Striche auf der Wand: Flurtür hellgrün, Terrassentür knallgrün, Fenster blau, **Doppel-Glastür gelb**,
+  Betriebstür fast weiß, Aufzugtür türkis, Haupteingang rot (verschlossen) · Glaswand gestrichelt (Pool).
+- **Größe:** ca. 151 × 130 m, **129 Zimmer** im Erdgeschoss: Ostflügel und Westflügel mit je einem
+  Rundflur um zwei Innenhöfe, dazwischen ein großer Garten, im Süden die Lobby mit Bar + Spiele, Partyraum
+  und Toiletten, im Westen Küche, Speisesaal, Lager und Kühlräume, im Norden der Indoor-Pool.
+- **Bauphasen:** zuerst **Lobby, Mittelgarten und Ostflügel**, der Westflügel später.
+- **Zimmernummern (vierstellig):** Stockwerk · Flügel · Zimmer. Erdgeschoss 0, erstes Obergeschoss 1;
+  Ostflügel x1xx, Westflügel x2xx. Gezählt wird nach Laufweg: ab der Lobby einmal um den Rundflur, danach der
+  Querflur zwischen den Höfen; **in Laufrichtung rechts ungerade, links gerade**. Erdgeschoss: Ost 0101–0181,
+  West 0201–0272; Zimmer darüber tragen dieselbe Nummer mit 1 vorne.
+- **Spielerzimmer ist 0113:** An der Tür ist das Schild abgebrochen, zu lesen ist nur noch **„13“**. Gäste
+  sprechen von „Zimmer 13“.
+- **Lobby mit Galerie:** Über Rezeption und Eingang ist die Lobby doppelt hoch (Luftraum ca. 7,4 × 20 m).
+  Das Obergeschoss umschließt ihn als Galerie mit Geländer, von der man in die Halle hinunterschaut. Die
+  Treppe links hinter der Rezeption führt hinauf; daneben zwei Aufzüge.
+- **Treppenhäuser:** zwei am Nordende der Flügel. Sie verbinden Keller, Erdgeschoss und Obergeschoss. Das
+  östliche ist der Kellerzugang der ersten Bauphase.
+- **Bis es Pläne für Obergeschoss und Keller gibt:** Galerie und Treppenhäuser enden oben an verschlossenen
+  Türen; der bisherige Keller kommt sinngemäß unter das östliche Treppenhaus. Vorschlag für später: ein
+  Kellergang unter der Nordseite verbindet beide Treppenhäuser.
+
 ---
 
 ## 8. Menüs, Speichern & Laden
