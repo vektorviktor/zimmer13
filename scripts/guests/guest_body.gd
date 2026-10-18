@@ -13,7 +13,7 @@ extends Node3D
 const BODIES := {
 	"man": {
 		"path": "res://assets/models/guest_man.glb", "sex": "m",
-		"height": 1.700, "width": 0.433, "walk": 1.40, "run": 2.44, "ref": Vector3(0.382, 0.125, 0.201),
+		"height": 1.700, "width": 0.433, "walk": 1.40, "run": 2.44, "ref": Vector3(0.383, 0.125, 0.200),
 	},
 }
 ## Breite wird nur so weit gestreckt (sonst sieht man es an Armen und Beinen)

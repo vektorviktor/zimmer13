@@ -42,7 +42,9 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   aus Meshys GLB (Auto-Rigging mit Skelettvorlage **Mixamo**, „Alle hinzugefügt“, einzelne Datei; Rohmodell
   als `assets/source/guest_<name>.glb`). Knochen ohne `mixamorig:` (`Hips`, `Spine`…`Spine2`, `Neck`, `Head`,
   `LeftArm`/`LeftForeArm`/`LeftHand` …, `LeftUpLeg`/`LeftLeg`/`LeftFoot` …), Animationen `walk` und `run`
-  (auf der Stelle), ~6000 Dreiecke, 512er-Textur, Blick nach −Z, Füße auf 0, Maße in Metern. **Färbemaske** als
+  (auf der Stelle), Netz unverändert von Meshy (höchstens 15 000 Dreiecke – Reduzieren zieht Dreiecke über
+  Meshys winzige UV-Inseln und macht Schlieren), 1024er-Textur als PNG (JPEG färbt die Inselränder), Lücken
+  zwischen den Inseln vor dem Verkleinern gefüllt, Blick nach −Z, Füße auf 0, Maße in Metern. **Färbemaske** als
   Punktfarbe je Fläche (R/G/B = Oberteil/Hose/Haare): Kopf-/Hals-Knochen → Haare, sonst hellere Grautöne →
   Oberteil, dunklere → Hose; Haut, Schuhe, Hände bleiben. **Formschlüssel `build`** (Körperbau, 1 = kräftig,
   negativ = schlank). Das Skript gibt die Zeile für `GuestBody.BODIES` aus (Höhe, Schulterbreite, Laufweite

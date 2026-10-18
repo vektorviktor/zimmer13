@@ -7,8 +7,11 @@
 # Was passiert:
 # - Knochen ohne „mixamorig:“ (der Doppelpunkt ist in Godot der Pfadtrenner), Meshys Hilfsknochen
 #   und die Hilfskugel fliegen raus, Animationen heißen „walk“ und „run“.
-# - Netz auf TARGET_TRIS Dreiecke, Farbtextur TEX_SIZE (Lücken zwischen den UV-Inseln vorher mit
-#   Nachbarfarben gefüllt, sonst färben sich beim Verkleinern die Nähte schwarz).
+# - Netz bleibt, wie Meshy es liefert (höchstens MAX_TRIS – sonst in Meshy kleiner erzeugen). Reduzieren
+#   geht nicht: Meshys Textur besteht aus Hunderten kleiner UV-Inseln, und zusammengelegte Dreiecke
+#   spannen dann über mehrere Inseln (graue und bunte Schlieren).
+# - Farbtextur TEX_SIZE (Lücken zwischen den UV-Inseln vorher mit Nachbarfarben gefüllt, sonst färben
+#   sich beim Verkleinern die Nähte schwarz).
 # - Färbemaske als Punktfarbe je Fläche (exakt, keine Texturkompression): Kanal R = Oberteil,
 #   G = Hose, B = Haare (0 oder 1). Die mittlere Helligkeit je Bereich gibt das Skript aus – sie
 #   gehört nach GuestBody.BODIES („ref“). Der Shader rechnet Gastfarbe × Helligkeit / Mittelwert,
@@ -22,8 +25,8 @@ import bpy, sys, os, math
 import numpy as np
 from mathutils import Matrix, Vector
 
-TARGET_TRIS = 6000
-TEX_SIZE = 512
+MAX_TRIS = 15000
+TEX_SIZE = 1024           # kleiner verschwimmen die Gesichter (die Inseln sind winzig)
 WORK_SIZE = 1024          # Arbeitsgröße der Textur für Maske und Lückenfüllen
 GREY_SAT = 0.09           # max. Sättigung (max − min) einer „grauen“ Stelle
 GREY_LUM = (0.12, 0.86)   # Helligkeitsbereich grauer Stoffe/Haare (darüber: Augenweiß)
@@ -83,24 +86,38 @@ nodes = mat.node_tree.nodes
 bsdf = [n for n in nodes if n.type == 'BSDF_PRINCIPLED'][0]
 base_node = [l.from_node for l in bsdf.inputs['Base Color'].links][0]
 img = base_node.image
+
+
+def fill_gaps(rgb, filled, steps):
+	"""Leere Texel (zwischen den UV-Inseln) bekommen die Farbe ihrer gefüllten Nachbarn – Schritt für Schritt."""
+	for _ in range(steps):
+		if filled.all():
+			break
+		acc = np.zeros_like(rgb)
+		cnt = np.zeros(filled.shape, dtype=np.float32)
+		for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+			f = np.roll(filled, (dy, dx), axis=(0, 1))
+			acc += np.roll(rgb, (dy, dx), axis=(0, 1)) * f[:, :, None]
+			cnt += f
+		grow = (~filled) & (cnt > 0)
+		rgb[grow] = acc[grow] / cnt[grow][:, None]
+		filled |= grow
+
+
+# Erst in voller Größe füllen, dann verkleinern – sonst mischt das Verkleinern Schwarz in die Inselränder
+size = img.size[0]
+px = np.array(img.pixels[:], dtype=np.float32).reshape(size, size, 4)
+rgb = px[:, :, :3].copy()
+fill_gaps(rgb, rgb.max(axis=2) > 0.012, 4 * size // WORK_SIZE)
+px[:, :, :3] = rgb
+px[:, :, 3] = 1.0
+img.pixels[:] = px.ravel()
+del px, rgb
 img.scale(WORK_SIZE, WORK_SIZE)
 px = np.array(img.pixels[:], dtype=np.float32).reshape(WORK_SIZE, WORK_SIZE, 4)
 rgb = px[:, :, :3].copy()
-filled = rgb.max(axis=2) > 0.012
-for _ in range(24):
-	if filled.all():
-		break
-	acc = np.zeros_like(rgb)
-	cnt = np.zeros(filled.shape, dtype=np.float32)
-	for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-		f = np.roll(filled, (dy, dx), axis=(0, 1))
-		acc += np.roll(rgb, (dy, dx), axis=(0, 1)) * f[:, :, None]
-		cnt += f
-	grow = (~filled) & (cnt > 0)
-	rgb[grow] = acc[grow] / cnt[grow][:, None]
-	filled |= grow
+fill_gaps(rgb, rgb.max(axis=2) > 0.012, 24)
 px[:, :, :3] = rgb
-px[:, :, 3] = 1.0
 img.pixels[:] = px.ravel()
 lum_map = rgb @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
 sat_map = rgb.max(axis=2) - rgb.min(axis=2)
@@ -108,23 +125,12 @@ sat_map = rgb.max(axis=2) - rgb.min(axis=2)
 lin = np.where(rgb <= 0.04045, rgb / 12.92, ((rgb + 0.055) / 1.055) ** 2.4)
 lin_lum_map = lin @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
 
-# --- Netz reduzieren ---------------------------------------------------------------------
-bpy.context.view_layer.objects.active = body
-body.select_set(True)
-bpy.ops.object.mode_set(mode='EDIT')
-bpy.ops.mesh.select_all(action='SELECT')
-bpy.ops.mesh.remove_doubles(threshold=0.0001)
-bpy.ops.object.mode_set(mode='OBJECT')
-dec = body.modifiers.new("decimate", 'DECIMATE')
-dec.ratio = min(1.0, TARGET_TRIS / sum(len(p.vertices) - 2 for p in body.data.polygons))
-bpy.ops.object.modifier_move_to_index(modifier=dec.name, index=0)
-bpy.ops.object.modifier_apply(modifier=dec.name)
-bpy.ops.object.mode_set(mode='EDIT')
-bpy.ops.mesh.select_all(action='SELECT')
-bpy.ops.mesh.quads_convert_to_tris()
-bpy.ops.object.mode_set(mode='OBJECT')
+# --- Netz prüfen -------------------------------------------------------------------------
 mesh = body.data
-print("Dreiecke: %d" % len(mesh.polygons))
+tris = sum(len(p.vertices) - 2 for p in mesh.polygons)
+print("Dreiecke: %d" % tris)
+if tris > MAX_TRIS:
+	raise SystemExit("Zu viele Dreiecke (%d > %d) – in Meshy mit kleinerer Polygonzahl erzeugen" % (tris, MAX_TRIS))
 
 # --- Färbemaske ------------------------------------------------------------------------------
 gname = {vg.index: vg.name for vg in body.vertex_groups}
@@ -219,6 +225,11 @@ body.shape_key_add(name="Basis", from_mix=False)
 sk = body.shape_key_add(name="build", from_mix=False)
 fwd = (arm.matrix_world.to_3x3().inverted() @ Vector((0, 1, 0))).normalized()   # vorn im Netzraum
 belly_ids = {vg.index for vg in body.vertex_groups if vg.name in ("Spine", "Spine1", "Hips")}
+# glTF trennt Punkte an UV-Nähten – deren Normalen mitteln, sonst reißen die Nähte beim Aufblähen auf
+normal_at = {}
+for v in mesh.vertices:
+	key = tuple(round(c, 5) for c in v.co)
+	normal_at[key] = normal_at.get(key, Vector()) + v.normal
 for v in mesh.vertices:
 	push = 0.0
 	belly = 0.0
@@ -228,8 +239,9 @@ for v in mesh.vertices:
 			belly += g.weight
 	if push <= 0.0:
 		continue
-	front = max(0.0, v.normal.dot(fwd))
-	sk.data[v.index].co = v.co + v.normal * push + fwd * BELLY_FORWARD * belly * front * front
+	n = normal_at[tuple(round(c, 5) for c in v.co)].normalized()
+	front = max(0.0, n.dot(fwd))
+	sk.data[v.index].co = v.co + n * push + fwd * BELLY_FORWARD * belly * front * front
 # Laufweite: Fußweg in der Standphase je Sekunde (Animationen laufen auf der Stelle)
 fps = scene.render.fps / scene.render.fps_base
 
@@ -265,7 +277,7 @@ bpy.ops.export_scene.gltf(
 	export_skins=True, export_animations=True, export_animation_mode='NLA_TRACKS',
 	export_morph=True, export_morph_normal=False, export_cameras=False, export_lights=False,
 	export_vertex_color='ACTIVE', export_all_vertex_colors=False,
-	export_image_format='JPEG', export_jpeg_quality=88)
+	export_image_format='AUTO')   # PNG: JPEG färbt die Inselränder (Farbunterabtastung)
 
 # --- Vorschau --------------------------------------------------------------------------------
 if PREVIEW:
