@@ -14,6 +14,17 @@ const NAMES := [
 	"Viktor", "Wanda", "Xaver", "Yusuf", "Zita", "Alma", "Bernd", "Cem", "Doris", "Elias",
 	"Franz", "Gisela", "Hedwig", "Ivo", "Jule", "Kurt", "Liesel", "Moritz", "Nele", "Oskar",
 ]
+## Frauennamen aus NAMES (alle anderen sind Männernamen) – bestimmt den Grundkörper (GuestBody)
+const FEMALE := [
+	"Berta", "Carla", "Elif", "Frieda", "Hanna", "Ida", "Lotte", "Nora", "Paula", "Rosa", "Uschi", "Vera",
+	"Yara", "Zoe", "Greta", "Lena", "Ines", "Marta", "Selma", "Johanna", "Wilma", "Tilda", "Agnes", "Clara",
+	"Fiona", "Gerda", "Irma", "Klara", "Magda", "Olga", "Ruth", "Thea", "Wanda", "Zita", "Alma", "Doris",
+	"Gisela", "Hedwig", "Jule", "Liesel", "Nele",
+]
+## Körpergröße in cm je Geschlecht: Mittel, Streuung, Grenzen (Spielkonzept 6.0: 150–185, selten über 190)
+const HEIGHT_CM := {"m": [176.0, 6.0, 160.0, 193.0], "f": [164.0, 5.5, 150.0, 180.0]}
+## Schulterbreite in cm je Geschlecht (Spielkonzept 6.0: 35–50)
+const WIDTH_CM := {"m": Vector2(41.0, 50.0), "f": Vector2(35.0, 43.0)}
 const CLOTHING := ["Mütze", "Schal", "Handschuh", "Brille", "Halstuch", "Strickjacke", "Taschenuhr", "Hut", "Haarspange"]
 const TELLS := [
 	"%s trommelt mit den Fingern auf den Tisch.", "%s blinzelt auffällig oft.", "%s räuspert sich.",
@@ -238,6 +249,7 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 		activities[key] = float(base[key]) * rng.randf_range(0.6, 1.4)
 	var profile := {
 		"name": guest_name, "room": room, "archetype": arche["kind"], "generated": true,
+		"sex": "f" if guest_name in FEMALE else "m",
 		"coat": COATS[rng.randi() % COATS.size()], "pants": PANTS[rng.randi() % PANTS.size()],
 		"hair": HAIR[rng.randi() % HAIR.size()], "height": rng.randf_range(0.92, 1.07),
 		"brave": _range(rng, arche["brave"]), "greed": _range(rng, arche["greed"]),
@@ -260,6 +272,12 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 	var batteries := rng.randi_range(0, 2)
 	if arche["kind"] == "Skeptiker" and batteries > 0:
 		stock[Item.Kind.BATTERY] = batteries
+	# Körper fürs Gastmodell (GuestBody): Größe, Schulterbreite, Körperbau (−0,6 schlank … 1 kräftig)
+	var h: Array = HEIGHT_CM[profile["sex"]]
+	profile["height_cm"] = clampf(rng.randfn(h[0], h[1]), h[2], h[3])
+	var w: Vector2 = WIDTH_CM[profile["sex"]]
+	profile["width_cm"] = rng.randf_range(w.x, w.y)
+	profile["build"] = rng.randf_range(-0.6, 1.0)
 	return profile
 
 

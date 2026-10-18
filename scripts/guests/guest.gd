@@ -58,6 +58,8 @@ var _visual: Node3D
 var _hand: Node3D
 var _arm_l: Node3D
 var _arm_r: Node3D
+var _body: GuestBody         ## Gastmodell; null = Klötzchenfigur (noch kein passender Grundkörper)
+var _arms_free := true       ## Gastmodell: Arme schwingen mit der Laufanimation
 var _label: Label3D
 var _target := Vector3.ZERO
 var _timer := 0.0
@@ -986,8 +988,37 @@ func _face(pos: Vector3, delta: float) -> void:
 
 func _build_visual() -> void:
 	_visual = Node3D.new()
-	_visual.scale = Vector3.ONE * float(profile.get("height", 1.0))
 	add_child(_visual)
+	var body_id := GuestBody.pick(profile, id)
+	if body_id != "":
+		_body = GuestBody.new()
+		_body.setup(body_id, profile)
+		_visual.add_child(_body)
+		# Unsichtbare Pivots: die Posen drehen sie, das Modell zielt mit den Oberarmen danach
+		_arm_l = Node3D.new()
+		_arm_r = Node3D.new()
+		_visual.add_child(_arm_l)
+		_visual.add_child(_arm_r)
+	else:
+		_build_blocks()
+	_hand = Node3D.new()
+	_hand.position = Vector3(0, 1.0, -0.35)
+	_visual.add_child(_hand)
+	_label = Label3D.new()
+	_label.text = display_name
+	_label.font_size = 28
+	_label.pixel_size = 0.005
+	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_label.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	_label.modulate = Color(0.9, 0.85, 0.7)
+	_label.position = Vector3(0, 2.0, 0)
+	_label.visible = false
+	add_child(_label)
+
+
+## Klötzchenfigur für Gäste ohne Grundkörper
+func _build_blocks() -> void:
+	_visual.scale = Vector3.ONE * float(profile.get("height", 1.0))
 	var coat := Mat.psx(profile["coat"])
 	var pants := Mat.psx(profile["pants"])
 	var skin := Mat.psx(Color(0.82, 0.66, 0.55))
@@ -1002,19 +1033,6 @@ func _build_visual() -> void:
 	Geo.mesh(_visual, Geo.box(Vector3(0.28, 0.2, 0.08)), hair, Vector3(0, 1.62, 0.12))
 	for side in [-1.0, 1.0]:
 		Geo.mesh(_visual, Geo.box(Vector3(0.03, 0.03, 0.02)), Mat.psx(Color(0.05, 0.05, 0.05)), Vector3(side * 0.05, 1.62, -0.12))
-	_hand = Node3D.new()
-	_hand.position = Vector3(0, 1.0, -0.35)
-	_visual.add_child(_hand)
-	_label = Label3D.new()
-	_label.text = display_name
-	_label.font_size = 28
-	_label.pixel_size = 0.005
-	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_label.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	_label.modulate = Color(0.9, 0.85, 0.7)
-	_label.position = Vector3(0, 2.0, 0)
-	_label.visible = false
-	add_child(_label)
 
 
 ## Meist der Lieblingstanz des Gastes, ab und zu ein anderer (Spielkonzept 7.1).
@@ -1095,6 +1113,13 @@ func _update_label() -> void:
 func _animate(delta: float) -> void:
 	_anim += delta
 	var speed := Vector2(velocity.x, velocity.z).length()
+	_pose(delta, speed)
+	if _body and visible:
+		_body.animate(delta, speed, running, [_arm_l, _arm_r], _arms_free, state == State.MINIGAME and seated)
+
+
+func _pose(delta: float, speed: float) -> void:
+	_arms_free = false
 	if state == State.PARTY and speed < 0.1:
 		_dance_pose(delta)
 		return
@@ -1104,7 +1129,7 @@ func _animate(delta: float) -> void:
 	_arm_l.rotation.z = 0.0
 	_arm_r.rotation.z = 0.0
 	if state == State.MINIGAME and seated:
-		_visual.position.y = -0.35   # sitzt
+		_visual.position.y = -(_body.sit_drop() if _body else 0.35)   # sitzt
 		_arm_l.rotation.x = -1.1 + sin(_anim * 3.0) * 0.05
 		_arm_r.rotation.x = -1.1
 		return
@@ -1118,3 +1143,4 @@ func _animate(delta: float) -> void:
 		var swing := sin(_anim * 6.0) * clampf(speed * 0.35, 0.0, 0.6)
 		_arm_l.rotation.x = swing
 		_arm_r.rotation.x = -swing
+		_arms_free = true

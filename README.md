@@ -57,7 +57,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 - **Spuren & Zettel:** Fußspuren (verblassen), Kratzspuren, Blut und Kleidungsstück bei einem Todesfall, Handabdrücke an Zimmertüren, geprüfte Verstecke, ausgehende Kerzen · Spuren an Zimmer 13 lassen sich wegwischen · Gäste berichten davon (nicht immer zuverlässig) · Warnungszettel früherer Gäste ab dem ersten Angriff · **Spuren der Gäste:** schlammige Schuhabdrücke nach dem Garten, Wachsflecken von Kerzen und Kürbislaternen, Blutstropfen und verlorene Münzen nach einem Angriff, Zettel an Türen und nach Todesfällen oder Sichtungen
 - **Klopfen an Zimmer 13:** ein Gast in Panik bittet um Einlass – oder eine bekannte Stimme, hinter der niemand steht
 - **Zimmertelefone:** Wählscheibentelefon in jedem Zimmer, Haupttelefon mit Gästeverzeichnis an der Rezeption (Zimmernummer wählen, 0 = Rezeption) · Freunde rufen an und warnen, wo es gerade ist (nicht immer richtig), Feinde lügen, Bekannte plaudern oder laden zur Feier ein · manchmal nur Atmen – danach liegt in einem leeren Zimmer ein Hörer neben dem Apparat · selbst anrufen: plaudern, fragen, einladen; **Klingeln ist Lärm** und lockt das Monster ins Zielzimmer · anrufen und sofort auflegen gilt als Telefonstreich · Hörer daneben legen: still, aber keine Warnungen mehr · ab und zu klingelt irgendwo im Hotel ein Telefon
-- **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (30 zum Start, sechs Charaktere mit eigenen Sätzen und Werten); sinkt die Zahl der Lebenden unter 24, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf mit **Nachtruhe zu zufälligen Zeiten** (alle gehen ins Bett, Licht aus), Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
+- **Gäste:** Edna, Bruno, Mila plus zufällig erzeugte Gäste (30 zum Start, sechs Charaktere mit eigenen Sätzen und Werten; Männer als echte Figuren mit eigener Größe, Breite, Statur und Kleidungs-/Haarfarbe, Frauen vorerst noch Klötzchen); sinkt die Zahl der Lebenden unter 24, wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf · eigener Tagesablauf mit **Nachtruhe zu zufälligen Zeiten** (alle gehen ins Bett, Licht aus), Dialog (Plaudern, Monster, Handeln, Schenken, Deko erbitten, Beruhigen, Einladen, Beleidigen, Entschuldigen), Beziehung, Klauen in beide Richtungen mit Zeugen und Gerüchten, Panik & Verstecken, können sterben → Schock/Schuld beim Spieler, Gedenkkerze hilft
 - **Mäxchen an der Hotelbar:** Bluff-Würfeln gegen Gäste um Geld oder Gegenstände (Einsätze liegen echt auf dem Tisch), Herausforderungen & Revanche, Gäste würfeln untereinander (zuschauen verrät ihre Ticks), gezinkte Würfel aus Zimmer 17, Abbruch bei Vorwarnung
 - **Lakengeist:** kommt, wenn du einen Raum mit Außenfenster betrittst, in dem das Licht aus und der Vorhang offen ist · wird von Mal zu Mal dreister: schwebt heran → blutige Handabdrücke auf der Scheibe und Hypnose mit kreisenden Händen (macht langsamer, zieht den Blick) → kommt herein und würgt → ab dem 4. Mal auch durch den zugezogenen Vorhang · losreißen nur durch Hin-und-Her-Bewegen innerhalb von 1,5 s, sonst tot · Gäste als Zeugen vertreiben ihn, in Gesellschaft kommt er nicht · ab dem 6. Mal auch im Flur, wenn alle schlafen
 - **Taschenlampe:** an der Rezeption (halb leer) · Licht zum Sehen, aber kein Schutz – wer sie trägt, wird weiter gesehen · Batterien (Wäscherei, Keller, manche leeren Zimmer, Skeptiker verkaufen sie) einlegen wie eine Kerze in den Kürbis · flackert in Monsternähe, im Versteck bleibt sie aus · **UV-Aufsatz** in Zimmer 18: UV leert eine Batterie in ~9 s; steht das Monster ~1 s im Kegel, flieht es – kommt aber bald wieder, sucht rund um Zimmer 13 und braucht jedes Mal länger · UV zeigt verblasste Fußspuren, Schrift an Wänden und eine zweite Zeile auf jedem Warnungszettel
@@ -93,6 +93,12 @@ Das Katzenmodell (`assets/models/cat.glb`) baut `tools/build_cat.py` aus Meshys 
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_cat.py -- assets/source/Meshy_AI_Curious_Cat_quadruped.zip assets/models/cat.glb
 ```
 
+Die Gast-Grundkörper (`assets/models/guest_<name>.glb`, Spielkonzept 6.0) baut `tools/build_guest.py` aus Meshys GLB (Auto-Rigging mit Skelettvorlage „Mixamo“, alle Animationen, einzelne Datei). Das Skript gibt am Ende die Zeile für `GuestBody.BODIES` aus; ein optionaler dritter Pfad legt Vorschaubilder ab (Ruhe, Maske, Körperbau, Gehen, Rennen):
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_guest.py -- assets/source/guest_man.glb assets/models/guest_man.glb
+```
+
 Den Lakengeist (`assets/models/ghost.glb`, Spielkonzept 4.18) riggt `tools/build_ghost.py` selbst – mit Armen und Fingern. Ein optionaler dritter Pfad legt Vorschaubilder ab (Ruhe, gekrümmte Finger, gehobene Arme):
 
 ```bash
@@ -125,6 +131,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`:
 | `--party` | Feier starten |
 | `--cat=minka` | Hotelkatze vor den Spieler setzen (`minka`, `socke`, `kasimir`) |
 | `--talk=edna` | Gespräch öffnen |
+| `--look=gast1` · `--look=gast1,carry` | vor einen Gast stellen, ohne Dialog (er bleibt stehen) · mit Haltung: `carry`, `panic`, `dance`, `sit`, `walk` – zum Prüfen der Gastmodelle |
 | `--dice=bruno` · `--autoplay` | Mäxchen-Partie starten · Antworten automatisch wählen |
 | `--challenge=bruno` | Gast fordert dich heraus |
 | `--pos=x,y,z,winkel[,neigung]` · `--monster=x,y,z` | Spieler versetzen (Neigung in Grad, positiv = nach oben) · Monster erscheinen lassen |

@@ -794,6 +794,11 @@ Deko ist **Schutzmittel und Währung** zugleich.
 - **Nie weniger als 24:** Sterben Gäste und sind weniger als 24 am Leben, **wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf** – das Hotel ist ja verschlossen. Er weiß nicht, wie er hergekommen ist („Ich bin in Zimmer 27 aufgewacht …“). Man hört eine Tür, in seinem Zimmer geht das Licht an. Zimmer von Verschwundenen bleiben leer.
 - Aus einem Seed entsteht immer derselbe Gast; Spielstände speichern nur Seed und Zimmer (`scripts/guests/guest_generator.gd`).
 
+**Gastmodelle (geplant 2026-10-17, erster Grundkörper „Mann“ eingebaut 2026-10-17):** Die Klötzchen-Gäste werden durch Meshy-Modelle ersetzt – keine Einzelmodelle, sondern **eigene Modelle für Edna, Bruno und Mila** und **6–8 Grundkörper** (Frau/Mann × jung/mittel/alt, evtl. weitere Statur) für die erzeugten Gäste. Jeder Grundkörper ist eine ganze Figur mit eigenem Kopf; alle haben denselben Knochenaufbau (Meshy-Auto-Rigging mit Skelettvorlage Mixamo), Animationen gibt es deshalb nur einmal. Der Grundkörper folgt aus Geschlecht und Generation des Namens und wird reihum statt zufällig verteilt, damit sich keiner häuft.
+- **Variiert wird:** Körpergröße **150–185 cm** (selten über 190), Breite **35–50 cm**, Körperbau (schlank bis kräftig), Kleidungs- und Haarfarbe (Einfärben über Masken). Das Kleidungsstück („Lottes Hut“) wird, wo es geht, als echtes Teil am Körper sichtbar.
+- **Vorerst nicht:** getrennte Frisuren, andere Kleidungsschnitte, Augenfarbe.
+- Modelle in Meshy: A-Pose, Kleidung und Haare entsättigt hell- bzw. mittelgrau (Ober- und Unterteil verschieden), keine Muster, keine Accessoires, Haare nicht auf den Schultern, keine eingebrannten Schatten.
+
 ### 6.1 Rolle
 - Leben ebenfalls im Hotel, haben eigene Zimmer, eigene Deko, eigene Persönlichkeit.
 - Sind **Handelspartner, potenzielle Freunde – und potenzielle Gegner**.

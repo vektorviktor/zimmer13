@@ -37,6 +37,9 @@ extends Node3D
 ##   --party                     sofort eine Feier in der Lobby starten
 ##   --cat=id                    Hotelkatze vor den Spieler setzen (minka, socke, kasimir)
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
+##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
+##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
+##                               zum Prüfen der Gastmodelle
 ##   --dice=id                   sofort Mäxchen mit dem Gast (Einsatz 3 Geld)
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
@@ -344,6 +347,10 @@ func _parse_debug_args() -> void:
 					cat.place_in_front_of(Game.player)
 		elif arg == "--party":
 			Game.social.start_party("player")
+		elif arg.begins_with("--look="):
+			var parts := arg.substr(7).split(",")
+			var guest := Game.social.guest_by_id(parts[0])
+			_debug_look(guest, parts[1] if parts.size() > 1 else "")
 		elif arg.begins_with("--talk="):
 			var partner := Game.social.guest_by_id(arg.substr(7))
 			Game.player.global_position = partner.global_position + Vector3(0, 0, -1.4)
@@ -442,6 +449,29 @@ func _parse_debug_args() -> void:
 
 
 ## --savetest: Speichern und Laden ohne Datei durchspielen und Unterschiede ausgeben.
+## --look: Spieler vor den Gast (in dessen Blickrichtung), der Gast bleibt stehen und schaut her.
+## pose stellt eine Haltung nach, damit man die Gastmodelle prüfen kann (Spielkonzept 6.0).
+func _debug_look(guest: Guest, pose: String) -> void:
+	guest.state = Guest.State.TALKING
+	guest.velocity = Vector3.ZERO
+	var forward := -guest.global_transform.basis.z
+	Game.player.global_position = guest.global_position + forward * 2.4
+	Game.player.rotation.y = atan2(forward.x, forward.z)
+	match pose:
+		"walk":
+			guest._walk_to(guest.global_position + forward.cross(Vector3.UP) * 2.0, Guest.State.WALK)
+		"carry":
+			guest._take_into_hand(Item.create(Item.Kind.PUMPKIN))
+		"panic":
+			guest.running = true
+		"dance":
+			guest.state = Guest.State.PARTY
+			guest._target = guest.global_position
+		"sit":
+			guest.state = Guest.State.MINIGAME
+			guest.seated = true
+
+
 func _save_test() -> void:
 	# Etwas Unordnung, damit der Test mehr abdeckt: Vorhang zu, Licht aus, Birne in der Hand
 	(get_tree().get_nodes_in_group("windows").filter(func(w: Node) -> bool: return w.has_curtains())[0] as HotelWindow).set_closed(true)

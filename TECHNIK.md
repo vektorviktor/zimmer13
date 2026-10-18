@@ -38,6 +38,15 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   Körpermitte); lokal X der Hand-/Fingerknochen beugt zur Handfläche (positiv = krallen). Eigene Gewichte statt
   Bone-Heat (das Netz ist nach dem Verschmelzen ein Stück, aber nicht sauber geschlossen). 10 159 Dreiecke,
   1,9 m, Blick nach −Z, Ursprung mittig unten, keine Animationen.
+  **Gast-Grundkörper** `assets/models/guest_<name>.glb` (Spielkonzept 6.0, `GuestBody`): `tools/build_guest.py`
+  aus Meshys GLB (Auto-Rigging mit Skelettvorlage **Mixamo**, „Alle hinzugefügt“, einzelne Datei; Rohmodell
+  als `assets/source/guest_<name>.glb`). Knochen ohne `mixamorig:` (`Hips`, `Spine`…`Spine2`, `Neck`, `Head`,
+  `LeftArm`/`LeftForeArm`/`LeftHand` …, `LeftUpLeg`/`LeftLeg`/`LeftFoot` …), Animationen `walk` und `run`
+  (auf der Stelle), ~6000 Dreiecke, 512er-Textur, Blick nach −Z, Füße auf 0, Maße in Metern. **Färbemaske** als
+  Punktfarbe je Fläche (R/G/B = Oberteil/Hose/Haare): Kopf-/Hals-Knochen → Haare, sonst hellere Grautöne →
+  Oberteil, dunklere → Hose; Haut, Schuhe, Hände bleiben. **Formschlüssel `build`** (Körperbau, 1 = kräftig,
+  negativ = schlank). Das Skript gibt die Zeile für `GuestBody.BODIES` aus (Höhe, Schulterbreite, Laufweite
+  der Animationen, mittlere Helligkeit je Färbebereich) – nach jedem Neubau übernehmen.
   **Rahmen-Kit** `assets/models/frames.glb` (Spielkonzept 7.2, `OpeningFrame`): `tools/build_frames.py` zieht
   2D-Profile ohne Ausgangsmodell zu 1 m langen Teilen aus – `casing` (Seitenbekleidung), `fillet`, `frieze`,
   `cap` (Kopfpartie im Craftsman-Stil), `stool` (Fensterbank), `board` (Einheitswürfel für Zarge und
@@ -288,6 +297,16 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
   **Achtung:** Die Reihenfolge der `rng`-Aufrufe in `make()` bestimmt, wer der Gast ist. Neue
   Zufallswerte nur **ans Ende** anhängen, sonst werden aus gespeicherten Seeds andere Gäste.
   `name_for(seed)` verlässt sich darauf, dass der Name die **erste** Zufallszahl ist.
+- **Aussehen** (Spielkonzept 6.0, „Gastmodelle“): `GuestBody.pick(profile, id)` wählt für erzeugte Gäste einen
+  Grundkörper aus `GuestBody.BODIES` passend zum Geschlecht des Namens (`GuestGenerator.FEMALE`), reihum nach der
+  Gastnummer. Ohne passenden Körper (feste Gäste, Frauen bis es Modelle gibt) bleibt die Klötzchenfigur
+  (`_build_blocks`). Je Gast aus dem Profil: `height_cm`, `width_cm` (Breite nur in `WIDTH_LIMIT`, Kopfknochen
+  gegengestreckt), `build`, Farben `coat`/`pants`/`hair` als Instanz-Uniforms von `psx_guest.gdshader`
+  (färbt nur graue Texel, Farbe × Helligkeit / Mittelwert). **Bewegung:** `walk`/`run` aus der GLB
+  (`AnimationPlayer` manuell vorgespult, Tempo nach Laufweite × Größe), im Stand Ruhepose mit Atmen. Die Posen
+  in `Guest._pose()`/`_dance_pose()` drehen weiter nur die Pivots `_arm_l`/`_arm_r` (beim Modell unsichtbar);
+  `GuestBody` richtet die Oberarmknochen danach aus (`_aim`), außer `_arms_free` (normales Gehen/Stehen).
+  Sitzen: Beine angewinkelt, Absenken über `sit_drop()`.
 - **`Guest`**: Zustandsautomat (`IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING,
   PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP`). In `IDLE` wählt `_next_activity()` gewichtet aus
   `profile.activities`; `_arrive()` verarbeitet das Ankommen je Zustand.
