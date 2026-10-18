@@ -326,7 +326,8 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
 - **Nachtruhe** (Spielkonzept 4.18): `Social._update_sleep` startet sie zu zufälligen Zeiten (`SLEEP_GAP`,
   nie in einer Feier) für `SLEEP_TIME` → `Guest.bedtime()`: ins Zimmer, Licht aus, still ins eigene Bett
   (`hiding` = Bett, aber Zustand `SLEEP` – kein Versteck-Lärm, kein `_watch_monster`; das Monster kann sie im
-  Bett finden). Wer redet, spielt, klopft oder sich versteckt, geht danach (`_next_activity`). Ende →
+  Bett finden). Sie bleiben sichtbar und liegen auf dem Rücken auf der Matratze (`BED_FEET`/`BED_TOP`, Kopf zum
+  Kissen = lokal −X des Betts; Pose in `_pose`, wie die Leiche um X gekippt). Wer redet, spielt, klopft oder sich versteckt, geht danach (`_next_activity`). Ende →
   `wake_up()`. `Social.all_asleep()` für den Lakengeist im Flur. Gespeichert: `sleep_active`, `sleep_timer`
   (Gäste laden wach und gehen wieder ins Bett).
   **Der Spieler schläft mit** (4.18): Nur das Bett mit `HideSpot.own_bed` (Zimmer 13, gesetzt im LevelBuilder)

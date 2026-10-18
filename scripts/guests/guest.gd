@@ -23,6 +23,9 @@ const ALARM_LINES := ["Was war das?!", "Hast du das gehört?", "Da war doch was 
 ## Erst wieder aus dem Versteck, wenn das Monster so weit weg ist
 const SAFE_DISTANCE := 22.0
 ## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
+## Schlafen im Bett (Nachtruhe): Füße so weit vom Bettmittelpunkt zum Fußende, so hoch liegt die Matratze
+const BED_FEET := 0.9
+const BED_TOP := 0.53
 const MUD_STEPS := 14
 const BLEED_TIME := 45.0
 ## Tänze bei Feiern (`_dance_pose`) für die Klötzchenfigur – Gastmodelle tanzen GuestBody.DANCES
@@ -481,7 +484,8 @@ func _go_to_bed() -> void:
 	_walk_to(_room_point(), State.WALK)
 
 
-## Licht aus, ins eigene Bett (still – kein Versteck-Geräusch). Ist es belegt, schläft er im Stehen.
+## Licht aus, ins eigene Bett (still – kein Versteck-Geräusch): Er liegt sichtbar auf dem Rücken, den Kopf
+## am Kissen (lokal −X des Betts; Pose in _pose). Ist das Bett belegt, schläft er im Stehen.
 func _fall_asleep() -> void:
 	_to_bed = false
 	_set_room_light(false)
@@ -492,10 +496,11 @@ func _fall_asleep() -> void:
 			hiding = bed
 			bed.occupant = self
 			bed.set_checked(false)
-			visible = false
 			_collider.disabled = true
 			velocity = Vector3.ZERO
-			global_position = bed.global_position
+			var along := bed.global_transform.basis.x.normalized()
+			global_position = bed.global_position + along * BED_FEET + Vector3.UP * BED_TOP
+			rotation.y = atan2(-along.x, -along.z)   # lokale +Z (Kopf beim Liegen) zum Kissen
 			return
 
 
@@ -1377,6 +1382,13 @@ func _pose(delta: float, speed: float) -> void:
 	_arm_r.rotation.z = 0.0
 	if state in [State.SHOCKED, State.GHOSTED]:
 		_shock_pose()
+		return
+	if state == State.SLEEP and hiding:
+		# schläft auf dem Rücken im Bett, Arme an der Seite, atmet ruhig
+		_visual.position.y = 0.13 + sin(_anim * 1.6) * 0.006
+		_visual.rotation.x = PI / 2.0
+		_arm_l.rotation = Vector3(0, 0, -0.15)
+		_arm_r.rotation = Vector3(0, 0, 0.15)
 		return
 	if state == State.MINIGAME and seated:
 		_visual.position.y = -(_body.sit_drop() if _body else 0.35)   # sitzt
