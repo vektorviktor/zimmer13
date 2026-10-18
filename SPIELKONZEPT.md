@@ -677,6 +677,10 @@ braucht), beim Ausprobieren festlegen.
 >   Je Nacht kommt er häufiger (+10 % am Fenster, kürzere Pause, öfter im Flur), ab **2** Nächten auch vor dem
 >   6. Mal im Flur, ab **3** Nächten **sicher im Flur**, sobald man dort allein ist – auch ohne Nachtruhe. Zeugen
 >   vertreiben ihn weiterhin. Schlafen setzt den Zähler zurück. Debug: `--awake=n`, `--ghost=schrank`, `--sleep=bett`.
+> - **Früher, häufiger, schneller (2026-10-18):** Er spukt **ab Tag 2** (oder schon nach dem ersten Angriff, falls
+>   früher). Die Licht-aus-Falle bleibt: Wer im dunklen Raum mit offenem Vorhang **bleibt**, für den wird alle **6 s**
+>   neu gewürfelt (**25 %**, beim Betreten weiter 70 %). Pause nach einem Besuch **45 s** statt 90 s, er schwebt
+>   schneller heran (1,6 statt 1,1 m/s) und kommt schneller herein (1,1 statt 0,8 m/s). Gilt auch für Gäste.
 > **Noch nicht:** Einstellung für den Blickzug. Modell: `temp/Meshy_AI_floating_ghost_3d_…glb` – Laken mit Mundloch, ~1,9 m, zwei
 > blutige Hände nach vorn gestreckt. **Gerigget (2026-10-17):** `tools/build_ghost.py` → `assets/models/ghost.glb`
 > (0,8 MB, 512er-Textur, alle 10 159 Dreiecke behalten, damit die Finger heil bleiben) mit Saum, Rumpf, Kopf,

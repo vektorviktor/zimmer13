@@ -20,15 +20,18 @@ enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN }
 const MODEL := "res://assets/models/ghost.glb"
 
 # --- Tuning -------------------------------------------------------------------
+const FROM_DAY := 2                   ## spukt ab diesem Tag (oder schon nach dem ersten Angriff)
 const SPAWN_CHANCE := 0.7             ## beim Betreten eines dunklen Raums mit offenem Vorhang
-const COOLDOWN := 90.0                ## frühestens wieder nach so vielen Sekunden
+const STAY_CHANCE := 0.25             ## … und alle STAY_EVERY Sekunden, solange man darin bleibt
+const STAY_EVERY := 6.0
+const COOLDOWN := 45.0                ## frühestens wieder nach so vielen Sekunden
 const CHECK_EVERY := 0.5
 const WINDOW_RANGE := 7.0             ## so nah am Fenster (und mit freier Sicht darauf) muss man sein
 const START_DISTANCE := 7.0           ## so weit draußen taucht er auf
 const STOP_OUTSIDE := 1.4             ## 1. Mal: bleibt so weit vor der Scheibe
 const STOP_AT_GLASS := 0.32           ## ab dem 2. Mal: Hände an der Scheibe
-const FLOAT_SPEED := 1.1
-const INSIDE_SPEED := 0.8
+const FLOAT_SPEED := 1.6
+const INSIDE_SPEED := 1.1
 const HOVER_TIME := [1.5, 4.5, 1.2]   ## 1. Mal, 2. Mal, ab 3. Mal (dann kommt er herein)
 const APPEAR_TIME := 0.8
 const FADE_TIME := 0.5
@@ -90,6 +93,7 @@ var _window: HotelWindow
 var _last_window: HotelWindow
 var _cooldown := 0.0
 var _check := 0.0
+var _stay := 0.0         ## bis zum nächsten Wurf, solange der Spieler im dunklen Raum bleibt
 var _timer := 0.0
 var _time := 0.0
 var _fade := 0.0
@@ -200,27 +204,41 @@ func _physics_process(delta: float) -> void:
 # --- Erscheinen ---------------------------------------------------------------------------
 
 ## Betritt der Spieler einen dunklen Raum mit Außenfenster (Vorhang offen – ab dem 4. Mal egal),
-## würfelt es einmal. Erst nach dem ersten Angriff des Monsters (friedlicher Anfang, 2.1).
+## würfelt es (SPAWN_CHANCE); bleibt er darin, alle STAY_EVERY Sekunden erneut (STAY_CHANCE).
+## Ab Tag FROM_DAY oder nach dem ersten Angriff des Monsters (der Anfang bleibt friedlich, 2.1).
 func _check_spawn() -> void:
 	var player := Game.player
 	var director := Game.director
 	if director == null or Game.game_over:
 		return
-	if not (player.dead or player.hiding != null or player.in_dialog) and (director.first_attack_done or _force or _force_hall):
+	if not (player.dead or player.hiding != null or player.in_dialog) and (_haunting() or _force or _force_hall):
 		if _check_hall(player):
 			return
 		var eye := player.camera.global_position
 		var window := _window_near(eye, visits + 1)
+		var chance := 0.0
 		if window != _last_window:
 			_last_window = window
-			# in Gesellschaft kommt er nicht
-			if window != null and (_cooldown <= 0.0 or _force) and director.player_threat <= 0.0 \
-					and _witness_guests(eye, player).size() < WITNESSES and (_force or randf() < _spawn_chance()):
-				_force = false
-				_appear(window, player)
-				return
-	if director.first_attack_done or _force_guest != null:
+			_stay = STAY_EVERY
+			chance = _spawn_chance()
+		elif window != null:
+			_stay -= CHECK_EVERY
+			if _stay <= 0.0:
+				_stay = STAY_EVERY
+				chance = minf(1.0, STAY_CHANCE + AWAKE_CHANCE * player.nights_awake)
+		# in Gesellschaft kommt er nicht
+		if window != null and (_cooldown <= 0.0 or _force) and director.player_threat <= 0.0 \
+				and _witness_guests(eye, player).size() < WITNESSES and (_force or randf() < chance):
+			_force = false
+			_appear(window, player)
+			return
+	if _haunting() or _force_guest != null:
 		_check_guests()
+
+
+## Spukt er schon? Ab Tag FROM_DAY oder nach dem ersten Angriff, je nachdem, was früher kommt.
+func _haunting() -> bool:
+	return Game.director.first_attack_done or Calendar.today() >= FROM_DAY
 
 
 ## Gäste behandelt er wie den Spieler (Spielkonzept 6.12): Steht ein wacher Gast in einem dunklen Raum mit
