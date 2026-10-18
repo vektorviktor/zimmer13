@@ -111,6 +111,9 @@ var _rematches: Array[Guest] = []
 var _challenge_timer := 45.0
 var _bar_game := {}                      ## laufende Partie zweier Gäste
 var _bar_timer := 25.0
+var _chess_watched := {}                 ## Gast-ID → du weißt, wie stark er Schach spielt
+var _chess_game := {}                    ## laufende Schachpartie zweier Gäste in der Lobby
+var _chess_timer := 40.0
 ## Spuren, von denen die Gäste erzählen: {kind, zone, time}
 var _reports: Array[Dictionary] = []
 ## Hotelkatzen (6.11): Gast-ID → Name der Katze, die ihm etwas weggetragen hat; ob schon eine geweint hat
@@ -125,6 +128,13 @@ var debug_fake_knock := false
 var _world: Node3D
 var _arrival_timer := -1.0
 var _next_guest := 1                     ## laufende Nummer für IDs erzeugter Gäste
+
+const CHESS_LINES := [
+	"%s schiebt die Dame vor. %s runzelt die Stirn.",
+	"%s: „Schach!“ – %s seufzt.",
+	"Es ist still am Schachtisch. %s grübelt, %s trommelt mit den Fingern.",
+	"%s schlägt einen Springer. %s murmelt etwas.",
+]
 
 const BAR_LINES := [
 	"%s: „Zweiundsechzig!“ – %s: „Glaub ich dir nicht!“",
@@ -645,10 +655,16 @@ func queue_rematch(guest: Guest) -> void:
 		_rematches.append(guest)
 
 
-func challenge(guest: Guest) -> void:
+## game: "dice" (Mäxchen an der Bar) oder "chess" (Schach in der Lobby)
+func challenge(guest: Guest, game: String = "dice") -> void:
 	guest.challenge_time = 30.0
 	guest.challenge_cooldown = 240.0
-	guest.say(guest.line("challenge"))
+	guest.challenge_game = game
+	guest.say(guest.line("chess_challenge" if game == "chess" else "challenge"))
+
+
+func has_watched_chess(guest: Guest) -> bool:
+	return _chess_watched.has(guest.id)
 
 
 func on_challenge_ignored(guest: Guest) -> void:
@@ -664,7 +680,8 @@ func _update_challenges(delta: float) -> void:
 		return
 	_challenge_timer = 20.0
 	var p := Game.player
-	if p == null or p.in_dialog or (Game.dice and Game.dice.active) or not Game.director.is_quiet(p.global_position, 25.0):
+	if p == null or p.in_dialog or (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active) \
+			or not Game.director.is_quiet(p.global_position, 25.0):
 		return
 	for guest in living_guests():
 		var g: Guest = guest
@@ -676,9 +693,14 @@ func _update_challenges(delta: float) -> void:
 			continue
 		if g in _rematches:
 			_rematches.erase(g)
-			challenge(g)
+			challenge(g, g.challenge_game)
 			return
 		var dice: Dictionary = g.profile["dice"]
+		var chess := ChessMatch.chess_profile(g)
+		var board := builder.chess_table.has_board(null)
+		if chess["likes"] and board and g.relation >= 30.0 and randf() < (0.15 if dice["likes"] else 0.25):
+			challenge(g, "chess")
+			return
 		if dice["likes"] and g.relation >= 30.0 and randf() < 0.25:
 			challenge(g)
 			return
@@ -733,6 +755,82 @@ func _update_bar_game(delta: float) -> void:
 		_end_bar_game(true)
 
 
+## Gäste spielen auch untereinander Schach (leise, lange Partien). Wer ≥ 30 s zusieht, weiß danach, wie
+## stark beide spielen – das steht dann schon bei der Einsatz-Frage.
+func _update_chess_game(delta: float) -> void:
+	var table := builder.chess_table
+	if _chess_game.is_empty():
+		_chess_timer -= delta
+		if _chess_timer > 0.0:
+			return
+		_chess_timer = 30.0
+		if table.busy or not table.has_board(null) or not Game.director.is_quiet(table.global_position, 25.0):
+			return
+		var free: Array = []
+		for guest in living_guests():
+			var g: Guest = guest
+			if g.state == Guest.State.IDLE and g.fear < 40.0 and not g.invited and ChessMatch.chess_profile(g)["likes"]:
+				free.append(g)
+		if free.size() < 2 or randf() > 0.3:
+			return
+		free.shuffle()
+		var a: Guest = free[0]
+		var b: Guest = free[1]
+		table.busy = true
+		a.sit_for_game(table.player_seat.global_position, table.top_center())
+		b.sit_for_game(table.guest_seat.global_position, table.top_center())
+		_chess_game = {"a": a, "b": b, "time": 0.0, "talk": 12.0, "watch": 0.0, "length": randf_range(70.0, 120.0)}
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Schach] %s gegen %s in der Lobby" % [a.display_name, b.display_name])
+		return
+	var ga: Guest = _chess_game["a"]
+	var gb: Guest = _chess_game["b"]
+	if ga.dead or gb.dead or ga.state != Guest.State.MINIGAME or gb.state != Guest.State.MINIGAME \
+			or not Game.director.is_quiet(table.global_position, 22.0):
+		_end_chess_game(false)
+		return
+	if not (ga.seated and gb.seated):
+		return
+	_chess_game["time"] = float(_chess_game["time"]) + delta
+	var dist := Game.player.global_position.distance_to(table.global_position) if Game.player else INF
+	if dist < 5.0:
+		_chess_game["watch"] = float(_chess_game["watch"]) + delta
+	_chess_game["talk"] = float(_chess_game["talk"]) - delta
+	if float(_chess_game["talk"]) <= 0.0:
+		_chess_game["talk"] = randf_range(14.0, 22.0)
+		if dist < 7.0:
+			var pair := [ga.display_name, gb.display_name]
+			pair.shuffle()
+			Game.say(String(CHESS_LINES[randi() % CHESS_LINES.size()]) % pair, 3.0)
+	if float(_chess_game["time"]) > float(_chess_game["length"]):
+		_end_chess_game(true)
+
+
+func _end_chess_game(completed: bool) -> void:
+	var ga: Guest = _chess_game["a"]
+	var gb: Guest = _chess_game["b"]
+	if completed:
+		# Der Stärkere gewinnt meistens
+		var sa := float(ChessMatch.chess_profile(ga)["skill"]) + randf_range(-0.3, 0.3)
+		var sb := float(ChessMatch.chess_profile(gb)["skill"]) + randf_range(-0.3, 0.3)
+		var winner := ga if sa >= sb else gb
+		var loser := gb if winner == ga else ga
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Schach] %s setzt %s matt (zugesehen %.0f s)" % [winner.display_name, loser.display_name, float(_chess_game["watch"])])
+		if Game.player and Game.player.global_position.distance_to(builder.chess_table.global_position) < 7.0:
+			Game.say("%s setzt %s matt." % [winner.display_name, loser.display_name], 3.5)
+		if float(_chess_game["watch"]) > 30.0 and not (has_watched_chess(ga) and has_watched_chess(gb)):
+			_chess_watched[ga.id] = true
+			_chess_watched[gb.id] = true
+			Game.say("Du hast zugesehen: %s %s, %s %s." % [ga.display_name, ChessMatch.strength_text(ga),
+				gb.display_name, ChessMatch.strength_text(gb)], 4.5)
+	for g in [ga, gb]:
+		if not g.dead:
+			g.end_game()
+	builder.chess_table.busy = false
+	_chess_game = {}
+
+
 func _end_bar_game(completed: bool) -> void:
 	var ga: Guest = _bar_game["a"]
 	var gb: Guest = _bar_game["b"]
@@ -770,6 +868,7 @@ func _process(delta: float) -> void:
 	_update_arrivals(delta)
 	_update_knocking(delta)
 	_update_bar_game(delta)
+	_update_chess_game(delta)
 	_update_challenges(delta)
 	_update_sleep(delta)
 	_check_timer -= delta

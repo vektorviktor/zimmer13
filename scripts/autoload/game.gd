@@ -23,6 +23,7 @@ var audio: SynthAudio
 var social: Social
 var dialog: DialogUI
 var dice: DiceMatch
+var chess: ChessMatch
 var menus: Menus
 var traces: Traces
 var phones: PhoneCalls

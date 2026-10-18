@@ -13,6 +13,7 @@ var _name: Label
 var _text: Label
 var _options: GridContainer
 var _buttons: Array[Button] = []
+var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dice" oder "chess")
 
 
 func _ready() -> void:
@@ -115,7 +116,8 @@ func _show_main() -> void:
 		_option("Tschüss", close)
 		return
 	if guest.challenge_time > 0.0:
-		_option("Herausforderung annehmen", _show_stakes)
+		_option("Herausforderung annehmen (%s)" % ("Schach" if guest.challenge_game == "chess" else "Mäxchen"),
+			_show_stakes.bind(guest.challenge_game))
 	_option("Plaudern", _chat)
 	if Game.director.first_attack_done:
 		_option("Über das Monster reden", _talk_monster)
@@ -123,7 +125,9 @@ func _show_main() -> void:
 		_option("Ist dir hier etwas aufgefallen?", _talk_odd)
 	_option("Handeln", _show_trade)
 	if Game.dice and Game.dice.table.has_cup(player) and not Game.dice.table.busy:
-		_option("Mäxchen an der Bar spielen", _show_stakes)
+		_option("Mäxchen an der Bar spielen", _show_stakes.bind("dice"))
+	if Game.chess and Game.chess.table.has_board(player) and not Game.chess.table.busy:
+		_option("Schach in der Lobby spielen", _show_stakes.bind("chess"))
 	if player.held and player.held.kind != Item.Kind.KEY:
 		_option("%s schenken" % player.held.display_name, _gift)
 	_option("Hast du Deko für mich?", _ask_deco)
@@ -154,47 +158,56 @@ func _show_trade() -> void:
 	_option("Zurück", _show_main)
 
 
-## Einsatz aushandeln (Spielkonzept 6.10)
-func _show_stakes() -> void:
-	var reason: String = Game.dice.why_not(guest)
+## Einsatz aushandeln (Spielkonzept 6.10). game: "dice" (Mäxchen) oder "chess" (Schach)
+func _show_stakes(game: String) -> void:
+	_game = game
+	var match_ui: Node = Game.chess if game == "chess" else Game.dice
+	var reason: String = match_ui.why_not(guest)
 	if reason != "":
 		_say(reason)
 		_show_main()
 		return
 	_clear()
 	_say("Um was spielen wir?")
+	if game == "chess" and Game.social.has_watched_chess(guest):
+		_name.text = "%s – %s (du hast zugesehen)" % [guest.display_name, ChessMatch.strength_text(guest)]
 	_option("Nur zum Spaß", _play.bind(0, false))
 	for amount in [3, 8]:
 		_option("Um %d Geld" % amount, _play.bind(amount, false), Game.money < amount)
-	if Game.dice.can_stake_item(guest):
+	if match_ui.can_stake_item(guest):
 		_option("Um %s (deine Hand)" % Game.player.held.display_name, _play.bind(0, true))
 	_option("Doch nicht", _show_main)
 
 
 func _play(money: int, with_item: bool) -> void:
-	var dice: Dictionary = guest.profile["dice"]
-	var challenged := guest.challenge_time > 0.0
+	var chess := _game == "chess"
+	var prefix := "chess_" if chess else "dice_"
+	var likes := bool((ChessMatch.chess_profile(guest) if chess else guest.profile["dice"])["likes"])
+	var challenged := guest.challenge_time > 0.0 and guest.challenge_game == _game
 	if guest.relation <= -30.0 and not challenged:
-		_say(guest.line("dice_no"))
+		_say(guest.line(prefix + "no"))
 		_show_main()
 		return
 	if money > guest.money:
 		_say("So viel Geld hab ich nicht.")
-		_show_stakes()
+		_show_stakes(_game)
 		return
 	if money == 0 and not with_item and float(guest.profile["greed"]) > 0.8:
 		_say("Ohne Einsatz? Langweilig.")
-		_show_stakes()
+		_show_stakes(_game)
 		return
-	if not dice["likes"] and guest.relation < 0.0 and not challenged:
-		_say(guest.line("dice_no"))
+	if not likes and guest.relation < 0.0 and not challenged:
+		_say(guest.line(prefix + "no"))
 		_show_main()
 		return
 	guest.challenge_time = 0.0
 	var opponent := guest
-	opponent.say(opponent.line("dice_yes"))
+	opponent.say(opponent.line(prefix + "yes"))
 	close()
-	Game.dice.start(opponent, {"money": money, "item": with_item})
+	if chess:
+		Game.chess.start(opponent, {"money": money, "item": with_item})
+	else:
+		Game.dice.start(opponent, {"money": money, "item": with_item})
 
 
 # --- Aktionen ---------------------------------------------------------------------
@@ -381,6 +394,8 @@ func _kind_name(kind: int) -> String:
 			return "Würfelbecher"
 		Item.Kind.LOADED_DICE:
 			return "Gezinkte Würfel"
+		Item.Kind.CHESS_BOARD:
+			return "Schachbrett"
 	return "Etwas"
 
 

@@ -69,6 +69,7 @@ var money := 0
 var seated := false          ## sitzt am Spieltisch
 var challenge_time := 0.0    ## > 0: hat dich gerade herausgefordert (Sekunden bis es verfällt)
 var challenge_cooldown := 0.0
+var challenge_game := "dice"  ## wozu er herausfordert: "dice" (Mäxchen) oder "chess" (Spielkonzept 6.10)
 var state := State.IDLE
 var gen_seed := -1           ## ≥ 0: zufällig erzeugter Gast (GuestGenerator)
 var corpse := false          ## tot, liegt aber noch da (Lakengeist, Spielkonzept 6.12)

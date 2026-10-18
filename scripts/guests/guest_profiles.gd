@@ -27,6 +27,7 @@ const ALL := {
 		"reliable": 0.5, "clothing": "Ednas Strickschal", "shock": "flee",
 		"report": "Ich habe %s gesehen … bei %s. Glaube ich. Oder habe ich das geträumt?",
 		"dice": {"likes": false, "honesty": 0.9, "jump": 1, "perception": 0.15, "pride": 0.1, "tell": "Edna kichert nervös und schaut weg."},
+		"chess": {"likes": true, "skill": 0.6, "pride": 0.1},
 		"lines": {
 			"greet_friend": ["Ach, du bist es! Schön, ein freundliches Gesicht zu sehen."],
 			"greet": ["Oh! Du hast mich erschreckt.", "Guten Abend … falls es Abend ist. Die Uhren hier stehen alle."],
@@ -56,6 +57,11 @@ const ALL := {
 			"challenge": ["Hättest du Lust auf eine Runde Würfeln an der Bar? Ganz gemütlich."],
 			"caught_cheat": ["Du … du hast geschummelt! Das tut weh."],
 			"patronized": ["Du hast mich gewinnen lassen. Ich bin alt, nicht dumm."],
+			"chess_yes": ["Schach! Mein seliger Mann hat es mir beigebracht. Ich nehme Schwarz."],
+			"chess_no": ["Heute nicht, Liebes. Mir schwirrt der Kopf."],
+			"chess_win": ["Matt! Ach, das hat mein Mann immer gehasst."],
+			"chess_lose": ["Sehr schön gespielt. Du hast Geduld, das mag ich."],
+			"chess_challenge": ["Spielst du Schach? In der Lobby steht ein Brett. Ganz gemütlich."],
 		},
 	},
 	"bruno": {
@@ -71,6 +77,7 @@ const ALL := {
 		"reliable": 0.9, "clothing": "Brunos Hut", "shock": "freeze",
 		"report": "Da waren %s, bei %s. Na und? Wahrscheinlich nur Dreck.",
 		"dice": {"likes": true, "honesty": 0.45, "jump": 2, "perception": 0.35, "pride": 0.85, "tell": "Bruno zieht den Mundwinkel hoch."},
+		"chess": {"likes": false, "skill": 0.35, "pride": 0.85},
 		"lines": {
 			"greet_friend": ["Na, Partner. Was brauchst du?"],
 			"greet": ["Hm. Was gibt's?", "Mach's kurz."],
@@ -100,6 +107,11 @@ const ALL := {
 			"challenge": ["Revanche! Bar. Jetzt.", "Na, Lust, dein Geld loszuwerden? Mäxchen an der Bar."],
 			"caught_cheat": ["Gezinkte Würfel?! Der Pott gehört mir – und das vergess ich dir nicht!"],
 			"patronized": ["Willst du mich verarschen? Ich brauch keine Almosen."],
+			"chess_yes": ["Schach. Meinetwegen. Aber nur mit Einsatz."],
+			"chess_no": ["Schach ist was für Leute mit zu viel Zeit."],
+			"chess_win": ["Matt. Hab ich doch gesagt."],
+			"chess_lose": ["Pff. Dein Läufer stand da nur aus Zufall."],
+			"chess_challenge": ["Revanche. Schachbrett. Lobby. Jetzt."],
 		},
 	},
 	"mila": {
@@ -115,6 +127,7 @@ const ALL := {
 		"reliable": 0.65, "clothing": "Milas Halstuch", "shock": "cry",
 		"report": "Ich schwör's dir: %s, bei %s! Riesig! Überall!",
 		"dice": {"likes": true, "honesty": 0.6, "jump": 1, "perception": 0.55, "pride": 0.4, "tell": "Mila spielt auffällig mit einer Haarsträhne."},
+		"chess": {"likes": true, "skill": 0.85, "pride": 0.4},
 		"lines": {
 			"greet_friend": ["Hey du! Ich hab gerade einen neuen Kürbis geschnitzt – willst du sehen?"],
 			"greet": ["Oh, hi! Bist du auch hier gestrandet?", "Hallo! Hast du schon gehört, was Edna erzählt?"],
@@ -144,6 +157,11 @@ const ALL := {
 			"challenge": ["Hey! Mäxchen an der Bar? Ich will wissen, wie gut du lügst."],
 			"caught_cheat": ["Schummler! Das erzähl ich allen!"],
 			"patronized": ["Haha, sehr witzig. Du hast extra verloren, oder?"],
+			"chess_yes": ["Schach? Oh ja! Ich war im Schachclub, nur damit du's weißt."],
+			"chess_no": ["Nee, nicht jetzt – ich kann mich grad nicht konzentrieren."],
+			"chess_win": ["Matt! Hab ich dir doch gesagt – Schachclub!"],
+			"chess_lose": ["Wow. Okay. Revanche, irgendwann. Ehrlich, gut gespielt!"],
+			"chess_challenge": ["Hey! Lust auf Schach in der Lobby? Ich will sehen, wie du denkst."],
 		},
 	},
 }

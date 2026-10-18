@@ -55,6 +55,9 @@ extends Node3D
 ##                               Lakengeist kommt zum N. Mal an sein dunkles Zimmerfenster (ab 3 würgt er) –
 ##                               mit --talk=id erzählt er danach davon
 ##   --dice=id                   sofort Mäxchen mit dem Gast (Einsatz 3 Geld)
+##   --chess=id                  sofort Schach mit dem Gast in der Lobby (Einsatz 3 Geld; mit --autoplay zieht der Spieler selbst)
+##   --challenge=id[,chess]      Gast fordert dich heraus (Mäxchen bzw. Schach)
+##   --autoplay                  Mäxchen-Antworten bzw. Schachzüge automatisch wählen
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
 ##   --shot-on=reveal|jumpscare|strangle|shock  Screenshot kurz nach einem Ereignis statt nach n Frames
@@ -152,6 +155,12 @@ func _ready() -> void:
 	add_child(dice)
 	Game.dice = dice
 
+	var chess := ChessMatch.new()
+	chess.name = "ChessMatch"
+	chess.table = builder.chess_table
+	add_child(chess)
+	Game.chess = chess
+
 	var hud := Hud.new()
 	hud.name = "Hud"
 	add_child(hud)
@@ -211,6 +220,10 @@ func _apply_settings() -> void:
 func _process(_delta: float) -> void:
 	if _autoplay and Engine.get_process_frames() % 100 == 0 and Game.dice.active:
 		print("[Mäxchen] " + Game.dice.debug_press_random())
+	if _autoplay and Engine.get_process_frames() % 30 == 0 and Game.chess.active:
+		var step := Game.chess.debug_step()
+		if step != "":
+			print("[Schach] " + step)
 	if _trace:
 		_trace_frames += 1
 		if _trace_frames % 120 == 0:
@@ -389,8 +402,13 @@ func run_debug(arg: String) -> bool:
 		var opponent := Game.social.guest_by_id(arg.substr(7))
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:
 			Game.dice.start(opponent, {"money": 3, "item": false}))
+	elif arg.begins_with("--chess="):
+		var chess_opponent := Game.social.guest_by_id(arg.substr(8))
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			Game.chess.start(chess_opponent, {"money": 3, "item": false}))
 	elif arg.begins_with("--challenge="):
-		Game.social.challenge(Game.social.guest_by_id(arg.substr(12)))
+		var challenger := Game.social.guest_by_id(arg.substr(12).split(",")[0])
+		Game.social.challenge(challenger, "chess" if arg.ends_with(",chess") else "dice")
 	elif arg == "--autoplay":
 		_autoplay = true
 	elif arg.begins_with("--cat="):

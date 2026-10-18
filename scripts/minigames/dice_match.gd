@@ -25,10 +25,7 @@ var _player_dice: Array[int] = []
 var _player_bluffs := 0        ## macht den Gast misstrauischer
 var _cheat_used := false
 var _threw_game := false
-var _pot: Item
-var _player_item: Item
-var _guest_item: Item
-var _pot_value := 0
+var _stakes := TableStakes.new()
 var _waiting_for_seat := false
 var _abort_timer := -1.0
 var _over := false
@@ -105,17 +102,14 @@ func start(p_guest: Guest, stake: Dictionary) -> void:
 	_player_bluffs = 0
 	_threw_game = false
 	_abort_timer = -1.0
-	_pot = null
-	_player_item = null
-	_guest_item = null
-	_pot_value = 0
+	_stakes = TableStakes.new()
 	var player := Game.player
 	# Becher auf den Tisch, falls du ihn in der Hand hast
 	if player.held_kind() == Item.Kind.DICE_CUP:
 		var cup := player.held
 		player.drop_held()
 		cup.global_position = table.top_center() + Vector3(-0.15, 0.01, 0.0)
-	_place_stakes(stake)
+	_stakes.place(table, guest, stake)
 	player.sit_at(table.player_seat.global_position, table.top_center())
 	guest.sit_for_game(table.guest_seat.global_position, table.top_center())
 	visible = true
@@ -366,7 +360,7 @@ func _finish() -> void:
 		if float(dice["pride"]) > 0.5:
 			guest.challenge_cooldown = randf_range(90.0, 150.0)
 			Game.social.queue_rematch(guest)
-		_take_stakes_for_player()
+		_stakes.take_for_player()
 	else:
 		line = guest.line("dice_win")
 		if _score_player == 1:
@@ -380,7 +374,7 @@ func _finish() -> void:
 		_give_stakes_to_guest()
 	Game.social.change_relation(guest, change)
 	var stakes_text := ""
-	if player_won and (is_instance_valid(_pot) or is_instance_valid(_guest_item) or is_instance_valid(_player_item)):
+	if player_won and _stakes.any_left():
 		stakes_text = " Die Einsätze liegen auf dem Tisch – nimm sie dir."
 	_say("%s: „%s“%s" % [guest.display_name, line, stakes_text])
 	_clear()
@@ -389,10 +383,7 @@ func _finish() -> void:
 
 func _abort(message: String) -> void:
 	_over = true
-	# Einsätze bleiben liegen – sie gehören jetzt niemandem
-	for item in [_pot, _player_item, _guest_item]:
-		if is_instance_valid(item):
-			item.owner_id = ""
+	_stakes.abandon()   # Einsätze bleiben liegen – sie gehören jetzt niemandem
 	_say(message)
 	_clear()
 	_option("Aufstehen", _end)
@@ -409,73 +400,14 @@ func _end() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
-# --- Einsätze ------------------------------------------------------------------------
-
-func _place_stakes(stake: Dictionary) -> void:
-	var money := int(stake.get("money", 0))
-	if money > 0:
-		Game.money -= money
-		guest.money -= money
-		_pot_value = money * 2
-		_pot = Item.create(Item.Kind.COINS, str(_pot_value))
-		_pot.owner_id = "stake"
-		get_parent().add_child(_pot)
-		_pot.global_position = table.stake_spot(0)
-	if stake.get("item", false) and Game.player.held:
-		_player_item = Game.player.held
-		Game.player.drop_held()
-		_player_item.global_position = table.stake_spot(-1)
-		_player_item.owner_id = "stake"
-		var kind := _guest_counter_stake(_player_item.price())
-		if kind >= 0:
-			guest.stock[kind] = int(guest.stock[kind]) - 1
-			_guest_item = Item.create(kind)
-			_guest_item.owner_id = "stake"
-			get_parent().add_child(_guest_item)
-			_guest_item.global_position = table.stake_spot(1)
-
-
-## Was legt der Gast gegen deinen Gegenstand? Etwas Gleichwertiges aus seinem Koffer.
-func _guest_counter_stake(value: int) -> int:
-	var best := -1
-	var best_diff := 999
-	for kind in guest.stock:
-		if int(guest.stock[kind]) <= 0:
-			continue
-		var diff := absi(int(Item.PRICES.get(kind, 1)) - value)
-		if diff < best_diff:
-			best_diff = diff
-			best = kind
-	return best
-
+# --- Einsätze (TableStakes) ----------------------------------------------------------
 
 func can_stake_item(p_guest: Guest) -> bool:
-	var held := Game.player.held
-	if held == null or held.kind == Item.Kind.KEY or held.kind == Item.Kind.DICE_CUP:
-		return false
-	for kind in p_guest.stock:
-		if int(p_guest.stock[kind]) > 0:
-			return true
-	return false
-
-
-func _take_stakes_for_player() -> void:
-	for item in [_pot, _player_item, _guest_item]:
-		if is_instance_valid(item):
-			item.owner_id = "player"
+	return TableStakes.can_stake_item(p_guest, Item.Kind.DICE_CUP)
 
 
 func _give_stakes_to_guest() -> void:
-	if is_instance_valid(_pot):
-		guest.money += _pot_value
-		_pot.queue_free()
-	for item in [_player_item, _guest_item]:
-		if is_instance_valid(item):
-			guest.stock[item.kind] = int(guest.stock.get(item.kind, 0)) + 1
-			item.queue_free()
-	_pot = null
-	_player_item = null
-	_guest_item = null
+	_stakes.give_to_guest(guest)
 
 
 ## Für automatische Tests: eine zufällige Option wählen. Gibt Titel + Text zurück.
@@ -507,13 +439,7 @@ func _rattle() -> void:
 func _update_title() -> void:
 	if guest == null:
 		return
-	var stakes: Array[String] = []
-	if _pot_value > 0:
-		stakes.append("%d Geld" % _pot_value)
-	if is_instance_valid(_player_item):
-		stakes.append(_player_item.display_name)
-	if is_instance_valid(_guest_item):
-		stakes.append(_guest_item.display_name)
+	var stakes := _stakes.labels()
 	_title.text = "Mäxchen mit %s   ·   Du %d : %d %s   ·   Einsatz: %s" % [guest.display_name,
 		_score_player, _score_guest, guest.display_name, "keiner" if stakes.is_empty() else ", ".join(stakes)]
 

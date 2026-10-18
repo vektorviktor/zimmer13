@@ -17,7 +17,7 @@ extends RigidBody3D
 ## bis man sie aufhebt – dann wandern sie an den Körper des Spielers (Player.has_compass,
 ## map_pages, keyring; Spielkonzept 3.2).
 
-enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER }
+enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -28,7 +28,7 @@ const HAND_ONLY_KEYS := ["ausgang"]
 const PRICES := {
 	Kind.PUMPKIN: 4, Kind.CARVED_PUMPKIN: 10, Kind.CANDLE: 3, Kind.COBWEB: 3,
 	Kind.LEAVES: 1, Kind.KNIFE: 5, Kind.KEY: 0, Kind.COINS: 0, Kind.DICE_CUP: 2, Kind.LOADED_DICE: 6, Kind.BULB: 4, Kind.CLOTHING: 0, Kind.COMPASS: 6, Kind.MAP: 2,
-	Kind.FLASHLIGHT: 8, Kind.BATTERY: 3, Kind.UV_FILTER: 12,
+	Kind.FLASHLIGHT: 8, Kind.BATTERY: 3, Kind.UV_FILTER: 12, Kind.CHESS_BOARD: 4,
 }
 
 var kind: Kind = Kind.PUMPKIN
@@ -471,6 +471,17 @@ func _build(extra: String) -> void:
 			ring.rotation.y = 0.2
 			var violet := Color(0.45, 0.22, 1.0)
 			Geo.mesh(self, Geo.cylinder(0.029, 0.004, 8), Mat.psx(Color(0.3, 0.15, 0.55), "", 1.0, violet, 0.6), Vector3(0, 0.037, 0))
+		Kind.CHESS_BOARD:
+			# Schachbrett (Spielkonzept 6.10): flacher Kasten, 8 × 8 Felder, die Figuren stehen im Kasten
+			display_name = "Schachbrett"
+			mass = 0.8
+			size = Vector3(0.36, 0.03, 0.36)
+			Geo.mesh(self, Geo.box(Vector3(0.36, 0.024, 0.36)), Mat.psx(Color(0.28, 0.16, 0.08)), Vector3(0, 0.012, 0))
+			var light := Mat.psx(Color(0.85, 0.78, 0.62))
+			var dark := Mat.psx(Color(0.32, 0.2, 0.12))
+			for i in 64:
+				var field := Vector3(-0.1575 + (i & 7) * 0.045, 0.0255, -0.1575 + (i >> 3) * 0.045)
+				Geo.mesh(self, Geo.box(Vector3(0.045, 0.003, 0.045)), light if ((i & 7) + (i >> 3)) % 2 == 0 else dark, field)
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size

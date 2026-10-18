@@ -155,6 +155,7 @@ var player_spawn := Vector3.ZERO
 var player_door_front := Vector3.ZERO
 var record_player_pos := Vector3(-1.5, 0.8, 5.8)
 var game_table: GameTable
+var chess_table: ChessTable
 var bar_spots: Array[Vector3] = [Vector3(-1.4, 0, 8.6), Vector3(-1.4, 0, 11.8), Vector3(-5.0, 0, 8.4)]
 var diary: Diary
 
@@ -667,6 +668,12 @@ func _lobby() -> void:
 	_candle(Vector3(-10.2, 0.4, 0.2))    # Couchtisch
 	_candle(Vector3(-11.85, 1.1, 5.65))  # Rezeption, neben dem Kürbis
 	_switch("lobby", "Lobby", Vector3(-0.12, 1.3, 2.2), -PI / 2.0)
+	# Schachtisch (Spielkonzept 6.10) vorn rechts in der Lobby, unter dem Fenster zum Garten
+	chess_table = ChessTable.new()
+	chess_table.position = Vector3(-2.3, 0, -4.7)
+	chess_table.rotation.y = PI / 2.0
+	root.add_child(chess_table)
+	_item(Item.Kind.CHESS_BOARD, Vector3(-2.3, 0.77, -4.7))
 	for i in 6:
 		var a := TAU * i / 6.0
 		party_spots.append(Vector3(-4.0 + cos(a) * 1.6, 0, sin(a) * 1.6))

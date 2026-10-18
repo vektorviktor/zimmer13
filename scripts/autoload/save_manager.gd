@@ -22,7 +22,8 @@ const DIR := "user://saves/"
 ## 11: Schreck & Erlebnisse der Gäste, Leichen, Lakengeist bei Gästen (corpse, ghost_visits, seen, experiences)
 ##     – Stände mit Version 10 laden weiter, die Gäste haben dann noch nichts erlebt
 ## 12: Nächte ohne Schlaf (player.nights_awake) – ältere Stände laden weiter, der Spieler gilt als ausgeschlafen
-const VERSION := 12
+## 13: Schachbrett (Item.Kind.CHESS_BOARD) – in älteren Ständen bleibt das Brett vom Start auf dem Schachtisch
+const VERSION := 13
 const MIN_VERSION := 10
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -138,7 +139,7 @@ func is_safe_for_autosave() -> bool:
 	var p := Game.player
 	if p == null or p.dead or p.hiding != null or p.in_dialog or Game.game_over:
 		return false
-	if Game.dice and Game.dice.active:
+	if (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active):
 		return false
 	if Game.menus and Game.menus.is_open():
 		return false
@@ -285,7 +286,7 @@ func collect() -> Dictionary:
 	for door_front in social._memorial_doors:
 		memorials.append(_v(door_front))
 	data["social"] = {
-		"thefts_ago": thefts, "memorials": memorials, "watched": social._watched.keys(),
+		"thefts_ago": thefts, "memorials": memorials, "watched": social._watched.keys(), "chess_watched": social._chess_watched.keys(),
 		"party_cooldown": social._party_cooldown, "roster": social.roster_state(),
 		"arrival_timer": social._arrival_timer,
 		"cat_thefts": social.cat_thefts, "cats_have_cried": social.cats_have_cried,
@@ -422,8 +423,11 @@ func apply(data: Dictionary) -> void:
 	Game.player.held = null
 	for guest in Game.social.guests:
 		guest.held = null
+	var keep_board := int(data.get("version", VERSION)) < 13   # gab es damals noch nicht
 	for node in tree.get_nodes_in_group("items"):
 		var item := node as Item
+		if keep_board and item.kind == Item.Kind.CHESS_BOARD:
+			continue
 		item.remove_from_group("items")
 		item.queue_free()
 	for entry in data.get("items", []):
@@ -469,6 +473,9 @@ func apply(data: Dictionary) -> void:
 	social._watched = {}
 	for id in sd.get("watched", []):
 		social._watched[id] = true
+	social._chess_watched = {}
+	for id in sd.get("chess_watched", []):
+		social._chess_watched[id] = true
 	social._party_cooldown = float(sd.get("party_cooldown", 150.0))
 	social.cat_thefts = (sd.get("cat_thefts", {}) as Dictionary).duplicate()
 	social.cats_have_cried = bool(sd.get("cats_have_cried", false))

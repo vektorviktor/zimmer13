@@ -84,7 +84,7 @@ func close() -> void:
 	UiKit.clear(_root)
 	_root.visible = false
 	get_tree().paused = false
-	var keep_mouse := (Game.dialog and Game.dialog.visible) or (Game.dice and Game.dice.active)
+	var keep_mouse := (Game.dialog and Game.dialog.visible) or (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if keep_mouse else Input.MOUSE_MODE_CAPTURED
 
 

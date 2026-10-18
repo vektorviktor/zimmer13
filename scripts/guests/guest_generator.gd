@@ -82,6 +82,29 @@ const COMMON := {
 }
 
 ## Charaktere: Wertebereiche (Vector2 = zufällig dazwischen), Vorlieben und eigene Sätze.
+## Schach (Spielkonzept 6.10): wie gern jeder Typ spielt, und seine Sätze dazu
+const CHESS_LIKES := {"ängstlich": 0.4, "geschäftstüchtig": 0.3, "Plaudertasche": 0.4, "Skeptiker": 0.85, "Bastler": 0.6, "Griesgram": 0.7}
+const CHESS_LINES := {
+	"ängstlich": {"chess_yes": ["Schach ist gut. Da ist es so schön still."], "chess_no": ["Ich kann mich gerade auf nichts konzentrieren."],
+		"chess_win": ["Oh … ich habe gewonnen? Entschuldige."], "chess_lose": ["Danke. Das hat mich abgelenkt."],
+		"chess_challenge": ["Würdest du … eine Partie Schach mit mir spielen? In der Lobby, da ist Licht."]},
+	"geschäftstüchtig": {"chess_yes": ["Schach? Gut – aber nur mit Einsatz."], "chess_no": ["Schach bringt kein Geld."],
+		"chess_win": ["Matt. Zahlen bitte."], "chess_lose": ["Glück. Reines Glück."],
+		"chess_challenge": ["Revanche am Schachbrett. Leg was drauf."]},
+	"Plaudertasche": {"chess_yes": ["Schach! Da können wir nebenbei so schön reden."], "chess_no": ["Ach, jetzt nicht, ich muss noch jemandem was erzählen!"],
+		"chess_win": ["Ups, Matt! Das muss ich gleich allen erzählen."], "chess_lose": ["Du spielst ja richtig gut! Wer hätte das gedacht."],
+		"chess_challenge": ["Spielst du Schach? Komm, eine Partie in der Lobby!"]},
+	"Skeptiker": {"chess_yes": ["Schach. Endlich etwas Logisches in diesem Hotel."], "chess_no": ["Nicht jetzt. Ich denke nach."],
+		"chess_win": ["Matt. Das war absehbar."], "chess_lose": ["Interessant. Diese Variante kannte ich nicht."],
+		"chess_challenge": ["Eine Partie Schach? Ich möchte wissen, ob du rechnen kannst."]},
+	"Bastler": {"chess_yes": ["Schach! Ich hab mal Figuren geschnitzt, weißt du."], "chess_no": ["Später, ich bastle gerade."],
+		"chess_win": ["Matt! Hehe."], "chess_lose": ["Schöner Zug, der letzte. Den merk ich mir."],
+		"chess_challenge": ["Lust auf Schach? Das Brett in der Lobby ist ein schönes altes Stück."]},
+	"Griesgram": {"chess_yes": ["Schach. Wenigstens redet man dabei nicht."], "chess_no": ["Lass mich in Ruhe mit deinem Brettkram."],
+		"chess_win": ["Matt. Und jetzt geh."], "chess_lose": ["Hm. Nicht schlecht."],
+		"chess_challenge": ["Du. Schach. Lobby. Oder hast du Angst?"]},
+}
+
 const ARCHETYPES := [
 	{
 		"kind": "ängstlich",
@@ -278,6 +301,12 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 	var w: Vector2 = WIDTH_CM[profile["sex"]]
 	profile["width_cm"] = rng.randf_range(w.x, w.y)
 	profile["build"] = rng.randf_range(-0.6, 1.0)
+	# Schach (Spielkonzept 6.10): Lust und Spielstärke 0..1, Stolz wie beim Würfeln
+	var chess_likes := rng.randf() < float(CHESS_LIKES.get(arche["kind"], 0.4))
+	profile["chess"] = {"likes": chess_likes, "skill": rng.randf(), "pride": profile["dice"]["pride"]}
+	var chess_lines: Dictionary = CHESS_LINES.get(arche["kind"], {})
+	for key in chess_lines:
+		lines[key] = chess_lines[key]
 	return profile
 
 

@@ -963,7 +963,28 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Beziehung:** fair spielen ↑, Lieblingsspiel ↑↑, gewinnen gegen Stolze ↓, knapp verlieren ↑, absichtlich verlieren: bemerkt ↓ / unbemerkt ↑.
 - **Schummeln:** gezinkte Würfel (Zimmer 17) in den Becher schmuggeln → „Gezinkt nachwürfeln“; erwischt: Beziehung ↓↓, Gerücht, Gast nimmt den ganzen Einsatz.
 - **Monster:** jeder Wurf macht Lärm (Neugier ↑ an der Bar); am Tisch ist man konzentriert → Flackern/Rauschen nur halb so stark sichtbar; bei Vorwarnung springt der Gast auf (Mutige später) – die Einsätze bleiben liegen und gehören niemandem mehr.
-- Noch offen: Möbel als Einsatz, Wettschulden, weitere Spiele (Schach, Karten, Schnitz-Duell …).
+- Noch offen: Möbel als Einsatz, Wettschulden, weitere Spiele (Karten, Schnitz-Duell …).
+
+**Umsetzungsstand (entschieden und umgesetzt 2026-10-18): Schach in der Lobby** – „wie Mäxchen“
+- **Schachtisch** in der Lobby (vorn rechts, unter dem Gartenfenster), zwei Hocker. Das **Schachbrett** ist ein
+  normaler Gegenstand – ohne Brett am Tisch kein Schach (man kann es wegtragen oder mitbringen).
+- **Spielen:** Du spielst **Weiß**. Das Brett erscheint **von oben**: Figur anklicken, dann Zielfeld (Bauern werden
+  automatisch zur Dame). Volle Regeln inklusive Rochade, en passant, Patt, 50 Züge, dreifache Wiederholung.
+  Dazu **Remis anbieten** (ab Zug 10, der Gast nimmt an, wenn er nicht klar besser steht), **aufgeben** und
+  **absichtlich verlieren**.
+- **Spielstärke je Gast:** Edna spielt ordentlich, Bruno schwach (und mag Schach nicht, ist aber stolz), Mila stark
+  (Schachclub). Zufallsgäste würfeln Lust (Skeptiker und Griesgrame am liebsten) und Stärke. Die KI rechnet 1–3
+  Halbzüge voraus und patzt je nach Stärke (45 % bis 5 % der Züge, mit Angst öfter). Schwache Gäste ohne Stolz
+  geben eine hoffnungslose Stellung auf.
+- **Einsätze, Beziehung, Revanche** wie bei Mäxchen: fair spielen ↑, Lieblingsspiel ↑↑, gewinnen gegen Stolze ↓
+  (die fordern Revanche), Remis ↑ und die Einsätze werden geteilt. Absichtlich verlieren merken gute Spieler eher,
+  besonders wenn du gut standest.
+- **Herausforderungen:** Wer Schach mag und dich mag, fordert dich auch zum Schach heraus.
+- **Gäste spielen untereinander** Schach (70–120 s, der Stärkere gewinnt meist). Wer **30 s zusieht**, weiß danach,
+  wie stark beide spielen – das steht dann schon bei der Frage nach dem Einsatz.
+- **Monster:** Schach ist **leise** (kein Lärm), aber man sitzt konzentriert (Flackern/Rauschen schwächer sichtbar).
+  Bei einer Vorwarnung springt der Gast auf, die Einsätze bleiben liegen.
+- Noch offen: die fehlende Dame als Suche (Idee oben), Dame/Mühle auf der Rückseite, Schachturnier bei Feiern.
 
 ---
 
@@ -1458,6 +1479,7 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 7g. ~~Angriffsabsicht & Flacker-Signal: Eine Flackerwelle vom Keller aus verrät mit ihrer Dauer, ob es sich umsieht, einen holt oder auf Raubzug geht (n Opfer ∝ 1/n², Flackern 1 + 2 × n s, Spieler zählt mit, täuscht manchmal) (4.17)~~ ✔ (2026-10-17)
 7h. ~~Lakengeist am Fenster: kommt bei Licht aus und offenem Vorhang, wird von Mal zu Mal dreister (Handabdrücke auf der Scheibe, Hypnose, kommt herein und würgt), verschwindet vor Zeugen in 0,5 s, ab dem 6. Mal im Flur, wenn alle schlafen (Nachtruhe zu zufälligen Zeiten) (4.18)~~ ✔ (2026-10-17)
 7i. ~~Lakengeist hartnäckiger: Losreißen kaum noch möglich, wartet vor dem Schrank und fliegt hinein, Schlafen im eigenen Bett, Schlafmangel lockt ihn – nach drei Nächten sicher im Flur (4.18)~~ ✔ (2026-10-18)
+7j. ~~Schach in der Lobby: Schachtisch und Brett, KI-Gegner mit Spielstärke je Gast, Einsätze, Herausforderungen, Gäste spielen untereinander (6.10)~~ ✔ (2026-10-18)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen
