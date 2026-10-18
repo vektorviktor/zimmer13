@@ -11,6 +11,9 @@ enum Style { CEILING, WALL }
 const BREAK_PER_FLICKER := 0.004     ## × Flackern² (Ankündigung, 0..1)
 const BREAK_NEAR_MONSTER := 0.012    ## × Nähe (1 direkt daneben, 0 ab 6 m)
 const MONSTER_RANGE := 6.0
+## Gesamthelligkeit aller Lampen: Stärke und Reichweite gegenüber den Werten im LevelBuilder
+const BRIGHTNESS := 1.35
+const REACH := 1.3
 
 var style := Style.CEILING
 var room_id := ""
@@ -31,8 +34,8 @@ var _break_timer := 0.0
 func setup(p_style: Style, p_room: String, p_energy: float, p_range: float, p_broken: bool) -> Lamp:
 	style = p_style
 	room_id = p_room
-	energy = p_energy
-	light_range = p_range
+	energy = p_energy * BRIGHTNESS
+	light_range = p_range * REACH
 	bulb_broken = p_broken
 	sparking = p_broken
 	return self

@@ -1190,8 +1190,8 @@ func _lantern(pos: Vector3, broken: bool, energy: float) -> void:
 	Geo.mesh(root, Geo.box(Vector3(0.25, 0.3, 0.25)), mat, pos + Vector3(0, 2.55, 0))
 	var light := FlickerLight.new()
 	light.position = pos + Vector3(0, 2.3, 0)
-	light.base_energy = energy
-	light.omni_range = 6.0
+	light.base_energy = energy * Lamp.BRIGHTNESS
+	light.omni_range = 6.0 * Lamp.REACH
 	light.light_color = Color(1.0, 0.75, 0.45)
 	light.shadow_enabled = true
 	light.broken = broken

@@ -256,7 +256,7 @@ func _setup_environment() -> void:
 	env.background_color = Color.BLACK
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.35, 0.38, 0.5)
-	env.ambient_light_energy = 0.1   # ohne Deckenlampen: dunkle Ecken bleiben als Umriss erkennbar
+	env.ambient_light_energy = 0.14  # ohne Deckenlampen: dunkle Ecken bleiben als Umriss erkennbar
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.02, 0.02, 0.03)
@@ -277,7 +277,7 @@ func _setup_environment() -> void:
 	# Schwaches Mondlicht – erhellt den Garten und fällt durch die Lobbyfenster
 	var moon := DirectionalLight3D.new()
 	moon.light_color = Color(0.55, 0.65, 1.0)
-	moon.light_energy = 0.18
+	moon.light_energy = 0.32
 	moon.shadow_enabled = true
 	moon.directional_shadow_max_distance = 40.0
 	moon.rotation = Vector3(deg_to_rad(-55.0), deg_to_rad(-30.0), 0.0)
