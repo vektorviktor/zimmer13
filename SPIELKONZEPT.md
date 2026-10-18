@@ -659,7 +659,9 @@ braucht), beim Ausprobieren festlegen.
 > eigenen Bett, Licht aus; schlafende Gäste sind keine Zeugen und bemerken nichts) und der Geist **im Flur** ab
 > dem 6. Mal, wenn alle schlafen. Außerdem sind die Zimmerfenster jetzt **breiter und deutlich höher**
 > (1,9 m breit, 0,75–3,05 m statt 1,4 m breit, 0,9–2,3 m).
-> **Noch nicht:** Gäste als Opfer, Einstellung für den Blickzug. Modell: `temp/Meshy_AI_floating_ghost_3d_…glb` – Laken mit Mundloch, ~1,9 m, zwei
+> **Gäste als Opfer (entschieden und umgesetzt 2026-10-18):** Er behandelt Gäste wie den Spieler, mit eigenem
+> Zähler je Gast; Erwürgte bleiben als Leiche liegen – siehe 6.12.
+> **Noch nicht:** Einstellung für den Blickzug. Modell: `temp/Meshy_AI_floating_ghost_3d_…glb` – Laken mit Mundloch, ~1,9 m, zwei
 > blutige Hände nach vorn gestreckt. **Gerigget (2026-10-17):** `tools/build_ghost.py` → `assets/models/ghost.glb`
 > (0,8 MB, 512er-Textur, alle 10 159 Dreiecke behalten, damit die Finger heil bleiben) mit Saum, Rumpf, Kopf,
 > Armen und je fünf Fingern à drei Gliedern. Schweben, Handkreisen und Würgen macht später der Code.
@@ -715,7 +717,7 @@ zum gefährlichsten Ort.
   Monsters? Bisher kennt das Konzept *ein* Monster, und die Geschichte (2.3) hängt daran.
 - **Befreien genau:** Wie viel Hin-und-Her reicht (z. B. drei Richtungswechsel in 1,5 s)? Hilft UV-Licht?
 - **Wie viele Zeugen genau:** einer oder zwei? Reicht es, dass sie im Raum sind, oder müssen sie ihn sehen?
-- **Gäste:** Kommt er auch zu Gästen, die bei sich das Licht aus und den Vorhang offen haben?
+- ~~**Gäste:** Kommt er auch zu Gästen, die bei sich das Licht aus und den Vorhang offen haben?~~ Ja, wie zum Spieler (2026-10-18, 6.12).
 - **Zähler:** gilt er für das ganze Hotel oder pro Zimmer? Wird er zurückgesetzt?
 - **Wechselwirkung mit dem Monster:** Darf der Geist kommen, während das Monster unterwegs ist?
 
@@ -850,6 +852,8 @@ Deko ist **Schutzmittel und Währung** zugleich.
   - Andere Gäste geraten in Panik, Dialoge ändern sich, die Feierstimmung in der Lobby kippt.
   - Monster ist gesättigt (4.10).
 - Evtl. Spuren: zerkratzte Tür, umgekippte Deko, ein einzelner Schuh im Flur – Andeutung statt Gore, passend zum diffusen Horror.
+- **Das Monster** lässt keine Leiche zurück, nur Blut und ein Kleidungsstück. **Der Lakengeist** (4.18) schon: Wen er
+  erwürgt, der bleibt liegen (2026-10-18). Wer Blut oder Leiche sieht, erschrickt und erzählt davon (6.12).
 
 ### 6.8 Schock & Trauer (Ideen – noch zu diskutieren)
 Stirbt ein Gast, mit dem man **gut befreundet** war, erleidet der Spieler einen **Schock** mit einem Malus. Stärke abhängig vom Beziehungswert.
@@ -987,6 +991,43 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Technik:** eigene Klasse ähnlich `Guest` (einfacher Zustandsautomat), interagierbar über
   `set_meta("interactable", self)`. Katzen gehören in den Spielstand (Position, Zustand) → neue Liste,
   kein Eingriff in die Reihenfolge der festen Welt-Objekte.
+
+### 6.12 Schreck & Erlebnisse (entschieden und umgesetzt 2026-10-18)
+Gäste reagieren **sichtbar erschrocken**, wenn sie etwas Schreckliches sehen, und erzählen dem Spieler später davon.
+
+**Was erschreckt**
+- **Blutlachen**, die das Monster hinterlässt, wenn es einen Gast holt (große Blutspur und Kleidungsstück – keine
+  Leiche). Kleine Blutstropfen verletzter Gäste erschrecken **nicht** (zu häufig).
+- **Leichen** gibt es nur vom **Lakengeist**: Ein erwürgter Gast bleibt liegen, wo er starb.
+- Der **Lakengeist** selbst – am eigenen Fenster oder als Zeuge, wenn er zu jemand anderem kommt.
+- Jeder Fund erschreckt einen Gast **nur einmal**. Schlafende und Versteckte sehen nichts.
+
+**Die Reaktion** – der Gast bleibt **2–5 Sekunden** stehen (je mutiger, desto kürzer) und starrt hin. Wie, liegt
+fest am Charakter, nicht am Zufall:
+
+| Reaktion | Wer | Danach |
+|----------|-----|--------|
+| **Hände hoch** (zitternd, weicht zurück) | ängstlich, geschäftstüchtig, Edna | rennt weg und versteckt sich |
+| **Starr vor Schreck** (Hand vor dem Mund) | Skeptiker, Griesgram, Bruno | macht weiter |
+| **Weinen** (zusammengesunken, Hände vorm Gesicht) | Plaudertasche, Bastler, Mila | geht weinend ins Zimmer |
+
+**Gesprächsthema:** Beim **nächsten Gespräch** erzählt der Gast zuerst davon (eigene Sätze je Reaktion: Blut,
+Leiche, Geist, Angriff des Geists). Danach kommt es **einen Spieltag lang** beim Reden über das Monster noch
+einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
+
+**Der Lakengeist behandelt Gäste wie den Spieler** (4.18):
+- Steht ein **wacher** Gast in einem Raum mit Außenfenster, **Licht aus, Vorhang offen** (meist: er ruht im eigenen
+  Zimmer), kommt er mit derselben Chance – mit **eigenem Zähler je Gast** (1. Mal heranschweben, 2. Handabdrücke
+  und Hypnose, ab 3. herein und würgen, ab 4. durch den Vorhang). Der Zähler des Spielers bleibt davon unberührt.
+- Ab der Hypnose bleibt der Gast **gebannt stehen**, statt wegzulaufen.
+- **Würgen:** Mutige reißen sich eher los (25 % + 50 % × Mut) und rennen in Panik davon, sonst **stirbt der Gast und
+  bleibt als Leiche liegen**. Im Hotel hört man nur ein abbrechendes Röcheln.
+- **Zeugen** vertreiben ihn wie beim Spieler – bei einem Gast zählt **auch der Spieler** als Zeuge. Wer ihn so
+  sieht, erschrickt ebenfalls.
+- Wer ihn erlebt hat, **lässt einen Tag lang den Vorhang zu** und ruht nicht im Dunkeln.
+- Zimmer ohne Außenfenster (z. B. Milas Zimmer 15) sind sicher.
+
+**Noch offen:** Werden Leichen irgendwann weggebracht (von Gästen, vom Monster)? Trauer der Gäste um Freunde (6.8)?
 
 ## 7. Spielwelt: Das Hotel
 

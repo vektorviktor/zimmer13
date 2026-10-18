@@ -19,7 +19,9 @@ const DIR := "user://saves/"
 ## 8: Hotelkatzen (Gruppe cats) – ältere Stände laden weiter, die Katzen beginnen an ihren Startplätzen
 ## 9: Milchglas zwischen Flur und Zimmern entfernt (Gruppe windows kleiner, Spuren hängen an Fenster-Indizes)
 ## 10: Deckenlampen entfernt, dafür Wandleuchten, zwei je Zimmer (Gruppe lamp_fixtures anders)
-const VERSION := 10
+## 11: Schreck & Erlebnisse der Gäste, Leichen, Lakengeist bei Gästen (corpse, ghost_visits, seen, experiences)
+##     – Stände mit Version 10 laden weiter, die Gäste haben dann noch nichts erlebt
+const VERSION := 11
 const MIN_VERSION := 10
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -271,6 +273,7 @@ func collect() -> Dictionary:
 			"chat_cooldown": g.chat_cooldown, "gift_cooldown": g.gift_cooldown,
 			"challenge_cooldown": g.challenge_cooldown, "monster_line": g.monster_line,
 			"held": _item_data(g.held) if g.held else null,
+			"corpse": g.corpse, "ghost_visits": g.ghost_visits, "seen": g.seen_sights, "experiences": g.experiences,
 		}
 	data["alive"] = alive
 	var social := Game.social
@@ -403,13 +406,16 @@ func apply(data: Dictionary) -> void:
 		g.gift_cooldown = float(d.get("gift_cooldown", 0.0))
 		g.challenge_cooldown = float(d.get("challenge_cooldown", 0.0))
 		g.monster_line = int(d.get("monster_line", 0))
+		g.ghost_visits = int(d.get("ghost_visits", 0))
+		g.seen_sights = (d.get("seen", []) as Array).duplicate()
+		g.experiences = (d.get("experiences", []) as Array).duplicate(true)
 		g.stock = {}
 		var stock: Dictionary = d["stock"]
 		for key in stock:
 			g.stock[int(key)] = int(stock[key])
 		g._set_idle(randf_range(1.0, 4.0))
 		if bool(d["dead"]):
-			g.die()
+			g.die("ghost" if bool(d.get("corpse", false)) else "monster")
 
 	# Gegenstände: alle Start-Gegenstände weg, dann aus dem Spielstand neu erzeugen
 	Game.player.held = null

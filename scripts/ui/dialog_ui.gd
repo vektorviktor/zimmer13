@@ -56,7 +56,13 @@ func open(p_guest: Guest) -> void:
 	var to := guest.global_position - Game.player.global_position
 	Game.player.rotation.y = atan2(-to.x, -to.z)
 	Game.player.head.rotation.x = -0.05
-	if guest.fear >= 60.0:
+	# Wer etwas Schlimmes erlebt hat, erzählt zuerst davon (Spielkonzept 6.12) – das Monster hört mit (4.7)
+	var experience := guest.untold_experience()
+	if not experience.is_empty():
+		experience["told"] = true
+		_say(Game.social.experience_line(guest, experience))
+		Game.social.on_monster_talk(guest)
+	elif guest.fear >= 60.0:
 		_say(guest.line("panic"))
 	elif guest.relation <= -50.0:
 		_say(guest.line("greet_enemy"))
@@ -215,7 +221,10 @@ func _talk_monster() -> void:
 	# Manchmal erzählt der Gast von Spuren – nicht immer zuverlässig (4.13)
 	var report := Game.social.report_line(guest)
 	var cat_tip := Game.social.cat_monster_line()
-	if report != "" and randf() < 0.5:
+	var experience := guest.recent_experience()   # eigenes Erlebnis vom selben Tag (6.12)
+	if not experience.is_empty() and randf() < 0.5:
+		_say(Game.social.experience_line(guest, experience, true))
+	elif report != "" and randf() < 0.5:
 		_say(report)
 	elif cat_tip != "" and randf() < 0.3:
 		_say(cat_tip)

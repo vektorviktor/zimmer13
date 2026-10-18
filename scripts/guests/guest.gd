@@ -7,8 +7,10 @@ extends CharacterBody3D
 ## Der Koffer („stock“) ist abstrakt; was er in der Hand hat, ist echt.
 ## Licht & Vorhänge (7.3): schaltet sein Zimmerlicht, zieht Vorhänge zu, wenn er Angst hat,
 ## ersetzt fehlende Glühbirnen – und klaut selbst welche.
+## Schreck (6.12): Sieht er eine Blutlache, eine Leiche oder den Lakengeist, bleibt er geschockt stehen –
+## je nach Charakter mit erhobenen Händen und Flucht, starr oder weinend – und erzählt später davon.
 
-enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP }
+enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP, SHOCKED, GHOSTED }
 
 const WALK_SPEED := 1.4
 const RUN_SPEED := 3.3
@@ -25,6 +27,21 @@ const MUD_STEPS := 14
 const BLEED_TIME := 45.0
 ## Tänze bei Feiern (`_dance_pose`)
 const DANCES := ["hüpfen", "wiegen", "drehen", "arme hoch", "twist", "schunkeln"]
+## Schreck (Spielkonzept 6.12): so weit sieht er Blut und Leichen, so oft schaut er sich um;
+## Reaktion je Charakter (feste Gäste: profile["shock"])
+const SHOCK_RANGE := 7.0
+const SHOCK_SCAN := 0.5
+const SHOCK_STYLES := {
+	"ängstlich": "flee", "geschäftstüchtig": "flee", "Plaudertasche": "cry", "Bastler": "cry",
+	"Skeptiker": "freeze", "Griesgram": "freeze",
+}
+const SHOCK_CRIES := {
+	"flee": ["Oh Gott! Nein, nein, nein!", "Hilfe! HILFE!", "Weg hier, nur weg!"],
+	"freeze": ["…", "Was zum …", "Das … das ist nicht wahr."],
+	"cry": ["Nein … *schluchzt*", "Oh nein, oh nein … *weint*", "Warum … *schluchzt*"],
+}
+## So viele Erlebnisse merkt er sich (die ältesten fallen heraus)
+const MAX_EXPERIENCES := 5
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
 
 var id := ""
@@ -51,6 +68,11 @@ var challenge_time := 0.0    ## > 0: hat dich gerade herausgefordert (Sekunden b
 var challenge_cooldown := 0.0
 var state := State.IDLE
 var gen_seed := -1           ## ≥ 0: zufällig erzeugter Gast (GuestGenerator)
+var corpse := false          ## tot, liegt aber noch da (Lakengeist, Spielkonzept 6.12)
+var ghost_visits := 0        ## so oft kam der Lakengeist schon zu ihm (Stufe, wie beim Spieler)
+var seen_sights: Array = []  ## Blutlachen und Leichen, die er schon gesehen hat (sight_key)
+## Eigene Erlebnisse: {kind (blood/corpse/ghost/ghost_attack), zone, who, at (Director.elapsed), told}
+var experiences: Array = []
 
 var agent: NavigationAgent3D
 var _collider: CollisionShape3D
@@ -90,6 +112,11 @@ var _bleeding := 0.0
 var _step_dist := 0.0
 var _foot_side := 1.0
 var _trace_pos := Vector3.ZERO
+var _shock_scan := 0.0
+var _shock_look := Vector3.ZERO
+var _shock_style := ""
+var _entranced := false    ## vom Lakengeist hypnotisiert – bleibt stehen, bis er weg ist
+var _gripped := false      ## wird vom Lakengeist gewürgt
 
 
 func setup(p_id: String, p_home: Dictionary) -> Guest:
@@ -130,13 +157,13 @@ func _ready() -> void:
 # --- Für Dialog & Social ------------------------------------------------------
 
 func get_prompt(_player: Player) -> String:
-	if dead or hiding:
+	if dead or hiding or state == State.GHOSTED:
 		return ""
 	return "Mit %s sprechen [E]  (%s)" % [display_name, Social.relation_word(relation)]
 
 
 func interact(_player: Player) -> void:
-	if not dead and not hiding and Game.dialog:
+	if not dead and not hiding and state != State.GHOSTED and Game.dialog:
 		Game.dialog.open(self)
 
 
@@ -250,7 +277,7 @@ func is_distracted() -> bool:
 ## Ein erschreckendes Geräusch gehört (Spielkonzept 4.15). Ängstliche geraten in Panik,
 ## Mutige sehen nach, die anderen erzählen davon. Gibt die Reaktion zurück (Debug), sonst "".
 func hear_alarm(pos: Vector3) -> String:
-	if dead or hiding or _alarm_cooldown > 0.0 or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDE_GO]:
+	if dead or hiding or _alarm_cooldown > 0.0 or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDE_GO, State.SHOCKED, State.GHOSTED]:
 		return ""
 	_alarm_cooldown = ALARM_COOLDOWN
 	var brave := float(profile["brave"])
@@ -289,7 +316,9 @@ func own_deco_near_door() -> Array[Item]:
 	return result
 
 
-func die() -> void:
+## cause "monster": er verschwindet, zurück bleiben Kratzer und ein Schuh. "ghost": vom Lakengeist
+## erwürgt – er bleibt liegen (Spielkonzept 6.12).
+func die(cause: String = "monster") -> void:
 	if dead:
 		return
 	dead = true
@@ -298,10 +327,17 @@ func die() -> void:
 		hiding = null
 	_drop_held()
 	state = State.DEAD
-	visible = false
 	_collider.disabled = true
 	collision_layer = 0
 	_label.visible = false
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.owner_id == id:
+			item.owner_id = ""
+	if cause == "ghost":
+		_lie_down()
+		return
+	visible = false
 	# Spuren statt Gore: Kratzer am Boden und ein einzelner Schuh
 	var traces := Node3D.new()
 	get_parent().add_child(traces)
@@ -310,10 +346,22 @@ func die() -> void:
 		var scratch := Geo.mesh(traces, Geo.box(Vector3(1.1, 0.01, 0.05)), Mat.psx(Color(0.12, 0.02, 0.02)), Vector3(0, 0.012, -0.12 + i * 0.12))
 		scratch.rotation.y = 0.3
 	Geo.mesh(traces, Geo.box(Vector3(0.12, 0.08, 0.26)), Mat.psx(profile["pants"]), Vector3(0.5, 0.04, 0.3))
-	for node in get_tree().get_nodes_in_group("items"):
-		var item := node as Item
-		if item.owner_id == id:
-			item.owner_id = ""
+
+
+## Leiche: auf den Rücken gekippt, Arme zur Seite. Andere Gäste erschrecken davor (Gruppe shock_sights).
+func _lie_down() -> void:
+	corpse = true
+	visible = true
+	velocity = Vector3.ZERO
+	_arm_l.rotation = Vector3(0, 0, -0.5)
+	_arm_r.rotation = Vector3(0, 0, 0.4)
+	if _body:
+		_body.animate(0.0, 0.0, false, [_arm_l, _arm_r], false, false)
+	_visual.position = Vector3(0, 0.13, 0)
+	_visual.rotation = Vector3(PI / 2.0, 0, 0.08)
+	set_meta("sight_key", "corpse:" + id)
+	set_meta("sight_kind", "corpse")
+	add_to_group("shock_sights")
 
 
 # --- Ablauf ---------------------------------------------------------------------
@@ -362,7 +410,12 @@ func _physics_process(delta: float) -> void:
 					_set_idle(randf_range(2.0, 5.0))
 			_open_doors()
 			return
+		State.GHOSTED:
+			# Der Lakengeist hält ihn am Hals (SheetGhost) – bis er sich losreißt oder stirbt
+			_stop(delta)
+			return
 	_watch_monster()
+	_scan_for_shock(delta)
 	running = state == State.HIDE_GO
 	if running:
 		# Wer in Panik rennt, macht Lärm (6.5, 4.15)
@@ -392,6 +445,12 @@ func _physics_process(delta: float) -> void:
 			elif _move_to(_target, WALK_SPEED, delta):
 				global_position = Vector3(_target.x, global_position.y, _target.z)
 				seated = true
+		State.SHOCKED:
+			_stop(delta)
+			_face(_shock_look, delta)
+			_timer -= delta
+			if _timer <= 0.0 and not _entranced:
+				_after_shock()
 		_:
 			if _move_to(_target, speed, delta):
 				_arrive()
@@ -410,7 +469,7 @@ func bedtime(instant: bool = false) -> void:
 		global_position = _room_point()
 		_fall_asleep()
 		return
-	if dead or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDING, State.HIDE_GO, State.SLEEP]:
+	if dead or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDING, State.HIDE_GO, State.SLEEP, State.SHOCKED, State.GHOSTED]:
 		return
 	if state == State.PARTY:
 		leave_party()
@@ -511,7 +570,7 @@ func _arrive() -> void:
 			_set_idle(randf_range(15.0, 40.0))
 			if _is_home():
 				_at_home()
-				if fear < 30.0 and float(profile["brave"]) >= 0.4 and randf() < 0.3:
+				if fear < 30.0 and float(profile["brave"]) >= 0.4 and not remembers("ghost") and randf() < 0.3:
 					_resting = true
 					_set_room_light(false)
 		State.CARRY_HOME:
@@ -581,11 +640,11 @@ func _set_room_light(on: bool) -> void:
 
 
 func _check_lights() -> void:
-	# Ängstlich → Vorhänge zu (nicht gesehen werden – macht das Zimmer aber dunkler)
+	# Ängstlich (oder den Lakengeist erlebt) → Vorhänge zu (nicht gesehen werden – macht das Zimmer aber dunkler)
 	for node in get_tree().get_nodes_in_group("windows"):
 		var win := node as HotelWindow
 		if win.room_id == home["no"] and win.has_curtains():
-			win.set_closed(fear >= 30.0)
+			win.set_closed(fear >= 30.0 or remembers("ghost"))
 	_set_room_light(true)
 	for lamp in _home_lamps():
 		if lamp.has_bulb and not lamp.bulb_broken:
@@ -707,6 +766,155 @@ func _finish_steal() -> void:
 	_walk_to(deco_place_point(), State.PLACE_DECO)
 
 
+# --- Schreck & Erlebnisse (Spielkonzept 6.12) ---------------------------------------------------
+
+## Reaktion auf Schreckliches, fest je Charakter: "flee" (Hände hoch, weglaufen), "freeze" (starr), "cry" (weinen).
+func shock_style() -> String:
+	if profile.has("shock"):
+		return profile["shock"]
+	return SHOCK_STYLES.get(profile.get("archetype", ""), "freeze")
+
+
+## Augenhöhe über den Füßen (Sichtlinien, Hals für den Lakengeist).
+func eye_height() -> float:
+	if _body:
+		return float(profile.get("height_cm", 170.0)) / 100.0 - 0.1
+	return 1.6 * float(profile.get("height", 1.0))
+
+
+## Schaut sich alle 0,5 s nach Blutlachen und Leichen um, die er noch nicht kennt (Gruppe shock_sights,
+## Schlüssel in Meta „sight_key“). Jeder Fund erschreckt ihn nur einmal.
+func _scan_for_shock(delta: float) -> void:
+	_shock_scan -= delta
+	if _shock_scan > 0.0:
+		return
+	_shock_scan = SHOCK_SCAN
+	if state in [State.HIDE_GO, State.SHOCKED]:
+		return
+	var eye := global_position + Vector3.UP * eye_height()
+	var forward := -global_transform.basis.z
+	var space := get_world_3d().direct_space_state
+	for node in get_tree().get_nodes_in_group("shock_sights"):
+		var sight := node as Node3D
+		if sight == self or not sight.has_meta("sight_key"):
+			continue
+		var key := String(sight.get_meta("sight_key"))
+		if key in seen_sights:
+			continue
+		var at := sight.global_position + Vector3.UP * 0.15
+		if eye.distance_to(at) > SHOCK_RANGE or absf(at.y - global_position.y) > 1.5:
+			continue
+		if forward.dot((at - eye).normalized()) < Senses.GUEST_FOV_DOT:
+			continue
+		var query := PhysicsRayQueryParameters3D.create(eye, at, Senses.SIGHT_MASK)
+		query.exclude = [get_rid()]
+		if not space.intersect_ray(query).is_empty():
+			continue
+		seen_sights.append(key)
+		shock(String(sight.get_meta("sight_kind", "blood")), sight.global_position, (sight as Guest).display_name if sight is Guest else "")
+		return
+
+
+## Schreck: bleibt 2–5 s stehen (je mutiger, desto kürzer) und starrt hin – danach je nach Charakter
+## weglaufen und verstecken, weitermachen oder weinend heim. Wird zum Erlebnis, von dem er erzählt.
+## entranced: vom Lakengeist hypnotisiert – bleibt stehen, bis der weg ist.
+func shock(kind: String, pos: Vector3, who: String = "", entranced: bool = false) -> void:
+	if dead:
+		return
+	remember(kind, pos, who)
+	if hiding or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.SLEEP, State.GHOSTED]:
+		return
+	if state == State.PARTY:
+		leave_party()
+	_drop_held()
+	var brave := float(profile["brave"])
+	_shock_style = shock_style()
+	_shock_look = pos
+	_entranced = entranced
+	state = State.SHOCKED
+	_timer = lerpf(5.0, 2.0, brave)
+	fear = minf(100.0, fear + (50.0 if kind == "corpse" else 30.0) * (1.2 - brave))
+	var cries: Array = SHOCK_CRIES[_shock_style]
+	say(cries[randi() % cries.size()])
+	if Game.player and Game.player.global_position.distance_to(global_position) < 10.0:
+		Game.play_sound("gasp", 0.5)
+	Game.shot_event("shock", 40)
+
+
+func _after_shock() -> void:
+	match _shock_style:
+		"flee":
+			fear = maxf(fear, 70.0)
+			_go_hide()
+		"cry":
+			_walk_to(_room_point(), State.WALK)
+		_:
+			_set_idle(randf_range(2.0, 4.0))
+
+
+## Der Lakengeist hat ihn am Hals (SheetGhost) – er zappelt, bis er sich losreißt oder stirbt.
+func ghost_grab(ghost_pos: Vector3) -> void:
+	if state == State.PARTY:
+		leave_party()
+	_drop_held()
+	_entranced = false
+	_shock_look = ghost_pos
+	state = State.GHOSTED
+	say("*röchelt*")
+
+
+## Der Lakengeist ist weg. Wer gewürgt wurde und sich losgerissen hat, rennt in Panik davon.
+func ghost_gone() -> void:
+	_entranced = false
+	if dead or state != State.GHOSTED:
+		return
+	remember("ghost_attack", _shock_look)
+	fear = 100.0
+	say_panic()
+	_go_hide()
+
+
+## Ein Erlebnis merken (für Gespräche). Dasselbe kurz hintereinander zählt einmal; wird man nach dem
+## Anblick des Lakengeists noch gewürgt, wird daraus ein Angriff.
+func remember(kind: String, pos: Vector3, who: String = "") -> void:
+	var now := Game.director.elapsed if Game.director else 0.0
+	if not experiences.is_empty():
+		var last: Dictionary = experiences.back()
+		var same: bool = last["kind"] == kind or (last["kind"] == "ghost" and kind == "ghost_attack")
+		if same and last["who"] == who and now - float(last["at"]) < 60.0:
+			if last["kind"] != kind:
+				last["kind"] = kind
+				last["told"] = false
+			return
+	var zone := Game.director.zone_name_at(pos) if Game.director else ""
+	experiences.append({"kind": kind, "zone": zone, "who": who, "at": now, "told": false})
+	if experiences.size() > MAX_EXPERIENCES:
+		experiences.pop_front()
+
+
+## Jüngstes Erlebnis dieser Art („ghost“ passt auch auf „ghost_attack“, "" auf alles) aus dem
+## letzten Spieltag, sonst {}.
+func recent_experience(kind: String = "") -> Dictionary:
+	var now := Game.director.elapsed if Game.director else 0.0
+	for i in range(experiences.size() - 1, -1, -1):
+		var e: Dictionary = experiences[i]
+		if String(e["kind"]).begins_with(kind) and now - float(e["at"]) < Calendar.DAY_SECONDS:
+			return e
+	return {}
+
+
+func remembers(kind: String) -> bool:
+	return not recent_experience(kind).is_empty()
+
+
+## Das älteste Erlebnis, von dem er dem Spieler noch nicht erzählt hat, sonst {}.
+func untold_experience() -> Dictionary:
+	for e in experiences:
+		if not e["told"]:
+			return e
+	return {}
+
+
 # --- Monster & Verstecken -------------------------------------------------------------
 
 func _watch_monster() -> void:
@@ -750,7 +958,7 @@ func on_flicker_signal(level: int, delay: float) -> void:
 ## Langes Flackern: Ängstliche verstecken sich sofort und bleiben eine Weile drin. Beim kurzen
 ## Zucken bleiben fast alle, wo sie sind.
 func _react_to_flicker(level: int) -> void:
-	if dead or hiding != null or state in [State.HIDE_GO, State.PARTY, State.TALKING, State.MINIGAME, State.DEAD]:
+	if dead or hiding != null or state in [State.HIDE_GO, State.PARTY, State.TALKING, State.MINIGAME, State.DEAD, State.GHOSTED]:
 		return
 	var brave := float(profile["brave"])
 	fear = minf(100.0, fear + [2.0, 8.0, 20.0][level])
@@ -1095,6 +1303,38 @@ func _dance_pose(delta: float) -> void:
 			_arm_r.rotation.z = 0.3
 
 
+## Schreckhaltung (6.12): Hände hoch und zittern (flee), Hand vor den Mund (freeze), zusammengesunken
+## mit den Händen vorm Gesicht (cry). Hypnotisiert: Arme hängen, leises Schwanken. Gewürgt: Hände am
+## Hals, zappeln.
+func _shock_pose() -> void:
+	var t := _anim
+	if state == State.GHOSTED:
+		_visual.rotation.y = sin(t * 11.0) * 0.12
+		_visual.rotation.x = 0.12
+		_arm_l.rotation = Vector3(-2.5 + sin(t * 13.0) * 0.15, 0, 0.55)
+		_arm_r.rotation = Vector3(-2.5 - sin(t * 13.0) * 0.15, 0, -0.55)
+		return
+	if _entranced:
+		_visual.rotation.z = sin(t * 0.9) * 0.04
+		_arm_l.rotation.x = 0.0
+		_arm_r.rotation.x = 0.0
+		return
+	match _shock_style:
+		"flee":
+			var shake := sin(t * 23.0) * 0.08
+			_visual.rotation.x = 0.1   # weicht zurück
+			_arm_l.rotation = Vector3(-2.8 + shake, 0, -0.35)
+			_arm_r.rotation = Vector3(-2.8 - shake, 0, 0.35)
+		"cry":
+			_visual.rotation.x = -0.3
+			_visual.position.y = -0.06 + absf(sin(t * 7.0)) * 0.015   # Schluchzen
+			_arm_l.rotation = Vector3(-2.3, 0, 0.5)
+			_arm_r.rotation = Vector3(-2.3, 0, -0.5)
+		_:
+			_arm_l.rotation = Vector3(-0.15, 0, 0)
+			_arm_r.rotation = Vector3(-2.1, 0, -0.6)
+
+
 func _make_arm(side: float, coat: Material, skin: Material) -> Node3D:
 	var pivot := Node3D.new()
 	pivot.position = Vector3(side * 0.26, 1.42, 0)
@@ -1128,6 +1368,9 @@ func _pose(delta: float, speed: float) -> void:
 	_visual.rotation = Vector3.ZERO
 	_arm_l.rotation.z = 0.0
 	_arm_r.rotation.z = 0.0
+	if state in [State.SHOCKED, State.GHOSTED]:
+		_shock_pose()
+		return
 	if state == State.MINIGAME and seated:
 		_visual.position.y = -(_body.sit_drop() if _body else 0.35)   # sitzt
 		_arm_l.rotation.x = -1.1 + sin(_anim * 3.0) * 0.05

@@ -41,10 +41,13 @@ extends Node3D
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
 ##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
 ##                               zum Prüfen der Gastmodelle
+##   --shock=id[,blood|corpse|ghostN]  Gast erschrecken (6.12): Blutlache bzw. Leiche vor ihm im Flur, oder der
+##                               Lakengeist kommt zum N. Mal an sein dunkles Zimmerfenster (ab 3 würgt er) –
+##                               mit --talk=id erzählt er danach davon
 ##   --dice=id                   sofort Mäxchen mit dem Gast (Einsatz 3 Geld)
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
-##   --shot-on=reveal|jumpscare|strangle  Screenshot kurz nach einem Ereignis statt nach n Frames
+##   --shot-on=reveal|jumpscare|strangle|shock  Screenshot kurz nach einem Ereignis statt nach n Frames
 
 ## Der Anfang wirkt friedlich – nichts deutet auf das Monster hin (Spielkonzept 2.1).
 const INTRO := "Willkommen im Hotel – zur Halloween-Woche! Heute ist der 1. Oktober.\nLerne die anderen Gäste kennen, schmücke deine Tür und feiere mit.\nDein Tagebuch liegt auf dem Schreibtisch in Zimmer 13.\n\n[WASD] Laufen  [Shift] Rennen  [Leertaste] Springen  [Strg] Ducken\n[E] Nehmen / Benutzen  [G] Ablegen  [Rechtsklick] Luft anhalten  [Esc] Menü"
@@ -356,12 +359,21 @@ func _parse_debug_args() -> void:
 			var parts := arg.substr(7).split(",")
 			var guest := Game.social.guest_by_id(parts[0])
 			_debug_look(guest, parts[1] if parts.size() > 1 else "")
+		elif arg.begins_with("--shock="):
+			var parts := arg.substr(8).split(",")
+			_debug_shock(Game.social.guest_by_id(parts[0]), parts[1] if parts.size() > 1 else "blood")
 		elif arg.begins_with("--talk="):
 			var partner := Game.social.guest_by_id(arg.substr(7))
-			Game.player.global_position = partner.global_position + Vector3(0, 0, -1.4)
-			Game.player.rotation.y = 0.0
-			get_tree().create_timer(1.0).timeout.connect(func() -> void:
-				Game.player.rotation.y = PI
+			var after_shock := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--shock="))
+			if not after_shock:
+				Game.player.global_position = partner.global_position + Vector3(0, 0, -1.4)
+				Game.player.rotation.y = 0.0
+			get_tree().create_timer(8.0 if after_shock else 1.0).timeout.connect(func() -> void:
+				if after_shock:   # erst erschrecken lassen, dann hingehen
+					var front := -partner.global_transform.basis.z
+					Game.player.global_position = partner.global_position + front * 1.4
+				var to := partner.global_position - Game.player.global_position
+				Game.player.rotation.y = atan2(-to.x, -to.z)
 				Game.dialog.open(partner))
 		elif arg == "--ghost=flur":
 			Game.ghost.debug_summon_hall()
@@ -475,6 +487,49 @@ func _debug_look(guest: Guest, pose: String) -> void:
 		"sit":
 			guest.state = Guest.State.MINIGAME
 			guest.seated = true
+
+
+## --shock (Spielkonzept 6.12): Gast erschrecken lassen. blood/corpse: Er steht im Flur vor seiner Tür, 2,5 m
+## vor ihm liegt eine Blutlache bzw. ein anderer Gast (erwürgt), der Spieler steht dahinter und sieht zu.
+## ghostN: Er steht im dunklen Zimmer, der Lakengeist kommt zum N. Mal (ab 3 würgt er), der Spieler sieht
+## aus der Zimmerecke zu (zählt dabei nicht als Zeuge).
+func _debug_shock(guest: Guest, what: String) -> void:
+	var home := guest.home
+	var along: Vector3 = home["along"]
+	var into: Vector3 = home["into"]
+	guest.velocity = Vector3.ZERO
+	guest._set_idle(60.0)
+	if what.begins_with("ghost"):
+		var center: Vector3 = home["center"]
+		guest.global_position = center + into * 0.8 + Vector3(0, 0.05, 0)
+		guest.rotation.y = atan2(-into.x, -into.z)
+		Game.player.global_position = center - into * 1.6 + along * 1.4 + Vector3(0, 0.05, 0)
+		var look := center + into * 2.5 - Game.player.global_position
+		Game.player.rotation.y = atan2(-look.x, -look.z)
+		Game.player.head.rotation.x = -0.2
+		Game.ghost.debug_summon_guest(guest, maxi(1, what.substr(5).to_int()))
+		return
+	var front: Vector3 = home["door_front"]
+	# in die Flurrichtung, in der 6 m frei sind
+	var ray := PhysicsRayQueryParameters3D.create(front + Vector3.UP, front + Vector3.UP + along * 6.0, 1)
+	if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
+		along = -along
+	guest.global_position = front + Vector3(0, 0.05, 0)
+	guest.rotation.y = atan2(-along.x, -along.z)
+	var spot := front + along * 2.5
+	if what == "corpse":
+		for other in Game.social.living_guests():
+			if other != guest and other.gen_seed >= 0:
+				other.global_position = spot
+				other.rotation.y = atan2(-into.x, -into.z)
+				other.die("ghost")
+				break
+	else:
+		Game.traces.add_blood(spot, 0.4)
+	Game.player.global_position = front + along * 4.2 + Vector3(0, 0.05, 0)
+	var to := front + Vector3.UP * 0.8 - Game.player.global_position
+	Game.player.rotation.y = atan2(-to.x, -to.z)
+	Game.player.head.rotation.x = -0.25
 
 
 func _save_test() -> void:

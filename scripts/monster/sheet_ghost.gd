@@ -7,6 +7,9 @@ extends Node3D
 ## Wer gewürgt wird, reißt sich nur los, indem er sich hin und her bewegt (1,5 s). Gäste als Zeugen
 ## vertreiben ihn. Verschwinden: in 0,5 s ausgeblendet. Ab dem 6. Mal taucht er auch im Flur auf, wenn alle
 ## Gäste schlafen (Nachtruhe, Social) – dann gibt es keine Zeugen.
+## Gäste behandelt er wie den Spieler (Spielkonzept 6.12): Wer wach im Dunkeln bei offenem Vorhang steht,
+## bekommt Besuch – mit eigenem Zähler (Guest.ghost_visits). Ein erwürgter Gast bleibt als Leiche liegen.
+## Wer ihn sieht, erschrickt (Guest.shock) und erzählt später davon.
 
 enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE }
 
@@ -47,8 +50,16 @@ const HANDS_AHEAD := 0.45
 const NECK_BELOW_EYES := 0.22
 const FINGERS := ["thumb", "index", "middle", "ring", "pinky"]
 
-var visits := 0          ## so oft ist er schon erschienen (Stufe)
+var visits := 0          ## so oft ist er schon beim Spieler erschienen (Stufe)
 var state := State.IDLE
+var debug_ignore_player := false   ## Debug (--shock=id,ghost): Spieler zählt bei Gästen nicht als Zeuge
+
+var _victim: Node3D      ## Player oder Guest, zu dem er gerade kommt
+var _stage := 0          ## das wievielte Mal bei diesem Opfer
+var _victim_saw := false ## Gast hat ihn schon gesehen (Schreck)
+var _escape_at := -1.0   ## Gast: reißt sich nach so vielen Sekunden los (< 0: schafft es nicht)
+var _guest_windows := {} ## Gast-ID → Fenster, an dem er zuletzt stand (wie _last_window beim Spieler)
+var _force_guest: Guest
 
 var _window: HotelWindow
 var _last_window: HotelWindow
@@ -104,30 +115,38 @@ func _physics_process(delta: float) -> void:
 		return
 	if Game.game_over:
 		return
-	if state != State.FADE and (_witnesses() >= WITNESSES or player.hiding != null or player.dead):
-		_vanish()
+	if state != State.FADE:
+		var seen_by := _witness_guests(global_position + Vector3.UP * HANDS_Y, _victim)
+		if seen_by.size() + _player_witness(global_position + Vector3.UP * HANDS_Y) >= WITNESSES:
+			for guest in seen_by:
+				guest.shock("ghost", global_position)
+			_vanish()
+		elif _victim_gone():
+			_vanish()
+	if _victim is Guest and not _victim_saw and state in [State.APPROACH, State.HOVER, State.ENTER] and _fade > 0.5:
+		_guest_sees_me(_victim as Guest)
 	match state:
 		State.APPROACH:
 			if _float_to(_target, FLOAT_SPEED, delta):
-				if visits >= HYPNOSIS_FROM and _window:
+				if _stage >= HYPNOSIS_FROM and _window:
 					_touch_glass()
 				state = State.HOVER
-				_timer = HOVER_TIME[mini(visits, 3) - 1]
+				_timer = HOVER_TIME[mini(_stage, 3) - 1]
 		State.HOVER:
 			_timer -= delta
 			if _timer <= 0.0:
-				if visits >= ENTER_FROM:
+				if _stage >= ENTER_FROM:
 					state = State.ENTER
 				else:
 					_vanish()
 		State.ENTER:
-			var neck := player.camera.global_position - Vector3(0, NECK_BELOW_EYES, 0)
+			var neck := _eye_of(_victim) - Vector3(0, NECK_BELOW_EYES, 0)
 			var flat := Vector3(neck.x - global_position.x, 0, neck.z - global_position.z)
 			var spot := Vector3(neck.x, neck.y - HANDS_Y, neck.z) - flat.normalized() * HANDS_AHEAD
 			_face(flat)
 			if _float_to(spot, INSIDE_SPEED, delta, false) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
 				_grab()
-			elif player.global_position.distance_to(_window.global_position if _window else global_position) > LEAVE_RANGE + (0.0 if _window else 6.0):
+			elif _victim.global_position.distance_to(_window.global_position if _window else global_position) > LEAVE_RANGE + (0.0 if _window else 6.0):
 				_vanish()
 		State.STRANGLE:
 			_struggle(delta)
@@ -150,22 +169,51 @@ func _physics_process(delta: float) -> void:
 func _check_spawn() -> void:
 	var player := Game.player
 	var director := Game.director
-	if director == null or player.dead or player.hiding != null or player.in_dialog or Game.game_over:
+	if director == null or Game.game_over:
 		return
-	if not director.first_attack_done and not (_force or _force_hall):
-		return
-	if _check_hall(player):
-		return
-	var window := _window_near(player)
-	if window != _last_window:
-		_last_window = window
-		if window == null or (_cooldown > 0.0 and not _force) or director.player_threat > 0.0:
+	if not (player.dead or player.hiding != null or player.in_dialog) and (director.first_attack_done or _force or _force_hall):
+		if _check_hall(player):
 			return
-		if _witnesses_at(player.camera.global_position) >= WITNESSES:   # in Gesellschaft kommt er nicht
-			return
-		if _force or randf() < SPAWN_CHANCE:
-			_force = false
-			_appear(window)
+		var eye := player.camera.global_position
+		var window := _window_near(eye, visits + 1)
+		if window != _last_window:
+			_last_window = window
+			# in Gesellschaft kommt er nicht
+			if window != null and (_cooldown <= 0.0 or _force) and director.player_threat <= 0.0 \
+					and _witness_guests(eye, player).size() < WITNESSES and (_force or randf() < SPAWN_CHANCE):
+				_force = false
+				_appear(window, player)
+				return
+	if director.first_attack_done or _force_guest != null:
+		_check_guests()
+
+
+## Gäste behandelt er wie den Spieler (Spielkonzept 6.12): Steht ein wacher Gast in einem dunklen Raum mit
+## offenem Vorhang (meist: er ruht im eigenen Zimmer), würfelt es einmal – gleiche Chance, gleiche Stufen.
+func _check_guests() -> void:
+	if Game.social == null:
+		return
+	for guest in Game.social.guests:
+		var g: Guest = guest
+		if _force_guest != null and g != _force_guest:
+			continue   # Debug: nur zu diesem Gast
+		if g.dead or g.hiding != null or g.state in [Guest.State.TALKING, Guest.State.MINIGAME, Guest.State.SLEEP, Guest.State.KNOCK, Guest.State.SHELTER]:
+			_guest_windows.erase(g.id)
+			continue
+		var eye := g.global_position + Vector3.UP * g.eye_height()
+		var window := _window_near(eye, g.ghost_visits + 1)
+		if window == _guest_windows.get(g.id):
+			continue
+		_guest_windows[g.id] = window
+		if window == null:
+			continue
+		var forced := _force_guest == g
+		if not forced and (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
+				or _witness_guests(eye, g).size() + _player_witness(eye) >= WITNESSES or randf() >= SPAWN_CHANCE):
+			continue
+		_force_guest = null
+		_appear(window, g)
+		return
 
 
 ## Ab dem 6. Mal: Schlafen alle Gäste und steht der Spieler im Flur, taucht er dort mit kleiner Chance
@@ -193,6 +241,8 @@ func _check_hall(player: Player) -> bool:
 
 func _appear_in_hall(floor_point: Vector3) -> void:
 	visits += 1
+	_victim = Game.player
+	_stage = visits
 	_window = null
 	_last_window = null
 	var neck := Game.player.camera.global_position.y - NECK_BELOW_EYES
@@ -206,12 +256,12 @@ func _appear_in_hall(floor_point: Vector3) -> void:
 		print("[Lakengeist] %d. Mal – im Flur" % visits)
 
 
-func _window_near(player: Player) -> HotelWindow:
-	var eye := player.camera.global_position
+## Dunkles Außenfenster in der Nähe dieses Augenpunkts, durch das er zum `stage`. Mal käme.
+func _window_near(eye: Vector3, stage: int) -> HotelWindow:
 	var space := get_world_3d().direct_space_state
 	for node in get_tree().get_nodes_in_group("windows"):
 		var window := node as HotelWindow
-		if not window.has_curtains() or (window.closed and visits + 1 < THROUGH_CURTAIN_FROM):
+		if not window.has_curtains() or (window.closed and stage < THROUGH_CURTAIN_FROM):
 			continue
 		var inside := window.inside_point()
 		if inside.distance_to(eye) > WINDOW_RANGE or absf(inside.y - eye.y) > 2.0 or not _room_dark(window.room_id):
@@ -230,8 +280,16 @@ func _room_dark(room_id: String) -> bool:
 	return true
 
 
-func _appear(window: HotelWindow) -> void:
-	visits += 1
+func _appear(window: HotelWindow, victim: Node3D) -> void:
+	_victim = victim
+	_victim_saw = false
+	if victim is Guest:
+		var guest := victim as Guest
+		guest.ghost_visits += 1
+		_stage = guest.ghost_visits
+	else:
+		visits += 1
+		_stage = visits
 	_window = window
 	var outward := window.global_transform.basis.z.normalized() * -1.0
 	var base := window.global_position - Vector3(0, HANDS_Y, 0)
@@ -245,11 +303,12 @@ func _appear(window: HotelWindow) -> void:
 		state = State.ENTER
 	else:
 		global_position = base + outward * START_DISTANCE
-		_target = base + outward * (STOP_OUTSIDE if visits < HYPNOSIS_FROM else STOP_AT_GLASS)
+		_target = base + outward * (STOP_OUTSIDE if _stage < HYPNOSIS_FROM else STOP_AT_GLASS)
 		state = State.APPROACH
-	Game.caption("[Etwas schwebt vor dem Fenster]")
+	if victim is Player:
+		Game.caption("[Etwas schwebt vor dem Fenster]")
 	if "--trace" in OS.get_cmdline_user_args():
-		print("[Lakengeist] %d. Mal am Fenster (%s)" % [visits, window.room_id])
+		print("[Lakengeist] %d. Mal am Fenster (%s) – bei %s" % [_stage, window.room_id, (victim as Guest).display_name if victim is Guest else "dir"])
 
 
 ## Ab dem 2. Mal: blutige Handabdrücke außen auf der Scheibe.
@@ -266,6 +325,15 @@ func _grab() -> void:
 	_timer = ESCAPE_TIME
 	_swings = 0
 	_last_sign = 0
+	if _victim is Guest:
+		# Mutige reißen sich eher los (ein Gast zappelt nicht nach Anleitung)
+		var guest := _victim as Guest
+		guest.ghost_grab(global_position + Vector3.UP * HANDS_Y)
+		_escape_at = ESCAPE_TIME * randf_range(0.3, 0.9) if randf() < 0.25 + 0.5 * float(guest.profile["brave"]) else -1.0
+		if Game.player.global_position.distance_to(guest.global_position) < 12.0:
+			Game.play_sound("gasp", 0.6)
+		Game.shot_event("strangle", 20)
+		return
 	Game.player.gripped = true
 	Game.play_sound("gasp", 0.8)
 	Game.caption("[Kalte Hände um deinen Hals – reiß dich los!]")
@@ -275,6 +343,15 @@ func _grab() -> void:
 
 ## Losreißen: Die Bewegungsrichtung muss ESCAPE_SWINGS-mal wechseln, bevor die Zeit um ist.
 func _struggle(delta: float) -> void:
+	if _victim is Guest:
+		_timer -= delta
+		if _escape_at >= 0.0 and ESCAPE_TIME - _timer >= _escape_at:
+			if "--trace" in OS.get_cmdline_user_args():
+				print("[Lakengeist] %s hat sich losgerissen" % (_victim as Guest).display_name)
+			_vanish()
+		elif _timer <= 0.0:
+			_kill_guest(_victim as Guest)
+		return
 	var player := Game.player
 	var input: Vector2 = player.move_input
 	var axis := input.x if absf(input.x) >= absf(input.y) else input.y
@@ -313,11 +390,23 @@ func _kill() -> void:
 	Game.player_died.emit()
 
 
+## Ein Gast stirbt – er bleibt liegen (Spielkonzept 6.12), das Hotel erfährt es wie beim Monster.
+func _kill_guest(guest: Guest) -> void:
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Lakengeist] %s erwürgt" % guest.display_name)
+	guest.die("ghost")
+	if Game.social:
+		Game.social.on_guest_died(guest, "ghost")
+	_vanish()
+
+
 # --- Verschwinden & Zeugen ------------------------------------------------------------------
 
 func _vanish() -> void:
 	if Game.player:
 		Game.player.gripped = false
+	if _victim is Guest:
+		(_victim as Guest).ghost_gone()
 	state = State.FADE
 	_cooldown = COOLDOWN
 
@@ -327,29 +416,68 @@ func _hide() -> void:
 	visible = false
 	_fade = 0.0
 	_window = null
+	_victim = null
 	global_position = Vector3(0, -60, 0)
 	if _material:
 		_material.set_shader_parameter("fade", 0.0)
 
 
-## Wache Gäste, die ihn sehen können.
-func _witnesses() -> int:
-	return _witnesses_at(global_position + Vector3.UP * HANDS_Y)
-
-
-## Wache Gäste mit freier Sicht auf diesen Punkt.
-func _witnesses_at(point: Vector3) -> int:
+## Wache Gäste (außer dem Opfer) mit freier Sicht auf diesen Punkt.
+func _witness_guests(point: Vector3, victim: Node3D) -> Array[Guest]:
+	var result: Array[Guest] = []
 	if Game.social == null:
-		return 0
-	var count := 0
+		return result
 	var space := get_world_3d().direct_space_state
 	for guest in Game.social.guests:
-		if guest.dead or guest.hiding != null or guest.global_position.distance_to(point) > WITNESS_RANGE:
+		if guest == victim or guest.dead or guest.hiding != null or guest.global_position.distance_to(point) > WITNESS_RANGE:
 			continue
-		var query := PhysicsRayQueryParameters3D.create(guest.global_position + Vector3.UP * 1.6, point, Senses.SIGHT_MASK)
+		var query := PhysicsRayQueryParameters3D.create(guest.global_position + Vector3.UP * guest.eye_height(), point, Senses.SIGHT_MASK)
 		if space.intersect_ray(query).is_empty():
-			count += 1
-	return count
+			result.append(guest)
+	return result
+
+
+## Kommt er zu einem Gast, ist der Spieler ein Zeuge wie jeder andere (1 oder 0).
+func _player_witness(point: Vector3) -> int:
+	var player := Game.player
+	if not _victim is Guest or debug_ignore_player or player == null or player.dead or player.hiding != null:
+		return 0
+	var eye := player.camera.global_position
+	if eye.distance_to(point) > WITNESS_RANGE:
+		return 0
+	var query := PhysicsRayQueryParameters3D.create(eye, point, Senses.SIGHT_MASK)
+	return 1 if get_world_3d().direct_space_state.intersect_ray(query).is_empty() else 0
+
+
+## Der Gast, zu dem er kommt, sieht ihn (Sicht durchs Glas): Schreck – ab der Hypnose-Stufe bleibt er
+## gebannt stehen, statt wegzulaufen.
+func _guest_sees_me(guest: Guest) -> void:
+	var eye := guest.global_position + Vector3.UP * guest.eye_height()
+	var head := global_position + Vector3.UP * (HANDS_Y + 0.5)
+	if eye.distance_to(head) > LEAVE_RANGE:
+		return
+	var query := PhysicsRayQueryParameters3D.create(eye, head, Senses.SIGHT_MASK & ~HotelWindow.LAYER_BLOCK)
+	query.exclude = [guest.get_rid()]
+	if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
+		return
+	_victim_saw = true
+	guest.shock("ghost", head, "", _stage >= HYPNOSIS_FROM)
+
+
+## Opfer versteckt (Gast: auch im Bett) oder tot – dann verschwindet er.
+func _victim_gone() -> bool:
+	if _victim is Guest:
+		var guest := _victim as Guest
+		return guest.hiding != null or guest.dead
+	var player := _victim as Player
+	return player.hiding != null or player.dead
+
+
+## Augenpunkt des Opfers (Spieler: Kamera).
+func _eye_of(victim: Node3D) -> Vector3:
+	if victim is Guest:
+		return victim.global_position + Vector3.UP * (victim as Guest).eye_height()
+	return (victim as Player).camera.global_position
 
 
 # --- Hypnose ----------------------------------------------------------------------------
@@ -359,13 +487,14 @@ func _witnesses_at(point: Vector3) -> int:
 func _update_trance(delta: float) -> void:
 	var player := Game.player
 	var head := global_position + Vector3.UP * (HANDS_Y + 0.5)
-	var hypnotizing := visits >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER] and _fade > 0.5
+	var mine := _victim == player   # bei einem Gast hält er den Spieler nicht fest
+	var hypnotizing := mine and _stage >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER] and _fade > 0.5
 	if hypnotizing and Game.director.player_can_see(head):
 		player.trance = minf(1.0, player.trance + TRANCE_GAIN * delta)
 	else:
 		player.trance = maxf(0.0, player.trance - TRANCE_DECAY * delta)
 	var pull := PULL * player.trance
-	if state == State.STRANGLE:
+	if state == State.STRANGLE and mine:
 		pull = PULL * 2.0
 	if pull <= 0.0:
 		return
@@ -402,7 +531,7 @@ func _pose() -> void:
 	_visual_offset(bob)
 	_rotate("hem", Vector3.RIGHT, sin(_time * 1.3) * 0.08)
 	_rotate("head", Vector3.FORWARD, sin(_time * 0.7) * 0.12)
-	var circling := visits >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER]
+	var circling := _stage >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER]
 	var gripping := state == State.STRANGLE
 	for side in [".L", ".R"]:
 		var phase := _time * 2.2 + (0.0 if side == ".L" else PI)
@@ -411,7 +540,7 @@ func _pose() -> void:
 		var swirl_z := cos(phase) * 0.22 if circling else 0.0
 		_rotate2("upper_arm" + side, Vector3.RIGHT, swirl_x + lift, Vector3.BACK, swirl_z)
 		_rotate("forearm" + side, Vector3.RIGHT, swirl_x * 0.6 + lift * 0.5)
-		var curl := 0.35 if gripping else (-0.08 if state == State.HOVER and visits >= HYPNOSIS_FROM else 0.05 * sin(_time * 3.0 + phase))
+		var curl := 0.35 if gripping else (-0.08 if state == State.HOVER and _stage >= HYPNOSIS_FROM else 0.05 * sin(_time * 3.0 + phase))
 		for finger in FINGERS:
 			for g in [1, 2, 3]:
 				_rotate("%s%d%s" % [finger, g, side], Vector3.RIGHT, curl * (0.6 if finger == "thumb" else 1.0))
@@ -461,6 +590,27 @@ func debug_summon_hall() -> void:
 	Game.social.start_sleep(true)
 
 
+## Debug (--shock=id,ghostN): Licht im Zimmer des Gastes aus, Vorhänge auf (ab dem 4. Mal zu); er kommt
+## sicher zum `stage`. Mal zu diesem Gast. Der Spieler zählt dabei nicht als Zeuge.
+func debug_summon_guest(guest: Guest, stage: int) -> void:
+	guest.ghost_visits = maxi(0, stage - 1)
+	_cooldown = 0.0
+	_guest_windows.erase(guest.id)
+	_force_guest = guest
+	debug_ignore_player = true
+	var sw := LightSwitch.find(get_tree(), guest.home["no"])
+	if sw:
+		sw.set_on(false)
+	var found := false
+	for node in get_tree().get_nodes_in_group("windows"):
+		var window := node as HotelWindow
+		if window.room_id == guest.home["no"] and window.has_curtains():
+			window.set_closed(stage >= THROUGH_CURTAIN_FROM, true)
+			found = true
+	if not found:
+		print("[Lakengeist] Zimmer %s hat kein Außenfenster – er kann nicht zu %s kommen" % [guest.home["no"], guest.display_name])
+
+
 func save_state() -> Dictionary:
 	return {"visits": visits, "cooldown": _cooldown}
 
@@ -468,6 +618,7 @@ func save_state() -> Dictionary:
 func load_state(d: Dictionary) -> void:
 	visits = int(d.get("visits", 0))
 	_cooldown = float(d.get("cooldown", 0.0))
+	_guest_windows.clear()
 	if Game.player:
 		Game.player.gripped = false
 	_hide()

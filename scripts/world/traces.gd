@@ -163,8 +163,18 @@ func add_blood(pos: Vector3, yaw: float) -> TraceMark:
 	add_child(mark)
 	mark.global_position = Vector3(pos.x, _floor_y(pos) + 0.008, pos.z)
 	mark.rotation = Vector3(-PI / 2.0, yaw, 0)
+	_as_sight(mark)
 	_report("blood", pos)
 	return mark
+
+
+## Blutlachen erschrecken Gäste (Guest._scan_for_shock, Spielkonzept 6.12). Der Schlüssel hängt am Ort,
+## damit ein Gast dieselbe Lache auch nach dem Laden wiedererkennt.
+func _as_sight(mark: TraceMark) -> void:
+	var p := mark.global_position
+	mark.set_meta("sight_key", "blood@%d,%d,%d" % [roundi(p.x * 10.0), roundi(p.y * 10.0), roundi(p.z * 10.0)])
+	mark.set_meta("sight_kind", "blood")
+	mark.add_to_group("shock_sights")
 
 
 ## Handabdruck auf der Flurseite eines Milchglasfensters.
@@ -246,6 +256,8 @@ func load_state(list: Array) -> void:
 		elif entry.has("global"):
 			add_child(mark)
 			mark.global_transform = _from_t(entry["global"])
+			if mark.kind == "blood":
+				_as_sight(mark)
 
 
 func _t(t: Transform3D) -> Array:

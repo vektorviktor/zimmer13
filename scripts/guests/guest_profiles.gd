@@ -9,6 +9,7 @@ class_name GuestProfiles
 ##            jump (wie weit beim Bluffen überboten wird), perception (durchschaut Bluffs
 ##            und Schummeleien), pride (gekränkt, wenn er verliert), tell (verräterische Geste)
 ##   reliable – wie zuverlässig sie von Spuren berichten (Rest: verwechselt, erfunden, übertrieben)
+##   shock  – Schreckreaktion (flee, freeze, cry; erzeugte Gäste: nach Charakter, Guest.SHOCK_STYLES)
 ##   report   – wie sie davon erzählen (%s = was, %s = wo)
 ##   clothing – was von ihnen zurückbleibt, wenn sie verschwinden
 
@@ -23,7 +24,7 @@ const ALL := {
 		"start_deco": [Item.Kind.CANDLE, Item.Kind.LEAVES],
 		"activities": {"room": 3.0, "lobby": 4.0, "kitchen": 2.0, "garden": 0.5, "wander": 0.5, "bar": 0.7},
 		"money": 12,
-		"reliable": 0.5, "clothing": "Ednas Strickschal",
+		"reliable": 0.5, "clothing": "Ednas Strickschal", "shock": "flee",
 		"report": "Ich habe %s gesehen … bei %s. Glaube ich. Oder habe ich das geträumt?",
 		"dice": {"likes": false, "honesty": 0.9, "jump": 1, "perception": 0.15, "pride": 0.1, "tell": "Edna kichert nervös und schaut weg."},
 		"lines": {
@@ -67,7 +68,7 @@ const ALL := {
 		"start_deco": [Item.Kind.CARVED_PUMPKIN],
 		"activities": {"room": 3.0, "lobby": 2.0, "kitchen": 1.0, "garden": 2.0, "wander": 1.0, "bar": 3.0},
 		"money": 30,
-		"reliable": 0.9, "clothing": "Brunos Hut",
+		"reliable": 0.9, "clothing": "Brunos Hut", "shock": "freeze",
 		"report": "Da waren %s, bei %s. Na und? Wahrscheinlich nur Dreck.",
 		"dice": {"likes": true, "honesty": 0.45, "jump": 2, "perception": 0.35, "pride": 0.85, "tell": "Bruno zieht den Mundwinkel hoch."},
 		"lines": {
@@ -111,7 +112,7 @@ const ALL := {
 		"start_deco": [Item.Kind.CARVED_PUMPKIN, Item.Kind.LEAVES],
 		"activities": {"room": 2.0, "lobby": 3.0, "kitchen": 1.0, "garden": 3.0, "wander": 1.0, "bar": 1.5},
 		"money": 8,
-		"reliable": 0.65, "clothing": "Milas Halstuch",
+		"reliable": 0.65, "clothing": "Milas Halstuch", "shock": "cry",
 		"report": "Ich schwör's dir: %s, bei %s! Riesig! Überall!",
 		"dice": {"likes": true, "honesty": 0.6, "jump": 1, "perception": 0.55, "pride": 0.4, "tell": "Mila spielt auffällig mit einer Haarsträhne."},
 		"lines": {

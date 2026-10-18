@@ -21,6 +21,35 @@ const TRACE_TEXT := {
 	"footprint": "nasse Fußspuren", "scratch": "Kratzspuren", "blood": "Blut",
 	"handprint": "einen Handabdruck an einer Tür", "drops": "Blutstropfen",
 }
+## Eigene Erlebnisse (Spielkonzept 6.12): was ein Gast beim nächsten Gespräch erzählt – je nach seiner
+## Schreckreaktion (Guest.shock_style). {zone} = Ort, {who} = der Tote.
+const EXPERIENCE_LINES := {
+	"flee": {
+		"blood": ["Da war Blut! Eine riesige Lache, bei {zone}! Ich bin nur noch gerannt!", "Bei {zone} … überall Blut. Ich hab geschrien und bin weg. Geh da nicht hin!"],
+		"corpse": ["{who} … liegt bei {zone}. Ganz still. Die Augen offen! Ich bin weggerannt, ich konnte nicht …", "Ich habe {who} gefunden. Tot! Bei {zone}! Bitte sag mir, dass ich das geträumt habe."],
+		"ghost": ["Vor meinem Fenster! Ein Laken, das schwebt – mit Händen! Ich bin sofort raus!", "Da war etwas am Fenster, bei {zone}. Weiß, mit blutigen Händen. Ich lass nie wieder den Vorhang offen!"],
+		"ghost_attack": ["Es kam DURCH das Fenster! Kalte Hände an meinem Hals! Ich hab mich losgerissen und bin gerannt …", "Das Laken … es wollte mich erwürgen! Bei {zone}! Schau, die Striemen!"],
+	},
+	"freeze": {
+		"blood": ["Bei {zone} ist eine Blutlache. Ich stand bestimmt eine Minute davor und konnte mich nicht rühren.", "Ich hab das Blut bei {zone} gesehen. Viel zu viel. Da hat niemand überlebt."],
+		"corpse": ["{who} liegt tot bei {zone}. Ich stand nur da. Ich wusste nicht, was ich tun soll.", "Ich habe {who} gefunden. Bei {zone}. Kein Kratzer – aber tot. Das war nicht das Ding aus dem Keller."],
+		"ghost": ["Draußen vor dem Fenster schwebte ein Laken. Ich hab nur gestarrt. Es hat mich angesehen, glaube ich.", "Etwas am Fenster bei {zone}. Hat die Hände kreisen lassen. Ich konnte nicht wegsehen."],
+		"ghost_attack": ["Dieses Laken hat mich am Hals gepackt. Ich weiß nicht, wie ich freigekommen bin. Mach nie das Licht aus.", "Es war im Zimmer. Bei {zone}. Ich lebe noch, aber frag mich nicht, warum."],
+	},
+	"cry": {
+		"blood": ["*schnieft* Bei {zone} … so viel Blut. Wer war das? Wer fehlt?", "Ich hab das Blut gesehen, bei {zone}. Ich musste so weinen … wer kann denn so etwas tun?"],
+		"corpse": ["*weint* {who} … liegt da bei {zone}. Wir haben doch erst gestern zusammen gelacht.", "Ich habe {who} gefunden. *schluchzt* Kannst du … kannst du eine Kerze für {who} anzünden?"],
+		"ghost": ["*zittert* Vor meinem Fenster war ein Geist. Ein richtiger! Ich kann gar nicht mehr aufhören zu weinen.", "Bei {zone}, am Fenster … ein Laken mit Händen. Ich kann seitdem nicht aufhören zu zittern."],
+		"ghost_attack": ["*weint* Es hat mich gewürgt! Ich dachte, jetzt ist es vorbei … ich will nach Hause!", "Ich hab mich losgerissen, irgendwie … *schluchzt* Bitte bleib heute nicht allein im Dunkeln."],
+	},
+}
+## Später am selben Tag, beim Reden über das Monster
+const EXPERIENCE_AGAIN := {
+	"blood": "Ich bekomme die Blutlache bei {zone} nicht aus dem Kopf.",
+	"corpse": "Ich sehe {who} immer noch da liegen. Bei {zone}.",
+	"ghost": "Ich trau mich nicht mehr ans Fenster. Seit dem Laken.",
+	"ghost_attack": "Mein Hals tut immer noch weh. Ich mache das Licht nie wieder aus.",
+}
 ## Gerüchte über Gehörtes (4.15): was man gehört hat, und wie man davon erzählt
 const HEARD_TEXT := {
 	"scream": "Jemand hat geschrien", "door_burst": "Eine Tür ist aufgeflogen, mit einem Knall",
@@ -389,12 +418,16 @@ func on_monster_talk(guest: Guest) -> void:
 	Game.director.on_monster_talk(guest.global_position)
 
 
-func on_guest_died(guest: Guest) -> void:
+## cause "ghost": vom Lakengeist erwürgt – kein Schrei durchs Hotel, er liegt in seinem Zimmer (6.12).
+func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	for other in living_guests():
 		other.fear = minf(100.0, other.fear + 50.0)
-	Game.say("Ein Schrei hallt durch das Hotel …", 4.0)
-	get_tree().create_timer(5.0).timeout.connect(func() -> void:
-		Game.say("%s ist verschwunden." % guest.display_name, 4.0))
+	if cause == "ghost":
+		Game.say("Irgendwo im Hotel bricht ein Röcheln ab …", 4.0)
+	else:
+		Game.say("Ein Schrei hallt durch das Hotel …", 4.0)
+		get_tree().create_timer(5.0).timeout.connect(func() -> void:
+			Game.say("%s ist verschwunden." % guest.display_name, 4.0))
 	_memorial_doors.append(guest.home["door_front"])
 	# Ein, zwei Gäste schreiben einen Zettel und legen ihn vor ihre Tür
 	var writers := living_guests()
@@ -797,6 +830,17 @@ func note_trace(kind: String, pos: Vector3) -> void:
 	_reports.append({"kind": kind, "zone": Game.director.zone_name_at(pos), "time": _time})
 	if _reports.size() > 12:
 		_reports.pop_front()
+
+
+## Was ein Gast von einem eigenen Erlebnis erzählt (Spielkonzept 6.12). again: später am Tag, kürzer.
+func experience_line(guest: Guest, experience: Dictionary, again: bool = false) -> String:
+	var kind: String = experience["kind"]
+	var zone: String = experience["zone"] if experience["zone"] != "" else "hier"
+	var keys := {"zone": zone, "who": experience["who"]}
+	if again:
+		return String(EXPERIENCE_AGAIN[kind]).format(keys)
+	var lines: Array = EXPERIENCE_LINES[guest.shock_style()][kind]
+	return String(lines[randi() % lines.size()]).format(keys)
 
 
 ## Was ein Gast über Spuren erzählt – je nach Persönlichkeit zuverlässig oder nicht.
