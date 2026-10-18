@@ -661,6 +661,22 @@ braucht), beim Ausprobieren festlegen.
 > (1,9 m breit, 0,75–3,05 m statt 1,4 m breit, 0,9–2,3 m).
 > **Gäste als Opfer (entschieden und umgesetzt 2026-10-18):** Er behandelt Gäste wie den Spieler, mit eigenem
 > Zähler je Gast; Erwürgte bleiben als Leiche liegen – siehe 6.12.
+> **Gefährlicher und hartnäckiger (entschieden und umgesetzt 2026-10-18):**
+> - **Losreißen ist die seltene Ausnahme:** Ein Balken füllt sich mit jedem Richtungswechsel, der Griff zieht ihn
+>   ständig zurück; in 3 s schafft man es erst mit etwa 6–7 Wechseln je Sekunde, ab dem 4. Mal greift er noch fester zu.
+>   Gäste reißen sich nur noch mit 5 % + 20 % × Mut los.
+> - **Verstecken im Schrank:** Er verschwindet nicht, sondern wartet **20–35 s vor den Schranktüren** (rüttelt,
+>   flüstert). Wer herauskommt, wird sofort gepackt. Danach fliegt er mit **40 %** (ab dem 6. Mal **75 %**, +10 % je
+>   Nacht ohne Schlaf) **hinein** und würgt im Schrank – sonst gibt er auf. Luft anhalten senkt die Chance (bis zur
+>   Hälfte), Keuchen verrät einen sofort. Zeugen vertreiben ihn auch hier. Nur ab dem 3. Mal (wenn er ohnehin
+>   hereinkäme) und nur am Schrank – unterm Bett verschwindet er wie bisher.
+> - **Schlafen:** Der Spieler schläft **während der Nachtruhe im eigenen Bett** (Zimmer 13; geduckt kriecht man
+>   darunter). Augen zu, die Zeit läuft fünfmal so schnell bis zum Ende der Nachtruhe. Das Monster kann einen im
+>   Bett finden; ist es nah oder gibt es ein lautes Geräusch, wacht man auf. Eine **Nacht** ist eine Nachtruhe.
+> - **Schlafmangel:** Endet eine Nachtruhe ohne Schlaf (nach dem ersten Angriff), zählt eine Nacht ohne Schlaf.
+>   Je Nacht kommt er häufiger (+10 % am Fenster, kürzere Pause, öfter im Flur), ab **2** Nächten auch vor dem
+>   6. Mal im Flur, ab **3** Nächten **sicher im Flur**, sobald man dort allein ist – auch ohne Nachtruhe. Zeugen
+>   vertreiben ihn weiterhin. Schlafen setzt den Zähler zurück. Debug: `--awake=n`, `--ghost=schrank`, `--sleep=bett`.
 > **Noch nicht:** Einstellung für den Blickzug. Modell: `temp/Meshy_AI_floating_ghost_3d_…glb` – Laken mit Mundloch, ~1,9 m, zwei
 > blutige Hände nach vorn gestreckt. **Gerigget (2026-10-17):** `tools/build_ghost.py` → `assets/models/ghost.glb`
 > (0,8 MB, 512er-Textur, alle 10 159 Dreiecke behalten, damit die Finger heil bleiben) mit Saum, Rumpf, Kopf,
@@ -692,8 +708,9 @@ Der Blickzug bekommt eine Einstellung zum Abschwächen (wie das Flackern, 8.4).
 
 **Im Zimmer: Er versucht, dich zu erwürgen.**
 - Er schwebt auf dich zu und greift nach deinem Hals.
-- **Befreien:** Nur wer sich **hin und her bewegt**, reißt sich los – und hat dafür **1,5 Sekunden**. Schafft
-  man es nicht, **stirbt man** (Sterbebildschirm wie beim Monster, 4.6).
+- **Befreien:** Nur wer sich **wild hin und her bewegt**, reißt sich los – und hat dafür **3 Sekunden**, gegen
+  einen Griff, der ständig zurückzieht (2026-10-18; vorher 1,5 s und drei Wechsel). Schafft man es nicht,
+  **stirbt man** (Sterbebildschirm wie beim Monster, 4.6).
 - **Er verschwindet, wenn mindestens ein bis zwei weitere Gäste zu sehen sind** – Zeugen vertreiben ihn.
   Allein im dunklen Zimmer ist man ihm ausgeliefert; in Gesellschaft ist man sicher. Das stärkt die Gäste
   (Kapitel 6): Wer Freunde hat, die mit ins Zimmer kommen, hat weniger zu fürchten.
@@ -715,7 +732,7 @@ zum gefährlichsten Ort.
 **Zu klären**
 - **Herkunft:** Eigenes Wesen, einer der Verschwundenen (mit jedem geholten Gast häufiger?) oder Teil des
   Monsters? Bisher kennt das Konzept *ein* Monster, und die Geschichte (2.3) hängt daran.
-- **Befreien genau:** Wie viel Hin-und-Her reicht (z. B. drei Richtungswechsel in 1,5 s)? Hilft UV-Licht?
+- ~~**Befreien genau:** Wie viel Hin-und-Her reicht?~~ Balken gegen den Griff (2026-10-18). Hilft UV-Licht?
 - **Wie viele Zeugen genau:** einer oder zwei? Reicht es, dass sie im Raum sind, oder müssen sie ihn sehen?
 - ~~**Gäste:** Kommt er auch zu Gästen, die bei sich das Licht aus und den Vorhang offen haben?~~ Ja, wie zum Spieler (2026-10-18, 6.12).
 - **Zähler:** gilt er für das ganze Hotel oder pro Zimmer? Wird er zurückgesetzt?
@@ -1020,7 +1037,7 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
   Zimmer), kommt er mit derselben Chance – mit **eigenem Zähler je Gast** (1. Mal heranschweben, 2. Handabdrücke
   und Hypnose, ab 3. herein und würgen, ab 4. durch den Vorhang). Der Zähler des Spielers bleibt davon unberührt.
 - Ab der Hypnose bleibt der Gast **gebannt stehen**, statt wegzulaufen.
-- **Würgen:** Mutige reißen sich eher los (25 % + 50 % × Mut) und rennen in Panik davon, sonst **stirbt der Gast und
+- **Würgen:** Mutige reißen sich eher los (5 % + 20 % × Mut, seit 2026-10-18; vorher 25 % + 50 %) und rennen in Panik davon, sonst **stirbt der Gast und
   bleibt als Leiche liegen**. Im Hotel hört man nur ein abbrechendes Röcheln.
 - **Zeugen** vertreiben ihn wie beim Spieler – bei einem Gast zählt **auch der Spieler** als Zeuge. Wer ihn so
   sieht, erschrickt ebenfalls.
@@ -1436,6 +1453,7 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 7f. ~~Hotelkatzen: frei laufend, streicheln, Lieblingsgäste, vom Monster verschont, fliehen und weinen in seiner Nähe, werfen Deko um, bringen selten Deko und schlafen auf deinem Bett (6.11)~~ ✔ (2026-10-17)
 7g. ~~Angriffsabsicht & Flacker-Signal: Eine Flackerwelle vom Keller aus verrät mit ihrer Dauer, ob es sich umsieht, einen holt oder auf Raubzug geht (n Opfer ∝ 1/n², Flackern 1 + 2 × n s, Spieler zählt mit, täuscht manchmal) (4.17)~~ ✔ (2026-10-17)
 7h. ~~Lakengeist am Fenster: kommt bei Licht aus und offenem Vorhang, wird von Mal zu Mal dreister (Handabdrücke auf der Scheibe, Hypnose, kommt herein und würgt), verschwindet vor Zeugen in 0,5 s, ab dem 6. Mal im Flur, wenn alle schlafen (Nachtruhe zu zufälligen Zeiten) (4.18)~~ ✔ (2026-10-17)
+7i. ~~Lakengeist hartnäckiger: Losreißen kaum noch möglich, wartet vor dem Schrank und fliegt hinein, Schlafen im eigenen Bett, Schlafmangel lockt ihn – nach drei Nächten sicher im Flur (4.18)~~ ✔ (2026-10-18)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen

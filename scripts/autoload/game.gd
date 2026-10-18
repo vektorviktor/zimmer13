@@ -146,6 +146,8 @@ func noise(kind: String, pos: Vector3, source: Node = null) -> float:
 			volume *= clampf(1.0 - d / reach, 0.0, 1.0) if reach > 0.0 else 0.0
 		if volume > 0.02:
 			play_sound(data["sound"], volume)
+		if player.sleeping and source != player and volume >= 0.3:
+			player.wake_up("Ein Geräusch weckt dich.")
 	var heard: Array[String] = []
 	if director:
 		var r := director.on_noise(pos, loudness, source)

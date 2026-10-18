@@ -33,9 +33,14 @@ extends Node3D
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort Vorwarnung → Monster erscheint
-##   --ghost=n|flur              Lakengeist zum n. Mal: Zimmer 13, Licht aus, Vorhang auf, er kommt sicher (4.18) ·
+##   --ghost=n|flur|schrank      Lakengeist zum n. Mal: Zimmer 13, Licht aus, Vorhang auf, er kommt sicher (4.18) ·
 ##                               flur: alle Gäste schlafen sofort, er kommt im Flur (Spieler vorher mit --pos hinstellen)
-##   --sleep                     Nachtruhe sofort beginnen (Gäste gehen ins Bett)
+##                               schrank: kommt in Zimmer 13 herein, du versteckst dich sofort im Schrank – er
+##                               wartet davor (mit --trace: Wartezeit, Chance, ob er hineinfliegt)
+##   --sleep[=bett]              Nachtruhe sofort beginnen (Gäste gehen ins Bett) · bett: alle liegen sofort,
+##                               du schläfst im Bett von Zimmer 13
+##   --awake=n                   so viele Nächte ohne Schlaf (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
+##                               der erste Angriff gilt dann als geschehen
 ##   --intent=roam|one|rampage|n Absicht beim Aufbruch erzwingen (umsehen, 1 oder 2 Opfer, oder n Opfer; 4.17)
 ##   --bold=n                    Dreistigkeit setzen (0–100)
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
@@ -417,8 +422,27 @@ func run_debug(arg: String) -> bool:
 			Game.dialog.open(partner))
 	elif arg == "--ghost=flur":
 		Game.ghost.debug_summon_hall()
+	elif arg == "--ghost=schrank":
+		# kommt durch den Vorhang herein – du versteckst dich gleich im Schrank von Zimmer 13
+		var room: Dictionary = Game.director.rooms["13"]
+		Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)
+		Game.ghost.debug_summon(4, "13")
+		get_tree().create_timer(1.5).timeout.connect(func() -> void:
+			for spot in room["spots"]:
+				if (spot as HideSpot).type == HideSpot.Type.WARDROBE and Game.player.hiding == null:
+					Game.player.enter_hide(spot))
+	elif arg.begins_with("--awake="):
+		# so viele Nächte ohne Schlaf (zählen erst nach dem ersten Angriff, also gilt der als geschehen)
+		Game.director.first_attack_done = true
+		Game.player.nights_awake = arg.substr(8).to_int()
 	elif arg == "--sleep":
 		Game.social.start_sleep()
+	elif arg == "--sleep=bett":
+		# alle Gäste sofort im Bett, du schläfst im Bett von Zimmer 13
+		Game.social.start_sleep(true)
+		for spot in Game.director.rooms["13"]["spots"]:
+			if (spot as HideSpot).own_bed:
+				Game.player.start_sleep(spot)
 	elif arg.begins_with("--ghost="):
 		var room: Dictionary = Game.director.rooms["13"]
 		Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)

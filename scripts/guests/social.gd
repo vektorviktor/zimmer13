@@ -541,6 +541,8 @@ func _update_sleep(delta: float) -> void:
 	if sleep_active:
 		sleep_active = false
 		sleep_timer = randf_range(SLEEP_GAP.x, SLEEP_GAP.y)
+		if Game.player:
+			Game.player.on_night_over()   # Schlaf oder eine Nacht mehr ohne (Spielkonzept 4.18)
 		for guest in living_guests():
 			guest.wake_up()
 		Game.say("Türen gehen auf, Schritte im Flur – die Gäste sind wieder wach.", 3.5)

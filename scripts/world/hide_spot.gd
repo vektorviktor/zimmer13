@@ -15,6 +15,8 @@ var checked := false
 var view_point: Marker3D
 var exit_point: Marker3D
 var check_point: Marker3D
+## Das Bett in Zimmer 13: Darin schläft der Spieler während der Nachtruhe (Spielkonzept 4.18).
+var own_bed := false
 
 var _visual: Node3D
 var _leaves: Array[Node3D] = []
@@ -45,6 +47,8 @@ func _ready() -> void:
 func get_prompt(player: Player) -> String:
 	if occupant != null and occupant != player:
 		return "Besetzt"
+	if _can_sleep(player):
+		return "Schlafen [E]    (geduckt: unters Bett)"
 	if checked and type == HideSpot.Type.BED:
 		return "Das Bett ist zerwühlt … Unters Bett kriechen [E]"
 	return "Im Schrank verstecken [E]" if type == Type.WARDROBE else "Unters Bett kriechen [E]"
@@ -52,7 +56,15 @@ func get_prompt(player: Player) -> String:
 
 func interact(player: Player) -> void:
 	if occupant == null:
-		player.enter_hide(self)
+		if _can_sleep(player):
+			player.start_sleep(self)
+		else:
+			player.enter_hide(self)
+
+
+## Im eigenen Bett (Zimmer 13) schläft man während der Nachtruhe – geduckt kriecht man darunter.
+func _can_sleep(player: Player) -> bool:
+	return own_bed and not player.crouching and Game.social != null and Game.social.sleep_active
 
 
 ## `actor`: wer hineingeht – die Schranktür ist Lärm (4.15).
@@ -89,6 +101,26 @@ func load_state(data: Dictionary) -> void:
 ## Das Monster reißt das Versteck auf.
 func rip_open() -> void:
 	Game.noise("hide_burst", global_position, Game.monster)
+	_fling_open()
+
+
+## Der Lakengeist (Spielkonzept 4.18): Die Schranktüren fliegen auf – leiser als beim Monster.
+func burst_open(source: Node) -> void:
+	Game.noise("rattle", global_position, source)
+	_fling_open()
+
+
+## Der Lakengeist wartet davor und rüttelt an den Türen.
+func rattle() -> void:
+	Game.play_sound("thud", 0.35)
+	for i in _leaves.size():
+		var side := -1.0 if i == 0 else 1.0
+		var tw := create_tween()
+		tw.tween_property(_leaves[i], "rotation:y", side * deg_to_rad(14.0), 0.08)
+		tw.tween_property(_leaves[i], "rotation:y", side * deg_to_rad(7.0), 0.12)
+
+
+func _fling_open() -> void:
 	var tw := create_tween().set_parallel(true)
 	if type == Type.WARDROBE:
 		for i in _leaves.size():

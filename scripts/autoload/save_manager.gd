@@ -21,7 +21,8 @@ const DIR := "user://saves/"
 ## 10: Deckenlampen entfernt, dafür Wandleuchten, zwei je Zimmer (Gruppe lamp_fixtures anders)
 ## 11: Schreck & Erlebnisse der Gäste, Leichen, Lakengeist bei Gästen (corpse, ghost_visits, seen, experiences)
 ##     – Stände mit Version 10 laden weiter, die Gäste haben dann noch nichts erlebt
-const VERSION := 11
+## 12: Nächte ohne Schlaf (player.nights_awake) – ältere Stände laden weiter, der Spieler gilt als ausgeschlafen
+const VERSION := 12
 const MIN_VERSION := 10
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -240,7 +241,7 @@ func collect() -> Dictionary:
 		"visited": visited.duplicate(),
 		"player": {
 			"pos": _v(p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
-			"crouch": p.crouching, "shock": p.shock,
+			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake,
 			"held": _item_data(p.held) if p.held else null,
 			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
 		},
@@ -447,6 +448,7 @@ func apply(data: Dictionary) -> void:
 	p.rotation.y = float(pd["yaw"])
 	p.head.rotation.x = float(pd["pitch"])
 	p.shock = float(pd.get("shock", 0.0))
+	p.nights_awake = int(pd.get("nights_awake", 0))
 	p.set_pockets(bool(pd.get("compass", false)), pd.get("map_pages", []), pd.get("keyring", []))
 	if pd.get("held") != null:
 		var held_item := _make_item(pd["held"])

@@ -4,14 +4,18 @@ extends Node3D
 ## in dem das Licht aus und der Vorhang offen ist – und wird mit jedem Mal dreister:
 ##   1. schwebt kurz heran · 2. fasst die Scheibe an (blutige Handabdrücke) und hypnotisiert mit kreisenden
 ##   Händen · 3. kommt herein und würgt · ab dem 4. Mal kommt er immer herein, auch durch den Vorhang.
-## Wer gewürgt wird, reißt sich nur los, indem er sich hin und her bewegt (1,5 s). Gäste als Zeugen
-## vertreiben ihn. Verschwinden: in 0,5 s ausgeblendet. Ab dem 6. Mal taucht er auch im Flur auf, wenn alle
-## Gäste schlafen (Nachtruhe, Social) – dann gibt es keine Zeugen.
+## Wer gewürgt wird, reißt sich nur mit wildem Hin und Her los – der Griff zieht ständig zurück, Losreißen
+## ist die seltene Ausnahme. Gäste als Zeugen vertreiben ihn. Verschwinden: in 0,5 s ausgeblendet.
+## Wer sich vor ihm im Schrank versteckt, den wartet er ab: Er schwebt vor den Türen, packt zu, wer
+## herauskommt, und fliegt am Ende vielleicht hinein (Luft anhalten hilft ein wenig).
+## Ab dem 6. Mal taucht er auch im Flur auf, wenn alle Gäste schlafen (Nachtruhe, Social) – dann gibt es
+## keine Zeugen. Schlafmangel (Player.nights_awake) macht ihn häufiger; nach drei Nächten ohne Schlaf
+## kommt er sicher im Flur, sobald man dort allein ist.
 ## Gäste behandelt er wie den Spieler (Spielkonzept 6.12): Wer wach im Dunkeln bei offenem Vorhang steht,
 ## bekommt Besuch – mit eigenem Zähler (Guest.ghost_visits). Ein erwürgter Gast bleibt als Leiche liegen.
 ## Wer ihn sieht, erschrickt (Guest.shock) und erzählt später davon.
 
-enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE }
+enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN }
 
 const MODEL := "res://assets/models/ghost.glb"
 
@@ -35,8 +39,23 @@ const TRANCE_GAIN := 0.35             ## Hypnose je Sekunde, solange man ihn ans
 const TRANCE_DECAY := 0.25
 const PULL := 0.9                     ## Blickzug (rad/s) bei voller Hypnose
 const GRIP_RANGE := 0.7
-const ESCAPE_TIME := 1.5
-const ESCAPE_SWINGS := 3              ## so oft muss man die Richtung wechseln, um sich loszureißen
+## Losreißen: Jeder Richtungswechsel füllt den Balken, der Griff zieht ihn ständig zurück. Erst ab etwa
+## 6,5 Wechseln je Sekunde über die ganze Zeit reicht es – ab dem 4. Mal greift er noch fester zu.
+const ESCAPE_TIME := 3.0
+const ESCAPE_GAIN := 0.16             ## je Richtungswechsel
+const ESCAPE_GRIP := 0.72             ## so viel zieht der Griff je Sekunde zurück
+const ESCAPE_GRIP_STAGE := 0.06       ## ab dem 4. Mal je Mal fester (höchstens +0,3)
+## Gäste reißen sich nur selten los: so viel + Mut × so viel
+const GUEST_ESCAPE := Vector2(0.05, 0.2)
+## Schrank: so lange wartet er vor den Türen, dann fliegt er mit dieser Chance hinein (sonst gibt er auf)
+const LURK_TIME := Vector2(20.0, 35.0)
+const FLY_IN_CHANCE := 0.4
+const FLY_IN_CHANCE_LATE := 0.75      ## ab dem 6. Mal
+const FLY_IN_PER_NIGHT := 0.1         ## je Nacht ohne Schlaf mehr
+const BREATH_SAVES := 0.5             ## Luft anhalten senkt die Chance um bis zu diesen Anteil …
+const BREATH_FULL := 12.0             ## … bei so vielen Sekunden angehaltener Luft während des Wartens
+const FLY_IN_SPEED := 2.4
+const RATTLE_EVERY := Vector2(3.0, 7.0)
 const WITNESSES := 1                  ## so viele wache Gäste mit Blick auf ihn vertreiben ihn
 const WITNESS_RANGE := 12.0
 const LEAVE_RANGE := 14.0             ## so weit weg vom Fenster (bzw. von ihm) gibt er auf
@@ -44,6 +63,12 @@ const LEAVE_RANGE := 14.0             ## so weit weg vom Fenster (bzw. von ihm) 
 const HALL_FROM := 6
 const HALL_CHANCE := 0.04
 const HALL_DISTANCE := Vector2(8.0, 16.0)
+## Schlafmangel (Nächte ohne Schlaf, Player.nights_awake): je Nacht mehr Chance, kürzere Pause, mehr Flur;
+## ab AWAKE_HALL_FROM auch vor dem 6. Mal im Flur, ab AWAKE_SURE sicher im Flur, sobald man dort allein ist
+## (auch ohne Nachtruhe)
+const AWAKE_CHANCE := 0.1
+const AWAKE_HALL_FROM := 2
+const AWAKE_SURE := 3
 ## Modell: Handgelenke so hoch über dem Ursprung, Hände so weit vor der Mitte
 const HANDS_Y := 1.12
 const HANDS_AHEAD := 0.45
@@ -73,6 +98,10 @@ var _swings := 0
 var _last_sign := 0
 var _force := false
 var _force_hall := false
+var _escape := 0.0       ## Losreißen: Balken 0..1
+var _lurk_spot: HideSpot ## Schrank, vor dem er wartet bzw. in den er hineinfliegt
+var _rattle := 0.0
+var _held_breath := 0.0  ## so lange hat der Spieler beim Warten die Luft angehalten
 var _material: ShaderMaterial
 var _skeleton: Skeleton3D
 var _bone := {}
@@ -120,8 +149,11 @@ func _physics_process(delta: float) -> void:
 		if seen_by.size() + _player_witness(global_position + Vector3.UP * HANDS_Y) >= WITNESSES:
 			for guest in seen_by:
 				guest.shock("ghost", global_position)
+			if "--trace" in OS.get_cmdline_user_args():
+				var names := seen_by.map(func(g: Guest) -> String: return g.display_name)
+				print("[Lakengeist] vertrieben von %s" % (", ".join(names) if not names.is_empty() else "dir"))
 			_vanish()
-		elif _victim_gone():
+		elif _lost_victim():
 			_vanish()
 	if _victim is Guest and not _victim_saw and state in [State.APPROACH, State.HOVER, State.ENTER] and _fade > 0.5:
 		_guest_sees_me(_victim as Guest)
@@ -142,20 +174,23 @@ func _physics_process(delta: float) -> void:
 		State.ENTER:
 			var neck := _eye_of(_victim) - Vector3(0, NECK_BELOW_EYES, 0)
 			var flat := Vector3(neck.x - global_position.x, 0, neck.z - global_position.z)
-			var spot := Vector3(neck.x, neck.y - HANDS_Y, neck.z) - flat.normalized() * HANDS_AHEAD
-			_face(flat)
-			if _float_to(spot, INSIDE_SPEED, delta, false) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
+			if _float_to(_grip_spot(), INSIDE_SPEED, delta, false) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
 				_grab()
 			elif _victim.global_position.distance_to(_window.global_position if _window else global_position) > LEAVE_RANGE + (0.0 if _window else 6.0):
 				_vanish()
 		State.STRANGLE:
 			_struggle(delta)
+		State.LURK:
+			_lurk(delta)
+		State.FLY_IN:
+			if _float_to(_grip_spot(), FLY_IN_SPEED, delta):
+				_grab()
 		State.FADE:
 			_fade = maxf(0.0, _fade - delta / FADE_TIME)
 			if _fade <= 0.0:
 				_hide()
 				return
-	if state in [State.APPROACH, State.HOVER, State.ENTER] and _fade < 1.0:
+	if state in [State.APPROACH, State.HOVER, State.ENTER, State.LURK, State.FLY_IN] and _fade < 1.0:
 		_fade = minf(1.0, _fade + delta / APPEAR_TIME)
 	_material.set_shader_parameter("fade", _fade)
 	_update_trance(delta)
@@ -180,7 +215,7 @@ func _check_spawn() -> void:
 			_last_window = window
 			# in Gesellschaft kommt er nicht
 			if window != null and (_cooldown <= 0.0 or _force) and director.player_threat <= 0.0 \
-					and _witness_guests(eye, player).size() < WITNESSES and (_force or randf() < SPAWN_CHANCE):
+					and _witness_guests(eye, player).size() < WITNESSES and (_force or randf() < _spawn_chance()):
 				_force = false
 				_appear(window, player)
 				return
@@ -217,20 +252,29 @@ func _check_guests() -> void:
 
 
 ## Ab dem 6. Mal: Schlafen alle Gäste und steht der Spieler im Flur, taucht er dort mit kleiner Chance
-## je Sekunde auf – irgendwo vor oder hinter ihm, wo er gerade nicht hinsieht.
+## je Sekunde auf – irgendwo vor oder hinter ihm, wo er gerade nicht hinsieht. Schlafmangel: je Nacht ohne
+## Schlaf öfter, ab der 2. auch vor dem 6. Mal, ab der 3. sicher, sobald man allein im Flur ist.
 func _check_hall(player: Player) -> bool:
-	if visits + 1 < HALL_FROM or Game.social == null or not Game.social.all_asleep():
+	var nights := player.nights_awake
+	if Game.social == null or not "Flur" in Game.director.zone_name_at(player.global_position):
 		return false
-	if not "Flur" in Game.director.zone_name_at(player.global_position):
-		return false
-	if not _force_hall and (_cooldown > 0.0 or Game.director.player_threat > 0.0 or randf() >= HALL_CHANCE * CHECK_EVERY):
-		return false
+	if nights >= AWAKE_SURE:
+		if _cooldown > 0.0 or Game.director.player_threat > 0.0 \
+				or _witness_guests(player.camera.global_position, player).size() >= WITNESSES:
+			return false
+	else:
+		if (visits + 1 < HALL_FROM and nights < AWAKE_HALL_FROM) or not Game.social.all_asleep():
+			return false
+		if not _force_hall and (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
+				or randf() >= HALL_CHANCE * (1 + nights) * CHECK_EVERY):
+			return false
 	var spots: Array[Vector3] = []
 	for entry in Game.director.patrol:
 		var p: Vector3 = entry["pos"]
 		var d := p.distance_to(player.global_position)
 		if absf(p.y - player.global_position.y) < 1.5 and d >= HALL_DISTANCE.x and d <= HALL_DISTANCE.y \
-				and "Flur" in Game.director.zone_name_at(p) and not Game.director.player_can_see(p + Vector3.UP * 1.2):
+				and "Flur" in Game.director.zone_name_at(p) and not Game.director.player_can_see(p + Vector3.UP * 1.2) \
+				and _witness_guests(p + Vector3.UP * HANDS_Y, player).size() < WITNESSES:   # wache Gäste (Schlafmangel)
 			spots.append(p)
 	if spots.is_empty():
 		return false
@@ -242,9 +286,11 @@ func _check_hall(player: Player) -> bool:
 func _appear_in_hall(floor_point: Vector3) -> void:
 	visits += 1
 	_victim = Game.player
+	_victim_saw = false
 	_stage = visits
 	_window = null
 	_last_window = null
+	_lurk_spot = null
 	var neck := Game.player.camera.global_position.y - NECK_BELOW_EYES
 	global_position = Vector3(floor_point.x, neck - HANDS_Y, floor_point.z)
 	_face(Game.player.global_position - global_position)
@@ -253,7 +299,8 @@ func _appear_in_hall(floor_point: Vector3) -> void:
 	state = State.ENTER
 	Game.caption("[Kälte im Flur]")
 	if "--trace" in OS.get_cmdline_user_args():
-		print("[Lakengeist] %d. Mal – im Flur" % visits)
+		var nights := Game.player.nights_awake
+		print("[Lakengeist] %d. Mal – im Flur (%d Nächte ohne Schlaf%s)" % [visits, nights, ", sicher" if nights >= AWAKE_SURE else ""])
 
 
 ## Dunkles Außenfenster in der Nähe dieses Augenpunkts, durch das er zum `stage`. Mal käme.
@@ -291,6 +338,7 @@ func _appear(window: HotelWindow, victim: Node3D) -> void:
 		visits += 1
 		_stage = visits
 	_window = window
+	_lurk_spot = null
 	var outward := window.global_transform.basis.z.normalized() * -1.0
 	var base := window.global_position - Vector3(0, HANDS_Y, 0)
 	visible = true
@@ -308,7 +356,8 @@ func _appear(window: HotelWindow, victim: Node3D) -> void:
 	if victim is Player:
 		Game.caption("[Etwas schwebt vor dem Fenster]")
 	if "--trace" in OS.get_cmdline_user_args():
-		print("[Lakengeist] %d. Mal am Fenster (%s) – bei %s" % [_stage, window.room_id, (victim as Guest).display_name if victim is Guest else "dir"])
+		print("[Lakengeist] %d. Mal am Fenster (%s) – bei %s" % [_stage, window.room_id, (victim as Guest).display_name if victim is Guest \
+			else "dir (%d Nächte ohne Schlaf)" % Game.player.nights_awake])
 
 
 ## Ab dem 2. Mal: blutige Handabdrücke außen auf der Scheibe.
@@ -325,11 +374,12 @@ func _grab() -> void:
 	_timer = ESCAPE_TIME
 	_swings = 0
 	_last_sign = 0
+	_escape = 0.0
 	if _victim is Guest:
 		# Mutige reißen sich eher los (ein Gast zappelt nicht nach Anleitung)
 		var guest := _victim as Guest
 		guest.ghost_grab(global_position + Vector3.UP * HANDS_Y)
-		_escape_at = ESCAPE_TIME * randf_range(0.3, 0.9) if randf() < 0.25 + 0.5 * float(guest.profile["brave"]) else -1.0
+		_escape_at = ESCAPE_TIME * randf_range(0.3, 0.9) if randf() < GUEST_ESCAPE.x + GUEST_ESCAPE.y * float(guest.profile["brave"]) else -1.0
 		if Game.player.global_position.distance_to(guest.global_position) < 12.0:
 			Game.play_sound("gasp", 0.6)
 		Game.shot_event("strangle", 20)
@@ -337,11 +387,14 @@ func _grab() -> void:
 	Game.player.gripped = true
 	Game.play_sound("gasp", 0.8)
 	Game.caption("[Kalte Hände um deinen Hals – reiß dich los!]")
-	Game.say("Beweg dich! Hin und her!", ESCAPE_TIME)
+	Game.say("Beweg dich! Schnell hin und her!", ESCAPE_TIME)
+	if Game.hud:
+		Game.hud.set_struggle(0.0)
 	Game.shot_event("strangle", 20)
 
 
-## Losreißen: Die Bewegungsrichtung muss ESCAPE_SWINGS-mal wechseln, bevor die Zeit um ist.
+## Losreißen: Jeder Richtungswechsel füllt den Balken um ESCAPE_GAIN, der Griff zieht ihn ständig zurück.
+## Voll, bevor die Zeit um ist → los (aus dem Schrank stürzt man dabei heraus).
 func _struggle(delta: float) -> void:
 	if _victim is Guest:
 		_timer -= delta
@@ -359,16 +412,26 @@ func _struggle(delta: float) -> void:
 	if dir != 0 and dir != _last_sign:
 		if _last_sign != 0:
 			_swings += 1
+			_escape += ESCAPE_GAIN
 		_last_sign = dir
-	if _swings >= ESCAPE_SWINGS:
+	var grip := ESCAPE_GRIP + minf(0.3, ESCAPE_GRIP_STAGE * maxi(0, _stage - ENTER_FROM))
+	_escape = maxf(0.0, _escape - grip * delta)
+	if Game.hud:
+		Game.hud.set_struggle(_escape)
+	var held := ESCAPE_TIME - _timer
+	if _escape >= 1.0:
 		if "--trace" in OS.get_cmdline_user_args():
-			print("[Lakengeist] losgerissen nach %.1f s" % (ESCAPE_TIME - _timer))
+			print("[Lakengeist] losgerissen nach %.1f s (%d Wechsel, %.1f je s)" % [held, _swings, _swings / maxf(0.1, held)])
 		player.add_shock(0.25, false)
 		Game.say("Losgerissen!", 1.5)
+		if player.hiding:
+			player.exit_hide()   # aus dem Schrank gestürzt
 		_vanish()
 		return
 	_timer -= delta
 	if _timer <= 0.0:
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Lakengeist] Balken bei %.0f %% (%d Wechsel in %.1f s)" % [_escape * 100.0, _swings, ESCAPE_TIME])
 		_kill()
 
 
@@ -382,6 +445,7 @@ func _kill() -> void:
 	player.gripped = false
 	player.dead = true
 	if Game.hud:
+		Game.hud.set_struggle(-1.0)
 		Game.hud.set_prompt("")
 		Game.hud.visible = false
 	Game.play_sound("scream", 1.0)
@@ -405,10 +469,14 @@ func _kill_guest(guest: Guest) -> void:
 func _vanish() -> void:
 	if Game.player:
 		Game.player.gripped = false
+	if Game.hud:
+		Game.hud.set_struggle(-1.0)
 	if _victim is Guest:
 		(_victim as Guest).ghost_gone()
 	state = State.FADE
-	_cooldown = COOLDOWN
+	_lurk_spot = null
+	# Schlafmangel: Zum Spieler kommt er umso schneller wieder
+	_cooldown = COOLDOWN / (1.0 + (Game.player.nights_awake if _victim is Player else 0))
 
 
 func _hide() -> void:
@@ -417,6 +485,7 @@ func _hide() -> void:
 	_fade = 0.0
 	_window = null
 	_victim = null
+	_lurk_spot = null
 	global_position = Vector3(0, -60, 0)
 	if _material:
 		_material.set_shader_parameter("fade", 0.0)
@@ -473,6 +542,93 @@ func _victim_gone() -> bool:
 	return player.hiding != null or player.dead
 
 
+## Opfer verloren? Versteckt sich der Spieler vor ihm im Schrank, wartet er davor, statt zu verschwinden.
+func _lost_victim() -> bool:
+	if not _victim_gone():
+		return false
+	var player := _victim as Player
+	if player == null or player.dead:
+		return true
+	if _lurk_spot != null and player.hiding == _lurk_spot:
+		return false   # wartet davor, fliegt hinein oder würgt schon im Schrank
+	return not _start_lurk(player.hiding)
+
+
+## Nur wenn er ohnehin hereingekommen wäre (ab dem 3. Mal, im Flur) – und nur vor Schränken.
+func _start_lurk(spot: HideSpot) -> bool:
+	if spot == null or spot.type != HideSpot.Type.WARDROBE or state == State.STRANGLE \
+			or not (_stage >= ENTER_FROM or _window == null):
+		return false
+	_lurk_spot = spot
+	state = State.LURK
+	_timer = randf_range(LURK_TIME.x, LURK_TIME.y)
+	_rattle = randf_range(RATTLE_EVERY.x, RATTLE_EVERY.y)
+	_held_breath = 0.0
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Lakengeist] wartet %.0f s vor dem Schrank" % _timer)
+	return true
+
+
+## Vor dem Schrank: schwebt vor die Türen und rüttelt ab und zu. Wer herauskommt, wird gepackt; wer nach
+## Luft schnappt, verrät sich – dann fliegt er sofort hinein. Am Ende würfelt er: hinein oder aufgeben.
+func _lurk(delta: float) -> void:
+	var player := Game.player
+	if player.hiding != _lurk_spot:   # herausgekommen (oder musste raus)
+		_lurk_spot = null
+		state = State.ENTER
+		Game.caption("[Er hat gewartet]")
+		return
+	var front := _lurk_spot.check_point.global_position
+	var hands := _lurk_spot.view_point.global_position.y - NECK_BELOW_EYES - HANDS_Y
+	_float_to(Vector3(front.x, hands, front.z), INSIDE_SPEED, delta)
+	_face(_lurk_spot.global_position - global_position)
+	if player.holding_breath:
+		_held_breath += delta
+	_rattle -= delta
+	if _rattle <= 0.0:
+		_rattle = randf_range(RATTLE_EVERY.x, RATTLE_EVERY.y)
+		_lurk_spot.rattle()
+		Game.caption("[Etwas rüttelt an der Schranktür]" if randf() < 0.6 else "[Flüstern vor dem Schrank]")
+	if player.breath <= 0.0:
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Lakengeist] hört dich keuchen – fliegt in den Schrank")
+		_fly_in()
+		return
+	_timer -= delta
+	if _timer > 0.0:
+		return
+	var chance := (FLY_IN_CHANCE_LATE if _stage >= HALL_FROM else FLY_IN_CHANCE) + FLY_IN_PER_NIGHT * player.nights_awake
+	chance *= 1.0 - BREATH_SAVES * clampf(_held_breath / BREATH_FULL, 0.0, 1.0)
+	var flies := randf() < chance
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Lakengeist] Schrank: Chance %.0f %% (Luft angehalten %.1f s) – %s" % [chance * 100.0, _held_breath,
+			"fliegt hinein" if flies else "gibt auf"])
+	if flies:
+		_fly_in()
+	else:
+		_vanish()
+
+
+## Die Türen fliegen auf, er schwebt hinein und würgt im Schrank.
+func _fly_in() -> void:
+	state = State.FLY_IN
+	_lurk_spot.burst_open(self)
+	Game.caption("[Die Schranktüren fliegen auf]")
+
+
+## Wohin er schwebt, um zuzupacken: Hände am Hals des Opfers. Dreht ihn zum Opfer.
+func _grip_spot() -> Vector3:
+	var neck := _eye_of(_victim) - Vector3(0, NECK_BELOW_EYES, 0)
+	var flat := Vector3(neck.x - global_position.x, 0, neck.z - global_position.z)
+	_face(flat)
+	return Vector3(neck.x, neck.y - HANDS_Y, neck.z) - flat.normalized() * HANDS_AHEAD
+
+
+## Erscheinen beim Spieler – Schlafmangel macht es wahrscheinlicher.
+func _spawn_chance() -> float:
+	return minf(1.0, SPAWN_CHANCE + AWAKE_CHANCE * Game.player.nights_awake)
+
+
 ## Augenpunkt des Opfers (Spieler: Kamera).
 func _eye_of(victim: Node3D) -> Vector3:
 	if victim is Guest:
@@ -496,7 +652,7 @@ func _update_trance(delta: float) -> void:
 	var pull := PULL * player.trance
 	if state == State.STRANGLE and mine:
 		pull = PULL * 2.0
-	if pull <= 0.0:
+	if pull <= 0.0 or player.hiding:   # im Versteck ist der Blick fest
 		return
 	var to := head - player.camera.global_position
 	var want_yaw := atan2(-to.x, -to.z)
@@ -531,8 +687,8 @@ func _pose() -> void:
 	_visual_offset(bob)
 	_rotate("hem", Vector3.RIGHT, sin(_time * 1.3) * 0.08)
 	_rotate("head", Vector3.FORWARD, sin(_time * 0.7) * 0.12)
-	var circling := _stage >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER]
-	var gripping := state == State.STRANGLE
+	var circling := _stage >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER, State.LURK]
+	var gripping := state in [State.STRANGLE, State.FLY_IN]
 	for side in [".L", ".R"]:
 		var phase := _time * 2.2 + (0.0 if side == ".L" else PI)
 		var lift := 0.25 if gripping else 0.0

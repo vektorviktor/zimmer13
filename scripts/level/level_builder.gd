@@ -446,7 +446,9 @@ func _room(no: String, x0: float, x1: float, kind: String, window: bool) -> void
 	var wardrobe_pos := Vector3(x1 - 0.4, 0, 3.8)
 	var table_pos := Vector3(x0 + 1.0, 0.375, 0.9)
 	if kind != "laundry":
-		info["spots"].append(_hide_spot(HideSpot.Type.BED, bed_pos, 90.0))
+		var bed := _hide_spot(HideSpot.Type.BED, bed_pos, 90.0)
+		bed.own_bed = kind == "player"
+		info["spots"].append(bed)
 		Geo.solid(_parent, Vector3(1.0, 0.75, 0.7), table_pos, _wood)
 	if kind in ["guest", "player", "empty", "vacant"]:
 		info["spots"].append(_hide_spot(HideSpot.Type.WARDROBE, wardrobe_pos, -90.0))

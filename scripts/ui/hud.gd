@@ -16,6 +16,8 @@ var _hide_overlay: ColorRect
 var _hide_material: ShaderMaterial
 var _breath_bg: ColorRect
 var _breath_fill: ColorRect
+var _struggle_bg: ColorRect
+var _struggle_fill: ColorRect
 var _message_time := 0.0
 var _autosave: Control
 var _autosave_flame: ColorRect
@@ -66,6 +68,18 @@ func _ready() -> void:
 	_breath_fill.position = Vector2(1, 1)
 	_breath_fill.size = Vector2(78, 2)
 	_breath_bg.visible = false
+
+	# Losreißen vom Lakengeist (Spielkonzept 4.18)
+	_struggle_bg = ColorRect.new()
+	_struggle_bg.color = Color(0, 0, 0, 0.6)
+	add_child(_struggle_bg)
+	_place(_struggle_bg, Vector4(0.5, 1, 0.5, 1), Vector4(-60, -40, 60, -34))
+	_struggle_fill = ColorRect.new()
+	_struggle_fill.color = Color(0.85, 0.85, 0.9, 0.9)
+	_struggle_bg.add_child(_struggle_fill)
+	_struggle_fill.position = Vector2(1, 1)
+	_struggle_fill.size = Vector2(0, 4)
+	_struggle_bg.visible = false
 
 	# Autosave: kleine Kerze in der Ecke
 	_autosave = Control.new()
@@ -147,7 +161,13 @@ func show_message(text: String, duration: float = 3.5) -> void:
 	_message.modulate.a = 1.0
 
 
-## 0 = kein Versteck, 1 = Schrank, 2 = unter dem Bett
+## Losreißen: Balken 0..1, < 0 blendet ihn aus.
+func set_struggle(value: float) -> void:
+	_struggle_bg.visible = value >= 0.0
+	_struggle_fill.size.x = 118.0 * clampf(value, 0.0, 1.0)
+
+
+## 0 = kein Versteck, 1 = Schrank, 2 = unter dem Bett, 3 = im Bett schlafen (Augen zu)
 func set_hide_mode(mode: int) -> void:
 	_hide_overlay.visible = mode > 0
 	_hide_material.set_shader_parameter("mode", mode)

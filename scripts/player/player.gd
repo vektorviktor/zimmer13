@@ -20,6 +20,11 @@ const MOUSE_SENSITIVITY := 0.0022
 const HIDE_COMFORT_TIME := 22.0   ## ab hier wird es im Versteck unangenehm
 const HIDE_MAX_TIME := 38.0       ## dann muss man raus (wie in „Doors“)
 const BREATH_MAX := 6.0
+## Schlafen im eigenen Bett während der Nachtruhe (Spielkonzept 4.18): die Zeit läuft so viel schneller,
+## so viele Spielsekunden Schlaf zählen als geschlafen, und ab dieser Nähe des Monsters wacht man auf
+const SLEEP_SPEED := 5.0
+const SLEEP_MIN := 30.0
+const SLEEP_WAKE_THREAT := 0.3
 ## Hand mit dem Gegenstand: unten rechts
 const HAND_REST := Vector3(0.22, -0.22, -0.45)
 ## Linke Hand: Karte bildfüllend vors Gesicht, Kompass vor die Brust (Zifferblatt zum Gesicht
@@ -54,6 +59,10 @@ var inspecting := false  ## schaut auf Karte oder Kompass in der linken Hand
 var trance := 0.0      ## Hypnose des Lakengeists (0..1) – macht langsamer (Spielkonzept 4.18)
 var gripped := false   ## wird gewürgt: steht fest, nur move_input zählt (Losreißen)
 var move_input := Vector2.ZERO   ## Bewegungstasten dieses Frames
+var sleeping := false  ## schläft im eigenen Bett (liegt dabei als Versteck darin)
+## Nachtruhen ohne Schlaf seit dem ersten Angriff – lockt den Lakengeist (Spielkonzept 4.18)
+var nights_awake := 0
+var _slept := 0.0      ## in dieser Nachtruhe geschlafen (Spielsekunden)
 ## Am Körper (Spielkonzept 3.2): Kompass, Kartenblätter (HotelMap.PAGES-IDs), Schlüssel-IDs
 var has_compass := false
 var map_pages: Array[String] = []
@@ -150,7 +159,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_explain_left_hand("map" if event.is_action_pressed("map") else "compass")
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	elif event.is_action_pressed("interact"):
+	elif event.is_action_pressed("interact") and not gripped:
 		if hiding:
 			exit_hide()
 		elif _focus != null and is_instance_valid(_focus):
@@ -163,6 +172,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	if dead:
+		if sleeping:
+			_stop_sleep()   # im Schlaf geholt
 		return
 	_update_shock(delta)
 	_update_dread(delta)
@@ -171,6 +182,8 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector3.ZERO
 		return
 	if hiding:
+		# Würgen im Schrank: nur die Bewegungstasten zählen (Losreißen)
+		move_input = Input.get_vector("move_left", "move_right", "move_forward", "move_back") if gripped else Vector2.ZERO
 		_update_hiding(delta)
 		return
 	_update_crouch()
@@ -633,6 +646,8 @@ func enter_hide(spot: HideSpot) -> void:
 func exit_hide() -> void:
 	if hiding == null:
 		return
+	if sleeping:
+		_stop_sleep()
 	var spot := hiding
 	hiding = null
 	spot.occupant = null
@@ -656,6 +671,9 @@ func _apply_hide_view() -> void:
 
 
 func _update_hiding(delta: float) -> void:
+	if sleeping:
+		_update_sleep(delta)
+		return
 	hide_time += delta
 	# Luft anhalten: senkt die Chance, dass das Monster dich findet – aber nicht zu lange.
 	if not Input.is_action_pressed("hold_breath"):
@@ -676,7 +694,76 @@ func _update_hiding(delta: float) -> void:
 	if Game.hud:
 		Game.hud.set_hide_state(hide_stress, breath / BREATH_MAX, holding_breath)
 		Game.hud.set_prompt("Verlassen [E]    Luft anhalten [Rechtsklick]")
-	if hide_stress >= 1.0:
+	if hide_stress >= 1.0 and not gripped:
 		Game.say("Du hältst es hier drin nicht mehr aus!")
 		Game.noise("gasp", global_position, self)
 		exit_hide()
+
+
+# --- Schlafen (Spielkonzept 4.18) ----------------------------------------------
+
+## Im eigenen Bett während der Nachtruhe: Augen zu, die Zeit läuft schneller bis zum Ende der Nachtruhe.
+## Man liegt dabei wie in einem Versteck im Bett – das Monster kann einen dort finden.
+func start_sleep(bed: HideSpot) -> void:
+	enter_hide(bed)
+	sleeping = true
+	Engine.time_scale = SLEEP_SPEED
+	if Game.hud:
+		Game.hud.set_hide_mode(3)
+		Game.hud.set_prompt("Aufstehen [E]")
+	Game.say("Du schläfst ein …", 2.0)
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Schlaf] eingeschlafen (%d Nächte ohne Schlaf)" % nights_awake)
+
+
+func _update_sleep(delta: float) -> void:
+	_slept += delta
+	if Game.hud:
+		Game.hud.set_prompt("Aufstehen [E]")
+	if Game.director and Game.director.player_threat > SLEEP_WAKE_THREAT:
+		wake_up("Du schreckst hoch – etwas ist ganz nah!")
+
+
+## Aufwachen, aber im Bett bleiben (darunter versteckt). Ende der Nachtruhe: aufstehen (on_night_over).
+func wake_up(text: String) -> void:
+	if not sleeping:
+		return
+	_stop_sleep()
+	hide_time = 0.0
+	if Game.hud:
+		Game.hud.set_hide_mode(2)
+	Game.say(text, 3.0)
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Schlaf] geweckt nach %.0f s: %s" % [_slept, text])
+
+
+func _stop_sleep() -> void:
+	sleeping = false
+	Engine.time_scale = 1.0
+
+
+## Ende der Nachtruhe (Social): Wer genug geschlafen hat, ist ausgeruht – sonst eine Nacht mehr ohne Schlaf.
+## Gezählt wird erst nach dem ersten Angriff (der friedliche Anfang soll niemanden bestrafen).
+func on_night_over() -> void:
+	var rested := _slept >= SLEEP_MIN
+	_slept = 0.0
+	if sleeping:
+		exit_hide()
+	var text := ""
+	if rested:
+		nights_awake = 0
+		text = "Du wachst auf. Endlich ausgeschlafen."
+	elif Game.director and Game.director.first_attack_done and not dead:
+		nights_awake += 1
+		match nights_awake:
+			1: text = "Wieder eine Nacht ohne Schlaf."
+			2: text = "Zwei Nächte wach … Ich sollte in meinem Bett schlafen, wenn das Hotel still wird."
+			_: text = "Mir fallen die Augen zu. Und draußen im Flur wartet etwas auf mich."
+	if text != "":   # nach der Meldung, dass die Gäste aufwachen
+		get_tree().create_timer(3.6, false).timeout.connect(Game.say.bind(text, 4.0))
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Schlaf] Nachtruhe vorbei – %s, %d Nächte ohne Schlaf" % ["ausgeschlafen" if rested else "wach geblieben", nights_awake])
+
+
+func _exit_tree() -> void:
+	Engine.time_scale = 1.0   # nicht schlafend ins Menü
