@@ -4,6 +4,31 @@ extends Node
 ## Diebstahl (mit Zeugen), Panik, Tod & Schock, Gedenken und Feiern in der Lobby.
 ## Dazu (4.13): Gäste berichten von Spuren – nicht immer zuverlässig – und klopfen nachts
 ## an Zimmer 13. Manchmal klopft auch etwas anderes …
+## Freundschaft und Feindschaft in neun Stufen (6.3): Die Extreme brauchen Taten (Spiele, Austausch bzw.
+## Klauen, Beleidigen, Rammen, Schlagen und Rache); gute Freunde besuchen dich, Erzfeinde schlagen zu.
+
+## Freundschaftsstufen (Spielkonzept 6.3), vom schlechtesten zum besten
+enum Tier { STRONG_ENEMY, ENEMY, ANGRY, ANNOYED, NEUTRAL, NICE, FRIENDLY, FRIEND, GOOD_FRIEND }
+const TIER_NAMES := ["stark verfeindet", "verfeindet", "wütend", "genervt", "neutral", "nett", "freundlich",
+	"befreundet", "guter Freund"]
+## Bedingungen für die Extreme: so viele Taten (Guest.deeds)
+const BOND_GAMES := 3
+const BOND_GIFTS_TO := 2
+const BOND_GIFTS_FROM := 1
+const FEUD_HOSTILE := 4
+const FEUD_REVENGE := 1
+## Ohne Kontakt wandern die Extreme zurück – so viele Punkte pro Sekunde (≈ 1,2 pro Tag)
+const DRIFT := 0.004
+## Gute Freunde besuchen Zimmer 13 (Abstand zwischen zwei Besuchen), Erzfeinde lauern dir auf
+const VISIT_COOLDOWN := Vector2(240.0, 480.0)
+const ATTACK_COOLDOWN := Vector2(120.0, 200.0)
+const VISIT_LINES := ["Ich bin's. Hast du kurz Zeit?", "Klopf, klopf – ich bin's nur. Lässt du mich rein?",
+	"Ich hab mich gelangweilt. Darf ich reinkommen?"]
+const VISIT_HELLO := ["Schön hast du's hier. Na ja – für Zimmer 13.", "Ich bleib nur kurz. Erzähl mal, wie geht's dir?",
+	"Endlich jemand, mit dem man reden kann."]
+const THREAT_LINES := ["Komm mir nicht zu nahe. Ich warne dich.", "Noch einmal, und du wirst es bereuen.",
+	"Pass auf, wo du langgehst. Hier ist es dunkel."]
+const ATTACK_LINES := ["Jetzt reicht's!", "Das hast du verdient!", "Hier sieht dich keiner …"]
 
 const PARTY_DURATION := 90.0
 const PARTY_COOLDOWN := 240.0
@@ -128,6 +153,8 @@ var debug_fake_knock := false
 var _world: Node3D
 var _arrival_timer := -1.0
 var _next_guest := 1                     ## laufende Nummer für IDs erzeugter Gäste
+var _visit_cooldown := 200.0
+var _feud_timer := 2.0
 
 const CHESS_LINES := [
 	"%s schiebt die Dame vor. %s runzelt die Stirn.",
@@ -145,16 +172,32 @@ const BAR_LINES := [
 ]
 
 
+static func tier_of(value: float) -> Tier:
+	if value <= -80.0:
+		return Tier.STRONG_ENEMY
+	if value <= -55.0:
+		return Tier.ENEMY
+	if value <= -30.0:
+		return Tier.ANGRY
+	if value < -10.0:
+		return Tier.ANNOYED
+	if value < 10.0:
+		return Tier.NEUTRAL
+	if value < 30.0:
+		return Tier.NICE
+	if value < 55.0:
+		return Tier.FRIENDLY
+	if value < 80.0:
+		return Tier.FRIEND
+	return Tier.GOOD_FRIEND
+
+
+static func tier(guest: Guest) -> Tier:
+	return tier_of(guest.relation)
+
+
 static func relation_word(value: float) -> String:
-	if value >= 50.0:
-		return "Freund"
-	if value >= 15.0:
-		return "freundlich"
-	if value > -15.0:
-		return "neutral"
-	if value > -50.0:
-		return "genervt"
-	return "feindlich"
+	return TIER_NAMES[tier_of(value)]
 
 
 func setup(p_builder: LevelBuilder, world: Node3D) -> void:
@@ -317,8 +360,58 @@ func guest_name(id: String) -> String:
 	return guest.display_name if guest else id
 
 
+## Beziehung ändern (6.3): Nach oben wird es zäh (bei 50 nur gut die Hälfte), und über „befreundet“
+## bzw. unter „verfeindet“ kommt man nur mit den passenden Taten.
 func change_relation(guest: Guest, amount: float) -> void:
-	guest.relation = clampf(guest.relation + amount, -100.0, 100.0)
+	var before := guest.relation
+	if amount > 0.0:
+		amount *= 1.0 - clampf(before, 0.0, 100.0) / 110.0
+	var value := clampf(before + amount, -100.0, 100.0)
+	if value >= 80.0 and not can_be_good_friend(guest):
+		value = minf(value, maxf(before, 79.0))
+	if value <= -80.0 and not can_be_strong_enemy(guest):
+		value = maxf(value, minf(before, -79.0))
+	guest.relation = value
+	_announce_tier(guest, tier_of(before), tier_of(value))
+
+
+func add_deed(guest: Guest, key: String, count: int = 1) -> void:
+	guest.deeds[key] = int(guest.deeds.get(key, 0)) + count
+
+
+func deed(guest: Guest, key: String) -> int:
+	return int(guest.deeds.get(key, 0))
+
+
+## Guter Freund: oft zusammen gespielt und Gegenstände in beide Richtungen getauscht.
+func can_be_good_friend(guest: Guest) -> bool:
+	return deed(guest, "games") >= BOND_GAMES and deed(guest, "gifts_to") >= BOND_GIFTS_TO \
+		and deed(guest, "gifts_from") >= BOND_GIFTS_FROM
+
+
+## Stark verfeindet: du warst oft feindselig – und er hat sich schon gerächt.
+func can_be_strong_enemy(guest: Guest) -> bool:
+	return deed(guest, "hostile") >= FEUD_HOSTILE and deed(guest, "revenge") >= FEUD_REVENGE
+
+
+## Neue Stufe an den Rändern kurz einblenden – die Stufen dazwischen stehen im Gesprächsprompt.
+func _announce_tier(guest: Guest, before: Tier, after: Tier) -> void:
+	if before == after or Game.hud == null:
+		return
+	var text := ""
+	match after:
+		Tier.GOOD_FRIEND:
+			text = "%s ist jetzt ein guter Freund." % guest.display_name
+		Tier.FRIEND:
+			if before < after:
+				text = "%s und du seid jetzt befreundet." % guest.display_name
+		Tier.ENEMY:
+			if before > after:
+				text = "%s und du seid jetzt verfeindet." % guest.display_name
+		Tier.STRONG_ENEMY:
+			text = "%s hasst dich. Pass auf, wenn du ihm allein begegnest." % guest.display_name
+	if text != "":
+		Game.hud.show_message(text, 4.0)
 
 
 # --- Diebstahl & Gerüchte ----------------------------------------------------------
@@ -329,6 +422,7 @@ func on_player_took(item: Item) -> void:
 	if owner_guest == null or owner_guest.dead:
 		return
 	_thefts[owner_guest.id] = _time
+	add_deed(owner_guest, "hostile")
 	var witnesses: Array[Guest] = []
 	for guest in guests:
 		if guest.can_see_actor(Game.player):
@@ -392,18 +486,23 @@ func on_guest_noticed_missing_bulb(guest: Guest) -> void:
 
 
 func on_guest_stole_bulb(guest: Guest, lamp: Lamp, room_id: String) -> void:
+	if room_id == "13":
+		add_deed(guest, "revenge")
 	if room_id == "13" and Game.player and Game.director.player_can_see(lamp.global_position) \
 			and Game.player.global_position.distance_to(guest.global_position) < 15.0:
 		Game.say("%s dreht deine Glühbirne heraus!" % guest.display_name, 4.0)
 
 
 func on_guest_stole(guest: Guest, item: Item, victim: String) -> void:
+	if victim == "player":
+		add_deed(guest, "revenge")
 	if victim == "player" and Game.player and Game.director.player_can_see(guest.global_position + Vector3.UP * 1.4) \
 			and Game.player.global_position.distance_to(guest.global_position) < 15.0:
 		Game.say("%s klaut deine Deko (%s)!" % [guest.display_name, item.display_name], 4.0)
 
 
 func on_insult(guest: Guest) -> void:
+	add_deed(guest, "hostile")
 	_spread_gossip(-3.0, [guest])
 
 
@@ -451,7 +550,7 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	if party_active and party_host == guest.id:
 		end_party("")
 	# Schock, wenn es ein Freund war – stärker, wenn man ihn vorher bestohlen hat (Schuld)
-	if guest.relation >= 50.0 and Game.player:
+	if tier(guest) >= Tier.FRIEND and Game.player:
 		var guilt := _thefts.has(guest.id) and _time - float(_thefts[guest.id]) < 600.0
 		var amount := clampf(guest.relation / 100.0, 0.5, 1.0) * (1.5 if guilt else 1.0)
 		Game.player.add_shock(amount, guilt)
@@ -526,7 +625,7 @@ func start_party(host: String) -> bool:
 	for guest in living_guests():
 		var comes := false
 		if host == "player":
-			comes = guest.invited or guest.relation >= 40.0
+			comes = guest.invited or tier(guest) >= Tier.FRIENDLY
 		else:
 			comes = guest.id == host or randf() < 0.75
 		if comes and guest.fear < 60.0 and guest.state != Guest.State.TALKING:
@@ -698,10 +797,10 @@ func _update_challenges(delta: float) -> void:
 		var dice: Dictionary = g.profile["dice"]
 		var chess := ChessMatch.chess_profile(g)
 		var board := builder.chess_table.has_board(null)
-		if chess["likes"] and board and g.relation >= 30.0 and randf() < (0.15 if dice["likes"] else 0.25):
+		if chess["likes"] and board and tier(g) >= Tier.FRIENDLY and randf() < (0.15 if dice["likes"] else 0.25):
 			challenge(g, "chess")
 			return
-		if dice["likes"] and g.relation >= 30.0 and randf() < 0.25:
+		if dice["likes"] and tier(g) >= Tier.FRIENDLY and randf() < 0.25:
 			challenge(g)
 			return
 
@@ -859,8 +958,8 @@ func _process(delta: float) -> void:
 		var entry := _gossip[i]
 		entry["delay"] = float(entry["delay"]) - delta
 		if float(entry["delay"]) <= 0.0:
-			var guest: Guest = entry["guest"]
-			if not guest.dead:
+			var guest = entry["guest"]   # nach dem Laden kann der Gast neu erzeugt worden sein
+			if is_instance_valid(guest) and not guest.dead:
 				change_relation(guest, entry["amount"])
 			_gossip.remove_at(i)
 		i -= 1
@@ -871,6 +970,7 @@ func _process(delta: float) -> void:
 	_update_chess_game(delta)
 	_update_challenges(delta)
 	_update_sleep(delta)
+	_update_bonds(delta)
 	_check_timer -= delta
 	if _check_timer <= 0.0:
 		_check_timer = 2.0
@@ -1016,6 +1116,9 @@ func _update_knocking(delta: float) -> void:
 
 
 func _knock_step(delta: float) -> void:
+	if _knock.get("visit", false):
+		_visit_step(delta)
+		return
 	var guest: Guest = _knock["guest"]
 	var fake: bool = _knock["fake"]
 	var door: Door = builder.rooms["13"]["door"]
@@ -1086,3 +1189,167 @@ func _knock_ignored(guest: Guest, fake: bool) -> void:
 	else:
 		Game.monster.spawn_near_unseen(guest.global_position)
 		Game.director.kill_guest(guest, null)
+
+
+# --- Freundschaft & Feindschaft (Spielkonzept 6.3) ------------------------------------
+
+func _update_bonds(delta: float) -> void:
+	# Ohne Kontakt wandern die Extreme langsam zurück
+	for guest in guests:
+		if guest.dead:
+			continue
+		if guest.relation > 55.0:
+			guest.relation = maxf(55.0, guest.relation - DRIFT * delta)
+		elif guest.relation < -55.0:
+			guest.relation = minf(-55.0, guest.relation + DRIFT * delta)
+	_update_visits(delta)
+	_feud_timer -= delta
+	if _feud_timer <= 0.0:
+		_feud_timer = 2.0
+		_update_feuds()
+
+
+## Gute Freunde klopfen ab und zu an Zimmer 13 – nur, wenn du drin bist und es ruhig ist.
+func _update_visits(delta: float) -> void:
+	_visit_cooldown -= delta
+	if _visit_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active:
+		return
+	var p := Game.player
+	if p == null or p.dead or p.in_dialog or p.sleeping or p.hiding:
+		return
+	if Game.director.zone_name_at(p.global_position) != "Zimmer 13" or Game.monster.is_active() 			or not Game.director.is_quiet(p.global_position, 25.0):
+		return
+	_visit_cooldown = randf_range(VISIT_COOLDOWN.x, VISIT_COOLDOWN.y)
+	var friends := living_guests().filter(func(g: Guest) -> bool:
+		return tier(g) == Tier.GOOD_FRIEND and g.state in [Guest.State.IDLE, Guest.State.WALK] and g.fear < 40.0)
+	if not friends.is_empty():
+		start_visit(friends.pick_random())
+
+
+func start_visit(guest: Guest) -> void:
+	guest.start_visit(builder.rooms["13"]["door_front"])
+
+
+## Der Gast steht vor Zimmer 13: Bei offener Tür kommt er gleich herein, sonst klopft er.
+func on_visit_arrived(guest: Guest) -> void:
+	var door: Door = builder.rooms["13"]["door"]
+	if door.is_open:
+		_visit_enter(guest)
+		return
+	if not _knock.is_empty():
+		guest.end_visit()
+		return
+	guest.knock_politely()
+	_knock = {"guest": guest, "fake": false, "visit": true, "time": 0.0, "next": 0.0, "said": 0}
+
+
+func _visit_step(delta: float) -> void:
+	var guest: Guest = _knock["guest"]
+	var door: Door = builder.rooms["13"]["door"]
+	_knock["time"] = float(_knock["time"]) + delta
+	var t := float(_knock["time"])
+	if guest.dead or guest.state != Guest.State.KNOCK:
+		_knock = {}
+		return
+	if door.is_open:
+		_knock = {}
+		_visit_enter(guest)
+		return
+	if t >= KNOCK_WAIT * 1.5:
+		_knock = {}
+		guest.say("Na gut … dann ein andermal.")
+		change_relation(guest, -1.0)
+		guest.end_visit()
+		return
+	_knock["next"] = float(_knock["next"]) - delta
+	if float(_knock["next"]) <= 0.0:
+		_knock["next"] = 2.6
+		Game.noise("knock", builder.rooms["13"]["door_front"], guest)
+		Game.caption("[Es klopft leise an deiner Tür]")
+	if int(_knock["said"]) == 0 and t > 1.2:
+		_knock["said"] = 1
+		Game.say("%s: „%s“" % [guest.display_name, VISIT_LINES.pick_random()], 4.0)
+
+
+func _visit_enter(guest: Guest) -> void:
+	guest.enter_shelter(builder.rooms["13"]["center"])
+	guest.say(VISIT_HELLO.pick_random())
+	change_relation(guest, 3.0)
+
+
+## Erzfeinde: drohen, wenn sie dich allein sehen – beim nächsten Mal schlagen sie zu.
+func _update_feuds() -> void:
+	var p := Game.player
+	if p == null or p.dead or p.hiding or p.in_dialog or p.sleeping:
+		return
+	for guest in living_guests():
+		var g: Guest = guest
+		if tier(g) != Tier.STRONG_ENEMY or g.attack_cooldown > 0.0 or g.fear >= 60.0:
+			continue
+		if not g.state in [Guest.State.IDLE, Guest.State.WALK]:
+			continue
+		if g.global_position.distance_to(p.global_position) > 8.0 or not g.can_see_actor(p) or _watched_by_others(p, g):
+			continue
+		if not g.threatened:
+			g.threatened = true
+			g.attack_cooldown = 25.0
+			g.say(THREAT_LINES.pick_random())
+			continue
+		g.threatened = false
+		g.attack_cooldown = randf_range(ATTACK_COOLDOWN.x, ATTACK_COOLDOWN.y)
+		g.say(ATTACK_LINES.pick_random())
+		g.start_attack()
+		return
+
+
+## Sieht außer `except` noch ein Gast den Spieler?
+func _watched_by_others(p: Player, except: Guest) -> bool:
+	for guest in living_guests():
+		if guest != except and guest.can_see_actor(p):
+			return true
+	return false
+
+
+## Alle Gäste außer `except`, die den Spieler gerade sehen.
+func _witnesses_of_player(except: Guest) -> Array[Guest]:
+	var list: Array[Guest] = []
+	for guest in living_guests():
+		if guest != except and guest.can_see_actor(Game.player):
+			list.append(guest)
+	return list
+
+
+## Der Spieler schlägt zu (Player, Linksklick): höchstens noch „wütend“, Zeugen, Gerede, Lärm.
+func on_player_punched(guest: Guest, dir: Vector3) -> void:
+	add_deed(guest, "hostile")
+	change_relation(guest, minf(-30.0, -30.0 - guest.relation))
+	Game.noise("punch", guest.global_position, Game.player)
+	var witnesses := _witnesses_of_player(guest)
+	for witness in witnesses:
+		change_relation(witness, -10.0)
+	if not witnesses.is_empty():
+		witnesses[0].say("Hast du gerade %s geschlagen?!" % guest.display_name)
+	var involved: Array = [guest]
+	involved.append_array(witnesses)
+	_spread_gossip(-6.0, involved)
+	guest.stagger(dir * 3.5, true)
+
+
+## Der Spieler rennt einen Gast um.
+func on_player_rammed(guest: Guest, dir: Vector3) -> void:
+	add_deed(guest, "hostile")
+	change_relation(guest, -8.0)
+	for witness in _witnesses_of_player(guest):
+		change_relation(witness, -3.0)
+	guest.stagger(dir * 2.5, false)
+
+
+## Ein wütender Gast rempelt dich an – seine Rache.
+func on_guest_rammed_player(guest: Guest) -> void:
+	add_deed(guest, "revenge")
+
+
+## Ein Gast hat dich geschlagen.
+func on_guest_hit_player(guest: Guest) -> void:
+	add_deed(guest, "revenge")
+	Game.noise("punch", Game.player.global_position, guest)

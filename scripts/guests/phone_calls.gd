@@ -136,11 +136,11 @@ func _pick_incoming() -> Dictionary:
 		var g: Guest = guest
 		if g.hiding or g.state in [Guest.State.KNOCK, Guest.State.SHELTER, Guest.State.TALKING, Guest.State.MINIGAME]:
 			continue
-		if out and g.relation >= 40.0:
+		if out and Social.tier(g) >= Social.Tier.FRIENDLY:
 			warners.append(g)
-		elif out and g.relation <= -40.0:
+		elif out and Social.tier(g) <= Social.Tier.ANGRY:
 			liars.append(g)
-		elif not out and g.relation >= 15.0:
+		elif not out and Social.tier(g) >= Social.Tier.NICE:
 			chatters.append(g)
 	var choices: Array = []   # [Gewicht, Art, Kandidaten]
 	if not warners.is_empty():
@@ -439,9 +439,9 @@ func _guest_answers(guest: Guest) -> void:
 	var key := "answer"
 	if guest.fear >= 60.0:
 		key = "answer_panic"
-	elif guest.relation <= -50.0:
+	elif Social.tier(guest) <= Social.Tier.ENEMY:
 		key = "answer_enemy"
-	elif guest.relation >= 50.0:
+	elif Social.tier(guest) >= Social.Tier.FRIEND:
 		key = "answer_friend"
 	_talk = {"guest": guest, "since": _time, "chose": false}
 	if key == "answer_panic":
@@ -490,7 +490,7 @@ func _phone_ask(guest: Guest) -> void:
 
 func _phone_invite(guest: Guest) -> void:
 	_talk["chose"] = true
-	if guest.relation >= 0.0:
+	if Social.tier(guest) >= Social.Tier.NEUTRAL:
 		guest.invited = true
 		_show_talk(guest, "„%s“" % guest.line("party_yes"))
 	else:
@@ -500,7 +500,7 @@ func _phone_invite(guest: Guest) -> void:
 
 func _phone_party(guest: Guest) -> void:
 	_talk["chose"] = true
-	if guest.relation >= -10.0:
+	if Social.tier(guest) >= Social.Tier.ANNOYED:
 		guest.invited = true
 		guest.join_party(Game.social.free_party_spot())
 		ui.show_page(_talk_title(guest), "„%s“" % guest.line("party_yes"), [["Auflegen", hang_up]])
@@ -630,7 +630,7 @@ func debug_call(who: String) -> void:
 				return
 			var kind := "chat"
 			if Game.monster.is_active():
-				kind = "lie" if guest.relation <= -40.0 else "warn"
+				kind = "lie" if Social.tier(guest) <= Social.Tier.ANGRY else "warn"
 			start_incoming({"kind": kind, "guest": guest, "room": guest.home["no"]})
 
 

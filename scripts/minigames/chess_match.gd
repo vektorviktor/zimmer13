@@ -361,6 +361,7 @@ func _finish(result: String) -> void:
 			change += 4.0                                         # Remis freut beide
 			line = "Remis. Ein gutes Spiel."
 			_stakes.split(guest)
+	Game.social.add_deed(guest, "games")   # gemeinsame Partie zählt für „guter Freund“ (6.3)
 	Game.social.change_relation(guest, change)
 	var stakes_text := " Die Einsätze liegen auf dem Tisch – nimm sie dir." if result == "player" and _stakes.any_left() else ""
 	_say("%s %s: „%s“%s" % [_log.text, guest.display_name, line, stakes_text])

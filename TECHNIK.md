@@ -360,6 +360,27 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
   Feiern, Herausforderungen (`challenge(guest, game)`, `Guest.challenge_game`), Gäste-Mäxchen und Gäste-Schach
   (`_update_chess_game`, Zuschauen ≥ 30 s → `has_watched_chess`), Berichte über Spuren (`note_trace` → `report_line`),
   Klopfen an Zimmer 13, Zettel, Neuankömmlinge (`START_GUESTS` 30, `MIN_GUESTS` 24).
+- **Freundschaftsstufen** (Spielkonzept 6.3): `Social.Tier` (9 Stufen, `tier(guest)` / `tier_of(wert)`,
+  Grenzen −80/−55/−30/−10/10/30/55/80, Namen `TIER_NAMES`). **Im Code nie mehr `relation` mit Zahlen
+  vergleichen, sondern Stufen** (`Social.tier(g) >= Social.Tier.FRIEND`). `change_relation` dämpft Zuwächse
+  (× 1 − Wert/110) und deckelt bei ±79, solange die Taten fehlen: `Guest.deeds` (`games`, `gifts_to`,
+  `gifts_from`, `hostile`, `revenge`; `add_deed`) gegen `BOND_*` bzw. `FEUD_*`. Taten zählen in
+  `DiceMatch`/`ChessMatch._finish` (Partie), Dialog (Geschenk, Deko erbeten, Kauf, Beleidigen), `on_player_took`
+  (Diebstahl), Gast klaut/Birne aus 13 (`revenge`), Rammen, Schlagen. `_update_bonds`: Zerfall der Extreme
+  (`DRIFT`), Besuche (`_update_visits` → `Guest.start_visit` → `on_visit_arrived`: offene Tür → `enter_shelter`,
+  sonst höfliches Klopfen über `_knock` mit `"visit"`, eigene `_visit_step`) und Erzfeinde (`_update_feuds`, alle
+  2 s: allein und sichtbar → erst Drohung `threatened`, beim nächsten Mal `Guest.start_attack`). Plaudern zählt
+  pro Spieltag `CHATS_PER_DAY` mal voll (`Guest.chat_day/chats_today`). Neue Gast-Zustände `FOLLOW` (bleibt
+  `FOLLOW_GAP` hinter dir; im Gespräch gemerkt über `_resume_follow`), `VISIT`, `ATTACK` (rennt hin, `Player.hurt`,
+  dann heim), `STAGGER` (Rückstoß `_push`, danach `_after_stagger`: zurückschlagen bei Mut ≥ 0,55, Stolz ≥ 0,65 oder
+  „verfeindet“, sonst verstecken; geschlagen humpelt er `HURT_TIME` mit `HURT_SLOW`). Wütende halten im Gehen auf den
+  Spieler zu und rempeln ihn an (`_wants_to_bump`/`_check_bump` → `Player.shove`).
+- **Spieler schlägt und rammt** (`player.gd`): Linksklick (`use_item`) schlägt, wenn `_punch_target()` einen Gast
+  in `PUNCH_REACH` im Fokus hat und keine Taschenlampe in der Hand ist (sonst wie bisher Lampe); außer bei
+  „wütend“ und schlimmer erst nach Nachfrage (zweiter Klick in `PUNCH_CONFIRM_TIME`) → `Social.on_player_punched`
+  (höchstens „wütend“, Zeugen −10, Gerede, Lärm `punch`). Rennen gegen einen Gast (`_check_ram`) →
+  `on_player_rammed`. `injury` (0..1, gespeichert) macht langsamer (`INJURY_SLOW`), heilt in `INJURY_HEAL_TIME`;
+  nach einem Treffer `BLEED_TIME` Blutstropfen (`Traces.add_guest_drop("drops")`), roter Blitz `Hud.flash_hurt`.
 - Gäste melden sich mit `Game.social.on_*` (Diebstahl, fehlende Deko/Birne, Monster gesehen …).
 - **`HotelCat`** (`guests/hotel_cat.gd`, Spielkonzept 6.11): drei Katzen aus `HotelCat.PROFILES`, erzeugt in
   `main.gd` nach den Gästen (`place_at_start()`; Lieblingsgast = `hash(id)` über die lebenden Gäste).

@@ -23,7 +23,9 @@ const DIR := "user://saves/"
 ##     – Stände mit Version 10 laden weiter, die Gäste haben dann noch nichts erlebt
 ## 12: Nächte ohne Schlaf (player.nights_awake) – ältere Stände laden weiter, der Spieler gilt als ausgeschlafen
 ## 13: Schachbrett (Item.Kind.CHESS_BOARD) – in älteren Ständen bleibt das Brett vom Start auf dem Schachtisch
-const VERSION := 13
+## 14: Freundschaftsstufen (Gast: deeds, chat_day, chats_today; Spieler: injury) – ältere Stände laden weiter,
+##     es gab dann noch keine Taten (die Extreme müssen neu verdient werden)
+const VERSION := 14
 const MIN_VERSION := 10
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -197,10 +199,15 @@ func diary_sentence() -> String:
 				parts.append("%s ist fort." % guest.display_name)
 		for guest in Game.social.living_guests():
 			var g: Guest = guest
-			if g.relation <= -50.0:
-				parts.append("%s redet nicht mehr mit mir." % g.display_name)
-			elif g.relation >= 50.0:
-				parts.append("%s und ich sind Freunde geworden." % g.display_name)
+			match Social.tier(g):
+				Social.Tier.STRONG_ENEMY:
+					parts.append("%s hasst mich. Ich gehe ihm aus dem Weg." % g.display_name)
+				Social.Tier.ENEMY:
+					parts.append("%s redet nicht mehr mit mir." % g.display_name)
+				Social.Tier.FRIEND:
+					parts.append("%s und ich sind Freunde geworden." % g.display_name)
+				Social.Tier.GOOD_FRIEND:
+					parts.append("Auf %s kann ich mich verlassen." % g.display_name)
 	var lit := 0
 	var deco := 0
 	if Game.director:
@@ -242,7 +249,7 @@ func collect() -> Dictionary:
 		"visited": visited.duplicate(),
 		"player": {
 			"pos": _v(p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
-			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake,
+			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
 			"held": _item_data(p.held) if p.held else null,
 			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
 		},
@@ -276,6 +283,7 @@ func collect() -> Dictionary:
 			"challenge_cooldown": g.challenge_cooldown, "monster_line": g.monster_line,
 			"held": _item_data(g.held) if g.held else null,
 			"corpse": g.corpse, "ghost_visits": g.ghost_visits, "seen": g.seen_sights, "experiences": g.experiences,
+			"deeds": g.deeds, "chat_day": g.chat_day, "chats_today": g.chats_today,
 		}
 	data["alive"] = alive
 	var social := Game.social
@@ -411,6 +419,9 @@ func apply(data: Dictionary) -> void:
 		g.ghost_visits = int(d.get("ghost_visits", 0))
 		g.seen_sights = (d.get("seen", []) as Array).duplicate()
 		g.experiences = (d.get("experiences", []) as Array).duplicate(true)
+		g.deeds = (d.get("deeds", {}) as Dictionary).duplicate()
+		g.chat_day = int(d.get("chat_day", 0))
+		g.chats_today = int(d.get("chats_today", 0))
 		g.stock = {}
 		var stock: Dictionary = d["stock"]
 		for key in stock:
@@ -453,6 +464,7 @@ func apply(data: Dictionary) -> void:
 	p.head.rotation.x = float(pd["pitch"])
 	p.shock = float(pd.get("shock", 0.0))
 	p.nights_awake = int(pd.get("nights_awake", 0))
+	p.injury = float(pd.get("injury", 0.0))
 	p.set_pockets(bool(pd.get("compass", false)), pd.get("map_pages", []), pd.get("keyring", []))
 	if pd.get("held") != null:
 		var held_item := _make_item(pd["held"])

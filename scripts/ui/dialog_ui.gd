@@ -2,10 +2,14 @@ class_name DialogUI
 extends CanvasLayer
 ## Gespräch mit einem Gast (Spielkonzept 6.2–6.5, 6.9): Plaudern, über das Monster
 ## reden, Handeln, Schenken, um Deko bitten, beruhigen, zur Feier einladen,
-## beleidigen, entschuldigen. Auswahl per Maus oder Zifferntasten 1–9, Esc schließt.
+## beleidigen, entschuldigen, mitkommen lassen (6.3). Auswahl per Maus oder Zifferntasten 1–9 und 0, Esc schließt.
 
 const CHAT_COOLDOWN := 40.0
 const GIFT_COOLDOWN := 150.0
+## Plaudern zählt am Tag nur so oft voll (6.3), danach kaum noch
+const CHATS_PER_DAY := 2
+## Entschuldigen kostet je nach Stufe (verfeindet / stark verfeindet)
+const APOLOGY_PRICE := {Social.Tier.ENEMY: 5, Social.Tier.STRONG_ENEMY: 15}
 
 var guest: Guest
 
@@ -65,9 +69,11 @@ func open(p_guest: Guest) -> void:
 		Game.social.on_monster_talk(guest)
 	elif guest.fear >= 60.0:
 		_say(guest.line("panic"))
-	elif guest.relation <= -50.0:
+	elif Social.tier(guest) == Social.Tier.STRONG_ENEMY:
+		_say("Du traust dich was. Sprich schnell – bevor ich es mir anders überlege.")
+	elif Social.tier(guest) <= Social.Tier.ENEMY:
 		_say(guest.line("greet_enemy"))
-	elif guest.relation >= 50.0:
+	elif Social.tier(guest) >= Social.Tier.FRIEND:
 		_say(guest.line("greet_friend"))
 	else:
 		_say(guest.line("greet"))
@@ -90,7 +96,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		close()
 		get_viewport().set_input_as_handled()
 	elif event is InputEventKey and event.pressed and not event.echo:
-		var index: int = (event as InputEventKey).keycode - KEY_1
+		var key := (event as InputEventKey).keycode
+		var index: int = 9 if key == KEY_0 else key - KEY_1
 		if index >= 0 and index < _buttons.size() and not _buttons[index].disabled:
 			_buttons[index].pressed.emit()
 			get_viewport().set_input_as_handled()
@@ -111,8 +118,10 @@ func _show_main() -> void:
 		_option("Beruhigen", _calm)
 		_option("Tschüss", close)
 		return
-	if guest.relation <= -50.0:
-		_option("Entschuldigen (5 Geld)", _apologize, Game.money < 5)
+	var tier := Social.tier(guest)
+	if tier <= Social.Tier.ENEMY:
+		var price: int = APOLOGY_PRICE[tier]
+		_option("Entschuldigen (%d Geld)" % price, _apologize.bind(price), Game.money < price)
 		_option("Tschüss", close)
 		return
 	if guest.challenge_time > 0.0:
@@ -131,6 +140,10 @@ func _show_main() -> void:
 	if player.held and player.held.kind != Item.Kind.KEY:
 		_option("%s schenken" % player.held.display_name, _gift)
 	_option("Hast du Deko für mich?", _ask_deco)
+	if guest.is_following():
+		_option("Du kannst gehen", _dismiss)
+	elif tier >= Social.Tier.FRIEND:
+		_option("Komm mit", _follow)
 	if guest.fear >= 30.0:
 		_option("Beruhigen", _calm)
 	if Game.social.party_active:
@@ -144,7 +157,7 @@ func _show_main() -> void:
 
 func _show_trade() -> void:
 	_clear()
-	_say("Was darf's sein?" if guest.relation > -15.0 else "Mach schnell.")
+	_say("Was darf's sein?" if Social.tier(guest) >= Social.Tier.NEUTRAL else "Mach schnell.")
 	var player := Game.player
 	for kind in guest.stock:
 		var count := int(guest.stock[kind])
@@ -184,7 +197,7 @@ func _play(money: int, with_item: bool) -> void:
 	var prefix := "chess_" if chess else "dice_"
 	var likes := bool((ChessMatch.chess_profile(guest) if chess else guest.profile["dice"])["likes"])
 	var challenged := guest.challenge_time > 0.0 and guest.challenge_game == _game
-	if guest.relation <= -30.0 and not challenged:
+	if Social.tier(guest) <= Social.Tier.ANGRY and not challenged:
 		_say(guest.line(prefix + "no"))
 		_show_main()
 		return
@@ -196,7 +209,7 @@ func _play(money: int, with_item: bool) -> void:
 		_say("Ohne Einsatz? Langweilig.")
 		_show_stakes(_game)
 		return
-	if not likes and guest.relation < 0.0 and not challenged:
+	if not likes and Social.tier(guest) <= Social.Tier.ANNOYED and not challenged:
 		_say(guest.line(prefix + "no"))
 		_show_main()
 		return
@@ -217,7 +230,12 @@ func _chat() -> void:
 		_say("Lass uns später weiterreden.")
 	else:
 		guest.chat_cooldown = CHAT_COOLDOWN
-		Game.social.change_relation(guest, 6.0 + (2.0 if guest.relation > 30.0 else 0.0))
+		var today := Calendar.today()
+		if guest.chat_day != today:
+			guest.chat_day = today
+			guest.chats_today = 0
+		guest.chats_today += 1
+		Game.social.change_relation(guest, 6.0 if guest.chats_today <= CHATS_PER_DAY else 1.0)
 		var cat_talk := Game.social.cat_line(guest) if randf() < 0.3 or Game.social.cat_thefts.has(guest.id) else ""
 		_say(cat_talk if cat_talk != "" else guest.line("smalltalk"))
 	_show_main()
@@ -256,6 +274,7 @@ func _gift() -> void:
 	var liked := item.kind in (guest.profile["likes"] as Array)
 	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + 3.0
 	Game.social.change_relation(guest, bonus)
+	Game.social.add_deed(guest, "gifts_to")
 	if item.deco_strength > 0.0:
 		guest.stock[item.kind] = int(guest.stock.get(item.kind, 0)) + 1
 	Game.player.consume_held()
@@ -264,7 +283,7 @@ func _gift() -> void:
 
 
 func _ask_deco() -> void:
-	if guest.relation < 50.0:
+	if Social.tier(guest) < Social.Tier.FRIEND:
 		_say(guest.line("refuse_deco"))
 	elif guest.gift_cooldown > 0.0:
 		_say("Ich hab dir doch gerade erst was gegeben.")
@@ -278,6 +297,7 @@ func _ask_deco() -> void:
 			guest.stock[kind] = int(guest.stock[kind]) - 1
 			guest.gift_cooldown = GIFT_COOLDOWN
 			Game.player.receive_item(Item.create(kind))
+			Game.social.add_deed(guest, "gifts_from")
 			_say(guest.line("give_deco"))
 	_show_main()
 
@@ -290,7 +310,7 @@ func _calm() -> void:
 
 
 func _invite() -> void:
-	if guest.relation >= 0.0:
+	if Social.tier(guest) >= Social.Tier.NEUTRAL:
 		guest.invited = true
 		_say(guest.line("party_yes") + " Sag Bescheid – der Plattenspieler steht in der Lobby.")
 	else:
@@ -300,7 +320,7 @@ func _invite() -> void:
 
 
 func _join_party() -> void:
-	if guest.relation >= -10.0:
+	if Social.tier(guest) >= Social.Tier.ANNOYED:
 		guest.invited = true
 		_say(guest.line("party_yes"))
 		var spot: Vector3 = Game.social.free_party_spot()
@@ -319,8 +339,28 @@ func _insult() -> void:
 	_show_main()
 
 
-func _apologize() -> void:
-	Game.money -= 5
+## Befreundete Gäste kommen ein Stück mit (6.3) – bis du sie wegschickst, dich versteckst oder es zu gefährlich wird.
+func _follow() -> void:
+	if guest.fear >= 40.0:
+		_say("Jetzt? Ich trau mich gerade nirgendwohin.")
+		_show_main()
+		return
+	_say("Klar, ich komm mit.")
+	var friend := guest   # close() setzt guest auf null
+	close()
+	friend.start_follow()
+
+
+func _dismiss() -> void:
+	_say("Na gut. Pass auf dich auf.")
+	var friend := guest
+	close()
+	friend.stop_follow()
+
+
+func _apologize(price: int) -> void:
+	Game.money -= price
+	guest.threatened = false
 	Game.social.change_relation(guest, 12.0)
 	_say("… Na gut. Fürs Erste.")
 	_show_main()
@@ -334,6 +374,7 @@ func _buy(kind: int) -> void:
 	guest.money += price
 	guest.stock[kind] = int(guest.stock[kind]) - 1
 	Game.social.change_relation(guest, 1.0)
+	Game.social.add_deed(guest, "gifts_from")
 	Game.player.receive_item(Item.create(kind))
 	_say("Gute Wahl.")
 	_show_trade()
@@ -360,13 +401,27 @@ func _sell() -> void:
 
 func _sell_price(kind: int) -> int:
 	var base: float = Item.PRICES.get(kind, 1)
-	var discount := 0.75 if guest.relation >= 50.0 else 1.0
+	var discount := _tier_factor(1.0, 0.95, 0.9, 0.8, 0.7)
 	return maxi(1, roundi(base * float(guest.profile["sell"]) * discount))
 
 
 func _buy_price(item: Item) -> int:
-	var bonus := 1.2 if guest.relation >= 50.0 else 1.0
+	var bonus := _tier_factor(1.0, 1.0, 1.05, 1.15, 1.25)
 	return maxi(1, roundi(item.price() * float(guest.profile["buy"]) * bonus))
+
+
+## Preisfaktor je Stufe: bis neutral, nett, freundlich, befreundet, guter Freund
+func _tier_factor(neutral: float, nice: float, friendly: float, friend: float, good: float) -> float:
+	match Social.tier(guest):
+		Social.Tier.NICE:
+			return nice
+		Social.Tier.FRIENDLY:
+			return friendly
+		Social.Tier.FRIEND:
+			return friend
+		Social.Tier.GOOD_FRIEND:
+			return good
+	return neutral
 
 
 func _best_deco() -> int:

@@ -38,6 +38,15 @@ const TRANCE_SLOW := 0.65         ## volle Hypnose des Lakengeists: so viel lang
 const STEP_LENGTH := 0.75         ## alle so viele Meter ein Schritt (Lärm auf Holz/Fliesen, 4.15)
 const LAND_SPEED := 2.5           ## ab dieser Fallgeschwindigkeit ist Landen zu hören
 const SOFT_FLOORS := ["carpet", "grass"]   ## Teppich und Rasen schlucken Schritte
+## Schlagen und Rammen (Spielkonzept 6.3): Reichweite eines Schlags, Mindesttempo zum Rammen,
+## Verletzung heilt in so vielen Sekunden ganz, macht bis zu so viel langsamer
+const PUNCH_REACH := 1.4
+const PUNCH_CONFIRM_TIME := 1.5
+const RAM_SPEED := 3.5
+const RAM_REACH := 0.75
+const INJURY_HEAL_TIME := 240.0
+const INJURY_SLOW := 0.4
+const BLEED_TIME := 40.0
 
 var head: Node3D
 var camera: Camera3D
@@ -68,6 +77,7 @@ var has_compass := false
 var map_pages: Array[String] = []
 var keyring: Array[String] = []
 var debug_show := ""   ## --show=map|keys|compass: als würde die Taste gehalten (keys: Schlüsselblatt oben)
+var injury := 0.0      ## von Gästen geschlagen (0..1): langsamer, blutet – heilt mit der Zeit (6.3)
 
 var _hand: Node3D
 var _left_hand: Node3D
@@ -91,6 +101,14 @@ var _crouch_toggled := false
 var _dread_time := 0.0
 var _shock_drop_timer := 0.0
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var _shove := Vector3.ZERO      ## Stoß von außen (angerempelt, geschlagen), klingt ab
+var _kick := 0.0                ## Kamera-Ruck nach Schlag oder Stoß
+var _bleed := 0.0
+var _blood_dist := 0.0
+var _punch_cooldown := 0.0
+var _ram_cooldown := 0.0
+var _confirm_guest: Guest       ## „Wirklich zuschlagen?“ – zweiter Klick auf denselben Gast
+var _confirm_time := 0.0
 
 
 func _ready() -> void:
@@ -166,6 +184,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_focus.interact(self)
 	elif event.is_action_pressed("drop") and not hiding:
 		drop_held()
+	elif event.is_action_pressed("use_item") and _punch_target() != null:
+		_try_punch(_punch_target())
 	elif event.is_action_pressed("use_item") or event.is_action_pressed("light_mode"):
 		_use_flashlight(event.is_action_pressed("light_mode"))
 
@@ -178,6 +198,7 @@ func _physics_process(delta: float) -> void:
 	_update_shock(delta)
 	_update_dread(delta)
 	_update_hand(delta)
+	_update_injury(delta)
 	if in_dialog:
 		velocity = Vector3.ZERO
 		return
@@ -204,14 +225,18 @@ func _physics_process(delta: float) -> void:
 	if inspecting:
 		speed *= INSPECT_SPEED
 	speed *= 1.0 - TRANCE_SLOW * trance
-	velocity.x = dir.x * speed
-	velocity.z = dir.z * speed
+	speed *= 1.0 - INJURY_SLOW * injury
+	velocity.x = dir.x * speed + _shove.x
+	velocity.z = dir.z * speed + _shove.z
+	_shove = _shove.move_toward(Vector3.ZERO, 9.0 * delta)
 	var fall_speed := -velocity.y
 	move_and_slide()
 	if is_on_floor() and not _was_on_floor and fall_speed > LAND_SPEED and Game.director:
 		Game.noise("land", global_position, self)
 	_was_on_floor = is_on_floor()
 	_push_items(dir, speed)
+	if running and speed >= RAM_SPEED:
+		_check_ram(dir)
 
 	var moving := is_on_floor() and input.length() > 0.1
 	if moving:
@@ -437,6 +462,101 @@ func _update_shock(delta: float) -> void:
 		if held and not hiding and randf() < shock * 0.35:
 			Game.say("Deine Hände zittern – %s fällt dir herunter." % held.display_name)
 			drop_held(true)
+
+
+# --- Schlagen, Rammen, Verletzungen (Spielkonzept 6.3) ------------------------------
+
+## Ein Gast in Armlänge vor dir – und keine Taschenlampe in der Hand (die schaltet der Linksklick).
+func _punch_target() -> Guest:
+	if hiding or gripped or sleeping or (held and held.flashlight) or _punch_cooldown > 0.0:
+		return null
+	var guest := _focus as Guest
+	if guest == null or not is_instance_valid(guest) or guest.dead or guest.hiding \
+			or guest.state == Guest.State.GHOSTED or guest.global_position.distance_to(global_position) > PUNCH_REACH:
+		return null
+	return guest
+
+
+## Erster Klick fragt nach (außer bei Gästen, mit denen du ohnehin im Streit liegst), der zweite schlägt.
+func _try_punch(guest: Guest) -> void:
+	var fighting := Social.tier(guest) <= Social.Tier.ANGRY
+	if not fighting and (_confirm_guest != guest or _confirm_time <= 0.0):
+		_confirm_guest = guest
+		_confirm_time = PUNCH_CONFIRM_TIME
+		Game.say("Wirklich %s schlagen? [Linksklick]" % guest.display_name, PUNCH_CONFIRM_TIME)
+		return
+	_confirm_guest = null
+	_punch_cooldown = 0.7
+	_hand.position = HAND_REST + Vector3(-0.08, 0.08, -0.35)   # Faust nach vorn, federt zurück
+	_kick = 0.04
+	Game.play_sound("thud", 0.9)
+	var dir := guest.global_position - global_position
+	dir.y = 0.0
+	Game.social.on_player_punched(guest, dir.normalized())
+
+
+## Für --punch: wie ein Linksklick auf den Gast.
+func debug_punch(guest: Guest) -> void:
+	_punch_cooldown = 0.0
+	_try_punch(guest)
+
+
+## Im Rennen in einen Gast: Er stolpert, du wirst gebremst.
+func _check_ram(dir: Vector3) -> void:
+	if _ram_cooldown > 0.0 or Game.social == null:
+		return
+	for guest in Game.social.living_guests():
+		var g: Guest = guest
+		if g.hiding or g.state in [Guest.State.STAGGER, Guest.State.SLEEP, Guest.State.GHOSTED]:
+			continue
+		var to := g.global_position - global_position
+		if absf(to.y) > 1.0:
+			continue
+		to.y = 0.0
+		if to.length() < RAM_REACH and to.normalized().dot(dir) > 0.5:
+			_ram_cooldown = 1.5
+			_shove = -dir * 1.5
+			_kick = 0.03
+			Game.play_sound("thud", 0.7)
+			Game.social.on_player_rammed(g, dir)
+			return
+
+
+## Von außen gestoßen (angerempelt, geschlagen).
+func shove(push: Vector3) -> void:
+	_shove = Vector3(push.x, 0.0, push.z)
+	_kick = maxf(_kick, 0.03)
+
+
+## Ein Gast schlägt dich: roter Blitz, Rückstoß, du blutest und wirst langsamer. Töten kann er dich nicht.
+func hurt(amount: float, from: Vector3) -> void:
+	if dead:
+		return
+	injury = minf(1.0, injury + amount)
+	_bleed = BLEED_TIME
+	var away := global_position - from
+	away.y = 0.0
+	shove(away.normalized() * 4.0)
+	_kick = 0.07
+	Game.play_sound("thud", 1.0)
+	if Game.hud:
+		Game.hud.flash_hurt(amount)
+
+
+func _update_injury(delta: float) -> void:
+	_punch_cooldown -= delta
+	_ram_cooldown -= delta
+	_confirm_time -= delta
+	injury = maxf(0.0, injury - delta / INJURY_HEAL_TIME)
+	_kick = move_toward(_kick, 0.0, delta * 0.25)
+	head.rotation.z = sin(Time.get_ticks_msec() * 0.03) * _kick
+	# Blutstropfen beim Gehen – eine Spur, der man folgen kann (4.13)
+	_bleed = maxf(0.0, _bleed - delta)
+	if _bleed > 0.0 and is_on_floor() and Game.traces:
+		_blood_dist += Vector2(velocity.x, velocity.z).length() * delta
+		if _blood_dist > 1.2:
+			_blood_dist = 0.0
+			Game.traces.add_guest_drop("drops", global_position + Vector3(randf_range(-0.15, 0.15), 0, randf_range(-0.15, 0.15)))
 
 
 # --- Gegenstände -----------------------------------------------------------

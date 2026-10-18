@@ -2,7 +2,8 @@ class_name Hud
 extends CanvasLayer
 ## Minimales HUD: Fadenkreuz, Interaktions-Hinweis, Gegenstand in der Hand, Geld,
 ## Meldungen, Versteck-Ansicht mit Atem-Anzeige und Debug-Werte (F3).
-## Dazu: flackernde Kerze beim Autosave (Spielkonzept 8.6) und Untertitel für Geräusche.
+## Dazu: flackernde Kerze beim Autosave (Spielkonzept 8.6), Untertitel für Geräusche und ein roter
+## Blitz, wenn dich ein Gast schlägt (6.3).
 
 var debug_enabled := false
 
@@ -26,6 +27,7 @@ var _caption: Label
 var _caption_time := 0.0
 var _day := -1
 var _debug_timer := 0.0
+var _hurt: ColorRect
 
 
 func _ready() -> void:
@@ -38,6 +40,12 @@ func _ready() -> void:
 	_hide_overlay.visible = false
 	add_child(_hide_overlay)
 	_hide_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	_hurt = ColorRect.new()
+	_hurt.color = Color(0.6, 0.0, 0.0, 0.0)
+	_hurt.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_hurt)
+	_hurt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	_crosshair = ColorRect.new()
 	_crosshair.color = Color(1, 1, 1, 0.6)
@@ -134,6 +142,8 @@ func _process(delta: float) -> void:
 		_caption.modulate.a = clampf(_caption_time, 0.0, 1.0)
 		if _caption_time <= 0.0:
 			_caption.text = ""
+	if _hurt.color.a > 0.0:
+		_hurt.color.a = maxf(0.0, _hurt.color.a - delta * 0.6)
 	if _message_time > 0.0:
 		_message_time -= delta
 		_message.modulate.a = clampf(_message_time, 0.0, 1.0)
@@ -145,6 +155,11 @@ func _process(delta: float) -> void:
 		if _debug_timer <= 0.0:
 			_debug_timer = 0.25
 			_debug.text = Game.director.debug_text()
+
+
+## Roter Blitz – je härter der Schlag, desto kräftiger.
+func flash_hurt(amount: float) -> void:
+	_hurt.color.a = clampf(0.25 + amount, 0.3, 0.6)
 
 
 func set_prompt(text: String) -> void:

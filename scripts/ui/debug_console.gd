@@ -34,6 +34,11 @@ const COMMANDS := {
 	"look": ["gast[,pose]", "Gast ansehen (carry, panic, dance, sit, walk)"],
 	"friend": ["gast", "mit dem Gast befreundet"],
 	"enemy": ["gast", "mit dem Gast verfeindet"],
+	"relation": ["gast,wert", "Beziehung setzen (ab ±80 mit Taten)"],
+	"follow": ["gast", "Gast kommt mit"],
+	"visit": ["gast", "Gast besucht Zimmer 13"],
+	"attack": ["gast", "Gast schlägt zu"],
+	"punch": ["gast", "Gast schlagen"],
 	"dice": ["gast", "Mäxchen mit dem Gast"],
 	"chess": ["gast", "Schach mit dem Gast"],
 	"challenge": ["gast[,chess]", "Gast fordert dich heraus (Mäxchen oder Schach)"],
@@ -57,7 +62,7 @@ const START_ONLY := ["title", "nointro", "shot", "frames", "shot-on", "trace-nav
 ## Getippter Name → Startparameter
 const ALIASES := {"save": "diary", "load": "load-slot"}
 ## Befehle, deren erster Wert eine Gast-ID ist (wird vorher geprüft)
-const GUEST_FIRST := ["shock", "kill", "talk", "look", "friend", "enemy", "dice", "chess", "challenge", "bulb-thief"]
+const GUEST_FIRST := ["shock", "kill", "talk", "look", "friend", "enemy", "relation", "follow", "visit", "attack", "punch", "dice", "chess", "challenge", "bulb-thief"]
 
 static var _history: Array[String] = []
 

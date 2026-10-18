@@ -832,13 +832,30 @@ Deko ist **Schutzmittel und Währung** zugleich.
 - **Negativ** beeinflusst durch: unhöfliche Antworten, Deko-Diebstahl, schlechte Trades, „blöde Aktionen“ (z. B. Lärm vor deren Tür, Monster anlocken).
 - Optional: **Ruf / Gerüchte** – Gäste reden miteinander, schlechtes Verhalten spricht sich herum.
 
-### 6.3 Konsequenzen
+### 6.3 Konsequenzen – neun Stufen (entschieden und umgesetzt 2026-10-18)
 
-| Beziehung | Verhalten des Gastes |
-|-----------|----------------------|
-| Freund    | Schenkt Deko, bietet gute Trades, warnt vor dem Monster |
-| Neutral   | Normaler Handel |
-| Feind     | Verweigert Handel, **klaut Deko** vom Spieler (vor dessen Tür / aus dem Flur) |
+| Stufe | Wert | Verhalten des Gastes |
+|-------|------|----------------------|
+| **Guter Freund** | ≥ 80 | Nur mit Taten (unten). Besucht dich in Zimmer 13 zum Quatschen, geht von sich aus ein Stück mit, bester Preis |
+| **Befreundet** | 55 … 80 | Schenkt Deko, kommt auf Bitte mit („Komm mit“), warnt am Telefon, guter Preis |
+| **Freundlich** | 30 … 55 | Warnt am Telefon, kommt zur Feier, fordert zum Spielen heraus, kleiner Rabatt |
+| **Nett** | 10 … 30 | Plaudert am Telefon, etwas Rabatt |
+| **Neutral** | −10 … 10 | Normaler Handel |
+| **Genervt** | −30 … −10 | Kurz angebunden, sagt Einladungen ab |
+| **Wütend** | −55 … −30 | Klaut deine Deko, spielt nicht mehr mit dir, rempelt dich im Vorbeigehen an |
+| **Verfeindet** | −80 … −55 | Redet nur noch, wenn du dich entschuldigst; lügt am Telefon |
+| **Stark verfeindet** | ≤ −80 | Nur mit Taten (unten). Droht dir und **schlägt zu**, wenn er dich allein erwischt |
+
+- **Langsamer nach oben:** Je besser man schon steht, desto weniger bringt jede nette Tat (bei 50 gut die Hälfte). Plaudern zählt pro Tag nur zweimal voll, danach kaum noch.
+- **Die Extreme brauchen Taten, nicht nur Punkte:**
+  - **Guter Freund:** mindestens 3 gemeinsame Partien (Mäxchen oder Schach), 2 Geschenke an ihn **und** 1 Gegenstand von ihm (Deko geschenkt bekommen oder gekauft) – Austausch in beide Richtungen. Bis dahin bleibt er bei „befreundet“ stehen.
+  - **Stark verfeindet:** mindestens 4 feindselige Taten von dir (Deko klauen, beleidigen, rammen, schlagen) **und** er hat sich mindestens einmal gerächt (dich bestohlen, angerempelt oder geschlagen). Bis dahin bleibt er bei „verfeindet“.
+- **Zerfall:** Oberhalb von „befreundet“ und unterhalb von „verfeindet“ wandert der Wert ohne Kontakt langsam zurück (gut 1 Punkt pro Tag).
+- **Rammen:** Rennst du in einen Gast, stolpert er – Beziehung ↓, Zeugen merken es. Wütende Gäste rempeln dich ihrerseits im Vorbeigehen an (du wirst weggeschubst).
+- **Schlagen (Linksklick auf einen Gast in Armlänge, ohne Taschenlampe in der Hand):** Beim ersten Mal fragt das Spiel nach („Wirklich zuschlagen?“ – zweiter Klick). Der Gast fällt sofort auf höchstens „wütend“, Zeugen mögen dich weniger, es spricht sich herum, Schläge machen Lärm (Neugier des Monsters). Ängstliche Gäste fliehen, mutige oder stolze schlagen zurück. Ein geschlagener Gast ist eine Weile langsamer.
+- **Verletzungen des Spielers:** Schläge von Gästen verletzen dich – roter Blitz, du wirst langsamer und hinterlässt Blutstropfen (Spur fürs Monster, 4.13). Heilt mit der Zeit; ein Gast kann dich nicht töten.
+- **Besuch:** Gute Freunde klopfen ab und zu ruhig an Zimmer 13 („Hast du kurz Zeit?“). Machst du auf, kommen sie eine Weile herein; ignorieren kostet kaum etwas.
+- **Mitkommen:** Befreundete Gäste folgen dir auf Bitte etwa zwei Minuten (oder bis du sie wegschickst, dich versteckst oder sie in Panik geraten). Gute Freunde schließen sich manchmal von selbst an. Ein Begleiter ist Schutz und Gefahr zugleich – er ist ein Opfer mehr, das das Monster holen kann.
 
 ### 6.4 Handel
 - **Geld** als Währung (einziger abstrakter Besitz, siehe 3.2) – Kaufen und Verkaufen von Deko & Gegenständen.

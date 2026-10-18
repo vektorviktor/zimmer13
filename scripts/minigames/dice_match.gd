@@ -372,6 +372,7 @@ func _finish() -> void:
 			else:
 				change += 6.0
 		_give_stakes_to_guest()
+	Game.social.add_deed(guest, "games")   # gemeinsame Partie zählt für „guter Freund“ (6.3)
 	Game.social.change_relation(guest, change)
 	var stakes_text := ""
 	if player_won and _stakes.any_left():

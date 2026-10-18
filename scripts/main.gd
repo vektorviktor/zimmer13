@@ -44,6 +44,11 @@ extends Node3D
 ##   --intent=roam|one|rampage|n Absicht beim Aufbruch erzwingen (umsehen, 1 oder 2 Opfer, oder n Opfer; 4.17)
 ##   --bold=n                    Dreistigkeit setzen (0–100)
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
+##   --enemy=id                  mit einem Gast verfeindet starten
+##   --relation=id,wert          Beziehung setzen (−100 … 100); ab ±80 werden die nötigen Taten mit eingetragen (6.3)
+##   --follow=id · --visit=id    Gast kommt mit (steht hinter dir) · Gast geht zu Zimmer 13 und klopft an
+##   --attack=id                 Gast steht vor dir und schlägt zu
+##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
 ##   --kill=id                   Gast nach 3 s vom Monster holen lassen
 ##   --party                     sofort eine Feier in der Lobby starten
 ##   --cat=id                    Hotelkatze vor den Spieler setzen (minka, socke, kasimir)
@@ -374,7 +379,41 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--friend="):
 		var friend := Game.social.guest_by_id(arg.substr(9))
 		if friend:
-			friend.relation = 80.0
+			friend.relation = 65.0   # befreundet (6.3)
+	elif arg.begins_with("--relation="):
+		# Beziehung setzen; für die Extreme werden die nötigen Taten gleich mit eingetragen (6.3)
+		var rel := arg.substr(11).split(",")
+		var g := Game.social.guest_by_id(rel[0])
+		if g and rel.size() > 1:
+			g.relation = clampf(rel[1].to_float(), -100.0, 100.0)
+			if g.relation >= 80.0:
+				g.deeds.merge({"games": Social.BOND_GAMES, "gifts_to": Social.BOND_GIFTS_TO, "gifts_from": Social.BOND_GIFTS_FROM}, true)
+			elif g.relation <= -80.0:
+				g.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
+	elif arg.begins_with("--follow="):
+		var follower := Game.social.guest_by_id(arg.substr(9))
+		if follower:
+			follower.global_position = Game.player.global_position + Game.player.global_transform.basis.z * 2.0
+			follower.start_follow()
+	elif arg.begins_with("--visit="):
+		var visitor := Game.social.guest_by_id(arg.substr(8))
+		if visitor:
+			Game.social.start_visit(visitor)
+	elif arg.begins_with("--punch="):
+		# Gast vor den Spieler stellen und zweimal zuschlagen (Nachfrage + Schlag)
+		var target := Game.social.guest_by_id(arg.substr(8))
+		if target:
+			target.global_position = Game.player.global_position - Game.player.global_transform.basis.z * 1.0
+			target.rotation.y = Game.player.rotation.y + PI
+			target._set_idle(5.0)
+			get_tree().create_timer(1.0).timeout.connect(func() -> void:
+				Game.player.debug_punch(target)
+				Game.player.debug_punch(target))
+	elif arg.begins_with("--attack="):
+		var attacker := Game.social.guest_by_id(arg.substr(9))
+		if attacker:
+			attacker.global_position = Game.player.global_position - Game.player.global_transform.basis.z * 4.0
+			get_tree().create_timer(1.0).timeout.connect(attacker.start_attack)
 	elif arg.begins_with("--kill="):
 		var victim := Game.social.guest_by_id(arg.substr(7))
 		Game.director.attacks = MonsterDirector.HARMLESS_ATTACKS + 1   # wirklich holen
@@ -391,7 +430,7 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--enemy="):
 		var enemy := Game.social.guest_by_id(arg.substr(8))
 		if enemy:
-			enemy.relation = -80.0
+			enemy.relation = -65.0   # verfeindet (6.3)
 	elif arg.begins_with("--player-deco="):
 		var xz := arg.substr(14).split(",")
 		var deco := Item.create(Item.Kind.CARVED_PUMPKIN)

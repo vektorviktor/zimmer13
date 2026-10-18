@@ -9,8 +9,11 @@ extends CharacterBody3D
 ## ersetzt fehlende Glühbirnen – und klaut selbst welche.
 ## Schreck (6.12): Sieht er eine Blutlache, eine Leiche oder den Lakengeist, bleibt er geschockt stehen –
 ## je nach Charakter mit erhobenen Händen und Flucht, starr oder weinend – und erzählt später davon.
+## Freundschaft & Feindschaft (6.3): folgt dir als Freund, besucht dich in Zimmer 13, rempelt dich an,
+## wenn er wütend ist, stolpert, wenn du ihn rammst, und schlägt zurück oder flieht, wenn du zuschlägst.
 
-enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP, SHOCKED, GHOSTED }
+enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP, SHOCKED, GHOSTED,
+	FOLLOW, VISIT, ATTACK, STAGGER }
 
 const WALK_SPEED := 1.4
 const RUN_SPEED := 3.3
@@ -45,6 +48,17 @@ const SHOCK_CRIES := {
 }
 ## So viele Erlebnisse merkt er sich (die ältesten fallen heraus)
 const MAX_EXPERIENCES := 5
+## Freundschaft & Feindschaft (6.3): Abstand beim Folgen, Reichweite eines Schlags, so lange humpelt er
+## nach einem Schlag (langsamer), so stark trifft er dich
+const FOLLOW_GAP := 1.8
+const PUNCH_REACH := 1.1
+const HURT_TIME := 90.0
+const HURT_SLOW := 0.7
+const PUNCH_INJURY := 0.35
+const RUDE_LINES := ["Aus dem Weg!", "Pass doch auf!", "Geh mir aus den Augen.", "Na, wieder unterwegs?"]
+const RAMMED_LINES := ["Hey! Spinnst du?", "Au! Pass doch auf!", "Was soll das denn?!"]
+const HIT_BACK_LINES := ["Na warte!", "Das wirst du bereuen!", "Jetzt reicht's mir!"]
+const HIT_FLEE_LINES := ["Hilfe! Der ist verrückt!", "Lass mich in Ruhe!", "Au! Hör auf!"]
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
 
 var id := ""
@@ -77,6 +91,12 @@ var ghost_visits := 0        ## so oft kam der Lakengeist schon zu ihm (Stufe, w
 var seen_sights: Array = []  ## Blutlachen und Leichen, die er schon gesehen hat (sight_key)
 ## Eigene Erlebnisse: {kind (blood/corpse/ghost/ghost_attack), zone, who, at (Director.elapsed), told}
 var experiences: Array = []
+## Taten zwischen ihm und dem Spieler (6.3): games, gifts_to, gifts_from, hostile, revenge
+var deeds := {}
+var chat_day := 0            ## Tag des letzten Plauderns
+var chats_today := 0         ## nur die ersten zwei Plaudereien am Tag zählen voll
+var attack_cooldown := 0.0
+var threatened := false      ## hat dir schon gedroht – beim nächsten Mal schlägt er zu
 
 var agent: NavigationAgent3D
 var _collider: CollisionShape3D
@@ -121,6 +141,11 @@ var _shock_look := Vector3.ZERO
 var _shock_style := ""
 var _entranced := false    ## vom Lakengeist hypnotisiert – bleibt stehen, bis er weg ist
 var _gripped := false      ## wird vom Lakengeist gewürgt
+var _hurt_time := 0.0      ## geschlagen: humpelt so lange langsamer
+var _bump_cooldown := 0.0
+var _push := Vector3.ZERO  ## Rückstoß beim Stolpern
+var _hit_back := false     ## nach dem Stolpern: zurückschlagen statt fliehen
+var _resume_follow := 0.0  ## Begleiter im Gespräch: so lange kommt er danach noch mit
 
 
 func setup(p_id: String, p_home: Dictionary) -> Guest:
@@ -172,11 +197,18 @@ func interact(_player: Player) -> void:
 
 
 func begin_talk() -> void:
+	_resume_follow = _timer if state == State.FOLLOW else 0.0
 	state = State.TALKING
 
 
 func end_talk() -> void:
-	if state == State.TALKING:
+	if state != State.TALKING:
+		return
+	if _resume_follow > 0.0:
+		_timer = _resume_follow   # ein Begleiter kommt nach dem Gespräch weiter mit
+		_resume_follow = 0.0
+		state = State.FOLLOW
+	else:
 		_set_idle(randf_range(2.0, 5.0))
 
 
@@ -281,7 +313,7 @@ func is_distracted() -> bool:
 ## Ein erschreckendes Geräusch gehört (Spielkonzept 4.15). Ängstliche geraten in Panik,
 ## Mutige sehen nach, die anderen erzählen davon. Gibt die Reaktion zurück (Debug), sonst "".
 func hear_alarm(pos: Vector3) -> String:
-	if dead or hiding or _alarm_cooldown > 0.0 or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDE_GO, State.SHOCKED, State.GHOSTED]:
+	if dead or hiding or _alarm_cooldown > 0.0 or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDE_GO, State.SHOCKED, State.GHOSTED, State.STAGGER, State.ATTACK]:
 		return ""
 	_alarm_cooldown = ALARM_COOLDOWN
 	var brave := float(profile["brave"])
@@ -387,6 +419,9 @@ func _physics_process(delta: float) -> void:
 	_monster_cooldown -= delta
 	_panic_quiet -= delta
 	_alarm_cooldown -= delta
+	_hurt_time = maxf(0.0, _hurt_time - delta)
+	_bump_cooldown -= delta
+	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	match state:
 		State.TALKING:
 			_stop(delta)
@@ -418,6 +453,15 @@ func _physics_process(delta: float) -> void:
 			# Der Lakengeist hält ihn am Hals (SheetGhost) – bis er sich losreißt oder stirbt
 			_stop(delta)
 			return
+		State.STAGGER:
+			# gerammt oder geschlagen: taumelt zurück, dann flieht er oder schlägt zurück
+			velocity = Vector3(_push.x, 0.0 if is_on_floor() else velocity.y - _gravity * delta, _push.z)
+			_push = _push.move_toward(Vector3.ZERO, 8.0 * delta)
+			move_and_slide()
+			_timer -= delta
+			if _timer <= 0.0:
+				_after_stagger()
+			return
 	_watch_monster()
 	_scan_for_shock(delta)
 	running = state == State.HIDE_GO
@@ -427,7 +471,7 @@ func _physics_process(delta: float) -> void:
 		if _run_noise <= 0.0:
 			_run_noise = 0.6
 			Game.noise("run", global_position, self)
-	var speed := RUN_SPEED if running else WALK_SPEED
+	var speed := (RUN_SPEED if running else WALK_SPEED) * _speed_factor()
 	match state:
 		State.IDLE:
 			_stop(delta)
@@ -455,10 +499,176 @@ func _physics_process(delta: float) -> void:
 			_timer -= delta
 			if _timer <= 0.0 and not _entranced:
 				_after_shock()
+		State.FOLLOW:
+			_follow_step(delta)
+		State.ATTACK:
+			_attack_step(delta)
 		_:
-			if _move_to(_target, speed, delta):
+			# Wütende Gäste halten im Vorbeigehen auf dich zu, um dich anzurempeln (6.3)
+			var goal := _target
+			if _wants_to_bump():
+				goal = Game.player.global_position
+			if _move_to(goal, speed, delta) and goal == _target:
 				_arrive()
+			_check_bump()
 	_open_doors()
+
+
+# --- Freundschaft & Feindschaft (Spielkonzept 6.3) ------------------------------------
+
+func is_following() -> bool:
+	return state == State.FOLLOW or (state == State.TALKING and _resume_follow > 0.0)
+
+
+## Mitkommen: bleibt etwa FOLLOW_GAP hinter dir, rennt, wenn du davonläufst.
+func start_follow(duration: float = 120.0) -> void:
+	if dead or hiding:
+		return
+	if state == State.PARTY:
+		leave_party()
+	_timer = duration
+	state = State.FOLLOW
+
+
+func stop_follow(text: String = "") -> void:
+	if not is_following():
+		return
+	_resume_follow = 0.0
+	if text != "":
+		say(text)
+	if state == State.FOLLOW:
+		_set_idle(randf_range(2.0, 5.0))
+
+
+func _follow_step(delta: float) -> void:
+	var p := Game.player
+	_timer -= delta
+	if p == null or p.dead or _timer <= 0.0:
+		stop_follow("Ich geh dann mal wieder.")
+		return
+	if p.hiding:
+		stop_follow("Ich such mir selbst ein Versteck …")
+		return
+	if p.sleeping:
+		stop_follow("Schlaf gut.")
+		return
+	var d := global_position.distance_to(p.global_position)
+	if d > 25.0:
+		stop_follow("Wo bist du denn hin?")
+		return
+	if d > FOLLOW_GAP:
+		_move_to(p.global_position, (RUN_SPEED if d > 5.0 else WALK_SPEED * 1.4) * _speed_factor(), delta)
+	else:
+		_stop(delta)
+		_face(p.global_position, delta)
+
+
+## Besuch in Zimmer 13: hingehen, dann klopft er (Social.on_visit_arrived).
+func start_visit(door_front: Vector3) -> void:
+	if dead or hiding:
+		return
+	_walk_to(door_front, State.VISIT)
+
+
+## Steht vor Zimmer 13 und klopft höflich (kein Panik-Klopfen).
+func knock_politely() -> void:
+	_drop_held()
+	state = State.KNOCK
+
+
+func end_visit() -> void:
+	if state == State.KNOCK:
+		_set_idle(randf_range(2.0, 5.0))
+
+
+## Auf den Spieler losgehen und zuschlagen (Erzfeind oder Vergeltung). Läufst du weg, gibt er auf.
+func start_attack(duration: float = 12.0) -> void:
+	if dead or hiding:
+		return
+	if state == State.PARTY:
+		leave_party()
+	_drop_held()
+	_timer = duration
+	state = State.ATTACK
+
+
+func _attack_step(delta: float) -> void:
+	var p := Game.player
+	_timer -= delta
+	if p == null or p.dead or p.hiding or p.in_dialog or _timer <= 0.0:
+		_set_idle(randf_range(3.0, 6.0))
+		return
+	if global_position.distance_to(p.global_position) > PUNCH_REACH:
+		_move_to(p.global_position, RUN_SPEED * 0.95 * _speed_factor(), delta)
+		return
+	_stop(delta)
+	_face(p.global_position, delta)
+	p.hurt(PUNCH_INJURY, global_position)
+	Game.social.on_guest_hit_player(self)
+	_bump_cooldown = 60.0
+	_walk_to(_room_point(), State.WALK)
+
+
+## Gerammt (hit = false) oder geschlagen (hit = true): taumelt zurück. Danach – je nach Mut, Stolz
+## und Beziehung – weiter, weg oder zurückschlagen.
+func stagger(push: Vector3, hit: bool) -> void:
+	if dead or hiding or state in [State.GHOSTED, State.SLEEP]:
+		return
+	if state == State.PARTY:
+		leave_party()
+	_drop_held()
+	_push = push
+	_timer = 0.9 if hit else 0.6
+	_hit_back = false
+	state = State.STAGGER
+	if not hit:
+		say(RAMMED_LINES[randi() % RAMMED_LINES.size()])
+		return
+	_hurt_time = HURT_TIME
+	var brave := float(profile["brave"])
+	var pride := float((profile["dice"] as Dictionary).get("pride", 0.5))
+	fear = minf(100.0, fear + 35.0 * (1.2 - brave))
+	_hit_back = brave >= 0.55 or pride >= 0.65 or Social.tier(self) <= Social.Tier.ENEMY
+	say((HIT_BACK_LINES if _hit_back else HIT_FLEE_LINES).pick_random())
+
+
+func _after_stagger() -> void:
+	if _hit_back:
+		_hit_back = false
+		start_attack(8.0)
+	elif _hurt_time > 0.0:
+		fear = maxf(fear, 70.0)
+		_go_hide()
+	else:
+		_set_idle(randf_range(1.0, 3.0))
+
+
+func _speed_factor() -> float:
+	return HURT_SLOW if _hurt_time > 0.0 else 1.0
+
+
+## Wütend oder schlimmer, der Spieler nah und sichtbar: hält auf ihn zu.
+func _wants_to_bump() -> bool:
+	if state != State.WALK or _bump_cooldown > 0.0 or Social.tier(self) > Social.Tier.ANGRY:
+		return false
+	var p := Game.player
+	if p == null or p.dead or p.hiding or p.in_dialog:
+		return false
+	return p.global_position.distance_to(global_position) < 3.5 and can_see_actor(p)
+
+
+func _check_bump() -> void:
+	if not _wants_to_bump():
+		return
+	var p := Game.player
+	var to := p.global_position - global_position
+	to.y = 0.0
+	if to.length() > 0.9:
+		return
+	_bump_cooldown = 45.0
+	p.shove(to.normalized() * 3.0)
+	say(RUDE_LINES[randi() % RUDE_LINES.size()])
+	Game.social.on_guest_rammed_player(self)
 
 
 # --- Nachtruhe --------------------------------------------------------------------------
@@ -473,7 +683,7 @@ func bedtime(instant: bool = false) -> void:
 		global_position = _room_point()
 		_fall_asleep()
 		return
-	if dead or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDING, State.HIDE_GO, State.SLEEP, State.SHOCKED, State.GHOSTED]:
+	if dead or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.HIDING, State.HIDE_GO, State.SLEEP, State.SHOCKED, State.GHOSTED, State.STAGGER, State.ATTACK]:
 		return
 	if state == State.PARTY:
 		leave_party()
@@ -538,6 +748,13 @@ func _next_activity() -> void:
 	if fear >= 60.0:
 		_walk_to(_room_point(), State.WALK)
 		return
+	# Gute Freunde schließen sich manchmal von selbst an (6.3)
+	var p := Game.player
+	if Social.tier(self) == Social.Tier.GOOD_FRIEND and p and not p.dead and p.hiding == null and randf() < 0.25 \
+			and p.global_position.distance_to(global_position) < 6.0 and can_see_actor(p):
+		say("Ich komm ein Stück mit.")
+		start_follow(60.0)
+		return
 	var choice := _weighted_choice(profile["activities"])
 	match choice:
 		"room":
@@ -600,6 +817,8 @@ func _arrive() -> void:
 			_set_idle(randf_range(5.0, 12.0))
 		State.STEAL:
 			_finish_steal()
+		State.VISIT:
+			Game.social.on_visit_arrived(self)
 		State.HIDE_GO:
 			if _hide_spot and _hide_spot.occupant == null:
 				_enter_hide(_hide_spot)
@@ -684,7 +903,7 @@ func deco_place_point() -> Vector3:
 func _try_steal() -> bool:
 	if held:
 		return false
-	var hostile := relation <= -30.0 and randf() < float(profile["greed"])
+	var hostile := Social.tier(self) <= Social.Tier.ANGRY and randf() < float(profile["greed"])
 	var desperate := fear >= 60.0 and own_deco_near_door().is_empty()
 	if not hostile and not desperate:
 		return false
@@ -1098,7 +1317,7 @@ func _leave_traces(delta: float) -> void:
 		_mud -= 1
 		_foot_side = -_foot_side
 		traces.add_shoeprint(global_position + global_transform.basis.x * 0.1 * _foot_side, rotation.y)
-	if _bleeding > 0.0 and randf() < 0.5:
+	if (_bleeding > 0.0 or _hurt_time > HURT_TIME - 20.0) and randf() < 0.5:
 		traces.add_guest_drop("drops", global_position + _jitter(0.15))
 	if held and held.lit and randf() < 0.15:
 		traces.add_guest_drop("wax", global_position + _jitter(0.2))
