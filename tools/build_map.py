@@ -7,8 +7,10 @@
 #   - Jede Ebenengruppe der obersten Stufe ist ein Stockwerk: „EG“, „OG1“, „OG2“ …, „Keller“. Gezählt werden
 #     alle normalen Ebenen der Gruppe, egal ob sichtbar. Nicht gezählt: Referenzebenen und Ebenen, deren Name
 #     mit „Beschriftung“, „Skizze“ oder „Notiz“ beginnt.
-#   - Die Bedeutung jeder Farbe steht als **Name in der Palette** (FILLS/OPENINGS unten). Farben, die nicht in
-#     der Palette stehen, werden gemeldet und übergangen.
+#   - Die Bedeutung jeder Farbe steht als Name in der **Legende map.gpl** neben der Plandatei (GIMP-Palette,
+#     „R G B<Tab>Name“ je Zeile, FILLS/OPENINGS unten). Aseprite 1.3.18 speichert keine Palettennamen; ohne
+#     .gpl gelten die Namen aus dem Paletten-Chunk (ältere Dateien). Farben ohne Namen werden gemeldet und
+#     übergangen.
 #   - Öffnungen sind Farbstriche auf der Wandlinie, Flächen sind Füllfarben.
 #   - Objektebenen je Stockwerk (eigene Legende, Palettennamen mit Vorsatz): „Möbel“ (Grundfläche als Rechteck,
 #     ein Strich „Möbel: Vorderseite“ am Rand zeigt die Vorderseite), „Ausstattung“, „Gegenstände“ und „Lichter“
@@ -154,11 +156,25 @@ def read_aseprite(path):
 			pivot = struct.unpack_from("<ii", data, q) if flags & 2 else None
 			slices.append({"name": name.strip(), "x": x, "y": y, "w": sw, "h": sh, "pivot": pivot})
 		p += size
+	slices.sort(key=lambda sl: sl["name"])   # Aseprite ändert ihre Reihenfolge beim Speichern
 	return w, h, layers, palette, slices
 
 
+def read_legend(path):
+	"""Legende als GIMP-Palette: [(Name, Hex)] in Dateireihenfolge."""
+	legend = []
+	for line in open(path, encoding="utf-8"):
+		parts = line.split(None, 3)
+		if len(parts) == 4 and all(x.isdigit() for x in parts[:3]):
+			legend.append((parts[3].strip(), "%02x%02x%02x" % tuple(int(x) for x in parts[:3])))
+	return legend
+
+
 W, H, LAYERS, PALETTE, SLICES = read_aseprite(SRC)
-assert any(n for n, _ in PALETTE), "Die Palette hat keine Farbnamen – Legende fehlt (siehe Kopf dieses Skripts)"
+LEGEND = os.path.splitext(SRC)[0] + ".gpl"
+if os.path.exists(LEGEND):
+	PALETTE = read_legend(LEGEND)
+assert any(n for n, _ in PALETTE), "Keine Farbnamen – Legende %s fehlt (siehe Kopf dieses Skripts)" % LEGEND
 BY_NAME = {n: c for n, c in PALETTE if n}
 WALL = BY_NAME[WALL_NAME]
 GLASS = BY_NAME.get(GLASS_NAME, "-")

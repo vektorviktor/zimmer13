@@ -17861,22 +17861,16 @@
 	],
 	"stairs": [
 		{
-			"id": "treppenhaus_west",
-			"name": "West",
-			"kind": "stairwell",
+			"id": "treppe_lobby",
+			"name": "Lobby",
+			"kind": "stair",
 			"rect": [
-				-47.4,
-				-103.9,
-				-43.6,
-				-98.1
+				-3.7,
+				-20.2,
+				0.1,
+				-15.0
 			],
-			"door": {
-				"pos": [
-					-46.5,
-					-97.95
-				],
-				"side": "south"
-			}
+			"up": "north"
 		},
 		{
 			"id": "treppenhaus_ost",
@@ -17897,16 +17891,22 @@
 			}
 		},
 		{
-			"id": "treppe_lobby",
-			"name": "Lobby",
-			"kind": "stair",
+			"id": "treppenhaus_west",
+			"name": "West",
+			"kind": "stairwell",
 			"rect": [
-				-3.7,
-				-20.2,
-				0.1,
-				-15.0
+				-47.4,
+				-103.9,
+				-43.6,
+				-98.1
 			],
-			"up": "north"
+			"door": {
+				"pos": [
+					-46.5,
+					-97.95
+				],
+				"side": "south"
+			}
 		}
 	],
 	"floor_patches": [

@@ -343,11 +343,14 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
   `Keller`) und wird zu `eg.json`, `og1.json` … – sobald sie Wände enthält. Gezählt werden alle normalen
   Ebenen der Gruppe, **egal ob sichtbar**; nicht gezählt werden Referenzebenen (`OG1/EG (Referenz)` zeigt das EG
   zum Abzeichnen) und Ebenen, deren Name mit `Beschriftung`, `Skizze` oder `Notiz` beginnt.
-- **Legende = Palette mit Namen:** Die Bedeutung jeder Farbe kommt aus dem **Farbnamen in der Palette**
-  (`FILLS`, `OPENINGS`, `Wand`, `Glaswand` oben im Skript). Farben dürfen sich ändern, die Namen nicht.
-  Farben ohne Paletteneintrag meldet das Skript mit Pixelposition. Beim Zeichnen zeigt die Aseprite-Erweiterung
-  `tools/aseprite-palette-names/` (View > Palettennamen) alle Namen als Liste; sie liest dafür denselben
-  Paletten-Chunk aus der gespeicherten Datei, weil Aseprites Lua-API keine Farbnamen kennt.
+- **Legende = `map.gpl`:** Die Bedeutung jeder Farbe steht als Name in der Legende neben der Plandatei
+  (GIMP-Palette, „R G B<Tab>Name“, Zeile = Paletten-Index; `FILLS`, `OPENINGS`, `Wand`, `Glaswand` oben im
+  Skript, Zuordnung nach Farbwert). Nicht in `map.aseprite`: Aseprite 1.3.18 behält keine Palettennamen,
+  schon Öffnen und Speichern verwirft sie (19.10.). Neue Farbe in der Palette → Zeile in `map.gpl`, Farbwert
+  geändert → dort auch. Farben ohne Legendeneintrag meldet das Skript mit Pixelposition. Slices liest es nach
+  Namen sortiert, weil Aseprite ihre Reihenfolge beim Speichern ändert (sonst wechselt z. B. die Reihenfolge der
+  Treppen und mit ihr der Fingerabdruck der Welt). Beim Zeichnen zeigt die Aseprite-Erweiterung
+  `tools/aseprite-palette-names/` (View > Palettennamen) die Palette mit den Namen aus `map.gpl`.
   1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie, Flächen als Füllfarben, `Luftraum` = hier kein Boden (wird beim
   Stockwerk darunter zu `open_above`). Schrift in Wandfarbe im Grundriss wird über ihre Größe erkannt und
   übermalt, gehört aber in die Ebene `Beschriftung`.

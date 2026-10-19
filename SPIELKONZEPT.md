@@ -1376,7 +1376,8 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man sc
   Skript liest daraus Wände, Türen, Fenster, Räume und Einbauten; Möbel setzt weiterhin der LevelBuilder.
 - **Vorlage für alle Stockwerke:** je Stockwerk eine Ebenengruppe (`EG`, `OG1` …, `Keller`) mit den Ebenen
   „Grundriss“ und „Beschriftung“ (frei, wird nicht gelesen); in `OG1` liegt das EG als Referenzebene zum
-  Abzeichnen. Die **Legende steht als Farbnamen in der Palette**. Raumnamen, Bereiche, Treppen (mit Richtung)
+  Abzeichnen. Die **Legende steht als Farbnamen in `map.gpl`** neben der Plandatei (Aseprite speichert keine
+  Palettennamen, 19.10.). Raumnamen, Bereiche, Treppen (mit Richtung)
   und künftig einzelne Objekte (mit Vorderseite) werden als **benannte Slices** eingetragen, z. B.
   „Raum: Küche“, „Treppe: Lobby“, „Objekt: Sofa“, im Obergeschoss mit Vorsatz: „OG1 Raum: Bibliothek“.
   Der Luftraum über der Lobby ist im OG1 als eigene Farbe „Luftraum“ eingezeichnet.

@@ -1,6 +1,6 @@
 -- Test für palette-file.lua im Batch-Modus (ohne Fenster, verändert nichts):
 --   Aseprite.exe -b map.aseprite --script tools/aseprite-palette-names/test.lua
--- Prüft, dass jede Farbe der geöffneten Datei ihren gespeicherten Namen bekommt, und die Zuordnung
+-- Prüft, dass jede Farbe der geöffneten Datei ihren Namen aus der Legende (bzw. Datei) bekommt, und die Zuordnung
 -- bei vertauschten, geänderten und neuen Farben.
 
 local dir = app.fs.filePath(debug.getinfo(1, "S").source:sub(2))
@@ -15,8 +15,9 @@ end
 -- Datei: Namen lesen und der Palette im Speicher zuordnen
 local spr = app.sprite
 assert(spr, "Bitte eine .aseprite-Datei mit angeben")
-local saved, size = PaletteFile.read(spr.filename)
-check("Datei lesbar", saved ~= nil)
+local saved, size, source = PaletteFile.read(spr.filename)
+check("Namen lesbar", saved ~= nil)
+print("Namen aus " .. (source == "legend" and PaletteFile.legendPath(spr.filename) or "der Datei"))
 local pal = spr.palettes[1]
 local live = {}
 for i = 0, #pal - 1 do

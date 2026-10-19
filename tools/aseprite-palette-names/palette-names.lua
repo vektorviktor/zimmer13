@@ -1,13 +1,13 @@
 -- Palettennamen: eigenes Fenster, das die aktive Palette als Liste zeigt – Farbkachel, Index, Name.
--- Gedacht für den Gebäudeplan map.aseprite, dessen Legende nur in den Namen der Palettenfarben steht
--- („Wand“, „Möbel: Bett“, „Licht: Wandleuchte defekt“ …).
+-- Gedacht für den Gebäudeplan map.aseprite, dessen Legende in den Namen der Palettenfarben steht
+-- („Wand“, „Möbel: Bett“, „Licht: Wandleuchte defekt“ …) – in der Legende map.gpl daneben.
 --
 -- Linksklick auf einen Eintrag setzt die Vordergrundfarbe, Rechtsklick die Hintergrundfarbe.
 -- Klick auf eine Gruppenüberschrift klappt die Gruppe ein und aus.
 --
--- Die Farben kommen live aus der Palette im Speicher, die Namen aus der gespeicherten Datei
--- (palette-file.lua – die Lua-API kennt keine Farbnamen). Weicht beides voneinander ab, weil die
--- Palette seit dem letzten Speichern geändert wurde, steht hinter dem Namen ein „*“.
+-- Die Farben kommen live aus der Palette im Speicher, die Namen aus der Legende <datei>.gpl oder, ohne
+-- Legende, aus der gespeicherten Datei (palette-file.lua – Aseprite behält keine Farbnamen). Passt eine
+-- Farbe nicht zur Legende (Reihenfolge oder Farbwert geändert), steht hinter dem Namen ein „*“.
 -- Die Erweiterung liest nur; Palette und Datei bleiben unverändert.
 
 local PaletteFile -- Modul aus palette-file.lua, geladen in init()
@@ -25,7 +25,7 @@ local S = {
   sprite = nil,         -- Sprite, an dessen Ereignisse die Liste gebunden ist
   spriteEvents = {},    -- { events, code } zum Abmelden
   appEvents = {},
-  saved = nil,          -- gespeicherte Palette (PaletteFile.read)
+  saved = nil,          -- Palette mit Namen aus Legende oder Datei (PaletteFile.read)
   note = "",            -- Hinweis, warum Namen fehlen
   liveKey = nil,        -- Signatur der Palette im Speicher, um Änderungen zu erkennen
   entries = {},         -- Index → Eintrag (PaletteFile.match + group)
@@ -110,9 +110,12 @@ local function loadSaved()
   elseif ext ~= "aseprite" and ext ~= "ase" then
     S.note = "Namen gibt es nur in .aseprite-Dateien"
   else
-    local saved, err = PaletteFile.read(fn)
+    local saved, err, source = PaletteFile.read(fn)
     if saved then
       S.saved = saved
+      if source == "file" then
+        S.note = "Keine Legende " .. app.fs.fileName(PaletteFile.legendPath(fn)) .. " – Namen aus der Datei"
+      end
     else
       S.note = "Datei nicht lesbar: " .. tostring(err)
     end
