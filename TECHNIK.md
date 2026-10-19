@@ -36,6 +36,12 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   (1,53 m) aus. Das Spiel skaliert auf den Kronenradius aus dem Plan; Kollision nur als Stammquader bis
   `TREE_TRUNK_H` (3 m), unter der Krone kann man durchgehen. Offene Blattbüschel → `two_sided`. Fehlt die
   Datei, bleibt der Platzhalter (Stammquader mit drei Herbstkugeln).
+  Die Taschenlampe `assets/models/flashlight.glb` (`Flashlight`): schwarze Stablampe von Sketchfab (Onur,
+  CC-BY 4.0 – Namensnennung nötig), `tools/build_flashlight.py` aus `assets/source/flashlight.glb`. 0,25 m lang,
+  Leuchtrichtung +Z, Schalter oben, Ursprung mittig in der Länge auf der Unterkante, ~2500 Dreiecke, 256er-PNG.
+  Zwei Objekte: `body` (Gehäuse + Schalter) und `lens` – das Glas bekommt statt der Textur das leuchtende
+  Material der Lampe. Das Skript gibt die Glasmitte aus → `Flashlight.LENS`, dort sitzt der Lichtkegel.
+  Fehlt die Datei, bleiben Rohr, Kopf und roter Schalter.
   Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh, fläche)` in ein `Mat.psx` (eins pro Textur der
   Modelldatei, Grundfarbe 0,8 Grau – Farbtöne gehören in die Textur, die Materialfarbe wird ignoriert;
   `two_sided` nimmt eine Kopie des Shaders mit `cull_disabled`).

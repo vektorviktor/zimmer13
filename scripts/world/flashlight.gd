@@ -10,6 +10,11 @@ extends Node3D
 ##   · In der Nähe des Monsters flackert sie wie die Lampen.
 ## Lokale +Z = Leuchtrichtung (Vorderseite des Gegenstands).
 
+## Stablampe aus tools/build_flashlight.py: „body“ und das Glas „lens“. Fehlt die Datei, bleibt der Platzhalter.
+const MODEL := "res://assets/models/flashlight.glb"
+## Glasmitte im Modell (ausgegeben von tools/build_flashlight.py) – dort sitzt der Lichtkegel
+const LENS := Vector3(0.0, 0.022, 0.121)
+
 # --- Tuning -------------------------------------------------------------------
 const NORMAL_SECONDS := 300.0   ## eine Batterie reicht für einen Ingame-Tag normales Licht …
 const UV_SECONDS := 9.0         ## … aber nur für Sekunden UV
@@ -64,22 +69,34 @@ func save_extra() -> String:
 
 
 func _ready() -> void:
-	# Gehäuse: Rohr entlang +Z, Kopf mit Glas vorn
-	var body := Geo.mesh(self, Geo.cylinder(0.02, 0.15, 8), Mat.psx(Color(0.16, 0.17, 0.19)), Vector3(0, 0.035, -0.01))
-	body.rotation.x = PI / 2.0
-	var head := Geo.mesh(self, Geo.cylinder(0.031, 0.045, 8), Mat.psx(Color(0.55, 0.56, 0.58)), Vector3(0, 0.035, 0.085))
-	head.rotation.x = PI / 2.0
-	Geo.mesh(self, Geo.box(Vector3(0.012, 0.008, 0.03)), Mat.psx(Color(0.6, 0.1, 0.08)), Vector3(0, 0.057, 0.0))   # Schalter
 	_lens = Mat.psx(Color(0.85, 0.85, 0.8), "", 1.0, NORMAL_COLOR, 0.0, false)
-	var glass := Geo.mesh(self, Geo.cylinder(0.026, 0.004, 8), _lens, Vector3(0, 0.035, 0.108))
-	glass.rotation.x = PI / 2.0
+	var beam_pos := Vector3(0, 0.035, 0.115)
+	if ResourceLoader.exists(MODEL):
+		var model: Node3D = (load(MODEL) as PackedScene).instantiate()
+		add_child(model)
+		for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+			m.material_override = _lens if m.name == "lens" else Mat.model(MODEL, m)
+		beam_pos = LENS + Vector3(0, 0, 0.005)
+	else:
+		_build_placeholder()
 	_beam = SpotLight3D.new()
-	_beam.position = Vector3(0, 0.035, 0.115)
+	_beam.position = beam_pos
 	_beam.rotation.y = PI   # SpotLight leuchtet entlang −Z
 	_beam.shadow_enabled = true
 	_beam.spot_attenuation = 0.8
 	add_child(_beam)
 	_apply_light()
+
+
+## Ohne Modell: Rohr entlang +Z, Kopf mit Glas vorn
+func _build_placeholder() -> void:
+	var body := Geo.mesh(self, Geo.cylinder(0.02, 0.15, 8), Mat.psx(Color(0.16, 0.17, 0.19)), Vector3(0, 0.035, -0.01))
+	body.rotation.x = PI / 2.0
+	var head := Geo.mesh(self, Geo.cylinder(0.031, 0.045, 8), Mat.psx(Color(0.55, 0.56, 0.58)), Vector3(0, 0.035, 0.085))
+	head.rotation.x = PI / 2.0
+	Geo.mesh(self, Geo.box(Vector3(0.012, 0.008, 0.03)), Mat.psx(Color(0.6, 0.1, 0.08)), Vector3(0, 0.057, 0.0))   # Schalter
+	var glass := Geo.mesh(self, Geo.cylinder(0.026, 0.004, 8), _lens, Vector3(0, 0.035, 0.108))
+	glass.rotation.x = PI / 2.0
 
 
 func is_held_by_player() -> bool:

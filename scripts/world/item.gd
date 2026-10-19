@@ -452,7 +452,7 @@ func _build(extra: String) -> void:
 		Kind.FLASHLIGHT:
 			display_name = "Taschenlampe"
 			mass = 0.3
-			size = Vector3(0.07, 0.07, 0.22)
+			size = Vector3(0.05, 0.05, 0.25)
 			flashlight = Flashlight.new().setup(extra)
 			add_child(flashlight)
 			if flashlight.has_uv:
