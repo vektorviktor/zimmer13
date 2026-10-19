@@ -18,15 +18,16 @@ python tools/aseprite-palette-names/pack.py
 ## Benutzen
 
 - Öffnen und schließen über **View > Palettennamen** oder im Paletten-Menü (☰-Knopf über der Palette)
-  **Palettennamen anzeigen**. Fenster lässt sich verschieben und in der Größe ändern; Lage und Einstellungen
-  bleiben gespeichert.
+  **Palettennamen anzeigen**. Schließen auch mit dem ✕ im Fenstertitel. Das Fenster lässt sich verschieben
+  und in Breite und Höhe ziehen, auch recht schmal (zu lange Namen werden dann abgeschnitten, die Fußzeile
+  zeigt den vollen Namen); Lage und Einstellungen bleiben gespeichert.
 - **Beim ersten Öffnen fragt Aseprite** „The following script … wants to access this file“. Die Erweiterung
   liest die gespeicherte Datei, weil Aseprites Skript-Schnittstelle keine Farbnamen kennt. Am besten
   *Give full trust to this script* anhaken und *Allow Read Access* klicken – dann kommt die Frage nicht wieder.
   Die Erweiterung schreibt nie etwas; Palette und Datei bleiben unverändert.
 - **Linksklick** auf einen Eintrag setzt die Vordergrundfarbe, **Rechtsklick** die Hintergrundfarbe.
-  Die aktuelle Vordergrundfarbe ist in der Liste markiert; unten steht der Eintrag unter der Maus
-  (oder die Vordergrundfarbe) mit Index, vollem Namen und Hex-Wert.
+  Die aktuelle Vordergrundfarbe ist in der Liste markiert. Die Fußzeile unter der Liste zeigt den Eintrag
+  unter der Maus (oder die Vordergrundfarbe) mit Index, vollem Namen und Hex-Wert, darunter Datei und Anzahl.
 - **Gruppe:** nur einen Namensvorsatz zeigen (`Möbel`, `Ausstattung`, `Gegenstand`, `Licht`,
   `Ohne Vorsatz`, `Ohne Namen`). Die Liste wird aus der Palette gebildet, neue Vorsätze erscheinen von selbst.
 - **Gruppiert:** Überschrift je Vorsatz; der Vorsatz fällt dann im Namen weg. Klick auf eine Überschrift

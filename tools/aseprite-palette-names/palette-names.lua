@@ -36,6 +36,8 @@ local S = {
   rows = {},            -- sichtbare Zeilen: { header = Gruppe, n = Anzahl } oder { entry = Eintrag }
   scroll = 0,
   hover = nil,
+  statusText = "",      -- Fußzeilen der Liste (im Canvas gezeichnet, damit das Fenster schmal werden kann)
+  infoText = "",
   picked = nil,         -- zuletzt per Klick gesetzte Vordergrundfarbe
   dragBar = false,
   rowH = 16,
@@ -217,16 +219,14 @@ local function updateLabels()
       if e.state ~= "ok" and e.name ~= "" then unsure = unsure + 1 end
     end
     status = string.format("%d Farben, %d benannt", S.count, named)
+    if S.sprite then status = app.fs.fileName(S.sprite.filename) .. ": " .. status end
     if unsure > 0 then
       status = status .. string.format(", %d mit * (ungespeichert)", unsure)
     end
   end
-  local title = "Palettennamen"
-  if S.sprite then title = title .. " – " .. app.fs.fileName(S.sprite.filename) end
   local hovered = S.hover and S.rows[S.hover] and S.rows[S.hover].entry
-  S.dlg:modify{ title = title }
-  S.dlg:modify{ id = "status", text = status }
-  S.dlg:modify{ id = "info", text = entryInfo(hovered or S.entries[fgIndex() or -1]) }
+  S.statusText = status
+  S.infoText = entryInfo(hovered or S.entries[fgIndex() or -1])
 end
 
 -- Auswahl der Gruppen nur neu setzen, wenn sich die Gruppen geändert haben
@@ -345,7 +345,9 @@ local function onPaint(ev)
   local gc = ev.context
   local w, h = gc.width, gc.height
   local textH = gc:measureText("Mg").height
-  S.viewW, S.viewH = w, h
+  local lineH = textH + 4
+  local listH = math.max(0, h - 2 * lineH - 3) -- darunter zwei Fußzeilen
+  S.viewW, S.viewH = w, listH
   S.rowH = math.max(textH + 6, 16)
   clampScroll()
 
@@ -360,8 +362,12 @@ local function onPaint(ev)
 
   gc.color = face
   gc:fillRect(Rectangle(0, 0, w, h))
+  gc:save()
+  gc:beginPath()
+  gc:rect(Rectangle(0, 0, w, listH))
+  gc:clip()
 
-  local showBar = contentH() > h
+  local showBar = contentH() > listH
   local listW = showBar and (w - BAR_W - 2) or w
   local swatch = rowH - 4
   local idxW = gc:measureText("000").width
@@ -372,7 +378,7 @@ local function onPaint(ev)
   local first = S.scroll // rowH + 1
   local y = (first - 1) * rowH - S.scroll
   for r = first, #S.rows do
-    if y >= h then break end
+    if y >= listH then break end
     local row = S.rows[r]
     if row.header then
       if r == S.hover then
@@ -428,20 +434,30 @@ local function onPaint(ev)
   end
 
   if showBar then
-    local thumbH = math.max(20, h * h // contentH())
-    local thumbY = math.floor(S.scroll / (contentH() - h) * (h - thumbH) + 0.5)
+    local thumbH = math.max(20, listH * listH // contentH())
+    local thumbY = math.floor(S.scroll / (contentH() - listH) * (listH - thumbH) + 0.5)
     gc.color = themeColor("separator_label", faint)
     gc.opacity = 60
-    gc:fillRect(Rectangle(w - BAR_W, 0, BAR_W, h))
+    gc:fillRect(Rectangle(w - BAR_W, 0, BAR_W, listH))
     gc.opacity = 255
     gc.color = faint
     gc:fillRect(Rectangle(w - BAR_W, thumbY, BAR_W, thumbH))
   end
+  gc:restore()
+
+  -- Fußzeilen: Eintrag unter der Maus bzw. Vordergrundfarbe, Status. Zu lange Texte werden abgeschnitten.
+  gc.color = faint
+  gc:fillRect(Rectangle(0, listH, w, 1))
+  gc.color = text
+  gc:fillText(S.infoText, 4, listH + 3)
+  gc.color = faint
+  gc:fillText(S.statusText, 4, listH + 3 + lineH)
 end
 
 -- Maus --------------------------------------------------------------------------------------------
 
 local function rowAt(y)
+  if y < 0 or y >= S.viewH then return nil end
   local r = (y + S.scroll) // S.rowH + 1
   if r >= 1 and r <= #S.rows then return r end
   return nil
@@ -553,18 +569,15 @@ local function openDialog()
     onchange = function() refresh() end }
   dlg:entry{ id = "search", label = "Suche", text = "",
     onchange = function() S.scroll = 0; refresh() end }
-  dlg:canvas{ id = "list", width = 260, height = 300,
+  -- Kleine Mindestgröße: Breite und Höhe bestimmt der Nutzer durch Ziehen am Fensterrand.
+  dlg:canvas{ id = "list", width = 100, height = 330,
     onpaint = onPaint, onmousedown = onMouseDown, onmousemove = onMouseMove,
     onmouseup = onMouseUp, onwheel = onWheel }
-  dlg:label{ id = "info", text = "" }
-  dlg:newrow()
-  dlg:label{ id = "status", text = "" }
   dlg:button{ id = "reload", text = "Neu einlesen", onclick = function()
     loadSaved()
     rebuildEntries(true)
     refresh()
   end }
-  dlg:button{ id = "close", text = "Schließen", onclick = closeDialog }
 
   bindSprite(app.sprite)
   bindApp()
