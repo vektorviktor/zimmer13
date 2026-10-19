@@ -90,6 +90,13 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   (Hüfte über Fuß), seitliches Wandern der Hüfte über `DRIFT_WINDOW` (2 s, als Schleife) gemittelt und abgezogen –
   Wackeln bleibt, der Gast tanzt auf der Stelle. Szenen-Bildrate bleibt (der FBX-Import stellt sie um, sonst
   liefen `walk`/`run` zu schnell). Die FBX liegen nicht im Repo (Mixamo-Lizenz: keine Weitergabe der Rohdateien).
+  **SmartRig → Mixamo** (`tools/smartrig_to_mixamo.py`): Meshy-Figuren mit Skelettvorlage „SmartRig“
+  (`Bone_000`…) bekommen dasselbe Skelett wie Meshys Mixamo-Vorlage (65 Knochen `mixamorig:…`, Hierarchie wie
+  `guest_*.glb` ohne `headfront`). Zuordnung fest in `MAP`, abgelesen am Kürbismann (`assets/source/pumpkin_man.glb`);
+  Meshy nummeriert die Finger links und rechts verschieden, das Skript prüft die Reihenfolge an den Gewichten.
+  Übrige Knochen (Hilfsknochen an Becken und Händen, Augen, Kiefer, Kopfspitze, Requisiten wie die Axt) geben
+  ihre Gewichte an den nächsten zugeordneten Vorfahren ab – die Axt hängt fest an `LeftHand`. `HeadTop_End` neu
+  auf dem höchsten Kopfpunkt, Figur auf die Hüfte zentriert, Ruhepose (hängende Arme) und Blick bleiben.
   **Rahmen-Kit** `assets/models/frames.glb` (Spielkonzept 7.2, `OpeningFrame`): `tools/build_frames.py` zieht
   2D-Profile ohne Ausgangsmodell zu 1 m langen Teilen aus – `casing` (Seitenbekleidung), `fillet`, `frieze`,
   `cap` (Kopfpartie im Craftsman-Stil), `stool` (Fensterbank), `board` (Einheitswürfel für Zarge und
