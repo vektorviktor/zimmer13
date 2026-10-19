@@ -132,6 +132,7 @@ Die Gast-Grundkörper (`assets/models/guest_<name>.glb`, Spielkonzept 6.0) baut 
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_guest.py -- assets/source/guest_man.glb assets/models/guest_man.glb
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_guest.py -- assets/source/guest_girl10.glb assets/models/guest_girl10.glb
 ```
 
 Den Kürbismann (`assets/models/pumpkin_man.glb`, neues Monster, vorerst Testfigur für `--pumpkin`) liefert Meshy mit der Skelettvorlage „SmartRig“. `tools/smartrig_to_mixamo.py` baut das Skelett auf Mixamo um (die Axt hängt danach fest an der linken Hand), `tools/build_pumpkin.py` macht daraus das Spielmodell mit denselben Mixamo-Tänzen wie bei den Gästen. Ein optionaler dritter Pfad legt Vorschaubilder ab:

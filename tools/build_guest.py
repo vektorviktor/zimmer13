@@ -206,8 +206,8 @@ mat.use_backface_culling = True
 
 # --- Blick nach −Z (glTF) = Blender +Y, Füße auf 0 ---------------------------------------------
 bpy.context.view_layer.update()
-# Die Zehen zeigen sicher nach vorn
-toe = arm.data.bones["LeftToe_End"].head_local
+# Die Zehen zeigen sicher nach vorn (Meshys kleines Skelett ohne Finger hat kein LeftToe_End)
+toe = arm.data.bones["LeftToe_End" if "LeftToe_End" in arm.data.bones else "LeftToeBase"].head_local
 foot = arm.data.bones["LeftFoot"].head_local
 if (toe - foot).y < 0:
 	arm.rotation_mode = 'XYZ'
@@ -220,13 +220,14 @@ pts = [body.matrix_world @ v.co for v in mesh.vertices]
 height = max(p.z for p in pts) - min(p.z for p in pts)
 
 # Schulterbreite: Abstand der Schultergelenke plus Deltamuskeln (geschätzt, ~5 cm je Seite)
-width = (arm.data.bones["LeftArm"].head_local - arm.data.bones["RightArm"].head_local).length + 0.10
+width = (arm.matrix_world @ arm.data.bones["LeftArm"].head_local - arm.matrix_world @ arm.data.bones["RightArm"].head_local).length + 0.10
 
 # --- Formschlüssel „build“ ------------------------------------------------------------------
 body.shape_key_add(name="Basis", from_mix=False)
 sk = body.shape_key_add(name="build", from_mix=False)
 fwd = (arm.matrix_world.to_3x3().inverted() @ Vector((0, 1, 0))).normalized()   # vorn im Netzraum
 belly_ids = {vg.index for vg in body.vertex_groups if vg.name in ("Spine", "Spine1", "Hips")}
+unit = 1.0 / body.matrix_world.to_scale().x   # Meshy liefert manche Figuren in cm (Objekt × 0,01)
 # glTF trennt Punkte an UV-Nähten – deren Normalen mitteln, sonst reißen die Nähte beim Aufblähen auf
 normal_at = {}
 for v in mesh.vertices:
@@ -243,7 +244,7 @@ for v in mesh.vertices:
 		continue
 	n = normal_at[tuple(round(c, 5) for c in v.co)].normalized()
 	front = max(0.0, n.dot(fwd))
-	sk.data[v.index].co = v.co + n * push + fwd * BELLY_FORWARD * belly * front * front
+	sk.data[v.index].co = v.co + n * push * unit + fwd * BELLY_FORWARD * unit * belly * front * front
 # Laufweite: Fußweg in der Standphase je Sekunde (Animationen laufen auf der Stelle)
 fps = scene.render.fps / scene.render.fps_base
 

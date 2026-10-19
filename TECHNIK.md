@@ -80,7 +80,10 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   Punktfarbe je Fläche (R/G/B = Oberteil/Hose/Haare): Kopf-/Hals-Knochen → Haare, sonst hellere Grautöne →
   Oberteil, dunklere → Hose; Haut, Schuhe, Hände bleiben. **Formschlüssel `build`** (Körperbau, 1 = kräftig,
   negativ = schlank). Das Skript gibt die Zeile für `GuestBody.BODIES` aus (Höhe, Schulterbreite, Laufweite
-  der Animationen, mittlere Helligkeit je Färbebereich) – nach jedem Neubau übernehmen.
+  der Animationen, mittlere Helligkeit je Färbebereich) – nach jedem Neubau übernehmen. Kinderkörper (6.13,
+  z. B. `guest_girl10`) liefert Meshy mit kleinem Mixamo-Skelett (23 Knochen: keine Finger, kein
+  `LeftToe_End`/`HeadTop_End`) und in Zentimetern (Objekt × 0,01) – Skript und `retarget()` rechnen beides mit
+  ein, die Hände bleiben bei den Tänzen in Ruhedrehung.
   **Mixamo-Animationen:** jede `assets/source/anim/<name>.fbx` (Mixamo, „Without Skin“, 30 fps, am
   Standard-Charakter heruntergeladen) landet als Animation `<name>` in **jeder** Gast-GLB – ein Download gilt für
   alle Grundkörper, solange sie Meshys Mixamo-Skelett haben. Umbenennen reicht nicht, weil Mixamo in T-Pose steht
@@ -496,9 +499,11 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
   `name_for(seed)` verlässt sich darauf, dass der Name die **erste** Zufallszahl ist.
 - **Aussehen** (Spielkonzept 6.0, „Gastmodelle“): `GuestBody.pick(profile, id)` wählt für erzeugte Gäste einen
   Grundkörper aus `GuestBody.BODIES` passend zum Geschlecht des Namens (`GuestGenerator.FEMALE`), reihum nach der
-  Gastnummer. Ohne passenden Körper (feste Gäste, Frauen bis es Modelle gibt) bleibt die Klötzchenfigur
-  (`_build_blocks`). Je Gast aus dem Profil: `height_cm`, `width_cm` (Breite nur in `WIDTH_LIMIT`, Kopfknochen
-  gegengestreckt), `build`, Farben `coat`/`pants`/`hair` als Instanz-Uniforms von `psx_guest.gdshader`
+  Gastnummer. Kinderkörper (Eintrag mit `age`, 6.13) bekommen nur Kinder (`child` im Profil) – den mit dem
+  nächsten Alter –, alle übrigen nur Erwachsene. Ohne passenden Körper (feste Gäste, Frauen und Jungen, bis es
+  Modelle gibt) bleibt die Klötzchenfigur (`_build_blocks`). Je Gast aus dem Profil: `height_cm`, `width_cm`
+  (Breite nur in `WIDTH_LIMIT`, Kopfknochen gegengestreckt; `head` vergrößert ihn nur auf Erwachsenenkörpern),
+  `build`, Farben `coat`/`pants`/`hair` als Instanz-Uniforms von `psx_guest.gdshader`
   (färbt nur graue Texel, Farbe × Helligkeit / Mittelwert). **Bewegung:** `walk`/`run` aus der GLB
   (`AnimationPlayer` manuell vorgespult, Tempo nach Laufweite × Größe), im Stand Ruhepose mit Atmen. Die Posen
   in `Guest._pose()`/`_dance_pose()` drehen weiter nur die Pivots `_arm_l`/`_arm_r` (beim Modell unsichtbar);

@@ -9,11 +9,16 @@ extends Node3D
 ## drehen weiter nur _arm_l/_arm_r, hier zielen die Oberarmknochen in dieselbe Richtung.
 
 ## Grundkörper. Werte gibt tools/build_guest.py aus (Höhe und Schulterbreite in m, Laufweite der
-## Animationen in m/s, mittlere Helligkeit der Färbebereiche).
+## Animationen in m/s, mittlere Helligkeit der Färbebereiche). Kinderkörper (Spielkonzept 6.13) haben
+## "age" – sie gehen nur an Kinder, die übrigen nur an Erwachsene.
 const BODIES := {
 	"man": {
 		"path": "res://assets/models/guest_man.glb", "sex": "m",
 		"height": 1.700, "width": 0.433, "walk": 1.40, "run": 2.44, "ref": Vector3(0.383, 0.125, 0.200),
+	},
+	"girl10": {
+		"path": "res://assets/models/guest_girl10.glb", "sex": "f", "age": 10,
+		"height": 1.640, "width": 0.394, "walk": 1.46, "run": 2.55, "ref": Vector3(0.416, 0.080, 0.048),
 	},
 }
 ## Breite wird nur so weit gestreckt (sonst sieht man es an Armen und Beinen)
@@ -36,23 +41,30 @@ var _bone := {}
 var _info: Dictionary
 var _scale := 1.0
 var _width := 1.0
+var _head := 1.0           ## Kopfgröße (Kinder größer, Spielkonzept 6.13)
 var _breath := 0.0
 var dance := ""   ## Name aus DANCES, solange der Gast tanzt (setzt Guest._dance_pose)
 
 
 ## Grundkörper für einen Gast – "" = keiner passt (dann bleibt die Klötzchenfigur). Feste Gäste
-## bekommen später eigene Modelle. Verteilt wird reihum nach der Gastnummer, nicht zufällig, damit
-## sich kein Körper häuft.
+## bekommen später eigene Modelle. Erwachsene bekommen ihn reihum nach der Gastnummer, nicht zufällig,
+## damit sich kein Körper häuft; Kinder den Kinderkörper, der ihrem Alter am nächsten ist.
 static func pick(profile: Dictionary, guest_id: String) -> String:
 	if not profile.get("generated", false):
 		return ""
+	var child: bool = profile.get("child", false)
 	var fits: Array = []
 	for key in BODIES:
-		if BODIES[key]["sex"] == profile.get("sex", ""):
+		if BODIES[key]["sex"] == profile.get("sex", "") and BODIES[key].has("age") == child:
 			fits.append(key)
 	if fits.is_empty():
 		return ""
 	fits.sort()
+	if child:
+		var age := int(profile.get("age", 8))
+		fits.sort_custom(func(a: String, b: String) -> bool:
+			return absi(int(BODIES[a]["age"]) - age) < absi(int(BODIES[b]["age"]) - age))
+		return fits[0]
 	return fits[int(guest_id.trim_prefix("gast")) % fits.size()]
 
 
@@ -83,6 +95,8 @@ func setup(id: String, profile: Dictionary) -> void:
 	_width = clampf(float(profile.get("width_cm", _info["width"] * 100.0)) / 100.0 / (float(_info["width"]) * _scale),
 		WIDTH_LIMIT.x, WIDTH_LIMIT.y)
 	scale = Vector3(_scale * _width, _scale, _scale)
+	# Kinderkörper haben schon Kinderproportionen – nur Erwachsenenkörper als Ersatz bekämen den großen Kopf
+	_head = 1.0 if _info.has("age") else float(profile.get("head", 1.0))
 	_breath = randf() * TAU
 
 
@@ -125,8 +139,8 @@ func animate(delta: float, speed: float, running: bool, arms: Array, arms_free: 
 		# Atmen, sonst stünde die Figur starr
 		_breath += delta * 1.6
 		_turn("Spine1", Vector3.RIGHT, sin(_breath) * 0.02)
-	# Der Kopf bleibt schmal, wenn der Körper breiter wird
-	_skeleton.set_bone_pose_scale(_bone["Head"], Vector3(1.0 / _width, 1.0, 1.0))
+	# Der Kopf bleibt schmal, wenn der Körper breiter wird – bei Kindern ist er größer
+	_skeleton.set_bone_pose_scale(_bone["Head"], Vector3(_head / _width, _head, _head))
 	if sitting:
 		for leg in LEGS:
 			_aim(leg[0], leg[1], Vector3(0, -0.15, -1))

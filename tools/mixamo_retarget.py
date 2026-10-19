@@ -80,8 +80,11 @@ def retarget(arm, path, name):
 			continue
 		kids = [c.name for c in b.children if c.name in sb]
 		child, side = ALIGN.get(n, (kids[0] if len(kids) == 1 else None, None))
-		if child is None or child not in sb:
+		# Kindknochen fehlen in Meshys kleinem Skelett (keine Finger) – dann bleibt die Ruhedrehung
+		if child is None or child not in sb or child not in arm.data.bones:
 			continue
+		if side and not all(s in arm.data.bones for s in side):
+			side = None
 		to_local = t_rest[n].inverted()
 		cur_dir = inherited @ (to_local @ (head(tw, arm.data.bones[child]) - head(tw, b)))
 		want_dir = head(sw, sb[child]) - head(sw, sb[n])
