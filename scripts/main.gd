@@ -24,6 +24,7 @@ extends Node3D
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
+##   --splash=x,z                nach 1 s platscht es dort im Pool (Wellenring, Schaum, Spritzer)
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
@@ -370,6 +371,12 @@ func run_debug(arg: String) -> bool:
 		var pos := Vector3(m[0].to_float(), m[1].to_float(), m[2].to_float())
 		Game.monster.spawn_at(pos)
 		Game.director.phase = MonsterDirector.Phase.ACTIVE
+	elif arg.begins_with("--splash="):
+		var at := arg.substr(9).split(",")
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+			var water := get_tree().get_first_node_in_group("pool_water") as PoolWater
+			if water:
+				water.splash(Vector2(at[0].to_float(), at[1].to_float()), 1.0))
 	elif arg == "--pocket":
 		Game.player.give_compass()
 		for page in HotelMap.PAGES:

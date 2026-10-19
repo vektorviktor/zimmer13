@@ -45,6 +45,7 @@ const COMMANDS := {
 	"bulb-thief": ["gast", "Gast klaut eine Birne aus Zimmer 13"],
 	"cat": ["minka|socke|kasimir", "Katze vor den Spieler setzen"],
 	"pos": ["x,y,z[,winkel[,neigung]]", "Spieler versetzen"],
+	"splash": ["x,z", "nach 1 s platscht es dort im Pool"],
 	"pocket": ["", "Kompass, Kartenblätter, Schlüssel 18"],
 	"flashlight": ["[uv]", "Taschenlampe in die Hand"],
 	"show": ["map|keys|compass", "Karte/Kompass hervorholen"],

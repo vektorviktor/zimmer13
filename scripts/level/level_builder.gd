@@ -1280,7 +1280,8 @@ func _region_name(id: String) -> String:
 	return id
 
 
-## Hallenbad: Becken 1,4 m tief mit Wasseroberfläche.
+## Hallenbad: Becken 1,4 m tief mit Wasseroberfläche. An beiden Schmalseiten führt eine Einstiegstreppe
+## mit Handlauf hinaus – hochspringen reicht nicht (Sprung ≈ 0,7 m).
 func _pool() -> void:
 	var w: Rect2 = _named["becken"]
 	var depth := 1.4
@@ -1289,8 +1290,32 @@ func _pool() -> void:
 	for s: float in [-1.0, 1.0]:
 		Geo.solid(root, Vector3(w.size.x, depth, 0.2), Vector3(w.get_center().x, -depth / 2.0, w.get_center().y + s * (w.size.y / 2.0 - 0.1)), _wall_tiles)
 		Geo.solid(root, Vector3(0.2, depth, w.size.y - 0.4), Vector3(w.get_center().x + s * (w.size.x / 2.0 - 0.1), -depth / 2.0, w.get_center().y), _wall_tiles)
-	var water := Mat.psx(Color(0.15, 0.35, 0.45), "", 1.0, Color(0.05, 0.2, 0.25), 0.4, false)
-	Geo.mesh(root, Geo.box(Vector3(w.size.x, 0.02, w.size.y)), water, Vector3(w.get_center().x, -0.3, w.get_center().y))
+	# Einstiegstreppen: von der Südkante entlang der West- bzw. Ostwand hinab, Handlauf an der offenen Seite
+	var stair_w := 1.2
+	var run := 2.0
+	var z_top := w.end.y - 0.2
+	var chrome := Mat.psx(Color(0.62, 0.66, 0.7))
+	for s: float in [-1.0, 1.0]:
+		var x := w.get_center().x + s * (w.size.x / 2.0 - 0.2 - stair_w / 2.0)
+		_flight(x, z_top, z_top - run, 0.0, -depth, stair_w, _wall_tiles)
+		var xr := x - s * (stair_w / 2.0 - 0.08)
+		var top := Vector3(xr, 0.9, z_top + 0.35)
+		var bend := Vector3(xr, 0.9, z_top - 0.1)
+		var low := Vector3(xr, -depth + 0.9, z_top - run + 0.2)
+		_rod(Vector3(top.x, 0.0, top.z), top, chrome)
+		_rod(top, bend, chrome)
+		_rod(bend, low, chrome)
+		_rod(low, Vector3(low.x, -depth, low.z), chrome)
+	# Wasser: halbtransparent, Wellen rein optisch (PoolWater)
+	root.add_child(PoolWater.new(w, -0.3, 0.2))
+
+
+## Dünne Stange von a nach b (Handlauf, Geländerpfosten), ohne Kollision.
+func _rod(a: Vector3, b: Vector3, mat: Material, radius: float = 0.025) -> void:
+	var mi := Geo.mesh(root, Geo.cylinder(radius, a.distance_to(b), 6), mat, (a + b) / 2.0)
+	var up := (b - a).normalized()
+	var side := up.cross(Vector3.FORWARD if absf(up.z) < 0.9 else Vector3.RIGHT).normalized()
+	mi.basis = Basis(side, up, side.cross(up))
 
 
 # --- Gärten -----------------------------------------------------------------------------------------
@@ -1445,9 +1470,9 @@ func _stairwells() -> void:
 
 
 ## Ein gerader Treppenlauf entlang z von (z_from, y_from) nach (z_to, y_to).
-func _flight(x: float, z_from: float, z_to: float, y_from: float, y_to: float, width: float = 1.4) -> void:
+func _flight(x: float, z_from: float, z_to: float, y_from: float, y_to: float, width: float = 1.4, mat: Material = null) -> void:
 	if y_to < y_from:
-		_flight(x, z_to, z_from, y_to, y_from, width)   # abwärts = derselbe Lauf von unten gesehen
+		_flight(x, z_to, z_from, y_to, y_from, width, mat)   # abwärts = derselbe Lauf von unten gesehen
 		return
 	var run := absf(z_to - z_from)
 	var rise := y_to - y_from
@@ -1466,7 +1491,7 @@ func _flight(x: float, z_from: float, z_to: float, y_from: float, y_to: float, w
 	for i in steps:
 		var y_top := y_from + step_rise * (i + 0.5)
 		var z := z_from + dir * run * (i + 0.5) / steps
-		Geo.mesh(root, Geo.box(Vector3(width, y_top - y_from + 0.05, run / steps)), _concrete, Vector3(x, (y_top + y_from - 0.05) / 2.0, z))
+		Geo.mesh(root, Geo.box(Vector3(width, y_top - y_from + 0.05, run / steps)), mat if mat else _concrete, Vector3(x, (y_top + y_from - 0.05) / 2.0, z))
 
 
 ## Keller unter der Erde südlich des Treppenhauses Ost: Versteck des Monsters.
