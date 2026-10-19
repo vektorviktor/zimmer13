@@ -25166,7 +25166,7 @@
 		{
 			"kind": "candle",
 			"pos": [
-				-40.45,
+				-34.45,
 				-40.85
 			]
 		},
@@ -25497,6 +25497,14 @@
 		{
 			"kind": "wall_lamp",
 			"pos": [
+				72.55,
+				-103.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
 				37.25,
 				-100.95
 			],
@@ -25517,14 +25525,6 @@
 				-99.85
 			],
 			"wall": "west"
-		},
-		{
-			"kind": "wall_lamp",
-			"pos": [
-				69.55,
-				-99.45
-			],
-			"wall": "north"
 		},
 		{
 			"kind": "wall_lamp",
@@ -26882,14 +26882,6 @@
 		{
 			"kind": "wall_lamp",
 			"pos": [
-				65.55,
-				-4.55
-			],
-			"wall": "north"
-		},
-		{
-			"kind": "wall_lamp",
-			"pos": [
 				-7.25,
 				-2.95
 			],
@@ -27006,6 +26998,14 @@
 				-0.25
 			],
 			"broken": true,
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				72.55,
+				-0.25
+			],
 			"wall": "south"
 		}
 	]

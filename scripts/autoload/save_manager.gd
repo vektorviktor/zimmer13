@@ -26,8 +26,10 @@ const DIR := "user://saves/"
 ## 14: Freundschaftsstufen (Gast: deeds, chat_day, chats_today; Spieler: injury) – ältere Stände laden weiter,
 ##     es gab dann noch keine Taten (die Extreme müssen neu verdient werden)
 ## 15: neuer Grundriss aus dem Gebäudeplan (Spielkonzept 7.5) – alle Gruppen neu, ältere Stände passen nicht mehr
-const VERSION := 15
-const MIN_VERSION := 15
+## 16: Einrichtung aus den Objektebenen des Plans – Lampen, Schalter, Verstecke, Kommoden, Telefone … in neuer
+##     Reihenfolge, ältere Stände passen nicht mehr
+const VERSION := 16
+const MIN_VERSION := 16
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)

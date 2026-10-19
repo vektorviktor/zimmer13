@@ -12,6 +12,10 @@ extends RefCounted
 ## Kollisionsebenen: 1 statisch/NavMesh · 2 Türen · 3 Gegenstände · 4 Spieler · 5 Decke
 ##                   · 6 Monster · 7 Glas · 8 Gäste · 9 Milchglas · 10 zugezogene Vorhänge
 ##
+## Einrichtung (Spielkonzept 7.5): Möbel, Ausstattung, Gegenstände und Lichter stehen im Plan (Objektebenen).
+## Was der Plan nicht kennt – Höhen, Helligkeit je Raumart, Zettel-Nummern, Münzbeträge, UV-Texte, Zimmerarten –
+## steht hier und wird über die Fläche zugeordnet, auf der ein Objekt liegt.
+##
 ## Licht (Spielkonzept 7.3): Jede Lampe gehört zu einem Raum; ein Lichtschalter pro Raum bzw. Flurabschnitt.
 
 const MAP_PATH := "res://assets/maps/eg.json"
@@ -22,7 +26,7 @@ const UP_Y := 4.0
 ## Gedimmtes Licht (Spielkonzept 7.3): keine Deckenlampen, Wandleuchten schwächer als Kerzen
 const WALL_LAMP_ENERGY := 0.5
 const CANDLE_ENERGY := 0.85
-## Zimmer etwas heller als die Flure: zwei Wandleuchten (Tür- und Fensterwand)
+## Zimmer etwas heller als die Flure
 const ROOM_LAMP_ENERGY := 0.65
 const DOOR_W := 1.2
 const DOOR_H := 2.1
@@ -58,6 +62,38 @@ const ROOM_KINDS := {
 }
 ## Flügel, deren Zimmer schon bewohnbar sind
 const OPEN_WINGS := ["ost"]
+
+## Inhalt, der nicht im Plan steht, je Raum-ID (Zimmernummer oder Bereich): Münzbetrag (ohne Eintrag 1),
+## Kartenblatt, Zettel-Nummer (Spielkonzept 4.12) und UV-Schrift (4.16) der Objekte in diesem Raum.
+const CONTENT := {
+	"0113": {"coins": "3", "map": "eg", "uv": "DU WARST SCHON\nEINMAL HIER"},
+	"0114": {"note": "2003"},
+	"0116": {"note": "1994"},
+	"0117": {"coins": "2", "map": "keller", "note": "1987",
+		"uv": "ICH HABE ES GEBLENDET.\nJETZT KENNT ES MEINE TÜR.\n– E. K."},
+	"0118": {"coins": "5", "uv": "NUR EINER\nKOMMT HINAUS"},
+	"lobby": {"note": "2019"},
+}
+## Möbel ohne eigenes Bauteil (Kästen in der Grundfläche aus dem Plan): Art → Höhe
+const BOX_HEIGHTS := {
+	"table": 0.75, "coffee_table": 0.4, "dining_table": 0.78, "bench": 0.45, "bar_counter": 1.1, "shelf": 2.0,
+	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5, "pillar": H,
+}
+const RECEPTION_H := 1.1
+## Wandsachen: Abstand zur Wandfläche (bündig, ohne Flimmern) und Höhen über dem Boden
+const WALL_GAP := 0.01
+const SWITCH_Y := 1.3
+const CALENDAR_Y := 1.7
+const UV_Y := 1.5
+const COBWEB_Y := 2.4
+## Ersatzbirnen liegen im Lagerregal, nicht obendrauf
+const BULB_SUPPLY_Y := 1.4
+## Reifegrade der Kürbispflanzen in Planreihenfolge (von Norden nach Süden, je Beet von Westen nach Osten)
+const PLANT_STAGES := [0, 3, 2, 3, 1, 3]
+const PAINTING_COLORS: Array[Color] = [Color(0.22, 0.14, 0.12), Color(0.16, 0.2, 0.15), Color(0.12, 0.13, 0.2),
+	Color(0.2, 0.18, 0.1), Color(0.18, 0.1, 0.12), Color(0.1, 0.14, 0.18), Color(0.25, 0.1, 0.1)]
+## Umkleiden und Duschen am Pool teilen sich einen Lichtschalter
+const CHANGING_ROOMS := ["vorraum", "dusche_west", "dusche_ost", "umkleide_west", "umkleide_ost"]
 
 var root: Node3D     ## NavigationRegion3D – statische Geometrie, wird fürs NavMesh geparst
 var world: Node3D    ## Hauptszene – dynamische Gegenstände
@@ -97,8 +133,10 @@ var _grid_size := Vector2i.ZERO
 var _places: Array[Dictionary] = []   ## {id, kind, region}
 var _lobby := Rect2()                 ## Innenmaß der Lobby (x, z)
 var _named := {}                      ## Flächen-ID → Rect2 (Umriss)
-## Wände für die Suche nach freien Stellen (Lampen, Kommoden): {horizontal, at, from, to, gaps, used}
+## Wandstücke des Plans, an die Wandsachen gehängt werden: {horizontal, at (Mittellinie), from, to, half (halbe Dicke)}
 var _wall_index: Array[Dictionary] = []
+## Gebaute Möbel und die Rezeption: {kind, rect: Rect2, top (Oberkante), front: Vector2, node}
+var _furnishings: Array[Dictionary] = []
 var _doors: Array[Dictionary] = []    ## {pos: Vector3 (Mitte unten), door: Door, kind, into}
 var _open_rooms := {}                 ## Nummern der bewohnbaren Zimmer (OPEN_WINGS)
 
@@ -136,13 +174,13 @@ func build() -> void:
 	_floors_and_ceilings()
 	for info in _map["rooms"]:
 		_room(info)
-	_corridors()
+	_furniture()
+	_fittings()
+	_items()
+	_lights()
 	_lobby_hall()
 	_gallery()
-	_bar()
-	_party_room()
-	_kitchen()
-	_service_rooms()
+	_common_rooms()
 	_pool()
 	_gardens()
 	_stairwells()
@@ -339,9 +377,8 @@ func _build_wall(w: Dictionary) -> void:
 			_glass_wall(horizontal, fixed, p0, p1)
 		else:
 			_wall_piece(horizontal, fixed, p0, p1, mine, minus[i], plus[i])
-		_wall_index.append({"horizontal": horizontal, "at": fixed, "from": p0, "to": p1, "minus": minus[i],
-			"plus": plus[i], "gaps": mine.map(func(op: Vector4) -> Vector2: return Vector2(op.x - op.y / 2.0, op.x + op.y / 2.0)),
-			"used": []})
+		_wall_index.append({"horizontal": horizontal, "at": fixed, "from": p0, "to": p1,
+			"half": float(w.get("thickness", T)) / 2.0})
 	for o in openings:
 		_opening_object(o, a, along, side, horizontal)
 
@@ -664,259 +701,435 @@ func _room(plan: Dictionary) -> void:
 		"spots": [],
 	}
 	_sign(label, Vector3(0, 2.45, -0.11), 180.0)
-	var dark := kind in ["abandoned", "laundry", "derelict"]
-	# Freie Wandstücke links und rechts der Tür (an der Türwand)
-	var left_free := -x0 - DOOR_W / 2.0
-	var right_free := x1 - DOOR_W / 2.0
-	var near := 1.0 if right_free >= 0.5 else -1.0   # Schalter neben der Tür
-	_wall_lamp(Vector3(-2.0 if left_free > right_free else 2.0, 2.0, 0.12), 0.0, ROOM_LAMP_ENERGY, 6.5, no, dark)
-	_wall_lamp(Vector3(cx - 2.0, 2.0, depth - 0.12), PI, ROOM_LAMP_ENERGY, 6.5, no, dark)
-	var sw := _switch(no, "Zimmer " + label, Vector3(near * 0.95, 1.3, 0.12), 0.0)
-	if kind == "vacant":
-		sw.set_on.call_deferred(false, true)   # unbewohnt: dunkel
-
-	# Möbel: Bett an der linken Wand hinten, Schrank rechts hinten, Tisch vorn auf der freieren Seite
-	var bed_pos := Vector3(x0 + 0.85, 0, depth - 1.15)
-	var wardrobe_pos := Vector3(x1 - 0.4, 0, depth - 1.2)
-	var table_x := x0 + 1.0 if left_free >= right_free else x1 - 1.0
-	var table_pos := Vector3(table_x, 0.375, 0.9)
-	var free_side := -1.0 if left_free >= right_free else 1.0   # Seite des Tisches
-	if kind != "laundry":
-		var bed := _hide_spot(HideSpot.Type.BED, bed_pos, 90.0)
-		bed.own_bed = kind == "player"
-		info["spots"].append(bed)
-		Geo.solid(_parent, Vector3(1.0, 0.75, 0.7), table_pos, _wood)
-	if kind in ["guest", "player", "empty", "vacant"]:
-		info["spots"].append(_hide_spot(HideSpot.Type.WARDROBE, wardrobe_pos, -90.0))
-	var table_top := Vector3(table_pos.x, 0.76, table_pos.z)
-	if kind != "laundry":
-		# Wählscheibentelefon vorn auf dem Tisch (Spielkonzept 4.14)
-		var phone := HotelPhone.new().setup(no)
-		phone.position = table_top + Vector3(-0.3, 0, -0.17)
-		_parent.add_child(phone)
-		if not dark and kind != "vacant":
-			_candle(table_top + Vector3(0.32, 0, 0.18))   # Kerze hinten rechts auf dem Tisch
-	# Ein freier Platz vorn neben dem Tisch, Richtung Tür (Truhe, Kürbis …)
-	var beside := Vector3(table_x - free_side * 1.15, 0, 0.45)
-
+	# Das Innere steht im Plan (_furniture, _fittings, _items, _lights); hier nur, was die Zimmerart ausmacht
 	match kind:
-		"player":
-			_item(Item.Kind.CANDLE, table_top)
-			diary = Diary.new()
-			diary.position = table_top + Vector3(0.25, 0, 0.05)
-			diary.rotation.y = 0.3
-			_parent.add_child(diary)
-			_item(Item.Kind.MAP, table_top + Vector3(-0.25, 0, 0.17), "eg").rotation.y = -0.2
-			var calendar := Calendar.new()
-			calendar.position = Vector3(x1 - 0.11, 1.7, depth / 2.0 - 0.3)
-			calendar.rotation.y = -PI / 2.0
-			_parent.add_child(calendar)
-			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.2, 0.02, depth - 0.7))
-			var chest := Chest.new()
-			chest.position = beside
-			_parent.add_child(chest)
-			_item(Item.Kind.COINS, beside + Vector3(-0.25, 0.52, 0), "3")
-			_item(Item.Kind.LEAVES, beside + Vector3(0.2, 0.52, 0))
-			_uv_writing("DU WARST SCHON\nEINMAL HIER", Vector3(x0 + 0.11, 1.45, depth - 1.15), 90.0)
-		"abandoned":
-			door.set_open.call_deferred(true)
-			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.5, 0.02, depth / 2.0 - 0.6))
-			_item(Item.Kind.COINS, table_top, "2")
-			_item(Item.Kind.LOADED_DICE, table_top + Vector3(0.3, 0, 0.1))
-			_note("1987", table_top + Vector3(-0.25, 0, 0.1))
-			_item(Item.Kind.MAP, Vector3(cx + 0.4, 0.02, depth - 2.0), "keller").rotation.y = 2.6   # Kellerskizze auf dem Boden
-			_resource_web(Vector3(x1 - 0.12, 2.2, depth - 0.3), -135.0)
-			_resource_web(Vector3(x0 + 0.12, 2.4, 0.4), 45.0)
-			_uv_writing("ICH HABE ES GEBLENDET.\nJETZT KENNT ES MEINE TÜR.\n– E. K.", Vector3(x1 - 0.11, 1.5, depth / 2.0), -90.0)
-		"laundry":
-			# Waschmaschinen, Regal, Wäschekiste
-			for i in 3:
-				var wm := Geo.solid(_parent, Vector3(0.65, 0.85, 0.65), Vector3(x0 + 0.45, 0.425, 1.4 + i * 0.8), Mat.psx(Color(0.75, 0.75, 0.72)))
-				var porthole := Geo.mesh(wm, Geo.cylinder(0.2, 0.02, 10), Mat.psx(Color(0.15, 0.17, 0.2)), Vector3(0.33, 0.1, 0))
-				porthole.rotation.z = PI / 2.0
-			Geo.solid(_parent, Vector3(3.0, 2.0, 0.5), Vector3(cx + 0.5, 1.0, depth - 0.4), _wood)
-			Geo.solid(_parent, Vector3(0.9, 0.5, 0.9), Vector3(x1 - 0.8, 0.25, depth - 1.0), Mat.psx(Color(0.6, 0.58, 0.5)))
-			_resource_web(Vector3(x1 - 0.12, 2.3, 0.6), -45.0)
-			_resource_web(Vector3(x0 + 0.12, 2.6, depth - 0.3), 135.0)
-			_item(Item.Kind.CANDLE, Vector3(cx + 0.5, 2.02, depth - 0.4))
-			_note("1994", Vector3(x1 - 0.8, 0.51, depth - 1.0))
-			_item(Item.Kind.BATTERY, Vector3(x1 - 0.55, 0.51, depth - 1.25))
+		"abandoned", "derelict":
+			door.set_open.call_deferred(true)   # verlassen bzw. verfallen: die Tür steht offen
 		"locked":
 			door.locked = true
 			door.key_id = "zimmer_18"
 			door.locked_text = "Zimmer %s ist abgeschlossen." % label
-			_item(Item.Kind.CARVED_PUMPKIN, Vector3(cx - 1.0, 0.02, 1.6))
-			_item(Item.Kind.COINS, table_top, "5")
-			_item(Item.Kind.LEAVES, Vector3(cx + 1.0, 0.02, 1.0))
-			_item(Item.Kind.UV_FILTER, table_top + Vector3(0.25, 0, 0.12))   # späterer Fund (4.16)
-			_uv_writing("NUR EINER\nKOMMT HINAUS", Vector3(x1 - 0.11, 1.5, depth / 2.0 + 0.3), -90.0)
-		"empty":
-			_item(Item.Kind.CANDLE, table_top)
-			_note("2003", Vector3(x0 + 1.95, 0.01, depth - 1.6))   # neben dem Bett, halb darunter
-		"derelict":
-			# Verfallen: Tür offen, Spinnweben, ein paar Dinge liegen noch herum
-			door.set_open.call_deferred(true)
-			_resource_web(Vector3(x1 - 0.12, 2.2, depth - 0.3), -135.0)
-			_resource_web(Vector3(x0 + 0.12, 2.4, 0.4), 45.0)
-			_item(Item.Kind.PUMPKIN, Vector3(cx + 1.5, 0.02, depth / 2.0 - 0.6))
-			_item(Item.Kind.COINS, table_top, "1")
-			if no == COMPASS_ROOM:
-				_item(Item.Kind.COMPASS, table_top + Vector3(0.25, 0, 0.1))
-		"vacant":
-			# Unbewohnt – ab und zu hat jemand etwas liegen lassen
-			var n := int(no) % 100
-			if n % 3 == 0:
-				_item(Item.Kind.CANDLE, table_top)
-			elif n % 5 == 0:
-				_item(Item.Kind.COINS, table_top, "1")
-			elif n % 7 == 0:
-				_item(Item.Kind.BATTERY, table_top)
 	rooms[no] = info
 	_parent = root
 
 
-# --- Flure --------------------------------------------------------------------------------------------
+# --- Einrichtung aus dem Plan ---------------------------------------------------------------------------
 
-## Je Flurabschnitt: Lichtschalter am Anfang, Wandleuchten, Kommoden mit Kerze und Bild, Schränke zum Verstecken.
-func _corridors() -> void:
+## Platz an der Wand für eine Wandsache des Plans (Leuchte, Schalter, Bild …).
+class WallSpot:
+	var pos: Vector2      ## auf der Wandfläche, plus Abstand
+	var out: Vector2      ## von der Wand weg in den Raum
+	var inside: Vector2   ## ein Stück im Raum – dort werden Raum-ID und Flächenart nachgeschlagen
+	var side: String      ## Wandseite aus dem Plan (`wall`)
+
+	func yaw() -> float:
+		return atan2(out.x, out.y)
+
+	func at(y: float) -> Vector3:
+		return Vector3(pos.x, y, pos.y)
+
+
+## Möbel (Ebene „Möbel“): Rechteck = Grundfläche, `facing` = Vorderseite. Verstecke, Kommoden, Truhe, Spieltische
+## und Sofas sind eigene Bauteile in der Mitte des Rechtecks, alles andere Kästen in Plangröße (BOX_HEIGHTS).
+## Dazu die Rezeption aus dem Grundriss. Verschlossene Zimmer bleiben leer.
+func _furniture() -> void:
+	for rc in _map["reception"]:
+		var r := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+		var desk := Geo.solid(root, Vector3(r.size.x, RECEPTION_H, r.size.y), Vector3(r.get_center().x, RECEPTION_H / 2.0, r.get_center().y), _dark_wood)
+		_furnishings.append({"kind": "reception", "rect": r, "top": RECEPTION_H, "front": Vector2.ZERO, "node": desk})
+	for f in _map["furniture"]:
+		var rc: Array = f["rect"]
+		var rect := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+		var c := rect.get_center()
+		if _kind_at(c) == "sealed":
+			continue
+		var kind := String(f["kind"])
+		var front := _facing(String(f.get("facing", "")), c)
+		var yaw := atan2(front.x, front.y)
+		var pos := Vector3(c.x, 0, c.y)
+		var node: Node3D
+		var top := 0.0
+		match kind:
+			"bed", "wardrobe":
+				var spot := _hide_spot(HideSpot.Type.BED if kind == "bed" else HideSpot.Type.WARDROBE, pos, yaw)
+				var room: Dictionary = rooms.get(_room_id_at(c), {})
+				if not room.is_empty():
+					spot.own_bed = kind == "bed" and room["kind"] == "player"
+					(room["spots"] as Array).append(spot)
+				node = spot
+				top = 0.6 if kind == "bed" else 2.18
+			"dresser":
+				node = Dresser.new()   # Schubladen (Spielkonzept 3.5)
+				top = Dresser.SIZE.y
+			"chest":
+				node = Chest.new()
+				top = Chest.SIZE.y
+			"chess_table":
+				chess_table = ChessTable.new()
+				node = chess_table
+				top = 0.76
+			"game_table":
+				game_table = GameTable.new()
+				node = game_table
+				top = 0.76
+			"couch":
+				node = _couch(pos, yaw - PI / 2.0)   # das Modell sitzt nach +X
+				top = 0.45
+			_:
+				if not BOX_HEIGHTS.has(kind):
+					push_warning("Gebäudeplan: unbekannte Möbelart „%s“ bei %s" % [kind, c])
+					continue
+				top = BOX_HEIGHTS[kind]
+				node = _box_furniture(kind, rect, top, front)
+				if kind == "bar_counter":
+					top += 0.045   # Thekenplatte
+		if node.get_parent() == null:
+			node.position = pos
+			node.rotation.y = yaw
+			root.add_child(node)
+		_furnishings.append({"kind": kind, "rect": rect, "top": top, "front": front, "node": node})
+
+
+## Möbel als Kasten in der Grundfläche des Plans; Theke mit Platte, Waschmaschine mit Bullauge vorn.
+func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) -> StaticBody3D:
+	var mat := _wood
+	match kind:
+		"bench", "bar_counter":
+			mat = _dark_wood
+		"kitchen_counter":
+			mat = Mat.psx(Color(0.55, 0.5, 0.42))
+		"stove":
+			mat = Mat.psx(Color(0.2, 0.2, 0.22))
+		"washbasin":
+			mat = Mat.psx(Color(0.85, 0.85, 0.82))
+		"washing_machine":
+			mat = Mat.psx(Color(0.75, 0.75, 0.72))
+		"laundry_box":
+			mat = Mat.psx(Color(0.6, 0.58, 0.5))
+		"pillar":
+			mat = Mat.psx(Color(0.6, 0.57, 0.5))
+	var c := rect.get_center()
+	var body := Geo.solid(root, Vector3(rect.size.x, height, rect.size.y), Vector3(c.x, height / 2.0, c.y), mat)
+	match kind:
+		"bar_counter":
+			Geo.mesh(body, Geo.box(Vector3(rect.size.x + 0.1, 0.05, rect.size.y + 0.1)), _wood, Vector3(0, height / 2.0 + 0.02, 0))
+		"washing_machine":
+			var half := rect.size / 2.0
+			var porthole := Geo.mesh(body, Geo.cylinder(0.2, 0.02, 10), Mat.psx(Color(0.15, 0.17, 0.2)),
+				Vector3(front.x * (half.x + 0.005), 0.1, front.y * (half.y + 0.005)))
+			if absf(front.x) > 0.5:
+				porthole.rotation.z = PI / 2.0
+			else:
+				porthole.rotation.x = PI / 2.0
+	return body
+
+
+## Ausstattung (Ebene „Ausstattung“). Wandsachen hängen an der Wandseite aus dem Plan; Telefone, Zettel, Tagebuch
+## und Vorräte stehen auf dem Möbel darunter. Zettel-Nummern und UV-Texte kommen aus CONTENT.
+func _fittings() -> void:
+	var paintings := 0
+	var plants := 0
+	for o in _map["fittings"]:
+		var p := _v2(o["pos"])
+		if _kind_at(p) == "sealed":
+			continue
+		var kind := String(o["kind"])
+		var top := _top_at(p)
+		var content: Dictionary = CONTENT.get(_room_id_at(p), {})
+		match kind:
+			"switch":
+				var at := _wall_spot(o, WALL_GAP)
+				var id := _light_room_at(at.inside)
+				var sw := _switch(id, _switch_label(id), at.at(SWITCH_Y), at.yaw())
+				if rooms.has(id) and rooms[id]["kind"] == "vacant":
+					sw.set_on.call_deferred(false, true)   # unbewohnt: dunkel
+			"painting":
+				var at := _wall_spot(o, WALL_GAP)
+				var area := _kind_at(at.inside)
+				var y := 2.2 if area == "lobby" else (1.9 if area == "bar" else 1.75)   # im Flur über den Kommoden
+				_painting(at.at(y), at.yaw(), PAINTING_COLORS[paintings % PAINTING_COLORS.size()])
+				paintings += 1
+			"cobweb":
+				# In einer Ecke (zweite Wand quer dazu nah) hängt die Spinnwebe schräg über Eck
+				var at := _wall_spot(o, 0.02)
+				for side in _perpendicular(at.side):
+					if not _on_wall(p, side, 0.5).is_empty():
+						at = _wall_spot(o, 0.12)
+						at.out = (at.out - _dir(side)).normalized()
+				_resource_web(at.at(COBWEB_Y), at.yaw())
+			"uv_writing":
+				var at := _wall_spot(o, WALL_GAP)
+				var text := String(CONTENT.get(_room_id_at(at.inside), {}).get("uv", ""))
+				if text == "":
+					push_warning("Gebäudeplan: UV-Schrift bei %s ohne Text in CONTENT" % p)
+					continue
+				_uv_writing(text, at.at(UV_Y), at.yaw())
+			"calendar":
+				var at := _wall_spot(o, WALL_GAP)
+				var calendar := Calendar.new()
+				calendar.position = at.at(CALENDAR_Y)
+				calendar.rotation.y = at.yaw()
+				root.add_child(calendar)
+			"phone":
+				var phone := HotelPhone.new().setup(_room_id_at(p))   # Wählscheibentelefon (Spielkonzept 4.14)
+				phone.position = Vector3(p.x, top, p.y)
+				phone.rotation.y = _upright_yaw(p)
+				root.add_child(phone)
+			"note":
+				if not content.has("note"):
+					push_warning("Gebäudeplan: Zettel bei %s ohne Nummer in CONTENT" % p)
+					continue
+				var note := _note(String(content["note"]), Vector3(p.x, top + 0.01, p.y))
+				note.rotation.y = _upright_yaw(p)
+			"diary":
+				diary = Diary.new()
+				diary.position = Vector3(p.x, top + 0.01, p.y)
+				diary.rotation.y = _upright_yaw(p) + 0.3   # leicht schräg hingelegt
+				root.add_child(diary)
+			"candle_supply":
+				_supply(ResourceSpot.new().setup(Item.Kind.CANDLE, "Kerze aus dem Vorrat", 3, 150.0), Vector3(p.x, top, p.y))
+			"bulb_supply":
+				_supply(ResourceSpot.new().setup(Item.Kind.BULB, "Ersatzbirne aus dem Lager", 2, 300.0), Vector3(p.x, BULB_SUPPLY_Y, p.y))
+			"leaf_pile":
+				_supply(ResourceSpot.new().setup(Item.Kind.LEAVES, "Herbstlaub", 4, 60.0), Vector3(p.x, top, p.y))
+			"pumpkin_plant":
+				var plant := PumpkinPlant.new().setup(PLANT_STAGES[plants % PLANT_STAGES.size()])
+				plant.position = Vector3(p.x, 0.05, p.y)   # auf dem Beet (_garden_beds)
+				root.add_child(plant)
+				plants += 1
+			_:
+				push_warning("Gebäudeplan: unbekannte Ausstattung „%s“ bei %s" % [kind, p])
+
+
+func _supply(spot: ResourceSpot, pos: Vector3) -> void:
+	spot.position = pos
+	root.add_child(spot)
+
+
+## Gegenstände (Ebene „Gegenstände“, Art = Item.Kind): auf dem Möbel darunter oder am Boden. Münzbetrag und
+## Kartenblatt aus CONTENT.
+func _items() -> void:
+	for o in _map["items"]:
+		var p := _v2(o["pos"])
+		if _kind_at(p) == "sealed":
+			continue
+		var kind_id: int = Item.Kind.get(String(o["kind"]), -1)
+		if kind_id < 0:
+			push_warning("Gebäudeplan: unbekannter Gegenstand „%s“ bei %s" % [o["kind"], p])
+			continue
+		var kind := kind_id as Item.Kind
+		var content: Dictionary = CONTENT.get(_room_id_at(p), {})
+		var extra := ""
+		match kind:
+			Item.Kind.COINS:
+				extra = String(content.get("coins", "1"))
+			Item.Kind.MAP:
+				extra = String(content.get("map", "eg"))
+			Item.Kind.KEY:
+				extra = String(content.get("key", ""))
+		_item(kind, Vector3(p.x, _top_at(p) + 0.02, p.y), extra)
+
+
+## Lichter (Ebene „Lichter“): Wandleuchten an der Wand (Höhe und Helligkeit je Fläche, _lamp_style), Kerzen auf
+## dem Möbel darunter, Laternen im Garten. Defekt laut Plan.
+func _lights() -> void:
+	for o in _map["lights"]:
+		var p := _v2(o["pos"])
+		if _kind_at(p) == "sealed":
+			continue
+		var broken := bool(o.get("broken", false))
+		match String(o["kind"]):
+			"wall_lamp":
+				var at := _wall_spot(o, WALL_GAP)
+				var id := _light_room_at(at.inside)
+				var style := _lamp_style(_kind_at(at.inside), id, at.side)
+				_wall_lamp(at.at(style["y"]), at.yaw(), style["energy"], style["range"], id, broken)
+			"candle":
+				_candle(Vector3(p.x, _top_at(p), p.y))
+			"lantern":
+				_lantern(Vector3(p.x, 0, p.y), broken, 1.0 if absf(p.x) < 15.0 else 0.8)   # in den Innenhöfen schwächer
+			_:
+				push_warning("Gebäudeplan: unbekanntes Licht „%s“ bei %s" % [o["kind"], p])
+
+
+## Höhe, Helligkeit und Reichweite einer Wandleuchte je Flächenart (Spielkonzept 7.3): {y, energy, range}.
+func _lamp_style(area: String, id: String, side: String) -> Dictionary:
+	if id == "umkleiden":
+		return {"y": 2.1, "energy": WALL_LAMP_ENERGY * 0.8, "range": 5.0}
+	match area:
+		"room":
+			return {"y": 2.0, "energy": ROOM_LAMP_ENERGY, "range": 6.5}
+		"lobby":   # große, hohe Halle: kräftiger, mehr Reichweite; über dem Eingang höher
+			return {"y": 2.6 if side == "south" else 2.4, "energy": WALL_LAMP_ENERGY * 1.3, "range": 8.0}
+		"pool":
+			return {"y": 2.4, "energy": WALL_LAMP_ENERGY, "range": 7.0}
+		"storage":
+			return {"y": 2.1, "energy": WALL_LAMP_ENERGY * 0.8, "range": 5.0}
+		"toilet":
+			return {"y": 2.1, "energy": WALL_LAMP_ENERGY, "range": 5.0}
+		"stairs":   # an der Nordwand hängt sie über dem Podest auf halbem Weg in den Keller
+			return {"y": CELLAR_Y / 2.0 + 1.8 if side == "north" else 2.0, "energy": WALL_LAMP_ENERGY, "range": 6.0}
+	return {"y": 2.1, "energy": WALL_LAMP_ENERGY, "range": 6.0}
+
+
+## Raum-ID für Lampen und Schalter: wie _room_id_at, nur teilen sich Umkleiden und Duschen einen Schalter.
+func _light_room_at(p: Vector2) -> String:
+	var id := _room_id_at(p)
+	if id in CHANGING_ROOMS:
+		return "umkleiden"
+	if id == "treppenhaus_ost":
+		return "treppenhaus"
+	return id
+
+
+func _switch_label(id: String) -> String:
+	if rooms.has(id):
+		return "Zimmer " + String(rooms[id]["sign"])
+	match id:
+		"lobby":
+			return "Lobby"
+		"umkleiden":
+			return "Umkleiden"
+		"treppenhaus":
+			return "Treppenhaus"
+		"toilette_west", "toilette_ost":
+			return "Toilette"
 	for c in _map["corridors"]:
-		var a := _v2(c["a"])
-		var b := _v2(c["b"])
-		var id := String(c["id"])
-		var length := a.distance_to(b)
-		var dir := (b - a) / length
-		var s := 3.0
-		var i := 0
-		var switched := false
-		while s < length - 2.0:
-			var p := a + dir * s
-			if _lobby.grow(1.0).has_point(p):
-				s += 2.0
-				continue
-			var side := 1.0 if i % 2 == 0 else -1.0
-			if not switched:
-				var at := _corridor_wall_spot(p, dir, side, 0.3)
-				if not at.is_empty():
-					_switch(id, String(c["name"]), (at["pos"] as Vector3) + Vector3(0, 1.3, 0), at["yaw"])
-					switched = true
-			if i % 3 == 0:
-				var at := _corridor_wall_spot(p + dir * 1.5, dir, side, 0.5)
-				if not at.is_empty():
-					_wall_lamp((at["pos"] as Vector3) + Vector3(0, 2.1, 0), at["yaw"], WALL_LAMP_ENERGY, 6.0, id)
-			if i % 4 == 1:
-				var at := _corridor_wall_spot(p, dir, -side, Dresser.SIZE.x + 0.2)
-				if not at.is_empty():
-					_corridor_dresser(at["pos"], at["yaw"], i)
-			elif i % 4 == 3:
-				var at := _corridor_wall_spot(p, dir, side, 1.3)
-				if not at.is_empty():
-					var out := Vector3(sin(at["yaw"]), 0, cos(at["yaw"]))
-					_hide_spot(HideSpot.Type.WARDROBE, (at["pos"] as Vector3) + out * 0.32, rad_to_deg(at["yaw"]))
-			s += 6.0
-			i += 1
+		if c["id"] == id:
+			return String(c["name"])
+	return _region_name(id)
 
 
-## Kommode mit Schubladen (Spielkonzept 3.5), Kerze darauf, Bild darüber.
-func _corridor_dresser(pos: Vector3, yaw: float, i: int) -> void:
-	var out := Vector3(sin(yaw), 0, cos(yaw))
-	var right := Vector3(cos(yaw), 0, -sin(yaw))
-	var dresser := Dresser.new()
-	dresser.position = pos + out * (Dresser.SIZE.z / 2.0 + 0.01)
-	dresser.rotation.y = yaw
-	root.add_child(dresser)
-	_candle(pos + out * 0.15 + right * 0.25 + Vector3(0, Dresser.SIZE.y, 0))   # die hellsten Lichter im Flur
-	var colors: Array[Color] = [Color(0.22, 0.14, 0.12), Color(0.16, 0.2, 0.15), Color(0.12, 0.13, 0.2), Color(0.2, 0.18, 0.1)]
-	_painting(pos + out * 0.01 + Vector3(0, 1.75, 0), rad_to_deg(yaw), colors[i % colors.size()])
+## Wandsache o des Plans an ihre Wand setzen: Wandseite `wall`, Abstand gap vor der Wandfläche.
+func _wall_spot(o: Dictionary, gap: float) -> WallSpot:
+	var spot := WallSpot.new()
+	var p := _v2(o["pos"])
+	spot.side = String(o.get("wall", ""))
+	if spot.side == "":
+		push_warning("Gebäudeplan: %s bei %s liegt an keiner Wand" % [o["kind"], p])
+		spot.side = "north"
+	spot.out = -_dir(spot.side)
+	var face := _on_wall(p, spot.side, 0.6)
+	var on_face: Vector2 = face.get("pos", p - spot.out * 0.15)   # ohne Wandstück: der Punkt liegt an der Wand
+	spot.pos = on_face + spot.out * gap
+	spot.inside = p + spot.out * 0.3
+	return spot
 
 
-## Sucht an der Flurwand (Seite side, quer zur Laufrichtung dir) nahe p ein freies Stück der Länge size
-## (ohne Öffnung, noch unbesetzt). Ergebnis {pos: Wandpunkt am Boden, yaw: ins Flurinnere} oder leer.
-func _corridor_wall_spot(p: Vector2, dir: Vector2, side: float, size: float) -> Dictionary:
-	var horizontal := absf(dir.x) > 0.5   # Flur entlang x → Wände entlang x
-	var across := Vector2(-dir.y, dir.x) * side
-	for shift: float in [0.0, 1.0, -1.0, 2.0, -2.0, 3.0, -3.0]:
-		var q := p + dir * shift
-		var s := q.x if horizontal else q.y
-		for w in _wall_index:
-			if w["horizontal"] != horizontal:
-				continue
-			var offset: float = (float(w["at"]) - (q.y if horizontal else q.x)) * (across.y if horizontal else across.x)
-			if offset < 1.4 or offset > 2.6:
-				continue
-			if s - size / 2.0 < float(w["from"]) + 0.3 or s + size / 2.0 > float(w["to"]) - 0.3:
-				continue
-			var facing := String(w["minus"]) if (across.y if horizontal else across.x) > 0 else String(w["plus"])
-			if facing != "corridor":
-				continue
-			var blocked := false
-			for g: Vector2 in w["gaps"] + w["used"]:
-				if s + size / 2.0 + 0.25 > g.x and s - size / 2.0 - 0.25 < g.y:
-					blocked = true
-					break
-			if blocked:
-				continue
-			(w["used"] as Array).append(Vector2(s - size / 2.0, s + size / 2.0))
-			var face: float = float(w["at"]) - (across.y if horizontal else across.x) * (T / 2.0)
-			var pos := Vector3(s, 0, face) if horizontal else Vector3(face, 0, s)
-			var inward := -across
-			return {"pos": pos, "yaw": atan2(inward.x, inward.y)}
+## Nächste Wandfläche von p aus in Richtung side (höchstens max_dist entfernt): {pos} oder {}.
+func _on_wall(p: Vector2, side: String, max_dist: float) -> Dictionary:
+	var dir := _dir(side)
+	var horizontal := absf(dir.y) > 0.5   # Wand quer zu z → verläuft entlang x
+	var s := p.x if horizontal else p.y
+	var across := p.y if horizontal else p.x
+	var toward := dir.y if horizontal else dir.x
+	var best := {}
+	var best_d := max_dist
+	for w in _wall_index:
+		if w["horizontal"] != horizontal or s < float(w["from"]) - 0.05 or s > float(w["to"]) + 0.05:
+			continue
+		var face := float(w["at"]) - toward * float(w["half"])
+		var d := (face - across) * toward
+		if d < -0.05 or d > best_d:
+			continue
+		best_d = d
+		best = {"pos": Vector2(p.x, face) if horizontal else Vector2(face, p.y)}
+	return best
+
+
+## Himmelsrichtung → Richtung (x, z).
+func _dir(side: String) -> Vector2:
+	match side:
+		"north":
+			return Vector2(0, -1)
+		"south":
+			return Vector2(0, 1)
+		"west":
+			return Vector2(-1, 0)
+	return Vector2(1, 0)
+
+
+func _perpendicular(side: String) -> Array[String]:
+	if side == "north" or side == "south":
+		return ["west", "east"]
+	return ["north", "south"]
+
+
+## Vorderseite: Himmelsrichtung aus dem Plan, sonst zur Mitte der Fläche hin (auf eine Achse gerundet).
+func _facing(side: String, p: Vector2) -> Vector2:
+	if side != "":
+		return _dir(side)
+	var to := _area_center(p) - p
+	if absf(to.x) > absf(to.y):
+		return Vector2(signf(to.x), 0)
+	return Vector2(0, -1 if to.y < 0 else 1)
+
+
+## Blickrichtung für Telefon, Zettel und Tagebuch: in Zimmern vom Flur weg, sonst zur Mitte der Fläche.
+func _upright_yaw(p: Vector2) -> float:
+	var dir := _facing("", p)
+	var room: Dictionary = rooms.get(_room_id_at(p), {})
+	if not room.is_empty():
+		var into: Vector3 = room["into"]
+		dir = Vector2(into.x, into.z)
+	return atan2(dir.x, dir.y)
+
+
+func _area_center(p: Vector2) -> Vector2:
+	var id := _room_id_at(p)
+	if rooms.has(id):
+		var c: Vector3 = rooms[id]["center"]
+		return Vector2(c.x, c.z)
+	if id == "lobby":
+		return _lobby.get_center()
+	if _named.has(id):
+		return (_named[id] as Rect2).get_center()
+	return p
+
+
+## Oberkante des Möbels unter p (0 = Boden): darauf stehen Kerzen, Telefone und Gegenstände des Plans.
+func _top_at(p: Vector2) -> float:
+	var top := 0.0
+	for f in _furnishings:
+		if (f["rect"] as Rect2).grow(0.05).has_point(p):
+			top = maxf(top, float(f["top"]))
+	return top
+
+
+## Erstes Möbel dieser Art in der benannten Fläche ({} = keins).
+func _furnishing(kind: String, area: String) -> Dictionary:
+	for f in _furnishings:
+		if f["kind"] == kind and (_named[area] as Rect2).has_point((f["rect"] as Rect2).get_center()):
+			return f
 	return {}
 
 
 # --- Lobby und Galerie ---------------------------------------------------------------------------------
 
+## Lobby: Teppich vor der Rezeption, Liegeplatz der Katzen auf der Rezeption, Sitzplätze vor den Sofas,
+## Schilder. Die Einrichtung steht im Plan.
 func _lobby_hall() -> void:
 	lobby_center = Vector3(_lobby.get_center().x, 0, _lobby.get_center().y)
 	var west := _lobby.position.x
 	var east := _lobby.end.x
-	# Teppich vor der Rezeption, Säulen unter der Galeriekante
 	Geo.mesh(root, Geo.box(Vector3(6.0, 0.02, 8.0)), Mat.layer(Color(0.32, 0.07, 0.08)), Vector3(0, 0.01, -5.0))
-	var void_rect := _void()
-	for x: float in [void_rect.position.x - 0.25, void_rect.end.x + 0.25]:
-		for z: float in [-10.0, void_rect.position.y - 0.25]:
-			Geo.solid(root, Vector3(0.5, H, 0.5), Vector3(x, H / 2.0, z), Mat.psx(Color(0.6, 0.57, 0.5)))
-	# Rezeption aus dem Plan
-	var desk_top := 1.1
-	for rc in _map["reception"]:
-		Geo.solid(root, Vector3(rc[2] - rc[0], desk_top, rc[3] - rc[1]), Vector3((rc[0] + rc[2]) / 2.0, desk_top / 2.0, (rc[1] + rc[3]) / 2.0), _dark_wood)
 	var front: Array = _map["reception"][0]
 	for rc in _map["reception"]:
 		if float(rc[2]) - float(rc[0]) > float(front[2]) - float(front[0]):
 			front = rc
 	var fz := (float(front[1]) + float(front[3])) / 2.0
-	_item(Item.Kind.CARVED_PUMPKIN, Vector3(-1.8, desk_top + 0.02, fz))
-	_note("2019", Vector3(-0.9, desk_top + 0.01, fz))
-	_item(Item.Kind.FLASHLIGHT, Vector3(1.7, desk_top + 0.01, fz)).rotation.y = 2.4   # halb leer (4.16)
-	var main_phone := HotelPhone.new().setup("lobby")   # Haupttelefon mit Gästeverzeichnis
-	main_phone.position = Vector3(0.4, desk_top, fz)
-	main_phone.rotation.y = PI
-	root.add_child(main_phone)
-	_candle(Vector3(-1.2, desk_top, fz))
-	cat_perches.append({"floor": Vector3(2.9, 0, fz - 0.8), "top": Vector3(2.3, desk_top + 0.02, fz - 0.8), "yaw": PI / 2.0})
-	# Sitzecke unter der Galerie (West), Schachtisch gegenüber (Ost)
-	var lz := -18.0
-	_couch(Vector3(west + 0.65, 0, lz), 0.0)
-	_couch(Vector3(west + 3.05, 0, lz), PI)
-	Geo.solid(root, Vector3(0.7, 0.4, 1.2), Vector3(west + 1.85, 0.2, lz), _wood)   # Couchtisch
-	_candle(Vector3(west + 1.85, 0.4, lz + 0.2))
-	for zz: float in [lz - 0.5, lz + 0.5]:
-		lobby_seats.append(Vector3(west + 1.35, 0, zz))
-		lobby_seats.append(Vector3(west + 2.35, 0, zz))
-		cat_perches.append({"floor": Vector3(west + 1.35, 0, zz), "top": Vector3(west + 0.72, 0.46, zz)})
-	chess_table = ChessTable.new()
-	chess_table.position = Vector3(east - 1.9, 0, lz)
-	chess_table.rotation.y = PI / 2.0
-	root.add_child(chess_table)
-	_item(Item.Kind.CHESS_BOARD, Vector3(east - 1.9, 0.77, lz))
-	_painting(Vector3(west + 0.01, 2.2, -24.0), 90.0, Color(0.18, 0.1, 0.12))
-	_painting(Vector3(east - 0.01, 2.2, -24.0), -90.0, Color(0.1, 0.14, 0.18))
-	# Leuchten: die Halle ist groß und hoch – etwas kräftiger, mehr Reichweite
-	for z: float in [-20.0, -3.0]:
-		_wall_lamp(Vector3(west + 0.12, 2.4, z), PI / 2.0, WALL_LAMP_ENERGY * 1.3, 8.0, "lobby")
-		_wall_lamp(Vector3(east - 0.12, 2.4, z), -PI / 2.0, WALL_LAMP_ENERGY * 1.3, 8.0, "lobby")
-	for x: float in [-2.6, 2.6]:
-		_wall_lamp(Vector3(x, 2.6, _lobby.end.y - 0.12), PI, WALL_LAMP_ENERGY * 1.3, 8.0, "lobby")
-	_switch("lobby", "Lobby", Vector3(east - 0.12, 1.3, -8.0 - 2.4), -PI / 2.0)
+	cat_perches.append({"floor": Vector3(2.9, 0, fz - 0.8), "top": Vector3(2.3, RECEPTION_H + 0.02, fz - 0.8), "yaw": PI / 2.0})
+	# Vor jedem Sofa zwei Sitzplätze für Gäste, obendrauf zwei Liegeplätze für die Katzen
+	for f in _furnishings:
+		var c: Vector2 = (f["rect"] as Rect2).get_center()
+		if f["kind"] != "couch" or not _lobby.has_point(c):
+			continue
+		var out: Vector2 = f["front"]
+		for s: float in [-0.5, 0.5]:
+			var seat := c + out * 0.7 + Vector2(-out.y, out.x) * s
+			var top := c + out * 0.07 + Vector2(-out.y, out.x) * s
+			lobby_seats.append(Vector3(seat.x, 0, seat.y))
+			cat_perches.append({"floor": Vector3(seat.x, 0, seat.y), "top": Vector3(top.x, 0.46, top.y)})
 	_sign("BAR", Vector3(west + 0.11, 2.75, -13.0), 90.0)
 	_sign("PARTY", Vector3(east - 0.11, 2.75, -13.0), -90.0)
 	_sign("GARTEN", Vector3(-5.5, 2.75, _lobby.position.y + 0.11), 0.0)
@@ -1002,105 +1215,49 @@ func _railing(a: Vector3, b: Vector3) -> void:
 		Geo.mesh(holder, Geo.box(Vector3(0.04, 1.0, 0.04)), _dark_wood, Vector3(-length / 2.0 + length * i / n, 0.5, 0))
 
 
-# --- Bar, Partyraum, Küche, Nebenräume, Pool -----------------------------------------------------------
+# --- Gemeinschaftsräume, Pool ---------------------------------------------------------------------------
 
-## Hotelbar (Spielkonzept 6.10): Theke an der Nordwand, Flaschen, Hocker, Würfeltisch mit Becher.
-func _bar() -> void:
-	var r: Rect2 = _named["bar"]
-	var cx := r.get_center().x
-	var counter := Geo.solid(root, Vector3(7.0, 1.1, 0.6), Vector3(cx, 0.55, r.position.y + 1.0), _dark_wood)
-	Geo.mesh(counter, Geo.box(Vector3(7.1, 0.05, 0.7)), _wood, Vector3(0, 0.57, 0))
-	Geo.solid(root, Vector3(7.0, 2.0, 0.4), Vector3(cx, 1.0, r.position.y + 0.2), _wood)   # Regal an der Wand
-	var pack := (load(BOTTLES_MODEL) as PackedScene).instantiate()
-	var bottles := pack.find_children("bottle_*", "MeshInstance3D", true, false)
-	for i in 14:   # jede Flasche nur einmal (5 und 28 sind teilerfremd)
-		var src: MeshInstance3D = bottles[i * 5 % bottles.size()]
-		var bottle := Geo.mesh(root, src.mesh, Mat.model(BOTTLES_MODEL, src), Vector3(cx - 3.2 + i * 0.49, 2.0, r.position.y + 0.25))
-		bottle.rotation.y = i * 1.3
-	pack.free()
-	for i in 4:
-		var x := cx - 2.4 + i * 1.6
-		var stool := Geo.mesh(root, Geo.cylinder(0.18, 0.05, 8), Mat.psx(Color(0.4, 0.1, 0.1)), Vector3(x, 0.7, r.position.y + 1.8))
-		Geo.mesh(stool, Geo.cylinder(0.04, 0.7, 5), _dark_wood, Vector3(0, -0.35, 0))
-		bar_spots.append(Vector3(x, 0, r.position.y + 2.2))
-	_candle(Vector3(cx + 2.8, 1.145, r.position.y + 1.1))   # auf der Theke
-	_painting(Vector3(r.position.x + 0.01, 1.9, r.get_center().y), 90.0, Color(0.25, 0.1, 0.1))
-	_wall_lamp(Vector3(r.position.x + 0.12, 2.1, r.position.y + 4.0), PI / 2.0, WALL_LAMP_ENERGY, 6.0, "bar")
-	_wall_lamp(Vector3(r.end.x - 0.12, 2.1, r.position.y + 4.0), -PI / 2.0, WALL_LAMP_ENERGY, 6.0, "bar")
-	_wall_lamp(Vector3(cx, 2.1, r.end.y - 0.12), PI, WALL_LAMP_ENERGY, 6.0, "bar")
-	_switch("bar", "Bar", Vector3(r.end.x - 0.12, 1.3, r.end.y - 1.0), -PI / 2.0)
-	game_table = GameTable.new()
-	game_table.position = Vector3(cx, 0, r.get_center().y + 2.0)
-	root.add_child(game_table)
-	_item(Item.Kind.DICE_CUP, Vector3(cx, 0.77, r.get_center().y + 2.0))
-
-
-## Partyraum: Plattenspieler, Tanzfläche (Feier-Punkte).
-func _party_room() -> void:
+## Was Bar, Partyraum und Küche über den Plan hinaus brauchen: Flaschen auf dem Barregal, Hocker vor der Theke
+## (Spielkonzept 6.10), Tanzfläche und Plattenspieler-Tisch, Treffpunkte für Gäste und Monster.
+func _common_rooms() -> void:
+	var shelf := _furnishing("shelf", "bar")
+	if not shelf.is_empty():
+		var r: Rect2 = shelf["rect"]
+		var along := Vector2(1, 0) if r.size.x >= r.size.y else Vector2(0, 1)
+		var length := maxf(r.size.x, r.size.y)
+		var pack := (load(BOTTLES_MODEL) as PackedScene).instantiate()
+		var bottles := pack.find_children("bottle_*", "MeshInstance3D", true, false)
+		for i in 14:   # jede Flasche nur einmal (5 und 28 sind teilerfremd)
+			var src: MeshInstance3D = bottles[i * 5 % bottles.size()]
+			var p := r.get_center() + along * (-length / 2.0 + 0.3 + i * (length - 0.6) / 13.0)
+			var bottle := Geo.mesh(root, src.mesh, Mat.model(BOTTLES_MODEL, src), Vector3(p.x, float(shelf["top"]), p.y))
+			bottle.rotation.y = i * 1.3
+		pack.free()
+	var counter := _furnishing("bar_counter", "bar")
+	if not counter.is_empty():
+		var r: Rect2 = counter["rect"]
+		var out: Vector2 = counter["front"]
+		var along := Vector2(1, 0) if r.size.x >= r.size.y else Vector2(0, 1)
+		var span := maxf(r.size.x, r.size.y) - 2.2
+		for i in 4:
+			var p := r.get_center() + along * (-span / 2.0 + i * span / 3.0)
+			var stool := Geo.mesh(root, Geo.cylinder(0.18, 0.05, 8), Mat.psx(Color(0.4, 0.1, 0.1)), Vector3(p.x + out.x * 0.8, 0.7, p.y + out.y * 0.8))
+			Geo.mesh(stool, Geo.cylinder(0.04, 0.7, 5), _dark_wood, Vector3(0, -0.35, 0))
+			bar_spots.append(Vector3(p.x + out.x * 1.2, 0, p.y + out.y * 1.2))
+	# Partyraum: Plattenspieler auf dem Tisch, dunkle Ecke (dort steht es beim ersten Angriff), Tanzfläche
 	var r: Rect2 = _named["partyraum"]
 	var c := r.get_center()
-	Geo.solid(root, Vector3(0.8, 0.8, 0.6), Vector3(r.end.x - 1.2, 0.4, r.position.y + 0.8), _wood)   # Tisch für den Plattenspieler
-	record_player_pos = Vector3(r.end.x - 1.2, 0.8, r.position.y + 0.8)
+	var table := _furnishing("table", "partyraum")
+	if not table.is_empty():
+		var t: Vector2 = (table["rect"] as Rect2).get_center()
+		record_player_pos = Vector3(t.x, float(table["top"]), t.y)
 	party_corner = Vector3(r.position.x + 0.9, 0, r.position.y + 0.9)
 	Geo.mesh(root, Geo.box(Vector3(6.0, 0.02, 6.0)), Mat.layer(Color(0.12, 0.1, 0.16)), Vector3(c.x, 0.01, c.y))
 	for i in 6:
 		var a := TAU * i / 6.0
 		party_spots.append(Vector3(c.x + cos(a) * 1.6, 0, c.y + sin(a) * 1.6))
-	for z: float in [r.position.y + 4.0, r.end.y - 4.0]:
-		_wall_lamp(Vector3(r.end.x - 0.12, 2.1, z), -PI / 2.0, WALL_LAMP_ENERGY, 6.0, "partyraum")
-	_wall_lamp(Vector3(c.x, 2.1, r.position.y + 0.12), 0.0, WALL_LAMP_ENERGY, 6.0, "partyraum")
-	_switch("partyraum", "Partyraum", Vector3(r.position.x + 0.12, 1.3, r.end.y - 1.0), PI / 2.0)
-	for i in 3:
-		_candle(Vector3(r.position.x + 0.5, 0.0, r.position.y + 3.0 + i * 4.0))
-
-
-func _kitchen() -> void:
-	var r: Rect2 = _named["kueche"]
-	var cx := r.get_center().x
-	var back := r.position.y + 0.32   # an der Nordwand
-	Geo.solid(root, Vector3(7.0, 0.9, 0.6), Vector3(cx - 0.5, 0.45, back), Mat.psx(Color(0.55, 0.5, 0.42)))   # Arbeitsplatte
-	Geo.solid(root, Vector3(0.8, 0.95, 0.62), Vector3(cx + 3.6, 0.475, back), Mat.psx(Color(0.2, 0.2, 0.22)))   # Herd
-	Geo.solid(root, Vector3(1.6, 0.78, 0.9), Vector3(cx, 0.39, r.get_center().y - 2.0), _wood)                    # Tisch
-	_item(Item.Kind.KNIFE, Vector3(cx - 3.2, 0.91, back))
-	var candles := ResourceSpot.new().setup(Item.Kind.CANDLE, "Kerze aus dem Vorrat", 3, 150.0)
-	candles.position = Vector3(cx - 1.5, 0.9, back)
-	root.add_child(candles)
-	kitchen_spot = Vector3(cx, 0, r.get_center().y)
-	_wall_lamp(Vector3(cx - 2.0, 2.1, r.position.y + 0.12), 0.0, WALL_LAMP_ENERGY, 6.0, "kueche")
-	_wall_lamp(Vector3(cx + 2.0, 2.1, r.end.y - 0.12), PI, WALL_LAMP_ENERGY, 6.0, "kueche")
-	_switch("kueche", "Küche", Vector3(r.end.x - 0.12, 1.3, r.get_center().y + 2.0), -PI / 2.0)
-	# Speisesaal: lange Tafeln
-	var d: Rect2 = _named["speisesaal"]
-	for row in 3:
-		var z := d.position.y + 4.5 + row * 4.5
-		for half: float in [-1.0, 1.0]:
-			Geo.solid(root, Vector3(9.0, 0.78, 1.1), Vector3(d.get_center().x + half * 6.0, 0.39, z), _wood)
-		_candle(Vector3(d.get_center().x - 6.0 + row * 6.0, 0.78, z))
-	for x: float in [d.position.x + 6.0, d.end.x - 6.0]:
-		_wall_lamp(Vector3(x, 2.1, d.position.y + 0.12), 0.0, WALL_LAMP_ENERGY, 6.0, "speisesaal")
-		_wall_lamp(Vector3(x, 2.1, d.end.y - 0.12), PI, WALL_LAMP_ENERGY, 6.0, "speisesaal")
-	_switch("speisesaal", "Speisesaal", Vector3(d.end.x - 4.5, 1.3, d.end.y - 0.12), PI)
-
-
-## Lager, Kühlräume, Toiletten, Duschen, Umkleiden: je eine Leuchte und ein Schalter, ein paar Einbauten.
-func _service_rooms() -> void:
-	for id: String in ["lager", "kuehlraum", "tiefkuehlraum"]:
-		var r: Rect2 = _named[id]
-		Geo.solid(root, Vector3(0.5, 2.0, r.size.y - 1.0), Vector3(r.position.x + 0.3, 1.0, r.get_center().y), _wood)   # Regal
-		_wall_lamp(Vector3(r.get_center().x, 2.1, r.position.y + 0.12), 0.0, WALL_LAMP_ENERGY * 0.8, 5.0, id, id != "lager")
-		_switch(id, _region_name(id), Vector3(r.end.x - 0.12, 1.3, r.get_center().y + 1.6), -PI / 2.0)
-	var spare := ResourceSpot.new().setup(Item.Kind.BULB, "Ersatzbirne aus dem Lager", 2, 300.0)
-	spare.position = Vector3(_named["lager"].position.x + 0.3, 1.4, _named["lager"].get_center().y)
-	root.add_child(spare)
-	for id: String in ["toilette_west", "toilette_ost"]:
-		var r: Rect2 = _named[id]
-		Geo.solid(root, Vector3(1.6, 0.85, 0.5), Vector3(r.get_center().x, 0.425, r.end.y - 0.35), Mat.psx(Color(0.85, 0.85, 0.82)))   # Waschtisch
-		_wall_lamp(Vector3(r.get_center().x, 2.1, r.end.y - 0.12), PI, WALL_LAMP_ENERGY, 5.0, id)
-		_switch(id, "Toilette", Vector3(r.get_center().x + 1.6, 1.3, r.position.y + 0.12), 0.0)
-	for id: String in ["vorraum", "dusche_west", "dusche_ost", "umkleide_west", "umkleide_ost"]:
-		var r: Rect2 = _named[id]
-		_wall_lamp(Vector3(r.end.x - 0.12, 2.1, r.get_center().y), -PI / 2.0, WALL_LAMP_ENERGY * 0.8, 5.0, "umkleiden")
-	_switch("umkleiden", "Umkleiden", Vector3(_named["vorraum"].end.x - 0.12, 1.3, _named["vorraum"].get_center().y), -PI / 2.0)
+	var k: Rect2 = _named["kueche"]
+	kitchen_spot = Vector3(k.get_center().x, 0, k.get_center().y)
 
 
 func _region_name(id: String) -> String:
@@ -1110,7 +1267,7 @@ func _region_name(id: String) -> String:
 	return id
 
 
-## Hallenbad: Becken 1,4 m tief mit Wasseroberfläche, Leuchten an der Nordwand.
+## Hallenbad: Becken 1,4 m tief mit Wasseroberfläche.
 func _pool() -> void:
 	var w: Rect2 = _named["becken"]
 	var depth := 1.4
@@ -1121,28 +1278,14 @@ func _pool() -> void:
 		Geo.solid(root, Vector3(0.2, depth, w.size.y - 0.4), Vector3(w.get_center().x + s * (w.size.x / 2.0 - 0.1), -depth / 2.0, w.get_center().y), _wall_tiles)
 	var water := Mat.psx(Color(0.15, 0.35, 0.45), "", 1.0, Color(0.05, 0.2, 0.25), 0.4, false)
 	Geo.mesh(root, Geo.box(Vector3(w.size.x, 0.02, w.size.y)), water, Vector3(w.get_center().x, -0.3, w.get_center().y))
-	var r: Rect2 = _named["pool"]
-	for x: float in [r.position.x + 5.0, r.get_center().x, r.end.x - 5.0]:
-		_wall_lamp(Vector3(x, 2.4, r.position.y + 0.12), 0.0, WALL_LAMP_ENERGY, 7.0, "pool")
-	_switch("pool", "Pool", Vector3(r.end.x - 3.0, 1.3, r.end.y - 0.12), PI)
 
 
 # --- Gärten -----------------------------------------------------------------------------------------
 
 func _gardens() -> void:
-	for r in _map["regions"]:
-		if r["kind"] != "garden":
-			continue
-		var b := _bounds(r["rects"])
-		if absf(b.get_center().x) < 15.0:
-			_central_garden(b)
+	_garden_beds()
 	for t in _map["trees"]:
-		var p := _v3(t["center"])
-		_tree(p, float(t["radius"]))
-		var pile := ResourceSpot.new().setup(Item.Kind.LEAVES, "Herbstlaub", 4, 60.0)
-		pile.position = p + Vector3(1.8, 0, 1.2)
-		root.add_child(pile)
-		_lantern(p + Vector3(-3.5, 0, 3.5), false, 0.8)
+		_tree(_v3(t["center"]), float(t["radius"]))
 	for rc in _map["planters"]:
 		var size := Vector2(float(rc[2]) - float(rc[0]), float(rc[3]) - float(rc[1]))
 		var c := Vector3((float(rc[0]) + float(rc[2])) / 2.0, 0, (float(rc[1]) + float(rc[3])) / 2.0)
@@ -1154,24 +1297,25 @@ func _gardens() -> void:
 				Vector3((float(rc[0]) + float(rc[2])) / 2.0, 0.125, (float(rc[1]) + float(rc[3])) / 2.0))
 
 
-## Der große Garten zwischen den Flügeln: Kürbisbeete nahe der Lobby, Laternen, Bank.
-func _central_garden(b: Rect2) -> void:
-	var cx := -2.0
+## Kürbisbeete unter den Pflanzen des Plans (je Reihe ein Beet) und davor die Plätze, an denen Gäste im Garten
+## stehen – das Beet nächst der Lobby zuerst.
+func _garden_beds() -> void:
+	var rows := {}   # z → x der Pflanzen
+	for o in _map["fittings"]:
+		if o["kind"] == "pumpkin_plant":
+			var z := snappedf(float(o["pos"][1]), 0.5)
+			if not rows.has(z):
+				rows[z] = []
+			(rows[z] as Array).append(float(o["pos"][0]))
+	var order := rows.keys()
+	order.sort_custom(func(a: float, b: float) -> bool: return absf(a - _lobby.position.y) < absf(b - _lobby.position.y))
 	var dirt := Mat.psx(Color(0.22, 0.14, 0.08))
-	for z: float in [_lobby.position.y - 7.0, _lobby.position.y - 9.5]:
-		Geo.mesh(root, Geo.box(Vector3(4.6, 0.06, 1.3)), dirt, Vector3(cx, 0.03, z))
-		for i in 3:
-			var plant := PumpkinPlant.new().setup(3 if (i + int(z)) % 2 == 0 else i)
-			plant.position = Vector3(cx - 1.5 + i * 1.5, 0.05, z)
-			root.add_child(plant)
-		garden_spots.append(Vector3(cx, 0, z + 1.0))
-	Geo.solid(root, Vector3(1.6, 0.45, 0.5), Vector3(cx + 4.5, 0.225, _lobby.position.y - 8.0), _dark_wood)   # Bank
-	var z := _lobby.position.y - 4.0
-	var i := 0
-	while z > b.position.y + 4.0:
-		_lantern(Vector3(cx + (2.5 if i % 2 == 0 else -2.5), 0, z), i % 4 == 3, 1.0)
-		z -= 14.0
-		i += 1
+	for z: float in order:
+		var xs: Array = rows[z]
+		var x0: float = xs.min()
+		var x1: float = xs.max()
+		Geo.mesh(root, Geo.box(Vector3(x1 - x0 + 1.6, 0.06, 1.3)), dirt, Vector3((x0 + x1) / 2.0, 0.03, z))
+		garden_spots.append(Vector3((x0 + x1) / 2.0, 0, z + 1.0))
 
 
 ## Baum mit Krone in der Größe des Plans (radius = Kronenradius).
@@ -1266,11 +1410,9 @@ func _stairwells() -> void:
 		root.add_child(og)
 		_seal(og, "Abgesperrt. Das Obergeschoss ist noch nicht zugänglich.")
 		_sign("TREPPENHAUS", Vector3((x0 + x1) / 2.0, 2.9, zs + T / 2.0 + 0.11), 0.0)
-		_wall_lamp(Vector3(x0 + 0.12, 2.0, z_door - 0.4), PI / 2.0, WALL_LAMP_ENERGY, 6.0, "treppenhaus")
-		_wall_lamp(Vector3(mid, UP_Y / 2.0 + 1.9, zn + 0.12), 0.0, WALL_LAMP_ENERGY, 6.0, "treppenhaus")
-		_wall_lamp(Vector3(mid, bottom / 2.0 + 1.8, zn + 0.12), 0.0, WALL_LAMP_ENERGY, 6.0, "treppenhaus")
-		_wall_lamp(Vector3(x1 - 0.12, UP_Y + 1.9, z_door - 0.4), -PI / 2.0, WALL_LAMP_ENERGY, 6.0, "treppenhaus")
-		_switch("treppenhaus", "Treppenhaus", Vector3(x1 - 0.12, 1.3, zs - 0.5), -PI / 2.0)
+		# Leuchten und Schalter im Erdgeschoss stehen im Plan; die über dem Erdgeschoss noch nicht (kein OG-Plan)
+		_wall_lamp(Vector3(mid, UP_Y / 2.0 + 1.9, zn + WALL_GAP), 0.0, WALL_LAMP_ENERGY, 6.0, "treppenhaus")
+		_wall_lamp(Vector3(x1 - WALL_GAP, UP_Y + 1.9, z_door - 0.4), -PI / 2.0, WALL_LAMP_ENERGY, 6.0, "treppenhaus")
 
 
 ## Ein gerader Treppenlauf entlang z von (z_from, y_from) nach (z_to, y_to).
@@ -1333,9 +1475,9 @@ func _cellar() -> void:
 	_item(Item.Kind.COINS, Vector3(1.2, 0.02, 2.0), "2")
 	_item(Item.Kind.BATTERY, Vector3(3.1, 1.61, -2.6))   # auf dem alten Regal
 	_note("2011", Vector3(L - 0.9, 0.61, 2.4))
-	_uv_writing("31.10.1987\nSIE HABEN IHN\nEINGESCHLOSSEN", Vector3(L - 0.11, 1.5, 0.0), -90.0)
+	_uv_writing("31.10.1987\nSIE HABEN IHN\nEINGESCHLOSSEN", Vector3(L - 0.11, 1.5, 0.0), -PI / 2.0)
 	_resource_web(Vector3(L - 0.5, 1.7, -2.88), 0.0)
-	_resource_web(Vector3(1.0, 1.7, 2.88), 180.0)
+	_resource_web(Vector3(1.0, 1.7, 2.88), PI)
 	_parent = root
 
 
@@ -1526,20 +1668,21 @@ func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, roo
 	return lamp
 
 
-## Schrift, die nur unter UV-Licht leuchtet (Spielkonzept 4.16); yaw dreht die Schrift
+## Schrift, die nur unter UV-Licht leuchtet (Spielkonzept 4.16); yaw (Bogenmaß) dreht die Schrift
 ## (lokale +Z) von der Wand weg in den Raum.
 func _uv_writing(text: String, pos: Vector3, yaw: float) -> void:
 	var mark := UvMark.new().setup_text(text)
 	mark.position = pos
-	mark.rotation.y = deg_to_rad(yaw)
+	mark.rotation.y = yaw
 	_parent.add_child(mark)
 
 
 ## Warnungszettel eines früheren Gastes (erscheint erst nach dem ersten Angriff).
-func _note(id: String, pos: Vector3) -> void:
+func _note(id: String, pos: Vector3) -> WarningNote:
 	var note := WarningNote.new().setup(id)
 	note.position = pos
 	_parent.add_child(note)
+	return note
 
 
 func _switch(room_id: String, label: String, pos: Vector3, yaw: float) -> LightSwitch:
@@ -1553,7 +1696,7 @@ func _switch(room_id: String, label: String, pos: Vector3, yaw: float) -> LightS
 func _hide_spot(type: HideSpot.Type, pos: Vector3, yaw: float) -> HideSpot:
 	var spot := HideSpot.new().setup(type)
 	spot.position = pos
-	spot.rotation.y = deg_to_rad(yaw)
+	spot.rotation.y = yaw
 	_parent.add_child(spot)
 	return spot
 
@@ -1561,7 +1704,7 @@ func _hide_spot(type: HideSpot.Type, pos: Vector3, yaw: float) -> HideSpot:
 func _painting(pos: Vector3, yaw: float, color: Color) -> void:
 	var holder := Node3D.new()
 	holder.position = pos
-	holder.rotation.y = deg_to_rad(yaw)
+	holder.rotation.y = yaw
 	_parent.add_child(holder)
 	Geo.mesh(holder, Geo.box(Vector3(0.8, 0.6, 0.04)), _dark_wood, Vector3(0, 0, 0.02))
 	Geo.mesh(holder, Geo.box(Vector3(0.66, 0.46, 0.045)), Mat.psx(color), Vector3(0, 0, 0.025))
@@ -1569,7 +1712,7 @@ func _painting(pos: Vector3, yaw: float, color: Color) -> void:
 
 ## Ledercouch (`assets/models/couch.glb`, Rohmodell in Blender-Einheiten → `COUCH_SCALE`).
 ## Lokal liegt die Lehne bei −X, die Sitzfläche zeigt nach +X; yaw dreht um Y.
-func _couch(pos: Vector3, yaw: float) -> void:
+func _couch(pos: Vector3, yaw: float) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.collision_mask = 0
 	body.position = pos
@@ -1584,13 +1727,14 @@ func _couch(pos: Vector3, yaw: float) -> void:
 	# Kollision (auch für das NavMesh): Sitzblock und Lehne, Maße aus dem skalierten Modell.
 	Geo.add_box_shape(body, Vector3(0.64, 0.45, 2.39), Vector3(0, 0.225, 0))
 	Geo.add_box_shape(body, Vector3(0.18, 0.47, 2.25), Vector3(-0.23, 0.685, 0))
+	return body
 
 
-## Spinnweben in einer Ecke, die man abnehmen kann (lokale +Z zeigt in den Raum).
+## Spinnweben, die man abnehmen kann (lokale +Z zeigt in den Raum, yaw im Bogenmaß).
 func _resource_web(pos: Vector3, yaw: float) -> void:
 	var spot := ResourceSpot.new().setup(Item.Kind.COBWEB, "Spinnenweben", 1, 240.0)
 	spot.position = pos
-	spot.rotation.y = deg_to_rad(yaw)
+	spot.rotation.y = yaw
 	_parent.add_child(spot)
 
 

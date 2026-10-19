@@ -214,8 +214,9 @@ Lärm-Dämpfung `1 | 2 | 64`.
 Baut das Erdgeschoss aus dem Gebäudeplan (`assets/maps/eg.json`, Abschnitt unten). Der alte, im Code
 festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
 - **Ablauf von `build()`:** Flächen-Raster (`_index_places`, 25 cm) → jede Wand des Plans (`_build_wall`) →
-  Böden und Decken je Fläche → Zimmer → Flurabschnitte → Lobby, Galerie, Bar, Partyraum, Küchenblock,
-  Nebenräume, Pool, Gärten → Treppenhäuser und Keller → Zonen, Wegpunkte.
+  Böden und Decken je Fläche → Zimmer → Einrichtung aus dem Plan (`_furniture`, `_fittings`, `_items`,
+  `_lights`) → Lobby, Galerie, Bar/Partyraum/Küche (`_common_rooms`), Pool, Gärten → Treppenhäuser und
+  Keller → Zonen, Wegpunkte.
 - **Wände:** Eine Planwand wird dort geteilt, wo sich die Räume an einer Seite ändern (abgetastet alle 25 cm,
   30 cm neben der Mitte; kurze Läufe an Querwänden geglättet). Tapete je Seite über `Mat.wallpaper_split`
   (Zimmer beige, Lobby rot, sonst teal); Seiten ohne Tapete (draußen = Fassade, Toilette/Pool = Fliesen,
@@ -226,15 +227,32 @@ festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
   `room_id` ist die Fläche dahinter (Zimmernummer, Bereich oder Flurabschnitt, `_room_id_at`). Unter jeder
   benutzbaren Tür liegt eine Schwelle – ohne Boden in der Wandlücke risse das NavMesh ab.
 - **Zimmer** (`_room`): Rahmen am Türmittelpunkt (+X an der Flurwand entlang, +Z ins Zimmer); Innenmaß aus
-  dem Rechteck an der Tür (Eckzimmer sind L-förmig). Möbel wie bisher (Bett links hinten, Schrank rechts
-  hinten, Tisch vorn auf der freieren Seite der Tür). Arten: `player`, `guest`, `empty`, `vacant`, `laundry`,
-  `abandoned`, `derelict`, `locked`; Sonderzimmer in `ROOM_KINDS` (Endziffern der alten Nummern,
-  `PLAYER_ROOM` 0113, `LOCKED_ROOM` 0118, `COMPASS_ROOM` 0126). **Bauphase:** Nur Flügel in `OPEN_WINGS`
-  sind bewohnbar; Zimmer anderer Flügel haben eine versiegelte Tür (`_seal`: abgeschlossen, auch für das
-  Monster) und dauerhaft zugezogene Vorhänge (`HotelWindow.sealed`), aber kein Inneres und keinen Boden.
-- **Flure** (`_corridors`): je Flurabschnitt des Plans ein Lichtschalter, alle 18 m eine Wandleuchte, im
-  Wechsel Kommoden (mit Kerze und Bild) und Schränke. `_corridor_wall_spot` sucht dafür ein freies Wandstück
-  zum Flur hin (keine Öffnung, nicht schon belegt).
+  dem Rechteck an der Tür (Eckzimmer sind L-förmig). Das Innere kommt aus dem Plan; `_room` legt nur die
+  Zimmerart fest (Tür offen bei `abandoned`/`derelict`, abgeschlossen bei `locked`). Arten: `player`, `guest`,
+  `empty`, `vacant`, `laundry`, `abandoned`, `derelict`, `locked`; Sonderzimmer in `ROOM_KINDS` (Endziffern der
+  alten Nummern, `PLAYER_ROOM` 0113, `LOCKED_ROOM` 0118, `COMPASS_ROOM` 0126). **Bauphase:** Nur Flügel in
+  `OPEN_WINGS` sind bewohnbar; Zimmer anderer Flügel haben eine versiegelte Tür (`_seal`: abgeschlossen, auch
+  für das Monster) und dauerhaft zugezogene Vorhänge (`HotelWindow.sealed`), aber kein Inneres und keinen Boden.
+  Objekte des Plans auf versiegelten Flächen werden übersprungen.
+- **Einrichtung aus dem Plan** (Objektebenen, Abschnitt unten), in dieser Reihenfolge – sie bestimmt die
+  Gruppen-Reihenfolge im Spielstand:
+  - `_furniture`: Rezeption, dann `furniture`. Bett/Schrank → `HideSpot` (ins `spots` des Zimmers),
+    Kommode, Truhe, Schach- und Spieltisch, Sofa als eigene Bauteile in der Rechteckmitte mit Blick nach
+    `facing` (ohne: zur Flächenmitte); alles andere ein Kasten in Plangröße mit Höhe aus `BOX_HEIGHTS`.
+    Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert daraus die Höhe, auf der
+    Kerzen, Telefone, Zettel und Gegenstände stehen.
+  - `_fittings`: Wandsachen (Schalter, Bild, Spinnwebe, UV-Schrift, Kalender) über `_wall_spot` an die
+    Wandfläche der Seite `wall` (`_on_wall` sucht im `_wall_index`), Höhen als Konstanten (`SWITCH_Y` …).
+    Telefon, Zettel, Tagebuch und Vorräte auf dem Möbel darunter, Kürbispflanzen mit `PLANT_STAGES`.
+  - `_items`: `Item.Kind`-Name aus dem Plan, auf dem Möbel darunter.
+  - `_lights`: Wandleuchten mit Höhe/Helligkeit/Reichweite je Flächenart (`_lamp_style`), Kerzen auf dem
+    Möbel, Laternen; `broken` aus dem Plan.
+  - Was der Plan nicht kennt, steht in `CONTENT` je Raum-ID: Münzbetrag, Kartenblatt, Zettel-Nummer, UV-Text.
+    Lampen und Schalter gehören zur Raum-ID der Fläche davor (`_light_room_at`: Umkleiden/Duschen teilen sich
+    `umkleiden`); Schalter in unbewohnten Zimmern starten aus.
+  - Nicht im Plan und weiter im Code: Galerie (Leuchten, Schalter), Treppenhaus-Leuchten zwischen den
+    Geschossen, der ganze Keller; dazu Flaschen, Hocker, Tanzfläche, Teppiche, Beete und die Treffpunkte für
+    Gäste (`_common_rooms`, `_lobby_hall`, `_garden_beds`).
 - **Lobby und Galerie:** Über dem Luftraum (`open_above`) fehlt die Decke; die Galerie ist ein 0,5 m dicker
   Boden auf 3,5–4 m (zugleich Lobbydecke) mit Geländer, Wänden bis 7,5 m und zwei gesperrten Türen ins
   Obergeschoss. Treppe aus dem Plan (`stairs`, `up` = oberes Ende).
@@ -251,8 +269,10 @@ festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
   `is_outdoor(p)`, `cellar_center()`.
 - NavMesh wird in `main._bake_navigation` zur Laufzeit gebacken (nur Ebene 1, Agent 0,3 m / 1,6 m).
   `--navcheck` misst Bau- und Backzeit (EG: ca. 0,5 s + 0,4 s) und prüft die Wege zu allen wichtigen Orten.
-- Ein neues Zimmer: im Plan zeichnen, `tools/build_map.py` laufen lassen – Wände, Tür, Lampen, Schalter,
-  Möbel, Zone und Wegpunkt entstehen automatisch. **Speicherformat beachten** (siehe 7).
+- Ein neues Zimmer: im Plan zeichnen und in den Objektebenen einrichten (Bett, Schrank, Leuchte, Schalter …),
+  `tools/build_map.py` laufen lassen – Wände, Tür, Einrichtung, Zone und Wegpunkt entstehen daraus.
+  **Speicherformat beachten** (siehe 7): Jede Änderung an Lampen, Schaltern, Verstecken, Kommoden, Truhen,
+  Telefonen, Pflanzen oder Vorräten im Plan verschiebt die Reihenfolge.
 
 ### Gebäudeplan (`map.aseprite` → `tools/build_map.py` → `assets/maps/<stockwerk>.json`)
 Grundriss seit Spielkonzept 7.5. Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
@@ -275,9 +295,9 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
   Strich `Möbel: Vorderseite` am Rand zeigt die Vorderseite. Alles andere ist ein 3×3-Punkt; Wandsachen
   (Leuchten, Schalter, Bilder, Spinnweben, UV-Schrift, Kalender) liegen innen an der Wand, daraus ergibt sich
   ihre Wandseite. Gleichfarbige Punkte dürfen sich nicht berühren (sonst wird es einer). Höhe, Helligkeit und
-  Inhalt (Zettel-Nummer, Münzen, UV-Text) stehen nicht im Plan. **Stand 2026-10-19:** Die Ebenen sind aus dem
-  laufenden Spiel übertragen (Keller fehlt, er steht noch nicht im Plan), der LevelBuilder baut aber noch
-  nach seinen Regeln und liest sie nicht.
+  Inhalt (Zettel-Nummer, Münzen, UV-Text) stehen nicht im Plan, sondern im LevelBuilder (`CONTENT`,
+  `_lamp_style`, `BOX_HEIGHTS`). Die Ebenen wurden am 2026-10-19 aus dem laufenden Spiel übertragen; der
+  Keller fehlt noch (er steht nicht im Plan und bleibt im Code).
 - **Slices** (sprite-weit, daher Stockwerk als Vorsatz, ohne Vorsatz EG: `OG1 Raum: Bibliothek`):
   `Raum: <Name>` benennt die Fläche mit den meisten Pixeln im Slice (ID = Name klein, Umlaute ausgeschrieben),
   `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen Kante**) und `Treppenhaus: <Name>` →
@@ -513,7 +533,7 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
 | Türen | `door.gd` | Blatt auf Ebene 2 (Glastür 7); Rahmen über `OpeningFrame` (Zarge, Bekleidung, Kopfpartie auf beiden Wandseiten, nur Optik). Spuren über `attach_mark(mark, seite, at)` – Kratzer mittig, Handabdrücke (`Traces.add_door_handprint`) höher; `at` wird mitgespeichert |
 | Spuren | `traces.gd`, `trace_mark.gd` | zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`; Fußabdrücke verblassen, Marken bleiben |
 | Zettel | `warning_note.gd` | feste Warnungszettel (`warning_notes`, erst nach dem 1. Angriff sichtbar) und Gäste-Zettel (`guest_notes`, max. 30) |
-| Kommoden | `world/dresser.gd` | In den Flurabschnitten verteilt (`LevelBuilder._corridors`). Drei Schubladen als eigene Körper; interagierbar ist je ein `Dresser.Handle` (leitet mit Index weiter). Hohler Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen einer Schublade (`searched`): leer / Münzen / Gegenstand aus `LOOT`. Beim Auf-/Zuschieben werden die darin liegenden Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“ – sie liegen nicht in der Hand). Lärm `drawer`. Gespeichert: `open`, `searched` (ab Version 7) |
+| Kommoden | `world/dresser.gd` | Aus dem Plan (Ebene `Möbel`, `LevelBuilder._furniture`). Drei Schubladen als eigene Körper; interagierbar ist je ein `Dresser.Handle` (leitet mit Index weiter). Hohler Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen einer Schublade (`searched`): leer / Münzen / Gegenstand aus `LOOT`. Beim Auf-/Zuschieben werden die darin liegenden Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“ – sie liegen nicht in der Hand). Lärm `drawer`. Gespeichert: `open`, `searched` (ab Version 7) |
 | Verstecke | `hide_spot.gd` | `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur; `own_bed` = Bett in Zimmer 13 (Schlafen, 4.18); `rattle()`/`burst_open()` für den Lakengeist |
 | Am Körper | `player.gd` (`_pocket`, `_update_hand`, `set_pockets`), `player/pocket_map.gd` | `Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den Welt-Gegenstand und trägt ihn in `has_compass`/`map_pages`/`keyring` ein – braucht keine freie Hand. Linke Hand (`_left_hand`) für Aktionen `map` (Tab) und `compass` (F), nicht bei `hands_blocked()` oder im Gespräch; `inspecting` halbiert das Tempo. Türen fragen `player.has_key(id)`. Gespeichert unter `player` |
 | Kompass | `item.gd` (`Kind.COMPASS`) | Nadel = Feder Richtung Welt −Z (Norden), gestört über `director.threat_at()` und – nur eingesteckt (`pocketed`) – `is_hallucinating()`; der Kompass in der linken Hand ist ein `Item` mit `make_pocketed()` (raus aus Gruppe `items`); liegt in `LevelBuilder.COMPASS_ROOM` |
@@ -573,8 +593,9 @@ angehaltener Atem (×0,35).
 Preis in `PRICES`, Aussehen/`deco_strength` in `_build()`, ggf. `create_extra()`.
 
 **Neues interagierbares Objekt:** Körper auf passender Ebene (meist 3 = Bit 4),
-`set_meta("interactable", self)`, `get_prompt`/`interact`, Gruppe; im LevelBuilder über eine
-`_xyz()`-Hilfsfunktion platzieren. Hat es Zustand → `save_state`/`load_state` + SaveManager +
+`set_meta("interactable", self)`, `get_prompt`/`interact`, Gruppe. Platzieren über den Plan: Farbe mit
+Namen in die Palette (`Ausstattung: …`/`Möbel: …`), Eintrag in `FITTINGS`/`FURNITURE` von `tools/build_map.py`,
+Fall in `LevelBuilder._fittings`/`_furniture`. Hat es Zustand → `save_state`/`load_state` + SaveManager +
 `VERSION` erhöhen.
 
 **Neue Gast-Aktivität:** Schlüssel in `activities` der Profile/Archetypen, Fall in
