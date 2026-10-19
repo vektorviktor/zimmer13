@@ -245,8 +245,9 @@ festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
     Wandfläche der Seite `wall` (`_on_wall` sucht im `_wall_index`), Höhen als Konstanten (`SWITCH_Y` …).
     Telefon, Zettel, Tagebuch und Vorräte auf dem Möbel darunter, Kürbispflanzen mit `PLANT_STAGES`.
   - `_items`: `Item.Kind`-Name aus dem Plan, auf dem Möbel darunter.
-  - `_lights`: Wandleuchten mit Höhe/Helligkeit/Reichweite je Flächenart (`_lamp_style`), Kerzen auf dem
-    Möbel, Laternen; `broken` aus dem Plan.
+  - `_lights`: Wandleuchten mit Höhe/Helligkeit/Reichweite je Flächenart (`_lamp_style`), Deckenleuchten
+    (`_ceiling_lamp`, `Lamp.Style.CEILING`: bündig unter der Decke, über `open_above` als Pendel an einer Schnur
+    bis `PENDANT_Y`), Kerzen auf dem Möbel, Laternen; `broken` aus dem Plan.
   - Was der Plan nicht kennt, steht in `CONTENT` je Raum-ID: Münzbetrag, Kartenblatt, Zettel-Nummer, UV-Text.
     Lampen und Schalter gehören zur Raum-ID der Fläche davor (`_light_room_at`: Umkleiden/Duschen teilen sich
     `umkleiden`); Schalter in unbewohnten Zimmern starten aus.

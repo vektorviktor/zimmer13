@@ -25351,6 +25351,34 @@
 			]
 		},
 		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				-1.95,
+				-13.95
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				1.95,
+				-13.95
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				-1.95,
+				-4.95
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				1.95,
+				-4.95
+			]
+		},
+		{
 			"kind": "lantern",
 			"pos": [
 				-4.45,

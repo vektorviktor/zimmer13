@@ -28,6 +28,11 @@ const WALL_LAMP_ENERGY := 0.5
 const CANDLE_ENERGY := 0.85
 ## Zimmer etwas heller als die Flure
 const ROOM_LAMP_ENERGY := 0.65
+## Deckenleuchten (wieder seit 2026-10-19, nur wo der Plan sie setzt): gedimmt, aber mit Reichweite bis zum Boden.
+## Über dem Luftraum hängen sie als Pendel an einer Schnur bis PENDANT_Y herab (Oberkante Schirm).
+const CEILING_LAMP_ENERGY := 0.65
+const CEILING_LAMP_RANGE := 9.0
+const PENDANT_Y := 4.8
 const DOOR_W := 1.2
 const DOOR_H := 2.1
 ## Doppeltüren, Glastüren, Terrassentüren
@@ -930,8 +935,8 @@ func _items() -> void:
 		_item(kind, Vector3(p.x, _top_at(p) + 0.02, p.y), extra)
 
 
-## Lichter (Ebene „Lichter“): Wandleuchten an der Wand (Höhe und Helligkeit je Fläche, _lamp_style), Kerzen auf
-## dem Möbel darunter, Laternen im Garten. Defekt laut Plan.
+## Lichter (Ebene „Lichter“): Wandleuchten an der Wand (Höhe und Helligkeit je Fläche, _lamp_style),
+## Deckenleuchten an der Decke darüber, Kerzen auf dem Möbel darunter, Laternen im Garten. Defekt laut Plan.
 func _lights() -> void:
 	for o in _map["lights"]:
 		var p := _v2(o["pos"])
@@ -944,6 +949,8 @@ func _lights() -> void:
 				var id := _light_room_at(at.inside)
 				var style := _lamp_style(_kind_at(at.inside), id, at.side)
 				_wall_lamp(at.at(style["y"]), at.yaw(), style["energy"], style["range"], id, broken)
+			"ceiling_lamp":
+				_ceiling_lamp(p, _light_room_at(p), broken)
 			"candle":
 				_candle(Vector3(p.x, _top_at(p), p.y))
 			"lantern":
@@ -1664,6 +1671,21 @@ func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, roo
 	var lamp := Lamp.new().setup(Lamp.Style.WALL, room_id, energy, light_range, broken)
 	lamp.position = pos
 	lamp.rotation.y = yaw
+	_parent.add_child(lamp)
+	return lamp
+
+
+## Deckenleuchte bei p (Spielkonzept 7.3): bündig unter der Decke, über dem Luftraum (open_above) als Pendel
+## an einer Schnur von der oberen Decke herab.
+func _ceiling_lamp(p: Vector2, room_id: String, broken: bool) -> Lamp:
+	var y := H - 0.03
+	for rc in _map["open_above"]:
+		if Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]).has_point(p):
+			var top := UP_Y + H
+			y = PENDANT_Y
+			Geo.mesh(_parent, Geo.cylinder(0.01, top - y, 4), Mat.psx(Color(0.2, 0.18, 0.16)), Vector3(p.x, (top + y) / 2.0, p.y))
+	var lamp := Lamp.new().setup(Lamp.Style.CEILING, room_id, CEILING_LAMP_ENERGY, CEILING_LAMP_RANGE, broken)
+	lamp.position = Vector3(p.x, y, p.y)
 	_parent.add_child(lamp)
 	return lamp
 

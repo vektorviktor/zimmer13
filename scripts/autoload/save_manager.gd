@@ -28,8 +28,9 @@ const DIR := "user://saves/"
 ## 15: neuer Grundriss aus dem Gebäudeplan (Spielkonzept 7.5) – alle Gruppen neu, ältere Stände passen nicht mehr
 ## 16: Einrichtung aus den Objektebenen des Plans – Lampen, Schalter, Verstecke, Kommoden, Telefone … in neuer
 ##     Reihenfolge, ältere Stände passen nicht mehr
-const VERSION := 16
-const MIN_VERSION := 16
+## 17: vier Deckenleuchten in der Lobby (Spielkonzept 7.3) – mehr Lampen, ältere Stände passen nicht mehr
+const VERSION := 17
+const MIN_VERSION := 17
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)

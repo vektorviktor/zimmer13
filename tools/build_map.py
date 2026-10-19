@@ -83,6 +83,7 @@ ITEMS = {
 LIGHTS = {
 	"Licht: Wandleuchte": ("wall_lamp", False), "Licht: Wandleuchte defekt": ("wall_lamp", True),
 	"Licht: Kerze": ("candle", False), "Licht: Laterne": ("lantern", False), "Licht: Laterne defekt": ("lantern", True),
+	"Licht: Deckenleuchte": ("ceiling_lamp", False),
 }
 ## Einbauten, die keine eigenen Bodenflächen sind
 FIXTURES = ("tree", "planter", "reception", "terrace_edge", "stairs", "void")
