@@ -285,8 +285,10 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
   zum Abzeichnen) und Ebenen, deren Name mit `Beschriftung`, `Skizze` oder `Notiz` beginnt.
 - **Legende = Palette mit Namen:** Die Bedeutung jeder Farbe kommt aus dem **Farbnamen in der Palette**
   (`FILLS`, `OPENINGS`, `Wand`, `Glaswand` oben im Skript). Farben dürfen sich ändern, die Namen nicht.
-  Farben ohne Paletteneintrag meldet das Skript mit Pixelposition. 1 m = 10 px, Wände 2 px, Öffnungen als
-  Farbstriche **auf** der Wandlinie, Flächen als Füllfarben, `Luftraum` = hier kein Boden (wird beim
+  Farben ohne Paletteneintrag meldet das Skript mit Pixelposition. Beim Zeichnen zeigt die Aseprite-Erweiterung
+  `tools/aseprite-palette-names/` (View > Palettennamen) alle Namen als Liste; sie liest dafür denselben
+  Paletten-Chunk aus der gespeicherten Datei, weil Aseprites Lua-API keine Farbnamen kennt.
+  1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie, Flächen als Füllfarben, `Luftraum` = hier kein Boden (wird beim
   Stockwerk darunter zu `open_above`). Schrift in Wandfarbe im Grundriss wird über ihre Größe erkannt und
   übermalt, gehört aber in die Ebene `Beschriftung`.
 - **Objektebenen** je Stockwerk: `Möbel`, `Ausstattung`, `Gegenstände`, `Lichter`. Sie zählen nicht zum

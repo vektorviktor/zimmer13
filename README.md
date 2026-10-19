@@ -178,6 +178,7 @@ scripts/autoload/settings.gd       Einstellungen (user://settings.cfg)
 scripts/autoload/save_manager.gd   Speichern/Laden, Autosave, Tagebuchsatz
 scripts/level/              LevelBuilder (baut aus assets/maps/eg.json: Wände, Zimmer, Flure, Keller, Zonen, Wegpunkte)
 tools/build_map.py          Gebäudeplan map.aseprite → assets/maps/<stockwerk>.json
+tools/aseprite-palette-names/  Aseprite-Erweiterung: Palettennamen als Liste neben den Farben (Legende beim Zeichnen)
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
                             PumpkinPlant, ResourceSpot, RecordPlayer,
                             Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang), OpeningFrame (Rahmen), Diary,
