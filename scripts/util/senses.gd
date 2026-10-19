@@ -40,6 +40,7 @@ const NOISE := {
 	"keys":       {"range": 3.0,  "sound": "jingle", "volume": 0.6},    ## Schlüssel an den Bund
 	"handset":    {"range": 2.0,  "sound": "thud",   "volume": 0.15},   ## Hörer abnehmen/auflegen/daneben legen
 	"gasp":       {"range": 10.0, "sound": "gasp",   "volume": 1.0},    ## nach Luft schnappen
+	"pant":       {"range": 4.0,  "sound": "",       "volume": 0.0},    ## Keuchen außer Atem, alle 1,5 s (3.1) – zu hören über SynthAudio
 	"knock":      {"range": 8.0,  "sound": "knock",  "volume": 0.7},
 	"phone":      {"range": 18.0, "sound": "ring",   "volume": 0.6},    ## je Klingeln (4.14)
 	"dice":       {"range": 10.0, "sound": "thud",   "volume": 0.4},    ## Würfeln, Spiel am Tisch

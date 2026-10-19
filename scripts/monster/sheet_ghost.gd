@@ -57,6 +57,7 @@ const FLY_IN_CHANCE_LATE := 0.75      ## ab dem 6. Mal
 const FLY_IN_PER_NIGHT := 0.1         ## je Nacht ohne Schlaf mehr
 const BREATH_SAVES := 0.5             ## Luft anhalten senkt die Chance um bis zu diesen Anteil …
 const BREATH_FULL := 12.0             ## … bei so vielen Sekunden angehaltener Luft während des Wartens
+const PANT_CHANCE := 0.25             ## hat er dich beim Warten keuchen hören: so viel mehr Chance (Ausdauer, 3.1)
 const FLY_IN_SPEED := 2.4
 const RATTLE_EVERY := Vector2(3.0, 7.0)
 const WITNESSES := 1                  ## so viele wache Gäste mit Blick auf ihn vertreiben ihn
@@ -106,6 +107,7 @@ var _escape := 0.0       ## Losreißen: Balken 0..1
 var _lurk_spot: HideSpot ## Schrank, vor dem er wartet bzw. in den er hineinfliegt
 var _rattle := 0.0
 var _held_breath := 0.0  ## so lange hat der Spieler beim Warten die Luft angehalten
+var _heard_pant := false ## beim Warten hat der Spieler gekeucht
 var _material: ShaderMaterial
 var _skeleton: Skeleton3D
 var _bone := {}
@@ -582,6 +584,7 @@ func _start_lurk(spot: HideSpot) -> bool:
 	_timer = randf_range(LURK_TIME.x, LURK_TIME.y)
 	_rattle = randf_range(RATTLE_EVERY.x, RATTLE_EVERY.y)
 	_held_breath = 0.0
+	_heard_pant = false
 	if "--trace" in OS.get_cmdline_user_args():
 		print("[Lakengeist] wartet %.0f s vor dem Schrank" % _timer)
 	return true
@@ -602,6 +605,8 @@ func _lurk(delta: float) -> void:
 	_face(_lurk_spot.global_position - global_position)
 	if player.holding_breath:
 		_held_breath += delta
+	elif player.is_panting():
+		_heard_pant = true
 	_rattle -= delta
 	if _rattle <= 0.0:
 		_rattle = randf_range(RATTLE_EVERY.x, RATTLE_EVERY.y)
@@ -616,10 +621,13 @@ func _lurk(delta: float) -> void:
 	if _timer > 0.0:
 		return
 	var chance := (FLY_IN_CHANCE_LATE if _stage >= HALL_FROM else FLY_IN_CHANCE) + FLY_IN_PER_NIGHT * player.nights_awake
+	if _heard_pant:
+		chance += PANT_CHANCE
 	chance *= 1.0 - BREATH_SAVES * clampf(_held_breath / BREATH_FULL, 0.0, 1.0)
 	var flies := randf() < chance
 	if "--trace" in OS.get_cmdline_user_args():
-		print("[Lakengeist] Schrank: Chance %.0f %% (Luft angehalten %.1f s) – %s" % [chance * 100.0, _held_breath,
+		print("[Lakengeist] Schrank: Chance %.0f %% (Luft angehalten %.1f s%s) – %s" % [chance * 100.0, _held_breath,
+			", gekeucht" if _heard_pant else "",
 			"fliegt hinein" if flies else "gibt auf"])
 	if flies:
 		_fly_in()

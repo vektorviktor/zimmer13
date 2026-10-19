@@ -55,6 +55,11 @@ const STAMINA_REST_TIME := 12.0
 const STAMINA_WALK_SLOW := 0.5
 const STAMINA_CALM := 0.6
 const STAMINA_HINT := 0.3
+## Außer Atem hält man die Luft bis zu so viel schneller nicht mehr aus (voll erschöpft: dreimal so schnell).
+## Ab PANT_NOISE_FROM ist das Keuchen Lärm (alle PANT_EVERY s) und verrät einen im Versteck.
+const WINDED_BREATH_DRAIN := 2.0
+const PANT_NOISE_FROM := 0.3
+const PANT_EVERY := 1.5
 
 var head: Node3D
 var camera: Camera3D
@@ -102,6 +107,7 @@ var _collider: CollisionShape3D
 var _ray: RayCast3D
 var _focus = null
 var _noise_timer := 0.0
+var _pant_timer := 0.0
 var _step_dist := 0.0
 var _was_on_floor := true
 var _bob := 0.0
@@ -582,6 +588,11 @@ func _update_injury(delta: float) -> void:
 ## Rennen (aus dem letzten Frame) leert die Ausdauer, sonst kommt sie wieder – im Stehen, Sitzen und
 ## Versteck schneller als beim Gehen. Leer → außer Atem, bis sie wieder bei STAMINA_CALM ist.
 func _update_stamina(delta: float) -> void:
+	# Lautes Keuchen ist Lärm – auch im Versteck, außer man hält die Luft an
+	_pant_timer -= delta
+	if is_panting() and _pant_timer <= 0.0:
+		_pant_timer = PANT_EVERY
+		Game.noise("pant", global_position, self)
 	if running:
 		stamina = maxf(0.0, stamina - delta / STAMINA_RUN_TIME)
 		if stamina <= 0.0 and not winded:
@@ -604,6 +615,11 @@ func exertion() -> float:
 	if winded:
 		return 1.0 - stamina / STAMINA_CALM
 	return 0.4 * clampf(1.0 - stamina / STAMINA_HINT, 0.0, 1.0)
+
+
+## Keucht er hörbar – für Monster und Lakengeist? (Luft anhalten bringt es zum Schweigen)
+func is_panting() -> bool:
+	return exertion() >= PANT_NOISE_FROM and not holding_breath and not sleeping
 
 
 # --- Gegenstände -----------------------------------------------------------
@@ -847,7 +863,7 @@ func _update_hiding(delta: float) -> void:
 		_breath_locked = false
 	holding_breath = Input.is_action_pressed("hold_breath") and not _breath_locked and breath > 0.0
 	if holding_breath:
-		breath -= delta
+		breath -= delta * (1.0 + WINDED_BREATH_DRAIN * exertion())   # außer Atem geht es kürzer
 		if breath <= 0.0:
 			breath = 0.0
 			holding_breath = false

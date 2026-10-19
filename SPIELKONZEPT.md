@@ -170,6 +170,11 @@ man **außer Atem**. Es gibt **keine Anzeige**: Man merkt es nur am Körper. Geh
 leise den eigenen Atem; ist sie leer, werden **Herzschlag und Keuchen** deutlich hörbar und **Rennen geht nicht mehr**,
 bis man sich beruhigt hat (im Stehen, Sitzen oder Versteck rund 7 Sekunden, beim Gehen doppelt so lange). Beim
 Luftanhalten verstummt das Keuchen. Wer flieht, muss sich also gut überlegen, wann er rennt.
+- **Keuchen verrät einen (umgesetzt 2026-10-19):** Lautes Keuchen ist Lärm (4 m, 4.15) – auch aus dem Versteck. Findet
+  das Monster einen keuchenden Spieler im Versteck, ist die Chance ×1,8 (höchstens 90 %); der Lakengeist vor dem Schrank
+  fliegt mit +25 % eher hinein, wenn er einen keuchen gehört hat (4.18).
+- **Außer Atem hält man die Luft kürzer an:** voll erschöpft geht der Atem dreimal so schnell aus, beruhigt wieder
+  normal. Wer gerade gerannt ist und sich versteckt, muss also wählen: keuchen oder bald nach Luft schnappen.
 
 ### 3.2 Kein Inventar – alles in den Händen
 - **Es gibt kein verstecktes Inventar.** Jeder Gegenstand (Deko, Schlüssel, Kerze, Messer, Gießkanne, Puppe …) existiert physisch in der Welt und wird **einzeln in den Händen** getragen.
@@ -495,6 +500,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Gespräch mit einem Gast | – | 3 m | Lauschen nach 4.7 bleibt |
 | Nach Luft schnappen (Luft zu lange angehalten) | 1,5 einmal | 10 m | |
 | Atmen im Versteck | Sonderregel | – | bleibt: angehaltener Atem senkt die Chance, entdeckt zu werden (×0,35) |
+| Keuchen außer Atem (3.1) | – | 4 m alle 1,5 s | im Versteck zudem ×1,8 Chance, entdeckt zu werden (beim Umsetzen ergänzt) |
 | Klopfen an eine Tür | – | 8 m | |
 | Telefon klingelt | 0,8 je Klingeln | 18 m | 4.14 |
 | Hörer abnehmen, auflegen, daneben legen | – | 2 m | (beim Umsetzen ergänzt) |

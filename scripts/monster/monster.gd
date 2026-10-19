@@ -20,6 +20,7 @@ const CANDLE_RANGE := 2.0          ## Kerzen in dieser Nähe gehen aus
 const HANDPRINT_RANGE := 1.4       ## Abstand zur Zimmertür für einen Handabdruck
 const HANDPRINT_CHANCE := 0.35
 const EYE_HEIGHT := 2.1            ## Augenhöhe im Modell (aufrecht)
+const PANT_FOUND := 1.8            ## keucht der Spieler im Versteck, findet es ihn so viel leichter (3.1)
 ## Modell aus tools/build_monster.py: aufrecht als Grundpose, die Hocke als Animation „crouch“
 const MODEL := "res://assets/models/monster.glb"
 const EYES: Array[Vector3] = [Vector3(-0.068, 2.1, -0.6), Vector3(0.068, 2.1, -0.6)]
@@ -575,6 +576,8 @@ func _check_hide_step(delta: float) -> void:
 			var chance := clampf(Game.director.effective_boldness() / 140.0, 0.1, 0.65)
 			if occupant.holding_breath:
 				chance *= 0.35
+			elif occupant == Game.player and Game.player.is_panting():
+				chance = minf(0.9, chance * PANT_FOUND)
 			if randf() < chance:
 				_kill(occupant, spot)
 
