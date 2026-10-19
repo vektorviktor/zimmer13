@@ -43,12 +43,12 @@ const COUCH_MODEL := "res://assets/models/couch.glb"
 const COUCH_SCALE := 0.55
 ## 28 einzelne Flaschen „bottle_NN“ in Metern, Ursprung mittig unten (tools/build_bottles.py)
 const BOTTLES_MODEL := "res://assets/models/bottles.glb"
-## Pflanzkübel samt Bepflanzung in Metern, Ursprung mittig unten, Grundfläche 2 × 2 m wie im Plan.
-## Fehlt die Datei, baut `_gardens()` den Platzhalter aus Steinquader und Heckenkugel
-## (als Ausgangsmodell exportiert von tools/build_planter.gd).
+## Pflanzkübel samt Bepflanzung in Metern, Ursprung mittig unten, Grundfläche 2 × 2 m wie im Plan
+## (tools/build_planter.py aus Meshys Modell). Fehlt die Datei, baut `_gardens()` den Platzhalter aus
+## Steinquader und Heckenkugel.
 const PLANTER_MODEL := "res://assets/models/planter.glb"
-## Höhe des Kollisionsquaders (und des Platzhalter-Kübels)
-const PLANTER_H := 0.6
+## Höhe des Kollisionsquaders (und des Platzhalter-Kübels) = Beckenkante, ausgegeben von tools/build_planter.py
+const PLANTER_H := 0.46
 const LAYER_CEILING := 16
 const LAYER_GLASS := 64
 ## Fenster: Unterkante (bündig mit der Vertäfelung), Oberkante – die Breite kommt aus dem Plan
@@ -1307,7 +1307,7 @@ func _gardens() -> void:
 			_planter(c, size)
 		else:
 			Geo.solid(root, Vector3(size.x, PLANTER_H, size.y), c + Vector3(0, PLANTER_H / 2.0, 0), _stone)
-			Geo.mesh(root, Geo.sphere(size.x * 0.4, 1.2, 7, 4), _hedge, c + Vector3(0, 1.1, 0))
+			Geo.mesh(root, Geo.sphere(size.x * 0.4, 1.2, 7, 4), _hedge, c + Vector3(0, PLANTER_H + 0.5, 0))
 	for rs in _map["terrace_edges"]:
 		for rc in rs:
 			Geo.mesh(root, Geo.box(Vector3(float(rc[2]) - float(rc[0]), 0.25, float(rc[3]) - float(rc[1]))), _hedge,
@@ -1323,7 +1323,7 @@ func _planter(c: Vector3, size: Vector2) -> void:
 	body.add_child(model)
 	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 		for s in m.mesh.get_surface_count():
-			m.set_surface_override_material(s, Mat.model(PLANTER_MODEL, m, s))
+			m.set_surface_override_material(s, Mat.model(PLANTER_MODEL, m, s, true))   # einseitige Blätter
 
 
 ## Kürbisbeete unter den Pflanzen des Plans (je Reihe ein Beet) und davor die Plätze, an denen Gäste im Garten

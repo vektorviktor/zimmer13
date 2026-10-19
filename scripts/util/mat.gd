@@ -26,6 +26,7 @@ const WALLPAPER_GLOSS := {
 }
 
 static var _shader: Shader
+static var _shader_two_sided: Shader
 static var _wall_shader: Shader
 static var _wall_albedo := {}
 static var _wall_surface: ImageTexture
@@ -58,13 +59,19 @@ static func psx(color: Color, tex_id: String = "", tex_scale: float = 1.0, emiss
 
 
 ## PSX-Material mit der Farbtextur aus einer importierten GLB – eins pro Textur der Modelldatei
-## (surface = Fläche des Meshs, deren Material die Textur liefert).
-static func model(path: String, src: MeshInstance3D, surface: int = 0) -> ShaderMaterial:
+## (surface = Fläche des Meshs, deren Material die Textur liefert). two_sided zeichnet auch die
+## Rückseiten – für einseitige Flächen wie Meshys Blätter.
+static func model(path: String, src: MeshInstance3D, surface: int = 0, two_sided: bool = false) -> ShaderMaterial:
 	var tex := (src.get_active_material(surface) as BaseMaterial3D).albedo_texture
 	var key := "model|%s|%d" % [path, tex.get_instance_id() if tex else 0]
 	if not _cache.has(key):
 		var m := psx(Color(0.8, 0.8, 0.8), "", 1.0, Color.BLACK, 0.0, false)
 		m.set_shader_parameter("albedo_tex", tex)
+		if two_sided:
+			if _shader_two_sided == null:
+				_shader_two_sided = Shader.new()
+				_shader_two_sided.code = m.shader.code.replace("cull_back", "cull_disabled")
+			m.shader = _shader_two_sided
 		_cache[key] = m
 	return _cache[key]
 
