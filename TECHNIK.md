@@ -22,7 +22,11 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   `tools/build_bottles.py` aus dem Paket in `assets/source/`) und der Plattenspieler
   `assets/models/record_player.glb` (`tools/build_record_player.py`: Objekte `body` und `record`, die
   Platte ist eine eigene runde Scheibe mit Ursprung auf der Drehachse, damit `RecordPlayer` sie drehen
-  kann). Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh)` in ein `Mat.psx` (eins pro Modelldatei).
+  kann). Optional die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`: Kübel samt
+  Bepflanzung in Metern, Ursprung mittig unten, Grundfläche 2 × 2 m wie alle Kübel im Plan; Kollision nur der
+  Quader `PLANTER_H` = 0,6 m über die Grundfläche; fehlt die Datei, bleiben Steinquader und Heckenkugel).
+  Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh)` in ein `Mat.psx` (eins pro Modelldatei – mehrere
+  Materialien in einer GLB teilen sich die Textur des ersten Meshs, also alles auf eine Textur backen).
   **Tapeten** `assets/textures/wallpaper_<variante>.png` (teal für Flure, Küche, Bar und Treppenhaus, beige für die Zimmer, red für die Lobby) + gemeinsame Höhenkarte
   `wallpaper_bump.png`, siehe „Optik“ in 9.
   **Katzenmodell** `assets/models/cat.glb` (`HotelCat`, Spielkonzept 6.11): `tools/build_cat.py` aus

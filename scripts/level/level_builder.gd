@@ -43,6 +43,11 @@ const COUCH_MODEL := "res://assets/models/couch.glb"
 const COUCH_SCALE := 0.55
 ## 28 einzelne Flaschen „bottle_NN“ in Metern, Ursprung mittig unten (tools/build_bottles.py)
 const BOTTLES_MODEL := "res://assets/models/bottles.glb"
+## Pflanzkübel samt Bepflanzung in Metern, Ursprung mittig unten, Grundfläche 2 × 2 m wie im Plan.
+## Fehlt die Datei, baut `_gardens()` den Platzhalter aus Steinquader und Heckenkugel.
+const PLANTER_MODEL := "res://assets/models/planter.glb"
+## Höhe des Kollisionsquaders (und des Platzhalter-Kübels)
+const PLANTER_H := 0.6
 const LAYER_CEILING := 16
 const LAYER_GLASS := 64
 ## Fenster: Unterkante (bündig mit der Vertäfelung), Oberkante – die Breite kommt aus dem Plan
@@ -1293,15 +1298,30 @@ func _gardens() -> void:
 	_garden_beds()
 	for t in _map["trees"]:
 		_tree(_v3(t["center"]), float(t["radius"]))
+	var has_model := ResourceLoader.exists(PLANTER_MODEL)
 	for rc in _map["planters"]:
 		var size := Vector2(float(rc[2]) - float(rc[0]), float(rc[3]) - float(rc[1]))
 		var c := Vector3((float(rc[0]) + float(rc[2])) / 2.0, 0, (float(rc[1]) + float(rc[3])) / 2.0)
-		Geo.solid(root, Vector3(size.x, 0.6, size.y), c + Vector3(0, 0.3, 0), _stone)
-		Geo.mesh(root, Geo.sphere(size.x * 0.4, 1.2, 7, 4), _hedge, c + Vector3(0, 1.1, 0))
+		if has_model:
+			_planter(c, size)
+		else:
+			Geo.solid(root, Vector3(size.x, PLANTER_H, size.y), c + Vector3(0, PLANTER_H / 2.0, 0), _stone)
+			Geo.mesh(root, Geo.sphere(size.x * 0.4, 1.2, 7, 4), _hedge, c + Vector3(0, 1.1, 0))
 	for rs in _map["terrace_edges"]:
 		for rc in rs:
 			Geo.mesh(root, Geo.box(Vector3(float(rc[2]) - float(rc[0]), 0.25, float(rc[3]) - float(rc[1]))), _hedge,
 				Vector3((float(rc[0]) + float(rc[2])) / 2.0, 0.125, (float(rc[1]) + float(rc[3])) / 2.0))
+
+
+## Pflanzkübel aus `PLANTER_MODEL` auf der Bodenmitte c; Kollision (auch für das NavMesh) nur als Quader
+## über die Grundfläche aus dem Plan, die Bepflanzung darüber bleibt durchlässig wie beim Platzhalter.
+func _planter(c: Vector3, size: Vector2) -> void:
+	var body := Geo.collider(root, Vector3(size.x, PLANTER_H, size.y), c + Vector3(0, PLANTER_H / 2.0, 0))
+	var model: Node3D = (load(PLANTER_MODEL) as PackedScene).instantiate()
+	model.position.y = -PLANTER_H / 2.0
+	body.add_child(model)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		m.material_override = Mat.model(PLANTER_MODEL, m)
 
 
 ## Kürbisbeete unter den Pflanzen des Plans (je Reihe ein Beet) und davor die Plätze, an denen Gäste im Garten
