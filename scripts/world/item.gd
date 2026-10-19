@@ -435,9 +435,10 @@ func _build(extra: String) -> void:
 			display_name = "Kaputte Glühbirne" if broken else "Glühbirne"
 			mass = 0.05
 			size = Vector3(0.07, 0.11, 0.07)
-			Geo.mesh(self, Geo.cylinder(0.018, 0.03, 6), Mat.psx(Color(0.7, 0.68, 0.6)), Vector3(0, 0.015, 0))
-			var glass := Color(0.35, 0.33, 0.3) if broken else Color(1.0, 0.97, 0.85)
-			Geo.mesh(self, Geo.sphere(0.032, 0.07, 6, 3), Mat.psx(glass), Vector3(0, 0.065, 0))
+			var glass := Mat.psx(Color(0.35, 0.33, 0.3) if broken else Color(1.0, 0.97, 0.85))
+			if Lamp.build_bulb(self, glass) == null:
+				Geo.mesh(self, Geo.cylinder(0.018, 0.03, 6), Mat.psx(Color(0.7, 0.68, 0.6)), Vector3(0, 0.015, 0))
+				Geo.mesh(self, Geo.sphere(0.032, 0.07, 6, 3), glass, Vector3(0, 0.065, 0))
 		Kind.COMPASS:
 			display_name = "Kompass"
 			mass = 0.15

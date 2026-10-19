@@ -15,6 +15,12 @@ const MONSTER_RANGE := 6.0
 const BRIGHTNESS := 1.35
 const REACH := 1.3
 
+## Glühbirne aus tools/build_bulb.py: „socket“ und der Kolben „glass“, Ursprung am Gewindeende, Glas nach +Y,
+## 0,11 m lang. Fehlt die Datei, bleibt die Kugel.
+const BULB_MODEL := "res://assets/models/bulb.glb"
+## So weit steckt das Gewinde (3 cm) in der Fassung
+const BULB_SCREWED_IN := 0.02
+
 var style := Style.CEILING
 var room_id := ""
 var energy := 1.0
@@ -26,7 +32,7 @@ var sparking := false
 var switched_on := true
 
 var light: FlickerLight
-var _bulb: MeshInstance3D
+var _bulb: Node3D
 var _bulb_material: ShaderMaterial
 var _break_timer := 0.0
 
@@ -48,17 +54,27 @@ func _ready() -> void:
 	add_to_group("lamp_fixtures")
 	_bulb_material = Mat.psx(Color(1, 0.95, 0.8), "", 1.0, Color(1.0, 0.85, 0.6), 2.5, false)
 	var bulb_pos := Vector3(0, -0.12, 0)
+	var socket := Vector3(0, -0.09 + BULB_SCREWED_IN, 0)   # Gewindeende der Birne
 	if style == Style.CEILING:
 		Geo.mesh(self, Geo.box(Vector3(0.45, 0.06, 0.45)), Mat.psx(Color(0.75, 0.7, 0.6)), Vector3.ZERO)
 		Geo.mesh(self, Geo.cylinder(0.02, 0.06, 5), Mat.psx(Color(0.3, 0.28, 0.25)), Vector3(0, -0.06, 0))
 	else:
-		# Wandleuchte: Halter an der Wand (lokale +Z zeigt in den Raum), offener Schirm
+		# Wandleuchte: Halter an der Wand (lokale +Z zeigt in den Raum), Fassung am Ende, die Birne steht
+		# darauf und reicht mit dem Kolben in den Schirm
 		var brass := Mat.psx(Color(0.7, 0.55, 0.25))
 		Geo.mesh(self, Geo.box(Vector3(0.12, 0.18, 0.03)), brass, Vector3(0, 0, 0.015))
 		Geo.mesh(self, Geo.box(Vector3(0.03, 0.03, 0.16)), brass, Vector3(0, 0, 0.1))
-		Geo.mesh(self, Geo.cylinder(0.09, 0.1, 8), Mat.psx(Color(0.85, 0.75, 0.55)), Vector3(0, 0.1, 0.18))
+		Geo.mesh(self, Geo.cylinder(0.02, 0.025, 5), brass, Vector3(0, 0.0275, 0.18))
+		Geo.mesh(self, Geo.cylinder(0.09, 0.1, 8), Mat.psx(Color(0.85, 0.75, 0.55)), Vector3(0, 0.13, 0.18))
 		bulb_pos = Vector3(0, 0.04, 0.18)
-	_bulb = Geo.mesh(self, Geo.sphere(0.045, 0.1, 6, 3), _bulb_material, bulb_pos)
+		socket = Vector3(0, 0.04 - BULB_SCREWED_IN, 0.18)
+	_bulb = build_bulb(self, _bulb_material)
+	if _bulb:
+		_bulb.position = socket
+		if style == Style.CEILING:
+			_bulb.rotation.x = PI   # hängt mit dem Kolben nach unten
+	else:
+		_bulb = Geo.mesh(self, Geo.sphere(0.045, 0.1, 6, 3), _bulb_material, bulb_pos)
 	Geo.add_box_shape(self, Vector3(0.35, 0.3, 0.35), bulb_pos * 0.5)
 	light = FlickerLight.new()
 	light.position = bulb_pos + (Vector3(0, -0.13, 0) if style == Style.CEILING else Vector3(0, 0, 0.12))
@@ -76,6 +92,18 @@ func _ready() -> void:
 	add_child(light)
 	_break_timer = randf()
 	apply_state()
+
+
+## Glühbirne als Modell unter parent (Ursprung am Gewindeende, Glas nach +Y), der Kolben mit glass –
+## für Lampen und das Item BULB (Spielkonzept 7.3). null, wenn das Modell fehlt.
+static func build_bulb(parent: Node3D, glass: Material) -> Node3D:
+	if not ResourceLoader.exists(BULB_MODEL):
+		return null
+	var model: Node3D = (load(BULB_MODEL) as PackedScene).instantiate()
+	parent.add_child(model)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		m.material_override = glass if m.name == "glass" else Mat.model(BULB_MODEL, m)
+	return model
 
 
 func is_lit() -> bool:

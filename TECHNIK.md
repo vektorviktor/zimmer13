@@ -42,6 +42,16 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   Zwei Objekte: `body` (Gehäuse + Schalter) und `lens` – das Glas bekommt statt der Textur das leuchtende
   Material der Lampe. Das Skript gibt die Glasmitte aus → `Flashlight.LENS`, dort sitzt der Lichtkegel.
   Fehlt die Datei, bleiben Rohr, Kopf und roter Schalter.
+  Die Glühbirne `assets/models/bulb.glb` (`Lamp.build_bulb`, für Lampen und das Item `BULB`): „Lightbulb
+  (Low-Poly)“ von Sketchfab (Mirai, CC-BY 4.0 – Namensnennung nötig), `tools/build_bulb.py` aus
+  `assets/source/lightbulb.glb`. Im Original schräg gestellt – das Skript nimmt die Linie zwischen den Mitten
+  von Sockel und Kolben als Achse. 0,11 m lang, Glas nach +Y, Ursprung am Gewindeende, Kolben 6,7 cm, Gewinde
+  3 cm. Glühwendel und Halter fallen weg (der Kolben ist undurchsichtig), Punkte an UV-Nähten werden vor dem
+  Ausdünnen verschmolzen (sonst reißt es Löcher): ~150 + 180 Dreiecke, 128er-PNG nur für den Sockel. Zwei
+  Objekte: `socket` und `glass` – das Glas bekommt das leuchtende Material der Lampe bzw. als Gegenstand die
+  Glasfarbe (dunkel, wenn kaputt). An der Decke hängt die Birne kopfüber, `BULB_SCREWED_IN` (2 cm) des
+  Gewindes stecken in der Fassung; an der Wandleuchte steht sie auf einer Fassung am Armende und reicht mit
+  dem Kolben in den Schirm. Fehlt die Datei, bleibt die Kugel (Lampe) bzw. Kugel auf Zylinder (Gegenstand).
   Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh, fläche)` in ein `Mat.psx` (eins pro Textur der
   Modelldatei, Grundfarbe 0,8 Grau – Farbtöne gehören in die Textur, die Materialfarbe wird ignoriert;
   `two_sided` nimmt eine Kopie des Shaders mit `cull_disabled`).
