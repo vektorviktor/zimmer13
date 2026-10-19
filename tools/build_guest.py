@@ -11,7 +11,8 @@
 #   geht nicht: Meshys Textur besteht aus Hunderten kleiner UV-Inseln, und zusammengelegte Dreiecke
 #   spannen dann über mehrere Inseln (graue und bunte Schlieren).
 # - Farbtextur TEX_SIZE (Lücken zwischen den UV-Inseln vorher mit Nachbarfarben gefüllt, sonst färben
-#   sich beim Verkleinern die Nähte schwarz).
+#   sich beim Verkleinern die Nähte schwarz). In Godot unkomprimiert (das Skript setzt das in der .import
+#   der GLB) – VRAM-Kompression macht helle Streifen an den Nähten getönter Kleidung.
 # - Färbemaske als Punktfarbe je Fläche (exakt, keine Texturkompression): Kanal R = Oberteil,
 #   G = Hose, B = Haare (0 oder 1). Die mittlere Helligkeit je Bereich gibt das Skript aus – sie
 #   gehört nach GuestBody.BODIES („ref“). Der Shader rechnet Gastfarbe × Helligkeit / Mittelwert,
@@ -318,6 +319,23 @@ bpy.ops.export_scene.gltf(
 	export_morph=True, export_morph_normal=False, export_cameras=False, export_lights=False,
 	export_vertex_color='ACTIVE', export_all_vertex_colors=False,
 	export_image_format='AUTO')   # PNG: JPEG färbt die Inselränder (Farbunterabtastung)
+
+# Textur unkomprimiert in Godot: Von sich aus zieht Godot sie als PNG heraus und packt sie per VRAM-Kompression –
+# deren 4×4-Blöcke mischen an den UV-Nähten Haut in den Stoff, auf kräftig getönter Kleidung helle Streifen.
+# Deshalb in der .import der GLB „Embed as Uncompressed“ (3); die liegt im Repo (.gitignore-Ausnahme), fehlt
+# sie, legt das Skript sie an und Godot ergänzt den Rest.
+GLB_IMPORT = {"gltf/embedded_image_handling": "3"}
+imp = DST + ".import"
+lines = open(imp, encoding="utf-8").read().splitlines() if os.path.exists(imp) else \
+	["[remap]", "", 'importer="scene"', 'type="PackedScene"', "", "[params]", ""]
+for key, value in GLB_IMPORT.items():
+	at = [i for i, l in enumerate(lines) if l.startswith(key + "=")]
+	if at:
+		lines[at[0]] = key + "=" + value
+	else:
+		lines.append(key + "=" + value)   # [params] ist der letzte Abschnitt
+open(imp, "w", encoding="utf-8", newline="\n").write("\n".join(lines) + "\n")
+print("Godot-Import: Textur unkomprimiert eingebettet (%s)" % imp)
 
 # --- Vorschau --------------------------------------------------------------------------------
 if PREVIEW:

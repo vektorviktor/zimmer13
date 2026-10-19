@@ -1,5 +1,7 @@
 .godot/
 *.import
+# … außer bei den Gastmodellen: Textur unkomprimiert eingebettet (tools/build_guest.py, sonst helle Streifen)
+!assets/models/guest_*.glb.import
 
 # Von Godot aus GLB-Dateien entpackte Texturen (entstehen beim Import neu)
 assets/models/*.jpg

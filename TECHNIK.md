@@ -85,6 +85,12 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   z. B. `guest_girl10`) liefert Meshy mit kleinem Mixamo-Skelett (23 Knochen: keine Finger, kein
   `LeftToe_End`/`HeadTop_End`) und in Zentimetern (Objekt × 0,01) – Skript und `retarget()` rechnen beides mit
   ein, die Hände bleiben bei den Tänzen in Ruhedrehung.
+  **Textur in Godot unkomprimiert** (`gltf/embedded_image_handling=3`, „Embed as Uncompressed“ in
+  `assets/models/guest_<name>.glb.import`, schreibt `build_guest.py`; diese `.import` sind als Ausnahme im Repo).
+  Von sich aus zieht Godot die Textur als PNG heraus und packt sie per VRAM-Kompression (S3TC) – deren
+  4×4-Blöcke mischen an den UV-Nähten Haut in den Stoff, auf kräftig getönter Kleidung (`psx_guest.gdshader`
+  färbt nur graue Texel) helle Streifen an Ärmeln, Bündchen und Seitennähten. Eine `.import` der PNG ins Repo
+  zu legen reicht nicht: Ohne die (gitignorierte) PNG zieht Godot sie dann nicht neu heraus.
   **Mixamo-Animationen:** jede `assets/source/anim/<name>.fbx` (Mixamo, „Without Skin“, 30 fps, am
   Standard-Charakter heruntergeladen) landet als Animation `<name>` in **jeder** Gast-GLB – ein Download gilt für
   alle Grundkörper, solange sie Meshys Mixamo-Skelett haben. Umbenennen reicht nicht, weil Mixamo in T-Pose steht
