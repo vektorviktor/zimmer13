@@ -243,8 +243,13 @@ festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
   (`world/pool_water.gd`): `PlaneMesh` im 25-cm-Raster 0,3 m unter dem Boden mit `shaders/psx_water.gdshader`,
   halbtransparent, beidseitig, wirft keinen Schatten. Alle Wellen sind rein optisch im Vertex-Shader (keine
   Physik, kein Auftrieb, Normalen per Differenz): Grundwellen ±7 cm über `wave_time` (Spielzeit aus `delta`,
-  steht in der Pause) und bis zu `MAX_RIPPLES` (24, Shader-Konstante gleich halten) **Wellenringe** im Array
-  `ripples` (x, z, Alter, Stärke; Ringpuffer, nach `RIPPLE_LIFE` frei). `_track()` prüft Spieler und Monster:
+  steht in der Pause) und bis zu `MAX_RIPPLES` (32, Shader-Konstante gleich halten) **Wellenringe** im Array
+  `ripples` (x, z, Alter, Stärke; nach `RIPPLE_LIFE` 9 s frei, sonst ersetzt `ripple()` den schwächsten). Ein Ring
+  ist ein Wellenpaket, das mit `ripple_speed` nach außen läuft, abklingend mit `RIPPLE_DECAY` und 1/√Weg.
+  **Abprall:** jeder Ring zählt zusätzlich als Spiegelquelle hinter den vier Innenwänden (× `wall_reflect` 0,6)
+  und den vier Ecken (× 0,6²) – für ein rechteckiges Becken genau die erste Reflexion; die Treppen werfen
+  nichts zurück. Alles wird addiert, wo Kämme zusammenkommen, steigt die Höhe über `foam_from` und es bricht.
+  `_track()` prüft Spieler und Monster:
   Füße im Becken → alle `WAKE_EVERY` m ein Ring (schneller als Gehen stärker), stillstehend ab und zu ein
   schwacher; Eintauchen mit mehr als `SPLASH_SPEED` Fallgeschwindigkeit → `splash()` (hoher Ring,
   Nachschwapper, Tropfen als `CPUParticles3D` im Ring um die Stelle). **Brechen** im Fragment-Shader: Schaum,

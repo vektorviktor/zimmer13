@@ -2,7 +2,7 @@ class_name PoolWater
 extends MeshInstance3D
 ## Wasser im Hallenbad (Spielkonzept 7.5): halbtransparent mit rein optischen Wellen im Shader
 ## (shaders/psx_water.gdshader), ohne Physik und Auftrieb. Wer durchs Becken geht, zieht Wellenringe
-## hinter sich her; wer hineinfällt, platscht – ein hoher Ring, der als Schaum bricht (oben auf dem Kamm
+## hinter sich her, die Wände werfen sie zurück, und alles addiert sich; wer hineinfällt, platscht – ein hoher Ring, der als Schaum bricht (oben auf dem Kamm
 ## und am Beckenrand), dazu Spritzer.
 ## Das Wasser spürt das Monster (wie das Rauschen nach Entfernung, Spielkonzept 4.13 – gemessen zum Wasser,
 ## nicht zum Spieler): erst wird es spiegelglatt, näher zittern feine Ringe von seiner Seite her übers
@@ -10,13 +10,15 @@ extends MeshInstance3D
 
 const SHADER := "res://shaders/psx_water.gdshader"
 ## Muss zu MAX_RIPPLES im Shader passen
-const MAX_RIPPLES := 24
-## so lange läuft ein Ring, dann ist er abgeklungen
-const RIPPLE_LIFE := 6.0
+const MAX_RIPPLES := 32
+## so lange läuft ein Ring, dann ist er abgeklungen (genug für den Rückweg von der Wand); RIPPLE_DECAY geht
+## als ripple_decay an den Shader, danach wählt ripple() den schwächsten Platz, wenn keiner frei ist
+const RIPPLE_LIFE := 9.0
+const RIPPLE_DECAY := 0.35
 ## Gitterweite der Wasserfläche – fein genug für die Ringe (Abstand der Kämme ~1,1 m)
 const GRID := 0.25
 ## Gehen im Wasser: alle so viele Meter ein Ring, Stärke gehend bzw. schneller als Gehen
-const WAKE_EVERY := 0.45
+const WAKE_EVERY := 0.6
 const WAKE_WALK := 0.4
 const WAKE_RUN := 0.7
 ## Stillstehen im Wasser: schwacher Ring alle so viele Sekunden
@@ -47,7 +49,6 @@ var hall := Rect2()    ## Hallenbad samt Umgang in x/z
 var debug_stage := ""  ## --pool=still|tremor|slosh: Stufe fest, ohne Übergang
 
 var _ripples := PackedVector4Array()   ## x, z, Alter, Stärke (0 = frei)
-var _next := 0
 var _walkers := {}                    ## Node3D → {wet, at, dist, idle}
 var _time := 0.0
 var _calm := 0.0
@@ -75,6 +76,7 @@ func _init(area: Rect2, y: float, wall: float, p_hall: Rect2) -> void:
 	_mat = ShaderMaterial.new()
 	_mat.shader = load(SHADER)
 	_mat.set_shader_parameter("pool_rect", Vector4(inner.position.x, inner.position.y, inner.end.x, inner.end.y))
+	_mat.set_shader_parameter("ripple_decay", RIPPLE_DECAY)
 	material_override = _mat
 	_ripples.resize(MAX_RIPPLES)
 	_drop_mat = Mat.psx(Color(0.8, 0.9, 0.95), "", 1.0, Color(0.4, 0.5, 0.55), 0.4)
@@ -100,8 +102,15 @@ func _process(delta: float) -> void:
 
 ## Wellenring an dieser Stelle (strength 1 ≈ 14 cm hoch).
 func ripple(at: Vector2, strength: float) -> void:
-	_ripples[_next] = Vector4(at.x, at.y, 0.0, strength)
-	_next = (_next + 1) % MAX_RIPPLES
+	var slot := 0
+	var weakest := INF
+	for i in MAX_RIPPLES:
+		var r := _ripples[i]
+		var left := r.w * exp(-r.z * RIPPLE_DECAY)
+		if left < weakest:
+			weakest = left
+			slot = i
+	_ripples[slot] = Vector4(at.x, at.y, 0.0, strength)
 
 
 ## Hineinfallen: hoher Ring mit einem Nachschwapper und Spritzer (strength ~1).

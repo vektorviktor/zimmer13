@@ -1,7 +1,8 @@
 // Poolwasser im PS1-Look: halbtransparent, rein optische Wellen (ohne Physik).
 // Grundwellen über wave_time (Spielzeit von PoolWater, steht in der Pause); dazu Wellenringe, die
 // PoolWater (scripts/world/pool_water.gd) dort einträgt, wo jemand durchs Wasser geht oder hineinfällt.
-// Hohe Kämme und Wellen am Beckenrand brechen zu Schaum.
+// Die Wände werfen die Ringe zurück (Spiegelquellen hinter jeder Wand und Ecke, je Abprall wall_reflect),
+// alles addiert sich. Hohe Kämme und Wellen am Beckenrand brechen zu Schaum.
 // Monster in der Nähe (von PoolWater gesetzt): base_scale 0 = spiegelglatt, tremor = feine zitternde
 // Ringe von seiner Seite, slosh = das Becken schwappt wie eine Badewanne.
 // Vertex-Snapping wie psx_surface, Licht je Ecke aus den Wellennormalen.
@@ -9,7 +10,7 @@ shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_lambert, specular_schlick_ggx;
 
 // Muss zu PoolWater.MAX_RIPPLES passen
-const int MAX_RIPPLES = 24;
+const int MAX_RIPPLES = 32;
 
 uniform vec4 deep : source_color = vec4(0.05, 0.2, 0.27, 0.7);
 uniform vec4 crest : source_color = vec4(0.25, 0.52, 0.58, 0.8);
@@ -24,6 +25,8 @@ uniform float base_scale = 1.0;        // 0 = glatt, > 1 = unruhig
 uniform float ripple_height = 0.14;    // Meter bei Stärke 1
 uniform float ripple_speed = 1.6;      // m/s, mit der ein Ring nach außen läuft
 uniform float ripple_length = 1.1;     // Meter von Kamm zu Kamm
+uniform float ripple_decay = 0.35;     // je Sekunde (exp), damit sie den Rückweg von der Wand schaffen
+uniform float wall_reflect = 0.6;      // so viel bleibt je Abprall an einer Wand
 uniform float foam_from = 0.09;        // ab dieser Höhe über der Ruhelage bricht ein Kamm
 // höchstens so weit steigt das Wasser (knapp unter der Beckenkante)
 uniform float max_rise = 0.27;
@@ -52,19 +55,32 @@ float base_waves(vec2 p, float t) {
 		+ sin((p.x - p.y) * 2.9 + t * 1.9) * 0.2;
 }
 
+// Ein Ring von src aus, so alt; d = zurückgelegter Weg (bei Spiegelquellen samt Umweg über die Wand)
+float ring(vec2 p, vec2 src, float age) {
+	float d = distance(p, src);
+	float x = d - age * ripple_speed;   // Abstand zur Wellenfront
+	float packet = exp(-x * x / (2.0 * ripple_length * ripple_length));
+	return packet * cos(6.2832 / ripple_length * x) / sqrt(1.0 + d * 0.8);
+}
+
 float ring_waves(vec2 p) {
 	float h = 0.0;
-	float k = 6.2832 / ripple_length;
+	vec2 lo = pool_rect.xy;
+	vec2 hi = pool_rect.zw;
 	for (int i = 0; i < MAX_RIPPLES; i++) {
 		vec4 r = ripples[i];
 		if (r.w <= 0.0) {
 			continue;
 		}
-		float d = distance(p, r.xy);
-		float x = d - r.z * ripple_speed;   // Abstand zur Wellenfront
-		float packet = exp(-x * x / (2.0 * ripple_length * ripple_length));
-		float fade = exp(-r.z * 0.7) / (1.0 + d * 0.6);
-		h += r.w * packet * fade * cos(k * x);
+		vec2 s = r.xy;
+		vec2 m_lo = 2.0 * lo - s;   // hinter der West- bzw. Nordwand gespiegelt
+		vec2 m_hi = 2.0 * hi - s;   // hinter der Ost- bzw. Südwand
+		float once = ring(p, vec2(m_lo.x, s.y), r.z) + ring(p, vec2(m_hi.x, s.y), r.z)
+			+ ring(p, vec2(s.x, m_lo.y), r.z) + ring(p, vec2(s.x, m_hi.y), r.z);
+		float corners = ring(p, m_lo, r.z) + ring(p, m_hi, r.z)
+			+ ring(p, vec2(m_lo.x, m_hi.y), r.z) + ring(p, vec2(m_hi.x, m_lo.y), r.z);
+		float total = ring(p, s, r.z) + wall_reflect * once + wall_reflect * wall_reflect * corners;
+		h += r.w * exp(-r.z * ripple_decay) * total;
 	}
 	return h * ripple_height;
 }
