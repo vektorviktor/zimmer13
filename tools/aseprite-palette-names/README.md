@@ -28,11 +28,11 @@ python tools/aseprite-palette-names/pack.py
 - **Linksklick** auf einen Eintrag setzt die Vordergrundfarbe, **Rechtsklick** die Hintergrundfarbe.
   Die aktuelle Vordergrundfarbe ist in der Liste markiert. Die Fußzeile unter der Liste zeigt den Eintrag
   unter der Maus (oder die Vordergrundfarbe) mit Index, vollem Namen und Hex-Wert, darunter Datei und Anzahl.
-- **Gruppe:** nur einen Namensvorsatz zeigen (`Möbel`, `Ausstattung`, `Gegenstand`, `Licht`,
+- **Auswahl oben (Gruppe):** nur einen Namensvorsatz zeigen (`Möbel`, `Ausstattung`, `Gegenstand`, `Licht`,
   `Ohne Vorsatz`, `Ohne Namen`). Die Liste wird aus der Palette gebildet, neue Vorsätze erscheinen von selbst.
 - **Gruppiert:** Überschrift je Vorsatz; der Vorsatz fällt dann im Namen weg. Klick auf eine Überschrift
   klappt die Gruppe ein und aus.
-- **Suche:** Teil des Namens, Index (`29`) oder Hex-Wert (`#7a3b`).
+- **Textfeld unter „Gruppiert“ (Suche):** Teil des Namens, Index (`29`) oder Hex-Wert (`#7a3b`).
 - Mausrad oder Leiste rechts zum Blättern.
 
 ## Wann sich die Liste aktualisiert

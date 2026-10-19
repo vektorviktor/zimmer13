@@ -563,11 +563,14 @@ local function openDialog()
   }
   S.dlg = dlg
   S.groupsKey = ""
-  dlg:combobox{ id = "group", label = "Gruppe", options = { ALL }, option = ALL,
+  -- Ohne Beschriftungen links, damit das Fenster schmal werden kann: Gruppe, Gruppiert, Suchfeld
+  dlg:combobox{ id = "group", options = { ALL }, option = ALL,
     onchange = function() S.scroll = 0; refresh() end }
+  dlg:newrow()
   dlg:check{ id = "grouped", text = "Gruppiert", selected = prefs.grouped ~= false,
     onchange = function() refresh() end }
-  dlg:entry{ id = "search", label = "Suche", text = "",
+  dlg:newrow()
+  dlg:entry{ id = "search", text = "",
     onchange = function() S.scroll = 0; refresh() end }
   -- Kleine Mindestgröße: Breite und Höhe bestimmt der Nutzer durch Ziehen am Fensterrand.
   dlg:canvas{ id = "list", width = 100, height = 330,
