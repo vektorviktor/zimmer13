@@ -20270,5 +20270,6743 @@
 			2.5,
 			-8.0
 		]
+	],
+	"furniture": [
+		{
+			"kind": "bar_counter",
+			"rect": [
+				-18.0,
+				-27.2,
+				-11.0,
+				-26.6
+			]
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				51.8,
+				-103.8,
+				53.3,
+				-101.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				57.8,
+				-103.8,
+				59.3,
+				-101.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				63.8,
+				-103.8,
+				65.3,
+				-101.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				67.8,
+				-100.0,
+				69.3,
+				-97.9
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-95.7,
+				75.3,
+				-94.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-93.8,
+				17.8,
+				-92.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				31.7,
+				-90.3,
+				33.2,
+				-88.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				37.7,
+				-90.3,
+				39.2,
+				-88.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				47.7,
+				-90.3,
+				49.2,
+				-88.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				53.7,
+				-90.3,
+				55.2,
+				-88.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-89.7,
+				75.3,
+				-88.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-87.8,
+				17.8,
+				-86.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				59.7,
+				-87.8,
+				61.8,
+				-86.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				29.2,
+				-83.7,
+				31.3,
+				-82.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-83.7,
+				75.3,
+				-82.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-81.8,
+				17.8,
+				-80.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				59.7,
+				-81.8,
+				61.8,
+				-80.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				29.2,
+				-77.7,
+				31.3,
+				-76.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-77.7,
+				75.3,
+				-76.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-71.8,
+				17.8,
+				-70.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				59.7,
+				-71.8,
+				61.8,
+				-70.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				29.2,
+				-67.7,
+				31.3,
+				-66.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-67.7,
+				75.3,
+				-66.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-65.8,
+				17.8,
+				-64.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				59.7,
+				-65.8,
+				61.8,
+				-64.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				29.2,
+				-61.7,
+				31.3,
+				-60.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-61.7,
+				75.3,
+				-60.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-59.8,
+				17.8,
+				-58.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				35.8,
+				-59.8,
+				37.3,
+				-57.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				41.8,
+				-59.8,
+				43.3,
+				-57.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				51.8,
+				-59.8,
+				53.3,
+				-57.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				57.8,
+				-59.8,
+				59.3,
+				-57.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-55.7,
+				75.3,
+				-54.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-49.8,
+				17.8,
+				-48.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				31.7,
+				-46.3,
+				33.2,
+				-44.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				37.7,
+				-46.3,
+				39.2,
+				-44.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				47.7,
+				-46.3,
+				49.2,
+				-44.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				53.7,
+				-46.3,
+				55.2,
+				-44.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-45.7,
+				75.3,
+				-44.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-43.8,
+				17.8,
+				-42.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				29.2,
+				-39.7,
+				31.3,
+				-38.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-39.7,
+				75.3,
+				-38.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				15.7,
+				-37.8,
+				17.8,
+				-36.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				59.7,
+				-37.8,
+				61.8,
+				-36.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				29.2,
+				-33.7,
+				31.3,
+				-32.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-33.7,
+				75.3,
+				-32.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				59.7,
+				-27.8,
+				61.8,
+				-26.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				29.2,
+				-23.7,
+				31.3,
+				-22.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-23.7,
+				75.3,
+				-22.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				59.7,
+				-21.8,
+				61.8,
+				-20.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				29.2,
+				-17.7,
+				31.3,
+				-16.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-17.7,
+				75.3,
+				-16.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				35.8,
+				-15.8,
+				37.3,
+				-13.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				41.8,
+				-15.8,
+				43.3,
+				-13.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				51.8,
+				-15.8,
+				53.3,
+				-13.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				57.8,
+				-15.8,
+				59.3,
+				-13.7
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-11.7,
+				75.3,
+				-10.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				65.7,
+				-6.1,
+				67.2,
+				-4.0
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				73.2,
+				-5.7,
+				75.3,
+				-4.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				7.7,
+				-2.3,
+				9.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				13.7,
+				-2.3,
+				15.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				19.7,
+				-2.3,
+				21.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				25.7,
+				-2.3,
+				27.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				31.7,
+				-2.3,
+				33.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				37.7,
+				-2.3,
+				39.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				47.7,
+				-2.3,
+				49.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				53.7,
+				-2.3,
+				55.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bed",
+			"rect": [
+				59.7,
+				-2.3,
+				61.2,
+				-0.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "bench",
+			"rect": [
+				1.7,
+				-36.2,
+				3.3,
+				-35.6
+			]
+		},
+		{
+			"kind": "chess_table",
+			"rect": [
+				5.1,
+				-18.4,
+				5.9,
+				-17.6
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "chest",
+			"rect": [
+				49.3,
+				-5.8,
+				50.2,
+				-5.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "coffee_table",
+			"rect": [
+				-5.9,
+				-18.6,
+				-5.2,
+				-17.4
+			]
+		},
+		{
+			"kind": "couch",
+			"rect": [
+				-7.1,
+				-19.2,
+				-6.4,
+				-16.8
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "couch",
+			"rect": [
+				-4.7,
+				-19.2,
+				-4.0,
+				-16.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "dining_table",
+			"rect": [
+				-51.0,
+				-46.0,
+				-42.0,
+				-44.8
+			]
+		},
+		{
+			"kind": "dining_table",
+			"rect": [
+				-39.0,
+				-46.0,
+				-30.0,
+				-44.8
+			]
+		},
+		{
+			"kind": "dining_table",
+			"rect": [
+				-51.0,
+				-41.4,
+				-42.0,
+				-40.4
+			]
+		},
+		{
+			"kind": "dining_table",
+			"rect": [
+				-39.0,
+				-41.4,
+				-30.0,
+				-40.4
+			]
+		},
+		{
+			"kind": "dining_table",
+			"rect": [
+				-51.0,
+				-37.0,
+				-42.0,
+				-35.8
+			]
+		},
+		{
+			"kind": "dining_table",
+			"rect": [
+				-39.0,
+				-37.0,
+				-30.0,
+				-35.8
+			]
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				34.0,
+				-97.9,
+				35.0,
+				-97.4
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				59.0,
+				-97.9,
+				60.0,
+				-97.4
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-59.0,
+				-94.6,
+				-58.0,
+				-94.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-35.0,
+				-94.6,
+				-34.0,
+				-94.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				68.9,
+				-91.5,
+				69.4,
+				-90.5
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-25.4,
+				-85.5,
+				-24.9,
+				-84.5
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				21.6,
+				-85.5,
+				22.1,
+				-84.5
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-66.1,
+				-67.5,
+				-65.6,
+				-66.5
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				68.9,
+				-65.5,
+				69.4,
+				-64.5
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-25.4,
+				-63.5,
+				-24.9,
+				-62.5
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				21.6,
+				-63.5,
+				22.1,
+				-62.5
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-57.0,
+				-53.9,
+				-56.0,
+				-53.4
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-35.0,
+				-53.9,
+				-34.0,
+				-53.4
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				34.0,
+				-50.6,
+				35.0,
+				-50.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				56.0,
+				-50.6,
+				57.0,
+				-50.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-66.1,
+				-43.5,
+				-65.6,
+				-42.5
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				68.9,
+				-41.5,
+				69.4,
+				-40.5
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-25.4,
+				-39.5,
+				-24.9,
+				-38.5
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				21.6,
+				-39.5,
+				22.1,
+				-38.5
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-66.1,
+				-17.5,
+				-65.6,
+				-16.5
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-25.4,
+				-17.5,
+				-24.9,
+				-16.5
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				68.9,
+				-17.5,
+				69.4,
+				-16.5
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				21.6,
+				-15.5,
+				22.1,
+				-14.5
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-41.0,
+				-9.9,
+				-40.0,
+				-9.4
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				-17.0,
+				-9.9,
+				-16.0,
+				-9.4
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				16.0,
+				-6.6,
+				17.0,
+				-6.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				37.0,
+				-6.6,
+				38.0,
+				-6.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "dresser",
+			"rect": [
+				62.0,
+				-6.6,
+				63.0,
+				-6.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "game_table",
+			"rect": [
+				-14.9,
+				-17.4,
+				-14.1,
+				-16.6
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "kitchen_counter",
+			"rect": [
+				-64.5,
+				-49.9,
+				-57.5,
+				-49.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "laundry_box",
+			"rect": [
+				60.1,
+				-39.4,
+				61.1,
+				-38.4
+			]
+		},
+		{
+			"kind": "pillar",
+			"rect": [
+				-4.2,
+				-20.7,
+				-3.7,
+				-20.2
+			]
+		},
+		{
+			"kind": "pillar",
+			"rect": [
+				3.7,
+				-20.7,
+				4.2,
+				-20.2
+			]
+		},
+		{
+			"kind": "pillar",
+			"rect": [
+				-4.2,
+				-10.2,
+				-3.7,
+				-9.8
+			]
+		},
+		{
+			"kind": "pillar",
+			"rect": [
+				3.7,
+				-10.2,
+				4.2,
+				-9.8
+			]
+		},
+		{
+			"kind": "shelf",
+			"rect": [
+				-75.3,
+				-49.4,
+				-74.9,
+				-44.6
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "shelf",
+			"rect": [
+				-75.3,
+				-43.4,
+				-74.9,
+				-38.6
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "shelf",
+			"rect": [
+				59.7,
+				-42.0,
+				60.3,
+				-39.0
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "shelf",
+			"rect": [
+				-75.3,
+				-37.4,
+				-74.9,
+				-32.6
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "shelf",
+			"rect": [
+				-18.0,
+				-27.9,
+				-11.0,
+				-27.5
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "stove",
+			"rect": [
+				-57.3,
+				-49.9,
+				-56.5,
+				-49.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-99.4,
+				70.7,
+				-98.4
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				48.1,
+				-99.2,
+				49.1,
+				-98.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				54.1,
+				-99.2,
+				55.1,
+				-98.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				60.1,
+				-99.2,
+				61.1,
+				-98.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				66.3,
+				-99.2,
+				67.1,
+				-98.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				35.9,
+				-93.4,
+				36.9,
+				-92.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				41.9,
+				-93.4,
+				42.9,
+				-92.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				51.9,
+				-93.4,
+				52.9,
+				-92.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				57.9,
+				-93.4,
+				58.9,
+				-92.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-93.4,
+				70.7,
+				-92.4
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-89.6,
+				20.9,
+				-88.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-87.4,
+				70.7,
+				-86.4
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-83.6,
+				20.9,
+				-82.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				26.1,
+				-83.6,
+				26.7,
+				-82.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				64.3,
+				-83.6,
+				64.9,
+				-82.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-81.4,
+				70.7,
+				-80.4
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-77.6,
+				20.9,
+				-76.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				26.1,
+				-77.6,
+				26.7,
+				-76.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				64.3,
+				-77.6,
+				64.9,
+				-76.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-71.4,
+				70.7,
+				-70.4
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-67.6,
+				20.9,
+				-66.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				26.1,
+				-67.6,
+				26.7,
+				-66.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				64.3,
+				-67.6,
+				64.9,
+				-66.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-65.4,
+				70.7,
+				-64.4
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-61.6,
+				20.9,
+				-60.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				26.1,
+				-61.6,
+				26.7,
+				-60.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				64.3,
+				-61.6,
+				64.9,
+				-60.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-59.4,
+				70.7,
+				-58.4
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-55.6,
+				20.9,
+				-54.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				35.9,
+				-55.2,
+				36.9,
+				-54.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				41.9,
+				-55.2,
+				42.9,
+				-54.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				48.1,
+				-55.2,
+				49.1,
+				-54.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				54.1,
+				-55.2,
+				55.1,
+				-54.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				35.9,
+				-49.4,
+				36.9,
+				-48.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				41.9,
+				-49.4,
+				42.9,
+				-48.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				51.9,
+				-49.4,
+				52.9,
+				-48.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				57.9,
+				-49.4,
+				58.9,
+				-48.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-45.6,
+				20.9,
+				-44.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-45.6,
+				70.7,
+				-44.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				-61.3,
+				-43.4,
+				-59.7,
+				-42.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-39.6,
+				20.9,
+				-38.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				26.1,
+				-39.6,
+				26.7,
+				-38.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-39.6,
+				70.7,
+				-38.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				20.3,
+				-33.6,
+				20.9,
+				-32.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				26.1,
+				-33.6,
+				26.7,
+				-32.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				64.3,
+				-33.6,
+				64.9,
+				-32.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-33.6,
+				70.7,
+				-32.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				19.8,
+				-27.4,
+				20.6,
+				-26.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				26.1,
+				-23.6,
+				26.7,
+				-22.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				64.3,
+				-23.6,
+				64.9,
+				-22.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-23.6,
+				70.7,
+				-22.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				26.1,
+				-17.6,
+				26.7,
+				-16.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				64.3,
+				-17.6,
+				64.9,
+				-16.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-17.6,
+				70.7,
+				-16.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-11.6,
+				70.7,
+				-10.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				35.9,
+				-11.2,
+				36.9,
+				-10.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				41.9,
+				-11.2,
+				42.9,
+				-10.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				48.1,
+				-11.2,
+				49.1,
+				-10.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				54.1,
+				-11.2,
+				55.1,
+				-10.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				70.1,
+				-5.6,
+				70.7,
+				-4.6
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				11.9,
+				-5.4,
+				12.9,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				17.9,
+				-5.4,
+				18.9,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				23.9,
+				-5.4,
+				24.9,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				29.9,
+				-5.4,
+				30.9,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				35.9,
+				-5.4,
+				36.9,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				41.9,
+				-5.4,
+				42.9,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				48.1,
+				-5.4,
+				49.1,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				54.1,
+				-5.4,
+				55.1,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				60.1,
+				-5.4,
+				61.1,
+				-4.8
+			]
+		},
+		{
+			"kind": "table",
+			"rect": [
+				66.1,
+				-5.4,
+				67.1,
+				-4.8
+			]
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				47.7,
+				-103.2,
+				48.3,
+				-102.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				53.7,
+				-103.2,
+				54.3,
+				-102.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				59.7,
+				-103.2,
+				60.3,
+				-102.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-99.8,
+				74.7,
+				-99.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				65.7,
+				-99.4,
+				66.3,
+				-98.4
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				-49.1,
+				-97.9,
+				-47.9,
+				-97.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-93.8,
+				74.7,
+				-93.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				36.7,
+				-89.8,
+				37.3,
+				-88.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				42.7,
+				-89.8,
+				43.3,
+				-88.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				52.7,
+				-89.8,
+				53.3,
+				-88.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-88.8,
+				17.3,
+				-88.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				29.7,
+				-87.8,
+				30.7,
+				-87.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-87.8,
+				74.7,
+				-87.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-82.8,
+				17.3,
+				-82.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				60.3,
+				-82.8,
+				61.3,
+				-82.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				29.7,
+				-81.8,
+				30.7,
+				-81.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-81.8,
+				74.7,
+				-81.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				-69.4,
+				-79.6,
+				-68.8,
+				-78.4
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				-22.2,
+				-78.6,
+				-21.6,
+				-77.4
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				24.8,
+				-78.6,
+				25.4,
+				-77.4
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				65.6,
+				-78.6,
+				66.2,
+				-77.4
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-76.8,
+				17.3,
+				-76.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				60.3,
+				-76.8,
+				61.3,
+				-76.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				29.7,
+				-71.8,
+				30.7,
+				-71.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-71.8,
+				74.7,
+				-71.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-66.8,
+				17.3,
+				-66.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				60.3,
+				-66.8,
+				61.3,
+				-66.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				29.7,
+				-65.8,
+				30.7,
+				-65.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-60.8,
+				17.3,
+				-60.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-59.8,
+				74.7,
+				-59.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				31.7,
+				-59.2,
+				32.3,
+				-58.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				37.7,
+				-59.2,
+				38.3,
+				-58.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				47.7,
+				-59.2,
+				48.3,
+				-58.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				53.7,
+				-59.2,
+				54.3,
+				-58.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-54.8,
+				17.3,
+				-54.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				41.9,
+				-53.9,
+				43.1,
+				-53.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				-44.1,
+				-50.7,
+				-42.9,
+				-50.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-49.8,
+				74.7,
+				-49.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				36.7,
+				-45.8,
+				37.3,
+				-44.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				42.7,
+				-45.8,
+				43.3,
+				-44.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				52.7,
+				-45.8,
+				53.3,
+				-44.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				58.7,
+				-45.8,
+				59.3,
+				-44.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-44.8,
+				17.3,
+				-44.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				29.7,
+				-43.8,
+				30.7,
+				-43.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-43.8,
+				74.7,
+				-43.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-38.8,
+				17.3,
+				-38.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				29.7,
+				-37.8,
+				30.7,
+				-37.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-37.8,
+				74.7,
+				-37.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				16.3,
+				-32.8,
+				17.3,
+				-32.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				60.3,
+				-32.8,
+				61.3,
+				-32.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				29.7,
+				-27.8,
+				30.7,
+				-27.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-27.8,
+				74.7,
+				-27.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				-22.2,
+				-26.6,
+				-21.6,
+				-25.4
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				24.8,
+				-25.6,
+				25.4,
+				-24.4
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				60.3,
+				-22.8,
+				61.3,
+				-22.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				29.7,
+				-21.8,
+				30.7,
+				-21.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-21.8,
+				74.7,
+				-21.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				60.3,
+				-16.8,
+				61.3,
+				-16.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-15.8,
+				74.7,
+				-15.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				31.7,
+				-15.2,
+				32.3,
+				-14.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				37.7,
+				-15.2,
+				38.3,
+				-14.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				47.7,
+				-15.2,
+				48.3,
+				-14.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				53.7,
+				-15.2,
+				54.3,
+				-14.2
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				49.9,
+				-9.9,
+				51.1,
+				-9.3
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				73.7,
+				-9.8,
+				74.7,
+				-9.2
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				-55.1,
+				-6.7,
+				-53.9,
+				-6.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				-29.1,
+				-6.7,
+				-27.9,
+				-6.1
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				68.7,
+				-5.6,
+				69.3,
+				-4.6
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				12.7,
+				-1.8,
+				13.3,
+				-0.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				18.7,
+				-1.8,
+				19.3,
+				-0.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				24.7,
+				-1.8,
+				25.3,
+				-0.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				30.7,
+				-1.8,
+				31.3,
+				-0.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				36.7,
+				-1.8,
+				37.3,
+				-0.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				42.7,
+				-1.8,
+				43.3,
+				-0.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				52.7,
+				-1.8,
+				53.3,
+				-0.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "wardrobe",
+			"rect": [
+				58.7,
+				-1.8,
+				59.3,
+				-0.8
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "washbasin",
+			"rect": [
+				-21.8,
+				-0.7,
+				-20.2,
+				-0.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "washbasin",
+			"rect": [
+				-12.8,
+				-0.7,
+				-11.2,
+				-0.2
+			],
+			"facing": "north"
+		},
+		{
+			"kind": "washing_machine",
+			"rect": [
+				62.2,
+				-43.8,
+				62.8,
+				-43.1
+			]
+		},
+		{
+			"kind": "washing_machine",
+			"rect": [
+				63.0,
+				-43.8,
+				63.6,
+				-43.1
+			]
+		},
+		{
+			"kind": "washing_machine",
+			"rect": [
+				63.8,
+				-43.8,
+				64.4,
+				-43.1
+			]
+		}
+	],
+	"fittings": [
+		{
+			"kind": "bulb_supply",
+			"pos": [
+				-75.05,
+				-40.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "calendar",
+			"pos": [
+				53.25,
+				-3.35
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "candle_supply",
+			"pos": [
+				-61.95,
+				-49.55
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "cobweb",
+			"pos": [
+				53.75,
+				-93.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "cobweb",
+			"pos": [
+				59.25,
+				-88.35
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "cobweb",
+			"pos": [
+				75.15,
+				-65.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "cobweb",
+			"pos": [
+				69.95,
+				-60.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "cobweb",
+			"pos": [
+				59.95,
+				-43.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "cobweb",
+			"pos": [
+				64.95,
+				-38.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "cobweb",
+			"pos": [
+				59.75,
+				-5.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "cobweb",
+			"pos": [
+				65.25,
+				-0.35
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "diary",
+			"pos": [
+				48.85,
+				-5.05
+			]
+		},
+		{
+			"kind": "leaf_pile",
+			"pos": [
+				-43.75,
+				-72.75
+			]
+		},
+		{
+			"kind": "leaf_pile",
+			"pos": [
+				47.35,
+				-72.75
+			]
+		},
+		{
+			"kind": "leaf_pile",
+			"pos": [
+				47.35,
+				-28.75
+			]
+		},
+		{
+			"kind": "note",
+			"pos": [
+				60.65,
+				-38.85
+			]
+		},
+		{
+			"kind": "note",
+			"pos": [
+				61.25,
+				-35.95
+			]
+		},
+		{
+			"kind": "note",
+			"pos": [
+				-0.85,
+				-8.15
+			]
+		},
+		{
+			"kind": "note",
+			"pos": [
+				60.35,
+				-4.95
+			]
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				34.55,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				59.55,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-58.45,
+				-94.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-34.45,
+				-94.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				69.25,
+				-90.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-25.25,
+				-84.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				21.75,
+				-84.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-65.75,
+				-66.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				69.25,
+				-64.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-25.25,
+				-62.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				21.75,
+				-62.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-56.45,
+				-53.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-34.45,
+				-53.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				34.55,
+				-50.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				56.55,
+				-50.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-65.75,
+				-42.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				69.25,
+				-40.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-25.25,
+				-38.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				21.75,
+				-38.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-7.25,
+				-23.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				7.25,
+				-23.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-21.25,
+				-18.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-65.75,
+				-16.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-25.25,
+				-16.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				69.25,
+				-16.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				21.75,
+				-14.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-40.45,
+				-9.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				-16.45,
+				-9.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				16.55,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				37.55,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "painting",
+			"pos": [
+				62.55,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				48.95,
+				-98.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				54.95,
+				-98.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				60.95,
+				-98.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				66.95,
+				-98.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-98.55
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				36.15,
+				-93.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				42.15,
+				-93.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				52.15,
+				-93.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				58.15,
+				-93.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-92.55
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-89.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-86.55
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-83.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				64.75,
+				-83.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				26.25,
+				-82.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-80.55
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-77.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				64.75,
+				-77.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				26.25,
+				-76.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-70.55
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-67.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				64.75,
+				-67.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				26.25,
+				-66.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-64.55
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-61.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				64.75,
+				-61.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				26.25,
+				-60.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-58.55
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-55.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				36.75,
+				-54.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				42.75,
+				-54.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				48.95,
+				-54.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				54.95,
+				-54.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				36.15,
+				-49.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				42.15,
+				-49.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				52.15,
+				-49.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				58.15,
+				-49.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-45.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-44.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-39.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				26.25,
+				-38.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-38.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				20.75,
+				-33.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				64.75,
+				-33.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				26.25,
+				-32.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-32.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				64.75,
+				-23.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				26.25,
+				-22.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-22.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				64.75,
+				-17.35
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				26.25,
+				-16.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-16.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				36.75,
+				-10.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				42.75,
+				-10.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				48.95,
+				-10.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				54.95,
+				-10.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-10.75
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				0.45,
+				-8.15
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				12.15,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				18.15,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				24.15,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				30.15,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				36.15,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				42.15,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				48.35,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				54.35,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				60.35,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				66.35,
+				-5.25
+			]
+		},
+		{
+			"kind": "phone",
+			"pos": [
+				70.25,
+				-4.75
+			]
+		},
+		{
+			"kind": "pumpkin_plant",
+			"pos": [
+				-3.45,
+				-37.35
+			]
+		},
+		{
+			"kind": "pumpkin_plant",
+			"pos": [
+				-1.95,
+				-37.35
+			]
+		},
+		{
+			"kind": "pumpkin_plant",
+			"pos": [
+				-0.45,
+				-37.35
+			]
+		},
+		{
+			"kind": "pumpkin_plant",
+			"pos": [
+				-3.45,
+				-34.85
+			]
+		},
+		{
+			"kind": "pumpkin_plant",
+			"pos": [
+				-1.95,
+				-34.85
+			]
+		},
+		{
+			"kind": "pumpkin_plant",
+			"pos": [
+				-0.45,
+				-34.85
+			]
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				43.25,
+				-109.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				47.25,
+				-98.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				28.45,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				51.15,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				57.15,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				63.15,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				67.15,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-59.45,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.55,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-96.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				33.85,
+				-93.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				39.85,
+				-93.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				49.85,
+				-93.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				55.85,
+				-93.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-91.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.75,
+				-90.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-90.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				25.75,
+				-87.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-85.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.25,
+				-85.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-21.75,
+				-84.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-84.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				25.75,
+				-81.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-79.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.25,
+				-79.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-78.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				25.75,
+				-71.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-69.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.25,
+				-69.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-68.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				25.75,
+				-65.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-63.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.25,
+				-63.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-62.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-57.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-56.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				31.95,
+				-54.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				37.95,
+				-54.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				51.15,
+				-54.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				57.15,
+				-54.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				34.55,
+				-53.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-32.45,
+				-50.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				33.95,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				39.95,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				49.95,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				55.95,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-49.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-47.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-69.75,
+				-45.35
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				25.75,
+				-43.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-43.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-41.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.25,
+				-41.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-69.75,
+				-39.35
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-55.75,
+				-38.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				25.75,
+				-37.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-37.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.25,
+				-35.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.25,
+				-35.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-69.75,
+				-33.35
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-30.05,
+				-32.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				25.75,
+				-27.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-27.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.25,
+				-25.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				25.75,
+				-21.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-21.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.25,
+				-19.65
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-69.25,
+				-16.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-15.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-7.75,
+				-11.05
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				7.75,
+				-11.05
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.25,
+				-10.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				7.25,
+				-10.35
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				31.95,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				37.95,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				51.15,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				57.15,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-10.45,
+				-9.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.75,
+				-9.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				10.55,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-19.35,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-10.35,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				9.85,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				15.85,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				21.85,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				27.95,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				33.85,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				39.85,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				53.05,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				59.05,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				65.05,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				69.05,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "uv_writing",
+			"pos": [
+				62.25,
+				-60.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "uv_writing",
+			"pos": [
+				65.25,
+				-3.05
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "uv_writing",
+			"pos": [
+				47.75,
+				-1.25
+			],
+			"wall": "west"
+		}
+	],
+	"items": [
+		{
+			"kind": "BATTERY",
+			"pos": [
+				66.65,
+				-98.85
+			]
+		},
+		{
+			"kind": "BATTERY",
+			"pos": [
+				52.45,
+				-93.05
+			]
+		},
+		{
+			"kind": "BATTERY",
+			"pos": [
+				54.65,
+				-54.85
+			]
+		},
+		{
+			"kind": "BATTERY",
+			"pos": [
+				42.45,
+				-49.05
+			]
+		},
+		{
+			"kind": "BATTERY",
+			"pos": [
+				60.85,
+				-38.65
+			]
+		},
+		{
+			"kind": "BATTERY",
+			"pos": [
+				30.45,
+				-5.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				60.65,
+				-98.85
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				42.45,
+				-93.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				70.45,
+				-92.85
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				20.65,
+				-89.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				64.65,
+				-83.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				26.45,
+				-77.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				70.45,
+				-70.85
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				20.65,
+				-67.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				48.65,
+				-54.85
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				36.45,
+				-49.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				58.45,
+				-49.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				20.65,
+				-45.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				70.45,
+				-45.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				60.05,
+				-40.45
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				26.45,
+				-39.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				64.65,
+				-33.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				70.45,
+				-23.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				26.45,
+				-17.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				48.65,
+				-10.85
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				18.45,
+				-5.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				36.45,
+				-5.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				48.65,
+				-5.05
+			]
+		},
+		{
+			"kind": "CANDLE",
+			"pos": [
+				70.45,
+				-5.05
+			]
+		},
+		{
+			"kind": "CARVED_PUMPKIN",
+			"pos": [
+				63.95,
+				-63.95
+			]
+		},
+		{
+			"kind": "CARVED_PUMPKIN",
+			"pos": [
+				-1.75,
+				-8.15
+			]
+		},
+		{
+			"kind": "CHESS_BOARD",
+			"pos": [
+				5.55,
+				-17.95
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				48.65,
+				-98.85
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				58.45,
+				-93.05
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				64.65,
+				-67.05
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				70.45,
+				-64.85
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				20.65,
+				-61.05
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				26.45,
+				-61.05
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				64.65,
+				-61.05
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				70.45,
+				-58.85
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				36.45,
+				-54.85
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				64.65,
+				-17.05
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				70.45,
+				-17.05
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				49.55,
+				-5.55
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				24.45,
+				-5.05
+			]
+		},
+		{
+			"kind": "COINS",
+			"pos": [
+				60.65,
+				-5.05
+			]
+		},
+		{
+			"kind": "COMPASS",
+			"pos": [
+				58.75,
+				-93.05
+			]
+		},
+		{
+			"kind": "DICE_CUP",
+			"pos": [
+				-14.45,
+				-16.95
+			]
+		},
+		{
+			"kind": "FLASHLIGHT",
+			"pos": [
+				1.75,
+				-8.15
+			]
+		},
+		{
+			"kind": "KNIFE",
+			"pos": [
+				-63.65,
+				-49.55
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "LEAVES",
+			"pos": [
+				64.55,
+				-61.95
+			]
+		},
+		{
+			"kind": "LEAVES",
+			"pos": [
+				49.95,
+				-5.55
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "LOADED_DICE",
+			"pos": [
+				60.95,
+				-4.95
+			]
+		},
+		{
+			"kind": "MAP",
+			"pos": [
+				48.35,
+				-4.95
+			]
+		},
+		{
+			"kind": "MAP",
+			"pos": [
+				62.95,
+				-2.05
+			]
+		},
+		{
+			"kind": "PUMPKIN",
+			"pos": [
+				58.05,
+				-91.65
+			]
+		},
+		{
+			"kind": "PUMPKIN",
+			"pos": [
+				71.85,
+				-64.45
+			]
+		},
+		{
+			"kind": "PUMPKIN",
+			"pos": [
+				64.05,
+				-3.65
+			]
+		},
+		{
+			"kind": "PUMPKIN",
+			"pos": [
+				51.75,
+				-0.75
+			]
+		},
+		{
+			"kind": "UV_FILTER",
+			"pos": [
+				64.35,
+				-60.95
+			]
+		}
+	],
+	"lights": [
+		{
+			"kind": "candle",
+			"pos": [
+				34.75,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				59.75,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-58.75,
+				-94.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-34.75,
+				-94.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				69.25,
+				-90.75
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-25.25,
+				-85.25
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				21.75,
+				-85.25
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-65.75,
+				-66.75
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				69.25,
+				-64.75
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-25.25,
+				-63.25
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				21.75,
+				-63.25
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				64.45,
+				-60.75
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-56.25,
+				-53.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-34.25,
+				-53.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				34.25,
+				-50.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				56.25,
+				-50.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-46.45,
+				-45.35
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-65.75,
+				-42.75
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-40.45,
+				-40.85
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				69.25,
+				-40.75
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-25.25,
+				-39.25
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				21.75,
+				-39.25
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-34.45,
+				-36.35
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				64.45,
+				-32.75
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-11.65,
+				-26.75
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				8.15,
+				-24.85
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				64.45,
+				-22.75
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				8.15,
+				-20.85
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-5.55,
+				-17.75
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-25.25,
+				-17.25
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				8.15,
+				-16.85
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-65.75,
+				-16.75
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				69.25,
+				-16.75
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				21.75,
+				-15.25
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-40.25,
+				-9.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-16.25,
+				-9.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				-1.15,
+				-8.15
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				16.25,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				37.25,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				62.25,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				42.75,
+				-4.95
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				48.95,
+				-4.95
+			]
+		},
+		{
+			"kind": "candle",
+			"pos": [
+				54.95,
+				-4.95
+			]
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				-4.45,
+				-101.85
+			]
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				0.55,
+				-87.85
+			]
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				-4.45,
+				-73.85
+			],
+			"broken": true
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				-49.05,
+				-70.45
+			]
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				42.05,
+				-70.45
+			]
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				0.55,
+				-59.85
+			]
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				-4.45,
+				-45.85
+			]
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				0.55,
+				-31.85
+			]
+		},
+		{
+			"kind": "lantern",
+			"pos": [
+				42.05,
+				-26.45
+			]
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				10.65,
+				-111.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				18.55,
+				-111.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				26.45,
+				-111.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				43.25,
+				-109.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				37.25,
+				-105.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				43.25,
+				-105.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				45.55,
+				-103.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				52.55,
+				-103.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				58.55,
+				-103.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				64.55,
+				-103.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				37.25,
+				-100.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				43.25,
+				-100.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				43.75,
+				-99.85
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.55,
+				-99.45
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				50.15,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				56.15,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				62.15,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				66.15,
+				-98.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-44.95,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				28.05,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				63.05,
+				-97.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-97.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-94.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				43.05,
+				-94.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				34.95,
+				-93.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				40.95,
+				-93.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				50.95,
+				-93.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				56.95,
+				-93.75
+			],
+			"broken": true,
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-92.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-91.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-90.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.75,
+				-89.45
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-88.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				32.55,
+				-88.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				38.55,
+				-88.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				48.55,
+				-88.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				54.55,
+				-88.25
+			],
+			"broken": true,
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-86.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				59.75,
+				-86.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-85.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-84.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.75,
+				-84.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.25,
+				-84.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-65.75,
+				-84.45
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.25,
+				-84.45
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				31.25,
+				-82.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-82.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-80.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				59.75,
+				-80.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-79.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-78.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.75,
+				-78.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.25,
+				-78.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				31.25,
+				-76.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-76.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-70.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				59.75,
+				-70.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-69.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-68.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.75,
+				-68.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.25,
+				-68.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-69.25,
+				-68.45
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.75,
+				-67.45
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				31.25,
+				-66.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-66.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-64.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				59.75,
+				-64.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-63.35
+			],
+			"broken": true,
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-62.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.75,
+				-62.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.25,
+				-62.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				31.25,
+				-60.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-60.95
+			],
+			"broken": true,
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				36.55,
+				-59.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				42.55,
+				-59.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				52.55,
+				-59.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				58.55,
+				-59.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-58.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-57.35
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-56.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.75,
+				-55.45
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-54.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				34.95,
+				-54.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				40.95,
+				-54.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				50.15,
+				-54.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				56.15,
+				-54.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				48.05,
+				-53.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-47.95,
+				-50.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-72.45,
+				-49.75
+			],
+			"broken": true,
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-62.45,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-49.35,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-31.55,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				35.05,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				41.05,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				51.05,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				57.05,
+				-49.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-48.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-65.75,
+				-48.45
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.25,
+				-47.45
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-46.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-46.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-44.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				32.55,
+				-44.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				38.55,
+				-44.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				48.55,
+				-44.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				54.55,
+				-44.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-72.45,
+				-43.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-42.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				59.75,
+				-42.95
+			],
+			"broken": true,
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-40.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.75,
+				-40.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.25,
+				-40.55
+			],
+			"broken": true,
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-40.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				31.25,
+				-38.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-38.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-72.45,
+				-37.75
+			],
+			"broken": true,
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				15.75,
+				-36.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				59.75,
+				-36.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-21.75,
+				-35.45
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.25,
+				-35.45
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-34.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.75,
+				-34.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.25,
+				-34.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-34.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-69.25,
+				-33.45
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.75,
+				-33.45
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				31.25,
+				-32.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-32.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-58.45,
+				-32.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-49.35,
+				-32.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-31.55,
+				-32.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				14.55,
+				-27.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				59.75,
+				-26.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.75,
+				-24.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.25,
+				-24.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-24.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-21.25,
+				-23.85
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-7.75,
+				-23.85
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-23.85
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				31.25,
+				-22.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-22.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				59.75,
+				-20.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-7.25,
+				-19.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				7.25,
+				-19.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-25.25,
+				-19.45
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.75,
+				-19.45
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				25.75,
+				-18.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.25,
+				-18.55
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-18.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				31.25,
+				-16.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-16.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				36.55,
+				-15.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				42.55,
+				-15.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				52.55,
+				-15.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				58.55,
+				-15.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				21.25,
+				-14.05
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-12.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.25,
+				-12.45
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-10.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-14.45,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				34.95,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				40.95,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				50.15,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				56.15,
+				-10.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-47.95,
+				-9.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-11.95,
+				-9.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				69.75,
+				-6.55
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-65.95,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-29.95,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				12.05,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				48.05,
+				-6.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				10.95,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				16.95,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				22.95,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				28.95,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				34.95,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				40.95,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				50.15,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				56.15,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				62.15,
+				-5.75
+			],
+			"broken": true,
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				66.15,
+				-5.75
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				75.25,
+				-4.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				65.55,
+				-4.55
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-7.25,
+				-2.95
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				7.25,
+				-2.95
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-20.95,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-11.95,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				-2.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				2.65,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				8.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				14.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				20.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				26.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				32.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				38.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				48.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				54.55,
+				-0.25
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "wall_lamp",
+			"pos": [
+				60.55,
+				-0.25
+			],
+			"broken": true,
+			"wall": "south"
+		}
 	]
 }

@@ -10,6 +10,9 @@
 #   - Die Bedeutung jeder Farbe steht als **Name in der Palette** (FILLS/OPENINGS unten). Farben, die nicht in
 #     der Palette stehen, werden gemeldet und übergangen.
 #   - Öffnungen sind Farbstriche auf der Wandlinie, Flächen sind Füllfarben.
+#   - Objektebenen je Stockwerk (eigene Legende, Palettennamen mit Vorsatz): „Möbel“ (Grundfläche als Rechteck,
+#     ein Strich „Möbel: Vorderseite“ am Rand zeigt die Vorderseite), „Ausstattung“, „Gegenstände“ und „Lichter“
+#     (je ein 3×3-Punkt, Wandsachen innen an der Wand). Sie zählen nicht zum Grundriss.
 #   - Slices (Aseprite-Werkzeug „Slice“) tragen Namen: „Raum: Küche“, „Bereich: Lobby“, „Treppe: Lobby“
 #     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite). Ohne Vorsatz gelten sie
 #     im EG, sonst mit Stockwerk davor: „OG1 Raum: Bibliothek“.
@@ -31,6 +34,8 @@ ORIGIN = (1155, 1810)       ## Pixel des Ursprungs (Mitte Haupteingang, Mittelli
 MIN_WALL_RUN = 6            ## kürzeste erkannte Wand in Pixeln (kürzere Läufe sind Querschnitte)
 MIN_WALL_NET = 300          ## kleinere Flecken in Wandfarbe sind Schrift, keine Wände
 IGNORED_LAYERS = ("Beschriftung", "Skizze", "Notiz")
+## Objektebenen → Schlüssel in der Ausgabe. Zählen nicht zum Grundriss.
+OBJECT_LAYERS = {"Möbel": "furniture", "Ausstattung": "fittings", "Gegenstände": "items", "Lichter": "lights"}
 
 ## Palettenname → (Flächenart, draußen = ohne Decke)
 FILLS = {
@@ -48,6 +53,37 @@ OPENINGS = {
 	"Betriebstür": "service_door", "Aufzugtür": "elevator_door", "Haupteingang": "main_entrance",
 }
 WALL_NAME, GLASS_NAME = "Wand", "Glaswand"
+## Objektlegende (Palettenname → Art). Möbel sind Rechtecke, alles andere 3×3-Punkte.
+FURNITURE = {
+	"Möbel: Bett": "bed", "Möbel: Schrank": "wardrobe", "Möbel: Kommode": "dresser", "Möbel: Tisch": "table",
+	"Möbel: Couchtisch": "coffee_table", "Möbel: Tafel": "dining_table", "Möbel: Sofa": "couch", "Möbel: Bank": "bench",
+	"Möbel: Truhe": "chest", "Möbel: Schachtisch": "chess_table", "Möbel: Spieltisch": "game_table",
+	"Möbel: Theke": "bar_counter", "Möbel: Regal": "shelf", "Möbel: Küchenzeile": "kitchen_counter", "Möbel: Herd": "stove",
+	"Möbel: Waschtisch": "washbasin", "Möbel: Waschmaschine": "washing_machine", "Möbel: Wäschekiste": "laundry_box",
+	"Möbel: Säule": "pillar",
+}
+FRONT_NAME = "Möbel: Vorderseite"
+FITTINGS = {
+	"Ausstattung: Lichtschalter": "switch", "Ausstattung: Telefon": "phone", "Ausstattung: Bild": "painting",
+	"Ausstattung: Zettel": "note", "Ausstattung: UV-Schrift": "uv_writing", "Ausstattung: Spinnweben": "cobweb",
+	"Ausstattung: Kerzenvorrat": "candle_supply", "Ausstattung: Ersatzbirnen": "bulb_supply",
+	"Ausstattung: Laubhaufen": "leaf_pile", "Ausstattung: Kürbispflanze": "pumpkin_plant",
+	"Ausstattung: Kalender": "calendar", "Ausstattung: Tagebuch": "diary",
+}
+## Gegenstände → Item.Kind
+ITEMS = {
+	"Gegenstand: Kürbis": "PUMPKIN", "Gegenstand: Geschnitzter Kürbis": "CARVED_PUMPKIN", "Gegenstand: Kerze": "CANDLE",
+	"Gegenstand: Schlüssel": "KEY", "Gegenstand: Spinnweben": "COBWEB", "Gegenstand: Laub": "LEAVES",
+	"Gegenstand: Münzen": "COINS", "Gegenstand: Messer": "KNIFE", "Gegenstand: Würfelbecher": "DICE_CUP",
+	"Gegenstand: Gezinkte Würfel": "LOADED_DICE", "Gegenstand: Glühbirne": "BULB", "Gegenstand: Kleidung": "CLOTHING",
+	"Gegenstand: Kompass": "COMPASS", "Gegenstand: Karte": "MAP", "Gegenstand: Taschenlampe": "FLASHLIGHT",
+	"Gegenstand: Batterie": "BATTERY", "Gegenstand: UV-Filter": "UV_FILTER", "Gegenstand: Schachbrett": "CHESS_BOARD",
+}
+## Lichter → (Art, defekt)
+LIGHTS = {
+	"Licht: Wandleuchte": ("wall_lamp", False), "Licht: Wandleuchte defekt": ("wall_lamp", True),
+	"Licht: Kerze": ("candle", False), "Licht: Laterne": ("lantern", False), "Licht: Laterne defekt": ("lantern", True),
+}
 ## Einbauten, die keine eigenen Bodenflächen sind
 FIXTURES = ("tree", "planter", "reception", "terrace_edge", "stairs", "void")
 
@@ -139,6 +175,23 @@ def floor_level(name):
 		return -1
 	return None
 
+OBJECT_IMAGES = {}   # Stockwerk → Objektebene → {Pixelindex: Farbe}
+
+def paint(layer, img):
+	"""Deckende Pixel einer Ebene in img eintragen (Liste oder dict, Index = y·W + x)."""
+	x, y, cw, ch, px = layer["cel"]
+	for yy in range(ch):
+		Y = y + yy
+		if not 0 <= Y < H:
+			continue
+		for xx in range(cw):
+			X = x + xx
+			s = (yy * cw + xx) * 4
+			if 0 <= X < W and px[s + 3] > 127:
+				img[Y * W + X] = px[s:s + 3].hex()
+	return img
+
+
 def floor_images():
 	"""Stockwerksname → Farbliste (Hex, „“ = leer), zusammengesetzt aus den gezählten Ebenen der Gruppe."""
 	floors, group = {}, None
@@ -153,17 +206,10 @@ def floor_images():
 			continue
 		if layer["name"].startswith(IGNORED_LAYERS):
 			continue
-		x, y, cw, ch, px = layer["cel"]
-		img = floors[group]
-		for yy in range(ch):
-			Y = y + yy
-			if not 0 <= Y < H:
-				continue
-			for xx in range(cw):
-				X = x + xx
-				s = (yy * cw + xx) * 4
-				if 0 <= X < W and px[s + 3] > 127:
-					img[Y * W + X] = px[s:s + 3].hex()
+		if layer["name"] in OBJECT_LAYERS:
+			OBJECT_IMAGES.setdefault(group, {})[layer["name"]] = paint(layer, {})
+			continue
+		paint(layer, floors[group])
 	assert floors, "Keine Stockwerksgruppen gefunden (Ebenengruppen „EG“, „OG1“ …)"
 	return floors
 
@@ -597,6 +643,8 @@ def build_floor(floor, COL, open_above):
 		room_list.append(entry)
 	assert len(room_list) == len({r["no"] for r in room_list}), "doppelte Zimmernummer"
 
+	placed = read_objects(floor, COL)
+
 	# --- Einbauten ---
 	def take(kind):
 		return [r for r in regions if r["kind"] == kind]
@@ -625,13 +673,98 @@ def build_floor(floor, COL, open_above):
 		"terrace_edges": [r["rects"] for r in take("terrace_edge")],
 		"trees": trees,
 		"reception": [rc for r in take("reception") for rc in r["rects"]],
+		**placed,
 	}
 	n_ops = sum(len(w.get("openings", [])) for w in walls)
 	print("%s: %d Wände (%d Öffnungen), %d Flächen, %d Zimmer (Ost %d, West %d), %d Treppen, %d Kübel, %d Bäume, "
 		"%d Bereiche, %d Objekte" % (floor, len(walls), n_ops, len(layout["regions"]), len(room_list),
 		sum(r["wing"] == "ost" for r in room_list), sum(r["wing"] == "west" for r in room_list), len(stairs),
 		len(layout["planters"]), len(trees), len(areas), len(objects)))
+	print("    Objektebenen: %s" % ", ".join("%d %s" % (len(v), k) for k, v in placed.items()))
 	return layout
+
+
+def read_objects(floor, COL):
+	"""Objektebenen eines Stockwerks: Möbel als Rechtecke mit Vorderseite, sonst Punkte mit Wandseite."""
+	by_color = {}
+	for legend in (FURNITURE, FITTINGS, ITEMS, LIGHTS):
+		for name, kind in legend.items():
+			if name in BY_NAME:
+				by_color[BY_NAME[name]] = kind
+	front = BY_NAME.get(FRONT_NAME)
+	walls = {WALL, GLASS} | set(OPENING_OF)
+	out = {key: [] for key in OBJECT_LAYERS.values()}
+	for layer, img in OBJECT_IMAGES.get(floor, {}).items():
+		key = OBJECT_LAYERS[layer]
+		seen = set()
+		blobs = []   # (Farbe, Pixel) – zusammenhängend über Kanten
+		for i, c in img.items():
+			if i in seen:
+				continue
+			seen.add(i)
+			q, pts = deque([i]), []
+			while q:
+				j = q.popleft()
+				pts.append(j)
+				for k in (j + 1, j - 1, j + W, j - W):
+					if k not in seen and img.get(k) == c and abs(k % W - j % W) <= 1:
+						seen.add(k)
+						q.append(k)
+			blobs.append((c, pts))
+		fronts = [pts for c, pts in blobs if c == front and key == "furniture"]
+		for c, pts in blobs:
+			if c == front and key == "furniture":
+				continue
+			xs, ys = [j % W for j in pts], [j // W for j in pts]
+			x0, y0, x1, y1 = min(xs), min(ys), max(xs) + 1, max(ys) + 1
+			if c not in by_color:
+				print("  Warnung: %s/%s – Farbe #%s ohne Eintrag in der Objektlegende bei Pixel %d,%d" % (floor, layer, c, x0, y0))
+				continue
+			if key == "furniture":
+				# Vorderseite: der Strich, der am Rand des Rechtecks anliegt
+				facing = None
+				for f in fronts:
+					fx, fy = [j % W for j in f], [j // W for j in f]
+					if not (x0 - 1 <= min(fx) and max(fx) <= x1 and y0 - 1 <= min(fy) and max(fy) <= y1):
+						continue
+					x0, y0, x1, y1 = min(x0, min(fx)), min(y0, min(fy)), max(x1, max(fx) + 1), max(y1, max(fy) + 1)
+					horizontal = max(fx) - min(fx) >= max(fy) - min(fy)
+					d = {"north": min(fy) - y0, "south": y1 - 1 - max(fy)} if horizontal else \
+						{"west": min(fx) - x0, "east": x1 - 1 - max(fx)}
+					facing = min(d, key=d.get)
+				entry = {"kind": by_color[c], "rect": m(x0, y0) + m(x1, y1)}
+				if facing:
+					entry["facing"] = facing
+				out[key].append(entry)
+				continue
+			cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+			entry = {"kind": by_color[c], "pos": m(cx, cy)}
+			if key == "lights":
+				entry["kind"], broken = by_color[c]
+				if broken:
+					entry["broken"] = True
+			# Wandseite: Wandsachen liegen innen an der Wand – die Seite mit dem nächsten Wand- oder Öffnungspixel
+			# (je Abstand eine Zeile/Spalte in Breite des Punkts; gleich nah → mehr Pixel)
+			best = None
+			for side in ("north", "south", "west", "east"):
+				for k in range(1, 4):
+					if side in ("north", "south"):
+						Y = y0 - k if side == "north" else y1 - 1 + k
+						line = [(X, Y) for X in range(x0, x1)]
+					else:
+						X = x0 - k if side == "west" else x1 - 1 + k
+						line = [(X, Y) for Y in range(y0, y1)]
+					n = sum(1 for X, Y in line if 0 <= X < W and 0 <= Y < H and COL[Y * W + X] in walls)
+					if n:
+						if best is None or (k, -n) < best[:2]:
+							best = (k, -n, side)
+						break
+			if best:
+				entry["wall"] = best[2]
+			out[key].append(entry)
+	for key in out:
+		out[key].sort(key=lambda e: (e["kind"], e.get("pos", e.get("rect"))[1], e.get("pos", e.get("rect"))[0]))
+	return out
 
 
 def voids_of(COL):
@@ -684,6 +817,13 @@ def preview(layout, path):
 			f0, f1 = o["at"] / L, (o["at"] + o["width"]) / L
 			out.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="%s" stroke-width=".45"/>' % (
 				ax + (bx - ax) * f0, az + (bz - az) * f0, ax + (bx - ax) * f1, az + (bz - az) * f1, op_colors[o["kind"]]))
+	for f in layout.get("furniture", []):
+		x0, z0, x1, z1 = f["rect"]
+		out.append(box % (x0, z0, x1 - x0, z1 - z0, 'fill="#8a5a2b" fill-opacity=".7"'))
+	dots = {"fittings": "#7a3fb0", "items": "#d02020", "lights": "#ffc000"}
+	for key, c in dots.items():
+		for o in layout.get(key, []):
+			out.append('<circle cx="%s" cy="%s" r=".18" fill="%s"/>' % (o["pos"][0], o["pos"][1], "#555" if o.get("broken") else c))
 	for r in layout["rooms"]:
 		fill = "#c00000" if r["sign"] != r["no"] else "#000"
 		out.append('<text x="%s" y="%s" font-size="1.5" text-anchor="middle" font-family="Arial" fill="%s">%s</text>' % (r["center"][0], r["center"][1] + 0.5, fill, r["no"]))

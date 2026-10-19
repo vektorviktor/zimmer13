@@ -269,6 +269,15 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
   Farbstriche **auf** der Wandlinie, Flächen als Füllfarben, `Luftraum` = hier kein Boden (wird beim
   Stockwerk darunter zu `open_above`). Schrift in Wandfarbe im Grundriss wird über ihre Größe erkannt und
   übermalt, gehört aber in die Ebene `Beschriftung`.
+- **Objektebenen** je Stockwerk: `Möbel`, `Ausstattung`, `Gegenstände`, `Lichter`. Sie zählen nicht zum
+  Grundriss und haben eine eigene Legende (Palettennamen mit Vorsatz `Möbel:`, `Ausstattung:`, `Gegenstand:`,
+  `Licht:` → `FURNITURE`, `FITTINGS`, `ITEMS`, `LIGHTS` im Skript). Möbel sind Rechtecke in Grundfläche, ein
+  Strich `Möbel: Vorderseite` am Rand zeigt die Vorderseite. Alles andere ist ein 3×3-Punkt; Wandsachen
+  (Leuchten, Schalter, Bilder, Spinnweben, UV-Schrift, Kalender) liegen innen an der Wand, daraus ergibt sich
+  ihre Wandseite. Gleichfarbige Punkte dürfen sich nicht berühren (sonst wird es einer). Höhe, Helligkeit und
+  Inhalt (Zettel-Nummer, Münzen, UV-Text) stehen nicht im Plan. **Stand 2026-10-19:** Die Ebenen sind aus dem
+  laufenden Spiel übertragen (Keller fehlt, er steht noch nicht im Plan), der LevelBuilder baut aber noch
+  nach seinen Regeln und liest sie nicht.
 - **Slices** (sprite-weit, daher Stockwerk als Vorsatz, ohne Vorsatz EG: `OG1 Raum: Bibliothek`):
   `Raum: <Name>` benennt die Fläche mit den meisten Pixeln im Slice (ID = Name klein, Umlaute ausgeschrieben),
   `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen Kante**) und `Treppenhaus: <Name>` →
@@ -282,7 +291,9 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
   `kind` `stair`/`stairwell`, `rect`, `up` bzw. `door`), `voids`, `open_above`, `areas`, `objects` (`name`,
   `rect`, `facing`), `corridors` (Flurabschnitte: `id`, `name`, `wing`, Mittellinie `a`–`b`), `floor_patches`
   (Boden unter Kübeln, Bäumen, Rezeption und freien Treppen, mit der Art der umgebenden Fläche), `planters`,
-  `terrace_edges`, `trees`, `reception`.
+  `terrace_edges`, `trees`, `reception`; aus den Objektebenen `furniture` (`kind`, `rect`, optional `facing`),
+  `fittings` und `items` (`kind`, `pos`, optional `wall` = Wandseite, Gegenstände mit `Item.Kind`-Namen) und
+  `lights` (dazu optional `broken`).
 - **Zimmernummern** entstehen im Skript (`WINGS`: Laufweg je Flügel als Flurmittellinien in Pixeln, dann
   Querflur; rechts ungerade). Liegt ein Zimmer an keinem bekannten Flur, bricht das Skript ab – dann `WINGS`
   ergänzen. `BROKEN_SIGNS`: abweichende Türschilder (0113 → „13“).
