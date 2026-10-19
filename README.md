@@ -134,6 +134,15 @@ Die Gast-Grundkörper (`assets/models/guest_<name>.glb`, Spielkonzept 6.0) baut 
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_guest.py -- assets/source/guest_man.glb assets/models/guest_man.glb
 ```
 
+Den Kürbismann (`assets/models/pumpkin_man.glb`, neues Monster, vorerst Testfigur für `--pumpkin`) liefert Meshy mit der Skelettvorlage „SmartRig“. `tools/smartrig_to_mixamo.py` baut das Skelett auf Mixamo um (die Axt hängt danach fest an der linken Hand), `tools/build_pumpkin.py` macht daraus das Spielmodell mit denselben Mixamo-Tänzen wie bei den Gästen. Ein optionaler dritter Pfad legt Vorschaubilder ab:
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/smartrig_to_mixamo.py -- Meshy_AI_Character_output.glb assets/source/pumpkin_man.glb
+```
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_pumpkin.py -- assets/source/pumpkin_man.glb assets/models/pumpkin_man.glb
+```
 Den Lakengeist (`assets/models/ghost.glb`, Spielkonzept 4.18) riggt `tools/build_ghost.py` selbst – mit Armen und Fingern. Ein optionaler dritter Pfad legt Vorschaubilder ab (Ruhe, gekrümmte Finger, gehobene Arme):
 
 ```bash
@@ -166,6 +175,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--dial=0111` · `--dial=lobby` | aus Zimmer 13 eine Nummer anrufen (0 = Rezeption) · Wählseite am Haupttelefon |
 | `--party` | Feier starten |
 | `--cat=minka` | Hotelkatze vor den Spieler setzen (`minka`, `socke`, `kasimir`) |
+| `--pumpkin` · `--pumpkin=macarena` | Kürbismann (neues Monster, nur Testfigur ohne Verhalten) 2,5 m vor dich, tanzt in Schleife: `chicken` (Standard), `macarena`, `hiphop` – erneut aufgerufen ersetzt er den alten |
 | `--tp=lobby` · `--tp=13` · `--tp=0126` · `--tp=edna` | hinspringen: Ort aus der F6-Liste (lobby, bar, küche, garten, galerie, treppenhaus, keller …), Zimmer (Türschild oder Nummer), vor einen Gast |
 | `--time=+1` · `--load-slot=2` | Spieltage vor-/zurückspulen · Spielstand laden (in der Konsole: `load 2`, `save 2` = `--diary=2`) |
 | `--console` · `--console=guests;tp keller` | Debug-Konsole nach 1 s öffnen, optional Befehle (mit `;` getrennt) eintippen – für Screenshots |

@@ -45,6 +45,7 @@ const COMMANDS := {
 	"challenge": ["gast[,chess]", "Gast fordert dich heraus (Mäxchen oder Schach)"],
 	"bulb-thief": ["gast", "Gast klaut eine Birne aus Zimmer 13"],
 	"cat": ["minka|socke|kasimir", "Katze vor den Spieler setzen"],
+	"pumpkin": ["[chicken|macarena|hiphop]", "Kürbismann vor dich, tanzt (Testfigur)"],
 	"pos": ["x,y,z[,winkel[,neigung]]", "Spieler versetzen"],
 	"splash": ["x,z", "nach 1 s platscht es dort im Pool"],
 	"pool": ["still|tremor|slosh", "Poolwasser wie bei nahem Monster (glatt, Zittern, Schwappen)"],

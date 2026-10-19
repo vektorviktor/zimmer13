@@ -57,6 +57,8 @@ extends Node3D
 ##   --kill=id                   Gast nach 3 s vom Monster holen lassen
 ##   --party                     sofort eine Feier im Partyraum starten
 ##   --cat=id                    Hotelkatze vor den Spieler setzen (minka, socke, kasimir)
+##   --pumpkin[=tanz]            Kürbismann (neues Monster, nur Testfigur) 2,5 m vor dich, tanzt in Schleife:
+##                               chicken (Standard), macarena, hiphop – erneut aufgerufen ersetzt er den alten
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
 ##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
@@ -489,6 +491,8 @@ func run_debug(arg: String) -> bool:
 		for cat in get_tree().get_nodes_in_group("cats"):
 			if cat.id == arg.substr(6):
 				cat.place_in_front_of(Game.player)
+	elif arg.begins_with("--pumpkin"):
+		PumpkinMan.spawn_in_front_of(Game.player, arg.substr(10) if arg.begins_with("--pumpkin=") else "dance_chicken")
 	elif arg == "--party":
 		Game.social.start_party("player")
 	elif arg.begins_with("--look="):

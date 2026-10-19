@@ -16,3 +16,6 @@ build/
 # Arbeitsordner (Rohmodelle, Mixamo-Rohdateien, Vorlagen) und Referenzbilder – nicht fürs Repo
 temp/
 assets/*.avif
+
+# Python-Zwischendateien (tools/mixamo_retarget.py wird von den Blender-Skripten importiert)
+__pycache__/

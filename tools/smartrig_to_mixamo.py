@@ -1,7 +1,7 @@
 # Macht aus einer Meshy-Figur mit „SmartRig“ (Knochen Bone_000 … Bone_077) dasselbe, was Meshys
 # Auto-Rigging mit Skelettvorlage „Mixamo“ liefert: Knochen mixamorig:Hips … mit Mixamos Namen und
 # Hierarchie (65 Knochen wie in guest_*.glb, ohne „headfront“). Danach passen Mixamo-Animationen
-# (tools/build_guest.py: retarget()) und Godots Humanoid-BoneMap ohne Handarbeit.
+# (tools/mixamo_retarget.py, auch für tools/build_guest.py) und Godots Humanoid-BoneMap ohne Handarbeit.
 #
 # Aufruf (Blender 4.3):
 #   blender -b --python tools/smartrig_to_mixamo.py -- <meshy_smartrig.glb> <ausgabe.glb>
