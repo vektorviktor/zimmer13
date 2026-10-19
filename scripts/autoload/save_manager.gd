@@ -29,9 +29,10 @@ const DIR := "user://saves/"
 ## 16: Einrichtung aus den Objektebenen des Plans – Lampen, Schalter, Verstecke, Kommoden, Telefone … in neuer
 ##     Reihenfolge, ältere Stände passen nicht mehr
 ## 17: vier Deckenleuchten in der Lobby (Spielkonzept 7.3) – mehr Lampen, ältere Stände passen nicht mehr
-## 18: Deckenleuchten in Bar, Partyraum, Lobby und über den Flurkübeln – mehr Lampen, ältere Stände passen nicht mehr
-const VERSION := 18
-const MIN_VERSION := 18
+## 18: Deckenleuchten in Bar, Partyraum und Lobby – mehr Lampen, ältere Stände passen nicht mehr
+## 19: Deckenleuchten über den zehn Flurkübeln – mehr Lampen, ältere Stände passen nicht mehr
+const VERSION := 19
+const MIN_VERSION := 19
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
