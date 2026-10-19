@@ -971,6 +971,8 @@ func _update_effects(delta: float) -> void:
 		if player.shock > 0.1:
 			noise_target += player.shock * 0.08
 			heart_target = maxf(heart_target, player.shock * 0.5)
+		# Außer Atem vom Rennen: Herz und Keuchen (Ausdauer, Spielkonzept 3.1)
+		heart_target = maxf(heart_target, player.exertion() * 0.85)
 	# Flackerwelle beim Spieler: Bildflackern, Sirren im Stromnetz, Untertitel (Barrierefreiheit)
 	var wave := wave_at(player.global_position + Vector3.UP) if player else 0.0
 	if wave > 0.0:
@@ -1010,6 +1012,12 @@ func _update_effects(delta: float) -> void:
 		Game.audio.heart = move_toward(Game.audio.heart, heart_target, delta * 0.5)
 		Game.audio.heart_bpm = 70.0 + heart_target * 60.0
 		Game.audio.buzz = move_toward(Game.audio.buzz, wave * 0.5, delta * 4.0)
+		# Beim Luftanhalten verstummt das Keuchen; je erschöpfter, desto schneller die Atemzüge
+		var pant_target := 0.0
+		if player and not player.holding_breath and not player.dead:
+			pant_target = player.exertion()
+		Game.audio.pant = move_toward(Game.audio.pant, pant_target, delta * (3.0 if pant_target < Game.audio.pant else 0.8))
+		Game.audio.pant_rate = 0.35 + 0.5 * Game.audio.pant
 
 
 func debug_text() -> String:
@@ -1020,7 +1028,8 @@ func debug_text() -> String:
 	s += "Absicht: %s (noch %d Opfer) · Flackern zeigte %d · Angriffschance %.0f %%\n" % [INTENT_NAMES[intent], victims_left, shown_victims, attack_chance() * 100.0]
 	s += "Monster: %s\n" % Monster.State.keys()[_monster.state]
 	if Game.player:
-		s += "Licht beim Spieler: %.2f\n" % light_at(Game.player.global_position + Vector3.UP)
+		s += "Licht beim Spieler: %.2f · Ausdauer %.2f%s\n" % [light_at(Game.player.global_position + Vector3.UP),
+			Game.player.stamina, " außer Atem" if Game.player.winded else ""]
 	s += "Zone        Neugier Druck Abschr.\n"
 	for zone in zones:
 		var c: Vector3 = zone["center"]

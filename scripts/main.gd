@@ -27,6 +27,8 @@ extends Node3D
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
+##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
+##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
 ##   --no-psx                    ohne PS1-Look (wie Einstellungen → PS1-Look aus, wird nicht gespeichert)
 ##   --debug                     Debug-Werte einblenden
 ##   --nointro                   ohne Einführungstext
@@ -380,6 +382,11 @@ func run_debug(arg: String) -> bool:
 		Game.player.receive_item(lamp)
 	elif arg.begins_with("--show="):
 		Game.player.debug_show = arg.substr(7)
+	elif arg == "--winded":
+		Game.player.stamina = 0.0
+		Game.player.winded = true
+	elif arg == "--sprint":
+		Game.player.debug_sprint = true
 	elif arg.begins_with("--bold="):
 		Game.director.boldness = arg.substr(7).to_float()
 	elif arg.begins_with("--friend="):

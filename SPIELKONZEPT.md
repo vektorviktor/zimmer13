@@ -152,7 +152,7 @@ Erkunden ──► Gäste treffen / reden / handeln ──► Deko erhalten (ode
 
 | Aktion | Beschreibung |
 |--------|--------------|
-| **Laufen** | Gehen, evtl. Rennen (macht Lärm) |
+| **Laufen** | Gehen, Rennen (macht Lärm, kostet Ausdauer – siehe unten) |
 | **Springen** | Normale Sprunghöhe, z. B. über Laubhaufen/Hindernisse |
 | **Ducken** *(Vorschlag)* | Nötig für die Kellertür (siehe 7.2), evtl. leiser |
 | **Gegenstände nehmen** | Aufheben per Blick + Taste (RayCast) |
@@ -164,6 +164,12 @@ Erkunden ──► Gäste treffen / reden / handeln ──► Deko erhalten (ode
 | **Mit Gästen spielen** | An einem Spieltisch (Schachbrett, Kartentisch …) eine Partie starten, evtl. um einen Einsatz (siehe 6.10) |
 
 **Spieler-Hitbox:** Kapsel, **1,80 m hoch, 45 cm breit** (Radius 0,225 m). Kamera auf Augenhöhe ca. 1,65–1,70 m.
+
+**Ausdauer (entschieden und umgesetzt 2026-10-19):** Rennen verbraucht Ausdauer – etwa 10 Sekunden am Stück, dann ist
+man **außer Atem**. Es gibt **keine Anzeige**: Man merkt es nur am Körper. Geht die Ausdauer zur Neige, hört man schon
+leise den eigenen Atem; ist sie leer, werden **Herzschlag und Keuchen** deutlich hörbar und **Rennen geht nicht mehr**,
+bis man sich beruhigt hat (im Stehen, Sitzen oder Versteck rund 7 Sekunden, beim Gehen doppelt so lange). Beim
+Luftanhalten verstummt das Keuchen. Wer flieht, muss sich also gut überlegen, wann er rennt.
 
 ### 3.2 Kein Inventar – alles in den Händen
 - **Es gibt kein verstecktes Inventar.** Jeder Gegenstand (Deko, Schlüssel, Kerze, Messer, Gießkanne, Puppe …) existiert physisch in der Welt und wird **einzeln in den Händen** getragen.

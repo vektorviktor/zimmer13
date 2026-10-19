@@ -6,7 +6,7 @@ extends CanvasLayer
 
 const CONTROLS := [
 	["W A S D / Maus", "Laufen / Umsehen"],
-	["Shift", "Rennen (macht Lärm)"],
+	["Shift", "Rennen (macht Lärm, kostet Ausdauer)"],
 	["Leertaste", "Springen"],
 	["Strg / C", "Ducken (nötig für die Kellertür)"],
 	["E", "Nehmen, Benutzen, Türen, Licht, Vorhänge, Reden, Verstecken"],

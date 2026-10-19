@@ -1,7 +1,7 @@
 class_name SynthAudio
 extends AudioStreamPlayer
 ## Prozedurale Platzhalter-Akustik, bis echte Sounds existieren:
-## Brummen, Rauschen, Herzschlag und kurze Einzeleffekte.
+## Brummen, Rauschen, Herzschlag, Keuchen und kurze Einzeleffekte.
 
 const RATE := 22050.0
 const MUSIC_BEAT := 60.0 / 132.0
@@ -19,11 +19,15 @@ var heart := 0.0
 var heart_bpm := 70.0
 var buzz := 0.0    ## Sirren und Knistern im Stromnetz (Flackerwelle, Spielkonzept 4.17)
 var music := 0.0   ## Lautstärke der Feiermusik (Plattenspieler)
+var pant := 0.0    ## Keuchen des Spielers nach dem Rennen (Ausdauer, Spielkonzept 3.1)
+var pant_rate := 0.4   ## Atemzüge pro Sekunde
 
 var _playback: AudioStreamGeneratorPlayback
 var _time := 0.0
 var _lp_fast := 0.0
 var _lp_slow := 0.0
+var _pant_phase := 0.0
+var _pant_depth := 1.0   ## jeder Atemzug etwas anders tief
 var _shots: Array[Dictionary] = []
 var _music_volume := 1.0
 var _effects_volume := 1.0
@@ -78,6 +82,8 @@ func _sample(dt: float) -> float:
 	if heart > 0.001:
 		var beat := fmod(_time, 60.0 / heart_bpm)
 		s += (_thump(beat) + _thump(beat - 0.22) * 0.6) * heart
+	if pant > 0.001:
+		s += _pant_sample(dt, white) * pant
 	var i := _shots.size() - 1
 	while i >= 0:
 		var shot := _shots[i]
@@ -101,6 +107,21 @@ func _music_sample() -> float:
 	var lead := (1.0 if sin(TAU * f * _time) > 0.0 else -1.0) * 0.1 * exp(-bt * 5.0)
 	var bass := sin(TAU * float(chord[0]) * 0.5 * _time) * (0.3 if step == 0 else 0.12) * exp(-bt * 2.5)
 	return lead + bass
+
+
+## Keuchen: kurzes, helles Einatmen, dann längeres, dumpferes Ausatmen, kleine Pause
+func _pant_sample(dt: float, white: float) -> float:
+	_pant_phase += dt * pant_rate
+	if _pant_phase >= 1.0:
+		_pant_phase -= 1.0
+		_pant_depth = randf_range(0.75, 1.15)
+	var p := _pant_phase
+	if p < 0.35:
+		return (white - _lp_fast) * sin(PI * p / 0.35) * 0.12 * _pant_depth
+	if p > 0.42 and p < 0.9:
+		var k := (p - 0.42) / 0.48
+		return (_lp_fast - _lp_slow) * 1.4 * pow(sin(PI * k), 0.6) * (1.0 - 0.4 * k) * 0.3 * _pant_depth
+	return 0.0
 
 
 func _thump(t: float) -> float:

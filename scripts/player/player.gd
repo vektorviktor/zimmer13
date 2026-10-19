@@ -47,6 +47,14 @@ const RAM_REACH := 0.75
 const INJURY_HEAL_TIME := 240.0
 const INJURY_SLOW := 0.4
 const BLEED_TIME := 40.0
+## Ausdauer (Spielkonzept 3.1): Rennen leert sie in so vielen Sekunden, im Stehen ist sie in so vielen
+## Sekunden wieder voll (beim Gehen halb so schnell). Leer → außer Atem: Rennen geht erst ab STAMINA_CALM
+## wieder. Unter STAMINA_HINT hört man den Atem schon beim Rennen.
+const STAMINA_RUN_TIME := 10.0
+const STAMINA_REST_TIME := 12.0
+const STAMINA_WALK_SLOW := 0.5
+const STAMINA_CALM := 0.6
+const STAMINA_HINT := 0.3
 
 var head: Node3D
 var camera: Camera3D
@@ -78,6 +86,9 @@ var map_pages: Array[String] = []
 var keyring: Array[String] = []
 var debug_show := ""   ## --show=map|keys|compass: als würde die Taste gehalten (keys: Schlüsselblatt oben)
 var injury := 0.0      ## von Gästen geschlagen (0..1): langsamer, blutet – heilt mit der Zeit (6.3)
+var stamina := 1.0     ## Ausdauer (0..1), nicht sichtbar – nur Herzschlag und Atem verraten sie (3.1)
+var winded := false    ## außer Atem: kein Rennen, bis man sich beruhigt hat
+var debug_sprint := false   ## --sprint: rennt vorwärts wie mit W + Shift, bis er außer Atem ist
 
 var _hand: Node3D
 var _left_hand: Node3D
@@ -199,10 +210,13 @@ func _physics_process(delta: float) -> void:
 	_update_dread(delta)
 	_update_hand(delta)
 	_update_injury(delta)
+	_update_stamina(delta)
 	if in_dialog:
 		velocity = Vector3.ZERO
+		running = false
 		return
 	if hiding:
+		running = false
 		# Würgen im Schrank: nur die Bewegungstasten zählen (Losreißen)
 		move_input = Input.get_vector("move_left", "move_right", "move_forward", "move_back") if gripped else Vector2.ZERO
 		_update_hiding(delta)
@@ -213,12 +227,16 @@ func _physics_process(delta: float) -> void:
 	elif Input.is_action_just_pressed("jump") and not crouching:
 		velocity.y = JUMP_VELOCITY
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if debug_sprint:
+		debug_sprint = not winded
+		input = Vector2(0, -1) if debug_sprint else Vector2.ZERO
 	move_input = input
 	if gripped:
 		velocity = Vector3.ZERO
+		running = false
 		return
 	var dir := (transform.basis * Vector3(input.x, 0, input.y)).normalized()
-	running = Input.is_action_pressed("run") and not crouching and input.length() > 0.1
+	running = (Input.is_action_pressed("run") or debug_sprint) and not crouching and not winded and input.length() > 0.1
 	var speed := CROUCH_SPEED if crouching else (RUN_SPEED if running else WALK_SPEED)
 	if held and held.is_large:
 		speed *= 0.8
@@ -557,6 +575,35 @@ func _update_injury(delta: float) -> void:
 		if _blood_dist > 1.2:
 			_blood_dist = 0.0
 			Game.traces.add_guest_drop("drops", global_position + Vector3(randf_range(-0.15, 0.15), 0, randf_range(-0.15, 0.15)))
+
+
+# --- Ausdauer (Spielkonzept 3.1) ---------------------------------------------------
+
+## Rennen (aus dem letzten Frame) leert die Ausdauer, sonst kommt sie wieder – im Stehen, Sitzen und
+## Versteck schneller als beim Gehen. Leer → außer Atem, bis sie wieder bei STAMINA_CALM ist.
+func _update_stamina(delta: float) -> void:
+	if running:
+		stamina = maxf(0.0, stamina - delta / STAMINA_RUN_TIME)
+		if stamina <= 0.0 and not winded:
+			winded = true
+			Game.caption("[Du keuchst]")
+			if "--trace" in OS.get_cmdline_user_args():
+				print("[Ausdauer] außer Atem")
+		return
+	var moving := Vector2(velocity.x, velocity.z).length() > 0.5
+	stamina = minf(1.0, stamina + delta / STAMINA_REST_TIME * (STAMINA_WALK_SLOW if moving else 1.0))
+	if winded and stamina >= STAMINA_CALM:
+		winded = false
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Ausdauer] beruhigt – Rennen geht wieder")
+
+
+## Wie laut Herz und Atem sind (0..1): außer Atem voll, klingt bis zum Beruhigen ab; beim Rennen mit
+## wenig Ausdauer schon leise – die einzige Warnung, denn eine Anzeige gibt es nicht.
+func exertion() -> float:
+	if winded:
+		return 1.0 - stamina / STAMINA_CALM
+	return 0.4 * clampf(1.0 - stamina / STAMINA_HINT, 0.0, 1.0)
 
 
 # --- Gegenstände -----------------------------------------------------------

@@ -27,7 +27,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | Taste | Aktion |
 |-------|--------|
 | WASD / Maus | Laufen / Umsehen |
-| Shift | Rennen (macht Lärm: 10 m statt 0–2 m beim Gehen) |
+| Shift | Rennen (macht Lärm: 10 m statt 0–2 m beim Gehen; kostet Ausdauer) |
 | Leertaste | Springen |
 | Strg / C (halten) | Ducken – nötig für die Kellertür (1,80 m) |
 | E | Nehmen, Benutzen (Schnitzen, Kerze einsetzen, Ernten), Umgeworfenes aufstellen, Katzen streicheln, Tür/Truhe/Schublade öffnen, Licht schalten, Vorhang ziehen, Glühbirne heraus-/eindrehen, mit Gästen reden, telefonieren, Verstecken, im eigenen Bett schlafen (während der Nachtruhe; geduckt: darunter verstecken), ins Tagebuch schreiben |
@@ -52,6 +52,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 - **Karte aus losen Blättern:** jedes Blatt einzeln zu finden – Erdgeschoss auf dem Schreibtisch in Zimmer 13, eine handgezeichnete Kellerskizze von 1994 in Zimmer 0117 · Tab halten hält die Blätter bildfüllend vors Gesicht, das Blatt der aktuellen Ebene liegt oben, Linksklick/Mausrad blättert · gedruckte Pläne mit Norden oben, allen Zimmernummern, Zimmer 13 rot eingekreist · das letzte Blatt listet den Schlüsselbund
 - **Schlüsselbund:** gefundene Schlüssel wandern beim Aufheben an den Bund, Türen lassen sich dann aufschließen, egal was man in der Hand hält · nur der Ausgangsschlüssel an Halloween muss in der Hand getragen werden
 - **Deko & Handwerk:** Kürbisse im Garten ernten · mit dem **Messer** (Küche) schnitzen · **Kerze** in den geschnitzten Kürbis stellen · Herbstlaub unter den Bäumen · Spinnweben in dunklen Ecken · Kerzenvorrat in der Küche
+- **Ausdauer:** ohne Anzeige · etwa 10 s Rennen, dann außer Atem: Herzschlag und Keuchen werden hörbar, Rennen geht erst wieder, wenn man sich beruhigt hat (im Stehen schneller als beim Gehen) · kurz vorher hört man schon leise den Atem
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
 - **Schlafen:** während der Nachtruhe im eigenen Bett in Zimmer 13 – Augen zu, die Zeit läuft schneller bis zum Morgen · das Monster in der Nähe oder ein Geräusch weckt dich · wer nicht schläft, sammelt Nächte ohne Schlaf (erst nach dem ersten Angriff), und das lockt den Lakengeist
 - **Dramaturgie:** friedlicher Anfang ohne Monster · erster Angriff am 3./4. Oktober während einer Feier (Licht und Musik aus, das Monster steht in der Lobby) · die ersten zwei Angriffe sind harmlos: es steht direkt vor dir, starrt dich an und verschwindet, Gäste werden nur erschreckt
@@ -147,6 +148,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--challenge=bruno` · `--challenge=edna,chess` | Gast fordert dich heraus (Mäxchen bzw. Schach) |
 | `--pos=x,y,z,winkel[,neigung]` · `--monster=x,y,z` | Spieler versetzen (Neigung in Grad, positiv = nach oben) · Monster erscheinen lassen |
 | `--flashlight` · `--flashlight=uv` | eingeschaltete Taschenlampe mit voller Batterie in die Hand · mit UV-Aufsatz im UV-Modus |
+| `--sprint` · `--winded` | vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (mit `--trace`: „außer Atem“ und „beruhigt“ in der Konsole) |
 | `--pocket` · `--show=map` / `keys` / `compass` | Kompass, alle Kartenblätter und Schlüssel 18 einstecken · Karte (Schlüsselblatt oben) bzw. Kompass hervorholen wie mit gehaltener Taste |
 | `--shot=pfad.png --frames=n` · `--shot-on=reveal` · `--shot-on=jumpscare` · `--shot-on=strangle` · `--shot-on=shock` | Screenshot nach n Frames (Standard 120) · kurz nach dem harmlosen Angriff auf den Spieler · im Jumpscare · wenn der Lakengeist zupackt · wenn ein Gast erschrickt |
 | `--bg` | Fenster im Hintergrund: nimmt keinen Fokus und liegt außerhalb des Bildschirms (für Screenshot-Läufe nebenher) |
