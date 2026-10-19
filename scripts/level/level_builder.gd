@@ -104,6 +104,22 @@ const SWITCH_Y := 1.3
 const CALENDAR_Y := 1.7
 const UV_Y := 1.5
 const COBWEB_Y := 2.4
+## Schilder (Zimmernummern, AUSGANG, BAR …): Messingbuchstaben in Cinzel Bold (OFL, assets/fonts/OFL.txt;
+## ohne überlappende Konturen aus tools/build_font.py) auf einer Holzplatte mit Messingrand.
+## Schriftgröße (Geviert) in Metern – Wegweiser, Zimmernummern –, Versalhöhe ~0,7 davon; CURVE_STEP in
+## Schriftpixeln – grob, damit die Rundungen kantig bleiben (PS1-Look)
+const SIGN_FONT := "res://assets/fonts/cinzel_bold.ttf"
+const SIGN_EM := 0.22
+const SIGN_EM_ROOM := 0.17
+const SIGN_FONT_SIZE := 16
+const SIGN_CURVE_STEP := 2.0
+## Wie weit die Buchstaben vor der Platte stehen, Stärke der Platte, Rand um den Text, Messingrand
+const SIGN_DEPTH := 0.01
+const SIGN_PLATE := 0.016
+const SIGN_MARGIN := Vector2(0.05, 0.035)
+const SIGN_RIM := 0.008
+## Messing je Schild: blank, matt, angelaufen
+const SIGN_BRASS: Array[Color] = [Color(0.8, 0.64, 0.28), Color(0.68, 0.54, 0.25), Color(0.52, 0.45, 0.27)]
 ## Ersatzbirnen liegen im Lagerregal, nicht obendrauf
 const BULB_SUPPLY_Y := 1.4
 ## Reifegrade der Kürbispflanzen in Planreihenfolge (von Norden nach Süden, je Beet von Westen nach Osten)
@@ -174,6 +190,7 @@ var _wood_floor: Material
 var _floor_tiles: Material
 var _grass: Material
 var _stone: Material
+var _sign_font: Font
 
 
 func _init(p_root: Node3D, p_world: Node3D) -> void:
@@ -227,6 +244,7 @@ func _materials() -> void:
 	_floor_tiles = Mat.psx(Color(1, 1, 1), "tiles", 0.5)
 	_grass = Mat.psx(Color(1, 1, 1), "grass", 1.0)
 	_stone = Mat.psx(Color(0.62, 0.57, 0.5), "concrete", 1.0)
+	_sign_font = load(SIGN_FONT)
 
 
 # --- Plan: Flächen nachschlagen --------------------------------------------------------------------
@@ -718,7 +736,7 @@ func _room(plan: Dictionary) -> void:
 		"door": door,
 		"spots": [],
 	}
-	_sign(label, Vector3(0, 2.45, -0.11), 180.0)
+	_sign(label, Vector3(0, 2.45, -0.11), 180.0, SIGN_EM_ROOM)
 	# Das Innere steht im Plan (_furniture, _fittings, _items, _lights); hier nur, was die Zimmerart ausmacht
 	match kind:
 		"abandoned", "derelict":
@@ -1696,16 +1714,32 @@ func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material,
 		wall.set_surface_override_material(1, m if m == _concrete else OpeningFrame.trim_material())
 
 
-func _sign(text: String, pos: Vector3, yaw: float) -> void:
-	var label := Label3D.new()
-	label.text = text
-	label.pixel_size = 0.008
-	label.font_size = 24
-	label.modulate = Color(0.85, 0.7, 0.35)
-	label.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	label.position = pos
-	label.rotation.y = deg_to_rad(yaw)
-	_parent.add_child(label)
+## Schild an der Wand (pos = 1 cm vor der Wandfläche, Schrift zeigt nach +Z): Buchstaben als echte Geometrie
+## (TextMesh) im PS1-Material, damit Lampen und Taschenlampe sie treffen wie alles andere (Spielkonzept 7.3).
+## Wie schief es hängt und wie angelaufen das Messing ist, folgt fest aus dem Text, nicht aus dem Zufall.
+func _sign(text: String, pos: Vector3, yaw: float, em: float = SIGN_EM) -> void:
+	var holder := Node3D.new()
+	holder.rotation = Vector3(0, deg_to_rad(yaw), 0)
+	holder.position = pos - holder.basis.z * WALL_GAP
+	var h := text.hash()
+	holder.rotate_object_local(Vector3.BACK, deg_to_rad(float(posmod(h, 7) - 3) * 0.5))   # bis 1,5° schief
+	_parent.add_child(holder)
+	var letters := TextMesh.new()
+	letters.text = text
+	letters.font = _sign_font
+	letters.font_size = SIGN_FONT_SIZE
+	letters.pixel_size = em / SIGN_FONT_SIZE
+	letters.curve_step = SIGN_CURVE_STEP
+	letters.depth = SIGN_DEPTH
+	var box := letters.get_aabb()
+	var center := box.get_center()
+	var plate := Vector2(box.size.x, box.size.y) + SIGN_MARGIN * 2.0
+	var brass := Mat.psx(SIGN_BRASS[posmod(h >> 3, SIGN_BRASS.size())])
+	var rim := Vector3(plate.x + SIGN_RIM * 2.0, plate.y + SIGN_RIM * 2.0, SIGN_PLATE * 0.6)
+	Geo.mesh(holder, Geo.box(rim), brass, Vector3(0, 0, rim.z / 2.0))
+	Geo.mesh(holder, Geo.box(Vector3(plate.x, plate.y, SIGN_PLATE)), _dark_wood, Vector3(0, 0, SIGN_PLATE / 2.0))
+	# Hinterkante der Buchstaben 2 mm in der Platte, sonst flimmert beim Vertex-Snapping ein Spalt
+	Geo.mesh(holder, letters, brass, Vector3(-center.x, -center.y, SIGN_PLATE - 0.002 - box.position.z))
 
 
 ## Feste Kerze als Deko-Licht (kein Gegenstand): brennt immer, flackert leicht und in Monsternähe.

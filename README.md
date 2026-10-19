@@ -100,6 +100,12 @@ Die Taschenlampe (`assets/models/flashlight.glb`) ist „Flashlight“ von [Onur
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_flashlight.py -- assets/source/flashlight.glb assets/models/flashlight.glb
 ```
 
+Die Schilderschrift (`assets/fonts/cinzel_bold.ttf`) ist [Cinzel](https://github.com/NDISCOVER/Cinzel) von Natanael Gama (SIL Open Font License 1.1, `assets/fonts/OFL.txt`), als feste Bold-Instanz ohne überlappende Konturen aus dem Variable Font von [google/fonts](https://github.com/google/fonts/tree/main/ofl/cinzel) (`pip install fonttools skia-pathops`):
+
+```bash
+python tools/build_font.py assets/source/cinzel_variable.ttf assets/fonts/cinzel_bold.ttf
+```
+
 Die Glühbirne (`assets/models/bulb.glb`) ist „Lightbulb (Low-Poly)“ von [Mirai](https://sketchfab.com/MrMirai) ([Sketchfab](https://sketchfab.com/3d-models/lightbulb-low-poly-2566774276944542a01ff47a67a6eb51), CC-BY 4.0):
 
 ```bash

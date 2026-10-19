@@ -319,6 +319,16 @@ festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
 - **Treppenhaus Ost:** Schacht von −3,5 bis 7,5 m, je Geschoss zwei Läufe mit Wendepodest im Norden
   (hinauf West/Ost, hinab Ost/West); unten die niedrige Kellertür, oben eine gesperrte Tür. Der Keller liegt
   südlich davon unter dem Flur. Treppenhaus West ist verschlossen.
+- **Schilder** (`_sign`: Zimmernummern, AUSGANG, BAR, KELLER …): Buchstaben als `TextMesh` (1 cm tief, grober
+  `curve_step`) im PS1-Material aus Messing auf einer dunklen Holzplatte mit Messingrand. So bekommen sie Licht,
+  Schatten und Vertex-Snapping wie alles andere (früher ein ungeschattetes `Label3D`). Zimmernummern
+  `SIGN_EM_ROOM` (0,17 m Geviert), Wegweiser `SIGN_EM` (0,22 m). Wie schief ein Schild hängt (bis 1,5°) und welches
+  Messing es hat (blank, matt, angelaufen), folgt aus dem Hash des Texts und bleibt so bei jedem Start gleich.
+  Schrift: Cinzel Bold (SIL OFL 1.1, `assets/fonts/OFL.txt`), gebaut von `tools/build_font.py` aus dem Variable
+  Font in `assets/source/cinzel_variable.ttf` (google/fonts). TextMesh verträgt keine überlappenden Konturen
+  (8, und bei Bold A, K, V, W, Y), deshalb eine feste Instanz mit verschmolzenen Konturen, ohne die doppelten
+  Eckpunkte, die das Verschmelzen hinterlässt (sonst scheitert die Zerlegung bei M, V, W, Y). Neue Zeichen auf
+  Schildern bei Fehlern „Triangulation/Convex decomposing failed“ dort prüfen.
 - Bauen in **lokalen Rahmen**: `_parent` ist das gerade aktive Bauteil (root, Zimmerrahmen, Keller);
   `_wall_x/_wall_z` mit Öffnungen als `Vector4(mitte, breite, oberkante, unterkante)`. Gegenstände kommen in
   die Hauptszene (`world`), umgerechnet über `_global()`.
