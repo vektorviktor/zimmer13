@@ -21,6 +21,7 @@ const COMMANDS := {
 	"sleep": ["[bett]", "Nachtruhe beginnen (bett: du schläfst in Zimmer 13)"],
 	"warn": ["", "Vorwarnung → Monster erscheint"],
 	"monster": ["x,y,z", "Monster an dieser Stelle zeigen"],
+	"lure": ["", "Monster kommt zu dir (wie F7)"],
 	"intent": ["roam|one|rampage|n", "Absicht beim nächsten Aufbruch"],
 	"bold": ["0–100", "Dreistigkeit setzen"],
 	"attacks": ["n", "so viele Angriffe gab es schon"],

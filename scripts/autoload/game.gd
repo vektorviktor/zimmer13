@@ -206,6 +206,7 @@ func _setup_input() -> void:
 	_bind_keys("debug_overlay", [KEY_F3])
 	_bind_keys("debug_manifest", [KEY_F5])
 	_bind_keys("debug_teleport", [KEY_F6])
+	_bind_keys("debug_lure", [KEY_F7])
 	_bind_keys("debug_console", [KEY_QUOTELEFT, KEY_F1])   # [^] auf deutscher Tastatur
 	_bind_keys("pause", [KEY_ESCAPE])
 	_bind_mouse("hold_breath", MOUSE_BUTTON_RIGHT)

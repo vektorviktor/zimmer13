@@ -384,6 +384,8 @@ Effekte), **`Monster`** führt aus (Zustandsautomat, Bewegung, Sicht, Spuren).
 `on_noise(pos, hörweite, quelle)` (nur über `Game.noise`) · `on_lights_off(pos)` · `on_actor_hid(spot, actor)` · `on_monster_talk(pos)` ·
 `on_monster_noticed()` · `on_monster_repelled()` · `on_monster_uv()` · `on_monster_gone()` · `kill_guest(guest, spot)` ·
 `kill_player(spot)`. Neue Spielmechaniken, die das Monster beeinflussen sollen, melden sich hier.
+Debug: F5 = `start_warning()` (nur wenn es ruht), F7/`--lure` = `debug_lure()`: ruht es, `spawn_at()` auf dem
+NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angriff), dann `investigate(Spieler)`.
 
 ### Dramaturgie
 - Vor dem ersten Angriff: kein Monster. Erster Angriff am 3./4. Oktober während einer Feier

@@ -20,7 +20,7 @@ mkdir -p build && "/c/Users/vikto/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_
 ```
 
 Ergebnis: `build/Zimmer13.exe` (ignoriert von Git), läuft ohne weitere Dateien. Die Debug-Startparameter
-funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sind im Export ebenfalls aktiv.
+funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7) sind im Export ebenfalls aktiv.
 
 ## Steuerung
 
@@ -41,6 +41,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 | F3 | Debug: versteckte Monster-Werte und die letzten Lärmereignisse |
 | F5 | Debug: Monster sofort rufen (wenn es gerade ruht; die ersten zwei Angriffe bleiben harmlos – `--attacks=3` für echte) |
 | F6 | Debug: Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller …) und Lakengeist zum 1.–4. Mal (in Zimmer 13) bzw. im Flur – pausiert, 1–9 / Maus |
+| F7 | Debug: Monster kommt zu dir, als hätte es dich gehört (ruht es, erscheint es ~25 m entfernt; jedes Drücken lenkt es zu deiner neuen Stelle; harmlos wie bei F5, solange nicht `--attacks=3`) |
 | ^ oder F1 | Debug-Konsole: Startparameter im Spiel tippen, ohne `--` (z. B. `shock edna,ghost3`, `tp lobby`, `guests`, `help`) – pausiert, ↑/↓ frühere Eingaben, Tab ergänzt · nur im Editor bzw. Debug-Build oder mit `--debug` |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel |
 
@@ -157,6 +158,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--chess=mila` · `--autoplay` | Schachpartie in der Lobby starten · der Spieler zieht selbst (schwach), mit `--trace` Stärke des Gastes und Ergebnis |
 | `--challenge=bruno` · `--challenge=edna,chess` | Gast fordert dich heraus (Mäxchen bzw. Schach) |
 | `--pos=x,y,z,winkel[,neigung]` · `--monster=x,y,z` | Spieler versetzen (Neigung in Grad, positiv = nach oben) · Monster erscheinen lassen |
+| `--lure` | nach 1 s kommt das Monster zu dir (wie F7) |
 | `--pool=still` · `--pool=tremor` · `--pool=slosh` | Poolwasser, als wäre das Monster nah: spiegelglatt · feine zitternde Ringe · Becken schwappt mit Schaum und Gischt (`--pool=off` in der Konsole: wieder normal) |
 | `--splash=x,z` | nach 1 s platscht es an dieser Stelle im Pool (Wellenring, der bricht, und Spritzer), z. B. `--splash=18,-105 --pos=18,0.1,-100,0,-25` |
 | `--flashlight` · `--flashlight=uv` | eingeschaltete Taschenlampe mit voller Batterie in die Hand · mit UV-Aufsatz im UV-Modus |

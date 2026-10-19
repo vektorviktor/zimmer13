@@ -38,6 +38,8 @@ const NOISE_START := 20.0
 const NOISE_FULL := 4.0
 ## Lampen flackern nur in der Nähe des Monsters
 const LAMP_FLICKER_RANGE := 9.0
+## Debug F7: so weit vom Spieler erscheint das ruhende Monster
+const LURE_DISTANCE := 25.0
 ## Erster Angriff: am 3. oder 4. Oktober, nach so vielen Sekunden einer Feier
 const FIRST_ATTACK_DAYS := [3, 4]
 const FIRST_ATTACK_PARTY_TIME := 25.0
@@ -144,6 +146,8 @@ func _physics_process(delta: float) -> void:
 	if not Game.game_over:
 		if Input.is_action_just_pressed("debug_manifest") and not _monster.is_active():
 			start_warning()
+		if Input.is_action_just_pressed("debug_lure"):
+			debug_lure()
 		elapsed += delta
 		if first_attack_done:
 			boldness = minf(100.0, boldness + BOLDNESS_PER_SECOND * delta)
@@ -498,6 +502,23 @@ func on_monster_gone() -> void:
 	if _uv_driven:
 		_phase_left *= UV_REST_FACTOR
 		_uv_driven = false
+
+
+## Debug (F7, --lure): Das Monster kommt zum Spieler, als hätte es dort etwas gehört. Ruht es, erscheint
+## es ~25 m entfernt auf dem NavMesh; ist es unterwegs, nimmt es diesen Weg statt seines Ziels.
+func debug_lure() -> void:
+	var target := Game.player.global_position
+	if not _monster.is_active():
+		var map := _monster.get_world_3d().navigation_map
+		var start := target
+		for i in 12:
+			var dir := Vector3.FORWARD.rotated(Vector3.UP, TAU * i / 12.0 + randf() * 0.5)
+			var p := NavigationServer3D.map_get_closest_point(map, target + dir * LURE_DISTANCE)
+			if absf(p.distance_to(target) - LURE_DISTANCE) < 8.0:
+				start = p
+				break
+		_monster.spawn_at(start)
+	_monster.investigate(target)
 
 
 ## Debug (F5, --warn): sofort losschicken.
