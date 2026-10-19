@@ -49,6 +49,13 @@ const BOTTLES_MODEL := "res://assets/models/bottles.glb"
 const PLANTER_MODEL := "res://assets/models/planter.glb"
 ## Höhe des Kollisionsquaders (und des Platzhalter-Kübels) = Beckenkante, ausgegeben von tools/build_planter.py
 const PLANTER_H := 0.46
+## Laubbaum in Metern, Ursprung auf der Stammachse am Boden (tools/build_tree.py aus Meshys Modell).
+## `_tree()` skaliert ihn auf den Kronenradius aus dem Plan; fehlt die Datei, bleibt der Platzhalter.
+const TREE_MODEL := "res://assets/models/tree.glb"
+## Kronenradius und Stammdurchmesser des Modells (ausgegeben von tools/build_tree.py), Höhe der Stammkollision
+const TREE_RADIUS := 5.0
+const TREE_TRUNK := 1.53
+const TREE_TRUNK_H := 3.0
 const LAYER_CEILING := 16
 const LAYER_GLASS := 64
 ## Fenster: Unterkante (bündig mit der Vertäfelung), Oberkante – die Breite kommt aus dem Plan
@@ -1372,8 +1379,20 @@ func _garden_beds() -> void:
 		garden_spots.append(Vector3((x0 + x1) / 2.0, 0, z + 1.0))
 
 
-## Baum mit Krone in der Größe des Plans (radius = Kronenradius).
+## Baum mit Krone in der Größe des Plans (radius = Kronenradius). Kollision nur am Stamm, unter der Krone
+## kann man durchgehen.
 func _tree(pos: Vector3, radius: float) -> void:
+	if ResourceLoader.exists(TREE_MODEL):
+		var s := radius / TREE_RADIUS
+		var body := Geo.collider(root, Vector3(TREE_TRUNK * s, TREE_TRUNK_H, TREE_TRUNK * s), pos + Vector3(0, TREE_TRUNK_H / 2.0, 0))
+		var model: Node3D = (load(TREE_MODEL) as PackedScene).instantiate()
+		model.position.y = -TREE_TRUNK_H / 2.0
+		model.scale = Vector3.ONE * s
+		body.add_child(model)
+		for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+			for i in m.mesh.get_surface_count():
+				m.set_surface_override_material(i, Mat.model(TREE_MODEL, m, i, true))   # offene Blattbüschel
+		return
 	var height := clampf(radius * 1.1, 3.2, 6.0)
 	var trunk := Geo.solid(root, Vector3(0.5, height, 0.5), pos + Vector3(0, height / 2.0, 0), Mat.psx(Color(0.22, 0.15, 0.1)))
 	var colors: Array[Color] = [Color(0.6, 0.25, 0.05), Color(0.7, 0.4, 0.08), Color(0.45, 0.12, 0.05)]

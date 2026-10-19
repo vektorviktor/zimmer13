@@ -29,6 +29,13 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   ohne Unterseite, nur Farbtextur (1024er-PNG, ~8600 Dreiecke). Es gibt die Beckenkante aus →
   `PLANTER_H` (0,46 m), so hoch ist der Kollisionsquader über der Grundfläche. Die Blätter sind einseitig,
   deshalb `Mat.model(…, two_sided = true)`. Fehlt die Datei, bleiben Steinquader und Heckenkugel.
+  Die Gartenbäume `assets/models/tree.glb` (`LevelBuilder._tree()`): grüner Laubbaum mit Wurzeln von Meshy,
+  `tools/build_tree.py` aus `assets/source/tree.glb`. Das Skript findet die Stammachse an den Punkten
+  zwischen 10 und 20 % der Höhe (Ursprung dort am Boden) und skaliert die Krone auf 5 m Radius (~9,9 m hoch,
+  ~9900 Dreiecke, 1024er-PNG, ohne Unterseite). Es gibt `TREE_RADIUS` und den Stammdurchmesser `TREE_TRUNK`
+  (1,53 m) aus. Das Spiel skaliert auf den Kronenradius aus dem Plan; Kollision nur als Stammquader bis
+  `TREE_TRUNK_H` (3 m), unter der Krone kann man durchgehen. Offene Blattbüschel → `two_sided`. Fehlt die
+  Datei, bleibt der Platzhalter (Stammquader mit drei Herbstkugeln).
   Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh, fläche)` in ein `Mat.psx` (eins pro Textur der
   Modelldatei, Grundfarbe 0,8 Grau – Farbtöne gehören in die Textur, die Materialfarbe wird ignoriert;
   `two_sided` nimmt eine Kopie des Shaders mit `cull_disabled`).

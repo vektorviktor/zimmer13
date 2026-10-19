@@ -77,7 +77,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6) sin
 - **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion – im Einstellungsmenü mit einem Schalter ganz abschaltbar · Tapeten mit Vertäfelung, die im Licht unterschiedlich glänzen (Lack, Satin, stumpfe Rauten) und an Fugen und Leisten Glanzkanten zeigen, dazu fleckige, matte Stellen
 - **Altersempfehlung ab 16** (selbst eingeschätzt, keine USK-Prüfung): Hinweis mit Inhalten beim ersten Start, Kennzeichen im Titelbildschirm (`scripts/ui/title_screen.gd`)
 
-Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler, die Tür- und Fensterrahmen und die Tapeten (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
+Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler, die Pflanzkübel, die Bäume im Garten, die Tür- und Fensterrahmen und die Tapeten (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_monster.py -- assets/source/Meshy_AI_Abyssal_Mawcrawler_1011084008_texture.glb assets/models/monster.glb
@@ -91,6 +91,16 @@ Die Barflaschen (`assets/models/bottles.glb`) und der Plattenspieler (`assets/mo
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_record_player.py -- assets/source/vintage_record_player.glb assets/models/record_player.glb
+```
+
+Pflanzkübel (`assets/models/planter.glb`) und Laubbaum (`assets/models/tree.glb`) kommen von Meshy:
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_planter.py -- assets/source/planter.glb assets/models/planter.glb
+```
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_tree.py -- assets/source/tree.glb assets/models/tree.glb
 ```
 
 Das Katzenmodell (`assets/models/cat.glb`) baut `tools/build_cat.py` aus Meshys geriggtem Paket:
