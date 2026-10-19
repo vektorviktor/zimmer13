@@ -25,6 +25,7 @@ extends Node3D
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
 ##   --splash=x,z                nach 1 s platscht es dort im Pool (Wellenring, Schaum, Spritzer)
+##   --pool=still|tremor|slosh   Poolwasser so, als wäre das Monster nah: glatt · zitternde Ringe · schwappt (off = wieder normal)
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
@@ -377,6 +378,10 @@ func run_debug(arg: String) -> bool:
 			var water := get_tree().get_first_node_in_group("pool_water") as PoolWater
 			if water:
 				water.splash(Vector2(at[0].to_float(), at[1].to_float()), 1.0))
+	elif arg.begins_with("--pool="):
+		var water := get_tree().get_first_node_in_group("pool_water") as PoolWater
+		if water:
+			water.debug_stage = "" if arg == "--pool=off" else arg.substr(7)
 	elif arg == "--pocket":
 		Game.player.give_compass()
 		for page in HotelMap.PAGES:

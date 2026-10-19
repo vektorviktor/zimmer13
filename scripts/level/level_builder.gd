@@ -1314,7 +1314,7 @@ func _pool() -> void:
 		_rod(bend, low, chrome)
 		_rod(low, Vector3(low.x, -depth, low.z), chrome)
 	# Wasser: halbtransparent, Wellen rein optisch (PoolWater)
-	root.add_child(PoolWater.new(w, -0.3, 0.2))
+	root.add_child(PoolWater.new(w, -0.3, 0.2, _named["pool"]))
 
 
 ## Dünne Stange von a nach b (Handlauf, Geländerpfosten), ohne Kollision.

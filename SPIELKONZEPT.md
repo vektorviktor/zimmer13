@@ -480,6 +480,12 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
   - **Manchmal nicht:** Es klopft, man hört eine bekannte Stimme. Öffnet man, ist niemand da – nur ein Kleidungsstück auf dem Boden.
 - **Warnungszettel** stammen von **früheren Gästen**, die es nicht hinausgeschafft haben. Sie liegen in verlassenen Zimmern, im Keller, unter Matratzen, geben Tipps zum Monster und deuten den Schlüssel an Halloween an – zugleich der Story-Faden (offene Frage 4).
 - **Lampen flackern nur noch lokal** in der Nähe des Monsters: Flackern zeigt, *wo* es ist; Rauschen zeigt, *wie nah*. (Umgesetzt 2026-10-17: Flackerwelle vom Keller aus beim Aufbruch, ihre Dauer verrät die Absicht, 4.17.)
+- **Das Poolwasser spürt es (entschieden und umgesetzt 2026-10-19):** gemessen vom Monster zum Wasser, nicht zum
+  Spieler. Ab ~30 m legen sich die Wellen, bei 20 m ist das Becken **spiegelglatt**. Ab 20 m (wo das Rauschen
+  beginnt) laufen **feine zitternde Ringe** von seiner Seite her übers Wasser, Stoß um Stoß, am stärksten bei 4 m –
+  man sieht sie nur in den Spiegelungen. Ist es **in der Halle**, schwappt das Becken unruhig wie eine Badewanne,
+  die Kämme brechen zu Schaum, an den Enden spritzt Gischt. Bewusst leise: kein Überlaufen, keine meterhohen
+  Wellen – das Monster schleicht, es tobt nicht, und ein tobender Pool wäre ein zu eindeutiges Warnsignal.
 - **Spuren:** Fußspuren **verblassen** über einige Minuten (man liest ab, wie frisch sie sind), Kratzspuren **bleiben**. Spuren am eigenen Zimmer kann man wegputzen.
 - **Das Hotel verändert sich** (Punkt „unzuverlässiges Hotel“): Kleine Veränderungen, wenn man nicht hinsieht – teils durch das Monster, teils bleibt offen, wer es war.
 - **Gäste als Quelle der Angst:** Gäste berichten von Spuren und Geräuschen, nicht immer zuverlässig.

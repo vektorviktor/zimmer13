@@ -250,6 +250,15 @@ festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
   Nachschwapper, Tropfen als `CPUParticles3D` im Ring um die Stelle). **Brechen** im Fragment-Shader: Schaum,
   wo die Höhe über `foam_from` steigt oder ein Ring innerhalb 0,6 m der Innenkante (`pool_rect`) anschlägt.
   Fresnel (`sheen`) macht flache Blickwinkel heller und dichter – daran sieht man die Wellen.
+  **Monster** (`_update_unrest`, Spielkonzept 4.13): Abstand vom aktiven, sichtbaren Monster zum nächsten Punkt
+  der Wasserfläche → Zielwerte, angeglichen mit `CALM_RATE`/`TREMOR_RATE`/`SLOSH_UP`/`SLOSH_DOWN` je Sekunde.
+  `STILL_FROM`→`STILL_FULL` (32→20 m) senkt `base_scale` auf 0 (glatt); `TREMOR_FROM`→`TREMOR_FULL` (= Rauschen
+  20→4 m) `tremor`: nur im Fragment-Shader, kippt die Normale um feine Ringe (22 cm) ab `tremor_src` (Punkt am
+  Rand zum Monster hin), alle 0,9 s ein Stoß, der mit 2,5 m/s läuft – das Raster ist dafür zu grob. Monster in
+  `hall` (Region `pool`) → `slosh`: stehende Welle der Länge nach (`SLOSH_HEIGHT` 15 cm, `SLOSH_PERIOD` 9 s) plus
+  eine schnellere quer, Grundwellen × `SLOSH_WAVES`; Schaum am Rand auch aus dem Schwappen, Gischt (`_drops`)
+  entlang des hohen Endes, wenn die Längswelle anschlägt. Alles zusammen höchstens `max_rise` (27 cm) – das Wasser
+  bleibt unter der Kante. Debug `--pool=still|tremor|slosh|off` setzt die Stufe ohne Übergang.
 - **Öffnungen → Objekte** (`_opening_object`): Türen gehen in Zimmer und Räume auf, nie in den Flur
   (`_inner_side`); ab 1,5 m Breite Doppeltür. Terrassen- und Glastüren sind gläserne Doppeltüren, Aufzüge
   verschlossen („Außer Betrieb“), der Haupteingang verriegelt. Fenster schauen von innen nach draußen; ihre

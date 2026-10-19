@@ -46,6 +46,7 @@ const COMMANDS := {
 	"cat": ["minka|socke|kasimir", "Katze vor den Spieler setzen"],
 	"pos": ["x,y,z[,winkel[,neigung]]", "Spieler versetzen"],
 	"splash": ["x,z", "nach 1 s platscht es dort im Pool"],
+	"pool": ["still|tremor|slosh", "Poolwasser wie bei nahem Monster (glatt, Zittern, Schwappen)"],
 	"pocket": ["", "Kompass, Kartenblätter, Schlüssel 18"],
 	"flashlight": ["[uv]", "Taschenlampe in die Hand"],
 	"show": ["map|keys|compass", "Karte/Kompass hervorholen"],
