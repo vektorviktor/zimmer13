@@ -57,12 +57,14 @@ static func psx(color: Color, tex_id: String = "", tex_scale: float = 1.0, emiss
 	return m
 
 
-## PSX-Material mit der Farbtextur aus einer importierten GLB – eins pro Modelldatei.
-static func model(path: String, src: MeshInstance3D) -> ShaderMaterial:
-	var key := "model|" + path
+## PSX-Material mit der Farbtextur aus einer importierten GLB – eins pro Textur der Modelldatei
+## (surface = Fläche des Meshs, deren Material die Textur liefert).
+static func model(path: String, src: MeshInstance3D, surface: int = 0) -> ShaderMaterial:
+	var tex := (src.get_active_material(surface) as BaseMaterial3D).albedo_texture
+	var key := "model|%s|%d" % [path, tex.get_instance_id() if tex else 0]
 	if not _cache.has(key):
 		var m := psx(Color(0.8, 0.8, 0.8), "", 1.0, Color.BLACK, 0.0, false)
-		m.set_shader_parameter("albedo_tex", (src.get_active_material(0) as BaseMaterial3D).albedo_texture)
+		m.set_shader_parameter("albedo_tex", tex)
 		_cache[key] = m
 	return _cache[key]
 

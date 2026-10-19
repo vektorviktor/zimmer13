@@ -22,11 +22,14 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   `tools/build_bottles.py` aus dem Paket in `assets/source/`) und der Plattenspieler
   `assets/models/record_player.glb` (`tools/build_record_player.py`: Objekte `body` und `record`, die
   Platte ist eine eigene runde Scheibe mit Ursprung auf der Drehachse, damit `RecordPlayer` sie drehen
-  kann). Optional die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`: Kübel samt
+  kann). Die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`: Kübel samt
   Bepflanzung in Metern, Ursprung mittig unten, Grundfläche 2 × 2 m wie alle Kübel im Plan; Kollision nur der
   Quader `PLANTER_H` = 0,6 m über die Grundfläche; fehlt die Datei, bleiben Steinquader und Heckenkugel).
-  Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh)` in ein `Mat.psx` (eins pro Modelldatei – mehrere
-  Materialien in einer GLB teilen sich die Textur des ersten Meshs, also alles auf eine Textur backen).
+  Ausgangsmodell ist genau dieser Platzhalter: `godot --headless --path . -s tools/build_planter.gd` schreibt
+  `pot` (Material `stone`) und `hedge` (Material `leaves`) mit den `TexGen`-Texturen und UVs wie die
+  Weltprojektion des Shaders (1 m = eine Kachel) – zum Weiterbearbeiten in Blender, ein Neubau überschreibt es.
+  Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh, fläche)` in ein `Mat.psx` (eins pro Textur der
+  Modelldatei, Grundfarbe 0,8 Grau – Farbtöne gehören in die Textur, die Materialfarbe wird ignoriert).
   **Tapeten** `assets/textures/wallpaper_<variante>.png` (teal für Flure, Küche, Bar und Treppenhaus, beige für die Zimmer, red für die Lobby) + gemeinsame Höhenkarte
   `wallpaper_bump.png`, siehe „Optik“ in 9.
   **Katzenmodell** `assets/models/cat.glb` (`HotelCat`, Spielkonzept 6.11): `tools/build_cat.py` aus

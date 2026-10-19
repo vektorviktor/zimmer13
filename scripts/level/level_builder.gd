@@ -44,7 +44,8 @@ const COUCH_SCALE := 0.55
 ## 28 einzelne Flaschen „bottle_NN“ in Metern, Ursprung mittig unten (tools/build_bottles.py)
 const BOTTLES_MODEL := "res://assets/models/bottles.glb"
 ## Pflanzkübel samt Bepflanzung in Metern, Ursprung mittig unten, Grundfläche 2 × 2 m wie im Plan.
-## Fehlt die Datei, baut `_gardens()` den Platzhalter aus Steinquader und Heckenkugel.
+## Fehlt die Datei, baut `_gardens()` den Platzhalter aus Steinquader und Heckenkugel
+## (als Ausgangsmodell exportiert von tools/build_planter.gd).
 const PLANTER_MODEL := "res://assets/models/planter.glb"
 ## Höhe des Kollisionsquaders (und des Platzhalter-Kübels)
 const PLANTER_H := 0.6
@@ -1321,7 +1322,8 @@ func _planter(c: Vector3, size: Vector2) -> void:
 	model.position.y = -PLANTER_H / 2.0
 	body.add_child(model)
 	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
-		m.material_override = Mat.model(PLANTER_MODEL, m)
+		for s in m.mesh.get_surface_count():
+			m.set_surface_override_material(s, Mat.model(PLANTER_MODEL, m, s))
 
 
 ## Kürbisbeete unter den Pflanzen des Plans (je Reihe ein Beet) und davor die Plätze, an denen Gäste im Garten
