@@ -11,9 +11,11 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
   verweisen auf das Spielkonzept, z. B. `(Spielkonzept 4.13)`.
 - Systeme sprechen über die Referenzen in `Game` miteinander (`Game.director.on_noise(...)`), nicht über Signale.
 - Interagierbar = `set_meta("interactable", self)` + `get_prompt(player)` / `interact(player)`.
-- **Speicherformat:** Feste Welt-Objekte werden über die Reihenfolge in ihrer Gruppe zugeordnet.
-  Ändert sich Anzahl oder Bau-Reihenfolge von Türen, Lampen, Schaltern, Fenstern, Verstecken, Truhen,
-  Pflanzen oder Ressourcen-Stellen → `SaveManager.VERSION`/`MIN_VERSION` erhöhen. Danach `--savetest`.
+- **Speicherformat:** Umbauten am Hotel (Türen, Lampen, Verstecke … verschoben, neu, weg) brauchen nichts –
+  der Fingerabdruck der Welt (`SaveManager.note_world`) lehnt alte Stände dann mit Hinweis ab. Rückwärts-
+  kompatibilität kommt erst spät (Entscheidung 19.10.). `VERSION`/`MIN_VERSION` nur erhöhen und `--savetest`
+  nur laufen lassen, wenn sich am Speichern selbst etwas ändert (Felder in `collect`/`apply`, neue Gruppe →
+  auch in `WORLD_GROUPS`).
 - `Item.Kind` und die Zufallsaufrufe in `GuestGenerator.make()` nur am Ende erweitern (Spielstände).
 - Spielzeit läuft über `delta` bzw. `MonsterDirector.elapsed` – nie über Systemzeit (Pause!).
 

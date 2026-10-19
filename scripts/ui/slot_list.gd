@@ -1,7 +1,8 @@
 class_name SlotList
 extends VBoxContainer
 ## Slot-Übersicht (Spielkonzept 8.5): Vorschaubild, Tagebuchsatz, Spielzeit, Datum,
-## lebende Gäste. Modus LOAD zeigt zusätzlich den Autosave; leere Slots sind dann gesperrt.
+## lebende Gäste. Modus LOAD zeigt zusätzlich den Autosave; leere und nicht mehr passende Slots
+## (SaveManager.fits) sind dann gesperrt.
 
 signal picked(slot: int)
 
@@ -36,7 +37,7 @@ func _row(slot: int) -> Control:
 	var button := Button.new()
 	button.custom_minimum_size = Vector2(0, 44)
 	button.focus_mode = Control.FOCUS_ALL
-	button.disabled = info.is_empty() and mode == Mode.LOAD
+	button.disabled = (info.is_empty() or not info["fits"]) and mode == Mode.LOAD
 	button.pressed.connect(func() -> void: picked.emit(slot))
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -72,6 +73,8 @@ func _row(slot: int) -> Control:
 	text.add_child(head)
 	if info.is_empty():
 		text.add_child(_small("– leer –"))
+	elif not info["fits"]:
+		text.add_child(_small("%s · passt nicht mehr zu diesem Hotel" % UiKit.date_text(int(info["saved_at"]))))
 	else:
 		var alive: Array = info["alive"]
 		text.add_child(_small("%s · %s · Spielzeit %s · Gäste: %s" % [Calendar.date_text(float(info["playtime"])),

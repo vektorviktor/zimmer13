@@ -179,7 +179,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 Ohne Parameter startet das Spiel mit dem Titelbildschirm; mit Parametern direkt im Hotel.
 Für lange Testläufe hilft Godots eigenes `--time-scale 3` (vor dem `--`), z. B. `--path . --time-scale 3 --quit-after 36000 -- --day=3 --nointro --trace`.
 Spielstände liegen in `%APPDATA%/Godot/app_userdata/Zimmer 13/saves/`, Einstellungen in `settings.cfg` daneben.
-Spielstände älterer Versionen (vor dem größeren Hotel bzw. den Zufallsgästen) werden nicht mehr geladen.
+Spielstände aus einem älteren Hotel (seitdem umgebaut) oder einer älteren Spielstand-Version werden in der Übersicht als „passt nicht mehr zu diesem Hotel“ gezeigt und nicht geladen.
 
 ## Aufbau
 

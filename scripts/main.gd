@@ -198,6 +198,7 @@ func _ready() -> void:
 		console.setup(run_debug)
 
 	Game.player_died.connect(_on_player_died)
+	SaveManager.note_world.call_deferred()   # nach dem Aufbau, bevor sich etwas bewegt
 	if not Game.pending_load.is_empty():
 		_load_pending.call_deferred()
 	else:
@@ -214,6 +215,11 @@ func _ready() -> void:
 func _load_pending() -> void:
 	var data := Game.pending_load
 	Game.pending_load = {}
+	if not SaveManager.fits(data):   # Hotel seit dem Speichern umgebaut – nicht falsch befüllen
+		SaveManager.visited = []
+		SaveManager.last_save_msec = -1
+		Game.say("Dieser Spielstand passt nicht mehr zum Hotel. Das Spiel beginnt von vorn.", 8.0)
+		return
 	SaveManager.apply(data)
 	Game.say("„%s“" % String(data.get("text", "")), 5.0)
 

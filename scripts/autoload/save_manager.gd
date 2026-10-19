@@ -5,6 +5,9 @@ extends Node
 ## Zustand, alle Gäste, die versteckten Werte des Monsters, Lampen, Türen, Vorhänge …
 ## Dateien: user://saves/slot_N.json (+ .png Vorschaubild), sicher geschrieben über .tmp.
 ## Laden = Hauptszene neu aufbauen und dann aus dem Spielstand befüllen.
+## Feste Welt-Objekte werden über ihre Reihenfolge in der Gruppe zugeordnet. Ein Spielstand passt deshalb nur
+## zu genau dem Hotel, in dem er entstand: Der Fingerabdruck der Welt (world_fingerprint) steht im Spielstand,
+## ändert sich das Hotel, wird der Stand mit Hinweis abgelehnt statt falsch befüllt.
 
 signal autosaved
 
@@ -31,12 +34,21 @@ const DIR := "user://saves/"
 ## 17: vier Deckenleuchten in der Lobby (Spielkonzept 7.3) – mehr Lampen, ältere Stände passen nicht mehr
 ## 18: Deckenleuchten in Bar, Partyraum und Lobby – mehr Lampen, ältere Stände passen nicht mehr
 ## 19: Deckenleuchten über den zehn Flurkübeln – mehr Lampen, ältere Stände passen nicht mehr
-const VERSION := 19
-const MIN_VERSION := 19
+## 20: Fingerabdruck der Welt („world“) – Umbauten am Hotel brauchen keine neue Version mehr, nur noch
+##     Änderungen am Aufbau des Spielstands selbst
+const VERSION := 20
+const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
 const AUTOSAVE_MONSTER_DISTANCE := 25.0
+## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
+## (Katzen beginnen nicht immer am selben Platz)
+const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
+	"windows", "hide_spots", "phones", "dressers", "cats"]
+const COUNT_ONLY := ["cats"]
+## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
+const WORLD_FILE := DIR + "world.txt"
 ## Bereiche, deren erster Besuch einen Autosave auslöst
 const NEW_AREAS := ["Lobby", "Galerie", "Küche", "Speisesaal", "Bar", "Partyraum", "Pool", "Garten", "Innenhof Nordost", "Innenhof Südost",
 	"Ostflügel, Nordflur", "Westflügel, Südflur", "Treppenhaus", "Keller", "Zimmer 0116", "Zimmer 0117", "Zimmer 0118"]
@@ -45,6 +57,8 @@ const NEW_AREAS := ["Lobby", "Galerie", "Küche", "Speisesaal", "Bar", "Partyrau
 var last_save_msec := -1
 var visited: Array = []
 
+## Fingerabdruck des aktuellen Hotels ("" = noch keins gebaut, dann aus WORLD_FILE)
+var world := ""
 var _pending_autosave := ""
 var _check_timer := 0.0
 
@@ -52,6 +66,8 @@ var _check_timer := 0.0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	DirAccess.make_dir_recursive_absolute(DIR)
+	if FileAccess.file_exists(WORLD_FILE):
+		world = FileAccess.get_file_as_string(WORLD_FILE).strip_edges()
 
 
 func _process(delta: float) -> void:
@@ -78,15 +94,45 @@ func slot_exists(slot: int) -> bool:
 	return FileAccess.file_exists(slot_path(slot))
 
 
-## Kopfdaten für die Slot-Übersicht ({} = leer oder unlesbar).
+## Kopfdaten für die Slot-Übersicht ({} = leer oder unlesbar). "fits" = false: stammt aus einem anderen
+## Hotel oder einer anderen Spielstand-Version und lässt sich nicht laden.
 func slot_info(slot: int) -> Dictionary:
 	var data := _read(slot)
 	if data.is_empty():
 		return {}
 	return {
 		"text": data.get("text", ""), "saved_at": data.get("saved_at", 0),
-		"playtime": data.get("playtime", 0.0), "alive": data.get("alive", []),
+		"playtime": data.get("playtime", 0.0), "alive": data.get("alive", []), "fits": fits(data),
 	}
+
+
+## Passt der Spielstand zu diesem Spiel? Ist das Hotel noch nicht gebaut und auch kein Fingerabdruck
+## gemerkt, gilt er vorerst als passend – main.gd prüft nach dem Aufbau noch einmal.
+func fits(data: Dictionary) -> bool:
+	var version := int(data.get("version", 0))
+	if version > VERSION or version < MIN_VERSION:
+		return false
+	return world == "" or String(data.get("world", "")) == world
+
+
+## Fingerabdruck aus Anzahl und Lage der festen Welt-Objekte – nach dem Aufbau des Hotels aufrufen,
+## bevor sich etwas bewegt. Merkt ihn sich auch für die Slot-Übersicht im Titelbildschirm.
+func note_world() -> void:
+	var parts: PackedStringArray = []
+	for group in WORLD_GROUPS:
+		var nodes := get_tree().get_nodes_in_group(group)
+		parts.append("%s:%d" % [group, nodes.size()])
+		if group in COUNT_ONLY:
+			continue
+		for node in nodes:
+			var p: Vector3 = (node as Node3D).global_position.snapped(Vector3.ONE * 0.1)
+			parts.append("%.1f,%.1f,%.1f" % [p.x, p.y, p.z])
+	var fingerprint := ";".join(parts).md5_text()
+	if fingerprint != world:
+		world = fingerprint
+		var file := FileAccess.open(WORLD_FILE, FileAccess.WRITE)
+		if file:
+			file.store_string(world)
 
 
 func thumbnail(slot: int) -> Texture2D:
@@ -103,7 +149,7 @@ func newest_slot() -> int:
 	var best_time := -1
 	for slot in range(0, SLOTS + 1):
 		var info := slot_info(slot)
-		if not info.is_empty() and int(info["saved_at"]) > best_time:
+		if not info.is_empty() and info["fits"] and int(info["saved_at"]) > best_time:
 			best_time = int(info["saved_at"])
 			best = slot
 	return best
@@ -179,7 +225,7 @@ func _check_new_area() -> void:
 
 func load_slot(slot: int) -> bool:
 	var data := _read(slot)
-	if data.is_empty():
+	if data.is_empty() or not fits(data):
 		return false
 	Game.pending_load = data
 	Game.new_game_slot = 0
@@ -249,6 +295,7 @@ func collect() -> Dictionary:
 	var p := Game.player
 	var data := {
 		"version": VERSION,
+		"world": world,
 		"saved_at": int(Time.get_unix_time_from_system()),
 		"playtime": Game.director.elapsed,
 		"money": Game.money,
@@ -551,11 +598,7 @@ func _read(slot: int) -> Dictionary:
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return {}
-	var data: Dictionary = parsed
-	var version := int(data.get("version", 0))
-	if version > VERSION or version < MIN_VERSION:
-		return {}
-	return data
+	return parsed
 
 
 func _v(v: Vector3) -> Array:

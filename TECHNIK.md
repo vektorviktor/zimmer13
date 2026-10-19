@@ -134,7 +134,7 @@ erzeugt die Gäste) → Dialog → PhoneCalls (findet die Telefone) → DiceMatc
 `_parse_debug_args` (deferred).
 
 **Wichtig:** Die Reihenfolge, in der der LevelBuilder Objekte erzeugt, ist Teil des
-Speicherformats (siehe 7).
+Speicherformats (siehe 7) – ändert sie sich, passen alte Spielstände nicht mehr (Fingerabdruck).
 
 ### Szenenbaum (grob)
 ```
@@ -310,8 +310,8 @@ festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
   `--navcheck` misst Bau- und Backzeit (EG: ca. 0,5 s + 0,4 s) und prüft die Wege zu allen wichtigen Orten.
 - Ein neues Zimmer: im Plan zeichnen und in den Objektebenen einrichten (Bett, Schrank, Leuchte, Schalter …),
   `tools/build_map.py` laufen lassen – Wände, Tür, Einrichtung, Zone und Wegpunkt entstehen daraus.
-  **Speicherformat beachten** (siehe 7): Jede Änderung an Lampen, Schaltern, Verstecken, Kommoden, Truhen,
-  Telefonen, Pflanzen oder Vorräten im Plan verschiebt die Reihenfolge.
+  Jede Änderung an Lampen, Schaltern, Verstecken, Kommoden, Truhen, Telefonen, Pflanzen oder Vorräten im Plan
+  verschiebt die Reihenfolge – alte Spielstände werden dann abgelehnt (siehe 7), zu tun ist nichts.
 
 ### Gebäudeplan (`map.aseprite` → `tools/build_map.py` → `assets/maps/<stockwerk>.json`)
 Grundriss seit Spielkonzept 7.5. Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
@@ -546,9 +546,16 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
 - **Feste Welt-Objekte werden über die Reihenfolge in ihrer Gruppe zugeordnet** (`_apply_group`:
   Index i im Spielstand ↔ i-ter Knoten der Gruppe). Passt die Anzahl nicht, wird die ganze Gruppe
   mit Warnung übersprungen. Spuren an Türen/Fenstern speichern ebenfalls den Index in `doors`/`windows`.
-  → **Jede Änderung, die Anzahl oder Bau-Reihenfolge von Türen, Truhen, Lampen, Schaltern, Fenstern,
-  Verstecken, Pflanzen oder Ressourcen-Stellen ändert, braucht `VERSION`/`MIN_VERSION` +1** (mit
-  Kommentarzeile, was sich geändert hat). Alte Stände werden dann nicht mehr angeboten.
+- **Fingerabdruck der Welt** statt Versionssprung bei jedem Umbau (Entscheidung 19.10.: Kompatibilität alter
+  Stände erst spät): `main.gd` ruft nach dem Aufbau `SaveManager.note_world()` – MD5 über Anzahl und Lage
+  (auf 10 cm) der Knoten jeder Gruppe in `WORLD_GROUPS`, bei `COUNT_ONLY` (Katzen, Startplatz wechselt) nur
+  die Anzahl. Steht als `world` im Spielstand und in `user://saves/world.txt`, damit die Slot-Übersicht ihn
+  vor dem Aufbau kennt. `fits(data)` = passende `VERSION` und gleicher Abdruck; nicht passende Stände zeigt
+  `SlotList` gesperrt mit „passt nicht mehr zu diesem Hotel“, `newest_slot` (Fortsetzen) übergeht sie. Ist
+  `world.txt` veraltet (Code seit dem letzten Start geändert), prüft `main._load_pending` nach dem Aufbau
+  erneut und startet bei Abweichung neu mit Hinweis. Neue Gruppe mit Zustand → in `WORLD_GROUPS` eintragen.
+- `VERSION`/`MIN_VERSION` nur noch für den Aufbau des Spielstands selbst (Felder in `collect`/`apply`),
+  mit Kommentarzeile.
 - Gegenstände werden nicht zugeordnet: beim Laden werden alle gelöscht und aus `kind` + `extra`
   (`Item.create_extra()`) neu erzeugt. Neuer Gegenstandszustand → in `create_extra()`/`_build()`
   abbilden oder in `_item_data`/`_make_item` ergänzen.
@@ -563,7 +570,9 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
   (gesehene Blutlachen/Leichen) und `experiences` (Zeitpunkte als `Director.elapsed`).
 - Speichern am Tagebuch gesperrt bei Jagd oder Monster näher als `NOISE_START`; Autosave nur in
   sicheren Momenten (`is_safe_for_autosave`), sonst aufgeschoben.
-- **Prüfen:** `--savetest` sammelt → wendet an → sammelt erneut und meldet Unterschiede.
+- **Prüfen:** `--savetest` sammelt → wendet an → sammelt erneut und meldet Unterschiede – nur nötig, wenn sich
+  am Speichern etwas ändert. Einzelne Abweichungen bei Türen oder Katzen sind Bewegung zwischen den beiden
+  Sammelzeitpunkten (wechselt von Lauf zu Lauf).
 
 ## 8. Weitere Systeme (Kurzüberblick)
 
@@ -637,8 +646,8 @@ Preis in `PRICES`, Aussehen/`deco_strength` in `_build()`, ggf. `create_extra()`
 **Neues interagierbares Objekt:** Körper auf passender Ebene (meist 3 = Bit 4),
 `set_meta("interactable", self)`, `get_prompt`/`interact`, Gruppe. Platzieren über den Plan: Farbe mit
 Namen in die Palette (`Ausstattung: …`/`Möbel: …`), Eintrag in `FITTINGS`/`FURNITURE` von `tools/build_map.py`,
-Fall in `LevelBuilder._fittings`/`_furniture`. Hat es Zustand → `save_state`/`load_state` + SaveManager +
-`VERSION` erhöhen.
+Fall in `LevelBuilder._fittings`/`_furniture`. Hat es Zustand → `save_state`/`load_state` + SaveManager
+(Gruppe auch in `WORLD_GROUPS`) + `VERSION` erhöhen.
 
 **Neue Gast-Aktivität:** Schlüssel in `activities` der Profile/Archetypen, Fall in
 `Guest._next_activity()`, ggf. eigener `State` und Fall in `_arrive()`.
@@ -668,7 +677,7 @@ Tabelle im README.
   des Fensters geklaut, deshalb startet jeder Lauf mit dem Editor-Binary ohne Fokus
   (`window/size/no_focus.editor_runtime` in `project.godot`); ohne `--bg` holt `Game._ready` ihn sofort nach.
   Exportierte Spiele betrifft das nicht.
-- Nach Änderungen am Speichern oder an der Welt: `--savetest` laufen lassen (`alles gleich` erwartet).
+- Nach Änderungen am Speichern (nicht an der Welt): `--savetest` laufen lassen (`alles gleich` erwartet).
 - Sonst keine automatisierten Tests – Prüfung über Debug-Parameter, Konsole und Screenshots. Ausnahme Schach:
   `Godot --headless --path . -s res://tests/chess_perft.gd` bzw. `…/chess_ai_speed.gd`. Neue Klassen kennt
   Godot erst nach einem Import (`--headless --import`).
