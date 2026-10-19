@@ -77,7 +77,8 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   (auf der Stelle), Netz unverändert von Meshy (höchstens 15 000 Dreiecke – Reduzieren zieht Dreiecke über
   Meshys winzige UV-Inseln und macht Schlieren), 1024er-Textur als PNG (JPEG färbt die Inselränder), Lücken
   zwischen den Inseln vor dem Verkleinern gefüllt, Blick nach −Z, Füße auf 0, Maße in Metern. **Färbemaske** als
-  Punktfarbe je Fläche (R/G/B = Oberteil/Hose/Haare): Kopf-/Hals-Knochen → Haare, sonst hellere Grautöne →
+  Punktfarbe je Fläche (R/G/B = Oberteil/Hose/Haare): Kopf-/Hals-Knochen → Haare (nur das größte zusammen-
+  hängende Stück – Iris und Augenweiß sind kleine Inseln im Gesicht, `HAIR_MIN_PART`), sonst hellere Grautöne →
   Oberteil, dunklere → Hose; Haut, Schuhe, Hände bleiben. **Formschlüssel `build`** (Körperbau, 1 = kräftig,
   negativ = schlank). Das Skript gibt die Zeile für `GuestBody.BODIES` aus (Höhe, Schulterbreite, Laufweite
   der Animationen, mittlere Helligkeit je Färbebereich) – nach jedem Neubau übernehmen. Kinderkörper (6.13,

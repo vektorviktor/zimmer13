@@ -14,11 +14,11 @@ extends Node3D
 const BODIES := {
 	"man": {
 		"path": "res://assets/models/guest_man.glb", "sex": "m",
-		"height": 1.700, "width": 0.433, "walk": 1.40, "run": 2.44, "ref": Vector3(0.383, 0.125, 0.200),
+		"height": 1.700, "width": 0.433, "walk": 1.40, "run": 2.44, "ref": Vector3(0.383, 0.125, 0.199),
 	},
 	"girl10": {
 		"path": "res://assets/models/guest_girl10.glb", "sex": "f", "age": 10,
-		"height": 1.640, "width": 0.394, "walk": 1.46, "run": 2.55, "ref": Vector3(0.416, 0.080, 0.048),
+		"height": 1.640, "width": 0.394, "walk": 1.46, "run": 2.55, "ref": Vector3(0.416, 0.080, 0.047),
 	},
 }
 ## Breite wird nur so weit gestreckt (sonst sieht man es an Armen und Beinen)

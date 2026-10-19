@@ -16,8 +16,9 @@
 #   G = Hose, B = Haare (0 oder 1). Die mittlere Helligkeit je Bereich gibt das Skript aus – sie
 #   gehört nach GuestBody.BODIES („ref“). Der Shader rechnet Gastfarbe × Helligkeit / Mittelwert,
 #   so behält die Kleidung Falten und Maschen. Welcher Bereich:
-#   Kopf/Hals-Knochen → Haare, Füße → nichts, sonst hell = Oberteil, dunkel = Hose (zwei Gruppen
-#   über die Grauwerte). Nur graue Stellen zählen; Haut, Schuhe und Augenweiß bleiben.
+#   Kopf/Hals-Knochen → Haare (nur das große zusammenhängende Stück, Augen sind kleine Inseln),
+#   Füße → nichts, sonst hell = Oberteil, dunkel = Hose (zwei Gruppen über die Grauwerte). Nur graue
+#   Stellen zählen; Haut, Schuhe und Augen bleiben.
 # - Formschlüssel „build“ (Körperbau): Bauch, Hüfte, Oberarme, Schenkel und Hals entlang der
 #   Oberfläche nach außen. 1 = kräftig, negativ = schlank.
 # - Blick nach −Z, Füße auf y = 0. Größe bleibt (Meter) – skaliert wird im Spiel je Gast.
@@ -32,6 +33,7 @@ TEX_SIZE = 1024           # kleiner verschwimmen die Gesichter (die Inseln sind 
 WORK_SIZE = 1024          # Arbeitsgröße der Textur für Maske und Lückenfüllen
 GREY_SAT = 0.09           # max. Sättigung (max − min) einer „grauen“ Stelle
 GREY_LUM = (0.12, 0.86)   # Helligkeitsbereich grauer Stoffe/Haare (darüber: Augenweiß)
+HAIR_MIN_PART = 0.05      # kleinere graue Teile im Kopfbereich (Augen) sind keine Haare (Anteil am größten)
 ## Körperbau: Verschiebung (m) entlang der Normalen je Knochen bei Wert 1
 BUILD_PUSH = {
 	"Hips": 0.035, "Spine": 0.045, "Spine1": 0.035, "Spine2": 0.018, "Neck": 0.010,
@@ -179,6 +181,35 @@ for z, g, a, gl in samples:
 		region.append(2)
 	else:
 		region.append(0 if np.mean(g) >= split else 1)
+# Haare: nur große zusammenhängende Bereiche – Iris und Augenweiß sind kleine graue Inseln im Gesicht
+# (rundum Haut) und behalten ihre Farbe. Zusammenhang über gemeinsame Punkte (an UV-Nähten doppelt)
+hair_root = list(range(len(region)))
+
+
+def root_of(i):
+	while hair_root[i] != i:
+		hair_root[i] = hair_root[hair_root[i]]
+		i = hair_root[i]
+	return i
+
+
+first_at = {}
+for poly, r in zip(mesh.polygons, region):
+	if r != 2:
+		continue
+	for vi in poly.vertices:
+		j = first_at.setdefault(tuple(round(c, 5) for c in mesh.vertices[vi].co), poly.index)
+		hair_root[root_of(poly.index)] = root_of(j)
+part_area = {}
+for poly, r in zip(mesh.polygons, region):
+	if r == 2:
+		part_area[root_of(poly.index)] = part_area.get(root_of(poly.index), 0.0) + poly.area
+biggest = max(part_area.values()) if part_area else 0.0
+for poly, r in zip(mesh.polygons, region):
+	if r == 2 and part_area[root_of(poly.index)] < HAIR_MIN_PART * biggest:
+		region[poly.index] = -1
+print("Haare: Teile (Anteil am größten) %s, behalten ab %.2f"
+	% (" ".join("%.3f" % (a / biggest) for a in sorted(part_area.values(), reverse=True)), HAIR_MIN_PART))
 ref = []
 for r in range(3):
 	ls = [(np.mean(gl), a) for (z, g, a, gl), rr in zip(samples, region) if rr == r]
