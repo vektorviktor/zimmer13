@@ -155,6 +155,7 @@ var _bleeding := 0.0
 var _step_dist := 0.0
 var _foot_side := 1.0
 var _trace_pos := Vector3.ZERO
+var _steps: Footsteps
 var _shock_scan := 0.0
 var _shock_look := Vector3.ZERO
 var _shock_style := ""
@@ -199,6 +200,8 @@ func _ready() -> void:
 	agent.target_desired_distance = 0.4
 	agent.path_height_offset = 0.2   # NavMesh liegt ~0,2 m über dem Boden
 	add_child(agent)
+	_steps = Footsteps.new()
+	add_child(_steps)
 	_build_visual()
 	_deco_timer = randf_range(30.0, 70.0)
 	_steal_timer = randf_range(30.0, 60.0)
@@ -1469,7 +1472,7 @@ func _ripe_plant() -> PumpkinPlant:
 
 # --- Spuren der Gäste ------------------------------------------------------------------
 
-## Schlammige Schuhabdrücke nach dem Garten, Wachs von etwas Brennendem in der Hand,
+## Schritte zum Hören (Footsteps), schlammige Schuhabdrücke nach dem Garten, Wachs von etwas Brennendem in der Hand,
 ## Blutstropfen nach einem Angriff.
 func _leave_traces(delta: float) -> void:
 	_bleeding = maxf(0.0, _bleeding - delta)
@@ -1484,6 +1487,7 @@ func _leave_traces(delta: float) -> void:
 	if _step_dist < 0.8:
 		return
 	_step_dist = 0.0
+	_steps.step(Footsteps.floor_under(self), moved / maxf(delta, 0.001) > WALK_SPEED * 1.5, is_child())
 	var traces := Game.traces
 	if traces == null:
 		return

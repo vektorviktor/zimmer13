@@ -36,6 +36,7 @@ const LEFT_DOWN := Vector3(0.0, -0.3, 0.05)
 const INSPECT_SPEED := 0.5        ## Laufen beim Draufschauen: halbe Geschwindigkeit
 const TRANCE_SLOW := 0.65         ## volle Hypnose des Lakengeists: so viel langsamer
 const STEP_LENGTH := 0.75         ## alle so viele Meter ein Schritt (Lärm auf Holz/Fliesen, 4.15)
+const RUN_STEP_LENGTH := 1.3      ## beim Rennen: nur zu hören (Footsteps), Lärm macht der Lauf-Takt
 const LAND_SPEED := 2.5           ## ab dieser Fallgeschwindigkeit ist Landen zu hören
 const SOFT_FLOORS := ["carpet", "grass"]   ## Teppich und Rasen schlucken Schritte
 ## Schlagen und Rammen (Spielkonzept 6.3): Reichweite eines Schlags, Mindesttempo zum Rammen,
@@ -124,6 +125,7 @@ var _focus = null
 var _noise_timer := 0.0
 var _pant_timer := 0.0
 var _step_dist := 0.0
+var _steps: Footsteps
 var _was_on_floor := true
 var _bob := 0.0
 var _hide_yaw := 0.0
@@ -161,6 +163,8 @@ func _ready() -> void:
 	head = Node3D.new()
 	head.position.y = EYE_HEIGHT
 	add_child(head)
+	_steps = Footsteps.new()
+	add_child(_steps)
 	camera = Camera3D.new()
 	camera.fov = Settings.fov
 	Settings.changed.connect(func() -> void: camera.fov = Settings.fov)
@@ -316,29 +320,16 @@ func _physics_process(delta: float) -> void:
 			_noise_timer = 0.6
 			if Game.director:
 				Game.noise("run", global_position, self)
-	elif moving and not crouching:
+	# Schritte: auf Teppich zu hören (Footsteps), Lärm nur beim Gehen auf hartem Boden (4.15)
+	if moving and (running or not crouching):
 		_step_dist += speed * delta
-		if _step_dist >= STEP_LENGTH:
+		if _step_dist >= (RUN_STEP_LENGTH if running else STEP_LENGTH):
 			_step_dist = 0.0
-			if Game.director and not _on_soft_floor():
+			var ground := Footsteps.floor_under(self)
+			_steps.step(ground, running)
+			if not running and Game.director and ground != "air" and not ground in SOFT_FLOORS:
 				Game.noise("step", global_position, self)
 	_update_focus()
-
-
-## Steht der Spieler auf Teppich oder Rasen? Dort sind Schritte still (4.15).
-func _on_soft_floor() -> bool:
-	var query := PhysicsRayQueryParameters3D.create(global_position + Vector3.UP * 0.1, global_position + Vector3.DOWN * 0.4, 1)
-	var hit := get_world_3d().direct_space_state.intersect_ray(query)
-	if hit.is_empty():
-		return true
-	for child in (hit["collider"] as Node).get_children():
-		var mi := child as MeshInstance3D
-		if mi and mi.material_override is ShaderMaterial:
-			var tex = (mi.material_override as ShaderMaterial).get_shader_parameter("albedo_tex")
-			for id in SOFT_FLOORS:
-				if tex == TexGen.get_tex(id):
-					return true
-	return false
 
 
 ## Linke Hand: Karte (Tab) oder Kompass (F) halten hebt sie vor die Augen. Mit einem großen
