@@ -748,7 +748,8 @@ Tabelle im README.
 - Preset „Windows Desktop“ in `export_presets.cfg`, Befehl im README. `binary_format/embed_pck=true` →
   eine einzelne `.exe`; Skripte als Binär-Tokens (`script_export_mode=2`); Ziel `build/` (Git-ignoriert).
 - Export-Filter „alle Ressourcen“: alles unter `res://` landet im Paket, außer `exclude_filter`
-  (`assets/source/*`, `tools/*`, `build/*`, `monster_idea.png`, `addons/meshy-godot-plugin/*`). Neue reine Arbeitsdateien dort ergänzen.
+  (`assets/source/*`, `tools/*`, `build/*`, `temp/*`, `addons/meshy-godot-plugin/*`). Neue reine Arbeitsdateien dort ergänzen.
+  `reference/` (Vorlagen, Referenzbilder) hat eine `.gdignore` – Godot sieht den Ordner gar nicht.
 - Nur `load()` mit festen `res://`-Pfaden verwenden – zusammengesetzte Pfade findet der Export nicht
   immer, und `res://` ist im Export schreibgeschützt. Alles Veränderliche gehört nach `user://`
   (Spielstände, `settings.cfg`), das im Export unter `%APPDATA%/Godot/app_userdata/Zimmer 13/` liegt.

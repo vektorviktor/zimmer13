@@ -18,7 +18,8 @@ build/
 # Austauschordner (Screenshots, Zwischenstände, Downloads) – nicht fürs Repo
 temp/
 # Vorlagen und Referenzbilder, nach denen gebaut wird (fremde Bilder, .gdignore: Godot importiert sie nicht)
-reference/
+reference/*
+!reference/monster_idea.png
 
 # Python-Zwischendateien (tools/mixamo_retarget.py wird von den Blender-Skripten importiert)
 __pycache__/
