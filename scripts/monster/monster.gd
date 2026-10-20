@@ -279,13 +279,15 @@ func _appear(pos: Vector3) -> void:
 
 # --- Wahrnehmung --------------------------------------------------------------
 
-## Alle, die es sehen und jagen kann: Spieler + lebende Gäste.
+## Alle, die es sehen und jagen kann: Spieler + lebende Gäste. Kinder übersieht es (Spielkonzept 6.13).
 func _actors() -> Array:
 	var list: Array = []
 	if Game.player:
 		list.append(Game.player)
 	if Game.social:
-		list.append_array(Game.social.living_guests())
+		for guest in Game.social.living_guests():
+			if not guest.is_child():
+				list.append(guest)
 	return list
 
 
@@ -562,6 +564,8 @@ func _check_hide_step(delta: float) -> void:
 		return
 	_face(_hide_target.global_position, delta)
 	var occupant = _hide_target.occupant
+	if occupant is Guest and (occupant as Guest).is_child():
+		occupant = null   # ein Kind im Versteck übersieht es (6.13)
 	if occupant != null and _hide_target.seen_entering and _state_timer > 0.4:
 		_kill(occupant, _hide_target)
 		return

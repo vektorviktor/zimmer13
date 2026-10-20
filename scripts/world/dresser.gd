@@ -15,7 +15,8 @@ const TRAY := Vector3(SIZE.x - 0.12, 0.15, SIZE.z - 0.07)
 ## Fund beim ersten Öffnen: Wahrscheinlichkeit für leer / Münzen, sonst ein Gegenstand
 const EMPTY_CHANCE := 0.4
 const COINS_CHANCE := 0.3
-const LOOT := [Item.Kind.CANDLE, Item.Kind.BULB, Item.Kind.BATTERY, Item.Kind.BATTERY, Item.Kind.KNIFE, Item.Kind.LOADED_DICE]
+const LOOT := [Item.Kind.CANDLE, Item.Kind.BULB, Item.Kind.BATTERY, Item.Kind.BATTERY, Item.Kind.KNIFE, Item.Kind.LOADED_DICE,
+	Item.Kind.SWEETS, Item.Kind.SWEETS]
 const EMPTY_LINES := ["Nur Staub.", "Ein alter Knopf, sonst nichts.", "Leer – bis auf eine tote Motte.", "Vergilbtes Briefpapier. Leer."]
 
 var is_open: Array[bool] = []

@@ -20,7 +20,7 @@ const ALL := {
 		"brave": 0.2, "greed": 0.15, "gossip": 0.5, "sell": 1.0, "buy": 0.6,
 		"harvester": false, "carver": false,
 		"likes": [Item.Kind.CANDLE, Item.Kind.LEAVES],
-		"stock": {Item.Kind.CANDLE: 4, Item.Kind.COBWEB: 1},
+		"stock": {Item.Kind.CANDLE: 4, Item.Kind.COBWEB: 1, Item.Kind.SWEETS: 2},   # Süßigkeiten für die Kinder (6.13)
 		"start_deco": [Item.Kind.CANDLE, Item.Kind.LEAVES],
 		"activities": {"room": 3.0, "lobby": 4.0, "kitchen": 2.0, "garden": 0.5, "wander": 0.5, "bar": 0.7},
 		"money": 12,
@@ -70,7 +70,7 @@ const ALL := {
 		"brave": 0.8, "greed": 0.9, "gossip": 0.2, "sell": 1.5, "buy": 0.5,
 		"harvester": true, "carver": false,
 		"likes": [Item.Kind.CARVED_PUMPKIN, Item.Kind.KNIFE],
-		"stock": {Item.Kind.PUMPKIN: 2, Item.Kind.CARVED_PUMPKIN: 1, Item.Kind.LEAVES: 3},
+		"stock": {Item.Kind.PUMPKIN: 2, Item.Kind.CARVED_PUMPKIN: 1, Item.Kind.LEAVES: 3, Item.Kind.SWEETS: 3},
 		"start_deco": [Item.Kind.CARVED_PUMPKIN],
 		"activities": {"room": 3.0, "lobby": 2.0, "kitchen": 1.0, "garden": 2.0, "wander": 1.0, "bar": 3.0},
 		"money": 30,

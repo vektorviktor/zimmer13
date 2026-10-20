@@ -45,6 +45,7 @@ const SHOCK_CRIES := {
 	"flee": ["Oh Gott! Nein, nein, nein!", "Hilfe! HILFE!", "Weg hier, nur weg!"],
 	"freeze": ["…", "Was zum …", "Das … das ist nicht wahr."],
 	"cry": ["Nein … *schluchzt*", "Oh nein, oh nein … *weint*", "Warum … *schluchzt*"],
+	"cling": ["*schreit*", "Neiiin!", "*weint laut*"],
 }
 ## So viele Erlebnisse merkt er sich (die ältesten fallen heraus)
 const MAX_EXPERIENCES := 5
@@ -64,6 +65,18 @@ const BAR_DRINK := 0.7
 const WEAK_FEAR := 0.6
 const HIT_FLEE_LINES := ["Hilfe! Der ist verrückt!", "Lass mich in Ruhe!", "Au! Hör auf!"]
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
+## Kinder (Spielkonzept 6.13): Grundwert an Schwäche für den Lakengeist; so viel Angst bekommen die Eltern,
+## wenn ihr Kind erschrickt; so oft rennt ein Kind los (Lärm wie Rennen) und so oft lacht es dabei bzw. auf
+## Feiern; so oft kann es in der Nachtruhe nicht schlafen und so lange bleibt es dann wach; so oft schenkt es
+## dir etwas, wenn es dich mag; so oft schließt sich ein Waisenkind dir an
+const CHILD_WEAKNESS := 0.5
+const CHILD_SCARE_FEAR := 40.0
+const CHILD_ROMP := 0.35
+const CHILD_LAUGH := Vector2(6.0, 14.0)
+const SLEEPLESS_CHANCE := 0.3
+const SLEEPLESS_TIME := Vector2(40.0, 80.0)
+const CHILD_GIFT := 0.2
+const ORPHAN_FOLLOW := 0.5
 
 var id := ""
 var profile: Dictionary
@@ -102,6 +115,7 @@ var chat_day := 0            ## Tag des letzten Plauderns
 var chats_today := 0         ## nur die ersten zwei Plaudereien am Tag zählen voll
 var attack_cooldown := 0.0
 var threatened := false      ## hat dir schon gedroht – beim nächsten Mal schlägt er zu
+var sleepless := false       ## Kind, das in dieser Nachtruhe nicht schlafen kann (Spielkonzept 6.13)
 
 var agent: NavigationAgent3D
 var _collider: CollisionShape3D
@@ -151,6 +165,9 @@ var _bump_cooldown := 0.0
 var _push := Vector3.ZERO  ## Rückstoß beim Stolpern
 var _hit_back := false     ## nach dem Stolpern: zurückschlagen statt fliehen
 var _resume_follow := 0.0  ## Begleiter im Gespräch: so lange kommt er danach noch mit
+var _romp := false         ## Kind rennt aus Spaß (oder zu Mama und Papa) – Lärm wie beim Rennen
+var _laugh := 0.0
+var _awake_left := 0.0     ## schlafloses Kind: so lange bleibt es noch wach
 
 
 func setup(p_id: String, p_home: Dictionary) -> Guest:
@@ -189,6 +206,23 @@ func _ready() -> void:
 
 
 # --- Für Dialog & Social ------------------------------------------------------
+
+## Kind (Spielkonzept 6.13): nie Opfer, trinkt nicht, kommt immer zu Feiern, schlägt und klaut nicht.
+func is_child() -> bool:
+	return bool(profile.get("child", false))
+
+
+## Mama oder Papa eines Kindes – null, wenn er kein Kind ist oder sie nicht mehr da sind.
+func parent_guest() -> Guest:
+	if not is_child() or Game.social == null:
+		return null
+	var parent := Game.social.guest_by_id(String(profile.get("parent", "")))
+	return parent if parent and not parent.dead else null
+
+
+func is_orphan() -> bool:
+	return is_child() and parent_guest() == null
+
 
 func get_prompt(_player: Player) -> String:
 	if dead or hiding or state == State.GHOSTED:
@@ -263,7 +297,7 @@ func scared_by_monster() -> void:
 		_leave_hide()
 	fear = 100.0
 	say_panic()
-	if randf() < 0.6:
+	if randf() < 0.6 and not is_child():
 		_bleeding = BLEED_TIME   # verletzt – hinterlässt Blutstropfen
 	if randf() < 0.35:
 		_lose_coins()
@@ -470,7 +504,9 @@ func _physics_process(delta: float) -> void:
 			return
 	_watch_monster()
 	_scan_for_shock(delta)
-	running = state == State.HIDE_GO
+	running = state == State.HIDE_GO or (_romp and state == State.WALK)
+	if is_child():
+		_child_step(delta)
 	if running:
 		# Wer in Panik rennt, macht Lärm (6.5, 4.15)
 		_run_noise -= delta
@@ -628,7 +664,7 @@ func stagger(push: Vector3, hit: bool) -> void:
 	_hit_back = false
 	state = State.STAGGER
 	if not hit:
-		say(RAMMED_LINES[randi() % RAMMED_LINES.size()])
+		say("Aua! *weint*" if is_child() else RAMMED_LINES[randi() % RAMMED_LINES.size()])
 		return
 	_hurt_time = HURT_TIME
 	var brave := float(profile["brave"])
@@ -642,6 +678,8 @@ func _after_stagger() -> void:
 	if _hit_back:
 		_hit_back = false
 		start_attack(8.0)
+	elif is_child():
+		_run_to_parent()   # umgerannt: weinend zu Mama oder Papa
 	elif _hurt_time > 0.0:
 		fear = maxf(fear, 70.0)
 		_go_hide()
@@ -651,13 +689,15 @@ func _after_stagger() -> void:
 
 ## Ein Glas (Bar oder Runde vom Spieler, Spielkonzept 3.7): nimmt Angst, macht betrunken.
 func drink() -> void:
+	if is_child():
+		return   # Kinder trinken nie (6.13)
 	drunk = minf(1.0, drunk + BarTap.DRINK)
 	fear = maxf(0.0, fear - BarTap.CALM * 100.0)
 
 
 ## Wie angreifbar der Gast gerade ist (0..1) – danach sucht sich der Lakengeist seine Opfer (4.18).
 func weakness() -> float:
-	return clampf(fear / 100.0 * WEAK_FEAR + drunk, 0.0, 1.0)
+	return clampf(fear / 100.0 * WEAK_FEAR + drunk + (CHILD_WEAKNESS if is_child() else 0.0), 0.0, 1.0)
 
 
 func _speed_factor() -> float:
@@ -666,7 +706,7 @@ func _speed_factor() -> float:
 
 ## Wütend oder schlimmer, der Spieler nah und sichtbar: hält auf ihn zu.
 func _wants_to_bump() -> bool:
-	if state != State.WALK or _bump_cooldown > 0.0 or Social.tier(self) > Social.Tier.ANGRY:
+	if is_child() or state != State.WALK or _bump_cooldown > 0.0 or Social.tier(self) > Social.Tier.ANGRY:
 		return false
 	var p := Game.player
 	if p == null or p.dead or p.hiding or p.in_dialog:
@@ -694,6 +734,10 @@ func _check_bump() -> void:
 ## sich versteckt, geht später (über _next_activity).
 ## instant (Debug): sofort im eigenen Bett.
 func bedtime(instant: bool = false) -> void:
+	# Manches Kind kann nicht schlafen (6.13) – es bleibt eine Weile wach (_night_activity)
+	sleepless = is_child() and not instant and randf() < SLEEPLESS_CHANCE
+	set_meta("visit", "")   # ein angefangener Besuch an Zimmer 13 fällt aus
+	_awake_left = randf_range(SLEEPLESS_TIME.x, SLEEPLESS_TIME.y)
 	if instant and not dead and state != State.SLEEP:
 		if hiding:
 			_leave_hide()
@@ -704,6 +748,9 @@ func bedtime(instant: bool = false) -> void:
 		return
 	if state == State.PARTY:
 		leave_party()
+	if sleepless:
+		_night_activity()
+		return
 	_go_to_bed()
 
 
@@ -739,6 +786,7 @@ func is_asleep() -> bool:
 ## Nachtruhe vorbei: aus dem Bett, Licht an.
 func wake_up() -> void:
 	_to_bed = false
+	sleepless = false
 	if state != State.SLEEP:
 		return
 	if hiding:
@@ -748,6 +796,7 @@ func wake_up() -> void:
 
 
 func _set_idle(duration: float) -> void:
+	_romp = false
 	state = State.IDLE
 	_timer = duration
 
@@ -757,7 +806,11 @@ func _next_activity() -> void:
 		_resting = false
 		_set_room_light(true)
 	if Game.social.sleep_active:
-		_go_to_bed()
+		if sleepless and _awake_left > 0.0:
+			_night_activity()
+		else:
+			sleepless = false
+			_go_to_bed()
 		return
 	if Game.social.party_active and invited:
 		join_party(Game.social.free_party_spot())
@@ -772,6 +825,9 @@ func _next_activity() -> void:
 		say("Ich komm ein Stück mit.")
 		start_follow(60.0)
 		return
+	if is_child() and _child_approach():
+		return
+	_romp = is_child() and randf() < CHILD_ROMP
 	var choice := _weighted_choice(profile["activities"])
 	match choice:
 		"room":
@@ -809,13 +865,13 @@ func _arrive() -> void:
 				return
 			_set_idle(randf_range(15.0, 40.0))
 			# An der Bar wird meist etwas getrunken (3.7)
-			if drunk < BarTap.ENOUGH and randf() < BAR_DRINK and Game.social.builder.in_area(global_position, "bar"):
+			if drunk < BarTap.ENOUGH and not is_child() and randf() < BAR_DRINK and Game.social.builder.in_area(global_position, "bar"):
 				drink()
 				if randf() < 0.4:
 					say("Prost!" if drunk < BarTap.DRUNK else "Noch eins … *hicks*")
-			if _is_home():
+			if _is_home() and not (sleepless and Game.social.sleep_active):
 				_at_home()
-				if fear < 30.0 and float(profile["brave"]) >= 0.4 and not remembers("ghost") and randf() < 0.3:
+				if fear < 30.0 and float(profile["brave"]) >= 0.4 and not remembers("ghost") and not is_child() and randf() < 0.3:
 					_resting = true
 					_set_room_light(false)
 		State.CARRY_HOME:
@@ -923,7 +979,7 @@ func deco_place_point() -> Vector3:
 ## Mag uns nicht (und ist gierig) → klaut Deko des Spielers. In Panik ohne eigene Deko
 ## → klaut irgendeine Deko, um sich zu schützen.
 func _try_steal() -> bool:
-	if held:
+	if held or is_child():
 		return false
 	var hostile := Social.tier(self) <= Social.Tier.ANGRY and randf() < float(profile["greed"])
 	var desperate := fear >= 60.0 and own_deco_near_door().is_empty()
@@ -1083,6 +1139,9 @@ func shock(kind: String, pos: Vector3, who: String = "", entranced: bool = false
 	fear = minf(100.0, fear + (50.0 if kind == "corpse" else 30.0) * (1.2 - brave))
 	var cries: Array = SHOCK_CRIES[_shock_style]
 	say(cries[randi() % cries.size()])
+	if is_child():
+		Game.noise("scream", global_position, self)   # Kinder schreien – das lockt das Monster zu den Erwachsenen (6.13)
+		_tell_grown_ups(pos)
 	if Game.player and Game.player.global_position.distance_to(global_position) < 10.0:
 		Game.play_sound("gasp", 0.5)
 	Game.shot_event("shock", 40)
@@ -1095,6 +1154,8 @@ func _after_shock() -> void:
 			_go_hide()
 		"cry":
 			_walk_to(_room_point(), State.WALK)
+		"cling":
+			_run_to_parent()
 		_:
 			_set_idle(randf_range(2.0, 4.0))
 
@@ -1162,6 +1223,92 @@ func untold_experience() -> Dictionary:
 	return {}
 
 
+# --- Kinder (Spielkonzept 6.13) ---------------------------------------------------------
+
+## Lachen beim Toben und auf Feiern (Lärm), Wachzeit eines schlaflosen Kindes.
+func _child_step(delta: float) -> void:
+	if sleepless:
+		_awake_left -= delta
+	if not ((_romp and fear < 30.0) or state == State.PARTY):
+		return
+	_laugh -= delta
+	if _laugh <= 0.0:
+		_laugh = randf_range(CHILD_LAUGH.x, CHILD_LAUGH.y)
+		Game.noise("laugh", global_position, self)
+		if randf() < 0.3:
+			say(["Hihi!", "Hahaha!", "Fang mich doch!"].pick_random())
+
+
+## Ein Kind hat etwas Schlimmes gesehen: Mama oder Papa bekommen große Angst (und werden schwächer, 4.18),
+## und wer in der Nähe ist, bekommt es erzählt – als Kinderfantasie (Erlebnis „child_saw“).
+func _tell_grown_ups(pos: Vector3) -> void:
+	var parent := parent_guest()
+	if parent:
+		parent.fear = minf(100.0, parent.fear + CHILD_SCARE_FEAR)
+	for other in Game.social.living_guests():
+		var g: Guest = other
+		if g != self and not g.is_child() and (g == parent or g.global_position.distance_to(global_position) < 12.0):
+			g.remember("child_saw", pos, display_name)
+
+
+## Nach einem Schreck (oder umgerannt): rennend zu Mama oder Papa, sonst ins eigene Zimmer.
+func _run_to_parent() -> void:
+	var parent := parent_guest()
+	if parent and parent.hiding == null:
+		_walk_to(parent.global_position + _jitter(0.5), State.WALK)
+	else:
+		_walk_to(parent._room_point() if parent else _room_point(), State.WALK)
+	_romp = true
+
+
+## Kinder, die dich mögen, schenken dir ab und zu etwas; ein Waisenkind bleibt bei dir. true = beschäftigt.
+func _child_approach() -> bool:
+	var p := Game.player
+	if p == null or p.dead or p.hiding != null or p.in_dialog or not can_see_actor(p):
+		return false
+	var d := p.global_position.distance_to(global_position)
+	if is_orphan() and d < 8.0 and Social.tier(self) >= Social.Tier.NEUTRAL and randf() < ORPHAN_FOLLOW:
+		say(line("orphan"))
+		start_follow(240.0)
+		return true
+	if d < 4.0 and p.held == null and gift_cooldown <= 0.0 and Social.tier(self) >= Social.Tier.NICE and randf() < CHILD_GIFT:
+		for kind in [Item.Kind.LEAVES, Item.Kind.CANDLE]:
+			if int(stock.get(kind, 0)) > 0:
+				stock[kind] = int(stock[kind]) - 1
+				gift_cooldown = DialogUI.GIFT_COOLDOWN
+				p.receive_item(Item.create(kind))
+				Game.social.add_deed(self, "gifts_from")
+				say(line("give_deco"))
+				return true
+	return false
+
+
+## Schlafloses Kind in der Nachtruhe: im dunklen Zimmer mit offenem Vorhang am Fenster stehen (dort findet es
+## der Lakengeist), durch den Flur tappen oder an Zimmer 13 klopfen („Ich kann nicht schlafen.“).
+func _night_activity() -> void:
+	_romp = false
+	var roll := randf()
+	if roll < 0.5:
+		_set_room_light(false)
+		for node in get_tree().get_nodes_in_group("windows"):
+			var win := node as HotelWindow
+			if win.room_id == home["no"] and win.has_curtains():
+				win.set_closed(false)
+				var inside := win.inside_point()
+				_walk_to(Vector3(inside.x, (home["center"] as Vector3).y, inside.z), State.WALK)
+				return
+	if roll >= 0.8 and Game.social.sleepless_visit(self):
+		return
+	var corridor: Array[Vector3] = Game.social.builder.wander_points
+	_walk_to(corridor[randi() % corridor.size()] + _jitter(0.5), State.WALK)
+
+
+## Zurück ins Bett geschickt (Dialog): Es schläft jetzt.
+func send_to_bed() -> void:
+	sleepless = false
+	_go_to_bed()
+
+
 # --- Monster & Verstecken -------------------------------------------------------------
 
 func _watch_monster() -> void:
@@ -1189,6 +1336,11 @@ func _watch_monster() -> void:
 	if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
 		return
 	_monster_cooldown = 10.0
+	if is_child():
+		# Es geht an ihm vorbei (6.13) – das Kind schreit und erzählt es allen; geglaubt wird es nicht
+		remember("monster", monster.global_position)
+		Game.noise("scream", global_position, self)
+		_tell_grown_ups(monster.global_position)
 	fear = minf(100.0, fear + 45.0 * (1.2 - float(profile["brave"])))
 	Game.social.on_guest_saw_monster(self)
 	if randf() < 0.1:
@@ -1483,11 +1635,16 @@ func _build_blocks() -> void:
 	Geo.mesh(_visual, Geo.box(Vector3(0.4, 0.62, 0.24)), coat, Vector3(0, 1.15, 0))
 	_arm_l = _make_arm(-1.0, coat, skin)
 	_arm_r = _make_arm(1.0, coat, skin)
-	Geo.mesh(_visual, Geo.sphere(0.13, 0.28, 7, 4), skin, Vector3(0, 1.6, 0))
-	Geo.mesh(_visual, Geo.box(Vector3(0.28, 0.1, 0.28)), hair, Vector3(0, 1.72, 0.01))
-	Geo.mesh(_visual, Geo.box(Vector3(0.28, 0.2, 0.08)), hair, Vector3(0, 1.62, 0.12))
+	# Kopf auf dem Hals (1,47 m) – bei Kindern größer (Spielkonzept 6.13)
+	var head := Node3D.new()
+	head.position = Vector3(0, 1.47, 0)
+	head.scale = Vector3.ONE * float(profile.get("head", 1.0))
+	_visual.add_child(head)
+	Geo.mesh(head, Geo.sphere(0.13, 0.28, 7, 4), skin, Vector3(0, 0.13, 0))
+	Geo.mesh(head, Geo.box(Vector3(0.28, 0.1, 0.28)), hair, Vector3(0, 0.25, 0.01))
+	Geo.mesh(head, Geo.box(Vector3(0.28, 0.2, 0.08)), hair, Vector3(0, 0.15, 0.12))
 	for side in [-1.0, 1.0]:
-		Geo.mesh(_visual, Geo.box(Vector3(0.03, 0.03, 0.02)), Mat.psx(Color(0.05, 0.05, 0.05)), Vector3(side * 0.05, 1.62, -0.12))
+		Geo.mesh(head, Geo.box(Vector3(0.03, 0.03, 0.02)), Mat.psx(Color(0.05, 0.05, 0.05)), Vector3(side * 0.05, 0.15, -0.12))
 
 
 ## Meist der Lieblingstanz des Gastes, ab und zu ein anderer (Spielkonzept 7.1).
@@ -1577,6 +1734,12 @@ func _shock_pose() -> void:
 			_visual.rotation.x = 0.1   # weicht zurück
 			_arm_l.rotation = Vector3(-2.8 + shake, 0, -0.35)
 			_arm_r.rotation = Vector3(-2.8 - shake, 0, 0.35)
+		"cling":
+			# klammert sich fest: geduckt, Arme nach vorn, zittert
+			var shake := sin(t * 19.0) * 0.06
+			_visual.rotation.x = -0.15
+			_arm_l.rotation = Vector3(-1.5 + shake, 0, 0.35)
+			_arm_r.rotation = Vector3(-1.5 - shake, 0, -0.35)
 		"cry":
 			_visual.rotation.x = -0.3
 			_visual.position.y = -0.06 + absf(sin(t * 7.0)) * 0.015   # Schluchzen

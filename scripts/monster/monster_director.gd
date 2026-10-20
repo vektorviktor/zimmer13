@@ -398,7 +398,7 @@ func _max_victims() -> int:
 	var alive := 0
 	if Game.social:
 		for guest in Game.social.guests:
-			if not guest.dead:
+			if not guest.dead and not guest.is_child():   # Kinder holt es nie (6.13)
 				alive += 1
 	return alive + 1
 
@@ -560,7 +560,7 @@ func on_noise(pos: Vector3, loudness: float, source: Node = null) -> String:
 ## Jemand (Spieler oder Gast) ist in ein Versteck gegangen. Hat das Monster es gesehen?
 ## Dieselbe Rechnung wie beim Jagen (4.15) – gesehen wird nur das Hineingehen.
 func on_actor_hid(spot: HideSpot, actor: Node3D) -> void:
-	if not _monster.is_active() or _monster.state == Monster.State.KILL:
+	if not _monster.is_active() or _monster.state == Monster.State.KILL or (actor is Guest and (actor as Guest).is_child()):
 		return
 	if _monster.can_see_actor(actor, spot.exit_point.global_position):
 		spot.seen_entering = true
@@ -615,7 +615,7 @@ func on_guest_taken() -> void:
 
 
 func kill_guest(guest, spot: HideSpot) -> void:
-	if guest == null or not is_instance_valid(guest) or guest.dead:
+	if guest == null or not is_instance_valid(guest) or guest.dead or guest.is_child():
 		return
 	if not wants_victim():   # harmlos, oder es sieht sich nur um (4.17)
 		_scare_guest(guest, spot)

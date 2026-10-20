@@ -14,6 +14,8 @@ extends Node3D
 ## Gäste behandelt er wie den Spieler (Spielkonzept 6.12): Wer wach im Dunkeln bei offenem Vorhang steht,
 ## bekommt Besuch – mit eigenem Zähler (Guest.ghost_visits). Ein erwürgter Gast bleibt als Leiche liegen.
 ## Wer ihn sieht, erschrickt (Guest.shock) und erzählt später davon.
+## Kinder (Spielkonzept 6.13) sucht er wegen ihrer Schwäche öfter auf, würgt sie aber nie: Statt zuzupacken
+## erschreckt er sie und verschwindet. Als Zeugen zählen sie nicht.
 
 enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN }
 
@@ -392,6 +394,9 @@ func _touch_glass() -> void:
 # --- Würgen -----------------------------------------------------------------------------
 
 func _grab() -> void:
+	if _victim is Guest and (_victim as Guest).is_child():
+		_frighten_child(_victim as Guest)
+		return
 	state = State.STRANGLE
 	_timer = ESCAPE_TIME
 	_swings = 0
@@ -476,6 +481,14 @@ func _kill() -> void:
 	Game.player_died.emit()
 
 
+## Ein Kind würgt er nie (6.13): Er greift nach ihm, es schreit – und er ist weg.
+func _frighten_child(child: Guest) -> void:
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Lakengeist] %s erschreckt" % child.display_name)
+	child.shock("ghost_attack", global_position + Vector3.UP * HANDS_Y)
+	_vanish()
+
+
 ## Ein Gast stirbt – er bleibt liegen (Spielkonzept 6.12), das Hotel erfährt es wie beim Monster.
 func _kill_guest(guest: Guest) -> void:
 	if "--trace" in OS.get_cmdline_user_args():
@@ -520,7 +533,7 @@ func _witness_guests(point: Vector3, victim: Node3D) -> Array[Guest]:
 		return result
 	var space := get_world_3d().direct_space_state
 	for guest in Game.social.guests:
-		if guest == victim or guest.dead or guest.hiding != null or guest.global_position.distance_to(point) > WITNESS_RANGE:
+		if guest == victim or guest.dead or guest.hiding != null or guest.is_child() or guest.global_position.distance_to(point) > WITNESS_RANGE:
 			continue
 		var query := PhysicsRayQueryParameters3D.create(guest.global_position + Vector3.UP * guest.eye_height(), point, Senses.SIGHT_MASK)
 		if space.intersect_ray(query).is_empty():

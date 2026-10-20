@@ -543,6 +543,10 @@ func _punch_target() -> Guest:
 
 ## Erster Klick fragt nach (außer bei Gästen, mit denen du ohnehin im Streit liegst), der zweite schlägt.
 func _try_punch(guest: Guest) -> void:
+	if guest.is_child():
+		Game.say("Ein Kind schlägt man nicht.", 2.5)   # Spielkonzept 6.13
+		_punch_cooldown = 0.7
+		return
 	var fighting := Social.tier(guest) <= Social.Tier.ANGRY
 	if not fighting and (_confirm_guest != guest or _confirm_time <= 0.0):
 		_confirm_guest = guest

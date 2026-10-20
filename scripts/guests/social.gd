@@ -6,6 +6,8 @@ extends Node
 ## an Zimmer 13. Manchmal klopft auch etwas anderes …
 ## Freundschaft und Feindschaft in neun Stufen (6.3): Die Extreme brauchen Taten (Spiele, Austausch bzw.
 ## Klauen, Beleidigen, Rammen, Schlagen und Rache); gute Freunde besuchen dich, Erzfeinde schlagen zu.
+## Kinder (6.13): kommen mit Mama oder Papa (Zimmer nebenan), petzen, klopfen zu „Süßes oder Saures“ an Zimmer 13,
+## kommen immer zu Feiern und vergessen schnell – im Guten wie im Schlechten.
 
 ## Freundschaftsstufen (Spielkonzept 6.3), vom schlechtesten zum besten
 enum Tier { STRONG_ENEMY, ENEMY, ANGRY, ANNOYED, NEUTRAL, NICE, FRIENDLY, FRIEND, GOOD_FRIEND }
@@ -41,6 +43,13 @@ const HIDE_MONSTER_DISTANCE := 8.0  ## Verstecke so nah am Monster meiden Gäste
 ## nach einem Todesfall wacht irgendwann ein neuer Gast in einem freien Zimmer auf.
 const START_GUESTS := 30
 const MIN_GUESTS := 24
+## Kinder (Spielkonzept 6.13): so viele der START_GUESTS, jedes mit einem erzeugten Erwachsenen als Mama oder
+## Papa; ihre Beziehung wandert so viel schneller zur Mitte (überall, nicht nur an den Extremen); Süßes oder
+## Saures: Abstand zwischen zwei Besuchen an Zimmer 13, so lange wartet das Kind an der offenen Tür
+const CHILDREN := 4
+const CHILD_DRIFT := 4.0
+const TRICK_COOLDOWN := Vector2(300.0, 600.0)
+const TRICK_WAIT := 15.0
 const ARRIVAL_DELAY := Vector2(150.0, 360.0)
 const TRACE_TEXT := {
 	"footprint": "nasse Fußspuren", "scratch": "Kratzspuren", "blood": "Blut",
@@ -67,13 +76,28 @@ const EXPERIENCE_LINES := {
 		"ghost": ["*zittert* Vor meinem Fenster war ein Geist. Ein richtiger! Ich kann gar nicht mehr aufhören zu weinen.", "Bei {zone}, am Fenster … ein Laken mit Händen. Ich kann seitdem nicht aufhören zu zittern."],
 		"ghost_attack": ["*weint* Es hat mich gewürgt! Ich dachte, jetzt ist es vorbei … ich will nach Hause!", "Ich hab mich losgerissen, irgendwie … *schluchzt* Bitte bleib heute nicht allein im Dunkeln."],
 	},
+	"cling": {
+		"blood": ["Da war ganz viel Blut! Bei {zone}! Ich hab geschrien, so laut ich konnte!", "Bei {zone} ist alles rot. Ist da wer hingefallen?"],
+		"corpse": ["{who} liegt bei {zone} und wacht nicht auf. Ich hab gerufen und gerufen …", "Warum schläft {who} auf dem Boden? Bei {zone}. Die Augen sind offen …"],
+		"ghost": ["Am Fenster war ein Gespenst! Ein echtes, mit Händen! Aber keiner glaubt mir!", "Ein Laken ist geflogen, draußen vor dem Fenster! Ehrlich! Es hat mit den Händen so gemacht …"],
+		"ghost_attack": ["Das Gespenst ist reingekommen und hat nach mir gegriffen! Ich hab ganz laut geschrien, und dann war es weg!", "Es war in meinem Zimmer! Ganz kalte Hände! {eltern} sagt, ich hab geträumt."],
+		"monster": ["Ich hab das Monster gesehen! Ganz lang und dünn, mit einer Zunge! Es hat mich angeguckt und ist weitergegangen!", "Bei {zone} war das Monster! Ich lüg nicht! Warum glaubt mir denn keiner?"],
+	},
 }
+## Was Erwachsene erzählen, wenn ein Kind ihnen etwas Schreckliches berichtet hat (6.13: niemand glaubt ihnen)
+const CHILD_SAW_LINES := [
+	"{who} erzählt jedem, bei {zone} wäre ein Monster gewesen. Kinder und ihre Fantasie … aber das Kind zittert immer noch.",
+	"{who} hat geschrien wie am Spieß. Angeblich ein Gespenst. Wahrscheinlich ein Vorhang im Wind.",
+	"Hast du {who} gehört? Bei {zone} soll etwas gewesen sein. Ich sag dir, die Kleinen schauen zu viele Gruselfilme.",
+]
 ## Später am selben Tag, beim Reden über das Monster
 const EXPERIENCE_AGAIN := {
 	"blood": "Ich bekomme die Blutlache bei {zone} nicht aus dem Kopf.",
 	"corpse": "Ich sehe {who} immer noch da liegen. Bei {zone}.",
 	"ghost": "Ich trau mich nicht mehr ans Fenster. Seit dem Laken.",
 	"ghost_attack": "Mein Hals tut immer noch weh. Ich mache das Licht nie wieder aus.",
+	"monster": "Ich hab das Monster echt gesehen. Ehrlich!",
+	"child_saw": "{who} redet immer noch von diesem Monster. Kinder …",
 }
 ## Gerüchte über Gehörtes (4.15): was man gehört hat, und wie man davon erzählt
 const HEARD_TEXT := {
@@ -155,6 +179,8 @@ var _arrival_timer := -1.0
 var _next_guest := 1                     ## laufende Nummer für IDs erzeugter Gäste
 var _visit_cooldown := 200.0
 var _feud_timer := 2.0
+var _trick_cooldown := 240.0
+var _trick: Dictionary = {}              ## Süßes oder Saures an der offenen Tür: {guest, time}
 
 const CHESS_LINES := [
 	"%s schiebt die Dame vor. %s runzelt die Stirn.",
@@ -206,9 +232,10 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	GuestProfiles.generated.clear()
 	for id in GuestProfiles.ALL:
 		_spawn(id, true)
-	while guests.size() < START_GUESTS:
+	while guests.size() < START_GUESTS - CHILDREN:
 		if _add_generated(randi(), "", false) == null:
 			break
+	_add_families()
 	# Manche Gäste haben schon einen Zettel an ihre Tür gelegt
 	for guest in guests:
 		if randf() < 0.25:
@@ -241,21 +268,27 @@ func _spawn(id: String, with_deco: bool) -> Guest:
 ## Einen zufälligen Gast erzeugen. room = "": ein freies Zimmer wählen.
 ## arrived: neu aufgewacht (eigene Sätze, Licht geht sofort an). Beim Laden (restoring)
 ## bleibt das Licht, wie es ist – der Spielstand setzt die Schalter selbst.
-func _add_generated(gen_seed: int, room: String, arrived: bool, id: String = "", restoring: bool = false) -> Guest:
+## parent ≠ "": ein Kind dieses Gastes (Spielkonzept 6.13, GuestGenerator.make_child).
+func _add_generated(gen_seed: int, room: String, arrived: bool, id: String = "", restoring: bool = false, parent: String = "") -> Guest:
 	if room == "":
 		room = _free_room()
 		if room == "":
 			return null
+	if not restoring:
 		# Jeder Name nur einmal im Hotel
 		var taken := guests.map(func(g: Guest) -> String: return g.display_name)
 		var tries := 0
-		while GuestGenerator.name_for(gen_seed) in taken and tries < 60:
+		while (GuestGenerator.child_name_for(gen_seed) if parent != "" else GuestGenerator.name_for(gen_seed)) in taken \
+				and tries < 60:
 			gen_seed += 1
 			tries += 1
 	if id == "":
 		id = "gast%d" % _next_guest
 	_next_guest = maxi(_next_guest, int(id.trim_prefix("gast")) + 1)
-	GuestProfiles.generated[id] = GuestGenerator.make(gen_seed, room, room if arrived else "")
+	if parent != "":
+		GuestProfiles.generated[id] = GuestGenerator.make_child(gen_seed, room, parent, GuestProfiles.get_profile(parent))
+	else:
+		GuestProfiles.generated[id] = GuestGenerator.make(gen_seed, room, room if arrived else "")
 	var guest := _spawn(id, true)
 	guest.gen_seed = gen_seed
 	guest.set_meta("arrived", arrived)
@@ -266,6 +299,31 @@ func _add_generated(gen_seed: int, room: String, arrived: bool, id: String = "",
 		else:
 			sw.set_on.call_deferred(true, true)   # nach dem „Licht aus“ des LevelBuilders
 	return guest
+
+
+## Familien (Spielkonzept 6.13): CHILDREN Kinder, jedes bei einem anderen erzeugten Erwachsenen, im freien
+## Zimmer am nächsten zu Mama oder Papa.
+func _add_families() -> void:
+	var parents := guests.filter(func(g: Guest) -> bool: return g.gen_seed >= 0)
+	parents.shuffle()
+	for parent in parents.slice(0, CHILDREN):
+		var room := _room_near(parent.home["center"])
+		if room == "":
+			return
+		_add_generated(randi(), room, false, "", false, parent.id)
+
+
+## Das unbewohnte Zimmer, das diesem Punkt am nächsten liegt (gleiches Stockwerk), sonst "".
+func _room_near(pos: Vector3) -> String:
+	var best := ""
+	var best_d := INF
+	for no in builder.rooms:
+		var info: Dictionary = builder.rooms[no]
+		var c: Vector3 = info["center"]
+		if info["kind"] == "vacant" and absf(c.y - pos.y) < 1.5 and c.distance_to(pos) < best_d:
+			best_d = c.distance_to(pos)
+			best = no
+	return best
 
 
 ## Ein unbewohntes Zimmer (nie das eines Verschwundenen), möglichst weit weg vom Spieler.
@@ -307,7 +365,8 @@ func roster_state() -> Array:
 	var list: Array = []
 	for guest in guests:
 		if guest.gen_seed >= 0:
-			list.append({"id": guest.id, "seed": guest.gen_seed, "room": guest.home["no"], "arrived": bool(guest.get_meta("arrived", false))})
+			list.append({"id": guest.id, "seed": guest.gen_seed, "room": guest.home["no"], "arrived": bool(guest.get_meta("arrived", false)),
+				"parent": String(guest.profile.get("parent", ""))})
 	return list
 
 
@@ -323,7 +382,7 @@ func restore_roster(list: Array) -> void:
 	_reserved.clear()
 	for entry in list:
 		var room := String(entry["room"])
-		_add_generated(int(entry["seed"]), room, bool(entry.get("arrived", false)), String(entry["id"]), true)
+		_add_generated(int(entry["seed"]), room, bool(entry.get("arrived", false)), String(entry["id"]), true, String(entry.get("parent", "")))
 
 
 ## Ein Zettel eines Gastes (Spur der Gäste): an pos, Text aus templates.
@@ -436,12 +495,19 @@ func on_player_took(item: Item) -> void:
 	else:
 		change_relation(owner_guest, -15.0)
 		var witness: Guest = witnesses[0]
-		witness.say("Ich hab genau gesehen, wie du %s' Sachen genommen hast!" % owner_guest.display_name)
+		witness.say(witness.line("tattle") if witness.is_child() \
+			else "Ich hab genau gesehen, wie du %s' Sachen genommen hast!" % owner_guest.display_name)
 	for witness in witnesses:
 		if witness != owner_guest:
 			change_relation(witness, -10.0)
 	var involved: Array = [owner_guest]
 	involved.append_array(witnesses)
+	# Kinder petzen (6.13) – und das glauben Mama und Papa sofort
+	for witness in witnesses:
+		var parent := witness.parent_guest()
+		if parent and not parent in involved:
+			change_relation(parent, -10.0)
+			involved.append(parent)
 	_spread_gossip(-8.0, involved)
 
 
@@ -538,6 +604,10 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 		get_tree().create_timer(5.0).timeout.connect(func() -> void:
 			Game.say("%s ist verschwunden." % guest.display_name, 4.0))
 	_memorial_doors.append(guest.home["door_front"])
+	# Ein Kind verliert Mama oder Papa (6.13): große Angst – es sucht sich jemanden, bei dem es bleiben kann
+	for other in living_guests():
+		if other.is_child() and String(other.profile.get("parent", "")) == guest.id:
+			other.fear = 100.0
 	# Ein, zwei Gäste schreiben einen Zettel und legen ihn vor ihre Tür
 	var writers := living_guests()
 	writers.shuffle()
@@ -627,7 +697,9 @@ func start_party(host: String) -> bool:
 	var coming: Array[String] = []
 	for guest in living_guests():
 		var comes := false
-		if host == "player":
+		if guest.is_child():
+			comes = true   # Kinder kommen immer (6.13)
+		elif host == "player":
 			comes = guest.invited or tier(guest) >= Tier.FRIENDLY
 		else:
 			comes = guest.id == host or randf() < 0.75
@@ -680,7 +752,7 @@ func all_asleep() -> bool:
 	if not sleep_active:
 		return false
 	for guest in living_guests():
-		if not guest.is_asleep():
+		if not guest.is_asleep() and not guest.is_child():   # ein wachliegendes Kind ist kein Zeuge (6.13)
 			return false
 	return true
 
@@ -726,6 +798,8 @@ func _update_party(delta: float) -> void:
 	if _spontaneous_timer > 0.0:
 		return
 	_spontaneous_timer = 30.0
+	if sleep_active:
+		return   # in der Nachtruhe feiert niemand
 	var alive := living_guests()
 	# Der erste Angriff passiert bei einer Feier (Spielkonzept 2.1): an diesem Tag lädt jemand ein
 	if Game.director.wants_first_attack_party() and alive.size() >= 1:
@@ -969,6 +1043,7 @@ func _process(delta: float) -> void:
 	_update_party(delta)
 	_update_arrivals(delta)
 	_update_knocking(delta)
+	_update_tricks(delta)
 	_update_bar_game(delta)
 	_update_chess_game(delta)
 	_update_challenges(delta)
@@ -1041,8 +1116,12 @@ func experience_line(guest: Guest, experience: Dictionary, again: bool = false) 
 	var kind: String = experience["kind"]
 	var zone: String = experience["zone"] if experience["zone"] != "" else "hier"
 	var keys := {"zone": zone, "who": experience["who"]}
+	if guest.is_child():
+		keys["eltern"] = "Mama" if GuestProfiles.get_profile(String(guest.profile.get("parent", ""))).get("sex", "m") == "f" else "Papa"
 	if again:
 		return String(EXPERIENCE_AGAIN[kind]).format(keys)
+	if kind == "child_saw":
+		return String(CHILD_SAW_LINES.pick_random()).format(keys)
 	var lines: Array = EXPERIENCE_LINES[guest.shock_style()][kind]
 	return String(lines[randi() % lines.size()]).format(keys)
 
@@ -1183,7 +1262,7 @@ func _knock_ignored(guest: Guest, fake: bool) -> void:
 			Game.traces.add_door_scratch(builder.rooms[LevelBuilder.PLAYER_ROOM]["door"], builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"] + Vector3(0, 0, -1.0))
 		return
 	Game.noise("scream", guest.global_position, guest)
-	if Game.director.is_harmless() or randf() < 0.5:
+	if Game.director.is_harmless() or guest.is_child() or randf() < 0.5:
 		guest.scared_by_monster()
 		change_relation(guest, -20.0)
 		get_tree().create_timer(4.0, false).timeout.connect(func() -> void:
@@ -1200,6 +1279,9 @@ func _update_bonds(delta: float) -> void:
 	# Ohne Kontakt wandern die Extreme langsam zurück
 	for guest in guests:
 		if guest.dead:
+			continue
+		if guest.is_child():
+			guest.relation = move_toward(guest.relation, 0.0, DRIFT * CHILD_DRIFT * delta)
 			continue
 		if guest.relation > 55.0:
 			guest.relation = maxf(55.0, guest.relation - DRIFT * delta)
@@ -1234,16 +1316,19 @@ func start_visit(guest: Guest) -> void:
 
 
 ## Der Gast steht vor Zimmer 13: Bei offener Tür kommt er gleich herein, sonst klopft er.
+## why (Meta „visit“ am Gast): "" Besuch eines Freundes, "trick" Süßes oder Saures, "sleepless" Kind kann nicht schlafen.
 func on_visit_arrived(guest: Guest) -> void:
 	var door: Door = builder.rooms[LevelBuilder.PLAYER_ROOM]["door"]
+	var why := String(guest.get_meta("visit", ""))
+	guest.set_meta("visit", "")
 	if door.is_open:
-		_visit_enter(guest)
+		_visit_door_open(guest, why)
 		return
 	if not _knock.is_empty():
 		guest.end_visit()
 		return
 	guest.knock_politely()
-	_knock = {"guest": guest, "fake": false, "visit": true, "time": 0.0, "next": 0.0, "said": 0}
+	_knock = {"guest": guest, "fake": false, "visit": true, "why": why, "time": 0.0, "next": 0.0, "said": 0}
 
 
 func _visit_step(delta: float) -> void:
@@ -1254,12 +1339,16 @@ func _visit_step(delta: float) -> void:
 	if guest.dead or guest.state != Guest.State.KNOCK:
 		_knock = {}
 		return
+	var why := String(_knock.get("why", ""))
 	if door.is_open:
 		_knock = {}
-		_visit_enter(guest)
+		_visit_door_open(guest, why)
 		return
 	if t >= KNOCK_WAIT * 1.5:
 		_knock = {}
+		if why == "trick":
+			_trick_prank(guest)   # nicht aufgemacht – dann gibt's Saures
+			return
 		guest.say("Na gut … dann ein andermal.")
 		change_relation(guest, -1.0)
 		guest.end_visit()
@@ -1271,7 +1360,106 @@ func _visit_step(delta: float) -> void:
 		Game.caption("[Es klopft leise an deiner Tür]")
 	if int(_knock["said"]) == 0 and t > 1.2:
 		_knock["said"] = 1
-		Game.say("%s: „%s“" % [guest.display_name, VISIT_LINES.pick_random()], 4.0)
+		var text: String = guest.line(why) if why != "" else VISIT_LINES.pick_random()
+		Game.say("%s: „%s“" % [guest.display_name, text], 4.0)
+
+
+func _visit_door_open(guest: Guest, why: String) -> void:
+	if why == "trick":
+		_trick_at_door(guest)
+		return
+	_visit_enter(guest)
+	if why == "sleepless":
+		guest.say(guest.line("sleepless"))
+
+
+# --- Süßes oder Saures (Spielkonzept 6.13) ---------------------------------------------------
+
+## Ab und zu klopft ein Kind an Zimmer 13 – nur, wenn du drin bist und es ruhig ist.
+func _update_tricks(delta: float) -> void:
+	if not _trick.is_empty():
+		var kid: Guest = _trick["guest"]
+		if kid.dead or not kid.state in [Guest.State.KNOCK, Guest.State.TALKING]:
+			_trick = {}
+		elif kid.state == Guest.State.KNOCK:
+			_trick["time"] = float(_trick["time"]) - delta
+			if float(_trick["time"]) <= 0.0:
+				_trick_prank(kid)
+		return
+	_trick_cooldown -= delta
+	if _trick_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active:
+		return
+	var p := Game.player
+	if p == null or p.dead or p.in_dialog or p.sleeping or p.hiding:
+		return
+	if Game.director.zone_name_at(p.global_position) != "Zimmer 13" or Game.monster.is_active() \
+			or not Game.director.is_quiet(p.global_position, 25.0):
+		return
+	_trick_cooldown = randf_range(TRICK_COOLDOWN.x, TRICK_COOLDOWN.y)
+	var kids := living_guests().filter(func(g: Guest) -> bool:
+		return g.is_child() and g.state in [Guest.State.IDLE, Guest.State.WALK] and g.fear < 40.0 and not g.is_following())
+	if not kids.is_empty():
+		var kid: Guest = kids.pick_random()
+		kid.set_meta("visit", "trick")
+		start_visit(kid)
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Süßes oder Saures] %s kommt zu Zimmer 13" % kid.display_name)
+
+
+## Die Tür ist auf: Hast du Süßigkeiten in der Hand, bekommt es sie gleich – sonst wartet es eine Weile
+## (schenken im Gespräch geht auch), dann gibt es Saures.
+func _trick_at_door(kid: Guest) -> void:
+	var p := Game.player
+	if p and p.held and p.held.kind == Item.Kind.SWEETS:
+		p.consume_held()
+		_treat(kid, 12.0)
+		return
+	kid.knock_politely()   # bleibt vor der Tür stehen
+	kid.say(kid.line("trick"))
+	_trick = {"guest": kid, "time": TRICK_WAIT}
+
+
+## Süßigkeiten geschenkt (auch im Gespräch, DialogUI._gift): Wartet das Kind gerade an der Tür, ist es zufrieden.
+func on_sweets_given(kid: Guest) -> void:
+	if not _trick.is_empty() and _trick["guest"] == kid:
+		_trick = {}
+		_treat(kid, 6.0)
+
+
+func _treat(kid: Guest, amount: float) -> void:
+	_trick = {}
+	change_relation(kid, amount)
+	add_deed(kid, "gifts_to")
+	kid.say(kid.line("treat"))
+	kid.end_visit()
+
+
+## Saures: Laub vor der Tür von Zimmer 13 – oder ein Klingelstreich ein wenig später.
+func _trick_prank(kid: Guest) -> void:
+	_trick = {}
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Süßes oder Saures] %s: Saures" % kid.display_name)
+	kid.say(kid.line("prank"))
+	change_relation(kid, -2.0)
+	kid.end_visit()
+	if randf() < 0.5 and Game.phones:
+		get_tree().create_timer(randf_range(15.0, 30.0), false).timeout.connect(func() -> void:
+			if is_instance_valid(kid) and not kid.dead:
+				Game.phones.kid_prank(kid))
+		return
+	var leaves := Item.create(Item.Kind.LEAVES)
+	_world.add_child(leaves)
+	leaves.global_position = (builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"] as Vector3) + kid._jitter(0.3) + Vector3(0, 0.02, 0)
+
+
+## Ein Kind, das nicht schlafen kann, klopft an Zimmer 13 – nur, wenn du drin bist. false = geht nicht.
+func sleepless_visit(kid: Guest) -> bool:
+	var p := Game.player
+	if not _knock.is_empty() or p == null or p.dead or Game.director.zone_name_at(p.global_position) != "Zimmer 13":
+		return false
+	kid.set_meta("visit", "sleepless")
+	start_visit(kid)
+	return true
 
 
 func _visit_enter(guest: Guest) -> void:
@@ -1287,7 +1475,7 @@ func _update_feuds() -> void:
 		return
 	for guest in living_guests():
 		var g: Guest = guest
-		if tier(g) != Tier.STRONG_ENEMY or g.attack_cooldown > 0.0 or g.fear >= 60.0:
+		if g.is_child() or tier(g) != Tier.STRONG_ENEMY or g.attack_cooldown > 0.0 or g.fear >= 60.0:
 			continue
 		if not g.state in [Guest.State.IDLE, Guest.State.WALK]:
 			continue
@@ -1339,11 +1527,17 @@ func on_player_punched(guest: Guest, dir: Vector3) -> void:
 
 
 ## Der Spieler rennt einen Gast um.
+## Ein Kind umgerannt (6.13): Es weint, Mama oder Papa sind wütend, Zeugen mögen dich weniger.
 func on_player_rammed(guest: Guest, dir: Vector3) -> void:
 	add_deed(guest, "hostile")
 	change_relation(guest, -8.0)
 	for witness in _witnesses_of_player(guest):
-		change_relation(witness, -3.0)
+		change_relation(witness, -6.0 if guest.is_child() else -3.0)
+	var parent := guest.parent_guest()
+	if parent:
+		change_relation(parent, -20.0)
+		add_deed(parent, "hostile")
+		parent.say("Lass mein Kind in Ruhe!")
 	guest.stagger(dir * 2.5, false)
 
 

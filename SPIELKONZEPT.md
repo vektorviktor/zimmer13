@@ -59,6 +59,7 @@
   - [6.10 Minispiele mit Gästen](#610-minispiele-mit-gästen)
   - [6.11 Hotelkatzen (vorgemerkt 2026-10-14, umgesetzt 2026-10-17)](#611-hotelkatzen-vorgemerkt-2026-10-14-umgesetzt-2026-10-17)
   - [6.12 Schreck & Erlebnisse (entschieden und umgesetzt 2026-10-18)](#612-schreck--erlebnisse-entschieden-und-umgesetzt-2026-10-18)
+  - [6.13 Kinder (entschieden und umgesetzt 2026-10-19)](#613-kinder-entschieden-und-umgesetzt-2026-10-19)
 - [7. Spielwelt: Das Hotel](#7-spielwelt-das-hotel)
   - [7.1 Die Lobby – Gemeinschaftsraum](#71-die-lobby--gemeinschaftsraum)
   - [7.2 Maße & Architektur](#72-maße--architektur)
@@ -360,8 +361,8 @@ nach der sich der Lakengeist seine Opfer sucht (4.18).
 - **Mäxchen:** Betrunken zittert man beim Bluffen, Gäste durchschauen einen leichter – und ein betrunkener Gast
   blufft schlechter.
 - **Gäste trinken auch:** Sie werden betrunken, gesprächiger (erzählen mehr, auch Gerüchte) und für den Geist
-  schwächer.
-- **Offen:** welche Getränke; ob es auch Alkoholfreies gibt.
+  schwächer. **Kinder** trinken nie (6.13).
+- **Offen:** welche Getränke; ob es auch für Erwachsene Alkoholfreies gibt (für Kinder Kakao und Limo, 6.13).
 
 > **Umgesetzt (2026-10-19):** Flasche und Glas auf der Bartheke, ein Glas **1 Geld**, nimmt etwas Schock. Ab dem
 > **2. Glas angetrunken** (Blick schwankt und driftet, die Maus zieht nach, man stolpert ab und zu – das ist
@@ -511,6 +512,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Durch Fenster (7.3) | normal; **Milchglas**: nur Umriss, keine Jagd |
 
 - Verstecken (3.4) bleibt der wichtigste Ausweg: Wer **ungesehen** in ein Versteck kommt, ist vorerst sicher.
+- **Kinder und Katzen** sieht es nicht als Beute – es jagt sie nicht (6.11, 6.13).
 - **Beobachteter Fehler im Prototyp:** Spieler steht im Flur hinter einer Deko-Zone → das Monster jagt ihn, wird an der Deko „abgewiesen“, zieht sich zurück und läuft dabei durch den Spieler hindurch, ohne ihn anzugreifen. Die drei Regeln oben beheben das. *(umgesetzt)*
 
 ### 4.13 Ständige Präsenz (entschieden 2026-10-10)
@@ -1022,7 +1024,7 @@ Deko ist **Schutzmittel und Währung** zugleich.
   - **Stark verfeindet:** mindestens 4 feindselige Taten von dir (Deko klauen, beleidigen, rammen, schlagen) **und** er hat sich mindestens einmal gerächt (dich bestohlen, angerempelt oder geschlagen). Bis dahin bleibt er bei „verfeindet“.
 - **Zerfall:** Oberhalb von „befreundet“ und unterhalb von „verfeindet“ wandert der Wert ohne Kontakt langsam zurück (gut 1 Punkt pro Tag).
 - **Rammen:** Rennst du in einen Gast, stolpert er – Beziehung ↓, Zeugen merken es. Wütende Gäste rempeln dich ihrerseits im Vorbeigehen an (du wirst weggeschubst).
-- **Schlagen (Linksklick auf einen Gast in Armlänge, ohne Taschenlampe in der Hand):** Beim ersten Mal fragt das Spiel nach („Wirklich zuschlagen?“ – zweiter Klick). Der Gast fällt sofort auf höchstens „wütend“, Zeugen mögen dich weniger, es spricht sich herum, Schläge machen Lärm (Neugier des Monsters). Ängstliche Gäste fliehen, mutige oder stolze schlagen zurück. Ein geschlagener Gast ist eine Weile langsamer.
+- **Schlagen (Linksklick auf einen Gast in Armlänge, ohne Taschenlampe in der Hand):** Beim ersten Mal fragt das Spiel nach („Wirklich zuschlagen?“ – zweiter Klick). Der Gast fällt sofort auf höchstens „wütend“, Zeugen mögen dich weniger, es spricht sich herum, Schläge machen Lärm (Neugier des Monsters). Ängstliche Gäste fliehen, mutige oder stolze schlagen zurück. Ein geschlagener Gast ist eine Weile langsamer. **Kinder** kann man nicht schlagen (6.13).
 - **Verletzungen des Spielers:** Schläge von Gästen verletzen dich – roter Blitz, du wirst langsamer und hinterlässt Blutstropfen (Spur fürs Monster, 4.13). Heilt mit der Zeit; ein Gast kann dich nicht töten.
 - **Besuch:** Gute Freunde klopfen ab und zu ruhig an Zimmer 13 („Hast du kurz Zeit?“). Machst du auf, kommen sie eine Weile herein; ignorieren kostet kaum etwas.
 - **Mitkommen:** Befreundete Gäste folgen dir auf Bitte etwa zwei Minuten (oder bis du sie wegschickst, dich versteckst oder sie in Panik geraten). Gute Freunde schließen sich manchmal von selbst an. Ein Begleiter ist Schutz und Gefahr zugleich – er ist ein Opfer mehr, das das Monster holen kann.
@@ -1239,6 +1241,7 @@ fest am Charakter, nicht am Zufall:
 | **Hände hoch** (zitternd, weicht zurück) | ängstlich, geschäftstüchtig, Edna | rennt weg und versteckt sich |
 | **Starr vor Schreck** (Hand vor dem Mund) | Skeptiker, Griesgram, Bruno | macht weiter |
 | **Weinen** (zusammengesunken, Hände vorm Gesicht) | Plaudertasche, Bastler, Mila | geht weinend ins Zimmer |
+| **Klammern** (an Mutter oder Vater) | Kinder (6.13) | rennt zu den Eltern, wenn keins in Sicht ist; erzählt es allen |
 
 **Gesprächsthema:** Beim **nächsten Gespräch** erzählt der Gast zuerst davon (eigene Sätze je Reaktion: Blut,
 Leiche, Geist, Angriff des Geists). Danach kommt es **einen Spieltag lang** beim Reden über das Monster noch
@@ -1257,6 +1260,115 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
 - Zimmer ohne Außenfenster (z. B. Milas Zimmer 15) sind sicher.
 
 **Noch offen:** Werden Leichen irgendwann weggebracht (von Gästen, vom Monster)? Trauer der Gäste um Freunde (6.8)?
+
+### 6.13 Kinder (entschieden und umgesetzt 2026-10-19)
+Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eigene Modelle, Sätze und Tänze brauchen.
+> **Im Prototyp umgesetzt (2026-10-19):** vier Kinder (6–11 Jahre) bei je einem erzeugten Erwachsenen, Zimmer nebenan,
+> eigene Namen und Sätze („Mama“/„Papa“), ab und zu ein Schach-Wunderkind. Alles unter „Kinder und die bestehenden
+> Systeme“ – bis auf die Lücken unten. Als Modell gibt es bisher nur das Mädchen ~10 (`guest_girl10`); Jungen und die
+> kleinen Mädchen sind noch Klötzchen (mit größerem Kopf).
+> **Noch nicht:** Die Puppe (5.5), das Geheimnis (2.3) und die Zeitschleife (2.2) gibt es noch nicht – deshalb auch kein
+> Herumtragen der Puppe, keine Funde in engen Ecken und kein Déjà-vu. Der Lakengeist erschreckt Kinder am Fenster,
+> noch nicht im Flur. Ein Waisenkind schließt sich nur dem Spieler an, noch keinem Gast. „Erzählt es allen“ heißt
+> vorerst: den Eltern und den Erwachsenen in der Nähe.
+- **Der Lakengeist erschreckt Kinder häufiger** – sie sind schwach und ängstlich (hoher Grundwert an Schwäche,
+  4.18). Er will Angst säen, nicht töten.
+- **Kinder sind nie Opfer (entschieden 2026-10-19):** Der Geist erschreckt sie (am Fenster, unter dem Bett, im
+  Flur), würgt sie aber nie; auch das **Monster holt keine Kinder**.
+- **Familien:** Kinder kommen mit ihren Eltern. Wird ein Kind erschreckt, steigt die Angst der Eltern stark – sie
+  werden schwächer, und der Geist kommt über das Kind an die Erwachsenen.
+- **Niemand glaubt ihnen:** Kinder erzählen, was sie gesehen haben, die Erwachsenen tun es ab – der Spieler merkt,
+  dass sie recht haben (passt zu den unzuverlässigen Berichten, 4.13).
+- **Kein Alkohol (entschieden 2026-10-19):** Kinder trinken nicht und lehnen jedes Glas ab, auch eine Runde mit dem
+  Spieler (3.7). Rausch fließt bei ihnen also nie in die Schwäche ein.
+- **Feiern (entschieden 2026-10-19):** Kinder kommen **immer freiwillig** zu Feiern – egal, wer einlädt, wie sie zum
+  Gastgeber stehen und wie die Stimmung ist (sonst entscheiden Laune und Beziehung, 7.1).
+
+**Kinder und die bestehenden Systeme (entschieden 2026-10-19)**
+
+*Monster und Lakengeist*
+- **Das Monster übersieht Kinder** wie die Katzen (6.11): Es jagt sie nicht, sieht über sie hinweg (4.12 gilt für
+  sie nicht) und geht an ihnen vorbei – auch an ihren Verstecken. Wer so nah dran war, erzählt es danach („Der große
+  Mann mit der langen Zunge hat mich angeschaut.“) – und keiner glaubt es.
+- **Kinder schützen niemanden:** Ein Kind daneben hält das Monster nicht von einem Erwachsenen ab, und vor dem
+  Lakengeist zählt ein Kind **nicht als Zeuge**. Sonst würden Kinder zum Schild.
+- **Kinder sind laut** (4.15): Sie rennen oft (10 m), lachen laut beim Spielen und schreien beim Erschrecken (20 m).
+  Ihnen passiert nichts – aber sie locken das Monster zu den Erwachsenen in ihrer Nähe. So kommt die Gefahr auch
+  beim Monster über das Kind an die Eltern.
+- **Angst vor der Dunkelheit:** Kinder schalten selbst nie das Licht aus. Dunkel wird ihr Zimmer erst in der
+  **Nachtruhe** (4.18), wenn die Eltern es ausmachen – dann gelten für den Geist die normalen Regeln (Licht aus,
+  Vorhang offen), dazu die hohe Schwäche.
+- **Nachts unterwegs:** Manchmal kann ein Kind nicht schlafen und schleicht in der Nachtruhe aus dem Zimmer. Im Flur
+  erschreckt es der Geist. Bringt der Spieler es zurück ins Zimmer, sind die Eltern dankbar (Beziehung ↑). Ein
+  Kind, das nicht schlafen kann, klopft manchmal auch an Zimmer 13 („Ich kann nicht schlafen.“).
+
+*Halloween, Deko und Puppe*
+- **Süßes oder Saures:** Kinder klopfen ab und zu an Zimmer 13. Gibt man ihnen **Süßigkeiten** (neuer kleiner
+  Gegenstand, in der Küche und in Schubladen, 3.5), steigt die Beziehung; gibt man nichts, spielen sie einen
+  **Streich** – Laub vor der Tür oder ein Klingelstreich am Telefon (Lärm, 4.14). Weil Klopfen schon unheimlich
+  belegt ist (4.13), weiß man nie sicher, ob es nur die Kinder sind.
+- **Gebastelte Geschenke:** Kinder schenken dem Spieler kleine, schwache Deko (Laub, eine Kerze) – mehr Herz als
+  Schutz, aber es zählt als Geschenk (6.3).
+- **Die Puppe** (5.5): Kinder sehen sie öfter als Erwachsene und **tragen sie zum Spielen herum**. Jedes Wegtragen
+  macht das Monster dort neugierig – oft genau da, wo die Familie wohnt.
+
+*Gäste und Beziehung*
+- **Kinder schlägt man nicht** (6.3): Der Schlag geht bei Kindern nicht. **Rammen** schon: Das Kind fällt hin und
+  weint, die Eltern werden wütend (Beziehung ↓↓), Zeugen merken es.
+- **Schnell beleidigt, schnell vergessen:** Die Beziehung eines Kindes wandert ohne Kontakt **schneller zur Mitte**
+  zurück als bei Erwachsenen (6.3) – in beide Richtungen.
+- **Kinder petzen:** Sehen sie dich klauen, erzählen sie es ihren Eltern – und **das** glauben die sofort. Beim
+  Monster glaubt ihnen keiner, beim Diebstahl jeder.
+- **Waisenkind** (6.7, 6.8): Stirbt ein Elternteil und ist keiner mehr da, hängt sich das Kind an den Spieler
+  (wenn er ihm am nächsten steht) oder an einen freundlichen Gast wie Edna und folgt ihm wie ein Begleiter (6.3).
+  Es wird selbst nie geholt, macht aber Lärm – und bringt seinen Beschützer in Gefahr.
+- **Eigene Schreckreaktion** (6.12): Kinder **klammern sich an die Eltern**, wenn eins in Sicht ist, sonst rennen
+  sie zu ihnen. Danach erzählen sie es **allen**, nicht nur beim nächsten Gespräch.
+
+*Bar, Handel, Spiele*
+- **Kakao statt Alkohol** (3.7): An der Bar gibt es für Kinder Kakao bzw. Limo. Er senkt bei ihnen die Angst; eine
+  Limo spendieren ist ein kleines Geschenk (Beziehung ↑).
+- **Kein Spiel um Einsätze** (6.10): Kinder spielen nur zum Spaß. Beim Schach kann ein Kind ein **Wunderkind** sein
+  und fast jeden schlagen (hohe Spielstärke, stolz – will Revanche).
+- **Keine Messer:** Gibt man einem Kind ein Messer, werden die Eltern wütend. Beim Kürbisschnitzen brauchen Kinder
+  einen Erwachsenen.
+- **Tauschen statt kaufen** (6.4): Kinder haben kaum Geld. Sie tauschen Süßigkeiten, Laub oder Fundstücke.
+
+*Geheimnis und Zeitschleife*
+- **Kinder kommen überall hin** (2.3): Sie finden Dinge unter Möbeln und in engen Ecken – auch Dokumente und
+  Hinweise – und erzählen davon in Kindersprache.
+- **Déjà-vu** (2.2): Kinder sagen offener als Erwachsene, dass sie einen kennen („Du warst letztes Jahr auch hier.“).
+
+**Vorschläge (offen, 2026-10-19)**
+- **Bettlaken-Kostüm:** Ein Kind im Laken-Kostüm steht im dunklen Flur – Kind oder Lakengeist? Braucht ein eigenes
+  Modell (Kinderkörper unter einem Laken) und gehört dann zu Halloween bzw. den Feiern.
+- **Versteckspiel mit Kindern:** Kinder fragen den Spieler von sich aus und kennen die besten Verstecke – bis einer
+  der Suchenden kein Kind ist (Versteckspiel, 6.10). Ein eigenes Minispiel, deshalb später.
+
+**Modelle (geplant 2026-10-19, „Mädchen ~10“ eingebaut 2026-10-19 als `guest_girl10`):** Wie bei den Erwachsenen (6.0) eigene **Grundkörper** statt Einzelmodelle, vier
+Stück: **Mädchen und Junge, je etwa 7 und etwa 10 Jahre**. Dieselben Regeln für Meshy (A-Pose, Kleidung und Haare
+entsättigt grau, Oberteil heller als die Hose, Haare nicht auf den Schultern, keine Muster, Accessoires oder
+eingebrannten Schatten) und dasselbe Skelett (Auto-Rigging mit Vorlage **Mixamo**, „Alle hinzugefügt“, eine
+Datei), damit die Tänze und Animationen der Gäste ohne Umbau passen. Dazu:
+- **Kopf etwas größer** als bei Erwachsenen, damit man Kinder im PS1-Look auch auf Entfernung erkennt.
+- **Freundliche Gesichter**, Mund zu – Kinder sind Ziel des Geists, keine Horrorfiguren.
+- **Lange Hosen, keine Röcke oder Kleider** (Stoff zwischen den Beinen verzieht sich beim Riggen), **keine Kapuze**
+  (Kopf- und Hals-Knochen werden als Haare eingefärbt, `build_guest.py`).
+- Höchstens 15 000 Dreiecke; fragt Meshy beim Riggen nach der Größe: etwa 1,20 m bzw. 1,40 m.
+
+| Grundkörper | Körperbau, Gesicht | Haare | Oberteil |
+|-------------|--------------------|-------|----------|
+| Mädchen, ~7 | schlank, freundlich und ruhig | kinnlanger Bob | Pullover |
+| Junge, ~7 | etwas pummelig, neugierig | kurz, zerzaust | Langarmshirt |
+| Mädchen, ~10 | schlaksig, schüchtern und ernst | kleiner Dutt am Hinterkopf | Pullover |
+| Junge, ~10 | schlaksig, dünn, frech und wach | kurz, Seitenscheitel | Strickweste über Langarmshirt |
+
+Beschreibung für Meshy (Beispiel Mädchen, ~7; für die anderen Alter, Körperbau, Gesicht, Haare und Oberteil
+nach der Tabelle tauschen):
+
+```text
+Full-body 3D character of a 7-year-old girl, child proportions with a slightly larger head, slim build. Standing in A-pose, arms angled down away from the body, hands open with fingers slightly apart, legs straight and slightly apart. Friendly, calm face, mouth closed. Short chin-length bob, hair not touching the shoulders, medium gray hair. Plain light gray long-sleeved sweater, plain medium gray long trousers, simple dark shoes. No patterns, no logos, no accessories, no hood, no bag, no toys. Even flat lighting, no baked shadows.
+```
 
 ## 7. Spielwelt: Das Hotel
 
@@ -1284,7 +1396,8 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
   - die Stimmung gut ist (wenig Panik, Monster lange nicht gesehen / gesättigt),
   - ein Gast etwas zu feiern hat (guter Handel, große Kürbisernte),
   - nach einem Todesfall als Trauerfeier / „Jetzt erst recht“.
-  - Ein Gast lädt ein → es spricht sich herum → Gäste kommen je nach Laune und Beziehung zum Gastgeber.
+  - Ein Gast lädt ein → es spricht sich herum → Gäste kommen je nach Laune und Beziehung zum Gastgeber. **Kinder
+    kommen immer** (6.13).
 - **Der Spieler kann selbst eine Feier ausrichten:**
   - Gäste persönlich einladen (Dialog) – ob sie kommen, hängt von der Beziehung ab.
   - **Tänze** (umgesetzt 2026-10-14): Gäste tanzen verschieden – hüpfen, wiegen, drehen, Arme hoch, Twist,
@@ -1718,6 +1831,8 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
     dem sich der Lakengeist seine Opfer sucht (4.18)~~ ✔ (2026-10-19)
 7l. Schlaf & Müdigkeit: Wachzeit statt Nächte, fremde Betten, Gäste wecken, ausgeschlafen/übermüdet (3.6) – vorgemerkt
     2026-10-19, Fragen offen
+7m. ~~Kinder: nur erschreckt, nie Opfer, Familien, kein Alkohol, immer auf Feiern, vom Monster übersehen, laut,
+    Süßes oder Saures, petzen, Waisenkind, Kakao (6.13)~~ ✔ (2026-10-19) · noch drei Grundkörper aus Meshy (Jungen, Mädchen ~7)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen

@@ -136,7 +136,10 @@ func _show_main() -> void:
 		_option("Ist dir hier etwas aufgefallen?", _talk_odd)
 	_option("Handeln", _show_trade)
 	if Game.social.builder.in_area(player.global_position, "bar"):
-		_option("Eine Runde ausgeben (%d Geld)" % (BarTap.PRICE * 2), _round, Game.money < BarTap.PRICE * 2)
+		if guest.is_child():
+			_option("Einen Kakao ausgeben (%d Geld)" % BarTap.PRICE, _cocoa, Game.money < BarTap.PRICE)
+		else:
+			_option("Eine Runde ausgeben (%d Geld)" % (BarTap.PRICE * 2), _round, Game.money < BarTap.PRICE * 2)
 	if Game.dice and Game.dice.table.has_cup(player) and not Game.dice.table.busy:
 		_option("Mäxchen an der Bar spielen", _show_stakes.bind("dice"))
 	if Game.chess and Game.chess.table.has_board(player) and not Game.chess.table.busy:
@@ -148,6 +151,8 @@ func _show_main() -> void:
 		_option("Du kannst gehen", _dismiss)
 	elif tier >= Social.Tier.FRIEND:
 		_option("Komm mit", _follow)
+	if guest.sleepless and Game.social.sleep_active:
+		_option("Ab ins Bett mit dir", _to_bed)
 	if guest.fear >= 30.0:
 		_option("Beruhigen", _calm)
 	if Game.social.party_active:
@@ -185,10 +190,13 @@ func _show_stakes(game: String) -> void:
 		_show_main()
 		return
 	_clear()
-	_say("Um was spielen wir?")
+	_say(guest.line("only_fun") if guest.is_child() else "Um was spielen wir?")
 	if game == "chess" and Game.social.has_watched_chess(guest):
 		_name.text = "%s – %s (du hast zugesehen)" % [guest.display_name, ChessMatch.strength_text(guest)]
 	_option("Nur zum Spaß", _play.bind(0, false))
+	if guest.is_child():   # Kinder spielen nie um Einsätze (6.13)
+		_option("Doch nicht", _show_main)
+		return
 	for amount in [3, 8]:
 		_option("Um %d Geld" % amount, _play.bind(amount, false), Game.money < amount)
 	if match_ui.can_stake_item(guest):
@@ -275,19 +283,30 @@ func _talk_monster() -> void:
 
 func _gift() -> void:
 	var item := Game.player.held
-	var liked := item.kind in (guest.profile["likes"] as Array)
+	var kind := item.kind
+	var liked := kind in (guest.profile["likes"] as Array)
 	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + 3.0
 	Game.social.change_relation(guest, bonus)
 	Game.social.add_deed(guest, "gifts_to")
 	if item.deco_strength > 0.0:
-		guest.stock[item.kind] = int(guest.stock.get(item.kind, 0)) + 1
+		guest.stock[kind] = int(guest.stock.get(kind, 0)) + 1
 	Game.player.consume_held()
 	_say(guest.line("thanks_like" if liked else "thanks"))
+	if guest.is_child() and kind == Item.Kind.KNIFE:
+		# Ein Messer für ein Kind (6.13): Mama oder Papa erfahren es – und sind wütend
+		_say(guest.line("knife"))
+		var parent := guest.parent_guest()
+		if parent:
+			Game.social.change_relation(parent, -20.0)
+			Game.social.add_deed(parent, "hostile")
+	elif kind == Item.Kind.SWEETS:
+		Game.social.on_sweets_given(guest)
 	_show_main()
 
 
 func _ask_deco() -> void:
-	if Social.tier(guest) < Social.Tier.FRIEND:
+	# Kinder geben schon ab „nett“ etwas ab (6.13)
+	if Social.tier(guest) < (Social.Tier.NICE if guest.is_child() else Social.Tier.FRIEND):
 		_say(guest.line("refuse_deco"))
 	elif guest.gift_cooldown > 0.0:
 		_say("Ich hab dir doch gerade erst was gegeben.")
@@ -307,7 +326,20 @@ func _ask_deco() -> void:
 
 
 ## An der Bar: zwei Gläser, eins für jeden (Spielkonzept 3.7) – die Beziehung steigt, beide werden betrunkener.
+## Für ein Kind (6.13): Kakao statt Alkohol – nimmt Angst, freut es.
+func _cocoa() -> void:
+	Game.money -= BarTap.PRICE
+	guest.fear = maxf(0.0, guest.fear - 25.0)
+	Game.social.change_relation(guest, 5.0)
+	_say(guest.line("cocoa"))
+	_show_main()
+
+
 func _round() -> void:
+	if guest.is_child():
+		_say(guest.line("no_drink"))   # Kinder trinken nie (6.13)
+		_show_main()
+		return
 	if guest.drunk >= BarTap.ENOUGH:
 		_say("Für mich nicht mehr, danke … *hicks*")
 	elif Game.player.drunk >= BarTap.ENOUGH:
@@ -330,7 +362,7 @@ func _calm() -> void:
 
 
 func _invite() -> void:
-	if Social.tier(guest) >= Social.Tier.NEUTRAL:
+	if Social.tier(guest) >= Social.Tier.NEUTRAL or guest.is_child():   # Kinder kommen immer (6.13)
 		guest.invited = true
 		_say(guest.line("party_yes") + " Sag Bescheid – der Plattenspieler steht in der Lobby.")
 	else:
@@ -340,7 +372,7 @@ func _invite() -> void:
 
 
 func _join_party() -> void:
-	if Social.tier(guest) >= Social.Tier.ANNOYED:
+	if Social.tier(guest) >= Social.Tier.ANNOYED or guest.is_child():
 		guest.invited = true
 		_say(guest.line("party_yes"))
 		var spot: Vector3 = Game.social.free_party_spot()
@@ -369,6 +401,18 @@ func _follow() -> void:
 	var friend := guest   # close() setzt guest auf null
 	close()
 	friend.start_follow()
+
+
+## Schlafloses Kind in der Nachtruhe zurück ins Bett schicken (6.13) – Mama oder Papa sind dankbar.
+func _to_bed() -> void:
+	_say(guest.line("to_bed"))
+	Game.social.change_relation(guest, 3.0)
+	var parent := guest.parent_guest()
+	if parent:
+		Game.social.change_relation(parent, 8.0)
+	var kid := guest   # close() setzt guest auf null
+	close()
+	kid.send_to_bed()
 
 
 func _dismiss() -> void:
@@ -471,6 +515,8 @@ func _kind_name(kind: int) -> String:
 			return "Gezinkte Würfel"
 		Item.Kind.CHESS_BOARD:
 			return "Schachbrett"
+		Item.Kind.SWEETS:
+			return "Süßigkeiten"
 	return "Etwas"
 
 

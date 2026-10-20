@@ -3,6 +3,7 @@ class_name GuestGenerator
 ## Spielstände speichern deshalb nur Seed und Zimmer. Ein Gast bekommt einen Namen, einen
 ## Charakter (Archetyp) mit passenden Werten und Sätzen, Aussehen, Vorrat und Würfelstil.
 ## Das Profil hat dieselbe Form wie die handgeschriebenen in GuestProfiles.ALL.
+## Kinder (6.13) kommen aus make_child() – mit eigenen Namen, Werten und Sätzen.
 
 const NAMES := [
 	"Anton", "Berta", "Carla", "Dieter", "Elif", "Frieda", "Gustav", "Hanna", "Ida", "Jonas",
@@ -227,6 +228,68 @@ const ARCHETYPES := [
 ]
 
 
+## Kinder (Spielkonzept 6.13): Namen, Kleidungsstück, Tagesablauf (keine Bar), großer Kopf (GuestBody),
+## ab und zu ein Schach-Wunderkind, eigene Sätze ({eltern} = Mama/Papa, {eltern_dat} = meiner Mama/meinem Papa).
+const CHILD_NAMES := ["Max", "Lina", "Paul", "Emma", "Ben", "Merle", "Finn", "Juna", "Tom", "Ella", "Jan", "Pia",
+	"Felix", "Ronja", "Till", "Smilla"]
+const CHILD_FEMALE := ["Lina", "Emma", "Merle", "Juna", "Ella", "Pia", "Ronja", "Smilla"]
+const CHILD_CLOTHING := ["Kuscheltier", "Pudelmütze", "Fäustling", "Haarspange", "Murmelbeutel"]
+const CHILD_ACTIVITIES := {"room": 2.0, "lobby": 3.0, "kitchen": 1.0, "garden": 3.0, "wander": 2.5}
+const CHILD_HEAD := 1.25
+const CHILD_PRODIGY := 0.2
+const CHILD_LINES := {
+	"greet_friend": ["Hallo! Spielst du mit mir?", "Da bist du ja! Ich hab dich überall gesucht!"],
+	"greet": ["Hallo. Wer bist du?", "Hi! Ich darf eigentlich nicht mit Fremden reden.", "Bist du auch in den Ferien hier?"],
+	"greet_enemy": ["Mit dir red ich nicht.", "Geh weg!"],
+	"smalltalk": ["Im Garten gibt es Kürbisse, die sind größer als ich!", "Ich hab einen Käfer gefunden. Der wohnt jetzt in meiner Hosentasche.",
+		"{eltern} sagt, ich soll nicht so rennen. Aber die Flure sind sooo lang!", "Ich hab die Zimmer gezählt. Bis hundert, dann hab ich aufgehört.",
+		"Die Katzen mögen mich. Minka hat mir die Hand abgeleckt!"],
+	"monster": ["Im Keller wohnt ein Monster. Ehrlich! Aber keiner glaubt mir.", "Wenn die Lampen flackern, versteck ich mich unter der Decke.",
+		"Es hat mich angeschaut. Mit ganz vielen Zähnen. Und dann ist es einfach weitergegangen.", "Die Katzen haben Angst vor ihm. Ich auch."],
+	"odd": ["Nachts klopft es manchmal an mein Fenster.", "{eltern} sagt, Gespenster gibt es nicht.", "Ich freu mich auf Halloween! Ich will gaaanz viel Süßes!"],
+	"knock": ["Mach auf! Bitte, bitte!", "Hilfe! Ich will zu {eltern}!"],
+	"sheltered": ["Danke … darf ich kurz bleiben?"],
+	"left_outside": ["Du hast mich nicht reingelassen. Ich hatte ganz doll Angst."],
+	"insult": ["Du bist gemein!", "Das sag ich {eltern_dat}!"],
+	"thanks": ["Danke!", "Juhu!"],
+	"thanks_like": ["Wow! Darf ich das echt behalten?"],
+	"give_deco": ["Hier, für dich! Hab ich selbst gesammelt."],
+	"refuse_deco": ["Das ist meins!", "Nur, wenn du mein Freund bist."],
+	"panic": ["{eltern}! {eltern}!", "Ich will nach Hause!"],
+	"calm": ["Okay … bleibst du noch ein bisschen?"],
+	"party_yes": ["Eine Party? JAAA!", "Darf ich tanzen? Ich tanz am allerbesten!"],
+	"party_no": ["…"],
+	"caught": ["Das ist meins! Das sag ich {eltern_dat}!"],
+	"tattle": ["Ich hab genau gesehen, wie du das geklaut hast! Das sag ich {eltern_dat}!"],
+	"missing": ["Wer hat mein Laub weggenommen?!"],
+	"dice_yes": ["Würfeln! Aber nur zum Spaß, sagt {eltern}."],
+	"dice_no": ["Nö."],
+	"dice_win": ["Gewonnen! Gewonnen!"],
+	"dice_lose": ["Menno."],
+	"challenge": ["Spielst du mit mir Würfeln?"],
+	"caught_cheat": ["Du schummelst! Das ist unfair!"],
+	"patronized": ["Du hast mich extra gewinnen lassen. Das ist doof."],
+	"chess_yes": ["Schach! Das kann ich schon!"], "chess_no": ["Schach ist langweilig."],
+	"chess_win": ["Schachmatt! Hihi."], "chess_lose": ["Nochmal! Nochmal!"],
+	"chess_challenge": ["Spielst du Schach mit mir? Ich bin richtig gut!"],
+	"only_fun": ["Nur zum Spaß! Um Geld darf ich nicht spielen, sagt {eltern}."],
+	"no_drink": ["Iiih, das riecht komisch. {eltern} sagt, das ist nur für Erwachsene."],
+	"cocoa": ["Kakao! Mit Sahne? Danke!", "Mmmh. Jetzt hab ich einen Kakaobart."],
+	"knife": ["Ein echtes Messer! {eltern} erlaubt mir das nie."],
+	"trick": ["Süßes oder Saures!", "Süßes, sonst gibt's Saures!"],
+	"treat": ["Danke! Du bist der Allerbeste!", "Juhu! Die teil ich nicht."],
+	"prank": ["Keine Süßigkeiten? Dann gibt's Saures!", "Ätsch! Saures!"],
+	"sleepless": ["Ich kann nicht schlafen.", "Da war was am Fenster … darf ich zu dir?"],
+	"to_bed": ["Na gut … aber du bleibst, bis ich eingeschlafen bin.", "Okay. Gute Nacht."],
+	"orphan": ["{eltern} ist nicht wiedergekommen. Darf ich bei dir bleiben?", "Wo ist {eltern}? Ich bleib bei dir, ja?"],
+	"phone_chat": ["Hallo? Hier ist {name}! Ich hab das Telefon ganz allein bedient!", "Rate mal, wer hier ist! … {name}!"],
+	"phone_warn": ["Hier ist {name}! Das Monster ist {where}! Ich hab's gesehen, echt!"],
+	"phone_warn_near": ["{name} hier … es ist bei mir im Flur … ich hab Angst …"],
+	"phone_party": ["Hier ist {name}! In der Lobby ist Party! Kommst du?"],
+	"phone_answer": ["Hallo? Hier ist {name}!"],
+}
+
+
 ## Der Name eines Gastes hängt nur vom Seed ab (erste Zufallszahl) – Social prüft damit,
 ## ob ein Name schon vergeben ist, ohne den ganzen Gast zu erzeugen.
 static func name_for(gen_seed: int) -> String:
@@ -308,6 +371,63 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 	for key in chess_lines:
 		lines[key] = chess_lines[key]
 	return profile
+
+
+## Ein Kind (Spielkonzept 6.13) – eigener Zufall, damit make() für gespeicherte Seeds gleich bleibt.
+## Es gehört zu parent_id (erzeugter Erwachsener), wohnt im Zimmer nebenan und spricht von „Mama“ bzw. „Papa“.
+static func make_child(gen_seed: int, room: String, parent_id: String, parent: Dictionary) -> Dictionary:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = gen_seed
+	var child_name: String = CHILD_NAMES[rng.randi() % CHILD_NAMES.size()]
+	var mum: bool = parent.get("sex", "m") == "f"
+	var words := {"eltern": "Mama" if mum else "Papa", "eltern_dat": "meiner Mama" if mum else "meinem Papa"}
+	var lines := {}
+	for key in CHILD_LINES:
+		lines[key] = (CHILD_LINES[key] as Array).map(func(s: String) -> String: return s.format(words))
+	var age := rng.randi_range(6, 11)
+	var prodigy := rng.randf() < CHILD_PRODIGY
+	var activities := {}
+	for key in CHILD_ACTIVITIES:
+		activities[key] = float(CHILD_ACTIVITIES[key]) * rng.randf_range(0.6, 1.4)
+	var height_cm := 112.0 + (age - 6) * 6.0 + rng.randf_range(-4.0, 4.0)
+	var profile := {
+		"name": child_name, "room": room, "archetype": "Kind", "generated": true, "child": true, "parent": parent_id,
+		"age": age, "sex": "f" if child_name in CHILD_FEMALE else "m",
+		"coat": COATS[rng.randi() % COATS.size()], "pants": PANTS[rng.randi() % PANTS.size()],
+		# meist dieselbe Haarfarbe wie Mama oder Papa
+		"hair": parent.get("hair", HAIR[0]) if rng.randf() < 0.7 else HAIR[rng.randi() % HAIR.size()],
+		"height": height_cm / 170.0, "height_cm": height_cm, "width_cm": rng.randf_range(27.0, 33.0),
+		"build": rng.randf_range(-0.4, 0.6), "head": CHILD_HEAD,
+		"brave": rng.randf_range(0.05, 0.3), "greed": rng.randf_range(0.0, 0.1), "gossip": rng.randf_range(0.8, 1.0),
+		"sell": rng.randf_range(0.8, 1.0), "buy": rng.randf_range(0.9, 1.1), "reliable": rng.randf_range(0.9, 1.0),
+		"harvester": false, "carver": false,
+		"likes": [Item.Kind.SWEETS, Item.Kind.LEAVES, Item.Kind.PUMPKIN, Item.Kind.CANDLE],
+		"stock": {Item.Kind.LEAVES: rng.randi_range(1, 3)}, "start_deco": [Item.Kind.LEAVES], "activities": activities,
+		"money": rng.randi_range(0, 3), "shock": "cling",
+		"clothing": "%s %s" % [_genitive(child_name), CHILD_CLOTHING[rng.randi() % CHILD_CLOTHING.size()]],
+		"report": "Ich hab %s gesehen! Bei %s! Ehrlich, ich lüg nicht!",
+		"dice": {
+			"likes": rng.randf() < 0.5, "honesty": rng.randf_range(0.8, 1.0), "jump": 1,
+			"perception": rng.randf_range(0.1, 0.3), "pride": rng.randf_range(0.3, 0.8),
+			"tell": "%s kichert und hält sich die Hand vor den Mund." % child_name,
+		},
+		# Schach: ab und zu ein Wunderkind, das fast jeden schlägt (und Revanche will)
+		"chess": {"likes": prodigy or rng.randf() < 0.35, "skill": 0.97 if prodigy else rng.randf_range(0.0, 0.35),
+			"pride": 0.85 if prodigy else 0.4},
+		"prodigy": prodigy,
+		"lines": lines,
+	}
+	if prodigy:
+		lines["chess_challenge"] = ["Ich hab noch nie verloren. Willst du's versuchen?"]
+		lines["chess_lose"] = ["Das … das gibt's nicht! Revanche! Sofort!"]
+	return profile
+
+
+## Name eines Kindes – wie name_for() die erste Zufallszahl.
+static func child_name_for(gen_seed: int) -> String:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = gen_seed
+	return CHILD_NAMES[rng.randi() % CHILD_NAMES.size()]
 
 
 static func _range(rng: RandomNumberGenerator, r: Vector2) -> float:

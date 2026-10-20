@@ -269,6 +269,8 @@ func _take_incoming(call: Dictionary) -> void:
 			_show_talk(guest, "„%s“" % _line(guest, key, {}))
 		"creepy":
 			_take_creepy(call, title)
+		"kid_prank":
+			ui.show_page(title, "*Kichern* … „Saures!“ … *klick*", [["Auflegen", hang_up]])
 
 
 ## Wo es ist – laut einem Gast. Nicht jeder erinnert sich richtig (4.13).
@@ -610,6 +612,15 @@ func _after(id: int, seconds: float, fn: Callable) -> void:
 	get_tree().create_timer(seconds, false).timeout.connect(func() -> void:
 		if id == _call_id and is_busy():
 			fn.call())
+
+
+## Klingelstreich eines Kindes (Süßes oder Saures, Spielkonzept 6.13): Zimmer 13 klingelt, am anderen Ende
+## kichert es nur. false, wenn das Telefon gerade nicht klingeln kann.
+func kid_prank(guest: Guest) -> bool:
+	if home_phone == null or home_phone.off_hook or is_busy():
+		return false
+	start_incoming({"kind": "kid_prank", "guest": guest, "room": guest.home["no"]})
+	return true
 
 
 ## Debug (--call=…): sofort einen Anruf für Zimmer 13 klingeln lassen.

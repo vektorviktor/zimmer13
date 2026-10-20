@@ -37,7 +37,8 @@ const DIR := "user://saves/"
 ## 20: Fingerabdruck der Welt („world“) – Umbauten am Hotel brauchen keine neue Version mehr, nur noch
 ##     Änderungen am Aufbau des Spielstands selbst
 ## 21: Rausch und Kater (player.drunk/hangover, Gast drunk) – Stände mit Version 20 laden weiter, alle nüchtern
-const VERSION := 21
+## 22: Kinder (Spielkonzept 6.13) – „parent“ in der Gästeliste (roster); ältere Stände laden weiter, ohne Kinder
+const VERSION := 22
 const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0

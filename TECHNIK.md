@@ -552,12 +552,47 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
   (`Social.experience_line`), `_talk_monster` am selben Spieltag (`recent_experience`) noch einmal. Wer den Geist
   erlebt hat (`remembers("ghost")`), ruht nicht im Dunkeln und zieht den Vorhang zu. Leiche: `die("ghost")` –
   sichtbar, gekippt, ohne Kollision; `on_guest_died(guest, "ghost")` ohne Schrei/„verschwunden“.
+- **Kinder** (Spielkonzept 6.13): `Social._add_families()` macht nach den Erwachsenen `CHILDREN` (4) Kinder – je ein
+  anderer erzeugter Erwachsener ist Mama oder Papa (`profile["parent"]`), das Kind wohnt im freien Zimmer am nächsten
+  (`_room_near`). Profil aus `GuestGenerator.make_child(seed, zimmer, eltern_id, eltern_profil)` mit eigenem Zufall
+  (`make()` bleibt unberührt; Name = erste Zufallszahl, `child_name_for`): `child`, `age` 6–11, `height_cm` 112–148,
+  `head` 1,25, Archetyp „Kind“, Schreckreaktion `cling`, Sätze aus `CHILD_LINES` (`{eltern}`/`{eltern_dat}` → Mama
+  bzw. Papa, auch `phone_*`), Tagesablauf ohne Bar, 20 % Schach-Wunderkind (`prodigy`, Stärke 0,97).
+  `Guest.is_child()`, `parent_guest()`, `is_orphan()`.
+  - **Nie Opfer:** `Monster._actors()` ohne Kinder (keine Jagd), `_check_hide_step` behandelt ein Kind im Versteck als
+    leer, `Director.on_actor_hid`/`kill_guest` übergehen Kinder, `_max_victims` zählt sie nicht. Sieht ein Kind das
+    Monster (`_watch_monster`), merkt es sich `monster`, schreit (Lärm `scream`) und erzählt es (`_tell_grown_ups`).
+    Der Lakengeist kommt öfter (`weakness()` + `CHILD_WEAKNESS`), würgt aber nie: `_grab` → `_frighten_child`
+    (Schreck `ghost_attack`, `_vanish`). Kinder zählen nicht als Zeugen (`_witness_guests`) und nicht für `all_asleep()`.
+  - **Familie:** Bei jedem Schreck schreit das Kind, Mama oder Papa bekommen `CHILD_SCARE_FEAR` Angst, die Eltern und
+    Erwachsene in 12 m merken sich `child_saw` und erzählen es als Kinderfantasie (`Social.CHILD_SAW_LINES`). Nach dem
+    Schreck (`cling`: klammern, zittern) und nach dem Umrennen rennt es zu den Eltern (`_run_to_parent`). Stirbt der
+    Elternteil: Angst 100, das Waisenkind schließt sich dem Spieler an (`_child_approach`, `ORPHAN_FOLLOW`, 240 s).
+  - **Verhalten:** trinkt nie (`drink`, Bar; Dialog „Einen Kakao ausgeben“ `_cocoa` statt Runde), kommt immer zu
+    Feiern (`start_party`, Einladen), klaut, rempelt, droht und schlägt nicht; tobt (`_romp` mit `CHILD_ROMP`: rennen
+    → Lärm `run`, lachen → `laugh` 8 m, auch auf Feiern), schenkt dir ab „nett“ Laub oder eine Kerze
+    (`_child_approach`, `CHILD_GIFT`; „Hast du Deko?“ ab „nett“); die Beziehung wandert überall `CHILD_DRIFT`-mal
+    schneller zur Mitte. Spieler: Schlagen geht nicht (`Player._try_punch`), Rammen → Eltern −20, Zeugen −6; ein Messer
+    schenken → Eltern −20; Mäxchen und Schach nur zum Spaß. Kinder als Zeugen beim Diebstahl petzen (`tattle`, Eltern −10).
+  - **Nachtruhe:** `bedtime()` würfelt `SLEEPLESS_CHANCE` (30 %) → `sleepless` für `SLEEPLESS_TIME`: `_night_activity()`
+    (Licht aus, Vorhang auf, ans Fenster – dort findet es der Geist; durch den Flur; an Zimmer 13 klopfen über
+    `Social.sleepless_visit`). Dialog „Ab ins Bett mit dir“ (`send_to_bed`, Eltern +8). In der Nachtruhe startet
+    keine spontane Feier mehr.
+  - **Süßes oder Saures:** `Social._update_tricks` (alle `TRICK_COOLDOWN`, Spieler in Zimmer 13, ruhig) schickt ein Kind
+    mit Meta `visit = "trick"` zu Zimmer 13 (Besuchsablauf, `why` in `_knock`). Tür auf mit `Item.Kind.SWEETS` in der
+    Hand → `_treat` (+12); sonst wartet es `TRICK_WAIT` vor der Tür (Schenken im Gespräch → `on_sweets_given`), dann
+    `_trick_prank`: Laub vor die Tür oder 15–30 s später ein Klingelstreich (`PhoneCalls.kid_prank`, Anruf `kid_prank`).
+    Süßigkeiten liegen in Kommoden (`Dresser.LOOT`) und bei Edna und Bruno im Vorrat.
+  - Gespeichert wird nur `parent` in der Gästeliste (Version 22); `sleepless`, Besuche und Süßes oder Saures nicht.
+    `--trace` zeigt `[Süßes oder Saures]` und `[Lakengeist] … erschreckt`; die Kinder-IDs folgen auf die Erwachsenen
+    (erstes Kind `gast24`).
 - **`Social`** ist der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`,
   `living_guests()`, `guest_by_id()`), Beziehungen (`change_relation`), Gerüchte mit Verzögerung,
   Diebstahl mit Zeugen, Reservierung von Verstecken (`find_hide_spot` / `release_hide_spot`),
   Feiern, Herausforderungen (`challenge(guest, game)`, `Guest.challenge_game`), Gäste-Mäxchen und Gäste-Schach
   (`_update_chess_game`, Zuschauen ≥ 30 s → `has_watched_chess`), Berichte über Spuren (`note_trace` → `report_line`),
-  Klopfen an Zimmer 13, Zettel, Neuankömmlinge (`START_GUESTS` 30, `MIN_GUESTS` 24).
+  Klopfen an Zimmer 13, Zettel, Neuankömmlinge (`START_GUESTS` 30 einschließlich `CHILDREN` 4 Kinder, `MIN_GUESTS` 24;
+  Neuankömmlinge sind immer Erwachsene).
 - **Freundschaftsstufen** (Spielkonzept 6.3): `Social.Tier` (9 Stufen, `tier(guest)` / `tier_of(wert)`,
   Grenzen −80/−55/−30/−10/10/30/55/80, Namen `TIER_NAMES`). **Im Code nie mehr `relation` mit Zahlen
   vergleichen, sondern Stufen** (`Social.tier(g) >= Social.Tier.FRIEND`). `change_relation` dämpft Zuwächse
@@ -621,7 +656,8 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
 - Gegenstände werden nicht zugeordnet: beim Laden werden alle gelöscht und aus `kind` + `extra`
   (`Item.create_extra()`) neu erzeugt. Neuer Gegenstandszustand → in `create_extra()`/`_build()`
   abbilden oder in `_item_data`/`_make_item` ergänzen.
-- Erzeugte Gäste: nur `{id, seed, room, arrived}` (`Social.roster_state` / `restore_roster`), wird
+- Erzeugte Gäste: nur `{id, seed, room, arrived, parent}` (`Social.roster_state` / `restore_roster`; `parent` ≠ "" →
+  Kind über `make_child`, ab Version 22 – die Liste steht in Erzeugungsreihenfolge, Eltern also vor ihren Kindern), wird
   **zuerst** angewendet, weil sich alles Weitere auf Gast-IDs bezieht. Danach Welt → Director-Werte →
   Gäste → Gegenstände → Spieler → Soziales → Monster zuletzt.
 - Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp, HotelPhone,
@@ -688,7 +724,7 @@ klares Glas ×0,6, je Geschossdecke ×0,3. Möbel, Böden und Brüstungen dämpf
 **Neues Geräusch in der Welt:** Eintrag in `Senses.NOISE`, Aufruf `Game.noise(...)` mit `quelle`, wo
 bekannt (sonst hört sich z. B. das Monster selbst und läuft seinen eigenen Türen nach).
 Spielerschritte: `Player._on_soft_floor()` erkennt Teppich/Rasen an der `albedo_tex` des Bodens.
-Gäste machen nur beim Rennen (Panik) Schrittlärm.
+Gäste machen nur beim Rennen (Panik; Kinder auch beim Toben, dazu Lachen `laugh`) Schrittlärm.
 
 **Sichtbarkeit:** `Senses.can_see(beobachter, auge, blick, grundweite, kegel, akteur, bonus, …)`:
 Sichtweite = Grundweite × `conspicuity(akteur)` + Bonus, dann Kegel (näher als 2 m ohne Kegel) und
