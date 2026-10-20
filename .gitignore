@@ -15,9 +15,10 @@ assets/source/anim/
 # Exportierte Builds (export_presets.cfg)
 build/
 
-# Arbeitsordner (Rohmodelle, Mixamo-Rohdateien, Vorlagen) und Referenzbilder – nicht fürs Repo
+# Austauschordner (Screenshots, Zwischenstände, Downloads) – nicht fürs Repo
 temp/
-assets/*.avif
+# Vorlagen und Referenzbilder, nach denen gebaut wird (fremde Bilder, .gdignore: Godot importiert sie nicht)
+reference/
 
 # Python-Zwischendateien (tools/mixamo_retarget.py wird von den Blender-Skripten importiert)
 __pycache__/

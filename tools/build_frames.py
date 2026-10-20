@@ -1,5 +1,5 @@
 # Baut das Profil-Kit für Tür- und Fensterrahmen (Spielkonzept 7.2): Craftsman-Stil nach
-# temp/doorframe.jpg – glatte Seitenbekleidung, darüber Leiste, Friesbrett und Abdeckung mit Kehle.
+# reference/doorframe.jpg – glatte Seitenbekleidung, darüber Leiste, Friesbrett und Abdeckung mit Kehle.
 # Kein Ausgangsmodell: Jedes Teil ist ein 2D-Profil, 1 m lang ausgezogen. OpeningFrame setzt die
 # Teile in Godot zusammen und streckt sie dabei nur in der Länge.
 #
