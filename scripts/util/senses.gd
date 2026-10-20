@@ -13,6 +13,7 @@ const NOISE := {
 	"step":       {"range": 2.0,  "sound": "",       "volume": 0.0},    ## Gehen auf Holz/Fliesen (Teppich, geduckt: still)
 	"run":        {"range": 10.0, "sound": "",       "volume": 0.0},    ## alle 0,6 s
 	"land":       {"range": 4.0,  "sound": "thud",   "volume": 0.2},    ## nach einem Sprung
+	"stumble":    {"range": 5.0,  "sound": "thud",   "volume": 0.35},   ## im Rausch gestolpert (3.7)
 	"door":       {"range": 5.0,  "sound": "creak",  "volume": 0.5},    ## Tür öffnen/schließen (Knarren)
 	"rattle":     {"range": 6.0,  "sound": "thud",   "volume": 0.6},    ## abgeschlossene Tür rütteln
 	"unlock":     {"range": 3.0,  "sound": "jingle", "volume": 0.6},    ## Schlüssel klirren

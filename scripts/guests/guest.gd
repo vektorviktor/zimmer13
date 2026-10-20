@@ -58,6 +58,10 @@ const PUNCH_INJURY := 0.35
 const RUDE_LINES := ["Aus dem Weg!", "Pass doch auf!", "Geh mir aus den Augen.", "Na, wieder unterwegs?"]
 const RAMMED_LINES := ["Hey! Spinnst du?", "Au! Pass doch auf!", "Was soll das denn?!"]
 const HIT_BACK_LINES := ["Na warte!", "Das wirst du bereuen!", "Jetzt reicht's mir!"]
+## An der Bar (Spielkonzept 3.7): so oft trinkt ein Gast etwas, wenn er dort ankommt; so viel zählt Angst
+## (0..100 → 0..1) für die Schwäche, nach der sich der Lakengeist seine Opfer sucht (4.18)
+const BAR_DRINK := 0.7
+const WEAK_FEAR := 0.6
 const HIT_FLEE_LINES := ["Hilfe! Der ist verrückt!", "Lass mich in Ruhe!", "Au! Hör auf!"]
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
 
@@ -88,6 +92,7 @@ var state := State.IDLE
 var gen_seed := -1           ## ≥ 0: zufällig erzeugter Gast (GuestGenerator)
 var corpse := false          ## tot, liegt aber noch da (Lakengeist, Spielkonzept 6.12)
 var ghost_visits := 0        ## so oft kam der Lakengeist schon zu ihm (Stufe, wie beim Spieler)
+var drunk := 0.0             ## Rausch (0..1) von der Bar – Stufen in BarTap (Spielkonzept 3.7)
 var seen_sights: Array = []  ## Blutlachen und Leichen, die er schon gesehen hat (sight_key)
 ## Eigene Erlebnisse: {kind (blood/corpse/ghost/ghost_attack), zone, who, at (Director.elapsed), told}
 var experiences: Array = []
@@ -409,6 +414,7 @@ func _physics_process(delta: float) -> void:
 	_update_label()
 	_leave_traces(delta)
 	fear = maxf(0.0, fear - delta * 0.4)
+	drunk = maxf(0.0, drunk - delta / BarTap.SOBER_TIME)
 	chat_cooldown = maxf(0.0, chat_cooldown - delta)
 	challenge_cooldown = maxf(0.0, challenge_cooldown - delta)
 	if challenge_time > 0.0:
@@ -643,6 +649,17 @@ func _after_stagger() -> void:
 		_set_idle(randf_range(1.0, 3.0))
 
 
+## Ein Glas (Bar oder Runde vom Spieler, Spielkonzept 3.7): nimmt Angst, macht betrunken.
+func drink() -> void:
+	drunk = minf(1.0, drunk + BarTap.DRINK)
+	fear = maxf(0.0, fear - BarTap.CALM * 100.0)
+
+
+## Wie angreifbar der Gast gerade ist (0..1) – danach sucht sich der Lakengeist seine Opfer (4.18).
+func weakness() -> float:
+	return clampf(fear / 100.0 * WEAK_FEAR + drunk, 0.0, 1.0)
+
+
 func _speed_factor() -> float:
 	return HURT_SLOW if _hurt_time > 0.0 else 1.0
 
@@ -791,6 +808,11 @@ func _arrive() -> void:
 				_fall_asleep()
 				return
 			_set_idle(randf_range(15.0, 40.0))
+			# An der Bar wird meist etwas getrunken (3.7)
+			if drunk < BarTap.ENOUGH and randf() < BAR_DRINK and Game.social.builder.in_area(global_position, "bar"):
+				drink()
+				if randf() < 0.4:
+					say("Prost!" if drunk < BarTap.DRUNK else "Noch eins … *hicks*")
 			if _is_home():
 				_at_home()
 				if fear < 30.0 and float(profile["brave"]) >= 0.4 and not remembers("ghost") and randf() < 0.3:
@@ -1600,6 +1622,8 @@ func _pose(delta: float, speed: float) -> void:
 	_visual.rotation = Vector3.ZERO
 	_arm_l.rotation.z = 0.0
 	_arm_r.rotation.z = 0.0
+	if hiding == null and state in [State.IDLE, State.WALK, State.TALKING, State.PARTY]:
+		_visual.rotation.z = sin(_anim * 1.9) * 0.07 * BarTap.sway(drunk)   # im Rausch schwankt er (3.7)
 	if state in [State.SHOCKED, State.GHOSTED]:
 		_shock_pose()
 		return

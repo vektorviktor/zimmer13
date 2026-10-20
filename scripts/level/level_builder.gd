@@ -1282,6 +1282,12 @@ func _common_rooms() -> void:
 			var stool := Geo.mesh(root, Geo.cylinder(0.18, 0.05, 8), Mat.psx(Color(0.4, 0.1, 0.1)), Vector3(p.x + out.x * 0.8, 0.7, p.y + out.y * 0.8))
 			Geo.mesh(stool, Geo.cylinder(0.04, 0.7, 5), _dark_wood, Vector3(0, -0.35, 0))
 			bar_spots.append(Vector3(p.x + out.x * 1.2, 0, p.y + out.y * 1.2))
+		# Flasche und Glas zum Trinken (3.7): mitten auf der Theke, zur Gästeseite hin
+		var tap := BarTap.new()
+		var at := r.get_center() + out * (minf(r.size.x, r.size.y) / 2.0 - 0.18)
+		tap.position = Vector3(at.x, float(counter["top"]), at.y)
+		tap.rotation.y = atan2(-along.y, along.x)   # Flasche und Glas nebeneinander entlang der Theke
+		root.add_child(tap)
 	# Partyraum: Plattenspieler auf dem Tisch, dunkle Ecke (dort steht es beim ersten Angriff), Tanzfläche
 	var r: Rect2 = _named["partyraum"]
 	var c := r.get_center()

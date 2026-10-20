@@ -704,7 +704,7 @@ func is_hallucinating() -> bool:
 	return _hallucination > 0.0
 
 
-## Halluzination nach einem Todesfall: Rauschen ohne Monster.
+## Halluzination nach einem Todesfall, unter Schock oder betrunken (3.7): Rauschen ohne Monster.
 func _update_hallucination(delta: float) -> void:
 	if _hallucination > 0.0:
 		_hallucination -= delta
@@ -712,7 +712,8 @@ func _update_hallucination(delta: float) -> void:
 	var p := Game.player
 	if p == null or p.dead:
 		return
-	if (grief > 0.0 or p.shock > 0.15) and randf() < delta / HALLUCINATION_EVERY:
+	var drunk := p.drunk >= BarTap.DRUNK
+	if (grief > 0.0 or p.shock > 0.15 or drunk) and randf() < delta / HALLUCINATION_EVERY * (1.0 + (p.drunk if drunk else 0.0)):
 		_hallucination = randf_range(6.0, 11.0)
 		if not _monster.is_active() and randf() < FAKE_SIGNAL_CHANCE:   # langes Flackern – und nichts kommt
 			_start_wave(spawn_points[0], FAKE_SIGNAL_VICTIMS, true)

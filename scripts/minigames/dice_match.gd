@@ -203,7 +203,10 @@ func _player_announce(value: int) -> void:
 	if _actual != value:
 		_player_bluffs += 1
 	_dice.hide_dice()
-	_say("Du schiebst den Becher rüber: „%s“" % Maexchen.label(value))
+	var text := "Du schiebst den Becher rüber: „%s“" % Maexchen.label(value)
+	if _actual != value and Game.player.drunk >= BarTap.TIPSY:
+		text += "\nDeine Hand zittert ein wenig."   # betrunken blufft man schlechter (3.7)
+	_say(text)
 	_clear()
 	_guest_respond.call_deferred()
 
@@ -214,7 +217,9 @@ func _guest_respond() -> void:
 		return
 	var dice: Dictionary = guest.profile["dice"]
 	var plausible := Maexchen.chance_at_least(_claim)
-	var suspicion := float(_player_bluffs) * 0.08 + float(dice["perception"]) * 0.2
+	# Rausch (3.7): der Spieler zittert beim Bluffen, ein betrunkener Gast passt schlechter auf
+	var suspicion := float(_player_bluffs) * 0.08 + float(dice["perception"]) * 0.2 * (1.0 - 0.5 * guest.drunk) \
+		+ 0.3 * BarTap.sway(Game.player.drunk) * (1.0 if _actual != _claim else 0.0)
 	var doubt := clampf((1.0 - plausible) * 0.85 + suspicion - 0.15, 0.05, 0.95)
 	if _claim == 21:
 		doubt = 0.85
@@ -250,8 +255,8 @@ func _guest_roll(intro: String) -> void:
 	_claim_by = "guest"
 	_actual = value
 	var text := "%s schaut unter den Becher und sagt: „%s“" % [guest.display_name, Maexchen.label(announce)]
-	# Verräterische Gesten – nur wenn du den Gast vorher beim Spielen beobachtet hast
-	if Game.social.has_watched(guest):
+	# Verräterische Gesten – nur wenn du den Gast vorher beim Spielen beobachtet hast oder er angetrunken ist (3.7)
+	if Game.social.has_watched(guest) or guest.drunk >= BarTap.TIPSY:
 		var bluffing := announce != value
 		if (bluffing and randf() < 0.6) or (not bluffing and randf() < 0.1):
 			text += "\n" + String(dice["tell"])

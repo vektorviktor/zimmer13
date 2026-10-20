@@ -9,8 +9,8 @@ extends Node3D
 ## Wer sich vor ihm im Schrank versteckt, den wartet er ab: Er schwebt vor den Türen, packt zu, wer
 ## herauskommt, und fliegt am Ende vielleicht hinein (Luft anhalten hilft ein wenig).
 ## Ab dem 6. Mal taucht er auch im Flur auf, wenn alle Gäste schlafen (Nachtruhe, Social) – dann gibt es
-## keine Zeugen. Schlafmangel (Player.nights_awake) macht ihn häufiger; nach drei Nächten ohne Schlaf
-## kommt er sicher im Flur, sobald man dort allein ist.
+## keine Zeugen. Er sucht die Schwachen (Player/Guest.weakness(): Schlafmangel, Rausch, Angst, Trauer): je
+## schwächer, desto häufiger; ab WEAK_HALL auch früher im Flur, ganz schwach sicher, sobald man dort allein ist.
 ## Gäste behandelt er wie den Spieler (Spielkonzept 6.12): Wer wach im Dunkeln bei offenem Vorhang steht,
 ## bekommt Besuch – mit eigenem Zähler (Guest.ghost_visits). Ein erwürgter Gast bleibt als Leiche liegen.
 ## Wer ihn sieht, erschrickt (Guest.shock) und erzählt später davon.
@@ -54,7 +54,7 @@ const GUEST_ESCAPE := Vector2(0.05, 0.2)
 const LURK_TIME := Vector2(20.0, 35.0)
 const FLY_IN_CHANCE := 0.4
 const FLY_IN_CHANCE_LATE := 0.75      ## ab dem 6. Mal
-const FLY_IN_PER_NIGHT := 0.1         ## je Nacht ohne Schlaf mehr
+const FLY_IN_WEAK := 0.3              ## bei voller Schwäche so viel mehr
 const BREATH_SAVES := 0.5             ## Luft anhalten senkt die Chance um bis zu diesen Anteil …
 const BREATH_FULL := 12.0             ## … bei so vielen Sekunden angehaltener Luft während des Wartens
 const PANT_CHANCE := 0.25             ## hat er dich beim Warten keuchen hören: so viel mehr Chance (Ausdauer, 3.1)
@@ -67,12 +67,14 @@ const LEAVE_RANGE := 14.0             ## so weit weg vom Fenster (bzw. von ihm) 
 const HALL_FROM := 6
 const HALL_CHANCE := 0.04
 const HALL_DISTANCE := Vector2(8.0, 16.0)
-## Schlafmangel (Nächte ohne Schlaf, Player.nights_awake): je Nacht mehr Chance, kürzere Pause, mehr Flur;
-## ab AWAKE_HALL_FROM auch vor dem 6. Mal im Flur, ab AWAKE_SURE sicher im Flur, sobald man dort allein ist
-## (auch ohne Nachtruhe)
-const AWAKE_CHANCE := 0.1
-const AWAKE_HALL_FROM := 2
-const AWAKE_SURE := 3
+## Schwäche des Opfers (0..1, Spielkonzept 4.18 – Player.weakness(), Guest.weakness()): bis zu so viel mehr
+## Chance, Pause und Flur-Chance bis zu (1 + WEAK_FASTER)-mal kürzer bzw. häufiger; ab WEAK_HALL auch vor dem
+## 6. Mal im Flur, ab WEAK_SURE sicher im Flur, sobald man dort allein ist (auch ohne Nachtruhe). Eine Nacht
+## ohne Schlaf ist ein Drittel Schwäche – zwei Nächte reichen für den Flur, drei für sicher.
+const WEAK_CHANCE := 0.3
+const WEAK_FASTER := 3.0
+const WEAK_HALL := 0.66
+const WEAK_SURE := 1.0
 ## Modell: Handgelenke so hoch über dem Ursprung, Hände so weit vor der Mitte
 const HANDS_Y := 1.12
 const HANDS_AHEAD := 0.45
@@ -222,12 +224,12 @@ func _check_spawn() -> void:
 		if window != _last_window:
 			_last_window = window
 			_stay = STAY_EVERY
-			chance = _spawn_chance()
+			chance = _spawn_chance(player)
 		elif window != null:
 			_stay -= CHECK_EVERY
 			if _stay <= 0.0:
 				_stay = STAY_EVERY
-				chance = minf(1.0, STAY_CHANCE + AWAKE_CHANCE * player.nights_awake)
+				chance = minf(1.0, STAY_CHANCE + WEAK_CHANCE * player.weakness())
 		# in Gesellschaft kommt er nicht
 		if window != null and (_cooldown <= 0.0 or _force) and director.player_threat <= 0.0 \
 				and _witness_guests(eye, player).size() < WITNESSES and (_force or randf() < chance):
@@ -264,7 +266,7 @@ func _check_guests() -> void:
 			continue
 		var forced := _force_guest == g
 		if not forced and (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
-				or _witness_guests(eye, g).size() + _player_witness(eye) >= WITNESSES or randf() >= SPAWN_CHANCE):
+				or _witness_guests(eye, g).size() + _player_witness(eye) >= WITNESSES or randf() >= _spawn_chance(g)):
 			continue
 		_force_guest = null
 		_appear(window, g)
@@ -272,21 +274,21 @@ func _check_guests() -> void:
 
 
 ## Ab dem 6. Mal: Schlafen alle Gäste und steht der Spieler im Flur, taucht er dort mit kleiner Chance
-## je Sekunde auf – irgendwo vor oder hinter ihm, wo er gerade nicht hinsieht. Schlafmangel: je Nacht ohne
-## Schlaf öfter, ab der 2. auch vor dem 6. Mal, ab der 3. sicher, sobald man allein im Flur ist.
+## je Sekunde auf – irgendwo vor oder hinter ihm, wo er gerade nicht hinsieht. Schwäche: je schwächer,
+## desto öfter, ab WEAK_HALL auch vor dem 6. Mal, ab WEAK_SURE sicher, sobald man allein im Flur ist.
 func _check_hall(player: Player) -> bool:
-	var nights := player.nights_awake
+	var weak := player.weakness()
 	if Game.social == null or not "Flur" in Game.director.zone_name_at(player.global_position):
 		return false
-	if nights >= AWAKE_SURE:
+	if weak >= WEAK_SURE:
 		if _cooldown > 0.0 or Game.director.player_threat > 0.0 \
 				or _witness_guests(player.camera.global_position, player).size() >= WITNESSES:
 			return false
 	else:
-		if (visits + 1 < HALL_FROM and nights < AWAKE_HALL_FROM) or not Game.social.all_asleep():
+		if (visits + 1 < HALL_FROM and weak < WEAK_HALL) or not Game.social.all_asleep():
 			return false
 		if not _force_hall and (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
-				or randf() >= HALL_CHANCE * (1 + nights) * CHECK_EVERY):
+				or randf() >= HALL_CHANCE * (1.0 + WEAK_FASTER * weak) * CHECK_EVERY):
 			return false
 	var spots: Array[Vector3] = []
 	for entry in Game.director.patrol:
@@ -294,7 +296,7 @@ func _check_hall(player: Player) -> bool:
 		var d := p.distance_to(player.global_position)
 		if absf(p.y - player.global_position.y) < 1.5 and d >= HALL_DISTANCE.x and d <= HALL_DISTANCE.y \
 				and "Flur" in Game.director.zone_name_at(p) and not Game.director.player_can_see(p + Vector3.UP * 1.2) \
-				and _witness_guests(p + Vector3.UP * HANDS_Y, player).size() < WITNESSES:   # wache Gäste (Schlafmangel)
+				and _witness_guests(p + Vector3.UP * HANDS_Y, player).size() < WITNESSES:   # wache Gäste (ganz Schwache auch ohne Nachtruhe)
 			spots.append(p)
 	if spots.is_empty():
 		return false
@@ -319,8 +321,8 @@ func _appear_in_hall(floor_point: Vector3) -> void:
 	state = State.ENTER
 	Game.caption("[Kälte im Flur]")
 	if "--trace" in OS.get_cmdline_user_args():
-		var nights := Game.player.nights_awake
-		print("[Lakengeist] %d. Mal – im Flur (%d Nächte ohne Schlaf%s)" % [visits, nights, ", sicher" if nights >= AWAKE_SURE else ""])
+		var weak := Game.player.weakness()
+		print("[Lakengeist] %d. Mal – im Flur (Schwäche %.2f%s)" % [visits, weak, ", sicher" if weak >= WEAK_SURE else ""])
 
 
 ## Dunkles Außenfenster in der Nähe dieses Augenpunkts, durch das er zum `stage`. Mal käme.
@@ -377,7 +379,7 @@ func _appear(window: HotelWindow, victim: Node3D) -> void:
 		Game.caption("[Etwas schwebt vor dem Fenster]")
 	if "--trace" in OS.get_cmdline_user_args():
 		print("[Lakengeist] %d. Mal am Fenster (%s) – bei %s" % [_stage, window.room_id, (victim as Guest).display_name if victim is Guest \
-			else "dir (%d Nächte ohne Schlaf)" % Game.player.nights_awake])
+			else "dir (Schwäche %.2f)" % Game.player.weakness()])
 
 
 ## Ab dem 2. Mal: blutige Handabdrücke außen auf der Scheibe.
@@ -495,8 +497,8 @@ func _vanish() -> void:
 		(_victim as Guest).ghost_gone()
 	state = State.FADE
 	_lurk_spot = null
-	# Schlafmangel: Zum Spieler kommt er umso schneller wieder
-	_cooldown = COOLDOWN / (1.0 + (Game.player.nights_awake if _victim is Player else 0))
+	# Je schwächer das Opfer, desto schneller kommt er wieder
+	_cooldown = COOLDOWN / (1.0 + WEAK_FASTER * _weakness(_victim))
 
 
 func _hide() -> void:
@@ -620,7 +622,7 @@ func _lurk(delta: float) -> void:
 	_timer -= delta
 	if _timer > 0.0:
 		return
-	var chance := (FLY_IN_CHANCE_LATE if _stage >= HALL_FROM else FLY_IN_CHANCE) + FLY_IN_PER_NIGHT * player.nights_awake
+	var chance := (FLY_IN_CHANCE_LATE if _stage >= HALL_FROM else FLY_IN_CHANCE) + FLY_IN_WEAK * player.weakness()
 	if _heard_pant:
 		chance += PANT_CHANCE
 	chance *= 1.0 - BREATH_SAVES * clampf(_held_breath / BREATH_FULL, 0.0, 1.0)
@@ -650,9 +652,18 @@ func _grip_spot() -> Vector3:
 	return Vector3(neck.x, neck.y - HANDS_Y, neck.z) - flat.normalized() * HANDS_AHEAD
 
 
-## Erscheinen beim Spieler – Schlafmangel macht es wahrscheinlicher.
-func _spawn_chance() -> float:
-	return minf(1.0, SPAWN_CHANCE + AWAKE_CHANCE * Game.player.nights_awake)
+## Erscheinen bei Spieler oder Gast – je schwächer das Opfer, desto wahrscheinlicher (4.18).
+func _spawn_chance(victim: Node3D) -> float:
+	return minf(1.0, SPAWN_CHANCE + WEAK_CHANCE * _weakness(victim))
+
+
+## Schwäche von Spieler oder Gast (0..1).
+func _weakness(victim: Node3D) -> float:
+	if victim is Player:
+		return (victim as Player).weakness()
+	if victim is Guest:
+		return (victim as Guest).weakness()
+	return 0.0
 
 
 ## Augenpunkt des Opfers (Spieler: Kamera).

@@ -60,6 +60,19 @@ const STAMINA_HINT := 0.3
 const WINDED_BREATH_DRAIN := 2.0
 const PANT_NOISE_FROM := 0.3
 const PANT_EVERY := 1.5
+## Rausch (Spielkonzept 3.7, Stufen in BarTap): Angetrunken schwankt der Blick, die Maus zieht nach (so schnell
+## folgt die Sicht – nüchtern sofort, voll betrunken träge) und man stolpert (je Sekunde Gehen so oft, voll
+## betrunken). Wer im Rausch schläft, hat danach so lange Kater: Rennen leert die Ausdauer schneller.
+const LOOK_LAG := Vector2(30.0, 7.0)
+const STUMBLE_RATE := 0.25
+const HANGOVER_TIME := 240.0
+const HANGOVER_DRAIN := 1.4
+## Schwäche (Spielkonzept 4.18): so viele Nächte ohne Schlaf machen ganz schwach; so viel zählen Schock,
+## Trauer (frisch) und Kater
+const WEAK_NIGHTS := 3.0
+const WEAK_SHOCK := 0.5
+const WEAK_GRIEF := 0.3
+const WEAK_HANGOVER := 0.2
 
 var head: Node3D
 var camera: Camera3D
@@ -94,6 +107,8 @@ var injury := 0.0      ## von Gästen geschlagen (0..1): langsamer, blutet – h
 var stamina := 1.0     ## Ausdauer (0..1), nicht sichtbar – nur Herzschlag und Atem verraten sie (3.1)
 var winded := false    ## außer Atem: kein Rennen, bis man sich beruhigt hat
 var debug_sprint := false   ## --sprint: rennt vorwärts wie mit W + Shift, bis er außer Atem ist
+var drunk := 0.0       ## Rausch (0..1) von der Bar – Stufen in BarTap (3.7)
+var hangover := 0.0    ## Sekunden Kater nach dem Schlaf im Rausch
 
 var _hand: Node3D
 var _left_hand: Node3D
@@ -126,6 +141,9 @@ var _punch_cooldown := 0.0
 var _ram_cooldown := 0.0
 var _confirm_guest: Guest       ## „Wirklich zuschlagen?“ – zweiter Klick auf denselben Gast
 var _confirm_time := 0.0
+var _look_lag := Vector2.ZERO   ## im Rausch: Mausbewegung, der die Sicht noch nachzieht
+var _drunk_time := 0.0
+var _sleep_drunk := 0.0         ## höchster Rausch in dieser Nachtruhe im Bett → Kater
 
 
 func _ready() -> void:
@@ -180,9 +198,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_hide_yaw = clampf(_hide_yaw - rel.x, -0.45, 0.45)
 			_hide_pitch = clampf(_hide_pitch - rel.y, -0.3, 0.3)
 			_apply_hide_view()
+		elif drunk >= BarTap.TIPSY:
+			_look_lag += rel   # die Sicht zieht nach (_process)
 		else:
-			rotate_y(-rel.x)
-			head.rotation.x = clampf(head.rotation.x - rel.y, -1.45, 1.45)
+			_look(rel)
 	elif event is InputEventMouseButton and event.pressed and _left_shown == "map" and inspecting:
 		# Blättern: Linksklick / Mausrad runter = nächstes Blatt, Mausrad hoch = voriges
 		var button := (event as InputEventMouseButton).button_index
@@ -207,11 +226,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		_use_flashlight(event.is_action_pressed("light_mode"))
 
 
+func _look(rel: Vector2) -> void:
+	rotate_y(-rel.x)
+	head.rotation.x = clampf(head.rotation.x - rel.y, -1.45, 1.45)
+
+
+## Im Rausch folgt die Sicht der Maus träge (Spielkonzept 3.7).
+func _process(delta: float) -> void:
+	if _look_lag == Vector2.ZERO:
+		return
+	if dead or in_dialog or hiding:
+		_look_lag = Vector2.ZERO
+		return
+	var step := _look_lag * minf(1.0, delta * lerpf(LOOK_LAG.x, LOOK_LAG.y, BarTap.sway(drunk)))
+	_look_lag -= step
+	_look(step)
+	if _look_lag.length() < 0.0001:
+		_look_lag = Vector2.ZERO
+
+
 func _physics_process(delta: float) -> void:
 	if dead:
 		if sleeping:
 			_stop_sleep()   # im Schlaf geholt
 		return
+	_update_drunk(delta)
 	_update_shock(delta)
 	_update_dread(delta)
 	_update_hand(delta)
@@ -265,6 +304,7 @@ func _physics_process(delta: float) -> void:
 	var moving := is_on_floor() and input.length() > 0.1
 	if moving:
 		_bob += delta * speed * 2.4
+	_drunk_walk(moving, delta)
 	var eye := CROUCH_EYE_HEIGHT if crouching else EYE_HEIGHT
 	var bob := sin(_bob) * 0.03 if moving else 0.0
 	head.position.y = lerpf(head.position.y, eye + bob, minf(1.0, 12.0 * delta))
@@ -567,13 +607,70 @@ func hurt(amount: float, from: Vector3) -> void:
 		Game.hud.flash_hurt(amount)
 
 
+# --- Rausch & Schwäche (Spielkonzept 3.7, 4.18) ---------------------------------------
+
+## Ein Glas an der Bar: nimmt Schock, macht betrunken. quiet: ohne Gedanken (im Gespräch, Runde ausgeben).
+func drink(quiet: bool = false) -> void:
+	drunk = minf(1.0, drunk + BarTap.DRINK)
+	shock = maxf(0.0, shock - BarTap.CALM)
+	if not quiet:
+		if drunk >= BarTap.DRUNK:
+			Game.say("Noch eins … Warum dreht sich die Bar?", 3.0)
+		elif drunk >= BarTap.TIPSY:
+			Game.say("Die Theke schwankt ein bisschen.", 3.0)
+		else:
+			Game.say("Das wärmt.", 2.5)
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Bar] Glas getrunken – Rausch %.2f, Schwäche %.2f" % [drunk, weakness()])
+
+
+## Wie angreifbar der Spieler gerade ist (0..1) – danach sucht sich der Lakengeist seine Opfer (4.18):
+## Schlafmangel, Rausch, Schock, frische Trauer und Kater zählen zusammen.
+func weakness() -> float:
+	var grief := 0.0
+	if Game.director:
+		grief = clampf(Game.director.grief / MonsterDirector.GRIEF_TIME, 0.0, 1.0)
+	return clampf(nights_awake / WEAK_NIGHTS + drunk + shock * WEAK_SHOCK + grief * WEAK_GRIEF
+		+ (WEAK_HANGOVER if hangover > 0.0 else 0.0), 0.0, 1.0)
+
+
+func _update_drunk(delta: float) -> void:
+	drunk = maxf(0.0, drunk - delta / BarTap.SOBER_TIME)
+	hangover = maxf(0.0, hangover - delta)
+	if sleeping:
+		_sleep_drunk = maxf(_sleep_drunk, drunk)
+	_drunk_time += delta
+
+
+## Im Rausch: der Blick schwankt und driftet, beim Gehen stolpert man manchmal – das hört man (4.15).
+func _drunk_walk(moving: bool, delta: float) -> void:
+	var sway := BarTap.sway(drunk)
+	if sway <= 0.0:
+		return
+	rotate_y(sin(_drunk_time * 0.7) * 0.25 * sway * delta)
+	if moving and randf() < delta * STUMBLE_RATE * sway:
+		var side := transform.basis.x * (1.0 if randf() < 0.5 else -1.0)
+		shove(side * randf_range(1.5, 2.5))
+		_kick = maxf(_kick, 0.05)
+		Game.caption("[Du stolperst]")
+		if Game.director:
+			Game.noise("stumble", global_position, self)
+
+
+## Seitliches Schwanken des Kopfes im Rausch (nicht im Versteck oder Gespräch).
+func _drunk_roll() -> float:
+	if hiding or in_dialog:
+		return 0.0
+	return sin(_drunk_time * 1.1) * 0.05 * BarTap.sway(drunk)
+
+
 func _update_injury(delta: float) -> void:
 	_punch_cooldown -= delta
 	_ram_cooldown -= delta
 	_confirm_time -= delta
 	injury = maxf(0.0, injury - delta / INJURY_HEAL_TIME)
 	_kick = move_toward(_kick, 0.0, delta * 0.25)
-	head.rotation.z = sin(Time.get_ticks_msec() * 0.03) * _kick
+	head.rotation.z = sin(Time.get_ticks_msec() * 0.03) * _kick + _drunk_roll()
 	# Blutstropfen beim Gehen – eine Spur, der man folgen kann (4.13)
 	_bleed = maxf(0.0, _bleed - delta)
 	if _bleed > 0.0 and is_on_floor() and Game.traces:
@@ -594,7 +691,7 @@ func _update_stamina(delta: float) -> void:
 		_pant_timer = PANT_EVERY
 		Game.noise("pant", global_position, self)
 	if running:
-		stamina = maxf(0.0, stamina - delta / STAMINA_RUN_TIME)
+		stamina = maxf(0.0, stamina - delta / STAMINA_RUN_TIME * (HANGOVER_DRAIN if hangover > 0.0 else 1.0))
 		if stamina <= 0.0 and not winded:
 			winded = true
 			Game.caption("[Du keuchst]")
@@ -890,6 +987,7 @@ func _update_hiding(delta: float) -> void:
 func start_sleep(bed: HideSpot) -> void:
 	enter_hide(bed)
 	sleeping = true
+	_sleep_drunk = drunk
 	Engine.time_scale = SLEEP_SPEED
 	if Game.hud:
 		Game.hud.set_hide_mode(3)
@@ -929,11 +1027,17 @@ func _stop_sleep() -> void:
 ## Gezählt wird erst nach dem ersten Angriff (der friedliche Anfang soll niemanden bestrafen).
 func on_night_over() -> void:
 	var rested := _slept >= SLEEP_MIN
+	var was_drunk := _sleep_drunk >= BarTap.TIPSY
 	_slept = 0.0
+	_sleep_drunk = 0.0
 	if sleeping:
 		exit_hide()
 	var text := ""
-	if rested:
+	if rested and was_drunk:
+		nights_awake = 0
+		hangover = HANGOVER_TIME   # im Rausch geschlafen (3.7)
+		text = "Du wachst auf. Mir brummt der Schädel."
+	elif rested:
 		nights_awake = 0
 		text = "Du wachst auf. Endlich ausgeschlafen."
 	elif Game.director and Game.director.first_attack_done and not dead:

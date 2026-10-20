@@ -36,7 +36,8 @@ const DIR := "user://saves/"
 ## 19: Deckenleuchten über den zehn Flurkübeln – mehr Lampen, ältere Stände passen nicht mehr
 ## 20: Fingerabdruck der Welt („world“) – Umbauten am Hotel brauchen keine neue Version mehr, nur noch
 ##     Änderungen am Aufbau des Spielstands selbst
-const VERSION := 20
+## 21: Rausch und Kater (player.drunk/hangover, Gast drunk) – Stände mit Version 20 laden weiter, alle nüchtern
+const VERSION := 21
 const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -304,6 +305,7 @@ func collect() -> Dictionary:
 		"player": {
 			"pos": _v(p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
 			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
+			"drunk": p.drunk, "hangover": p.hangover,
 			"held": _item_data(p.held) if p.held else null,
 			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
 		},
@@ -337,6 +339,7 @@ func collect() -> Dictionary:
 			"challenge_cooldown": g.challenge_cooldown, "monster_line": g.monster_line,
 			"held": _item_data(g.held) if g.held else null,
 			"corpse": g.corpse, "ghost_visits": g.ghost_visits, "seen": g.seen_sights, "experiences": g.experiences,
+			"drunk": g.drunk,
 			"deeds": g.deeds, "chat_day": g.chat_day, "chats_today": g.chats_today,
 		}
 	data["alive"] = alive
@@ -471,6 +474,7 @@ func apply(data: Dictionary) -> void:
 		g.challenge_cooldown = float(d.get("challenge_cooldown", 0.0))
 		g.monster_line = int(d.get("monster_line", 0))
 		g.ghost_visits = int(d.get("ghost_visits", 0))
+		g.drunk = float(d.get("drunk", 0.0))
 		g.seen_sights = (d.get("seen", []) as Array).duplicate()
 		g.experiences = (d.get("experiences", []) as Array).duplicate(true)
 		g.deeds = (d.get("deeds", {}) as Dictionary).duplicate()
@@ -519,6 +523,8 @@ func apply(data: Dictionary) -> void:
 	p.shock = float(pd.get("shock", 0.0))
 	p.nights_awake = int(pd.get("nights_awake", 0))
 	p.injury = float(pd.get("injury", 0.0))
+	p.drunk = float(pd.get("drunk", 0.0))
+	p.hangover = float(pd.get("hangover", 0.0))
 	p.set_pockets(bool(pd.get("compass", false)), pd.get("map_pages", []), pd.get("keyring", []))
 	if pd.get("held") != null:
 		var held_item := _make_item(pd["held"])

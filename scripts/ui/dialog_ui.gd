@@ -77,6 +77,8 @@ func open(p_guest: Guest) -> void:
 		_say(guest.line("greet_friend"))
 	else:
 		_say(guest.line("greet"))
+	if guest.drunk >= BarTap.TIPSY:
+		_text.text = "*hicks* " + _text.text
 	_show_main()
 
 
@@ -133,6 +135,8 @@ func _show_main() -> void:
 	else:
 		_option("Ist dir hier etwas aufgefallen?", _talk_odd)
 	_option("Handeln", _show_trade)
+	if Game.social.builder.in_area(player.global_position, "bar"):
+		_option("Eine Runde ausgeben (%d Geld)" % (BarTap.PRICE * 2), _round, Game.money < BarTap.PRICE * 2)
 	if Game.dice and Game.dice.table.has_cup(player) and not Game.dice.table.busy:
 		_option("Mäxchen an der Bar spielen", _show_stakes.bind("dice"))
 	if Game.chess and Game.chess.table.has_board(player) and not Game.chess.table.busy:
@@ -255,7 +259,7 @@ func _talk_monster() -> void:
 	var experience := guest.recent_experience()   # eigenes Erlebnis vom selben Tag (6.12)
 	if not experience.is_empty() and randf() < 0.5:
 		_say(Game.social.experience_line(guest, experience, true))
-	elif report != "" and randf() < 0.5:
+	elif report != "" and randf() < 0.5 + 0.4 * guest.drunk:   # betrunken erzählt er mehr (3.7)
 		_say(report)
 	elif cat_tip != "" and randf() < 0.3:
 		_say(cat_tip)
@@ -299,6 +303,22 @@ func _ask_deco() -> void:
 			Game.player.receive_item(Item.create(kind))
 			Game.social.add_deed(guest, "gifts_from")
 			_say(guest.line("give_deco"))
+	_show_main()
+
+
+## An der Bar: zwei Gläser, eins für jeden (Spielkonzept 3.7) – die Beziehung steigt, beide werden betrunkener.
+func _round() -> void:
+	if guest.drunk >= BarTap.ENOUGH:
+		_say("Für mich nicht mehr, danke … *hicks*")
+	elif Game.player.drunk >= BarTap.ENOUGH:
+		_say("Du hast genug, glaub mir.")
+	else:
+		Game.money -= BarTap.PRICE * 2
+		Game.player.drink(true)
+		guest.drink()
+		Game.social.change_relation(guest, 5.0)
+		_say("Auf uns! Und darauf, dass wir diesen Monat überstehen." if guest.drunk < BarTap.DRUNK
+			else "Du bist … *hicks* … ein echter Freund, weißt du das?")
 	_show_main()
 
 

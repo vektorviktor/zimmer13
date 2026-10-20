@@ -18,6 +18,8 @@
   - [3.3 Truhen](#33-truhen)
   - [3.4 Verstecken (inspiriert von Roblox *Doors*)](#34-verstecken-inspiriert-von-roblox-doors)
   - [3.5 Kommoden im Flur (entschieden und umgesetzt 2026-10-14)](#35-kommoden-im-flur-entschieden-und-umgesetzt-2026-10-14)
+  - [3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19)](#36-schlaf--müdigkeit-vorgemerkt-2026-10-19)
+  - [3.7 Trinken an der Bar (entschieden 2026-10-19)](#37-trinken-an-der-bar-entschieden-2026-10-19)
 - [4. Das Monster](#4-das-monster)
   - [4.1 Grundprinzip](#41-grundprinzip)
   - [4.2 Ankündigung („Manifestation“)](#42-ankündigung-manifestation)
@@ -307,6 +309,67 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - Eine offene Schublade verrät, dass hier schon jemand gesucht hat. Aufziehen macht leisen Lärm (3 m, 4.15).
 - **Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
   Nachschub (z. B. der Hausmeister füllt nach)?
+
+### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19)
+Baut auf dem Schlafen im eigenen Bett und der Nachtruhe auf (4.18). Müdigkeit fließt in die **Schwäche** ein, nach
+der sich der Lakengeist seine Opfer sucht (4.18).
+
+- **Wachzeit statt Nächte zählen:** Statt „Nächte ohne Schlaf“ zählt die **Zeit seit dem letzten Schlaf** in
+  Spielminuten. Schlaf senkt sie je nach Dauer – eine ganze Nachtruhe auf null, wer früh geweckt wird, ist nur
+  halb erholt.
+- **Stufen** (Vorschlag): ab ~5 min **müde** (Gedanke, Gähnen, die Augen fallen kurz zu) · ab ~8 min
+  **übermüdet** (Halluzinationen wie in 4.13/6.8, der Lakengeist kommt deutlich öfter, Werte schlechter) · nach
+  **10–15 min ohne Schlaf** kommt der Lakengeist **sicher in den Flur**, sobald man dort allein ist. Keine Anzeige –
+  man merkt es am Körper (wie die Ausdauer, 3.1). Vielleicht bei starker Übermüdung **Sekundenschlaf**: die Augen
+  fallen eine halbe Sekunde zu, auch auf der Flucht.
+- **Ausgeschlafen** (einige Minuten nach einer ganzen Nachtruhe): mehr Ausdauer, länger Luft anhalten, Schock baut
+  schneller ab, die Hypnose des Geists ist schwächer, Losreißen leichter. Übermüdet umgekehrt.
+- **In fremden Betten schlafen:**
+  - **Freies Bett** (leeres Zimmer): geht, aber das Zimmer ist fremd – keine Deko vor der Tür, das Monster biegt
+    eher ab.
+  - **Bett eines Gastes:** Er kommt zur Nachtruhe heim und findet dich. **Freunde** stört das nicht – sie legen sich
+    woanders hin, gute Freunde **halten vielleicht Wache** (ein wacher Zeuge vertreibt den Geist). **Neutrale bis
+    genervte** Gäste wecken dich, die Beziehung sinkt, das Gerücht „hat in meinem Bett geschlafen“ geht herum.
+    **Verfeindete** wecken dich unsanft, schlagen zu – oder beklauen dich im Schlaf.
+- **Gäste wecken:** macht sie unglücklich (Beziehung sinkt, bei Freunden weniger; eine Weile gereizt). **Mit gutem
+  Grund** – das Monster ist wirklich nah, es flackert – sind sie dankbar (Beziehung steigt); ein **falscher Alarm**
+  (etwa aus einer Halluzination) kostet Vertrauen. Ein geweckter Gast ist auch ein Zeuge gegen den Geist, schläft
+  aber bald wieder ein.
+
+**Zu klären**
+- **Wann schlafen:** nur in der Nachtruhe wie bisher – oder jederzeit ein **Nickerchen** (ohne Zeitraffer, wenig
+  Erholung)?
+- **Ersetzt die Wachzeit die Nächte-Zählung** (4.18: ab 3 Nächten sicher im Flur) ganz?
+- **Schwelle:** fest (z. B. 12 min) oder zufällig zwischen 10 und 15 min je Spiel?
+- **Wache halten:** Sollen Freunde wach bleiben und aufpassen, während man schläft?
+
+### 3.7 Trinken an der Bar (entschieden 2026-10-19)
+An der Bar kann man **etwas trinken** (kostet Geld) – und betrunken werden. Rausch fließt in die **Schwäche** ein,
+nach der sich der Lakengeist seine Opfer sucht (4.18).
+
+- **Warum man trinkt:** Ein Glas senkt den **Schock** sofort (man trinkt sich Mut an). Eine **Runde mit einem
+  Gast** hebt die Beziehung; an der Bar wird ohnehin Mäxchen gespielt (6.10).
+- **Rausch** steigt mit jedem Glas und baut sich mit der Spielzeit ab:
+  - **leicht:** etwas weniger Schock, sonst nichts.
+  - **angetrunken:** die Kamera schwankt leicht, die Maus reagiert etwas verzögert, man **stolpert** ab und zu – das
+    ist Lärm (4.15).
+  - **betrunken:** **Halluzinationen** (wie bei Müdigkeit, 3.6), man ist geschwächt und desorientiert – ab einem
+    Schwellenwert kommt der **Lakengeist** deutlich öfter, auch in den Flur.
+- **Danach:** Betrunken schläft man schnell ein, aber man wacht mit einem **Kater** auf – schlechtere Werte statt
+  „ausgeschlafen“ (3.6).
+- **Mäxchen:** Betrunken zittert man beim Bluffen, Gäste durchschauen einen leichter – und ein betrunkener Gast
+  blufft schlechter.
+- **Gäste trinken auch:** Sie werden betrunken, gesprächiger (erzählen mehr, auch Gerüchte) und für den Geist
+  schwächer.
+- **Offen:** welche Getränke; ob es auch Alkoholfreies gibt.
+
+> **Umgesetzt (2026-10-19):** Flasche und Glas auf der Bartheke, ein Glas **1 Geld**, nimmt etwas Schock. Ab dem
+> **2. Glas angetrunken** (Blick schwankt und driftet, die Maus zieht nach, man stolpert ab und zu – das ist
+> Lärm), ab dem **3. betrunken** (Halluzinationen), nach dem 3. ist Schluss. Voller Rausch ist nach 5 Spielminuten
+> verflogen. Wer betrunken in seinem Bett ausschläft, wacht mit **Kater** auf (4 min: Rennen erschöpft schneller,
+> etwas schwächer). Gäste trinken an der Bar meist ein Glas, schwanken, sagen „*hicks*“ und erzählen mehr; „Eine
+> Runde ausgeben“ (2 Geld) hebt die Beziehung. Beim Mäxchen zittert die Hand beim Bluffen, betrunkene Gäste
+> verraten ihre Bluffs. Debug: `--drunk=n[,gast]`.
 
 ---
 
@@ -826,6 +889,19 @@ zum gefährlichsten Ort.
 - **Licht aus** lockt schon das Monster an (4.4) – jetzt auch den Geist. Licht an schützt vor beidem.
 - **Vorhang zu** hält den Geist draußen, macht den Raum aber dunkler (weniger Mondlicht).
 - **Handabdrücke** gibt es schon an Türen (`Traces`); neu ist die Scheibe als Untergrund.
+
+**Er sucht die Schwachen (entschieden 2026-10-19)**
+Der Geist achtet darauf, wer **schwach und ängstlich** ist. Spieler und Gäste haben dafür einen versteckten Wert
+**Schwäche**, in den alles einfließt, was angreifbar macht: **Angst bzw. Schock**, **Trauer** nach einem Todesfall
+(6.8), **Müdigkeit** (3.6), **Rausch** (3.7) und bei **Kindern** ein hoher Grundwert (6.13).
+- Je schwächer jemand ist, desto **öfter kommt er** zu ihm.
+- Ab einer **Schwelle** kommt er auch **in den Flur**, sobald man dort allein ist – egal ob man übermüdet,
+  betrunken oder verängstigt ist.
+- So gilt für Müdigkeit, Alkohol, Trauer und Kinder **eine** Regel statt vieler Sonderfälle.
+- **Umgesetzt (2026-10-19):** Schwäche 0–1. Spieler: je Nacht ohne Schlaf ⅓, Rausch (0,3 je Glas), halber Schock,
+  frische Trauer bis 0,3, Kater 0,2. Gäste: Angst × 0,6 plus Rausch. Volle Schwäche bringt bis zu +30 % Chance und
+  eine viermal kürzere Pause; ab **⅔** kommt er auch vor dem 6. Mal in den Flur, ab **1** sicher, sobald man dort
+  allein ist. Zwei bzw. drei Nächte ohne Schlaf wirken damit wie bisher – drei Gläser plus etwas Schock ebenso.
 
 **Zu klären**
 - **Herkunft:** Eigenes Wesen, einer der Verschwundenen (mit jedem geholten Gast häufiger?) oder Teil des
@@ -1638,6 +1714,10 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 7h. ~~Lakengeist am Fenster: kommt bei Licht aus und offenem Vorhang, wird von Mal zu Mal dreister (Handabdrücke auf der Scheibe, Hypnose, kommt herein und würgt), verschwindet vor Zeugen in 0,5 s, ab dem 6. Mal im Flur, wenn alle schlafen (Nachtruhe zu zufälligen Zeiten) (4.18)~~ ✔ (2026-10-17)
 7i. ~~Lakengeist hartnäckiger: Losreißen kaum noch möglich, wartet vor dem Schrank und fliegt hinein, Schlafen im eigenen Bett, Schlafmangel lockt ihn – nach drei Nächten sicher im Flur (4.18)~~ ✔ (2026-10-18)
 7j. ~~Schach in der Lobby: Schachtisch und Brett, KI-Gegner mit Spielstärke je Gast, Einsätze, Herausforderungen, Gäste spielen untereinander (6.10)~~ ✔ (2026-10-18)
+7k. ~~Trinken an der Bar (Rausch, Halluzinationen, Kater, Gäste trinken mit, 3.7) und der Wert **Schwäche**, nach
+    dem sich der Lakengeist seine Opfer sucht (4.18)~~ ✔ (2026-10-19)
+7l. Schlaf & Müdigkeit: Wachzeit statt Nächte, fremde Betten, Gäste wecken, ausgeschlafen/übermüdet (3.6) – vorgemerkt
+    2026-10-19, Fragen offen
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen
