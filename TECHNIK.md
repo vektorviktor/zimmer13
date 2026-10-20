@@ -81,10 +81,16 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   hängende Stück – Iris und Augenweiß sind kleine Inseln im Gesicht, `HAIR_MIN_PART`), sonst hellere Grautöne →
   Oberteil, dunklere → Hose; Haut, Schuhe, Hände bleiben. **Formschlüssel `build`** (Körperbau, 1 = kräftig,
   negativ = schlank). Das Skript gibt die Zeile für `GuestBody.BODIES` aus (Höhe, Schulterbreite, Laufweite
-  der Animationen, mittlere Helligkeit je Färbebereich) – nach jedem Neubau übernehmen. Kinderkörper (6.13,
-  z. B. `guest_girl10`) liefert Meshy mit kleinem Mixamo-Skelett (23 Knochen: keine Finger, kein
+  der Animationen, mittlere Helligkeit je Färbebereich) – nach jedem Neubau übernehmen. Erwachsene: `man`/`woman`
+  (mittel), `man_young`/`woman_young`, `man_old`/`woman_old` (`gen` in `BODIES`); `guest_woman_young` ist vorläufig –
+  Meshys Gehen/Rennen klappt ihre Hände um bis zu 90° ab, das Modell wird neu geliefert. Kinderkörper (6.13,
+  `guest_girl7`, `guest_girl10`, `guest_boy7`, `guest_boy10`) liefert Meshy mit kleinem Mixamo-Skelett (23 Knochen: keine Finger, kein
   `LeftToe_End`/`HeadTop_End`) und in Zentimetern (Objekt × 0,01) – Skript und `retarget()` rechnen beides mit
-  ein, die Hände bleiben bei den Tänzen in Ruhedrehung.
+  ein, die Hände bleiben bei den Tänzen in Ruhedrehung. **Arme absenken:** Stehen die Arme in Meshys Ruhepose
+  weiter als `ARM_MAX` (32°, Schulter → Handgelenk gegen die Senkrechte) ab – bisher `guest_boy10` (43°) und `guest_woman_old`
+  (37°), die übrigen 14–29° –, dreht das Skript die Oberarme samt Netz auf `ARM_DOWN` (20°) und übernimmt das als Ruhepose;
+  Gehen und Rennen sind relativ zur Ruhepose gespeichert und senken sich mit, die Tänze rechnet `retarget()` ohnehin
+  aus der Ruhepose. Alle anderen Körper bauen dadurch byte-gleich.
   **Textur in Godot unkomprimiert** (`gltf/embedded_image_handling=3`, „Embed as Uncompressed“ in
   `assets/models/guest_<name>.glb.import`, schreibt `build_guest.py`; diese `.import` sind als Ausnahme im Repo).
   Von sich aus zieht Godot die Textur als PNG heraus und packt sie per VRAM-Kompression (S3TC) – deren
@@ -505,10 +511,12 @@ weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
   Zufallswerte nur **ans Ende** anhängen, sonst werden aus gespeicherten Seeds andere Gäste.
   `name_for(seed)` verlässt sich darauf, dass der Name die **erste** Zufallszahl ist.
 - **Aussehen** (Spielkonzept 6.0, „Gastmodelle“): `GuestBody.pick(profile, id)` wählt für erzeugte Gäste einen
-  Grundkörper aus `GuestBody.BODIES` passend zum Geschlecht des Namens (`GuestGenerator.FEMALE`), reihum nach der
-  Gastnummer. Kinderkörper (Eintrag mit `age`, 6.13) bekommen nur Kinder (`child` im Profil) – den mit dem
-  nächsten Alter –, alle übrigen nur Erwachsene. Ohne passenden Körper (feste Gäste, Frauen und Jungen, bis es
-  Modelle gibt) bleibt die Klötzchenfigur (`_build_blocks`). Je Gast aus dem Profil: `height_cm`, `width_cm`
+  Grundkörper aus `GuestBody.BODIES` passend zu Geschlecht (`GuestGenerator.FEMALE`) und Generation des Vornamens
+  (`GuestGenerator.generation()`: `OLD`/`YOUNG`, alle übrigen „mid“; im Profil `gen`, kein Zufall – Spielstände
+  bleiben gleich). Fehlt der Körper der Generation, nimmt `pick` den der nächsten (`GENERATIONS`), bei mehreren
+  reihum nach der Gastnummer. Kinderkörper (Eintrag mit `age`, 6.13) bekommen nur Kinder (`child` im Profil) – den mit dem
+  nächsten Alter –, alle übrigen nur Erwachsene. Ohne passenden Körper (feste Gäste, bis sie
+  eigene Modelle haben) bleibt die Klötzchenfigur (`_build_blocks`). Je Gast aus dem Profil: `height_cm`, `width_cm`
   (Breite nur in `WIDTH_LIMIT`, Kopfknochen gegengestreckt; `head` vergrößert ihn nur auf Erwachsenenkörpern),
   `build`, Farben `coat`/`pants`/`hair` als Instanz-Uniforms von `psx_guest.gdshader`
   (färbt nur graue Texel, Farbe × Helligkeit / Mittelwert). **Bewegung:** `walk`/`run` aus der GLB

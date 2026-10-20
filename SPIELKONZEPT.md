@@ -989,7 +989,8 @@ Deko ist **Schutzmittel und Währung** zugleich.
 - **Nie weniger als 24:** Sterben Gäste und sind weniger als 24 am Leben, **wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf** – das Hotel ist ja verschlossen. Er weiß nicht, wie er hergekommen ist („Ich bin in Zimmer 27 aufgewacht …“). Man hört eine Tür, in seinem Zimmer geht das Licht an. Zimmer von Verschwundenen bleiben leer.
 - Aus einem Seed entsteht immer derselbe Gast; Spielstände speichern nur Seed und Zimmer (`scripts/guests/guest_generator.gd`).
 
-**Gastmodelle (geplant 2026-10-17, erster Grundkörper „Mann“ eingebaut 2026-10-17):** Die Klötzchen-Gäste werden durch Meshy-Modelle ersetzt – keine Einzelmodelle, sondern **eigene Modelle für Edna, Bruno und Mila** und **6–8 Grundkörper** (Frau/Mann × jung/mittel/alt, evtl. weitere Statur) für die erzeugten Gäste. Jeder Grundkörper ist eine ganze Figur mit eigenem Kopf; alle haben denselben Knochenaufbau (Meshy-Auto-Rigging mit Skelettvorlage Mixamo), Animationen gibt es deshalb nur einmal. Der Grundkörper folgt aus Geschlecht und Generation des Namens und wird reihum statt zufällig verteilt, damit sich keiner häuft.
+**Gastmodelle (geplant 2026-10-17, erster Grundkörper „Mann“ eingebaut 2026-10-17, „Frau ~40“, „junge Frau“, „junger Mann“, „alte Frau“ und „alter Mann“ 2026-10-20 – damit alle sechs, Generation
+je Vorname in `GuestGenerator.OLD`/`YOUNG`):** Die Klötzchen-Gäste werden durch Meshy-Modelle ersetzt – keine Einzelmodelle, sondern **eigene Modelle für Edna, Bruno und Mila** und **6–8 Grundkörper** (Frau/Mann × jung/mittel/alt, evtl. weitere Statur) für die erzeugten Gäste. Jeder Grundkörper ist eine ganze Figur mit eigenem Kopf; alle haben denselben Knochenaufbau (Meshy-Auto-Rigging mit Skelettvorlage Mixamo), Animationen gibt es deshalb nur einmal. Der Grundkörper folgt aus Geschlecht und Generation des Namens und wird reihum statt zufällig verteilt, damit sich keiner häuft.
 - **Variiert wird:** Körpergröße **150–185 cm** (selten über 190), Breite **35–50 cm**, Körperbau (schlank bis kräftig), Kleidungs- und Haarfarbe (Einfärben über Masken). Das Kleidungsstück („Lottes Hut“) wird, wo es geht, als echtes Teil am Körper sichtbar.
 - **Vorerst nicht:** getrennte Frisuren, andere Kleidungsschnitte, Augenfarbe.
 - Modelle in Meshy: A-Pose, Kleidung und Haare entsättigt hell- bzw. mittelgrau (Ober- und Unterteil verschieden), keine Muster, keine Accessoires, Haare nicht auf den Schultern, keine eingebrannten Schatten.
@@ -1265,8 +1266,8 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
 Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eigene Modelle, Sätze und Tänze brauchen.
 > **Im Prototyp umgesetzt (2026-10-19):** vier Kinder (6–11 Jahre) bei je einem erzeugten Erwachsenen, Zimmer nebenan,
 > eigene Namen und Sätze („Mama“/„Papa“), ab und zu ein Schach-Wunderkind. Alles unter „Kinder und die bestehenden
-> Systeme“ – bis auf die Lücken unten. Als Modell gibt es bisher nur das Mädchen ~10 (`guest_girl10`); Jungen und die
-> kleinen Mädchen sind noch Klötzchen (mit größerem Kopf).
+> Systeme“ – bis auf die Lücken unten. Als Modelle gibt es das Mädchen ~10 (`guest_girl10`) und seit 2026-10-20 auch das
+> Mädchen ~7 und die Jungen ~7 und ~10 (`guest_girl7`, `guest_boy7`, `guest_boy10`) – alle vier Grundkörper.
 > **Noch nicht:** Die Puppe (5.5), das Geheimnis (2.3) und die Zeitschleife (2.2) gibt es noch nicht – deshalb auch kein
 > Herumtragen der Puppe, keine Funde in engen Ecken und kein Déjà-vu. Der Lakengeist erschreckt Kinder am Fenster,
 > noch nicht im Flur. Ein Waisenkind schließt sich nur dem Spieler an, noch keinem Gast. „Erzählt es allen“ heißt
@@ -1345,7 +1346,8 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
 - **Versteckspiel mit Kindern:** Kinder fragen den Spieler von sich aus und kennen die besten Verstecke – bis einer
   der Suchenden kein Kind ist (Versteckspiel, 6.10). Ein eigenes Minispiel, deshalb später.
 
-**Modelle (geplant 2026-10-19, „Mädchen ~10“ eingebaut 2026-10-19 als `guest_girl10`):** Wie bei den Erwachsenen (6.0) eigene **Grundkörper** statt Einzelmodelle, vier
+**Modelle (geplant 2026-10-19, „Mädchen ~10“ eingebaut 2026-10-19 als `guest_girl10`, „Mädchen ~7“, „Junge ~7“ und
+„Junge ~10“ 2026-10-20 als `guest_girl7`, `guest_boy7` und `guest_boy10`):** Wie bei den Erwachsenen (6.0) eigene **Grundkörper** statt Einzelmodelle, vier
 Stück: **Mädchen und Junge, je etwa 7 und etwa 10 Jahre**. Dieselben Regeln für Meshy (A-Pose, Kleidung und Haare
 entsättigt grau, Oberteil heller als die Hose, Haare nicht auf den Schultern, keine Muster, Accessoires oder
 eingebrannten Schatten) und dasselbe Skelett (Auto-Rigging mit Vorlage **Mixamo**, „Alle hinzugefügt“, eine
@@ -1832,7 +1834,7 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 7l. Schlaf & Müdigkeit: Wachzeit statt Nächte, fremde Betten, Gäste wecken, ausgeschlafen/übermüdet (3.6) – vorgemerkt
     2026-10-19, Fragen offen
 7m. ~~Kinder: nur erschreckt, nie Opfer, Familien, kein Alkohol, immer auf Feiern, vom Monster übersehen, laut,
-    Süßes oder Saures, petzen, Waisenkind, Kakao (6.13)~~ ✔ (2026-10-19) · noch drei Grundkörper aus Meshy (Jungen, Mädchen ~7)
+    Süßes oder Saures, petzen, Waisenkind, Kakao (6.13)~~ ✔ (2026-10-19) · alle vier Grundkörper aus Meshy ✔ (2026-10-20)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12)
 10. Balancing, weitere Etagen

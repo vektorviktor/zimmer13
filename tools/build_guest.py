@@ -7,6 +7,7 @@
 # Was passiert:
 # - Knochen ohne „mixamorig:“ (der Doppelpunkt ist in Godot der Pfadtrenner), Meshys Hilfsknochen
 #   und die Hilfskugel fliegen raus, Animationen heißen „walk“ und „run“.
+# - Arme weiter als ARM_MAX abgespreizt → Oberarme in der Ruhepose auf ARM_DOWN abgesenkt (Netz mit).
 # - Netz bleibt, wie Meshy es liefert (höchstens MAX_TRIS – sonst in Meshy kleiner erzeugen). Reduzieren
 #   geht nicht: Meshys Textur besteht aus Hunderten kleiner UV-Inseln, und zusammengelegte Dreiecke
 #   spannen dann über mehrere Inseln (graue und bunte Schlieren).
@@ -43,6 +44,8 @@ BUILD_PUSH = {
 }
 BELLY_FORWARD = 0.03      # Bauch zusätzlich nach vorn (m), nur Vorderseite
 KEEP_EXTRA_BONES = False  # Meshys „headfront“ hat keine Gewichte
+ARM_MAX = 32.0            # stehen die Arme weiter ab (Grad, Schulter → Handgelenk gegen die Senkrechte) …
+ARM_DOWN = 20.0           # … werden sie auf diesen Winkel abgesenkt
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 SRC, DST = argv[0], argv[1]
@@ -84,6 +87,39 @@ arm.animation_data.action = None
 for pb in arm.pose.bones:
 	pb.matrix_basis = Matrix()
 print("Animationen:", {k: tuple(a.frame_range) for k, a in actions.items()})
+
+# --- Arme absenken ---------------------------------------------------------------------------
+# Meshy stellt manche Figuren mit weit abgespreizten Armen hin (Junge ~10: 43°, alte Frau: 37°, die übrigen 14–29°) –
+# im Stand sieht das nach T-Pose aus. Oberarm samt Netz um die Schulter nach unten drehen und das als
+# neue Ruhepose übernehmen; Gehen und Rennen sind relativ zur Ruhepose gespeichert und senken sich mit.
+bpy.context.view_layer.update()
+down = arm.matrix_world.to_3x3().inverted() @ Vector((0, 0, -1))   # unten im Armaturraum
+lowered = False
+for side in ("Left", "Right"):
+	pb = arm.pose.bones[side + "Arm"]
+	head = pb.bone.head_local
+	reach = arm.data.bones[side + "Hand"].head_local - head
+	angle = reach.angle(down)
+	if angle <= math.radians(ARM_MAX):
+		continue
+	rot = Matrix.Rotation(angle - math.radians(ARM_DOWN), 4, reach.cross(down).normalized())
+	pb.matrix = Matrix.Translation(head) @ rot @ Matrix.Translation(-head) @ pb.matrix
+	print("Arm %s: %.1f° → %.1f°" % (side, math.degrees(angle), ARM_DOWN))
+	lowered = True
+if lowered:
+	if body.data.shape_keys:
+		raise SystemExit("Meshy-Netz hat schon Formschlüssel – Arme lassen sich so nicht absenken")
+	bpy.context.view_layer.update()
+	skin = [m for m in body.modifiers if m.type == 'ARMATURE'][0]
+	bpy.ops.object.mode_set(mode='OBJECT')
+	bpy.context.view_layer.objects.active = body
+	bpy.ops.object.modifier_apply(modifier=skin.name)
+	bpy.context.view_layer.objects.active = arm
+	bpy.ops.object.mode_set(mode='POSE')
+	bpy.ops.pose.armature_apply(selected=False)
+	bpy.ops.object.mode_set(mode='OBJECT')
+	skin = body.modifiers.new("Armature", 'ARMATURE')
+	skin.object = arm
 
 # --- Textur: Lücken füllen, Arbeitskopie --------------------------------------------------
 mat = body.data.materials[0]

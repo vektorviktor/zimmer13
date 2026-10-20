@@ -10,17 +10,52 @@ extends Node3D
 
 ## Grundkörper. Werte gibt tools/build_guest.py aus (Höhe und Schulterbreite in m, Laufweite der
 ## Animationen in m/s, mittlere Helligkeit der Färbebereiche). Kinderkörper (Spielkonzept 6.13) haben
-## "age" – sie gehen nur an Kinder, die übrigen nur an Erwachsene.
+## "age" – sie gehen nur an Kinder, die übrigen nur an Erwachsene, nach der Generation des Vornamens
+## ("gen", GuestGenerator.generation).
 const BODIES := {
 	"man": {
-		"path": "res://assets/models/guest_man.glb", "sex": "m",
+		"path": "res://assets/models/guest_man.glb", "sex": "m", "gen": "mid",
 		"height": 1.700, "width": 0.433, "walk": 1.40, "run": 2.44, "ref": Vector3(0.383, 0.125, 0.199),
+	},
+	"woman": {
+		"path": "res://assets/models/guest_woman.glb", "sex": "f", "gen": "mid",
+		"height": 1.650, "width": 0.398, "walk": 1.42, "run": 2.48, "ref": Vector3(0.410, 0.035, 0.148),
+	},
+	"man_young": {
+		"path": "res://assets/models/guest_man_young.glb", "sex": "m", "gen": "young",
+		"height": 1.650, "width": 0.409, "walk": 1.44, "run": 2.55, "ref": Vector3(0.533, 0.049, 0.089),
+	},
+	"man_old": {
+		"path": "res://assets/models/guest_man_old.glb", "sex": "m", "gen": "old",
+		"height": 1.640, "width": 0.444, "walk": 1.53, "run": 2.64, "ref": Vector3(0.432, 0.050, 0.324),
+	},
+	"woman_young": {
+		"path": "res://assets/models/guest_woman_young.glb", "sex": "f", "gen": "young",
+		"height": 1.700, "width": 0.392, "walk": 1.49, "run": 2.62, "ref": Vector3(0.518, 0.046, 0.024),
+	},
+	"woman_old": {
+		"path": "res://assets/models/guest_woman_old.glb", "sex": "f", "gen": "old",
+		"height": 1.640, "width": 0.418, "walk": 1.42, "run": 2.49, "ref": Vector3(0.354, 0.052, 0.248),
+	},
+	"girl7": {
+		"path": "res://assets/models/guest_girl7.glb", "sex": "f", "age": 7,
+		"height": 1.690, "width": 0.371, "walk": 1.45, "run": 2.56, "ref": Vector3(0.438, 0.147, 0.098),
 	},
 	"girl10": {
 		"path": "res://assets/models/guest_girl10.glb", "sex": "f", "age": 10,
 		"height": 1.640, "width": 0.394, "walk": 1.46, "run": 2.55, "ref": Vector3(0.416, 0.080, 0.047),
 	},
+	"boy7": {
+		"path": "res://assets/models/guest_boy7.glb", "sex": "m", "age": 7,
+		"height": 1.690, "width": 0.393, "walk": 1.31, "run": 2.31, "ref": Vector3(0.404, 0.132, 0.078),
+	},
+	"boy10": {
+		"path": "res://assets/models/guest_boy10.glb", "sex": "m", "age": 10,
+		"height": 1.650, "width": 0.400, "walk": 1.47, "run": 2.53, "ref": Vector3(0.366, 0.126, 0.116),
+	},
 }
+## Generationen der Erwachsenenkörper in Altersfolge (fehlt eine, nimmt pick() die nächste)
+const GENERATIONS := ["young", "mid", "old"]
 ## Breite wird nur so weit gestreckt (sonst sieht man es an Armen und Beinen)
 const WIDTH_LIMIT := Vector2(0.88, 1.15)
 ## Sitzen: so tief sinkt die Hüfte, bis die Oberschenkel waagerecht liegen (Anteil der Körpergröße)
@@ -47,8 +82,9 @@ var dance := ""   ## Name aus DANCES, solange der Gast tanzt (setzt Guest._dance
 
 
 ## Grundkörper für einen Gast – "" = keiner passt (dann bleibt die Klötzchenfigur). Feste Gäste
-## bekommen später eigene Modelle. Erwachsene bekommen ihn reihum nach der Gastnummer, nicht zufällig,
-## damit sich kein Körper häuft; Kinder den Kinderkörper, der ihrem Alter am nächsten ist.
+## bekommen später eigene Modelle. Erwachsene den Körper ihrer Generation (fehlt er, den der nächsten),
+## bei mehreren reihum nach der Gastnummer, nicht zufällig, damit sich keiner häuft; Kinder den
+## Kinderkörper, der ihrem Alter am nächsten ist.
 static func pick(profile: Dictionary, guest_id: String) -> String:
 	if not profile.get("generated", false):
 		return ""
@@ -65,6 +101,10 @@ static func pick(profile: Dictionary, guest_id: String) -> String:
 		fits.sort_custom(func(a: String, b: String) -> bool:
 			return absi(int(BODIES[a]["age"]) - age) < absi(int(BODIES[b]["age"]) - age))
 		return fits[0]
+	var gen := GENERATIONS.find(String(profile.get("gen", "mid")))
+	var gap := func(key: String) -> int: return absi(GENERATIONS.find(String(BODIES[key].get("gen", "mid"))) - gen)
+	var best: int = fits.map(gap).min()
+	fits = fits.filter(func(key: String) -> bool: return gap.call(key) == best)
 	return fits[int(guest_id.trim_prefix("gast")) % fits.size()]
 
 

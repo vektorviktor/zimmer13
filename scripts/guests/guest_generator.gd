@@ -22,6 +22,19 @@ const FEMALE := [
 	"Fiona", "Gerda", "Irma", "Klara", "Magda", "Olga", "Ruth", "Thea", "Wanda", "Zita", "Alma", "Doris",
 	"Gisela", "Hedwig", "Jule", "Liesel", "Nele",
 ]
+## Generation des Vornamens (Spielkonzept 6.0, „Gastmodelle“) – bestimmt mit dem Geschlecht den Grundkörper.
+## Alle übrigen Namen sind „mid“. Je Geschlecht etwa ein Drittel jung und alt.
+const OLD := [
+	"Berta", "Gerda", "Gisela", "Hedwig", "Irma", "Liesel", "Magda", "Olga", "Ruth", "Wilma", "Zita", "Agnes",
+	"Uschi", "Doris",
+	"Anton", "Fritz", "Franz", "Gustav", "Hugo", "Karl", "Konrad", "Kurt", "Oskar", "Otto", "Walter", "Xaver",
+	"Dieter",
+]
+const YOUNG := [
+	"Elif", "Hanna", "Yara", "Zoe", "Lena", "Jule", "Nele", "Fiona", "Clara", "Paula", "Ida", "Greta", "Lotte",
+	"Thea",
+	"Cem", "Elias", "Emil", "Enno", "Jakob", "Jonas", "Leon", "Luis", "Moritz", "Niklas", "Ole", "Theo", "Yusuf",
+]
 ## Körpergröße in cm je Geschlecht: Mittel, Streuung, Grenzen (Spielkonzept 6.0: 150–185, selten über 190)
 const HEIGHT_CM := {"m": [176.0, 6.0, 160.0, 193.0], "f": [164.0, 5.5, 150.0, 180.0]}
 ## Schulterbreite in cm je Geschlecht (Spielkonzept 6.0: 35–50)
@@ -290,6 +303,15 @@ const CHILD_LINES := {
 }
 
 
+## "young", "mid" oder "old" – nur vom Vornamen abhängig, kein Zufall (Spielstände bleiben gleich)
+static func generation(guest_name: String) -> String:
+	if guest_name in OLD:
+		return "old"
+	if guest_name in YOUNG:
+		return "young"
+	return "mid"
+
+
 ## Der Name eines Gastes hängt nur vom Seed ab (erste Zufallszahl) – Social prüft damit,
 ## ob ein Name schon vergeben ist, ohne den ganzen Gast zu erzeugen.
 static func name_for(gen_seed: int) -> String:
@@ -335,7 +357,7 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 		activities[key] = float(base[key]) * rng.randf_range(0.6, 1.4)
 	var profile := {
 		"name": guest_name, "room": room, "archetype": arche["kind"], "generated": true,
-		"sex": "f" if guest_name in FEMALE else "m",
+		"sex": "f" if guest_name in FEMALE else "m", "gen": generation(guest_name),
 		"coat": COATS[rng.randi() % COATS.size()], "pants": PANTS[rng.randi() % PANTS.size()],
 		"hair": HAIR[rng.randi() % HAIR.size()], "height": rng.randf_range(0.92, 1.07),
 		"brave": _range(rng, arche["brave"]), "greed": _range(rng, arche["greed"]),
