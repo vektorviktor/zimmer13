@@ -121,7 +121,12 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   à 25 cm, die Fugen treffen die Beckenkanten), Fläche `pool_deck` in `_floor_material` · **Poolhalle, Wände**
   `Stone_EngraveWall_01` (Steinriemchen, Farbbild mit eingebackener AO – ohne sie fast musterlos – + Normal Map)
   über `POOL_WALL_METERS` (3 m = 6 Spalten × ~22 Reihen, Steine ~50 × 14 cm) als Haut der Seite `pool`
-  (`_skin_material`); Toiletten und Bäder behalten `_wall_tiles`. Böden mit Fototextur nennen
+  (`_skin_material`); Toiletten und Bäder behalten `_wall_tiles` · **Säulen der Lobby** `TerrazzoDark_01` (polierter
+  dunkler Terrazzo, Farbbild + Rauheit 0,15…0,79, Glanz `PILLAR_SPECULAR` 0,5; AO, Höhe und Metallic leer, die Normal Map
+  flach) über `PILLAR_METERS` (1 m, Steinchen 5–8 mm): `_pillar` baut mittig in der Planfläche zwei quadratische
+  Sockel `PILLAR_PLINTH` (80 × 80 × 30 cm) unten und unter der Galerie, dazwischen einen runden Schaft
+  (`PILLAR_SHAFT_RADIUS` 0,3 m, 24 Segmente, Kollision als Zylinder) – die Projektion nach der Hauptachse wechselt am
+  Schaft alle 90°, im Korn sieht man die Nähte nicht. Böden mit Fototextur nennen
   `Footsteps.floor_under` ihre Bodenart per `set_meta("floor", …)` (Lobby: `"tiles"`), weil der Abgleich sonst über die TexGen-Textur läuft.
   **Katzenmodell** `assets/models/cat.glb` (`HotelCat`, Spielkonzept 6.11): `tools/build_cat.py` aus
   Meshys Zip (Auto-Rigging-Preset „Hund“, in `assets/source/`). 27 Knochen (`Hips`, `chest`, `head`,

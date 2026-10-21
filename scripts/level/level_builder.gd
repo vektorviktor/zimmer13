@@ -63,6 +63,15 @@ const POOL_FLOOR_NORMAL := "res://assets/textures/TilesBasic_01/T_TilesBasic_01_
 const POOL_FLOOR_ROUGHNESS := "res://assets/textures/TilesBasic_01/T_TilesBasic_01_roughness.jpg"
 const POOL_FLOOR_METERS := 1.0
 const POOL_FLOOR_SPECULAR := 0.5
+## Säulen der Lobby unter der Galerie: polierter dunkler Terrazzo (Farbbild, Rauheit; die Normal Map des Sets ist
+## flach), eine Kachel = 1 m, Steinchen 5–8 mm. Runder Schaft zwischen zwei quadratischen Sockeln, mittig im Plan
+const PILLAR_TEX := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_basecolor.jpg"
+const PILLAR_ROUGHNESS := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_roughness.jpg"
+const PILLAR_METERS := 1.0
+const PILLAR_SPECULAR := 0.5
+const PILLAR_SHAFT_RADIUS := 0.3
+const PILLAR_SHAFT_SEGMENTS := 24
+const PILLAR_PLINTH := Vector3(0.8, 0.3, 0.8)
 const H := 3.5
 const T := 0.2
 ## Höhe des Obergeschosses (Oberkante Boden)
@@ -169,7 +178,7 @@ const CONTENT := {
 ## Möbel ohne eigenes Bauteil (Kästen in der Grundfläche aus dem Plan): Art → Höhe
 const BOX_HEIGHTS := {
 	"table": 0.75, "coffee_table": 0.4, "dining_table": 0.78, "bench": 0.45, "bar_counter": 1.1, "shelf": 2.0,
-	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5, "pillar": H,
+	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5,
 }
 const RECEPTION_H := 1.1
 ## Teppiche aus dem Plan: Art → Textur (TexGen); Oberseite knapp über dem Boden
@@ -300,6 +309,7 @@ var _lobby_floor: Material
 var _pool_tiles: Material
 var _pool_wall: Material
 var _pool_floor: Material
+var _pillar_stone: Material
 var _grass: Material
 var _stone: Material
 var _cellar_wall: Material
@@ -518,6 +528,7 @@ func _materials() -> void:
 	_pool_wall = Mat.photo(POOL_WALL_TEX, POOL_WALL_METERS, POOL_WALL_NORMAL)
 	_pool_floor = Mat.photo(POOL_FLOOR_TEX, POOL_FLOOR_METERS, POOL_FLOOR_NORMAL, POOL_FLOOR_ROUGHNESS, POOL_FLOOR_SPECULAR)
 	_pool_floor.set_meta("floor", "tiles")
+	_pillar_stone = Mat.photo(PILLAR_TEX, PILLAR_METERS, "", PILLAR_ROUGHNESS, PILLAR_SPECULAR)
 	_grass = Mat.psx(Color(1, 1, 1), "grass", 1.0)
 	_stone = Mat.psx(Color(0.62, 0.57, 0.5), "concrete", 1.0)
 	# Untergeschoss (Spielkonzept 7.9): Wände aus Brettschalungsbeton, Boden und Decke einfach grau
@@ -1348,6 +1359,9 @@ func _furniture() -> void:
 			"couch":
 				node = _couch(pos, yaw - PI / 2.0)   # das Modell sitzt nach +X
 				top = 0.45
+			"pillar":
+				node = _pillar(rect)
+				top = H
 			"cat_tree":
 				node = _cat_tree(rect)
 				top = CAT_TREE_TOP
@@ -1414,8 +1428,6 @@ func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) ->
 			mat = Mat.psx(Color(0.75, 0.75, 0.72))
 		"laundry_box":
 			mat = Mat.psx(Color(0.6, 0.58, 0.5))
-		"pillar":
-			mat = Mat.psx(Color(0.6, 0.57, 0.5))
 	var c := rect.get_center()
 	var body := Geo.solid(root, Vector3(rect.size.x, height, rect.size.y), Vector3(c.x, height / 2.0, c.y), mat)
 	match kind:
@@ -1963,6 +1975,28 @@ func _auto_switches() -> void:
 ## Richtung aus der Welt in den Rahmen dieses Stockwerks (nur Drehung – die Stockwerke sind nicht gedreht).
 func _global_dir(v: Vector3) -> Vector3:
 	return Vector3(v.x, 0, v.z).normalized()
+
+
+## Säule bis unter die Galerie: quadratischer Sockel unten und oben, dazwischen ein runder Schaft (Terrazzo).
+func _pillar(rect: Rect2) -> StaticBody3D:
+	var c := rect.get_center()
+	var body := StaticBody3D.new()
+	body.collision_mask = 0
+	body.position = Vector3(c.x, 0, c.y)
+	root.add_child(body)
+	var shaft_h := H - 2.0 * PILLAR_PLINTH.y
+	for y: float in [PILLAR_PLINTH.y / 2.0, H - PILLAR_PLINTH.y / 2.0]:
+		Geo.mesh(body, Geo.box(PILLAR_PLINTH), _pillar_stone, Vector3(0, y, 0))
+		Geo.add_box_shape(body, PILLAR_PLINTH, Vector3(0, y, 0))
+	Geo.mesh(body, Geo.cylinder(PILLAR_SHAFT_RADIUS, shaft_h, PILLAR_SHAFT_SEGMENTS), _pillar_stone, Vector3(0, H / 2.0, 0))
+	var cs := CollisionShape3D.new()
+	var shape := CylinderShape3D.new()
+	shape.radius = PILLAR_SHAFT_RADIUS
+	shape.height = shaft_h
+	cs.shape = shape
+	cs.position = Vector3(0, H / 2.0, 0)
+	body.add_child(cs)
+	return body
 
 
 ## Kratzbaum (Spielkonzept 7.7): Plüschsockel, Sisalstämme, Zwischenetage mit Höhle, Liegefläche oben.

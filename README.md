@@ -133,7 +133,7 @@ Die Discokugel (`assets/models/disco_ball.glb`) ist „Disco Ball“ von [aragho
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_disco_ball.py -- assets/source/disco_ball.glb assets/models/disco_ball.glb
 ```
 
-Die Fototexturen (PBR-Sets) sind von Julio Sillet ([JulioVII auf itch.io](https://juliovii.itch.io), CC-BY): `Concrete_WoodPattern_01` (Kellerwände), `TilesMarble_01` (Lobbyboden), `pool/Tiles_06` (Poolbecken), `Stone_EngraveWall_01` (Wände der Poolhalle) und `TilesBasic_01` (Umgang der Poolhalle) – jeweils nur die genutzten Karten, verkleinert mit `tools/photo_set.gd` (TECHNIK.md, „Fototexturen“).
+Die Fototexturen (PBR-Sets) sind von Julio Sillet ([JulioVII auf itch.io](https://juliovii.itch.io), CC-BY): `Concrete_WoodPattern_01` (Kellerwände), `TilesMarble_01` (Lobbyboden), `pool/Tiles_06` (Poolbecken), `Stone_EngraveWall_01` (Wände der Poolhalle) `TilesBasic_01` (Umgang der Poolhalle) und `TerrazzoDark_01` (Säulen der Lobby) – jeweils nur die genutzten Karten, verkleinert mit `tools/photo_set.gd` (TECHNIK.md, „Fototexturen“).
 
 Pflanzkübel (`assets/models/planter.glb`) und Laubbaum (`assets/models/tree.glb`) kommen von Meshy:
 
