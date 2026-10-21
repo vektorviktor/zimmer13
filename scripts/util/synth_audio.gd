@@ -25,6 +25,9 @@ const VOICES := {
 	"scream": {"files": SCREAMS, "db": 0.0, "synth": "scream"},   ## Schreck – klingt aus
 	"death_scream": {"files": SCREAMS, "db": 2.0, "pitch": 0.94, "cut": Vector2(0.45, 0.75), "synth": "scream"},   ## jäh abgerissen
 	"grunt": {"files": {"m": ["grunt_male_1", "grunt_male_2"]}, "db": -3.0, "cut": Vector2.ONE, "synth": ""},   ## letzter Laut (Axt, Würgen)
+	## schweres Atmen nach dem Würgen (Spielkonzept 6.17) – ein Atemzug, tiefer und gepresst, in seiner Stimmlage
+	"wheeze": {"files": {"m": ["breath"], "f": ["breath"], "child": ["breath"]}, "dir": "res://assets/sound/%s.wav", "db": -4.0,
+		"pitch": 0.8, "cut": Vector2.ONE, "synth": ""},
 }
 const VOICE_DIR := "res://assets/sound/screams/%s.wav"
 const VOICE_PLAYERS := 4          ## so viele Stimmen gleichzeitig (wer schon schreit, nimmt seine eigene)
@@ -133,7 +136,7 @@ func _play_voice(entry: Dictionary, volume: float, pos: Vector3, who: Node) -> b
 	var gain := volume * Settings.effects_volume * _damp
 	if gain <= 0.0:
 		return true
-	var file: String = VOICE_DIR % files[int(v["pick"]) % files.size()]
+	var file: String = String(entry.get("dir", VOICE_DIR)) % files[int(v["pick"]) % files.size()]
 	if not _sample_streams.has(file):
 		_sample_streams[file] = load(file)
 	var speaker: AudioStreamPlayer3D = null

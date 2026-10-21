@@ -160,6 +160,21 @@ func head_origin() -> Vector3:
 	return (_skeleton.global_transform * _skeleton.get_bone_global_pose(_bone["Head"])).origin
 
 
+## Knoten, der dem Knochen folgt (Verletzungsmarken, Spielkonzept 6.17) – null, wenn es den Knochen nicht gibt.
+func attach(bone_name: String) -> Node3D:
+	if not _bone.has(bone_name):
+		return null
+	var at := BoneAttachment3D.new()
+	at.bone_idx = _bone[bone_name]
+	_skeleton.add_child(at)
+	var holder := Node3D.new()
+	# Marken in Metern: Maßstab des Skeletts ausgleichen (manche Modelle sind intern in Zentimetern, dazu die Größe des Gasts)
+	var s := _skeleton.global_basis.get_scale() if _skeleton.is_inside_tree() else Vector3.ONE * _scale
+	holder.scale = Vector3(1.0 / maxf(s.x, 0.0001), 1.0 / maxf(s.y, 0.0001), 1.0 / maxf(s.z, 0.0001))
+	at.add_child(holder)
+	return holder
+
+
 ## Wie tief die Figur beim Sitzen sinkt (m)
 func sit_drop() -> float:
 	return SIT_DROP * float(_info["height"]) * _scale

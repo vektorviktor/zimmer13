@@ -80,7 +80,10 @@ extends Node3D
 ##   --follow=id · --visit=id    Gast kommt mit (steht hinter dir) · Gast geht zu Zimmer 13 und klopft an
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
-##   --kill=id                   Gast nach 3 s vom Monster holen lassen
+##   --kill=id                   Gast nach 3 s vom Monster holen lassen (überlebt mit 40 %: Kratzer, 6.17)
+##   --weep=gast                 der Gast weint 30 s (Tränen, 7.6) – mit --look=gast steht er vor dir
+##   --wound=gast,scratch|axe|choke[,hin]   Gast hat überlebt (6.17): Kratzer, Axtwunde (Blutspur, ein Tag im Bett) bzw.
+##                               Würgemale (heiser, schweres Atmen) · hin: steht vor dir statt im Bett (mit --talk=gast)
 ##   --wallblood[=smear]         Blutspritzer (smear: blutige Schmierspur) an die Wand, auf die du schaust (4.13)
 ##   --costumes[=art]            alle Gäste sofort verkleidet (sonst ab dem 25.): jeder sein Kostüm, art = sheet|witch|
 ##                               pumpkin|cape für alle gleich (5.9)
@@ -560,6 +563,27 @@ func run_debug(arg: String) -> bool:
 			Game.monster.spawn_at(victim.global_position + Vector3(1, 0, 0))
 			Game.director.phase = MonsterDirector.Phase.ACTIVE
 			Game.director.kill_guest(victim, null))
+	elif arg.begins_with("--weep="):
+		# Tränen (Spielkonzept 7.6): der Gast weint eine halbe Minute – mit --look=gast vor dir
+		var crying := Game.social.guest_by_id(arg.substr(7))
+		if crying:
+			crying.weep(30.0)
+	elif arg.begins_with("--wound="):
+		# Überlebender (Spielkonzept 6.17): gast,scratch|axe|choke[,hin] – verletzt wie nach dem Angriff; hin: er liegt
+		# bzw. steht vor dir (mit --talk=gast erzählt er als Zeuge)
+		var parts := arg.substr(8).split(",")
+		var hurt := Game.social.guest_by_id(parts[0])
+		if hurt == null or parts.size() < 2 or not Wounds.KINDS.has(parts[1]):
+			Game.say("--wound=gast,scratch|axe|choke[,hin]", 3.0)
+		else:
+			hurt.wound_by(parts[1])
+			if "hin" in parts:
+				var forward := -Game.player.global_transform.basis.z
+				hurt.global_position = Game.player.global_position + forward * 1.4
+				hurt.rotation.y = Game.player.rotation.y + PI
+				hurt.wound_bed = 0.0   # zum Ansehen: steht vor dir statt im Bett
+				hurt._set_idle(30.0)
+				Game.player.head.rotation.x = deg_to_rad(-28.0 if parts[1] == "axe" else -5.0)
 	elif arg == "--steal-test":
 		# Spieler nimmt Ednas Deko unbemerkt (für Schuld-Test)
 		for node in get_tree().get_nodes_in_group("items"):

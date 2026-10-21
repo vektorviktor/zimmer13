@@ -58,7 +58,7 @@ const ESCAPE_GAIN := 0.16             ## je Richtungswechsel
 const ESCAPE_GRIP := 0.72             ## so viel zieht der Griff je Sekunde zurück
 const ESCAPE_GRIP_STAGE := 0.06       ## ab dem 4. Mal je Mal fester (höchstens +0,3)
 ## Gäste reißen sich nur selten los: so viel + Mut × so viel
-const GUEST_ESCAPE := Vector2(0.05, 0.2)
+const GUEST_ESCAPE := Vector2(0.3, 0.2)   ## 2026-10-21: im Mittel etwa 4 von 10 (Spielkonzept 6.17), vorher 0,05 + 0,2 × Mut
 ## Schrank: so lange wartet er vor den Türen, dann fliegt er mit dieser Chance hinein (sonst gibt er auf)
 const LURK_TIME := Vector2(20.0, 35.0)
 const FLY_IN_CHANCE := 0.4
@@ -640,6 +640,7 @@ func _struggle(delta: float) -> void:
 		if _escape_at >= 0.0 and ESCAPE_TIME - _timer >= _escape_at:
 			if "--trace" in OS.get_cmdline_user_args():
 				print("[Lakengeist] %s hat sich losgerissen" % (_victim as Guest).display_name)
+			(_victim as Guest).wound_by("choke")   # Würgemale: heiser, atmet schwer (6.17)
 			_vanish()
 		elif _timer <= 0.0:
 			_kill_guest(_victim as Guest)

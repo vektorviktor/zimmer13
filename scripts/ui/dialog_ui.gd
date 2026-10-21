@@ -7,6 +7,8 @@ extends CanvasLayer
 
 const CHAT_COOLDOWN := 40.0
 const GIFT_COOLDOWN := 150.0
+## Nicht zu verschenken: Schlüssel und was dem Hotel gehört (Schachbrett, Würfelbecher – Wunsch 2026-10-21)
+const NO_GIFT := [Item.Kind.KEY, Item.Kind.CHESS_BOARD, Item.Kind.DICE_CUP]
 ## Gebratener Kürbis als Geschenk (Spielkonzept 3.8): so viel weniger Angst
 const ROAST_CALM := 20.0
 ## Plaudern zählt am Tag nur so oft voll (6.3), danach kaum noch
@@ -79,7 +81,19 @@ func open(p_guest: Guest) -> void:
 	Game.player.head.rotation.x = -0.05
 	# Wer etwas Schlimmes erlebt hat, erzählt zuerst davon (Spielkonzept 6.12) – das Monster hört mit (4.7)
 	var experience := guest.untold_experience()
-	if not experience.is_empty():
+	var witness := _wound_visit()
+	if witness != "":
+		_say(witness)   # Überlebender (6.17): bei jedem Gespräch ein neues Detail, alles stimmt
+		Game.social.on_monster_talk(guest)
+		experience = {"told": true}
+	elif guest.wound_note != "":
+		_say(Wounds.NEGLECT_LINE if guest.wound_note == "neglect" else Wounds.HEALED_LINE)
+		guest.wound_note = ""
+		experience = {"told": true}
+	elif guest.wound != "":
+		_say(Wounds.GREET[guest.wound].pick_random())
+		experience = {"told": true}
+	elif not experience.is_empty():
 		experience["told"] = true
 		_say(Game.social.experience_line(guest, experience))
 		Game.social.on_monster_talk(guest)
@@ -185,7 +199,7 @@ func _show_main() -> void:
 		_option("Mäxchen an der Bar spielen", _show_stakes.bind("dice"))
 	if Game.chess and Game.chess.table.has_board(player) and not Game.chess.table.busy:
 		_option("Schach in der Lobby spielen", _show_stakes.bind("chess"))
-	if player.held and player.held.kind != Item.Kind.KEY:
+	if player.held and not player.held.kind in NO_GIFT:
 		_option("%s schenken" % player.held.display_name, _gift)
 	_option("Hast du Deko für mich?", _ask_deco)
 	if tier >= Social.Tier.NICE and not Game.social.party_active:
@@ -205,6 +219,25 @@ func _show_main() -> void:
 		_option("Zur Feier in die Lobby einladen", _invite)
 	_option("Beleidigen", _insult)
 	_option("Tschüss", close)
+
+
+## Besuch bei einem Verletzten (Spielkonzept 6.17): zählt als Besuch, einmal am Spieltag heilt es etwas schneller; das
+## nächste Detail, das er als Zeuge erzählt ("" = keins mehr). Erlebnisse vom Angriff gelten damit als erzählt.
+func _wound_visit() -> String:
+	if guest.wound == "":
+		return ""
+	guest.wound_visited = true
+	if int(guest.wound_facts.get("visit_day", 0)) != Calendar.today():
+		guest.wound_facts["visit_day"] = Calendar.today()
+		guest.speed_healing(Wounds.VISIT_HEAL)
+	var line := guest.witness_line()
+	if line != "" and guest.is_hoarse():
+		line = "*heiser* " + line   # Würgemale
+	if line != "":
+		for e in guest.experiences:
+			if e["kind"] in ["monster", "ghost", "ghost_attack", "pumpkin"]:
+				e["told"] = true
+	return line
 
 
 ## Gemeinsam etwas machen (Spielkonzept 5.9, 2026-10-21): schmücken, wo du stehst, groß schmücken, Deko suchen.
@@ -430,17 +463,28 @@ func _gift() -> void:
 	var favorite := is_pumpkin and item.variety == guest.favorite_pumpkin()
 	var liked := kind in (guest.profile["likes"] as Array) or favorite
 	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + (8.0 if favorite else 0.0) + 3.0
+	var fitting := false
+	if guest.wound != "":
+		# Verletzt (Spielkonzept 6.17): Geschenke dreifach (×2 in change_relation), passende noch mehr, zählen doppelt
+		fitting = Wounds.fitting(guest.wound, item, guest.in_sickbed())
+		bonus = bonus * Wounds.GIFT_FACTOR + (Wounds.FITTING if fitting else 0.0)
+		guest.speed_healing(Wounds.GIFT_HEAL)
 	Game.social.change_relation(guest, bonus)
-	Game.social.add_deed(guest, "gifts_to")
-	if item.deco_strength > 0.0:
-		guest.stock[kind] = int(guest.stock.get(kind, 0)) + 1
-	Game.player.consume_held()
+	Game.social.add_deed(guest, "gifts_to", Wounds.GIFT_DEEDS if guest.wound != "" else 1)
+	# Er nimmt es in die Hand und trägt es heim bzw. isst es (6.17); mit vollen Händen wandert es gleich in den Vorrat
+	if not guest.receive_gift(Game.player.hand_over()):
+		if item.deco_strength > 0.0:
+			guest.stock[kind] = int(guest.stock.get(kind, 0)) + 1
+		item.queue_free()
 	var fav_name := String(PumpkinKinds.data(guest.favorite_pumpkin())["name"])
 	if kind == Item.Kind.ROAST_PUMPKIN:
 		# Gebratener Kürbis (Spielkonzept 3.8): er isst ihn gleich – das beruhigt
 		guest.fear = maxf(0.0, guest.fear - ROAST_CALM)
 		_say("Gebratener %s – mein Lieblingskürbis! Du bist ein Schatz." % fav_name if favorite
 			else "Oh, noch warm! Danke – das tut gut.")
+	elif fitting:
+		_say("Genau das hab ich jetzt gebraucht. Danke – wirklich." if kind != Item.Kind.CANDLE
+			else "Eine Kerze … dann ist es heute Nacht nicht ganz dunkel. Danke.")
 	elif favorite:
 		_say("Ein %s! Mein Lieblingskürbis – woher wusstest du das?" % fav_name)
 	elif is_pumpkin and randf() < 0.6:

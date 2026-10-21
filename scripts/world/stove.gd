@@ -106,6 +106,15 @@ func _ready() -> void:
 	Geo.add_box_shape(self, Vector3(0.7, 0.24, 0.45), Vector3(0, 0.12, 0))
 
 
+## Beim Laden eines Spielstands (SaveManager.apply): Herd leer, niemand isst (nicht gespeichert).
+func reset() -> void:
+	_eaters.clear()
+	_ate.clear()
+	phase = "empty"
+	portions = 0
+	_show()
+
+
 ## Ein Kürbis in der Hand: kommt er in den Topf (Suppe) oder in die Pfanne (braten)? "" = gar nicht.
 static func dish_for(item: Item) -> String:
 	if item == null:

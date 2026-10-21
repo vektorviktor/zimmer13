@@ -45,6 +45,12 @@ var _offers := {}
 var _cooldown := 60.0
 
 
+## Beim Laden eines Spielstands (SaveManager.apply): laufende Suchen vergessen (nicht gespeichert, Gäste neu gebaut).
+func reset() -> void:
+	_trips.clear()
+	_offers.clear()
+
+
 func _process(delta: float) -> void:
 	if Game.game_over or Game.social == null:
 		return

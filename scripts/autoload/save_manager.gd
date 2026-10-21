@@ -43,7 +43,9 @@ const DIR := "user://saves/"
 ## 24: übergeworfenes Bettlaken (player.disguised, Item.Kind.BED_SHEET) – ältere Stände laden weiter, unverkleidet
 ## 25: Freundschaften unter Gästen (Spielkonzept 6.16) – „pals“ unter „social“; ältere Stände laden weiter, dort
 ##     sind nur Familie und Zimmernachbarn befreundet
-const VERSION := 25
+## 26: Überlebende & Verletzungen (Spielkonzept 6.17) – je Gast wound, wound_left, wound_bed, wound_facts, wound_told,
+##     wound_visited; ältere Stände laden weiter, alle unverletzt
+const VERSION := 26
 const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -348,6 +350,8 @@ func collect() -> Dictionary:
 			"corpse": g.corpse, "ghost_visits": g.ghost_visits, "seen": g.seen_sights, "experiences": g.experiences,
 			"drunk": g.drunk,
 			"deeds": g.deeds, "chat_day": g.chat_day, "chats_today": g.chats_today,
+			"wound": g.wound, "wound_left": g.wound_left, "wound_bed": g.wound_bed, "wound_facts": g.wound_facts,
+			"wound_told": g.wound_told, "wound_visited": g.wound_visited,
 		}
 	data["alive"] = alive
 	var social := Game.social
@@ -419,6 +423,11 @@ func apply(data: Dictionary) -> void:
 	visited = (data.get("visited", []) as Array).duplicate()
 	Game.money = int(data.get("money", 5))
 	Game.current_slot = int(data.get("current_slot", Game.current_slot))
+	# Laufendes Schmücken, Deko-Suche und Suppenessen werden nicht gespeichert – und die Gäste gleich neu gebaut
+	Game.social.decorating.reset()
+	Game.social.search.reset()
+	if Game.kitchen:
+		Game.kitchen.reset()
 	# Zuerst die zufällig erzeugten Gäste – alles Weitere bezieht sich auf ihre IDs
 	Game.social.restore_roster((data.get("social", {}) as Dictionary).get("roster", []))
 
@@ -488,6 +497,13 @@ func apply(data: Dictionary) -> void:
 		g.deeds = (d.get("deeds", {}) as Dictionary).duplicate()
 		g.chat_day = int(d.get("chat_day", 0))
 		g.chats_today = int(d.get("chats_today", 0))
+		g.wound = String(d.get("wound", ""))
+		g.wound_left = float(d.get("wound_left", 0.0))
+		g.wound_bed = float(d.get("wound_bed", 0.0))
+		g.wound_facts = (d.get("wound_facts", {}) as Dictionary).duplicate()
+		g.wound_told = int(d.get("wound_told", 0))
+		g.wound_visited = bool(d.get("wound_visited", false))
+		g._update_wound_marks()
 		g.stock = {}
 		var stock: Dictionary = d["stock"]
 		for key in stock:

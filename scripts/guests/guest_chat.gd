@@ -155,6 +155,11 @@ static func facts(guest: Guest) -> Array[String]:
 		for experience in guest.experiences:
 			var line := social.experience_line(guest, experience, true)
 			result.append("- Erlebt (%s): %s" % [_ago(float(experience["at"])), line])
+		if guest.wound != "":   # Überlebender (Spielkonzept 6.17): weiß alles sicher
+			var keys := {"zone": guest.wound_facts.get("zone", "hier"), "went": guest.wound_facts.get("went", "irgendwohin")}
+			var known: Array = (Wounds.WITNESS[guest.wound] as Array).map(func(l: String) -> String: return l.format(keys))
+			result.append("- Verletzt: Du hast einen Angriff überlebt (%s) und bist noch nicht gesund. Das weißt du sicher: %s"
+				% [Wounds.data(guest.wound)["name"], " ".join(known)])
 		var report := social.report_line(guest)   # Gerücht – je nach Gast zuverlässig oder nicht (4.13)
 		if report != "":
 			result.append("- Gerücht (du bist nicht ganz sicher): %s" % report)

@@ -713,6 +713,17 @@ func kill_guest(guest, spot: HideSpot) -> void:
 	if not wants_victim():   # harmlos, oder es sieht sich nur um (4.17)
 		_scare_guest(guest, spot)
 		return
+	if Wounds.survives():
+		# Er reißt sich los, als es ihn wegschleppen will (Spielkonzept 6.17): nur Kratzer – es bleibt hungrig
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Losgerissen] %s" % guest.display_name)
+		if spot != null:
+			spot.rip_open()
+		Game.noise("scream", guest.global_position, guest)
+		guest.wound_by("scratch", _monster)
+		guest.scared_by_monster()
+		_monster.after_scare(guest)
+		return
 	if spot != null:
 		spot.rip_open()
 	Game.noise("death_scream", guest.global_position, guest)

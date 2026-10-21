@@ -634,7 +634,7 @@ func _can_hunt(actor: Node3D) -> bool:
 		return false
 	if actor is Guest:
 		var guest := actor as Guest
-		return not guest.dead and guest.hiding == null and not guest.is_child()
+		return not guest.dead and guest.hiding == null and not guest.is_child() and guest.wound != "axe"   # wen er verletzt hat, lässt er (6.17)
 	var player := actor as Player
 	return player != null and not player.dead and player.hiding == null and not player.sleeping
 
@@ -798,6 +798,15 @@ func _hit() -> void:
 	if not _can_hunt(target) or target.global_position.distance_to(global_position) > HIT_RANGE:
 		if "--trace" in OS.get_cmdline_user_args():
 			print("[Kürbismann] schlägt daneben")
+		return
+	if target is Guest and Wounds.survives():
+		# Der Hieb trifft nicht voll (Spielkonzept 6.17): Axtwunde, er blutet eine Spur und humpelt davon
+		var survivor := target as Guest
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Kürbismann] verletzt %s" % survivor.display_name)
+		Game.sound_at("grunt", survivor.global_position, Senses.GRUNT_RANGE, survivor)
+		survivor.wound_by("axe", self)
+		_next_victim()
 		return
 	_kills += 1
 	if target is Guest:

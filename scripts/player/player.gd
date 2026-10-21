@@ -869,6 +869,15 @@ func eat_held() -> void:
 	Game.say("Warm, süß und ein bisschen rauchig. Das tut gut.", 3.0)
 
 
+## Gegenstand aus der Hand geben (Geschenk, das der Gast selbst trägt – Spielkonzept 6.17). null = leere Hände.
+func hand_over() -> Item:
+	var item := held
+	held = null
+	if Game.hud:
+		Game.hud.set_held("")
+	return item
+
+
 ## Gegenstand in der Hand wird verbraucht (z. B. Kerze in den Kürbis).
 func consume_held() -> void:
 	if held == null:

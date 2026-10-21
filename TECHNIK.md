@@ -1147,6 +1147,38 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   `take_heard_line` an die Begrüßung. `praise(gast, n)`: alle seine Freunde nach `PRAISE_DELAY` (`_queue`). Gespeichert
   wird nur `counts` (`social.pals`, Version 25); `heard`, `_told`, `_queue` nicht. Debug `--pals=gast1,gast2`, `--trace`:
   `[Freunde]`.
+- **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze; Zustand im Gast, Spielkonzept 6.17):
+  `Wounds.survives()` (`SURVIVE` 0,4) in `MonsterDirector.kill_guest` (nach `wants_victim`: Lärm `scream`,
+  `wound_by("scratch", monster)`, `scared_by_monster`, `after_scare` – zählt nicht als Opfer, keine Sättigung) und
+  `PumpkinMan._hit` (`wound_by("axe", self)`, Ächzen, `_next_victim`; `_can_hunt` übergeht Gäste mit Axtwunde). Lakengeist:
+  `GUEST_ESCAPE` jetzt 0,3 + 0,2 × Mut, beim Losreißen `wound_by("choke")`. `Guest.wound_by(art, angreifer)`: `wound`,
+  `wound_left` (`KINDS.heal`), `wound_bed` (`bed`), `_bleeding` (`bleed` – über 60 s jeder Schritt ein Tropfen, sonst jeder
+  zweite: die Blutspur der Axtwunde), Angst ≥ 50 (ansprechbar), `wound_facts` (`zone`; `went` = Zone des Angreifers 8 s
+  später), `_update_wound_marks` und `_spread_wound_news` (Freunde und Gäste in `SPREAD_RANGE`: Angst + `SPREAD_FEAR`,
+  Erlebnis `survivor_<art>` → `Social.experience_line` mit `Wounds.HEARD`). `_wound_step`: Zeiten nach `delta`; solange
+  `wound_bed` läuft, geht er ins eigene Bett (`_go_to_bed` → `_fall_asleep`, Licht an außer in der Nachtruhe) und bleibt
+  dort (`wake_up` und der `SLEEP`-Zweig warten), `in_sickbed()`: ansprechbar (`get_prompt`/`interact`), `begin_talk`/
+  `end_talk` lassen ihn liegen; heiser: alle `WHEEZE_GAP` s `Game.sound_at("wheeze")` (neuer `SynthAudio.VOICES`-Eintrag mit
+  eigenem `dir`: `breath.wav` tiefer in seiner Stimmlage), `say` mit „*heiser*“. Geheilt (`_heal`): befreundet und nie
+  besucht → `NEGLECT`, `wound_note` für das nächste Gespräch. Wirkung: `_speed_factor` × `speed`, `can_run()` (Axt nicht),
+  `weakness` + `CHOKE_WEAKNESS`, nicht verfügbar für Schmücken und Suche (`Decorating._available`), keine Feier im Bett
+  (`start_party`). Marken: `GuestBody.attach(knochen)` = `BoneAttachment3D` + Halter, der den Maßstab des Skeletts
+  ausgleicht (manche Modelle sind intern in Zentimetern); Kratzer an `Head`/`LeftForeArm`, Verband und Blut an `LeftLeg`/
+  `LeftUpLeg`, Ring an `Neck`; Klötzchenfiguren in fester Höhe. **Dialog:** `DialogUI._wound_visit` (besucht, einmal am
+  Spieltag `VISIT_HEAL`) erzählt `witness_line()` (nächstes aus `WITNESS`, alles stimmt) statt eines Erlebnisses, danach
+  `GREET`; `change_relation` × `RELATION_FACTOR` (auch negativ); `_gift` × `GIFT_FACTOR`, `+FITTING` bei
+  `Wounds.fitting`, Tat `gifts_to` × `GIFT_DEEDS`, `GIFT_HEAL`. `GuestChat.facts` kennt die Verletzung und alle Zeugen-Details.
+  Gespeichert je Gast (Version 26): `wound`, `wound_left`, `wound_bed`, `wound_facts`, `wound_told`, `wound_visited`. Debug
+  `--wound=gast,art[,hin]`, `--kill=gast` (würfelt mit), `--trace`: `[Verletzt]`, `[Losgerissen]`, `[Kürbismann] verletzt`.
+- **Geschenke in der Hand** (6.17): `DialogUI._gift` gibt den Gegenstand per `Player.hand_over()` an `Guest.receive_gift`
+  (in die Hand, `_gift_hold`); nach dem Gespräch trägt er ihn heim (`_carry_gift_home` → `CARRY_HOME` → Vorrat), Essbares
+  (Süßes, gebratener Kürbis) isst er nach ein paar Sekunden (`_gift_step`), im Bett wandert es nach der Zeit in den Vorrat.
+  Volle Hände → wie früher gleich in den Vorrat. Nicht zu verschenken: `DialogUI.NO_GIFT` (Schlüssel, Schachbrett,
+  Würfelbecher – Hotelgegenstände).
+- **Tränen** (Spielkonzept 7.6): `Guest.weep(s)` legt beim ersten Mal ein `CPUParticles3D` an (`top_level`, zwei
+  Emissionspunkte an den Augen, × `head` bei Kindern, helle Tropfen mit Schwerkraft); `_tears_step` setzt es jedes Bild auf
+  `_head_point()` mit der Drehung des Gastes. Ausgelöst in `shock` (Stil `cry`: Schreckzeit + 20–35 s, `cling`: + 8–14 s),
+  `stagger` (umgerannte Kinder), `Social.on_guest_died` (Freunde 20–40 s, Kinder des Toten 60 s). Debug `--weep=gast`.
 - **Kochen** (`world/stove.gd`, `Stove`, `Game.kitchen`, Spielkonzept 3.8): `LevelBuilder._common_rooms` setzt ihn auf die
   Plan-Ausstattung „stove“ in der Küche (Höhe `top`, gedreht nach `front`). `phase`: `empty` → (`dish_for(gehalten)`:
   `SOUP_VARIETIES` in den Topf, `ROAST_VARIETIES` und Zierkürbis in die Pfanne) `raw` → Messer in der Hand → `cooking`
@@ -1250,6 +1282,10 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   LightSwitch, HotelWindow, Dresser) oder werden in `collect()` direkt ausgelesen (Door, Chest, Plant, Resource).
   Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()`.
 - Beim Laden: `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
+- Nicht gespeichert, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating.reset()`, `DecoSearch.reset()`,
+  `Stove.reset()` – sonst zeigten laufende Aktionen nach `--savetest` auf die neu gebauten Gäste ins Leere.
+- Verletzungen (ab Version 26, Spielkonzept 6.17): je Gast `wound`, `wound_left`, `wound_bed`, `wound_facts`, `wound_told`,
+  `wound_visited`; nach dem Laden `_update_wound_marks`, ins Bett geht er von selbst wieder.
 - Freundschaften unter Gästen (ab Version 25): `social.pals` = `GuestPals.counts` (`"id_a|id_b"` → Anzahl); ältere
   Stände laden ohne (nur Familie und Nachbarn).
 - Je Gast außerdem (ab Version 11) `corpse` (tote Gäste mit Leiche → `die("ghost")`), `ghost_visits`, `seen`

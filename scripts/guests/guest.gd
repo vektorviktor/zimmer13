@@ -139,6 +139,21 @@ var attack_cooldown := 0.0
 var threatened := false      ## hat dir schon gedroht – beim nächsten Mal schlägt er zu
 var sleepless := false       ## Kind, das in dieser Nachtruhe nicht schlafen kann (Spielkonzept 6.13)
 var last_party := -1.0       ## Director.elapsed, als er zuletzt eine Feier verlassen hat; −1 = noch nie (GuestChat, nicht gespeichert)
+## Überlebt (Spielkonzept 6.17): Art der Verletzung ("" = unverletzt, sonst Wounds.KINDS), so lange noch bis geheilt, davon
+## noch im Bett; was er als Zeuge weiß (zone, went, visit_day) und wie viel er erzählt hat; ob der Spieler ihn besucht hat
+var wound := ""
+var wound_left := 0.0
+var wound_bed := 0.0
+var wound_facts := {}
+var wound_told := 0
+var wound_visited := false
+var wound_note := ""         ## beim nächsten Gespräch: "healed" oder "neglect" (nicht gespeichert)
+var _wheeze := 3.0
+var _wound_nodes: Array[Node3D] = []   ## Verletzungsmarken am Körper
+var _gift_item: Item         ## Geschenk in der Hand (6.17): er trägt es heim bzw. isst es nach _gift_hold Sekunden
+var _tears: CPUParticles3D   ## Tränen, solange er weint (_tears_left Sekunden; 7.6)
+var _tears_left := 0.0
+var _gift_hold := 0.0
 
 var agent: NavigationAgent3D
 var _collider: CollisionShape3D
@@ -264,6 +279,241 @@ func voice() -> Dictionary:
 	return {"voice": key, "pick": posmod(hash(id), 1000), "pitch": pitch, "length": length}
 
 
+# --- Überlebende & Verletzungen (Spielkonzept 6.17) -------------------------------------------
+
+## Überlebt einen Angriff: verletzt (Wounds.KINDS), merkt sich, wo es war und wohin der Angreifer ging, und erzählt es
+## seinen Freunden und den Gästen ringsum. attacker: wohin er danach ging (nach 8 s nachgesehen), null = egal.
+func wound_by(kind: String, attacker: Node3D = null) -> void:
+	var d := Wounds.data(kind)
+	if d.is_empty() or dead:
+		return
+	wound = kind
+	wound_left = float(d["heal"])
+	wound_bed = float(d["bed"])
+	wound_told = 0
+	wound_visited = false
+	_bleeding = maxf(_bleeding, float(d["bleed"]))
+	fear = maxf(fear, 50.0)   # erschüttert, aber ansprechbar (Panik ab 60)
+	var zone := Game.director.zone_name_at(global_position) if Game.director else ""
+	wound_facts = {"zone": zone, "went": zone}
+	if attacker:
+		get_tree().create_timer(8.0, false).timeout.connect(func() -> void:
+			if is_instance_valid(attacker) and Game.director:
+				wound_facts["went"] = Game.director.zone_name_at(attacker.global_position))
+	_update_wound_marks()
+	_spread_wound_news()
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Verletzt] %s überlebt: %s bei %s" % [display_name, d["name"], zone])
+
+
+func is_hoarse() -> bool:
+	return wound != "" and bool(Wounds.data(wound)["hoarse"])
+
+
+## Liegt er verletzt im eigenen Bett? (ansprechbar, steht dafür nicht auf)
+func in_sickbed() -> bool:
+	return wound_bed > 0.0 and state == State.SLEEP and hiding != null
+
+
+## Das nächste Detail, das er als Zeuge erzählt ("" = alles erzählt).
+func witness_line() -> String:
+	var lines: Array = Wounds.WITNESS.get(wound, [])
+	if wound_told >= lines.size():
+		return ""
+	var zone := String(wound_facts.get("zone", ""))
+	var went := String(wound_facts.get("went", ""))
+	var text := String(lines[wound_told]).format({"zone": zone if zone != "" else "hier", "went": went if went != "" else "irgendwohin"})
+	wound_told += 1
+	return text
+
+
+## Freunde und Gäste ringsum erfahren davon: Angst steigt, sie erzählen es weiter (Erlebnis „survivor_<art>“).
+func _spread_wound_news() -> void:
+	var told: Array = Game.social.pals.pals_of(self)
+	for g in Game.social.living_guests():
+		if g != self and not g in told and g.global_position.distance_to(global_position) < Wounds.SPREAD_RANGE:
+			told.append(g)
+	for g: Guest in told:
+		g.fear = minf(100.0, g.fear + Wounds.SPREAD_FEAR)
+		g.remember("survivor_" + wound, global_position, display_name)
+
+
+func _wound_step(delta: float) -> void:
+	if wound == "":
+		return
+	wound_left -= delta
+	if wound_bed > 0.0:
+		wound_bed -= delta
+		if wound_bed <= 0.0:
+			if state == State.SLEEP and not Game.social.sleep_active:
+				wake_up()   # der erste Tag im Bett ist vorbei
+		elif state in [State.IDLE, State.WALK] and not _to_bed and hiding == null and fear < 60.0 and _gift_item == null:
+			_go_to_bed()   # erst einmal ins Bett
+	if is_hoarse():
+		_wheeze -= delta
+		if _wheeze <= 0.0:
+			_wheeze = randf_range(Wounds.WHEEZE_GAP.x, Wounds.WHEEZE_GAP.y)
+			Game.sound_at("wheeze", global_position, Wounds.WHEEZE_RANGE, self, 0.8)   # schweres Atmen
+	if wound_left <= 0.0:
+		_heal()
+
+
+## Geheilt: Wer befreundet ist und ihn nie besucht hat, ist gekränkt.
+func _heal() -> void:
+	var neglected := not wound_visited and Social.tier(self) >= Social.Tier.FRIEND
+	wound = ""
+	wound_bed = 0.0
+	wound_note = "neglect" if neglected else ("healed" if wound_visited else "")
+	if neglected:
+		Game.social.change_relation(self, Wounds.NEGLECT)
+	_update_wound_marks()
+	if state == State.SLEEP and not Game.social.sleep_active:
+		wake_up()
+
+
+## Gegessen bzw. heimgetragen nach Wounds.GIFT_HEAL … – Geschenke und Besuche lassen ihn schneller heilen.
+func speed_healing(seconds: float) -> void:
+	if wound == "":
+		return
+	wound_left = maxf(1.0, wound_left - seconds)
+	wound_bed = minf(wound_bed, wound_left) if wound_bed > 0.0 else 0.0
+
+
+## Sichtbar am Körper: Kratzer im Gesicht und am Arm, Verband am Bein, dunkle Male am Hals.
+func _update_wound_marks() -> void:
+	for n in _wound_nodes:
+		if is_instance_valid(n):
+			n.queue_free()
+	_wound_nodes.clear()
+	if wound == "" or _visual == null:
+		return
+	var red := Mat.psx(Color(0.45, 0.04, 0.04))
+	match wound:
+		"scratch":
+			var face := _mark_root("Head", Vector3(0, 1.62, 0))
+			for i in 3:
+				var line := Geo.mesh(face, Geo.box(Vector3(0.009, 0.06, 0.01)), red, Vector3(0.035 + i * 0.014, 0.045, 0.095))
+				line.rotation.z = 0.5
+			var arm := _mark_root("LeftForeArm", Vector3(0.25, 1.1, 0))
+			for i in 3:
+				var line := Geo.mesh(arm, Geo.box(Vector3(0.012, 0.09, 0.012)), red, Vector3(0.045, 0.08 + i * 0.03, 0.01 * i))
+				line.rotation.x = 0.6
+		"axe":
+			var leg := _mark_root("LeftLeg", Vector3(0.1, 0.35, 0))
+			Geo.mesh(leg, Geo.cylinder(0.078, 0.15, 8), Mat.psx(Color(0.92, 0.9, 0.84)), Vector3(0, 0.2, 0))
+			Geo.mesh(leg, Geo.cylinder(0.081, 0.04, 8), red, Vector3(0, 0.19, 0))   # durchgeblutet
+			var thigh := _mark_root("LeftUpLeg", Vector3(0.1, 0.7, 0))
+			Geo.mesh(thigh, Geo.cylinder(0.092, 0.1, 8), red, Vector3(0, 0.36, 0))   # Blut auf der Hose
+		"choke":
+			var neck := _mark_root("Neck", Vector3(0, 1.48, 0))
+			Geo.mesh(neck, Geo.cylinder(0.062, 0.035, 8), Mat.psx(Color(0.35, 0.12, 0.2)), Vector3(0, 0.04, 0))
+
+
+## Knoten für die Verletzungsmarken: am Knochen des Gastmodells, bei der Klötzchenfigur in dieser Höhe.
+func _mark_root(bone: String, fallback: Vector3) -> Node3D:
+	var root: Node3D = _body.attach(bone) if _body else null
+	if root == null:
+		root = Node3D.new()
+		root.position = fallback
+		_visual.add_child(root)
+	_wound_nodes.append(root)
+	return root
+
+
+# --- Geschenke in der Hand (6.17, gilt für alle Gäste) ----------------------------------------
+
+## Ein Geschenk des Spielers: Er nimmt es in die Hand. false = Hände voll (dann wandert es wie früher in den Vorrat).
+func receive_gift(item: Item) -> bool:
+	if held != null or item == null:
+		return false
+	_take_into_hand(item)
+	_gift_item = item
+	var food := item.kind in [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]
+	_gift_hold = randf_range(8.0, 14.0) if food else randf_range(25.0, 40.0)
+	return true
+
+
+## Nach dem Gespräch: mit dem Geschenk heim (CARRY_HOME legt es in den Vorrat). false = nichts zu tragen.
+func _carry_gift_home() -> bool:
+	if _gift_item == null or held != _gift_item or _gift_item.kind in [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]:
+		return false
+	_gift_item = null
+	_walk_to(_room_point(), State.CARRY_HOME)
+	return true
+
+
+func _gift_step(delta: float) -> void:
+	if _gift_item == null:
+		return
+	if not is_instance_valid(_gift_item) or held != _gift_item:
+		_gift_item = null   # fallen gelassen, abgelegt, heimgebracht
+		return
+	_gift_hold -= delta
+	if _gift_hold > 0.0 or state == State.TALKING:
+		return
+	var item := _gift_item
+	_gift_item = null
+	if item.kind in [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]:
+		held = null
+		item.queue_free()   # aufgegessen
+		if randf() < 0.5:
+			say("Mmh." if item.kind == Item.Kind.SWEETS else "Das war lecker.")
+	elif state in [State.IDLE, State.WALK]:
+		_walk_to(_room_point(), State.CARRY_HOME)
+	else:
+		held = null   # im Bett oder anderweitig beschäftigt: wandert in den Vorrat
+		stock[item.kind] = int(stock.get(item.kind, 0)) + 1
+		item.queue_free()
+
+
+# --- Tränen (Spielkonzept 7.6) ------------------------------------------------------------------
+
+## Er weint so viele Sekunden (oder länger, wenn er schon weint): Tropfen aus beiden Augen.
+func weep(seconds: float) -> void:
+	if dead:
+		return
+	_tears_left = maxf(_tears_left, seconds)
+	if _tears == null:
+		_tears = CPUParticles3D.new()
+		_tears.top_level = true
+		_tears.amount = 10
+		_tears.lifetime = 0.7
+		_tears.local_coords = false
+		_tears.emission_shape = CPUParticles3D.EMISSION_SHAPE_POINTS
+		var eye := Vector3(0.032, 0.075, -0.095) * float(profile.get("head", 1.0))
+		_tears.emission_points = PackedVector3Array([eye, Vector3(-eye.x, eye.y, eye.z)])
+		_tears.direction = Vector3(0, -1, -0.3)
+		_tears.spread = 15.0
+		_tears.initial_velocity_min = 0.05
+		_tears.initial_velocity_max = 0.2
+		_tears.gravity = Vector3(0, -3.5, 0)
+		_tears.scale_amount_min = 0.7
+		_tears.scale_amount_max = 1.2
+		var drop := QuadMesh.new()
+		drop.size = Vector2(0.012, 0.02)
+		var mat := StandardMaterial3D.new()
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+		mat.albedo_color = Color(0.7, 0.85, 1.0, 0.75)
+		drop.material = mat
+		_tears.mesh = drop
+		add_child(_tears)
+	_tears.emitting = true
+
+
+func _tears_step(delta: float) -> void:
+	if _tears == null or not _tears.emitting:
+		return
+	_tears_left -= delta
+	if _tears_left <= 0.0 or dead:
+		_tears.emitting = false
+		return
+	# Den Augen folgen: Kopf des Modells bzw. der Klötzchenfigur, Blickrichtung des Gastes
+	_tears.global_transform = Transform3D(Basis(Vector3.UP, rotation.y), _head_point())
+
+
 ## Mama oder Papa eines Kindes – null, wenn er kein Kind ist oder sie nicht mehr da sind.
 func parent_guest() -> Guest:
 	if not is_child() or Game.social == null:
@@ -277,17 +527,19 @@ func is_orphan() -> bool:
 
 
 func get_prompt(_player: Player) -> String:
-	if dead or hiding or state == State.GHOSTED:
+	if dead or (hiding and not in_sickbed()) or state == State.GHOSTED:
 		return ""
 	return "Mit %s sprechen [E]  (%s)" % [display_name, Social.relation_word(relation)]
 
 
 func interact(_player: Player) -> void:
-	if not dead and not hiding and state != State.GHOSTED and Game.dialog:
+	if not dead and (not hiding or in_sickbed()) and state != State.GHOSTED and Game.dialog:
 		Game.dialog.open(self)
 
 
 func begin_talk() -> void:
+	if in_sickbed():
+		return   # bleibt liegen (6.17)
 	_resume_follow = _timer if state == State.FOLLOW else 0.0
 	state = State.TALKING
 
@@ -299,11 +551,13 @@ func end_talk() -> void:
 		_timer = _resume_follow   # ein Begleiter kommt nach dem Gespräch weiter mit
 		_resume_follow = 0.0
 		state = State.FOLLOW
-	else:
+	elif not _carry_gift_home():
 		_set_idle(randf_range(2.0, 5.0))
 
 
 func say(text: String) -> void:
+	if is_hoarse():
+		text = "*heiser* " + text   # Würgemale (6.17)
 	if Game.player and Game.player.global_position.distance_to(global_position) < 14.0:
 		Game.say("%s: „%s“" % [display_name, text], 4.0)
 
@@ -538,6 +792,9 @@ func _physics_process(delta: float) -> void:
 	_update_costume(delta)
 	_notice_disguise(delta)
 	_leave_traces(delta)
+	_wound_step(delta)
+	_gift_step(delta)
+	_tears_step(delta)
 	fear = maxf(0.0, fear - delta * 0.4)
 	drunk = maxf(0.0, drunk - delta / BarTap.SOBER_TIME)
 	chat_cooldown = maxf(0.0, chat_cooldown - delta)
@@ -564,7 +821,7 @@ func _physics_process(delta: float) -> void:
 			return
 		State.SLEEP:
 			# schläft – bemerkt nichts (kein Rauschen, kein Monster) bis zum Ende der Nachtruhe
-			if not Game.social.sleep_active:
+			if not Game.social.sleep_active and wound_bed <= 0.0:
 				wake_up()
 			return
 		State.KNOCK:
@@ -604,7 +861,7 @@ func _physics_process(delta: float) -> void:
 		if _run_noise <= 0.0:
 			_run_noise = 0.6
 			Game.noise("run", global_position, self)
-	var speed := (RUN_SPEED if running else WALK_SPEED) * _speed_factor()
+	var speed := (RUN_SPEED if running and can_run() else WALK_SPEED) * _speed_factor()
 	match state:
 		State.IDLE:
 			_stop(delta)
@@ -780,6 +1037,8 @@ func stagger(push: Vector3, hit: bool) -> void:
 	state = State.STAGGER
 	if not hit:
 		say("Aua! *weint*" if is_child() else RAMMED_LINES[randi() % RAMMED_LINES.size()])
+		if is_child():
+			weep(randf_range(6.0, 10.0))
 		return
 	_hurt_time = HURT_TIME
 	var brave := float(profile["brave"])
@@ -820,14 +1079,22 @@ func _drink_with_someone() -> void:
 
 ## Wie angreifbar der Gast gerade ist (0..1) – danach sucht sich der Lakengeist seine Opfer (4.18).
 func weakness() -> float:
-	return clampf(fear / 100.0 * WEAK_FEAR + drunk + (CHILD_WEAKNESS if is_child() else 0.0), 0.0, 1.0)
+	return clampf(fear / 100.0 * WEAK_FEAR + drunk + (CHILD_WEAKNESS if is_child() else 0.0)
+		+ (Wounds.CHOKE_WEAKNESS if wound == "choke" else 0.0), 0.0, 1.0)
 
 
 func _speed_factor() -> float:
 	var f := HURT_SLOW if _hurt_time > 0.0 else 1.0
 	if state == State.DECORATE and Game.social.decorating.strolls(self):
 		f *= Decorating.SOLO_STROLL   # schlendert mit Deko durchs Hotel (5.9)
+	if wound != "":
+		f *= float(Wounds.data(wound)["speed"])   # humpelt (6.17)
 	return f
+
+
+## Mit einer Axtwunde rennt er nicht (6.17).
+func can_run() -> bool:
+	return wound == "" or bool(Wounds.data(wound)["run"])
 
 
 ## Wütend oder schlimmer, der Spieler nah und sichtbar: hält auf ihn zu.
@@ -889,7 +1156,7 @@ func _go_to_bed() -> void:
 ## am Kissen (lokal −X des Betts; Pose in _pose). Ist das Bett belegt, schläft er im Stehen.
 func _fall_asleep() -> void:
 	_to_bed = false
-	_set_room_light(false)
+	_set_room_light(wound_bed > 0.0 and not Game.social.sleep_active)   # verletzt liegt er nicht im Dunkeln (6.17)
 	state = State.SLEEP
 	for spot in home["spots"]:
 		var bed := spot as HideSpot
@@ -913,7 +1180,7 @@ func is_asleep() -> bool:
 func wake_up() -> void:
 	_to_bed = false
 	sleepless = false
-	if state != State.SLEEP:
+	if state != State.SLEEP or wound_bed > 0.0:   # verletzt bleibt er liegen (6.17)
 		return
 	if hiding:
 		_leave_hide()
@@ -1275,6 +1542,10 @@ func shock(kind: String, pos: Vector3, who: String = "", entranced: bool = false
 	fear = minf(100.0, fear + (50.0 if kind == "corpse" else 30.0) * (1.2 - brave))
 	var cries: Array = SHOCK_CRIES[_shock_style]
 	say(cries[randi() % cries.size()])
+	if _shock_style == "cry":
+		weep(_timer + randf_range(20.0, 35.0))   # weint noch auf dem Weg heim
+	elif _shock_style == "cling":
+		weep(_timer + randf_range(8.0, 14.0))
 	if is_child():
 		Game.noise("scream", global_position, self)   # Kinder schreien – das lockt das Monster zu den Erwachsenen (6.13)
 		_tell_grown_ups(pos)
@@ -1718,7 +1989,7 @@ func _leave_traces(delta: float) -> void:
 		_mud -= 1
 		_foot_side = -_foot_side
 		traces.add_shoeprint(global_position + global_transform.basis.x * 0.1 * _foot_side, rotation.y)
-	if (_bleeding > 0.0 or _hurt_time > HURT_TIME - 20.0) and randf() < 0.5:
+	if (_bleeding > 0.0 or _hurt_time > HURT_TIME - 20.0) and randf() < (1.0 if _bleeding > 60.0 else 0.5):   # Axtwunde: dichte Spur
 		traces.add_guest_drop("drops", global_position + _jitter(0.15))
 	if held and held.lit and randf() < 0.15:
 		traces.add_guest_drop("wax", global_position + _jitter(0.2))

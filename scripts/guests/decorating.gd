@@ -140,6 +140,15 @@ var _big_player_day := 0      ## Spieltag, an dem der Spieler zuletzt groß ausg
 var _invited: Dictionary = {} ## Gruppe, zu der der Spieler zuletzt eingeladen wurde (Anruf → on_accepted)
 
 
+## Beim Laden eines Spielstands (SaveManager.apply): laufende Aktionen vergessen – sie werden nicht gespeichert, und die
+## erzeugten Gäste werden dabei neu gebaut.
+func reset() -> void:
+	actions.clear()
+	_member.clear()
+	_solo.clear()
+	_invited = {}
+
+
 func setup(builder: LevelBuilder) -> void:
 	_builder = builder
 	_cooldown = randf_range(FIRST_GAP.x, FIRST_GAP.y)
@@ -207,7 +216,7 @@ func start(who: Guest, lobby: bool = false) -> bool:
 func _available(g: Guest) -> bool:
 	return not g.dead and g.hiding == null and g.held == null and g.state in [Guest.State.IDLE, Guest.State.WALK] \
 		and g.fear < 50.0 and g.drunk < BarTap.DRUNK and not g.is_following() and not Game.social.has_fun(g) \
-		and not _member.has(g.id) and not _solo.has(g.id) and not Game.social.search.is_busy(g)
+		and not _member.has(g.id) and not _solo.has(g.id) and not Game.social.search.is_busy(g) and g.wound == ""
 
 
 ## Tag 1 → 0, Halloween → 1.
@@ -631,7 +640,7 @@ func _next_from_load(entry: Dictionary) -> bool:
 	var load: Array = entry["load"]
 	while not load.is_empty():
 		var next: Dictionary = load.pop_front()
-		var item: Item = next["item"]
+		var item := _alive(next["item"])
 		if not is_instance_valid(item):
 			next["slot"]["used"] = false
 			continue
@@ -645,6 +654,12 @@ func _next_from_load(entry: Dictionary) -> bool:
 		_walk(g, next["slot"]["stand"])
 		return true
 	return false
+
+
+## Gegenstand aus einem Eintrag – null, wenn es ihn nicht mehr gibt (nach dem Laden eines Spielstands werden alle neu
+## erzeugt, laufende Aktionen zeigen dann ins Leere).
+static func _alive(value: Variant) -> Item:
+	return value as Item if is_instance_valid(value) else null
 
 
 ## Am Platz angekommen: zur Wand drehen, Arme hoch – nach 1,1 s hängt es (_crew_step / _solo_step).
@@ -701,7 +716,7 @@ func _choose_kind(g: Guest, kinds: Array) -> int:
 ## Aufhängen bzw. hinstellen – wie der Spieler mit [G] (Spielkonzept 5.6).
 func _place(entry: Dictionary) -> void:
 	var g: Guest = entry["guest"]
-	var item: Item = entry["item"]
+	var item := _alive(entry["item"])
 	var slot: Dictionary = entry["slot"]
 	entry["item"] = null
 	if item == null or not is_instance_valid(item) or g.held != item:
@@ -744,15 +759,15 @@ func _drop_out(a: Action, entry: Dictionary) -> void:
 	var slot: Dictionary = entry["slot"]
 	if not slot.is_empty():
 		slot["used"] = false
-	var item: Item = entry["item"]
-	if item and is_instance_valid(item) and g.held == item:
+	var item := _alive(entry["item"])
+	if item and g.held == item:
 		g.held = null
 		g.stock[item.kind] = int(g.stock.get(item.kind, 0)) + 1
 		item.queue_free()
 	for rest: Dictionary in entry["load"]:
 		rest["slot"]["used"] = false
-		var extra: Item = rest["item"]
-		if is_instance_valid(extra):
+		var extra := _alive(rest["item"])
+		if extra:
 			g.stock[extra.kind] = int(g.stock.get(extra.kind, 0)) + 1
 			extra.queue_free()
 	entry["load"] = []
@@ -1059,8 +1074,8 @@ func _solo_step(entry: Dictionary, delta: float) -> void:
 	var phase := String(entry["phase"])
 	if g.dead or not g.state in [Guest.State.DECORATE, Guest.State.IDLE, Guest.State.TALKING]:
 		_solo.erase(g.id)   # erschreckt, versteckt, feiert, schläft … – Deko zurück in den Koffer
-		var item: Item = entry["item"]
-		if item and is_instance_valid(item) and g.held == item:
+		var item := _alive(entry["item"])
+		if item and g.held == item:
 			g.held = null
 			g.stock[item.kind] = int(g.stock.get(item.kind, 0)) + 1
 			item.queue_free()

@@ -462,6 +462,8 @@ func guest_name(id: String) -> String:
 ## (Weitererzählen unter Freunden, 6.16).
 func change_relation(guest: Guest, amount: float, cap: float = 100.0) -> void:
 	var before := guest.relation
+	if guest.wound != "":
+		amount *= Wounds.RELATION_FACTOR   # verletzt zählt alles doppelt (6.17)
 	if amount > 0.0:
 		amount *= 1.0 - clampf(before, 0.0, 100.0) / 110.0
 	var value := clampf(before + amount, -100.0, 100.0)
@@ -660,6 +662,10 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	for other in living_guests():
 		if other.is_child() and String(other.profile.get("parent", "")) == guest.id:
 			other.fear = 100.0
+			other.weep(60.0)
+	# Seine Freunde weinen um ihn (6.16, Tränen 7.6)
+	for pal in pals.pals_of(guest):
+		pal.weep(randf_range(20.0, 40.0))
 	# Ein, zwei Gäste schreiben einen Zettel und legen ihn vor ihre Tür
 	var writers := living_guests()
 	writers.shuffle()
@@ -811,7 +817,7 @@ func start_party(host: String) -> bool:
 			comes = guest.invited or tier(guest) >= Tier.FRIENDLY
 		else:
 			comes = guest.id == host or randf() < 0.75
-		if comes and guest.fear < 60.0 and guest.state != Guest.State.TALKING:
+		if comes and guest.fear < 60.0 and guest.state != Guest.State.TALKING and guest.wound_bed <= 0.0:
 			guest.invited = true
 			guest.join_party(free_party_spot(guest))
 			coming.append(guest.display_name)
@@ -1231,6 +1237,8 @@ func experience_line(guest: Guest, experience: Dictionary, again: bool = false) 
 	var keys := {"zone": zone, "who": experience["who"]}
 	if guest.is_child():
 		keys["eltern"] = "Mama" if GuestProfiles.get_profile(String(guest.profile.get("parent", ""))).get("sex", "m") == "f" else "Papa"
+	if kind.begins_with("survivor_"):   # ein Überlebender hat es ihm erzählt (6.17)
+		return String(Wounds.HEARD.get(kind.trim_prefix("survivor_"), "")).format(keys)
 	if again:
 		return String(EXPERIENCE_AGAIN[kind]).format(keys)
 	if kind == "child_saw":

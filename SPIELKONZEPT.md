@@ -66,6 +66,7 @@
   - [6.13 Kinder (entschieden und umgesetzt 2026-10-19)](#613-kinder-entschieden-und-umgesetzt-2026-10-19)
   - [6.14 Aufträge von Gästen (vorgemerkt 2026-10-20)](#614-aufträge-von-gästen-vorgemerkt-2026-10-20)
   - [6.16 Freundschaften unter Gästen (entschieden 2026-10-21)](#616-freundschaften-unter-gästen-entschieden-2026-10-21)
+  - [6.17 Überlebende & Verletzungen (entschieden 2026-10-21)](#617-überlebende--verletzungen-entschieden-2026-10-21)
 - [7. Spielwelt: Das Hotel](#7-spielwelt-das-hotel)
   - [7.1 Die Lobby – Gemeinschaftsraum](#71-die-lobby--gemeinschaftsraum)
   - [7.2 Maße & Architektur](#72-maße--architektur)
@@ -1720,6 +1721,35 @@ Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gute
 - Gast-Freundschaften stehen im Spielstand (Zähler je Paar); Familie und Nachbarn ergeben sich aus dem Hotel.
 - **Offen:** Streit unter Gästen (Freundschaften, die zerbrechen); Schlechtes über dich, das Freunde weitertragen.
 
+### 6.17 Überlebende & Verletzungen (entschieden 2026-10-21)
+Nicht jeder Angriff endet tödlich: **Etwa vier von zehn Gästen überleben** – ohne Lebenspunkte, es wird beim Angriff
+entschieden. Wer überlebt, ist verletzt, erzählt viel und lässt sich in dieser Zeit schneller gewinnen – oder verlieren.
+Das gilt nur für Gäste (der Spieler stirbt wie bisher, 8.7); Kinder sind ohnehin nie Opfer (6.13). Wer überlebt, zählt
+nicht als Opfer – das Monster bleibt hungrig (4.10).
+
+| Angreifer | Was er überlebt | Verletzung | Folgen |
+|-----------|-----------------|------------|--------|
+| **Monster** | reißt sich los, als es ihn wegschleppen will | **Kratzer und Schrammen** – nichts Großes | sichtbare Kratzer, kurz ein paar Blutstropfen, kein Bett; heilt in gut einem Spieltag |
+| **Kürbismann** (4.19) | der Axthieb trifft nicht voll | **Axtwunde** | Verband, humpelt stark, kann nicht rennen; **blutet sichtbar** – eine Spur auf dem Weg (wie die Blutstropfen, 4.13, aber deutlicher), erst nach einer Weile weniger |
+| **Lakengeist** (4.18) | reißt sich beim Würgen los | **Würgemale** | spricht **heiser**, **atmet schwer** (hörbar), panische Angst im Dunkeln, schwächer – der Geist kommt eher wieder |
+
+- **Heilung:** zwei bis drei Spieltage. Nach Axt und Würgen liegt er den **ersten Spieltag im eigenen Bett** (wach,
+  ansprechbar – er feiert, schmückt und sucht nicht), danach schont er sich noch ein, zwei Tage. Geschenke und Besuche
+  lassen ihn etwas schneller heilen. Verletzung und Heilung stehen im Spielstand.
+- **Zeuge:** Ein Überlebender erzählt **viel und zuverlässig** – anders als Gerüchte (4.13) stimmt alles: wo es
+  passiert ist, wie der Angreifer aussah, woher er kam und wohin er verschwand, wovor er zurückwich. Bei jedem Gespräch
+  ein neues Detail. Er erzählt es auch seinen Freunden und den Gästen ringsum – die Angst im Hotel steigt. Auch im
+  Freitext-Gespräch (6.15) weiß er es.
+- **Beziehung in dieser Zeit:** Alles zählt **doppelt** – Plaudern, Hilfe, aber auch Beleidigen und Klauen. **Geschenke
+  dreifach**, und **passende** noch mehr: eine Kerze für den, den der Geist gewürgt hat (er hat Angst im Dunkeln),
+  Süßes, Suppe oder gebratener Kürbis für den, der im Bett liegt, und immer der Lieblingskürbis. Ein Geschenk zählt in
+  dieser Zeit wie zwei für „guter Freund“ (6.3). Wer mit ihm befreundet ist und ihn kein einziges Mal besucht, kränkt
+  ihn ein bisschen.
+- **Geschenke trägt er (gilt für alle Gäste):** Was man einem Gast schenkt, verschwindet nicht mehr, sondern er hält
+  es in der Hand und bringt es in sein Zimmer; Essbares (Süßes, gebratener Kürbis) isst er nach einer Weile. Wer im
+  Bett liegt, behält das Geschenk eine Weile in den Händen. **Schachbrett und Würfelbecher** gehören dem Hotel und
+  lassen sich nicht verschenken (entschieden 2026-10-21).
+
 ## 7. Spielwelt: Das Hotel
 
 - **Bereiche (Vorschlag):** Lobby, Flure mehrerer Etagen, Gästezimmer, Speisesaal/Küche, Wäscherei, Keller, Treppenhaus, **Hotelgarten** (Kürbisbeete, Laubbäume, umzäunt), **Bibliothek / Salon** (Schachbrett, Kamin, Billard), **Hotelbar** (Würfel, Darts).
@@ -1992,6 +2022,10 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man sc
 - **Konfetti (entschieden 2026-10-21):** Zu Beginn einer Feier und dann alle paar Sekunden schießt buntes
   Konfetti über der Tanzfläche hoch und rieselt herab; zum Abschluss eines großen Schmückens (5.9) auch dort. Was
   landet, bleibt als bunte Schnipsel am Boden liegen und verblasst erst nach einigen Spieltagen.
+- **Tränen (entschieden 2026-10-21):** Wer weint, dem laufen kleine helle Tropfen aus beiden Augen – bei der
+  Schreckreaktion „Weinen“ (6.12) noch auf dem Weg ins Zimmer, bei Kindern, die sich vor Angst an Mama oder Papa
+  klammern, bei umgerannten Kindern, bei Freunden eines Verstorbenen (6.16) und bei Kindern, die Mama oder Papa
+  verloren haben.
 - **Lakengeist:** Vom Saum rieseln **weiße Flocken**, sparsam, sie blenden mit ihm ein und aus. Im Flur können
   sie ihn etwas früher verraten – gewollt, als leise Vorwarnung.
 - **Monster:** **keine ständige Aura** – es soll verborgen bleiben (4.13). Stattdessen eine **Aschespur**: Wo es
