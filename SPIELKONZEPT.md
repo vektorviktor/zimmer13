@@ -1945,7 +1945,12 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man sc
   sprechen von „Zimmer 13“.
 - **Lobby mit Galerie:** Über Rezeption und Eingang ist die Lobby doppelt hoch (Luftraum ca. 7,4 × 20 m).
   Das Obergeschoss umschließt ihn als Galerie mit Geländer, von der man in die Halle hinunterschaut. Die
-  Treppe links hinter der Rezeption führt hinauf; daneben zwei Aufzüge.
+  Treppe hinter der Rezeption führt hinauf; daneben zwei Aufzüge.
+- **Lobbytreppe (entschieden 2026-10-21):** eine richtige Hoteltreppe statt des Betonblocks – mittig im
+  Luftraum (Eingang → Rezeption → Treppe → Galerie vor den Aufzügen), 3,8 m breit, 24 flache Stufen (16,7 cm
+  hoch, 30 cm tief) auf 6,9 m Lauf, unten offen. Gebeizte Trittstufen, helle Setzstufen und Wangen, Läufer mit
+  Messingstangen; beidseitig ein Geländer mit gedrechselten Stäben, Handlauf und Pfosten mit Knauf. Die
+  Galeriegeländer bekommen denselben Stil. Im Code gebaut, nicht als Modell: Die Treppe folgt dem Plan.
 - **Treppenhäuser:** zwei am Nordende der Flügel. Sie verbinden Keller, Erdgeschoss und Obergeschoss. Das
   östliche ist der Kellerzugang der ersten Bauphase.
 - **Bis es Pläne für Obergeschoss und Keller gibt:** Galerie und Treppenhäuser enden oben an verschlossenen

@@ -418,6 +418,7 @@ Lärm-Dämpfung `1 | 2 | 64`.
 - Türen öffnen Gäste/Monster selbst, wenn sie nahe sind (`_open_doors()`).
 - Treppen: Rampe als Kollision (Ebene 1, fürs NavMesh, Meta `stair_ramp`) + Stufen als Optik mit eigenen
   Trittflächen (Ebene 12, nur für Spuren). Läufe müssen bündig an der Flurkante enden, sonst Stolperkante.
+  Die Lobbytreppe (`GrandStair`) ist unten offen – unter ihrem hohen Ende ist Platz zum Laufen.
 - **Spuren auf dem Boden** suchen die Fläche mit `Traces.surface_below` (Ebene 1 + Trittflächen, die Rampe wird
   übersprungen) – sonst schweben sie vorn an jeder Stufe. **Blut** (`TraceMark` „blood“) besteht aus `BLOOD_SPLATS`
   (18–28) Flecken aus je 2–4 Stücken, bis `BLOOD_RADIUS` (1,8 m) um das Opfer verteilt und jeder senkrecht auf die
@@ -579,6 +580,22 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   Leuchten, Schalter, Geländer), die Lobby hat ihre Decke bis auf den Luftraum (`open_above`); hier nur die
   Treppe (`stairs`, `up` = oberes Ende). Ohne `og1.json` die alte Galerie (`_gallery`): 0,5 m Boden auf 3,5–4 m,
   Geländer, Wände bis 7,5 m, zwei gesperrte Türen. Der Partyraum hat wie die Lobby einen Luftraum mit Galerie.
+- **Lobbytreppe** (`scripts/level/grand_stair.gd`, `GrandStair.build` aus `_lobby_flight`; Spielkonzept 7.5):
+  gerade Wangentreppe im Rechteck des Plans (Treppe mittig im Luftraum, 3,8 × 6,9 m), unten offen. Stufenzahl
+  aus der Höhe (`RISER` 17 cm → 24 Steigungen à 16,7 cm), Auftritt aus der Lauflänge (30 cm). Gebaut im Rahmen
+  der Treppe (lokal −Z bergauf, `up` dreht ihn): gebeizte Trittstufen mit Überstand, lackierte Setzstufen, zwei
+  Wangen, dazwischen eine schräge Untersicht; Läufer (TexGen „runner“) im Wasserfall-Stil – die Musterkachel
+  wiederholt sich entlang des Wegs, in jeder Falte eine Messingstange (`Mat.metal`). Geländer beidseitig:
+  Handlauf als gezogener Querschnitt (`RAIL_PROFILE`), gedrechselte Stäbe (zwei je Stufe, ein `MultiMesh` je
+  Reihe), Pfosten mit Fußblock, Kappe und Knauf; die oberen hängen mit einem Zapfen unter die Galeriekante. Ein
+  Mesh je Material (`GrandStair.Shape`: Quader, Drehkörper, gezogener Strang, Felder ≤ `Geo.MAX_FACE`).
+  Kollision wie bei `_flight`: Rampe durch die Mitten der Trittstufen (Ebene 1, `stair_ramp`, reicht unten
+  knapp unter die Untersicht), Trittflächen auf `LAYER_TREAD`, schräge Kästen für die Geländer, die Pfosten. Der Läufer hängt
+  an der Rampe – `Footsteps.floor_under` hört Teppich (Gehen leise wie auf den Fluren).
+  **Galeriegeländer** (`GrandStair.railing`, aus `_void_edges` für alle Lufträume): Bodenholm, dieselben Stäbe
+  (höchstens `BALUSTER_GAP`), Handlauf auf 1 m, Pfosten an den Enden und alle höchstens `BAY` (3 m); an einer
+  Ecke nur einer (Meta `gallery_posts` am Stockwerk). Neben einer Treppe endet es genau an ihrer Kante
+  (`_stair_edge`), dort steht der obere Treppenpfosten. Balkone und die alte Galerie behalten `_railing`.
 - **Wandstöße** (`_index_joints`): Senkrechte Wände enden laut Plan bündig an der Fläche einer waagerechten –
   ihr Mesh ragt bis zu deren Mitte hinein (`_joint_depth`). Läuft umgekehrt eine waagerechte Wand durch eine
   senkrechte hindurch bis an deren ferne Fläche (T-Stoß: Zimmertrennwand an der Flurwand, im EG rund 140), weicht ihr

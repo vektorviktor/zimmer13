@@ -1938,18 +1938,14 @@ func _lobby_stair() -> Dictionary:
 	return {}
 
 
-## Treppe von der Lobby hinauf zur Galerie, oberes Ende laut Plan. Galerie, Geländer, Wände und Türen baut das
-## Obergeschoss aus seinem Plan (_upper_floor).
+## Treppe von der Lobby hinauf zur Galerie, oberes Ende laut Plan (GrandStair: Wangentreppe mit Geländer, unten
+## offen). Galerie, Geländer, Wände und Türen baut das Obergeschoss aus seinem Plan (_upper_floor).
 func _lobby_flight() -> void:
 	var stair := _lobby_stair()
 	if stair.is_empty():
 		return
 	var rc: Array = stair["rect"]
-	var up := String(stair.get("up", "north"))
-	var x := (float(rc[0]) + float(rc[2])) / 2.0
-	var z_low := float(rc[3]) if up == "north" else float(rc[1])
-	var z_high := float(rc[1]) if up == "north" else float(rc[3])
-	_flight(x, z_low, z_high, 0.0, UP_Y, float(rc[2]) - float(rc[0]))
+	GrandStair.build(_parent, Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]), String(stair.get("up", "north")), UP_Y)
 
 
 ## Ränder der Lufträume dieses Stockwerks (Lobby, Partyraum): Geländer, wo Boden angrenzt – außer, wo eine Treppe
@@ -1987,8 +1983,26 @@ func _void_edges() -> void:
 				var p0 := a.lerp(b, float(i0) / n)
 				var p1 := a.lerp(b, float(i1) / n)
 				if kinds[i0] == "floor":
-					_railing(Vector3(p0.x, 0, p0.y), Vector3(p1.x, 0, p1.y))
+					# Neben einer Treppe endet das Geländer genau an ihrer Kante – dort steht ihr oberer Pfosten
+					var by_a := i0 > 0 and kinds[i0 - 1] == "stair"
+					var by_b := i1 < n and kinds[i1] == "stair"
+					if by_a:
+						p0 = _stair_edge(p0, b - a, stairs)
+					if by_b:
+						p1 = _stair_edge(p1, b - a, stairs)
+					GrandStair.railing(root, Vector3(p0.x, 0, p0.y), Vector3(p1.x, 0, p1.y), not by_a, not by_b)
 				i0 = i1
+
+
+## Punkt p auf einer Luftraumkante (Richtung along) an die nächste Seitenkante der Treppe daneben geschoben.
+func _stair_edge(p: Vector2, along: Vector2, stairs: Array[Rect2]) -> Vector2:
+	for grown in stairs:
+		if grown.grow(0.3).has_point(p):
+			var r := grown.grow(-0.05)
+			if absf(along.x) > absf(along.y):
+				return Vector2(r.position.x if absf(p.x - r.position.x) < absf(p.x - r.end.x) else r.end.x, p.y)
+			return Vector2(p.x, r.position.y if absf(p.y - r.position.y) < absf(p.y - r.end.y) else r.end.y)
+	return p
 
 
 ## Balkone und Terrassen über dem EG (Spielkonzept 7.7): Geländer auf den Kanten aus dem Plan.
