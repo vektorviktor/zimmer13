@@ -117,7 +117,7 @@ const PLANTER_H := 0.46
 const TREE_MODEL := "res://assets/models/tree.glb"
 ## Wanduhr über dem Haupteingang (WallClock): Durchmesser und Abstand der Rückseite zur Wandfläche; die Mitte hängt
 ## auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds und der Hallendecke
-const CLOCK_DIAMETER := 2.0
+const CLOCK_DIAMETER := 3.0
 const CLOCK_GAP := 0.02
 ## Kronenradius und Stammdurchmesser des Modells (ausgegeben von tools/build_tree.py), Höhe der Stammkollision
 const TREE_RADIUS := 5.0

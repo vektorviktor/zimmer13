@@ -3,9 +3,11 @@
 # sich drehen können. Im Rohmodell sind die Zeiger mit dem Rahmen in einem Netz – sie werden als lose Teile
 # gefunden: flach (dünner als HAND_DEPTH), über die Uhrmitte reichend und länger als HAND_MIN; der längere ist der
 # Minutenzeiger. Beide werden auf 12 Uhr gedreht (Ruhelage = 0:00), WallClock dreht sie um lokal Z.
+# Dazu kommt „dial“, eine runde Scheibe hinter allem (DIAL_INSET vor der Rückseite), die bis in die Mitte des äußeren
+# Rings reicht – ihr Rand verschwindet dahinter, innen füllt sie die offene Uhr (WallClock färbt sie weiß).
 #
 # Lage (Godot-Achsen): Zifferblatt nach +Z, 12 Uhr nach +Y, Ursprung in der Uhrmitte auf der Rückseite (liegt an der
-# Wand), Durchmesser DIAMETER Meter. Ein Material, keine Textur (das Spiel färbt sie schwarz).
+# Wand), Durchmesser DIAMETER Meter. Keine Texturen, Materialien „clock“ und „dial“ (das Spiel färbt sie).
 #
 # Aufruf (Blender 4.3):
 #   blender -b --python tools/build_clock.py -- assets/source/clock.glb assets/models/clock.glb
@@ -15,6 +17,8 @@ from mathutils import Matrix, Vector
 DIAMETER = 2.0      # Meter
 HAND_DEPTH = 1.0    # Originaleinheiten: Zeiger sind ~0,3 dick, Speichen und Nabe dicker
 HAND_MIN = 15.0     # Originaleinheiten: kürzer sind Ziffernteile und der Stift
+DIAL_INSET = 0.1    # Originaleinheiten vor der Rückseite (der äußere Ring ist 3 tief, Speichen beginnen 1,5 davor)
+DIAL_SEGMENTS = 64
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 SRC, DST = argv[0], argv[1]
@@ -86,6 +90,11 @@ for faces in islands:
 assert len(hands) == 2, "%d Zeiger gefunden statt 2" % len(hands)
 hands.sort(key=lambda h: h[0])
 
+# Äußerer Ring = das Teil, das am weitesten hinausreicht; die Scheibe endet in seiner Mitte
+ring = max(islands, key=lambda faces: extent(faces)[1].length)
+radii = [Vector((v.co.x - center.x, v.co.z - center.z)).length for f in ring for v in f.verts]
+dial_radius = (min(radii) + max(radii)) / 2.0
+
 # --- Zeiger als eigene Objekte, auf 12 Uhr gedreht ----------------------------------------------
 objects = []
 for name, (length, far, faces) in zip(("hour_hand", "minute_hand"), hands):
@@ -106,6 +115,19 @@ for name, (length, far, faces) in zip(("hour_hand", "minute_hand"), hands):
 	angle = math.atan2(far.x, far.y)
 	ob.data.transform(Matrix.Translation(center) @ Matrix.Rotation(-angle, 4, 'Y') @ Matrix.Translation(-center))
 	objects.append((ob, length, math.degrees(angle)))
+# --- Zifferblatt: Scheibe in der Ebene x/z, Vorderseite nach −Y ----------------------------------
+db = bmesh.new()
+bmesh.ops.create_circle(db, cap_ends=True, segments=DIAL_SEGMENTS, radius=dial_radius)
+bmesh.ops.transform(db, verts=db.verts, matrix=Matrix.Translation((center.x, hi.y - DIAL_INSET, center.z))
+	@ Matrix.Rotation(math.pi / 2.0, 4, 'X'))
+dm = bpy.data.meshes.new("dial")
+db.to_mesh(dm)
+db.free()
+dm.materials.append(bpy.data.materials.new("dial"))
+dial = bpy.data.objects.new("dial", dm)
+bpy.context.scene.collection.objects.link(dial)
+frame.data.materials[0].name = "clock"
+
 bmesh.ops.delete(bm, geom=[f for _, _, faces in hands for f in faces], context='FACES')
 bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
 bm.to_mesh(frame.data)
@@ -114,9 +136,12 @@ bm.free()
 # --- In Meter, Ursprung Mitte Rückseite (Blender +Y = hinten, glTF −Z) ---------------------------
 fix = Matrix.Scale(scale, 4) @ Matrix.Translation(-Vector((center.x, hi.y, center.z)))
 frame.data.transform(fix)
+dial.data.transform(fix)
 for ob, length, angle in objects:
 	ob.data.transform(fix)
 	print("%s: %.2f m lang, stand im Original bei %.0f° (von 12 Uhr im Uhrzeigersinn)" % (ob.name, length * scale, angle))
+print("Zifferblatt: %.2f m Durchmesser (Ring innen %.2f, außen %.2f m)" % (
+	2 * dial_radius * scale, 2 * min(radii) * scale, 2 * max(radii) * scale))
 print("Uhr: %.2f m Durchmesser, %.3f m tief, %d Dreiecke Rahmen" % (
 	max(size.x, size.z) * scale, size.y * scale, sum(len(p.vertices) - 2 for p in frame.data.polygons)))
 

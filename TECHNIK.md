@@ -30,9 +30,11 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   `LevelBuilder._clock`): offene Eisenuhr mit römischen Ziffern, `tools/build_clock.py` aus
   `assets/source/clock.glb`. Im Rohmodell stecken die Zeiger im selben Netz wie der Rahmen; das Skript findet sie
   als lose Teile (flach unter `HAND_DEPTH`, über die Mitte, länger als `HAND_MIN`; der längere = Minute), trennt
-  sie als `hour_hand`/`minute_hand` ab und dreht sie auf 12 Uhr. Rest = `frame`. Ursprung Mitte Rückseite,
-  Zifferblatt nach +Z, 2 m Durchmesser, ~16 800 Dreiecke, ein Platzhalter-Material (das Spiel setzt mattes Schwarz
-  `WallClock.IRON` – poliertes Eisen ging im Halbdunkel vor der roten Tapete unter). `set_time(stunden)` dreht die
+  sie als `hour_hand`/`minute_hand` ab und dreht sie auf 12 Uhr. Rest = `frame`. Dazu `dial`: Scheibe
+  `DIAL_INSET` vor der Rückseite bis in die Mitte des äußeren Rings (ihr Rand verschwindet dahinter, Speichen und
+  innerer Ring liegen davor). Ursprung Mitte Rückseite, Zifferblatt nach +Z, Modell 2 m Durchmesser (im Spiel
+  `CLOCK_DIAMETER` 3 m), ~16 900 Dreiecke, ohne Texturen: Das Spiel setzt mattes Schwarz `WallClock.IRON`
+  (poliertes Eisen ging im Halbdunkel vor der roten Tapete unter), das Blatt gebrochen weiß (`DIAL`). `set_time(stunden)` dreht die
   Zeiger um lokal −Z; bis es eine Uhrzeit gibt, zeigt sie `START_TIME` (1:55 wie im Rohmodell). Sie hängt mittig
   über dem Haupteingang, auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds (`_sign` gibt sie zurück,
   `_exit_sign_top`) und der Hallendecke, `CLOCK_GAP` vor der Wand, ohne Kollision. Die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`): Granitbecken mit Erde,

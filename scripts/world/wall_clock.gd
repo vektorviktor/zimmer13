@@ -1,7 +1,8 @@
 class_name WallClock
 extends Node3D
-## Offene Wanduhr aus schwarzem Eisen über dem Haupteingang (tools/build_clock.py): Rahmen „frame“, Zeiger „hour_hand“ und
-## „minute_hand“ drehen um lokal Z, Ruhelage 12 Uhr. Ursprung in der Uhrmitte auf der Rückseite, Zifferblatt nach +Z.
+## Wanduhr aus schwarzem Eisen über dem Haupteingang (tools/build_clock.py): Rahmen „frame“ auf weißem Zifferblatt
+## „dial“, Zeiger „hour_hand“ und „minute_hand“ drehen um lokal Z, Ruhelage 12 Uhr. Ursprung in der Uhrmitte auf der
+## Rückseite, Zifferblatt nach +Z.
 ## Eine echte Uhrzeit gibt es noch nicht (Spielkonzept, offener Punkt „Mitternacht“) – bis dahin zeigt sie
 ## START_TIME; set_time() stellt sie.
 
@@ -10,6 +11,8 @@ const MODEL := "res://assets/models/clock.glb"
 const MODEL_DIAMETER := 2.0
 ## Mattes Schwarz: hebt sich als Silhouette von der roten Tapete ab (poliertes Eisen ging oben im Halbdunkel unter)
 const IRON := Color(0.06, 0.055, 0.05)
+## Zifferblatt: gebrochenes Weiß (altes Emaille)
+const DIAL := Color(0.88, 0.86, 0.8)
 ## Stunden (0..24, Bruchteile = Minuten): wie die Zeiger im Rohmodell standen
 const START_TIME := 1.0 + 55.0 / 60.0
 
@@ -26,7 +29,7 @@ static func create(diameter: float) -> WallClock:
 	model.scale = Vector3.ONE * diameter / MODEL_DIAMETER
 	clock.add_child(model)
 	for mi: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
-		mi.material_override = Mat.psx(IRON)
+		mi.material_override = Mat.psx(DIAL if mi.name == "dial" else IRON)
 	clock._hour_hand = model.find_child("hour_hand", true, false)
 	clock._minute_hand = model.find_child("minute_hand", true, false)
 	clock.set_time(START_TIME)
