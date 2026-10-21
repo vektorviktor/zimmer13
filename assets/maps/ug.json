@@ -1869,8 +1869,71 @@
 		{
 			"kind": "halogen",
 			"pos": [
+				35.5,
+				-90.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				40.5,
+				-90.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
 				45.5,
 				-88.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				35.5,
+				-85.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				40.5,
+				-85.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				-8.5,
+				-83.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				0.0,
+				-83.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				8.5,
+				-83.5
 			],
 			"axis": "z",
 			"length": 0.8
@@ -1887,8 +1950,71 @@
 		{
 			"kind": "halogen",
 			"pos": [
+				35.5,
+				-80.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				40.5,
+				-80.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
 				45.5,
 				-78.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				-8.5,
+				-76.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				0.0,
+				-76.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				8.5,
+				-76.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				35.5,
+				-75.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				40.5,
+				-75.5
 			],
 			"axis": "z",
 			"length": 0.8
@@ -1914,8 +2040,44 @@
 		{
 			"kind": "halogen",
 			"pos": [
+				5.5,
+				-64.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				10.5,
+				-64.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
 				45.5,
 				-62.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				5.5,
+				-59.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				10.5,
+				-59.5
 			],
 			"axis": "z",
 			"length": 0.8
@@ -1932,8 +2094,44 @@
 		{
 			"kind": "halogen",
 			"pos": [
+				5.5,
+				-54.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				10.5,
+				-54.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
 				45.5,
 				-52.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				5.5,
+				-49.5
+			],
+			"axis": "z",
+			"length": 0.8
+		},
+		{
+			"kind": "halogen",
+			"pos": [
+				10.5,
+				-49.5
 			],
 			"axis": "z",
 			"length": 0.8
