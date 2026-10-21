@@ -33,6 +33,7 @@ static var _shader: Shader
 static var _shader_two_sided: Shader
 static var _wall_shader: Shader
 static var _particle_shader: Shader
+static var _leaves_shader: Shader
 static var _wall_albedo := {}
 static var _wall_surface: ImageTexture
 static var _cache := {}
@@ -140,6 +141,20 @@ static func _photo_image(path: String) -> Image:
 	if img.get_width() > PHOTO_SIZE_SMOOTH or img.get_height() > PHOTO_SIZE_SMOOTH:
 		img.resize(PHOTO_SIZE_SMOOTH, PHOTO_SIZE_SMOOTH, Image.INTERPOLATE_LANCZOS)
 	return img
+
+
+## Blattkarten (Hecken) mit shaders/psx_leaves.gdshader: Textur tex_id aus TexGen mit Alpha (ausgestanzt),
+## beidseitig, abgedunkelt mit den Eckfarben.
+static func leaves(tex_id: String) -> ShaderMaterial:
+	var key := "leaves|" + tex_id
+	if not _cache.has(key):
+		if _leaves_shader == null:
+			_leaves_shader = load("res://shaders/psx_leaves.gdshader")
+		var m := ShaderMaterial.new()
+		m.shader = _leaves_shader
+		m.set_shader_parameter("albedo_tex", TexGen.get_tex(tex_id))
+		_cache[key] = m
+	return _cache[key]
 
 
 ## Für flache Auflagen auf einer anderen Fläche (Teppich auf Fliesen, Kassetten auf dem Türblatt):

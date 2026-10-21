@@ -26,6 +26,8 @@ static func get_tex(id: String) -> Texture2D:
 			img = _grass()
 		"hedge":
 			img = _hedge()
+		"leaves":
+			img = _leaves()
 		_:
 			img = _concrete()
 	var tex := ImageTexture.create_from_image(img)
@@ -200,8 +202,38 @@ static func _hedge() -> Image:
 	for y in 32:
 		for x in 32:
 			var v := rng.randf()
-			var c := Color(0.08, 0.17, 0.07).lerp(Color(0.16, 0.28, 0.1), v)
-			if v > 0.92:
-				c = Color(0.45, 0.25, 0.08)
+			var c := Color(0.06, 0.13, 0.05).lerp(Color(0.16, 0.28, 0.1), v * v)
+			if v > 0.97:
+				c = Color(0.22, 0.17, 0.07)
 			img.set_pixel(x, y, c)
 	return img
+
+
+## Blattbüschel für die Blattkarten der Hecken (mit Alpha): unten dicht – dort steckt die Karte in der Hecke –,
+## nach oben einzelne Blätter; dazwischen ein paar herbstgelbe. Farben wie „hedge“.
+static func _leaves() -> Image:
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var rng := _rng(9)
+	for i in 70:
+		var rise := pow(rng.randf(), 1.8)
+		var c := Vector2(16.0 + rng.randf_range(-1.0, 1.0) * lerpf(13.0, 5.0, rise), 30.0 - rise * 26.0)
+		var col := Color(0.08, 0.17, 0.07).lerp(Color(0.18, 0.31, 0.11), rng.randf())
+		if rng.randf() < 0.06:
+			col = Color(0.48, 0.4, 0.1)
+		_leaf(img, c, rng.randf() * TAU, rng.randf_range(2.0, 3.0), 1.3, col)
+	return img
+
+
+## Ein Blatt als Ellipse (Halbachsen a entlang angle, b quer), zur Spitze hin heller
+static func _leaf(img: Image, c: Vector2, angle: float, a: float, b: float, col: Color) -> void:
+	var dir := Vector2.from_angle(angle)
+	for y in range(floori(c.y - a), ceili(c.y + a) + 1):
+		for x in range(floori(c.x - a), ceili(c.x + a) + 1):
+			if x < 0 or y < 0 or x >= img.get_width() or y >= img.get_height():
+				continue
+			var d := Vector2(x + 0.5, y + 0.5) - c
+			var u := d.dot(dir) / a
+			var v := d.dot(dir.orthogonal()) / b
+			if u * u + v * v <= 1.0:
+				img.set_pixel(x, y, Color(col.lightened(0.15 * u).darkened(0.1), 1.0))

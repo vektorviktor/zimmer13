@@ -9,7 +9,8 @@ const PATH := "user://settings.cfg"
 const RESOLUTIONS: Array[Vector2i] = [Vector2i(480, 270), Vector2i(640, 360), Vector2i(960, 540)]
 ## Shader mit Nearest-Filter – ohne PS1-Look werden ihre Texturen weich gefiltert
 const PSX_SHADERS := ["res://shaders/psx_surface.gdshader", "res://shaders/psx_guest.gdshader",
-	"res://shaders/psx_ghost.gdshader", "res://shaders/psx_particle.gdshader", "res://shaders/psx_photo.gdshader"]
+	"res://shaders/psx_ghost.gdshader", "res://shaders/psx_particle.gdshader", "res://shaders/psx_photo.gdshader",
+	"res://shaders/psx_leaves.gdshader"]
 
 # Bild
 var gamma := 1.0                 ## Helligkeit (0,6 … 1,8)

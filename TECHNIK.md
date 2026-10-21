@@ -578,6 +578,23 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
     hängt eine halbe Etage höher, über dem Wendepodest zum Stockwerk darüber (nicht im obersten Stockwerk).
   - **Kratzbaum** (`cat_tree`, `_cat_tree`): Kasten-Kollision bis `CAT_TREE_TOP`, oben ein Liegeplatz in
     `cat_perches` (`cat_room` = im Katzenraum).
+  - **Hecken** (`scripts/level/hedge.gd`, `Hedge.build` aus `_gardens`; Spielkonzept 7): Die Terrassenkanten
+    im EG (`terrace_edges`, im Plan 20-cm-Linien) werden Formschnitthecken, `WIDTH` 0,5 m dick und `HEIGHT` 1,6 m
+    hoch, mittig auf der Linie. `_lines` fasst Stücke auf derselben Mittellinie zusammen (der Plan teilt die
+    Front dort, wo ein Querstück anstößt). Abschlüsse (`_end`): stößt das Ende auf eine Hecke, die dort ebenfalls
+    endet → Gehrung; läuft die andere durch → offenes Ende in deren Mitte (verdeckt); frei → Stirnfläche, vor einer
+    Hauswand bis in deren Mittellinie (`WALL_SNAP`). Netz je Linie: Querschnitt (`_profile`, spiegelgleich, oben um
+    `TAPER` schmaler, Oberkante mit Radius `ROUND`) im Raster `STEP` entlang der Linie gezogen; die Ecken wandern
+    um `BUMP` nach einem Vektor-Rauschen ihrer **Weltlage** (oben stärker in der Höhe, `BUMP_TOP`) – gleiche Ecken
+    zweier Stücke wandern gleich, an Gehrungen bleibt keine Fuge. Normalen aus den Nachbarecken. Eckfarben dunkeln
+    zum Boden ab und sprenkeln (`_shade`; `psx_surface` mit `use_vertex_color`), Textur `TexGen` „hedge“.
+    **Blattkarten** (`_cards`): einzelne Vierecke mit `TexGen` „leaves“ (Büschel mit Alpha, ein paar
+    herbstgelbe Blätter), `CARDS_TOP` je Meter auf der Oberkante, `CARDS_SIDE` an den Seiten, zur Hälfte aus der
+    Fläche ragend, nach außen gekippt – sie brechen den geraden Umriss auf. `Mat.leaves` mit
+    `shaders/psx_leaves.gdshader`: ausgestanzt (`ALPHA_SCISSOR_THRESHOLD`), beidseitig; Normale = die der Fläche
+    darunter, auf der Rückseite wieder umgedreht, so werden die Blätter wie die Hecke beleuchtet. Eigener Zufall
+    je Linie (Spielstände unberührt). Ein Mesh für Körper und eins für Blätter je Linienzug des Plans, Kollision
+    als Quader je Linie (auch fürs NavMesh); ~670 m Hecke kosten ~0,25 s Bauzeit.
 - **Lobby und Galerie:** Mit `og1.json` baut das Obergeschoss die Galerie aus seinem Plan (Boden, Wände, Türen,
   Leuchten, Schalter, Geländer), die Lobby hat ihre Decke bis auf den Luftraum (`open_above`); hier nur die
   Treppe (`stairs`, `up` = oberes Ende). Ohne `og1.json` die alte Galerie (`_gallery`): 0,5 m Boden auf 3,5–4 m,

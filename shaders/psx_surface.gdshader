@@ -14,6 +14,8 @@ uniform float snap_resolution = 140.0;
 // hin. Ändert nur die Tiefe, nicht die Bildposition – so kann das Snapping die Unterlage nicht
 // durch die Auflage drücken.
 uniform float layer_pull = 0.0;
+// Helligkeit aus den Eckfarben des Meshs (z. B. Hecken: unten im Schatten dunkler)
+uniform bool use_vertex_color = false;
 // Einstellungen → PS1-Look → Vertex-Wackeln (1 = an, 0 = aus)
 global uniform float psx_snap;
 
@@ -49,6 +51,9 @@ void fragment() {
 	}
 	vec4 tex = texture(albedo_tex, uv);
 	ALBEDO = albedo.rgb * tex.rgb;
+	if (use_vertex_color) {
+		ALBEDO *= COLOR.rgb;
+	}
 	ROUGHNESS = 1.0;
 	SPECULAR = 0.0;
 	EMISSION = emission * emission_energy;
