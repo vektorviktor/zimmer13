@@ -341,18 +341,24 @@ static func _collision(holder: Node3D, width: float, run: float, rise: float, n:
 	holder.add_child(treads)
 	for k in range(1, n):
 		Geo.add_box_shape(treads, Vector3(2.0 * x_side, 0.05, g), Vector3(0, k * h - 0.025, -(k - 0.5) * g))
-	# Geländer: schräger Kasten von der Unterkante der Wange bis 1 m über die Stufen
-	var pitch := atan(slope)
-	var rail_n := Vector3(0, cos(pitch), sin(pitch))
-	var thick := (STRINGER_DOWN + 1.0) * cos(pitch)
+	# Geländer: schräges Prisma von der Unterkante der Wange bis 1 m über die Stufen, vorn und oben senkrecht
+	# abgeschnitten – ein gekippter Kasten ragte mit seiner Stirn auf Hüfthöhe 30 cm vor die Treppe, dort blieben
+	# Gäste auf dem Weg ums Eck hängen
 	for s: float in [-1.0, 1.0]:
 		var body := StaticBody3D.new()
 		body.collision_layer = 1
 		body.collision_mask = 0
-		body.transform = Transform3D(Basis(Vector3.RIGHT, rail_n, Vector3.RIGHT.cross(rail_n)),
-			Vector3(s * x_side, float(nose.call(run / 2.0)) + (1.0 - STRINGER_DOWN) / 2.0, -run / 2.0))
 		holder.add_child(body)
-		Geo.add_box_shape(body, Vector3(0.1, thick, run / cos(pitch)), Vector3.ZERO)
+		var points := PackedVector3Array()
+		for u: float in [0.0, run]:
+			for y: float in [float(nose.call(u)) - STRINGER_DOWN, float(nose.call(u)) + 1.0]:
+				for dx: float in [-0.05, 0.05]:
+					points.append(Vector3(s * x_side + dx, y, -u))
+		var prism := ConvexPolygonShape3D.new()
+		prism.points = points
+		var col := CollisionShape3D.new()
+		col.shape = prism
+		body.add_child(col)
 		Geo.collider(holder, Vector3(NEWEL_BASE.x, NEWEL_TOP, NEWEL_BASE.z), Vector3(s * x_side, NEWEL_TOP / 2.0, 0))
 		Geo.collider(holder, Vector3(NEWEL, NEWEL_TOP, NEWEL), Vector3(s * x_side, rise + NEWEL_TOP / 2.0, -run))
 	return ramp

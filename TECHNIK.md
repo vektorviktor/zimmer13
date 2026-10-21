@@ -592,7 +592,8 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   Reihe), Pfosten mit Fußblock, Kappe und Knauf; die oberen hängen mit einem Zapfen unter die Galeriekante. Ein
   Mesh je Material (`GrandStair.Shape`: Quader, Drehkörper, gezogener Strang, Felder ≤ `Geo.MAX_FACE`).
   Kollision wie bei `_flight`: Rampe durch die Mitten der Trittstufen (Ebene 1, `stair_ramp`, reicht unten
-  knapp unter die Untersicht), Trittflächen auf `LAYER_TREAD`, schräge Kästen für die Geländer, die Pfosten. Der Läufer hängt
+  knapp unter die Untersicht), Trittflächen auf `LAYER_TREAD`, für die Geländer schräge Prismen mit senkrechten Enden (ein gekippter
+  Kasten ragte mit seiner Stirn auf Hüfthöhe vor die Treppe, Gäste blieben am Eck hängen), die Pfosten. Der Läufer hängt
   an der Rampe – `Footsteps.floor_under` hört Teppich (Gehen leise wie auf den Fluren).
   **Galeriegeländer** (`GrandStair.railing`, aus `_void_edges` für alle Lufträume): Bodenholm, dieselben Stäbe
   (höchstens `BALUSTER_GAP`), Handlauf auf 1 m, Pfosten an den Enden und alle höchstens `BAY` (3 m); an einer
