@@ -431,9 +431,9 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   → je oberes Stockwerk `_upper_floor` → Untergeschoss `_lower_floor` → Zonen, Wegpunkte.
 - **Stockwerke (Spielkonzept 7.7):** `UPPER_MAP_PATHS` (fehlt eine Datei, endet das Haus darunter). Jedes
   obere Stockwerk ist ein zweiter Durchgang von `_build_plan_floor()` unter dem Knoten „Obergeschoss“
-  (`root` vorübergehend dorthin, y = `UP_Y` × Stockwerk); danach Geländer und Holzleisten an den Lufträumen
-  (`_void_edges`: Geländer, wo Boden angrenzt, außer wo die Lobbytreppe ankommt; Leiste auf 3,5 m, wo eine Wand
-  angrenzt), Balkon- und Terrassengeländer (`_balconies`), gesperrte Treppenhaustüren. Der Zustand je Stockwerk
+  (`root` vorübergehend dorthin, y = `UP_Y` × Stockwerk); danach Geländer an den Lufträumen
+  (`_void_edges`: wo Boden angrenzt, außer wo die Lobbytreppe ankommt; wo eine Wand angrenzt, nichts – siehe
+  „Wände“, Hallen), Balkon- und Terrassengeländer (`_balconies`), gesperrte Treppenhaustüren. Der Zustand je Stockwerk
   (Plan, Raster, Wandstöße, Möbel, Türen, `_level`, `_base_y`) liegt in `_floors` (`_state`/`_use`); Abfragen
   anderer Systeme wählen ihn über die Höhe (`_level_of`, ±1,5 m um den Boden, `_on_floor`). Raum-IDs ohne
   Zimmernummer tragen oben den Vorsatz `og1_` (`_prefix`: `og1_flure`, `og1_cat_room_1`, Flurabschnitte
@@ -467,6 +467,13 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   30 cm neben der Mitte; kurze Läufe an Querwänden geglättet). Tapete je Seite über `Mat.wallpaper_split`
   (Zimmer beige, Lobby rot, sonst teal); Seiten ohne Tapete (draußen = Fassade, Toilette/Pool = Fliesen,
   Lager = Beton) bekommen eine 2-cm-Haut knapp vor der Wand. Glaswände (Pool) als Scheibe auf Ebene 7.
+  **Hallen über zwei Stockwerke** (Lufträume, z. B. über dem Haupteingang): Die Seiten werden mit
+  `_wall_side_kind` abgetastet – im EG unter `open_above`, darüber in `voids` heißt die Seite `hall:<Art im EG>`
+  (`_halls`, beim EG-Plan gemerkt; oben liegt dort keine Fläche, sonst wäre die Seite „draußen“ mit Fassade).
+  Ihre Tapete ist die des EG mit `wall_top` = `storey` = `HALL_WALL_TOP` (100 m): keine Leiste, die Höhe zählt
+  durchgehend ab dem EG-Boden, die Rauten laufen nahtlos von der EG- in die OG-Wand bis unter die Decke, unten
+  bleibt die Vertäfelung. `_subtract` verwirft Reste unter 1 mm (sonst stak dort eine Deckenplatte ohne Tiefe in
+  der Wandfläche).
 - **Böden** (`_floor`): ein `Geo.solid` je Planrechteck, Textur in Weltkoordinaten (Muster läuft über alle
   Stöße durch). Flure tragen Teppich, die Lobby Fliesen; ein Flurrechteck, das in die Lobby ragt (der Südflur
   ist ein Stück quer hindurch), wird an deren Rand geteilt.

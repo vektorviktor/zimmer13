@@ -76,6 +76,9 @@ const H := 3.5
 const T := 0.2
 ## Höhe des Obergeschosses (Oberkante Boden)
 const UP_Y := 4.0
+## Wandhöhe der Tapete in Hallen über zwei Stockwerke (Lufträume): so hoch, dass keine Leiste und kein neues
+## Stockwerk kommt
+const HALL_WALL_TOP := 100.0
 ## Gedimmtes Licht (Spielkonzept 7.3): keine Deckenlampen, Wandleuchten schwächer als Kerzen
 const WALL_LAMP_ENERGY := 0.5
 ## Abstand der Tanzplätze im Sechseckraster – rund 1,7 m² Freiraum je Tänzer (Spielkonzept 7.1)
@@ -280,7 +283,10 @@ var _grid_origin := Vector2.ZERO
 var _grid_size := Vector2i.ZERO
 var _places: Array[Dictionary] = []   ## {id, kind, region}
 var _lobby := Rect2()                 ## Innenmaß der Lobby (x, z)
-var _named := {}                      ## Flächen-ID → Rect2 (Umriss)
+## Hallen über zwei Stockwerke (Lufträume des EG): {rect, kind (Art im EG)} – für ihre Wände (_wall_side_kind)
+var _halls: Array[Dictionary] = []
+var _hall_wallpapers := {}            ## Tapete im EG → dieselbe ohne Leiste, Höhe ab dem EG-Boden
+var _named := {}                    ## Flächen-ID → Rect2 (Umriss)
 ## Wandstücke des Plans, an die Wandsachen gehängt werden: {horizontal, at (Mittellinie), from, to, half (halbe Dicke)}
 var _wall_index: Array[Dictionary] = []
 ## Wandstöße für _joint_depth/_joints_on (siehe _index_joints)
@@ -448,6 +454,11 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 		_lobby = lobby   # die Galerie über der Lobby gehört zur Halle (rote Tapete, Lobby-Licht)
 	elif level < 0:
 		_lobby = Rect2()
+	else:
+		_halls = []
+		for rc in _map["open_above"]:
+			var r := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+			_halls.append({"rect": r, "kind": _kind_at(r.get_center())})
 
 
 ## Zustand des geladenen Stockwerks (für _use).
@@ -700,8 +711,8 @@ func _build_wall(w: Dictionary) -> void:
 	var plus: Array[String] = []
 	for i in steps:
 		var p := a + along * (i + 0.5) * (s1 - s0) / steps
-		minus.append(_kind_at(p - side * 0.3))
-		plus.append(_kind_at(p + side * 0.3))
+		minus.append(_wall_side_kind(p - side * 0.3))
+		plus.append(_wall_side_kind(p + side * 0.3))
 	_smooth(minus)
 	_smooth(plus)
 	# Wechselt die Seite an einer anstoßenden Wand, liegt der Schnitt in deren Mitte: Ihr Körper deckt dann die
@@ -897,9 +908,31 @@ func _opening_vec(o: Dictionary, s0: float) -> Vector4:
 	return Vector4(center, width, WIDE_DOOR_H, 0.0)
 
 
+## Art einer Wandseite: wie _kind_at, an einem Luftraum aber „hall:<Art im EG>“ – im EG darunter wie darüber
+## (dort liegt im Plan keine Fläche, die Seite wäre sonst draußen und trüge Fassade).
+func _wall_side_kind(p: Vector2) -> String:
+	if _level >= 0:
+		for hall in _halls:
+			if (hall["rect"] as Rect2).has_point(p):
+				return "hall:" + String(hall["kind"])
+	return _kind_at(p)
+
+
 func _wall_material(kind: String) -> Material:
 	if _level < 0:
 		return _cellar_wall   # im Untergeschoss überall Beton
+	if kind.begins_with("hall:"):
+		# Halle über zwei Stockwerke: Rauten ohne Leiste bis unter die Decke, die Höhe zählt durchgehend ab dem
+		# EG-Boden (nahtlos zwischen EG- und OG-Wand); unten die Vertäfelung wie sonst
+		var below := _wall_material(kind.trim_prefix("hall:")) as ShaderMaterial
+		if below == null:
+			return null
+		if not _hall_wallpapers.has(below):
+			var m := below.duplicate() as ShaderMaterial
+			m.set_shader_parameter("wall_top", HALL_WALL_TOP)
+			m.set_shader_parameter("storey", HALL_WALL_TOP)
+			_hall_wallpapers[below] = m
+		return _hall_wallpapers[below]
 	match kind:
 		"room", "sealed", "cat_room", "library":
 			return _room_wallpaper
@@ -1220,13 +1253,15 @@ func _subtract(r: Rect2, holes: Array[Rect2]) -> Array[Rect2]:
 			if i.size.x <= 0.001 or i.size.y <= 0.001:
 				next.append(p)
 				continue
-			if i.position.y > p.position.y:
+			# Reste unter 1 mm (Rundung der Plankoordinaten) fallen weg – sonst steckt z. B. eine Deckenplatte ohne
+			# Tiefe in der Wandfläche und flimmert durch die Tapete
+			if i.position.y > p.position.y + 0.001:
 				next.append(Rect2(p.position.x, p.position.y, p.size.x, i.position.y - p.position.y))
-			if i.end.y < p.end.y:
+			if i.end.y < p.end.y - 0.001:
 				next.append(Rect2(p.position.x, i.end.y, p.size.x, p.end.y - i.end.y))
-			if i.position.x > p.position.x:
+			if i.position.x > p.position.x + 0.001:
 				next.append(Rect2(p.position.x, i.position.y, i.position.x - p.position.x, i.size.y))
-			if i.end.x < p.end.x:
+			if i.end.x < p.end.x - 0.001:
 				next.append(Rect2(i.end.x, i.position.y, p.end.x - i.end.x, i.size.y))
 		pieces = next
 	return pieces
@@ -1889,14 +1924,13 @@ func _lobby_flight() -> void:
 
 
 ## Ränder der Lufträume dieses Stockwerks (Lobby, Partyraum): Geländer, wo Boden angrenzt – außer, wo eine Treppe
-## von unten ankommt –, und eine Holzleiste über der Fuge zur Wand darunter, wo eine Wand angrenzt.
+## von unten ankommt. Wo eine Wand angrenzt, nichts: Ihre Tapete läuft ohne Fuge von unten durch (_wall_side_kind).
 func _void_edges() -> void:
 	var stairs: Array[Rect2] = []
 	for st in (_floors[0]["map"] as Dictionary)["stairs"]:
 		if st["kind"] == "stair":
 			var rc: Array = st["rect"]
 			stairs.append(Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]).grow(0.05))
-	var trim := OpeningFrame.trim_material()
 	for rc in _map["voids"]:
 		var v := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
 		var edges := [[v.position, Vector2(v.end.x, v.position.y), Vector2(0, -1)], [Vector2(v.position.x, v.end.y), v.end, Vector2(0, 1)],
@@ -1925,10 +1959,6 @@ func _void_edges() -> void:
 				var p1 := a.lerp(b, float(i1) / n)
 				if kinds[i0] == "floor":
 					_railing(Vector3(p0.x, 0, p0.y), Vector3(p1.x, 0, p1.y))
-				elif kinds[i0] == "wall":
-					var c := (p0 + p1) / 2.0 - out * 0.015
-					var size := Vector3(p0.distance_to(p1), 0.14, 0.03) if out.x == 0.0 else Vector3(0.03, 0.14, p0.distance_to(p1))
-					Geo.mesh(root, Geo.box(size), trim, Vector3(c.x, H - UP_Y, c.y))
 				i0 = i1
 
 
