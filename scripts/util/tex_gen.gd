@@ -12,6 +12,8 @@ static func get_tex(id: String) -> Texture2D:
 	match id:
 		"carpet":
 			img = _carpet()
+		"runner":
+			img = _runner()
 		"wood":
 			img = _wood()
 		"ceiling":
@@ -50,6 +52,53 @@ static func _carpet() -> Image:
 			elif dx + dy < 2:
 				c = Color(0.18, 0.04, 0.05)
 			img.set_pixel(x, y, c.darkened(rng.randf() * 0.2))
+	return img
+
+
+## Läufer (Ebene „Teppiche“ im Plan, Spielkonzept 7.5) für `Geo.runner_mesh`: RUNNER_WIDTH px quer über die
+## ganze Breite, darunter der Abschluss (Zeile 0 = Ende des Läufers), dann die Musterkachel mit Medaillon, die
+## sich wiederholt. Bordüre an den Seiten und am Abschluss; ein Punkt auf der Naht verbindet die Kacheln.
+const RUNNER_WIDTH := 32
+const RUNNER_CAP_ROWS := 16
+const RUNNER_TILE_ROWS := 32
+
+static func _runner() -> Image:
+	var img := Image.create(RUNNER_WIDTH, RUNNER_CAP_ROWS + RUNNER_TILE_ROWS, false, Image.FORMAT_RGB8)
+	var rng := _rng(9)
+	var edge := Color(0.1, 0.04, 0.03)
+	var gold := Color(0.58, 0.42, 0.14)
+	var line := Color(0.42, 0.07, 0.08)
+	var field := Color(0.1, 0.11, 0.2)
+	for y in img.get_height():
+		var cap := y < RUNNER_CAP_ROWS
+		var ty := y - RUNNER_CAP_ROWS
+		for x in RUNNER_WIDTH:
+			var d := mini(x, RUNNER_WIDTH - 1 - x)
+			if cap:
+				d = mini(d, y)
+			var dx := absf(x - (RUNNER_WIDTH - 1) / 2.0)
+			var c := field
+			if d < 2:
+				c = edge
+			elif d < 5:
+				c = gold
+			elif d == 5:
+				c = line
+			elif cap:
+				if y >= RUNNER_CAP_ROWS - 2 and dx < 1.5:
+					c = gold
+			else:
+				var dy := absf(ty - (RUNNER_TILE_ROWS - 1) / 2.0)
+				var m := dx + dy
+				if dy >= RUNNER_TILE_ROWS / 2.0 - 2.0 and dx < 1.5:
+					c = gold   # Punkt auf der Naht
+				elif m >= 8.0 and m < 10.0:
+					c = gold
+				elif m >= 5.0 and m < 6.0:
+					c = line
+				elif m < 3.0:
+					c = line.lightened(0.15)
+			img.set_pixel(x, y, c.darkened(rng.randf() * 0.18))
 	return img
 
 

@@ -1,7 +1,10 @@
 .godot/
 *.import
-# … außer bei den Gastmodellen: Textur unkomprimiert eingebettet (tools/build_guest.py, sonst helle Streifen)
+# … außer bei den Gastmodellen und dem Kürbismann: Textur unkomprimiert eingebettet (tools/meshy_tex.py, sonst helle Streifen)
 !assets/models/guest_*.glb.import
+!assets/models/pumpkin_man.glb.import
+# … und bei der Discokugel (Normal Map: Kompression verbiegt die Spiegelplättchen)
+!assets/models/disco_ball.glb.import
 
 # Von Godot aus GLB-Dateien entpackte Texturen (entstehen beim Import neu)
 assets/models/*.jpg

@@ -1,8 +1,39 @@
 class_name SynthAudio
 extends AudioStreamPlayer
 ## Prozedurale Platzhalter-Akustik, bis echte Sounds existieren:
-## Brummen, Rauschen, Herzschlag, Keuchen und kurze Einzeleffekte.
+## Brummen, Rauschen, Herzschlag, Keuchen und kurze Einzeleffekte. Arten mit echtem Klang stehen in
+## `SAMPLES` und laufen über eigene Player statt über den Generator.
 
+## Art → Klangdatei (mono, Spitze −6 dB) und Pegel in dB, abgespielt statt der synthetischen Fassung.
+## "solo": eigene Stimme, die kein anderer Klang abbricht (lange Klänge).
+const SAMPLES := {
+	"door": {"file": "res://assets/sound/door_open.wav", "db": 0.0},   ## Hoteltüren (`Door.set_open`)
+	"bell": {"file": "res://assets/sound/church_bell.wav", "db": 0.0, "solo": true},   ## Totenglocke (`Social.on_guest_died`)
+	"shriek": {"file": "res://assets/sound/screams/monster.wav", "db": 0.0, "solo": true},   ## Spielertod (Jumpscare)
+	"cry": {"file": "res://assets/sound/screams/cat.wav", "db": -2.0},   ## Hotelkatze auf der Flucht (`cat_cry`)
+}
+## Menschliche Laute: Klang → Aufnahmen je Stimme ("m", "f", "child", `Guest.voice()`), Pegel in dB, Tonhöhe
+## (`pitch`, × die eigene des Gastes) und Abbruch (`cut`: spielt nur einen zufälligen Anteil dazwischen, sonst
+## `length` des Gastes). Jeder bekommt immer dieselbe Aufnahme seiner Stimme und klingt aus seiner Richtung
+## (3D, gedämpft wie Lärm). Ohne passende Stimme spielt `synth` ("" = nichts).
+const SCREAMS := {
+	"m": ["male_1", "male_2", "male_3", "male_4", "male_5", "male_6"],
+	"f": ["female_1", "female_2", "female_3"],
+	"child": ["child_1", "child_2", "child_3"],
+}
+const VOICES := {
+	"scream": {"files": SCREAMS, "db": 0.0, "synth": "scream"},   ## Schreck – klingt aus
+	"death_scream": {"files": SCREAMS, "db": 2.0, "pitch": 0.94, "cut": Vector2(0.45, 0.75), "synth": "scream"},   ## jäh abgerissen
+	"grunt": {"files": {"m": ["grunt_male_1", "grunt_male_2"]}, "db": -3.0, "cut": Vector2.ONE, "synth": ""},   ## letzter Laut (Axt, Würgen)
+}
+const VOICE_DIR := "res://assets/sound/screams/%s.wav"
+const VOICE_PLAYERS := 4          ## so viele Stimmen gleichzeitig (wer schon schreit, nimmt seine eigene)
+const VOICE_JITTER := 0.05        ## jedes Mal etwas anders hoch und lang
+const VOICE_FADE := 0.04          ## so schnell bricht ein Schrei ab (s)
+const SAMPLE_VOICES := 4          ## so viele Klänge gleichzeitig
+const SAMPLE_PITCH_JITTER := 0.05 ## jedes Mal etwas anders
+const BREATH := "res://assets/sound/breath.wav"   ## ein Atemzug, ein und aus (Keuchen, `pant`)
+const BREATH_DB := -4.0
 const RATE := 22050.0
 const MUSIC_BEAT := 60.0 / 132.0
 ## Walzer in a-Moll: Am – F – G – E
@@ -10,7 +41,7 @@ const MUSIC_CHORDS := [[220.0, 261.6, 329.6], [174.6, 220.0, 261.6], [196.0, 246
 const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
-	"rustle": 0.3, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "cry": 1.5,
+	"rustle": 0.3, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0,
 }
 
 var hum := 0.0
@@ -21,20 +52,43 @@ var buzz := 0.0    ## Sirren und Knistern im Stromnetz (Flackerwelle, Spielkonze
 var music := 0.0   ## Lautstärke der Feiermusik (Plattenspieler)
 var pant := 0.0    ## Keuchen des Spielers nach dem Rennen (Ausdauer, Spielkonzept 3.1)
 var pant_rate := 0.4   ## Atemzüge pro Sekunde
+var rain := 0.0    ## Regenrauschen (Wetter, Spielkonzept 7.8)
+var rain_muffle := 0.0   ## 1 = drinnen: dumpfer
 
 var _playback: AudioStreamGeneratorPlayback
 var _time := 0.0
 var _lp_fast := 0.0
 var _lp_slow := 0.0
-var _pant_phase := 0.0
+var _pant_phase := 1.0   ## 1 = der nächste Atemzug beginnt sofort
 var _pant_depth := 1.0   ## jeder Atemzug etwas anders tief
+var _breath: AudioStreamPlayer
 var _shots: Array[Dictionary] = []
 var _music_volume := 1.0
 var _effects_volume := 1.0
 var _damp := 1.0   ## im Pausenmenü gedämpft
+var _voices: Array[AudioStreamPlayer] = []
+var _next_voice := 0
+var _sample_streams := {}
+var _solo_voices := {}   ## Klangdatei → eigene Stimme ("solo" in `SAMPLES`)
+var _speakers: Array[AudioStreamPlayer3D] = []   ## menschliche Laute (`VOICES`), im Raum
+var _next_speaker := 0
 
 
 func _ready() -> void:
+	for i in SAMPLE_VOICES:
+		var voice := AudioStreamPlayer.new()
+		add_child(voice)
+		_voices.append(voice)
+	for i in VOICE_PLAYERS:
+		# Ohne Abschwächung über die Entfernung – die Lautstärke rechnet Game.sound_at (Wände, Hörweite),
+		# der Lautsprecher gibt nur die Richtung
+		var speaker := AudioStreamPlayer3D.new()
+		speaker.attenuation_model = AudioStreamPlayer3D.ATTENUATION_DISABLED
+		add_child(speaker)
+		_speakers.append(speaker)
+	_breath = AudioStreamPlayer.new()
+	_breath.stream = load(BREATH)
+	add_child(_breath)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var generator := AudioStreamGenerator.new()
 	generator.mix_rate = RATE
@@ -44,18 +98,111 @@ func _ready() -> void:
 	_playback = get_stream_playback() as AudioStreamGeneratorPlayback
 
 
-func play_shot(kind: String, volume: float = 1.0) -> void:
+## Spielt einen Klang; `pos`/`who` braucht nur eine Stimme (`VOICES`). false = nichts zu hören (keine passende
+## Stimme und kein Ersatz).
+func play_shot(kind: String, volume: float = 1.0, pos := Vector3.INF, who: Node = null) -> bool:
+	if VOICES.has(kind):
+		if who and who.has_method("voice") and pos.is_finite() and _play_voice(VOICES[kind], volume, pos, who):
+			return true
+		kind = VOICES[kind]["synth"]
+		if kind == "":
+			return false
+	if SAMPLES.has(kind):
+		_play_sample(SAMPLES[kind], volume)
+		return true
 	if _shots.size() > 16:
-		return
+		return true
 	_shots.append({"kind": kind, "t": 0.0, "dur": float(DURATIONS.get(kind, 0.5)), "vol": volume, "phase": 0.0})
+	return true
 
 
-func _process(_delta: float) -> void:
+## Was `who` gerade ruft, bricht ab (schnell ausgeblendet) – etwa ein Schrei, wenn die Axt trifft.
+func cut_voice(who: Node) -> void:
+	for speaker in _speakers:
+		if speaker.playing and speaker.get_meta("who", 0) == who.get_instance_id():
+			_fade_out(speaker)
+
+
+## Menschlicher Laut aus `VOICES` am Ort `pos` in der Stimme von `who` (`Guest.voice()`). Wer schon ruft, nimmt
+## seinen eigenen Lautsprecher (der alte Laut bricht ab), sonst reihum. false = keine Aufnahme für diese Stimme.
+func _play_voice(entry: Dictionary, volume: float, pos: Vector3, who: Node) -> bool:
+	var v: Dictionary = who.voice()
+	var files: Array = entry["files"].get(v["voice"], [])
+	if files.is_empty():
+		return false
+	var gain := volume * Settings.effects_volume * _damp
+	if gain <= 0.0:
+		return true
+	var file: String = VOICE_DIR % files[int(v["pick"]) % files.size()]
+	if not _sample_streams.has(file):
+		_sample_streams[file] = load(file)
+	var speaker: AudioStreamPlayer3D = null
+	for s in _speakers:
+		if s.playing and s.get_meta("who", 0) == who.get_instance_id():
+			speaker = s
+	if speaker == null:
+		speaker = _speakers[_next_speaker]
+		_next_speaker = (_next_speaker + 1) % _speakers.size()
+	var stream: AudioStream = _sample_streams[file]
+	var pitch: float = float(v["pitch"]) * float(entry.get("pitch", 1.0)) * randf_range(1.0 - VOICE_JITTER, 1.0 + VOICE_JITTER)
+	var cut: Vector2 = entry.get("cut", Vector2.ONE * float(v["length"]))
+	var token := int(speaker.get_meta("token", 0)) + 1
+	speaker.set_meta("token", token)
+	speaker.set_meta("who", who.get_instance_id())
+	if speaker.has_meta("fade"):
+		(speaker.get_meta("fade") as Tween).kill()
+		speaker.remove_meta("fade")
+	speaker.stream = stream
+	speaker.global_position = pos + Vector3.UP * 1.5
+	speaker.volume_db = float(entry["db"]) + linear_to_db(gain)
+	speaker.pitch_scale = pitch
+	speaker.play()
+	var share := randf_range(cut.x, cut.y)
+	if share < 0.98:
+		get_tree().create_timer(stream.get_length() * share / pitch, true).timeout.connect(func() -> void:
+			if speaker.playing and int(speaker.get_meta("token", 0)) == token:
+				_fade_out(speaker))
+	return true
+
+
+func _fade_out(speaker: AudioStreamPlayer3D) -> void:
+	var tween := speaker.create_tween()
+	tween.tween_property(speaker, "volume_db", -60.0, VOICE_FADE)
+	tween.tween_callback(speaker.stop)
+	speaker.set_meta("fade", tween)
+
+
+## Echter Klang, reihum auf einer der `SAMPLE_VOICES` Stimmen (die älteste bricht ab) – oder auf einer
+## eigenen, wenn er "solo" ist
+func _play_sample(sample: Dictionary, volume: float) -> void:
+	var gain := volume * Settings.effects_volume * _damp
+	if gain <= 0.0:
+		return
+	var file: String = sample["file"]
+	if not _sample_streams.has(file):
+		_sample_streams[file] = load(file)
+	var voice: AudioStreamPlayer
+	if sample.get("solo", false):
+		if not _solo_voices.has(file):
+			_solo_voices[file] = AudioStreamPlayer.new()
+			add_child(_solo_voices[file])
+		voice = _solo_voices[file]
+	else:
+		voice = _voices[_next_voice]
+		_next_voice = (_next_voice + 1) % _voices.size()
+	voice.stream = _sample_streams[file]
+	voice.volume_db = float(sample["db"]) + linear_to_db(gain)
+	voice.pitch_scale = randf_range(1.0 - SAMPLE_PITCH_JITTER, 1.0 + SAMPLE_PITCH_JITTER)
+	voice.play()
+
+
+func _process(delta: float) -> void:
 	if _playback == null:
 		return
 	_music_volume = Settings.music_volume
 	_effects_volume = Settings.effects_volume
 	_damp = move_toward(_damp, 0.25 if get_tree().paused else 1.0, 0.05)
+	_update_pant(delta)
 	var frames := _playback.get_frames_available()
 	var dt := 1.0 / RATE
 	for i in frames:
@@ -82,8 +229,8 @@ func _sample(dt: float) -> float:
 	if heart > 0.001:
 		var beat := fmod(_time, 60.0 / heart_bpm)
 		s += (_thump(beat) + _thump(beat - 0.22) * 0.6) * heart
-	if pant > 0.001:
-		s += _pant_sample(dt, white) * pant
+	if rain > 0.001:
+		s += (white * 0.16 * (1.0 - rain_muffle) + _lp_fast * 0.3 + _lp_slow * 0.8 * rain_muffle) * rain
 	var i := _shots.size() - 1
 	while i >= 0:
 		var shot := _shots[i]
@@ -109,19 +256,21 @@ func _music_sample() -> float:
 	return lead + bass
 
 
-## Keuchen: kurzes, helles Einatmen, dann längeres, dumpferes Ausatmen, kleine Pause
-func _pant_sample(dt: float, white: float) -> float:
-	_pant_phase += dt * pant_rate
+## Keuchen: alle `1 / pant_rate` s ein Atemzug aus `BREATH`, jeder etwas anders tief und hoch. Die Lautstärke
+## folgt `pant` auch mitten im Atemzug – beim Luftanhalten bricht er ab.
+func _update_pant(delta: float) -> void:
+	if pant <= 0.02:
+		_pant_phase = 1.0
+		if _breath.playing:
+			_breath.stop()
+		return
+	_pant_phase += delta * pant_rate
 	if _pant_phase >= 1.0:
-		_pant_phase -= 1.0
+		_pant_phase = fmod(_pant_phase, 1.0)
 		_pant_depth = randf_range(0.75, 1.15)
-	var p := _pant_phase
-	if p < 0.35:
-		return (white - _lp_fast) * sin(PI * p / 0.35) * 0.12 * _pant_depth
-	if p > 0.42 and p < 0.9:
-		var k := (p - 0.42) / 0.48
-		return (_lp_fast - _lp_slow) * 1.4 * pow(sin(PI * k), 0.6) * (1.0 - 0.4 * k) * 0.3 * _pant_depth
-	return 0.0
+		_breath.pitch_scale = randf_range(1.0 - SAMPLE_PITCH_JITTER, 1.0 + SAMPLE_PITCH_JITTER)
+		_breath.play()
+	_breath.volume_db = BREATH_DB + linear_to_db(maxf(pant * _pant_depth * _effects_volume * _damp, 0.0001))
 
 
 func _thump(t: float) -> float:
@@ -191,11 +340,9 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			# Schnurren: tiefes Brummen, 26-mal pro Sekunde an- und abschwellend
 			var pulse := 0.5 + 0.5 * sin(TAU * 26.0 * t)
 			return (_lp_slow * 2.5 + sin(TAU * 52.0 * t) * 0.3) * pulse * sin(PI * k) * 0.5
-		"cry":
-			# Weinen: langes, klagendes Jammern mit Zittern, am Ende abfallend
-			var cf := 430.0 + 260.0 * sin(PI * k) + 30.0 * sin(TAU * 5.5 * t)
-			var cph: float = shot["phase"] + cf * dt
-			shot["phase"] = cph
-			var wail := (fmod(cph, 1.0) * 2.0 - 1.0) * 0.3 + sin(TAU * cph) * 0.4 + white * 0.08
-			return wail * sqrt(sin(PI * k)) * 0.3
+		"thunder":
+			# Donner (Wetter, 7.8): kurzes Krachen, dann langes, schwankendes Grollen
+			var crack := white * exp(-t * 14.0) * 0.5
+			var roll := _lp_slow * 9.0 * (0.6 + 0.4 * sin(TAU * 1.7 * t + 2.0 * sin(TAU * 0.4 * t)))
+			return (crack + roll) * minf(1.0, t * 30.0) * exp(-t * 0.75)
 	return 0.0

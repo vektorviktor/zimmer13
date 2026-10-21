@@ -5,9 +5,12 @@ extends CharacterBody3D
 ## Das Monster tut ihr nichts (es mag Katzen), aber sie hat Angst vor ihm: Kommt es nah, rennt sie
 ## weg und weint – eine Frühwarnung. Im Vorbeigehen wirft sie manchmal Deko um; selten bringt sie
 ## dir etwas vor die Tür oder legt sich auf dein Bett.
+## Tragen (Spielkonzept 6.11): Erst streicheln, dann nimmt [E] sie auf den Arm (scheue erst, wenn sie dich
+## kennen). Auf dem Arm schnurrt sie und beruhigt; [G] setzt sie ab, nach einer Weile windet sie sich heraus.
+## Naht das Monster, faucht sie, kratzt und springt weg.
 ## Modell: tools/build_cat.py (Laufen als Animation, Stehen/Sitzen/Liegen per Code wie beim Monster).
 
-enum State { IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH }
+enum State { IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED }
 
 const MODEL := "res://assets/models/cat.glb"
 ## Eigene Kollisionsebene (11): blockiert niemanden, nur der Spieler-Strahl trifft sie (Streicheln)
@@ -25,15 +28,27 @@ const GIFT_COOLDOWN := Calendar.DAY_SECONDS
 const GIFT_KINDS := [Item.Kind.LEAVES, Item.Kind.COBWEB, Item.Kind.CANDLE]
 ## So oft holt sie stattdessen etwas, das einem Gast gehört (der vermisst es dann)
 const GUEST_GIFT_CHANCE := 0.4
+## Auf dem Arm: so lange bleibt sie (mehr, je öfter gestreichelt, weniger, je scheuer), so viel Schock je Sekunde weg
+const CARRY_TIME := Vector2(15.0, 40.0)
+const CARRY_CALM := 0.02
+## Scheue Katzen lassen sich erst ab so oft Streicheln hochnehmen
+const CARRY_TRUST := 3
 ## Zimmer-Arten ohne Liegeplätze für Katzen
 const UNINHABITABLE := ["laundry", "abandoned", "derelict", "locked"]
 ## Persönlichkeit: schläfrig (Nickerchen), scheu (weicht beim Streicheln aus), neugierig (streift,
-## bringt Geschenke), tollpatschig (wirft Deko um). Färbung über die Fell-Textur.
+## bringt Geschenke), tollpatschig (wirft Deko um). Färbung über die Fell-Textur. home: wohnt im Katzenraum
+## (Spielkonzept 7.7) – schläft und streift meist dort, folgt selten jemandem hinaus, bringt nichts.
 const PROFILES := {
 	"minka": {"name": "Minka", "tint": Color(1.0, 1.0, 1.0), "sleepy": 0.7, "shy": 0.05, "curious": 0.3, "clumsy": 0.12},
 	"socke": {"name": "Socke", "tint": Color(0.5, 0.46, 0.44), "sleepy": 0.45, "shy": 0.5, "curious": 0.45, "clumsy": 0.2},
 	"kasimir": {"name": "Kasimir", "tint": Color(1.0, 0.7, 0.42), "sleepy": 0.25, "shy": 0.0, "curious": 0.85, "clumsy": 0.35},
+	"luna": {"name": "Luna", "tint": Color(0.3, 0.28, 0.3), "sleepy": 0.6, "shy": 0.2, "curious": 0.3, "clumsy": 0.1, "home": true},
+	"fussel": {"name": "Fussel", "tint": Color(1.0, 0.95, 0.85), "sleepy": 0.5, "shy": 0.35, "curious": 0.25, "clumsy": 0.25, "home": true},
+	"tiger": {"name": "Tiger", "tint": Color(0.95, 0.62, 0.32), "sleepy": 0.35, "shy": 0.0, "curious": 0.5, "clumsy": 0.3, "home": true},
+	"mausi": {"name": "Mausi", "tint": Color(0.68, 0.66, 0.66), "sleepy": 0.8, "shy": 0.6, "curious": 0.15, "clumsy": 0.1, "home": true},
 }
+## So oft bleibt eine Katzenraum-Katze bei Nickerchen und Streifzügen dort
+const HOME_STAY := 0.85
 ## Posen (Drehungen im Skelettraum: X = linke Seite, Y = oben, Z = Blickrichtung) und Absenkung
 const POSES := {
 	"stand": {"drop": 0.0, "turns": []},
@@ -84,6 +99,9 @@ var _pose := "stand"
 var _anim := 0.0
 var _stuck_time := 0.0
 var _last_pos := Vector3.ZERO
+var _carried_by: Player
+var _carry_time := 0.0
+var _purr_timer := 0.0
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 
@@ -124,15 +142,20 @@ func _ready() -> void:
 
 # --- Für Spieler, Gäste und Speichern ------------------------------------------------------
 
-func get_prompt(_p: Player) -> String:
-	if _hopping:
+func get_prompt(p: Player) -> String:
+	if _hopping or state == State.CARRIED:
 		return ""
+	if state == State.PET and p.held == null and p.carried_cat == null:
+		return "%s hochnehmen [E]" % display_name
 	if state == State.SLEEP:
 		return "%s streicheln [E]  (schläft)" % display_name
 	return "%s streicheln [E]" % display_name
 
 
 func interact(p: Player) -> void:
+	if state == State.PET and p.held == null and p.carried_cat == null:
+		pick_up(p)
+		return
 	if state == State.FLEE:
 		Game.say("%s ist viel zu verängstigt." % display_name, 2.0)
 		return
@@ -153,8 +176,90 @@ func interact(p: Player) -> void:
 		_target = p.global_position
 
 
+## Auf den Arm nehmen (nach dem Streicheln). Scheue Katzen wollen erst ein paar Mal gestreichelt sein.
+func pick_up(p: Player) -> void:
+	if float(profile["shy"]) > 0.3 and affection < CARRY_TRUST:
+		Game.say("%s will nicht hochgenommen werden – noch nicht." % display_name, 2.5)
+		_wander()
+		return
+	_drop_carried()
+	_perch = -1
+	_perch_goal = -1
+	state = State.CARRIED
+	_carried_by = p
+	p.carried_cat = self
+	collision_layer = 0
+	velocity = Vector3.ZERO
+	_carry_time = randf_range(CARRY_TIME.x, CARRY_TIME.y) * (1.0 + minf(affection, 10) * 0.1) * (1.0 - float(profile["shy"]) * 0.5)
+	_purr_timer = 0.0
+	Game.say("Du nimmst %s auf den Arm. [G] zum Absetzen." % display_name, 2.5)
+	if Game.hud:
+		Game.hud.set_held(display_name)
+
+
+## Absetzen ([G] oder von selbst): vor dem Spieler auf den Boden – vor einer Wand dichter heran.
+func put_down() -> void:
+	var p := _carried_by
+	_carried_by = null
+	state = State.IDLE
+	_timer = randf_range(3.0, 8.0)
+	collision_layer = LAYER
+	if p == null or not is_instance_valid(p):
+		return
+	p.carried_cat = null
+	if Game.hud:
+		Game.hud.set_held("")
+	var forward := -p.global_basis.z
+	forward.y = 0.0
+	forward = forward.normalized()
+	var from := p.global_position + Vector3.UP * 0.5
+	var ray := PhysicsRayQueryParameters3D.create(from, from + forward * 0.8, 1 | 2)
+	ray.exclude = [p.get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(ray)
+	var reach := 0.6 if hit.is_empty() else maxf(0.1, from.distance_to(hit["position"]) - 0.3)
+	global_position = p.global_position + forward * reach + Vector3.UP * 0.05
+	rotation.y = p.rotation.y + PI
+	_last_pos = global_position
+
+
+func _carried_step(delta: float) -> void:
+	var p := _carried_by
+	if p == null or not is_instance_valid(p) or p.dead or p.hiding != null or p.sleeping or p.gripped:
+		put_down()
+		return
+	if _monster_near(FEAR_DISTANCE):
+		# Angst: faucht, kratzt und ist weg
+		Game.say("%s faucht, kratzt dich und springt weg!" % display_name, 2.5)
+		p.add_shock(0.1, false)
+		put_down()
+		_start_flee()
+		return
+	var forward := -p.global_basis.z
+	global_position = p.global_position + Vector3.UP * 0.95 + forward * 0.42 + p.global_basis.x * 0.04
+	rotation.y = p.rotation.y + PI / 2.0   # quer im Arm
+	velocity = Vector3.ZERO
+	p.shock = maxf(0.0, p.shock - CARRY_CALM * delta)
+	_purr_timer -= delta
+	if _purr_timer <= 0.0:
+		_purr_timer = randf_range(5.0, 9.0)
+		Game.noise("cat_purr", global_position, self)
+	_carry_time -= delta
+	if _carry_time <= 0.0:
+		Game.say("%s windet sich und springt herunter." % display_name, 2.0)
+		put_down()
+
+
 ## Startplätze: Minka schläft auf dem Sofa, Socke in der Küche, Kasimir im Flur vor Zimmer 13.
 func place_at_start() -> void:
+	if _home_cat():
+		var spots := _home_perches()
+		if not spots.is_empty():
+			_perch = spots[PROFILES.keys().find(id) % spots.size()]
+			global_position = perches()[_perch]["top"]
+			state = State.SLEEP
+			_timer = randf_range(30.0, 120.0)
+			_last_pos = global_position
+			return
 	match id:
 		"minka":
 			_perch = 0
@@ -170,6 +275,8 @@ func place_at_start() -> void:
 
 ## Debug (--cat=id): sitzt vor dem Spieler.
 func place_in_front_of(p: Player) -> void:
+	if state == State.CARRIED:
+		put_down()
 	_perch = -1
 	global_position = p.global_position - p.global_transform.basis.z * 1.1 + Vector3.UP * 0.05
 	rotation.y = p.rotation.y + PI
@@ -180,13 +287,16 @@ func place_in_front_of(p: Player) -> void:
 ## Ein Gast streichelt sie im Vorbeigehen.
 func petted_by_guest() -> void:
 	Game.noise("cat_purr", global_position, self)
-	if state != State.SLEEP:
+	if state != State.SLEEP and state != State.CARRIED:
 		state = State.PET
 		_timer = 3.0
 
 
 func save_state() -> Dictionary:
-	return {"pos": [global_position.x, global_position.y, global_position.z], "rot": rotation.y,
+	var pos := global_position
+	if state == State.CARRIED and _carried_by:
+		pos = _carried_by.global_position + Vector3.UP * 0.05   # auf dem Arm: nach dem Laden zu deinen Füßen
+	return {"pos": [pos.x, pos.y, pos.z], "rot": rotation.y,
 		"favourite": favourite, "affection": affection, "gift": _gift_timer, "perch": _perch,
 		"sleep": state == State.SLEEP, "timer": _timer,
 		"carried": SaveManager._item_data(_carried) if _carried else null}
@@ -254,6 +364,10 @@ func _physics_process(delta: float) -> void:
 	if _hopping:
 		_animate(delta)
 		return
+	if state == State.CARRIED:
+		_carried_step(delta)
+		_animate(delta)
+		return
 	if _monster_near(FEAR_DISTANCE) and state != State.FLEE:
 		_start_flee()
 	match state:
@@ -294,12 +408,17 @@ func _next_activity() -> void:
 	var curious := float(profile["curious"])
 	var weights := {"nap": 1.0 + sleepy * 3.0, "wander": 0.5 + curious * 2.0, "sit": 1.0,
 		"follow": 0.8, "bed": 0.06 + minf(affection, 10) * 0.03}
-	if _gift_timer <= 0.0:
+	if _gift_timer <= 0.0 and not _home_cat():
 		weights["gift"] = 0.15 * curious
+	if _home_cat():
+		weights["follow"] = 0.1
+		weights["bed"] = 0.0
 	match _weighted_choice(weights):
 		"nap":
 			var spots := _usable_perches()
-			if randf() < 0.65 and not spots.is_empty():
+			if _home_cat() and randf() < HOME_STAY and not _home_perches().is_empty():
+				_go_perch(_home_perches().pick_random())
+			elif randf() < 0.65 and not spots.is_empty():
 				_go_perch(spots.pick_random())
 			else:
 				_target = _floor_spot()
@@ -342,7 +461,27 @@ func _usable_perches() -> Array[int]:
 	return result
 
 
+## Wohnt sie im Katzenraum?
+func _home_cat() -> bool:
+	return bool(profile.get("home", false))
+
+
+## Liegeplätze im Katzenraum (Kratzbäume).
+func _home_perches() -> Array[int]:
+	var result: Array[int] = []
+	var list := perches()
+	for i in list.size():
+		if list[i].get("cat_room", false):
+			result.append(i)
+	return result
+
+
 func _wander() -> void:
+	if _home_cat() and randf() < HOME_STAY and not _home_perches().is_empty():
+		_target = (perches()[_home_perches().pick_random()]["floor"] as Vector3) + Vector3(randf_range(-1.5, 1.5), 0, randf_range(-1.5, 1.5))
+		_perch_goal = -1
+		state = State.WALK
+		return
 	var points: Array[Vector3] = _builder.wander_points
 	var near: Array[Vector3] = []
 	for p in points:
@@ -559,7 +698,7 @@ func _guest_item_nearby() -> Item:
 	var best_d := 25.0
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
-		if not item.kind in GIFT_KINDS or item.is_held or item.lit or item.owner_id in ["", "player"]:
+		if not item.kind in GIFT_KINDS or item.is_held or item.hung or item.lit or item.owner_id in ["", "player"]:
 			continue
 		if absf(item.global_position.y - global_position.y) > 1.5 or item.global_position.distance_to(door_13) < 4.0:
 			continue
@@ -778,7 +917,7 @@ func _animate(delta: float) -> void:
 
 func _pose_for_state() -> String:
 	match state:
-		State.SLEEP:
+		State.SLEEP, State.CARRIED:
 			return "lie"
 		State.FLEE:
 			return "lie" if _cowering else "sit"

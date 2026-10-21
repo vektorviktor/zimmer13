@@ -30,9 +30,8 @@ uniform float bump_depth = 0.035;
 uniform float rough_matte = 0.95;
 uniform float rough_gloss = 0.3;
 uniform float sheen = 0.6;
-// Alterung: so viel Glanz nehmen Flecken weg, so viel dunkeln sie ab
-uniform float stain_gloss = 0.85;
-uniform float stain_dark = 0.12;
+// Abgegriffener Sockel: so viel Glanz verliert die Wand direkt über dem Boden
+uniform float scuff_gloss = 0.51;
 uniform float snap_resolution = 140.0;
 // Einstellungen → PS1-Look → Vertex-Wackeln (1 = an, 0 = aus)
 global uniform float psx_snap;
@@ -75,18 +74,6 @@ vec3 wall_color(ivec2 t, bool side_b) {
 	return side_b ? texelFetch(albedo_tex_b, t, 0).rgb : texelFetch(albedo_tex, t, 0).rgb;
 }
 
-float hash(vec2 p) {
-	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-float value_noise(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-		mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-
 void fragment() {
 	vec3 n = abs(world_normal);
 	vec3 tangent;
@@ -124,12 +111,12 @@ void fragment() {
 	vec2 surf = texelFetch(surface_tex, t, 0).rg;
 	float gloss = surf.g;
 
-	// Flecken und abgegriffene Stellen: großflächiges Rauschen nimmt Glanz weg und dunkelt leicht ab
-	float stain = smoothstep(0.55, 0.8, value_noise(vec2(u, world_pos.y) * 1.3) * 0.7 + value_noise(vec2(u, world_pos.y) * 5.0) * 0.3);
+	// Abgegriffener Sockel: direkt über dem Boden weniger Glanz. Flecken hat die Tapete vorerst keine
+	// (offener Punkt, Spielkonzept 7.2)
 	float scuff = 1.0 - smoothstep(0.05, 0.25, h);
-	gloss *= 1.0 - stain_gloss * max(stain, scuff * 0.6);
+	gloss *= 1.0 - scuff_gloss * scuff;
 
-	ALBEDO = albedo.rgb * tex * (1.0 - stain_dark * stain);
+	ALBEDO = albedo.rgb * tex;
 	ROUGHNESS = mix(rough_matte, rough_gloss, gloss);
 	SPECULAR = gloss;
 	RIM = sheen * gloss;

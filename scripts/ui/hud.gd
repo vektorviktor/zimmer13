@@ -1,11 +1,12 @@
 class_name Hud
 extends CanvasLayer
 ## Minimales HUD: Fadenkreuz, Interaktions-Hinweis, Gegenstand in der Hand, Geld,
-## Meldungen, Versteck-Ansicht mit Atem-Anzeige und Debug-Werte (F3).
+## Meldungen, Versteck-Ansicht mit Atem-Anzeige, Debug-Werte (F3) und Bilder pro Sekunde (F10).
 ## Dazu: flackernde Kerze beim Autosave (Spielkonzept 8.6), Untertitel für Geräusche und ein roter
 ## Blitz, wenn dich ein Gast schlägt (6.3).
 
 var debug_enabled := false
+var fps_enabled := false          ## Bilder pro Sekunde und Bildzeit rechts oben (F10, --fps)
 
 var _prompt: Label
 var _held: Label
@@ -27,7 +28,10 @@ var _caption: Label
 var _caption_time := 0.0
 var _day := -1
 var _debug_timer := 0.0
+var _fps: Label
+var _fps_timer := 0.0
 var _hurt: ColorRect
+var _sheet_overlay: ColorRect   ## unter dem Bettlaken: Sicht durch die Augenlöcher (5.9)
 
 
 func _ready() -> void:
@@ -40,6 +44,17 @@ func _ready() -> void:
 	_hide_overlay.visible = false
 	add_child(_hide_overlay)
 	_hide_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	var sheet_material := ShaderMaterial.new()
+	sheet_material.shader = load("res://shaders/sheet_overlay.gdshader")
+	_sheet_overlay = ColorRect.new()
+	_sheet_overlay.material = sheet_material
+	_sheet_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sheet_overlay.visible = false
+	add_child(_sheet_overlay)
+	_sheet_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_sheet_overlay.resized.connect(func() -> void:
+		sheet_material.set_shader_parameter("aspect", _sheet_overlay.size.x / maxf(_sheet_overlay.size.y, 1.0)))
 
 	_hurt = ColorRect.new()
 	_hurt.color = Color(0.6, 0.0, 0.0, 0.0)
@@ -62,6 +77,9 @@ func _ready() -> void:
 	_message = _label(10, HORIZONTAL_ALIGNMENT_CENTER)
 	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_message, Vector4(0, 0.12, 1, 0.12), Vector4(16, 0, -16, 80))
+	_fps = _label(8, HORIZONTAL_ALIGNMENT_RIGHT)
+	_place(_fps, Vector4(0.6, 0, 1, 0), Vector4(0, 20, -8, 32))
+	_fps.visible = false
 	_debug = _label(8, HORIZONTAL_ALIGNMENT_LEFT)
 	_place(_debug, Vector4(0, 0, 0.7, 0.7), Vector4(4, 4, 0, 0))
 	_debug.visible = false
@@ -149,6 +167,16 @@ func _process(delta: float) -> void:
 		_message.modulate.a = clampf(_message_time, 0.0, 1.0)
 	if Input.is_action_just_pressed("debug_overlay"):
 		debug_enabled = not debug_enabled
+	if Input.is_action_just_pressed("debug_fps"):
+		fps_enabled = not fps_enabled
+		_fps_timer = 0.0
+	_fps.visible = fps_enabled
+	if fps_enabled:
+		_fps_timer -= delta
+		if _fps_timer <= 0.0:
+			_fps_timer = 0.25
+			var fps := Engine.get_frames_per_second()
+			_fps.text = "%d FPS · %s ms" % [fps, String.num(1000.0 / maxf(fps, 1.0), 1).replace(".", ",")]
 	_debug.visible = debug_enabled
 	if debug_enabled and Game.director:
 		_debug_timer -= delta
@@ -180,6 +208,11 @@ func show_message(text: String, duration: float = 3.5) -> void:
 func set_struggle(value: float) -> void:
 	_struggle_bg.visible = value >= 0.0
 	_struggle_fill.size.x = 118.0 * clampf(value, 0.0, 1.0)
+
+
+## Bettlaken übergeworfen (Spielkonzept 5.9): Stoff ringsum, Blick durch zwei Augenlöcher – auch im Versteck.
+func set_disguised(on: bool) -> void:
+	_sheet_overlay.visible = on
 
 
 ## 0 = kein Versteck, 1 = Schrank, 2 = unter dem Bett, 3 = im Bett schlafen (Augen zu)

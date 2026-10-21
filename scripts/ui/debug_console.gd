@@ -9,14 +9,14 @@ extends CanvasLayer
 
 ## Befehl → [Werte, Beschreibung]. Neuer Startparameter → auch hier eintragen (Tab, help).
 const COMMANDS := {
-	"tp": ["ort|zimmer|gast", "dorthin springen (lobby, bar, küche, garten, keller, obergeschoss, 13, edna …)"],
+	"tp": ["ort|zimmer|gast", "dorthin springen (lobby, bar, partyraum, küche, garten, keller, kellergang, obergeschoss, katzenraum, bibliothek, westflügel, technikraum, wäscherei, jedes Zimmer: 13, 1157 …, edna …)"],
 	"time": ["+n|-n", "Spieltage vor- oder zurückspulen"],
 	"day": ["n", "zu Tag n im Oktober springen"],
 	"save": ["n", "nach 2 s in Slot n speichern (wie am Tagebuch)"],
 	"load": ["n", "Spielstand n laden (0 = Autosave)"],
 	"savetest": ["", "Speichern → Laden → Vergleichen (Konsole)"],
-	"shock": ["gast[,blood|corpse|ghostN]", "Gast erschrecken (6.12)"],
-	"ghost": ["n|flur|schrank", "Lakengeist zum n. Mal (Zimmer 13), im Flur bzw. vor deinem Schrank"],
+	"shock": ["gast[,blood|corpse|ghostN|tür]", "Gast erschrecken (6.12) – tür: Lakengeist vor seiner Tür (5.6)"],
+	"ghost": ["n|flur|schrank|tür", "Lakengeist zum n. Mal am Fenster deines Raums, knapp 20 m vor dir im Flur, vor deinem Schrank bzw. lautlos vor deiner Tür"],
 	"awake": ["n", "so viele Nächte ohne Schlaf (Lakengeist, 4.18)"],
 	"sleep": ["[bett]", "Nachtruhe beginnen (bett: du schläfst in Zimmer 13)"],
 	"warn": ["", "Vorwarnung → Monster erscheint"],
@@ -28,10 +28,18 @@ const COMMANDS := {
 	"first-attack": ["", "Feier, kurz darauf der erste Angriff"],
 	"kill": ["gast", "Gast nach 3 s vom Monster holen lassen"],
 	"knock": ["", "Klopfen an Zimmer 13"],
+	"trick": ["[kind]", "Süßes oder Saures: ein Kind klopft von Tür zu Tür"],
+	"decorate": ["[gast][,lobby][,allein][,hin]", "Schmück-Aktion: Gäste schmücken Tür, Flur oder Lobby · allein: ein Gast trägt Deko in sein Zimmer (hin: du stehst davor)"],
 	"call": ["gast|creepy|dead|door", "Telefon in Zimmer 13 klingelt"],
 	"dial": ["n|lobby", "vom Telefon in Zimmer 13 anrufen"],
-	"party": ["", "Feier in der Lobby starten"],
+	"wallblood": ["[smear]", "Blut an die nächste Wand"],
+	"costumes": ["[sheet|witch|pumpkin|cape]", "alle Gäste sofort verkleidet"],
+	"disguise": ["", "Bettlaken überwerfen"],
+	"drunk": ["n[,gast]", "n Gläser getrunken (du oder der Gast)"],
+	"weather": ["klar|regen|gewitter|blitz", "Wetter sofort (Regen, Gewitter, ein Blitz)"],
+	"party": ["[gast]", "Feier im Partyraum starten (mit Gast: er lädt ein)"],
 	"talk": ["gast", "Gespräch öffnen"],
+	"ask": ["gast[,frage|frage]", "Gespräch öffnen und frei fragen (Sprachmodell, nur edna und bruno)"],
 	"look": ["gast[,pose]", "Gast ansehen (carry, panic, dance, sit, walk)"],
 	"friend": ["gast", "mit dem Gast befreundet"],
 	"enemy": ["gast", "mit dem Gast verfeindet"],
@@ -45,16 +53,19 @@ const COMMANDS := {
 	"challenge": ["gast[,chess]", "Gast fordert dich heraus (Mäxchen oder Schach)"],
 	"bulb-thief": ["gast", "Gast klaut eine Birne aus Zimmer 13"],
 	"cat": ["minka|socke|kasimir", "Katze vor den Spieler setzen"],
-	"pumpkin": ["[chicken|macarena|hiphop]", "Kürbismann vor dich, tanzt (Testfigur)"],
+	"pumpkin": ["[walk|run|spin_jump|chicken|macarena|hiphop|jagd[,gast]|garten]", "Kürbismann: Testfigur vor dich oder jagt dich/den Gast"],
 	"pos": ["x,y,z[,winkel[,neigung]]", "Spieler versetzen"],
 	"splash": ["x,z", "nach 1 s platscht es dort im Pool"],
 	"pool": ["still|tremor|slosh", "Poolwasser wie bei nahem Monster (glatt, Zittern, Schwappen)"],
 	"pocket": ["", "Kompass, Kartenblätter, Schlüssel 18"],
 	"flashlight": ["[uv]", "Taschenlampe in die Hand"],
+	"deco": ["gespenst|lichter|netz|laub|zierkürbis|fledermaus|spinne|totenkopf|besen", "Deko in die Hand – an die Wand sehen, [G] hängt auf (5.6)"],
 	"show": ["map|keys|compass", "Karte/Kompass hervorholen"],
 	"menu": ["pause|diary|settings|load|controls", "Menü öffnen"],
 	"noise": ["art", "alle 6 s Lärm am Spieler"],
 	"no-psx": ["", "PS1-Look aus"],
+	"fps": ["", "Bilder pro Sekunde ein/aus (wie F10)"],
+	"psx": ["", "PS1-Look an"],
 	"debug": ["", "Debug-Werte einblenden"],
 	"trace": ["", "Monster und Lärm in die Konsole schreiben"],
 	"guests": ["", "alle Gäste: Ort, Zustand, Angst, Beziehung"],
@@ -66,7 +77,7 @@ const START_ONLY := ["title", "nointro", "shot", "frames", "shot-on", "trace-nav
 ## Getippter Name → Startparameter
 const ALIASES := {"save": "diary", "load": "load-slot"}
 ## Befehle, deren erster Wert eine Gast-ID ist (wird vorher geprüft)
-const GUEST_FIRST := ["shock", "kill", "talk", "look", "friend", "enemy", "relation", "follow", "visit", "attack", "punch", "dice", "chess", "challenge", "bulb-thief"]
+const GUEST_FIRST := ["shock", "kill", "talk", "ask", "look", "friend", "enemy", "relation", "follow", "visit", "attack", "punch", "dice", "chess", "challenge", "bulb-thief"]
 
 static var _history: Array[String] = []
 
@@ -259,7 +270,7 @@ func _complete() -> void:
 	else:
 		for guest in Game.social.guests:
 			options.append(guest.id)
-		options.append_array(["blood", "corpse", "ghost1", "ghost2", "ghost3", "ghost4", "flur"])
+		options.append_array(["blood", "corpse", "ghost1", "ghost2", "ghost3", "ghost4", "flur", "tür"])
 	var hits := options.filter(func(o: String) -> bool: return o.begins_with(word))
 	if hits.is_empty():
 		return

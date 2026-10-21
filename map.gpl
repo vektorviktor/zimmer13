@@ -89,3 +89,24 @@ Columns: 0
 255 243 160	Licht: Laterne
 140 132  90	Licht: Laterne defekt
 255 248 200	Licht: Deckenleuchte
+ 92  20  32	Teppich: Läufer
+243   0 255	Türanschlag
+186  92  44	Ausstattung: Dekokiste
+149  71 183	Katzenraum
+188 127  74	Bibliothek
+143 152 141	Balkon
+102 112 100	Balkongeländer
+ 48  96 224	Bad
+240 200 140	Möbel: Kratzbaum
+200  80  20	Ausstattung: Kürbispflanze Hokkaido
+230 230 200	Ausstattung: Kürbispflanze Weiß
+220 190 120	Ausstattung: Kürbispflanze Butternut
+ 90 110  50	Ausstattung: Kürbispflanze Muskat
+180  60  60	Ausstattung: Kürbispflanze Türkenturban
+255 160   0	Ausstattung: Kürbispflanze Riese
+153 153 153	Kellerboden
+130  27  27	Heizkeller
+124 107 255	Technikraum
+107 182 255	Wäscherei
+123 123 123	Kellerraum
+146 239 226	Licht: Halogenleuchte

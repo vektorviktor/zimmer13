@@ -24,13 +24,20 @@ const WALLPAPER_GLOSS := {
 	149: 0.7,    # Vertäfelung, Grund
 	196: 0.9,    # Handlauf, Kassettenfüllung, Deckenleiste – Lack
 }
+## Fototexturen (PBR-Sets in assets/textures/<set>/): Kantenlänge des Farbbilds mit PS1-Look (Texel für Texel,
+## grob wie die Tapete) und ohne (weich gefiltert, mit Mipmaps – aus der Nähe scharf, in der Ferne ruhig)
+const PHOTO_SIZE_PSX := 256
+const PHOTO_SIZE_SMOOTH := 1024
 
 static var _shader: Shader
 static var _shader_two_sided: Shader
 static var _wall_shader: Shader
+static var _particle_shader: Shader
 static var _wall_albedo := {}
 static var _wall_surface: ImageTexture
 static var _cache := {}
+static var _photos: Array[ShaderMaterial] = []
+static var _photo_shader: Shader
 static var _cobweb: StandardMaterial3D
 static var _glass: StandardMaterial3D
 static var _frosted: StandardMaterial3D
@@ -76,6 +83,65 @@ static func model(path: String, src: MeshInstance3D, surface: int = 0, two_sided
 	return _cache[key]
 
 
+## Material aus einem Foto (PBR-Set, z. B. Beton) mit shaders/psx_photo.gdshader, in Weltkoordinaten über meters
+## Meter gespannt. Das Farbbild liegt in zwei Stufen vor (PHOTO_SIZE_PSX ohne, PHOTO_SIZE_SMOOTH mit Mipmaps), die
+## Normal Map (normal_path, OpenGL-Format) nur in der großen und nur ohne PS1-Look – Settings.apply schaltet über
+## set_photo_detail um. Glanz (specular > 0, z. B. 0,5) mit der Rauheit aus roughness_path wirkt in beiden Looks
+## (wie die Tapete). Die übrigen Karten des Sets löscht tools/photo_set.gd, siehe TECHNIK.md.
+static func photo(path: String, meters: float, normal_path: String = "", roughness_path: String = "",
+		specular: float = 0.0, color: Color = Color(1, 1, 1)) -> ShaderMaterial:
+	var key := "photo|%s|%s|%s|%.2f|%.2f|%s" % [path, normal_path, roughness_path, meters, specular, color.to_html()]
+	if not _cache.has(key):
+		if _photo_shader == null:
+			_photo_shader = load("res://shaders/psx_photo.gdshader")
+		var img := _photo_image(path)
+		var small := img.duplicate() as Image
+		small.resize(PHOTO_SIZE_PSX, PHOTO_SIZE_PSX, Image.INTERPOLATE_LANCZOS)
+		img.generate_mipmaps()
+		var m := ShaderMaterial.new()
+		m.shader = _photo_shader
+		m.set_shader_parameter("albedo", color)
+		m.set_shader_parameter("tex_scale", 1.0 / meters)
+		m.set_shader_parameter("specular", specular)
+		m.set_meta("photo_psx", ImageTexture.create_from_image(small))
+		m.set_meta("photo_smooth", ImageTexture.create_from_image(img))
+		if normal_path != "":
+			var normal := _photo_image(normal_path)
+			normal.generate_mipmaps(true)   # gemittelte Normalen wieder auf Länge 1
+			m.set_shader_parameter("normal_tex", ImageTexture.create_from_image(normal))
+		if roughness_path != "":
+			var rough := _photo_image(roughness_path)
+			rough.generate_mipmaps()
+			m.set_shader_parameter("roughness_tex", ImageTexture.create_from_image(rough))
+			m.set_shader_parameter("use_roughness", true)
+		_photos.append(m)
+		_cache[key] = m
+		_set_photo_detail(m, Settings.psx_look)
+	return _cache[key]
+
+
+## Alle Fotomaterialien auf die Stufe für den PS1-Look (psx = true) bzw. ohne ihn umstellen.
+static func set_photo_detail(psx: bool) -> void:
+	for m in _photos:
+		_set_photo_detail(m, psx)
+
+
+static func _set_photo_detail(m: ShaderMaterial, psx: bool) -> void:
+	m.set_shader_parameter("albedo_tex", m.get_meta("photo_psx" if psx else "photo_smooth"))
+	m.set_shader_parameter("use_normal", not psx and m.get_shader_parameter("normal_tex") != null)
+
+
+## Bild einer Fototextur als RGB8, höchstens PHOTO_SIZE_SMOOTH (tools/photo_set.gd schneidet es schon zu;
+## kleinere Karten wie die Rauheit bleiben, wie sie sind).
+static func _photo_image(path: String) -> Image:
+	var img := (load(path) as Texture2D).get_image()
+	img.decompress()
+	img.convert(Image.FORMAT_RGB8)
+	if img.get_width() > PHOTO_SIZE_SMOOTH or img.get_height() > PHOTO_SIZE_SMOOTH:
+		img.resize(PHOTO_SIZE_SMOOTH, PHOTO_SIZE_SMOOTH, Image.INTERPOLATE_LANCZOS)
+	return img
+
+
 ## Für flache Auflagen auf einer anderen Fläche (Teppich auf Fliesen, Kassetten auf dem Türblatt):
 ## wird leicht zur Kamera gezogen, damit die Unterlage beim Vertex-Snapping nicht durchflimmert.
 ## pull = Anteil der Kameraentfernung (Rahmen nehmen weniger, sonst überdecken sie Vorhänge und Türblätter).
@@ -86,6 +152,31 @@ static func layer(color: Color, tex_id: String = "", tex_scale: float = 1.0, pul
 	var m := psx(color, tex_id, tex_scale, Color.BLACK, 0.0, false)
 	m.set_shader_parameter("layer_pull", pull)
 	_cache[key] = m
+	return m
+
+
+## Auflage wie `layer`, aber mit den UVs des Meshs statt Weltkoordinaten (Läufer: die Bordüre folgt dem Band).
+static func layer_uv(tex_id: String, pull: float = 0.01) -> ShaderMaterial:
+	var key := "layer_uv|%s|%.4f" % [tex_id, pull]
+	if not _cache.has(key):
+		var m := psx(Color(1, 1, 1), "", 1.0, Color.BLACK, 0.0, false)
+		m.set_shader_parameter("albedo_tex", TexGen.get_tex(tex_id))
+		m.set_shader_parameter("layer_pull", pull)
+		_cache[key] = m
+	return _cache[key]
+
+
+## Partikel (shaders/psx_particle.gdshader): eigenes Material je Emitter, weitere Parameter (rainbow,
+## sway, spin …) setzt der Aufrufer. frames = so viele Bilder nebeneinander in tex.
+static func particle(tex: Texture2D = null, glow: float = 0.0, frames: int = 1) -> ShaderMaterial:
+	if _particle_shader == null:
+		_particle_shader = load("res://shaders/psx_particle.gdshader")
+	var m := ShaderMaterial.new()
+	m.shader = _particle_shader
+	if tex:
+		m.set_shader_parameter("albedo_tex", tex)
+	m.set_shader_parameter("glow", glow)
+	m.set_shader_parameter("frames", frames)
 	return m
 
 
@@ -158,6 +249,18 @@ static func _gloss_for(level: int) -> float:
 		if absi(l - level) < absi(best - level):
 			best = l
 	return WALLPAPER_GLOSS[best]
+
+
+## Poliertes Metall (shaders/psx_metal.gdshader): spiegelt einen gedachten Raum, so hell wie die Lampen ihn
+## beleuchten, mit Glanzpunkt – Edelstahl mit der Standardfarbe, Chrom heller. Je Farbe ein gemeinsames Material.
+static func metal(tint: Color = Color(0.78, 0.8, 0.84)) -> ShaderMaterial:
+	var key := "metal|%s" % tint.to_html()
+	if not _cache.has(key):
+		var m := ShaderMaterial.new()
+		m.shader = load("res://shaders/psx_metal.gdshader")
+		m.set_shader_parameter("tint", tint)
+		_cache[key] = m
+	return _cache[key]
 
 
 static func cobweb() -> StandardMaterial3D:

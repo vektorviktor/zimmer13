@@ -1,7 +1,8 @@
 class_name LightSwitch
 extends StaticBody3D
-## Lichtschalter – einer pro Raum bzw. Flurabschnitt (Spielkonzept 7.3). Schaltet alle
-## Decken- und Wandlampen des Raums. Licht aus = das Monster kommt (4.4).
+## Lichtschalter – meist einer pro Raum bzw. Flurabschnitt (Spielkonzept 7.3), mehrere im selben
+## Raum bilden eine Wechselschaltung. Schaltet alle Decken- und Wandlampen des Raums. Licht aus =
+## das Monster kommt (4.4).
 ## Lokale +Z zeigt von der Wand in den Raum.
 
 var room_id := ""
@@ -37,16 +38,21 @@ static func find(tree: SceneTree, p_room: String) -> LightSwitch:
 
 
 ## loading = true: nur Zustand setzen (Spielstand laden), keine Folgen.
+## Mehrere Schalter im selben Raum sind eine Wechselschaltung: alle springen mit um, Lärm und
+## Monster kommen nur vom betätigten.
 func set_on(value: bool, loading: bool = false) -> void:
 	if on == value:
 		return
-	on = value
+	for node in get_tree().get_nodes_in_group("light_switches"):
+		var sw := node as LightSwitch
+		if sw.room_id == room_id:
+			sw.on = value
+			sw._update_visual()
 	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
 		var lamp := node as Lamp
 		if lamp.room_id == room_id:
 			lamp.switched_on = on
 			lamp.apply_state()
-	_update_visual()
 	if loading:
 		return
 	Game.noise("switch", global_position)

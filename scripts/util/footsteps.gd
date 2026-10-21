@@ -1,15 +1,17 @@
 class_name Footsteps
 extends AudioStreamPlayer3D
-## Schritte zum Hören, an den Füßen von Spieler und Gästen. Bisher nur auf Teppich – Holz, Fliesen und Rasen
-## bleiben stumm, bis es Klänge dafür gibt. Reiner Ton: Lärm für Monster und Gäste macht weiter
+## Schritte zum Hören, an den Füßen von Spieler und Gästen. Bisher auf Teppich (Flure) und Fliesen (Lobby, Küche) –
+## Holz und Rasen bleiben stumm, bis es Klänge dafür gibt. Reiner Ton: Lärm für Monster und Gäste macht weiter
 ## `Game.noise("step", …)` (Spielkonzept 4.15, Teppich schluckt dort Schritte).
 
 ## Bodenart (Textur-Id aus TexGen) → Klänge, abwechselnd linker und rechter Fuß
 const SOUNDS := {
-	"carpet": ["res://assets/sound/step_carpet_1.wav", "res://assets/sound/step_carpet_2.wav"],
+	"carpet": ["res://assets/sound/step_carpet.wav"],   ## Teppichflure
+	"tiles": ["res://assets/sound/step_tiles.wav"],     ## Lobby, Küche
+## (ein Klang je Boden reicht – die Tonhöhe streut, mehrere wechseln sich ab)
 }
 ## Texturen, die `floor_under` erkennt
-const FLOOR_TEXTURES := ["carpet", "grass"]
+const FLOOR_TEXTURES := ["carpet", "grass", "tiles"]
 const VOLUME_DB := -8.0
 const RUN_DB := 4.0               ## Rennen: so viel lauter
 const CHILD_DB := -4.0            ## Kinder treten leiser auf …
@@ -44,7 +46,8 @@ func step(floor_id: String, running := false, child := false) -> void:
 	play()
 
 
-## Boden unter einem Körper: Textur-Id aus FLOOR_TEXTURES, "" für alles andere, "air" ohne Boden.
+## Boden unter einem Körper: Textur-Id aus FLOOR_TEXTURES, "" für alles andere, "air" ohne Boden. Materialien ohne
+## TexGen-Textur (Fototexturen, Mat.photo) nennen ihre Bodenart im Meta "floor" (Lobbymarmor = "tiles").
 ## Teppichläufer haben keine Kollision – darunter liegt im Flur ohnehin Teppich (Spielkonzept 7.5).
 static func floor_under(body: Node3D) -> String:
 	var from := body.global_position + Vector3.UP * 0.1
@@ -55,6 +58,8 @@ static func floor_under(body: Node3D) -> String:
 	for child in (hit["collider"] as Node).get_children():
 		var mi := child as MeshInstance3D
 		if mi and mi.material_override is ShaderMaterial:
+			if mi.material_override.has_meta("floor"):
+				return mi.material_override.get_meta("floor")
 			var tex = (mi.material_override as ShaderMaterial).get_shader_parameter("albedo_tex")
 			for id in FLOOR_TEXTURES:
 				if tex == TexGen.get_tex(id):

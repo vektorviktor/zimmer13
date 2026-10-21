@@ -9,13 +9,14 @@ const PATH := "user://settings.cfg"
 const RESOLUTIONS: Array[Vector2i] = [Vector2i(480, 270), Vector2i(640, 360), Vector2i(960, 540)]
 ## Shader mit Nearest-Filter – ohne PS1-Look werden ihre Texturen weich gefiltert
 const PSX_SHADERS := ["res://shaders/psx_surface.gdshader", "res://shaders/psx_guest.gdshader",
-	"res://shaders/psx_ghost.gdshader"]
+	"res://shaders/psx_ghost.gdshader", "res://shaders/psx_particle.gdshader", "res://shaders/psx_photo.gdshader"]
 
 # Bild
 var gamma := 1.0                 ## Helligkeit (0,6 … 1,8)
 var fullscreen := false          ## wird nicht gespeichert – das Spiel startet immer im Fenster
 var vsync := true
 var fov := 72.0
+var reflections := true          ## Spiegelungen auf glatten Flächen (SSR: Lobbymarmor, Pool, Tapetenlack) – kostet Leistung
 # PS1-Look
 var psx_look := true             ## Hauptschalter: aus = volle Auflösung, glatte Texturen, kein Wackeln/Dithering
 var resolution := 0              ## Index in RESOLUTIONS
@@ -38,7 +39,7 @@ var age_notice_shown := false    ## Hinweis mit Altersempfehlung schon gezeigt
 ## Hält die PSX_SHADERS geladen, damit jedes load() dieselbe (umgeschaltete) Instanz liefert
 var _shaders: Array[Shader] = []
 
-const KEYS := ["gamma", "vsync", "fov", "psx_look", "resolution", "vertex_wobble", "dithering",
+const KEYS := ["gamma", "vsync", "fov", "reflections", "psx_look", "resolution", "vertex_wobble", "dithering",
 	"master_volume", "music_volume", "effects_volume", "mouse_sensitivity", "invert_y",
 	"crouch_toggle", "flicker_intensity", "subtitles", "warning_shown", "age_notice_shown"]
 
@@ -91,7 +92,9 @@ func apply() -> void:
 		window.content_scale_factor = 1.0
 	RenderingServer.global_shader_parameter_set("psx_snap", 1.0 if psx_look and vertex_wobble else 0.0)
 	RenderingServer.global_shader_parameter_set("psx_smooth", 0.0 if psx_look else 1.0)   # Tapete (psx_wall)
+	RenderingServer.global_shader_parameter_set("reflections", 1.0 if reflections else 0.0)   # Spiegelanteil (psx_photo)
 	_apply_texture_filter(psx_look)
+	Mat.set_photo_detail(psx_look)
 	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(master_volume, 0.0001)))
 	changed.emit()
 

@@ -12,15 +12,16 @@ class_name GuestProfiles
 ##   shock  – Schreckreaktion (flee, freeze, cry; erzeugte Gäste: nach Charakter, Guest.SHOCK_STYLES)
 ##   report   – wie sie davon erzählen (%s = was, %s = wo)
 ##   clothing – was von ihnen zurückbleibt, wenn sie verschwinden
+##   sex / gen – Geschlecht und Generation (young, mid, old) wie bei erzeugten Gästen – für ihre Stimme (Guest.voice)
 
 const ALL := {
 	"edna": {
-		"name": "Edna", "room": "0111",
+		"name": "Edna", "room": "0111", "sex": "f", "gen": "old",
 		"coat": Color(0.42, 0.28, 0.48), "pants": Color(0.2, 0.18, 0.22), "hair": Color(0.82, 0.82, 0.84),
 		"brave": 0.2, "greed": 0.15, "gossip": 0.5, "sell": 1.0, "buy": 0.6,
 		"harvester": false, "carver": false,
 		"likes": [Item.Kind.CANDLE, Item.Kind.LEAVES],
-		"stock": {Item.Kind.CANDLE: 4, Item.Kind.COBWEB: 1, Item.Kind.SWEETS: 2},   # Süßigkeiten für die Kinder (6.13)
+		"stock": {Item.Kind.CANDLE: 4, Item.Kind.COBWEB: 1, Item.Kind.SWEETS: 2, Item.Kind.MINI_PUMPKIN: 1},   # Süßigkeiten für die Kinder (6.13)
 		"start_deco": [Item.Kind.CANDLE, Item.Kind.LEAVES],
 		"activities": {"room": 3.0, "lobby": 4.0, "kitchen": 2.0, "garden": 0.5, "wander": 0.5, "bar": 0.7},
 		"money": 12,
@@ -65,12 +66,12 @@ const ALL := {
 		},
 	},
 	"bruno": {
-		"name": "Bruno", "room": "0112",
+		"name": "Bruno", "room": "0112", "sex": "m", "gen": "mid",
 		"coat": Color(0.3, 0.25, 0.18), "pants": Color(0.15, 0.15, 0.17), "hair": Color(0.15, 0.1, 0.08),
 		"brave": 0.8, "greed": 0.9, "gossip": 0.2, "sell": 1.5, "buy": 0.5,
 		"harvester": true, "carver": false,
 		"likes": [Item.Kind.CARVED_PUMPKIN, Item.Kind.KNIFE],
-		"stock": {Item.Kind.PUMPKIN: 2, Item.Kind.CARVED_PUMPKIN: 1, Item.Kind.LEAVES: 3, Item.Kind.SWEETS: 3},
+		"stock": {Item.Kind.PUMPKIN: 2, Item.Kind.CARVED_PUMPKIN: 1, Item.Kind.LEAVES: 3, Item.Kind.SWEETS: 3, Item.Kind.LIGHT_STRING: 2, Item.Kind.SKULL: 1},
 		"start_deco": [Item.Kind.CARVED_PUMPKIN],
 		"activities": {"room": 3.0, "lobby": 2.0, "kitchen": 1.0, "garden": 2.0, "wander": 1.0, "bar": 3.0},
 		"money": 30,
@@ -115,13 +116,13 @@ const ALL := {
 		},
 	},
 	"mila": {
-		"name": "Mila", "room": "0115",
+		"name": "Mila", "room": "0115", "sex": "f", "gen": "young",
 		"coat": Color(0.2, 0.45, 0.4), "pants": Color(0.25, 0.2, 0.3), "hair": Color(0.55, 0.2, 0.1),
 		"brave": 0.5, "greed": 0.4, "gossip": 0.9, "sell": 1.1, "buy": 0.8,
 		"harvester": true, "carver": true,
 		"likes": [Item.Kind.PUMPKIN, Item.Kind.COBWEB],
-		"stock": {Item.Kind.CARVED_PUMPKIN: 2, Item.Kind.PUMPKIN: 1},
-		"start_deco": [Item.Kind.CARVED_PUMPKIN, Item.Kind.LEAVES],
+		"stock": {Item.Kind.CARVED_PUMPKIN: 2, Item.Kind.PUMPKIN: 1, Item.Kind.SHEET_GHOST: 1, Item.Kind.MINI_PUMPKIN: 2, Item.Kind.BAT_GARLAND: 1},
+		"start_deco": [Item.Kind.CARVED_PUMPKIN, Item.Kind.SHEET_GHOST],
 		"activities": {"room": 2.0, "lobby": 3.0, "kitchen": 1.0, "garden": 3.0, "wander": 1.0, "bar": 1.5},
 		"money": 8,
 		"reliable": 0.65, "clothing": "Milas Halstuch", "shock": "cry",

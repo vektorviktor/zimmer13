@@ -7,6 +7,8 @@ extends CharacterBody3D
 ## Taschenlampe in der Hand: [Linksklick] an/aus, [R] normales Licht ↔ UV (4.16).
 
 const HEIGHT := 1.8
+## Gebratenen Kürbis essen (Spielkonzept 3.8): so viel Schock weniger
+const EAT_CALM := 0.2
 const RADIUS := 0.225
 const CROUCH_HEIGHT := 1.15
 const EYE_HEIGHT := 1.68
@@ -68,16 +70,26 @@ const LOOK_LAG := Vector2(30.0, 7.0)
 const STUMBLE_RATE := 0.25
 const HANGOVER_TIME := 240.0
 const HANGOVER_DRAIN := 1.4
-## Schwäche (Spielkonzept 4.18): so viele Nächte ohne Schlaf machen ganz schwach; so viel zählen Schock,
-## Trauer (frisch) und Kater
+## Schwäche (Spielkonzept 4.18): so viele Nächte ohne Schlaf machen ganz schwach, betrunken (BarTap.DRUNK, ab dem
+## 3. Glas) ebenso; so viel zählen Schock, Trauer (frisch) und Kater
 const WEAK_NIGHTS := 3.0
+## Unter dem Bettlaken (Spielkonzept 5.9) erkennen Gäste den Spieler nur aus dieser Nähe
+const RECOGNIZE_RANGE := 1.5
+const WEAK_DRUNK := 1.0 / BarTap.DRUNK
 const WEAK_SHOCK := 0.5
 const WEAK_GRIEF := 0.3
 const WEAK_HANGOVER := 0.2
+## Verschwommene Sicht (Spielkonzept 3.6/3.7): so unscharf nach WEAK_NIGHTS Nächten ohne Schlaf (in Schüben
+## schwächer), ab diesem Rausch (1. Glas noch klar), bei Kater; so schnell (je Sekunde) folgt die Sicht dem Zustand
+const SIGHT_TIRED := 0.7
+const SIGHT_DRUNK_FROM := 0.25
+const SIGHT_HANGOVER := 0.12
+const SIGHT_FADE := 0.5
 
 var head: Node3D
 var camera: Camera3D
 var held: Item
+var carried_cat: HotelCat   ## Katze auf dem Arm (Spielkonzept 6.11) – solange keine Hand frei für Gegenstände
 var crouching := false
 var running := false
 var dead := false
@@ -108,8 +120,12 @@ var injury := 0.0      ## von Gästen geschlagen (0..1): langsamer, blutet – h
 var stamina := 1.0     ## Ausdauer (0..1), nicht sichtbar – nur Herzschlag und Atem verraten sie (3.1)
 var winded := false    ## außer Atem: kein Rennen, bis man sich beruhigt hat
 var debug_sprint := false   ## --sprint: rennt vorwärts wie mit W + Shift, bis er außer Atem ist
+var disguised := false   ## Bettlaken übergeworfen – Gäste erkennen ihn nur aus der Nähe (5.9)
+var disguise_count := 0  ## wie oft schon übergeworfen – jeder Gast staunt einmal je Mal (Guest._notice_disguise)
 var drunk := 0.0       ## Rausch (0..1) von der Bar – Stufen in BarTap (3.7)
 var hangover := 0.0    ## Sekunden Kater nach dem Schlaf im Rausch
+var sight_blur := 0.0   ## verschwommene Sicht (0..1) aus Müdigkeit und Rausch – Post-Shader `blur` (3.6/3.7)
+var sight_warp := 0.0   ## Wabern und Doppelbild im Rausch (0..1) – Post-Shader `warp`
 
 var _hand: Node3D
 var _left_hand: Node3D
@@ -122,6 +138,7 @@ var _shape: CapsuleShape3D
 var _collider: CollisionShape3D
 var _ray: RayCast3D
 var _focus = null
+var _hang_hint := false   ## Hinweis aufs Aufhängen schon gezeigt
 var _noise_timer := 0.0
 var _pant_timer := 0.0
 var _step_dist := 0.0
@@ -223,9 +240,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif _focus != null and is_instance_valid(_focus):
 			_focus.interact(self)
 	elif event.is_action_pressed("drop") and not hiding:
-		drop_held()
+		if held == null and disguised:
+			take_off_sheet()
+		else:
+			drop_held()
 	elif event.is_action_pressed("use_item") and _punch_target() != null:
 		_try_punch(_punch_target())
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.BED_SHEET and not hiding:
+		put_on_sheet()
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.ROAST_PUMPKIN and not hiding:
+		eat_held()
 	elif event.is_action_pressed("use_item") or event.is_action_pressed("light_mode"):
 		_use_flashlight(event.is_action_pressed("light_mode"))
 
@@ -602,6 +626,35 @@ func hurt(amount: float, from: Vector3) -> void:
 		Game.hud.flash_hurt(amount)
 
 
+# --- Verkleiden (Spielkonzept 5.9) ---------------------------------------------------
+
+## Bettlaken aus der Hand überwerfen: Man sieht nur noch durch die Augenlöcher, Gäste erkennen einen nur aus
+## der Nähe (recognized_by) – als Zeugen beim Klauen, beim Rempeln, beim Anschließen.
+func put_on_sheet() -> void:
+	consume_held()
+	set_disguised(true)
+	Game.say("Du wirfst dir das Laken über. Wer bist du jetzt? ([G] mit leeren Händen: abnehmen)", 4.0)
+
+
+## Abnehmen: Das Laken kommt zurück in die Hand.
+func take_off_sheet() -> void:
+	set_disguised(false)
+	receive_item(Item.create(Item.Kind.BED_SHEET))
+
+
+func set_disguised(value: bool) -> void:
+	if value and not disguised:
+		disguise_count += 1
+	disguised = value
+	if Game.hud:
+		Game.hud.set_disguised(value)
+
+
+## Erkennt dieser Gast den Spieler? Verkleidet nur aus RECOGNIZE_RANGE.
+func recognized_by(guest: Node3D) -> bool:
+	return not disguised or guest.global_position.distance_to(global_position) < RECOGNIZE_RANGE
+
+
 # --- Rausch & Schwäche (Spielkonzept 3.7, 4.18) ---------------------------------------
 
 ## Ein Glas an der Bar: nimmt Schock, macht betrunken. quiet: ohne Gedanken (im Gespräch, Runde ausgeben).
@@ -625,7 +678,7 @@ func weakness() -> float:
 	var grief := 0.0
 	if Game.director:
 		grief = clampf(Game.director.grief / MonsterDirector.GRIEF_TIME, 0.0, 1.0)
-	return clampf(nights_awake / WEAK_NIGHTS + drunk + shock * WEAK_SHOCK + grief * WEAK_GRIEF
+	return clampf(nights_awake / WEAK_NIGHTS + drunk * WEAK_DRUNK + shock * WEAK_SHOCK + grief * WEAK_GRIEF
 		+ (WEAK_HANGOVER if hangover > 0.0 else 0.0), 0.0, 1.0)
 
 
@@ -635,6 +688,20 @@ func _update_drunk(delta: float) -> void:
 	if sleeping:
 		_sleep_drunk = maxf(_sleep_drunk, drunk)
 	_drunk_time += delta
+	_update_sight(delta)
+
+
+## Verschwommene Sicht (Spielkonzept 3.6/3.7): je Nacht ohne Schlaf unschärfer, in Schüben, als fielen die Augen
+## zu; im Rausch angetrunken leicht, betrunken deutlich, pulsierend, dazu Wabern und Doppelbild; Kater ein Hauch.
+func _update_sight(delta: float) -> void:
+	var t := _drunk_time
+	var tired := clampf(nights_awake / WEAK_NIGHTS, 0.0, 1.0) * SIGHT_TIRED
+	tired *= 0.55 + 0.45 * pow(0.5 + 0.5 * sin(t * 0.45), 4.0) + 0.05 * sin(t * 1.7)
+	var tipsy := pow(clampf((drunk - SIGHT_DRUNK_FROM) / (BarTap.ENOUGH - SIGHT_DRUNK_FROM), 0.0, 1.0), 1.5)
+	tipsy *= 0.75 + 0.25 * sin(t * 0.9)
+	var sore := (SIGHT_HANGOVER * (0.7 + 0.3 * sin(t * 0.6))) if hangover > 0.0 else 0.0
+	sight_blur = move_toward(sight_blur, clampf(tired + tipsy + sore, 0.0, 1.0), delta * SIGHT_FADE)
+	sight_warp = move_toward(sight_warp, BarTap.sway(drunk), delta * SIGHT_FADE)
 
 
 ## Im Rausch: der Blick schwankt und driftet, beim Gehen stolpert man manchmal – das hört man (4.15).
@@ -726,6 +793,9 @@ func try_pick_up(item: Item) -> void:
 	if held and not item.goes_to_pocket():
 		Game.say("Du hast schon etwas in der Hand. Erst ablegen [G].")
 		return
+	if carried_cat and not item.goes_to_pocket():
+		Game.say("Erst %s absetzen [G]." % carried_cat.display_name)
+		return
 	if item.owner_id != "" and item.owner_id != "player" and Game.social:
 		Game.social.on_player_took(item)
 	if item.goes_to_pocket():
@@ -740,15 +810,31 @@ func try_pick_up(item: Item) -> void:
 	Game.play_sound("blip", 0.5)
 	if item.flashlight:
 		Game.say("%s – [Linksklick] an/aus%s" % [item.display_name, ", [R] UV" if item.flashlight.has_uv else ""], 3.0)
+	elif item.can_hang() and not _hang_hint:
+		_hang_hint = true
+		Game.say("%s – auf eine Wand sehen und [G] zum Aufhängen" % item.display_name, 3.5)
 	if Game.hud:
 		Game.hud.set_held(item.display_name)
 
 
 ## `shocked`: vor Schreck fallen gelassen – lauter (6.8, 4.15).
 func drop_held(shocked: bool = false) -> void:
+	if held == null and carried_cat:
+		carried_cat.put_down()
+		return
 	if held == null:
 		return
 	var item := held
+	var spot := {} if shocked else _hang_spot()
+	if not spot.is_empty():
+		# An die Wand hängen statt ablegen (Spielkonzept 5.6)
+		held = null
+		item.reparent(get_parent(), false)
+		item.hang(spot["point"], spot["out"], float(spot.get("length", 0.0)))
+		Game.noise("drop", item.global_position, self)
+		if Game.hud:
+			Game.hud.set_held("")
+		return
 	held = null
 	var place := _drop_position()
 	item.reparent(get_parent(), false)
@@ -768,12 +854,19 @@ func receive_item(item: Item) -> bool:
 		return false
 	get_parent().add_child(item)
 	item.global_position = global_position + Vector3.UP
-	if held and not item.goes_to_pocket():
+	if (held or carried_cat) and not item.goes_to_pocket():
 		Game.say("Die Hände sind voll – %s liegt jetzt vor dir." % item.display_name)
 		item.global_position = _drop_position()
 		return false
 	try_pick_up(item)
 	return true
+
+
+## Gebratenen Kürbis essen (Spielkonzept 3.8): Schock sinkt.
+func eat_held() -> void:
+	shock = maxf(0.0, shock - EAT_CALM)
+	consume_held()
+	Game.say("Warm, süß und ein bisschen rauchig. Das tut gut.", 3.0)
 
 
 ## Gegenstand in der Hand wird verbraucht (z. B. Kerze in den Kürbis).
@@ -826,6 +919,52 @@ func _drop_position() -> Vector3:
 	return floor_pos + Vector3.UP * 0.01
 
 
+## Wo der Gegenstand in der Hand an der Wand hängen würde (Spielkonzept 5.6): {point, out[, length]} oder
+## leer. point liegt auf der Wandfläche: beim Lakengespenst in Höhe des Hakens, bei der Lichterkette in der
+## Mitte der Aufhängelinie – sie reicht nach beiden Seiten bis zur nächsten Wand oder Tür, höchstens 1,5 m.
+func _hang_spot() -> Dictionary:
+	if held == null or not held.can_hang():
+		return {}
+	var space := get_world_3d().direct_space_state
+	var from := camera.global_position
+	var query := PhysicsRayQueryParameters3D.create(from, from - camera.global_transform.basis.z * REACH, 1)
+	query.exclude = [get_rid()]
+	var hit := space.intersect_ray(query)
+	if hit.is_empty():
+		return {}
+	var normal: Vector3 = hit["normal"]
+	if absf(normal.y) > 0.3:
+		return {}
+	var out := Vector3(normal.x, 0, normal.z).normalized()
+	var point: Vector3 = hit["position"]
+	var floor_y := global_position.y
+	match held.kind:
+		Item.Kind.SHEET_GHOST:
+			point.y = clampf(point.y + 0.3, floor_y + 1.6, floor_y + 2.5)
+		Item.Kind.COBWEB:
+			point.y = clampf(point.y, floor_y + 0.5, floor_y + 2.7)
+		Item.Kind.BAT_GARLAND:
+			point.y = clampf(point.y + 0.2, floor_y + 1.7, floor_y + 2.5)
+		Item.Kind.SPIDER:
+			point.y = clampf(point.y + 0.3, floor_y + 1.8, floor_y + 2.6)
+		Item.Kind.BROOM:
+			point.y = floor_y   # lehnt unten an der Wand
+		Item.Kind.LIGHT_STRING:
+			point.y = clampf(point.y + 0.15, floor_y + 1.7, floor_y + 2.5)
+			var along := Vector3.UP.cross(out)
+			var reach: Array[float] = [1.5, 1.5]
+			for i in 2:
+				var start := point + out * 0.06
+				var ray := PhysicsRayQueryParameters3D.create(start, start + along * (1.0 if i == 0 else -1.0) * 1.5, 1 | 2)
+				var block := space.intersect_ray(ray)
+				if not block.is_empty():
+					reach[i] = start.distance_to(block["position"]) - 0.05
+			if reach[0] + reach[1] < 0.8:
+				return {}
+			return {"point": point + along * (reach[0] - reach[1]) / 2.0, "out": out, "length": reach[0] + reach[1]}
+	return {"point": point, "out": out}
+
+
 func _update_focus() -> void:
 	_focus = null
 	if _ray.is_colliding():
@@ -836,6 +975,13 @@ func _update_focus() -> void:
 		var text := ""
 		if _focus != null and is_instance_valid(_focus):
 			text = _focus.get_prompt(self)
+		if text == "" and carried_cat:
+			text = "%s absetzen [G]" % carried_cat.display_name
+		if text == "" and held:
+			if held.can_hang() and not _hang_spot().is_empty():
+				text = "%s aufhängen [G]" % held.display_name
+			elif held.kind == Item.Kind.LEAVES:
+				text = "Herbstlaub verstreuen [G]"
 		Game.hud.set_prompt(text)
 
 

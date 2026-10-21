@@ -4,7 +4,8 @@ extends CharacterBody3D
 ## (Dunkelheit, Neugier, wenig Deko) – und biegt in Zimmer ab, wenn Neugier und Dreistigkeit
 ## groß genug sind. Es bleibt meist verborgen: Sieht der Spieler es, verschwindet es aus
 ## seinem Blickfeld. Sieht es jemanden, jagt es ihn. Es hinterlässt Spuren (Fußspuren,
-## Kratzspuren, ausgehende Kerzen, Handabdrücke, geprüfte Verstecke).
+## Kratzspuren, ausgehende Kerzen, Handabdrücke, geprüfte Verstecke) und eine Aschespur: schwarze Flocken,
+## die dort, wo es war, noch eine Weile in der Luft hängen und langsam sinken.
 ## Lokale −Z-Achse = Blickrichtung. Bewegt sich ruckartig („Stop-Motion“).
 
 enum State { INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK, REVEAL }
@@ -26,6 +27,11 @@ const MODEL := "res://assets/models/monster.glb"
 const EYES: Array[Vector3] = [Vector3(-0.068, 2.1, -0.6), Vector3(0.068, 2.1, -0.6)]
 const ANIM_STEP := 0.09            ## Stop-Motion: so oft wird eine neue Pose gesetzt
 const LEG_LENGTH := 1.25
+## Aschespur: so viele Flocken gleichzeitig, so lange hängen sie in der Luft (s), Kantenlänge (m)
+const ASH := 60
+const ASH_LIFE := 7.0
+const ASH_SIZE := 0.035
+const ASH_HEIGHT := 1.0            ## Mitte des Bereichs (±0,6 m), in dem sie entstehen
 ## Sichtlinie: Wände, Türen, Vorhänge und Milchglas (klares Glas lässt den Blick durch).
 ## Sichtweiten stehen in Senses (Spielkonzept 4.15).
 const SIGHT_MASK := Senses.SIGHT_MASK
@@ -48,6 +54,7 @@ var _gait := 0.0                        ## Schrittphase
 var _near_door := false                 ## unter dem Türsturz (2,1 m) ducken
 var _eye_mat: ShaderMaterial
 var _face_light: OmniLight3D
+var _ash: CPUParticles3D
 var _target := Vector3.ZERO
 var _roam: Dictionary = {}       ## aktuelles Ziel beim Umherstreifen {pos, room}
 var _seen_timer := 0.0
@@ -99,8 +106,12 @@ func _ready() -> void:
 	agent.path_desired_distance = 0.3
 	agent.target_desired_distance = 0.5
 	agent.path_height_offset = 0.2   # NavMesh liegt ~0,2 m über dem Boden
+	# Vom Heizkeller (Untergeschoss, Spielkonzept 7.9) bis in die Flügel sind es mehr Polygone, als Godot
+	# standardmäßig durchsucht (4096) – sonst endet der Weg irgendwo auf halber Strecke
+	agent.path_search_max_polygons = 0
 	add_child(agent)
 	_build_visual()
+	_build_ash()
 	deactivate()
 
 
@@ -153,6 +164,7 @@ func deactivate() -> void:
 	noticed = false
 	_look_timer = 0.0
 	_face_light.light_energy = 0.0
+	_ash.emitting = false
 
 
 ## Geräusch gehört → nachsehen, danach weiter auf der Route.
@@ -349,6 +361,9 @@ func _update_noticed(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	if state == State.INACTIVE:
 		return
+	if _ash.is_inside_tree():
+		_ash.global_position = global_position + Vector3.UP * ASH_HEIGHT
+		_ash.emitting = true
 	_animate(delta)
 	if state == State.KILL or state == State.REVEAL:
 		return
@@ -766,6 +781,29 @@ func _build_visual() -> void:
 	_face_light.omni_range = 1.6
 	_face_light.light_energy = 0.0
 	add_child(_face_light)
+
+
+## Asche: eigener Knoten neben dem Monster in der Welt – die Flocken bleiben, auch wenn es verschwindet.
+func _build_ash() -> void:
+	var mat := Mat.particle(null)
+	mat.set_shader_parameter("spin", 0.8)
+	mat.set_shader_parameter("sway", 0.05)
+	mat.set_shader_parameter("sway_cycles", 2.0)
+	_ash = Geo.particles(ASH, ASH_LIFE, ASH_SIZE, mat, 0.05, 0.35)
+	_ash.color = Color(0.05, 0.045, 0.045)
+	_ash.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_ash.emission_box_extents = Vector3(0.25, 0.6, 0.25)
+	_ash.direction = Vector3.UP
+	_ash.spread = 180.0
+	_ash.initial_velocity_min = 0.02
+	_ash.initial_velocity_max = 0.1
+	_ash.gravity = Vector3(0, -0.06, 0)
+	_ash.damping_min = 0.01
+	_ash.damping_max = 0.03
+	_ash.scale_amount_min = 0.5
+	_ash.scale_amount_max = 1.4
+	_ash.emitting = false
+	get_parent().add_child.call_deferred(_ash)
 
 
 ## Dreht einen Knochen um eine Achse im Modellraum (X = seitlich, Y = oben, −Z = vorn).

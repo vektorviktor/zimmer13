@@ -271,6 +271,14 @@ func _take_incoming(call: Dictionary) -> void:
 			_take_creepy(call, title)
 		"kid_prank":
 			ui.show_page(title, "*Kichern* … „Saures!“ … *klick*", [["Auflegen", hang_up]])
+		"decorate":
+			ui.show_page("%s – %s" % [title, guest.display_name],
+				"„%s hier! Wir schmücken gerade %s – bring Deko mit und komm dazu!“" % [guest.display_name, call["where"]], [
+				["Ich komme!", func() -> void:
+					Game.social.decorating.on_accepted()
+					hang_up()],
+				["Keine Zeit.", hang_up],
+			])
 
 
 ## Wo es ist – laut einem Gast. Nicht jeder erinnert sich richtig (4.13).
@@ -504,7 +512,7 @@ func _phone_party(guest: Guest) -> void:
 	_talk["chose"] = true
 	if Social.tier(guest) >= Social.Tier.ANNOYED:
 		guest.invited = true
-		guest.join_party(Game.social.free_party_spot())
+		guest.join_party(Game.social.free_party_spot(guest))
 		ui.show_page(_talk_title(guest), "„%s“" % guest.line("party_yes"), [["Auflegen", hang_up]])
 	else:
 		_show_talk(guest, "„%s“" % guest.line("party_no"))
@@ -620,6 +628,15 @@ func kid_prank(guest: Guest) -> bool:
 	if home_phone == null or home_phone.off_hook or is_busy():
 		return false
 	start_incoming({"kind": "kid_prank", "guest": guest, "room": guest.home["no"]})
+	return true
+
+
+## Einladung zur Schmück-Aktion (Spielkonzept 5.9): where wie „den Südflur (Ostflügel)“. false, wenn das Telefon
+## gerade nicht klingeln kann – dann kommt die Einladung als Meldung.
+func decorate_call(guest: Guest, where: String) -> bool:
+	if home_phone == null or home_phone.off_hook or is_busy() or not _incoming.is_empty():
+		return false
+	start_incoming({"kind": "decorate", "guest": guest, "room": guest.home["no"], "where": where})
 	return true
 
 

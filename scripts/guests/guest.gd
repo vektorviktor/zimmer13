@@ -13,9 +13,15 @@ extends CharacterBody3D
 ## wenn er wütend ist, stolpert, wenn du ihn rammst, und schlägt zurück oder flieht, wenn du zuschlägst.
 
 enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP, SHOCKED, GHOSTED,
-	FOLLOW, VISIT, ATTACK, STAGGER }
+	FOLLOW, VISIT, ATTACK, STAGGER, DECORATE, SEARCH, EAT }
 
 const WALK_SPEED := 1.4
+## Detailstufe (Leistung bei vielen Gästen): Wer nicht im Blickfeld und weiter als LOD_RANGE vom Spieler ist (oder
+## weiter als LOD_FAR), rechnet nur jedes LOD_STEP-te Physikbild – mit der aufgesammelten Zeit und entsprechend
+## längeren Schritten (_lod_scale in _move_to). In der Nähe und im Blick bleibt alles flüssig.
+const LOD_RANGE := 15.0
+const LOD_FAR := 45.0
+const LOD_STEP := 3
 const RUN_SPEED := 3.3
 ## Hört das Monster (Rauschen) ab dieser Entfernung – vorsichtige Gäste verstecken sich
 const HEAR_DISTANCE := 15.0
@@ -33,6 +39,13 @@ const MUD_STEPS := 14
 const BLEED_TIME := 45.0
 ## Tänze bei Feiern (`_dance_pose`) für die Klötzchenfigur – Gastmodelle tanzen GuestBody.DANCES
 const DANCES := ["hüpfen", "wiegen", "drehen", "arme hoch", "twist", "schunkeln"]
+## Stimme (Schreie, SynthAudio.VOICES): jeder klingt etwas anders hoch (± VOICE_SPREAD, fest nach der Id), dazu
+## Alter, Panik (höher) und Rausch (tiefer, schleppend); Mutige brechen den Schreckensschrei bis VOICE_BRAVE früher ab
+const VOICE_SPREAD := 0.06
+const VOICE_AGE := {"young": 1.04, "mid": 1.0, "old": 0.92}
+const VOICE_FEAR := 0.06
+const VOICE_DRUNK := 0.08
+const VOICE_BRAVE := 0.35
 ## Schreck (Spielkonzept 6.12): so weit sieht er Blut und Leichen, so oft schaut er sich um;
 ## Reaktion je Charakter (feste Gäste: profile["shock"])
 const SHOCK_RANGE := 7.0
@@ -41,6 +54,11 @@ const SHOCK_STYLES := {
 	"ängstlich": "flee", "geschäftstüchtig": "flee", "Plaudertasche": "cry", "Bastler": "cry",
 	"Skeptiker": "freeze", "Griesgram": "freeze",
 }
+## Lakengeist vor der Tür (Spielkonzept 5.6): so lange starrt er hin, bevor er aufmachen geht (bei voller
+## Schwäche halb so lange) – aufmachen gehen nur so viele (+ Schwäche × DOOR_OPEN_WEAK), die anderen starren nur
+const DOOR_TRANCE := Vector2(20.0, 50.0)
+const DOOR_OPEN := 0.2
+const DOOR_OPEN_WEAK := 0.8
 const SHOCK_CRIES := {
 	"flee": ["Oh Gott! Nein, nein, nein!", "Hilfe! HILFE!", "Weg hier, nur weg!"],
 	"freeze": ["…", "Was zum …", "Das … das ist nicht wahr."],
@@ -62,9 +80,13 @@ const HIT_BACK_LINES := ["Na warte!", "Das wirst du bereuen!", "Jetzt reicht's m
 ## An der Bar (Spielkonzept 3.7): so oft trinkt ein Gast etwas, wenn er dort ankommt; so viel zählt Angst
 ## (0..100 → 0..1) für die Schwäche, nach der sich der Lakengeist seine Opfer sucht (4.18)
 const BAR_DRINK := 0.7
+## Spieler unter dem Bettlaken (5.9): so dunkel (Director.light_at), dass er einen Gast wirklich erschreckt – und so sehr
+const DISGUISE_DARK := 0.25
+const DISGUISE_FRIGHT := 20.0
 const WEAK_FEAR := 0.6
 const HIT_FLEE_LINES := ["Hilfe! Der ist verrückt!", "Lass mich in Ruhe!", "Au! Hör auf!"]
-const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.LEAVES, Item.Kind.PUMPKIN]
+const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.SKULL, Item.Kind.SHEET_GHOST, Item.Kind.LIGHT_STRING, Item.Kind.BROOM,
+	Item.Kind.BAT_GARLAND, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.SPIDER, Item.Kind.LEAVES, Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN]
 ## Kinder (Spielkonzept 6.13): Grundwert an Schwäche für den Lakengeist; so viel Angst bekommen die Eltern,
 ## wenn ihr Kind erschrickt; so oft rennt ein Kind los (Lärm wie Rennen) und so oft lacht es dabei bzw. auf
 ## Feiern; so oft kann es in der Nachtruhe nicht schlafen und so lange bleibt es dann wach; so oft schenkt es
@@ -116,14 +138,23 @@ var chats_today := 0         ## nur die ersten zwei Plaudereien am Tag zählen v
 var attack_cooldown := 0.0
 var threatened := false      ## hat dir schon gedroht – beim nächsten Mal schlägt er zu
 var sleepless := false       ## Kind, das in dieser Nachtruhe nicht schlafen kann (Spielkonzept 6.13)
+var last_party := -1.0       ## Director.elapsed, als er zuletzt eine Feier verlassen hat; −1 = noch nie (GuestChat, nicht gespeichert)
 
 var agent: NavigationAgent3D
 var _collider: CollisionShape3D
 var _visual: Node3D
+var _lod_frame := randi() % 3   ## Detailstufe: Bilder seit dem letzten Rechnen (versetzt, damit nicht alle zugleich)
+var _lod_time := 0.0          ## … und die Zeit dazwischen
+var _lod_scale := 1.0         ## so viele Physikbilder stecken im aktuellen Schritt
 var _hand: Node3D
 var _arm_l: Node3D
 var _arm_r: Node3D
 var _body: GuestBody         ## Gastmodell; null = Klötzchenfigur (noch kein passender Grundkörper)
+var _head_pivot: Node3D      ## Kopf der Klötzchenfigur (Hut und Kürbis des Kostüms sitzen darauf)
+var _costume: Costume        ## Halloween-Kostüm ab dem 25. (Spielkonzept 5.9), null = unverkleidet
+var _costume_check := 0.0
+var _disguise_seen := 0      ## Player.disguise_count, über das er schon gestaunt hat (5.9)
+var _disguise_check := 0.0
 var _arms_free := true       ## Gastmodell: Arme schwingen mit der Laufanimation
 var _label: Label3D
 var _target := Vector3.ZERO
@@ -160,6 +191,8 @@ var _shock_scan := 0.0
 var _shock_look := Vector3.ZERO
 var _shock_style := ""
 var _entranced := false    ## vom Lakengeist hypnotisiert – bleibt stehen, bis er weg ist
+var _door_trance := 0.0    ## Lakengeist vor der Tür: so lange starrt er noch hin, dann geht er aufmachen
+var _knock_face := Vector3.INF   ## beim Klopfen dorthin sehen (Tür); INF: wie vor Zimmer 13
 var _gripped := false      ## wird vom Lakengeist gewürgt
 var _hurt_time := 0.0      ## geschlagen: humpelt so lange langsamer
 var _bump_cooldown := 0.0
@@ -169,6 +202,7 @@ var _resume_follow := 0.0  ## Begleiter im Gespräch: so lange kommt er danach n
 var _romp := false         ## Kind rennt aus Spaß (oder zu Mama und Papa) – Lärm wie beim Rennen
 var _laugh := 0.0
 var _awake_left := 0.0     ## schlafloses Kind: so lange bleibt es noch wach
+var _reach := 0.0          ## Schmücken (5.9): so lange noch die Arme hoch zur Wand
 
 
 func setup(p_id: String, p_home: Dictionary) -> Guest:
@@ -213,6 +247,21 @@ func _ready() -> void:
 ## Kind (Spielkonzept 6.13): nie Opfer, trinkt nicht, kommt immer zu Feiern, schlägt und klaut nicht.
 func is_child() -> bool:
 	return bool(profile.get("child", false))
+
+
+## Seine Stimme für SynthAudio.play_shot: "voice" ("m", "f", "child"), "pick" (immer dieselbe Aufnahme),
+## "pitch" (Tonhöhe und Tempo, 1 = Aufnahme) und "length" (Anteil des Schreckensschreis, Mutige kürzer).
+## Die Kinderaufnahmen sind Mädchen um 8: Jungen klingen tiefer, Siebenjährige höher.
+func voice() -> Dictionary:
+	var pitch := 1.0 + float(posmod(hash(id + "voice"), 101) - 50) / 50.0 * VOICE_SPREAD
+	var key := "child" if is_child() else String(profile.get("sex", "m"))
+	if is_child():
+		pitch *= (1.05 if int(profile.get("age", 8)) <= 7 else 0.98) * (0.93 if profile.get("sex", "m") == "m" else 1.0)
+	else:
+		pitch *= float(VOICE_AGE.get(String(profile.get("gen", "mid")), 1.0))
+	pitch *= (1.0 + fear / 100.0 * VOICE_FEAR) * (1.0 - drunk * VOICE_DRUNK)
+	var length := 1.0 if is_child() else 1.0 - float(profile["brave"]) * VOICE_BRAVE
+	return {"voice": key, "pick": posmod(hash(id), 1000), "pitch": pitch, "length": length}
 
 
 ## Mama oder Papa eines Kindes – null, wenn er kein Kind ist oder sie nicht mehr da sind.
@@ -281,6 +330,7 @@ func start_knock(door_front: Vector3) -> void:
 		global_position = door_front + Vector3(randf_range(-0.3, 0.3), 0.05, -0.15)
 	_target = door_front
 	fear = maxf(fear, 70.0)
+	_knock_face = Vector3.INF
 	state = State.KNOCK
 
 
@@ -333,6 +383,7 @@ func end_game() -> void:
 
 func leave_party() -> void:
 	if state == State.PARTY:
+		last_party = Game.director.elapsed
 		_set_idle(randf_range(2.0, 6.0))
 	invited = false
 
@@ -384,18 +435,37 @@ func pet_cat(cat: HotelCat) -> void:
 		say(["Na, %s?", "Na du, %s.", "Hallo %s, meine Schöne.", "%s! Komm her."].pick_random() % cat.display_name)
 
 
+## Wandstelle an der eigenen Tür (Flurseite) für aufgehängte Deko (Spielkonzept 5.6): Lichterkette über der
+## Tür, Lakengespenst und Spinnweben daneben, abwechselnd links und rechts. {point, out[, length]}
+func door_hang_spot(kind: int) -> Dictionary:
+	var door: Door = home["door"]
+	var into: Vector3 = home["into"]
+	var along: Vector3 = home["along"]
+	var c := door.center()
+	var face := Vector3(c.x, door.global_position.y, c.z) - into * (LevelBuilder.T / 2.0)
+	if kind == Item.Kind.LIGHT_STRING:
+		return {"point": face + Vector3.UP * (door.height + 0.12), "out": -into, "length": door.width + 1.0}
+	var hung_here := own_deco_near_door().filter(func(i: Item) -> bool: return i.hung).size()
+	var side := 1.0 if (hung_here + id.length()) % 2 == 0 else -1.0
+	var up: float = {Item.Kind.SHEET_GHOST: 2.15, Item.Kind.BAT_GARLAND: 2.25, Item.Kind.SPIDER: 2.35, Item.Kind.BROOM: 0.0}.get(kind, 1.9)
+	var beside := door.width / 2.0 + (0.75 if kind == Item.Kind.BAT_GARLAND else 0.45)
+	return {"point": face + along * side * beside + Vector3.UP * up, "out": -into}
+
+
 func own_deco_near_door() -> Array[Item]:
 	var result: Array[Item] = []
 	var door_front: Vector3 = home["door_front"]
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
-		if item.owner_id == id and not item.is_held and item.global_position.distance_to(door_front) < 2.5:
+		var flat := Vector2(item.global_position.x - door_front.x, item.global_position.z - door_front.z)
+		if item.owner_id == id and not item.is_held and flat.length() < 2.5 and absf(item.global_position.y - door_front.y) < 3.0:
 			result.append(item)
 	return result
 
 
 ## cause "monster": er verschwindet, zurück bleiben Kratzer und ein Schuh. "ghost": vom Lakengeist
-## erwürgt – er bleibt liegen (Spielkonzept 6.12).
+## erwürgt – er bleibt liegen (Spielkonzept 6.12). "pumpkin": vom Kürbismann erschlagen – er bleibt in
+## einer Blutlache liegen (4.19).
 func die(cause: String = "monster") -> void:
 	if dead:
 		return
@@ -412,7 +482,10 @@ func die(cause: String = "monster") -> void:
 		var item := node as Item
 		if item.owner_id == id:
 			item.owner_id = ""
-	if cause == "ghost":
+	if cause == "pumpkin" and Game.traces:
+		Game.traces.add_blood(global_position, randf() * TAU)
+		Game.traces.add_wall_blood(global_position, "wall_splatter")
+	if cause in ["ghost", "pumpkin"]:
 		_lie_down()
 		return
 	visible = false
@@ -437,6 +510,11 @@ func _lie_down() -> void:
 		_body.animate(0.0, 0.0, false, [_arm_l, _arm_r], false, false)
 	_visual.position = Vector3(0, 0.13, 0)
 	_visual.rotation = Vector3(PI / 2.0, 0, 0.08)
+	# Auf der Treppe an die Schräge anlegen, sonst schwebt er über den unteren Stufen
+	var under := get_world_3d().direct_space_state.intersect_ray(
+		PhysicsRayQueryParameters3D.create(global_position + Vector3.UP * 0.5, global_position + Vector3.DOWN, 1, [get_rid()]))
+	if not under.is_empty() and (under["normal"] as Vector3).y < 0.98:
+		global_basis = Basis(Quaternion(Vector3.UP, (under["normal"] as Vector3).normalized())) * global_basis
 	set_meta("sight_key", "corpse:" + id)
 	set_meta("sight_kind", "corpse")
 	add_to_group("shock_sights")
@@ -447,8 +525,18 @@ func _lie_down() -> void:
 func _physics_process(delta: float) -> void:
 	if dead:
 		return
+	_lod_time += delta
+	_lod_frame += 1
+	if _lod_frame < LOD_STEP and _lod_far():
+		return
+	_lod_scale = _lod_time / maxf(delta, 0.0001)
+	delta = _lod_time
+	_lod_time = 0.0
+	_lod_frame = 0
 	_animate(delta)
 	_update_label()
+	_update_costume(delta)
+	_notice_disguise(delta)
 	_leave_traces(delta)
 	fear = maxf(0.0, fear - delta * 0.4)
 	drunk = maxf(0.0, drunk - delta / BarTap.SOBER_TIME)
@@ -480,9 +568,9 @@ func _physics_process(delta: float) -> void:
 				wake_up()
 			return
 		State.KNOCK:
-			# klopft an Zimmer 13 und wartet, dass jemand aufmacht
+			# klopft an eine Tür (meist Zimmer 13) und wartet, dass jemand aufmacht
 			_stop(delta)
-			_face(_target + Vector3(0, 0, 1.0), delta)
+			_face(_knock_face if _knock_face != Vector3.INF else _target + Vector3(0, 0, 1.0), delta)
 			return
 		State.SHELTER:
 			# Schutz in Zimmer 13 gefunden – eine Weile bleiben
@@ -529,7 +617,14 @@ func _physics_process(delta: float) -> void:
 			if _timer <= 0.0:
 				_next_activity()
 		State.PARTY:
-			if _move_to(_target, WALK_SPEED, delta):
+			# Die letzten Schritte genau auf den eigenen Platz – _move_to hört 0,6 m davor auf, dann
+			# stünden Nachbarn zu dicht (Gäste gehen durcheinander durch)
+			var rest := Vector2(_target.x - global_position.x, _target.z - global_position.z)
+			if rest.length() > 0.1 and rest.length() < 0.6:
+				var step := rest.normalized() * minf(WALK_SPEED * 0.6, rest.length() / maxf(delta, 0.001))
+				velocity = Vector3(step.x, 0.0 if is_on_floor() else velocity.y - _gravity * delta, step.y)
+				move_and_slide()
+			elif _move_to(_target, WALK_SPEED, delta):
 				_face(Game.social.party_center(), delta)
 		State.MINIGAME:
 			if seated:
@@ -541,6 +636,17 @@ func _physics_process(delta: float) -> void:
 		State.SHOCKED:
 			_stop(delta)
 			_face(_shock_look, delta)
+			if _door_trance > 0.0:
+				_door_trance -= delta
+				if _door_trance <= 0.0:
+					if _company_at_home():
+						_door_trance = randf_range(8.0, 15.0)   # wird zurückgehalten
+					else:
+						_entranced = false
+						_walk_to(home["door_inside"], State.WALK)   # geht aufmachen (_open_doors)
+						if "--trace" in OS.get_cmdline_user_args():
+							print("[Lakengeist] %s geht zur Tür" % display_name)
+						return
 			_timer -= delta
 			if _timer <= 0.0 and not _entranced:
 				_after_shock()
@@ -615,10 +721,16 @@ func start_visit(door_front: Vector3) -> void:
 	_walk_to(door_front, State.VISIT)
 
 
-## Steht vor Zimmer 13 und klopft höflich (kein Panik-Klopfen).
-func knock_politely() -> void:
+## Steht vor einer Tür (meist Zimmer 13) und klopft höflich (kein Panik-Klopfen); face: dorthin sehen.
+func knock_politely(face: Vector3 = Vector3.INF) -> void:
 	_drop_held()
+	_knock_face = face
 	state = State.KNOCK
+
+
+## Arme hoch zur Wand (Schmücken, Spielkonzept 5.9) – für t Sekunden.
+func reach_up(t: float) -> void:
+	_reach = t
 
 
 func end_visit() -> void:
@@ -698,13 +810,24 @@ func drink() -> void:
 	fear = maxf(0.0, fear - BarTap.CALM * 100.0)
 
 
+## An der Bar: wer gerade daneben steht, trinkt mit – einer davon zählt als gemeinsame Tat (Spielkonzept 6.16).
+func _drink_with_someone() -> void:
+	var near := Game.social.living_guests().filter(func(g: Guest) -> bool:
+		return g != self and not g.is_child() and g.state in [State.IDLE, State.WALK] and g.global_position.distance_to(global_position) < 3.0)
+	if not near.is_empty():
+		Game.social.pals.note(self, near.pick_random())
+
+
 ## Wie angreifbar der Gast gerade ist (0..1) – danach sucht sich der Lakengeist seine Opfer (4.18).
 func weakness() -> float:
 	return clampf(fear / 100.0 * WEAK_FEAR + drunk + (CHILD_WEAKNESS if is_child() else 0.0), 0.0, 1.0)
 
 
 func _speed_factor() -> float:
-	return HURT_SLOW if _hurt_time > 0.0 else 1.0
+	var f := HURT_SLOW if _hurt_time > 0.0 else 1.0
+	if state == State.DECORATE and Game.social.decorating.strolls(self):
+		f *= Decorating.SOLO_STROLL   # schlendert mit Deko durchs Hotel (5.9)
+	return f
 
 
 ## Wütend oder schlimmer, der Spieler nah und sichtbar: hält auf ihn zu.
@@ -714,7 +837,7 @@ func _wants_to_bump() -> bool:
 	var p := Game.player
 	if p == null or p.dead or p.hiding or p.in_dialog:
 		return false
-	return p.global_position.distance_to(global_position) < 3.5 and can_see_actor(p)
+	return p.global_position.distance_to(global_position) < 3.5 and can_see_actor(p) and p.recognized_by(self)
 
 
 func _check_bump() -> void:
@@ -816,7 +939,7 @@ func _next_activity() -> void:
 			_go_to_bed()
 		return
 	if Game.social.party_active and invited:
-		join_party(Game.social.free_party_spot())
+		join_party(Game.social.free_party_spot(self))
 		return
 	if fear >= 60.0:
 		_walk_to(_room_point(), State.WALK)
@@ -824,7 +947,7 @@ func _next_activity() -> void:
 	# Gute Freunde schließen sich manchmal von selbst an (6.3)
 	var p := Game.player
 	if Social.tier(self) == Social.Tier.GOOD_FRIEND and p and not p.dead and p.hiding == null and randf() < 0.25 \
-			and p.global_position.distance_to(global_position) < 6.0 and can_see_actor(p):
+			and p.global_position.distance_to(global_position) < 6.0 and can_see_actor(p) and p.recognized_by(self):
 		say("Ich komm ein Stück mit.")
 		start_follow(60.0)
 		return
@@ -870,6 +993,7 @@ func _arrive() -> void:
 			# An der Bar wird meist etwas getrunken (3.7)
 			if drunk < BarTap.ENOUGH and not is_child() and randf() < BAR_DRINK and Game.social.builder.in_area(global_position, "bar"):
 				drink()
+				_drink_with_someone()
 				if randf() < 0.4:
 					say("Prost!" if drunk < BarTap.DRUNK else "Noch eins … *hicks*")
 			if _is_home() and not (sleepless and Game.social.sleep_active):
@@ -900,6 +1024,12 @@ func _arrive() -> void:
 			_finish_steal()
 		State.VISIT:
 			Game.social.on_visit_arrived(self)
+		State.DECORATE:
+			Game.social.decorating.on_arrived(self)   # Schmück-Aktion (Spielkonzept 5.9)
+		State.SEARCH:
+			Game.social.search.on_arrived(self)   # Deko-Suche (5.9)
+		State.EAT:
+			Game.kitchen.on_arrived(self)   # Kürbissuppe (3.8)
 		State.HIDE_GO:
 			if _hide_spot and _hide_spot.occupant == null:
 				_enter_hide(_hide_spot)
@@ -915,6 +1045,9 @@ func _at_home() -> void:
 	for item in placed:
 		if item.is_toppled():
 			item.stand_up()   # von einer Katze umgeworfen (6.11)
+		elif item.kind == Item.Kind.SHEET_GHOST and not item.holds_pumpkin and int(stock.get(Item.Kind.MINI_PUMPKIN, 0)) > 0:
+			stock[Item.Kind.MINI_PUMPKIN] = int(stock[Item.Kind.MINI_PUMPKIN]) - 1
+			item.set_pumpkin(true)   # Zierkürbis in die Hände (Spielkonzept 5.6)
 	if placed.size() < expected_deco:
 		Game.social.on_guest_noticed_missing(self, expected_deco - placed.size())
 	expected_deco = placed.size()
@@ -925,7 +1058,7 @@ func _at_home() -> void:
 		for kind in DECO_KINDS:
 			if int(stock.get(kind, 0)) > 0:
 				stock[kind] = int(stock[kind]) - 1
-				_take_into_hand(Item.create(kind))
+				_take_into_hand(stock_item(kind))
 				_walk_to(deco_place_point(), State.PLACE_DECO)
 				return
 
@@ -1025,7 +1158,7 @@ func _bulb_to_steal(hostile: bool) -> Lamp:
 	var best_dist := INF
 	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
 		var lamp := node as Lamp
-		if not lamp.has_bulb or lamp.bulb_broken or lamp.room_id == home["no"]:
+		if not lamp.has_bulb or lamp.bulb_broken or lamp.room_id == home["no"] or not lamp.has_socket():
 			continue
 		if lamp.room_id == "lobby":
 			continue   # Lobbydecke – zu hoch
@@ -1163,6 +1296,36 @@ func _after_shock() -> void:
 			_set_idle(randf_range(2.0, 4.0))
 
 
+## Der Kürbismann ist da (Spielkonzept 4.19): Spiel, Feier und Süßes oder Saures sind vorbei – wer ihn sieht,
+## erschrickt, auch am Spieltisch (shock allein lässt Spielende und Klopfende in Ruhe). Im Gespräch nicht.
+func see_pumpkin(pos: Vector3) -> void:
+	if dead or hiding or state in [State.TALKING, State.SLEEP, State.GHOSTED, State.SHOCKED]:
+		return
+	if state in [State.MINIGAME, State.KNOCK]:
+		seated = false
+		_set_idle(0.5)
+	shock("pumpkin", pos)
+
+
+## Er holt aus – wer so nah ist, erstarrt vor Angst (sonst wäre jeder Gast schneller weg als die Axt).
+func cower(pos: Vector3) -> void:
+	if dead or hiding:
+		return
+	if state == State.PARTY:
+		leave_party()
+	_drop_held()
+	seated = false
+	_shock_style = "freeze"
+	_shock_look = pos
+	_entranced = false
+	state = State.SHOCKED
+	_timer = 2.0
+	say(["*schreit*", "Nein! NEIN!", "Bitte nicht!"].pick_random())
+	# Nur der Klang – die Axt (Lärm axe_swing) bricht ihn ab, wenn sie trifft
+	var scream: Dictionary = Senses.NOISE["scream"]
+	Game.sound_at("scream", global_position, scream["range"], self, scream["volume"])
+
+
 ## Der Lakengeist hat ihn am Hals (SheetGhost) – er zappelt, bis er sich losreißt oder stirbt.
 func ghost_grab(ghost_pos: Vector3) -> void:
 	if state == State.PARTY:
@@ -1174,9 +1337,45 @@ func ghost_grab(ghost_pos: Vector3) -> void:
 	say("*röchelt*")
 
 
+## Der Lakengeist steht vor der Zimmertür (Spielkonzept 4.18, 5.6): Er starrt zur Tür, bis der Geist weg ist –
+## Schwache (DOOR_OPEN) gehen nach einer Weile hin, je schwächer, desto früher, und machen auf. Ist jemand Waches bei ihm im Zimmer, hält der ihn
+## zurück; ein Gespräch mit dem Spieler holt ihn heraus.
+func door_trance(door_point: Vector3) -> void:
+	if dead or hiding or state in [State.TALKING, State.MINIGAME, State.KNOCK, State.SHELTER, State.SLEEP, State.GHOSTED]:
+		return
+	if state == State.PARTY:
+		leave_party()
+	_drop_held()
+	_shock_style = "stare"
+	_shock_look = door_point
+	_entranced = true
+	var weak := weakness()
+	_door_trance = randf_range(DOOR_TRANCE.x, DOOR_TRANCE.y) * (1.0 - 0.5 * weak) if randf() < DOOR_OPEN + DOOR_OPEN_WEAK * weak else 0.0
+	state = State.SHOCKED
+	_timer = 2.0
+
+
+## Jemand Waches (Spieler oder erwachsener Gast) mit ihm im eigenen Zimmer.
+func _company_at_home() -> bool:
+	var builder := Game.social.builder
+	var no := String(home["no"])
+	if Game.player and not Game.player.dead and builder.room_at(Game.player.global_position) == no:
+		return true
+	for guest in Game.social.guests:
+		var g: Guest = guest
+		if g != self and not g.dead and not g.is_child() and g.state != State.SLEEP and builder.room_at(g.global_position) == no:
+			return true
+	return false
+
+
 ## Der Lakengeist ist weg. Wer gewürgt wurde und sich losgerissen hat, rennt in Panik davon.
 func ghost_gone() -> void:
 	_entranced = false
+	if _door_trance > 0.0 or (state == State.WALK and _target == home["door_inside"]):
+		_door_trance = 0.0
+		if state in [State.SHOCKED, State.WALK]:
+			say(["Hm? … Ich dachte, da wär jemand an der Tür.", "Was wollte ich gerade …?"].pick_random())
+			_set_idle(randf_range(2.0, 5.0))
 	if dead or state != State.GHOSTED:
 		return
 	remember("ghost_attack", _shock_look)
@@ -1267,7 +1466,7 @@ func _run_to_parent() -> void:
 ## Kinder, die dich mögen, schenken dir ab und zu etwas; ein Waisenkind bleibt bei dir. true = beschäftigt.
 func _child_approach() -> bool:
 	var p := Game.player
-	if p == null or p.dead or p.hiding != null or p.in_dialog or not can_see_actor(p):
+	if p == null or p.dead or p.hiding != null or p.in_dialog or not can_see_actor(p) or not p.recognized_by(self):
 		return false
 	var d := p.global_position.distance_to(global_position)
 	if is_orphan() and d < 8.0 and Social.tier(self) >= Social.Tier.NEUTRAL and randf() < ORPHAN_FOLLOW:
@@ -1441,6 +1640,10 @@ func _drop_held() -> void:
 	var item := held
 	held = null
 	item.reparent(get_parent(), true)
+	if state == State.PLACE_DECO and item.can_hang():
+		var spot := door_hang_spot(item.kind)
+		item.hang(spot["point"], spot["out"], float(spot.get("length", 0.0)))
+		return
 	var pos := Vector3(item.global_position.x, global_position.y + 0.02, item.global_position.z)
 	if state == State.PLACE_DECO:
 		pos = Vector3(_target.x, _target.y + 0.02, _target.z)
@@ -1462,12 +1665,31 @@ func _is_home() -> bool:
 	return global_position.distance_to(c) < 2.5
 
 
+## Eine reife Pflanze – am liebsten seine Lieblingssorte, nie den Riesenkürbis (den trägt keiner).
 func _ripe_plant() -> PumpkinPlant:
+	var any: PumpkinPlant = null
 	for node in get_tree().get_nodes_in_group("pumpkin_plants"):
 		var plant := node as PumpkinPlant
-		if plant.is_ripe():
+		if not plant.is_ripe() or plant.is_giant():
+			continue
+		if plant.variety == favorite_pumpkin():
 			return plant
-	return null
+		if any == null:
+			any = plant
+	return any
+
+
+## Lieblingskürbis (Spielkonzept 5.8): als Geschenk besonders willkommen, beim Ernten bevorzugt, eigene Kürbisse
+## aus dem Vorrat sind von dieser Sorte. Fest aus der ID (PumpkinKinds.favorite_of) – kein Speicherfeld.
+func favorite_pumpkin() -> String:
+	return PumpkinKinds.favorite_of(id)
+
+
+## Ein Gegenstand aus seinem Vorrat – Kürbisse in seiner Lieblingssorte (geschnitzt: Halloween, wenn sie sich nicht schnitzen lässt).
+func stock_item(kind: int) -> Item:
+	if kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN]:
+		return Item.create(kind, favorite_pumpkin())
+	return Item.create(kind)
 
 
 # --- Spuren der Gäste ------------------------------------------------------------------
@@ -1476,17 +1698,18 @@ func _ripe_plant() -> PumpkinPlant:
 ## Blutstropfen nach einem Angriff.
 func _leave_traces(delta: float) -> void:
 	_bleeding = maxf(0.0, _bleeding - delta)
-	var in_garden := Game.social != null and Game.social.builder.is_outdoor(global_position)
-	if in_garden:
-		_mud = MUD_STEPS
 	var moved := Vector2(global_position.x - _trace_pos.x, global_position.z - _trace_pos.z).length()
 	_trace_pos = global_position
-	if moved > 1.0 or moved < 0.001 or hiding:
+	if moved > 1.0 * maxf(1.0, _lod_scale) or moved < 0.001 or hiding:
 		return   # versetzt (Versteck, Laden) oder steht still
 	_step_dist += moved
 	if _step_dist < 0.8:
 		return
 	_step_dist = 0.0
+	# Garten erst beim Schritt prüfen – das kostet bei vielen Gästen sonst jedes Bild
+	var in_garden := Game.social != null and Game.social.builder.is_outdoor(global_position)
+	if in_garden:
+		_mud = MUD_STEPS
 	_steps.step(Footsteps.floor_under(self), moved / maxf(delta, 0.001) > WALK_SPEED * 1.5, is_child())
 	var traces := Game.traces
 	if traces == null:
@@ -1535,6 +1758,17 @@ func _weighted_choice(weights: Dictionary) -> String:
 	return weights.keys()[0]
 
 
+## Weit weg und nicht im Blick? Im Gespräch, beim Spiel, gewürgt oder taumelnd immer voll.
+func _lod_far() -> bool:
+	var player := Game.player
+	if player == null or state in [State.TALKING, State.MINIGAME, State.GHOSTED, State.STAGGER, State.ATTACK]:
+		return false
+	var d := global_position.distance_squared_to(player.global_position)
+	if d > LOD_FAR * LOD_FAR:
+		return true
+	return d > LOD_RANGE * LOD_RANGE and not player.camera.is_position_in_frustum(global_position + Vector3.UP)
+
+
 func _open_doors() -> void:
 	# Bei vielen Gästen und Türen nicht jeden Frame alle Türen prüfen
 	_door_timer -= get_physics_process_delta_time()
@@ -1563,10 +1797,12 @@ func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 	if dir.length() > 0.01:
 		dir = dir.normalized()
 		rotation.y = lerp_angle(rotation.y, atan2(-dir.x, -dir.z), minf(1.0, 8.0 * delta))
-	velocity.x = dir.x * speed
-	velocity.z = dir.z * speed
+	velocity.x = dir.x * speed * _lod_scale   # seltener gerechnet → längerer Schritt (_lod_far)
+	velocity.z = dir.z * speed * _lod_scale
 	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
 	move_and_slide()
+	velocity.x /= _lod_scale
+	velocity.z /= _lod_scale
 	# Festgefahren? Weg neu berechnen und kurz seitlich ausweichen.
 	if global_position.distance_to(_last_pos) < speed * delta * 0.2:
 		_stuck_time += delta
@@ -1582,10 +1818,12 @@ func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 
 
 func _stop(delta: float) -> void:
+	var still := is_on_floor() and velocity.length_squared() < 0.0001
 	velocity.x = 0.0
 	velocity.z = 0.0
 	velocity.y = 0.0 if is_on_floor() else velocity.y - _gravity * delta
-	move_and_slide()
+	if not still:
+		move_and_slide()   # wer schon still auf dem Boden steht, braucht keine Kollision (Leistung bei vielen Gästen)
 
 
 func _face(pos: Vector3, delta: float) -> void:
@@ -1643,6 +1881,7 @@ func _build_blocks() -> void:
 	var head := Node3D.new()
 	head.position = Vector3(0, 1.47, 0)
 	head.scale = Vector3.ONE * float(profile.get("head", 1.0))
+	_head_pivot = head
 	_visual.add_child(head)
 	Geo.mesh(head, Geo.sphere(0.13, 0.28, 7, 4), skin, Vector3(0, 0.13, 0))
 	Geo.mesh(head, Geo.box(Vector3(0.28, 0.1, 0.28)), hair, Vector3(0, 0.25, 0.01))
@@ -1766,7 +2005,65 @@ func _make_arm(side: float, coat: Material, skin: Material) -> Node3D:
 func _update_label() -> void:
 	var p := Game.player
 	var d := p.global_position.distance_to(global_position) if p else INF
-	_label.visible = hiding == null and d > 2.2 and d < 7.0 and state != State.TALKING
+	_label.visible = hiding == null and d > 2.2 and d < 7.0 and state != State.TALKING \
+		and not (_costume and _costume.kind == "sheet")   # unter dem Laken: wer ist das? (5.9)
+
+
+## Ab dem 25. verkleidet (Spielkonzept 5.9) – einmal je Sekunde prüfen, ob das Kostüm wechselt. Im Bett zieht
+## man es aus.
+func _update_costume(delta: float) -> void:
+	_costume_check -= delta
+	if _costume_check > 0.0:
+		return
+	_costume_check = 1.0
+	var want := "" if state == State.SLEEP and hiding else Costume.pick(self)
+	if want == (_costume.kind if _costume else ""):
+		return
+	if _costume:
+		_costume.queue_free()
+		_costume = null
+	# Unter dem Laken: Kopf kleiner bzw. weg, sonst sticht er durch
+	if _body:
+		_body.head_shrink = 0.6 if want == "sheet" else 1.0
+	else:   # Klötzchenfigur: Kopf und Arme stecken ganz im Laken
+		_head_pivot.visible = want != "sheet"
+		_arm_l.visible = want != "sheet"
+		_arm_r.visible = want != "sheet"
+	if want == "":
+		return
+	_costume = Costume.new()
+	_costume.scale = Vector3.ONE / _visual.scale   # Klötzchenfiguren sind über _visual skaliert
+	var height := eye_height() + 0.12
+	var size := clampf(height / 1.8, 0.65, 1.0)
+	# Scheitel über dem Kopfpunkt: Kopfknochen des Modells bzw. Kopf der Klötzchenfigur
+	var lift := 0.2 * size if _body else 0.27 * float(profile.get("height", 1.0)) * float(profile.get("head", 1.0))
+	_costume.setup(want, height, lift, size)
+	_visual.add_child(_costume)
+
+
+## Der Spieler unter dem Bettlaken kommt in Sicht (Spielkonzept 5.9): einmal je Überwerfen staunen – im Dunkeln
+## mit echtem Schreck, Kinder freuen sich. Wer ihn schon erkennt (ganz nah), staunt nicht.
+func _notice_disguise(delta: float) -> void:
+	_disguise_check -= delta
+	var p := Game.player
+	if _disguise_check > 0.0 or p == null or not p.disguised or p.disguise_count == _disguise_seen:
+		return
+	_disguise_check = 0.5
+	if state in [State.SLEEP, State.TALKING, State.MINIGAME] or hiding \
+			or p.global_position.distance_to(global_position) > 6.0 or not can_see_actor(p):
+		return
+	_disguise_seen = p.disguise_count
+	if is_child():
+		say("Ein Gespenst! Hihi – buuuh!")
+	elif Game.director and Game.director.light_at(p.global_position + Vector3.UP) < DISGUISE_DARK:
+		fear = minf(100.0, fear + DISGUISE_FRIGHT * (1.2 - float(profile["brave"])))
+		say("Aaah! … Ach so, nur ein Kostüm. Wer ist da drunter?")
+	else:
+		say("Huch! … Ach, ein Kostüm.")
+
+
+func _head_point() -> Vector3:
+	return _body.head_origin() if _body else _head_pivot.global_position
 
 
 func _animate(delta: float) -> void:
@@ -1774,7 +2071,11 @@ func _animate(delta: float) -> void:
 	var speed := Vector2(velocity.x, velocity.z).length()
 	_pose(delta, speed)
 	if _body and visible:
-		_body.animate(delta, speed, running, [_arm_l, _arm_r], _arms_free, state == State.MINIGAME and seated)
+		# unter dem Laken hängen die Arme still, sonst schwingen sie beim Gehen heraus (Tanzen darf man sie sehen)
+		var arms_free := _arms_free and not (_costume and _costume.kind == "sheet")
+		_body.animate(delta, speed, running, [_arm_l, _arm_r], arms_free, state == State.MINIGAME and seated)
+	if _costume and visible:
+		_costume.follow(_head_point(), _visual.global_basis)
 
 
 func _pose(delta: float, speed: float) -> void:
@@ -1806,7 +2107,11 @@ func _pose(delta: float, speed: float) -> void:
 		_arm_l.rotation.x = -1.1 + sin(_anim * 3.0) * 0.05
 		_arm_r.rotation.x = -1.1
 		return
-	if running:
+	if _reach > 0.0:
+		_reach -= delta
+		_arm_l.rotation.x = -2.5   # hängt Deko an die Wand (Spielkonzept 5.9)
+		_arm_r.rotation.x = -2.5
+	elif running:
 		_arm_l.rotation.x = -2.6 + sin(_anim * 14.0) * 0.3   # Arme hoch – Panik
 		_arm_r.rotation.x = -2.6 - sin(_anim * 14.0) * 0.3
 	elif held:

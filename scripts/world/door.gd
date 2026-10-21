@@ -1,7 +1,7 @@
 class_name Door
 extends Node3D
-## Drehtür, einfach oder doppelt. Lokale +X = Türbreite, Scharnier im Ursprung,
-## Boden auf y = 0. Türen liegen auf Kollisionsebene 2 und gehen nicht ins NavMesh ein,
+## Drehtür, einfach oder doppelt. Lokale +X = Türbreite, Scharnier im Ursprung (hinge_end: bei x = width),
+## Boden auf y = 0. Sie geht nach lokal +Z auf. Türen liegen auf Kollisionsebene 2 und gehen nicht ins NavMesh ein,
 ## damit das Monster durch Türöffnungen planen kann (es öffnet sie dann selbst).
 
 ## Kollisionstiefe des Türblatts (= Wandstärke, siehe LevelBuilder.T)
@@ -16,21 +16,25 @@ var key_id := ""
 var locked_text := "Abgeschlossen."
 var monster_can_open := true
 var glass := false          ## Glastür: man sieht hindurch (Ebene 7 statt 2)
+var hinge_end := false      ## einfache Tür: Scharnier bei x = width statt im Ursprung (Türanschlag im Plan)
 var is_open := false
 ## Zuletzt vom Monster aufgerissen (nicht vom Spieler oder einem Gast)
 var opened_by_monster := false
 
 var _pivots: Array[Node3D] = []
 var _bodies: Array[Node3D] = []
+var _dirs: Array[float] = []   ## je Flügel: +1 = Blatt nach +X vom Scharnier, −1 = nach −X
 var _tween: Tween
 
 
-func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: bool = false, p_glass: bool = false) -> Door:
+func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: bool = false, p_glass: bool = false,
+		p_hinge_end: bool = false) -> Door:
 	width = p_width
 	height = p_height
 	open_angle = deg_to_rad(p_open_angle_deg)
 	double = p_double
 	glass = p_glass
+	hinge_end = p_hinge_end and not p_double
 	return self
 
 
@@ -40,6 +44,8 @@ func _ready() -> void:
 	if double:
 		_pivots.append(_make_leaf(Vector3.ZERO, width / 2.0, 1.0))
 		_pivots.append(_make_leaf(Vector3(width, 0, 0), width / 2.0, -1.0))
+	elif hinge_end:
+		_pivots.append(_make_leaf(Vector3(width, 0, 0), width, -1.0))
 	else:
 		_pivots.append(_make_leaf(Vector3.ZERO, width, 1.0))
 
@@ -87,8 +93,7 @@ func set_open(open: bool, fast: bool = false, quiet: bool = false, source: Node 
 		_tween.kill()
 	_tween = create_tween().set_parallel(true)
 	for i in _pivots.size():
-		var side := 1.0 if i == 0 else -1.0
-		var target := open_angle * side if open else 0.0
+		var target := open_angle * _dirs[i] if open else 0.0
 		_tween.tween_property(_pivots[i], "rotation:y", target, 0.25 if fast else 0.6).set_trans(Tween.TRANS_SINE)
 	if not quiet:
 		Game.noise("door", center(), source)
@@ -112,7 +117,7 @@ func attach_mark(mark: TraceMark, side: float, at := Vector2(0.45, 1.35)) -> voi
 	mark.set_meta("door_side", side)
 	mark.set_meta("door_at", at)
 	_bodies[0].add_child(mark)
-	mark.position = Vector3(leaf_width * at.x, at.y, side * 0.04)
+	mark.position = Vector3(_dirs[0] * leaf_width * at.x, at.y, side * 0.04)
 	mark.rotation.y = 0.0 if side > 0.0 else PI
 
 
@@ -136,6 +141,7 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 	body.set_meta("interactable", self)
 	pivot.add_child(body)
 	_bodies.append(body)
+	_dirs.append(dir)
 	var leaf_size := Vector3(leaf_width - 0.02, height - 0.02, 0.06)
 	var cx := dir * leaf_width / 2.0
 	if glass:

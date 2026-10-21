@@ -3,7 +3,7 @@ extends Node3D
 ## Spuren des Monsters (Spielkonzept 4.13) an einer Stelle gesammelt:
 ##   Fußspuren – dunkel und nass, verblassen über einige Minuten (zeigen Weg und Alter);
 ##     unter UV-Licht leuchten sie noch lange danach (UvMark, Spielkonzept 4.16)
-##   Kratzspuren an Wänden und Türen, Blut, Handabdrücke am Milchglas – bleiben (TraceMark)
+##   Kratzspuren an Wänden und Türen, Blut (am Boden und an Wänden), Handabdrücke am Milchglas – bleiben (TraceMark)
 ## Jede neue Spur wird auch den Gästen bekannt, die davon erzählen (Social.note_trace).
 ## Dazu Spuren der Gäste: schlammige Schuhabdrücke aus dem Garten (verblassen), Wachsflecken,
 ## Blutstropfen nach einem Angriff (bleiben) und Zettel, die Gäste schreiben.
@@ -13,6 +13,9 @@ const FOOTPRINT_UV_LIFE := 900.0    ## so lange sieht man sie unter UV (drei Ing
 const MAX_FOOTPRINTS := 240
 const SHOEPRINT_LIFE := 150.0
 const MAX_GUEST_MARKS := 140        ## Wachs und Blutstropfen der Gäste – die ältesten verschwinden
+## Blut an Wänden: so weit sucht es ringsum nach der nächsten Wand, in dieser Höhe sitzt die Spur
+const WALL_BLOOD_RANGE := 2.5
+const WALL_BLOOD_HEIGHT := {"wall_splatter": 1.15, "wall_smear": 1.45}
 
 var _footprints: Array[Dictionary] = []   ## {node, material, age, life, alpha}
 var _guest_marks: Array[TraceMark] = []
@@ -117,9 +120,23 @@ func add_guest_note(pos: Vector3, title: String, text: String) -> WarningNote:
 
 
 func _floor_y(pos: Vector3) -> float:
-	var query := PhysicsRayQueryParameters3D.create(pos + Vector3.UP * 0.5, pos + Vector3.DOWN * 1.0, 1)
-	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	var hit := surface_below(get_world_3d().direct_space_state, pos + Vector3.UP * 0.5, 1.5)
 	return pos.y if hit.is_empty() else float((hit["position"] as Vector3).y)
+
+
+## Die Fläche unter `from` (Strahl `depth` nach unten), auf der Spuren liegen: Boden, Möbel und auf Treppen die
+## sichtbaren Stufen (LevelBuilder.LAYER_TREAD) – nicht die Rampe, über die man läuft (sonst schweben Spuren vorn an
+## jeder Stufe). {} = nichts gefunden, sonst das Ergebnis von intersect_ray (position, normal, collider …).
+static func surface_below(space: PhysicsDirectSpaceState3D, from: Vector3, depth: float) -> Dictionary:
+	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * depth, 1 | LevelBuilder.LAYER_TREAD)
+	var skip: Array[RID] = []
+	for i in 4:
+		query.exclude = skip
+		var hit := space.intersect_ray(query)
+		if hit.is_empty() or not (hit["collider"] as Object).has_meta("stair_ramp"):
+			return hit
+		skip.append(hit["rid"])
+	return {}
 
 
 # --- Bleibende Spuren ------------------------------------------------------------
@@ -161,10 +178,40 @@ func add_door_scratch(door: Door, from_pos: Vector3) -> TraceMark:
 func add_blood(pos: Vector3, yaw: float) -> TraceMark:
 	var mark := TraceMark.new().setup("blood")
 	add_child(mark)
-	mark.global_position = Vector3(pos.x, _floor_y(pos) + 0.008, pos.z)
-	mark.rotation = Vector3(-PI / 2.0, yaw, 0)
+	mark.global_position = Vector3(pos.x, _floor_y(pos), pos.z)
+	mark.rotation.y = yaw   # die Flecken verteilt TraceMark selbst (auf Treppen die Stufen hinunter)
 	_as_sight(mark)
 	_report("blood", pos)
+	return mark
+
+
+## Blut an der nächsten Wand (Spielkonzept 4.13): „wall_splatter“, wo das Monster einen Gast geholt oder der
+## Kürbismann zugeschlagen hat; „wall_smear“ – eine blutige Hand, die hinuntergerutscht ist – als Spuk
+## (MonsterDirector._haunt_wall_blood). Sucht ringsum in Spurhöhe die nächste Wand bis WALL_BLOOD_RANGE; null = keine.
+func add_wall_blood(pos: Vector3, kind: String) -> TraceMark:
+	var space := get_world_3d().direct_space_state
+	var from := Vector3(pos.x, _floor_y(pos) + float(WALL_BLOOD_HEIGHT[kind]), pos.z)
+	var best := {}
+	var best_d := INF
+	for i in 16:
+		var a := TAU * i / 16.0
+		var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(from, from + Vector3(sin(a), 0, cos(a)) * WALL_BLOOD_RANGE, 1))
+		if hit.is_empty() or absf((hit["normal"] as Vector3).y) > 0.3:
+			continue
+		var d := from.distance_to(hit["position"])
+		if d < best_d:
+			best_d = d
+			best = hit
+	if best.is_empty():
+		return null
+	var normal: Vector3 = best["normal"]
+	var mark := TraceMark.new().setup(kind)
+	add_child(mark)
+	mark.global_position = best["position"] + normal * 0.012
+	mark.look_at(mark.global_position - normal, Vector3.UP)
+	mark.rotate_object_local(Vector3.FORWARD, randf_range(-0.2, 0.2))
+	_as_sight(mark)
+	_report("blood", mark.global_position)
 	return mark
 
 
@@ -256,7 +303,7 @@ func load_state(list: Array) -> void:
 		elif entry.has("global"):
 			add_child(mark)
 			mark.global_transform = _from_t(entry["global"])
-			if mark.kind == "blood":
+			if mark.kind in ["blood", "wall_splatter", "wall_smear"]:
 				_as_sight(mark)
 
 

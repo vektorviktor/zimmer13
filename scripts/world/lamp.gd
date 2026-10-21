@@ -4,8 +4,12 @@ extends StaticBody3D
 ## wird über dessen Lichtschalter geschaltet. Die Birne lässt sich herausdrehen und
 ## woanders einschrauben – fehlt sie, bleibt die Lampe dunkel und das Monster kommt.
 ## Birnen brennen selten durch: bei starkem Flackern oder wenn das Monster nahe ist.
+## HALOGEN (Untergeschoss, Spielkonzept 7.9): Röhre unter der Decke, kaltweiß, flackert ab und zu von selbst kurz
+## auf – ohne Glühbirne: nichts herauszudrehen, brennt nicht durch.
+## POOL (Spielkonzept 7.5): runder Scheinwerfer unter Wasser in der Beckenwand, läuft langsam einmal durch den
+## Regenbogen und wieder von vorn – jede Lampe mit eigenem Anfang und Tempo; ohne Birne wie HALOGEN.
 
-enum Style { CEILING, WALL }
+enum Style { CEILING, WALL, HALOGEN, POOL }
 
 ## Durchbrenn-Chance je Sekunde (geringe Wahrscheinlichkeit)
 const BREAK_PER_FLICKER := 0.004     ## × Flackern² (Ankündigung, 0..1)
@@ -20,8 +24,11 @@ const REACH := 1.3
 const BULB_MODEL := "res://assets/models/bulb.glb"
 ## So weit steckt das Gewinde (3 cm) in der Fassung
 const BULB_SCREWED_IN := 0.02
+## Unterwasserlampe: Sekunden für einmal durch den Regenbogen (je Lampe zufällig dazwischen)
+const POOL_CYCLE := Vector2(18.0, 26.0)
 
 var style := Style.CEILING
+var length := 0.8   ## Halogenröhre: Länge entlang lokal X
 var room_id := ""
 var energy := 1.0
 var light_range := 6.0
@@ -35,6 +42,8 @@ var light: FlickerLight
 var _bulb: Node3D
 var _bulb_material: ShaderMaterial
 var _break_timer := 0.0
+var _hue := 0.0         ## Unterwasserlampe: Farbton 0..1
+var _hue_speed := 0.0   ## je Sekunde
 
 
 func setup(p_style: Style, p_room: String, p_energy: float, p_range: float, p_broken: bool) -> Lamp:
@@ -50,8 +59,14 @@ func setup(p_style: Style, p_room: String, p_energy: float, p_range: float, p_br
 func _ready() -> void:
 	collision_layer = 4
 	collision_mask = 0
-	set_meta("interactable", self)
 	add_to_group("lamp_fixtures")
+	if style == Style.HALOGEN:
+		_build_halogen()
+		return
+	if style == Style.POOL:
+		_build_pool()
+		return
+	set_meta("interactable", self)
 	_bulb_material = Mat.psx(Color(1, 0.95, 0.8), "", 1.0, Color(1.0, 0.85, 0.6), 2.5, false)
 	var bulb_pos := Vector3(0, -0.12, 0)
 	var socket := Vector3(0, -0.09 + BULB_SCREWED_IN, 0)   # Gewindeende der Birne
@@ -75,6 +90,10 @@ func _ready() -> void:
 			_bulb.rotation.x = PI   # hängt mit dem Kolben nach unten
 	else:
 		_bulb = Geo.mesh(self, Geo.sphere(0.045, 0.1, 6, 3), _bulb_material, bulb_pos)
+	# Die Leuchte selbst wirft keinen Schatten: Das Licht sitzt vor dem Schirm, sonst zeichnet er einen langen
+	# Keil mit dunklem Strich darüber an die Wand
+	for g: GeometryInstance3D in find_children("*", "GeometryInstance3D", true, false):
+		g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	Geo.add_box_shape(self, Vector3(0.35, 0.3, 0.35), bulb_pos * 0.5)
 	light = FlickerLight.new()
 	light.position = bulb_pos + (Vector3(0, -0.13, 0) if style == Style.CEILING else Vector3(0, 0, 0.12))
@@ -92,6 +111,74 @@ func _ready() -> void:
 	add_child(light)
 	_break_timer = randf()
 	apply_state()
+
+
+## Halogenleuchte: Blechgehäuse bündig unter der Decke, darunter die Röhre (statt der Birne), kaltweißes Licht mit
+## eigenem Flackern (FlickerLight.stutter).
+func _build_halogen() -> void:
+	set_process(false)   # keine Birne, die durchbrennt
+	_bulb_material = Mat.psx(Color(0.9, 0.95, 1.0), "", 1.0, Color(0.8, 0.9, 1.0), 2.5, false)
+	Geo.mesh(self, Geo.box(Vector3(length + 0.06, 0.05, 0.12)), Mat.psx(Color(0.55, 0.57, 0.58)), Vector3.ZERO)
+	_bulb = Geo.mesh(self, Geo.cylinder(0.02, length, 6), _bulb_material, Vector3(0, -0.045, 0))
+	_bulb.rotation.z = PI / 2.0   # der Zylinder steht nach +Y, die Röhre liegt entlang X
+	for g: GeometryInstance3D in find_children("*", "GeometryInstance3D", true, false):
+		g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	Geo.add_box_shape(self, Vector3(length + 0.06, 0.1, 0.15), Vector3(0, -0.02, 0))
+	light = FlickerLight.new()
+	light.position = Vector3(0, -0.15, 0)
+	light.base_energy = energy
+	light.omni_range = light_range
+	light.light_color = Color(0.85, 0.93, 1.0)
+	light.shadow_enabled = true
+	light.stutter = true
+	light.distance_fade_enabled = true
+	light.distance_fade_begin = 26.0
+	light.distance_fade_length = 6.0
+	light.distance_fade_shadow = 16.0
+	light.lamp_material = _bulb_material
+	light.add_to_group("lamps")
+	add_child(light)
+	apply_state()
+
+
+## Unterwasserlampe: Chromring bündig an der Beckenwand (lokale +Z zeigt ins Becken), davor die Glasscheibe in
+## der Farbe des Lichts. Anfangsfarbe und Tempo zufällig, damit keine zwei Lampen gleich laufen.
+func _build_pool() -> void:
+	_bulb_material = Mat.psx(Color(1, 1, 1), "", 1.0, Color.RED, 2.5, false)
+	var ring := Geo.mesh(self, Geo.cylinder(0.14, 0.03, 10), Mat.psx(Color(0.62, 0.66, 0.7)), Vector3(0, 0, 0.015))
+	ring.rotation.x = PI / 2.0   # der Zylinder steht nach +Y, die Scheibe liegt an der Wand
+	_bulb = Geo.mesh(self, Geo.cylinder(0.11, 0.02, 10), _bulb_material, Vector3(0, 0, 0.035))
+	_bulb.rotation.x = PI / 2.0
+	for g: GeometryInstance3D in find_children("*", "GeometryInstance3D", true, false):
+		g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	Geo.add_box_shape(self, Vector3(0.3, 0.3, 0.06), Vector3(0, 0, 0.03))
+	light = FlickerLight.new()
+	light.position = Vector3(0, 0, 0.25)
+	light.base_energy = energy
+	light.omni_range = light_range
+	light.shadow_enabled = true
+	light.distance_fade_enabled = true
+	light.distance_fade_begin = 26.0
+	light.distance_fade_length = 6.0
+	light.distance_fade_shadow = 16.0
+	light.lamp_material = _bulb_material
+	light.add_to_group("lamps")
+	add_child(light)
+	_hue = randf()
+	_hue_speed = 1.0 / randf_range(POOL_CYCLE.x, POOL_CYCLE.y)
+	_set_hue()
+	apply_state()
+
+
+## Unterwasserlampe: Farbe des Farbtons auf Licht und Scheibe.
+func _set_hue() -> void:
+	light.light_color = Color.from_hsv(_hue, 0.9, 1.0)
+	_bulb_material.set_shader_parameter("emission", Color.from_hsv(_hue, 1.0, 1.0))
+
+
+## Steckt eine Glühbirne darin, die man herausdrehen kann (nicht bei Halogen- und Unterwasserlampen)?
+func has_socket() -> bool:
+	return style == Style.CEILING or style == Style.WALL
 
 
 ## Glühbirne als Modell unter parent (Ursprung am Gewindeende, Glas nach +Y), der Kolben mit glass –
@@ -123,6 +210,10 @@ func apply_state() -> void:
 
 
 func _process(delta: float) -> void:
+	if style == Style.POOL:
+		_hue = fposmod(_hue + delta * _hue_speed, 1.0)
+		_set_hue()
+		return
 	_break_timer -= delta
 	if _break_timer > 0.0:
 		return

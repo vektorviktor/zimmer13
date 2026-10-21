@@ -44,6 +44,30 @@ static func mesh(parent: Node, m: Mesh, mat: Material, pos: Vector3) -> MeshInst
 	return mi
 
 
+## Partikel-Emitter für Mat.particle: quadratische Billboards (Kantenlänge size) in Weltkoordinaten –
+## sie bleiben, wo sie entstanden sind, auch wenn der Emitter weiterzieht. Blenden über fade_in/fade_out
+## (Anteile der Lebenszeit) ein und aus; Bewegung (Richtung, Tempo, Schwerkraft …) setzt der Aufrufer.
+static func particles(amount: int, lifetime: float, size: float, mat: Material, fade_in: float = 0.1, fade_out: float = 0.3) -> CPUParticles3D:
+	var p := CPUParticles3D.new()
+	p.amount = amount
+	p.lifetime = lifetime
+	p.local_coords = false
+	var quad := QuadMesh.new()
+	quad.size = Vector2(size, size)
+	p.mesh = quad
+	p.material_override = mat
+	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	p.angle_min = 0.0   # Zufallswert je Partikel für den Shader (Bild, Farbton, Phase)
+	p.angle_max = 360.0
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(1, 1, 1, 0))
+	ramp.set_color(1, Color(1, 1, 1, 0))
+	ramp.add_point(fade_in, Color.WHITE)
+	ramp.add_point(1.0 - fade_out, Color.WHITE)
+	p.color_ramp = ramp
+	return p
+
+
 static func add_box_shape(body: CollisionObject3D, size: Vector3, pos: Vector3) -> CollisionShape3D:
 	var cs := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -75,6 +99,48 @@ static func collider(parent: Node, size: Vector3, pos: Vector3, layer: int = 1) 
 	parent.add_child(body)
 	add_box_shape(body, size, Vector3.ZERO)
 	return body
+
+
+## Läufer als flaches Band entlang X (Mitte im Ursprung, Oberseite y = 0) mit eigenen UVs für eine Textur aus
+## Abschluss (v 0…cap_v) und Musterkachel (cap_v…1), u quer über die ganze Breite: an beiden Enden ein Abschluss
+## (das hintere gespiegelt), dazwischen eine ganze Zahl Kacheln, leicht gestreckt – so sitzt das Muster immer
+## symmetrisch. cap und tile = Länge von Abschluss und Kachel in Metern. Jedes Feld hat eigene Ecken (die UVs
+## springen an den Nähten), Felder höchstens MAX_FACE groß.
+static func runner_mesh(length: float, width: float, cap: float, tile: float, cap_v: float) -> ArrayMesh:
+	cap = minf(cap, length / 3.0)
+	var body := length - 2.0 * cap
+	var n := maxi(1, roundi(body / tile))
+	var segments: Array[Vector4] = [Vector4(0.0, cap, 0.0, cap_v)]   # (von, bis, v von, v bis)
+	for i in n:
+		segments.append(Vector4(cap + body * i / n, cap + body * (i + 1) / n, cap_v, 1.0))
+	segments.append(Vector4(length - cap, length, cap_v, 0.0))
+	var across := maxi(1, ceili(width / MAX_FACE - 0.0001))
+	var verts := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	for sg in segments:
+		var steps := maxi(1, ceili((sg.y - sg.x) / MAX_FACE - 0.0001))
+		for i in steps:
+			for j in across:
+				var first := verts.size()
+				for k in [Vector2i(i, j), Vector2i(i + 1, j), Vector2i(i + 1, j + 1), Vector2i(i, j + 1)]:
+					var t := float(k.x) / steps
+					var u := float(k.y) / across
+					verts.append(Vector3(lerpf(sg.x, sg.y, t) - length / 2.0, 0.0, (u - 0.5) * width))
+					normals.append(Vector3.UP)
+					uvs.append(Vector2(u, lerpf(sg.z, sg.w, t)))
+				# +X, dann +Z: von oben gesehen im Uhrzeigersinn
+				indices.append_array([first, first + 1, first + 2, first, first + 2, first + 3])
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var m := ArrayMesh.new()
+	m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return m
 
 
 ## Wand als ein einziges Mesh: entlang X von x0 bis x1, Mitte z = 0, Boden y = 0 (ohne Unterseite).

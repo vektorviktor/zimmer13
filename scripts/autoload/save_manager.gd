@@ -38,7 +38,12 @@ const DIR := "user://saves/"
 ##     Änderungen am Aufbau des Spielstands selbst
 ## 21: Rausch und Kater (player.drunk/hangover, Gast drunk) – Stände mit Version 20 laden weiter, alle nüchtern
 ## 22: Kinder (Spielkonzept 6.13) – „parent“ in der Gästeliste (roster); ältere Stände laden weiter, ohne Kinder
-const VERSION := 22
+## 23: aufgehängte Deko (Spielkonzept 5.6) – „hung“ an Gegenständen, neue Arten Lakengespenst, Lichterkette,
+##     Zierkürbis; ältere Stände laden weiter, dort hängt noch nichts
+## 24: übergeworfenes Bettlaken (player.disguised, Item.Kind.BED_SHEET) – ältere Stände laden weiter, unverkleidet
+## 25: Freundschaften unter Gästen (Spielkonzept 6.16) – „pals“ unter „social“; ältere Stände laden weiter, dort
+##     sind nur Familie und Zimmernachbarn befreundet
+const VERSION := 25
 const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -270,7 +275,8 @@ func diary_sentence() -> String:
 			var item := node as Item
 			if item.is_held or item.deco_strength <= 0.0:
 				continue
-			if item.global_position.distance_to(Game.director.player_door_front) < 2.5:
+			var door: Vector3 = Game.director.player_door_front
+			if Vector2(item.global_position.x - door.x, item.global_position.z - door.z).length() < 2.5 and absf(item.global_position.y - door.y) < 3.0:
 				deco += 1
 				if item.lit and item.kind == Item.Kind.CARVED_PUMPKIN:
 					lit += 1
@@ -306,7 +312,7 @@ func collect() -> Dictionary:
 		"player": {
 			"pos": _v(p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
 			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
-			"drunk": p.drunk, "hangover": p.hangover,
+			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised,
 			"held": _item_data(p.held) if p.held else null,
 			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
 		},
@@ -357,6 +363,7 @@ func collect() -> Dictionary:
 		"arrival_timer": social._arrival_timer,
 		"cat_thefts": social.cat_thefts, "cats_have_cried": social.cats_have_cried,
 		"sleep_active": social.sleep_active, "sleep_timer": social.sleep_timer,
+		"pals": social.pals.save_state(),
 	}
 	var director := Game.director
 	var curiosity: Array = []
@@ -399,7 +406,7 @@ func _item_data(item: Item) -> Dictionary:
 	var e := item.global_rotation
 	return {
 		"kind": int(item.kind), "extra": item.create_extra(), "pos": _v(item.global_position),
-		"rot": _v(e), "owner": item.owner_id, "lit": item.lit, "burn": item.burn_time,
+		"rot": _v(e), "owner": item.owner_id, "lit": item.lit, "burn": item.burn_time, "hung": item.hung,
 	}
 
 
@@ -505,6 +512,8 @@ func apply(data: Dictionary) -> void:
 		world.add_child(item)
 		item.global_position = _vec(entry["pos"])
 		item.global_rotation = _vec(entry["rot"])
+		if bool(entry.get("hung", false)):
+			item.restore_hung()
 	for guest in Game.social.guests:
 		var g: Guest = guest
 		var held = gd.get(g.id, {}).get("held")
@@ -526,6 +535,7 @@ func apply(data: Dictionary) -> void:
 	p.injury = float(pd.get("injury", 0.0))
 	p.drunk = float(pd.get("drunk", 0.0))
 	p.hangover = float(pd.get("hangover", 0.0))
+	p.set_disguised(bool(pd.get("disguised", false)))
 	p.set_pockets(bool(pd.get("compass", false)), pd.get("map_pages", []), pd.get("keyring", []))
 	if pd.get("held") != null:
 		var held_item := _make_item(pd["held"])
@@ -555,6 +565,7 @@ func apply(data: Dictionary) -> void:
 	social.sleep_active = bool(sd.get("sleep_active", false))
 	social.sleep_timer = float(sd.get("sleep_timer", 300.0))
 	social._arrival_timer = float(sd.get("arrival_timer", -1.0))
+	social.pals.load_state(sd.get("pals", {}))
 	# Monster zuletzt: ggf. wieder unterwegs an seiner gespeicherten Stelle
 	director.load_state(dd.get("state", {}))
 	last_save_msec = Time.get_ticks_msec()

@@ -78,6 +78,7 @@ var _scale := 1.0
 var _width := 1.0
 var _head := 1.0           ## Kopfgröße (Kinder größer, Spielkonzept 6.13)
 var _breath := 0.0
+var head_shrink := 1.0   ## unter dem Bettlaken-Kostüm kleiner, damit er nicht durch den Stoff sticht (Costume)
 var dance := ""   ## Name aus DANCES, solange der Gast tanzt (setzt Guest._dance_pose)
 
 
@@ -154,6 +155,11 @@ static func _material_for(path: String, mesh: MeshInstance3D) -> ShaderMaterial:
 	return _material[path]
 
 
+## Kopfknochen in Weltkoordinaten – Hut und Kürbis des Kostüms sitzen darauf (Costume.follow)
+func head_origin() -> Vector3:
+	return (_skeleton.global_transform * _skeleton.get_bone_global_pose(_bone["Head"])).origin
+
+
 ## Wie tief die Figur beim Sitzen sinkt (m)
 func sit_drop() -> float:
 	return SIT_DROP * float(_info["height"]) * _scale
@@ -180,7 +186,7 @@ func animate(delta: float, speed: float, running: bool, arms: Array, arms_free: 
 		_breath += delta * 1.6
 		_turn("Spine1", Vector3.RIGHT, sin(_breath) * 0.02)
 	# Der Kopf bleibt schmal, wenn der Körper breiter wird – bei Kindern ist er größer
-	_skeleton.set_bone_pose_scale(_bone["Head"], Vector3(_head / _width, _head, _head))
+	_skeleton.set_bone_pose_scale(_bone["Head"], Vector3(_head / _width, _head, _head) * head_shrink)
 	if sitting:
 		for leg in LEGS:
 			_aim(leg[0], leg[1], Vector3(0, -0.15, -1))

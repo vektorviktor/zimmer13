@@ -16,10 +16,17 @@ extends Node3D
 ## Wer ihn sieht, erschrickt (Guest.shock) und erzählt später davon.
 ## Kinder (Spielkonzept 6.13) sucht er wegen ihrer Schwäche öfter auf, würgt sie aber nie: Statt zuzupacken
 ## erschreckt er sie und verschwindet. Als Zeugen zählen sie nicht.
+## Solange er da ist, hört man ihn: ein geloopter Klangteppich am Geist, der mit ihm ein- und ausblendet.
+## Vom Saum rieseln weiße Flocken, die hinter ihm zurückbleiben und mit ihm verschwinden.
+## Vor der Tür (Spielkonzept 4.18, 5.6): Hängen an einer Zimmertür Lakengespenster und ist jemand drinnen, zieht
+## es ihn manchmal dorthin. Er steht lautlos vor der geschlossenen Tür und kreist mit den Händen, die Gespenster
+## kreisen mit; drinnen dreht sich der Blick ganz langsam zur Tür (durch die Wand), ein Gast starrt hin und geht
+## irgendwann aufmachen – außer jemand ist bei ihm. Wer die Tür öffnet, den packt er. Nach DOOR_TIME ist er weg.
 
-enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN }
+enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN, DOOR }
 
 const MODEL := "res://assets/models/ghost.glb"
+const AMBIENCE := "res://assets/sound/ghost_ambience.mp3"
 
 # --- Tuning -------------------------------------------------------------------
 const FROM_DAY := 2                   ## spukt ab diesem Tag (oder schon nach dem ersten Angriff)
@@ -69,6 +76,9 @@ const LEAVE_RANGE := 14.0             ## so weit weg vom Fenster (bzw. von ihm) 
 const HALL_FROM := 6
 const HALL_CHANCE := 0.04
 const HALL_DISTANCE := Vector2(8.0, 16.0)
+const HALL_GIVE_UP := LEAVE_RANGE + 6.0   ## im Flur gibt er auf, wenn man so weit von ihm weg ist
+## Debug (F6, --ghost=flur): höchstens so weit vor dem Spieler taucht er auf – knapp unter HALL_GIVE_UP
+const DEBUG_HALL_DISTANCE := HALL_GIVE_UP - 1.0
 ## Schwäche des Opfers (0..1, Spielkonzept 4.18 – Player.weakness(), Guest.weakness()): bis zu so viel mehr
 ## Chance, Pause und Flur-Chance bis zu (1 + WEAK_FASTER)-mal kürzer bzw. häufiger; ab WEAK_HALL auch vor dem
 ## 6. Mal im Flur, ab WEAK_SURE sicher im Flur, sobald man dort allein ist (auch ohne Nachtruhe). Eine Nacht
@@ -82,6 +92,25 @@ const HANDS_Y := 1.12
 const HANDS_AHEAD := 0.45
 const NECK_BELOW_EYES := 0.22
 const FINGERS := ["thumb", "index", "middle", "ring", "pinky"]
+## Klang: Lautstärke bei voller Sichtbarkeit, in dieser Nähe ungedämpft, ab dieser Entfernung stumm
+const AMBIENCE_DB := 0.0
+const AMBIENCE_UNIT := 4.0
+const AMBIENCE_RANGE := 30.0
+## Flocken vom Saum: so viele gleichzeitig, Lebenszeit (s), Kantenlänge (m), Eigenleuchten
+const FLAKES := 36
+const FLAKE_LIFE := 3.0
+const FLAKE_SIZE := 0.045
+const FLAKE_GLOW := 0.7
+const FLAKE_FROM := 0.2               ## Anteil der Modellhöhe über dem Saum, wo sie entstehen
+## Vor der Tür (Lakengespenster als Deko, Spielkonzept 5.6)
+const DOOR_CHANCE := 0.006           ## je Prüfung (CHECK_EVERY) und Lakengespenst an der Tür, × (1 + Schwäche)
+const DOOR_TIME := Vector2(90.0, 150.0)
+const DOOR_DECO_RANGE := 1.8         ## so nah an der Türmitte (waagerecht) müssen die Lakengespenster hängen
+const DOOR_STAND := 0.75             ## so weit vor der Tür (Flurseite) steht er
+const DOOR_PULL := 0.05              ## Blickzug durch die Wand (rad/s), bei voller Schwäche doppelt so stark
+const DOOR_PULL_RANGE := 7.0
+const DOOR_GRAB_RANGE := 1.6         ## kommt das Opfer im Flur so nah, packt er zu
+const DOOR_WITNESS_RANGE := 6.0      ## vor der Tür vertreiben ihn Gäste erst aus dieser Nähe (sonst bliebe er im Flur nie)
 
 var visits := 0          ## so oft ist er schon beim Spieler erschienen (Stufe)
 var state := State.IDLE
@@ -105,8 +134,6 @@ var _fade := 0.0
 var _target := Vector3.ZERO
 var _swings := 0
 var _last_sign := 0
-var _force := false
-var _force_hall := false
 var _escape := 0.0       ## Losreißen: Balken 0..1
 var _lurk_spot: HideSpot ## Schrank, vor dem er wartet bzw. in den er hineinfliegt
 var _rattle := 0.0
@@ -116,6 +143,11 @@ var _material: ShaderMaterial
 var _skeleton: Skeleton3D
 var _bone := {}
 var _rest := {}
+var _ambience: AudioStreamPlayer3D
+var _flakes: CPUParticles3D
+var _flake_mat: ShaderMaterial
+var _door_room: Dictionary = {}   ## Zimmer, vor dessen Tür er steht (LevelBuilder.rooms)
+var _door_deco: Array[Item] = []  ## die Lakengespenster dort – sie kreisen mit
 
 
 func _ready() -> void:
@@ -132,7 +164,45 @@ func _ready() -> void:
 	_material.set_shader_parameter("albedo_tex", (mesh.get_active_material(0) as BaseMaterial3D).albedo_texture)
 	mesh.material_override = _material
 	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_ambience = AudioStreamPlayer3D.new()
+	var stream := load(AMBIENCE) as AudioStreamMP3
+	stream.loop = true
+	_ambience.stream = stream
+	_ambience.unit_size = AMBIENCE_UNIT
+	_ambience.max_distance = AMBIENCE_RANGE
+	_ambience.position.y = HANDS_Y
+	add_child(_ambience)
+	_build_flakes(mesh)
 	_hide()
+
+
+## Weiße Flocken rund um den unteren Rand des Lakens, sinken langsam und trudeln.
+func _build_flakes(mesh: MeshInstance3D) -> void:
+	var box := (global_transform.affine_inverse() * mesh.global_transform) * mesh.get_aabb()
+	_flake_mat = Mat.particle(null, FLAKE_GLOW)
+	_flake_mat.set_shader_parameter("spin", 1.5)
+	_flake_mat.set_shader_parameter("sway", 0.04)
+	_flake_mat.set_shader_parameter("sway_cycles", 1.2)
+	_flakes = Geo.particles(FLAKES, FLAKE_LIFE, FLAKE_SIZE, _flake_mat, 0.15, 0.4)
+	_flakes.color = Color(0.9, 0.9, 0.95)
+	# Ring knapp außerhalb des Lakens (Breite ohne die vorgestreckten Arme), etwas über dem Saum –
+	# weiter innen verdeckte sie das Laken, weiter unten am Fenster die Brüstung
+	_flakes.position = Vector3(box.get_center().x, box.position.y + box.size.y * FLAKE_FROM, box.get_center().z)
+	_flakes.emission_shape = CPUParticles3D.EMISSION_SHAPE_RING
+	_flakes.emission_ring_axis = Vector3.UP
+	_flakes.emission_ring_radius = box.size.x * 0.45
+	_flakes.emission_ring_inner_radius = box.size.x * 0.32
+	_flakes.emission_ring_height = box.size.y * 0.15
+	_flakes.direction = Vector3.DOWN
+	_flakes.spread = 40.0
+	_flakes.initial_velocity_min = 0.03
+	_flakes.initial_velocity_max = 0.12
+	_flakes.gravity = Vector3(0, -0.08, 0)
+	_flakes.damping_min = 0.05
+	_flakes.damping_max = 0.1
+	_flakes.scale_amount_min = 0.6
+	_flakes.scale_amount_max = 1.3
+	add_child(_flakes)
 
 
 func is_active() -> bool:
@@ -153,15 +223,18 @@ func _physics_process(delta: float) -> void:
 			_check_spawn()
 		return
 	if Game.game_over:
+		if state != State.FADE:   # das Monster war schneller – ihn selbst hört man nicht mehr
+			_ambience.stop()
 		return
 	if state != State.FADE:
-		var seen_by := _witness_guests(global_position + Vector3.UP * HANDS_Y, _victim)
+		var seen_by := _witness_guests(global_position + Vector3.UP * HANDS_Y, _victim, DOOR_WITNESS_RANGE if state == State.DOOR else WITNESS_RANGE)
 		if seen_by.size() + _player_witness(global_position + Vector3.UP * HANDS_Y) >= WITNESSES:
 			for guest in seen_by:
 				guest.shock("ghost", global_position)
 			if "--trace" in OS.get_cmdline_user_args():
 				var names := seen_by.map(func(g: Guest) -> String: return g.display_name)
-				print("[Lakengeist] vertrieben von %s" % (", ".join(names) if not names.is_empty() else "dir"))
+				print("[Lakengeist] vertrieben von %s%s" % [", ".join(names) if not names.is_empty() else "dir",
+					" (vor der Tür, %.0f s vor Schluss)" % _timer if state == State.DOOR else ""])
 			_vanish()
 		elif _lost_victim():
 			_vanish()
@@ -186,7 +259,7 @@ func _physics_process(delta: float) -> void:
 			var flat := Vector3(neck.x - global_position.x, 0, neck.z - global_position.z)
 			if _float_to(_grip_spot(), INSIDE_SPEED, delta, false) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
 				_grab()
-			elif _victim.global_position.distance_to(_window.global_position if _window else global_position) > LEAVE_RANGE + (0.0 if _window else 6.0):
+			elif _victim.global_position.distance_to(_window.global_position if _window else global_position) > (LEAVE_RANGE if _window else HALL_GIVE_UP):
 				_vanish()
 		State.STRANGLE:
 			_struggle(delta)
@@ -195,14 +268,19 @@ func _physics_process(delta: float) -> void:
 		State.FLY_IN:
 			if _float_to(_grip_spot(), FLY_IN_SPEED, delta):
 				_grab()
+		State.DOOR:
+			_door_watch(delta)
 		State.FADE:
 			_fade = maxf(0.0, _fade - delta / FADE_TIME)
 			if _fade <= 0.0:
 				_hide()
 				return
-	if state in [State.APPROACH, State.HOVER, State.ENTER, State.LURK, State.FLY_IN] and _fade < 1.0:
+	if state in [State.APPROACH, State.HOVER, State.ENTER, State.LURK, State.FLY_IN, State.DOOR] and _fade < 1.0:
 		_fade = minf(1.0, _fade + delta / APPEAR_TIME)
 	_material.set_shader_parameter("fade", _fade)
+	_flake_mat.set_shader_parameter("fade", _fade)
+	_flakes.emitting = state != State.FADE
+	_update_ambience()
 	_update_trance(delta)
 	_pose()
 
@@ -215,9 +293,12 @@ func _physics_process(delta: float) -> void:
 func _check_spawn() -> void:
 	var player := Game.player
 	var director := Game.director
-	if director == null or Game.game_over:
+	if director == null or Game.game_over or director.other_threat_active(self):
+		return   # nur eine Bedrohung im Haus
+	if _haunting() and _cooldown <= 0.0 and director.player_threat <= 0.0 and _check_doors():
 		return
-	if not (player.dead or player.hiding != null or player.in_dialog) and (_haunting() or _force or _force_hall):
+	var safe := Game.social.builder.is_safe(player.global_position)   # Katzenraum (Spielkonzept 7.7)
+	if not (player.dead or player.hiding != null or player.in_dialog or safe) and _haunting():
 		if _check_hall(player):
 			return
 		var eye := player.camera.global_position
@@ -233,9 +314,8 @@ func _check_spawn() -> void:
 				_stay = STAY_EVERY
 				chance = minf(1.0, STAY_CHANCE + WEAK_CHANCE * player.weakness())
 		# in Gesellschaft kommt er nicht
-		if window != null and (_cooldown <= 0.0 or _force) and director.player_threat <= 0.0 \
-				and _witness_guests(eye, player).size() < WITNESSES and (_force or randf() < chance):
-			_force = false
+		if window != null and _cooldown <= 0.0 and director.player_threat <= 0.0 \
+				and _witness_guests(eye, player).size() < WITNESSES and randf() < chance:
 			_appear(window, player)
 			return
 	if _haunting() or _force_guest != null:
@@ -256,7 +336,8 @@ func _check_guests() -> void:
 		var g: Guest = guest
 		if _force_guest != null and g != _force_guest:
 			continue   # Debug: nur zu diesem Gast
-		if g.dead or g.hiding != null or g.state in [Guest.State.TALKING, Guest.State.MINIGAME, Guest.State.SLEEP, Guest.State.KNOCK, Guest.State.SHELTER]:
+		if g.dead or g.hiding != null or g.state in [Guest.State.TALKING, Guest.State.MINIGAME, Guest.State.SLEEP, Guest.State.KNOCK, Guest.State.SHELTER] \
+				or Game.social.builder.is_safe(g.global_position):
 			_guest_windows.erase(g.id)
 			continue
 		var eye := g.global_position + Vector3.UP * g.eye_height()
@@ -280,7 +361,7 @@ func _check_guests() -> void:
 ## desto öfter, ab WEAK_HALL auch vor dem 6. Mal, ab WEAK_SURE sicher, sobald man allein im Flur ist.
 func _check_hall(player: Player) -> bool:
 	var weak := player.weakness()
-	if Game.social == null or not "Flur" in Game.director.zone_name_at(player.global_position):
+	if Game.social == null or not _in_hall(player.global_position):
 		return false
 	if weak >= WEAK_SURE:
 		if _cooldown > 0.0 or Game.director.player_threat > 0.0 \
@@ -289,22 +370,152 @@ func _check_hall(player: Player) -> bool:
 	else:
 		if (visits + 1 < HALL_FROM and weak < WEAK_HALL) or not Game.social.all_asleep():
 			return false
-		if not _force_hall and (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
-				or randf() >= HALL_CHANCE * (1.0 + WEAK_FASTER * weak) * CHECK_EVERY):
+		if _cooldown > 0.0 or Game.director.player_threat > 0.0 \
+				or randf() >= HALL_CHANCE * (1.0 + WEAK_FASTER * weak) * CHECK_EVERY:
 			return false
 	var spots: Array[Vector3] = []
 	for entry in Game.director.patrol:
 		var p: Vector3 = entry["pos"]
 		var d := p.distance_to(player.global_position)
 		if absf(p.y - player.global_position.y) < 1.5 and d >= HALL_DISTANCE.x and d <= HALL_DISTANCE.y \
-				and "Flur" in Game.director.zone_name_at(p) and not Game.director.player_can_see(p + Vector3.UP * 1.2) \
+				and _in_hall(p) and not Game.director.player_can_see(p + Vector3.UP * 1.2) \
 				and _witness_guests(p + Vector3.UP * HANDS_Y, player).size() < WITNESSES:   # wache Gäste (ganz Schwache auch ohne Nachtruhe)
 			spots.append(p)
 	if spots.is_empty():
 		return false
-	_force_hall = false
 	_appear_in_hall(spots[randi() % spots.size()])
 	return true
+
+
+## Lakengespenster an einer geschlossenen Zimmertür, jemand Waches drinnen: Mit DOOR_CHANCE je Gespenst
+## (mehr bei Schwachen) stellt er sich davor – nur wo ihn gerade niemand sieht.
+func _check_doors() -> bool:
+	if Game.social == null:
+		return false
+	var builder := Game.social.builder
+	var by_room := {}
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.kind != Item.Kind.SHEET_GHOST or not item.hung:
+			continue
+		for room: Dictionary in builder.rooms.values():
+			var door: Door = room.get("door")
+			if door == null:
+				continue
+			var c := door.center()
+			if Vector2(item.global_position.x - c.x, item.global_position.z - c.z).length() < DOOR_DECO_RANGE \
+					and absf(item.global_position.y - c.y) < 2.0:
+				by_room.get_or_add(room["no"], []).append(item)
+				break
+	for no: String in by_room:
+		var room: Dictionary = builder.rooms[no]
+		var door: Door = room["door"]
+		var victim := _door_victim(room)
+		if door.is_open or victim == null:
+			continue
+		if randf() >= DOOR_CHANCE * (by_room[no] as Array).size() * (1.0 + _weakness(victim)):
+			continue
+		var stand := _door_stand(room)
+		if _witness_guests(stand + Vector3.UP * HANDS_Y, victim).size() >= WITNESSES \
+				or Game.director.player_can_see(stand + Vector3.UP * 1.2):
+			continue
+		var deco: Array[Item] = []
+		deco.assign(by_room[no])
+		_appear_at_door(room, victim, deco)
+		return true
+	return false
+
+
+## Wer im Zimmer ist und wach: der Spieler, sonst ein Gast, der dort wohnt (oder null).
+func _door_victim(room: Dictionary) -> Node3D:
+	var builder := Game.social.builder
+	var no := String(room["no"])
+	var player := Game.player
+	if not (player.dead or player.hiding != null or player.in_dialog) and builder.room_at(player.global_position) == no:
+		return player
+	for guest in Game.social.guests:
+		var g: Guest = guest
+		if g.home["no"] != no or g.dead or g.hiding != null or builder.room_at(g.global_position) != no \
+				or g.state in [Guest.State.TALKING, Guest.State.MINIGAME, Guest.State.SLEEP, Guest.State.KNOCK, Guest.State.SHELTER, Guest.State.GHOSTED]:
+			continue
+		return g
+	return null
+
+
+## Wo er vor der Tür schwebt: im Flur, DOOR_STAND vor der Wand, Hände auf Halshöhe eines Erwachsenen.
+func _door_stand(room: Dictionary) -> Vector3:
+	var front: Vector3 = room["door_front"]   # 0,9 m vor der Wandmitte
+	var into: Vector3 = room["into"]
+	var stand := front + into * (0.9 - DOOR_STAND)
+	return Vector3(stand.x, front.y + Player.EYE_HEIGHT - NECK_BELOW_EYES - HANDS_Y, stand.z)
+
+
+func _appear_at_door(room: Dictionary, victim: Node3D, deco: Array[Item]) -> void:
+	_victim = victim
+	_victim_saw = true   # sieht ihn erst, wenn die Tür aufgeht
+	if victim is Guest:
+		var guest := victim as Guest
+		guest.ghost_visits += 1
+		_stage = guest.ghost_visits
+	else:
+		visits += 1
+		_stage = visits
+	_window = null
+	_last_window = null
+	_lurk_spot = null
+	_door_room = room
+	_door_deco = deco
+	for item in deco:
+		item.circling_with = self
+	global_position = _door_stand(room)
+	_face(room["into"])
+	visible = true
+	_fade = 0.0
+	_timer = randf_range(DOOR_TIME.x, DOOR_TIME.y)
+	state = State.DOOR
+	var door: Door = room["door"]
+	if victim is Guest:
+		(victim as Guest).door_trance(door.center())
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Lakengeist] %d. Mal – vor der Tür von %s (%d Lakengespenster), bei %s" % [_stage, room["no"], deco.size(),
+			(victim as Guest).display_name if victim is Guest else "dir (Schwäche %.2f)" % Game.player.weakness()])
+
+
+## Vor der Tür: lautlos, bis die Zeit um ist. Geht die Tür auf – oder kommt das Opfer im Flur zu nah –,
+## packt er zu (wie beim Hereinkommen; Zeugen vertreiben ihn wie sonst auch).
+func _door_watch(delta: float) -> void:
+	var door: Door = _door_room["door"]
+	var near := Vector2(_victim.global_position.x - global_position.x, _victim.global_position.z - global_position.z).length() < DOOR_GRAB_RANGE
+	if door.is_open or near:
+		_end_door()
+		_stage = maxi(_stage, ENTER_FROM)
+		state = State.ENTER
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Lakengeist] Tür auf – er packt zu")
+		return
+	_timer -= delta
+	if _timer <= 0.0:
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Lakengeist] vor der Tür verschwunden")
+		_vanish()
+
+
+## Hände kreisen im Takt (für die Lakengespenster vor der Tür, Item.circling_with).
+func hand_phase() -> float:
+	return _time * 2.2
+
+
+func _end_door() -> void:
+	for item in _door_deco:
+		if is_instance_valid(item):
+			item.circling_with = null
+	_door_deco.clear()
+	_door_room = {}
+
+
+## Flur eines Stockwerks (nicht die Lobby) – nach dem Grundriss, nicht nach dem Zonennamen.
+func _in_hall(p: Vector3) -> bool:
+	return Game.social.builder.in_corridor(p)
 
 
 func _appear_in_hall(floor_point: Vector3) -> void:
@@ -324,7 +535,8 @@ func _appear_in_hall(floor_point: Vector3) -> void:
 	Game.caption("[Kälte im Flur]")
 	if "--trace" in OS.get_cmdline_user_args():
 		var weak := Game.player.weakness()
-		print("[Lakengeist] %d. Mal – im Flur (Schwäche %.2f%s)" % [visits, weak, ", sicher" if weak >= WEAK_SURE else ""])
+		print("[Lakengeist] %d. Mal – im Flur, %.0f m entfernt (Schwäche %.2f%s)" % [visits,
+			floor_point.distance_to(Game.player.global_position), weak, ", sicher" if weak >= WEAK_SURE else ""])
 
 
 ## Dunkles Außenfenster in der Nähe dieses Augenpunkts, durch das er zum `stage`. Mal käme.
@@ -475,9 +687,10 @@ func _kill() -> void:
 		Game.hud.set_struggle(-1.0)
 		Game.hud.set_prompt("")
 		Game.hud.visible = false
-	Game.play_sound("scream", 1.0)
+	Game.play_sound("shriek", 1.0)
 	Game.director.flash(1.4)
 	await get_tree().create_timer(1.5).timeout
+	_ambience.stop()
 	Game.player_died.emit()
 
 
@@ -493,6 +706,7 @@ func _frighten_child(child: Guest) -> void:
 func _kill_guest(guest: Guest) -> void:
 	if "--trace" in OS.get_cmdline_user_args():
 		print("[Lakengeist] %s erwürgt" % guest.display_name)
+	Game.sound_at("grunt", guest.global_position, Senses.GRUNT_RANGE, guest)   # das Röcheln bricht ab – kein Schrei
 	guest.die("ghost")
 	if Game.social:
 		Game.social.on_guest_died(guest, "ghost")
@@ -510,6 +724,7 @@ func _vanish() -> void:
 		(_victim as Guest).ghost_gone()
 	state = State.FADE
 	_lurk_spot = null
+	_end_door()
 	# Je schwächer das Opfer, desto schneller kommt er wieder
 	_cooldown = COOLDOWN / (1.0 + WEAK_FASTER * _weakness(_victim))
 
@@ -521,19 +736,25 @@ func _hide() -> void:
 	_window = null
 	_victim = null
 	_lurk_spot = null
+	_end_door()
 	global_position = Vector3(0, -60, 0)
+	if _ambience:
+		_ambience.stop()
 	if _material:
 		_material.set_shader_parameter("fade", 0.0)
+	if _flakes:
+		_flakes.restart()   # alte Flocken weg, sonst stünden sie beim nächsten Auftritt noch am alten Ort
+		_flakes.emitting = false
 
 
-## Wache Gäste (außer dem Opfer) mit freier Sicht auf diesen Punkt.
-func _witness_guests(point: Vector3, victim: Node3D) -> Array[Guest]:
+## Wache Gäste (außer dem Opfer) mit freier Sicht auf diesen Punkt, höchstens `reach` entfernt.
+func _witness_guests(point: Vector3, victim: Node3D, reach: float = WITNESS_RANGE) -> Array[Guest]:
 	var result: Array[Guest] = []
 	if Game.social == null:
 		return result
 	var space := get_world_3d().direct_space_state
 	for guest in Game.social.guests:
-		if guest == victim or guest.dead or guest.hiding != null or guest.is_child() or guest.global_position.distance_to(point) > WITNESS_RANGE:
+		if guest == victim or guest.dead or guest.hiding != null or guest.is_child() or guest.global_position.distance_to(point) > reach:
 			continue
 		var query := PhysicsRayQueryParameters3D.create(guest.global_position + Vector3.UP * guest.eye_height(), point, Senses.SIGHT_MASK)
 		if space.intersect_ray(query).is_empty():
@@ -690,6 +911,18 @@ func _eye_of(victim: Node3D) -> Vector3:
 
 ## Ab dem 2. Mal: Solange man ihn ansieht, während er die Hände kreisen lässt, wird man langsamer und
 ## der Blick wird zu ihm gezogen. Beim Würgen hält er den Blick fest.
+## Sein Klang folgt der Sichtbarkeit (Erscheinen, Ausblenden) und der Effektlautstärke; jeder Auftritt
+## beginnt an einer zufälligen Stelle der Schleife.
+func _update_ambience() -> void:
+	var level := 0.0 if state == State.DOOR else _fade * Settings.effects_volume   # vor der Tür: lautlos
+	if level <= 0.001:
+		_ambience.stop()
+		return
+	_ambience.volume_db = AMBIENCE_DB + linear_to_db(level)
+	if not _ambience.playing:
+		_ambience.play(randf() * _ambience.stream.get_length())
+
+
 func _update_trance(delta: float) -> void:
 	var player := Game.player
 	var head := global_position + Vector3.UP * (HANDS_Y + 0.5)
@@ -702,7 +935,14 @@ func _update_trance(delta: float) -> void:
 	var pull := PULL * player.trance
 	if state == State.STRANGLE and mine:
 		pull = PULL * 2.0
-	if pull <= 0.0 or player.hiding:   # im Versteck ist der Blick fest
+	if player.hiding:   # im Versteck ist der Blick fest
+		return
+	if state == State.DOOR and mine and global_position.distance_to(player.global_position) < DOOR_PULL_RANGE:
+		# Hypnose durch die Wand: nur der Blick dreht sich, ganz langsam, zur Tür
+		var at := head - player.camera.global_position
+		var door_pull := DOOR_PULL * (1.0 + player.weakness())
+		player.rotation.y = rotate_toward(player.rotation.y, atan2(-at.x, -at.z), door_pull * delta)
+	if pull <= 0.0:
 		return
 	var to := head - player.camera.global_position
 	var want_yaw := atan2(-to.x, -to.z)
@@ -737,7 +977,7 @@ func _pose() -> void:
 	_visual_offset(bob)
 	_rotate("hem", Vector3.RIGHT, sin(_time * 1.3) * 0.08)
 	_rotate("head", Vector3.FORWARD, sin(_time * 0.7) * 0.12)
-	var circling := _stage >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER, State.LURK]
+	var circling := state == State.DOOR or (_stage >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER, State.LURK])
 	var gripping := state in [State.STRANGLE, State.FLY_IN]
 	for side in [".L", ".R"]:
 		var phase := _time * 2.2 + (0.0 if side == ".L" else PI)
@@ -770,30 +1010,131 @@ func _rotate2(bone_name: String, axis_a: Vector3, a: float, axis_b: Vector3, b: 
 
 # --- Debug & Speichern ----------------------------------------------------------------------
 
-## Debug (F6, --ghost=n): Licht in diesem Zimmer aus, Vorhänge auf (ab dem 4. Mal zu), beim nächsten
-## Prüfen kommt er sicher – zum `stage`. Mal.
-func debug_summon(stage: int, room_id: String) -> void:
+## Debug (F6, --ghost=n): Er kommt sofort zum `stage`. Mal ans Außenfenster des Raums, in dem der Spieler
+## steht – Licht dort aus, Vorhänge auf (ab dem 4. Mal zu), Blick zum Fenster. Ohne Außenfenster nur eine
+## Meldung (false).
+func debug_summon(stage: int) -> bool:
+	var player := Game.player
+	var room := Game.social.builder.room_at(player.global_position)
+	var window: HotelWindow = null
+	var best := INF
+	for node in get_tree().get_nodes_in_group("windows"):
+		var w := node as HotelWindow
+		var d := w.global_position.distance_to(player.global_position)
+		if room != "" and w.room_id == room and w.has_curtains() and d < best:
+			window = w
+			best = d
+	if window == null:
+		Game.say("Lakengeist: Hier ist kein Außenfenster.", 2.5)
+		return false
+	_debug_reset()
 	visits = maxi(0, stage - 1)
-	_cooldown = 0.0
-	_last_window = null
-	_force = true
-	var sw := LightSwitch.find(get_tree(), room_id)
+	var sw := LightSwitch.find(get_tree(), room)
 	if sw:
 		sw.set_on(false)
 	for node in get_tree().get_nodes_in_group("windows"):
-		var window := node as HotelWindow
-		if window.room_id == room_id:
-			window.set_closed(stage >= THROUGH_CURTAIN_FROM, true)
-			var to := window.global_position - Game.player.global_position
-			Game.player.rotation.y = atan2(-to.x, -to.z)
+		var w := node as HotelWindow
+		if w.room_id == room and w.has_curtains():
+			w.set_closed(stage >= THROUGH_CURTAIN_FROM, true)
+	_debug_look_at(window.global_position)
+	_last_window = window
+	_appear(window, player)
+	return true
 
 
-## Debug (F6, --ghost=flur): 6. Mal, alle Gäste sofort im Bett, er kommt gleich im Flur.
-func debug_summon_hall() -> void:
+## Debug (F6, --ghost=flur): Alle Gäste liegen sofort im Bett, er taucht in dem Flur auf, in dem der Spieler
+## steht – Richtung des weitesten Wegpunkts dieses Flurabschnitts, höchstens DEBUG_HALL_DISTANCE entfernt –
+## und kommt auf ihn zu (mindestens das 6. Mal). Außerhalb eines Flurs nur eine Meldung (false).
+func debug_summon_hall() -> bool:
+	var player := Game.player
+	var builder := Game.social.builder
+	if not builder.in_corridor(player.global_position):
+		Game.say("Lakengeist: Du stehst in keinem Flur.", 2.5)
+		return false
+	var section := builder.room_at(player.global_position)
+	var spot := Vector3.ZERO
+	var far := 0.0
+	for p: Vector3 in builder.wander_points:
+		var d := p.distance_to(player.global_position)
+		if builder.room_at(p) == section and d > far:
+			spot = p
+			far = d
+	if far > DEBUG_HALL_DISTANCE:   # Flurabschnitte sind gerade: auf der Linie dorthin näher heran
+		var from := Vector3(player.global_position.x, spot.y, player.global_position.z)
+		spot = from + (spot - from).normalized() * DEBUG_HALL_DISTANCE
+		far = DEBUG_HALL_DISTANCE
+	if far < HALL_DISTANCE.x:
+		Game.say("Lakengeist: Der Flur ist hier zu kurz.", 2.5)
+		return false
+	_debug_reset()
 	visits = maxi(visits, HALL_FROM - 1)
-	_cooldown = 0.0
-	_force_hall = true
 	Game.social.start_sleep(true)
+	_debug_look_at(spot)
+	_appear_in_hall(spot)
+	return true
+
+
+## Debug (--ghost=tür): Ein Lakengespenst hängt neben der Tür des Zimmers, in dem der Spieler steht (sonst
+## Zimmer 13 – dorthin springt er), die Tür ist zu, und er steht sofort davor; Blick weg von der Tür.
+## Mit Gast (--shock=id,tür): vor dessen Tür, der Spieler zählt nicht als Zeuge.
+func debug_summon_door(guest: Guest = null) -> bool:
+	var player := Game.player
+	var builder := Game.social.builder
+	var no := builder.room_at(player.global_position) if guest == null else String(guest.home["no"])
+	if not builder.rooms.has(no):
+		no = LevelBuilder.PLAYER_ROOM
+		var home: Dictionary = builder.rooms[no]
+		player.global_position = (home["center"] as Vector3) + Vector3(0, 0.05, 0)
+	var room: Dictionary = builder.rooms[no]
+	var door: Door = room["door"]
+	door.set_open(false, true, true)
+	var into: Vector3 = room["into"]
+	var along: Vector3 = room["along"]
+	var c := door.center()
+	var face := Vector3(c.x, door.global_position.y, c.z) - into * (LevelBuilder.T / 2.0)
+	var deco: Array[Item] = []
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.kind == Item.Kind.SHEET_GHOST and item.hung and item.global_position.distance_to(face) < DOOR_DECO_RANGE + 1.0:
+			deco.append(item)
+	if deco.is_empty():
+		var ghost := Item.create(Item.Kind.SHEET_GHOST, "pumpkin")
+		get_parent().add_child(ghost)
+		ghost.hang(face + along * (door.width / 2.0 + 0.45) + Vector3.UP * 2.15, -into)
+		deco.append(ghost)
+	_debug_reset()
+	if guest:
+		debug_ignore_player = true
+		_appear_at_door(room, guest, deco)
+		return true
+	_debug_look_at((room["center"] as Vector3) + into * 3.0)
+	_appear_at_door(room, player, deco)
+	return true
+
+
+## Debug (--ghost=tür --answer): Der Spieler macht die Tür auf, vor der er steht.
+func debug_open_door() -> void:
+	if state == State.DOOR:
+		(_door_room["door"] as Door).set_open(true, false, false, Game.player)
+
+
+## Debug: Läuft er schon, verschwindet er sofort (der Spieler kommt los); keine Pause.
+func _debug_reset() -> void:
+	if state != State.IDLE:
+		Game.player.gripped = false
+		if _victim is Guest:
+			(_victim as Guest).ghost_gone()
+		if Game.hud:
+			Game.hud.set_struggle(-1.0)
+		_hide()
+	_cooldown = 0.0
+
+
+## Debug: Der Spieler bleibt stehen, nur sein Blick geht dorthin.
+func _debug_look_at(point: Vector3) -> void:
+	var to := point - Game.player.global_position
+	Game.player.rotation.y = atan2(-to.x, -to.z)
+	Game.player.head.rotation.x = 0.0
 
 
 ## Debug (--shock=id,ghostN): Licht im Zimmer des Gastes aus, Vorhänge auf (ab dem 4. Mal zu); er kommt

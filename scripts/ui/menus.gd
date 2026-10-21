@@ -8,7 +8,7 @@ const CONTROLS := [
 	["W A S D / Maus", "Laufen / Umsehen"],
 	["Shift", "Rennen (macht Lärm, kostet Ausdauer)"],
 	["Leertaste", "Springen"],
-	["Strg / C", "Ducken (nötig für die Kellertür)"],
+	["Strg / C", "Ducken"],
 	["E", "Nehmen, Benutzen, Türen, Licht, Vorhänge, Reden, Verstecken"],
 	["G / Q", "Gegenstand ablegen"],
 	["Rechtsklick (halten)", "Im Versteck Luft anhalten"],

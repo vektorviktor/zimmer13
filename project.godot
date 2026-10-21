@@ -46,6 +46,7 @@ enabled=PackedStringArray("res://addons/meshy-godot-plugin/plugin.cfg")
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+textures/light_projectors/filter=1
 
 [shader_globals]
 
@@ -56,4 +57,8 @@ psx_snap={
 psx_smooth={
 "type": "float",
 "value": 0.0
+}
+reflections={
+"type": "float",
+"value": 1.0
 }

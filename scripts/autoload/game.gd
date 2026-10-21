@@ -10,14 +10,16 @@ const MAIN_SCENE := "res://scenes/main.tscn"
 const TITLE_SCENE := "res://scenes/title.tscn"
 ## Untertitel für wichtige Geräusche (Einstellungen → Barrierefreiheit)
 const SOUND_CAPTIONS := {
-	"scream": "[Ein Schrei]", "growl": "[Knurren]", "bang": "[Ein Knall]", "sting": "[Schriller Ton]",
-	"cry": "[Eine Katze jammert]", "meow": "[Miau]",
+	"scream": "[Ein Schrei]", "death_scream": "[Ein Schrei – jäh abgerissen]", "grunt": "[Ein Ächzen]",
+	"shriek": "[Ein Kreischen]", "growl": "[Knurren]", "bang": "[Ein Knall]", "sting": "[Schriller Ton]",
+	"cry": "[Eine Katze kreischt]", "meow": "[Miau]", "bell": "[Eine Totenglocke läutet]",
 }
 
 var player: Player
 var director: MonsterDirector
 var monster: Monster
 var ghost: SheetGhost
+var pumpkin: PumpkinMan
 var hud: Hud
 var audio: SynthAudio
 var social: Social
@@ -27,6 +29,11 @@ var chess: ChessMatch
 var menus: Menus
 var traces: Traces
 var phones: PhoneCalls
+var weather: Weather
+var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
+var confetti: Confetti            ## Konfetti auf Feiern (Spielkonzept 7.6)
+## Lokales Sprachmodell (Prototyp, GuestChat) – bleibt über Szenenwechsel bestehen, reset() lässt es stehen
+var llm: LlmClient
 var game_over := false
 ## Debug: letzte Lärmereignisse (F3) und Ausgabe in die Konsole (--trace)
 var noise_log: Array[String] = []
@@ -101,6 +108,7 @@ func reset() -> void:
 	player = null
 	director = null
 	monster = null
+	pumpkin = null
 	hud = null
 	audio = null
 	social = null
@@ -109,6 +117,9 @@ func reset() -> void:
 	menus = null
 	traces = null
 	phones = null
+	weather = null
+	kitchen = null
+	confetti = null
 	noise_log.clear()
 
 
@@ -116,11 +127,30 @@ func say(text: String, duration: float = 3.5) -> void:
 	message_posted.emit(text, duration)
 
 
-func play_sound(kind: String, volume: float = 1.0) -> void:
-	if audio:
-		audio.play_shot(kind, volume)
+## `pos`/`who`: Ort und Stimme für menschliche Laute (SynthAudio.VOICES) – die klingen aus ihrer Richtung.
+func play_sound(kind: String, volume: float = 1.0, pos := Vector3.INF, who: Node = null) -> void:
+	if audio and not audio.play_shot(kind, volume, pos, who):
+		return
 	if volume >= 0.3 and SOUND_CAPTIONS.has(kind):
 		caption(SOUND_CAPTIONS[kind])
+
+
+## Nur der Klang, ohne Lärm (niemand sonst reagiert): so laut, wie der Spieler ihn bei `loudness` m Hörweite
+## hört – bis zur doppelten Hörweite, gedämpft durch Wände wie bei `noise`. Gibt die Lautstärke zurück.
+func sound_at(sound: String, pos: Vector3, loudness: float, source: Node = null, volume: float = 1.0) -> float:
+	if player == null:
+		return 0.0
+	if source != player:
+		var ear := player.camera.global_position
+		var d := ear.distance_to(pos)
+		var reach := 0.0
+		if d < maxf(2.0 * loudness, Senses.PLAYER_MIN_REACH):
+			var audible := Senses.audible_range(player.get_world_3d(), pos, ear, loudness)
+			reach = maxf(2.0 * audible, Senses.PLAYER_MIN_REACH * audible / loudness)
+		volume *= clampf(1.0 - d / reach, 0.0, 1.0) if reach > 0.0 else 0.0
+	if volume > 0.02:
+		play_sound(sound, volume, pos, source)
+	return volume
 
 
 ## Lärm (Spielkonzept 4.15): Geräusch und Lärm in einem. `kind` ist eine Art aus
@@ -135,18 +165,7 @@ func noise(kind: String, pos: Vector3, source: Node = null) -> float:
 	var loudness: float = data["range"]
 	var volume := 0.0
 	if player and String(data["sound"]) != "":
-		volume = float(data["volume"])
-		if source != player:
-			# Der Spieler hört fremde Geräusche bis zur doppelten (gedämpften) Hörweite
-			var ear := player.camera.global_position
-			var d := ear.distance_to(pos)
-			var reach := 0.0
-			if d < maxf(2.0 * loudness, Senses.PLAYER_MIN_REACH):
-				var audible := Senses.audible_range(player.get_world_3d(), pos, ear, loudness)
-				reach = maxf(2.0 * audible, Senses.PLAYER_MIN_REACH * audible / loudness)
-			volume *= clampf(1.0 - d / reach, 0.0, 1.0) if reach > 0.0 else 0.0
-		if volume > 0.02:
-			play_sound(data["sound"], volume)
+		volume = sound_at(data["sound"], pos, loudness, source, float(data["volume"]))
 		if player.sleeping and source != player and volume >= 0.3:
 			player.wake_up("Ein Geräusch weckt dich.")
 	var heard: Array[String] = []
@@ -207,6 +226,8 @@ func _setup_input() -> void:
 	_bind_keys("debug_manifest", [KEY_F5])
 	_bind_keys("debug_teleport", [KEY_F6])
 	_bind_keys("debug_lure", [KEY_F7])
+	_bind_keys("debug_pumpkin", [KEY_F9])   # Kürbismann im Garten (F8 stoppt im Godot-Editor das Spiel)
+	_bind_keys("debug_fps", [KEY_F10])      # Bilder pro Sekunde (Hud)
 	_bind_keys("debug_console", [KEY_QUOTELEFT, KEY_F1])   # [^] auf deutscher Tastatur
 	_bind_keys("pause", [KEY_ESCAPE])
 	_bind_mouse("hold_breath", MOUSE_BUTTON_RIGHT)

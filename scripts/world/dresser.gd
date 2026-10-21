@@ -16,7 +16,7 @@ const TRAY := Vector3(SIZE.x - 0.12, 0.15, SIZE.z - 0.07)
 const EMPTY_CHANCE := 0.4
 const COINS_CHANCE := 0.3
 const LOOT := [Item.Kind.CANDLE, Item.Kind.BULB, Item.Kind.BATTERY, Item.Kind.BATTERY, Item.Kind.KNIFE, Item.Kind.LOADED_DICE,
-	Item.Kind.SWEETS, Item.Kind.SWEETS]
+	Item.Kind.SWEETS, Item.Kind.SWEETS, Item.Kind.LIGHT_STRING, Item.Kind.SPIDER, Item.Kind.BAT_GARLAND]
 const EMPTY_LINES := ["Nur Staub.", "Ein alter Knopf, sonst nichts.", "Leer – bis auf eine tote Motte.", "Vergilbtes Briefpapier. Leer."]
 
 var is_open: Array[bool] = []

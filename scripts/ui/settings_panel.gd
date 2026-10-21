@@ -28,6 +28,8 @@ func _ready() -> void:
 	_check(list, "Vollbild", "fullscreen")
 	_check(list, "VSync", "vsync")
 	_slider(list, "Sichtfeld (FOV)", "fov", 60.0, 95.0, 1.0)
+	_check(list, "Spiegelungen", "reflections")
+	list.add_child(UiKit.wrap_label("Marmor, Wasser und Lack spiegeln, was zu sehen ist. Aus, wenn das Spiel ruckelt.", 8))
 
 	_section(list, "PS1-Look")
 	var look := _check(list, "PS1-Look", "psx_look")

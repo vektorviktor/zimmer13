@@ -9,9 +9,26 @@ extends Node3D
 ##   --savetest                  Speichern → Laden → Vergleichen (Ausgabe in der Konsole)
 ##   --diary=n                   nach 2 s wie am Tagebuch in Slot n speichern
 ##   --day=n                     zu Tag n im Oktober springen
-##   --attacks=n                 so viele Angriffe gab es schon (> 2: es holt jemanden)
+##   --attacks=n                 so viele Angriffe gab es schon (> 2: nicht mehr harmlos, ob es holt, entscheidet die Tageskurve; sicher mit --intent)
 ##   --first-attack              Feier starten, kurz darauf der erste Angriff
 ##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
+##   --trick[=kind]              Süßes oder Saures von Tür zu Tür (6.13): ein Kind (oder dieses) zieht sofort los und
+##                               klopft an die nächsten Gästetüren (mit --trace: Türen, Süßes oder Saures)
+##   --decorate[=gast][,hin]     Schmück-Aktion sofort (5.9): ein Gast (oder dieser) ruft auf, Gäste aus der Nähe holen
+##                               Deko und hängen sie an eine Tür bzw. in den Flur · hin: du stehst davor (mit --trace:
+##                               Stelle, Mitmacher, jedes Stück, Ende) · sonst Anruf in Zimmer 13, mit --answer nach 4 s abnehmen
+##   --decorate=lobby[,gast][,hin]   Schmück-Aktion in der Lobby
+##   --decorate=allein[,gast][,lobby][,hin]   ein Gast holt allein Deko aus einer Kiste und hängt sie in seinem Zimmer
+##                               auf (lobby: aus dem Koffer in die Lobby; haus: irgendwohin ins Hotel, wo wenig hängt)
+##   --decorate=gross[,gast][,lobby][,hin]   großes Schmücken (2026-10-21): 10–20 Gäste, mehrere Stellen eines
+##                               Flurbereichs (bzw. der Lobby), jeder mit einem Armvoll Deko
+##   --decorate=hier[,gast]      wie „Lass uns hier schmücken!“ im Gespräch: geschmückt wird, wo du stehst (mit --tp/--pos)
+##   --search[=gast][,mit]       Deko-Suche (5.9): ein Gast (oder dieser) zieht los · mit: du gehst mit (er führt, du
+##                               folgst ihm von selbst, er teilt am Fundort) – mit --trace: Fundort, Teilen, Beziehung
+##   --cook=suppe|braten[,fertig]  Kochen (3.8): Kürbis liegt geschnitten im Topf bzw. in der Pfanne, du stehst am Herd ·
+##                               fertig: gleich fertig (Suppe: Gäste kommen zum Essen)
+##   --pals=gast1,gast2          Weitererzählen (6.16): gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir
+##                               nebeneinander – gast1 erzählt gast2 gleich Gutes über dich (mit --trace: Beziehung)
 ##   --call=id|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast, Atmen, Verschwundener,
 ##                               vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --dial=n|lobby              vom Telefon in Zimmer 13 aus Zimmer n anrufen (0 = Rezeption) ·
@@ -19,7 +36,7 @@ extends Node3D
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, controls)
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
-##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, keller …), Zimmernummer, vor einen Gast
+##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
 ##   --time=+n|-n                Spieltage vor- oder zurückspulen
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
@@ -29,19 +46,28 @@ extends Node3D
 ##   --pool=still|tremor|slosh   Poolwasser so, als wäre das Monster nah: glatt · zitternde Ringe · schwappt (off = wieder normal)
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
+##   --deco=art[,g]              Deko in die Hand (5.6, 5.7): gespenst, lichter, netz, laub, zierkürbis, fledermaus,
+##                               spinne, totenkopf, besen – an eine Wand sehen
+##                               und [G] zum Aufhängen bzw. Verstreuen · ,g: nach 1 s selbst [G] (mit --pos auf eine Wand)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
 ##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
-##   --no-psx                    ohne PS1-Look (wie Einstellungen → PS1-Look aus, wird nicht gespeichert)
+##   --no-psx · --psx            ohne bzw. mit PS1-Look (wie der Schalter in den Einstellungen, wird nicht gespeichert)
+##   --fps                       Bilder pro Sekunde einblenden (wie F10)
 ##   --debug                     Debug-Werte einblenden
 ##   --nointro                   ohne Einführungstext
+##   --perf[=s]                  Frame-Zeiten nach temp/perf.csv schreiben, nach s Sekunden (Standard 20) beenden (PerfLog)
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort Vorwarnung → Monster erscheint
-##   --ghost=n|flur|schrank      Lakengeist zum n. Mal: Zimmer 13, Licht aus, Vorhang auf, er kommt sicher (4.18) ·
-##                               flur: alle Gäste schlafen sofort, er kommt im Flur (Spieler vorher mit --pos hinstellen)
-##                               schrank: kommt in Zimmer 13 herein, du versteckst dich sofort im Schrank – er
-##                               wartet davor (mit --trace: Wartezeit, Chance, ob er hineinfliegt)
+##   --ghost=n|flur|schrank|tür  Lakengeist sofort zum n. Mal am Außenfenster des Raums, in dem du stehst (beim Start
+##                               Zimmer 13): Licht aus, Vorhang auf, Blick zum Fenster (4.18) · flur: alle Gäste
+##                               schlafen sofort, er taucht in deinem Flur knapp 20 m vor dir auf und kommt (vorher mit
+##                               --tp/--pos in einen Flur stellen) · schrank: kommt durch den Vorhang deines Zimmers
+##                               herein, du versteckst dich sofort in dessen Schrank – er wartet davor (mit --trace:
+##                               Wartezeit, Chance, ob er hineinfliegt) · tür: ein Lakengespenst hängt neben der Tür
+##                               deines Zimmers (sonst Zimmer 13), er steht lautlos davor und hypnotisiert durch die
+##                               Wand (5.6), mit --answer öffnest du nach 4 s · ohne Fenster bzw. Flur nur eine Meldung
 ##   --sleep[=bett]              Nachtruhe sofort beginnen (Gäste gehen ins Bett) · bett: alle liegen sofort,
 ##                               du schläfst im Bett von Zimmer 13
 ##   --awake=n                   so viele Nächte ohne Schlaf (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
@@ -55,15 +81,29 @@ extends Node3D
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
 ##   --kill=id                   Gast nach 3 s vom Monster holen lassen
-##   --party                     sofort eine Feier im Partyraum starten
-##   --cat=id                    Hotelkatze vor den Spieler setzen (minka, socke, kasimir)
-##   --pumpkin[=tanz]            Kürbismann (neues Monster, nur Testfigur) 2,5 m vor dich, tanzt in Schleife:
-##                               chicken (Standard), macarena, hiphop – erneut aufgerufen ersetzt er den alten
+##   --wallblood[=smear]         Blutspritzer (smear: blutige Schmierspur) an die Wand, auf die du schaust (4.13)
+##   --costumes[=art]            alle Gäste sofort verkleidet (sonst ab dem 25.): jeder sein Kostüm, art = sheet|witch|
+##                               pumpkin|cape für alle gleich (5.9)
+##   --disguise                  Bettlaken übergeworfen (5.9): Sicht durch Augenlöcher, Gäste erkennen dich nur aus der Nähe
+##   --drunk=n[,gast]            n Gläser getrunken (du, mit Gast: er) – ab 2 angetrunken, ab 3 betrunken (3.7)
+##   --weather=klar|regen|gewitter|blitz   Wetter sofort in voller Stärke (7.8) · blitz: gleich ein Blitz (mit Gewitter)
+##   --party[=gast]              sofort eine Feier im Partyraum starten (mit Gast: er lädt ein, ~3/4 kommen;
+##                               sonst du – dann kommen nur Eingeladene und Freunde)
+##   --cat=id[,tragen]           Hotelkatze vor den Spieler setzen (minka, socke, kasimir; im Katzenraum luna, fussel, tiger, mausi) – mit tragen gleich auf den Arm
+##   --pumpkin[=anim]            Kürbismann als Testfigur (ohne Verhalten) 2,5 m vor dich, Animation in Schleife:
+##                               walk (Standard), run, spin_jump, chicken, macarena, hiphop – ersetzt eine alte
+##   --pumpkin=jagd[,gast]       Kürbismann (Spielkonzept 4.19) erscheint außer Sicht und jagt dich bzw. den Gast
+##   --pumpkin=garten            wie F9: Kürbismann an den Kürbisbeeten im Garten, jagt alle mit Spaß und dich
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
+##   --ask=id[,frage|frage]      Gespräch öffnen und frei fragen (Prototyp 6.15, nur edna und bruno): stellt die Fragen
+##                               nacheinander, sobald das Sprachmodell geladen ist (ohne Frage: „Wann hast du zuletzt
+##                               gefeiert?“) – Faktenzettel, Antwort, Absicht und Tempo in der Konsole · mit
+##                               --shot-on=answer Screenshot nach der letzten Antwort
+##   --llm=pfad                  Ordner mit llama.cpp/llama-server.exe und models/*.gguf (Standard: ~/llm)
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
 ##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
 ##                               zum Prüfen der Gastmodelle
-##   --shock=id[,blood|corpse|ghostN]  Gast erschrecken (6.12): Blutlache bzw. Leiche vor ihm im Flur, oder der
+##   --shock=id[,blood|corpse|ghostN|tür]  Gast erschrecken (6.12): Blutlache bzw. Leiche vor ihm im Flur, oder der
 ##                               Lakengeist kommt zum N. Mal an sein dunkles Zimmerfenster (ab 3 würgt er) –
 ##                               mit --talk=id erzählt er danach davon
 ##   --dice=id                   sofort Mäxchen mit dem Gast (Einsatz 3 Geld)
@@ -72,7 +112,7 @@ extends Node3D
 ##   --autoplay                  Mäxchen-Antworten bzw. Schachzüge automatisch wählen
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
-##   --shot-on=reveal|jumpscare|strangle|shock  Screenshot kurz nach einem Ereignis statt nach n Frames
+##   --shot-on=reveal|jumpscare|strangle|shock|pumpkin|lightning  Screenshot kurz nach einem Ereignis statt nach n Frames
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
 ##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)
 
@@ -81,6 +121,10 @@ const INTRO := "Willkommen im Hotel – zur Halloween-Woche! Heute ist der 1. Ok
 const START_ENTRY := "Ich bin in Zimmer 13 aufgewacht. Die Tür nach draußen ist verriegelt."
 
 var _post: ShaderMaterial
+## Nachthimmel (shaders/night_sky.gdshader) – Wolkenzug nach Spielzeit
+var _sky: ShaderMaterial
+var _env: Environment
+var _sky_time := 0.0
 
 var _trace := false
 var _trace_frames := 0
@@ -133,6 +177,11 @@ func _ready() -> void:
 	add_child(ghost)
 	Game.ghost = ghost
 
+	var pumpkin := PumpkinMan.new()
+	pumpkin.name = "PumpkinMan"
+	add_child(pumpkin)
+	Game.pumpkin = pumpkin
+
 	var director := MonsterDirector.new()
 	director.name = "MonsterDirector"
 	add_child(director)
@@ -155,6 +204,12 @@ func _ready() -> void:
 		cat.name = "Katze_" + cat_id
 		add_child(cat)
 		cat.place_at_start()
+
+	var weather := Weather.new()   # Regen und Gewitter draußen (Spielkonzept 7.8)
+	weather.name = "Weather"
+	add_child(weather)
+	weather.setup(builder, get_node("Moon") as DirectionalLight3D, _sky)
+	Game.weather = weather
 
 	var dialog := DialogUI.new()
 	dialog.name = "Dialog"
@@ -200,6 +255,10 @@ func _ready() -> void:
 		add_child(console)
 		console.setup(run_debug)
 
+	for arg in OS.get_cmdline_user_args():
+		if arg == "--perf" or arg.begins_with("--perf="):
+			add_child(PerfLog.new(arg.substr(7).to_float() if arg.length() > 7 else 20.0))
+
 	Game.player_died.connect(_on_player_died)
 	SaveManager.note_world.call_deferred()   # nach dem Aufbau, bevor sich etwas bewegt
 	if not Game.pending_load.is_empty():
@@ -235,13 +294,20 @@ func _save_start(slot: int) -> void:
 
 
 func _apply_settings() -> void:
+	_env.ssr_enabled = Settings.reflections
 	if _post:
 		_post.set_shader_parameter("gamma", Settings.gamma)
 		_post.set_shader_parameter("dither", 1.0 if Settings.dither_on() else 0.0)
 		_post.set_shader_parameter("color_levels", 28.0 if Settings.psx_look else 255.0)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_sky_time += delta
+	_sky.set_shader_parameter("sky_time", _sky_time)
+	if _post and Game.player:   # verschwommene Sicht (Spielkonzept 3.6/3.7)
+		_post.set_shader_parameter("blur", Game.player.sight_blur)
+		_post.set_shader_parameter("warp", Game.player.sight_warp)
+		_post.set_shader_parameter("blur_time", _sky_time)
 	if _autoplay and Engine.get_process_frames() % 100 == 0 and Game.dice.active:
 		print("[Mäxchen] " + Game.dice.debug_press_random())
 	if _autoplay and Engine.get_process_frames() % 30 == 0 and Game.chess.active:
@@ -254,19 +320,37 @@ func _process(_delta: float) -> void:
 			print("[%ds] Monster %s @ %s | Phase %s | Dreistigkeit %.1f" % [_trace_frames / 60,
 				Monster.State.keys()[Game.monster.state], Game.monster.global_position.snapped(Vector3.ONE * 0.1),
 				MonsterDirector.Phase.keys()[Game.director.phase], Game.director.effective_boldness()])
-			print("      Spieler @ %s | Schock %.2f | Geld %d | Hand: %s" % [Game.player.global_position.snapped(Vector3.ONE * 0.1), Game.player.shock, Game.money, Game.player.held.display_name if Game.player.held else "-"])
+			print("      Spieler @ %s | Schock %.2f | Rausch %.2f | Schwäche %.2f | Geld %d | Hand: %s" % [Game.player.global_position.snapped(Vector3.ONE * 0.1), Game.player.shock, Game.player.drunk, Game.player.weakness(), Game.money, Game.player.held.display_name if Game.player.held else "-"])
 			for guest in Game.social.guests:
-				print("      %s: %s @ %s | Angst %.0f | Beziehung %.0f | Hand: %s" % [guest.display_name,
+				print("      %s: %s @ %s | Angst %.0f | Rausch %.2f | Beziehung %.0f | Hand: %s" % [guest.display_name,
 					Guest.State.keys()[guest.state], guest.global_position.snapped(Vector3.ONE * 0.1), guest.fear,
-					guest.relation, guest.held.display_name if guest.held else "-"])
+					guest.drunk, guest.relation, guest.held.display_name if guest.held else "-"])
 				if "--trace-nav" in OS.get_cmdline_user_args():
 					print("        Ziel %s  nächster Punkt %s  fertig %s" % [guest.get("_target"), guest.agent.get_next_path_position(), guest.agent.is_navigation_finished()])
 
 
 func _setup_environment() -> void:
 	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color.BLACK
+	# Nachthimmel mit Mond und Wolken (7.3): zu sehen im Garten und durch die Fenster. Er leuchtet nichts
+	# aus – Umgebungslicht bleibt eine feste Farbe, Spiegelungen aus (sonst glänzte er in Tapete und Fliesen)
+	_sky = ShaderMaterial.new()
+	_sky.shader = load("res://shaders/night_sky.gdshader")
+	var sky := Sky.new()
+	sky.sky_material = _sky
+	sky.process_mode = Sky.PROCESS_MODE_REALTIME   # Wolken ziehen jedes Bild; Strahlungs-Durchgang ist billig
+	env.background_mode = Environment.BG_SKY
+	env.sky = sky
+	env.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
+	# Spiegelbilder nur aus dem Bild selbst (SSR, 2026-10-21): polierter Lobbymarmor, Lack der Tapete, Poolwasser
+	# spiegeln, was gerade zu sehen ist – zum Bildrand und nach hinten blendet es aus. Matte Flächen
+	# (psx_surface, Rauheit 1) bleiben unberührt. Godot nimmt für Nichtmetalle fest 4 % Reflexion an, darum hat
+	# der Lobbyboden etwas Metallic (LevelBuilder.LOBBY_FLOOR_MIRROR). Schritte: ein Bildpunkt je Schritt –
+	# mit 64 fanden Strahlen über den Boden die Wände dahinter oft nicht
+	env.ssr_enabled = Settings.reflections   # Einstellungen → Bild → Spiegelungen (_apply_settings)
+	env.ssr_max_steps = 128
+	env.ssr_fade_in = 0.15
+	env.ssr_fade_out = 2.0
+	env.ssr_depth_tolerance = 0.2
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.35, 0.38, 0.5)
 	env.ambient_light_energy = 0.14  # ohne Deckenlampen: dunkle Ecken bleiben als Umriss erkennbar
@@ -279,16 +363,19 @@ func _setup_environment() -> void:
 	env.fog_depth_begin = 4.0
 	env.fog_depth_end = 66.0
 	env.fog_depth_curve = 0.6
+	env.fog_sky_affect = 0.0   # Himmel bleibt hinter dem Nebel sichtbar, Bäume und Dächer stehen schwarz davor
 	# Lichtschein im Dunst: Lampen werfen sichtbare Lichtkegel, dazwischen bleibt es finster
 	env.volumetric_fog_enabled = true
 	env.volumetric_fog_density = 0.0175
 	env.volumetric_fog_albedo = Color(0.6, 0.6, 0.65)
 	env.volumetric_fog_length = 12.0   # nur nah: weiter hinten würde das Lampenlicht den Flur beige verschleiern
+	_env = env
 	var world_env := WorldEnvironment.new()
 	world_env.environment = env
 	add_child(world_env)
 	# Schwaches Mondlicht – erhellt den Garten und fällt durch die Lobbyfenster
 	var moon := DirectionalLight3D.new()
+	moon.name = "Moon"   # Weather lässt ihn blitzen
 	moon.light_color = Color(0.55, 0.65, 1.0)
 	moon.light_energy = 0.32
 	moon.shadow_enabled = true
@@ -335,10 +422,10 @@ func _on_player_died() -> void:
 func _parse_debug_args() -> void:
 	var args := OS.get_cmdline_user_args()
 	for arg in args:   # vor allem, was einen Aufbruch auslöst (--warn …)
-		if arg.begins_with("--intent=") or arg == "--no-psx":
+		if arg.begins_with("--intent=") or arg in ["--no-psx", "--psx"]:
 			run_debug(arg)
 	for arg in args:
-		if not (arg.begins_with("--intent=") or arg == "--no-psx"):
+		if not (arg.begins_with("--intent=") or arg in ["--no-psx", "--psx"]):
 			run_debug(arg)
 
 
@@ -349,9 +436,11 @@ func run_debug(arg: String) -> bool:
 	if arg.begins_with("--intent="):
 		var wanted := arg.substr(9)
 		Game.director.debug_victims = wanted.to_int() if wanted.is_valid_int() else ["roam", "one", "rampage"].find(wanted)
-	elif arg == "--no-psx":
-		Settings.psx_look = false
+	elif arg == "--no-psx" or arg == "--psx":
+		Settings.psx_look = arg == "--psx"
 		Settings.apply()
+	elif arg == "--fps":
+		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg.begins_with("--tp="):
 		return _debug_teleport(arg.substr(5))
 	elif arg.begins_with("--time="):
@@ -403,6 +492,18 @@ func run_debug(arg: String) -> bool:
 		var lamp := Item.create(Item.Kind.FLASHLIGHT, "c=1;on" + (";uv;m=uv" if uv else ""))
 		Game.player.drop_held()
 		Game.player.receive_item(lamp)
+	elif arg.begins_with("--deco="):
+		var kinds := {"gespenst": Item.Kind.SHEET_GHOST, "lichter": Item.Kind.LIGHT_STRING, "netz": Item.Kind.COBWEB,
+			"laub": Item.Kind.LEAVES, "zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN,
+			"fledermaus": Item.Kind.BAT_GARLAND, "spinne": Item.Kind.SPIDER, "totenkopf": Item.Kind.SKULL, "besen": Item.Kind.BROOM}
+		var what := arg.substr(7).trim_suffix(",g")
+		if not kinds.has(what):
+			Game.say("Deko: gespenst, lichter, netz, laub, zierkürbis, fledermaus, spinne, totenkopf oder besen", 3.0)
+			return true
+		Game.player.drop_held()
+		Game.player.receive_item(Item.create(kinds[what]))
+		if arg.ends_with(",g"):
+			get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.player.drop_held())
 	elif arg.begins_with("--show="):
 		Game.player.debug_show = arg.substr(7)
 	elif arg == "--winded":
@@ -487,14 +588,68 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--autoplay":
 		_autoplay = true
 	elif arg.begins_with("--cat="):
-		# Katze vor den Spieler setzen (sitzt, zum Streicheln)
+		# Katze vor den Spieler setzen (sitzt, zum Streicheln) – mit ",tragen" gleich auf den Arm
+		var parts := arg.substr(6).split(",")
 		for cat in get_tree().get_nodes_in_group("cats"):
-			if cat.id == arg.substr(6):
+			if cat.id == parts[0]:
 				cat.place_in_front_of(Game.player)
+				if parts.size() > 1 and parts[1] == "tragen":
+					cat.affection = maxi(cat.affection, HotelCat.CARRY_TRUST)
+					Game.player.drop_held()
+					cat.pick_up(Game.player)
+	elif arg == "--pumpkin=garten":
+		get_tree().create_timer(0.5, false).timeout.connect(Game.pumpkin.debug_garden)   # NavMesh muss erst stehen
+	elif arg.begins_with("--pumpkin=jagd"):
+		_debug_pumpkin_hunt(arg.substr(14).trim_prefix(","))
 	elif arg.begins_with("--pumpkin"):
-		PumpkinMan.spawn_in_front_of(Game.player, arg.substr(10) if arg.begins_with("--pumpkin=") else "dance_chicken")
-	elif arg == "--party":
-		Game.social.start_party("player")
+		PumpkinMan.spawn_in_front_of(Game.player, arg.substr(10) if arg.begins_with("--pumpkin=") else "walk")
+	elif arg == "--wallblood" or arg == "--wallblood=smear":
+		var kind := "wall_smear" if arg.ends_with("smear") else "wall_splatter"
+		# Ein Stück vor der Wand im Blick ansetzen – dann ist sie die nächste
+		var cam := Game.player.camera
+		var ahead := -cam.global_basis.z
+		var hit := cam.get_world_3d().direct_space_state.intersect_ray(
+			PhysicsRayQueryParameters3D.create(cam.global_position, cam.global_position + ahead * 6.0, 1))
+		var near: Vector3 = hit.get("position", Vector3.ZERO) - ahead * 0.4
+		near.y = Game.player.global_position.y   # Boden unter dem Spieler – die Spur sitzt in Höhe über dem Boden
+		if hit.is_empty() or Game.traces.add_wall_blood(near, kind) == null:
+			Game.say("Keine Wand im Blick.", 2.5)
+	elif arg == "--costumes" or arg.begins_with("--costumes="):
+		Costume.force = arg.substr(11) if arg.begins_with("--costumes=") else "all"
+	elif arg == "--disguise":
+		Game.player.set_disguised(true)
+	elif arg.begins_with("--drunk="):
+		var parts := arg.substr(8).split(",")
+		var glasses := parts[0].to_int()
+		var who: Guest = Game.social.guest_by_id(parts[1]) if parts.size() > 1 else null
+		if parts.size() > 1 and who == null:
+			Game.say("Unbekannter Gast: %s" % parts[1], 3.0)
+		for i in glasses:
+			if who:
+				who.drink()
+			else:
+				Game.player.drink(i < glasses - 1)
+	elif arg.begins_with("--weather="):
+		# Wetter sofort (7.8): klar, regen, gewitter (gleich in voller Stärke) oder blitz (ein Blitz, ggf. mit Gewitter)
+		match arg.substr(10):
+			"klar":
+				Game.weather.set_weather(Weather.Kind.CLEAR, true)
+			"regen":
+				Game.weather.set_weather(Weather.Kind.RAIN, true)
+			"gewitter":
+				Game.weather.set_weather(Weather.Kind.STORM, true)
+			"blitz":
+				if Game.weather.kind != Weather.Kind.STORM:
+					Game.weather.set_weather(Weather.Kind.STORM, true)
+				get_tree().create_timer(3.0).timeout.connect(Game.weather.lightning)   # erst, wenn es regnet
+			_:
+				Game.say("Wetter: klar, regen, gewitter oder blitz", 3.0)
+	elif arg == "--party" or arg.begins_with("--party="):
+		var host := arg.substr(8) if arg.begins_with("--party=") else "player"
+		if host != "player" and Game.social.guest_by_id(host) == null:
+			Game.say("Unbekannter Gast: %s" % host, 3.0)
+		else:
+			Game.social.start_party(host)
 	elif arg.begins_with("--look="):
 		var parts := arg.substr(7).split(",")
 		var guest := Game.social.guest_by_id(parts[0])
@@ -502,6 +657,14 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--shock="):
 		var parts := arg.substr(8).split(",")
 		_debug_shock(Game.social.guest_by_id(parts[0]), parts[1] if parts.size() > 1 else "blood")
+	elif arg.begins_with("--llm="):
+		LlmClient.dir = arg.substr(6)
+	elif arg.begins_with("--ask="):
+		var parts := arg.substr(6).split(",", true, 1)
+		var questions := parts[1].split("|", false) if parts.size() > 1 else PackedStringArray(["Wann hast du zuletzt gefeiert?"])
+		Game.noise_trace = true
+		run_debug("--talk=" + parts[0])
+		Game.dialog.debug_questions.assign(Array(questions))
 	elif arg.begins_with("--talk="):
 		var partner := Game.social.guest_by_id(arg.substr(7))
 		var after_shock := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--shock="))
@@ -517,15 +680,22 @@ func run_debug(arg: String) -> bool:
 			Game.dialog.open(partner))
 	elif arg == "--ghost=flur":
 		Game.ghost.debug_summon_hall()
+	elif arg == "--ghost=tür" or arg == "--ghost=tuer":
+		if Game.ghost.debug_summon_door() and "--answer" in OS.get_cmdline_user_args():
+			get_tree().create_timer(4.0).timeout.connect(Game.ghost.debug_open_door)   # du machst nach 4 s auf
 	elif arg == "--ghost=schrank":
-		# kommt durch den Vorhang herein – du versteckst dich gleich im Schrank von Zimmer 13
-		var room: Dictionary = Game.director.rooms[LevelBuilder.PLAYER_ROOM]
-		Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)
-		Game.ghost.debug_summon(4, LevelBuilder.PLAYER_ROOM)
-		get_tree().create_timer(1.5).timeout.connect(func() -> void:
-			for spot in room["spots"]:
-				if (spot as HideSpot).type == HideSpot.Type.WARDROBE and Game.player.hiding == null:
-					Game.player.enter_hide(spot))
+		# kommt durch den Vorhang deines Zimmers herein – du versteckst dich gleich in dessen Schrank
+		var room: Dictionary = Game.director.rooms.get(Game.social.builder.room_at(Game.player.global_position), {})
+		var wardrobe: HideSpot = null
+		for spot in room.get("spots", []):
+			if (spot as HideSpot).type == HideSpot.Type.WARDROBE:
+				wardrobe = spot
+		if wardrobe == null:
+			Game.say("Lakengeist: Hier ist kein Schrank.", 2.5)
+		elif Game.ghost.debug_summon(4):
+			get_tree().create_timer(1.5).timeout.connect(func() -> void:
+				if Game.player.hiding == null:
+					Game.player.enter_hide(wardrobe))
 	elif arg.begins_with("--awake="):
 		# so viele Nächte ohne Schlaf (zählen erst nach dem ersten Angriff, also gilt der als geschehen)
 		Game.director.first_attack_done = true
@@ -539,19 +709,40 @@ func run_debug(arg: String) -> bool:
 			if (spot as HideSpot).own_bed:
 				Game.player.start_sleep(spot)
 	elif arg.begins_with("--ghost="):
-		var room: Dictionary = Game.director.rooms[LevelBuilder.PLAYER_ROOM]
-		Game.player.global_position = (room["center"] as Vector3) + Vector3(0, 0.05, 0)
-		Game.ghost.debug_summon(arg.substr(8).to_int(), LevelBuilder.PLAYER_ROOM)
+		Game.ghost.debug_summon(arg.substr(8).to_int())
 	elif arg == "--warn":
 		Game.director.start_warning()
 	elif arg.begins_with("--attacks="):
-		# so viele Angriffe gab es schon (über 2 = gefährlich)
+		# so viele Angriffe gab es schon (über 2 = gefährlich, ob es holt, würfelt _choose_intent nach Tag)
 		Game.director.first_attack_done = true
 		Game.director.attacks = arg.substr(10).to_int()
 	elif arg == "--first-attack":
 		# Feier starten, kurz darauf der erste Angriff
 		Game.social.start_party("mila")
 		get_tree().create_timer(3.0).timeout.connect(Game.director._first_attack_at_party)
+	elif arg == "--trick" or arg.begins_with("--trick="):
+		var kid: Guest = Game.social.guest_by_id(arg.substr(8)) if arg.begins_with("--trick=") else null
+		if kid == null:
+			var kids := Game.social.living_guests().filter(func(g: Guest) -> bool: return g.is_child())
+			kid = kids.pick_random() if not kids.is_empty() else null
+		if kid == null or not kid.is_child() or not Game.social.start_round(kid):
+			Game.say("Süßes oder Saures: kein Kind oder keine Gästetür in der Nähe", 3.0)
+	elif arg == "--decorate" or arg.begins_with("--decorate="):
+		# Schmück-Aktion sofort (Spielkonzept 5.9); „lobby“: in der Lobby; „allein“: ein Gast trägt allein ein Stück
+		# Deko in sein Zimmer (mit „lobby“ in die Lobby); „hin“: Spieler vor die Stelle, Blick zur Wand
+		var parts := arg.substr(11).split(",") if arg.begins_with("--decorate=") else PackedStringArray()
+		if "allein" in parts:   # der Weg zur Kiste braucht das fertige NavMesh
+			get_tree().create_timer(1.5).timeout.connect(func() -> void: _debug_decorate(parts))
+		else:
+			_debug_decorate(parts)
+	elif arg == "--search" or arg.begins_with("--search="):
+		# Deko-Suche (Spielkonzept 5.9) – der Weg zum Fundort braucht das fertige NavMesh
+		var parts := arg.substr(9).split(",") if arg.begins_with("--search=") else PackedStringArray()
+		get_tree().create_timer(1.5).timeout.connect(func() -> void: _debug_search(parts))
+	elif arg.begins_with("--cook="):
+		_debug_cook(arg.substr(7).split(","))
+	elif arg.begins_with("--pals="):
+		_debug_pals(arg.substr(7).split(","))
 	elif arg == "--knock":
 		# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
 		Game.director.first_attack_done = true
@@ -637,15 +828,17 @@ func _debug_teleport(where: String) -> bool:
 		var front := -guest.global_transform.basis.z
 		_place_player(guest.global_position + front * 1.6, -front)
 		return true
-	var rooms: Dictionary = Game.social.builder.rooms
+	# Zimmer: Nummer (auch verschlossene, auch oben), „113“ → 0113, Türschild „13“ → 0113
+	var b := Game.social.builder
 	var no := where
-	if not rooms.has(no) and where.is_valid_int():
-		no = "%04d" % where.to_int()   # 113 → 0113
-	for key in rooms:
-		if rooms[key]["sign"] == where:   # 13 → 0113 (Türschild)
+	if b.room_spot(no).is_empty() and where.is_valid_int():
+		no = "%04d" % where.to_int()
+	for key in b.rooms:
+		if b.rooms[key]["sign"] == where:
 			no = key
-	if rooms.has(no):
-		_place_player(rooms[no]["center"], -(rooms[no]["into"] as Vector3))
+	var spot := b.room_spot(no)
+	if not spot.is_empty():
+		_place_player(spot["pos"], spot["look"])
 		return true
 	var entry := (get_node("Teleport") as TeleportUI).find(where)
 	if entry.is_empty():
@@ -662,16 +855,44 @@ func _nav_check() -> void:
 	print("[navcheck] Bau %d ms, NavMesh %d ms" % [_load_times.x, _load_times.y])
 	var map := get_world_3d().navigation_map
 	var from := NavigationServer3D.map_get_closest_point(map, b.player_spawn)
+	var ground := b.wander_points.filter(func(p: Vector3) -> bool: return p.y < 1.0)
 	var targets := {"Lobby": b.lobby_center, "Galerie": b.lobby_center + Vector3(-5.5, LevelBuilder.UP_Y, -2.0),
 		"Bar": b.bar_spots[0], "Partyraum": b.party_spots[0], "Küche": b.kitchen_spot, "Garten": b.garden_spots[0],
 		"Keller": b.cellar_center(), "Treppenhaus": b.stairwell_point + Vector3(0, 0, 2.2),
-		"Westflügel": b.wander_points[b.wander_points.size() - 1]}
+		"Westflügel": ground[ground.size() - 1]}
 	for t in b._map["trees"]:
 		targets["Innenhof %.0f,%.0f" % [t["center"][0], t["center"][1]]] = Vector3(t["center"][0], 0, t["center"][1] + 7.0)
+	# Obergeschoss (Spielkonzept 7.7): Katzenraum, Bibliothek, ein Flur und ein Zimmer oben
+	for zone in b.zones:
+		var name := String(zone["name"])
+		if (name in ["Katzenraum", "Bibliothek"] or (name.ends_with("(oben)") and not targets.has("Flur oben"))) \
+				and not targets.has(name):
+			targets["Flur oben" if name.ends_with("(oben)") else name] = zone["center"]
+	# Untergeschoss (Spielkonzept 7.9): Gang unten am Treppenhaus, Technikraum, Wäscherei (der Heizkeller ist „Keller“)
+	var below := b.zones.filter(func(z: Dictionary) -> bool: return z["name"] == "Keller")
+	below.sort_custom(func(z1: Dictionary, z2: Dictionary) -> bool:
+		return (z1["center"] as Vector3).distance_to(b.stairwell_point) < (z2["center"] as Vector3).distance_to(b.stairwell_point))
+	if not below.is_empty():
+		targets["Kellergang"] = below[0]["center"]
+	for zone in b.zones:
+		if zone["name"] in ["Technikraum", "Wäscherei"]:
+			targets[zone["name"]] = zone["center"]
+	for no in b.rooms:
+		if b.rooms[no]["kind"] == "vacant" and (b.rooms[no]["center"] as Vector3).y > 2.0:
+			targets["Zimmer %s" % no] = b.rooms[no]["center"]
+			break
 	var bad := 0
 	for label in targets:
 		var to := NavigationServer3D.map_get_closest_point(map, targets[label])
-		var path := NavigationServer3D.map_get_path(map, from, to, true)
+		# ohne Grenze bei der Suche, wie das Monster (Monster.agent.path_search_max_polygons)
+		var query := NavigationPathQueryParameters3D.new()
+		query.map = map
+		query.start_position = from
+		query.target_position = to
+		query.path_search_max_polygons = 0
+		var result := NavigationPathQueryResult3D.new()
+		NavigationServer3D.query_path(query, result)
+		var path := result.path
 		var reached := not path.is_empty() and path[path.size() - 1].distance_to(to) < 0.5 and to.distance_to(targets[label]) < 1.0
 		var length := 0.0
 		for i in range(1, path.size()):
@@ -726,6 +947,16 @@ func _debug_shock(guest: Guest, what: String) -> void:
 	var into: Vector3 = home["into"]
 	guest.velocity = Vector3.ZERO
 	guest._set_idle(60.0)
+	if what == "tür" or what == "tuer":
+		# Er steht im eigenen Zimmer, der Lakengeist vor seiner Tür; du stehst im Flur dahinter (kein Zeuge)
+		var center: Vector3 = home["center"]
+		guest.global_position = center + Vector3(0, 0.05, 0)
+		var front: Vector3 = home["door_front"]
+		Game.player.global_position = front - into * 3.5 + along * 2.5 + Vector3(0, 0.05, 0)
+		var at := front - Game.player.global_position
+		Game.player.rotation.y = atan2(-at.x, -at.z)
+		Game.ghost.debug_summon_door(guest)
+		return
 	if what.begins_with("ghost"):
 		var center: Vector3 = home["center"]
 		guest.global_position = center + into * 0.8 + Vector3(0, 0.05, 0)
@@ -803,7 +1034,11 @@ func _save_test() -> void:
 ## Gleich bis auf kleine Zahlenabweichungen (zwischen den Messungen vergeht ein Frame).
 func _same(a, b) -> bool:
 	if typeof(a) == TYPE_FLOAT or typeof(a) == TYPE_INT:
-		return (typeof(b) == TYPE_FLOAT or typeof(b) == TYPE_INT) and absf(float(a) - float(b)) < 2.0
+		# Winkel: π und −π sind dieselbe Drehung (aufgehängte Deko blickt oft genau nach Süden)
+		if typeof(b) != TYPE_FLOAT and typeof(b) != TYPE_INT:
+			return false
+		var diff := absf(float(a) - float(b))
+		return diff < 2.0 or absf(diff - TAU) < 0.01
 	if typeof(a) != typeof(b):
 		return false
 	if a is Array:
@@ -821,3 +1056,130 @@ func _same(a, b) -> bool:
 				return false
 		return true
 	return a == b
+
+## --pumpkin=jagd[,gast]: Der Kürbismann jagt den Spieler bzw. den Gast (auch ohne Spaß und vor dem ersten Angriff).
+func _debug_pumpkin_hunt(id: String) -> void:
+	await get_tree().create_timer(0.5, false).timeout   # NavMesh muss erst synchronisiert sein
+	var target: Node3D = Game.player
+	if id != "":
+		target = Game.social.guest_by_id(id)
+		if target == null:
+			Game.say("Kein Gast „%s“" % id)
+			return
+		if (target as Guest).is_child():
+			Game.say("Kindern tut der Kürbismann nichts")
+			return
+	if not Game.pumpkin.debug_hunt(target):
+		Game.say("Kürbismann: kein Platz zum Erscheinen")
+
+
+## --search[=gast][,mit]: Deko-Suche (Spielkonzept 5.9) – mit „mit“ geht der Spieler mit (folgt ihm von selbst).
+func _debug_search(parts: PackedStringArray) -> void:
+	var search := Game.social.search
+	var who: Guest = null
+	for part in parts:
+		if part != "mit":
+			who = Game.social.guest_by_id(part)
+	var walkers: Array = [who] if who else Game.social.living_guests().filter(func(g: Guest) -> bool: return search._available(g))
+	walkers.shuffle()
+	for g: Guest in walkers.slice(0, 8):
+		if search.start(g, "mit" in parts):
+			if "mit" in parts:
+				search.lead_off(g)
+				# Der Spieler folgt ihm von selbst (2,5 m dahinter), bis er geteilt hat
+				var follow := Timer.new()
+				follow.wait_time = 0.3
+				add_child(follow)
+				follow.timeout.connect(func() -> void:
+					if not search.is_busy(g):
+						follow.queue_free()
+						return
+					var back := g.global_position - (-g.global_transform.basis.z) * 2.5
+					Game.player.global_position = Vector3(back.x, g.global_position.y + 0.05, back.z)
+					var to := g.global_position - Game.player.global_position
+					Game.player.rotation.y = atan2(-to.x, -to.z))
+				follow.start()
+			return
+	Game.say("Deko-Suche: kein Gast frei oder kein Fundort erreichbar", 3.0)
+
+
+## --cook=suppe|braten[,fertig]: Kochen (Spielkonzept 3.8) – Spieler vor den Herd, Kürbis schon geschnitten.
+func _debug_cook(parts: PackedStringArray) -> void:
+	var stove := Game.kitchen
+	if stove == null:
+		Game.say("Kein Herd im Hotel", 3.0)
+		return
+	var soup := "braten" not in parts
+	stove.dish = "soup" if soup else "roast"
+	stove.variety = "halloween" if soup else "hokkaido"
+	stove.phase = "cooking"
+	stove._timer = 0.5 if "fertig" in parts else (Stove.SOUP_TIME if soup else Stove.ROAST_TIME)
+	stove._show()
+	var front: Vector3 = stove.front
+	Game.player.global_position = Vector3(stove.global_position.x, 0.05, stove.global_position.z) + front * 1.4
+	Game.player.rotation.y = atan2(front.x, front.z)
+	Game.player.head.rotation.x = deg_to_rad(-25.0)
+
+
+## --pals=gast1,gast2: gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir (Spielkonzept 6.16).
+func _debug_pals(parts: PackedStringArray) -> void:
+	var a := Game.social.guest_by_id(parts[0])
+	var b := Game.social.guest_by_id(parts[1]) if parts.size() > 1 else null
+	if a == null or b == null:
+		Game.say("--pals: zwei Gäste angeben, z. B. --pals=edna,bruno", 3.0)
+		return
+	a.relation = 60.0
+	b.relation = minf(b.relation, 5.0)
+	Game.social.pals.counts[GuestPals.key(a, b)] = GuestPals.PAL_DEEDS
+	var p := Game.player
+	var forward := -p.global_transform.basis.z
+	var side := forward.cross(Vector3.UP).normalized()
+	for g: Guest in [a, b]:
+		g.global_position = p.global_position + forward * 2.5 + side * (0.6 if g == a else -0.6)
+		g._set_idle(30.0)
+	Game.social.pals._scan = 0.5
+
+
+## --decorate[=…]: Schmück-Aktion bzw. allein schmückender Gast (Spielkonzept 5.9), mit „hin“ steht der Spieler davor.
+func _debug_decorate(parts: PackedStringArray) -> void:
+	var caller: Guest = null
+	for part in parts:
+		if not part in ["hin", "lobby", "allein", "gross", "hier", "haus"]:
+			caller = Game.social.guest_by_id(part)
+	var deco := Game.social.decorating
+	var spot: Dictionary = {}
+	if "hier" in parts:
+		var host: Guest = caller if caller else Game.social.living_guests().filter(func(g: Guest) -> bool:
+			return not g.is_child() and deco._available(g)).pick_random()
+		var why := deco.call_here(host, false)
+		if why != "":
+			Game.say("Schmücken: " + why, 3.0)
+		return
+	if "gross" in parts:
+		if deco.start_big(caller, Vector3.INF, false, "lobby" in parts):
+			spot = deco.site
+	elif "allein" in parts:
+		var walkers: Array = [caller] if caller else Game.social.living_guests().filter(func(g: Guest) -> bool: return deco._available(g))
+		walkers.shuffle()
+		for g: Guest in walkers.slice(0, 8):
+			if deco.start_solo(g, "lobby" in parts, "haus" in parts):
+				spot = deco.solo_site(g)
+				break
+	elif deco.start(caller, "lobby" in parts):
+		spot = deco.site
+	if spot.is_empty():
+		Game.say("Schmücken: kein Gast frei oder keine passende Stelle in der Nähe", 3.0)
+	elif "hin" in parts:
+		var out: Vector3 = spot["out"]
+		var wall: Vector3 = spot["wall"]
+		var back := 3.2   # so weit zurück, wie der Flur reicht
+		var hit := Game.player.get_world_3d().direct_space_state.intersect_ray(
+			PhysicsRayQueryParameters3D.create(wall + out * 0.1 + Vector3.UP * 1.2, wall + out * 3.6 + Vector3.UP * 1.2, 1 | 2))
+		if not hit.is_empty():
+			back = minf(back, wall.distance_to(Vector3(hit["position"].x, wall.y, hit["position"].z)) - 0.4)
+		Game.player.global_position = wall + out * back + Vector3(0, 0.05, 0)
+		Game.player.rotation.y = atan2(out.x, out.z)
+		Game.player.head.rotation.x = deg_to_rad(-12.0)
+	elif "--answer" in OS.get_cmdline_user_args():
+		# in Zimmer 13 kommt die Einladung per Anruf – nach 4 s abnehmen
+		get_tree().create_timer(4.0).timeout.connect(func() -> void: Game.phones.answer(Game.phones.home_phone))

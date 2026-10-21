@@ -14,7 +14,7 @@ const NOISE := {
 	"run":        {"range": 10.0, "sound": "",       "volume": 0.0},    ## alle 0,6 s
 	"land":       {"range": 4.0,  "sound": "thud",   "volume": 0.2},    ## nach einem Sprung
 	"stumble":    {"range": 5.0,  "sound": "thud",   "volume": 0.35},   ## im Rausch gestolpert (3.7)
-	"door":       {"range": 5.0,  "sound": "creak",  "volume": 0.5},    ## Tür öffnen/schließen (Knarren)
+	"door":       {"range": 5.0,  "sound": "door",   "volume": 0.5},    ## Tür öffnen/schließen (echter Klang)
 	"rattle":     {"range": 6.0,  "sound": "thud",   "volume": 0.6},    ## abgeschlossene Tür rütteln
 	"unlock":     {"range": 3.0,  "sound": "jingle", "volume": 0.6},    ## Schlüssel klirren
 	"door_burst": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true},  ## Tür vom Monster aufgerissen
@@ -47,7 +47,9 @@ const NOISE := {
 	"dice":       {"range": 10.0, "sound": "thud",   "volume": 0.4},    ## Würfeln, Spiel am Tisch
 	"party":      {"range": 25.0, "sound": "",       "volume": 0.0},    ## Feier mit Musik, alle 8 s
 	"punch":      {"range": 9.0,  "sound": "thud",   "volume": 0.8},    ## Schlag (Spieler oder Gast, 6.3)
-	"scream":     {"range": 20.0, "sound": "scream", "volume": 0.9, "alarm": true},
+	"scream":     {"range": 20.0, "sound": "scream", "volume": 0.9, "alarm": true},   ## Schreck – Stimme des Gastes (SynthAudio.VOICES)
+	"death_scream": {"range": 20.0, "sound": "death_scream", "volume": 1.0, "alarm": true},   ## vom Monster geholt – jäh abgerissen
+	"axe_swing":  {"range": 20.0, "sound": "",       "volume": 0.0, "alarm": true},   ## Kürbismann schlägt zu (4.19) – Ton spielt er selbst (3D)
 	"laugh":      {"range": 8.0,  "sound": "",       "volume": 0.0},    ## Kinder lachen beim Toben und auf Feiern (6.13)
 }
 ## Dämpfung je Hindernis zwischen Quelle und Hörer (offene Tür: ungedämpft)
@@ -65,6 +67,8 @@ const LOUD := 8.0
 const GUEST_HEARING := 0.5
 ## Der Spieler hört fremde Geräusche bis zur doppelten Hörweite, mindestens aber so weit
 const PLAYER_MIN_REACH := 8.0
+## Nur Klang, ohne Lärm (`Game.sound_at`): so weit hört man das Ächzen eines Sterbenden (Axt, Lakengeist)
+const GRUNT_RANGE := 8.0
 
 # --- Tuning: Sichtbarkeit -----------------------------------------------------------
 ## Auffälligkeit (1,0 = steht normal im Dunkeln)
@@ -122,7 +126,7 @@ static func audible_range(world: World3D, src: Vector3, listener: Vector3, loudn
 	return r
 
 
-## Stockwerk: Keller −1, Erdgeschoss 0, Obergeschoss 1
+## Stockwerk: Untergeschoss −1, Erdgeschoss 0, Obergeschoss 1
 static func _storey(p: Vector3) -> int:
 	if p.y >= LevelBuilder.UP_Y - 0.3:
 		return 1
@@ -131,7 +135,7 @@ static func _storey(p: Vector3) -> int:
 
 ## Ohrhöhe über dem Boden des Stockwerks – so laufen die Strahlen durch Türöffnungen.
 static func _ear(p: Vector3) -> Vector3:
-	var floor_y: float = [-3.5, 0.0, LevelBuilder.UP_Y][_storey(p) + 1]
+	var floor_y: float = [LevelBuilder.CELLAR_Y, 0.0, LevelBuilder.UP_Y][_storey(p) + 1]
 	return Vector3(p.x, floor_y + 1.2, p.z)
 
 

@@ -29,6 +29,7 @@ import numpy as np
 from mathutils import Matrix, Vector
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import mixamo_retarget
+import meshy_tex
 
 MAX_TRIS = 15000
 TEX_SIZE = 1024           # kleiner verschwimmen die Gesichter (die Inseln sind winzig)
@@ -129,37 +130,8 @@ base_node = [l.from_node for l in bsdf.inputs['Base Color'].links][0]
 img = base_node.image
 
 
-def fill_gaps(rgb, filled, steps):
-	"""Leere Texel (zwischen den UV-Inseln) bekommen die Farbe ihrer gefüllten Nachbarn – Schritt für Schritt."""
-	for _ in range(steps):
-		if filled.all():
-			break
-		acc = np.zeros_like(rgb)
-		cnt = np.zeros(filled.shape, dtype=np.float32)
-		for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-			f = np.roll(filled, (dy, dx), axis=(0, 1))
-			acc += np.roll(rgb, (dy, dx), axis=(0, 1)) * f[:, :, None]
-			cnt += f
-		grow = (~filled) & (cnt > 0)
-		rgb[grow] = acc[grow] / cnt[grow][:, None]
-		filled |= grow
-
-
 # Erst in voller Größe füllen, dann verkleinern – sonst mischt das Verkleinern Schwarz in die Inselränder
-size = img.size[0]
-px = np.array(img.pixels[:], dtype=np.float32).reshape(size, size, 4)
-rgb = px[:, :, :3].copy()
-fill_gaps(rgb, rgb.max(axis=2) > 0.012, 4 * size // WORK_SIZE)
-px[:, :, :3] = rgb
-px[:, :, 3] = 1.0
-img.pixels[:] = px.ravel()
-del px, rgb
-img.scale(WORK_SIZE, WORK_SIZE)
-px = np.array(img.pixels[:], dtype=np.float32).reshape(WORK_SIZE, WORK_SIZE, 4)
-rgb = px[:, :, :3].copy()
-fill_gaps(rgb, rgb.max(axis=2) > 0.012, 24)
-px[:, :, :3] = rgb
-img.pixels[:] = px.ravel()
+rgb = meshy_tex.shrink(img, WORK_SIZE, WORK_SIZE)
 lum_map = rgb @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
 sat_map = rgb.max(axis=2) - rgb.min(axis=2)
 # Helligkeit wie im Shader: lineare Farbe, Rec. 709
@@ -356,22 +328,7 @@ bpy.ops.export_scene.gltf(
 	export_vertex_color='ACTIVE', export_all_vertex_colors=False,
 	export_image_format='AUTO')   # PNG: JPEG färbt die Inselränder (Farbunterabtastung)
 
-# Textur unkomprimiert in Godot: Von sich aus zieht Godot sie als PNG heraus und packt sie per VRAM-Kompression –
-# deren 4×4-Blöcke mischen an den UV-Nähten Haut in den Stoff, auf kräftig getönter Kleidung helle Streifen.
-# Deshalb in der .import der GLB „Embed as Uncompressed“ (3); die liegt im Repo (.gitignore-Ausnahme), fehlt
-# sie, legt das Skript sie an und Godot ergänzt den Rest.
-GLB_IMPORT = {"gltf/embedded_image_handling": "3"}
-imp = DST + ".import"
-lines = open(imp, encoding="utf-8").read().splitlines() if os.path.exists(imp) else \
-	["[remap]", "", 'importer="scene"', 'type="PackedScene"', "", "[params]", ""]
-for key, value in GLB_IMPORT.items():
-	at = [i for i, l in enumerate(lines) if l.startswith(key + "=")]
-	if at:
-		lines[at[0]] = key + "=" + value
-	else:
-		lines.append(key + "=" + value)   # [params] ist der letzte Abschnitt
-open(imp, "w", encoding="utf-8", newline="\n").write("\n".join(lines) + "\n")
-print("Godot-Import: Textur unkomprimiert eingebettet (%s)" % imp)
+meshy_tex.write_import(DST)   # Textur in Godot unkomprimiert (sonst helle Streifen an den Nähten)
 
 # --- Vorschau --------------------------------------------------------------------------------
 if PREVIEW:

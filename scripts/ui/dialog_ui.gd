@@ -3,9 +3,12 @@ extends CanvasLayer
 ## Gespräch mit einem Gast (Spielkonzept 6.2–6.5, 6.9): Plaudern, über das Monster
 ## reden, Handeln, Schenken, um Deko bitten, beruhigen, zur Feier einladen,
 ## beleidigen, entschuldigen, mitkommen lassen (6.3). Auswahl per Maus oder Zifferntasten 1–9 und 0, Esc schließt.
+## Prototyp: „Etwas fragen …“ – Freitext über das lokale Sprachmodell (GuestChat, Spielkonzept 6.15).
 
 const CHAT_COOLDOWN := 40.0
 const GIFT_COOLDOWN := 150.0
+## Gebratener Kürbis als Geschenk (Spielkonzept 3.8): so viel weniger Angst
+const ROAST_CALM := 20.0
 ## Plaudern zählt am Tag nur so oft voll (6.3), danach kaum noch
 const CHATS_PER_DAY := 2
 ## Entschuldigen kostet je nach Stufe (verfeindet / stark verfeindet)
@@ -18,6 +21,10 @@ var _text: Label
 var _options: GridContainer
 var _buttons: Array[Button] = []
 var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dice" oder "chess")
+var _page := ""         ## "main", "ask" oder eine andere Seite (nur main und ask werden neu aufgebaut)
+var _question: LineEdit ## Eingabe für „Etwas fragen …“ (nur auf der Seite ask sichtbar)
+## Debug --ask=gast,frage|frage: diese Fragen nacheinander stellen, sobald das Modell bereit ist
+var debug_questions: Array[String] = []
 
 
 func _ready() -> void:
@@ -43,6 +50,13 @@ func _ready() -> void:
 	_text = _label(10, Color(0.9, 0.88, 0.85))
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_text)
+	_question = LineEdit.new()
+	_question.placeholder_text = "Frag etwas … (Enter)"
+	_question.max_length = GuestChat.MAX_INPUT
+	_question.add_theme_font_size_override("font_size", 9)
+	_question.visible = false
+	_question.text_submitted.connect(_submit_question)
+	box.add_child(_question)
 	_options = GridContainer.new()
 	_options.columns = 2
 	_options.add_theme_constant_override("h_separation", 8)
@@ -58,6 +72,8 @@ func open(p_guest: Guest) -> void:
 	if Game.hud:
 		Game.hud.set_prompt("")
 	guest.begin_talk()
+	if GuestChat.can_ask(guest):
+		LlmClient.ensure()   # lädt das Modell beim ersten Gespräch (Prototyp)
 	var to := guest.global_position - Game.player.global_position
 	Game.player.rotation.y = atan2(-to.x, -to.z)
 	Game.player.head.rotation.x = -0.05
@@ -77,13 +93,22 @@ func open(p_guest: Guest) -> void:
 		_say(guest.line("greet_friend"))
 	else:
 		_say(guest.line("greet"))
+	# Ein Freund hat ihm Gutes über dich erzählt (Spielkonzept 6.16)
+	var heard := Game.social.pals.take_heard_line(guest)
+	if heard != "" and experience.is_empty() and guest.fear < 60.0:
+		_text.text += " " + heard
 	if guest.drunk >= BarTap.TIPSY:
 		_text.text = "*hicks* " + _text.text
+	if Game.player.disguised:   # unter dem Laken (5.9)
+		_text.text = "„Wer steckt denn da drunter? … Ach, du bist's!“ " + _text.text
 	_show_main()
 
 
 func close() -> void:
 	visible = false
+	_question.visible = false
+	_question.release_focus()
+	debug_questions.clear()
 	if guest:
 		guest.end_talk()
 	guest = null
@@ -108,12 +133,23 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	if visible and (guest == null or guest.dead or Game.game_over):
 		close()
+		return
+	if not visible or Game.llm == null or not GuestChat.can_ask(guest):
+		return
+	# Modell ist inzwischen geladen: „Etwas fragen …“ freischalten bzw. die Debug-Fragen stellen
+	if Game.llm.is_ready() and _page == "main" and _buttons.any(func(b: Button) -> bool: return b.disabled and b.text.ends_with("(lädt …)")):
+		_show_main()
+	if Game.llm.is_ready() and not debug_questions.is_empty() and not Game.llm.busy() and _question.editable:
+		if _page != "ask":
+			_show_ask()
+		_submit_question(debug_questions.pop_front())
 
 
 # --- Seiten -------------------------------------------------------------------------
 
 func _show_main() -> void:
 	_clear()
+	_page = "main"
 	_name.text = "%s – %s" % [guest.display_name, Social.relation_word(guest.relation)]
 	var player := Game.player
 	if guest.fear >= 60.0:
@@ -129,7 +165,12 @@ func _show_main() -> void:
 	if guest.challenge_time > 0.0:
 		_option("Herausforderung annehmen (%s)" % ("Schach" if guest.challenge_game == "chess" else "Mäxchen"),
 			_show_stakes.bind(guest.challenge_game))
+	if Game.social.search.has_offer(guest):
+		_option("Klar, ich such mit!", _search)   # er hat gefragt, ob du mitkommst (5.9)
 	_option("Plaudern", _chat)
+	if GuestChat.can_ask(guest) and Game.llm and Game.llm.state in ["starting", "warming", "ready"]:
+		var loading: bool = not Game.llm.is_ready()
+		_option("Etwas fragen …" + (" (lädt …)" if loading else ""), _show_ask, loading)
 	if Game.director.first_attack_done:
 		_option("Über das Monster reden", _talk_monster)
 	else:
@@ -147,6 +188,8 @@ func _show_main() -> void:
 	if player.held and player.held.kind != Item.Kind.KEY:
 		_option("%s schenken" % player.held.display_name, _gift)
 	_option("Hast du Deko für mich?", _ask_deco)
+	if tier >= Social.Tier.NICE and not Game.social.party_active:
+		_option("Wollen wir zusammen …", _show_together)
 	if guest.is_following():
 		_option("Du kannst gehen", _dismiss)
 	elif tier >= Social.Tier.FRIEND:
@@ -162,6 +205,41 @@ func _show_main() -> void:
 		_option("Zur Feier in die Lobby einladen", _invite)
 	_option("Beleidigen", _insult)
 	_option("Tschüss", close)
+
+
+## Gemeinsam etwas machen (Spielkonzept 5.9, 2026-10-21): schmücken, wo du stehst, groß schmücken, Deko suchen.
+func _show_together() -> void:
+	_clear()
+	_say("Woran denkst du?")
+	if not guest.is_child():
+		_option("… hier schmücken?", _decorate_here.bind(false))
+		if Game.social.decorating.can_call_big():
+			_option("… ein großes Schmücken ausrufen?", _decorate_here.bind(true))
+	_option("… Deko suchen gehen?", _search)
+	_option("Zurück", _show_main)
+
+
+func _decorate_here(big: bool) -> void:
+	var partner := guest   # close() setzt guest auf null
+	var why: String = Game.social.decorating.call_here(partner, big)
+	if why != "":
+		_say(why)
+		_show_main()
+		return
+	close()
+	if not big:   # beim großen Schmücken ruft er selbst alle zusammen
+		partner.say(Decorating.PLAYER_CALL_LINES.pick_random())
+
+
+func _search() -> void:
+	var partner := guest
+	var why: String = Game.social.search.ask(partner)
+	if why != "":
+		_say(why)
+		_show_main()
+		return
+	close()
+	Game.social.search.lead_off(partner)
 
 
 func _show_trade() -> void:
@@ -235,22 +313,80 @@ func _play(money: int, with_item: bool) -> void:
 		Game.dice.start(opponent, {"money": money, "item": with_item})
 
 
+## Freitext (Prototyp, 6.15): Eingabezeile, Enter schickt die Frage ans Sprachmodell (GuestChat).
+func _show_ask() -> void:
+	_clear()
+	_page = "ask"
+	_question.visible = true
+	_question.editable = true
+	_question.grab_focus.call_deferred()
+	_option("Zurück", _show_main)
+
+
+func _submit_question(text: String) -> void:
+	if text.strip_edges() == "" or not _question.editable:
+		return
+	_question.editable = false
+	_question.text = text
+	var shown := _text.text
+	_text.text = "*%s überlegt …*" % guest.display_name
+	if not GuestChat.ask(guest, text, _on_answer.bind(guest)):
+		_text.text = shown
+		_question.editable = true
+
+
+func _on_answer(intent: String, reply: String, _info: Dictionary, asked: Guest) -> void:
+	if guest != asked or not visible:
+		return   # Gespräch inzwischen beendet
+	_question.editable = true
+	_question.clear()
+	if debug_questions.is_empty():
+		Game.shot_event("answer")   # --shot-on=answer: nach der letzten Debug-Frage
+	if _page == "ask":
+		_question.grab_focus.call_deferred()
+	match intent:
+		"":
+			_say("Hm? … Was hast du gesagt?")
+		"monster":
+			_say(reply)
+			if Game.director.first_attack_done:
+				_monster_talked()
+			else:
+				Game.social.change_relation(guest, 1.0)
+		"einladen":   # entscheidet das Spiel, nicht das Modell
+			_invite()
+			_show_ask()
+		"beleidigen":
+			_insult()
+		_:
+			if intent == "plaudern":
+				_count_chat()
+			_say(reply)
+
+
 # --- Aktionen ---------------------------------------------------------------------
 
 func _chat() -> void:
-	if guest.chat_cooldown > 0.0:
+	if not _count_chat():
 		_say("Lass uns später weiterreden.")
 	else:
-		guest.chat_cooldown = CHAT_COOLDOWN
-		var today := Calendar.today()
-		if guest.chat_day != today:
-			guest.chat_day = today
-			guest.chats_today = 0
-		guest.chats_today += 1
-		Game.social.change_relation(guest, 6.0 if guest.chats_today <= CHATS_PER_DAY else 1.0)
 		var cat_talk := Game.social.cat_line(guest) if randf() < 0.3 or Game.social.cat_thefts.has(guest.id) else ""
 		_say(cat_talk if cat_talk != "" else guest.line("smalltalk"))
 	_show_main()
+
+
+## Plaudern zählt für die Beziehung (6.3) – false, solange die Pause seit dem letzten Plaudern läuft.
+func _count_chat() -> bool:
+	if guest.chat_cooldown > 0.0:
+		return false
+	guest.chat_cooldown = CHAT_COOLDOWN
+	var today := Calendar.today()
+	if guest.chat_day != today:
+		guest.chat_day = today
+		guest.chats_today = 0
+	guest.chats_today += 1
+	Game.social.change_relation(guest, 6.0 if guest.chats_today <= CHATS_PER_DAY else 1.0)
+	return true
 
 
 ## Vor dem ersten Angriff: alles wirkt harmlos (Spielkonzept 2.1).
@@ -275,23 +411,42 @@ func _talk_monster() -> void:
 		var lines: Array = guest.profile["lines"]["monster"]
 		_say(lines[guest.monster_line % lines.size()])
 		guest.monster_line += 1
+	_monster_talked()
+	_show_main()
+
+
+## Über das Monster reden: Beziehung ↑, Angst ↑, und das Monster hört mit (4.7)
+func _monster_talked() -> void:
 	Game.social.change_relation(guest, 3.0)
 	guest.fear = minf(100.0, guest.fear + 12.0 * (1.2 - float(guest.profile["brave"])))
 	Game.social.on_monster_talk(guest)
-	_show_main()
 
 
 func _gift() -> void:
 	var item := Game.player.held
 	var kind := item.kind
-	var liked := kind in (guest.profile["likes"] as Array)
-	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + 3.0
+	# Kürbis in seiner Lieblingssorte (Spielkonzept 5.8): freut ihn wie etwas, das er mag, und noch ein bisschen mehr
+	var is_pumpkin := kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN, Item.Kind.ROAST_PUMPKIN]
+	var favorite := is_pumpkin and item.variety == guest.favorite_pumpkin()
+	var liked := kind in (guest.profile["likes"] as Array) or favorite
+	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + (8.0 if favorite else 0.0) + 3.0
 	Game.social.change_relation(guest, bonus)
 	Game.social.add_deed(guest, "gifts_to")
 	if item.deco_strength > 0.0:
 		guest.stock[kind] = int(guest.stock.get(kind, 0)) + 1
 	Game.player.consume_held()
-	_say(guest.line("thanks_like" if liked else "thanks"))
+	var fav_name := String(PumpkinKinds.data(guest.favorite_pumpkin())["name"])
+	if kind == Item.Kind.ROAST_PUMPKIN:
+		# Gebratener Kürbis (Spielkonzept 3.8): er isst ihn gleich – das beruhigt
+		guest.fear = maxf(0.0, guest.fear - ROAST_CALM)
+		_say("Gebratener %s – mein Lieblingskürbis! Du bist ein Schatz." % fav_name if favorite
+			else "Oh, noch warm! Danke – das tut gut.")
+	elif favorite:
+		_say("Ein %s! Mein Lieblingskürbis – woher wusstest du das?" % fav_name)
+	elif is_pumpkin and randf() < 0.6:
+		_say("%s Mein Lieblingskürbis ist ja der %s." % [guest.line("thanks"), fav_name])   # ein Hinweis für das nächste Mal
+	else:
+		_say(guest.line("thanks_like" if liked else "thanks"))
 	if guest.is_child() and kind == Item.Kind.KNIFE:
 		# Ein Messer für ein Kind (6.13): Mama oder Papa erfahren es – und sind wütend
 		_say(guest.line("knife"))
@@ -319,7 +474,7 @@ func _ask_deco() -> void:
 		else:
 			guest.stock[kind] = int(guest.stock[kind]) - 1
 			guest.gift_cooldown = GIFT_COOLDOWN
-			Game.player.receive_item(Item.create(kind))
+			Game.player.receive_item(guest.stock_item(kind))
 			Game.social.add_deed(guest, "gifts_from")
 			_say(guest.line("give_deco"))
 	_show_main()
@@ -375,7 +530,7 @@ func _join_party() -> void:
 	if Social.tier(guest) >= Social.Tier.ANNOYED or guest.is_child():
 		guest.invited = true
 		_say(guest.line("party_yes"))
-		var spot: Vector3 = Game.social.free_party_spot()
+		var spot: Vector3 = Game.social.free_party_spot(guest)
 		var partner := guest   # close() setzt guest auf null
 		close()
 		partner.join_party(spot)
@@ -439,7 +594,7 @@ func _buy(kind: int) -> void:
 	guest.stock[kind] = int(guest.stock[kind]) - 1
 	Game.social.change_relation(guest, 1.0)
 	Game.social.add_deed(guest, "gifts_from")
-	Game.player.receive_item(Item.create(kind))
+	Game.player.receive_item(guest.stock_item(kind))
 	_say("Gute Wahl.")
 	_show_trade()
 
@@ -525,6 +680,8 @@ func _say(text: String) -> void:
 
 
 func _clear() -> void:
+	_page = ""
+	_question.visible = false
 	for button in _buttons:
 		button.queue_free()
 	_buttons.clear()

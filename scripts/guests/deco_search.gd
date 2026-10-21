@@ -1,0 +1,260 @@
+class_name DecoSearch
+extends Node
+## Deko-Suche mit Gästen (Spielkonzept 5.9, entschieden 2026-10-21): Gäste ziehen los und suchen Deko – Laub im Garten,
+## Dekokiste, Wäschekisten, Kerzenvorrat; Mutige auch Spinnweben in dunklen Ecken oder die alte Deko im Keller. Trifft ein
+## Suchender den Spieler, fragt er, ob er mitkommt; der Spieler kann auch selbst fragen. Dann führt der Gast, wartet, wenn
+## der Spieler zurückfällt, und teilt am Fundort: ein Stück für ihn, eins für den Spieler. Dafür mag er den Spieler mehr
+## und erzählt es seinen Freunden (6.16). Manchmal suchen zwei Gäste zusammen und werden dabei Freunde.
+## Der Vorrat der Fundorte bleibt unberührt (wie beim Schmücken allein). Nichts davon wird gespeichert.
+## Kind von Social, erreichbar über Game.social.search.
+
+## Pause bis zur nächsten Suche am 1. … am 31.; so viele gleichzeitig; so oft zu zweit
+const GAP_EARLY := Vector2(100.0, 200.0)
+const GAP_LATE := Vector2(40.0, 90.0)
+const MAX_TRIPS := 3
+const PAIR_CHANCE := 0.3
+## Ab diesem Mut geht ein Gast auch an gefährliche Orte (Spinnweben-Ecken, alte Deko im Keller) – mit dieser Chance
+const BRAVE := 0.6
+const DANGER_CHANCE := 0.35
+## Fragen: so nah und sichtbar muss der Spieler sein, so lange gilt die Frage (Antwort im Gespräch)
+const ASK_RANGE := 6.0
+const OFFER_TIME := 25.0
+## Führen: ab diesem Abstand wartet er, ab LOSE_RANGE zählt die Zeit bis zum Aufgeben
+const LAG_RANGE := 7.0
+const LOSE_RANGE := 25.0
+const LOSE_TIME := 15.0
+## Ganz aufgeben, wenn er so lange unterwegs ist
+const MAX_TIME := 240.0
+## Anerkennung, wenn der Spieler mitgesucht hat; was er seinen Freunden erzählt (GuestPals.praise)
+const RELATION := 8.0
+const PRAISE := 3.0
+const ASK_LINES := ["Ich geh Deko suchen – kommst du mit?", "Ich such noch Deko für mein Zimmer. Hilfst du mir?",
+	"Kommst du mit? Ich weiß, wo noch Deko liegt."]
+const DANGER_ASK_LINES := ["Ich hol mir Spinnweben aus der dunklen Ecke. Kommst du mit? Allein ist mir das nicht geheuer.",
+	"Im Keller soll alte Deko stehen. Gehst du mit?"]
+const START_LINES := ["Na dann los – mir nach!", "Super! Komm, hier lang.", "Prima, zu zweit macht's mehr Spaß."]
+const WAIT_LINES := ["Kommst du?", "Hier lang!", "Nicht trödeln!"]
+const SHARE_LINES := ["Hier – eins für dich, eins für mich.", "Schau, gleich zwei! Nimm du das.", "Für dich. Danke fürs Mitkommen!"]
+const LOST_LINES := ["Na gut, dann such ich eben allein.", "Wo bist du denn hin? Dann eben ohne dich."]
+
+## Gast-ID → {guest, source, phase (go/wait), partner ("player", Gast oder null), leader (bei zu zweit: der Führende),
+## lost, time, goal}
+var _trips := {}
+## Gast-ID → Zeit, bis zu der seine Frage „Kommst du mit?“ gilt
+var _offers := {}
+var _cooldown := 60.0
+
+
+func _process(delta: float) -> void:
+	if Game.game_over or Game.social == null:
+		return
+	for id in _offers.keys():
+		_offers[id] = float(_offers[id]) - delta
+		if float(_offers[id]) <= 0.0:
+			_offers.erase(id)
+	for id in _trips.keys():
+		if _trips.has(id):
+			_step(_trips[id], delta)
+	_cooldown -= delta
+	if _cooldown > 0.0:
+		return
+	var t := Game.social.decorating._progress()
+	_cooldown = randf_range(lerpf(GAP_EARLY.x, GAP_LATE.x, t), lerpf(GAP_EARLY.y, GAP_LATE.y, t))
+	if _quiet() and _leaders() < MAX_TRIPS:
+		var free := Game.social.living_guests().filter(func(g: Guest) -> bool: return _available(g))
+		if not free.is_empty():
+			start(free.pick_random(), null)
+
+
+func _quiet() -> bool:
+	var social := Game.social
+	return not social.party_active and not social.sleep_active and not Game.monster.is_active() \
+		and not (Game.pumpkin and Game.pumpkin.is_hunting())
+
+
+func _leaders() -> int:
+	return _trips.values().filter(func(e: Dictionary) -> bool: return e["leader"] == null).size()
+
+
+func _available(g: Guest) -> bool:
+	return Game.social.decorating._available(g)
+
+
+## Ist er gerade auf Deko-Suche? (Decorating._available)
+func is_busy(g: Guest) -> bool:
+	return _trips.has(g.id)
+
+
+## Fragt er gerade „Kommst du mit?“ (für den Dialog)?
+func has_offer(g: Guest) -> bool:
+	return _offers.has(g.id) and _trips.has(g.id) and _trips[g.id]["partner"] == null
+
+
+## Ein Gast zieht los (auch Debug --search). with_player: der Spieler kommt gleich mit. false = kein Fundort.
+func start(g: Guest, with_player: Variant) -> bool:
+	if g == null or g.dead or _trips.has(g.id):
+		return false
+	var source := _source_for(g)
+	if source == null:
+		return false
+	var entry := {"guest": g, "source": source, "phase": "go", "partner": null, "leader": null, "lost": 0.0, "time": 0.0}
+	_trips[g.id] = entry
+	if with_player:
+		entry["partner"] = "player"
+	elif randf() < PAIR_CHANCE:
+		var pals := Game.social.pals.pals_of(g).filter(func(o: Guest) -> bool:
+			return _available(o) and o.global_position.distance_to(g.global_position) < 20.0)
+		var mates := pals if not pals.is_empty() else Game.social.living_guests().filter(func(o: Guest) -> bool:
+			return o != g and _available(o) and o.global_position.distance_to(g.global_position) < 12.0)
+		if not mates.is_empty():
+			var mate: Guest = mates.pick_random()
+			entry["partner"] = mate
+			_trips[mate.id] = {"guest": mate, "source": source, "phase": "go", "partner": g, "leader": g, "lost": 0.0, "time": 0.0}
+			_walk(mate, _goal(source) + mate._jitter(0.8))
+	_walk(g, _goal(source))
+	if "--trace" in OS.get_cmdline_user_args():
+		var with := "mit dir" if with_player else (("mit " + (entry["partner"] as Guest).display_name) if entry["partner"] else "allein")
+		print("[Deko-Suche] %s sucht bei %s (%s)" % [g.display_name, source.label, with])
+	return true
+
+
+## Im Gespräch: „Lass uns zusammen Deko suchen“ bzw. „Klar, ich such mit!“ – "" = es geht los, sonst der Satz des Gastes.
+func ask(g: Guest) -> String:
+	if not _quiet():
+		return "Jetzt? Lieber nicht."
+	if g.fear >= 50.0:
+		return "Ich trau mich gerade nirgendwohin."
+	if _trips.has(g.id):
+		if _trips[g.id]["partner"] != null:
+			return "Ich bin doch schon unterwegs!"
+		_trips[g.id]["partner"] = "player"
+		_offers.erase(g.id)
+		return ""
+	if Game.social.decorating.is_crew(g):
+		return "Ich schmücke doch gerade!"
+	return "" if start(g, true) else "Mir fällt gerade nicht ein, wo noch Deko liegen könnte."
+
+
+## Nach dem Gespräch weiter (DialogUI): Er ruft „Mir nach!“ und geht los.
+func lead_off(g: Guest) -> void:
+	if _trips.has(g.id):
+		g.say(START_LINES.pick_random())
+		_walk(g, _trips[g.id]["goal"])
+
+
+## Ein Fundort: der nächste erreichbare von ein paar in der Nähe – Mutige auch Spinnweben und Keller.
+func _source_for(g: Guest) -> ResourceSpot:
+	var danger := float(g.profile["brave"]) >= BRAVE and not g.is_child() and randf() < DANGER_CHANCE
+	var spots: Array = []
+	for node in get_tree().get_nodes_in_group("resource_spots"):
+		var spot := node as ResourceSpot
+		var risky := spot.global_position.y < -0.5 or spot.kind == Item.Kind.COBWEB
+		if risky == danger:
+			spots.append(spot)
+	spots.sort_custom(func(a: ResourceSpot, b: ResourceSpot) -> bool:
+		return a.global_position.distance_to(g.global_position) < b.global_position.distance_to(g.global_position))
+	var near := spots.slice(0, 5)
+	near.shuffle()
+	for spot: ResourceSpot in near:
+		if Game.social.decorating._reachable(g.global_position, spot.global_position):
+			return spot
+	return null
+
+
+func _goal(source: ResourceSpot) -> Vector3:
+	var map := Game.social.decorating.get_world_3d().navigation_map
+	return NavigationServer3D.map_get_closest_point(map, source.global_position)
+
+
+func _walk(g: Guest, point: Vector3) -> void:
+	if _trips.has(g.id):
+		_trips[g.id]["goal"] = point
+	g._walk_to(point, Guest.State.SEARCH)
+
+
+func _step(entry: Dictionary, delta: float) -> void:
+	var g: Guest = entry["guest"]
+	entry["time"] = float(entry["time"]) + delta
+	if g.dead or not g.state in [Guest.State.SEARCH, Guest.State.IDLE, Guest.State.TALKING] or float(entry["time"]) > MAX_TIME \
+			or not _quiet():
+		_finish(g)   # erschreckt, versteckt, Feier, Nachtruhe … – die Suche ist vorbei
+		return
+	if g.state == Guest.State.TALKING:
+		return
+	var p := Game.player
+	# Fragen: Wer allein sucht und dem Spieler begegnet, fragt einmal
+	if entry["partner"] == null and entry["leader"] == null and not entry.get("asked", false) and p and not p.dead \
+			and p.global_position.distance_to(g.global_position) < ASK_RANGE and g.can_see_actor(p) and p.recognized_by(g) \
+			and Social.tier(g) >= Social.Tier.NEUTRAL:
+		entry["asked"] = true
+		_offers[g.id] = OFFER_TIME
+		var risky: bool = (entry["source"] as ResourceSpot).global_position.y < -0.5 or (entry["source"] as ResourceSpot).kind == Item.Kind.COBWEB
+		g.say((DANGER_ASK_LINES if risky else ASK_LINES).pick_random())
+	if entry["partner"] is String and p and not p.dead:
+		var d := p.global_position.distance_to(g.global_position)
+		entry["lost"] = float(entry["lost"]) + delta if d > LOSE_RANGE else 0.0
+		if float(entry["lost"]) > LOSE_TIME:
+			g.say(LOST_LINES.pick_random())
+			entry["partner"] = null
+			entry["asked"] = true
+			if g.state == Guest.State.IDLE:
+				_walk(g, entry["goal"])
+		elif d > LAG_RANGE and g.state == Guest.State.SEARCH:
+			g._set_idle(30.0)   # wartet auf den Spieler
+			g.rotation.y = atan2(-(p.global_position - g.global_position).x, -(p.global_position - g.global_position).z)
+			if randf() < 0.5:
+				g.say(WAIT_LINES.pick_random())
+			return
+		elif d <= LAG_RANGE * 0.6 and g.state == Guest.State.IDLE:
+			_walk(g, entry["goal"])
+			return
+		if g.state == Guest.State.IDLE:
+			g._timer = 30.0
+			return
+	elif g.state == Guest.State.IDLE:
+		_walk(g, entry["goal"])   # nach einem Gespräch weiter
+
+
+## Guest._arrive im Zustand SEARCH: am Fundort – teilen, dann mit seinem Stück heim (CARRY_HOME).
+func on_arrived(g: Guest) -> void:
+	if not _trips.has(g.id):
+		g._set_idle(randf_range(2.0, 5.0))
+		return
+	var entry: Dictionary = _trips[g.id]
+	var source: ResourceSpot = entry["source"]
+	if not is_instance_valid(source):
+		_finish(g)
+		return
+	var kinds: Array = source.pool if not source.pool.is_empty() else [source.kind]
+	var mine := g.stock_item(kinds.pick_random())
+	var partner = entry["partner"]
+	if partner is String:
+		var p := Game.player
+		if p and not p.dead and p.global_position.distance_to(g.global_position) < LAG_RANGE * 1.5:
+			var theirs := g.stock_item(kinds.pick_random())
+			theirs.owner_id = "player"
+			p.receive_item(theirs)
+			g.say(SHARE_LINES.pick_random())
+			Game.social.change_relation(g, RELATION)
+			Game.social.add_deed(g, "gifts_from")
+			Game.social.pals.praise(g, PRAISE)   # er erzählt es seinen Freunden (6.16)
+			if "--trace" in OS.get_cmdline_user_args():
+				print("[Deko-Suche] %s teilt mit dir: %s, Beziehung %.0f" % [g.display_name, theirs.display_name, g.relation])
+	elif partner is Guest and is_instance_valid(partner) and entry["leader"] == null:
+		Game.social.pals.note(g, partner)   # zusammen gesucht (6.16)
+	_trips.erase(g.id)
+	_offers.erase(g.id)
+	g._take_into_hand(mine)
+	g._walk_to(g._room_point(), Guest.State.CARRY_HOME)
+
+
+## Suche abbrechen (der Gast bleibt, wie er ist; wer gerade dorthin ging, macht etwas anderes).
+func _finish(g: Guest) -> void:
+	var entry: Dictionary = _trips.get(g.id, {})
+	_trips.erase(g.id)
+	_offers.erase(g.id)
+	if not g.dead and g.state in [Guest.State.SEARCH, Guest.State.IDLE]:
+		g._set_idle(randf_range(2.0, 5.0))
+	var partner = entry.get("partner")
+	if partner is Guest and is_instance_valid(partner) and _trips.has(partner.id):
+		_finish(partner)

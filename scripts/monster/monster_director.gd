@@ -31,6 +31,14 @@ const LIGHT_DETERRENCE := 12.0
 const CHASE_BONUS := 12.0
 const MOONLIGHT := 0.3                 ## Helligkeit direkt am offenen Außenfenster
 const MOONLIGHT_RANGE := 5.0
+## light_at sucht Lichter in einem Raster (Zellen in m) statt unter allen; neu einsortiert alle LIGHT_GRID_FRAMES
+## Physik-Frames – getragene Lichter wandern bis dahin höchstens LIGHT_GRID_SLACK Meter aus ihrer Zelle
+const LIGHT_CELL := 8.0
+const LIGHT_GRID_FRAMES := 30
+const LIGHT_GRID_SLACK := 3.0
+## In so vielen Sekunden führt jede Zone einmal ihre Neugier nach – verteilt auf die Physik-Frames, sonst
+## hängt das Spiel bei ein paar hundert Zonen jede Sekunde kurz
+const ZONE_PERIOD := 1.0
 const LIGHTS_OFF_CURIOSITY := 30.0     ## Licht aus = das Monster kommt (4.4)
 const NOISE_CURIOSITY := 0.25          ## Neugier je Meter Hörweite (Rennen: +2,5 alle 0,6 s)
 ## Rauschen nach Entfernung zum Spieler (auch durch Wände)
@@ -38,6 +46,9 @@ const NOISE_START := 20.0
 const NOISE_FULL := 4.0
 ## Lampen flackern nur in der Nähe des Monsters
 const LAMP_FLICKER_RANGE := 9.0
+## Hängende Deko (Spielkonzept 5.6) rührt sich schon ab hier – früher, als die Lampen flackern
+const DECO_UNREST_RANGE := 16.0
+const DECO_UNREST_GHOST := 10.0   ## beim Lakengeist (er ist lautlos – die Deko verrät ihn)
 ## Debug F7: so weit vom Spieler erscheint das ruhende Monster
 const LURE_DISTANCE := 25.0
 ## Erster Angriff: am 3. oder 4. Oktober, nach so vielen Sekunden einer Feier
@@ -51,6 +62,9 @@ const REST_TIME := Vector2(150.0, 35.0)
 const ACTIVE_TIME := Vector2(70.0, 210.0)
 ## Kleine Veränderungen im Hotel (Sekunden zwischen zwei Ereignissen)
 const HAUNT_INTERVAL := Vector2(80.0, 170.0)
+## Blutige Schmierspuren an Flurwänden als Spuk: so oft kommt die Möglichkeit dazu, höchstens so viele im Spiel
+const WALL_SMEAR_CHANCE := 0.35
+const MAX_WALL_SMEARS := 12
 ## Halluzination: mittlere Sekunden zwischen zwei Rausch-Anfällen nach einem Todesfall
 const HALLUCINATION_EVERY := 70.0
 const GRIEF_TIME := 900.0
@@ -114,6 +128,10 @@ var debug_victims := -1         ## --intent=…: erzwungene Opferzahl (0 = umseh
 var _monster: Monster
 var _phase_left := 0.0
 var _zone_timer := 0.0
+var _zone_next := 0.0           ## nächste nachzuführende Zone (mit Bruchteil, _update_zones)
+var _light_grid := {}           ## Vector2i (Zelle) → Lichter darin
+var _light_reach := 0.0         ## größte Reichweite im Raster
+var _light_grid_frame := -LIGHT_GRID_FRAMES
 var _noise := 0.0
 var _pulse := 0.0
 var _jumpscare := 0.0
@@ -129,9 +147,11 @@ var _wave_strength := 0.0
 var _wave_level := 0        ## 0 = Zucken, 1 = Flackern, 2 = langes Flackern (ab zwei Opfern)
 var _wave_told := true      ## Untertitel beim Spieler schon gezeigt
 var _stairwell := Vector3.ZERO
+var _builder: LevelBuilder
 
 
 func setup(builder: LevelBuilder, monster: Monster) -> void:
+	_builder = builder
 	zones = builder.zones
 	spawn_points = builder.spawn_points
 	patrol = builder.patrol
@@ -154,10 +174,13 @@ func _physics_process(delta: float) -> void:
 		boldness_dip = maxf(0.0, boldness_dip - 0.15 * delta)
 		satiation = maxf(0.0, satiation - 0.1 * delta)
 		grief = maxf(0.0, grief - delta)
+		_update_zones(delta)
 		_zone_timer -= delta
 		if _zone_timer <= 0.0:
 			_zone_timer = 1.0
-			_update_zones()
+			# „Angst riecht“: ein Spieler unter Schock lockt das Monster an
+			if Game.player and Game.player.shock > 0.1:
+				add_curiosity(Game.player.global_position, Game.player.shock * 3.0)
 		if not first_attack_done:
 			_check_first_attack()
 		else:
@@ -182,6 +205,8 @@ func pressure_at(p: Vector3, chasing: bool = false) -> float:
 
 
 func deterrence_at(p: Vector3) -> float:
+	if _builder and _builder.is_safe(p):
+		return INF   # Katzenraum (Spielkonzept 7.7): dort hinein kommt es nie, wer drinsteht, ist geschützt
 	var light := light_at(p + Vector3.UP)
 	return deco_strength_at(p) * (0.6 + light) / demand() \
 		+ light * LIGHT_DETERRENCE * (1.0 - effective_boldness() / 120.0)
@@ -197,13 +222,24 @@ func is_protected(p: Vector3) -> bool:
 
 
 func deco_strength_at(p: Vector3) -> float:
-	var total := 0.0
+	return _deco_strength(p, _deco_items())
+
+
+## Gegenstände, die gerade als Deko zählen (nicht in der Hand, nicht umgeworfen).
+func _deco_items() -> Array[Item]:
+	var result: Array[Item] = []
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
-		if item.is_held or item.deco_strength <= 0.0 or item.is_toppled():
-			continue
+		if not item.is_held and item.deco_strength > 0.0 and not item.is_toppled():
+			result.append(item)
+	return result
+
+
+func _deco_strength(p: Vector3, decos: Array[Item]) -> float:
+	var total := 0.0
+	for item in decos:
 		var d := Vector2(item.global_position.x - p.x, item.global_position.z - p.z).length()
-		if d < DECO_RADIUS:
+		if d < DECO_RADIUS and absf(item.global_position.y - p.y) < 2.5:   # nur auf demselben Stockwerk
 			total += item.deco_strength * (1.0 - 0.5 * d / DECO_RADIUS)
 	return total
 
@@ -213,15 +249,17 @@ func deco_strength_at(p: Vector3) -> float:
 func light_at(p: Vector3, skip: Node = null) -> float:
 	var space := _monster.get_world_3d().direct_space_state
 	var total := 0.0
-	for node in get_tree().get_nodes_in_group("light_source"):
-		var light := node as OmniLight3D
-		if not light.is_visible_in_tree() or light.light_energy < 0.02:
+	for node in _lights_near(p):
+		if not is_instance_valid(node):
 			continue
-		if skip != null and is_instance_valid(skip) and skip.is_ancestor_of(light):
+		var light := node as OmniLight3D
+		if light.light_energy < 0.02:
 			continue
 		var lp := light.global_position
 		var d := lp.distance_to(p)
-		if d > light.omni_range:
+		if d > light.omni_range or not light.is_visible_in_tree():
+			continue
+		if skip != null and is_instance_valid(skip) and skip.is_ancestor_of(light):
 			continue
 		var query := PhysicsRayQueryParameters3D.create(lp, p, 1 | 2)
 		if not space.intersect_ray(query).is_empty():
@@ -241,6 +279,30 @@ func light_at(p: Vector3, skip: Node = null) -> float:
 		if space.intersect_ray(moon_query).is_empty():
 			total += MOONLIGHT * (1.0 - wd / MOONLIGHT_RANGE)
 	return clampf(total, 0.0, 1.0)
+
+
+## Lichter, deren Reichweite p erreichen könnte (Raster aus _light_grid, Kandidaten – light_at prüft genau).
+func _lights_near(p: Vector3) -> Array:
+	var frame := Engine.get_physics_frames()
+	if frame - _light_grid_frame >= LIGHT_GRID_FRAMES:
+		_light_grid_frame = frame
+		_light_grid.clear()
+		_light_reach = 0.0
+		for node in get_tree().get_nodes_in_group("light_source"):
+			var light := node as OmniLight3D
+			var cell := Vector2i(floori(light.global_position.x / LIGHT_CELL), floori(light.global_position.z / LIGHT_CELL))
+			if not _light_grid.has(cell):
+				_light_grid[cell] = []
+			_light_grid[cell].append(light)
+			_light_reach = maxf(_light_reach, light.omni_range)
+	var reach := _light_reach + LIGHT_GRID_SLACK
+	var result := []
+	for x in range(floori((p.x - reach) / LIGHT_CELL), floori((p.x + reach) / LIGHT_CELL) + 1):
+		for z in range(floori((p.z - reach) / LIGHT_CELL), floori((p.z + reach) / LIGHT_CELL) + 1):
+			var cell := Vector2i(x, z)
+			if _light_grid.has(cell):
+				result.append_array(_light_grid[cell])
+	return result
 
 
 func curiosity_at(p: Vector3) -> float:
@@ -277,17 +339,25 @@ func zone_name_at(p: Vector3) -> String:
 
 ## Neugier strebt langsam zu einem Grundwert aus Dunkelheit und fehlender Deko;
 ## Ereignisse (Lärm, Sichtung …) addieren direkt darauf.
-func _update_zones() -> void:
-	for zone in zones:
+## Je Physik-Frame ein Stück der Zonen, sodass jede einmal je ZONE_PERIOD drankommt.
+func _update_zones(delta: float) -> void:
+	if zones.is_empty():
+		return
+	var until := _zone_next + zones.size() * delta / ZONE_PERIOD
+	var first := int(_zone_next)
+	var count := mini(int(until) - first, zones.size())
+	_zone_next = fmod(until, float(zones.size()))
+	if count <= 0:
+		return
+	var decos := _deco_items()
+	for i in count:
+		var zone: Dictionary = zones[(first + i) % zones.size()]
 		var c: Vector3 = zone["center"]
 		var light := light_at(c + Vector3.UP)
-		var deco := deco_strength_at(c) / demand()
+		var deco := _deco_strength(c, decos) / demand()
 		var base := 10.0 + (1.0 - light) * 55.0 + clampf(25.0 - deco, 0.0, 25.0)
 		var current: float = zone["curiosity"]
 		zone["curiosity"] = clampf(lerpf(current, base, 0.04), 0.0, 100.0)
-	# „Angst riecht“: ein Spieler unter Schock lockt das Monster an
-	if Game.player and Game.player.shock > 0.1:
-		add_curiosity(Game.player.global_position, Game.player.shock * 3.0)
 
 
 # --- Dramaturgie ------------------------------------------------------------------------
@@ -303,11 +373,27 @@ func wants_first_attack_party() -> bool:
 
 
 ## Ist es um diesen Ort herum ruhig (kein Monster in der Nähe)?
+## Ruhig = kein Monster in der Nähe – und kein jagender Kürbismann (Spielkonzept 4.19): Wo er hinkommt, enden
+## Feier und Partien von selbst.
 func is_quiet(pos: Vector3, radius: float = 25.0) -> bool:
+	if Game.pumpkin and Game.pumpkin.is_hunting() and Game.pumpkin.global_position.distance_to(pos) <= radius:
+		return false
 	return not _monster.is_active() or _monster.global_position.distance_to(pos) > radius
 
 
+## Immer nur eine Bedrohung im Haus (entschieden 2026-10-20): Ist das Monster, der Lakengeist oder der Kürbismann
+## unterwegs, warten die anderen, bis er weg ist. who: wer fragt – er selbst zählt nicht. Debug-Aufrufe fragen nicht.
+func other_threat_active(who: Node) -> bool:
+	if who != _monster and _monster.is_active():
+		return true
+	if who != Game.ghost and Game.ghost and Game.ghost.is_active():
+		return true
+	return who != Game.pumpkin and Game.pumpkin != null and Game.pumpkin.in_house()
+
+
 func _check_first_attack() -> void:
+	if other_threat_active(_monster):
+		return   # die Feier wartet auf ihren Auftritt
 	var day := Calendar.today()
 	var social := Game.social
 	if social and social.party_active and day >= first_attack_day and social.party_age() >= FIRST_ATTACK_PARTY_TIME:
@@ -347,7 +433,10 @@ func _start_activity(spawn: Vector3, with_signal: bool = true) -> void:
 			shown_victims = 0   # es täuscht: nur ein Zucken
 		_start_wave(spawn_points[0], shown_victims, false, SIGNAL_TIME_SATED if sated else -1.0)
 	if "--trace" in OS.get_cmdline_user_args():
-		print("[Aufbruch] %s (%d Opfer) · Flackern zeigt %s" % [INTENT_NAMES[intent], victims_left, str(shown_victims) if with_signal else "-"])
+		var why := "erzwungen" if debug_victims >= 0 else ("satt" if sated else "Chance %.0f %%" % (attack_chance() * 100.0))
+		print("[Aufbruch] %d. Angriff%s · Tag %.1f, %s → %s (%d Opfer) · Flackern zeigt %s" % [attacks,
+			" (harmlos)" if is_harmless() else "", Calendar.FIRST_DAY + elapsed / Calendar.DAY_SECONDS, why,
+			INTENT_NAMES[intent], victims_left, str(shown_victims) if with_signal else "-"])
 	_monster.start_roaming(spawn)
 
 
@@ -436,13 +525,12 @@ func _start_wave(origin: Vector3, victims: int, fake: bool = false, duration: fl
 		guest.on_flicker_signal(_wave_level, wave_delay(guest.global_position))
 
 
-## Sekunden, bis die Welle diesen Ort erreicht: vom Ausgangspunkt übers Stockwerk, ins
-## Obergeschoss über das Treppenhaus.
+## Sekunden, bis die Welle diesen Ort erreicht: vom Ausgangspunkt übers Stockwerk, in die anderen Stockwerke
+## (vom Heizkeller hinauf, Spielkonzept 7.9) über das Treppenhaus.
 func wave_delay(p: Vector3) -> float:
 	var o := _wave_origin
-	var upper := LevelBuilder.UP_Y - 0.5
 	var d: float
-	if (p.y > upper) != (o.y > upper):
+	if absf(p.y - o.y) > LevelBuilder.UP_Y / 2.0:
 		d = _flat(o, _stairwell) + absf(p.y - o.y) + _flat(_stairwell, p)
 	else:
 		d = _flat(o, p) + absf(p.y - o.y)
@@ -486,7 +574,10 @@ func _update_schedule(delta: float) -> void:
 				_monster.go_home()
 		_:
 			if _phase_left <= 0.0:
-				_start_activity(spawn_points[0])
+				if other_threat_active(_monster):
+					_phase_left = 10.0   # Lakengeist oder Kürbismann ist im Haus – es wartet
+				else:
+					_start_activity(spawn_points[0])
 
 
 ## Wert zwischen Anfang (1. Oktober) und Halloween.
@@ -536,6 +627,8 @@ func start_warning() -> void:
 func on_noise(pos: Vector3, loudness: float, source: Node = null) -> String:
 	if source == _monster or source is HotelCat:   # Katzen überhört es – es mag sie (6.11)
 		return ""
+	if Game.weather:
+		loudness *= Game.weather.masking()   # gleich nach einem Donner hört es schlechter (7.8)
 	var curiosity := loudness * NOISE_CURIOSITY
 	if not _monster.is_active():
 		if loudness >= Senses.LOUD:
@@ -622,17 +715,20 @@ func kill_guest(guest, spot: HideSpot) -> void:
 		return
 	if spot != null:
 		spot.rip_open()
-	Game.noise("scream", guest.global_position, guest)
+	Game.noise("death_scream", guest.global_position, guest)
 	var where: Vector3 = guest.global_position
 	guest.die()
 	if Game.traces:
-		Game.traces.add_blood(Vector3(where.x, 0.0, where.z), _monster.rotation.y)
+		Game.traces.add_blood(where, _monster.rotation.y)
+		Game.traces.add_wall_blood(where, "wall_splatter")
 	# Ein Kleidungsstück bleibt zurück – Andeutung statt Gore
 	var cloth := Item.create(Item.Kind.CLOTHING, guest.id)
 	_monster.get_parent().add_child(cloth)
 	cloth.global_position = Vector3(where.x + 0.4, 0.05, where.z + 0.2)
 	grief = GRIEF_TIME
 	victims_left -= 1
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Geholt] %s · noch %d Opfer" % [guest.display_name, victims_left])
 	if victims_left > 0:   # Raubzug: weiter zum nächsten Opfer
 		_monster.after_kill_hunting()
 	else:
@@ -644,6 +740,8 @@ func kill_guest(guest, spot: HideSpot) -> void:
 
 ## Harmloser Angriff auf einen Gast: Er wird zu Tode erschreckt – aber nicht geholt.
 func _scare_guest(guest, spot: HideSpot) -> void:
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Erschreckt] %s (%s)" % [guest.display_name, "harmlos" if is_harmless() else "umsehen"])
 	if spot != null:
 		spot.rip_open()
 	Game.noise("scream", guest.global_position, guest)
@@ -669,7 +767,7 @@ func kill_player(spot: HideSpot) -> void:
 		Game.hud.visible = false
 	_monster.play_jumpscare(player.camera)
 	_jumpscare = 1.4
-	Game.play_sound("scream", 1.0)
+	Game.play_sound("shriek", 1.0)
 	await get_tree().create_timer(1.5).timeout
 	Game.player_died.emit()
 
@@ -730,6 +828,8 @@ func _update_haunting(delta: float) -> void:
 		return
 	var away_from_room := p.global_position.distance_to(player_door_front) > 12.0
 	var actions: Array[Callable] = [_haunt_door, _haunt_curtain, _haunt_light, _haunt_bed]
+	if randf() < WALL_SMEAR_CHANCE and _wall_smears() < MAX_WALL_SMEARS:
+		actions.append(_haunt_wall_blood)
 	if away_from_room:
 		actions.append(_haunt_room_13)
 	actions.shuffle()
@@ -775,6 +875,24 @@ func _haunt_light() -> bool:
 			sw.set_on(false)
 			return true
 	return false
+
+
+## Eine blutige Hand rutscht an einer Flurwand hinunter – wo der Spieler gerade nicht hinsieht (4.13).
+func _haunt_wall_blood() -> bool:
+	var points := patrol.duplicate()
+	points.shuffle()
+	for entry in points:
+		var pos: Vector3 = entry["pos"]
+		if Game.social.builder.in_corridor(pos) and _unseen(pos + Vector3.UP * 1.4, 10.0) \
+				and Game.traces.add_wall_blood(pos, "wall_smear") != null:
+			return true
+	return false
+
+
+## So viele Schmierspuren hängen schon (gezählt an den Spuren selbst – so stimmt es auch nach dem Laden).
+func _wall_smears() -> int:
+	return get_tree().get_nodes_in_group("trace_marks").filter(func(m: Node) -> bool:
+		return (m as TraceMark).kind == "wall_smear").size()
 
 
 func _haunt_bed() -> bool:
@@ -927,6 +1045,32 @@ func player_can_see(p: Vector3) -> bool:
 
 
 ## Bedrohung 0..1 nach Entfernung zum Monster (für Spieler und Gäste) – wirkt durch Wände.
+## Unruhe hängender Deko an p (0..1, Spielkonzept 5.6): Monster bis DECO_UNREST_RANGE (wirkt durch Wände),
+## die Flackerwelle beim Aufbruch und der Lakengeist bis DECO_UNREST_GHOST.
+func deco_unrest_at(p: Vector3) -> float:
+	var unrest := 0.0
+	if _monster.is_active() and _monster.state != Monster.State.KILL:
+		var d := _monster.global_position.distance_to(p)
+		unrest = clampf((DECO_UNREST_RANGE - d) / (DECO_UNREST_RANGE - 3.0), 0.0, 1.0)
+	if is_signalling():
+		unrest = maxf(unrest, wave_at(p) * 0.6)
+	if Game.ghost and Game.ghost.is_active():
+		var g := Game.ghost.global_position.distance_to(p)
+		unrest = maxf(unrest, clampf(1.0 - g / DECO_UNREST_GHOST, 0.0, 1.0) * 0.75)
+	return unrest
+
+
+## Woher die Unruhe an p kommt: das nähere von Monster und Lakengeist (aktiv) – sonst Vector3.INF.
+func deco_unrest_source(p: Vector3) -> Vector3:
+	var best := Vector3.INF
+	if _monster.is_active() and _monster.state != Monster.State.KILL:
+		best = _monster.global_position
+	if Game.ghost and Game.ghost.is_active() and (best == Vector3.INF \
+			or Game.ghost.global_position.distance_to(p) < best.distance_to(p)):
+		best = Game.ghost.global_position
+	return best
+
+
 func threat_at(pos: Vector3) -> float:
 	if not _monster.is_active() or _monster.state == Monster.State.KILL:
 		return 0.0

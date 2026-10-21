@@ -66,7 +66,7 @@ const COMMON := {
 	"monster": [
 		"Wenn das Rauschen lauter wird, ist es nah. Dann such dir ein Versteck – eins, bei dem es dich nicht sieht.",
 		"Licht hält es fern. Ein geschnitzter Kürbis mit Kerze vor der Tür wirkt Wunder.",
-		"Es kommt aus dem Keller. Die Treppe hinter der kleinen Tür am Flurende … da gehe ich nicht hin.",
+		"Es kommt aus dem Keller. Ganz unten im Treppenhaus, wo die Treppe aufhört … da gehe ich nicht hin.",
 		"Die Lampen flackern dort, wo es gerade ist. Achte darauf.",
 		"Je mehr wir darüber reden, desto dreister wird es. Also … leise.",
 		"In den Flügeln ist es am dunkelsten. Da streift es am liebsten herum.",
@@ -292,6 +292,8 @@ const CHILD_LINES := {
 	"trick": ["Süßes oder Saures!", "Süßes, sonst gibt's Saures!"],
 	"treat": ["Danke! Du bist der Allerbeste!", "Juhu! Die teil ich nicht."],
 	"prank": ["Keine Süßigkeiten? Dann gibt's Saures!", "Ätsch! Saures!"],
+	"treat_other": ["Danke!", "Juhu, Bonbons!", "Danke schön! Fröhliches Halloween!"],
+	"scolded": ["Menno. Dann eben Saures!", "Pff, gemein. Saures!"],
 	"sleepless": ["Ich kann nicht schlafen.", "Da war was am Fenster … darf ich zu dir?"],
 	"to_bed": ["Na gut … aber du bleibst, bis ich eingeschlafen bin.", "Okay. Gute Nacht."],
 	"orphan": ["{eltern} ist nicht wiedergekommen. Darf ich bei dir bleiben?", "Wo ist {eltern}? Ich bleib bei dir, ja?"],
@@ -392,6 +394,16 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 	var chess_lines: Dictionary = CHESS_LINES.get(arche["kind"], {})
 	for key in chess_lines:
 		lines[key] = chess_lines[key]
+	# Aufgehängte Deko (Spielkonzept 5.6): manche haben ein Lakengespenst oder eine Lichterkette an der Tür
+	var festive := rng.randf()
+	if festive < 0.25:
+		start_deco.append(Item.Kind.SHEET_GHOST)
+	elif festive < 0.35:
+		start_deco.append(Item.Kind.LIGHT_STRING)
+	elif festive < 0.45:
+		start_deco.append(Item.Kind.BAT_GARLAND)
+	elif festive < 0.5:
+		start_deco.append(Item.Kind.SPIDER)
 	return profile
 
 
