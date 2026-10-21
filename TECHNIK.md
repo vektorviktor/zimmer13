@@ -37,7 +37,19 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   (poliertes Eisen ging im Halbdunkel vor der roten Tapete unter), das Blatt gebrochen weiß (`DIAL`). `set_time(stunden)` dreht die
   Zeiger um lokal −Z; bis es eine Uhrzeit gibt, zeigt sie `START_TIME` (1:55 wie im Rohmodell). Sie hängt mittig
   über dem Haupteingang, auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds (`_sign` gibt sie zurück,
-  `_exit_sign_top`) und der Hallendecke, `CLOCK_GAP` vor der Wand, ohne Kollision. Die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`): Granitbecken mit Erde,
+  `_exit_sign_top`) und der Hallendecke, `CLOCK_GAP` vor der Wand, ohne Kollision. Die **Rezeption**
+  `assets/models/reception.glb` (`LevelBuilder._reception`, `RECEPTION_MODEL`): `tools/build_reception.py` baut sie
+  neu nach dem Vorbild `assets/source/reception_desk.glb` (Sketchfab, eckig und zu zerstückelt zum Umbiegen) und
+  übernimmt nur dessen Holz- und Sockeltextur (Platzhalter). Alles sind Bänder entlang einer U-Linie (`outer(d)` =
+  Außenkontur um d versetzt, Bögen konzentrisch): Holzwange 5 cm, vordere Ecken außen 40 cm Radius, innen 35 cm;
+  Endkappen hinten an den Armen, zurückgesetzter schwarzer Sockel, Ablage innen auf 0,79 m; Platte 5 cm, steht 3 cm
+  über, Innenkante mit eigenem Radius 20 cm (Platte 40/50 cm breit, konzentrisch ginge nicht); zwei Rohre Ø 8 cm
+  10 cm unter der Platte und über dem Boden, 2 cm vor dem Holz auf Haltern. 5 × 1,5 × 1,1 m (`RECEPTION_SIZE`,
+  Rohre stehen 7 cm über), Ursprung mittig unten, Kundenseite nach +Z, Flächen `wood`, `stone`, `plinth`, `gold`.
+  Im Spiel: `stone` = Säulenstein `_pillar_stone`, `gold` = `Mat.metal(GrandStair.BRASS)`, Holz und Sockel per
+  `Mat.model`. Platziert mittig in der Hülle der Planrechtecke, +Z zum größten Rechteck (der Front); Kollision und
+  NavMesh aus dem Netz (`create_trimesh_shape`), damit die Rundungen stimmen. Die Planrechtecke bleiben in
+  `_furnishings` (Höhe für Telefon, Kerze, Katzen); ohne Datei die alten Kästen. Die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`): Granitbecken mit Erde,
   Steinen und großblättrigen Pflanzen von Meshy, `tools/build_planter.py` aus `assets/source/planter.glb`.
   Das Skript misst das Becken an den Punkten unter 20 % der Höhe, skaliert es auf genau 2 × 2 m (x und y
   einzeln, Meshy trifft das Quadrat nicht; Höhe mit dem Mittel, ~2,1 m mit Pflanzen), Ursprung mittig unten,
@@ -541,7 +553,7 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   Objekte des Plans auf versiegelten Flächen werden übersprungen.
 - **Einrichtung aus dem Plan** (Objektebenen, Abschnitt unten), in dieser Reihenfolge – sie bestimmt die
   Gruppen-Reihenfolge im Spielstand:
-  - `_furniture`: Rezeption, dann `furniture`. Bett/Schrank → `HideSpot` (ins `spots` des Zimmers),
+  - `_furniture`: Rezeption (Modell über ihre Planrechtecke, siehe 1), dann `furniture`. Bett/Schrank → `HideSpot` (ins `spots` des Zimmers),
     Kommode, Truhe, Schach- und Spieltisch, Sofa als eigene Bauteile in der Rechteckmitte mit Blick nach
     `facing` (ohne: zur Flächenmitte); alles andere ein Kasten in Plangröße mit Höhe aus `BOX_HEIGHTS`.
     Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert daraus die Höhe, auf der

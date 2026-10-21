@@ -188,6 +188,11 @@ const BOX_HEIGHTS := {
 	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5,
 }
 const RECEPTION_H := 1.1
+## Rezeption als U mit runden vorderen Ecken (tools/build_reception.py): Holzkorpus, Platte im Terrazzo der Säulen,
+## zwei Messingrohre; Kundenseite nach +Z, Ursprung mittig im Grundriss am Boden, RECEPTION_SIZE wie im Plan. Fehlt
+## die Datei, bleiben die Kästen aus dem Plan.
+const RECEPTION_MODEL := "res://assets/models/reception.glb"
+const RECEPTION_SIZE := Vector2(5.0, 1.5)
 ## Teppiche aus dem Plan: Art → Textur (TexGen); Oberseite knapp über dem Boden
 const RUG_TEXTURES := {"runner": "runner"}
 const RUG_Y := 0.01
@@ -1355,9 +1360,12 @@ class WallSpot:
 ## und Sofas sind eigene Bauteile in der Mitte des Rechtecks, alles andere Kästen in Plangröße (BOX_HEIGHTS).
 ## Dazu die Rezeption aus dem Grundriss. Verschlossene Zimmer bleiben leer.
 func _furniture() -> void:
+	var rects: Array[Rect2] = []
 	for rc in _map["reception"]:
-		var r := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
-		var desk := Geo.solid(root, Vector3(r.size.x, RECEPTION_H, r.size.y), Vector3(r.get_center().x, RECEPTION_H / 2.0, r.get_center().y), _dark_wood)
+		rects.append(Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]))
+	var model := _reception(rects)
+	for r in rects:
+		var desk: Node3D = model if model else Geo.solid(root, Vector3(r.size.x, RECEPTION_H, r.size.y), Vector3(r.get_center().x, RECEPTION_H / 2.0, r.get_center().y), _dark_wood)
 		_furnishings.append({"kind": "reception", "rect": r, "top": RECEPTION_H, "front": Vector2.ZERO, "node": desk})
 	for f in _map["furniture"]:
 		var rc: Array = f["rect"]
@@ -3011,6 +3019,45 @@ func _painting(pos: Vector3, yaw: float, color: Color) -> void:
 	_parent.add_child(holder)
 	Geo.mesh(holder, Geo.box(Vector3(0.8, 0.6, 0.04)), _dark_wood, Vector3(0, 0, 0.02))
 	Geo.mesh(holder, Geo.box(Vector3(0.66, 0.46, 0.045)), Mat.psx(color), Vector3(0, 0, 0.025))
+
+
+## Rezeption aus `RECEPTION_MODEL` über die Rechtecke des Plans (U aus Front und zwei Armen): mittig in ihrer
+## Hülle, die Kundenseite zur Front hin gedreht. Platte = Säulenstein, Rohre = Messing der Treppe, Holz und Sockel
+## mit den Texturen des Modells. Kollision (auch fürs NavMesh) aus dem Netz selbst, damit die runden Ecken stimmen.
+## null, wenn das Modell fehlt oder der Plan keine Rezeption hat.
+func _reception(rects: Array[Rect2]) -> StaticBody3D:
+	if rects.is_empty() or not ResourceLoader.exists(RECEPTION_MODEL):
+		return null
+	var hull := rects[0]
+	var front := rects[0]
+	for r in rects:
+		hull = hull.merge(r)
+		if r.size.x * r.size.y > front.size.x * front.size.y:
+			front = r
+	var to_front := front.get_center() - hull.get_center()
+	var body := StaticBody3D.new()
+	body.collision_mask = 0
+	body.position = Vector3(hull.get_center().x, 0, hull.get_center().y)
+	body.rotation.y = atan2(to_front.x, to_front.y)   # +Z des Modells zur Front
+	root.add_child(body)
+	var model: Node3D = (load(RECEPTION_MODEL) as PackedScene).instantiate()
+	body.add_child(model)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		for s in m.mesh.get_surface_count():
+			var mat: Material
+			match m.mesh.surface_get_material(s).resource_name:
+				"stone":
+					mat = _pillar_stone
+				"gold":
+					mat = Mat.metal(GrandStair.BRASS)
+				_:
+					mat = Mat.model(RECEPTION_MODEL, m, s)
+			m.set_surface_override_material(s, mat)
+		var shape := CollisionShape3D.new()
+		shape.shape = m.mesh.create_trimesh_shape()
+		shape.transform = model.transform * m.transform
+		body.add_child(shape)
+	return body
 
 
 ## Ledercouch (`assets/models/couch.glb`, Rohmodell in Blender-Einheiten → `COUCH_SCALE`).
