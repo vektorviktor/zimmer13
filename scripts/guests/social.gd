@@ -1,7 +1,7 @@
 class_name Social
 extends Node
 ## Das soziale Gefüge im Hotel (Spielkonzept 6 + 7.1): Gäste, Beziehungen, Gerüchte,
-## Diebstahl (mit Zeugen), Panik, Tod & Schock, Gedenken und Feiern in der Lobby.
+## Diebstahl (mit Zeugen), Panik, Tod & Schock, Gedenken und Feiern im Partyraum.
 ## Dazu (4.13): Gäste berichten von Spuren – nicht immer zuverlässig – und klopfen nachts
 ## an Zimmer 13. Manchmal klopft auch etwas anderes …
 ## Freundschaft und Feindschaft in neun Stufen (6.3): Die Extreme brauchen Taten (Spiele, Austausch bzw.
@@ -189,6 +189,9 @@ var _chess_timer := 40.0
 var _reports: Array[Dictionary] = []
 ## Hotelkatzen (6.11): Gast-ID → Name der Katze, die ihm etwas weggetragen hat; ob schon eine geweint hat
 var cat_thefts := {}
+## Gast-ID → so viel Beziehung hat er dem Spieler für Deko abgezogen, die eine Katze weggetragen hat (6.11) –
+## bekommt der Spieler zurück, sobald er erzählt, wer es war (cat_line)
+var cat_blame := {}
 var cats_have_cried := false
 var sleep_active := false
 var sleep_timer := 300.0                 ## bis zur nächsten Nachtruhe bzw. bis zu ihrem Ende
@@ -569,6 +572,7 @@ func cat_line(guest: Guest) -> String:
 	if cat_thefts.has(guest.id):
 		var thief: String = cat_thefts[guest.id]
 		cat_thefts.erase(guest.id)
+		_clear_cat_blame(guest)
 		return "%s hat mir meine Deko weggeschleppt! Ich dachte erst, das warst du." % thief
 	for cat in cats:
 		if cat.favourite == guest.id:
@@ -590,8 +594,22 @@ func cat_monster_line() -> String:
 
 
 func on_guest_noticed_missing(guest: Guest, count: int) -> void:
+	var before := guest.relation
 	change_relation(guest, -5.0 * count)
+	if cat_thefts.has(guest.id) and count > 0:   # ein Stück davon hat eine Katze weggetragen (6.11)
+		cat_blame[guest.id] = float(cat_blame.get(guest.id, 0.0)) + (before - guest.relation) / count
 	guest.say(guest.line("missing"))
+
+
+## Er weiß jetzt, dass es die Katze war (Spielkonzept 6.11): Der Verdacht gegen den Spieler ist vom Tisch.
+func _clear_cat_blame(guest: Guest) -> void:
+	var blame := float(cat_blame.get(guest.id, 0.0))
+	cat_blame.erase(guest.id)
+	if blame <= 0.0:
+		return
+	var before := guest.relation
+	guest.relation = clampf(before + blame, -100.0, 100.0)
+	_announce_tier(guest, tier_of(before), tier_of(guest.relation))
 
 
 ## Ein Gast merkt, dass in seinem Zimmer eine Glühbirne fehlt.
@@ -653,7 +671,7 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 		Game.say("Ein Schrei – dann ein dumpfer Schlag. Dann ist es still.", 4.0)
 	else:
 		Game.say("Ein Schrei hallt durch das Hotel …", 4.0)
-		get_tree().create_timer(5.0).timeout.connect(func() -> void:
+		get_tree().create_timer(5.0, false).timeout.connect(func() -> void:
 			Game.say("%s ist verschwunden." % guest.display_name, 4.0))
 	# Die Totenglocke läutet – nach dem Schrei, für jeden Toten, im ganzen Hotel zu hören
 	get_tree().create_timer(BELL_DELAY, false).timeout.connect(func() -> void: Game.play_sound("bell"))
@@ -671,7 +689,7 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	writers.shuffle()
 	for writer in writers.slice(0, randi_range(1, 2)):
 		var w: Guest = writer
-		get_tree().create_timer(randf_range(20.0, 60.0)).timeout.connect(func() -> void:
+		get_tree().create_timer(randf_range(20.0, 60.0), false).timeout.connect(func() -> void:
 			if is_instance_valid(w) and not w.dead:
 				_leave_note(w, DEATH_NOTES, w.home["door_front"], guest.display_name))
 	SaveManager.request_autosave("Tod eines Gastes")
@@ -825,9 +843,9 @@ func start_party(host: String) -> bool:
 		if coming.is_empty():
 			Game.say("Die Musik spielt … aber niemand kommt.", 4.0)
 		else:
-			Game.say("Feier in der Lobby! Es kommen: %s" % ", ".join(coming), 4.0)
+			Game.say("Feier im Partyraum! Es kommen: %s" % ", ".join(coming), 4.0)
 	else:
-		Game.say("Aus der Lobby klingt Musik – %s feiert." % guest_name(host), 4.0)
+		Game.say("Aus dem Partyraum klingt Musik – %s feiert." % guest_name(host), 4.0)
 	return true
 
 
@@ -898,7 +916,7 @@ func _update_party(delta: float) -> void:
 		var p := Game.player
 		if p and builder.in_area(p.global_position, "partyraum"):
 			_party_presence += delta
-		# Musik ist laut – das Monster wird neugierig auf die Lobby
+		# Musik ist laut – das Monster wird neugierig auf den Partyraum
 		_party_noise -= delta
 		if _party_noise <= 0.0:
 			_party_noise = 8.0
@@ -964,7 +982,8 @@ func on_challenge_ignored(guest: Guest) -> void:
 		guest.say("Pff. Dann eben nicht.")
 
 
-## Gäste fordern dich heraus: Revanche nach einer Niederlage oder einfach aus Spaß.
+## Gäste fordern dich heraus: Revanche nach einer Niederlage oder einfach aus Spaß. Ab „wütend“ spielen sie nicht
+## mehr mit dir (Spielkonzept 6.3) – auch eine offene Revanche verfällt dann.
 func _update_challenges(delta: float) -> void:
 	_challenge_timer -= delta
 	if _challenge_timer > 0.0:
@@ -981,6 +1000,9 @@ func _update_challenges(delta: float) -> void:
 		if not (g.state == Guest.State.IDLE or g.state == Guest.State.WALK):
 			continue
 		if g.global_position.distance_to(p.global_position) > 6.0:
+			continue
+		if tier(g) <= Tier.ANGRY:
+			_rematches.erase(g)
 			continue
 		if g in _rematches:
 			_rematches.erase(g)

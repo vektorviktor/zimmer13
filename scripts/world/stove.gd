@@ -226,7 +226,6 @@ func _done() -> void:
 	_show()
 	Game.say("Es gibt Kürbissuppe in der Küche!", 4.0)
 	_call_eaters()
-	SaveManager.request_autosave("Kürbissuppe fertig")
 
 
 func _end_soup(message: String) -> void:

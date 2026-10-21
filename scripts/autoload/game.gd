@@ -32,8 +32,6 @@ var phones: PhoneCalls
 var weather: Weather
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
 var confetti: Confetti            ## Konfetti auf Feiern (Spielkonzept 7.6)
-## Lokales Sprachmodell (Prototyp, GuestChat) – bleibt über Szenenwechsel bestehen, reset() lässt es stehen
-var llm: LlmClient
 var game_over := false
 ## Debug: letzte Lärmereignisse (F3) und Ausgabe in die Konsole (--trace)
 var noise_log: Array[String] = []

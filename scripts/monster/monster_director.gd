@@ -15,9 +15,8 @@ extends Node
 ##   · Beim Aufbruch wählt es eine Absicht (Umsehen, einen holen, Raubzug), und eine Flackerwelle
 ##     vom Keller aus verrät sie mit ihrer Dauer – manchmal täuscht es (4.17).
 
-## CALM = ruht im Keller, ACTIVE = streift umher. WARNING/COOLDOWN gibt es nicht mehr
-## (nur noch für alte Spielstände/Abfragen vorhanden).
-enum Phase { CALM, WARNING, ACTIVE, COOLDOWN }
+## CALM = ruht im Keller, ACTIVE = streift umher.
+enum Phase { CALM, ACTIVE }
 ## Was es in dieser Aktivphase vorhat (Spielkonzept 4.17) – gilt für Gäste und Spieler
 enum Intent { ROAM, ONE, RAMPAGE }
 const INTENT_NAMES := ["Umsehen", "Einen holen", "Raubzug"]
@@ -101,7 +100,6 @@ const FAKE_SIGNAL_VICTIMS := 3
 
 var phase := Phase.CALM
 var boldness := BOLDNESS_START
-var boldness_dip := 0.0     ## vorübergehend weniger dreist (abgewiesen)
 var satiation := 0.0        ## gesättigt, nachdem es einen Gast geholt hat (4.10)
 var elapsed := 0.0
 var zones: Array[Dictionary] = []
@@ -171,7 +169,6 @@ func _physics_process(delta: float) -> void:
 		elapsed += delta
 		if first_attack_done:
 			boldness = minf(100.0, boldness + BOLDNESS_PER_SECOND * delta)
-		boldness_dip = maxf(0.0, boldness_dip - 0.15 * delta)
 		satiation = maxf(0.0, satiation - 0.1 * delta)
 		grief = maxf(0.0, grief - delta)
 		_update_zones(delta)
@@ -193,7 +190,7 @@ func _physics_process(delta: float) -> void:
 # --- Versteckte Werte ---------------------------------------------------------------
 
 func effective_boldness() -> float:
-	return clampf(boldness - boldness_dip - satiation, 0.0, 100.0)
+	return clampf(boldness - satiation, 0.0, 100.0)
 
 
 func demand() -> float:
@@ -698,10 +695,6 @@ func on_monster_uv() -> void:
 	_monster.uv_repel()
 
 
-func on_monster_repelled() -> void:
-	boldness_dip = minf(15.0, boldness_dip + 2.0)
-
-
 ## Hat das Monster einen Gast geholt, ist es eine Weile satt.
 func on_guest_taken() -> void:
 	satiation = 40.0
@@ -773,13 +766,13 @@ func kill_player(spot: HideSpot) -> void:
 		Game.hud.set_prompt("")
 	if spot != null:
 		spot.rip_open()
-		await get_tree().create_timer(0.2).timeout
+		await get_tree().create_timer(0.2, false).timeout
 	if Game.hud:
 		Game.hud.visible = false
 	_monster.play_jumpscare(player.camera)
 	_jumpscare = 1.4
 	Game.play_sound("shriek", 1.0)
-	await get_tree().create_timer(1.5).timeout
+	await get_tree().create_timer(1.5, false).timeout
 	Game.player_died.emit()
 
 
@@ -789,7 +782,8 @@ func flash(seconds: float) -> void:
 
 
 ## Harmloser Angriff auf den Spieler: Es steht direkt vor dir, starrt dich an – und ist
-## im nächsten Flackern verschwunden. Jetzt weißt du, dass es real ist.
+## im nächsten Flackern verschwunden. Jetzt weißt du, dass es real ist. Die Aktivphase läuft weiter: Es streift
+## außer Sicht umher und lässt dich bis zur nächsten in Ruhe (Spielkonzept 4.13).
 func _reveal_to_player(spot: HideSpot) -> void:
 	var player := Game.player
 	if spot != null:
@@ -802,8 +796,7 @@ func _reveal_to_player(spot: HideSpot) -> void:
 	_jumpscare = 1.0
 	Game.play_sound("bang", 0.5)
 	await get_tree().create_timer(0.15, false).timeout
-	_monster.deactivate()
-	on_monster_gone()
+	_monster.vanish_after_reveal(player)
 
 
 # --- Unheimliche Kleinigkeiten ---------------------------------------------------------------

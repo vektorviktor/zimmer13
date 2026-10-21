@@ -138,7 +138,6 @@ var chats_today := 0         ## nur die ersten zwei Plaudereien am Tag zählen v
 var attack_cooldown := 0.0
 var threatened := false      ## hat dir schon gedroht – beim nächsten Mal schlägt er zu
 var sleepless := false       ## Kind, das in dieser Nachtruhe nicht schlafen kann (Spielkonzept 6.13)
-var last_party := -1.0       ## Director.elapsed, als er zuletzt eine Feier verlassen hat; −1 = noch nie (GuestChat, nicht gespeichert)
 ## Überlebt (Spielkonzept 6.17): Art der Verletzung ("" = unverletzt, sonst Wounds.KINDS), so lange noch bis geheilt, davon
 ## noch im Bett; was er als Zeuge weiß (zone, went, visit_day) und wie viel er erzählt hat; ob der Spieler ihn besucht hat
 var wound := ""
@@ -596,7 +595,8 @@ func enter_shelter(room_center: Vector3) -> void:
 	state = State.SHELTER
 
 
-## Harmloser Angriff: zu Tode erschrocken, aber nicht geholt – rennt davon.
+## Harmloser Angriff: zu Tode erschrocken, aber nicht geholt – rennt davon. Ist er verletzt (auch gerade eben beim
+## Losreißen, wound_by), bleibt es bei der Blutspur der Verletzung (Spielkonzept 6.17).
 func scared_by_monster() -> void:
 	if dead:
 		return
@@ -604,7 +604,7 @@ func scared_by_monster() -> void:
 		_leave_hide()
 	fear = 100.0
 	say_panic()
-	if randf() < 0.6 and not is_child():
+	if randf() < 0.6 and not is_child() and wound == "":
 		_bleeding = BLEED_TIME   # verletzt – hinterlässt Blutstropfen
 	if randf() < 0.35:
 		_lose_coins()
@@ -637,7 +637,6 @@ func end_game() -> void:
 
 func leave_party() -> void:
 	if state == State.PARTY:
-		last_party = Game.director.elapsed
 		_set_idle(randf_range(2.0, 6.0))
 	invited = false
 
@@ -956,6 +955,7 @@ func _follow_step(delta: float) -> void:
 		return
 	if p.hiding:
 		stop_follow("Ich such mir selbst ein Versteck …")
+		_go_hide()   # und tut es auch – ein freies Versteck in der Nähe, sonst ins eigene Zimmer
 		return
 	if p.sleeping:
 		stop_follow("Schlaf gut.")

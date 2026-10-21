@@ -27,7 +27,7 @@ const LINES := {
 	"warn_near": ["{name} hier … es ist bei mir im Flur. {where}. Komm nicht her!", "Es ist direkt vor meiner Tür – {where}! Ich … ich lege jetzt auf."],
 	"lie": ["Alles ruhig hier. Ich glaube, es schläft. Komm doch in die Lobby.", "Die Luft ist rein, ich hab extra nachgesehen. Du kannst ruhig rausgehen.", "Hier ist {name}. Am Flurende liegt Deko, die keinem gehört. Beeil dich!"],
 	"chat": ["Hallo? Hier ist {name} aus Zimmer {room}. Ich wollte nur mal eine Stimme hören.", "{name} hier. Mir ist langweilig. Erzähl mir was."],
-	"party": ["{name} hier! In der Lobby läuft Musik – kommst du rüber?"],
+	"party": ["{name} hier! Im Partyraum läuft Musik – kommst du rüber?"],
 	"answer": ["Ja? Zimmer {room}.", "Hallo? Wer ist da?"],
 	"answer_friend": ["Oh, du bist's! Schön, dass du anrufst.", "Hallo, du! Alles in Ordnung bei dir?"],
 	"answer_enemy": ["Was willst du?", "Ach, du. Mach's kurz."],
@@ -474,7 +474,7 @@ func _show_talk(guest: Guest, text: String) -> void:
 		options.append(["Hast du es gesehen?", _phone_ask.bind(guest)])
 	if Game.social.party_active:
 		if guest.state != Guest.State.PARTY:
-			options.append(["Komm zur Feier in die Lobby!", _phone_party.bind(guest)])
+			options.append(["Komm zur Feier in den Partyraum!", _phone_party.bind(guest)])
 	elif not guest.invited:
 		options.append(["Zur Feier einladen", _phone_invite.bind(guest)])
 	options.append(["Auflegen", hang_up])

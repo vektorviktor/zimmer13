@@ -1,6 +1,6 @@
 class_name RecordPlayer
 extends StaticBody3D
-## Plattenspieler in der Lobby: Feier starten oder Musik ausschalten (Spielkonzept 7.1).
+## Plattenspieler im Partyraum: Feier starten oder Musik ausschalten (Spielkonzept 7.1).
 ## Modell aus tools/build_record_player.py: „body“ und die drehbare Platte „record“.
 ## Solange Musik läuft, steigen Noten in Regenbogenfarben aus dem Trichter.
 
@@ -111,7 +111,7 @@ func _build_notes() -> void:
 
 
 func get_prompt(_player: Player) -> String:
-	return "Musik ausschalten [E]" if playing else "Feier in der Lobby starten [E]"
+	return "Musik ausschalten [E]" if playing else "Feier im Partyraum starten [E]"
 
 
 func interact(_player: Player) -> void:

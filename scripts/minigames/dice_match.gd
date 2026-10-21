@@ -212,7 +212,7 @@ func _player_announce(value: int) -> void:
 
 
 func _guest_respond() -> void:
-	await get_tree().create_timer(1.3).timeout
+	await get_tree().create_timer(1.3, false).timeout
 	if not _still_playing():
 		return
 	var dice: Dictionary = guest.profile["dice"]
@@ -239,7 +239,7 @@ func _guest_roll(intro: String) -> void:
 	_dice.hide_dice()
 	_say("%s %s würfelt …" % [intro, guest.display_name])
 	_rattle()
-	await get_tree().create_timer(1.4).timeout
+	await get_tree().create_timer(1.4, false).timeout
 	if not _still_playing():
 		return
 	var dice: Dictionary = guest.profile["dice"]

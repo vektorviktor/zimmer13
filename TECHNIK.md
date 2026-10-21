@@ -736,8 +736,8 @@ Gefragt wird beim natürlichen Erscheinen: `_update_schedule` (Aufbruch verschob
 der bleibt scharf). Debug-Aufrufe (F5/F7/F9, `--warn`, `--ghost`, `--pumpkin=…`) fragen nicht.
 
 ### Versteckte Werte (Director)
-- `boldness` (Dreistigkeit, global, steigt nach dem ersten Angriff) − `boldness_dip` − `satiation`
-  = `effective_boldness()`.
+- `boldness` (Dreistigkeit, global, steigt nach dem ersten Angriff) − `satiation` = `effective_boldness()` (keine Delle
+  nach einer Abweisung mehr, entschieden 2026-10-21).
 - `curiosity` je Zone: strebt jede Sekunde zu einem Grundwert aus Dunkelheit und fehlender Deko,
   Ereignisse addieren direkt (`add_curiosity`). `_update_zones(delta)` nimmt je Physik-Frame nur ein Stück der
   Zonen dran, jede einmal je `ZONE_PERIOD` (1 s) – alle auf einmal (334 Zonen × 547 Lichter) ließen das Spiel
@@ -753,7 +753,7 @@ der bleibt scharf). Debug-Aufrufe (F5/F7/F9, `--warn`, `--ghost`, `--pumpkin=…
 
 ### Ereignis-Schnittstelle (andere Systeme melden, der Director reagiert)
 `on_noise(pos, hörweite, quelle)` (nur über `Game.noise`) · `on_lights_off(pos)` · `on_actor_hid(spot, actor)` · `on_monster_talk(pos)` ·
-`on_monster_noticed()` · `on_monster_repelled()` · `on_monster_uv()` · `on_monster_gone()` · `kill_guest(guest, spot)` ·
+`on_monster_noticed()` · `on_monster_uv()` · `on_monster_gone()` · `kill_guest(guest, spot)` ·
 `kill_player(spot)`. Neue Spielmechaniken, die das Monster beeinflussen sollen, melden sich hier.
 Debug: F5 = `start_warning()` (nur wenn es ruht), F7/`--lure` = `debug_lure()`: ruht es, `spawn_at()` auf dem
 NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angriff), dann `investigate(Spieler)`.
@@ -762,7 +762,6 @@ NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angri
 - Vor dem ersten Angriff: kein Monster. Erster Angriff am 3./4. Oktober während einer Feier
   (`_first_attack_at_party`), spätestens am 5.
 - Danach Wechsel `Phase.CALM` (Keller) ↔ `Phase.ACTIVE` (streift umher); Dauern über `_day_lerp`.
-  `WARNING`/`COOLDOWN` sind Altlast und werden nicht mehr benutzt.
 - `attacks <= HARMLESS_ATTACKS` (2) → `is_harmless()`: es holt niemanden, `kill_*` werden zu
   Erschrecken (`_scare_guest`) bzw. Zeigen (`_reveal_to_player`).
 - **Absicht** (Spielkonzept 4.17): `_start_activity` → `_choose_intent` setzt `victims_left`: 0 (umsehen) oder – mit
@@ -798,7 +797,9 @@ Schutz liegt – vorbeigehen darf es (die Deko vor den Türen deckt sonst den ga
 `is_protected(Gejagter)`. Zurückgeschreckt ohne UV → anderes Ziel (`_next_roam`), der Gejagte kommt für
 `REBUFF_TIME` in `_rebuffed`; nach `LURK` ebenso weiter. **Rückzug (`RETREAT`) nur:** Ende der Aktivphase
 (`go_home`), satt (`after_feeding`), UV. Nach einem harmlosen Schreck `after_scare(opfer)` → `SLINK` und
-weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
+weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`. Beim Spieler (`_reveal_to_player`):
+`REVEAL`, Flackern, dann `vanish_after_reveal(spieler)` – taucht an `hidden_point_near` (sonst am Kellerausgang)
+wieder auf und streift weiter, der Spieler steht in `_spared`; die Aktivphase endet dadurch nicht.
 
 ### Aussehen & Animation
 - **Modell:** `assets/models/monster.glb` wird von `tools/build_monster.py` (Blender 4.3) aus dem
@@ -1021,38 +1022,8 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   - Gespeichert wird nur `parent` in der Gästeliste (Version 22); `sleepless`, Besuche und Süßes oder Saures nicht.
     `--trace` zeigt `[Süßes oder Saures]` und `[Lakengeist] … erschreckt`; die Kinder-IDs folgen auf die Erwachsenen
     (erstes Kind `gast24`).
-- **Freitext-Gespräche (Prototyp, Spielkonzept 6.15)** – `guests/guest_chat.gd` (`GuestChat`, statisch) und
-  `util/llm_client.gd` (`LlmClient`, Knoten unter `Game`, `Game.llm`): Nur Gäste mit Eintrag in `GuestChat.PERSONAS`
-  (Edna, Bruno) bieten im Dialog „Etwas fragen …“ an. `DialogUI.open` ruft `LlmClient.ensure()` – beim ersten Mal sucht er
-  in `LlmClient.dir` (Standard `~/llm`, Debug `--llm=pfad`) `llama.cpp/llama-server.exe` und das erste `models/*.gguf`
-  und startet den Server mit `OS.create_process` auf `127.0.0.1:PORT` (8137; läuft dort schon einer, wird er übernommen).
-  Zustände `off` (Dateien fehlen → keine Option), `starting` (Option „(lädt …)“, gesperrt), `warming` (eine Probeanfrage
-  mit langem Prompt, Zeitlimit `WARM_TIMEOUT` 180 s – die erste lange Anfrage nach dem Start dauerte sonst bis über 60 s, danach
-  ~0,5 s; auch ein gescheitertes Aufwärmen gibt `ready`), `ready`, `failed` (Server antwortet nicht).
-  `_exit_tree` beendet den Server; nach einem harten Abbruch läuft er weiter, gibt aber nach `IDLE_SLEEP` s den
-  Grafikspeicher frei (`--sleep-idle-seconds`) und wird beim nächsten Start übernommen. Denken des Modells ist aus
-  (`--reasoning off`, `enable_thinking`). **Anfrage:** Systemprompt = Rolle (`PERSONAS.who`, Sätze aus `smalltalk`/`greet`
-  als Stilbeispiele, `others`), Regeln, dann der **Faktenzettel** `GuestChat.facts()` – alles aus dem Spielzustand: Datum,
-  Zeilen nach Thema beschriftet („Feiern:“, „Monster:“, „Gerücht …“ – sonst überging Gemma die Antwort), Ort (`zone_name_at`), Beziehungswort, Geschenke/Spiele (`deed`), Angst, Rausch, Feier läuft / zuletzt gefeiert
-  (`Guest.last_party`, gesetzt in `leave_party`, nicht gespeichert) / eingeladen; vor dem ersten Angriff nur die
-  `odd`-Sätze, danach die `monster`-Sätze, Erlebnisse (`experience_line(…, true)` mit „gestern“, `_ago`) und ein
-  Gerücht (`report_line` – so unzuverlässig wie beim Reden über das Monster, je Frage neu gewürfelt), Verschwundene.
-  Dazu die letzten `HISTORY` Nachrichten je Gast (`_history`, nicht gespeichert). `response_format` mit JSON-Schema
-  erzwingt `{"absicht", "antwort"}`, `absicht` aus `INTENTS` (im Prompt mit Beispielen `INTENT_EXAMPLES`), `antwort` nach
-  `ANSWER_PATTERN` ohne Anführungszeichen, Klammern und Zeilenumbrüche (Gemma beendete den Text sonst mit „“ und schrieb
-  Müll bis zum Tokenlimit; eine feste Länge im Muster bremste die Grammatik auf ein Viertel). Regeln im Prompt: duzen,
-  höchstens zwei Sätze unter 30 Wörtern, direkt antworten, nichts erfinden (auch keine Preise oder Zahlen); `shorten()`
-  schneidet nach `MAX_SENTENCES` Satzenden ab, gemerkt wird die gekürzte Antwort. **Folgen** (`DialogUI._on_answer`): `plaudern` →
-  `_count_chat()` (dieselbe Pause und Tageszählung wie „Plaudern“), `monster` → `_monster_talked()` (Beziehung, Angst,
-  das Monster hört mit; vor dem ersten Angriff nur +1), `einladen` → `_invite()`, `beleidigen` → `_insult()` – bei diesen
-  beiden ersetzt der Satz des Spiels die Antwort des Modells. Debug `--ask=gast,frage|frage` (setzt `--trace`): Gespräch
-  öffnen, Fragen nacheinander stellen, Faktenzettel, Absicht, Antwortzeit und Token/s in die Konsole;
-  `--shot-on=answer`. **Modell:** Gemma 3 4B it Q4_K_M (ggml-org, Gemma-Lizenz) – im Vergleich mit Qwen3.5-4B (20.10.,
-  11 Fragen aus zwei Spielszenen, je zweimal, gleiche Faktenzettel) besseres Deutsch und klarere Figuren; Qwen erfand
-  öfter (Kürbispreise in „Mark“) und baute holprige Sätze. Gemessen (RTX 4060 Laptop, Vulkan-Build b11756): ~2,55 GB VRAM,
-  Laden 4–13 s, Faktenzettel ~600–1000 Token in ~0,5–1 s, 50–75 Token/s, Antwort 0,5–2,5 s (mit dem Spiel aus dem Editor auf
-  derselben Grafikkarte zeitweise 10–30 Token/s). Für weitere Gäste: Eintrag in
-  `PERSONAS`; erzeugte Gäste bräuchten ihn aus Archetyp und Werten.
+- **Freitext-Gespräche** (Prototyp, Spielkonzept 6.15: lokales Sprachmodell über llama-server, `GuestChat`, `LlmClient`)
+  sind am 2026-10-21 entfernt worden – Aufbau, Faktenzettel und Modellvergleich stehen im Git-Verlauf davor.
 - **Schmück-Aktionen** (`guests/decorating.gd`, `Decorating`, Kind von Social: `Game.social.decorating`, Spielkonzept 5.9;
   zählen als Spaß für den Kürbismann – `is_crew`, `player_joins`):
   Pause bis zur nächsten Aktion von `GAP_EARLY` (1.) linear bis `GAP_LATE` (31.); `_can_start`: keine Feier, keine
@@ -1074,7 +1045,7 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   Einladung: in Zimmer 13 Anruf (`PhoneCalls.decorate_call`, Art `decorate`, „Ich komme!“ → `on_accepted`), sonst Meldung.
   Spieler: neue Deko mit Besitzer „player“ im Umkreis `SITE_RADIUS` zählt (`_check_player_deco`, alle 0,5 s), sonst
   `PRESENT_TIME` in `PRESENT_RANGE`. Ende (alle fertig oder `MAX_TIME`): Angst − `FEAR_RELIEF`, hat der Spieler
-  mitgemacht, Beziehung + `RELATION` (+ je Stück, bis `RELATION_MAX`) und Schock − `SHOCK_RELIEF`, Autosave. Abbruch bei
+  mitgemacht, Beziehung + `RELATION` (+ je Stück, bis `RELATION_MAX`) und Schock − `SHOCK_RELIEF` (kein Autosave, 8.6). Abbruch bei
   Feier, Nachtruhe oder Unruhe (`Director.is_quiet` 30 m, Lakengeist in 20 m); `_update_sleep` schiebt die Nachtruhe
   auf, solange eine Aktion läuft. Nichts davon wird gespeichert – die Deko sind normale Gegenstände (aufgehängt mit
   `hung`). `--trace`: `[Schmücken]` mit Stelle, Mitmachern, jedem Stück und Ende.
@@ -1098,7 +1069,7 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   `helped`, `time`, `known`, `min_time`/`max_time`, `scan`, `group`); `actions` hält alle, `_member` Gast-ID → Action.
   `active` und `site` sind Getter (Nachtruhe, Debug). `group` = `{name, big, by_player, items, present, accepted}` – geteilt
   von allen Stellen eines großen Schmückens; Deko und Anwesenheit des Spielers zählen für die ganze Gruppe, Belohnung je
-  Stelle für ihre Mitmacher, Meldung, Schock und Autosave erst, wenn die letzte Stelle der Gruppe endet (`_first_of`).
+  Stelle für ihre Mitmacher, Meldung, Schock und Konfetti erst, wenn die letzte Stelle der Gruppe endet (`_first_of`).
   Gäste-Aktionen: höchstens `MAX_SMALL` (1, ab Monatsmitte 2) gleichzeitig, Pause `_next_gap` ab dem Start; Stellen
   gleichzeitiger Aktionen liegen `SITE_SPACING` auseinander (`_site_taken` in `_score`). Mitmacher: zuerst Freunde des
   Rufers (`GuestPals.pals_of`, bis `PAL_RANGE`), dann wie bisher (`_helpers_for`). Bei Abschluss merken sich die
@@ -1144,7 +1115,8 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   „verfeindet“, beide frei (`IDLE`/`WALK`/`PARTY`, Angst < 60) in `TELL_RANGE` → Sprechblase, `change_relation(b,
   TELL_AMOUNT, TELL_CAP)` (neuer Parameter `cap`: Zuwachs höchstens bis 79, also nie „guter Freund“), Antwort 2,5 s
   später; je Paar einmal am Spieltag (`_told`), einer je Durchgang. `heard[b] = a` → `DialogUI.open` hängt
-  `take_heard_line` an die Begrüßung. `praise(gast, n)`: alle seine Freunde nach `PRAISE_DELAY` (`_queue`). Gespeichert
+  `take_heard_line` an die Begrüßung – nur ohne Erlebnis oder Detail des Verletzten (bloßer Gruß `Wounds.GREET` geht),
+  sonst bleibt `heard` für ein späteres Gespräch stehen. `praise(gast, n)`: alle seine Freunde nach `PRAISE_DELAY` (`_queue`). Gespeichert
   wird nur `counts` (`social.pals`, Version 25); `heard`, `_told`, `_queue` nicht. Debug `--pals=gast1,gast2`, `--trace`:
   `[Freunde]`.
 - **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze; Zustand im Gast, Spielkonzept 6.17):
@@ -1167,7 +1139,7 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   `LeftUpLeg`, Ring an `Neck`; Klötzchenfiguren in fester Höhe. **Dialog:** `DialogUI._wound_visit` (besucht, einmal am
   Spieltag `VISIT_HEAL`) erzählt `witness_line()` (nächstes aus `WITNESS`, alles stimmt) statt eines Erlebnisses, danach
   `GREET`; `change_relation` × `RELATION_FACTOR` (auch negativ); `_gift` × `GIFT_FACTOR`, `+FITTING` bei
-  `Wounds.fitting`, Tat `gifts_to` × `GIFT_DEEDS`, `GIFT_HEAL`. `GuestChat.facts` kennt die Verletzung und alle Zeugen-Details.
+  `Wounds.fitting`, Tat `gifts_to` × `GIFT_DEEDS`, `GIFT_HEAL`.
   Gespeichert je Gast (Version 26): `wound`, `wound_left`, `wound_bed`, `wound_facts`, `wound_told`, `wound_visited`. Debug
   `--wound=gast,art[,hin]`, `--kill=gast` (würfelt mit), `--trace`: `[Verletzt]`, `[Losgerissen]`, `[Kürbismann] verletzt`.
 - **Geschenke in der Hand** (6.17): `DialogUI._gift` gibt den Gegenstand per `Player.hand_over()` an `Guest.receive_gift`
@@ -1195,7 +1167,8 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
 - **`Social`** ist der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`,
   `living_guests()`, `guest_by_id()`), Beziehungen (`change_relation`), Gerüchte mit Verzögerung,
   Diebstahl mit Zeugen, Reservierung von Verstecken (`find_hide_spot` / `release_hide_spot`),
-  Feiern, Herausforderungen (`challenge(guest, game)`, `Guest.challenge_game`), Gäste-Mäxchen und Gäste-Schach
+  Feiern, Herausforderungen (`challenge(guest, game)`, `Guest.challenge_game`; ab „wütend“ keine, auch offene Revanchen in
+  `_rematches` verfallen), Gäste-Mäxchen und Gäste-Schach
   (`_update_chess_game`, Zuschauen ≥ 30 s → `has_watched_chess`), Berichte über Spuren (`note_trace` → `report_line`),
   Klopfen an Zimmer 13, Zettel, Neuankömmlinge (`START_GUESTS` 67 einschließlich `CHILDREN` 13 Kinder, `MIN_GUESTS` 33;
   Neuankömmlinge sind immer Erwachsene).
@@ -1215,7 +1188,7 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   sonst höfliches Klopfen über `_knock` mit `"visit"`, eigene `_visit_step`) und Erzfeinde (`_update_feuds`, alle
   2 s: allein und sichtbar → erst Drohung `threatened`, beim nächsten Mal `Guest.start_attack`). Plaudern zählt
   pro Spieltag `CHATS_PER_DAY` mal voll (`Guest.chat_day/chats_today`). Neue Gast-Zustände `FOLLOW` (bleibt
-  `FOLLOW_GAP` hinter dir; im Gespräch gemerkt über `_resume_follow`), `VISIT`, `ATTACK` (rennt hin, `Player.hurt`,
+  `FOLLOW_GAP` hinter dir; im Gespräch gemerkt über `_resume_follow`; versteckst du dich, sucht er sich mit `_go_hide` selbst eins), `VISIT`, `ATTACK` (rennt hin, `Player.hurt`,
   dann heim), `STAGGER` (Rückstoß `_push`, danach `_after_stagger`: zurückschlagen bei Mut ≥ 0,55, Stolz ≥ 0,65 oder
   „verfeindet“, sonst verstecken; geschlagen humpelt er `HURT_TIME` mit `HURT_SLOW`). Wütende halten im Gehen auf den
   Spieler zu und rempeln ihn an (`_wants_to_bump`/`_check_bump` → `Player.shove`).
@@ -1250,7 +1223,9 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   Fell = `Mat.psx(tint)` mit der GLB-Textur. Geschenk hängt am Knoten `_mouth`. Gespeichert (Gruppe `cats`,
   ab Version 8, angewendet nach den Gegenständen): Lage, Lieblingsgast, Zuneigung, Geschenk-Timer,
   Liegeplatz, Schlaf, Beute im Maul (liegt nach dem Laden vor ihr). Gespräche: `Social.cat_line()`
-  (Plaudern), `Social.cat_monster_line()` (nach dem ersten Weinen, `cats_have_cried`).
+  (Plaudern), `Social.cat_monster_line()` (nach dem ersten Weinen, `cats_have_cried`). **Verdacht:** Merkt ein Gast mit
+  Eintrag in `cat_thefts` fehlende Deko (`on_guest_noticed_missing`), steht der Abzug für ein Stück in `Social.cat_blame`
+  (gespeichert ab Version 27); erzählt er in `cat_line`, welche Katze es war, bekommt der Spieler ihn zurück (`_clear_cat_blame`).
 
 ## 7. Speichern & Laden
 
@@ -1290,8 +1265,10 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   Stände laden ohne (nur Familie und Nachbarn).
 - Je Gast außerdem (ab Version 11) `corpse` (tote Gäste mit Leiche → `die("ghost")`), `ghost_visits`, `seen`
   (gesehene Blutlachen/Leichen) und `experiences` (Zeitpunkte als `Director.elapsed`).
-- Speichern am Tagebuch gesperrt bei Jagd oder Monster näher als `NOISE_START`; Autosave nur in
-  sicheren Momenten (`is_safe_for_autosave`), sonst aufgeschoben.
+- Speichern am Tagebuch gesperrt bei Jagd oder Monster näher als `NOISE_START`, während der Flackerwelle, solange der
+  Kürbismann im Hotel ist (`PumpkinMan.in_house`, er wird nicht gespeichert) und der Lakengeist beim Spieler ist
+  (`SheetGhost.with_player`); Autosave nur in sicheren Momenten (`is_safe_for_autosave`, schließt `can_save` ein),
+  sonst aufgeschoben. Auslöser nur nach 8.6: Tod eines Gastes, Ende einer Feier, Tür aufgeschlossen, neuer Bereich.
 - **Prüfen:** `--savetest` sammelt → wendet an → sammelt erneut und meldet Unterschiede – nur nötig, wenn sich
   am Speichern etwas ändert. Einzelne Abweichungen bei Türen oder Katzen sind Bewegung zwischen den beiden
   Sammelzeitpunkten (wechselt von Lauf zu Lauf).

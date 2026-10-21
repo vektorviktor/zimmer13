@@ -209,6 +209,12 @@ func is_active() -> bool:
 	return state != State.IDLE
 
 
+## Ist er gerade beim Spieler (Erscheinen, Hypnose, Würgen, Lauern vor dem Schrank, vor der Tür)? Dann ist das
+## Tagebuch gesperrt und der Autosave wartet (Spielkonzept 8.5, 8.6).
+func with_player() -> bool:
+	return is_active() and _victim != null and _victim == Game.player
+
+
 func _physics_process(delta: float) -> void:
 	var player := Game.player
 	if player == null:
@@ -690,7 +696,7 @@ func _kill() -> void:
 		Game.hud.visible = false
 	Game.play_sound("shriek", 1.0)
 	Game.director.flash(1.4)
-	await get_tree().create_timer(1.5).timeout
+	await get_tree().create_timer(1.5, false).timeout
 	_ambience.stop()
 	Game.player_died.emit()
 

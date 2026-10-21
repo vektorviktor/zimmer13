@@ -99,11 +99,6 @@ extends Node3D
 ##   --pumpkin=dach              wie F9: Kürbismann klettert übers Lobbydach, springt in den Garten, sucht die Lobby ab
 ##   --pumpkin=garten            Kürbismann gleich an den Kürbisbeeten im Garten (ohne Dach), jagt alle mit Spaß und dich
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
-##   --ask=id[,frage|frage]      Gespräch öffnen und frei fragen (Prototyp 6.15, nur edna und bruno): stellt die Fragen
-##                               nacheinander, sobald das Sprachmodell geladen ist (ohne Frage: „Wann hast du zuletzt
-##                               gefeiert?“) – Faktenzettel, Antwort, Absicht und Tempo in der Konsole · mit
-##                               --shot-on=answer Screenshot nach der letzten Antwort
-##   --llm=pfad                  Ordner mit llama.cpp/llama-server.exe und models/*.gguf (Standard: ~/llm)
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
 ##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
 ##                               zum Prüfen der Gastmodelle
@@ -685,14 +680,6 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--shock="):
 		var parts := arg.substr(8).split(",")
 		_debug_shock(Game.social.guest_by_id(parts[0]), parts[1] if parts.size() > 1 else "blood")
-	elif arg.begins_with("--llm="):
-		LlmClient.dir = arg.substr(6)
-	elif arg.begins_with("--ask="):
-		var parts := arg.substr(6).split(",", true, 1)
-		var questions := parts[1].split("|", false) if parts.size() > 1 else PackedStringArray(["Wann hast du zuletzt gefeiert?"])
-		Game.noise_trace = true
-		run_debug("--talk=" + parts[0])
-		Game.dialog.debug_questions.assign(Array(questions))
 	elif arg.begins_with("--talk="):
 		var partner := Game.social.guest_by_id(arg.substr(7))
 		var after_shock := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--shock="))

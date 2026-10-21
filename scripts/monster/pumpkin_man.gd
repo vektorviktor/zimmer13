@@ -835,7 +835,7 @@ func _kill_player() -> void:
 		Game.hud.visible = false
 	Game.play_sound("shriek", 1.0)
 	Game.director.flash(1.4)
-	await get_tree().create_timer(1.5).timeout
+	await get_tree().create_timer(1.5, false).timeout
 	Game.player_died.emit()
 
 

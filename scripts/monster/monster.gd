@@ -81,7 +81,6 @@ var _idle_timer := 0.0
 var _active_time := 0.0
 var _look_timer := 0.0
 var _deter_timer := 0.0
-var _lurk_count := 0
 var _anim_time := 0.0
 var _stuck_time := 0.0
 var _last_pos := Vector3.ZERO
@@ -252,6 +251,20 @@ func after_scare(victim: Node) -> void:
 	_set_state(State.SLINK)
 
 
+## Nach dem harmlosen Angriff auf den Spieler (Spielkonzept 2.1, 4.13): im Flackern verschwunden – es taucht außer
+## Sicht wieder auf und streift weiter; den Spieler verschont es für den Rest dieser Aktivphase (wie Gäste nach
+## after_scare). Ohne verborgenen Punkt in der Nähe kommt es vom Kellerausgang wieder.
+func vanish_after_reveal(victim: Node) -> void:
+	_spared.append(victim)
+	_chase_target = null
+	_face_light.light_energy = 0.0
+	var away := Game.director.hidden_point_near(global_position)
+	if away.is_equal_approx(global_position):
+		away = Game.director.spawn_points[0]
+	_appear(away)
+	_next_roam()
+
+
 ## Harmloser Angriff auf den Spieler: Es steht direkt vor ihm und starrt ihn an.
 func reveal(cam: Camera3D) -> void:
 	_set_state(State.REVEAL)
@@ -280,7 +293,6 @@ func _appear(pos: Vector3) -> void:
 	visible = true
 	_collider.disabled = false
 	_active_time = 0.0
-	_lurk_count = 0
 	noticed = false
 	_look_timer = 0.0
 	_chase_target = null
@@ -402,10 +414,7 @@ func _physics_process(delta: float) -> void:
 			if seen != null and global_position.distance_to(seen.global_position) < 4.0:
 				_start_chase(seen)
 			elif _state_timer > 2.5:
-				# Licht drängt es ab, schickt es aber nicht nach Hause (Spielkonzept 4.13):
-				# nach mehrmaligem Lauern sucht es sich anderswo ein Ziel
-				if _lurk_count >= 4:
-					_lurk_count = 0
+				# Licht drängt es ab, schickt es aber nicht nach Hause (Spielkonzept 4.13): es sucht sich anderswo ein Ziel
 				_next_roam()
 		State.STARE:
 			_stop(delta)
@@ -627,14 +636,12 @@ func _check_deterrence(delta: float) -> void:
 	# geht das Monster durch die Deko hindurch.
 	if state == State.CHASE and _chase_target != null and is_instance_valid(_chase_target) 			and not Game.director.is_protected(_chase_target.global_position):
 		return
-	Game.director.on_monster_repelled()
 	if not _scratched and Game.traces:
 		_scratched = Game.traces.scratch_wall_ahead(self)
 	if state == State.CHASE:
 		Game.play_sound("growl", 0.7)
 		_set_state(State.REPELLED)
 	else:
-		_lurk_count += 1
 		_search.clear()
 		_set_state(State.LURK)
 

@@ -803,10 +803,8 @@ func _end(a: Action, message: String, finished: bool) -> void:
 			if group["big"]:
 				who = "Die Gäste haben"
 			message = "%s %s geschmückt%s" % [who, group["name"], " – danke fürs Helfen!" if helped else "."]
-		if last:
-			SaveManager.request_autosave("Ende einer Schmück-Aktion")
-			if group["big"] and Game.confetti:
-				Game.confetti.burst(a.site["pos"] + Vector3.UP * 2.6, 40)   # zum Abschluss Konfetti
+		if last and group["big"] and Game.confetti:
+			Game.confetti.burst(a.site["pos"] + Vector3.UP * 2.6, 40)   # zum Abschluss Konfetti
 	if "--trace" in OS.get_cmdline_user_args():
 		print("[Schmücken] Ende %s (%s): %d s, Spieler: %d Stück, %d s dabei, Deko an der Stelle: %d" % [a.site["name"],
 			"fertig" if finished else "abgebrochen", int(a.time), int(group["items"]), int(group["present"]), placed])

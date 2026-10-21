@@ -45,7 +45,9 @@ const DIR := "user://saves/"
 ##     sind nur Familie und Zimmernachbarn befreundet
 ## 26: Überlebende & Verletzungen (Spielkonzept 6.17) – je Gast wound, wound_left, wound_bed, wound_facts, wound_told,
 ##     wound_visited; ältere Stände laden weiter, alle unverletzt
-const VERSION := 26
+## 27: Verdacht wegen Katzendiebstahl (social.cat_blame), ohne Delle der Dreistigkeit (director.boldness_dip entfällt) –
+##     ältere Stände laden weiter, dort verdächtigt keiner den Spieler, eine gespeicherte Delle wird übergangen
+const VERSION := 27
 const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -170,10 +172,13 @@ func has_any_save() -> bool:
 
 # --- Speichern ---------------------------------------------------------------------
 
-## Am Tagebuch: gesperrt, solange das Monster in der Nähe ist (Rauschen) oder jagt (8.5, 4.13)
-## und solange die Flackerwelle läuft (4.17).
+## Am Tagebuch: gesperrt, solange das Monster in der Nähe ist (Rauschen) oder jagt (8.5, 4.13),
+## solange die Flackerwelle läuft (4.17), der Kürbismann im Hotel ist (4.19) und der Lakengeist beim
+## Spieler ist (4.18). Der Kürbismann wird nicht gespeichert – sonst wäre man ihn durch Laden los.
 func can_save() -> bool:
 	if Game.director == null or Game.game_over or Game.player == null or Game.director.is_signalling():
+		return false
+	if (Game.pumpkin and Game.pumpkin.in_house()) or (Game.ghost and Game.ghost.with_player()):
 		return false
 	var monster := Game.monster
 	if not monster.is_active():
@@ -365,7 +370,7 @@ func collect() -> Dictionary:
 		"thefts_ago": thefts, "memorials": memorials, "watched": social._watched.keys(), "chess_watched": social._chess_watched.keys(),
 		"party_cooldown": social._party_cooldown, "roster": social.roster_state(),
 		"arrival_timer": social._arrival_timer,
-		"cat_thefts": social.cat_thefts, "cats_have_cried": social.cats_have_cried,
+		"cat_thefts": social.cat_thefts, "cat_blame": social.cat_blame, "cats_have_cried": social.cats_have_cried,
 		"sleep_active": social.sleep_active, "sleep_timer": social.sleep_timer,
 		"pals": social.pals.save_state(),
 	}
@@ -374,7 +379,7 @@ func collect() -> Dictionary:
 	for zone in director.zones:
 		curiosity.append(float(zone["curiosity"]))
 	data["director"] = {
-		"boldness": director.boldness, "boldness_dip": director.boldness_dip,
+		"boldness": director.boldness,
 		"satiation": director.satiation, "elapsed": director.elapsed,
 		"curiosity": curiosity, "state": director.save_state(),
 	}
@@ -465,7 +470,6 @@ func apply(data: Dictionary) -> void:
 	var director := Game.director
 	var dd: Dictionary = data.get("director", {})
 	director.boldness = float(dd.get("boldness", director.boldness))
-	director.boldness_dip = float(dd.get("boldness_dip", 0.0))
 	director.satiation = float(dd.get("satiation", 0.0))
 	director.elapsed = float(dd.get("elapsed", 0.0))
 	director.phase = MonsterDirector.Phase.CALM
@@ -577,6 +581,7 @@ func apply(data: Dictionary) -> void:
 		social._chess_watched[id] = true
 	social._party_cooldown = float(sd.get("party_cooldown", 150.0))
 	social.cat_thefts = (sd.get("cat_thefts", {}) as Dictionary).duplicate()
+	social.cat_blame = (sd.get("cat_blame", {}) as Dictionary).duplicate()
 	social.cats_have_cried = bool(sd.get("cats_have_cried", false))
 	social.sleep_active = bool(sd.get("sleep_active", false))
 	social.sleep_timer = float(sd.get("sleep_timer", 300.0))
