@@ -2900,16 +2900,18 @@ func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, roo
 	return lamp
 
 
-## Deckenleuchte bei p (Spielkonzept 7.3): bündig unter der Decke, über dem Luftraum (open_above) als Pendel
-## an einer Schnur von der oberen Decke herab.
+## Deckenleuchte bei p (Spielkonzept 7.3): runde Kupferleuchte bündig an der Decke (Lamp.Style.FLUSH), über dem
+## Luftraum (open_above) als Pendel an einer Schnur von der oberen Decke herab (Lamp.Style.CEILING).
 func _ceiling_lamp(p: Vector2, room_id: String, broken: bool) -> Lamp:
-	var y := H - 0.03
+	var y := H
+	var style := Lamp.Style.FLUSH
 	for rc in _map["open_above"]:
 		if Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]).has_point(p):
 			var top := UP_Y + H
 			y = PENDANT_Y
+			style = Lamp.Style.CEILING
 			Geo.mesh(_parent, Geo.cylinder(0.01, top - y, 4), Mat.psx(Color(0.2, 0.18, 0.16)), Vector3(p.x, (top + y) / 2.0, p.y))
-	var lamp := Lamp.new().setup(Lamp.Style.CEILING, room_id, CEILING_LAMP_ENERGY, CEILING_LAMP_RANGE, broken)
+	var lamp := Lamp.new().setup(style, room_id, CEILING_LAMP_ENERGY, CEILING_LAMP_RANGE, broken)
 	lamp.position = Vector3(p.x, y, p.y)
 	_parent.add_child(lamp)
 	return lamp

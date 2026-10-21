@@ -8,8 +8,25 @@ extends StaticBody3D
 ## auf – ohne Glühbirne: nichts herauszudrehen, brennt nicht durch.
 ## POOL (Spielkonzept 7.5): runder Scheinwerfer unter Wasser in der Beckenwand, läuft langsam einmal durch den
 ## Regenbogen und wieder von vorn – jede Lampe mit eigenem Anfang und Tempo; ohne Birne wie HALOGEN.
+## FLUSH: runde Deckenleuchte aus Kupfer bündig an der Decke – breiter Rand mit zwei Rillen, abgesetzter Korpus mit
+## einer Rille, unten Opalglas, das statt der Birne leuchtet (die Birne steckt dahinter und lässt sich wie sonst
+## herausdrehen). CEILING bleibt die Pendelleuchte über den Lufträumen.
 
-enum Style { CEILING, WALL, HALOGEN, POOL }
+enum Style { CEILING, WALL, HALOGEN, POOL, FLUSH }
+
+## Kupferleuchte (FLUSH): Profil von der Decke abwärts als [Radius, Höhe, Rille?] – Rillen sind schmale, etwas
+## schmalere Ringe in dunklem Kupfer; darunter das Glas (Radius, Dicke, so weit steht es unter dem untersten Ring vor –
+## die Ringe sind volle Zylinder, deren Boden es sonst verdeckte; knapper flimmerte er beim Vertex-Snapping durch) in
+## Opalweiß.
+## Das Licht sitzt FLUSH_LIGHT_BELOW unter dem Glas – näher strahlte es das Kupfer von unten grell orange an
+const FLUSH_PROFILE := [[0.24, 0.03, false], [0.232, 0.006, true], [0.235, 0.024, false], [0.225, 0.006, true],
+	[0.228, 0.014, false], [0.19, 0.038, false], [0.185, 0.006, true], [0.19, 0.026, false], [0.196, 0.015, false]]
+const FLUSH_GLASS := Vector3(0.172, 0.012, 0.008)
+const FLUSH_SEGMENTS := 24
+const FLUSH_LIGHT_BELOW := 0.35
+const FLUSH_GLASS_GLOW := Color(1.0, 0.95, 0.88)
+const COPPER := Color(0.72, 0.42, 0.3)
+const COPPER_GROOVE := Color(0.3, 0.14, 0.08)
 
 ## Durchbrenn-Chance je Sekunde (geringe Wahrscheinlichkeit)
 const BREAK_PER_FLICKER := 0.004     ## × Flackern² (Ankündigung, 0..1)
@@ -73,6 +90,9 @@ func _ready() -> void:
 	if style == Style.CEILING:
 		Geo.mesh(self, Geo.box(Vector3(0.45, 0.06, 0.45)), Mat.psx(Color(0.75, 0.7, 0.6)), Vector3.ZERO)
 		Geo.mesh(self, Geo.cylinder(0.02, 0.06, 5), Mat.psx(Color(0.3, 0.28, 0.25)), Vector3(0, -0.06, 0))
+	elif style == Style.FLUSH:
+		bulb_pos = _build_flush()
+		socket = Vector3(0, -0.03, 0)
 	else:
 		# Wandleuchte: Halter an der Wand (lokale +Z zeigt in den Raum), Fassung am Ende, die Birne steht
 		# darauf und reicht mit dem Kolben in den Schirm
@@ -86,7 +106,7 @@ func _ready() -> void:
 	_bulb = build_bulb(self, _bulb_material)
 	if _bulb:
 		_bulb.position = socket
-		if style == Style.CEILING:
+		if style == Style.CEILING or style == Style.FLUSH:
 			_bulb.rotation.x = PI   # hängt mit dem Kolben nach unten
 	else:
 		_bulb = Geo.mesh(self, Geo.sphere(0.045, 0.1, 6, 3), _bulb_material, bulb_pos)
@@ -94,9 +114,18 @@ func _ready() -> void:
 	# Keil mit dunklem Strich darüber an die Wand
 	for g: GeometryInstance3D in find_children("*", "GeometryInstance3D", true, false):
 		g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	Geo.add_box_shape(self, Vector3(0.35, 0.3, 0.35), bulb_pos * 0.5)
+	if style == Style.FLUSH:
+		Geo.add_box_shape(self, Vector3(0.48, bulb_pos.y * -1.0, 0.48), bulb_pos * 0.5)
+	else:
+		Geo.add_box_shape(self, Vector3(0.35, 0.3, 0.35), bulb_pos * 0.5)
 	light = FlickerLight.new()
-	light.position = bulb_pos + (Vector3(0, -0.13, 0) if style == Style.CEILING else Vector3(0, 0, 0.12))
+	match style:
+		Style.CEILING:
+			light.position = bulb_pos + Vector3(0, -0.13, 0)
+		Style.FLUSH:
+			light.position = bulb_pos + Vector3(0, -FLUSH_LIGHT_BELOW, 0)
+		_:
+			light.position = bulb_pos + Vector3(0, 0, 0.12)
 	light.base_energy = energy
 	light.omni_range = light_range
 	light.light_color = Color(1.0, 0.8, 0.55)
@@ -111,6 +140,22 @@ func _ready() -> void:
 	add_child(light)
 	_break_timer = randf()
 	apply_state()
+
+
+## Kupferleuchte: Ringe nach FLUSH_PROFILE von der Decke (y 0) abwärts, darunter das Glas mit dem Material der
+## Birne (leuchtet, flackert und erlischt mit ihr). Gibt die Unterkante zurück (Birnenstelle für Licht und Kollision).
+func _build_flush() -> Vector3:
+	_bulb_material.set_shader_parameter("emission", FLUSH_GLASS_GLOW)
+	var copper := Mat.metal(COPPER)
+	var groove := Mat.psx(COPPER_GROOVE)
+	var y := 0.0
+	for ring: Array in FLUSH_PROFILE:
+		var h: float = ring[1]
+		Geo.mesh(self, Geo.cylinder(ring[0], h, FLUSH_SEGMENTS), groove if ring[2] else copper, Vector3(0, y - h / 2.0, 0))
+		y -= h
+	Geo.mesh(self, Geo.cylinder(FLUSH_GLASS.x, FLUSH_GLASS.y, FLUSH_SEGMENTS), _bulb_material,
+		Vector3(0, y - FLUSH_GLASS.z + FLUSH_GLASS.y / 2.0, 0))
+	return Vector3(0, y - FLUSH_GLASS.z, 0)
 
 
 ## Halogenleuchte: Blechgehäuse bündig unter der Decke, darunter die Röhre (statt der Birne), kaltweißes Licht mit
@@ -178,7 +223,7 @@ func _set_hue() -> void:
 
 ## Steckt eine Glühbirne darin, die man herausdrehen kann (nicht bei Halogen- und Unterwasserlampen)?
 func has_socket() -> bool:
-	return style == Style.CEILING or style == Style.WALL
+	return style == Style.CEILING or style == Style.WALL or style == Style.FLUSH
 
 
 ## Glühbirne als Modell unter parent (Ursprung am Gewindeende, Glas nach +Y), der Kolben mit glass –
