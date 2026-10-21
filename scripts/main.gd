@@ -92,8 +92,9 @@ extends Node3D
 ##   --cat=id[,tragen]           Hotelkatze vor den Spieler setzen (minka, socke, kasimir; im Katzenraum luna, fussel, tiger, mausi) – mit tragen gleich auf den Arm
 ##   --pumpkin[=anim]            Kürbismann als Testfigur (ohne Verhalten) 2,5 m vor dich, Animation in Schleife:
 ##                               walk (Standard), run, spin_jump, chicken, macarena, hiphop – ersetzt eine alte
-##   --pumpkin=jagd[,gast]       Kürbismann (Spielkonzept 4.19) erscheint außer Sicht und jagt dich bzw. den Gast
-##   --pumpkin=garten            wie F9: Kürbismann an den Kürbisbeeten im Garten, jagt alle mit Spaß und dich
+##   --pumpkin=jagd[,gast]       Kürbismann (Spielkonzept 4.19) kommt übers Lobbydach und jagt dich bzw. den Gast
+##   --pumpkin=dach              wie F9: Kürbismann klettert übers Lobbydach, springt in den Garten, sucht die Lobby ab
+##   --pumpkin=garten            Kürbismann gleich an den Kürbisbeeten im Garten (ohne Dach), jagt alle mit Spaß und dich
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
 ##   --ask=id[,frage|frage]      Gespräch öffnen und frei fragen (Prototyp 6.15, nur edna und bruno): stellt die Fragen
 ##                               nacheinander, sobald das Sprachmodell geladen ist (ohne Frage: „Wann hast du zuletzt
@@ -113,6 +114,7 @@ extends Node3D
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
 ##   --shot-on=reveal|jumpscare|strangle|shock|pumpkin|lightning  Screenshot kurz nach einem Ereignis statt nach n Frames
+##                               (Kürbismann auch pumpkin_roof|pumpkin_edge|pumpkin_leap|pumpkin_land|pumpkin_lobby)
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
 ##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)
 
@@ -597,6 +599,8 @@ func run_debug(arg: String) -> bool:
 					cat.affection = maxi(cat.affection, HotelCat.CARRY_TRUST)
 					Game.player.drop_held()
 					cat.pick_up(Game.player)
+	elif arg == "--pumpkin=dach":
+		get_tree().create_timer(0.5, false).timeout.connect(Game.pumpkin.debug_roof)   # NavMesh muss erst stehen
 	elif arg == "--pumpkin=garten":
 		get_tree().create_timer(0.5, false).timeout.connect(Game.pumpkin.debug_garden)   # NavMesh muss erst stehen
 	elif arg.begins_with("--pumpkin=jagd"):

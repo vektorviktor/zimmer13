@@ -50,6 +50,7 @@ const NOISE := {
 	"scream":     {"range": 20.0, "sound": "scream", "volume": 0.9, "alarm": true},   ## Schreck – Stimme des Gastes (SynthAudio.VOICES)
 	"death_scream": {"range": 20.0, "sound": "death_scream", "volume": 1.0, "alarm": true},   ## vom Monster geholt – jäh abgerissen
 	"axe_swing":  {"range": 20.0, "sound": "",       "volume": 0.0, "alarm": true},   ## Kürbismann schlägt zu (4.19) – Ton spielt er selbst (3D)
+	"pumpkin_land": {"range": 16.0, "sound": "thud", "volume": 1.0, "alarm": true},   ## Kürbismann springt vom Lobbydach in den Garten (4.19)
 	"laugh":      {"range": 8.0,  "sound": "",       "volume": 0.0},    ## Kinder lachen beim Toben und auf Feiern (6.13)
 }
 ## Dämpfung je Hindernis zwischen Quelle und Hörer (offene Tür: ungedämpft)

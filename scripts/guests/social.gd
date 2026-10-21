@@ -121,6 +121,7 @@ const HEARD_TEXT := {
 	"scream": "Jemand hat geschrien", "death_scream": "Jemand hat geschrien – und dann war es still", "door_burst": "Eine Tür ist aufgeflogen, mit einem Knall",
 	"hide_burst": "Ein Schrank ist aufgerissen worden", "bulb_burst": "Eine Glühbirne ist geplatzt",
 	"cat_cry": "Eine Katze hat jämmerlich geweint", "axe_swing": "Etwas hat durch die Luft gesaust, dann ein dumpfer Schlag",
+	"pumpkin_land": "Etwas Schweres ist vom Dach gefallen",
 }
 const HEARD_LINES := [
 	"Hast du das auch gehört? %s – bei %s.",

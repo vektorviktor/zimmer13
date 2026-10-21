@@ -828,7 +828,28 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
 - **Auslöser** (`_check_spawn`, je Sekunde): steigt `fun_guests().size()` auf `FUN_MIN` (15), wird einmal mit
   `SPAWN_CHANCE` (30 %) gewürfelt; neu gewürfelt wird erst nach einem Abfall unter die Schwelle (`_armed`). Erst nach
   `first_attack_done` und erst mit fertigem NavMesh (`map_get_iteration_id`).
-- **Jagd:** `start_hunt(akteure)` erscheint an einem Kürbisbeet
+- **Ankunft übers Lobbydach** (entschieden 2026-10-21): `start_hunt(akteure)` sucht die Glastür von der Lobby in
+  den Mittelgarten, die einem davon am nächsten liegt (`_garden_door`: Tür mit `glass` aus der Gruppe `doors`, Lobby
+  davor – `in_lobby` –, Garten dahinter – `is_outdoor`; heute x ±5,5 in der Nordwand z = −28). Warum dort: Der
+  Haupteingang ist verriegelt, der Luftraum oben geschlossen, die Galerie hat kein Fenster nach draußen – die
+  Gartentüren sind der einzige Weg in die Lobby, und der Garten mit den Kürbisbeeten liegt direkt dahinter. Ablauf
+  ohne Physik und NavMesh (Kapsel aus, Position direkt gesetzt): `CLIMB` an der Straßenfassade genau gegenüber
+  (`FACADE_Z` vor der Südwand, `CLIMB_SPEED`, oben `LEDGE_TIME` über die Kante) → `ROOF` mit `ROOF_SPEED` bis an die
+  Dachkante über der Tür, dort `EDGE_WAIT` stehen (Silhouette vor dem Nachthimmel) → `LEAP` (Schritt mit `LEAP_SPEED`,
+  freier Fall) → `LAND` im Garten (Kapsel an, Lärm `pumpkin_land` 16 m mit `alarm`, `Social.HEARD_TEXT`; `LAND_TIME`)
+  → `LOBBY`: durch die Glastür, Halte hinter der Tür und `LOBBY_STOPS` (Seitengang neben der Treppe, hinter der
+  Rezeption, vor dem Haupteingang; x zur Seite seiner Tür gespiegelt, auf den NavMesh gezogen), an jedem `LOBBY_LOOK`
+  umsehen. Alle `LOOK_EVERY` s `_spot_someone`: wen er sieht (jeder Erwachsene und der Spieler, mit `_forced` nur
+  der), den jagt er (`CHASE`); wer im Weg steht, stirbt, danach sucht er weiter (`_lobby_left`). Danach `_next_victim`.
+  Dach- und Gartenhöhe per Strahl nach unten (`_surface_y`, Ebene 1 und Decke 16 – heute 7,7 m auf der
+  Obergeschossdecke; ein späteres Dach müsste nur trittfest auf diesen Ebenen liegen). `arriving()` (`CLIMB`/`ROOF`/`LEAP`):
+  `_hunt_left` läuft erst ab der Landung, `is_hunting()` erst ab `LAND` (Feiern laufen weiter, bis er unten ist),
+  `in_house()` schon (keine zweite Bedrohung); `_scare_onlookers` nimmt dann die Decke dazu (sonst sähen ihn die Gäste
+  darunter hindurch). Animationen `climb`/`land` (`CLIMB_ANIM`/`LAND_ANIM`, Mixamo-FBX nach `assets/source/anim/pumpkin/`)
+  nimmt er, sobald die GLB sie hat – bis dahin Gehen beim Klettern, Stand in der Gehpose im Fall und nach dem Aufprall.
+  `spin_jump` taugt nicht: Meshys Drehsprung dreht ihn fast über die ganze Länge. Ohne Gartentür (anderer Plan)
+  erscheint er wie früher an einem Kürbisbeet.
+- **Jagd:** mit `at` (Debug) bzw. ohne Gartentür erscheint er an einem Kürbisbeet
   (`_bed_point`: NavMesh-Punkt höchstens `BED_REACH` neben der Pflanze aus `pumpkin_plants`, die einem davon am nächsten
   liegt, außer Sicht des Spielers – `MonsterDirector.player_can_see`); ohne freies Beet `SPAWN_DISTANCE` vom Opfer. Zustände
   `STALK` (zum Opfer aus `_pick`: zuerst dem Nächsten, den er im Partyraum sieht – `_seen_in_party_room()`, Gäste und
@@ -852,10 +873,12 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   beim Lakengeist.
 - **Ruhe:** `MonsterDirector.is_quiet` ist auch dort falsch, wo er jagt – Feier, Partien und Süßes oder Saures enden
   damit von selbst, ohne eigene Abfragen.
-- Nicht gespeichert (wie der Lakengeist mitten im Auftritt). Debug: F9 (`debug_garden`, Aktion `debug_pumpkin`: an den Beeten im Garten – nicht F8, das stoppt im Editor
-  das laufende Spiel),
-  `--pumpkin=jagd[,gast]` (`debug_hunt`), `--trace`,
-  `--shot-on=pumpkin`; `--pumpkin[=anim]` stellt eine Testfigur ohne Verhalten auf (`spawn_in_front_of`).
+- Nicht gespeichert (wie der Lakengeist mitten im Auftritt). Debug: F9 bzw. `--pumpkin=dach` (`debug_roof`, Aktion
+  `debug_pumpkin`: übers Lobbydach – nicht F8, das stoppt im Editor das laufende Spiel), `--pumpkin=garten`
+  (`debug_garden`: gleich an den Beeten im Garten), `--pumpkin=jagd[,gast]` (`debug_hunt`, auch übers Dach), `--trace`,
+  `--shot-on=pumpkin` (Schlag) bzw. `pumpkin_roof`, `pumpkin_edge`, `pumpkin_leap`, `pumpkin_land`, `pumpkin_lobby`
+  (oben angekommen, an der Kante, im Sprung, gelandet, erster Halt in der Lobby); `--pumpkin[=anim]` stellt eine
+  Testfigur ohne Verhalten auf (`spawn_in_front_of`).
 
 ## 6. Gäste & Soziales
 

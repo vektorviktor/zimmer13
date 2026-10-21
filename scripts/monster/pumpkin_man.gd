@@ -6,17 +6,20 @@ extends CharacterBody3D
 ## Runde zählen mit und locken ihn, aber ihnen tut er nie etwas (6.13) – sie schützen auch niemanden. Wer ihm im
 ## Weg steht, den erschlägt er, auch ohne Spaß.
 ## Haben mindestens FUN_MIN Gäste gleichzeitig Spaß (Social.has_fun), erscheint er mit SPAWN_CHANCE – einmal je
-## Anstieg über die Schwelle. Er taucht außer Sicht an einem Kürbisbeet auf und nimmt sich immer den Nächsten vor:
-## zu jemandem mit Spaß sprintet er, sonst folgt er dem nächsten erwachsenen Gast; den Spieler jagt er nur, wenn der
-## Spaß hat (oder im Weg steht). Sieht er sein Opfer, rennt er hin und schlägt mit dem Beil zu. Wer sich versteckt oder ihm lange
+## Anstieg über die Schwelle. Er klettert an der Straßenfassade neben dem Haupteingang aufs Lobbydach, geht hinüber,
+## springt vor einer Glastür der Lobby in den Mittelgarten und sucht zuerst die Lobby ab (entschieden 2026-10-21).
+## Danach nimmt er sich immer den Nächsten vor: zu jemandem mit Spaß sprintet er, sonst folgt er dem nächsten
+## erwachsenen Gast; den Spieler jagt er, wenn er ihn in der Nähe sieht oder der Spaß hat (oder im Weg steht). Sieht er sein Opfer, rennt er hin und schlägt mit dem Beil zu. Wer sich versteckt oder ihm lange
 ## genug aus den Augen ist, entkommt. Nach HUNT_TIME (2–3 min) hat er keine Lust mehr und verlässt das Hotel durch den
 ## Haupteingang – eine Opfergrenze gibt es nicht. Opfer bleiben als Leiche liegen.
 ## Modell von tools/build_pumpkin.py (walk, run, spin_jump von Meshy, Tänze wie bei den Gästen; das Beil ist ein
 ## eigenes Netz am Knochen RightHand). Der Schlag ist Mixamos „Standing Melee Attack Downward“ (ATTACK_ANIM); fehlt
-## er in der GLB, bleibt er kurz stehen und holt aus. Debug: --pumpkin[=anim] stellt eine Testfigur vor dich,
-## --pumpkin=jagd[,gast] jagt, F9 bzw. --pumpkin=garten lässt ihn an den Kürbisbeeten im Garten erscheinen.
+## er in der GLB, bleibt er kurz stehen und holt aus. Klettern (CLIMB_ANIM) und Landen (LAND_ANIM) nimmt er, sobald
+## es sie in der GLB gibt – bis dahin klettert er mit Gehbewegungen und bleibt nach dem Aufprall kurz stehen.
+## Debug: --pumpkin[=anim] stellt eine Testfigur vor dich, --pumpkin=jagd[,gast] jagt (kommt auch übers Dach),
+## F9 bzw. --pumpkin=dach lässt ihn übers Lobbydach kommen, --pumpkin=garten gleich an den Kürbisbeeten erscheinen.
 
-enum State { INACTIVE, TEST, STALK, CHASE, SEARCH, STRIKE, ROAM, LEAVE }
+enum State { INACTIVE, TEST, STALK, CHASE, SEARCH, STRIKE, ROAM, LEAVE, CLIMB, ROOF, LEAP, LAND, LOBBY }
 
 const MODEL := "res://assets/models/pumpkin_man.glb"
 ## Beim Schlag (Dragon Studio, „sword slice“ – Datei dragon-studio-sword-slice-393847)
@@ -57,6 +60,24 @@ const SCARE_RANGE := 14.0            ## Gäste mit freier Sicht auf ihn erschrec
 const LEAVE_TIME := 120.0            ## spätestens dann ist er weg (sonst am Ausgang, sobald ihn keiner sieht)
 const HEAD_HEIGHT := 1.85
 
+# --- Ankunft übers Lobbydach (Spielkonzept 4.19) ----------------------------------
+## Er klettert an der Straßenseite gegenüber einer Gartentür der Lobby hoch (Südwand z = 0, außen – der Haupteingang
+## ist verriegelt, der Luftraum oben geschlossen), geht übers Dach und springt vor dieser Glastür in den Garten.
+const FACADE_Z := 0.45               ## so weit vor der Südwand klettert er (Wand 0,2 m stark, Kapsel 0,3 m)
+const CLIMB_SPEED := 1.5             ## m/s die Fassade hinauf
+const LEDGE_TIME := 0.7              ## so lange zieht er sich über die Dachkante
+const ROOF_SPEED := 2.2              ## übers Dach (schneller als Gehen, langsamer als die Jagd)
+const EDGE_WAIT := 1.6               ## so lange steht er an der Dachkante und sieht in den Garten hinunter
+const LEAP_SPEED := 2.2              ## so schnell trägt ihn der Schritt über die Kante nach vorn (m/s)
+const LAND_TIME := 0.9               ## ohne Landeanimation: so lange bleibt er nach dem Aufprall stehen
+const CLIMB_ANIM := "climb"          ## Mixamo-Klettern (assets/source/anim/pumpkin/climb.fbx) – fehlt es: Gehen
+const LAND_ANIM := "land"            ## Mixamo-Landung (…/land.fbx) – fehlt sie: stehen bleiben
+## Wo er die Lobby absucht, nach dem Halt hinter der Glastür (x zur Seite seiner Tür gespiegelt): Seitengang neben
+## der Treppe, hinter der Rezeption (sein alter Platz), vor dem Haupteingang
+const LOBBY_STOPS: Array[Vector3] = [Vector3(6.3, 0, -15.0), Vector3(0.0, 0, -9.0), Vector3(1.5, 0, -3.5)]
+const LOBBY_LOOK := 2.5              ## so lange sieht er sich an jedem Halt um
+const LOOK_EVERY := 0.4              ## so oft sieht er beim Absuchen nach, ob jemand da ist
+
 var state := State.INACTIVE
 ## Das Beil in der rechten Hand (Ursprung = Griffpunkt, Stiel entlang +Y, Schneide −X)
 var axe: MeshInstance3D
@@ -84,6 +105,12 @@ var _scared := {}             ## Gast-ID → schon erschrocken (je Auftritt einm
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _last_pos := Vector3.ZERO
 var _stuck_time := 0.0
+var _door := Vector3.ZERO     ## Ankunft: Mitte der Glastür am Boden, vor der er landet …
+var _roof_y := 0.0            ## … Höhe des Dachs darüber …
+var _ground_y := 0.0          ## … und des Gartens davor
+var _at_edge := false         ## steht an der Dachkante
+var _lobby_left: Array[Vector3] = []   ## Halte in der Lobby, die er noch absuchen will
+var _look := 0.0
 
 
 ## Testfigur vor den Spieler stellen, Blick zu ihm – ersetzt eine schon stehende. Ohne Verhalten.
@@ -156,7 +183,12 @@ func play(anim: String) -> bool:
 
 ## Jagt er gerade (dann ist es nirgends ruhig, wo er ist – MonsterDirector.is_quiet)?
 func is_hunting() -> bool:
-	return state in [State.STALK, State.CHASE, State.SEARCH, State.STRIKE, State.ROAM]
+	return state in [State.STALK, State.CHASE, State.SEARCH, State.STRIKE, State.ROAM, State.LAND, State.LOBBY]
+
+
+## Ist er noch draußen auf dem Weg übers Dach (klettert, geht, springt)? Dann läuft seine Zeit im Hotel noch nicht.
+func arriving() -> bool:
+	return state in [State.CLIMB, State.ROOF, State.LEAP]
 
 
 ## Ist er im Hotel (jagt oder geht gerade)? Testfiguren zählen nicht.
@@ -168,7 +200,7 @@ func _physics_process(delta: float) -> void:
 	if _test:
 		return
 	if Input.is_action_just_pressed("debug_pumpkin") and not Game.game_over:
-		debug_garden()
+		debug_roof()
 	if state == State.INACTIVE:
 		_check -= delta
 		if _check <= 0.0:
@@ -177,7 +209,8 @@ func _physics_process(delta: float) -> void:
 		return
 	if Game.player == null or Game.game_over:
 		return
-	_hunt_left -= delta
+	if not arriving():
+		_hunt_left -= delta
 	_timer -= delta
 	if _hunt_left <= 0.0 and state != State.LEAVE and state != State.STRIKE:
 		_start_leave()   # keine Lust mehr
@@ -199,6 +232,16 @@ func _physics_process(delta: float) -> void:
 			_roam(delta)
 		State.LEAVE:
 			_leave(delta)
+		State.CLIMB:
+			_climb(delta)
+		State.ROOF:
+			_roof(delta)
+		State.LEAP:
+			_leap(delta)
+		State.LAND:
+			_land(delta)
+		State.LOBBY:
+			_lobby(delta)
 
 
 # --- Erscheinen ---------------------------------------------------------------
@@ -226,8 +269,10 @@ func _check_spawn() -> void:
 		start_hunt(social.fun_actors())
 
 
-## Er erscheint außer Sicht am Kürbisbeet, das einem der Feiernden am nächsten liegt (ohne freies Beet SPAWN_DISTANCE
-## von ihm, mit `at` dort). Wen er dann jagt, sucht er sich laufend selbst aus (_pick).
+## Er kommt übers Lobbydach (_start_arrival, an der Gartentür, die einem der Feiernden am nächsten liegt) und sucht
+## zuerst die Lobby ab; mit `at` erscheint er gleich dort (Debug). Ohne Glastür von der Lobby in den Garten erscheint
+## er außer Sicht am Kürbisbeet, das einem der Feiernden am nächsten liegt (ohne freies Beet SPAWN_DISTANCE von ihm).
+## Wen er dann jagt, sucht er sich laufend selbst aus (_pick).
 func start_hunt(actors: Array[Node3D], at: Vector3 = Vector3.INF) -> bool:
 	var huntable: Array[Node3D] = []
 	for actor in actors:
@@ -236,24 +281,29 @@ func start_hunt(actors: Array[Node3D], at: Vector3 = Vector3.INF) -> bool:
 	if huntable.is_empty():
 		return false
 	var first: Node3D = huntable.pick_random()
+	var door := _garden_door(first.global_position) if at == Vector3.INF else Vector3.INF
 	var spot := at
-	if spot == Vector3.INF:
+	if spot == Vector3.INF and door == Vector3.INF:
 		spot = _bed_point(first.global_position)
-	if spot == Vector3.INF:
-		spot = _spawn_point(first.global_position)
-	if spot == Vector3.INF:
-		if "--trace" in OS.get_cmdline_user_args():
-			print("[Kürbismann] kein Platz zum Erscheinen bei %s" % _name_of(first))
-		return false
+		if spot == Vector3.INF:
+			spot = _spawn_point(first.global_position)
+		if spot == Vector3.INF:
+			if "--trace" in OS.get_cmdline_user_args():
+				print("[Kürbismann] kein Platz zum Erscheinen bei %s" % _name_of(first))
+			return false
 	_kills = 0
 	_scared.clear()
 	_hunt_left = randf_range(HUNT_TIME.x, HUNT_TIME.y)
 	visible = true
+	velocity = Vector3.ZERO
+	_victim = null
+	_lobby_left.clear()
+	if door != Vector3.INF:
+		_start_arrival(door)
+		return true
 	_collider.disabled = false
 	global_position = spot
 	_last_pos = spot
-	velocity = Vector3.ZERO
-	_victim = null
 	if "--trace" in OS.get_cmdline_user_args():
 		print("[Kürbismann] erscheint bei %s" % Game.director.zone_name_at(spot))
 	_next_victim()
@@ -292,10 +342,193 @@ func _spawn_point(near: Vector3) -> Vector3:
 	return Vector3.INF
 
 
+# --- Ankunft übers Lobbydach -------------------------------------------------------
+
+## Die Glastür von der Lobby in den Mittelgarten, die `near` am nächsten liegt (Mitte am Boden) – ohne: Vector3.INF.
+func _garden_door(near: Vector3) -> Vector3:
+	if Game.social == null:
+		return Vector3.INF
+	var builder := Game.social.builder
+	var best := Vector3.INF
+	for node in get_tree().get_nodes_in_group("doors"):
+		var door := node as Door
+		if not door.glass:
+			continue
+		var c := door.center()
+		c.y = 0.0
+		if builder.in_lobby(c + Vector3(0, 0, 0.8)) and builder.is_outdoor(c + Vector3(0, 0, -0.8)) \
+				and (best == Vector3.INF or c.distance_to(near) < best.distance_to(near)):
+			best = c
+	return best
+
+
+## Höhe der obersten Fläche bei (x, z) unterhalb von `below` – Dach (Decke, Ebene 5) bzw. Garten.
+func _surface_y(x: float, z: float, below: float = 50.0) -> float:
+	var query := PhysicsRayQueryParameters3D.create(Vector3(x, below, z), Vector3(x, -1.0, z), 1 | LevelBuilder.LAYER_CEILING)
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	return (hit["position"] as Vector3).y if not hit.is_empty() else 0.0
+
+
+## Unten an der Straßenfassade, genau gegenüber der Glastür – von dort klettert er hinauf. Übers Dach geht er ohne
+## Physik und NavMesh (Kapsel aus), auf festem Weg; erst im Garten ist er wieder ein Körper.
+func _start_arrival(door: Vector3) -> void:
+	_door = door
+	_roof_y = _surface_y(door.x, door.z + 1.0)
+	_ground_y = _surface_y(door.x, door.z - 2.5, _roof_y - 1.0)
+	_at_edge = false
+	_collider.disabled = true
+	global_position = Vector3(door.x, 0.0, FACADE_Z)
+	rotation.y = 0.0   # Blick nach −Z, zur Wand
+	state = State.CLIMB
+	if _player.has_animation(CLIMB_ANIM):
+		_player.get_animation(CLIMB_ANIM).loop_mode = Animation.LOOP_LINEAR
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Kürbismann] klettert aufs Lobbydach (%.1f m), will zur Gartentür bei x %.1f" % [_roof_y, door.x])
+
+
+## Die Fassade hinauf, dann über die Kante aufs Dach.
+func _climb(delta: float) -> void:
+	if _player.has_animation(CLIMB_ANIM):
+		if _player.current_animation != CLIMB_ANIM:
+			_player.play(CLIMB_ANIM, 0.2)
+		_player.speed_scale = 1.0
+	else:
+		_animate("walk", CLIMB_SPEED)
+	if global_position.y < _roof_y:
+		global_position.y = minf(_roof_y, global_position.y + CLIMB_SPEED * delta)
+		_timer = LEDGE_TIME
+		return
+	global_position.z = move_toward(global_position.z, -0.4, (FACADE_Z + 0.4) / LEDGE_TIME * delta)
+	if _timer <= 0.0:
+		state = State.ROOF
+		Game.shot_event("pumpkin_roof", 30)
+
+
+## Übers Dach bis an die Kante über der Glastür, dort kurz stehen und hinuntersehen – dann ein Schritt ins Leere.
+func _roof(delta: float) -> void:
+	var edge := Vector3(_door.x, _roof_y, _door.z)
+	if not _at_edge:
+		_animate("walk", ROOF_SPEED)
+		_face(edge, delta)
+		global_position = global_position.move_toward(edge, ROOF_SPEED * delta)
+		if global_position.distance_to(edge) < 0.05:
+			_at_edge = true
+			_timer = EDGE_WAIT
+			Game.shot_event("pumpkin_edge", 30)
+		return
+	_animate("walk", 0.0)
+	_face(edge + Vector3(0, 0, -5.0), delta)
+	if _timer <= 0.0:
+		state = State.LEAP
+		velocity = Vector3(0, 0.5, -LEAP_SPEED)
+		Game.shot_event("pumpkin_leap", 30)
+		if "--trace" in OS.get_cmdline_user_args():
+			print("[Kürbismann] springt vom Dach")
+
+
+## Freier Fall in den Garten; der Aufprall ist Lärm (pumpkin_land) – Gäste in der Nähe erschrecken.
+func _leap(delta: float) -> void:
+	velocity.y -= _gravity * delta
+	global_position += velocity * delta
+	if global_position.y > _ground_y:
+		return
+	global_position.y = _ground_y
+	velocity = Vector3.ZERO
+	_collider.disabled = false
+	_last_pos = global_position
+	state = State.LAND
+	Game.noise("pumpkin_land", global_position, self)
+	Game.shot_event("pumpkin_land", 20)
+	if _player.has_animation(LAND_ANIM):
+		_player.play(LAND_ANIM, 0.05)
+		_player.speed_scale = 1.0
+		_timer = _player.get_animation(LAND_ANIM).length
+	else:
+		_animate("walk", 0.0)
+		_timer = LAND_TIME
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Kürbismann] landet bei %s (%.1f, %.2f, %.1f)" % [Game.director.zone_name_at(global_position),
+			global_position.x, global_position.y, global_position.z])
+
+
+func _land(delta: float) -> void:
+	_stop(delta)
+	if _timer <= 0.0:
+		_start_lobby()
+
+
+## Zuerst sucht er die Lobby ab: durch die Glastür hinein, an jedem Halt (LOBBY_STOPS) sieht er sich um. Wen er dabei
+## sieht, den jagt er – jeden Erwachsenen und den Spieler, ob mit Spaß oder ohne; danach wie sonst (_next_victim).
+func _start_lobby() -> void:
+	state = State.LOBBY
+	_timer = -1.0
+	_look = 0.0
+	_lobby_left.clear()
+	var side := -1.0 if _door.x < 0.0 else 1.0
+	var map := get_world_3d().navigation_map
+	_lobby_left.append(NavigationServer3D.map_get_closest_point(map, _door + Vector3(0, 0, 2.5)))
+	for stop in LOBBY_STOPS:
+		_lobby_left.append(NavigationServer3D.map_get_closest_point(map, Vector3(stop.x * side, stop.y, stop.z)))
+	if "--trace" in OS.get_cmdline_user_args():
+		print("[Kürbismann] sucht die Lobby ab")
+
+
+func _lobby(delta: float) -> void:
+	_look -= delta
+	if _look <= 0.0:
+		_look = LOOK_EVERY
+		var found := _spot_someone()
+		if found:
+			_lobby_left.clear()
+			_victim = found
+			_last_seen = found.global_position
+			_timer = RECHECK
+			_start_chase()
+			return
+	if _strike_blocker():
+		return
+	if _timer < 0.0:
+		if _lobby_left.is_empty():
+			_next_victim()
+			return
+		_animate("walk", WALK_SPEED)
+		if _move_to(_lobby_left[0], WALK_SPEED, delta):
+			_lobby_left.pop_front()
+			_timer = LOBBY_LOOK
+			Game.shot_event("pumpkin_lobby", 60)
+			if "--trace" in OS.get_cmdline_user_args():
+				print("[Kürbismann] sieht sich in der Lobby um (%.1f, %.1f)" % [global_position.x, global_position.z])
+		return
+	_stop(delta)
+	_animate("walk", 0.0)
+	rotation.y += delta * 0.9   # sieht sich um
+	if _timer <= 0.0:
+		_timer = -1.0
+
+
+## Wen er beim Absuchen sieht: den Nächsten, Kinder nicht. Mit `--pumpkin=jagd,…` nur das erzwungene Opfer.
+func _spot_someone() -> Node3D:
+	if Game.social == null:
+		return null
+	var actors: Array[Node3D] = []
+	if _can_hunt(_forced):
+		actors.append(_forced)
+	else:
+		actors.append(Game.player)
+		for guest in Game.social.guests:
+			actors.append(guest)
+	var seen: Array[Node3D] = []
+	for actor in actors:
+		if _can_hunt(actor) and _sees(actor):
+			seen.append(actor)
+	return _nearest(seen)
+
+
 # --- Jagd -------------------------------------------------------------------------
 
 ## Nächstes Opfer (_pick) – gibt es keinen erwachsenen Gast mehr, streift er umher, bis er keine Lust mehr hat.
 func _next_victim() -> void:
+	_lobby_left.clear()
 	_victim = _pick()
 	if _victim == null:
 		_start_roam()
@@ -550,6 +783,9 @@ func _strike(delta: float) -> void:
 				_start_chase()   # daneben oder jemand im Weg – weiter hinter dem Opfer her
 			else:
 				state = State.STALK
+		elif not _lobby_left.is_empty():
+			state = State.LOBBY   # wer im Weg stand, ist erledigt – weiter die Lobby absuchen
+			_timer = -1.0
 		else:
 			_next_victim()
 
@@ -623,6 +859,7 @@ func _deactivate() -> void:
 	visible = false
 	_victim = null
 	_forced = null
+	_lobby_left.clear()
 	velocity = Vector3.ZERO
 	if _collider:
 		_collider.disabled = true
@@ -643,17 +880,19 @@ func _sees(actor: Node3D) -> bool:
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 
-## Gäste, die ihn sehen, erschrecken – Spiel und Feier sind für sie vorbei (Guest.see_pumpkin).
+## Gäste, die ihn sehen, erschrecken – Spiel und Feier sind für sie vorbei (Guest.see_pumpkin). Auf dem Dach
+## verdeckt ihn auch die oberste Decke (Ebene 5, sonst nicht im Sichtstrahl) – von drinnen sieht ihn dort keiner.
 func _scare_onlookers() -> void:
 	if Game.social == null or not visible:
 		return
 	var head := global_position + Vector3.UP * HEAD_HEIGHT
 	var space := get_world_3d().direct_space_state
+	var mask := Senses.SIGHT_MASK | (LevelBuilder.LAYER_CEILING if arriving() else 0)
 	for guest in Game.social.guests:
 		var g: Guest = guest
 		if g.dead or g.hiding != null or _scared.has(g.id) or g.global_position.distance_to(head) > SCARE_RANGE:
 			continue
-		var query := PhysicsRayQueryParameters3D.create(g.global_position + Vector3.UP * g.eye_height(), head, Senses.SIGHT_MASK)
+		var query := PhysicsRayQueryParameters3D.create(g.global_position + Vector3.UP * g.eye_height(), head, mask)
 		query.exclude = [get_rid()]
 		if space.intersect_ray(query).is_empty():
 			_scared[g.id] = true
@@ -733,14 +972,23 @@ func _apply_gravity(delta: float) -> void:
 
 # --- Debug ------------------------------------------------------------------------
 
-## F9: Er erscheint an den Kürbisbeeten im Garten und jagt wie sonst auch (auch ohne Feier und vor dem ersten Angriff).
+## F9 bzw. --pumpkin=dach: Er kommt übers Lobbydach und jagt wie sonst auch (auch ohne Feier und vor dem ersten Angriff).
+func debug_roof() -> void:
+	if state != State.INACTIVE:
+		_deactivate()
+	var actors: Array[Node3D] = [Game.player]   # nur, damit er erscheint – wen er jagt, sucht er selbst aus (_pick)
+	if start_hunt(actors):
+		Game.say("Kürbismann kommt übers Lobbydach", 2.0)
+
+
+## --pumpkin=garten: Er erscheint gleich an den Kürbisbeeten im Garten (ohne den Weg übers Dach) und jagt.
 func debug_garden() -> void:
 	var garden: Array = Game.director.zones.filter(func(z: Dictionary) -> bool: return z["name"] == "Garten")
 	if garden.is_empty():
 		return
 	if state != State.INACTIVE:
 		_deactivate()
-	var actors: Array[Node3D] = [Game.player]   # nur, damit er erscheint – wen er jagt, sucht er selbst aus (_pick)
+	var actors: Array[Node3D] = [Game.player]
 	var spot := _bed_point(garden[0]["center"], true)
 	if spot == Vector3.INF:
 		spot = NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, garden[0]["center"])
@@ -748,10 +996,10 @@ func debug_garden() -> void:
 		Game.say("Kürbismann an den Kürbisbeeten", 2.0)
 
 
-## --pumpkin=jagd[,gast]: Er erscheint und jagt den Spieler bzw. den Gast (auch ohne Spaß und vor dem
+## --pumpkin=jagd[,gast]: Er kommt übers Dach und jagt den Spieler bzw. den Gast (auch ohne Spaß und vor dem
 ## ersten Angriff). false = kein Platz zum Erscheinen.
 func debug_hunt(target: Node3D) -> bool:
-	if is_hunting() or state == State.LEAVE:
+	if in_house():
 		_deactivate()
 	_forced = target   # erst dieses Opfer, danach wie sonst
 	var marked: Array[Node3D] = [target]

@@ -962,9 +962,10 @@ Der Geist achtet darauf, wer **schwach und ängstlich** ist. Spieler und Gäste 
 
 ### 4.19 Der Kürbismann (entschieden und umgesetzt 2026-10-20)
 > **Im Prototyp umgesetzt (2026-10-20):** Auslöser, Jagd, Schlag mit dem Beil in der rechten Hand (Mixamo „Standing
-> Melee Attack Downward“), Leichen in einer Blutlache, Schreck und Erlebnisse der Gäste. Debug: F9,
+> Melee Attack Downward“), Leichen in einer Blutlache, Schreck und Erlebnisse der Gäste; seit 2026-10-21 die Ankunft
+> übers Lobbydach mit Sprung in den Garten und Suche in der Lobby. Debug: F9 bzw. `--pumpkin=dach`,
 > `--pumpkin=jagd[,gast]`, `--pumpkin=garten`.
-> **Noch nicht:** eigene Geräusche, die Vorgeschichte als Fundstück im Spiel.
+> **Noch nicht:** eigene Geräusche, die Vorgeschichte als Fundstück im Spiel, eigene Kletter- und Landeanimation.
 
 **Vorgeschichte:** Der Kürbismann („Pumpkinhead“) war der **Rezeptionist** des Hotels. An einem Halloween klopften zwei Kinder zu
 **Süßes oder Saures** an seine Tür, und er gab ihnen nichts. Da holten die Kinder **seine Axt**, köpften ihn und
@@ -983,8 +984,13 @@ Schwachen (4.18), der Kürbismann zum **Spaß**. Er hat nichts mit dem Abkommen 
 - Nicht vor dem **ersten Angriff** des Monsters – der friedliche Anfang (2.1) bleibt.
 
 **Was er tut**
-- Er taucht **an den Kürbisbeeten** auf (entschieden 2026-10-20) – an dem Beet, das einem der Feiernden am nächsten
-  liegt und das der Spieler gerade nicht sieht. Sieht der Spieler alle Beete, kommt er außer Sicht 18–28 m vom Opfer.
+- ~~Er taucht **an den Kürbisbeeten** auf (entschieden 2026-10-20).~~ **Er kommt übers Lobbydach** (entschieden und
+  umgesetzt 2026-10-21): Er klettert an der Straßenseite neben dem Haupteingang hinauf, geht über das Dach der Lobby,
+  bleibt kurz an der Kante über dem Mittelgarten stehen und springt vor einer der Glastüren der Lobby hinunter –
+  mitten zu den Kürbisbeeten; der Aufprall ist weit zu hören. Dann **sucht er zuerst die Lobby ab** (hinter der Tür,
+  neben der Treppe, hinter der Rezeption – sein alter Platz –, vor dem Haupteingang). Wen er dabei sieht, den jagt er;
+  danach wie unten. Warum dort: Der Haupteingang ist verriegelt, und die Gartentüren sind der einzige Weg in die
+  Lobby. Seine Zeit im Hotel (2–3 Minuten) beginnt mit der Landung.
 - **Er nimmt sich immer den Nächsten vor** (entschieden 2026-10-20): Zu jemandem, der **gerade Spaß hat**, **sprintet**
   er; hat keiner Spaß, **folgt** er dem nächsten erwachsenen Gast. Alle paar Sekunden sucht er neu aus.
 - **Den Spieler verfolgt er, sobald er ihn in der Nähe sieht** (entschieden 2026-10-20, etwa 14 m) – ob er Spaß hat
