@@ -93,7 +93,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7/F
 - **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion – im Einstellungsmenü mit einem Schalter ganz abschaltbar (dann auch feinerer, dichterer Regen) · Kellerwände aus Brettschalungsbeton (ohne PS1-Look schärfer und mit Relief im Licht der Taschenlampe) · Lobbyboden aus poliertem Marmor, auf dem Lampen, Kerzen und Taschenlampe glänzen und sich Wände, Lampen und Gäste spiegeln (auch im Poolwasser) · Tapeten mit Vertäfelung, die im Licht unterschiedlich glänzen (Lack, Satin, stumpfe Rauten) und an Fugen und Leisten Glanzkanten zeigen, dazu fleckige, matte Stellen
 - **Altersempfehlung ab 16** (selbst eingeschätzt, keine USK-Prüfung): Hinweis mit Inhalten beim ersten Start, Kennzeichen im Titelbildschirm (`scripts/ui/title_screen.gd`)
 
-Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler, die Taschenlampe, die Glühbirnen, die Discokugel, die Pflanzkübel, die Bäume im Garten, die Tür- und Fensterrahmen, die Tapeten, die Kellerwände und der Lobbyboden (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
+Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler, die Taschenlampe, die Glühbirnen, die Discokugel, die Wanduhr über dem Haupteingang, die Pflanzkübel, die Bäume im Garten, die Tür- und Fensterrahmen, die Tapeten, die Kellerwände und der Lobbyboden (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_monster.py -- assets/source/Meshy_AI_Abyssal_Mawcrawler_1011084008_texture.glb assets/models/monster.glb
@@ -131,6 +131,12 @@ Die Discokugel (`assets/models/disco_ball.glb`) ist „Disco Ball“ von [aragho
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_disco_ball.py -- assets/source/disco_ball.glb assets/models/disco_ball.glb
+```
+
+Die Wanduhr über dem Haupteingang (`assets/models/clock.glb`) – Rahmen und die beiden Zeiger als eigene Teile, damit sie sich drehen können:
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_clock.py -- assets/source/clock.glb assets/models/clock.glb
 ```
 
 Die Fototexturen (PBR-Sets) sind von Julio Sillet ([JulioVII auf itch.io](https://juliovii.itch.io), CC-BY): `Concrete_WoodPattern_01` (Kellerwände), `TilesMarble_01` (Lobbyboden), `pool/Tiles_06` (Poolbecken), `Stone_EngraveWall_01` (Wände der Poolhalle) `TilesBasic_01` (Umgang der Poolhalle) und `TerrazzoDark_01` (Säulen der Lobby) – jeweils nur die genutzten Karten, verkleinert mit `tools/photo_set.gd` (TECHNIK.md, „Fototexturen“).

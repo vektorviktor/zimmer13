@@ -26,7 +26,16 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   `tools/build_bottles.py` aus dem Paket in `assets/source/`) und der Plattenspieler
   `assets/models/record_player.glb` (`tools/build_record_player.py`: Objekte `body` und `record`, die
   Platte ist eine eigene runde Scheibe mit Ursprung auf der Drehachse, damit `RecordPlayer` sie drehen
-  kann; Noten aus dem Trichter siehe Partikel in 8). Die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`): Granitbecken mit Erde,
+  kann; Noten aus dem Trichter siehe Partikel in 8). Die **Wanduhr** `assets/models/clock.glb` (`WallClock`,
+  `LevelBuilder._clock`): offene Eisenuhr mit römischen Ziffern, `tools/build_clock.py` aus
+  `assets/source/clock.glb`. Im Rohmodell stecken die Zeiger im selben Netz wie der Rahmen; das Skript findet sie
+  als lose Teile (flach unter `HAND_DEPTH`, über die Mitte, länger als `HAND_MIN`; der längere = Minute), trennt
+  sie als `hour_hand`/`minute_hand` ab und dreht sie auf 12 Uhr. Rest = `frame`. Ursprung Mitte Rückseite,
+  Zifferblatt nach +Z, 2 m Durchmesser, ~16 800 Dreiecke, ein Platzhalter-Material (das Spiel setzt mattes Schwarz
+  `WallClock.IRON` – poliertes Eisen ging im Halbdunkel vor der roten Tapete unter). `set_time(stunden)` dreht die
+  Zeiger um lokal −Z; bis es eine Uhrzeit gibt, zeigt sie `START_TIME` (1:55 wie im Rohmodell). Sie hängt mittig
+  über dem Haupteingang, auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds (`_sign` gibt sie zurück,
+  `_exit_sign_top`) und der Hallendecke, `CLOCK_GAP` vor der Wand, ohne Kollision. Die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`): Granitbecken mit Erde,
   Steinen und großblättrigen Pflanzen von Meshy, `tools/build_planter.py` aus `assets/source/planter.glb`.
   Das Skript misst das Becken an den Punkten unter 20 % der Höhe, skaliert es auf genau 2 × 2 m (x und y
   einzeln, Meshy trifft das Quadrat nicht; Höhe mit dem Mittel, ~2,1 m mit Pflanzen), Ursprung mittig unten,

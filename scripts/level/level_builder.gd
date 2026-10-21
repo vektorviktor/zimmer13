@@ -115,6 +115,10 @@ const PLANTER_H := 0.46
 ## Laubbaum in Metern, Ursprung auf der Stammachse am Boden (tools/build_tree.py aus Meshys Modell).
 ## `_tree()` skaliert ihn auf den Kronenradius aus dem Plan; fehlt die Datei, bleibt der Platzhalter.
 const TREE_MODEL := "res://assets/models/tree.glb"
+## Wanduhr über dem Haupteingang (WallClock): Durchmesser und Abstand der Rückseite zur Wandfläche; die Mitte hängt
+## auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds und der Hallendecke
+const CLOCK_DIAMETER := 2.0
+const CLOCK_GAP := 0.02
 ## Kronenradius und Stammdurchmesser des Modells (ausgegeben von tools/build_tree.py), Höhe der Stammkollision
 const TREE_RADIUS := 5.0
 const TREE_TRUNK := 1.53
@@ -285,6 +289,7 @@ var _places: Array[Dictionary] = []   ## {id, kind, region}
 var _lobby := Rect2()                 ## Innenmaß der Lobby (x, z)
 ## Hallen über zwei Stockwerke (Lufträume des EG): {rect, kind (Art im EG)} – für ihre Wände (_wall_side_kind)
 var _halls: Array[Dictionary] = []
+var _exit_sign_top := 0.0             ## Oberkante des AUSGANG-Schilds über dem Haupteingang (für _clock)
 var _hall_wallpapers := {}            ## Tapete im EG → dieselbe ohne Leiste, Höhe ab dem EG-Boden
 var _named := {}                    ## Flächen-ID → Rect2 (Umriss)
 ## Wandstücke des Plans, an die Wandsachen gehängt werden: {horizontal, at (Mittellinie), from, to, half (halbe Dicke)}
@@ -1094,7 +1099,7 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			door.key_id = "ausgang"
 			door.monster_can_open = false
 			door.locked_text = "Der Ausgang ist verriegelt. Es muss einen anderen Weg hinaus geben …"
-			_sign("AUSGANG", center + Vector3(0, ENTRANCE_H + 0.35, 0) + into3 * 0.11, rad_to_deg(yaw))
+			_exit_sign_top = _sign("AUSGANG", center + Vector3(0, ENTRANCE_H + 0.35, 0) + into3 * 0.11, rad_to_deg(yaw))
 		"elevator_door":
 			door.locked = true
 			door.key_id = "aufzug"
@@ -1832,10 +1837,34 @@ func _lobby_hall() -> void:
 			var top := c + out * 0.07 + Vector2(-out.y, out.x) * s
 			lobby_seats.append(Vector3(seat.x, 0, seat.y))
 			cat_perches.append({"floor": Vector3(seat.x, 0, seat.y), "top": Vector3(top.x, 0.46, top.y)})
+	_clock()
 	_sign("BAR", Vector3(west + 0.11, 2.75, -13.0), 90.0)
 	_sign("PARTY", Vector3(east - 0.11, 2.75, -13.0), -90.0)
 	_sign("GARTEN", Vector3(-5.5, 2.75, _lobby.position.y + 0.11), 0.0)
 	_sign("POOL", Vector3(5.5, 2.75, _lobby.position.y + 0.11), 0.0)
+
+
+## Wanduhr über dem Haupteingang (WallClock): Mitte über der Tür, Zifferblatt in die Lobby, ohne Kollision.
+func _clock() -> void:
+	for w in _map["walls"]:
+		for o in w.get("openings", []):
+			if o["kind"] != "main_entrance":
+				continue
+			var clock := WallClock.create(CLOCK_DIAMETER)
+			if clock == null:
+				return
+			var a := _v2(w["a"])
+			var along := (_v2(w["b"]) - a).normalized()
+			var center := a + along * (float(o["at"]) + float(o["width"]) / 2.0)
+			var into := Vector2(-along.y, along.x)   # Normale der Wand, zur Lobby hin gedreht
+			if not _lobby.has_point(center + into * 0.5):
+				into = -into
+			var back := center + into * (float(w.get("thickness", T)) / 2.0 + CLOCK_GAP)
+			var ceiling := UP_Y + H if _has_upper else H   # Halle über zwei Stockwerke (Luftraum)
+			clock.position = Vector3(back.x, (_exit_sign_top + ceiling) / 2.0, back.y)
+			clock.rotation.y = atan2(into.x, into.y)   # +Z der Uhr zeigt in die Lobby
+			root.add_child(clock)
+			return
 
 
 func _void() -> Rect2:
@@ -2842,7 +2871,8 @@ func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material,
 ## Schild an der Wand (pos = 1 cm vor der Wandfläche, Schrift zeigt nach +Z): Buchstaben als echte Geometrie
 ## (TextMesh) im PS1-Material, damit Lampen und Taschenlampe sie treffen wie alles andere (Spielkonzept 7.3).
 ## Wie schief es hängt und wie angelaufen das Messing ist, folgt fest aus dem Text, nicht aus dem Zufall.
-func _sign(text: String, pos: Vector3, yaw: float, em: float = SIGN_EM) -> void:
+## Gibt die Oberkante der Platte zurück (Höhe wie pos).
+func _sign(text: String, pos: Vector3, yaw: float, em: float = SIGN_EM) -> float:
 	var holder := Node3D.new()
 	holder.rotation = Vector3(0, deg_to_rad(yaw), 0)
 	holder.position = pos - holder.basis.z * WALL_GAP
@@ -2865,6 +2895,7 @@ func _sign(text: String, pos: Vector3, yaw: float, em: float = SIGN_EM) -> void:
 	Geo.mesh(holder, Geo.box(Vector3(plate.x, plate.y, SIGN_PLATE)), _dark_wood, Vector3(0, 0, SIGN_PLATE / 2.0))
 	# Hinterkante der Buchstaben 2 mm in der Platte, sonst flimmert beim Vertex-Snapping ein Spalt
 	Geo.mesh(holder, letters, brass, Vector3(-center.x, -center.y, SIGN_PLATE - 0.002 - box.position.z))
+	return pos.y + rim.y / 2.0
 
 
 ## Feste Kerze als Deko-Licht (kein Gegenstand): brennt immer, flackert leicht und in Monsternähe.
