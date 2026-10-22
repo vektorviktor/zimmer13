@@ -206,18 +206,21 @@ func _set_text(text: String) -> void:
 	_line.caret_column = text.length()
 
 
-## Eine Zeile ausführen wie getippt (auch --console=befehl beim Start).
-func submit(text: String) -> void:
+## Eine Zeile ausführen wie getippt (auch --console=befehl beim Start und aus dem F6-Menü, TeleportUI).
+## true = eine Aktion lief, false = Auskunft oder Fehler (steht im Protokoll).
+func submit(text: String) -> bool:
 	text = text.strip_edges()
 	_line.clear()
 	_browse = -1
 	if text == "":
-		return
+		return false
 	if _history.is_empty() or _history.back() != text:
 		_history.append(text)
 	_print("[color=#9bd]> %s[/color]" % text)
 	if _run(text):
 		close()
+		return true
+	return false
 
 
 ## Führt eine Zeile aus. true = eine Aktion lief (Konsole schließt), false = Auskunft oder Fehler.
