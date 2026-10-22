@@ -49,10 +49,11 @@
   - [5.2 Platzierung](#52-platzierung)
   - [5.3 Ideen für Deko-Typen (vorläufig)](#53-ideen-für-deko-typen-vorläufig)
   - [5.4 Deko selbst herstellen](#54-deko-selbst-herstellen)
-  - [5.5 Die Puppe – „Halloween-Jury“ (entschieden 2026-10-21)](#55-die-puppe--halloween-jury-entschieden-2026-10-21)
+  - [5.5 Die Puppe – „Halloween-Jury“ (entschieden 2026-10-21, neu gefasst 2026-10-22)](#55-die-puppe--halloween-jury-entschieden-2026-10-21-neu-gefasst-2026-10-22)
   - [5.8 Kürbissorten (entschieden und umgesetzt 2026-10-20)](#58-kürbissorten-entschieden-und-umgesetzt-2026-10-20)
   - [5.9 Halloween im Hotel (vorgemerkt 2026-10-20)](#59-halloween-im-hotel-vorgemerkt-2026-10-20)
   - [5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21)](#510-knappheit-wert--verfall-entschieden-2026-10-21)
+  - [5.11 Feuer: Deko kann brennen (entschieden 2026-10-22)](#511-feuer-deko-kann-brennen-entschieden-2026-10-22)
 - [6. Die anderen Gäste (NPCs)](#6-die-anderen-gäste-npcs)
   - [6.0 Gäste im Prototyp](#60-gäste-im-prototyp)
   - [6.1 Rolle](#61-rolle)
@@ -190,8 +191,8 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Der Heizer – das erste Opfer:** Halloween 1987 kam es im **Tiefkeller** zum Unglück (Kesselbrand). Der Heizer blieb beim Feuer, um andere hinauszubringen. Das Personal schloss die Tür hinter ihm ab – so wurde das Abkommen besiegelt. **Er ist zu dem geworden, was es jetzt verlangt.** Das Personal hält ihn seitdem mit Gästen ruhig und hinter dem Gitter (7.4). Bevor er starb, schrieb er den **ältesten Warnungszettel** (4.13); sein **Kesselbuch** liegt im Heizkeller (7.4).
 - **Was das erklärt:**
   - **Deko schützt**, weil sie einmal Teil des Rituals war: Wer schmückt, gilt als *Gastgeber*, nicht als *Gabe*. Und weil sie ihn an das Fest erinnert, das er retten wollte – in geschmückten Bereichen zögert er.
-  - **Die Puppe** (5.5) ist die Jury des Abkommens: Sie bestimmt vor jedem Aufbruch, wer am wenigsten schmückt und
-    damit „angeboten“ wird – vor dessen Tür sitzt sie.
+  - **Die Puppe** (5.5) ist die Jury des Abkommens: Sie bestimmt vor jedem Angriff, wer am wenigsten schmückt und
+    damit „angeboten“ wird – vor dessen Tür liegt sie, und dort stirbt jemand.
   - **Kerzen gehen aus**, wenn er vorbeikommt: das Feuer, das ihn getötet hat.
   - **Das Hotel behält jeden, der dort stirbt** (entschieden 2026-10-21, 4.20): der Heizer als das Monster, der
     Rezeptionist von 1987 als Kürbismann (4.19), die Verschwundenen als Lakengeist (4.18).
@@ -457,6 +458,11 @@ nach der sich der Lakengeist seine Opfer sucht (4.18).
   schwächer. **Kinder** trinken nie (6.13).
 - **Offen:** welche Getränke; ob es auch für Erwachsene Alkoholfreies gibt (für Kinder Kakao und Limo, 6.13).
 - **Getränkedosen (umgesetzt 2026-10-22, 3.2):** Limo und Cola – Kisten in Kühlraum und Lager, auf der Bartheke für 1 Geld. Eine Dose (Linksklick) bringt einen sofort wieder zu Atem (Ausdauer voll, 3.1) und nimmt etwas Schock; das Zischen beim Öffnen ist leiser Lärm (3 m). Gäste trinken geschenkte Dosen, Kinder freuen sich darüber wie über etwas, das sie mögen.
+- **Automaten (entschieden und umgesetzt 2026-10-22):** Je ein **Snackautomat** (Süßigkeiten) und ein **Colaautomat**
+  (Cola) in der Lobby und auf jedem Stockwerk beim Treppenhaus, für je 1 Geld, ohne Ende. Ihre beleuchtete Front ist ein
+  schwaches Licht im Flur.
+- **Süßigkeiten-Truhe (entschieden und umgesetzt 2026-10-22):** In **jedem Zimmer** steht eine kleine Truhe mit
+  **6 Süßigkeiten** zum Start – sichtbar darin, wie alles (3.2). Gäste geben Kindern daraus (6.13).
 
 > **Umgesetzt (2026-10-19):** Flasche und Glas auf der Bartheke, ein Glas **1 Geld**, nimmt etwas Schock. Ab dem
 > **2. Glas angetrunken** (Blick schwankt und driftet, die Maus zieht nach, man stolpert ab und zu – das ist
@@ -471,6 +477,10 @@ nach der sich der Lakengeist seine Opfer sucht (4.18).
 > Blick (Doppelbild). Nach dem 1. Glas sieht man noch klar.
 
 ### 3.8 Kochen in der Küche (entschieden 2026-10-21)
+> **Gäste kochen selbst (entschieden und umgesetzt 2026-10-22):** Ist der Herd frei, geht alle paar Minuten ein
+> Erwachsener mit einem Kürbis aus seinem Koffer in die Küche, gibt ihn in den Topf, schneidet ihn mit dem eigenen
+> Messer und wartet, bis die Suppe fertig ist – dann kommen die Esser wie bei deiner Suppe. Mögen dich dafür nicht mehr
+> (das gibt es nur für deine Suppe), werden aber mit dem Koch vertrauter (6.16).
 Aus den geernteten Kürbissen (5.8) kocht man am **Herd in der Küche** – **Kürbissuppe** zum Teilen oder **gebratenen
 Kürbis** für sich.
 - **Ablauf, alles in den Händen (3.2):** Kürbis in der Hand, am Herd [E] → er kommt in den Topf (große Sorten:
@@ -578,8 +588,8 @@ Das Verhalten des Monsters wird aus **für den Spieler unsichtbaren Werten** ber
 - ↑ Dunkelheit in der Zone
 - ↑ wenig/schwache Deko (im Verhältnis zum aktuellen Anspruch, 4.8)
 - ↑ Sichtung in der Nähe / Spielerzimmer im Suchmodus (4.5)
-- *Die Puppe (5.5) wirkt nicht über die Neugier, sondern direkt: Ihr Urteil bestimmt, zu welcher Tür das Monster
-  beim Angriff zuerst geht (entschieden 2026-10-21, ersetzt „Puppe blockiert/weggetragen“ und „schlechtes Urteil“).*
+- *Die Puppe (5.5) wirkt nicht über die Neugier, sondern direkt: Vor ihrer Tür endet jeder Angriff, und wer dort
+  ist, stirbt (neu gefasst 2026-10-22; ersetzt „Puppe blockiert/weggetragen“ und „schlechtes Urteil“).*
 - ↑ Lärm
 - ↓ langsamer Abbau über Zeit
 
@@ -615,7 +625,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 |---------|---------|
 | **Deko eines Gastes klauen** | Seine Zone wird schwächer → Neugier ↑ dort |
 | **Licht sabotieren** | Lichtschalter seines Raums ausschalten, **Glühbirnen klauen** (7.3), Kerze auspusten → dunkle Zone; geklaute Birnen machen das eigene Zimmer heller |
-| **Die Puppe vor seine Tür tragen** | Ihr Urteil wandert mit: Will das Monster jemanden holen, geht es zuerst zu ihm (5.5) |
+| ~~**Die Puppe vor seine Tür tragen**~~ | entfällt 2026-10-22 – niemand trägt sie mehr hin; statt dessen ihm die Deko klauen: dann liegt sie vor seiner Tür (5.5) |
 | **Lärm machen** | Wecker / Spieluhr / Radio in seinem Zimmer oder Flur abstellen |
 | **Gerüchte & Panik säen** | Mit dem Gast über das Monster reden → er gerät in Panik, macht Lärm, versteckt sich auffällig |
 | **Ihn in den Keller / Garten schicken** | Per Dialog oder Auftrag in eine dunkle Gefahrenzone locken |
@@ -940,10 +950,21 @@ des Directors. Die Zuordnung fester Weltobjekte ändert sich nicht.
 bis drei Opfer pro Raubzug · Flackern als Welle vom Keller nach oben. Später am selben Tag geändert: Opferzahl
 nach 1/n² ohne festen Deckel, Flackern 1 + 2 × n Sekunden.
 
+**Mit der Puppe (2026-10-22, 5.5):** Vor jedem echten Angriff (einen holen, Raubzug) liegt 1–2 Minuten vorher die Puppe
+vor der schwächsten bewohnten Tür, und ein Grollen schwillt im ganzen Hotel an. Beim Aufbruch läuft die Flackerwelle
+wie bisher. Das Monster geht dann nicht mehr ziellos umher, sondern zur Puppentür und greift unterwegs bis zu fünf
+schwache bewohnte Türen an, solange es noch hungrig ist. Die Opferzahl gilt für diese Türen unterwegs; das
+Puppenzimmer kommt immer dazu. Beim Umsehen bleibt alles wie oben.
+
 **Noch offen:** genaue Tuning-Werte (Täuschungsrate, Angriffschance je Tag, ob die Opferzahl doch einen Deckel
 braucht), beim Ausprobieren festlegen.
 
 ### 4.18 Der Lakengeist am Fenster (entschieden 2026-10-17)
+> **Garantien (entschieden und umgesetzt 2026-10-22):** War er bis **Tag 10** noch nie beim Spieler, kommt er ab dann
+> sicher **im Flur**, sobald der Spieler dort allein ist – als **Warnung**: Er schwebt heran und verschwindet kurz vor
+> ihm. War er an **Tag 20** noch keine **drei Mal** da, holt er auf: Jeder dunkle Raum mit Fenster ruft ihn sicher, und
+> nach nur wenigen Sekunden kommt er wieder – **mehrmals hintereinander beim Betreten**, auch mehr als dreimal (am
+> Tag 20 den ganzen Tag). Alle diese Besuche zählen für seine Stufen.
 > **Im Prototyp umgesetzt (2026-10-17):** Erscheinen bei Licht aus und offenem Vorhang (70 % beim Betreten,
 > danach 90 s Pause), Stufen 1–4 inklusive Handabdrücken auf der Scheibe, Hypnose (langsamer, Blickzug), Hereinkommen
 > (ab dem 4. Mal durch den Vorhang), Würgen mit Losreißen (drei Richtungswechsel in 1,5 s) oder Tod, Zeugen
@@ -1082,9 +1103,15 @@ Aufhalten und erlösen: 4.21.
 - Wer Spaß hat: **feiern** (7.1), am **Spieltisch** sitzen (Mäxchen, Schach – Gäste unter sich oder mit dem
   Spieler, 6.10), als Kind zu **Süßes oder Saures** von Tür zu Tür ziehen oder damit an Zimmer 13 stehen (6.13),
   gemeinsam **schmücken** (5.9, entschieden 2026-10-20 – auch der Spieler, wenn er dabei ist).
-- Haben **mindestens 15 Gäste gleichzeitig Spaß**, erscheint er mit **30 %**. Gewürfelt wird einmal, wenn die
-  Zahl auf 15 steigt; erst wenn sie wieder darunter fällt, gibt es beim nächsten Mal einen neuen Wurf. Praktisch
-  heißt das: Er kommt zu großen Feiern.
+- ~~Haben **mindestens 15 Gäste gleichzeitig Spaß**, erscheint er mit **30 %**.~~ **Spaßwert (entschieden und umgesetzt
+  2026-10-22):** Das Hotel hat einen unsichtbaren **Spaßwert** (0–100, Start 30). Er sinkt ständig von selbst gegen 0;
+  jeder Gast mit Spaß hebt ihn je nach Beschäftigung – am **Spieltisch** und auf **Feiern** stark, beim Schmücken,
+  Suppenessen und Süßes oder Saures weniger, der Spieler zählt wie ein Gast. **Deko platzieren** hebt ihn kurz. Über der
+  **Schwelle (60)** wird alle 30 s gewürfelt: an der Schwelle 40 %, bei 100 dann 90 % – je mehr Spaß, desto sicherer
+  kommt er. Nach seinem Besuch fängt der Wert bei 0 an.
+- **Garantie:** War er bis **Tag 15** noch keine zwei Mal da, kommt er **an Tag 15 und an Tag 16 sicher** – zu einer
+  zufälligen Tageszeit, auch wenn gerade keiner Spaß hat (dann zu den Gästen und dem Spieler). Kam er an einem dieser
+  Tage schon von selbst, zählt das.
 - Nicht vor dem **ersten Angriff** des Monsters – der friedliche Anfang (2.1) bleibt.
 
 **Was er tut**
@@ -1317,63 +1344,67 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 - Draußen, aber umzäunt/eingeschlossen (man kommt trotzdem nicht aus dem Hotel heraus).
 - Tagsüber relativ sicher, nachts dunkel und gefährlich → Ernten wird zum Risiko-Abwägen.
 
-### 5.5 Die Puppe – „Halloween-Jury“ (entschieden 2026-10-21)
-> Ersetzt die frühere Fassung (eine Puppe wandert durchs Hotel, bewertet die Deko jeder Zone und macht das Monster
-> dort neugierig; Blockieren und Wegtragen machen es *auch* neugierig). Noch nicht umgesetzt.
+### 5.5 Die Puppe – „Halloween-Jury“ (entschieden 2026-10-21, neu gefasst 2026-10-22)
+> **Umgesetzt (2026-10-22):** alles außer „Vorgemerkt“. Die Puppe ist vorerst aus Grundkörpern gebaut (Stoffpuppe mit
+> Porzellangesicht, orangem Kleid und Hexenhut) und sitzt am Anfang auf einem Lobby-Sofa.
+> Ersetzt die Fassung vom 2026-10-21 (Urteil schon beim Rückzug in den Keller, Spieler trägt sie, Opfern durch
+> Hintragen, Monster geht nur „zuerst“ zu ihr) und davor die wandernde Puppe, die Zonen bewertet.
 
-**Grundidee:** Die Puppe ist keine Figur, die herumläuft, sondern das **sichtbare Urteil** des Abkommens (2.3): Sie
-sitzt vor der Tür dessen, der am wenigsten schmückt – und dorthin geht das Monster, wenn es jemanden holen will. Was
-bisher unsichtbar ist (wie gut die Deko gegen den wachsenden Anspruch noch reicht, 4.8, 4.9), wird so lesbar.
+**Grundidee:** Die Puppe ist keine Figur, die herumläuft, sondern das **sichtbare Urteil** des Abkommens (2.3): Kurz vor
+einem Angriff liegt sie vor der Tür dessen, der am wenigsten schmückt – und **dort stirbt jemand**. Was bisher
+unsichtbar ist (wie gut die Deko gegen den wachsenden Anspruch noch reicht, 4.8, 4.9), wird so lesbar. Dass sie
+immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss es selbst herausfinden.
 
 **Das Urteil**
-- **Wann:** Sobald sich das Monster in den Keller zurückzieht, urteilt sie für den nächsten Aufbruch – man hat also die
-  Ruhephase Zeit zu reagieren. Beim Aufbruch (4.17) prüft sie noch einmal.
-- **Wen:** Nur **bewohnte Türen** (entschieden 2026-10-21) – die Zimmer der erwachsenen Gäste und **Zimmer 13**. Keine
-  Flure, keine Lobby, keine leeren Zimmer, keine Zimmer, in denen nur Kinder schlafen (sie sind nie Opfer, 6.13).
-- **Wie:** Gewählt wird die Tür mit dem **schwächsten Schutz** – Deko und Licht vor der Tür im Verhältnis zum Anspruch
-  (4.9). Das Urteil ist **relativ**: Es gibt immer eine schwächste Tür, egal wie viel im Hotel hängt. Man muss nicht
-  gut geschmückt sein, nur besser als die anderen. Deko bleibt damit bis Halloween wertvoll, auch wenn das ganze Hotel
-  geschmückt ist (5.9) – und der Nachbar wird zur Konkurrenz: Klaue ich ihm einen Kürbis, ist er der Schwächste (1).
-- **Sie bewegt sich nie vor den Augen des Spielers.** Sie zieht um, wenn niemand hinsieht, wie die kleinen
-  Veränderungen im Hotel (4.13): eben war der Flur leer, jetzt sitzt sie da, mit dem Gesicht zur Tür.
-- **Folge:** Will das Monster beim Aufbruch jemanden holen (4.17), geht es **zuerst zu ihrer Tür**. Beim Umsehen
-  schaut es dort nur vorbei und hinterlässt Spuren (Kratzer, Handabdrücke, 4.13). Zusammen mit der Flackerwelle wird
-  das lesbar: **Puppe vor der eigenen Tür und langes Flackern – es kommt zu mir.**
+- **Wann:** nur vor einem **echten Angriff** (einen holen oder Raubzug, 4.17) – nie beim Umsehen und nicht bei den
+  harmlosen ersten Angriffen (2.1). **1–2 Minuten vor dem Aufbruch** liegt sie plötzlich vor der Tür. Ist die
+  Ruhephase kürzer (spät im Monat, 4.13), wartet das Monster, bis die Frist um ist.
+- **Wen:** nur **bewohnte Türen** – die Zimmer der erwachsenen Gäste und **Zimmer 13**. Keine Flure, keine Lobby, keine
+  leeren Zimmer, keine Zimmer, in denen nur Kinder schlafen (sie sind nie Opfer, 6.13).
+- **Wie:** die Tür mit der **wenigsten Deko** (so, wie das Monster sie zählt – im Lichtschein, 5.10). Haben mehrere
+  gleich wenig, die **dunkelste**; sind auch die gleich dunkel, eine **zufällige**. Es gibt immer eine schlechteste
+  Tür, egal wie viel im Hotel hängt – und der Nachbar wird zur Konkurrenz (Klaue ich ihm einen Kürbis, ist er der
+  Schwächste).
+- **Sie bewegt sich nie vor den Augen des Spielers.** Sie springt um, wenn er weder ihren alten noch ihren neuen Platz
+  sieht: eben war der Flur leer, jetzt sitzt sie da, mit dem Gesicht zur Tür.
+- **Grollen:** Solange sie vor der Tür liegt, hört man **im ganzen Hotel** ein tiefes Grollen, das immer lauter wird –
+  dann bricht das Monster auf, und die Flackerwelle (4.17) verrät, wie viele es holen will.
 - **Nachbessern hilft:** Wer bis zum Aufbruch Deko nachlegt und nicht mehr der Schwächste ist, den verlässt sie beim
-  nächsten unbeobachteten Moment, und sie sitzt vor der neuen schwächsten Tür.
+  nächsten unbeobachteten Moment, und sie liegt vor der neuen schwächsten Tür. Mit dem Aufbruch steht das Urteil fest.
+- **Niemand kann sie bewegen** (entschieden 2026-10-22): Der Spieler nie, Kinder nur zwischen den Angriffen (unten).
 
-**Wegtragen**
-- Die Puppe ist ein **großer Gegenstand** (beide Hände, 3.2). Tragen dürfen sie **nur der Spieler und Kinder**
-  (entschieden 2026-10-21); erwachsene Gäste fassen sie nicht an.
-- **Das Urteil wandert mit:** Gilt die Tür, vor der sie sitzt. Setzt man sie vor einer anderen bewohnten Tür ab, ist
-  jetzt diese gemeint. Woanders abgelegt (Flur, leeres Zimmer, Truhe, Kommode), kehrt sie beim nächsten unbeobachteten
-  Moment zu ihrer Tür zurück.
-- **Wer sie beim Aufbruch in den Händen hält, ist selbst ihr Urteil** – das Monster geht zu ihm.
-- **Opfern (4.11):** Die Puppe vor die Tür eines Gastes zu tragen, ist der direkteste Weg, das Monster auf ihn zu
-  lenken. Wer dabei gesehen wird, verliert stark an Ruf („Der aus Zimmer 13 hat mir die Puppe vor die Tür gelegt!“,
-  Zeugen wie beim Klauen, 6.3). Stirbt der Gast, ist das Schuld (6.8).
+**Der Angriff** (entschieden 2026-10-22)
+- **Weg:** Vom Keller zur Puppentür. **Unterwegs** greift das Monster bis zu **fünf bewohnte Türen** an, deren Deko
+  nicht hält – undekorierte oder billig geschmückte (4.9: Abschreckung kleiner als der Druck). Das tut es nur,
+  **solange es noch hungrig ist** (Opferzahl aus 4.17); die Puppentür kommt immer zuletzt dran.
+- **Ein gewähltes Zimmer:** Die Tür fällt, auch abgeschlossene. Das Monster geht hinein und **reißt jedes Versteck
+  auf** – Schrank und Bett schützen hier nicht. Jeder darin wird mit **60 %** geholt, sonst überlebt er verletzt
+  (wie 6.17, vier von zehn). Der Spieler stirbt (8.7).
+- **Das Puppenzimmer:** Die Tür fällt **immer**, auch gut geschmückt. **Wer darin ist, stirbt** – keine 40 %. Es zählt
+  nicht gegen die Opferzahl; danach ist das Monster satt und kehrt in den Keller zurück.
+- Wer weiß, wohin es geht, ist **nicht** dort: Die Puppe ist eine Warnung, kein Todesurteil – für den, der sie liest.
 
-**Gäste und Kinder**
-- **Findet ein Gast sie vor seiner Tür,** steigt seine Angst. Er bittet den Spieler um Deko für seine Tür – ein
-  natürlicher Auftrag (6.14) – oder erzählt davon („Bei mir sitzt die Puppe …“).
-- **Kinder** sehen sie öfter als Erwachsene, nehmen sie zum Spielen mit und lassen sie irgendwo liegen – oft vor der
-  eigenen Familie. Hält ein Kind sie beim Aufbruch, geht das Monster zu ihm: Dem Kind passiert nichts, aber den
-  Erwachsenen in seiner Nähe (6.13). Kinder erzählen von ihr („Die Puppe hat mich angeguckt“) – keiner glaubt es.
+**Kinder**
+- Zwischen den Angriffen sehen Kinder die Puppe, nehmen sie zum Spielen mit und legen sie gern **vor die Tür ihrer
+  eigenen Familie**. Kurz vor einem Angriff springt sie von dort (unbeobachtet) zur schwächsten Tür, und ab dann
+  können auch Kinder sie nicht mehr bewegen.
+- Kinder erzählen von ihr („Die Puppe hat mich angeguckt“) – keiner glaubt es.
 
-**Zwischen den Urteilen** sitzt sie an unheimlichen Stellen, wo man gerade nicht hinsieht: auf einem Sessel, einer
-Treppenstufe, einer Fensterbank, im Türspalt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „immer nur eine
-Bedrohung im Haus“ (4.1).
+**Gäste:** Findet ein Gast sie vor seiner Tür, steigt seine Angst, und er sagt es laut („Bei mir sitzt die Puppe …“).
+~~Er bittet den Spieler um Deko~~ – kommt mit den Wünschen (6.14, 6.18).
+
+**Zwischen den Urteilen** bleibt sie, wo sie zuletzt lag – oder wo ein Kind sie hingelegt hat. Am Anfang sitzt sie in
+der Lobby. Sie ist **keine Bedrohung** und zählt nicht zur Regel „immer nur eine Bedrohung im Haus“ (4.1).
 
 **Vorgemerkt**
 - **Jury beim Schmücken (5.9) und beim Schnitz-Wettbewerb (6.10):** Am Ende eines Großen Schmückens sitzt sie an der
   schönsten Stelle – Ruf für die Mitmacher. Kein Muss.
 - **Das letzte Urteil an Halloween:** „Das Hotel behält immer einen“ (2.3) – am 31. sitzt sie ein letztes Mal vor
   einer Tür: bei dem, den das Hotel behält. Erst festlegen, wenn das Ende (2.1) steht.
+- ~~Opfern durch Hintragen, Ruf-Verlust beim Hintragen~~ (entfällt 2026-10-22: niemand trägt sie mehr dorthin). Opfern
+  geht über Diebstahl: Wer dem Nachbarn die Deko klaut, macht ihn zum Schwächsten (4.11).
 
-**Spielstand:** Position, beurteilte Tür, wer sie trägt.
-
-**Zu klären:** Wie viel Zeit zwischen Urteil und Aufbruch mindestens bleibt (sonst ist Nachbessern unmöglich, wenn
-die Ruhephasen spät kurz werden, 4.13).
+**Spielstand:** Lage, Urteil (Tür), welches Kind sie trägt, Frist bis zum Aufbruch.
 
 ### 5.6 Aufhängen, Lakengespenster, Lichterketten (entschieden und umgesetzt 2026-10-20)
 - **Aufhängen:** Lakengespenster, Lichterketten und Spinnweben hängt man an die Wand – an eine Wand sehen und
@@ -1613,6 +1644,17 @@ ihm.
 
 **Zu klären:** Inhalt und Größe der Kisten (wann genau sie leer sind) · wie stark Füllmaterial im Verhältnis zum
 Anspruch sein darf, damit es nie allein reicht · ob die Gäste-Startdeko für die Kernfiguren (6.0) größer ist.
+
+### 5.11 Feuer: Deko kann brennen (entschieden 2026-10-22)
+> **Umgesetzt (2026-10-22).**
+- **Was brennt:** nur leichte Deko – Laub, Spinnweben, Lakengespenster, Fledermausgirlanden, Plastikspinnen,
+  Hexenbesen, Bettlaken. Kürbisse, Totenköpfe, Kerzen und Lichterketten nicht; **Möbel und das Hotel nie**.
+- **Wie es anfängt:** Eine **brennende Kerze**, die ein Kind vor eine Tür wirft (6.13), zündet leichte Deko in der Nähe
+  an. Feuer springt auf leichte Deko daneben über.
+- **Brennen:** Die Deko lodert ein paar Sekunden (Flammen, Licht, Knistern – Lärm, 4.15) und ist dann weg; zurück
+  bleibt ein Rußfleck. Die Tür ist danach schwächer – vielleicht schwach genug für die Puppe (5.5).
+- **Löschen:** Der Spieler kann brennende Deko austreten [E]; was gelöscht ist, bleibt angesengt erhalten.
+- Brennende Deko zählt nicht als Deko, aber als Licht.
 
 ## 6. Die anderen Gäste (NPCs)
 
@@ -1947,8 +1989,8 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
 > eigene Namen und Sätze („Mama“/„Papa“), ab und zu ein Schach-Wunderkind. Alles unter „Kinder und die bestehenden
 > Systeme“ – bis auf die Lücken unten. Als Modelle gibt es das Mädchen ~10 (`guest_girl10`) und seit 2026-10-20 auch das
 > Mädchen ~7 und die Jungen ~7 und ~10 (`guest_girl7`, `guest_boy7`, `guest_boy10`) – alle vier Grundkörper.
-> **Noch nicht:** Die Puppe (5.5), das Geheimnis (2.3) und die Zeitschleife (2.2) gibt es noch nicht – deshalb auch kein
-> Herumtragen der Puppe, keine Funde in engen Ecken und kein Déjà-vu. Der Lakengeist erschreckt Kinder am Fenster,
+> **Noch nicht:** Das Geheimnis (2.3) und die Zeitschleife (2.2) gibt es noch nicht – deshalb keine
+> Funde in engen Ecken und kein Déjà-vu. Die Puppe (5.5) tragen Kinder seit 2026-10-22. Der Lakengeist erschreckt Kinder am Fenster,
 > noch nicht im Flur. Ein Waisenkind schließt sich nur dem Spieler an, noch keinem Gast. „Erzählt es allen“ heißt
 > vorerst: den Eltern und den Erwachsenen in der Nähe.
 - **Der Lakengeist erschreckt Kinder häufiger** – sie sind schwach und ängstlich (hoher Grundwert an Schwäche,
@@ -1999,12 +2041,30 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
   der Spieler in der Nähe stand, auf ihn. Am Fenster verdeckt das Eigelb ein Stück der Sicht, und nachts sieht der
   verschmierte Fleck aus wie die Handabdrücke des Lakengeists: Ei oder Geist? Eier gibt es in der Küche (neuer
   Gegenstand) – auch der Spieler kann werfen, etwa an die Tür eines Feindes (Zeugen, 6.3).
+  **Streiche (entschieden und umgesetzt 2026-10-22):** Saures ist nicht mehr nur Laub. Das Kind sucht sich einen Streich aus:
+  - **Laub** vor die Tür streuen (wie bisher),
+  - einen **Kürbis holen und vor die Tür werfen** – er zerplatzt beim Aufprall, egal aus welcher Höhe (Kürbismatsch,
+    5.8); geholt wird er aus dem Koffer der Familie (Zierkürbis oder Kürbis),
+  - eine **Kerze holen und vor die Tür werfen** – sie zerbricht und hinterlässt einen **großen weißen Wachsfleck**;
+    brennt sie, kann sie leichte Deko anzünden (5.11),
+  - **Deko umwerfen**, die vor der Tür steht (Kürbisse, Kerzen, Totenköpfe) – umgeworfene Deko schützt nicht mehr, bis
+    sie jemand aufstellt (5.10), und kann die Tür zur schwächsten machen (5.5),
+  - an Zimmer 13 weiterhin auch den **Klingelstreich** (4.14).
+  Hat die Familie nichts zum Werfen, bleibt es bei Laub oder Umwerfen.
+  **Zeugen:** Erwachsene, die das Kind dabei sehen, **verpetzen es sehr wahrscheinlich** – nur die eigenen Eltern nicht.
+  Erzählt wird es dem **Bewohner der getroffenen Tür**: Er ist danach sauer auf die Eltern des Kindes, die beiden sind
+  **verfeindet** (erste Feindschaft unter Gästen, 6.16).
+  **Mehr Süßes (entschieden und umgesetzt 2026-10-22):** Kinder klopfen **viel häufiger** – an Zimmer 13 etwa alle
+  2–4 Minuten, auf Runden von Tür zu Tür etwa jede Minute. An Zimmer 13 gibt man ihnen Süßigkeiten mit [E] (oder im
+  Gespräch): **bis zu 3 je Besuch**. Schon **eine** verhindert den Streich, und das Kind mag dich etwas mehr – **jede
+  weitere mehr als die vorige**. Nach einer wartet es noch kurz auf die nächste, dann geht es zufrieden. Süßigkeiten
+  gibt es in der **Truhe jedes Zimmers** (6 Stück zum Start) und am **Snackautomaten**; Gäste geben Kindern an ihrer Tür
+  aus ihrer eigenen Truhe, solange sie nicht leer ist.
 - **Gebastelte Geschenke:** Kinder schenken dem Spieler kleine, schwache Deko (Laub, eine Kerze) – mehr Herz als
   Schutz, aber es zählt als Geschenk (6.3).
-- **Die Puppe** (5.5): Kinder sehen sie öfter als Erwachsene und **tragen sie zum Spielen herum**. Ihr Urteil wandert
-  mit – wo ein Kind sie vor einer Tür liegen lässt, ist diese gemeint, und hält es sie beim Aufbruch, geht das Monster
-  zu ihm (entschieden 2026-10-21). ~~Jedes Wegtragen
-  macht das Monster dort neugierig – oft genau da, wo die Familie wohnt.~~
+- **Die Puppe** (5.5, neu gefasst 2026-10-22): Kinder sehen sie und **tragen sie zum Spielen herum** – zwischen den
+  Angriffen, meist vor die Tür der eigenen Familie. Ihr Urteil wandert nicht mit: Kurz vor einem Angriff springt sie
+  unbeobachtet zur schwächsten Tür, und dann kann sie auch kein Kind mehr bewegen.
 
 *Gäste und Beziehung*
 - **Kinder schlägt man nicht** (6.3): Der Schlag geht bei Kindern nicht. **Rammen** schon: Das Kind fällt hin und
@@ -2133,6 +2193,10 @@ Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gute
 - **Offen:** Streit unter Gästen (Freundschaften, die zerbrechen – ein Anfang ist Diebstahl unter Gästen bei
   Knappheit, 5.10). ~~Schlechtes über dich, das Freunde weitertragen.~~ Gutes und Schlechtes laufen künftig über
   dasselbe Netz (6.18, 1).
+- **Feindschaften (2026-10-22):** Ein erster Anfang sind die Streiche der Kinder (6.13): Wer verpetzt bekommt, wessen
+  Kind ihm einen Kürbis vor die Tür geworfen hat, ist mit dessen Eltern **verfeindet** – Verfeindete sind keine
+  Freunde mehr, auch nicht als Zimmernachbarn. Wie sich das auf den Spieler auswirkt („Freund meines Feindes“), ist
+  noch zu besprechen.
 
 ### 6.17 Überlebende & Verletzungen (entschieden 2026-10-21)
 Nicht jeder Angriff endet tödlich: **Etwa vier von zehn Gästen überleben** – ohne Lebenspunkte, es wird beim Angriff

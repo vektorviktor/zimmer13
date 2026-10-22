@@ -77,6 +77,8 @@ const JOLT_UNREST := 0.8        ## ab dieser Unruhe kann der Zierkürbis aus den
 const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN]
 const BURST_HEIGHT := 3.0
 const IMPACT_SPEED := 3.0
+## Wurf: als Aufprall zählt, wenn er mit mindestens so viel Tempo (m/s) fliegt und auf einen Schlag die Hälfte verliert
+const THROW_IMPACT := 1.5
 const MUSH_TEXTURE := "res://assets/textures/pumpkin_splash.png"
 ## Mittlere Farbe der Textur – die Spritzer werden durch sie geteilt und in der Farbe des Kürbisses eingefärbt
 const MUSH_TEX_COLOR := Color(0.836, 0.674, 0.361)
@@ -150,6 +152,8 @@ var circling_with: Node3D
 var mushed_at := 0.0
 var mush_size := MUSH_SIZE
 var portions := 1
+## Geworfen (Streich, 6.13): zerplatzt bzw. zerbricht beim ersten Aufprall (throw_from)
+var thrown := false
 
 var _shape: CollisionShape3D
 ## Drehpunkt am Haken: alles, was schwingt (Lakengespenst, Lichterkette, Spinnweben)
@@ -171,6 +175,7 @@ var _unrest_timer := 0.0
 var _lean := 0.0          ## seitlich weg von der Quelle der Unruhe (−1..1, lokale X)
 var _fall_top := -INF     ## Zerplatzen: höchster Punkt des laufenden Falls
 var _last_vy := 0.0
+var _last_speed := 0.0   ## Wurf: Tempo im letzten Physikschritt
 var _mush_mat: ShaderMaterial
 
 
@@ -1089,7 +1094,19 @@ func _physics_process(_delta: float) -> void:
 	if is_held or freeze or pocketed:
 		_fall_top = -INF
 		_last_vy = 0.0
+		thrown = false
 		return
+	if thrown:
+		# Geworfen (Streich, 6.13): beim ersten harten Aufprall, egal aus welcher Höhe – Kürbis zerplatzt, Kerze zerbricht
+		var speed := linear_velocity.length()
+		if _last_speed > THROW_IMPACT and speed < _last_speed * 0.5:
+			thrown = false
+			if kind == Kind.CANDLE:
+				_shatter_candle()
+			else:
+				burst()
+			return
+		_last_speed = speed
 	var vy := linear_velocity.y
 	if _last_vy < -IMPACT_SPEED and vy > _last_vy * 0.5 and _fall_top - global_position.y > BURST_HEIGHT:
 		burst()
@@ -1097,6 +1114,34 @@ func _physics_process(_delta: float) -> void:
 	if vy > -0.5:
 		_fall_top = global_position.y   # liegt, rollt oder steigt: hier beginnt ein neuer Fall
 	_last_vy = vy
+
+
+## Werfen (Streich der Kinder, Spielkonzept 6.13): fliegt von `from` mit `velocity` los und zerplatzt bzw. zerbricht
+## beim ersten Aufprall (Kürbis, Zierkürbis, Kerze).
+func throw_from(from: Vector3, velocity: Vector3) -> void:
+	set_held(false)
+	global_position = from
+	linear_velocity = velocity
+	angular_velocity = Vector3(randf_range(-6, 6), randf_range(-6, 6), randf_range(-6, 6))
+	thrown = true
+	_last_speed = velocity.length()
+	set_physics_process(true)
+
+
+## Eine geworfene Kerze zerbricht: ein großer weißer Wachsfleck; brannte sie, fängt leichte Deko daneben Feuer (5.11).
+func _shatter_candle() -> void:
+	var at := global_position
+	var hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(at + Vector3.UP * 0.3, at + Vector3.DOWN * 1.5, 1))
+	if not hit.is_empty():
+		at = hit["position"]
+	if Game.traces:
+		Game.traces.add_guest_drop("wax_splash", at)
+	Game.noise("wax_splat", at, self)
+	if lit:
+		DecoFire.ignite_near(at, self)
+	if Game.tracing:
+		print("[Streich] Kerze zerbricht%s bei %s" % [" (brennend)" if lit else "", at])
+	queue_free()
 
 
 ## Der Kürbis zerplatzt: An seiner Stelle liegt Kürbismatsch der gleichen Sorte – Spritzer so groß wie die Sorte

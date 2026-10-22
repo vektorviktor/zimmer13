@@ -114,12 +114,24 @@ const DOOR_PULL := 0.05              ## Blickzug durch die Wand (rad/s), bei vol
 const DOOR_PULL_RANGE := 7.0
 const DOOR_GRAB_RANGE := 1.6         ## kommt das Opfer im Flur so nah, packt er zu
 const DOOR_WITNESS_RANGE := 6.0      ## vor der Tür vertreiben ihn Gäste erst aus dieser Nähe (sonst bliebe er im Flur nie)
+## Garantien (Spielkonzept 4.18, 2026-10-22): War er bis GUARANTEE_DAY noch nie beim Spieler, kommt er ab dann sicher in
+## den Flur, sobald der Spieler dort allein ist – als Warnung: er schwebt heran und verschwindet WARN_RANGE vor ihm.
+## Ab CATCH_UP_DAY holt er auf, solange er noch keine CATCH_UP_VISITS Mal beim Spieler war (hat er am CATCH_UP_DAY
+## damit angefangen, den ganzen Tag): Jeder dunkle Raum mit Fenster ruft ihn sicher, Pause nur CATCH_UP_COOLDOWN –
+## er kommt mehrmals hintereinander, und jedes Mal zählt für seine Stufe.
+const GUARANTEE_DAY := 10
+const WARN_RANGE := 3.0
+const CATCH_UP_DAY := 20
+const CATCH_UP_VISITS := 3
+const CATCH_UP_COOLDOWN := 8.0
 
 var visits := 0          ## so oft ist er schon beim Spieler erschienen (Stufe)
 var state := State.IDLE
 var debug_ignore_player := false   ## Debug (--shock=id,ghost): Spieler zählt bei Gästen nicht als Zeuge
+var catch_up_day := false   ## am CATCH_UP_DAY hat er aufgeholt – der ganze Tag zählt (gespeichert)
 
 var _victim: Node3D      ## Player oder Guest, zu dem er gerade kommt
+var _warn_only := false  ## garantierter erster Auftritt im Flur: nur heranschweben, dann weg
 var _stage := 0          ## das wievielte Mal bei diesem Opfer
 var _victim_saw := false ## Gast hat ihn schon gesehen (Schreck)
 var _escape_at := -1.0   ## Gast: reißt sich nach so vielen Sekunden los (< 0: schafft es nicht)
@@ -269,6 +281,11 @@ func _physics_process(delta: float) -> void:
 		State.ENTER:
 			var neck := _eye_of(_victim) - Vector3(0, NECK_BELOW_EYES, 0)
 			var flat := Vector3(neck.x - global_position.x, 0, neck.z - global_position.z)
+			if _warn_only and flat.length() < WARN_RANGE:
+				if Game.tracing:
+					print("[Lakengeist] Warnung im Flur – verschwunden")
+				_vanish()
+				return
 			if _float_to(_grip_spot(), INSIDE_SPEED, delta) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
 				_grab()
 			elif _victim.global_position.distance_to(_window_center(_window) if _window else global_position) > (LEAVE_RANGE if _window else HALL_GIVE_UP):
@@ -315,7 +332,7 @@ func _check_spawn() -> void:
 		return
 	var safe := Game.social.builder.is_safe(player.global_position)   # Katzenraum (Spielkonzept 7.7)
 	if not (player.dead or player.hiding != null or player.in_dialog or safe) and _haunting():
-		if _check_hall(player):
+		if _check_guarantee_hall(player) or _check_hall(player):
 			return
 		var eye := player.camera.global_position
 		var window := _window_near(eye, visits + 1)
@@ -328,7 +345,7 @@ func _check_spawn() -> void:
 			_stay -= CHECK_EVERY
 			if _stay <= 0.0:
 				_stay = STAY_EVERY
-				chance = minf(1.0, (FRENCH_DOOR_STAY if window is Door else STAY_CHANCE) + WEAK_CHANCE * player.weakness())
+				chance = 1.0 if catching_up() else minf(1.0, (FRENCH_DOOR_STAY if window is Door else STAY_CHANCE) + WEAK_CHANCE * player.weakness())
 		# in Gesellschaft kommt er nicht
 		if window != null and _cooldown <= 0.0 and director.player_threat <= 0.0 \
 				and _witness_guests(eye, player).size() < WITNESSES and randf() < chance:
@@ -389,18 +406,54 @@ func _check_hall(player: Player) -> bool:
 		if _cooldown > 0.0 or Game.director.player_threat > 0.0 \
 				or randf() >= HALL_CHANCE * (1.0 + WEAK_FASTER * weak) * CHECK_EVERY:
 			return false
+	var spot := _hall_spot(player)
+	if spot == Vector3.INF:
+		return false
+	_appear_in_hall(spot)
+	return true
+
+
+## Wo er im Flur auftaucht: ein Wegpunkt HALL_DISTANCE vom Spieler auf seiner Höhe, im Flur, wo der Spieler gerade
+## nicht hinsieht und kein wacher Gast ihn sähe (ganz Schwache auch ohne Nachtruhe). INF = keiner.
+func _hall_spot(player: Player) -> Vector3:
 	var spots: Array[Vector3] = []
 	for entry in Game.director.patrol:
 		var p: Vector3 = entry["pos"]
 		var d := p.distance_to(player.global_position)
 		if absf(p.y - player.global_position.y) < 1.5 and d >= HALL_DISTANCE.x and d <= HALL_DISTANCE.y \
 				and _in_hall(p) and not Game.director.player_can_see(p + Vector3.UP * 1.2) \
-				and _witness_guests(p + Vector3.UP * HANDS_Y, player).size() < WITNESSES:   # wache Gäste (ganz Schwache auch ohne Nachtruhe)
+				and _witness_guests(p + Vector3.UP * HANDS_Y, player).size() < WITNESSES:
 			spots.append(p)
-	if spots.is_empty():
+	return Vector3.INF if spots.is_empty() else spots[randi() % spots.size()]
+
+
+## Garantie (GUARANTEE_DAY): War er noch nie beim Spieler, kommt er sicher, sobald der allein im Flur ist – als Warnung.
+func _check_guarantee_hall(player: Player) -> bool:
+	if visits > 0 or Calendar.today() < GUARANTEE_DAY or Game.social == null or not _in_hall(player.global_position) \
+			or _cooldown > 0.0 or Game.director.player_threat > 0.0 \
+			or _witness_guests(player.camera.global_position, player).size() >= WITNESSES:
 		return false
-	_appear_in_hall(spots[randi() % spots.size()])
+	var spot := _hall_spot(player)
+	if spot == Vector3.INF:
+		return false
+	_appear_in_hall(spot)
+	_warn_only = true
+	if Game.tracing:
+		print("[Lakengeist] Garantie an Tag %d: Warnung im Flur" % Calendar.today())
 	return true
+
+
+## Holt er gerade auf (CATCH_UP_DAY)? Solange er noch keine CATCH_UP_VISITS Mal beim Spieler war – und hat er am
+## CATCH_UP_DAY damit angefangen, den ganzen Tag.
+func catching_up() -> bool:
+	var day := Calendar.today()
+	if day < CATCH_UP_DAY:
+		return false
+	if visits < CATCH_UP_VISITS:
+		if day == CATCH_UP_DAY:
+			catch_up_day = true
+		return true
+	return catch_up_day and day == CATCH_UP_DAY
 
 
 ## Lakengespenster an einer geschlossenen Zimmertür, jemand Waches drinnen: Mit DOOR_CHANCE je Gespenst
@@ -605,6 +658,7 @@ func _appear(window: Node3D, victim: Node3D) -> void:
 ## sichtbar machen, eingeblendet wird er danach in _physics_process.
 func _start_visit(victim: Node3D, window: Node3D) -> void:
 	_victim = victim
+	_warn_only = false
 	_victim_saw = false
 	if victim is Guest:
 		var guest := victim as Guest
@@ -763,8 +817,10 @@ func _vanish() -> void:
 	state = State.FADE
 	_lurk_spot = null
 	_end_door()
-	# Je schwächer das Opfer, desto schneller kommt er wieder
+	# Je schwächer das Opfer, desto schneller kommt er wieder – beim Aufholen fast sofort
 	_cooldown = COOLDOWN / (1.0 + WEAK_FASTER * _weakness(_victim))
+	if _victim is Player and catching_up():
+		_cooldown = CATCH_UP_COOLDOWN
 
 
 func _hide() -> void:
@@ -920,6 +976,8 @@ func _grip_spot() -> Vector3:
 ## Erscheinen bei Spieler oder Gast – je schwächer das Opfer, desto wahrscheinlicher, an einer Fenstertür
 ## noch wahrscheinlicher (4.18).
 func _spawn_chance(victim: Node3D, window: Node3D) -> float:
+	if victim is Player and catching_up():
+		return 1.0
 	return minf(1.0, (FRENCH_DOOR_CHANCE if window is Door else SPAWN_CHANCE) + WEAK_CHANCE * _weakness(victim))
 
 
@@ -1195,11 +1253,12 @@ func debug_summon_guest(guest: Guest, stage: int) -> void:
 
 
 func save_state() -> Dictionary:
-	return {"visits": visits, "cooldown": _cooldown}
+	return {"visits": visits, "cooldown": _cooldown, "catch_up_day": catch_up_day}
 
 
 func load_state(d: Dictionary) -> void:
 	visits = int(d.get("visits", 0))
+	catch_up_day = bool(d.get("catch_up_day", false))
 	_cooldown = float(d.get("cooldown", 0.0))
 	_guest_windows.clear()
 	if Game.player:

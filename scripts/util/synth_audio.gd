@@ -57,6 +57,7 @@ var pant := 0.0    ## Keuchen des Spielers nach dem Rennen (Ausdauer, Spielkonze
 var pant_rate := 0.4   ## Atemzüge pro Sekunde
 var rain := 0.0    ## Regenrauschen (Wetter, Spielkonzept 7.8)
 var rain_muffle := 0.0   ## 1 = drinnen: dumpfer
+var rumble := 0.0  ## tiefes Grollen im ganzen Hotel, bevor das Monster aufbricht (Puppe, Spielkonzept 5.5)
 
 var _playback: AudioStreamGeneratorPlayback
 var _time := 0.0
@@ -232,6 +233,10 @@ func _sample(dt: float) -> float:
 	if heart > 0.001:
 		var beat := fmod(_time, 60.0 / heart_bpm)
 		s += (_thump(beat) + _thump(beat - 0.22) * 0.6) * heart
+	if rumble > 0.001:
+		# tiefes, schwankendes Grollen aus der Tiefe – wie Donner, aber ohne Krachen und ohne Ende
+		var swell := 0.65 + 0.35 * sin(TAU * 0.23 * _time + 1.5 * sin(TAU * 0.07 * _time))
+		s += (_lp_slow * 7.0 * swell + sin(TAU * 33.0 * _time) * 0.18 * swell + sin(TAU * 41.0 * _time) * 0.1) * rumble
 	if rain > 0.001:
 		s += (white * 0.16 * (1.0 - rain_muffle) + _lp_fast * 0.3 + _lp_slow * 0.8 * rain_muffle) * rain
 	var i := _shots.size() - 1

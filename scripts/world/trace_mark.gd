@@ -16,7 +16,7 @@ const BLOOD_SMALL := Vector2(0.12, 0.35)
 ## So weit darf die Fläche unter einem Fleck in der Höhe abweichen (m) – sonst ragt er über eine Stufen- oder Möbelkante
 const BLOOD_FLAT := 0.02
 const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck",
-	"wax": "Wachsflecken", "drops": "Blutstropfen",
+	"wax": "Wachsflecken", "drops": "Blutstropfen", "wax_splash": "Ein großer Wachsfleck", "soot": "Ein Rußfleck",
 	"bloody_hand": "Blutige Handabdrücke", "wall_splatter": "Blutspritzer", "wall_smear": "Eine blutige Schmierspur"}
 
 var kind := "scratch"
@@ -117,6 +117,29 @@ func _ready() -> void:
 				Geo.mesh(self, Geo.box(Vector3(rng.randf_range(0.02, 0.05), rng.randf_range(0.02, 0.05), 0.005)), wax,
 					Vector3(rng.randf_range(-0.08, 0.08), rng.randf_range(-0.08, 0.08), 0.0025))
 			Geo.add_box_shape(self, Vector3(0.25, 0.25, 0.04), Vector3.ZERO)
+		"wax_splash":
+			# Geworfene Kerze (Streich der Kinder, 6.13): großer weißer Wachsfleck mit Spritzern
+			var white := Mat.psx(Color(0.94, 0.92, 0.86))
+			var shade := Mat.psx(Color(0.82, 0.8, 0.74))
+			for i in 4:
+				var blob := Geo.mesh(self, Geo.box(Vector3(rng.randf_range(0.14, 0.26), rng.randf_range(0.12, 0.22), 0.006)), white if i % 2 == 0 else shade,
+					Vector3(rng.randf_range(-0.06, 0.06), rng.randf_range(-0.06, 0.06), 0.003 + i * 0.0004))
+				blob.rotation.z = rng.randf() * TAU
+			for i in rng.randi_range(10, 16):
+				var a := rng.randf() * TAU
+				var d := rng.randf_range(0.18, 0.4)
+				var s := rng.randf_range(0.02, 0.06)
+				var drop := Geo.mesh(self, Geo.box(Vector3(s * rng.randf_range(1.0, 2.2), s, 0.005)), white, Vector3(cos(a) * d, sin(a) * d, 0.0035))
+				drop.rotation.z = a
+			Geo.add_box_shape(self, Vector3(0.7, 0.7, 0.04), Vector3.ZERO)
+		"soot":
+			# Verbrannte Deko (5.11): dunkler Rußfleck
+			var soot := Mat.psx(Color(0.07, 0.06, 0.05))
+			for i in 3:
+				var patch := Geo.mesh(self, Geo.box(Vector3(rng.randf_range(0.18, 0.32), rng.randf_range(0.14, 0.28), 0.005)), soot,
+					Vector3(rng.randf_range(-0.06, 0.06), rng.randf_range(-0.06, 0.06), 0.003 + i * 0.0004))
+				patch.rotation.z = rng.randf() * TAU
+			Geo.add_box_shape(self, Vector3(0.45, 0.45, 0.04), Vector3.ZERO)
 		"drops":
 			# Spur eines verletzten Gastes: einzelne Blutstropfen
 			var red := Mat.psx(Color(0.3, 0.02, 0.02))

@@ -13,6 +13,10 @@ extends Node3D
 ##   --attacks=n                 so viele Angriffe gab es schon (> 2: nicht mehr harmlos, ob es holt, entscheidet die Tageskurve; sicher mit --intent)
 ##   --first-attack              Feier starten, kurz darauf der erste Angriff
 ##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
+##   --prank=art[,zimmer]        Streich (6.13): das erste Kind mit Eltern steht vor der Tür (Standard Zimmer 13) und
+##                               spielt ihn – leaves, topple (Kürbis steht daneben), pumpkin, candle (steht damit in der Hand
+##                               2 m davor und wirft), fire (brennende Kerze, daneben Laub und Lakengespenst, 5.11)
+##   --trick=13[,n]              ein Kind steht vor Zimmer 13 (Tür auf) und will Süßes; ,n: du gibst ihm n Süßigkeiten (je 1,5 s)
 ##   --trick[=kind]              Süßes oder Saures von Tür zu Tür (6.13): ein Kind (oder dieses) zieht sofort los und
 ##                               klopft an die nächsten Gästetüren (mit --trace: Türen, Süßes oder Saures)
 ##   --decorate[=gast][,hin]     Schmück-Aktion sofort (5.9): ein Gast (oder dieser) ruft auf, Gäste aus der Nähe holen
@@ -26,6 +30,7 @@ extends Node3D
 ##   --decorate=hier[,gast]      wie „Lass uns hier schmücken!“ im Gespräch: geschmückt wird, wo du stehst (mit --tp/--pos)
 ##   --search[=gast][,mit]       Deko-Suche (5.9): ein Gast (oder dieser) zieht los · mit: du gehst mit (er führt, du
 ##                               folgst ihm von selbst, er teilt am Fundort) – mit --trace: Fundort, Teilen, Beziehung
+##   --cook=gast[,id]            ein Gast (oder dieser) kocht gleich Kürbissuppe (er steht 4 m vor dem Herd, du daneben)
 ##   --cook=suppe|braten[,fertig]  Kochen (3.8): Kürbis liegt geschnitten im Topf bzw. in der Pfanne, du stehst am Herd ·
 ##                               fertig: gleich fertig (Suppe: Gäste kommen zum Essen)
 ##   --pals=gast1,gast2          Weitererzählen (6.16): gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir
@@ -70,6 +75,10 @@ extends Node3D
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort Vorwarnung → Monster erscheint
+##   --doll[=s[,zimmer]]         die Puppe (5.5): in s Sekunden (Standard 20) bricht das Monster zu einem Angriff mit
+##                               einem Opfer auf (wie --intent=one), sie liegt sofort vor der schwächsten bewohnten Tür (bzw.
+##                               vor diesem Zimmer, z. B. 13 oder 1157) und es grollt; mit --trace „[Puppe]“ mit Weg und Opfern
+##   --doll=kind                 ein Kind holt die Puppe gleich und legt sie vor die Tür seiner Familie
 ##   --ghost=n|flur|schrank|tür  Lakengeist sofort zum n. Mal am Außenfenster bzw. an der Fenstertür des Raums, in dem
 ##                               du stehst (beim Start Zimmer 13): Licht aus, Vorhang auf, Blick dorthin (4.18) · flur: alle Gäste
 ##                               schlafen sofort, er taucht in deinem Flur knapp 20 m vor dir auf und kommt (vorher mit
@@ -155,6 +164,7 @@ func _ready() -> void:
 	var builder := LevelBuilder.new(level, self)
 	var t0 := Time.get_ticks_msec()
 	builder.build()
+	ExtraFixtures.place(builder, self)   # Süßigkeiten-Truhen und Automaten – vor dem NavMesh (6.13, 3.2)
 	var t1 := Time.get_ticks_msec()
 	_bake_navigation(level)
 	_load_times = Vector2i(t1 - t0, Time.get_ticks_msec() - t1)
@@ -209,6 +219,13 @@ func _ready() -> void:
 	add_child(social)
 	Game.social = social
 	social.setup(builder, self)
+
+	# Die Puppe (5.5) – sitzt am Anfang in der Lobby
+	var doll := JuryDoll.new().setup(builder)
+	doll.name = "Puppe"
+	add_child(doll)
+	doll.place_at_start()
+	Game.doll = doll
 
 	# Hotelkatzen (6.11) – nach den Gästen, sie suchen sich einen Lieblingsgast
 	for cat_id in HotelCat.PROFILES:
@@ -787,6 +804,18 @@ func run_debug(arg: String) -> bool:
 		Game.ghost.debug_summon(arg.substr(8).to_int())
 	elif arg == "--warn":
 		Game.director.start_warning()
+	elif arg.begins_with("--prank="):
+		var prank := arg.substr(8).split(",")
+		var prank_room := Game.director.room_by_label(prank[1]) if prank.size() > 1 else LevelBuilder.PLAYER_ROOM
+		get_tree().create_timer(1.5).timeout.connect(func() -> void: Game.social.pranks.debug(prank[0], prank_room))
+	elif arg == "--doll=kind":
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.doll.debug_fetch())
+	elif arg == "--doll" or arg.begins_with("--doll="):
+		# Angriff mit Puppe in s Sekunden – nach 1 s, damit Gäste und NavMesh stehen
+		var parts := arg.substr(7).split(",") if arg.length() > 7 else PackedStringArray()
+		var seconds := parts[0].to_float() if parts.size() > 0 and parts[0] != "" else 20.0
+		Game.director.debug_doom = Game.director.room_by_label(parts[1]) if parts.size() > 1 else ""
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.director.debug_doll(seconds))
 	elif arg.begins_with("--attacks="):
 		# so viele Angriffe gab es schon (über 2 = gefährlich, ob es holt, würfelt _choose_intent nach Tag)
 		Game.director.first_attack_done = true
@@ -795,6 +824,10 @@ func run_debug(arg: String) -> bool:
 		# Feier starten, kurz darauf der erste Angriff
 		Game.social.start_party("mila")
 		get_tree().create_timer(3.0).timeout.connect(Game.director._first_attack_at_party)
+	elif arg == "--trick=13" or arg.begins_with("--trick=13,"):
+		# Ein Kind steht vor Zimmer 13 (Tür auf) – mit „,n“ gibst du ihm n Süßigkeiten, eine je 1,5 s
+		var give := arg.substr(11).to_int() if arg.begins_with("--trick=13,") else 0
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.social.debug_trick_at_13(give))
 	elif arg == "--trick" or arg.begins_with("--trick="):
 		var kid: Guest = Game.social.guest_by_id(arg.substr(8)) if arg.begins_with("--trick=") else null
 		if kid == null:
@@ -1241,6 +1274,15 @@ func _debug_cook(parts: PackedStringArray) -> void:
 	var stove := Game.kitchen
 	if stove == null:
 		Game.say("Kein Herd im Hotel", 3.0)
+		return
+	if parts[0] == "gast":   # ein Gast kocht selbst (2026-10-22): er steht 4 m vor dem Herd, du daneben
+		var cook: Guest = Game.social.guest_by_id(parts[1]) if parts.size() > 1 else Game.social.living_guests().filter(func(g: Guest) -> bool: return not g.is_child())[0]
+		var front: Vector3 = stove.front
+		cook.global_position = Vector3(stove.global_position.x, 0.05, stove.global_position.z) + front * 4.0
+		cook._set_idle(5.0)
+		Game.player.global_position = cook.global_position + front.cross(Vector3.UP) * 1.5
+		Game.player.rotation.y = atan2(front.x, front.z)
+		stove.start_guest_cook(cook)
 		return
 	var soup := "braten" not in parts
 	stove.dish = "soup" if soup else "roast"

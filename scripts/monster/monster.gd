@@ -160,6 +160,8 @@ func deactivate() -> void:
 
 ## Geräusch gehört → nachsehen, danach weiter auf der Route.
 func investigate(pos: Vector3) -> void:
+	if Game.director.raid_active():
+		return   # auf dem Weg zur Puppe (5.5) lässt es sich von Geräuschen nicht ablenken
 	if state in [State.PATROL, State.LURK, State.SEARCH, State.INVESTIGATE, State.SLINK]:
 		_target = pos
 		_set_state(State.INVESTIGATE)
@@ -456,7 +458,7 @@ func _patrol_step(delta: float) -> void:
 	if _roam.is_empty():
 		_next_roam()
 		return
-	if not _move_to(_roam["pos"], WALK_SPEED, delta):
+	if not _move_to(_roam["pos"], SEARCH_SPEED if Game.director.raid_active() else WALK_SPEED, delta):
 		return
 	var room: String = _roam["room"]
 	if room != "" and Game.director.wants_to_enter_room(room):
@@ -479,10 +481,29 @@ func _goal() -> Vector3:
 	return _target
 
 
-## Neues Ziel irgendwo im Hotel.
+## Neues Ziel irgendwo im Hotel – mit Puppe (Spielkonzept 5.5) die nächste Tür auf dem Weg zu ihr; ist das
+## Puppenzimmer durchsucht, zurück in den Keller.
 func _next_roam() -> void:
-	_roam = Game.director.next_roam_target(global_position)
+	var raid := Game.director.next_raid_target()
+	if raid.get("home", false):
+		_chase_target = null
+		_start_retreat()
+		return
+	_roam = raid if not raid.is_empty() else Game.director.next_roam_target(global_position)
 	_set_state(State.PATROL)
+
+
+## Gewähltes Zimmer (Puppe, 5.5): nach einem Opfer (oder einem, der sich losgerissen hat) weiter durchsuchen.
+func continue_raid(spared = null) -> void:
+	if spared != null:
+		_spared.append(spared)
+	_chase_target = null
+	_hide_target = null
+	_eye_mat.set_shader_parameter("emission_energy", 1.2)
+	if _search.is_empty():
+		_next_roam()
+	else:
+		_set_state(State.SEARCH)
 
 
 ## Bleibt verborgen: Sieht der Spieler es (und jagt es nicht), verschwindet es aus dem Blick.
@@ -513,6 +534,8 @@ func _start_chase(actor) -> void:
 
 
 func _chase_step(seen, delta: float) -> void:
+	if seen == null and _chase_target != null and Game.director.is_raid_prey(_chase_target):
+		seen = _chase_target   # im gewählten Zimmer (Puppe, 5.5) entkommt es keiner, auch nicht im Dunkeln
 	if seen != null:
 		_chase_target = seen
 		_last_seen = seen.global_position
@@ -550,6 +573,10 @@ func _can_vanish() -> bool:
 
 
 func _search_step(delta: float) -> void:
+	var prey = Game.director.raid_prey()   # gewähltes Zimmer (Puppe, 5.5): wer darin steht, den holt es
+	if prey != null:
+		_start_chase(prey)
+		return
 	if _search.is_empty():
 		_next_roam()
 		return
@@ -577,13 +604,19 @@ func _check_hide_step(delta: float) -> void:
 	var occupant = _hide_target.occupant
 	if occupant is Guest and (occupant as Guest).is_child():
 		occupant = null   # ein Kind im Versteck übersieht es (6.13)
-	if occupant != null and _hide_target.seen_entering and _state_timer > 0.4:
+	# Gesehen, wie er hineinging – oder ein gewähltes Zimmer (Puppe, 5.5): dort reißt es jedes Versteck auf
+	if occupant != null and (_hide_target.seen_entering or Game.director.in_raid_room(_hide_target.global_position)) \
+			and _state_timer > 0.4:
 		_kill(occupant, _hide_target)
 		return
 	if _state_timer > 2.2:
 		var spot := _hide_target
 		_hide_target = null
-		spot.set_checked(true)   # Spur: offene Schranktür / zerwühltes Bett
+		if Game.director.in_raid_room(spot.global_position):
+			spot.rip_open()   # gewähltes Zimmer: auch leere Verstecke reißt es auf
+			spot.checked = true
+		else:
+			spot.set_checked(true)   # Spur: offene Schranktür / zerwühltes Bett
 		if not _search.is_empty():
 			_search.pop_front()
 		_set_state(State.SEARCH)

@@ -97,6 +97,21 @@ const ESCALATE_ON_TALK := 0.15
 ## Halluzination: so oft kommt mit dem Rauschen eine lange Flackerwelle ohne Monster (zeigt so viele Opfer)
 const FAKE_SIGNAL_CHANCE := 0.35
 const FAKE_SIGNAL_VICTIMS := 3
+## Die Puppe (Spielkonzept 5.5): so viele Sekunden vor einem echten Angriff liegt sie vor der schwächsten bewohnten
+## Tür (ist die Ruhephase kürzer, wartet das Monster); so oft wird bis zum Aufbruch nachgerechnet (Nachbessern)
+const DOLL_LEAD := Vector2(60.0, 120.0)
+const DOLL_RECHECK := 3.0
+## Gleich wenig Deko bzw. gleich dunkel, wenn sich die Werte höchstens so stark unterscheiden
+const DOLL_DECO_TIE := 0.25
+const DOLL_LIGHT_TIE := 0.03
+## Weg zur Puppentür: unterwegs bis zu so viele schwache bewohnte Türen, deren Flurpunkt höchstens so weit vom Weg liegt
+const ROUTE_DOORS := 5
+const ROUTE_REACH := 4.0
+## Findet es nach so vielen Sekunden über der Aktivzeit nicht ans Ziel, gibt es auf
+const RAID_OVERTIME := 300.0
+## Grollen (5.5): so leise am Anfang, voll am Ende der Frist; so schnell verklingt es nach dem Aufbruch
+const RUMBLE_START := 0.12
+const RUMBLE_FADE := 0.4
 
 var phase := Phase.CALM
 var boldness := BOLDNESS_START
@@ -122,6 +137,19 @@ var intent := Intent.ONE
 var victims_left := 1
 var shown_victims := 1          ## so viele Opfer hat die letzte Flackerwelle angezeigt
 var debug_victims := -1         ## --intent=…: erzwungene Opferzahl (0 = umsehen)
+var debug_doom := ""             ## --doll=s,zimmer: die Puppe urteilt immer über dieses Zimmer
+## Die Puppe (5.5): Zimmer, vor dessen Tür sie urteilt ("" = kein Urteil); der Weg dorthin (Zimmer der Reihe nach,
+## die Puppentür zuletzt) und das Zimmer, das es gerade durchsucht
+var doom_room := ""
+var raid_room := ""
+var _route: Array[String] = []
+var _raid_kills := 0
+var _raiding := false            ## unterwegs zur Puppentür (Weg geplant, Puppenzimmer noch nicht durchsucht)
+var _planned := false           ## Absicht für den nächsten Aufbruch steht schon (Frist der Puppe)
+var _lead := 90.0               ## Frist der Puppe vor diesem Aufbruch
+var _rumble_total := 0.0        ## so lang war die Frist, als das Grollen begann
+var _doll_check := 0.0
+var _rumble_told := false
 
 var _monster: Monster
 var _phase_left := 0.0
@@ -219,6 +247,8 @@ func deterrence_at(p: Vector3) -> float:
 
 
 func is_blocked(p: Vector3, chasing: bool) -> bool:
+	if _at_doom(p):
+		return false   # die Puppentür fällt immer, auch gut geschmückt (Spielkonzept 5.5)
 	return deterrence_at(p) > pressure_at(p, chasing)
 
 
@@ -440,7 +470,10 @@ func _start_activity(spawn: Vector3, with_signal: bool = true) -> void:
 	attacks += 1
 	phase = Phase.ACTIVE
 	var sated := satiation > SATED_ROAM
-	_choose_intent(sated)
+	if not _planned:
+		_choose_intent(sated)
+	_planned = false
+	_plan_route(spawn)
 	_phase_left = _day_lerp(ACTIVE_TIME) * randf_range(0.8, 1.2) * minf(2.0, 1.0 + 0.2 * maxi(0, victims_left - 1))
 	if with_signal:
 		shown_victims = victims_left
@@ -585,9 +618,21 @@ func _update_schedule(delta: float) -> void:
 		Phase.ACTIVE:
 			if not _monster.is_active():
 				on_monster_gone()
-			elif _phase_left <= 0.0 and _monster.state != Monster.State.CHASE:
+			elif _phase_left <= 0.0 and _monster.state != Monster.State.CHASE and (not raid_active() or _phase_left < -RAID_OVERTIME):
+				if raid_active() and Game.tracing:
+					print("[Puppe] Das Monster kommt nicht bis zur Puppentür – es gibt auf")
+				_raiding = false
+				_route.clear()
+				raid_room = ""
 				_monster.go_home()
 		_:
+			if not _planned and _phase_left <= _lead and first_attack_done:
+				_plan_departure()
+			if doom_room != "":
+				_doll_check -= delta
+				if _doll_check <= 0.0:
+					_doll_check = DOLL_RECHECK
+					_judge(_weakest_door())   # Nachbessern: wer nicht mehr der Schwächste ist, den verlässt sie
 			if _phase_left <= 0.0:
 				if other_threat_active(_monster):
 					_phase_left = 10.0   # Lakengeist oder Kürbismann ist im Haus – es wartet
@@ -608,6 +653,222 @@ func on_monster_gone() -> void:
 	if _uv_driven:
 		_phase_left *= UV_REST_FACTOR
 		_uv_driven = false
+	_end_raid()
+	_planned = false
+	_lead = randf_range(DOLL_LEAD.x, DOLL_LEAD.y)
+
+
+# --- Die Puppe und ihr Urteil (Spielkonzept 5.5) -------------------------------------------------
+
+## Frist vor dem Aufbruch: Die Absicht steht jetzt fest. Will es wirklich jemanden holen (nicht harmlos, nicht nur
+## umsehen), liegt die Puppe ab jetzt vor der schwächsten bewohnten Tür, und ein Grollen schwillt an – ist die
+## Ruhephase kürzer als die Frist, wartet das Monster so lange.
+func _plan_departure() -> void:
+	_planned = true
+	var sated := satiation - 0.1 * maxf(_phase_left, 0.0) > SATED_ROAM   # so satt wird es beim Aufbruch noch sein
+	_choose_intent(sated)
+	if attacks + 1 <= HARMLESS_ATTACKS or victims_left <= 0 or Game.doll == null:
+		return
+	_phase_left = maxf(_phase_left, _lead)
+	_rumble_total = _phase_left
+	_rumble_told = false
+	_doll_check = DOLL_RECHECK
+	_judge(_weakest_door())
+	Game.caption("[Ein tiefes Grollen geht durchs Haus]")
+	if Game.tracing:
+		print("[Puppe] %s (%d Opfer) in %.0f s – Urteil: Zimmer %s" % [INTENT_NAMES[intent], victims_left, _phase_left, doom_room])
+
+
+func _judge(no: String) -> void:
+	if no == "" or no == doom_room:
+		return
+	doom_room = no
+	Game.doll.judge(no)
+
+
+## Debug (--doll[=sekunden]): Der nächste Aufbruch ist ein Angriff mit Puppe – in so vielen Sekunden.
+func debug_doll(seconds: float) -> void:
+	first_attack_done = true
+	attacks = maxi(attacks, HARMLESS_ATTACKS)
+	if _monster.is_active():
+		_monster.deactivate()
+		on_monster_gone()
+	var keep := debug_victims
+	debug_victims = maxi(debug_victims, 1)
+	_lead = seconds
+	_phase_left = seconds
+	_plan_departure()
+	debug_victims = keep
+
+
+## Zimmer zu einer Eingabe (Debug): Schlüssel („0113“), Nummer („113“) oder Türschild („13“); "" = keins.
+func room_by_label(text: String) -> String:
+	if rooms.has(text):
+		return text
+	for key in rooms:
+		if String(rooms[key]["sign"]) == text:
+			return key
+	var padded := "%04d" % text.to_int() if text.is_valid_int() else ""
+	return padded if rooms.has(padded) else ""
+
+
+## Bewohnte Türen (5.5): die Zimmer lebender erwachsener Gäste und Zimmer 13.
+func inhabited_rooms() -> Array[String]:
+	var result: Array[String] = [LevelBuilder.PLAYER_ROOM]
+	if Game.social:
+		for guest in Game.social.living_guests():
+			var no := String(guest.home["no"])
+			if not guest.is_child() and rooms.has(no) and not no in result:
+				result.append(no)
+	return result
+
+
+## Die schwächste bewohnte Tür: am wenigsten Deko (wie das Monster sie zählt), bei Gleichstand die dunkelste, sonst
+## eine zufällige.
+func _weakest_door() -> String:
+	if rooms.has(debug_doom):
+		return debug_doom
+	var decos := _deco_items()
+	var entries: Array[Dictionary] = []
+	for no in inhabited_rooms():
+		var front: Vector3 = rooms[no]["door_front"]
+		entries.append({"no": no, "deco": _deco_strength(front, decos), "front": front})
+	if entries.is_empty():
+		return ""
+	var least: float = entries.map(func(e: Dictionary) -> float: return e["deco"]).min()
+	entries = entries.filter(func(e: Dictionary) -> bool: return float(e["deco"]) <= least + DOLL_DECO_TIE)
+	if doom_room != "" and entries.any(func(e: Dictionary) -> bool: return e["no"] == doom_room):
+		return doom_room   # weiter unter den Schwächsten – sie bleibt, wo sie ist
+	for e in entries:
+		e["light"] = light_at((e["front"] as Vector3) + Vector3.UP)
+	var darkest: float = entries.map(func(e: Dictionary) -> float: return e["light"]).min()
+	entries = entries.filter(func(e: Dictionary) -> bool: return float(e["light"]) <= darkest + DOLL_LIGHT_TIE)
+	return String(entries.pick_random()["no"])
+
+
+## Beim Aufbruch mit Puppe: der Weg vom Keller zur Puppentür und unterwegs bis zu ROUTE_DOORS bewohnte Türen, deren Deko
+## nicht hält (undekoriert oder billig, 4.9) – in der Reihenfolge des Wegs, die Puppentür zuletzt.
+func _plan_route(spawn: Vector3) -> void:
+	_route.clear()
+	raid_room = ""
+	_raid_kills = 0
+	_raiding = false
+	if doom_room == "" or not wants_victim():
+		return
+	_raiding = true
+	var goal: Vector3 = rooms[doom_room]["door_front"]
+	var path := NavigationServer3D.map_get_path(_monster.get_world_3d().navigation_map, spawn, goal, true)
+	var stops: Array[Dictionary] = []
+	for no in inhabited_rooms():
+		if no == doom_room:
+			continue
+		var front: Vector3 = rooms[no]["door_front"]
+		var along := _along_path(path, front)
+		if along < 0.0 or is_blocked(front, false):
+			continue
+		stops.append({"no": no, "along": along})
+	stops.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["along"]) < float(b["along"]))
+	for s in stops.slice(0, ROUTE_DOORS):
+		_route.append(String(s["no"]))
+	_route.append(doom_room)
+	if Game.tracing:
+		print("[Puppe] Weg zur Puppentür (Zimmer %s): %s" % [doom_room, ", ".join(_route)])
+
+
+## Wie weit entlang des Wegs (m) liegt p, wenn es höchstens ROUTE_REACH daneben und auf derselben Höhe liegt? −1 = nicht.
+func _along_path(path: PackedVector3Array, p: Vector3) -> float:
+	var walked := 0.0
+	var best := -1.0
+	var best_d := ROUTE_REACH
+	for i in range(1, path.size()):
+		var a := path[i - 1]
+		var b := path[i]
+		var q := Geometry3D.get_closest_point_to_segment(p, a, b)
+		var d := Vector2(q.x - p.x, q.z - p.z).length()
+		if d < best_d and absf(q.y - p.y) < 1.5:
+			best_d = d
+			best = walked + a.distance_to(q)
+		walked += a.distance_to(b)
+	return best
+
+
+## Unterwegs zur Puppentür (von _plan_route bis das Puppenzimmer durchsucht ist)?
+func raid_active() -> bool:
+	return _raiding
+
+
+## Liegt p an der Puppentür oder im Puppenzimmer, während das Monster dorthin unterwegs ist?
+func _at_doom(p: Vector3) -> bool:
+	if not _raiding or not rooms.has(doom_room):
+		return false
+	if p.distance_to(rooms[doom_room]["door_front"]) < 3.5:
+		return true
+	return _builder != null and _builder.room_at(p) == doom_room
+
+
+## Gehört p zum Zimmer, das es gerade durchsucht? In einem gewählten Zimmer helfen keine Verstecke.
+func in_raid_room(p: Vector3) -> bool:
+	return raid_room != "" and _builder != null and _builder.room_at(p) == raid_room
+
+
+## Steht der Akteur (Spieler oder Gast) offen im Zimmer, das es gerade durchsucht? Dem entkommt er nicht.
+func is_raid_prey(actor) -> bool:
+	return raid_room != "" and is_instance_valid(actor) and not actor.dead and actor.hiding == null \
+		and in_raid_room(actor.global_position) and not actor in _monster._spared
+
+
+## Der nächste, der offen im durchsuchten Zimmer steht (null = keiner) – Verstecke prüft es ohnehin alle.
+func raid_prey():
+	if raid_room == "":
+		return null
+	for actor in _monster._actors():
+		if is_raid_prey(actor):
+			return actor
+	return null
+
+
+## Nächstes Ziel auf dem Weg zur Puppentür (Monster._next_roam): {} = kein Weg, normal umherstreifen;
+## {"home": true} = das Puppenzimmer ist durchsucht – zurück in den Keller. Türen unterwegs nur, solange es hungrig
+## ist und ihre Deko noch nicht hält; die Puppentür immer.
+func next_raid_target() -> Dictionary:
+	if not _raiding:
+		return {}
+	if raid_room != "":
+		var done := raid_room
+		raid_room = ""
+		if done == doom_room:
+			_finish_raid()
+			return {"home": true}
+	while not _route.is_empty():
+		var no: String = _route[0]
+		var front: Vector3 = rooms[no]["door_front"]
+		if no == doom_room or (victims_left > 0 and not is_blocked(front, false)):
+			return {"pos": front, "room": no}
+		_route.pop_front()
+	_finish_raid()
+	return {"home": true}
+
+
+## Weg zu Ende: satt, wenn es jemanden geholt hat (4.10); die Puppe bleibt liegen, bis es im Keller ist.
+func _finish_raid() -> void:
+	_raiding = false
+	_route.clear()
+	raid_room = ""
+	victims_left = 0
+	if _raid_kills > 0:
+		on_guest_taken()
+	if Game.tracing:
+		print("[Puppe] Angriff vorbei – %d geholt" % _raid_kills)
+
+
+func _end_raid() -> void:
+	if doom_room != "" and Game.doll:
+		Game.doll.release()
+	doom_room = ""
+	raid_room = ""
+	_route.clear()
+	_raid_kills = 0
+	_raiding = false
 
 
 ## Debug (F7, --lure): Das Monster kommt zum Spieler, als hätte es dort etwas gehört. Ruht es, erscheint
@@ -722,10 +983,13 @@ func on_guest_taken() -> void:
 func kill_guest(guest, spot: HideSpot) -> void:
 	if guest == null or not is_instance_valid(guest) or guest.dead or guest.is_child():
 		return
-	if not wants_victim():   # harmlos, oder es sieht sich nur um (4.17)
+	# Gewähltes Zimmer (Puppe, 5.5): jeder darin wird angegriffen; im Puppenzimmer stirbt er immer
+	var raided := in_raid_room(spot.global_position if spot != null else guest.global_position)
+	var doomed := raided and raid_room == doom_room
+	if not wants_victim() and not raided:   # harmlos, oder es sieht sich nur um (4.17)
 		_scare_guest(guest, spot)
 		return
-	if Wounds.survives():
+	if not doomed and Wounds.survives():
 		# Er reißt sich los, als es ihn wegschleppen will (Spielkonzept 6.17): nur Kratzer – es bleibt hungrig
 		if Game.tracing:
 			print("[Losgerissen] %s" % guest.display_name)
@@ -734,7 +998,10 @@ func kill_guest(guest, spot: HideSpot) -> void:
 		Game.noise("scream", guest.global_position, guest)
 		guest.wound_by("scratch", _monster)
 		guest.scared_by_monster()
-		_monster.after_scare(guest)
+		if raided:
+			_monster.continue_raid(guest)
+		else:
+			_monster.after_scare(guest)
 		return
 	if spot != null:
 		spot.rip_open()
@@ -749,10 +1016,15 @@ func kill_guest(guest, spot: HideSpot) -> void:
 	_monster.get_parent().add_child(cloth)
 	cloth.global_position = Vector3(where.x + 0.4, 0.05, where.z + 0.2)
 	grief = GRIEF_TIME
-	victims_left -= 1
+	if not doomed:   # das Puppenzimmer zählt nicht gegen die Opferzahl
+		victims_left = maxi(0, victims_left - 1)
+	if raided:
+		_raid_kills += 1
 	if Game.tracing:
-		print("[Geholt] %s · noch %d Opfer" % [guest.display_name, victims_left])
-	if victims_left > 0:   # Raubzug: weiter zum nächsten Opfer
+		print("[Geholt] %s · noch %d Opfer%s" % [guest.display_name, victims_left, " (Puppenzimmer)" if doomed else ""])
+	if raided:   # gewähltes Zimmer: weiter durchsuchen
+		_monster.continue_raid(null)
+	elif victims_left > 0 or _raiding:   # Raubzug bzw. weiter zur Puppentür
 		_monster.after_kill_hunting()
 	else:
 		on_guest_taken()
@@ -775,7 +1047,7 @@ func _scare_guest(guest, spot: HideSpot) -> void:
 func kill_player(spot: HideSpot) -> void:
 	if Game.game_over:
 		return
-	if not wants_victim():
+	if not wants_victim() and not in_raid_room(spot.global_position if spot != null else Game.player.global_position):
 		_reveal_to_player(spot)
 		return
 	Game.game_over = true
@@ -1034,6 +1306,12 @@ func hidden_point_near(from: Vector3) -> Vector3:
 func wants_to_enter_room(no: String) -> bool:
 	if not rooms.has(no):
 		return false
+	if _raiding and not _route.is_empty() and _route[0] == no:
+		_route.pop_front()
+		raid_room = no   # gewähltes Zimmer (5.5): die Tür fällt, es durchsucht alles
+		if Game.tracing:
+			print("[Puppe] Das Monster bricht in Zimmer %s ein%s" % [no, " – die Puppentür" if no == doom_room else ""])
+		return true
 	var info: Dictionary = rooms[no]
 	var door: Door = info["door"]
 	if door.locked and effective_boldness() < 50.0:
@@ -1121,6 +1399,9 @@ func save_state() -> Dictionary:
 		"haunt_timer": _haunt_timer, "uv_count": uv_count, "monster_active": _monster.is_active(),
 		"victims_left": victims_left, "uv_angry": _uv_angry,
 		"monster_pos": [_monster.global_position.x, _monster.global_position.y, _monster.global_position.z],
+		# Puppe (5.5): Frist, Urteil und Weg – ein angefangenes Zimmer kommt wieder an den Anfang
+		"planned": _planned, "lead": _lead, "rumble_total": _rumble_total, "doom_room": doom_room, "raiding": _raiding,
+		"route": ([raid_room] if raid_room != "" else []) + _route, "raid_kills": _raid_kills,
 	}
 
 
@@ -1136,6 +1417,17 @@ func load_state(d: Dictionary) -> void:
 	victims_left = int(d.get("victims_left", 1))
 	intent = _intent_for(victims_left)
 	_uv_angry = bool(d.get("uv_angry", false))
+	_planned = bool(d.get("planned", false))
+	_lead = float(d.get("lead", randf_range(DOLL_LEAD.x, DOLL_LEAD.y)))
+	_rumble_total = float(d.get("rumble_total", 0.0))
+	doom_room = String(d.get("doom_room", ""))
+	_raiding = bool(d.get("raiding", false))
+	_route.clear()
+	for no in d.get("route", []):
+		if rooms.has(String(no)):
+			_route.append(String(no))
+	raid_room = ""
+	_raid_kills = int(d.get("raid_kills", 0))
 	phase = Phase.CALM
 	if bool(d.get("monster_active", false)):
 		var mp: Array = d.get("monster_pos", [32.8, 0.05, 0.2])
@@ -1212,6 +1504,15 @@ func _update_effects(delta: float) -> void:
 		Game.audio.heart = move_toward(Game.audio.heart, heart_target, delta * 0.5)
 		Game.audio.heart_bpm = 70.0 + heart_target * 60.0
 		Game.audio.buzz = move_toward(Game.audio.buzz, wave * 0.5, delta * 4.0)
+		# Grollen bis zum Aufbruch (Puppe, 5.5): im ganzen Hotel gleich laut, schwillt bis zum Ende der Frist an
+		var rumble_target := 0.0
+		if doom_room != "" and phase == Phase.CALM and _rumble_total > 0.0:
+			var k := clampf(1.0 - _phase_left / _rumble_total, 0.0, 1.0)
+			rumble_target = RUMBLE_START + (1.0 - RUMBLE_START) * k * k
+			if k > 0.6 and not _rumble_told:
+				_rumble_told = true
+				Game.caption("[Das Grollen wird lauter]")
+		Game.audio.rumble = move_toward(Game.audio.rumble, rumble_target, delta * (0.2 if rumble_target > Game.audio.rumble else RUMBLE_FADE))
 		# Beim Luftanhalten verstummt das Keuchen; je erschöpfter, desto schneller die Atemzüge
 		var pant_target := 0.0
 		if player and not player.holding_breath and not player.dead:
@@ -1227,6 +1528,12 @@ func debug_text() -> String:
 	s += "UV vertrieben: %d× (nötig %.1f s)\n" % [uv_count, uv_repel_time()]
 	s += "Absicht: %s (noch %d Opfer) · Flackern zeigte %d · Angriffschance %.0f %%\n" % [INTENT_NAMES[intent], victims_left, shown_victims, attack_chance() * 100.0]
 	s += "Monster: %s\n" % Monster.State.keys()[_monster.state]
+	if Game.pumpkin:
+		s += "Kürbismann: Spaßwert %.0f (Schwelle %.0f) · %d× da%s\n" % [Game.pumpkin.fun_value(), PumpkinMan.FUN_THRESHOLD,
+			Game.pumpkin.visits, " · Garantie offen" if not Game.pumpkin.guarantee_at.is_empty() else ""]
+	if doom_room != "":
+		s += "Puppe: Zimmer %s%s · Weg %s\n" % [doom_room, " (Frist %d s)" % int(_phase_left) if phase == Phase.CALM else "",
+			", ".join(_route) if _raiding else "-"]
 	if Game.player:
 		s += "Licht beim Spieler: %.2f · Ausdauer %.2f%s\n" % [light_at(Game.player.global_position + Vector3.UP),
 			Game.player.stamina, " außer Atem" if Game.player.winded else ""]

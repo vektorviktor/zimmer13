@@ -70,6 +70,9 @@ done <<'LIST'
 3000|--navcheck
 3000|--day=12 --first-attack --trace
 2400|--warn --intent=one --day=10 --trace
+3000|--doll --trace
+2400|--doll=10,13 --trace
+1600|--doll=kind --trace
 1500|--kill=mila --trace
 3000|--pumpkin=jagd --trace
 3000|--pumpkin=jagd,edna --trace
@@ -85,9 +88,16 @@ done <<'LIST'
 1000|--call=edna --answer
 1000|--cat=minka,tragen
 2000|--trick --trace
+600|--prank=fire --trace
+600|--prank=pumpkin,111 --trace
+600|--prank=topple --trace
 4000|--dice=bruno --autoplay
 4000|--chess=mila --autoplay --trace
 1500|--cook=suppe,fertig
+2200|--cook=gast --trace
+700|--trick=13,3 --trace
+1500|--day=10 --tp=westflügel --trace
+4000|--attacks=3 --party --trace
 400|--flashlight=uv
 600|--deco=lichter,g --pos=55,0.1,-7.9,180,14
 600|--weather=blitz

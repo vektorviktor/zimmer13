@@ -482,10 +482,15 @@ func is_orphan() -> bool:
 func get_prompt(_player: Player) -> String:
 	if dead or (hiding and not in_sickbed()) or state == State.GHOSTED:
 		return ""
+	var sweets := Game.social.trick_sweets_given(self) if Game.social else -1
+	if sweets >= 0 and _player.has_kind(Item.Kind.SWEETS):   # Süßes oder Saures an Zimmer 13 (6.13)
+		return "%s eine Süßigkeit geben (%d/%d) [E]" % [display_name, sweets + 1, Social.TRICK_SWEETS_MAX]
 	return "Mit %s sprechen [E]  (%s)" % [display_name, Social.relation_word(relation)]
 
 
 func interact(_player: Player) -> void:
+	if Game.social and Game.social.give_trick_sweet(self):
+		return
 	if not dead and (not hiding or in_sickbed()) and state != State.GHOSTED and Game.dialog:
 		Game.dialog.open(self)
 

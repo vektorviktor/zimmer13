@@ -5,8 +5,8 @@ extends NavWalker
 ## alle, die Spaß haben: Feiernde und Spieler an den Spieltischen, den Spieler auch. Kinder auf Süßes-oder-Saures-
 ## Runde zählen mit und locken ihn, aber ihnen tut er nie etwas (6.13) – sie schützen auch niemanden. Wer ihm im
 ## Weg steht, den erschlägt er, auch ohne Spaß.
-## Haben mindestens FUN_MIN Gäste gleichzeitig Spaß (Social.has_fun), erscheint er mit SPAWN_CHANCE – einmal je
-## Anstieg über die Schwelle. Er klettert an der Straßenfassade neben dem Haupteingang aufs Lobbydach, geht hinüber,
+## Steigt der Spaßwert des Hotels (fun, siehe FUN_START) über FUN_THRESHOLD, erscheint er mit hoher Chance – je mehr
+## Spaß, desto sicherer; war er bis Tag 15 nicht zweimal da, kommt er an Tag 15 und 16 sicher. Er klettert an der Straßenfassade neben dem Haupteingang aufs Lobbydach, geht hinüber,
 ## springt vor einer Glastür der Lobby in den Mittelgarten und sucht zuerst die Lobby ab (entschieden 2026-10-21).
 ## Danach nimmt er sich immer den Nächsten vor: zu jemandem mit Spaß sprintet er, sonst folgt er dem nächsten
 ## erwachsenen Gast; den Spieler jagt er, wenn er ihn in der Nähe sieht oder der Spaß hat (oder im Weg steht). Sieht er sein Opfer, rennt er hin und schlägt mit dem Beil zu. Wer sich versteckt oder ihm lange
@@ -30,8 +30,26 @@ const HIT_SOUND_RANGE := 35.0        ## … ab hier stumm
 const DISTANCE := 2.5
 
 # --- Tuning -------------------------------------------------------------------
-const FUN_MIN := 15                  ## so viele Gäste müssen gleichzeitig Spaß haben …
-const SPAWN_CHANCE := 0.3            ## … dann erscheint er mit dieser Chance (einmal je Anstieg über die Schwelle)
+## Spaßwert (Spielkonzept 4.19, 2026-10-22, ersetzt „15 Gäste mit Spaß, dann 30 %“): unsichtbar, 0 bis FUN_MAX, Start
+## FUN_START. Er fällt ständig (je Sekunde FUN_DECAY des Werts – ohne Spaß von 60 in gut drei Minuten unter 10); jeder
+## Gast mit Spaß hebt ihn je Sekunde nach seiner Beschäftigung (FUN_GAIN – am Spieltisch und auf Feiern stark), der
+## Spieler wie ein Gast. Deko platzieren (Spieler) gibt kurz FUN_DECO je Stück, das in FUN_DECO_TIME verfliegt. Über
+## FUN_THRESHOLD wird alle FUN_ROLL_EVERY s gewürfelt: FUN_CHANCE.x an der Schwelle bis FUN_CHANCE.y bei FUN_MAX.
+## Solange er im Hotel ist, steigt nichts; danach fängt der Wert bei 0 an.
+const FUN_START := 30.0
+const FUN_MAX := 100.0
+const FUN_DECAY := 1.0 / 90.0
+const FUN_GAIN := {"game": 0.12, "party": 0.06, "decorate": 0.04, "eat": 0.04, "trick": 0.03}
+const FUN_DECO := 3.0
+const FUN_DECO_TIME := 60.0
+const FUN_THRESHOLD := 60.0
+const FUN_ROLL_EVERY := 30.0
+const FUN_CHANCE := Vector2(0.4, 0.9)
+## Garantie: War er bis GUARANTEE_DAY noch keine GUARANTEE_VISITS Mal da, kommt er an diesem und am nächsten Tag
+## sicher – zu einer zufälligen Tageszeit (Anteil des Tages in GUARANTEE_TIME), auch wenn keiner Spaß hat.
+const GUARANTEE_DAY := 15
+const GUARANTEE_VISITS := 2
+const GUARANTEE_TIME := Vector2(0.25, 0.75)
 const CHECK_EVERY := 1.0
 const SPAWN_DISTANCE := Vector2(18.0, 28.0)   ## ohne Kürbisbeet: so weit von seinem ersten Opfer taucht er auf
 const BED_REACH := 2.5               ## so nah an einer Kürbispflanze muss der NavMesh-Punkt liegen
@@ -84,7 +102,13 @@ var _player: AnimationPlayer
 var _collider: CollisionShape3D
 var _hit_sound: AudioStreamPlayer3D
 var _test := false
-var _armed := true            ## unter FUN_MIN gefallen – beim nächsten Anstieg wird gewürfelt
+var fun := FUN_START          ## Spaßwert ohne den Deko-Anteil (gespeichert)
+var visits := 0               ## so oft war er schon im Hotel (gespeichert, für die Garantie)
+## Garantie: Spielzeit (Director.elapsed), zu der er sicher kommt – je Tag einer; geprüft am GUARANTEE_DAY (gespeichert)
+var guarantee_at: Array = []
+var guarantee_checked := false
+var _fun_deco := 0.0          ## kurzer Anteil vom Deko-Platzieren
+var _roll := FUN_ROLL_EVERY
 var _check := 0.0
 var _scan := 0.0
 var _timer := 0.0
@@ -162,6 +186,7 @@ func _ready() -> void:
 	_hit_sound.position.y = 1.2
 	add_child(_hit_sound)
 	_deactivate()
+	fun = FUN_START
 
 
 ## Animation in Schleife – „chicken“ reicht für „dance_chicken“. false = gibt es nicht.
@@ -242,27 +267,88 @@ func _physics_process(delta: float) -> void:
 
 # --- Erscheinen ---------------------------------------------------------------
 
-## Einmal je Anstieg über FUN_MIN: mit SPAWN_CHANCE kommt er. Nicht vor dem ersten Angriff des Monsters –
-## der friedliche Anfang (Spielkonzept 2.1) bleibt.
+## Spaßwert nachführen (CHECK_EVERY) und über FUN_THRESHOLD alle FUN_ROLL_EVERY s würfeln; dazu die Garantie
+## (GUARANTEE_DAY). Nicht vor dem ersten Angriff des Monsters – der friedliche Anfang (Spielkonzept 2.1) bleibt.
 func _check_spawn() -> void:
 	var social := Game.social
 	if social == null or Game.director == null or Game.player == null or Game.player.dead \
 			or NavigationServer3D.map_get_iteration_id(get_world_3d().navigation_map) == 0:
 		return   # ohne fertiges NavMesh findet er keinen Platz zum Erscheinen
-	var count := social.fun_guests().size()
-	if count < FUN_MIN:
-		_armed = true
-		return
-	if not _armed or Game.director.other_threat_active(self):
+	_update_fun(CHECK_EVERY)
+	if not Game.director.first_attack_done or Game.director.other_threat_active(self):
 		return   # nur eine Bedrohung im Haus – der Wurf wartet, bis die andere weg ist
-	_armed = false
-	if not Game.director.first_attack_done:
+	if _guarantee_due():
+		if Game.tracing:
+			print("[Kürbismann] Garantie an Tag %d (erst %d Mal da)" % [Calendar.today(), visits])
+		if _start_any():
+			guarantee_at.pop_front()
 		return
+	var value := fun_value()
+	if value < FUN_THRESHOLD:
+		_roll = FUN_ROLL_EVERY * 0.5   # gleich über der Schwelle wird bald gewürfelt
+		return
+	_roll -= CHECK_EVERY
+	if _roll > 0.0:
+		return
+	_roll = FUN_ROLL_EVERY
+	var chance := lerpf(FUN_CHANCE.x, FUN_CHANCE.y, clampf((value - FUN_THRESHOLD) / (FUN_MAX - FUN_THRESHOLD), 0.0, 1.0))
 	var roll := randf()
 	if Game.tracing:
-		print("[Kürbismann] %d Gäste haben Spaß – Wurf %.2f gegen %.2f" % [count, roll, SPAWN_CHANCE])
-	if roll < SPAWN_CHANCE:
-		start_hunt(social.fun_actors())
+		print("[Kürbismann] Spaßwert %.0f – Wurf %.2f gegen %.2f" % [value, roll, chance])
+	if roll < chance:
+		_start_any()
+
+
+## Spaßwert mit dem kurzen Deko-Anteil (0..FUN_MAX).
+func fun_value() -> float:
+	return minf(FUN_MAX, fun + _fun_deco)
+
+
+## Fällt ständig, steigt mit jedem, der Spaß hat (Social.fun_kind; der Spieler wie ein Gast) – nicht, solange er im
+## Hotel ist.
+func _update_fun(delta: float) -> void:
+	_fun_deco = maxf(0.0, _fun_deco - delta * FUN_DECO / FUN_DECO_TIME)
+	var gain := 0.0
+	if not in_house():
+		for guest in Game.social.guests:
+			gain += float(FUN_GAIN.get(Game.social.fun_kind(guest), 0.0))
+		if (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active):
+			gain += float(FUN_GAIN["game"])
+		elif Game.social.player_has_fun():
+			gain += float(FUN_GAIN["party"])
+	fun = clampf(fun + (gain - fun * FUN_DECAY) * delta, 0.0, FUN_MAX)
+
+
+## Der Spieler hat Deko platziert (Player): kurz mehr Spaß.
+func on_deco_placed() -> void:
+	if not in_house():
+		_fun_deco = minf(FUN_MAX, _fun_deco + FUN_DECO)
+
+
+## Garantie: Am GUARANTEE_DAY einmal prüfen – war er noch keine GUARANTEE_VISITS Mal da, je eine zufällige Zeit an diesem
+## und am nächsten Tag. Fällig, sobald die nächste erreicht ist; kam er an dem Tag schon von selbst, fällt sie weg.
+func _guarantee_due() -> bool:
+	var now := Game.director.elapsed
+	var day := Calendar.today()
+	if not guarantee_checked and day >= GUARANTEE_DAY:
+		guarantee_checked = true
+		if visits < GUARANTEE_VISITS:
+			for d: int in [GUARANTEE_DAY, GUARANTEE_DAY + 1]:
+				var start: float = (d - Calendar.FIRST_DAY) * Calendar.DAY_SECONDS
+				guarantee_at.append(maxf(now, start + Calendar.DAY_SECONDS * randf_range(GUARANTEE_TIME.x, GUARANTEE_TIME.y)))
+			if Game.tracing:
+				print("[Kürbismann] Garantie: erst %d Mal da – kommt sicher bei %s" % [visits, ", ".join(guarantee_at.map(func(t) -> String: return Calendar.date_text(float(t)) + " (%.0f s)" % float(t)))])
+	return not guarantee_at.is_empty() and now >= float(guarantee_at[0])
+
+
+## Er kommt – zu denen, die Spaß haben, sonst zu allen Erwachsenen und dem Spieler (Garantie). false = kein Platz.
+func _start_any() -> bool:
+	var actors := Game.social.fun_actors()
+	if actors.is_empty():
+		for guest in Game.social.living_guests():
+			actors.append(guest)
+		actors.append(Game.player)
+	return start_hunt(actors)
 
 
 ## Er kommt übers Lobbydach (_start_arrival, an der Gartentür, die einem der Feiernden am nächsten liegt) und sucht
@@ -287,6 +373,9 @@ func start_hunt(actors: Array[Node3D], at: Vector3 = Vector3.INF) -> bool:
 			if Game.tracing:
 				print("[Kürbismann] kein Platz zum Erscheinen bei %s" % _name_of(first))
 			return false
+	visits += 1
+	var today := Calendar.today()
+	guarantee_at = guarantee_at.filter(func(t) -> bool: return Calendar.day_of(float(t)) != today)   # heute schon da
 	_kills = 0
 	_scared.clear()
 	_hunt_left = randf_range(HUNT_TIME.x, HUNT_TIME.y)
@@ -841,6 +930,9 @@ func _leave(delta: float) -> void:
 
 func _deactivate() -> void:
 	state = State.INACTIVE
+	fun = 0.0   # der Spaßwert fängt nach seinem Besuch von vorn an
+	_fun_deco = 0.0
+	_roll = FUN_ROLL_EVERY
 	visible = false
 	_victim = null
 	_forced = null
@@ -931,3 +1023,19 @@ func debug_hunt(target: Node3D) -> bool:
 	_forced = target   # erst dieses Opfer, danach wie sonst
 	var marked: Array[Node3D] = [target]
 	return start_hunt(marked)
+
+
+# --- Spielstand ------------------------------------------------------------------------------
+## Gespeichert werden nur Spaßwert, Besuche und Garantie – er selbst nicht (im Hotel wird nicht gespeichert, 8.6).
+
+func save_state() -> Dictionary:
+	return {"fun": fun, "visits": visits, "guarantee_at": guarantee_at.duplicate(), "guarantee_checked": guarantee_checked}
+
+
+func load_state(d: Dictionary) -> void:
+	fun = float(d.get("fun", FUN_START))
+	visits = int(d.get("visits", 0))
+	guarantee_at = (d.get("guarantee_at", []) as Array).map(func(t) -> float: return float(t))
+	guarantee_checked = bool(d.get("guarantee_checked", false))
+	_fun_deco = 0.0
+	_roll = FUN_ROLL_EVERY

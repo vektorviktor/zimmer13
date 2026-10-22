@@ -50,7 +50,10 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" el
 ##     ältere Stände laden weiter, dort verdächtigt keiner den Spieler, eine gespeicherte Delle wird übergangen
 ## 28: Tasche für Kleines (player.bag, Spielkonzept 3.2) und Getränkedosen (Item.Kind.SODA_CAN) – ältere Stände
 ##     laden weiter, die Tasche ist dann leer
-const VERSION := 28
+## 29: Puppe (Spielkonzept 5.5: „doll“, im Director Frist, Urteil und Weg), Feindschaften unter Gästen (social.pals mit
+##     counts und feuds), Spaßwert und Garantie des Kürbismanns („pumpkin“), Aufholen des Lakengeists (ghost.catch_up_day)
+##     – ältere Stände laden weiter, die Puppe sitzt dann in der Lobby
+const VERSION := 29
 const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -391,6 +394,8 @@ func collect() -> Dictionary:
 	}
 	data["traces"] = Game.traces.save_state() if Game.traces else []
 	data["ghost"] = Game.ghost.save_state() if Game.ghost else {}
+	data["doll"] = Game.doll.save_state() if Game.doll else {}
+	data["pumpkin"] = Game.pumpkin.save_state() if Game.pumpkin else {}
 	data["hide_spots"] = _collect_group("hide_spots", func(n: Node) -> Dictionary: return n.save_state())
 	data["doors"] = _collect_group("doors", func(n: Node) -> Dictionary:
 		return {"open": n.is_open, "locked": n.locked})
@@ -445,6 +450,7 @@ func apply(data: Dictionary) -> void:
 	# Laufendes Schmücken, Deko-Suche und Suppenessen werden nicht gespeichert – und die Gäste gleich neu gebaut
 	Game.social.decorating.reset()
 	Game.social.search.reset()
+	Game.social.pranks.reset()
 	if Game.kitchen:
 		Game.kitchen.reset()
 	# Zuerst die zufällig erzeugten Gäste – alles Weitere bezieht sich auf ihre IDs
@@ -600,6 +606,10 @@ func apply(data: Dictionary) -> void:
 	social.sleep_timer = float(sd.get("sleep_timer", 300.0))
 	social._arrival_timer = float(sd.get("arrival_timer", -1.0))
 	social.pals.load_state(sd.get("pals", {}))
+	if Game.doll:
+		Game.doll.load_state(data.get("doll", {}))
+	if Game.pumpkin:
+		Game.pumpkin.load_state(data.get("pumpkin", {}))
 	# Monster zuletzt: ggf. wieder unterwegs an seiner gespeicherten Stelle
 	director.load_state(dd.get("state", {}))
 	last_save_msec = Time.get_ticks_msec()

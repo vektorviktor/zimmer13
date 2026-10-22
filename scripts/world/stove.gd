@@ -6,6 +6,10 @@ extends StaticBody3D
 ## Schalen – freie Gäste in der Nähe kommen und essen mit (Angst ↓, mögen dich mehr, werden miteinander vertrauter,
 ## 6.16), du selbst isst am Topf (Schock ↓); nach COLD_TIME ist sie kalt. Der gebratene Kürbis liegt danach als Teller
 ## (Item.Kind.ROAST_PUMPKIN) auf dem Herd. Was auf dem Herd steht, wird nicht gespeichert. Erreichbar über Game.kitchen.
+## Gäste kochen auch selbst (2026-10-22): Ist der Herd frei, nimmt alle COOK_GAP Sekunden ein freier Erwachsener mit
+## einem Kürbis im Koffer ihn mit in die Küche, gibt ihn in den Topf, schneidet ihn mit dem eigenen Messer und wartet am
+## Herd, bis die Suppe fertig ist – dann kommen die Esser wie sonst. Die Beziehung zum Spieler steigt dabei nicht (das
+## gibt es nur für seine Suppe), aber die Esser werden mit dem Koch vertrauter (6.16).
 
 const SOUP_TIME := 40.0
 const ROAST_TIME := 25.0
@@ -26,6 +30,10 @@ const ROAST_VARIETIES := ["hokkaido", "butternut", "turban"]
 const EAT_LINES := ["Mmh, lecker!", "Genau das Richtige bei dem Wetter.", "Hast du die gekocht? Wunderbar!", "Noch ganz heiß …"]
 const KID_EAT_LINES := ["Lecker!", "Darf ich noch eine?", "Das schmeckt besser als zu Hause!"]
 const LATE_LINES := ["Schon alle? Schade.", "Oh – nichts mehr übrig."]
+## Gäste kochen: so lange Pause zwischen zwei Versuchen (s), so weit (gleiches Stockwerk) kommt ein Koch her
+const COOK_GAP := Vector2(90.0, 200.0)
+const COOK_RANGE := 90.0
+const COOK_LINES := ["Ich mach uns eine Kürbissuppe.", "Wer hat Hunger? Gleich gibt's Suppe!", "So, ab in den Topf mit dir."]
 
 ## empty · raw (Kürbis im Topf bzw. in der Pfanne, noch nicht geschnitten) · cooking · soup (fertig, Schalen übrig)
 var phase := "empty"
@@ -37,6 +45,9 @@ var front := Vector3(0, 0, 1)
 
 var _timer := 0.0
 var _player_ate := false
+var _cook: Guest              ## Gast, der gerade kocht (auf dem Weg oder am Herd); null = keiner bzw. der Spieler
+var _guest_cooked := false    ## die Suppe im Topf hat ein Gast gekocht
+var _cook_timer := randf_range(COOK_GAP.x, COOK_GAP.y)
 var _eaters := {}             ## Gast-ID → {guest, phase (go/eat), time, spot}
 var _ate: Array[Guest] = []   ## wer von diesem Topf gegessen hat
 var _pot: Node3D
@@ -111,6 +122,8 @@ func _ready() -> void:
 func reset() -> void:
 	_eaters.clear()
 	_ate.clear()
+	_cook = null
+	_guest_cooked = false
 	phase = "empty"
 	portions = 0
 	_show()
@@ -166,6 +179,7 @@ func interact(player: Player) -> void:
 			variety = PumpkinKinds.DEFAULT if player.held.kind == Item.Kind.MINI_PUMPKIN else player.held.variety
 			dish = d
 			var mush := player.held.kind == Item.Kind.PUMPKIN_MUSH
+			_guest_cooked = false
 			player.consume_held()
 			phase = "raw"
 			if mush:   # schon klein – kocht gleich
@@ -201,6 +215,8 @@ func _process(delta: float) -> void:
 	if Game.game_over:
 		return
 	_bob += delta
+	if phase == "empty":
+		_update_guest_cook(delta)
 	match phase:
 		"cooking":
 			_timer -= delta
@@ -232,12 +248,21 @@ func _done() -> void:
 	_player_ate = false
 	_ate.clear()
 	_show()
-	Game.say("Es gibt Kürbissuppe in der Küche!", 4.0)
+	if _guest_cooked and _cook and not _cook.dead:
+		_cook.say("Die Suppe ist fertig!")
+		if _player_near(25.0):
+			Game.say("%s hat Kürbissuppe gekocht!" % _cook.display_name, 4.0)
+	else:
+		Game.say("Es gibt Kürbissuppe in der Küche!", 4.0)
 	_call_eaters()
 
 
 func _end_soup(message: String) -> void:
 	Game.social.pals.note_group(_ate)   # zusammen gegessen (6.16)
+	if _guest_cooked and _cook and not _cook.dead:
+		for g in _ate:
+			Game.social.pals.note(g, _cook)   # der Koch wird mit allen vertrauter
+	_cook = null
 	if Game.tracing:
 		print("[Kochen] Suppe aus: %d gegessen, %d Schalen übrig" % [_ate.size(), portions])
 	for id in _eaters.keys():
@@ -300,8 +325,11 @@ func player_eats() -> bool:
 	return phase == "soup" and _player_near(4.0) and _eaters.values().any(func(e: Dictionary) -> bool: return e["phase"] == "eat")
 
 
-## Guest._arrive im Zustand EAT: eine Schale nehmen.
+## Guest._arrive im Zustand EAT: eine Schale nehmen – oder als Koch den Kürbis in den Topf geben.
 func on_arrived(g: Guest) -> void:
+	if g == _cook and phase == "empty" and g.held:
+		_start_guest_soup(g)
+		return
 	if not _eaters.has(g.id):
 		g._set_idle(randf_range(2.0, 5.0))
 		return
@@ -338,7 +366,8 @@ func _update_eaters(delta: float) -> void:
 		entry["time"] = float(entry["time"]) - delta
 		if float(entry["time"]) <= 0.0:
 			g.fear = maxf(0.0, g.fear - FEAR_RELIEF)
-			Game.social.change_relation(g, RELATION)
+			if not _guest_cooked:
+				Game.social.change_relation(g, RELATION)   # du hast gekocht
 			_ate.append(g)
 			if Game.tracing:
 				print("[Kochen] %s hat gegessen (Beziehung %.0f)" % [g.display_name, g.relation])
@@ -346,3 +375,69 @@ func _update_eaters(delta: float) -> void:
 			g._set_idle(randf_range(2.0, 5.0))
 	if portions <= 0 and _eaters.is_empty():
 		_end_soup("")
+
+
+# --- Gäste kochen selbst ---------------------------------------------------------------------
+
+## Herd frei: alle COOK_GAP s macht sich ein Gast mit einem Kürbis im Koffer auf den Weg (nicht bei Feier, Nachtruhe oder
+## wenn es in der Küche unruhig ist). Bricht er unterwegs ab, wandert der Kürbis zurück in den Koffer.
+func _update_guest_cook(delta: float) -> void:
+	if _cook:
+		if _cook.dead or _cook.state != Guest.State.EAT:
+			if not _cook.dead and _cook.held:
+				_cook.stow_held()
+			_cook = null
+		return
+	_cook_timer -= delta
+	if _cook_timer > 0.0:
+		return
+	_cook_timer = randf_range(COOK_GAP.x, COOK_GAP.y)
+	start_guest_cook(null)
+
+
+## Ein Gast kocht (Debug: dieser, auch ohne Kürbis im Koffer). false = keiner frei bzw. der Herd ist belegt.
+func start_guest_cook(forced: Guest) -> bool:
+	var social := Game.social
+	if phase != "empty" or _cook != null or social == null or (forced == null and (social.party_active or social.sleep_active \
+			or not Game.director.is_quiet(global_position))):
+		return false
+	var pos := global_position
+	var cook := forced
+	if cook == null:
+		var candidates := social.living_guests().filter(func(g: Guest) -> bool:
+			return not g.is_child() and int(g.stock.get(Item.Kind.PUMPKIN, 0)) > 0 and g.held == null and g.hiding == null \
+				and g.state in [Guest.State.IDLE, Guest.State.WALK] and not g.is_following() and g.fear < 50.0 \
+				and absf(g.global_position.y - pos.y) < 2.5 and g.global_position.distance_to(pos) < COOK_RANGE \
+				and not social.decorating.is_crew(g) and not social.search.is_busy(g))
+		if candidates.is_empty():
+			return false
+		cook = candidates.pick_random()
+	if int(cook.stock.get(Item.Kind.PUMPKIN, 0)) > 0:
+		cook.stock[Item.Kind.PUMPKIN] = int(cook.stock[Item.Kind.PUMPKIN]) - 1
+	_cook = cook
+	cook._take_into_hand(cook.stock_item(Item.Kind.PUMPKIN))
+	var spot := NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, pos + front * 0.8)
+	cook._walk_to(spot, Guest.State.EAT)
+	if Game.tracing:
+		print("[Kochen] %s geht kochen (%s)" % [cook.display_name, cook.held.display_name])
+	return true
+
+
+## Am Herd: Kürbis in den Topf, mit dem eigenen Messer klein – es kocht (immer Suppe, damit alle etwas haben).
+func _start_guest_soup(g: Guest) -> void:
+	var pumpkin := g.held
+	g.held = null
+	variety = pumpkin.variety if pumpkin.variety in SOUP_VARIETIES else PumpkinKinds.DEFAULT
+	pumpkin.queue_free()
+	dish = "soup"
+	phase = "cooking"
+	_timer = SOUP_TIME
+	_guest_cooked = true
+	_show()
+	Game.noise("carve", global_position, g)
+	g.say(COOK_LINES.pick_random())
+	g._set_idle(SOUP_TIME + 3.0)   # wartet am Herd
+	var to := global_position - g.global_position
+	g.rotation.y = atan2(-to.x, -to.z)
+	if Game.tracing:
+		print("[Kochen] %s kocht Kürbissuppe" % g.display_name)

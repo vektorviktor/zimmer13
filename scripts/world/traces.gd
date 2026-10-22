@@ -101,7 +101,8 @@ func _drop_oldest_footprint() -> void:
 		_footprints.remove_at(0)
 
 
-## Wachsfleck oder Blutstropfen eines Gastes auf dem Boden.
+## Wachsfleck oder Blutstropfen eines Gastes auf dem Boden – auch der große Wachsfleck einer geworfenen Kerze
+## („wax_splash“, 6.13) und Ruß verbrannter Deko („soot“, 5.11).
 func add_guest_drop(kind: String, pos: Vector3) -> TraceMark:
 	if _guest_marks.size() >= MAX_GUEST_MARKS:
 		var old: TraceMark = _guest_marks.pop_front()
@@ -322,7 +323,7 @@ func load_state(list: Array) -> void:
 		else:
 			mark.free()   # Tür oder Fenster gibt es nicht mehr – die Spur fällt weg
 			continue
-		if mark.kind in ["wax", "drops"]:
+		if mark.kind in ["wax", "drops", "wax_splash", "soot"]:
 			_guest_marks.append(mark)
 
 

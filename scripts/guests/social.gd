@@ -49,10 +49,16 @@ const MIN_GUESTS := 33
 ## Saures: Abstand zwischen zwei Besuchen an Zimmer 13, so lange wartet das Kind an der offenen Tür
 const CHILDREN := 13
 const CHILD_DRIFT := 4.0
-const TRICK_COOLDOWN := Vector2(300.0, 600.0)
+const TRICK_COOLDOWN := Vector2(100.0, 220.0)
 const TRICK_WAIT := 15.0
+## Süßigkeiten an der Tür: höchstens so viele je Besuch, so viel Beziehung bringt die erste, zweite, dritte (je mehr,
+## desto mehr – zusammen 21); nach einer Süßigkeit wartet es noch so lange auf die nächste
+const TRICK_SWEETS_MAX := 3
+const TREAT_RELATION := [5.0, 7.0, 9.0]
+const TRICK_MORE_WAIT := 8.0
+const TREAT_LINES := ["Danke!", "Noch eins? Juhu!", "Drei! Danke, danke, danke!"]
 ## Von Tür zu Tür (Spielkonzept 6.13): so oft zieht ein Kind los, zu so vielen Türen, so lange klopft es
-const ROUND_COOLDOWN := Vector2(150.0, 330.0)
+const ROUND_COOLDOWN := Vector2(45.0, 110.0)
 const ROUND_DOORS := 3
 const ROUND_RANGE := 60.0
 const ROUND_KNOCK_EVERY := 2.2
@@ -160,6 +166,7 @@ var builder: LevelBuilder
 var record_player: RecordPlayer
 var decorating: Decorating               ## Schmück-Aktionen (Spielkonzept 5.9)
 var pals: GuestPals                      ## Freundschaften unter Gästen (Spielkonzept 6.16)
+var pranks: Pranks                      ## Streiche der Kinder (Spielkonzept 6.13)
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
@@ -281,6 +288,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	search = DecoSearch.new()   # Deko-Suche (Spielkonzept 5.9)
 	search.name = "DecoSearch"
 	add_child(search)
+	pranks = Pranks.new()   # Streiche der Kinder (Spielkonzept 6.13)
+	pranks.name = "Pranks"
+	add_child(pranks)
 
 
 ## Gast ins Hotel setzen (Profil muss schon bekannt sein); mit Start-Deko vor der Tür.
@@ -740,15 +750,24 @@ func is_in_closed_chest(item: Item) -> bool:
 ## Wer gerade Spaß hat (Spielkonzept 4.19 – lockt den Kürbismann): feiert, sitzt am Spieltisch, zieht als Kind
 ## zu Süßes oder Saures von Tür zu Tür oder steht damit an Zimmer 13.
 func has_fun(guest: Guest) -> bool:
+	return fun_kind(guest) != ""
+
+
+## Welcher Spaß (für den Spaßwert des Kürbismanns, 4.19): "party", "game", "decorate", "eat", "trick" – "" = keiner.
+func fun_kind(guest: Guest) -> String:
 	if guest.dead or guest.hiding != null:
-		return false
-	if guest.state in [Guest.State.PARTY, Guest.State.MINIGAME]:
-		return true
+		return ""
+	if guest.state == Guest.State.PARTY:
+		return "party"
+	if guest.state == Guest.State.MINIGAME:
+		return "game"
 	if decorating and decorating.is_crew(guest):
-		return true   # Schmücken ist auch Spaß (Spielkonzept 5.9, 4.19)
+		return "decorate"   # Schmücken ist auch Spaß (Spielkonzept 5.9, 4.19)
 	if Game.kitchen and Game.kitchen.is_eating(guest):
-		return true   # gemeinsam Kürbissuppe essen (3.8)
-	return _rounds.has(guest.id) or (not _trick.is_empty() and _trick["guest"] == guest)
+		return "eat"   # gemeinsam Kürbissuppe essen (3.8)
+	if _rounds.has(guest.id) or (not _trick.is_empty() and _trick["guest"] == guest):
+		return "trick"
+	return ""
 
 
 func fun_guests() -> Array[Guest]:
@@ -1474,6 +1493,8 @@ func start_visit(guest: Guest) -> void:
 ## Der Gast steht vor Zimmer 13: Bei offener Tür kommt er gleich herein, sonst klopft er.
 ## why (Meta „visit“ am Gast): "" Besuch eines Freundes, "trick" Süßes oder Saures, "sleepless" Kind kann nicht schlafen.
 func on_visit_arrived(guest: Guest) -> void:
+	if pranks.on_arrived(guest):   # holt etwas für einen Streich bzw. wirft es (6.13)
+		return
 	if _rounds.has(guest.id):
 		_round_arrived(guest)
 		return
@@ -1543,7 +1564,10 @@ func _update_tricks(delta: float) -> void:
 		elif kid.state == Guest.State.KNOCK:
 			_trick["time"] = float(_trick["time"]) - delta
 			if float(_trick["time"]) <= 0.0:
-				_trick_prank(kid)
+				if int(_trick.get("given", 0)) > 0:
+					_treat_done(kid)   # hat schon etwas bekommen – kein Streich
+				else:
+					_trick_prank(kid)
 		return
 	_trick_cooldown -= delta
 	if _trick_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active or not _player_home_quiet():
@@ -1559,34 +1583,57 @@ func _update_tricks(delta: float) -> void:
 			print("[Süßes oder Saures] %s kommt zu Zimmer 13" % kid.display_name)
 
 
-## Die Tür ist auf: Hast du Süßigkeiten in der Hand oder in der Tasche, bekommt es sie gleich – sonst wartet es
-## eine Weile (schenken im Gespräch geht auch), dann gibt es Saures.
+## Die Tür ist auf: Das Kind wartet eine Weile vor der Tür. Gibst du ihm Süßigkeiten ([E] am Kind, give_trick_sweet,
+## oder im Gespräch), spielt es keinen Streich – bis zu TRICK_SWEETS_MAX Stück, und jedes mag dich mehr (TREAT_RELATION).
+## Nach dem ersten wartet es nur noch TRICK_MORE_WAIT auf das nächste; bekommt es nichts, gibt es Saures.
 func _trick_at_door(kid: Guest) -> void:
-	var p := Game.player
-	if p and p.consume_kind(Item.Kind.SWEETS):
-		_treat(kid, 12.0)
-		return
 	kid.knock_politely()   # bleibt vor der Tür stehen
 	kid.say(kid.line("trick"))
-	_trick = {"guest": kid, "time": TRICK_WAIT}
+	_trick = {"guest": kid, "time": TRICK_WAIT, "given": 0}
 
 
-## Süßigkeiten geschenkt (auch im Gespräch, DialogUI._gift): Wartet das Kind gerade an der Tür, ist es zufrieden.
+## Wartet dieses Kind gerade vor Zimmer 13 auf (weitere) Süßigkeiten? Gibt zurück, wie viele es schon hat, sonst −1.
+func trick_sweets_given(kid: Guest) -> int:
+	if _trick.is_empty() or _trick["guest"] != kid or kid.state != Guest.State.KNOCK:
+		return -1
+	var given := int(_trick.get("given", 0))
+	return given if given < TRICK_SWEETS_MAX else -1
+
+
+## Der Spieler gibt dem wartenden Kind eine Süßigkeit (aus Hand oder Tasche). false = geht nicht.
+func give_trick_sweet(kid: Guest) -> bool:
+	if trick_sweets_given(kid) < 0 or not Game.player.consume_kind(Item.Kind.SWEETS):
+		return false
+	on_sweets_given(kid)
+	return true
+
+
+## Eine Süßigkeit bekommen (an der Tür oder im Gespräch, DialogUI._gift): Wartet das Kind gerade an der Tür, spielt es
+## keinen Streich mehr und mag dich – je mehr Stück, desto mehr; ab dem dritten geht es zufrieden.
 func on_sweets_given(kid: Guest) -> void:
-	if not _trick.is_empty() and _trick["guest"] == kid:
-		_trick = {}
-		_treat(kid, 6.0)
-
-
-func _treat(kid: Guest, amount: float) -> void:
-	_trick = {}
-	change_relation(kid, amount)
+	var given := trick_sweets_given(kid)
+	if given < 0:
+		return
+	given += 1
+	_trick["given"] = given
+	_trick["time"] = TRICK_MORE_WAIT
+	change_relation(kid, TREAT_RELATION[given - 1])
 	add_deed(kid, "gifts_to")
+	kid.say(TREAT_LINES[given - 1])
+	if Game.tracing:
+		print("[Süßes oder Saures] %s bekommt die %d. Süßigkeit (Beziehung %.0f)" % [kid.display_name, given, kid.relation])
+	if given >= TRICK_SWEETS_MAX:
+		_treat_done(kid)
+
+
+## Zufrieden: Das Kind bedankt sich und geht.
+func _treat_done(kid: Guest) -> void:
+	_trick = {}
 	kid.say(kid.line("treat"))
 	kid.end_visit()
 
 
-## Saures: Laub vor der Tür von Zimmer 13 – oder ein Klingelstreich ein wenig später.
+## Saures: ein Streich vor der Tür von Zimmer 13 (Pranks) – oder ein Klingelstreich ein wenig später.
 func _trick_prank(kid: Guest) -> void:
 	_trick = {}
 	if Game.tracing:
@@ -1599,7 +1646,7 @@ func _trick_prank(kid: Guest) -> void:
 			if is_instance_valid(kid) and not kid.dead:
 				Game.phones.kid_prank(kid))
 		return
-	_leaves_at(LevelBuilder.PLAYER_ROOM, kid)
+	pranks.play(kid, LevelBuilder.PLAYER_ROOM)
 
 
 ## Saures: Laub vor die Tür dieses Zimmers.
@@ -1744,7 +1791,8 @@ func _round_answer(entry: Dictionary, host: Guest) -> void:
 	var kid: Guest = entry["kid"]
 	var grumpy := String(host.profile.get("archetype", "")) == "Griesgram"
 	var sweets := int(host.stock.get(Item.Kind.SWEETS, 0))
-	if sweets > 0 or randf() < (TRICK_GIVE_GRUMPY if grumpy else TRICK_GIVE):
+	# Mit Süßem im Koffer gibt er immer, sonst nach Laune – aus der Süßigkeiten-Truhe seines Zimmers, solange sie nicht leer ist
+	if sweets > 0 or (randf() < (TRICK_GIVE_GRUMPY if grumpy else TRICK_GIVE) and take_room_sweet(String(host.home["no"]))):
 		if sweets > 0:
 			host.stock[Item.Kind.SWEETS] = sweets - 1
 		kid.stock[Item.Kind.SWEETS] = int(kid.stock.get(Item.Kind.SWEETS, 0)) + 1
@@ -1758,14 +1806,33 @@ func _round_answer(entry: Dictionary, host: Guest) -> void:
 	_round_prank(entry, host)
 
 
-## Saures: Laub vor der Tür (Spielkonzept 6.13) – dann weiter.
+## Eine Süßigkeit aus der Süßigkeiten-Truhe dieses Zimmers nehmen (ExtraFixtures) – sie liegt sichtbar darin. false = leer.
+func take_room_sweet(no: String) -> bool:
+	for node in get_tree().get_nodes_in_group("sweet_chests"):
+		var chest := node as Chest
+		if String(chest.get_meta("sweets_room", "")) != no:
+			continue
+		for item_node in get_tree().get_nodes_in_group("items"):
+			var item := item_node as Item
+			if item.kind == Item.Kind.SWEETS and not item.is_held and not item.is_queued_for_deletion() \
+					and item.global_position.distance_to(chest.global_position) < 0.4:
+				item.queue_free()
+				return true
+		return false
+	return false
+
+
+## Saures: ein Streich vor der Tür (Pranks, Spielkonzept 6.13) – dann weiter; holt das Kind dafür etwas, ist die Runde
+## vorbei.
 func _round_prank(entry: Dictionary, host: Guest) -> void:
 	var kid: Guest = entry["kid"]
 	kid.say(kid.line("scolded" if host else "prank"))
-	_leaves_at(entry["no"], kid)
 	if Game.tracing:
 		print("[Süßes oder Saures] %s: Saures vor Zimmer %s" % [kid.display_name, entry["no"]])
+	var busy := pranks.play(kid, entry["no"])
 	_round_done(entry, host)
+	if busy:
+		_rounds.erase(kid.id)
 
 
 ## Tür wieder zu (der Gast geht zurück ins Zimmer), das Kind zur nächsten Tür.
@@ -1882,3 +1949,20 @@ func on_guest_rammed_player(guest: Guest) -> void:
 func on_guest_hit_player(guest: Guest) -> void:
 	add_deed(guest, "revenge")
 	Game.noise("punch", Game.player.global_position, guest)
+
+
+## Debug (--trick=13[,n]): Ein Kind steht vor der offenen Tür von Zimmer 13 und will Süßes; der Spieler gibt ihm n Stück
+## (je 1,5 s eine, wie [E] am Kind).
+func debug_trick_at_13(give: int) -> void:
+	var kids := living_guests().filter(func(g: Guest) -> bool: return g.is_child())
+	if kids.is_empty():
+		return
+	var kid: Guest = kids[0]
+	var room: Dictionary = builder.rooms[LevelBuilder.PLAYER_ROOM]
+	kid.global_position = (room["door_front"] as Vector3) + Vector3.UP * 0.05
+	(room["door"] as Door).set_open(true, true, true)
+	_trick_at_door(kid)
+	for i in give:
+		get_tree().create_timer(1.5 * (i + 1), false).timeout.connect(func() -> void:
+			Game.player.receive_item(Item.create(Item.Kind.SWEETS))
+			give_trick_sweet(kid))

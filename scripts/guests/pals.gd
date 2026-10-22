@@ -4,7 +4,9 @@ extends Node
 ## schmücken, Deko suchen, Suppe essen, spielen, feiern, an der Bar trinken. Familie (6.13) und Zimmernachbarn sind
 ## es von Anfang an. Wer mit dem Spieler mindestens „befreundet“ ist, erzählt seinen Freunden beim Treffen Gutes über
 ## ihn – sie mögen ihn dann mehr, bis höchstens „befreundet“. Kind von Social, erreichbar über Game.social.pals.
-## Gespeichert werden nur die Zähler je Paar (counts).
+## Feindschaften (6.16, 2026-10-22): Wer verpetzt bekommt, wessen Kind ihm einen Streich gespielt hat, ist mit dessen
+## Eltern verfeindet (Pranks) – Verfeindete sind keine Freunde, auch nicht als Nachbarn.
+## Gespeichert werden die Zähler je Paar (counts) und die verfeindeten Paare (feuds).
 
 ## Ab so vielen gemeinsamen Taten sind zwei Gäste Freunde
 const PAL_DEEDS := 3
@@ -29,6 +31,8 @@ const HEARD_LINES := ["%s hat mir viel Gutes von dir erzählt.", "Du bist also d
 
 ## "id_a|id_b" (sortiert) → Anzahl gemeinsamer Taten
 var counts := {}
+## "id_a|id_b" (sortiert) → true: verfeindet
+var feuds := {}
 ## Gast-ID → ID dessen, der ihm zuletzt Gutes über dich erzählt hat (für das nächste Gespräch; nicht gespeichert)
 var heard := {}
 var _told := {}          ## "id_a|id_b" → Spieltag des letzten Weitererzählens (nicht gespeichert)
@@ -69,11 +73,29 @@ func note_group(group: Array) -> void:
 func are_pals(a: Guest, b: Guest) -> bool:
 	if a == null or b == null or a == b:
 		return false
+	if feuds.has(key(a, b)):
+		return false   # verfeindet (6.16)
 	if a.parent_guest() == b or b.parent_guest() == a:
 		return true   # Familie (6.13)
 	if int(counts.get(key(a, b), 0)) >= PAL_DEEDS:
 		return true
 	return _neighbors(a, b)
+
+
+## Zwei Gäste werden Feinde (Streich verpetzt, Pranks).
+func add_feud(a: Guest, b: Guest) -> void:
+	if a == null or b == null or a == b or a.dead or b.dead:
+		return
+	var k := key(a, b)
+	if feuds.has(k):
+		return
+	feuds[k] = true
+	if Game.tracing:
+		print("[Feinde] %s und %s sind jetzt verfeindet" % [a.display_name, b.display_name])
+
+
+func are_feuding(a: Guest, b: Guest) -> bool:
+	return a != null and b != null and feuds.has(key(a, b))
 
 
 func _neighbors(a: Guest, b: Guest) -> bool:
@@ -98,13 +120,18 @@ func praise(from: Guest, amount: float) -> void:
 
 
 func save_state() -> Dictionary:
-	return counts.duplicate()
+	return {"counts": counts.duplicate(), "feuds": feuds.keys()}
 
 
+## Ältere Stände (vor Version 29): nur die Zähler, ohne Feindschaften.
 func load_state(data: Dictionary) -> void:
 	counts = {}
-	for k in data:
-		counts[String(k)] = int(data[k])
+	feuds = {}
+	var saved: Dictionary = data.get("counts", {}) if data.get("counts") is Dictionary else data
+	for k in saved:
+		counts[String(k)] = int(saved[k])
+	for k in data.get("feuds", []):
+		feuds[String(k)] = true
 
 
 ## Im Gespräch: einmal sagen, wer ihm von dir erzählt hat ("" = niemand).

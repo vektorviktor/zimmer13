@@ -887,6 +887,8 @@ func drop_held(shocked: bool = false, hang: bool = true) -> void:
 		item.reparent(get_parent(), false)
 		item.hang(spot["point"], spot["out"], float(spot.get("length", 0.0)))
 		Game.noise("drop", item.global_position, self)
+		if Game.pumpkin:
+			Game.pumpkin.on_deco_placed()   # Deko platzieren macht kurz Spaß (4.19)
 		if Game.hud:
 			Game.hud.set_held("")
 		return
@@ -899,6 +901,8 @@ func drop_held(shocked: bool = false, hang: bool = true) -> void:
 	item.linear_velocity = Vector3.ZERO
 	var heavy := item.is_large or item.kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN]
 	Game.noise("shock_drop" if shocked else ("drop_heavy" if heavy else "drop"), place, self)
+	if not shocked and item.deco_strength > 0.0 and Game.pumpkin:
+		Game.pumpkin.on_deco_placed()   # Deko platzieren macht kurz Spaß (4.19)
 	if Game.hud:
 		Game.hud.set_held("")
 
@@ -1097,6 +1101,11 @@ func bag_remove(item: Item) -> Item:
 	item.take_from_bag()
 	_show_bag()
 	return item
+
+
+## Hat er so etwas – in der Hand oder in der Tasche?
+func has_kind(kind: int) -> bool:
+	return held_kind() == kind or bag.any(func(item: Item) -> bool: return item.kind == kind)
 
 
 ## Einen Gegenstand dieser Art verbrauchen – aus der Hand, sonst aus der Tasche. false = keiner da.

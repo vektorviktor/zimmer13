@@ -32,6 +32,7 @@ var phones: PhoneCalls
 var weather: Weather
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
 var confetti: Confetti            ## Konfetti auf Feiern (Spielkonzept 7.6)
+var doll: JuryDoll                 ## die Puppe – „Halloween-Jury“ (Spielkonzept 5.5)
 var game_over := false
 ## Debug: letzte Lärmereignisse (F3)
 var noise_log: Array[String] = []
@@ -130,6 +131,7 @@ func reset() -> void:
 	weather = null
 	kitchen = null
 	confetti = null
+	doll = null
 	noise_log.clear()
 	Senses.clear_cache()
 

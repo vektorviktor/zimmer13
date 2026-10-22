@@ -23,6 +23,8 @@ const NOISE := {
 	"drop":       {"range": 2.0,  "sound": "thud",   "volume": 0.4},    ## Gegenstand ablegen
 	"drop_heavy": {"range": 4.0,  "sound": "thud",   "volume": 0.5},    ## Kürbis oder großer Gegenstand
 	"pumpkin_splat": {"range": 8.0, "sound": "thud", "volume": 0.8},    ## Kürbis zerplatzt nach tiefem Fall (5.8)
+	"wax_splat":  {"range": 5.0,  "sound": "thud",   "volume": 0.5},    ## geworfene Kerze zerbricht (Streich, 6.13)
+	"fire":       {"range": 5.0,  "sound": "rustle", "volume": 0.6},    ## Deko brennt, alle 2 s (5.11)
 	"shock_drop": {"range": 6.0,  "sound": "thud",   "volume": 0.6},    ## vor Schreck fallen gelassen (6.8)
 	"chest":      {"range": 4.0,  "sound": "creak",  "volume": 0.4},
 	"drawer":     {"range": 3.0,  "sound": "creak",  "volume": 0.3},    ## Schublade einer Kommode
