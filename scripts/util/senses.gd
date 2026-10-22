@@ -49,7 +49,7 @@ const NOISE := {
 	"dice":       {"range": 10.0, "sound": "thud",   "volume": 0.4},    ## Würfeln, Spiel am Tisch
 	"party":      {"range": 25.0, "sound": "",       "volume": 0.0},    ## Feier mit Musik, alle 8 s
 	"punch":      {"range": 9.0,  "sound": "thud",   "volume": 0.8},    ## Schlag (Spieler oder Gast, 6.3)
-	"scream":     {"range": 20.0, "sound": "scream", "volume": 0.9, "alarm": true},   ## Schreck – Stimme des Gastes (SynthAudio.VOICES)
+	"scream":     {"range": 20.0, "sound": "scream", "volume": 1.0, "alarm": true},   ## Schreck – Stimme des Gastes (SynthAudio.VOICES)
 	"death_scream": {"range": 20.0, "sound": "death_scream", "volume": 1.0, "alarm": true},   ## vom Monster geholt – jäh abgerissen
 	"axe_swing":  {"range": 20.0, "sound": "",       "volume": 0.0, "alarm": true},   ## Kürbismann schlägt zu (4.19) – Ton spielt er selbst (3D)
 	"pumpkin_land": {"range": 16.0, "sound": "thud", "volume": 1.0, "alarm": true},   ## Kürbismann springt vom Lobbydach in den Garten (4.19)

@@ -22,8 +22,8 @@ const SCREAMS := {
 	"child": ["child_1", "child_2", "child_3"],
 }
 const VOICES := {
-	"scream": {"files": SCREAMS, "db": 0.0, "synth": "scream"},   ## Schreck – klingt aus
-	"death_scream": {"files": SCREAMS, "db": 2.0, "pitch": 0.94, "cut": Vector2(0.45, 0.75), "synth": "scream"},   ## jäh abgerissen
+	"scream": {"files": SCREAMS, "db": 6.0, "synth": "scream"},   ## Schreck – klingt aus (2026-10-22: +6 dB, deutlich lauter)
+	"death_scream": {"files": SCREAMS, "db": 7.0, "pitch": 0.94, "cut": Vector2(0.45, 0.75), "synth": "scream"},   ## jäh abgerissen
 	"grunt": {"files": {"m": ["grunt_male_1", "grunt_male_2"]}, "db": -3.0, "cut": Vector2.ONE, "synth": ""},   ## letzter Laut (Axt, Würgen)
 	## schweres Atmen nach dem Würgen (Spielkonzept 6.17) – ein Atemzug, tiefer und gepresst, in seiner Stimmlage
 	"wheeze": {"files": {"m": ["breath"], "f": ["breath"], "child": ["breath"]}, "dir": "res://assets/sound/%s.wav", "db": -4.0,

@@ -301,7 +301,9 @@ UI-nahe Dinge (`Game.message_posted`, `money_changed`, `player_died`, `caption_p
   `voice()` hat (`Guest.voice()`: Stimme, feste Aufnahme nach `hash(id)`, Tonhöhe, Länge). Jeder Gast klingt
   immer gleich: Grundtonhöhe ± `VOICE_SPREAD` nach der Id, × `VOICE_AGE` (alt tiefer, jung höher), Kinder nach
   Alter und Geschlecht (die Aufnahmen sind Mädchen), Angst höher (`VOICE_FEAR`), Rausch tiefer (`VOICE_DRUNK`),
-  dazu jedes Mal ± `VOICE_JITTER`. Tonhöhe ändert auch die Länge (`pitch_scale`). Der Schreckensschrei `scream`
+  dazu jedes Mal ± `VOICE_JITTER`. Tonhöhe ändert auch die Länge (`pitch_scale`). Pegel der Schreie seit
+  2026-10-22 deutlich höher: `scream` +6 dB, `death_scream` +7 dB (Aufnahmen mit Spitze −6 dB, also knapp
+  unter Vollaussteuerung), Lärm `scream` mit Lautstärke 1,0. Der Schreckensschrei `scream`
   läuft bei Mutigen kürzer (bis `VOICE_BRAVE` früher abgeblendet), der Todesschrei `death_scream` ist tiefer und
   bricht bei 45–75 % jäh ab (`VOICE_FADE`), das Ächzen `grunt` gibt es nur für Männer. Sie laufen auf
   `VOICE_PLAYERS` `AudioStreamPlayer3D` am Ort des Gastes (ohne Abschwächung über die Entfernung – die Lautstärke
