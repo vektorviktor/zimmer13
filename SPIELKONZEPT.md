@@ -2516,10 +2516,10 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man sc
 - **Konfetti (entschieden 2026-10-21):** Zu Beginn einer Feier und dann alle paar Sekunden schießt buntes
   Konfetti über der Tanzfläche hoch und rieselt herab; zum Abschluss eines großen Schmückens (5.9) auch dort. Was
   landet, bleibt als bunte Schnipsel am Boden liegen und verblasst erst nach einigen Spieltagen.
-- **Tränen (entschieden 2026-10-21):** Wer weint, dem laufen kleine helle Tropfen aus beiden Augen – bei der
+- ~~**Tränen (entschieden 2026-10-21):** Wer weint, dem laufen kleine helle Tropfen aus beiden Augen – bei der
   Schreckreaktion „Weinen“ (6.12) noch auf dem Weg ins Zimmer, bei Kindern, die sich vor Angst an Mama oder Papa
   klammern, bei umgerannten Kindern, bei Freunden eines Verstorbenen (6.16) und bei Kindern, die Mama oder Papa
-  verloren haben.
+  verloren haben.~~ **Entfernt (2026-10-22):** keine Tränenpartikel mehr.
 - **Lakengeist:** Vom Saum rieseln **weiße Flocken**, sparsam, sie blenden mit ihm ein und aus. Im Flur können
   sie ihn etwas früher verraten – gewollt, als leise Vorwarnung.
 - **Monster:** **keine ständige Aura** – es soll verborgen bleiben (4.13). Stattdessen eine **Aschespur**: Wo es

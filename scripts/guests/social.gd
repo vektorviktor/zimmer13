@@ -680,10 +680,6 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	for other in living_guests():
 		if other.is_child() and String(other.profile.get("parent", "")) == guest.id:
 			other.fear = 100.0
-			other.weep(60.0)
-	# Seine Freunde weinen um ihn (6.16, Tränen 7.6)
-	for pal in pals.pals_of(guest):
-		pal.weep(randf_range(20.0, 40.0))
 	# Ein, zwei Gäste schreiben einen Zettel und legen ihn vor ihre Tür
 	var writers := living_guests()
 	writers.shuffle()

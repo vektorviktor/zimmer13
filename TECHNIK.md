@@ -1200,10 +1200,6 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   (Süßes, gebratener Kürbis) isst er nach ein paar Sekunden (`_gift_step`), im Bett wandert es nach der Zeit in den Vorrat.
   Volle Hände → wie früher gleich in den Vorrat. Nicht zu verschenken: `DialogUI.NO_GIFT` (Schlüssel, Schachbrett,
   Würfelbecher – Hotelgegenstände).
-- **Tränen** (Spielkonzept 7.6): `Guest.weep(s)` legt beim ersten Mal ein `CPUParticles3D` an (`top_level`, zwei
-  Emissionspunkte an den Augen, × `head` bei Kindern, helle Tropfen mit Schwerkraft); `_tears_step` setzt es jedes Bild auf
-  `_head_point()` mit der Drehung des Gastes. Ausgelöst in `shock` (Stil `cry`: Schreckzeit + 20–35 s, `cling`: + 8–14 s),
-  `stagger` (umgerannte Kinder), `Social.on_guest_died` (Freunde 20–40 s, Kinder des Toten 60 s). Debug `--weep=gast`.
 - **Kochen** (`world/stove.gd`, `Stove`, `Game.kitchen`, Spielkonzept 3.8): `LevelBuilder._common_rooms` setzt ihn auf die
   Plan-Ausstattung „stove“ in der Küche (Höhe `top`, gedreht nach `front`). `phase`: `empty` → (`dish_for(gehalten)`:
   `SOUP_VARIETIES` in den Topf, `ROAST_VARIETIES` und Zierkürbis in die Pfanne) `raw` → Messer in der Hand → `cooking`

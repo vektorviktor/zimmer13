@@ -156,8 +156,6 @@ var wound_note := ""         ## beim nächsten Gespräch: "healed" oder "neglect
 var _wheeze := 3.0
 var _wound_nodes: Array[Node3D] = []   ## Verletzungsmarken am Körper
 var _gift_item: Item         ## Geschenk in der Hand (6.17): er trägt es heim bzw. isst es nach _gift_hold Sekunden
-var _tears: CPUParticles3D   ## Tränen, solange er weint (_tears_left Sekunden; 7.6)
-var _tears_left := 0.0
 var _gift_hold := 0.0
 
 var agent: NavigationAgent3D
@@ -469,54 +467,6 @@ func _gift_step(delta: float) -> void:
 		stow_held()   # im Bett oder anderweitig beschäftigt: wandert in den Vorrat
 
 
-# --- Tränen (Spielkonzept 7.6) ------------------------------------------------------------------
-
-## Er weint so viele Sekunden (oder länger, wenn er schon weint): Tropfen aus beiden Augen.
-func weep(seconds: float) -> void:
-	if dead:
-		return
-	_tears_left = maxf(_tears_left, seconds)
-	if _tears == null:
-		_tears = CPUParticles3D.new()
-		_tears.top_level = true
-		_tears.amount = 10
-		_tears.lifetime = 0.7
-		_tears.local_coords = false
-		_tears.emission_shape = CPUParticles3D.EMISSION_SHAPE_POINTS
-		var eye := Vector3(0.032, 0.075, -0.095) * float(profile.get("head", 1.0))
-		_tears.emission_points = PackedVector3Array([eye, Vector3(-eye.x, eye.y, eye.z)])
-		_tears.direction = Vector3(0, -1, -0.3)
-		_tears.spread = 15.0
-		_tears.initial_velocity_min = 0.05
-		_tears.initial_velocity_max = 0.2
-		_tears.gravity = Vector3(0, -3.5, 0)
-		_tears.scale_amount_min = 0.7
-		_tears.scale_amount_max = 1.2
-		var drop := QuadMesh.new()
-		drop.size = Vector2(0.012, 0.02)
-		var mat := StandardMaterial3D.new()
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-		mat.albedo_color = Color(0.7, 0.85, 1.0, 0.75)
-		drop.material = mat
-		_tears.mesh = drop
-		add_child(_tears)
-	_tears.emitting = true
-
-
-func _tears_step(delta: float) -> void:
-	if _tears == null or not _tears.emitting:
-		return
-	_tears_left -= delta
-	if _tears_left <= 0.0 or dead:
-		_tears.emitting = false
-		return
-	# Den Augen folgen: Kopf des Modells bzw. der Klötzchenfigur, Blickrichtung des Gastes
-	_tears.global_transform = Transform3D(Basis(Vector3.UP, rotation.y), _head_point())
-
-
 ## Mama oder Papa eines Kindes – null, wenn er kein Kind ist oder sie nicht mehr da sind.
 func parent_guest() -> Guest:
 	if not is_child() or Game.social == null:
@@ -732,8 +682,6 @@ func die(cause: String = "monster") -> void:
 		hiding = null
 	_drop_held()
 	_release_hide_spot()
-	if _tears:
-		_tears.emitting = false   # die Leiche weint nicht weiter (_tears_step läuft nicht mehr)
 	state = State.DEAD
 	_collider.disabled = true
 	collision_layer = 0
@@ -800,7 +748,6 @@ func _physics_process(delta: float) -> void:
 	_leave_traces(delta)
 	_wound_step(delta)
 	_gift_step(delta)
-	_tears_step(delta)
 	fear = maxf(0.0, fear - delta * 0.4)
 	drunk = maxf(0.0, drunk - delta / BarTap.SOBER_TIME)
 	chat_cooldown = maxf(0.0, chat_cooldown - delta)
@@ -1048,8 +995,6 @@ func stagger(push: Vector3, hit: bool) -> void:
 	state = State.STAGGER
 	if not hit:
 		say("Aua! *weint*" if is_child() else RAMMED_LINES.pick_random())
-		if is_child():
-			weep(randf_range(6.0, 10.0))
 		return
 	_hurt_time = HURT_TIME
 	var brave := float(profile["brave"])
@@ -1551,10 +1496,6 @@ func shock(kind: String, pos: Vector3, who: String = "", entranced: bool = false
 	fear = minf(100.0, fear + (50.0 if kind == "corpse" else 30.0) * (1.2 - brave))
 	var cries: Array = SHOCK_CRIES[_shock_style]
 	say(cries.pick_random())
-	if _shock_style == "cry":
-		weep(_timer + randf_range(20.0, 35.0))   # weint noch auf dem Weg heim
-	elif _shock_style == "cling":
-		weep(_timer + randf_range(8.0, 14.0))
 	if is_child():
 		Game.noise("scream", global_position, self)   # Kinder schreien – das lockt das Monster zu den Erwachsenen (6.13)
 		_tell_grown_ups(pos)

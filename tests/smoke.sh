@@ -103,7 +103,6 @@ done <<'LIST'
 400|--talk=edna
 400|--dial=lobby
 600|--pals=edna,bruno --trace
-600|--weep=edna --look=edna
 2000|--sprint --trace
 LIST
 wait

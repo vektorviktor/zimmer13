@@ -89,7 +89,6 @@ extends Node3D
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
 ##   --steal-test                Ednas Deko unbemerkt nehmen (Schuld-Test)
 ##   --player-deco=x,z           geschnitzten Kürbis des Spielers an diese Stelle stellen
-##   --weep=gast                 der Gast weint 30 s (Tränen, 7.6) – mit --look=gast steht er vor dir
 ##   --wound=gast,scratch|axe|choke[,hin]   Gast hat überlebt (6.17): Kratzer, Axtwunde (Blutspur, ein Tag im Bett) bzw.
 ##                               Würgemale (heiser, schweres Atmen) · hin: steht vor dir statt im Bett (mit --talk=gast)
 ##   --wallblood[=smear]         Blutspritzer (smear: blutige Schmierspur) an die Wand, auf die du schaust (4.13)
@@ -594,11 +593,6 @@ func run_debug(arg: String) -> bool:
 			Game.monster.spawn_at(victim.global_position + Vector3(1, 0, 0))
 			Game.director.phase = MonsterDirector.Phase.ACTIVE
 			Game.director.kill_guest(victim, null))
-	elif arg.begins_with("--weep="):
-		# Tränen (Spielkonzept 7.6): der Gast weint eine halbe Minute – mit --look=gast vor dir
-		var crying := _guest(arg.substr(7))
-		if crying:
-			crying.weep(30.0)
 	elif arg.begins_with("--wound="):
 		# Überlebender (Spielkonzept 6.17): gast,scratch|axe|choke[,hin] – verletzt wie nach dem Angriff; hin: er liegt
 		# bzw. steht vor dir (mit --talk=gast erzählt er als Zeuge)

@@ -43,7 +43,6 @@ const COMMANDS := {
 	"party": ["[gast]", "Feier im Partyraum starten (mit Gast: er lädt ein)"],
 	"talk": ["gast", "Gespräch öffnen"],
 	"look": ["gast[,pose]", "Gast ansehen (carry, panic, dance, sit, walk)"],
-	"weep": ["gast", "der Gast weint 30 s (7.6)"],
 	"wound": ["gast,scratch|axe|choke[,hin]", "Gast hat einen Angriff überlebt (6.17) – hin: steht vor dir"],
 	"friend": ["gast", "mit dem Gast befreundet"],
 	"enemy": ["gast", "mit dem Gast verfeindet"],
@@ -89,7 +88,7 @@ const START_ONLY := ["title", "new", "nointro", "shot", "frames", "shot-on", "bg
 ## Getippter Name → Startparameter
 const ALIASES := {"save": "diary", "load": "load-slot"}
 ## Befehle, deren erster Wert eine Gast-ID ist (wird vorher geprüft)
-const GUEST_FIRST := ["shock", "kill", "talk", "look", "weep", "wound", "pals", "friend", "enemy", "relation", "follow", "visit",
+const GUEST_FIRST := ["shock", "kill", "talk", "look", "wound", "pals", "friend", "enemy", "relation", "follow", "visit",
 	"attack", "punch", "dice", "chess", "challenge", "bulb-thief"]
 
 static var _history: Array[String] = []
