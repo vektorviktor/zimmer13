@@ -7,6 +7,20 @@ extends Node3D
 ## Kollisionstiefe des Türblatts (= Wandstärke, siehe LevelBuilder.T)
 const COLLISION_DEPTH := 0.2
 
+## Aussehen des Blatts: im Code gebaut (Betriebs- und Glastüren) oder eines der gemalten Modelle aus
+## tools/build_doors.py – Zimmertür bzw. Kniestocktür zum Dachboden (Spielkonzept 4.21)
+enum Look { PLAIN, HOTEL, ATTIC }
+const HOTEL_MODEL := "res://assets/models/door_hotel.glb"
+const ATTIC_MODEL := "res://assets/models/door_attic.glb"
+## Blattgröße der Modelle (Meter, wie im Skript) – gestreckt auf die Tür, Klinke und Bänder bleiben, wie sie sind
+const HOTEL_LEAF := Vector2(1.18, 2.08)
+const ATTIC_LEAF := Vector2(0.78, 1.55)
+## Klinke: Abstand der Drückerachse von der Schlosskante und Höhe über dem Boden
+const HANDLE_INSET := 0.1
+const HANDLE_HEIGHT := 1.04
+## Bänder der Zimmertür als Anteil der Blatthöhe (wie gemalt)
+const HINGE_AT: Array[float] = [0.12, 0.62, 0.88]
+
 var width := 1.2
 var height := 2.1
 var open_angle := deg_to_rad(-100.0)
@@ -16,6 +30,7 @@ var key_id := ""
 var locked_text := "Abgeschlossen."
 var monster_can_open := true
 var glass := false          ## Glastür: man sieht hindurch (Ebene 7 statt 2)
+var look := Look.PLAIN      ## vor dem Einhängen setzen (nicht bei Glastüren)
 var hinge_end := false      ## einfache Tür: Scharnier bei x = width statt im Ursprung (Türanschlag im Plan)
 ## Fenstertür nach draußen (Terrasse, Garten, Balkon; Gruppe „french_doors“): Raum dahinter und Richtung nach
 ## draußen – dort erscheint auch der Lakengeist (Spielkonzept 4.18)
@@ -36,6 +51,8 @@ const CELL := 4.0
 static var _all: Array[Door] = []
 static var _cells := {}
 static var _dirty := true
+## Teile der Modelle (Pfad → {Name: [Mesh, Material]}), einmal geladen für alle Türen
+static var _models := {}
 
 
 func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: bool = false, p_glass: bool = false,
@@ -190,16 +207,48 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 		Geo.mesh(body, Geo.box(Vector3(0.1, height - 0.02, 0.06)), frame, Vector3(dir * 0.05, height / 2.0, 0))
 		Geo.mesh(body, Geo.box(Vector3(0.1, height - 0.02, 0.06)), frame, Vector3(dir * (leaf_width - 0.06), height / 2.0, 0))
 		Geo.mesh(body, Geo.box(Vector3(leaf_width - 0.02, 0.05, 0.05)), frame, Vector3(cx, height * 0.55, 0))
-	else:
+	elif look == Look.PLAIN:
 		Geo.mesh(body, Geo.box(leaf_size), Mat.psx(Color(0.3, 0.17, 0.1)), Vector3(cx, height / 2.0, 0))
 		# Kassetten als Relief
 		var panel := Mat.layer(Color(0.24, 0.13, 0.08))
 		for y in [0.6, 1.5]:
 			Geo.mesh(body, Geo.box(Vector3(leaf_width * 0.6, 0.55, 0.075)), panel, Vector3(cx, y * height / 2.1, 0))
+	else:
+		_add_model_leaf(body, leaf_size, dir)
 	# Kollision so tief wie die Wand: Ein dünnes Türblatt bildet eine Nische, in der die
 	# Spielerkapsel beim schrägen Entlanglaufen an der Wand hängenbleibt.
 	Geo.add_box_shape(body, Vector3(leaf_size.x, leaf_size.y, COLLISION_DEPTH), Vector3(cx, height / 2.0, 0))
-	var brass := Mat.psx(Color(0.8, 0.65, 0.25))
-	for z in [0.05, -0.05]:
-		Geo.mesh(body, Geo.sphere(0.035, 0.07, 6, 3), brass, Vector3(dir * (leaf_width - 0.1), 1.0, z))
+	if glass or look == Look.PLAIN:
+		var brass := Mat.psx(Color(0.8, 0.65, 0.25))
+		for z in [0.05, -0.05]:
+			Geo.mesh(body, Geo.sphere(0.035, 0.07, 6, 3), brass, Vector3(dir * (leaf_width - 0.1), 1.0, z))
 	return pivot
+
+
+## Gemaltes Blatt (Look.HOTEL/ATTIC): auf die Blattgröße gestreckt, bei dir = −1 gespiegelt (Scharnier rechts).
+## Klinke und Bänder der Zimmertür ungestreckt – sie sehen an schmalen Badtüren aus wie an breiten Zimmertüren.
+func _add_model_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
+	var hotel := look == Look.HOTEL
+	var parts := _model_parts(HOTEL_MODEL if hotel else ATTIC_MODEL)
+	var ref := HOTEL_LEAF if hotel else ATTIC_LEAF
+	var leaf := Geo.mesh(body, parts["leaf"][0], parts["leaf"][1], Vector3(dir * 0.01, 0.01, 0))
+	leaf.scale = Vector3(dir * leaf_size.x / ref.x, leaf_size.y / ref.y, 1.0)
+	if not hotel:
+		return
+	var handle := Geo.mesh(body, parts["handle"][0], parts["handle"][1],
+		Vector3(dir * (leaf_size.x + 0.01 - HANDLE_INSET), HANDLE_HEIGHT, 0))
+	handle.scale.x = dir   # Drücker zeigt zum Scharnier
+	for at in HINGE_AT:
+		var hinge := Geo.mesh(body, parts["hinge"][0], parts["hinge"][1], Vector3(dir * 0.008, 0.01 + at * leaf_size.y, 0))
+		hinge.scale.x = dir
+
+
+static func _model_parts(path: String) -> Dictionary:
+	if not _models.has(path):
+		var parts := {}
+		var scene: Node = (load(path) as PackedScene).instantiate()
+		for mi: MeshInstance3D in scene.find_children("*", "MeshInstance3D", true, false):
+			parts[String(mi.name)] = [mi.mesh, Mat.model(path, mi)]
+		scene.free()
+		_models[path] = parts
+	return _models[path]

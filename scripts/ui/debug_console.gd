@@ -84,7 +84,8 @@ const COMMANDS := {
 	"clear": ["", "Ausgabe leeren"],
 }
 ## Wirken nur beim Start (andere Stellen lesen sie aus den Startparametern)
-const START_ONLY := ["title", "new", "nointro", "shot", "frames", "shot-on", "bg", "perf", "trace-nav", "knock-fake", "answer"]
+const START_ONLY := ["title", "new", "nointro", "shot", "frames", "shot-on", "bg", "perf", "trace-nav", "knock-fake", "answer",
+		"attic-door"]
 ## Getippter Name → Startparameter
 const ALIASES := {"save": "diary", "load": "load-slot"}
 ## Befehle, deren erster Wert eine Gast-ID ist (wird vorher geprüft)

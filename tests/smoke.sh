@@ -102,6 +102,7 @@ done <<'LIST'
 400|--menu=pause
 400|--talk=edna
 400|--dial=lobby
+400|--attic-door --flashlight
 600|--pals=edna,bruno --trace
 2000|--sprint --trace
 LIST

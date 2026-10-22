@@ -39,6 +39,8 @@ extends Node3D
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
 ##   --time=+n|-n                Spieltage vor- oder zurückspulen
+##   --attic-door                Kniestocktür zum Ansehen (4.21): Solange kein Dachgeschoss gezeichnet ist, wird beim Aufbau
+##                               die erste 0,8 m breite Tür im OG1 zur Dachbodentür – du stehst vor ihrer Bandseite
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -455,6 +457,14 @@ func run_debug(arg: String) -> bool:
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg.begins_with("--tp="):
 		return _debug_teleport(arg.substr(5))
+	elif arg == "--attic-door":
+		var builder := Game.social.builder
+		if builder.attic_doors.is_empty():
+			return false
+		var door: Door = builder.attic_doors[0]
+		var front := door.global_transform.basis.z   # Aufgehseite: Bänder und Kastenschloss
+		TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + front * 2.2, -front)
+		Game.player.head.rotation.x = deg_to_rad(-12.0)   # die Tür ist niedrig
 	elif arg.begins_with("--time="):
 		# Spieltage vor- oder zurückspulen (+1, -2 …)
 		Game.director.elapsed = maxf(0.0, Game.director.elapsed + arg.substr(7).to_float() * Calendar.DAY_SECONDS)

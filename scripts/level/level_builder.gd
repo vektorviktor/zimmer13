@@ -98,6 +98,8 @@ const DOOR_H := 2.1
 ## Doppeltüren, Glastüren, Terrassentüren
 const WIDE_DOOR_H := 2.4
 const ENTRANCE_H := 2.8
+## Kniestocktür zum Dachboden (Planfarbe „Kniestocktür“, Spielkonzept 4.21): niedrig, verschlossen bis zum Schlüssel
+const ATTIC_DOOR_H := 1.6
 const COUCH_MODEL := "res://assets/models/couch.glb"
 ## Rohmodell ist 4,34 Einheiten lang → ~2,4 m lang, Sitzhöhe ~0,45 m, Lehne ~0,92 m.
 const COUCH_SCALE := 0.55
@@ -303,6 +305,7 @@ var _ends := {}
 ## Gebaute Möbel und die Rezeption: {kind, rect: Rect2, top (Oberkante), front: Vector2, node}
 var _furnishings: Array[Dictionary] = []
 var _doors: Array[Dictionary] = []    ## {pos: Vector3 (Mitte unten), door: Door, kind, into}
+var attic_doors: Array[Door] = []     ## Kniestocktüren aller Ebenen
 var _open_rooms := {}                 ## Nummern der bewohnbaren Zimmer (OPEN_WINGS)
 
 var _wallpaper: Material
@@ -350,6 +353,8 @@ func build() -> void:
 	var lower: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(LOWER_MAP_PATH))
 	assert(lower != null, "Gebäudeplan %s fehlt – tools/build_map.py ausführen" % LOWER_MAP_PATH)
 	_has_upper = not uppers.is_empty()
+	if "--attic-door" in OS.get_cmdline_user_args():
+		_debug_attic_door(uppers[0] if _has_upper else ground)
 	_upper_plans = uppers
 	_top_level = uppers.size()
 	_begin_floor(ground, 0)
@@ -921,6 +926,8 @@ func _opening_vec(o: Dictionary, s0: float) -> Vector4:
 			return Vector4(center, width, ENTRANCE_H if _level >= 0 else DOOR_H, 0.0)
 		"door", "service_door":
 			return Vector4(center, width, DOOR_H if width < 1.5 else WIDE_DOOR_H, 0.0)
+		"attic_door":
+			return Vector4(center, width, ATTIC_DOOR_H, 0.0)
 	return Vector4(center, width, WIDE_DOOR_H, 0.0)
 
 
@@ -1098,6 +1105,11 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 		hinge = center + Vector3(along.x, 0, along.y) * width / 2.0 * (1.0 if o["hinge"] == "end" else -1.0)
 	var hinge_end := not wide and (hinge - center).dot(right) > 0.0
 	var door := Door.new().setup(width, height, -90.0 if wide else -100.0, wide, glass, hinge_end)
+	match kind:   # gemalte Modelle (tools/build_doors.py): Zimmertüren und die Kniestocktür
+		"door":
+			door.look = Door.Look.HOTEL
+		"attic_door":
+			door.look = Door.Look.ATTIC
 	door.position = center - right * width / 2.0
 	door.rotation.y = yaw
 	root.add_child(door)
@@ -1117,6 +1129,12 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			door.monster_can_open = false
 			door.locked_text = "Außer Betrieb."
 			_sign("AUSSER BETRIEB", center + Vector3(0, WIDE_DOOR_H + 0.3, 0) - into3 * 0.11, rad_to_deg(yaw) + 180.0)
+		"attic_door":   # Schlüssel im Heizraum hinter dem Gitter (4.21) – das Monster bricht sie nicht auf
+			door.locked = true
+			door.key_id = "dachboden"
+			door.monster_can_open = false
+			door.locked_text = "Die niedrige Tür ist abgeschlossen."
+			attic_doors.append(door)
 	if k_minus == "sealed" or k_plus == "sealed":
 		_seal(door, "Abgeschlossen.")
 	elif kind == "garden_door" and (k_minus == "outside") != (k_plus == "outside"):
@@ -1137,6 +1155,16 @@ func _inner_side(k_minus: String, k_plus: String, kind: String) -> float:
 				return 2
 		return 3
 	return 1.0 if rank.call(k_plus) >= rank.call(k_minus) else -1.0
+
+
+## Debug --attic-door: Solange kein Dachgeschoss gezeichnet ist, wird die erste 0,8 m breite Tür des Plans (OG1, sonst
+## EG) zur Kniestocktür – zum Ansehen, main.gd stellt dich davor.
+static func _debug_attic_door(plan: Dictionary) -> void:
+	for w: Dictionary in plan["walls"]:
+		for o: Dictionary in w.get("openings", []):
+			if o["kind"] == "door" and is_equal_approx(float(o["width"]), 0.8):
+				o["kind"] = "attic_door"
+				return
 
 
 ## Tür, die (in dieser Bauphase) niemand öffnen kann – auch das Monster nicht.

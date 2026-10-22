@@ -62,6 +62,7 @@ FILLS = {
 OPENINGS = {
 	"Tür Flur": "door", "Tür Terrasse": "garden_door", "Fenster": "window", "Doppel-Glastür": "glass_double_door",
 	"Betriebstür": "service_door", "Aufzugtür": "elevator_door", "Haupteingang": "main_entrance",
+	"Kniestocktür": "attic_door",
 }
 WALL_NAME, GLASS_NAME = "Wand", "Glaswand"
 HINGE_NAME = "Türanschlag"   ## ein Pixel auf dem Türstrich: Scharnierende und Aufgehseite
@@ -988,7 +989,7 @@ def preview(layout, path):
 		"pool_deck": "#c3d2de", "elevator": "#a9dccb", "cellar": "#999", "boiler_room": "#821b1b", "plant_room": "#7c6bff",
 		"laundry_room": "#6bb6ff", "cellar_room": "#7b7b7b"}
 	op_colors = {"door": "#2e9e00", "garden_door": "#00d000", "window": "#2a7fd0", "glass_double_door": "#e0c000",
-		"service_door": "#999", "elevator_door": "#00c090", "main_entrance": "#e00000"}
+		"service_door": "#999", "elevator_door": "#00c090", "main_entrance": "#e00000", "attic_door": "#8a5a2a"}
 	out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -118 160 128" width="100%" style="background:#fff">']
 	box = '<rect x="%s" y="%s" width="%s" height="%s" %s/>'
 	for r in layout["regions"]:
