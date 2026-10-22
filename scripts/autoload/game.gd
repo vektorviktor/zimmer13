@@ -59,6 +59,13 @@ var _shot_frames := 0
 var _shot_on := ""
 
 
+## Headless (tests/smoke.sh): Endmarke beim Abbau – stürzt Godot danach ab oder hängt, liegt es am Beenden, nicht am
+## Spiel (offenes Problem, TECHNIK.md 10).
+func _exit_tree() -> void:
+	if DisplayServer.get_name() == "headless":
+		print("[Ende] Szenenbaum abgebaut")
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_setup_input()

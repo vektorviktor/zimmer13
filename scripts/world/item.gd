@@ -432,14 +432,22 @@ func _update_needle(delta: float) -> void:
 	else:
 		_needle_spin = _needle_angle
 		target += sin(_needle_time * 13.0) * threat * 1.1 + randf_range(-1.0, 1.0) * threat * 0.9
-	# In Teilschritten: Die steife Feder schaukelt sich bei einem langen Frame (Autosave, Ruckler) sonst bis NaN auf
+	var state := needle_step(Vector2(_needle_angle, _needle_speed), target, delta)
+	_needle_angle = state.x
+	_needle_speed = state.y
+	_needle.rotation.y = _needle_angle
+
+
+## Ein Schritt der Nadelfeder: state = (Winkel, Drehgeschwindigkeit) → neuer state. In Teilschritten ≤ 20 ms – die
+## steife Feder schaukelt sich bei einem langen Frame (Autosave, Ruckler) sonst bis NaN auf (tests/math_checks.gd).
+static func needle_step(state: Vector2, target: float, delta: float) -> Vector2:
 	var steps := maxi(1, ceili(delta / 0.02))
 	var dt := delta / steps
 	for i in steps:
-		var accel := wrapf(target - _needle_angle, -PI, PI) * 45.0 - _needle_speed * 5.0
-		_needle_speed += accel * dt
-		_needle_angle = wrapf(_needle_angle + _needle_speed * dt, -PI, PI)
-	_needle.rotation.y = _needle_angle
+		var accel := wrapf(target - state.x, -PI, PI) * 45.0 - state.y * 5.0
+		state.y += accel * dt
+		state.x = wrapf(state.x + state.y * dt, -PI, PI)
+	return state
 
 
 func set_held(held: bool) -> void:

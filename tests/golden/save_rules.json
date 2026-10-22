@@ -1,0 +1,2499 @@
+{
+	"guests": {
+		"child_1": {
+			"activities": {
+				"garden": 3.08814060688019,
+				"kitchen": 0.807201266288757,
+				"lobby": 4.10037446022034,
+				"room": 1.54155588150024,
+				"wander": 1.60971164703369
+			},
+			"age": 9.0,
+			"archetype": "Kind",
+			"brave": 0.205776304006577,
+			"build": 0.198315411806107,
+			"buy": 0.958078861236572,
+			"carver": false,
+			"chess": {
+				"likes": false,
+				"pride": 0.4,
+				"skill": 0.204635381698608
+			},
+			"child": true,
+			"clothing": "Jans Murmelbeutel",
+			"coat": "(0.15, 0.15, 0.15, 1.0)",
+			"dice": {
+				"honesty": 0.970419585704803,
+				"jump": 1.0,
+				"likes": true,
+				"perception": 0.289996832609177,
+				"pride": 0.635994493961334,
+				"tell": "Jan kichert und hält sich die Hand vor den Mund."
+			},
+			"generated": true,
+			"gossip": 0.924910664558411,
+			"greed": 0.0407291427254677,
+			"hair": "(0.35, 0.22, 0.12, 1.0)",
+			"harvester": false,
+			"head": 1.25,
+			"height": 0.766842976738425,
+			"height_cm": 130.363306045532,
+			"likes": [
+				18.0,
+				5.0,
+				0.0,
+				2.0
+			],
+			"lines": {
+				"calm": [
+					"Okay … bleibst du noch ein bisschen?"
+				],
+				"caught": [
+					"Das ist meins! Das sag ich meinem Papa!"
+				],
+				"caught_cheat": [
+					"Du schummelst! Das ist unfair!"
+				],
+				"challenge": [
+					"Spielst du mit mir Würfeln?"
+				],
+				"chess_challenge": [
+					"Spielst du Schach mit mir? Ich bin richtig gut!"
+				],
+				"chess_lose": [
+					"Nochmal! Nochmal!"
+				],
+				"chess_no": [
+					"Schach ist langweilig."
+				],
+				"chess_win": [
+					"Schachmatt! Hihi."
+				],
+				"chess_yes": [
+					"Schach! Das kann ich schon!"
+				],
+				"cocoa": [
+					"Kakao! Mit Sahne? Danke!",
+					"Mmmh. Jetzt hab ich einen Kakaobart."
+				],
+				"dice_lose": [
+					"Menno."
+				],
+				"dice_no": [
+					"Nö."
+				],
+				"dice_win": [
+					"Gewonnen! Gewonnen!"
+				],
+				"dice_yes": [
+					"Würfeln! Aber nur zum Spaß, sagt Papa."
+				],
+				"give_deco": [
+					"Hier, für dich! Hab ich selbst gesammelt."
+				],
+				"greet": [
+					"Hallo. Wer bist du?",
+					"Hi! Ich darf eigentlich nicht mit Fremden reden.",
+					"Bist du auch in den Ferien hier?"
+				],
+				"greet_enemy": [
+					"Mit dir red ich nicht.",
+					"Geh weg!"
+				],
+				"greet_friend": [
+					"Hallo! Spielst du mit mir?",
+					"Da bist du ja! Ich hab dich überall gesucht!"
+				],
+				"insult": [
+					"Du bist gemein!",
+					"Das sag ich meinem Papa!"
+				],
+				"knife": [
+					"Ein echtes Messer! Papa erlaubt mir das nie."
+				],
+				"knock": [
+					"Mach auf! Bitte, bitte!",
+					"Hilfe! Ich will zu Papa!"
+				],
+				"left_outside": [
+					"Du hast mich nicht reingelassen. Ich hatte ganz doll Angst."
+				],
+				"missing": [
+					"Wer hat mein Laub weggenommen?!"
+				],
+				"monster": [
+					"Im Keller wohnt ein Monster. Ehrlich! Aber keiner glaubt mir.",
+					"Wenn die Lampen flackern, versteck ich mich unter der Decke.",
+					"Es hat mich angeschaut. Mit ganz vielen Zähnen. Und dann ist es einfach weitergegangen.",
+					"Die Katzen haben Angst vor ihm. Ich auch."
+				],
+				"no_drink": [
+					"Iiih, das riecht komisch. Papa sagt, das ist nur für Erwachsene."
+				],
+				"odd": [
+					"Nachts klopft es manchmal an mein Fenster.",
+					"Papa sagt, Gespenster gibt es nicht.",
+					"Ich freu mich auf Halloween! Ich will gaaanz viel Süßes!"
+				],
+				"only_fun": [
+					"Nur zum Spaß! Um Geld darf ich nicht spielen, sagt Papa."
+				],
+				"orphan": [
+					"Papa ist nicht wiedergekommen. Darf ich bei dir bleiben?",
+					"Wo ist Papa? Ich bleib bei dir, ja?"
+				],
+				"panic": [
+					"Papa! Papa!",
+					"Ich will nach Hause!"
+				],
+				"party_no": [
+					"…"
+				],
+				"party_yes": [
+					"Eine Party? JAAA!",
+					"Darf ich tanzen? Ich tanz am allerbesten!"
+				],
+				"patronized": [
+					"Du hast mich extra gewinnen lassen. Das ist doof."
+				],
+				"phone_answer": [
+					"Hallo? Hier ist {name}!"
+				],
+				"phone_chat": [
+					"Hallo? Hier ist {name}! Ich hab das Telefon ganz allein bedient!",
+					"Rate mal, wer hier ist! … {name}!"
+				],
+				"phone_party": [
+					"Hier ist {name}! In der Lobby ist Party! Kommst du?"
+				],
+				"phone_warn": [
+					"Hier ist {name}! Das Monster ist {where}! Ich hab's gesehen, echt!"
+				],
+				"phone_warn_near": [
+					"{name} hier … es ist bei mir im Flur … ich hab Angst …"
+				],
+				"prank": [
+					"Keine Süßigkeiten? Dann gibt's Saures!",
+					"Ätsch! Saures!"
+				],
+				"refuse_deco": [
+					"Das ist meins!",
+					"Nur, wenn du mein Freund bist."
+				],
+				"scolded": [
+					"Menno. Dann eben Saures!",
+					"Pff, gemein. Saures!"
+				],
+				"sheltered": [
+					"Danke … darf ich kurz bleiben?"
+				],
+				"sleepless": [
+					"Ich kann nicht schlafen.",
+					"Da war was am Fenster … darf ich zu dir?"
+				],
+				"smalltalk": [
+					"Im Garten gibt es Kürbisse, die sind größer als ich!",
+					"Ich hab einen Käfer gefunden. Der wohnt jetzt in meiner Hosentasche.",
+					"Papa sagt, ich soll nicht so rennen. Aber die Flure sind sooo lang!",
+					"Ich hab die Zimmer gezählt. Bis hundert, dann hab ich aufgehört.",
+					"Die Katzen mögen mich. Minka hat mir die Hand abgeleckt!"
+				],
+				"tattle": [
+					"Ich hab genau gesehen, wie du das geklaut hast! Das sag ich meinem Papa!"
+				],
+				"thanks": [
+					"Danke!",
+					"Juhu!"
+				],
+				"thanks_like": [
+					"Wow! Darf ich das echt behalten?"
+				],
+				"to_bed": [
+					"Na gut … aber du bleibst, bis ich eingeschlafen bin.",
+					"Okay. Gute Nacht."
+				],
+				"treat": [
+					"Danke! Du bist der Allerbeste!",
+					"Juhu! Die teil ich nicht."
+				],
+				"treat_other": [
+					"Danke!",
+					"Juhu, Bonbons!",
+					"Danke schön! Fröhliches Halloween!"
+				],
+				"trick": [
+					"Süßes oder Saures!",
+					"Süßes, sonst gibt's Saures!"
+				]
+			},
+			"money": 0.0,
+			"name": "Jan",
+			"pants": "(0.15, 0.15, 0.17, 1.0)",
+			"parent": "gast1",
+			"prodigy": false,
+			"reliable": 0.974579393863678,
+			"report": "Ich hab %s gesehen! Bei %s! Ehrlich, ich lüg nicht!",
+			"room": "0101",
+			"sell": 0.911527156829834,
+			"sex": "m",
+			"shock": "cling",
+			"start_deco": [
+				5.0
+			],
+			"stock": {
+				"5": 1.0
+			},
+			"width_cm": 31.7264938354492
+		},
+		"child_17": {
+			"activities": {
+				"garden": 3.79028964042664,
+				"kitchen": 0.739227771759033,
+				"lobby": 2.26690936088562,
+				"room": 2.18565320968628,
+				"wander": 1.90069943666458
+			},
+			"age": 6.0,
+			"archetype": "Kind",
+			"brave": 0.151555985212326,
+			"build": 0.303596764802933,
+			"buy": 0.935204684734344,
+			"carver": false,
+			"chess": {
+				"likes": true,
+				"pride": 0.4,
+				"skill": 0.0613796338438988
+			},
+			"child": true,
+			"clothing": "Bens Haarspange",
+			"coat": "(0.15, 0.15, 0.15, 1.0)",
+			"dice": {
+				"honesty": 0.821549236774445,
+				"jump": 1.0,
+				"likes": false,
+				"perception": 0.127992510795593,
+				"pride": 0.472462296485901,
+				"tell": "Ben kichert und hält sich die Hand vor den Mund."
+			},
+			"generated": true,
+			"gossip": 0.920956611633301,
+			"greed": 0.0751799792051315,
+			"hair": "(0.82, 0.82, 0.84, 1.0)",
+			"harvester": false,
+			"head": 1.25,
+			"height": 0.670976910871618,
+			"height_cm": 114.066074848175,
+			"likes": [
+				18.0,
+				5.0,
+				0.0,
+				2.0
+			],
+			"lines": {
+				"calm": [
+					"Okay … bleibst du noch ein bisschen?"
+				],
+				"caught": [
+					"Das ist meins! Das sag ich meinem Papa!"
+				],
+				"caught_cheat": [
+					"Du schummelst! Das ist unfair!"
+				],
+				"challenge": [
+					"Spielst du mit mir Würfeln?"
+				],
+				"chess_challenge": [
+					"Spielst du Schach mit mir? Ich bin richtig gut!"
+				],
+				"chess_lose": [
+					"Nochmal! Nochmal!"
+				],
+				"chess_no": [
+					"Schach ist langweilig."
+				],
+				"chess_win": [
+					"Schachmatt! Hihi."
+				],
+				"chess_yes": [
+					"Schach! Das kann ich schon!"
+				],
+				"cocoa": [
+					"Kakao! Mit Sahne? Danke!",
+					"Mmmh. Jetzt hab ich einen Kakaobart."
+				],
+				"dice_lose": [
+					"Menno."
+				],
+				"dice_no": [
+					"Nö."
+				],
+				"dice_win": [
+					"Gewonnen! Gewonnen!"
+				],
+				"dice_yes": [
+					"Würfeln! Aber nur zum Spaß, sagt Papa."
+				],
+				"give_deco": [
+					"Hier, für dich! Hab ich selbst gesammelt."
+				],
+				"greet": [
+					"Hallo. Wer bist du?",
+					"Hi! Ich darf eigentlich nicht mit Fremden reden.",
+					"Bist du auch in den Ferien hier?"
+				],
+				"greet_enemy": [
+					"Mit dir red ich nicht.",
+					"Geh weg!"
+				],
+				"greet_friend": [
+					"Hallo! Spielst du mit mir?",
+					"Da bist du ja! Ich hab dich überall gesucht!"
+				],
+				"insult": [
+					"Du bist gemein!",
+					"Das sag ich meinem Papa!"
+				],
+				"knife": [
+					"Ein echtes Messer! Papa erlaubt mir das nie."
+				],
+				"knock": [
+					"Mach auf! Bitte, bitte!",
+					"Hilfe! Ich will zu Papa!"
+				],
+				"left_outside": [
+					"Du hast mich nicht reingelassen. Ich hatte ganz doll Angst."
+				],
+				"missing": [
+					"Wer hat mein Laub weggenommen?!"
+				],
+				"monster": [
+					"Im Keller wohnt ein Monster. Ehrlich! Aber keiner glaubt mir.",
+					"Wenn die Lampen flackern, versteck ich mich unter der Decke.",
+					"Es hat mich angeschaut. Mit ganz vielen Zähnen. Und dann ist es einfach weitergegangen.",
+					"Die Katzen haben Angst vor ihm. Ich auch."
+				],
+				"no_drink": [
+					"Iiih, das riecht komisch. Papa sagt, das ist nur für Erwachsene."
+				],
+				"odd": [
+					"Nachts klopft es manchmal an mein Fenster.",
+					"Papa sagt, Gespenster gibt es nicht.",
+					"Ich freu mich auf Halloween! Ich will gaaanz viel Süßes!"
+				],
+				"only_fun": [
+					"Nur zum Spaß! Um Geld darf ich nicht spielen, sagt Papa."
+				],
+				"orphan": [
+					"Papa ist nicht wiedergekommen. Darf ich bei dir bleiben?",
+					"Wo ist Papa? Ich bleib bei dir, ja?"
+				],
+				"panic": [
+					"Papa! Papa!",
+					"Ich will nach Hause!"
+				],
+				"party_no": [
+					"…"
+				],
+				"party_yes": [
+					"Eine Party? JAAA!",
+					"Darf ich tanzen? Ich tanz am allerbesten!"
+				],
+				"patronized": [
+					"Du hast mich extra gewinnen lassen. Das ist doof."
+				],
+				"phone_answer": [
+					"Hallo? Hier ist {name}!"
+				],
+				"phone_chat": [
+					"Hallo? Hier ist {name}! Ich hab das Telefon ganz allein bedient!",
+					"Rate mal, wer hier ist! … {name}!"
+				],
+				"phone_party": [
+					"Hier ist {name}! In der Lobby ist Party! Kommst du?"
+				],
+				"phone_warn": [
+					"Hier ist {name}! Das Monster ist {where}! Ich hab's gesehen, echt!"
+				],
+				"phone_warn_near": [
+					"{name} hier … es ist bei mir im Flur … ich hab Angst …"
+				],
+				"prank": [
+					"Keine Süßigkeiten? Dann gibt's Saures!",
+					"Ätsch! Saures!"
+				],
+				"refuse_deco": [
+					"Das ist meins!",
+					"Nur, wenn du mein Freund bist."
+				],
+				"scolded": [
+					"Menno. Dann eben Saures!",
+					"Pff, gemein. Saures!"
+				],
+				"sheltered": [
+					"Danke … darf ich kurz bleiben?"
+				],
+				"sleepless": [
+					"Ich kann nicht schlafen.",
+					"Da war was am Fenster … darf ich zu dir?"
+				],
+				"smalltalk": [
+					"Im Garten gibt es Kürbisse, die sind größer als ich!",
+					"Ich hab einen Käfer gefunden. Der wohnt jetzt in meiner Hosentasche.",
+					"Papa sagt, ich soll nicht so rennen. Aber die Flure sind sooo lang!",
+					"Ich hab die Zimmer gezählt. Bis hundert, dann hab ich aufgehört.",
+					"Die Katzen mögen mich. Minka hat mir die Hand abgeleckt!"
+				],
+				"tattle": [
+					"Ich hab genau gesehen, wie du das geklaut hast! Das sag ich meinem Papa!"
+				],
+				"thanks": [
+					"Danke!",
+					"Juhu!"
+				],
+				"thanks_like": [
+					"Wow! Darf ich das echt behalten?"
+				],
+				"to_bed": [
+					"Na gut … aber du bleibst, bis ich eingeschlafen bin.",
+					"Okay. Gute Nacht."
+				],
+				"treat": [
+					"Danke! Du bist der Allerbeste!",
+					"Juhu! Die teil ich nicht."
+				],
+				"treat_other": [
+					"Danke!",
+					"Juhu, Bonbons!",
+					"Danke schön! Fröhliches Halloween!"
+				],
+				"trick": [
+					"Süßes oder Saures!",
+					"Süßes, sonst gibt's Saures!"
+				]
+			},
+			"money": 2.0,
+			"name": "Ben",
+			"pants": "(0.15, 0.15, 0.17, 1.0)",
+			"parent": "gast1",
+			"prodigy": false,
+			"reliable": 0.960945606231689,
+			"report": "Ich hab %s gesehen! Bei %s! Ehrlich, ich lüg nicht!",
+			"room": "0101",
+			"sell": 0.829168617725372,
+			"sex": "m",
+			"shock": "cling",
+			"start_deco": [
+				5.0
+			],
+			"stock": {
+				"5": 1.0
+			},
+			"width_cm": 30.975118637085
+		},
+		"child_2": {
+			"activities": {
+				"garden": 2.85122537612915,
+				"kitchen": 1.27809321880341,
+				"lobby": 2.37509965896606,
+				"room": 1.739333152771,
+				"wander": 3.45517933368683
+			},
+			"age": 6.0,
+			"archetype": "Kind",
+			"brave": 0.173630744218826,
+			"build": 0.491477638483047,
+			"buy": 1.03938245773315,
+			"carver": false,
+			"chess": {
+				"likes": false,
+				"pride": 0.4,
+				"skill": 0.119581520557404
+			},
+			"child": true,
+			"clothing": "Felix' Pudelmütze",
+			"coat": "(0.15, 0.15, 0.15, 1.0)",
+			"dice": {
+				"honesty": 0.834872603416443,
+				"jump": 1.0,
+				"likes": true,
+				"perception": 0.212748885154724,
+				"pride": 0.633057355880737,
+				"tell": "Felix kichert und hält sich die Hand vor den Mund."
+			},
+			"generated": true,
+			"gossip": 0.82866245508194,
+			"greed": 0.0425275675952435,
+			"hair": "(0.75, 0.6, 0.3, 1.0)",
+			"harvester": false,
+			"head": 1.25,
+			"height": 0.657760911829331,
+			"height_cm": 111.819355010986,
+			"likes": [
+				18.0,
+				5.0,
+				0.0,
+				2.0
+			],
+			"lines": {
+				"calm": [
+					"Okay … bleibst du noch ein bisschen?"
+				],
+				"caught": [
+					"Das ist meins! Das sag ich meinem Papa!"
+				],
+				"caught_cheat": [
+					"Du schummelst! Das ist unfair!"
+				],
+				"challenge": [
+					"Spielst du mit mir Würfeln?"
+				],
+				"chess_challenge": [
+					"Spielst du Schach mit mir? Ich bin richtig gut!"
+				],
+				"chess_lose": [
+					"Nochmal! Nochmal!"
+				],
+				"chess_no": [
+					"Schach ist langweilig."
+				],
+				"chess_win": [
+					"Schachmatt! Hihi."
+				],
+				"chess_yes": [
+					"Schach! Das kann ich schon!"
+				],
+				"cocoa": [
+					"Kakao! Mit Sahne? Danke!",
+					"Mmmh. Jetzt hab ich einen Kakaobart."
+				],
+				"dice_lose": [
+					"Menno."
+				],
+				"dice_no": [
+					"Nö."
+				],
+				"dice_win": [
+					"Gewonnen! Gewonnen!"
+				],
+				"dice_yes": [
+					"Würfeln! Aber nur zum Spaß, sagt Papa."
+				],
+				"give_deco": [
+					"Hier, für dich! Hab ich selbst gesammelt."
+				],
+				"greet": [
+					"Hallo. Wer bist du?",
+					"Hi! Ich darf eigentlich nicht mit Fremden reden.",
+					"Bist du auch in den Ferien hier?"
+				],
+				"greet_enemy": [
+					"Mit dir red ich nicht.",
+					"Geh weg!"
+				],
+				"greet_friend": [
+					"Hallo! Spielst du mit mir?",
+					"Da bist du ja! Ich hab dich überall gesucht!"
+				],
+				"insult": [
+					"Du bist gemein!",
+					"Das sag ich meinem Papa!"
+				],
+				"knife": [
+					"Ein echtes Messer! Papa erlaubt mir das nie."
+				],
+				"knock": [
+					"Mach auf! Bitte, bitte!",
+					"Hilfe! Ich will zu Papa!"
+				],
+				"left_outside": [
+					"Du hast mich nicht reingelassen. Ich hatte ganz doll Angst."
+				],
+				"missing": [
+					"Wer hat mein Laub weggenommen?!"
+				],
+				"monster": [
+					"Im Keller wohnt ein Monster. Ehrlich! Aber keiner glaubt mir.",
+					"Wenn die Lampen flackern, versteck ich mich unter der Decke.",
+					"Es hat mich angeschaut. Mit ganz vielen Zähnen. Und dann ist es einfach weitergegangen.",
+					"Die Katzen haben Angst vor ihm. Ich auch."
+				],
+				"no_drink": [
+					"Iiih, das riecht komisch. Papa sagt, das ist nur für Erwachsene."
+				],
+				"odd": [
+					"Nachts klopft es manchmal an mein Fenster.",
+					"Papa sagt, Gespenster gibt es nicht.",
+					"Ich freu mich auf Halloween! Ich will gaaanz viel Süßes!"
+				],
+				"only_fun": [
+					"Nur zum Spaß! Um Geld darf ich nicht spielen, sagt Papa."
+				],
+				"orphan": [
+					"Papa ist nicht wiedergekommen. Darf ich bei dir bleiben?",
+					"Wo ist Papa? Ich bleib bei dir, ja?"
+				],
+				"panic": [
+					"Papa! Papa!",
+					"Ich will nach Hause!"
+				],
+				"party_no": [
+					"…"
+				],
+				"party_yes": [
+					"Eine Party? JAAA!",
+					"Darf ich tanzen? Ich tanz am allerbesten!"
+				],
+				"patronized": [
+					"Du hast mich extra gewinnen lassen. Das ist doof."
+				],
+				"phone_answer": [
+					"Hallo? Hier ist {name}!"
+				],
+				"phone_chat": [
+					"Hallo? Hier ist {name}! Ich hab das Telefon ganz allein bedient!",
+					"Rate mal, wer hier ist! … {name}!"
+				],
+				"phone_party": [
+					"Hier ist {name}! In der Lobby ist Party! Kommst du?"
+				],
+				"phone_warn": [
+					"Hier ist {name}! Das Monster ist {where}! Ich hab's gesehen, echt!"
+				],
+				"phone_warn_near": [
+					"{name} hier … es ist bei mir im Flur … ich hab Angst …"
+				],
+				"prank": [
+					"Keine Süßigkeiten? Dann gibt's Saures!",
+					"Ätsch! Saures!"
+				],
+				"refuse_deco": [
+					"Das ist meins!",
+					"Nur, wenn du mein Freund bist."
+				],
+				"scolded": [
+					"Menno. Dann eben Saures!",
+					"Pff, gemein. Saures!"
+				],
+				"sheltered": [
+					"Danke … darf ich kurz bleiben?"
+				],
+				"sleepless": [
+					"Ich kann nicht schlafen.",
+					"Da war was am Fenster … darf ich zu dir?"
+				],
+				"smalltalk": [
+					"Im Garten gibt es Kürbisse, die sind größer als ich!",
+					"Ich hab einen Käfer gefunden. Der wohnt jetzt in meiner Hosentasche.",
+					"Papa sagt, ich soll nicht so rennen. Aber die Flure sind sooo lang!",
+					"Ich hab die Zimmer gezählt. Bis hundert, dann hab ich aufgehört.",
+					"Die Katzen mögen mich. Minka hat mir die Hand abgeleckt!"
+				],
+				"tattle": [
+					"Ich hab genau gesehen, wie du das geklaut hast! Das sag ich meinem Papa!"
+				],
+				"thanks": [
+					"Danke!",
+					"Juhu!"
+				],
+				"thanks_like": [
+					"Wow! Darf ich das echt behalten?"
+				],
+				"to_bed": [
+					"Na gut … aber du bleibst, bis ich eingeschlafen bin.",
+					"Okay. Gute Nacht."
+				],
+				"treat": [
+					"Danke! Du bist der Allerbeste!",
+					"Juhu! Die teil ich nicht."
+				],
+				"treat_other": [
+					"Danke!",
+					"Juhu, Bonbons!",
+					"Danke schön! Fröhliches Halloween!"
+				],
+				"trick": [
+					"Süßes oder Saures!",
+					"Süßes, sonst gibt's Saures!"
+				]
+			},
+			"money": 0.0,
+			"name": "Felix",
+			"pants": "(0.15, 0.15, 0.17, 1.0)",
+			"parent": "gast1",
+			"prodigy": false,
+			"reliable": 0.934056580066681,
+			"report": "Ich hab %s gesehen! Bei %s! Ehrlich, ich lüg nicht!",
+			"room": "0101",
+			"sell": 0.929004192352295,
+			"sex": "m",
+			"shock": "cling",
+			"start_deco": [
+				5.0
+			],
+			"stock": {
+				"5": 2.0
+			},
+			"width_cm": 32.9521026611328
+		},
+		"child_3": {
+			"activities": {
+				"garden": 3.21185338497162,
+				"kitchen": 0.994012296199799,
+				"lobby": 2.37954676151276,
+				"room": 2.36974763870239,
+				"wander": 2.01253578066826
+			},
+			"age": 9.0,
+			"archetype": "Kind",
+			"brave": 0.151558607816696,
+			"build": 0.167437881231308,
+			"buy": 1.03881251811981,
+			"carver": false,
+			"chess": {
+				"likes": true,
+				"pride": 0.4,
+				"skill": 0.118515394628048
+			},
+			"child": true,
+			"clothing": "Merles Kuscheltier",
+			"coat": "(0.15, 0.15, 0.15, 1.0)",
+			"dice": {
+				"honesty": 0.964417457580566,
+				"jump": 1.0,
+				"likes": false,
+				"perception": 0.165948525071144,
+				"pride": 0.528509020805359,
+				"tell": "Merle kichert und hält sich die Hand vor den Mund."
+			},
+			"generated": true,
+			"gossip": 0.948527455329895,
+			"greed": 0.0900862514972687,
+			"hair": "(0.05, 0.05, 0.05, 1.0)",
+			"harvester": false,
+			"head": 1.25,
+			"height": 0.762657517545363,
+			"height_cm": 129.651777982712,
+			"likes": [
+				18.0,
+				5.0,
+				0.0,
+				2.0
+			],
+			"lines": {
+				"calm": [
+					"Okay … bleibst du noch ein bisschen?"
+				],
+				"caught": [
+					"Das ist meins! Das sag ich meinem Papa!"
+				],
+				"caught_cheat": [
+					"Du schummelst! Das ist unfair!"
+				],
+				"challenge": [
+					"Spielst du mit mir Würfeln?"
+				],
+				"chess_challenge": [
+					"Spielst du Schach mit mir? Ich bin richtig gut!"
+				],
+				"chess_lose": [
+					"Nochmal! Nochmal!"
+				],
+				"chess_no": [
+					"Schach ist langweilig."
+				],
+				"chess_win": [
+					"Schachmatt! Hihi."
+				],
+				"chess_yes": [
+					"Schach! Das kann ich schon!"
+				],
+				"cocoa": [
+					"Kakao! Mit Sahne? Danke!",
+					"Mmmh. Jetzt hab ich einen Kakaobart."
+				],
+				"dice_lose": [
+					"Menno."
+				],
+				"dice_no": [
+					"Nö."
+				],
+				"dice_win": [
+					"Gewonnen! Gewonnen!"
+				],
+				"dice_yes": [
+					"Würfeln! Aber nur zum Spaß, sagt Papa."
+				],
+				"give_deco": [
+					"Hier, für dich! Hab ich selbst gesammelt."
+				],
+				"greet": [
+					"Hallo. Wer bist du?",
+					"Hi! Ich darf eigentlich nicht mit Fremden reden.",
+					"Bist du auch in den Ferien hier?"
+				],
+				"greet_enemy": [
+					"Mit dir red ich nicht.",
+					"Geh weg!"
+				],
+				"greet_friend": [
+					"Hallo! Spielst du mit mir?",
+					"Da bist du ja! Ich hab dich überall gesucht!"
+				],
+				"insult": [
+					"Du bist gemein!",
+					"Das sag ich meinem Papa!"
+				],
+				"knife": [
+					"Ein echtes Messer! Papa erlaubt mir das nie."
+				],
+				"knock": [
+					"Mach auf! Bitte, bitte!",
+					"Hilfe! Ich will zu Papa!"
+				],
+				"left_outside": [
+					"Du hast mich nicht reingelassen. Ich hatte ganz doll Angst."
+				],
+				"missing": [
+					"Wer hat mein Laub weggenommen?!"
+				],
+				"monster": [
+					"Im Keller wohnt ein Monster. Ehrlich! Aber keiner glaubt mir.",
+					"Wenn die Lampen flackern, versteck ich mich unter der Decke.",
+					"Es hat mich angeschaut. Mit ganz vielen Zähnen. Und dann ist es einfach weitergegangen.",
+					"Die Katzen haben Angst vor ihm. Ich auch."
+				],
+				"no_drink": [
+					"Iiih, das riecht komisch. Papa sagt, das ist nur für Erwachsene."
+				],
+				"odd": [
+					"Nachts klopft es manchmal an mein Fenster.",
+					"Papa sagt, Gespenster gibt es nicht.",
+					"Ich freu mich auf Halloween! Ich will gaaanz viel Süßes!"
+				],
+				"only_fun": [
+					"Nur zum Spaß! Um Geld darf ich nicht spielen, sagt Papa."
+				],
+				"orphan": [
+					"Papa ist nicht wiedergekommen. Darf ich bei dir bleiben?",
+					"Wo ist Papa? Ich bleib bei dir, ja?"
+				],
+				"panic": [
+					"Papa! Papa!",
+					"Ich will nach Hause!"
+				],
+				"party_no": [
+					"…"
+				],
+				"party_yes": [
+					"Eine Party? JAAA!",
+					"Darf ich tanzen? Ich tanz am allerbesten!"
+				],
+				"patronized": [
+					"Du hast mich extra gewinnen lassen. Das ist doof."
+				],
+				"phone_answer": [
+					"Hallo? Hier ist {name}!"
+				],
+				"phone_chat": [
+					"Hallo? Hier ist {name}! Ich hab das Telefon ganz allein bedient!",
+					"Rate mal, wer hier ist! … {name}!"
+				],
+				"phone_party": [
+					"Hier ist {name}! In der Lobby ist Party! Kommst du?"
+				],
+				"phone_warn": [
+					"Hier ist {name}! Das Monster ist {where}! Ich hab's gesehen, echt!"
+				],
+				"phone_warn_near": [
+					"{name} hier … es ist bei mir im Flur … ich hab Angst …"
+				],
+				"prank": [
+					"Keine Süßigkeiten? Dann gibt's Saures!",
+					"Ätsch! Saures!"
+				],
+				"refuse_deco": [
+					"Das ist meins!",
+					"Nur, wenn du mein Freund bist."
+				],
+				"scolded": [
+					"Menno. Dann eben Saures!",
+					"Pff, gemein. Saures!"
+				],
+				"sheltered": [
+					"Danke … darf ich kurz bleiben?"
+				],
+				"sleepless": [
+					"Ich kann nicht schlafen.",
+					"Da war was am Fenster … darf ich zu dir?"
+				],
+				"smalltalk": [
+					"Im Garten gibt es Kürbisse, die sind größer als ich!",
+					"Ich hab einen Käfer gefunden. Der wohnt jetzt in meiner Hosentasche.",
+					"Papa sagt, ich soll nicht so rennen. Aber die Flure sind sooo lang!",
+					"Ich hab die Zimmer gezählt. Bis hundert, dann hab ich aufgehört.",
+					"Die Katzen mögen mich. Minka hat mir die Hand abgeleckt!"
+				],
+				"tattle": [
+					"Ich hab genau gesehen, wie du das geklaut hast! Das sag ich meinem Papa!"
+				],
+				"thanks": [
+					"Danke!",
+					"Juhu!"
+				],
+				"thanks_like": [
+					"Wow! Darf ich das echt behalten?"
+				],
+				"to_bed": [
+					"Na gut … aber du bleibst, bis ich eingeschlafen bin.",
+					"Okay. Gute Nacht."
+				],
+				"treat": [
+					"Danke! Du bist der Allerbeste!",
+					"Juhu! Die teil ich nicht."
+				],
+				"treat_other": [
+					"Danke!",
+					"Juhu, Bonbons!",
+					"Danke schön! Fröhliches Halloween!"
+				],
+				"trick": [
+					"Süßes oder Saures!",
+					"Süßes, sonst gibt's Saures!"
+				]
+			},
+			"money": 1.0,
+			"name": "Merle",
+			"pants": "(0.3, 0.25, 0.2, 1.0)",
+			"parent": "gast1",
+			"prodigy": false,
+			"reliable": 0.919381320476532,
+			"report": "Ich hab %s gesehen! Bei %s! Ehrlich, ich lüg nicht!",
+			"room": "0101",
+			"sell": 0.924852073192596,
+			"sex": "f",
+			"shock": "cling",
+			"start_deco": [
+				5.0
+			],
+			"stock": {
+				"5": 3.0
+			},
+			"width_cm": 32.3507766723633
+		},
+		"child_4242": {
+			"activities": {
+				"garden": 3.04962980747223,
+				"kitchen": 1.33819437026978,
+				"lobby": 3.34096598625183,
+				"room": 1.42915368080139,
+				"wander": 1.95360764861107
+			},
+			"age": 8.0,
+			"archetype": "Kind",
+			"brave": 0.121985495090485,
+			"build": -0.0797266960144043,
+			"buy": 0.942972600460052,
+			"carver": false,
+			"chess": {
+				"likes": true,
+				"pride": 0.85,
+				"skill": 0.97
+			},
+			"child": true,
+			"clothing": "Junas Fäustling",
+			"coat": "(0.42, 0.28, 0.48, 1.0)",
+			"dice": {
+				"honesty": 0.949108600616455,
+				"jump": 1.0,
+				"likes": false,
+				"perception": 0.135015666484833,
+				"pride": 0.309234470129013,
+				"tell": "Juna kichert und hält sich die Hand vor den Mund."
+			},
+			"generated": true,
+			"gossip": 0.804472625255585,
+			"greed": 0.00004077076300745,
+			"hair": "(0.6, 0.6, 0.62, 1.0)",
+			"harvester": false,
+			"head": 1.25,
+			"height": 0.719736821511213,
+			"height_cm": 122.355259656906,
+			"likes": [
+				18.0,
+				5.0,
+				0.0,
+				2.0
+			],
+			"lines": {
+				"calm": [
+					"Okay … bleibst du noch ein bisschen?"
+				],
+				"caught": [
+					"Das ist meins! Das sag ich meiner Mama!"
+				],
+				"caught_cheat": [
+					"Du schummelst! Das ist unfair!"
+				],
+				"challenge": [
+					"Spielst du mit mir Würfeln?"
+				],
+				"chess_challenge": [
+					"Ich hab noch nie verloren. Willst du's versuchen?"
+				],
+				"chess_lose": [
+					"Das … das gibt's nicht! Revanche! Sofort!"
+				],
+				"chess_no": [
+					"Schach ist langweilig."
+				],
+				"chess_win": [
+					"Schachmatt! Hihi."
+				],
+				"chess_yes": [
+					"Schach! Das kann ich schon!"
+				],
+				"cocoa": [
+					"Kakao! Mit Sahne? Danke!",
+					"Mmmh. Jetzt hab ich einen Kakaobart."
+				],
+				"dice_lose": [
+					"Menno."
+				],
+				"dice_no": [
+					"Nö."
+				],
+				"dice_win": [
+					"Gewonnen! Gewonnen!"
+				],
+				"dice_yes": [
+					"Würfeln! Aber nur zum Spaß, sagt Mama."
+				],
+				"give_deco": [
+					"Hier, für dich! Hab ich selbst gesammelt."
+				],
+				"greet": [
+					"Hallo. Wer bist du?",
+					"Hi! Ich darf eigentlich nicht mit Fremden reden.",
+					"Bist du auch in den Ferien hier?"
+				],
+				"greet_enemy": [
+					"Mit dir red ich nicht.",
+					"Geh weg!"
+				],
+				"greet_friend": [
+					"Hallo! Spielst du mit mir?",
+					"Da bist du ja! Ich hab dich überall gesucht!"
+				],
+				"insult": [
+					"Du bist gemein!",
+					"Das sag ich meiner Mama!"
+				],
+				"knife": [
+					"Ein echtes Messer! Mama erlaubt mir das nie."
+				],
+				"knock": [
+					"Mach auf! Bitte, bitte!",
+					"Hilfe! Ich will zu Mama!"
+				],
+				"left_outside": [
+					"Du hast mich nicht reingelassen. Ich hatte ganz doll Angst."
+				],
+				"missing": [
+					"Wer hat mein Laub weggenommen?!"
+				],
+				"monster": [
+					"Im Keller wohnt ein Monster. Ehrlich! Aber keiner glaubt mir.",
+					"Wenn die Lampen flackern, versteck ich mich unter der Decke.",
+					"Es hat mich angeschaut. Mit ganz vielen Zähnen. Und dann ist es einfach weitergegangen.",
+					"Die Katzen haben Angst vor ihm. Ich auch."
+				],
+				"no_drink": [
+					"Iiih, das riecht komisch. Mama sagt, das ist nur für Erwachsene."
+				],
+				"odd": [
+					"Nachts klopft es manchmal an mein Fenster.",
+					"Mama sagt, Gespenster gibt es nicht.",
+					"Ich freu mich auf Halloween! Ich will gaaanz viel Süßes!"
+				],
+				"only_fun": [
+					"Nur zum Spaß! Um Geld darf ich nicht spielen, sagt Mama."
+				],
+				"orphan": [
+					"Mama ist nicht wiedergekommen. Darf ich bei dir bleiben?",
+					"Wo ist Mama? Ich bleib bei dir, ja?"
+				],
+				"panic": [
+					"Mama! Mama!",
+					"Ich will nach Hause!"
+				],
+				"party_no": [
+					"…"
+				],
+				"party_yes": [
+					"Eine Party? JAAA!",
+					"Darf ich tanzen? Ich tanz am allerbesten!"
+				],
+				"patronized": [
+					"Du hast mich extra gewinnen lassen. Das ist doof."
+				],
+				"phone_answer": [
+					"Hallo? Hier ist {name}!"
+				],
+				"phone_chat": [
+					"Hallo? Hier ist {name}! Ich hab das Telefon ganz allein bedient!",
+					"Rate mal, wer hier ist! … {name}!"
+				],
+				"phone_party": [
+					"Hier ist {name}! In der Lobby ist Party! Kommst du?"
+				],
+				"phone_warn": [
+					"Hier ist {name}! Das Monster ist {where}! Ich hab's gesehen, echt!"
+				],
+				"phone_warn_near": [
+					"{name} hier … es ist bei mir im Flur … ich hab Angst …"
+				],
+				"prank": [
+					"Keine Süßigkeiten? Dann gibt's Saures!",
+					"Ätsch! Saures!"
+				],
+				"refuse_deco": [
+					"Das ist meins!",
+					"Nur, wenn du mein Freund bist."
+				],
+				"scolded": [
+					"Menno. Dann eben Saures!",
+					"Pff, gemein. Saures!"
+				],
+				"sheltered": [
+					"Danke … darf ich kurz bleiben?"
+				],
+				"sleepless": [
+					"Ich kann nicht schlafen.",
+					"Da war was am Fenster … darf ich zu dir?"
+				],
+				"smalltalk": [
+					"Im Garten gibt es Kürbisse, die sind größer als ich!",
+					"Ich hab einen Käfer gefunden. Der wohnt jetzt in meiner Hosentasche.",
+					"Mama sagt, ich soll nicht so rennen. Aber die Flure sind sooo lang!",
+					"Ich hab die Zimmer gezählt. Bis hundert, dann hab ich aufgehört.",
+					"Die Katzen mögen mich. Minka hat mir die Hand abgeleckt!"
+				],
+				"tattle": [
+					"Ich hab genau gesehen, wie du das geklaut hast! Das sag ich meiner Mama!"
+				],
+				"thanks": [
+					"Danke!",
+					"Juhu!"
+				],
+				"thanks_like": [
+					"Wow! Darf ich das echt behalten?"
+				],
+				"to_bed": [
+					"Na gut … aber du bleibst, bis ich eingeschlafen bin.",
+					"Okay. Gute Nacht."
+				],
+				"treat": [
+					"Danke! Du bist der Allerbeste!",
+					"Juhu! Die teil ich nicht."
+				],
+				"treat_other": [
+					"Danke!",
+					"Juhu, Bonbons!",
+					"Danke schön! Fröhliches Halloween!"
+				],
+				"trick": [
+					"Süßes oder Saures!",
+					"Süßes, sonst gibt's Saures!"
+				]
+			},
+			"money": 1.0,
+			"name": "Juna",
+			"pants": "(0.2, 0.18, 0.22, 1.0)",
+			"parent": "gast1",
+			"prodigy": true,
+			"reliable": 0.97760534286499,
+			"report": "Ich hab %s gesehen! Bei %s! Ehrlich, ich lüg nicht!",
+			"room": "0101",
+			"sell": 0.923181176185608,
+			"sex": "f",
+			"shock": "cling",
+			"start_deco": [
+				5.0
+			],
+			"stock": {
+				"5": 2.0
+			},
+			"width_cm": 30.9659442901611
+		},
+		"child_99991": {
+			"activities": {
+				"garden": 2.78918695449829,
+				"kitchen": 0.973986864089966,
+				"lobby": 3.93065142631531,
+				"room": 1.52566075325012,
+				"wander": 2.77258515357971
+			},
+			"age": 8.0,
+			"archetype": "Kind",
+			"brave": 0.111578494310379,
+			"build": -0.297817170619965,
+			"buy": 1.09346973896027,
+			"carver": false,
+			"chess": {
+				"likes": false,
+				"pride": 0.4,
+				"skill": 0.0361002050340176
+			},
+			"child": true,
+			"clothing": "Toms Murmelbeutel",
+			"coat": "(0.18, 0.22, 0.4, 1.0)",
+			"dice": {
+				"honesty": 0.818906664848328,
+				"jump": 1.0,
+				"likes": true,
+				"perception": 0.238881796598434,
+				"pride": 0.577588975429535,
+				"tell": "Tom kichert und hält sich die Hand vor den Mund."
+			},
+			"generated": true,
+			"gossip": 0.942168116569519,
+			"greed": 0.0691681727766991,
+			"hair": "(0.35, 0.22, 0.12, 1.0)",
+			"harvester": false,
+			"head": 1.25,
+			"height": 0.746313462537878,
+			"height_cm": 126.873288631439,
+			"likes": [
+				18.0,
+				5.0,
+				0.0,
+				2.0
+			],
+			"lines": {
+				"calm": [
+					"Okay … bleibst du noch ein bisschen?"
+				],
+				"caught": [
+					"Das ist meins! Das sag ich meinem Papa!"
+				],
+				"caught_cheat": [
+					"Du schummelst! Das ist unfair!"
+				],
+				"challenge": [
+					"Spielst du mit mir Würfeln?"
+				],
+				"chess_challenge": [
+					"Spielst du Schach mit mir? Ich bin richtig gut!"
+				],
+				"chess_lose": [
+					"Nochmal! Nochmal!"
+				],
+				"chess_no": [
+					"Schach ist langweilig."
+				],
+				"chess_win": [
+					"Schachmatt! Hihi."
+				],
+				"chess_yes": [
+					"Schach! Das kann ich schon!"
+				],
+				"cocoa": [
+					"Kakao! Mit Sahne? Danke!",
+					"Mmmh. Jetzt hab ich einen Kakaobart."
+				],
+				"dice_lose": [
+					"Menno."
+				],
+				"dice_no": [
+					"Nö."
+				],
+				"dice_win": [
+					"Gewonnen! Gewonnen!"
+				],
+				"dice_yes": [
+					"Würfeln! Aber nur zum Spaß, sagt Papa."
+				],
+				"give_deco": [
+					"Hier, für dich! Hab ich selbst gesammelt."
+				],
+				"greet": [
+					"Hallo. Wer bist du?",
+					"Hi! Ich darf eigentlich nicht mit Fremden reden.",
+					"Bist du auch in den Ferien hier?"
+				],
+				"greet_enemy": [
+					"Mit dir red ich nicht.",
+					"Geh weg!"
+				],
+				"greet_friend": [
+					"Hallo! Spielst du mit mir?",
+					"Da bist du ja! Ich hab dich überall gesucht!"
+				],
+				"insult": [
+					"Du bist gemein!",
+					"Das sag ich meinem Papa!"
+				],
+				"knife": [
+					"Ein echtes Messer! Papa erlaubt mir das nie."
+				],
+				"knock": [
+					"Mach auf! Bitte, bitte!",
+					"Hilfe! Ich will zu Papa!"
+				],
+				"left_outside": [
+					"Du hast mich nicht reingelassen. Ich hatte ganz doll Angst."
+				],
+				"missing": [
+					"Wer hat mein Laub weggenommen?!"
+				],
+				"monster": [
+					"Im Keller wohnt ein Monster. Ehrlich! Aber keiner glaubt mir.",
+					"Wenn die Lampen flackern, versteck ich mich unter der Decke.",
+					"Es hat mich angeschaut. Mit ganz vielen Zähnen. Und dann ist es einfach weitergegangen.",
+					"Die Katzen haben Angst vor ihm. Ich auch."
+				],
+				"no_drink": [
+					"Iiih, das riecht komisch. Papa sagt, das ist nur für Erwachsene."
+				],
+				"odd": [
+					"Nachts klopft es manchmal an mein Fenster.",
+					"Papa sagt, Gespenster gibt es nicht.",
+					"Ich freu mich auf Halloween! Ich will gaaanz viel Süßes!"
+				],
+				"only_fun": [
+					"Nur zum Spaß! Um Geld darf ich nicht spielen, sagt Papa."
+				],
+				"orphan": [
+					"Papa ist nicht wiedergekommen. Darf ich bei dir bleiben?",
+					"Wo ist Papa? Ich bleib bei dir, ja?"
+				],
+				"panic": [
+					"Papa! Papa!",
+					"Ich will nach Hause!"
+				],
+				"party_no": [
+					"…"
+				],
+				"party_yes": [
+					"Eine Party? JAAA!",
+					"Darf ich tanzen? Ich tanz am allerbesten!"
+				],
+				"patronized": [
+					"Du hast mich extra gewinnen lassen. Das ist doof."
+				],
+				"phone_answer": [
+					"Hallo? Hier ist {name}!"
+				],
+				"phone_chat": [
+					"Hallo? Hier ist {name}! Ich hab das Telefon ganz allein bedient!",
+					"Rate mal, wer hier ist! … {name}!"
+				],
+				"phone_party": [
+					"Hier ist {name}! In der Lobby ist Party! Kommst du?"
+				],
+				"phone_warn": [
+					"Hier ist {name}! Das Monster ist {where}! Ich hab's gesehen, echt!"
+				],
+				"phone_warn_near": [
+					"{name} hier … es ist bei mir im Flur … ich hab Angst …"
+				],
+				"prank": [
+					"Keine Süßigkeiten? Dann gibt's Saures!",
+					"Ätsch! Saures!"
+				],
+				"refuse_deco": [
+					"Das ist meins!",
+					"Nur, wenn du mein Freund bist."
+				],
+				"scolded": [
+					"Menno. Dann eben Saures!",
+					"Pff, gemein. Saures!"
+				],
+				"sheltered": [
+					"Danke … darf ich kurz bleiben?"
+				],
+				"sleepless": [
+					"Ich kann nicht schlafen.",
+					"Da war was am Fenster … darf ich zu dir?"
+				],
+				"smalltalk": [
+					"Im Garten gibt es Kürbisse, die sind größer als ich!",
+					"Ich hab einen Käfer gefunden. Der wohnt jetzt in meiner Hosentasche.",
+					"Papa sagt, ich soll nicht so rennen. Aber die Flure sind sooo lang!",
+					"Ich hab die Zimmer gezählt. Bis hundert, dann hab ich aufgehört.",
+					"Die Katzen mögen mich. Minka hat mir die Hand abgeleckt!"
+				],
+				"tattle": [
+					"Ich hab genau gesehen, wie du das geklaut hast! Das sag ich meinem Papa!"
+				],
+				"thanks": [
+					"Danke!",
+					"Juhu!"
+				],
+				"thanks_like": [
+					"Wow! Darf ich das echt behalten?"
+				],
+				"to_bed": [
+					"Na gut … aber du bleibst, bis ich eingeschlafen bin.",
+					"Okay. Gute Nacht."
+				],
+				"treat": [
+					"Danke! Du bist der Allerbeste!",
+					"Juhu! Die teil ich nicht."
+				],
+				"treat_other": [
+					"Danke!",
+					"Juhu, Bonbons!",
+					"Danke schön! Fröhliches Halloween!"
+				],
+				"trick": [
+					"Süßes oder Saures!",
+					"Süßes, sonst gibt's Saures!"
+				]
+			},
+			"money": 0.0,
+			"name": "Tom",
+			"pants": "(0.12, 0.14, 0.2, 1.0)",
+			"parent": "gast1",
+			"prodigy": false,
+			"reliable": 0.995794236660004,
+			"report": "Ich hab %s gesehen! Bei %s! Ehrlich, ich lüg nicht!",
+			"room": "0101",
+			"sell": 0.95046591758728,
+			"sex": "m",
+			"shock": "cling",
+			"start_deco": [
+				5.0
+			],
+			"stock": {
+				"5": 2.0
+			},
+			"width_cm": 31.191104888916
+		},
+		"make_1": {
+			"activities": {
+				"bar": 0.596919143199921,
+				"garden": 0.381864702701569,
+				"kitchen": 0.907632082700729,
+				"lobby": 3.18229079246521,
+				"room": 2.49179649353027,
+				"wander": 0.19979395866394
+			},
+			"archetype": "ängstlich",
+			"brave": 0.220453530550003,
+			"build": -0.306795984506607,
+			"buy": 0.726734042167664,
+			"carver": true,
+			"chess": {
+				"likes": true,
+				"pride": 0.286511331796646,
+				"skill": 0.0834634155035019
+			},
+			"clothing": "Simons Handschuh",
+			"coat": "(0.5, 0.15, 0.12, 1.0)",
+			"dice": {
+				"honesty": 0.742722630500793,
+				"jump": 1.0,
+				"likes": false,
+				"perception": 0.151368379592896,
+				"pride": 0.286511331796646,
+				"tell": "Simon schaut kurz zur Decke."
+			},
+			"gen": "mid",
+			"generated": true,
+			"gossip": 0.58929717540741,
+			"greed": 0.07820013910532,
+			"hair": "(0.35, 0.22, 0.12, 1.0)",
+			"harvester": false,
+			"height": 0.94756942987442,
+			"height_cm": 178.244827270508,
+			"likes": [
+				2.0,
+				1.0
+			],
+			"lines": {
+				"calm": [
+					"Ja … ja. Atmen. Danke, dass du bleibst."
+				],
+				"caught": [
+					"He! Das gehört mir!"
+				],
+				"caught_cheat": [
+					"Gezinkte Würfel? Ernsthaft?!"
+				],
+				"challenge": [
+					"Lust auf eine Runde Mäxchen an der Bar?"
+				],
+				"chess_challenge": [
+					"Würdest du … eine Partie Schach mit mir spielen? In der Lobby, da ist Licht."
+				],
+				"chess_lose": [
+					"Danke. Das hat mich abgelenkt."
+				],
+				"chess_no": [
+					"Ich kann mich gerade auf nichts konzentrieren."
+				],
+				"chess_win": [
+					"Oh … ich habe gewonnen? Entschuldige."
+				],
+				"chess_yes": [
+					"Schach ist gut. Da ist es so schön still."
+				],
+				"dice_lose": [
+					"Gut gespielt."
+				],
+				"dice_no": [
+					"Ich kann mich gerade auf nichts konzentrieren."
+				],
+				"dice_win": [
+					"Gewonnen!"
+				],
+				"dice_yes": [
+					"Na gut, eine Runde."
+				],
+				"give_deco": [
+					"Hier, nimm. Du brauchst es dringender als ich."
+				],
+				"greet": [
+					"Oh! Du bist es nur. Gott sei Dank.",
+					"Hast du das gehört? Nein? Dann … ist ja gut."
+				],
+				"greet_enemy": [
+					"Ach, du schon wieder."
+				],
+				"greet_friend": [
+					"Ah, du! Endlich jemand, dem ich trauen kann."
+				],
+				"insult": [
+					"Das hab ich nicht verdient."
+				],
+				"knock": [
+					"Es ist hinter mir! Mach auf!"
+				],
+				"left_outside": [
+					"Du hast mich draußen gelassen. Ich hab gehört, wie du hinter der Tür standest."
+				],
+				"missing": [
+					"Wer hat meine Deko vor der Tür genommen?"
+				],
+				"monster": [
+					"Die Lampen flackern dort, wo es gerade ist. Achte darauf."
+				],
+				"odd": [
+					"Ich habe meine Tür dreimal abgeschlossen. Dreimal!",
+					"Das Hotel kam mir im Prospekt viel freundlicher vor.",
+					"Manchmal höre ich nachts jemanden in den leeren Zimmern umräumen."
+				],
+				"panic": [
+					"Nein, nein, nein! Es ist da!",
+					"Ich wusste es! Ich wusste es!"
+				],
+				"party_no": [
+					"Laut sein? Jetzt? Lieber nicht …"
+				],
+				"party_yes": [
+					"Eine Feier … mit vielen Leuten? Ja, das ist sicherer.",
+					"Eine Feier? Gern!"
+				],
+				"patronized": [
+					"Du hast mich gewinnen lassen. Lass das."
+				],
+				"refuse_deco": [
+					"Das brauche ich selbst, tut mir leid."
+				],
+				"sheltered": [
+					"Danke. Das vergesse ich dir nicht."
+				],
+				"smalltalk": [
+					"Ich schlafe nur noch mit Licht. Alle Lampen an.",
+					"Ich zähle jede Nacht die Schritte im Flur. Es sind immer mehr, als Gäste da sind."
+				],
+				"thanks": [
+					"Danke!"
+				],
+				"thanks_like": [
+					"Genau so etwas habe ich gesucht!"
+				]
+			},
+			"money": 5.0,
+			"name": "Simon",
+			"pants": "(0.25, 0.2, 0.3, 1.0)",
+			"reliable": 0.368132710456848,
+			"report": "Ich … ich glaube, da waren %s. Bei %s. Bitte sag, dass ich mir das eingebildet habe.",
+			"room": "0101",
+			"sell": 0.919721245765686,
+			"sex": "m",
+			"start_deco": [
+				2.0,
+				23.0
+			],
+			"stock": {
+				"2": 2.0
+			},
+			"width_cm": 41.3847427368164
+		},
+		"make_17": {
+			"activities": {
+				"bar": 1.47347983717918,
+				"garden": 0.680743813514709,
+				"kitchen": 1.21489691734314,
+				"lobby": 2.30659627914429,
+				"room": 3.88750612735748,
+				"wander": 2.60224008560181
+			},
+			"archetype": "Skeptiker",
+			"brave": 0.702701091766357,
+			"build": 0.0863907933235168,
+			"buy": 0.72426038980484,
+			"carver": false,
+			"chess": {
+				"likes": true,
+				"pride": 0.502488672733307,
+				"skill": 0.856143414974213
+			},
+			"clothing": "Moritz' Brille",
+			"coat": "(0.55, 0.35, 0.1, 1.0)",
+			"dice": {
+				"honesty": 0.447065114974976,
+				"jump": 2.0,
+				"likes": true,
+				"perception": 0.584040820598602,
+				"pride": 0.502488672733307,
+				"tell": "Moritz schaut kurz zur Decke."
+			},
+			"gen": "young",
+			"generated": true,
+			"gossip": 0.0784074887633324,
+			"greed": 0.380869328975677,
+			"hair": "(0.82, 0.82, 0.84, 1.0)",
+			"harvester": false,
+			"height": 0.990864753723145,
+			"height_cm": 178.659927368164,
+			"likes": [
+				10.0,
+				7.0
+			],
+			"lines": {
+				"calm": [
+					"Schon gut. Ich hab mich wieder im Griff."
+				],
+				"caught": [
+					"He! Das gehört mir!"
+				],
+				"caught_cheat": [
+					"Gezinkte Würfel? Ernsthaft?!"
+				],
+				"challenge": [
+					"Lust auf eine Runde Mäxchen an der Bar?"
+				],
+				"chess_challenge": [
+					"Eine Partie Schach? Ich möchte wissen, ob du rechnen kannst."
+				],
+				"chess_lose": [
+					"Interessant. Diese Variante kannte ich nicht."
+				],
+				"chess_no": [
+					"Nicht jetzt. Ich denke nach."
+				],
+				"chess_win": [
+					"Matt. Das war absehbar."
+				],
+				"chess_yes": [
+					"Schach. Endlich etwas Logisches in diesem Hotel."
+				],
+				"dice_lose": [
+					"Gut gespielt."
+				],
+				"dice_no": [
+					"Nicht jetzt."
+				],
+				"dice_win": [
+					"Gewonnen!"
+				],
+				"dice_yes": [
+					"Wahrscheinlichkeiten. Gut. Spielen wir.",
+					"Na gut, eine Runde."
+				],
+				"give_deco": [
+					"Hier, nimm. Du brauchst es dringender als ich."
+				],
+				"greet": [
+					"Guten Abend.",
+					"Ah. Ein vernünftiges Gesicht.",
+					"Hallo."
+				],
+				"greet_enemy": [
+					"Was willst du?"
+				],
+				"greet_friend": [
+					"Ah, du! Endlich jemand, dem ich trauen kann."
+				],
+				"insult": [
+					"Bitte?!"
+				],
+				"knock": [
+					"Es ist hinter mir! Mach auf!"
+				],
+				"left_outside": [
+					"Du hast mich draußen gelassen. Ich hab gehört, wie du hinter der Tür standest."
+				],
+				"missing": [
+					"Wer hat meine Deko vor der Tür genommen?"
+				],
+				"monster": [
+					"Es kommt in Phasen. Mal ist es lange ruhig – dann ist es im Keller.",
+					"Es reagiert auf Blicke. Starr es nicht an, wenn du nicht gefunden werden willst.",
+					"Die Lampen flackern dort, wo es gerade ist. Achte darauf."
+				],
+				"odd": [
+					"Ein Hotel ohne Personal, aber mit frischer Bettwäsche. Interessant.",
+					"Die Stromleitungen hier sind älter als ich."
+				],
+				"panic": [
+					"Okay. Okay. Das ist … real.",
+					"Rückzug. Sofort."
+				],
+				"party_no": [
+					"Nein danke."
+				],
+				"party_yes": [
+					"Eine Feier? Gern!"
+				],
+				"patronized": [
+					"Du hast mich gewinnen lassen. Lass das."
+				],
+				"refuse_deco": [
+					"Das brauche ich selbst, tut mir leid."
+				],
+				"sheltered": [
+					"Danke. Ich … ich bleibe nur kurz."
+				],
+				"smalltalk": [
+					"Es gibt für alles eine Erklärung. Ich hab sie nur noch nicht gefunden.",
+					"Ich führe Buch: Wann das Licht flackert, wo es rauscht. Da steckt ein Muster drin."
+				],
+				"thanks": [
+					"Danke!"
+				],
+				"thanks_like": [
+					"Genau so etwas habe ich gesucht!"
+				]
+			},
+			"money": 12.0,
+			"name": "Moritz",
+			"pants": "(0.3, 0.25, 0.2, 1.0)",
+			"reliable": 0.938736617565155,
+			"report": "Nüchtern betrachtet: %s, bei %s. Das ist eine Beobachtung, keine Geschichte.",
+			"room": "0101",
+			"sell": 1.14711022377014,
+			"sex": "m",
+			"start_deco": [
+				5.0
+			],
+			"stock": {
+				"10": 1.0
+			},
+			"width_cm": 41.8225631713867
+		},
+		"make_2": {
+			"activities": {
+				"bar": 1.49655264616013,
+				"garden": 0.746102333068848,
+				"kitchen": 1.06773805618286,
+				"lobby": 2.34815740585327,
+				"room": 3.4127733707428,
+				"wander": 1.59004318714142
+			},
+			"archetype": "Skeptiker",
+			"brave": 0.733775854110718,
+			"build": 0.660846829414368,
+			"buy": 0.793240010738373,
+			"carver": false,
+			"chess": {
+				"likes": true,
+				"pride": 0.814156949520111,
+				"skill": 0.475838959217072
+			},
+			"clothing": "Karls Hut",
+			"coat": "(0.55, 0.35, 0.1, 1.0)",
+			"dice": {
+				"honesty": 0.60038161277771,
+				"jump": 2.0,
+				"likes": false,
+				"perception": 0.231615051627159,
+				"pride": 0.814156949520111,
+				"tell": "Karl grinst eine Spur zu breit."
+			},
+			"gen": "old",
+			"generated": true,
+			"gossip": 0.229540839791298,
+			"greed": 0.349818468093872,
+			"hair": "(0.05, 0.05, 0.05, 1.0)",
+			"harvester": false,
+			"height": 1.03455483913422,
+			"height_cm": 176.898880004883,
+			"likes": [
+				10.0,
+				7.0
+			],
+			"lines": {
+				"calm": [
+					"Schon gut. Ich hab mich wieder im Griff.",
+					"Danke … es geht wieder."
+				],
+				"caught": [
+					"He! Das gehört mir!"
+				],
+				"caught_cheat": [
+					"Gezinkte Würfel? Ernsthaft?!"
+				],
+				"challenge": [
+					"Lust auf eine Runde Mäxchen an der Bar?"
+				],
+				"chess_challenge": [
+					"Eine Partie Schach? Ich möchte wissen, ob du rechnen kannst."
+				],
+				"chess_lose": [
+					"Interessant. Diese Variante kannte ich nicht."
+				],
+				"chess_no": [
+					"Nicht jetzt. Ich denke nach."
+				],
+				"chess_win": [
+					"Matt. Das war absehbar."
+				],
+				"chess_yes": [
+					"Schach. Endlich etwas Logisches in diesem Hotel."
+				],
+				"dice_lose": [
+					"Gut gespielt."
+				],
+				"dice_no": [
+					"Nicht jetzt."
+				],
+				"dice_win": [
+					"Gewonnen!"
+				],
+				"dice_yes": [
+					"Wahrscheinlichkeiten. Gut. Spielen wir."
+				],
+				"give_deco": [
+					"Hier, nimm. Du brauchst es dringender als ich."
+				],
+				"greet": [
+					"Guten Abend.",
+					"Ah. Ein vernünftiges Gesicht.",
+					"Oh – hallo. Ich hab dich gar nicht kommen hören."
+				],
+				"greet_enemy": [
+					"Was willst du?"
+				],
+				"greet_friend": [
+					"Da bist du ja! Gut, dich zu sehen."
+				],
+				"insult": [
+					"Das hab ich nicht verdient."
+				],
+				"knock": [
+					"Lass mich rein, schnell!"
+				],
+				"left_outside": [
+					"Du hast mich draußen gelassen. Ich hab gehört, wie du hinter der Tür standest."
+				],
+				"missing": [
+					"Wer hat meine Deko vor der Tür genommen?"
+				],
+				"monster": [
+					"Es kommt in Phasen. Mal ist es lange ruhig – dann ist es im Keller.",
+					"Es reagiert auf Blicke. Starr es nicht an, wenn du nicht gefunden werden willst.",
+					"In den Flügeln ist es am dunkelsten. Da streift es am liebsten herum."
+				],
+				"odd": [
+					"Ein Hotel ohne Personal, aber mit frischer Bettwäsche. Interessant.",
+					"Die Stromleitungen hier sind älter als ich.",
+					"Manchmal höre ich nachts jemanden in den leeren Zimmern umräumen."
+				],
+				"panic": [
+					"Okay. Okay. Das ist … real.",
+					"Rückzug. Sofort.",
+					"Es ist hier! Weg, weg, weg!"
+				],
+				"party_no": [
+					"Nein danke."
+				],
+				"party_yes": [
+					"Eine Feier? Gern!"
+				],
+				"patronized": [
+					"Du hast mich gewinnen lassen. Lass das."
+				],
+				"refuse_deco": [
+					"Das brauche ich selbst, tut mir leid."
+				],
+				"sheltered": [
+					"Danke. Ich … ich bleibe nur kurz."
+				],
+				"smalltalk": [
+					"Es gibt für alles eine Erklärung. Ich hab sie nur noch nicht gefunden.",
+					"Ich führe Buch: Wann das Licht flackert, wo es rauscht. Da steckt ein Muster drin."
+				],
+				"thanks": [
+					"Danke!"
+				],
+				"thanks_like": [
+					"Genau so etwas habe ich gesucht!"
+				]
+			},
+			"money": 12.0,
+			"name": "Karl",
+			"pants": "(0.2, 0.18, 0.22, 1.0)",
+			"reliable": 0.941616237163544,
+			"report": "Nüchtern betrachtet: %s, bei %s. Das ist eine Beobachtung, keine Geschichte.",
+			"room": "0101",
+			"sell": 1.16164517402649,
+			"sex": "m",
+			"start_deco": [
+				5.0
+			],
+			"stock": {
+				"10": 1.0,
+				"15": 2.0,
+				"2": 2.0
+			},
+			"width_cm": 47.3665313720703
+		},
+		"make_3": {
+			"activities": {
+				"bar": 0.490092158317566,
+				"garden": 0.315292382240295,
+				"kitchen": 1.6656299829483,
+				"lobby": 2.67653733491898,
+				"room": 3.49331665039063,
+				"wander": 0.365533447265625
+			},
+			"archetype": "ängstlich",
+			"brave": 0.0812080204486847,
+			"build": -0.485733360052109,
+			"buy": 0.700800836086273,
+			"carver": false,
+			"chess": {
+				"likes": false,
+				"pride": 0.451691329479218,
+				"skill": 0.889658391475677
+			},
+			"clothing": "Emils Strickjacke",
+			"coat": "(0.25, 0.3, 0.15, 1.0)",
+			"dice": {
+				"honesty": 0.821897983551025,
+				"jump": 2.0,
+				"likes": true,
+				"perception": 0.560957372188568,
+				"pride": 0.451691329479218,
+				"tell": "Emil wippt mit dem Fuß."
+			},
+			"gen": "young",
+			"generated": true,
+			"gossip": 0.412018001079559,
+			"greed": 0.150113701820374,
+			"hair": "(0.35, 0.22, 0.12, 1.0)",
+			"harvester": false,
+			"height": 0.966221153736115,
+			"height_cm": 173.423004150391,
+			"likes": [
+				2.0,
+				1.0
+			],
+			"lines": {
+				"calm": [
+					"Ja … ja. Atmen. Danke, dass du bleibst.",
+					"Danke … es geht wieder."
+				],
+				"caught": [
+					"He! Das gehört mir!"
+				],
+				"caught_cheat": [
+					"Gezinkte Würfel? Ernsthaft?!"
+				],
+				"challenge": [
+					"Lust auf eine Runde Mäxchen an der Bar?"
+				],
+				"chess_challenge": [
+					"Würdest du … eine Partie Schach mit mir spielen? In der Lobby, da ist Licht."
+				],
+				"chess_lose": [
+					"Danke. Das hat mich abgelenkt."
+				],
+				"chess_no": [
+					"Ich kann mich gerade auf nichts konzentrieren."
+				],
+				"chess_win": [
+					"Oh … ich habe gewonnen? Entschuldige."
+				],
+				"chess_yes": [
+					"Schach ist gut. Da ist es so schön still."
+				],
+				"dice_lose": [
+					"Gut gespielt."
+				],
+				"dice_no": [
+					"Ich kann mich gerade auf nichts konzentrieren.",
+					"Nicht jetzt."
+				],
+				"dice_win": [
+					"Gewonnen!"
+				],
+				"dice_yes": [
+					"Na gut, eine Runde."
+				],
+				"give_deco": [
+					"Hier, nimm. Du brauchst es dringender als ich."
+				],
+				"greet": [
+					"Oh! Du bist es nur. Gott sei Dank.",
+					"Hast du das gehört? Nein? Dann … ist ja gut.",
+					"Hallo."
+				],
+				"greet_enemy": [
+					"Was willst du?"
+				],
+				"greet_friend": [
+					"Ah, du! Endlich jemand, dem ich trauen kann."
+				],
+				"insult": [
+					"Bitte?!"
+				],
+				"knock": [
+					"Es ist hinter mir! Mach auf!"
+				],
+				"left_outside": [
+					"Du hast mich draußen gelassen. Ich hab gehört, wie du hinter der Tür standest."
+				],
+				"missing": [
+					"Wer hat meine Deko vor der Tür genommen?"
+				],
+				"monster": [
+					"In den Flügeln ist es am dunkelsten. Da streift es am liebsten herum."
+				],
+				"odd": [
+					"Ich habe meine Tür dreimal abgeschlossen. Dreimal!",
+					"Das Hotel kam mir im Prospekt viel freundlicher vor.",
+					"Die Fenster gehen alle nicht auf. Ich hab's bei jedem versucht."
+				],
+				"panic": [
+					"Nein, nein, nein! Es ist da!",
+					"Ich wusste es! Ich wusste es!",
+					"Es ist hier! Weg, weg, weg!"
+				],
+				"party_no": [
+					"Laut sein? Jetzt? Lieber nicht …",
+					"Nein danke."
+				],
+				"party_yes": [
+					"Eine Feier … mit vielen Leuten? Ja, das ist sicherer."
+				],
+				"patronized": [
+					"Du hast mich gewinnen lassen. Lass das."
+				],
+				"refuse_deco": [
+					"Das brauche ich selbst, tut mir leid."
+				],
+				"sheltered": [
+					"Danke. Das vergesse ich dir nicht."
+				],
+				"smalltalk": [
+					"Ich schlafe nur noch mit Licht. Alle Lampen an.",
+					"Ich zähle jede Nacht die Schritte im Flur. Es sind immer mehr, als Gäste da sind.",
+					"In der Küche ist nie jemand. Trotzdem steht immer frisches Brot da."
+				],
+				"thanks": [
+					"Danke!"
+				],
+				"thanks_like": [
+					"Genau so etwas habe ich gesucht!"
+				]
+			},
+			"money": 4.0,
+			"name": "Emil",
+			"pants": "(0.2, 0.18, 0.22, 1.0)",
+			"reliable": 0.590598821640015,
+			"report": "Ich … ich glaube, da waren %s. Bei %s. Bitte sag, dass ich mir das eingebildet habe.",
+			"room": "0101",
+			"sell": 1.00392997264862,
+			"sex": "m",
+			"start_deco": [
+				2.0,
+				5.0
+			],
+			"stock": {
+				"2": 1.0,
+				"5": 2.0
+			},
+			"width_cm": 43.8939476013184
+		},
+		"make_4242": {
+			"activities": {
+				"bar": 0.733954608440399,
+				"garden": 3.96691906452179,
+				"kitchen": 1.38127309083939,
+				"lobby": 2.59876847267151,
+				"room": 2.47503852844238,
+				"wander": 0.800589919090271
+			},
+			"archetype": "Bastler",
+			"brave": 0.568906664848328,
+			"build": 0.411118745803833,
+			"buy": 0.991184115409851,
+			"carver": true,
+			"chess": {
+				"likes": false,
+				"pride": 0.625863373279572,
+				"skill": 0.783148884773254
+			},
+			"clothing": "Theas Mütze",
+			"coat": "(0.25, 0.3, 0.15, 1.0)",
+			"dice": {
+				"honesty": 0.866022229194641,
+				"jump": 1.0,
+				"likes": false,
+				"perception": 0.293413668870926,
+				"pride": 0.625863373279572,
+				"tell": "Thea beißt sich auf die Lippe."
+			},
+			"gen": "young",
+			"generated": true,
+			"gossip": 0.554419457912445,
+			"greed": 0.498595744371414,
+			"hair": "(0.05, 0.05, 0.05, 1.0)",
+			"harvester": true,
+			"height": 0.925009667873383,
+			"height_cm": 164.542877197266,
+			"likes": [
+				0.0,
+				4.0,
+				7.0
+			],
+			"lines": {
+				"calm": [
+					"Danke … es geht wieder."
+				],
+				"caught": [
+					"He! Das gehört mir!"
+				],
+				"caught_cheat": [
+					"Gezinkte Würfel? Ernsthaft?!"
+				],
+				"challenge": [
+					"Lust auf eine Runde Mäxchen an der Bar?"
+				],
+				"chess_challenge": [
+					"Lust auf Schach? Das Brett in der Lobby ist ein schönes altes Stück."
+				],
+				"chess_lose": [
+					"Schöner Zug, der letzte. Den merk ich mir."
+				],
+				"chess_no": [
+					"Später, ich bastle gerade."
+				],
+				"chess_win": [
+					"Matt! Hehe."
+				],
+				"chess_yes": [
+					"Schach! Ich hab mal Figuren geschnitzt, weißt du."
+				],
+				"dice_lose": [
+					"Gut gespielt."
+				],
+				"dice_no": [
+					"Nicht jetzt."
+				],
+				"dice_win": [
+					"Gewonnen!"
+				],
+				"dice_yes": [
+					"Na gut, eine Runde."
+				],
+				"give_deco": [
+					"Nimm den hier – frisch geschnitzt!",
+					"Hier, nimm. Du brauchst es dringender als ich."
+				],
+				"greet": [
+					"Hi! Schon gesehen, was ich vor meine Tür gestellt hab?",
+					"Oh, hallo! Ich hab Kürbisreste an den Händen, sorry."
+				],
+				"greet_enemy": [
+					"Ach, du schon wieder."
+				],
+				"greet_friend": [
+					"Da bist du ja! Gut, dich zu sehen."
+				],
+				"insult": [
+					"Das hab ich nicht verdient."
+				],
+				"knock": [
+					"Mach auf! Bitte!"
+				],
+				"left_outside": [
+					"Du hast mich draußen gelassen. Ich hab gehört, wie du hinter der Tür standest."
+				],
+				"missing": [
+					"Wer hat meine Deko vor der Tür genommen?"
+				],
+				"monster": [
+					"Es kommt aus dem Keller. Ganz unten im Treppenhaus, wo die Treppe aufhört … da gehe ich nicht hin."
+				],
+				"odd": [
+					"Ich mache die schönste Tür im ganzen Hotel. Wetten?",
+					"Ich freue mich auf Halloween. Glaube ich."
+				],
+				"panic": [
+					"Es ist hier! Weg, weg, weg!"
+				],
+				"party_no": [
+					"Nein danke."
+				],
+				"party_yes": [
+					"Eine Feier? Gern!"
+				],
+				"patronized": [
+					"Du hast mich gewinnen lassen. Lass das."
+				],
+				"refuse_deco": [
+					"Meine Deko verschenke ich nur an Freunde."
+				],
+				"sheltered": [
+					"Danke. Ich … ich bleibe nur kurz."
+				],
+				"smalltalk": [
+					"Mit dem Messer aus der Küche schnitzt es sich am besten.",
+					"Spinnweben in den dunklen Ecken – perfekt für Deko. Wenn man sich traut.",
+					"In der Küche ist nie jemand. Trotzdem steht immer frisches Brot da."
+				],
+				"thanks": [
+					"Danke!"
+				],
+				"thanks_like": [
+					"Perfekt, daraus mach ich was richtig Gruseliges!"
+				]
+			},
+			"money": 6.0,
+			"name": "Thea",
+			"pants": "(0.25, 0.2, 0.3, 1.0)",
+			"reliable": 0.689207553863525,
+			"report": "%s! Bei %s! Gruselig – das wäre eine tolle Deko-Idee.",
+			"room": "0101",
+			"sell": 1.14165222644806,
+			"sex": "f",
+			"start_deco": [
+				0.0,
+				22.0
+			],
+			"stock": {
+				"0": 2.0,
+				"1": 2.0,
+				"4": 1.0
+			},
+			"width_cm": 42.1778717041016
+		},
+		"make_99991": {
+			"activities": {
+				"bar": 3.2221155166626,
+				"garden": 1.28555464744568,
+				"kitchen": 0.763143002986908,
+				"lobby": 2.01244354248047,
+				"room": 2.82015800476074,
+				"wander": 0.876098394393921
+			},
+			"archetype": "geschäftstüchtig",
+			"brave": 0.724585711956024,
+			"build": 0.189383566379547,
+			"buy": 0.430942475795746,
+			"carver": true,
+			"chess": {
+				"likes": true,
+				"pride": 0.503573656082153,
+				"skill": 0.594815015792847
+			},
+			"clothing": "Samis Brille",
+			"coat": "(0.18, 0.22, 0.4, 1.0)",
+			"dice": {
+				"honesty": 0.376978546380997,
+				"jump": 1.0,
+				"likes": false,
+				"perception": 0.320631682872772,
+				"pride": 0.503573656082153,
+				"tell": "Sami wippt mit dem Fuß."
+			},
+			"gen": "mid",
+			"generated": true,
+			"gossip": 0.104280844330788,
+			"greed": 0.914523661136627,
+			"hair": "(0.35, 0.22, 0.12, 1.0)",
+			"harvester": true,
+			"height": 0.975880861282349,
+			"height_cm": 176.051498413086,
+			"likes": [
+				7.0,
+				6.0,
+				1.0
+			],
+			"lines": {
+				"calm": [
+					"Danke … es geht wieder."
+				],
+				"caught": [
+					"He! Das gehört mir!"
+				],
+				"caught_cheat": [
+					"Gezinkte Würfel? Ernsthaft?!"
+				],
+				"challenge": [
+					"Revanche. Bar. Jetzt.",
+					"Na, Lust, dein Geld loszuwerden?"
+				],
+				"chess_challenge": [
+					"Revanche am Schachbrett. Leg was drauf."
+				],
+				"chess_lose": [
+					"Glück. Reines Glück."
+				],
+				"chess_no": [
+					"Schach bringt kein Geld."
+				],
+				"chess_win": [
+					"Matt. Zahlen bitte."
+				],
+				"chess_yes": [
+					"Schach? Gut – aber nur mit Einsatz."
+				],
+				"dice_lose": [
+					"Glück. Nächstes Mal nicht.",
+					"Gut gespielt."
+				],
+				"dice_no": [
+					"Nicht jetzt."
+				],
+				"dice_win": [
+					"Das Haus gewinnt immer.",
+					"Gewonnen!"
+				],
+				"dice_yes": [
+					"Mäxchen? Leg was auf den Tisch.",
+					"Na gut, eine Runde."
+				],
+				"give_deco": [
+					"Hier. Aber du schuldest mir was.",
+					"Hier, nimm. Du brauchst es dringender als ich."
+				],
+				"greet": [
+					"Na? Kaufen oder verkaufen?",
+					"Zeit ist Geld. Was gibt's?"
+				],
+				"greet_enemy": [
+					"Was willst du?"
+				],
+				"greet_friend": [
+					"Mein bester Kunde! Was darf's sein?",
+					"Ah, du! Endlich jemand, dem ich trauen kann."
+				],
+				"insult": [
+					"Bitte?!"
+				],
+				"knock": [
+					"Lass mich rein, schnell!"
+				],
+				"left_outside": [
+					"Du hast mich draußen gelassen. Ich hab gehört, wie du hinter der Tür standest."
+				],
+				"missing": [
+					"Wer hat meine Deko vor der Tür genommen?"
+				],
+				"monster": [
+					"Licht hält es fern. Ein geschnitzter Kürbis mit Kerze vor der Tür wirkt Wunder."
+				],
+				"odd": [
+					"Manchmal höre ich nachts jemanden in den leeren Zimmern umräumen."
+				],
+				"panic": [
+					"Jeder ist sich selbst der Nächste!",
+					"Aus dem Weg!",
+					"Ich hab es gesehen! Ich muss mich verstecken!"
+				],
+				"party_no": [
+					"Nein danke."
+				],
+				"party_yes": [
+					"Eine Feier? Gern!"
+				],
+				"patronized": [
+					"Du hast mich gewinnen lassen. Lass das."
+				],
+				"refuse_deco": [
+					"Umsonst? Ich bin doch nicht die Wohlfahrt."
+				],
+				"sheltered": [
+					"Danke. Das vergesse ich dir nicht."
+				],
+				"smalltalk": [
+					"In so einem Haus braucht jeder irgendwas. Und ich hab's.",
+					"Kerzen werden knapp. Die Preise steigen. So ist das.",
+					"In der Küche ist nie jemand. Trotzdem steht immer frisches Brot da."
+				],
+				"thanks": [
+					"Gutes Geschäft.",
+					"Das merk ich mir – im Guten."
+				],
+				"thanks_like": [
+					"Genau so etwas habe ich gesucht!"
+				]
+			},
+			"money": 24.0,
+			"name": "Sami",
+			"pants": "(0.3, 0.25, 0.2, 1.0)",
+			"reliable": 0.93827623128891,
+			"report": "%s, bei %s. Ich sag's dir umsonst. Ausnahmsweise.",
+			"room": "0101",
+			"sell": 1.41256034374237,
+			"sex": "m",
+			"start_deco": [
+				0.0,
+				5.0
+			],
+			"stock": {
+				"0": 2.0,
+				"2": 1.0,
+				"5": 1.0
+			},
+			"width_cm": 49.2230529785156
+		}
+	},
+	"kinds": [
+		"PUMPKIN",
+		"CARVED_PUMPKIN",
+		"CANDLE",
+		"KEY",
+		"COBWEB",
+		"LEAVES",
+		"COINS",
+		"KNIFE",
+		"DICE_CUP",
+		"LOADED_DICE",
+		"BULB",
+		"CLOTHING",
+		"COMPASS",
+		"MAP",
+		"FLASHLIGHT",
+		"BATTERY",
+		"UV_FILTER",
+		"CHESS_BOARD",
+		"SWEETS",
+		"SHEET_GHOST",
+		"LIGHT_STRING",
+		"MINI_PUMPKIN",
+		"BAT_GARLAND",
+		"SPIDER",
+		"SKULL",
+		"BROOM",
+		"BED_SHEET",
+		"ROAST_PUMPKIN"
+	]
+}

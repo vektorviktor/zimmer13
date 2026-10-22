@@ -10,6 +10,17 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 "/c/Users/vikto/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64.exe" --path .
 ```
 
+Tests (Details in TECHNIK.md, Abschnitt 10): Rauchtest über alle Debug-Szenarien (~25 min) bzw. nur Spielstand-Regeln
+und Rechentests (Sekunden):
+
+```bash
+bash tests/smoke.sh
+```
+
+```bash
+"/c/Users/vikto/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe" --headless --path . res://tests/run.tscn
+```
+
 ## Exportieren (eine einzelne .exe)
 
 Einmalig im Editor die Export-Vorlagen für **4.7.2** installieren (*Editor → Export-Vorlagen verwalten → Herunterladen*).

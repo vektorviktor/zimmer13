@@ -16,7 +16,8 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
   kompatibilität kommt erst spät (Entscheidung 19.10.). `VERSION`/`MIN_VERSION` nur erhöhen und `--savetest`
   nur laufen lassen, wenn sich am Speichern selbst etwas ändert (Felder in `collect`/`apply`, neue Gruppe →
   auch in `WORLD_GROUPS`).
-- `Item.Kind` und die Zufallsaufrufe in `GuestGenerator.make()` nur am Ende erweitern (Spielstände).
+- `Item.Kind` und die Zufallsaufrufe in `GuestGenerator.make()` nur am Ende erweitern (Spielstände) – prüft
+  `tests/run.tscn` (`save_rules`). Vor größeren Commits `bash tests/smoke.sh` (TECHNIK.md 10).
 - Spielzeit läuft über `delta` bzw. `MonsterDirector.elapsed` – nie über Systemzeit (Pause!).
 
 ## Dokumentation pflegen
