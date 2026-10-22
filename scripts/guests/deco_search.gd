@@ -69,7 +69,7 @@ func _process(delta: float) -> void:
 	if _quiet() and _leaders() < MAX_TRIPS:
 		var free := Game.social.living_guests().filter(func(g: Guest) -> bool: return _available(g))
 		if not free.is_empty():
-			start(free.pick_random(), null)
+			start(free.pick_random())
 
 
 func _quiet() -> bool:
@@ -97,7 +97,7 @@ func has_offer(g: Guest) -> bool:
 
 
 ## Ein Gast zieht los (auch Debug --search). with_player: der Spieler kommt gleich mit. false = kein Fundort.
-func start(g: Guest, with_player: Variant) -> bool:
+func start(g: Guest, with_player: bool = false) -> bool:
 	if g == null or g.dead or _trips.has(g.id):
 		return false
 	var source := _source_for(g)
@@ -118,7 +118,7 @@ func start(g: Guest, with_player: Variant) -> bool:
 			_trips[mate.id] = {"guest": mate, "source": source, "phase": "go", "partner": g, "leader": g, "lost": 0.0, "time": 0.0}
 			_walk(mate, _goal(source) + mate._jitter(0.8))
 	_walk(g, _goal(source))
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		var with := "mit dir" if with_player else (("mit " + (entry["partner"] as Guest).display_name) if entry["partner"] else "allein")
 		print("[Deko-Suche] %s sucht bei %s (%s)" % [g.display_name, source.label, with])
 	return true
@@ -154,8 +154,7 @@ func _source_for(g: Guest) -> ResourceSpot:
 	var spots: Array = []
 	for node in get_tree().get_nodes_in_group("resource_spots"):
 		var spot := node as ResourceSpot
-		var risky := spot.global_position.y < -0.5 or spot.kind == Item.Kind.COBWEB
-		if risky == danger:
+		if _risky(spot) == danger:
 			spots.append(spot)
 	spots.sort_custom(func(a: ResourceSpot, b: ResourceSpot) -> bool:
 		return a.global_position.distance_to(g.global_position) < b.global_position.distance_to(g.global_position))
@@ -167,9 +166,13 @@ func _source_for(g: Guest) -> ResourceSpot:
 	return null
 
 
+## Gefährlicher Fundort: Spinnweben-Ecke oder Keller.
+static func _risky(spot: ResourceSpot) -> bool:
+	return spot.global_position.y < -0.5 or spot.kind == Item.Kind.COBWEB
+
+
 func _goal(source: ResourceSpot) -> Vector3:
-	var map := Game.social.decorating.get_world_3d().navigation_map
-	return NavigationServer3D.map_get_closest_point(map, source.global_position)
+	return NavigationServer3D.map_get_closest_point(source.get_world_3d().navigation_map, source.global_position)
 
 
 func _walk(g: Guest, point: Vector3) -> void:
@@ -194,8 +197,7 @@ func _step(entry: Dictionary, delta: float) -> void:
 			and Social.tier(g) >= Social.Tier.NEUTRAL:
 		entry["asked"] = true
 		_offers[g.id] = OFFER_TIME
-		var risky: bool = (entry["source"] as ResourceSpot).global_position.y < -0.5 or (entry["source"] as ResourceSpot).kind == Item.Kind.COBWEB
-		g.say((DANGER_ASK_LINES if risky else ASK_LINES).pick_random())
+		g.say((DANGER_ASK_LINES if _risky(entry["source"]) else ASK_LINES).pick_random())
 	if entry["partner"] is String and p and not p.dead:
 		var d := p.global_position.distance_to(g.global_position)
 		entry["lost"] = float(entry["lost"]) + delta if d > LOSE_RANGE else 0.0
@@ -207,7 +209,8 @@ func _step(entry: Dictionary, delta: float) -> void:
 				_walk(g, entry["goal"])
 		elif d > LAG_RANGE and g.state == Guest.State.SEARCH:
 			g._set_idle(30.0)   # wartet auf den Spieler
-			g.rotation.y = atan2(-(p.global_position - g.global_position).x, -(p.global_position - g.global_position).z)
+			var to := p.global_position - g.global_position
+			g.rotation.y = atan2(-to.x, -to.z)
 			if randf() < 0.5:
 				g.say(WAIT_LINES.pick_random())
 			return
@@ -244,12 +247,13 @@ func on_arrived(g: Guest) -> void:
 			Game.social.change_relation(g, RELATION)
 			Game.social.add_deed(g, "gifts_from")
 			Game.social.pals.praise(g, PRAISE)   # er erzählt es seinen Freunden (6.16)
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				print("[Deko-Suche] %s teilt mit dir: %s, Beziehung %.0f" % [g.display_name, theirs.display_name, g.relation])
 	elif partner is Guest and is_instance_valid(partner) and entry["leader"] == null:
 		Game.social.pals.note(g, partner)   # zusammen gesucht (6.16)
 	_trips.erase(g.id)
 	_offers.erase(g.id)
+	g.stow_held()   # hält er noch etwas (Geschenk), wandert es in den Vorrat – sonst bliebe es verwaist in der Hand
 	g._take_into_hand(mine)
 	g._walk_to(g._room_point(), Guest.State.CARRY_HOME)
 

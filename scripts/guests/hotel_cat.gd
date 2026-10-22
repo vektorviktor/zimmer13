@@ -95,7 +95,6 @@ var _bumped := {}             ## Item-ID → Spielzeit, damit nicht dieselbe Dek
 var _wait_door: Door
 var _cowering := false        ## Flucht endet an einer geschlossenen Tür: geduckt weiterweinen
 var _after_door := State.IDLE
-var _pose := "stand"
 var _anim := 0.0
 var _stuck_time := 0.0
 var _last_pos := Vector3.ZERO
@@ -416,14 +415,13 @@ func _next_activity() -> void:
 	match _weighted_choice(weights):
 		"nap":
 			var spots := _usable_perches()
-			if _home_cat() and randf() < HOME_STAY and not _home_perches().is_empty():
-				_go_perch(_home_perches().pick_random())
+			var home := _home_pick()
+			if home >= 0:
+				_go_perch(home)
 			elif randf() < 0.65 and not spots.is_empty():
 				_go_perch(spots.pick_random())
 			else:
-				_target = _floor_spot()
-				_perch_goal = -1
-				state = State.WALK
+				_walk_to(_floor_spot())
 		"wander":
 			_wander()
 		"sit":
@@ -476,11 +474,18 @@ func _home_perches() -> Array[int]:
 	return result
 
 
+## Bleibt eine Katzenraum-Katze daheim (HOME_STAY)? Dann ein zufälliger Liegeplatz dort, sonst −1.
+func _home_pick() -> int:
+	if not _home_cat() or randf() >= HOME_STAY:
+		return -1
+	var spots := _home_perches()
+	return spots.pick_random() if not spots.is_empty() else -1
+
+
 func _wander() -> void:
-	if _home_cat() and randf() < HOME_STAY and not _home_perches().is_empty():
-		_target = (perches()[_home_perches().pick_random()]["floor"] as Vector3) + Vector3(randf_range(-1.5, 1.5), 0, randf_range(-1.5, 1.5))
-		_perch_goal = -1
-		state = State.WALK
+	var home := _home_pick()
+	if home >= 0:
+		_walk_to((perches()[home]["floor"] as Vector3) + Vector3(randf_range(-1.5, 1.5), 0, randf_range(-1.5, 1.5)))
 		return
 	var points: Array[Vector3] = _builder.wander_points
 	var near: Array[Vector3] = []
@@ -488,7 +493,12 @@ func _wander() -> void:
 		if absf(p.y - global_position.y) < 1.5 and p.distance_to(global_position) < 25.0:
 			near.append(p)
 	var choice := near if not near.is_empty() else points
-	_target = choice[randi() % choice.size()] + Vector3(randf_range(-0.8, 0.8), 0, randf_range(-0.6, 0.6))
+	_walk_to(choice[randi() % choice.size()] + Vector3(randf_range(-0.8, 0.8), 0, randf_range(-0.6, 0.6)))
+
+
+## Auf dem Boden irgendwohin (kein Liegeplatz als Ziel).
+func _walk_to(point: Vector3) -> void:
+	_target = point
 	_perch_goal = -1
 	state = State.WALK
 
@@ -510,7 +520,7 @@ func _arrive() -> void:
 		State.FETCH:
 			var item := _fetch_item
 			_fetch_item = null
-			if item != null and is_instance_valid(item) and not item.is_held 					and item.global_position.distance_to(global_position) < 0.8:
+			if is_instance_valid(item) and not item.is_held and item.global_position.distance_to(global_position) < 0.8:
 				if Game.social:
 					Game.social.cat_thefts[item.owner_id] = display_name
 				_carry(item)
@@ -674,7 +684,7 @@ func _start_gift() -> void:
 		state = State.FETCH
 		return
 	var kind: Item.Kind = GIFT_KINDS[randi() % GIFT_KINDS.size()]
-	var item := Item.create(kind, "unlit" if kind == Item.Kind.CARVED_PUMPKIN else "")
+	var item := Item.create(kind)
 	if item.lit:
 		item._extinguish()
 	_carry(item)
@@ -733,8 +743,7 @@ func _drop_carried() -> void:
 ## Geschlossene Tür direkt voraus? (Das NavMesh kennt keine Türen.)
 func _door_ahead(dir: Vector3) -> Door:
 	var probe := global_position + dir * 0.45
-	for node in get_tree().get_nodes_in_group("doors"):
-		var door := node as Door
+	for door: Door in Door.near(probe):
 		if door.is_open:
 			continue
 		var c := door.center()
@@ -773,6 +782,10 @@ func _check_surroundings() -> void:
 	if _perch >= 0 or not state in [State.WALK, State.FLEE, State.FOLLOW, State.GIFT, State.FETCH]:
 		return
 	var now := Game.director.elapsed if Game.director else 0.0
+	if _bumped.size() > 100:   # Abgelaufenes vergessen – sonst wächst die Liste mit jeder Deko, an der sie vorbeikommt
+		for key in _bumped.keys():
+			if now - float(_bumped[key]) >= 60.0:
+				_bumped.erase(key)
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
 		if not item.kind in Item.TOPPLE_KINDS or item.is_held or item.is_toppled():
@@ -800,6 +813,7 @@ func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 	if near or agent.is_navigation_finished():
 		_stop(delta)
 		return true
+	agent.path_desired_distance = maxf(0.3, speed * get_physics_process_delta_time() * 1.5)   # wie Guest._move_to
 	var next := agent.get_next_path_position()
 	var dir := next - global_position
 	dir.y = 0.0
@@ -897,11 +911,9 @@ func _animate(delta: float) -> void:
 		return
 	if _player.is_playing():
 		_player.stop()
-	_pose = _pose_for_state()
-	var pose: Dictionary = POSES[_pose]
+	var pose: Dictionary = POSES[_pose_for_state()]
 	_visual.position.y = lerpf(_visual.position.y, -float(pose["drop"]), minf(1.0, 6.0 * delta))
-	var target := _rest.duplicate()
-	_rot = target
+	_rot = _rest.duplicate()
 	for t in pose["turns"]:
 		_turn(t[0], t[1], t[2])
 	# Schwanz pendelt (im Schlaf kaum), Kopf schaut sich um

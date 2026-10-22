@@ -88,4 +88,4 @@ static func survives() -> bool:
 static func fitting(kind: String, item: Item, in_bed: bool) -> bool:
 	if kind == "choke" and (item.kind == Item.Kind.CANDLE or (item.kind in Item.CANDLE_HOLDERS and item.lit)):
 		return true
-	return in_bed and item.kind in [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]
+	return in_bed and item.kind in Guest.FOOD_GIFTS

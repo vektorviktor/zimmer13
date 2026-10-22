@@ -220,7 +220,8 @@ func is_safe_for_autosave() -> bool:
 
 
 func autosave(_reason: String) -> void:
-	var thumb := get_viewport().get_texture().get_image()
+	# Headless (Testläufe) gibt es kein Bild – dann ohne Vorschau
+	var thumb: Image = null if DisplayServer.get_name() == "headless" else get_viewport().get_texture().get_image()
 	if save_to(AUTOSAVE, diary_sentence(), thumb):
 		autosaved.emit()
 
@@ -278,11 +279,11 @@ func diary_sentence() -> String:
 	var lit := 0
 	var deco := 0
 	if Game.director:
+		var door: Vector3 = Game.director.player_door_front
 		for node in get_tree().get_nodes_in_group("items"):
 			var item := node as Item
 			if item.is_held or item.deco_strength <= 0.0:
 				continue
-			var door: Vector3 = Game.director.player_door_front
 			if Vector2(item.global_position.x - door.x, item.global_position.z - door.z).length() < 2.5 and absf(item.global_position.y - door.y) < 3.0:
 				deco += 1
 				if item.lit and item.kind == Item.Kind.CARVED_PUMPKIN:
@@ -293,13 +294,12 @@ func diary_sentence() -> String:
 		parts.append("Vor meiner Tür steht nichts. Gar nichts.")
 	if Game.player and Game.player.shock > 0.3:
 		parts.append("Ich kann nicht aufhören zu zittern.")
+	var date := Calendar.date_text(Game.director.elapsed) + ". " if Game.director else ""
 	if Game.director and Game.director.strange_diary:
 		# Zimmer 13 bleibt nicht unberührt (4.13): eine Zeile, die man nicht geschrieben hat
-		return (Calendar.date_text(Game.director.elapsed) + ". " if Game.director else "") \
-			+ " ".join(parts.slice(0, 2)) + " – Darunter, in fremder Schrift: »Ich sehe dir beim Schreiben zu.«"
+		return date + " ".join(parts.slice(0, 2)) + " – Darunter, in fremder Schrift: »Ich sehe dir beim Schreiben zu.«"
 	if parts.is_empty():
 		parts.append("Noch ein Abend in diesem Hotel. Es ist still. Zu still.")
-	var date := Calendar.date_text(Game.director.elapsed) + ". " if Game.director else ""
 	return date + " ".join(parts.slice(0, 3))
 
 
@@ -424,7 +424,7 @@ func _item_data(item: Item) -> Dictionary:
 ## Wird von main.gd aufgerufen, nachdem das Hotel frisch aufgebaut ist.
 func apply(data: Dictionary) -> void:
 	var tree := get_tree()
-	var world := Game.player.get_parent()
+	var parent := Game.player.get_parent()   # dort liegen die Gegenstände (nicht `world`, das ist der Fingerabdruck)
 	visited = (data.get("visited", []) as Array).duplicate()
 	Game.money = int(data.get("money", 5))
 	Game.current_slot = int(data.get("current_slot", Game.current_slot))
@@ -455,10 +455,8 @@ func apply(data: Dictionary) -> void:
 	_apply_group("lamp_fixtures", data.get("lamps", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("windows", data.get("windows", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("hide_spots", data.get("hide_spots", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
-	if data.has("phones"):   # erst ab Version 5
-		_apply_group("phones", data["phones"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
-	if data.has("dressers"):   # erst ab Version 7
-		_apply_group("dressers", data["dressers"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	_apply_group("phones", data.get("phones", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	_apply_group("dressers", data.get("dressers", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if Game.traces:
 		Game.traces.load_state(data.get("traces", []))
 	if Game.ghost:
@@ -520,16 +518,13 @@ func apply(data: Dictionary) -> void:
 	Game.player.held = null
 	for guest in Game.social.guests:
 		guest.held = null
-	var keep_board := int(data.get("version", VERSION)) < 13   # gab es damals noch nicht
 	for node in tree.get_nodes_in_group("items"):
 		var item := node as Item
-		if keep_board and item.kind == Item.Kind.CHESS_BOARD:
-			continue
 		item.remove_from_group("items")
 		item.queue_free()
 	for entry in data.get("items", []):
 		var item := _make_item(entry)
-		world.add_child(item)
+		parent.add_child(item)
 		item.global_position = _vec(entry["pos"])
 		item.global_rotation = _vec(entry["rot"])
 		if bool(entry.get("hung", false)):
@@ -541,8 +536,7 @@ func apply(data: Dictionary) -> void:
 			g._take_into_hand(_make_item(held))
 
 	# Katzen (nach den Gästen: Lieblingsgast; nach den Gegenständen: ihre Beute im Maul)
-	if data.has("cats"):   # erst ab Version 8
-		_apply_group("cats", data["cats"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	_apply_group("cats", data.get("cats", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 
 	# Spieler
 	var pd: Dictionary = data["player"]
@@ -550,6 +544,7 @@ func apply(data: Dictionary) -> void:
 	p.global_position = _vec(pd["pos"])
 	p.rotation.y = float(pd["yaw"])
 	p.head.rotation.x = float(pd["pitch"])
+	p.set_crouching(bool(pd.get("crouch", false)))
 	p.shock = float(pd.get("shock", 0.0))
 	p.nights_awake = int(pd.get("nights_awake", 0))
 	p.injury = float(pd.get("injury", 0.0))
@@ -560,7 +555,7 @@ func apply(data: Dictionary) -> void:
 	if pd.get("held") != null:
 		var held_item := _make_item(pd["held"])
 		held_item.owner_id = "player"
-		world.add_child(held_item)
+		parent.add_child(held_item)
 		p.try_pick_up(held_item)
 
 	# Soziales
@@ -625,6 +620,9 @@ func _write(slot: int, data: Dictionary) -> bool:
 	file.store_string(JSON.stringify(data, "\t"))
 	file.close()
 	var dir := DirAccess.open(DIR)
+	if dir == null:
+		push_error("Spielstand-Ordner nicht erreichbar: %s" % DIR)
+		return false
 	if dir.file_exists(path.get_file()):
 		dir.remove(path.get_file())
 	return dir.rename(tmp.get_file(), path.get_file()) == OK

@@ -1,5 +1,5 @@
 class_name Monster
-extends CharacterBody3D
+extends NavWalker
 ## Das Monster (Spielkonzept 4, 4.13). Streift im ganzen Hotel umher – gewichtet nach Druck
 ## (Dunkelheit, Neugier, wenig Deko) – und biegt in Zimmer ab, wenn Neugier und Dreistigkeit
 ## groß genug sind. Es bleibt meist verborgen: Sieht der Spieler es, verschwindet es aus
@@ -32,13 +32,9 @@ const ASH := 60
 const ASH_LIFE := 7.0
 const ASH_SIZE := 0.035
 const ASH_HEIGHT := 1.0            ## Mitte des Bereichs (±0,6 m), in dem sie entstehen
-## Sichtlinie: Wände, Türen, Vorhänge und Milchglas (klares Glas lässt den Blick durch).
-## Sichtweiten stehen in Senses (Spielkonzept 4.15).
-const SIGHT_MASK := Senses.SIGHT_MASK
 
 var state := State.INACTIVE
 var noticed := false
-var agent: NavigationAgent3D
 
 var _collider: CollisionShape3D
 var _visual: Node3D
@@ -78,14 +74,10 @@ var _fleeing := false           ## vom UV-Licht vertrieben: rennt in den Keller 
 var _uv_slow := 0.0             ## steht im UV-Kegel: zögert, wird langsamer
 var _state_timer := 0.0
 var _idle_timer := 0.0
-var _active_time := 0.0
 var _look_timer := 0.0
 var _deter_timer := 0.0
 var _anim_time := 0.0
-var _stuck_time := 0.0
-var _last_pos := Vector3.ZERO
 var _anim_step := 0.0
-var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 
 func _ready() -> void:
@@ -102,7 +94,7 @@ func _ready() -> void:
 	agent = NavigationAgent3D.new()
 	agent.radius = 0.3
 	agent.height = 1.6
-	agent.path_desired_distance = 0.3
+	agent.path_desired_distance = PATH_DISTANCE
 	agent.target_desired_distance = 0.5
 	agent.path_height_offset = 0.2   # NavMesh liegt ~0,2 m über dem Boden
 	# Vom Heizkeller (Untergeschoss, Spielkonzept 7.9) bis in die Flügel sind es mehr Polygone, als Godot
@@ -188,15 +180,10 @@ func play_jumpscare(cam: Camera3D) -> void:
 	_set_state(State.KILL)
 	visible = true
 	_collider.disabled = true
-	var forward := -cam.global_transform.basis.z
-	forward.y = 0.0
-	if forward.length() < 0.01:
-		forward = Vector3.FORWARD
-	forward = forward.normalized()
+	var forward := _face_camera(cam)
 	# Auf dem Boden, vorgebeugt – dann ruckartig mit dem Kopf auf die Kamera zu
 	var base := Vector3(cam.global_position.x, cam.global_position.y - 1.7, cam.global_position.z)
 	global_position = base + forward * 2.2
-	rotation = Vector3(0, atan2(forward.x, forward.z), 0)
 	_eye_mat.set_shader_parameter("emission_energy", 8.0)
 	_face_light.light_energy = 1.4
 	_crouch = 0.0
@@ -271,19 +258,24 @@ func reveal(cam: Camera3D) -> void:
 	visible = true
 	_collider.disabled = true
 	velocity = Vector3.ZERO
-	var forward := -cam.global_transform.basis.z
-	forward.y = 0.0
-	if forward.length() < 0.01:
-		forward = Vector3.FORWARD
-	forward = forward.normalized()
-	var base := cam.global_position - Vector3.UP * (EYE_HEIGHT - 0.1)
-	global_position = Vector3(base.x, cam.global_position.y - 1.7, base.z) + forward * 1.3
-	rotation = Vector3(0, atan2(forward.x, forward.z), 0)
+	var forward := _face_camera(cam)
+	global_position = Vector3(cam.global_position.x, cam.global_position.y - 1.7, cam.global_position.z) + forward * 1.3
 	_eye_mat.set_shader_parameter("emission_energy", 6.0)
 	_face_light.light_energy = 0.9
 	_crouch = 0.0
 	_anim_step = ANIM_STEP
 	Game.shot_event("reveal")
+
+
+## Dreht es zur Kamera hin (es steht in ihrer Blickrichtung) und gibt diese Richtung waagerecht zurück.
+func _face_camera(cam: Camera3D) -> Vector3:
+	var forward := -cam.global_transform.basis.z
+	forward.y = 0.0
+	if forward.length() < 0.01:
+		forward = Vector3.FORWARD
+	forward = forward.normalized()
+	rotation = Vector3(0, atan2(forward.x, forward.z), 0)
+	return forward
 
 
 func _appear(pos: Vector3) -> void:
@@ -292,7 +284,6 @@ func _appear(pos: Vector3) -> void:
 	_last_pos = pos
 	visible = true
 	_collider.disabled = false
-	_active_time = 0.0
 	noticed = false
 	_look_timer = 0.0
 	_chase_target = null
@@ -343,12 +334,6 @@ func _visible_actor():
 	return best
 
 
-func _los(a: Vector3, b: Vector3) -> bool:
-	var query := PhysicsRayQueryParameters3D.create(a, b, SIGHT_MASK)
-	query.exclude = [get_rid()]
-	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
-
-
 ## Schaut der Spieler das Monster ~0,8 s direkt an, „weiß“ es, dass es bemerkt wurde.
 func _update_noticed(delta: float) -> void:
 	if noticed or not (state in [State.PATROL, State.INVESTIGATE, State.LURK, State.SEARCH, State.SLINK]):
@@ -361,7 +346,7 @@ func _update_noticed(delta: float) -> void:
 	var to := head_pos - cam.global_position
 	var looking := to.length() < 22.0 \
 		and (-cam.global_transform.basis.z).dot(to.normalized()) > 0.93 \
-		and _los(cam.global_position, head_pos)
+		and Senses.clear_line(get_world_3d(), cam.global_position, head_pos, self)
 	_look_timer = _look_timer + delta if looking else maxf(0.0, _look_timer - delta)
 	if _look_timer > 0.8:
 		noticed = true
@@ -379,7 +364,6 @@ func _physics_process(delta: float) -> void:
 	_animate(delta)
 	if state == State.KILL or state == State.REVEAL:
 		return
-	_active_time += delta
 	_uv_slow = maxf(0.0, _uv_slow - delta)
 	_update_traces(delta)
 	_state_timer += delta
@@ -441,6 +425,9 @@ func _physics_process(delta: float) -> void:
 					_calm_retreat = true
 				else:          # Deko und Licht: abgedrängt – es sucht sich ein anderes Opfer
 					if _chase_target != null:
+						for actor in _rebuffed.keys():   # Abgelaufene vergessen, sonst wächst die Liste endlos
+							if Game.director.elapsed - float(_rebuffed[actor]) >= REBUFF_TIME:
+								_rebuffed.erase(actor)
 						_rebuffed[_chase_target] = Game.director.elapsed
 					_chase_target = null
 					_eye_mat.set_shader_parameter("emission_energy", 1.2)
@@ -549,7 +536,7 @@ func _start_search(center: Vector3) -> void:
 
 func _start_retreat() -> void:
 	_calm_retreat = false
-	_target = Game.director.retreat_point(global_position)
+	_target = Game.director.retreat_point()
 	_set_state(State.RETREAT)
 
 
@@ -634,7 +621,8 @@ func _check_deterrence(delta: float) -> void:
 		return
 	# Deko schützt nur, wer drinsteht (4.12): Steht der Gejagte außerhalb des Schutzes,
 	# geht das Monster durch die Deko hindurch.
-	if state == State.CHASE and _chase_target != null and is_instance_valid(_chase_target) 			and not Game.director.is_protected(_chase_target.global_position):
+	if state == State.CHASE and _chase_target != null and is_instance_valid(_chase_target) \
+			and not Game.director.is_protected(_chase_target.global_position):
 		return
 	if not _scratched and Game.traces:
 		_scratched = Game.traces.scratch_wall_ahead(self)
@@ -648,8 +636,7 @@ func _check_deterrence(delta: float) -> void:
 
 func _open_doors() -> void:
 	_near_door = false
-	for node in get_tree().get_nodes_in_group("doors"):
-		var door := node as Door
+	for door: Door in Door.near(global_position):
 		if door.center().distance_to(global_position + Vector3.UP) >= 1.5:
 			continue
 		_near_door = true
@@ -679,70 +666,22 @@ func _update_traces(delta: float) -> void:
 		var item := node as Item
 		if item.lit and not item.is_held and item.global_position.distance_to(global_position) < CANDLE_RANGE:
 			item.blow_out()
-	for node in get_tree().get_nodes_in_group("doors"):
-		var door := node as Door
+	for door: Door in Door.near(global_position):
 		if door.glass or door in _handprinted:
 			continue
 		var c := door.center()
-		if absf(c.y - 1.05 - global_position.y) < 1.5 				and Vector2(c.x - global_position.x, c.z - global_position.z).length() < HANDPRINT_RANGE:
+		if absf(c.y - 1.05 - global_position.y) < 1.5 \
+				and Vector2(c.x - global_position.x, c.z - global_position.z).length() < HANDPRINT_RANGE:
 			_handprinted.append(door)
 			if randf() < HANDPRINT_CHANCE and Game.traces:
 				Game.traces.add_door_handprint(door, global_position)
 
 
-# --- Bewegung -------------------------------------------------------------------
+# --- Bewegung (NavWalker) -------------------------------------------------------
 
+## Im UV-Kegel zögert es und wird langsamer.
 func _move_to(point: Vector3, speed: float, delta: float) -> bool:
-	if agent.target_position.distance_to(point) > 0.25:
-		agent.target_position = point
-	var near := Vector2(point.x - global_position.x, point.z - global_position.z).length() < 0.7 		and absf(point.y - global_position.y) < 1.5
-	if near or agent.is_navigation_finished():
-		_stop(delta)
-		return true
-	var next := agent.get_next_path_position()
-	var dir := next - global_position
-	dir.y = 0.0
-	if dir.length() > 0.01:
-		dir = dir.normalized()
-		rotation.y = lerp_angle(rotation.y, atan2(-dir.x, -dir.z), minf(1.0, 8.0 * delta))
-	if _uv_slow > 0.0:
-		speed *= 0.35
-	velocity.x = dir.x * speed
-	velocity.z = dir.z * speed
-	_apply_gravity(delta)
-	move_and_slide()
-	# Festgefahren (z. B. an einer Türkante)? Seitlich ausweichen, Weg neu berechnen.
-	if global_position.distance_to(_last_pos) < speed * delta * 0.2:
-		_stuck_time += delta
-		if _stuck_time > 0.6:
-			_stuck_time = 0.0
-			global_position += Vector3(-dir.z, 0, dir.x) * (0.15 if randf() < 0.5 else -0.15)
-			agent.target_position = point + Vector3(0.01, 0, 0)
-	else:
-		_stuck_time = 0.0
-	_last_pos = global_position
-	return false
-
-
-func _stop(delta: float) -> void:
-	velocity.x = 0.0
-	velocity.z = 0.0
-	_apply_gravity(delta)
-	move_and_slide()
-
-
-func _face(pos: Vector3, delta: float) -> void:
-	var to := pos - global_position
-	if Vector2(to.x, to.z).length() < 0.01:
-		return
-	rotation.y = lerp_angle(rotation.y, atan2(-to.x, -to.z), minf(1.0, 6.0 * delta))
-
-
-func _apply_gravity(delta: float) -> void:
-	if is_on_floor():
-		velocity.y = 0.0
-	else:
-		velocity.y -= _gravity * delta
+	return super(point, speed * 0.35 if _uv_slow > 0.0 else speed, delta)
 
 
 # --- Aussehen ----------------------------------------------------------------------

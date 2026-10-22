@@ -4,6 +4,7 @@
 // die u bzw. das Bild-„oben“ zeigt, ist dort fest – daraus entsteht die Normale ohne Tangenten im Mesh.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_schlick_ggx;
+#include "res://shaders/psx_snap.gdshaderinc"
 
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, filter_nearest, repeat_enable, hint_default_white;
@@ -24,9 +25,6 @@ uniform float metallic = 0.0;
 global uniform float reflections;
 // Kacheln pro Meter
 uniform float tex_scale = 1.0;
-uniform float snap_resolution = 140.0;
-// Einstellungen → PS1-Look → Vertex-Wackeln (1 = an, 0 = aus)
-global uniform float psx_snap;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -35,11 +33,7 @@ void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	if (psx_snap > 0.5 && clip.w > 0.0001) {
-		vec2 ndc = clip.xy / clip.w;
-		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;
-		clip.xy = ndc * clip.w;
-	}
+	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

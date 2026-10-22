@@ -114,9 +114,9 @@ static func build(parent: Node3D, rect: Rect2, up: String, rise: float) -> void:
 	_soffit(paint, inner, run, nose, slope)
 	_runner(runner, brass, n, h, g, run)
 	var rail_drop := RAIL_PROFILE_H / cos(atan(slope))   # senkrechte Höhe des schrägen Querschnitts
+	var y_rail := func(u: float) -> float: return nose.call(u) + RAIL_H - rail_drop
 	for s: float in [-1.0, 1.0]:
 		var x := s * x_side
-		var y_rail := func(u: float) -> float: return nose.call(u) + RAIL_H - rail_drop
 		stain.sweep(RAIL_PROFILE, Vector3(x, y_rail.call(0.0), 0.0), Vector3(x, y_rail.call(run), -run))
 		_newel(paint, stain, Vector3(x, 0, 0), NEWEL_TOP, false)
 		_newel(paint, stain, Vector3(x, rise - STRINGER_DOWN - 0.05, -run), rise + NEWEL_TOP, true)
@@ -131,7 +131,7 @@ static func build(parent: Node3D, rect: Rect2, up: String, rise: float) -> void:
 	Geo.mesh(holder, paint.commit(), Mat.psx(PAINT), Vector3.ZERO)
 	Geo.mesh(holder, stain.commit(), Mat.psx(STAIN), Vector3.ZERO)
 	Geo.mesh(holder, brass.commit(), Mat.metal(BRASS), Vector3.ZERO)
-	var ramp := _collision(holder, width, run, rise, n, h, g, x_side, nose, slope)
+	var ramp := _collision(holder, width, run, rise, n, h, g, x_side, nose)
 	# Der Läufer hängt an der Rampe: Footsteps.floor_under liest den Boden aus den Meshes des getroffenen Körpers –
 	# Teppichschritte, Gehen ist leise (Player.SOFT_FLOORS)
 	var carpet := Mat.layer_uv("runner").duplicate() as ShaderMaterial
@@ -320,11 +320,12 @@ static func _baluster_row(holder: Node3D, length: float, spots: Array[Transform3
 	holder.add_child(mmi)
 
 
-## Rampe zum Laufen (durch die Mitten der Trittstufen, vorn und oben bis auf den Boden), Trittflächen für Spuren,
-## Geländer und Pfosten. Gibt die Rampe zurück.
+## Rampe zum Laufen (unten durch die Mitte der ersten Trittstufe bis auf den Boden, oben bündig mit der Galeriekante –
+## lief sie dort auch durch die Trittmitten, blieb eine halbe Stufe Kante, an der Gäste hängen blieben), Trittflächen
+## für Spuren, Geländer und Pfosten. Gibt die Rampe zurück.
 static func _collision(holder: Node3D, width: float, run: float, rise: float, n: int, h: float, g: float,
-		x_side: float, nose: Callable, slope: float) -> StaticBody3D:
-	var length := run + g
+		x_side: float, nose: Callable) -> StaticBody3D:
+	var length := run + g / 2.0   # von u = −g/2 (Boden) bis u = run (Galerie)
 	var angle := atan2(rise, length)
 	var normal := Vector3(0, cos(angle), sin(angle))
 	var ramp := StaticBody3D.new()
@@ -332,7 +333,7 @@ static func _collision(holder: Node3D, width: float, run: float, rise: float, n:
 	ramp.collision_mask = 0
 	ramp.set_meta("stair_ramp", true)
 	ramp.transform = Transform3D(Basis(Vector3.RIGHT, normal, Vector3.RIGHT.cross(normal)),
-		Vector3(0, rise / 2.0, -(run / 2.0)) - normal * RAMP_T / 2.0)
+		Vector3(0, rise / 2.0, -(run - g / 2.0) / 2.0) - normal * RAMP_T / 2.0)
 	holder.add_child(ramp)
 	Geo.add_box_shape(ramp, Vector3(width, RAMP_T, Vector2(length, rise).length()), Vector3.ZERO)
 	var treads := StaticBody3D.new()

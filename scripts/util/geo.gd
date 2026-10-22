@@ -78,6 +78,13 @@ static func add_box_shape(body: CollisionObject3D, size: Vector3, pos: Vector3) 
 	return cs
 
 
+## Quader mit gleich großer Kollisionsform an einem vorhandenen Körper (Bretter von Truhe und Kommode).
+static func box_part(body: CollisionObject3D, size: Vector3, pos: Vector3, mat: Material) -> MeshInstance3D:
+	var mi := mesh(body, box(size), mat, pos)
+	add_box_shape(body, size, pos)
+	return mi
+
+
 ## Massiver Quader mit Kollision (Wände, Böden, Möbel).
 static func solid(parent: Node, size: Vector3, pos: Vector3, mat: Material, layer: int = 1) -> StaticBody3D:
 	var body := StaticBody3D.new()
@@ -132,15 +139,7 @@ static func runner_mesh(length: float, width: float, cap: float, tile: float, ca
 					uvs.append(Vector2(u, lerpf(sg.z, sg.w, t)))
 				# +X, dann +Z: von oben gesehen im Uhrzeigersinn
 				indices.append_array([first, first + 1, first + 2, first, first + 2, first + 3])
-	var arrays := []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = verts
-	arrays[Mesh.ARRAY_NORMAL] = normals
-	arrays[Mesh.ARRAY_TEX_UV] = uvs
-	arrays[Mesh.ARRAY_INDEX] = indices
-	var m := ArrayMesh.new()
-	m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	return m
+	return add_surface(ArrayMesh.new(), verts, normals, indices, uvs)
 
 
 ## Wand als ein einziges Mesh: entlang X von x0 bis x1, Mitte z = 0, Boden y = 0 (ohne Unterseite).
@@ -199,13 +198,24 @@ static func wall_mesh(x0: float, x1: float, height: float, thick: float, opening
 			_grid(reveals, span_xs, zs, func(u, v): return Vector3(u, op.w, v), Vector3.UP, always)
 	var m := ArrayMesh.new()
 	for part in [out, reveals]:
-		var arrays := []
-		arrays.resize(Mesh.ARRAY_MAX)
-		arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array(part[0])
-		arrays[Mesh.ARRAY_NORMAL] = PackedVector3Array(part[1])
-		arrays[Mesh.ARRAY_INDEX] = PackedInt32Array(part[2])
 		if not part[0].is_empty():
-			m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+			add_surface(m, PackedVector3Array(part[0]), PackedVector3Array(part[1]), PackedInt32Array(part[2]))
+	return m
+
+
+## Hängt eine Dreiecksfläche an m an (leere uvs/colors: ohne) und gibt m zurück.
+static func add_surface(m: ArrayMesh, verts: PackedVector3Array, normals: PackedVector3Array, indices: PackedInt32Array,
+		uvs := PackedVector2Array(), colors := PackedColorArray()) -> ArrayMesh:
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_INDEX] = indices
+	if not uvs.is_empty():
+		arrays[Mesh.ARRAY_TEX_UV] = uvs
+	if not colors.is_empty():
+		arrays[Mesh.ARRAY_COLOR] = colors
+	m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return m
 
 

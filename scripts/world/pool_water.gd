@@ -58,6 +58,7 @@ var _slosh_phase := Vector2.ZERO
 var _spray_side := 0                  ## an welchem Ende zuletzt Gischt aufspritzte
 var _mat: ShaderMaterial
 var _drop_mat: Material
+var _drop_mesh: BoxMesh
 
 
 ## area = Wasserfläche laut Plan (unter den Beckenrändern), wall = Dicke der Beckenränder,
@@ -80,6 +81,7 @@ func _init(area: Rect2, y: float, wall: float, p_hall: Rect2) -> void:
 	material_override = _mat
 	_ripples.resize(MAX_RIPPLES)
 	_drop_mat = Mat.psx(Color(0.8, 0.9, 0.95), "", 1.0, Color(0.4, 0.5, 0.55), 0.4)
+	_drop_mesh = Geo.box(Vector3(0.03, 0.03, 0.03))
 	add_to_group("pool_water")
 
 
@@ -133,7 +135,7 @@ func _drops(at: Vector3, amount: int, strength: float) -> CPUParticles3D:
 	drops.amount = amount
 	drops.lifetime = 1.1
 	drops.explosiveness = 0.9
-	drops.mesh = Geo.box(Vector3(0.03, 0.03, 0.03))
+	drops.mesh = _drop_mesh
 	drops.material_override = _drop_mat
 	drops.direction = Vector3.UP
 	drops.spread = 25.0

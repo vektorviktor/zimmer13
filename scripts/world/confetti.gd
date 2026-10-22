@@ -20,6 +20,8 @@ const DECAL_LIFE := 900.0
 const DECAL_SIZE := Vector2(0.5, 1.0)
 
 var _texture: ImageTexture
+var _snippet: QuadMesh       ## ein Schnipsel (für alle Schüsse gleich)
+var _colors: Gradient        ## Farbe je Schnipsel
 var _decals: Array[Dictionary] = []   ## {decal, age}
 var _was_party := false
 var _shot_timer := 0.0
@@ -28,6 +30,21 @@ var _shot_timer := 0.0
 func _ready() -> void:
 	Game.confetti = self
 	_texture = ImageTexture.create_from_image(_paper_image())
+	_colors = Gradient.new()
+	_colors.interpolation_mode = Gradient.GRADIENT_INTERPOLATE_CONSTANT
+	_colors.set_color(0, COLORS[0])
+	_colors.set_offset(1, 1.0)
+	_colors.set_color(1, COLORS[COLORS.size() - 1])
+	for i in range(1, COLORS.size() - 1):
+		_colors.add_point(float(i) / COLORS.size(), COLORS[i])
+	_snippet = QuadMesh.new()
+	_snippet.size = Vector2(0.035, 0.05)
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	mat.roughness = 0.6
+	_snippet.material = mat
 
 
 ## Ein Schuss Konfetti bei `pos` (Mitte, in der Luft): fliegt hoch und rieselt herab, landet als Decals.
@@ -50,34 +67,23 @@ func burst(pos: Vector3, amount: int) -> void:
 	p.particle_flag_rotate_y = true
 	p.scale_amount_min = 0.7
 	p.scale_amount_max = 1.3
-	var colors := Gradient.new()
-	colors.interpolation_mode = Gradient.GRADIENT_INTERPOLATE_CONSTANT
-	colors.set_color(0, COLORS[0])
-	colors.set_offset(1, 1.0)
-	colors.set_color(1, COLORS[COLORS.size() - 1])
-	for i in range(1, COLORS.size() - 1):
-		colors.add_point(float(i) / COLORS.size(), COLORS[i])
-	p.color_initial_ramp = colors
-	var quad := QuadMesh.new()
-	quad.size = Vector2(0.035, 0.05)
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	mat.roughness = 0.6
-	quad.material = mat
-	p.mesh = quad
+	p.color_initial_ramp = _colors
+	p.mesh = _snippet
 	add_child(p)
 	p.global_position = pos
 	p.emitting = true
 	get_tree().create_timer(LIFETIME * 2.0, false).timeout.connect(p.queue_free)
 	# Was herunterkommt, bleibt liegen – kurz nach der Landung
+	get_tree().create_timer(LIFETIME * 0.6, false).timeout.connect(_land.bind(pos, amount))
+
+
+## Die Schnipsel eines Schusses sind gelandet: verstreut um die Mitte, je PER_DECAL ein Decal.
+func _land(pos: Vector3, amount: int) -> void:
 	var spread := 0.8 + amount / 40.0
-	get_tree().create_timer(LIFETIME * 0.6, false).timeout.connect(func() -> void:
-		for i in maxi(1, amount / PER_DECAL):
-			var r := sqrt(randf()) * spread
-			var a := randf() * TAU
-			_lay(pos + Vector3(cos(a) * r, 0, sin(a) * r)))
+	for i in maxi(1, amount / PER_DECAL):
+		var r := sqrt(randf()) * spread
+		var a := randf() * TAU
+		_lay(pos + Vector3(cos(a) * r, 0, sin(a) * r))
 
 
 func _process(delta: float) -> void:

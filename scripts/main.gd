@@ -5,7 +5,8 @@ extends Node3D
 ##
 ## Debug-Startparameter (nach „--“ an Godot übergeben; ohne Titelbildschirm). Im Spiel dieselben Befehle
 ## ohne „--“ in der Debug-Konsole ([^]/F1, DebugConsole) – ausgeführt von run_debug():
-##   --load=n                    Spielstand n laden (0 = Autosave)
+##   --load=n                    Spielstand n laden (0 = Autosave; TitleScreen)
+##   --new=n                     neues Spiel in Slot n (TitleScreen)
 ##   --savetest                  Speichern → Laden → Vergleichen (Ausgabe in der Konsole)
 ##   --diary=n                   nach 2 s wie am Tagebuch in Slot n speichern
 ##   --day=n                     zu Tag n im Oktober springen
@@ -58,6 +59,7 @@ extends Node3D
 ##   --nointro                   ohne Einführungstext
 ##   --perf[=s]                  Frame-Zeiten nach temp/perf.csv schreiben, nach s Sekunden (Standard 20) beenden (PerfLog)
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
+##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort Vorwarnung → Monster erscheint
 ##   --ghost=n|flur|schrank|tür  Lakengeist sofort zum n. Mal am Außenfenster des Raums, in dem du stehst (beim Start
@@ -81,6 +83,9 @@ extends Node3D
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
 ##   --kill=id                   Gast nach 3 s vom Monster holen lassen (überlebt mit 40 %: Kratzer, 6.17)
+##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
+##   --steal-test                Ednas Deko unbemerkt nehmen (Schuld-Test)
+##   --player-deco=x,z           geschnitzten Kürbis des Spielers an diese Stelle stellen
 ##   --weep=gast                 der Gast weint 30 s (Tränen, 7.6) – mit --look=gast steht er vor dir
 ##   --wound=gast,scratch|axe|choke[,hin]   Gast hat überlebt (6.17): Kratzer, Axtwunde (Blutspur, ein Tag im Bett) bzw.
 ##                               Würgemale (heiser, schweres Atmen) · hin: steht vor dir statt im Bett (mit --talk=gast)
@@ -264,8 +269,7 @@ func _ready() -> void:
 	if not Game.pending_load.is_empty():
 		_load_pending.call_deferred()
 	else:
-		SaveManager.visited = []
-		SaveManager.last_save_msec = -1
+		_fresh_session()
 		if not "--nointro" in OS.get_cmdline_user_args():
 			Game.say(INTRO, 12.0)
 		if Game.new_game_slot > 0:
@@ -278,12 +282,17 @@ func _load_pending() -> void:
 	var data := Game.pending_load
 	Game.pending_load = {}
 	if not SaveManager.fits(data):   # Hotel seit dem Speichern umgebaut – nicht falsch befüllen
-		SaveManager.visited = []
-		SaveManager.last_save_msec = -1
+		_fresh_session()
 		Game.say("Dieser Spielstand passt nicht mehr zum Hotel. Das Spiel beginnt von vorn.", 8.0)
 		return
 	SaveManager.apply(data)
 	Game.say("„%s“" % String(data.get("text", "")), 5.0)
+
+
+## Neues Spiel: noch nichts besucht (Autosave „neuer Bereich“), noch nicht gespeichert.
+func _fresh_session() -> void:
+	SaveManager.visited = []
+	SaveManager.last_save_msec = -1
 
 
 ## Neues Spiel in einem Slot: Startzustand gleich speichern, damit „Fortsetzen“ greift.
@@ -317,6 +326,7 @@ func _process(delta: float) -> void:
 	if _trace:
 		_trace_frames += 1
 		if _trace_frames % 120 == 0:
+			var nav := "--trace-nav" in OS.get_cmdline_user_args()
 			print("[%ds] Monster %s @ %s | Phase %s | Dreistigkeit %.1f" % [_trace_frames / 60,
 				Monster.State.keys()[Game.monster.state], Game.monster.global_position.snapped(Vector3.ONE * 0.1),
 				MonsterDirector.Phase.keys()[Game.director.phase], Game.director.effective_boldness()])
@@ -325,7 +335,7 @@ func _process(delta: float) -> void:
 				print("      %s: %s @ %s | Angst %.0f | Rausch %.2f | Beziehung %.0f | Hand: %s" % [guest.display_name,
 					Guest.State.keys()[guest.state], guest.global_position.snapped(Vector3.ONE * 0.1), guest.fear,
 					guest.drunk, guest.relation, guest.held.display_name if guest.held else "-"])
-				if "--trace-nav" in OS.get_cmdline_user_args():
+				if nav:
 					print("        Ziel %s  nächster Punkt %s  fertig %s" % [guest.get("_target"), guest.agent.get_next_path_position(), guest.agent.is_navigation_finished()])
 
 
@@ -514,13 +524,13 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--bold="):
 		Game.director.boldness = arg.substr(7).to_float()
 	elif arg.begins_with("--friend="):
-		var friend := Game.social.guest_by_id(arg.substr(9))
+		var friend := _guest(arg.substr(9))
 		if friend:
 			friend.relation = 65.0   # befreundet (6.3)
 	elif arg.begins_with("--relation="):
 		# Beziehung setzen; für die Extreme werden die nötigen Taten gleich mit eingetragen (6.3)
 		var rel := arg.substr(11).split(",")
-		var g := Game.social.guest_by_id(rel[0])
+		var g := _guest(rel[0])
 		if g and rel.size() > 1:
 			g.relation = clampf(rel[1].to_float(), -100.0, 100.0)
 			if g.relation >= 80.0:
@@ -528,39 +538,42 @@ func run_debug(arg: String) -> bool:
 			elif g.relation <= -80.0:
 				g.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
 	elif arg.begins_with("--follow="):
-		var follower := Game.social.guest_by_id(arg.substr(9))
+		var follower := _guest(arg.substr(9))
 		if follower:
-			follower.global_position = Game.player.global_position + Game.player.global_transform.basis.z * 2.0
+			_put_in_front(follower, -2.0, false)   # hinter dir
 			follower.start_follow()
 	elif arg.begins_with("--visit="):
-		var visitor := Game.social.guest_by_id(arg.substr(8))
+		var visitor := _guest(arg.substr(8))
 		if visitor:
 			Game.social.start_visit(visitor)
 	elif arg.begins_with("--punch="):
 		# Gast vor den Spieler stellen und zweimal zuschlagen (Nachfrage + Schlag)
-		var target := Game.social.guest_by_id(arg.substr(8))
+		var target := _guest(arg.substr(8))
 		if target:
-			target.global_position = Game.player.global_position - Game.player.global_transform.basis.z * 1.0
-			target.rotation.y = Game.player.rotation.y + PI
+			_put_in_front(target, 1.0)
 			target._set_idle(5.0)
 			get_tree().create_timer(1.0).timeout.connect(func() -> void:
 				Game.player.debug_punch(target)
 				Game.player.debug_punch(target))
 	elif arg.begins_with("--attack="):
-		var attacker := Game.social.guest_by_id(arg.substr(9))
+		var attacker := _guest(arg.substr(9))
 		if attacker:
-			attacker.global_position = Game.player.global_position - Game.player.global_transform.basis.z * 4.0
+			_put_in_front(attacker, 4.0, false)
 			get_tree().create_timer(1.0).timeout.connect(attacker.start_attack)
 	elif arg.begins_with("--kill="):
-		var victim := Game.social.guest_by_id(arg.substr(7))
+		var victim := _guest(arg.substr(7))
+		if victim == null:
+			return true
 		Game.director.attacks = MonsterDirector.HARMLESS_ATTACKS + 1   # wirklich holen
 		get_tree().create_timer(3.0).timeout.connect(func() -> void:
+			if victim.dead:
+				return
 			Game.monster.spawn_at(victim.global_position + Vector3(1, 0, 0))
 			Game.director.phase = MonsterDirector.Phase.ACTIVE
 			Game.director.kill_guest(victim, null))
 	elif arg.begins_with("--weep="):
 		# Tränen (Spielkonzept 7.6): der Gast weint eine halbe Minute – mit --look=gast vor dir
-		var crying := Game.social.guest_by_id(arg.substr(7))
+		var crying := _guest(arg.substr(7))
 		if crying:
 			crying.weep(30.0)
 	elif arg.begins_with("--wound="):
@@ -573,9 +586,7 @@ func run_debug(arg: String) -> bool:
 		else:
 			hurt.wound_by(parts[1])
 			if "hin" in parts:
-				var forward := -Game.player.global_transform.basis.z
-				hurt.global_position = Game.player.global_position + forward * 1.4
-				hurt.rotation.y = Game.player.rotation.y + PI
+				_put_in_front(hurt, 1.4)
 				hurt.wound_bed = 0.0   # zum Ansehen: steht vor dir statt im Bett
 				hurt._set_idle(30.0)
 				Game.player.head.rotation.x = deg_to_rad(-28.0 if parts[1] == "axe" else -5.0)
@@ -586,7 +597,7 @@ func run_debug(arg: String) -> bool:
 				Game.player.try_pick_up(node)
 				break
 	elif arg.begins_with("--enemy="):
-		var enemy := Game.social.guest_by_id(arg.substr(8))
+		var enemy := _guest(arg.substr(8))
 		if enemy:
 			enemy.relation = -65.0   # verfeindet (6.3)
 	elif arg.begins_with("--player-deco="):
@@ -596,16 +607,21 @@ func run_debug(arg: String) -> bool:
 		deco.position = Vector3(xz[0].to_float(), 0.02, xz[1].to_float())
 		add_child(deco)
 	elif arg.begins_with("--dice="):
-		var opponent := Game.social.guest_by_id(arg.substr(7))
+		var opponent := _guest(arg.substr(7))
+		if opponent == null:
+			return true
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:
 			Game.dice.start(opponent, {"money": 3, "item": false}))
 	elif arg.begins_with("--chess="):
-		var chess_opponent := Game.social.guest_by_id(arg.substr(8))
+		var chess_opponent := _guest(arg.substr(8))
+		if chess_opponent == null:
+			return true
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:
 			Game.chess.start(chess_opponent, {"money": 3, "item": false}))
 	elif arg.begins_with("--challenge="):
-		var challenger := Game.social.guest_by_id(arg.substr(12).split(",")[0])
-		Game.social.challenge(challenger, "chess" if arg.ends_with(",chess") else "dice")
+		var challenger := _guest(arg.substr(12).split(",")[0])
+		if challenger:
+			Game.social.challenge(challenger, "chess" if arg.ends_with(",chess") else "dice")
 	elif arg == "--autoplay":
 		_autoplay = true
 	elif arg.begins_with("--cat="):
@@ -644,9 +660,9 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--drunk="):
 		var parts := arg.substr(8).split(",")
 		var glasses := parts[0].to_int()
-		var who: Guest = Game.social.guest_by_id(parts[1]) if parts.size() > 1 else null
+		var who: Guest = _guest(parts[1]) if parts.size() > 1 else null
 		if parts.size() > 1 and who == null:
-			Game.say("Unbekannter Gast: %s" % parts[1], 3.0)
+			return true   # nicht stattdessen selbst trinken
 		for i in glasses:
 			if who:
 				who.drink()
@@ -669,19 +685,22 @@ func run_debug(arg: String) -> bool:
 				Game.say("Wetter: klar, regen, gewitter oder blitz", 3.0)
 	elif arg == "--party" or arg.begins_with("--party="):
 		var host := arg.substr(8) if arg.begins_with("--party=") else "player"
-		if host != "player" and Game.social.guest_by_id(host) == null:
-			Game.say("Unbekannter Gast: %s" % host, 3.0)
-		else:
+		if host == "player" or _guest(host):
 			Game.social.start_party(host)
 	elif arg.begins_with("--look="):
 		var parts := arg.substr(7).split(",")
-		var guest := Game.social.guest_by_id(parts[0])
-		_debug_look(guest, parts[1] if parts.size() > 1 else "")
+		var guest := _guest(parts[0])
+		if guest:
+			_debug_look(guest, parts[1] if parts.size() > 1 else "")
 	elif arg.begins_with("--shock="):
 		var parts := arg.substr(8).split(",")
-		_debug_shock(Game.social.guest_by_id(parts[0]), parts[1] if parts.size() > 1 else "blood")
+		var shocked := _guest(parts[0])
+		if shocked:
+			_debug_shock(shocked, parts[1] if parts.size() > 1 else "blood")
 	elif arg.begins_with("--talk="):
-		var partner := Game.social.guest_by_id(arg.substr(7))
+		var partner := _guest(arg.substr(7))
+		if partner == null:
+			return true
 		var after_shock := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--shock="))
 		if not after_shock:
 			Game.player.global_position = partner.global_position + Vector3(0, 0, -1.4)
@@ -690,8 +709,7 @@ func run_debug(arg: String) -> bool:
 			if after_shock:   # erst erschrecken lassen, dann hingehen
 				var front := -partner.global_transform.basis.z
 				Game.player.global_position = partner.global_position + front * 1.4
-			var to := partner.global_position - Game.player.global_position
-			Game.player.rotation.y = atan2(-to.x, -to.z)
+			_face_toward(partner.global_position)
 			Game.dialog.open(partner))
 	elif arg == "--ghost=flur":
 		Game.ghost.debug_summon_hall()
@@ -786,7 +804,7 @@ func run_debug(arg: String) -> bool:
 				Game.phones.debug_dial(value))
 	elif arg == "--trace":
 		_trace = true
-		Game.noise_trace = true
+		Game.tracing = true
 		Game.message_posted.connect(func(text: String, _d: float) -> void: print("  » " + text.replace("
 ", " ")))
 	elif arg.begins_with("--noise="):
@@ -805,8 +823,8 @@ func run_debug(arg: String) -> bool:
 		Game.director.elapsed = (clampi(arg.substr(6).to_int(), 1, Calendar.HALLOWEEN) - 1) * Calendar.DAY_SECONDS
 	elif arg.begins_with("--bulb-thief="):
 		# Gast klaut sofort eine Glühbirne aus Zimmer 13
-		var thief := Game.social.guest_by_id(arg.substr(13))
-		var lamp := thief._bulb_to_steal(true)
+		var thief := _guest(arg.substr(13))
+		var lamp: Lamp = thief._bulb_to_steal(true) if thief else null
 		if lamp:
 			thief._steal_lamp = lamp
 			thief._walk_to(Vector3(lamp.global_position.x, 0, lamp.global_position.z) + thief._toward_room(lamp), Guest.State.STEAL)
@@ -841,7 +859,7 @@ func _debug_teleport(where: String) -> bool:
 	var guest := Game.social.guest_by_id(where)
 	if guest and not guest.dead:
 		var front := -guest.global_transform.basis.z
-		_place_player(guest.global_position + front * 1.6, -front)
+		TeleportUI.place_player(guest.global_position + front * 1.6, -front)
 		return true
 	# Zimmer: Nummer (auch verschlossene, auch oben), „113“ → 0113, Türschild „13“ → 0113
 	var b := Game.social.builder
@@ -853,7 +871,7 @@ func _debug_teleport(where: String) -> bool:
 			no = key
 	var spot := b.room_spot(no)
 	if not spot.is_empty():
-		_place_player(spot["pos"], spot["look"])
+		TeleportUI.place_player(spot["pos"], spot["look"])
 		return true
 	var entry := (get_node("Teleport") as TeleportUI).find(where)
 	if entry.is_empty():
@@ -918,17 +936,27 @@ func _nav_check() -> void:
 	get_tree().quit()
 
 
-func _place_player(pos: Vector3, look: Vector3) -> void:
-	var p := Game.player
-	if p.hiding:
-		p.exit_hide()
-	p.global_position = pos + Vector3(0, 0.05, 0)
-	p.velocity = Vector3.ZERO
-	p.rotation = Vector3(0, atan2(-look.x, -look.z), 0)
-	p.head.rotation.x = 0.0
+## Gast für einen Debug-Befehl – unbekannte ID: Meldung und null.
+func _guest(id: String) -> Guest:
+	var guest := Game.social.guest_by_id(id)
+	if guest == null:
+		Game.say("Unbekannter Gast: %s" % id, 3.0)
+	return guest
 
 
-## --savetest: Speichern und Laden ohne Datei durchspielen und Unterschiede ausgeben.
+## Gast `distance` m vor den Spieler stellen (negativ: dahinter); face: er schaut den Spieler an.
+func _put_in_front(guest: Guest, distance: float, face: bool = true) -> void:
+	guest.global_position = Game.player.global_position - Game.player.global_transform.basis.z * distance
+	if face:
+		guest.rotation.y = Game.player.rotation.y + PI
+
+
+## Spieler waagerecht zu einem Punkt drehen.
+func _face_toward(point: Vector3) -> void:
+	var to := point - Game.player.global_position
+	Game.player.rotation.y = atan2(-to.x, -to.z)
+
+
 ## --look: Spieler vor den Gast (in dessen Blickrichtung), der Gast bleibt stehen und schaut her.
 ## pose stellt eine Haltung nach, damit man die Gastmodelle prüfen kann (Spielkonzept 6.0).
 func _debug_look(guest: Guest, pose: String) -> void:
@@ -968,8 +996,7 @@ func _debug_shock(guest: Guest, what: String) -> void:
 		guest.global_position = center + Vector3(0, 0.05, 0)
 		var front: Vector3 = home["door_front"]
 		Game.player.global_position = front - into * 3.5 + along * 2.5 + Vector3(0, 0.05, 0)
-		var at := front - Game.player.global_position
-		Game.player.rotation.y = atan2(-at.x, -at.z)
+		_face_toward(front)
 		Game.ghost.debug_summon_door(guest)
 		return
 	if what.begins_with("ghost"):
@@ -977,8 +1004,7 @@ func _debug_shock(guest: Guest, what: String) -> void:
 		guest.global_position = center + into * 0.8 + Vector3(0, 0.05, 0)
 		guest.rotation.y = atan2(-into.x, -into.z)
 		Game.player.global_position = center - into * 1.6 + along * 1.4 + Vector3(0, 0.05, 0)
-		var look := center + into * 2.5 - Game.player.global_position
-		Game.player.rotation.y = atan2(-look.x, -look.z)
+		_face_toward(center + into * 2.5)
 		Game.player.head.rotation.x = -0.2
 		Game.ghost.debug_summon_guest(guest, maxi(1, what.substr(5).to_int()))
 		return
@@ -1000,11 +1026,11 @@ func _debug_shock(guest: Guest, what: String) -> void:
 	else:
 		Game.traces.add_blood(spot, 0.4)
 	Game.player.global_position = front + along * 4.2 + Vector3(0, 0.05, 0)
-	var to := front + Vector3.UP * 0.8 - Game.player.global_position
-	Game.player.rotation.y = atan2(-to.x, -to.z)
+	_face_toward(front)
 	Game.player.head.rotation.x = -0.25
 
 
+## --savetest: Speichern und Laden ohne Datei durchspielen und Unterschiede ausgeben.
 func _save_test() -> void:
 	# Etwas Unordnung, damit der Test mehr abdeckt: Vorhang zu, Licht aus, Birne in der Hand
 	(get_tree().get_nodes_in_group("windows").filter(func(w: Node) -> bool: return w.has_curtains())[0] as HotelWindow).set_closed(true)
@@ -1018,6 +1044,8 @@ func _save_test() -> void:
 	await get_tree().physics_frame
 	await get_tree().process_frame
 	var after: Dictionary = JSON.parse_string(JSON.stringify(SaveManager.collect()))
+	for note in _settle(before, after):
+		print("[savetest]   (kein Fehler) " + note)
 	var problems := 0
 	for key in before:
 		if key == "saved_at":
@@ -1044,6 +1072,53 @@ func _save_test() -> void:
 	print("[savetest] %d Gegenstände, %d Gäste, %d Spuren, Angriffe %d – %s" % [(before["items"] as Array).size(), (before["guests"] as Dictionary).size(),
 		(before["traces"] as Array).size(), int(before["director"]["state"]["attacks"]),
 		"alles gleich" if problems == 0 else "%d Unterschiede" % problems])
+
+
+## Bekanntes Rauschen zwischen den beiden Sammelzeitpunkten angleichen, damit nur echte Lade-Lücken zählen:
+## Lage von Gegenständen in der Hand (folgt der Hand, apply setzt sie nicht), Türen, die ein Gast im Türrahmen
+## gleich nach dem Laden öffnet (sein Zustand – Klopfen, Schlafen … – wird nicht gespeichert, er steht danach
+## untätig da), Drehung liegender Gegenstände bis ~15° und Katzen-Zeitgeber, die genau dazwischen abliefen.
+## Gibt Hinweise dazu zurück.
+func _settle(before: Dictionary, after: Dictionary) -> Array[String]:
+	var notes: Array[String] = []
+	for data: Dictionary in [before, after]:
+		var hands: Array = [data["player"]]
+		hands.append_array((data["guests"] as Dictionary).values())
+		for who: Dictionary in hands:
+			if who.get("held") is Dictionary:
+				who["held"].erase("pos")
+				who["held"].erase("rot")
+	var doors := get_tree().get_nodes_in_group("doors")
+	var was: Array = before.get("doors", [])
+	var now: Array = after.get("doors", [])
+	if was.size() == doors.size() and now.size() == doors.size():
+		for i in doors.size():
+			var center: Vector3 = (doors[i] as Door).center()
+			if bool(was[i]["open"]) != bool(now[i]["open"]) and Game.social.living_guests().any(func(g: Guest) -> bool:
+					return center.distance_to(g.global_position + Vector3.UP) < 1.3):
+				now[i] = was[i]
+				notes.append("doors[%d]: ein Gast im Türrahmen hat sie nach dem Laden geöffnet" % i)
+	# Liegende Gegenstände: Euler-Winkel sind nahe ±90° Neigung mehrdeutig, und was beim Sammeln noch rollte, setzt
+	# sich ohne Schwung (wird nicht gespeichert) etwas anders – gleich, wenn die Lage auf ~15° stimmt
+	var items_was: Array = before.get("items", [])
+	var items_now: Array = after.get("items", [])
+	if items_was.size() == items_now.size():
+		for i in items_was.size():
+			var a: Dictionary = items_was[i]
+			var b: Dictionary = items_now[i]
+			if a.get("kind") == b.get("kind") and a.get("rot") is Array and b.get("rot") is Array and a["rot"] != b["rot"]:
+				var qa := Quaternion.from_euler(Vector3(a["rot"][0], a["rot"][1], a["rot"][2]))
+				var qb := Quaternion.from_euler(Vector3(b["rot"][0], b["rot"][1], b["rot"][2]))
+				if qa.angle_to(qb) < deg_to_rad(15.0):
+					b["rot"] = a["rot"]
+	var cats_was: Array = before.get("cats", [])
+	var cats_now: Array = after.get("cats", [])
+	if cats_was.size() == cats_now.size():
+		for i in cats_was.size():
+			if float(cats_was[i].get("timer", 1.0)) <= 0.05 and not _same(cats_was[i], cats_now[i]):
+				cats_now[i] = cats_was[i]   # neuer Zeitgeber, neue Richtung – sie hat gerade etwas Neues angefangen
+				notes.append("cats[%d]: Zeitgeber lief zwischen den Messungen ab" % i)
+	return notes
 
 
 ## Gleich bis auf kleine Zahlenabweichungen (zwischen den Messungen vergeht ein Frame).
@@ -1111,8 +1186,7 @@ func _debug_search(parts: PackedStringArray) -> void:
 						return
 					var back := g.global_position - (-g.global_transform.basis.z) * 2.5
 					Game.player.global_position = Vector3(back.x, g.global_position.y + 0.05, back.z)
-					var to := g.global_position - Game.player.global_position
-					Game.player.rotation.y = atan2(-to.x, -to.z))
+					_face_toward(g.global_position))
 				follow.start()
 			return
 	Game.say("Deko-Suche: kein Gast frei oder kein Fundort erreichbar", 3.0)

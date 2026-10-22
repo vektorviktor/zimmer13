@@ -77,17 +77,7 @@ class Parts:
 	var uvs := PackedVector2Array()
 
 	func mesh() -> ArrayMesh:
-		var arrays := []
-		arrays.resize(Mesh.ARRAY_MAX)
-		arrays[Mesh.ARRAY_VERTEX] = verts
-		arrays[Mesh.ARRAY_NORMAL] = normals
-		arrays[Mesh.ARRAY_COLOR] = colors
-		arrays[Mesh.ARRAY_INDEX] = indices
-		if not uvs.is_empty():
-			arrays[Mesh.ARRAY_TEX_UV] = uvs
-		var m := ArrayMesh.new()
-		m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-		return m
+		return Geo.add_surface(ArrayMesh.new(), verts, normals, indices, uvs, colors)
 
 
 ## Baut alle Hecken unter parent: groups = Linienzüge aus dem Plan (je eine Liste von Rechtecken
@@ -121,6 +111,7 @@ static func build(parent: Node3D, groups: Array, walls: Array) -> void:
 			Geo.collider(parent, size, mid)
 		if not body.verts.is_empty():
 			Geo.mesh(parent, body.mesh(), body_mat, Vector3.ZERO).name = "Hecke"
+		if not cards.verts.is_empty():   # sehr kurze Linien bekommen keine Karte (leere Fläche wäre ein Fehler)
 			Geo.mesh(parent, cards.mesh(), leaf_mat, Vector3.ZERO).name = "Heckenblaetter"
 
 

@@ -150,8 +150,7 @@ func _pick_incoming() -> Dictionary:
 	if not chatters.is_empty():
 		choices.append([1.5, "chat", chatters])
 	if director.first_attack_done:
-		var grieving := director.grief > 0.0 or director.is_hallucinating()
-		choices.append([0.6 + (2.0 if grieving else 0.0), "creepy", []])
+		choices.append([0.6 + (2.0 if _grieving() else 0.0), "creepy", []])
 	if choices.is_empty():
 		return {}
 	var total := 0.0
@@ -176,11 +175,15 @@ func _creepy_call() -> Dictionary:
 	if Game.monster.is_active() and Game.monster.global_position.distance_to(door_front) < 6.0:
 		return {"kind": "creepy", "variant": "door", "room": LevelBuilder.PLAYER_ROOM}
 	var dead: Array = Game.social.guests.filter(func(g: Guest) -> bool: return g.dead)
-	var grieving := Game.director.grief > 0.0 or Game.director.is_hallucinating()
-	if not dead.is_empty() and (grieving or randf() < 0.3):
+	if not dead.is_empty() and (_grieving() or randf() < 0.3):
 		var ghost: Guest = dead[randi() % dead.size()]
 		return {"kind": "creepy", "variant": "dead", "guest": ghost, "room": ghost.home["no"]}
 	return {"kind": "creepy", "variant": "breath", "room": _empty_room()}
+
+
+## Trauer oder Halluzinationen: Dann ruft öfter … etwas anderes an.
+func _grieving() -> bool:
+	return Game.director.grief > 0.0 or Game.director.is_hallucinating()
 
 
 ## Ein Zimmer, in dem niemand wohnt – am liebsten das abgeschlossene Zimmer 0118.
@@ -259,14 +262,14 @@ func _take_incoming(call: Dictionary) -> void:
 				["Auflegen", hang_up],
 			])
 		"lie":
-			ui.show_page("%s – %s" % [title, guest.display_name], "„%s“" % _line(guest, "lie", {}), [
+			ui.show_page("%s – %s" % [title, guest.display_name], "„%s“" % _line(guest, "lie"), [
 				["Danke.", hang_up],
 				["Auflegen", hang_up],
 			])
 		"chat":
 			var key := "party" if Game.social.party_active else "chat"
 			_talk = {"guest": guest, "since": _time, "chose": true}
-			_show_talk(guest, "„%s“" % _line(guest, key, {}))
+			_show_talk(guest, "„%s“" % _line(guest, key))
 		"creepy":
 			_take_creepy(call, title)
 		"kid_prank":
@@ -285,8 +288,7 @@ func _take_incoming(call: Dictionary) -> void:
 func _monster_where(guest: Guest) -> String:
 	var zone := Game.director.zone_name_at(Game.monster.global_position)
 	if zone == "" or randf() > float(guest.profile.get("reliable", 0.7)):
-		var names: Array = Game.director.zones.map(func(z: Dictionary) -> String: return z["name"])
-		zone = names[randi() % names.size()]
+		zone = Game.social.random_zone_name()
 	return where_text(zone)
 
 
@@ -315,7 +317,7 @@ func _take_creepy(call: Dictionary, title: String) -> void:
 			var ghost: Guest = call["guest"]
 			ui.show_page(title, "[Rauschen] …", [["Auflegen", hang_up]])
 			_after(id, 2.0, func() -> void:
-				ui.set_text("„%s“" % _line(ghost, "dead", {})))
+				ui.set_text("„%s“" % _line(ghost, "dead")))
 			_after(id, 7.0, func() -> void:
 				ui.set_text("[Die Leitung ist tot.]")
 				Game.play_sound("sting", 0.4)
@@ -391,9 +393,7 @@ func _retry_options() -> Array:
 
 
 func _dial_again() -> void:
-	_outgoing = {}
-	_talk = {}
-	_call_id += 1
+	_end_call()
 	if _active_phone:
 		_show_dial(_active_phone)
 
@@ -456,10 +456,10 @@ func _guest_answers(guest: Guest) -> void:
 	_talk = {"guest": guest, "since": _time, "chose": false}
 	if key == "answer_panic":
 		# keine Zeit zum Reden – er legt selbst auf
-		ui.show_page(_talk_title(guest), "„%s“" % _line(guest, key, {}), [["Auflegen", hang_up]])
+		ui.show_page(_talk_title(guest), "„%s“" % _line(guest, key), [["Auflegen", hang_up]])
 		_talk["chose"] = true
 		return
-	_show_talk(guest, "„%s“" % _line(guest, key, {}))
+	_show_talk(guest, "„%s“" % _line(guest, key))
 
 
 func _talk_title(guest: Guest) -> String:
@@ -495,7 +495,7 @@ func _phone_ask(guest: Guest) -> void:
 	_talk["chose"] = true
 	var report := Game.social.report_line(guest)
 	Game.social.on_monster_talk(guest)
-	_show_talk(guest, "„%s“" % (report if report != "" else _line(guest, "no_news", {})))
+	_show_talk(guest, "„%s“" % (report if report != "" else _line(guest, "no_news")))
 
 
 func _phone_invite(guest: Guest) -> void:
@@ -521,7 +521,7 @@ func _phone_party(guest: Guest) -> void:
 ## Leeres Zimmer – und doch nimmt jemand ab.
 func _creepy_pickup(target: HotelPhone) -> void:
 	var id := _call_id
-	var text := "„%s“" % LINES["reception"][randi() % LINES["reception"].size()] if target.is_main() else "[Jemand nimmt ab.]"
+	var text := "„%s“" % (LINES["reception"] as Array).pick_random() if target.is_main() else "[Jemand nimmt ab.]"
 	ui.show_page(ui.title(), text, [["Auflegen", hang_up]])
 	_after(id, 2.5, func() -> void: ui.set_text(text + "\n[Atmen]"))
 	_after(id, 6.0, func() -> void:
@@ -536,23 +536,26 @@ func hang_up() -> void:
 		var guest: Guest = _talk["guest"]
 		if not bool(_talk["chose"]) and _time - float(_talk["since"]) < PRANK_TIME:
 			_prank(guest)
-	if not _outgoing.is_empty():
-		(_outgoing["phone"] as HotelPhone).ringing = false
-	_outgoing = {}
-	_talk = {}
-	_call_id += 1
+	_end_call()
 	if _active_phone:
 		Game.noise("handset", _active_phone.global_position, Game.player)
 	_active_phone = null
 	ui.close()
 
 
-## Den Hörer neben den Apparat legen: still – aber auch keine Warnungen mehr.
-func leave_off_hook() -> void:
-	var phone := _active_phone
+## Gespräch bzw. Klingeln beim Angerufenen beenden; alte Zeitgeber (_after) feuern danach nicht mehr.
+func _end_call() -> void:
+	if not _outgoing.is_empty():
+		(_outgoing["phone"] as HotelPhone).ringing = false
 	_outgoing = {}
 	_talk = {}
 	_call_id += 1
+
+
+## Den Hörer neben den Apparat legen: still – aber auch keine Warnungen mehr.
+func leave_off_hook() -> void:
+	var phone := _active_phone
+	_end_call()
 	_active_phone = null
 	ui.close()
 	if phone:
@@ -567,7 +570,7 @@ func _prank(guest: Guest) -> void:
 	Game.social.change_relation(guest, -4.0)
 	if count >= 2:
 		Game.social.on_insult(guest)
-	Game.say("Du hörst noch, wie %s schimpft: „%s“" % [guest.display_name, _line(guest, "prank_again" if count >= 2 else "prank", {})], 4.0)
+	Game.say("Du hörst noch, wie %s schimpft: „%s“" % [guest.display_name, _line(guest, "prank_again" if count >= 2 else "prank")], 4.0)
 
 
 # --- Ferne Telefone ------------------------------------------------------------------------
@@ -607,7 +610,7 @@ func _update_ambient(delta: float) -> void:
 # --- Hilfen -----------------------------------------------------------------------------
 
 ## Satz am Telefon: eigener Satz des Gastes ("phone_<key>") oder aus LINES.
-func _line(guest: Guest, key: String, extra: Dictionary) -> String:
+func _line(guest: Guest, key: String, extra: Dictionary = {}) -> String:
 	var lines: Dictionary = guest.profile.get("lines", {}) if guest else {}
 	var pool: Array = lines.get("phone_" + key, LINES.get(key, ["…"]))
 	var values := {"name": guest.display_name if guest else "", "room": guest.home["no"] if guest else "", "where": ""}

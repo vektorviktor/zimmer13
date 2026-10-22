@@ -19,11 +19,11 @@ func _ready() -> void:
 	add_to_group("chests")
 	var wood := Mat.psx(Color(0.4, 0.24, 0.12))
 	var band := Mat.psx(Color(0.22, 0.2, 0.18))
-	_part(Vector3(SIZE.x, WALL, SIZE.z), Vector3(0, WALL / 2.0, 0), wood)
-	_part(Vector3(SIZE.x, SIZE.y, WALL), Vector3(0, SIZE.y / 2.0, SIZE.z / 2.0 - WALL / 2.0), wood)
-	_part(Vector3(SIZE.x, SIZE.y, WALL), Vector3(0, SIZE.y / 2.0, -SIZE.z / 2.0 + WALL / 2.0), wood)
-	_part(Vector3(WALL, SIZE.y, SIZE.z), Vector3(SIZE.x / 2.0 - WALL / 2.0, SIZE.y / 2.0, 0), wood)
-	_part(Vector3(WALL, SIZE.y, SIZE.z), Vector3(-SIZE.x / 2.0 + WALL / 2.0, SIZE.y / 2.0, 0), wood)
+	Geo.box_part(self, Vector3(SIZE.x, WALL, SIZE.z), Vector3(0, WALL / 2.0, 0), wood)
+	Geo.box_part(self, Vector3(SIZE.x, SIZE.y, WALL), Vector3(0, SIZE.y / 2.0, SIZE.z / 2.0 - WALL / 2.0), wood)
+	Geo.box_part(self, Vector3(SIZE.x, SIZE.y, WALL), Vector3(0, SIZE.y / 2.0, -SIZE.z / 2.0 + WALL / 2.0), wood)
+	Geo.box_part(self, Vector3(WALL, SIZE.y, SIZE.z), Vector3(SIZE.x / 2.0 - WALL / 2.0, SIZE.y / 2.0, 0), wood)
+	Geo.box_part(self, Vector3(WALL, SIZE.y, SIZE.z), Vector3(-SIZE.x / 2.0 + WALL / 2.0, SIZE.y / 2.0, 0), wood)
 	_lid_pivot = Node3D.new()
 	_lid_pivot.position = Vector3(0, SIZE.y, -SIZE.z / 2.0)
 	add_child(_lid_pivot)
@@ -55,8 +55,3 @@ func set_open(open: bool, instant: bool = false) -> void:
 		return
 	create_tween().tween_property(_lid_pivot, "rotation:x", target, 0.4).set_trans(Tween.TRANS_SINE)
 	Game.noise("chest", global_position)
-
-
-func _part(size: Vector3, pos: Vector3, mat: Material) -> void:
-	Geo.mesh(self, Geo.box(size), mat, pos)
-	Geo.add_box_shape(self, size, pos)

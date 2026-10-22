@@ -5,6 +5,7 @@
 // selbst im Metall steht. Ohne Licht bleibt das Metall dunkel. Wie psx_mirror (Discokugel), nur ohne Textur.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back;
+#include "res://shaders/psx_snap.gdshaderinc"
 
 // Farbe des Metalls: Edelstahl leicht kühl, Chrom fast weiß
 uniform vec3 tint : source_color = vec3(0.78, 0.8, 0.84);
@@ -20,16 +21,10 @@ uniform float horizon_dark = 0.35;
 // Glanzpunkt der Lampe: Schärfe (Exponent) und Stärke
 uniform float glint_power = 120.0;
 uniform float glint_energy = 5.0;
-uniform float snap_resolution = 140.0;
-global uniform float psx_snap;
 
 void vertex() {
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	if (psx_snap > 0.5 && clip.w > 0.0001) {
-		vec2 ndc = clip.xy / clip.w;
-		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;
-		clip.xy = ndc * clip.w;
-	}
+	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

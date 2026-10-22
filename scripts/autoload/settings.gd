@@ -64,7 +64,8 @@ func save_settings() -> void:
 	var cfg := ConfigFile.new()
 	for key in KEYS:
 		cfg.set_value("settings", key, get(key))
-	cfg.save(PATH)
+	if cfg.save(PATH) != OK:
+		push_warning("Einstellungen konnten nicht gespeichert werden: " + PATH)
 
 
 ## Einen Wert ändern, sofort anwenden und speichern.

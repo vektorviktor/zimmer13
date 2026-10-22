@@ -5,6 +5,7 @@
 // Höhensprünge werden zu Glanzkanten, der Glanz unterscheidet Lack, Satin und matte Rauten.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_toon;
+#include "res://shaders/psx_snap.gdshaderinc"
 
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, filter_nearest, repeat_enable, hint_default_white;
@@ -32,9 +33,6 @@ uniform float rough_gloss = 0.3;
 uniform float sheen = 0.6;
 // Abgegriffener Sockel: so viel Glanz verliert die Wand direkt über dem Boden
 uniform float scuff_gloss = 0.51;
-uniform float snap_resolution = 140.0;
-// Einstellungen → PS1-Look → Vertex-Wackeln (1 = an, 0 = aus)
-global uniform float psx_snap;
 // Einstellungen → PS1-Look aus: Farbbild bilinear statt Texel für Texel (1 = weich)
 global uniform float psx_smooth;
 
@@ -45,11 +43,7 @@ void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	if (psx_snap > 0.5 && clip.w > 0.0001) {
-		vec2 ndc = clip.xy / clip.w;
-		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;
-		clip.xy = ndc * clip.w;
-	}
+	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

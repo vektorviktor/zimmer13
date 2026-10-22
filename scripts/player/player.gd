@@ -549,8 +549,10 @@ func _update_shock(delta: float) -> void:
 func _punch_target() -> Guest:
 	if hiding or gripped or sleeping or (held and held.flashlight) or _punch_cooldown > 0.0:
 		return null
+	if not is_instance_valid(_focus):   # vor dem Cast – einen freigegebenen Gast kann man nicht casten
+		return null
 	var guest := _focus as Guest
-	if guest == null or not is_instance_valid(guest) or guest.dead or guest.hiding \
+	if guest == null or guest.dead or guest.hiding \
 			or guest.state == Guest.State.GHOSTED or guest.global_position.distance_to(global_position) > PUNCH_REACH:
 		return null
 	return guest
@@ -668,7 +670,7 @@ func drink(quiet: bool = false) -> void:
 			Game.say("Die Theke schwankt ein bisschen.", 3.0)
 		else:
 			Game.say("Das wärmt.", 2.5)
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Bar] Glas getrunken – Rausch %.2f, Schwäche %.2f" % [drunk, weakness()])
 
 
@@ -732,7 +734,7 @@ func _update_injury(delta: float) -> void:
 	_confirm_time -= delta
 	injury = maxf(0.0, injury - delta / INJURY_HEAL_TIME)
 	_kick = move_toward(_kick, 0.0, delta * 0.25)
-	head.rotation.z = sin(Time.get_ticks_msec() * 0.03) * _kick + _drunk_roll()
+	head.rotation.z = sin(_drunk_time * 30.0) * _kick + _drunk_roll()   # Spielzeit, nicht Systemzeit
 	# Blutstropfen beim Gehen – eine Spur, der man folgen kann (4.13)
 	_bleed = maxf(0.0, _bleed - delta)
 	if _bleed > 0.0 and is_on_floor() and Game.traces:
@@ -757,14 +759,14 @@ func _update_stamina(delta: float) -> void:
 		if stamina <= 0.0 and not winded:
 			winded = true
 			Game.caption("[Du keuchst]")
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				print("[Ausdauer] außer Atem")
 		return
 	var moving := Vector2(velocity.x, velocity.z).length() > 0.5
 	stamina = minf(1.0, stamina + delta / STAMINA_REST_TIME * (STAMINA_WALK_SLOW if moving else 1.0))
 	if winded and stamina >= STAMINA_CALM:
 		winded = false
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Ausdauer] beruhigt – Rennen geht wieder")
 
 
@@ -1027,6 +1029,13 @@ func _update_crouch() -> void:
 		_set_crouch(false)
 
 
+## Spielstand: geduckt laden – wo der Platz zum Aufstehen fehlt (unter Treppen, Tischen), bleibt er geduckt;
+## sonst steht er im nächsten Frame auf (beim Umschalten bleibt das Ducken an).
+func set_crouching(value: bool) -> void:
+	_set_crouch(value)
+	_crouch_toggled = value
+
+
 func _set_crouch(value: bool) -> void:
 	crouching = value
 	_shape.height = CROUCH_HEIGHT if value else HEIGHT
@@ -1143,7 +1152,7 @@ func start_sleep(bed: HideSpot) -> void:
 		Game.hud.set_hide_mode(3)
 		Game.hud.set_prompt("Aufstehen [E]")
 	Game.say("Du schläfst ein …", 2.0)
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Schlaf] eingeschlafen (%d Nächte ohne Schlaf)" % nights_awake)
 
 
@@ -1164,7 +1173,7 @@ func wake_up(text: String) -> void:
 	if Game.hud:
 		Game.hud.set_hide_mode(2)
 	Game.say(text, 3.0)
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Schlaf] geweckt nach %.0f s: %s" % [_slept, text])
 
 
@@ -1198,7 +1207,7 @@ func on_night_over() -> void:
 			_: text = "Mir fallen die Augen zu. Und draußen im Flur wartet etwas auf mich."
 	if text != "":   # nach der Meldung, dass die Gäste aufwachen
 		get_tree().create_timer(3.6, false).timeout.connect(Game.say.bind(text, 4.0))
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Schlaf] Nachtruhe vorbei – %s, %d Nächte ohne Schlaf" % ["ausgeschlafen" if rested else "wach geblieben", nights_awake])
 
 

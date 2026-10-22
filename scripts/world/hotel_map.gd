@@ -20,6 +20,7 @@ const X_MAX := 78.0
 const Z_MIN := -122.0
 const Z_MAX := 4.0
 const PAGE_SIZE := Vector2i(int((X_MAX - X_MIN) * PX), int((Z_MAX - Z_MIN) * PX))
+const ORIGIN := Vector2(X_MIN, Z_MIN)   ## Weltpunkt (x, z) oben links in jedem Blatt
 const LINE := 2.0
 
 const PAPER := Color(0.86, 0.8, 0.66)
@@ -36,8 +37,6 @@ static var _texture: Texture2D
 static var _materials := {}
 static var _rendering := false
 
-var _origin := Vector2(X_MIN, Z_MIN)   ## Weltpunkt (x, z) oben links im Blatt
-var _scale := PX
 var _rng := RandomNumberGenerator.new()
 
 
@@ -141,8 +140,6 @@ func _draw() -> void:
 		if id == "keller":
 			_draw_cellar_sketch(lower, top, font)
 			continue
-		_origin = Vector2(X_MIN, Z_MIN)
-		_scale = PX
 		draw_rect(Rect2(Vector2(0, top), Vector2(PAGE_SIZE)), PAPER)
 		draw_rect(Rect2(Vector2(4, top + 4), Vector2(PAGE_SIZE) - Vector2(8, 8)), INK, false, LINE)
 		# Kopf oben links, Geschoss und Nordpfeil oben rechts
@@ -193,8 +190,8 @@ func _draw_floor(plan: Dictionary, top: float, font: Font) -> void:
 		draw_line(a, b, INK, LINE)
 		var length := a.distance_to(b)
 		for o in w.get("openings", []):
-			var f0 := float(o["at"]) * _scale / length
-			var f1 := (float(o["at"]) + float(o["width"])) * _scale / length
+			var f0 := float(o["at"]) * PX / length
+			var f1 := (float(o["at"]) + float(o["width"])) * PX / length
 			draw_line(a.lerp(b, f0), a.lerp(b, f1), CORRIDOR if o["kind"] == "window" else PAPER, LINE + 1.0)
 	for s in plan["stairs"]:
 		var well := _rect(_world_rect(s["rect"]), top)
@@ -245,15 +242,13 @@ func _outer(rects: Array) -> Array:
 
 
 func _point(p: Array, top: float) -> Vector2:
-	return Vector2((float(p[0]) - _origin.x) * _scale, top + (float(p[1]) - _origin.y) * _scale)
+	return Vector2((float(p[0]) - ORIGIN.x) * PX, top + (float(p[1]) - ORIGIN.y) * PX)
 
 
 ## Skizze eines früheren Gastes auf einem Notizzettel: das Untergeschoss (Spielkonzept 7.9) aus dem Gebäudeplan im
 ## Maßstab der gedruckten Pläne, Linien von Hand gezittert. Offene Türen sind Lücken, die verschlossenen hat er
 ## zugezeichnet; der Heizkeller ist rot eingekreist.
 func _draw_cellar_sketch(plan: Dictionary, top: float, font: Font) -> void:
-	_origin = Vector2(X_MIN, Z_MIN)
-	_scale = PX
 	_rng.seed = 1994
 	draw_rect(Rect2(Vector2(0, top), Vector2(PAGE_SIZE)), NOTE_PAPER)
 	for k in int((PAGE_SIZE.y - 40) / 48.0) + 1:   # Linien des Notizblocks
@@ -271,10 +266,10 @@ func _draw_cellar_sketch(plan: Dictionary, top: float, font: Font) -> void:
 		openings.sort_custom(func(o1: Dictionary, o2: Dictionary) -> bool: return float(o1["at"]) < float(o2["at"]))
 		var f := 0.0
 		for o in openings:
-			var f0 := float(o["at"]) * _scale / length
+			var f0 := float(o["at"]) * PX / length
 			if f0 > f:
 				_wobbly_line(a.lerp(b, f), a.lerp(b, f0), PENCIL)
-			f = (float(o["at"]) + float(o["width"])) * _scale / length
+			f = (float(o["at"]) + float(o["width"])) * PX / length
 		if f < 1.0:
 			_wobbly_line(a.lerp(b, f), b, PENCIL)
 	for s in plan["stairs"]:
@@ -314,8 +309,8 @@ func _draw_cellar_sketch(plan: Dictionary, top: float, font: Font) -> void:
 
 ## Rechteck in Weltkoordinaten (x, z) → Bildpunkte im aktuellen Blatt
 func _rect(world: Rect2, top: float) -> Rect2:
-	return Rect2((world.position.x - _origin.x) * _scale, top + (world.position.y - _origin.y) * _scale,
-		world.size.x * _scale, world.size.y * _scale)
+	return Rect2((world.position.x - ORIGIN.x) * PX, top + (world.position.y - ORIGIN.y) * PX,
+		world.size.x * PX, world.size.y * PX)
 
 
 ## Freihand-Linie: leicht zitternd, Enden etwas überstehend
@@ -344,9 +339,6 @@ func _dashed_rect(r: Rect2) -> void:
 		draw_dashed_line(corners[k], corners[(k + 1) % 4], FADED, LINE, 8.0)
 
 
-func _text(r: Rect2, text: String, color: Color, font: Font, font_size: int, angle: float = 0.0) -> void:
+func _text(r: Rect2, text: String, color: Color, font: Font, font_size: int) -> void:
 	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	var c := r.get_center()
-	draw_set_transform(c, deg_to_rad(angle))
-	draw_string(font, Vector2(-w / 2.0, font_size * 0.35), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
-	draw_set_transform(Vector2.ZERO)
+	draw_string(font, r.get_center() + Vector2(-w / 2.0, font_size * 0.35), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)

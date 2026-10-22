@@ -230,7 +230,7 @@ func _done() -> void:
 
 func _end_soup(message: String) -> void:
 	Game.social.pals.note_group(_ate)   # zusammen gegessen (6.16)
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kochen] Suppe aus: %d gegessen, %d Schalen übrig" % [_ate.size(), portions])
 	for id in _eaters.keys():
 		var g: Guest = _eaters[id]["guest"]
@@ -278,7 +278,7 @@ func _call_eaters() -> void:
 		_eaters[g.id] = {"guest": g, "phase": "go", "time": 0.0, "spot": spot}
 		g._walk_to(spot, Guest.State.EAT)
 		i += 1
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kochen] Suppe fertig, es kommen: %s" % ", ".join(guests.slice(0, EATERS).map(func(g: Guest) -> String: return g.display_name)))
 
 
@@ -332,7 +332,7 @@ func _update_eaters(delta: float) -> void:
 			g.fear = maxf(0.0, g.fear - FEAR_RELIEF)
 			Game.social.change_relation(g, RELATION)
 			_ate.append(g)
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				print("[Kochen] %s hat gegessen (Beziehung %.0f)" % [g.display_name, g.relation])
 			_eaters.erase(id)
 			g._set_idle(randf_range(2.0, 5.0))

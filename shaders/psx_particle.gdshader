@@ -4,6 +4,7 @@
 // (angle_min/max 0…360 → Zufallswert je Partikel), INSTANCE_CUSTOM.y = Anteil der Lebenszeit 0…1.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_lambert, specular_disabled, skip_vertex_transform;
+#include "res://shaders/psx_snap.gdshaderinc"
 
 uniform sampler2D albedo_tex : source_color, filter_nearest, hint_default_white;
 // Bilder nebeneinander in albedo_tex – jeder Partikel nimmt per Zufall eins
@@ -26,8 +27,6 @@ uniform float spin = 0.0;
 // Bodenhöhe in Weltkoordinaten: darunter liegt ein Partikel flach auf dem Boden statt weiterzufallen
 // (Herbstlaub – CPUParticles3D kennt keine Kollision); Schaukeln läuft auf dem letzten halben Meter aus
 uniform float floor_y = -10000.0;
-uniform float snap_resolution = 140.0;
-global uniform float psx_snap;
 
 varying flat float seed;
 varying float life;
@@ -57,11 +56,7 @@ void vertex() {
 		NORMAL = vec3(0.0, 0.0, 1.0);
 	}
 	vec4 clip = PROJECTION_MATRIX * vec4(VERTEX, 1.0);
-	if (psx_snap > 0.5 && clip.w > 0.0001) {
-		vec2 ndc = clip.xy / clip.w;
-		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;
-		clip.xy = ndc * clip.w;
-	}
+	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

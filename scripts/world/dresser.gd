@@ -49,11 +49,11 @@ func _ready() -> void:
 	var front := Mat.psx(Color(0.38, 0.22, 0.12))
 	var brass := Mat.psx(Color(0.62, 0.48, 0.22))
 	# Hohler Korpus – sonst drückt die Physik die Gegenstände aus geschlossenen Schubladen heraus
-	_part(self, Vector3(SIZE.x, PLINTH, SIZE.z), Vector3(0, PLINTH / 2.0, 0), wood)
-	_part(self, Vector3(SIZE.x + 0.04, TOP, SIZE.z + 0.03), Vector3(0, SIZE.y - TOP / 2.0, 0.005), wood)
-	_part(self, Vector3(SIZE.x, SIZE.y, 0.02), Vector3(0, SIZE.y / 2.0, -SIZE.z / 2.0 + 0.01), wood)
+	Geo.box_part(self, Vector3(SIZE.x, PLINTH, SIZE.z), Vector3(0, PLINTH / 2.0, 0), wood)
+	Geo.box_part(self, Vector3(SIZE.x + 0.04, TOP, SIZE.z + 0.03), Vector3(0, SIZE.y - TOP / 2.0, 0.005), wood)
+	Geo.box_part(self, Vector3(SIZE.x, SIZE.y, 0.02), Vector3(0, SIZE.y / 2.0, -SIZE.z / 2.0 + 0.01), wood)
 	for side in [-1.0, 1.0]:
-		_part(self, Vector3(0.03, SIZE.y, SIZE.z), Vector3(side * (SIZE.x / 2.0 - 0.015), SIZE.y / 2.0, 0), wood)
+		Geo.box_part(self, Vector3(0.03, SIZE.y, SIZE.z), Vector3(side * (SIZE.x / 2.0 - 0.015), SIZE.y / 2.0, 0), wood)
 	for i in DRAWERS:
 		var drawer := StaticBody3D.new()
 		drawer.collision_layer = 1
@@ -62,13 +62,13 @@ func _ready() -> void:
 		drawer.set_meta("interactable", Handle.new(self, i))
 		add_child(drawer)
 		var z_front := SIZE.z / 2.0 - 0.0125
-		_part(drawer, Vector3(SIZE.x - 0.08, PITCH - 0.02, 0.025), Vector3(0, (PITCH - 0.02) / 2.0, z_front), front)
+		Geo.box_part(drawer, Vector3(SIZE.x - 0.08, PITCH - 0.02, 0.025), Vector3(0, (PITCH - 0.02) / 2.0, z_front), front)
 		Geo.mesh(drawer, Geo.box(Vector3(0.1, 0.025, 0.03)), brass, Vector3(0, (PITCH - 0.02) / 2.0, z_front + 0.02))
 		var tray_z := z_front - 0.0125 - TRAY.z / 2.0
-		_part(drawer, Vector3(TRAY.x, 0.015, TRAY.z), Vector3(0, 0.0075, tray_z), wood)
-		_part(drawer, Vector3(TRAY.x, TRAY.y, 0.015), Vector3(0, TRAY.y / 2.0, tray_z - TRAY.z / 2.0), wood)
+		Geo.box_part(drawer, Vector3(TRAY.x, 0.015, TRAY.z), Vector3(0, 0.0075, tray_z), wood)
+		Geo.box_part(drawer, Vector3(TRAY.x, TRAY.y, 0.015), Vector3(0, TRAY.y / 2.0, tray_z - TRAY.z / 2.0), wood)
 		for side in [-1.0, 1.0]:
-			_part(drawer, Vector3(0.015, TRAY.y, TRAY.z), Vector3(side * TRAY.x / 2.0, TRAY.y / 2.0, tray_z), wood)
+			Geo.box_part(drawer, Vector3(0.015, TRAY.y, TRAY.z), Vector3(side * TRAY.x / 2.0, TRAY.y / 2.0, tray_z), wood)
 		_drawers.append(drawer)
 		is_open.append(false)
 		searched.append(false)
@@ -164,8 +164,3 @@ func _items_in(drawer: StaticBody3D) -> Array[Item]:
 				and p.z < SIZE.z / 2.0 and p.z > SIZE.z / 2.0 - 0.025 - TRAY.z:
 			found.append(item)
 	return found
-
-
-func _part(body: Node3D, size: Vector3, pos: Vector3, mat: Material) -> void:
-	Geo.mesh(body, Geo.box(size), mat, pos)
-	Geo.add_box_shape(body as CollisionObject3D, size, pos)

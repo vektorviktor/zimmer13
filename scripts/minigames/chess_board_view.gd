@@ -9,7 +9,6 @@ signal move_chosen(m: int)
 const CELL := 22
 const LIGHT := Color(0.86, 0.78, 0.6)
 const DARK := Color(0.45, 0.3, 0.18)
-const PIECE_LETTERS := ["", "", "S", "L", "T", "D", "K"]
 
 var board: Chess
 var interactive := false
@@ -102,7 +101,7 @@ func _draw() -> void:
 		draw_circle(center, radius + 1.0, ink)
 		draw_circle(center, radius, fill)
 		if kind != Chess.PAWN:
-			draw_string(font, center + Vector2(-CELL * 0.5, 4.0), PIECE_LETTERS[kind], HORIZONTAL_ALIGNMENT_CENTER, CELL, 11, ink)
+			draw_string(font, center + Vector2(-CELL * 0.5, 4.0), Chess.LETTERS[kind], HORIZONTAL_ALIGNMENT_CENTER, CELL, 11, ink)
 	# Linien und Reihen am Rand
 	for i in 8:
 		draw_string(font, Vector2(i * CELL + 1, CELL * 8 - 1), "abcdefgh"[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 6, Color(0, 0, 0, 0.55))

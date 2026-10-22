@@ -31,7 +31,11 @@ func _process(delta: float) -> void:
 			(f["node"] as Node).queue_free()
 			_footprints.remove_at(i)
 		elif k > 0.0:
-			(f["material"] as StandardMaterial3D).albedo_color.a = float(f.get("alpha", 0.85)) * k
+			# Bis zu MAX_FOOTPRINTS Materialien: nur schreiben, wenn sich der Wert um eine Stufe (1/255) ändert
+			var mat := f["material"] as StandardMaterial3D
+			var a := float(f.get("alpha", 0.85)) * k
+			if absf(mat.albedo_color.a - a) >= 1.0 / 255.0:
+				mat.albedo_color.a = a
 		elif not f.get("faded", false):
 			# Für das Auge verschwunden – nur der UV-Nachglanz bleibt
 			f["faded"] = true
@@ -44,9 +48,7 @@ func _process(delta: float) -> void:
 # --- Fußspuren ----------------------------------------------------------------
 
 func add_footprint(pos: Vector3, yaw: float) -> void:
-	if _footprints.size() >= MAX_FOOTPRINTS:
-		(_footprints[0]["node"] as Node).queue_free()
-		_footprints.remove_at(0)
+	_drop_oldest_footprint()
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.06, 0.035, 0.03, 0.85)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -76,9 +78,7 @@ func add_footprint(pos: Vector3, yaw: float) -> void:
 
 ## Schlammiger Schuhabdruck eines Gastes, der aus dem Garten kommt.
 func add_shoeprint(pos: Vector3, yaw: float) -> void:
-	if _footprints.size() >= MAX_FOOTPRINTS:
-		(_footprints[0]["node"] as Node).queue_free()
-		_footprints.remove_at(0)
+	_drop_oldest_footprint()
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.2, 0.13, 0.07, 0.7)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -92,6 +92,13 @@ func add_shoeprint(pos: Vector3, yaw: float) -> void:
 	var heel := Geo.mesh(shoe, Geo.box(Vector3(0.07, 0.004, 0.07)), mat, Vector3(0, 0, 0.1))
 	heel.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_footprints.append({"node": shoe, "material": mat, "age": 0.0, "life": SHOEPRINT_LIFE, "alpha": 0.7})
+
+
+## Platz für eine neue Fuß- oder Schuhspur: Bei MAX_FOOTPRINTS verschwindet die älteste.
+func _drop_oldest_footprint() -> void:
+	if _footprints.size() >= MAX_FOOTPRINTS:
+		(_footprints[0]["node"] as Node).queue_free()
+		_footprints.remove_at(0)
 
 
 ## Wachsfleck oder Blutstropfen eines Gastes auf dem Boden.
@@ -292,8 +299,6 @@ func load_state(list: Array) -> void:
 			note.global_transform = _from_t(entry["global"])
 			continue
 		var mark := TraceMark.new().setup(String(entry["kind"]))
-		if String(entry["kind"]) in ["wax", "drops"]:
-			_guest_marks.append(mark)
 		if entry.has("window") and int(entry["window"]) >= 0 and int(entry["window"]) < windows.size():
 			windows[int(entry["window"])].add_child(mark)
 			mark.transform = _from_t(entry["local"])
@@ -305,6 +310,11 @@ func load_state(list: Array) -> void:
 			mark.global_transform = _from_t(entry["global"])
 			if mark.kind in ["blood", "wall_splatter", "wall_smear"]:
 				_as_sight(mark)
+		else:
+			mark.free()   # Tür oder Fenster gibt es nicht mehr – die Spur fällt weg
+			continue
+		if mark.kind in ["wax", "drops"]:
+			_guest_marks.append(mark)
 
 
 func _t(t: Transform3D) -> Array:

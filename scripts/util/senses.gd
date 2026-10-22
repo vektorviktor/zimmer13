@@ -98,6 +98,11 @@ const SIGHT_MASK := 1 | 2 | 256 | HotelWindow.LAYER_BLOCK
 static var _wall_cache := {}     ## Instanz-ID → Dämpfungsfaktor
 
 
+## Beim Verlassen der Spielwelt (Game.reset): Die Instanz-IDs gehören dann nicht mehr zu Wänden.
+static func clear_cache() -> void:
+	_wall_cache.clear()
+
+
 # --- Lärm ---------------------------------------------------------------------------
 
 static func range_of(kind: String) -> float:
@@ -205,11 +210,20 @@ static func can_see(observer: CollisionObject3D, eye: Vector3, forward: Vector3,
 	var length := to.length()
 	if fov_dot >= -1.0 and length > NEAR and forward.dot(to / length) < fov_dot:
 		return false
+	# Billig vor teuer: Auffälligkeit bei vollem Licht und ein Sichtstrahl, erst dann light_at (viele Strahlen)
+	if dist > base * conspicuity(actor, 1.0, entering_hide) + bonus \
+			or not clear_line(observer.get_world_3d(), eye, target, observer):
+		return false
 	var light := 0.0
 	if Game.director:
 		light = Game.director.light_at(target, actor.held)
-	if dist > base * conspicuity(actor, light, entering_hide) + bonus:
-		return false
-	var query := PhysicsRayQueryParameters3D.create(eye, target, SIGHT_MASK)
-	query.exclude = [observer.get_rid()]
-	return observer.get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+	return dist <= base * conspicuity(actor, light, entering_hide) + bonus
+
+
+## Freie Sichtlinie von `from` nach `to` (Standard: Wände, Türen, Milchglas, Vorhänge – klares Glas lässt durch).
+## `skip`: dieser Körper zählt nicht (der Beobachter selbst).
+static func clear_line(world: World3D, from: Vector3, to: Vector3, skip: CollisionObject3D = null, mask: int = SIGHT_MASK) -> bool:
+	var query := PhysicsRayQueryParameters3D.create(from, to, mask)
+	if skip:
+		query.exclude = [skip.get_rid()]
+	return world.direct_space_state.intersect_ray(query).is_empty()

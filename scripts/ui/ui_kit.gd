@@ -174,6 +174,82 @@ static func sheet(parent: Control, title: String, min_size: Vector2) -> VBoxCont
 	return box
 
 
+## Dunkler Kasten über dem Spiel (Gespräch, Telefon, Teleport – nicht im Papier-Stil): Anker als (links, oben,
+## rechts, unten). Inhalt kommt in das zurückgegebene VBox.
+static func dark_panel(parent: Node, bg: Color, border: Color, anchors: Vector4) -> VBoxContainer:
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg
+	style.border_color = border
+	style.set_border_width_all(1)
+	style.set_content_margin_all(6)
+	panel.add_theme_stylebox_override("panel", style)
+	parent.add_child(panel)
+	panel.anchor_left = anchors.x
+	panel.anchor_top = anchors.y
+	panel.anchor_right = anchors.z
+	panel.anchor_bottom = anchors.w
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 3)
+	panel.add_child(box)
+	return box
+
+
+## Zweispaltiges Raster für Antwortknöpfe (Gespräch, Telefon, Teleport).
+static func option_grid(parent: Node) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 0)
+	parent.add_child(grid)
+	return grid
+
+
+## Schlichte Antwortzeile (Gespräch, Telefon): flach, eng, ohne Tastaturfokus – gewählt wird mit Maus oder Ziffer.
+static func flat_option(text: String, callback: Callable, disabled: bool = false) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.disabled = disabled
+	button.flat = true
+	button.add_theme_font_size_override("font_size", 9)
+	button.custom_minimum_size = Vector2(190, 0)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var tight := StyleBoxEmpty.new()
+	tight.content_margin_top = 1
+	tight.content_margin_bottom = 1
+	for style_name in ["normal", "hover", "pressed", "disabled", "focus"]:
+		button.add_theme_stylebox_override(style_name, tight)
+	button.focus_mode = Control.FOCUS_NONE
+	button.pressed.connect(callback)
+	return button
+
+
+## Zifferntaste 1–9 (0 = zehnte Zeile) drückt den passenden Knopf. true = getroffen (Eingabe verbraucht).
+static func press_number(event: InputEvent, buttons: Array[Button]) -> bool:
+	var key := event as InputEventKey
+	if key == null or not key.pressed or key.echo:
+		return false
+	var index: int = 9 if key.keycode == KEY_0 else key.keycode - KEY_1
+	if index < 0 or index >= buttons.size() or buttons[index].disabled:
+		return false
+	buttons[index].pressed.emit()
+	return true
+
+
+## Label mit eigenen LabelSettings (HUD, Gespräch, Telefon) – optional mit schwarzem Umriss.
+static func plain_label(font_size: int, color: Color = Color.WHITE, outline: int = 0) -> Label:
+	var label := Label.new()
+	var settings := LabelSettings.new()
+	settings.font_size = font_size
+	settings.font_color = color
+	if outline > 0:
+		settings.outline_size = outline
+		settings.outline_color = Color.BLACK
+	label.label_settings = settings
+	return label
+
+
 ## Abdunkelnder Hintergrund für Menüs über dem Spiel.
 static func dimmer(parent: Control, alpha: float = 0.55) -> ColorRect:
 	var dim := ColorRect.new()

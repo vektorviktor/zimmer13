@@ -5,16 +5,8 @@ extends GameTable
 ## weggetragen werden, etwa ins eigene helle Zimmer … dort steht aber kein Tisch.
 
 
-func board() -> Item:
-	for node in get_tree().get_nodes_in_group("items"):
-		var item := node as Item
-		if item.kind == Item.Kind.CHESS_BOARD and not item.is_held and item.global_position.distance_to(top_center()) < 0.8:
-			return item
-	return null
-
-
 func has_board(player: Player) -> bool:
-	return board() != null or (player != null and player.held_kind() == Item.Kind.CHESS_BOARD)
+	return _has_gear(Item.Kind.CHESS_BOARD, player)
 
 
 func get_prompt(player: Player) -> String:

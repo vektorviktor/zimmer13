@@ -13,6 +13,9 @@ void fragment() {
 }
 """
 
+var _root: Control
+var _box: VBoxContainer
+
 
 func _ready() -> void:
 	layer = 20
@@ -62,20 +65,10 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
-var _root: Control
-var _box: VBoxContainer
-
-
 func _label(text: String, font_size: int, color: Color) -> Label:
-	var label := Label.new()
+	var label := UiKit.plain_label(font_size, color, 2)
 	label.text = text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var settings := LabelSettings.new()
-	settings.font_size = font_size
-	settings.font_color = color
-	settings.outline_size = 2
-	settings.outline_color = Color.BLACK
-	label.label_settings = settings
 	return label
 
 

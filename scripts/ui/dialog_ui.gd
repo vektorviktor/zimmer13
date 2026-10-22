@@ -27,31 +27,13 @@ var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dic
 func _ready() -> void:
 	layer = 15
 	visible = false
-	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.03, 0.03, 0.92)
-	style.border_color = Color(0.45, 0.3, 0.15)
-	style.set_border_width_all(1)
-	style.set_content_margin_all(6)
-	panel.add_theme_stylebox_override("panel", style)
-	add_child(panel)
-	panel.anchor_left = 0.08
-	panel.anchor_right = 0.92
-	panel.anchor_top = 0.5
-	panel.anchor_bottom = 0.98
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 3)
-	panel.add_child(box)
-	_name = _label(10, Color(0.95, 0.75, 0.4))
+	var box := UiKit.dark_panel(self, Color(0.05, 0.03, 0.03, 0.92), Color(0.45, 0.3, 0.15), Vector4(0.08, 0.5, 0.92, 0.98))
+	_name = UiKit.plain_label(10, Color(0.95, 0.75, 0.4))
 	box.add_child(_name)
-	_text = _label(10, Color(0.9, 0.88, 0.85))
+	_text = UiKit.plain_label(10, Color(0.9, 0.88, 0.85))
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_text)
-	_options = GridContainer.new()
-	_options.columns = 2
-	_options.add_theme_constant_override("h_separation", 8)
-	_options.add_theme_constant_override("v_separation", 0)
-	box.add_child(_options)
+	_options = UiKit.option_grid(box)
 
 
 func open(p_guest: Guest) -> void:
@@ -110,7 +92,7 @@ func open(p_guest: Guest) -> void:
 
 func close() -> void:
 	visible = false
-	if guest:
+	if is_instance_valid(guest):
 		guest.end_talk()
 	guest = null
 	Game.player.in_dialog = false
@@ -123,16 +105,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		close()
 		get_viewport().set_input_as_handled()
-	elif event is InputEventKey and event.pressed and not event.echo:
-		var key := (event as InputEventKey).keycode
-		var index: int = 9 if key == KEY_0 else key - KEY_1
-		if index >= 0 and index < _buttons.size() and not _buttons[index].disabled:
-			_buttons[index].pressed.emit()
-			get_viewport().set_input_as_handled()
+	elif UiKit.press_number(event, _buttons):
+		get_viewport().set_input_as_handled()
 
 
 func _process(_delta: float) -> void:
-	if visible and (guest == null or guest.dead or Game.game_over):
+	if visible and (not is_instance_valid(guest) or guest.dead or Game.game_over):
 		close()
 
 
@@ -652,29 +630,6 @@ func _clear() -> void:
 
 
 func _option(text: String, callback: Callable, disabled: bool = false) -> void:
-	var button := Button.new()
-	button.text = "%d. %s" % [_buttons.size() + 1, text]
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	button.disabled = disabled
-	button.flat = true
-	button.add_theme_font_size_override("font_size", 9)
-	button.custom_minimum_size = Vector2(190, 0)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var tight := StyleBoxEmpty.new()
-	tight.content_margin_top = 1
-	tight.content_margin_bottom = 1
-	for style_name in ["normal", "hover", "pressed", "disabled", "focus"]:
-		button.add_theme_stylebox_override(style_name, tight)
-	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(callback)
+	var button := UiKit.flat_option("%d. %s" % [_buttons.size() + 1, text], callback, disabled)
 	_options.add_child(button)
 	_buttons.append(button)
-
-
-func _label(font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	var settings := LabelSettings.new()
-	settings.font_size = font_size
-	settings.font_color = color
-	label.label_settings = settings
-	return label

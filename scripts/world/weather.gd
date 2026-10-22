@@ -110,7 +110,7 @@ func set_weather(new_kind: Kind, instant: bool = false) -> void:
 		_lightning = randf_range(3.0, 8.0) if instant else randf_range(LIGHTNING_GAP.x, LIGHTNING_GAP.y)
 	if instant:
 		intensity = 0.0 if kind == Kind.CLEAR else 1.0
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Wetter] %s für %d s" % [["klar", "Regen", "Gewitter"][kind], int(_timer)])
 
 
@@ -122,8 +122,8 @@ func lightning() -> void:
 		_flash_queue.append(randf_range(0.25, 0.4))
 	var delay := randf_range(THUNDER_DELAY.x, THUNDER_DELAY.y)
 	var loud := clampf(1.3 - delay / THUNDER_DELAY.y, 0.4, 1.0)
-	get_tree().create_timer(delay, false).timeout.connect(func() -> void: _thunder(loud))
-	if "--trace" in OS.get_cmdline_user_args():
+	get_tree().create_timer(delay, false).timeout.connect(_thunder.bind(loud))
+	if Game.tracing:
 		print("[Wetter] Blitz, Donner nach %.1f s" % delay)
 
 

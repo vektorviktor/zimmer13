@@ -12,7 +12,6 @@ enum Status { PLAYING, CHECKMATE, STALEMATE, FIFTY_MOVES, REPETITION, NO_MATERIA
 const FLAG_EP := 1 << 16
 const FLAG_CASTLE := 1 << 17
 const FLAG_DOUBLE := 1 << 18
-const MOVE_BITS := (1 << 19) - 1
 
 const CASTLE_WK := 1
 const CASTLE_WQ := 2

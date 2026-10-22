@@ -1,12 +1,12 @@
 class_name ChessMatch
-extends CanvasLayer
+extends TableMatch
 ## Schach am Schachtisch in der Lobby – Spieler gegen einen Gast (Spielkonzept 6.10).
 ##
 ## Du spielst Weiß und ziehst mit der Maus auf dem Brett von oben (ChessBoardView). Der Gast rechnet mit
 ## ChessAI in einem Hintergrund-Thread; seine Stärke (Suchtiefe, Patzer) kommt aus profile["chess"]["skill"].
 ## Ende: Matt, Patt, Remis (angeboten, 50 Züge, Wiederholung, zu wenig Material) oder Aufgabe.
 ## Einsätze liegen wie bei Mäxchen echt auf dem Tisch (TableStakes). Schach ist leise, aber man ist
-## konzentriert – bei einer Vorwarnung springt der Gast auf, die Einsätze bleiben liegen.
+## konzentriert – bei einer Vorwarnung springt der Gast auf, die Einsätze bleiben liegen (TableMatch).
 
 const THINK_TIME := Vector2(1.0, 2.6)   ## so lange „überlegt“ der Gast mindestens
 const DRAW_FROM_MOVE := 10              ## Remis erst ab diesem Zug
@@ -14,45 +14,21 @@ const RESIGN_BELOW := -900              ## so schlecht steht der Gast, bevor er 
 const COMMENT_CHANCE := 0.12            ## nach einem Zug sagt der Gast manchmal etwas
 const GUEST_LINES := ["Hm.", "Interessant …", "Na warte.", "Das hast du nicht kommen sehen, oder?", "Hmmm …", "Mutig."]
 
-var active := false
-var guest: Guest
 var table: ChessTable
 
 var _board := Chess.new()
 var _ai := ChessAI.new()
-var _stakes := TableStakes.new()
 var _thinking := false
 var _think_left := 0.0
-var _waiting_for_seat := false
-var _abort_timer := -1.0
-var _over := false
-var _threw_game := false
 var _draw_offered_at := -99
 var _moves: Array[String] = []
 
-var _title: Label
-var _log: Label
 var _moves_label: Label
 var _view: ChessBoardView
-var _options: VBoxContainer
-var _buttons: Array[Button] = []
 
 
 func _ready() -> void:
-	layer = 15
-	visible = false
-	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.04, 0.05, 0.06, 0.92)
-	style.border_color = Color(0.5, 0.35, 0.15)
-	style.set_border_width_all(1)
-	style.set_content_margin_all(5)
-	panel.add_theme_stylebox_override("panel", style)
-	add_child(panel)
-	panel.anchor_left = 0.03
-	panel.anchor_right = 0.97
-	panel.anchor_top = 0.04
-	panel.anchor_bottom = 0.96
+	var panel := _build_panel(Color(0.04, 0.05, 0.06, 0.92), 5, Vector4(0.03, 0.04, 0.97, 0.96))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	panel.add_child(row)
@@ -64,20 +40,34 @@ func _ready() -> void:
 	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override("separation", 3)
 	row.add_child(box)
-	_title = _make_label(9, Color(0.95, 0.75, 0.4))
+	_title = UiKit.plain_label(9, Color(0.95, 0.75, 0.4))
 	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_title)
-	_log = _make_label(9, Color(0.9, 0.88, 0.85))
+	_log = UiKit.plain_label(9, Color(0.9, 0.88, 0.85))
 	_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_log.custom_minimum_size = Vector2(0, 40)
 	box.add_child(_log)
-	_moves_label = _make_label(8, Color(0.65, 0.65, 0.6))
+	_moves_label = UiKit.plain_label(8, Color(0.65, 0.65, 0.6))
 	_moves_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_moves_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(_moves_label)
-	_options = VBoxContainer.new()
-	_options.add_theme_constant_override("separation", 0)
-	box.add_child(_options)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 0)
+	box.add_child(list)
+	_options = list
+
+
+## Die KI rechnet vielleicht noch im Hintergrund – den Thread nicht mit dem Knoten verwaisen lassen.
+func _exit_tree() -> void:
+	_ai.cancel()
+
+
+func _table() -> GameTable:
+	return table
+
+
+func _gear() -> Item.Kind:
+	return Item.Kind.CHESS_BOARD
 
 
 # --- Spielstärke der Gäste --------------------------------------------------------------
@@ -113,79 +103,36 @@ func why_not(p_guest: Guest) -> String:
 		return "Am Schachtisch wird schon gespielt."
 	if not table.has_board(Game.player):
 		return "Das Schachbrett fehlt am Tisch."
-	if p_guest.fear >= 60.0:
-		return p_guest.line("panic")
-	if not Game.director.is_quiet(table.global_position, 20.0):
-		return "Jetzt? Hörst du das nicht?"
-	if Game.director.long_signal_near(table.global_position):
-		return "Jetzt? Hast du das Licht gesehen?"
-	return ""
-
-
-func can_stake_item(p_guest: Guest) -> bool:
-	return TableStakes.can_stake_item(p_guest, Item.Kind.CHESS_BOARD)
+	return _guest_unwilling(p_guest)
 
 
 ## stake: {"money": int, "item": bool}
 func start(p_guest: Guest, stake: Dictionary) -> void:
-	guest = p_guest
-	active = true
-	_over = false
 	_thinking = false
-	_threw_game = false
-	_abort_timer = -1.0
 	_draw_offered_at = -99
 	_moves.clear()
-	table.busy = true
 	_board = Chess.new()
 	_board.setup_start()
 	_view.board = _board
 	_view.last_move = 0
 	_view.interactive = false
 	_view.refresh()
-	_stakes = TableStakes.new()
-	var player := Game.player
-	# Brett auf den Tisch, falls du es in der Hand hast
-	if player.held_kind() == Item.Kind.CHESS_BOARD:
-		var board_item := player.held
-		player.drop_held()
-		board_item.global_position = table.top_center() + Vector3(0, 0.01, 0)
-	_stakes.place(table, guest, stake)
-	player.sit_at(table.player_seat.global_position, table.top_center())
-	guest.sit_for_game(table.guest_seat.global_position, table.top_center())
-	visible = true
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	_waiting_for_seat = true
+	_begin(p_guest, stake, Vector3(0, 0.01, 0))   # Brett auf den Tisch, falls du es in der Hand hast
 	_update_title()
 	_update_moves()
 	_say("%s kommt an den Tisch und stellt die Figuren auf …" % guest.display_name)
 	_clear()
 	_option("Doch nicht spielen", _abort.bind("Du stehst wieder auf."))
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Schach] gegen %s (Tiefe %d, Patzer %.0f %%)" % [guest.display_name, depth_of(guest), blunder_of(guest) * 100.0])
 
 
-func _process(delta: float) -> void:
-	if not active:
-		return
-	if _waiting_for_seat and guest.seated:
-		_waiting_for_seat = false
-		_say("Du spielst Weiß und fängst an. Klick auf eine Figur, dann aufs Zielfeld.")
-		_player_turn()
-	# Der Gast hat das Spiel verlassen (Panik, Monster gesehen, gestorben …)
-	if not _over and (guest.dead or guest.state != Guest.State.MINIGAME):
-		_abort("%s springt auf und rennt davon! Die Einsätze liegen noch auf dem Tisch …" % guest.display_name)
-		return
-	# Vorwarnung: je mutiger der Gast, desto später bemerkt er sie (wie bei Mäxchen)
-	if not _over and (not Game.director.is_quiet(table.global_position, 20.0) or Game.director.long_signal_near(table.global_position)):
-		if _abort_timer < 0.0:
-			_abort_timer = 0.5 + float(guest.profile["brave"]) * 4.5
-		_abort_timer -= delta
-		if _abort_timer <= 0.0:
-			guest.say_panic()
-			guest.end_game()
-			_abort("%s springt auf und rennt davon! Die Einsätze liegen noch auf dem Tisch …" % guest.display_name)
-			return
+func _on_seated() -> void:
+	_say("Du spielst Weiß und fängst an. Klick auf eine Figur, dann aufs Zielfeld.")
+	_player_turn()
+
+
+func _update_game(delta: float) -> void:
 	if _thinking:
 		_think_left -= delta
 		if _think_left <= 0.0 and _ai.is_done():
@@ -193,14 +140,10 @@ func _process(delta: float) -> void:
 			_guest_move(_ai.take_move())
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not visible:
-		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		var index: int = (event as InputEventKey).keycode - KEY_1
-		if index >= 0 and index < _buttons.size() and not _buttons[index].disabled:
-			_buttons[index].pressed.emit()
-			get_viewport().set_input_as_handled()
+func _stop() -> void:
+	_thinking = false
+	_ai.cancel()
+	_view.interactive = false
 
 
 # --- Züge -------------------------------------------------------------------------------
@@ -329,9 +272,7 @@ func _throw_game() -> void:
 ## result: "player", "guest" oder "draw"
 func _finish(result: String) -> void:
 	_over = true
-	_thinking = false
-	_ai.cancel()
-	_view.interactive = false
+	_stop()
 	_view.refresh()
 	var chess := chess_profile(guest)
 	var change := 5.0 + (3.0 if chess["likes"] else 0.0)     # gemeinsame Zeit
@@ -366,32 +307,10 @@ func _finish(result: String) -> void:
 	var stakes_text := " Die Einsätze liegen auf dem Tisch – nimm sie dir." if result == "player" and _stakes.any_left() else ""
 	_say("%s %s: „%s“%s" % [_log.text, guest.display_name, line, stakes_text])
 	_update_title()
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Schach] Ende nach %d Zügen: %s" % [_board.fullmove, {"player": "du gewinnst", "guest": "%s gewinnt" % guest.display_name}.get(result, "Remis")])
 	_clear()
 	_option("Aufstehen", _end)
-
-
-func _abort(message: String) -> void:
-	_over = true
-	_thinking = false
-	_ai.cancel()
-	_view.interactive = false
-	_stakes.abandon()   # Einsätze bleiben liegen – sie gehören jetzt niemandem
-	_say(message)
-	_clear()
-	_option("Aufstehen", _end)
-
-
-func _end() -> void:
-	visible = false
-	active = false
-	table.busy = false
-	_clear()
-	if guest and not guest.dead:
-		guest.end_game()
-	Game.player.stand_up()
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 ## Für automatische Tests (--autoplay): Spieler zieht schwach, sonst die erste Option.
@@ -412,10 +331,6 @@ func debug_step() -> String:
 
 # --- Hilfen -----------------------------------------------------------------------------
 
-func _still_playing() -> bool:
-	return active and not _over
-
-
 func _update_title() -> void:
 	if guest == null:
 		return
@@ -427,40 +342,3 @@ func _update_title() -> void:
 func _update_moves() -> void:
 	var recent := _moves.slice(maxi(0, _moves.size() - 8))
 	_moves_label.text = "  ".join(recent)
-
-
-func _say(text: String) -> void:
-	_log.text = text
-
-
-func _clear() -> void:
-	for button in _buttons:
-		button.queue_free()
-	_buttons.clear()
-
-
-func _option(text: String, callback: Callable, disabled: bool = false) -> void:
-	var button := Button.new()
-	button.text = "%d. %s" % [_buttons.size() + 1, text]
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	button.flat = true
-	button.disabled = disabled
-	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 9)
-	var tight := StyleBoxEmpty.new()
-	tight.content_margin_top = 1
-	tight.content_margin_bottom = 1
-	for style_name in ["normal", "hover", "pressed", "disabled", "focus"]:
-		button.add_theme_stylebox_override(style_name, tight)
-	button.pressed.connect(callback)
-	_options.add_child(button)
-	_buttons.append(button)
-
-
-func _make_label(font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	var settings := LabelSettings.new()
-	settings.font_size = font_size
-	settings.font_color = color
-	label.label_settings = settings
-	return label

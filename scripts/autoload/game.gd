@@ -33,9 +33,10 @@ var weather: Weather
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
 var confetti: Confetti            ## Konfetti auf Feiern (Spielkonzept 7.6)
 var game_over := false
-## Debug: letzte Lärmereignisse (F3) und Ausgabe in die Konsole (--trace)
+## Debug: letzte Lärmereignisse (F3)
 var noise_log: Array[String] = []
-var noise_trace := false
+## Debug: --trace (auch aus der Konsole) – Lärm und Zustandswechsel in die Konsole schreiben
+var tracing := false
 ## Spielstand, der beim nächsten Start der Hauptszene geladen wird (siehe SaveManager)
 var pending_load: Dictionary = {}
 ## Neues Spiel: in diesen Slot gleich den Startzustand schreiben (0 = keiner)
@@ -75,6 +76,8 @@ func _ready() -> void:
 			_shot_at = -1   # erst beim Ereignis
 		elif arg == "--bg":
 			_to_background()
+		elif arg == "--trace":
+			tracing = true   # schon hier, damit es beim Aufbau der Welt gilt (main.gd setzt es sonst erst danach)
 
 
 ## Debug: --bg – Fenster nimmt keinen Fokus und liegt außerhalb des Bildschirms, damit Testläufe
@@ -106,12 +109,14 @@ func reset() -> void:
 	player = null
 	director = null
 	monster = null
+	ghost = null
 	pumpkin = null
 	hud = null
 	audio = null
 	social = null
 	dialog = null
 	dice = null
+	chess = null
 	menus = null
 	traces = null
 	phones = null
@@ -119,6 +124,7 @@ func reset() -> void:
 	kitchen = null
 	confetti = null
 	noise_log.clear()
+	Senses.clear_cache()
 
 
 func say(text: String, duration: float = 3.5) -> void:
@@ -178,7 +184,7 @@ func noise(kind: String, pos: Vector3, source: Node = null) -> float:
 	noise_log.append(line)
 	if noise_log.size() > 5:
 		noise_log.pop_front()
-	if noise_trace:
+	if tracing:
 		print(line)
 	return volume
 

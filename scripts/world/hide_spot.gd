@@ -114,26 +114,31 @@ func burst_open(source: Node) -> void:
 func rattle() -> void:
 	Game.play_sound("thud", 0.35)
 	for i in _leaves.size():
-		var side := -1.0 if i == 0 else 1.0
 		var tw := create_tween()
-		tw.tween_property(_leaves[i], "rotation:y", side * deg_to_rad(14.0), 0.08)
-		tw.tween_property(_leaves[i], "rotation:y", side * deg_to_rad(7.0), 0.12)
+		tw.tween_property(_leaves[i], "rotation:y", _leaf_side(i) * deg_to_rad(14.0), 0.08)
+		tw.tween_property(_leaves[i], "rotation:y", _leaf_side(i) * deg_to_rad(7.0), 0.12)
 
 
 func _fling_open() -> void:
 	var tw := create_tween().set_parallel(true)
 	if type == Type.WARDROBE:
 		for i in _leaves.size():
-			var side := -1.0 if i == 0 else 1.0
-			tw.tween_property(_leaves[i], "rotation:y", side * deg_to_rad(115.0), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_property(_leaves[i], "rotation:y", _leaf_side(i) * deg_to_rad(115.0), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	else:
+		# Das Bett fliegt hoch und fällt wieder zurück (blieb sonst bis zum nächsten Laden schweben)
+		tw.set_parallel(false)
 		tw.tween_property(_visual, "position", Vector3(0, 0.3, 0.35), 0.15).set_trans(Tween.TRANS_BACK)
+		tw.tween_property(_visual, "position", Vector3.ZERO, 0.25).set_delay(0.6).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 
 
 func _set_leaves(angle: float) -> void:
 	for i in _leaves.size():
-		var side := -1.0 if i == 0 else 1.0
-		create_tween().tween_property(_leaves[i], "rotation:y", side * angle, 0.2)
+		create_tween().tween_property(_leaves[i], "rotation:y", _leaf_side(i) * angle, 0.2)
+
+
+## Drehsinn der Schranktüren (0 = links, 1 = rechts), damit beide nach vorn aufgehen.
+func _leaf_side(i: int) -> float:
+	return -1.0 if i == 0 else 1.0
 
 
 func _marker() -> Marker3D:

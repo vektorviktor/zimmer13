@@ -135,7 +135,6 @@ const LEAF_SIZE := 0.13
 const LEAF_GLOW := 0.35          ## etwas Eigenleuchten, sonst verschluckt sie die Nacht unter der Krone
 const LEAF_COLORS: Array[Color] = [Color(0.75, 0.35, 0.08), Color(0.6, 0.15, 0.05), Color(0.8, 0.55, 0.1), Color(0.45, 0.25, 0.08)]
 const LAYER_CEILING := 16
-const LAYER_GLASS := 64
 ## Trittflächen der Treppenstufen – nur für Spuren (Traces.surface_below), blockiert niemanden. Gelaufen wird auf der
 ## glatten Rampe darunter (Ebene 1, Meta „stair_ramp“), die vorn an jeder Stufe über der Trittfläche liegt.
 const LAYER_TREAD := 2048
@@ -189,10 +188,9 @@ const BOX_HEIGHTS := {
 }
 const RECEPTION_H := 1.1
 ## Rezeption als U mit runden vorderen Ecken (tools/build_reception.py): Holzkorpus, Platte im Terrazzo der Säulen,
-## zwei Messingrohre; Kundenseite nach +Z, Ursprung mittig im Grundriss am Boden, RECEPTION_SIZE wie im Plan. Fehlt
-## die Datei, bleiben die Kästen aus dem Plan.
+## zwei Messingrohre; Kundenseite nach +Z, Ursprung mittig im Grundriss am Boden, Grundriss 5 × 1,5 m wie im Plan.
+## Fehlt die Datei, bleiben die Kästen aus dem Plan.
 const RECEPTION_MODEL := "res://assets/models/reception.glb"
-const RECEPTION_SIZE := Vector2(5.0, 1.5)
 ## Teppiche aus dem Plan: Art → Textur (TexGen); Oberseite knapp über dem Boden
 const RUG_TEXTURES := {"runner": "runner"}
 const RUG_Y := 0.01
@@ -467,7 +465,7 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 	else:
 		_halls = []
 		for rc in _map["open_above"]:
-			var r := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+			var r := _rect(rc)
 			_halls.append({"rect": r, "kind": _kind_at(r.get_center())})
 
 
@@ -505,7 +503,10 @@ func _level_of(y: float) -> int:
 
 
 ## f mit dem Plan des Stockwerks level (Index in _floors) aufrufen (Abfragen anderer Systeme nach dem Bau).
+## Läuft für jede Abfrage von Gästen und Monster – ist das Stockwerk schon geladen (meist das EG), ohne Umladen.
 func _on_floor(level: int, f: Callable) -> Variant:
+	if int(_floors[level]["level"]) == _level:
+		return f.call()
 	var keep := _state()
 	_use(_floors[level])
 	var result: Variant = f.call()
@@ -519,7 +520,7 @@ func _index_shafts() -> void:
 		if s["kind"] != "stairwell":
 			continue
 		var rc: Array = s["rect"]
-		var r := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+		var r := _rect(rc)
 		var to_landing := -_dir(String(s.get("door", {}).get("side", "south")))
 		var frame := Transform3D(Basis(Vector3.UP, atan2(-to_landing.x, -to_landing.y)), Vector3(r.get_center().x, 0, r.get_center().y))
 		_shafts[String(s["id"])] = {"rect": r, "frame": frame, "plan": s}
@@ -602,7 +603,7 @@ func _index_places() -> void:
 	for a in _map["areas"]:
 		if a["id"] == "lobby":
 			var rc: Array = a["rect"]
-			_lobby = Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+			_lobby = _rect(rc)
 	for info in _map["rooms"]:
 		if String(info["wing"]) in OPEN_WINGS:
 			_open_rooms[String(info["no"])] = true
@@ -620,10 +621,15 @@ func _prefix() -> String:
 	return "" if _level == 0 else "og%d_" % _level
 
 
+## Rechteck des Plans [x0, z0, x1, z1] → Rect2 (x, z).
+func _rect(rc: Array) -> Rect2:
+	return Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+
+
 func _bounds(rects: Array) -> Rect2:
-	var r := Rect2(rects[0][0], rects[0][1], rects[0][2] - rects[0][0], rects[0][3] - rects[0][1])
+	var r := _rect(rects[0])
 	for rc in rects:
-		r = r.merge(Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]))
+		r = r.merge(_rect(rc))
 	return r
 
 
@@ -704,6 +710,8 @@ func _v3(a: Array, y: float = 0.0) -> Vector3:
 func _build_wall(w: Dictionary) -> void:
 	var a := _v2(w["a"])
 	var b := _v2(w["b"])
+	if _in_shaft(a) and _in_shaft(b):
+		return   # Mittelwand im Treppenhaus: baut _stairwells über alle Stockwerke
 	var horizontal := is_equal_approx(a.y, b.y)
 	var along := Vector2(1, 0) if horizontal else Vector2(0, 1)
 	var side := Vector2(0, 1) if horizontal else Vector2(1, 0)   # „Plus“-Seite: Süden bzw. Osten
@@ -712,8 +720,6 @@ func _build_wall(w: Dictionary) -> void:
 	var fixed := a.y if horizontal else a.x
 	var openings: Array = w.get("openings", [])
 	var glass := bool(w.get("glass", false))
-	if _in_shaft(a) and _in_shaft(b):
-		return   # Mittelwand im Treppenhaus: baut _stairwells über alle Stockwerke
 
 	# Seiten abtasten (alle 25 cm, 30 cm neben der Wandmitte), kurze Läufe (Querwände) glätten
 	var steps := maxi(1, roundi((s1 - s0) / GRID))
@@ -1042,7 +1048,7 @@ func _glass_wall(horizontal: bool, fixed: float, p0: float, p1: float) -> void:
 	root.add_child(holder)
 	var length := p1 - p0
 	var pane := StaticBody3D.new()
-	pane.collision_layer = LAYER_GLASS
+	pane.collision_layer = HotelWindow.LAYER_GLASS
 	pane.collision_mask = 0
 	holder.add_child(pane)
 	Geo.add_box_shape(pane, Vector3(length, H, T), Vector3(0, H / 2.0, 0))
@@ -1174,7 +1180,7 @@ func _door_near(p: Vector3, max_dist: float = 0.6) -> Door:
 func _floors_and_ceilings() -> void:
 	var holes: Array[Rect2] = []
 	for rc in _map["open_above"]:
-		holes.append(Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]))
+		holes.append(_rect(rc))
 	if not _has_upper:
 		holes.append(_lobby)   # die Lobby-Decke ist der Boden der Galerie (_gallery)
 	for r in _map["regions"]:
@@ -1189,22 +1195,20 @@ func _floors_and_ceilings() -> void:
 			if kind != "pool_water":   # das Becken baut _pool, die Decke darüber ist die Holzdecke der Halle
 				_floor(kind, rc, layer)
 			if not bool(r["outdoor"]):
-				for piece in _subtract(Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]), holes):
-					Geo.solid(root, Vector3(piece.size.x, 0.2, piece.size.y), Vector3(piece.get_center().x, H + 0.1, piece.get_center().y),
-						ceiling, LAYER_CEILING)
+				for piece in _subtract(_rect(rc), holes):
+					_ceiling_slab(piece, ceiling)
 	for p in _map["floor_patches"]:
 		for rc in p["rects"]:
 			_floor(String(p["kind"]), rc)
 			if not bool(p["outdoor"]):
-				for piece in _subtract(Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]), holes):
-					Geo.solid(root, Vector3(piece.size.x, 0.2, piece.size.y), Vector3(piece.get_center().x, H + 0.1, piece.get_center().y), _ceiling, LAYER_CEILING)
+				for piece in _subtract(_rect(rc), holes):
+					_ceiling_slab(piece, _ceiling)
 	for rs in _map["terrace_edges"] + _map.get("balcony_edges", []):
 		for rc in rs:
 			_floor_rect(rc, _stone)
 	# Über einem Luftraum (Lobby, Partyraum) schließt die Decke dieses Stockwerks die Halle nach oben ab
 	for rc in _map["voids"]:
-		Geo.solid(root, Vector3(float(rc[2]) - float(rc[0]), 0.2, float(rc[3]) - float(rc[1])),
-			Vector3((float(rc[0]) + float(rc[2])) / 2.0, H + 0.1, (float(rc[1]) + float(rc[3])) / 2.0), _ceiling, LAYER_CEILING)
+		_ceiling_slab(_rect(rc), _ceiling)
 	# Schwellen: unter jeder Tür liegt die Wand – ohne Boden dort risse das NavMesh ab
 	for d in _doors:
 		var door: Door = d["door"]
@@ -1212,6 +1216,11 @@ func _floors_and_ceilings() -> void:
 			var into: Vector3 = d["into"]
 			var size := Vector3(door.width, 0.2, T) if absf(into.z) > 0.5 else Vector3(T, 0.2, door.width)
 			Geo.solid(root, size, (d["pos"] as Vector3) + Vector3(0, -0.1, 0), _wood)
+
+
+## Deckenplatte über r (H … H + 0,2) auf der Ebene der Decken.
+func _ceiling_slab(r: Rect2, mat: Material) -> void:
+	Geo.solid(root, Vector3(r.size.x, 0.2, r.size.y), Vector3(r.get_center().x, H + 0.1, r.get_center().y), mat, LAYER_CEILING)
 
 
 ## Boden über dem EG: 0,3 m stark, liegt auf der Decke darunter (H … H + 0,2) auf – keine Fuge an Lufträumen
@@ -1228,7 +1237,7 @@ func _floor(kind: String, rc: Array, layer: int = 1) -> void:
 	if kind != "corridor":
 		_floor_rect(rc, _floor_material(kind), layer)
 		return
-	var r := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+	var r := _rect(rc)
 	var inside := r.intersection(_lobby) if _level == 0 else Rect2()   # die Galerie trägt Teppich
 	if inside.has_area():
 		_floor_rect([inside.position.x, inside.position.y, inside.end.x, inside.end.y], _lobby_floor)
@@ -1362,14 +1371,14 @@ class WallSpot:
 func _furniture() -> void:
 	var rects: Array[Rect2] = []
 	for rc in _map["reception"]:
-		rects.append(Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]))
+		rects.append(_rect(rc))
 	var model := _reception(rects)
 	for r in rects:
 		var desk: Node3D = model if model else Geo.solid(root, Vector3(r.size.x, RECEPTION_H, r.size.y), Vector3(r.get_center().x, RECEPTION_H / 2.0, r.get_center().y), _dark_wood)
 		_furnishings.append({"kind": "reception", "rect": r, "top": RECEPTION_H, "front": Vector2.ZERO, "node": desk})
 	for f in _map["furniture"]:
 		var rc: Array = f["rect"]
-		var rect := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+		var rect := _rect(rc)
 		var c := rect.get_center()
 		if _kind_at(c) == "sealed":
 			continue
@@ -1441,7 +1450,7 @@ func _furniture() -> void:
 func _rugs() -> void:
 	for r in _map["rugs"]:
 		var rc: Array = r["rect"]
-		var rect := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+		var rect := _rect(rc)
 		var c := rect.get_center()
 		var kind := String(r["kind"])
 		if _kind_at(c) == "sealed":
@@ -1668,7 +1677,7 @@ func _lamp_style(area: String, id: String, side: String) -> Dictionary:
 func _landing_side(p: Vector2) -> String:
 	for s in _map["stairs"]:
 		var rc: Array = s["rect"]
-		if s["kind"] == "stairwell" and s.has("door") and Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]).grow(0.3).has_point(p):
+		if s["kind"] == "stairwell" and s.has("door") and _rect(rc).grow(0.3).has_point(p):
 			match String(s["door"]["side"]):
 				"south":
 					return "north"
@@ -1877,7 +1886,7 @@ func _clock() -> void:
 
 func _void() -> Rect2:
 	var rc: Array = _map["open_above"][0]
-	return Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+	return _rect(rc)
 
 
 ## Galerie im Obergeschoss rund um den Luftraum (Spielkonzept 7.5): Boden mit Geländer, Treppe hinauf,
@@ -1953,7 +1962,7 @@ func _lobby_flight() -> void:
 	if stair.is_empty():
 		return
 	var rc: Array = stair["rect"]
-	GrandStair.build(_parent, Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]), String(stair.get("up", "north")), UP_Y)
+	GrandStair.build(_parent, _rect(rc), String(stair.get("up", "north")), UP_Y)
 
 
 ## Ränder der Lufträume dieses Stockwerks (Lobby, Partyraum): Geländer, wo Boden angrenzt – außer, wo eine Treppe
@@ -1963,9 +1972,9 @@ func _void_edges() -> void:
 	for st in (_floors[0]["map"] as Dictionary)["stairs"]:
 		if st["kind"] == "stair":
 			var rc: Array = st["rect"]
-			stairs.append(Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]).grow(0.05))
+			stairs.append(_rect(rc).grow(0.05))
 	for rc in _map["voids"]:
-		var v := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+		var v := _rect(rc)
 		var edges := [[v.position, Vector2(v.end.x, v.position.y), Vector2(0, -1)], [Vector2(v.position.x, v.end.y), v.end, Vector2(0, 1)],
 			[v.position, Vector2(v.position.x, v.end.y), Vector2(-1, 0)], [Vector2(v.end.x, v.position.y), v.end, Vector2(1, 0)]]
 		for e in edges:
@@ -2017,7 +2026,7 @@ func _stair_edge(p: Vector2, along: Vector2, stairs: Array[Rect2]) -> Vector2:
 func _balconies() -> void:
 	for rs in _map["terrace_edges"] + _map.get("balcony_edges", []):
 		for rc in rs:
-			var r := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+			var r := _rect(rc)
 			if r.size.x >= r.size.y:
 				_railing(Vector3(r.position.x, 0, r.get_center().y), Vector3(r.end.x, 0, r.get_center().y))
 			else:
@@ -2039,7 +2048,7 @@ func _auto_switches() -> void:
 			continue
 		var door: Door = entry["door"]
 		var center: Vector3 = entry["pos"]
-		var into := _global_dir(rooms[no]["into"])
+		var into := (rooms[no]["into"] as Vector3).normalized()
 		var handle := (center - (entry["hinge"] as Vector3)).normalized()
 		for side: float in [1.0, -1.0]:   # Griffseite, sonst neben dem Scharnier hinter dem Türblatt hervor
 			var reach := door.width / 2.0 + (0.25 if side > 0 else door.width + 0.3)
@@ -2051,11 +2060,6 @@ func _auto_switches() -> void:
 			if rooms[no]["kind"] == "vacant":
 				sw.set_on.call_deferred(false, true)
 			break
-
-
-## Richtung aus der Welt in den Rahmen dieses Stockwerks (nur Drehung – die Stockwerke sind nicht gedreht).
-func _global_dir(v: Vector3) -> Vector3:
-	return Vector3(v.x, 0, v.z).normalized()
 
 
 ## Säule bis unter die Galerie: quadratischer Sockel unten und oben, dazwischen ein runder Schaft (Terrazzo).
@@ -2166,7 +2170,7 @@ func _common_rooms() -> void:
 	party_spots = _dance_spots(r, c)
 	var top := H
 	for rc in _map["open_above"]:
-		if Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]).has_point(c):
+		if _rect(rc).has_point(c):
 			top = UP_Y + H
 	var ball := DiscoBall.new().setup(top - DISCO_Y)
 	ball.position = Vector3(c.x, DISCO_Y, c.y)
@@ -2276,8 +2280,8 @@ func _pool() -> void:
 
 
 ## Dünne Stange von a nach b (Handlauf, Geländerpfosten), ohne Kollision.
-func _rod(a: Vector3, b: Vector3, mat: Material, radius: float = 0.025) -> void:
-	var mi := Geo.mesh(root, Geo.cylinder(radius, a.distance_to(b), 6), mat, (a + b) / 2.0)
+func _rod(a: Vector3, b: Vector3, mat: Material) -> void:
+	var mi := Geo.mesh(root, Geo.cylinder(0.025, a.distance_to(b), 6), mat, (a + b) / 2.0)
 	var up := (b - a).normalized()
 	var side := up.cross(Vector3.FORWARD if absf(up.z) < 0.9 else Vector3.RIGHT).normalized()
 	mi.basis = Basis(side, up, side.cross(up))
@@ -2543,7 +2547,7 @@ func _flight(x: float, z_from: float, z_to: float, y_from: float, y_to: float, w
 	treads.collision_layer = LAYER_TREAD
 	treads.collision_mask = 0
 	_parent.add_child(treads)
-	var steps := roundi(rise / step_h)
+	var steps := maxi(1, roundi(rise / step_h))   # flacher als eine halbe Stufe: eine Stufe statt Division durch 0
 	var step_rise := rise / steps
 	for i in steps:
 		var y_top := y_from + step_rise * (i + 0.5)
@@ -2623,7 +2627,7 @@ func _largest_rect(kind: String) -> Rect2:
 		if r["kind"] != kind:
 			continue
 		for rc in r["rects"]:
-			var rect := Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1])
+			var rect := _rect(rc)
 			if rect.get_area() > best.get_area():
 				best = rect
 	return best
@@ -2644,14 +2648,7 @@ func _zones() -> void:
 		if r["kind"] == "garden":
 			var b := _bounds(r["rects"])
 			zones.append({"name": _garden_name(b.get_center()), "center": Vector3(b.get_center().x, 0, b.get_center().y), "radius": minf(b.size.x, b.size.y) / 2.0})
-	# Flurabschnitte: lange Flure als Kette von Kreisen
-	for c in _map["corridors"]:
-		var a := _v2(c["a"])
-		var b := _v2(c["b"])
-		var n := maxi(1, ceili(a.distance_to(b) / 12.0))
-		for i in n:
-			var p := a.lerp(b, (i + 0.5) / n)
-			zones.append({"name": String(c["name"]), "center": Vector3(p.x, 0, p.y), "radius": a.distance_to(b) / n / 2.0 + 1.0})
+	_corridor_zones("%s")
 	for level in range(1, _top_level + 1):
 		_on_floor(level, _upper_zones)
 	_on_floor(_lower, _lower_zones)
@@ -2676,13 +2673,18 @@ func _upper_zones() -> void:
 			var b := _bounds(r["rects"])
 			zones.append({"name": KIND_NAMES[kind], "center": Vector3(b.get_center().x, _base_y, b.get_center().y),
 				"radius": minf(b.size.x, b.size.y) / 2.0 + 0.5})
+	_corridor_zones("%s (oben)")
+
+
+## Flurabschnitte des geladenen Stockwerks als Kette von Kreisen (lange Flure); name = Format für den Namen.
+func _corridor_zones(name: String) -> void:
 	for c in _map["corridors"]:
 		var a := _v2(c["a"])
 		var b := _v2(c["b"])
 		var n := maxi(1, ceili(a.distance_to(b) / 12.0))
 		for i in n:
 			var p := a.lerp(b, (i + 0.5) / n)
-			zones.append({"name": "%s (oben)" % c["name"], "center": Vector3(p.x, _base_y, p.y), "radius": a.distance_to(b) / n / 2.0 + 1.0})
+			zones.append({"name": name % c["name"], "center": Vector3(p.x, _base_y, p.y), "radius": a.distance_to(b) / n / 2.0 + 1.0})
 
 
 ## Wegpunkte eines oberen Stockwerks: Flure alle 4 m (nur wo dort Boden ist, nicht über dem Luftraum), Bibliothek.
@@ -2704,9 +2706,11 @@ func _upper_waypoints() -> void:
 ## Zonen des Untergeschosses (Plan geladen): Heizkeller, Technikraum und Wäscherei je ein Kreis, die Gänge als
 ## Kette von Kreisen je Planrechteck („Keller“ – der erste Besuch löst einen Autosave aus, SaveManager.NEW_AREAS).
 func _lower_zones() -> void:
+	var seen := {}   # je Art ein Kreis, auch wenn der Plan sie auf mehrere Flächen verteilt
 	for r in _map["regions"]:
 		var kind := String(r["kind"])
-		if kind in ["boiler_room", "plant_room", "laundry_room"]:
+		if kind in ["boiler_room", "plant_room", "laundry_room"] and not seen.has(kind):
+			seen[kind] = true
 			var b := _largest_rect(kind)
 			zones.append({"name": KIND_NAMES[kind], "center": Vector3(b.get_center().x, _base_y, b.get_center().y),
 				"radius": minf(b.size.x, b.size.y) / 2.0 + 0.5})
@@ -2727,9 +2731,11 @@ func _lower_zones() -> void:
 ## Wegpunkte des Untergeschosses – nur fürs Monster (patrol), Gäste gehen nicht hinunter: die Gänge alle 6 m und die
 ## Mitte jedes Kellerraums, der nicht verschlossen ist.
 func _lower_waypoints() -> void:
+	var seen := {}
 	for r in _map["regions"]:
 		var kind := String(r["kind"])
-		if kind in ["plant_room", "laundry_room"]:
+		if kind in ["plant_room", "laundry_room"] and not seen.has(kind):
+			seen[kind] = true
 			var b := _largest_rect(kind)
 			patrol.append({"pos": Vector3(b.get_center().x, _base_y, b.get_center().y), "room": ""})
 		elif kind == "cellar":
@@ -2846,45 +2852,44 @@ func is_safe(p: Vector3) -> bool:
 # --- Bausteine ------------------------------------------------------------------------------------
 
 ## Wand entlang X bei z. Öffnungen als Vector4(Mitte x, Breite, Oberkante, Unterkante).
-func _wall_x(z: float, x0: float, x1: float, openings: Array, mat: Material = null, height: float = H, thick: float = T) -> void:
+func _wall_x(z: float, x0: float, x1: float, openings: Array, mat: Material, height: float = H) -> void:
 	var holder := Node3D.new()
 	holder.position = Vector3(0, 0, z)
 	_parent.add_child(holder)
-	_wall(holder, x0, x1, openings, mat, height, thick)
+	_wall(holder, x0, x1, openings, mat, height)
 
 
 ## Wand entlang Z bei x. Öffnungen als Vector4(Mitte z, Breite, Oberkante, Unterkante).
-func _wall_z(x: float, z0: float, z1: float, openings: Array, mat: Material = null, height: float = H, thick: float = T) -> void:
+func _wall_z(x: float, z0: float, z1: float, openings: Array, mat: Material, height: float = H) -> void:
 	var holder := Node3D.new()
 	holder.position = Vector3(x, 0, 0)
 	holder.rotation.y = -PI / 2.0   # lokale +X zeigt entlang +Z
 	_parent.add_child(holder)
-	_wall(holder, z0, z1, openings, mat, height, thick)
+	_wall(holder, z0, z1, openings, mat, height)
 
 
 ## Wand im lokalen Rahmen von holder (entlang X von a0 bis a1): Kollision als Kästen wie gehabt
 ## (links, unter und über jeder Öffnung, rechts), die Optik als ein Mesh mit gemeinsamen Ecken (Geo.wall_mesh).
 ## Laibungen in Rahmenholz: Rutscht die Zarge beim Vertex-Snapping weg, blitzt Holz statt Tapete durch
 ## (nur der Beton im Keller hat keinen Rahmen).
-func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material, height: float, thick: float) -> void:
+func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material, height: float) -> void:
 	var cursor := a0
 	for o in openings:
 		var op: Vector4 = o
 		var a := op.x - op.y / 2.0
 		if a > cursor:
-			Geo.collider(holder, Vector3(a - cursor, height, thick), Vector3((cursor + a) / 2.0, height / 2.0, 0))
+			Geo.collider(holder, Vector3(a - cursor, height, T), Vector3((cursor + a) / 2.0, height / 2.0, 0))
 		if op.w > 0.0:
-			Geo.collider(holder, Vector3(op.y, op.w, thick), Vector3(op.x, op.w / 2.0, 0))
+			Geo.collider(holder, Vector3(op.y, op.w, T), Vector3(op.x, op.w / 2.0, 0))
 		if op.z < height:
-			Geo.collider(holder, Vector3(op.y, height - op.z, thick), Vector3(op.x, op.z + (height - op.z) / 2.0, 0))
+			Geo.collider(holder, Vector3(op.y, height - op.z, T), Vector3(op.x, op.z + (height - op.z) / 2.0, 0))
 		cursor = op.x + op.y / 2.0
 	if a1 > cursor:
-		Geo.collider(holder, Vector3(a1 - cursor, height, thick), Vector3((cursor + a1) / 2.0, height / 2.0, 0))
-	var wall := Geo.mesh(holder, Geo.wall_mesh(a0, a1, height, thick, openings), null, Vector3.ZERO)
-	var m: Material = mat if mat else _wallpaper
-	wall.set_surface_override_material(0, m)
+		Geo.collider(holder, Vector3(a1 - cursor, height, T), Vector3((cursor + a1) / 2.0, height / 2.0, 0))
+	var wall := Geo.mesh(holder, Geo.wall_mesh(a0, a1, height, T, openings), null, Vector3.ZERO)
+	wall.set_surface_override_material(0, mat)
 	if wall.mesh.get_surface_count() > 1:
-		wall.set_surface_override_material(1, m if m == _concrete else OpeningFrame.trim_material())
+		wall.set_surface_override_material(1, mat if mat == _concrete else OpeningFrame.trim_material())
 
 
 ## Schild an der Wand (pos = 1 cm vor der Wandfläche, Schrift zeigt nach +Z): Buchstaben als echte Geometrie
@@ -2942,21 +2947,20 @@ func _candle(pos: Vector3) -> void:
 
 
 ## Wandleuchte; yaw dreht die lokale +Z-Achse (von der Wand weg) in den Raum.
-func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, room_id: String, broken: bool = false) -> Lamp:
+func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, room_id: String, broken: bool = false) -> void:
 	var lamp := Lamp.new().setup(Lamp.Style.WALL, room_id, energy, light_range, broken)
 	lamp.position = pos
 	lamp.rotation.y = yaw
 	_parent.add_child(lamp)
-	return lamp
 
 
 ## Deckenleuchte bei p (Spielkonzept 7.3): runde Kupferleuchte bündig an der Decke (Lamp.Style.FLUSH), über dem
 ## Luftraum (open_above) als Pendel an einer Schnur von der oberen Decke herab (Lamp.Style.CEILING).
-func _ceiling_lamp(p: Vector2, room_id: String, broken: bool) -> Lamp:
+func _ceiling_lamp(p: Vector2, room_id: String, broken: bool) -> void:
 	var y := H
 	var style := Lamp.Style.FLUSH
 	for rc in _map["open_above"]:
-		if Rect2(rc[0], rc[1], rc[2] - rc[0], rc[3] - rc[1]).has_point(p):
+		if _rect(rc).has_point(p):
 			var top := UP_Y + H
 			y = PENDANT_Y
 			style = Lamp.Style.CEILING
@@ -2964,19 +2968,17 @@ func _ceiling_lamp(p: Vector2, room_id: String, broken: bool) -> Lamp:
 	var lamp := Lamp.new().setup(style, room_id, CEILING_LAMP_ENERGY, CEILING_LAMP_RANGE, broken)
 	lamp.position = Vector3(p.x, y, p.y)
 	_parent.add_child(lamp)
-	return lamp
 
 
 ## Halogenleuchte (Spielkonzept 7.9): Röhre der Länge length entlang axis („x“/„z“) bündig unter der Decke,
 ## kaltweiß, flackert ab und zu von selbst kurz auf (Lamp.Style.HALOGEN).
-func _halogen(p: Vector2, axis: String, length: float, room_id: String, broken: bool) -> Lamp:
+func _halogen(p: Vector2, axis: String, length: float, room_id: String, broken: bool) -> void:
 	var lamp := Lamp.new().setup(Lamp.Style.HALOGEN, room_id, HALOGEN_ENERGY, HALOGEN_RANGE, broken)
 	lamp.length = length
 	lamp.position = Vector3(p.x, H - 0.03, p.y)
 	if axis == "z":
 		lamp.rotation.y = PI / 2.0   # die Röhre liegt lokal entlang X
 	_parent.add_child(lamp)
-	return lamp
 
 
 ## Schrift, die nur unter UV-Licht leuchtet (Spielkonzept 4.16); yaw (Bogenmaß) dreht die Schrift
@@ -3045,7 +3047,8 @@ func _reception(rects: Array[Rect2]) -> StaticBody3D:
 	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 		for s in m.mesh.get_surface_count():
 			var mat: Material
-			match m.mesh.surface_get_material(s).resource_name:
+			var src := m.mesh.surface_get_material(s)
+			match src.resource_name if src else "":
 				"stone":
 					mat = _pillar_stone
 				"gold":
@@ -3089,11 +3092,10 @@ func _resource_web(pos: Vector3, yaw: float) -> void:
 
 
 ## Gegenstände liegen in der Hauptszene – pos im Rahmen des aktuellen Bauteils.
-func _item(kind: Item.Kind, pos: Vector3, extra: String = "") -> Item:
+func _item(kind: Item.Kind, pos: Vector3, extra: String = "") -> void:
 	var item := Item.create(kind, extra)
 	item.position = _global(pos)
 	world.add_child(item)
-	return item
 
 
 func _global(local: Vector3) -> Vector3:

@@ -60,7 +60,7 @@ func set_playing(value: bool) -> void:
 			_level = 0.0
 			_music.volume_db = linear_to_db(0.0001)
 			_music.play()
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Feier] Musik: %s" % (TRACKS[track].get_file() if TRACKS[track] != "" else "Original (SynthAudio)"))
 	elif not value:
 		_music.stop()

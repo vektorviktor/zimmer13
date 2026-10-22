@@ -38,7 +38,8 @@ func _process(delta: float) -> void:
 		_update_stutter(delta)
 	var level := _level * (0.05 if _stutter_off else 1.0)
 	light_energy = base_energy * level
-	if lamp_material:
+	# Nur schreiben, wenn sich etwas ändert – Hunderte Lampen, und das Flackern wechselt nur alle paar Bilder
+	if lamp_material and lamp_material.get_shader_parameter("emission_energy") != 2.5 * level:
 		lamp_material.set_shader_parameter("emission_energy", 2.5 * level)
 
 

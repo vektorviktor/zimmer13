@@ -26,6 +26,13 @@ var _bodies: Array[Node3D] = []
 var _dirs: Array[float] = []   ## je Flügel: +1 = Blatt nach +X vom Scharnier, −1 = nach −X
 var _tween: Tween
 
+## Türen nach Feldern im Grundriss (Kantenlänge CELL), für Gäste, die laufend die Türen in ihrer Nähe
+## abfragen (near). Türen bewegen sich nicht; das Raster entsteht beim ersten Abfragen nach dem Bau neu.
+const CELL := 4.0
+static var _all: Array[Door] = []
+static var _cells := {}
+static var _dirty := true
+
 
 func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: bool = false, p_glass: bool = false,
 		p_hinge_end: bool = false) -> Door:
@@ -48,10 +55,37 @@ func _ready() -> void:
 		_pivots.append(_make_leaf(Vector3(width, 0, 0), width, -1.0))
 	else:
 		_pivots.append(_make_leaf(Vector3.ZERO, width, 1.0))
+	_all.append(self)
+	_dirty = true
+
+
+func _exit_tree() -> void:
+	_all.erase(self)
+	_dirty = true
 
 
 func center() -> Vector3:
 	return global_transform * Vector3(width / 2.0, height / 2.0, 0.0)
+
+
+## Türen, deren Mitte höchstens CELL (im Grundriss) von pos entfernt sein kann – also eine Vorauswahl.
+static func near(pos: Vector3) -> Array:
+	if _dirty:
+		_cells.clear()
+		for door in _all:
+			var c := door.center()
+			var key := Vector2i(floori(c.x / CELL), floori(c.z / CELL))
+			if not _cells.has(key):
+				_cells[key] = []
+			(_cells[key] as Array).append(door)
+		_dirty = false
+	var found := []
+	var cx := floori(pos.x / CELL)
+	var cz := floori(pos.z / CELL)
+	for x in range(cx - 1, cx + 2):
+		for z in range(cz - 1, cz + 2):
+			found.append_array(_cells.get(Vector2i(x, z), []))
+	return found
 
 
 func get_prompt(player: Player) -> String:

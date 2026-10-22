@@ -37,16 +37,20 @@ func stake_spot(side: int) -> Vector3:
 	return global_transform * Vector3(0.28 if side != 0 else -0.25, TOP_HEIGHT + 0.01, side * 0.22)
 
 
-func cup() -> Item:
+func has_cup(player: Player) -> bool:
+	return _has_gear(Item.Kind.DICE_CUP, player)
+
+
+## Liegt das Spielgerät (Würfelbecher, Schachbrett) auf dem Tisch oder in der Hand des Spielers?
+## player darf null sein: nur der Tisch.
+func _has_gear(kind: Item.Kind, player: Player) -> bool:
+	if player != null and player.held_kind() == kind:
+		return true
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
-		if item.kind == Item.Kind.DICE_CUP and not item.is_held and item.global_position.distance_to(top_center()) < 0.8:
-			return item
-	return null
-
-
-func has_cup(player: Player) -> bool:
-	return cup() != null or (player != null and player.held_kind() == Item.Kind.DICE_CUP)
+		if item.kind == kind and not item.is_held and item.global_position.distance_to(top_center()) < 0.8:
+			return true
+	return false
 
 
 func get_prompt(player: Player) -> String:

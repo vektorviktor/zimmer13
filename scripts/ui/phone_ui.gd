@@ -21,31 +21,13 @@ var _dial_hint := ""
 func _ready() -> void:
 	layer = 15
 	visible = false
-	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.03, 0.03, 0.04, 0.92)
-	style.border_color = Color(0.35, 0.33, 0.3)
-	style.set_border_width_all(1)
-	style.set_content_margin_all(6)
-	panel.add_theme_stylebox_override("panel", style)
-	add_child(panel)
-	panel.anchor_left = 0.08
-	panel.anchor_right = 0.92
-	panel.anchor_top = 0.5
-	panel.anchor_bottom = 0.98
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 3)
-	panel.add_child(box)
-	_title = _label(10, Color(0.8, 0.8, 0.75))
+	var box := UiKit.dark_panel(self, Color(0.03, 0.03, 0.04, 0.92), Color(0.35, 0.33, 0.3), Vector4(0.08, 0.5, 0.92, 0.98))
+	_title = UiKit.plain_label(10, Color(0.8, 0.8, 0.75))
 	box.add_child(_title)
-	_text = _label(10, Color(0.9, 0.88, 0.85))
+	_text = UiKit.plain_label(10, Color(0.9, 0.88, 0.85))
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_text)
-	_options = GridContainer.new()
-	_options.columns = 2
-	_options.add_theme_constant_override("h_separation", 8)
-	_options.add_theme_constant_override("v_separation", 0)
-	box.add_child(_options)
+	_options = UiKit.option_grid(box)
 
 
 func open() -> void:
@@ -126,13 +108,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var key := (event as InputEventKey).keycode
 	if dialing:
-		if key >= KEY_0 and key <= KEY_9 and _number.length() < MAX_DIGITS:
-			_number += str(key - KEY_0)
+		var digit := -1   # Ziffernreihe oder Ziffernblock
+		if key >= KEY_0 and key <= KEY_9:
+			digit = key - KEY_0
+		elif key >= KEY_KP_0 and key <= KEY_KP_9:
+			digit = key - KEY_KP_0
+		if digit >= 0 and _number.length() < MAX_DIGITS:
+			_number += str(digit)
 			Game.play_sound("creak", 0.12)   # die Wählscheibe schnurrt zurück
-			_update_number()
-		elif key >= KEY_KP_0 and key <= KEY_KP_9 and _number.length() < MAX_DIGITS:
-			_number += str(key - KEY_KP_0)
-			Game.play_sound("creak", 0.12)
 			_update_number()
 		elif key == KEY_BACKSPACE:
 			_number = _number.left(-1)
@@ -145,9 +128,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		get_viewport().set_input_as_handled()
 		return
-	var index: int = key - KEY_1
-	if index >= 0 and index < _buttons.size() and not _buttons[index].disabled:
-		_buttons[index].pressed.emit()
+	if UiKit.press_number(event, _buttons):
 		get_viewport().set_input_as_handled()
 
 
@@ -158,29 +139,6 @@ func _clear() -> void:
 
 
 func _option(text: String, callback: Callable, disabled: bool = false, numbered: bool = true) -> void:
-	var button := Button.new()
-	button.text = ("%d. %s" % [_buttons.size() + 1, text]) if numbered else text
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	button.disabled = disabled
-	button.flat = true
-	button.add_theme_font_size_override("font_size", 9)
-	button.custom_minimum_size = Vector2(190, 0)
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var tight := StyleBoxEmpty.new()
-	tight.content_margin_top = 1
-	tight.content_margin_bottom = 1
-	for style_name in ["normal", "hover", "pressed", "disabled", "focus"]:
-		button.add_theme_stylebox_override(style_name, tight)
-	button.focus_mode = Control.FOCUS_NONE
-	button.pressed.connect(callback)
+	var button := UiKit.flat_option(("%d. %s" % [_buttons.size() + 1, text]) if numbered else text, callback, disabled)
 	_options.add_child(button)
 	_buttons.append(button)
-
-
-func _label(font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	var settings := LabelSettings.new()
-	settings.font_size = font_size
-	settings.font_color = color
-	label.label_settings = settings
-	return label

@@ -255,6 +255,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--navcheck` | Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu Lobby, Galerie, Bar, Küche, Heizkeller, Innenhöfen, Katzenraum, Bibliothek, einem Flur und Zimmer oben, Kellergang, Technikraum, Wäscherei … (unerreichbare Orte werden gemeldet) |
 | `--menu=pause` | Menü öffnen (`pause`, `diary`, `settings`, `load`, `controls`) |
 | `--bulb-thief=bruno` | Gast klaut sofort eine Glühbirne aus Zimmer 13 |
+| `--steal-test` · `--player-deco=x,z` | Ednas Deko unbemerkt nehmen (Schuld-Test) · geschnitzten Kürbis des Spielers an diese Stelle stellen |
 | `--day=31` | zu einem Tag im Oktober springen (ein Tag ≈ 5 min, `Calendar.DAY_SECONDS`) |
 
 Ohne Parameter startet das Spiel mit dem Titelbildschirm; mit Parametern direkt im Hotel.
@@ -284,9 +285,11 @@ scripts/guests/             Guest (Verhalten), GuestProfiles (feste Gäste, Sät
                             Social (Beziehungen, Gerüchte, Diebstahl, Tod, Feiern), PhoneCalls (Anrufe),
                             Decorating (Schmück-Aktionen), DecoSearch (Deko-Suche), GuestPals (Freundschaften unter Gästen)
 scripts/player/             Player
-scripts/monster/            Monster (Zustände), MonsterDirector (Phasen, versteckte Werte, Effekte, Spuk)
+scripts/monster/            Monster (Zustände), MonsterDirector (Phasen, versteckte Werte, Effekte, Spuk),
+                            PumpkinMan (Kürbismann), SheetGhost (Lakengeist), NavWalker (gemeinsames Laufen)
 scripts/minigames/          Mäxchen: Regeln, Partie (Ablauf, Gast-KI), Würfeltisch · Schach: Regeln, KI (Thread),
-                            Brett von oben, Partie, Schachtisch · TableStakes (Einsätze für beide)
+                            Brett von oben, Partie, Schachtisch · TableMatch (Ablauf am Tisch) und TableStakes
+                            (Einsätze) für beide
 scripts/ui/                 HUD, Dialog, Sterbebildschirm, Titelbildschirm, Menüs (Esc, Tagebuch),
                             Einstellungen, Slot-Übersicht, UiKit (Meldezettel-Optik), Telefon
 scripts/util/               PS1-Materialien, Platzhalter-Geometrie/-Texturen, Synth-Sound, ShadowBudget,

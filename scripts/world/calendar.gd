@@ -25,11 +25,12 @@ static func date_text(elapsed: float) -> String:
 
 
 static func today() -> int:
-	return day_of(Game.director.elapsed) if Game.director else FIRST_DAY
+	return day_of(_elapsed())
 
 
-static func is_halloween() -> bool:
-	return today() >= HALLOWEEN
+## Spielzeit des Directors (0, solange es keinen gibt – Titelbildschirm, Szenenwechsel).
+static func _elapsed() -> float:
+	return Game.director.elapsed if Game.director else 0.0
 
 
 # --- Abreißkalender --------------------------------------------------------------
@@ -56,7 +57,7 @@ func _process(_delta: float) -> void:
 
 
 func get_prompt(_player: Player) -> String:
-	return "Kalender: %s" % date_text(Game.director.elapsed if Game.director else 0.0)
+	return "Kalender: %s" % date_text(_elapsed())
 
 
 func interact(_player: Player) -> void:
@@ -64,7 +65,7 @@ func interact(_player: Player) -> void:
 	if left <= 0:
 		Game.say("Halloween. Heute ist es so weit.", 3.0)
 	else:
-		Game.say("%s – noch %d %s bis Halloween." % [date_text(Game.director.elapsed), left, "Tag" if left == 1 else "Tage"], 3.0)
+		Game.say("%s – noch %d %s bis Halloween." % [date_text(_elapsed()), left, "Tag" if left == 1 else "Tage"], 3.0)
 
 
 func _label(text: String, size: int, color: Color) -> Label3D:

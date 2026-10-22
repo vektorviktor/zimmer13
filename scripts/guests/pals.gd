@@ -32,7 +32,7 @@ var counts := {}
 ## Gast-ID → ID dessen, der ihm zuletzt Gutes über dich erzählt hat (für das nächste Gespräch; nicht gespeichert)
 var heard := {}
 var _told := {}          ## "id_a|id_b" → Spieltag des letzten Weitererzählens (nicht gespeichert)
-var _queue: Array[Dictionary] = []   ## {guest, amount, delay} – Ruf mit Verzögerung
+var _queue: Array[Dictionary] = []   ## {guest, amount, delay, from} – Ruf mit Verzögerung
 var _scan := TELL_SCAN
 
 
@@ -47,7 +47,7 @@ func note(a: Guest, b: Guest, amount: int = 1) -> void:
 	var k := key(a, b)
 	var before := int(counts.get(k, 0))
 	counts[k] = before + amount
-	if before < PAL_DEEDS and before + amount >= PAL_DEEDS and "--trace" in OS.get_cmdline_user_args():
+	if before < PAL_DEEDS and before + amount >= PAL_DEEDS and Game.tracing:
 		print("[Freunde] %s und %s sind jetzt Freunde" % [a.display_name, b.display_name])
 
 
@@ -170,5 +170,5 @@ func _tell(a: Guest, b: Guest) -> void:
 	get_tree().create_timer(2.5, false).timeout.connect(func() -> void:
 		if is_instance_valid(b) and not b.dead:
 			b.say(REPLY_LINES.pick_random()))
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Freunde] %s erzählt %s Gutes über dich: %.0f → %.0f" % [a.display_name, b.display_name, before, b.relation])

@@ -2,6 +2,7 @@
 // Nearest-Filter, kein Glanz. Optional Textur in Weltkoordinaten (für Wände/Böden).
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_disabled;
+#include "res://shaders/psx_snap.gdshaderinc"
 
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, filter_nearest, repeat_enable, hint_default_white;
@@ -9,15 +10,12 @@ uniform bool use_world_uv = false;
 uniform float tex_scale = 1.0;
 uniform vec3 emission : source_color = vec3(0.0);
 uniform float emission_energy = 0.0;
-uniform float snap_resolution = 140.0;
 // Auflagen (Teppich, Türkassetten): rückt die Fläche um diesen Anteil der Entfernung zur Kamera
 // hin. Ändert nur die Tiefe, nicht die Bildposition – so kann das Snapping die Unterlage nicht
 // durch die Auflage drücken.
 uniform float layer_pull = 0.0;
 // Helligkeit aus den Eckfarben des Meshs (z. B. Hecken: unten im Schatten dunkler)
 uniform bool use_vertex_color = false;
-// Einstellungen → PS1-Look → Vertex-Wackeln (1 = an, 0 = aus)
-global uniform float psx_snap;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -28,11 +26,7 @@ void vertex() {
 	vec4 view = MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
 	view.xyz *= 1.0 - layer_pull;
 	vec4 clip = PROJECTION_MATRIX * view;
-	if (psx_snap > 0.5 && clip.w > 0.0001) {
-		vec2 ndc = clip.xy / clip.w;
-		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;
-		clip.xy = ndc * clip.w;
-	}
+	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

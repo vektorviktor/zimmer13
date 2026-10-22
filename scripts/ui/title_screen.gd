@@ -282,7 +282,9 @@ func _handle_debug_args() -> bool:
 	if args.is_empty():
 		return false
 	for arg in args:
-		if arg.begins_with("--load=") and SaveManager.slot_exists(arg.substr(7).to_int()):
+		# Nur ladbare Stände – sonst bliebe der Bildschirm leer (load_slot lehnt ab, Menü gibt es keins)
+		var info := SaveManager.slot_info(arg.substr(7).to_int()) if arg.begins_with("--load=") else {}
+		if not info.is_empty() and info["fits"]:
 			SaveManager.load_slot.call_deferred(arg.substr(7).to_int())
 			return true
 	if "--title" in args:

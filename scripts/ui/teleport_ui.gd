@@ -104,33 +104,11 @@ func _ready() -> void:
 	layer = 16
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.03, 0.04, 0.06, 0.94)
-	style.border_color = Color(0.3, 0.45, 0.6)
-	style.set_border_width_all(1)
-	style.set_content_margin_all(6)
-	panel.add_theme_stylebox_override("panel", style)
-	add_child(panel)
-	panel.anchor_left = 0.15
-	panel.anchor_right = 0.85
-	panel.anchor_top = 0.2
-	panel.anchor_bottom = 0.8
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 3)
-	panel.add_child(box)
-	var title := Label.new()
-	var settings := LabelSettings.new()
-	settings.font_size = 10
-	settings.font_color = Color(0.6, 0.8, 0.95)
-	title.label_settings = settings
+	var box := UiKit.dark_panel(self, Color(0.03, 0.04, 0.06, 0.94), Color(0.3, 0.45, 0.6), Vector4(0.15, 0.2, 0.85, 0.8))
+	var title := UiKit.plain_label(10, Color(0.6, 0.8, 0.95))
 	title.text = "Debug: Teleport  (1–9 / Maus, Esc schließt)"
 	box.add_child(title)
-	_options = GridContainer.new()
-	_options.columns = 2
-	_options.add_theme_constant_override("h_separation", 8)
-	_options.add_theme_constant_override("v_separation", 0)
-	box.add_child(_options)
+	_options = UiKit.option_grid(box)
 
 
 func open() -> void:
@@ -196,18 +174,22 @@ func go_to(entry: Array) -> void:
 		close()
 		(entry[3] as Callable).call()
 		return
-	var p := Game.player
-	if p.hiding:
-		p.exit_hide()
-	var look: Vector3 = entry[2]
-	p.global_position = (entry[1] as Vector3) + Vector3(0, 0.05, 0)
-	p.velocity = Vector3.ZERO
-	p.rotation = Vector3(0, atan2(-look.x, -look.z), 0)
-	p.head.rotation.x = 0.0
+	place_player(entry[1], entry[2])
 	close()
 	Game.say("Teleport: %s" % entry[0], 2.0)
 	if entry.size() > 3:
 		(entry[3] as Callable).call()
+
+
+## Spieler an einen Standpunkt setzen (aus dem Versteck heraus), Blick waagerecht in Richtung `look` – auch für --tp.
+static func place_player(pos: Vector3, look: Vector3) -> void:
+	var p := Game.player
+	if p.hiding:
+		p.exit_hide()
+	p.global_position = pos + Vector3(0, 0.05, 0)
+	p.velocity = Vector3.ZERO
+	p.rotation = Vector3(0, atan2(-look.x, -look.z), 0)
+	p.head.rotation.x = 0.0
 
 
 func _option(index: int, text: String) -> void:

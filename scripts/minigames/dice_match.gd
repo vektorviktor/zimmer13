@@ -1,5 +1,5 @@
 class_name DiceMatch
-extends CanvasLayer
+extends TableMatch
 ## Mäxchen am Würfeltisch – Spieler gegen einen Gast (Spielkonzept 6.10).
 ##
 ## Ablauf einer Runde: Wer dran ist, würfelt verdeckt und sagt einen Wert an, der die
@@ -8,12 +8,10 @@ extends CanvasLayer
 ## die Runde. Wer zuerst 2 Runden gewinnt, gewinnt die Partie.
 ##
 ## Einsätze liegen echt auf dem Tisch (Münzen, Gegenstände). Bei einer Vorwarnung
-## springt der Gast auf – die Einsätze bleiben liegen, für wen auch immer.
+## springt der Gast auf – die Einsätze bleiben liegen, für wen auch immer (TableMatch).
 
 const WIN_ROUNDS := 2
 
-var active := false
-var guest: Guest
 var table: GameTable
 
 var _score_player := 0
@@ -24,38 +22,16 @@ var _actual := -1              ## wirklicher Wurf des Ansagenden
 var _player_dice: Array[int] = []
 var _player_bluffs := 0        ## macht den Gast misstrauischer
 var _cheat_used := false
-var _threw_game := false
-var _stakes := TableStakes.new()
-var _waiting_for_seat := false
-var _abort_timer := -1.0
-var _over := false
 
-var _title: Label
-var _log: Label
 var _dice: DiceView
-var _options: GridContainer
-var _buttons: Array[Button] = []
 
 
 func _ready() -> void:
-	layer = 15
-	visible = false
-	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.04, 0.06, 0.04, 0.9)
-	style.border_color = Color(0.5, 0.35, 0.15)
-	style.set_border_width_all(1)
-	style.set_content_margin_all(6)
-	panel.add_theme_stylebox_override("panel", style)
-	add_child(panel)
-	panel.anchor_left = 0.06
-	panel.anchor_right = 0.94
-	panel.anchor_top = 0.5
-	panel.anchor_bottom = 0.98
+	var panel := _build_panel(Color(0.04, 0.06, 0.04, 0.9), 6, Vector4(0.06, 0.5, 0.94, 0.98))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 3)
 	panel.add_child(box)
-	_title = _make_label(10, Color(0.95, 0.75, 0.4))
+	_title = UiKit.plain_label(10, Color(0.95, 0.75, 0.4))
 	box.add_child(_title)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
@@ -63,15 +39,25 @@ func _ready() -> void:
 	_dice = DiceView.new()
 	_dice.custom_minimum_size = Vector2(52, 24)
 	row.add_child(_dice)
-	_log = _make_label(9, Color(0.9, 0.88, 0.85))
+	_log = UiKit.plain_label(9, Color(0.9, 0.88, 0.85))
 	_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_log.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_log.custom_minimum_size = Vector2(300, 0)
 	row.add_child(_log)
-	_options = GridContainer.new()
-	_options.columns = 2
-	_options.add_theme_constant_override("h_separation", 8)
-	box.add_child(_options)
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 8)
+	box.add_child(grid)
+	_options = grid
+	_button_width = 190.0
+
+
+func _table() -> GameTable:
+	return table
+
+
+func _gear() -> Item.Kind:
+	return Item.Kind.DICE_CUP
 
 
 ## Kann jetzt mit diesem Gast gespielt werden? Gibt einen Grund zurück oder "".
@@ -82,39 +68,15 @@ func why_not(p_guest: Guest) -> String:
 		return "Am Würfeltisch wird schon gespielt."
 	if not table.has_cup(Game.player):
 		return "Der Würfelbecher fehlt am Tisch."
-	if p_guest.fear >= 60.0:
-		return p_guest.line("panic")
-	if not Game.director.is_quiet(table.global_position, 20.0):
-		return "Jetzt? Hörst du das nicht?"
-	if Game.director.long_signal_near(table.global_position):
-		return "Jetzt? Hast du das Licht gesehen?"
-	return ""
+	return _guest_unwilling(p_guest)
 
 
 ## stake: {"money": int, "item": bool}
 func start(p_guest: Guest, stake: Dictionary) -> void:
-	guest = p_guest
-	active = true
-	_over = false
-	table.busy = true
 	_score_player = 0
 	_score_guest = 0
 	_player_bluffs = 0
-	_threw_game = false
-	_abort_timer = -1.0
-	_stakes = TableStakes.new()
-	var player := Game.player
-	# Becher auf den Tisch, falls du ihn in der Hand hast
-	if player.held_kind() == Item.Kind.DICE_CUP:
-		var cup := player.held
-		player.drop_held()
-		cup.global_position = table.top_center() + Vector3(-0.15, 0.01, 0.0)
-	_stakes.place(table, guest, stake)
-	player.sit_at(table.player_seat.global_position, table.top_center())
-	guest.sit_for_game(table.guest_seat.global_position, table.top_center())
-	visible = true
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	_waiting_for_seat = true
+	_begin(p_guest, stake, Vector3(-0.15, 0.01, 0.0))   # Becher auf den Tisch, falls du ihn in der Hand hast
 	_update_title()
 	_dice.hide_dice()
 	_say("%s kommt an den Tisch …" % guest.display_name)
@@ -122,35 +84,8 @@ func start(p_guest: Guest, stake: Dictionary) -> void:
 	_option("Doch nicht spielen", _abort.bind("Du stehst wieder auf."))
 
 
-func _process(delta: float) -> void:
-	if not active:
-		return
-	if _waiting_for_seat and guest.seated:
-		_waiting_for_seat = false
-		_start_round("guest" if randf() < 0.5 else "player")
-	# Der Gast hat das Spiel verlassen (Panik, Monster gesehen, gestorben …)
-	if not _over and (guest.dead or guest.state != Guest.State.MINIGAME):
-		_abort("%s springt auf und rennt davon! Die Einsätze liegen noch auf dem Tisch …" % guest.display_name)
-		return
-	# Vorwarnung: je mutiger der Gast, desto später bemerkt er sie – langes Flackern bricht ab (4.17)
-	if not _over and (not Game.director.is_quiet(table.global_position, 20.0) or Game.director.long_signal_near(table.global_position)):
-		if _abort_timer < 0.0:
-			_abort_timer = 0.5 + float(guest.profile["brave"]) * 4.5
-		_abort_timer -= delta
-		if _abort_timer <= 0.0:
-			guest.say_panic()
-			guest.end_game()
-			_abort("%s springt auf und rennt davon! Die Einsätze liegen noch auf dem Tisch …" % guest.display_name)
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if not visible:
-		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		var index: int = (event as InputEventKey).keycode - KEY_1
-		if index >= 0 and index < _buttons.size() and not _buttons[index].disabled:
-			_buttons[index].pressed.emit()
-			get_viewport().set_input_as_handled()
+func _on_seated() -> void:
+	_start_round("guest" if randf() < 0.5 else "player")
 
 
 # --- Runden ----------------------------------------------------------------------
@@ -340,7 +275,7 @@ func _caught_cheating() -> void:
 	Game.social.change_relation(guest, -30.0)
 	Game.social.on_cheat_caught(guest)
 	table.loaded = false   # die gezinkten Würfel sind aufgeflogen
-	_give_stakes_to_guest()
+	_stakes.give_to_guest(guest)
 	_clear()
 	_option("Aufstehen", _end)
 
@@ -376,7 +311,7 @@ func _finish() -> void:
 				line = guest.line("patronized")
 			else:
 				change += 6.0
-		_give_stakes_to_guest()
+		_stakes.give_to_guest(guest)
 	Game.social.add_deed(guest, "games")   # gemeinsame Partie zählt für „guter Freund“ (6.3)
 	Game.social.change_relation(guest, change)
 	var stakes_text := ""
@@ -385,35 +320,6 @@ func _finish() -> void:
 	_say("%s: „%s“%s" % [guest.display_name, line, stakes_text])
 	_clear()
 	_option("Aufstehen", _end)
-
-
-func _abort(message: String) -> void:
-	_over = true
-	_stakes.abandon()   # Einsätze bleiben liegen – sie gehören jetzt niemandem
-	_say(message)
-	_clear()
-	_option("Aufstehen", _end)
-
-
-func _end() -> void:
-	visible = false
-	active = false
-	table.busy = false
-	_clear()
-	if guest and not guest.dead:
-		guest.end_game()
-	Game.player.stand_up()
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-
-
-# --- Einsätze (TableStakes) ----------------------------------------------------------
-
-func can_stake_item(p_guest: Guest) -> bool:
-	return TableStakes.can_stake_item(p_guest, Item.Kind.DICE_CUP)
-
-
-func _give_stakes_to_guest() -> void:
-	_stakes.give_to_guest(guest)
 
 
 ## Für automatische Tests: eine zufällige Option wählen. Gibt Titel + Text zurück.
@@ -433,10 +339,6 @@ func debug_press_random() -> String:
 
 # --- Hilfen --------------------------------------------------------------------------
 
-func _still_playing() -> bool:
-	return active and not _over
-
-
 func _rattle() -> void:
 	Game.noise("dice", table.global_position, Game.player)   # Würfeln ist laut (4.15)
 	Game.play_sound("blip", 0.2)
@@ -448,40 +350,3 @@ func _update_title() -> void:
 	var stakes := _stakes.labels()
 	_title.text = "Mäxchen mit %s   ·   Du %d : %d %s   ·   Einsatz: %s" % [guest.display_name,
 		_score_player, _score_guest, guest.display_name, "keiner" if stakes.is_empty() else ", ".join(stakes)]
-
-
-func _say(text: String) -> void:
-	_log.text = text
-
-
-func _clear() -> void:
-	for button in _buttons:
-		button.queue_free()
-	_buttons.clear()
-
-
-func _option(text: String, callback: Callable) -> void:
-	var button := Button.new()
-	button.text = "%d. %s" % [_buttons.size() + 1, text]
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	button.flat = true
-	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 9)
-	button.custom_minimum_size = Vector2(190, 0)
-	var tight := StyleBoxEmpty.new()
-	tight.content_margin_top = 1
-	tight.content_margin_bottom = 1
-	for style_name in ["normal", "hover", "pressed", "disabled", "focus"]:
-		button.add_theme_stylebox_override(style_name, tight)
-	button.pressed.connect(callback)
-	_options.add_child(button)
-	_buttons.append(button)
-
-
-func _make_label(font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	var settings := LabelSettings.new()
-	settings.font_size = font_size
-	settings.font_color = color
-	label.label_settings = settings
-	return label

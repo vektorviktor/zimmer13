@@ -42,11 +42,10 @@ func _ready() -> void:
 	match kind:
 		Item.Kind.LEAVES:
 			var rng := RandomNumberGenerator.new()
-			var colors: Array[Color] = [Color(0.75, 0.35, 0.08), Color(0.6, 0.15, 0.05), Color(0.8, 0.55, 0.1), Color(0.45, 0.25, 0.08)]
 			for i in 30:
 				var r := rng.randf() * 0.45
 				var a := rng.randf() * TAU
-				var leaf := Geo.mesh(_visual, Geo.box(Vector3(0.1, 0.015, 0.07)), Mat.psx(colors[i % 4]),
+				var leaf := Geo.mesh(_visual, Geo.box(Vector3(0.1, 0.015, 0.07)), Mat.psx(Item.LEAF_COLORS[i % Item.LEAF_COLORS.size()]),
 					Vector3(cos(a) * r, 0.02 + (0.45 - r) * 0.35 * rng.randf(), sin(a) * r))
 				leaf.rotation = Vector3(rng.randf() * 0.5, rng.randf() * TAU, 0)
 			Geo.add_box_shape(self, Vector3(0.9, 0.25, 0.9), Vector3(0, 0.12, 0))
@@ -74,7 +73,7 @@ func _ready() -> void:
 			Geo.mesh(_visual, Geo.cylinder(0.13, 0.02, 10), wire, Vector3(0, 0.33, 0))
 			for i in 6:
 				var a := i * TAU / 6.0
-				Geo.mesh(_visual, Geo.sphere(0.02, 0.04, 5, 2), Mat.psx(Item.STRING_COLORS[i % 4]), Vector3(cos(a) * 0.11, 0.35, sin(a) * 0.11))
+				Geo.mesh(_visual, Geo.sphere(0.02, 0.04, 5, 2), Mat.psx(Item.STRING_COLORS[i % Item.STRING_COLORS.size()]), Vector3(cos(a) * 0.11, 0.35, sin(a) * 0.11))
 			Geo.add_box_shape(self, Vector3(0.5, 0.38, 0.38), Vector3(0, 0.19, 0))
 		Item.Kind.BROOM:
 			# Holzkiste mit alter Halloween-Deko im Keller: ein Besenstiel ragt heraus, ein Totenkopf grinst

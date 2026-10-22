@@ -563,7 +563,6 @@ func on_player_took(item: Item) -> void:
 	_spread_gossip(-8.0, involved)
 
 
-## Ein Gast merkt, dass Deko vor seiner Tür fehlt.
 ## Plauderei über die Hotelkatzen (Spielkonzept 6.11) – Lieblingsgast, Diebin oder einfach so.
 func cat_line(guest: Guest) -> String:
 	var cats := get_tree().get_nodes_in_group("cats")
@@ -593,6 +592,7 @@ func cat_monster_line() -> String:
 		"Es tut den Katzen nichts. Aber sie haben trotzdem Angst vor ihm."] as Array).pick_random()
 
 
+## Ein Gast merkt, dass Deko vor seiner Tür fehlt.
 func on_guest_noticed_missing(guest: Guest, count: int) -> void:
 	var before := guest.relation
 	change_relation(guest, -5.0 * count)
@@ -725,8 +725,10 @@ func find_hide_spot(guest: Guest) -> HideSpot:
 	return best
 
 
-func release_hide_spot(spot: HideSpot) -> void:
-	_reserved.erase(spot)
+## Gibt die Reservierung frei – nur die eigene (ein anderer kann das Versteck inzwischen reserviert haben).
+func release_hide_spot(spot: HideSpot, guest: Guest) -> void:
+	if _reserved.get(spot) == guest:
+		_reserved.erase(spot)
 
 
 func is_in_closed_chest(item: Item) -> bool:
@@ -739,7 +741,6 @@ func is_in_closed_chest(item: Item) -> bool:
 
 # --- Feiern ---------------------------------------------------------------------------
 
-## Wie lange läuft die Feier schon?
 ## Wer gerade Spaß hat (Spielkonzept 4.19 – lockt den Kürbismann): feiert, sitzt am Spieltisch, zieht als Kind
 ## zu Süßes oder Saures von Tür zu Tür oder steht damit an Zimmer 13.
 func has_fun(guest: Guest) -> bool:
@@ -787,6 +788,7 @@ func fun_actors() -> Array[Node3D]:
 	return result
 
 
+## Wie lange läuft die Feier schon?
 func party_age() -> float:
 	return PARTY_DURATION - _party_time if party_active else 0.0
 
@@ -817,7 +819,8 @@ func start_party(host: String) -> bool:
 	if party_active:
 		return false
 	if not Game.director.is_quiet(party_center(), 25.0):
-		Game.say("Jetzt nicht – es ist zu unruhig im Hotel.")
+		if host == "player":
+			Game.say("Jetzt nicht – es ist zu unruhig im Hotel.")
 		return false
 	party_active = true
 	party_host = host
@@ -875,7 +878,7 @@ func start_sleep(instant: bool = false) -> void:
 	for guest in living_guests():
 		guest.bedtime(instant)
 	Game.say("Im Hotel wird es still – die Gäste gehen schlafen.", 3.5)
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Nachtruhe] für %d s" % int(sleep_timer))
 
 
@@ -1029,41 +1032,22 @@ func _update_bar_game(delta: float) -> void:
 		_bar_timer = 20.0
 		if table.busy or not table.has_cup(null) or not Game.director.is_quiet(table.global_position, 25.0):
 			return
-		var free: Array = []
-		for guest in living_guests():
-			var g: Guest = guest
-			if g.state == Guest.State.IDLE and g.fear < 40.0 and not g.invited:
-				free.append(g)
-		if free.size() < 2 or randf() > 0.35:
-			return
-		free.shuffle()
-		var a: Guest = free[0]
-		var b: Guest = free[1]
-		table.busy = true
-		a.sit_for_game(table.player_seat.global_position, table.top_center())
-		b.sit_for_game(table.guest_seat.global_position, table.top_center())
-		_bar_game = {"a": a, "b": b, "time": 0.0, "noise": 0.0, "watch": 0.0}
+		var pair := _seat_pair(table, 0.35, func(_g: Guest) -> bool: return true)
+		if not pair.is_empty():
+			_bar_game = {"a": pair[0], "b": pair[1], "time": 0.0, "noise": 0.0, "watch": 0.0}
 		return
-	var ga: Guest = _bar_game["a"]
-	var gb: Guest = _bar_game["b"]
-	if ga.dead or gb.dead or ga.state != Guest.State.MINIGAME or gb.state != Guest.State.MINIGAME \
-			or not Game.director.is_quiet(table.global_position, 22.0):
+	if _pair_broken(_bar_game, table):
 		_end_bar_game(false)
 		return
-	if not (ga.seated and gb.seated):
+	if not (_bar_game["a"].seated and _bar_game["b"].seated):
 		return
-	_bar_game["time"] = float(_bar_game["time"]) + delta
-	var dist := Game.player.global_position.distance_to(table.global_position) if Game.player else INF
-	if dist < 5.0:
-		_bar_game["watch"] = float(_bar_game["watch"]) + delta
+	var dist := _pair_time(_bar_game, table, delta)
 	_bar_game["noise"] = float(_bar_game["noise"]) - delta
 	if float(_bar_game["noise"]) <= 0.0:
 		_bar_game["noise"] = 7.0
 		Game.noise("dice", table.global_position)
 		if dist < 7.0:
-			var pair := [ga.display_name, gb.display_name]
-			pair.shuffle()
-			Game.say(String(BAR_LINES[randi() % BAR_LINES.size()]) % pair, 3.0)
+			_pair_line(_bar_game, BAR_LINES)
 	if float(_bar_game["time"]) > 45.0:
 		_end_bar_game(true)
 
@@ -1079,42 +1063,24 @@ func _update_chess_game(delta: float) -> void:
 		_chess_timer = 30.0
 		if table.busy or not table.has_board(null) or not Game.director.is_quiet(table.global_position, 25.0):
 			return
-		var free: Array = []
-		for guest in living_guests():
-			var g: Guest = guest
-			if g.state == Guest.State.IDLE and g.fear < 40.0 and not g.invited and ChessMatch.chess_profile(g)["likes"]:
-				free.append(g)
-		if free.size() < 2 or randf() > 0.3:
+		var pair := _seat_pair(table, 0.3, func(g: Guest) -> bool: return ChessMatch.chess_profile(g)["likes"])
+		if pair.is_empty():
 			return
-		free.shuffle()
-		var a: Guest = free[0]
-		var b: Guest = free[1]
-		table.busy = true
-		a.sit_for_game(table.player_seat.global_position, table.top_center())
-		b.sit_for_game(table.guest_seat.global_position, table.top_center())
-		_chess_game = {"a": a, "b": b, "time": 0.0, "talk": 12.0, "watch": 0.0, "length": randf_range(70.0, 120.0)}
-		if "--trace" in OS.get_cmdline_user_args():
-			print("[Schach] %s gegen %s in der Lobby" % [a.display_name, b.display_name])
+		_chess_game = {"a": pair[0], "b": pair[1], "time": 0.0, "talk": 12.0, "watch": 0.0, "length": randf_range(70.0, 120.0)}
+		if Game.tracing:
+			print("[Schach] %s gegen %s in der Lobby" % [pair[0].display_name, pair[1].display_name])
 		return
-	var ga: Guest = _chess_game["a"]
-	var gb: Guest = _chess_game["b"]
-	if ga.dead or gb.dead or ga.state != Guest.State.MINIGAME or gb.state != Guest.State.MINIGAME \
-			or not Game.director.is_quiet(table.global_position, 22.0):
+	if _pair_broken(_chess_game, table):
 		_end_chess_game(false)
 		return
-	if not (ga.seated and gb.seated):
+	if not (_chess_game["a"].seated and _chess_game["b"].seated):
 		return
-	_chess_game["time"] = float(_chess_game["time"]) + delta
-	var dist := Game.player.global_position.distance_to(table.global_position) if Game.player else INF
-	if dist < 5.0:
-		_chess_game["watch"] = float(_chess_game["watch"]) + delta
+	var dist := _pair_time(_chess_game, table, delta)
 	_chess_game["talk"] = float(_chess_game["talk"]) - delta
 	if float(_chess_game["talk"]) <= 0.0:
 		_chess_game["talk"] = randf_range(14.0, 22.0)
 		if dist < 7.0:
-			var pair := [ga.display_name, gb.display_name]
-			pair.shuffle()
-			Game.say(String(CHESS_LINES[randi() % CHESS_LINES.size()]) % pair, 3.0)
+			_pair_line(_chess_game, CHESS_LINES)
 	if float(_chess_game["time"]) > float(_chess_game["length"]):
 		_end_chess_game(true)
 
@@ -1129,7 +1095,7 @@ func _end_chess_game(completed: bool) -> void:
 		var winner := ga if sa >= sb else gb
 		var loser := gb if winner == ga else ga
 		pals.note(ga, gb)   # zusammen gespielt (6.16)
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Schach] %s setzt %s matt (zugesehen %.0f s)" % [winner.display_name, loser.display_name, float(_chess_game["watch"])])
 		if Game.player and Game.player.global_position.distance_to(builder.chess_table.global_position) < 7.0:
 			Game.say("%s setzt %s matt." % [winner.display_name, loser.display_name], 3.5)
@@ -1138,10 +1104,7 @@ func _end_chess_game(completed: bool) -> void:
 			_chess_watched[gb.id] = true
 			Game.say("Du hast zugesehen: %s %s, %s %s." % [ga.display_name, ChessMatch.strength_text(ga),
 				gb.display_name, ChessMatch.strength_text(gb)], 4.5)
-	for g in [ga, gb]:
-		if not g.dead:
-			g.end_game()
-	builder.chess_table.busy = false
+	_release_pair(_chess_game, builder.chess_table)
 	_chess_game = {}
 
 
@@ -1158,11 +1121,53 @@ func _end_bar_game(completed: bool) -> void:
 			_watched[ga.id] = true
 			_watched[gb.id] = true
 			Game.say("Du hast genau hingesehen: Jetzt kennst du die Ticks von %s und %s beim Bluffen." % [ga.display_name, gb.display_name], 4.5)
-	for g in [ga, gb]:
+	_release_pair(_bar_game, builder.game_table)
+	_bar_game = {}
+
+
+## Partien zweier Gäste (Mäxchen an der Bar, Schach in der Lobby): Zwei freie Gäste (IDLE, Angst < 40, nicht zur
+## Feier eingeladen, `likes`) setzen sich an den Tisch – mit dieser Chance. [] = zu wenige oder keine Lust.
+func _seat_pair(table: GameTable, chance: float, likes: Callable) -> Array:
+	var free: Array = living_guests().filter(func(g: Guest) -> bool:
+		return g.state == Guest.State.IDLE and g.fear < 40.0 and not g.invited and likes.call(g))
+	if free.size() < 2 or randf() > chance:
+		return []
+	free.shuffle()
+	table.busy = true
+	(free[0] as Guest).sit_for_game(table.player_seat.global_position, table.top_center())
+	(free[1] as Guest).sit_for_game(table.guest_seat.global_position, table.top_center())
+	return [free[0], free[1]]
+
+
+## Partie vorbei, weil einer tot ist, aufgestanden ist oder es am Tisch unruhig wird?
+func _pair_broken(game: Dictionary, table: GameTable) -> bool:
+	var ga: Guest = game["a"]
+	var gb: Guest = game["b"]
+	return ga.dead or gb.dead or ga.state != Guest.State.MINIGAME or gb.state != Guest.State.MINIGAME \
+		or not Game.director.is_quiet(table.global_position, 22.0)
+
+
+## Spielzeit und Zuschauzeit des Spielers (näher als 5 m) weiterzählen; gibt seinen Abstand zum Tisch zurück.
+func _pair_time(game: Dictionary, table: GameTable, delta: float) -> float:
+	game["time"] = float(game["time"]) + delta
+	var dist := Game.player.global_position.distance_to(table.global_position) if Game.player else INF
+	if dist < 5.0:
+		game["watch"] = float(game["watch"]) + delta
+	return dist
+
+
+## Ein Satz vom Tisch, die beiden Namen in zufälliger Reihenfolge.
+func _pair_line(game: Dictionary, lines: Array) -> void:
+	var pair := [(game["a"] as Guest).display_name, (game["b"] as Guest).display_name]
+	pair.shuffle()
+	Game.say(String(lines[randi() % lines.size()]) % pair, 3.0)
+
+
+func _release_pair(game: Dictionary, table: GameTable) -> void:
+	for g: Guest in [game["a"], game["b"]]:
 		if not g.dead:
 			g.end_game()
-	builder.game_table.busy = false
-	_bar_game = {}
+	table.busy = false
 
 
 # --- Laufend ----------------------------------------------------------------------------
@@ -1208,15 +1213,16 @@ func _update_memorials() -> void:
 	if p == null:
 		return
 	var mult := 1.0
-	for door_front in _memorial_doors:
+	if not _memorial_doors.is_empty():
 		for node in get_tree().get_nodes_in_group("items"):
 			var item := node as Item
-			if item.lit and not item.is_held and item.global_position.distance_to(door_front) < 2.5:
+			if item.lit and not item.is_held and _memorial_doors.any(func(door_front: Vector3) -> bool:
+					return item.global_position.distance_to(door_front) < 2.5):
 				mult = 3.0
+				break
 	if party_active and builder.in_area(p.global_position, "partyraum"):
 		mult = maxf(mult, 2.0)
 	p.shock_recovery = mult
-
 
 
 # --- Spuren & Berichte (Spielkonzept 4.13) -----------------------------------------------------
@@ -1240,16 +1246,25 @@ func on_alarm(kind: String, pos: Vector3, loudness: float, source: Node) -> Arra
 		result.append("%s %s" % [guest.display_name, reaction])
 		if reaction == "erzählt davon" and not told:
 			told = true
-			_reports.append({"kind": kind, "heard": true, "zone": Game.director.zone_name_at(pos), "time": _time})
-			if _reports.size() > 12:
-				_reports.pop_front()
+			_add_report({"kind": kind, "heard": true, "zone": Game.director.zone_name_at(pos), "time": _time})
 	return result
 
 
 func note_trace(kind: String, pos: Vector3) -> void:
-	_reports.append({"kind": kind, "zone": Game.director.zone_name_at(pos), "time": _time})
+	_add_report({"kind": kind, "zone": Game.director.zone_name_at(pos), "time": _time})
+
+
+## Die letzten zwölf Berichte bleiben.
+func _add_report(report: Dictionary) -> void:
+	_reports.append(report)
 	if _reports.size() > 12:
 		_reports.pop_front()
+
+
+## Irgendein Ort im Hotel – für falsch Erinnertes (Berichte, Warnanrufe).
+func random_zone_name() -> String:
+	var names: Array = Game.director.zones.map(func(z: Dictionary) -> String: return z["name"])
+	return names.pick_random() if not names.is_empty() else ""
 
 
 ## Was ein Gast von einem eigenen Erlebnis erzählt (Spielkonzept 6.12). again: später am Tag, kürzer.
@@ -1283,14 +1298,12 @@ func report_line(guest: Guest) -> String:
 	if r.get("heard", false):
 		var heard: String = HEARD_TEXT.get(r["kind"], "Ein lautes Geräusch")
 		if randf() > float(guest.profile.get("reliable", 0.7)):
-			var zone_names: Array = Game.director.zones.map(func(z: Dictionary) -> String: return z["name"])
-			zone = zone_names[randi() % zone_names.size()]
+			zone = random_zone_name()
 		return HEARD_LINES[randi() % HEARD_LINES.size()] % [heard, zone]
 	var what: String = TRACE_TEXT.get(r["kind"], "etwas Seltsames")
 	if randf() > float(guest.profile.get("reliable", 0.7)):
 		# Falsch erinnert, erfunden oder übertrieben
-		var names: Array = Game.director.zones.map(func(z: Dictionary) -> String: return z["name"])
-		zone = names[randi() % names.size()]
+		zone = random_zone_name()
 		what = TRACE_TEXT.values()[randi() % TRACE_TEXT.size()]
 	var template: String = guest.profile.get("report", "Ich habe %s gesehen. %s.")
 	return template % [what, zone]
@@ -1440,18 +1453,22 @@ func _update_bonds(delta: float) -> void:
 ## Gute Freunde klopfen ab und zu an Zimmer 13 – nur, wenn du drin bist und es ruhig ist.
 func _update_visits(delta: float) -> void:
 	_visit_cooldown -= delta
-	if _visit_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active:
-		return
-	var p := Game.player
-	if p == null or p.dead or p.in_dialog or p.sleeping or p.hiding:
-		return
-	if Game.director.zone_name_at(p.global_position) != "Zimmer 13" or Game.monster.is_active() 			or not Game.director.is_quiet(p.global_position, 25.0):
+	if _visit_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active or not _player_home_quiet():
 		return
 	_visit_cooldown = randf_range(VISIT_COOLDOWN.x, VISIT_COOLDOWN.y)
 	var friends := living_guests().filter(func(g: Guest) -> bool:
 		return tier(g) == Tier.GOOD_FRIEND and g.state in [Guest.State.IDLE, Guest.State.WALK] and g.fear < 40.0)
 	if not friends.is_empty():
 		start_visit(friends.pick_random())
+
+
+## Der Spieler ist in Zimmer 13 – frei (kein Gespräch, Schlaf oder Versteck), kein Monster unterwegs, ruhig ringsum.
+func _player_home_quiet() -> bool:
+	var p := Game.player
+	if p == null or p.dead or p.in_dialog or p.sleeping or p.hiding:
+		return false
+	return Game.director.zone_name_at(p.global_position) == "Zimmer 13" and not Game.monster.is_active() \
+		and Game.director.is_quiet(p.global_position, 25.0)
 
 
 func start_visit(guest: Guest) -> void:
@@ -1533,13 +1550,7 @@ func _update_tricks(delta: float) -> void:
 				_trick_prank(kid)
 		return
 	_trick_cooldown -= delta
-	if _trick_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active:
-		return
-	var p := Game.player
-	if p == null or p.dead or p.in_dialog or p.sleeping or p.hiding:
-		return
-	if Game.director.zone_name_at(p.global_position) != "Zimmer 13" or Game.monster.is_active() \
-			or not Game.director.is_quiet(p.global_position, 25.0):
+	if _trick_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active or not _player_home_quiet():
 		return
 	_trick_cooldown = randf_range(TRICK_COOLDOWN.x, TRICK_COOLDOWN.y)
 	var kids := living_guests().filter(func(g: Guest) -> bool:
@@ -1548,7 +1559,7 @@ func _update_tricks(delta: float) -> void:
 		var kid: Guest = kids.pick_random()
 		kid.set_meta("visit", "trick")
 		start_visit(kid)
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Süßes oder Saures] %s kommt zu Zimmer 13" % kid.display_name)
 
 
@@ -1583,7 +1594,7 @@ func _treat(kid: Guest, amount: float) -> void:
 ## Saures: Laub vor der Tür von Zimmer 13 – oder ein Klingelstreich ein wenig später.
 func _trick_prank(kid: Guest) -> void:
 	_trick = {}
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Süßes oder Saures] %s: Saures" % kid.display_name)
 	kid.say(kid.line("prank"))
 	change_relation(kid, -2.0)
@@ -1593,9 +1604,14 @@ func _trick_prank(kid: Guest) -> void:
 			if is_instance_valid(kid) and not kid.dead:
 				Game.phones.kid_prank(kid))
 		return
+	_leaves_at(LevelBuilder.PLAYER_ROOM, kid)
+
+
+## Saures: Laub vor die Tür dieses Zimmers.
+func _leaves_at(no: String, kid: Guest) -> void:
 	var leaves := Item.create(Item.Kind.LEAVES)
 	_world.add_child(leaves)
-	leaves.global_position = (builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"] as Vector3) + kid._jitter(0.3) + Vector3(0, 0.02, 0)
+	leaves.global_position = (builder.rooms[no]["door_front"] as Vector3) + kid._jitter(0.3) + Vector3(0, 0.02, 0)
 
 
 # --- Süßes oder Saures von Tür zu Tür (Spielkonzept 6.13) -------------------------------------------
@@ -1637,7 +1653,7 @@ func start_round(kid: Guest) -> bool:
 	doors.sort_custom(func(a: String, b: String) -> bool: return order.call(a) < order.call(b))
 	_rounds[kid.id] = {"kid": kid, "doors": doors.slice(0, ROUND_DOORS), "no": "", "phase": "walk", "time": 0.0,
 		"next": 0.0, "knocks": 0, "host": null}
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Süßes oder Saures] %s zieht los: %s" % [kid.display_name, ", ".join(_rounds[kid.id]["doors"])])
 	_round_next(_rounds[kid.id])
 	return true
@@ -1672,21 +1688,27 @@ func _round_arrived(kid: Guest) -> void:
 func _round_step(entry: Dictionary, delta: float) -> void:
 	var kid: Guest = entry["kid"]
 	var phase := String(entry["phase"])
-	if phase == "pause" and not kid.dead and not sleep_active:
-		return   # kurz zwischen zwei Türen
-	if kid.dead or sleep_active or (phase == "walk" and kid.state != Guest.State.VISIT) \
-			or (phase != "walk" and not kid.state in [Guest.State.KNOCK, Guest.State.TALKING]):
-		_rounds.erase(kid.id)   # erschreckt, versteckt, ins Bett geschickt … – die Runde ist vorbei
+	var allowed: Array = [Guest.State.KNOCK, Guest.State.TALKING]
+	if phase == "walk":
+		allowed = [Guest.State.VISIT]
+	elif phase == "pause":
+		allowed = [Guest.State.IDLE, Guest.State.WALK, Guest.State.TALKING]   # kurz zwischen zwei Türen
+	if kid.dead or sleep_active or not kid.state in allowed:
+		_rounds.erase(kid.id)   # erschreckt, versteckt, ins Bett geschickt, feiert … – die Runde ist vorbei
 		if kid.state == Guest.State.KNOCK:
 			kid.end_visit()
 		return
 	if phase == "walk" or kid.state == Guest.State.TALKING:
 		return
+	entry["time"] = float(entry["time"]) + delta
+	if phase == "pause":
+		if float(entry["time"]) >= float(entry["next"]):
+			_round_next(entry)
+		return
 	var room: Dictionary = builder.rooms[entry["no"]]
 	var door: Door = room["door"]
 	var front: Vector3 = room["door_front"]
-	entry["time"] = float(entry["time"]) + delta
-	match entry["phase"]:
+	match phase:
 		"knock":
 			if float(entry["time"]) >= float(entry["next"]) and int(entry["knocks"]) < 3:
 				entry["next"] = float(entry["time"]) + ROUND_KNOCK_EVERY
@@ -1733,7 +1755,7 @@ func _round_answer(entry: Dictionary, host: Guest) -> void:
 		kid.stock[Item.Kind.SWEETS] = int(kid.stock.get(Item.Kind.SWEETS, 0)) + 1
 		host.say(TRICK_GIVE_LINES.pick_random())
 		kid.say(kid.line("treat_other"))
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Süßes oder Saures] %s bekommt Süßes von %s" % [kid.display_name, host.display_name])
 		_round_done(entry, host)
 		return
@@ -1745,10 +1767,8 @@ func _round_answer(entry: Dictionary, host: Guest) -> void:
 func _round_prank(entry: Dictionary, host: Guest) -> void:
 	var kid: Guest = entry["kid"]
 	kid.say(kid.line("scolded" if host else "prank"))
-	var leaves := Item.create(Item.Kind.LEAVES)
-	_world.add_child(leaves)
-	leaves.global_position = (builder.rooms[entry["no"]]["door_front"] as Vector3) + kid._jitter(0.3) + Vector3(0, 0.02, 0)
-	if "--trace" in OS.get_cmdline_user_args():
+	_leaves_at(entry["no"], kid)
+	if Game.tracing:
 		print("[Süßes oder Saures] %s: Saures vor Zimmer %s" % [kid.display_name, entry["no"]])
 	_round_done(entry, host)
 
@@ -1763,10 +1783,9 @@ func _round_done(entry: Dictionary, host: Guest) -> void:
 			if is_instance_valid(door) and door.is_open and is_instance_valid(host) and not host.dead:
 				door.set_open(false, false, false, host))
 	entry["phase"] = "pause"
+	entry["time"] = 0.0
+	entry["next"] = randf_range(1.5, 3.0)
 	kid.end_visit()
-	get_tree().create_timer(randf_range(1.5, 3.0), false).timeout.connect(func() -> void:
-		if _rounds.has(kid.id) and is_instance_valid(kid) and not kid.dead:
-			_round_next(entry))
 
 
 ## Ein Kind, das nicht schlafen kann, klopft an Zimmer 13 – nur, wenn du drin bist. false = geht nicht.

@@ -125,7 +125,7 @@ func setup(id: String, profile: Dictionary) -> void:
 	for i in _skeleton.get_bone_count():
 		_bone[_skeleton.get_bone_name(i)] = i
 	_mesh = model.find_children("*", "MeshInstance3D", true, false)[0]
-	_mesh.material_override = _material_for(path, _mesh)
+	_mesh.material_override = _material_for(_info, _mesh)
 	_mesh.set_instance_shader_parameter("tint_top", (profile["coat"] as Color).srgb_to_linear())
 	_mesh.set_instance_shader_parameter("tint_bottom", (profile["pants"] as Color).srgb_to_linear())
 	_mesh.set_instance_shader_parameter("tint_hair", (profile["hair"] as Color).srgb_to_linear())
@@ -141,12 +141,10 @@ func setup(id: String, profile: Dictionary) -> void:
 	_breath = randf() * TAU
 
 
-static func _material_for(path: String, mesh: MeshInstance3D) -> ShaderMaterial:
+## Ein Material je Grundkörper (Textur und Färbebereiche gleich, die Farben sind Instanz-Uniforms).
+static func _material_for(info: Dictionary, mesh: MeshInstance3D) -> ShaderMaterial:
+	var path: String = info["path"]
 	if not _material.has(path):
-		var info: Dictionary
-		for key in BODIES:
-			if BODIES[key]["path"] == path:
-				info = BODIES[key]
 		var m := ShaderMaterial.new()
 		m.shader = load("res://shaders/psx_guest.gdshader")
 		m.set_shader_parameter("albedo_tex", (mesh.get_active_material(0) as BaseMaterial3D).albedo_texture)
@@ -223,7 +221,8 @@ func _aim(bone_name: String, child_name: String, dir: Vector3) -> void:
 	var want := (to_skel * dir).normalized()
 	var pose := _skeleton.get_bone_global_pose(bone)
 	var cur := (_skeleton.get_bone_global_pose(_bone[child_name]).origin - pose.origin).normalized()
-	if cur.dot(want) > 0.9999 or cur.dot(want) < -0.9999:
+	# Null-Richtungen (entarteter Knochen) und (fast) parallele ergäben einen kaputten Quaternion (NaN)
+	if not cur.is_normalized() or not want.is_normalized() or absf(cur.dot(want)) > 0.9999:
 		return
 	var turned := Basis(Quaternion(cur, want)) * pose.basis
 	var parent := _skeleton.get_bone_parent(bone)

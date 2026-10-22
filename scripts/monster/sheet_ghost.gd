@@ -148,6 +148,8 @@ var _flakes: CPUParticles3D
 var _flake_mat: ShaderMaterial
 var _door_room: Dictionary = {}   ## Zimmer, vor dessen Tür er steht (LevelBuilder.rooms)
 var _door_deco: Array[Item] = []  ## die Lakengespenster dort – sie kreisen mit
+var _windows: Array[Node] = []    ## je Prüfung (_check_spawn) einmal gelesen – _window_near läuft für jeden Gast …
+var _dark := {}                   ## … ebenso Raum-ID → dunkel?
 
 
 func _ready() -> void:
@@ -237,7 +239,7 @@ func _physics_process(delta: float) -> void:
 		if seen_by.size() + _player_witness(global_position + Vector3.UP * HANDS_Y) >= WITNESSES:
 			for guest in seen_by:
 				guest.shock("ghost", global_position)
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				var names := seen_by.map(func(g: Guest) -> String: return g.display_name)
 				print("[Lakengeist] vertrieben von %s%s" % [", ".join(names) if not names.is_empty() else "dir",
 					" (vor der Tür, %.0f s vor Schluss)" % _timer if state == State.DOOR else ""])
@@ -263,7 +265,7 @@ func _physics_process(delta: float) -> void:
 		State.ENTER:
 			var neck := _eye_of(_victim) - Vector3(0, NECK_BELOW_EYES, 0)
 			var flat := Vector3(neck.x - global_position.x, 0, neck.z - global_position.z)
-			if _float_to(_grip_spot(), INSIDE_SPEED, delta, false) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
+			if _float_to(_grip_spot(), INSIDE_SPEED, delta) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
 				_grab()
 			elif _victim.global_position.distance_to(_window.global_position if _window else global_position) > (LEAVE_RANGE if _window else HALL_GIVE_UP):
 				_vanish()
@@ -301,6 +303,8 @@ func _check_spawn() -> void:
 	var director := Game.director
 	if director == null or Game.game_over or director.other_threat_active(self):
 		return   # nur eine Bedrohung im Haus
+	_windows = get_tree().get_nodes_in_group("windows")
+	_dark.clear()
 	if _haunting() and _cooldown <= 0.0 and director.player_threat <= 0.0 and _check_doors():
 		return
 	var safe := Game.social.builder.is_safe(player.global_position)   # Katzenraum (Spielkonzept 7.7)
@@ -346,7 +350,7 @@ func _check_guests() -> void:
 				or Game.social.builder.is_safe(g.global_position):
 			_guest_windows.erase(g.id)
 			continue
-		var eye := g.global_position + Vector3.UP * g.eye_height()
+		var eye := _eye_of(g)
 		var window := _window_near(eye, g.ghost_visits + 1)
 		if window == _guest_windows.get(g.id):
 			continue
@@ -457,32 +461,21 @@ func _door_stand(room: Dictionary) -> Vector3:
 
 
 func _appear_at_door(room: Dictionary, victim: Node3D, deco: Array[Item]) -> void:
-	_victim = victim
+	_start_visit(victim, null)
 	_victim_saw = true   # sieht ihn erst, wenn die Tür aufgeht
-	if victim is Guest:
-		var guest := victim as Guest
-		guest.ghost_visits += 1
-		_stage = guest.ghost_visits
-	else:
-		visits += 1
-		_stage = visits
-	_window = null
 	_last_window = null
-	_lurk_spot = null
 	_door_room = room
 	_door_deco = deco
 	for item in deco:
 		item.circling_with = self
 	global_position = _door_stand(room)
 	_face(room["into"])
-	visible = true
-	_fade = 0.0
 	_timer = randf_range(DOOR_TIME.x, DOOR_TIME.y)
 	state = State.DOOR
 	var door: Door = room["door"]
 	if victim is Guest:
 		(victim as Guest).door_trance(door.center())
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Lakengeist] %d. Mal – vor der Tür von %s (%d Lakengespenster), bei %s" % [_stage, room["no"], deco.size(),
 			(victim as Guest).display_name if victim is Guest else "dir (Schwäche %.2f)" % Game.player.weakness()])
 
@@ -496,12 +489,12 @@ func _door_watch(delta: float) -> void:
 		_end_door()
 		_stage = maxi(_stage, ENTER_FROM)
 		state = State.ENTER
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Lakengeist] Tür auf – er packt zu")
 		return
 	_timer -= delta
 	if _timer <= 0.0:
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Lakengeist] vor der Tür verschwunden")
 		_vanish()
 
@@ -525,66 +518,49 @@ func _in_hall(p: Vector3) -> bool:
 
 
 func _appear_in_hall(floor_point: Vector3) -> void:
-	visits += 1
-	_victim = Game.player
-	_victim_saw = false
-	_stage = visits
-	_window = null
+	_start_visit(Game.player, null)
 	_last_window = null
-	_lurk_spot = null
 	var neck := Game.player.camera.global_position.y - NECK_BELOW_EYES
 	global_position = Vector3(floor_point.x, neck - HANDS_Y, floor_point.z)
 	_face(Game.player.global_position - global_position)
-	visible = true
-	_fade = 0.0
 	state = State.ENTER
 	Game.caption("[Kälte im Flur]")
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		var weak := Game.player.weakness()
 		print("[Lakengeist] %d. Mal – im Flur, %.0f m entfernt (Schwäche %.2f%s)" % [visits,
 			floor_point.distance_to(Game.player.global_position), weak, ", sicher" if weak >= WEAK_SURE else ""])
 
 
-## Dunkles Außenfenster in der Nähe dieses Augenpunkts, durch das er zum `stage`. Mal käme.
+## Dunkles Außenfenster in der Nähe dieses Augenpunkts, durch das er zum `stage`. Mal käme (nur aus _check_spawn).
 func _window_near(eye: Vector3, stage: int) -> HotelWindow:
-	var space := get_world_3d().direct_space_state
-	for node in get_tree().get_nodes_in_group("windows"):
+	var world := get_world_3d()
+	for node in _windows:
 		var window := node as HotelWindow
 		if not window.has_curtains() or (window.closed and stage < THROUGH_CURTAIN_FROM):
 			continue
 		var inside := window.inside_point()
 		if inside.distance_to(eye) > WINDOW_RANGE or absf(inside.y - eye.y) > 2.0 or not _room_dark(window.room_id):
 			continue
-		var query := PhysicsRayQueryParameters3D.create(inside, eye, Senses.SIGHT_MASK & ~HotelWindow.LAYER_BLOCK)
-		if space.intersect_ray(query).is_empty():
+		if Senses.clear_line(world, inside, eye, null, Senses.SIGHT_MASK & ~HotelWindow.LAYER_BLOCK):
 			return window
 	return null
 
 
 func _room_dark(room_id: String) -> bool:
-	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
-		var lamp := node as Lamp
-		if lamp.room_id == room_id and lamp.is_lit():
-			return false
-	return true
+	if not _dark.has(room_id):
+		_dark[room_id] = true
+		for node in get_tree().get_nodes_in_group("lamp_fixtures"):
+			var lamp := node as Lamp
+			if lamp.room_id == room_id and lamp.is_lit():
+				_dark[room_id] = false
+				break
+	return _dark[room_id]
 
 
 func _appear(window: HotelWindow, victim: Node3D) -> void:
-	_victim = victim
-	_victim_saw = false
-	if victim is Guest:
-		var guest := victim as Guest
-		guest.ghost_visits += 1
-		_stage = guest.ghost_visits
-	else:
-		visits += 1
-		_stage = visits
-	_window = window
-	_lurk_spot = null
+	_start_visit(victim, window)
 	var outward := window.global_transform.basis.z.normalized() * -1.0
 	var base := window.global_position - Vector3(0, HANDS_Y, 0)
-	visible = true
-	_fade = 0.0
 	_swings = 0
 	_last_sign = 0
 	_face(-outward)
@@ -597,9 +573,27 @@ func _appear(window: HotelWindow, victim: Node3D) -> void:
 		state = State.APPROACH
 	if victim is Player:
 		Game.caption("[Etwas schwebt vor dem Fenster]")
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Lakengeist] %d. Mal am Fenster (%s) – bei %s" % [_stage, window.room_id, (victim as Guest).display_name if victim is Guest \
 			else "dir (Schwäche %.2f)" % Game.player.weakness()])
+
+
+## Beginn eines Auftritts (Fenster, Flur, Tür): Besuch beim Opfer zählen – Stufe = das wievielte Mal bei ihm –,
+## sichtbar machen, eingeblendet wird er danach in _physics_process.
+func _start_visit(victim: Node3D, window: HotelWindow) -> void:
+	_victim = victim
+	_victim_saw = false
+	if victim is Guest:
+		var guest := victim as Guest
+		guest.ghost_visits += 1
+		_stage = guest.ghost_visits
+	else:
+		visits += 1
+		_stage = visits
+	_window = window
+	_lurk_spot = null
+	visible = true
+	_fade = 0.0
 
 
 ## Ab dem 2. Mal: blutige Handabdrücke außen auf der Scheibe.
@@ -644,7 +638,7 @@ func _struggle(delta: float) -> void:
 	if _victim is Guest:
 		_timer -= delta
 		if _escape_at >= 0.0 and ESCAPE_TIME - _timer >= _escape_at:
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				print("[Lakengeist] %s hat sich losgerissen" % (_victim as Guest).display_name)
 			(_victim as Guest).wound_by("choke")   # Würgemale: heiser, atmet schwer (6.17)
 			_vanish()
@@ -666,7 +660,7 @@ func _struggle(delta: float) -> void:
 		Game.hud.set_struggle(_escape)
 	var held := ESCAPE_TIME - _timer
 	if _escape >= 1.0:
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Lakengeist] losgerissen nach %.1f s (%d Wechsel, %.1f je s)" % [held, _swings, _swings / maxf(0.1, held)])
 		player.add_shock(0.25, false)
 		Game.say("Losgerissen!", 1.5)
@@ -676,34 +670,27 @@ func _struggle(delta: float) -> void:
 		return
 	_timer -= delta
 	if _timer <= 0.0:
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Lakengeist] Balken bei %.0f %% (%d Wechsel in %.1f s)" % [_escape * 100.0, _swings, ESCAPE_TIME])
 		_kill()
 
 
 func _kill() -> void:
 	var player := Game.player
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Lakengeist] erwürgt")
 	state = State.FADE   # bleibt sichtbar, bis der Sterbebildschirm kommt
 	_fade = 1.0
-	Game.game_over = true
 	player.gripped = false
-	player.dead = true
 	if Game.hud:
 		Game.hud.set_struggle(-1.0)
-		Game.hud.set_prompt("")
-		Game.hud.visible = false
-	Game.play_sound("shriek", 1.0)
-	Game.director.flash(1.4)
-	await get_tree().create_timer(1.5, false).timeout
-	_ambience.stop()
-	Game.player_died.emit()
+	await Game.director.player_slain()
+	_ambience.stop()   # erst mit dem Sterbebildschirm verstummt er
 
 
 ## Ein Kind würgt er nie (6.13): Er greift nach ihm, es schreit – und er ist weg.
 func _frighten_child(child: Guest) -> void:
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Lakengeist] %s erschreckt" % child.display_name)
 	child.shock("ghost_attack", global_position + Vector3.UP * HANDS_Y)
 	_vanish()
@@ -711,12 +698,9 @@ func _frighten_child(child: Guest) -> void:
 
 ## Ein Gast stirbt – er bleibt liegen (Spielkonzept 6.12), das Hotel erfährt es wie beim Monster.
 func _kill_guest(guest: Guest) -> void:
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Lakengeist] %s erwürgt" % guest.display_name)
-	Game.sound_at("grunt", guest.global_position, Senses.GRUNT_RANGE, guest)   # das Röcheln bricht ab – kein Schrei
-	guest.die("ghost")
-	if Game.social:
-		Game.social.on_guest_died(guest, "ghost")
+	Game.director.guest_slain(guest, "ghost")   # das Röcheln bricht ab – kein Schrei
 	_vanish()
 
 
@@ -759,12 +743,11 @@ func _witness_guests(point: Vector3, victim: Node3D, reach: float = WITNESS_RANG
 	var result: Array[Guest] = []
 	if Game.social == null:
 		return result
-	var space := get_world_3d().direct_space_state
+	var world := get_world_3d()
 	for guest in Game.social.guests:
 		if guest == victim or guest.dead or guest.hiding != null or guest.is_child() or guest.global_position.distance_to(point) > reach:
 			continue
-		var query := PhysicsRayQueryParameters3D.create(guest.global_position + Vector3.UP * guest.eye_height(), point, Senses.SIGHT_MASK)
-		if space.intersect_ray(query).is_empty():
+		if Senses.clear_line(world, _eye_of(guest), point):
 			result.append(guest)
 	return result
 
@@ -775,22 +758,16 @@ func _player_witness(point: Vector3) -> int:
 	if not _victim is Guest or debug_ignore_player or player == null or player.dead or player.hiding != null:
 		return 0
 	var eye := player.camera.global_position
-	if eye.distance_to(point) > WITNESS_RANGE:
-		return 0
-	var query := PhysicsRayQueryParameters3D.create(eye, point, Senses.SIGHT_MASK)
-	return 1 if get_world_3d().direct_space_state.intersect_ray(query).is_empty() else 0
+	return 1 if eye.distance_to(point) <= WITNESS_RANGE and Senses.clear_line(get_world_3d(), eye, point) else 0
 
 
 ## Der Gast, zu dem er kommt, sieht ihn (Sicht durchs Glas): Schreck – ab der Hypnose-Stufe bleibt er
 ## gebannt stehen, statt wegzulaufen.
 func _guest_sees_me(guest: Guest) -> void:
-	var eye := guest.global_position + Vector3.UP * guest.eye_height()
+	var eye := _eye_of(guest)
 	var head := global_position + Vector3.UP * (HANDS_Y + 0.5)
-	if eye.distance_to(head) > LEAVE_RANGE:
-		return
-	var query := PhysicsRayQueryParameters3D.create(eye, head, Senses.SIGHT_MASK & ~HotelWindow.LAYER_BLOCK)
-	query.exclude = [guest.get_rid()]
-	if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
+	if eye.distance_to(head) > LEAVE_RANGE \
+			or not Senses.clear_line(get_world_3d(), eye, head, guest, Senses.SIGHT_MASK & ~HotelWindow.LAYER_BLOCK):
 		return
 	_victim_saw = true
 	guest.shock("ghost", head, "", _stage >= HYPNOSIS_FROM)
@@ -828,7 +805,7 @@ func _start_lurk(spot: HideSpot) -> bool:
 	_rattle = randf_range(RATTLE_EVERY.x, RATTLE_EVERY.y)
 	_held_breath = 0.0
 	_heard_pant = false
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Lakengeist] wartet %.0f s vor dem Schrank" % _timer)
 	return true
 
@@ -856,7 +833,7 @@ func _lurk(delta: float) -> void:
 		_lurk_spot.rattle()
 		Game.caption("[Etwas rüttelt an der Schranktür]" if randf() < 0.6 else "[Flüstern vor dem Schrank]")
 	if player.breath <= 0.0:
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Lakengeist] hört dich keuchen – fliegt in den Schrank")
 		_fly_in()
 		return
@@ -868,7 +845,7 @@ func _lurk(delta: float) -> void:
 		chance += PANT_CHANCE
 	chance *= 1.0 - BREATH_SAVES * clampf(_held_breath / BREATH_FULL, 0.0, 1.0)
 	var flies := randf() < chance
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Lakengeist] Schrank: Chance %.0f %% (Luft angehalten %.1f s%s) – %s" % [chance * 100.0, _held_breath,
 			", gekeucht" if _heard_pant else "",
 			"fliegt hinein" if flies else "gibt auf"])
@@ -961,14 +938,12 @@ func _update_trance(delta: float) -> void:
 # --- Bewegung & Pose ----------------------------------------------------------------------
 
 ## Schwebt auf `to` zu; true, wenn angekommen.
-func _float_to(to: Vector3, speed: float, delta: float, turn: bool = false) -> bool:
+func _float_to(to: Vector3, speed: float, delta: float) -> bool:
 	var d := to - global_position
 	if d.length() <= speed * delta:
 		global_position = to
 		return true
 	global_position += d.normalized() * speed * delta
-	if turn:
-		_face(Vector3(d.x, 0, d.z))
 	return false
 
 
@@ -987,7 +962,7 @@ func _pose() -> void:
 	var circling := state == State.DOOR or (_stage >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER, State.LURK])
 	var gripping := state in [State.STRANGLE, State.FLY_IN]
 	for side in [".L", ".R"]:
-		var phase := _time * 2.2 + (0.0 if side == ".L" else PI)
+		var phase := hand_phase() + (0.0 if side == ".L" else PI)
 		var lift := 0.25 if gripping else 0.0
 		var swirl_x := sin(phase) * 0.22 if circling else 0.0
 		var swirl_z := cos(phase) * 0.22 if circling else 0.0

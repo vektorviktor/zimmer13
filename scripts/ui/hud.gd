@@ -122,10 +122,8 @@ func _ready() -> void:
 	_autosave_flame.position = Vector2(2.5, 2)
 	_autosave_flame.size = Vector2(3, 5)
 	_autosave.add_child(_autosave_flame)
-	var saved := _label(8, HORIZONTAL_ALIGNMENT_LEFT)
+	var saved := _label(8, HORIZONTAL_ALIGNMENT_LEFT, _autosave)
 	saved.text = "Gespeichert"
-	remove_child(saved)
-	_autosave.add_child(saved)
 	saved.position = Vector2(9, 4)
 	_autosave.visible = false
 	SaveManager.autosaved.connect(func() -> void:
@@ -235,16 +233,12 @@ func _on_money_changed(amount: int) -> void:
 	_money.text = "Geld: %d" % amount
 
 
-func _label(font_size: int, align: HorizontalAlignment) -> Label:
-	var label := Label.new()
-	var settings := LabelSettings.new()
-	settings.font_size = font_size
-	settings.outline_size = 3
-	settings.outline_color = Color.BLACK
-	label.label_settings = settings
+## Weiße Schrift mit schwarzem Umriss, im HUD (oder unter `parent`).
+func _label(font_size: int, align: HorizontalAlignment, parent: Node = null) -> Label:
+	var label := UiKit.plain_label(font_size, Color.WHITE, 3)
 	label.horizontal_alignment = align
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(label)
+	(parent if parent else self).add_child(label)
 	return label
 
 

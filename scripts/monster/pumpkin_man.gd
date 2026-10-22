@@ -1,5 +1,5 @@
 class_name PumpkinMan
-extends CharacterBody3D
+extends NavWalker
 ## Der Kürbismann (Spielkonzept 4.19): früher Rezeptionist des Hotels. Zwei Kinder klopften zu Süßes oder Saures,
 ## er gab nichts – sie holten seine Axt, köpften ihn und setzten ihm als Streich einen Kürbis auf. Jetzt jagt er
 ## alle, die Spaß haben: Feiernde und Spieler an den Spieltischen, den Spieler auch. Kinder auf Süßes-oder-Saures-
@@ -79,9 +79,6 @@ const LOBBY_LOOK := 2.5              ## so lange sieht er sich an jedem Halt um
 const LOOK_EVERY := 0.4              ## so oft sieht er beim Absuchen nach, ob jemand da ist
 
 var state := State.INACTIVE
-## Das Beil in der rechten Hand (Ursprung = Griffpunkt, Stiel entlang +Y, Schneide −X)
-var axe: MeshInstance3D
-var agent: NavigationAgent3D
 
 var _player: AnimationPlayer
 var _collider: CollisionShape3D
@@ -102,9 +99,6 @@ var _strike_target: Node3D    ## wen der Schlag trifft – sein Opfer oder wer i
 var _strike_len := 0.0        ## Dauer des Schlags (s) …
 var _hit_time := 0.0          ## … und wann er trifft
 var _scared := {}             ## Gast-ID → schon erschrocken (je Auftritt einmal)
-var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
-var _last_pos := Vector3.ZERO
-var _stuck_time := 0.0
 var _door := Vector3.ZERO     ## Ankunft: Mitte der Glastür am Boden, vor der er landet …
 var _roof_y := 0.0            ## … Höhe des Dachs darüber …
 var _ground_y := 0.0          ## … und des Gartens davor
@@ -135,7 +129,8 @@ func _ready() -> void:
 	add_child(model)
 	var body: MeshInstance3D = model.find_child("pumpkin_man", true, false)
 	body.material_override = Mat.model(MODEL, body, 0, true)   # Jackenfetzen sind einseitig
-	axe = model.find_child("axe", true, false)
+	# Das Beil in der rechten Hand (Ursprung = Griffpunkt, Stiel entlang +Y, Schneide −X)
+	var axe: MeshInstance3D = model.find_child("axe", true, false)
 	axe.material_override = Mat.model(MODEL, axe)
 	_player = model.find_children("*", "AnimationPlayer", true, false)[0]
 	for anim in ["walk", "run"]:
@@ -155,9 +150,10 @@ func _ready() -> void:
 	agent = NavigationAgent3D.new()
 	agent.radius = 0.3
 	agent.height = 1.6
-	agent.path_desired_distance = 0.3
+	agent.path_desired_distance = PATH_DISTANCE
 	agent.target_desired_distance = 0.5
 	agent.path_height_offset = 0.2   # NavMesh liegt ~0,2 m über dem Boden
+	agent.path_search_max_polygons = 0   # wie das Monster: sonst endet ein langer Weg (Flügel, Stockwerke) auf halber Strecke
 	add_child(agent)
 	_hit_sound = AudioStreamPlayer3D.new()
 	_hit_sound.stream = load(HIT_SOUND)
@@ -263,7 +259,7 @@ func _check_spawn() -> void:
 	if not Game.director.first_attack_done:
 		return
 	var roll := randf()
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] %d Gäste haben Spaß – Wurf %.2f gegen %.2f" % [count, roll, SPAWN_CHANCE])
 	if roll < SPAWN_CHANCE:
 		start_hunt(social.fun_actors())
@@ -288,7 +284,7 @@ func start_hunt(actors: Array[Node3D], at: Vector3 = Vector3.INF) -> bool:
 		if spot == Vector3.INF:
 			spot = _spawn_point(first.global_position)
 		if spot == Vector3.INF:
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				print("[Kürbismann] kein Platz zum Erscheinen bei %s" % _name_of(first))
 			return false
 	_kills = 0
@@ -304,7 +300,7 @@ func start_hunt(actors: Array[Node3D], at: Vector3 = Vector3.INF) -> bool:
 	_collider.disabled = false
 	global_position = spot
 	_last_pos = spot
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] erscheint bei %s" % Game.director.zone_name_at(spot))
 	_next_victim()
 	return true
@@ -382,7 +378,7 @@ func _start_arrival(door: Vector3) -> void:
 	state = State.CLIMB
 	if _player.has_animation(CLIMB_ANIM):
 		_player.get_animation(CLIMB_ANIM).loop_mode = Animation.LOOP_LINEAR
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] klettert aufs Lobbydach (%.1f m), will zur Gartentür bei x %.1f" % [_roof_y, door.x])
 
 
@@ -422,7 +418,7 @@ func _roof(delta: float) -> void:
 		state = State.LEAP
 		velocity = Vector3(0, 0.5, -LEAP_SPEED)
 		Game.shot_event("pumpkin_leap", 30)
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Kürbismann] springt vom Dach")
 
 
@@ -446,7 +442,7 @@ func _leap(delta: float) -> void:
 	else:
 		_animate("walk", 0.0)
 		_timer = LAND_TIME
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] landet bei %s (%.1f, %.2f, %.1f)" % [Game.director.zone_name_at(global_position),
 			global_position.x, global_position.y, global_position.z])
 
@@ -469,7 +465,7 @@ func _start_lobby() -> void:
 	_lobby_left.append(NavigationServer3D.map_get_closest_point(map, _door + Vector3(0, 0, 2.5)))
 	for stop in LOBBY_STOPS:
 		_lobby_left.append(NavigationServer3D.map_get_closest_point(map, Vector3(stop.x * side, stop.y, stop.z)))
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] sucht die Lobby ab")
 
 
@@ -496,7 +492,7 @@ func _lobby(delta: float) -> void:
 			_lobby_left.pop_front()
 			_timer = LOBBY_LOOK
 			Game.shot_event("pumpkin_lobby", 60)
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				print("[Kürbismann] sieht sich in der Lobby um (%.1f, %.1f)" % [global_position.x, global_position.z])
 		return
 	_stop(delta)
@@ -510,13 +506,9 @@ func _lobby(delta: float) -> void:
 func _spot_someone() -> Node3D:
 	if Game.social == null:
 		return null
-	var actors: Array[Node3D] = []
-	if _can_hunt(_forced):
-		actors.append(_forced)
-	else:
-		actors.append(Game.player)
-		for guest in Game.social.guests:
-			actors.append(guest)
+	var actors: Array[Node3D] = [_forced]
+	if not _can_hunt(_forced):
+		actors = _everyone()
 	var seen: Array[Node3D] = []
 	for actor in actors:
 		if _can_hunt(actor) and _sees(actor):
@@ -537,7 +529,7 @@ func _next_victim() -> void:
 	_unseen_time = 0.0
 	_timer = RECHECK
 	state = State.STALK
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] %s zu %s%s" % ["sprintet" if _has_fun(_victim) else "geht", _name_of(_victim),
 			" (im Partyraum)" if _in_party_room(_victim) else ""])
 
@@ -559,8 +551,7 @@ func _pick() -> Node3D:
 	if fun:
 		return fun
 	var guests: Array[Node3D] = []
-	for guest in Game.social.guests:
-		guests.append(guest)
+	guests.assign(Game.social.guests)
 	return _nearest(guests)
 
 
@@ -581,13 +572,18 @@ func _has_fun(actor: Node3D) -> bool:
 ## Alle im Partyraum, die er sieht – Gäste wie der Spieler, mit oder ohne Spaß (Spielkonzept 4.19). Kinder nicht (_can_hunt).
 func _seen_in_party_room() -> Array[Node3D]:
 	var result: Array[Node3D] = []
-	var actors: Array[Node3D] = [Game.player]
-	for guest in Game.social.guests:
-		actors.append(guest)
-	for actor in actors:
+	for actor in _everyone():
 		if _can_hunt(actor) and _in_party_room(actor) and _sees(actor):
 			result.append(actor)
 	return result
+
+
+## Spieler und alle Gäste (auch Kinder und Tote – _can_hunt sortiert aus).
+func _everyone() -> Array[Node3D]:
+	var actors: Array[Node3D] = [Game.player]
+	for guest in Game.social.guests:
+		actors.append(guest)
+	return actors
 
 
 func _in_party_room(actor: Node3D) -> bool:
@@ -611,7 +607,7 @@ func _start_roam() -> void:
 	var dir := Vector3.FORWARD.rotated(Vector3.UP, randf() * TAU)
 	_last_seen = NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map,
 		global_position + dir * randf_range(8.0, ROAM_RANGE))
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] streift umher (noch %.0f s)" % _hunt_left)
 
 
@@ -670,7 +666,7 @@ func _start_chase() -> void:
 	elif _victim is Player:
 		Game.play_sound("sting", 0.8)
 		Game.caption("[Schwere Schritte – etwas rennt auf dich zu]")
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] rennt auf %s los" % _name_of(_victim))
 
 
@@ -704,14 +700,14 @@ func _chase(delta: float) -> void:
 
 ## Opfer weg (versteckt, entkommen): Er geht hin, wo er es zuletzt sah, und sieht sich um.
 func _lost_victim() -> void:
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] verliert %s" % _name_of(_victim))
 	state = State.SEARCH
 	_timer = -1.0
 
 
 func _search(delta: float) -> void:
-	if _victim and _can_hunt(_victim) and _sees(_victim):
+	if _can_hunt(_victim) and _sees(_victim):
 		_start_chase()
 		return
 	if _timer < 0.0:
@@ -732,16 +728,13 @@ func _strike_blocker() -> bool:
 	if Game.social == null:
 		return false
 	var ahead := -global_transform.basis.z
-	var actors: Array[Node3D] = [Game.player]
-	for guest in Game.social.guests:
-		actors.append(guest)
-	for actor in actors:
+	for actor in _everyone():
 		if actor == _victim or not _can_hunt(actor):
 			continue
 		var to := actor.global_position - global_position
 		var flat := Vector3(to.x, 0.0, to.z)
 		if absf(to.y) < 1.0 and flat.length() < BLOCK_RANGE and flat.normalized().dot(ahead) > BLOCK_DOT:
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				print("[Kürbismann] %s steht im Weg" % _name_of(actor))
 			_start_strike(actor)
 			return true
@@ -796,54 +789,37 @@ func _hit() -> void:
 	Game.noise("axe_swing", global_position, self)   # nur Lärm (Gäste, Monster) – zu hören ist _hit_sound
 	var target := _strike_target
 	if not _can_hunt(target) or target.global_position.distance_to(global_position) > HIT_RANGE:
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Kürbismann] schlägt daneben")
 		return
 	if target is Guest and Wounds.survives():
 		# Der Hieb trifft nicht voll (Spielkonzept 6.17): Axtwunde, er blutet eine Spur und humpelt davon
 		var survivor := target as Guest
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Kürbismann] verletzt %s" % survivor.display_name)
 		Game.sound_at("grunt", survivor.global_position, Senses.GRUNT_RANGE, survivor)
-		survivor.wound_by("axe", self)
-		_next_victim()
+		survivor.wound_by("axe", self)   # weiter wie nach einem Treffer, sobald der Schlag vorbei ist (_strike)
 		return
 	_kills += 1
 	if target is Guest:
 		var guest := target as Guest
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Kürbismann] erschlägt %s" % guest.display_name)
 		# Der Schrei vom Ausholen (Guest.cower) bricht ab – dann noch ein Ächzen, dann ist es still
 		if Game.audio:
 			Game.audio.cut_voice(guest)
-		Game.sound_at("grunt", guest.global_position, Senses.GRUNT_RANGE, guest)
-		guest.die("pumpkin")
-		if Game.social:
-			Game.social.on_guest_died(guest, "pumpkin")
+		Game.director.guest_slain(guest, "pumpkin")
 	else:
-		_kill_player()
-
-
-func _kill_player() -> void:
-	var player := Game.player
-	if "--trace" in OS.get_cmdline_user_args():
-		print("[Kürbismann] erschlägt den Spieler")
-	Game.game_over = true
-	player.dead = true
-	if Game.hud:
-		Game.hud.set_prompt("")
-		Game.hud.visible = false
-	Game.play_sound("shriek", 1.0)
-	Game.director.flash(1.4)
-	await get_tree().create_timer(1.5, false).timeout
-	Game.player_died.emit()
+		if Game.tracing:
+			print("[Kürbismann] erschlägt den Spieler")
+		Game.director.player_slain()
 
 
 # --- Gehen ----------------------------------------------------------------------
 
 ## Keine Lust mehr: Er geht zum Haupteingang und verlässt das Hotel – unterwegs tut er niemandem mehr etwas.
 func _start_leave() -> void:
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Kürbismann] hat keine Lust mehr und geht (%d Opfer)" % _kills)
 	state = State.LEAVE
 	_victim = null
@@ -858,7 +834,7 @@ func _leave(delta: float) -> void:
 	var seen := Game.director.player_can_see(global_position + Vector3.UP * HEAD_HEIGHT) \
 		and Game.player.global_position.distance_to(global_position) < SIGHT_RANGE * 2.0
 	if _timer <= 0.0 or (arrived and not seen):
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Kürbismann] hat das Hotel verlassen")
 		_deactivate()
 
@@ -882,11 +858,7 @@ func _deactivate() -> void:
 func _sees(actor: Node3D) -> bool:
 	var eye := global_position + Vector3.UP * HEAD_HEIGHT
 	var target := actor.global_position + Vector3.UP * ((actor as Guest).eye_height() if actor is Guest else 1.4)
-	if eye.distance_to(target) > SIGHT_RANGE:
-		return false
-	var query := PhysicsRayQueryParameters3D.create(eye, target, Senses.SIGHT_MASK)
-	query.exclude = [get_rid()]
-	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+	return eye.distance_to(target) <= SIGHT_RANGE and Senses.clear_line(get_world_3d(), eye, target, self)
 
 
 ## Gäste, die ihn sehen, erschrecken – Spiel und Feier sind für sie vorbei (Guest.see_pumpkin). Auf dem Dach
@@ -895,15 +867,13 @@ func _scare_onlookers() -> void:
 	if Game.social == null or not visible:
 		return
 	var head := global_position + Vector3.UP * HEAD_HEIGHT
-	var space := get_world_3d().direct_space_state
+	var world := get_world_3d()
 	var mask := Senses.SIGHT_MASK | (LevelBuilder.LAYER_CEILING if arriving() else 0)
 	for guest in Game.social.guests:
 		var g: Guest = guest
 		if g.dead or g.hiding != null or _scared.has(g.id) or g.global_position.distance_to(head) > SCARE_RANGE:
 			continue
-		var query := PhysicsRayQueryParameters3D.create(g.global_position + Vector3.UP * g.eye_height(), head, mask)
-		query.exclude = [get_rid()]
-		if space.intersect_ray(query).is_empty():
+		if Senses.clear_line(world, g.global_position + Vector3.UP * g.eye_height(), head, self, mask):
 			_scared[g.id] = true
 			g.see_pumpkin(head)
 
@@ -922,61 +892,9 @@ func _animate(anim: String, speed: float) -> void:
 
 
 func _open_doors() -> void:
-	for node in get_tree().get_nodes_in_group("doors"):
-		var door := node as Door
+	for door: Door in Door.near(global_position):
 		if not door.is_open and door.monster_can_open and door.center().distance_to(global_position + Vector3.UP) < 1.5:
 			door.monster_open()
-
-
-## Wie Monster._move_to: true = angekommen; festgefahren → seitlich ausweichen, Weg neu berechnen.
-func _move_to(point: Vector3, speed: float, delta: float) -> bool:
-	if agent.target_position.distance_to(point) > 0.25:
-		agent.target_position = point
-	var near := Vector2(point.x - global_position.x, point.z - global_position.z).length() < 0.7 \
-		and absf(point.y - global_position.y) < 1.5
-	if near or agent.is_navigation_finished():
-		_stop(delta)
-		return true
-	var dir := agent.get_next_path_position() - global_position
-	dir.y = 0.0
-	if dir.length() > 0.01:
-		dir = dir.normalized()
-		rotation.y = lerp_angle(rotation.y, atan2(-dir.x, -dir.z), minf(1.0, 8.0 * delta))
-	velocity.x = dir.x * speed
-	velocity.z = dir.z * speed
-	_apply_gravity(delta)
-	move_and_slide()
-	if global_position.distance_to(_last_pos) < speed * delta * 0.2:
-		_stuck_time += delta
-		if _stuck_time > 0.6:
-			_stuck_time = 0.0
-			global_position += Vector3(-dir.z, 0, dir.x) * (0.15 if randf() < 0.5 else -0.15)
-			agent.target_position = point + Vector3(0.01, 0, 0)
-	else:
-		_stuck_time = 0.0
-	_last_pos = global_position
-	return false
-
-
-func _stop(delta: float) -> void:
-	velocity.x = 0.0
-	velocity.z = 0.0
-	_apply_gravity(delta)
-	move_and_slide()
-
-
-func _face(pos: Vector3, delta: float) -> void:
-	var to := pos - global_position
-	if Vector2(to.x, to.z).length() < 0.01:
-		return
-	rotation.y = lerp_angle(rotation.y, atan2(-to.x, -to.z), minf(1.0, 6.0 * delta))
-
-
-func _apply_gravity(delta: float) -> void:
-	if is_on_floor():
-		velocity.y = 0.0
-	else:
-		velocity.y -= _gravity * delta
 
 
 # --- Debug ------------------------------------------------------------------------

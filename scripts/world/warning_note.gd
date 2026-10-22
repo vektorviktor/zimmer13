@@ -60,6 +60,8 @@ func _process(_delta: float) -> void:
 	if shown != visible:
 		visible = shown
 		collision_layer = 4 if shown else 0
+	if note_id == "":
+		set_process(false)   # Zettel eines Gastes: immer sichtbar, nichts mehr zu prüfen
 
 
 func get_prompt(player: Player) -> String:

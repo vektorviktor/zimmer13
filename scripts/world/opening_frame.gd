@@ -67,14 +67,11 @@ func _ready() -> void:
 	var key := "%.3f|%.3f|%.3f|%.3f|%.3f|%s" % [x0, y0, width, height, depth, window]
 	if not _cache.has(key):
 		_build()
-		var arrays := []
-		arrays.resize(Mesh.ARRAY_MAX)
-		arrays[Mesh.ARRAY_VERTEX] = _verts
-		arrays[Mesh.ARRAY_NORMAL] = _normals
-		arrays[Mesh.ARRAY_INDEX] = _indices
-		var m := ArrayMesh.new()
-		m.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-		_cache[key] = m
+		_cache[key] = Geo.add_surface(ArrayMesh.new(), _verts, _normals, _indices)
+		# Die Bauliste liegt jetzt im Mesh – nicht für die ganze Lebenszeit des Rahmens im Speicher halten
+		_verts = PackedVector3Array()
+		_normals = PackedVector3Array()
+		_indices = PackedInt32Array()
 	mesh = _cache[key]
 
 

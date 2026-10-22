@@ -127,8 +127,13 @@ var _monster: Monster
 var _phase_left := 0.0
 var _zone_timer := 0.0
 var _zone_next := 0.0           ## nächste nachzuführende Zone (mit Bruchteil, _update_zones)
+## Mitten und Radien der Zonen in gepackten Listen – _zone_at läuft oft (next_roam_target: für jede Zone über alle)
+var _zone_centers := PackedVector3Array()
+var _zone_radii := PackedFloat64Array()
+var _roam_zones := {}           ## Ziel von next_roam_target (Zonenmitte, vor der Zimmertür) → Zone dort
 var _light_grid := {}           ## Vector2i (Zelle) → Lichter darin
 var _light_reach := 0.0         ## größte Reichweite im Raster
+var _windows: Array[Node] = []  ## Fenster fürs Mondlicht, mit dem Raster neu gelesen
 var _light_grid_frame := -LIGHT_GRID_FRAMES
 var _noise := 0.0
 var _pulse := 0.0
@@ -198,7 +203,11 @@ func demand() -> float:
 
 
 func pressure_at(p: Vector3, chasing: bool = false) -> float:
-	return effective_boldness() * (0.5 + 0.5 * curiosity_at(p) / 100.0) + (CHASE_BONUS if chasing else 0.0)
+	return _pressure_in(_zone_at(p), chasing)
+
+
+func _pressure_in(zone: Dictionary, chasing: bool = false) -> float:
+	return effective_boldness() * (0.5 + 0.5 * _curiosity_of(zone) / 100.0) + (CHASE_BONUS if chasing else 0.0)
 
 
 func deterrence_at(p: Vector3) -> float:
@@ -264,9 +273,9 @@ func light_at(p: Vector3, skip: Node = null) -> float:
 		var att := 1.0 - d / light.omni_range
 		total += light.light_energy * att * att * 1.6
 	# Mondlicht durch Außenfenster mit offenen Vorhängen
-	for node in get_tree().get_nodes_in_group("windows"):
+	for node in _windows:
 		var win := node as HotelWindow
-		if not win.lets_moonlight():
+		if not is_instance_valid(win) or not win.lets_moonlight():
 			continue
 		var wp := win.inside_point()
 		var wd := wp.distance_to(p)
@@ -283,6 +292,7 @@ func _lights_near(p: Vector3) -> Array:
 	var frame := Engine.get_physics_frames()
 	if frame - _light_grid_frame >= LIGHT_GRID_FRAMES:
 		_light_grid_frame = frame
+		_windows = get_tree().get_nodes_in_group("windows")
 		_light_grid.clear()
 		_light_reach = 0.0
 		for node in get_tree().get_nodes_in_group("light_source"):
@@ -303,7 +313,10 @@ func _lights_near(p: Vector3) -> Array:
 
 
 func curiosity_at(p: Vector3) -> float:
-	var zone := _zone_at(p)
+	return _curiosity_of(_zone_at(p))
+
+
+func _curiosity_of(zone: Dictionary) -> float:
 	return 40.0 if zone.is_empty() else float(zone["curiosity"])
 
 
@@ -315,18 +328,23 @@ func add_curiosity(p: Vector3, amount: float) -> void:
 
 ## Zonen sind Kreise auf einem Stockwerk (Keller, Erdgeschoss, Obergeschoss).
 func _zone_at(p: Vector3) -> Dictionary:
-	var best: Dictionary = {}
+	if _zone_centers.size() != zones.size():
+		_zone_centers.clear()
+		_zone_radii.clear()
+		for zone in zones:
+			_zone_centers.append(zone["center"])
+			_zone_radii.append(zone["radius"])
+	var best := -1
 	var best_ratio := INF
-	for zone in zones:
-		var c: Vector3 = zone["center"]
-		var r: float = zone["radius"]
+	for i in _zone_centers.size():
+		var c := _zone_centers[i]
 		if absf(p.y - c.y) > 2.5:
 			continue
-		var ratio := Vector2(p.x - c.x, p.z - c.z).length() / r
+		var ratio := Vector2(p.x - c.x, p.z - c.z).length() / _zone_radii[i]
 		if ratio < best_ratio:
 			best_ratio = ratio
-			best = zone
-	return best
+			best = i
+	return zones[best] if best >= 0 else {}
 
 
 func zone_name_at(p: Vector3) -> String:
@@ -429,7 +447,7 @@ func _start_activity(spawn: Vector3, with_signal: bool = true) -> void:
 		if not is_harmless() and victims_left > 0 and randf() < DECEIVE_CHANCE * effective_boldness() / 100.0:
 			shown_victims = 0   # es täuscht: nur ein Zucken
 		_start_wave(spawn_points[0], shown_victims, false, SIGNAL_TIME_SATED if sated else -1.0)
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		var why := "erzwungen" if debug_victims >= 0 else ("satt" if sated else "Chance %.0f %%" % (attack_chance() * 100.0))
 		print("[Aufbruch] %d. Angriff%s · Tag %.1f, %s → %s (%d Opfer) · Flackern zeigt %s" % [attacks,
 			" (harmlos)" if is_harmless() else "", Calendar.FIRST_DAY + elapsed / Calendar.DAY_SECONDS, why,
@@ -650,7 +668,8 @@ func on_noise(pos: Vector3, loudness: float, source: Node = null) -> String:
 ## Jemand (Spieler oder Gast) ist in ein Versteck gegangen. Hat das Monster es gesehen?
 ## Dieselbe Rechnung wie beim Jagen (4.15) – gesehen wird nur das Hineingehen.
 func on_actor_hid(spot: HideSpot, actor: Node3D) -> void:
-	if not _monster.is_active() or _monster.state == Monster.State.KILL or (actor is Guest and (actor as Guest).is_child()):
+	if not _monster.is_active() or _monster.state in [Monster.State.KILL, Monster.State.REVEAL] \
+			or (actor is Guest and (actor as Guest).is_child()):
 		return
 	if _monster.can_see_actor(actor, spot.exit_point.global_position):
 		spot.seen_entering = true
@@ -708,7 +727,7 @@ func kill_guest(guest, spot: HideSpot) -> void:
 		return
 	if Wounds.survives():
 		# Er reißt sich los, als es ihn wegschleppen will (Spielkonzept 6.17): nur Kratzer – es bleibt hungrig
-		if "--trace" in OS.get_cmdline_user_args():
+		if Game.tracing:
 			print("[Losgerissen] %s" % guest.display_name)
 		if spot != null:
 			spot.rip_open()
@@ -731,7 +750,7 @@ func kill_guest(guest, spot: HideSpot) -> void:
 	cloth.global_position = Vector3(where.x + 0.4, 0.05, where.z + 0.2)
 	grief = GRIEF_TIME
 	victims_left -= 1
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Geholt] %s · noch %d Opfer" % [guest.display_name, victims_left])
 	if victims_left > 0:   # Raubzug: weiter zum nächsten Opfer
 		_monster.after_kill_hunting()
@@ -744,7 +763,7 @@ func kill_guest(guest, spot: HideSpot) -> void:
 
 ## Harmloser Angriff auf einen Gast: Er wird zu Tode erschreckt – aber nicht geholt.
 func _scare_guest(guest, spot: HideSpot) -> void:
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Erschreckt] %s (%s)" % [guest.display_name, "harmlos" if is_harmless() else "umsehen"])
 	if spot != null:
 		spot.rip_open()
@@ -779,6 +798,29 @@ func kill_player(spot: HideSpot) -> void:
 ## Rotes Aufblitzen mit Rauschen wie beim Jumpscare (auch für den Lakengeist).
 func flash(seconds: float) -> void:
 	_jumpscare = seconds
+
+
+## Kürbismann oder Lakengeist hat den Spieler getötet (das Monster hat seinen Jumpscare, kill_player): Spiel aus,
+## HUD weg, Schrei und rotes Aufblitzen, nach 1,5 s der Sterbebildschirm.
+func player_slain() -> void:
+	Game.game_over = true
+	Game.player.dead = true
+	if Game.hud:
+		Game.hud.set_prompt("")
+		Game.hud.visible = false
+	Game.play_sound("shriek", 1.0)
+	flash(1.4)
+	await get_tree().create_timer(1.5, false).timeout
+	Game.player_died.emit()
+
+
+## Kürbismann oder Lakengeist hat einen Gast getötet: ein letztes Ächzen (kein Schrei), die Leiche bleibt liegen,
+## das Hotel erfährt es (Spielkonzept 4.19, 6.12).
+func guest_slain(guest: Guest, cause: String) -> void:
+	Game.sound_at("grunt", guest.global_position, Senses.GRUNT_RANGE, guest)
+	guest.die(cause)
+	if Game.social:
+		Game.social.on_guest_died(guest, cause)
 
 
 ## Harmloser Angriff auf den Spieler: Es steht direkt vor dir, starrt dich an – und ist
@@ -953,7 +995,9 @@ func next_roam_target(from: Vector3) -> Dictionary:
 			if rooms.has(no):
 				target = {"pos": (rooms[no] as Dictionary)["door_front"] as Vector3, "room": no}
 		var pos: Vector3 = target["pos"]
-		var w := pow(maxf(pressure_at(pos), 1.0), 2.0)
+		if not _roam_zones.has(pos):   # die Ziele liegen fest – ihre Zone auch
+			_roam_zones[pos] = _zone_at(pos)
+		var w := pow(maxf(_pressure_in(_roam_zones[pos]), 1.0), 2.0)
 		if Game.player and player_can_see(pos + Vector3.UP * 1.2) and pos.distance_to(Game.player.global_position) < 15.0:
 			w *= 0.15
 		candidates.append(target)
@@ -986,17 +1030,6 @@ func hidden_point_near(from: Vector3) -> Vector3:
 	return best
 
 
-func nearest_patrol_index(pos: Vector3) -> int:
-	var best := 0
-	var best_dist := INF
-	for i in patrol.size():
-		var d := pos.distance_to(patrol[i]["pos"])
-		if d < best_dist:
-			best_dist = d
-			best = i
-	return best
-
-
 ## Biegt das Monster an dieser Tür ins Zimmer ab? Neugier × Dreistigkeit, mit Zufall.
 func wants_to_enter_room(no: String) -> bool:
 	if not rooms.has(no):
@@ -1022,7 +1055,7 @@ func room_search_points(no: String) -> Array[Dictionary]:
 
 
 ## Rückzugsort: der Keller.
-func retreat_point(_from: Vector3) -> Vector3:
+func retreat_point() -> Vector3:
 	return spawn_points[0]
 
 
@@ -1042,13 +1075,9 @@ func search_points_near(center: Vector3) -> Array[Dictionary]:
 
 func player_can_see(p: Vector3) -> bool:
 	var cam := Game.player.camera
-	if not cam.is_position_in_frustum(p):
-		return false
-	var query := PhysicsRayQueryParameters3D.create(cam.global_position, p, Monster.SIGHT_MASK)
-	return _monster.get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+	return cam.is_position_in_frustum(p) and Senses.clear_line(_monster.get_world_3d(), cam.global_position, p)
 
 
-## Bedrohung 0..1 nach Entfernung zum Monster (für Spieler und Gäste) – wirkt durch Wände.
 ## Unruhe hängender Deko an p (0..1, Spielkonzept 5.6): Monster bis DECO_UNREST_RANGE (wirkt durch Wände),
 ## die Flackerwelle beim Aufbruch und der Lakengeist bis DECO_UNREST_GHOST.
 func deco_unrest_at(p: Vector3) -> float:
@@ -1075,6 +1104,7 @@ func deco_unrest_source(p: Vector3) -> Vector3:
 	return best
 
 
+## Bedrohung 0..1 nach Entfernung zum Monster (für Spieler und Gäste) – wirkt durch Wände.
 func threat_at(pos: Vector3) -> float:
 	if not _monster.is_active() or _monster.state == Monster.State.KILL:
 		return 0.0
@@ -1149,7 +1179,7 @@ func _update_effects(delta: float) -> void:
 		flicker_target = maxf(flicker_target, wave * 0.9)
 		if not _wave_told:
 			_wave_told = true
-			if "--trace" in OS.get_cmdline_user_args():
+			if Game.tracing:
 				var lit := get_tree().get_nodes_in_group("lamps").filter(func(l: Node) -> bool: return (l as FlickerLight).wave > 0.0).size()
 				print("[Flackerwelle] beim Spieler nach %.1f s, %.1f s lang · %d Lampen flackern gerade" % [elapsed - _wave_start, _wave_time, lit])
 			Game.caption(["[Die Lichter zucken kurz]", "[Die Lichter flackern]", "[Die Lichter flackern lange]"][_wave_level])

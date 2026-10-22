@@ -49,6 +49,8 @@ const PRICES := {
 const HANGABLE := [Kind.SHEET_GHOST, Kind.LIGHT_STRING, Kind.COBWEB, Kind.BAT_GARLAND, Kind.SPIDER, Kind.BROOM]
 ## Mit Kerze darin: Kerze in der Hand + das hier → Licht (Spielkonzept 5.4, 5.7)
 const CANDLE_HOLDERS := [Kind.CARVED_PUMPKIN, Kind.SKULL]
+## Deko, die eine Katze umwerfen kann (Spielkonzept 6.11) – flache Dinge (Laub, Spinnweben) kippen nicht.
+const TOPPLE_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.CANDLE, Kind.SKULL]
 const SPIDER_THREAD := 0.45     ## Plastikspinne: so lang hängt sie unter dem Haken
 const BROOM_LENGTH := 1.55
 const BROOM_LEAN := 0.2         ## Hexenbesen: so schräg lehnt er an der Wand (rad)
@@ -56,6 +58,8 @@ const GHOST_HEIGHT := 0.78      ## Lakengespenst: vom Haken bis zum Saum
 const GHOST_DEPTH := 0.17       ## Kopf an der Wand: so weit sitzt der Haken vor der Wandfläche
 const STRING_SAG := 0.13        ## Lichterkette: Durchhang je Bogen
 const STRING_COLORS: Array[Color] = [Color(1.0, 0.5, 0.1), Color(0.6, 0.25, 0.95), Color(0.35, 0.9, 0.3), Color(1.0, 0.85, 0.5)]
+## Herbstlaub: Farben der Blätter (auch der Laubhaufen unter den Bäumen, ResourceSpot)
+const LEAF_COLORS: Array[Color] = [Color(0.75, 0.35, 0.08), Color(0.6, 0.15, 0.05), Color(0.8, 0.55, 0.1), Color(0.45, 0.25, 0.08)]
 const JOLT_UNREST := 0.8        ## ab dieser Unruhe kann der Zierkürbis aus den Händen fallen
 ## Ausschlag (rad): leichtes Wehen, bei voller Unruhe
 const SWAY: Dictionary = {
@@ -196,9 +200,7 @@ func create_extra() -> String:
 			return str(coin_value)
 		Kind.BULB:
 			return "broken" if broken else ""
-		Kind.PUMPKIN:
-			return "" if variety == PumpkinKinds.DEFAULT else variety
-		Kind.ROAST_PUMPKIN:
+		Kind.PUMPKIN, Kind.ROAST_PUMPKIN:
 			return "" if variety == PumpkinKinds.DEFAULT else variety
 		Kind.CARVED_PUMPKIN:
 			var parts: Array[String] = []
@@ -226,14 +228,14 @@ func get_prompt(player: Player) -> String:
 	if is_toppled():
 		return "%s aufstellen [E]" % display_name
 	var held := player.held_kind()
-	if kind == Kind.PUMPKIN and held == Kind.KNIFE:
+	if _carving(held):
 		return "%s schnitzen [E]" % display_name if can_carve() else "%s – zu hart zum Schnitzen" % display_name
-	if kind in CANDLE_HOLDERS and not lit and held == Kind.CANDLE:
+	if _takes_candle(held):
 		return "Kerze hineinstellen [E]"
 	var fitting := _fitting_prompt(held, player)
 	if fitting != "":
 		return fitting
-	if kind == Kind.SHEET_GHOST and not holds_pumpkin and held == Kind.MINI_PUMPKIN:
+	if _takes_mini_pumpkin(held):
 		return "Zierkürbis in die Hände geben [E]"
 	if kind == Kind.COINS:
 		return "%s aufheben (+%d) [E]" % [display_name, coin_value]
@@ -251,12 +253,12 @@ func interact(player: Player) -> void:
 		Game.noise("drop", global_position, player)
 		return
 	var held := player.held_kind()
-	if kind == Kind.PUMPKIN and held == Kind.KNIFE:
+	if _carving(held):
 		if can_carve():
 			carve()
 			Game.say("Du schnitzt eine Fratze in den Kürbis.", 2.5)
 		return
-	if kind in CANDLE_HOLDERS and not lit and held == Kind.CANDLE:
+	if _takes_candle(held):
 		player.consume_held()
 		light_up()
 		Game.say("Die Kerze flackert im Kürbis auf." if kind == Kind.CARVED_PUMPKIN else "Die Augen des Totenkopfs glimmen.", 2.5)
@@ -264,7 +266,7 @@ func interact(player: Player) -> void:
 	if _fitting_prompt(held, player) != "":
 		_fit(player)
 		return
-	if kind == Kind.SHEET_GHOST and not holds_pumpkin and held == Kind.MINI_PUMPKIN:
+	if _takes_mini_pumpkin(held):
 		player.consume_held()
 		set_pumpkin(true)
 		Game.noise("drop", global_position, player)
@@ -272,6 +274,21 @@ func interact(player: Player) -> void:
 	if not can_carry():
 		return
 	player.try_pick_up(self)
+
+
+## Messer in der Hand + Kürbis → schnitzen (ob er sich schnitzen lässt, sagt can_carve)
+func _carving(held: int) -> bool:
+	return kind == Kind.PUMPKIN and held == Kind.KNIFE
+
+
+## Kerze in der Hand + Kürbis oder Totenkopf ohne Licht → Kerze hineinstellen
+func _takes_candle(held: int) -> bool:
+	return kind in CANDLE_HOLDERS and not lit and held == Kind.CANDLE
+
+
+## Zierkürbis in der Hand + Lakengespenst mit leeren Händen
+func _takes_mini_pumpkin(held: int) -> bool:
+	return kind == Kind.SHEET_GHOST and not holds_pumpkin and held == Kind.MINI_PUMPKIN
 
 
 ## Batterie bzw. UV-Aufsatz und Taschenlampe: eins in der Hand, das andere hier.
@@ -342,10 +359,6 @@ func light_up(with_sound: bool = true) -> void:
 		_glow_material.set_shader_parameter("emission_energy", 3.0)
 	if with_sound:
 		Game.play_sound("blip", 0.4)
-
-
-## Deko, die eine Katze umwerfen kann (Spielkonzept 6.11) – flache Dinge (Laub, Spinnweben) kippen nicht.
-const TOPPLE_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.CANDLE, Kind.SKULL]
 
 
 ## Liegt umgekippt da: zählt nicht als Deko, bis jemand sie wieder aufstellt.
@@ -419,9 +432,13 @@ func _update_needle(delta: float) -> void:
 	else:
 		_needle_spin = _needle_angle
 		target += sin(_needle_time * 13.0) * threat * 1.1 + randf_range(-1.0, 1.0) * threat * 0.9
-	var accel := wrapf(target - _needle_angle, -PI, PI) * 45.0 - _needle_speed * 5.0
-	_needle_speed += accel * delta
-	_needle_angle = wrapf(_needle_angle + _needle_speed * delta, -PI, PI)
+	# In Teilschritten: Die steife Feder schaukelt sich bei einem langen Frame (Autosave, Ruckler) sonst bis NaN auf
+	var steps := maxi(1, ceili(delta / 0.02))
+	var dt := delta / steps
+	for i in steps:
+		var accel := wrapf(target - _needle_angle, -PI, PI) * 45.0 - _needle_speed * 5.0
+		_needle_speed += accel * dt
+		_needle_angle = wrapf(_needle_angle + _needle_speed * dt, -PI, PI)
 	_needle.rotation.y = _needle_angle
 
 
@@ -448,7 +465,8 @@ func can_hang() -> bool:
 ## Lichterkette: Mitte der Aufhängelinie), out: Wandnormale. length: Lichterkette entlang der Wand.
 ## Der Gegenstand muss schon in der Welt hängen (nicht mehr in einer Hand).
 func hang(point: Vector3, out: Vector3, length: float = 0.0) -> void:
-	out = Vector3(out.x, 0.0, out.z).normalized()
+	out = Vector3(out.x, 0.0, out.z)
+	out = out.normalized() if out.length() > 0.001 else global_basis.z   # Boden oder Decke: bleibt, wie er liegt
 	var gap := {Kind.SHEET_GHOST: GHOST_DEPTH, Kind.LIGHT_STRING: 0.03, Kind.COBWEB: 0.012, Kind.BAT_GARLAND: 0.03,
 		Kind.SPIDER: 0.03, Kind.BROOM: BROOM_LENGTH * sin(BROOM_LEAN) + 0.03}
 	if kind == Kind.LIGHT_STRING:
@@ -581,9 +599,10 @@ func _sway(delta: float) -> void:
 			lean = clampf(away.x / maxf(Vector2(away.x, away.z).length(), 0.1), -1.0, 1.0)
 		_lean = move_toward(_lean, lean, 0.15)
 	if not _bulb_materials.is_empty() and light:
-		var level := light.light_energy / maxf(light.base_energy, 0.001)
-		for m in _bulb_materials:
-			m.set_shader_parameter("emission_energy", 2.2 * level)
+		var energy := 2.2 * light.light_energy / maxf(light.base_energy, 0.001)
+		if _bulb_materials[0].get_shader_parameter("emission_energy") != energy:
+			for m in _bulb_materials:
+				m.set_shader_parameter("emission_energy", energy)
 	if holds_pumpkin and _unrest > JOLT_UNREST and randf() < delta * 0.6:
 		drop_pumpkin()
 	if kind == Kind.BROOM:
@@ -690,11 +709,10 @@ func _build(extra: String) -> void:
 			mass = 0.2
 			size = Vector3(0.9, 0.03, 0.9)
 			var rng := RandomNumberGenerator.new()
-			var colors: Array[Color] = [Color(0.75, 0.35, 0.08), Color(0.6, 0.15, 0.05), Color(0.8, 0.55, 0.1), Color(0.45, 0.25, 0.08)]
 			_pile = Node3D.new()
 			add_child(_pile)
 			for i in 9:
-				var leaf := Geo.mesh(_pile, Geo.box(Vector3(0.09, 0.012, 0.06)), Mat.psx(colors[i % colors.size()]),
+				var leaf := Geo.mesh(_pile, Geo.box(Vector3(0.09, 0.012, 0.06)), Mat.psx(LEAF_COLORS[i % LEAF_COLORS.size()]),
 					Vector3(rng.randf_range(-0.15, 0.15), 0.01 + i * 0.004, rng.randf_range(-0.15, 0.15)))
 				leaf.rotation.y = rng.randf() * TAU
 			# Verstreut: flach auf dem Boden, dichter zur Mitte hin
@@ -704,7 +722,7 @@ func _build(extra: String) -> void:
 				var r := sqrt(rng.randf()) * 0.45
 				var a := rng.randf() * TAU
 				# Mat.layer: leicht zur Kamera gezogen, sonst flimmert der Boden beim Vertex-Snapping durch
-				var leaf := Geo.mesh(_spread, Geo.box(Vector3(0.09, 0.008, 0.06)), Mat.layer(colors[i % colors.size()], "", 1.0, 0.004),
+				var leaf := Geo.mesh(_spread, Geo.box(Vector3(0.09, 0.008, 0.06)), Mat.layer(LEAF_COLORS[i % LEAF_COLORS.size()], "", 1.0, 0.004),
 					Vector3(cos(a) * r, 0.005 + (i % 3) * 0.003, sin(a) * r))
 				leaf.rotation = Vector3(rng.randf_range(-0.1, 0.1), rng.randf() * TAU, 0.0)
 		Kind.COINS:
@@ -1072,16 +1090,8 @@ func _build_strand() -> void:
 	for i in bulbs:
 		var at := points[clampi(roundi((i + 0.5) / bulbs * steps), 0, steps)]
 		Geo.mesh(_strand, Geo.sphere(0.022, 0.05, 6, 3), _bulb_materials[i % _bulb_materials.size()], at + Vector3(0, -0.03, 0.005))
-	light = FlickerLight.new()
-	light.position = Vector3(0, -0.12, 0.2)
-	light.light_color = Color(1.0, 0.62, 0.35)
-	light.base_energy = 0.55
-	light.omni_range = 2.5 + length * 0.5
-	light.soft = true
-	light.shadow_enabled = false
-	light.set_meta("no_shadow", true)   # ShadowBudget: Lichterketten werfen nie Schatten
-	light.add_to_group("lamps")
-	add_child(light)
+	# ShadowBudget: Lichterketten werfen nie Schatten („no_shadow“), flackern aber mit den Lampen („lamps“)
+	_add_light(Vector3(0, -0.12, 0.2), Color(1.0, 0.62, 0.35), 0.55, 2.5 + length * 0.5, true)
 
 
 ## Messingdose mit Zifferblatt; Nadel und Nordmarke leuchten schwach (Leuchtfarbe),
@@ -1168,14 +1178,15 @@ func _pumpkin(carved: bool) -> void:
 		var dark := Mat.psx(Color(0.1, 0.04, 0.0))
 		var k := sz.x / 0.42
 		var front := sz.x * 0.44
-		Geo.mesh(self, Geo.box(Vector3(0.06, 0.05, 0.04) * k), _glow_material, Vector3(-0.075 * k, 0.2 * k, front))
-		Geo.mesh(self, Geo.box(Vector3(0.06, 0.05, 0.04) * k), _glow_material, Vector3(0.075 * k, 0.2 * k, front))
-		Geo.mesh(self, Geo.box(Vector3(0.15, 0.035, 0.04) * k), _glow_material, Vector3(0, 0.1 * k, front))
-		Geo.mesh(self, Geo.box(Vector3(0.03, 0.02, 0.045) * k), dark, Vector3(-0.03 * k, 0.105 * k, front + 0.002))
-		Geo.mesh(self, Geo.box(Vector3(0.03, 0.02, 0.045) * k), dark, Vector3(0.03 * k, 0.105 * k, front + 0.002))
+		for side: float in [-1.0, 1.0]:
+			Geo.mesh(self, Geo.box(Vector3(0.06, 0.05, 0.04) * k), _glow_material, Vector3(side * 0.075 * k, 0.2 * k, front))   # Auge
+		Geo.mesh(self, Geo.box(Vector3(0.15, 0.035, 0.04) * k), _glow_material, Vector3(0, 0.1 * k, front))   # Mund
+		for side: float in [-1.0, 1.0]:
+			Geo.mesh(self, Geo.box(Vector3(0.03, 0.02, 0.045) * k), dark, Vector3(side * 0.03 * k, 0.105 * k, front + 0.002))   # Zähne
 
 
-func _add_light(pos: Vector3, color: Color, energy: float, light_range: float) -> void:
+## Kerzenlicht ohne Schatten; as_lamp: zählt zu den Lampen (Lichterkette).
+func _add_light(pos: Vector3, color: Color, energy: float, light_range: float, as_lamp: bool = false) -> void:
 	light = FlickerLight.new()
 	light.position = pos
 	light.light_color = color
@@ -1183,4 +1194,7 @@ func _add_light(pos: Vector3, color: Color, energy: float, light_range: float) -
 	light.omni_range = light_range
 	light.soft = true
 	light.shadow_enabled = false
+	if as_lamp:
+		light.set_meta("no_shadow", true)
+		light.add_to_group("lamps")
 	add_child(light)

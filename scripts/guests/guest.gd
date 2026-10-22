@@ -31,10 +31,14 @@ const ALARM_COOLDOWN := 20.0
 const ALARM_LINES := ["Was war das?!", "Hast du das gehört?", "Da war doch was …", "Hallo? Ist da jemand?"]
 ## Erst wieder aus dem Versteck, wenn das Monster so weit weg ist
 const SAFE_DISTANCE := 22.0
-## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
+## Festgefahren: kommt er beim Gehen so lange nicht weiter als STALL_RANGE vom Fleck, gibt er das Ziel auf
+## (sonst rennt er auf dem Weg ins Versteck endlos auf der Stelle – mit Lärm, der das Monster lockt)
+const STALL_TIME := 10.0
+const STALL_RANGE := 1.5
 ## Schlafen im Bett (Nachtruhe): Füße so weit vom Bettmittelpunkt zum Fußende, so hoch liegt die Matratze
 const BED_FEET := 0.9
 const BED_TOP := 0.53
+## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
 const MUD_STEPS := 14
 const BLEED_TIME := 45.0
 ## Tänze bei Feiern (`_dance_pose`) für die Klötzchenfigur – Gastmodelle tanzen GuestBody.DANCES
@@ -87,6 +91,8 @@ const WEAK_FEAR := 0.6
 const HIT_FLEE_LINES := ["Hilfe! Der ist verrückt!", "Lass mich in Ruhe!", "Au! Hör auf!"]
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.SKULL, Item.Kind.SHEET_GHOST, Item.Kind.LIGHT_STRING, Item.Kind.BROOM,
 	Item.Kind.BAT_GARLAND, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.SPIDER, Item.Kind.LEAVES, Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN]
+## Essbare Geschenke (6.17): isst er nach ein paar Sekunden, statt sie heimzutragen
+const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]
 ## Kinder (Spielkonzept 6.13): Grundwert an Schwäche für den Lakengeist; so viel Angst bekommen die Eltern,
 ## wenn ihr Kind erschrickt; so oft rennt ein Kind los (Lärm wie Rennen) und so oft lacht es dabei bzw. auf
 ## Feiern; so oft kann es in der Nachtruhe nicht schlafen und so lange bleibt es dann wach; so oft schenkt es
@@ -157,7 +163,7 @@ var _gift_hold := 0.0
 var agent: NavigationAgent3D
 var _collider: CollisionShape3D
 var _visual: Node3D
-var _lod_frame := randi() % 3   ## Detailstufe: Bilder seit dem letzten Rechnen (versetzt, damit nicht alle zugleich)
+var _lod_frame := randi() % LOD_STEP   ## Detailstufe: Bilder seit dem letzten Rechnen (versetzt, damit nicht alle zugleich)
 var _lod_time := 0.0          ## … und die Zeit dazwischen
 var _lod_scale := 1.0         ## so viele Physikbilder stecken im aktuellen Schritt
 var _hand: Node3D
@@ -178,7 +184,6 @@ var _steal_lamp: Lamp
 var _resting := false        ## ruht im Zimmer bei ausgeschaltetem Licht
 var _plant: PumpkinPlant
 var _hide_spot: HideSpot
-var _deco_timer := 0.0
 var _steal_timer := 0.0
 var _monster_cooldown := 0.0
 var _panic_quiet := 0.0      ## Panik-Satz nicht ständig wiederholen
@@ -193,6 +198,9 @@ var _dance_timer := 0.0
 var _game_look := Vector3.ZERO
 var _stuck_time := 0.0
 var _last_pos := Vector3.ZERO
+var _stall_pos := Vector3.ZERO   ## Festgefahren: hier stand er, als er zuletzt vorankam …
+var _stall_since := 0.0          ## … seit dieser Spielzeit (Director.elapsed)
+var _stall_seen := -10.0         ## letzter Schritt in _move_to (Spielzeit) – wer zwischendurch stand, fängt neu an
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _door_timer := 0.0
 var _mud := 0
@@ -207,7 +215,6 @@ var _shock_style := ""
 var _entranced := false    ## vom Lakengeist hypnotisiert – bleibt stehen, bis er weg ist
 var _door_trance := 0.0    ## Lakengeist vor der Tür: so lange starrt er noch hin, dann geht er aufmachen
 var _knock_face := Vector3.INF   ## beim Klopfen dorthin sehen (Tür); INF: wie vor Zimmer 13
-var _gripped := false      ## wird vom Lakengeist gewürgt
 var _hurt_time := 0.0      ## geschlagen: humpelt so lange langsamer
 var _bump_cooldown := 0.0
 var _push := Vector3.ZERO  ## Rückstoß beim Stolpern
@@ -251,7 +258,6 @@ func _ready() -> void:
 	_steps = Footsteps.new()
 	add_child(_steps)
 	_build_visual()
-	_deco_timer = randf_range(30.0, 70.0)
 	_steal_timer = randf_range(30.0, 60.0)
 	_timer = randf_range(2.0, 6.0)
 
@@ -301,7 +307,7 @@ func wound_by(kind: String, attacker: Node3D = null) -> void:
 				wound_facts["went"] = Game.director.zone_name_at(attacker.global_position))
 	_update_wound_marks()
 	_spread_wound_news()
-	if "--trace" in OS.get_cmdline_user_args():
+	if Game.tracing:
 		print("[Verletzt] %s überlebt: %s bei %s" % [display_name, d["name"], zone])
 
 
@@ -427,14 +433,14 @@ func receive_gift(item: Item) -> bool:
 		return false
 	_take_into_hand(item)
 	_gift_item = item
-	var food := item.kind in [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]
+	var food := item.kind in FOOD_GIFTS
 	_gift_hold = randf_range(8.0, 14.0) if food else randf_range(25.0, 40.0)
 	return true
 
 
 ## Nach dem Gespräch: mit dem Geschenk heim (CARRY_HOME legt es in den Vorrat). false = nichts zu tragen.
 func _carry_gift_home() -> bool:
-	if _gift_item == null or held != _gift_item or _gift_item.kind in [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]:
+	if _gift_item == null or held != _gift_item or _gift_item.kind in FOOD_GIFTS:
 		return false
 	_gift_item = null
 	_walk_to(_room_point(), State.CARRY_HOME)
@@ -452,7 +458,7 @@ func _gift_step(delta: float) -> void:
 		return
 	var item := _gift_item
 	_gift_item = null
-	if item.kind in [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]:
+	if item.kind in FOOD_GIFTS:
 		held = null
 		item.queue_free()   # aufgegessen
 		if randf() < 0.5:
@@ -460,9 +466,7 @@ func _gift_step(delta: float) -> void:
 	elif state in [State.IDLE, State.WALK]:
 		_walk_to(_room_point(), State.CARRY_HOME)
 	else:
-		held = null   # im Bett oder anderweitig beschäftigt: wandert in den Vorrat
-		stock[item.kind] = int(stock.get(item.kind, 0)) + 1
-		item.queue_free()
+		stow_held()   # im Bett oder anderweitig beschäftigt: wandert in den Vorrat
 
 
 # --- Tränen (Spielkonzept 7.6) ------------------------------------------------------------------
@@ -670,7 +674,7 @@ func hear_alarm(pos: Vector3) -> String:
 		return "Panik"
 	if state == State.PARTY:
 		return "erschrickt"
-	say(ALARM_LINES[randi() % ALARM_LINES.size()])
+	say(ALARM_LINES.pick_random())
 	if randf() < brave:
 		_drop_held()
 		_walk_to(pos, State.WALK)
@@ -727,6 +731,9 @@ func die(cause: String = "monster") -> void:
 		hiding.occupant = null
 		hiding = null
 	_drop_held()
+	_release_hide_spot()
+	if _tears:
+		_tears.emitting = false   # die Leiche weint nicht weiter (_tears_step läuft nicht mehr)
 	state = State.DEAD
 	_collider.disabled = true
 	collision_layer = 0
@@ -766,7 +773,7 @@ func _lie_down() -> void:
 	# Auf der Treppe an die Schräge anlegen, sonst schwebt er über den unteren Stufen
 	var under := get_world_3d().direct_space_state.intersect_ray(
 		PhysicsRayQueryParameters3D.create(global_position + Vector3.UP * 0.5, global_position + Vector3.DOWN, 1, [get_rid()]))
-	if not under.is_empty() and (under["normal"] as Vector3).y < 0.98:
+	if not under.is_empty() and (under["normal"] as Vector3).y < 0.98 and (under["normal"] as Vector3).y > 0.1:
 		global_basis = Basis(Quaternion(Vector3.UP, (under["normal"] as Vector3).normalized())) * global_basis
 	set_meta("sight_key", "corpse:" + id)
 	set_meta("sight_kind", "corpse")
@@ -782,7 +789,7 @@ func _physics_process(delta: float) -> void:
 	_lod_frame += 1
 	if _lod_frame < LOD_STEP and _lod_far():
 		return
-	_lod_scale = _lod_time / maxf(delta, 0.0001)
+	_lod_scale = maxf(1.0, _lod_time / maxf(delta, 0.0001))   # nie 0 – _move_to teilt dadurch
 	delta = _lod_time
 	_lod_time = 0.0
 	_lod_frame = 0
@@ -809,6 +816,8 @@ func _physics_process(delta: float) -> void:
 	_hurt_time = maxf(0.0, _hurt_time - delta)
 	_bump_cooldown -= delta
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
+	if _hide_spot and state != State.HIDE_GO:
+		_release_hide_spot()   # Weg ins Versteck abgebrochen (Gespräch, Schreck, Klopfen …)
 	match state:
 		State.TALKING:
 			_stop(delta)
@@ -834,7 +843,7 @@ func _physics_process(delta: float) -> void:
 				_timer -= delta
 				if _timer <= 0.0:
 					_set_idle(randf_range(2.0, 5.0))
-			_open_doors()
+			_open_doors(delta)
 			return
 		State.GHOSTED:
 			# Der Lakengeist hält ihn am Hals (SheetGhost) – bis er sich losreißt oder stirbt
@@ -900,7 +909,7 @@ func _physics_process(delta: float) -> void:
 					else:
 						_entranced = false
 						_walk_to(home["door_inside"], State.WALK)   # geht aufmachen (_open_doors)
-						if "--trace" in OS.get_cmdline_user_args():
+						if Game.tracing:
 							print("[Lakengeist] %s geht zur Tür" % display_name)
 						return
 			_timer -= delta
@@ -917,8 +926,10 @@ func _physics_process(delta: float) -> void:
 				goal = Game.player.global_position
 			if _move_to(goal, speed, delta) and goal == _target:
 				_arrive()
+			elif state in [State.HIDE_GO, State.WALK] and _stalled():
+				_give_up_walk()
 			_check_bump()
-	_open_doors()
+	_open_doors(delta)
 
 
 # --- Freundschaft & Feindschaft (Spielkonzept 6.3) ------------------------------------
@@ -1036,7 +1047,7 @@ func stagger(push: Vector3, hit: bool) -> void:
 	_hit_back = false
 	state = State.STAGGER
 	if not hit:
-		say("Aua! *weint*" if is_child() else RAMMED_LINES[randi() % RAMMED_LINES.size()])
+		say("Aua! *weint*" if is_child() else RAMMED_LINES.pick_random())
 		if is_child():
 			weep(randf_range(6.0, 10.0))
 		return
@@ -1117,7 +1128,7 @@ func _check_bump() -> void:
 		return
 	_bump_cooldown = 45.0
 	p.shove(to.normalized() * 3.0)
-	say(RUDE_LINES[randi() % RUDE_LINES.size()])
+	say(RUDE_LINES.pick_random())
 	Game.social.on_guest_rammed_player(self)
 
 
@@ -1195,6 +1206,7 @@ func _set_idle(duration: float) -> void:
 
 
 func _next_activity() -> void:
+	_to_bed = false   # ein abgebrochener Weg ins Bett gilt nicht mehr (in der Nachtruhe geht er gleich wieder)
 	if _resting:
 		_resting = false
 		_set_room_light(true)
@@ -1226,23 +1238,19 @@ func _next_activity() -> void:
 		"room":
 			_walk_to(_room_point(), State.WALK)
 		"lobby":
-			var seats: Array[Vector3] = Game.social.builder.lobby_seats
-			_walk_to(seats[randi() % seats.size()] + _jitter(0.3), State.WALK)
+			_walk_to(Game.social.builder.lobby_seats.pick_random() + _jitter(0.3), State.WALK)
 		"kitchen":
 			_walk_to(Game.social.builder.kitchen_spot + _jitter(1.2), State.WALK)
 		"bar":
-			var bar_spots: Array[Vector3] = Game.social.builder.bar_spots
-			_walk_to(bar_spots[randi() % bar_spots.size()] + _jitter(0.3), State.WALK)
+			_walk_to(Game.social.builder.bar_spots.pick_random() + _jitter(0.3), State.WALK)
 		"garden":
 			_plant = _ripe_plant() if profile["harvester"] else null
 			if _plant:
 				_walk_to(_plant.global_position + Vector3(0, 0, 0.7), State.HARVEST)
 			else:
-				var spots: Array[Vector3] = Game.social.builder.garden_spots
-				_walk_to(spots[randi() % spots.size()] + _jitter(1.5), State.WALK)
+				_walk_to(Game.social.builder.garden_spots.pick_random() + _jitter(1.5), State.WALK)
 		_:
-			var corridor: Array[Vector3] = Game.social.builder.wander_points
-			_walk_to(corridor[randi() % corridor.size()] + _jitter(0.5), State.WALK)
+			_walk_to(_wander_point(), State.WALK)
 
 
 func _walk_to(point: Vector3, new_state: State) -> void:
@@ -1269,11 +1277,7 @@ func _arrive() -> void:
 					_resting = true
 					_set_room_light(false)
 		State.CARRY_HOME:
-			if held:
-				var kind := held.kind
-				held.queue_free()
-				held = null
-				stock[kind] = int(stock.get(kind, 0)) + 1
+			stow_held()
 			_set_idle(randf_range(8.0, 20.0))
 			_at_home()
 		State.HARVEST:
@@ -1339,6 +1343,16 @@ func _home_lamps() -> Array[Lamp]:
 	return result
 
 
+## Fenster mit Vorhang im eigenen Zimmer.
+func _home_curtains() -> Array[HotelWindow]:
+	var result: Array[HotelWindow] = []
+	for node in get_tree().get_nodes_in_group("windows"):
+		var win := node as HotelWindow
+		if win.room_id == home["no"] and win.has_curtains():
+			result.append(win)
+	return result
+
+
 func _set_room_light(on: bool) -> void:
 	var sw := LightSwitch.find(get_tree(), home["no"])
 	if sw:
@@ -1347,10 +1361,8 @@ func _set_room_light(on: bool) -> void:
 
 func _check_lights() -> void:
 	# Ängstlich (oder den Lakengeist erlebt) → Vorhänge zu (nicht gesehen werden – macht das Zimmer aber dunkler)
-	for node in get_tree().get_nodes_in_group("windows"):
-		var win := node as HotelWindow
-		if win.room_id == home["no"] and win.has_curtains():
-			win.set_closed(fear >= 30.0 or remembers("ghost"))
+	for win in _home_curtains():
+		win.set_closed(fear >= 30.0 or remembers("ghost"))
 	_set_room_light(true)
 	for lamp in _home_lamps():
 		if lamp.has_bulb and not lamp.bulb_broken:
@@ -1499,7 +1511,6 @@ func _scan_for_shock(delta: float) -> void:
 		return
 	var eye := global_position + Vector3.UP * eye_height()
 	var forward := -global_transform.basis.z
-	var space := get_world_3d().direct_space_state
 	for node in get_tree().get_nodes_in_group("shock_sights"):
 		var sight := node as Node3D
 		if sight == self or not sight.has_meta("sight_key"):
@@ -1512,9 +1523,7 @@ func _scan_for_shock(delta: float) -> void:
 			continue
 		if forward.dot((at - eye).normalized()) < Senses.GUEST_FOV_DOT:
 			continue
-		var query := PhysicsRayQueryParameters3D.create(eye, at, Senses.SIGHT_MASK)
-		query.exclude = [get_rid()]
-		if not space.intersect_ray(query).is_empty():
+		if not Senses.clear_line(get_world_3d(), eye, at, self):
 			continue
 		seen_sights.append(key)
 		shock(String(sight.get_meta("sight_kind", "blood")), sight.global_position, (sight as Guest).display_name if sight is Guest else "")
@@ -1541,7 +1550,7 @@ func shock(kind: String, pos: Vector3, who: String = "", entranced: bool = false
 	_timer = lerpf(5.0, 2.0, brave)
 	fear = minf(100.0, fear + (50.0 if kind == "corpse" else 30.0) * (1.2 - brave))
 	var cries: Array = SHOCK_CRIES[_shock_style]
-	say(cries[randi() % cries.size()])
+	say(cries.pick_random())
 	if _shock_style == "cry":
 		weep(_timer + randf_range(20.0, 35.0))   # weint noch auf dem Weg heim
 	elif _shock_style == "cling":
@@ -1589,6 +1598,7 @@ func cower(pos: Vector3) -> void:
 	_shock_style = "freeze"
 	_shock_look = pos
 	_entranced = false
+	_door_trance = 0.0   # die Axt geht vor – kein Gang mehr zur Tür des Lakengeists
 	state = State.SHOCKED
 	_timer = 2.0
 	say(["*schreit*", "Nein! NEIN!", "Bitte nicht!"].pick_random())
@@ -1763,17 +1773,14 @@ func _night_activity() -> void:
 	var roll := randf()
 	if roll < 0.5:
 		_set_room_light(false)
-		for node in get_tree().get_nodes_in_group("windows"):
-			var win := node as HotelWindow
-			if win.room_id == home["no"] and win.has_curtains():
-				win.set_closed(false)
-				var inside := win.inside_point()
-				_walk_to(Vector3(inside.x, (home["center"] as Vector3).y, inside.z), State.WALK)
-				return
+		for win in _home_curtains():
+			win.set_closed(false)
+			var inside := win.inside_point()
+			_walk_to(Vector3(inside.x, (home["center"] as Vector3).y, inside.z), State.WALK)
+			return
 	if roll >= 0.8 and Game.social.sleepless_visit(self):
 		return
-	var corridor: Array[Vector3] = Game.social.builder.wander_points
-	_walk_to(corridor[randi() % corridor.size()] + _jitter(0.5), State.WALK)
+	_walk_to(_wander_point(), State.WALK)
 
 
 ## Zurück ins Bett geschickt (Dialog): Es schläft jetzt.
@@ -1805,8 +1812,7 @@ func _watch_monster() -> void:
 	var monster_head := monster.global_position + Vector3.UP * 1.7
 	if eye.distance_to(monster_head) > 15.0:
 		return
-	var query := PhysicsRayQueryParameters3D.create(eye, monster_head, Monster.SIGHT_MASK)
-	if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
+	if not Senses.clear_line(get_world_3d(), eye, monster_head, self):
 		return
 	_monster_cooldown = 10.0
 	if is_child():
@@ -1844,6 +1850,7 @@ func _go_hide() -> void:
 	_drop_held()
 	if state == State.PARTY:
 		state = State.IDLE
+	_release_hide_spot()
 	_hide_spot = Game.social.find_hide_spot(self)
 	if _hide_spot:
 		_walk_to(_hide_spot.exit_point.global_position, State.HIDE_GO)
@@ -1853,7 +1860,7 @@ func _go_hide() -> void:
 
 func _enter_hide(spot: HideSpot) -> void:
 	Game.director.on_actor_hid(spot, self)
-	Game.social.release_hide_spot(spot)
+	_release_hide_spot()
 	hiding = spot
 	spot.occupant = self
 	spot.on_enter(self)
@@ -1863,6 +1870,14 @@ func _enter_hide(spot: HideSpot) -> void:
 	global_position = spot.global_position
 	state = State.HIDING
 	_timer = 0.0
+
+
+## Reserviertes Versteck freigeben – beim Hineingehen, und wenn der Weg dorthin abbricht (sonst bliebe es für alle
+## anderen Gäste gesperrt, auch nach seinem Tod).
+func _release_hide_spot() -> void:
+	if _hide_spot:
+		Game.social.release_hide_spot(_hide_spot, self)
+		_hide_spot = null
 
 
 func _hiding_step(delta: float) -> void:
@@ -1903,6 +1918,15 @@ func _take_into_hand(item: Item) -> void:
 	item.position = Vector3(0, -0.15, 0) if item.is_large else Vector3.ZERO
 	item.rotation = Vector3(0, PI, 0)
 	held = item
+
+
+## Was er in der Hand hat, wandert in den Vorrat (Koffer).
+func stow_held() -> void:
+	if held == null:
+		return
+	stock[held.kind] = int(stock.get(held.kind, 0)) + 1
+	held.queue_free()
+	held = null
 
 
 func _drop_held() -> void:
@@ -2013,6 +2037,11 @@ func _floor_below(p: Vector3) -> Vector3:
 	return Vector3(p.x, global_position.y if hit.is_empty() else (hit["position"] as Vector3).y, p.z)
 
 
+## Ein zufälliger Punkt auf den Fluren (Herumschlendern).
+func _wander_point() -> Vector3:
+	return Game.social.builder.wander_points.pick_random() + _jitter(0.5)
+
+
 func _jitter(r: float) -> Vector3:
 	return Vector3(randf_range(-r, r), 0, randf_range(-r, r))
 
@@ -2040,14 +2069,16 @@ func _lod_far() -> bool:
 	return d > LOD_RANGE * LOD_RANGE and not player.camera.is_position_in_frustum(global_position + Vector3.UP)
 
 
-func _open_doors() -> void:
-	# Bei vielen Gästen und Türen nicht jeden Frame alle Türen prüfen
-	_door_timer -= get_physics_process_delta_time()
+func _open_doors(delta: float) -> void:
+	# Bei vielen Gästen und Türen nicht jeden Frame alle Türen prüfen (delta: mit Detailstufe die aufgesammelte Zeit)
+	_door_timer -= delta
 	if _door_timer > 0.0:
 		return
 	_door_timer = 0.15
-	for node in get_tree().get_nodes_in_group("doors"):
-		var door := node as Door
+	# Nur wer geht, macht auf – wer steht (wartet, klopft, ist gerade geladen), lässt die Tür neben sich zu
+	if Vector2(velocity.x, velocity.z).length_squared() < 0.01:
+		return
+	for door: Door in Door.near(global_position):
 		if door.is_open or door.locked:
 			continue
 		if door.center().distance_to(global_position + Vector3.UP) < 1.2:
@@ -2058,10 +2089,13 @@ func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 	if agent.target_position.distance_to(point) > 0.25:
 		agent.target_position = point
 	# Nur angekommen, wenn auch das Stockwerk stimmt (Zimmer liegen übereinander)
-	var near := Vector2(point.x - global_position.x, point.z - global_position.z).length() < 0.6 		and absf(point.y - global_position.y) < 1.5
+	var near := Vector2(point.x - global_position.x, point.z - global_position.z).length() < 0.6 and absf(point.y - global_position.y) < 1.5
 	if near or agent.is_navigation_finished():
 		_stop(delta)
 		return true
+	# Große Schritte (fern mit _lod_scale, Zeitraffer beim Schlafen, wenige Bilder) springen über den Wegpunkt – ohne
+	# größeren Abstand pendelte er dann um ihn herum, ohne je weiterzuschalten
+	agent.path_desired_distance = maxf(0.3, speed * _lod_scale * get_physics_process_delta_time() * 1.5)
 	var next := agent.get_next_path_position()
 	var dir := next - global_position
 	dir.y = 0.0
@@ -2074,6 +2108,7 @@ func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 	move_and_slide()
 	velocity.x /= _lod_scale
 	velocity.z /= _lod_scale
+	_note_progress()
 	# Festgefahren? Weg neu berechnen und kurz seitlich ausweichen.
 	if global_position.distance_to(_last_pos) < speed * delta * 0.2:
 		_stuck_time += delta
@@ -2086,6 +2121,34 @@ func _move_to(point: Vector3, speed: float, delta: float) -> bool:
 		_stuck_time = 0.0
 	_last_pos = global_position
 	return false
+
+
+## Kommt er voran? Merkt sich, wo er zuletzt STALL_RANGE weiter war.
+func _note_progress() -> void:
+	var now := Game.director.elapsed if Game.director else 0.0
+	if now - _stall_seen > 1.0 or global_position.distance_to(_stall_pos) > STALL_RANGE:
+		_stall_pos = global_position
+		_stall_since = now
+	_stall_seen = now
+
+
+func _stalled() -> bool:
+	var now := Game.director.elapsed if Game.director else 0.0
+	return now - _stall_seen < 1.0 and now - _stall_since > STALL_TIME
+
+
+## Festgefahren: Der Weg ins Versteck führt nicht weiter – dann eben ins eigene Zimmer; sonst bleibt er stehen
+## und sucht sich etwas Neues (_next_activity).
+func _give_up_walk() -> void:
+	_stall_seen = -10.0
+	if Game.tracing:
+		print("[Gast] %s kommt nicht weiter (%s) bei %s → Ziel %s" % [display_name, State.keys()[state],
+			global_position.snapped(Vector3.ONE * 0.1), _target.snapped(Vector3.ONE * 0.1)])
+	if state == State.HIDE_GO:
+		_release_hide_spot()
+		_walk_to(_room_point(), State.WALK)
+	else:
+		_set_idle(randf_range(2.0, 5.0))
 
 
 func _stop(delta: float) -> void:

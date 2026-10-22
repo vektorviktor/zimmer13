@@ -112,23 +112,29 @@ func _ready() -> void:
 		_bulb = Geo.mesh(self, Geo.sphere(0.045, 0.1, 6, 3), _bulb_material, bulb_pos)
 	# Die Leuchte selbst wirft keinen Schatten: Das Licht sitzt vor dem Schirm, sonst zeichnet er einen langen
 	# Keil mit dunklem Strich darüber an die Wand
-	for g: GeometryInstance3D in find_children("*", "GeometryInstance3D", true, false):
-		g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_no_shadows()
 	if style == Style.FLUSH:
 		Geo.add_box_shape(self, Vector3(0.48, bulb_pos.y * -1.0, 0.48), bulb_pos * 0.5)
 	else:
 		Geo.add_box_shape(self, Vector3(0.35, 0.3, 0.35), bulb_pos * 0.5)
-	light = FlickerLight.new()
+	var light_pos := bulb_pos + Vector3(0, 0, 0.12)
 	match style:
 		Style.CEILING:
-			light.position = bulb_pos + Vector3(0, -0.13, 0)
+			light_pos = bulb_pos + Vector3(0, -0.13, 0)
 		Style.FLUSH:
-			light.position = bulb_pos + Vector3(0, -FLUSH_LIGHT_BELOW, 0)
-		_:
-			light.position = bulb_pos + Vector3(0, 0, 0.12)
+			light_pos = bulb_pos + Vector3(0, -FLUSH_LIGHT_BELOW, 0)
+	_add_light(light_pos, Color(1.0, 0.8, 0.55))
+	_break_timer = randf()
+	apply_state()
+
+
+## Das Licht der Leuchte (Gruppe „lamps“, flackert mit der Birne bzw. Röhre oder Scheibe).
+func _add_light(pos: Vector3, color: Color) -> void:
+	light = FlickerLight.new()
+	light.position = pos
 	light.base_energy = energy
 	light.omni_range = light_range
-	light.light_color = Color(1.0, 0.8, 0.55)
+	light.light_color = color
 	light.shadow_enabled = true
 	# Viele Zimmer → weit entfernte Lampen und ihre Schatten ausblenden (spart Leistung)
 	light.distance_fade_enabled = true
@@ -138,8 +144,12 @@ func _ready() -> void:
 	light.lamp_material = _bulb_material
 	light.add_to_group("lamps")
 	add_child(light)
-	_break_timer = randf()
-	apply_state()
+
+
+## Gehäuse, Birne und Scheibe werfen keinen Schatten.
+func _no_shadows() -> void:
+	for g: GeometryInstance3D in find_children("*", "GeometryInstance3D", true, false):
+		g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 ## Kupferleuchte: Ringe nach FLUSH_PROFILE von der Decke (y 0) abwärts, darunter das Glas mit dem Material der
@@ -166,23 +176,10 @@ func _build_halogen() -> void:
 	Geo.mesh(self, Geo.box(Vector3(length + 0.06, 0.05, 0.12)), Mat.psx(Color(0.55, 0.57, 0.58)), Vector3.ZERO)
 	_bulb = Geo.mesh(self, Geo.cylinder(0.02, length, 6), _bulb_material, Vector3(0, -0.045, 0))
 	_bulb.rotation.z = PI / 2.0   # der Zylinder steht nach +Y, die Röhre liegt entlang X
-	for g: GeometryInstance3D in find_children("*", "GeometryInstance3D", true, false):
-		g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_no_shadows()
 	Geo.add_box_shape(self, Vector3(length + 0.06, 0.1, 0.15), Vector3(0, -0.02, 0))
-	light = FlickerLight.new()
-	light.position = Vector3(0, -0.15, 0)
-	light.base_energy = energy
-	light.omni_range = light_range
-	light.light_color = Color(0.85, 0.93, 1.0)
-	light.shadow_enabled = true
+	_add_light(Vector3(0, -0.15, 0), Color(0.85, 0.93, 1.0))
 	light.stutter = true
-	light.distance_fade_enabled = true
-	light.distance_fade_begin = 26.0
-	light.distance_fade_length = 6.0
-	light.distance_fade_shadow = 16.0
-	light.lamp_material = _bulb_material
-	light.add_to_group("lamps")
-	add_child(light)
 	apply_state()
 
 
@@ -194,21 +191,9 @@ func _build_pool() -> void:
 	ring.rotation.x = PI / 2.0   # der Zylinder steht nach +Y, die Scheibe liegt an der Wand
 	_bulb = Geo.mesh(self, Geo.cylinder(0.11, 0.02, 10), _bulb_material, Vector3(0, 0, 0.035))
 	_bulb.rotation.x = PI / 2.0
-	for g: GeometryInstance3D in find_children("*", "GeometryInstance3D", true, false):
-		g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_no_shadows()
 	Geo.add_box_shape(self, Vector3(0.3, 0.3, 0.06), Vector3(0, 0, 0.03))
-	light = FlickerLight.new()
-	light.position = Vector3(0, 0, 0.25)
-	light.base_energy = energy
-	light.omni_range = light_range
-	light.shadow_enabled = true
-	light.distance_fade_enabled = true
-	light.distance_fade_begin = 26.0
-	light.distance_fade_length = 6.0
-	light.distance_fade_shadow = 16.0
-	light.lamp_material = _bulb_material
-	light.add_to_group("lamps")
-	add_child(light)
+	_add_light(Vector3(0, 0, 0.25), Color.WHITE)   # Farbe setzt _set_hue
 	_hue = randf()
 	_hue_speed = 1.0 / randf_range(POOL_CYCLE.x, POOL_CYCLE.y)
 	_set_hue()

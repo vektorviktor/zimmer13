@@ -16,8 +16,6 @@ static func get_tex(id: String) -> Texture2D:
 			img = _runner()
 		"wood":
 			img = _wood()
-		"ceiling":
-			img = _ceiling()
 		"cobweb":
 			img = _cobweb()
 		"tiles":
@@ -120,18 +118,6 @@ static func _wood() -> Image:
 			elif (x + y * 3) % 7 == 0:
 				c = c.darkened(0.1)
 			img.set_pixel(x, y, c.darkened(rng.randf() * 0.08))
-	return img
-
-
-static func _ceiling() -> Image:
-	var img := Image.create(32, 32, false, Image.FORMAT_RGB8)
-	var rng := _rng(4)
-	for y in 32:
-		for x in 32:
-			var c := Color(0.55, 0.52, 0.46)
-			if x % 16 == 0 or y % 16 == 0:
-				c = Color(0.3, 0.28, 0.25)
-			img.set_pixel(x, y, c.darkened(rng.randf() * 0.18))
 	return img
 
 

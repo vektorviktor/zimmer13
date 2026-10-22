@@ -8,6 +8,7 @@
 // Vertex-Snapping wie psx_surface, Licht je Ecke aus den Wellennormalen.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_lambert, specular_schlick_ggx;
+#include "res://shaders/psx_snap.gdshaderinc"
 
 // Muss zu PoolWater.MAX_RIPPLES passen
 const int MAX_RIPPLES = 32;
@@ -40,9 +41,6 @@ uniform vec2 slosh_phase = vec2(0.0);
 uniform vec4 pool_rect = vec4(0.0);
 // je Ring: x, z, Alter in s, Stärke (0 = frei)
 uniform vec4 ripples[MAX_RIPPLES];
-uniform float snap_resolution = 140.0;
-// Einstellungen → PS1-Look → Vertex-Wackeln (1 = an, 0 = aus)
-global uniform float psx_snap;
 
 varying float v_height;
 varying float v_ripple;
@@ -109,11 +107,7 @@ void vertex() {
 	NORMAL = normalize(vec3(-(hx - h) / e, 1.0, -(hz - h) / e));
 	v_height = h;
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	if (psx_snap > 0.5 && clip.w > 0.0001) {
-		vec2 ndc = clip.xy / clip.w;
-		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;
-		clip.xy = ndc * clip.w;
-	}
+	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

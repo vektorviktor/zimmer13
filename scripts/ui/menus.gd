@@ -50,8 +50,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			close()
 		get_viewport().set_input_as_handled()
 		return
-	if Game.dialog and Game.dialog.visible:
-		return   # das Gespräch schließt sich selbst
+	if (Game.dialog and Game.dialog.visible) or (Game.phones and Game.phones.is_busy()):
+		return   # Gespräch und Telefon schließen sich selbst (Esc legt auf)
 	open_pause()
 	get_viewport().set_input_as_handled()
 
@@ -84,7 +84,8 @@ func close() -> void:
 	UiKit.clear(_root)
 	_root.visible = false
 	get_tree().paused = false
-	var keep_mouse := (Game.dialog and Game.dialog.visible) or (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active)
+	var keep_mouse := (Game.dialog and Game.dialog.visible) or (Game.dice and Game.dice.active) \
+		or (Game.chess and Game.chess.active) or (Game.phones and Game.phones.is_busy())
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if keep_mouse else Input.MOUSE_MODE_CAPTURED
 
 
@@ -122,7 +123,9 @@ func _show_load() -> void:
 	var box := _new_sheet("load", "Spielstand laden", 330.0)
 	var list := SlotList.new().setup(SlotList.Mode.LOAD, Game.current_slot)
 	list.picked.connect(func(slot: int) -> void:
-		_confirm("Diesen Spielstand laden?", func() -> void: SaveManager.load_slot(slot)))
+		_confirm("Diesen Spielstand laden?", func() -> void:
+			if not SaveManager.load_slot(slot):   # unlesbar geworden – zurück zur Liste, das Spiel bleibt pausiert
+				_show_load()))
 	box.add_child(list)
 	box.add_child(UiKit.button("Zurück", _show_pause))
 
@@ -155,10 +158,7 @@ func _confirm(question: String, action: Callable) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
-	var yes := UiKit.button("Ja", func() -> void:
-		get_tree().paused = false
-		action.call())
-	row.add_child(yes)
+	row.add_child(UiKit.button("Ja", action))   # Szenenwechsel bzw. Laden heben die Pause selbst auf
 	var no := UiKit.button("Nein", _show_load if previous == "load" else _show_pause)
 	row.add_child(no)
 	no.grab_focus.call_deferred()

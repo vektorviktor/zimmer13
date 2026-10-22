@@ -4,14 +4,13 @@
 // mittlere Helligkeit des Bereichs – Falten und Maschen bleiben, im Mittel kommt genau die Gastfarbe heraus.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_disabled;
+#include "res://shaders/psx_snap.gdshaderinc"
 
 uniform sampler2D albedo_tex : source_color, filter_nearest, hint_default_white;
-uniform float snap_resolution = 140.0;
 // Mittlere Helligkeit (linear) von Oberteil, Hose, Haaren in der Textur – aus GuestBody.BODIES
 uniform vec3 ref_lum = vec3(0.5);
 // Sättigung (linear, max − min), ab der ein Texel nicht mehr als grau gilt
 uniform vec2 grey_sat = vec2(0.05, 0.11);
-global uniform float psx_snap;
 
 // Gastfarben (linear), je Instanz
 instance uniform vec3 tint_top = vec3(0.5);
@@ -23,11 +22,7 @@ varying vec3 mask;
 void vertex() {
 	mask = COLOR.rgb;
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	if (psx_snap > 0.5 && clip.w > 0.0001) {
-		vec2 ndc = clip.xy / clip.w;
-		ndc = floor(ndc * snap_resolution + 0.5) / snap_resolution;
-		clip.xy = ndc * clip.w;
-	}
+	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

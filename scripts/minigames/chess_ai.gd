@@ -19,6 +19,7 @@ var _move := 0
 
 ## Zug für die Seite am Zug suchen (im Hintergrund).
 func think(board: Chess, depth: int, blunder: float) -> void:
+	cancel()   # eine noch laufende Suche erst beenden – sonst verwaist ihr Thread
 	_move = 0
 	_thread = Thread.new()
 	_thread.start(_run.bind(board.copy(), depth, blunder, randi()))

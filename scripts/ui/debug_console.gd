@@ -29,7 +29,10 @@ const COMMANDS := {
 	"kill": ["gast", "Gast nach 3 s vom Monster holen lassen"],
 	"knock": ["", "Klopfen an Zimmer 13"],
 	"trick": ["[kind]", "Süßes oder Saures: ein Kind klopft von Tür zu Tür"],
-	"decorate": ["[gast][,lobby][,allein][,hin]", "Schmück-Aktion: Gäste schmücken Tür, Flur oder Lobby · allein: ein Gast trägt Deko in sein Zimmer (hin: du stehst davor)"],
+	"decorate": ["[gast][,lobby][,allein|gross|hier][,haus][,hin]", "Schmück-Aktion: Gäste schmücken Tür, Flur oder Lobby · allein: ein Gast trägt Deko in sein Zimmer (haus: irgendwohin) · gross: großes Schmücken · hier: wo du stehst (hin: du stehst davor)"],
+	"search": ["[gast][,mit]", "Deko-Suche (5.9) – mit: du gehst mit"],
+	"cook": ["suppe|braten[,fertig]", "Kochen (3.8): Kürbis liegt im Topf bzw. in der Pfanne, du stehst am Herd"],
+	"pals": ["gast1,gast2", "gast1 erzählt gast2 gleich Gutes über dich (6.16)"],
 	"call": ["gast|creepy|dead|door", "Telefon in Zimmer 13 klingelt"],
 	"dial": ["n|lobby", "vom Telefon in Zimmer 13 anrufen"],
 	"wallblood": ["[smear]", "Blut an die nächste Wand"],
@@ -40,6 +43,8 @@ const COMMANDS := {
 	"party": ["[gast]", "Feier im Partyraum starten (mit Gast: er lädt ein)"],
 	"talk": ["gast", "Gespräch öffnen"],
 	"look": ["gast[,pose]", "Gast ansehen (carry, panic, dance, sit, walk)"],
+	"weep": ["gast", "der Gast weint 30 s (7.6)"],
+	"wound": ["gast,scratch|axe|choke[,hin]", "Gast hat einen Angriff überlebt (6.17) – hin: steht vor dir"],
 	"friend": ["gast", "mit dem Gast befreundet"],
 	"enemy": ["gast", "mit dem Gast verfeindet"],
 	"relation": ["gast,wert", "Beziehung setzen (ab ±80 mit Taten)"],
@@ -50,8 +55,11 @@ const COMMANDS := {
 	"dice": ["gast", "Mäxchen mit dem Gast"],
 	"chess": ["gast", "Schach mit dem Gast"],
 	"challenge": ["gast[,chess]", "Gast fordert dich heraus (Mäxchen oder Schach)"],
+	"autoplay": ["", "Mäxchen-Antworten bzw. Schachzüge automatisch"],
 	"bulb-thief": ["gast", "Gast klaut eine Birne aus Zimmer 13"],
-	"cat": ["minka|socke|kasimir", "Katze vor den Spieler setzen"],
+	"steal-test": ["", "Ednas Deko unbemerkt nehmen (Schuld-Test)"],
+	"player-deco": ["x,z", "geschnitzten Kürbis des Spielers dort hinstellen"],
+	"cat": ["minka|socke|kasimir|luna|fussel|tiger|mausi[,tragen]", "Katze vor den Spieler setzen (tragen: gleich auf den Arm)"],
 	"pumpkin": ["[walk|run|spin_jump|chicken|macarena|hiphop|jagd[,gast]|dach|garten]", "Kürbismann: Testfigur vor dich, jagt dich/den Gast oder kommt übers Lobbydach"],
 	"pos": ["x,y,z[,winkel[,neigung]]", "Spieler versetzen"],
 	"splash": ["x,z", "nach 1 s platscht es dort im Pool"],
@@ -60,6 +68,8 @@ const COMMANDS := {
 	"flashlight": ["[uv]", "Taschenlampe in die Hand"],
 	"deco": ["gespenst|lichter|netz|laub|zierkürbis|fledermaus|spinne|totenkopf|besen", "Deko in die Hand – an die Wand sehen, [G] hängt auf (5.6)"],
 	"show": ["map|keys|compass", "Karte/Kompass hervorholen"],
+	"sprint": ["", "vorwärts rennen, bis die Ausdauer leer ist"],
+	"winded": ["", "gleich außer Atem (3.1)"],
 	"menu": ["pause|diary|settings|load|controls", "Menü öffnen"],
 	"noise": ["art", "alle 6 s Lärm am Spieler"],
 	"no-psx": ["", "PS1-Look aus"],
@@ -67,16 +77,18 @@ const COMMANDS := {
 	"psx": ["", "PS1-Look an"],
 	"debug": ["", "Debug-Werte einblenden"],
 	"trace": ["", "Monster und Lärm in die Konsole schreiben"],
+	"navcheck": ["", "NavMesh-Wege zu allen wichtigen Orten prüfen (beendet das Spiel)"],
 	"guests": ["", "alle Gäste: Ort, Zustand, Angst, Beziehung"],
 	"help": ["[befehl]", "diese Liste"],
 	"clear": ["", "Ausgabe leeren"],
 }
 ## Wirken nur beim Start (andere Stellen lesen sie aus den Startparametern)
-const START_ONLY := ["title", "nointro", "shot", "frames", "shot-on", "trace-nav", "knock-fake", "answer"]
+const START_ONLY := ["title", "new", "nointro", "shot", "frames", "shot-on", "bg", "perf", "trace-nav", "knock-fake", "answer"]
 ## Getippter Name → Startparameter
 const ALIASES := {"save": "diary", "load": "load-slot"}
 ## Befehle, deren erster Wert eine Gast-ID ist (wird vorher geprüft)
-const GUEST_FIRST := ["shock", "kill", "talk", "look", "friend", "enemy", "relation", "follow", "visit", "attack", "punch", "dice", "chess", "challenge", "bulb-thief"]
+const GUEST_FIRST := ["shock", "kill", "talk", "look", "weep", "wound", "pals", "friend", "enemy", "relation", "follow", "visit",
+	"attack", "punch", "dice", "chess", "challenge", "bulb-thief"]
 
 static var _history: Array[String] = []
 
