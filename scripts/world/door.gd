@@ -17,6 +17,10 @@ var locked_text := "Abgeschlossen."
 var monster_can_open := true
 var glass := false          ## Glastür: man sieht hindurch (Ebene 7 statt 2)
 var hinge_end := false      ## einfache Tür: Scharnier bei x = width statt im Ursprung (Türanschlag im Plan)
+## Fenstertür nach draußen (Terrasse, Garten, Balkon; Gruppe „french_doors“): Raum dahinter und Richtung nach
+## draußen – dort erscheint auch der Lakengeist (Spielkonzept 4.18)
+var room_id := ""
+var outward := Vector3.ZERO
 var is_open := false
 ## Zuletzt vom Monster aufgerissen (nicht vom Spieler oder einem Gast)
 var opened_by_monster := false

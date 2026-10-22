@@ -62,8 +62,8 @@ extends Node3D
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort Vorwarnung → Monster erscheint
-##   --ghost=n|flur|schrank|tür  Lakengeist sofort zum n. Mal am Außenfenster des Raums, in dem du stehst (beim Start
-##                               Zimmer 13): Licht aus, Vorhang auf, Blick zum Fenster (4.18) · flur: alle Gäste
+##   --ghost=n|flur|schrank|tür  Lakengeist sofort zum n. Mal am Außenfenster bzw. an der Fenstertür des Raums, in dem
+##                               du stehst (beim Start Zimmer 13): Licht aus, Vorhang auf, Blick dorthin (4.18) · flur: alle Gäste
 ##                               schlafen sofort, er taucht in deinem Flur knapp 20 m vor dir auf und kommt (vorher mit
 ##                               --tp/--pos in einen Flur stellen) · schrank: kommt durch den Vorhang deines Zimmers
 ##                               herein, du versteckst dich sofort in dessen Schrank – er wartet davor (mit --trace:

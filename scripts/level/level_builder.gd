@@ -1119,6 +1119,12 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			_sign("AUSSER BETRIEB", center + Vector3(0, WIDE_DOOR_H + 0.3, 0) - into3 * 0.11, rad_to_deg(yaw) + 180.0)
 	if k_minus == "sealed" or k_plus == "sealed":
 		_seal(door, "Abgeschlossen.")
+	elif kind == "garden_door" and (k_minus == "outside") != (k_plus == "outside"):
+		# Fenstertür: Der Lakengeist kommt auch hierher (Spielkonzept 4.18)
+		var out := side * (-1.0 if k_minus == "outside" else 1.0)
+		door.outward = Vector3(out.x, 0, out.y)
+		door.room_id = _room_id_at(c - out * 0.5)
+		door.add_to_group("french_doors")
 
 
 func _inner_side(k_minus: String, k_plus: String, kind: String) -> float:

@@ -251,6 +251,15 @@ func add_window_handprints(window: HotelWindow) -> void:
 	_report("handprint", window.global_position)
 
 
+## Dasselbe außen auf der Scheibe einer Fenstertür (am ersten Flügel, gespeichert wie Spuren an Türen).
+func add_french_door_handprints(door: Door) -> void:
+	var side := 1.0 if door.global_transform.basis.z.dot(door.outward) > 0.0 else -1.0
+	for x in [0.3, 0.7]:
+		var mark := TraceMark.new().setup("bloody_hand")
+		door.attach_mark(mark, side, Vector2(x + randf_range(-0.05, 0.05), randf_range(1.3, 1.5)))
+	_report("handprint", door.center())
+
+
 func _report(kind: String, pos: Vector3) -> void:
 	if Game.social:
 		Game.social.note_trace(kind, pos)

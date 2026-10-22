@@ -970,6 +970,10 @@ braucht), beim Ausprobieren festlegen.
 >   früher). Die Licht-aus-Falle bleibt: Wer im dunklen Raum mit offenem Vorhang **bleibt**, für den wird alle **6 s**
 >   neu gewürfelt (**25 %**, beim Betreten weiter 70 %). Pause nach einem Besuch **45 s** statt 90 s, er schwebt
 >   schneller heran (1,6 statt 1,1 m/s) und kommt schneller herein (1,1 statt 0,8 m/s). Gilt auch für Gäste.
+> **Fenstertüren (entschieden und umgesetzt 2026-10-22):** Er kommt auch an Fenstertüren nach draußen (Terrasse,
+> Garten, Balkon) – gerade dort sehr wahrscheinlich: Sie haben keinen Vorhang, es reicht Licht aus. **90 %** beim
+> Betreten, **40 %** alle 6 s beim Bleiben (statt 70 % / 25 %). Er schwebt über dem Boden davor heran, ab dem 2. Mal
+> Handabdrücke auf der Scheibe, ab dem 3. Mal **öffnet er die Tür lautlos** und kommt herein. Gilt auch für Gäste.
 > **Noch nicht:** Einstellung für den Blickzug. Modell: `temp/Meshy_AI_floating_ghost_3d_…glb` – Laken mit Mundloch, ~1,9 m, zwei
 > blutige Hände nach vorn gestreckt. **Gerigget (2026-10-17):** `tools/build_ghost.py` → `assets/models/ghost.glb`
 > (0,8 MB, 512er-Textur, alle 10 159 Dreiecke behalten, damit die Finger heil bleiben) mit Saum, Rumpf, Kopf,

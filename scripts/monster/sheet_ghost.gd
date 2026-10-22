@@ -1,7 +1,8 @@
 class_name SheetGhost
 extends Node3D
 ## Der Lakengeist am Fenster (Spielkonzept 4.18). Er kommt, wenn man einen Raum mit Außenfenster betritt,
-## in dem das Licht aus und der Vorhang offen ist – und wird mit jedem Mal dreister:
+## in dem das Licht aus und der Vorhang offen ist – und wird mit jedem Mal dreister. Fenstertüren nach draußen
+## haben keinen Vorhang: Dort kommt er bei Licht aus noch wahrscheinlicher, ab dem 3. Mal öffnet er sie.
 ##   1. schwebt kurz heran · 2. fasst die Scheibe an (blutige Handabdrücke) und hypnotisiert mit kreisenden
 ##   Händen · 3. kommt herein und würgt · ab dem 4. Mal kommt er immer herein, auch durch den Vorhang.
 ## Wer gewürgt wird, reißt sich nur mit wildem Hin und Her los – der Griff zieht ständig zurück, Losreißen
@@ -33,6 +34,8 @@ const FROM_DAY := 2                   ## spukt ab diesem Tag (oder schon nach de
 const SPAWN_CHANCE := 0.7             ## beim Betreten eines dunklen Raums mit offenem Vorhang
 const STAY_CHANCE := 0.25             ## … und alle STAY_EVERY Sekunden, solange man darin bleibt
 const STAY_EVERY := 6.0
+const FRENCH_DOOR_CHANCE := 0.9       ## an einer Fenstertür statt SPAWN_CHANCE …
+const FRENCH_DOOR_STAY := 0.4         ## … und STAY_CHANCE
 const COOLDOWN := 45.0                ## frühestens wieder nach so vielen Sekunden
 const CHECK_EVERY := 0.5
 const WINDOW_RANGE := 7.0             ## so nah am Fenster (und mit freier Sicht darauf) muss man sein
@@ -120,11 +123,11 @@ var _victim: Node3D      ## Player oder Guest, zu dem er gerade kommt
 var _stage := 0          ## das wievielte Mal bei diesem Opfer
 var _victim_saw := false ## Gast hat ihn schon gesehen (Schreck)
 var _escape_at := -1.0   ## Gast: reißt sich nach so vielen Sekunden los (< 0: schafft es nicht)
-var _guest_windows := {} ## Gast-ID → Fenster, an dem er zuletzt stand (wie _last_window beim Spieler)
+var _guest_windows := {} ## Gast-ID → Fenster bzw. Fenstertür, an dem er zuletzt stand (wie _last_window beim Spieler)
 var _force_guest: Guest
 
-var _window: HotelWindow
-var _last_window: HotelWindow
+var _window: Node3D      ## HotelWindow oder Fenstertür (Door), durch die er gerade kommt
+var _last_window: Node3D
 var _cooldown := 0.0
 var _check := 0.0
 var _stay := 0.0         ## bis zum nächsten Wurf, solange der Spieler im dunklen Raum bleibt
@@ -148,7 +151,7 @@ var _flakes: CPUParticles3D
 var _flake_mat: ShaderMaterial
 var _door_room: Dictionary = {}   ## Zimmer, vor dessen Tür er steht (LevelBuilder.rooms)
 var _door_deco: Array[Item] = []  ## die Lakengespenster dort – sie kreisen mit
-var _windows: Array[Node] = []    ## je Prüfung (_check_spawn) einmal gelesen – _window_near läuft für jeden Gast …
+var _windows: Array[Node] = []    ## Fenstertüren und Fenster, je Prüfung (_check_spawn) einmal gelesen – _window_near läuft für jeden Gast …
 var _dark := {}                   ## … ebenso Raum-ID → dunkel?
 
 
@@ -259,6 +262,7 @@ func _physics_process(delta: float) -> void:
 			_timer -= delta
 			if _timer <= 0.0:
 				if _stage >= ENTER_FROM:
+					_open_french_door()
 					state = State.ENTER
 				else:
 					_vanish()
@@ -267,7 +271,7 @@ func _physics_process(delta: float) -> void:
 			var flat := Vector3(neck.x - global_position.x, 0, neck.z - global_position.z)
 			if _float_to(_grip_spot(), INSIDE_SPEED, delta) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
 				_grab()
-			elif _victim.global_position.distance_to(_window.global_position if _window else global_position) > (LEAVE_RANGE if _window else HALL_GIVE_UP):
+			elif _victim.global_position.distance_to(_window_center(_window) if _window else global_position) > (LEAVE_RANGE if _window else HALL_GIVE_UP):
 				_vanish()
 		State.STRANGLE:
 			_struggle(delta)
@@ -295,15 +299,17 @@ func _physics_process(delta: float) -> void:
 
 # --- Erscheinen ---------------------------------------------------------------------------
 
-## Betritt der Spieler einen dunklen Raum mit Außenfenster (Vorhang offen – ab dem 4. Mal egal),
-## würfelt es (SPAWN_CHANCE); bleibt er darin, alle STAY_EVERY Sekunden erneut (STAY_CHANCE).
+## Betritt der Spieler einen dunklen Raum mit Außenfenster (Vorhang offen – ab dem 4. Mal egal) oder Fenstertür,
+## würfelt es (SPAWN_CHANCE bzw. FRENCH_DOOR_CHANCE); bleibt er darin, alle STAY_EVERY Sekunden erneut
+## (STAY_CHANCE bzw. FRENCH_DOOR_STAY).
 ## Ab Tag FROM_DAY oder nach dem ersten Angriff des Monsters (der Anfang bleibt friedlich, 2.1).
 func _check_spawn() -> void:
 	var player := Game.player
 	var director := Game.director
 	if director == null or Game.game_over or director.other_threat_active(self):
 		return   # nur eine Bedrohung im Haus
-	_windows = get_tree().get_nodes_in_group("windows")
+	_windows = get_tree().get_nodes_in_group("french_doors")   # zuerst: Dort kommt er am liebsten
+	_windows.append_array(get_tree().get_nodes_in_group("windows"))
 	_dark.clear()
 	if _haunting() and _cooldown <= 0.0 and director.player_threat <= 0.0 and _check_doors():
 		return
@@ -317,12 +323,12 @@ func _check_spawn() -> void:
 		if window != _last_window:
 			_last_window = window
 			_stay = STAY_EVERY
-			chance = _spawn_chance(player)
+			chance = _spawn_chance(player, window)
 		elif window != null:
 			_stay -= CHECK_EVERY
 			if _stay <= 0.0:
 				_stay = STAY_EVERY
-				chance = minf(1.0, STAY_CHANCE + WEAK_CHANCE * player.weakness())
+				chance = minf(1.0, (FRENCH_DOOR_STAY if window is Door else STAY_CHANCE) + WEAK_CHANCE * player.weakness())
 		# in Gesellschaft kommt er nicht
 		if window != null and _cooldown <= 0.0 and director.player_threat <= 0.0 \
 				and _witness_guests(eye, player).size() < WITNESSES and randf() < chance:
@@ -359,7 +365,7 @@ func _check_guests() -> void:
 			continue
 		var forced := _force_guest == g
 		if not forced and (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
-				or _witness_guests(eye, g).size() + _player_witness(eye) >= WITNESSES or randf() >= _spawn_chance(g)):
+				or _witness_guests(eye, g).size() + _player_witness(eye) >= WITNESSES or randf() >= _spawn_chance(g, window)):
 			continue
 		_force_guest = null
 		_appear(window, g)
@@ -531,15 +537,26 @@ func _appear_in_hall(floor_point: Vector3) -> void:
 			floor_point.distance_to(Game.player.global_position), weak, ", sicher" if weak >= WEAK_SURE else ""])
 
 
-## Dunkles Außenfenster in der Nähe dieses Augenpunkts, durch das er zum `stage`. Mal käme (nur aus _check_spawn).
-func _window_near(eye: Vector3, stage: int) -> HotelWindow:
+## Dunkle Fenstertür oder dunkles Außenfenster in der Nähe dieses Augenpunkts, durch das er zum `stage`. Mal
+## käme (nur aus _check_spawn).
+func _window_near(eye: Vector3, stage: int) -> Node3D:
 	var world := get_world_3d()
-	for node in _windows:
-		var window := node as HotelWindow
-		if not window.has_curtains() or (window.closed and stage < THROUGH_CURTAIN_FROM):
-			continue
-		var inside := window.inside_point()
-		if inside.distance_to(eye) > WINDOW_RANGE or absf(inside.y - eye.y) > 2.0 or not _room_dark(window.room_id):
+	for window: Node3D in _windows:
+		var room_id := ""
+		var inside := Vector3.ZERO
+		if window is Door:
+			var door := window as Door
+			if door.locked:
+				continue
+			room_id = door.room_id
+			inside = door.center() - door.outward * 0.4
+		else:
+			var win := window as HotelWindow
+			if not win.has_curtains() or (win.closed and stage < THROUGH_CURTAIN_FROM):
+				continue
+			room_id = win.room_id
+			inside = win.inside_point()
+		if inside.distance_to(eye) > WINDOW_RANGE or absf(inside.y - eye.y) > 2.0 or not _room_dark(room_id):
 			continue
 		if Senses.clear_line(world, inside, eye, null, Senses.SIGHT_MASK & ~HotelWindow.LAYER_BLOCK):
 			return window
@@ -557,14 +574,19 @@ func _room_dark(room_id: String) -> bool:
 	return _dark[room_id]
 
 
-func _appear(window: HotelWindow, victim: Node3D) -> void:
+func _appear(window: Node3D, victim: Node3D) -> void:
 	_start_visit(victim, window)
 	var outward := window.global_transform.basis.z.normalized() * -1.0
 	var base := window.global_position - Vector3(0, HANDS_Y, 0)
+	var door := window as Door
+	if door:   # Fenstertür: über dem Boden davor, Hände auf Halshöhe eines Erwachsenen
+		outward = door.outward
+		var c := door.center()
+		base = Vector3(c.x, door.global_position.y + Player.EYE_HEIGHT - NECK_BELOW_EYES - HANDS_Y, c.z)
 	_swings = 0
 	_last_sign = 0
 	_face(-outward)
-	if window.closed:   # ab dem 4. Mal: hinter dem Vorhang, gleich herein
+	if door == null and (window as HotelWindow).closed:   # ab dem 4. Mal: hinter dem Vorhang, gleich herein
 		global_position = base + outward * STOP_AT_GLASS
 		state = State.ENTER
 	else:
@@ -572,15 +594,16 @@ func _appear(window: HotelWindow, victim: Node3D) -> void:
 		_target = base + outward * (STOP_OUTSIDE if _stage < HYPNOSIS_FROM else STOP_AT_GLASS)
 		state = State.APPROACH
 	if victim is Player:
-		Game.caption("[Etwas schwebt vor dem Fenster]")
+		Game.caption("[Etwas schwebt vor der Fenstertür]" if door else "[Etwas schwebt vor dem Fenster]")
 	if Game.tracing:
-		print("[Lakengeist] %d. Mal am Fenster (%s) – bei %s" % [_stage, window.room_id, (victim as Guest).display_name if victim is Guest \
+		print("[Lakengeist] %d. Mal %s (%s) – bei %s" % [_stage, "an der Fenstertür" if door else "am Fenster",
+			door.room_id if door else (window as HotelWindow).room_id, (victim as Guest).display_name if victim is Guest \
 			else "dir (Schwäche %.2f)" % Game.player.weakness()])
 
 
 ## Beginn eines Auftritts (Fenster, Flur, Tür): Besuch beim Opfer zählen – Stufe = das wievielte Mal bei ihm –,
 ## sichtbar machen, eingeblendet wird er danach in _physics_process.
-func _start_visit(victim: Node3D, window: HotelWindow) -> void:
+func _start_visit(victim: Node3D, window: Node3D) -> void:
 	_victim = victim
 	_victim_saw = false
 	if victim is Guest:
@@ -596,11 +619,35 @@ func _start_visit(victim: Node3D, window: HotelWindow) -> void:
 	_fade = 0.0
 
 
-## Ab dem 2. Mal: blutige Handabdrücke außen auf der Scheibe.
+## Ab dem 2. Mal: blutige Handabdrücke außen auf der Scheibe (an einer offenen Fenstertür keine).
 func _touch_glass() -> void:
+	var door := _window as Door
+	if door and door.is_open:
+		return
 	Game.play_sound("thud", 0.4)
-	if Game.traces:
-		Game.traces.add_window_handprints(_window)
+	if Game.traces == null:
+		return
+	if door:
+		Game.traces.add_french_door_handprints(door)
+	else:
+		Game.traces.add_window_handprints(_window as HotelWindow)
+
+
+## Ab dem 3. Mal kommt er herein – eine geschlossene Fenstertür schwingt dabei lautlos auf.
+func _open_french_door() -> void:
+	var door := _window as Door
+	if door == null or door.is_open or door.locked:
+		return
+	door.set_open(true, false, true, self)
+	if Game.tracing:
+		print("[Lakengeist] öffnet die Fenstertür (%s)" % door.room_id)
+	if _victim is Player:
+		Game.caption("[Die Fenstertür schwingt auf]")
+
+
+## Mitte des Fensters bzw. der Fenstertür (für den Abstand, ab dem er aufgibt).
+func _window_center(window: Node3D) -> Vector3:
+	return (window as Door).center() if window is Door else window.global_position
 
 
 # --- Würgen -----------------------------------------------------------------------------
@@ -870,9 +917,10 @@ func _grip_spot() -> Vector3:
 	return Vector3(neck.x, neck.y - HANDS_Y, neck.z) - flat.normalized() * HANDS_AHEAD
 
 
-## Erscheinen bei Spieler oder Gast – je schwächer das Opfer, desto wahrscheinlicher (4.18).
-func _spawn_chance(victim: Node3D) -> float:
-	return minf(1.0, SPAWN_CHANCE + WEAK_CHANCE * _weakness(victim))
+## Erscheinen bei Spieler oder Gast – je schwächer das Opfer, desto wahrscheinlicher, an einer Fenstertür
+## noch wahrscheinlicher (4.18).
+func _spawn_chance(victim: Node3D, window: Node3D) -> float:
+	return minf(1.0, (FRENCH_DOOR_CHANCE if window is Door else SPAWN_CHANCE) + WEAK_CHANCE * _weakness(victim))
 
 
 ## Schwäche von Spieler oder Gast (0..1).
@@ -992,22 +1040,24 @@ func _rotate2(bone_name: String, axis_a: Vector3, a: float, axis_b: Vector3, b: 
 
 # --- Debug & Speichern ----------------------------------------------------------------------
 
-## Debug (F6, --ghost=n): Er kommt sofort zum `stage`. Mal ans Außenfenster des Raums, in dem der Spieler
-## steht – Licht dort aus, Vorhänge auf (ab dem 4. Mal zu), Blick zum Fenster. Ohne Außenfenster nur eine
-## Meldung (false).
+## Debug (F6, --ghost=n): Er kommt sofort zum `stage`. Mal ans nächste Außenfenster bzw. an die nächste
+## Fenstertür des Raums, in dem der Spieler steht – Licht dort aus, Vorhänge auf (ab dem 4. Mal zu), Blick
+## dorthin. Ohne beides nur eine Meldung (false).
 func debug_summon(stage: int) -> bool:
 	var player := Game.player
 	var room := Game.social.builder.room_at(player.global_position)
-	var window: HotelWindow = null
+	var window: Node3D = null
 	var best := INF
-	for node in get_tree().get_nodes_in_group("windows"):
-		var w := node as HotelWindow
-		var d := w.global_position.distance_to(player.global_position)
-		if room != "" and w.room_id == room and w.has_curtains() and d < best:
-			window = w
+	for node in get_tree().get_nodes_in_group("windows") + get_tree().get_nodes_in_group("french_doors"):
+		var door := node as Door
+		var d := _window_center(node).distance_to(player.global_position)
+		var usable := (door.room_id == room and not door.locked) if door \
+			else ((node as HotelWindow).room_id == room and (node as HotelWindow).has_curtains())
+		if room != "" and usable and d < best:
+			window = node
 			best = d
 	if window == null:
-		Game.say("Lakengeist: Hier ist kein Außenfenster.", 2.5)
+		Game.say("Lakengeist: Hier ist kein Außenfenster und keine Fenstertür.", 2.5)
 		return false
 	_debug_reset()
 	visits = maxi(0, stage - 1)
@@ -1018,7 +1068,9 @@ func debug_summon(stage: int) -> bool:
 		var w := node as HotelWindow
 		if w.room_id == room and w.has_curtains():
 			w.set_closed(stage >= THROUGH_CURTAIN_FROM, true)
-	_debug_look_at(window.global_position)
+	if window is Door:
+		(window as Door).set_open(false, true, true)
+	_debug_look_at(_window_center(window))
 	_last_window = window
 	_appear(window, player)
 	return true
@@ -1136,8 +1188,10 @@ func debug_summon_guest(guest: Guest, stage: int) -> void:
 		if window.room_id == guest.home["no"] and window.has_curtains():
 			window.set_closed(stage >= THROUGH_CURTAIN_FROM, true)
 			found = true
+	for node in get_tree().get_nodes_in_group("french_doors"):
+		found = found or ((node as Door).room_id == guest.home["no"] and not (node as Door).locked)
 	if not found:
-		print("[Lakengeist] Zimmer %s hat kein Außenfenster – er kann nicht zu %s kommen" % [guest.home["no"], guest.display_name])
+		print("[Lakengeist] Zimmer %s hat kein Außenfenster und keine Fenstertür – er kann nicht zu %s kommen" % [guest.home["no"], guest.display_name])
 
 
 func save_state() -> Dictionary:

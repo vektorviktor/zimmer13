@@ -74,6 +74,7 @@ done <<'LIST'
 2000|--ghost=3 --trace
 2000|--ghost=schrank --trace
 2000|--ghost=tür --answer --trace
+2000|--pos=34.45,0.1,-13.5 --ghost=4 --trace
 1500|--lure --trace
 3000|--decorate=gross,hin --trace
 2000|--decorate=allein,haus --trace
