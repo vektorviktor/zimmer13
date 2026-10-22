@@ -44,7 +44,7 @@ const MUSIC_CHORDS := [[220.0, 261.6, 329.6], [174.6, 220.0, 261.6], [196.0, 246
 const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
-	"rustle": 0.3, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0,
+	"rustle": 0.3, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
 }
 
 var hum := 0.0
@@ -339,6 +339,10 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			shot["phase"] = mph
 			var nasal := (fmod(mph, 1.0) * 2.0 - 1.0) * 0.35 + sin(TAU * mph * 2.0) * 0.3
 			return nasal * sin(PI * k) * (0.8 + 0.2 * sin(TAU * 7.0 * t)) * 0.25
+		"hiss":
+			# Getränkedose: kurzes Knacken der Lasche, dann zischt die Kohlensäure heraus
+			var click := sin(TAU * 1900.0 * t) * exp(-t * 400.0) * 0.4
+			return click + white * minf(1.0, t * 60.0) * exp(-t * 7.0) * 0.28
 		"purr":
 			# Schnurren: tiefes Brummen, 26-mal pro Sekunde an- und abschwellend
 			var pulse := 0.5 + 0.5 * sin(TAU * 26.0 * t)

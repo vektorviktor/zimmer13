@@ -47,7 +47,9 @@ const DIR := "user://saves/"
 ##     wound_visited; ältere Stände laden weiter, alle unverletzt
 ## 27: Verdacht wegen Katzendiebstahl (social.cat_blame), ohne Delle der Dreistigkeit (director.boldness_dip entfällt) –
 ##     ältere Stände laden weiter, dort verdächtigt keiner den Spieler, eine gespeicherte Delle wird übergangen
-const VERSION := 27
+## 28: Tasche für Kleines (player.bag, Spielkonzept 3.2) und Getränkedosen (Item.Kind.SODA_CAN) – ältere Stände
+##     laden weiter, die Tasche ist dann leer
+const VERSION := 28
 const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -321,6 +323,7 @@ func collect() -> Dictionary:
 			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
 			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised,
 			"held": _item_data(p.held) if p.held else null,
+			"bag": p.bag.map(_bag_data),
 			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
 		},
 		"items": [],
@@ -417,6 +420,14 @@ func _item_data(item: Item) -> Dictionary:
 		"kind": int(item.kind), "extra": item.create_extra(), "pos": _v(item.global_position),
 		"rot": _v(e), "owner": item.owner_id, "lit": item.lit, "burn": item.burn_time, "hung": item.hung,
 	}
+
+
+## Gegenstand in der Tasche: ohne Lage – er liegt beim Spieler
+func _bag_data(item: Item) -> Dictionary:
+	var d := _item_data(item)
+	for key in ["pos", "rot", "hung"]:
+		d.erase(key)
+	return d
 
 
 # --- Zustand wiederherstellen ------------------------------------------------------------
@@ -557,6 +568,10 @@ func apply(data: Dictionary) -> void:
 		held_item.owner_id = "player"
 		parent.add_child(held_item)
 		p.try_pick_up(held_item)
+	var bag: Array[Item] = []
+	for entry in pd.get("bag", []):
+		bag.append(_make_item(entry))
+	p.set_bag(bag)
 
 	# Soziales
 	var sd: Dictionary = data.get("social", {})

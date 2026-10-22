@@ -65,6 +65,8 @@ while IFS='|' read -r frames args; do
 done <<'LIST'
 600|--savetest
 600|--savetest --day=20
+600|--bag --flashlight --savetest
+400|--bag --flashlight --bag-menu=2
 3000|--navcheck
 3000|--day=12 --first-attack --trace
 2400|--warn --intent=one --day=10 --trace

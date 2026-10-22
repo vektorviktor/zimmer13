@@ -15,7 +15,7 @@
   - [2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21)](#24-tagesuhr--tagesablauf-entschieden-2026-10-21)
 - [3. Core Gameplay Loop](#3-core-gameplay-loop)
   - [3.1 Spieler-Aktionen (Grundumfang)](#31-spieler-aktionen-grundumfang)
-  - [3.2 Kein Inventar – alles in den Händen](#32-kein-inventar--alles-in-den-händen)
+  - [3.2 Kein verstecktes Inventar – Hände und Tasche](#32-kein-verstecktes-inventar--hände-und-tasche)
   - [3.3 Truhen](#33-truhen)
   - [3.4 Verstecken (inspiriert von Roblox *Doors*)](#34-verstecken-inspiriert-von-roblox-doors)
   - [3.5 Kommoden im Flur (entschieden und umgesetzt 2026-10-14)](#35-kommoden-im-flur-entschieden-und-umgesetzt-2026-10-14)
@@ -333,7 +333,7 @@ Luftanhalten verstummt das Keuchen. Wer flieht, muss sich also gut überlegen, w
 - **Außer Atem hält man die Luft kürzer an:** voll erschöpft geht der Atem dreimal so schnell aus, beruhigt wieder
   normal. Wer gerade gerannt ist und sich versteckt, muss also wählen: keuchen oder bald nach Luft schnappen.
 
-### 3.2 Kein Inventar – alles in den Händen
+### 3.2 Kein verstecktes Inventar – Hände und Tasche
 - **Es gibt kein verstecktes Inventar.** Jeder Gegenstand (Deko, Schlüssel, Kerze, Messer, Gießkanne, Puppe …) existiert physisch in der Welt und wird **einzeln in den Händen** getragen.
 - **Einzige Ausnahme: Geld.** Geld ist ein reiner Zahlenwert, den der Spieler besitzt (Anzeige z. B. dezent im HUD oder beim Handeln).
 - **Folgen für das Gameplay:**
@@ -341,7 +341,12 @@ Luftanhalten verstummt das Keuchen. Wer flieht, muss sich also gut überlegen, w
   - Mit vollen Händen ist man verwundbar: keine Tür öffnen, nichts anderes aufheben, evtl. langsamer bei großen Dingen.
   - Im Notfall muss man Dinge **fallen lassen**, um zu fliehen – und sie liegen dann im Flur (für Gäste zum Klauen).
 - **Das eigene Zimmer ist das Lager:** Dinge werden auf Tisch, Regal, Bett, Boden abgelegt. Dadurch sind sie auch **sichtbar und klaubar** für unfreundliche Gäste, wenn die Tür offen ist oder sie einen Schlüssel haben.
-- **Offen:** Genau ein Gegenstand gleichzeitig – oder zwei Hände (z. B. kleine Dinge je eine Hand, große Dinge wie Kürbis/Puppe beide Hände)?
+- ~~**Offen:** Genau ein Gegenstand gleichzeitig – oder zwei Hände?~~ → **Tasche für Kleines (entschieden 2026-10-22, im Prototyp umgesetzt):** Große Dinge (Kürbisse, Deko, Taschenlampe …) trägt man weiter in der Hand. Kleines passt zusätzlich in eine **Tasche mit 6 Fächern**: Süßigkeiten, **Getränkedosen**, Zierkürbisse, Messer, Batterien, Glühbirnen, UV-Aufsatz, Würfel(becher) und Kerzen, die nicht brennen.
+  - Kleines nimmt man mit E in die Hand; ist die Hand schon voll, wandert es gleich in die Tasche (mit einem großen Ding in beiden Händen nicht).
+  - **[Q] halten** (geändert 2026-10-22, vorher [I]/Mausrad): Die Fächer erscheinen groß mit Bildern der Gegenstände, das Spiel dahinter verschwimmt – **es läuft weiter**, man kann weiterlaufen, nur die Maus wählt (links/rechts, Mausrad oder [1]–[6]). **Loslassen** nimmt den gewählten Gegenstand in die Hand; **was man vorher trug – groß oder klein –, fällt zu Boden** (Lärm wie Ablegen, ein Kürbis poltert). Ein leeres Fach wählen steckt Kleines aus der Hand ein; nichts wählen oder Rechtsklick bricht ab. [1]–[6] ohne [Q] nehmen gleich heraus.
+  - Mit einer Katze im Arm kommt man nicht an die Tasche, im Versteck nur mit leerer Hand (dort ist kein Platz zum Ablegen).
+  - Immer sichtbar: kleine Fächer mit Bildern unten rechts, sobald etwas in der Tasche ist.
+  - Die Dinge in der Tasche bleiben echte Gegenstände: Man kann sie wieder herausnehmen, ablegen, verschenken und verkaufen (im Gespräch „Aus der Tasche …“), Kinder an der Tür bekommen Süßigkeiten auch aus der Tasche. Gäste sehen und stehlen sie nicht.
 - **Ausnahme am Körper (entschieden 2026-10-11, im Prototyp umgesetzt):** Drei Dinge trägt man am Körper statt in der Hand – sie sind Werkzeug für Orientierung und Zutritt, keine Beute. Man kann sie nicht ablegen, verlieren, handeln oder gestohlen bekommen.
   - **Kompass** (Zimmer 226): beim Aufheben eingesteckt, **F halten** holt ihn mit der linken Hand hervor.
   - **Karte aus losen Blättern**, ein Blatt je Ebene, **jedes einzeln zu finden** (Erdgeschoss in Zimmer 13, Obergeschoss an der Rezeption, Kellerskizze eines früheren Gastes in Zimmer 17; künftige Ebenen wie Tiefkeller bekommen eigene Blätter). **Tab halten** zeigt sie, das Blatt der aktuellen Ebene liegt oben, **Linksklick / Mausrad** blättert.
@@ -451,6 +456,7 @@ nach der sich der Lakengeist seine Opfer sucht (4.18).
 - **Gäste trinken auch:** Sie werden betrunken, gesprächiger (erzählen mehr, auch Gerüchte) und für den Geist
   schwächer. **Kinder** trinken nie (6.13).
 - **Offen:** welche Getränke; ob es auch für Erwachsene Alkoholfreies gibt (für Kinder Kakao und Limo, 6.13).
+- **Getränkedosen (umgesetzt 2026-10-22, 3.2):** Limo und Cola – Kisten in Kühlraum und Lager, auf der Bartheke für 1 Geld. Eine Dose (Linksklick) bringt einen sofort wieder zu Atem (Ausdauer voll, 3.1) und nimmt etwas Schock; das Zischen beim Öffnen ist leiser Lärm (3 m). Gäste trinken geschenkte Dosen, Kinder freuen sich darüber wie über etwas, das sie mögen.
 
 > **Umgesetzt (2026-10-19):** Flasche und Glas auf der Bartheke, ein Glas **1 Geld**, nimmt etwas Schock. Ab dem
 > **2. Glas angetrunken** (Blick schwankt und driftet, die Maus zieht nach, man stolpert ab und zu – das ist
@@ -2776,7 +2782,7 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 - Gibt es noch keinen Spielstand → „Neu beginnen“ (Start in Zimmer 13).
 
 ### 8.8 Was gespeichert wird
-Weil es **kein Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegenstand muss mit Ort und Zustand gespeichert werden.
+Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegenstand muss mit Ort und Zustand gespeichert werden (die Tasche für Kleines mit dem Spieler).
 
 | Bereich | Inhalt |
 |---------|--------|
@@ -2914,7 +2920,7 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 3j. ~~Feiern~~ → spontan durch Gäste, Spieler kann auch eine ausrichten (entschieden).
 3k. **Minispiele (6.10):** Welche Spiele für den ersten Umfang? Echte Schachregeln (aufwendiger) oder zuerst ein einfaches Würfel-/Kartenspiel? Welche Möbel dürfen als Einsatz dienen?
 3h. **Truhen:** Abschließbar? Gibt es eine eigene Truhe im Spielerzimmer?
-3f. ~~Tragen~~ → kein Inventar, alles in den Händen, nur Geld als Wert (entschieden); Ausnahme am Körper: Kompass, Kartenblätter, Schlüsselbund (3.2, entschieden 2026-10-11). Offen: ein oder zwei Hände?
+3f. ~~Tragen~~ → kein Inventar, alles in den Händen, nur Geld als Wert (entschieden); Ausnahme am Körper: Kompass, Kartenblätter, Schlüsselbund (3.2, entschieden 2026-10-11). ~~Offen: ein oder zwei Hände?~~ → eine Hand für alles, dazu eine Tasche mit 6 Fächern für Kleines (3.2, entschieden 2026-10-22) ✔
 4. ~~Story~~ → **Das Abkommen und der Heizer** (2.3, entschieden 2026-10-11). ~~Offen: Mitwisser besetzen~~ (Tochter des Heizers als Kernfigur, 2026-10-21). Offen: was das Ding vor 1987 war.
 5. **Anzahl & Tiefe der Gäste:** Wenige tiefe Charaktere (3–5) oder viele einfache?
 6. **Können Gäste sterben / verschwinden?** (starke emotionale Konsequenz)

@@ -1,8 +1,11 @@
 class_name Player
 extends CharacterBody3D
 ## Ego-Perspektive-Spieler. Kapsel 1,80 m × 0,45 m (Spielkonzept 3.1).
-## Kein Inventar: genau ein Gegenstand in der Hand (3.2). Ausnahme am Körper: Kompass,
-## Kartenblätter und Schlüsselbund – Karte (Tab) und Kompass (F) holt die linke Hand hervor.
+## Ein Gegenstand in der Hand, Kleines dazu in der Tasche (BAG_SLOTS Fächer, Spielkonzept 3.2): [Q] halten zeigt die
+## Fächer über dem verschwommenen Spiel (es läuft weiter), Maus / Mausrad / [1]–[6] wählen, Loslassen nimmt den
+## Gegenstand in die Hand – was die Hand hielt, fällt zu Boden; ein leeres Fach steckt Kleines aus der Hand ein.
+## Am Körper: Kompass, Kartenblätter und Schlüsselbund – Karte (Tab) und Kompass (F) holt die linke Hand hervor.
+## Getränkedose in der Hand: [Linksklick] trinkt.
 ## Kann sich in Schränken und unter Betten verstecken (3.4).
 ## Taschenlampe in der Hand: [Linksklick] an/aus, [R] normales Licht ↔ UV (4.16).
 
@@ -18,6 +21,13 @@ const RUN_SPEED := 4.8
 const CROUCH_SPEED := 1.3
 const JUMP_VELOCITY := 3.6
 const REACH := 2.2
+## Tasche für Kleines (Spielkonzept 3.2): so viele Fächer, je ein Gegenstand (Item.POCKET_KINDS)
+const BAG_SLOTS := 6
+## Getränkedose trinken: so viel Schock weniger (die Ausdauer ist danach voll)
+const CAN_CALM := 0.05
+## Tasche offen: so viele Pixel Mausweg je Fach; so nah an der Mitte ist nichts gewählt (in Fächern)
+const BAG_MOUSE_STEP := 60.0
+const BAG_DEAD_ZONE := 0.35
 const MOUSE_SENSITIVITY := 0.0022
 const HIDE_COMFORT_TIME := 22.0   ## ab hier wird es im Versteck unangenehm
 const HIDE_MAX_TIME := 38.0       ## dann muss man raus (wie in „Doors“)
@@ -89,6 +99,14 @@ const SIGHT_FADE := 0.5
 var head: Node3D
 var camera: Camera3D
 var held: Item
+## Tasche für Kleines (Spielkonzept 3.2): Fach 1 zuerst, höchstens BAG_SLOTS
+var bag: Array[Item] = []
+## [Q] gehalten: Fächer sind eingeblendet, die Maus wählt statt sich umzusehen
+var bag_open := false
+## gewähltes Fach (−1 = keins: Loslassen bricht ab)
+var bag_sel := -1
+var _bag_cursor := 0.0   ## Mausweg seit dem Öffnen in Fächern, 0 = Mitte
+var debug_bag_menu := false   ## --bag-menu: als würde [Q] gehalten
 var carried_cat: HotelCat   ## Katze auf dem Arm (Spielkonzept 6.11) – solange keine Hand frei für Gegenstände
 var crouching := false
 var running := false
@@ -139,6 +157,8 @@ var _collider: CollisionShape3D
 var _ray: RayCast3D
 var _focus = null
 var _hang_hint := false   ## Hinweis aufs Aufhängen schon gezeigt
+var _bag_hint := false    ## Hinweis auf die Tasche schon gezeigt
+var _bag_node: Node3D     ## hier hängen die Gegenstände in der Tasche (unsichtbar)
 var _noise_timer := 0.0
 var _pant_timer := 0.0
 var _step_dist := 0.0
@@ -200,6 +220,9 @@ func _ready() -> void:
 	_compass_holder = Node3D.new()
 	_compass_holder.rotation.x = COMPASS_TILT
 	_left_hand.add_child(_compass_holder)
+	_bag_node = Node3D.new()
+	_bag_node.visible = false
+	add_child(_bag_node)
 	_ray = RayCast3D.new()
 	_ray.target_position = Vector3(0, 0, -REACH)
 	_ray.collision_mask = 1 | 2 | 4 | 64 | 128 | 256 | HotelWindow.LAYER_BLOCK | HotelCat.LAYER
@@ -210,6 +233,9 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if dead or in_dialog:
+		return
+	if bag_open:
+		_bag_input(event)
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var rel: Vector2 = (event as InputEventMouseMotion).screen_relative * MOUSE_SENSITIVITY * Settings.mouse_sensitivity
@@ -234,6 +260,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_explain_left_hand("map" if event.is_action_pressed("map") else "compass")
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	elif event.is_action_pressed("bag") and not gripped:
+		open_bag()
+	elif _bag_slot_pressed(event) >= 0 and not gripped:
+		take_from_bag(_bag_slot_pressed(event))
 	elif event.is_action_pressed("interact") and not gripped:
 		if hiding:
 			exit_hide()
@@ -250,6 +280,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		put_on_sheet()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.ROAST_PUMPKIN and not hiding:
 		eat_held()
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.SODA_CAN and not hiding:
+		drink_can()
 	elif event.is_action_pressed("use_item") or event.is_action_pressed("light_mode"):
 		_use_flashlight(event.is_action_pressed("light_mode"))
 
@@ -261,6 +293,10 @@ func _look(rel: Vector2) -> void:
 
 ## Im Rausch folgt die Sicht der Maus träge (Spielkonzept 3.7).
 func _process(delta: float) -> void:
+	if bag_open and (dead or in_dialog or gripped):
+		close_bag(false)
+	elif bag_open and not Input.is_action_pressed("bag") and not debug_bag_menu:
+		close_bag(true)   # [Q] losgelassen
 	if _look_lag == Vector2.ZERO:
 		return
 	if dead or in_dialog or hiding:
@@ -792,8 +828,12 @@ func try_pick_up(item: Item) -> void:
 		Game.play_sound("blip")
 		item.queue_free()
 		return
-	if held and not item.goes_to_pocket():
-		Game.say("Du hast schon etwas in der Hand. Erst ablegen [G].")
+	var into_bag := (held != null or carried_cat != null) and bag_takes(item)
+	if held and not item.goes_to_pocket() and not into_bag:
+		if item.fits_pocket() and not hands_blocked() and bag.size() >= BAG_SLOTS:
+			Game.say("Hand und Tasche sind voll.")
+		else:
+			Game.say("Du hast schon etwas in der Hand. Erst ablegen [G].")
 		return
 	if carried_cat and not item.goes_to_pocket():
 		Game.say("Erst %s absetzen [G]." % carried_cat.display_name)
@@ -803,31 +843,44 @@ func try_pick_up(item: Item) -> void:
 	if item.goes_to_pocket():
 		_pocket(item)
 		return
+	if into_bag:
+		bag_add(item)
+		Game.say("%s – eingesteckt." % item.display_name, 2.0)
+		Game.noise("bag", global_position, self)
+		return
 	item.owner_id = "player"
+	_hold(item)
+	Game.play_sound("blip", 0.5)
+	if item.fits_pocket() and not _bag_hint:
+		_bag_hint = true
+		Game.say("%s – passt in die Tasche: [Q] halten und ein leeres Fach wählen steckt es ein" % item.display_name, 4.0)
+	elif item.flashlight:
+		Game.say("%s – [Linksklick] an/aus%s" % [item.display_name, ", [R] UV" if item.flashlight.has_uv else ""], 3.0)
+	elif item.can_hang() and not _hang_hint:
+		_hang_hint = true
+		Game.say("%s – auf eine Wand sehen und [G] zum Aufhängen" % item.display_name, 3.5)
+
+
+## In die rechte Hand nehmen (aufgehoben oder aus der Tasche).
+func _hold(item: Item) -> void:
 	held = item
 	item.set_held(true)
 	item.reparent(_hand, false)
 	item.position = Vector3(-0.22, -0.28, -0.12) if item.is_large else Vector3.ZERO
 	item.rotation = Vector3(0, PI, 0)
-	Game.play_sound("blip", 0.5)
-	if item.flashlight:
-		Game.say("%s – [Linksklick] an/aus%s" % [item.display_name, ", [R] UV" if item.flashlight.has_uv else ""], 3.0)
-	elif item.can_hang() and not _hang_hint:
-		_hang_hint = true
-		Game.say("%s – auf eine Wand sehen und [G] zum Aufhängen" % item.display_name, 3.5)
 	if Game.hud:
 		Game.hud.set_held(item.display_name)
 
 
-## `shocked`: vor Schreck fallen gelassen – lauter (6.8, 4.15).
-func drop_held(shocked: bool = false) -> void:
+## `shocked`: vor Schreck fallen gelassen – lauter (6.8, 4.15). `hang`: Deko vor einer Wand hängt man auf.
+func drop_held(shocked: bool = false, hang: bool = true) -> void:
 	if held == null and carried_cat:
 		carried_cat.put_down()
 		return
 	if held == null:
 		return
 	var item := held
-	var spot := {} if shocked else _hang_spot()
+	var spot := {} if shocked or not hang else _hang_spot()
 	if not spot.is_empty():
 		# An die Wand hängen statt ablegen (Spielkonzept 5.6)
 		held = null
@@ -856,7 +909,7 @@ func receive_item(item: Item) -> bool:
 		return false
 	get_parent().add_child(item)
 	item.global_position = global_position + Vector3.UP
-	if (held or carried_cat) and not item.goes_to_pocket():
+	if (held or carried_cat) and not item.goes_to_pocket() and not bag_takes(item):
 		Game.say("Die Hände sind voll – %s liegt jetzt vor dir." % item.display_name)
 		item.global_position = _drop_position()
 		return false
@@ -869,6 +922,17 @@ func eat_held() -> void:
 	shock = maxf(0.0, shock - EAT_CALM)
 	consume_held()
 	Game.say("Warm, süß und ein bisschen rauchig. Das tut gut.", 3.0)
+
+
+## Getränkedose trinken (Spielkonzept 3.1, 3.2): wieder ganz bei Atem und etwas ruhiger – das Zischen hört man.
+func drink_can() -> void:
+	var cola := held.flavor == "cola"
+	consume_held()
+	stamina = 1.0
+	winded = false
+	shock = maxf(0.0, shock - CAN_CALM)
+	Game.noise("can", global_position, self)
+	Game.say("Zisch. Eiskalte Cola – der Atem geht wieder ruhig." if cola else "Zisch. Süße, kalte Limo – der Atem geht wieder ruhig.", 3.0)
 
 
 ## Gegenstand aus der Hand geben (Geschenk, das der Gast selbst trägt – Spielkonzept 6.17). null = leere Hände.
@@ -888,6 +952,194 @@ func consume_held() -> void:
 	held = null
 	if Game.hud:
 		Game.hud.set_held("")
+
+
+# --- Tasche für Kleines (Spielkonzept 3.2) ----------------------------------------------
+
+## Passt dieser Gegenstand noch in die Tasche? Mit einem großen Ding oder einer Katze im Arm kommt man nicht heran.
+func bag_takes(item: Item) -> bool:
+	return item.fits_pocket() and carried_cat == null and not hands_blocked() and bag.size() < BAG_SLOTS
+
+
+## Kann er einen neuen Gegenstand dieser Art annehmen – in die freie Hand oder in die Tasche? (Kerzen aus dem Vorrat
+## brennen und passen deshalb nur in die Hand.)
+func can_take(kind: int) -> bool:
+	if carried_cat:
+		return false
+	return held == null or (kind in Item.POCKET_KINDS and kind != Item.Kind.CANDLE and not hands_blocked() and bag.size() < BAG_SLOTS)
+
+
+## [Q] gedrückt: Fächer einblenden. Das Spiel läuft weiter, man kann weiterlaufen – nur die Maus wählt.
+func open_bag() -> void:
+	bag_open = true
+	bag_sel = -1
+	_bag_cursor = 0.0
+	_show_bag_menu()
+
+
+## [Q] losgelassen (choose) oder abgebrochen (Rechtsklick, Gespräch, Würgen …).
+func close_bag(choose: bool) -> void:
+	bag_open = false
+	if Game.hud:
+		Game.hud.show_bag_menu(false)
+	if choose and bag_sel >= 0:
+		if bag_sel < bag.size():
+			take_from_bag(bag_sel)
+		elif held:
+			stow_held()   # leeres Fach: Kleines aus der Hand hinein
+
+
+## Eingabe bei offener Tasche: Maus nach links/rechts, Mausrad oder [1]–[6] wählen, Rechtsklick bricht ab.
+func _bag_input(event: InputEvent) -> void:
+	var half := BAG_SLOTS / 2.0
+	if event is InputEventMouseMotion:
+		var dx := (event as InputEventMouseMotion).screen_relative.x * Settings.mouse_sensitivity / BAG_MOUSE_STEP
+		_bag_cursor = clampf(_bag_cursor + dx, -half, half)
+		bag_sel = -1 if absf(_bag_cursor) < BAG_DEAD_ZONE else clampi(floori(_bag_cursor + half), 0, BAG_SLOTS - 1)
+	elif event is InputEventMouseButton and event.pressed:
+		match (event as InputEventMouseButton).button_index:
+			MOUSE_BUTTON_WHEEL_DOWN:
+				_select_bag_slot((bag_sel + 1) % BAG_SLOTS)
+			MOUSE_BUTTON_WHEEL_UP:
+				_select_bag_slot((bag_sel - 1 + BAG_SLOTS) % BAG_SLOTS if bag_sel >= 0 else BAG_SLOTS - 1)
+			MOUSE_BUTTON_RIGHT:
+				close_bag(false)
+				return
+	elif _bag_slot_pressed(event) >= 0:
+		_select_bag_slot(_bag_slot_pressed(event))
+	else:
+		return
+	_show_bag_menu()
+
+
+## --bag-menu=n: Tasche offen halten, Fach `slot` gewählt (−1 = keins)
+func debug_open_bag(slot: int) -> void:
+	debug_bag_menu = true
+	open_bag()
+	if slot >= 0:
+		_select_bag_slot(mini(slot, BAG_SLOTS - 1))
+	_show_bag_menu()
+
+
+func _select_bag_slot(slot: int) -> void:
+	bag_sel = slot
+	_bag_cursor = slot - BAG_SLOTS / 2.0 + 0.5   # die Maus macht von dort aus weiter
+
+
+func _show_bag_menu() -> void:
+	if Game.hud:
+		Game.hud.show_bag_menu(true, bag, BAG_SLOTS, bag_sel, held)
+
+
+## Kleines aus der Hand in die Tasche (Tasche offen, leeres Fach gewählt).
+func stow_held() -> void:
+	if held == null:
+		return
+	if not held.fits_pocket():
+		Game.say("Eine brennende Kerze steckt man nicht ein." if held.kind == Item.Kind.CANDLE else "%s passt nicht in die Tasche." % held.display_name)
+		return
+	if bag.size() >= BAG_SLOTS:
+		Game.say("Die Tasche ist voll.")
+		return
+	var item := held
+	held = null
+	if Game.hud:
+		Game.hud.set_held("")
+	bag_add(item)
+	Game.noise("bag", global_position, self)
+
+
+## Fach `slot` in die Hand (Loslassen von [Q], ohne Tasche direkt mit [1]–[6]). Was die Hand hielt – groß oder klein –
+## fällt zu Boden (es wird nicht aufgehängt); im Versteck ist dafür kein Platz.
+func take_from_bag(slot: int) -> void:
+	if slot >= bag.size():
+		return
+	if carried_cat:
+		Game.say("Erst %s absetzen [G]." % carried_cat.display_name)
+		return
+	if held and hiding:
+		Game.say("Hier drin kannst du %s nicht ablegen." % held.display_name)
+		return
+	if held:
+		drop_held(false, false)
+	var item: Item = bag[slot]
+	bag.remove_at(slot)
+	item.take_from_bag()
+	_hold(item)
+	_show_bag()
+	Game.noise("bag", global_position, self)
+
+
+## Fach-Taste dieses Ereignisses (0 = [1]) oder −1
+func _bag_slot_pressed(event: InputEvent) -> int:
+	for i in BAG_SLOTS:
+		if event.is_action_pressed("bag_%d" % (i + 1)):
+			return i
+	return -1
+
+
+## In die Tasche, an Platz `at` (sonst ans Ende). Der Gegenstand muss hineinpassen (bag_takes).
+func bag_add(item: Item, at: int = -1) -> void:
+	if item.get_parent():
+		item.reparent(_bag_node, false)
+	else:
+		_bag_node.add_child(item)
+	item.owner_id = "player"
+	item.put_in_bag()
+	item.position = Vector3.ZERO
+	bag.insert(clampi(at, 0, bag.size()) if at >= 0 else bag.size(), item)
+	_show_bag()
+
+
+## Aus der Tasche nehmen, um es wegzugeben oder zu verbrauchen – der Gegenstand gehört dann dem Aufrufer.
+func bag_remove(item: Item) -> Item:
+	bag.erase(item)
+	item.take_from_bag()
+	_show_bag()
+	return item
+
+
+## Einen Gegenstand dieser Art verbrauchen – aus der Hand, sonst aus der Tasche. false = keiner da.
+func consume_kind(kind: int) -> bool:
+	if held_kind() == kind:
+		consume_held()
+		return true
+	for item in bag:
+		if item.kind == kind:
+			bag_remove(item).queue_free()
+			return true
+	return false
+
+
+## Weggeben (Geschenk) – aus der Hand oder aus der Tasche.
+func give_away(item: Item) -> Item:
+	return hand_over() if item == held else bag_remove(item)
+
+
+## Verkauft oder verbraucht – aus der Hand oder aus der Tasche.
+func consume_item(item: Item) -> void:
+	if item == held:
+		consume_held()
+	else:
+		bag_remove(item).queue_free()
+
+
+## Spielstand: Tasche neu füllen
+func set_bag(items: Array[Item]) -> void:
+	for item in bag:
+		item.queue_free()
+	bag.clear()
+	for item in items:
+		bag_add(item)
+	_show_bag()
+
+
+## HUD: kleine Fächer unten rechts, bei offener Tasche auch die große Anzeige
+func _show_bag() -> void:
+	if Game.hud:
+		Game.hud.set_bag(bag, BAG_SLOTS)
+	if bag_open:
+		_show_bag_menu()
 
 
 func held_kind() -> int:

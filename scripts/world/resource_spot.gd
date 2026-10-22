@@ -2,7 +2,8 @@ class_name ResourceSpot
 extends StaticBody3D
 ## Stelle, an der man Material bekommt: Laubhaufen unter Bäumen, Spinnweben in
 ## dunklen Ecken, Kerzenvorrat in der Küche, Lakengespenster in der Wäschekiste, Lichterketten
-## in der Dekokiste (Spielkonzept 5.6), alte Deko im Keller (5.7). Begrenzter Vorrat, wächst langsam nach.
+## in der Dekokiste (Spielkonzept 5.6), alte Deko im Keller (5.7), Getränkedosen in Kühlraum und Lager und – für Geld –
+## auf der Bartheke (3.2). Begrenzter Vorrat, wächst langsam nach.
 ## Mit `pool` gibt es abwechselnd verschiedene Dinge (Dekokiste, alte Deko); `kind` bestimmt nur das Aussehen.
 ## Spinnweben: lokale +Z zeigt von der Wand weg.
 
@@ -12,6 +13,8 @@ var uses := 3
 var max_uses := 3
 var regen_time := 90.0
 var pool: Array = []
+## Kostet so viel Geld je Stück (0 = umsonst)
+var price := 0
 
 var _timer := 0.0
 var _visual: Node3D
@@ -23,6 +26,12 @@ func setup(p_kind: Item.Kind, p_label: String, p_max_uses: int, p_regen_time: fl
 	max_uses = p_max_uses
 	uses = p_max_uses
 	regen_time = p_regen_time
+	return self
+
+
+## Zum Kaufen: jedes Stück kostet `p_price` Geld.
+func for_sale(p_price: int) -> ResourceSpot:
+	price = p_price
 	return self
 
 
@@ -83,6 +92,23 @@ func _ready() -> void:
 			var skull := Geo.mesh(_visual, Geo.sphere(0.07, 0.14, 8, 4), Mat.psx(Color(0.88, 0.84, 0.72)), Vector3(-0.12, 0.36, 0.05))
 			skull.scale = Vector3(1.0, 0.95, 1.1)
 			Geo.add_box_shape(self, Vector3(0.55, 0.5, 0.4), Vector3(0, 0.25, 0))
+		Item.Kind.SODA_CAN:
+			# Getränkekiste aus rotem Kunststoff mit Dosen darin – zum Kaufen nur ein Tablett mit einer Reihe Dosen
+			var cans := 3 if price > 0 else 6
+			if price > 0:
+				Geo.mesh(self, Geo.box(Vector3(0.3, 0.01, 0.12)), Mat.psx(Color(0.55, 0.5, 0.45)), Vector3(0, 0.005, 0))
+			else:
+				var crate := Mat.psx(Color(0.6, 0.1, 0.08))
+				Geo.mesh(self, Geo.box(Vector3(0.4, 0.03, 0.27)), crate, Vector3(0, 0.015, 0))
+				for side in [-1.0, 1.0]:
+					Geo.mesh(self, Geo.box(Vector3(0.4, 0.1, 0.02)), crate, Vector3(0, 0.08, side * 0.125))
+					Geo.mesh(self, Geo.box(Vector3(0.02, 0.1, 0.27)), crate, Vector3(side * 0.19, 0.08, 0))
+			var flavors: Array = Item.SODA_COLORS.keys()
+			for i in cans:
+				var at := Vector3(-0.1 + i * 0.1, 0.0, 0.0) if price > 0 else Vector3(-0.12 + (i % 3) * 0.12, 0.0, -0.06 + floori(i / 3.0) * 0.12)
+				Geo.mesh(_visual, Geo.cylinder(0.033, 0.11, 8), Mat.psx(Item.SODA_COLORS[flavors[i % flavors.size()]]), at + Vector3(0, 0.065, 0))
+				Geo.mesh(_visual, Geo.cylinder(0.028, 0.012, 8), Mat.psx(Color(0.75, 0.76, 0.78)), at + Vector3(0, 0.126, 0))
+			Geo.add_box_shape(self, Vector3(0.4, 0.14, 0.27) if price == 0 else Vector3(0.3, 0.14, 0.12), Vector3(0, 0.07, 0))
 	_update_visual()
 
 
@@ -108,14 +134,17 @@ func take() -> Item:
 func get_prompt(player: Player) -> String:
 	if uses <= 0:
 		return "%s – gerade nichts zu holen" % label
-	if player.held:
+	if not player.can_take(kind):
 		return "Hände voll"
+	if price > 0:
+		return "%s kaufen – %d Geld [E]" % [label, price] if Game.money >= price else "%s – %d Geld, so viel hast du nicht" % [label, price]
 	return "%s nehmen [E]" % label
 
 
 func interact(player: Player) -> void:
-	if uses <= 0 or player.held:
+	if uses <= 0 or not player.can_take(kind) or Game.money < price:
 		return
+	Game.money -= price
 	player.receive_item(take())
 
 

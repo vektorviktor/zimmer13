@@ -47,6 +47,9 @@ extends Node3D
 ##   --pool=still|tremor|slosh   Poolwasser so, als wäre das Monster nah: glatt · zitternde Ringe · schwappt (off = wieder normal)
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
+##   --bag[=a,b,…]               Kleines in die Tasche (3.2): süßes, cola, limo, zierkürbis, kerze, messer, batterie, birne,
+##                               uv, würfel, becher – ohne Angabe Süßigkeiten, Cola, Zierkürbis und Batterie
+##   --bag-menu[=n]              Tasche offen halten wie mit gehaltenem [Q], Fach n (1–6) gewählt – für Screenshots
 ##   --deco=art[,g]              Deko in die Hand (5.6, 5.7): gespenst, lichter, netz, laub, zierkürbis, fledermaus,
 ##                               spinne, totenkopf, besen – an eine Wand sehen
 ##                               und [G] zum Aufhängen bzw. Verstreuen · ,g: nach 1 s selbst [G] (mit --pos auf eine Wand)
@@ -497,6 +500,26 @@ func run_debug(arg: String) -> bool:
 		for page in HotelMap.PAGES:
 			Game.player.add_map_page(page["id"])
 		Game.player.add_key("zimmer_18")
+	elif arg.begins_with("--bag-menu"):
+		# erst nach den übrigen Parametern (--bag, --flashlight) öffnen
+		Game.player.debug_open_bag.call_deferred(arg.substr(11).to_int() - 1 if arg.begins_with("--bag-menu=") else -1)
+	elif arg.begins_with("--bag"):
+		var kinds := {"süßes": Item.Kind.SWEETS, "suesses": Item.Kind.SWEETS, "cola": Item.Kind.SODA_CAN, "limo": Item.Kind.SODA_CAN,
+			"zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE,
+			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
+			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP}
+		var names := (arg.substr(6) if arg.begins_with("--bag=") else "süßes,cola,zierkürbis,batterie").split(",", false)
+		for what in names:
+			if not kinds.has(what):
+				Game.say("Tasche: " + ", ".join(kinds.keys()), 3.0)
+				return true
+			var item := Item.create(kinds[what], what if what in ["cola", "limo"] else "")
+			if item.kind == Item.Kind.CANDLE:
+				item._extinguish()   # brennend passt sie nicht hinein
+			if Game.player.bag.size() < Player.BAG_SLOTS:
+				Game.player.bag_add(item)
+			else:
+				item.free()
 	elif arg.begins_with("--flashlight"):
 		var uv := arg == "--flashlight=uv"
 		var lamp := Item.create(Item.Kind.FLASHLIGHT, "c=1;on" + (";uv;m=uv" if uv else ""))
@@ -1038,6 +1061,8 @@ func _save_test() -> void:
 	var lamp: Lamp = get_tree().get_nodes_in_group("lamp_fixtures").filter(func(l: Node) -> bool: return l.room_id == "0115")[0]
 	if Game.player.held == null:
 		Game.player.receive_item(lamp.take_bulb())
+	for kind in [Item.Kind.SWEETS, Item.Kind.SODA_CAN]:   # mit voller Hand: in die Tasche
+		Game.player.receive_item(Item.create(kind))
 	await get_tree().create_timer(0.5).timeout
 	var before: Dictionary = JSON.parse_string(JSON.stringify(SaveManager.collect()))
 	SaveManager.apply(before)

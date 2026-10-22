@@ -1,8 +1,8 @@
 class_name Item
 extends RigidBody3D
-## Physischer Gegenstand. Es gibt kein Inventar – alles wird einzeln in den Händen
-## getragen (Ausnahme: Münzen werden sofort zu Geld). Ursprung = Unterseite,
-## lokale +Z-Achse = Vorderseite (z. B. das Gesicht eines geschnitzten Kürbisses).
+## Physischer Gegenstand. Kein verstecktes Inventar: Große Dinge trägt man einzeln in den Händen, Kleines
+## (POCKET_KINDS) passt zusätzlich in die Tasche des Spielers (Player.bag, Spielkonzept 3.2); Münzen werden sofort
+## zu Geld. Ursprung = Unterseite, lokale +Z-Achse = Vorderseite (z. B. das Gesicht eines geschnitzten Kürbisses).
 ##
 ## Handwerk: Messer in der Hand + Kürbis → schnitzen; Kerze in der Hand + geschnitzter
 ## Kürbis ohne Licht → Kerze hineinstellen.
@@ -27,7 +27,7 @@ extends RigidBody3D
 ## map_pages, keyring; Spielkonzept 3.2).
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
-	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN }
+	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -44,7 +44,13 @@ const PRICES := {
 	Kind.FLASHLIGHT: 8, Kind.BATTERY: 3, Kind.UV_FILTER: 12, Kind.CHESS_BOARD: 4, Kind.SWEETS: 1,
 	Kind.SHEET_GHOST: 5, Kind.LIGHT_STRING: 9, Kind.MINI_PUMPKIN: 2,
 	Kind.BAT_GARLAND: 4, Kind.SPIDER: 2, Kind.SKULL: 8, Kind.BROOM: 7, Kind.BED_SHEET: 1, Kind.ROAST_PUMPKIN: 5,
+	Kind.SODA_CAN: 1,
 }
+## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
+const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
+	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE]
+## Getränkedose: die Sorten und ihre Farbe
+const SODA_COLORS := {"limo": Color(0.95, 0.55, 0.1), "cola": Color(0.7, 0.07, 0.07)}
 ## Was man an die Wand hängen kann (Spielkonzept 5.6, 5.7) – der Besen lehnt nur daran
 const HANGABLE := [Kind.SHEET_GHOST, Kind.LIGHT_STRING, Kind.COBWEB, Kind.BAT_GARLAND, Kind.SPIDER, Kind.BROOM]
 ## Mit Kerze darin: Kerze in der Hand + das hier → Licht (Spielkonzept 5.4, 5.7)
@@ -85,6 +91,8 @@ var burn_time := 0.0
 var broken := false
 ## Kleidungsstück: wem es gehörte (Gast-ID) – Spur von Verschwundenen
 var clothing_of := ""
+## Getränkedose: „limo“ oder „cola“ (SODA_COLORS)
+var flavor := ""
 
 var _glow_material: ShaderMaterial
 ## Kompass: Nadel (dreht um die lokale Y-Achse), Winkel und Schwung der Feder
@@ -99,6 +107,8 @@ var page_id := ""
 var flashlight: Flashlight
 ## Steckt beim Spieler in der Tasche (Kompass in der linken Hand) – nicht mehr in der Welt
 var pocketed := false
+## Liegt in der Tasche für Kleines (Player.bag): unsichtbar, ohne Physik, nicht in der Welt
+var in_bag := false
 ## Hängt an der Wand (HANGABLE)
 var hung := false
 ## Lakengespenst: hält einen Zierkürbis in den Händen
@@ -171,6 +181,31 @@ func make_pocketed() -> void:
 	remove_meta("interactable")
 
 
+## Passt in die Tasche für Kleines (Spielkonzept 3.2)? Brennendes nicht.
+func fits_pocket() -> bool:
+	return kind in POCKET_KINDS and not lit
+
+
+## In die Tasche des Spielers: unsichtbar, eingefroren, aus Gruppe und Interaktion heraus. Wird mit dem Spieler
+## gespeichert (SaveManager „bag“), nicht als Welt-Gegenstand.
+func put_in_bag() -> void:
+	in_bag = true
+	set_held(true)
+	visible = false
+	process_mode = Node.PROCESS_MODE_DISABLED
+	remove_from_group("items")
+	remove_meta("interactable")
+
+
+## Wieder aus der Tasche (in eine Hand – des Spielers oder eines Gastes, dem man es schenkt).
+func take_from_bag() -> void:
+	in_bag = false
+	visible = true
+	process_mode = Node.PROCESS_MODE_INHERIT
+	add_to_group("items")
+	set_meta("interactable", self)
+
+
 func price() -> int:
 	if broken:
 		return 0
@@ -221,6 +256,8 @@ func create_extra() -> String:
 			return "pumpkin" if holds_pumpkin else ""
 		Kind.LIGHT_STRING:
 			return ("%.2f" % string_length) if hung else ""
+		Kind.SODA_CAN:
+			return flavor
 	return ""
 
 
@@ -242,6 +279,8 @@ func get_prompt(player: Player) -> String:
 	if not can_carry():
 		return "%s – viel zu schwer zum Tragen%s" % [display_name, " (mit dem Messer schnitzen)" if kind == Kind.PUMPKIN else ""]
 	var verb := "abnehmen" if hung else ("aufsammeln" if kind == Kind.LEAVES else "nehmen")
+	if verb == "nehmen" and player.held and player.bag_takes(self):
+		verb = "einstecken"   # die Hand ist voll – Kleines kommt in die Tasche (Spielkonzept 3.2)
 	if owner_id != "" and owner_id != "player" and Game.social:
 		return "%s %s [E]  – gehört %s" % [display_name, verb, Game.social.guest_name(owner_id)]
 	return "%s %s [E]" % [display_name, verb]
@@ -928,6 +967,17 @@ func _build(extra: String) -> void:
 				var wedge := Geo.mesh(self, Geo.box(Vector3(0.1, 0.03, 0.04)), flesh, Vector3(cos(a) * 0.05, 0.03, sin(a) * 0.05))
 				wedge.rotation.y = -a
 				Geo.mesh(wedge, Geo.box(Vector3(0.1, 0.012, 0.012)), crust, Vector3(0, 0.012, 0.018))
+		Kind.SODA_CAN:
+			# Getränkedose (Spielkonzept 3.2, 3.7): Limo oder Cola – trinken bringt einen wieder zu Atem
+			flavor = extra if SODA_COLORS.has(extra) else ("cola" if randf() < 0.5 else "limo")
+			display_name = "Dose Cola" if flavor == "cola" else "Dose Limo"
+			mass = 0.35
+			size = Vector3(0.07, 0.12, 0.07)
+			var tin := Mat.psx(Color(0.75, 0.76, 0.78))
+			Geo.mesh(self, Geo.cylinder(0.033, 0.11, 8), Mat.psx(SODA_COLORS[flavor]), Vector3(0, 0.055, 0))
+			Geo.mesh(self, Geo.cylinder(0.0335, 0.022, 8), Mat.psx(Color(0.95, 0.93, 0.85)), Vector3(0, 0.06, 0))   # Banderole
+			Geo.mesh(self, Geo.cylinder(0.028, 0.012, 8), tin, Vector3(0, 0.116, 0))   # Deckel
+			Geo.mesh(self, Geo.box(Vector3(0.014, 0.003, 0.022)), tin, Vector3(0, 0.123, 0.006))   # Lasche
 		Kind.MINI_PUMPKIN:
 			display_name = "Zierkürbis"
 			deco_strength = 4.0

@@ -2130,7 +2130,8 @@ func _railing(a: Vector3, b: Vector3) -> void:
 # --- Gemeinschaftsräume, Pool ---------------------------------------------------------------------------
 
 ## Was Bar, Partyraum und Küche über den Plan hinaus brauchen: Flaschen auf dem Barregal, Hocker vor der Theke
-## (Spielkonzept 6.10), Tanzfläche mit Discokugel und Plattenspieler-Tisch, Treffpunkte für Gäste und Monster.
+## (Spielkonzept 6.10), Getränkedosen (3.2: auf der Theke für Geld, Kisten in Kühlraum und Lager), Tanzfläche mit
+## Discokugel und Plattenspieler-Tisch, Treffpunkte für Gäste und Monster.
 func _common_rooms() -> void:
 	var shelf := _furnishing("shelf", "bar")
 	if not shelf.is_empty():
@@ -2162,6 +2163,23 @@ func _common_rooms() -> void:
 		tap.position = Vector3(at.x, float(counter["top"]), at.y)
 		tap.rotation.y = atan2(-along.y, along.x)   # Flasche und Glas nebeneinander entlang der Theke
 		root.add_child(tap)
+		# Dosen zum Kaufen am Ende der Theke, gegenüber der Kerze
+		var cans := ResourceSpot.new().setup(Item.Kind.SODA_CAN, "Getränkedose", 6, 240.0).for_sale(1)
+		var can_at := at - along * (span / 2.0 + 0.2)
+		cans.rotation.y = tap.rotation.y
+		_supply(cans, Vector3(can_at.x, float(counter["top"]), can_at.y))
+	# Getränkekisten auf dem Boden vor dem Regal in Kühlraum und Lager (im Lager weg von den Ersatzbirnen)
+	for room: String in ["kuehlraum", "lager"]:
+		var store := _furnishing("shelf", room)
+		if store.is_empty():
+			continue
+		var sr: Rect2 = store["rect"]
+		var room_center: Vector2 = (_named[room] as Rect2).get_center()
+		var out := Vector2(signf(room_center.x - sr.get_center().x), 0) if sr.size.y > sr.size.x else Vector2(0, signf(room_center.y - sr.get_center().y))
+		var p := sr.get_center() + out * (minf(sr.size.x, sr.size.y) / 2.0 + 0.3) + Vector2(out.y, out.x) * (1.2 if room == "lager" else 0.0)
+		var crate := ResourceSpot.new().setup(Item.Kind.SODA_CAN, "Getränkedose aus der Kiste", 4 if room == "kuehlraum" else 2, 600.0)
+		crate.rotation.y = PI / 2.0 if sr.size.y > sr.size.x else 0.0   # lange Seite am Regal entlang
+		_supply(crate, Vector3(p.x, 0.0, p.y))
 	# Partyraum: Plattenspieler auf dem Tisch, dunkle Ecke (dort steht es beim ersten Angriff), Tanzfläche mit
 	# Discokugel darüber
 	var r: Rect2 = _named["partyraum"]

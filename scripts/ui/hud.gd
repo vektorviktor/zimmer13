@@ -1,6 +1,7 @@
 class_name Hud
 extends CanvasLayer
-## Minimales HUD: Fadenkreuz, Interaktions-Hinweis, Gegenstand in der Hand, Geld,
+## Minimales HUD: Fadenkreuz, Interaktions-Hinweis, Gegenstand in der Hand, Tasche (kleine Fächer unten rechts,
+## mit [Q] gehalten groß über dem verschwommenen Spiel – Spielkonzept 3.2), Geld,
 ## Meldungen, Versteck-Ansicht mit Atem-Anzeige, Debug-Werte (F3) und Bilder pro Sekunde (F10).
 ## Dazu: flackernde Kerze beim Autosave (Spielkonzept 8.6), Untertitel für Geräusche und ein roter
 ## Blitz, wenn dich ein Gast schlägt (6.3).
@@ -10,6 +11,17 @@ var fps_enabled := false          ## Bilder pro Sekunde und Bildzeit rechts oben
 
 var _prompt: Label
 var _held: Label
+var _icons: ItemIcons
+var _bag_mini: Control                    ## kleine Fächer unten rechts (immer, sobald etwas drin ist)
+var _bag_mini_icons: Array[TextureRect] = []
+var _bag_blur: ColorRect                  ## Tasche offen: das Spiel verschwimmt
+var _bag_blur_material: ShaderMaterial
+var _bag_menu: Control                    ## Tasche offen: große Fächer
+var _bag_frames: Array[ColorRect] = []
+var _bag_slot_icons: Array[TextureRect] = []
+var _bag_info: Label
+var _bag_count: Label
+var _bag_filled := false
 var _money: Label
 var _message: Label
 var _debug: Label
@@ -72,6 +84,9 @@ func _ready() -> void:
 	_place(_prompt, Vector4(0, 1, 1, 1), Vector4(8, -46, -8, -32))
 	_held = _label(9, HORIZONTAL_ALIGNMENT_LEFT)
 	_place(_held, Vector4(0, 1, 0.6, 1), Vector4(8, -18, 0, -4))
+	_icons = ItemIcons.new()
+	add_child(_icons)
+	_build_bag_mini()
 	_money = _label(9, HORIZONTAL_ALIGNMENT_RIGHT)
 	_place(_money, Vector4(0.6, 0, 1, 0), Vector4(0, 4, -8, 18))
 	_message = _label(10, HORIZONTAL_ALIGNMENT_CENTER)
@@ -107,11 +122,11 @@ func _ready() -> void:
 	_struggle_fill.size = Vector2(0, 4)
 	_struggle_bg.visible = false
 
-	# Autosave: kleine Kerze in der Ecke
+	# Autosave: kleine Kerze in der Ecke (über den kleinen Fächern der Tasche)
 	_autosave = Control.new()
 	_autosave.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_autosave)
-	_place(_autosave, Vector4(1, 1, 1, 1), Vector4(-62, -40, -6, -22))
+	_place(_autosave, Vector4(1, 1, 1, 1), Vector4(-62, -42, -6, -24))
 	var wax := ColorRect.new()
 	wax.color = Color(0.9, 0.86, 0.72)
 	wax.position = Vector2(2, 7)
@@ -140,6 +155,7 @@ func _ready() -> void:
 	Game.money_changed.connect(_on_money_changed)
 	Game.message_posted.connect(show_message)
 	_on_money_changed(Game.money)
+	_build_bag_menu()   # zuletzt: liegt über allem, die Unschärfe erfasst auch die übrigen Anzeigen
 
 
 func _process(delta: float) -> void:
@@ -160,6 +176,9 @@ func _process(delta: float) -> void:
 			_caption.text = ""
 	if _hurt.color.a > 0.0:
 		_hurt.color.a = maxf(0.0, _hurt.color.a - delta * 0.6)
+	if _bag_blur.visible:
+		var amount: float = _bag_blur_material.get_shader_parameter("amount")
+		_bag_blur_material.set_shader_parameter("amount", minf(1.0, amount + delta * 8.0))
 	if _message_time > 0.0:
 		_message_time -= delta
 		_message.modulate.a = clampf(_message_time, 0.0, 1.0)
@@ -194,6 +213,130 @@ func set_prompt(text: String) -> void:
 
 func set_held(item_name: String) -> void:
 	_held.text = "" if item_name == "" else "In der Hand: %s" % item_name
+
+
+# --- Tasche (Spielkonzept 3.2) ---------------------------------------------------------------
+
+const BAG_SLOT := 46       ## große Fächer: Kantenlänge (Pixel, interne Auflösung)
+const BAG_GAP := 6
+const BAG_MINI := 18       ## kleine Fächer unten rechts
+const SLOT_COLOR := Color(0.05, 0.04, 0.04, 0.7)
+const SELECT_COLOR := Color(1.0, 0.62, 0.15)   ## Kürbisorange
+
+
+## Kleine Fächer unten rechts: immer sichtbar, sobald etwas in der Tasche ist.
+func set_bag(items: Array[Item], slots: int) -> void:
+	for i in _bag_mini_icons.size():
+		_bag_mini_icons[i].texture = _icons.icon(items[i]) if i < items.size() else null
+	_bag_filled = not items.is_empty()
+	_bag_mini.visible = _bag_filled and not _bag_menu.visible
+	_bag_count.text = "Tasche %d/%d" % [items.size(), slots]
+
+
+## [Q] gehalten: große Fächer über dem verschwommenen Spiel, `sel` hervorgehoben, darunter was beim Loslassen passiert.
+func show_bag_menu(open: bool, items: Array[Item] = [], slots: int = 0, sel: int = -1, held: Item = null) -> void:
+	if open and not _bag_menu.visible:
+		_bag_blur_material.set_shader_parameter("amount", 0.0)
+	_bag_menu.visible = open
+	_bag_blur.visible = open
+	_crosshair.visible = not open and not _hide_overlay.visible
+	_bag_mini.visible = not open and _bag_filled
+	if not open:
+		return
+	for i in _bag_frames.size():
+		_bag_slot_icons[i].texture = _icons.icon(items[i]) if i < items.size() else null
+		_bag_frames[i].color = SELECT_COLOR if i == sel else Color(0.4, 0.35, 0.3, 0.6)
+	var text := "Maus nach links oder rechts zeigt auf ein Fach"
+	if sel >= 0 and sel < items.size():
+		text = "%s in die Hand nehmen" % items[sel].display_name
+		if held:
+			text += " – %s fällt zu Boden" % held.display_name
+	elif sel >= 0 and held and held.fits_pocket():
+		text = "%s einstecken" % held.display_name
+	elif sel >= 0 and held:
+		text = "Leeres Fach – %s passt nicht hinein" % held.display_name
+	elif sel >= 0:
+		text = "Leeres Fach"
+	_bag_info.text = text
+	_bag_count.text = "Tasche %d/%d" % [items.size(), slots]
+
+
+func _build_bag_mini() -> void:
+	_bag_mini = Control.new()
+	_bag_mini.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bag_mini.modulate.a = 0.8
+	add_child(_bag_mini)
+	var width := Player.BAG_SLOTS * (BAG_MINI + 2) - 2
+	_place(_bag_mini, Vector4(1, 1, 1, 1), Vector4(-8 - width, -4 - BAG_MINI, -8, -4))
+	for i in Player.BAG_SLOTS:
+		var bg := ColorRect.new()
+		bg.color = SLOT_COLOR
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bg.position = Vector2(i * (BAG_MINI + 2), 0)
+		bg.size = Vector2(BAG_MINI, BAG_MINI)
+		_bag_mini.add_child(bg)
+		_bag_mini_icons.append(_icon_rect(bg, BAG_MINI - 2))
+	_bag_mini.visible = false
+
+
+func _build_bag_menu() -> void:
+	_bag_blur_material = ShaderMaterial.new()
+	_bag_blur_material.shader = load("res://shaders/bag_blur.gdshader")
+	_bag_blur = ColorRect.new()
+	_bag_blur.material = _bag_blur_material
+	_bag_blur.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bag_blur.visible = false
+	add_child(_bag_blur)
+	_bag_blur.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	_bag_menu = Control.new()
+	_bag_menu.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bag_menu.visible = false
+	add_child(_bag_menu)
+	_bag_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var width := Player.BAG_SLOTS * (BAG_SLOT + BAG_GAP) - BAG_GAP
+	var row := Control.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bag_menu.add_child(row)
+	_place(row, Vector4(0.5, 0.5, 0.5, 0.5), Vector4(-width / 2.0, -BAG_SLOT / 2.0, width / 2.0, BAG_SLOT / 2.0))
+	for i in Player.BAG_SLOTS:
+		var frame := ColorRect.new()   # Rahmen: hervorgehoben, wenn gewählt
+		frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		frame.position = Vector2(i * (BAG_SLOT + BAG_GAP) - 1, -1)
+		frame.size = Vector2(BAG_SLOT + 2, BAG_SLOT + 2)
+		row.add_child(frame)
+		_bag_frames.append(frame)
+		var bg := ColorRect.new()
+		bg.color = SLOT_COLOR
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bg.position = Vector2(1, 1)
+		bg.size = Vector2(BAG_SLOT, BAG_SLOT)
+		frame.add_child(bg)
+		_bag_slot_icons.append(_icon_rect(bg, BAG_SLOT - 6))
+		var number := _label(8, HORIZONTAL_ALIGNMENT_LEFT, bg)
+		number.text = str(i + 1)
+		number.position = Vector2(3, 1)
+	var title := _label(10, HORIZONTAL_ALIGNMENT_CENTER, _bag_menu)
+	_place(title, Vector4(0, 0.5, 1, 0.5), Vector4(0, -BAG_SLOT / 2.0 - 22, 0, -BAG_SLOT / 2.0 - 6))
+	_bag_count = title
+	_bag_info = _label(10, HORIZONTAL_ALIGNMENT_CENTER, _bag_menu)
+	_place(_bag_info, Vector4(0, 0.5, 1, 0.5), Vector4(8, BAG_SLOT / 2.0 + 8, -8, BAG_SLOT / 2.0 + 24))
+	var hint := _label(8, HORIZONTAL_ALIGNMENT_CENTER, _bag_menu)
+	hint.label_settings.font_color = Color(0.75, 0.72, 0.65)
+	hint.text = "Maus · Mausrad · 1–6 wählen   ·   Q loslassen: in die Hand   ·   Rechtsklick: abbrechen"
+	_place(hint, Vector4(0, 0.5, 1, 0.5), Vector4(8, BAG_SLOT / 2.0 + 26, -8, BAG_SLOT / 2.0 + 40))
+
+
+## Bild eines Gegenstands mittig in einem Fach
+func _icon_rect(parent: Control, size: int) -> TextureRect:
+	var rect := TextureRect.new()
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rect.position = (parent.size - Vector2(size, size)) / 2.0
+	rect.size = Vector2(size, size)
+	parent.add_child(rect)
+	return rect
 
 
 func show_message(text: String, duration: float = 3.5) -> void:

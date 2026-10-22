@@ -1563,12 +1563,11 @@ func _update_tricks(delta: float) -> void:
 			print("[Süßes oder Saures] %s kommt zu Zimmer 13" % kid.display_name)
 
 
-## Die Tür ist auf: Hast du Süßigkeiten in der Hand, bekommt es sie gleich – sonst wartet es eine Weile
-## (schenken im Gespräch geht auch), dann gibt es Saures.
+## Die Tür ist auf: Hast du Süßigkeiten in der Hand oder in der Tasche, bekommt es sie gleich – sonst wartet es
+## eine Weile (schenken im Gespräch geht auch), dann gibt es Saures.
 func _trick_at_door(kid: Guest) -> void:
 	var p := Game.player
-	if p and p.held and p.held.kind == Item.Kind.SWEETS:
-		p.consume_held()
+	if p and p.consume_kind(Item.Kind.SWEETS):
 		_treat(kid, 12.0)
 		return
 	kid.knock_politely()   # bleibt vor der Tür stehen

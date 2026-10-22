@@ -151,7 +151,9 @@ func _show_main() -> void:
 	if Game.chess and Game.chess.table.has_board(player) and not Game.chess.table.busy:
 		_option("Schach in der Lobby spielen", _show_stakes.bind("chess"))
 	if player.held and not player.held.kind in NO_GIFT:
-		_option("%s schenken" % player.held.display_name, _gift)
+		_option("%s schenken" % player.held.display_name, _gift.bind(player.held))
+	if not _bag_items(true).is_empty():
+		_option("Aus der Tasche schenken …", _show_bag.bind(true))
 	_option("Hast du Deko für mich?", _ask_deco)
 	if tier >= Social.Tier.NICE and not Game.social.party_active:
 		_option("Wollen wir zusammen …", _show_together)
@@ -236,10 +238,33 @@ func _show_trade() -> void:
 			continue
 		var price := _sell_price(kind)
 		var label := "%s kaufen – %d Geld (%d da)" % [_kind_name(kind), price, count]
-		_option(label, _buy.bind(kind), Game.money < price or player.held != null)
+		_option(label, _buy.bind(kind), Game.money < price or not player.can_take(kind))
 	if player.held and player.held.kind != Item.Kind.KEY:
-		_option("%s verkaufen – %d Geld" % [player.held.display_name, _buy_price(player.held)], _sell)
+		_option("%s verkaufen – %d Geld" % [player.held.display_name, _buy_price(player.held)], _sell.bind(player.held))
+	if not _bag_items(false).is_empty():
+		_option("Aus der Tasche verkaufen …", _show_bag.bind(false))
 	_option("Zurück", _show_main)
+
+
+## Tasche des Spielers (Spielkonzept 3.2): ein Fach zum Schenken (gift) oder Verkaufen auswählen.
+func _show_bag(gift: bool) -> void:
+	_clear()
+	_say("Was hast du denn da?")
+	for item in _bag_items(gift):
+		if gift:
+			_option("%s schenken" % item.display_name, _gift.bind(item))
+		else:
+			_option("%s verkaufen – %d Geld" % [item.display_name, _buy_price(item)], _sell.bind(item))
+	_option("Zurück", _show_main if gift else _show_trade)
+
+
+## Was in der Tasche zum Schenken bzw. Verkaufen taugt
+func _bag_items(gift: bool) -> Array[Item]:
+	var items: Array[Item] = []
+	for item in Game.player.bag:
+		if not (gift and item.kind in NO_GIFT):
+			items.append(item)
+	return items
 
 
 ## Einsatz aushandeln (Spielkonzept 6.10). game: "dice" (Mäxchen) oder "chess" (Schach)
@@ -355,13 +380,14 @@ func _monster_talked() -> void:
 	Game.social.on_monster_talk(guest)
 
 
-func _gift() -> void:
-	var item := Game.player.held
+## Geschenk aus der Hand oder aus der Tasche
+func _gift(item: Item) -> void:
 	var kind := item.kind
 	# Kürbis in seiner Lieblingssorte (Spielkonzept 5.8): freut ihn wie etwas, das er mag, und noch ein bisschen mehr
 	var is_pumpkin := kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN, Item.Kind.ROAST_PUMPKIN]
 	var favorite := is_pumpkin and item.variety == guest.favorite_pumpkin()
-	var liked := kind in (guest.profile["likes"] as Array) or favorite
+	# Limo freut jedes Kind (6.13)
+	var liked := kind in (guest.profile["likes"] as Array) or favorite or (guest.is_child() and kind == Item.Kind.SODA_CAN)
 	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + (8.0 if favorite else 0.0) + 3.0
 	var fitting := false
 	if guest.wound != "":
@@ -372,7 +398,7 @@ func _gift() -> void:
 	Game.social.change_relation(guest, bonus)
 	Game.social.add_deed(guest, "gifts_to", Wounds.GIFT_DEEDS if guest.wound != "" else 1)
 	# Er nimmt es in die Hand und trägt es heim bzw. isst es (6.17); mit vollen Händen wandert es gleich in den Vorrat
-	if not guest.receive_gift(Game.player.hand_over()):
+	if not guest.receive_gift(Game.player.give_away(item)):
 		if item.deco_strength > 0.0:
 			guest.stock[kind] = int(guest.stock.get(kind, 0)) + 1
 		item.queue_free()
@@ -409,12 +435,12 @@ func _ask_deco() -> void:
 		_say(guest.line("refuse_deco"))
 	elif guest.gift_cooldown > 0.0:
 		_say("Ich hab dir doch gerade erst was gegeben.")
-	elif Game.player.held:
-		_say("Mach erst mal die Hände frei.")
 	else:
 		var kind := _best_deco()
 		if kind < 0:
 			_say("Ich hab gerade selbst nichts übrig.")
+		elif not Game.player.can_take(kind):
+			_say("Mach erst mal die Hände frei.")
 		else:
 			guest.stock[kind] = int(guest.stock[kind]) - 1
 			guest.gift_cooldown = GIFT_COOLDOWN
@@ -531,7 +557,7 @@ func _apologize(price: int) -> void:
 
 func _buy(kind: int) -> void:
 	var price := _sell_price(kind)
-	if Game.money < price or Game.player.held:
+	if Game.money < price or not Game.player.can_take(kind):
 		return
 	Game.money -= price
 	guest.money += price
@@ -543,8 +569,8 @@ func _buy(kind: int) -> void:
 	_show_trade()
 
 
-func _sell() -> void:
-	var item := Game.player.held
+## Verkaufen aus der Hand oder aus der Tasche
+func _sell(item: Item) -> void:
 	var price := _buy_price(item)
 	if guest.money < price:
 		_say("So viel Geld hab ich gerade nicht.")
@@ -554,7 +580,7 @@ func _sell() -> void:
 	Game.money += price
 	if item.deco_strength > 0.0:
 		guest.stock[item.kind] = int(guest.stock.get(item.kind, 0)) + 1
-	Game.player.consume_held()
+	Game.player.consume_item(item)
 	Game.social.change_relation(guest, 1.0)
 	_say("Abgemacht.")
 	_show_trade()
@@ -616,6 +642,8 @@ func _kind_name(kind: int) -> String:
 			return "Schachbrett"
 		Item.Kind.SWEETS:
 			return "Süßigkeiten"
+		Item.Kind.SODA_CAN:
+			return "Getränkedose"
 	return "Etwas"
 
 

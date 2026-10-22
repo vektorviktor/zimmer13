@@ -66,6 +66,8 @@ const COMMANDS := {
 	"pool": ["still|tremor|slosh", "Poolwasser wie bei nahem Monster (glatt, Zittern, Schwappen)"],
 	"pocket": ["", "Kompass, Kartenblätter, Schlüssel 18"],
 	"flashlight": ["[uv]", "Taschenlampe in die Hand"],
+	"bag": ["[süßes,cola,limo,zierkürbis,kerze,messer,batterie,birne,uv,würfel,becher]", "Kleines in die Tasche (3.2)"],
+	"bag-menu": ["[1-6]", "Tasche offen halten wie mit gehaltenem [Q], Fach gewählt"],
 	"deco": ["gespenst|lichter|netz|laub|zierkürbis|fledermaus|spinne|totenkopf|besen", "Deko in die Hand – an die Wand sehen, [G] hängt auf (5.6)"],
 	"show": ["map|keys|compass", "Karte/Kompass hervorholen"],
 	"sprint": ["", "vorwärts rennen, bis die Ausdauer leer ist"],

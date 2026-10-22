@@ -91,8 +91,8 @@ const WEAK_FEAR := 0.6
 const HIT_FLEE_LINES := ["Hilfe! Der ist verrückt!", "Lass mich in Ruhe!", "Au! Hör auf!"]
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.SKULL, Item.Kind.SHEET_GHOST, Item.Kind.LIGHT_STRING, Item.Kind.BROOM,
 	Item.Kind.BAT_GARLAND, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.SPIDER, Item.Kind.LEAVES, Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN]
-## Essbare Geschenke (6.17): isst er nach ein paar Sekunden, statt sie heimzutragen
-const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN]
+## Essbare Geschenke (6.17), auch Getränkedosen: isst bzw. trinkt er nach ein paar Sekunden, statt sie heimzutragen
+const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN, Item.Kind.SODA_CAN]
 ## Kinder (Spielkonzept 6.13): Grundwert an Schwäche für den Lakengeist; so viel Angst bekommen die Eltern,
 ## wenn ihr Kind erschrickt; so oft rennt ein Kind los (Lärm wie Rennen) und so oft lacht es dabei bzw. auf
 ## Feiern; so oft kann es in der Nachtruhe nicht schlafen und so lange bleibt es dann wach; so oft schenkt es
@@ -462,7 +462,7 @@ func _gift_step(delta: float) -> void:
 		held = null
 		item.queue_free()   # aufgegessen
 		if randf() < 0.5:
-			say("Mmh." if item.kind == Item.Kind.SWEETS else "Das war lecker.")
+			say({Item.Kind.SWEETS: "Mmh.", Item.Kind.SODA_CAN: "Ahh, schön kalt."}.get(item.kind, "Das war lecker."))
 	elif state in [State.IDLE, State.WALK]:
 		_walk_to(_room_point(), State.CARRY_HOME)
 	else:

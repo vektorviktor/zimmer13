@@ -310,7 +310,7 @@ func owner_guest() -> Guest:
 
 func get_prompt(player: Player) -> String:
 	if has_bulb:
-		if player.held:
+		if not player.can_take(Item.Kind.BULB):
 			return "Hände voll"
 		var what := "Kaputte Glühbirne" if bulb_broken else "Glühbirne"
 		var guest := owner_guest()
@@ -324,7 +324,7 @@ func get_prompt(player: Player) -> String:
 
 func interact(player: Player) -> void:
 	if has_bulb:
-		if player.held:
+		if not player.can_take(Item.Kind.BULB):
 			return
 		var guest := owner_guest()
 		var item := take_bulb()

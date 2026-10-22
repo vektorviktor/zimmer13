@@ -154,7 +154,7 @@ func _source_for(g: Guest) -> ResourceSpot:
 	var spots: Array = []
 	for node in get_tree().get_nodes_in_group("resource_spots"):
 		var spot := node as ResourceSpot
-		if _risky(spot) == danger:
+		if _risky(spot) == danger and spot.kind != Item.Kind.SODA_CAN:   # Getränkekisten sind keine Deko
 			spots.append(spot)
 	spots.sort_custom(func(a: ResourceSpot, b: ResourceSpot) -> bool:
 		return a.global_position.distance_to(g.global_position) < b.global_position.distance_to(g.global_position))

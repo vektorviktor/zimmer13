@@ -38,6 +38,8 @@ const NOISE := {
 	"carve":      {"range": 3.0,  "sound": "creak",  "volume": 0.6},
 	"wipe":       {"range": 2.0,  "sound": "creak",  "volume": 0.15},   ## Spur wegwischen
 	"map":        {"range": 1.0,  "sound": "rustle", "volume": 0.5},    ## Kartenblatt blättern
+	"bag":        {"range": 1.0,  "sound": "rustle", "volume": 0.3},    ## Kleines in die Tasche / heraus (3.2)
+	"can":        {"range": 3.0,  "sound": "hiss",   "volume": 0.5},    ## Getränkedose aufreißen
 	"keys":       {"range": 3.0,  "sound": "jingle", "volume": 0.6},    ## Schlüssel an den Bund
 	"handset":    {"range": 2.0,  "sound": "thud",   "volume": 0.15},   ## Hörer abnehmen/auflegen/daneben legen
 	"gasp":       {"range": 10.0, "sound": "gasp",   "volume": 1.0},    ## nach Luft schnappen
