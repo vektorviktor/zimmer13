@@ -4,7 +4,8 @@ extends StaticBody3D
 ## geerntet werden – vom Spieler und von Gästen. Danach wächst ein neuer Kürbis nach.
 ## Oft hängt ein Zierkürbis mit an der Ranke – er fällt beim Ernten daneben (Spielkonzept 5.6).
 ## Jede Pflanze trägt eine Sorte (PumpkinKinds, Spielkonzept 5.8) – aus dem Gebäudeplan: Aussehen der Frucht und
-## Wachstum (grow = Sekunden bis reif). Der Riesenkürbis landet beim Ernten neben dem Beet, nicht in der Hand.
+## Wachstum (grow = Sekunden bis reif). Der Riesenkürbis landet beim Ernten neben dem Beet, nicht in der Hand – tragen
+## lässt er sich danach trotzdem, nur langsam (Item.carry_speed).
 
 const RIPE := 3
 const MINI_CHANCE := 0.5   ## Zierkürbis beim Ernten
@@ -29,7 +30,7 @@ func stage_time() -> float:
 
 
 func is_giant() -> bool:
-	return not bool(PumpkinKinds.data(variety)["carry"])
+	return variety == "giant"
 
 
 func _ready() -> void:
@@ -86,7 +87,7 @@ func harvest() -> Item:
 		mini.global_position = global_position + Vector3(randf_range(-0.35, 0.35), 0.05, randf_range(0.25, 0.4))
 	var pumpkin := Item.create(Item.Kind.PUMPKIN, variety)
 	if is_giant():
-		# Viel zu schwer für die Hände: Er bleibt neben dem Beet liegen
+		# Zu schwer, um ihn einfach zu pflücken: Er rollt neben das Beet
 		get_parent().add_child(pumpkin)
 		pumpkin.global_position = global_position + Vector3(0, 0.05, 0.8)
 		pumpkin.rotation.y = randf() * TAU

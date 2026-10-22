@@ -477,6 +477,7 @@ Kürbis** für sich.
   Halloween-Kürbis, Weißer Kürbis, Muskat) bzw. in die Pfanne (kleine: Hokkaido, Butternut, Türkenturban,
   Zierkürbis). Dann mit dem **Messer** in der Hand [E] → klein schneiden, es kocht. Suppe braucht **40 s**, der
   Braten **25 s** Spielzeit; Topf und Pfanne blubbern bzw. brutzeln, es dampft. Den Riesenkürbis kocht keiner.
+  **Kürbismatsch** (zerplatzter Kürbis, 5.8, 2026-10-22) kommt direkt in den Topf und wird zu Suppe, ohne Messer.
 - **Kürbissuppe – gemeinsam essen:** Ist sie fertig, heißt es „Es gibt Kürbissuppe in der Küche!“ – freie Gäste
   auf demselben Stockwerk kommen (die nächsten), **bis zu sechs**, auch Kinder. Jeder isst eine Schale am Herd:
   **Angst sinkt** (−30), wer mitisst, **mag dich mehr** (+6), und wer zusammen isst, wird miteinander vertrauter
@@ -1419,6 +1420,19 @@ die Ruhephasen spät kurz werden, 4.13).
 > **Umgesetzt (2026-10-20):** sieben Sorten mit eigenem Aussehen, Tragen, Schnitzen, Deko-Stärke, Wert und Wachstum,
 > Lieblingskürbisse der Gäste. **Beete:** Der Gebäudeplan hat je Sorte eine eigene Palettenfarbe („Ausstattung:
 > Kürbispflanze Hokkaido“ usw.; ohne Sorte = Halloween-Kürbis). Weitere Beete malt der Nutzer im Plan.
+>
+> **Zerplatzen und Kürbismatsch (entschieden und umgesetzt 2026-10-22):** Ein Kürbis – auch ein geschnitzter –, der
+> **tiefer als 3 m** fällt (vom Balkon, von der Galerie), zerplatzt mit einem dumpfen Klatschen; Stücke spritzen davon.
+> Übrig bleibt **Kürbismatsch** (Grafik `pumpkin_splash.png`): Man kann ihn aufsammeln und in der Küche zu
+> **Kürbissuppe** kochen (3.8) – jede Sorte, ohne Schneiden. Liegen gelassen, **verblasst er nach einem Spieltag ganz
+> langsam, kaum merklich, und verschwindet** (nur der Matsch – Blut, Laub und Kürbisse bleiben).
+>
+> **Nachtrag (2026-10-22):** **Alle** Kürbisse zerplatzen, auch Zierkürbisse. Der Spritzer ist so groß wie der Kürbis
+> und hat seine Farbe (halb Schale, halb Fruchtfleisch: der weiße hell, der Muskat bräunlich): Zierkürbis ~40 cm,
+> Hokkaido ~50 cm, Halloween-Kürbis ~90 cm, **Riesenkürbis 4–5 m**. Der Riesenspritzer reicht für **10–20 Hände voll**
+> Kürbismatsch – man sammelt ihn Hand für Hand auf, er wird dabei kleiner. Beim Aufprall **fliegen Kürbisstücke**
+> (Schale und Fruchtfleisch) davon, schlagen auf, bleiben ein paar Sekunden liegen und vergehen. Der **Riesenkürbis
+> lässt sich jetzt tragen** – mit beiden Händen, man geht nur gut halb so schnell und sieht über ihn kaum hinweg.
 
 Im Garten wachsen nicht nur Halloween-Kürbisse. Welche Sorte wo wächst, bestimmt der Plan – so gibt es Beete, in denen
 nur eine bestimmte Sorte wächst (der Riese nur in seinem eigenen Beet).
@@ -1435,13 +1449,13 @@ nur eine bestimmte Sorte wächst (der Riese nur in seinem eigenen Beet).
 | **Butternut** | eine Hand | nein | 5 | 4 | ~3,5 min | beige Flaschenform |
 | **Muskatkürbis** | beide Hände | nein (zu hart) | 8 | 6 | ~4,5 min | flach, grün-braun, gerippt |
 | **Türkenturban** | eine Hand | nein | 9 | 6 | ~4 min | rot-orange mit heller, gestreifter Kappe |
-| **Riesenkürbis** | gar nicht | ja, dort, wo er liegt | 25 | – | ~7,5 min | riesig (fast 1 m) |
+| **Riesenkürbis** | beide Hände, sehr langsam | ja | 25 | – | ~7,5 min | riesig (fast 1 m) |
 
 - **Kleine Sorten** trägt man in einer Hand – Karte, Kompass und Aufschließen gehen dann weiter (3.2).
 - **Geschnitzt** zählen die Sorten wie ihre Deko-Stärke: der weiße Kürbis mehr, der Riese zweieinhalbmal so viel
   wie der Halloween-Kürbis.
-- **Riesenkürbis:** Beim Ernten rollt er neben das Beet. Tragen kann ihn niemand, Gäste ernten ihn nie. Mit dem Messer
-  wird er dort, wo er liegt, zur riesigen Laterne im Garten.
+- **Riesenkürbis:** Beim Ernten rollt er neben das Beet, Gäste ernten ihn nie. Mit dem Messer wird er zur riesigen
+  Laterne. Tragen kann man ihn (seit 2026-10-22) mit beiden Händen, aber nur gut halb so schnell wie sonst.
 - **Lieblingskürbis:** Jeder Gast hat eine Lieblingssorte (nie den Riesen). Schenkt man sie ihm, freut er sich besonders
   (wie über etwas, das er mag, und noch mehr); bei anderen Kürbissen verrät er manchmal, welche er lieber hätte. Beim
   Ernten nimmt er seine Sorte zuerst, und seine eigene Kürbisdeko ist aus dieser Sorte.

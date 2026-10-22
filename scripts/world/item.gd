@@ -19,6 +19,10 @@ extends RigidBody3D
 ## wenn das Monster oder der Lakengeist naht – früher, als die Lampen flackern (MonsterDirector.deco_unrest_at).
 ## Einem Lakengespenst gibt man einen Zierkürbis in die Hände; bei einem starken Ruck fällt er herunter.
 ## Herbstlaub liegt verstreut am Boden, in der Hand ist es ein Haufen.
+## Ein Kürbis (auch Zierkürbis), der mehr als BURST_HEIGHT tief fällt, zerplatzt (Spielkonzept 5.8): Stücke fliegen
+## davon, übrig bleibt Kürbismatsch – am Boden ein Spritzer in Größe und Farbe der Sorte, in der Hand ein Klumpen. Der
+## Spritzer des Riesenkürbisses reicht für viele Hände voll. Er wird zu Suppe gekocht (Stove) oder verblasst nach
+## einem Spieltag kaum merklich und verschwindet.
 ## Mehr Deko (Spielkonzept 5.7): Fledermausgirlande (flattert bei Unruhe), Plastikspinne am Faden (wippt),
 ## Hexenbesen (lehnt an der Wand, kippt beim starken Ruck um), Totenkopf (Kerze hinein wie beim Kürbis).
 ##
@@ -27,7 +31,7 @@ extends RigidBody3D
 ## map_pages, keyring; Spielkonzept 3.2).
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
-	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN }
+	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -45,6 +49,7 @@ const PRICES := {
 	Kind.SHEET_GHOST: 5, Kind.LIGHT_STRING: 9, Kind.MINI_PUMPKIN: 2,
 	Kind.BAT_GARLAND: 4, Kind.SPIDER: 2, Kind.SKULL: 8, Kind.BROOM: 7, Kind.BED_SHEET: 1, Kind.ROAST_PUMPKIN: 5,
 	Kind.SODA_CAN: 1,
+	Kind.PUMPKIN_MUSH: 0,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
@@ -67,6 +72,29 @@ const STRING_COLORS: Array[Color] = [Color(1.0, 0.5, 0.1), Color(0.6, 0.25, 0.95
 ## Herbstlaub: Farben der Blätter (auch der Laubhaufen unter den Bäumen, ResourceSpot)
 const LEAF_COLORS: Array[Color] = [Color(0.75, 0.35, 0.08), Color(0.6, 0.15, 0.05), Color(0.8, 0.55, 0.1), Color(0.45, 0.25, 0.08)]
 const JOLT_UNREST := 0.8        ## ab dieser Unruhe kann der Zierkürbis aus den Händen fallen
+## Zerplatzen (Spielkonzept 5.8): diese Arten, ab so viel Fallhöhe (m); als Aufprall zählt, wenn ein Gegenstand mit
+## mindestens IMPACT_SPEED (m/s) fällt und auf einen Schlag mehr als die Hälfte davon verliert
+const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN]
+const BURST_HEIGHT := 3.0
+const IMPACT_SPEED := 3.0
+const MUSH_TEXTURE := "res://assets/textures/pumpkin_splash.png"
+## Mittlere Farbe der Textur – die Spritzer werden durch sie geteilt und in der Farbe des Kürbisses eingefärbt
+const MUSH_TEX_COLOR := Color(0.836, 0.674, 0.361)
+## Fruchtfleisch: Kürbismatsch hat zur Hälfte diese Farbe, zur Hälfte die der Schale
+const FLESH_COLOR := Color(0.95, 0.6, 0.2)
+const MUSH_SIZE := 0.9          ## Kantenlänge des Spritzers (m), wenn nichts anderes gespeichert ist
+const MINI_SPLAT := 0.4         ## Spritzer eines Zierkürbisses (m; Sorten: PumpkinKinds „splat“)
+const HANDFUL_SPLAT := 0.6      ## eine Hand voll aus einem großen Spritzer, wieder abgelegt (m)
+## Stücke, die beim Zerplatzen davonfliegen: so viele je Meter Spritzer (höchstens CHUNK_MAX), liegen so lange
+## (Spielzeit, s), dann schrumpfen sie weg
+const CHUNKS_PER_M := 7.0
+const CHUNK_MAX := 26
+const CHUNK_STAY := Vector2(5.0, 9.0)
+const MINI_COLOR := Color(0.9, 0.48, 0.1)
+const LARGE_SPEED := 0.8        ## Gehtempo mit etwas Großem in beiden Händen (Riesenkürbis: PumpkinKinds „slow“)
+## Kürbismatsch: bleibt so lange (Spielzeit, s) unverändert, verblasst danach in MUSH_FADE und ist weg
+const MUSH_ROT_AFTER := Calendar.DAY_SECONDS
+const MUSH_FADE := Calendar.DAY_SECONDS * 0.5
 ## Ausschlag (rad): leichtes Wehen, bei voller Unruhe
 const SWAY: Dictionary = {
 	Kind.SHEET_GHOST: Vector2(0.035, 0.32), Kind.LIGHT_STRING: Vector2(0.03, 0.34), Kind.COBWEB: Vector2(0.05, 0.22),
@@ -117,6 +145,11 @@ var holds_pumpkin := false
 var string_length := 0.0
 ## Lakengespenst: der Lakengeist steht davor und kreist mit den Händen – es kreist mit (SheetGhost)
 var circling_with: Node3D
+## Kürbismatsch: Spielzeit (MonsterDirector.elapsed), zu der der Kürbis zerplatzt ist; Kantenlänge des Spritzers
+## (m); reicht für so viele Hände voll (Riesenkürbis: viele, sonst 1)
+var mushed_at := 0.0
+var mush_size := MUSH_SIZE
+var portions := 1
 
 var _shape: CollisionShape3D
 ## Drehpunkt am Haken: alles, was schwingt (Lakengespenst, Lichterkette, Spinnweben)
@@ -136,6 +169,9 @@ var _sway_seed := 0.0
 var _unrest := 0.0
 var _unrest_timer := 0.0
 var _lean := 0.0          ## seitlich weg von der Quelle der Unruhe (−1..1, lokale X)
+var _fall_top := -INF     ## Zerplatzen: höchster Punkt des laufenden Falls
+var _last_vy := 0.0
+var _mush_mat: ShaderMaterial
 
 
 static func create(p_kind: Kind, extra: String = "") -> Item:
@@ -148,6 +184,7 @@ static func create(p_kind: Kind, extra: String = "") -> Item:
 func _ready() -> void:
 	add_to_group("items")
 	set_meta("interactable", self)
+	set_physics_process(kind in BURST_KINDS)
 
 
 func _process(delta: float) -> void:
@@ -155,6 +192,8 @@ func _process(delta: float) -> void:
 		_update_needle(delta)
 	if hung:
 		_sway(delta)
+	if _mush_mat and not is_held:
+		_rot()
 	if not lit or burn_time <= 0.0:
 		return
 	burn_time -= delta
@@ -217,9 +256,24 @@ func price() -> int:
 	return int(PRICES.get(kind, 1))
 
 
-## Lässt er sich tragen? (Der Riesenkürbis nicht – Spielkonzept 5.8)
-func can_carry() -> bool:
-	return not (kind in [Kind.PUMPKIN, Kind.CARVED_PUMPKIN] and not bool(PumpkinKinds.data(variety)["carry"]))
+## Gehtempo beim Tragen (Anteil): Großes mit beiden Händen LARGE_SPEED, der Riesenkürbis noch langsamer
+## (Spielkonzept 5.8, PumpkinKinds „slow“).
+func carry_speed() -> float:
+	if not is_large:
+		return 1.0
+	if kind in [Kind.PUMPKIN, Kind.CARVED_PUMPKIN]:
+		return float(PumpkinKinds.data(variety).get("slow", LARGE_SPEED))
+	return LARGE_SPEED
+
+
+## Lage in der Hand des Spielers (Hand = Player.HAND_REST vor der Kamera): Großes mittig vor dem Bauch, der
+## Riesenkürbis tiefer und weiter vorn – er verdeckt trotzdem den unteren Teil der Sicht.
+func hold_offset() -> Vector3:
+	if not is_large:
+		return Vector3.ZERO
+	if kind in [Kind.PUMPKIN, Kind.CARVED_PUMPKIN] and variety == "giant":
+		return Vector3(-0.22, -0.78, -0.4)
+	return Vector3(-0.22, -0.28, -0.12)
 
 
 func can_carve() -> bool:
@@ -237,6 +291,8 @@ func create_extra() -> String:
 			return "broken" if broken else ""
 		Kind.PUMPKIN, Kind.ROAST_PUMPKIN:
 			return "" if variety == PumpkinKinds.DEFAULT else variety
+		Kind.PUMPKIN_MUSH:
+			return mush_extra(variety, mushed_at, mush_size, portions)
 		Kind.CARVED_PUMPKIN:
 			var parts: Array[String] = []
 			if variety != PumpkinKinds.DEFAULT:
@@ -276,9 +332,9 @@ func get_prompt(player: Player) -> String:
 		return "Zierkürbis in die Hände geben [E]"
 	if kind == Kind.COINS:
 		return "%s aufheben (+%d) [E]" % [display_name, coin_value]
-	if not can_carry():
-		return "%s – viel zu schwer zum Tragen%s" % [display_name, " (mit dem Messer schnitzen)" if kind == Kind.PUMPKIN else ""]
-	var verb := "abnehmen" if hung else ("aufsammeln" if kind == Kind.LEAVES else "nehmen")
+	var verb := "abnehmen" if hung else ("aufsammeln" if kind in [Kind.LEAVES, Kind.PUMPKIN_MUSH] else "nehmen")
+	if portions > 1:
+		verb = "aufsammeln (noch %d Hände voll)" % portions
 	if verb == "nehmen" and player.held and player.bag_takes(self):
 		verb = "einstecken"   # die Hand ist voll – Kleines kommt in die Tasche (Spielkonzept 3.2)
 	if owner_id != "" and owner_id != "player" and Game.social:
@@ -310,7 +366,8 @@ func interact(player: Player) -> void:
 		set_pumpkin(true)
 		Game.noise("drop", global_position, player)
 		return
-	if not can_carry():
+	if portions > 1:
+		_take_portion(player)
 		return
 	player.try_pick_up(self)
 
@@ -608,8 +665,8 @@ func _apply_pose() -> void:
 					light = null
 			(_shape.shape as BoxShape3D).size = Vector3(maxf(string_length, 0.3), 0.3, 0.1) if hung else Vector3(0.26, 0.06, 0.26)
 			_shape.position = Vector3(0, -0.1, 0) if hung else Vector3(0, 0.03 - SINK, 0)
-		Kind.LEAVES:
-			# in der Hand ein Haufen, am Boden verstreut (Spielkonzept 5.6)
+		Kind.LEAVES, Kind.PUMPKIN_MUSH:
+			# in der Hand ein Haufen bzw. Klumpen, am Boden verstreut bzw. ein Spritzer (Spielkonzept 5.6, 5.8)
 			_pile.visible = is_held
 			_spread.visible = not is_held
 		Kind.BAT_GARLAND:
@@ -983,8 +1040,39 @@ func _build(extra: String) -> void:
 			deco_strength = 4.0
 			mass = 0.3
 			size = Vector3(0.15, 0.13, 0.15)
-			Geo.mesh(self, Geo.sphere(0.075, 0.11, 8, 4), Mat.psx(Color(0.9, 0.48, 0.1)), Vector3(0, 0.055, 0))
+			Geo.mesh(self, Geo.sphere(0.075, 0.11, 8, 4), Mat.psx(MINI_COLOR), Vector3(0, 0.055, 0))
 			Geo.mesh(self, Geo.cylinder(0.012, 0.035, 5), Mat.psx(Color(0.3, 0.35, 0.12)), Vector3(0, 0.12, 0))
+		Kind.PUMPKIN_MUSH:
+			# Zerplatzter Kürbis (Spielkonzept 5.8): extra = mush_extra() – Sorte, Zeitpunkt, Größe, Hände voll; die Zahlen
+			# der Reihe nach (ältere Stände: nur Zeitpunkt)
+			variety = PumpkinKinds.from_extra(extra)
+			mushed_at = Calendar._elapsed()
+			var numbers := Array(extra.split(",")).filter(func(part: String) -> bool: return part.is_valid_float())
+			if numbers.size() > 0:
+				mushed_at = String(numbers[0]).to_float()
+			if numbers.size() > 1:
+				mush_size = String(numbers[1]).to_float()
+			if numbers.size() > 2:
+				portions = maxi(1, String(numbers[2]).to_int())
+			display_name = "Kürbismatsch"
+			mass = 0.5
+			size = Vector3(mush_size * 0.7, 0.03, mush_size * 0.7)
+			var color := mush_color(PumpkinKinds.data(variety)["color"])
+			var flesh := Mat.psx(color)
+			_pile = Node3D.new()
+			add_child(_pile)
+			for i in 4:
+				var lump := Geo.mesh(_pile, Geo.sphere(0.07 - i * 0.01, 0.05, 6, 3), flesh, Vector3((i % 2) * 0.05 - 0.025, 0.025 + i * 0.015, 0.02 if i >= 2 else -0.02))
+				lump.rotation.y = i * 1.3
+			_spread = Node3D.new()
+			add_child(_spread)
+			var plane := PlaneMesh.new()
+			plane.size = Vector2.ONE   # Größe über _spread.scale (schrumpft beim Aufsammeln, _take_portion)
+			_mush_mat = Mat.decal(MUSH_TEXTURE)
+			_mush_mat.set_shader_parameter("albedo", Color(color.r / MUSH_TEX_COLOR.r, color.g / MUSH_TEX_COLOR.g, color.b / MUSH_TEX_COLOR.b))
+			Geo.mesh(_spread, plane, _mush_mat, Vector3(0, 0.006, 0))
+			_spread.scale = Vector3(mush_size, 1.0, mush_size)
+			freeze = portions > 1   # der große Spritzer rutscht nicht weg
 	_shape = CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size
@@ -993,6 +1081,139 @@ func _build(extra: String) -> void:
 	add_child(_shape)
 	_sway_seed = randf() * TAU
 	_apply_pose()
+
+
+## Zerplatzen (Spielkonzept 5.8): merkt sich den höchsten Punkt des Falls; beim Aufprall (siehe IMPACT_SPEED) aus mehr
+## als BURST_HEIGHT zerplatzt der Kürbis. Nur für BURST_KINDS, nicht in der Hand oder an der Wand.
+func _physics_process(_delta: float) -> void:
+	if is_held or freeze or pocketed:
+		_fall_top = -INF
+		_last_vy = 0.0
+		return
+	var vy := linear_velocity.y
+	if _last_vy < -IMPACT_SPEED and vy > _last_vy * 0.5 and _fall_top - global_position.y > BURST_HEIGHT:
+		burst()
+		return
+	if vy > -0.5:
+		_fall_top = global_position.y   # liegt, rollt oder steigt: hier beginnt ein neuer Fall
+	_last_vy = vy
+
+
+## Der Kürbis zerplatzt: An seiner Stelle liegt Kürbismatsch der gleichen Sorte – Spritzer so groß wie die Sorte
+## (PumpkinKinds „splat“, Zierkürbis MINI_SPLAT), beim Riesenkürbis für viele Hände voll –, Stücke fliegen davon.
+func burst() -> Item:
+	var at := global_position
+	var hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(at + Vector3.UP * 0.5, at + Vector3.DOWN * 1.5, 1))
+	if not hit.is_empty():
+		at = hit["position"]
+	var d := PumpkinKinds.data(variety)
+	var mini := kind == Kind.MINI_PUMPKIN
+	var splat := (MINI_SPLAT if mini else float(d["splat"])) * randf_range(0.9, 1.1)
+	var hands: Vector2i = Vector2i.ONE if mini else d.get("portions", Vector2i.ONE)
+	var mush := Item.create(Kind.PUMPKIN_MUSH, mush_extra(variety, Calendar._elapsed(), splat, randi_range(hands.x, hands.y)))
+	mush.owner_id = owner_id
+	get_parent().add_child(mush)
+	mush.global_transform = Transform3D(Basis(Vector3.UP, randf() * TAU), at + Vector3.UP * 0.02)
+	_splash_chunks(at, MINI_COLOR if mini else d["color"], splat)
+	Game.noise("pumpkin_splat", at, self)
+	if Game.player and Game.player.global_position.distance_to(at) < 12.0:
+		Game.caption("[Ein Kürbis zerplatzt]")
+	if Game.tracing:
+		print("[Kürbis] %s zerplatzt nach %.1f m Fall – Spritzer %.2f m, %d Hände voll" % [display_name, _fall_top - global_position.y, splat, mush.portions])
+	queue_free()
+	return mush
+
+
+## Zusatzfeld für Kürbismatsch (Item.create): Sorte, Zeitpunkt des Zerplatzens, Kantenlänge des Spritzers, Hände voll.
+static func mush_extra(p_variety: String, at_time: float, splat: float, hands: int) -> String:
+	return "%s,%.2f,%.2f,%d" % [p_variety, at_time, splat, hands]
+
+
+## Farbe des Kürbismatschs: halb Schale, halb Fruchtfleisch – ein weißer Kürbis gibt hellen, ein grüner bräunlichen.
+static func mush_color(skin: Color) -> Color:
+	return skin.lerp(FLESH_COLOR, 0.5)
+
+
+## Großer Spritzer (Riesenkürbis): eine Hand voll nehmen – sie liegt als eigener Kürbismatsch in der Hand, der
+## Spritzer schrumpft (Fläche je Hand voll), bis die letzte Hand voll mit ihm selbst aufgesammelt wird.
+func _take_portion(player: Player) -> void:
+	var handful := Item.create(Kind.PUMPKIN_MUSH, mush_extra(variety, mushed_at, HANDFUL_SPLAT, 1))
+	handful.owner_id = owner_id
+	get_parent().add_child(handful)
+	handful.global_position = global_position
+	player.try_pick_up(handful)
+	if player.held != handful:   # Hände voll – bleibt im Spritzer
+		handful.queue_free()
+		return
+	portions -= 1
+	mush_size *= sqrt(float(portions) / (portions + 1))
+	_spread.scale = Vector3(mush_size, 1.0, mush_size)
+	(_shape.shape as BoxShape3D).size = Vector3(mush_size * 0.7, 0.03, mush_size * 0.7)
+
+
+## Was beim Zerplatzen davonfliegt (Spielkonzept 5.8), je größer der Spritzer (m), desto mehr und weiter: feine
+## Spritzer (Partikel, kurz) und Stücke aus Schale und Fruchtfleisch, die aufschlagen, eine Weile liegen und dann
+## wegschrumpfen (Spielzeit – pausiert mit dem Spiel). Sie sind nur Bild, nichts zum Aufheben.
+func _splash_chunks(at: Vector3, skin: Color, splat: float) -> void:
+	var k := sqrt(splat / MUSH_SIZE)   # Riesenkürbis ≈ 2,2, Zierkürbis ≈ 0,7
+	var spray := CPUParticles3D.new()
+	spray.one_shot = true
+	spray.explosiveness = 1.0
+	spray.amount = int(14 * k)
+	spray.lifetime = 0.9
+	spray.local_coords = false
+	spray.mesh = Geo.box(Vector3(0.05, 0.03, 0.04) * minf(k, 1.5))
+	spray.material_override = Mat.psx(mush_color(skin))
+	spray.direction = Vector3.UP
+	spray.spread = 70.0
+	spray.initial_velocity_min = 1.5 * k
+	spray.initial_velocity_max = 3.0 * k
+	spray.gravity = Vector3(0, -9.8, 0)
+	spray.angular_velocity_min = -400.0
+	spray.angular_velocity_max = 400.0
+	spray.scale_amount_min = 0.6
+	spray.scale_amount_max = 1.4
+	get_parent().add_child(spray)
+	spray.global_position = at + Vector3.UP * 0.1
+	spray.emitting = true
+	get_tree().create_timer(spray.lifetime + 0.2, false).timeout.connect(spray.queue_free)
+	var mats := [Mat.psx(skin), Mat.psx(mush_color(skin)), Mat.psx(FLESH_COLOR)]
+	for i in mini(CHUNK_MAX, maxi(3, roundi(CHUNKS_PER_M * splat))):
+		var piece := RigidBody3D.new()
+		piece.collision_layer = 0
+		piece.collision_mask = 1   # nur Wände und Böden
+		piece.mass = 0.1
+		var dims := Vector3(randf_range(0.04, 0.09), randf_range(0.02, 0.04), randf_range(0.03, 0.07)) * minf(k, 1.6)
+		var look := Geo.mesh(piece, Geo.box(dims), mats[i % mats.size()], Vector3.ZERO)
+		var shape := CollisionShape3D.new()
+		shape.shape = BoxShape3D.new()
+		(shape.shape as BoxShape3D).size = dims
+		piece.add_child(shape)
+		get_parent().add_child(piece)
+		var a := randf() * TAU
+		var out := Vector3(cos(a), 0, sin(a))
+		piece.global_position = at + out * randf_range(0.05, 0.2) * k + Vector3.UP * (0.08 + 0.1 * k)
+		piece.rotation = Vector3(randf() * TAU, randf() * TAU, randf() * TAU)
+		piece.linear_velocity = out * randf_range(1.0, 3.0) * k + Vector3.UP * randf_range(2.0, 4.0) * minf(k, 1.4)
+		piece.angular_velocity = Vector3(randf_range(-12, 12), randf_range(-12, 12), randf_range(-12, 12))
+		# Am Stück selbst (der Kürbis ist dann längst weg); der Körper lässt sich nicht skalieren, nur sein Bild
+		var shrink := piece.create_tween()
+		shrink.tween_interval(randf_range(CHUNK_STAY.x, CHUNK_STAY.y))
+		shrink.tween_property(look, "scale", Vector3.ONE * 0.01, 0.8)
+		shrink.tween_callback(piece.queue_free)
+
+
+## Kürbismatsch am Boden: nach MUSH_ROT_AFTER verblasst er über MUSH_FADE kaum merklich und verschwindet.
+func _rot() -> void:
+	var left := 1.0 - (Calendar._elapsed() - mushed_at - MUSH_ROT_AFTER) / MUSH_FADE
+	if left <= 0.0:
+		if Game.tracing:
+			print("[Kürbis] Kürbismatsch verblasst und weg")
+		queue_free()
+		return
+	var fade := minf(1.0, left)
+	if _mush_mat.get_shader_parameter("fade") != fade:
+		_mush_mat.set_shader_parameter("fade", fade)
 
 
 ## Lakengespenst: Inhalt unter dem Drehpunkt am Haken (y = 0 oben, Saum bei −GHOST_HEIGHT), Gesicht nach +Z.

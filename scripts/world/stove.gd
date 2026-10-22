@@ -1,7 +1,8 @@
 class_name Stove
 extends StaticBody3D
 ## Herd in der Küche (Spielkonzept 3.8): Kürbis in der Hand → in den Topf (große Sorten, Suppe) bzw. in die Pfanne
-## (kleine, braten); mit dem Messer klein schneiden, dann kocht es nach Spielzeit. Die Suppe reicht für PORTIONS
+## (kleine, braten); mit dem Messer klein schneiden, dann kocht es nach Spielzeit. Kürbismatsch (zerplatzter Kürbis,
+## 5.8) gibt jede Sorte Suppe und kocht gleich, ohne Schneiden. Die Suppe reicht für PORTIONS
 ## Schalen – freie Gäste in der Nähe kommen und essen mit (Angst ↓, mögen dich mehr, werden miteinander vertrauter,
 ## 6.16), du selbst isst am Topf (Schock ↓); nach COLD_TIME ist sie kalt. Der gebratene Kürbis liegt danach als Teller
 ## (Item.Kind.ROAST_PUMPKIN) auf dem Herd. Was auf dem Herd steht, wird nicht gespeichert. Erreichbar über Game.kitchen.
@@ -121,6 +122,8 @@ static func dish_for(item: Item) -> String:
 		return ""
 	if item.kind == Item.Kind.MINI_PUMPKIN:
 		return "roast"
+	if item.kind == Item.Kind.PUMPKIN_MUSH:
+		return "soup"
 	if item.kind != Item.Kind.PUMPKIN:
 		return ""
 	if item.variety in SOUP_VARIETIES:
@@ -162,8 +165,13 @@ func interact(player: Player) -> void:
 				return
 			variety = PumpkinKinds.DEFAULT if player.held.kind == Item.Kind.MINI_PUMPKIN else player.held.variety
 			dish = d
+			var mush := player.held.kind == Item.Kind.PUMPKIN_MUSH
 			player.consume_held()
 			phase = "raw"
+			if mush:   # schon klein – kocht gleich
+				phase = "cooking"
+				_timer = SOUP_TIME
+				Game.say("Du gibst den Kürbismatsch in den Topf. Jetzt heißt es warten.", 3.0)
 			_show()
 			Game.noise("drop", global_position, player)
 		"raw":

@@ -55,6 +55,9 @@ extends Node3D
 ##   --deco=art[,g]              Deko in die Hand (5.6, 5.7): gespenst, lichter, netz, laub, zierkürbis, fledermaus,
 ##                               spinne, totenkopf, besen – an eine Wand sehen
 ##                               und [G] zum Aufhängen bzw. Verstreuen · ,g: nach 1 s selbst [G] (mit --pos auf eine Wand)
+##   --fall[=h[,sorte]]          Kürbis fällt 1,5 m vor dir aus h m Höhe (Standard 4) – ab 3 m zerplatzt er zu Kürbismatsch
+##                               (5.8); Sorte aus PumpkinKinds oder „mini“ (Zierkürbis), z. B. --fall=5,giant; mit
+##                               --time=+2 danach ist der Matsch verblasst und weg
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
 ##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
@@ -546,6 +549,18 @@ func run_debug(arg: String) -> bool:
 		Game.player.receive_item(Item.create(kinds[what]))
 		if arg.ends_with(",g"):
 			get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.player.drop_held())
+	elif arg == "--fall" or arg.begins_with("--fall="):
+		# Kürbis fällt 1,5 m vor dir aus h m Höhe (Standard 4) – ab 3 m zerplatzt er (5.8); dahinter Sorte oder „mini“
+		var parts := arg.substr(7).split(",") if arg.length() > 7 else PackedStringArray()
+		var height := parts[0].to_float() if parts.size() > 0 and parts[0] != "" else 4.0
+		var sort := parts[1] if parts.size() > 1 else ""
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
+			var pumpkin := Item.create(Item.Kind.MINI_PUMPKIN) if sort == "mini" else Item.create(Item.Kind.PUMPKIN, sort)
+			Game.player.get_parent().add_child(pumpkin)
+			var front := -Game.player.global_basis.z
+			pumpkin.global_position = Game.player.global_position + Vector3(front.x, 0, front.z).normalized() * 1.5 + Vector3.UP * height
+			if Game.tracing:
+				print("[Kürbis] fällt aus %.1f m bei %s" % [height, pumpkin.global_position]))
 	elif arg.begins_with("--show="):
 		Game.player.debug_show = arg.substr(7)
 	elif arg == "--winded":

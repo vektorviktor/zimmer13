@@ -347,8 +347,8 @@ func _physics_process(delta: float) -> void:
 	var dir := (transform.basis * Vector3(input.x, 0, input.y)).normalized()
 	running = (Input.is_action_pressed("run") or debug_sprint) and not crouching and not winded and input.length() > 0.1
 	var speed := CROUCH_SPEED if crouching else (RUN_SPEED if running else WALK_SPEED)
-	if held and held.is_large:
-		speed *= 0.8
+	if held:
+		speed *= held.carry_speed()   # Großes 0,8, Riesenkürbis langsamer (Item.carry_speed)
 	if inspecting:
 		speed *= INSPECT_SPEED
 	speed *= 1.0 - TRANCE_SLOW * trance
@@ -866,7 +866,7 @@ func _hold(item: Item) -> void:
 	held = item
 	item.set_held(true)
 	item.reparent(_hand, false)
-	item.position = Vector3(-0.22, -0.28, -0.12) if item.is_large else Vector3.ZERO
+	item.position = item.hold_offset()
 	item.rotation = Vector3(0, PI, 0)
 	if Game.hud:
 		Game.hud.set_held(item.display_name)
@@ -1256,8 +1256,8 @@ func _push_items(dir: Vector3, speed: float) -> void:
 		return
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
-		if item.is_held or item.freeze:
-			continue
+		if item.is_held or item.freeze or item.kind == Item.Kind.PUMPKIN_MUSH:
+			continue   # Kürbismatsch klebt am Boden
 		var to := item.global_position - global_position
 		if to.y > 0.8 or to.y < -0.3:
 			continue   # liegt auf einem Tisch oder tiefer

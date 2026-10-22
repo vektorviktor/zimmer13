@@ -34,6 +34,7 @@ static var _shader_two_sided: Shader
 static var _wall_shader: Shader
 static var _particle_shader: Shader
 static var _leaves_shader: Shader
+static var _decal_shader: Shader
 static var _wall_albedo := {}
 static var _wall_surface: ImageTexture
 static var _cache := {}
@@ -155,6 +156,17 @@ static func leaves(tex_id: String) -> ShaderMaterial:
 		m.set_shader_parameter("albedo_tex", TexGen.get_tex(tex_id))
 		_cache[key] = m
 	return _cache[key]
+
+
+## Flache Auflage mit Umriss aus dem Alpha einer Bilddatei (shaders/psx_decal.gdshader, Kürbismatsch) – eigenes
+## Material je Aufruf, damit jede für sich verblassen kann (Parameter `fade`).
+static func decal(path: String) -> ShaderMaterial:
+	if _decal_shader == null:
+		_decal_shader = load("res://shaders/psx_decal.gdshader")
+	var m := ShaderMaterial.new()
+	m.shader = _decal_shader
+	m.set_shader_parameter("albedo_tex", load(path))
+	return m
 
 
 ## Für flache Auflagen auf einer anderen Fläche (Teppich auf Fliesen, Kassetten auf dem Türblatt):
