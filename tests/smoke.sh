@@ -97,7 +97,7 @@ done <<'LIST'
 800|--wound=edna,axe,hin --talk=edna
 1200|--shock=mila,corpse --trace
 2400|--sleep=bett --trace
-1500|--awake=3 --pos=40,0.1,0 --trace
+1500|--awake=3 --pos=50.5,0.1,-7 --trace
 400|--console=guests;tp keller
 400|--menu=pause
 400|--talk=edna

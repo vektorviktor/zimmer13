@@ -11,7 +11,8 @@ extends Node
 
 signal autosaved
 
-const DIR := "user://saves/"
+## Headless (Testläufe, tests/smoke.sh) ein eigener Ordner – sonst überschreibt ein Testlauf den echten Autosave
+var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" else "user://saves/"
 ## 2: größeres Hotel (Kreuzungen, 30 Zimmer, Kellertreppe) – ältere Stände passen nicht mehr
 ## 3: zufällig erzeugte Gäste (Seed + Zimmer im Spielstand)
 ## 4: Obergeschoss, dritte Kreuzung, Spuren und Zettel der Gäste
@@ -61,7 +62,7 @@ const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "l
 	"windows", "hide_spots", "phones", "dressers", "cats"]
 const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
-const WORLD_FILE := DIR + "world.txt"
+var WORLD_FILE := DIR + "world.txt"
 ## Bereiche, deren erster Besuch einen Autosave auslöst
 const NEW_AREAS := ["Lobby", "Galerie", "Küche", "Speisesaal", "Bar", "Partyraum", "Pool", "Garten", "Innenhof Nordost", "Innenhof Südost",
 	"Ostflügel, Nordflur", "Westflügel, Südflur", "Treppenhaus", "Keller", "Zimmer 0116", "Zimmer 0117", "Zimmer 0118"]
@@ -209,6 +210,8 @@ func request_autosave(reason: String) -> void:
 func is_safe_for_autosave() -> bool:
 	var p := Game.player
 	if p == null or p.dead or p.hiding != null or p.in_dialog or Game.game_over:
+		return false
+	if not p.is_on_floor():   # nicht im Sprung oder Fall – sonst lädt man womöglich mitten in der Luft oder im Leeren
 		return false
 	if (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active):
 		return false

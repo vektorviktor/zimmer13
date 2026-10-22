@@ -1300,7 +1300,9 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
 ## 7. Speichern & Laden
 
 - JSON in `user://saves/` (`slot_1..3.json`, `autosave.json` + `.png`), geschrieben über `.tmp` +
-  Umbenennen. `SaveManager.collect()` sammelt, `SaveManager.apply(data)` stellt her.
+  Umbenennen. `SaveManager.collect()` sammelt, `SaveManager.apply(data)` stellt her. Headless (Testläufe, Rauchtest)
+  stattdessen `user://saves_headless/` (`SaveManager.DIR`) – sonst überschrieb ein Testlauf den echten Autosave, und
+  „Letzten Spielstand laden“ nach dem Tod landete an dessen Testposition.
 - **Laden = Hauptszene neu aufbauen, dann befüllen.** `load_slot` setzt `Game.pending_load` und
   wechselt die Szene; `main.gd` ruft nach dem Aufbau `SaveManager.apply` auf.
 - **Feste Welt-Objekte werden über die Reihenfolge in ihrer Gruppe zugeordnet** (`_apply_group`:
@@ -1340,7 +1342,7 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
 - Speichern am Tagebuch gesperrt bei Jagd oder Monster näher als `NOISE_START`, während der Flackerwelle, solange der
   Kürbismann im Hotel ist (`PumpkinMan.in_house`, er wird nicht gespeichert) und der Lakengeist beim Spieler ist
   (`SheetGhost.with_player`); Autosave nur in sicheren Momenten (`is_safe_for_autosave`, schließt `can_save` ein),
-  sonst aufgeschoben. Auslöser nur nach 8.6: Tod eines Gastes, Ende einer Feier, Tür aufgeschlossen, neuer Bereich.
+  sonst aufgeschoben – auch, solange der Spieler keinen Boden unter den Füßen hat (Sprung, Fall ins Leere). Auslöser nur nach 8.6: Tod eines Gastes, Ende einer Feier, Tür aufgeschlossen, neuer Bereich.
 - **Prüfen:** `--savetest` sammelt → wendet an → sammelt erneut und meldet Unterschiede – nur nötig, wenn sich
   am Speichern etwas ändert. Bekanntes Rauschen gleicht `main._settle` an und meldet es als „(kein Fehler)“: Türen mit
   einem Gast im Türrahmen, Lage und Drehung von Dingen in der Hand (folgen der Hand), Drehung liegender Gegenstände bis
@@ -1464,7 +1466,7 @@ Tabelle im README. Im F6-Menü erscheint er von selbst; in `TeleportUI.GROUPS` e
   (`window/size/no_focus.editor_runtime` in `project.godot`); ohne `--bg` holt `Game._ready` ihn sofort nach.
   Exportierte Spiele betrifft das nicht.
 - Nach Änderungen am Speichern (nicht an der Welt): `--savetest` laufen lassen (`alles gleich` erwartet).
-- Headless gibt es kein Bild: das Autosave speichert dann ohne Vorschau, Shader werden nicht kompiliert (Shader-Änderungen
+- Headless gibt es kein Bild: das Autosave speichert dann ohne Vorschau (in `user://saves_headless/`, nicht in die echten Stände), Shader werden nicht kompiliert (Shader-Änderungen
   mit Fenster und `--bg --shot=…` prüfen).
 - **Bekannt, offen:** Headless-Läufe enden nach dem Hotel in etwa jedem dritten Fall beim Beenden mit Segfault (Exit 139),
   selten hängen sie stattdessen; der Titelbildschirm allein nie. Eingegrenzt (2026-10-22): nicht der Abbau der Szene (alles vorher freigegeben und
