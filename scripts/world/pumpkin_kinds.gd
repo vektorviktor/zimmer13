@@ -8,24 +8,24 @@ const DEFAULT := "halloween"
 const ORDER := ["halloween", "hokkaido", "casper", "butternut", "muskat", "turban", "giant"]
 ## shape: round (rund), flat (flach, gerippt), bottle (Flaschenform), turban (mit Kappe)
 ## size: Maße (m), large: beide Hände, carve: schnitzbar, deco: Deko-Stärke, price: Grundpreis,
-## grow: Sekunden bis reif, mass: kg; geschnitzt leuchtet er in glow. Zerplatzt (Item.burst): splat = Kantenlänge des
+## grow: Sekunden bis reif (große Sorten einmal am Spieltag, der Riese alle zwei – Spielkonzept 5.10), mass: kg; geschnitzt leuchtet er in glow. Zerplatzt (Item.burst): splat = Kantenlänge des
 ## Spritzers (m, ±10 %), portions = so viele Hände voll Kürbismatsch (Standard 1). slow: Gehtempo beim Tragen
 ## (Standard Item.LARGE_SPEED bzw. 1)
 const DATA := {
 	"halloween": {"name": "Halloween-Kürbis", "shape": "round", "color": Color(0.85, 0.42, 0.08), "size": Vector3(0.42, 0.34, 0.42),
-		"large": true, "carve": true, "deco": 10.0, "price": 4, "grow": 225.0, "mass": 4.0, "splat": 0.9, "glow": Color(1.0, 0.55, 0.15)},
+		"large": true, "carve": true, "deco": 10.0, "price": 4, "grow": Calendar.DAY_SECONDS, "mass": 4.0, "splat": 0.9, "glow": Color(1.0, 0.55, 0.15)},
 	"hokkaido": {"name": "Hokkaido", "shape": "round", "color": Color(0.82, 0.3, 0.06), "size": Vector3(0.2, 0.16, 0.2),
 		"large": false, "carve": false, "deco": 4.0, "price": 2, "grow": 150.0, "mass": 1.2, "splat": 0.5},
 	"casper": {"name": "Weißer Kürbis", "shape": "round", "color": Color(0.86, 0.86, 0.8), "size": Vector3(0.44, 0.32, 0.44),
-		"large": true, "carve": true, "deco": 12.0, "price": 6, "grow": 300.0, "mass": 4.5, "splat": 0.95, "glow": Color(0.75, 0.85, 1.0)},
+		"large": true, "carve": true, "deco": 12.0, "price": 6, "grow": Calendar.DAY_SECONDS, "mass": 4.5, "splat": 0.95, "glow": Color(0.75, 0.85, 1.0)},
 	"butternut": {"name": "Butternut", "shape": "bottle", "color": Color(0.86, 0.7, 0.45), "size": Vector3(0.18, 0.32, 0.18),
 		"large": false, "carve": false, "deco": 5.0, "price": 4, "grow": 210.0, "mass": 1.5, "splat": 0.55},
 	"muskat": {"name": "Muskatkürbis", "shape": "flat", "color": Color(0.45, 0.42, 0.2), "size": Vector3(0.5, 0.24, 0.5),
-		"large": true, "carve": false, "deco": 8.0, "price": 6, "grow": 270.0, "mass": 6.0, "splat": 1.0},
+		"large": true, "carve": false, "deco": 8.0, "price": 6, "grow": Calendar.DAY_SECONDS, "mass": 6.0, "splat": 1.0},
 	"turban": {"name": "Türkenturban", "shape": "turban", "color": Color(0.8, 0.32, 0.1), "size": Vector3(0.3, 0.26, 0.3),
 		"large": false, "carve": false, "deco": 9.0, "price": 6, "grow": 240.0, "mass": 2.0, "splat": 0.7},
 	"giant": {"name": "Riesenkürbis", "shape": "round", "color": Color(0.9, 0.52, 0.12), "size": Vector3(0.95, 0.72, 0.95),
-		"large": true, "carve": true, "deco": 25.0, "price": 0, "grow": 450.0, "mass": 60.0, "glow": Color(1.0, 0.5, 0.12),
+		"large": true, "carve": true, "deco": 25.0, "price": 0, "grow": 2.0 * Calendar.DAY_SECONDS, "mass": 60.0, "glow": Color(1.0, 0.5, 0.12),
 		"slow": 0.45, "splat": 4.5, "portions": Vector2i(10, 20)},
 }
 ## Was ein Gast als Lieblingskürbis haben kann (den Riesen erntet keiner)

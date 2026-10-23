@@ -66,6 +66,8 @@ done <<'LIST'
 600|--savetest
 600|--savetest --day=20
 600|--bag --flashlight --savetest
+600|--day=12 --rot=eingefallen --savetest --trace
+1200|--day=26 --rot --decorate=allein --trace
 400|--bag --flashlight --bag-menu=2
 3000|--navcheck
 3000|--day=12 --first-attack --trace

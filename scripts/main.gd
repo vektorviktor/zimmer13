@@ -49,6 +49,7 @@ extends Node3D
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
 ##   --time=+n|-n                Spieltage vor- oder zurückspulen
+##   --rot[=welk|eingefallen]    alle Kürbisse 10 s vor welk (5.10) – bzw. gleich welk oder eingefallen
 ##   --aufzug[=innen|offen|fahrt]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht (innen: in der
 ##                               Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt: in der Kabine, sie
 ##                               fährt gleich ins oberste Stockwerk)
@@ -937,6 +938,18 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--day="):
 		# zu einem Tag im Oktober springen (1–31), dort 15 Uhr
 		Game.director.elapsed = Calendar.at(clampi(arg.substr(6).to_int(), 1, Calendar.HALLOWEEN), Calendar.START_HOUR)
+	elif arg == "--rot" or arg.begins_with("--rot="):
+		# alle Kürbisse kurz vor welk bzw. gleich in dieser Stufe (Spielkonzept 5.10)
+		var target: float = {"welk": Item.ROT_WILT + 0.01, "eingefallen": Item.ROT_SAG + 0.01}.get(arg.substr(6), Item.ROT_WILT)
+		var count := 0
+		for node in get_tree().get_nodes_in_group("items"):
+			var item := node as Item
+			if item.rot_at < INF:
+				var life := Item.ROT_CARVED if item.kind == Item.Kind.CARVED_PUMPKIN else Item.ROT_WHOLE
+				item.rot_at = Game.director.elapsed + life * (1.0 - target) + (10.0 if arg == "--rot" else 0.0)
+				item._rot_timer = 0.0
+				count += 1
+		Game.say("%d Kürbisse altern" % count, 2.0)
 	elif arg.begins_with("--uhr="):
 		# Uhrzeit am aktuellen Tag (hh oder hh:mm); vor der Anreise am 1. Oktober geht es nicht
 		var hm := arg.substr(6).split(":")

@@ -97,6 +97,21 @@ const LARGE_SPEED := 0.8        ## Gehtempo mit etwas Großem in beiden Händen 
 ## Kürbismatsch: bleibt so lange (Spielzeit, s) unverändert, verblasst danach in MUSH_FADE und ist weg
 const MUSH_ROT_AFTER := Calendar.DAY_SECONDS
 const MUSH_FADE := Calendar.DAY_SECONDS * 0.5
+## Kürbisse faulen (Spielkonzept 5.10): geschnitzte nach ROT_CARVED, ungeschnitzte und Zierkürbisse nach ROT_WHOLE –
+## ab ROT_WILT der Zeit welk (dunkler, Deko × WILT_DECO), ab ROT_SAG eingefallen (gestaucht, × SAG_DECO), dann weg.
+## Schnitzen setzt die Restzeit auf höchstens ROT_CARVED. Geprüft alle ROT_CHECK s.
+const ROT_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN]
+const ROT_CARVED := 3.0 * Calendar.DAY_SECONDS
+const ROT_WHOLE := 7.0 * Calendar.DAY_SECONDS
+const ROT_WILT := 0.6
+const ROT_SAG := 0.85
+const WILT_DECO := 0.7
+const SAG_DECO := 0.4
+const ROT_CHECK := 1.0
+const ROT_NAMES := ["", " (welk)", " (eingefallen)"]
+## Füllmaterial (5.10): wächst nach und zählt an einer Stelle nur bis MonsterDirector.FILLER_CAP – dazu die kleinen
+## Kürbissorten (is_filler)
+const FILLER_KINDS := [Kind.LEAVES, Kind.COBWEB, Kind.CANDLE, Kind.MINI_PUMPKIN]
 ## Ausschlag (rad): leichtes Wehen, bei voller Unruhe
 const SWAY: Dictionary = {
 	Kind.SHEET_GHOST: Vector2(0.035, 0.32), Kind.LIGHT_STRING: Vector2(0.03, 0.34), Kind.COBWEB: Vector2(0.05, 0.22),
@@ -108,6 +123,10 @@ var kind: Kind = Kind.PUMPKIN
 var variety := PumpkinKinds.DEFAULT
 var display_name := ""
 var deco_strength := 0.0
+## Kürbisse (ROT_KINDS): Spielzeit, zu der er ganz verfault ist, und erreichte Stufe (0 frisch, 1 welk, 2 eingefallen)
+var rot_at := INF
+var rot_stage := 0
+var _rot_timer := 0.0
 var is_large := false
 var key_id := ""
 var coin_value := 0
@@ -183,6 +202,8 @@ static func create(p_kind: Kind, extra: String = "") -> Item:
 	var item := Item.new()
 	item.kind = p_kind
 	item._build(extra)
+	if p_kind in ROT_KINDS:
+		item._read_rot(extra)
 	return item
 
 
@@ -199,6 +220,11 @@ func _process(delta: float) -> void:
 		_sway(delta)
 	if _mush_mat and not is_held:
 		_rot()
+	if rot_at < INF:
+		_rot_timer -= delta
+		if _rot_timer <= 0.0:
+			_rot_timer = ROT_CHECK
+			_decay()
 	if not lit or burn_time <= 0.0:
 		return
 	burn_time -= delta
@@ -294,8 +320,12 @@ func create_extra() -> String:
 			return str(coin_value)
 		Kind.BULB:
 			return "broken" if broken else ""
-		Kind.PUMPKIN, Kind.ROAST_PUMPKIN:
+		Kind.ROAST_PUMPKIN:
 			return "" if variety == PumpkinKinds.DEFAULT else variety
+		Kind.PUMPKIN:
+			return ",".join(([] if variety == PumpkinKinds.DEFAULT else [variety]) + [_rot_extra()])
+		Kind.MINI_PUMPKIN:
+			return _rot_extra()
 		Kind.PUMPKIN_MUSH:
 			return mush_extra(variety, mushed_at, mush_size, portions)
 		Kind.CARVED_PUMPKIN:
@@ -304,6 +334,7 @@ func create_extra() -> String:
 				parts.append(variety)
 			if not lit:
 				parts.append("unlit")
+			parts.append(_rot_extra())
 			return ",".join(parts)
 		Kind.SKULL:
 			return "lit" if lit else ""
@@ -435,7 +466,8 @@ func _fit(player: Player) -> void:
 
 ## Ersetzt diesen Kürbis durch einen geschnitzten (noch ohne Kerze).
 func carve() -> Item:
-	var carved := Item.create(Kind.CARVED_PUMPKIN, variety + ",unlit")
+	var rot := minf(rot_at, Calendar._elapsed() + ROT_CARVED)
+	var carved := Item.create(Kind.CARVED_PUMPKIN, "%s,unlit,r=%d" % [variety, int(rot)])
 	carved.owner_id = owner_id
 	get_parent().add_child(carved)
 	carved.global_transform = global_transform
@@ -1463,7 +1495,72 @@ func _build_map() -> void:
 
 ## Geschnitzt: „Geschnitzter Kürbis“, bei anderen Sorten mit deren Namen
 func _carved_name() -> String:
-	return "Geschnitzter Kürbis" if variety == PumpkinKinds.DEFAULT else "Geschnitzter %s" % PumpkinKinds.data(variety)["name"]
+	return ("Geschnitzter Kürbis" if variety == PumpkinKinds.DEFAULT else "Geschnitzter %s" % PumpkinKinds.data(variety)["name"]) 		+ ROT_NAMES[rot_stage]
+
+
+# --- Faulen (Spielkonzept 5.10) -------------------------------------------------------------
+
+## Deko-Stärke mit Verfall: welk und eingefallen zählt weniger.
+func deco_value() -> float:
+	return deco_strength * (SAG_DECO if rot_stage == 2 else (WILT_DECO if rot_stage == 1 else 1.0))
+
+
+## Füllmaterial (FILLER_KINDS und kleine Kürbissorten)? Zählt an einer Stelle nur bis MonsterDirector.FILLER_CAP.
+func is_filler() -> bool:
+	return kind in FILLER_KINDS or (kind == Kind.PUMPKIN and not is_large)
+
+
+## Faulzeit aus dem Zusatz („r=Spielzeit“) – ohne ihn beginnt sie jetzt (frisch geerntet bzw. neu erzeugt).
+func _read_rot(extra: String) -> void:
+	for part in extra.split(","):
+		if part.begins_with("r="):
+			rot_at = part.substr(2).to_float()
+			return
+	rot_at = Calendar._elapsed() + (ROT_CARVED if kind == Kind.CARVED_PUMPKIN else ROT_WHOLE)
+
+
+func _rot_extra() -> String:
+	return "r=%d" % int(rot_at)
+
+
+## Stufe nachführen; ganz verfault ist er weg – in der Hand oder Tasche erst, sobald er wieder liegt.
+func _decay() -> void:
+	var life := ROT_CARVED if kind == Kind.CARVED_PUMPKIN else ROT_WHOLE
+	var used := 1.0 - (rot_at - Calendar._elapsed()) / life
+	if used >= 1.0:
+		if is_held or in_bag or pocketed:
+			return
+		if Game.tracing:
+			print("[Kürbis] %s ist verfault und weg" % display_name)
+		queue_free()
+		return
+	var stage := 2 if used >= ROT_SAG else (1 if used >= ROT_WILT else 0)
+	if stage > rot_stage:
+		set_rot_stage(stage)
+
+
+## Welk: dunkler und bräunlich; eingefallen: gestaucht. Nur vorwärts (Debug --rot setzt die Zeit).
+func set_rot_stage(stage: int) -> void:
+	var old_name: String = ROT_NAMES[rot_stage]
+	for i in range(rot_stage + 1, stage + 1):
+		for mi in get_children():
+			var mesh := mi as MeshInstance3D
+			if mesh == null:
+				continue
+			var mat := mesh.material_override as ShaderMaterial
+			if i == 1 and mat and mat != _glow_material and mat.get_shader_parameter("emission_energy") == 0.0:
+				var c: Color = mat.get_shader_parameter("albedo")
+				mesh.material_override = Mat.psx(c.darkened(0.3).lerp(Color(0.32, 0.24, 0.1), 0.35))
+			elif i == 2:
+				mesh.scale *= Vector3(1.12, 0.7, 1.12)
+				mesh.position *= Vector3(1.12, 0.7, 1.12)
+	rot_stage = stage
+	if kind == Kind.CARVED_PUMPKIN:
+		display_name = _carved_name() + ("" if lit else " (ohne Licht)")
+	else:
+		display_name = display_name.trim_suffix(old_name) + ROT_NAMES[stage]
+	if Game.tracing:
+		print("[Kürbis] %s" % display_name)
 
 
 ## Deko-Stärke der Sorte im Verhältnis zum Halloween-Kürbis (geschnitzt: Weiß × 1,2, Riese × 2,5)

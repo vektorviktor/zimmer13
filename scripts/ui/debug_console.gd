@@ -14,6 +14,7 @@ const COMMANDS := {
 	"time": ["+n|-n", "Spieltage vor- oder zurückspulen"],
 	"day": ["n", "zu Tag n im Oktober springen (15 Uhr)"],
 	"uhr": ["hh[:mm]", "Uhrzeit am aktuellen Tag stellen (2.4)"],
+	"rot": ["[welk|eingefallen]", "alle Kürbisse 10 s vor welk bzw. gleich welk oder eingefallen (5.10)"],
 	"save": ["n", "nach 2 s in Slot n speichern (wie am Tagebuch)"],
 	"load": ["n", "Spielstand n laden (0 = Autosave)"],
 	"savetest": ["", "Speichern → Laden → Vergleichen (Konsole)"],

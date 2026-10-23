@@ -1524,13 +1524,13 @@ nur eine bestimmte Sorte wächst (der Riese nur in seinem eigenen Beet).
 
 | Sorte | Tragen | Schnitzen | Deko | Wert | Reif nach | Aussehen |
 |-------|--------|-----------|------|------|-----------|----------|
-| **Halloween-Kürbis** | beide Hände | ja | 10 | 4 | ~4 min | groß, rund, orange |
+| **Halloween-Kürbis** | beide Hände | ja | 10 | 4 | ~~etwa 4 min~~ 1 Tag (5.10) | groß, rund, orange |
 | **Hokkaido** | eine Hand | nein | 4 | 2 | ~2,5 min | klein, rot-orange |
-| **Weißer Kürbis** („Casper“) | beide Hände | ja – leuchtet kalt-weiß | 12 | 6 | ~5 min | groß, weiß |
+| **Weißer Kürbis** („Casper“) | beide Hände | ja – leuchtet kalt-weiß | 12 | 6 | ~~etwa 5 min~~ 1 Tag | groß, weiß |
 | **Butternut** | eine Hand | nein | 5 | 4 | ~3,5 min | beige Flaschenform |
-| **Muskatkürbis** | beide Hände | nein (zu hart) | 8 | 6 | ~4,5 min | flach, grün-braun, gerippt |
+| **Muskatkürbis** | beide Hände | nein (zu hart) | 8 | 6 | ~~etwa 4,5 min~~ 1 Tag | flach, grün-braun, gerippt |
 | **Türkenturban** | eine Hand | nein | 9 | 6 | ~4 min | rot-orange mit heller, gestreifter Kappe |
-| **Riesenkürbis** | beide Hände, sehr langsam | ja | 25 | – | ~7,5 min | riesig (fast 1 m) |
+| **Riesenkürbis** | beide Hände, sehr langsam | ja | 25 | – | ~~etwa 7,5 min~~ 2 Tage | riesig (fast 1 m) |
 
 - **Kleine Sorten** trägt man in einer Hand – Karte, Kompass und Aufschließen gehen dann weiter (3.2).
 - **Geschnitzt** zählen die Sorten wie ihre Deko-Stärke: der weiße Kürbis mehr, der Riese zweieinhalbmal so viel
@@ -1551,7 +1551,7 @@ ihm.
   > **Umgesetzt (2026-10-20): Schmück-Aktionen.** Ab und zu ruft ein Gast zum gemeinsamen Schmücken auf – eine
   > Zimmertür, einen Flurabschnitt oder eine Flurecke in der Nähe seines Zimmers, nie Lobby oder Partyraum, am liebsten
   > dort, wo noch wenig hängt. Gäste aus der Nähe (auch Kinder) machen mit: Sie holen Deko aus ihrem Zimmer (aus dem
-  > Koffer, sonst etwas Gebasteltes), tragen sie sichtbar durch den Flur und hängen bzw. stellen sie auf – oben eine
+  > Koffer, sonst ~~etwas Gebasteltes~~ Füllmaterial wie Laub und Spinnweben, seit 5.10), tragen sie sichtbar durch den Flur und hängen bzw. stellen sie auf – oben eine
   > Lichterkette, an der Wand Lakengespenster, Fledermäuse, Spinnen und Spinnweben, am Boden Kürbisse, Totenköpfe,
   > Besen und Laub. Der Spieler wird per Meldung eingeladen, in Zimmer 13 per Anruf. Wer selbst Deko dazuhängt oder eine
   > Weile dabei ist, gewinnt die Mitmacher als Freunde, sein Schock sinkt; allen Mitmachern sinkt die Angst.
@@ -1626,9 +1626,30 @@ ihm.
   Verschwundenen. Es landet im Tagebuch bzw. im Abspann. Mit der Zeitschleife (2.2) hängt das Foto des letzten
   Durchgangs in der Lobby – und man steht selbst darauf.
 
-### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21)
-> Noch nicht umgesetzt. Macht den Pitch (1) wahr – „Die Deko ist knapp“ – und ändert Anspruch (4.8), Abschreckung
-> (4.9) und Schutzbereich (4.12).
+### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23)
+> Macht den Pitch (1) wahr – „Die Deko ist knapp“ – und ändert Anspruch (4.8), Abschreckung (4.9) und Schutzbereich
+> (4.12). In drei Stufen: **1** Anspruch, Kisten, Kürbisse und Verfall · **2** Schutzkreis = Lichtschein, sichtbare
+> Abweisung (Teil 3 unten) · **3** Gäste schmücken mit Plan und klauen bei Knappheit (Teil 5).
+>
+> **Stufe 1 umgesetzt (2026-10-23)** mit diesen Zahlen aus der Durchsprache am selben Tag:
+> - **Anspruch** gleitend von ×1 am 2. Oktober bis ×3 an Halloween, dann gedeckelt (bisher +100 % alle drei Tage,
+>   also ×11). Grob gerechnet braucht eine hell beleuchtete Tür zur Monatsmitte 2–3, an Halloween 4 geschnitzte
+>   Kürbisse mit Licht.
+> - **Füllmaterial** (Laub, Spinnweben, Kerzen, Zierkürbisse, Hokkaido, Butternut, Turban) zählt an einer Stelle
+>   **zusammen höchstens 20** – in den ersten Tagen ein Grundschutz, ab etwa dem 5. reicht es allein nie (beantwortet
+>   „wie stark Füllmaterial sein darf“; bis Stufe 2, in der Deko ohne Licht ohnehin nur halb zählt).
+> - **Kisten ohne Nachschub:** Dekokiste je 15 (Lichterketten, Fledermäuse, Spinnen), Wäschekiste 8 Lakengespenster,
+>   alte Deko im Heizkeller 10 (Totenköpfe, Besen, Fledermäuse). Gäste nehmen aus jeder Kiste **höchstens ein Stück am
+>   Spieltag** – so leeren sie sich gegen die Monatsmitte, mit dem Spieler schneller. Dekokisten trägt der Plan
+>   (`map_a`) noch nicht – sie kommen von Hand dazu.
+> - **Nichts Starkes mehr aus dem Nichts:** Mit leerem Koffer bringen Gäste beim Schmücken nur noch Füllmaterial
+>   (Laub, Spinnweben, Zierkürbisse); Lichterketten oben nur aus dem Koffer. Allein-Schmücken und Deko-Suche
+>   verbrauchen den Vorrat der Fundorte (mit dem Tageslimit der Kisten). Katzen bringen weiter einmal am Tag etwas.
+> - **Große Kürbisse:** Halloween, Weißer und Muskat werden je Beet **einmal am Tag** reif, der Riese alle zwei Tage;
+>   **Frost ab dem 25.**: Danach tragen große Beete nicht mehr (neu). Kleine Sorten wachsen wie bisher (3c beantwortet).
+> - **Faulen:** geschnitzte nach 3 Tagen, ungeschnitzte und Zierkürbisse nach 7; ab 60 % der Zeit **welk** (dunkler,
+>   zählt ×0,7), ab 85 % **eingefallen** (gestaucht, ×0,4), dann weg. Schnitzen setzt die Restzeit auf höchstens 3 Tage.
+>   Was im Koffer eines Gastes liegt (nur gezählt), fault nicht.
 
 **Die Probleme bisher**
 - **Zu viel:** Jede Quelle wächst nach (Laub, Kerzen, Lakengespenster, alte Deko im Keller, über 60 Beete), dazu
@@ -3071,7 +3092,8 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 3. ~~Monster-Kontakt~~ → Jumpscare + Sterbebildschirm, danach letzten Spielstand laden (entschieden, siehe 8).
 3a. **„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren?
 3b. ~~Spieler-Lichtquelle~~ → **Taschenlampe**, verrät die eigene Position, schützt nicht; mit UV-Aufsatz (späterer Fund) kurz vertreiben, kostet Batterien und macht es dreister (4.16, entschieden 2026-10-11).
-3c. **Garten-Zeit:** Wie lange wächst ein Kürbis – Minuten Echtzeit oder Ingame-Tage?
+3c. ~~**Garten-Zeit:** Wie lange wächst ein Kürbis – Minuten Echtzeit oder Ingame-Tage?~~ → kleine Sorten Minuten, große
+    einen Spieltag (Riese zwei), Frost ab dem 25. (5.10, entschieden 2026-10-23)
 3d. **Kellertür vs. Hitbox:** Ducken, Tür erhöhen oder Hitbox verkleinern?
 3e. ~~Puppe~~ → **sichtbares Urteil statt wandernder Jury:** sitzt vor der am schwächsten geschützten bewohnten Tür,
     dorthin geht das Monster beim Angriff zuerst; tragen dürfen sie nur Spieler und Kinder (5.5, entschieden 2026-10-21).
@@ -3128,8 +3150,9 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
     entschieden 2026-10-21)
 7m1. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
     Zuflucht/Warnen/Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18, entschieden 2026-10-21)
-7m2. Deko knapp machen: Füllmaterial wächst nach, starke Deko endlich, Anspruch je Tag bis ×3, Schutzkreis = Lichtschein,
-    Kürbisse faulen, Gäste schmücken nach Angst und Freundschaft und klauen bei Knappheit (5.10, entschieden 2026-10-21)
+7m2. Deko knapp machen: ~~Füllmaterial wächst nach, starke Deko endlich, Anspruch je Tag bis ×3~~, Schutzkreis = Lichtschein,
+    ~~Kürbisse faulen~~, Gäste schmücken nach Angst und Freundschaft und klauen bei Knappheit (5.10, entschieden 2026-10-21;
+    Stufe 1 ✔ 2026-10-23)
 7m3. Monsterwerte vereinfachen: Dreistigkeit in Spieltagen mit abklingenden Boni, heiße Stellen statt Zonen-Neugier
     (4.9) · Freitext-Prototyp entfernen (6.15) · Tiefkeller auf den Kern beschränken (7.4) · Tochter des Heizers als
     vierte Kernfigur (2.3, 6.0) – entschieden 2026-10-21

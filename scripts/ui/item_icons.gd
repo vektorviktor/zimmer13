@@ -22,7 +22,9 @@ func _process(_delta: float) -> void:
 
 
 func icon(item: Item) -> Texture2D:
-	var key := "%d|%s|%s" % [item.kind, item.create_extra(), item.display_name]
+	# ohne Faulzeit („r=…“, Spielkonzept 5.10) – sonst bekäme jeder Kürbis ein eigenes Bild; die Stufe steht im Namen
+	var extra := ",".join(Array(item.create_extra().split(",")).filter(func(part: String) -> bool: return not part.begins_with("r=")))
+	var key := "%d|%s|%s" % [item.kind, extra, item.display_name]
 	if not _cache.has(key):
 		_cache[key] = _render(item)
 	return _cache[key]

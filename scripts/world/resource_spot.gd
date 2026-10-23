@@ -3,7 +3,8 @@ extends StaticBody3D
 ## Stelle, an der man Material bekommt: Laubhaufen unter Bäumen, Spinnweben in
 ## dunklen Ecken, Kerzenvorrat in der Küche, Lakengespenster in der Wäschekiste, Lichterketten
 ## in der Dekokiste (Spielkonzept 5.6), alte Deko im Keller (5.7), Getränkedosen in Kühlraum und Lager und – für Geld –
-## auf der Bartheke (3.2). Begrenzter Vorrat, wächst langsam nach.
+## auf der Bartheke (3.2). Begrenzter Vorrat, wächst langsam nach – außer in den Kisten mit starker Deko
+## (regen_time 0, Spielkonzept 5.10): Die leeren sich, und Gäste nehmen aus jeder höchstens ein Stück am Spieltag.
 ## Mit `pool` gibt es abwechselnd verschiedene Dinge (Dekokiste, alte Deko); `kind` bestimmt nur das Aussehen.
 ## Spinnweben: lokale +Z zeigt von der Wand weg.
 
@@ -15,6 +16,8 @@ var regen_time := 90.0
 var pool: Array = []
 ## Kostet so viel Geld je Stück (0 = umsonst)
 var price := 0
+## Kiste ohne Nachschub: Spieltag, an dem zuletzt ein Gast etwas genommen hat (gespeichert)
+var guest_day := 0
 
 var _timer := 0.0
 var _visual: Node3D
@@ -113,13 +116,44 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if uses >= max_uses:
+	if uses >= max_uses or regen_time <= 0.0:
 		return
 	_timer += delta
 	if _timer >= regen_time:
 		_timer = 0.0
 		uses += 1
 		_update_visual()
+
+
+## Kiste mit starker Deko, die nicht nachwächst (5.10)?
+func runs_out() -> bool:
+	return regen_time <= 0.0
+
+
+## Darf ein Gast jetzt etwas nehmen? Aus einer Kiste ohne Nachschub nur ein Stück am Spieltag.
+func guest_can_take() -> bool:
+	return uses > 0 and (not runs_out() or guest_day != Calendar.today())
+
+
+## Ein Stück für den Spieler, ohne Gegenstand (er bekommt ihn geteilt, DecoSearch). false = leer.
+func consume() -> bool:
+	if uses <= 0:
+		return false
+	uses -= 1
+	_update_visual()
+	return true
+
+
+## Ein Gast nimmt ein Stück (den Gegenstand baut er selbst, Guest.stock_item) – zählt das Tageslimit der Kisten.
+## false = leer oder heute schon genommen.
+func guest_consume() -> bool:
+	if not guest_can_take():
+		return false
+	if runs_out():
+		guest_day = Calendar.today()
+	uses -= 1
+	_update_visual()
+	return true
 
 
 ## Gibt ein neues Item zurück (noch nicht in der Szene) oder null, wenn leer.
@@ -133,7 +167,7 @@ func take() -> Item:
 
 func get_prompt(player: Player) -> String:
 	if uses <= 0:
-		return "%s – gerade nichts zu holen" % label
+		return ("%s – leer" if runs_out() else "%s – gerade nichts zu holen") % label
 	if not player.can_take(kind):
 		return "Hände voll"
 	if price > 0:

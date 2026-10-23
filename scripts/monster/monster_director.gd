@@ -24,8 +24,13 @@ const INTENT_NAMES := ["Umsehen", "Einen holen", "Raubzug"]
 # --- Tuning -------------------------------------------------------------------
 const BOLDNESS_START := 25.0
 const BOLDNESS_PER_DAY := 12.0         ## nach dem ersten Angriff, je Spieltag (2.4)
-const DEMAND_GROWTH_DAYS := 3.0        ## Anspruch an Deko: +100 % alle drei Spieltage
+## Anspruch an Deko (Spielkonzept 5.10): ×1 am DEMAND_FROM_DAY, gleitend bis ×DEMAND_MAX an Halloween, dann gedeckelt
+const DEMAND_FROM_DAY := 2.0
+const DEMAND_MAX := 3.0
 const DECO_RADIUS := 3.0
+## Füllmaterial (Item.is_filler: Laub, Spinnweben, Kerzen, Zierkürbisse, kleine Sorten) zählt an einer Stelle
+## zusammen höchstens so viel – ein Grundschutz, der ab Monatsmitte nie allein reicht (5.10)
+const FILLER_CAP := 20.0
 const LIGHT_DETERRENCE := 12.0
 const CHASE_BONUS := 12.0
 const MOONLIGHT := 0.3                 ## Helligkeit direkt am offenen Außenfenster
@@ -235,7 +240,8 @@ func effective_boldness() -> float:
 
 
 func demand() -> float:
-	return 1.0 + elapsed / (DEMAND_GROWTH_DAYS * Calendar.DAY_SECONDS)
+	var t := clampf((Calendar.day_float(elapsed) - DEMAND_FROM_DAY) / (Calendar.HALLOWEEN - DEMAND_FROM_DAY), 0.0, 1.0)
+	return lerpf(1.0, DEMAND_MAX, t)
 
 
 func pressure_at(p: Vector3, chasing: bool = false) -> float:
@@ -281,11 +287,16 @@ func _deco_items() -> Array[Item]:
 
 func _deco_strength(p: Vector3, decos: Array[Item]) -> float:
 	var total := 0.0
+	var filler := 0.0
 	for item in decos:
 		var d := Vector2(item.global_position.x - p.x, item.global_position.z - p.z).length()
 		if d < DECO_RADIUS and absf(item.global_position.y - p.y) < 2.5:   # nur auf demselben Stockwerk
-			total += item.deco_strength * (1.0 - 0.5 * d / DECO_RADIUS)
-	return total
+			var value := item.deco_value() * (1.0 - 0.5 * d / DECO_RADIUS)
+			if item.is_filler():
+				filler += value
+			else:
+				total += value
+	return total + minf(filler, FILLER_CAP)
 
 
 ## Helligkeit 0..1 an einem Punkt – alle Lichtquellen mit freier Sichtlinie.
@@ -1517,7 +1528,8 @@ func _update_effects(delta: float) -> void:
 func debug_text() -> String:
 	var s := "%s %s · Phase %s (%ds) · Angriff %d%s\n" % [Calendar.date_text(elapsed), Calendar.time_text(elapsed),
 		Phase.keys()[phase], int(_phase_left), attacks, " harmlos" if is_harmless() else ""]
-	s += "Dreistigkeit %.1f (effektiv %.1f) · Bedrohung %.2f\n" % [boldness, effective_boldness(), player_threat]
+	s += "Dreistigkeit %.1f (effektiv %.1f) · Anspruch ×%.2f · Bedrohung %.2f\n" % [boldness, effective_boldness(), demand(),
+		player_threat]
 	s += "UV vertrieben: %d× (nötig %.1f s)\n" % [uv_count, uv_repel_time()]
 	s += "Absicht: %s (noch %d Opfer) · Flackern zeigte %d · Angriffschance %.0f %%\n" % [INTENT_NAMES[intent], victims_left, shown_victims, attack_chance() * 100.0]
 	s += "Monster: %s\n" % Monster.State.keys()[_monster.state]

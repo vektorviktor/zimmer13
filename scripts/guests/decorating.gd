@@ -86,12 +86,9 @@ const SOLO_LOBBY := 0.25
 const SOLO_MIN := Vector2i(1, 2)
 const SOLO_HOTEL := 0.5
 const SOLO_STROLL := 0.7
-## Gebastelt, wenn der Koffer leer ist (Gewichte)
-const HOMEMADE := {
-	Item.Kind.SHEET_GHOST: 3, Item.Kind.BAT_GARLAND: 3, Item.Kind.SPIDER: 2, Item.Kind.COBWEB: 2, Item.Kind.LIGHT_STRING: 2,
-	Item.Kind.CARVED_PUMPKIN: 2, Item.Kind.PUMPKIN: 2, Item.Kind.MINI_PUMPKIN: 2, Item.Kind.SKULL: 1, Item.Kind.BROOM: 1,
-	Item.Kind.LEAVES: 2,
-}
+## Ist der Koffer leer, bringt er Füllmaterial mit (Gewichte) – Starkes gibt es nicht mehr aus dem Nichts, nur aus dem
+## Koffer oder den Kisten (Spielkonzept 5.10); für Lichterketten oben bleibt der Platz dann frei
+const HOMEMADE := {Item.Kind.COBWEB: 2, Item.Kind.MINI_PUMPKIN: 2, Item.Kind.LEAVES: 3}
 const CALL_LINES := ["Wer hilft mir schmücken? Bringt Deko mit!", "Kommt, wir machen es hier richtig gruselig!",
 	"Halloween kommt – hier fehlt noch Deko!"]
 const BIG_LINES := ["Alle mal herhören: Heute wird groß geschmückt! Holt eure Deko!", "Großes Schmücken! Jeder bringt mit, was er hat!",
@@ -607,10 +604,14 @@ func on_arrived(g: Guest) -> void:
 			# Ein Armvoll: für jedes Stück einen Platz reservieren, das erste in die Hand, die anderen obendrauf
 			var load: Array = []
 			for i in int(entry["armful"]):
-				var slot := _reserve_slot(a.site)
+				var slot := _reserve_slot(a.site, _bring_layers(g))
 				if slot.is_empty():
 					break
-				load.append({"slot": slot, "item": g.stock_item(_pick_kind(g, slot, a.site))})
+				var kind := _pick_kind(g, slot, a.site)
+				if kind < 0:
+					slot["used"] = false
+					break
+				load.append({"slot": slot, "item": g.stock_item(kind)})
 			if load.is_empty():
 				_leave(a, g)
 				return
@@ -695,6 +696,15 @@ func _pick_kind(g: Guest, slot: Dictionary, at: Dictionary) -> int:
 	return kind
 
 
+## Ebenen, für die der Gast etwas mitbringen kann: aus seinem Koffer oder Füllmaterial (HOMEMADE).
+func _bring_layers(g: Guest) -> Array:
+	var layers: Array = []
+	for layer: String in LAYER_KINDS:
+		if (LAYER_KINDS[layer] as Array).any(func(k: int) -> bool: return int(g.stock.get(k, 0)) > 0 or HOMEMADE.has(k)):
+			layers.append(layer)
+	return layers
+
+
 func _wall_neighbors(slot: Dictionary, at: Dictionary) -> Array:
 	if slot["layer"] != "wall":
 		return []
@@ -708,6 +718,9 @@ func _choose_kind(g: Guest, kinds: Array) -> int:
 		var kind: int = own.pick_random()
 		g.stock[kind] = int(g.stock[kind]) - 1
 		return kind
+	kinds = kinds.filter(func(k: int) -> bool: return HOMEMADE.has(k))
+	if kinds.is_empty():
+		return -1
 	var total := 0
 	for k in kinds:
 		total += int(HOMEMADE.get(k, 1))
@@ -988,7 +1001,7 @@ func _source_for(g: Guest, at: Dictionary) -> ResourceSpot:
 	var spots: Array = []
 	for node in get_tree().get_nodes_in_group("resource_spots"):
 		var spot := node as ResourceSpot
-		if spot.global_position.y > -0.5 and spot.kind != Item.Kind.COBWEB and not _spot_kinds(spot).filter(func(k: int) -> bool: return k in wanted).is_empty():
+		if spot.global_position.y > -0.5 and spot.kind != Item.Kind.COBWEB and spot.guest_can_take() 				and not _spot_kinds(spot).filter(func(k: int) -> bool: return k in wanted).is_empty():
 			spots.append(spot)
 	spots.sort_custom(func(a: ResourceSpot, b: ResourceSpot) -> bool:
 		return a.global_position.distance_to(g.global_position) < b.global_position.distance_to(g.global_position))
@@ -1046,17 +1059,19 @@ func _solo_arrived(entry: Dictionary) -> void:
 			var source: ResourceSpot = entry["source"]
 			var slot := {}
 			var kind := -1
-			if source and is_instance_valid(source):
+			if source and is_instance_valid(source) and source.guest_can_take():
 				var wanted := _free_kinds(at)
 				var kinds := _spot_kinds(source).filter(func(k: int) -> bool: return k in wanted)
 				if not kinds.is_empty():
 					kind = kinds.pick_random()
 					slot = _reserve_slot(at, [_layer_of(kind)])
-			else:
-				slot = _reserve_slot(at)
+			elif source == null:
+				slot = _reserve_slot(at, _bring_layers(g))
 				if not slot.is_empty():
 					kind = _pick_kind(g, slot, at)
-			if slot.is_empty():
+			if slot.is_empty() or kind < 0 or (source and is_instance_valid(source) and not source.guest_consume()):
+				if not slot.is_empty():
+					slot["used"] = false
 				_solo.erase(g.id)
 				g._set_idle(randf_range(3.0, 6.0))
 				return

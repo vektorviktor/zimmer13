@@ -59,8 +59,10 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     ohnehin nicht mehr (Aufzugtüren und Kabinenleuchte ändern den Fingerabdruck)
 ## 31: Tagesuhr (Spielkonzept 2.4) – ein Tag dauert 1440 statt 300 s, die Nachtruhe folgt der Uhr (social.night_seed statt
 ##     sleep_timer); ältere Stände laden nicht mehr (ihre Spielzeit ergäbe einen ganz anderen Tag)
-const VERSION := 31
-const MIN_VERSION := 31
+## 32: Knappheit (Spielkonzept 5.10) – Faulzeit der Kürbisse im Zusatz der Gegenstände („r=…“), Tag der letzten
+##     Entnahme eines Gastes je Kiste (resources.guest_day); ältere Stände laden nicht (Kisten wären wieder voll)
+const VERSION := 32
+const MIN_VERSION := 32
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
@@ -410,7 +412,7 @@ func collect() -> Dictionary:
 	data["plants"] = _collect_group("pumpkin_plants", func(n: Node) -> Dictionary:
 		return {"stage": n.stage, "timer": n._timer})
 	data["resources"] = _collect_group("resource_spots", func(n: Node) -> Dictionary:
-		return {"uses": n.uses, "timer": n._timer})
+		return {"uses": n.uses, "timer": n._timer, "guest_day": n.guest_day})
 	data["lamps"] = _collect_group("lamp_fixtures", func(n: Node) -> Dictionary: return n.save_state())
 	data["switches"] = _collect_group("light_switches", func(n: Node) -> Dictionary: return n.save_state())
 	data["windows"] = _collect_group("windows", func(n: Node) -> Dictionary: return n.save_state())
@@ -478,6 +480,7 @@ func apply(data: Dictionary) -> void:
 	_apply_group("resource_spots", data.get("resources", []), func(n: Node, d: Dictionary) -> void:
 		n.uses = int(d["uses"])
 		n._timer = float(d["timer"])
+		n.guest_day = int(d.get("guest_day", 0))
 		n._update_visual())
 	_apply_group("light_switches", data.get("switches", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("lamp_fixtures", data.get("lamps", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))

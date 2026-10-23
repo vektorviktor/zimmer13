@@ -5,7 +5,9 @@ extends Node
 ## Suchender den Spieler, fragt er, ob er mitkommt; der Spieler kann auch selbst fragen. Dann führt der Gast, wartet, wenn
 ## der Spieler zurückfällt, und teilt am Fundort: ein Stück für ihn, eins für den Spieler. Dafür mag er den Spieler mehr
 ## und erzählt es seinen Freunden (6.16). Manchmal suchen zwei Gäste zusammen und werden dabei Freunde.
-## Der Vorrat der Fundorte bleibt unberührt (wie beim Schmücken allein). Nichts davon wird gespeichert.
+## Beide Stücke kommen aus dem Vorrat des Fundorts – aus Kisten ohne Nachschub nimmt ein Gast höchstens eins am Tag
+## (ResourceSpot.guest_consume, Spielkonzept 5.10); ist nichts mehr da, gibt es nichts zu teilen. Nichts davon wird
+## gespeichert.
 ## Kind von Social, erreichbar über Game.social.search.
 
 ## Pause bis zur nächsten Suche am 1. … am 31. (von selbst nur tagsüber, 11–18 Uhr); so viele gleichzeitig; so oft zu zweit
@@ -154,7 +156,7 @@ func _source_for(g: Guest) -> ResourceSpot:
 	var spots: Array = []
 	for node in get_tree().get_nodes_in_group("resource_spots"):
 		var spot := node as ResourceSpot
-		if _risky(spot) == danger and spot.kind != Item.Kind.SODA_CAN:   # Getränkekisten sind keine Deko
+		if _risky(spot) == danger and not spot.kind in [Item.Kind.SODA_CAN, Item.Kind.BULB] and spot.guest_can_take():   # Dosen und Birnen sind keine Deko
 			spots.append(spot)
 	spots.sort_custom(func(a: ResourceSpot, b: ResourceSpot) -> bool:
 		return a.global_position.distance_to(g.global_position) < b.global_position.distance_to(g.global_position))
@@ -231,13 +233,13 @@ func on_arrived(g: Guest) -> void:
 		return
 	var entry: Dictionary = _trips[g.id]
 	var source: ResourceSpot = entry["source"]
-	if not is_instance_valid(source):
-		_finish(g)
+	if not is_instance_valid(source) or not source.guest_consume():
+		_finish(g)   # leer oder heute schon jemand da gewesen
 		return
 	var kinds: Array = source.pool if not source.pool.is_empty() else [source.kind]
 	var mine := g.stock_item(kinds.pick_random())
 	var partner = entry["partner"]
-	if partner is String:
+	if partner is String and source.consume():
 		var p := Game.player
 		if p and not p.dead and p.global_position.distance_to(g.global_position) < LAG_RANGE * 1.5:
 			var theirs := g.stock_item(kinds.pick_random())

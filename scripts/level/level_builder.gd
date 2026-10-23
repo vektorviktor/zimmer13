@@ -308,6 +308,11 @@ const SIGN_RIM := 0.008
 const SIGN_BRASS: Array[Color] = [Color(0.8, 0.64, 0.28), Color(0.68, 0.54, 0.25), Color(0.52, 0.45, 0.27)]
 ## Ersatzbirnen liegen im Lagerregal, nicht obendrauf
 const BULB_SUPPLY_Y := 1.4
+## Kisten mit starker Deko ohne Nachschub (Spielkonzept 5.10): so viele Stücke je Dekokiste, Wäschekiste und alte Deko
+## im Heizkeller
+const DECO_BOX_SIZE := 15
+const LAUNDRY_BOX_SIZE := 8
+const OLD_DECO_SIZE := 10
 ## Reifegrade der Kürbispflanzen in Planreihenfolge (von Norden nach Süden, je Beet von Westen nach Osten)
 const PLANT_STAGES := [0, 3, 2, 3, 1, 3]
 const PAINTING_COLORS: Array[Color] = [Color(0.22, 0.14, 0.12), Color(0.16, 0.2, 0.15), Color(0.12, 0.13, 0.2),
@@ -1715,7 +1720,7 @@ func _furniture() -> void:
 				elif kind == "laundry_box":
 					# alte Laken mit aufgemalten Gesichtern – Deko vom letzten Jahr (Spielkonzept 5.6)
 					var lc := rect.get_center()
-					_supply(ResourceSpot.new().setup(Item.Kind.SHEET_GHOST, "Lakengespenst", 2, 400.0), Vector3(lc.x, top, lc.y))
+					_supply(ResourceSpot.new().setup(Item.Kind.SHEET_GHOST, "Lakengespenst", LAUNDRY_BOX_SIZE, 0.0), Vector3(lc.x, top, lc.y))
 		if node.get_parent() == null:
 			node.position = pos
 			node.rotation.y = yaw
@@ -1917,7 +1922,7 @@ func _fittings() -> void:
 				_supply(ResourceSpot.new().setup(Item.Kind.LEAVES, "Herbstlaub", 4, 60.0), Vector3(p.x, top, p.y))
 			"deco_box":
 				# Karton mit alter Halloween-Deko: Lichterketten (Spielkonzept 5.6)
-				var box := ResourceSpot.new().setup(Item.Kind.LIGHT_STRING, "Deko aus der Kiste", 3, 500.0) \
+				var box := ResourceSpot.new().setup(Item.Kind.LIGHT_STRING, "Deko aus der Kiste", DECO_BOX_SIZE, 0.0) \
 					.with_pool([Item.Kind.LIGHT_STRING, Item.Kind.BAT_GARLAND, Item.Kind.SPIDER])
 				box.rotation.y = _upright_yaw(p)
 				_supply(box, Vector3(p.x, top, p.y))
@@ -3021,7 +3026,7 @@ func _boiler_room() -> void:
 	_resource_web(Vector3(e - 0.5, 1.7, s - 0.02), PI)
 	_resource_web(Vector3(w + 1.0, 1.7, n + 0.02), 0.0)
 	# Alte Halloween-Deko früherer Jahre (Spielkonzept 5.7) – im Versteck des Monsters
-	var old := ResourceSpot.new().setup(Item.Kind.BROOM, "Alte Deko", 3, 900.0) \
+	var old := ResourceSpot.new().setup(Item.Kind.BROOM, "Alte Deko", OLD_DECO_SIZE, 0.0) \
 		.with_pool([Item.Kind.SKULL, Item.Kind.BROOM, Item.Kind.BAT_GARLAND])
 	old.position = Vector3(w + 1.45, 0.45, s - 0.6)
 	old.rotation.y = PI / 2.0

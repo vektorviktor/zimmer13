@@ -8,6 +8,8 @@ extends StaticBody3D
 ## lässt er sich danach trotzdem, nur langsam (Item.carry_speed).
 
 const RIPE := 3
+## Frost (Spielkonzept 5.10): ab diesem Tag wachsen große Sorten nicht mehr nach – die letzte Woche wird knapp
+const FROST_DAY := 25
 const MINI_CHANCE := 0.5   ## Zierkürbis beim Ernten
 
 var stage := 0
@@ -61,13 +63,18 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if stage >= RIPE:
+	if stage >= RIPE or frozen():
 		return
 	_timer += delta
 	if _timer >= stage_time():
 		_timer = 0.0
 		stage += 1
 		_update_visual()
+
+
+## Große Sorte nach dem Frost: trägt nicht mehr (ein schon reifer Kürbis lässt sich noch ernten).
+func frozen() -> bool:
+	return bool(PumpkinKinds.data(variety)["large"]) and Calendar.today() >= FROST_DAY
 
 
 func is_ripe() -> bool:
@@ -108,7 +115,7 @@ func _minis_near() -> int:
 func get_prompt(player: Player) -> String:
 	var label: String = "Kürbis" if variety == PumpkinKinds.DEFAULT else String(PumpkinKinds.data(variety)["name"])
 	if not is_ripe():
-		return "%s wächst noch …" % label
+		return ("%s – erfroren, trägt nicht mehr" if frozen() else "%s wächst noch …") % label
 	if is_giant():
 		return "%s abschneiden [E]" % label
 	if player.held:
