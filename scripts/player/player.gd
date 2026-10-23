@@ -138,7 +138,7 @@ var _slept := 0.0      ## in dieser Nachtruhe geschlafen (Spielsekunden)
 var has_compass := false
 var map_pages: Array[String] = []
 var keyring: Array[String] = []
-var debug_show := ""   ## --show=map|keys|compass: als würde die Taste gehalten (keys: Schlüsselblatt oben)
+var debug_show := ""   ## --show=map|keys|compass|aufgaben|notizen: als würde die Taste gehalten (keys: Schlüsselblatt oben)
 var injury := 0.0      ## von Gästen geschlagen (0..1): langsamer, blutet – heilt mit der Zeit (6.3)
 var stamina := 1.0     ## Ausdauer (0..1), nicht sichtbar – nur Herzschlag und Atem verraten sie (3.1)
 var winded := false    ## außer Atem: kein Rennen, bis man sich beruhigt hat
@@ -269,12 +269,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			_look(rel)
 	elif event is InputEventMouseButton and event.pressed and _left_shown == "map" and inspecting:
-		# Blättern: Linksklick / Mausrad runter = nächstes Blatt, Mausrad hoch = voriges
+		# Blättern: Linksklick / Mausrad runter = nächstes Blatt, Mausrad hoch = voriges; Rechtsklick = nächstes
+		# Lesezeichen des Notizbuchs (3.10) – im Versteck hält Rechtsklick die Luft an, dort reicht das Mausrad
 		var button := (event as InputEventMouseButton).button_index
 		if button == MOUSE_BUTTON_LEFT or button == MOUSE_BUTTON_WHEEL_DOWN:
 			_pocket_map.flip(1)
 		elif button == MOUSE_BUTTON_WHEEL_UP:
 			_pocket_map.flip(-1)
+		elif button == MOUSE_BUTTON_RIGHT and hiding == null:
+			_pocket_map.next_bookmark()
 	elif event.is_action_pressed("map") or event.is_action_pressed("compass"):
 		_explain_left_hand("map" if event.is_action_pressed("map") else "compass")
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
@@ -419,12 +422,12 @@ func _physics_process(delta: float) -> void:
 	_update_focus()
 
 
-## Linke Hand: Karte (Tab) oder Kompass (F) halten hebt sie vor die Augen. Mit einem großen
-## Gegenstand sind beide Hände voll; im Gespräch geht es nicht.
+## Linke Hand: Karte bzw. Notizbuch (Tab, 3.10) oder Kompass (F) halten hebt sie vor die Augen. Mit einem großen
+## Gegenstand sind beide Hände voll; im Gespräch geht es nicht. Das Spiel läuft dabei weiter.
 func _update_hand(delta: float) -> void:
 	var want := ""
 	if not in_dialog:
-		if (Input.is_action_pressed("map") or debug_show in ["map", "keys"]) and _can_show("map"):
+		if (Input.is_action_pressed("map") or debug_show in ["map", "keys", "aufgaben", "notizen"]) and _can_show("map"):
 			want = "map"
 		elif (Input.is_action_pressed("compass") or debug_show == "compass") and _can_show("compass"):
 			want = "compass"
@@ -433,6 +436,8 @@ func _update_hand(delta: float) -> void:
 		_left_raise = 0.0
 		if want == "map":
 			_pocket_map.open_at(PocketMap.KEYS if debug_show == "keys" else HotelMap.page_at(global_position.y))
+			if debug_show in ["aufgaben", "notizen"]:
+				_pocket_map.open_bookmark("tasks" if debug_show == "aufgaben" else "notes")
 			Game.noise("map", global_position, self)
 	inspecting = want != ""
 	_left_raise = move_toward(_left_raise, 1.0 if inspecting else 0.0, delta * 5.0)
@@ -452,7 +457,7 @@ func _can_show(what: String) -> bool:
 	if hands_blocked():
 		return false
 	if what == "map":
-		return not map_pages.is_empty() or not keyring.is_empty()
+		return not map_pages.is_empty() or not keyring.is_empty() or (Game.notebook != null and Game.notebook.owned)
 	return has_compass
 
 
@@ -495,6 +500,8 @@ func _pocket(item: Item) -> void:
 			add_map_page(item.page_id)
 			if first:
 				Game.say("%s – eingesteckt. [Tab] halten zum Ansehen, [Linksklick] blättert." % item.display_name, 4.0)
+			elif Game.notebook and Game.notebook.owned:
+				Game.say("%s – ins Notizbuch gelegt." % item.display_name, 3.0)
 			else:
 				Game.say("%s – zu den anderen Blättern gesteckt." % item.display_name, 3.0)
 			Game.noise("map", global_position, self)

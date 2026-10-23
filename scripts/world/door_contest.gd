@@ -11,6 +11,9 @@ extends Node
 ##     der dunklen Ecke der Lobby (MonsterDirector.first_attack_in_lobby)
 ##   · Die Regel danach: Warnungszettel von 1999 am Morgen danach unter der Tür von Zimmer 13, Gäste reden am Brett,
 ##     beim ersten Urteil der Puppe ein Satz im Tagebuch
+##   · Notizbuch (3.10): steckt im Umschlag des Briefs, erste Aufgabe ist die eigene Tür (bei der Siegerehrung
+##     durchgestrichen bzw. „zu spät“); Durchsagen und Aushänge kommen als Notiz hinein, Ankunft, Siegerehrung und
+##     erstes Urteil als Meilensteine ins Tagebuch
 ## Erreichbar über Game.contest; gespeichert unter „contest“ (save_state/load_state).
 
 enum Stage { CONTEST, GATHERING, SCENE, DONE }
@@ -20,18 +23,35 @@ const LETTER_TITLE := "Hotel – Mitteilung der Direktion"
 const LETTER_TEXT := "Verehrter Gast,\nherzlich willkommen in Zimmer 13. Wir wünschen Ihnen einen schaurig-schönen Oktober.\n\nWie jedes Jahr lädt die Direktion zum Türschmuck-Wettbewerb: Die Jury kürt am 2. Oktober um 20 Uhr in der Lobby die schönste Tür. Alles Weitere finden Sie am Brett in der Lobby.\n\nDie Direktion"
 ## Erster Tagebucheintrag – Satz des Startstands und am 1. Oktober, sobald der Brief gelesen ist
 const ARRIVAL_ENTRY := "Angekommen. Zimmer 13 ist hübsch, wenn auch etwas altmodisch. Morgen Abend kürt eine Jury die schönste Tür – ich brauche Deko."
+## Meilensteine im Tagebuch (3.10): Siegerehrung mit bzw. ohne den Spieler, erster Angriff auf anderem Weg (Debug)
+const CEREMONY_ENTRY := "Die Siegerehrung. Die Puppe ist aufgestanden, über uns geschwebt und in einer Rauchwolke verschwunden. Dann ging das Licht aus, und in der Ecke der Lobby stand etwas. Einen Sieger gab es nicht."
+const CEREMONY_MISSED_ENTRY := "Die Siegerehrung habe ich verpasst. Unten erzählen sie, die Puppe sei aufgestanden und in Rauch aufgegangen – und als das Licht ausging, habe in der Ecke etwas gestanden."
+const FIRST_SIGHT_ENTRY := "Heute habe ich es zum ersten Mal gesehen. Ich weiß nicht, was es ist. Ich weiß nur, dass es mich auch gesehen hat."
+## Erste Aufgabe im Notizbuch (3.10)
+const TASK_ID := "contest"
+const TASK_TEXT := "Meine Tür schmücken"
+const TASK_DUE := "bis 2. Okt., 20 Uhr"
 const POSTER_TITLE := "Aushang der Direktion"
 const POSTER_HEAD := "HALLOWEEN\nIM HOTEL"
 const POSTER_BEFORE := "Großer Türschmuck-Wettbewerb\n\nVerehrte Gäste, schmücken Sie Ihre Zimmertür!\nDie Jury kürt am 2. Oktober um 20 Uhr in der Lobby die schönste Tür.\nDie Jury sieht nur, was im Licht hängt.\n\nDie Direktion"
 const POSTER_AFTER := "Die Jury hat entschieden.\nVon nun an besucht sie die Tür, die am wenigsten zu bieten hat.\nDie Jury sieht nur, was im Licht hängt.\n\nDie Direktion"
 const RULES_TITLE := "Hausordnung"
 const RULES_TEXT := "Nachtruhe von 23 bis 6 Uhr.\nDie Bar schließt um Mitternacht.\nZu Ihrer Sicherheit bleibt der Haupteingang nachts verschlossen.\n\nDie Direktion"
-## Durchsagen: Tag, Uhrzeit, Text – verpasste (Uhr vorgestellt, Schlaf) holt das Spiel höchstens eine Spielstunde später nach
+## Was die Figur sich vom Brett notiert (3.10): vorher, nachher, Hausordnung
+const POSTER_BEFORE_JOT := "Türschmuck-Wettbewerb: Die Jury kürt am 2. Okt. um 20 Uhr die schönste Tür. Sie sieht nur, was im Licht hängt."
+const POSTER_AFTER_JOT := "Der Aushang ist ein anderer: Die Jury besucht jetzt die Tür, die am wenigsten zu bieten hat. Sie sieht nur, was im Licht hängt."
+const RULES_JOT := "Hausordnung: Nachtruhe 23–6 Uhr, die Bar schließt um Mitternacht, der Haupteingang bleibt nachts zu."
+## Durchsagen: Tag, Uhrzeit, Text, Notiz im Notizbuch – verpasste (Uhr vorgestellt, Schlaf) holt das Spiel höchstens
+## eine Spielstunde später nach
 const ANNOUNCEMENTS := [
-	[1, 15.5, "Verehrte Gäste, herzlich willkommen. Die Direktion lädt zum Türschmuck-Wettbewerb. Die Jury kürt morgen um 20 Uhr in der Lobby die schönste Tür."],
-	[2, 12.0, "Verehrte Gäste, noch acht Stunden bis zur Siegerehrung. Die Jury freut sich auf Ihre Türen."],
-	[2, 19.75, "Verehrte Gäste, die Jury bittet in einer Viertelstunde in die Lobby."],
-	[2, 20.0, "Die Siegerehrung beginnt, sobald alle Gäste versammelt sind."],
+	[1, 15.5, "Verehrte Gäste, herzlich willkommen. Die Direktion lädt zum Türschmuck-Wettbewerb. Die Jury kürt morgen um 20 Uhr in der Lobby die schönste Tür.",
+		"Willkommen. Türschmuck-Wettbewerb: Die Jury kürt morgen um 20 Uhr in der Lobby die schönste Tür."],
+	[2, 12.0, "Verehrte Gäste, noch acht Stunden bis zur Siegerehrung. Die Jury freut sich auf Ihre Türen.",
+		"Noch acht Stunden bis zur Siegerehrung."],
+	[2, 19.75, "Verehrte Gäste, die Jury bittet in einer Viertelstunde in die Lobby.",
+		"Die Jury bittet in einer Viertelstunde in die Lobby."],
+	[2, 20.0, "Die Siegerehrung beginnt, sobald alle Gäste versammelt sind.",
+		"Die Siegerehrung beginnt, sobald alle versammelt sind."],
 ]
 const ANNOUNCE_LATE := 60.0
 ## Siegerehrung: Tag und Stunde, spätestens dann ohne den Spieler
@@ -147,7 +167,13 @@ func welcome() -> void:
 
 
 func on_letter_read() -> void:
+	if not letter_read and Game.notebook:   # im Umschlag: das Notizbuch, darin gleich die erste Aufgabe (3.10)
+		Game.notebook.give()
+		if stage == Stage.CONTEST:
+			Game.notebook.add_task(TASK_ID, TASK_TEXT, "Direktion", null, TASK_DUE)
 	letter_read = true
+	if Game.diary and stage == Stage.CONTEST:
+		Game.diary.note("arrival", ARRIVAL_ENTRY)
 
 
 ## Tagebuchsatz (SaveManager.diary_sentence): nach dem ersten Urteil der Puppe dieser Satz (bis zum Tag danach), am
@@ -205,8 +231,10 @@ func _pin_board() -> void:
 		return
 	var after := Game.director != null and Game.director.first_attack_done
 	board.pin("poster", Vector2(-0.22, 0.03), Vector2(0.46, 0.66), POSTER_HEAD, POSTER_AFTER if after else POSTER_BEFORE,
-		POSTER_TITLE, POSTER_HEAD.replace("\n", " ") + "\n\n" + (POSTER_AFTER if after else POSTER_BEFORE))
-	board.pin("rules", Vector2(0.33, 0.12), Vector2(0.34, 0.42), RULES_TITLE.to_upper(), RULES_TEXT, RULES_TITLE, RULES_TEXT)
+		POSTER_TITLE, POSTER_HEAD.replace("\n", " ") + "\n\n" + (POSTER_AFTER if after else POSTER_BEFORE),
+		"board_after" if after else "board_before", POSTER_AFTER_JOT if after else POSTER_BEFORE_JOT)
+	board.pin("rules", Vector2(0.33, 0.12), Vector2(0.34, 0.42), RULES_TITLE.to_upper(), RULES_TEXT, RULES_TITLE, RULES_TEXT,
+		"board_rules", RULES_JOT)
 
 
 func _update_announcements() -> void:
@@ -218,17 +246,22 @@ func _update_announcements() -> void:
 			return
 		announced += 1
 		if now - at < ANNOUNCE_LATE and stage != Stage.DONE:
-			announce(String(a[2]))
+			announce(String(a[2]), String(a[3]))
 
 
-## Durchsage der Direktion (Spielkonzept 5.9): Gong, dann der Text.
-func announce(text: String) -> void:
+## Durchsage der Direktion (Spielkonzept 5.9): Gong, dann der Text – kurz gefasst ins Notizbuch (jot, 3.10).
+func announce(text: String, jot: String = "") -> void:
 	Game.play_sound("chime", 0.7)
 	Game.say("Durchsage: „%s“" % text, 7.0)
+	if Game.notebook:
+		Game.notebook.add_note("", jot if jot != "" else text, "Durchsage")
 
 
 func _skip_to_done() -> void:
 	_release_guests(false)
+	_settle_task()
+	if Game.diary:
+		Game.diary.note("first_attack", FIRST_SIGHT_ENTRY)
 	stage = Stage.DONE
 	attack_day = Calendar.today()
 	if Game.doll:
@@ -435,6 +468,9 @@ func _end_scene() -> void:
 		Game.player.spellbound = false
 	Game.director.first_attack_in_lobby(_monster_corner(), _doll_base)
 	_release_guests(true)
+	_settle_task()
+	if Game.diary:
+		Game.diary.note("first_attack", CEREMONY_ENTRY if _with_player else CEREMONY_MISSED_ENTRY)
 	if Game.tracing:
 		print("[Wettbewerb] Licht aus – erster Angriff in der Lobby")
 
@@ -547,6 +583,18 @@ func on_doll_placed(room: String) -> void:
 	var where := "vor meiner Tür" if room == LevelBuilder.PLAYER_ROOM else "vor Zimmer %s" % String(info["sign"])
 	var how := "An der Tür hing fast nichts." if deco < 1.0 else ("An der Tür hing nicht viel." if deco < 3.0 else "Dabei hing dort einiges.")
 	verdict_text = "Die Puppe saß %s. %s" % [where, how]
+	if Game.diary:
+		Game.diary.note("first_verdict", verdict_text)
+
+
+## Die Frist der ersten Aufgabe ist um (Siegerehrung): durchgestrichen, wenn vor der Tür etwas hängt, sonst „zu spät“.
+func _settle_task() -> void:
+	if Game.notebook == null or Game.notebook.task_state(TASK_ID) != Notebook.TaskState.OPEN:
+		return
+	if Game.director.deco_strength_at(Game.director.player_door_front) > 0.0:
+		Game.notebook.finish_task(TASK_ID)
+	else:
+		Game.notebook.miss_task(TASK_ID)
 
 
 # --- Spielstand -----------------------------------------------------------------------------------

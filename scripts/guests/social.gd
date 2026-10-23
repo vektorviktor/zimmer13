@@ -555,6 +555,8 @@ func on_player_took(item: Item) -> void:
 		return
 	_thefts[owner_guest.id] = _time
 	add_deed(owner_guest, "hostile")
+	if Game.diary:   # eine dunkle Tat – Meilenstein im Tagebuch (3.10), Gäste können es dort lesen (8.9)
+		Game.diary.note("first_theft", "Ich habe %s etwas weggenommen. Ich brauche es dringender, rede ich mir ein." % owner_guest.display_name)
 	var witnesses: Array[Guest] = []
 	var masked: Array[Guest] = []   # sehen es, erkennen unter dem Laken aber niemanden (5.9)
 	for guest in guests:
@@ -703,6 +705,11 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	# Die Totenglocke läutet – nach dem Schrei, für jeden Toten, im ganzen Hotel zu hören
 	get_tree().create_timer(BELL_DELAY, false).timeout.connect(func() -> void: Game.play_sound("bell"))
 	_memorial_doors.append(guest.home["door_front"])
+	if Game.notebook:   # Kreuz neben seinem Namen bei seinen Aufgaben (3.10)
+		Game.notebook.on_guest_died(guest)
+	if Game.diary:
+		Game.diary.note("first_death", "%s aus Zimmer %s ist tot. Bis heute dachte ich, es tut niemandem etwas." % [
+			guest.display_name, String(guest.home["sign"])])
 	# Ein Kind verliert Mama oder Papa (6.13): große Angst – es sucht sich jemanden, bei dem es bleiben kann
 	for other in living_guests():
 		if other.is_child() and String(other.profile.get("parent", "")) == guest.id:

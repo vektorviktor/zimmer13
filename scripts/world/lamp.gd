@@ -140,7 +140,7 @@ func _add_light(pos: Vector3, color: Color) -> void:
 	light.distance_fade_enabled = true
 	light.distance_fade_begin = 26.0
 	light.distance_fade_length = 6.0
-	light.distance_fade_shadow = 16.0
+	light.distance_fade_shadow = light.distance_fade_begin + light.distance_fade_length   # Schatten bis zum Schluss: ohne ihn schiene es durch Wände
 	light.lamp_material = _bulb_material
 	light.add_to_group("lamps")
 	add_child(light)

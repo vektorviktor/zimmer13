@@ -2,9 +2,9 @@ GIMP Palette
 Name: Zimmer 13 – Gebäudeplan (map_a.aseprite)
 Columns: 0
 # Legende des Gebäudeplans (Spielkonzept 7.5): eine Zeile je Palettenfarbe, in der Reihenfolge der Palette.
-# Aseprite 1.3.18 speichert keine Farbnamen – sie stehen deshalb nur hier. Neue Farbe in der Palette →
-# hier eine Zeile „R G B<Tab>Name“ ergänzen. Gelesen von tools/build_map.py (nach Farbwert) und der
-# Aseprite-Erweiterung Palettennamen. In Aseprite lässt sich die Datei als Palette laden (Farben, ohne Namen).
+# Aseprite 1.3.18 speichert keine Farbnamen – sie stehen deshalb nur hier. Neue Farbe →
+# hier eine Zeile „R G B<Tab>Name“ ergänzen. Gelesen von tools/build_map.py (nach Farbwert);
+# tools/build_colors.py zeichnet daraus map_colors.png (Vorlage zum Zeichnen).
   0   0   0	Wand
 255 136  85	Zimmer
 212 228 241	Flur

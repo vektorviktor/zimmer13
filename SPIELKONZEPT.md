@@ -23,6 +23,8 @@
   - [3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19)](#36-schlaf--müdigkeit-vorgemerkt-2026-10-19)
   - [3.7 Trinken an der Bar (entschieden 2026-10-19)](#37-trinken-an-der-bar-entschieden-2026-10-19)
   - [3.8 Kochen in der Küche (entschieden 2026-10-21)](#38-kochen-in-der-küche-entschieden-2026-10-21)
+  - [3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)](#39-spielerfigur-und-charaktererstellung-entschieden-und-umgesetzt-2026-10-23)
+  - [3.10 Notizbuch und Tagebuch (entschieden 2026-10-23, Stufe 1 umgesetzt 2026-10-23)](#310-notizbuch-und-tagebuch-entschieden-2026-10-23-stufe-1-umgesetzt-2026-10-23)
 - [4. Das Monster](#4-das-monster)
   - [4.1 Grundprinzip](#41-grundprinzip)
   - [4.2 Ankündigung („Manifestation“)](#42-ankündigung-manifestation)
@@ -230,7 +232,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 **Dokumente (Lore)**
 - **Jedes Dokument zeigt auf etwas** – einen Ort, eine Person, einen Code. Lore, die nur Sammelgut ist, liest niemand.
 - **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch des Heizers (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Lager (7.4).
-- **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Wichtiges notiert der Spieler-Charakter **im Tagebuch** (8.5) – das Tagebuch wird so zum Notizbuch der Ermittlung.
+- **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Was ein Dokument verrät, notiert der Spieler-Charakter als eine Zeile mit Quelle im **Notizbuch** (Lesezeichen „Notizen“, 3.10), ebenso Gerüchte – mit dem, von dem sie stammen, ohne zu sagen, ob sie stimmen. Wendepunkte der Ermittlung (ein Mitwisser bricht sein Schweigen) schreibt er ins **Tagebuch** (3.10, 8.5). *(Bis 2026-10-23 sollte das Tagebuch selbst das Notizbuch der Ermittlung sein.)*
 - **Zeitschleife (2.2):** Die Welt setzt sich zurück, Wissen kann bleiben – über die eigenen Zettel. Codes, Namen und wer lügt, gibt man sich selbst weiter. So wird jeder Durchgang schneller und tiefer, auch wenn man scheitert.
 
 **Zu klären**
@@ -341,7 +343,8 @@ Sandbox.
   Schreibtisch.“*
 - Auf dem Schreibtisch in Zimmer 13 liegt neben dem Tagebuch ein **Umschlag mit Hotelwappen**: der Willkommensbrief der
   Direktion (Wortlaut unten). Wer ihn liest, dem schreibt die Figur den **ersten Tagebucheintrag**. Der Brief bleibt
-  liegen und lässt sich wieder lesen.
+  liegen und lässt sich wieder lesen. Im Umschlag steckt außerdem das **Notizbuch** (3.10) – die erste Aufgabe darin
+  ist die eigene Tür.
 - Der Brief schickt den Spieler zum **Aushangbrett in der Lobby** – das erste Ziel.
 
 **Das Aushangbrett in der Lobby**
@@ -353,8 +356,9 @@ Sandbox.
   Überschrift quer durch die Lobby lesbar), **daneben die Hausordnung**.
 - **Nach dem Angriff** hängt in der Mitte der veränderte Aushang. Damit man es merkt, stehen am nächsten Tag Gäste davor
   und reden darüber („Hast du gelesen, was am Brett steht?“).
-- **Später** kann das Brett das Anschlagbrett ohne Questmenü werden (2.3, 6.14): Großes Schmücken, Durchsagen zum
-  Nachlesen, Suchzettel von Gästen („Minka vermisst“), Aufträge. Für den Anfang reichen die beiden Blätter.
+- **Später** kann das Brett das Anschlagbrett ohne Questmenü werden (2.3, 6.14): Großes Schmücken, Suchzettel von
+  Gästen („Minka vermisst“), Aufträge. Durchsagen zum Nachlesen stehen im Notizbuch (3.10). Für den Anfang reichen die
+  beiden Blätter.
 
 **Der Wettbewerb**
 - **Das Hotel ruft ihn aus:** im Willkommensbrief, auf dem Aushangbrett und mit Durchsagen (5.9). Personal sieht man
@@ -565,7 +569,7 @@ schaut. Belegt ist ein Platz, wenn dort die Katze schläft, die Puppe sitzt oder
   - Die Dinge in der Tasche bleiben echte Gegenstände: Man kann sie wieder herausnehmen, ablegen, verschenken und verkaufen (im Gespräch „Aus der Tasche …“), Kinder an der Tür bekommen Süßigkeiten auch aus der Tasche. Gäste sehen und stehlen sie nicht.
 - **Ausnahme am Körper (entschieden 2026-10-11, im Prototyp umgesetzt):** Drei Dinge trägt man am Körper statt in der Hand – sie sind Werkzeug für Orientierung und Zutritt, keine Beute. Man kann sie nicht ablegen, verlieren, handeln oder gestohlen bekommen.
   - **Kompass** (Zimmer 226): beim Aufheben eingesteckt, **F halten** holt ihn mit der linken Hand hervor.
-  - **Karte aus losen Blättern**, ein Blatt je Ebene, **jedes einzeln zu finden** (Erdgeschoss in Zimmer 13, Obergeschoss an der Rezeption, Kellerskizze eines früheren Gastes in Zimmer 17; künftige Ebenen wie Tiefkeller bekommen eigene Blätter). **Tab halten** zeigt sie, das Blatt der aktuellen Ebene liegt oben, **Linksklick / Mausrad** blättert.
+  - **Karte aus losen Blättern** (seit 2026-10-23 im Notizbuch, 3.10), ein Blatt je Ebene, **jedes einzeln zu finden** (Erdgeschoss in Zimmer 13, Obergeschoss an der Rezeption, Kellerskizze eines früheren Gastes in Zimmer 17; künftige Ebenen wie Tiefkeller bekommen eigene Blätter). **Tab halten** zeigt sie, das Blatt der aktuellen Ebene liegt oben, **Linksklick / Mausrad** blättert.
   - **Schlüsselbund:** Gefundene Schlüssel (später auch Schlüsselkarten) hängen am Bund; Türen schließt man damit auf, egal was die rechte Hand trägt. Das letzte Kartenblatt listet den Bund. **Ausnahme: Der Ausgangsschlüssel an Halloween (2.1) passt nicht an den Bund** – er muss in der Hand getragen werden, die Flucht bleibt ein Lauf, bei dem man ihn nicht fallen lassen darf.
   - Die linke Hand braucht man dafür: Mit einem **großen Gegenstand** (Kürbis) sind beide Hände voll – dann weder Karte noch Kompass noch Aufschließen.
 
@@ -732,6 +736,99 @@ an Lampen und Kerzen.
   2 m, Bauch bei 1,45 m); er bekommt später ein richtiges Modell.
 - **Vorgemerkt:** Atem und Keuchen passend zur Figur (Frau/Mann, Alter); den eigenen Körper beim Blick nach unten
   sehen; Haare später über einen Gegenstand färben.
+
+### 3.10 Notizbuch und Tagebuch (entschieden 2026-10-23, Stufe 1 umgesetzt 2026-10-23)
+> Ändert 2.3, 2.5, 3.2, 6.14, 7.4 und 8.5.
+>
+> **Stufe 1 umgesetzt (2026-10-23):** Notizbuch im Umschlag des Briefs, mit der Karte zusammengelegt, drei Reiter am
+> rechten Rand; **Rechtsklick** (mit Tab) springt zum nächsten Lesezeichen, Mausrad und Linksklick blättern durchs
+> ganze Buch (im Versteck hält Rechtsklick die Luft an, dort reicht das Mausrad). Aufgaben: vorerst nur die eigene
+> Tür für den Wettbewerb (bei der Siegerehrung durchgestrichen, ohne Deko vor der Tür „zu spät“) – die Aufträge (6.14)
+> tragen sich später mit einem Aufruf ein. Notizen: Durchsagen (Kurzfassung), Aushänge am Brett, was die Zettel
+> früherer Gäste verraten (auch die UV-Zeile), Einladungen zur Feier und zum Schmücken am Telefon, der Anruf eines
+> Toten. Tagebuch: Ankunft, Siegerehrung (mit oder ohne den Spieler), erstes Urteil, erster Toter, erster Diebstahl,
+> Lakengeist, Kürbismann; die fremde Zeile (4.13) steht beim Aufschreiben darunter; „Im Tagebuch blättern“ am
+> Schreibtisch. Beim Bauen festgelegt: Unter einer Aufgabe steht klein *„Edna · Zi. 021 · vor der Nachtruhe“*, das
+> Kreuz direkt hinter dem Namen; der Tageskopf ohne Wochentag (das Spiel hat kein Jahr). Die Seiten sind
+> **ungeschattet** – beleuchtet war die Schrift grau auf grau, und so liest man auch im Dunkeln. Eine Seite fasst
+> 14 Zeilen, groß genug für 480 × 270. Noch offen: Gerüchte im Gespräch (es gibt noch kein System, das sie trägt).
+
+**Warum:** Bisher sollte das Tagebuch alles tragen: Aufträge (6.14), die Seite zur Fahrstuhl-Reparatur (7.4), das
+Wissen der Ermittlung (2.3) – und es liegt fest in Zimmer 13 (8.5). Wer unterwegs wissen will, was er versprochen hat
+und bis wann, müsste zurücklaufen. Durchsagen (5.9) sind eine Einblendung von wenigen Sekunden und dann weg. Deshalb
+zwei Bücher mit klar getrennten Rollen:
+
+| | **Notizbuch** | **Tagebuch** |
+|---|---|---|
+| Wo | am Körper, immer dabei (3.2) | fest auf dem Schreibtisch in Zimmer 13 |
+| Spiel | läuft weiter, wie bei der Karte | pausiert (8.5) |
+| Inhalt | Stichpunkte: Aufgaben und Notizen | Prosa: Meilensteine der Geschichte |
+| Wann geschrieben | sofort, wenn es passiert | beim nächsten Speichern |
+| Wer liest mit | niemand | Gäste, die ins Zimmer kommen (8.9) |
+
+**Das Notizbuch**
+- **Woher:** Es liegt im Umschlag des Willkommensbriefs (2.5), ein kleines Notizbuch mit dem Hotelwappen – ein
+  Geschenk der Direktion, also des Abkommens (2.3). Wer den Brief liest, steckt es ein.
+- **Am Körper** wie Kompass und Schlüsselbund (3.2): nicht ablegen, nicht verlieren, nicht handeln, nicht stehlen.
+- **Karte und Notizbuch sind ein Ding:** Die losen Kartenblätter (3.2) liegen darin. **Tab halten** öffnet es mit der
+  linken Hand auf der Karte, wie bisher; drei **Lesezeichen** führen zu **Karte**, **Aufgaben** und **Notizen**. Jedes
+  Lesezeichen merkt sich seine Seite, die Seiten blättert man wie die Kartenblätter. (Wer noch kein Notizbuch hat,
+  sieht mit Tab nur die Blätter.) Den Wechsel der Lesezeichen macht der Rechtsklick (siehe oben).
+- **Das Spiel läuft weiter**, man kann dabei gehen. Mit einem großen Gegenstand in beiden Händen geht es nicht, im
+  Gespräch auch nicht – wie bei der Karte.
+- **Neuer Eintrag:** kurzes Kritzeln und der Hinweis *„Notiert.“* – mehr nicht, kein Aufblinken im HUD.
+- **Nur, was die Figur weiß:** handschriftlich, knapp, erste Person. **Keine Wegmarken, keine Zähler wie „2/3“, keine
+  Prioritäten.** Das Notizbuch ist kein Questmenü (2.3), es ersetzt nur das Gedächtnis der Figur.
+- **Zeitschleife (2.2):** Das Notizbuch ist im neuen Durchgang leer. Wissen bleibt nur über die eigenen Zettel.
+- **Im Spielstand** (Einträge und ihr Zustand).
+
+**Lesezeichen „Aufgaben“**
+- **Fortlaufend in der Reihenfolge, in der man sie bekommt** – nichts wird umsortiert, nichts hervorgehoben. Jeder
+  Spieltag beginnt mit einem Tageskopf (*„3. Oktober“*).
+- **Eine Zeile je Aufgabe:** was, von wem mit **Zimmernummer** (bei 67 Gästen findet man sonst niemanden) und die
+  Frist, falls es eine gibt – *„Kerze bringen“*, darunter klein *„Edna · Zi. 021 · vor der Nachtruhe“*.
+- **Eingetragen beim Annehmen.** Eine abgelehnte Bitte kommt nicht hinein.
+- **Drei Enden:**
+  - **Erledigt:** durchgestrichen – sobald die Figur es merkt (der Gast bedankt sich, die Szene ist vorbei), nicht
+    stillschweigend im Hintergrund.
+  - **Verpasst:** bleibt stehen, daneben *„zu spät“*.
+  - **Der Gast ist tot:** ein Kreuz neben dem Namen – wie die Kreuze im Hotelregister seit 1987 (2.3). Die Aufgabe
+    bleibt offen stehen (*„Ich hatte es ihm versprochen“*, 6.14).
+- Alte offene Aufgaben rutschen auf frühere Seiten – das ist gewollt. Erinnern tut der Gast im Gespräch (6.14).
+- **Die ersten Einträge:** *„Tür schmücken – Direktion · bis 2. Okt., 20 Uhr“* nach dem Lesen des Briefs (2.5),
+  durchgestrichen bei der Siegerehrung. Später die drei Mängel am Aufzug aus dem Notizbuch des Hausmeisters (7.4) als
+  drei Zeilen.
+
+**Lesezeichen „Notizen“**
+- **Fortlaufend mit Datum und Uhrzeit**, dazu von wem: *„2. Okt., 12:00 – Durchsage: noch acht Stunden bis zur
+  Siegerehrung.“*
+- **Nur ausgewählte Arten**, sonst wird es ein Gesprächsprotokoll:
+  - **Durchsagen** (5.9) – auch die, die es nicht geben dürfte. Die Figur schreibt sie genauso nüchtern auf.
+  - **Termine:** Feiern, Öffnungszeiten, was ein Gast verabredet.
+  - **Regeln:** die Hausordnung beim ersten Lesen des Bretts, die Regel der Puppe (2.5).
+  - **Gerüchte** mit Bezug zum Geheimnis (Schicht 1 in 2.3), am Telefon (4.14) oder im Gespräch.
+  - **Was ein Dokument verrät** (Code, Name, Ort – 2.3) als eine Zeile mit Quelle; den Wortlaut liest man vor Ort.
+- **Die Quelle steht immer dabei**, ob sie stimmt, nie. Mitwisser lügen (2.3) – abwägen muss der Spieler selbst.
+- Das Aushangbrett (2.5) bleibt die Stimme des Hotels und kann sich ändern; das Notizbuch hält fest, was man selbst
+  gelesen und gehört hat. Nach dem ersten Angriff steht im Buch noch der alte Aushang.
+
+**Das Tagebuch: Meilensteine**
+- Das Tagebuch in Zimmer 13 bekommt **Einträge in Prosa bei Wendepunkten**, z. B.: Ankunft (2.5), das erste Auftauchen
+  des Monsters, das erste Urteil der Puppe, der erste Tod eines Gastes, die erste Nacht mit dem Lakengeist (4.18), der
+  Kürbismann (4.19), Aufzug repariert und Tiefkeller betreten (7.4), ein Mitwisser bricht sein Schweigen (2.3),
+  Halloween.
+- **Auch die dunklen Taten** sind Meilensteine: ein Diebstahl, ein Gast, den man ins Dunkle geschickt hat (4.11, 6.2).
+  Davon leben die Gäste, die das Tagebuch lesen (8.9).
+- **Geschrieben wird beim nächsten Speichern:** Was seit dem letzten Mal geschehen ist, schreibt die Figur am
+  Schreibtisch auf. Damit wird *„ein Tod kostet alles seit dem letzten Tagebucheintrag“* (8) wörtlich wahr – und wer
+  speichert, schreibt auch sein Geständnis nieder.
+- Man kann die Einträge in Zimmer 13 nachlesen (Spiel pausiert, 8.5). Der **Tagebuchsatz** in der Slot-Übersicht
+  bleibt davon getrennt: Er beschreibt den Stand, die Einträge erzählen den Weg dorthin.
+
+**Zu klären**
+- ~~Liest man das Notizbuch im Dunkeln?~~ → ja, die Seiten sind ungeschattet (umgesetzt).
+- ~~Wie viele Zeilen auf eine Seite passen~~ → 14 (umgesetzt, im Spiel noch einmal ansehen).
+- Die **Kartenblätter** haben denselben grauen Schleier wie die Notizbuchseiten vorher – auch ungeschattet machen?
 
 ---
 
@@ -1579,6 +1676,12 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 ### 4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)
 > Noch nicht umgesetzt. Eine vierte Bedrohung – für sie gilt dieselbe Ebenenregel wie für die anderen drei (4.20).
 > Mit „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
+> **Fledermäuse umgesetzt (2026-10-23), ohne Biss:** draußen in den Bäumen des Gartens (das Dachgeschoss fehlt im Plan
+> noch) – tagsüber hängen sie schlafend am unteren Rand der Krone, abends und nachts kreisen sie zackig um die Kronen.
+> Scheu, Frühwarnung (sie fliehen vor Monster, Kürbismann und Lakengeist) und der Schwarm als Lärm wie unten
+> vorgeschlagen; wie nah man ihrem Baum kommen darf, hängt an der Auffälligkeit (4.15: Licht, Rennen, Ducken), laute
+> Geräusche wecken sie. Biss, Vampir und Knoblauch/Kreuz kommen mit den offenen Fragen unten. Debug:
+> `--fledermaus[=tag|schwarm]`.
 
 **Fledermäuse**
 - Echte Fledermäuse im **Dachgeschoss** und **draußen**. Meist sind sie **scheu** und fliegen vom Spieler weg.
@@ -1954,7 +2057,8 @@ ihm.
   machen – offen, wie stark sie wirken.
 - **Durchsagen:** Die Rezeption sagt über Lautsprecher an, was im Hotel passiert („Die Bar schließt um
   Mitternacht“, „Feier im Partyraum“, Nachtruhe). Nachts klingen sie verzerrt – und manchmal kommt eine Durchsage,
-  die es nicht geben dürfte: der Name eines Verschwundenen, „Zimmer 13 wird erwartet“. Wer spricht da (2.3)?
+  die es nicht geben dürfte: der Name eines Verschwundenen, „Zimmer 13 wird erwartet“. Wer spricht da (2.3)? Alle
+  Durchsagen notiert die Figur mit Uhrzeit im Notizbuch (3.10) – die falschen genauso nüchtern wie die echten.
 - **Gruppenfoto an Halloween:** Beim Fest am 31. ein Gruppenbild aller Überlebenden – mit leeren Plätzen für die
   Verschwundenen. Es landet im Tagebuch bzw. im Abspann. Mit der Zeitschleife (2.2) hängt das Foto des letzten
   Durchgangs in der Lobby – und man steht selbst darauf. Wer zum Vampir geworden ist, **fehlt auf dem Bild** (4.22,
@@ -2539,8 +2643,9 @@ Full-body 3D character of a 7-year-old girl, child proportions with a slightly l
 > Lakengeist, Puppe vor der Tür (6.18, 3). Die Tabelle unten bleibt der Ausbau.
 
 Gäste bitten den Spieler um Hilfe – kleine Aufgaben, die die bestehenden Systeme nutzen. **Kein Questmenü** (2.3):
-Angenommene Aufträge notiert der Spieler-Charakter im **Tagebuch** (8.5), der Gast erinnert beim nächsten Gespräch
-daran.
+Angenommene Aufträge notiert der Spieler-Charakter im **Notizbuch** unter „Aufgaben“ (3.10) – fortlaufend, mit Name,
+Zimmer und Frist, erledigte durchgestrichen –, der Gast erinnert beim nächsten Gespräch daran. *(Bis 2026-10-23 im
+Tagebuch, das aber in Zimmer 13 liegt.)*
 - **Wie man sie bekommt:** im Gespräch (der Gast fragt von sich aus oder auf „Kann ich dir helfen?“), am Telefon
   (4.14, „Ich habe kein Licht mehr“) oder als Zettel an der Tür von Zimmer 13.
 
@@ -2560,11 +2665,12 @@ daran.
 - **Belohnung:** Geld, Deko aus dem Vorrat des Gastes, Beziehung ↑ – und manchmal ein **Hinweis** zum Geheimnis oder
   ein **Schlüssel** (2.3). Mitwisser geben das Wichtigste nur über Aufträge heraus.
 - **Fristen:** Viele Aufträge gelten nur bis zu einem Ereignis („vor der Nachtruhe“, „bis zur Feier“); verpasst sinkt
-  die Beziehung ein wenig. Stirbt der Gast, bleibt der Auftrag im Tagebuch stehen („Ich hatte es ihm versprochen“) –
-  ein kleiner Stich Schuld (6.8).
+  die Beziehung ein wenig, im Notizbuch steht dann *„zu spät“*. Stirbt der Gast, bleibt der Auftrag im Notizbuch offen
+  stehen, mit einem Kreuz neben dem Namen („Ich hatte es ihm versprochen“) – ein kleiner Stich Schuld (6.8).
 - **Falsche Aufträge:** Feinde schicken einen bewusst in Gefahr („Hol meinen Schlüssel aus dem Keller“) – das
   Gegenstück dazu, wie man selbst Gäste in den Keller lockt (4.11).
-- **Offen:** wie viele Aufträge gleichzeitig; ob man ablehnen kann, ohne dass die Beziehung sinkt.
+- **Offen:** wie viele Aufträge gleichzeitig; ob man ablehnen kann, ohne dass die Beziehung sinkt. Fest steht
+  (3.10): Ins Notizbuch kommt ein Auftrag erst beim Annehmen, eine abgelehnte Bitte gar nicht.
 
 ### 6.15 Freitext-Gespräche (Prototyp 2026-10-20)
 > **Gestrichen (2026-10-21):** Der Prototyp kommt nicht ins Spiel, der Code wird entfernt. Gespräche laufen nur über
@@ -2679,7 +2785,7 @@ nicht als Opfer – das Monster bleibt hungrig (4.10).
   Geschenke · Besuche zählen, und wer als Freund nie kommt, kränkt · eigene Sätze.
 - **Jeder Zustand ergibt einen Wunsch** – der Auftrag aus 6.14 ohne eigenes System: eine Kerze für den Toten, Deko für
   die Tür, Suppe ans Bett, eine Katze zum Trösten, die Deko zurück, die die Katze verschleppt hat. Der Gast nennt ihn
-  im Gespräch, das Tagebuch notiert ihn (6.14). Erfüllt: Beziehung ↑, und er erzählt es weiter (1).
+  im Gespräch, das Notizbuch notiert ihn (6.14, 3.10). Erfüllt: Beziehung ↑, und er erzählt es weiter (1).
 - **Nach Ebenen** (6.0): Kernfiguren und zentrale Gäste haben eigene Wünsche, die übrigen allgemeine.
 
 **4. Freundschaft schützt** (Freunde schmücken deine Tür mit: 5.10; Begleiter verstecken sich wirklich: behoben)
@@ -2889,7 +2995,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 - Aus dem Schacht hört man gelegentlich Kratzen. **Das Monster klettert im Schacht** – an den Schachttüren tauchen später Handabdrücke auf (neue Spur, 4.13).
 
 **Die Reparatur – drei Teile, drei Gefahren**
-Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man schon erledigt hat, notiert der Spieler-Charakter auf einer eigenen Seite im **Tagebuch** (8.5), handschriftlich und abgehakt.
+Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es gelesen, schreibt der Spieler-Charakter die drei Mängel als drei Zeilen in sein eigenes **Notizbuch** unter „Aufgaben“ (3.10) und streicht sie durch, sobald sie behoben sind. Der erste Start des Aufzugs ist ein Meilenstein im **Tagebuch**. *(Bis 2026-10-23: eigene Seite im Tagebuch.)*
 
 | Schritt | Wo | Gefahr / Mechanik |
 |---------|----|-------------------|
@@ -3278,6 +3384,10 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 - **Der Eintrag als Slot-Beschreibung:** Das Spiel formuliert automatisch einen kurzen Tagebuchsatz aus dem aktuellen Stand, z. B. *„Edna ist fort. Bruno redet nicht mehr mit mir. Vor meiner Tür brennen zwei Kürbisse.“* Dieser Satz erscheint in der Slot-Übersicht. **Seit 2026-10-21:** Namen nur von Kernfiguren und zentralen Gästen, der Rest wird gezählt (8.10).
 - **Slot-Übersicht zeigt:** Vorschaubild (480 × 270, passt zum PS1-Look), Tagebuchsatz, Spielzeit, Datum/Uhrzeit, lebende Gäste.
 - Das Tagebuch ist **fest verankert** (nicht tragbar, nicht klaubar) – sonst könnte man sich das Speichern verbauen.
+- **Meilensteine (3.10, entschieden 2026-10-23):** Beim Speichern schreibt die Figur auf, was seit dem letzten Eintrag
+  an Wendepunkten geschehen ist – erstes Auftauchen des Monsters, erster Tod, Aufzug repariert, aber auch ein
+  Diebstahl oder ein Opfer. Die Einträge lassen sich am Schreibtisch nachlesen. Aufgaben und Notizen stehen nicht im
+  Tagebuch, sondern im Notizbuch, das man bei sich trägt (3.10).
 
 ### 8.6 Autosave
 - **Ein eigener Slot**, der sich selbst überschreibt. Kann nur geladen, nicht manuell beschrieben werden.
@@ -3317,7 +3427,7 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 | **Nicht** | Einstellungen (eigene Datei), laufende Minispiel-Partien von Gästen (starten nach dem Laden neu) |
 
 ### 8.9 Ausbau-Ideen (später)
-- **Gäste lesen das Tagebuch:** Kommt ein Gast in Zimmer 13 (offene Tür, Schlüssel, Feier), kann er das Tagebuch lesen und so erfahren, wen man bestohlen oder dem Monster „geopfert“ hat (4.11, 6.2) → Abschließen lohnt sich doppelt. Das Tagebuch bleibt dabei fest im Zimmer.
+- **Gäste lesen das Tagebuch:** Kommt ein Gast in Zimmer 13 (offene Tür, Schlüssel, Feier), kann er das Tagebuch lesen und so erfahren, wen man bestohlen oder dem Monster „geopfert“ hat (4.11, 6.2) → Abschließen lohnt sich doppelt. Das Tagebuch bleibt dabei fest im Zimmer. Drin steht es erst, wenn man seitdem gespeichert hat (3.10); das Notizbuch am Körper liest niemand.
 - **„Albtraum-Modus“:** ein einziger Slot, der Tod löscht ihn.
 
 ### 8.10 Speicherregel geschärft (entschieden 2026-10-21)
@@ -3499,12 +3609,12 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 7n. Halloween im Hotel: Hotel schmückt sich bis zum 31., ~~Kostüme mit Lakengeist-Verwechslung, selbst verkleiden~~ ✔
     (2026-10-20), Gruselgeschichten-Abend, Kürbissuppe, alte Bräuche als Schutz, unheimliche Durchsagen,
     Gruppenfoto (5.9) – vorgemerkt 2026-10-20
-7o. Eier-Streich der Kinder an Türen und Fenstern (6.13) · Aufträge von Gästen ohne Questmenü, notiert im Tagebuch
+7o. Eier-Streich der Kinder an Türen und Fenstern (6.13) · Aufträge von Gästen ohne Questmenü, notiert im Notizbuch (3.10)
     (6.14) · Gewitter, Regen, Kirchturmglocke, dichter werdender Nebel (7.8) – vorgemerkt 2026-10-20
 7p. ~~Geisterstunde: 0–1 Uhr zieht der Lakengeist versteckt durch die Flure, angekündigt von der Kirchturmglocke,
     schwebt auf einen zu, wenn er einen sieht, verschwindet die ersten Male kurz davor und würgt danach (eigener
     Zähler), nur Flure (4.18)~~ ✔ (2026-10-23)
-7q. Fledermäuse (scheu, beißen selten) und der Vampir als vierte Bedrohung: Biss macht schwach, im schwachen Zustand
+7q. ~~Fledermäuse (scheu, Frühwarnung, Schwarm als Lärm)~~ ✔ (2026-10-23) · Biss und der Vampir als vierte Bedrohung: Biss macht schwach, im schwachen Zustand
     tödlich, Knoblauch und Kreuz lassen ihn in einen Schwarm zerfallen; Twist: selbst Vampir werden, fehlt auf dem
     Gruppenfoto und im Spiegel (4.22, vorgemerkt 2026-10-23)
 7r. Verkleiden aus Fundstücken (Kürbis als Hut, Masken, Laken) und Maskenspiel „Wer steckt dahinter?“ im Partyraum

@@ -76,6 +76,7 @@ func _ready() -> void:
 		_pivots.append(_make_leaf(Vector3(width, 0, 0), width, -1.0))
 	else:
 		_pivots.append(_make_leaf(Vector3.ZERO, width, 1.0))
+	ShadowBudget.structure(self)   # Zarge und Blatt halten das Licht aller Lampen auf
 	_all.append(self)
 	_dirty = true
 

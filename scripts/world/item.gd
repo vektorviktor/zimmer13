@@ -1124,7 +1124,7 @@ func _build(extra: String) -> void:
 			add_child(_spread)
 			_mush_mat = Mat.decal(MUSH_TEXTURE)
 			_mush_mat.set_shader_parameter("albedo", Color(color.r / MUSH_TEX_COLOR.r, color.g / MUSH_TEX_COLOR.g, color.b / MUSH_TEX_COLOR.b))
-			_mush_mat.set_shader_parameter("layer_pull", TraceMark.SPLAT_PULL)
+			TraceMark.splat_look(_mush_mat, MUSH_TEXTURE)   # Zug zur Kamera, Glanz, Rand (wie Blut und Wachs)
 			freeze = portions > 1   # der große Spritzer rutscht nicht weg
 	_shape = CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -1325,7 +1325,7 @@ func _settle_mush() -> void:
 ## Kürbismatsch am Boden, gebaut wie eine Blutlache (TraceMark.place_splat): ein großer Spritzer mit der Kantenlänge
 ## mush_size und MUSH_SPLATS_PER_M × mush_size kleinere drumherum, jeder senkrecht auf die Fläche darunter gefallen
 ## (Boden, Stufe, Möbel – nicht die Rampe, nicht durch Wände) und ganz auf ihr. Auf einer Treppe liegen sie längs auf
-## den Stufen (dort als Reihe von Spritzern, höchstens 2 : 1 gestreckt) und laufen die Stufen hinunter. Jedes Mal anders
+## den Stufen (dort als überlappende Reihe, TraceMark.lay_decal) und laufen die Stufen hinunter. Jedes Mal anders
 ## verteilt.
 func _lay_mush() -> void:
 	for child in _spread.get_children():
@@ -1337,8 +1337,6 @@ func _lay_mush() -> void:
 	rng.randomize()
 	var center := global_position
 	var downhill := TraceMark.downhill_at(space, center)
-	var plane := PlaneMesh.new()
-	plane.size = Vector2.ONE   # Größe über die Basis der Flecken (schrumpft beim Aufsammeln, shrink_by_handful)
 	var count := 1 + roundi(mush_size * MUSH_SPLATS_PER_M)
 	for i in count:
 		var main := i == 0
@@ -1353,20 +1351,7 @@ func _lay_mush() -> void:
 			r *= 0.5
 		if spot.is_empty():
 			continue
-		var size: Vector2 = spot["size"]
-		var yaw: float = spot["yaw"]
-		var tiles := maxi(1, ceili(size.x / (size.y * 2.0))) if spot["along"] else 1
-		var w := size.x if tiles == 1 else size.x / tiles * 1.3
-		for t in tiles:
-			var basis := Basis(Vector3.UP, yaw + (PI if rng.randf() < 0.5 else 0.0))
-			var x := 0.0 if tiles == 1 else -size.x / 2.0 + w / 2.0 + t * (size.x - w) / (tiles - 1)
-			var deep := size.y * (rng.randf_range(0.75, 1.0) if tiles > 1 else 1.0)   # in der Reihe nicht alle gleich
-			var z := rng.randf_range(-0.5, 0.5) * (size.y - deep)
-			var lift := 0.006 + mini(_spread.get_child_count(), 40) * 0.0001   # überlappende Flecken nicht gleich hoch
-			var piece := Geo.mesh(_spread, plane, _mush_mat, Vector3.ZERO)
-			piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			piece.transform = Transform3D(basis * Basis.from_scale(Vector3(w, 1.0, deep)),
-				spot["at"] + Basis(Vector3.UP, yaw) * Vector3(x, 0.0, z) + Vector3.UP * lift)
+		TraceMark.lay_decal(_spread, spot, _mush_mat, rng, 0.006 + mini(_spread.get_child_count(), 60) * 0.00002)
 
 
 ## Kürbismatsch am Boden: nach MUSH_ROT_AFTER verblasst er über MUSH_FADE kaum merklich und verschwindet.

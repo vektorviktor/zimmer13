@@ -14,7 +14,7 @@ const SOUND_CAPTIONS := {
 	"shriek": "[Ein Kreischen]", "growl": "[Knurren]", "bang": "[Ein Knall]", "sting": "[Schriller Ton]",
 	"cry": "[Eine Katze kreischt]", "meow": "[Miau]", "bell": "[Eine Totenglocke läutet]",
 	"ding": "[Ding – der Aufzug]", "motor": "[Ein Motor brummt im Schacht]", "alarm": "[Eine Alarmglocke schrillt]",
-	"chime": "[Gong – eine Durchsage]", "poof": "[Ein Fauchen]",
+	"chime": "[Gong – eine Durchsage]", "poof": "[Ein Fauchen]", "flutter": "[Flügelschlagen]",
 }
 
 var player: Player
@@ -32,10 +32,13 @@ var menus: Menus
 var traces: Traces
 var phones: PhoneCalls
 var weather: Weather
+var bats: Bats                     ## Fledermäuse draußen (Spielkonzept 4.22)
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
 var confetti: Confetti            ## Konfetti auf Feiern (Spielkonzept 7.6)
 var doll: JuryDoll                 ## die Puppe – „Halloween-Jury“ (Spielkonzept 5.5)
 var contest: DoorContest           ## Türschmuck-Wettbewerb, Brief, Brett, Siegerehrung (Spielkonzept 2.5)
+var notebook: Notebook             ## Notizbuch am Körper: Aufgaben und Notizen (Spielkonzept 3.10)
+var diary: Diary                   ## Tagebuch in Zimmer 13: Speichern und Meilensteine (Spielkonzept 3.10, 8.5)
 var game_over := false
 ## Charaktererstellung am Waschbecken läuft (Spielkonzept 3.9) – kein Spielmenü, das Spiel ist pausiert
 var creating := false
@@ -139,6 +142,8 @@ func reset() -> void:
 	confetti = null
 	doll = null
 	contest = null
+	notebook = null
+	diary = null
 	noise_log.clear()
 	Senses.clear_cache()
 
@@ -195,6 +200,8 @@ func noise(kind: String, pos: Vector3, source: Node = null) -> float:
 			heard.append(r)
 	if social and data.get("alarm", false):
 		heard.append_array(social.on_alarm(kind, pos, loudness, source))
+	if bats:
+		bats.on_noise(pos, loudness, source)
 	var line := "[%ds] Lärm %s %.0f m @ (%.1f, %.1f, %.1f)%s" % [int(director.elapsed) if director else 0,
 		kind, loudness, pos.x, pos.y, pos.z, "" if heard.is_empty() else " → " + ", ".join(heard)]
 	noise_log.append(line)

@@ -33,6 +33,7 @@ const NOISE := {
 	"cat_purr":   {"range": 1.5,  "sound": "purr",   "volume": 0.6},    ## schnurrt beim Streicheln
 	"cat_cry":    {"range": 16.0, "sound": "cry",    "volume": 0.6, "alarm": true},  ## weint auf der Flucht vor dem Monster
 	"cat_knock":  {"range": 5.0,  "sound": "thud",   "volume": 0.5},    ## wirft Deko um
+	"bats":       {"range": 8.0,  "sound": "flutter", "volume": 0.7},   ## aufgeschreckter Fledermausschwarm (4.22)
 	"curtain":    {"range": 2.0,  "sound": "creak",  "volume": 0.15},
 	"bulb":       {"range": 2.0,  "sound": "creak",  "volume": 0.2},    ## Glühbirne heraus-/eindrehen
 	"bulb_burst": {"range": 8.0,  "sound": "bang",   "volume": 0.35, "alarm": true},

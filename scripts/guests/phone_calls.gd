@@ -270,6 +270,8 @@ func _take_incoming(call: Dictionary) -> void:
 			var key := "party" if Game.social.party_active else "chat"
 			_talk = {"guest": guest, "since": _time, "chose": true}
 			_show_talk(guest, "„%s“" % _line(guest, key))
+			if key == "party" and Game.notebook:   # ein Termin (Notizbuch, 3.10)
+				Game.notebook.add_note("", "Feier im Partyraum – ich soll rüberkommen.", _caller(guest))
 		"creepy":
 			_take_creepy(call, title)
 		"kid_prank":
@@ -279,6 +281,8 @@ func _take_incoming(call: Dictionary) -> void:
 				"„%s hier! Wir schmücken gerade %s – bring Deko mit und komm dazu!“" % [guest.display_name, call["where"]], [
 				["Ich komme!", func() -> void:
 					Game.social.decorating.on_accepted()
+					if Game.notebook:
+						Game.notebook.add_note("", "Sie schmücken gerade %s – ich soll mit Deko kommen." % call["where"], _caller(guest))
 					hang_up()],
 				["Keine Zeit.", hang_up],
 			])
@@ -317,7 +321,10 @@ func _take_creepy(call: Dictionary, title: String) -> void:
 			var ghost: Guest = call["guest"]
 			ui.show_page(title, "[Rauschen] …", [["Auflegen", hang_up]])
 			_after(id, 2.0, func() -> void:
-				ui.set_text("„%s“" % _line(ghost, "dead")))
+				ui.set_text("„%s“" % _line(ghost, "dead"))
+				if Game.notebook:
+					Game.notebook.add_note("", "Anruf aus Zimmer %s. Es war %s. Aber %s ist tot." % [room, ghost.display_name,
+						ghost.display_name], "Telefon"))
 			_after(id, 7.0, func() -> void:
 				ui.set_text("[Die Leitung ist tot.]")
 				Game.play_sound("sting", 0.4)
@@ -329,6 +336,11 @@ func _take_creepy(call: Dictionary, title: String) -> void:
 			_after(id, 6.0, func() -> void:
 				ui.set_text("[Atmen]\n[Die Leitung ist tot.]")
 				_leave_receiver(room))
+
+
+## Quelle einer Notiz aus einem Anruf: „Edna, Zi. 021 am Telefon“.
+func _caller(guest: Guest) -> String:
+	return "%s, Zi. %s am Telefon" % [guest.display_name, String(guest.home["sign"])]
 
 
 ## Spur der unheimlichen Anrufe: In diesem Zimmer liegt jetzt ein Hörer neben dem Apparat.

@@ -167,14 +167,22 @@ static func leaves(tex_id: String) -> ShaderMaterial:
 	return _cache[key]
 
 
-## Flache Auflage mit Umriss aus dem Alpha einer Bilddatei (shaders/psx_decal.gdshader, Kürbismatsch) – eigenes
-## Material je Aufruf, damit jede für sich verblassen kann (Parameter `fade`).
+## Flache Auflage mit Umriss aus dem Alpha einer Bilddatei (shaders/psx_decal.gdshader, Blut, Wachs, Kürbismatsch) –
+## eigenes Material je Aufruf, damit jede für sich verblassen kann (Parameter `fade`). Liegen daneben <name>_n.png und
+## <name>_d.png (tools/splat_maps.gd), kommen Normal Map und Detailkarte dazu; den Look stellt TraceMark.splat_look ein.
 static func decal(path: String) -> ShaderMaterial:
 	if _decal_shader == null:
 		_decal_shader = load("res://shaders/psx_decal.gdshader")
 	var m := ShaderMaterial.new()
 	m.shader = _decal_shader
 	m.set_shader_parameter("albedo_tex", load(path))
+	var base := path.get_basename()
+	if ResourceLoader.exists(base + "_n.png"):
+		m.set_shader_parameter("normal_tex", load(base + "_n.png"))
+		m.set_shader_parameter("use_normal", true)
+	if ResourceLoader.exists(base + "_d.png"):
+		m.set_shader_parameter("detail_tex", load(base + "_d.png"))
+		m.set_shader_parameter("use_detail", true)
 	return m
 
 

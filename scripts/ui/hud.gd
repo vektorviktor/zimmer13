@@ -38,6 +38,8 @@ var _autosave_flame: ColorRect
 var _autosave_time := 0.0
 var _caption: Label
 var _caption_time := 0.0
+var _noted: Label                          ## „Notiert“ über der Autosave-Kerze (Notizbuch, Spielkonzept 3.10)
+var _noted_time := 0.0
 var _day := -1
 var _debug_timer := 0.0
 var _fps: Label
@@ -145,6 +147,12 @@ func _ready() -> void:
 		_autosave_time = 2.5
 		_autosave.visible = true)
 
+	_noted = _label(8, HORIZONTAL_ALIGNMENT_RIGHT)
+	_noted.text = "Notiert"
+	_noted.label_settings.font_color = Color(0.9, 0.85, 0.7)
+	_place(_noted, Vector4(1, 1, 1, 1), Vector4(-80, -58, -6, -44))
+	_noted.visible = false
+
 	_caption = _label(8, HORIZONTAL_ALIGNMENT_LEFT)
 	_caption.label_settings.font_color = Color(0.85, 0.85, 0.75)
 	_place(_caption, Vector4(0, 1, 0.6, 1), Vector4(8, -32, 0, -20))
@@ -169,6 +177,10 @@ func _process(delta: float) -> void:
 		_autosave_flame.size.y = randf_range(3.5, 5.5)
 		_autosave.modulate.a = clampf(_autosave_time, 0.0, 1.0)
 		_autosave.visible = _autosave_time > 0.0
+	if _noted_time > 0.0:
+		_noted_time -= delta
+		_noted.modulate.a = clampf(_noted_time, 0.0, 1.0)
+		_noted.visible = _noted_time > 0.0
 	if _caption_time > 0.0:
 		_caption_time -= delta
 		_caption.modulate.a = clampf(_caption_time, 0.0, 1.0)
@@ -343,6 +355,12 @@ func show_message(text: String, duration: float = 3.5) -> void:
 	_message.text = text
 	_message_time = duration
 	_message.modulate.a = 1.0
+
+
+## Neuer Eintrag im Notizbuch (3.10): kurz „Notiert“ – mehr nicht.
+func show_noted() -> void:
+	_noted_time = 2.5
+	_noted.visible = true
 
 
 ## Losreißen: Balken 0..1, < 0 blendet ihn aus.

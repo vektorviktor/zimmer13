@@ -64,6 +64,7 @@ while IFS='|' read -r frames args; do
 	scenario "$(printf '%02d' $count)" "$frames" "$args" &
 done <<'LIST'
 600|--savetest
+600|--notizbuch --show=aufgaben --savetest
 600|--savetest --day=20
 600|--bag --flashlight --savetest
 600|--day=12 --rot=eingefallen --savetest --trace
@@ -85,6 +86,8 @@ done <<'LIST'
 2000|--pos=34.45,0.1,-13.5 --ghost=4 --trace
 1400|--pos=31.5,0,-8 --ghost=stunde --trace
 900|--pos=31.5,0,-8 --ghost=stunde,4 --trace
+600|--fledermaus --trace
+600|--fledermaus=schwarm --trace
 1500|--lure --trace
 3000|--decorate=gross,hin --trace
 2000|--decorate=allein,haus --trace

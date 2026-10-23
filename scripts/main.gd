@@ -17,6 +17,8 @@ extends Node3D
 ##                               Angriff (ohne: du bleibst, wo du bist, die Uhr springt auf 22 Uhr, es geschieht ohne dich)
 ##   --brett[=nachher]           vor das Aushangbrett in der Lobby (2.5) – nachher: der erste Angriff gilt als geschehen
 ##   --brief                     an den Schreibtisch in Zimmer 13, Blick auf den Willkommensbrief (2.5)
+##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
+##                               über drei Tage) und ein paar Einträge im Tagebuch zum Nachlesen (3.10)
 ##   --zettel                    erster Angriff gilt als geschehen, der Warnungszettel von 1999 liegt hinter der Tür von
 ##                               Zimmer 13, du stehst davor (2.5)
 ##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
@@ -50,7 +52,7 @@ extends Node3D
 ##                               vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --dial=n|lobby              vom Telefon in Zimmer 13 aus Zimmer n anrufen (0 = Rezeption) ·
 ##                               lobby: Wählseite am Haupttelefon mit Gästeverzeichnis
-##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, help)
+##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, diary_pages, settings, load, help)
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
@@ -81,7 +83,8 @@ extends Node3D
 ##                               --time=+2 danach ist der Matsch verblasst und weg
 ##   --kuerbis[=n]               Kürbismodelle (5.8) 1,5 m vor dir, Gesicht zu dir, Blick hinunter: der glatte und die fünf
 ##                               Fratzen mit Kerze in einer Reihe – bzw. nur Fratze n (1–5)
-##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
+##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten); aufgaben|notizen:
+##                               das Notizbuch bei diesem Lesezeichen (3.10)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
 ##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
 ##   --no-psx · --psx            ohne bzw. mit PS1-Look (wie der Schalter in den Einstellungen, wird nicht gespeichert)
@@ -112,6 +115,8 @@ extends Node3D
 ##   --ghost=stunde[,n]          Geisterstunde (4.18): die Uhr springt kurz vor Mitternacht, die Glocke schlägt, danach geht
 ##                               er in deinem Flur um (vorher mit --tp/--pos hinstellen, sonst im Obergeschoss) und kommt zum
 ##                               n. Mal (Standard 1; ab 4 würgt er) – der erste Angriff gilt als geschehen
+##   --fledermaus[=tag|schwarm]  Fledermäuse (4.22): du stehst im Garten vor einem Baum und siehst hinauf – 21 Uhr, sie
+##                               kreisen · tag: 12 Uhr, sie hängen in der Krone · schwarm: wie tag, nach 3 s fliegen sie auf
 ##   --sleep[=bett]              Nachtruhe sofort beginnen – die Uhr springt auf ihren Beginn (Gäste gehen ins Bett) · bett: alle liegen sofort,
 ##                               du schläfst im Bett von Zimmer 13
 ##   --awake=n                   so viele Nächte ohne Schlaf (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
@@ -256,6 +261,13 @@ func _ready() -> void:
 	Game.contest = contest
 	contest.setup(builder)
 
+	# Notizbuch (3.10) – steckt im Umschlag des Briefs; Tagebuch mit seinen Meilensteinen
+	var notebook := Notebook.new()
+	notebook.name = "Notebook"
+	add_child(notebook)
+	Game.notebook = notebook
+	Game.diary = builder.diary
+
 	# Hotelkatzen (6.11) – nach den Gästen, sie suchen sich einen Lieblingsgast
 	for cat_id in HotelCat.PROFILES:
 		var cat := HotelCat.new().setup(cat_id, builder)
@@ -268,6 +280,11 @@ func _ready() -> void:
 	add_child(weather)
 	weather.setup(builder, get_node("Moon") as DirectionalLight3D, _sky)
 	Game.weather = weather
+	var bats := Bats.new()   # Fledermäuse in den Bäumen und über dem Garten (Spielkonzept 4.22)
+	bats.name = "Bats"
+	add_child(bats)
+	bats.setup(builder)
+	Game.bats = bats
 
 	var grass := Grass.new()   # Grasbüschel, nur ohne PS1-Look – nach dem NavMesh
 	grass.name = "Grass"
@@ -862,6 +879,8 @@ func run_debug(arg: String) -> bool:
 			Game.dialog.open(partner))
 	elif arg == "--ghost=flur":
 		Game.ghost.debug_summon_hall()
+	elif arg == "--fledermaus" or arg.begins_with("--fledermaus="):
+		Game.bats.debug_show(arg.substr(13) if arg.length() > 13 else "")
 	elif arg == "--ghost=stunde" or arg.begins_with("--ghost=stunde,"):
 		Game.ghost.debug_ghost_hour(maxi(1, arg.get_slice(",", 1).to_int()) if "," in arg else 1)
 	elif arg == "--ghost=tür" or arg == "--ghost=tuer":
@@ -921,6 +940,8 @@ func run_debug(arg: String) -> bool:
 		Game.contest.debug_letter()
 	elif arg == "--zettel":
 		Game.contest.debug_note()
+	elif arg == "--notizbuch":
+		get_tree().create_timer(0.5).timeout.connect(Game.notebook.debug_fill)   # nach den Gästen
 	elif arg == "--trick=13" or arg.begins_with("--trick=13,"):
 		# Ein Kind steht vor Zimmer 13 (Tür auf) – mit „,n“ gibst du ihm n Süßigkeiten, eine je 1,5 s
 		var give := arg.substr(11).to_int() if arg.begins_with("--trick=13,") else 0
@@ -1036,11 +1057,13 @@ func run_debug(arg: String) -> bool:
 			var ok := SaveManager.save_to(slot, SaveManager.diary_sentence(), get_viewport().get_texture().get_image())
 			print("[diary] Slot %d gespeichert: %s – „%s“" % [slot, ok, SaveManager.diary_sentence()]))
 	elif arg.begins_with("--menu="):
-		# Menü für Screenshots öffnen: pause, diary, settings, load, help (controls: alter Name der Hilfe)
+		# Menü für Screenshots öffnen: pause, diary, diary_pages, settings, load, help (controls: alter Name der Hilfe)
 		var which := "help" if arg.substr(7) == "controls" else arg.substr(7)
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
-			if which == "diary":
+			if which in ["diary", "diary_pages"]:
 				Game.menus.open_diary()
+				if which == "diary_pages":   # die aufgeschriebenen Meilensteine, letzte Seite (3.10)
+					Game.menus.call("_show_diary_pages", -1)
 			else:
 				Game.menus.open_pause()
 				if which != "pause":

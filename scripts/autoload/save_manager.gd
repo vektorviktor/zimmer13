@@ -70,7 +70,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 36: Türschmuck-Wettbewerb (Spielkonzept 2.5, „contest“: Abschnitt, Brief, Durchsagen, Zettel, erstes Urteil; Puppe
 ##     „gone“), ohne director.first_attack_day – ältere Stände laden weiter: Ist der erste Angriff schon gewesen, ist
 ##     der Wettbewerb vorbei, sonst beginnt er von vorn
-const VERSION := 36
+## 37: Notizbuch (Spielkonzept 3.10, „notebook“: Aufgaben und Notizen) und Meilensteine im Tagebuch („diary“:
+##     aufgeschrieben und noch nicht) – ältere Stände laden weiter: Wer den Brief gelesen hat, hat ein leeres Notizbuch
+const VERSION := 37
 const MIN_VERSION := 32
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -420,6 +422,8 @@ func collect() -> Dictionary:
 	data["ghost"] = Game.ghost.save_state() if Game.ghost else {}
 	data["doll"] = Game.doll.save_state() if Game.doll else {}
 	data["contest"] = Game.contest.save_state() if Game.contest else {}
+	data["notebook"] = Game.notebook.save_state() if Game.notebook else {}
+	data["diary"] = Game.diary.save_state() if Game.diary else {}
 	data["pumpkin"] = Game.pumpkin.save_state() if Game.pumpkin else {}
 	data["hide_spots"] = _collect_group("hide_spots", func(n: Node) -> Dictionary: return n.save_state())
 	data["doors"] = _collect_group("doors", func(n: Node) -> Dictionary:
@@ -645,6 +649,10 @@ func apply(data: Dictionary) -> void:
 	director.load_state(dd.get("state", {}))
 	if Game.contest:   # nach dem Director (erster Angriff schon gewesen?) und der Puppe
 		Game.contest.load_state(data.get("contest", {}))
+	if Game.notebook:   # nach dem Wettbewerb (Brief gelesen?)
+		Game.notebook.load_state(data.get("notebook", {}), Game.contest != null and Game.contest.letter_read)
+	if Game.diary:
+		Game.diary.load_state(data.get("diary", {}))
 	last_save_msec = Time.get_ticks_msec()
 
 

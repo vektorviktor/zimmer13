@@ -369,6 +369,9 @@ var cat_perches: Array[Dictionary] = []
 var kitchen_spot := Vector3.ZERO
 var garden_spots: Array[Vector3] = []
 var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kein Gras (Grass)
+## Bäume: {pos (Stammachse am Boden), radius (Krone), height, crown (Höhenbereich der Krone als Anteile)} – für die
+## Fledermäuse (Bats)
+var tree_spots: Array[Dictionary] = []
 var player_spawn := Vector3.ZERO
 var player_door_front := Vector3.ZERO
 var record_player_pos := Vector3.ZERO
@@ -1478,7 +1481,8 @@ func _floors_and_ceilings() -> void:
 
 ## Deckenplatte über r (H … H + 0,2) auf der Ebene der Decken.
 func _ceiling_slab(r: Rect2, mat: Material) -> void:
-	Geo.solid(root, Vector3(r.size.x, 0.2, r.size.y), Vector3(r.get_center().x, H + 0.1, r.get_center().y), mat, LAYER_CEILING)
+	ShadowBudget.structure(Geo.solid(root, Vector3(r.size.x, 0.2, r.size.y), Vector3(r.get_center().x, H + 0.1, r.get_center().y), mat,
+		LAYER_CEILING))
 
 
 ## Boden über dem EG: 0,3 m stark, liegt auf der Decke darunter (H … H + 0,2) auf – keine Fuge an Lufträumen
@@ -1486,7 +1490,8 @@ func _ceiling_slab(r: Rect2, mat: Material) -> void:
 func _floor_rect(rc: Array, mat: Material, layer: int = 1) -> void:
 	var thick := 0.2 if _level <= 0 else UP_Y - H - 0.2
 	var size := Vector3(float(rc[2]) - float(rc[0]), thick, float(rc[3]) - float(rc[1]))
-	Geo.solid(root, size, Vector3((float(rc[0]) + float(rc[2])) / 2.0, -thick / 2.0, (float(rc[1]) + float(rc[3])) / 2.0), mat, layer)
+	ShadowBudget.structure(Geo.solid(root, size, Vector3((float(rc[0]) + float(rc[2])) / 2.0, -thick / 2.0,
+		(float(rc[1]) + float(rc[3])) / 2.0), mat, layer))
 
 
 ## Boden eines Plan-Rechtecks. Flure tragen Teppich, nur in der Lobby Fliesen: Ragt ein Flurrechteck in die
@@ -2812,6 +2817,7 @@ func _tree(pos: Vector3, index: int) -> void:
 	var info: Dictionary = TREE_MODELS[index % TREE_MODELS.size()]
 	var path: String = info["path"]
 	if ResourceLoader.exists(path):
+		tree_spots.append({"pos": pos, "radius": info["radius"], "height": info["height"], "crown": info["crown"]})
 		var trunk: float = info["trunk"]
 		var body := Geo.collider(root, Vector3(trunk, TREE_TRUNK_H, trunk), pos + Vector3(0, TREE_TRUNK_H / 2.0, 0))
 		var model: Node3D = (load(path) as PackedScene).instantiate()
@@ -2826,6 +2832,7 @@ func _tree(pos: Vector3, index: int) -> void:
 		return
 	var radius := TREE_RADIUS
 	var height := clampf(radius * 1.1, 3.2, 6.0)
+	tree_spots.append({"pos": pos, "radius": radius, "height": height + radius * 0.45, "crown": TREE_CROWN})
 	_falling_leaves(pos, radius, height + radius * 0.45, TREE_CROWN)
 	var trunk := Geo.solid(root, Vector3(0.5, height, 0.5), pos + Vector3(0, height / 2.0, 0), Mat.psx(Color(0.22, 0.15, 0.1)))
 	var colors: Array[Color] = [Color(0.6, 0.25, 0.05), Color(0.7, 0.4, 0.08), Color(0.45, 0.12, 0.05)]
@@ -3392,6 +3399,7 @@ func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material,
 		Geo.collider(holder, Vector3(a1 - cursor, height, T), Vector3((cursor + a1) / 2.0, height / 2.0, 0))
 	var wall := Geo.mesh(holder, Geo.wall_mesh(a0, a1, height, T, openings), null, Vector3.ZERO)
 	wall.set_surface_override_material(0, mat)
+	ShadowBudget.structure(wall)   # hält das Licht aller Lampen auf
 	if wall.mesh.get_surface_count() > 1:
 		wall.set_surface_override_material(1, mat if mat == _concrete else OpeningFrame.trim_material())
 

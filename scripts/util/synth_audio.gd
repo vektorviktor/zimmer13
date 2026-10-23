@@ -48,7 +48,7 @@ const CREEPY_TUNE := [440.0, 523.3, 659.3, 587.3, 523.3, 493.9, 440.0, 329.6, 44
 const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
-	"rustle": 0.3, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
+	"rustle": 0.3, "flutter": 1.4, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
 	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
 }
 
@@ -338,6 +338,11 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 				return 0.0
 			var strike := exp(-fmod(t, 0.04) * 60.0)
 			return (sin(TAU * 1020.0 * t) + sin(TAU * 1290.0 * t) * 0.7) * strike * 0.22
+		"flutter":
+			# Fledermausschwarm: viele kleine, ledrige Flügelschläge durcheinander, wird leiser
+			var beat := fmod(t * 19.0 + sin(TAU * 3.1 * t) * 0.4, 1.0)
+			var beat2 := fmod(t * 13.0 + 0.37, 1.0)
+			return white * (exp(-beat * 10.0) + exp(-beat2 * 12.0) * 0.6) * (1.0 - k) * 0.35
 		"rustle":
 			# Papier: Rauschen in kurzen, unregelmäßigen Knistern
 			return white * (0.5 + 0.5 * sin(TAU * 23.0 * t) * sin(TAU * 37.0 * t)) * sin(PI * k) * 0.25

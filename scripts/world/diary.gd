@@ -2,6 +2,23 @@ class_name Diary
 extends StaticBody3D
 ## Das Tagebuch auf dem Schreibtisch in Zimmer 13 – der einzige Speicherpunkt
 ## (Spielkonzept 8.5). Fest verankert: nicht tragbar, nicht klaubar.
+## Meilensteine (3.10): Wendepunkte der Geschichte – auch die dunklen Taten – sammelt note() als „noch nicht
+## aufgeschrieben“; beim Speichern am Schreibtisch schreibt die Figur sie auf (write_pending), danach lassen sie sich
+## nachlesen (Menus). Jeder Meilenstein einmal. Erreichbar über Game.diary; gespeichert unter „diary“.
+
+## Meilensteine, die das Tagebuch selbst bemerkt (alle CHECK_EVERY s): Lakengeist beim Spieler, Kürbismann in Sicht
+const CHECK_EVERY := 1.0
+const GHOST_ENTRY := "Heute Nacht war etwas bei mir – wie ein Laken, unter dem niemand ist. Ich konnte den Blick nicht abwenden."
+const PUMPKIN_ENTRY := "Heute war ein Mann im Haus, der statt eines Kopfes einen Kürbis trägt. Kein Kostüm. Die Fratze hat sich bewegt."
+## Fremde Zeile beim Schreiben (MonsterDirector.strange_diary, 4.13)
+const STRANGE_ENTRY := "Darunter, in fremder Schrift: »Ich sehe dir beim Schreiben zu.«"
+
+## aufgeschrieben: {id, at, text, foreign} – at = MonsterDirector.elapsed, als es geschah
+var entries: Array[Dictionary] = []
+## geschehen, aber noch nicht aufgeschrieben
+var pending: Array[Dictionary] = []
+
+var _check := CHECK_EVERY
 
 
 func _ready() -> void:
@@ -29,3 +46,86 @@ func interact(_player: Player) -> void:
 		return
 	if Game.menus:
 		Game.menus.open_diary()
+
+
+# --- Meilensteine ---------------------------------------------------------------------------
+
+## Ein Wendepunkt ist geschehen – aufgeschrieben wird er beim nächsten Speichern. Jede id nur einmal.
+func note(id: String, text: String) -> void:
+	if text == "" or has(id):
+		return
+	pending.append({"id": id, "at": Game.director.elapsed if Game.director else 0.0, "text": text, "foreign": false})
+	if Game.tracing:
+		print("[Tagebuch] Meilenstein „%s“ – wird beim nächsten Speichern aufgeschrieben" % id)
+
+
+func has(id: String) -> bool:
+	for e in entries + pending:
+		if e["id"] == id:
+			return true
+	return false
+
+
+## Beim Speichern: alles seit dem letzten Mal aufschreiben, mit strange die fremde Zeile darunter. Gibt zurück, wie
+## viele Einträge dazukamen (unwrite nimmt sie zurück, falls das Speichern scheitert).
+func write_pending(strange: bool) -> int:
+	var count := pending.size()
+	entries.append_array(pending)
+	pending.clear()
+	if strange:
+		entries.append({"id": "", "at": Game.director.elapsed if Game.director else 0.0, "text": STRANGE_ENTRY, "foreign": true})
+		count += 1
+	return count
+
+
+func unwrite(count: int) -> void:
+	for i in count:
+		var e: Dictionary = entries.pop_back()
+		if not e["foreign"]:
+			pending.push_front(e)
+
+
+func _process(delta: float) -> void:
+	_check -= delta
+	if _check > 0.0:
+		return
+	_check = CHECK_EVERY
+	if Game.ghost and Game.ghost.with_player():
+		note("first_ghost", GHOST_ENTRY)
+	if Game.pumpkin and Game.pumpkin.in_house() and Game.director \
+			and Game.director.player_can_see(Game.pumpkin.global_position + Vector3.UP * 1.6):
+		note("pumpkin_man", PUMPKIN_ENTRY)
+
+
+# --- Spielstand -----------------------------------------------------------------------------
+
+func save_state() -> Dictionary:
+	return {"entries": entries.duplicate(true), "pending": pending.duplicate(true)}
+
+
+func load_state(d: Dictionary) -> void:
+	entries.clear()
+	pending.clear()
+	for e: Dictionary in d.get("entries", []):
+		entries.append(_entry(e))
+	for e: Dictionary in d.get("pending", []):
+		pending.append(_entry(e))
+
+
+func _entry(e: Dictionary) -> Dictionary:
+	return {"id": String(e.get("id", "")), "at": float(e.get("at", 0.0)), "text": String(e.get("text", "")),
+		"foreign": bool(e.get("foreign", false))}
+
+
+## --notizbuch: ein paar aufgeschriebene Einträge zum Nachlesen.
+func debug_fill() -> void:
+	var samples := [
+		[1, 15.6, "arrival", DoorContest.ARRIVAL_ENTRY],
+		[2, 20.1, "first_attack", DoorContest.CEREMONY_ENTRY],
+		[3, 22.4, "first_verdict", "Die Puppe saß vor Zimmer 021. An der Tür hing fast nichts."],
+		[4, 1.3, "first_ghost", GHOST_ENTRY],
+	]
+	for s: Array in samples:
+		if not has(String(s[2])):
+			entries.append({"id": s[2], "at": Calendar.at(int(s[0]), float(s[1])), "text": s[3], "foreign": false})
+	entries.append({"id": "", "at": Calendar.at(4, 1.4), "text": STRANGE_ENTRY, "foreign": true})

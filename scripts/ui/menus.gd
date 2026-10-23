@@ -1,6 +1,6 @@
 class_name Menus
 extends CanvasLayer
-## Spielmenü (Esc) und Tagebuch (Spielkonzept 8.3, 8.5). Solange etwas offen ist,
+## Spielmenü (Esc) und Tagebuch (Spielkonzept 8.3, 8.5; Meilensteine aufschreiben und nachlesen, 3.10). Solange etwas offen ist,
 ## pausiert das Spiel komplett. Esc schließt zuerst ein offenes Fenster (Dialog,
 ## Tagebuch, Untermenü) und öffnet sonst das Menü – auch im Versteck und im Minispiel.
 ## Hilfe (2.5): Tastenübersicht und ein paar Sätze zu den Grundlagen – Einträge zu Monster und Verstecken erst nach dem
@@ -17,7 +17,8 @@ const CONTROLS := [
 	["Q (halten)", "Tasche: wählen, loslassen nimmt in die Hand"],
 	["1–6", "Fach der Tasche gleich in die Hand"],
 	["Rechtsklick (halten)", "Im Versteck Luft anhalten", "danach"],
-	["Tab (halten)", "Karte ansehen – Klick / Mausrad blättert"],
+	["Tab (halten)", "Notizbuch und Karte – Klick / Mausrad blättert"],
+	["Rechtsklick", "mit Tab: nächstes Lesezeichen (Karte, Aufgaben, Notizen)"],
 	["F (halten)", "Kompass ansehen"],
 	["Linksklick / R", "Lampe an/aus / Licht ↔ UV · Dose trinken"],
 	["1–9", "Antwort im Gespräch wählen"],
@@ -31,9 +32,14 @@ const BASICS := [
 	["Speichern kannst du nur am Tagebuch auf dem Schreibtisch in Zimmer 13."],
 	["Tag und Uhrzeit: Wanduhr in der Lobby, Kalender in Zimmer 13, dieses Menü."],
 	["Mitteilungen der Direktion hängen am Brett in der Lobby."],
+	["Aufgaben, Durchsagen und was du liest, notiert die Figur im Notizbuch [Tab]."],
 	["Flackert das Licht und rauscht es, ist es unterwegs. Schränke und Betten sind Verstecke.", "danach"],
 	["Deko im Licht vor deiner Tür hält es fern – die Puppe zeigt, wessen Tür am schwächsten ist.", "danach"],
 ]
+
+## Tagebuch nachlesen: Einträge je Seite, Farbe der fremden Zeile (MonsterDirector.strange_diary)
+const DIARY_PER_PAGE := 3
+const FOREIGN_INK := Color(0.5, 0.08, 0.06)
 
 var _root: Control
 var _screen := ""
@@ -61,6 +67,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _screen != "":
 		if _screen in ["load", "settings", "help", "confirm"]:
 			_show_pause()
+		elif _screen == "diary_pages":
+			_show_diary()
 		else:
 			close()
 		get_viewport().set_input_as_handled()
@@ -212,19 +220,52 @@ func _show_diary() -> void:
 	var box := _new_sheet("diary", "Tagebuch", 330.0)
 	var entry := UiKit.wrap_label("„%s“" % _diary_text, 9, UiKit.INK)
 	box.add_child(entry)
+	if Game.diary and not Game.diary.pending.is_empty():   # Meilensteine seit dem letzten Mal (3.10)
+		var n := Game.diary.pending.size()
+		box.add_child(UiKit.wrap_label("Seit dem letzten Eintrag ist %s geschehen, das ich aufschreiben will." % (
+			"etwas" if n == 1 else "einiges"), 8, UiKit.INK_FAINT))
 	box.add_child(UiKit.label("In welche Seite schreiben?", 9, UiKit.INK_FAINT))
 	var list := SlotList.new().setup(SlotList.Mode.SAVE, Game.current_slot)
 	list.picked.connect(_write_diary)
 	box.add_child(list)
+	if Game.diary and not Game.diary.entries.is_empty():
+		box.add_child(UiKit.button("Im Tagebuch blättern", _show_diary_pages.bind(-1)))
 	box.add_child(UiKit.button("Tagebuch weglegen", close))
+
+
+## Die aufgeschriebenen Meilensteine nachlesen (3.10) – page -1 = die letzte Seite.
+func _show_diary_pages(page: int) -> void:
+	var entries: Array[Dictionary] = Game.diary.entries
+	var pages := maxi(1, ceili(entries.size() / float(DIARY_PER_PAGE)))
+	page = pages - 1 if page < 0 else clampi(page, 0, pages - 1)
+	var box := _new_sheet("diary_pages", "Tagebuch – Seite %d/%d" % [page + 1, pages], 330.0)
+	for e in entries.slice(page * DIARY_PER_PAGE, (page + 1) * DIARY_PER_PAGE):
+		var at := float(e["at"])
+		box.add_child(UiKit.label("%s, %s" % [Calendar.date_text(at), Calendar.time_text(at)], 8, UiKit.INK_FAINT))
+		box.add_child(UiKit.wrap_label(String(e["text"]), 9, FOREIGN_INK if e["foreign"] else UiKit.INK))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	box.add_child(row)
+	var back := UiKit.button("« Zurück", _show_diary_pages.bind(page - 1))
+	back.disabled = page == 0
+	row.add_child(back)
+	var next := UiKit.button("Weiter »", _show_diary_pages.bind(page + 1))
+	next.disabled = page >= pages - 1
+	row.add_child(next)
+	var done := UiKit.button("Zum Tagebuch", _show_diary)
+	box.add_child(done)
+	done.grab_focus.call_deferred()
 
 
 func _write_diary(slot: int) -> void:
 	close()
+	var written := Game.diary.write_pending(Game.director.strange_diary) if Game.diary else 0
 	if SaveManager.save_to(slot, _diary_text, _diary_thumb):
 		Game.current_slot = slot
 		Game.director.strange_diary = false
 		Game.say("Du schreibst ein paar Zeilen in dein Tagebuch. (Gespeichert – Slot %d)" % slot, 3.0)
 		Game.play_sound("creak", 0.2)
 	else:
+		if Game.diary:
+			Game.diary.unwrite(written)
 		Game.say("Die Seite lässt sich nicht beschreiben … (Speichern fehlgeschlagen)", 3.0)

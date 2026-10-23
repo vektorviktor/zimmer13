@@ -37,8 +37,9 @@ func _ready() -> void:
 
 
 ## Blatt anheften bzw. ersetzen: Lage (Mitte, auf der Tafel), Größe, Überschrift und Text auf dem Papier, Titel und Text
-## beim Lesen.
-func pin(id: String, at: Vector2, size: Vector2, headline: String, body: String, title: String, text: String) -> void:
+## beim Lesen; jot: was sich die Figur davon beim Lesen notiert (Notizbuch, 3.10), einmal je jot_id.
+func pin(id: String, at: Vector2, size: Vector2, headline: String, body: String, title: String, text: String,
+		jot_id: String = "", jot: String = "") -> void:
 	var sheet: Sheet = _sheets.get(id)
 	if sheet == null:
 		sheet = Sheet.new()
@@ -47,6 +48,8 @@ func pin(id: String, at: Vector2, size: Vector2, headline: String, body: String,
 	sheet.position = Vector3(at.x, at.y, DEPTH + 0.004)
 	sheet.rotation.z = deg_to_rad(float(posmod(id.hash(), 5) - 2) * 0.8)   # leicht schief angeheftet
 	sheet.show_text(size, headline, body, title, text)
+	sheet.jot_id = jot_id
+	sheet.jot = jot
 
 
 ## Punkt vor der Tafel am Boden (Gäste lesen dort) – side verschiebt seitlich (m).
@@ -124,6 +127,8 @@ class Sheet:
 
 	var title := ""
 	var text := ""
+	var jot_id := ""
+	var jot := ""
 	var _paper: MeshInstance3D
 	var _head: Label3D
 	var _body: Label3D
@@ -162,3 +167,5 @@ class Sheet:
 	func interact(_player: Player) -> void:
 		if Game.menus:
 			Game.menus.open_note(title, text)
+		if Game.notebook and jot != "":
+			Game.notebook.add_note(jot_id, jot, "Brett in der Lobby")
