@@ -2,7 +2,7 @@ class_name GuestBody
 extends Node3D
 ## Gastmodell aus einem Grundkörper (Spielkonzept 6.0, „Gastmodelle“): Meshy-Figur mit Mixamo-Skelett,
 ## gebaut von tools/build_guest.py. Je Gast verschieden: Größe, Schulterbreite, Körperbau
-## (Formschlüssel „build“) und die Farben von Oberteil, Hose und Haaren (psx_guest.gdshader).
+## (Formschlüssel „build“), die Farben von Oberteil, Hose und Haaren und der Hautton (psx_guest.gdshader).
 ##
 ## Bewegung: Gehen, Rennen und die Tänze (Mixamo, umgerechnet von tools/build_guest.py) kommen aus
 ## der GLB, alles andere aus den Arm-Pivots des Gastes – die Posen in Guest (Tragen, Panik, Sitzen)
@@ -67,6 +67,7 @@ const DANCES := ["dance_chicken", "dance_macarena", "dance_hiphop"]
 
 static var _scenes := {}
 static var _material: Dictionary = {}
+static var _skin: Dictionary = {}   ## mittlere Textur-Haut je Grundkörper (_skin_ref)
 
 var body_id := ""
 var _skeleton: Skeleton3D
@@ -126,9 +127,15 @@ func setup(id: String, profile: Dictionary) -> void:
 		_bone[_skeleton.get_bone_name(i)] = i
 	_mesh = model.find_children("*", "MeshInstance3D", true, false)[0]
 	_mesh.material_override = _material_for(_info, _mesh)
-	_mesh.set_instance_shader_parameter("tint_top", (profile["coat"] as Color).srgb_to_linear())
-	_mesh.set_instance_shader_parameter("tint_bottom", (profile["pants"] as Color).srgb_to_linear())
-	_mesh.set_instance_shader_parameter("tint_hair", (profile["hair"] as Color).srgb_to_linear())
+	# Color rechnet Godot bei Instanz-Uniforms selbst nach linear um – hier nicht noch einmal (sonst zu dunkel und satt)
+	_mesh.set_instance_shader_parameter("tint_top", profile["coat"])
+	_mesh.set_instance_shader_parameter("tint_bottom", profile["pants"])
+	_mesh.set_instance_shader_parameter("tint_hair", profile["hair"])
+	if profile.has("skin"):
+		# Faktor als Vector3 (wird nicht umgerechnet): Zielton / mittlere Haut der Textur, beides linear
+		var target := (profile["skin"] as Color).srgb_to_linear()
+		var ref: Color = _skin[path]
+		_mesh.set_instance_shader_parameter("tint_skin", Vector3(target.r / ref.r, target.g / ref.g, target.b / ref.b))
 	var shape := _mesh.find_blend_shape_by_name("build")
 	if shape >= 0:
 		_mesh.set_blend_shape_value(shape, float(profile.get("build", 0.0)))
@@ -150,7 +157,28 @@ static func _material_for(info: Dictionary, mesh: MeshInstance3D) -> ShaderMater
 		m.set_shader_parameter("albedo_tex", (mesh.get_active_material(0) as BaseMaterial3D).albedo_texture)
 		m.set_shader_parameter("ref_lum", info["ref"])
 		_material[path] = m
+		_skin[path] = _skin_ref(m.get_shader_parameter("albedo_tex"))
 	return _material[path]
+
+
+## Mittlere Hautfarbe (linear) der Textur – wie die Hauterkennung in psx_guest.gdshader (rot > grün > blau,
+## mäßig gesättigt, kein Gelb), nur helle Texel, damit Brauen, Lippen und Schuhe nicht mitzählen.
+static func _skin_ref(tex: Texture2D) -> Color:
+	var img := tex.get_image()
+	if img.is_compressed():
+		img.decompress()
+	img.resize(128, 128, Image.INTERPOLATE_NEAREST)
+	var sum := Color(0, 0, 0)
+	var n := 0
+	for y in img.get_height():
+		for x in img.get_width():
+			var c := img.get_pixel(x, y).srgb_to_linear()
+			var lum := 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
+			var sat := maxf(c.r, maxf(c.g, c.b)) - minf(c.r, minf(c.g, c.b))
+			if c.r >= c.g and c.g >= c.b and sat > 0.08 and lum > 0.15 and (c.g - c.b) / maxf(c.r - c.b, 0.001) < 0.75:
+				sum += c
+				n += 1
+	return Color(0.5, 0.35, 0.3) if n == 0 else Color(sum.r / n, sum.g / n, sum.b / n)
 
 
 ## Kopfknochen in Weltkoordinaten – Hut und Kürbis des Kostüms sitzen darauf (Costume.follow)

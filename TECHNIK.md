@@ -1200,7 +1200,14 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   eigene Modelle haben) bleibt die Klötzchenfigur (`_build_blocks`). Je Gast aus dem Profil: `height_cm`, `width_cm`
   (Breite nur in `WIDTH_LIMIT`, Kopfknochen gegengestreckt; `head` vergrößert ihn nur auf Erwachsenenkörpern),
   `build`, Farben `coat`/`pants`/`hair` als Instanz-Uniforms von `psx_guest.gdshader`
-  (färbt nur graue Texel, Farbe × Helligkeit / Mittelwert). **Bewegung:** `walk`/`run` aus der GLB
+  (färbt nur graue Texel, Farbe × Helligkeit / Mittelwert). Die `Color` geht unverändert hinein – Godot rechnet
+  Farben bei Instanz-Uniforms selbst nach linear um; ein zusätzliches `srgb_to_linear()` machte bis 2026-10-23 alle
+  Gäste zu dunkel und zu satt. **Hautton** `skin` (`GuestGenerator.SKIN`, acht Stufen; Kinder erben ihn vom
+  Elternteil): Der Shader erkennt Haut an der Texelfarbe (rot > grün > blau, mäßig gesättigt, nicht gelb, nicht zu
+  dunkel, außerhalb der gefärbten Texel) und multipliziert sie mit `tint_skin`. Den Faktor rechnet `GuestBody`
+  als `Vector3` (wird nicht umgerechnet) aus Zielton / mittlerer Textur-Haut des Grundkörpers (`_skin_ref`, einmal
+  je Körper aus der auf 128² verkleinerten Textur) – so sieht derselbe Ton auf jedem Modell gleich aus.
+  `debug_skin` im Material färbt die erkannte Haut magenta. **Bewegung:** `walk`/`run` aus der GLB
   (`AnimationPlayer` manuell vorgespult, Tempo nach Laufweite × Größe), im Stand Ruhepose mit Atmen. Die Posen
   in `Guest._pose()`/`_dance_pose()` drehen weiter nur die Pivots `_arm_l`/`_arm_r` (beim Modell unsichtbar);
   `GuestBody` richtet die Oberarmknochen danach aus (`_aim`), außer `_arms_free` (normales Gehen/Stehen).

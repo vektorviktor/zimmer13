@@ -45,15 +45,34 @@ const TELLS := [
 	"%s kratzt sich am Ohr.", "%s grinst eine Spur zu breit.", "%s schaut kurz zur Decke.",
 	"%s wippt mit dem Fuß.", "%s beißt sich auf die Lippe.",
 ]
+## Oberteile: gedeckte Töne, dazu helle und bunte (hellrot, weiß, senf, hellblau, mint, rosa, hellgrau, orange,
+## creme, königsblau).
 const COATS := [
 	Color(0.42, 0.28, 0.48), Color(0.3, 0.25, 0.18), Color(0.2, 0.45, 0.4), Color(0.5, 0.15, 0.12),
 	Color(0.18, 0.22, 0.4), Color(0.45, 0.42, 0.3), Color(0.25, 0.3, 0.15), Color(0.55, 0.35, 0.1),
 	Color(0.15, 0.15, 0.15), Color(0.6, 0.55, 0.5),
+	Color(0.88, 0.3, 0.28), Color(0.9, 0.9, 0.88), Color(0.88, 0.7, 0.28), Color(0.55, 0.72, 0.88),
+	Color(0.55, 0.8, 0.62), Color(0.92, 0.6, 0.66), Color(0.72, 0.72, 0.74), Color(0.92, 0.52, 0.2),
+	Color(0.9, 0.84, 0.7), Color(0.3, 0.42, 0.78),
 ]
-const PANTS := [Color(0.2, 0.18, 0.22), Color(0.15, 0.15, 0.17), Color(0.25, 0.2, 0.3), Color(0.3, 0.25, 0.2), Color(0.12, 0.14, 0.2)]
+## Hosen: dunkle Stoffhosen, fünf Jeanstöne (dunkel, mittel, stonewashed, hell, verwaschen schwarzblau – zusammen
+## gut ein Drittel), dazu beige, hellgrau, khaki und creme.
+const PANTS := [
+	Color(0.2, 0.18, 0.22), Color(0.15, 0.15, 0.17), Color(0.25, 0.2, 0.3), Color(0.3, 0.25, 0.2), Color(0.12, 0.14, 0.2),
+	Color(0.16, 0.22, 0.36), Color(0.25, 0.36, 0.55), Color(0.42, 0.53, 0.68), Color(0.58, 0.67, 0.8), Color(0.18, 0.19, 0.24),
+	Color(0.8, 0.72, 0.58), Color(0.62, 0.62, 0.64), Color(0.55, 0.52, 0.38), Color(0.88, 0.86, 0.8),
+]
+## Haare: Platin-, Gold-, Dunkelblond, Hell-, Kastanien-, Dunkelbraun, Schwarz, Kupferrot, Rotbraun, Grau, Silberweiß
 const HAIR := [
-	Color(0.82, 0.82, 0.84), Color(0.15, 0.1, 0.08), Color(0.55, 0.2, 0.1), Color(0.75, 0.6, 0.3),
-	Color(0.35, 0.22, 0.12), Color(0.05, 0.05, 0.05), Color(0.6, 0.6, 0.62),
+	Color(0.9, 0.84, 0.66), Color(0.78, 0.6, 0.32), Color(0.55, 0.42, 0.26), Color(0.45, 0.3, 0.18),
+	Color(0.36, 0.2, 0.11), Color(0.22, 0.14, 0.09), Color(0.08, 0.07, 0.07), Color(0.7, 0.32, 0.14),
+	Color(0.48, 0.2, 0.11), Color(0.58, 0.58, 0.6), Color(0.85, 0.85, 0.87),
+]
+## Hauttöne (Spielkonzept 6.0) von sehr hell bis sehr dunkel – GuestBody rechnet je Grundkörper den Faktor auf
+## die Textur-Haut aus, damit derselbe Ton auf jedem Modell gleich aussieht.
+const SKIN := [
+	Color(0.94, 0.8, 0.7), Color(0.88, 0.7, 0.58), Color(0.78, 0.62, 0.46), Color(0.68, 0.5, 0.36),
+	Color(0.56, 0.39, 0.27), Color(0.44, 0.29, 0.2), Color(0.33, 0.21, 0.14), Color(0.24, 0.15, 0.1),
 ]
 const DECO := [Item.Kind.CANDLE, Item.Kind.LEAVES, Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN, Item.Kind.COBWEB]
 
@@ -404,6 +423,7 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 		start_deco.append(Item.Kind.BAT_GARLAND)
 	elif festive < 0.5:
 		start_deco.append(Item.Kind.SPIDER)
+	profile["skin"] = SKIN[rng.randi() % SKIN.size()]
 	return profile
 
 
@@ -430,6 +450,7 @@ static func make_child(gen_seed: int, room: String, parent_id: String, parent: D
 		"coat": COATS[rng.randi() % COATS.size()], "pants": PANTS[rng.randi() % PANTS.size()],
 		# meist dieselbe Haarfarbe wie Mama oder Papa
 		"hair": parent.get("hair", HAIR[0]) if rng.randf() < 0.7 else HAIR[rng.randi() % HAIR.size()],
+		"skin": parent.get("skin", SKIN[0]),   # Hautton wie Mama oder Papa
 		"height": height_cm / 170.0, "height_cm": height_cm, "width_cm": rng.randf_range(27.0, 33.0),
 		"build": rng.randf_range(-0.4, 0.6), "head": CHILD_HEAD,
 		"brave": rng.randf_range(0.05, 0.3), "greed": rng.randf_range(0.0, 0.1), "gossip": rng.randf_range(0.8, 1.0),
