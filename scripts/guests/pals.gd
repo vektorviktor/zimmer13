@@ -6,6 +6,8 @@ extends Node
 ## ihn – sie mögen ihn dann mehr, bis höchstens „befreundet“. Kind von Social, erreichbar über Game.social.pals.
 ## Feindschaften (6.16, 2026-10-22): Wer verpetzt bekommt, wessen Kind ihm einen Streich gespielt hat, ist mit dessen
 ## Eltern verfeindet (Pranks) – Verfeindete sind keine Freunde, auch nicht als Nachbarn.
+## Freund meines Feindes (2026-10-22): Wird der Spieler mit einem Gast „befreundet“, erfahren dessen Feinde es nach
+## RIVAL_DELAY und mögen ihn weniger (RIVAL_AMOUNT) – je Paar einmal.
 ## Gespeichert werden die Zähler je Paar (counts) und die verfeindeten Paare (feuds).
 
 ## Ab so vielen gemeinsamen Taten sind zwei Gäste Freunde
@@ -17,6 +19,11 @@ const TELL_RANGE := 3.2
 const TELL_AMOUNT := 8.0
 const TELL_CAP := 79.0
 const TELL_SCAN := 1.5
+## Freund meines Feindes: so viel weniger mögen dich seine Feinde, so lange dauert es, bis sie es erfahren
+const RIVAL_AMOUNT := -15.0
+const RIVAL_DELAY := Vector2(20.0, 60.0)
+const RIVAL_LINES := ["Du bist also mit %s befreundet? Na schön.", "Mit %s gibst du dich ab? Dann such dir andere Freunde.",
+	"Ich hab gehört, du und %s … Das merk ich mir."]
 ## Ruf (Deko-Suche): was ein Gast seinen Freunden über gemeinsame Taten erzählt, nach dieser Verzögerung
 const PRAISE_DELAY := Vector2(20.0, 60.0)
 ## Große Gruppen (Feier, großes Schmücken): jeder merkt sich nur so viele andere aus der Gruppe
@@ -36,6 +43,7 @@ var feuds := {}
 ## Gast-ID → ID dessen, der ihm zuletzt Gutes über dich erzählt hat (für das nächste Gespräch; nicht gespeichert)
 var heard := {}
 var _told := {}          ## "id_a|id_b" → Spieltag des letzten Weitererzählens (nicht gespeichert)
+var _rivals := {}        ## "freund|feind" → true: hat es schon erfahren (nicht gespeichert)
 var _queue: Array[Dictionary] = []   ## {guest, amount, delay, from} – Ruf mit Verzögerung
 var _scan := TELL_SCAN
 
@@ -96,6 +104,23 @@ func add_feud(a: Guest, b: Guest) -> void:
 
 func are_feuding(a: Guest, b: Guest) -> bool:
 	return a != null and b != null and feuds.has(key(a, b))
+
+
+## Der Spieler ist jetzt mit `friend` befreundet: Wer mit `friend` verfeindet ist, erfährt es und mag ihn weniger.
+func on_player_befriended(friend: Guest) -> void:
+	for other in Game.social.living_guests():
+		var rival: Guest = other
+		var k := "%s|%s" % [friend.id, rival.id]
+		if rival == friend or not are_feuding(friend, rival) or _rivals.has(k):
+			continue
+		_rivals[k] = true
+		get_tree().create_timer(randf_range(RIVAL_DELAY.x, RIVAL_DELAY.y), false).timeout.connect(func() -> void:
+			if not is_instance_valid(rival) or rival.dead or not is_instance_valid(friend):
+				return
+			Game.social.change_relation(rival, RIVAL_AMOUNT)
+			rival.say(RIVAL_LINES.pick_random() % friend.display_name)
+			if Game.tracing:
+				print("[Feinde] %s erfährt, dass du mit %s befreundet bist: %.0f" % [rival.display_name, friend.display_name, rival.relation]))
 
 
 func _neighbors(a: Guest, b: Guest) -> bool:

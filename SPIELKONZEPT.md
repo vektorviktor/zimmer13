@@ -2219,8 +2219,9 @@ Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gute
   dasselbe Netz (6.18, 1).
 - **Feindschaften (2026-10-22):** Ein erster Anfang sind die Streiche der Kinder (6.13): Wer verpetzt bekommt, wessen
   Kind ihm einen Kürbis vor die Tür geworfen hat, ist mit dessen Eltern **verfeindet** – Verfeindete sind keine
-  Freunde mehr, auch nicht als Zimmernachbarn. Wie sich das auf den Spieler auswirkt („Freund meines Feindes“), ist
-  noch zu besprechen.
+  Freunde mehr, auch nicht als Zimmernachbarn.
+- **Freund meines Feindes (entschieden und umgesetzt 2026-10-22):** Wird der Spieler mit einem Gast **befreundet**,
+  erfahren dessen Feinde es nach einer Weile und mögen ihn weniger (−15, je Paar einmal; „Du bist also mit … befreundet?“).
 
 ### 6.17 Überlebende & Verletzungen (entschieden 2026-10-21)
 Nicht jeder Angriff endet tödlich: **Etwa vier von zehn Gästen überleben** – ohne Lebenspunkte, es wird beim Angriff

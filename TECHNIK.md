@@ -1291,7 +1291,9 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   `take_heard_line` an die Begrüßung – nur ohne Erlebnis oder Detail des Verletzten (bloßer Gruß `Wounds.GREET` geht),
   sonst bleibt `heard` für ein späteres Gespräch stehen. `praise(gast, n)`: alle seine Freunde nach `PRAISE_DELAY` (`_queue`).
   **Feindschaften:** `feuds` (`"id_a|id_b"` → true, `add_feud` aus `Pranks`, `are_feuding`) – `are_pals` ist für Verfeindete
-  immer falsch, auch für Nachbarn. Gespeichert
+  immer falsch, auch für Nachbarn. **Freund meines Feindes:** `Social.change_relation` ruft beim Aufstieg auf „befreundet“
+  `pals.on_player_befriended(gast)` – seine Feinde (`are_feuding`) bekommen nach `RIVAL_DELAY` `RIVAL_AMOUNT` und einen
+  Satz, je Paar einmal (`_rivals`, nicht gespeichert). Debug `--rival=gast1,gast2`. Gespeichert
   werden `counts` und `feuds` (`social.pals`, Version 25 bzw. 29); `heard`, `_told`, `_queue` nicht. Debug `--pals=gast1,gast2`, `--trace`:
   `[Freunde]`.
 - **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze; Zustand im Gast, Spielkonzept 6.17):

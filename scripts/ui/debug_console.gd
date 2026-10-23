@@ -35,6 +35,7 @@ const COMMANDS := {
 	"search": ["[gast][,mit]", "Deko-Suche (5.9) – mit: du gehst mit"],
 	"cook": ["suppe|braten[,fertig]|gast[,id]", "Kochen (3.8): Kürbis liegt im Topf bzw. in der Pfanne, du stehst am Herd · gast: ein Gast kocht Suppe"],
 	"mess": ["[wachs]", "Kürbismatsch (oder Wachsfleck) vor dir, ein ordentlicher Gast putzt ihn weg (6.13)"],
+	"rival": ["gast1,gast2", "gast1 und gast2 verfeindet, du wirst mit gast1 befreundet – gast2 mag dich weniger (6.16)"],
 	"pals": ["gast1,gast2", "gast1 erzählt gast2 gleich Gutes über dich (6.16)"],
 	"call": ["gast|creepy|dead|door", "Telefon in Zimmer 13 klingelt"],
 	"dial": ["n|lobby", "vom Telefon in Zimmer 13 anrufen"],

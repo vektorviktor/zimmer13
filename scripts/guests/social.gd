@@ -502,6 +502,8 @@ func change_relation(guest: Guest, amount: float, cap: float = 100.0) -> void:
 		value = maxf(value, minf(before, -79.0))
 	guest.relation = value
 	_announce_tier(guest, tier_of(before), tier_of(value))
+	if pals and tier_of(value) >= Tier.FRIEND and tier_of(before) < Tier.FRIEND:
+		pals.on_player_befriended(guest)   # Freund meines Feindes (6.16)
 
 
 func add_deed(guest: Guest, key: String, count: int = 1) -> void:

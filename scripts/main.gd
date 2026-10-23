@@ -35,6 +35,8 @@ extends Node3D
 ##                               fertig: gleich fertig (Suppe: Gäste kommen zum Essen)
 ##   --mess[=wachs]              Kürbismatsch (bzw. großer Wachsfleck) 3 m vor dir, ein ordentlicher Gast hinter dir putzt ihn weg
 ##                               (6.13; --trace „[Flecken]“)
+##   --rival=gast1,gast2         gast1 und gast2 sind verfeindet, du wirst gleich mit gast1 befreundet – gast2 steht vor dir und
+##                               erfährt es nach 20–60 s (--trace „[Feinde]“)
 ##   --pals=gast1,gast2          Weitererzählen (6.16): gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir
 ##                               nebeneinander – gast1 erzählt gast2 gleich Gutes über dich (mit --trace: Beziehung)
 ##   --call=id|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast, Atmen, Verschwundener,
@@ -859,6 +861,16 @@ func run_debug(arg: String) -> bool:
 		_debug_cook(arg.substr(7).split(","))
 	elif arg == "--mess" or arg == "--mess=wachs":
 		get_tree().create_timer(1.5, false).timeout.connect(func() -> void: Game.social.tidying.debug(arg.ends_with("wachs")))
+	elif arg.begins_with("--rival="):
+		# Freund meines Feindes (6.16): gast1 und gast2 sind verfeindet, du wirst gleich mit gast1 befreundet
+		var ids := arg.substr(8).split(",")
+		var a := Game.social.guest_by_id(ids[0])
+		var b := Game.social.guest_by_id(ids[1]) if ids.size() > 1 else null
+		if a and b:
+			Game.social.pals.add_feud(a, b)
+			b.global_position = Game.player.global_position - Game.player.global_transform.basis.z * 2.5
+			b._set_idle(90.0)
+			Game.social.change_relation(a, 80.0)
 	elif arg.begins_with("--pals="):
 		_debug_pals(arg.substr(7).split(","))
 	elif arg == "--knock":

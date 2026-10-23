@@ -17,7 +17,7 @@ const GROUPS := [
 	["Lakengeist", ["ghost", "awake"]],
 	["Monster", ["warn", "doll", "lure", "monster", "intent", "bold", "attacks", "first-attack", "kill", "knock", "noise"]],
 	["Kürbismann", ["pumpkin"]],
-	["Gäste", ["guests", "talk", "look", "shock", "wound", "friend", "enemy", "relation", "pals", "follow",
+	["Gäste", ["guests", "talk", "look", "shock", "wound", "friend", "enemy", "relation", "pals", "rival", "follow",
 		"visit", "attack", "punch", "bulb-thief", "steal-test"]],
 	["Spiele", ["dice", "chess", "challenge", "autoplay"]],
 	["Feiern & Deko", ["party", "trick", "prank", "mess", "decorate", "search", "cook", "costumes", "player-deco"]],
