@@ -402,6 +402,7 @@ static func place_player(pos: Vector3, look: Vector3) -> void:
 	var p := Game.player
 	if p.hiding:
 		p.exit_hide()
+	p.leave_seat(true)
 	p.global_position = pos + Vector3(0, 0.05, 0)
 	p.velocity = Vector3.ZERO
 	p.rotation = Vector3(0, atan2(-look.x, -look.z), 0)

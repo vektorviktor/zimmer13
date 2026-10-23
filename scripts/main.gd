@@ -53,6 +53,7 @@ extends Node3D
 ##   --aufzug[=innen|offen|fahrt]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht (innen: in der
 ##                               Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt: in der Kabine, sie
 ##                               fährt gleich ins oberste Stockwerk)
+##   --sitzen[=sofa|bank|stuhl|bett|klo]   aufs nächste Sitzmöbel dieser Art setzen (3.1), erster Platz – ohne Angabe Sofa
 ##   --attic-door                Kniestocktür zum Ansehen (4.21): Solange kein Dachgeschoss gezeichnet ist, wird beim Aufbau
 ##                               die erste 0,8 m breite Tür im OG1 zur Dachbodentür – du stehst vor ihrer Bandseite
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
@@ -503,6 +504,17 @@ func run_debug(arg: String) -> bool:
 			lifts[0].open_doors()
 		elif arg.ends_with("=fahrt"):
 			lifts[0].ride_to_top()
+	elif arg == "--sitzen" or arg.begins_with("--sitzen="):
+		var want := arg.substr(9) if arg.begins_with("--sitzen=") else "sofa"
+		var here := Game.player.global_position
+		var best: Seat = null
+		for node in get_tree().get_nodes_in_group("seats"):
+			var s := node as Seat
+			if s.kind == want and (best == null or s.global_position.distance_to(here) < best.global_position.distance_to(here)):
+				best = s
+		if best == null:
+			return false
+		Game.player.sit_down(best, best.spots[0])
 	elif arg == "--attic-door":
 		var builder := Game.social.builder
 		if builder.attic_doors.is_empty():

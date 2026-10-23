@@ -121,6 +121,7 @@ done <<'LIST'
 400|--talk=edna
 400|--dial=lobby
 400|--attic-door --flashlight
+400|--sitzen=bett --trace
 600|--pals=edna,bruno --trace
 2000|--sprint --trace
 LIST

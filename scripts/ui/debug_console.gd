@@ -10,6 +10,7 @@ extends CanvasLayer
 ## Befehl → [Werte, Beschreibung]. Neuer Startparameter → auch hier eintragen (Tab, help).
 const COMMANDS := {
 	"aufzug": ["[innen|offen|fahrt]", "vor den Aufzug stellen (innen: in die Kabine, Blick aufs Bedienfeld · offen: Tür geht auf · fahrt: in der Kabine nach oben)"],
+	"sitzen": ["[sofa|bank|stuhl|bett|klo]", "aufs nächste Sitzmöbel dieser Art setzen (3.1) – ohne Angabe Sofa"],
 	"tp": ["ort|zimmer|gast", "dorthin springen (lobby, bar, partyraum, küche, garten, keller, kellergang, obergeschoss, katzenraum, bibliothek, westflügel, technikraum, wäscherei, jedes Zimmer: 13, 1157 …, edna …)"],
 	"time": ["+n|-n", "Spieltage vor- oder zurückspulen"],
 	"day": ["n", "zu Tag n im Oktober springen (15 Uhr)"],

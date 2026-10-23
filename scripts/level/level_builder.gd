@@ -269,6 +269,8 @@ const BOX_HEIGHTS := {
 ## Platzhalter-Möbel: Stuhllehne über dem Sitz, Spiegel über dem Waschbecken (Breite, Höhe; Mitte über dem Boden),
 ## Fußmatte
 const CHAIR_BACK := 0.45
+## Sitzmöbel (Seat): Aufstehen so weit vor der Sitzkante (Spielerradius und etwas Luft)
+const SEAT_CLEAR := 0.33
 const MIRROR_SIZE := Vector2(0.6, 0.7)
 const MIRROR_Y := 1.55
 const DOORMAT_H := 0.012
@@ -1837,6 +1839,14 @@ func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) ->
 			var y := height / 2.0 + CHAIR_BACK / 2.0 if kind == "chair" else MIRROR_Y - height / 2.0
 			Geo.mesh(body, Geo.box(size if across else Vector3(size.z, size.y, size.x)), mat if kind == "chair" else _mirror,
 				back + Vector3(0, y, 0))
+	if kind in ["bench", "chair", "toilet"]:
+		# Sitzplätze (Seat): Bank je SPOT_WIDTH einer, Stuhl und Toilette einer – Blick zur Vorderseite
+		var across := absf(front.y) > 0.5
+		var width := rect.size.x if across else rect.size.y
+		var depth := rect.size.y if across else rect.size.x
+		var title: String = {"bench": "bank", "chair": "stuhl", "toilet": "klo"}[kind]
+		Seat.attach(body, title, height, Vector3(0, -height / 2.0, 0), Vector3(front.x, 0, front.y),
+			width if kind == "bench" else minf(width, Seat.SPOT_WIDTH), depth / 2.0 + SEAT_CLEAR)
 	return body
 
 
@@ -3523,6 +3533,7 @@ func _couch(pos: Vector3, yaw: float) -> StaticBody3D:
 	# Kollision (auch für das NavMesh): Sitzblock und Lehne, Maße aus dem skalierten Modell.
 	Geo.add_box_shape(body, Vector3(0.64, 0.45, 2.39), Vector3(0, 0.225, 0))
 	Geo.add_box_shape(body, Vector3(0.18, 0.47, 2.25), Vector3(-0.23, 0.685, 0))
+	Seat.attach(body, "sofa", 0.45, Vector3(0.02, 0, 0), Vector3.RIGHT, 2.0, 0.3 + SEAT_CLEAR)   # zwischen den Armlehnen
 	return body
 
 
@@ -3540,6 +3551,7 @@ func _bench(length: float) -> StaticBody3D:
 	# Kollision (auch für das NavMesh): Sitzblock und Lehne, Maße aus tools/build_bench.py
 	Geo.add_box_shape(body, Vector3(1.6, BENCH_SEAT, 0.47) * s, Vector3(0, BENCH_SEAT / 2.0, 0.085) * s)
 	Geo.add_box_shape(body, Vector3(1.6, 0.365, 0.11) * s, Vector3(0, 0.66, -0.18) * s)
+	Seat.attach(body, "bank", BENCH_SEAT * s, Vector3(0, 0, 0.06 * s), Vector3.BACK, 1.5 * s, 0.26 * s + SEAT_CLEAR)
 	return body
 
 
@@ -3594,6 +3606,7 @@ func _room_table(rect: Rect2) -> StaticBody3D:
 		c.material_override = Mat.model(ROOM_TABLE_MODEL, c)
 		Geo.add_box_shape(seat, ROOM_CHAIR, Vector3(0, ROOM_CHAIR.y / 2.0, 0))
 		Geo.add_box_shape(seat, Vector3(ROOM_CHAIR.x, ROOM_CHAIR_H - ROOM_CHAIR.y, 0.07), Vector3(0, (ROOM_CHAIR_H + ROOM_CHAIR.y) / 2.0, -0.18))
+		Seat.attach(seat, "stuhl", ROOM_CHAIR.y, Vector3(0, 0, 0.02), Vector3.BACK, ROOM_CHAIR.x, ROOM_CHAIR.z / 2.0 + SEAT_CLEAR)
 	return body
 
 

@@ -21,6 +21,8 @@ var own_bed := false
 var bed_size := Vector2(2.05, 1.45)
 ## Bett: Seite des Kopfendes auf der lokalen x-Achse (−1 oder +1); heraus geht es immer nach +Z
 var head_x := -1.0
+## Bett: Plätze auf der Bettkante (Spielkonzept 3.1) – stehend [E] setzt sich, geduckt geht es darunter
+var seat: Seat
 
 var _visual: Node3D
 var _leaves: Array[Node3D] = []
@@ -49,26 +51,39 @@ func _ready() -> void:
 
 
 func get_prompt(player: Player) -> String:
+	if seat and player.seat == seat:
+		return ""
+	if _can_sleep(player):
+		return "Schlafen [E]    (geduckt: unters Bett)" if occupant == null else "Besetzt"
+	if _sits(player):
+		return seat.get_prompt(player)
 	if occupant != null and occupant != player:
 		return "Besetzt"
-	if _can_sleep(player):
-		return "Schlafen [E]    (geduckt: unters Bett)"
 	if checked and type == HideSpot.Type.BED:
 		return "Das Bett ist zerwühlt … Unters Bett kriechen [E]"
 	return "Im Schrank verstecken [E]" if type == Type.WARDROBE else "Unters Bett kriechen [E]"
 
 
 func interact(player: Player) -> void:
-	if occupant == null:
-		if _can_sleep(player):
+	if seat and player.seat == seat:
+		return
+	if _can_sleep(player):
+		if occupant == null:
 			player.start_sleep(self)
-		else:
-			player.enter_hide(self)
+	elif _sits(player):
+		seat.interact(player)
+	elif occupant == null:
+		player.enter_hide(self)
 
 
 ## Im eigenen Bett (Zimmer 13) schläft man während der Nachtruhe – geduckt kriecht man darunter.
 func _can_sleep(player: Player) -> bool:
 	return own_bed and not player.crouching and Game.social != null and Game.social.sleep_active
+
+
+## Stehend auf ein Bett: auf die Kante setzen (auch wenn jemand darunter liegt).
+func _sits(player: Player) -> bool:
+	return seat != null and not player.crouching
 
 
 ## `actor`: wer hineingeht – die Schranktür ist Lärm (4.15).
@@ -196,3 +211,6 @@ func _build_bed() -> void:
 	view_point.position = Vector3(-head_x * 0.2, 0.17, 0.15)
 	exit_point.position = Vector3(0, 0, width / 2.0 + 0.525)
 	check_point.position = Vector3(0, 0, width / 2.0 + 0.625)
+	# Bettkante zum Hinsetzen (stehend [E]), zur Ausstiegsseite, ohne das Kopfkissen
+	seat = Seat.attach(self, "bett", 0.55, Vector3(-head_x * 0.3, 0, width / 2.0 - 0.25), Vector3.BACK, length - 0.6, 0.58)
+	seat.prompt = "Auf die Bettkante setzen [E]    (geduckt: unters Bett)"

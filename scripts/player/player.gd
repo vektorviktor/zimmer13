@@ -6,7 +6,7 @@ extends CharacterBody3D
 ## Gegenstand in die Hand – was die Hand hielt, fällt zu Boden; ein leeres Fach steckt Kleines aus der Hand ein.
 ## Am Körper: Kompass, Kartenblätter und Schlüsselbund – Karte (Tab) und Kompass (F) holt die linke Hand hervor.
 ## Getränkedose in der Hand: [Linksklick] trinkt.
-## Kann sich in Schränken und unter Betten verstecken (3.4).
+## Kann sich in Schränken und unter Betten verstecken (3.4) und auf Sitzmöbel setzen (Seat, 3.1).
 ## Taschenlampe in der Hand: [Linksklick] an/aus, [R] normales Licht ↔ UV (4.16).
 
 const HEIGHT := 1.8
@@ -95,6 +95,8 @@ const SIGHT_TIRED := 0.7
 const SIGHT_DRUNK_FROM := 0.25
 const SIGHT_HANGOVER := 0.12
 const SIGHT_FADE := 0.5
+## Im Sitzen (Spielkonzept 3.1): so weit dreht sich der Blick höchstens zur Seite – 180° nach vorn
+const SIT_TURN := PI / 2.0
 
 var head: Node3D
 var camera: Camera3D
@@ -144,6 +146,7 @@ var drunk := 0.0       ## Rausch (0..1) von der Bar – Stufen in BarTap (3.7)
 var hangover := 0.0    ## Sekunden Kater nach dem Schlaf im Rausch
 var sight_blur := 0.0   ## verschwommene Sicht (0..1) aus Müdigkeit und Rausch – Post-Shader `blur` (3.6/3.7)
 var sight_warp := 0.0   ## Wabern und Doppelbild im Rausch (0..1) – Post-Shader `warp`
+var seat: Seat          ## sitzt auf diesem Möbel (3.1) – Platz in _seat_spot
 
 var _hand: Node3D
 var _left_hand: Node3D
@@ -183,6 +186,8 @@ var _confirm_time := 0.0
 var _look_lag := Vector2.ZERO   ## im Rausch: Mausbewegung, der die Sicht noch nachzieht
 var _drunk_time := 0.0
 var _sleep_drunk := 0.0         ## höchster Rausch in dieser Nachtruhe im Bett → Kater
+var _seat_spot: Marker3D
+var _sit_turn := 0.0            ## Blick gegenüber der Sitzrichtung, höchstens ±SIT_TURN
 
 
 func _ready() -> void:
@@ -287,7 +292,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _look(rel: Vector2) -> void:
-	rotate_y(-rel.x)
+	if seat:
+		_sit_turn = clampf(_sit_turn - rel.x, -SIT_TURN, SIT_TURN)
+		rotation.y = _seat_spot.global_rotation.y + _sit_turn
+	else:
+		rotate_y(-rel.x)
 	head.rotation.x = clampf(head.rotation.x - rel.y, -1.45, 1.45)
 
 
@@ -329,6 +338,10 @@ func _physics_process(delta: float) -> void:
 		# Würgen im Schrank: nur die Bewegungstasten zählen (Losreißen)
 		move_input = Input.get_vector("move_left", "move_right", "move_forward", "move_back") if gripped else Vector2.ZERO
 		_update_hiding(delta)
+		return
+	if seat:
+		running = false
+		_update_seated()
 		return
 	_update_crouch()
 	if not is_on_floor():
@@ -520,15 +533,16 @@ func has_key(id: String) -> bool:
 
 # --- Am Spieltisch sitzen -------------------------------------------------------
 
-func sit_at(seat: Vector3, look: Vector3) -> void:
+func sit_at(at: Vector3, look: Vector3) -> void:
 	if hiding:
 		exit_hide()
+	leave_seat(true)
 	in_dialog = true
 	focused = true
 	_collider.disabled = true
 	velocity = Vector3.ZERO
-	global_position = seat
-	var to := look - seat
+	global_position = at
+	var to := look - at
 	rotation = Vector3(0, atan2(-to.x, -to.z), 0)
 	head.position.y = 1.2
 	head.rotation.x = -0.55
@@ -543,6 +557,86 @@ func stand_up() -> void:
 	_collider.disabled = false
 	head.position.y = EYE_HEIGHT
 	head.rotation.x = 0.0
+
+
+# --- Auf Sitzmöbel setzen (Spielkonzept 3.1) -----------------------------------------
+
+## Auf einen festen Platz setzen: Blick in Sitzrichtung, höchstens SIT_TURN zur Seite. Großes stellt man ab.
+func sit_down(s: Seat, spot: Marker3D) -> void:
+	if hiding:
+		exit_hide()
+	leave_seat(true)
+	if held and held.is_large:
+		Game.say("Du stellst %s ab." % held.display_name, 2.0)
+		drop_held()
+	set_crouching(false)
+	seat = s
+	_seat_spot = spot
+	_collider.disabled = true
+	velocity = Vector3.ZERO
+	_shove = Vector3.ZERO
+	global_position = spot.global_position
+	_sit_turn = 0.0
+	rotation = Vector3(0, spot.global_rotation.y, 0)
+	head.position.y = s.top + Seat.EYE_ABOVE
+	head.rotation.x = 0.0
+	if Game.tracing:
+		print("[Sitzen] %s, Platz %d bei %s, Blick %s" % [s.kind, s.spots.find(spot), spot.global_position.snapped(Vector3.ONE * 0.1),
+			(-spot.global_basis.z).snapped(Vector3.ONE * 0.1)])
+
+
+## Im Sitzen: Leertaste oder eine Bewegungstaste steht auf, Würgen reißt hoch. [E] bleibt für Dinge in Reichweite.
+func _update_seated() -> void:
+	velocity = Vector3.ZERO
+	move_input = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if gripped or Input.is_action_just_pressed("jump") or move_input.length() > 0.1:
+		leave_seat(gripped)
+		return
+	_update_focus()
+
+
+## Aufstehen: vor den Platz, sonst daneben oder dahinter. Ist nirgends Platz, bleibt man sitzen (false) – außer
+## mit `force` (Stoß, Würgen, Versetzen), dann steht man vor dem Platz.
+func leave_seat(force: bool = false) -> bool:
+	if seat == null:
+		return true
+	var at := stand_position()
+	if at == Vector3.INF:
+		if not force:
+			Game.say("Hier ist kein Platz zum Aufstehen.", 2.0)
+			return false
+		at = _seat_spot.global_position - _seat_spot.global_basis.z * seat.stand_out
+	seat = null
+	_seat_spot = null
+	global_position = at
+	_collider.disabled = false
+	head.position.y = EYE_HEIGHT
+	return true
+
+
+## Wo man beim Aufstehen stünde (INF = kein Platz); stehend die eigene Lage – so speichert der Spielstand.
+## Sucht vor dem Platz, dann schräg, seitlich und dahinter, jeweils etwas weiter weg – nie durch eine Wand.
+func stand_position() -> Vector3:
+	if seat == null:
+		return global_position
+	var base := _seat_spot.global_position
+	var fwd := -_seat_spot.global_basis.z
+	var space := get_world_3d().direct_space_state
+	for step in 3:
+		var dist := seat.stand_out + 0.3 * step
+		for turn: float in [0.0, 0.25, -0.25, 0.5, -0.5, 0.75, -0.75, 1.0]:
+			var at := base + fwd.rotated(Vector3.UP, turn * PI) * dist
+			if not _can_stand(at):
+				continue
+			var look := PhysicsRayQueryParameters3D.create(base + Vector3.UP * 1.4, at + Vector3.UP * 1.4, 1, [get_rid()])
+			if space.intersect_ray(look).is_empty():
+				return at
+	return Vector3.INF
+
+
+## Ziel des Blicks (Strahl in Reichweite), sonst die eigene Lage – Sitzmöbel wählen den nächsten Platz dazu.
+func aim_point() -> Vector3:
+	return _ray.get_collision_point() if _ray.is_colliding() else global_position
 
 
 # --- Angst: engerer Blick, schwerer Atem (Spielkonzept 4.13) ---------------------------
@@ -645,6 +739,7 @@ func _check_ram(dir: Vector3) -> void:
 
 ## Von außen gestoßen (angerempelt, geschlagen).
 func shove(push: Vector3) -> void:
+	leave_seat(true)   # reißt einen vom Sitz hoch
 	_shove = Vector3(push.x, 0.0, push.z)
 	_kick = maxf(_kick, 0.03)
 
@@ -1247,6 +1342,8 @@ func _update_focus() -> void:
 		var text := ""
 		if _focus != null and is_instance_valid(_focus):
 			text = _focus.get_prompt(self)
+		if text == "" and seat:
+			text = "Aufstehen [Leertaste]"
 		if text == "" and carried_cat:
 			text = "%s absetzen [G]" % carried_cat.display_name
 		if text == "" and held:
@@ -1303,13 +1400,13 @@ func _set_crouch(value: bool) -> void:
 	_collider.position.y = _shape.height / 2.0
 
 
-func _can_stand() -> bool:
+func _can_stand(at: Vector3 = global_position) -> bool:
 	var probe := CapsuleShape3D.new()
 	probe.radius = RADIUS - 0.02
 	probe.height = HEIGHT
 	var params := PhysicsShapeQueryParameters3D.new()
 	params.shape = probe
-	params.transform = Transform3D(Basis(), global_position + Vector3(0, HEIGHT / 2.0 + 0.02, 0))
+	params.transform = Transform3D(Basis(), at + Vector3(0, HEIGHT / 2.0 + 0.02, 0))
 	params.collision_mask = collision_mask
 	params.exclude = [get_rid()]
 	return get_world_3d().direct_space_state.intersect_shape(params, 1).is_empty()
@@ -1318,6 +1415,7 @@ func _can_stand() -> bool:
 # --- Verstecken -------------------------------------------------------------
 
 func enter_hide(spot: HideSpot) -> void:
+	leave_seat(true)
 	if held and held.is_large:
 		Game.say("Du stellst %s ab." % held.display_name, 2.0)
 		drop_held()

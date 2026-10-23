@@ -344,6 +344,7 @@ Erkunden ──► Gäste treffen / reden / handeln ──► Deko erhalten (ode
 | **Ablegen / Werfen** | Gegenstand bewusst abstellen, platzieren oder fallen lassen |
 | **Mit Gästen interagieren** | Ansprechen, Dialog, Handel, Geschenke |
 | **Mit Gästen spielen** | An einem Spieltisch (Schachbrett, Kartentisch …) eine Partie starten, evtl. um einen Einsatz (siehe 6.10) |
+| **Hinsetzen** | Auf Sofas, Bänke, Stühle, Bettkanten und Toiletten (siehe unten) |
 
 **Spieler-Hitbox:** Kapsel, **1,80 m hoch, 45 cm breit** (Radius 0,225 m). Kamera auf Augenhöhe ca. 1,65–1,70 m.
 
@@ -357,6 +358,19 @@ Luftanhalten verstummt das Keuchen. Wer flieht, muss sich also gut überlegen, w
   fliegt mit +25 % eher hinein, wenn er einen keuchen gehört hat (4.18).
 - **Außer Atem hält man die Luft kürzer an:** voll erschöpft geht der Atem dreimal so schnell aus, beruhigt wieder
   normal. Wer gerade gerannt ist und sich versteckt, muss also wählen: keuchen oder bald nach Luft schnappen.
+
+**Hinsetzen (entschieden und umgesetzt 2026-10-23):** Der Spieler kann sich mit [E] auf jede Sitzgelegenheit setzen:
+Sofas, Bänke, Stühle, die Kante jedes Bettes und Toiletten. Jedes Sitzmöbel hat **feste Plätze** (Sofa drei, Bank je
+60 cm einer, Bettkante zwei auf der Ausstiegsseite, Stuhl und Toilette einer); man nimmt den freien Platz, auf den man
+schaut. Belegt ist ein Platz, wenn dort die Katze schläft, die Puppe sitzt oder ein Gast steht.
+- **Blick:** höchstens 90° nach links und rechts, also 180° nach vorn; nach oben und unten frei. [E] wirkt weiter auf
+  alles in Reichweite.
+- **Aufstehen:** Leertaste oder eine Bewegungstaste – vor das Möbel, sonst daneben oder dahinter. Ein Stoß (Anrempeln,
+  Schlag) oder der Würgegriff des Lakengeists reißt einen hoch.
+- **Bett:** stehend [E] setzt sich auf die Kante, **geduckt [E] kriecht man darunter** (wie schon beim eigenen Bett,
+  wo stehend während der Nachtruhe Schlafen bleibt). Auf der Flucht muss man sich also erst ducken.
+- **Nicht dabei:** die Hocker an Spiel- und Schachtisch (nur für Partien, 6.10). Sitzen ist kein Versteck und still;
+  man erholt sich wie im Stehen. Gespeichert wird die Stelle, an der man aufstünde – geladen wird stehend.
 
 ### 3.2 Kein verstecktes Inventar – Hände und Tasche
 - **Es gibt kein verstecktes Inventar.** Jeder Gegenstand (Deko, Schlüssel, Kerze, Messer, Gießkanne, Puppe …) existiert physisch in der Welt und wird **einzeln in den Händen** getragen.

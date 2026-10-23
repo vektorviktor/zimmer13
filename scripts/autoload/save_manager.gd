@@ -324,6 +324,7 @@ func diary_sentence() -> String:
 func collect() -> Dictionary:
 	var tree := get_tree()
 	var p := Game.player
+	var stand := p.stand_position()   # im Sitzen: wo er aufstünde (geladen wird stehend)
 	var data := {
 		"version": VERSION,
 		"world": world,
@@ -333,7 +334,7 @@ func collect() -> Dictionary:
 		"current_slot": Game.current_slot,
 		"visited": visited.duplicate(),
 		"player": {
-			"pos": _v(p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
+			"pos": _v(stand if stand != Vector3.INF else p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
 			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
 			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised,
 			"held": _item_data(p.held) if p.held else null,
@@ -573,6 +574,7 @@ func apply(data: Dictionary) -> void:
 	# Spieler
 	var pd: Dictionary = data["player"]
 	var p := Game.player
+	p.leave_seat(true)
 	p.global_position = _vec(pd["pos"])
 	p.rotation.y = float(pd["yaw"])
 	p.head.rotation.x = float(pd["pitch"])
