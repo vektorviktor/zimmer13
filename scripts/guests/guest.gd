@@ -105,6 +105,8 @@ const SLEEPLESS_CHANCE := 0.3
 const SLEEPLESS_TIME := Vector2(40.0, 80.0)
 const CHILD_GIFT := 0.2
 const ORPHAN_FOLLOW := 0.5
+## Monster unterwegs: so nah am eigenen Zimmer rennt er heim (Tür zu), sonst sucht er ein Versteck
+const COVER_HOME_RANGE := 80.0
 
 var id := ""
 var profile: Dictionary
@@ -144,6 +146,7 @@ var chats_today := 0         ## nur die ersten zwei Plaudereien am Tag zählen v
 var attack_cooldown := 0.0
 var threatened := false      ## hat dir schon gedroht – beim nächsten Mal schlägt er zu
 var sleepless := false       ## Kind, das in dieser Nachtruhe nicht schlafen kann (Spielkonzept 6.13)
+var _flee_home := false        ## rennt vor dem Monster heim und macht die Tür zu (take_cover)
 ## Überlebt (Spielkonzept 6.17): Art der Verletzung ("" = unverletzt, sonst Wounds.KINDS), so lange noch bis geheilt, davon
 ## noch im Bett; was er als Zeuge weiß (zone, went, visit_day) und wie viel er erzählt hat; ob der Spieler ihn besucht hat
 var wound := ""
@@ -812,7 +815,7 @@ func _physics_process(delta: float) -> void:
 			return
 	_watch_monster()
 	_scan_for_shock(delta)
-	running = state == State.HIDE_GO or (_romp and state == State.WALK)
+	running = state == State.HIDE_GO or ((_romp or _flee_home) and state == State.WALK)
 	if is_child():
 		_child_step(delta)
 	if running:
@@ -1157,6 +1160,7 @@ func _set_idle(duration: float) -> void:
 
 func _next_activity() -> void:
 	_to_bed = false   # ein abgebrochener Weg ins Bett gilt nicht mehr (in der Nachtruhe geht er gleich wieder)
+	_flee_home = false
 	if _resting:
 		_resting = false
 		_set_room_light(true)
@@ -1166,6 +1170,12 @@ func _next_activity() -> void:
 		else:
 			sleepless = false
 			_go_to_bed()
+		return
+	if Game.monster and Game.monster.is_active():   # draußen ist es – drinnen bleiben bzw. in Sicherheit
+		if _is_home():
+			_set_idle(randf_range(10.0, 20.0))
+		else:
+			take_cover()
 		return
 	if Game.social.party_active and invited:
 		join_party(Game.social.free_party_spot(self))
@@ -1213,6 +1223,9 @@ func _arrive() -> void:
 		State.WALK:
 			if _to_bed and _is_home():
 				_fall_asleep()
+				return
+			if _flee_home:
+				_shut_in()
 				return
 			_set_idle(randf_range(15.0, 40.0))
 			# An der Bar wird meist etwas getrunken (3.7)
@@ -1776,20 +1789,42 @@ func _watch_monster() -> void:
 ## Flackerwelle beim Aufbruch des Monsters (Spielkonzept 4.17), erreicht den Gast nach `delay` s.
 ## level 0 = kurzes Zucken, 1 = Flackern, 2 = langes Flackern.
 func on_flicker_signal(level: int, delay: float) -> void:
-	get_tree().create_timer(delay, false).timeout.connect(_react_to_flicker.bind(level))
+	# etwas gestreut – sonst rennen alle aus einer Feier im selben Augenblick zur selben Tür
+	get_tree().create_timer(delay + randf_range(0.0, 3.0), false).timeout.connect(_react_to_flicker.bind(level))
 
 
-## Langes Flackern: Ängstliche verstecken sich sofort und bleiben eine Weile drin. Beim kurzen
-## Zucken bleiben fast alle, wo sie sind.
+## Das Monster bricht auf (Flackerwelle, 2026-10-22): Alle bringen sich in Sicherheit – auch Feiernde –, je länger es
+## flackert, desto mehr Angst. Wer im Gespräch oder am Spieltisch ist, bleibt (das Langflackern bricht Partien ab).
 func _react_to_flicker(level: int) -> void:
-	if dead or hiding != null or state in [State.HIDE_GO, State.PARTY, State.TALKING, State.MINIGAME, State.DEAD, State.GHOSTED]:
+	if dead or hiding != null or state in [State.HIDE_GO, State.TALKING, State.MINIGAME, State.DEAD, State.GHOSTED, State.SLEEP]:
 		return
-	var brave := float(profile["brave"])
-	fear = minf(100.0, fear + [2.0, 8.0, 20.0][level])
-	var threshold: float = [1.0, brave + 0.5, brave][level]
-	if randf() > threshold:
-		_flicker_fear = 15.0 * level * level
+	fear = minf(100.0, fear + [10.0, 15.0, 25.0][level])
+	_flicker_fear = 30.0 + 15.0 * level
+	take_cover()
+
+
+## In Sicherheit bringen (Monster unterwegs): Wer nah genug an seinem Zimmer ist (COVER_HOME_RANGE, gleiches Stockwerk),
+## rennt heim und macht die Tür zu – sonst ins nächste Versteck.
+func take_cover() -> void:
+	if dead or hiding != null or state in [State.HIDE_GO, State.DEAD, State.GHOSTED, State.SLEEP]:
+		return
+	if state == State.PARTY:
+		leave_party()
+	var door_front: Vector3 = home["door_front"]
+	if door_front.distance_to(global_position) < COVER_HOME_RANGE and absf(door_front.y - global_position.y) < 1.5:
+		_flee_home = true
+		_walk_to(_room_point(), State.WALK)
+	else:
 		_go_hide()
+
+
+## Daheim angekommen (take_cover): Tür zu, drinnen bleiben, solange das Monster unterwegs ist (_next_activity).
+func _shut_in() -> void:
+	_flee_home = false
+	var door: Door = home.get("door")
+	if door and door.is_open:
+		door.set_open(false, false, false, self)
+	_set_idle(randf_range(20.0, 40.0))
 
 
 func _go_hide() -> void:

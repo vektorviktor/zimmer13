@@ -112,6 +112,8 @@ const RAID_OVERTIME := 300.0
 ## Grollen (5.5): so leise am Anfang, voll am Ende der Frist; so schnell verklingt es nach dem Aufbruch
 const RUMBLE_START := 0.12
 const RUMBLE_FADE := 0.4
+## So oft wirkt das Grollen auf die Gäste (Social.on_rumble)
+const RUMBLE_GUEST_EVERY := 3.0
 
 var phase := Phase.CALM
 var boldness := BOLDNESS_START
@@ -150,6 +152,7 @@ var _lead := 90.0               ## Frist der Puppe vor diesem Aufbruch
 var _rumble_total := 0.0        ## so lang war die Frist, als das Grollen begann
 var _doll_check := 0.0
 var _rumble_told := false
+var _rumble_tick := 0.0
 
 var _monster: Monster
 var _phase_left := 0.0
@@ -633,6 +636,10 @@ func _update_schedule(delta: float) -> void:
 				if _doll_check <= 0.0:
 					_doll_check = DOLL_RECHECK
 					_judge(_weakest_door())   # Nachbessern: wer nicht mehr der Schwächste ist, den verlässt sie
+				_rumble_tick -= delta
+				if _rumble_tick <= 0.0 and _rumble_total > 0.0 and Game.social:
+					_rumble_tick = RUMBLE_GUEST_EVERY
+					Game.social.on_rumble(clampf(1.0 - _phase_left / _rumble_total, 0.0, 1.0))   # Angst, Gerede, Feier aus
 			if _phase_left <= 0.0:
 				if other_threat_active(_monster):
 					_phase_left = 10.0   # Lakengeist oder Kürbismann ist im Haus – es wartet

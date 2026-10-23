@@ -113,7 +113,17 @@ const CHILD_SAW_LINES := [
 	"Hast du {who} gehört? Bei {zone} soll etwas gewesen sein. Ich sag dir, die Kleinen schauen zu viele Gruselfilme.",
 ]
 ## Später am selben Tag, beim Reden über das Monster
+## Grollen vor einem Angriff (Puppe, 5.5): so viel Angst je Durchgang (× Lautstärke × (1,2 − Mut)), ab dieser Lautstärke
+## löst sich eine Feier auf; was Gäste dabei sagen, und was sie später erzählen
+const RUMBLE_FEAR := 12.0
+const RUMBLE_PARTY_END := 0.5
+const RUMBLE_TALK_CHANCE := 0.3   ## so oft hört das Monster mit (on_monster_talk)
+const RUMBLE_LINES := ["Hört ihr das? Dieses Grollen …", "Das kommt von unten. Aus dem Keller.", "Es wird lauter. Ich geh lieber rein.",
+	"Wo ist die Puppe? Hat jemand die Puppe gesehen?", "So hat es letztes Mal auch angefangen …", "Schließt eure Türen ab. Bitte."]
+const RUMBLE_STORIES := ["Hast du das Grollen gehört? Ganz tief unten im Haus.", "Jedes Mal, bevor es kommt, grollt das ganze Hotel.",
+	"Ich hab die Puppe vor einer Tür sitzen sehen – und dann ging das Grollen los.", "Beim Grollen bleib ich in meinem Zimmer. Tür zu, Licht an."]
 const EXPERIENCE_AGAIN := {
+	"rumble": "Dieses Grollen … ich hör es immer noch, wenn es still ist.",
 	"blood": "Ich bekomme die Blutlache bei {zone} nicht aus dem Kopf.",
 	"corpse": "Ich sehe {who} immer noch da liegen. Bei {zone}.",
 	"ghost": "Ich trau mich nicht mehr ans Fenster. Seit dem Laken.",
@@ -1295,6 +1305,8 @@ func experience_line(guest: Guest, experience: Dictionary, again: bool = false) 
 		return String(EXPERIENCE_AGAIN[kind]).format(keys)
 	if kind == "child_saw":
 		return String(CHILD_SAW_LINES.pick_random()).format(keys)
+	if kind == "rumble":
+		return RUMBLE_STORIES.pick_random()
 	var lines: Array = EXPERIENCE_LINES[guest.shock_style()][kind]
 	return String(lines[randi() % lines.size()]).format(keys)
 
@@ -1966,3 +1978,42 @@ func debug_trick_at_13(give: int) -> void:
 		get_tree().create_timer(1.5 * (i + 1), false).timeout.connect(func() -> void:
 			Game.player.receive_item(Item.create(Item.Kind.SWEETS))
 			give_trick_sweet(kid))
+
+
+## Es grollt (MonsterDirector, alle paar Sekunden bis zum Aufbruch, k = Lautstärke 0..1, Puppe 5.5): Die Gäste bekommen
+## Angst (Mutige weniger), merken es sich als Erlebnis (sie erzählen davon), wer genug Angst hat, rennt heim und macht die
+## Tür zu, Kinder laufen zu Mama oder Papa. Einer redet darüber – das Monster hört mit (4.7). Ab RUMBLE_PARTY_END löst
+## sich eine Feier auf.
+func on_rumble(k: float) -> void:
+	for guest in living_guests():
+		var g: Guest = guest
+		if g.state in [Guest.State.SLEEP, Guest.State.GHOSTED]:
+			continue
+		if not g.remembers("rumble"):
+			g.remember("rumble", g.global_position)
+		if g.is_child():
+			if k > 0.4 and randf() < 0.1 and g.parent_guest() and g.state in [Guest.State.IDLE, Guest.State.WALK]:
+				g._run_to_parent()
+			continue
+		g.fear = minf(100.0, g.fear + RUMBLE_FEAR * k * (1.2 - float(g.profile["brave"])))
+		if g.fear >= 60.0 and g.state in [Guest.State.IDLE, Guest.State.WALK] and not g._is_home():
+			g.take_cover()
+	if k >= RUMBLE_PARTY_END and party_active:
+		end_party("Das Grollen übertönt die Musik. Die Feier löst sich auf.")
+	var talkers := living_guests().filter(func(g: Guest) -> bool:
+		return not g.is_child() and g.state in [Guest.State.IDLE, Guest.State.WALK, Guest.State.PARTY] and g.hiding == null)
+	talkers.shuffle()
+	for talker: Guest in talkers.slice(0, 6):
+		var company := Game.player != null and Game.player.global_position.distance_to(talker.global_position) < 6.0
+		for other in living_guests():
+			if company:
+				break
+			company = other != talker and other.global_position.distance_to(talker.global_position) < 4.0
+		if not company:
+			continue
+		talker.say(RUMBLE_LINES.pick_random())
+		if randf() < RUMBLE_TALK_CHANCE:
+			on_monster_talk(talker)   # es hört mit
+		if Game.tracing:
+			print("[Grollen] %s redet darüber (Angst %.0f)" % [talker.display_name, talker.fear])
+		return

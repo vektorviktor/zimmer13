@@ -894,6 +894,15 @@ NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angri
   `rumble_total`, `doom_room`, `raiding`, `route` (ein angefangenes Zimmer wieder vorn), `raid_kills`. Debug
   `--doll[=s[,zimmer]]` (`debug_doll`, ein Opfer), `--trace`: `[Puppe]`.
 
+- **Gäste beim Grollen und Aufbruch** (2026-10-22): Während der Frist ruft der Director alle `RUMBLE_GUEST_EVERY` s
+  `Social.on_rumble(k)` (k = Anteil der Frist): Angst + `RUMBLE_FEAR` × k × (1,2 − Mut), Erlebnis „rumble“ (erzählt mit
+  `RUMBLE_STORIES`), ab Angst 60 `Guest.take_cover()`, Kinder `_run_to_parent`, ab `RUMBLE_PARTY_END` `end_party`; einer mit
+  Gesellschaft sagt etwas aus `RUMBLE_LINES`, mit `RUMBLE_TALK_CHANCE` → `on_monster_talk`. Die Flackerwelle beim Aufbruch
+  ruft bei jedem Gast `_react_to_flicker` → Angst und `take_cover()` (auch Feiernde; nicht im Gespräch, am Spieltisch, im
+  Bett): in `COVER_HOME_RANGE` vom eigenen `door_front` (gleiches Stockwerk) rennend heim (`_flee_home`, Zustand `WALK`),
+  dort `_shut_in()` – Tür zu –, sonst `_go_hide()`. Solange `Game.monster.is_active()`, bleibt `_next_activity` daheim
+  (`_set_idle`) bzw. bringt ihn wieder in Sicherheit.
+
 ### Monster-Zustände
 `INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK, REVEAL`.
 Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `start_roaming`,

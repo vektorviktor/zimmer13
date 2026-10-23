@@ -1374,6 +1374,13 @@ immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss
   sieht: eben war der Flur leer, jetzt sitzt sie da, mit dem Gesicht zur Tür.
 - **Grollen:** Solange sie vor der Tür liegt, hört man **im ganzen Hotel** ein tiefes Grollen, das immer lauter wird –
   dann bricht das Monster auf, und die Flackerwelle (4.17) verrät, wie viele es holen will.
+- **Das Grollen wirkt (entschieden und umgesetzt 2026-10-22):** Die Gäste bekommen Angst (Mutige weniger) und reden
+  darüber („Hört ihr das? Dieses Grollen …“, „Wo ist die Puppe?“) – das Monster hört mit (4.7). Wer genug Angst hat, rennt
+  heim und schließt die Tür, Kinder laufen zu Mama oder Papa, ab halber Lautstärke **löst sich jede Feier auf**. Später
+  erzählen sie davon („Jedes Mal, bevor es kommt, grollt das ganze Hotel.“).
+- **Beim Aufbruch bringen sich alle in Sicherheit (entschieden und umgesetzt 2026-10-22):** Sobald die Flackerwelle sie
+  erreicht, rennen alle Gäste – auch Feiernde – **heim und machen die Tür zu** oder, wenn ihr Zimmer zu weit weg ist, **ins
+  nächste Versteck**, und bleiben drinnen, solange das Monster unterwegs ist.
 - **Nachbessern hilft:** Wer bis zum Aufbruch Deko nachlegt und nicht mehr der Schwächste ist, den verlässt sie beim
   nächsten unbeobachteten Moment, und sie liegt vor der neuen schwächsten Tür. Mit dem Aufbruch steht das Urteil fest.
 - **Niemand kann sie bewegen** (entschieden 2026-10-22): Der Spieler nie, Kinder nur zwischen den Angriffen (unten).
