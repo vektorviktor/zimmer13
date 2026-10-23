@@ -48,6 +48,9 @@ extends Node3D
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
 ##   --time=+n|-n                Spieltage vor- oder zurückspulen
+##   --aufzug[=innen|offen|fahrt]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht (innen: in der
+##                               Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt: in der Kabine, sie
+##                               fährt gleich ins oberste Stockwerk)
 ##   --attic-door                Kniestocktür zum Ansehen (4.21): Solange kein Dachgeschoss gezeichnet ist, wird beim Aufbau
 ##                               die erste 0,8 m breite Tür im OG1 zur Dachbodentür – du stehst vor ihrer Bandseite
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
@@ -488,6 +491,16 @@ func run_debug(arg: String) -> bool:
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg.begins_with("--tp="):
 		return _debug_teleport(arg.substr(5))
+	elif arg == "--aufzug" or arg.begins_with("--aufzug="):
+		var lifts := Game.social.builder.elevators
+		if lifts.is_empty():
+			return false
+		var at := lifts[0].spot(arg.ends_with("=innen") or arg.ends_with("=fahrt"))
+		TeleportUI.place_player(at[0], at[1])
+		if arg.ends_with("=offen"):
+			lifts[0].open_doors()
+		elif arg.ends_with("=fahrt"):
+			lifts[0].ride_to_top()
 	elif arg == "--attic-door":
 		var builder := Game.social.builder
 		if builder.attic_doors.is_empty():

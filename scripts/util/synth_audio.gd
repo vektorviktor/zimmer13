@@ -49,6 +49,7 @@ const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
 	"rustle": 0.3, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
+	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6,
 }
 
 var hum := 0.0
@@ -362,6 +363,23 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			# Schnurren: tiefes Brummen, 26-mal pro Sekunde an- und abschwellend
 			var pulse := 0.5 + 0.5 * sin(TAU * 26.0 * t)
 			return (_lp_slow * 2.5 + sin(TAU * 52.0 * t) * 0.3) * pulse * sin(PI * k) * 0.5
+		"ding":
+			# Aufzugsglocke (7.4): heller Gong mit Obertönen, klingt lang aus
+			return (sin(TAU * 1318.0 * t) + sin(TAU * 2637.0 * t) * 0.35 + sin(TAU * 3950.0 * t) * 0.12) * exp(-t * 2.6) * 0.25
+		"motor":
+			# Aufzugsmotor: tiefes Brummen mit Netzbrumm-Oberton, schwillt an und ab
+			var mwin := minf(1.0, t * 2.0) * minf(1.0, (float(shot["dur"]) - t) * 2.0)
+			return (sin(TAU * 50.0 * t) * 0.5 + sin(TAU * 100.0 * t) * 0.3 + _lp_slow * 2.0) * mwin * 0.35
+		"slide":
+			# Schiebetür: Rollen auf der Schiene mit leichtem Rattern, am Ende ein dumpfer Anschlag
+			var roll := _lp_fast * (0.6 + 0.4 * sin(TAU * 31.0 * t)) * sin(PI * minf(k * 1.15, 1.0)) * 0.5
+			var bump := sin(TAU * 70.0 * (t - 1.55)) * exp(-(t - 1.55) * 25.0) * 0.5 if t > 1.55 else 0.0
+			return roll + bump
+		"alarm":
+			# Alarmglocke: elektrischer Klöppel, 30 Schläge je Sekunde auf eine Schale
+			var strike := exp(-fmod(t, 1.0 / 30.0) * 90.0)
+			var fade := minf(1.0, (float(shot["dur"]) - t) * 4.0)
+			return (sin(TAU * 1750.0 * t) + sin(TAU * 2440.0 * t) * 0.6) * strike * fade * 0.3
 		"thunder":
 			# Donner (Wetter, 7.8): kurzes Krachen, dann langes, schwankendes Grollen
 			var crack := white * exp(-t * 14.0) * 0.5

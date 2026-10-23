@@ -96,10 +96,11 @@ static func model(path: String, src: MeshInstance3D, surface: int = 0, two_sided
 ## Meter gespannt. Das Farbbild liegt in zwei Stufen vor (PHOTO_SIZE_PSX ohne, PHOTO_SIZE_SMOOTH mit Mipmaps), die
 ## Normal Map (normal_path, OpenGL-Format) nur in der großen und nur ohne PS1-Look – Settings.apply schaltet über
 ## set_photo_detail um. Glanz (specular > 0, z. B. 0,5) mit der Rauheit aus roughness_path wirkt in beiden Looks
-## (wie die Tapete). Die übrigen Karten des Sets löscht tools/photo_set.gd, siehe TECHNIK.md.
+## (wie die Tapete). Die übrigen Karten des Sets löscht tools/photo_set.gd, siehe TECHNIK.md. object_uv: Textur in
+## Modellkoordinaten statt in Weltkoordinaten (Bewegtes wie die Aufzugskabine).
 static func photo(path: String, meters: float, normal_path: String = "", roughness_path: String = "",
-		specular: float = 0.0, color: Color = Color(1, 1, 1)) -> ShaderMaterial:
-	var key := "photo|%s|%s|%s|%.2f|%.2f|%s" % [path, normal_path, roughness_path, meters, specular, color.to_html()]
+		specular: float = 0.0, color: Color = Color(1, 1, 1), object_uv: bool = false) -> ShaderMaterial:
+	var key := "photo|%s|%s|%s|%.2f|%.2f|%s|%s" % [path, normal_path, roughness_path, meters, specular, color.to_html(), object_uv]
 	if not _cache.has(key):
 		if _photo_shader == null:
 			_photo_shader = load("res://shaders/psx_photo.gdshader")
@@ -112,6 +113,7 @@ static func photo(path: String, meters: float, normal_path: String = "", roughne
 		m.set_shader_parameter("albedo", color)
 		m.set_shader_parameter("tex_scale", 1.0 / meters)
 		m.set_shader_parameter("specular", specular)
+		m.set_shader_parameter("object_uv", object_uv)
 		m.set_meta("photo_psx", ImageTexture.create_from_image(small))
 		m.set_meta("photo_smooth", ImageTexture.create_from_image(img))
 		if normal_path != "":

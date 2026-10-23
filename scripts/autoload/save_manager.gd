@@ -55,7 +55,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 29: Puppe (Spielkonzept 5.5: „doll“, im Director Frist, Urteil und Weg), Feindschaften unter Gästen (social.pals mit
 ##     counts und feuds), Spaßwert und Garantie des Kürbismanns („pumpkin“), Aufholen des Lakengeists (ghost.catch_up_day)
 ##     – ältere Stände laden weiter, die Puppe sitzt dann in der Lobby
-const VERSION := 29
+## 30: Aufzug (Spielkonzept 7.4, Gruppe elevators: Höhe der Kabine, gewählte Halte, Tür offen) – ältere Stände passen
+##     ohnehin nicht mehr (Aufzugtüren und Kabinenleuchte ändern den Fingerabdruck)
+const VERSION := 30
 const MIN_VERSION := 20
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -64,7 +66,7 @@ const AUTOSAVE_MONSTER_DISTANCE := 25.0
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
-	"windows", "hide_spots", "phones", "dressers", "cats"]
+	"windows", "hide_spots", "phones", "dressers", "cats", "elevators"]
 const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
 var WORLD_FILE := DIR + "world.txt"
@@ -413,6 +415,7 @@ func collect() -> Dictionary:
 	data["phones"] = _collect_group("phones", func(n: Node) -> Dictionary: return n.save_state())
 	data["dressers"] = _collect_group("dressers", func(n: Node) -> Dictionary: return n.save_state())
 	data["cats"] = _collect_group("cats", func(n: Node) -> Dictionary: return n.save_state())
+	data["elevators"] = _collect_group("elevators", func(n: Node) -> Dictionary: return n.save_state())
 	data["table_loaded"] = Game.dice.table.loaded if Game.dice and Game.dice.table else false
 	return data
 
@@ -480,6 +483,7 @@ func apply(data: Dictionary) -> void:
 	_apply_group("hide_spots", data.get("hide_spots", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("phones", data.get("phones", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("dressers", data.get("dressers", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	_apply_group("elevators", data.get("elevators", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if Game.traces:
 		Game.traces.load_state(data.get("traces", []))
 	if Game.ghost:

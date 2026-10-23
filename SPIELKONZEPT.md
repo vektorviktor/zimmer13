@@ -2476,6 +2476,16 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 - Zerspringt eine heruntergefallene Birne? – im Prototyp noch nicht.
 
 ### 7.4 Fahrstuhl & Tiefkeller (vorgemerkt 2026-10-11)
+> **Stand 2026-10-23 – Aufzug gebaut:** Statt des Gitterfahrstuhls ein Hotelaufzug mit **Teleskoptüren**, die
+> beidseitig zur Mitte schließen, in einem Holzportal; darüber die **Lampenanzeige** „U“, „0“, „1“ (runde Lampen, 8 cm),
+> daneben ein Rufknopf. Die Kabine **fährt wirklich** zwischen Untergeschoss, Erdgeschoss und Obergeschoss: drei goldene
+> Handläufe wie an der Rezeption, gegenüber der Tür ein **Spiegel** (echtes Spiegelbild – der Spieler selbst fehlt darin),
+> eine Deckenleuchte, links ein **Bedienfeld** aus Messing (drei Etagenknöpfe untereinander, darunter Tür auf / Tür zu,
+> darunter Alarm). Motor und Glocke an Abfahrt und Ziel machen das Monster neugierig, der **Alarm** ist laut und
+> erschreckt Gäste. **Aufzug 1 fährt schon jetzt** – die Reparatur unten kommt später als Sperre davor. **Aufzug 2 ist
+> tot** (7.10), sieht aber gleich aus; seine Anzeige wandert ab und zu ohne Kabine. Noch offen: Gäste und Monster im
+> Aufzug (Falle, Nothalt), Notruftelefon, Halt im Tiefkeller und Dachgeschoss (sobald die Pläne stehen).
+>
 > **Stand 2026-10-21 (7.10):** Der **Tiefkeller kommt** – nur mit dem Aufzug erreichbar, Plan steht aus. Von den zwei
 > Schächten wird **einer repariert**, der andere bleibt der Weg des Monsters. Der **Maschinenraum liegt im
 > Untergeschoss** (nicht mehr am Ende des Obergeschosses), der **Heizraum** ebenfalls; der Aufzug hält auf allen

@@ -396,6 +396,8 @@ var _ends := {}
 var _furnishings: Array[Dictionary] = []
 var _doors: Array[Dictionary] = []    ## {pos: Vector3 (Mitte unten), door: Door, kind, into}
 var attic_doors: Array[Door] = []     ## Kniestocktüren aller Ebenen
+var elevators: Array[Elevator] = []   ## Aufzüge (je Schacht einer, der erste fährt)
+var _elevator_doors: Array[Dictionary] = []   ## Aufzugtüren aller Stockwerke (_elevators baut sie)
 var _open_rooms := {}                 ## Nummern der bewohnbaren Zimmer (OPEN_WINGS)
 
 var _wallpaper: Material
@@ -497,6 +499,7 @@ func build() -> void:
 	for i in uppers.size():
 		_upper_floor(uppers[i], i + 1)
 	_lower_floor(lower)
+	_elevators()
 	_use(_floors[0])
 	var home: Dictionary = rooms[PLAYER_ROOM]
 	player_spawn = (home["center"] as Vector3) + Vector3(0, 0.05, 0) + (home["into"] as Vector3) * 0.1
@@ -1195,6 +1198,49 @@ func _wall_piece_at(horizontal: bool, fixed: float, p0: float, p1: float, openin
 		Geo.mesh(holder, Geo.wall_mesh(p0, p1, height, 0.02, openings), skin, Vector3.ZERO)
 
 
+## Aufzüge (Spielkonzept 7.4, 7.10): die Aufzugtüren aller Stockwerke nach Schacht gesammelt, je Schacht ein
+## Elevator unter der Hauptszene (bewegte Kabine, nicht im NavMesh). Rahmen = Tür im EG (lokal +Z aus dem Schacht).
+## Der westlichste Schacht fährt, die übrigen sind tot (7.10: einer wird repariert, der andere bleibt der Weg des
+## Monsters).
+func _elevators() -> void:
+	var shafts := {}
+	for o in _elevator_doors:
+		var r: Rect2 = o["shaft"]
+		if not r.has_area():
+			continue
+		var key := Vector2i(roundi(r.get_center().x * 10.0), roundi(r.get_center().y * 10.0))
+		if not shafts.has(key):
+			shafts[key] = []
+		shafts[key].append(o)
+	var keys := shafts.keys()
+	keys.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.x < b.x or (a.x == b.x and a.y < b.y))
+	for key: Vector2i in keys:
+		var list: Array = shafts[key]
+		list.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["y"]) < float(b["y"]))
+		var ref: Dictionary = list[0]
+		var stops: Array[float] = []
+		var levels: Array[int] = []
+		for o: Dictionary in list:
+			stops.append(float(o["y"]))
+			levels.append(int(o["level"]))
+			if int(o["level"]) == 0:
+				ref = o
+		var c: Vector2 = ref["center"]
+		var out: Vector2 = ref["out"]
+		var frame := Transform3D(Basis(Vector3.UP, atan2(out.x, out.y)), Vector3(c.x, 0, c.y))
+		var r: Rect2 = ref["shaft"]
+		var local := Rect2()
+		for k in 4:
+			var corner := r.position + r.size * Vector2(k & 1, k >> 1)
+			var p := frame.affine_inverse() * Vector3(corner.x, 0, corner.y)
+			local = Rect2(p.x, p.z, 0, 0) if k == 0 else local.expand(Vector2(p.x, p.z))
+		var lift := Elevator.new().setup(elevators.is_empty(), stops, levels, ref["size"], local)
+		lift.name = "Aufzug_%d" % (elevators.size() + 1)
+		lift.transform = frame
+		world.add_child(lift)
+		elevators.append(lift)
+
+
 ## Glaswand (Pool): Scheibe auf der Glas-Ebene, Rahmen und Pfosten alle ~1,8 m.
 func _glass_wall(horizontal: bool, fixed: float, p0: float, p1: float) -> void:
 	var holder := Node3D.new()
@@ -1247,6 +1293,12 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 		win.sealed = inside_kind == "sealed"
 		root.add_child(win)
 		return
+	if kind == "elevator_door":   # Türen, Anzeige und Kabine baut _elevators je Schacht über alle Stockwerke
+		var to_shaft := side if _kind_at(c + side * 0.5) == "elevator" else -side
+		var shaft := _place_at(c + to_shaft * 0.5)
+		_elevator_doors.append({"center": c, "out": -to_shaft, "size": Vector2(width, _opening_vec(o, 0.0).z),
+			"y": _base_y, "level": _level, "shaft": _bounds(shaft["rects"]) if not shaft.is_empty() else Rect2()})
+		return
 	var wide := width >= 1.5
 	var height := _opening_vec(o, 0.0).z
 	var glass := kind in ["garden_door", "glass_double_door"]
@@ -1274,12 +1326,6 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			door.monster_can_open = false
 			door.locked_text = "Der Ausgang ist verriegelt. Es muss einen anderen Weg hinaus geben …"
 			_exit_sign_top = _sign("AUSGANG", center + Vector3(0, ENTRANCE_H + 0.35, 0) + into3 * 0.11, rad_to_deg(yaw))
-		"elevator_door":
-			door.locked = true
-			door.key_id = "aufzug"
-			door.monster_can_open = false
-			door.locked_text = "Außer Betrieb."
-			_sign("AUSSER BETRIEB", center + Vector3(0, WIDE_DOOR_H + 0.3, 0) - into3 * 0.11, rad_to_deg(yaw) + 180.0)
 		"attic_door":   # Schlüssel im Heizraum hinter dem Gitter (4.21) – das Monster bricht sie nicht auf
 			door.locked = true
 			door.key_id = "dachboden"
@@ -1371,7 +1417,7 @@ func _floors_and_ceilings() -> void:
 	for r in _map["regions"]:
 		var kind := String(r["kind"])
 		if kind == "elevator":
-			continue   # Aufzüge außer Betrieb
+			continue   # Schacht offen über alle Stockwerke – Grube und Decke baut der Aufzug (Elevator)
 		# Verschlossene Zimmer und Kellerräume: Boden nur zum Draufstehen (Debug-Teleport), auf der Ebene der Decken –
 		# nicht im NavMesh, sonst planten Gäste und Monster Wege durch abgesperrte Türen
 		var layer := LAYER_CEILING if (kind == "room" and not _room_open(String(r["id"]))) or kind == "cellar_room" else 1

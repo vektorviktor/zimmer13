@@ -13,6 +13,7 @@ const SOUND_CAPTIONS := {
 	"scream": "[Ein Schrei]", "death_scream": "[Ein Schrei – jäh abgerissen]", "grunt": "[Ein Ächzen]",
 	"shriek": "[Ein Kreischen]", "growl": "[Knurren]", "bang": "[Ein Knall]", "sting": "[Schriller Ton]",
 	"cry": "[Eine Katze kreischt]", "meow": "[Miau]", "bell": "[Eine Totenglocke läutet]",
+	"ding": "[Ding – der Aufzug]", "motor": "[Ein Motor brummt im Schacht]", "alarm": "[Eine Alarmglocke schrillt]",
 }
 
 var player: Player

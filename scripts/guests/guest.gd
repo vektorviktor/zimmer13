@@ -1414,8 +1414,8 @@ func _bulb_to_steal(hostile: bool) -> Lamp:
 		var lamp := node as Lamp
 		if not lamp.has_bulb or lamp.bulb_broken or lamp.room_id == home["no"] or not lamp.has_socket():
 			continue
-		if lamp.room_id == "lobby":
-			continue   # Lobbydecke – zu hoch
+		if lamp.room_id in ["lobby", "aufzug"]:
+			continue   # Lobbydecke – zu hoch; Aufzugskabine – Gäste fahren (noch) nicht mit (7.4)
 		if hostile and lamp.room_id != LevelBuilder.PLAYER_ROOM:
 			continue
 		if Game.player and Game.player.global_position.distance_to(lamp.global_position) < 8.0:

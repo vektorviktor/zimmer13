@@ -127,7 +127,8 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   **Tapeten** `assets/textures/wallpaper_<variante>.png` (teal für Flure, Küche, Bar und Treppenhaus, beige für die Zimmer, red für die Lobby) + gemeinsame Höhenkarte
   `wallpaper_bump.png`, siehe „Optik“ in 9.
   **Fototexturen** (PBR-Sets, je ein Ordner `assets/textures/<set>/`): `Mat.photo(pfad, meter, normal_pfad,
-  rauheit_pfad, glanz)` mit `shaders/psx_photo.gdshader` (wie `psx_surface`, Weltkoordinaten) spannt das Farbbild über so viele
+  rauheit_pfad, glanz)` mit `shaders/psx_photo.gdshader` (wie `psx_surface`, Weltkoordinaten; mit `object_uv` in
+  Modellkoordinaten – für Bewegtes wie die Aufzugskabine) spannt das Farbbild über so viele
   Meter und hält es in zwei Stufen: 256² ohne Mipmaps für den PS1-Look (grob wie die Tapete), 1024² mit Mipmaps
   ohne ihn (`PHOTO_SIZE_PSX`/`_SMOOTH`). Die Normal Map (OpenGL-Format) wirkt nur ohne PS1-Look (`use_normal`; die
   PS1 kannte keine, bei 256² glitzerte sie nur); der Shader bildet Tangente und Bild-„oben“ aus der Hauptachse der
@@ -415,6 +416,7 @@ Main (Node3D, main.gd)
 │   ├─ Obergeschoss (y 4)            ← dasselbe aus assets/maps/og1.json, Zimmer_1101 …
 │   └─ Untergeschoss (y −4)          ← dasselbe aus assets/maps/ug.json, darin der Heizkeller
 ├─ Items, Gäste, Plattenspieler      ← dynamisch, direkt unter Main (LevelBuilder.world)
+├─ Aufzug_1, Aufzug_2                ← Elevator je Schacht (bewegte Kabine – nicht im NavMesh), direkt unter Main
 ├─ SynthAudio, ShadowBudget, Traces, Player, Monster, MonsterDirector, Social, PhoneCalls
 └─ CanvasLayer: PostFx (5), Hud (10), Dialog/DiceMatch/ChessMatch/PhoneUI (15), DeathScreen (20), Menus (30)
 ```
@@ -474,7 +476,7 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` = `1 | 2 | 256 | 51
 `items`, `guests`, `player`, `doors`, `chests`, `hide_spots`, `lamp_fixtures` (die Lampen),
 `lamps` (deren Lichter), `light_source` (alles, was für die Helligkeit zählt – `FlickerLight`),
 `light_switches`, `windows`, `pumpkin_plants`, `resource_spots`, `trace_marks`, `warning_notes`,
-`guest_notes`, `diaries`, `phones`, `dressers`, `cats`, `uv_marks` (nicht gespeichert).
+`guest_notes`, `diaries`, `phones`, `dressers`, `cats`, `elevators` (der fahrende Aufzug), `uv_marks` (nicht gespeichert).
 
 ### Räume & IDs
 - **Raum-ID** = Zimmernummer (`"13"`, `"231"`) oder Bereichs-ID (`"lobby"`, `"flur_west"`,
@@ -635,8 +637,8 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   beide Flügel der Doppeltür), `attic_door` die Kniestocktür (`Look.ATTIC`, `ATTIC_DOOR_H` 1,6 m hoch,
   verschlossen mit Schlüssel `dachboden`, das Monster bricht sie nicht auf, `attic_doors`); Betriebstüren
   behalten das gebaute Blatt. Solange kein Dachgeschoss gezeichnet ist, macht `--attic-door` die erste 0,8 m
-  breite Tür des OG1 zur Kniestocktür (`_debug_attic_door`, ändert den Fingerabdruck der Welt). Terrassen- und Glastüren sind gläserne Doppeltüren, Aufzüge
-  verschlossen („Außer Betrieb“), der Haupteingang verriegelt. Fenster schauen von innen nach draußen; ihre
+  breite Tür des OG1 zur Kniestocktür (`_debug_attic_door`, ändert den Fingerabdruck der Welt). Terrassen- und Glastüren sind gläserne Doppeltüren, Aufzugtüren
+  baut der Aufzug (unten), der Haupteingang ist verriegelt. Fenster schauen von innen nach draußen; ihre
   `room_id` ist die Fläche dahinter (Zimmernummer, Bereich oder Flurabschnitt, `_room_id_at`). Unter jeder
   benutzbaren Tür liegt eine Schwelle – ohne Boden in der Wandlücke risse das NavMesh ab.
 - **Zimmer** (`_room`): Rahmen am Türmittelpunkt (+X an der Flurwand entlang, +Z ins Zimmer); Innenmaß aus
@@ -764,6 +766,44 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   `_in_shaft`; im UG Beton), die Außenwände und Türen die Pläne. Im Untergeschoss endet die Treppe (der Plan zeigt
   dort nur noch den Lauf hinauf), die Tür des UG-Plans führt in die Kellergänge. Treppenhaus West ist verschlossen
   (auf allen Stockwerken).
+- **Aufzug** (`scripts/world/elevator.gd`, Spielkonzept 7.4, 7.10): `_opening_object` sammelt die Aufzugtüren aller
+  Stockwerke (`_elevator_doors`), `_elevators()` baut daraus je Schacht (Fläche `elevator`) einen `Elevator` unter der
+  Hauptszene (`world` – die Kabine bewegt sich, sie darf nicht ins NavMesh) im Rahmen der EG-Tür: Ursprung Mitte der
+  Öffnung auf der Wandmittellinie, lokal +Z aus dem Schacht. Halte = Stockwerke mit Aufzugtür. Der westlichste Schacht
+  fährt (`working`, Gruppe `elevators`), die übrigen sind tot. Der Plan lässt den Schacht offen (`_floors_and_ceilings`
+  überspringt `elevator`), Grube und Decke baut der Aufzug.
+  - **Türen:** je Halt Teleskoptüren aus vier Blättern, die zur Mitte schließen (je Seite außen das langsame, innen das
+    schnelle mit doppeltem Weg), offen hinter der Leibung gestapelt. Die lichte Breite folgt aus dem Platz im Schacht
+    (`_layout`: das offene Paket muss in Schachthälfte − `SIDE_ROOM` passen – beim 3,3-m-Schacht 2,04 m statt der 2,5 m im
+    Plan); den Rest der Planöffnung füllt ein Portal aus dunklem Holz mit Messingkante, lichte Höhe = Öffnung − `HEAD`.
+    Schachttüren sind `AnimatableBody3D` auf Ebene 2. Die Kabinentür ist nur Optik, solange sie zu ist, schließt
+    `_doorway` (eine Form am Kabinenkörper) die Öffnung. Lichtschranke: Steht der Spieler in der Türebene
+    (`_in_doorway`), geht sie wieder auf.
+  - **Anzeige** über jeder Tür und innen über der Kabinentür: runde Lampen (`LAMP_D` 8 cm) im Messingring mit Buchstaben
+    in Cinzel (U, 0, 1 …, T für einen Tiefkeller), links das unterste Stockwerk; ein Material je Halt für alle Anzeigen
+    des Schachts. Rufknopf rechts neben dem Portal (`CALL_Y`).
+  - **Kabine:** `AnimatableBody3D` (`sync_to_physics`) auf Ebene 1, alle Formen am Körper selbst – nur so bekommt der
+    Spieler die Geschwindigkeit der Plattform und fährt mit (Gegenstände auch). Wände `Wood_Panels_01` über
+    `Mat.photo(…, object_uv = true)` (in Weltkoordinaten wanderte die Textur beim Fahren über die Wand), Boden Teppich,
+    Decke hell. Drei Messinghandläufe (`_rails`: Rohr mit Viertelbögen zur Wand, Rosetten, Halter alle ≤ `RAIL_BAY`),
+    Deckenleuchte `Lamp` FLUSH (`room_id` „aufzug“, ohne Schalter; Gäste klauen ihre Birne nicht), Bedienfeld links vom
+    Eingang (`_panel`: Etagenknöpfe untereinander, darunter Tür auf/zu, darunter Alarm; jeder Knopf ein `Elevator.Push`).
+  - **Spiegel** an der Rückwand (`_mirror_wall`): eine Kamera in einem SubViewport (`MIRROR_PX` breit, PS1-grob) steht am
+    Spiegelpunkt der Spielerkamera und schaut mit schiefem Frustum genau durch die Spiegelfläche (`set_frustum`, near =
+    Abstand zur Ebene – was hinter dem Spiegel liegt, fällt weg); `shaders/mirror_view.gdshader` zeigt das Bild
+    unbeleuchtet und seitenverkehrt. Eigene Umgebung ohne Tonemapping (sonst doppelt), SSR, Lichtnebel und Glow. Die
+    Spiegelfläche liegt auf Sichtebene 20 (`MIRROR_LAYER`), die die Spiegelkamera nicht sieht. Gerendert wird nur, wenn
+    der Spiegel im Bild, näher als `MIRROR_RANGE` und auf dem Stockwerk ist und „Spiegelungen“ an sind – sonst matt.
+    Der Spieler hat keinen Körper: im Spiegel fehlt er, nur was er in der Hand hält, schwebt darin.
+  - **Ablauf** (`_physics_process`): Warteschlange gewählter Halte (`_queue`); Tür auf → `DOOR_HOLD` (Etage gewählt:
+    `DOOR_HOLD_CHOSEN`) → zu → nächste Fahrt mit `ACCEL`/`SPEED`, Bremsweg aus √(2·a·s). Lärm: `elevator` (Motor) an der
+    Abfahrt, `elevator_bell` (Glocke) am Ziel – beides macht das Monster neugierig –, `elevator_alarm` (Alarmknopf,
+    erschreckt Gäste); Türen und Motor während der Fahrt nur als Klang (`Game.sound_at`). Klänge `ding`, `motor`,
+    `slide`, `alarm` in `SynthAudio`.
+  - **Toter Schacht** (`_ghost`): Nach `GHOST_PAUSE` geht eine Lampe an und wandert Halt für Halt (`GHOST_STEP`) zu
+    einem anderen Stockwerk, bleibt `GHOST_HOLD`, manchmal klingt dort leise die Glocke (nur Klang); nicht gespeichert.
+    Sein Rufknopf leuchtet nur kurz.
+  - Gäste und Monster benutzen den Aufzug noch nicht, die Reparatur (7.4) fehlt – er fährt von Anfang an.
 - **Schilder** (`_sign`: Zimmernummern, AUSGANG, BAR, KELLER …): Buchstaben als `TextMesh` (1 cm tief, grober
   `curve_step`) im PS1-Material aus Messing auf einer dunklen Holzplatte mit Messingrand. So bekommen sie Licht,
   Schatten und Vertex-Snapping wie alles andere (früher ein ungeschattetes `Label3D`). Zimmernummern
@@ -1550,7 +1590,7 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   **zuerst** angewendet, weil sich alles Weitere auf Gast-IDs bezieht. Danach Welt → Director-Werte →
   Gäste → Gegenstände → Spieler → Soziales → Monster zuletzt.
 - Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp, HotelPhone,
-  LightSwitch, HotelWindow, Dresser) oder werden in `collect()` direkt ausgelesen (Door, Chest, Plant, Resource).
+  LightSwitch, HotelWindow, Dresser, Elevator) oder werden in `collect()` direkt ausgelesen (Door, Chest, Plant, Resource).
   Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()`.
 - Beim Laden: `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
 - Nicht gespeichert, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating.reset()`, `DecoSearch.reset()`,
@@ -1559,6 +1599,8 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   `wound_visited`; nach dem Laden `_update_wound_marks`, ins Bett geht er von selbst wieder.
 - Freundschaften unter Gästen (ab Version 25): `social.pals` = `GuestPals.counts` (`"id_a|id_b"` → Anzahl); ältere
   Stände laden ohne (nur Familie und Nachbarn).
+- Aufzug (ab Version 30): `elevators` = `Elevator.save_state` (Höhe der Kabine, gewählte Halte mit dem laufenden Ziel
+  vorn, Tür offen); mitten in der Fahrt gespeichert, fährt sie nach dem Laden weiter.
 - Puppe und Feindschaften (ab Version 29): `doll` (`JuryDoll.save_state`), im Director Frist, Urteil und Weg; `social.pals`
   ist jetzt `{counts, feuds}` (`feuds` = Liste verfeindeter Paare) – `GuestPals.load_state` liest auch die alte Form; dazu
   `pumpkin` (Spaßwert, Besuche, Garantie) und `ghost.catch_up_day`.
