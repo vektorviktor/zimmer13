@@ -132,7 +132,7 @@ extends Node3D
 ##   --autoplay                  Mäxchen-Antworten bzw. Schachzüge automatisch wählen
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
-##   --shot-on=reveal|jumpscare|strangle|shock|pumpkin|lightning  Screenshot kurz nach einem Ereignis statt nach n Frames
+##   --shot-on=jumpscare|strangle|shock|pumpkin|lightning  Screenshot kurz nach einem Ereignis statt nach n Frames
 ##                               (Kürbismann auch pumpkin_roof|pumpkin_edge|pumpkin_leap|pumpkin_land|pumpkin_lobby)
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
 ##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)

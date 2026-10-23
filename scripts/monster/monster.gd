@@ -8,11 +8,12 @@ extends NavWalker
 ## die dort, wo es war, noch eine Weile in der Luft hängen und langsam sinken.
 ## Lokale −Z-Achse = Blickrichtung. Bewegt sich ruckartig („Stop-Motion“).
 
-enum State { INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK, REVEAL }
+enum State { INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK }
 
-const WALK_SPEED := 1.6
-const SEARCH_SPEED := 2.0
-const CHASE_SPEED := 4.3
+## Tempo (m/s, 2026-10-22): Es rast durch die Flure – jagend deutlich schneller als der rennende Spieler (4,8)
+const WALK_SPEED := 3.6
+const SEARCH_SPEED := 4.2
+const CHASE_SPEED := 7.2
 const KILL_DISTANCE := 1.1
 ## Wird es länger als so lange gesehen, verschwindet es aus dem Blickfeld
 const SEEN_BEFORE_SLINK := 0.35
@@ -139,7 +140,7 @@ func spawn_near_unseen(pos: Vector3) -> void:
 
 ## Ende der Aktivphase: zurück in den Keller.
 func go_home() -> void:
-	if not state in [State.RETREAT, State.INACTIVE, State.KILL, State.REVEAL]:
+	if not state in [State.RETREAT, State.INACTIVE, State.KILL]:
 		_start_retreat()
 
 
@@ -240,35 +241,6 @@ func after_scare(victim: Node) -> void:
 	_set_state(State.SLINK)
 
 
-## Nach dem harmlosen Angriff auf den Spieler (Spielkonzept 2.1, 4.13): im Flackern verschwunden – es taucht außer
-## Sicht wieder auf und streift weiter; den Spieler verschont es für den Rest dieser Aktivphase (wie Gäste nach
-## after_scare). Ohne verborgenen Punkt in der Nähe kommt es vom Kellerausgang wieder.
-func vanish_after_reveal(victim: Node) -> void:
-	_spared.append(victim)
-	_chase_target = null
-	_face_light.light_energy = 0.0
-	var away := Game.director.hidden_point_near(global_position)
-	if away.is_equal_approx(global_position):
-		away = Game.director.spawn_points[0]
-	_appear(away)
-	_next_roam()
-
-
-## Harmloser Angriff auf den Spieler: Es steht direkt vor ihm und starrt ihn an.
-func reveal(cam: Camera3D) -> void:
-	_set_state(State.REVEAL)
-	visible = true
-	_collider.disabled = true
-	velocity = Vector3.ZERO
-	var forward := _face_camera(cam)
-	global_position = Vector3(cam.global_position.x, cam.global_position.y - 1.7, cam.global_position.z) + forward * 1.3
-	_eye_mat.set_shader_parameter("emission_energy", 6.0)
-	_face_light.light_energy = 0.9
-	_crouch = 0.0
-	_anim_step = ANIM_STEP
-	Game.shot_event("reveal")
-
-
 ## Dreht es zur Kamera hin (es steht in ihrer Blickrichtung) und gibt diese Richtung waagerecht zurück.
 func _face_camera(cam: Camera3D) -> Vector3:
 	var forward := -cam.global_transform.basis.z
@@ -364,7 +336,7 @@ func _physics_process(delta: float) -> void:
 		_ash.global_position = global_position + Vector3.UP * ASH_HEIGHT
 		_ash.emitting = true
 	_animate(delta)
-	if state == State.KILL or state == State.REVEAL:
+	if state == State.KILL:
 		return
 	_uv_slow = maxf(0.0, _uv_slow - delta)
 	_update_traces(delta)
@@ -808,7 +780,7 @@ func _crouch_target() -> float:
 			c = 0.4
 		State.SEARCH:
 			c = 0.15
-		State.KILL, State.REVEAL:
+		State.KILL:
 			return 0.0
 	return maxf(c, 0.3) if _near_door else c
 
@@ -846,7 +818,7 @@ func _animate(delta: float) -> void:
 			nod = 0.2
 			tilt = 0.3 + randf_range(-0.25, 0.25)
 			jaw = 0.4 + randf_range(-0.05, 0.05)
-		State.REVEAL, State.STARE, State.LURK:
+		State.STARE, State.LURK:
 			nod = 0.3
 			tilt = sin(_anim_time * 0.4) * 0.45 + randf_range(-0.04, 0.04)
 		State.REPELLED:

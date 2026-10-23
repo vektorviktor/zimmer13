@@ -832,12 +832,13 @@ NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angri
 - Vor dem ersten Angriff: kein Monster. Erster Angriff am 3./4. Oktober während einer Feier
   (`_first_attack_at_party`), spätestens am 5.
 - Danach Wechsel `Phase.CALM` (Keller) ↔ `Phase.ACTIVE` (streift umher); Dauern über `_day_lerp`.
-- `attacks <= HARMLESS_ATTACKS` (2) → `is_harmless()`: es holt niemanden, `kill_*` werden zu
-  Erschrecken (`_scare_guest`) bzw. Zeigen (`_reveal_to_player`).
+- `attacks <= HARMLESS_ATTACKS` (2) → `is_harmless()`: es holt keinen Gast, `kill_guest` wird zu Erschrecken
+  (`_scare_guest`). **Den Spieler tötet es immer, wenn es ihn erwischt** (2026-10-22, auch harmlos und beim Umsehen –
+  das frühere Anstarren und Verschwinden, `_reveal_to_player`/`REVEAL`, ist entfernt).
 - **Absicht** (Spielkonzept 4.17): `_start_activity` → `_choose_intent` setzt `victims_left`: 0 (umsehen) oder – mit
   `attack_chance()`, gleitend nach Tag aus `ATTACK_CHANCE` – `_draw_victims()` – n ∝ 1/n², höchstens `_max_victims()` (lebende Gäste + Spieler).
   `intent` (`ROAM`/`ONE`/`RAMPAGE`) folgt nur daraus (`_intent_for`). `kill_*` holen nur, wenn `wants_victim()` (nicht harmlos und
-  `victims_left > 0`), sonst Erschrecken/Zeigen wie bei harmlosen Angriffen – gilt für Spieler und Gäste.
+  `victims_left > 0`), sonst Erschrecken wie bei harmlosen Angriffen – nur für Gäste; der Spieler stirbt immer.
   Raubzug: nach einem Opfer `Monster.after_kill_hunting()` (weiterstreifen, keine Sättigung), erst das
   letzte macht satt (`after_feeding`). Satt (`satiation > SATED_ROAM`) → immer `ROAM`. Sichtung/Gerede
   können `ROAM` per `_escalate` zu `ONE` machen. `victims_left` und `_uv_angry` stehen im Spielstand.
@@ -870,8 +871,8 @@ NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angri
   Drehung, `verdict`, `at_room`, `pending`; ein getragenes liegt danach, wo es war). Debug `--doll=kind` (`debug_fetch`).
 - **Frist und Urteil** (`MonsterDirector`): `on_monster_gone` würfelt `_lead` (`DOLL_LEAD` 60–120 s). In der Ruhephase ruft
   `_update_schedule` bei `_phase_left <= _lead` einmal `_plan_departure()`: Absicht jetzt wählen (`_planned`, `_start_activity`
-  wählt dann nicht neu; Sättigung hochgerechnet auf den Aufbruch). Nur wenn der nächste Angriff nicht harmlos ist und
-  `victims_left > 0`: Ruhe auf mindestens `_lead` verlängern, `_rumble_total`, `_judge(_weakest_door())`, Untertitel.
+  wählt dann nicht neu; Sättigung hochgerechnet auf den Aufbruch). Nur wenn `victims_left > 0` (auch vor harmlosen
+  Angriffen – dann erschreckt es im gewählten Zimmer nur, `raided` verlangt `not is_harmless()`): Ruhe auf mindestens `_lead` verlängern, `_rumble_total`, `_judge(_weakest_door())`, Untertitel.
   `_weakest_door()`: unter `inhabited_rooms()` (Zimmer lebender Erwachsener + 13) die mit der wenigsten Deko
   (`_deco_strength` am `door_front`, Gleichstand bis `DOLL_DECO_TIE` – die bisherige Tür bleibt, wenn sie dabei ist), dann
   die dunkelste (`light_at`, `DOLL_LIGHT_TIE`), dann Zufall; alle `DOLL_RECHECK` s neu (Nachbessern). `debug_doom` erzwingt
@@ -905,9 +906,9 @@ Schutz liegt – vorbeigehen darf es (die Deko vor den Türen deckt sonst den ga
 `is_protected(Gejagter)`. Zurückgeschreckt ohne UV → anderes Ziel (`_next_roam`), der Gejagte kommt für
 `REBUFF_TIME` in `_rebuffed`; nach `LURK` ebenso weiter. **Rückzug (`RETREAT`) nur:** Ende der Aktivphase
 (`go_home`), satt (`after_feeding`), UV. Nach einem harmlosen Schreck `after_scare(opfer)` → `SLINK` und
-weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`. Beim Spieler (`_reveal_to_player`):
-`REVEAL`, Flackern, dann `vanish_after_reveal(spieler)` – taucht an `hidden_point_near` (sonst am Kellerausgang)
-wieder auf und streift weiter, der Spieler steht in `_spared`; die Aktivphase endet dadurch nicht.
+weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
+**Tempo** (2026-10-22): `WALK_SPEED` 3,6, `SEARCH_SPEED` 4,2, `CHASE_SPEED` 7,2 m/s – es rast durch die Flure, jagend weit
+schneller als der rennende Spieler (4,8); auf dem Weg zur Puppe streift es mit `SEARCH_SPEED`.
 
 ### Aussehen & Animation
 - **Modell:** `assets/models/monster.glb` wird von `tools/build_monster.py` (Blender 4.3) aus dem
@@ -1539,7 +1540,7 @@ Tabelle im README. Im F6-Menü erscheint er von selbst; in `TeleportUI.GROUPS` e
   `--time-scale 3` (headless besser mit `--fixed-fps 60`, siehe Rauchtest), `--quit-after N`, `--trace` (Zustand alle 2 s in die Konsole; im Code immer `Game.tracing`
   abfragen, nicht die Startparameter – so wirkt auch `trace` aus der Konsole), `--day=n`,
   `--attacks=n`, `--kill=id`, `--knock` …
-- Screenshots zum Prüfen: `--shot=pfad.png --frames=n` oder `--shot-on=reveal|jumpscare`; Menüs mit `--menu=…`.
+- Screenshots zum Prüfen: `--shot=pfad.png --frames=n` oder `--shot-on=jumpscare`; Menüs mit `--menu=…`.
   Mit `--bg` (in `Game._ready`) nimmt das Fenster keinen Fokus und liegt außerhalb des Bildschirms – nicht
   minimiert, sonst zeichnet Godot nicht und der Screenshot bleibt leer. Der Fokus würde schon beim Erstellen
   des Fensters geklaut, deshalb startet jeder Lauf mit dem Editor-Binary ohne Fokus

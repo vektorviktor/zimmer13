@@ -637,6 +637,9 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Das schafft die zentrale moralische Spannung: *Opfere ich jemanden, um selbst Ruhe zu haben?*
 
 ### 4.12 Sehen & Jagen (entschieden 2026-10-10)
+> **Tempo (entschieden und umgesetzt 2026-10-22):** Das Monster **rast** durch die Flure – schon beim Umherstreifen fast
+> so schnell wie du rennend, jagend **deutlich schneller** (etwa 7 m/s gegen 4,8). Davonlaufen hilft nicht mehr –
+> verstecken, Licht und Deko schon.
 **Grundsatz: Wer offen im Flur steht, wenn das Monster kommt, ist in Lebensgefahr.** Das Monster muss einen sehen können.
 
 - **Deko schützt nur, wer drinsteht:** Deko (und Licht) bilden einen Schutzbereich um sich herum (Radius, 5.2; seit 2026-10-21 **ihr sichtbarer Lichtschein**, 5.10). Wer **in diesem Bereich steht**, ist sicher – das Monster bricht die Jagd an dessen Rand ab. Wer **hinter** oder **neben** dem Bereich steht, ist **nicht** geschützt: Das Monster darf den Bereich durchqueren, um ihn zu holen. → Zur Deko flüchten rettet einen, sich hinter ihr verstecken nicht.
@@ -918,8 +921,9 @@ Hunger und wird mehrere holen.
 - **Die Absicht kann sich ändern:** Lärm, Sichtungen und Gespräche über das Monster (4.7) können aus „Umsehen“
   einen Angriff machen. Die Lichter flackern dann noch einmal.
 - **Die Absicht gilt auch für den Spieler** (entschieden): Der Spieler zählt wie ein Gast.
-  - **Umsehen:** Es jagt dich trotzdem (4.12). Erwischt es dich, starrt es dich an und verschwindet wie bei den
-    harmlosen Angriffen (2.1).
+  - **Umsehen:** Es jagt dich trotzdem (4.12). ~~Erwischt es dich, starrt es dich an und verschwindet wie bei den
+    harmlosen Angriffen (2.1).~~ **Erwischt es dich, stirbst du – immer** (entschieden 2026-10-22, auch bei den ersten,
+    für Gäste harmlosen Angriffen). Harmlos bleiben die nur für die Gäste.
   - **Einen holen:** Du kannst der eine sein.
   - **Raubzug:** Du bist eines der n Opfer.
   - Weil es manchmal täuscht, ist ein kurzes Zucken trotzdem keine Garantie.
@@ -1356,8 +1360,9 @@ unsichtbar ist (wie gut die Deko gegen den wachsenden Anspruch noch reicht, 4.8,
 immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss es selbst herausfinden.
 
 **Das Urteil**
-- **Wann:** nur vor einem **echten Angriff** (einen holen oder Raubzug, 4.17) – nie beim Umsehen und nicht bei den
-  harmlosen ersten Angriffen (2.1). **1–2 Minuten vor dem Aufbruch** liegt sie plötzlich vor der Tür. Ist die
+- **Wann:** nur vor einem **echten Angriff** (einen holen oder Raubzug, 4.17) – nie beim Umsehen. Seit 2026-10-22 auch vor
+  den ersten, für Gäste harmlosen Angriffen (2.1): Dann bricht es ebenfalls ein, erschreckt die Gäste aber nur – dich tötet
+  es, wenn es dich erwischt. **1–2 Minuten vor dem Aufbruch** liegt sie plötzlich vor der Tür. Ist die
   Ruhephase kürzer (spät im Monat, 4.13), wartet das Monster, bis die Frist um ist.
 - **Wen:** nur **bewohnte Türen** – die Zimmer der erwachsenen Gäste und **Zimmer 13**. Keine Flure, keine Lobby, keine
   leeren Zimmer, keine Zimmer, in denen nur Kinder schlafen (sie sind nie Opfer, 6.13).

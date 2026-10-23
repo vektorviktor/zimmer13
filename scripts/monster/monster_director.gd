@@ -667,8 +667,8 @@ func _plan_departure() -> void:
 	_planned = true
 	var sated := satiation - 0.1 * maxf(_phase_left, 0.0) > SATED_ROAM   # so satt wird es beim Aufbruch noch sein
 	_choose_intent(sated)
-	if attacks + 1 <= HARMLESS_ATTACKS or victims_left <= 0 or Game.doll == null:
-		return
+	if victims_left <= 0 or Game.doll == null:
+		return   # beim Umsehen keine Puppe (auch vor den ersten, für Gäste harmlosen Angriffen kommt sie)
 	_phase_left = maxf(_phase_left, _lead)
 	_rumble_total = _phase_left
 	_rumble_told = false
@@ -753,7 +753,7 @@ func _plan_route(spawn: Vector3) -> void:
 	raid_room = ""
 	_raid_kills = 0
 	_raiding = false
-	if doom_room == "" or not wants_victim():
+	if doom_room == "" or victims_left <= 0:
 		return
 	_raiding = true
 	var goal: Vector3 = rooms[doom_room]["door_front"]
@@ -929,7 +929,7 @@ func on_noise(pos: Vector3, loudness: float, source: Node = null) -> String:
 ## Jemand (Spieler oder Gast) ist in ein Versteck gegangen. Hat das Monster es gesehen?
 ## Dieselbe Rechnung wie beim Jagen (4.15) – gesehen wird nur das Hineingehen.
 func on_actor_hid(spot: HideSpot, actor: Node3D) -> void:
-	if not _monster.is_active() or _monster.state in [Monster.State.KILL, Monster.State.REVEAL] \
+	if not _monster.is_active() or _monster.state == Monster.State.KILL \
 			or (actor is Guest and (actor as Guest).is_child()):
 		return
 	if _monster.can_see_actor(actor, spot.exit_point.global_position):
@@ -984,7 +984,7 @@ func kill_guest(guest, spot: HideSpot) -> void:
 	if guest == null or not is_instance_valid(guest) or guest.dead or guest.is_child():
 		return
 	# Gewähltes Zimmer (Puppe, 5.5): jeder darin wird angegriffen; im Puppenzimmer stirbt er immer
-	var raided := in_raid_room(spot.global_position if spot != null else guest.global_position)
+	var raided := in_raid_room(spot.global_position if spot != null else guest.global_position) and not is_harmless()
 	var doomed := raided and raid_room == doom_room
 	if not wants_victim() and not raided:   # harmlos, oder es sieht sich nur um (4.17)
 		_scare_guest(guest, spot)
@@ -1044,11 +1044,10 @@ func _scare_guest(guest, spot: HideSpot) -> void:
 	_monster.after_scare(guest)
 
 
+## Erwischt es den Spieler, stirbt er – immer, auch beim Umsehen und bei den ersten Angriffen (2026-10-22, ersetzt das
+## harmlose Anstarren und Verschwinden).
 func kill_player(spot: HideSpot) -> void:
 	if Game.game_over:
-		return
-	if not wants_victim() and not in_raid_room(spot.global_position if spot != null else Game.player.global_position):
-		_reveal_to_player(spot)
 		return
 	Game.game_over = true
 	var player := Game.player
@@ -1093,24 +1092,6 @@ func guest_slain(guest: Guest, cause: String) -> void:
 	guest.die(cause)
 	if Game.social:
 		Game.social.on_guest_died(guest, cause)
-
-
-## Harmloser Angriff auf den Spieler: Es steht direkt vor dir, starrt dich an – und ist
-## im nächsten Flackern verschwunden. Jetzt weißt du, dass es real ist. Die Aktivphase läuft weiter: Es streift
-## außer Sicht umher und lässt dich bis zur nächsten in Ruhe (Spielkonzept 4.13).
-func _reveal_to_player(spot: HideSpot) -> void:
-	var player := Game.player
-	if spot != null:
-		spot.rip_open()
-		player.exit_hide()
-	_monster.reveal(player.camera)
-	Game.play_sound("sting", 1.0)
-	_jumpscare = 0.6
-	await get_tree().create_timer(1.8, false).timeout
-	_jumpscare = 1.0
-	Game.play_sound("bang", 0.5)
-	await get_tree().create_timer(0.15, false).timeout
-	_monster.vanish_after_reveal(player)
 
 
 # --- Unheimliche Kleinigkeiten ---------------------------------------------------------------
