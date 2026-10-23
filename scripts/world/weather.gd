@@ -6,6 +6,8 @@ extends Node3D
 ## Dazu Rauschen (SynthAudio.rain, drinnen dumpfer) und mehr Wolken. Bei Gewitter: Blitze (Mondlicht und Himmel
 ## blitzen kurz auf, das Licht fällt durch die Fenster) und Donner einige Sekunden später – Lärm ohne Quelle: Er lockt
 ## niemanden, übertönt aber kurz alles, das Monster hört schlechter (masking, MonsterDirector.on_noise).
+## Um Mitternacht schlägt hinter der Waldkante eine Kirchturmglocke zwölfmal, tief und fern, drinnen leiser – kein
+## Lärm. Danach beginnt die Geisterstunde (SheetGhost, Spielkonzept 4.18).
 ## Nicht gespeichert: Nach dem Laden ist es klar.
 
 enum Kind { CLEAR, RAIN, STORM }
@@ -45,6 +47,14 @@ const MASK := 0.6
 const FLASH_ENERGY := 6.0
 const FLASH_DECAY := 6.0
 const CLOUDS_RAIN := 0.12
+## Kirchturmglocke um Mitternacht (Spielkonzept 7.8): so viele Schläge, so weit auseinander (s), Pegel, drinnen so viel
+## davon, Tonhöhe (tiefer als die Totenglocke – eine große Glocke weit weg)
+const BELL := "res://assets/sound/church_bell.wav"
+const BELL_STRIKES := 12
+const BELL_GAP := 1.3
+const BELL_DB := -9.0
+const BELL_INSIDE := 0.5
+const BELL_PITCH := 0.6
 
 var kind := Kind.CLEAR
 var intensity := 0.0              ## 0 … 1, folgt dem Wetter weich
@@ -65,6 +75,10 @@ var _rain_psx := true             ## Aussehen der Tropfen, wie es gerade gebaut 
 var _roofs: Image
 var _origin := Vector2.ZERO
 var _rows_done := 0
+var _bell: AudioStreamPlayer
+var _bell_left := 0               ## so viele Schläge stehen noch aus
+var _bell_timer := 0.0
+var _last_hour := -1.0
 
 
 func setup(builder: LevelBuilder, moon: DirectionalLight3D, sky: ShaderMaterial) -> void:
@@ -77,6 +91,11 @@ func setup(builder: LevelBuilder, moon: DirectionalLight3D, sky: ShaderMaterial)
 	_timer = randf_range(FIRST_CLEAR.x, FIRST_CLEAR.y)
 	_prepare_roofs()
 	_build_rain()
+	_bell = AudioStreamPlayer.new()
+	_bell.stream = load(BELL)
+	_bell.pitch_scale = BELL_PITCH
+	_bell.max_polyphony = 3   # jeder Schlag klingt aus, während der nächste kommt
+	add_child(_bell)
 
 
 func _process(delta: float) -> void:
@@ -98,6 +117,34 @@ func _process(delta: float) -> void:
 	_update_flash(delta)
 	_mask = maxf(0.0, _mask - delta)
 	_update_rain()
+	_update_bell(delta)
+
+
+## Wechselt die Uhr über Mitternacht, schlägt die Glocke BELL_STRIKES-mal.
+func _update_bell(delta: float) -> void:
+	if Game.director == null:
+		return
+	var hour := Calendar.hour_of(Game.director.elapsed)
+	if _last_hour >= 23.0 and hour < 1.0:
+		_bell_left = BELL_STRIKES
+		_bell_timer = 0.0
+		Game.caption("[Eine Kirchturmglocke schlägt Mitternacht]")
+		if Game.tracing:
+			print("[Wetter] Kirchturmglocke: Mitternacht am %d." % Calendar.today())
+	_last_hour = hour
+	if _bell_left <= 0:
+		return
+	_bell_timer -= delta
+	if _bell_timer > 0.0:
+		return
+	_bell_timer = BELL_GAP
+	_bell_left -= 1
+	var p := Game.player
+	var inside := p != null and not _builder.is_outdoor(p.global_position)
+	var gain := Settings.effects_volume * (BELL_INSIDE if inside else 1.0)
+	if gain > 0.0:
+		_bell.volume_db = BELL_DB + linear_to_db(gain)
+		_bell.play()
 
 
 ## Debug (--weather=…) und Zeitplan: Wetter wechseln. instant: sofort volle Stärke.

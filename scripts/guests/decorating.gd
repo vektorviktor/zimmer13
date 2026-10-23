@@ -180,7 +180,7 @@ func _can_start() -> bool:
 		return false
 	if Game.monster.is_active() or (Game.ghost and Game.ghost.is_active()) or (Game.pumpkin and Game.pumpkin.is_hunting()):
 		return false
-	return not Game.director.wants_first_attack_party()
+	return not (Game.contest and Game.contest.holds_parties())   # Abend der Siegerehrung (2.5)
 
 
 ## Rufen die Gäste von selbst zum Schmücken auf? Nur tagsüber und wenn es ruhig ist.

@@ -23,6 +23,8 @@
 #   Stellen zählen; Haut, Schuhe und Augen bleiben.
 # - Formschlüssel „build“ (Körperbau): Bauch, Hüfte, Oberarme, Schenkel und Hals entlang der
 #   Oberfläche nach außen. 1 = kräftig, negativ = schlank.
+# - Formschlüssel „fit“ (definiert, Ecke im Dreieck der Spielerfigur): Schultern, Oberarme, Brust und
+#   Waden nach außen, Bauch flacher. 0 … 1.
 # - Blick nach −Z, Füße auf y = 0. Größe bleibt (Meter) – skaliert wird im Spiel je Gast.
 import bpy, sys, os, math
 import numpy as np
@@ -44,6 +46,15 @@ BUILD_PUSH = {
 	"LeftUpLeg": 0.020, "RightUpLeg": 0.020, "LeftLeg": 0.006, "RightLeg": 0.006,
 }
 BELLY_FORWARD = 0.03      # Bauch zusätzlich nach vorn (m), nur Vorderseite
+## Formschlüssel „fit“ (definiert, Spielerfigur, Spielkonzept 3.9): Schultern, Arme, Brust und Waden nach außen,
+## Bauch und Taille etwas flacher
+FIT_PUSH = {
+	"LeftShoulder": 0.040, "RightShoulder": 0.040, "Neck": 0.008, "Spine2": 0.028, "Spine1": -0.006,
+	"Spine": -0.022, "Hips": -0.008,
+	"LeftArm": 0.028, "RightArm": 0.028, "LeftForeArm": 0.014, "RightForeArm": 0.014,
+	"LeftUpLeg": 0.012, "RightUpLeg": 0.012, "LeftLeg": 0.014, "RightLeg": 0.014,
+}
+CHEST_FORWARD = 0.020     # Brust zusätzlich nach vorn (m), nur Vorderseite
 KEEP_EXTRA_BONES = False  # Meshys „headfront“ hat keine Gewichte
 ARM_MAX = 32.0            # stehen die Arme weiter ab (Grad, Schulter → Handgelenk gegen die Senkrechte) …
 ARM_DOWN = 20.0           # … werden sie auf diesen Winkel abgesenkt
@@ -285,6 +296,22 @@ for v in mesh.vertices:
 	n = normal_at[tuple(round(c, 5) for c in v.co)].normalized()
 	front = max(0.0, n.dot(fwd))
 	sk.data[v.index].co = v.co + n * push * unit + fwd * BELLY_FORWARD * unit * belly * front * front
+
+# --- Formschlüssel „fit“ (definiert) -----------------------------------------------------------
+fit = body.shape_key_add(name="fit", from_mix=False)
+chest_ids = {vg.index for vg in body.vertex_groups if vg.name == "Spine2"}
+for v in mesh.vertices:
+	push = 0.0
+	chest = 0.0
+	for g in v.groups:
+		push += FIT_PUSH.get(gname[g.group], 0.0) * g.weight
+		if g.group in chest_ids:
+			chest += g.weight
+	if push == 0.0:
+		continue
+	n = normal_at[tuple(round(c, 5) for c in v.co)].normalized()
+	front = max(0.0, n.dot(fwd))
+	fit.data[v.index].co = v.co + n * push * unit + fwd * CHEST_FORWARD * unit * chest * front * front
 # Laufweite: Fußweg in der Standphase je Sekunde (Animationen laufen auf der Stelle)
 fps = scene.render.fps / scene.render.fps_base
 
@@ -366,6 +393,10 @@ if PREVIEW:
 	sk.value = -0.6
 	shot("slim_side", math.pi / 2)
 	sk.value = 0.0
+	fit.value = 1.0
+	shot("fit_front")
+	shot("fit_side", math.pi / 2)
+	fit.value = 0.0
 	for k, a in actions.items():
 		arm.animation_data.action = a
 		f0, f1 = a.frame_range

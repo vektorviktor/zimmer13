@@ -3,6 +3,7 @@ extends Node3D
 ## Gastmodell aus einem Grundkörper (Spielkonzept 6.0, „Gastmodelle“): Meshy-Figur mit Mixamo-Skelett,
 ## gebaut von tools/build_guest.py. Je Gast verschieden: Größe, Schulterbreite, Körperbau
 ## (Formschlüssel „build“), die Farben von Oberteil, Hose und Haaren und der Hautton (psx_guest.gdshader).
+## Auch die Spielerfigur (PlayerBody, Spielkonzept 3.9) ist ein GuestBody – dazu Formschlüssel „fit“ (definiert).
 ##
 ## Bewegung: Gehen, Rennen und die Tänze (Mixamo, umgerechnet von tools/build_guest.py) kommen aus
 ## der GLB, alles andere aus den Arm-Pivots des Gastes – die Posen in Guest (Tragen, Panik, Sitzen)
@@ -81,6 +82,7 @@ var _head := 1.0           ## Kopfgröße (Kinder größer, Spielkonzept 6.13)
 var _breath := 0.0
 var head_shrink := 1.0   ## unter dem Bettlaken-Kostüm kleiner, damit er nicht durch den Stoff sticht (Costume)
 var dance := ""   ## Name aus DANCES, solange der Gast tanzt (setzt Guest._dance_pose)
+var head_pitch := 0.0   ## Kopf nach oben (+) bzw. unten (−) geneigt, rad – die Spielerfigur folgt dem Blick
 
 
 ## Grundkörper für einen Gast – "" = keiner passt (dann bleibt die Klötzchenfigur). Feste Gäste
@@ -139,6 +141,9 @@ func setup(id: String, profile: Dictionary) -> void:
 	var shape := _mesh.find_blend_shape_by_name("build")
 	if shape >= 0:
 		_mesh.set_blend_shape_value(shape, float(profile.get("build", 0.0)))
+	shape = _mesh.find_blend_shape_by_name("fit")
+	if shape >= 0:
+		_mesh.set_blend_shape_value(shape, float(profile.get("fit", 0.0)))
 	_scale = float(profile.get("height_cm", _info["height"] * 100.0)) / 100.0 / float(_info["height"])
 	_width = clampf(float(profile.get("width_cm", _info["width"] * 100.0)) / 100.0 / (float(_info["width"]) * _scale),
 		WIDTH_LIMIT.x, WIDTH_LIMIT.y)
@@ -228,6 +233,9 @@ func animate(delta: float, speed: float, running: bool, arms: Array, arms_free: 
 		_turn("Spine1", Vector3.RIGHT, sin(_breath) * 0.02)
 	# Der Kopf bleibt schmal, wenn der Körper breiter wird – bei Kindern ist er größer
 	_skeleton.set_bone_pose_scale(_bone["Head"], Vector3(_head / _width, _head, _head) * head_shrink)
+	if head_pitch != 0.0:   # Hals und Kopf teilen sich die Neigung (Mixamo: Querachse = x)
+		_turn("Neck", Vector3.RIGHT, -head_pitch * 0.4)
+		_turn("Head", Vector3.RIGHT, -head_pitch * 0.6)
 	if sitting:
 		for leg in LEGS:
 			_aim(leg[0], leg[1], Vector3(0, -0.15, -1))

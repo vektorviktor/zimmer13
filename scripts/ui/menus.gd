@@ -3,23 +3,36 @@ extends CanvasLayer
 ## Spielmenü (Esc) und Tagebuch (Spielkonzept 8.3, 8.5). Solange etwas offen ist,
 ## pausiert das Spiel komplett. Esc schließt zuerst ein offenes Fenster (Dialog,
 ## Tagebuch, Untermenü) und öffnet sonst das Menü – auch im Versteck und im Minispiel.
+## Hilfe (2.5): Tastenübersicht und ein paar Sätze zu den Grundlagen – Einträge zu Monster und Verstecken erst nach dem
+## ersten Angriff, damit sie den friedlichen Anfang nicht verraten (2.1).
 
+## Taste, Bedeutung – mit drittem Eintrag "danach" erst nach dem ersten Angriff, "debug" nur mit Debug-Konsole
 const CONTROLS := [
 	["W A S D / Maus", "Laufen / Umsehen"],
 	["Shift", "Rennen (macht Lärm, kostet Ausdauer)"],
-	["Leertaste", "Springen"],
+	["Leertaste", "Springen · Aufstehen"],
 	["Strg / C", "Ducken"],
-	["E", "Nehmen, Benutzen, Türen, Licht, Vorhänge, Reden, Verstecken"],
+	["E", "Nehmen, Benutzen, Reden, Hinsetzen"],
 	["G", "Gegenstand ablegen"],
-	["Q (halten)", "Tasche – Maus / Mausrad / 1–6 wählt, Loslassen nimmt in die Hand"],
+	["Q (halten)", "Tasche: wählen, loslassen nimmt in die Hand"],
 	["1–6", "Fach der Tasche gleich in die Hand"],
-	["Rechtsklick (halten)", "Im Versteck Luft anhalten"],
-	["Tab (halten)", "Kartenblätter ansehen – Linksklick / Mausrad blättert"],
+	["Rechtsklick (halten)", "Im Versteck Luft anhalten", "danach"],
+	["Tab (halten)", "Karte ansehen – Klick / Mausrad blättert"],
 	["F (halten)", "Kompass ansehen"],
-	["Linksklick / R", "Taschenlampe an/aus / normales Licht ↔ UV · Dose trinken"],
+	["Linksklick / R", "Lampe an/aus / Licht ↔ UV · Dose trinken"],
 	["1–9", "Antwort im Gespräch wählen"],
 	["Esc", "Fenster schließen / Spielmenü"],
-	["F3 / F5 / F6", "Debug-Werte / Monster rufen / Teleport"],
+	["F3 / F5 / F6", "Debug-Werte / Monster rufen / Teleport", "debug"],
+]
+## Grundlagen – mit "danach" erst nach dem ersten Angriff
+const BASICS := [
+	["Was [E] tut, steht unten, sobald du etwas ansiehst – Tür, Licht, Gegenstand, Gast."],
+	["Du trägst alles in der Hand. Kleines passt in die Tasche, Großes trägst du einzeln."],
+	["Speichern kannst du nur am Tagebuch auf dem Schreibtisch in Zimmer 13."],
+	["Tag und Uhrzeit: Wanduhr in der Lobby, Kalender in Zimmer 13, dieses Menü."],
+	["Mitteilungen der Direktion hängen am Brett in der Lobby."],
+	["Flackert das Licht und rauscht es, ist es unterwegs. Schränke und Betten sind Verstecke.", "danach"],
+	["Deko im Licht vor deiner Tür hält es fern – die Puppe zeigt, wessen Tür am schwächsten ist.", "danach"],
 ]
 
 var _root: Control
@@ -43,10 +56,10 @@ func is_open() -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed("pause") or Game.game_over:
+	if not event.is_action_pressed("pause") or Game.game_over or Game.creating:
 		return
 	if _screen != "":
-		if _screen in ["load", "settings", "controls", "confirm"]:
+		if _screen in ["load", "settings", "help", "confirm"]:
 			_show_pause()
 		else:
 			close()
@@ -114,7 +127,7 @@ func _show_pause() -> void:
 	box.add_child(first)
 	box.add_child(UiKit.button("Laden", _show_load))
 	box.add_child(UiKit.button("Einstellungen", _show_settings))
-	box.add_child(UiKit.button("Steuerung", _show_controls))
+	box.add_child(UiKit.button("Hilfe", _show_help))
 	box.add_child(UiKit.button("Zum Hauptmenü", _confirm.bind("Zum Hauptmenü?", Game.go_to_title)))
 	box.add_child(UiKit.button("Spiel beenden", _confirm.bind("Spiel beenden?", func() -> void: get_tree().quit())))
 	box.add_child(UiKit.wrap_label("Speichern nur am Tagebuch in Zimmer 13.", 8, Color(0.45, 0.4, 0.32)))
@@ -140,16 +153,33 @@ func _show_settings() -> void:
 	box.add_child(panel)
 
 
-func _show_controls() -> void:
-	var box := _new_sheet("controls", "Steuerung", 300.0)
+## Hilfe: links die Tasten, rechts die Grundlagen.
+func _show_help() -> void:
+	var box := _new_sheet("help", "Hilfe", 450.0)
+	var after := Game.director != null and Game.director.first_attack_done
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 14)
+	box.add_child(row)
 	var grid := GridContainer.new()
 	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 1)
-	box.add_child(grid)
-	for entry in CONTROLS:
-		grid.add_child(UiKit.label(entry[0], 9, UiKit.ACCENT))
-		grid.add_child(UiKit.label(entry[1], 9))
+	row.add_child(grid)
+	for entry: Array in CONTROLS:
+		var tag := String(entry[2]) if entry.size() > 2 else ""
+		if (tag == "danach" and not after) or (tag == "debug" and not DebugConsole.enabled()):
+			continue
+		grid.add_child(UiKit.label(entry[0], 8, UiKit.ACCENT))
+		grid.add_child(UiKit.label(entry[1], 8))
+	var basics := VBoxContainer.new()
+	basics.custom_minimum_size.x = 130.0
+	basics.add_theme_constant_override("separation", 4)
+	row.add_child(basics)
+	basics.add_child(UiKit.label("Grundlagen", 9, UiKit.ACCENT))
+	for entry: Array in BASICS:
+		if entry.size() > 1 and not after:
+			continue
+		basics.add_child(UiKit.wrap_label(entry[0], 8, UiKit.INK))
 	box.add_child(UiKit.button("Zurück", _show_pause))
 
 

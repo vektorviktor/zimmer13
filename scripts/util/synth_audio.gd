@@ -49,7 +49,7 @@ const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
 	"rustle": 0.3, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
-	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6,
+	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
 }
 
 var hum := 0.0
@@ -214,7 +214,7 @@ func _process(delta: float) -> void:
 		return
 	_music_volume = Settings.music_volume
 	_effects_volume = Settings.effects_volume
-	_damp = move_toward(_damp, 0.25 if get_tree().paused else 1.0, 0.05)
+	_damp = move_toward(_damp, 0.25 if get_tree().paused and not Game.creating else 1.0, 0.05)   # Charaktererstellung: ungedämpft
 	_update_pant(delta)
 	var frames := _playback.get_frames_available()
 	var dt := 1.0 / RATE
@@ -380,6 +380,27 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			var strike := exp(-fmod(t, 1.0 / 30.0) * 90.0)
 			var fade := minf(1.0, (float(shot["dur"]) - t) * 4.0)
 			return (sin(TAU * 1750.0 * t) + sin(TAU * 2440.0 * t) * 0.6) * strike * fade * 0.3
+		"tap":
+			# Wasserhahn (Erwachen am Waschbecken, 3.9): helles Rauschen, das unruhig plätschert, sanft an und aus
+			var twin := minf(1.0, t * 3.0) * minf(1.0, (float(shot["dur"]) - t) * 1.5)
+			var gurgle := 0.55 + 0.45 * sin(TAU * 11.0 * t + 3.0 * sin(TAU * 2.3 * t)) * sin(TAU * 17.0 * t)
+			return ((white - _lp_fast) * 0.35 + _lp_fast * 0.5) * gurgle * twin * 0.35
+		"splash":
+			# Wasser ins Gesicht: ein nasser Klatsch, danach tropft es ins Becken
+			var slap := white * exp(-t * 14.0) * 0.8 + _lp_fast * exp(-t * 6.0) * 1.4
+			var drip := 0.0
+			for d: float in [0.45, 0.62, 0.84]:
+				if t > d:
+					drip += sin(TAU * (1500.0 - 300.0 * d) * (t - d)) * exp(-(t - d) * 45.0) * 0.15
+			return slap * minf(1.0, t * 200.0) + drip
+		"chime":
+			# Gong vor einer Durchsage (Spielkonzept 2.5, 5.9): „Ding-dong“ – zwei weiche Töne, große Terz abwärts
+			var tone := 659.3 if t < 0.55 else 523.3
+			var tt := t if t < 0.55 else t - 0.55
+			return (sin(TAU * tone * tt) + sin(TAU * tone * 2.0 * tt) * 0.2) * minf(1.0, tt * 80.0) * exp(-tt * 2.2) * 0.22
+		"poof":
+			# Puppe löst sich in Rauch auf (2.5): weiches Fauchen, das schnell anschwillt und verweht
+			return (_lp_fast * 1.6 + white * 0.15) * minf(1.0, t * 25.0) * exp(-t * 3.5) * 0.7
 		"thunder":
 			# Donner (Wetter, 7.8): kurzes Krachen, dann langes, schwankendes Grollen
 			var crack := white * exp(-t * 14.0) * 0.5

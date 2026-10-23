@@ -5,7 +5,7 @@ extends RefCounted
 ## Ursprung = Mitte des Haupteingangs auf der Südwand.
 ##
 ##   Erdgeschoss (y 0): Lobby mit Luftraum und Galerie (Treppe hinauf), Bar + Spiele, Partyraum über zwei
-##   Stockwerke, Toiletten · Ostflügel 0101–0181 · Westflügel 0201–0272 (Bauphase: Zimmer verschlossen, Flure
+##   Stockwerke, Toiletten · Ostflügel 001–049 · Westflügel 051–099 (Bauphase: Zimmer verschlossen, Flure
 ##   begehbar) · Küchenblock im Westflügel · Mittelgarten und vier Innenhöfe · Pool im Norden · Treppenhaus
 ##   Ost vom Untergeschoss bis ins Obergeschoss, Treppenhaus West gesperrt.
 ##   Obergeschoss (y 4, Spielkonzept 7.7): derselbe Bau in einem zweiten Durchgang (_upper_floor) unter dem
@@ -234,15 +234,15 @@ const WASHERS_PER_WALL := 12
 ## Rasterweite der Flächen-Nachschlagetabelle (Wandmaterial, Raum-IDs)
 const GRID := 0.25
 
-## Zimmer mit besonderer Rolle (Spielkonzept 7.5: die alten Nummern sind die Endziffern). Alle übrigen
+## Zimmer mit besonderer Rolle (Spielkonzept 7.5: die alten zweistelligen Nummern sind die Endziffern). Alle übrigen
 ## Zimmer im Ostflügel sind unbewohnt („vacant“), die im Westflügel noch verschlossen (Bauphase).
 ## Arten: player, guest, empty, vacant (unbewohnt, Licht aus), laundry, abandoned, derelict, locked.
-const PLAYER_ROOM := "0113"
-const COMPASS_ROOM := "0126"
-const LOCKED_ROOM := "0118"
+const PLAYER_ROOM := "013"
+const COMPASS_ROOM := "026"
+const LOCKED_ROOM := "018"
 const ROOM_KINDS := {
-	"0111": "guest", "0112": "guest", "0113": "player", "0114": "empty", "0115": "guest",
-	"0116": "laundry", "0117": "abandoned", "0118": "locked", "0126": "derelict", "0137": "derelict",
+	"011": "guest", "012": "guest", "013": "player", "014": "empty", "015": "guest",
+	"017": "abandoned", "018": "locked", "037": "derelict",
 }
 ## Flügel, deren Zimmer schon bewohnbar sind – im EG bzw. darüber (im Obergeschoss alle, 22.10.)
 const OPEN_WINGS := ["ost"]
@@ -251,12 +251,12 @@ const OPEN_WINGS_UPPER := ["ost", "west"]
 ## Inhalt, der nicht im Plan steht, je Raum-ID (Zimmernummer oder Bereich): Münzbetrag (ohne Eintrag 1),
 ## Kartenblatt, Zettel-Nummer (Spielkonzept 4.12) und UV-Schrift (4.16) der Objekte in diesem Raum.
 const CONTENT := {
-	"0113": {"coins": "3", "map": "eg", "uv": "DU WARST SCHON\nEINMAL HIER"},
-	"0114": {"note": "2003"},
-	"0116": {"note": "1994"},
-	"0117": {"coins": "2", "map": "keller", "note": "1987",
+	"013": {"coins": "3", "map": "eg", "uv": "DU WARST SCHON\nEINMAL HIER"},
+	"014": {"note": "2003"},
+	"017": {"coins": "2", "map": "keller", "note": "1987",
 		"uv": "ICH HABE ES GEBLENDET.\nJETZT KENNT ES MEINE TÜR.\n– E. K."},
-	"0118": {"coins": "5", "uv": "NUR EINER\nKOMMT HINAUS"},
+	"018": {"coins": "5", "uv": "NUR EINER\nKOMMT HINAUS"},
+	"ug_laundry_room_1": {"note": "1994"},   # Wäscherei im Keller (seit 23.10. ohne Zimmernummer)
 	"lobby": {"note": "2019", "map": "og"},   # Kartenblatt Obergeschoss an der Rezeption (Spielkonzept 3.2)
 }
 ## Möbel ohne eigenes Bauteil (Kästen in der Grundfläche aus dem Plan): Art → Höhe
@@ -271,8 +271,12 @@ const BOX_HEIGHTS := {
 const CHAIR_BACK := 0.45
 ## Sitzmöbel (Seat): Aufstehen so weit vor der Sitzkante (Spielerradius und etwas Luft)
 const SEAT_CLEAR := 0.33
-const MIRROR_SIZE := Vector2(0.6, 0.7)
-const MIRROR_Y := 1.55
+## Spiegel über dem Waschbecken (Mirror): Breite höchstens, Unter- und Oberkante über dem Boden, so nah rechnet er
+const MIRROR_WIDTH := 0.6
+const MIRROR_BOTTOM := 1.1
+const MIRROR_TOP := 1.95
+const MIRROR_RANGE := 6.0
+const MIRROR_GAP := 0.03   ## vor der Wand (näher verschwindet er im Vertex-Snapping des PS1-Looks hinter ihr)
 const DOORMAT_H := 0.012
 ## Süßigkeiten-Truhe (Truhe aus dem Plan in einem Hotelzimmer, Spielkonzept 6.13): Höhe, Holz, Inhalt
 const SWEETS_CHEST_H := 0.32
@@ -286,6 +290,17 @@ const RECEPTION_MODEL := "res://assets/models/reception.glb"
 ## Teppiche aus dem Plan: Art → Textur (TexGen); Oberseite knapp über dem Boden
 const RUG_TEXTURES := {"runner": "runner"}
 const RUG_Y := 0.01
+## Teppiche im Katzenraum auf dem Holzboden (nicht im Plan): Mitte als Anteil der Raumgrenzen, Größe quer × längs
+## in Metern (längs = +Z vor der Drehung), Drehung in Grad, Farbe (TexGen.RUG_COLORS). Ein Texturpixel ≈ RUG_PIXEL.
+const CAT_ROOM_RUGS := [
+	{"at": Vector2(0.5, 0.52), "size": Vector2(5.0, 7.0), "yaw": 0.0, "colors": 0},
+	{"at": Vector2(0.3, 0.2), "size": Vector2(1.8, 2.8), "yaw": 96.0, "colors": 2},
+	{"at": Vector2(0.72, 0.18), "size": Vector2(1.5, 2.2), "yaw": 80.0, "colors": 1},
+	{"at": Vector2(0.38, 0.84), "size": Vector2(2.0, 3.2), "yaw": 86.0, "colors": 3},
+	{"at": Vector2(0.82, 0.78), "size": Vector2(1.4, 2.2), "yaw": 0.0, "colors": 4},
+	{"at": Vector2(0.2, 0.55), "size": Vector2(1.2, 1.8), "yaw": 12.0, "colors": 1},
+]
+const RUG_PIXEL := 0.08
 ## Wandsachen: Abstand zur Wandfläche (bündig, ohne Flimmern) und Höhen über dem Boden
 const WALL_GAP := 0.01
 const SWITCH_Y := 1.3
@@ -328,6 +343,10 @@ const KIND_NAMES := {"cat_room": "Katzenraum", "library": "Bibliothek", "bath": 
 	"gravel": "Kiesweg"}
 ## Kratzbaum (Spielkonzept 7.7): Höhe der oberen Liegefläche
 const CAT_TREE_TOP := 1.45
+## Aushangbrett (Spielkonzept 2.5): an der Westwand der Lobby zwischen Glastür zur Bar und Wandleuchte – man sieht es,
+## wenn man aus dem Ostflur (Zimmer 13) hereinkommt; Mitte der Tafel so hoch
+const NOTICE_BOARD_Z := -16.6
+const NOTICE_BOARD_Y := 1.55
 
 var root: Node3D     ## NavigationRegion3D – statische Geometrie, wird fürs NavMesh geparst
 var world: Node3D    ## Hauptszene – dynamische Gegenstände
@@ -353,12 +372,15 @@ var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kei
 var player_spawn := Vector3.ZERO
 var player_door_front := Vector3.ZERO
 var record_player_pos := Vector3.ZERO
-## Dunkle Ecke des Partyraums (dort steht es beim ersten Angriff, MonsterDirector)
+## Dunkle Ecke des Partyraums (dort bleibt die Tanzfläche frei)
 var party_corner := Vector3.ZERO
 var game_table: GameTable
 var chess_table: ChessTable
 var bar_spots: Array[Vector3] = []
 var diary: Diary
+## Aushangbrett in der Lobby (Spielkonzept 2.5) und Innenmaß der Lobby (x, z)
+var notice_board: NoticeBoard
+var lobby_rect := Rect2()
 ## Treppenhaus zwischen den Geschossen (Ausbreitung der Flacker-Welle, MonsterDirector.wave_delay)
 var stairwell_point := Vector3.ZERO
 
@@ -432,7 +454,6 @@ var _grass: Material
 var _stone: Material
 var _gravel: Material
 var _ceramic: Material
-var _mirror: Material
 var _doormat: Material
 var _cellar_wall: Material
 var _cellar_floor: Material
@@ -699,7 +720,6 @@ func _materials() -> void:
 	_gravel = Mat.photo(GRAVEL_TEX, GRAVEL_METERS, GRAVEL_NORMAL)
 	(_gravel as ShaderMaterial).set_shader_parameter("normal_strength", GRAVEL_NORMAL_STRENGTH)
 	_ceramic = Mat.psx(Color(0.88, 0.88, 0.86))
-	_mirror = Mat.psx(Color(0.62, 0.7, 0.74))
 	_doormat = Mat.psx(Color(0.4, 0.3, 0.18))
 	# Untergeschoss (Spielkonzept 7.9): Wände aus Brettschalungsbeton, Boden und Decke einfach grau
 	_cellar_wall = Mat.photo(CELLAR_WALL_TEX, CELLAR_WALL_METERS, CELLAR_WALL_NORMAL)
@@ -1105,10 +1125,10 @@ func _wall_material(kind: String) -> Material:
 			_hall_wallpapers[below] = m
 		return _hall_wallpapers[below]
 	match kind:
-		"room", "sealed", "cat_room", "library":
+		"room", "sealed", "library":
 			return _room_wallpaper
-		"lobby":
-			return _lobby_wallpaper
+		"lobby", "cat_room":
+			return _lobby_wallpaper   # rote Rauten
 		"corridor", "bar", "party", "service", "stairs", "elevator":
 			return _wallpaper
 	return null
@@ -1753,6 +1773,25 @@ func _rugs() -> void:
 		var mi := Geo.mesh(root, mesh, Mat.layer_uv(RUG_TEXTURES[kind]), Vector3(c.x, RUG_Y, c.y))
 		if rect.size.y > rect.size.x:
 			mi.rotation.y = PI / 2.0
+	for r in _map["regions"]:
+		if String(r["kind"]) == "cat_room":
+			_cat_room_rugs(_bounds(r["rects"]))
+
+
+## Lose Teppiche im Katzenraum (CAT_ROOM_RUGS): flache Auflagen wie die Läufer, jeder ein paar Millimeter höher
+## als der vorige, falls sie sich überlappen.
+func _cat_room_rugs(b: Rect2) -> void:
+	for i in CAT_ROOM_RUGS.size():
+		var r: Dictionary = CAT_ROOM_RUGS[i]
+		var size: Vector2 = r["size"]
+		var c := b.position + b.size * (r["at"] as Vector2)
+		var tex := TexGen.rug(r["colors"], maxi(8, roundi(size.x / RUG_PIXEL)), maxi(8, roundi(size.y / RUG_PIXEL)))
+		var plane := PlaneMesh.new()
+		plane.size = size
+		plane.subdivide_width = maxi(0, ceili(size.x / Geo.MAX_FACE) - 1)
+		plane.subdivide_depth = maxi(0, ceili(size.y / Geo.MAX_FACE) - 1)
+		var mi := Geo.mesh(root, plane, Mat.layer_tex(tex), Vector3(c.x, RUG_Y + i * 0.003, c.y))
+		mi.rotation.y = deg_to_rad(r["yaw"])
 
 
 ## Doppelbett aus dem Plan (map_legend.png): Versteck wie das Bett (unters Bett kriechen), so groß wie seine
@@ -1830,15 +1869,23 @@ func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) ->
 				porthole.rotation.z = PI / 2.0
 			else:
 				porthole.rotation.x = PI / 2.0
-		"chair", "sink":
-			# Lehne bzw. Spiegel an der Rückseite, quer zur Vorderseite
+		"chair":
+			# Lehne an der Rückseite, quer zur Vorderseite
 			var across := absf(front.y) > 0.5
 			var back := Vector3(-front.x * (rect.size.x / 2.0 - 0.025), 0, -front.y * (rect.size.y / 2.0 - 0.025))
 			var width := rect.size.x if across else rect.size.y
-			var size := Vector3(width, CHAIR_BACK, 0.05) if kind == "chair" else Vector3(minf(width, MIRROR_SIZE.x), MIRROR_SIZE.y, 0.02)
-			var y := height / 2.0 + CHAIR_BACK / 2.0 if kind == "chair" else MIRROR_Y - height / 2.0
-			Geo.mesh(body, Geo.box(size if across else Vector3(size.z, size.y, size.x)), mat if kind == "chair" else _mirror,
-				back + Vector3(0, y, 0))
+			var size := Vector3(width, CHAIR_BACK, 0.05)
+			Geo.mesh(body, Geo.box(size if across else Vector3(size.z, size.y, size.x)), mat,
+				back + Vector3(0, height / 2.0 + CHAIR_BACK / 2.0, 0))
+		"sink":
+			# Spiegel mit Spiegelbild (Mirror) an der Wand hinter dem Becken – Unterkante MIRROR_BOTTOM, Oberkante
+			# MIRROR_TOP: Figuren von 1,45 bis 2,00 m sehen darin Scheitel und Bauch (Spielkonzept 3.9)
+			var across := absf(front.y) > 0.5
+			var width := minf(rect.size.x if across else rect.size.y, MIRROR_WIDTH)
+			var back := Vector3(-front.x * (rect.size.x / 2.0 - MIRROR_GAP), 0, -front.y * (rect.size.y / 2.0 - MIRROR_GAP))
+			var mid := (MIRROR_BOTTOM + MIRROR_TOP) / 2.0 - height / 2.0
+			Mirror.make(body, Vector2(width, MIRROR_TOP - MIRROR_BOTTOM), back + Vector3(0, mid, 0),
+				Vector3(front.x, 0, front.y), MIRROR_RANGE).add_to_group("sink_mirrors")
 	if kind in ["bench", "chair", "toilet"]:
 		# Sitzplätze (Seat): Bank je SPOT_WIDTH einer, Stuhl und Toilette einer – Blick zur Vorderseite
 		var across := absf(front.y) > 0.5
@@ -2180,9 +2227,10 @@ func _furnishing(kind: String, area: String) -> Dictionary:
 # --- Lobby und Galerie ---------------------------------------------------------------------------------
 
 ## Lobby: Teppich vor der Rezeption, Liegeplatz der Katzen auf der Rezeption, Sitzplätze vor den Sofas,
-## Schilder. Die Einrichtung steht im Plan.
+## Schilder, Aushangbrett (2.5). Die Einrichtung steht im Plan.
 func _lobby_hall() -> void:
 	lobby_center = Vector3(_lobby.get_center().x, 0, _lobby.get_center().y)
+	lobby_rect = _lobby
 	var west := _lobby.position.x
 	var east := _lobby.end.x
 	Geo.mesh(root, Geo.box(Vector3(6.0, 0.02, 8.0)), Mat.layer(Color(0.32, 0.07, 0.08)), Vector3(0, 0.01, -5.0))
@@ -2208,6 +2256,10 @@ func _lobby_hall() -> void:
 	_sign("PARTY", Vector3(east - 0.11, 2.75, -13.0), -90.0)
 	_sign("GARTEN", Vector3(-5.5, 2.75, _lobby.position.y + 0.11), 0.0)
 	_sign("POOL", Vector3(5.5, 2.75, _lobby.position.y + 0.11), 0.0)
+	notice_board = NoticeBoard.new()
+	notice_board.position = Vector3(west + WALL_GAP, NOTICE_BOARD_Y, NOTICE_BOARD_Z)
+	notice_board.rotation.y = PI / 2.0   # +Z in die Lobby
+	_parent.add_child(notice_board)
 
 
 ## Wanduhr über dem Haupteingang (WallClock): Mitte über der Tür, Zifferblatt in die Lobby, ohne Kollision.
@@ -3106,8 +3158,7 @@ func _zones() -> void:
 		zone["curiosity"] = 50.0
 	spawn_points = [
 		cellar_center() + Vector3(0, 0.05, 0),                             # Heizkeller – das Versteck des Monsters
-		(rooms["0117"]["center"] as Vector3) + Vector3(0, 0.05, 0),        # verlassenes Zimmer
-		(rooms["0116"]["center"] as Vector3) + Vector3(0, 0.05, 0),        # Wäscherei
+		(rooms["017"]["center"] as Vector3) + Vector3(0, 0.05, 0),        # verlassenes Zimmer
 		garden_spots[0] + Vector3(0, 0.05, -12.0),                         # Garten
 	]
 

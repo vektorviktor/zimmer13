@@ -23,8 +23,13 @@ extends Node3D
 ## es ihn manchmal dorthin. Er steht lautlos vor der geschlossenen Tür und kreist mit den Händen, die Gespenster
 ## kreisen mit; drinnen dreht sich der Blick ganz langsam zur Tür (durch die Wand), ein Gast starrt hin und geht
 ## irgendwann aufmachen – außer jemand ist bei ihm. Wer die Tür öffnet, den packt er. Nach DOOR_TIME ist er weg.
+## Geisterstunde (Spielkonzept 4.18, 2026-10-23): Nach der Mitternachtsglocke (Weather) bis 1 Uhr zieht er kaum
+## sichtbar durch die Flure des Obergeschosses (PATROL) – nur Flocken und leiser Klang. Sieht er den Spieler im Flur
+## (Senses.can_see), schwebt er auf ihn zu: Die ersten HOUR_WARNINGS Begegnungen verschwindet er kurz vor ihm, danach
+## würgt er (eigener Zähler hour_meetings, seine Stufe bleibt). Greift eine der Flur-Regeln (Schwäche, ab dem 6. Mal,
+## Garantie) oder kommt man ihm ans dunkle Fenster, wird ein gewöhnlicher Besuch daraus; schwache Gäste im Flur ebenso.
 
-enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN, DOOR }
+enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN, DOOR, PATROL }
 
 const MODEL := "res://assets/models/ghost.glb"
 const AMBIENCE := "res://assets/sound/ghost_ambience.mp3"
@@ -124,8 +129,23 @@ const WARN_RANGE := 3.0
 const CATCH_UP_DAY := 20
 const CATCH_UP_VISITS := 3
 const CATCH_UP_COOLDOWN := 8.0
+## Geisterstunde: beginnt, wenn die Glocke ausgeschlagen hat, endet um HOUR_END Uhr; so viele Begegnungen nur Warnung
+const HOUR_START := Weather.BELL_STRIKES * Weather.BELL_GAP / Calendar.HOUR
+const HOUR_END := 1.0
+const HOUR_WARNINGS := 3
+const PATROL_SPEED := 0.8
+const PATROL_FADE := 0.12             ## so deutlich ist er, solange er niemanden bemerkt hat (Raster, kaum zu sehen) …
+const PATROL_SOUND := 0.45            ## … sein Klang so laut, die Flocken so deutlich (Anteil von ganz da)
+const PATROL_FLAKES := 0.7
+const PATROL_SIGHT := 7.0             ## Grundsichtweite nach Senses.can_see (Monster: 8 m) und Blickkegel
+const PATROL_FOV := 0.3
+const PATROL_LEG := Vector2(8.0, 30.0)   ## so weit liegt das nächste Ziel im Flur
+const PATROL_AWAY := 15.0             ## so weit vom Spieler taucht er auf (wo der nicht hinsieht)
+const HOUR_PAUSE := 8.0               ## nach einer Begegnung so lange, bis er wieder umgeht
+const DEBUG_CALM := 120.0             ## Debug (--ghost=stunde): so lange ruht das Monster mindestens
 
 var visits := 0          ## so oft ist er schon beim Spieler erschienen (Stufe)
+var hour_meetings := 0   ## so oft hat er den Spieler in der Geisterstunde bemerkt (gespeichert)
 var state := State.IDLE
 var debug_ignore_player := false   ## Debug (--shock=id,ghost): Spieler zählt bei Gästen nicht als Zeuge
 var catch_up_day := false   ## am CATCH_UP_DAY hat er aufgeholt – der ganze Tag zählt (gespeichert)
@@ -165,6 +185,15 @@ var _door_room: Dictionary = {}   ## Zimmer, vor dessen Tür er steht (LevelBuil
 var _door_deco: Array[Item] = []  ## die Lakengespenster dort – sie kreisen mit
 var _windows: Array[Node] = []    ## Fenstertüren und Fenster, je Prüfung (_check_spawn) einmal gelesen – _window_near läuft für jeden Gast …
 var _dark := {}                   ## … ebenso Raum-ID → dunkel?
+var _hour_meeting := false        ## der laufende Auftritt ist eine Begegnung in der Geisterstunde
+var _hour_pause := 0.0            ## so lange, bis er in der Geisterstunde wieder umgeht (eigene Pause, nicht _cooldown)
+var _eyes: Area3D                 ## Beobachter für Senses.can_see (ohne Form, stört keinen Strahl)
+var _patrol_points := {}          ## Boden (gerundet) → Flurpunkte dieses Stockwerks (beim ersten Umgehen gesammelt)
+var _floor_y := 0.0               ## Boden des Stockwerks, auf dem er umgeht
+var _path := PackedVector3Array()
+var _path_i := 0
+var _patrol_check := 0.0
+var _debug_hour_near := false     ## Debug (--ghost=stunde): taucht im Flur des Spielers auf
 
 
 func _ready() -> void:
@@ -190,6 +219,12 @@ func _ready() -> void:
 	_ambience.position.y = HANDS_Y
 	add_child(_ambience)
 	_build_flakes(mesh)
+	_eyes = Area3D.new()
+	_eyes.collision_layer = 0
+	_eyes.collision_mask = 0
+	_eyes.monitoring = false
+	_eyes.monitorable = false
+	add_child(_eyes)
 	_hide()
 
 
@@ -238,6 +273,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_time += delta
 	_cooldown = maxf(0.0, _cooldown - delta)
+	_hour_pause = maxf(0.0, _hour_pause - delta)
 	if state == State.IDLE:
 		player.trance = maxf(0.0, player.trance - TRANCE_DECAY * delta)
 		_check -= delta
@@ -249,7 +285,7 @@ func _physics_process(delta: float) -> void:
 		if state != State.FADE:   # das Monster war schneller – ihn selbst hört man nicht mehr
 			_ambience.stop()
 		return
-	if state != State.FADE:
+	if state not in [State.FADE, State.PATROL]:   # beim Umgehen sieht ihn kaum einer, ein Opfer hat er nicht
 		var seen_by := _witness_guests(global_position + Vector3.UP * HANDS_Y, _victim, DOOR_WITNESS_RANGE if state == State.DOOR else WITNESS_RANGE)
 		if seen_by.size() + _player_witness(global_position + Vector3.UP * HANDS_Y) >= WITNESSES:
 			for guest in seen_by:
@@ -298,7 +334,12 @@ func _physics_process(delta: float) -> void:
 			if _float_to(_grip_spot(), FLY_IN_SPEED, delta):
 				_grab()
 		State.DOOR:
-			_door_watch(delta)
+			if ghost_hour():   # die Glocke hat ausgeschlagen – er geht um
+				_vanish()
+			else:
+				_door_watch(delta)
+		State.PATROL:
+			_patrol(delta)
 		State.FADE:
 			_fade = maxf(0.0, _fade - delta / FADE_TIME)
 			if _fade <= 0.0:
@@ -306,8 +347,10 @@ func _physics_process(delta: float) -> void:
 				return
 	if state in [State.APPROACH, State.HOVER, State.ENTER, State.LURK, State.FLY_IN, State.DOOR] and _fade < 1.0:
 		_fade = minf(1.0, _fade + delta / APPEAR_TIME)
+	elif state == State.PATROL:
+		_fade = move_toward(_fade, PATROL_FADE, delta / APPEAR_TIME)
 	_material.set_shader_parameter("fade", _fade)
-	_flake_mat.set_shader_parameter("fade", _fade)
+	_flake_mat.set_shader_parameter("fade", _fade / PATROL_FADE * PATROL_FLAKES if state == State.PATROL else _fade)
 	_flakes.emitting = state != State.FADE
 	_update_ambience()
 	_update_trance(delta)
@@ -325,34 +368,53 @@ func _check_spawn() -> void:
 	var director := Game.director
 	if director == null or Game.game_over or director.other_threat_active(self):
 		return   # nur eine Bedrohung im Haus
+	_refresh_windows()
+	var hour := ghost_hour()
+	if not hour and _haunting() and _cooldown <= 0.0 and director.player_threat <= 0.0 and _check_doors():
+		return
+	if _player_free(player) and _haunting():
+		if _check_guarantee_hall(player) or _check_hall(player) or _check_player_window(player):
+			return
+	if hour:   # Geisterstunde: er geht um – zu Türen und Gästen an Fenstern kommt er solange nicht
+		if _hour_pause <= 0.0 and director.player_threat <= 0.0:
+			_start_patrol()
+		return
+	if _haunting() or _force_guest != null:
+		_check_guests()
+
+
+## Fenster und Fenstertüren neu lesen, Dunkelheit der Räume vergessen (je Prüfung einmal).
+func _refresh_windows() -> void:
 	_windows = get_tree().get_nodes_in_group("french_doors")   # zuerst: Dort kommt er am liebsten
 	_windows.append_array(get_tree().get_nodes_in_group("windows"))
 	_dark.clear()
-	if _haunting() and _cooldown <= 0.0 and director.player_threat <= 0.0 and _check_doors():
-		return
-	var safe := Game.social.builder.is_safe(player.global_position)   # Katzenraum (Spielkonzept 7.7)
-	if not (player.dead or player.hiding != null or player.in_dialog or safe) and _haunting():
-		if _check_guarantee_hall(player) or _check_hall(player):
-			return
-		var eye := player.camera.global_position
-		var window := _window_near(eye, visits + 1)
-		var chance := 0.0
-		if window != _last_window:
-			_last_window = window
+
+
+## Kann er zum Spieler kommen? Nicht zu Toten, Versteckten, im Gespräch und im Katzenraum (Spielkonzept 7.7).
+func _player_free(player: Player) -> bool:
+	return not (player.dead or player.hiding != null or player.in_dialog or Game.social.builder.is_safe(player.global_position))
+
+
+## Dunkles Fenster in der Nähe des Spielers: beim Betreten würfeln, beim Bleiben alle STAY_EVERY Sekunden.
+func _check_player_window(player: Player) -> bool:
+	var eye := player.camera.global_position
+	var window := _window_near(eye, visits + 1)
+	var chance := 0.0
+	if window != _last_window:
+		_last_window = window
+		_stay = STAY_EVERY
+		chance = _spawn_chance(player, window)
+	elif window != null:
+		_stay -= CHECK_EVERY
+		if _stay <= 0.0:
 			_stay = STAY_EVERY
-			chance = _spawn_chance(player, window)
-		elif window != null:
-			_stay -= CHECK_EVERY
-			if _stay <= 0.0:
-				_stay = STAY_EVERY
-				chance = 1.0 if catching_up() else minf(1.0, (FRENCH_DOOR_STAY if window is Door else STAY_CHANCE) + WEAK_CHANCE * player.weakness())
-		# in Gesellschaft kommt er nicht
-		if window != null and _cooldown <= 0.0 and director.player_threat <= 0.0 \
-				and _witness_guests(eye, player).size() < WITNESSES and randf() < chance:
-			_appear(window, player)
-			return
-	if _haunting() or _force_guest != null:
-		_check_guests()
+			chance = 1.0 if catching_up() else minf(1.0, (FRENCH_DOOR_STAY if window is Door else STAY_CHANCE) + WEAK_CHANCE * player.weakness())
+	# in Gesellschaft kommt er nicht
+	if window != null and _cooldown <= 0.0 and Game.director.player_threat <= 0.0 \
+			and _witness_guests(eye, player).size() < WITNESSES and randf() < chance:
+		_appear(window, player)
+		return true
+	return false
 
 
 ## Spukt er schon? Ab Tag FROM_DAY oder nach dem ersten Angriff, je nachdem, was früher kommt.
@@ -393,24 +455,27 @@ func _check_guests() -> void:
 ## je Sekunde auf – irgendwo vor oder hinter ihm, wo er gerade nicht hinsieht. Schwäche: je schwächer,
 ## desto öfter, ab WEAK_HALL auch vor dem 6. Mal, ab WEAK_SURE sicher, sobald man allein im Flur ist.
 func _check_hall(player: Player) -> bool:
-	var weak := player.weakness()
-	if Game.social == null or not _in_hall(player.global_position):
+	if not _hall_rule(player):
 		return false
-	if weak >= WEAK_SURE:
-		if _cooldown > 0.0 or Game.director.player_threat > 0.0 \
-				or _witness_guests(player.camera.global_position, player).size() >= WITNESSES:
-			return false
-	else:
-		if (visits + 1 < HALL_FROM and weak < WEAK_HALL) or not Game.social.all_asleep():
-			return false
-		if _cooldown > 0.0 or Game.director.player_threat > 0.0 \
-				or randf() >= HALL_CHANCE * (1.0 + WEAK_FASTER * weak) * CHECK_EVERY:
-			return false
 	var spot := _hall_spot(player)
 	if spot == Vector3.INF:
 		return false
 	_appear_in_hall(spot)
 	return true
+
+
+## Greift gerade eine Flur-Regel für den Spieler (ab dem 6. Mal bei Nachtruhe, Schwäche)? Würfelt dabei.
+func _hall_rule(player: Player) -> bool:
+	var weak := player.weakness()
+	if Game.social == null or not _in_hall(player.global_position):
+		return false
+	if weak >= WEAK_SURE:
+		return not (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
+				or _witness_guests(player.camera.global_position, player).size() >= WITNESSES)
+	if (visits + 1 < HALL_FROM and weak < WEAK_HALL) or not Game.social.all_asleep():
+		return false
+	return not (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
+			or randf() >= HALL_CHANCE * (1.0 + WEAK_FASTER * weak) * CHECK_EVERY)
 
 
 ## Wo er im Flur auftaucht: ein Wegpunkt HALL_DISTANCE vom Spieler auf seiner Höhe, im Flur, wo der Spieler gerade
@@ -429,9 +494,7 @@ func _hall_spot(player: Player) -> Vector3:
 
 ## Garantie (GUARANTEE_DAY): War er noch nie beim Spieler, kommt er sicher, sobald der allein im Flur ist – als Warnung.
 func _check_guarantee_hall(player: Player) -> bool:
-	if visits > 0 or Calendar.today() < GUARANTEE_DAY or Game.social == null or not _in_hall(player.global_position) \
-			or _cooldown > 0.0 or Game.director.player_threat > 0.0 \
-			or _witness_guests(player.camera.global_position, player).size() >= WITNESSES:
+	if not _guarantee_rule(player):
 		return false
 	var spot := _hall_spot(player)
 	if spot == Vector3.INF:
@@ -441,6 +504,12 @@ func _check_guarantee_hall(player: Player) -> bool:
 	if Game.tracing:
 		print("[Lakengeist] Garantie an Tag %d: Warnung im Flur" % Calendar.today())
 	return true
+
+
+func _guarantee_rule(player: Player) -> bool:
+	return not (visits > 0 or Calendar.today() < GUARANTEE_DAY or Game.social == null or not _in_hall(player.global_position) \
+			or _cooldown > 0.0 or Game.director.player_threat > 0.0 \
+			or _witness_guests(player.camera.global_position, player).size() >= WITNESSES)
 
 
 ## Holt er gerade auf (CATCH_UP_DAY)? Solange er noch keine CATCH_UP_VISITS Mal beim Spieler war – und hat er am
@@ -659,6 +728,7 @@ func _appear(window: Node3D, victim: Node3D) -> void:
 func _start_visit(victim: Node3D, window: Node3D) -> void:
 	_victim = victim
 	_warn_only = false
+	_hour_meeting = false
 	_victim_saw = false
 	if victim is Guest:
 		var guest := victim as Guest
@@ -702,6 +772,179 @@ func _open_french_door() -> void:
 ## Mitte des Fensters bzw. der Fenstertür (für den Abstand, ab dem er aufgibt).
 func _window_center(window: Node3D) -> Vector3:
 	return (window as Door).center() if window is Door else window.global_position
+
+
+# --- Geisterstunde ---------------------------------------------------------------------------
+
+## Läuft die Geisterstunde? Nach der Mitternachtsglocke bis HOUR_END Uhr – erst nach dem ersten Angriff (4.20).
+func ghost_hour() -> bool:
+	if Game.director == null or not Game.director.first_attack_done:
+		return false
+	var hour := Calendar.hour_of(Game.director.elapsed)
+	return hour >= HOUR_START and hour < HOUR_END
+
+
+## Er taucht im Flur des Obergeschosses auf, weit weg vom Spieler und wo der nicht hinsieht, und geht um.
+func _start_patrol() -> bool:
+	var player := Game.player
+	var near := _debug_hour_near and _in_hall(player.global_position)
+	var points := _corridor_points(player.global_position.y if near else _hour_floor())
+	var options: Array[Vector3] = []
+	for p in points:
+		var d := p.distance_to(player.global_position)
+		if near:
+			if d >= HALL_DISTANCE.x and d <= HALL_DISTANCE.y:
+				options.append(p)
+		elif d >= PATROL_AWAY and not Game.director.player_can_see(p + Vector3.UP * 1.2):
+			options.append(p)
+	if options.is_empty():
+		return false
+	var at: Vector3 = options.pick_random()
+	_victim = null
+	_window = null
+	_lurk_spot = null
+	_warn_only = false
+	_hour_meeting = false
+	visible = true
+	_fade = 0.0
+	_floor_y = at.y
+	global_position = _hover(at)
+	_path = PackedVector3Array()
+	_path_i = 0
+	_patrol_check = CHECK_EVERY
+	state = State.PATROL
+	_debug_hour_near = false
+	if near:   # Debug: er kommt auf dich zu, du siehst hin
+		_face(player.global_position - global_position)
+		_path = PackedVector3Array([player.global_position])
+		_debug_look_at(at + Vector3.UP * 1.4)
+	if Game.tracing:
+		print("[Lakengeist] Geisterstunde: geht um, %.0f m von dir" % at.distance_to(player.global_position))
+	return true
+
+
+## Boden des Stockwerks, auf dem er umgeht: Obergeschoss (dort ist er zu Hause, 4.20), ohne Flure dort das Erdgeschoss.
+func _hour_floor() -> float:
+	return LevelBuilder.UP_Y if not _corridor_points(LevelBuilder.UP_Y).is_empty() else 0.0
+
+
+## Flurpunkte (Wegpunkte im Flur, nicht Lobby oder Galerie) auf dem Stockwerk mit diesem Boden – je Stockwerk einmal
+## gesammelt.
+func _corridor_points(floor_y: float) -> Array[Vector3]:
+	var key := roundi(floor_y)
+	if not _patrol_points.has(key):
+		var builder := Game.social.builder
+		var list: Array[Vector3] = []
+		for p in builder.wander_points:
+			if absf(p.y - floor_y) < 1.0 and builder.in_corridor(p):
+				list.append(p)
+		_patrol_points[key] = list
+	return _patrol_points[key]
+
+
+## Höhe, in der er über diesem Bodenpunkt schwebt: Hände auf Halshöhe eines Erwachsenen.
+func _hover(floor_point: Vector3) -> Vector3:
+	return Vector3(floor_point.x, _floor_y + Player.EYE_HEIGHT - NECK_BELOW_EYES - HANDS_Y, floor_point.z)
+
+
+## Umgehen: von Flurpunkt zu Flurpunkt über das NavMesh; zweimal je Sekunde sieht er sich um.
+func _patrol(delta: float) -> void:
+	if not ghost_hour():
+		if Game.tracing:
+			print("[Lakengeist] Geisterstunde vorbei")
+		_vanish()
+		return
+	if _path_i >= _path.size():
+		_next_leg()
+	else:
+		var to := _hover(_path[_path_i])
+		_face(to - global_position)
+		if _float_to(to, PATROL_SPEED, delta):
+			_path_i += 1
+	_patrol_check -= delta
+	if _patrol_check <= 0.0:
+		_patrol_check = CHECK_EVERY
+		_patrol_look()
+
+
+## Nächstes Ziel: ein Flurpunkt PATROL_LEG entfernt, Weg über das NavMesh (sonst geradeaus).
+func _next_leg() -> void:
+	var here := Vector3(global_position.x, _floor_y, global_position.z)
+	var options: Array[Vector3] = []
+	var points := _corridor_points(_floor_y)
+	for p in points:
+		var d := p.distance_to(here)
+		if d >= PATROL_LEG.x and d <= PATROL_LEG.y:
+			options.append(p)
+	if options.is_empty():
+		options = points
+	var goal: Vector3 = options.pick_random()
+	_path = NavigationServer3D.map_get_path(get_world_3d().navigation_map, here, goal, true)
+	if _path.is_empty():
+		_path = PackedVector3Array([goal])
+	_path_i = 0
+
+
+## Beim Umgehen: Greift eine Flur-Regel oder ruft ihn ein dunkles Fenster, wird ein gewöhnlicher Besuch daraus.
+## Sonst: Sieht er den Spieler im Flur, eine Begegnung der Geisterstunde; einen schwachen Gast, einen Besuch.
+func _patrol_look() -> void:
+	var player := Game.player
+	if _player_free(player):
+		_refresh_windows()
+		var near := absf(player.global_position.y - _floor_y) < 1.5 and player.global_position.distance_to(global_position) < HALL_GIVE_UP
+		var warn := near and _guarantee_rule(player)
+		if warn or (near and _hall_rule(player)):
+			_turn_to(player, warn)
+			return
+		if _check_player_window(player):
+			return
+		if _in_hall(player.global_position) and _sees(player):
+			_meet_in_hour(player)
+			return
+	for guest in Game.social.guests:
+		var g: Guest = guest
+		if g.dead or g.hiding != null or g.state in [Guest.State.SLEEP, Guest.State.TALKING, Guest.State.MINIGAME] \
+				or g.weakness() < WEAK_HALL or not _in_hall(g.global_position) or not _sees(g):
+			continue
+		_turn_to(g, false)
+		return
+
+
+## Sieht er diesen Akteur (Licht, Ducken und Laufen zählen wie beim Monster, 4.15)?
+func _sees(actor) -> bool:
+	return Senses.can_see(_eyes, global_position + Vector3.UP * (HANDS_Y + 0.5), -global_transform.basis.z,
+		PATROL_SIGHT, PATROL_FOV, actor)
+
+
+## Er hat den Spieler in der Geisterstunde bemerkt: Die ersten HOUR_WARNINGS Male nur heranschweben und kurz vor
+## ihm verschwinden, danach würgt er. Zählt nicht für seine Stufe am Fenster.
+func _meet_in_hour(player: Player) -> void:
+	hour_meetings += 1
+	_victim = player
+	_warn_only = hour_meetings <= HOUR_WARNINGS
+	_victim_saw = false
+	_stage = maxi(visits, 1)
+	_hour_meeting = true
+	_last_window = null
+	state = State.ENTER
+	Game.caption("[Kälte im Flur]")
+	if Game.tracing:
+		print("[Lakengeist] Geisterstunde: %d. Begegnung – %s" % [hour_meetings, "Warnung" if _warn_only else "er würgt"])
+
+
+## Aus dem Umgehen wird ein gewöhnlicher Besuch bei `victim` (zählt für die Stufe), von dort, wo er gerade ist.
+func _turn_to(victim: Node3D, warn: bool) -> void:
+	var fade := _fade
+	_start_visit(victim, null)
+	_fade = fade
+	_warn_only = warn
+	if victim is Player:
+		_last_window = null
+		Game.caption("[Kälte im Flur]")
+	state = State.ENTER
+	if Game.tracing:
+		print("[Lakengeist] Geisterstunde: dreht sich zu %s um (%d. Mal%s)" % [(victim as Guest).display_name if victim is Guest \
+			else "dir", _stage, ", Warnung" if warn else ""])
 
 
 # --- Würgen -----------------------------------------------------------------------------
@@ -817,6 +1060,10 @@ func _vanish() -> void:
 	state = State.FADE
 	_lurk_spot = null
 	_end_door()
+	if _hour_meeting or _victim == null:   # Geisterstunde: bald geht er wieder um
+		_hour_pause = HOUR_PAUSE
+		if _victim == null:
+			return   # nur umgegangen – kein Besuch, keine Abklingzeit
 	# Je schwächer das Opfer, desto schneller kommt er wieder – beim Aufholen fast sofort
 	_cooldown = COOLDOWN / (1.0 + WEAK_FASTER * _weakness(_victim))
 	if _victim is Player and catching_up():
@@ -830,6 +1077,7 @@ func _hide() -> void:
 	_window = null
 	_victim = null
 	_lurk_spot = null
+	_hour_meeting = false
 	_end_door()
 	global_position = Vector3(0, -60, 0)
 	if _ambience:
@@ -897,9 +1145,10 @@ func _lost_victim() -> bool:
 	return not _start_lurk(player.hiding)
 
 
-## Nur wenn er ohnehin hereingekommen wäre (ab dem 3. Mal, im Flur) – und nur vor Schränken.
+## Nur wenn er ohnehin hereingekommen wäre (ab dem 3. Mal, im Flur) – und nur vor Schränken. Eine Warnung
+## (Garantie, erste Begegnungen der Geisterstunde) endet, wenn man sich versteckt.
 func _start_lurk(spot: HideSpot) -> bool:
-	if spot == null or spot.type != HideSpot.Type.WARDROBE or state == State.STRANGLE \
+	if spot == null or spot.type != HideSpot.Type.WARDROBE or state == State.STRANGLE or _warn_only \
 			or not (_stage >= ENTER_FROM or _window == null):
 		return false
 	_lurk_spot = spot
@@ -1005,6 +1254,8 @@ func _eye_of(victim: Node3D) -> Vector3:
 ## beginnt an einer zufälligen Stelle der Schleife.
 func _update_ambience() -> void:
 	var level := 0.0 if state == State.DOOR else _fade * Settings.effects_volume   # vor der Tür: lautlos
+	if state == State.PATROL:   # beim Umgehen leise
+		level = _fade / PATROL_FADE * PATROL_SOUND * Settings.effects_volume
 	if level <= 0.001:
 		_ambience.stop()
 		return
@@ -1204,6 +1455,20 @@ func debug_summon_door(guest: Guest = null) -> bool:
 	return true
 
 
+## Debug (--ghost=stunde[,n]): Die Uhr springt kurz vor Mitternacht (der erste Angriff gilt als geschehen), die Glocke
+## schlägt, danach taucht er im Flur auf, in dem der Spieler steht, und kommt zum n. Mal (Standard 1, ab
+## HOUR_WARNINGS + 1 würgt er). Das Monster ruht noch mindestens DEBUG_CALM Sekunden. Steht der Spieler in keinem Flur, geht er dort um, wo er sonst auch umginge.
+func debug_ghost_hour(meeting: int) -> void:
+	_debug_reset()
+	var director := Game.director
+	director.first_attack_done = true
+	if director.phase != MonsterDirector.Phase.ACTIVE:   # das Monster bleibt im Keller, sonst wartete die Geisterstunde
+		director._phase_left = maxf(director._phase_left, DEBUG_CALM)
+	hour_meetings = maxi(0, meeting - 1)
+	director.elapsed = Calendar.at(Calendar.day_of(director.elapsed), 24.0 - 3.0 / Calendar.HOUR)
+	_debug_hour_near = true
+
+
 ## Debug (--ghost=tür --answer): Der Spieler macht die Tür auf, vor der er steht.
 func debug_open_door() -> void:
 	if state == State.DOOR:
@@ -1220,6 +1485,7 @@ func _debug_reset() -> void:
 			Game.hud.set_struggle(-1.0)
 		_hide()
 	_cooldown = 0.0
+	_hour_pause = 0.0
 
 
 ## Debug: Der Spieler bleibt stehen, nur sein Blick geht dorthin.
@@ -1253,11 +1519,12 @@ func debug_summon_guest(guest: Guest, stage: int) -> void:
 
 
 func save_state() -> Dictionary:
-	return {"visits": visits, "cooldown": _cooldown, "catch_up_day": catch_up_day}
+	return {"visits": visits, "cooldown": _cooldown, "catch_up_day": catch_up_day, "hour_meetings": hour_meetings}
 
 
 func load_state(d: Dictionary) -> void:
 	visits = int(d.get("visits", 0))
+	hour_meetings = int(d.get("hour_meetings", 0))
 	catch_up_day = bool(d.get("catch_up_day", false))
 	_cooldown = float(d.get("cooldown", 0.0))
 	_guest_windows.clear()

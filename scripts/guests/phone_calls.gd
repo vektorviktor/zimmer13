@@ -186,7 +186,7 @@ func _grieving() -> bool:
 	return Game.director.grief > 0.0 or Game.director.is_hallucinating()
 
 
-## Ein Zimmer, in dem niemand wohnt – am liebsten das abgeschlossene Zimmer 0118.
+## Ein Zimmer, in dem niemand wohnt – am liebsten das abgeschlossene Zimmer 018.
 func _empty_room() -> String:
 	if randf() < 0.35 and _phones.has(LevelBuilder.LOCKED_ROOM):
 		return LevelBuilder.LOCKED_ROOM

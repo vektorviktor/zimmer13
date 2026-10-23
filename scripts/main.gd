@@ -12,7 +12,13 @@ extends Node3D
 ##   --day=n                     zu Tag n im Oktober springen (15 Uhr)
 ##   --uhr=hh[:mm]               Uhrzeit am aktuellen Tag stellen (2.4; am 1. Oktober frühestens 15 Uhr) – nach --day
 ##   --attacks=n                 so viele Angriffe gab es schon (> 9: nicht mehr harmlos, ob es holt, entscheidet die Tageskurve; sicher mit --intent)
-##   --first-attack              Feier starten, kurz darauf der erste Angriff
+##   --siegerehrung[=ohne]       Siegerehrung des Türschmuck-Wettbewerbs (2.5) sofort: Uhr auf den 2. Oktober 20 Uhr, die
+##                               Gäste stehen schon um die Puppe, du vor ihr – gleich steht sie auf, dann der erste
+##                               Angriff (ohne: du bleibst, wo du bist, die Uhr springt auf 22 Uhr, es geschieht ohne dich)
+##   --brett[=nachher]           vor das Aushangbrett in der Lobby (2.5) – nachher: der erste Angriff gilt als geschehen
+##   --brief                     an den Schreibtisch in Zimmer 13, Blick auf den Willkommensbrief (2.5)
+##   --zettel                    erster Angriff gilt als geschehen, der Warnungszettel von 1999 liegt hinter der Tür von
+##                               Zimmer 13, du stehst davor (2.5)
 ##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
 ##   --prank=art[,zimmer]        Streich (6.13): das erste Kind mit Eltern steht vor der Tür (Standard Zimmer 13) und
 ##                               spielt ihn – leaves, topple (Kürbis steht daneben), pumpkin, candle (steht damit in der Hand
@@ -44,7 +50,7 @@ extends Node3D
 ##                               vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --dial=n|lobby              vom Telefon in Zimmer 13 aus Zimmer n anrufen (0 = Rezeption) ·
 ##                               lobby: Wählseite am Haupttelefon mit Gästeverzeichnis
-##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, controls)
+##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, settings, load, help)
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
@@ -73,13 +79,17 @@ extends Node3D
 ##   --fall[=h[,sorte]]          Kürbis fällt 1,5 m vor dir aus h m Höhe (Standard 4) – ab 3 m zerplatzt er zu Kürbismatsch
 ##                               (5.8); Sorte aus PumpkinKinds oder „mini“ (Zierkürbis), z. B. --fall=5,giant; mit
 ##                               --time=+2 danach ist der Matsch verblasst und weg
+##   --kuerbis[=n]               Kürbismodelle (5.8) 1,5 m vor dir, Gesicht zu dir, Blick hinunter: der glatte und die fünf
+##                               Fratzen mit Kerze in einer Reihe – bzw. nur Fratze n (1–5)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
 ##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
 ##   --no-psx · --psx            ohne bzw. mit PS1-Look (wie der Schalter in den Einstellungen, wird nicht gespeichert)
 ##   --fps                       Bilder pro Sekunde einblenden (wie F10)
 ##   --debug                     Debug-Werte einblenden
-##   --nointro                   ohne Einführungstext
+##   --nointro                   ohne den Gedanken an den Brief beim Start (2.5)
+##   --figur[=schnell]           Erwachen am Waschbecken und Charaktererstellung (3.9) wie bei einem neuen Spiel –
+##                               schnell: gleich der Bogen vor dem Spiegel (ohne --figur: Standardfigur)
 ##   --perf[=s]                  Frame-Zeiten nach temp/perf.csv schreiben, nach s Sekunden (Standard 20) beenden (PerfLog)
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
@@ -89,7 +99,7 @@ extends Node3D
 ##                               Sekunden (Standard 20) kommt er übers Lobbydach; mit --trace „[Kürbismann] kündigt sich an“
 ##   --doll[=s[,zimmer]]         die Puppe (5.5): in s Sekunden (Standard 20) bricht das Monster zu einem Angriff mit
 ##                               einem Opfer auf (wie --intent=one), sie liegt sofort vor der schwächsten bewohnten Tür (bzw.
-##                               vor diesem Zimmer, z. B. 13 oder 1157) und es grollt; mit --trace „[Puppe]“ mit Weg und Opfern
+##                               vor diesem Zimmer, z. B. 13 oder 113) und es grollt; mit --trace „[Puppe]“ mit Weg und Opfern
 ##   --doll=kind                 ein Kind holt die Puppe gleich und legt sie vor die Tür seiner Familie
 ##   --ghost=n|flur|schrank|tür  Lakengeist sofort zum n. Mal am Außenfenster bzw. an der Fenstertür des Raums, in dem
 ##                               du stehst (beim Start Zimmer 13): Licht aus, Vorhang auf, Blick dorthin (4.18) · flur: alle Gäste
@@ -99,6 +109,9 @@ extends Node3D
 ##                               Wartezeit, Chance, ob er hineinfliegt) · tür: ein Lakengespenst hängt neben der Tür
 ##                               deines Zimmers (sonst Zimmer 13), er steht lautlos davor und hypnotisiert durch die
 ##                               Wand (5.6), mit --answer öffnest du nach 4 s · ohne Fenster bzw. Flur nur eine Meldung
+##   --ghost=stunde[,n]          Geisterstunde (4.18): die Uhr springt kurz vor Mitternacht, die Glocke schlägt, danach geht
+##                               er in deinem Flur um (vorher mit --tp/--pos hinstellen, sonst im Obergeschoss) und kommt zum
+##                               n. Mal (Standard 1; ab 4 würgt er) – der erste Angriff gilt als geschehen
 ##   --sleep[=bett]              Nachtruhe sofort beginnen – die Uhr springt auf ihren Beginn (Gäste gehen ins Bett) · bett: alle liegen sofort,
 ##                               du schläfst im Bett von Zimmer 13
 ##   --awake=n                   so viele Nächte ohne Schlaf (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
@@ -149,10 +162,6 @@ extends Node3D
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
 ##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)
 
-## Der Anfang wirkt friedlich – nichts deutet auf das Monster hin (Spielkonzept 2.1).
-const INTRO := "Willkommen im Hotel – zur Halloween-Woche! Heute ist der 1. Oktober.\nLerne die anderen Gäste kennen, schmücke deine Tür und feiere mit.\nDein Tagebuch liegt auf dem Schreibtisch in Zimmer 13.\n\n[WASD] Laufen  [Shift] Rennen  [Leertaste] Springen  [Strg] Ducken\n[E] Nehmen / Benutzen  [G] Ablegen  [Rechtsklick] Luft anhalten  [Esc] Menü"
-const START_ENTRY := "Ich bin in Zimmer 13 aufgewacht. Die Tür nach draußen ist verriegelt."
-
 var _post: ShaderMaterial
 ## Nachthimmel (shaders/night_sky.gdshader) – Wolkenzug nach Spielzeit
 var _sky: ShaderMaterial
@@ -200,6 +209,7 @@ func _ready() -> void:
 	player.position = builder.player_spawn
 	add_child(player)
 	Game.player = player
+	player.set_look(PlayerBody.default_look())   # neues Spiel: die Charaktererstellung ändert sie, ein Spielstand auch
 
 	var monster := Monster.new()
 	monster.name = "Monster"
@@ -238,6 +248,13 @@ func _ready() -> void:
 	add_child(doll)
 	doll.place_at_start()
 	Game.doll = doll
+
+	# Der Anfang (2.5): Brief, Aushangbrett, Durchsagen, Siegerehrung
+	var contest := DoorContest.new()
+	contest.name = "DoorContest"
+	add_child(contest)
+	Game.contest = contest
+	contest.setup(builder)
 
 	# Hotelkatzen (6.11) – nach den Gästen, sie suchen sich einen Lieblingsgast
 	for cat_id in HotelCat.PROFILES:
@@ -311,10 +328,10 @@ func _ready() -> void:
 		_load_pending.call_deferred()
 	else:
 		_fresh_session()
-		if not "--nointro" in OS.get_cmdline_user_args():
-			Game.say(INTRO, 12.0)
-		if Game.new_game_slot > 0:
-			_save_start.call_deferred(Game.new_game_slot)
+		if Game.new_game_slot > 0:   # vom Titelbildschirm: erst die Figur, dann der Gedanke an den Brief und Speichern
+			_start_creation(Game.new_game_slot, false)
+		elif not "--nointro" in OS.get_cmdline_user_args():
+			Game.contest.welcome()
 		Game.new_game_slot = 0
 	_parse_debug_args.call_deferred()
 
@@ -330,6 +347,22 @@ func _load_pending() -> void:
 	Game.say("„%s“" % String(data.get("text", "")), 5.0)
 
 
+## Erwachen am Waschbecken und Charaktererstellung (Spielkonzept 3.9) – danach der Gedanke an den Brief (2.5) und, in
+## einem Slot, der Startstand.
+func _start_creation(slot: int, quick: bool) -> void:
+	if has_node("CharacterCreation"):
+		return
+	var creation := CharacterCreation.new()
+	creation.name = "CharacterCreation"
+	creation.quick = quick
+	creation.finished.connect(func() -> void:
+		if not "--nointro" in OS.get_cmdline_user_args():
+			Game.contest.welcome()
+		if slot > 0:
+			_save_start(slot))
+	add_child(creation)
+
+
 ## Neues Spiel: noch nichts besucht (Autosave „neuer Bereich“), noch nicht gespeichert.
 func _fresh_session() -> void:
 	SaveManager.visited = []
@@ -340,7 +373,7 @@ func _fresh_session() -> void:
 func _save_start(slot: int) -> void:
 	for i in 3:
 		await get_tree().process_frame
-	SaveManager.save_to(slot, START_ENTRY, get_viewport().get_texture().get_image())
+	SaveManager.save_to(slot, DoorContest.ARRIVAL_ENTRY, get_viewport().get_texture().get_image())
 
 
 func _apply_settings() -> void:
@@ -355,7 +388,7 @@ func _process(delta: float) -> void:
 	_sky_time += delta
 	_sky.set_shader_parameter("sky_time", _sky_time)
 	if _post and Game.player:   # verschwommene Sicht (Spielkonzept 3.6/3.7)
-		_post.set_shader_parameter("blur", Game.player.sight_blur)
+		_post.set_shader_parameter("blur", maxf(Game.player.sight_blur, Game.player.intro_blur))
 		_post.set_shader_parameter("warp", Game.player.sight_warp)
 		_post.set_shader_parameter("blur_time", _sky_time)
 	if _autoplay and Engine.get_process_frames() % 100 == 0 and Game.dice.active:
@@ -616,6 +649,21 @@ func run_debug(arg: String) -> bool:
 			pumpkin.global_position = Game.player.global_position + Vector3(front.x, 0, front.z).normalized() * 1.5 + Vector3.UP * height
 			if Game.tracing:
 				print("[Kürbis] fällt aus %.1f m bei %s" % [height, pumpkin.global_position]))
+	elif arg == "--kuerbis" or arg.begins_with("--kuerbis="):
+		# Kürbismodelle (PumpkinModel, 5.8): glatt und alle Fratzen mit Kerze in einer Reihe vor dir – bzw. nur Fratze n
+		var only := clampi(arg.substr(10).to_int(), 1, PumpkinModel.FACES) if arg.begins_with("--kuerbis=") else 0
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
+			var faces: Array = [only] if only > 0 else range(PumpkinModel.FACES + 1)
+			var front := -Game.player.global_basis.z
+			front = Vector3(front.x, 0, front.z).normalized()
+			var side := front.cross(Vector3.UP)
+			for i in faces.size():
+				var f: int = faces[i]
+				var pumpkin := Item.create(Item.Kind.PUMPKIN) if f == 0 else Item.create(Item.Kind.CARVED_PUMPKIN, "f=%d" % f)
+				Game.player.get_parent().add_child(pumpkin)
+				pumpkin.global_position = Game.player.global_position + front * 1.5 + side * (i - (faces.size() - 1) / 2.0) * 0.5 					+ Vector3.UP * 0.05
+				pumpkin.rotation.y = atan2(-front.x, -front.z)
+			Game.player.head.rotation.x = -0.6)   # Blick hinunter auf die Reihe
 	elif arg.begins_with("--show="):
 		Game.player.debug_show = arg.substr(7)
 	elif arg == "--winded":
@@ -814,6 +862,8 @@ func run_debug(arg: String) -> bool:
 			Game.dialog.open(partner))
 	elif arg == "--ghost=flur":
 		Game.ghost.debug_summon_hall()
+	elif arg == "--ghost=stunde" or arg.begins_with("--ghost=stunde,"):
+		Game.ghost.debug_ghost_hour(maxi(1, arg.get_slice(",", 1).to_int()) if "," in arg else 1)
 	elif arg == "--ghost=tür" or arg == "--ghost=tuer":
 		if Game.ghost.debug_summon_door() and "--answer" in OS.get_cmdline_user_args():
 			get_tree().create_timer(4.0).timeout.connect(Game.ghost.debug_open_door)   # du machst nach 4 s auf
@@ -862,10 +912,15 @@ func run_debug(arg: String) -> bool:
 		# so viele Angriffe gab es schon (über 2 = gefährlich, ob es holt, würfelt _choose_intent nach Tag)
 		Game.director.first_attack_done = true
 		Game.director.attacks = arg.substr(10).to_int()
-	elif arg == "--first-attack":
-		# Feier starten, kurz darauf der erste Angriff
-		Game.social.start_party("mila")
-		get_tree().create_timer(3.0).timeout.connect(Game.director._first_attack_at_party)
+	elif arg == "--siegerehrung" or arg == "--siegerehrung=ohne":
+		# Siegerehrung (2.5) – nach 1 s, damit NavMesh und Gäste stehen
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.contest.debug_ceremony(arg.ends_with("ohne")))
+	elif arg == "--brett" or arg == "--brett=nachher":
+		Game.contest.debug_board(arg.ends_with("nachher"))
+	elif arg == "--brief":
+		Game.contest.debug_letter()
+	elif arg == "--zettel":
+		Game.contest.debug_note()
 	elif arg == "--trick=13" or arg.begins_with("--trick=13,"):
 		# Ein Kind steht vor Zimmer 13 (Tür auf) – mit „,n“ gibst du ihm n Süßigkeiten, eine je 1,5 s
 		var give := arg.substr(11).to_int() if arg.begins_with("--trick=13,") else 0
@@ -981,8 +1036,8 @@ func run_debug(arg: String) -> bool:
 			var ok := SaveManager.save_to(slot, SaveManager.diary_sentence(), get_viewport().get_texture().get_image())
 			print("[diary] Slot %d gespeichert: %s – „%s“" % [slot, ok, SaveManager.diary_sentence()]))
 	elif arg.begins_with("--menu="):
-		# Menü für Screenshots öffnen: pause, diary, settings, load, controls
-		var which := arg.substr(7)
+		# Menü für Screenshots öffnen: pause, diary, settings, load, help (controls: alter Name der Hilfe)
+		var which := "help" if arg.substr(7) == "controls" else arg.substr(7)
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
 			if which == "diary":
 				Game.menus.open_diary()
@@ -990,6 +1045,8 @@ func run_debug(arg: String) -> bool:
 				Game.menus.open_pause()
 				if which != "pause":
 					Game.menus.call("_show_" + which))
+	elif arg == "--figur" or arg == "--figur=schnell":
+		_start_creation(0, arg.ends_with("schnell"))
 	elif arg == "--savetest":
 		get_tree().create_timer(6.0).timeout.connect(_save_test)
 	elif arg == "--navcheck":
@@ -1007,11 +1064,11 @@ func _debug_teleport(where: String) -> bool:
 		var front := -guest.global_transform.basis.z
 		TeleportUI.place_player(guest.global_position + front * 1.6, -front)
 		return true
-	# Zimmer: Nummer (auch verschlossene, auch oben), „113“ → 0113, Türschild „13“ → 0113
+	# Zimmer: Nummer (auch verschlossene, auch oben), „13“ → 013, Türschild „13“ → 013
 	var b := Game.social.builder
 	var no := where
 	if b.room_spot(no).is_empty() and where.is_valid_int():
-		no = "%04d" % where.to_int()
+		no = "%03d" % where.to_int()
 	for key in b.rooms:
 		if b.rooms[key]["sign"] == where:
 			no = key
@@ -1189,8 +1246,11 @@ func _save_test() -> void:
 		Game.player.receive_item(lamp.take_bulb())
 	for kind in [Item.Kind.SWEETS, Item.Kind.SODA_CAN]:   # mit voller Hand: in die Tasche
 		Game.player.receive_item(Item.create(kind))
+	# Spielerfigur (3.9): eine andere als die Standardfigur – nach dem Sammeln zurückgesetzt, Laden muss sie wiederholen
+	Game.player.set_look({"body": "woman_old", "height": 1.52, "slim": 0.1, "fit": 0.7, "skin": GuestGenerator.SKIN[5].to_html(false)})
 	await get_tree().create_timer(0.5).timeout
 	var before: Dictionary = JSON.parse_string(JSON.stringify(SaveManager.collect()))
+	Game.player.set_look(PlayerBody.default_look())
 	SaveManager.apply(before)
 	await get_tree().physics_frame
 	await get_tree().process_frame

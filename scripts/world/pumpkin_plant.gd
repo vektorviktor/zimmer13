@@ -17,6 +17,8 @@ var variety := PumpkinKinds.DEFAULT
 
 var _timer := 0.0
 var _fruit: MeshInstance3D
+## Reife Frucht der Sorten mit Modell (PumpkinModel) – die grünen Stufen davor bleiben die Kugel
+var _ripe_model: MeshInstance3D
 var _materials: Array[ShaderMaterial] = []
 
 
@@ -51,6 +53,11 @@ func _ready() -> void:
 		_materials.append(Mat.psx(c))
 	var sz: Vector3 = d["size"]
 	_fruit = Geo.mesh(self, Geo.sphere(sz.x / 2.0, sz.y, 9, 5), _materials[0], Vector3.ZERO)
+	if PumpkinModel.has_model(variety):
+		_ripe_model = Geo.mesh(self, PumpkinModel.mesh_of(0), PumpkinModel.shared_material(),
+			Vector3(0.08 if not is_giant() else 0.0, 0, 0.05))
+		_ripe_model.scale = Vector3.ONE * PumpkinModel.scale_for(variety)
+		_ripe_model.rotation.y = randf() * TAU
 	if is_giant():
 		leaf_mat = Mat.psx(Color(0.16, 0.3, 0.09))
 		for i in 3:
@@ -145,3 +152,6 @@ func _update_visual() -> void:
 	_fruit.scale = Vector3.ONE * maxf(s, 0.01)
 	_fruit.position = Vector3(0.08 if not is_giant() else 0.0, sz.y / 2.0 * s, 0.05)
 	_fruit.material_override = _materials[stage]
+	if _ripe_model:
+		_ripe_model.visible = stage >= RIPE
+		_fruit.visible = stage > 0 and stage < RIPE

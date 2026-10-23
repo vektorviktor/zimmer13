@@ -15,8 +15,9 @@ extends CanvasLayer
 const GROUPS := [
 	["Teleport", ["tp", "pos"]],
 	["Lakengeist", ["ghost", "awake"]],
-	["Monster", ["warn", "doll", "lure", "monster", "intent", "bold", "attacks", "first-attack", "kill", "knock", "noise"]],
+	["Monster", ["warn", "doll", "lure", "monster", "intent", "bold", "attacks", "kill", "knock", "noise"]],
 	["Kürbismann", ["pumpkin"]],
+	["Wettbewerb", ["siegerehrung", "brett", "brief", "zettel"]],
 	["Gäste", ["guests", "talk", "look", "shock", "wound", "friend", "enemy", "relation", "pals", "rival", "follow",
 		"visit", "attack", "punch", "bulb-thief", "steal-test"]],
 	["Spiele", ["dice", "chess", "challenge", "autoplay"]],
@@ -54,7 +55,7 @@ func setup(builder: LevelBuilder) -> void:
 func _destinations(b: LevelBuilder) -> Array:
 	var cellar := b.cellar_center()
 	return [
-		_room(b, LevelBuilder.PLAYER_ROOM, "Zimmer 13 (eigenes, 0113)"),
+		_room(b, LevelBuilder.PLAYER_ROOM, "Zimmer 13 (eigenes, 013)"),
 		["Lobby", b.lobby_center + Vector3(0, 0, 8.0), Vector3.FORWARD],
 		_room(b, LevelBuilder.COMPASS_ROOM, "Zimmer %s (Kompass)" % LevelBuilder.COMPASS_ROOM),
 		["Bar", b.bar_spots[0] + Vector3(0, 0, 2.0), Vector3.FORWARD],
@@ -63,8 +64,7 @@ func _destinations(b: LevelBuilder) -> Array:
 		["Galerie (Obergeschoss)", b.lobby_center + Vector3(-5.5, LevelBuilder.UP_Y, -2.0), Vector3.RIGHT],
 		["Treppenhaus Ost (EG)", b.stairwell_point + Vector3(0, 0, 2.2), Vector3.FORWARD],
 		["Keller (Heizkeller)", cellar, Vector3.BACK],
-		_room(b, "0117", "Zimmer 0117 (verlassen)"),
-		_room(b, "0116", "Zimmer 0116 (Wäscherei)"),
+		_room(b, "017", "Zimmer 017 (verlassen)"),
 		_zone(b, "Partyraum", func(n: String) -> bool: return n == "Partyraum"),
 		_zone(b, "Westflügel (Flur)", func(n: String) -> bool: return n.begins_with("Westflügel")),
 		_zone(b, "Obergeschoss, Flur", func(n: String) -> bool: return n.ends_with("(oben)")),

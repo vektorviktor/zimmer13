@@ -87,6 +87,7 @@ const FLESH_COLOR := Color(0.95, 0.6, 0.2)
 const MUSH_SIZE := 0.9          ## Kantenlänge des Spritzers (m), wenn nichts anderes gespeichert ist
 const MINI_SPLAT := 0.4         ## Spritzer eines Zierkürbisses (m; Sorten: PumpkinKinds „splat“)
 const HANDFUL_SPLAT := 0.6      ## eine Hand voll aus einem großen Spritzer, wieder abgelegt (m)
+const MUSH_SPLATS_PER_M := 4.0  ## kleine Spritzer rings um den großen, je Meter Kantenlänge (Item._lay_mush)
 ## Stücke, die beim Zerplatzen davonfliegen: so viele je Meter Spritzer (höchstens CHUNK_MAX), liegen so lange
 ## (Spielzeit, s), dann schrumpfen sie weg
 const CHUNKS_PER_M := 7.0
@@ -121,6 +122,8 @@ const SWAY: Dictionary = {
 var kind: Kind = Kind.PUMPKIN
 ## Kürbis, geschnitzter und gebratener Kürbis: Sorte (PumpkinKinds, Spielkonzept 5.8, 3.8)
 var variety := PumpkinKinds.DEFAULT
+## Geschnitzter Kürbis: Fratze 1 … PumpkinModel.FACES – beim Schnitzen ausgewürfelt, im Zusatz „f=n“ gespeichert
+var face := 0
 var display_name := ""
 var deco_strength := 0.0
 ## Kürbisse (ROT_KINDS): Spielzeit, zu der er ganz verfault ist, und erreichte Stufe (0 frisch, 1 welk, 2 eingefallen)
@@ -196,6 +199,8 @@ var _fall_top := -INF     ## Zerplatzen: höchster Punkt des laufenden Falls
 var _last_vy := 0.0
 var _last_speed := 0.0   ## Wurf: Tempo im letzten Physikschritt
 var _mush_mat: ShaderMaterial
+## Kürbismatsch: hier wurden die Flecken zuletzt auf die Fläche gelegt (_lay_mush; INF = noch nicht)
+var _laid_at := Vector3.INF
 
 
 static func create(p_kind: Kind, extra: String = "") -> Item:
@@ -219,6 +224,7 @@ func _process(delta: float) -> void:
 	if hung:
 		_sway(delta)
 	if _mush_mat and not is_held:
+		_settle_mush()
 		_rot()
 	if rot_at < INF:
 		_rot_timer -= delta
@@ -334,6 +340,7 @@ func create_extra() -> String:
 				parts.append(variety)
 			if not lit:
 				parts.append("unlit")
+			parts.append("f=%d" % face)
 			parts.append(_rot_extra())
 			return ",".join(parts)
 		Kind.SKULL:
@@ -706,6 +713,11 @@ func _apply_pose() -> void:
 			# in der Hand ein Haufen bzw. Klumpen, am Boden verstreut bzw. ein Spritzer (Spielkonzept 5.6, 5.8)
 			_pile.visible = is_held
 			_spread.visible = not is_held
+			if kind == Kind.PUMPKIN_MUSH and (is_held or _laid_at == Vector3.INF):
+				# Matsch: die Flecken liegen in Weltlage – abgelegt kommen sie neu auf die Fläche (_settle_mush)
+				_laid_at = Vector3.INF
+				_pile.visible = true
+				_spread.visible = false
 		Kind.BAT_GARLAND:
 			# an der Wand eine Leine mit Fledermäusen, sonst flach zusammengelegt (in der Hand kleiner)
 			_swing.position = Vector3.ZERO if hung else Vector3(0, 0.02, 0)
@@ -805,6 +817,10 @@ func _build(extra: String) -> void:
 			if not bool(PumpkinKinds.data(variety)["carve"]):
 				variety = PumpkinKinds.DEFAULT
 			var d := PumpkinKinds.data(variety)
+			face = randi_range(1, PumpkinModel.FACES)
+			for part in extra.split(","):
+				if part.begins_with("f="):
+					face = clampi(part.substr(2).to_int(), 1, PumpkinModel.FACES)
 			display_name = _carved_name()
 			is_large = true
 			mass = float(d["mass"]) * 0.85
@@ -1101,14 +1117,14 @@ func _build(extra: String) -> void:
 			for i in 4:
 				var lump := Geo.mesh(_pile, Geo.sphere(0.07 - i * 0.01, 0.05, 6, 3), flesh, Vector3((i % 2) * 0.05 - 0.025, 0.025 + i * 0.015, 0.02 if i >= 2 else -0.02))
 				lump.rotation.y = i * 1.3
+			# Die Flecken am Boden legt _lay_mush wie eine Blutlache auf die Fläche darunter – in Weltlage, unabhängig davon,
+			# wie der Körper liegt (auf einer Treppe auf der Rampe)
 			_spread = Node3D.new()
+			_spread.top_level = true
 			add_child(_spread)
-			var plane := PlaneMesh.new()
-			plane.size = Vector2.ONE   # Größe über _spread.scale (schrumpft beim Aufsammeln, _take_portion)
 			_mush_mat = Mat.decal(MUSH_TEXTURE)
 			_mush_mat.set_shader_parameter("albedo", Color(color.r / MUSH_TEX_COLOR.r, color.g / MUSH_TEX_COLOR.g, color.b / MUSH_TEX_COLOR.b))
-			Geo.mesh(_spread, plane, _mush_mat, Vector3(0, 0.006, 0))
-			_spread.scale = Vector3(mush_size, 1.0, mush_size)
+			_mush_mat.set_shader_parameter("layer_pull", TraceMark.SPLAT_PULL)
 			freeze = portions > 1   # der große Spritzer rutscht nicht weg
 	_shape = CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -1235,8 +1251,10 @@ func split_handful() -> Item:
 ## Der Spritzer verliert eine Hand voll (Fläche je Hand voll).
 func shrink_by_handful() -> void:
 	portions -= 1
-	mush_size *= sqrt(float(portions) / (portions + 1))
-	_spread.scale = Vector3(mush_size, 1.0, mush_size)
+	var shrink := sqrt(float(portions) / (portions + 1))
+	mush_size *= shrink
+	for piece in _spread.get_children():   # jeder Fleck um seine eigene Mitte – so bleibt er auf seiner Fläche
+		(piece as Node3D).basis = (piece as Node3D).basis * Basis.from_scale(Vector3(shrink, 1.0, shrink))
 	(_shape.shape as BoxShape3D).size = Vector3(mush_size * 0.7, 0.03, mush_size * 0.7)
 
 
@@ -1290,6 +1308,65 @@ func _splash_chunks(at: Vector3, skin: Color, splat: float) -> void:
 		shrink.tween_interval(randf_range(CHUNK_STAY.x, CHUNK_STAY.y))
 		shrink.tween_property(look, "scale", Vector3.ONE * 0.01, 0.8)
 		shrink.tween_callback(piece.queue_free)
+
+
+## Kürbismatsch, der nicht in der Hand ist: Liegt er still an einer neuen Stelle (frisch zerplatzt, geladen, abgelegt,
+## weggerutscht), kommen seine Flecken dort auf die Fläche (_lay_mush); solange er fliegt oder rutscht, ist er ein Klumpen.
+func _settle_mush() -> void:
+	if _laid_at != Vector3.INF and global_position.distance_to(_laid_at) < 0.05:
+		return
+	var moving := not freeze and linear_velocity.length() > 0.2
+	_pile.visible = moving
+	_spread.visible = not moving
+	if not moving:
+		_lay_mush()
+
+
+## Kürbismatsch am Boden, gebaut wie eine Blutlache (TraceMark.place_splat): ein großer Spritzer mit der Kantenlänge
+## mush_size und MUSH_SPLATS_PER_M × mush_size kleinere drumherum, jeder senkrecht auf die Fläche darunter gefallen
+## (Boden, Stufe, Möbel – nicht die Rampe, nicht durch Wände) und ganz auf ihr. Auf einer Treppe liegen sie längs auf
+## den Stufen (dort als Reihe von Spritzern, höchstens 2 : 1 gestreckt) und laufen die Stufen hinunter. Jedes Mal anders
+## verteilt.
+func _lay_mush() -> void:
+	for child in _spread.get_children():
+		child.free()
+	_laid_at = global_position
+	_spread.global_transform = Transform3D.IDENTITY
+	var space := get_world_3d().direct_space_state
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var center := global_position
+	var downhill := TraceMark.downhill_at(space, center)
+	var plane := PlaneMesh.new()
+	plane.size = Vector2.ONE   # Größe über die Basis der Flecken (schrumpft beim Aufsammeln, shrink_by_handful)
+	var count := 1 + roundi(mush_size * MUSH_SPLATS_PER_M)
+	for i in count:
+		var main := i == 0
+		var r := 0.0 if main else mush_size * rng.randf_range(0.4, 0.75)
+		var spot := {}
+		for attempt in 3:   # kein Platz (neben der Treppe, hinter der Wand): näher an der Mitte noch einmal
+			var off := TraceMark.scatter_offset(rng, r, downhill, mush_size * (0.3 if main else 1.0) / (1 + attempt))
+			spot = TraceMark.place_splat(space, center, off, Vector2.ONE * mush_size * (1.0 if main else rng.randf_range(0.2, 0.4)),
+				downhill, rng)
+			if not spot.is_empty():
+				break
+			r *= 0.5
+		if spot.is_empty():
+			continue
+		var size: Vector2 = spot["size"]
+		var yaw: float = spot["yaw"]
+		var tiles := maxi(1, ceili(size.x / (size.y * 2.0))) if spot["along"] else 1
+		var w := size.x if tiles == 1 else size.x / tiles * 1.3
+		for t in tiles:
+			var basis := Basis(Vector3.UP, yaw + (PI if rng.randf() < 0.5 else 0.0))
+			var x := 0.0 if tiles == 1 else -size.x / 2.0 + w / 2.0 + t * (size.x - w) / (tiles - 1)
+			var deep := size.y * (rng.randf_range(0.75, 1.0) if tiles > 1 else 1.0)   # in der Reihe nicht alle gleich
+			var z := rng.randf_range(-0.5, 0.5) * (size.y - deep)
+			var lift := 0.006 + mini(_spread.get_child_count(), 40) * 0.0001   # überlappende Flecken nicht gleich hoch
+			var piece := Geo.mesh(_spread, plane, _mush_mat, Vector3.ZERO)
+			piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			piece.transform = Transform3D(basis * Basis.from_scale(Vector3(w, 1.0, deep)),
+				spot["at"] + Basis(Vector3.UP, yaw) * Vector3(x, 0.0, z) + Vector3.UP * lift)
 
 
 ## Kürbismatsch am Boden: nach MUSH_ROT_AFTER verblasst er über MUSH_FADE kaum merklich und verschwindet.
@@ -1548,7 +1625,10 @@ func set_rot_stage(stage: int) -> void:
 			if mesh == null:
 				continue
 			var mat := mesh.material_override as ShaderMaterial
-			if i == 1 and mat and mat != _glow_material and mat.get_shader_parameter("emission_energy") == 0.0:
+			if i == 1 and mat and mat.has_meta("pumpkin_model"):
+				# Modell: eigenes Material, nur die Grundfarbe abdunkeln (Textur bleibt)
+				mat.set_shader_parameter("albedo", Color(1, 1, 1).darkened(0.3).lerp(Color(0.32, 0.24, 0.1), 0.35))
+			elif i == 1 and mat and mat != _glow_material and mat.get_shader_parameter("emission_energy") == 0.0:
 				var c: Color = mat.get_shader_parameter("albedo")
 				mesh.material_override = Mat.psx(c.darkened(0.3).lerp(Color(0.32, 0.24, 0.1), 0.35))
 			elif i == 2:
@@ -1569,8 +1649,12 @@ func _variety_deco() -> float:
 
 
 ## Kürbis je Sorte (PumpkinKinds): rund, flach gerippt, Flaschenform oder mit Kappe. Geschnitzt bekommt er ein Gesicht,
-## mit der Größe der Sorte skaliert (Grundmaß: Halloween-Kürbis, 0,42 m).
+## mit der Größe der Sorte skaliert (Grundmaß: Halloween-Kürbis, 0,42 m). Halloween- und Riesenkürbis sind ein Modell
+## (PumpkinModel).
 func _pumpkin(carved: bool) -> void:
+	if PumpkinModel.has_model(variety):
+		_pumpkin_model(carved)
+		return
 	var d := PumpkinKinds.data(variety)
 	var sz: Vector3 = d["size"]
 	var base: Color = d["color"]
@@ -1616,6 +1700,17 @@ func _pumpkin(carved: bool) -> void:
 		Geo.mesh(self, Geo.box(Vector3(0.15, 0.035, 0.04) * k), _glow_material, Vector3(0, 0.1 * k, front))   # Mund
 		for side: float in [-1.0, 1.0]:
 			Geo.mesh(self, Geo.box(Vector3(0.03, 0.02, 0.045) * k), dark, Vector3(side * 0.03 * k, 0.105 * k, front + 0.002))   # Zähne
+
+
+## Meshy-Modell (PumpkinModel): glatt oder mit der Fratze face, auf die Breite der Sorte gebracht. Geschnitzt ist sein
+## Material zugleich _glow_material – mit Kerze glüht das Fruchtfleisch (Glutmaske) in der Farbe der Sorte.
+func _pumpkin_model(carved: bool) -> void:
+	var d := PumpkinKinds.data(variety)
+	var mat := PumpkinModel.material(d.get("glow", Color(1.0, 0.55, 0.15)) if carved else Color.BLACK)
+	var mi := Geo.mesh(self, PumpkinModel.mesh_of(face if carved else 0), mat, Vector3.ZERO)
+	mi.scale = Vector3.ONE * PumpkinModel.scale_for(variety)
+	if carved:
+		_glow_material = mat
 
 
 ## Kerzenlicht ohne Schatten; as_lamp: zählt zu den Lampen (Lichterkette).

@@ -133,23 +133,26 @@ FIXTURES = ("tree", "planter", "reception", "terrace_edge", "balcony_edge", "sta
 
 ## Zimmernummern (Spielkonzept 7.5): je Flügel ein Laufweg ab der Lobby um den Rundflur (Mittellinien in px des
 ## Stockwerks), optional danach ein Querflur (cross = (y, x-Anfang, Richtung), cross_end = Ende). Rechte Hand ungerade,
-## linke gerade. Ost = x1xx, West = x2xx; die erste Ziffer ist das Stockwerk (EG 0, OG1 1 …). Darüber gilt die Nummer
+## linke gerade. Dreistellig (23.10.): die erste Ziffer ist das Stockwerk (EG 0, OG1 1 …), dahinter zwei Ziffern –
+## Ost ab 01, West ab 51 (base), jeder Flügel bleibt unter dem nächsten (SPAN). Darüber gilt die Nummer
 ## des EG-Zimmers unter der Flurtür mit dem Stockwerk vorne (number_from_eg); die Laufwege dienen dort nur noch den
 ## Flurabschnitten (der Grundriss der Flure ist oben derselbe).
 ## legs: Name je Teilstück des Laufwegs (wird zu einem Flurabschnitt mit eigenem Lichtschalter).
 WINGS = {
 	"EG": {
-		"ost": dict(base=100, path=[(850, 690), (1450, 690), (1450, 250), (1010, 250), (1010, 690)],
+		"ost": dict(base=0, path=[(850, 690), (1450, 690), (1450, 250), (1010, 250), (1010, 690)],
 			legs=["Südflur", "Ostflur", "Nordflur", "Gartenflur"]),
-		"west": dict(base=200, path=[(700, 690), (100, 690), (100, 250), (540, 250), (540, 690)],
+		"west": dict(base=50, path=[(700, 690), (100, 690), (100, 250), (540, 250), (540, 690)],
 			legs=["Südflur", "Westflur", "Nordflur", "Gartenflur"]),
 	},
 }
 ## Zimmer mit fester Nummer, wo der Plan sie beschriftet: Nummer → Pixel im Zimmer. Der Laufweg überspringt sie.
-PINNED = {"EG": {"0113": (1120, 640)}}   # Zimmer 13 des Spielers
+PINNED = {"EG": {"013": (1120, 640)}}   # Zimmer 13 des Spielers
+## Nummern je Flügel: base + 1 … base + SPAN – 1
+SPAN = 50
 WING_NAMES = {"ost": "Ostflügel", "west": "Westflügel"}
-## Türschilder, die nicht die Nummer zeigen: 0113 ist das Spielerzimmer, das Schild ist abgebrochen
-BROKEN_SIGNS = {"0113": "13"}
+## Türschilder, die nicht die Nummer zeigen: 013 ist das Spielerzimmer, die führende Null ist abgefallen
+BROKEN_SIGNS = {"013": "13"}
 
 
 # --- Aseprite lesen --------------------------------------------------------------------------------
@@ -834,7 +837,7 @@ def build_floor(floor, COL, open_above, eg=None):
 		r["wing"] = "west" if r["cx"] < WING_SPLIT_X else "ost"
 		used = [int(o["no"][1:]) for o in rooms if "no" in o and o["wing"] == r["wing"]] + \
 			[int(e["no"][1:]) for e in eg["rooms"] if e["wing"] == r["wing"]]
-		r["no"] = "%d%03d" % (level, max(used + [WINGS["EG"][r["wing"]]["base"]]) + 1)
+		r["no"] = "%d%02d" % (level, max(used + [WINGS["EG"][r["wing"]]["base"]]) + 1)
 	# Laufwege: eigene je Stockwerk, sonst die des EG (darüber gleicher Grundriss); das Untergeschoss hat keine
 	wings = WINGS.get(floor, WINGS["EG"] if level >= 0 else {})
 	pinned = {}
@@ -869,7 +872,7 @@ def build_floor(floor, COL, open_above, eg=None):
 					floor, m(r["cx"], r["cy"]), px, py)
 				cross.append(((px - x0) * direction, (r["cy"] > y) if direction > 0 else (r["cy"] < y), r))
 		odd, even = w["base"] + 1, w["base"] + 2
-		number = lambda n: "%04d" % (level * 1000 + n)
+		number = lambda n: "%d%02d" % (level, n)
 		for _, right, r in sorted(loop, key=lambda e: e[0]) + sorted(cross, key=lambda e: e[0]):
 			if right:
 				while number(odd) in pinned:
@@ -892,6 +895,13 @@ def build_floor(floor, COL, open_above, eg=None):
 			corridors.append({"id": slug("%s querflur" % name), "name": "%s, Querflur" % WING_NAMES[name],
 				"wing": name, "a": m(x0, y), "b": m(w["cross_end"], y)})
 
+	numbered = [r["no"] for r in rooms if "no" in r]
+	assert len(numbered) == len(set(numbered)), "%s: doppelte Zimmernummern %s" % (
+		floor, sorted({n for n in numbered if numbered.count(n) > 1}))
+	for r in rooms:
+		base = WINGS["EG"][r["wing"]]["base"]
+		assert len(r["no"]) == 3 and base < int(r["no"][1:]) < base + SPAN, \
+			"%s: Zimmer %s passt nicht in den %s (SPAN)" % (floor, r["no"], WING_NAMES[r["wing"]])
 	room_list = []
 	for r in sorted(rooms, key=lambda r: r["no"]):
 		r["region"]["id"] = r["no"]
@@ -1197,4 +1207,4 @@ for floor in sorted(floors, key=lambda f: (floor_level(f) != 0, floor_level(f)))
 	if PREVIEW_DIR:
 		preview(layout, os.path.join(PREVIEW_DIR, floor.lower() + ".svg"))
 eg = json.load(open(os.path.join(DST_DIR, "eg.json"), encoding="utf-8"))
-assert any(r["no"] == "0113" for r in eg["rooms"]), "Spielerzimmer 0113 fehlt"
+assert any(r["no"] == "013" for r in eg["rooms"]), "Spielerzimmer 013 fehlt"

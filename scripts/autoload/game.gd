@@ -14,6 +14,7 @@ const SOUND_CAPTIONS := {
 	"shriek": "[Ein Kreischen]", "growl": "[Knurren]", "bang": "[Ein Knall]", "sting": "[Schriller Ton]",
 	"cry": "[Eine Katze kreischt]", "meow": "[Miau]", "bell": "[Eine Totenglocke läutet]",
 	"ding": "[Ding – der Aufzug]", "motor": "[Ein Motor brummt im Schacht]", "alarm": "[Eine Alarmglocke schrillt]",
+	"chime": "[Gong – eine Durchsage]", "poof": "[Ein Fauchen]",
 }
 
 var player: Player
@@ -34,7 +35,10 @@ var weather: Weather
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
 var confetti: Confetti            ## Konfetti auf Feiern (Spielkonzept 7.6)
 var doll: JuryDoll                 ## die Puppe – „Halloween-Jury“ (Spielkonzept 5.5)
+var contest: DoorContest           ## Türschmuck-Wettbewerb, Brief, Brett, Siegerehrung (Spielkonzept 2.5)
 var game_over := false
+## Charaktererstellung am Waschbecken läuft (Spielkonzept 3.9) – kein Spielmenü, das Spiel ist pausiert
+var creating := false
 ## Debug: letzte Lärmereignisse (F3)
 var noise_log: Array[String] = []
 ## Debug: --trace (auch aus der Konsole) – Lärm und Zustandswechsel in die Konsole schreiben
@@ -114,6 +118,7 @@ func shot_event(event: String, frames: int = 25) -> void:
 
 func reset() -> void:
 	game_over = false
+	creating = false
 	money = 5
 	player = null
 	director = null
@@ -133,6 +138,7 @@ func reset() -> void:
 	kitchen = null
 	confetti = null
 	doll = null
+	contest = null
 	noise_log.clear()
 	Senses.clear_cache()
 

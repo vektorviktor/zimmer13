@@ -967,7 +967,9 @@
 				{
 					"kind": "garden_door",
 					"at": 2.0,
-					"width": 2.0
+					"width": 2.0,
+					"hinge": "end",
+					"opens": 1
 				}
 			]
 		},
@@ -1324,7 +1326,9 @@
 				{
 					"kind": "garden_door",
 					"at": 1.8,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "end",
+					"opens": 1
 				}
 			]
 		},
@@ -1671,7 +1675,9 @@
 				{
 					"kind": "garden_door",
 					"at": 1.8,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "end",
+					"opens": 1
 				}
 			]
 		},
@@ -2528,7 +2534,9 @@
 				{
 					"kind": "garden_door",
 					"at": 1.3,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "end",
+					"opens": 1
 				}
 			]
 		},
@@ -2546,7 +2554,9 @@
 				{
 					"kind": "garden_door",
 					"at": 1.3,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "start",
+					"opens": -1
 				}
 			]
 		},
@@ -2671,7 +2681,16 @@
 				-59.4,
 				-20.0
 			],
-			"thickness": 0.2
+			"thickness": 0.2,
+			"openings": [
+				{
+					"kind": "door",
+					"at": 0.9,
+					"width": 1.2,
+					"hinge": "start",
+					"opens": -1
+				}
+			]
 		},
 		{
 			"a": [
@@ -2682,7 +2701,16 @@
 				-25.4,
 				-20.0
 			],
-			"thickness": 0.2
+			"thickness": 0.2,
+			"openings": [
+				{
+					"kind": "door",
+					"at": 0.9,
+					"width": 1.2,
+					"hinge": "start",
+					"opens": -1
+				}
+			]
 		},
 		{
 			"a": [
@@ -2789,7 +2817,9 @@
 				{
 					"kind": "garden_door",
 					"at": 0.8,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "end",
+					"opens": 1
 				}
 			]
 		},
@@ -2807,7 +2837,9 @@
 				{
 					"kind": "garden_door",
 					"at": 0.8,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "start",
+					"opens": -1
 				}
 			]
 		},
@@ -2825,7 +2857,9 @@
 				{
 					"kind": "door",
 					"at": 1.9,
-					"width": 1.2
+					"width": 1.2,
+					"hinge": "end",
+					"opens": -1
 				}
 			]
 		},
@@ -2946,12 +2980,16 @@
 				{
 					"kind": "garden_door",
 					"at": 10.5,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "end",
+					"opens": -1
 				},
 				{
 					"kind": "garden_door",
 					"at": 15.0,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "end",
+					"opens": -1
 				},
 				{
 					"kind": "window",
@@ -2961,12 +2999,16 @@
 				{
 					"kind": "garden_door",
 					"at": 23.0,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "end",
+					"opens": -1
 				},
 				{
 					"kind": "garden_door",
 					"at": 27.5,
-					"width": 2.2
+					"width": 2.2,
+					"hinge": "end",
+					"opens": -1
 				}
 			]
 		},
@@ -3110,7 +3152,16 @@
 				-34.5,
 				-10.1
 			],
-			"thickness": 0.2
+			"thickness": 0.2,
+			"openings": [
+				{
+					"kind": "door",
+					"at": 2.8,
+					"width": 1.2,
+					"hinge": "start",
+					"opens": 1
+				}
+			]
 		},
 		{
 			"a": [
@@ -3963,7 +4014,7 @@
 	],
 	"regions": [
 		{
-			"id": "1224",
+			"id": "174",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -3976,7 +4027,7 @@
 			]
 		},
 		{
-			"id": "1228",
+			"id": "178",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -3989,7 +4040,7 @@
 			]
 		},
 		{
-			"id": "1232",
+			"id": "182",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4008,7 +4059,7 @@
 			]
 		},
 		{
-			"id": "1236",
+			"id": "186",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4027,7 +4078,7 @@
 			]
 		},
 		{
-			"id": "1148",
+			"id": "148",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4046,7 +4097,7 @@
 			]
 		},
 		{
-			"id": "1149",
+			"id": "149",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4065,7 +4116,7 @@
 			]
 		},
 		{
-			"id": "1141",
+			"id": "141",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4078,7 +4129,7 @@
 			]
 		},
 		{
-			"id": "1137",
+			"id": "137",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4091,7 +4142,7 @@
 			]
 		},
 		{
-			"id": "1240",
+			"id": "190",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4116,7 +4167,7 @@
 			]
 		},
 		{
-			"id": "1145",
+			"id": "145",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4141,7 +4192,7 @@
 			]
 		},
 		{
-			"id": "1120",
+			"id": "118",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4160,7 +4211,7 @@
 			]
 		},
 		{
-			"id": "1118",
+			"id": "116",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4179,7 +4230,7 @@
 			]
 		},
 		{
-			"id": "1133",
+			"id": "133",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4204,7 +4255,7 @@
 			]
 		},
 		{
-			"id": "1124",
+			"id": "122",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4223,7 +4274,7 @@
 			]
 		},
 		{
-			"id": "1114",
+			"id": "112",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4242,7 +4293,7 @@
 			]
 		},
 		{
-			"id": "1218",
+			"id": "168",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4261,7 +4312,7 @@
 			]
 		},
 		{
-			"id": "1125",
+			"id": "125",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4280,7 +4331,7 @@
 			]
 		},
 		{
-			"id": "1209",
+			"id": "159",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4299,7 +4350,7 @@
 			]
 		},
 		{
-			"id": "1215",
+			"id": "165",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4318,7 +4369,7 @@
 			]
 		},
 		{
-			"id": "1130",
+			"id": "126",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4337,7 +4388,7 @@
 			]
 		},
 		{
-			"id": "1108",
+			"id": "106",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4356,7 +4407,7 @@
 			]
 		},
 		{
-			"id": "1205",
+			"id": "155",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4375,7 +4426,7 @@
 			]
 		},
 		{
-			"id": "1203",
+			"id": "153",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4394,7 +4445,7 @@
 			]
 		},
 		{
-			"id": "1102",
+			"id": "113",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4413,7 +4464,7 @@
 			]
 		},
 		{
-			"id": "1104",
+			"id": "102",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4432,7 +4483,7 @@
 			]
 		},
 		{
-			"id": "1216",
+			"id": "166",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4451,7 +4502,7 @@
 			]
 		},
 		{
-			"id": "1123",
+			"id": "123",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4470,7 +4521,7 @@
 			]
 		},
 		{
-			"id": "1208",
+			"id": "158",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4489,7 +4540,7 @@
 			]
 		},
 		{
-			"id": "1206",
+			"id": "156",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4508,7 +4559,7 @@
 			]
 		},
 		{
-			"id": "1101",
+			"id": "101",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4521,7 +4572,7 @@
 			]
 		},
 		{
-			"id": "1105",
+			"id": "105",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4534,7 +4585,7 @@
 			]
 		},
 		{
-			"id": "1109",
+			"id": "109",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -4547,7 +4598,7 @@
 			]
 		},
 		{
-			"id": "1115",
+			"id": "115",
 			"kind": "room",
 			"outdoor": false,
 			"rects": [
@@ -5587,8 +5638,8 @@
 	],
 	"rooms": [
 		{
-			"no": "1101",
-			"sign": "1101",
+			"no": "101",
+			"sign": "101",
 			"wing": "ost",
 			"rects": [
 				[
@@ -5615,79 +5666,8 @@
 			}
 		},
 		{
-			"no": "1102",
-			"sign": "1102",
-			"wing": "ost",
-			"rects": [
-				[
-					34.6,
-					-15.9,
-					39.4,
-					-10.1
-				],
-				[
-					39.6,
-					-15.9,
-					43.4,
-					-10.1
-				]
-			],
-			"center": [
-				38.94,
-				-13.05
-			],
-			"door": {
-				"pos": [
-					42.1,
-					-10.0
-				],
-				"normal": [
-					0,
-					1
-				],
-				"width": 1.2
-			},
-			"garden_doors": [
-				{
-					"pos": [
-						41.5,
-						-16.0
-					],
-					"normal": [
-						0,
-						-1
-					],
-					"width": 2.2
-				},
-				{
-					"pos": [
-						37.0,
-						-16.0
-					],
-					"normal": [
-						0,
-						-1
-					],
-					"width": 2.2
-				}
-			],
-			"bath_doors": [
-				{
-					"pos": [
-						34.5,
-						-13.5
-					],
-					"normal": [
-						-1,
-						0
-					],
-					"width": 1.2
-				}
-			]
-		},
-		{
-			"no": "1104",
-			"sign": "1104",
+			"no": "102",
+			"sign": "102",
 			"wing": "ost",
 			"rects": [
 				[
@@ -5757,8 +5737,8 @@
 			]
 		},
 		{
-			"no": "1105",
-			"sign": "1105",
+			"no": "105",
+			"sign": "105",
 			"wing": "ost",
 			"rects": [
 				[
@@ -5785,8 +5765,8 @@
 			}
 		},
 		{
-			"no": "1108",
-			"sign": "1108",
+			"no": "106",
+			"sign": "106",
 			"wing": "ost",
 			"rects": [
 				[
@@ -5856,8 +5836,8 @@
 			]
 		},
 		{
-			"no": "1109",
-			"sign": "1109",
+			"no": "109",
+			"sign": "109",
 			"wing": "ost",
 			"rects": [
 				[
@@ -5884,8 +5864,8 @@
 			}
 		},
 		{
-			"no": "1114",
-			"sign": "1114",
+			"no": "112",
+			"sign": "112",
 			"wing": "ost",
 			"rects": [
 				[
@@ -5955,8 +5935,79 @@
 			]
 		},
 		{
-			"no": "1115",
-			"sign": "1115",
+			"no": "113",
+			"sign": "113",
+			"wing": "ost",
+			"rects": [
+				[
+					34.6,
+					-15.9,
+					39.4,
+					-10.1
+				],
+				[
+					39.6,
+					-15.9,
+					43.4,
+					-10.1
+				]
+			],
+			"center": [
+				38.94,
+				-13.05
+			],
+			"door": {
+				"pos": [
+					42.1,
+					-10.0
+				],
+				"normal": [
+					0,
+					1
+				],
+				"width": 1.2
+			},
+			"garden_doors": [
+				{
+					"pos": [
+						41.5,
+						-16.0
+					],
+					"normal": [
+						0,
+						-1
+					],
+					"width": 2.2
+				},
+				{
+					"pos": [
+						37.0,
+						-16.0
+					],
+					"normal": [
+						0,
+						-1
+					],
+					"width": 2.2
+				}
+			],
+			"bath_doors": [
+				{
+					"pos": [
+						34.5,
+						-13.5
+					],
+					"normal": [
+						-1,
+						0
+					],
+					"width": 1.2
+				}
+			]
+		},
+		{
+			"no": "115",
+			"sign": "115",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6015,8 +6066,8 @@
 			]
 		},
 		{
-			"no": "1118",
-			"sign": "1118",
+			"no": "116",
+			"sign": "116",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6086,8 +6137,8 @@
 			]
 		},
 		{
-			"no": "1120",
-			"sign": "1120",
+			"no": "118",
+			"sign": "118",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6157,68 +6208,8 @@
 			]
 		},
 		{
-			"no": "1123",
-			"sign": "1123",
-			"wing": "ost",
-			"rects": [
-				[
-					69.6,
-					-9.9,
-					75.4,
-					-5.9
-				],
-				[
-					68.6,
-					-5.9,
-					75.4,
-					-0.1
-				]
-			],
-			"center": [
-				72.14,
-				-4.86
-			],
-			"door": {
-				"pos": [
-					69.5,
-					-8.6
-				],
-				"normal": [
-					-1,
-					0
-				],
-				"width": 1.2
-			},
-			"bath_doors": [
-				{
-					"pos": [
-						68.5,
-						-2.5
-					],
-					"normal": [
-						-1,
-						0
-					],
-					"width": 1.2
-				}
-			],
-			"side_doors": [
-				{
-					"pos": [
-						68.65,
-						-6.0
-					],
-					"normal": [
-						-1,
-						0
-					],
-					"width": 0.2
-				}
-			]
-		},
-		{
-			"no": "1124",
-			"sign": "1124",
+			"no": "122",
+			"sign": "122",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6288,8 +6279,68 @@
 			]
 		},
 		{
-			"no": "1125",
-			"sign": "1125",
+			"no": "123",
+			"sign": "123",
+			"wing": "ost",
+			"rects": [
+				[
+					69.6,
+					-9.9,
+					75.4,
+					-5.9
+				],
+				[
+					68.6,
+					-5.9,
+					75.4,
+					-0.1
+				]
+			],
+			"center": [
+				72.14,
+				-4.86
+			],
+			"door": {
+				"pos": [
+					69.5,
+					-8.6
+				],
+				"normal": [
+					-1,
+					0
+				],
+				"width": 1.2
+			},
+			"bath_doors": [
+				{
+					"pos": [
+						68.5,
+						-2.5
+					],
+					"normal": [
+						-1,
+						0
+					],
+					"width": 1.2
+				}
+			],
+			"side_doors": [
+				{
+					"pos": [
+						68.65,
+						-6.0
+					],
+					"normal": [
+						-1,
+						0
+					],
+					"width": 0.2
+				}
+			]
+		},
+		{
+			"no": "125",
+			"sign": "125",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6335,8 +6386,8 @@
 			]
 		},
 		{
-			"no": "1130",
-			"sign": "1130",
+			"no": "126",
+			"sign": "126",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6406,8 +6457,8 @@
 			]
 		},
 		{
-			"no": "1133",
-			"sign": "1133",
+			"no": "133",
+			"sign": "133",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6481,8 +6532,8 @@
 			]
 		},
 		{
-			"no": "1137",
-			"sign": "1137",
+			"no": "137",
+			"sign": "137",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6546,8 +6597,8 @@
 			]
 		},
 		{
-			"no": "1141",
-			"sign": "1141",
+			"no": "141",
+			"sign": "141",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6600,8 +6651,8 @@
 			]
 		},
 		{
-			"no": "1145",
-			"sign": "1145",
+			"no": "145",
+			"sign": "145",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6675,8 +6726,8 @@
 			]
 		},
 		{
-			"no": "1148",
-			"sign": "1148",
+			"no": "148",
+			"sign": "148",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6759,8 +6810,8 @@
 			]
 		},
 		{
-			"no": "1149",
-			"sign": "1149",
+			"no": "149",
+			"sign": "149",
 			"wing": "ost",
 			"rects": [
 				[
@@ -6830,8 +6881,8 @@
 			]
 		},
 		{
-			"no": "1203",
-			"sign": "1203",
+			"no": "153",
+			"sign": "153",
 			"wing": "west",
 			"rects": [
 				[
@@ -6885,11 +6936,24 @@
 					],
 					"width": 2.2
 				}
+			],
+			"bath_doors": [
+				{
+					"pos": [
+						-34.5,
+						-12.5
+					],
+					"normal": [
+						1,
+						0
+					],
+					"width": 1.2
+				}
 			]
 		},
 		{
-			"no": "1205",
-			"sign": "1205",
+			"no": "155",
+			"sign": "155",
 			"wing": "west",
 			"rects": [
 				[
@@ -6959,8 +7023,8 @@
 			]
 		},
 		{
-			"no": "1206",
-			"sign": "1206",
+			"no": "156",
+			"sign": "156",
 			"wing": "west",
 			"rects": [
 				[
@@ -7006,8 +7070,8 @@
 			]
 		},
 		{
-			"no": "1208",
-			"sign": "1208",
+			"no": "158",
+			"sign": "158",
 			"wing": "west",
 			"rects": [
 				[
@@ -7066,8 +7130,8 @@
 			]
 		},
 		{
-			"no": "1209",
-			"sign": "1209",
+			"no": "159",
+			"sign": "159",
 			"wing": "west",
 			"rects": [
 				[
@@ -7137,8 +7201,8 @@
 			]
 		},
 		{
-			"no": "1215",
-			"sign": "1215",
+			"no": "165",
+			"sign": "165",
 			"wing": "west",
 			"rects": [
 				[
@@ -7208,8 +7272,8 @@
 			]
 		},
 		{
-			"no": "1216",
-			"sign": "1216",
+			"no": "166",
+			"sign": "166",
 			"wing": "west",
 			"rects": [
 				[
@@ -7268,8 +7332,8 @@
 			]
 		},
 		{
-			"no": "1218",
-			"sign": "1218",
+			"no": "168",
+			"sign": "168",
 			"wing": "west",
 			"rects": [
 				[
@@ -7315,8 +7379,8 @@
 			]
 		},
 		{
-			"no": "1224",
-			"sign": "1224",
+			"no": "174",
+			"sign": "174",
 			"wing": "west",
 			"rects": [
 				[
@@ -7380,8 +7444,8 @@
 			]
 		},
 		{
-			"no": "1228",
-			"sign": "1228",
+			"no": "178",
+			"sign": "178",
 			"wing": "west",
 			"rects": [
 				[
@@ -7434,8 +7498,8 @@
 			]
 		},
 		{
-			"no": "1232",
-			"sign": "1232",
+			"no": "182",
+			"sign": "182",
 			"wing": "west",
 			"rects": [
 				[
@@ -7505,8 +7569,8 @@
 			]
 		},
 		{
-			"no": "1236",
-			"sign": "1236",
+			"no": "186",
+			"sign": "186",
 			"wing": "west",
 			"rects": [
 				[
@@ -7589,8 +7653,8 @@
 			]
 		},
 		{
-			"no": "1240",
-			"sign": "1240",
+			"no": "190",
+			"sign": "190",
 			"wing": "west",
 			"rects": [
 				[
@@ -9054,7 +9118,104 @@
 			"facing": "west"
 		}
 	],
-	"fittings": [],
+	"fittings": [
+		{
+			"kind": "switch",
+			"pos": [
+				-61.1,
+				-25.2
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-29.9,
+				-25.2
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-63.2,
+				-20.2
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-29.2,
+				-20.2
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-65.3,
+				-18.3
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-25.7,
+				-18.3
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-56.7,
+				-14.4
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-51.7,
+				-13.7
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-39.3,
+				-13.7
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-34.3,
+				-11.6
+			],
+			"wall": "west"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-49.8,
+				-10.2
+			],
+			"wall": "south"
+		},
+		{
+			"kind": "switch",
+			"pos": [
+				-41.2,
+				-10.2
+			],
+			"wall": "south"
+		}
+	],
 	"items": [],
 	"lights": [
 		{
@@ -9116,6 +9277,20 @@
 		{
 			"kind": "ceiling_lamp",
 			"pos": [
+				-62.5,
+				-26.5
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				-28.5,
+				-26.5
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
 				-17.95,
 				-23.45
 			]
@@ -9137,7 +9312,21 @@
 		{
 			"kind": "ceiling_lamp",
 			"pos": [
+				-28.5,
+				-22.5
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
 				-62.5,
+				-18.0
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				-28.5,
 				-18.0
 			]
 		},
@@ -9153,6 +9342,13 @@
 			"pos": [
 				-11.05,
 				-14.55
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				-58.0,
+				-13.0
 			]
 		},
 		{
@@ -9180,6 +9376,13 @@
 			"kind": "ceiling_lamp",
 			"pos": [
 				-37.0,
+				-13.0
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				-33.0,
 				-13.0
 			]
 		},

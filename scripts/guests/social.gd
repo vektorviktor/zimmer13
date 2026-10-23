@@ -884,6 +884,11 @@ func start_party(host: String) -> bool:
 	return true
 
 
+## Versammeln sich die Gäste gerade zur Siegerehrung (Spielkonzept 2.5)? Dann kein Besuch, kein Süßes oder Saures.
+func _gathering() -> bool:
+	return Game.contest != null and Game.contest.is_gathering()
+
+
 ## Nachtruhe nach der Uhr (2.4): beginnt, sobald es so weit ist und keine Feier oder Schmück-Aktion mehr läuft,
 ## und endet am Morgen.
 func _update_sleep(_delta: float) -> void:
@@ -1000,12 +1005,9 @@ func _update_party(delta: float) -> void:
 	_spontaneous_timer = 30.0
 	if sleep_active or Calendar.phase() != Calendar.Phase.EVENING:
 		return   # Feiern gibt es abends (Spielkonzept 2.4), in der Nachtruhe feiert niemand
+	if Game.contest and Game.contest.holds_parties():
+		return   # am Abend der Siegerehrung feiert niemand (Spielkonzept 2.5) – der erste Angriff kommt dort
 	var alive := living_guests()
-	# Der erste Angriff passiert bei einer Feier (Spielkonzept 2.1): an diesem Tag lädt jemand ein
-	if Game.director.wants_first_attack_party() and alive.size() >= 1:
-		var party_host_guest: Guest = alive[randi() % alive.size()]
-		start_party(party_host_guest.id)
-		return
 	if _party_cooldown > 0.0 or alive.size() < 2 or not Game.director.is_quiet(party_center(), 30.0):
 		return
 	var total_fear := 0.0
@@ -1519,7 +1521,7 @@ func _update_bonds(delta: float) -> void:
 ## Gute Freunde klopfen ab und zu an Zimmer 13 – nur, wenn du drin bist und es ruhig ist.
 func _update_visits(delta: float) -> void:
 	_visit_cooldown -= delta
-	if _visit_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active or not _player_home_quiet():
+	if _visit_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active or _gathering() or not _player_home_quiet():
 		return
 	_visit_cooldown = randf_range(VISIT_COOLDOWN.x, VISIT_COOLDOWN.y)
 	var friends := living_guests().filter(func(g: Guest) -> bool:
@@ -1623,7 +1625,7 @@ func _update_tricks(delta: float) -> void:
 					_trick_prank(kid)
 		return
 	_trick_cooldown -= delta
-	if _trick_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active or not _player_home_quiet():
+	if _trick_cooldown > 0.0 or not _knock.is_empty() or sleep_active or party_active or _gathering() or not _player_home_quiet():
 		return
 	_trick_cooldown = randf_range(TRICK_COOLDOWN.x, TRICK_COOLDOWN.y)
 	var kids := living_guests().filter(func(g: Guest) -> bool:
@@ -1718,7 +1720,7 @@ func _update_rounds(delta: float) -> void:
 	for id in _rounds.keys():
 		_round_step(_rounds[id], delta)
 	_round_cooldown -= delta
-	if _round_cooldown > 0.0 or sleep_active or party_active or Game.monster.is_active():
+	if _round_cooldown > 0.0 or sleep_active or party_active or _gathering() or Game.monster.is_active():
 		return
 	_round_cooldown = randf_range(ROUND_COOLDOWN.x, ROUND_COOLDOWN.y)
 	var kids := living_guests().filter(func(g: Guest) -> bool:

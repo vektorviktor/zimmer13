@@ -70,7 +70,8 @@ done <<'LIST'
 1200|--day=26 --rot --decorate=allein --trace
 400|--bag --flashlight --bag-menu=2
 3000|--navcheck
-3000|--day=12 --first-attack --trace
+3000|--day=12 --siegerehrung --trace
+2400|--siegerehrung=ohne --trace
 2400|--warn --intent=one --day=10 --trace
 3000|--doll --trace
 2400|--doll=10,13 --trace
@@ -82,6 +83,8 @@ done <<'LIST'
 2000|--ghost=schrank --trace
 2000|--ghost=tür --answer --trace
 2000|--pos=34.45,0.1,-13.5 --ghost=4 --trace
+1400|--pos=31.5,0,-8 --ghost=stunde --trace
+900|--pos=31.5,0,-8 --ghost=stunde,4 --trace
 1500|--lure --trace
 3000|--decorate=gross,hin --trace
 2000|--decorate=allein,haus --trace

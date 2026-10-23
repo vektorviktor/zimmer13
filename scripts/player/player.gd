@@ -1,6 +1,7 @@
 class_name Player
 extends CharacterBody3D
-## Ego-Perspektive-Spieler. Kapsel 1,80 m × 0,45 m (Spielkonzept 3.1).
+## Ego-Perspektive-Spieler. Kapsel so hoch wie die Figur (1,45–2,00 m, Standard 1,80 m) × 0,45 m (Spielkonzept 3.1, 3.9);
+## Augenhöhe und Hocken wachsen mit. Den eigenen Körper (PlayerBody) sieht man nur im Spiegel und als Schatten.
 ## Ein Gegenstand in der Hand, Kleines dazu in der Tasche (BAG_SLOTS Fächer, Spielkonzept 3.2): [Q] halten zeigt die
 ## Fächer über dem verschwommenen Spiel (es läuft weiter), Maus / Mausrad / [1]–[6] wählen, Loslassen nimmt den
 ## Gegenstand in die Hand – was die Hand hielt, fällt zu Boden; ein leeres Fach steckt Kleines aus der Hand ein.
@@ -122,6 +123,8 @@ var holding_breath := false
 var shock := 0.0
 var shock_recovery := 1.0   ## schneller durch Gedenken oder Feiern (Social)
 var in_dialog := false
+## Gebannt (Siegerehrung, Spielkonzept 2.5): keine Steuerung, DoorContest führt den Blick
+var spellbound := false
 var focused := false   ## sitzt konzentriert am Spieltisch → Vorwarnungen fallen weniger auf
 var inspecting := false  ## schaut auf Karte oder Kompass in der linken Hand
 var trance := 0.0      ## Hypnose des Lakengeists (0..1) – macht langsamer (Spielkonzept 4.18)
@@ -147,6 +150,14 @@ var hangover := 0.0    ## Sekunden Kater nach dem Schlaf im Rausch
 var sight_blur := 0.0   ## verschwommene Sicht (0..1) aus Müdigkeit und Rausch – Post-Shader `blur` (3.6/3.7)
 var sight_warp := 0.0   ## Wabern und Doppelbild im Rausch (0..1) – Post-Shader `warp`
 var seat: Seat          ## sitzt auf diesem Möbel (3.1) – Platz in _seat_spot
+## Größe der Figur (Spielkonzept 3.9) – Kapsel, Augenhöhe und Hocken im Verhältnis zu HEIGHT
+var body_height := HEIGHT
+var eye_height := EYE_HEIGHT
+var crouch_height := CROUCH_HEIGHT
+var crouch_eye := CROUCH_EYE_HEIGHT
+var body: PlayerBody
+## zusätzlich verschwommen (0..1) – Erwachen am Waschbecken (CharacterCreation)
+var intro_blur := 0.0
 
 var _hand: Node3D
 var _left_hand: Node3D
@@ -197,13 +208,13 @@ func _ready() -> void:
 	collision_mask = 1 | 2 | 16 | 64 | 128 | 256
 	_shape = CapsuleShape3D.new()
 	_shape.radius = RADIUS
-	_shape.height = HEIGHT
+	_shape.height = body_height
 	_collider = CollisionShape3D.new()
 	_collider.shape = _shape
-	_collider.position.y = HEIGHT / 2.0
+	_collider.position.y = body_height / 2.0
 	add_child(_collider)
 	head = Node3D.new()
-	head.position.y = EYE_HEIGHT
+	head.position.y = eye_height
 	add_child(head)
 	_steps = Footsteps.new()
 	add_child(_steps)
@@ -214,6 +225,9 @@ func _ready() -> void:
 	camera.far = 70.0   # knapp hinter dem Nebelende (main.gd) – weiter sieht man nichts, auch das Monster nicht
 	head.add_child(camera)
 	camera.make_current()
+	camera.cull_mask = 0xFFFFF & ~PlayerBody.LAYER   # den eigenen Körper nur im Spiegel und als Schatten
+	body = PlayerBody.new()
+	add_child(body)
 	_hand = Node3D.new()
 	_hand.position = HAND_REST
 	camera.add_child(_hand)
@@ -237,7 +251,7 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if dead or in_dialog:
+	if dead or in_dialog or spellbound:
 		return
 	if bag_open:
 		_bag_input(event)
@@ -308,7 +322,7 @@ func _process(delta: float) -> void:
 		close_bag(true)   # [Q] losgelassen
 	if _look_lag == Vector2.ZERO:
 		return
-	if dead or in_dialog or hiding:
+	if dead or in_dialog or hiding or spellbound:
 		_look_lag = Vector2.ZERO
 		return
 	var step := _look_lag * minf(1.0, delta * lerpf(LOOK_LAG.x, LOOK_LAG.y, BarTap.sway(drunk)))
@@ -329,7 +343,7 @@ func _physics_process(delta: float) -> void:
 	_update_hand(delta)
 	_update_injury(delta)
 	_update_stamina(delta)
-	if in_dialog:
+	if in_dialog or spellbound:
 		velocity = Vector3.ZERO
 		running = false
 		return
@@ -382,7 +396,7 @@ func _physics_process(delta: float) -> void:
 	if moving:
 		_bob += delta * speed * 2.4
 	_drunk_walk(moving, delta)
-	var eye := CROUCH_EYE_HEIGHT if crouching else EYE_HEIGHT
+	var eye := crouch_eye if crouching else eye_height
 	var bob := sin(_bob) * 0.03 if moving else 0.0
 	head.position.y = lerpf(head.position.y, eye + bob, minf(1.0, 12.0 * delta))
 
@@ -555,7 +569,7 @@ func stand_up() -> void:
 	focused = false
 	global_position += transform.basis.z * 0.5
 	_collider.disabled = false
-	head.position.y = EYE_HEIGHT
+	head.position.y = eye_height
 	head.rotation.x = 0.0
 
 
@@ -610,7 +624,7 @@ func leave_seat(force: bool = false) -> bool:
 	_seat_spot = null
 	global_position = at
 	_collider.disabled = false
-	head.position.y = EYE_HEIGHT
+	head.position.y = eye_height
 	return true
 
 
@@ -781,6 +795,19 @@ func set_disguised(value: bool) -> void:
 	disguised = value
 	if Game.hud:
 		Game.hud.set_disguised(value)
+
+
+## Aussehen aus der Charaktererstellung (Spielkonzept 3.9): Figur neu bauen, Kapsel und Augenhöhe auf die Größe.
+func set_look(look: Dictionary) -> void:
+	body.apply(look)
+	var k := float(body.look["height"]) / HEIGHT
+	body_height = HEIGHT * k
+	eye_height = EYE_HEIGHT * k
+	crouch_height = CROUCH_HEIGHT * k
+	crouch_eye = CROUCH_EYE_HEIGHT * k
+	_set_crouch(crouching)
+	if hiding == null and seat == null:
+		head.position.y = crouch_eye if crouching else eye_height
 
 
 ## Erkennt dieser Gast den Spieler? Verkleidet nur aus RECOGNIZE_RANGE.
@@ -1396,17 +1423,17 @@ func set_crouching(value: bool) -> void:
 
 func _set_crouch(value: bool) -> void:
 	crouching = value
-	_shape.height = CROUCH_HEIGHT if value else HEIGHT
+	_shape.height = crouch_height if value else body_height
 	_collider.position.y = _shape.height / 2.0
 
 
 func _can_stand(at: Vector3 = global_position) -> bool:
 	var probe := CapsuleShape3D.new()
 	probe.radius = RADIUS - 0.02
-	probe.height = HEIGHT
+	probe.height = body_height
 	var params := PhysicsShapeQueryParameters3D.new()
 	params.shape = probe
-	params.transform = Transform3D(Basis(), at + Vector3(0, HEIGHT / 2.0 + 0.02, 0))
+	params.transform = Transform3D(Basis(), at + Vector3(0, body_height / 2.0 + 0.02, 0))
 	params.collision_mask = collision_mask
 	params.exclude = [get_rid()]
 	return get_world_3d().direct_space_state.intersect_shape(params, 1).is_empty()
@@ -1432,7 +1459,7 @@ func enter_hide(spot: HideSpot) -> void:
 	velocity = Vector3.ZERO
 	_hide_yaw = 0.0
 	_hide_pitch = 0.0
-	head.position.y = EYE_HEIGHT
+	head.position.y = eye_height
 	spot.on_enter(self)
 	_apply_hide_view()
 	if Game.hud:
@@ -1463,7 +1490,7 @@ func exit_hide() -> void:
 
 func _apply_hide_view() -> void:
 	var view := hiding.view_point.global_transform
-	global_position = view.origin - Vector3(0, EYE_HEIGHT, 0)
+	global_position = view.origin - Vector3(0, eye_height, 0)
 	rotation = Vector3(0, view.basis.get_euler().y + _hide_yaw, 0)
 	head.rotation.x = _hide_pitch
 

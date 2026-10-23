@@ -193,10 +193,15 @@ static func layer(color: Color, tex_id: String = "", tex_scale: float = 1.0, pul
 
 ## Auflage wie `layer`, aber mit den UVs des Meshs statt Weltkoordinaten (Läufer: die Bordüre folgt dem Band).
 static func layer_uv(tex_id: String, pull: float = 0.01) -> ShaderMaterial:
-	var key := "layer_uv|%s|%.4f" % [tex_id, pull]
+	return layer_tex(TexGen.get_tex(tex_id), pull)
+
+
+## Wie `layer_uv`, aber mit fertiger Textur (Teppiche: TexGen.rug je Größe).
+static func layer_tex(tex: Texture2D, pull: float = 0.01) -> ShaderMaterial:
+	var key := "layer_uv|%d|%.4f" % [tex.get_instance_id(), pull]
 	if not _cache.has(key):
 		var m := psx(Color(1, 1, 1), "", 1.0, Color.BLACK, 0.0, false)
-		m.set_shader_parameter("albedo_tex", TexGen.get_tex(tex_id))
+		m.set_shader_parameter("albedo_tex", tex)
 		m.set_shader_parameter("layer_pull", pull)
 		_cache[key] = m
 	return _cache[key]

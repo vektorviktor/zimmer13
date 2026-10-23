@@ -6,7 +6,8 @@ extends Node
 ##   Druck > Abschreckung → das Monster kommt durch.
 ##
 ## Dramaturgie (Spielkonzept 2.1, 4.13):
-##   · Friedlicher Anfang – bis zum ersten Angriff (3./4. Oktober, bei einer Feier) kein Monster.
+##   · Friedlicher Anfang – bis zum ersten Angriff kein Monster; den löst die Siegerehrung des Türschmuck-Wettbewerbs
+##     am Abend des 2. Oktober aus (DoorContest, 2.5).
 ##   · Danach streift es im ganzen Hotel umher, abwechselnd mit Ruhephasen im Keller;
 ##     anfangs lange Pausen, mit jedem Tag kürzere.
 ##   · Die ersten Angriffe sind harmlos: es holt niemanden, es zeigt sich nur.
@@ -55,12 +56,7 @@ const DECO_UNREST_RANGE := 16.0
 const DECO_UNREST_GHOST := 10.0   ## beim Lakengeist (er ist lautlos – die Deko verrät ihn)
 ## Debug F7: so weit vom Spieler erscheint das ruhende Monster
 const LURE_DISTANCE := 25.0
-## Erster Angriff: am Abend des 2. Oktober (Feiern gibt es nur abends, 2.4), nach so vielen Sekunden einer Feier
-const FIRST_ATTACK_DAYS := [2]
-const FIRST_ATTACK_PARTY_TIME := 25.0
-## Spätestens dann – auch ohne Feier: am 3. Oktober um 20 Uhr
-const FALLBACK_ATTACK_DAY := 3
-const FALLBACK_ATTACK_HOUR := 20.0
+## Den ersten Angriff löst die Siegerehrung des Türschmuck-Wettbewerbs aus (DoorContest, Spielkonzept 2.5)
 ## So viele Aufbrüche holt es niemanden – etwa anderthalb Spieltage (früher zwei Aufbrüche bei 5-Minuten-Tagen)
 const HARMLESS_ATTACKS := 9
 ## Ruhe- und Aktivphasen in Sekunden: am 1. Oktober → an Halloween
@@ -137,7 +133,6 @@ var player_door_front := Vector3.ZERO
 var post_material: ShaderMaterial
 ## Dramaturgie
 var first_attack_done := false
-var first_attack_day := 2
 var attacks := 0            ## Aktivphasen seit dem ersten Angriff
 var grief := 0.0            ## Sekunden „Trauerzeit“ nach einem Todesfall → Halluzinationen
 var strange_diary := false  ## im Tagebuch steht beim nächsten Mal eine fremde Zeile
@@ -203,7 +198,6 @@ func setup(builder: LevelBuilder, monster: Monster) -> void:
 	player_door_front = builder.player_door_front
 	_stairwell = builder.stairwell_point
 	_monster = monster
-	first_attack_day = FIRST_ATTACK_DAYS[randi() % FIRST_ATTACK_DAYS.size()]
 
 
 func _physics_process(delta: float) -> void:
@@ -224,9 +218,7 @@ func _physics_process(delta: float) -> void:
 			# „Angst riecht“: ein Spieler unter Schock lockt das Monster an
 			if Game.player and Game.player.shock > 0.1:
 				add_curiosity(Game.player.global_position, Game.player.shock * 3.0)
-		if not first_attack_done:
-			_check_first_attack()
-		else:
+		if first_attack_done:
 			_update_schedule(delta)
 			_update_haunting(delta)
 		_update_hallucination(delta)
@@ -431,11 +423,6 @@ func is_harmless() -> bool:
 	return attacks <= HARMLESS_ATTACKS
 
 
-## Soll ein Gast jetzt eine Feier geben, damit der erste Angriff dort passieren kann?
-func wants_first_attack_party() -> bool:
-	return not first_attack_done and Calendar.today() >= first_attack_day
-
-
 ## Ist es um diesen Ort herum ruhig (kein Monster in der Nähe)?
 ## Ruhig = kein Monster in der Nähe – und kein jagender Kürbismann (Spielkonzept 4.19): Wo er hinkommt, enden
 ## Feier und Partien von selbst.
@@ -455,35 +442,15 @@ func other_threat_active(who: Node) -> bool:
 	return who != Game.pumpkin and Game.pumpkin != null and (Game.pumpkin.in_house() or Game.pumpkin.announcing())
 
 
-func _check_first_attack() -> void:
-	if other_threat_active(_monster):
-		return   # die Feier wartet auf ihren Auftritt
-	var day := Calendar.today()
-	var social := Game.social
-	if social and social.party_active and day >= first_attack_day and social.party_age() >= FIRST_ATTACK_PARTY_TIME:
-		_first_attack_at_party()
-	elif elapsed >= Calendar.at(FALLBACK_ATTACK_DAY, FALLBACK_ATTACK_HOUR):
-		first_attack_done = true
-		_start_activity(spawn_points[0])
-
-
-## Mitten in der Feier: Licht aus, Musik aus, Stille – und es ist da.
-func _first_attack_at_party() -> void:
+## Der erste Angriff (Spielkonzept 2.1, 2.5): Bei der Siegerehrung hat sich die Puppe in Rauch aufgelöst, das Licht in der
+## Lobby ist aus – es steht in deren dunkler Ecke und geht dorthin, wo sie saß.
+func first_attack_in_lobby(corner: Vector3, look: Vector3) -> void:
 	first_attack_done = true
-	var builder := Game.social.builder
-	var party_light := LightSwitch.find(get_tree(), "partyraum")
-	if party_light:
-		party_light.set_on(false)
-	Game.social.end_party("")
-	Game.play_sound("bang", 0.6)
-	if Game.player and builder.in_area(Game.player.global_position, "partyraum"):
-		Game.say("Das Licht geht aus. Die Musik verstummt.", 3.0)
-	# Es steht in der dunklen Ecke des Partyraums
-	_start_activity(builder.party_corner + Vector3(0, 0.05, 0), false)
-	_monster.investigate(Game.social.party_center())
+	_start_activity(corner + Vector3(0, 0.05, 0), false)
+	_monster.investigate(look)
 
 
-## Aufbruch: Absicht wählen, Flackerwelle vom Keller aus (der erste Angriff bei der Feier hat
+## Aufbruch: Absicht wählen, Flackerwelle vom Keller aus (der erste Angriff bei der Siegerehrung hat
 ## seinen eigenen Auftakt), dann losstreifen.
 func _start_activity(spawn: Vector3, with_signal: bool = true) -> void:
 	attacks += 1
@@ -1398,7 +1365,7 @@ func threat_at(pos: Vector3) -> float:
 
 func save_state() -> Dictionary:
 	return {
-		"first_attack_done": first_attack_done, "first_attack_day": first_attack_day, "attacks": attacks,
+		"first_attack_done": first_attack_done, "attacks": attacks,
 		"grief": grief, "strange_diary": strange_diary, "phase": int(phase), "phase_left": _phase_left,
 		"haunt_timer": _haunt_timer, "uv_count": uv_count, "monster_active": _monster.is_active(),
 		"victims_left": victims_left, "uv_angry": _uv_angry,
@@ -1411,7 +1378,6 @@ func save_state() -> Dictionary:
 
 func load_state(d: Dictionary) -> void:
 	first_attack_done = bool(d.get("first_attack_done", false))
-	first_attack_day = int(d.get("first_attack_day", first_attack_day))
 	attacks = int(d.get("attacks", 0))
 	grief = float(d.get("grief", 0.0))
 	strange_diary = bool(d.get("strange_diary", false))

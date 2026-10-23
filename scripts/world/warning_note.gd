@@ -7,12 +7,16 @@ extends StaticBody3D
 
 const NOTES := {
 	"1987": {"title": "Zettel, Oktober 1987",
-		"text": "Wer das liest: Lass das Licht an. Immer. Es kommt nur, wo es dunkel ist.\nIch habe die Birne in meinem Zimmer verloren. Jetzt höre ich es jede Nacht vor der Tür.\n– E. K., Zimmer 0117",
+		"text": "Wer das liest: Lass das Licht an. Immer. Es kommt nur, wo es dunkel ist.\nIch habe die Birne in meinem Zimmer verloren. Jetzt höre ich es jede Nacht vor der Tür.\n– E. K., Zimmer 017",
 		"uv": "Der Heizer war noch unten, als sie die Tür abgeschlossen haben. Ich habe den Schlüssel klirren hören."},
 	"1994": {"title": "Zerknitterte Seite, 1994",
 		"text": "Redet nicht über ES. Es hört zu. Jedes Mal, wenn wir in der Lobby darüber geflüstert haben, kam es näher.\nUnd wenn das Rauschen anfängt – nicht rennen. Verstecken. Aber nur, wenn es dich nicht sieht.
 Flackert das Licht im ganzen Haus lange, geh nicht mehr raus. Dann holt es mehr als einen.",
 		"uv": "Wo die Kerzen ausgehen, ist es gerade vorbeigegangen. Zähl sie."},
+	# Liegt am Morgen nach der Siegerehrung hinter der Tür von Zimmer 13 (Spielkonzept 2.5, DoorContest)
+	"1999": {"title": "Vergilbter Zettel, 1999",
+		"text": "Uns haben sie auch einen Wettbewerb versprochen. Einen Sieger gab es nie.\nDie Puppe sitzt vor der Tür, an der am wenigsten hängt. Wer dann in dem Zimmer ist, kommt nicht mehr heraus.\nSchmück mehr als die anderen. Und wenn sie doch vor deiner sitzt – geh woanders hin.\n– M. B., Zimmer 021",
+		"uv": "Wer schmückt, ist Gastgeber. Wer nicht, ist die Gabe."},
 	"2003": {"title": "Notiz unter der Matratze",
 		"text": "Es hat an meine Tür geklopft. Mit der Stimme meiner Schwester.\nMeine Schwester ist seit drei Tagen fort.\nWENN DU DIE STIMME KENNST – MACH NICHT AUF.",
 		"uv": "Im Gästebuch steht hinter jedem Namen ein Datum. Hinter manchen ein Kreuz."},

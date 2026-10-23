@@ -129,6 +129,8 @@ var running := false
 var holding_breath := false
 var held: Item
 var invited := false
+## Siegerehrung (Spielkonzept 2.5): im Zustand PARTY dorthin sehen statt zu tanzen (INF = gewöhnliche Feier)
+var _gather_look := Vector3.INF
 var chat_cooldown := 0.0
 var gift_cooldown := 0.0
 var monster_line := 0
@@ -587,11 +589,14 @@ func scared_by_monster() -> void:
 	_go_hide()
 
 
-func join_party(spot: Vector3) -> void:
+## Zur Feier auf seinen Platz – oder mit look zur Siegerehrung (Spielkonzept 2.5): dort stehen und dorthin sehen,
+## ohne zu tanzen.
+func join_party(spot: Vector3, look := Vector3.INF) -> void:
 	if dead or hiding or fear >= 60.0:
 		return
 	_drop_held()
 	_target = spot
+	_gather_look = look
 	state = State.PARTY
 
 
@@ -864,7 +869,7 @@ func _physics_process(delta: float) -> void:
 				velocity = Vector3(step.x, 0.0 if is_on_floor() else velocity.y - _gravity * delta, step.y)
 				move_and_slide()
 			elif _move_to(_target, WALK_SPEED, delta):
-				_face(Game.social.party_center(), delta)
+				_face(_gather_look if _gather_look.is_finite() else Game.social.party_center(), delta)
 		State.MINIGAME:
 			if seated:
 				_stop(delta)
@@ -2423,7 +2428,7 @@ func _animate(delta: float) -> void:
 
 func _pose(delta: float, speed: float) -> void:
 	_arms_free = false
-	if state == State.PARTY and speed < 0.1:
+	if state == State.PARTY and speed < 0.1 and not _gather_look.is_finite():
 		_dance_pose(delta)
 		return
 	_dance = -1

@@ -15,6 +15,11 @@ const BLOOD_BIG := Vector2(0.45, 0.75)
 const BLOOD_SMALL := Vector2(0.12, 0.35)
 ## So weit darf die Fläche unter einem Fleck in der Höhe abweichen (m) – sonst ragt er über eine Stufen- oder Möbelkante
 const BLOOD_FLAT := 0.02
+## Zug der Flecken am Boden zur Kamera (Blut, Wachs, Kürbismatsch – Anteil der Kameraentfernung): mehr als Auflagen
+## am Boden (Mat.layer 0,01, Treppenläufer der Lobby), sonst decken die sie zu
+const SPLAT_PULL := 0.014
+## Kern eines großen Wachsflecks (m), die Tropfen liegen drumherum
+const WAX_CORE := Vector2(0.36, 0.32)
 const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck",
 	"wax": "Wachsflecken", "drops": "Blutstropfen", "wax_splash": "Ein großer Wachsfleck", "soot": "Ein Rußfleck",
 	"bloody_hand": "Blutige Handabdrücke", "wall_splatter": "Blutspritzer", "wall_smear": "Eine blutige Schmierspur"}
@@ -118,20 +123,10 @@ func _ready() -> void:
 					Vector3(rng.randf_range(-0.08, 0.08), rng.randf_range(-0.08, 0.08), 0.0025))
 			Geo.add_box_shape(self, Vector3(0.25, 0.25, 0.04), Vector3.ZERO)
 		"wax_splash":
-			# Geworfene Kerze (Streich der Kinder, 6.13): großer weißer Wachsfleck mit Spritzern
-			var white := Mat.psx(Color(0.94, 0.92, 0.86))
-			var shade := Mat.psx(Color(0.82, 0.8, 0.74))
-			for i in 4:
-				var blob := Geo.mesh(self, Geo.box(Vector3(rng.randf_range(0.14, 0.26), rng.randf_range(0.12, 0.22), 0.006)), white if i % 2 == 0 else shade,
-					Vector3(rng.randf_range(-0.06, 0.06), rng.randf_range(-0.06, 0.06), 0.003 + i * 0.0004))
-				blob.rotation.z = rng.randf() * TAU
-			for i in rng.randi_range(10, 16):
-				var a := rng.randf() * TAU
-				var d := rng.randf_range(0.18, 0.4)
-				var s := rng.randf_range(0.02, 0.06)
-				var drop := Geo.mesh(self, Geo.box(Vector3(s * rng.randf_range(1.0, 2.2), s, 0.005)), white, Vector3(cos(a) * d, sin(a) * d, 0.0035))
-				drop.rotation.z = a
+			# Geworfene Kerze (Streich der Kinder, 6.13): großer weißer Wachsfleck mit Spritzern – wie Blut Fleck für Fleck auf
+			# der Fläche darunter, sobald die Spur steht (_spread_wax)
 			Geo.add_box_shape(self, Vector3(0.7, 0.7, 0.04), Vector3.ZERO)
+			_spread_wax.call_deferred()
 		"soot":
 			# Verbrannte Deko (5.11): dunkler Rußfleck
 			var soot := Mat.psx(Color(0.07, 0.06, 0.05))
@@ -150,8 +145,8 @@ func _ready() -> void:
 
 
 ## Blutlache (Spielkonzept 4.13, 6.12): BLOOD_SPLATS Flecken um das Opfer, große in der Mitte, kleine bis BLOOD_RADIUS.
-## Jeder fällt senkrecht auf die Fläche darunter (Traces.surface_below) – auf Treppen also auf die Stufen, nicht auf die
-## Rampe. Auf einer Treppe läuft das Blut die Stufen hinunter (bergauf verteilt sich nichts). Nicht durch Wände.
+## Jeder fällt senkrecht auf die Fläche darunter (place_splat) – auf Treppen also auf die Stufen, nicht auf die Rampe.
+## Auf einer Treppe läuft das Blut die Stufen hinunter (bergauf verteilt sich nichts). Nicht durch Wände.
 func _spread_blood() -> void:
 	if not is_inside_tree():
 		return
@@ -160,60 +155,25 @@ func _spread_blood() -> void:
 	var center := global_position
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
-	var red := Mat.layer(Color(0.22, 0.02, 0.02), "", 1.0, 0.004)
-	# Steht das Opfer auf einer Treppe? Dann zeigt die Rampe, wo es hinunter geht.
-	var downhill := Vector3.ZERO
-	var under := space.intersect_ray(PhysicsRayQueryParameters3D.create(center + Vector3.UP * 0.5, center + Vector3.DOWN, 1))
-	if not under.is_empty() and (under["collider"] as Object).has_meta("stair_ramp"):
-		var n: Vector3 = under["normal"]
-		downhill = Vector3(n.x, 0.0, n.z).normalized()
+	var red := Mat.layer(Color(0.22, 0.02, 0.02), "", 1.0, SPLAT_PULL)
+	var downhill := downhill_at(space, center)
 	var count := rng.randi_range(BLOOD_SPLATS.x, BLOOD_SPLATS.y)
 	for i in count:
 		var big := i < 4
 		var r := rng.randf_range(0.0, 0.35) if big else sqrt(rng.randf()) * BLOOD_RADIUS
-		var off := Vector3.FORWARD.rotated(Vector3.UP, rng.randf() * TAU) * r
-		if downhill != Vector3.ZERO:
-			if off.dot(downhill) < 0.0:
-				off -= downhill * 2.0 * off.dot(downhill)   # bergauf gespiegelt
-			off += downhill * rng.randf_range(0.0, BLOOD_DOWNHILL) * (0.4 if big else 1.0)
-		# Nicht durch Wände: auf Kniehöhe bis zur Wand, ein Stück davor bleiben
-		var knee := center + Vector3.UP * 0.3
-		var wall := space.intersect_ray(PhysicsRayQueryParameters3D.create(knee, knee + off, 1))
-		if not wall.is_empty() and not (wall["collider"] as Object).has_meta("stair_ramp"):
-			off = ((wall["position"] as Vector3) - knee) * maxf(0.0, 1.0 - 0.15 / maxf(off.length(), 0.01))
-		var hit := Traces.surface_below(space, center + off + Vector3.UP * 1.2, 2.8)
-		if hit.is_empty() or (hit["normal"] as Vector3).y < 0.7 or (hit["position"] as Vector3).y < center.y - 2.0:
-			continue
-		# Größe und Lage: Der ganze Fleck muss auf derselben Fläche liegen. Ragt er über eine Kante, legt er sich auf
-		# einer Treppe längs auf die Stufe (lang quer zur Laufrichtung), sonst wird er kleiner.
-		var at: Vector3 = hit["position"]
 		var size := Vector2.ONE * (rng.randf_range(BLOOD_BIG.x, BLOOD_BIG.y) if big else rng.randf_range(BLOOD_SMALL.x, BLOOD_SMALL.y))
 		size.y *= rng.randf_range(0.6, 1.0)
-		var yaw := rng.randf() * TAU
-		var along := false
-		var fits := false
-		for attempt in 6:
-			if _blood_fits(space, at, size, yaw, along):
-				fits = true
-				break
-			if downhill != Vector3.ZERO and not along:
-				# Längs auf die Stufe: mittig in ihre Tiefe, so breit, wie die Stufe neben ihm noch reicht
-				along = true
-				yaw = atan2(downhill.x, downhill.z)   # lokale X quer zur Treppe, Z die Stufe hinunter
-				var deep := _flat_span(space, at, downhill, 0.8)
-				at += downhill * (deep.y - deep.x) / 2.0
-				var across := downhill.cross(Vector3.UP)
-				var wide := _flat_span(space, at, across, 1.2)
-				size = Vector2(minf(size.x * 1.5, 2.0 * minf(wide.x, wide.y)), minf(size.y, deep.x + deep.y)) * 0.9
-			else:
-				size *= 0.75
-		if not fits:
+		var spot := place_splat(space, center, scatter_offset(rng, r, downhill, BLOOD_DOWNHILL * (0.4 if big else 1.0)), size,
+			downhill, rng)
+		if spot.is_empty():
 			continue
 		# Ein Fleck aus zwei, drei überlappenden Stücken – unregelmäßiger Rand statt Quadrat (innerhalb des Umrisses)
+		var along: bool = spot["along"]
+		size = spot["size"]
 		var splat := Node3D.new()
 		add_child(splat)
-		splat.position = to_local(at + Vector3.UP * (0.004 + i * 0.0004))
-		splat.global_rotation = Vector3(0, yaw, 0)
+		splat.position = to_local(spot["at"] + Vector3.UP * (0.004 + i * 0.0004))
+		splat.global_rotation = Vector3(0, spot["yaw"], 0)
 		for k in rng.randi_range(2, 4 if along else 3):
 			var scale_k := 1.0 if k == 0 else rng.randf_range(0.5, 0.75)
 			if along:
@@ -228,9 +188,104 @@ func _spread_blood() -> void:
 				piece.rotation.y = rng.randf_range(-0.6, 0.6)
 
 
+## Großer Wachsfleck einer geworfenen Kerze (6.13), gebaut wie eine Blutlache: ein Kern aus überlappenden Klecksen und
+## Tropfen ringsum, jeder auf der Fläche darunter (place_splat) – auf Treppen auf den Stufen, die Tropfen hinunter.
+func _spread_wax() -> void:
+	if not is_inside_tree():
+		return
+	var space := get_world_3d().direct_space_state
+	var center := global_position
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var white := Mat.layer(Color(0.94, 0.92, 0.86), "", 1.0, SPLAT_PULL)
+	var shade := Mat.layer(Color(0.82, 0.8, 0.74), "", 1.0, SPLAT_PULL)
+	var downhill := downhill_at(space, center)
+	var core := place_splat(space, center, Vector3.ZERO, WAX_CORE, downhill, rng)
+	if not core.is_empty():
+		var size: Vector2 = core["size"]
+		var splat := Node3D.new()
+		add_child(splat)
+		splat.global_position = core["at"] + Vector3.UP * 0.004
+		splat.global_rotation = Vector3(0, core["yaw"], 0)
+		for i in 4:
+			var piece := Geo.mesh(splat, Geo.box(Vector3(size.x * rng.randf_range(0.5, 0.75), 0.006, size.y * rng.randf_range(0.5, 0.75))),
+				white if i % 2 == 0 else shade, Vector3(rng.randf_range(-0.15, 0.15) * size.x, 0.0004 * i, rng.randf_range(-0.15, 0.15) * size.y))
+			piece.rotation.y = rng.randf_range(-0.1, 0.1) if core["along"] else rng.randf() * TAU
+	for i in rng.randi_range(10, 16):
+		var s := rng.randf_range(0.02, 0.06)
+		var off := scatter_offset(rng, rng.randf_range(0.18, 0.4), downhill, 0.3)
+		var drop := place_splat(space, center, off, Vector2(s * rng.randf_range(1.0, 2.2), s), downhill, rng)
+		if drop.is_empty():
+			continue
+		var dims: Vector2 = drop["size"]
+		var piece := Geo.mesh(self, Geo.box(Vector3(dims.x, 0.006, dims.y)), white, Vector3.ZERO)
+		piece.global_position = drop["at"] + Vector3.UP * (0.0045 + i * 0.0002)
+		# Tropfen zeigen vom Kern weg (lokale X), auf einer Stufe liegen sie längs
+		piece.global_rotation = Vector3(0, drop["yaw"] if drop["along"] else atan2(-off.z, off.x), 0)
+
+
+# --- Flecken auf der Fläche darunter (Blut, Wachs, Kürbismatsch – Item._lay_mush) -------------------------------------
+
+## Steht `center` auf einer Treppe? Dann waagrecht die Richtung die Stufen hinunter (aus der Rampe), sonst ZERO.
+static func downhill_at(space: PhysicsDirectSpaceState3D, center: Vector3) -> Vector3:
+	var under := space.intersect_ray(PhysicsRayQueryParameters3D.create(center + Vector3.UP * 0.5, center + Vector3.DOWN, 1))
+	if under.is_empty() or not (under["collider"] as Object).has_meta("stair_ramp"):
+		return Vector3.ZERO
+	var n: Vector3 = under["normal"]
+	return Vector3(n.x, 0.0, n.z).normalized()
+
+
+## Versatz eines Flecks, `r` vom Mittelpunkt in zufälliger Richtung; auf einer Treppe bergauf gespiegelt und dazu bis
+## `reach` die Stufen hinunter.
+static func scatter_offset(rng: RandomNumberGenerator, r: float, downhill: Vector3, reach: float) -> Vector3:
+	var off := Vector3.FORWARD.rotated(Vector3.UP, rng.randf() * TAU) * r
+	if downhill != Vector3.ZERO:
+		if off.dot(downhill) < 0.0:
+			off -= downhill * 2.0 * off.dot(downhill)   # bergauf gespiegelt
+		off += downhill * rng.randf_range(0.0, reach)
+	return off
+
+
+## Ein Fleck (Maße size: x quer, y längs) bei center + off, senkrecht auf die Fläche darunter gefallen
+## (Traces.surface_below: Boden, Stufe, Möbel – nicht die Rampe), nicht durch Wände (auf Kniehöhe geprüft). Er muss ganz
+## auf derselben Fläche liegen: Ragt er über eine Kante, legt er sich auf einer Treppe längs mittig auf die Stufe (lang
+## quer zur Laufrichtung, _flat_span misst Tiefe und Breite), sonst wird er kleiner.
+## {} = kein Platz, sonst {at, size, yaw, along}.
+static func place_splat(space: PhysicsDirectSpaceState3D, center: Vector3, off: Vector3, size: Vector2,
+		downhill: Vector3, rng: RandomNumberGenerator) -> Dictionary:
+	if off.length() > 0.01:
+		var knee := center + Vector3.UP * 0.3
+		var wall := space.intersect_ray(PhysicsRayQueryParameters3D.create(knee, knee + off, 1))
+		if not wall.is_empty() and not (wall["collider"] as Object).has_meta("stair_ramp"):
+			off = ((wall["position"] as Vector3) - knee) * maxf(0.0, 1.0 - 0.15 / maxf(off.length(), 0.01))
+	var hit := Traces.surface_below(space, center + off + Vector3.UP * 1.2, 2.8)
+	if hit.is_empty() or (hit["normal"] as Vector3).y < 0.7 or (hit["position"] as Vector3).y < center.y - 2.0:
+		return {}
+	var at: Vector3 = hit["position"]
+	var yaw := rng.randf() * TAU
+	var along := false
+	for attempt in 6:
+		if _blood_fits(space, at, size, yaw, along):
+			return {"at": at, "size": size, "yaw": yaw, "along": along}
+		if downhill != Vector3.ZERO and not along:
+			# Längs auf die Stufe: mittig in ihre Tiefe, so breit, wie die Stufe neben ihm noch reicht
+			along = true
+			yaw = atan2(downhill.x, downhill.z)   # lokale X quer zur Treppe, Z die Stufe hinunter
+			var deep := _flat_span(space, at, downhill, 0.8)
+			at += downhill * (deep.y - deep.x) / 2.0
+			var across := downhill.cross(Vector3.UP)
+			var wide := _flat_span(space, at, across, 1.2)
+			size = Vector2(minf(size.x * 1.5, 2.0 * minf(wide.x, wide.y)), minf(size.y, deep.x + deep.y)) * 0.9
+			if minf(size.x, size.y) < 0.02:   # Stufenkante oder Treppenrand direkt daneben – hier ist keine Fläche
+				return {}
+		else:
+			size *= 0.75
+	return {}
+
+
 ## Wie weit reicht die Fläche unter `at` in Richtung dir (y) und dagegen (x), bis sie um mehr als BLOOD_FLAT springt
 ## (Stufenkante, Treppenrand)? Höchstens `reach` je Seite, in 3-cm-Schritten.
-func _flat_span(space: PhysicsDirectSpaceState3D, at: Vector3, dir: Vector3, reach: float) -> Vector2:
+static func _flat_span(space: PhysicsDirectSpaceState3D, at: Vector3, dir: Vector3, reach: float) -> Vector2:
 	var span := Vector2.ZERO
 	for side in 2:
 		var d := 0.0
@@ -244,9 +299,9 @@ func _flat_span(space: PhysicsDirectSpaceState3D, at: Vector3, dir: Vector3, rea
 	return span
 
 
-## Liegt ein Blutfleck (Maße size, gedreht um yaw) um `at` ganz auf einer Fläche? Geprüft werden Ecken und Kantenmitten –
+## Liegt ein Fleck (Maße size, gedreht um yaw) um `at` ganz auf einer Fläche? Geprüft werden Ecken und Kantenmitten –
 ## frei gedrehte Flecken mit Reserve für ihre schräg liegenden Stücke, längs auf einer Stufe genau.
-func _blood_fits(space: PhysicsDirectSpaceState3D, at: Vector3, size: Vector2, yaw: float, along: bool) -> bool:
+static func _blood_fits(space: PhysicsDirectSpaceState3D, at: Vector3, size: Vector2, yaw: float, along: bool) -> bool:
 	var basis := Basis(Vector3.UP, yaw)
 	var half := Vector3(size.x, 0.0, size.y) * (0.52 if along else 0.62)
 	for x in [-1, 0, 1]:

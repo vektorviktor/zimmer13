@@ -5,6 +5,9 @@ extends StaticBody3D
 ## ist, stirbt. Sie springt nur um, wenn der Spieler weder ihren alten noch ihren neuen Platz sieht. Niemand kann sie
 ## bewegen, außer Kindern zwischen den Angriffen: Sie nehmen sie zum Spielen mit und legen sie meist vor die Tür der
 ## eigenen Familie. Findet ein Gast sie vor seiner Tür, bekommt er Angst. Keine Bedrohung (4.1).
+## Bis zum ersten Angriff ist sie die Jury des Türschmuck-Wettbewerbs (2.5): ein Schildchen „Jury“ vor ihr, kein Kind
+## nimmt sie mit. Bei der Siegerehrung steht sie auf, schwebt (stand_pose, DoorContest bewegt sie) und löst sich in
+## Rauch auf (vanish) – bis zum nächsten Urteil ist sie fort und taucht dann vor der Tür auf.
 ## Erreichbar über Game.doll; gespeichert unter „doll“ (save_state/load_state).
 
 ## Lage vor der Tür: so weit vom Flurpunkt door_front (0,9 m vor der Tür) zur Tür hin, mit dem Gesicht zur Tür
@@ -31,6 +34,8 @@ const SIZE := 1.35
 var verdict := ""
 ## Zimmer, vor dessen Tür sie liegt ("" = woanders, z. B. in der Lobby)
 var at_room := ""
+## Seit der Siegerehrung fort (2.5): unsichtbar, bis sie vor der Tür des nächsten Urteils auftaucht
+var gone := false
 var carrier: Guest            ## Kind, das sie gerade trägt
 var _fetcher: Guest           ## Kind auf dem Weg zu ihr
 var _goal_room := ""          ## dorthin trägt das Kind sie (Tür der Familie)
@@ -40,6 +45,9 @@ var _kid_scan := KID_SCAN
 var _kid_rest := 60.0
 var _noticed := {}            ## Gast-ID → true: hat sie bei diesem Urteil schon vor seiner Tür gesehen
 var _builder: LevelBuilder
+var _legs: Node3D             ## Beine (schwingen beim Aufstehen nach unten)
+var _head: Node3D
+var _card: Node3D             ## Schildchen „Jury“ (Wettbewerb, 2.5)
 
 
 func setup(builder: LevelBuilder) -> JuryDoll:
@@ -68,11 +76,42 @@ func place_at_start() -> void:
 
 
 func get_prompt(_player: Player) -> String:
-	return "Eine alte Puppe [E]"
+	return "Die Jury [E]" if _card and _card.visible else "Eine alte Puppe [E]"
 
 
 func interact(_player: Player) -> void:
-	Game.say("Sie lässt sich nicht hochheben – als wäre sie festgewachsen.", 3.0)
+	if _card and _card.visible:
+		Game.say("Ein Schildchen vor ihr: „Jury“. Sie lässt sich nicht hochheben – als wäre sie festgewachsen.", 3.5)
+	else:
+		Game.say("Sie lässt sich nicht hochheben – als wäre sie festgewachsen.", 3.0)
+
+
+## Schildchen „Jury“ zeigen (bis zur Siegerehrung, DoorContest).
+func show_card(value: bool) -> void:
+	if _card:
+		_card.visible = value
+
+
+## Aufstehen bei der Siegerehrung (0 = sitzt, 1 = steht): die Beine schwingen nach unten, der Kopf richtet sich auf.
+func stand_pose(k: float) -> void:
+	_legs.rotation.x = k * PI / 2.0 * 0.95
+	_head.rotation = Vector3(0.12, 0, 0.16) * (1.0 - k)
+
+
+## In Rauch aufgelöst (Siegerehrung): fort, bis sie vor der Tür des nächsten Urteils liegt.
+func vanish() -> void:
+	gone = true
+	visible = false
+	collision_layer = 0
+	at_room = ""
+	stand_pose(0.0)
+	show_card(false)
+
+
+func _reappear() -> void:
+	gone = false
+	visible = true
+	collision_layer = Item.LAYER
 
 
 func is_judging() -> bool:
@@ -124,10 +163,14 @@ func _try_jump() -> void:
 		_pending = ""
 		return
 	var spot := _door_spot(info)
-	if _seen(global_position) or _seen(spot["pos"]):
+	if (not gone and _seen(global_position)) or _seen(spot["pos"]):
 		return
+	if gone:
+		_reappear()
 	_place(spot, _pending)
 	_pending = ""
+	if Game.contest:
+		Game.contest.on_doll_placed(at_room)   # das erste Urteil kommt ins Tagebuch (2.5)
 	if Game.tracing:
 		print("[Puppe] liegt jetzt vor Zimmer %s bei %s" % [at_room, global_position])
 
@@ -180,8 +223,8 @@ func _in_view(g: Guest) -> bool:
 
 ## Zwischen den Angriffen holt sich ab und zu ein Kind in der Nähe die Puppe (es muss sie sehen).
 func _update_kids() -> void:
-	if verdict != "" or carrier or Game.social == null:
-		return
+	if verdict != "" or carrier or gone or Game.social == null or Game.director == null or not Game.director.first_attack_done:
+		return   # vor dem ersten Angriff ist sie die Jury in der Lobby (2.5)
 	if _fetcher:
 		if not _fetcher_ok(_fetcher):
 			_fetcher = null
@@ -278,7 +321,7 @@ func _drop_from_kid() -> void:
 
 func save_state() -> Dictionary:
 	return {"pos": [global_position.x, global_position.y, global_position.z], "yaw": rotation.y, "verdict": verdict,
-		"at_room": at_room, "pending": _pending}
+		"at_room": at_room, "pending": _pending, "gone": gone}
 
 
 func load_state(d: Dictionary) -> void:
@@ -293,6 +336,11 @@ func load_state(d: Dictionary) -> void:
 	verdict = String(d.get("verdict", ""))
 	at_room = String(d.get("at_room", ""))
 	_pending = String(d.get("pending", ""))
+	if bool(d.get("gone", false)):
+		vanish()
+		_pending = String(d.get("pending", ""))
+	else:
+		_reappear()
 
 
 # --- Aussehen -------------------------------------------------------------------------------
@@ -307,12 +355,15 @@ func _build() -> void:
 	var dress := Mat.psx(DRESS)
 	var black := Mat.psx(Color(0.05, 0.04, 0.05))
 	var stripes := Mat.psx(Color(0.92, 0.9, 0.85))
-	# Beine nach vorn ausgestreckt, gestreifte Strümpfe, schwarze Schuhe
+	# Beine nach vorn ausgestreckt, gestreifte Strümpfe, schwarze Schuhe – an der Hüfte drehbar (stand_pose)
+	_legs = Node3D.new()
+	_legs.position = Vector3(0, 0.03, 0)
+	look.add_child(_legs)
 	for side: float in [-1.0, 1.0]:
-		Geo.mesh(look, Geo.box(Vector3(0.05, 0.05, 0.2)), stripes, Vector3(side * 0.045, 0.03, 0.1))
+		Geo.mesh(_legs, Geo.box(Vector3(0.05, 0.05, 0.2)), stripes, Vector3(side * 0.045, 0.0, 0.1))
 		for i in 3:
-			Geo.mesh(look, Geo.box(Vector3(0.054, 0.054, 0.02)), black, Vector3(side * 0.045, 0.03, 0.04 + i * 0.06))
-		Geo.mesh(look, Geo.box(Vector3(0.06, 0.07, 0.08)), black, Vector3(side * 0.045, 0.045, 0.22))
+			Geo.mesh(_legs, Geo.box(Vector3(0.054, 0.054, 0.02)), black, Vector3(side * 0.045, 0.0, 0.04 + i * 0.06))
+		Geo.mesh(_legs, Geo.box(Vector3(0.06, 0.07, 0.08)), black, Vector3(side * 0.045, 0.015, 0.22))
 	# Rock und Oberkörper
 	Geo.mesh(look, Geo.cylinder(0.12, 0.12, 8), dress, Vector3(0, 0.07, 0))
 	Geo.mesh(look, Geo.box(Vector3(0.15, 0.17, 0.1)), dress, Vector3(0, 0.2, 0))
@@ -328,6 +379,7 @@ func _build() -> void:
 	head.position = Vector3(0, 0.37, 0)
 	head.rotation = Vector3(0.12, 0, 0.16)
 	look.add_child(head)
+	_head = head
 	Geo.mesh(head, Geo.sphere(0.075, 0.15, 10, 6), skin, Vector3.ZERO)
 	Geo.mesh(head, Geo.sphere(0.08, 0.1, 10, 4), Mat.psx(Color(0.18, 0.08, 0.04)), Vector3(0, 0.03, -0.012))   # Haar
 	for side: float in [-1.0, 1.0]:
@@ -346,6 +398,24 @@ func _build() -> void:
 	tip.rotation.x = -0.25
 	Geo.mesh(head, Geo.cylinder(0.057, 0.018, 10), dress, Vector3(0, 0.083, -0.005))   # Hutband
 	Geo.add_box_shape(self, Vector3(0.28, 0.5, 0.32) * SIZE, Vector3(0, 0.25, 0.04) * SIZE)
+	_build_card()
+
+
+## Schildchen „Jury“: gefaltetes Kärtchen neben ihr auf dem Sofa, Schrift zum Betrachter.
+func _build_card() -> void:
+	_card = Node3D.new()
+	_card.position = Vector3(0.25, 0, 0.16)
+	_card.rotation.y = -0.25
+	add_child(_card)
+	var paper := Mat.psx(Color(0.93, 0.9, 0.82))
+	for side: float in [-1.0, 1.0]:
+		var leaf := Geo.mesh(_card, Geo.box(Vector3(0.16, 0.075, 0.003)), paper, Vector3(0, 0.035, side * 0.014))
+		leaf.rotation.x = side * 0.38
+	var label := NoticeBoard._label("Jury", 60, load(LevelBuilder.SIGN_FONT))
+	label.position = Vector3(0, 0.036, 0.03)
+	label.rotation.x = -0.38
+	label.modulate = Color(0.45, 0.06, 0.04)
+	_card.add_child(label)
 
 
 ## Debug (--doll=kind): Das erste Kind mit Eltern steht 3 m neben ihr und holt sie gleich (trägt sie vor die Tür der

@@ -13,6 +13,7 @@
   - [2.2 Scheitern als Zeitschleife – mit eigenen Zetteln (vorgemerkt 2026-10-11)](#22-scheitern-als-zeitschleife--mit-eigenen-zetteln-vorgemerkt-2026-10-11)
   - [2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)](#23-fortschritt--geheimnis-vorgemerkt-2026-10-11)
   - [2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21, umgesetzt 2026-10-23)](#24-tagesuhr--tagesablauf-entschieden-2026-10-21-umgesetzt-2026-10-23)
+  - [2.5 Der Anfang: Türschmuck-Wettbewerb (entschieden und umgesetzt 2026-10-23)](#25-der-anfang-türschmuck-wettbewerb-entschieden-und-umgesetzt-2026-10-23)
 - [3. Core Gameplay Loop](#3-core-gameplay-loop)
   - [3.1 Spieler-Aktionen (Grundumfang)](#31-spieler-aktionen-grundumfang)
   - [3.2 Kein verstecktes Inventar – Hände und Tasche](#32-kein-verstecktes-inventar--hände-und-tasche)
@@ -44,6 +45,7 @@
   - [4.19 Der Kürbismann (entschieden und umgesetzt 2026-10-20)](#419-der-kürbismann-entschieden-und-umgesetzt-2026-10-20)
   - [4.20 Drei Bedrohungen, ein Hotel (entschieden 2026-10-21)](#420-drei-bedrohungen-ein-hotel-entschieden-2026-10-21)
   - [4.21 Den Kürbismann aufhalten – und erlösen (entschieden 2026-10-21)](#421-den-kürbismann-aufhalten--und-erlösen-entschieden-2026-10-21)
+  - [4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)](#422-fledermäuse-und-der-vampir-vorgemerkt-2026-10-23)
 - [5. Halloween-Dekoration](#5-halloween-dekoration)
   - [5.1 Funktion](#51-funktion)
   - [5.2 Platzierung](#52-platzierung)
@@ -123,13 +125,16 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 > Im Prototyp umgesetzt (2026-10-11): Kalender, friedlicher Anfang, erster Angriff bei einer Feier am 3./4. Oktober (spätestens am 5.), zwei harmlose Angriffe. Noch offen: Schlüssel an Halloween und das Scheitern.
 > **Mit der Tagesuhr (2.4, umgesetzt 2026-10-23):** erster Angriff auf einer Feier **am Abend des 2. Oktober**
 > (spätestens am 3. um 20 Uhr), harmlos bleibt es etwa **anderthalb Spieltage** (neun Aufbrüche).
+> **Mit dem Türschmuck-Wettbewerb (2.5, entschieden 2026-10-23):** Der erste Angriff ist die **Siegerehrung am 2. Oktober
+> um 20 Uhr in der Lobby** – sie wartet auf den Spieler, spätestens um 22 Uhr. Die spontane Feier und der Ausweichtermin
+> am 3. entfallen.
 
 - **Kalender:** Das Spiel beginnt am **1. Oktober**. Die Zeit läuft durchgängig und wird in **Ingame-Tagen** gezählt. Draußen ist **immer Nacht** – der „Tag“ ist nur die Zähleinheit, kein Wechsel von Hell und Dunkel.
 - ~~**Tageslänge: ca. 5 Minuten Echtzeit** → 31 Tage ≈ 2,5 Stunden bis Halloween.~~ **Seit 2026-10-21: 24 Minuten
   Echtzeit** (24 Stunden = 24 Minuten) → 31 Tage ≈ 12½ Stunden, mit Uhrzeit und Tagesablauf (2.4). Zentral einstellbar (Tuning-Wert, `Calendar.DAY_SECONDS`).
 - **Datum sichtbar:** Abreißkalender an der Wand von Zimmer 13, im Spielmenü und kurz eingeblendet, wenn ein neuer Tag beginnt. Spielstände zeigen das Ingame-Datum.
-- **Der friedliche Anfang:** Zu Beginn wirkt alles wie ein **gemütliches Hotel-Party-Spiel** – Gäste kennenlernen, Deko basteln, Kürbisse ziehen, Würfeln, Feiern. Keine Vorwarnung, kein Rauschen, nichts Bedrohliches. Auch Einführungstext und Gäste deuten nichts an. Der Spieler soll glauben, es sei ein friedliches Halloween-Spiel.
-- **Der erste Angriff bricht das – ~~am 3. oder 4. Oktober~~ am Abend des 2. Oktober (seit 2.4) während einer Feier in der Lobby:** Musik, alle sind fröhlich, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich.
+- **Der friedliche Anfang:** Zu Beginn wirkt alles wie ein **gemütliches Hotel-Party-Spiel** – Gäste kennenlernen, Deko basteln, Kürbisse ziehen, Würfeln, Feiern. Keine Vorwarnung, kein Rauschen, nichts Bedrohliches. Auch Einführungstext und Gäste deuten nichts an. Der Spieler soll glauben, es sei ein friedliches Halloween-Spiel. Den Faden dafür gibt seit 2026-10-23 der **Türschmuck-Wettbewerb** (2.5).
+- **Der erste Angriff bricht das – ~~am 3. oder 4. Oktober~~ am Abend des 2. Oktober (seit 2.4) ~~während einer Feier in der Lobby~~ bei der Siegerehrung des Wettbewerbs in der Lobby (seit 2.5):** Alle stehen um die Puppe, sie steigt auf und löst sich in Rauch auf, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich.
 - **Die ersten ein bis zwei Angriffe sind noch nicht tödlich:** Das Monster holt **niemanden**. Erwischt es den Spieler, **steht es direkt vor ihm, starrt ihn an und verschwindet im Flackern** – man sieht es zum ersten Mal und weiß: Es ist real. Erst danach wird es gefährlich.
 - **Halloween (31. Oktober):** In einem Zimmer **taucht ein Schlüssel auf** – der Weg hinaus. Es ist **sehr schwer**, an ihn heranzukommen.
 
@@ -311,6 +316,178 @@ konnte man nicht lernen.
   der erste Angriff früher (z. B. am Abend des 2.)?~~ → **Abend des 2.** (etwa 27–32 min), spätestens am 3. um 20 Uhr
   (entschieden 2026-10-23).
 - Ob die Uhrzeiten der Phasen so passen – im Spiel prüfen.
+
+### 2.5 Der Anfang: Türschmuck-Wettbewerb (entschieden und umgesetzt 2026-10-23)
+> **Umgesetzt (2026-10-23)** wie unten. Beim Bauen festgelegt: Das Brett hängt an der **Westwand der Lobby** zwischen der
+> Glastür zur Bar und der Wandleuchte. Vor der Puppe bleibt ein **Halbkreis frei** (gut 2,5 m), damit man sie über die
+> Versammelten hinweg sieht; sie steigt etwa 1,5 m über das Sofa. Die Gäste schauen dabei zur Puppe statt zu tanzen. Am
+> Tag nach dem Angriff gehen bis zu drei Gäste zugleich ans Brett (höchstens acht am Tag). Der Zettel kommt erst, wenn man
+> die Stelle hinter der Tür gerade nicht sieht (man hört ihn rascheln). Der Tagebuchsatz zum ersten Urteil gilt bis zum
+> Tag danach. Kein eigener Sieger, kein Preis.
+>
+> Gibt dem friedlichen Anfang (2.1) einen Faden: ein Ziel mit Frist, das nebenbei das Schmücken
+> lehrt, und einen festen Termin für den ersten Angriff. Ändert 5.5: Die Regel der Puppe wird mitgeteilt, und einmal
+> bewegt sie sich vor den Augen des Spielers.
+
+**Warum:** Die ersten rund 30 Minuten tragen bisher nur die Systeme. Der Einführungstext sagt „Lerne die anderen Gäste
+kennen, schmücke deine Tür und feiere mit“, ein Ziel gibt es nicht. Alles, was Richtung gibt – Aufzug (7.4), Aufträge
+(6.14), Geheimnis (2.3), Großes Schmücken (5.9) –, setzt erst nach dem ersten Angriff ein. Das Spiel wirkt wie eine
+Sandbox.
+
+**Spielstart: Brief statt Einführungstext**
+- Der lange Einführungstext entfällt, ebenso die Tastenzeile. Jede Aktion nennt ihre Taste ohnehin im Hinweis
+  („Brief lesen [E]“), WASD setzen wir voraus. Wer nachsehen will, findet die Hilfeseite im Spielmenü (8.3).
+- Nach dem Bestätigen am Spiegel (3.9) erscheint nur ein **kurzer Gedanke** (ca. 3 s): *„Da liegt ein Brief auf dem
+  Schreibtisch.“*
+- Auf dem Schreibtisch in Zimmer 13 liegt neben dem Tagebuch ein **Umschlag mit Hotelwappen**: der Willkommensbrief der
+  Direktion (Wortlaut unten). Wer ihn liest, dem schreibt die Figur den **ersten Tagebucheintrag**. Der Brief bleibt
+  liegen und lässt sich wieder lesen.
+- Der Brief schickt den Spieler zum **Aushangbrett in der Lobby** – das erste Ziel.
+
+**Das Aushangbrett in der Lobby**
+- Eine **Korktafel** in dunklem Holzrahmen, etwa 1,2 × 0,9 m, oben ein Messingschild **„Mitteilungen der Direktion“**,
+  darüber eine eigene kleine **Bilderleuchte** aus Messing – man sieht es von Weitem, und es hängt selbst im Licht.
+- **Wo:** prominent an der Lobbywand, auf die man vom Flur von Zimmer 13 kommend schaut. Die genaue Stelle legen wir im
+  Spiel fest; das Brett setzt der Code, nicht der Plan.
+- **Einzelne Blätter**, jedes für sich lesbar wie ein Warnungszettel: **in der Mitte groß der Wettbewerb** (die
+  Überschrift quer durch die Lobby lesbar), **daneben die Hausordnung**.
+- **Nach dem Angriff** hängt in der Mitte der veränderte Aushang. Damit man es merkt, stehen am nächsten Tag Gäste davor
+  und reden darüber („Hast du gelesen, was am Brett steht?“).
+- **Später** kann das Brett das Anschlagbrett ohne Questmenü werden (2.3, 6.14): Großes Schmücken, Durchsagen zum
+  Nachlesen, Suchzettel von Gästen („Minka vermisst“), Aufträge. Für den Anfang reichen die beiden Blätter.
+
+**Der Wettbewerb**
+- **Das Hotel ruft ihn aus:** im Willkommensbrief, auf dem Aushangbrett und mit Durchsagen (5.9). Personal sieht man
+  nie – die unsichtbare Hotelleitung ist das Abkommen (2.3), das jedes Jahr dasselbe veranstaltet.
+- **Die Jury ist die Puppe** (5.5). Sie sitzt bis zur Siegerehrung auf dem Lobby-Sofa, mit einem kleinen Schild „Jury“.
+  Kinder nehmen sie vorher **nicht** mit.
+- **Bis dahin** (1. Oktober 15 Uhr bis 2. Oktober 20 Uhr, knapp 30 Minuten): Deko besorgen und an die Tür bringen –
+  geschenkt, getauscht, gebastelt, geerntet, aus den Kisten oder geklaut. Die Gäste schmücken ihre Türen ebenfalls und
+  reden über den Wettbewerb (wer vorn liegt, wer nichts tut). Es zählt, was vor der Tür im Lichtschein hängt, also so,
+  wie das Monster zählt (5.10) – das sagt das Spiel nicht.
+- **Kein Sieger.** Wer gewonnen hätte, erfährt man nie. Der Lohn fürs Mitmachen ist die Deko, die an der Tür bleibt:
+  Beim ersten Urteil der Puppe ist man geschützt, wer nichts getan hat, ist das erste Ziel. Der Wettbewerb hat doch
+  entschieden – nur nicht über den Sieger.
+
+**Die Siegerehrung – der erste Angriff**
+- **Am 2. Oktober um 20 Uhr** kommen die Gäste in die Lobby (alle wachen Erwachsenen und die Kinder, wie zu einer
+  Feier, 7.1), stehen um die Puppe herum und reden über den Wettbewerb. Das ersetzt die spontane Feier im Partyraum, auf
+  der bisher der erste Angriff kam (2.1), und den Ausweichtermin am 3. um 20 Uhr.
+- **Sie wartet auf den Spieler:** Die Szene beginnt erst, wenn er in der Lobby ist; bis dahin warten die Gäste und
+  reden („Wo bleibt denn die Jury?“). Spätestens um **22 Uhr** passiert es ohne ihn. Dann erfährt er es aus Erzählungen
+  (6.12) und sieht an der leeren Sofaecke, dass sie fort ist.
+- **Blick statt Kameraschnitt:** Der Kopf des Spielers wird sanft zur Puppe gezogen, die Steuerung ist für die Szene
+  gesperrt – kein Schnitt, man bleibt in der eigenen Figur (wie beim Erwachen am Waschbecken, 3.9). Die Gäste
+  verstummen und schauen ebenfalls hin.
+- **Die Puppe steht auf**, hebt ab, schwebt einen Moment über dem Sofa und **löst sich in einer Rauchwolke auf** (7.6).
+  Das ist das **einzige Mal**, dass sie sich vor den Augen des Spielers bewegt (5.5).
+- **Direkt danach** geht das Licht aus, Stille, Rauschen – das Monster steht in der dunklen Ecke der Lobby. Sonst wie
+  bisher beim ersten Angriff (2.1).
+
+**Die Regel danach** (abweichend von 5.5, wo der Spieler sie selbst herausfinden sollte)
+1. **Der Aushang wechselt** – das trägt die Regel. Nach dem Angriff hängt am Brett derselbe Zettel in derselben
+   Schrift, nur mit anderem Text (unten). Niemand hat ihn ausgetauscht. Der Satz „Die Jury sieht nur, was im Licht
+   hängt“ steht auf beiden: vorher ein Tipp für den Wettbewerb, nachher eine Überlebensregel – und die einzige Stelle,
+   an der das Spiel die Lichtschein-Regel (5.10) verrät.
+2. **Ein Warnungszettel** (4.13) liegt am Morgen danach unter der Tür von Zimmer 13, von einem früheren Gast, der
+   denselben Wettbewerb erlebt hat. Er sagt, was der Aushang nicht sagt: Die Puppe ist eine Warnung, kein Todesurteil
+   (5.5). Für Spieler, die nicht am Brett vorbeikommen.
+3. **Die Bestätigung:** Beim ersten Urteil sagt der Gast es laut („Bei mir sitzt die Puppe …“, 5.5), und die Spielfigur
+   notiert es im Tagebuch.
+- **Die harmlose Phase ist die Lernzeit:** Die nächsten Angriffe holen noch niemanden (2.1), die Puppe urteilt aber
+  schon (5.5). Ein- oder zweimal sieht man die Regel, bevor jemand vor der Puppentür stirbt – wie beim Flacker-Signal
+  (4.17).
+
+**Die Texte** (entschieden 2026-10-23) – das Hotel spricht förmlich und etwas altmodisch, immer gezeichnet „Die
+Direktion“; die Zettel früherer Gäste wie die bisherigen (4.13): kurz, erste Person, Kürzel und Zimmer, eine Zeile im
+UV-Licht (4.16).
+
+*Gedanke nach der Charaktererstellung:*
+> Da liegt ein Brief auf dem Schreibtisch.
+
+*Willkommensbrief* (Schreibtisch in Zimmer 13):
+> **Hotel – Mitteilung der Direktion**
+>
+> Verehrter Gast,
+> herzlich willkommen in Zimmer 13. Wir wünschen Ihnen einen schaurig-schönen Oktober.
+>
+> Wie jedes Jahr lädt die Direktion zum Türschmuck-Wettbewerb: Die Jury kürt am 2. Oktober um 20 Uhr in der Lobby die
+> schönste Tür. Alles Weitere finden Sie am Brett in der Lobby.
+>
+> *Die Direktion*
+
+„Wie jedes Jahr“ klingt harmlos und passt später zu den Zetteln früherer Gäste; „Verehrter Gast“ passt zu jeder Figur.
+
+*Erster Tagebucheintrag* (nach dem Lesen des Briefs; ersetzt „Ich bin in Zimmer 13 aufgewacht. Die Tür nach draußen ist
+verriegelt.“, das schon etwas andeutete, 2.1):
+> Angekommen. Zimmer 13 ist hübsch, wenn auch etwas altmodisch. Morgen Abend kürt eine Jury die schönste Tür – ich
+> brauche Deko.
+
+Das Erwachen am Waschbecken (3.9) liest sich damit als kaltes Wasser ins Gesicht nach der Anreise.
+
+*Aushangbrett, Mitte – vorher:*
+> **HALLOWEEN IM HOTEL**
+> Großer Türschmuck-Wettbewerb
+>
+> Verehrte Gäste, schmücken Sie Ihre Zimmertür!
+> Die Jury kürt am 2. Oktober um 20 Uhr in der Lobby die schönste Tür.
+> Die Jury sieht nur, was im Licht hängt.
+>
+> *Die Direktion*
+
+*Aushangbrett, Mitte – nach dem ersten Angriff:*
+> **HALLOWEEN IM HOTEL**
+>
+> Die Jury hat entschieden.
+> Von nun an besucht sie die Tür, die am wenigsten zu bieten hat.
+> Die Jury sieht nur, was im Licht hängt.
+>
+> *Die Direktion*
+
+*Aushangbrett, daneben – Hausordnung:*
+> Nachtruhe von 23 bis 6 Uhr.
+> Die Bar schließt um Mitternacht.
+> Zu Ihrer Sicherheit bleibt der Haupteingang nachts verschlossen.
+>
+> *Die Direktion*
+
+Der letzte Satz erklärt die verriegelte Tür harmlos – bis man begreift, dass draußen immer Nacht ist (2.1).
+
+*Durchsagen* (Gong, Text als Einblendung; die ersten Durchsagen aus 5.9):
+
+| Wann | Text |
+|------|------|
+| 1. Okt., ca. 15:30 | „Verehrte Gäste, herzlich willkommen. Die Direktion lädt zum Türschmuck-Wettbewerb. Die Jury kürt morgen um 20 Uhr in der Lobby die schönste Tür.“ |
+| 2. Okt., 12 Uhr | „Verehrte Gäste, noch acht Stunden bis zur Siegerehrung. Die Jury freut sich auf Ihre Türen.“ |
+| 2. Okt., 19:45 | „Verehrte Gäste, die Jury bittet in einer Viertelstunde in die Lobby.“ |
+| 2. Okt., 20 Uhr | „Die Siegerehrung beginnt, sobald alle Gäste versammelt sind.“ |
+
+Bewusst neutral – die letzte erklärt nebenbei, warum die Szene auf den Spieler wartet. Unheimliche, verzerrte
+Durchsagen (5.9) erst nach dem Bruch.
+
+*Warnungszettel* (am Morgen nach dem ersten Angriff unter der Tür von Zimmer 13):
+> **Vergilbter Zettel, 1999**
+>
+> Uns haben sie auch einen Wettbewerb versprochen. Einen Sieger gab es nie.
+> Die Puppe sitzt vor der Tür, an der am wenigsten hängt. Wer dann in dem Zimmer ist, kommt nicht mehr heraus.
+> Schmück mehr als die anderen. Und wenn sie doch vor deiner sitzt – geh woanders hin.
+> – M. B., Zimmer 021
+>
+> *Im UV-Licht:* Wer schmückt, ist Gastgeber. Wer nicht, ist die Gabe.
+
+Die UV-Zeile führt zum Abkommen (2.3), ohne es zu erklären. Nicht „Zimmer 013“ – das bleibt dem Twist der Zeitschleife
+(2.2).
+
+*Tagebuch beim ersten Urteil:*
+> Die Puppe saß vor Zimmer 21. An der Tür hing fast nichts.
+
+Zimmernummer eingesetzt; der zweite Satz richtet sich danach, wie viel dort tatsächlich hing.
+
+**Zu klären**
+- ~~Wie die Puppe aufsteht~~ → die Beine schwingen nach unten, der Kopf richtet sich auf, sie hebt ab (umgesetzt).
+- ~~Die genaue Stelle des Aushangbretts~~ → Westwand der Lobby (umgesetzt, im Spiel noch einmal ansehen).
+- **Zeitschleife (2.2):** Im nächsten Durchgang weiß man, was bei der Siegerehrung kommt. Rückt sie mit dem um einen Tag
+  kürzeren friedlichen Anfang auf den Abend des 1.?
 
 ---
 
@@ -536,6 +713,25 @@ Kürbis** für sich.
   oder man **verschenkt** ihn im Gespräch: wie ein Geschenk (6.3), in der **Lieblingssorte** des Gastes noch mehr
   (5.8), dazu sinkt seine Angst. Der Teller bleibt im Spielstand; was gerade auf dem Herd steht, nicht.
 - **Offen:** Ob Kochen Lärm macht oder Gäste selbst kochen; Zutaten aus dem Kühlraum (Eier, 6.13).
+
+### 3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)
+Der Spieler hat einen **Körper**: Er sieht sich im Spiegel – und später sehen ihn Mitspieler, falls es einmal Koop
+gibt (10, Frage 9). In der Ich-Perspektive sieht man ihn (vorerst) nicht, nur **im Spiegel** und als **Schatten**
+an Lampen und Kerzen.
+- **Erwachen am Waschbecken (neues Spiel):** Das Bild ist schwarz, Wasser läuft, ein Klatsch ins Gesicht. Dann
+  blendet das Bad von Zimmer 13 langsam ein, erst verschwommen, dann klar, und der Blick hebt sich vom Becken zum
+  Spiegel. Dort stellt man sich ein; bis zur Bestätigung steht die Uhr, man kann sich nicht bewegen. „So sehe ich
+  aus.“ fragt noch einmal nach – **später lässt sich nichts mehr ändern**, auch die Kleidung nicht.
+- **Was man wählt:** Frau oder Mann und das **Alter** (jung, mittel, alt – die sechs erwachsenen Grundkörper der
+  Gäste, 6.0). **Kein Kind:** Kinder haben im Spiel Vorteile (das Monster holt keine Kinder, 6.13). **Größe 1,45–2,00 m**,
+  die **Statur** in einem Dreieck mit den Ecken **schlank**, **definiert** und **kräftig** (= dick; die Mitte ist
+  der Grundkörper), dazu **Hautton**, **Haarfarbe**, **Oberteil** und **Hose** aus den Farben der Gäste. Kein Name.
+- **Nur Aussehen:** Größe und Statur ändern weder Tempo noch Ausdauer. Augenhöhe, Kapsel und Hocken wachsen mit
+  der Größe – wer 2 m groß ist, sieht über mehr hinweg und stößt sich eher.
+- **Spiegel über dem Waschbecken** reicht von 1,10 bis 1,95 m, damit sich jede Figur darin sieht (Scheitel bei
+  2 m, Bauch bei 1,45 m); er bekommt später ein richtiges Modell.
+- **Vorgemerkt:** Atem und Keuchen passend zur Figur (Frau/Mann, Alter); den eigenen Körper beim Blick nach unten
+  sehen; Haare später über einen Gegenstand färben.
 
 ---
 
@@ -1100,6 +1296,35 @@ zum gefährlichsten Ort.
   Licht aus, ins Bett. Schlafende zählen nicht als Zeugen und bemerken nichts (auch nicht das Monster, das sie
   im Bett finden kann). Danach wachen alle wieder auf.
 
+**Die Geisterstunde (entschieden und umgesetzt 2026-10-23)**
+> **Umgesetzt (2026-10-23)** wie unten, mit den beiden Vorschlägen (kaum sichtbar, ab der 4. Begegnung würgt er) und der
+> Glocke aus 7.8. Er geht im Obergeschoss um; in der Stunde kommt er nicht zu Türen mit Lakengespenstern und nicht zu
+> Gästen an Fenstern – wer dort gerade Besuch hat, den verlässt er, wenn die Glocke ausgeschlagen hat. Debug:
+> `--ghost=stunde[,n]`.
+
+Von **0 bis 1 Uhr** (2.4) zieht er durch die **Flure**, jede Nacht – wie alles von ihm erst nach dem ersten Angriff
+(4.20). Er sucht niemanden gezielt, er patrouilliert.
+- **Ankündigung:** die **Kirchturmglocke**, die zur Mitternacht zwölfmal schlägt (7.8). Danach Flocken und
+  Geisterklang in den Fluren.
+- **Kurz und heftig:** Die Stunde dauert eine Minute Echtzeit (im Bett, fünfmal so schnell, 12 s) – ein Moment,
+  kein Abschnitt der Nacht. Genug für ein, zwei Durchgänge durch einen Flur.
+- **Versteckt** (Vorschlag): Bis er einen bemerkt, ist er kaum zu sehen – nur leiser Geisterklang und Flocken. Er
+  sieht nach 4.15 (`Senses.can_see`): Ducken und Dunkel helfen, man kann ihm bewusst ausweichen.
+- **Hat er dich gesehen,** schwebt er auf dich zu. Die **ersten Begegnungen** in der Geisterstunde sind eine Warnung:
+  Er verschwindet kurz vor dir (wie die Garantie an Tag 10). Danach – Vorschlag: **ab der 4. Begegnung** – kann er
+  **würgen** (Losreißen wie im Zimmer). Dafür zählt ein **eigener Zähler** für Begegnungen in der Geisterstunde;
+  seine Stufen am Fenster (Tabelle oben) bleiben davon unberührt.
+- **Nur Flure, keine Zimmer:** In den Zimmern gilt weiter die Regel am Fenster. Wer um 0 Uhr mit Licht im Zimmer
+  ist, ist sicher – man kann rechtzeitig drinnen sein oder die Minute bewusst riskieren.
+- **Die anderen Flur-Regeln bleiben** (ab dem 6. Mal, Schwäche, Nächte ohne Schlaf, Tag 10) und wirken in der
+  Geisterstunde mit: Greift eine davon, dreht sich der umherziehende Geist zu einem um.
+- **Zeugen** vertreiben ihn wie sonst; um 0 Uhr schlafen fast alle. Die Bar schließt um Mitternacht (5.9) –
+  angetrunkene Gäste auf dem Heimweg sind schwach und mitten in der Geisterstunde unterwegs. Ab dem 25. stehen
+  Bettlaken-Kostüme im Flur (5.9).
+- **Ebenen** (4.20): Er nimmt das Obergeschoss, ist dort schon eine andere Bedrohung, das Erdgeschoss. Solange im Code
+  noch „nur eine Bedrohung im Haus“ gilt (4.1): Ist das Monster um 0 Uhr unterwegs, beginnt die Geisterstunde erst, wenn
+  es wieder ruht (oder fällt aus); läuft sie, verschiebt das Monster seinen Aufbruch.
+
 **Passt zu den bestehenden Systemen**
 - **Licht aus** lockt schon das Monster an (4.4) – jetzt auch den Geist. Licht an schützt vor beidem.
 - **Vorhang zu** hält den Geist draußen, macht den Raum aber dunkler (weniger Mondlicht).
@@ -1351,6 +1576,74 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 - **Hängt an der Dachform:** Wie die Kammern aussehen (Schrägen, Kniestock, Gauben), folgt aus der Dachform, die noch
   aussteht.
 
+### 4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)
+> Noch nicht umgesetzt. Eine vierte Bedrohung – für sie gilt dieselbe Ebenenregel wie für die anderen drei (4.20).
+> Mit „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
+
+**Fledermäuse**
+- Echte Fledermäuse im **Dachgeschoss** und **draußen**. Meist sind sie **scheu** und fliegen vom Spieler weg.
+- **Beißen:** mit **geringer** Wahrscheinlichkeit den Spieler, mit **sehr geringer** einen Gast – erst nach dem
+  ersten Angriff, der friedliche Anfang bleibt friedlich (4.20).
+- Vorschläge:
+  - **Tagesrhythmus** (2.4): tagsüber hängen sie schlafend an den Balken im Dachgeschoss, Licht oder Lärm schreckt
+    sie als Schwarm auf; nachts sind sie draußen über dem Garten.
+  - **Frühwarnung:** Sie fliehen vor allem, auch vor den Bedrohungen – fliegt draußen oder oben plötzlich ein Schwarm
+    auf, kommt etwas (wie die schwingenden Lakengespenster, 5.6). Ein aufgeschreckter Schwarm ist Lärm (4.15).
+  - **Echt oder Papier?** Verwechslung mit der Fledermausgirlande (5.7).
+  - **Die gefährliche kündigt sich an:** Sie fliegt nicht weg, sondern bleibt sitzen und starrt. Die Chance hängt an der
+    Schwäche (4.18), die Taschenlampe vertreibt sie.
+  - **Im Dachgeschoss kein Biss** – dort bleibt es still und ohne eigene Bedrohung (4.20, 4.21); gebissen wird draußen.
+
+**Der Biss**
+- Wer gebissen wird, wird **schwach** – Vorschlag: Schwäche **+0,5** (4.18), die Wunde heilt in zwei bis drei
+  Spieltagen (6.17). Damit kommt auch der **Lakengeist wahrscheinlicher und schneller** – ohne Sonderregel.
+- **Das Bild:** Nach dem Biss wird der Bildschirm abwechselnd **dunkler und heller**, ist ziemlich **dunkel und
+  verschwommen**. Vorschlag: direkt nach dem Biss stark, wie ein Herzschlag, dann klingt es mit der Schwäche ab;
+  abschwächbar in den Einstellungen (wie das Flackern, 8.4) – Dunkelheit ist Spielmechanik (4.4).
+- **Wer im schwachen Zustand gebissen wird, stirbt.**
+- **Gäste** genauso: Gebissene haben **Bissmale am Hals** und sind blass (Eintrag für 6.17); zweimal gebissen bleiben sie
+  als blasse Leiche liegen.
+
+**Der Vampir**
+- Die **Fledermaus, die gebissen hat, verwandelt sich selbst** in einen Vampir.
+- **Ebenenregel** (4.20): Draußen ist Erdgeschoss, die Balkone gehören zum Obergeschoss. Ist die Ebene schon belegt,
+  verwandelt sie sich nicht – es bleibt beim Biss, sie flattert davon.
+- **Nicht nur einmal, aber selten.** Vorschlag: nach jedem Vampir einige Spieltage Pause, in der keine Fledermaus beißt;
+  etwa **3–5 im Monat**, gegen Halloween etwas häufiger.
+- **Vertreiben mit Knoblauch oder Kreuz:** Er erschrickt, und sein **Körper zerfällt in 20–30 Fledermäuse**, die alle
+  in eine Richtung davonfliegen und aus dem Bild verschwinden. Damit ist der Besuch vorbei. Vorschläge: vom Spieler weg
+  (drinnen den Flur hinunter, draußen in den Himmel); der Schwarm ist Lärm, Gäste, die ihn sehen, erschrecken und reden
+  darüber.
+- **Knoblauch und Kreuz** sind neue Gegenstände (klein, Tasche). Vorschläge: Sie wirken nur **in der Hand, hochgehalten
+  mit Blick auf ihn** (wie der UV-Aufsatz, 4.16). **Knoblauch** ist häufig (Küche, ein Beet im Garten) und welkt nach
+  ein paar Tagen (5.10); Gäste rümpfen die Nase. **Kreuze** sind selten (zwei, drei im Hotel: eine Schublade, eine
+  gläubige ältere Frau, über einem Bett) und halten ewig.
+
+**Twist: Man wird selbst zum Vampir**
+- Der Spieler kann selbst zum Vampir werden. Dann muss er **Gäste beißen, sonst verhungert er**.
+- **Am Ende, beim Gruppenfoto** an Halloween (5.9), stellt sich heraus, dass man ein Vampir ist: Man fehlt auf dem Bild
+  – ein leerer Platz wie bei den Verschwundenen. **Danach fehlt auch das Spiegelbild** (3.9). Der Vampir versetzt die
+  **Stadt** in Chaos – ein eigenes, dunkles Ende neben der Flucht und der Zeitschleife (2.1, 2.2).
+- Vorschläge: Als Vampir spielt man die Rolle des Lakengeists – schlafende Gäste in der Nachtruhe, keine Zeugen, Zeugen
+  verraten einen. **Kinder nie** (6.13). Das Spiegelbild **verblasst schon während der Verwandlung** als Hinweis für
+  Aufmerksame.
+
+**Zu klären**
+- **Was macht den Spieler zum Vampir?** Vorschlag: Nach einem Biss hat man zwei, drei Tage Zeit, sich zu heilen
+  (Knoblauch essen, richtig schlafen); wer es nicht schafft, verwandelt sich. Keine Strafe aus dem Nichts.
+- **Was heißt „schwach“ beim tödlichen Biss?** (a) die Bisswunde ist noch offen – zwischen zwei Vampiren liegen aber
+  Tage, das passiert kaum; (b) Schwäche ab ⅔, egal woher. Vorschlag: beides, und nach dem ersten Biss lässt er **5–8 s
+  los** und kommt dann wieder – ein zweiter Biss in derselben Begegnung tötet. Der erste Biss ist die Warnung, wer schon
+  schwach ist, bekommt keine.
+- **Muss man ihn hereinbitten?** Vorschlag: ja – er klopft an Türen und Fenstertüren, gibt sich als neuer Gast aus, und
+  ein Gast, der ihn nicht erkennt, lässt ihn herein (ab dem 25. gibt es Vampirkostüme, 5.9). Seine Regel wäre dann
+  **Leichtsinn und Gastfreundschaft** – neben Dunkelheit (Monster), Schwäche (Lakengeist) und Spaß (Kürbismann).
+- **Weiß der Spieler, dass er ein Vampir ist?** Beim Beißen ja – das Foto verrät es dann den anderen.
+- **Herkunft:** Er steht außerhalb von „Das Hotel behält jeden“ (4.20) – bewusst so lassen oder einbinden (etwa ein
+  Gast von 1987, der nie abgereist ist)? Lässt das Hotel den Vampir gehen, weil er nicht mehr zum Abkommen gehört?
+- Wie er sich bewegt und jagt, was Monster und Lakengeist mit einem Spieler-Vampir tun, wie Hunger und Beißen als Spieler
+  gehen, wie Gäste reagieren, ob Knoblauch und Kreuz dann gegen einen selbst wirken.
+
 ---
 
 ## 5. Halloween-Dekoration
@@ -1405,11 +1698,17 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 > Porzellangesicht, orangem Kleid und Hexenhut) und sitzt am Anfang auf einem Lobby-Sofa.
 > Ersetzt die Fassung vom 2026-10-21 (Urteil schon beim Rückzug in den Keller, Spieler trägt sie, Opfern durch
 > Hintragen, Monster geht nur „zuerst“ zu ihr) und davor die wandernde Puppe, die Zonen bewertet.
+>
+> **Geändert und umgesetzt 2026-10-23 (2.5):** Bis zum ersten Angriff ist sie die **Jury des
+> Türschmuck-Wettbewerbs** auf dem Lobby-Sofa. Bei der Siegerehrung steigt sie auf und löst sich in Rauch auf – das
+> einzige Mal vor den Augen des Spielers. Ihre Regel wird danach **mitgeteilt** (Aushang, Warnungszettel), statt dass
+> der Spieler sie selbst herausfinden muss.
 
 **Grundidee:** Die Puppe ist keine Figur, die herumläuft, sondern das **sichtbare Urteil** des Abkommens (2.3): Kurz vor
 einem Angriff liegt sie vor der Tür dessen, der am wenigsten schmückt – und **dort stirbt jemand**. Was bisher
-unsichtbar ist (wie gut die Deko gegen den wachsenden Anspruch noch reicht, 4.8, 4.9), wird so lesbar. Dass sie
-immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss es selbst herausfinden.
+unsichtbar ist (wie gut die Deko gegen den wachsenden Anspruch noch reicht, 4.8, 4.9), wird so lesbar. ~~Dass sie
+immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss es selbst herausfinden.~~ Seit 2026-10-23
+sagt es das Hotel nach dem ersten Angriff selbst: der veränderte Aushang am Brett in der Lobby und ein Warnungszettel (2.5).
 
 **Das Urteil**
 - **Wann:** nur vor einem **echten Angriff** (einen holen oder Raubzug, 4.17) – nie beim Umsehen. Seit 2026-10-22 auch vor
@@ -1423,7 +1722,8 @@ immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss
   Tür, egal wie viel im Hotel hängt – und der Nachbar wird zur Konkurrenz (Klaue ich ihm einen Kürbis, ist er der
   Schwächste).
 - **Sie bewegt sich nie vor den Augen des Spielers.** Sie springt um, wenn er weder ihren alten noch ihren neuen Platz
-  sieht: eben war der Flur leer, jetzt sitzt sie da, mit dem Gesicht zur Tür.
+  sieht: eben war der Flur leer, jetzt sitzt sie da, mit dem Gesicht zur Tür. Einzige Ausnahme ist die Siegerehrung
+  (2.5), bei der sie aufsteigt und sich in Rauch auflöst.
 - **Grollen:** Solange sie vor der Tür liegt, hört man **im ganzen Hotel** ein tiefes Grollen, das immer lauter wird –
   dann bricht das Monster auf, und die Flackerwelle (4.17) verrät, wie viele es holen will.
 - **Das Grollen wirkt (entschieden und umgesetzt 2026-10-22):** Die Gäste bekommen Angst (Mutige weniger) und reden
@@ -1449,7 +1749,7 @@ immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss
 - Wer weiß, wohin es geht, ist **nicht** dort: Die Puppe ist eine Warnung, kein Todesurteil – für den, der sie liest.
 
 **Kinder**
-- Zwischen den Angriffen sehen Kinder die Puppe, nehmen sie zum Spielen mit und legen sie gern **vor die Tür ihrer
+- Zwischen den Angriffen (erst nach dem ersten – vorher ist sie die Jury in der Lobby, 2.5) sehen Kinder die Puppe, nehmen sie zum Spielen mit und legen sie gern **vor die Tür ihrer
   eigenen Familie**. Kurz vor einem Angriff springt sie von dort (unbeobachtet) zur schwächsten Tür, und ab dann
   können auch Kinder sie nicht mehr bewegen.
 - Kinder erzählen von ihr („Die Puppe hat mich angeguckt“) – keiner glaubt es.
@@ -1458,7 +1758,8 @@ immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss
 ~~Er bittet den Spieler um Deko~~ – kommt mit den Wünschen (6.14, 6.18).
 
 **Zwischen den Urteilen** bleibt sie, wo sie zuletzt lag – oder wo ein Kind sie hingelegt hat. Am Anfang sitzt sie in
-der Lobby. Sie ist **keine Bedrohung** und zählt nicht zur Regel „immer nur eine Bedrohung im Haus“ (4.1).
+der Lobby, als Jury des Wettbewerbs (2.5); nach der Siegerehrung ist sie fort, bis sie vor dem nächsten echten Angriff
+vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „immer nur eine Bedrohung im Haus“ (4.1).
 
 **Vorgemerkt**
 - **Jury beim Schmücken (5.9) und beim Schnitz-Wettbewerb (6.10):** Am Ende eines Großen Schmückens sitzt sie an der
@@ -1623,6 +1924,24 @@ ihm.
   > gute Freunde schließen sich nicht an, Kinder bringen keine Geschenke. Wer den Spieler im Laken zum ersten Mal
   > sieht, staunt („Huch! … Ach, ein Kostüm.“) – im Dunkeln erschrickt er wirklich, Kinder freuen sich. Im
   > Gespräch: „Wer steckt denn da drunter? … Ach, du bist's!“ Debug: `--disguise`.
+- **Verkleiden aus Fundstücken (vorgemerkt 2026-10-23):** Spieler **und Gäste** ziehen sich einfache Verkleidungen
+  an – einen **Kürbis als Hut**, **Masken**, **Gespensterlaken** oder andere kleine Gegenstände. Vorschläge: Ein
+  geschnitzter, **brennender Kürbis auf dem Kopf leuchtet** – man trägt Licht, das das Monster sieht (4.15).
+  **Masken** sind ein neuer Gegenstand; woher (Kiste im Partyraum, basteln, von Gästen) ist offen.
+- **Maskenspiel „Wer steckt dahinter?“ (vorgemerkt 2026-10-23):** Ein Spiel im **Partyraum** mit den Gästen. Alle
+  Mitspieler tragen Masken, die **Namen über ihnen verschwinden**, und man muss erraten, wer wer ist – **einmal je
+  Gast**. Man sammelt **Beliebtheit**: stärker, wenn man richtig rät, aber auch falsch geraten, weil das Spiel den
+  Gästen Spaß macht. Vorschläge:
+  - **Fair raten:** Die Maske verdeckt Gesicht und Haare; **Kleidung, Größe, Statur, Schuhe und Stimme** bleiben – genau
+    das, was der Gastgenerator variiert (6.0). Wer die Gäste kennt, gewinnt. Laken sind beim Spiel nicht erlaubt.
+  - **Ablauf:** einen Maskierten ansprechen, einen Namen aus der Liste der Mitspielenden wählen.
+  - **Beliebtheit** über die Beziehungen (6.2): richtig **+8**, falsch **+3** (er lacht), dazu ein wenig bei allen
+    Mitspielern.
+  - **Spaß ruft den Kürbismann:** Das Spiel zählt wie Spieltisch und Feier stark für den Spaßwert (4.19).
+  - **Wann:** abends; ausrufen wie das große Schmücken, Gäste starten es auf Feiern auch selbst.
+  - **Twist: eine Maske zu viel** – acht spielen mit, neun stehen im Raum: der hereingebetene Vampir (4.22) oder eine
+    Halluzination.
+  - **Offen:** neuer, hotelweiter Wert „Beliebtheit“ statt der Beziehungen? Erst ab dem 25. oder schon früher?
 - **Gruselgeschichten-Abend:** Abends sitzen Gäste bei Kerzen in der Lobby und erzählen Geschichten – mit wenig
   Licht, also nicht ohne Risiko (4.4). Manche Geschichten enthalten **echte Hinweise** auf das Geheimnis (2.3);
   Mitwisser verraten sich dabei. Erzählt der Spieler selbst eine, steigt die Angst der Zuhörer und damit ihre
@@ -1638,7 +1957,8 @@ ihm.
   die es nicht geben dürfte: der Name eines Verschwundenen, „Zimmer 13 wird erwartet“. Wer spricht da (2.3)?
 - **Gruppenfoto an Halloween:** Beim Fest am 31. ein Gruppenbild aller Überlebenden – mit leeren Plätzen für die
   Verschwundenen. Es landet im Tagebuch bzw. im Abspann. Mit der Zeitschleife (2.2) hängt das Foto des letzten
-  Durchgangs in der Lobby – und man steht selbst darauf.
+  Durchgangs in der Lobby – und man steht selbst darauf. Wer zum Vampir geworden ist, **fehlt auf dem Bild** (4.22,
+  vorgemerkt 2026-10-23).
 
 ### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23)
 > Macht den Pitch (1) wahr – „Die Deko ist knapp“ – und ändert Anspruch (4.8), Abschreckung (4.9) und Schutzbereich
@@ -2064,7 +2384,7 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
 - **Zeugen** vertreiben ihn wie beim Spieler – bei einem Gast zählt **auch der Spieler** als Zeuge. Wer ihn so
   sieht, erschrickt ebenfalls.
 - Wer ihn erlebt hat, **lässt einen Tag lang den Vorhang zu** und ruht nicht im Dunkeln.
-- Zimmer ohne Außenfenster (z. B. Milas Zimmer 15) sind sicher.
+- Zimmer ohne Außenfenster sind sicher. (Seit 2026-10-23 hat im Erdgeschoss jedes Zimmer ein Fenster oder eine Gartentür, auch Milas Zimmer 15 – die Regel greift dort vorerst nicht.)
 
 **Noch offen:** Werden Leichen irgendwann weggebracht (von Gästen, vom Monster)? Trauer der Gäste um Freunde (6.8)?
 
@@ -2299,6 +2619,7 @@ nicht als Opfer – das Monster bleibt hungrig (4.10).
 | **Monster** | reißt sich los, als es ihn wegschleppen will | **Kratzer und Schrammen** – nichts Großes | sichtbare Kratzer, kurz ein paar Blutstropfen, kein Bett; heilt in gut einem Spieltag |
 | **Kürbismann** (4.19) | der Axthieb trifft nicht voll | **Axtwunde** | Verband, humpelt stark, kann nicht rennen; **blutet sichtbar** – eine Spur auf dem Weg (wie die Blutstropfen, 4.13, aber deutlicher), erst nach einer Weile weniger |
 | **Lakengeist** (4.18) | reißt sich beim Würgen los | **Würgemale** | spricht **heiser**, **atmet schwer** (hörbar), panische Angst im Dunkeln, schwächer – der Geist kommt eher wieder |
+| **Vampir** (4.22, vorgemerkt) | der erste Biss | **Bissmale am Hals** | blass und schwach – der Geist kommt eher wieder; ein zweiter Biss im schwachen Zustand tötet |
 
 - **Heilung:** zwei bis drei Spieltage. Nach Axt und Würgen liegt er den **ersten Spieltag im eigenen Bett** (wach,
   ansprechbar – er feiert, schmückt und sucht nicht), danach schont er sich noch ein, zwei Tage. Geschenke und Besuche
@@ -2409,7 +2730,7 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
   - **Hotelgarten** hinter einer **Glastür** (plus Fenster in der Lobby-Nordwand): Kürbisbeete, Bäume mit Laubhaufen, Hecken, Laternen, Mondlicht
   - **Erdgeschoss:** Hauptflur (78 m nach Osten) mit **drei Flurkreuzungen** – A und B mit langen Nord- und Südflügeln, C mit kurzen Flügeln – **44 Zimmer**
   - **Obergeschoss** (4 m höher) über ein **Treppenhaus** mit Wendepodest am Ende des Nordflügels: Hauptflur mit zwei Kreuzungen, **30 Zimmer** (211–244), zwei davon verfallen (Tür offen, Spinnweben). Zusammen **74 Zimmer** für rund 30 Gäste
-  - Zimmer 11 (Edna), 13 (Spieler), 15 (Mila), 17 (verlassen, dunkel), 12 (Bruno), 14 (leer), 16 (Wäscherei, dunkel, Spinnweben), 18 (abgeschlossen); alle übrigen sind zu Beginn mit Zufallsgästen belegt oder **unbewohnt** – eingerichtet, Licht aus, hier und da eine Kerze oder Münzen. Zimmer, hinter deren Rückwand ein Flügel liegt, haben kein Außenfenster.
+  - Zimmer 11 (Edna), 13 (Spieler), 15 (Mila), 17 (verlassen, dunkel), 12 (Bruno), 14 (leer), 18 (abgeschlossen), 26 (Doppelzimmer für eine Familie, vorgemerkt); die **Wäscherei** hat seit 2026-10-23 keine Zimmernummer mehr, sie liegt im Untergeschoss (Zettel 1994 dort). Der Grundriss des Erdgeschosses bleibt ab 2026-10-23, wie er ist; alle übrigen sind zu Beginn mit Zufallsgästen belegt oder **unbewohnt** – eingerichtet, Licht aus, hier und da eine Kerze oder Münzen. Zimmer, hinter deren Rückwand ein Flügel liegt, haben kein Außenfenster.
   - **Kellertreppe** hinter der niedrigen Kellertür am Ostende des Erdgeschosses: 3,5 m hinab
   - **Keller** unter der Erde: Versteck des Monsters, Schlüssel zu Zimmer 18, altes Regal
   - Noch nicht gebaut: Bibliothek/Salon, Speisesaal, weitere Etagen; Gäste gibt es weiterhin nur drei
@@ -2543,7 +2864,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 > **Stand 2026-10-23 – Aufzug gebaut:** Statt des Gitterfahrstuhls ein Hotelaufzug mit **Teleskoptüren**, die
 > beidseitig zur Mitte schließen, in einem Holzportal; darüber die **Lampenanzeige** „U“, „0“, „1“ (runde Lampen, 8 cm),
 > daneben ein Rufknopf. Die Kabine **fährt wirklich** zwischen Untergeschoss, Erdgeschoss und Obergeschoss: drei goldene
-> Handläufe wie an der Rezeption, gegenüber der Tür ein **Spiegel** (echtes Spiegelbild – der Spieler selbst fehlt darin),
+> Handläufe wie an der Rezeption, gegenüber der Tür ein **Spiegel** (echtes Spiegelbild, seit 23.10. mit der Spielerfigur, 3.9),
 > eine Deckenleuchte, links ein **Bedienfeld** aus Messing (drei Etagenknöpfe untereinander, darunter Tür auf / Tür zu,
 > darunter Alarm). Motor und Glocke an Abfahrt und Ziel machen das Monster neugierig, der **Alarm** ist laut und
 > erschreckt Gäste. **Aufzug 1 fährt schon jetzt** – die Reparatur unten kommt später als Sperre davor. **Aufzug 2 ist
@@ -2645,12 +2966,13 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Was man sc
   Rundflur um zwei Innenhöfe, dazwischen ein großer Garten, im Süden die Lobby mit Bar + Spiele, Partyraum
   und Toiletten, im Westen Küche, Speisesaal, Lager und Kühlräume, im Norden der Indoor-Pool.
 - **Bauphasen:** zuerst **Lobby, Mittelgarten und Ostflügel**, der Westflügel später.
-- **Zimmernummern (vierstellig):** Stockwerk · Flügel · Zimmer. Erdgeschoss 0, erstes Obergeschoss 1;
-  Ostflügel x1xx, Westflügel x2xx. Gezählt wird nach Laufweg: ab der Lobby einmal um den Rundflur, danach der
-  Querflur zwischen den Höfen; **in Laufrichtung rechts ungerade, links gerade**. Erdgeschoss: Ost 0101–0181,
-  West 0201–0272; Zimmer darüber tragen dieselbe Nummer mit 1 vorne.
-- **Spielerzimmer ist 0113:** An der Tür ist das Schild abgebrochen, zu lesen ist nur noch **„13“**. Gäste
-  sprechen von „Zimmer 13“.
+- **Zimmernummern (dreistellig seit 2026-10-23, vorher vierstellig mit Flügel):** Stockwerk · zwei Ziffern.
+  Erdgeschoss 0, erstes Obergeschoss 1; Ostflügel 01–49, Westflügel 51–99. Gezählt wird nach Laufweg: ab der Lobby
+  einmal um den Rundflur, danach der Querflur zwischen den Höfen; **in Laufrichtung rechts ungerade, links gerade**.
+  Zimmer darüber tragen dieselbe Nummer mit 1 vorne (über 013 liegt 113).
+- **Spielerzimmer ist 013:** An der Tür ist die führende Null abgefallen, zu lesen ist nur **„13“** – anders als
+  bei 012, 014 … nebenan. Gäste sprechen von „Zimmer 13“. Es liegt am rechten Innenhof, seit 23.10. ein
+  Doppelzimmer mit Bad (Waschbecken für das Erwachen, 3.9); die Zimmer rund um diesen Hof werden Doppelzimmer.
 - **Lobby mit Galerie:** Über Rezeption und Eingang ist die Lobby doppelt hoch (Luftraum ca. 7,4 × 20 m).
   Das Obergeschoss umschließt ihn als Galerie mit Geländer, von der man in die Halle hinunterschaut. Die
   Treppe hinter der Rezeption führt hinauf; daneben zwei Aufzüge.
@@ -2763,7 +3085,7 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
   Spieler aber auch.
 - **Regen** an den Scheiben, Wind in den Bäumen, mehr fallendes Laub (7.6).
 - **Tiere und Ferne:** Krähen, eine Eule, ferne Hunde – und eine **Kirchturmglocke**, die hinter der Waldkante zur
-  Mitternacht zwölfmal schlägt.
+  Mitternacht zwölfmal schlägt (umgesetzt 2026-10-23, kündigt die Geisterstunde an, 4.18).
 - **Steigerung bis Halloween:** Der Nebel wird mit jedem Tag dichter, der Himmel wolkiger; an Halloween ist
   Vollmond.
 - ~~**Offen:** wann „Mitternacht“ ist, solange es keine echte Uhrzeit gibt (nach Spieltag oder Nachtruhe?).~~ → 0 Uhr
@@ -2910,7 +3232,8 @@ oder nur mit dem Aufzug · wo Kessel und Gitter (7.4) liegen, seit der Heizraum 
 - **Hintergrund (Vorschlag):** Die verriegelte Lobby-Doppeltür oder ein langer Flur im PS1-Look – Nebel, eine flackernde Lampe, leichtes Bildrauschen. Ab und zu steht am Flurende eine Silhouette … und beim nächsten Flackern ist sie weg.
 - **Einträge:**
   - **Fortsetzen** – lädt den neuesten Spielstand (Slot oder Autosave). Nur sichtbar, wenn einer existiert.
-  - **Neues Spiel** – Slot wählen; ist er belegt → Rückfrage „Überschreiben?“. Danach Intro-Text, Start in Zimmer 13.
+  - **Neues Spiel** – Slot wählen; ist er belegt → Rückfrage „Überschreiben?“. ~~Danach Intro-Text, Start in Zimmer 13.~~ Danach Erwachen am Waschbecken in Zimmer 13 (3.9) und der
+    Willkommensbrief auf dem Schreibtisch statt eines Einführungstexts (2.5, 2026-10-23).
   - **Laden** – Slot-Übersicht (siehe 8.5).
   - **Einstellungen** (siehe 8.4)
   - **Beenden**
@@ -2922,7 +3245,10 @@ oder nur mit dem Aufzug · wo Kessel und Gitter (7.4) liegen, seit der Heizraum 
   - **Fortsetzen** (auch erneut Esc)
   - **Laden**
   - **Einstellungen**
-  - **Steuerung** (Tastenübersicht)
+  - **Steuerung** (Tastenübersicht) – **wird zur Hilfe** (entschieden und umgesetzt 2026-10-23): eine kleine Hilfeseite mit der
+    Tastenübersicht und ein paar Sätzen zu den Grundlagen (Tagebuch speichert, Hand und Tasche, Licht, Hinsetzen …).
+    Ersatz für die Tastenzeile, die bisher im Einführungstext stand (2.5). Vorschlag: nichts, was den friedlichen
+    Anfang verrät (2.1) – Einträge zu Monster und Verstecken erscheinen erst nach dem ersten Angriff.
   - **Zum Hauptmenü** – mit Rückfrage und Hinweis „Zuletzt gespeichert vor 12 Minuten – ungespeicherter Fortschritt geht verloren.“
   - **Spiel beenden** – gleiche Rückfrage. Es wird **nicht** automatisch gespeichert (sonst ließe sich die Regel „nur im Zimmer speichern“ umgehen).
   - **Unterbrechen und beenden** (entschieden 2026-10-21, 8.10) – legt einen Zwischenstand an, der beim nächsten Laden gelöscht wird.
@@ -3175,6 +3501,18 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
     Gruppenfoto (5.9) – vorgemerkt 2026-10-20
 7o. Eier-Streich der Kinder an Türen und Fenstern (6.13) · Aufträge von Gästen ohne Questmenü, notiert im Tagebuch
     (6.14) · Gewitter, Regen, Kirchturmglocke, dichter werdender Nebel (7.8) – vorgemerkt 2026-10-20
+7p. ~~Geisterstunde: 0–1 Uhr zieht der Lakengeist versteckt durch die Flure, angekündigt von der Kirchturmglocke,
+    schwebt auf einen zu, wenn er einen sieht, verschwindet die ersten Male kurz davor und würgt danach (eigener
+    Zähler), nur Flure (4.18)~~ ✔ (2026-10-23)
+7q. Fledermäuse (scheu, beißen selten) und der Vampir als vierte Bedrohung: Biss macht schwach, im schwachen Zustand
+    tödlich, Knoblauch und Kreuz lassen ihn in einen Schwarm zerfallen; Twist: selbst Vampir werden, fehlt auf dem
+    Gruppenfoto und im Spiegel (4.22, vorgemerkt 2026-10-23)
+7r. Verkleiden aus Fundstücken (Kürbis als Hut, Masken, Laken) und Maskenspiel „Wer steckt dahinter?“ im Partyraum
+    (5.9, vorgemerkt 2026-10-23)
+7s. ~~Türschmuck-Wettbewerb als Faden für den Anfang: Willkommensbrief statt Einführungstext, Aushangbrett in der Lobby,
+    Durchsagen, Puppe als Jury in der Lobby, Siegerehrung am 2. um 20 Uhr als erster Angriff (wartet bis 22 Uhr auf den
+    Spieler, Blick zur Puppe, sie löst sich in Rauch auf), danach veränderter Aushang und Warnungszettel mit der Regel
+    der Puppe · Hilfeseite im Spielmenü statt Tastenzeile (2.5, 8.3, entschieden 2026-10-23)~~ ✔ (2026-10-23)
 8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
 9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12) · Speicherregel schärfen: Autosave nur bei Fortschritt, neuen Bereichen und Aufwachen, „Unterbrechen und beenden“, Stände je Durchgang, Tagebuchsatz (8.10, entschieden 2026-10-21)
 10. Balancing, weitere Etagen

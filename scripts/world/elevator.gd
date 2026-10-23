@@ -14,7 +14,6 @@ extends Node3D
 ## Rahmen: Ursprung = Mitte der Türöffnung auf der Wandmittellinie in Höhe des EG-Bodens, lokal +Z aus dem Schacht
 ## (vor die Tür), +X von dort aus gesehen rechts. Gebaut von LevelBuilder._elevators.
 
-const MIRROR_LAYER := 1 << 19   ## Sichtebene der Spiegelfläche – die Spiegelkamera sieht sie nicht
 const WALL_T := 0.2             ## Wandstärke im Plan (LevelBuilder.T)
 ## Türen: Luft zur Schachtwand, so weit stecken geschlossene Blätter hinter der Leibung, Überdeckung der Blätter,
 ## Blattstärke, Sturz (lichte Höhe = Öffnung im Plan − HEAD), Sekunden für ganz auf bzw. zu, so lange bleibt sie offen
@@ -71,9 +70,7 @@ const MIRROR_Y := 1.0
 const MIRROR_H := 1.3
 const MIRROR_MARGIN := 0.25
 const MIRROR_FRAME := 0.03
-const MIRROR_PX := 320
 const MIRROR_RANGE := 12.0
-const MIRROR_TINT := Color(0.86, 0.9, 0.88)
 ## Deckenleuchte
 const LAMP_ENERGY := 0.65
 const LAMP_RANGE := 5.0
@@ -138,12 +135,7 @@ var _ghost_timer := 0.0
 var _ghost_path: Array[int] = []
 var _rng := RandomNumberGenerator.new()
 
-var _mirror_vp: SubViewport
-var _mirror_cam: Camera3D
-var _mirror: MeshInstance3D
-var _mirror_live: ShaderMaterial
-var _mirror_dull: Material
-var _mirror_size := Vector2.ONE
+var _mirror: Mirror
 
 
 ## Ein Knopf (Ruf-, Etagen-, Tür- oder Alarmknopf): interagierbar, alles Weitere entscheidet der Aufzug.
@@ -485,81 +477,18 @@ func _disc(sh: GrandStair.Shape, p: Vector3, n: Vector3, r: float, h: float) -> 
 		sh.tri(p + n * h, p + d0 * r + n * h, p + d1 * r + n * h, n, n, n)
 
 
-## Spiegel an der Rückwand (gegenüber der Tür) im Messingrahmen. Das Bild malt eine zweite Kamera hinter dem Spiegel
-## in ein SubViewport (Spiegelpunkt der Spielerkamera, schiefes Frustum genau durch die Spiegelfläche) – nur nah davor
-## und mit „Spiegelungen“ in den Einstellungen, sonst matt wie die Spiegel über den Waschbecken.
+## Spiegel an der Rückwand (gegenüber der Tür) im Messingrahmen – echtes Spiegelbild (Mirror), nur in einer Kabine,
+## die fährt.
 func _mirror_wall() -> void:
 	var width := _cab_side * 2.0 - MIRROR_MARGIN * 2.0
-	_mirror_size = Vector2(width, MIRROR_H)
-	var z := _cab_back + 0.012
 	var cy := MIRROR_Y + MIRROR_H / 2.0
 	for s: float in [-1.0, 1.0]:
 		Geo.mesh(cabin, Geo.box(Vector3(MIRROR_FRAME, MIRROR_H + MIRROR_FRAME * 2.0, 0.02)), _brass,
 			Vector3(s * (width + MIRROR_FRAME) / 2.0, cy, _cab_back + 0.01))
 		Geo.mesh(cabin, Geo.box(Vector3(width + MIRROR_FRAME * 2.0, MIRROR_FRAME, 0.02)), _brass,
 			Vector3(0, cy + s * (MIRROR_H + MIRROR_FRAME) / 2.0, _cab_back + 0.01))
-	var quad := QuadMesh.new()
-	quad.size = _mirror_size
-	_mirror_dull = Mat.psx(Color(0.62, 0.7, 0.74))
-	_mirror = Geo.mesh(cabin, quad, _mirror_dull, Vector3(0, cy, z))
-	_mirror.layers = MIRROR_LAYER
-	_mirror.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_mirror_vp = SubViewport.new()
-	_mirror_vp.size = Vector2i(MIRROR_PX, roundi(MIRROR_PX * MIRROR_H / width))
-	_mirror_vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
-	add_child(_mirror_vp)
-	_mirror_cam = Camera3D.new()
-	_mirror_cam.cull_mask = 0xFFFFF & ~MIRROR_LAYER
-	_mirror_cam.projection = Camera3D.PROJECTION_FRUSTUM
-	_mirror_vp.add_child(_mirror_cam)
-	_mirror_cam.current = true
-	_mirror_live = ShaderMaterial.new()
-	_mirror_live.shader = load("res://shaders/mirror_view.gdshader")
-	_mirror_live.set_shader_parameter("view", _mirror_vp.get_texture())
-	_mirror_live.set_shader_parameter("tint", MIRROR_TINT)
-	_mirror_env()
-	Settings.changed.connect(_mirror_env)
-
-
-## Umgebung der Spiegelkamera: die der Welt ohne Tonemapping (das kommt im Hauptbild ein zweites Mal), ohne
-## Bildschirmspiegelung und Lichtnebel (zu teuer für ein Bild im Bild).
-func _mirror_env() -> void:
-	var env := get_world_3d().environment if is_inside_tree() else null
-	if env:
-		var own := env.duplicate() as Environment
-		own.tonemap_mode = Environment.TONE_MAPPER_LINEAR
-		own.ssr_enabled = false
-		own.volumetric_fog_enabled = false
-		own.glow_enabled = false
-		_mirror_cam.environment = own
-
-
-## Spiegelkamera nachführen (jedes Bild, solange der Spiegel zu sehen ist).
-func _update_mirror() -> void:
-	var cam := get_viewport().get_camera_3d()
-	var live := Settings.reflections and cam != null
-	var t := _mirror.global_transform
-	var n := t.basis.z.normalized()
-	var c := t.origin
-	var dist := 0.0
-	if live:
-		dist = (cam.global_position - c).dot(n)
-		live = dist > 0.05 and cam.global_position.distance_to(c) < MIRROR_RANGE and absf(cam.global_position.y - c.y) < 2.5
-	if live:   # zu sehen, wenn Mitte oder eine Ecke im Bild ist
-		live = false
-		for corner: Vector2 in [Vector2.ZERO, Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
-			var q: Vector2 = corner * _mirror_size / 2.0
-			live = live or cam.is_position_in_frustum(t * Vector3(q.x, q.y, 0.01))
-	_mirror_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS if live else SubViewport.UPDATE_DISABLED
-	_mirror.material_override = _mirror_live if Settings.reflections else _mirror_dull
-	if not live:
-		return
-	var p := cam.global_position - n * dist * 2.0
-	var x_axis := -t.basis.x.normalized()
-	var y_axis := t.basis.y.normalized()
-	_mirror_cam.global_transform = Transform3D(Basis(x_axis, y_axis, -n), p)
-	var rel := c - p
-	_mirror_cam.set_frustum(_mirror_size.y, Vector2(rel.dot(x_axis), rel.dot(y_axis)), dist, cam.far)
+	_mirror = Mirror.make(cabin, Vector2(width, MIRROR_H), Vector3(0, cy, _cab_back + 0.012), Vector3.BACK, MIRROR_RANGE)
+	_mirror.active = working
 
 
 ## Bedienfeld links in der Kabine (vom Eingang aus): Messingplatte, oben die Etagen (oberste zuoberst), darunter
@@ -716,7 +645,6 @@ func _process(delta: float) -> void:
 				nearest = i
 		if nearest != _shown:
 			_show(nearest)
-		_update_mirror()
 	else:
 		_ghost(delta)
 

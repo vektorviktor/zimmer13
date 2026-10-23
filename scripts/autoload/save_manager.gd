@@ -61,7 +61,16 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     sleep_timer); ältere Stände laden nicht mehr (ihre Spielzeit ergäbe einen ganz anderen Tag)
 ## 32: Knappheit (Spielkonzept 5.10) – Faulzeit der Kürbisse im Zusatz der Gegenstände („r=…“), Tag der letzten
 ##     Entnahme eines Gastes je Kiste (resources.guest_day); ältere Stände laden nicht (Kisten wären wieder voll)
-const VERSION := 32
+## 33: Spielerfigur (Spielkonzept 3.9, player.look: Grundkörper, Größe, Statur, Farben) – ältere Stände laden weiter
+##     mit der Standardfigur
+## 34: Fratze geschnitzter Kürbisse im Zusatz („f=1…5“, PumpkinModel) – ältere Stände laden weiter, die Fratze wird
+##     beim Laden ausgewürfelt
+## 35: Geisterstunde (Spielkonzept 4.18, ghost.hour_meetings) – ältere Stände laden weiter, er bemerkt einen dann wieder
+##     zum ersten Mal
+## 36: Türschmuck-Wettbewerb (Spielkonzept 2.5, „contest“: Abschnitt, Brief, Durchsagen, Zettel, erstes Urteil; Puppe
+##     „gone“), ohne director.first_attack_day – ältere Stände laden weiter: Ist der erste Angriff schon gewesen, ist
+##     der Wettbewerb vorbei, sonst beginnt er von vorn
+const VERSION := 36
 const MIN_VERSION := 32
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -76,7 +85,7 @@ const COUNT_ONLY := ["cats"]
 var WORLD_FILE := DIR + "world.txt"
 ## Bereiche, deren erster Besuch einen Autosave auslöst
 const NEW_AREAS := ["Lobby", "Galerie", "Küche", "Speisesaal", "Bar", "Partyraum", "Pool", "Garten", "Innenhof Nordost", "Innenhof Südost",
-	"Ostflügel, Nordflur", "Westflügel, Südflur", "Treppenhaus", "Keller", "Zimmer 0116", "Zimmer 0117", "Zimmer 0118"]
+	"Ostflügel, Nordflur", "Westflügel, Südflur", "Treppenhaus", "Keller", "Zimmer 016", "Zimmer 017", "Zimmer 018"]
 
 ## Zeitpunkt (Ticks in ms) des letzten Speicherns oder Ladens in dieser Sitzung
 var last_save_msec := -1
@@ -228,6 +237,8 @@ func is_safe_for_autosave() -> bool:
 		return false
 	if Game.menus and Game.menus.is_open():
 		return false
+	if Game.contest and Game.contest.in_scene():   # Siegerehrung (2.5) – gleich geht das Licht aus
+		return false
 	if not can_save():
 		return false
 	if Game.monster.is_active() and Game.monster.global_position.distance_to(p.global_position) < AUTOSAVE_MONSTER_DISTANCE:
@@ -277,6 +288,9 @@ func load_newest() -> bool:
 ## Ein kurzer Tagebuchsatz aus dem aktuellen Stand – erscheint in der Slot-Übersicht.
 func diary_sentence() -> String:
 	var parts: Array[String] = []
+	var contest_line := Game.contest.diary_line() if Game.contest else ""   # Ankunft bzw. erstes Urteil der Puppe (2.5)
+	if contest_line != "":
+		parts.append(contest_line)
 	if Game.social:
 		for guest in Game.social.guests:
 			if guest.dead:
@@ -340,6 +354,7 @@ func collect() -> Dictionary:
 			"held": _item_data(p.held) if p.held else null,
 			"bag": p.bag.map(_bag_data),
 			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
+			"look": p.body.look.duplicate(),
 		},
 		"items": [],
 		"guests": {},
@@ -404,6 +419,7 @@ func collect() -> Dictionary:
 	data["traces"] = Game.traces.save_state() if Game.traces else []
 	data["ghost"] = Game.ghost.save_state() if Game.ghost else {}
 	data["doll"] = Game.doll.save_state() if Game.doll else {}
+	data["contest"] = Game.contest.save_state() if Game.contest else {}
 	data["pumpkin"] = Game.pumpkin.save_state() if Game.pumpkin else {}
 	data["hide_spots"] = _collect_group("hide_spots", func(n: Node) -> Dictionary: return n.save_state())
 	data["doors"] = _collect_group("doors", func(n: Node) -> Dictionary:
@@ -575,6 +591,7 @@ func apply(data: Dictionary) -> void:
 	var pd: Dictionary = data["player"]
 	var p := Game.player
 	p.leave_seat(true)
+	p.set_look(pd.get("look", PlayerBody.default_look()))
 	p.global_position = _vec(pd["pos"])
 	p.rotation.y = float(pd["yaw"])
 	p.head.rotation.x = float(pd["pitch"])
@@ -626,6 +643,8 @@ func apply(data: Dictionary) -> void:
 		Game.pumpkin.load_state(data.get("pumpkin", {}))
 	# Monster zuletzt: ggf. wieder unterwegs an seiner gespeicherten Stelle
 	director.load_state(dd.get("state", {}))
+	if Game.contest:   # nach dem Director (erster Angriff schon gewesen?) und der Puppe
+		Game.contest.load_state(data.get("contest", {}))
 	last_save_msec = Time.get_ticks_msec()
 
 

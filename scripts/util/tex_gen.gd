@@ -100,6 +100,79 @@ static func _runner() -> Image:
 	return img
 
 
+## Teppiche im Katzenraum (`LevelBuilder._cat_room_rugs`): der ganze Teppich in einem Bild, w Pixel quer und
+## h Pixel längs, an beiden Enden Fransen. Bordüre mit Rauten, Feld mit Medaillon (längs gestreckt), Eckstücken
+## und einem lockeren Punktraster. Farben je Variante aus RUG_COLORS, zwischengespeichert je Variante und Größe.
+const RUG_COLORS := [   # Rand, Bordüre, Linie, Feld, Muster
+	[Color(0.1, 0.04, 0.03), Color(0.12, 0.13, 0.26), Color(0.58, 0.42, 0.14), Color(0.45, 0.08, 0.08), Color(0.66, 0.55, 0.34)],
+	[Color(0.06, 0.05, 0.08), Color(0.42, 0.08, 0.08), Color(0.62, 0.5, 0.3), Color(0.1, 0.12, 0.24), Color(0.6, 0.45, 0.2)],
+	[Color(0.06, 0.07, 0.04), Color(0.5, 0.36, 0.14), Color(0.2, 0.08, 0.06), Color(0.16, 0.26, 0.16), Color(0.62, 0.52, 0.3)],
+	[Color(0.15, 0.09, 0.05), Color(0.32, 0.16, 0.08), Color(0.12, 0.15, 0.25), Color(0.62, 0.5, 0.34), Color(0.38, 0.1, 0.08)],
+	[Color(0.12, 0.07, 0.07), Color(0.28, 0.3, 0.36), Color(0.7, 0.62, 0.5), Color(0.55, 0.3, 0.3), Color(0.75, 0.68, 0.55)],
+]
+const RUG_FRINGE := Color(0.72, 0.66, 0.54)
+const RUG_FRINGE_ROWS := 2
+
+static func rug(variant: int, w: int, h: int) -> Texture2D:
+	var key := "rug|%d|%d|%d" % [variant, w, h]
+	if _cache.has(key):
+		return _cache[key]
+	var cols: Array = RUG_COLORS[variant % RUG_COLORS.size()]
+	var edge: Color = cols[0]
+	var border: Color = cols[1]
+	var line: Color = cols[2]
+	var field: Color = cols[3]
+	var motif: Color = cols[4]
+	var img := Image.create(w, h, false, Image.FORMAT_RGB8)
+	var rng := _rng(20 + variant)
+	var rh := h - 2 * RUG_FRINGE_ROWS
+	var band := maxi(3, roundi(mini(w, rh) * 0.12))
+	var mid := int(band / 2.0)
+	var hw := w / 2.0 - band - 1.0   # halbe Feldgröße
+	var hh := rh / 2.0 - band - 1.0
+	var s := minf(hw, hh) * 0.75     # Medaillon
+	for y in h:
+		var ry := y - RUG_FRINGE_ROWS
+		for x in w:
+			var c := field
+			if ry < 0 or ry >= rh:
+				c = RUG_FRINGE if x % 2 == 0 else RUG_FRINGE.darkened(0.35)
+			else:
+				var side := mini(x, w - 1 - x)
+				var d := mini(side, mini(ry, rh - 1 - ry))
+				var fx := absf(x - (w - 1) / 2.0)
+				var fy := absf(ry - (rh - 1) / 2.0)
+				if d < 1:
+					c = edge
+				elif d < band:
+					var along := ry if side == d else x
+					var a := posmod(along + 2, 4) - 2
+					c = motif if absi(d - mid) + absi(a) <= 1 else border
+				elif d == band:
+					c = line
+				else:
+					var md := fx / s + fy / (s * 1.4)
+					var corner := (hw - fx) + (hh - fy)
+					if md < 0.3:
+						c = motif
+					elif md < 0.55:
+						c = line
+					elif md < 0.9:
+						c = border
+					elif md < 1.0:
+						c = motif
+					elif corner < s * 0.45:
+						c = border
+					elif corner < s * 0.6:
+						c = motif
+					elif posmod(x + ry, 6) == 0 and posmod(x - ry, 6) == 0:
+						c = motif.darkened(0.25)
+			img.set_pixel(x, y, c.darkened(rng.randf() * 0.16))
+	var tex := ImageTexture.create_from_image(img)
+	_cache[key] = tex
+	return tex
+
+
 static func _concrete() -> Image:
 	var img := Image.create(32, 32, false, Image.FORMAT_RGB8)
 	var rng := _rng(5)

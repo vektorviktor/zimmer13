@@ -1141,7 +1141,15 @@
 	"trees": [],
 	"reception": [],
 	"furniture": [],
-	"fittings": [],
+	"fittings": [
+		{
+			"kind": "note",
+			"pos": [
+				16.55,
+				-19.05
+			]
+		}
+	],
 	"items": [],
 	"lights": [
 		{
