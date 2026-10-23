@@ -1,0 +1,140 @@
+GIMP Palette
+Name: Zimmer 13 – Gebäudeplan (map_a.aseprite)
+Columns: 0
+# Legende des Gebäudeplans (Spielkonzept 7.5): eine Zeile je Palettenfarbe, in der Reihenfolge der Palette.
+# Aseprite 1.3.18 speichert keine Farbnamen – sie stehen deshalb nur hier. Neue Farbe in der Palette →
+# hier eine Zeile „R G B<Tab>Name“ ergänzen. Gelesen von tools/build_map.py (nach Farbwert) und der
+# Aseprite-Erweiterung Palettennamen. In Aseprite lässt sich die Datei als Palette laden (Farben, ohne Namen).
+  0   0   0	Wand
+255 136  85	Zimmer
+212 228 241	Flur
+190 246 176	Garten
+191 223 183	Terrasse
+ 37 100  21	Terrassenkante
+ 36 158   7	Baum
+109 169  93	Pflanzkübel
+255 255 255	Betriebsraum
+197 197 197	Lagerraum
+153 176  84	Bar
+206 145 211	Partyraum
+  0 175 255	Toilette
+  0 141 255	Pool Wasser
+178 198 213	Pool Umgang
+145 211 190	Aufzug
+216 216 216	Treppe
+132 132 132	Treppenstufe
+223 113  38	Rezeption
+ 63  63 116	Luftraum
+153 229  80	Tür Flur
+ 53 255   0	Tür Terrasse
+ 80 163 229	Fenster
+251 242  54	Doppel-Glastür
+223 223 223	Betriebstür
+  0 255 175	Aufzugtür
+255   0   0	Haupteingang
+221 240 255	Glaswand
+255   0 255	Möbel: Vorderseite
+122  59 143	Möbel: Bett
+ 91  58  30	Möbel: Schrank
+160 102  45	Möbel: Kommode
+200 161 101	Möbel: Tisch
+217 185 138	Möbel: Couchtisch
+229 196 147	Möbel: Couchtisch Vorderseite
+176 136  80	Möbel: Tafel
+110  31  31	Möbel: Sofa
+143 122  90	Möbel: Bank
+163 139 101	Möbel: Bank Vorderseite
+125  90   0	Möbel: Truhe
+ 47  47  47	Möbel: Schachtisch
+ 31  95  63	Möbel: Spieltisch
+ 74  44  23	Möbel: Theke
+ 61 110 143	Möbel: Regal
+143 163 168	Möbel: Küchenzeile
+ 64  72  80	Möbel: Herd
+224 224 216	Möbel: Waschtisch
+184 200 216	Möbel: Waschmaschine
+168 156 128	Möbel: Wäschekiste
+112 112 112	Möbel: Säule
+  0 229 229	Ausstattung: Lichtschalter
+229   0  90	Ausstattung: Telefon
+155  89 208	Ausstattung: Bild
+240 240 160	Ausstattung: Zettel
+123   0 255	Ausstattung: UV-Schrift
+192 192 208	Ausstattung: Spinnweben
+255 176 112	Ausstattung: Kerzenvorrat
+255 224 128	Ausstattung: Ersatzbirnen
+192  96  32	Ausstattung: Laubhaufen
+ 96 160   0	Ausstattung: Kürbispflanze
+ 64 128 255	Ausstattung: Kalender
+128  32  64	Ausstattung: Tagebuch
+255 112   0	Gegenstand: Kürbis
+255  64   0	Gegenstand: Geschnitzter Kürbis
+255 240 192	Gegenstand: Kerze
+232 192  64	Gegenstand: Schlüssel
+224 224 240	Gegenstand: Spinnweben
+176  80  16	Gegenstand: Laub
+212 175  55	Gegenstand: Münzen
+160 160 168	Gegenstand: Messer
+107  62  38	Gegenstand: Würfelbecher
+240 240 240	Gegenstand: Gezinkte Würfel
+255 251 208	Gegenstand: Glühbirne
+ 80 112 160	Gegenstand: Kleidung
+ 48 160 160	Gegenstand: Kompass
+232 220 176	Gegenstand: Karte
+ 48  48  96	Gegenstand: Taschenlampe
+ 64 192  64	Gegenstand: Batterie
+144   0 255	Gegenstand: UV-Filter
+ 32  32  32	Gegenstand: Schachbrett
+255 216   0	Licht: Wandleuchte
+128 108   0	Licht: Wandleuchte defekt
+255 140  26	Licht: Kerze
+255 243 160	Licht: Laterne
+140 132  90	Licht: Laterne defekt
+255 248 200	Licht: Deckenleuchte
+ 92  20  32	Teppich: Läufer
+243   0 255	Türanschlag
+186  92  44	Ausstattung: Dekokiste
+149  71 183	Katzenraum
+188 127  74	Bibliothek
+143 152 141	Balkon
+102 112 100	Balkongeländer
+ 48  96 224	Bad
+240 200 140	Möbel: Kratzbaum
+200  80  20	Ausstattung: Kürbispflanze Hokkaido
+230 230 200	Ausstattung: Kürbispflanze Weiß
+220 190 120	Ausstattung: Kürbispflanze Butternut
+ 90 110  50	Ausstattung: Kürbispflanze Muskat
+180  60  60	Ausstattung: Kürbispflanze Türkenturban
+255 160   0	Ausstattung: Kürbispflanze Riese
+153 153 153	Kellerboden
+130  27  27	Heizkeller
+124 107 255	Technikraum
+107 182 255	Wäscherei
+123 123 123	Kellerraum
+146 239 226	Licht: Halogenleuchte
+# Plan map_a (22.10.): Kieswege, Müllraum, nicht gebaute Kellerräume; Möbel nach map_legend.png mit
+# hellerer Zeile als Vorderseite (beim Doppelbett das Kopfende)
+ 20  76   6	Kiesweg
+121  79  31	Müllraum
+ 93  93  93	Kellerraum zu
+151  82 174	Möbel: Doppelbett
+178 107 201	Möbel: Doppelbett Kopfende
+ 56 203 223	Möbel: Badewanne
+ 67 217 236	Möbel: Badewanne Vorderseite
+ 67 236 214	Möbel: Waschbecken
+ 74 248 225	Möbel: Waschbecken Vorderseite
+ 87  66 169	Möbel: Fußmatte
+ 74 134 128	Möbel: Dusche
+ 92 158 151	Möbel: Dusche Vorderseite
+ 20 114 103	Möbel: WC
+ 29 128 116	Möbel: WC Vorderseite
+107 107 107	Möbel: Mülleimer
+150 147 147	Möbel: Mülleimer Vorderseite
+ 32  41  93	Möbel: Snackautomat
+ 42  54 123	Möbel: Snackautomat Vorderseite
+ 90 134  62	Möbel: Getränkeautomat
+104 151  74	Möbel: Getränkeautomat Vorderseite
+ 78 169  66	Möbel: Zimmertisch
+ 99 183  87	Möbel: Zimmertisch Vorderseite
+ 87 153 183	Möbel: Stuhl
+109 169 197	Möbel: Stuhl Vorderseite

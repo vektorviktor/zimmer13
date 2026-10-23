@@ -172,7 +172,7 @@ func _draw_floor(plan: Dictionary, top: float, font: Font) -> void:
 				fill = CORRIDOR
 			"garden":
 				fill = GARDEN
-			"terrace", "balcony":
+			"terrace", "balcony", "gravel":
 				fill = GARDEN.lightened(0.15)
 		for rc in r["rects"]:
 			draw_rect(_rect(_world_rect(rc), top), fill)

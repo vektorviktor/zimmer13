@@ -1826,7 +1826,8 @@ func _round_answer(entry: Dictionary, host: Guest) -> void:
 	_round_prank(entry, host)
 
 
-## Eine Süßigkeit aus der Süßigkeiten-Truhe dieses Zimmers nehmen (ExtraFixtures) – sie liegt sichtbar darin. false = leer.
+## Eine Süßigkeit aus der Süßigkeiten-Truhe dieses Zimmers nehmen (Truhe aus dem Plan, LevelBuilder._sweets_chest) – sie
+## liegt sichtbar darin. false = leer oder keine Truhe im Zimmer.
 func take_room_sweet(no: String) -> bool:
 	for node in get_tree().get_nodes_in_group("sweet_chests"):
 		var chest := node as Chest

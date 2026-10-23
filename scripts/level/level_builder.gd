@@ -29,13 +29,44 @@ const MAP_PATH := "res://assets/maps/eg.json"
 const UPPER_MAP_PATHS := ["res://assets/maps/og1.json"]
 ## Untergeschoss (Spielkonzept 7.9) – die Treppenhäuser enden dort
 const LOWER_MAP_PATH := "res://assets/maps/ug.json"
+## Plan, Legende und Umsetzer: Ist eins davon neuer als die Karten, liest refresh_maps() den Plan neu ein
+const PLAN_SOURCES := ["res://map_a.aseprite", "res://map_a.gpl", "res://tools/build_map.py"]
 ## Kellerwände: Brettschalungsbeton (Farbbild und Normal Map des PBR-Sets), eine Kachel = 18 Brettreihen auf
 ## CELLAR_WALL_METERS
 const CELLAR_WALL_TEX := "res://assets/textures/Concrete_WoodPattern_01/Concrete_WoodPattern_01_Base_Color.jpg"
 const CELLAR_WALL_NORMAL := "res://assets/textures/Concrete_WoodPattern_01/Concrete_WoodPattern_01_Normal.jpg"
 const CELLAR_WALL_METERS := 3.0
+## Kieswege im Garten (Plan map_a, Fläche „Kiesweg“): Kopfsteine in Moos (StoneWall_01, Farbbild mit eingebackener
+## AO + Normal Map, verstärkt – sonst wirken sie flach), Steine 10–18 cm
+const GRAVEL_TEX := "res://assets/textures/StoneWall_01/StoneWall_01_basecolor.jpg"
+const GRAVEL_NORMAL := "res://assets/textures/StoneWall_01/StoneWall_01_normalOGL.jpg"
+const GRAVEL_METERS := 0.5
+const GRAVEL_NORMAL_STRENGTH := 2.0
+## Außenwände des Hotels: Bruchsteinplatten mit Fugen (StoneFloor_02, Farbbild mit eingebackener AO + verstärkte
+## Normal Map), Platten 20–40 cm
+const FACADE_TEX := "res://assets/textures/StoneFloor_02/StoneFloor_02_basecolor.jpg"
+const FACADE_NORMAL := "res://assets/textures/StoneFloor_02/StoneFloor_02_normalOGL.jpg"
+const FACADE_METERS := 2.0
+const FACADE_NORMAL_STRENGTH := 2.0
+## Holzdecken (Flure, Hallen, Treppenhäuser, Zimmer): dunkle Kassettendecke mit Schnitzwerk (Wood_Panels_01,
+## Farbbild mit eingebackener AO, Normal Map, Rauheit – lackiert), eine Kachel = 2 × 2 Kassetten à 1 m.
+## Das Farbbild ist dunkler als die frühere TexGen-Holzdecke – aufgehellt, in den Fluren weniger (Spielkonzept 7.3)
+const CEILING_TEX := "res://assets/textures/Wood_Panels_01/Wood_Panels_01_basecolor.jpg"
+const CEILING_NORMAL := "res://assets/textures/Wood_Panels_01/Wood_Panels_01_normalogl.jpg"
+const CEILING_ROUGHNESS := "res://assets/textures/Wood_Panels_01/Wood_Panels_01_roughness.jpg"
+const CEILING_METERS := 2.0
+const CEILING_SPECULAR := 0.5
+const CEILING_SHADE := Color(1.2, 1.2, 1.2)
+const ROOM_CEILING_SHADE := Color(1.8, 1.8, 1.8)
 ## Lobbyboden: polierte Marmorplatten (Farbbild, Normal Map, Rauheit), eine Kachel = 4 × 4 Platten à 60 cm
-const LOBBY_FLOOR_TEX := "res://assets/textures/TilesMarble_01/T_TilesMarble_01_basecolor.jpg"
+## Holzböden (Zimmer, Bar, Partyraum, Katzenzimmer, Bibliothek, Treppenpodeste): lackierte Dielen (WoodenFloor_03),
+## 16 Dielen je Kachel à ~12,5 cm, längs +z; leichter Glanz aus der Rauheitskarte
+const WOOD_FLOOR_TEX := "res://assets/textures/WoodenFloor_03/WoodenFloor_03_basecolor.jpg"
+const WOOD_FLOOR_NORMAL := "res://assets/textures/WoodenFloor_03/WoodenFloor_03_normalogl.jpg"
+const WOOD_FLOOR_ROUGHNESS := "res://assets/textures/WoodenFloor_03/WoodenFloor_03_roughness.jpg"
+const WOOD_FLOOR_METERS := 2.0
+const WOOD_FLOOR_SPECULAR := 0.5
+const LOBBY_FLOOR_TEX :="res://assets/textures/TilesMarble_01/T_TilesMarble_01_basecolor.jpg"
 const LOBBY_FLOOR_NORMAL := "res://assets/textures/TilesMarble_01/T_TilesMarble_01_normalogl.jpg"
 const LOBBY_FLOOR_ROUGHNESS := "res://assets/textures/TilesMarble_01/T_TilesMarble_01_roughness.jpg"
 const LOBBY_FLOOR_METERS := 2.4
@@ -51,6 +82,17 @@ const POOL_TILES_NORMAL := "res://assets/textures/pool/Tiles_06_normalOgl.jpg"
 const POOL_TILES_ROUGHNESS := "res://assets/textures/pool/Tiles_06_roughness.jpg"
 const POOL_TILES_METERS := 0.6
 const POOL_TILES_SPECULAR := 0.5
+## Bäder (23.10.): Wände bis BATH_TILE_HEIGHT, Boden und Wannensockel mit der beigen Variante der Poolfliesen
+## (tools/tint_tiles.gd, Normal Map und Rauheit von Tiles_06), eine Kachel = 6 × 6 Fliesen à 5 cm – in Weltkoordinaten,
+## die Fugen laufen so von der Wand über den Boden auf die Wanne durch; darüber und an der Decke gestrichene Wand
+const BATH_TILES_TEX := "res://assets/textures/pool/Tiles_06_beige_basecolor.jpg"
+const BATH_TILES_METERS := 0.3
+const BATH_TILE_HEIGHT := 2.0
+const BATH_PAINT_TEX := "res://assets/textures/Scifi_PaintedWall_01/Scifi_PaintedWall_01_basecolor.jpg"
+const BATH_PAINT_NORMAL := "res://assets/textures/Scifi_PaintedWall_01/Scifi_PaintedWall_01_normalogl.jpg"
+const BATH_PAINT_ROUGHNESS := "res://assets/textures/Scifi_PaintedWall_01/Scifi_PaintedWall_01_roughness.jpg"
+const BATH_PAINT_METERS := 2.5
+const BATH_PAINT_SPECULAR := 0.3
 ## Wände der Poolhalle: Riemchen aus Naturstein (Farbbild mit eingebackener AO – das Muster steckt im Set fast nur in
 ## AO und Normal Map –, Normal Map), eine Kachel = 6 Spalten × ~22 Reihen, also Steine à ~50 × 14 cm
 const POOL_WALL_TEX := "res://assets/textures/Stone_EngraveWall_01/Stone_EngraveWall_01_basecolor.jpg"
@@ -72,6 +114,11 @@ const PILLAR_SPECULAR := 0.5
 const PILLAR_SHAFT_RADIUS := 0.3
 const PILLAR_SHAFT_SEGMENTS := 24
 const PILLAR_PLINTH := Vector3(0.8, 0.3, 0.8)
+## Couchtisch der Lobby: quadratisch (kurze Seite des Plan-Rechtecks), Platte aus dem Terrazzo der Säulen, so stark,
+## wie sie über den Unterbau steht und wie ihre Ecken gerundet sind; Beine und Zarge aus dunklem Holz, gleich stark
+const COFFEE_TABLE_SLAB := 0.03
+const COFFEE_TABLE_WOOD := 0.1
+const COFFEE_TABLE_CORNER_SEGMENTS := 4
 const H := 3.5
 const T := 0.2
 ## Höhe des Obergeschosses (Oberkante Boden)
@@ -103,6 +150,24 @@ const ATTIC_DOOR_H := 1.6
 const COUCH_MODEL := "res://assets/models/couch.glb"
 ## Rohmodell ist 4,34 Einheiten lang → ~2,4 m lang, Sitzhöhe ~0,45 m, Lehne ~0,92 m.
 const COUCH_SCALE := 0.55
+## Parkbank für Bänke im Außenbereich (tools/build_bench.py): 1,6 m lang, in Metern, Ursprung mittig unten, Sitzseite
+## nach +Z. Fehlt die Datei oder steht die Bank drinnen, bleibt sie ein Holzkasten.
+const BENCH_MODEL := "res://assets/models/bench.glb"
+const BENCH_LENGTH := 1.6
+## Sitzoberkante, ausgegeben von tools/build_bench.py
+const BENCH_SEAT := 0.476
+## Tischgruppe in den Zimmern (tools/build_room_table.py): „table“ quadratisch 1 × 1 m, 0,75 m hoch, und ein „chair“,
+## Sitzseite nach +Z, beide mit Ursprung mittig unten. Je Gruppe zwei Stühle einander gegenüber, auch wenn der Plan
+## mehr zeigt. Fehlt die Datei, bleiben Kasten-Tisch und Kasten-Stühle aus dem Plan.
+const ROOM_TABLE_MODEL := "res://assets/models/room_table.glb"
+const ROOM_TABLE_SIDE := 1.0
+## Stuhl: Breite, Sitzhöhe, Tiefe (ausgegeben von tools/build_room_table.py); Lehne von z −0,215 bis −0,149
+const ROOM_CHAIR := Vector3(0.375, 0.46, 0.431)
+const ROOM_CHAIR_H := 0.84
+## Abstand der Stuhlmitte von der Tischmitte – die Sitzfläche ragt ein Stück unter die Platte
+const ROOM_CHAIR_GAP := 0.66
+## Stühle aus dem Plan, deren Mitte so nah am Zimmertisch liegt, gehören zu dessen Gruppe
+const ROOM_CHAIR_REACH := 0.5
 ## 28 einzelne Flaschen „bottle_NN“ in Metern, Ursprung mittig unten (tools/build_bottles.py)
 const BOTTLES_MODEL := "res://assets/models/bottles.glb"
 ## Pflanzkübel samt Bepflanzung in Metern, Ursprung mittig unten, Grundfläche 2 × 2 m wie im Plan
@@ -112,22 +177,32 @@ const PLANTER_MODEL := "res://assets/models/planter.glb"
 ## Handlauf der Pooltreppen mit gebogenen Knicken (tools/build_handrail.py, Tiefe 1,4 m und Lauf 2,1 m wie in _pool);
 ## Ursprung am Fuß des Pfostens auf dem Umgang, die Treppe hinab entlang −Z. Fehlt die Datei, gerade Stangen.
 const HANDRAIL_MODEL := "res://assets/models/pool_handrail.glb"
+## Gartenlaterne (tools/build_lantern.py): 3 m hoch, Ursprung mittig unter der Bodenplatte, Teile „post“ (Fuß und
+## Mast, achteckig), „head“ (eckiger Kopf) und „glass“. Fehlt die Datei, Mast und Leuchtkasten als Platzhalter.
+const LANTERN_MODEL := "res://assets/models/lantern.glb"
+## Glasmitte (dort sitzt das Licht), ausgegeben von tools/build_lantern.py
+const LANTERN_LIGHT_Y := 2.58
 ## Höhe des Kollisionsquaders (und des Platzhalter-Kübels) = Beckenkante, ausgegeben von tools/build_planter.py
 const PLANTER_H := 0.46
-## Laubbaum in Metern, Ursprung auf der Stammachse am Boden (tools/build_tree.py aus Meshys Modell).
-## `_tree()` skaliert ihn auf den Kronenradius aus dem Plan; fehlt die Datei, bleibt der Platzhalter.
-const TREE_MODEL := "res://assets/models/tree.glb"
+## Die drei großen Laubbäume aus der „Realistic Trees Collection“ (tools/build_trees.py, Werte von dort): Ursprung
+## auf der Stammachse am Boden, in Metern. Kronenradius, Höhe, Krone als Anteile der Höhe (von dort fällt Laub),
+## Stammdurchmesser in 1 m Höhe (Kollision). Der Plan zeigt nur den Standort, die Bäume wechseln sich der Reihe
+## nach ab; fehlt eine Datei, bleibt dort der Platzhalter.
+const TREE_MODELS: Array[Dictionary] = [
+	{"path": "res://assets/models/tree_1.glb", "radius": 4.9, "height": 10.3, "crown": Vector2(0.33, 1.00), "trunk": 0.55},
+	{"path": "res://assets/models/tree_2.glb", "radius": 3.5, "height": 8.2, "crown": Vector2(0.30, 1.00), "trunk": 0.41},
+	{"path": "res://assets/models/tree_3.glb", "radius": 5.4, "height": 10.7, "crown": Vector2(0.34, 1.00), "trunk": 0.56},
+]
 ## Wanduhr über dem Haupteingang (WallClock): Durchmesser und Abstand der Rückseite zur Wandfläche; die Mitte hängt
 ## auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds und der Hallendecke
 const CLOCK_DIAMETER := 3.0
 const CLOCK_GAP := 0.02
-## Kronenradius und Stammdurchmesser des Modells (ausgegeben von tools/build_tree.py), Höhe der Stammkollision
-const TREE_RADIUS := 5.0
-const TREE_TRUNK := 1.53
+## Höhe der Stammkollision; Kronenradius und Krone (Anteile der Höhe) des Platzhalters
 const TREE_TRUNK_H := 3.0
-## Höhe des Modells (bei TREE_RADIUS); fallendes Laub entsteht zwischen diesen Anteilen davon (Krone)
-const TREE_HEIGHT := 9.9
+const TREE_RADIUS := 5.0
 const TREE_CROWN := Vector2(0.35, 0.6)
+## Drehung von Baum zu Baum (Grad), damit zwei gleiche nicht gleich aussehen
+const TREE_TURN := 137.0
 ## Fallendes Herbstlaub je Baum: so viele Blätter gleichzeitig, Lebenszeit (s) – reicht für den Fall aus
 ## der Krone und ein paar Sekunden am Boden –, Sinkgeschwindigkeit (m/s), Kantenlänge (m)
 const LEAF_FALL := 40
@@ -140,8 +215,8 @@ const LAYER_CEILING := 16
 ## Trittflächen der Treppenstufen – nur für Spuren (Traces.surface_below), blockiert niemanden. Gelaufen wird auf der
 ## glatten Rampe darunter (Ebene 1, Meta „stair_ramp“), die vorn an jeder Stufe über der Trittfläche liegt.
 const LAYER_TREAD := 2048
-## Fenster: Unterkante (bündig mit der Vertäfelung), Oberkante – die Breite kommt aus dem Plan
-const WINDOW_SILL := 0.75
+## Fenster: Unterkante (überall 90 cm, Entscheidung 23.10.), Oberkante – die Breite kommt aus dem Plan
+const WINDOW_SILL := 0.9
 const WINDOW_TOP := 3.05
 ## Oberkante Boden des Untergeschosses (ein Stockwerk unter dem EG)
 const CELLAR_Y := -UP_Y
@@ -169,8 +244,9 @@ const ROOM_KINDS := {
 	"0111": "guest", "0112": "guest", "0113": "player", "0114": "empty", "0115": "guest",
 	"0116": "laundry", "0117": "abandoned", "0118": "locked", "0126": "derelict", "0137": "derelict",
 }
-## Flügel, deren Zimmer schon bewohnbar sind
+## Flügel, deren Zimmer schon bewohnbar sind – im EG bzw. darüber (im Obergeschoss alle, 22.10.)
 const OPEN_WINGS := ["ost"]
+const OPEN_WINGS_UPPER := ["ost", "west"]
 
 ## Inhalt, der nicht im Plan steht, je Raum-ID (Zimmernummer oder Bereich): Münzbetrag (ohne Eintrag 1),
 ## Kartenblatt, Zettel-Nummer (Spielkonzept 4.12) und UV-Schrift (4.16) der Objekte in diesem Raum.
@@ -187,7 +263,19 @@ const CONTENT := {
 const BOX_HEIGHTS := {
 	"table": 0.75, "coffee_table": 0.4, "dining_table": 0.78, "bench": 0.45, "bar_counter": 1.1, "shelf": 2.0,
 	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5,
+	# Plan map_a (map_legend.png), Platzhalter bis zu den Modellen
+	"bathtub": 0.6, "sink": 0.85, "shower": 0.06, "toilet": 0.42, "trash_can": 0.55, "room_table": 0.75, "chair": 0.45,
 }
+## Platzhalter-Möbel: Stuhllehne über dem Sitz, Spiegel über dem Waschbecken (Breite, Höhe; Mitte über dem Boden),
+## Fußmatte
+const CHAIR_BACK := 0.45
+const MIRROR_SIZE := Vector2(0.6, 0.7)
+const MIRROR_Y := 1.55
+const DOORMAT_H := 0.012
+## Süßigkeiten-Truhe (Truhe aus dem Plan in einem Hotelzimmer, Spielkonzept 6.13): Höhe, Holz, Inhalt
+const SWEETS_CHEST_H := 0.32
+const SWEETS_CHEST_COLOR := Color(0.55, 0.22, 0.1)
+const SWEETS_CHEST_COUNT := 6
 const RECEPTION_H := 1.1
 ## Rezeption als U mit runden vorderen Ecken (tools/build_reception.py): Holzkorpus, Platte im Terrazzo der Säulen,
 ## zwei Messingrohre; Kundenseite nach +Z, Ursprung mittig im Grundriss am Boden, Grundriss 5 × 1,5 m wie im Plan.
@@ -229,7 +317,8 @@ const CHANGING_ROOMS := ["vorraum", "dusche_west", "dusche_ost", "umkleide_west"
 ## Flächenarten ohne Namen im Plan → Name (Schalter, Zonen)
 const KIND_NAMES := {"cat_room": "Katzenraum", "library": "Bibliothek", "bath": "Bad", "balcony": "Balkon",
 	"terrace": "Terrasse", "toilet": "Toilette", "storage": "Lager", "cellar": "Keller", "boiler_room": "Heizkeller",
-	"plant_room": "Technikraum", "laundry_room": "Wäscherei", "cellar_room": "Kellerraum"}
+	"plant_room": "Technikraum", "laundry_room": "Wäscherei", "cellar_room": "Kellerraum", "trash_room": "Müllraum",
+	"gravel": "Kiesweg"}
 ## Kratzbaum (Spielkonzept 7.7): Höhe der oberen Liegefläche
 const CAT_TREE_TOP := 1.45
 
@@ -253,6 +342,7 @@ var lobby_seats: Array[Vector3] = []
 var cat_perches: Array[Dictionary] = []
 var kitchen_spot := Vector3.ZERO
 var garden_spots: Array[Vector3] = []
+var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kein Gras (Grass)
 var player_spawn := Vector3.ZERO
 var player_door_front := Vector3.ZERO
 var record_player_pos := Vector3.ZERO
@@ -324,11 +414,17 @@ var _wood_floor: Material
 var _floor_tiles: Material
 var _lobby_floor: Material
 var _pool_tiles: Material
+var _bath_tiles: Material
+var _bath_paint: Material
 var _pool_wall: Material
 var _pool_floor: Material
 var _pillar_stone: Material
 var _grass: Material
 var _stone: Material
+var _gravel: Material
+var _ceramic: Material
+var _mirror: Material
+var _doormat: Material
 var _cellar_wall: Material
 var _cellar_floor: Material
 var _cellar_ceiling: Material
@@ -339,6 +435,34 @@ func _init(p_root: Node3D, p_world: Node3D) -> void:
 	root = p_root
 	world = p_world
 	_parent = root
+
+
+## Liest den Gebäudeplan neu ein (python tools/build_map.py), wenn Plan, Legende oder Umsetzer neuer sind als die
+## älteste Karte – nur beim Start aus den Quellen (Editor, `godot --path .`); im Export fehlt der Plan.
+static func refresh_maps() -> void:
+	if not OS.has_feature("editor") or not FileAccess.file_exists(PLAN_SOURCES[0]):
+		return
+	var built := 0
+	for path: String in [MAP_PATH, LOWER_MAP_PATH] + UPPER_MAP_PATHS:
+		var t := FileAccess.get_modified_time(path) if FileAccess.file_exists(path) else 0
+		built = t if built == 0 else mini(built, t)
+	var newest := 0
+	for path: String in PLAN_SOURCES:
+		if FileAccess.file_exists(path):
+			newest = maxi(newest, FileAccess.get_modified_time(path))
+	if newest <= built:
+		return
+	print("Gebäudeplan geändert – lese ihn neu ein (tools/build_map.py) …")
+	# Python schreibt in dieselbe Codepage, in der Godot die Ausgabe liest; Zeichen außerhalb werden ersetzt
+	OS.set_environment("PYTHONIOENCODING", ":replace")
+	var out := []
+	var code := OS.execute("python", [ProjectSettings.globalize_path("res://tools/build_map.py"),
+		ProjectSettings.globalize_path(PLAN_SOURCES[0]), ProjectSettings.globalize_path("res://assets/maps")], out, true)
+	for line: String in "".join(out).split("\n"):
+		if line.begins_with("  Warnung") or line.contains("Error") or line.contains("Traceback"):
+			push_warning("build_map: " + line.strip_edges())
+	if code != 0:
+		push_warning("build_map: fehlgeschlagen (Code %d) – das Spiel nimmt die alten Karten" % code)
 
 
 func build() -> void:
@@ -535,16 +659,17 @@ func _materials() -> void:
 	_wallpaper = Mat.wallpaper(H, UP_Y)
 	_room_wallpaper = Mat.wallpaper(H, UP_Y, "beige")   # nur in den Zimmern
 	_lobby_wallpaper = Mat.wallpaper(H, UP_Y, "red")
-	_facade = Mat.psx(Color(0.62, 0.56, 0.5), "concrete", 0.5)
+	_facade = Mat.photo(FACADE_TEX, FACADE_METERS, FACADE_NORMAL)
+	(_facade as ShaderMaterial).set_shader_parameter("normal_strength", FACADE_NORMAL_STRENGTH)
 	_wall_tiles = Mat.psx(Color(0.82, 0.88, 0.9), "tiles", 1.0)
 	_concrete = Mat.psx(Color(0.8, 0.8, 0.8), "concrete", 0.5)
 	_wood = Mat.psx(Color(0.45, 0.28, 0.15))
 	_dark_wood = Mat.psx(Color(0.22, 0.13, 0.08))
-	_ceiling = Mat.psx(Color(0.55, 0.55, 0.55), "wood", 1.0)   # Holzdecke wie der Zimmerboden, abgedunkelt (7.3)
-	_room_ceiling = Mat.psx(Color(0.85, 0.85, 0.85), "wood", 1.0)   # in den Zimmern heller
+	_ceiling = Mat.photo(CEILING_TEX, CEILING_METERS, CEILING_NORMAL, CEILING_ROUGHNESS, CEILING_SPECULAR, CEILING_SHADE)
+	_room_ceiling = Mat.photo(CEILING_TEX, CEILING_METERS, CEILING_NORMAL, CEILING_ROUGHNESS, CEILING_SPECULAR, ROOM_CEILING_SHADE)
 	_hedge = Mat.psx(Color(1, 1, 1), "hedge", 1.0)
 	_carpet = Mat.psx(Color(1, 1, 1), "carpet", 1.0)
-	_wood_floor = Mat.psx(Color(1, 1, 1), "wood", 1.0)
+	_wood_floor = Mat.photo(WOOD_FLOOR_TEX, WOOD_FLOOR_METERS, WOOD_FLOOR_NORMAL, WOOD_FLOOR_ROUGHNESS, WOOD_FLOOR_SPECULAR)
 	_floor_tiles = Mat.psx(Color(1, 1, 1), "tiles", 0.5)
 	_lobby_floor = Mat.photo(LOBBY_FLOOR_TEX, LOBBY_FLOOR_METERS, LOBBY_FLOOR_NORMAL, LOBBY_FLOOR_ROUGHNESS, LOBBY_FLOOR_SPECULAR)
 	_lobby_floor.set_meta("floor", "tiles")   # Schritte klingen wie auf den übrigen Fliesen (Footsteps)
@@ -552,12 +677,20 @@ func _materials() -> void:
 	_lobby_floor.set_shader_parameter("roughness_scale", LOBBY_FLOOR_ROUGHNESS_SCALE)
 	_pool_tiles = Mat.photo(POOL_TILES_TEX, POOL_TILES_METERS, POOL_TILES_NORMAL, POOL_TILES_ROUGHNESS, POOL_TILES_SPECULAR)
 	_pool_tiles.set_meta("floor", "tiles")
+	_bath_tiles = Mat.photo(BATH_TILES_TEX, BATH_TILES_METERS, POOL_TILES_NORMAL, POOL_TILES_ROUGHNESS, POOL_TILES_SPECULAR)
+	_bath_tiles.set_meta("floor", "tiles")
+	_bath_paint = Mat.photo(BATH_PAINT_TEX, BATH_PAINT_METERS, BATH_PAINT_NORMAL, BATH_PAINT_ROUGHNESS, BATH_PAINT_SPECULAR)
 	_pool_wall = Mat.photo(POOL_WALL_TEX, POOL_WALL_METERS, POOL_WALL_NORMAL)
 	_pool_floor = Mat.photo(POOL_FLOOR_TEX, POOL_FLOOR_METERS, POOL_FLOOR_NORMAL, POOL_FLOOR_ROUGHNESS, POOL_FLOOR_SPECULAR)
 	_pool_floor.set_meta("floor", "tiles")
 	_pillar_stone = Mat.photo(PILLAR_TEX, PILLAR_METERS, "", PILLAR_ROUGHNESS, PILLAR_SPECULAR)
 	_grass = Mat.psx(Color(1, 1, 1), "grass", 1.0)
 	_stone = Mat.psx(Color(0.62, 0.57, 0.5), "concrete", 1.0)
+	_gravel = Mat.photo(GRAVEL_TEX, GRAVEL_METERS, GRAVEL_NORMAL)
+	(_gravel as ShaderMaterial).set_shader_parameter("normal_strength", GRAVEL_NORMAL_STRENGTH)
+	_ceramic = Mat.psx(Color(0.88, 0.88, 0.86))
+	_mirror = Mat.psx(Color(0.62, 0.7, 0.74))
+	_doormat = Mat.psx(Color(0.4, 0.3, 0.18))
 	# Untergeschoss (Spielkonzept 7.9): Wände aus Brettschalungsbeton, Boden und Decke einfach grau
 	_cellar_wall = Mat.photo(CELLAR_WALL_TEX, CELLAR_WALL_METERS, CELLAR_WALL_NORMAL)
 	_cellar_floor = Mat.psx(Color(0.45, 0.45, 0.45), "concrete", 1.0)
@@ -610,7 +743,7 @@ func _index_places() -> void:
 			var rc: Array = a["rect"]
 			_lobby = _rect(rc)
 	for info in _map["rooms"]:
-		if String(info["wing"]) in OPEN_WINGS:
+		if _wing_open(String(info["wing"])):
 			_open_rooms[String(info["no"])] = true
 		# Bäder gehören zum Zimmer hinter ihrer Tür
 		for d in info.get("bath_doors", []):
@@ -661,7 +794,7 @@ func _kind_at(p: Vector2) -> String:
 			return "sealed" if owner != "" and not _room_open(owner) else "bath"
 		"corridor":
 			return "lobby" if _lobby.has_point(p) else "corridor"
-		"garden", "terrace", "balcony":
+		"garden", "gravel", "terrace", "balcony":
 			return "outside"
 		"pool_water", "pool_deck":
 			return "pool"
@@ -676,6 +809,11 @@ func _room_id_at(p: Vector2) -> String:
 	if place["kind"] == "corridor":
 		return "lobby" if _lobby.has_point(p) else _section_at(p)
 	return String(place["id"])
+
+
+## Sind die Zimmer dieses Flügels auf dem Stockwerk, das gerade gebaut wird, schon bewohnbar?
+func _wing_open(wing: String) -> bool:
+	return wing in (OPEN_WINGS_UPPER if _level > 0 else OPEN_WINGS)
 
 
 func _room_open(no: String) -> bool:
@@ -972,8 +1110,10 @@ func _skin_material(kind: String) -> Material:
 	match kind:
 		"outside":
 			return _facade
-		"toilet", "bath":
+		"toilet":
 			return _wall_tiles
+		"bath":
+			return _bath_tiles   # nur bis BATH_TILE_HEIGHT, darüber _bath_paint (_wall_piece_at)
 		"pool":
 			return _pool_wall
 		"storage":
@@ -1030,7 +1170,8 @@ func _wall_piece_at(horizontal: bool, fixed: float, p0: float, p1: float, openin
 		_wall_z(fixed, p0, p1, openings, mat, height)
 	# Häute für Seiten ohne Tapete, knapp vor der Wandfläche
 	for s: float in [-1.0, 1.0]:
-		var skin := _skin_material(minus if s < 0 else plus)
+		var kind := minus if s < 0 else plus
+		var skin := _skin_material(kind)
 		if skin == null:
 			continue
 		var offset := s * (T / 2.0 + 0.012)
@@ -1041,6 +1182,16 @@ func _wall_piece_at(horizontal: bool, fixed: float, p0: float, p1: float, openin
 			holder.position = Vector3(fixed + offset, 0, 0)
 			holder.rotation.y = -PI / 2.0
 		_parent.add_child(holder)
+		if kind == "bath":
+			# Fliesen bis BATH_TILE_HEIGHT über dem Boden (über dem EG beginnt die Wand height − H darunter),
+			# darüber gestrichen
+			var split := BATH_TILE_HEIGHT + height - H
+			var upper: Array = []
+			for op: Vector4 in openings:
+				upper.append(Vector4(op.x, op.y, op.z - split, op.w - split))
+			Geo.mesh(holder, Geo.wall_mesh(p0, p1, split, 0.02, openings), skin, Vector3.ZERO)
+			Geo.mesh(holder, Geo.wall_mesh(p0, p1, height - split, 0.02, upper), _bath_paint, Vector3(0, split, 0))
+			continue
 		Geo.mesh(holder, Geo.wall_mesh(p0, p1, height, 0.02, openings), skin, Vector3.ZERO)
 
 
@@ -1224,7 +1375,7 @@ func _floors_and_ceilings() -> void:
 		# Verschlossene Zimmer und Kellerräume: Boden nur zum Draufstehen (Debug-Teleport), auf der Ebene der Decken –
 		# nicht im NavMesh, sonst planten Gäste und Monster Wege durch abgesperrte Türen
 		var layer := LAYER_CEILING if (kind == "room" and not _room_open(String(r["id"]))) or kind == "cellar_room" else 1
-		var ceiling := _cellar_ceiling if _level < 0 else (_room_ceiling if kind == "room" else _ceiling)
+		var ceiling: Material = _cellar_ceiling if _level < 0 else {"room": _room_ceiling, "bath": _bath_paint}.get(kind, _ceiling)
 		for rc in r["rects"]:
 			if kind != "pool_water":   # das Becken baut _pool, die Decke darüber ist die Holzdecke der Halle
 				_floor(kind, rc, layer)
@@ -1287,12 +1438,16 @@ func _floor_material(kind: String) -> Material:
 			return _wood_floor
 		"garden":
 			return _grass
+		"gravel":
+			return _gravel
 		"terrace", "balcony":
 			return _stone
 		"storage":
 			return _concrete
 		"pool_deck":
 			return _pool_floor
+		"bath":
+			return _bath_tiles
 	return _floor_tiles
 
 
@@ -1332,7 +1487,7 @@ func _room(plan: Dictionary) -> void:
 	var door := _door_near(door_pos)
 	var c: Array = plan["center"]
 	_room_spots[no] = {"pos": Vector3(float(c[0]), _base_y, float(c[1])), "look": -into}
-	if not String(plan["wing"]) in OPEN_WINGS:
+	if not _wing_open(String(plan["wing"])):
 		return   # Bauphase: Tür verschlossen (_opening_object), kein Inneres
 	assert(door != null, "Zimmer %s: keine Tür an der Stelle aus dem Plan" % no)
 	var kind: String = ROOM_KINDS.get(no, "vacant")
@@ -1417,28 +1572,54 @@ func _furniture() -> void:
 		if _kind_at(c) == "sealed":
 			continue
 		var kind := String(f["kind"])
+		if kind == "chair" and _room_table_at(c).has_area():
+			continue   # die Stühle der Tischgruppe setzt _room_table()
 		var front := _facing(String(f.get("facing", "")), c)
 		var yaw := atan2(front.x, front.y)
 		var pos := Vector3(c.x, 0, c.y)
 		var node: Node3D
 		var top := 0.0
 		match kind:
-			"bed", "wardrobe":
-				var spot := _hide_spot(HideSpot.Type.BED if kind == "bed" else HideSpot.Type.WARDROBE, pos, yaw)
+			"bed", "wardrobe", "double_bed":
+				var spot: HideSpot
+				if kind == "double_bed":
+					spot = _double_bed(rect, String(f.get("head", "")))
+					front = Vector2(sin(spot.rotation.y), cos(spot.rotation.y))
+				else:
+					spot = _hide_spot(HideSpot.Type.BED if kind == "bed" else HideSpot.Type.WARDROBE, pos, yaw)
 				var room: Dictionary = rooms.get(_room_id_at(c), {})
 				if not room.is_empty():
-					spot.own_bed = kind == "bed" and room["kind"] == "player"
+					spot.own_bed = kind != "wardrobe" and room["kind"] == "player"
 					if spot.own_bed:   # ein frisches Laken zum Verkleiden (Spielkonzept 5.9)
 						_item(Item.Kind.BED_SHEET, pos + Vector3(0, 0.62, 0))
 					(room["spots"] as Array).append(spot)
 				node = spot
-				top = 0.6 if kind == "bed" else 2.18
+				top = 2.18 if kind == "wardrobe" else 0.6
 			"dresser":
 				node = Dresser.new()   # Schubladen (Spielkonzept 3.5)
 				top = Dresser.SIZE.y
 			"chest":
-				node = Chest.new()
-				top = Chest.SIZE.y
+				var chest := Chest.new()
+				if rooms.has(_room_id_at(c)):
+					_sweets_chest(chest, rect, front, pos)
+				node = chest
+				top = chest.size.y
+			"snack_machine", "drink_machine":
+				var machine := VendingMachine.new().setup("snack" if kind == "snack_machine" else "cola")
+				var across := absf(front.y) > 0.5   # Front nach Norden oder Süden: Breite entlang x
+				machine.size = Vector3(rect.size.x if across else rect.size.y, VendingMachine.SIZE.y, rect.size.y if across else rect.size.x)
+				node = machine
+				top = machine.size.y
+			"bathtub":
+				var tub := Bathtub.new()
+				tub.tiles = _bath_tiles
+				var along := absf(front.y) > 0.5   # Front nach Norden oder Süden: Länge entlang x
+				tub.size = Vector3(rect.size.x if along else rect.size.y, BOX_HEIGHTS["bathtub"], rect.size.y if along else rect.size.x)
+				node = tub
+				top = tub.size.y
+			"doormat":
+				node = Geo.mesh(root, Geo.box(Vector3(rect.size.x, DOORMAT_H, rect.size.y)), _doormat, Vector3(c.x, DOORMAT_H / 2.0, c.y))
+				top = DOORMAT_H
 			"chess_table":
 				chess_table = ChessTable.new()
 				node = chess_table
@@ -1450,6 +1631,24 @@ func _furniture() -> void:
 			"couch":
 				node = _couch(pos, yaw - PI / 2.0)   # das Modell sitzt nach +X
 				top = 0.45
+			"bench" when _kind_at(c) == "outside" and ResourceLoader.exists(BENCH_MODEL):
+				var long_x := rect.size.x >= rect.size.y
+				if (absf(front.x) > 0.5) == long_x:   # Vorderseite muss quer zur Länge liegen
+					var to := _area_center(c) - c
+					front = Vector2(0, -1 if to.y < 0 else 1) if long_x else Vector2(-1 if to.x < 0 else 1, 0)
+				yaw = atan2(front.x, front.y)
+				node = _bench(maxf(rect.size.x, rect.size.y))
+				top = BENCH_SEAT * maxf(rect.size.x, rect.size.y) / BENCH_LENGTH
+			"coffee_table" when _lobby.has_point(c):
+				yaw = 0.0
+				var side := minf(rect.size.x, rect.size.y)
+				rect = Rect2(c - Vector2(side, side) / 2.0, Vector2(side, side))   # quadratisch, für _top_at
+				node = _coffee_table(side)
+				top = BOX_HEIGHTS["coffee_table"]
+			"room_table" when ResourceLoader.exists(ROOM_TABLE_MODEL):
+				yaw = 0.0   # Stühle stehen in Weltrichtung (_room_table)
+				node = _room_table(rect)
+				top = BOX_HEIGHTS["room_table"]
 			"pillar":
 				node = _pillar(rect)
 				top = H
@@ -1503,12 +1702,58 @@ func _rugs() -> void:
 			mi.rotation.y = PI / 2.0
 
 
-## Möbel als Kasten in der Grundfläche des Plans; Theke mit Platte, Waschmaschine mit Bullauge vorn.
+## Doppelbett aus dem Plan (map_legend.png): Versteck wie das Bett (unters Bett kriechen), so groß wie seine
+## Grundfläche, das Kopfende an der helleren Kante. Heraus (lokal +Z) geht es zu der Längsseite mit mehr Platz.
+func _double_bed(rect: Rect2, head_side: String) -> HideSpot:
+	var c := rect.get_center()
+	var head := _dir(head_side) if head_side != "" else -_facing("", c)
+	var spot := HideSpot.new().setup(HideSpot.Type.BED)
+	spot.bed_size = Vector2(rect.size.x, rect.size.y) if absf(head.x) > 0.5 else Vector2(rect.size.y, rect.size.x)
+	var out := Vector2(head.y, -head.x)   # lokal −X zeigt dann zum Kopfende
+	if _free_run(c, -out) > _free_run(c, out):
+		out = -out
+		spot.head_x = 1.0
+	spot.position = Vector3(c.x, 0, c.y)
+	spot.rotation.y = atan2(out.x, out.y)
+	_parent.add_child(spot)
+	return spot
+
+
+## Wie weit man von p aus in Richtung dir im selben Raum bleibt (Schritte von 0,25 m, höchstens 4 m).
+func _free_run(p: Vector2, dir: Vector2) -> float:
+	var id := _room_id_at(p)
+	var d := 0.25
+	while d < 4.0 and _room_id_at(p + dir * d) == id:
+		d += 0.25
+	return d
+
+
+## Truhe in einem Hotelzimmer = dessen Süßigkeiten-Truhe (Spielkonzept 6.13): so groß wie im Plan, darin
+## SWEETS_CHEST_COUNT Süßigkeiten als echte Gegenstände. Gäste geben Kindern daraus (Social.take_room_sweet).
+func _sweets_chest(chest: Chest, rect: Rect2, front: Vector2, pos: Vector3) -> void:
+	var across := absf(front.y) > 0.5
+	chest.size = Vector3(rect.size.x if across else rect.size.y, SWEETS_CHEST_H, rect.size.y if across else rect.size.x)
+	chest.wood_color = SWEETS_CHEST_COLOR
+	chest.title = "Süßigkeiten-Truhe"
+	chest.set_meta("sweets_room", _room_id_at(rect.get_center()))
+	chest.add_to_group("sweet_chests")
+	var basis := Basis(Vector3.UP, atan2(front.x, front.y))
+	for i in SWEETS_CHEST_COUNT:   # zwei Reihen, liegen sichtbar darin
+		var row := floorf(i / 3.0)
+		_item(Item.Kind.SWEETS, pos + basis * Vector3((i % 3 - 1) * chest.size.x * 0.28, 0.08 + 0.03 * row, (row - 0.5) * chest.size.z * 0.4))
+
+
+## Möbel als Kasten in der Grundfläche des Plans; Theke mit Platte, Waschmaschine mit Bullauge vorn, Stuhl mit
+## Lehne hinten, Waschbecken mit Spiegel an der Wand dahinter.
 func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) -> StaticBody3D:
 	var mat := _wood
 	match kind:
 		"bench", "bar_counter":
 			mat = _dark_wood
+		"sink", "toilet", "shower":
+			mat = _ceramic
+		"trash_can":
+			mat = Mat.psx(Color(0.3, 0.3, 0.32))
 		"kitchen_counter":
 			mat = Mat.psx(Color(0.55, 0.5, 0.42))
 		"stove":
@@ -1532,6 +1777,15 @@ func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) ->
 				porthole.rotation.z = PI / 2.0
 			else:
 				porthole.rotation.x = PI / 2.0
+		"chair", "sink":
+			# Lehne bzw. Spiegel an der Rückseite, quer zur Vorderseite
+			var across := absf(front.y) > 0.5
+			var back := Vector3(-front.x * (rect.size.x / 2.0 - 0.025), 0, -front.y * (rect.size.y / 2.0 - 0.025))
+			var width := rect.size.x if across else rect.size.y
+			var size := Vector3(width, CHAIR_BACK, 0.05) if kind == "chair" else Vector3(minf(width, MIRROR_SIZE.x), MIRROR_SIZE.y, 0.02)
+			var y := height / 2.0 + CHAIR_BACK / 2.0 if kind == "chair" else MIRROR_Y - height / 2.0
+			Geo.mesh(body, Geo.box(size if across else Vector3(size.z, size.y, size.x)), mat if kind == "chair" else _mirror,
+				back + Vector3(0, y, 0))
 	return body
 
 
@@ -1999,8 +2253,8 @@ func _lobby_flight() -> void:
 	GrandStair.build(_parent, _rect(rc), String(stair.get("up", "north")), UP_Y)
 
 
-## Ränder der Lufträume dieses Stockwerks (Lobby, Partyraum): Geländer, wo Boden angrenzt – außer, wo eine Treppe
-## von unten ankommt. Wo eine Wand angrenzt, nichts: Ihre Tapete läuft ohne Fuge von unten durch (_wall_side_kind).
+## Ränder der Lufträume dieses Stockwerks (Lobby, Partyraum): Geländer mit Blende davor, wo Boden angrenzt – außer,
+## wo eine Treppe von unten ankommt. Wo eine Wand angrenzt, nichts: Ihre Tapete läuft ohne Fuge von unten durch (_wall_side_kind).
 func _void_edges() -> void:
 	var stairs: Array[Rect2] = []
 	for st in (_floors[0]["map"] as Dictionary)["stairs"]:
@@ -2042,6 +2296,8 @@ func _void_edges() -> void:
 					if by_b:
 						p1 = _stair_edge(p1, b - a, stairs)
 					GrandStair.railing(root, Vector3(p0.x, 0, p0.y), Vector3(p1.x, 0, p1.y), not by_a, not by_b)
+					GrandStair.fascia(root, Vector3(p0.x, 0, p0.y), Vector3(p1.x, 0, p1.y), Vector3(-out.x, 0, -out.y), UP_Y - H,
+						not by_a, not by_b)
 				i0 = i1
 
 
@@ -2116,6 +2372,51 @@ func _pillar(rect: Rect2) -> StaticBody3D:
 	cs.position = Vector3(0, H / 2.0, 0)
 	body.add_child(cs)
 	return body
+
+
+## Couchtisch der Lobby: vier Beine und eine Zarge darunter (Kantholz COFFEE_TABLE_WOOD), darauf die Steinplatte
+## mit abgerundeten Ecken, die COFFEE_TABLE_SLAB über den Unterbau steht. Oberkante wie im Plan (BOX_HEIGHTS).
+func _coffee_table(side: float) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.collision_mask = 0
+	var top: float = BOX_HEIGHTS["coffee_table"]
+	var under := top - COFFEE_TABLE_SLAB   # Unterkante der Platte
+	var w := COFFEE_TABLE_WOOD
+	var half := side / 2.0 - COFFEE_TABLE_SLAB - w / 2.0   # Mitte der Beine und der Zarge
+	for sx: float in [-1.0, 1.0]:
+		for sz: float in [-1.0, 1.0]:
+			Geo.mesh(body, Geo.box(Vector3(w, under, w)), _dark_wood, Vector3(sx * half, under / 2.0, sz * half))
+	var rail := 2.0 * half - w   # zwischen den Beinen, außen bündig
+	for s: float in [-1.0, 1.0]:
+		Geo.mesh(body, Geo.box(Vector3(rail, w, w)), _dark_wood, Vector3(0, under - w / 2.0, s * half))
+		Geo.mesh(body, Geo.box(Vector3(w, w, rail)), _dark_wood, Vector3(s * half, under - w / 2.0, 0))
+	Geo.mesh(body, _rounded_slab(side, COFFEE_TABLE_SLAB, COFFEE_TABLE_SLAB), _pillar_stone, Vector3(0, under, 0))
+	Geo.add_box_shape(body, Vector3(side, top, side), Vector3(0, top / 2.0, 0))
+	return body
+
+
+## Quadratische Platte (Kantenlänge side, Stärke thick, Eckradius r) von y = 0 bis thick, Ursprung mittig unten.
+## Die Seiten sind an den Ecken weich schattiert.
+func _rounded_slab(side: float, thick: float, r: float) -> ArrayMesh:
+	var sh := GrandStair.Shape.new()
+	var ring: Array[Vector3] = []   # Umriss mit waagrechter Normale je Punkt
+	var normals: Array[Vector3] = []
+	var c := side / 2.0 - r
+	for corner in 4:
+		var center := Vector3(c if corner in [0, 3] else -c, 0, c if corner < 2 else -c)
+		for s in COFFEE_TABLE_CORNER_SEGMENTS + 1:
+			var phi := PI / 2.0 * (corner + float(s) / COFFEE_TABLE_CORNER_SEGMENTS)
+			var n := Vector3(cos(phi), 0, sin(phi))
+			ring.append(center + n * r)
+			normals.append(n)
+	var up := Vector3(0, thick, 0)
+	for i in ring.size():
+		var j := (i + 1) % ring.size()
+		sh.tri(ring[i], ring[j], ring[j] + up, normals[i], normals[j], normals[j])
+		sh.tri(ring[i], ring[j] + up, ring[i] + up, normals[i], normals[j], normals[i])
+		sh.tri(up, ring[i] + up, ring[j] + up, Vector3.UP, Vector3.UP, Vector3.UP)
+		sh.tri(Vector3.ZERO, ring[j], ring[i], Vector3.DOWN, Vector3.DOWN, Vector3.DOWN)
+	return sh.commit()
 
 
 ## Kratzbaum (Spielkonzept 7.7): Plüschsockel, Sisalstämme, Zwischenetage mit Höhle, Liegefläche oben.
@@ -2343,8 +2644,9 @@ func _rod(a: Vector3, b: Vector3, mat: Material) -> void:
 
 func _gardens() -> void:
 	_garden_beds()
-	for t in _map["trees"]:
-		_tree(_v3(t["center"]), float(t["radius"]))
+	var trees: Array = _map["trees"]
+	for i in trees.size():
+		_tree(_v3(trees[i]["center"]), i)   # der Plan zeigt nur den Standort
 	var has_model := ResourceLoader.exists(PLANTER_MODEL)
 	for rc in _map["planters"]:
 		var size := Vector2(float(rc[2]) - float(rc[0]), float(rc[3]) - float(rc[1]))
@@ -2387,26 +2689,31 @@ func _garden_beds() -> void:
 		var x0: float = xs.min()
 		var x1: float = xs.max()
 		Geo.mesh(root, Geo.box(Vector3(x1 - x0 + 1.6, 0.06, 1.3)), dirt, Vector3((x0 + x1) / 2.0, 0.03, z))
+		garden_beds.append(Rect2(x0 - 0.8, z - 0.65, x1 - x0 + 1.6, 1.3))
 		garden_spots.append(Vector3((x0 + x1) / 2.0, 0, z + 1.0))
 
 
-## Baum mit Krone in der Größe des Plans (radius = Kronenradius). Kollision nur am Stamm, unter der Krone
-## kann man durchgehen.
-func _tree(pos: Vector3, radius: float) -> void:
-	if ResourceLoader.exists(TREE_MODEL):
-		var s := radius / TREE_RADIUS
-		var body := Geo.collider(root, Vector3(TREE_TRUNK * s, TREE_TRUNK_H, TREE_TRUNK * s), pos + Vector3(0, TREE_TRUNK_H / 2.0, 0))
-		var model: Node3D = (load(TREE_MODEL) as PackedScene).instantiate()
+## Baum Nummer index aus TREE_MODELS (der Reihe nach, je um TREE_TURN gedreht). Kollision nur am Stamm, unter der
+## Krone kann man durchgehen. Blätter sind ausgestanzte Karten (Mat.model mit cutout), die Rinde einseitig.
+func _tree(pos: Vector3, index: int) -> void:
+	var info: Dictionary = TREE_MODELS[index % TREE_MODELS.size()]
+	var path: String = info["path"]
+	if ResourceLoader.exists(path):
+		var trunk: float = info["trunk"]
+		var body := Geo.collider(root, Vector3(trunk, TREE_TRUNK_H, trunk), pos + Vector3(0, TREE_TRUNK_H / 2.0, 0))
+		var model: Node3D = (load(path) as PackedScene).instantiate()
 		model.position.y = -TREE_TRUNK_H / 2.0
-		model.scale = Vector3.ONE * s
+		model.rotation.y = deg_to_rad(TREE_TURN * index)
 		body.add_child(model)
 		for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 			for i in m.mesh.get_surface_count():
-				m.set_surface_override_material(i, Mat.model(TREE_MODEL, m, i, true))   # offene Blattbüschel
-		_falling_leaves(pos, radius, TREE_HEIGHT * s)
+				var leaves := m.get_active_material(i).resource_name == "leaves"
+				m.set_surface_override_material(i, Mat.model(path, m, i, false, leaves))
+		_falling_leaves(pos, info["radius"], info["height"], info["crown"])
 		return
+	var radius := TREE_RADIUS
 	var height := clampf(radius * 1.1, 3.2, 6.0)
-	_falling_leaves(pos, radius, height + radius * 0.45)
+	_falling_leaves(pos, radius, height + radius * 0.45, TREE_CROWN)
 	var trunk := Geo.solid(root, Vector3(0.5, height, 0.5), pos + Vector3(0, height / 2.0, 0), Mat.psx(Color(0.22, 0.15, 0.1)))
 	var colors: Array[Color] = [Color(0.6, 0.25, 0.05), Color(0.7, 0.4, 0.08), Color(0.45, 0.12, 0.05)]
 	var offsets: Array[Vector3] = [Vector3(0, height / 2.0, 0), Vector3(radius * 0.35, height / 2.0 - 0.6, radius * 0.2), Vector3(-radius * 0.3, height / 2.0 - 0.4, -radius * 0.25)]
@@ -2415,8 +2722,8 @@ func _tree(pos: Vector3, radius: float) -> void:
 
 
 ## Herbstlaub löst sich aus der Krone, sinkt schaukelnd und trudelnd und bleibt kurz flach am Boden liegen
-## (floor_y im Partikel-Shader), bevor es verblasst.
-func _falling_leaves(pos: Vector3, radius: float, height: float) -> void:
+## (floor_y im Partikel-Shader), bevor es verblasst. crown = Höhenbereich der Krone als Anteile von height.
+func _falling_leaves(pos: Vector3, radius: float, height: float, crown: Vector2) -> void:
 	var mat := Mat.particle(_leaf_texture(), LEAF_GLOW)
 	mat.set_shader_parameter("sway", 0.25)
 	mat.set_shader_parameter("sway_cycles", 6.0)
@@ -2428,9 +2735,9 @@ func _falling_leaves(pos: Vector3, radius: float, height: float) -> void:
 	colors.offsets = PackedFloat32Array([0.0, 0.25, 0.5, 0.75])
 	colors.colors = PackedColorArray(LEAF_COLORS)
 	leaves.color_initial_ramp = colors
-	leaves.position = pos + Vector3(0, height * (TREE_CROWN.x + TREE_CROWN.y) / 2.0, 0)
+	leaves.position = pos + Vector3(0, height * (crown.x + crown.y) / 2.0, 0)
 	leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	leaves.emission_box_extents = Vector3(radius * 0.75, height * (TREE_CROWN.y - TREE_CROWN.x) / 2.0, radius * 0.75)
+	leaves.emission_box_extents = Vector3(radius * 0.75, height * (crown.y - crown.x) / 2.0, radius * 0.75)
 	leaves.direction = Vector3.DOWN
 	leaves.spread = 20.0
 	leaves.gravity = Vector3.ZERO
@@ -2465,12 +2772,32 @@ func _leaf_texture() -> ImageTexture:
 	return _leaf_tex
 
 
+## Gartenlaterne (`assets/models/lantern.glb`): das Licht sitzt im Glaskasten – Kopf und Glas werfen deshalb keinen
+## Schatten, sonst bliebe es darin gefangen; der Mast schon.
 func _lantern(pos: Vector3, broken: bool, energy: float) -> void:
-	Geo.solid(root, Vector3(0.12, 2.4, 0.12), pos + Vector3(0, 1.2, 0), Mat.psx(Color(0.1, 0.1, 0.1)))
+	var iron := Mat.psx(Color(0.1, 0.1, 0.1))
 	var mat := Mat.psx(Color(1, 0.95, 0.8), "", 1.0, Color(1.0, 0.8, 0.5), 2.5, false)
-	Geo.mesh(root, Geo.box(Vector3(0.25, 0.3, 0.25)), mat, pos + Vector3(0, 2.55, 0))
+	var light_y := 2.3
+	if ResourceLoader.exists(LANTERN_MODEL):
+		var body := StaticBody3D.new()
+		body.collision_mask = 0
+		body.position = pos
+		root.add_child(body)
+		var model: Node3D = (load(LANTERN_MODEL) as PackedScene).instantiate()
+		body.add_child(model)
+		for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+			m.material_override = mat if m.name == "glass" else iron
+			if m.name != "post":
+				m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# Kollision (auch für das NavMesh): Fuß bis über den Wulst, Mast bis unter den Kopf
+		Geo.add_box_shape(body, Vector3(0.5, 0.36, 0.5), Vector3(0, 0.18, 0))
+		Geo.add_box_shape(body, Vector3(0.1, 2.04, 0.1), Vector3(0, 1.38, 0))
+		light_y = LANTERN_LIGHT_Y
+	else:
+		Geo.solid(root, Vector3(0.12, 2.4, 0.12), pos + Vector3(0, 1.2, 0), iron)
+		Geo.mesh(root, Geo.box(Vector3(0.25, 0.3, 0.25)), mat, pos + Vector3(0, 2.55, 0))
 	var light := FlickerLight.new()
-	light.position = pos + Vector3(0, 2.3, 0)
+	light.position = pos + Vector3(0, light_y, 0)
 	light.base_energy = energy * Lamp.BRIGHTNESS
 	light.omni_range = 6.0 * Lamp.REACH
 	light.light_color = Color(1.0, 0.75, 0.45)
@@ -2624,11 +2951,18 @@ func _boiler_room() -> void:
 	var c := hall.get_center()
 	_cellar_center = Vector3(c.x, CELLAR_Y, c.y)
 	_wall_lamp(Vector3(c.x - 6.0, 2.1, n + WALL_GAP), 0.0, 0.6, 6.0, "keller", true)   # kaputte Birne, blitzt nur auf
+	var switched := false
 	for r in _map["regions"]:   # Schalter im Eingangsgang, an der Ostwand neben der Tür
 		if r["kind"] == "boiler_room":
 			for rc in r["rects"]:
 				if float(rc[3]) <= n + 0.01:
 					_switch("keller", "Heizkeller", Vector3(float(rc[2]) - 0.02, SWITCH_Y, float(rc[1]) + 1.6), -PI / 2.0)
+					switched = true
+	for d in _doors if not switched else []:   # ohne Eingangsgang (Plan map_a): innen an der Nordwand neben der Tür
+		var p: Vector3 = d["pos"]
+		if absf(p.z - n) < 0.3 and p.x > w and p.x < e:
+			_switch("keller", "Heizkeller", Vector3(p.x + (d["door"] as Door).width / 2.0 + 0.35, SWITCH_Y, n + 0.02), 0.0)
+			break
 	Geo.solid(root, Vector3(0.7, 0.7, 0.7), Vector3(e - 0.8, 0.35, s - 0.8), _dark_wood)
 	Geo.solid(root, Vector3(0.6, 0.6, 0.6), Vector3(w + 0.7, 0.3, s - 0.7), _dark_wood)
 	Geo.solid(root, Vector3(0.6, 0.45, 0.6), Vector3(w + 1.45, 0.225, s - 0.6), _dark_wood)
@@ -2869,6 +3203,12 @@ func in_corridor(p: Vector3) -> bool:
 
 ## Raum an p, wie bei Fenstern und Schaltern: Zimmernummer, Bereich (bar, pool, og1_… oben, ug_… unten),
 ## Flurabschnitt oder "lobby" – leer draußen und auf Treppenpodesten.
+## Rasen (Fläche „Garten“ im EG, auch unter Bäumen) an der Stelle p (x, z)? Für die Grasbüschel (Grass).
+func is_lawn(p: Vector2) -> bool:
+	var place := _place_at(p)
+	return not place.is_empty() and place["kind"] == "garden"
+
+
 func room_at(p: Vector3) -> String:
 	var level := _level_of(p.y)
 	if level < 0:
@@ -2883,7 +3223,7 @@ func is_outdoor(p: Vector3) -> bool:
 		return false
 	return _on_floor(level, func() -> bool:
 		var place := _place_at(Vector2(p.x, p.z))
-		return not place.is_empty() and String(place["kind"]) in ["garden", "terrace", "balcony"])
+		return not place.is_empty() and String(place["kind"]) in ["garden", "gravel", "terrace", "balcony"])
 
 
 ## Wohin der Debug-Teleport in Zimmer no springt: {pos, look} – auch verschlossene Zimmer; {} = kein Zimmer.
@@ -3132,6 +3472,77 @@ func _couch(pos: Vector3, yaw: float) -> StaticBody3D:
 	# Kollision (auch für das NavMesh): Sitzblock und Lehne, Maße aus dem skalierten Modell.
 	Geo.add_box_shape(body, Vector3(0.64, 0.45, 2.39), Vector3(0, 0.225, 0))
 	Geo.add_box_shape(body, Vector3(0.18, 0.47, 2.25), Vector3(-0.23, 0.685, 0))
+	return body
+
+
+## Parkbank (`assets/models/bench.glb`) mit der Länge aus dem Plan, gleichmäßig skaliert; Sitzseite nach +Z.
+func _bench(length: float) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.collision_mask = 0
+	var s := length / BENCH_LENGTH
+	var model: Node3D = (load(BENCH_MODEL) as PackedScene).instantiate()
+	model.scale = Vector3.ONE * s
+	body.add_child(model)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		for i in m.mesh.get_surface_count():
+			m.set_surface_override_material(i, Mat.model(BENCH_MODEL, m, i))
+	# Kollision (auch für das NavMesh): Sitzblock und Lehne, Maße aus tools/build_bench.py
+	Geo.add_box_shape(body, Vector3(1.6, BENCH_SEAT, 0.47) * s, Vector3(0, BENCH_SEAT / 2.0, 0.085) * s)
+	Geo.add_box_shape(body, Vector3(1.6, 0.365, 0.11) * s, Vector3(0, 0.66, -0.18) * s)
+	return body
+
+
+## Zimmertisch, zu dem ein Stuhl an p gehört (leeres Rechteck = keiner oder das Modell fehlt).
+func _room_table_at(p: Vector2) -> Rect2:
+	if not ResourceLoader.exists(ROOM_TABLE_MODEL):
+		return Rect2()
+	for f in _map["furniture"]:
+		if f["kind"] == "room_table":
+			var r := _rect(f["rect"])
+			if r.grow(ROOM_CHAIR_REACH).has_point(p):
+				return r
+	return Rect2()
+
+
+## Tischgruppe (`assets/models/room_table.glb`): Tisch so groß wie im Plan, zwei Stühle einander gegenüber. Die
+## Achse nimmt sie von einem Paar gegenüberstehender Stühle im Plan, sonst Ost–West. Jeder Stuhl ist ein eigener
+## Körper mit Sitzblock und Lehne; der Tisch ein voller Quader (für das NavMesh wie bisher).
+func _room_table(rect: Rect2) -> StaticBody3D:
+	var axis := Vector2(1, 0)
+	var seen: Array[Vector2] = []
+	for f in _map["furniture"]:
+		if f["kind"] != "chair" or _room_table_at(_rect(f["rect"]).get_center()) != rect:
+			continue
+		var d := _dir(String(f.get("facing", "")))
+		if seen.any(func(o: Vector2) -> bool: return o.dot(d) < -0.9):
+			axis = d.abs()
+			break
+		seen.append(d)
+	var body := StaticBody3D.new()
+	body.collision_mask = 0
+	var s := rect.size.x / ROOM_TABLE_SIDE
+	var model: Node3D = (load(ROOM_TABLE_MODEL) as PackedScene).instantiate()
+	var table: MeshInstance3D = model.get_node("table")
+	var chair: MeshInstance3D = model.get_node("chair")
+	model.remove_child(chair)
+	chair.owner = null   # wird umgehängt
+	model.scale = Vector3(s, 1.0, rect.size.y / ROOM_TABLE_SIDE)
+	body.add_child(model)
+	table.material_override = Mat.model(ROOM_TABLE_MODEL, table)
+	Geo.add_box_shape(body, Vector3(rect.size.x, BOX_HEIGHTS["room_table"], rect.size.y), Vector3(0, BOX_HEIGHTS["room_table"] / 2.0, 0))
+	for side: float in [-1.0, 1.0]:
+		var out := axis * side
+		var seat := StaticBody3D.new()
+		seat.collision_mask = 0
+		seat.position = Vector3(out.x, 0, out.y) * (ROOM_CHAIR_GAP * s)
+		seat.rotation.y = atan2(-out.x, -out.y)   # zum Tisch
+		body.add_child(seat)
+		var c := chair if side > 0 else chair.duplicate() as MeshInstance3D
+		c.transform = Transform3D.IDENTITY
+		seat.add_child(c)
+		c.material_override = Mat.model(ROOM_TABLE_MODEL, c)
+		Geo.add_box_shape(seat, ROOM_CHAIR, Vector3(0, ROOM_CHAIR.y / 2.0, 0))
+		Geo.add_box_shape(seat, Vector3(ROOM_CHAIR.x, ROOM_CHAIR_H - ROOM_CHAIR.y, 0.07), Vector3(0, (ROOM_CHAIR_H + ROOM_CHAIR.y) / 2.0, -0.18))
 	return body
 
 

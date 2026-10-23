@@ -69,14 +69,21 @@ static func psx(color: Color, tex_id: String = "", tex_scale: float = 1.0, emiss
 
 ## PSX-Material mit der Farbtextur aus einer importierten GLB – eins pro Textur der Modelldatei
 ## (surface = Fläche des Meshs, deren Material die Textur liefert). two_sided zeichnet auch die
-## Rückseiten – für einseitige Flächen wie Meshys Blätter.
-static func model(path: String, src: MeshInstance3D, surface: int = 0, two_sided: bool = false) -> ShaderMaterial:
+## Rückseiten – für einseitige Flächen wie Meshys Blätter. cutout stanzt nach dem Alpha der Textur aus
+## (Blattkarten der Bäume, shaders/psx_leaves.gdshader) und ist immer beidseitig.
+static func model(path: String, src: MeshInstance3D, surface: int = 0, two_sided: bool = false, cutout: bool = false) -> ShaderMaterial:
 	var tex := (src.get_active_material(surface) as BaseMaterial3D).albedo_texture
-	var key := "model|%s|%d" % [path, tex.get_instance_id() if tex else 0]
+	var key := "model|%s|%d|%s" % [path, tex.get_instance_id() if tex else 0, cutout]
 	if not _cache.has(key):
 		var m := psx(Color(0.8, 0.8, 0.8), "", 1.0, Color.BLACK, 0.0, false)
 		m.set_shader_parameter("albedo_tex", tex)
-		if two_sided:
+		if cutout:
+			if _leaves_shader == null:
+				_leaves_shader = load("res://shaders/psx_leaves.gdshader")
+			m.shader = _leaves_shader
+			m.set_shader_parameter("albedo", Color(0.8, 0.8, 0.8))
+			m.set_shader_parameter("albedo_tex", tex)
+		elif two_sided:
 			if _shader_two_sided == null:
 				_shader_two_sided = Shader.new()
 				_shader_two_sided.code = m.shader.code.replace("cull_back", "cull_disabled")

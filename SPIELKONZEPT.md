@@ -458,11 +458,12 @@ nach der sich der Lakengeist seine Opfer sucht (4.18).
   schwächer. **Kinder** trinken nie (6.13).
 - **Offen:** welche Getränke; ob es auch für Erwachsene Alkoholfreies gibt (für Kinder Kakao und Limo, 6.13).
 - **Getränkedosen (umgesetzt 2026-10-22, 3.2):** Limo und Cola – Kisten in Kühlraum und Lager, auf der Bartheke für 1 Geld. Eine Dose (Linksklick) bringt einen sofort wieder zu Atem (Ausdauer voll, 3.1) und nimmt etwas Schock; das Zischen beim Öffnen ist leiser Lärm (3 m). Gäste trinken geschenkte Dosen, Kinder freuen sich darüber wie über etwas, das sie mögen.
-- **Automaten (entschieden und umgesetzt 2026-10-22):** Je ein **Snackautomat** (Süßigkeiten) und ein **Colaautomat**
-  (Cola) in der Lobby und auf jedem Stockwerk beim Treppenhaus, für je 1 Geld, ohne Ende. Ihre beleuchtete Front ist ein
-  schwaches Licht im Flur.
-- **Süßigkeiten-Truhe (entschieden und umgesetzt 2026-10-22):** In **jedem Zimmer** steht eine kleine Truhe mit
-  **6 Süßigkeiten** zum Start – sichtbar darin, wie alles (3.2). Gäste geben Kindern daraus (6.13).
+- **Automaten (entschieden und umgesetzt 2026-10-22):** **Snackautomaten** (Süßigkeiten) und **Getränkeautomaten**
+  (Cola) für je 1 Geld, ohne Ende. Ihre beleuchtete Front ist ein schwaches Licht im Flur. *Geändert 2026-10-22:* Sie
+  stehen, wo der Plan sie zeigt (bisher ein Paar in der Lobby), statt automatisch auf jedem Stockwerk (7.10).
+- **Süßigkeiten-Truhe (entschieden und umgesetzt 2026-10-22):** Eine kleine Truhe mit **6 Süßigkeiten** zum Start –
+  sichtbar darin, wie alles (3.2). Gäste geben Kindern daraus (6.13). *Geändert 2026-10-22:* Nicht mehr automatisch in
+  jedem Zimmer – jede Truhe, die der Plan in ein Hotelzimmer stellt, ist dessen Süßigkeiten-Truhe (7.10).
 
 > **Umgesetzt (2026-10-19):** Flasche und Glas auf der Bartheke, ein Glas **1 Geld**, nimmt etwas Schock. Ab dem
 > **2. Glas angetrunken** (Blick schwankt und driftet, die Maus zieht nach, man stolpert ab und zu – das ist
@@ -2726,8 +2727,24 @@ gezeichnet im Gebäudeplan (Gruppe „UG“, 7.5).
 - **Offen:** Ausstattung (Kessel, Rohre, Technik) sowie Tiefkeller und Lager aus 7.4.
 
 ### 7.10 Kleineres Hotel, mehr Ebenen (entschieden 2026-10-21)
-> Noch nicht umgesetzt. Der Plan (`map.aseprite`) wird für alle Stockwerke neu gezeichnet; Pläne für Tiefkeller und
-> Dachgeschoss stehen noch aus. Alte Spielstände spielen dabei vorerst keine Rolle.
+> Teilweise umgesetzt (2026-10-22): Der neue Plan `map_a.aseprite` (EG, OG1 und UG untereinander, 151 × 60 m) ist
+> gebaut; Pläne für Tiefkeller und Dachgeschoss stehen noch aus. Alte Spielstände spielen dabei vorerst keine Rolle.
+>
+> **Entschieden 2026-10-22:** Der Plan wird **von Hand eingerichtet** – der Code stellt nichts mehr selbst in die
+> Zimmer (auch keine Süßigkeiten-Truhen und Automaten, 3.2/6.13); braucht eine Mechanik etwas, kommt es in den Plan.
+> Eine Ebene `Zimmer` markiert, welche Räume zu einem Hotelzimmer gehören. Neue Möbel nach `map_legend.png`
+> (Doppelbett – hellere Kante = Kopfende –, Badewanne, Waschbecken mit Spiegel, Dusche, WC, Fußmatte, Tisch mit drei
+> Stühlen, Mülleimer, Snack- und Getränkeautomat; sonst zeigt die hellere Kante die Vorderseite), vorerst als
+> Platzhalter bis zu den Modellen. **Badewanne** (entschieden und umgesetzt 2026-10-23): eingeflieste Wanne, 2,2 m lang,
+> 50 cm tief auf 10 cm Sockel im gefliesten Block, der die Nische füllt (2,8 × 0,6 m) – Schürze und Rand um die Wanne
+> gefliest, Messing-Wandarmatur 10 cm darüber. **Fensterunterkanten** liegen überall im Hotel auf **90 cm** (2026-10-23).
+> **Kieswege** im Garten (Kieseltextur folgt), **Müllraum** im Keller, nicht gebaute
+> Kellerräume bleiben zu. **Bäume** im Plan sind nur Standortmarken, jeder Baum hat dieselbe Größe. **Grasbüschel**
+> (entschieden und umgesetzt 2026-10-22) nur **ohne PS1-Look**: verwildert, bis 30 cm, wiegen sich im Wind und neigen
+> sich unter Schritten und Gegenständen zur Seite – niedrig genug, dass nichts darin verschwindet (beide Looks spielen
+> sich gleich); Wege, Beete, Kübel, Baumwurzeln und Gegenstände des Plans bleiben frei. **Zimmer 13**
+> liegt, wo der Plan es beschriftet (Innenhofblock Ost, Tür zum Südflur); die übrigen fest belegten Zimmer stehen
+> vorerst auf ihren alten Nummern, bis sie neu verteilt sind.
 
 **Warum:** Mit ca. 151 × 130 m und rund 130 Zimmern je Stockwerk sind die Wege für 5-Minuten-Tage (2.1) zu lang, und
 viele Zimmer bleiben leer. Ein kompaktes Hotel kennt man nach ein, zwei Tagen – Ortskenntnis (wo steht der nächste

@@ -167,10 +167,10 @@ func _ready() -> void:
 	var level := NavigationRegion3D.new()
 	level.name = "Level"
 	add_child(level)
+	LevelBuilder.refresh_maps()   # Plan geändert? Dann erst neu einlesen
 	var builder := LevelBuilder.new(level, self)
 	var t0 := Time.get_ticks_msec()
 	builder.build()
-	ExtraFixtures.place(builder, self)   # Süßigkeiten-Truhen und Automaten – vor dem NavMesh (6.13, 3.2)
 	var t1 := Time.get_ticks_msec()
 	_bake_navigation(level)
 	_load_times = Vector2i(t1 - t0, Time.get_ticks_msec() - t1)
@@ -1131,8 +1131,11 @@ func _debug_shock(guest: Guest, what: String) -> void:
 func _save_test() -> void:
 	# Etwas Unordnung, damit der Test mehr abdeckt: Vorhang zu, Licht aus, Birne in der Hand
 	(get_tree().get_nodes_in_group("windows").filter(func(w: Node) -> bool: return w.has_curtains())[0] as HotelWindow).set_closed(true)
-	LightSwitch.find(get_tree(), "keller").set_on(false)
-	var lamp: Lamp = get_tree().get_nodes_in_group("lamp_fixtures").filter(func(l: Node) -> bool: return l.room_id == "0115")[0]
+	(get_tree().get_nodes_in_group("light_switches")[0] as LightSwitch).set_on(false)
+	# eine Zimmerlampe (Raum-ID = Zimmernummer), sonst irgendeine – unabhängig davon, wie der Plan eingerichtet ist
+	var fixtures := get_tree().get_nodes_in_group("lamp_fixtures").filter(func(l: Node) -> bool: return (l as Lamp).has_bulb)
+	var in_rooms := fixtures.filter(func(l: Node) -> bool: return String(l.room_id).is_valid_int())
+	var lamp: Lamp = (in_rooms if not in_rooms.is_empty() else fixtures)[0]
 	if Game.player.held == null:
 		Game.player.receive_item(lamp.take_bulb())
 	for kind in [Item.Kind.SWEETS, Item.Kind.SODA_CAN]:   # mit voller Hand: in die Tasche

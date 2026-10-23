@@ -62,7 +62,10 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7/F
 
 ## Was drin ist
 
-- **Hotel (Graybox) nach dem Gebäudeplan `map.aseprite`:** Erdgeschoss ca. 150 × 110 m · **Lobby** mit Rezeption (Holz mit runden Ecken, Terrazzoplatte wie die Säulen, Messingrohre), verriegeltem Haupteingang, Luftraum und **Galerie** (breite Treppe mit Läufer und gedrechseltem Geländer hinauf), zwei Aufzüge außer Betrieb · **Zimmertüren** nach gemalter Vorlage (vier Bogenkassetten, Messingklinke, Bänder) · die verschlossene **Kniestocktür** zum Dachboden (Bretter, Langbänder, Kastenschloss) steht bereit und erscheint mit dem Plan des Dachgeschosses · **Bar + Spiele**, **Partyraum** über zwei Stockwerke mit Galerie, Toiletten · **Ostflügel** mit 69 Zimmern (0101–0181) um zwei Innenhöfe mit Bäumen (sie verlieren Herbstlaub, das kurz im Gras liegen bleibt) und Terrassen hinter 1,6 m hohen Formschnitthecken (nur durch die Gartentür des Zimmers zu erreichen) · **Westflügel**: Flure, Innenhöfe, Küche, Speisesaal, Lager und Kühlräume offen, die Zimmer (0201–0272) noch verschlossen · großer Mittelgarten mit acht Kürbisfeldern (je eine Sorte, über 60 Pflanzen) und vier Bäumen, auch im Innenhof Südwest ein Baum · Hallenbad mit Duschen und Umkleiden (Einstiegstreppen, vier Unterwasserlampen, die jede für sich langsam durch den Regenbogen wechseln; das Wasser schlägt Wellen, wenn man hindurchgeht, und spritzt, wenn man hineinfällt · naht das Monster, wird es spiegelglatt, dann zittert es, und ist es in der Halle, schwappt das Becken) · **Obergeschoss:** Zimmer mit 2–3 Betten, manche mit Bad und Balkon, Suiten über Verbindungstüren, Bibliothek, **Katzenraum** · **Treppenhaus Ost** vom Untergeschoss bis ins Obergeschoss · **Untergeschoss:** graue Kellergänge unter kaltweißen Halogenleuchten, die ab und zu kurz flackern, Heizkeller (Versteck des Monsters), Technikraum, Wäscherei mit Waschmaschinen, sonst verschlossene Räume · nur zwölf Lampen um die Kamera werfen Schatten (`ShadowBudget`)
+- **Hotel (Graybox) nach dem Gebäudeplan `map_a.aseprite`** (neuer, kleinerer Plan – Zimmer und Gärten werden gerade neu
+  eingerichtet, die folgende Beschreibung ist teils noch die des alten Plans): Erdgeschoss ca. 150 × 60 m · Möbel nach
+  `map_legend.png` als Platzhalter (Doppelbett – man kriecht darunter wie unters Bett, Badewanne, Waschbecken mit Spiegel, Dusche, WC,
+  Fußmatte, Tisch und Stühle, Mülleimer) · Kopfsteinwege im Garten, Außenwände aus Bruchstein · ohne PS1-Look wächst im Garten verwildertes Gras, das sich im Wind wiegt und unter Schritten und Gegenständen zur Seite neigt · Müllraum im Keller · im Obergeschoss sind alle Zimmer offen · **Lobby** mit Rezeption (Holz mit runden Ecken, Terrazzoplatte wie die Säulen, Messingrohre), verriegeltem Haupteingang, Luftraum und **Galerie** (breite Treppe mit Läufer und gedrechseltem Geländer hinauf), zwei Aufzüge außer Betrieb · **Zimmertüren** nach gemalter Vorlage (vier Bogenkassetten, Messingklinke, Bänder) · die verschlossene **Kniestocktür** zum Dachboden (Bretter, Langbänder, Kastenschloss) steht bereit und erscheint mit dem Plan des Dachgeschosses · **Bar + Spiele**, **Partyraum** über zwei Stockwerke mit Galerie, Toiletten · **Ostflügel** mit 69 Zimmern (0101–0181) um zwei Innenhöfe mit Bäumen (sie verlieren Herbstlaub, das kurz im Gras liegen bleibt) und Terrassen hinter 1,6 m hohen Formschnitthecken (nur durch die Gartentür des Zimmers zu erreichen) · **Westflügel**: Flure, Innenhöfe, Küche, Speisesaal, Lager und Kühlräume offen, die Zimmer (0201–0272) noch verschlossen · großer Mittelgarten mit acht Kürbisfeldern (je eine Sorte, über 60 Pflanzen) und vier Bäumen, auch im Innenhof Südwest ein Baum · Hallenbad mit Duschen und Umkleiden (Einstiegstreppen, vier Unterwasserlampen, die jede für sich langsam durch den Regenbogen wechseln; das Wasser schlägt Wellen, wenn man hindurchgeht, und spritzt, wenn man hineinfällt · naht das Monster, wird es spiegelglatt, dann zittert es, und ist es in der Halle, schwappt das Becken) · **Obergeschoss:** Zimmer mit 2–3 Betten, manche mit Bad und Balkon, Suiten über Verbindungstüren, Bibliothek, **Katzenraum** · **Treppenhaus Ost** vom Untergeschoss bis ins Obergeschoss · **Untergeschoss:** graue Kellergänge unter kaltweißen Halogenleuchten, die ab und zu kurz flackern, Heizkeller (Versteck des Monsters), Technikraum, Wäscherei mit Waschmaschinen, sonst verschlossene Räume · nur zwölf Lampen um die Kamera werfen Schatten (`ShadowBudget`)
 - **Hände & Tasche:** ein Gegenstand in der Hand; große Dinge (Kürbisse, Deko) brauchen beide Hände und blockieren Türen/Truhen; Münzen werden zu Geld · **Tasche für Kleines** mit 6 Fächern: Süßigkeiten, Getränkedosen, Zierkürbisse, Messer, Batterien, Glühbirnen, UV-Aufsatz, Würfel und ausgegangene Kerzen – mit voller Hand wandern sie beim Aufheben gleich hinein, unten rechts zeigen kleine Fächer mit Bildern, was drin ist · Q halten zeigt die Tasche groß – wer etwas herausnimmt, lässt fallen, was er in der Hand hatte (auch einen Kürbis) · Süßes oder Saures, Schenken und Verkaufen gehen auch aus der Tasche · **Ausnahme am Körper:** Kompass, Kartenblätter und Schlüsselbund – Karte und Kompass holt die linke Hand hervor (nicht mit einem Kürbis in den Händen)
 - **Getränkedosen:** Limo und Cola aus den Kisten in Kühlraum und Lager oder für 1 Geld von der Bartheke · trinken (Linksklick) bringt einen sofort wieder zu Atem und beruhigt ein wenig – das Zischen hört man ein paar Meter weit · Gäste trinken geschenkte Dosen, Kinder freuen sich besonders
 - **Kompass:** liegt im verfallenen Zimmer 226 im Obergeschoss · wird eingesteckt, F halten hebt ihn vor die Augen (kein HUD), auch im Versteck · leuchtende Nadel zeigt nach Norden (Nordflügel, Treppenhaus) · in der Nähe des Monsters zittert sie, ganz nah dreht sie sich im Kreis – auch bei Halluzinationen
@@ -74,9 +77,9 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7/F
 - **Verstecke:** Schränke (auch im Flur) und Betten, Zeitlimit wie in *Doors*, Luft anhalten
 - **Schlafen:** während der Nachtruhe im eigenen Bett in Zimmer 13 – Augen zu, die Zeit läuft schneller bis zum Morgen · das Monster in der Nähe oder ein Geräusch weckt dich · wer nicht schläft, sammelt Nächte ohne Schlaf (erst nach dem ersten Angriff), und das lockt den Lakengeist · übermüdet verschwimmt die Sicht, in Schüben, je Nacht stärker
 - **Dramaturgie:** friedlicher Anfang ohne Monster · erster Angriff am 3./4. Oktober während einer Feier (Licht und Musik aus, das Monster steht im Partyraum) · die ersten zwei Angriffe sind harmlos: es steht direkt vor dir, starrt dich an und verschwindet im Flackern – es streift danach weiter, lässt dich aber bis zur nächsten Aktivphase in Ruhe, Gäste werden nur erschreckt
-- **Süßigkeiten-Truhen und Automaten:** in jedem Zimmer eine kleine Truhe mit 6 Süßigkeiten, Gäste geben Kindern daraus · Snack- und Colaautomaten (je 1 Geld) in der Lobby und auf jedem Stockwerk beim Treppenhaus, ihre Front leuchtet schwach
 - **Monster:** dürre, über zwei Meter große Gestalt auf zwei Beinen (Modell mit Skelett, ruckartige Stop-Motion-Bewegung) · rast durch die Flure, jagend deutlich schneller als du rennst – erwischt es dich, bist du tot (auch bei den ersten Angriffen) · duckt sich unter Türen, lauert halb geduckt, schleicht auf allen Vieren davon, wenn man es sieht · streift im ganzen Hotel umher, im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht deinem Blick aus, biegt in Zimmer ab (wenn keine Deko davor), Deko und Licht drängen es ab, schicken es aber nicht nach Hause – es bleibt die ganze Aktivphase unterwegs, versteckte Werte Dreistigkeit / Neugier / Abschreckung, Rauschen ab ~20 m (lauter, je näher), Lampen flackern in seiner Nähe, beim Aufbruch läuft eine Flackerwelle vom Keller durchs Haus – kurzes Zucken: es sieht sich nur um, je länger es flackert, desto mehr will es holen (1 + 2 s pro Opfer, manchmal täuscht es), „weiß“, wenn man es anstarrt, holt Spieler **und Gäste** aus Verstecken, Jumpscare + Sterbebildschirm, nach einem Gast eine Weile satt, danach Halluzinationen
 - **Die Puppe (Halloween-Jury):** eine Stoffpuppe mit Hexenhut, am Anfang auf einem Sofa in der Lobby · 1–2 Minuten vor jedem echten Angriff (nicht beim bloßen Umsehen) liegt sie vor der bewohnten Tür mit der wenigsten Deko (bei Gleichstand der dunkelsten) – sie springt nur, wenn du weder ihren alten noch ihren neuen Platz siehst · dazu schwillt im ganzen Hotel ein Grollen an – die Gäste bekommen Angst, reden darüber (das Monster hört mit), Feiern lösen sich auf, Ängstliche schließen sich ein · wer nachbessert und nicht mehr der Schwächste ist, den verlässt sie wieder · das Monster geht dann zur Puppentür und bricht unterwegs, solange es hungrig ist, in bis zu fünf bewohnte Zimmer ein, deren Deko nicht hält: dort reißt es jedes Versteck auf, jeder darin wird mit 60 % geholt · die Puppentür fällt immer, und wer im Puppenzimmer ist, stirbt · niemand kann sie hochheben – nur Kinder nehmen sie zwischen den Angriffen mit und legen sie vor die Tür ihrer Familie · Gäste, die sie vor ihrer Tür finden, bekommen Angst
+- **Süßigkeiten-Truhen und Automaten:** eine Truhe im Plan, die in einem Hotelzimmer steht, ist dessen Süßigkeiten-Truhe mit 6 Süßigkeiten, Gäste geben Kindern daraus · Snack- und Getränkeautomaten (je 1 Geld), wo der Plan sie zeigt, ihre Front leuchtet schwach
 - **Gäste kochen:** ab und zu kocht ein Gast mit einem Kürbis aus seinem Koffer Suppe in der Küche, die anderen kommen zum Essen
 - **In Sicherheit:** bricht das Monster auf, rennen alle Gäste heim und machen die Tür zu oder verstecken sich, und bleiben drinnen, bis es weg ist
 - **Flecken:** Bewohner beschweren sich über Kürbismatsch, Wachs und Ruß vor ihrer Tür · ordentliche Gäste putzen: Wachs und Ruß wischen sie weg, Kürbismatsch bringen sie in die Küche und kochen daraus Suppe
@@ -116,7 +119,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7/F
 - **PS1-Look:** 480×270, Vertex-Snapping, Dithering, Farbreduktion – im Einstellungsmenü mit einem Schalter ganz abschaltbar (dann auch feinerer, dichterer Regen) · Kellerwände aus Brettschalungsbeton (ohne PS1-Look schärfer und mit Relief im Licht der Taschenlampe) · Lobbyboden aus poliertem Marmor, auf dem Lampen, Kerzen und Taschenlampe glänzen und sich Wände, Lampen und Gäste spiegeln (auch im Poolwasser) · Tapeten mit Vertäfelung, die im Licht unterschiedlich glänzen (Lack, Satin, stumpfe Rauten) und an Fugen und Leisten Glanzkanten zeigen, dazu fleckige, matte Stellen
 - **Altersempfehlung ab 16** (selbst eingeschätzt, keine USK-Prüfung): Hinweis mit Inhalten beim ersten Start, Kennzeichen im Titelbildschirm (`scripts/ui/title_screen.gd`)
 
-Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler, die Taschenlampe, die Glühbirnen, die Discokugel, die Wanduhr über dem Haupteingang, die Pflanzkübel, die Bäume im Garten, die Tür- und Fensterrahmen, die Tapeten, die Kellerwände und der Lobbyboden (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
+Bis auf das Monster, die Lobby-Sofas, die Flaschen in der Bar, den Plattenspieler, die Taschenlampe, die Glühbirnen, die Discokugel, die Wanduhr über dem Haupteingang, die Pflanzkübel, die Bäume im Garten, die Parkbank, die Tischgruppen in den Zimmern, die Tür- und Fensterrahmen, die Tapeten, die Kellerwände, der Lobbyboden und die Holzböden (`assets/textures/`) sind alle Modelle, Texturen und Sounds Platzhalter (prozedural erzeugt) und werden später durch Blender-Modelle (glTF) und echte Sounds ersetzt. Das Monster-Modell (`assets/models/monster.glb`) baut `tools/build_monster.py` in Blender aus dem Meshy-Original:
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_monster.py -- assets/source/Meshy_AI_Abyssal_Mawcrawler_1011084008_texture.glb assets/models/monster.glb
@@ -162,16 +165,30 @@ Die Wanduhr über dem Haupteingang (`assets/models/clock.glb`) – Rahmen und di
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_clock.py -- assets/source/clock.glb assets/models/clock.glb
 ```
 
-Die Fototexturen (PBR-Sets) sind von Julio Sillet ([JulioVII auf itch.io](https://juliovii.itch.io), CC-BY): `Concrete_WoodPattern_01` (Kellerwände), `TilesMarble_01` (Lobbyboden), `pool/Tiles_06` (Poolbecken), `Stone_EngraveWall_01` (Wände der Poolhalle) `TilesBasic_01` (Umgang der Poolhalle) und `TerrazzoDark_01` (Säulen der Lobby) – jeweils nur die genutzten Karten, verkleinert mit `tools/photo_set.gd` (TECHNIK.md, „Fototexturen“).
+Die Fototexturen (PBR-Sets) sind von Julio Sillet ([JulioVII auf itch.io](https://juliovii.itch.io), CC-BY): `Concrete_WoodPattern_01` (Kellerwände), `TilesMarble_01` (Lobbyboden), `pool/Tiles_06` (Poolbecken; beige umgefärbt mit `tools/tint_tiles.gd` in den Bädern), `Stone_EngraveWall_01` (Wände der Poolhalle) `TilesBasic_01` (Umgang der Poolhalle), `TerrazzoDark_01` (Säulen der Lobby), `StoneWall_01` (Wege im Garten), `StoneFloor_02` (Außenwände) `Wood_Panels_01` (Holzdecken) und `WoodenFloor_03` (Holzböden) – jeweils nur die genutzten Karten, verkleinert mit `tools/photo_set.gd` (TECHNIK.md, „Fototexturen“).
 
-Pflanzkübel (`assets/models/planter.glb`) und Laubbaum (`assets/models/tree.glb`) kommen von Meshy:
+Der Pflanzkübel (`assets/models/planter.glb`) kommt von Meshy:
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_planter.py -- assets/source/planter.glb assets/models/planter.glb
 ```
 
+Die Bäume im Garten (`assets/models/tree_1.glb` … `tree_3.glb`) sind die drei großen aus „Realistic Trees Collection“ von [Jungle Jim](https://sketchfab.com/jungle_jim) ([Sketchfab](https://sketchfab.com/3d-models/realistic-trees-collection-fe67c886eebf4bcb988d7c45e69995ad), CC-BY 4.0):
+
 ```bash
-"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_tree.py -- assets/source/tree.glb assets/models/tree.glb
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_trees.py -- assets/source/realistic_trees_collection.glb assets/models
+```
+
+Die Parkbank im Garten (`assets/models/bench.glb`) ist „Park Bench“ von [Decoratopia](https://sketchfab.com/hyperproduct) ([Sketchfab](https://sketchfab.com/3d-models/park-bench-124b1f8ea43c4d1d8e71085e69bb293a), CC-BY 4.0):
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_bench.py -- assets/source/park_bench.glb assets/models/bench.glb
+```
+
+Die Tischgruppen in den Zimmern (`assets/models/room_table.glb`, Tisch quadratisch gemacht, ein Stuhl) sind „Old wooden table and chair“ von [MaX3Dd](https://sketchfab.com/MaX3Dd) ([Sketchfab](https://sketchfab.com/3d-models/old-wooden-table-and-chair-da18a40480ec42d6920a2a828d10018c), CC-BY 4.0):
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_room_table.py -- assets/source/old_wooden_table_and_chair.glb assets/models/room_table.glb
 ```
 
 Das Katzenmodell (`assets/models/cat.glb`) baut `tools/build_cat.py` aus Meshys geriggtem Paket:
@@ -209,6 +226,12 @@ Den Handlauf der Pooltreppen (`assets/models/pool_handrail.glb`) baut `tools/bui
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_handrail.py -- assets/models/pool_handrail.glb
+```
+
+Die Gartenlaterne (`assets/models/lantern.glb`) baut `tools/build_lantern.py` ohne Ausgangsmodell nach einer Skizze: eckiger Lampenkopf auf achteckigem Mast und Fuß, 3 m hoch. Optional ein Pfad für eine Vorschau:
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_lantern.py -- assets/models/lantern.glb
 ```
 
 ## Debug-Startparameter
@@ -304,8 +327,9 @@ scripts/autoload/game.gd    globaler Zustand, Geld, Tastenbelegung, Szenenwechse
 scripts/autoload/settings.gd       Einstellungen (user://settings.cfg)
 scripts/autoload/save_manager.gd   Speichern/Laden, Autosave, Tagebuchsatz
 scripts/level/              LevelBuilder (baut aus assets/maps/eg.json, og1.json, ug.json: Wände, Zimmer, Flure, Keller, Zonen, Wegpunkte)
-tools/build_map.py          Gebäudeplan map.aseprite (Legende: Farbnamen in map.gpl) → assets/maps/<stockwerk>.json
-tools/aseprite-palette-names/  Aseprite-Erweiterung: Palettennamen aus map.gpl als Liste neben den Farben
+tools/build_map.py          Gebäudeplan map_a.aseprite (Legende: Farbnamen in map_a.gpl) → assets/maps/<stockwerk>.json
+                            (läuft beim Spielstart aus dem Editor von selbst, wenn der Plan neuer ist)
+tools/aseprite-palette-names/  Aseprite-Erweiterung: Palettennamen aus <plan>.gpl als Liste neben den Farben
 scripts/world/              Item, Door (auch Glas), HideSpot, Chest, FlickerLight,
                             PumpkinPlant, ResourceSpot, RecordPlayer,
                             Lamp (Glühbirne), LightSwitch, HotelWindow (Vorhang), OpeningFrame (Rahmen), Diary,

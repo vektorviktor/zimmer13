@@ -51,6 +51,11 @@ const FINIAL := [Vector2(0.03, 0.0), Vector2(0.025, 0.025), Vector2(0.04, 0.04),
 const DROP := [Vector2(0.0, 0.0), Vector2(0.035, 0.04), Vector2(0.03, 0.07), Vector2(0.045, 0.1), Vector2(0.06, 0.12)]
 ## Galeriegeländer: höchstens so weit zwischen zwei Pfosten
 const BAY := 3.0
+## Blende vor der Galeriekante (lackiert wie die Pfosten): Tiefe vor der Kante – die Pfostenfüße (NEWEL_BASE) ragen
+## 8,5 cm vor –, Überstand unter die Decke; Abdeckleiste oben und Leiste unten: Tiefe, Höhe
+const FASCIA_DEPTH := 0.1
+const FASCIA_BELOW := 0.04
+const FASCIA_LIP := Vector2(0.125, 0.035)
 ## Läufer (TexGen „runner“): Breite, Abstand über den Stufen; Messingstangen: Radius, Überstand je Seite
 const RUNNER_W := 2.4
 const RUNNER_LIFT := 0.003
@@ -179,6 +184,26 @@ static func railing(parent: Node3D, a: Vector3, b: Vector3, post_a: bool = true,
 	_baluster_row(holder, rail_y + 0.01 - SILL.y + 0.01, spots)
 	Geo.mesh(holder, paint.commit(), Mat.psx(PAINT), Vector3.ZERO)
 	Geo.mesh(holder, stain.commit(), Mat.psx(STAIN), Vector3.ZERO)
+
+
+## Blende vor der Galeriekante von a nach b (achsparallel, Galerieboden auf a.y), out zeigt in den Luftraum: deckt
+## die Stirn der Decke und des Bodens darüber (drop = Abstand Galerieboden – Deckenunterseite) und die vorstehenden
+## Pfostenfüße ab. ext_a/ext_b verlängern um die Leistentiefe, damit sich zwei Blenden an einer Ecke treffen.
+static func fascia(parent: Node3D, a: Vector3, b: Vector3, out: Vector3, drop: float, ext_a: bool = true,
+		ext_b: bool = true) -> void:
+	var along := (b - a).normalized()
+	a -= along * (FASCIA_LIP.x if ext_a else 0.0)
+	b += along * (FASCIA_LIP.x if ext_b else 0.0)
+	var sh := Shape.new()
+	var part := func(depth: float, y0: float, y1: float) -> void:
+		var c := (a + b) / 2.0 + out * (depth / 2.0) + Vector3.UP * (y0 + y1) / 2.0
+		var size := (b - a).abs() + out.abs() * depth + Vector3.UP * (y1 - y0)
+		sh.box(c, size)
+	var bottom := -drop - FASCIA_BELOW
+	part.call(FASCIA_DEPTH, bottom + FASCIA_LIP.y, 0.0)
+	part.call(FASCIA_LIP.x, 0.0, FASCIA_LIP.y)   # Abdeckleiste, vor dem Bodenholm
+	part.call(FASCIA_LIP.x, bottom, bottom + FASCIA_LIP.y)
+	Geo.mesh(parent, sh.commit(), Mat.psx(PAINT), Vector3.ZERO)
 
 
 ## Wange auf Höhe x: Oberkante STRINGER_UP über, Unterkante STRINGER_DOWN unter den Stufenvorderkanten; vorn senkrecht

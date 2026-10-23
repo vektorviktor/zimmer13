@@ -56,14 +56,40 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   ohne Unterseite, nur Farbtextur (1024er-PNG, ~8600 Dreiecke). Es gibt die Beckenkante aus →
   `PLANTER_H` (0,46 m), so hoch ist der Kollisionsquader über der Grundfläche. Die Blätter sind einseitig,
   deshalb `Mat.model(…, two_sided = true)`. Fehlt die Datei, bleiben Steinquader und Heckenkugel.
-  Die Gartenbäume `assets/models/tree.glb` (`LevelBuilder._tree()`): grüner Laubbaum mit Wurzeln von Meshy,
-  `tools/build_tree.py` aus `assets/source/tree.glb`. Das Skript findet die Stammachse an den Punkten
-  zwischen 10 und 20 % der Höhe (Ursprung dort am Boden) und skaliert die Krone auf 5 m Radius (~9,9 m hoch,
-  ~9900 Dreiecke, 1024er-PNG, ohne Unterseite). Es gibt `TREE_RADIUS` und den Stammdurchmesser `TREE_TRUNK`
-  (1,53 m) aus. Das Spiel skaliert auf den Kronenradius aus dem Plan; Kollision nur als Stammquader bis
-  `TREE_TRUNK_H` (3 m), unter der Krone kann man durchgehen. Offene Blattbüschel → `two_sided`. Fehlt die
-  Datei, bleibt der Platzhalter (Stammquader mit drei Herbstkugeln). Beide verlieren Herbstlaub
-  (`_falling_leaves`, siehe Partikel in 8); `TREE_HEIGHT` ist die Modellhöhe bei `TREE_RADIUS`.
+  Die Gartenbäume `assets/models/tree_1.glb` … `tree_3.glb` (`LevelBuilder._tree()`): die drei großen Laubbäume
+  aus „Realistic Trees Collection“ von Sketchfab (Jungle Jim, CC-BY 4.0 – Namensnennung nötig, mit EZ-Tree
+  erzeugt), `tools/build_trees.py` aus `assets/source/realistic_trees_collection.glb` (alle Bäume in einer Datei,
+  das Skript sucht sie nach Namen). Je Baum ein Mesh mit zwei Flächen: Rinde (`bark`) und Blattkarten (`leaves`,
+  Alpha), Ursprung auf der Stammachse am Boden (Mitte der Astpunkte am Stammfuß), in Metern (ein Rohwert = 1 mm:
+  10,3 / 8,2 / 10,7 m hoch), nur Farbtexturen (512er-PNG; Normal Maps und die zweite UV-Ebene fallen weg),
+  ~15 000 / 42 000 / 23 000 Dreiecke. Das Skript gibt je Baum eine Zeile für `TREE_MODELS` aus: Kronenradius,
+  Höhe, Krone als Höhenanteile (ohne die untersten 10 % der Blattpunkte) und Stammdurchmesser in 1 m Höhe.
+  Der Plan zeigt nur den Standort (die Fläche „Baum“ ist eine Markierung); die Bäume wechseln sich in der
+  Reihenfolge des Plans ab, jeder um `TREE_TURN` weitergedreht. Blätter mit `Mat.model(…, cutout = true)` –
+  `shaders/psx_leaves.gdshader` wie bei den Hecken: ausgestanzt nach Alpha, beidseitig –, erkannt am
+  Materialnamen `leaves`; die Rinde einseitig. Kollision nur als Stammquader bis `TREE_TRUNK_H` (3 m), unter der
+  Krone kann man durchgehen. Fehlt eine Datei, steht dort der Platzhalter (Stammquader mit drei Herbstkugeln).
+  Alle verlieren Herbstlaub (`_falling_leaves` mit Höhe und Krone des Baums, siehe Partikel in 8).
+  Die Parkbank `assets/models/bench.glb` (`LevelBuilder._bench()`, Bänke im Außenbereich): „Park Bench“ von
+  Sketchfab (Decoratopia, CC-BY 4.0 – Namensnennung nötig), `tools/build_bench.py` aus
+  `assets/source/park_bench.glb`. 1,6 m lang (`BENCH_LENGTH`), 0,64 m tief, 0,84 m hoch, Sitzseite nach +Z,
+  Ursprung mittig unten, 328 Dreiecke; eine Fläche `metal` (gusseiserne Seiten) und eine `wood` (Latten), nur
+  Farbtexturen (512er-PNG). Das Skript gibt Sitzhöhe (`BENCH_SEAT`, 0,476 m) und Lehne aus – daraus die
+  Kollision (Sitzblock und Lehne). Im Spiel gleichmäßig auf die lange Seite des Plan-Rechtecks skaliert; liegt
+  die Vorderseite aus dem Plan längs, nimmt es die Querrichtung zur Mitte der Fläche (sonst +Z). Bänke drinnen
+  und ohne Datei bleiben ein dunkler Holzkasten (`_box_furniture`).
+  Die Tischgruppen in den Zimmern `assets/models/room_table.glb` (`LevelBuilder._room_table()`, Planfarbe
+  „Zimmertisch“): „Old wooden table and chair“ von Sketchfab (MaX3Dd, CC-BY 4.0 – Namensnennung nötig),
+  `tools/build_room_table.py` aus `assets/source/old_wooden_table_and_chair.glb`. Zwei Objekte, Ursprung
+  jeweils mittig unten: `table` – im Original 1,2 × 0,7 m, quadratisch gemacht, indem nur das Mittelstück
+  zwischen den Beinen (|x| < `LEG_INNER`) entlang der Länge gestaucht wird; Beine, Zarge und runde Ecken bleiben
+  unverzerrt; dann 1 × 1 × 0,75 m – und `chair` (nur der gerade stehende der beiden Stühle, auf 0,46 m Sitzhöhe,
+  0,84 m hoch, Sitzseite nach +Z; im Original ist der Tisch für den Stuhl zu niedrig, darum getrennt skaliert).
+  Nur Farbtexturen (512er-PNG statt 4096), ~1300 + 1400 Dreiecke. Im Spiel je Gruppe zwei Stühle einander
+  gegenüber (`ROOM_CHAIR_GAP` von der Tischmitte), auch wenn der Plan drei zeigt: Die Stühle aus dem Plan im
+  Umkreis `ROOM_CHAIR_REACH` um einen Zimmertisch fallen weg, ein Paar gegenüberstehender gibt nur die Achse vor
+  (sonst Ost–West). Der Tisch kollidiert als voller Quader (NavMesh wie bisher), jeder Stuhl als eigener Körper
+  mit Sitzblock und Lehne (`ROOM_CHAIR`). Ohne Datei bleiben Kasten-Tisch und alle Kasten-Stühle aus dem Plan.
   Die Taschenlampe `assets/models/flashlight.glb` (`Flashlight`): schwarze Stablampe von Sketchfab (Onur,
   CC-BY 4.0 – Namensnennung nötig), `tools/build_flashlight.py` aus `assets/source/flashlight.glb`. 0,25 m lang,
   Leuchtrichtung +Z, Schalter oben, Ursprung mittig in der Länge auf der Unterkante, ~2500 Dreiecke, 256er-PNG.
@@ -144,12 +170,40 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   à 25 cm, die Fugen treffen die Beckenkanten), Fläche `pool_deck` in `_floor_material` · **Poolhalle, Wände**
   `Stone_EngraveWall_01` (Steinriemchen, Farbbild mit eingebackener AO – ohne sie fast musterlos – + Normal Map)
   über `POOL_WALL_METERS` (3 m = 6 Spalten × ~22 Reihen, Steine ~50 × 14 cm) als Haut der Seite `pool`
-  (`_skin_material`); Toiletten und Bäder behalten `_wall_tiles` · **Säulen der Lobby** `TerrazzoDark_01` (polierter
+  (`_skin_material`); Toiletten behalten `_wall_tiles` · **Bäder** (23.10.): beige Variante von Tiles_06
+  (`Tiles_06_beige_basecolor.jpg`, aus dem Farbbild mit `tools/tint_tiles.gd`: Helligkeit bleibt, Farbton beige,
+  grünlich/bläulich → wärmer/kühler, Fugen im 6×6-Raster neutral; Normal Map und Rauheit von Tiles_06) über
+  `BATH_TILES_METERS` (0,3 m = 6 × 6 Fliesen à 5 cm) als `_bath_tiles`: Haut der Seite `bath` bis `BATH_TILE_HEIGHT`
+  (2 m, `_wall_piece_at` teilt die Haut dort), Boden `bath` (`_floor_material`) und Wannensockel (`Bathtub.tiles`) –
+  alles in Weltkoordinaten, die Fugen laufen durch; darüber und an der Decke `Scifi_PaintedWall_01` (gespachtelter
+  Anstrich in Grünbeige; Farbbild + Normal Map + Rauheit 0,2…0,4, Glanz `BATH_PAINT_SPECULAR` 0,3; Glossiness,
+  Höhe und DirectX-Normal-Map weggelassen, AO hat das Set nicht) über `BATH_PAINT_METERS` (2,5 m) als `_bath_paint`
+  · **Kieswege im Garten** `StoneWall_01` (Kopfsteine in
+  Moos; Farbbild mit eingebackener AO + Normal Map, `GRAVEL_NORMAL_STRENGTH` 2 – ohne beides wirkten sie flach; Rauheit
+  und Höhe weggelassen, matt) über `GRAVEL_METERS` (0,5 m, Steine 10–18 cm), Fläche `gravel` in `_floor_material` ·
+  **Außenwände** `StoneFloor_02` (Bruchsteinplatten; Farbbild mit eingebackener AO – die Fugen liegen tiefer – + Normal
+  Map, `FACADE_NORMAL_STRENGTH` 2; Metallic und `MS` leer, `ORM` nur gepackt) über `FACADE_METERS` (2 m, Platten
+  20–40 cm) als Haut der Seite `outside` (`_skin_material`, `_facade`) · **Holzdecken** `Wood_Panels_01` (dunkle
+  Kassettendecke mit Schnitzwerk; Farbbild mit eingebackener AO × 0,7 + Normal Map + Rauheit 0,09…1, Glanz
+  `CEILING_SPECULAR` 0,5 – lackiert; Glossiness = umgekehrte Rauheit, Höhe und Metallic weggelassen) über
+  `CEILING_METERS` (2 m = 2 × 2 Kassetten à 1 m) für alle Holzdecken (`_ceiling`, `_room_ceiling`: Flure, Lobby,
+  Galerie, Hallen, Treppenhäuser, Zimmer; der Keller bleibt Beton); das Farbbild ist dunkler als die frühere
+  TexGen-Holzdecke, daher aufgehellt – Flure `CEILING_SHADE` ×1,2, Zimmer `ROOM_CEILING_SHADE` ×1,8 · **Holzböden**
+  `WoodenFloor_03` (lackierte Dielen, 16 je Kachel, längs +z; Farbbild + Normal Map + Rauheit 0,2…0,84, Glanz
+  `WOOD_FLOOR_SPECULAR` 0,5; kein AO im Set, die DirectX-Normal-Map gelöscht) über `WOOD_FLOOR_METERS` (2 m, Dielen
+  ~12,5 cm) für alle Holzböden (`_wood_floor`: Zimmer, Bar, Partyraum, Katzenzimmer, Bibliothek, Podeste der
+  Treppenhäuser; ersetzt die TexGen-Dielen) – Schritte klingen wie bisher auf Holz (Fototexturen ohne `floor`-Meta = "") · **Säulen der Lobby** `TerrazzoDark_01` (polierter
   dunkler Terrazzo, Farbbild + Rauheit 0,15…0,79, Glanz `PILLAR_SPECULAR` 0,5; AO, Höhe und Metallic leer, die Normal Map
   flach) über `PILLAR_METERS` (1 m, Steinchen 5–8 mm): `_pillar` baut mittig in der Planfläche zwei quadratische
   Sockel `PILLAR_PLINTH` (80 × 80 × 30 cm) unten und unter der Galerie, dazwischen einen runden Schaft
   (`PILLAR_SHAFT_RADIUS` 0,3 m, 24 Segmente, Kollision als Zylinder) – die Projektion nach der Hauptachse wechselt am
-  Schaft alle 90°, im Korn sieht man die Nähte nicht. Böden mit Fototextur nennen
+  Schaft alle 90°, im Korn sieht man die Nähte nicht. Derselbe Stein ist die Platte des **Couchtischs der Lobby**
+  (`_coffee_table`, nur für `coffee_table` in der Lobby; anderswo bleibt der Kasten): quadratisch mit der kurzen Seite
+  des Plan-Rechtecks (der Eintrag in `_furnishings` wird mit verkleinert, Kerzen stehen darauf), Platte
+  `COFFEE_TABLE_SLAB` 3 cm stark, 3 cm Überstand, 3 cm Eckradius (`_rounded_slab`, `GrandStair.Shape`, je Ecke
+  `COFFEE_TABLE_CORNER_SEGMENTS` 4, Seiten an den Ecken weich schattiert), Oberkante `BOX_HEIGHTS` 0,4 m; darunter
+  vier Beine und eine Zarge aus `_dark_wood`, Kantholz `COFFEE_TABLE_WOOD` 10 cm, außen bündig; Kollision ein
+  Quader über die ganze Fläche. Böden mit Fototextur nennen
   `Footsteps.floor_under` ihre Bodenart per `set_meta("floor", …)` (Lobby: `"tiles"`), weil der Abgleich sonst über die TexGen-Textur läuft.
   **Katzenmodell** `assets/models/cat.glb` (`HotelCat`, Spielkonzept 6.11): `tools/build_cat.py` aus
   Meshys Zip (Auto-Rigging-Preset „Hund“, in `assets/source/`). 27 Knochen (`Hips`, `chest`, `head`,
@@ -236,6 +290,13 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   (Ø 5 cm, 10 Ecken) darum. Ursprung am Pfostenfuß auf dem Umgang, die Treppe hinab entlang −Z; Tiefe und Lauf
   (1,4/2,1 m) sind eingebacken und müssen zu `_pool` passen. Material in Godot (`Mat.metal()`, Edelstahl, als `material_override`);
   fehlt die Datei, baut `_pool` wie früher gerade `_rod`-Stangen.
+  **Gartenlaterne** `assets/models/lantern.glb` (`LevelBuilder.LANTERN_MODEL`, nach einer Skizze des Nutzers):
+  `tools/build_lantern.py` baut sie ohne Ausgangsmodell, 3 m hoch. Unten alles achteckig als gedrehtes Profil
+  (Bodenplatte 0,56 m, Fuß mit Kehle, Wulst, Mast 8 cm, Kragen), oben ein eckiger Kopf (ab 2,4 m, 0,6 m hoch) aus Pyramidenstümpfen
+  (Bodenplatte, nach oben weiter werdender Glaskasten mit Eckstreben und Rahmenleisten, Gesims, Walmdach,
+  Deckplatte, Spitze); Knicke unter 30° glatt schattiert. Drei Teile ohne Material: `post` und `head` bekommen
+  dunkles Eisen, `glass` das leuchtende Lampenmaterial. Das Licht sitzt in der Glasmitte (`LANTERN_LIGHT_Y`) –
+  Kopf und Glas werfen darum keinen Schatten. Kollision: Fuß- und Mastquader. Fehlt die Datei, Platzhalter.
   **Gemalte Türen** `assets/models/door_hotel.glb` (Zimmertür) und `door_attic.glb` (Kniestocktür zum Dachboden,
   Spielkonzept 4.21): `tools/build_doors.py` baut sie ohne Ausgangsmodell aus den Pixelbildern in `assets/source/`
   (`door_hotel.png` 64 × 112, `door_attic.png` 80 × 144 mit Zarge, die nicht mitkommt) – Quader und Prismen im
@@ -486,7 +547,7 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
 - **Stockwerke (Spielkonzept 7.7):** `UPPER_MAP_PATHS` (fehlt eine Datei, endet das Haus darunter). Jedes
   obere Stockwerk ist ein zweiter Durchgang von `_build_plan_floor()` unter dem Knoten „Obergeschoss“
   (`root` vorübergehend dorthin, y = `UP_Y` × Stockwerk); danach Geländer an den Lufträumen
-  (`_void_edges`: wo Boden angrenzt, außer wo die Lobbytreppe ankommt; wo eine Wand angrenzt, nichts – siehe
+  mit Blende (`_void_edges`: wo Boden angrenzt, außer wo die Lobbytreppe ankommt; wo eine Wand angrenzt, nichts – siehe
   „Wände“, Hallen), Balkon- und Terrassengeländer (`_balconies`), gesperrte Treppenhaustüren. Der Zustand je Stockwerk
   (Plan, Raster, Wandstöße, Möbel, Türen, `_level`, `_base_y`) liegt in `_floors` (`_state`/`_use`); Abfragen
   anderer Systeme wählen ihn über die Höhe (`_level_of`, ±1,5 m um den Boden, `_on_floor`). Raum-IDs ohne
@@ -583,7 +644,7 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   Zimmerart fest (Tür offen bei `abandoned`/`derelict`, abgeschlossen bei `locked`). Arten: `player`, `guest`,
   `empty`, `vacant`, `laundry`, `abandoned`, `derelict`, `locked`; Sonderzimmer in `ROOM_KINDS` (Endziffern der
   alten Nummern, `PLAYER_ROOM` 0113, `LOCKED_ROOM` 0118, `COMPASS_ROOM` 0126). **Bauphase:** Nur Flügel in
-  `OPEN_WINGS` sind bewohnbar; Zimmer anderer Flügel haben eine versiegelte Tür (`_seal`: abgeschlossen, auch
+  `OPEN_WINGS` (im EG) bzw. `OPEN_WINGS_UPPER` (darüber, seit 22.10. beide Flügel; `_wing_open`) sind bewohnbar; Zimmer anderer Flügel haben eine versiegelte Tür (`_seal`: abgeschlossen, auch
   für das Monster) und dauerhaft zugezogene Vorhänge (`HotelWindow.sealed`), aber kein Inneres und keinen Boden.
   Objekte des Plans auf versiegelten Flächen werden übersprungen.
 - **Einrichtung aus dem Plan** (Objektebenen, Abschnitt unten), in dieser Reihenfolge – sie bestimmt die
@@ -591,6 +652,22 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   - `_furniture`: Rezeption (Modell über ihre Planrechtecke, siehe 1), dann `furniture`. Bett/Schrank → `HideSpot` (ins `spots` des Zimmers),
     Kommode, Truhe, Schach- und Spieltisch, Sofa als eigene Bauteile in der Rechteckmitte mit Blick nach
     `facing` (ohne: zur Flächenmitte); alles andere ein Kasten in Plangröße mit Höhe aus `BOX_HEIGHTS`.
+    Neue Möbel aus `map_legend.png` (22.10., Platzhalter bis zu den Modellen): **Doppelbett** (`_double_bed`) ist
+    ein Bett-`HideSpot` in Plangröße (`bed_size`), Kopfteil zur Seite `head` (`head_x`), heraus geht es zu der
+    Längsseite mit mehr Platz im Zimmer (`_free_run`); die **Badewanne** ist ein `Bathtub` (`world/bathtub.gd`,
+    23.10.): gefliester Block in Plangröße (Länge quer zur Vorderseite, Höhe `BOX_HEIGHTS` 60 cm = 50 cm Wanne auf 10 cm
+    Sockel), darin die Keramikwanne
+    `TUB_LENGTH` 2,2 m als hohles Becken aus Ringen (`_loop`, abgerundete Rechtecke mit gleich vielen Punkten,
+    Rückenschräge am Kopfende −X, Übergang zum Boden als Bézierkurve über `FILLET_*`), Keramikrand `RAISE` 1 cm auf
+    den Fliesen aufgesetzt, Außenecken `CORNER_OUTER` (der Fliesenausschnitt ist `CUT` größer als die Öffnung, sonst
+    flimmert er in der Beckenwand), Abfluss und Überlauf; Wandarmatur aus glatten Messingzylindern (`_tube`,
+    `MIXER_SIDES`) an der Rückseite, 10 cm über den Fliesen und unter der Fensterbrüstung (`WINDOW_SILL` 90 cm überall, die Schürze unter der Fensterbank endet
+    gut 80 cm hoch) (Rosetten, Rohr, Drehgriffe mit Rille, schräger
+    Auslauf, Mundstück ganz darunter); Meshes über `GrandStair.Shape`, Kollision = die vier Fliesenquader und der
+    Beckenboden (man kann hineinsteigen). Waschbecken (mit Spiegel `MIRROR_*` an der
+    Rückseite), Dusche (flache Wanne), WC, Mülleimer, Zimmertisch und Stuhl (Lehne `CHAIR_BACK` hinten) sind Kästen;
+    die Fußmatte liegt flach ohne Kollision; Snack- und Getränkeautomat sind `VendingMachine`, eine Truhe in einem
+    Hotelzimmer ist dessen Süßigkeiten-Truhe (siehe Tabelle unten).
     Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert daraus die Höhe, auf der
     Kerzen, Telefone, Zettel und Gegenstände stehen.
   - `_fittings`: Wandsachen (Schalter, Bild, Spinnwebe, UV-Schrift, Kalender) über `_wall_spot` an die
@@ -664,6 +741,11 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   (höchstens `BALUSTER_GAP`), Handlauf auf 1 m, Pfosten an den Enden und alle höchstens `BAY` (3 m); an einer
   Ecke nur einer (Meta `gallery_posts` am Stockwerk). Neben einer Treppe endet es genau an ihrer Kante
   (`_stair_edge`), dort steht der obere Treppenpfosten. Balkone und die alte Galerie behalten `_railing`.
+  Davor eine **Blende** (`GrandStair.fascia`, lackiert wie die Pfosten): Brett `FASCIA_DEPTH` (10 cm) vor der Kante von
+  `FASCIA_BELOW` unter der Decke bis zum Galerieboden, darauf eine Abdeckleiste und unten eine Leiste (`FASCIA_LIP`,
+  12,5 × 3,5 cm) – deckt die Stirn von Decke und Teppichboden und die 8,5 cm vorstehenden Pfostenfüße; an Ecken um
+  die Leistentiefe verlängert, neben der Treppe nicht. `out` zeigt in den Luftraum (in `_void_edges` heißt die
+  Gegenrichtung `out`) – andersherum steckt die Blende in der Platte und flimmert mit deren Stirn.
 - **Wandstöße** (`_index_joints`): Senkrechte Wände enden laut Plan bündig an der Fläche einer waagerechten –
   ihr Mesh ragt bis zu deren Mitte hinein (`_joint_depth`). Läuft umgekehrt eine waagerechte Wand durch eine
   senkrechte hindurch bis an deren ferne Fläche (T-Stoß: Zimmertrennwand an der Flurwand, im EG rund 140), weicht ihr
@@ -711,27 +793,45 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   Orten (ohne Suchgrenze wie das Monster), oben zu Katzenraum, Bibliothek, einem Flur und einem Zimmer, unten zu
   Kellergang am Treppenhaus, Heizkeller („Keller“), Technikraum und Wäscherei.
 - Ein neues Zimmer: im Plan zeichnen und in den Objektebenen einrichten (Bett, Schrank, Leuchte, Schalter …),
-  `tools/build_map.py` laufen lassen – Wände, Tür, Einrichtung, Zone und Wegpunkt entstehen daraus.
+  `tools/build_map.py` laufen lassen – Wände, Tür, Einrichtung, Zone und Wegpunkt entstehen daraus. Den Plan
+  zeichnet und möbliert der Zeichner von Hand; der Code stellt nichts dazu (seit 22.10. auch keine Truhen und
+  Automaten mehr). Braucht eine Mechanik etwas im Zimmer, kommt es in den Plan.
   Jede Änderung an Lampen, Schaltern, Verstecken, Kommoden, Truhen, Telefonen, Pflanzen oder Vorräten im Plan
   verschiebt die Reihenfolge – alte Spielstände werden dann abgelehnt (siehe 7), zu tun ist nichts.
 
-### Gebäudeplan (`map.aseprite` → `tools/build_map.py` → `assets/maps/<stockwerk>.json`)
-Grundriss seit Spielkonzept 7.5. Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
-dort), das Skript ist reines Python ohne Zusatzpakete und braucht ca. 10 s je Stockwerk:
-`python tools/build_map.py [map.aseprite] [assets/maps] [vorschau-ordner]`. Die Vorschau (`<stockwerk>.svg`)
+### Gebäudeplan (`map_a.aseprite` → `tools/build_map.py` → `assets/maps/<stockwerk>.json`)
+Grundriss seit Spielkonzept 7.5, seit 22.10. der kleinere Plan `map_a.aseprite` (7.10; der alte `map.aseprite` mit
+Ebenengruppen lässt sich weiter umsetzen). Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
+dort) und wird **nur gelesen**; das Skript ist reines Python ohne Zusatzpakete und braucht ca. 10 s je Stockwerk:
+`python tools/build_map.py [map_a.aseprite] [assets/maps] [vorschau-ordner]`. Die Vorschau (`<stockwerk>.svg`)
 zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Prüfen nach Planänderungen.
-- **Aufbau der Plandatei (Vorlage):** Jede Ebenengruppe der obersten Stufe ist ein Stockwerk (`EG`, `OG1` …,
-  `Keller`) und wird zu `eg.json`, `og1.json` … – sobald sie Wände enthält. Gezählt werden alle normalen
-  Ebenen der Gruppe, **egal ob sichtbar**; nicht gezählt werden Referenzebenen (`OG1/EG (Referenz)` zeigt das EG
-  zum Abzeichnen) und Ebenen, deren Name mit `Beschriftung`, `Skizze` oder `Notiz` beginnt.
-- **Legende = `map.gpl`:** Die Bedeutung jeder Farbe steht als Name in der Legende neben der Plandatei
-  (GIMP-Palette, „R G B<Tab>Name“, Zeile = Paletten-Index; `FILLS`, `OPENINGS`, `Wand`, `Glaswand` oben im
-  Skript, Zuordnung nach Farbwert). Nicht in `map.aseprite`: Aseprite 1.3.18 behält keine Palettennamen,
-  schon Öffnen und Speichern verwirft sie (19.10.). Neue Farbe in der Palette → Zeile in `map.gpl`, Farbwert
-  geändert → dort auch. Farben ohne Legendeneintrag meldet das Skript mit Pixelposition. Slices liest es nach
+**Automatisch beim Spielstart** (`LevelBuilder.refresh_maps()`, aus `main._ready` vor dem Bauen): Ist
+`map_a.aseprite`, `map_a.gpl` oder `tools/build_map.py` (`PLAN_SOURCES`) neuer als die älteste Karte, ruft das Spiel
+`python tools/build_map.py` auf (blockierend, ~40 s) – nur mit dem Feature `editor` (Editor, `godot --path .`, auch
+Rauchtest), im Export fehlt der Plan. Warnungen des Skripts erscheinen als `push_warning` „build_map: …“; schlägt es
+fehl, baut das Spiel aus den alten Karten. `PYTHONIOENCODING=:replace` hält Python in der Codepage, in der Godot
+die Ausgabe liest (Umlaute). `source` in den Karten ist nur der Dateiname des Plans (keine absoluten Pfade).
+- **Aufbau der Plandatei (Vorlage):** Ohne Ebenengruppen liegen die Stockwerke untereinander, je `BAND` (790 px)
+  hoch und um genau so viel versetzt deckungsgleich: oben das OG1, in der Mitte das EG, unten das UG
+  (`FLAT_FLOORS`; die türkisen Marken links oben in `Beschriftung` zeigen die Grenzen). Jedes wird zu `og1.json`,
+  `eg.json`, `ug.json` – sobald es Wände enthält. Gezählt werden alle normalen Ebenen, **egal ob sichtbar**; nicht
+  gezählt werden Referenzebenen und Ebenen, deren Name mit `Beschriftung`, `Skizze` oder `Notiz` beginnt. Ältere
+  Pläne mit einer Ebenengruppe je Stockwerk (`EG`, `OG1` …, `Keller`) gehen weiterhin. Der **Ursprung** ist die Mitte
+  des Haupteingangs im EG (`entrance_origin`, beim neuen Plan Pixel 775, 770), `WING_SPLIT_X` dessen x.
+- **Ebene `Zimmer`** (`UNITS_LAYER`, 22.10.): deckende Flächen markieren die Hotelzimmer. Alle Flächen „Zimmer“
+  unter einer zusammenhängenden Markierung werden eine Fläche mit einer Nummer (`rects` mit mehreren Rechtecken);
+  Türen zwischen ihnen sind Innentüren (`door_to` → `inner`, in keiner Liste), Bäder darunter bleiben Flächen `bath`
+  mit `bath_doors`. Ohne Markierung ist jede Fläche „Zimmer“ ein eigenes Zimmer (Warnung, wenn es die Ebene gibt).
+  Die Normale einer Zimmeröffnung kommt aus der Seite der Wand, auf der das Zimmer liegt (die Mitte eines
+  L-förmigen Zimmers trügt).
+- **Legende = `<plan>.gpl`** (`map_a.gpl`): Die Bedeutung jeder Farbe steht als Name in der Legende neben der
+  Plandatei (GIMP-Palette, „R G B<Tab>Name“, Zeile = Paletten-Index; `FILLS`, `OPENINGS`, `Wand`, `Glaswand` oben
+  im Skript, Zuordnung nach Farbwert). Nicht in der Plandatei: Aseprite 1.3.18 behält keine Palettennamen,
+  schon Öffnen und Speichern verwirft sie (19.10.). Neue Farbe in der Palette → Zeile in der `.gpl`, Farbwert
+  geändert → dort auch; die Bedeutung der neuen Möbel erklärt der Zeichner in `map_legend.png`. Farben ohne Legendeneintrag meldet das Skript mit Pixelposition. Slices liest es nach
   Namen sortiert, weil Aseprite ihre Reihenfolge beim Speichern ändert (sonst wechselt z. B. die Reihenfolge der
   Treppen und mit ihr der Fingerabdruck der Welt). Beim Zeichnen zeigt die Aseprite-Erweiterung
-  `tools/aseprite-palette-names/` (View > Palettennamen) die Palette mit den Namen aus `map.gpl`.
+  `tools/aseprite-palette-names/` (View > Palettennamen) die Palette mit den Namen aus der `.gpl`.
   1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie (**Türanschlag**: ein Pixel
   `Türanschlag` statt eines Türpixels an einem Ende des Strichs, in der Wandhälfte, in die die Tür aufgeht – dort
   sitzt das Scharnier; es zählt als Türpixel, falsch gesetzt bricht das Skript mit der Position ab), Flächen als Füllfarben, `Luftraum` = hier kein Boden (wird beim
@@ -740,7 +840,11 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
 - **Objektebenen** je Stockwerk: `Möbel`, `Ausstattung`, `Gegenstände`, `Lichter`, `Teppiche`. Sie zählen nicht
   zum Grundriss und haben eine eigene Legende (Palettennamen mit Vorsatz `Möbel:`, `Ausstattung:`, `Gegenstand:`,
   `Licht:`, `Teppich:` → `FURNITURE`, `FITTINGS`, `ITEMS`, `LIGHTS`, `RUGS` im Skript). Möbel sind Rechtecke in
-  Grundfläche, ein Strich `Möbel: Vorderseite` am Rand zeigt die Vorderseite. Teppiche sind volle Rechtecke auf
+  Grundfläche, ein Strich `Möbel: Vorderseite` am Rand zeigt die Vorderseite. Die Möbel aus `map_legend.png`
+  (22.10.: Doppelbett, Badewanne, Waschbecken, Fußmatte, Dusche, WC, Mülleimer, Snack- und Getränkeautomat,
+  Zimmertisch, Stuhl) tragen stattdessen eine Zeile in ihrer helleren Farbe `<Möbel> Vorderseite`
+  (`FRONT_SUFFIXES`, gilt nur für dieses Möbel); beim Doppelbett heißt sie `Kopfende` und wird zu `head` statt
+  `facing`. Teppiche sind volle Rechtecke auf
   eigener Ebene (dürfen unter Möbeln liegen; `Teppich: Läufer` läuft entlang der langen Seite). Alles andere ist ein 3×3-Punkt; Wandsachen
   (Leuchten, Schalter, Bilder, Spinnweben, UV-Schrift, Kalender) liegen innen an der Wand, daraus ergibt sich
   ihre Wandseite. **Halogenleuchten** (`Licht: Halogenleuchte`) sind Striche in ihrer Länge (8×2 px = 80 cm),
@@ -748,11 +852,13 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
   es einer). Höhe, Helligkeit und
   Inhalt (Zettel-Nummer, Münzen, UV-Text) stehen nicht im Plan, sondern im LevelBuilder (`CONTENT`,
   `_lamp_style`, `BOX_HEIGHTS`). Die Ebenen wurden am 2026-10-19 aus dem laufenden Spiel übertragen.
-- **Untergeschoss** (Gruppe `UG`, 20.10.): Flächen `Kellerboden` (`cellar`, Gänge), `Heizkeller`, `Technikraum`,
-  `Wäscherei`, `Kellerraum` (leer, verschlossen); unbemalte Räume hinter verschlossenen Türen (Farbe `Haupteingang`)
+- **Untergeschoss** (unteres Drittel bzw. Gruppe `UG`, 20.10.): Flächen `Kellerboden` (`cellar`, Gänge), `Heizkeller`,
+  `Technikraum`, `Wäscherei`, `Müllraum` (`trash_room`, 22.10.), `Kellerraum` (leer, verschlossen); unbemalte Räume
+  und `Kellerraum zu` (`EMPTY_FILLS`: noch zu und nicht gebaut) hinter verschlossenen Türen (Farbe `Haupteingang`)
   haben keinen Boden. Das Skript baut zuerst das EG, damit die Treppenflächen des UG dem Schacht darüber zugeordnet
   werden (wie oben); Laufwege und Flurabschnitte (`WINGS`) gibt es unten nicht.
-- **Slices** (sprite-weit, daher Stockwerk als Vorsatz, ohne Vorsatz EG: `OG1 Raum: Bibliothek`):
+- **Slices** (sprite-weit; sie gelten im Stockwerk, in dem ihre Mitte liegt – bei Ebenengruppen über den Vorsatz,
+  ohne Vorsatz EG: `OG1 Raum: Bibliothek`):
   `Raum: <Name>` benennt die Fläche mit den meisten Pixeln im Slice (ID = Name klein, Umlaute ausgeschrieben),
   `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen Kante**) und `Treppenhaus: <Name>` →
   `stairs`, `Objekt: <Name>` (Pivot an der Vorderseite) → `objects` (Vorsatz `UG` für das Untergeschoss). Unbenannte Flächen heißen `<art>_<n>`,
@@ -767,25 +873,30 @@ zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Pr
   `kind` `stair`/`stairwell`, `rect`, `up` bzw. `door`), `voids`, `open_above`, `areas`, `objects` (`name`,
   `rect`, `facing`), `corridors` (Flurabschnitte: `id`, `name`, `wing`, Mittellinie `a`–`b`), `floor_patches`
   (Boden unter Kübeln, Bäumen, Rezeption und freien Treppen, mit der Art der umgebenden Fläche), `planters`,
-  `terrace_edges`, `balcony_edges` (Balkongeländer, Rechtecke wie die Terrassenkanten), `trees`, `reception`; aus den Objektebenen `furniture` (`kind`, `rect`, optional `facing`),
+  `terrace_edges`, `balcony_edges` (Balkongeländer, Rechtecke wie die Terrassenkanten), `trees` (nur `center`),
+  `reception`; aus den Objektebenen `furniture` (`kind`, `rect`, optional `facing` bzw. `head`),
   `fittings` und `items` (`kind`, `pos`, optional `wall` = Wandseite, Gegenstände mit `Item.Kind`-Namen),
   `lights` (dazu optional `broken`) und `rugs` (`kind`, `rect`).
 - **Türarten:** Alle Zimmertüren sind Striche in `Tür Flur`; das Skript liest beiderseits der Wand, wohin sie führen:
   ans **Bad** (Fläche `Bad`, Art `bath`) → `bath_doors`, beiderseits Zimmer → **Verbindungstür** (`connecting_doors`),
-  sonst Flurtür. Im EG braucht jedes Zimmer genau eine Flurtür; darüber sind zwei erlaubt (die erste ist die
-  Zimmertür, die übrigen `side_doors`) und Suiten ohne Flurtür (`suite`, Tür = erste Verbindungstür); eine Fläche
-  „Zimmer“ ganz ohne Tür bleibt geschlossen (Hinweis beim Bauen). Ohne Türanschlag gehen Badtüren ins Zimmer
+  sonst Flurtür; liegen beide Seiten unter derselben Markierung der Ebene `Zimmer`, ist es eine Innentür. Ein
+  Zimmer darf mehrere Flurtüren haben (die erste ist die Zimmertür, die übrigen `side_doors`), über dem EG auch
+  keine (Suite, `suite`, Tür = erste Verbindungstür); ein Zimmer ganz ohne Tür bleibt geschlossen (Hinweis mit
+  Pixelposition beim Bauen). Ohne Türanschlag gehen Badtüren ins Zimmer
   auf, Verbindungstüren ins Zimmer mit der höheren Nummer (`opens`, Spielkonzept 7.7). Weitere Flächen seit dem
   OG1 (20.10.): `Katzenraum` (`cat_room`), `Bibliothek` (`library`), `Balkon` (`balcony`, draußen) mit
   `Balkongeländer` (`balcony_edge`, Einbau); Möbel `Möbel: Kratzbaum` (`cat_tree`). Öffnungsfarbe
   `Kniestocktür` (`attic_door`, 22.10.) für die niedrige Tür zum Dachboden – steht in `OPENINGS`, die Farbe kommt
-  mit dem Plan des Dachgeschosses in Palette und `map.gpl`.
+  mit dem Plan des Dachgeschosses in Palette und `.gpl`. Seit `map_a` (22.10.): Fläche `Kiesweg` (`gravel`, draußen –
+  Wege im Garten, Platzhalter-Material bis zur Kieseltextur), Bäume (`Baum`) markieren nur den Standort.
 - **Treppenhäuser über dem EG** brauchen keine eigenen Slices: Treppenflächen über einem Treppenhaus des EG
   gehören zu dessen Schacht (gleiche ID). Die Tür eines Treppenhauses darf jede Türart sein (Flur-, Glas-,
   Betriebstür); `steps` = Rechteck der Treppenstufen (dort beginnen und enden die Läufe).
-- **Zimmernummern** entstehen im Skript (`WINGS`: Laufweg je Flügel als Flurmittellinien in Pixeln, dann
-  Querflur; rechts ungerade). Liegt ein Zimmer an keinem bekannten Flur, bricht das Skript ab – dann `WINGS`
-  ergänzen. Darüber (`number_from_eg`): Nummer des EG-Zimmers 1 m hinter der Flurtür mit dem Stockwerk vorne,
+- **Zimmernummern** entstehen im Skript (`WINGS`: Laufweg je Flügel als Flurmittellinien in Pixeln des Stockwerks,
+  optional ein Querflur; rechts ungerade). Beim Plan `map_a` laufen beide Flügel von der Lobby über Süd-, Außen-,
+  Nord- und Gartenflur einmal um ihren Innenhof. Liegt ein Zimmer an keinem bekannten Flur, bricht das Skript ab
+  – dann `WINGS` ergänzen. `PINNED`: Zimmer mit fester Nummer, wo der Plan sie beschriftet (0113 bei Pixel
+  1120, 640 im EG); der Laufweg überspringt sie und ihre Nummer. Darüber (`number_from_eg`): Nummer des EG-Zimmers 1 m hinter der Flurtür mit dem Stockwerk vorne,
   sonst das mit der größten Überdeckung; zwei Zimmer über demselben behalten es für das mit der Flurtür darüber,
   die übrigen und Zimmer über keinem EG-Zimmer zählen im Flügel hinter der höchsten Nummer weiter (Norden vor
   Süden, Westen vor Osten). `BROKEN_SIGNS`: abweichende Türschilder (0113 → „13“).
@@ -1155,8 +1266,8 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
     `Player.has_kind`/`consume_kind`) oder Schenken im Gespräch (`on_sweets_given`) – bis `TRICK_SWEETS_MAX` (3), Beziehung
     `TREAT_RELATION` je Stück (die späteren mehr), danach wartet es nur `TRICK_MORE_WAIT` und geht zufrieden (`_treat_done`).
     Ohne Süßes → `_trick_prank`: Laub vor die Tür oder 15–30 s später ein Klingelstreich (`PhoneCalls.kid_prank`, Anruf `kid_prank`).
-    Süßigkeiten liegen in Kommoden (`Dresser.LOOT`), bei Edna und Bruno im Vorrat, in der Süßigkeiten-Truhe jedes Zimmers
-    (ExtraFixtures) und im Snackautomaten. Debug `--trick=13[,n]` (`debug_trick_at_13`).
+    Süßigkeiten liegen in Kommoden (`Dresser.LOOT`), bei Edna und Bruno im Vorrat, in den Süßigkeiten-Truhen der Zimmer
+    (Truhe aus dem Plan, `LevelBuilder._sweets_chest`) und im Snackautomaten. Debug `--trick=13[,n]` (`debug_trick_at_13`).
   - **Von Tür zu Tür** (`Social._update_rounds`, alle `ROUND_COOLDOWN`, nicht in Nachtruhe, Feier oder bei aktivem
     Monster; Debug `--trick[=kind]`): `start_round(kid)` nimmt bis zu `ROUND_DOORS` Gästetüren im Umkreis
     `ROUND_RANGE` (nicht Zimmer 13, nicht die Eltern; zuerst, wo jemand zu Hause ist). `_rounds[id]` führt die
@@ -1471,11 +1582,11 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
 | Fenster | `hotel_window.gd` | klares Glas / Vorhang (Ebene 10 nur für Sicht & Mond); Milchglas kann die Klasse noch, ist aber nicht mehr verbaut |
 | Türen | `door.gd` | Blatt auf Ebene 2 (Glastür 7); Rahmen über `OpeningFrame` (Zarge, Bekleidung, Kopfpartie auf beiden Wandseiten, nur Optik). Blatt gebaut (`Look.PLAIN`, Glastüren immer) oder gemaltes Modell (`HOTEL`, `ATTIC`, siehe 1): `leaf` auf die Blattgröße gestreckt, bei `dir` = −1 über `scale.x` gespiegelt; Klinke (`HANDLE_INSET`, `HANDLE_HEIGHT`) und Bänder (`HINGE_AT`) ungestreckt; Teile einmal geladen (`_model_parts`), Kollision wie beim gebauten Blatt. Spuren über `attach_mark(mark, seite, at)` – Kratzer mittig, Handabdrücke (`Traces.add_door_handprint`) höher; `at` wird mitgespeichert |
 | Spuren | `traces.gd`, `trace_mark.gd` | zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`; Fußabdrücke verblassen, Marken bleiben. **Blut an Wänden** (`add_wall_blood(pos, kind)`): sucht in 16 Richtungen in Spurhöhe (`WALL_BLOOD_HEIGHT`) die nächste Wand bis `WALL_BLOOD_RANGE` (2,5 m, Ebene 1, Normale waagrecht) und setzt dort `wall_splatter` (Kern, Spritzer, Läufer – wo das Monster einen Gast holt, `MonsterDirector`, und beim Kürbismann, `Guest.die`) bzw. `wall_smear` (Hand mit vier herabgezogenen Fingerstreifen – Spuk `MonsterDirector._haunt_wall_blood`: mit `WALL_SMEAR_CHANCE` je Spuk-Runde dabei, an einem Patrouillenpunkt im Flur außer Sicht, höchstens `MAX_WALL_SMEARS`, gezählt an den Spuren selbst). Beide sind Schreck-Anblicke wie Blutlachen (`_as_sight`, auch nach dem Laden) und an Zimmer 13 abwischbar; Debug `--wallblood[=smear]` an die Wand im Blick. Die Aschespur des Monsters ist nur Optik (Partikel, `monster.gd`), keine Spur in `Traces` – Gäste erzählen nicht davon |
-| Partikel | `shaders/psx_particle.gdshader`, `Mat.particle`, `Geo.particles`; `record_player.gd` (`_build_notes`), `sheet_ghost.gd` (`_build_flakes`), `monster.gd` (`_build_ash`), `level_builder.gd` (`_falling_leaves`, `_leaf_texture`) | Spielkonzept 7.6. Alles `CPUParticles3D` in Weltkoordinaten (`local_coords` aus – Partikel bleiben, wo sie entstanden), quadratische `QuadMesh`, keine Schatten. Der Shader macht das Billboard selbst (`skip_vertex_transform`, Vertex-Snapping wie `psx_surface`) und blendet über das 4×4-Raster aus: Deckkraft = `fade` × `COLOR.a`, `COLOR` = `color` × `color_ramp` (`Geo.particles` legt die Rampe mit `fade_in`/`fade_out` an) × `color_initial_ramp`. Je Partikel liest er `INSTANCE_CUSTOM.x` (Startwinkel, `angle_min/max` 0…360 → Zufallswert: Bild, Farbton, Phase) und `.y` (Anteil der Lebenszeit) – darüber laufen `sway`/`tilt`/`sway_cycles`/`spin` und der Farbton, so steht alles in der Pause. `frames` = Bilder nebeneinander in `albedo_tex`; `rainbow` ersetzt den Farbton der Textur (Startton zufällig, wandert um `hue_drift` je Leben), `brighten` hebt den HSV-Wert, `glow` = Eigenleuchten. `floor_y` (Welt): darunter liegt ein Partikel flach auf dem Boden statt weiterzufallen (Laub; CPUParticles kennen keine Kollision), das Schaukeln läuft auf dem letzten halben Meter aus. **Noten:** `assets/textures/note_1…4.png` (32², rot gemalt, damit der Farbton sauber ersetzt wird) zur Laufzeit zu einem Streifen zusammengesetzt, Emitter an der Trichteröffnung (`HORN_MOUTH`), `emitting` = `playing`. **Flocken:** Ring knapp außerhalb des Lakens (Breite aus der Mesh-AABB, ohne die Arme in Z) auf `FLAKE_FROM` der Höhe – weiter innen verdeckt sie das Laken, weiter unten die Fensterbrüstung; `fade` folgt `_fade`, `_hide()` löscht alte per `restart()`. **Asche:** eigener Knoten neben dem Monster (`get_parent()`, deferred), folgt ihm auf `ASH_HEIGHT` und sendet, solange es aktiv ist – so bleibt die Spur, wenn es verschwindet. **Laub:** je Baum ein Emitter unter `world` (nicht `root`, das NavMesh liest dort), Kasten in der Krone (`TREE_CROWN` × Höhe), konstante Sinkgeschwindigkeit ohne Schwerkraft, `LEAF_LIFE` reicht für Fall und Liegen; `preprocess`, damit beim Start schon Laub liegt. Neuer Partikeleffekt: `Mat.particle` + `Geo.particles`, Bewegung am Emitter setzen |
+| Partikel | `shaders/psx_particle.gdshader`, `Mat.particle`, `Geo.particles`; `record_player.gd` (`_build_notes`), `sheet_ghost.gd` (`_build_flakes`), `monster.gd` (`_build_ash`), `level_builder.gd` (`_falling_leaves`, `_leaf_texture`) | Spielkonzept 7.6. Alles `CPUParticles3D` in Weltkoordinaten (`local_coords` aus – Partikel bleiben, wo sie entstanden), quadratische `QuadMesh`, keine Schatten. Der Shader macht das Billboard selbst (`skip_vertex_transform`, Vertex-Snapping wie `psx_surface`) und blendet über das 4×4-Raster aus: Deckkraft = `fade` × `COLOR.a`, `COLOR` = `color` × `color_ramp` (`Geo.particles` legt die Rampe mit `fade_in`/`fade_out` an) × `color_initial_ramp`. Je Partikel liest er `INSTANCE_CUSTOM.x` (Startwinkel, `angle_min/max` 0…360 → Zufallswert: Bild, Farbton, Phase) und `.y` (Anteil der Lebenszeit) – darüber laufen `sway`/`tilt`/`sway_cycles`/`spin` und der Farbton, so steht alles in der Pause. `frames` = Bilder nebeneinander in `albedo_tex`; `rainbow` ersetzt den Farbton der Textur (Startton zufällig, wandert um `hue_drift` je Leben), `brighten` hebt den HSV-Wert, `glow` = Eigenleuchten. `floor_y` (Welt): darunter liegt ein Partikel flach auf dem Boden statt weiterzufallen (Laub; CPUParticles kennen keine Kollision), das Schaukeln läuft auf dem letzten halben Meter aus. **Noten:** `assets/textures/note_1…4.png` (32², rot gemalt, damit der Farbton sauber ersetzt wird) zur Laufzeit zu einem Streifen zusammengesetzt, Emitter an der Trichteröffnung (`HORN_MOUTH`), `emitting` = `playing`. **Flocken:** Ring knapp außerhalb des Lakens (Breite aus der Mesh-AABB, ohne die Arme in Z) auf `FLAKE_FROM` der Höhe – weiter innen verdeckt sie das Laken, weiter unten die Fensterbrüstung; `fade` folgt `_fade`, `_hide()` löscht alte per `restart()`. **Asche:** eigener Knoten neben dem Monster (`get_parent()`, deferred), folgt ihm auf `ASH_HEIGHT` und sendet, solange es aktiv ist – so bleibt die Spur, wenn es verschwindet. **Laub:** je Baum ein Emitter unter `world` (nicht `root`, das NavMesh liest dort), Kasten in der Krone (`crown` aus `TREE_MODELS` × Höhe), konstante Sinkgeschwindigkeit ohne Schwerkraft, `LEAF_LIFE` reicht für Fall und Liegen; `preprocess`, damit beim Start schon Laub liegt. Neuer Partikeleffekt: `Mat.particle` + `Geo.particles`, Bewegung am Emitter setzen |
 | Zettel | `warning_note.gd` | feste Warnungszettel (`warning_notes`, erst nach dem 1. Angriff sichtbar) und Gäste-Zettel (`guest_notes`, max. 30) |
 | Kommoden | `world/dresser.gd` | Aus dem Plan (Ebene `Möbel`, `LevelBuilder._furniture`). Drei Schubladen als eigene Körper; interagierbar ist je ein `Dresser.Handle` (leitet mit Index weiter). Hohler Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen einer Schublade (`searched`): leer / Münzen / Gegenstand aus `LOOT`. Beim Auf-/Zuschieben werden die darin liegenden Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“ – sie liegen nicht in der Hand). Lärm `drawer`. Gespeichert: `open`, `searched` (ab Version 7) |
 | Aufgehängte Deko | `item.gd` (`HANGABLE`, `hang`, `_sway`, `_build_sheet_ghost`, `_build_strand`), `player.gd` (`_hang_spot`, `drop_held`), `guest.gd` (`door_hang_spot`), `monster_director.gd` (`deco_unrest_at`) | Spielkonzept 5.6. [G] auf eine Wand (Strahl Ebene 1, Normale fast waagerecht) hängt auf statt abzulegen; der Prompt zeigt „… aufhängen [G]“ bzw. „Herbstlaub verstreuen [G]“. Lakengespenst: Haken 1,6–2,5 m über dem Boden, Kopf an der Wand (`GHOST_DEPTH`). Lichterkette: Linie 1,7–2,5 m, reicht nach beiden Seiten bis zur nächsten Wand oder Tür (Strahl Ebene 1+2), höchstens 3 m, Bögen mit `STRING_SAG`, ein `FlickerLight` ohne Schatten (Meta `no_shadow` → `ShadowBudget` überspringt es) in Gruppe `lamps` – flackert also wie die Lampen; die Birnen folgen dessen Helligkeit. Gäste hängen eigene Deko an die Flurseite ihrer Tür (`door_hang_spot`: Lichterkette über, Gespenst/Spinnweben neben der Tür), auch die Start-Deko (`Social._spawn`). `own_deco_near_door` und der Tagebuchsatz messen waagerecht. **Unruhe** `deco_unrest_at(p)` 0..1: Monster linear von `DECO_UNREST_RANGE` (16 m) bis 3 m, Flackerwelle × 0,6, Lakengeist bis `DECO_UNREST_GHOST` (10 m) × 0,75; jeder hängende Gegenstand fragt alle 0,2 s, schwingt immer ein wenig (`SWAY.x`) und bei Unruhe gleichmäßiger und stärker (`SWAY.y`), nie in die Wand; seitlich neigt es sich leicht weg von der Quelle (`deco_unrest_source`, `_lean`). Ab `JOLT_UNREST` fällt der Zierkürbis aus den Händen (`drop_pumpkin`, eigener Gegenstand `MINI_PUMPKIN`, Untertitel). `circling_with` (der Lakengeist vor der Tür) lässt Lakengespenster im Takt seiner Hände kreisen (`SheetGhost.hand_phase`). Herkunft: Wäschekiste (Möbel `laundry_box` → `ResourceSpot` `SHEET_GHOST`), Plan-Ausstattung „Dekokiste“ (`deco_box` → `LIGHT_STRING`), Kommoden (`Dresser.LOOT`), Kürbisbeete (`MINI_CHANCE` je Ernte ein Zierkürbis daneben), Vorräte von Mila, Bruno, Edna und manchen erzeugten Gästen (am Ende von `GuestGenerator.make`). Debug `--deco=art[,g]`. **Mehr Deko** (5.7): `BAT_GARLAND` (`_build_bats`, Flügel `_wings` flattern mit der Unruhe), `SPIDER` (`_build_spider`, `_thread`/`_spider` wippen), `BROOM` (lehnt schräg, `BROOM_LEAN` steckt in der Drehung des Körpers; `topple_broom()` ab `JOLT_UNREST`), `SKULL` (`CANDLE_HOLDERS` wie der geschnitzte Kürbis, `extra` `"lit"`, kippt um). `ResourceSpot.with_pool()` gibt abwechselnd verschiedene Arten (Dekokiste: Lichterkette, Fledermäuse, Spinne; alte Deko im Heizkeller, `LevelBuilder._boiler_room`: Totenkopf, Besen, Fledermäuse) |
-| Verstecke | `hide_spot.gd` | `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur; `own_bed` = Bett in Zimmer 13 (Schlafen, 4.18); `rattle()`/`burst_open()` für den Lakengeist |
+| Verstecke | `hide_spot.gd` | `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur; `own_bed` = Bett in Zimmer 13 (Schlafen, 4.18); `rattle()`/`burst_open()` für den Lakengeist; Bett: `bed_size` (Länge × Breite, Doppelbett aus dem Plan) und `head_x` (Seite des Kopfteils) vor dem Einfügen |
 | Ausdauer | `player.gd` (`_update_stamina`, `exertion()`), `monster_director.gd` (`_update_effects`), `util/synth_audio.gd` (`pant`, `_update_pant`) | Spielkonzept 3.1. `stamina` 0..1, nicht im HUD und nicht gespeichert. Rennen (Wert aus dem letzten Frame) zieht `1/STAMINA_RUN_TIME` je Sekunde ab, sonst kommt `1/STAMINA_REST_TIME` dazu (in Bewegung × `STAMINA_WALK_SLOW`). Leer → `winded`: `running` bleibt aus bis `STAMINA_CALM`. `exertion()` = Lautstärke von Herz und Atem (außer Atem 1 → 0 bis zum Beruhigen, sonst leise unter `STAMINA_HINT`); der Director nimmt sie in `heart_target` (× 0,85) und setzt `audio.pant`/`pant_rate` (stumm bei `holding_breath`). Klang: `SynthAudio._update_pant` spielt alle `1 / pant_rate` s einen Atemzug `assets/sound/breath.wav` (aus `temp/audio/345961__hkkit__breath.mp3`, mono, Spitze −6 dB) mit `BREATH_DB`, Tiefe und Tonhöhe leicht gewürfelt; die Lautstärke folgt `pant` laufend, unter 0,02 bricht der Atemzug ab. Untertitel `[Du keuchst]`. **Keuchen verrät:** `is_panting()` (ab `PANT_NOISE_FROM`, nicht beim Luftanhalten) → Lärm `pant` alle `PANT_EVERY` s; `Monster._check_hide_step` × `PANT_FOUND`; `SheetGhost._lurk` merkt es in `_heard_pant` → `PANT_CHANCE` mehr. Luftanhalten verbraucht `breath` × (1 + `WINDED_BREATH_DRAIN` × `exertion()`). F3 zeigt die Ausdauer, `--sprint`/`--winded` zum Prüfen |
 | Schritte | `util/footsteps.gd`, `player.gd` (Schrittzähler in `_physics_process`), `guest.gd` (`_leave_traces`) | Reiner Ton, kein Lärm (der läuft weiter über `Game.noise("step"/"run")`, 4.15). `Footsteps` ist ein `AudioStreamPlayer3D` an den Füßen jedes Spielers und Gastes; `step(boden, rennt, kind)` spielt den nächsten Klang aus `SOUNDS[boden]` (abwechselnd linker/rechter Fuß, Tonhöhe ± `PITCH_JITTER`, Rennen + `RUN_DB`, Kinder leiser und heller) × `Settings.effects_volume`, hörbar bis `RANGE` (12 m, ungedämpft durch Wände). Bisher `carpet` (Teppichflure) und `tiles` (Fliesen: Lobby, Küche und alle anderen gefliesten Räume) – Holz und Rasen bleiben stumm, ein neuer Klang ist nur ein Eintrag in `SOUNDS` (Textur dazu in `FLOOR_TEXTURES`). `Footsteps.floor_under(körper)`: Strahl nach unten (Ebene 1), Textur-Id des getroffenen Bodens aus `FLOOR_TEXTURES`, `""` sonst, `"air"` ohne Treffer – auch der Spieler entscheidet damit, ob Gehen Lärm macht (`SOFT_FLOORS`). Spieler: Schritt alle `STEP_LENGTH` (0,75 m), rennend alle `RUN_STEP_LENGTH` (1,3 m), geduckt still; Gäste alle 0,8 m, als rennend gilt > 1,5 × `WALK_SPEED`. `step_carpet.wav` stammt aus `temp/audio/footsteps_carpet.wav` (um 20 dB angehoben, ausgeblendet), `step_tiles.wav` aus `temp/audio/footstep_church.wav` (Stille vorn jeweils weg; mono, Spitze −6 dB) |
 | Am Körper | `player.gd` (`_pocket`, `_update_hand`, `set_pockets`), `player/pocket_map.gd` | `Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den Welt-Gegenstand und trägt ihn in `has_compass`/`map_pages`/`keyring` ein – braucht keine freie Hand. Linke Hand (`_left_hand`) für Aktionen `map` (Tab) und `compass` (F), nicht bei `hands_blocked()` oder im Gespräch; `inspecting` halbiert das Tempo. Türen fragen `player.has_key(id)`. Gespeichert unter `player` |
@@ -1493,7 +1604,7 @@ zugezeichnet, Heizkeller rot eingekreist). Alle Blätter einmal untereinander in
 | Zerplatzen, Kürbismatsch | `item.gd` (`BURST_KINDS`, `_physics_process`, `burst`, `_splash_chunks`, `Kind.PUMPKIN_MUSH`, `mush_extra`, `mush_color`, `_take_portion`, `_rot`), `shaders/psx_decal.gdshader`, `Mat.decal`, `stove.gd` (`dish_for`) | Spielkonzept 5.8 (2026-10-22). Nur `PUMPKIN`, `CARVED_PUMPKIN` und `MINI_PUMPKIN` haben `_physics_process` (in `_ready` an): Solange der Körper frei ist (nicht gehalten, eingefroren, eingesteckt), merkt er sich den Punkt, an dem ein Fall beginnt (`_fall_top`, jedes Bild neu, solange `linear_velocity.y` > −0,5); war er im letzten Bild schneller als `IMPACT_SPEED` (3 m/s) nach unten und hat jetzt mehr als die Hälfte davon verloren, ist das ein Aufprall – aus mehr als `BURST_HEIGHT` (3 m) → `burst()`: Strahl nach unten (Ebene 1) für den Boden, dort Kürbismatsch gleicher Sorte und gleichen Besitzers mit zufälliger Drehung – Kantenlänge `PumpkinKinds` `splat` (Zierkürbis `MINI_SPLAT` 0,4 m) ± 10 %, Hände voll aus `portions` (Riese 10–20, sonst 1). `_splash_chunks` je nach Spritzergröße (`k` = √(splat/0,9)): einmalige `CPUParticles3D` (räumen sich per pausierbarem Timer weg) und `CHUNKS_PER_M` × splat (3…`CHUNK_MAX`) echte `RigidBody3D`-Stücke (Ebene 0, Maske 1, nicht interagierbar) in Schalen-, Matsch- und Fruchtfleischfarbe, die davonfliegen, aufschlagen und nach `CHUNK_STAY` (5–9 s) per Tween am Stück selbst wegschrumpfen (Tweens pausieren mit dem Spiel; der Kürbis ist da schon frei, darum kein Lambda an ihm). Lärm `pumpkin_splat` (8 m), Untertitel in 12 m, Trace `[Kürbis]`. Die Kerze eines geschnitzten Kürbisses geht mit verloren. **Kürbismatsch** (`PUMPKIN_MUSH`, hinten an `Item.Kind`): am Boden eine `PlaneMesh` 1 × 1, skaliert über `_spread.scale` auf `mush_size`, mit `assets/textures/pumpkin_splash.png` und `Mat.decal` (eigenes Material: Umriss aus dem Alpha, leicht zur Kamera gezogen, `fade` als echte Transparenz, damit das Verblassen kaum auffällt), eingefärbt über `albedo` = `mush_color` / `MUSH_TEX_COLOR` (mittlere Texturfarbe, je Kanal – so bleibt die Schattierung der Textur); `mush_color` = Schale halb zu `FLESH_COLOR`. In der Hand vier Klumpen (`_pile`/`_spread` wie Herbstlaub, „aufsammeln“), Deko 0, Preis 0. Der Spieler schiebt Matsch nicht weg (`Player._push_items`); mit mehr als einer Hand voll ist er eingefroren. Zusatzfeld `mush_extra` = `"sorte,zeitpunkt,größe,hände"` (z. B. `"giant,1234.50,4.37,15"`, kein neues Speicherfeld; die Zahlen werden der Reihe nach gelesen, ältere Stände mit nur dem Zeitpunkt laden mit 0,9 m). **Riesenspritzer:** `interact` mit `portions` > 1 → `_take_portion`: neuer Matsch mit einer Hand voll (`HANDFUL_SPLAT` 0,6 m) über `Player.try_pick_up` (Hände voll → wieder weg), der Spritzer verliert eine Hand voll und schrumpft auf √((n−1)/n) seiner Kantenlänge, Kollisionsbox mit; die letzte Hand voll ist er selbst. `mushed_at` = Spielzeit des Zerplatzens. `_rot()` (in `_process`, nicht in der Hand): nach `MUSH_ROT_AFTER` (ein Tag, `Calendar.DAY_SECONDS`) über `MUSH_FADE` (halber Tag) ausblenden, dann `queue_free` (Trace). Debug `--fall[=h[,sorte]]` (Kürbis aus h m vor dir, nach 1 s; Sorte oder `mini`) |
 | Werfen (Streiche) | `item.gd` (`throw_from`, `thrown`, `THROW_IMPACT`, `_shatter_candle`), `trace_mark.gd` (`wax_splash`), `guests/pranks.gd` | Spielkonzept 6.13. `throw_from(start, tempo)` löst den Gegenstand aus der Hand, setzt Schwung und Drall und schaltet `_physics_process` ein (auch für Kerzen). Solange `thrown`: verliert er bei mehr als `THROW_IMPACT` m/s auf einen Schlag die Hälfte seines Tempos, ist das der Aufprall – Kürbisse und Zierkürbisse `burst()` (aus jeder Höhe), Kerzen `_shatter_candle()`: Spur `wax_splash` am Boden (`Traces.add_guest_drop`, zählt zu den Gästespuren, wird gespeichert), Lärm `wax_splat`, brennend `DecoFire.ignite_near`, die Kerze ist weg. Trace `[Streich]` |
 | Feuer | `world/deco_fire.gd` (`DecoFire`), `trace_mark.gd` (`soot`) | Spielkonzept 5.11. `DecoFire.FLAMMABLE` (Laub, Spinnweben, Lakengespenst, Fledermäuse, Spinne, Besen, Bettlaken). `ignite_near(ort)`: freie leichte Deko bis `IGNITE_RANGE` waagerecht und `IGNITE_HEIGHT` darüber → `ignite(item)`: eigener `StaticBody3D` neben dem Gegenstand (Meta `fire` am Gegenstand), Ebene 3 – fängt den Blick ab: „… brennt – austreten [E]“ → Deko-Stärke × `SCORCHED`, Name „(angesengt)“. Brennend `deco_strength` 0, Flammen (`CPUParticles3D`, Farbverlauf), `OmniLight3D` in Gruppe `light_source` (zählt in `light_at`), Lärm `fire` alle `NOISE_EVERY` s, springt alle `SPREAD_EVERY` s mit `SPREAD_CHANCE` auf leichte Deko in `SPREAD_RANGE` über; nach `BURN_TIME` Ruß (`soot`) am Boden, Gegenstand weg. Hebt jemand ihn auf, erstickt es. Nicht gespeichert. Trace `[Feuer]` |
-| Süßigkeiten-Truhen, Automaten | `world/extra_fixtures.gd` (`ExtraFixtures.place`, aus `main._ready` nach `LevelBuilder.build`, vor `_bake_navigation`), `world/vending_machine.gd`, `world/chest.gd` (`size`, `wood_color`, `title`) | Spielkonzept 3.2, 6.13 (2026-10-22). Physikabfragen sehen frisch gebaute Körper erst nach dem nächsten Physikschritt – `_Space` sammelt darum die Hüllquader aller `CollisionShape3D` auf Ebene 1/2 unter `builder.root` und prüft selbst (`is_free`, `hit_distance` mit `min_height` für Wände). **Truhe** je Zimmer: an der Türwand innen (`CHEST_OFFSETS` seitlich), sonst an der Rückwand (Abstand per `hit_distance`), Front ins Zimmer, `room_at` muss passen; `Chest` mit `CHEST_SIZE`, Meta `sweets_room`, Gruppe `sweet_chests` (und wie jede Truhe `chests` – gespeichert, im Fingerabdruck), darin `SWEETS_START` Süßigkeiten als Gegenstände. `Social.take_room_sweet(zimmer)` nimmt eins heraus (Gäste an der Tür). **Automaten**: je ein Paar (`snack` → `SWEETS`, `cola` → `SODA_CAN` „cola“, `PRICE` 1) in der Lobby und auf jedem Stockwerk mit Flur nahe `stairwell_point`: von den nächsten Wegpunkten aus die erste Wand (≥ `WALL_HEIGHT`) in vier Richtungen, Rücken daran, vor ihnen `AISLE` frei, keine Tür in `DOOR_CLEAR` + halbe Türbreite, derselbe Raum. Ebene 1 (im NavMesh), Front leuchtet (`OmniLight3D` in `light_source`), Schild als `Label3D`. Nicht gespeichert (kein Zustand). Ausgabe `[Ausstattung] … von … Zimmern …, n Automaten` |
+| Süßigkeiten-Truhen, Automaten | `level_builder.gd` (`_furniture`: `chest` → `_sweets_chest`, `snack_machine`/`drink_machine`), `world/vending_machine.gd` (`size`), `world/chest.gd` (`size`, `wood_color`, `title`) | Spielkonzept 3.2, 6.13; seit 22.10. nur aus dem Plan (vorher stellte `ExtraFixtures` sie selbst auf – der Plan wird von Hand eingerichtet). **Truhe** (`Möbel: Truhe`) in einem Hotelzimmer = dessen Süßigkeiten-Truhe: Größe aus dem Plan, Höhe `SWEETS_CHEST_H`, Meta `sweets_room`, Gruppe `sweet_chests` (und wie jede Truhe `chests` – gespeichert, im Fingerabdruck), darin `SWEETS_CHEST_COUNT` Süßigkeiten als Gegenstände. `Social.take_room_sweet(zimmer)` nimmt eins heraus (Gäste an der Tür); ohne Truhe im Zimmer gibt es von dort nichts. **Automaten** (`Möbel: Snackautomat` → `snack`/`SWEETS`, `Möbel: Getränkeautomat` → `cola`/`SODA_CAN` „cola“, `PRICE` 1): Breite und Tiefe aus dem Plan, Höhe `VendingMachine.SIZE.y`, Front zur helleren Kante. Ebene 1 (im NavMesh), Front leuchtet (`OmniLight3D` in `light_source`), Schild als `Label3D`. Nicht gespeichert (kein Zustand) |
 | Taschenlampe | `world/flashlight.gd`, `world/uv_mark.gd`, `item.gd` (`FLASHLIGHT`, `BATTERY`, `UV_FILTER`) | `Flashlight` hängt als Kind am Item (`item.flashlight`), Zustand steckt in `create_extra()` (`"c=0.42;uv;m=uv;on"`), also kein eigener Speicher-Eintrag. Bewusst **ein `SpotLight3D` außerhalb von `light_source`** – zählt nicht für Helligkeit/Abschreckung (`light_at` castet ohnehin auf `OmniLight3D`) und nicht als `item.lit` (sonst bläst das Monster sie aus, Gäste tropfen Wachs …). Auffälligkeit über `flashlight.carried_conspicuity()` in `Senses.conspicuity`. Nur in der Hand des Spielers: UV prüft alle 0,1 s die Gruppe `uv_marks` (Kegel + Sichtlinie `SIGHT_MASK`, `UvMark.shine()`) und jeden Frame das Monster (`can_be_repelled_by_uv`, Brust im Kegel) → nach `director.uv_repel_time()` `on_monster_uv()`. Einsetzen von Batterie/UV-Aufsatz in `Item._fitting_prompt/_fit` (nur eigene oder herrenlose Teile). `UvMark`: Leuchtschrift (`setup_text`, im LevelBuilder `_uv_writing`) oder Kästen (`add_box`, Nachglanz der Fußspuren in `Traces`); läuft nur, solange es leuchtet. Warnungszettel: `NOTES[id]["uv"]` |
 | Kalender | `calendar.gd` | statische Datumsfunktionen + Abreißkalender in Zimmer 13 |
 | Telefone | `world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd` | `HotelPhone` auf jedem Zimmertisch (nicht Wäscherei) + Haupttelefon an der Rezeption (`room_id` `"lobby"`, Nummer `"0"`); gespeichert wird nur `off_hook` (Gruppe `phones`, ab Spielstand-Version 5). `PhoneCalls` (`Game.phones`) hat die Anrufe: eingehend nur für Zimmer 13 (warnen/lügen/plaudern/unheimlich), ausgehend per Wählseite, ferne Telefone als Atmosphäre. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`, eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die Zufallsfolge). Unheimliche Anrufe hinterlassen einen Hörer neben dem Apparat im Herkunftszimmer. Laufende Anrufe werden nicht gespeichert |

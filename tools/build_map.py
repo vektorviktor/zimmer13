@@ -1,13 +1,17 @@
-# Liest den Gebäudeplan map.aseprite (Spielkonzept 7.5) und schreibt je Stockwerk eine Layout-Datei, aus der
-# der LevelBuilder baut: Wände mit Öffnungen, Flächen (Zimmer, Flure, Gärten …), Zimmer mit Nummer, Tür und
+# Liest den Gebäudeplan map_a.aseprite (Spielkonzept 7.5, 7.10) und schreibt je Stockwerk eine Layout-Datei, aus
+# der der LevelBuilder baut: Wände mit Öffnungen, Flächen (Zimmer, Flure, Gärten …), Zimmer mit Nummer, Tür und
 # Fenstern, dazu Pflanzkübel, Bäume, Treppen, Aufzüge, Rezeption, Luftraum, Bereiche und Objekte.
+#
+# Der Plan gehört dem Zeichner – das Skript liest ihn nur (auch die Zimmer werden von Hand eingerichtet).
 #
 # Aufbau der Plandatei (Vorlage, mit dem Zeichner abgestimmt):
 #   - Maßstab 1 m = 10 px. Wände sind 2 px dicke Linien in der Palettenfarbe „Wand“ (20 cm).
-#   - Jede Ebenengruppe der obersten Stufe ist ein Stockwerk: „EG“, „OG1“, „OG2“ …, „Keller“. Gezählt werden
-#     alle normalen Ebenen der Gruppe, egal ob sichtbar. Nicht gezählt: Referenzebenen und Ebenen, deren Name
-#     mit „Beschriftung“, „Skizze“ oder „Notiz“ beginnt.
-#   - Die Bedeutung jeder Farbe steht als Name in der **Legende map.gpl** neben der Plandatei (GIMP-Palette,
+#   - Die Stockwerke liegen untereinander auf derselben Ebene, je BAND px hoch (FLAT_FLOORS: oben das Obergeschoss,
+#     in der Mitte das Erdgeschoss, unten der Keller) – deckungsgleich, wenn man sie um BAND verschiebt. Gezählt
+#     werden alle normalen Ebenen, egal ob sichtbar; nicht gezählt: Referenzebenen und Ebenen, deren Name mit
+#     „Beschriftung“, „Skizze“ oder „Notiz“ beginnt. Ältere Pläne (map.aseprite) mit einer Ebenengruppe je
+#     Stockwerk („EG“, „OG1“ …, „Keller“) gehen weiterhin.
+#   - Die Bedeutung jeder Farbe steht als Name in der **Legende <plan>.gpl** neben der Plandatei (GIMP-Palette,
 #     „R G B<Tab>Name“ je Zeile, FILLS/OPENINGS unten). Aseprite 1.3.18 speichert keine Palettennamen; ohne
 #     .gpl gelten die Namen aus dem Paletten-Chunk (ältere Dateien). Farben ohne Namen werden gemeldet und
 #     übergangen.
@@ -15,28 +19,36 @@
 #   - Türanschlag: ein Pixel „Türanschlag“ statt eines Türpixels an einem Ende des Strichs, in der Wandhälfte
 #     der Seite, in die die Tür aufgeht – dort sitzt das Scharnier, dort steht die offene Tür. Ohne Pixel gilt
 #     die Regel im LevelBuilder (in Räume, nicht in Flure; Scharnier rechts). Bei Doppeltüren zählt nur die Seite.
-#   - Objektebenen je Stockwerk (eigene Legende, Palettennamen mit Vorsatz): „Möbel“ (Grundfläche als Rechteck,
-#     ein Strich „Möbel: Vorderseite“ am Rand zeigt die Vorderseite), „Ausstattung“, „Gegenstände“ und „Lichter“
-#     (je ein 3×3-Punkt, Wandsachen innen an der Wand; Halogenleuchten als Strich in ihrer Länge, 8×2 px), dazu „Teppiche“ (Rechtecke; eigene Ebene, damit sie unter
-#     Möbeln liegen können – ein Läufer läuft entlang der langen Seite). Sie zählen nicht zum Grundriss.
+#   - Ebene „Zimmer“: deckende Flächen markieren die Hotelzimmer – alles darunter (Zimmerflächen, Bad,
+#     Verbindungstüren dazwischen) gehört zu einem Zimmer mit einer Nummer. Ohne die Ebene ist jede Fläche
+#     „Zimmer“ ein eigenes Zimmer.
+#   - Objektebenen (eigene Legende, Palettennamen mit Vorsatz): „Möbel“ (Grundfläche als Rechteck; die
+#     Vorderseite zeigt ein Strich „Möbel: Vorderseite“ am Rand oder – bei den neueren Möbeln – eine Zeile in
+#     der helleren Farbe „<Möbel> Vorderseite“, beim Doppelbett „… Kopfende“), „Ausstattung“, „Gegenstände“ und
+#     „Lichter“ (je ein 3×3-Punkt, Wandsachen innen an der Wand; Halogenleuchten als Strich in ihrer Länge, 8×2 px),
+#     dazu „Teppiche“ (Rechtecke; eigene Ebene, damit sie unter Möbeln liegen können – ein Läufer läuft entlang
+#     der langen Seite). Sie zählen nicht zum Grundriss.
+#   - Bäume (Fläche „Baum“) markieren nur den Standort, die Größe kommt aus dem Modell.
 #   - Slices (Aseprite-Werkzeug „Slice“) tragen Namen: „Raum: Küche“, „Bereich: Lobby“, „Treppe: Lobby“
-#     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite). Ohne Vorsatz gelten sie
-#     im EG, sonst mit Stockwerk davor: „OG1 Raum: Bibliothek“.
+#     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite). Sie gelten im Stockwerk,
+#     in dem ihre Mitte liegt (bei Ebenengruppen: ohne Vorsatz im EG, sonst „OG1 Raum: Bibliothek“).
 #
 # Koordinaten der Ausgabe: Meter, x nach Osten, z nach Süden (Norden = −Z wie in Godot), Ursprung = Mitte
-# des Haupteingangs auf der Mittellinie der Südwand. Rechtecke als [x0, z0, x1, z1].
+# des Haupteingangs auf der Mittellinie der Südwand (aus dem Plan des EG). Rechtecke als [x0, z0, x1, z1].
 #
 # Aufruf (Python 3, keine Zusatzpakete):
-#   python tools/build_map.py [map.aseprite] [assets/maps] [vorschau-ordner]
+#   python tools/build_map.py [map_a.aseprite] [assets/maps] [vorschau-ordner]
 import json, math, os, struct, sys, zlib
 from collections import deque
 
-SRC = sys.argv[1] if len(sys.argv) > 1 else "map.aseprite"
+SRC = sys.argv[1] if len(sys.argv) > 1 else "map_a.aseprite"
 DST_DIR = sys.argv[2] if len(sys.argv) > 2 else "assets/maps"
 PREVIEW_DIR = sys.argv[3] if len(sys.argv) > 3 else ""
 
 PX = 0.1                    ## Meter pro Pixel
-ORIGIN = (1155, 1810)       ## Pixel des Ursprungs (Mitte Haupteingang, Mittellinie Südwand)
+BAND = 790                  ## Höhe eines Stockwerks im Plan ohne Ebenengruppen (Versatz zwischen den Stockwerken)
+FLAT_FLOORS = ("OG1", "EG", "UG")   ## Stockwerke von oben nach unten
+UNITS_LAYER = "Zimmer"      ## Ebene mit den Flächen der Hotelzimmer
 MIN_WALL_RUN = 6            ## kürzeste erkannte Wand in Pixeln (kürzere Läufe sind Querschnitte)
 MIN_WALL_NET = 300          ## kleinere Flecken in Wandfarbe sind Schrift, keine Wände
 IGNORED_LAYERS = ("Beschriftung", "Skizze", "Notiz")
@@ -57,6 +69,8 @@ FILLS = {
 	# Untergeschoss (20.10.): Gänge, Heizkeller, Technikraum, Wäscherei, leere (verschlossene) Kellerräume
 	"Kellerboden": ("cellar", False), "Heizkeller": ("boiler_room", False), "Technikraum": ("plant_room", False),
 	"Wäscherei": ("laundry_room", False), "Kellerraum": ("cellar_room", False),
+	# Plan map_a (22.10.): Kieswege im Garten, Müllraum im Keller
+	"Kiesweg": ("gravel", True), "Müllraum": ("trash_room", False),
 }
 ## Palettenname → Öffnungsart (Strich auf der Wandlinie)
 OPENINGS = {
@@ -64,6 +78,8 @@ OPENINGS = {
 	"Betriebstür": "service_door", "Aufzugtür": "elevator_door", "Haupteingang": "main_entrance",
 	"Kniestocktür": "attic_door",
 }
+## Flächen, die wie unbemalt zählen (kein Boden, nichts gebaut)
+EMPTY_FILLS = ("Kellerraum zu",)
 WALL_NAME, GLASS_NAME = "Wand", "Glaswand"
 HINGE_NAME = "Türanschlag"   ## ein Pixel auf dem Türstrich: Scharnierende und Aufgehseite
 ## Objektlegende (Palettenname → Art). Möbel und Teppiche sind Rechtecke, alles andere 3×3-Punkte.
@@ -74,8 +90,16 @@ FURNITURE = {
 	"Möbel: Theke": "bar_counter", "Möbel: Regal": "shelf", "Möbel: Küchenzeile": "kitchen_counter", "Möbel: Herd": "stove",
 	"Möbel: Waschtisch": "washbasin", "Möbel: Waschmaschine": "washing_machine", "Möbel: Wäschekiste": "laundry_box",
 	"Möbel: Säule": "pillar", "Möbel: Kratzbaum": "cat_tree",
+	# Plan map_a (22.10., Legende map_legend.png): Vorderseite als hellere Zeile „<Name> Vorderseite“ (FRONT_SUFFIXES)
+	"Möbel: Doppelbett": "double_bed", "Möbel: Badewanne": "bathtub", "Möbel: Waschbecken": "sink",
+	"Möbel: Fußmatte": "doormat", "Möbel: Dusche": "shower", "Möbel: WC": "toilet", "Möbel: Mülleimer": "trash_can",
+	"Möbel: Snackautomat": "snack_machine", "Möbel: Getränkeautomat": "drink_machine",
+	"Möbel: Zimmertisch": "room_table", "Möbel: Stuhl": "chair",
 }
-FRONT_NAME = "Möbel: Vorderseite"
+FRONT_NAME = "Möbel: Vorderseite"   ## Strich am Rand, gilt für jedes Möbel
+## Hellere Zeile am Rand, gilt nur für ihr Möbel: „Möbel: Dusche Vorderseite“ → facing. Beim Doppelbett ist sie das
+## Kopfende (→ head statt facing).
+FRONT_SUFFIXES = {" Vorderseite": "facing", " Kopfende": "head"}
 FITTINGS = {
 	"Ausstattung: Lichtschalter": "switch", "Ausstattung: Telefon": "phone", "Ausstattung: Bild": "painting",
 	"Ausstattung: Zettel": "note", "Ausstattung: UV-Schrift": "uv_writing", "Ausstattung: Spinnweben": "cobweb",
@@ -107,22 +131,23 @@ LIGHTS = {
 ## Einbauten, die keine eigenen Bodenflächen sind
 FIXTURES = ("tree", "planter", "reception", "terrace_edge", "balcony_edge", "stairs", "void")
 
-## Zimmernummern (Spielkonzept 7.5): je Flügel ein Laufweg ab der Lobby um den Rundflur (Mittellinien in px),
-## danach der Querflur. Rechte Hand ungerade, linke gerade. Ost = x1xx, West = x2xx; die erste Ziffer ist das
-## Stockwerk (EG 0, OG1 1 …). Darüber gilt die Nummer des EG-Zimmers unter der Flurtür mit dem Stockwerk vorne
-## (number_from_eg); die Laufwege dienen dort nur noch den Flurabschnitten.
-## legs: Name je Teilstück des Laufwegs (wird zu einem Flurabschnitt mit eigenem Lichtschalter); cross_end: Ende
-## des Querflurs.
+## Zimmernummern (Spielkonzept 7.5): je Flügel ein Laufweg ab der Lobby um den Rundflur (Mittellinien in px des
+## Stockwerks), optional danach ein Querflur (cross = (y, x-Anfang, Richtung), cross_end = Ende). Rechte Hand ungerade,
+## linke gerade. Ost = x1xx, West = x2xx; die erste Ziffer ist das Stockwerk (EG 0, OG1 1 …). Darüber gilt die Nummer
+## des EG-Zimmers unter der Flurtür mit dem Stockwerk vorne (number_from_eg); die Laufwege dienen dort nur noch den
+## Flurabschnitten (der Grundriss der Flure ist oben derselbe).
+## legs: Name je Teilstück des Laufwegs (wird zu einem Flurabschnitt mit eigenem Lichtschalter).
 WINGS = {
 	"EG": {
-		"ost": dict(base=100, path=[(1150, 1730), (1830, 1730), (1830, 850), (1390, 850), (1390, 1730)],
-			legs=["Südflur", "Ostflur", "Nordflur", "Gartenflur"], cross=(1290, 1390, 1), cross_end=1830),
-		"west": dict(base=200, path=[(1080, 1730), (480, 1730), (480, 850), (920, 850), (920, 1730)],
-			legs=["Südflur", "Westflur", "Nordflur", "Gartenflur"], cross=(1290, 920, -1), cross_end=480),
+		"ost": dict(base=100, path=[(850, 690), (1450, 690), (1450, 250), (1010, 250), (1010, 690)],
+			legs=["Südflur", "Ostflur", "Nordflur", "Gartenflur"]),
+		"west": dict(base=200, path=[(700, 690), (100, 690), (100, 250), (540, 250), (540, 690)],
+			legs=["Südflur", "Westflur", "Nordflur", "Gartenflur"]),
 	},
 }
+## Zimmer mit fester Nummer, wo der Plan sie beschriftet: Nummer → Pixel im Zimmer. Der Laufweg überspringt sie.
+PINNED = {"EG": {"0113": (1120, 640)}}   # Zimmer 13 des Spielers
 WING_NAMES = {"ost": "Ostflügel", "west": "Westflügel"}
-WING_SPLIT_X = 1155   ## Zimmer westlich davon gehören zum Westflügel
 ## Türschilder, die nicht die Nummer zeigen: 0113 ist das Spielerzimmer, das Schild ist abgebrochen
 BROKEN_SIGNS = {"0113": "13"}
 
@@ -189,6 +214,10 @@ def read_legend(path):
 
 
 W, H, LAYERS, PALETTE, SLICES = read_aseprite(SRC)
+## Ohne Ebenengruppen liegen die Stockwerke untereinander (FLAT_FLOORS); jedes wird ein eigenes Bild der Höhe BAND
+FLAT = not any(l["level"] == 0 and l["type"] == 1 for l in LAYERS)
+if FLAT:
+	H = BAND
 LEGEND = os.path.splitext(SRC)[0] + ".gpl"
 if os.path.exists(LEGEND):
 	PALETTE = read_legend(LEGEND)
@@ -200,6 +229,7 @@ FILL_OF = {BY_NAME[n]: k for n, k in FILLS.items() if n in BY_NAME}          # F
 OPENING_OF = {BY_NAME[n]: k for n, k in OPENINGS.items() if n in BY_NAME}    # Farbe → Öffnungsart
 DOOR = BY_NAME["Tür Flur"]
 HINGE = BY_NAME.get(HINGE_NAME, "-")
+EMPTY = {BY_NAME[n] for n in EMPTY_FILLS if n in BY_NAME}                     # Farben, die wie unbemalt zählen
 KNOWN = set(FILL_OF) | set(OPENING_OF) | {WALL, GLASS}
 
 def floor_level(name):
@@ -212,55 +242,85 @@ def floor_level(name):
 	return None
 
 OBJECT_IMAGES = {}   # Stockwerk → Objektebene → {Pixelindex: Farbe}
+UNIT_IMAGES = {}     # Stockwerk → {Pixelindex: Farbe} der Ebene „Zimmer“
 
-def paint(layer, img):
-	"""Deckende Pixel einer Ebene in img eintragen (Liste oder dict, Index = y·W + x)."""
+def paint(layer, img, dy=0):
+	"""Deckende Pixel einer Ebene in img eintragen (Liste oder dict, Index = y·W + x), dy Pixel nach oben versetzt."""
 	x, y, cw, ch, px = layer["cel"]
 	for yy in range(ch):
-		Y = y + yy
+		Y = y + yy - dy
 		if not 0 <= Y < H:
 			continue
 		for xx in range(cw):
 			X = x + xx
 			s = (yy * cw + xx) * 4
 			if 0 <= X < W and px[s + 3] > 127:
-				img[Y * W + X] = px[s:s + 3].hex()
+				c = px[s:s + 3].hex()
+				img[Y * W + X] = "" if c in EMPTY else c
 	return img
 
 
 def floor_images():
-	"""Stockwerksname → Farbliste (Hex, „“ = leer), zusammengesetzt aus den gezählten Ebenen der Gruppe."""
+	"""Stockwerksname → Farbliste (Hex, „“ = leer), zusammengesetzt aus den gezählten Ebenen des Stockwerks."""
 	floors, group = {}, None
+	def add(layer, floor, dy=0):
+		if layer["name"] in OBJECT_LAYERS:
+			OBJECT_IMAGES.setdefault(floor, {})[layer["name"]] = paint(layer, {}, dy)
+		elif layer["name"] == UNITS_LAYER:
+			UNIT_IMAGES[floor] = paint(layer, {}, dy)
+		else:
+			paint(layer, floors[floor], dy)
+	if FLAT:
+		for floor in FLAT_FLOORS:
+			floors[floor] = [""] * (W * H)
 	for layer in LAYERS:
-		if layer["level"] == 0:
+		if not FLAT and layer["level"] == 0:
 			group = layer["name"] if layer["type"] == 1 else None
 			if group:
 				assert floor_level(group) is not None, "Unbekannte Stockwerksgruppe „%s“ (EG, OG1 …, Keller)" % group
 				floors[group] = [""] * (W * H)
 			continue
-		if not group or layer["type"] != 0 or layer["flags"] & 64 or layer["cel"] is None:
+		if not (FLAT or group) or layer["type"] != 0 or layer["flags"] & 64 or layer["cel"] is None:
 			continue
 		if layer["name"].startswith(IGNORED_LAYERS):
 			continue
-		if layer["name"] in OBJECT_LAYERS:
-			OBJECT_IMAGES.setdefault(group, {})[layer["name"]] = paint(layer, {})
-			continue
-		paint(layer, floors[group])
+		if FLAT:
+			for n, floor in enumerate(FLAT_FLOORS):
+				add(layer, floor, n * BAND)
+		else:
+			add(layer, group)
 	assert floors, "Keine Stockwerksgruppen gefunden (Ebenengruppen „EG“, „OG1“ …)"
 	return floors
 
 
+def entrance_origin(COL):
+	"""Ursprung in Pixeln: Mitte des Haupteingangs auf der Mittellinie seiner Wand (Plan des EG)."""
+	c = BY_NAME["Haupteingang"]
+	pts = [i for i, v in enumerate(COL) if v == c]
+	assert pts, "EG: kein Haupteingang im Plan – er legt den Ursprung fest"
+	xs, ys = [i % W for i in pts], [i // W for i in pts]
+	mid = lambda v: (min(v) + max(v) + 1) / 2   # Pixelkanten
+	return tuple(int(c) if c == int(c) else c for c in (mid(xs), mid(ys)))
+
+
 def slices_of(floor):
-	"""Slices dieses Stockwerks als (Art, Name, Slice); Vorsatz „OG1 “ usw. wählt das Stockwerk."""
+	"""Slices dieses Stockwerks als (Art, Name, Slice): ohne Ebenengruppen nach der Lage ihrer Mitte (y dann im
+	Stockwerk), sonst wählt der Vorsatz „OG1 “ usw. das Stockwerk."""
 	out = []
 	for s in SLICES:
 		name = s["name"]
-		head = name.split(" ", 1)
-		target = "EG"
-		if len(head) == 2 and floor_level(head[0]) is not None:
-			target, name = head
-		if target != floor:
-			continue
+		if FLAT:
+			n = int((s["y"] + s["h"] / 2) // BAND)
+			if n >= len(FLAT_FLOORS) or FLAT_FLOORS[n] != floor:
+				continue
+			s = dict(s, y=s["y"] - n * BAND)
+		else:
+			head = name.split(" ", 1)
+			target = "EG"
+			if len(head) == 2 and floor_level(head[0]) is not None:
+				target, name = head
+			if target != floor:
+				continue
 		if ":" not in name:
 			print("  Warnung: Slice „%s“ ohne Art (z. B. „Raum: …“) – übergangen" % s["name"])
 			continue
@@ -507,6 +567,42 @@ def build_floor(floor, COL, open_above, eg=None):
 	if len(corridors) == 1:
 		corridors[0]["id"] = "flure"
 
+	# Hotelzimmer aus der Ebene „Zimmer“: alle Zimmerflächen unter einer zusammenhängenden Markierung werden
+	# eine Fläche (ein Zimmer mit einer Nummer); Türen zwischen ihnen sind Innentüren
+	unit_of = {}
+	marks = UNIT_IMAGES.get(floor, {})
+	for start in marks:
+		if start in unit_of:
+			continue
+		unit_of[start] = start
+		q = deque([start])
+		while q:
+			j = q.popleft()
+			for k in (j + 1, j - 1, j + W, j - W):
+				if k in marks and k not in unit_of and abs(k % W - j % W) <= 1:
+					unit_of[k] = start
+					q.append(k)
+	units = {}
+	for r in [r for r in regions if r["kind"] == "room"]:
+		comp, _ = comps_of[id(r)]
+		votes = {}
+		for j in comp:
+			if j in unit_of:
+				votes[unit_of[j]] = votes.get(unit_of[j], 0) + 1
+		if not votes:
+			if marks:
+				print("  Warnung: %s – Fläche „Zimmer“ bei %s liegt auf keiner Markierung der Ebene „%s“" % (floor,
+					r["rects"][0][:2], UNITS_LAYER))
+			continue
+		units.setdefault(max(votes, key=votes.get), []).append(r)
+	for parts in units.values():
+		first = parts[0]
+		comp = [j for r in parts for j in comps_of[id(r)][0]]
+		for r in parts[1:]:
+			regions.remove(r)
+		first["rects"] = rects(comp)
+		comps_of[id(first)] = (comp, bbox(comp))
+
 	def region_for(s, kinds=None):
 		"""Fläche mit den meisten Pixeln im Slice-Rechteck."""
 		best, best_n = None, 0
@@ -646,28 +742,43 @@ def build_floor(floor, COL, open_above, eg=None):
 						g.append(nb)
 			xs = [v[0] for v in g]
 			ys = [v[1] for v in g]
-			out.append(((min(xs) + max(xs) + 1) / 2, (min(ys) + max(ys) + 1) / 2, max(max(xs) - min(xs), max(ys) - min(ys)) + 1))
+			horizontal = max(xs) - min(xs) >= max(ys) - min(ys)
+			out.append(((min(xs) + max(xs) + 1) / 2, (min(ys) + max(ys) + 1) / 2, max(max(xs) - min(xs), max(ys) - min(ys)) + 1,
+				horizontal))
 		return out
 
 	def door_to(gx, gy):
-		"""Wohin führt ein Türstrich (Mitte)? „bath“ ins Bad, „room“ ins Nachbarzimmer (Verbindungstür), sonst
-		„corridor“ (Flur, Lobby …). Gelesen wird beiderseits der Wand."""
+		"""Wohin führt ein Türstrich (Mitte)? „bath“ ins Bad, „inner“ in einen Raum desselben Hotelzimmers (Ebene
+		„Zimmer“), „room“ ins Nachbarzimmer (Verbindungstür), sonst „corridor“ (Flur, Lobby …). Gelesen wird
+		beiderseits der Wand."""
 		x, y = int(gx), int(gy)
-		sides = [FILL_OF.get(col(x + dx * k, y + dy * k), ("", False))[0]
-			for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) for k in (2, 3)]
+		pts = [(x + dx * k, y + dy * k) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) for k in (2, 3)]
+		sides = [FILL_OF.get(col(*p), ("", False))[0] for p in pts]
 		if "bath" in sides:
 			return "bath"
-		return "room" if sides.count("room") >= 4 else "corridor"
+		if sides.count("room") < 4:
+			return "corridor"
+		owners = {unit_of.get(p[1] * W + p[0]) for p, kind in zip(pts, sides) if kind == "room"}
+		return "inner" if len(owners) == 1 and None not in owners else "room"
 
 	def opening_info(comp, name, cx, cy, to=None):
+		"""Öffnungen der Farbe name am Rand von comp: Mitte, Normale (aus dem Raum hinaus) und Breite."""
 		out = []
 		if name not in BY_NAME:
 			return out
-		for gx, gy, width in strokes(touching(comp, BY_NAME[name])):
+		inside = set(comp)
+		for gx, gy, width, horizontal in strokes(touching(comp, BY_NAME[name])):
 			if to is not None and door_to(gx, gy) != to:
 				continue
-			vx, vy = gx - cx, gy - cy
-			normal = [1 if vx > 0 else -1, 0] if abs(vx) > abs(vy) else [0, 1 if vy > 0 else -1]
+			# Normale: auf welcher Seite der Wand liegt der Raum? (bei L-förmigen Zimmern trügt die Mitte)
+			x, y = int(gx), int(gy)
+			a, b = ((x, y - 3), (x, y + 3)) if horizontal else ((x - 3, y), (x + 3, y))
+			in_a, in_b = (p[1] * W + p[0] in inside for p in (a, b))
+			if in_a != in_b:
+				normal = ([0, 1] if in_a else [0, -1]) if horizontal else ([1, 0] if in_a else [-1, 0])
+			else:
+				vx, vy = gx - cx, gy - cy
+				normal = [1 if vx > 0 else -1, 0] if abs(vx) > abs(vy) else [0, 1 if vy > 0 else -1]
 			out.append({"pos": m(gx, gy), "normal": normal, "width": round(width * PX, 2)})
 		return out
 
@@ -684,11 +795,10 @@ def build_floor(floor, COL, open_above, eg=None):
 		suite = False
 		if level > 0 and not doors and connecting:
 			doors, suite = connecting[:1], True   # Suite: nur über das Nachbarzimmer erreichbar (Spielkonzept 7.7)
-		elif level > 0 and not doors:
-			print("  Hinweis: %s – Fläche „Zimmer“ bei %s hat keine Tür, bleibt geschlossen" % (floor, m(cx, cy)))
+		elif not doors:
+			print("  Hinweis: %s – Fläche „Zimmer“ bei %s (Pixel %d,%d) hat keine Tür, bleibt geschlossen" % (floor,
+				m(cx, cy), cx, cy))
 			continue
-		assert len(doors) == 1 or (level > 0 and doors), "%s: Zimmer bei %s hat %d Flurtüren (%s)" % (floor,
-			m(cx, cy), len(doors), ", ".join(str(d["pos"]) for d in doors))
 		rooms.append({"region": r, "cx": cx, "cy": cy, "door": doors[0], "side_doors": doors[1:], "suite": suite,
 			"bath_doors": opening_info(comp, "Tür Flur", cx, cy, to="bath"),
 			"connecting_doors": connecting,
@@ -727,10 +837,16 @@ def build_floor(floor, COL, open_above, eg=None):
 		r["no"] = "%d%03d" % (level, max(used + [WINGS["EG"][r["wing"]]["base"]]) + 1)
 	# Laufwege: eigene je Stockwerk, sonst die des EG (darüber gleicher Grundriss); das Untergeschoss hat keine
 	wings = WINGS.get(floor, WINGS["EG"] if level >= 0 else {})
+	pinned = {}
+	for no, (x, y) in PINNED.get(floor, {}).items():
+		r = next((r for r in rooms if y * W + x in set(comps_of[id(r["region"])][0])), None)
+		assert r, "%s: Zimmer %s bei Pixel %d,%d (PINNED) liegt in keinem Zimmer" % (floor, no, x, y)
+		r["no"], r["wing"] = no, "west" if r["cx"] < WING_SPLIT_X else "ost"
+		pinned[no] = r
 	for name, w in (wings if not (level > 0 and eg) else {}).items():
 		loop, cross = [], []
 		for r in rooms:
-			if (r["cx"] < WING_SPLIT_X) != (name == "west"):
+			if (r["cx"] < WING_SPLIT_X) != (name == "west") or r.get("no") in pinned:
 				continue
 			dx, dz = r["door"]["normal"]
 			px = r["door"]["pos"][0] / PX + ORIGIN[0] + dx * 20   # Punkt 2 m vor der Tür im Flur
@@ -748,15 +864,21 @@ def build_floor(floor, COL, open_above, eg=None):
 			if best:
 				loop.append((best[1], best[2], r))
 			else:
-				y, x0, direction = w["cross"]
-				assert abs(py - y) < 30, "%s: Zimmer bei %s liegt an keinem Flur aus WINGS" % (floor, m(r["cx"], r["cy"]))
+				y, x0, direction = w.get("cross", (None, 0, 1))
+				assert y is not None and abs(py - y) < 30, "%s: Zimmer bei %s (Tür bei Pixel %d,%d) liegt an keinem Flur aus WINGS" % (
+					floor, m(r["cx"], r["cy"]), px, py)
 				cross.append(((px - x0) * direction, (r["cy"] > y) if direction > 0 else (r["cy"] < y), r))
 		odd, even = w["base"] + 1, w["base"] + 2
+		number = lambda n: "%04d" % (level * 1000 + n)
 		for _, right, r in sorted(loop, key=lambda e: e[0]) + sorted(cross, key=lambda e: e[0]):
 			if right:
-				r["no"], odd = "%04d" % (level * 1000 + odd), odd + 2
+				while number(odd) in pinned:
+					odd += 2
+				r["no"], odd = number(odd), odd + 2
 			else:
-				r["no"], even = "%04d" % (level * 1000 + even), even + 2
+				while number(even) in pinned:
+					even += 2
+				r["no"], even = number(even), even + 2
 			r["wing"] = name
 
 	# Flurabschnitte: Mittellinien der Laufwege, je Teilstück einer (Lichtschalter, Lampen, Wegpunkte)
@@ -765,9 +887,10 @@ def build_floor(floor, COL, open_above, eg=None):
 		for leg, (a, b) in zip(w["legs"], zip(w["path"], w["path"][1:])):
 			corridors.append({"id": slug("%s %s" % (name, leg)), "name": "%s, %s" % (WING_NAMES[name], leg),
 				"wing": name, "a": m(*a), "b": m(*b)})
-		y, x0, _ = w["cross"]
-		corridors.append({"id": slug("%s querflur" % name), "name": "%s, Querflur" % WING_NAMES[name],
-			"wing": name, "a": m(x0, y), "b": m(w["cross_end"], y)})
+		if "cross" in w:
+			y, x0, _ = w["cross"]
+			corridors.append({"id": slug("%s querflur" % name), "name": "%s, Querflur" % WING_NAMES[name],
+				"wing": name, "a": m(x0, y), "b": m(w["cross_end"], y)})
 
 	room_list = []
 	for r in sorted(rooms, key=lambda r: r["no"]):
@@ -827,10 +950,10 @@ def build_floor(floor, COL, open_above, eg=None):
 	trees = []
 	for t in take("tree"):
 		x0, z0, x1, z1 = outer(t["rects"])
-		trees.append({"center": [round((x0 + x1) / 2, 2), round((z0 + z1) / 2, 2)], "radius": round((x1 - x0) / 2, 2)})
+		trees.append({"center": [round((x0 + x1) / 2, 2), round((z0 + z1) / 2, 2)]})   # nur der Standort, Größe im Spiel
 
 	layout = {
-		"source": SRC, "floor": floor, "level": level, "meters_per_pixel": PX, "origin_px": list(ORIGIN),
+		"source": os.path.basename(SRC), "floor": floor, "level": level, "meters_per_pixel": PX, "origin_px": list(ORIGIN),
 		"walls": walls,
 		"regions": [r for r in regions if r["kind"] not in FIXTURES],
 		"rooms": room_list,
@@ -866,6 +989,11 @@ def read_objects(floor, COL):
 			if name in BY_NAME:
 				by_color[BY_NAME[name]] = kind
 	front = BY_NAME.get(FRONT_NAME)
+	own_fronts = {}   # Farbe der helleren Zeile → (Möbelart, Schlüssel in der Ausgabe)
+	for name, kind in FURNITURE.items():
+		for suffix, side_key in FRONT_SUFFIXES.items():
+			if name + suffix in BY_NAME:
+				own_fronts[BY_NAME[name + suffix]] = (kind, side_key)
 	walls = {WALL, GLASS} | set(OPENING_OF)
 	out = {key: [] for key in OBJECT_LAYERS.values()}
 	for layer, img in OBJECT_IMAGES.get(floor, {}).items():
@@ -885,9 +1013,10 @@ def read_objects(floor, COL):
 						seen.add(k)
 						q.append(k)
 			blobs.append((c, pts))
-		fronts = [pts for c, pts in blobs if c == front and key == "furniture"]
+		is_front = lambda c: key == "furniture" and (c == front or c in own_fronts)
+		fronts = [(c, pts) for c, pts in blobs if is_front(c)]
 		for c, pts in blobs:
-			if c == front and key == "furniture":
+			if is_front(c):
 				continue
 			xs, ys = [j % W for j in pts], [j // W for j in pts]
 			x0, y0, x1, y1 = min(xs), min(ys), max(xs) + 1, max(ys) + 1
@@ -900,9 +1029,11 @@ def read_objects(floor, COL):
 				out[key].append({"kind": by_color[c], "rect": m(x0, y0) + m(x1, y1)})
 				continue
 			if key == "furniture":
-				# Vorderseite: der Strich, der am Rand des Rechtecks anliegt
-				facing = None
-				for f in fronts:
+				# Vorderseite: der Strich bzw. die hellere Zeile des Möbels, die am Rand des Rechtecks anliegt
+				facing, side_key = None, "facing"
+				for fc, f in fronts:
+					if fc != front and own_fronts[fc][0] != by_color[c]:
+						continue
 					fx, fy = [j % W for j in f], [j // W for j in f]
 					if not (x0 - 1 <= min(fx) and max(fx) <= x1 and y0 - 1 <= min(fy) and max(fy) <= y1):
 						continue
@@ -911,9 +1042,11 @@ def read_objects(floor, COL):
 					d = {"north": min(fy) - y0, "south": y1 - 1 - max(fy)} if horizontal else \
 						{"west": min(fx) - x0, "east": x1 - 1 - max(fx)}
 					facing = min(d, key=d.get)
+					if fc != front:
+						side_key = own_fronts[fc][1]
 				entry = {"kind": by_color[c], "rect": m(x0, y0) + m(x1, y1)}
 				if facing:
-					entry["facing"] = facing
+					entry[side_key] = facing
 				out[key].append(entry)
 				continue
 			cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
@@ -998,7 +1131,7 @@ def preview(layout, path):
 	for x0, z0, x1, z1 in layout["planters"]:
 		out.append(box % (x0, z0, x1 - x0, z1 - z0, 'fill="#5c9a4c"'))
 	for t in layout["trees"]:
-		out.append('<circle cx="%s" cy="%s" r="%s" fill="#2d8f12"/>' % (t["center"][0], t["center"][1], t["radius"]))
+		out.append('<circle cx="%s" cy="%s" r="5" fill="#2d8f12" fill-opacity=".6"/>' % (t["center"][0], t["center"][1]))
 	for s in layout["stairs"]:
 		x0, z0, x1, z1 = s["rect"]
 		out.append(box % (x0, z0, x1 - x0, z1 - z0, 'fill="#bbb" stroke="#555" stroke-width=".1"'))
@@ -1043,6 +1176,8 @@ def preview(layout, path):
 # --- Ablauf ------------------------------------------------------------------------------------------
 
 floors = floor_images()
+ORIGIN = entrance_origin(floors["EG"])
+WING_SPLIT_X = ORIGIN[0]   ## Zimmer westlich davon gehören zum Westflügel
 by_level = {floor_level(f): f for f in floors}
 eg_layout = None
 for floor in sorted(floors, key=lambda f: (floor_level(f) != 0, floor_level(f))):   # EG zuerst, die anderen brauchen es

@@ -17,6 +17,10 @@ var exit_point: Marker3D
 var check_point: Marker3D
 ## Das Bett in Zimmer 13: Darin schläft der Spieler während der Nachtruhe (Spielkonzept 4.18).
 var own_bed := false
+## Bett: Länge (lokal x) und Breite (lokal z) – das Doppelbett aus dem Plan ist größer; vor dem Einfügen setzen
+var bed_size := Vector2(2.05, 1.45)
+## Bett: Seite des Kopfendes auf der lokalen x-Achse (−1 oder +1); heraus geht es immer nach +Z
+var head_x := -1.0
 
 var _visual: Node3D
 var _leaves: Array[Node3D] = []
@@ -85,7 +89,8 @@ func set_checked(value: bool) -> void:
 	if type == Type.WARDROBE:
 		_set_leaves(deg_to_rad(38.0) if value else 0.0)
 	elif _blanket:
-		_blanket.position = Vector3(0.1, 0.56, 0.12) if value else Vector3(0.3, 0.54, 0)
+		var k := -head_x * bed_size.x / 2.05
+		_blanket.position = Vector3(0.1 * k, 0.56, 0.12) if value else Vector3(0.3 * k, 0.54, 0)
 		_blanket.rotation = Vector3(0.12, 0.35, 0.08) if value else Vector3.ZERO
 
 
@@ -175,16 +180,19 @@ func _build_bed() -> void:
 	var wood := Mat.psx(Color(0.3, 0.18, 0.1))
 	var sheet := Mat.psx(Color(0.55, 0.52, 0.48))
 	var blanket := Mat.psx(Color(0.35, 0.08, 0.08))
-	Geo.mesh(_visual, Geo.box(Vector3(2.05, 0.08, 1.45)), wood, Vector3(0, 0.33, 0))
-	Geo.mesh(_visual, Geo.box(Vector3(2.0, 0.16, 1.4)), sheet, Vector3(0, 0.45, 0))
-	_blanket = Geo.mesh(_visual, Geo.box(Vector3(1.3, 0.04, 1.44)), blanket, Vector3(0.3, 0.54, 0))
-	Geo.mesh(_visual, Geo.box(Vector3(0.35, 0.1, 0.9)), sheet, Vector3(-0.75, 0.58, 0))
-	Geo.mesh(_visual, Geo.box(Vector3(0.08, 1.0, 1.45)), wood, Vector3(-1.02, 0.5, 0))
-	for x in [-0.95, 0.95]:
-		for z in [-0.65, 0.65]:
-			Geo.mesh(_visual, Geo.box(Vector3(0.07, 0.3, 0.07)), wood, Vector3(x, 0.15, z))
-	Geo.add_box_shape(self, Vector3(2.05, 0.6, 1.45), Vector3(0, 0.3, 0))
-	Geo.add_box_shape(self, Vector3(0.08, 1.0, 1.45), Vector3(-1.02, 0.5, 0))
-	view_point.position = Vector3(0.2, 0.17, 0.15)
-	exit_point.position = Vector3(0, 0, 1.25)
-	check_point.position = Vector3(0, 0, 1.35)
+	var length := bed_size.x
+	var width := bed_size.y
+	var head := head_x * (length / 2.0 - 0.005)   # Kopfteil
+	Geo.mesh(_visual, Geo.box(Vector3(length, 0.08, width)), wood, Vector3(0, 0.33, 0))
+	Geo.mesh(_visual, Geo.box(Vector3(length - 0.05, 0.16, width - 0.05)), sheet, Vector3(0, 0.45, 0))
+	_blanket = Geo.mesh(_visual, Geo.box(Vector3(length * 0.63, 0.04, width - 0.01)), blanket, Vector3(-head_x * 0.3 * length / 2.05, 0.54, 0))
+	Geo.mesh(_visual, Geo.box(Vector3(0.35, 0.1, width * 0.62)), sheet, Vector3(head_x * (length / 2.0 - 0.275), 0.58, 0))
+	Geo.mesh(_visual, Geo.box(Vector3(0.08, 1.0, width)), wood, Vector3(head, 0.5, 0))
+	for x in [-1.0, 1.0]:
+		for z in [-1.0, 1.0]:
+			Geo.mesh(_visual, Geo.box(Vector3(0.07, 0.3, 0.07)), wood, Vector3(x * (length / 2.0 - 0.075), 0.15, z * (width / 2.0 - 0.075)))
+	Geo.add_box_shape(self, Vector3(length, 0.6, width), Vector3(0, 0.3, 0))
+	Geo.add_box_shape(self, Vector3(0.08, 1.0, width), Vector3(head, 0.5, 0))
+	view_point.position = Vector3(-head_x * 0.2, 0.17, 0.15)
+	exit_point.position = Vector3(0, 0, width / 2.0 + 0.525)
+	check_point.position = Vector3(0, 0, width / 2.0 + 0.625)

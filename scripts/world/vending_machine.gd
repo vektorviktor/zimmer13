@@ -3,7 +3,7 @@ extends StaticBody3D
 ## Snack- und Cola-Automat (Spielkonzept 3.2, 6.13): Für PRICE Geld gibt der Snackautomat Süßigkeiten, der Colaautomat
 ## eine Dose Cola – unbegrenzt. Die beleuchtete Front ist ein schwaches Licht im Flur (zählt in light_at). Steht auf
 ## Ebene 1 (im NavMesh, Gäste gehen außen herum). Lokale +Z = Front. Kein Zustand, nicht gespeichert.
-## Aufgestellt von ExtraFixtures.
+## Aufgestellt vom LevelBuilder, wo der Plan „Möbel: Snackautomat“ bzw. „Möbel: Getränkeautomat“ zeigt.
 
 const PRICE := 1
 const SIZE := Vector3(0.85, 1.8, 0.7)
@@ -15,6 +15,8 @@ const KINDS := {
 }
 
 var kind := "snack"
+## Breite, Höhe und Tiefe – aus dem Plan; vor dem Einfügen setzen
+var size := SIZE
 
 
 func setup(p_kind: String) -> VendingMachine:
@@ -31,9 +33,9 @@ func _ready() -> void:
 	var body := Mat.psx(d["body"])
 	var dark := Mat.psx(Color(0.06, 0.06, 0.07))
 	var glow := Mat.psx(Color(0.1, 0.1, 0.12), "", 1.0, d["glow"], 0.9)
-	Geo.box_part(self, SIZE, Vector3(0, SIZE.y / 2.0, 0), body)
+	Geo.box_part(self, size, Vector3(0, size.y / 2.0, 0), body)
 	# Front: beleuchtetes Fenster mit Fächern (links) und Bedienfeld (rechts), unten der Ausgabeschacht
-	var front := SIZE.z / 2.0 + 0.005
+	var front := size.z / 2.0 + 0.005
 	Geo.mesh(self, Geo.box(Vector3(0.52, 1.1, 0.01)), glow, Vector3(-0.1, 1.08, front))
 	var colors: Array = [Color(0.85, 0.2, 0.15), Color(0.95, 0.75, 0.15), Color(0.25, 0.6, 0.3), Color(0.55, 0.25, 0.7)] \
 		if kind == "snack" else [Item.SODA_COLORS["cola"]]

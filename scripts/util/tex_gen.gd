@@ -14,8 +14,6 @@ static func get_tex(id: String) -> Texture2D:
 			img = _carpet()
 		"runner":
 			img = _runner()
-		"wood":
-			img = _wood()
 		"cobweb":
 			img = _cobweb()
 		"tiles":
@@ -99,25 +97,6 @@ static func _runner() -> Image:
 				elif m < 3.0:
 					c = line.lightened(0.15)
 			img.set_pixel(x, y, c.darkened(rng.randf() * 0.18))
-	return img
-
-
-static func _wood() -> Image:
-	var img := Image.create(32, 32, false, Image.FORMAT_RGB8)
-	var rng := _rng(3)
-	var plank_tones: Array[float] = []
-	for i in 4:
-		plank_tones.append(rng.randf_range(-0.06, 0.06))
-	for y in 32:
-		var plank := y / 8
-		for x in 32:
-			var base := Color(0.36, 0.22, 0.12)
-			var c := base.lightened(plank_tones[plank]) if plank_tones[plank] > 0.0 else base.darkened(-plank_tones[plank])
-			if y % 8 == 0 or (x + plank * 11) % 32 == 0:
-				c = Color(0.12, 0.07, 0.04)
-			elif (x + y * 3) % 7 == 0:
-				c = c.darkened(0.1)
-			img.set_pixel(x, y, c.darkened(rng.randf() * 0.08))
 	return img
 
 

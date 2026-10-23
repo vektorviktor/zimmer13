@@ -7,7 +7,7 @@ const SIZE := Vector3(0.9, 0.5, 0.55)
 const WALL := 0.05
 
 var is_open := false
-## Größe, Holzfarbe und Name (Süßigkeiten-Truhe in jedem Zimmer, ExtraFixtures) – vor dem Einfügen setzen
+## Größe, Holzfarbe und Name (Süßigkeiten-Truhe in den Zimmern, LevelBuilder) – vor dem Einfügen setzen
 var size := SIZE
 var wood_color := Color(0.4, 0.24, 0.12)
 var title := "Truhe"
