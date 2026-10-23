@@ -246,6 +246,11 @@ func _ready() -> void:
 	weather.setup(builder, get_node("Moon") as DirectionalLight3D, _sky)
 	Game.weather = weather
 
+	var grass := Grass.new()   # Grasbüschel, nur ohne PS1-Look – nach dem NavMesh
+	grass.name = "Grass"
+	add_child(grass)
+	grass.setup(builder)
+
 	var dialog := DialogUI.new()
 	dialog.name = "Dialog"
 	add_child(dialog)
