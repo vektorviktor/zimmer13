@@ -1374,7 +1374,7 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
 
 - JSON in `user://saves/` (`slot_1..3.json`, `autosave.json` + `.png`), geschrieben über `.tmp` +
   Umbenennen. `SaveManager.collect()` sammelt, `SaveManager.apply(data)` stellt her. Headless (Testläufe, Rauchtest)
-  stattdessen `user://saves_headless/` (`SaveManager.DIR`) – sonst überschrieb ein Testlauf den echten Autosave, und
+  und mit `--bg` (Screenshot-Läufe nebenher, seit 22.10.) stattdessen `user://saves_headless/` (`SaveManager.DIR`) – sonst überschrieb ein Testlauf den echten Autosave, und
   „Letzten Spielstand laden“ nach dem Tod landete an dessen Testposition.
 - **Laden = Hauptszene neu aufbauen, dann befüllen.** `load_slot` setzt `Game.pending_load` und
   wechselt die Szene; `main.gd` ruft nach dem Aufbau `SaveManager.apply` auf.

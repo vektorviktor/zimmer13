@@ -11,8 +11,10 @@ extends Node
 
 signal autosaved
 
-## Headless (Testläufe, tests/smoke.sh) ein eigener Ordner – sonst überschreibt ein Testlauf den echten Autosave
-var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" else "user://saves/"
+## Headless (Testläufe, tests/smoke.sh) und mit --bg (Screenshot-Läufe nebenher) ein eigener Ordner – sonst
+## überschreibt ein Testlauf den echten Autosave
+var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or "--bg" in OS.get_cmdline_user_args() \
+	else "user://saves/"
 ## 2: größeres Hotel (Kreuzungen, 30 Zimmer, Kellertreppe) – ältere Stände passen nicht mehr
 ## 3: zufällig erzeugte Gäste (Seed + Zimmer im Spielstand)
 ## 4: Obergeschoss, dritte Kreuzung, Spuren und Zettel der Gäste
