@@ -22,7 +22,7 @@ const GROUPS := [
 	["Spiele", ["dice", "chess", "challenge", "autoplay"]],
 	["Feiern & Deko", ["party", "trick", "prank", "mess", "decorate", "search", "cook", "costumes", "player-deco"]],
 	["Telefon", ["call", "dial"]],
-	["Zeit & Schlaf", ["time", "day", "sleep"]],
+	["Zeit & Schlaf", ["time", "day", "uhr", "sleep"]],
 	["Welt", ["weather", "wallblood", "pool", "splash"]],
 	["Spieler", ["pocket", "flashlight", "bag", "deco", "show", "sprint", "winded", "disguise", "drunk", "cat"]],
 	["Speichern & Ansicht", ["save", "load", "savetest", "menu", "fps", "psx", "no-psx", "debug", "trace"]],

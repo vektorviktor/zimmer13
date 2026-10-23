@@ -57,8 +57,10 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     – ältere Stände laden weiter, die Puppe sitzt dann in der Lobby
 ## 30: Aufzug (Spielkonzept 7.4, Gruppe elevators: Höhe der Kabine, gewählte Halte, Tür offen) – ältere Stände passen
 ##     ohnehin nicht mehr (Aufzugtüren und Kabinenleuchte ändern den Fingerabdruck)
-const VERSION := 30
-const MIN_VERSION := 20
+## 31: Tagesuhr (Spielkonzept 2.4) – ein Tag dauert 1440 statt 300 s, die Nachtruhe folgt der Uhr (social.night_seed statt
+##     sleep_timer); ältere Stände laden nicht mehr (ihre Spielzeit ergäbe einen ganz anderen Tag)
+const VERSION := 31
+const MIN_VERSION := 31
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
@@ -384,7 +386,7 @@ func collect() -> Dictionary:
 		"party_cooldown": social._party_cooldown, "roster": social.roster_state(),
 		"arrival_timer": social._arrival_timer,
 		"cat_thefts": social.cat_thefts, "cat_blame": social.cat_blame, "cats_have_cried": social.cats_have_cried,
-		"sleep_active": social.sleep_active, "sleep_timer": social.sleep_timer,
+		"sleep_active": social.sleep_active, "night_seed": social.night_seed,
 		"pals": social.pals.save_state(),
 	}
 	var director := Game.director
@@ -610,7 +612,7 @@ func apply(data: Dictionary) -> void:
 	social.cat_blame = (sd.get("cat_blame", {}) as Dictionary).duplicate()
 	social.cats_have_cried = bool(sd.get("cats_have_cried", false))
 	social.sleep_active = bool(sd.get("sleep_active", false))
-	social.sleep_timer = float(sd.get("sleep_timer", 300.0))
+	social.night_seed = int(sd.get("night_seed", social.night_seed))
 	social._arrival_timer = float(sd.get("arrival_timer", -1.0))
 	social.pals.load_state(sd.get("pals", {}))
 	if Game.doll:

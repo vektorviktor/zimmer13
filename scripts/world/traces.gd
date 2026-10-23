@@ -9,7 +9,7 @@ extends Node3D
 ## Blutstropfen nach einem Angriff (bleiben) und Zettel, die Gäste schreiben.
 
 const FOOTPRINT_LIFE := 240.0
-const FOOTPRINT_UV_LIFE := 900.0    ## so lange sieht man sie unter UV (drei Ingame-Tage)
+const FOOTPRINT_UV_LIFE := 900.0    ## so lange sieht man sie unter UV (15 Spielstunden)
 const MAX_FOOTPRINTS := 240
 const SHOEPRINT_LIFE := 150.0
 const MAX_GUEST_MARKS := 140        ## Wachs und Blutstropfen der Gäste – die ältesten verschwinden

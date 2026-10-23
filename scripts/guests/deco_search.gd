@@ -8,7 +8,7 @@ extends Node
 ## Der Vorrat der Fundorte bleibt unberührt (wie beim Schmücken allein). Nichts davon wird gespeichert.
 ## Kind von Social, erreichbar über Game.social.search.
 
-## Pause bis zur nächsten Suche am 1. … am 31.; so viele gleichzeitig; so oft zu zweit
+## Pause bis zur nächsten Suche am 1. … am 31. (von selbst nur tagsüber, 11–18 Uhr); so viele gleichzeitig; so oft zu zweit
 const GAP_EARLY := Vector2(100.0, 200.0)
 const GAP_LATE := Vector2(40.0, 90.0)
 const MAX_TRIPS := 3
@@ -66,7 +66,7 @@ func _process(delta: float) -> void:
 		return
 	var t := Game.social.decorating._progress()
 	_cooldown = randf_range(lerpf(GAP_EARLY.x, GAP_LATE.x, t), lerpf(GAP_EARLY.y, GAP_LATE.y, t))
-	if _quiet() and _leaders() < MAX_TRIPS:
+	if Calendar.phase() == Calendar.Phase.DAY and _quiet() and _leaders() < MAX_TRIPS:   # nur tagsüber (2.4)
 		var free := Game.social.living_guests().filter(func(g: Guest) -> bool: return _available(g))
 		if not free.is_empty():
 			start(free.pick_random())

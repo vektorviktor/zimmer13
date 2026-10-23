@@ -16,7 +16,7 @@ const MODEL := "res://assets/models/flashlight.glb"
 const LENS := Vector3(0.0, 0.022, 0.121)
 
 # --- Tuning -------------------------------------------------------------------
-const NORMAL_SECONDS := 300.0   ## eine Batterie reicht für einen Ingame-Tag normales Licht …
+const NORMAL_SECONDS := 300.0   ## eine Batterie reicht für 5 Minuten normales Licht (etwa einen Abend, 2.4) …
 const UV_SECONDS := 9.0         ## … aber nur für Sekunden UV
 const START_CHARGE := 0.5       ## die gefundene Lampe ist halb leer
 const LOW_CHARGE := 0.15        ## darunter wird das Licht schwach und unruhig

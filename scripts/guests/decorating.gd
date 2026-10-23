@@ -11,7 +11,8 @@ extends Node3D
 ## große Schmücken – 10–20 Gäste schmücken mehrere Stellen eines Flurbereichs oder der Lobby, jeder mit einem Armvoll
 ## Deko. Mitmacher werden dabei Freunde untereinander (6.16). Kind von Social, erreichbar über Game.social.decorating.
 
-## Pause bis zur nächsten Aktion: am 1. Oktober … am 31. (dazwischen linear); nach dem Laden bzw. Start
+## Pause bis zur nächsten Aktion: am 1. Oktober … am 31. (dazwischen linear); nach dem Laden bzw. Start. Die Gäste
+## rufen nur tagsüber (11–18 Uhr, Spielkonzept 2.4) zum Schmücken auf – der Spieler jederzeit.
 const GAP_EARLY := Vector2(420.0, 720.0)
 const GAP_LATE := Vector2(100.0, 200.0)
 const FIRST_GAP := Vector2(120.0, 240.0)
@@ -46,11 +47,11 @@ const MAX_SMALL := Vector2i(1, 2)
 const SITE_SPACING := 8.0
 ## Selbst aufrufen (2026-10-21): so nah an einer Zimmertür gilt sie als Stelle
 const DOOR_REACH := 2.5
-## Großes Schmücken (2026-10-21): Pause am Monatsanfang … am Ende (erreicht nach 1/BIG_RAMP des Monats, also etwa ab
-## dem 24. täglich), das erste nach dem Start; so viele Gäste, so viele Stellen in BIG_RADIUS um die Mitte
-const BIG_GAP_EARLY := Vector2(750.0, 1050.0)
-const BIG_GAP_LATE := Vector2(200.0, 320.0)
-const BIG_FIRST_GAP := Vector2(500.0, 900.0)
+## Großes Schmücken (2026-10-21): Pause in Spieltagen am Monatsanfang … am Ende (erreicht nach 1/BIG_RAMP des Monats,
+## also etwa ab dem 24. täglich), das erste nach dem Start; so viele Gäste, so viele Stellen in BIG_RADIUS um die Mitte
+const BIG_GAP_EARLY := Vector2(2.5, 3.5) * Calendar.DAY_SECONDS
+const BIG_GAP_LATE := Vector2(0.67, 1.07) * Calendar.DAY_SECONDS
+const BIG_FIRST_GAP := Vector2(1.0, 2.0) * Calendar.DAY_SECONDS
 const BIG_RAMP := 1.3
 const BIG_GUESTS := Vector2i(10, 20)
 const BIG_SITES := Vector2i(3, 5)
@@ -165,24 +166,29 @@ func _process(delta: float) -> void:
 	_big_cooldown -= delta
 	if _big_cooldown <= 0.0:
 		_big_cooldown = 30.0   # später noch einmal versuchen
-		if _can_start() and not _has_big() and start_big(null):
+		if _guests_call() and not _has_big() and start_big(null):
 			_big_cooldown = _next_big_gap()
 	_cooldown -= delta
 	if _cooldown > 0.0:
 		return
 	_cooldown = 20.0
-	if _can_start() and not _has_big() and _small_count() < _max_small() and start(null):
+	if _guests_call() and not _has_big() and _small_count() < _max_small() and start(null):
 		_cooldown = _next_gap()
 
 
 ## Ruhig genug? Keine Feier, keine Nachtruhe (auch nicht gleich), kein Monster, Lakengeist oder jagender Kürbismann.
 func _can_start() -> bool:
 	var social := Game.social
-	if social.party_active or social.sleep_active or social.sleep_timer < 60.0:
+	if social.party_active or social.sleep_active or social.seconds_to_night() < 60.0:
 		return false
 	if Game.monster.is_active() or (Game.ghost and Game.ghost.is_active()) or (Game.pumpkin and Game.pumpkin.is_hunting()):
 		return false
 	return not Game.director.wants_first_attack_party()
+
+
+## Rufen die Gäste von selbst zum Schmücken auf? Nur tagsüber und wenn es ruhig ist.
+func _guests_call() -> bool:
+	return Calendar.phase() == Calendar.Phase.DAY and _can_start()
 
 
 func _has_big() -> bool:

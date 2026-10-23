@@ -101,7 +101,7 @@ done <<'LIST'
 2400|--mess --trace
 800|--mess=wachs --trace
 1600|--rival=edna,bruno --trace
-4000|--attacks=3 --party --trace
+4000|--attacks=10 --party --trace
 400|--flashlight=uv
 600|--deco=lichter,g --pos=55,0.1,-7.9,180,14
 600|--weather=blitz

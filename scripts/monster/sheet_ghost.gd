@@ -1160,7 +1160,7 @@ func debug_summon_hall() -> bool:
 		return false
 	_debug_reset()
 	visits = maxi(visits, HALL_FROM - 1)
-	Game.social.start_sleep(true)
+	Game.social.debug_sleep(true)
 	_debug_look_at(spot)
 	_appear_in_hall(spot)
 	return true

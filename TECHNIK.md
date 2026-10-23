@@ -35,7 +35,7 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   innerer Ring liegen davor). Ursprung Mitte Rückseite, Zifferblatt nach +Z, Modell 2 m Durchmesser (im Spiel
   `CLOCK_DIAMETER` 3 m), ~16 900 Dreiecke, ohne Texturen: Das Spiel setzt mattes Schwarz `WallClock.IRON`
   (poliertes Eisen ging im Halbdunkel vor der roten Tapete unter), das Blatt gebrochen weiß (`DIAL`). `set_time(stunden)` dreht die
-  Zeiger um lokal −Z; bis es eine Uhrzeit gibt, zeigt sie `START_TIME` (1:55 wie im Rohmodell). Sie hängt mittig
+  Zeiger um lokal −Z; `_process` stellt sie jedes Bild auf `Calendar.hour_of` (Tagesuhr, Spielkonzept 2.4). Sie hängt mittig
   über dem Haupteingang, auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds (`_sign` gibt sie zurück,
   `_exit_sign_top`) und der Hallendecke, `CLOCK_GAP` vor der Wand, ohne Kollision. Die **Rezeption**
   `assets/models/reception.glb` (`LevelBuilder._reception`, `RECEPTION_MODEL`): `tools/build_reception.py` baut sie
@@ -493,8 +493,12 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` = `1 | 2 | 256 | 51
 ### Pause & Zeit
 - Menüs pausieren mit `get_tree().paused = true`. Was im Menü laufen muss, hat
   `process_mode = PROCESS_MODE_ALWAYS` (Game, Settings, SynthAudio, Menus, DeathScreen, TitleScreen).
-- **Spielzeit ist `MonsterDirector.elapsed`** (pausiert, wird gespeichert). Datum daraus über
-  `Calendar.today()` / `Calendar.date_text(elapsed)`; ein Tag = `Calendar.DAY_SECONDS` (300 s).
+- **Spielzeit ist `MonsterDirector.elapsed`** (pausiert, wird gespeichert). Datum und Uhrzeit daraus über `Calendar`
+  (Spielkonzept 2.4): ein Tag = `Calendar.DAY_SECONDS` (1440 s, 24 Stunden = 24 Minuten, `HOUR` = 60 s), Spielzeit 0 =
+  1. Oktober `START_HOUR` (15 Uhr). `today()`/`day_of(elapsed)` (bis 31), `raw_day_of` (ohne Obergrenze), `day_float`
+  (gleitend, für Kurven über den Monat), `hour_of`, `at(tag, stunde)` (→ Spielzeit, vor der Anreise negativ),
+  `phase()`/`phase_at(stunde)` (`Phase.MORNING` 6, `DAY` 11, `EVENING` 18, `NIGHT` 23 Uhr), `date_text`/`time_text`.
+  Werte, die je Spieltag gelten, rechnen mit `Calendar.DAY_SECONDS` statt mit festen Sekunden.
 - Spielablauf-Timer laufen über `delta`, nie über Systemzeit. Bei `get_tree().create_timer()` für
   Spielereignisse `process_always = false` übergeben (`create_timer(t, false)`), sonst laufen sie im
   Menü weiter.
@@ -954,8 +958,9 @@ Gefragt wird beim natürlichen Erscheinen: `_update_schedule` (Aufbruch verschob
 der bleibt scharf). Debug-Aufrufe (F5/F7/F9, `--warn`, `--ghost`, `--pumpkin=…`) fragen nicht.
 
 ### Versteckte Werte (Director)
-- `boldness` (Dreistigkeit, global, steigt nach dem ersten Angriff) − `satiation` = `effective_boldness()` (keine Delle
-  nach einer Abweisung mehr, entschieden 2026-10-21).
+- `boldness` (Dreistigkeit, global, steigt nach dem ersten Angriff um `BOLDNESS_PER_DAY` je Spieltag) − `satiation` =
+  `effective_boldness()` (keine Delle nach einer Abweisung mehr, entschieden 2026-10-21). `demand()` (Anspruch an Deko)
+  = 1 + Spieltage / `DEMAND_GROWTH_DAYS`.
 - `curiosity` je Zone: strebt jede Sekunde zu einem Grundwert aus Dunkelheit und fehlender Deko,
   Ereignisse addieren direkt (`add_curiosity`). `_update_zones(delta)` nimmt je Physik-Frame nur ein Stück der
   Zonen dran, jede einmal je `ZONE_PERIOD` (1 s) – alle auf einmal (334 Zonen × 547 Lichter) ließen das Spiel
@@ -980,20 +985,21 @@ Debug: F5 = `start_warning()` (nur wenn es ruht), F7/`--lure` = `debug_lure()`: 
 NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angriff), dann `investigate(Spieler)`.
 
 ### Dramaturgie
-- Vor dem ersten Angriff: kein Monster. Erster Angriff am 3./4. Oktober während einer Feier
-  (`_first_attack_at_party`), spätestens am 5.
+- Vor dem ersten Angriff: kein Monster. Erster Angriff am Abend des 2. Oktober (`FIRST_ATTACK_DAYS`) während einer
+  Feier (`_first_attack_at_party`; Feiern gibt es nur abends), spätestens am 3. um 20 Uhr (`FALLBACK_ATTACK_DAY`/`_HOUR`).
 - Danach Wechsel `Phase.CALM` (Keller) ↔ `Phase.ACTIVE` (streift umher); Dauern über `_day_lerp`.
-- `attacks <= HARMLESS_ATTACKS` (2) → `is_harmless()`: es holt keinen Gast, `kill_guest` wird zu Erschrecken
+- `attacks <= HARMLESS_ATTACKS` (9 Aufbrüche ≈ anderthalb Spieltage) → `is_harmless()`: es holt keinen Gast, `kill_guest` wird zu Erschrecken
   (`_scare_guest`). **Den Spieler tötet es immer, wenn es ihn erwischt** (2026-10-22, auch harmlos und beim Umsehen –
   das frühere Anstarren und Verschwinden, `_reveal_to_player`/`REVEAL`, ist entfernt).
 - **Absicht** (Spielkonzept 4.17): `_start_activity` → `_choose_intent` setzt `victims_left`: 0 (umsehen) oder – mit
-  `attack_chance()`, gleitend nach Tag aus `ATTACK_CHANCE` – `_draw_victims()` – n ∝ 1/n², höchstens `_max_victims()` (lebende Gäste + Spieler).
+  `attack_chance()`, gleitend nach Tag aus `ATTACK_CHANCE` (seit der Tagesuhr ein Fünftel der Werte aus Spielkonzept 4.17:
+  Ruhe- und Aktivphasen sind in Sekunden, es bricht etwa sechsmal am Tag auf; so greift es je Tag etwa gleich oft an) – `_draw_victims()` – n ∝ 1/n², höchstens `_max_victims()` (lebende Gäste + Spieler).
   `intent` (`ROAM`/`ONE`/`RAMPAGE`) folgt nur daraus (`_intent_for`). `kill_*` holen nur, wenn `wants_victim()` (nicht harmlos und
   `victims_left > 0`), sonst Erschrecken wie bei harmlosen Angriffen – nur für Gäste; der Spieler stirbt immer.
   Raubzug: nach einem Opfer `Monster.after_kill_hunting()` (weiterstreifen, keine Sättigung), erst das
   letzte macht satt (`after_feeding`). Satt (`satiation > SATED_ROAM`) → immer `ROAM`. Sichtung/Gerede
   können `ROAM` per `_escalate` zu `ONE` machen. `victims_left` und `_uv_angry` stehen im Spielstand.
-  `--attacks=3` macht es nur nicht mehr harmlos – ob es holt, würfelt `_choose_intent` (Tag 1–4: 20 %); sicher
+  `--attacks=10` macht es nur nicht mehr harmlos – ob es holt, würfelt `_choose_intent` (Tag 1–4: 4 %); sicher
   mit `--intent`. `--trace` zeigt beim Aufbruch Angriffsnummer, Tag, Chance (bzw. satt/erzwungen) und Absicht,
   dazu `[Geholt]` aus `kill_guest` und `[Erschreckt]` aus `_scare_guest`.
 - **Flackerwelle**: `_start_wave(ursprung, opfer)` – Dauer `SIGNAL_BASE + SIGNAL_PER_VICTIM × opfer` (1 + 2 × n s),
@@ -1202,21 +1208,27 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
 - **`Guest`**: Zustandsautomat (`IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING,
   PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP, SHOCKED, GHOSTED`, dazu `FOLLOW, VISIT, ATTACK, STAGGER, DECORATE,
   SEARCH, EAT`; der Zustand wird nicht gespeichert, neue Zustände also einfach hinten anfügen). In `IDLE` wählt `_next_activity()` gewichtet aus
-  `profile.activities`; `_arrive()` verarbeitet das Ankommen je Zustand.
-- **Nachtruhe** (Spielkonzept 4.18): `Social._update_sleep` startet sie zu zufälligen Zeiten (`SLEEP_GAP`,
-  nie in einer Feier) für `SLEEP_TIME` → `Guest.bedtime()`: ins Zimmer, Licht aus, still ins eigene Bett
+  `profile.activities`, je Phase der Uhr mit den Faktoren aus `Guest.PHASE_ACTIVITIES` (`_phase_activities`: morgens
+  Küche und Garten, abends Bar und Lobby, Zimmer fast leer – Spielkonzept 2.4); `_arrive()` verarbeitet das Ankommen je Zustand.
+  Spontane Feiern (`Social._update_party`) nur in `Phase.EVENING`.
+- **Nachtruhe** (Spielkonzept 2.4, 4.18): nach der Uhr, `SLEEP_START` 23 bis `SLEEP_END` 6 Uhr, Beginn und Ende je
+  Nacht um bis zu `SLEEP_JITTER` (½ h) gestreut – `night_window(tag)` würfelt die Nacht, die am Abend von `tag` beginnt,
+  aus `hash([night_seed, tag])`, damit Laden und Debug-Sprünge der Uhr dieselbe Nacht ergeben. `night_due()`,
+  `seconds_to_night()`. `Social._update_sleep` startet sie, sobald sie fällig ist und keine Feier oder Schmück-Aktion
+  mehr läuft, und beendet sie am Morgen (`_end_sleep`) → `Guest.bedtime()`: ins Zimmer, Licht aus, still ins eigene Bett
   (`hiding` = Bett, aber Zustand `SLEEP` – kein Versteck-Lärm, kein `_watch_monster`; das Monster kann sie im
   Bett finden). Sie bleiben sichtbar und liegen auf dem Rücken auf der Matratze (`BED_FEET`/`BED_TOP`, Kopf zum
   Kissen = lokal −X des Betts; Pose in `_pose`, wie die Leiche um X gekippt). Wer redet, spielt, klopft oder sich versteckt, geht danach (`_next_activity`). Ende →
-  `wake_up()`. `Social.all_asleep()` für den Lakengeist im Flur. Gespeichert: `sleep_active`, `sleep_timer`
-  (Gäste laden wach und gehen wieder ins Bett).
+  `wake_up()`. `Social.all_asleep()` für den Lakengeist im Flur. Gespeichert: `sleep_active`, `night_seed`
+  (Gäste laden wach und gehen wieder ins Bett). Debug `debug_sleep(sofort)` (`--sleep`, Lakengeist im Flur) stellt die
+  Uhr auf den Beginn der heutigen Nacht.
   **Der Spieler schläft mit** (4.18): Nur das Bett mit `HideSpot.own_bed` (Zimmer 13, gesetzt im LevelBuilder)
   bietet während der Nachtruhe „Schlafen“ an (geduckt: darunter kriechen). `Player.start_sleep()` =
   `enter_hide()` + `sleeping` + Zeitraffer + Overlay-Modus 3 (Augen zu); man liegt wie in einem Versteck im
   Bett, das Monster kann einen dort finden. Aufwachen (`wake_up`, bleibt im Bett): Monster nah
   (`player_threat` > `SLEEP_WAKE_THREAT`) oder ein fremdes Geräusch mit Lautstärke ≥ 0,3 (`Game.noise`).
-  Ende der Nachtruhe → `Player.on_night_over()` (vor `Guest.wake_up`): ≥ `SLEEP_MIN` Spielsekunden
-  geschlafen → `nights_awake = 0`, sonst +1 (erst nach dem ersten Angriff); Gedanke 3,6 s später, damit die
+  Ende der Nachtruhe → `Player.on_night_over()` (vor `Guest.wake_up`): ≥ `SLEEP_MIN` Spielsekunden (120 = zwei
+  Spielstunden) geschlafen → `nights_awake = 0`, sonst +1 (erst nach dem ersten Angriff); Gedanke 3,6 s später, damit die
   Gäste-Meldung ihn nicht überschreibt. `nights_awake` steht im Spielstand unter `player`. Wer im Rausch
   (`_sleep_drunk` ≥ `BarTap.TIPSY`, höchster Rausch im Bett) ausgeschlafen hat, wacht mit **Kater** auf
   (`hangover` = `HANGOVER_TIME` s, 3.7). Nächte ohne Schlaf machen die Sicht unscharf (`Player._update_sight`,
@@ -1350,7 +1362,8 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   sind am 2026-10-21 entfernt worden – Aufbau, Faktenzettel und Modellvergleich stehen im Git-Verlauf davor.
 - **Schmück-Aktionen** (`guests/decorating.gd`, `Decorating`, Kind von Social: `Game.social.decorating`, Spielkonzept 5.9;
   zählen als Spaß für den Kürbismann – `is_crew`, `player_joins`):
-  Pause bis zur nächsten Aktion von `GAP_EARLY` (1.) linear bis `GAP_LATE` (31.); `_can_start`: keine Feier, keine
+  Pause bis zur nächsten Aktion von `GAP_EARLY` (1.) linear bis `GAP_LATE` (31.); von selbst rufen die Gäste nur in
+  `Phase.DAY` auf (`_guests_call`, Spielkonzept 2.4), der Spieler jederzeit; `_can_start`: keine Feier, keine
   Nachtruhe (auch nicht in den nächsten 60 s), Monster, Lakengeist und Kürbismann nicht unterwegs, kein Tag des ersten
   Angriffs. `start(gast)` (Debug `--decorate[=gast][,hin]`): ein freier Erwachsener ruft auf, `_find_site` sucht in 30 m
   um seine Wohnung (gleiches Stockwerk) unter Zimmertüren (`_door_site`, nicht 13 und 18) und Flurwegpunkten
@@ -1408,14 +1421,14 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   Spieltag (`_called`), `by_player` → ein Mitmacher mehr, gilt als mitgemacht. Groß: `can_call_big()` (≥ `BIG_FRIENDS`
   mindestens „freundlich“, `_big_player_day`) → `start_big(gast, position, true)`.
   **Großes Schmücken:** `start_big(wer, mitte, by_player, lobby)` alle `_next_big_gap` (von `BIG_GAP_EARLY` zu
-  `BIG_GAP_LATE`, Fortschritt × `BIG_RAMP`; nicht neben einer anderen großen Aktion, keine kleinen währenddessen).
+  `BIG_GAP_LATE` in Spieltagen, Fortschritt × `BIG_RAMP`; von selbst nur tagsüber; nicht neben einer anderen großen Aktion, keine kleinen währenddessen).
   Mitte: Lobby (`LOBBY_CHANCE`) oder `_big_center()` (Flurpunkt mit vielen Wohnungen in der Nähe, wenig Deko);
   `_sites_around` bewertet bis zu 28 Türen, Flurpunkte (und Lobbypunkte) in `BIG_RADIUS` auf demselben Stockwerk und nimmt
   die besten `BIG_SITES` mit `SITE_SPACING` Abstand (Zimmer 13 nur, wenn der Spieler aufruft). Gäste: die `BIG_GUESTS`
   nächsten freien (ganzes Hotel), reihum auf die Stellen verteilt, der erste ist jeweils Rufer; `BIG_MIN_TIME`/
   `BIG_MAX_TIME`. Debug `--decorate=gross[,gast][,lobby][,hin]`.
 - **Deko-Suche** (`guests/deco_search.gd`, `DecoSearch`, Kind von Social: `Game.social.search`, Spielkonzept 5.9): alle
-  `GAP_EARLY`…`GAP_LATE` s (nach Tag) startet ein freier Gast (`Decorating._available`), höchstens `MAX_TRIPS` gleichzeitig,
+  `GAP_EARLY`…`GAP_LATE` s (nach Tag, nur in `Phase.DAY`) startet ein freier Gast (`Decorating._available`), höchstens `MAX_TRIPS` gleichzeitig,
   nicht bei Feier, Nachtruhe, Monster oder jagendem Kürbismann. `_source_for`: die 5 nächsten `ResourceSpot`s, Mutige
   (`BRAVE`, mit `DANGER_CHANCE`) nur Spinnweben-Ecken und Keller, sonst nur die übrigen; erreichbar über
   `Decorating._reachable`. Mit `PAIR_CHANCE` geht ein Freund (sonst ein Gast in 12 m) mit (`leader` gesetzt). Neuer
@@ -1649,7 +1662,7 @@ zugezeichnet, Heizkeller rot eingekreist). Alle Blätter einmal untereinander in
 | Feuer | `world/deco_fire.gd` (`DecoFire`), `trace_mark.gd` (`soot`) | Spielkonzept 5.11. `DecoFire.FLAMMABLE` (Laub, Spinnweben, Lakengespenst, Fledermäuse, Spinne, Besen, Bettlaken). `ignite_near(ort)`: freie leichte Deko bis `IGNITE_RANGE` waagerecht und `IGNITE_HEIGHT` darüber → `ignite(item)`: eigener `StaticBody3D` neben dem Gegenstand (Meta `fire` am Gegenstand), Ebene 3 – fängt den Blick ab: „… brennt – austreten [E]“ → Deko-Stärke × `SCORCHED`, Name „(angesengt)“. Brennend `deco_strength` 0, Flammen (`CPUParticles3D`, Farbverlauf), `OmniLight3D` in Gruppe `light_source` (zählt in `light_at`), Lärm `fire` alle `NOISE_EVERY` s, springt alle `SPREAD_EVERY` s mit `SPREAD_CHANCE` auf leichte Deko in `SPREAD_RANGE` über; nach `BURN_TIME` Ruß (`soot`) am Boden, Gegenstand weg. Hebt jemand ihn auf, erstickt es. Nicht gespeichert. Trace `[Feuer]` |
 | Süßigkeiten-Truhen, Automaten | `level_builder.gd` (`_furniture`: `chest` → `_sweets_chest`, `snack_machine`/`drink_machine`), `world/vending_machine.gd` (`size`), `world/chest.gd` (`size`, `wood_color`, `title`) | Spielkonzept 3.2, 6.13; seit 22.10. nur aus dem Plan (vorher stellte `ExtraFixtures` sie selbst auf – der Plan wird von Hand eingerichtet). **Truhe** (`Möbel: Truhe`) in einem Hotelzimmer = dessen Süßigkeiten-Truhe: Größe aus dem Plan, Höhe `SWEETS_CHEST_H`, Meta `sweets_room`, Gruppe `sweet_chests` (und wie jede Truhe `chests` – gespeichert, im Fingerabdruck), darin `SWEETS_CHEST_COUNT` Süßigkeiten als Gegenstände. `Social.take_room_sweet(zimmer)` nimmt eins heraus (Gäste an der Tür); ohne Truhe im Zimmer gibt es von dort nichts. **Automaten** (`Möbel: Snackautomat` → `snack`/`SWEETS`, `Möbel: Getränkeautomat` → `cola`/`SODA_CAN` „cola“, `PRICE` 1): Breite und Tiefe aus dem Plan, Höhe `VendingMachine.SIZE.y`, Front zur helleren Kante. Ebene 1 (im NavMesh), Front leuchtet (`OmniLight3D` in `light_source`), Schild als `Label3D`. Nicht gespeichert (kein Zustand) |
 | Taschenlampe | `world/flashlight.gd`, `world/uv_mark.gd`, `item.gd` (`FLASHLIGHT`, `BATTERY`, `UV_FILTER`) | `Flashlight` hängt als Kind am Item (`item.flashlight`), Zustand steckt in `create_extra()` (`"c=0.42;uv;m=uv;on"`), also kein eigener Speicher-Eintrag. Bewusst **ein `SpotLight3D` außerhalb von `light_source`** – zählt nicht für Helligkeit/Abschreckung (`light_at` castet ohnehin auf `OmniLight3D`) und nicht als `item.lit` (sonst bläst das Monster sie aus, Gäste tropfen Wachs …). Auffälligkeit über `flashlight.carried_conspicuity()` in `Senses.conspicuity`. Nur in der Hand des Spielers: UV prüft alle 0,1 s die Gruppe `uv_marks` (Kegel + Sichtlinie `SIGHT_MASK`, `UvMark.shine()`) und jeden Frame das Monster (`can_be_repelled_by_uv`, Brust im Kegel) → nach `director.uv_repel_time()` `on_monster_uv()`. Einsetzen von Batterie/UV-Aufsatz in `Item._fitting_prompt/_fit` (nur eigene oder herrenlose Teile). `UvMark`: Leuchtschrift (`setup_text`, im LevelBuilder `_uv_writing`) oder Kästen (`add_box`, Nachglanz der Fußspuren in `Traces`); läuft nur, solange es leuchtet. Warnungszettel: `NOTES[id]["uv"]` |
-| Kalender | `calendar.gd` | statische Datumsfunktionen + Abreißkalender in Zimmer 13 |
+| Kalender & Tagesuhr | `calendar.gd`, `wall_clock.gd`, `social.gd` (`night_window`), `guest.gd` (`PHASE_ACTIVITIES`) | statische Datums- und Uhrzeitfunktionen, Phasen des Tages (Spielkonzept 2.4) + Abreißkalender in Zimmer 13 (zeigt Datum und Uhrzeit) |
 | Telefone | `world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd` | `HotelPhone` auf jedem Zimmertisch (nicht Wäscherei) + Haupttelefon an der Rezeption (`room_id` `"lobby"`, Nummer `"0"`); gespeichert wird nur `off_hook` (Gruppe `phones`, ab Spielstand-Version 5). `PhoneCalls` (`Game.phones`) hat die Anrufe: eingehend nur für Zimmer 13 (warnen/lügen/plaudern/unheimlich), ausgehend per Wählseite, ferne Telefone als Atmosphäre. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`, eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die Zufallsfolge). Unheimliche Anrufe hinterlassen einen Hörer neben dem Apparat im Herkunftszimmer. Laufende Anrufe werden nicht gespeichert |
 | Spieltische | `minigames/table_match.gd` | `TableMatch` (CanvasLayer 15) = gemeinsame Basis von `DiceMatch` und `ChessMatch`: Fensterrahmen, nummerierte Knöpfe (`UiKit.flat_option`, Tasten 1–9/0 über `UiKit.press_number`), Hinsetzen, Gast springt auf bzw. Vorwarnung, Abbruch, Aufstehen, `can_stake_item`, Ablehnungsgründe; die Partie füllt die Hooks `_table`, `_gear`, `_on_seated`, `_update_game`, `_stop` |
 | Mäxchen | `minigames/` | `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI, `GameTable` = Tisch; Würfeln macht Lärm (`dice`). Einsätze über `TableStakes` (auch Schach: `place`, `take_for_player`, `give_to_guest`, `abandon`, `split` bei Remis) |

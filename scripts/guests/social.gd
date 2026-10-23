@@ -19,8 +19,8 @@ const BOND_GIFTS_TO := 2
 const BOND_GIFTS_FROM := 1
 const FEUD_HOSTILE := 4
 const FEUD_REVENGE := 1
-## Ohne Kontakt wandern die Extreme zurück – so viele Punkte pro Sekunde (≈ 1,2 pro Tag)
-const DRIFT := 0.004
+## Ohne Kontakt wandern die Extreme zurück – so viele Punkte pro Sekunde (1,2 je Spieltag, 2.4)
+const DRIFT := 1.2 / Calendar.DAY_SECONDS
 ## Gute Freunde besuchen Zimmer 13 (Abstand zwischen zwei Besuchen), Erzfeinde lauern dir auf
 const VISIT_COOLDOWN := Vector2(240.0, 480.0)
 const ATTACK_COOLDOWN := Vector2(120.0, 200.0)
@@ -165,10 +165,11 @@ const DOOR_NOTES := [
 	"Halloween-Feier? Ich bin dabei!\n– {name}, Zimmer {room}",
 ]
 const MAX_GUEST_NOTES := 30
-## Nachtruhe zu zufälligen Zeiten: alle Gäste schlafen eine Weile in ihren Betten, das Licht ist aus
-## (Spielkonzept 4.18 – dann kommt der Lakengeist auch in den Flur). Abstand und Dauer in Sekunden.
-const SLEEP_GAP := Vector2(240.0, 540.0)
-const SLEEP_TIME := Vector2(70.0, 140.0)
+## Nachtruhe (Spielkonzept 2.4, 4.18): jeden Tag etwa 23–6 Uhr schlafen alle Gäste in ihren Betten, das Licht ist
+## aus – dann kommt der Lakengeist auch in den Flur. Beginn und Ende streuen je Nacht um bis zu SLEEP_JITTER Stunden.
+const SLEEP_START := 23.0
+const SLEEP_END := 6.0
+const SLEEP_JITTER := 0.5
 
 
 var guests: Array[Guest] = []
@@ -212,7 +213,7 @@ var cat_thefts := {}
 var cat_blame := {}
 var cats_have_cried := false
 var sleep_active := false
-var sleep_timer := 300.0                 ## bis zur nächsten Nachtruhe bzw. bis zu ihrem Ende
+var night_seed := randi()                ## Streuung der Nachtruhe je Nacht – fest, damit Laden die Nacht nicht verschiebt
 ## Klopfen an Zimmer 13: {guest, fake, time, opened}
 var _knock: Dictionary = {}
 var _knock_cooldown := 90.0
@@ -883,34 +884,66 @@ func start_party(host: String) -> bool:
 	return true
 
 
-## Nachtruhe: beginnt zu zufälligen Zeiten (nie mitten in einer Feier) und endet nach einer Weile.
-func _update_sleep(delta: float) -> void:
-	sleep_timer -= delta
-	if sleep_timer > 0.0:
-		return
+## Nachtruhe nach der Uhr (2.4): beginnt, sobald es so weit ist und keine Feier oder Schmück-Aktion mehr läuft,
+## und endet am Morgen.
+func _update_sleep(_delta: float) -> void:
+	var due := night_due()
 	if sleep_active:
-		sleep_active = false
-		sleep_timer = randf_range(SLEEP_GAP.x, SLEEP_GAP.y)
-		if Game.player:
-			Game.player.on_night_over()   # Schlaf oder eine Nacht mehr ohne (Spielkonzept 4.18)
-		for guest in living_guests():
-			guest.wake_up()
-		Game.say("Türen gehen auf, Schritte im Flur – die Gäste sind wieder wach.", 3.5)
-	elif party_active or (decorating and decorating.active):
-		sleep_timer = 20.0   # erst zu Ende feiern bzw. schmücken
-	else:
+		if not due:
+			_end_sleep()
+	elif due and not party_active and not (decorating and decorating.active):   # erst zu Ende feiern bzw. schmücken
 		start_sleep()
+
+
+## Die Nacht, die am Abend von day beginnt: Spielzeit von Beginn und Ende (je Nacht gestreut, aus night_seed).
+func night_window(day: int) -> Vector2:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([night_seed, day])
+	var from := Calendar.at(day, SLEEP_START + rng.randf_range(-SLEEP_JITTER, SLEEP_JITTER))
+	var to := Calendar.at(day + 1, SLEEP_END + rng.randf_range(-SLEEP_JITTER, SLEEP_JITTER))
+	return Vector2(from, to)
+
+
+## Ist laut Uhr Nachtruhe (auch wenn eine Feier sie gerade noch aufhält)?
+func night_due() -> bool:
+	return seconds_to_night() <= 0.0
+
+
+## Sekunden bis zur nächsten Nachtruhe; 0, solange sie fällig ist.
+func seconds_to_night() -> float:
+	var now := Game.director.elapsed
+	var day := Calendar.raw_day_of(now)
+	var last := night_window(day - 1)   # die Nacht von gestern Abend bis heute Morgen
+	if now < last.y:
+		return maxf(0.0, last.x - now)
+	var tonight := night_window(day)
+	return maxf(0.0, tonight.x - now) if now < tonight.y else 0.0
+
+
+func _end_sleep() -> void:
+	sleep_active = false
+	if Game.player:
+		Game.player.on_night_over()   # Schlaf oder eine Nacht mehr ohne (Spielkonzept 4.18)
+	for guest in living_guests():
+		guest.wake_up()
+	Game.say("Türen gehen auf, Schritte im Flur – die Gäste sind wieder wach.", 3.5)
 
 
 ## instant (Debug): alle liegen sofort im Bett.
 func start_sleep(instant: bool = false) -> void:
 	sleep_active = true
-	sleep_timer = randf_range(SLEEP_TIME.x, SLEEP_TIME.y)
 	for guest in living_guests():
 		guest.bedtime(instant)
 	Game.say("Im Hotel wird es still – die Gäste gehen schlafen.", 3.5)
 	if Game.tracing:
-		print("[Nachtruhe] für %d s" % int(sleep_timer))
+		print("[Nachtruhe] %s, %s" % [Calendar.date_text(Game.director.elapsed), Calendar.time_text(Game.director.elapsed)])
+
+
+## Debug: Nachtruhe sofort – die Uhr springt auf den Beginn der heutigen Nacht, falls es noch nicht so weit ist.
+func debug_sleep(instant: bool = false) -> void:
+	Game.director.elapsed += seconds_to_night()
+	if not sleep_active:
+		start_sleep(instant)
 
 
 ## Schlafen alle lebenden Gäste gerade?
@@ -965,8 +998,8 @@ func _update_party(delta: float) -> void:
 	if _spontaneous_timer > 0.0:
 		return
 	_spontaneous_timer = 30.0
-	if sleep_active:
-		return   # in der Nachtruhe feiert niemand
+	if sleep_active or Calendar.phase() != Calendar.Phase.EVENING:
+		return   # Feiern gibt es abends (Spielkonzept 2.4), in der Nachtruhe feiert niemand
 	var alive := living_guests()
 	# Der erste Angriff passiert bei einer Feier (Spielkonzept 2.1): an diesem Tag lädt jemand ein
 	if Game.director.wants_first_attack_party() and alive.size() >= 1:

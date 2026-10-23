@@ -12,7 +12,7 @@
   - [2.1 Zeit & Dramaturgie: Vom 1. Oktober bis Halloween (entschieden 2026-10-10)](#21-zeit--dramaturgie-vom-1-oktober-bis-halloween-entschieden-2026-10-10)
   - [2.2 Scheitern als Zeitschleife – mit eigenen Zetteln (vorgemerkt 2026-10-11)](#22-scheitern-als-zeitschleife--mit-eigenen-zetteln-vorgemerkt-2026-10-11)
   - [2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)](#23-fortschritt--geheimnis-vorgemerkt-2026-10-11)
-  - [2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21)](#24-tagesuhr--tagesablauf-entschieden-2026-10-21)
+  - [2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21, umgesetzt 2026-10-23)](#24-tagesuhr--tagesablauf-entschieden-2026-10-21-umgesetzt-2026-10-23)
 - [3. Core Gameplay Loop](#3-core-gameplay-loop)
   - [3.1 Spieler-Aktionen (Grundumfang)](#31-spieler-aktionen-grundumfang)
   - [3.2 Kein verstecktes Inventar – Hände und Tasche](#32-kein-verstecktes-inventar--hände-und-tasche)
@@ -121,13 +121,15 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 
 ### 2.1 Zeit & Dramaturgie: Vom 1. Oktober bis Halloween (entschieden 2026-10-10)
 > Im Prototyp umgesetzt (2026-10-11): Kalender, friedlicher Anfang, erster Angriff bei einer Feier am 3./4. Oktober (spätestens am 5.), zwei harmlose Angriffe. Noch offen: Schlüssel an Halloween und das Scheitern.
+> **Mit der Tagesuhr (2.4, umgesetzt 2026-10-23):** erster Angriff auf einer Feier **am Abend des 2. Oktober**
+> (spätestens am 3. um 20 Uhr), harmlos bleibt es etwa **anderthalb Spieltage** (neun Aufbrüche).
 
 - **Kalender:** Das Spiel beginnt am **1. Oktober**. Die Zeit läuft durchgängig und wird in **Ingame-Tagen** gezählt. Draußen ist **immer Nacht** – der „Tag“ ist nur die Zähleinheit, kein Wechsel von Hell und Dunkel.
 - ~~**Tageslänge: ca. 5 Minuten Echtzeit** → 31 Tage ≈ 2,5 Stunden bis Halloween.~~ **Seit 2026-10-21: 24 Minuten
   Echtzeit** (24 Stunden = 24 Minuten) → 31 Tage ≈ 12½ Stunden, mit Uhrzeit und Tagesablauf (2.4). Zentral einstellbar (Tuning-Wert, `Calendar.DAY_SECONDS`).
 - **Datum sichtbar:** Abreißkalender an der Wand von Zimmer 13, im Spielmenü und kurz eingeblendet, wenn ein neuer Tag beginnt. Spielstände zeigen das Ingame-Datum.
 - **Der friedliche Anfang:** Zu Beginn wirkt alles wie ein **gemütliches Hotel-Party-Spiel** – Gäste kennenlernen, Deko basteln, Kürbisse ziehen, Würfeln, Feiern. Keine Vorwarnung, kein Rauschen, nichts Bedrohliches. Auch Einführungstext und Gäste deuten nichts an. Der Spieler soll glauben, es sei ein friedliches Halloween-Spiel.
-- **Der erste Angriff bricht das – am 3. oder 4. Oktober während einer Feier in der Lobby:** Musik, alle sind fröhlich, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich.
+- **Der erste Angriff bricht das – ~~am 3. oder 4. Oktober~~ am Abend des 2. Oktober (seit 2.4) während einer Feier in der Lobby:** Musik, alle sind fröhlich, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich.
 - **Die ersten ein bis zwei Angriffe sind noch nicht tödlich:** Das Monster holt **niemanden**. Erwischt es den Spieler, **steht es direkt vor ihm, starrt ihn an und verschwindet im Flackern** – man sieht es zum ersten Mal und weiß: Es ist real. Erst danach wird es gefährlich.
 - **Halloween (31. Oktober):** In einem Zimmer **taucht ein Schlüssel auf** – der Weg hinaus. Es ist **sehr schwer**, an ihn heranzukommen.
 
@@ -234,8 +236,29 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Wie viele Sperrbereiche** für den Anfang? Vorschlag: drei bis vier (siehe Kandidaten oben).
 - Wie hängt das Geheimnis mit dem **Schlüssel an Halloween** (2.1) zusammen – ist die Wahrheit Voraussetzung für die Flucht, oder ein eigenes, besseres Ende?
 
-### 2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21)
-> Noch nicht umgesetzt. Ersetzt die Tageslänge aus 2.1 (5 Minuten) und die Nachtruhe zu zufälligen Zeiten (4.18).
+### 2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21, umgesetzt 2026-10-23)
+> Ersetzt die Tageslänge aus 2.1 (5 Minuten) und die Nachtruhe zu zufälligen Zeiten (4.18).
+>
+> **Umgesetzt (2026-10-23)** wie unten, mit diesen Entscheidungen aus der Durchsprache am selben Tag:
+> - **Anreise am 1. Oktober um 15 Uhr**; das Kalenderblatt wechselt um Mitternacht, mitten in der Nachtruhe. Die
+>   erste Nacht kommt nach gut 8 Minuten.
+> - **Nachtruhe** 23–6 Uhr, Beginn und Ende je Nacht ± ½ Stunde. Eine Feier oder Schmück-Aktion, die noch läuft,
+>   schiebt den Beginn hinaus.
+> - **Phasen:** Morgens zieht es die Gäste in Küche und Garten, abends an die Bar und in die Lobby, die Zimmer sind
+>   fast leer. Spontane Feiern gibt es nur abends; zum Schmücken und zur Deko-Suche rufen die Gäste nur tagsüber auf
+>   (der Spieler jederzeit). Das große Schmücken kommt in Spieltagen wie bisher (anfangs alle 2½–3½ Tage, ab dem 24. täglich).
+> - **Monster:** Ruhe- und Aktivphasen bleiben in Echtzeit – es ist ständig präsent (4.13) und bricht etwa sechsmal am
+>   Tag auf statt gut einmal. Die **Angriffschance je Aufbruch ist deshalb ein Fünftel** der bisherigen (4.17), damit es
+>   je Tag etwa gleich oft angreift; die übrigen Aufbrüche sind Umsehen. Ebenso eskaliert Gerede nur noch selten (3 %).
+>   Harmlos ist es neun Aufbrüche lang (etwa anderthalb Tage wie bisher zwei).
+> - **Dreistigkeit** +12 je Spieltag, **Deko-Anspruch** +100 % je drei Spieltage (wie bisher je Tag); die Umbauten aus
+>   4.9 und 5.10 kommen eigens.
+> - **Bleiben in Sekunden:** Batterie 5 Minuten Licht (etwa ein Abend, sonst wären Batterien kaum noch knapp), Rausch
+>   5 und Kater 4 Spielstunden, Kürbiswachstum (3c, entscheidet sich mit 5.10), UV-Spuren 15 Spielstunden.
+> - **Nächte ohne Schlaf** zählen weiter bis drei (Lakengeist sicher im Flur, 4.18) – bis Schlaf & Müdigkeit (3.6)
+>   sie ersetzt. Ausgeschlafen ist, wer zwei Spielstunden geschlafen hat. Der Spieler schläft wie bisher nur in der
+>   Nachtruhe.
+> - **Uhrzeit sichtbar:** Wanduhr in der Lobby, Abreißkalender in Zimmer 13 und Spielmenü.
 
 **Warum:** Bisher gab es zwei Uhren, die nichts miteinander zu tun hatten – den Kalendertag als reine Zähleinheit und
 die Nachtruhe zu zufälligen Zeiten. Die Wanduhr stand fest, obwohl das Konzept Uhrzeiten braucht („die letzte
@@ -284,9 +307,10 @@ konnte man nicht lernen.
   Kochen, Hypnose, Losreißen), in Sekunden wie bisher; die Steigerung des Monsters (Dreistigkeit, Anspruch) in Tagen.
 
 **Zu klären**
-- **Der friedliche Anfang** (2.1) bis zum 3./4. Oktober dauert jetzt rund 1–1½ Stunden. Bleibt das so, oder kommt
-  der erste Angriff früher (z. B. am Abend des 2.)?
-- Ob die Uhrzeiten der Phasen so passen.
+- ~~**Der friedliche Anfang** (2.1) bis zum 3./4. Oktober dauert jetzt rund 1–1½ Stunden. Bleibt das so, oder kommt
+  der erste Angriff früher (z. B. am Abend des 2.)?~~ → **Abend des 2.** (etwa 27–32 min), spätestens am 3. um 20 Uhr
+  (entschieden 2026-10-23).
+- Ob die Uhrzeiten der Phasen so passen – im Spiel prüfen.
 
 ---
 
@@ -717,7 +741,8 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
   Zurückgeschreckt sucht es sich ein anderes Ziel und lässt den Geschützten ~15 s in Ruhe. Nach einem
   harmlosen Schreck schleicht es aus dem Blick und streift weiter; den Erschreckten verschont es bis zur
   nächsten Aktivphase. In den Keller geht es nur noch am Ende der Aktivphase, satt oder vom UV-Licht vertrieben.
-- Die **ersten beiden Angriffe bleiben harmlos** (2.1) – auch mit F5 gerufen. Erst ab dem dritten holt es jemanden
+- Die **ersten beiden Angriffe bleiben harmlos** (2.1) – auch mit F5 gerufen (seit der Tagesuhr, 2.4: die ersten neun
+  Aufbrüche, etwa anderthalb Tage). Erst danach holt es jemanden
   (seit 4.17 nur, wenn es das beim Aufbruch will – mit einer Chance, die von Tag zu Tag steigt).
 
 **Offen**
@@ -844,7 +869,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 - **Eine Lampe, zwei Modi:** Man findet früh eine normale Taschenlampe. Der **UV-Aufsatz** ist ein **späterer Fund** (Zimmer 18, Schlüssel im Keller – „Wagnis“ nach 2.3). Danach schaltet man um.
 - **Gegenstand in der Hand** (3.2), nicht am Körper: Mit Lampe trägt man keinen Kürbis. [Linksklick] an/aus, [R] normal ↔ UV.
-- **Batterien** sind kleine Gegenstände. Batterie in der Hand + Lampe (oder umgekehrt) → einlegen, wie die Kerze in den Kürbis. Eine Batterie reicht für **einen Ingame-Tag normales Licht** – oder für **etwa 9 Sekunden UV**. Skeptiker handeln damit.
+- **Batterien** sind kleine Gegenstände. Batterie in der Hand + Lampe (oder umgekehrt) → einlegen, wie die Kerze in den Kürbis. Eine Batterie reicht für ~~**einen Ingame-Tag normales Licht**~~ **5 Minuten normales Licht** (etwa einen Abend, 2.4) – oder für **etwa 9 Sekunden UV**. Skeptiker handeln damit.
 - **Kein Schutzbereich:** Die Lampe zählt nicht als Licht für die Abschreckung (4.9) – sonst wäre sie eine helle Zone zum Mitnehmen.
 - **Verrät einen** (4.15): Auffälligkeit normal **+0,9**, UV **+1,2** (Kerze +0,6).
 - **Flackert in der Nähe des Monsters** wie die Wandlampen; bei schwacher Batterie wird sie dunkel und unruhig.
@@ -856,7 +881,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Nicht, wenn es schon zupackt (Jumpscare) oder sich ohnehin zurückzieht.
 
 **UV zeigt Verborgenes**
-- **Fußspuren des Monsters** leuchten unter UV noch lange, nachdem sie für das Auge verblasst sind (drei Ingame-Tage).
+- **Fußspuren des Monsters** leuchten unter UV noch lange, nachdem sie für das Auge verblasst sind (~~drei Ingame-Tage~~ 15 Spielstunden, 2.4).
 - **Schrift an Wänden**, nur unter UV: in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2), in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, der Heizer), in Zimmer 18 („Nur einer kommt hinaus“).
 - **Jeder Warnungszettel** hat eine unsichtbare zweite Zeile, die man nur mit eingeschaltetem UV-Licht liest – Hinweise auf das Abkommen und den Heizer (2.3).
 - **Warum UV?** Bewusst offen. Gäste und Zettel deuten an, dass es „dieses Licht hasst“ – eine Erklärung im Geheimnis (2.3) ist möglich, aber nicht nötig.
@@ -905,6 +930,10 @@ Hunger und wird mehrere holen.
   | Tag | bis 4 | 7 | 10 | 20 | ab 30 |
   |-----|-------|---|----|----|-------|
   | will mindestens einen holen | 20 % | 50 % | 75 % | 90 % | 95 % |
+  | **seit der Tagesuhr (2.4), je Aufbruch** | 4 % | 10 % | 16 % | 19 % | 20 % |
+
+  Seit 2026-10-23 bricht es etwa sechsmal am Tag auf statt gut einmal – je Tag greift es damit etwa so oft an wie
+  zuvor nach der oberen Zeile.
 
   Gedeckelt bei 95 %, damit ein kurzes Zucken auch an Halloween nicht immer gelogen ist. Die ersten Tage bleiben
   ohne Monster, die ersten beiden Angriffe harmlos (2.1) – die Kurve gilt danach. **Vom UV-Licht vertrieben** (4.16) → beim nächsten Aufbruch mindestens zwei:
@@ -975,8 +1004,8 @@ braucht), beim Ausprobieren festlegen.
 > (ab dem 4. Mal durch den Vorhang), Würgen mit Losreißen (drei Richtungswechsel in 1,5 s) oder Tod, Zeugen
 > (ein wacher Gast mit Sicht) vertreiben ihn, Ausblenden in 0,5 s. Erst nach dem ersten Angriff des Monsters,
 > nicht während das Monster nah ist. Debug: F6 und `--ghost=n`.
-> **Später am Tag umgesetzt:** **Nachtruhe zu zufälligen Zeiten** (seit 2026-10-21 entschieden: feste Zeit mit
-> Streuung, etwa 23–6 Uhr, nur für die Gäste, 2.4) (alle 4–9 min für 70–140 s: alle Gäste im
+> **Später am Tag umgesetzt:** **Nachtruhe zu zufälligen Zeiten** (seit 2026-10-21 entschieden, seit 2026-10-23 umgesetzt: feste Zeit
+> mit Streuung, 23–6 Uhr ± ½ h, nur für die Gäste, 2.4) (~~alle 4–9 min für 70–140 s~~ jede Nacht etwa 7 min: alle Gäste im
 > eigenen Bett, Licht aus; schlafende Gäste sind keine Zeugen und bemerken nichts) und der Geist **im Flur** ab
 > dem 6. Mal, wenn alle schlafen. Außerdem sind die Zimmerfenster jetzt **breiter und deutlich höher**
 > (1,9 m breit, 0,75–3,05 m statt 1,4 m breit, 0,9–2,3 m).
@@ -1053,7 +1082,7 @@ Der Blickzug bekommt eine Einstellung zum Abschwächen (wie das Flackern, 8.4).
 **Später auch im Flur** (ab dem **6.–7. Mal**): Wenn **alle Gäste schlafen**, taucht er wahrscheinlicher
 **im Flur** auf statt nur vor Fenstern. Dann gibt es keine Zeugen, die ihn vertreiben – der nächtliche Flur wird
 zum gefährlichsten Ort.
-- **Nachtruhe** (entschieden 2026-10-17; seit 2026-10-21 zu **fester Zeit** mit Streuung, 2.4): ~~zu **zufälligen Zeiten**~~ gehen alle Gäste schlafen – ins eigene Zimmer,
+- **Nachtruhe** (entschieden 2026-10-17; seit 2026-10-21 zu **fester Zeit** mit Streuung, 2.4, umgesetzt 2026-10-23): ~~zu **zufälligen Zeiten**~~ gehen alle Gäste schlafen – ins eigene Zimmer,
   Licht aus, ins Bett. Schlafende zählen nicht als Zeugen und bemerken nichts (auch nicht das Monster, das sie
   im Bett finden kann). Danach wachen alle wieder auf.
 
@@ -2702,7 +2731,8 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
   Mitternacht zwölfmal schlägt.
 - **Steigerung bis Halloween:** Der Nebel wird mit jedem Tag dichter, der Himmel wolkiger; an Halloween ist
   Vollmond.
-- **Offen:** wann „Mitternacht“ ist, solange es keine echte Uhrzeit gibt (nach Spieltag oder Nachtruhe?).
+- ~~**Offen:** wann „Mitternacht“ ist, solange es keine echte Uhrzeit gibt (nach Spieltag oder Nachtruhe?).~~ → 0 Uhr
+  der Tagesuhr (2.4).
 > **Umgesetzt (2026-10-20): Regen und Gewitter.** Meist ist es klar; alle paar Spieltage regnet es 2–4 Minuten, gegen
 > Monatsende öfter, und öfter als Gewitter (ein Drittel am Anfang, drei Viertel an Halloween). Der Regen fällt draußen
 > und ist durch die Fenster zu sehen, drinnen nie; man hört ihn (drinnen dumpfer), der Himmel zieht zu und der Mond wird
@@ -3037,7 +3067,7 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 ## 10. Offene Fragen für die Detaildiskussion
 
 1. ~~Ziel~~ → **Dem Horrorhotel entkommen** (entschieden). Offen: Wie genau? (Schlüssel für die Lobbytür zusammensuchen, Rätsel, Hilfe der Gäste?)
-2. ~~Zeitstruktur~~ → **durchgängig**, keine Level; Ingame-Tage à ca. 5 min vom 1. Oktober bis Halloween, draußen immer Nacht (2.1, entschieden).
+2. ~~Zeitstruktur~~ → **durchgängig**, keine Level; Ingame-Tage à ~~ca. 5 min~~ 24 min mit Tagesuhr (2.4) vom 1. Oktober bis Halloween, draußen immer Nacht (2.1, entschieden).
 3. ~~Monster-Kontakt~~ → Jumpscare + Sterbebildschirm, danach letzten Spielstand laden (entschieden, siehe 8).
 3a. **„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren?
 3b. ~~Spieler-Lichtquelle~~ → **Taschenlampe**, verrät die eigene Position, schützt nicht; mit UV-Aufsatz (späterer Fund) kurz vertreiben, kostet Batterien und macht es dreister (4.16, entschieden 2026-10-11).
@@ -3086,8 +3116,8 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 7k. ~~Trinken an der Bar (Rausch, Halluzinationen, Kater, Gäste trinken mit, 3.7) und der Wert **Schwäche**, nach
     dem sich der Lakengeist seine Opfer sucht (4.18)~~ ✔ (2026-10-19)
 7l. Schlaf & Müdigkeit: Wachzeit statt Nächte, fremde Betten, Gäste wecken, ausgeschlafen/übermüdet (3.6) – vorgemerkt
-    2026-10-19, Fragen offen · Tagesuhr 24 Stunden = 24 Minuten, feste Nachtruhe der Gäste, Tagesablauf in vier
-    Phasen, Werte umrechnen (2.4, entschieden 2026-10-21)
+    2026-10-19, Fragen offen · ~~Tagesuhr 24 Stunden = 24 Minuten, feste Nachtruhe der Gäste, Tagesablauf in vier
+    Phasen, Werte umrechnen (2.4, entschieden 2026-10-21)~~ ✔ (2026-10-23)
 7m. ~~Kinder: nur erschreckt, nie Opfer, Familien, kein Alkohol, immer auf Feiern, vom Monster übersehen, laut,
     Süßes oder Saures, petzen, Waisenkind, Kakao (6.13)~~ ✔ (2026-10-19) · alle vier Grundkörper aus Meshy ✔ (2026-10-20)
 7m0. Drei Bedrohungen: eine je Ebene und außer Hörweite, Kürbismann mit Ankündigung in Stufen und leiernder Musik,

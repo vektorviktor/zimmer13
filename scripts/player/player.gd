@@ -33,9 +33,9 @@ const HIDE_COMFORT_TIME := 22.0   ## ab hier wird es im Versteck unangenehm
 const HIDE_MAX_TIME := 38.0       ## dann muss man raus (wie in „Doors“)
 const BREATH_MAX := 6.0
 ## Schlafen im eigenen Bett während der Nachtruhe (Spielkonzept 4.18): die Zeit läuft so viel schneller,
-## so viele Spielsekunden Schlaf zählen als geschlafen, und ab dieser Nähe des Monsters wacht man auf
+## so viele Spielsekunden Schlaf (= Spielminuten, 2.4) zählen als geschlafen, und ab dieser Nähe des Monsters wacht man auf
 const SLEEP_SPEED := 5.0
-const SLEEP_MIN := 30.0
+const SLEEP_MIN := 120.0
 const SLEEP_WAKE_THREAT := 0.3
 ## Hand mit dem Gegenstand: unten rechts
 const HAND_REST := Vector3(0.22, -0.22, -0.45)

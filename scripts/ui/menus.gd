@@ -108,7 +108,8 @@ func _new_sheet(screen: String, title: String, width: float = 200.0) -> VBoxCont
 
 func _show_pause() -> void:
 	var box := _new_sheet("pause", "Zimmer 13 – Pause", 190.0)
-	box.add_child(UiKit.label(Calendar.date_text(Game.director.elapsed), 9, UiKit.INK_FAINT))
+	box.add_child(UiKit.label("%s · %s" % [Calendar.date_text(Game.director.elapsed), Calendar.time_text(Game.director.elapsed)], 9,
+		UiKit.INK_FAINT))
 	var first := UiKit.button("Fortsetzen", close)
 	box.add_child(first)
 	box.add_child(UiKit.button("Laden", _show_load))

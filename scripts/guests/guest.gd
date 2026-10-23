@@ -102,9 +102,16 @@ const CHILD_SCARE_FEAR := 40.0
 const CHILD_ROMP := 0.35
 const CHILD_LAUGH := Vector2(6.0, 14.0)
 const SLEEPLESS_CHANCE := 0.3
-const SLEEPLESS_TIME := Vector2(40.0, 80.0)
+const SLEEPLESS_TIME := Vector2(120.0, 240.0)
 const CHILD_GIFT := 0.2
 const ORPHAN_FOLLOW := 0.5
+## Tagesablauf (Spielkonzept 2.4): Faktoren auf die Vorlieben des Gasts (profile.activities) je Phase der Uhr –
+## morgens Küche und Garten, tagsüber wie gewohnt, abends Bar und Lobby, die Zimmer sind dann fast leer
+const PHASE_ACTIVITIES := {
+	Calendar.Phase.MORNING: {"kitchen": 3.0, "garden": 3.0, "room": 0.7, "bar": 0.1},
+	Calendar.Phase.DAY: {"bar": 0.4},
+	Calendar.Phase.EVENING: {"room": 0.15, "bar": 3.0, "lobby": 1.5, "kitchen": 0.7, "garden": 0.3},
+}
 ## Monster unterwegs: so nah am eigenen Zimmer rennt er heim (Tür zu), sonst sucht er ein Versteck
 const COVER_HOME_RANGE := 80.0
 
@@ -1205,7 +1212,7 @@ func _next_activity() -> void:
 	if is_child() and _child_approach():
 		return
 	_romp = is_child() and randf() < CHILD_ROMP
-	var choice := _weighted_choice(profile["activities"])
+	var choice := _weighted_choice(_phase_activities())
 	match choice:
 		"room":
 			_walk_to(_room_point(), State.WALK)
@@ -2037,6 +2044,15 @@ func _wander_point() -> Vector3:
 
 func _jitter(r: float) -> Vector3:
 	return Vector3(randf_range(-r, r), 0, randf_range(-r, r))
+
+
+## Vorlieben des Gasts, gewichtet nach der Phase des Tages (PHASE_ACTIVITIES).
+func _phase_activities() -> Dictionary:
+	var factors: Dictionary = PHASE_ACTIVITIES.get(Calendar.phase(), {})
+	var weights := {}
+	for key in profile["activities"]:
+		weights[key] = float(profile["activities"][key]) * float(factors.get(key, 1.0))
+	return weights
 
 
 func _weighted_choice(weights: Dictionary) -> String:

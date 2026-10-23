@@ -9,8 +9,9 @@ extends Node3D
 ##   --new=n                     neues Spiel in Slot n (TitleScreen)
 ##   --savetest                  Speichern → Laden → Vergleichen (Ausgabe in der Konsole)
 ##   --diary=n                   nach 2 s wie am Tagebuch in Slot n speichern
-##   --day=n                     zu Tag n im Oktober springen
-##   --attacks=n                 so viele Angriffe gab es schon (> 2: nicht mehr harmlos, ob es holt, entscheidet die Tageskurve; sicher mit --intent)
+##   --day=n                     zu Tag n im Oktober springen (15 Uhr)
+##   --uhr=hh[:mm]               Uhrzeit am aktuellen Tag stellen (2.4; am 1. Oktober frühestens 15 Uhr) – nach --day
+##   --attacks=n                 so viele Angriffe gab es schon (> 9: nicht mehr harmlos, ob es holt, entscheidet die Tageskurve; sicher mit --intent)
 ##   --first-attack              Feier starten, kurz darauf der erste Angriff
 ##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
 ##   --prank=art[,zimmer]        Streich (6.13): das erste Kind mit Eltern steht vor der Tür (Standard Zimmer 13) und
@@ -96,7 +97,7 @@ extends Node3D
 ##                               Wartezeit, Chance, ob er hineinfliegt) · tür: ein Lakengespenst hängt neben der Tür
 ##                               deines Zimmers (sonst Zimmer 13), er steht lautlos davor und hypnotisiert durch die
 ##                               Wand (5.6), mit --answer öffnest du nach 4 s · ohne Fenster bzw. Flur nur eine Meldung
-##   --sleep[=bett]              Nachtruhe sofort beginnen (Gäste gehen ins Bett) · bett: alle liegen sofort,
+##   --sleep[=bett]              Nachtruhe sofort beginnen – die Uhr springt auf ihren Beginn (Gäste gehen ins Bett) · bett: alle liegen sofort,
 ##                               du schläfst im Bett von Zimmer 13
 ##   --awake=n                   so viele Nächte ohne Schlaf (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
 ##                               der erste Angriff gilt dann als geschehen
@@ -821,10 +822,10 @@ func run_debug(arg: String) -> bool:
 		Game.director.first_attack_done = true
 		Game.player.nights_awake = arg.substr(8).to_int()
 	elif arg == "--sleep":
-		Game.social.start_sleep()
+		Game.social.debug_sleep()
 	elif arg == "--sleep=bett":
 		# alle Gäste sofort im Bett, du schläfst im Bett von Zimmer 13
-		Game.social.start_sleep(true)
+		Game.social.debug_sleep(true)
 		for spot in Game.director.rooms[LevelBuilder.PLAYER_ROOM]["spots"]:
 			if (spot as HideSpot).own_bed:
 				Game.player.start_sleep(spot)
@@ -934,8 +935,13 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--debug":
 		Game.hud.debug_enabled = true
 	elif arg.begins_with("--day="):
-		# zu einem Tag im Oktober springen (1–31)
-		Game.director.elapsed = (clampi(arg.substr(6).to_int(), 1, Calendar.HALLOWEEN) - 1) * Calendar.DAY_SECONDS
+		# zu einem Tag im Oktober springen (1–31), dort 15 Uhr
+		Game.director.elapsed = Calendar.at(clampi(arg.substr(6).to_int(), 1, Calendar.HALLOWEEN), Calendar.START_HOUR)
+	elif arg.begins_with("--uhr="):
+		# Uhrzeit am aktuellen Tag (hh oder hh:mm); vor der Anreise am 1. Oktober geht es nicht
+		var hm := arg.substr(6).split(":")
+		var hour := hm[0].to_float() + (hm[1].to_float() / 60.0 if hm.size() > 1 else 0.0)
+		Game.director.elapsed = maxf(0.0, Calendar.at(Calendar.day_of(Game.director.elapsed), hour))
 	elif arg.begins_with("--bulb-thief="):
 		# Gast klaut sofort eine Glühbirne aus Zimmer 13
 		var thief := _guest(arg.substr(13))

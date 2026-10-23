@@ -451,7 +451,7 @@ func _guarantee_due() -> bool:
 		guarantee_checked = true
 		if visits < GUARANTEE_VISITS:
 			for d: int in [GUARANTEE_DAY, GUARANTEE_DAY + 1]:
-				var start: float = (d - Calendar.FIRST_DAY) * Calendar.DAY_SECONDS
+				var start: float = Calendar.at(d, 0.0)
 				guarantee_at.append(maxf(now, start + Calendar.DAY_SECONDS * randf_range(GUARANTEE_TIME.x, GUARANTEE_TIME.y)))
 			if Game.tracing:
 				print("[Kürbismann] Garantie: erst %d Mal da – kommt sicher bei %s" % [visits, ", ".join(guarantee_at.map(func(t) -> String: return Calendar.date_text(float(t)) + " (%.0f s)" % float(t)))])

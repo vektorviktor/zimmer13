@@ -23,8 +23,8 @@ const INTENT_NAMES := ["Umsehen", "Einen holen", "Raubzug"]
 
 # --- Tuning -------------------------------------------------------------------
 const BOLDNESS_START := 25.0
-const BOLDNESS_PER_SECOND := 0.04      ## ≈ +2,4 pro Minute
-const DEMAND_GROWTH_SECONDS := 900.0   ## Anspruch an Deko: +100 % alle 15 min
+const BOLDNESS_PER_DAY := 12.0         ## nach dem ersten Angriff, je Spieltag (2.4)
+const DEMAND_GROWTH_DAYS := 3.0        ## Anspruch an Deko: +100 % alle drei Spieltage
 const DECO_RADIUS := 3.0
 const LIGHT_DETERRENCE := 12.0
 const CHASE_BONUS := 12.0
@@ -50,12 +50,14 @@ const DECO_UNREST_RANGE := 16.0
 const DECO_UNREST_GHOST := 10.0   ## beim Lakengeist (er ist lautlos – die Deko verrät ihn)
 ## Debug F7: so weit vom Spieler erscheint das ruhende Monster
 const LURE_DISTANCE := 25.0
-## Erster Angriff: am 3. oder 4. Oktober, nach so vielen Sekunden einer Feier
-const FIRST_ATTACK_DAYS := [3, 4]
+## Erster Angriff: am Abend des 2. Oktober (Feiern gibt es nur abends, 2.4), nach so vielen Sekunden einer Feier
+const FIRST_ATTACK_DAYS := [2]
 const FIRST_ATTACK_PARTY_TIME := 25.0
-const FALLBACK_ATTACK_DAY := 5         ## spätestens jetzt – auch ohne Feier
-## So viele Angriffe (Aktivphasen) holt es niemanden
-const HARMLESS_ATTACKS := 2
+## Spätestens dann – auch ohne Feier: am 3. Oktober um 20 Uhr
+const FALLBACK_ATTACK_DAY := 3
+const FALLBACK_ATTACK_HOUR := 20.0
+## So viele Aufbrüche holt es niemanden – etwa anderthalb Spieltage (früher zwei Aufbrüche bei 5-Minuten-Tagen)
+const HARMLESS_ATTACKS := 9
 ## Ruhe- und Aktivphasen in Sekunden: am 1. Oktober → an Halloween
 const REST_TIME := Vector2(150.0, 35.0)
 const ACTIVE_TIME := Vector2(70.0, 210.0)
@@ -76,8 +78,10 @@ const UV_CURIOSITY := 40.0             ## … und sucht rund um Zimmer 13
 const UV_REST_FACTOR := 0.4            ## vertrieben ruht es nur kurz
 ## Aufbruch (4.17): Chance, dass es angreifen will, steigt mit dem Tag – Stützpunkte (Tag, Chance),
 ## dazwischen gleitend, davor/danach der erste/letzte Wert. Greift es an, will es n Opfer mit
-## Wahrscheinlichkeit ∝ 1/n² (≈ 61 % eins, 15 % zwei, 7 % drei …), höchstens alle Lebenden + Spieler
-const ATTACK_CHANCE := [Vector2(4, 0.2), Vector2(7, 0.5), Vector2(10, 0.75), Vector2(20, 0.9), Vector2(30, 0.95)]
+## Wahrscheinlichkeit ∝ 1/n² (≈ 61 % eins, 15 % zwei, 7 % drei …), höchstens alle Lebenden + Spieler.
+## Seit der Tagesuhr (2.4) bricht es etwa sechsmal am Tag auf statt gut einmal – die Chancen sind deshalb ein
+## Fünftel der früheren (20/50/75/90/95 %), damit es je Tag etwa gleich oft angreift; die übrigen Aufbrüche sind Umsehen
+const ATTACK_CHANCE := [Vector2(4, 0.04), Vector2(7, 0.1), Vector2(10, 0.16), Vector2(20, 0.19), Vector2(30, 0.2)]
 ## Flackerwelle: Sekunden = SIGNAL_BASE + SIGNAL_PER_VICTIM × gezeigte Opfer, schwankt um
 ## ± SIGNAL_JITTER; satt nur ein Zucken. Stärke je 0 / 1 / ab 2 Opfern. Läuft mit WAVE_SPEED m/s
 ## vom Keller aus, ins Obergeschoss über das Treppenhaus.
@@ -91,9 +95,10 @@ const WAVE_SPEED := 15.0
 const DECEIVE_CHANCE := 0.2
 ## Ab so viel Sättigung sieht es sich beim Aufbruch nur um
 const SATED_ROAM := 5.0
-## Umsehen wird zum Angriff: bei einer Sichtung / wenn es Gerede hört (mit dieser Chance)
+## Umsehen wird zum Angriff: bei einer Sichtung / wenn es Gerede hört (mit dieser Chance; Gerede seit der Tagesuhr
+## ein Fünftel, weil es fünfmal so oft je Tag unterwegs ist, 2.4)
 const ESCALATE_ON_SIGHT := 0.5
-const ESCALATE_ON_TALK := 0.15
+const ESCALATE_ON_TALK := 0.03
 ## Halluzination: so oft kommt mit dem Rauschen eine lange Flackerwelle ohne Monster (zeigt so viele Opfer)
 const FAKE_SIGNAL_CHANCE := 0.35
 const FAKE_SIGNAL_VICTIMS := 3
@@ -127,7 +132,7 @@ var player_door_front := Vector3.ZERO
 var post_material: ShaderMaterial
 ## Dramaturgie
 var first_attack_done := false
-var first_attack_day := 3
+var first_attack_day := 2
 var attacks := 0            ## Aktivphasen seit dem ersten Angriff
 var grief := 0.0            ## Sekunden „Trauerzeit“ nach einem Todesfall → Halluzinationen
 var strange_diary := false  ## im Tagebuch steht beim nächsten Mal eine fremde Zeile
@@ -204,7 +209,7 @@ func _physics_process(delta: float) -> void:
 			debug_lure()
 		elapsed += delta
 		if first_attack_done:
-			boldness = minf(100.0, boldness + BOLDNESS_PER_SECOND * delta)
+			boldness = minf(100.0, boldness + BOLDNESS_PER_DAY * delta / Calendar.DAY_SECONDS)
 		satiation = maxf(0.0, satiation - 0.1 * delta)
 		grief = maxf(0.0, grief - delta)
 		_update_zones(delta)
@@ -230,7 +235,7 @@ func effective_boldness() -> float:
 
 
 func demand() -> float:
-	return 1.0 + elapsed / DEMAND_GROWTH_SECONDS
+	return 1.0 + elapsed / (DEMAND_GROWTH_DAYS * Calendar.DAY_SECONDS)
 
 
 func pressure_at(p: Vector3, chasing: bool = false) -> float:
@@ -446,7 +451,7 @@ func _check_first_attack() -> void:
 	var social := Game.social
 	if social and social.party_active and day >= first_attack_day and social.party_age() >= FIRST_ATTACK_PARTY_TIME:
 		_first_attack_at_party()
-	elif day >= FALLBACK_ATTACK_DAY:
+	elif elapsed >= Calendar.at(FALLBACK_ATTACK_DAY, FALLBACK_ATTACK_HOUR):
 		first_attack_done = true
 		_start_activity(spawn_points[0])
 
@@ -486,7 +491,7 @@ func _start_activity(spawn: Vector3, with_signal: bool = true) -> void:
 	if Game.tracing:
 		var why := "erzwungen" if debug_victims >= 0 else ("satt" if sated else "Chance %.0f %%" % (attack_chance() * 100.0))
 		print("[Aufbruch] %d. Angriff%s · Tag %.1f, %s → %s (%d Opfer) · Flackern zeigt %s" % [attacks,
-			" (harmlos)" if is_harmless() else "", Calendar.FIRST_DAY + elapsed / Calendar.DAY_SECONDS, why,
+			" (harmlos)" if is_harmless() else "", Calendar.day_float(elapsed), why,
 			INTENT_NAMES[intent], victims_left, str(shown_victims) if with_signal else "-"])
 	_monster.start_roaming(spawn)
 
@@ -508,7 +513,7 @@ func _choose_intent(sated: bool) -> void:
 
 ## Chance, dass es bei einem Aufbruch jetzt angreift – steigt gleitend von Tag zu Tag (4.17).
 func attack_chance() -> float:
-	var day := Calendar.FIRST_DAY + elapsed / Calendar.DAY_SECONDS
+	var day := Calendar.day_float(elapsed)
 	var prev: Vector2 = ATTACK_CHANCE[0]
 	if day <= prev.x:
 		return prev.y
@@ -1510,8 +1515,8 @@ func _update_effects(delta: float) -> void:
 
 
 func debug_text() -> String:
-	var s := "%s · Phase %s (%ds) · Angriff %d%s\n" % [Calendar.date_text(elapsed), Phase.keys()[phase], int(_phase_left),
-		attacks, " harmlos" if is_harmless() else ""]
+	var s := "%s %s · Phase %s (%ds) · Angriff %d%s\n" % [Calendar.date_text(elapsed), Calendar.time_text(elapsed),
+		Phase.keys()[phase], int(_phase_left), attacks, " harmlos" if is_harmless() else ""]
 	s += "Dreistigkeit %.1f (effektiv %.1f) · Bedrohung %.2f\n" % [boldness, effective_boldness(), player_threat]
 	s += "UV vertrieben: %d× (nötig %.1f s)\n" % [uv_count, uv_repel_time()]
 	s += "Absicht: %s (noch %d Opfer) · Flackern zeigte %d · Angriffschance %.0f %%\n" % [INTENT_NAMES[intent], victims_left, shown_victims, attack_chance() * 100.0]
