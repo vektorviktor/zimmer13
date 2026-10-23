@@ -453,6 +453,7 @@ func apply(data: Dictionary) -> void:
 	Game.social.decorating.reset()
 	Game.social.search.reset()
 	Game.social.pranks.reset()
+	Game.social.tidying.reset()
 	if Game.kitchen:
 		Game.kitchen.reset()
 	# Zuerst die zufällig erzeugten Gäste – alles Weitere bezieht sich auf ihre IDs

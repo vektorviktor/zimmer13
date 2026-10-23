@@ -1172,6 +1172,15 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   - Gespeichert wird nur `parent` in der Gästeliste (Version 22); `sleepless`, Besuche und Süßes oder Saures nicht.
     `--trace` zeigt `[Süßes oder Saures]` und `[Lakengeist] … erschreckt`; die Kinder-IDs folgen auf die Erwachsenen
     (erstes Kind `gast24`).
+- **Flecken und Putzen** (`guests/tidying.gd`, `Tidying`, Kind von Social: `Game.social.tidying`, Spielkonzept 6.13, 2026-10-22):
+  alle `SCAN` s `_messes()` = Kürbismatsch am Boden und Spuren `wax_splash`/`soot`. `_complaints`: ein wacher Erwachsener,
+  dessen `door_front` höchstens `COMPLAIN_RANGE` vom Fleck liegt und der ihn in `SEE_RANGE` frei sieht, sagt einmal je
+  Fleck (Meta `complained`) einen Satz. `_send_cleaner` (Pause `TIDY_GAP`, nicht in der Nachtruhe): der nächste freie
+  `is_tidy` (`TIDY_SHARE`, nach `hash(id)`) in `TIDY_RANGE` mit freier Sicht → `start_visit` (Meta `cleaning`). `on_arrived`
+  (aus `Social.on_visit_arrived`): Spur → `TraceMark.wipe(gast)`; Matsch → in die Hand (Riesenspritzer: `Item.split_handful`
+  + `shrink_by_handful`), dann `Stove.claim_cook` → Zustand `EAT` zu `cook_spot()` (kocht wie ein Gast, `_start_guest_soup`),
+  sonst Phase `drop`: in der Küche fallen lassen. Abbruch: Matsch fällt zu Boden. Nicht gespeichert (`reset`). Debug
+  `--mess[=wachs]`, `--trace`: `[Flecken]`.
 - **Streiche** (`guests/pranks.gd`, `Pranks`, Kind von Social: `Game.social.pranks`, Spielkonzept 6.13): Saures an Zimmer 13
   (`_trick_prank`, 50 % weiter Klingelstreich) und auf der Runde (`_round_prank`) läuft über `play(kind, zimmer)`: gewichtet
   (`WEIGHTS`) unter dem, was geht – `leaves` (`Social._leaves_at`), `topple` (Deko aus `Item.TOPPLE_KINDS` in `TOPPLE_RANGE`
@@ -1432,7 +1441,7 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()`.
 - Beim Laden: `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
 - Nicht gespeichert, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating.reset()`, `DecoSearch.reset()`,
-  `Stove.reset()`, `Pranks.reset()` – sonst zeigten laufende Aktionen nach `--savetest` auf die neu gebauten Gäste ins Leere.
+  `Stove.reset()`, `Pranks.reset()`, `Tidying.reset()` – sonst zeigten laufende Aktionen nach `--savetest` auf die neu gebauten Gäste ins Leere.
 - Verletzungen (ab Version 26, Spielkonzept 6.17): je Gast `wound`, `wound_left`, `wound_bed`, `wound_facts`, `wound_told`,
   `wound_visited`; nach dem Laden `_update_wound_marks`, ins Bett geht er von selbst wieder.
 - Freundschaften unter Gästen (ab Version 25): `social.pals` = `GuestPals.counts` (`"id_a|id_b"` → Anzahl); ältere

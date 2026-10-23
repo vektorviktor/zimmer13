@@ -1182,14 +1182,26 @@ static func mush_color(skin: Color) -> Color:
 ## Großer Spritzer (Riesenkürbis): eine Hand voll nehmen – sie liegt als eigener Kürbismatsch in der Hand, der
 ## Spritzer schrumpft (Fläche je Hand voll), bis die letzte Hand voll mit ihm selbst aufgesammelt wird.
 func _take_portion(player: Player) -> void:
-	var handful := Item.create(Kind.PUMPKIN_MUSH, mush_extra(variety, mushed_at, HANDFUL_SPLAT, 1))
-	handful.owner_id = owner_id
-	get_parent().add_child(handful)
-	handful.global_position = global_position
+	var handful := split_handful()
 	player.try_pick_up(handful)
 	if player.held != handful:   # Hände voll – bleibt im Spritzer
 		handful.queue_free()
 		return
+	shrink_by_handful()
+
+
+## Eine Hand voll aus einem großen Spritzer als eigener Kürbismatsch an seiner Stelle (auch für Gäste, die putzen) – der
+## Spritzer selbst schrumpft erst mit shrink_by_handful.
+func split_handful() -> Item:
+	var handful := Item.create(Kind.PUMPKIN_MUSH, mush_extra(variety, mushed_at, HANDFUL_SPLAT, 1))
+	handful.owner_id = owner_id
+	get_parent().add_child(handful)
+	handful.global_position = global_position
+	return handful
+
+
+## Der Spritzer verliert eine Hand voll (Fläche je Hand voll).
+func shrink_by_handful() -> void:
 	portions -= 1
 	mush_size *= sqrt(float(portions) / (portions + 1))
 	_spread.scale = Vector3(mush_size, 1.0, mush_size)

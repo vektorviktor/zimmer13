@@ -20,7 +20,7 @@ const GROUPS := [
 	["Gäste", ["guests", "talk", "look", "shock", "wound", "friend", "enemy", "relation", "pals", "follow",
 		"visit", "attack", "punch", "bulb-thief", "steal-test"]],
 	["Spiele", ["dice", "chess", "challenge", "autoplay"]],
-	["Feiern & Deko", ["party", "trick", "prank", "decorate", "search", "cook", "costumes", "player-deco"]],
+	["Feiern & Deko", ["party", "trick", "prank", "mess", "decorate", "search", "cook", "costumes", "player-deco"]],
 	["Telefon", ["call", "dial"]],
 	["Zeit & Schlaf", ["time", "day", "sleep"]],
 	["Welt", ["weather", "wallblood", "pool", "splash"]],

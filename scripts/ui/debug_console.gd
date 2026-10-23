@@ -34,6 +34,7 @@ const COMMANDS := {
 	"decorate": ["[gast][,lobby][,allein|gross|hier][,haus][,hin]", "Schmück-Aktion: Gäste schmücken Tür, Flur oder Lobby · allein: ein Gast trägt Deko in sein Zimmer (haus: irgendwohin) · gross: großes Schmücken · hier: wo du stehst (hin: du stehst davor)"],
 	"search": ["[gast][,mit]", "Deko-Suche (5.9) – mit: du gehst mit"],
 	"cook": ["suppe|braten[,fertig]|gast[,id]", "Kochen (3.8): Kürbis liegt im Topf bzw. in der Pfanne, du stehst am Herd · gast: ein Gast kocht Suppe"],
+	"mess": ["[wachs]", "Kürbismatsch (oder Wachsfleck) vor dir, ein ordentlicher Gast putzt ihn weg (6.13)"],
 	"pals": ["gast1,gast2", "gast1 erzählt gast2 gleich Gutes über dich (6.16)"],
 	"call": ["gast|creepy|dead|door", "Telefon in Zimmer 13 klingelt"],
 	"dial": ["n|lobby", "vom Telefon in Zimmer 13 anrufen"],

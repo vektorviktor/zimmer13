@@ -416,10 +416,22 @@ func start_guest_cook(forced: Guest) -> bool:
 		cook.stock[Item.Kind.PUMPKIN] = int(cook.stock[Item.Kind.PUMPKIN]) - 1
 	_cook = cook
 	cook._take_into_hand(cook.stock_item(Item.Kind.PUMPKIN))
-	var spot := NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, pos + front * 0.8)
-	cook._walk_to(spot, Guest.State.EAT)
+	cook._walk_to(cook_spot(), Guest.State.EAT)
 	if Game.tracing:
 		print("[Kochen] %s geht kochen (%s)" % [cook.display_name, cook.held.display_name])
+	return true
+
+
+## Wo der Koch steht: vor dem Herd, aufs NavMesh gezogen.
+func cook_spot() -> Vector3:
+	return NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, global_position + front * 0.8)
+
+
+## Ein Gast will kochen (Tidying: mit Kürbismatsch in der Hand). false = der Herd ist belegt oder es kocht schon jemand.
+func claim_cook(g: Guest) -> bool:
+	if phase != "empty" or _cook != null:
+		return false
+	_cook = g
 	return true
 
 

@@ -273,10 +273,15 @@ func get_prompt(_player: Player) -> String:
 func interact(_player: Player) -> void:
 	if not can_wipe():
 		return
+	wipe(Game.player)
+
+
+## Wegwischen (Spieler an Zimmer 13, Gäste beim Putzen – Tidying): schrumpft weg und ist fort.
+func wipe(by: Node) -> void:
 	remove_from_group("trace_marks")
 	set_meta("interactable", null)
 	collision_layer = 0
-	Game.noise("wipe", global_position, Game.player)
+	Game.noise("wipe", global_position, by)
 	var tw := create_tween()
 	tw.tween_property(self, "scale", Vector3(1, 1, 0.01) * 0.2, 0.6)
 	tw.tween_callback(queue_free)

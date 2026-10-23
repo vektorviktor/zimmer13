@@ -177,6 +177,7 @@ var record_player: RecordPlayer
 var decorating: Decorating               ## Schmück-Aktionen (Spielkonzept 5.9)
 var pals: GuestPals                      ## Freundschaften unter Gästen (Spielkonzept 6.16)
 var pranks: Pranks                      ## Streiche der Kinder (Spielkonzept 6.13)
+var tidying: Tidying                    ## Flecken: Beschweren und Putzen (Spielkonzept 6.13)
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
@@ -301,6 +302,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	pranks = Pranks.new()   # Streiche der Kinder (Spielkonzept 6.13)
 	pranks.name = "Pranks"
 	add_child(pranks)
+	tidying = Tidying.new()   # Flecken: Beschweren und Putzen (6.13)
+	tidying.name = "Tidying"
+	add_child(tidying)
 
 
 ## Gast ins Hotel setzen (Profil muss schon bekannt sein); mit Start-Deko vor der Tür.
@@ -1506,6 +1510,8 @@ func start_visit(guest: Guest) -> void:
 ## why (Meta „visit“ am Gast): "" Besuch eines Freundes, "trick" Süßes oder Saures, "sleepless" Kind kann nicht schlafen.
 func on_visit_arrived(guest: Guest) -> void:
 	if pranks.on_arrived(guest):   # holt etwas für einen Streich bzw. wirft es (6.13)
+		return
+	if tidying.on_arrived(guest):   # putzt einen Fleck weg bzw. bringt Kürbismatsch in die Küche
 		return
 	if _rounds.has(guest.id):
 		_round_arrived(guest)

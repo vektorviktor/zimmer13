@@ -33,6 +33,8 @@ extends Node3D
 ##   --cook=gast[,id]            ein Gast (oder dieser) kocht gleich Kürbissuppe (er steht 4 m vor dem Herd, du daneben)
 ##   --cook=suppe|braten[,fertig]  Kochen (3.8): Kürbis liegt geschnitten im Topf bzw. in der Pfanne, du stehst am Herd ·
 ##                               fertig: gleich fertig (Suppe: Gäste kommen zum Essen)
+##   --mess[=wachs]              Kürbismatsch (bzw. großer Wachsfleck) 3 m vor dir, ein ordentlicher Gast hinter dir putzt ihn weg
+##                               (6.13; --trace „[Flecken]“)
 ##   --pals=gast1,gast2          Weitererzählen (6.16): gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir
 ##                               nebeneinander – gast1 erzählt gast2 gleich Gutes über dich (mit --trace: Beziehung)
 ##   --call=id|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast, Atmen, Verschwundener,
@@ -855,6 +857,8 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(1.5).timeout.connect(func() -> void: _debug_search(parts))
 	elif arg.begins_with("--cook="):
 		_debug_cook(arg.substr(7).split(","))
+	elif arg == "--mess" or arg == "--mess=wachs":
+		get_tree().create_timer(1.5, false).timeout.connect(func() -> void: Game.social.tidying.debug(arg.ends_with("wachs")))
 	elif arg.begins_with("--pals="):
 		_debug_pals(arg.substr(7).split(","))
 	elif arg == "--knock":

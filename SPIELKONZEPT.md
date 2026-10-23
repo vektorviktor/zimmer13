@@ -2080,6 +2080,10 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
   weitere mehr als die vorige**. Nach einer wartet es noch kurz auf die nächste, dann geht es zufrieden. Süßigkeiten
   gibt es in der **Truhe jedes Zimmers** (6 Stück zum Start) und am **Snackautomaten**; Gäste geben Kindern an ihrer Tür
   aus ihrer eigenen Truhe, solange sie nicht leer ist.
+  **Flecken (entschieden und umgesetzt 2026-10-22):** Kürbismatsch, große Wachsflecken und Ruß vor der eigenen Tür
+  bemerken die Bewohner und **beschweren sich** („Wer schmeißt hier mit Kürbissen?!“). **Ordentliche Gäste** (etwa vier
+  von zehn) **putzen**: Wachs und Ruß wischen sie weg, Kürbismatsch sammeln sie auf (vom Riesenspritzer eine Hand voll)
+  und **bringen ihn in die Küche** – ist der Herd frei, kochen sie daraus **Kürbissuppe**, sonst legen sie ihn dort ab.
 - **Gebastelte Geschenke:** Kinder schenken dem Spieler kleine, schwache Deko (Laub, eine Kerze) – mehr Herz als
   Schutz, aber es zählt als Geschenk (6.3).
 - **Die Puppe** (5.5, neu gefasst 2026-10-22): Kinder sehen sie und **tragen sie zum Spielen herum** – zwischen den
