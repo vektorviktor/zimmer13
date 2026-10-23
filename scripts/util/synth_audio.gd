@@ -41,6 +41,10 @@ const RATE := 22050.0
 const MUSIC_BEAT := 60.0 / 132.0
 ## Walzer in a-Moll: Am – F – G – E
 const MUSIC_CHORDS := [[220.0, 261.6, 329.6], [174.6, 220.0, 261.6], [196.0, 246.9, 293.7], [164.8, 207.7, 246.9]]
+## Das Lied der Kinder vom Kürbiskopf (eigene Melodie, a-Moll, Achtel): Frequenzen in Hz, je Ton CREEPY_BEAT Sekunden
+const CREEPY_BEAT := 0.34
+const CREEPY_TUNE := [440.0, 523.3, 659.3, 587.3, 523.3, 493.9, 440.0, 329.6, 440.0, 523.3, 659.3, 698.5, 659.3, 587.3, 523.3, 493.9,
+	523.3, 493.9, 440.0, 415.3, 440.0, 493.9, 523.3, 659.3, 587.3, 523.3, 493.9, 415.3, 440.0, 440.0, 329.6, 440.0]
 const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
@@ -58,6 +62,10 @@ var pant_rate := 0.4   ## Atemzüge pro Sekunde
 var rain := 0.0    ## Regenrauschen (Wetter, Spielkonzept 7.8)
 var rain_muffle := 0.0   ## 1 = drinnen: dumpfer
 var rumble := 0.0  ## tiefes Grollen im ganzen Hotel, bevor das Monster aufbricht (Puppe, Spielkonzept 5.5)
+## Kürbismann kündigt sich an (Spielkonzept 4.19): der Plattenspieler leiert überall eine schrille, verzerrte Melodie
+## (`creepy`), und die Kinder singen sie mit (`chorus`, nach Nähe zum nächsten singenden Kind)
+var creepy := 0.0
+var chorus := 0.0
 
 var _playback: AudioStreamGeneratorPlayback
 var _time := 0.0
@@ -237,6 +245,8 @@ func _sample(dt: float) -> float:
 		# tiefes, schwankendes Grollen aus der Tiefe – wie Donner, aber ohne Krachen und ohne Ende
 		var swell := 0.65 + 0.35 * sin(TAU * 0.23 * _time + 1.5 * sin(TAU * 0.07 * _time))
 		s += (_lp_slow * 7.0 * swell + sin(TAU * 33.0 * _time) * 0.18 * swell + sin(TAU * 41.0 * _time) * 0.1) * rumble
+	if creepy > 0.001 or chorus > 0.001:
+		s += _creepy_sample(white)
 	if rain > 0.001:
 		s += (white * 0.16 * (1.0 - rain_muffle) + _lp_fast * 0.3 + _lp_slow * 0.8 * rain_muffle) * rain
 	var i := _shots.size() - 1
@@ -358,3 +368,29 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			var roll := _lp_slow * 9.0 * (0.6 + 0.4 * sin(TAU * 1.7 * t + 2.0 * sin(TAU * 0.4 * t)))
 			return (crack + roll) * minf(1.0, t * 30.0) * exp(-t * 0.75)
 	return 0.0
+
+
+## Melodie vom Kürbiskopf: der Plattenspieler leiert (Rechteck und Säge, Tonhöhe schwankt wie eine verbogene Platte,
+## grob gestuft und knisternd) – darüber die Kinder (drei leicht verstimmte Stimmen mit Vibrato, „Aah“ aus Grundton und
+## Obertönen, jeder Ton weich angesetzt).
+func _creepy_sample(white: float) -> float:
+	var n := int(_time / CREEPY_BEAT)
+	var f: float = CREEPY_TUNE[n % CREEPY_TUNE.size()]
+	var nt := fmod(_time, CREEPY_BEAT)
+	var s := 0.0
+	if creepy > 0.001:
+		var warp := 1.0 + 0.035 * sin(TAU * 0.6 * _time) + 0.01 * sin(TAU * 7.0 * _time)
+		var ph := fmod(_time * f * warp, 1.0)
+		var tone := (1.0 if ph < 0.5 else -1.0) * 0.5 + (ph * 2.0 - 1.0) * 0.35
+		tone = roundf(tone * 4.0) / 4.0   # grob gestuft – klingt kaputt
+		var crackle := white * 0.6 if randf() < 0.002 else 0.0
+		s += (tone * exp(-nt * 3.0) * 0.22 + crackle) * creepy
+	if chorus > 0.001:
+		var env := minf(1.0, nt / 0.06) * (0.75 + 0.25 * exp(-nt * 4.0))
+		var voice := 0.0
+		for detune: float in [0.995, 1.0, 1.006]:
+			var vf := f * detune * (1.0 + 0.012 * sin(TAU * 5.5 * _time + detune * 40.0))
+			var p := TAU * vf * _time
+			voice += sin(p) + 0.45 * sin(2.0 * p) + 0.2 * sin(3.0 * p)
+		s += voice * env * 0.07 * chorus
+	return s

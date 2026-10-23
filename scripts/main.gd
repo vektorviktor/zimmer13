@@ -75,6 +75,8 @@ extends Node3D
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort Vorwarnung → Monster erscheint
+##   --pumpkin=ankündigung[,s]   Kürbismann kündigt sich an (4.19): Lampen rot, schrille Melodie, Kinder singen – in s
+##                               Sekunden (Standard 20) kommt er übers Lobbydach; mit --trace „[Kürbismann] kündigt sich an“
 ##   --doll[=s[,zimmer]]         die Puppe (5.5): in s Sekunden (Standard 20) bricht das Monster zu einem Angriff mit
 ##                               einem Opfer auf (wie --intent=one), sie liegt sofort vor der schwächsten bewohnten Tür (bzw.
 ##                               vor diesem Zimmer, z. B. 13 oder 1157) und es grollt; mit --trace „[Puppe]“ mit Weg und Opfern
@@ -693,6 +695,10 @@ func run_debug(arg: String) -> bool:
 					cat.affection = maxi(cat.affection, HotelCat.CARRY_TRUST)
 					Game.player.drop_held()
 					cat.pick_up(Game.player)
+	elif arg.begins_with("--pumpkin=ankündigung"):
+		# Ankündigung (4.19): rote Lampen, Melodie, Kinder singen – in s Sekunden (Standard 20) kommt er übers Dach
+		var wait := arg.get_slice(",", 1).to_float() if "," in arg else 20.0
+		get_tree().create_timer(0.5, false).timeout.connect(func() -> void: Game.pumpkin.debug_announce(wait))
 	elif arg == "--pumpkin=dach":
 		get_tree().create_timer(0.5, false).timeout.connect(Game.pumpkin.debug_roof)   # NavMesh muss erst stehen
 	elif arg == "--pumpkin=garten":

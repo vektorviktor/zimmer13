@@ -97,6 +97,7 @@ done <<'LIST'
 2200|--cook=gast --trace
 700|--trick=13,3 --trace
 1500|--day=10 --tp=westflügel --trace
+1200|--pumpkin=ankündigung,20 --trace
 4000|--attacks=3 --party --trace
 400|--flashlight=uv
 600|--deco=lichter,g --pos=55,0.1,-7.9,180,14

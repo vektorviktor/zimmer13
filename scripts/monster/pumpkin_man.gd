@@ -51,6 +51,20 @@ const GUARANTEE_DAY := 15
 const GUARANTEE_VISITS := 2
 const GUARANTEE_TIME := Vector2(0.25, 0.75)
 const CHECK_EVERY := 1.0
+## Ankündigung (Spielkonzept 4.19, 2026-10-22): Fällt der Wurf (oder die Garantie), kommt er erst nach ANNOUNCE_TIME –
+## dann aber sicher. So lange werden alle Lampen rot und flackern ab und zu (FlickerLight.red, in RED_FADE s), der
+## Plattenspieler leiert überall eine schrille Melodie (SynthAudio.creepy) und alle Kinder bleiben stehen und singen
+## (Guest.singing, SynthAudio.chorus nach Nähe bis CHORUS_RANGE, Zeilen aus SONG als Untertitel). Rot und Melodie bleiben,
+## bis er wieder weg ist; die Kinder hören auf, sobald er landet. In seiner Nähe leuchten die Lampen greller
+## (FlickerLight.hot_spot).
+const ANNOUNCE_TIME := Vector2(180.0, 240.0)
+const RED_FADE := 4.0
+const CREEPY_VOLUME := 0.55
+const CHORUS_RANGE := 25.0
+const CHORUS_FAR := 0.12      ## so leise hört man die Kinder überall
+const SONG_LINE_TIME := 2.72  ## eine Zeile = acht Töne der Melodie (SynthAudio.CREEPY_BEAT)
+const SONG := ["Kürbiskopf, Kürbiskopf, wo ist dein Gesicht?", "Süßes gabst du keines – Saures gab's für dich.",
+	"Die Axt lag am Empfang, die Kerze ging aus,", "Kürbiskopf, Kürbiskopf, kommt heut in jedes Haus."]
 const SPAWN_DISTANCE := Vector2(18.0, 28.0)   ## ohne Kürbisbeet: so weit von seinem ersten Opfer taucht er auf
 const BED_REACH := 2.5               ## so nah an einer Kürbispflanze muss der NavMesh-Punkt liegen
 const WALK_SPEED := 1.74             ## wie Meshys Gehen (Laufweite aus build_pumpkin.py, bei 2 m Größe)
@@ -108,6 +122,10 @@ var visits := 0               ## so oft war er schon im Hotel (gespeichert, für
 var guarantee_at: Array = []
 var guarantee_checked := false
 var _fun_deco := 0.0          ## kurzer Anteil vom Deko-Platzieren
+var _announce := 0.0          ## Ankündigung: noch so viele Sekunden, dann kommt er
+var _announce_wait := 0.0     ## Ankündigung vorbei, aber kein Platz zum Erscheinen: so lange schon
+var _song := 0.0
+var _song_line := 0
 var _roll := FUN_ROLL_EVERY
 var _check := 0.0
 var _scan := 0.0
@@ -162,6 +180,8 @@ func _ready() -> void:
 	if _test:
 		state = State.TEST
 		return
+	FlickerLight.red = 0.0   # statisch – vom letzten Spiel nichts übrig lassen
+	FlickerLight.hot_spot = Vector3.INF
 	collision_layer = 32   # wie das Monster: Gäste und Spieler laufen nicht durch ihn hindurch
 	collision_mask = 1
 	_collider = CollisionShape3D.new()
@@ -222,7 +242,11 @@ func _physics_process(delta: float) -> void:
 		return
 	if Input.is_action_just_pressed("debug_pumpkin") and not Game.game_over:
 		debug_roof()
+	_update_omens(delta)
 	if state == State.INACTIVE:
+		if announcing():
+			_announce_step(delta)
+			return
 		_check -= delta
 		if _check <= 0.0:
 			_check = CHECK_EVERY
@@ -280,8 +304,8 @@ func _check_spawn() -> void:
 	if _guarantee_due():
 		if Game.tracing:
 			print("[Kürbismann] Garantie an Tag %d (erst %d Mal da)" % [Calendar.today(), visits])
-		if _start_any():
-			guarantee_at.pop_front()
+		guarantee_at.pop_front()
+		_begin_announce()
 		return
 	var value := fun_value()
 	if value < FUN_THRESHOLD:
@@ -296,7 +320,100 @@ func _check_spawn() -> void:
 	if Game.tracing:
 		print("[Kürbismann] Spaßwert %.0f – Wurf %.2f gegen %.2f" % [value, roll, chance])
 	if roll < chance:
-		_start_any()
+		_begin_announce()
+
+
+# --- Ankündigung ------------------------------------------------------------------------------
+
+## Kündigt er sich gerade an (rote Lampen, Melodie, Kinder singen – er ist noch nicht da)?
+func announcing() -> bool:
+	return _announce > 0.0 or _announce_wait > 0.0
+
+
+## Der Wurf ist gefallen: in ANNOUNCE_TIME kommt er. Rot, Melodie und Gesang beginnen; Ängstliche bekommen Angst
+## (wer genug hat, geht heim), die meisten feiern weiter, Betrunkene erst recht.
+func _begin_announce(seconds: float = -1.0) -> void:
+	_announce = seconds if seconds > 0.0 else randf_range(ANNOUNCE_TIME.x, ANNOUNCE_TIME.y)
+	_announce_wait = 0.0
+	_song = 0.0
+	_song_line = 0
+	Game.caption("[Alle Lichter werden rot]")
+	Game.caption("[Eine schrille, verzerrte Melodie – überall im Hotel]")
+	for guest in Game.social.living_guests():
+		var g: Guest = guest
+		if g.is_child():
+			g.singing = true
+		elif g.drunk < BarTap.DRUNK:
+			g.fear = minf(100.0, g.fear + (1.0 - float(g.profile["brave"])) * 45.0)
+	if Game.tracing:
+		print("[Kürbismann] kündigt sich an – kommt in %.0f s (Spaßwert %.0f)" % [_announce, fun_value()])
+
+
+## Während der Ankündigung (statt _check_spawn): Liedzeilen als Untertitel; ist die Zeit um, kommt er sicher – findet
+## er keinen Platz, versucht er es jede Sekunde wieder, höchstens 60 s lang.
+func _announce_step(delta: float) -> void:
+	_song -= delta
+	if _song <= 0.0:
+		_song = SONG_LINE_TIME
+		var near := _nearest_singer()
+		if near < CHORUS_RANGE:
+			Game.caption("[Die Kinder singen: „%s“]" % SONG[_song_line % SONG.size()])
+		elif _song_line % SONG.size() == 0:
+			Game.caption("[Irgendwo singen Kinder]")
+		_song_line += 1
+	if _announce > 0.0:
+		_announce -= delta
+		if _announce > 0.0:
+			return
+		_announce_wait = 0.001
+	_announce_wait += delta
+	if _start_any() or _announce_wait > 60.0:
+		_announce_wait = 0.0
+		_announce = 0.0
+		_stop_singing()
+
+
+## Rot und Melodie, solange er sich ankündigt oder im Hotel ist; grelle Lampen um ihn herum; Kinderchor nach Nähe.
+func _update_omens(delta: float) -> void:
+	var on := announcing() or in_house()
+	FlickerLight.red = move_toward(FlickerLight.red, 1.0 if on else 0.0, delta / RED_FADE)
+	FlickerLight.hot_spot = global_position + Vector3.UP * 1.5 if in_house() and not arriving() else Vector3.INF
+	if Game.audio:
+		Game.audio.creepy = move_toward(Game.audio.creepy, CREEPY_VOLUME * Settings.music_volume if on else 0.0, delta * 0.3)
+		var chorus := 0.0
+		if announcing():
+			chorus = maxf(CHORUS_FAR, clampf(1.0 - _nearest_singer() / CHORUS_RANGE, 0.0, 1.0))
+		Game.audio.chorus = move_toward(Game.audio.chorus, chorus, delta * 0.5)
+
+
+## Abstand des Spielers zum nächsten singenden Kind (INF = keins).
+func _nearest_singer() -> float:
+	var best := INF
+	if Game.player and Game.social:
+		for guest in Game.social.guests:
+			var g: Guest = guest
+			if g.singing and not g.dead:
+				best = minf(best, g.global_position.distance_to(Game.player.global_position))
+	return best
+
+
+func _stop_singing() -> void:
+	if Game.social:
+		for guest in Game.social.guests:
+			(guest as Guest).singing = false
+
+
+## Liedzeile für ein Kind, das man anspricht, während es singt (Guest.interact).
+func song_line() -> String:
+	_song_line += 1
+	return SONG[_song_line % SONG.size()]
+
+
+## Debug (--pumpkin=ankündigung[,s]): Er kündigt sich an und kommt in s Sekunden (Standard 20).
+func debug_announce(seconds: float) -> void:
+	Game.director.first_attack_done = true
+	if state == State.INACTIVE and not announcing():
+		_begin_announce(seconds)
 
 
 ## Spaßwert mit dem kurzen Deko-Anteil (0..FUN_MAX).

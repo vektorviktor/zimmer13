@@ -956,6 +956,23 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   Bedrohung, erst mit fertigem NavMesh (`map_get_iteration_id`). Gespeichert unter `pumpkin` (`fun`, `visits`,
   `guarantee_at`, `guarantee_checked`; er selbst nicht). F3 zeigt den Wert, `--trace`: `[Kürbismann] Spaßwert … – Wurf`,
   `Garantie`.
+- **Ankündigung** (2026-10-22): Wurf und Garantie rufen `_begin_announce()` statt gleich `_start_any()`: `_announce`
+  (`ANNOUNCE_TIME` 180–240 s), alle Kinder `Guest.singing`, Erwachsene (nicht betrunken) Angst + (1 − Mut) × 45.
+  Solange `announcing()`, läuft im Zustand `INACTIVE` `_announce_step` statt `_check_spawn`: alle `SONG_LINE_TIME` s eine
+  Zeile aus `SONG` als Untertitel (in `CHORUS_RANGE` des nächsten Sängers, sonst ab und zu „[Irgendwo singen Kinder]“);
+  ist die Zeit um, `_start_any()` jede Sekunde, bis es klappt (höchstens 60 s), dann `_stop_singing()`. `_update_omens`
+  (jedes Bild): `FlickerLight.red` in `RED_FADE` s auf 1, solange er sich ankündigt oder im Hotel ist, `FlickerLight.hot_spot`
+  = sein Kopf, solange er im Haus ist (nicht beim Klettern), `SynthAudio.creepy` (`CREEPY_VOLUME` × Musiklautstärke) und
+  `SynthAudio.chorus` (nach Nähe zum nächsten Sänger, mindestens `CHORUS_FAR`). `Director.other_threat_active` und
+  `SaveManager.can_save` zählen `announcing()` mit. Nicht gespeichert (Speichern ist gesperrt). Debug
+  `--pumpkin=ankündigung[,s]` (`debug_announce`), `--trace`: `[Kürbismann] kündigt sich an`.
+  **Lampen** (`FlickerLight`, statisch für alle): `red` färbt `light_color` (aus `_base_color`) und die Emission des
+  Lampenmaterials (`_base_emission`, geteilte Materialien sind gewollt) nach `RED`, rotes Flackern `RED_FLICKER`; in
+  `NEAR_RANGE` um `hot_spot` × (1 + `NEAR_BOOST` × Nähe) und Flackern bis 0,6. `PumpkinMan._ready` setzt beides zurück.
+  **Klang** (`SynthAudio._creepy_sample`): `CREEPY_TUNE` (eigene Melodie, `CREEPY_BEAT`), Plattenspieler = Rechteck + Säge
+  mit schwankender Tonhöhe, grob gestuft, Knistern; Chor = drei verstimmte Stimmen mit Vibrato und Obertönen.
+  **Kinder** (`Guest.singing`): stehen (`_stop`), sehen zu `lobby_center`, außer im Bett, Versteck, Gespräch oder gewürgt;
+  [E] → `say(PumpkinMan.song_line())` statt Gespräch.
 - **Ankunft übers Lobbydach** (entschieden 2026-10-21): `start_hunt(akteure)` sucht die Glastür von der Lobby in
   den Mittelgarten, die einem davon am nächsten liegt (`_garden_door`: Tür mit `glass` aus der Gruppe `doors`, Lobby
   davor – `in_lobby` –, Garten dahinter – `is_outdoor`; heute x ±5,5 in der Nordwand z = −28). Warum dort: Der

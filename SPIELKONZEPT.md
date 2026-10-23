@@ -1202,8 +1202,16 @@ Aufhalten und erlösen: 4.21.
 - Die Hausherren aus 7.10 bleiben, wo jeder **zu Hause** ist; unterwegs sein dürfen sie nach der Tabelle.
 
 **2. Der Kürbismann kündigt sich an** – in Stufen wie das Monster mit seiner Flackerwelle (4.17)
-1. **Vorzeichen:** Fällt der Wurf (4.19), **lodern alle geschnitzten Kürbisse im Hotel kurz orange auf** – sein
-   Gegenstück zur Flackerwelle. Zugleich **leiert die Musik**.
+1. ~~**Vorzeichen:** Fällt der Wurf (4.19), **lodern alle geschnitzten Kürbisse im Hotel kurz orange auf** – sein
+   Gegenstück zur Flackerwelle. Zugleich **leiert die Musik**.~~ **Ankündigung (entschieden und umgesetzt 2026-10-22,
+   ersetzt das Auflodern):** Fällt der Wurf (oder die Garantie, 4.19), kommt er erst **3–4 Minuten später – dann aber
+   sicher**, auch wenn der Spaß inzwischen vorbei ist. So lange werden **alle Lampen rot** und flackern ab und zu (rotes
+   Licht schützt wie jedes Licht), der **Plattenspieler leiert eine schrille, verzerrte Melodie im ganzen Hotel** (lässt
+   sich nicht abstellen), und **alle Kinder bleiben stehen und singen** das Lied vom Kürbiskopf (eigener Text, als
+   Untertitel; spricht man sie an, antworten sie nur mit der nächsten Zeile). Ängstliche bekommen Angst und gehen heim,
+   die meisten feiern weiter, Betrunkene erst recht. Rot und Melodie bleiben, bis er wieder weg ist; die Kinder hören
+   auf, sobald er landet. **In seiner Nähe** leuchten die Lampen **greller und flackern stärker** – wo er ist, kann man
+   sich schlechter verstecken. Solange er sich ankündigt, kommen Monster und Lakengeist nicht, gespeichert wird nicht.
 2. **Klettern:** Kratzen an der Fassade, dann schwere Schritte auf dem Lobbydach – in Lobby und Partyraum durch die
    Decke zu hören.
 3. **Landung:** der Aufprall, wie bisher.

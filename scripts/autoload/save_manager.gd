@@ -186,7 +186,7 @@ func has_any_save() -> bool:
 func can_save() -> bool:
 	if Game.director == null or Game.game_over or Game.player == null or Game.director.is_signalling():
 		return false
-	if (Game.pumpkin and Game.pumpkin.in_house()) or (Game.ghost and Game.ghost.with_player()):
+	if (Game.pumpkin and (Game.pumpkin.in_house() or Game.pumpkin.announcing())) or (Game.ghost and Game.ghost.with_player()):
 		return false
 	var monster := Game.monster
 	if not monster.is_active():

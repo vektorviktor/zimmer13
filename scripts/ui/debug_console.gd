@@ -61,7 +61,7 @@ const COMMANDS := {
 	"steal-test": ["", "Ednas Deko unbemerkt nehmen (Schuld-Test)"],
 	"player-deco": ["x,z", "geschnitzten Kürbis des Spielers dort hinstellen"],
 	"cat": ["minka|socke|kasimir|luna|fussel|tiger|mausi[,tragen]", "Katze vor den Spieler setzen (tragen: gleich auf den Arm)"],
-	"pumpkin": ["[walk|run|spin_jump|chicken|macarena|hiphop|jagd[,gast]|dach|garten]", "Kürbismann: Testfigur vor dich, jagt dich/den Gast oder kommt übers Lobbydach"],
+	"pumpkin": ["[walk|run|spin_jump|chicken|macarena|hiphop|jagd[,gast]|dach|garten|ankündigung[,s]]", "Kürbismann: Testfigur vor dich, jagt dich/den Gast, kommt übers Lobbydach oder kündigt sich an (rote Lampen, Melodie, Kinder singen)"],
 	"pos": ["x,y,z[,winkel[,neigung]]", "Spieler versetzen"],
 	"splash": ["x,z", "nach 1 s platscht es dort im Pool"],
 	"pool": ["still|tremor|slosh", "Poolwasser wie bei nahem Monster (glatt, Zittern, Schwappen)"],

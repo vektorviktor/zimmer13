@@ -436,7 +436,7 @@ func other_threat_active(who: Node) -> bool:
 		return true
 	if who != Game.ghost and Game.ghost and Game.ghost.is_active():
 		return true
-	return who != Game.pumpkin and Game.pumpkin != null and Game.pumpkin.in_house()
+	return who != Game.pumpkin and Game.pumpkin != null and (Game.pumpkin.in_house() or Game.pumpkin.announcing())
 
 
 func _check_first_attack() -> void:

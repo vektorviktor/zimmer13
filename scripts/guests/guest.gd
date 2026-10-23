@@ -146,6 +146,7 @@ var chats_today := 0         ## nur die ersten zwei Plaudereien am Tag zählen v
 var attack_cooldown := 0.0
 var threatened := false      ## hat dir schon gedroht – beim nächsten Mal schlägt er zu
 var sleepless := false       ## Kind, das in dieser Nachtruhe nicht schlafen kann (Spielkonzept 6.13)
+var singing := false         ## Kind singt das Lied vom Kürbiskopf, während er sich ankündigt (PumpkinMan, 4.19)
 var _flee_home := false        ## rennt vor dem Monster heim und macht die Tür zu (take_cover)
 ## Überlebt (Spielkonzept 6.17): Art der Verletzung ("" = unverletzt, sonst Wounds.KINDS), so lange noch bis geheilt, davon
 ## noch im Bett; was er als Zeuge weiß (zone, went, visit_day) und wie viel er erzählt hat; ob der Spieler ihn besucht hat
@@ -485,6 +486,8 @@ func is_orphan() -> bool:
 func get_prompt(_player: Player) -> String:
 	if dead or (hiding and not in_sickbed()) or state == State.GHOSTED:
 		return ""
+	if singing:
+		return "%s singt und hört dich nicht [E]" % display_name
 	var sweets := Game.social.trick_sweets_given(self) if Game.social else -1
 	if sweets >= 0 and _player.has_kind(Item.Kind.SWEETS):   # Süßes oder Saures an Zimmer 13 (6.13)
 		return "%s eine Süßigkeit geben (%d/%d) [E]" % [display_name, sweets + 1, Social.TRICK_SWEETS_MAX]
@@ -492,6 +495,9 @@ func get_prompt(_player: Player) -> String:
 
 
 func interact(_player: Player) -> void:
+	if singing and Game.pumpkin:
+		say(Game.pumpkin.song_line())   # antwortet nur mit der nächsten Liedzeile
+		return
 	if Game.social and Game.social.give_trick_sweet(self):
 		return
 	if not dead and (not hiding or in_sickbed()) and state != State.GHOSTED and Game.dialog:
@@ -773,6 +779,12 @@ func _physics_process(delta: float) -> void:
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	if _hide_spot and state != State.HIDE_GO:
 		_release_hide_spot()   # Weg ins Versteck abgebrochen (Gespräch, Schreck, Klopfen …)
+	if singing and not state in [State.SLEEP, State.HIDING, State.GHOSTED, State.TALKING, State.DEAD]:
+		# Der Kürbiskopf kündigt sich an: Das Kind bleibt stehen, sieht zur Lobby und singt
+		_stop(delta)
+		_face(Game.social.builder.lobby_center, delta)
+		_open_doors(delta)
+		return
 	match state:
 		State.TALKING:
 			_stop(delta)
