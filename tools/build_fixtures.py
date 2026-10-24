@@ -23,6 +23,7 @@ SHOWER_SIZE = 1.1      # Meter, Duschfläche im Plan (Original 1,2 m)
 SHOWER_LIFT = 0.04     # Wanne ganz auf den Sockel (Original 4 cm darin) → Sockel zeigt genau 2 Fliesenreihen
 TOILET_SCALE = 0.85    # Schüssel im Original 0,63 × 0,42 m – zu groß
 TOILET_SEAT = 0.42     # Sitzhöhe (LevelBuilder.BOX_HEIGHTS["toilet"]; im Original 0,60 m)
+PLATE_GAP = 0.025      # Drückerplatte vor die Wand: Die Fliesen liegen im Spiel als Haut 2,2 cm vor der Wandfläche
 MIRROR_DEPTH = 0.04    # Rahmen tiefer (Original 2 cm): Das Spiegelbild liegt 3 cm vor der Wand (MIRROR_GAP)
 WOOD_TEX = 512
 SMALL_TEX = 256
@@ -211,6 +212,7 @@ def toilet():
 	xform(objs, Matrix.Rotation(-math.pi / 2.0, 4, 'Z') @ Matrix.Translation((-wall_x, -mid_y, 0)))
 	plate = [o for o in objs if o not in bowl and bounds([o])[0].z > 0.9]
 	holder = [o for o in objs if o not in bowl and o not in plate]
+	xform(plate, Matrix.Translation((0, -PLATE_GAP, 0)))
 	remap(objs, {"Cream_Ceramic": "ceramic", "chrome_blurry": "chrome", "ROLOPH": "paper", "Material_11": "holder"},
 		SMALL_TEX, "toilet_")
 	b0, b1 = bounds(bowl)
