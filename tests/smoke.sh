@@ -156,6 +156,7 @@ done <<'LIST'
 400|level,dachboden|--attic-door --flashlight
 600|dachboden,speichern|--dachboden=kopf --flashlight --savetest
 600|dachboden|--dachboden=treppe --trace
+600|dachboden,wetter|--dachboden=blitz --trace
 400|spieler|--sitzen=bett --trace
 600|gaeste,beziehungen|--pals=edna,bruno --trace
 2000|spieler|--sprint --trace

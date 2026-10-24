@@ -205,6 +205,8 @@ func _update_flash(delta: float) -> void:
 			_flash_queue.remove_at(i)
 			_flash = randf_range(0.7, 1.0)
 			Game.shot_event("lightning", 4)   # im Hintergrundfenster hinkt das Bild nach
+			if _builder and _builder.attic_spook:   # Spuk im Dachboden: dreht den Spieler im Blitzbild
+				_builder.attic_spook.on_flash()
 	_flash = maxf(0.0, _flash - delta * FLASH_DECAY)
 	var overcast := intensity * (1.0 if kind != Kind.CLEAR else 0.6)
 	if _moon:

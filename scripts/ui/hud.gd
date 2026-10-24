@@ -10,6 +10,8 @@ extends CanvasLayer
 const PROMPT_ICON := 24
 const MESSAGE_ICON := 24
 
+const WHITE_FADE := 3.5   ## flash_white: so schnell verblasst der Blitz (Deckkraft je Sekunde)
+
 var debug_enabled := false
 var fps_enabled := false          ## Bilder pro Sekunde und Bildzeit rechts oben (F10, --fps)
 
@@ -52,6 +54,7 @@ var _debug_timer := 0.0
 var _fps: Label
 var _fps_timer := 0.0
 var _hurt: ColorRect
+var _white: ColorRect   ## Blitz übers ganze Bild (Spuk im Dachboden, flash_white)
 var _sheet_overlay: ColorRect   ## unter dem Bettlaken: Sicht durch die Augenlöcher (5.9)
 
 
@@ -82,6 +85,11 @@ func _ready() -> void:
 	_hurt.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_hurt)
 	_hurt.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_white = ColorRect.new()
+	_white.color = Color(0.85, 0.9, 1.0, 0.0)
+	_white.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_white)
+	_white.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	_crosshair = ColorRect.new()
 	_crosshair.color = Color(1, 1, 1, 0.6)
@@ -202,6 +210,8 @@ func _process(delta: float) -> void:
 			_caption.text = ""
 	if _hurt.color.a > 0.0:
 		_hurt.color.a = maxf(0.0, _hurt.color.a - delta * 0.6)
+	if _white.color.a > 0.0:
+		_white.color.a = maxf(0.0, _white.color.a - delta * WHITE_FADE)
 	if _bag_blur.visible:
 		var amount: float = _bag_blur_material.get_shader_parameter("amount")
 		_bag_blur_material.set_shader_parameter("amount", minf(1.0, amount + delta * 8.0))
@@ -227,6 +237,12 @@ func _process(delta: float) -> void:
 		if _debug_timer <= 0.0:
 			_debug_timer = 0.25
 			_debug.text = Game.director.debug_text()
+
+
+## Grellweißer Blitz übers Bild (amount = Deckkraft), verblasst mit WHITE_FADE je Sekunde – der Spuk im Dachboden
+## (AtticSpook) versteckt darin den Dreh.
+func flash_white(amount: float) -> void:
+	_white.color.a = clampf(amount, 0.0, 1.0)
 
 
 ## Roter Blitz – je härter der Schlag, desto kräftiger.

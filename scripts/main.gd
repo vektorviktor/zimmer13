@@ -80,9 +80,10 @@ extends Node3D
 ##                               Antwort im Türgespräch gleich selbst – mit --trace Chance und Ausgang
 ##   --attic-door                Kniestocktür zum Ansehen (4.21): du stehst im Dachboden vor ihrer Bandseite (ohne Dachgeschoss
 ##                               im Plan wird beim Aufbau die erste 0,8 m breite Tür im OG1 zur Dachbodentür)
-##   --dachboden[=kopf|fenster|treppe]  ins Dachgeschoss (4.21): hinter die Kniestocktür, Blick in die Kammer · kopf: vor
+##   --dachboden[=kopf|fenster|treppe|blitz]  ins Dachgeschoss (4.21): hinter die Kniestocktür, Blick in die Kammer · kopf: vor
 ##                               den Kopf des Kürbismanns · fenster: unter das Dachfenster, durch das der Mond scheint, Blick hinauf
-##                               · treppe: im OG1 an den Fuß der Dachbodentreppe
+##                               · treppe: im OG1 an den Fuß der Dachbodentreppe · blitz: in die Kammer, Gewitter, nach 3 s
+##                               ein Blitz, der dich sicher um 90° dreht (Spuk, --shot-on=attic_turn)
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -700,6 +701,11 @@ func run_debug(arg: String) -> bool:
 				var door: Door = builder.attic_doors[0]
 				var into := door.global_transform.basis.z   # Aufgehseite = in den Dachboden
 				TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + into * 1.6, into)
+				if arg == "--dachboden=blitz" and builder.attic_spook:
+					builder.attic_spook.forced = true
+					if Game.weather.kind != Weather.Kind.STORM:
+						Game.weather.set_weather(Weather.Kind.STORM, true)
+					get_tree().create_timer(3.0).timeout.connect(Game.weather.lightning)
 	elif arg.begins_with("--time="):
 		# Spieltage vor- oder zurückspulen (+1, -2 …)
 		Game.director.elapsed = maxf(0.0, Game.director.elapsed + arg.substr(7).to_float() * Calendar.DAY_SECONDS)

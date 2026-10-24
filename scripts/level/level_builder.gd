@@ -340,7 +340,7 @@ const SHOWER_BLOCK := 0.5
 const TOILET_BOWL := Vector3(0.363, 0.42, 0.54)
 const TOILET_SIT := 0.27
 const TOILET_HOLDER_REACH := 0.5
-const TOILET_CHROME := Color(0.3, 0.3, 0.32)   ## Drückerplatte und Halter: dunkles Chrom
+const TOILET_CHROME := Color(0.5, 0.5, 0.53)   ## Drückerplatte und Halter: dunkles Chrom
 ## Theke (L, Rückschenkel bei −X): Korpus des langen Schenkels und des Rückschenkels (x0, z0, x1, z1), Platte des
 ## langen Schenkels (darauf Flasche, Dosen, Kaffee), Oberkante; sie reicht hinten BAR_RETURN bis an die Platte des
 ## Barregals. Barregal: Tiefe (Ursprung in der Mitte), Korpus für die Kollision, Glasböden (Oberkanten, Mitte
@@ -523,6 +523,7 @@ var _furnishings: Array[Dictionary] = []
 var _doors: Array[Dictionary] = []    ## {pos: Vector3 (Mitte unten), door: Door, kind, into}
 var attic_doors: Array[Door] = []     ## Kniestocktüren aller Ebenen
 var attic_haze: AtticHaze             ## Staubnebel im Dachgeschoss (null ohne Plan „DG“)
+var attic_spook: AtticSpook           ## Blitz-Dreh in den Kammern des Dachbodens (null ohne Plan „DG“)
 var pumpkin_head_spot := Vector3.INF  ## wo der Kopf des Kürbismanns liegt (rotes Kreuz im Plan „DG“)
 var attic_stair_foot := Transform3D() ## Fuß der Dachbodentreppe im Obergeschoss, Blick hinauf (Debug --dachboden=treppe)
 var attic_window_spots: Array[Transform3D] = []   ## unter jedem Dachfenster, Blick zu ihm (Debug --dachboden=fenster)
@@ -3783,6 +3784,16 @@ func _attic_haze() -> void:
 	attic_haze = AtticHaze.new().setup(rects, _base_y, ATTIC_H, _window_shafts)
 	attic_haze.name = "Dachbodennebel"
 	world.add_child(attic_haze)
+	# Kammern (nicht die offenen Böden): Flächen, die in ein Feld der Stützbalken passen – dort spukt es beim Blitz
+	var chambers: Array[Rect2] = []
+	for r in _map["regions"]:
+		var b := _bounds(r["rects"])
+		if r["kind"] == "attic" and b.size.x < ATTIC_BAY * 1.25 and b.size.y < ATTIC_BAY * 1.25:
+			for rc in r["rects"]:
+				chambers.append(_rect(rc))
+	attic_spook = AtticSpook.new().setup(chambers, _base_y, ATTIC_H)
+	attic_spook.name = "Dachbodenspuk"
+	world.add_child(attic_spook)
 
 
 ## Treppe vom Obergeschoss in den Dachboden (Spielkonzept 4.21): im Schacht des Treppenhauses unter dem Treppenpodest

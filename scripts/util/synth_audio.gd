@@ -50,6 +50,7 @@ const DURATIONS := {
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
 	"rustle": 0.3, "flutter": 1.4, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
 	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
+	"giggle": 0.8,
 }
 
 var hum := 0.0
@@ -364,6 +365,16 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			# Getränkedose: kurzes Knacken der Lasche, dann zischt die Kohlensäure heraus
 			var click := sin(TAU * 1900.0 * t) * exp(-t * 400.0) * 0.4
 			return click + white * minf(1.0, t * 60.0) * exp(-t * 7.0) * 0.28
+		"giggle":
+			# Kinderkichern (Dachboden, Spielkonzept 4.21): fünf kurze, hohe, hauchige „hi“, jedes etwas tiefer
+			var gt := fmod(t, 0.15)
+			if t > 0.75 or gt > 0.1:
+				return 0.0
+			var gf := 1150.0 - 300.0 * k + 80.0 * sin(TAU * 11.0 * t)
+			var gph: float = shot["phase"] + gf * dt
+			shot["phase"] = gph
+			var hi := sin(TAU * gph) * 0.5 + sin(TAU * gph * 2.0) * 0.2 + white * 0.3
+			return hi * sin(PI * gt / 0.1) * (1.0 - k * 0.6) * 0.2
 		"purr":
 			# Schnurren: tiefes Brummen, 26-mal pro Sekunde an- und abschwellend
 			var pulse := 0.5 + 0.5 * sin(TAU * 26.0 * t)

@@ -792,8 +792,8 @@ an Lampen und Kerzen.
   der Grundkörper), dazu **Hautton**, **Haarfarbe**, **Oberteil** und **Hose** aus den Farben der Gäste. Kein Name.
 - **Nur Aussehen:** Größe und Statur ändern weder Tempo noch Ausdauer. Augenhöhe, Kapsel und Hocken wachsen mit
   der Größe – wer 2 m groß ist, sieht über mehr hinweg und stößt sich eher.
-- **Spiegel über dem Waschbecken** reicht von 1,10 bis 1,95 m, damit sich jede Figur darin sieht (Scheitel bei
-  2 m, Bauch bei 1,45 m); er bekommt später ein richtiges Modell.
+- **Spiegel über dem Waschbecken** reicht von 1,10 bis 2,04 m, damit sich jede Figur darin sieht (Scheitel bei
+  2 m, Bauch bei 1,45 m); seit 24.10. mit Modell (Stahlrahmen über einem Aufsatzbecken mit Wandarmatur).
 - **Vorgemerkt:** Atem und Keuchen passend zur Figur (Frau/Mann, Alter); den eigenen Körper beim Blick nach unten
   sehen; Haare später über einen Gegenstand färben.
 
@@ -1783,6 +1783,11 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
   eigenen Kopf nicht nahe).
 - **Kurz halten:** Das Dachgeschoss bekommt einen **kleineren Grundriss** und wenige, gezielte Aufgaben – man ist dort
   nicht lange, Bedrohungen tauchen dort selten auf.
+- **Blitz-Dreh (entschieden und umgesetzt 2026-10-24):** Blitzt es, während man in einer der Kammern steht, dreht einen
+  der Spuk im grellen Blitzbild um genau 90° nach links oder rechts – die Kinder von 1987 spielen einem einen Streich, kurz
+  danach kichert es leise. Höchstens einmal je Gewitter, nicht bei jedem Blitz, nie während einen etwas verfolgt, nicht
+  im Versteck oder im Sitzen, nicht auf den offenen Böden. Der Kompass verrät den Dreh. Wer das Flackern abschwächt
+  (Barrierefreiheit), bekommt nur das Kichern.
 - **Unheimlich ohne Gefahr** (Vorschläge): gedämpfte Musik von unten, Regen und Wind auf dem Dach (7.8), man braucht
   die Taschenlampe (4.16); **Möbel unter Laken**, die aussehen wie der Lakengeist – hier ist es nie einer (wie die
   Kostüme, 5.9); Kreidezeichen, ein Kinderschuh, ein Abzählreim der Kinder von 1987.
