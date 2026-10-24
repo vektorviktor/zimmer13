@@ -113,7 +113,13 @@ func setup(p_id: String, builder: LevelBuilder) -> HotelCat:
 	return self
 
 
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): bis zum nächsten Mitbringsel um dt näher.
+func skip_time(dt: float) -> void:
+	_gift_timer = maxf(0.001, _gift_timer - dt)
+
+
 func _ready() -> void:
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
 	collision_layer = LAYER
 	collision_mask = 1 | 16   # Türen wie bei Gästen nicht: geschlossene erkennt _door_ahead()
 	set_meta("interactable", self)
@@ -335,7 +341,7 @@ func perches() -> Array[Dictionary]:
 			continue
 		for spot in room["spots"]:
 			if spot is HideSpot and spot.type == HideSpot.Type.BED:
-				list.append({"floor": spot.exit_point.global_position, "top": spot.global_transform * Vector3(0.3, 0.57, 0.0), "room": no})
+				list.append({"floor": spot.exit_point.global_position, "top": spot.global_transform * Vector3(-spot.head_x * 0.3, BedModel.blanket_top(), 0.0), "room": no})
 	for node in get_tree().get_nodes_in_group("windows"):
 		var win := node as HotelWindow
 		if not win.exterior or not win.has_curtains():

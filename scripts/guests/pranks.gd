@@ -35,6 +35,8 @@ var _jobs := {}
 ## Saures vor der Tür von Zimmer `no`. true = das Kind ist jetzt mit dem Streich beschäftigt (holt etwas) – eine
 ## Runde von Tür zu Tür endet dann; false = erledigt (Laub, umgeworfen). forced: dieser Streich (Debug).
 func play(kid: Guest, no: String, forced: String = "") -> bool:
+	if no == String(kid.home["no"]):
+		return false   # nie an der eigenen Tür (Haushalt, 6.20)
 	var kind := forced if forced != "" else _choose(kid, no)
 	if Game.tracing:
 		print("[Streich] %s: %s vor Zimmer %s" % [kid.display_name, kind, no])
@@ -96,6 +98,10 @@ func _family(kid: Guest) -> Array[Guest]:
 	var parent := kid.parent_guest()
 	if parent and not parent.dead:
 		result.append(parent)
+	for guest in Game.social.living_guests():   # der andere Elternteil im selben Zimmer (Haushalt, 6.20)
+		var g: Guest = guest
+		if not g in result and not g.is_child() and g.home["no"] == kid.home["no"]:
+			result.append(g)
 	return result
 
 
@@ -203,7 +209,7 @@ func _witnesses(kid: Guest, no: String) -> void:
 			if Game.player and Game.player.global_position.distance_to(w.global_position) < 12.0:
 				Game.say("%s: „Das war %s – das Kind von %s!“" % [w.display_name, kid.display_name, parent.display_name], 4.0)
 			return
-		if victim and victim != parent:
+		if victim and victim != parent and victim.home["no"] != kid.home["no"]:
 			var delay := 1.5 if w == victim else randf_range(TATTLE_DELAY.x, TATTLE_DELAY.y)
 			get_tree().create_timer(delay, false).timeout.connect(_tell.bind(w, victim, kid, parent))
 		return   # einer reicht

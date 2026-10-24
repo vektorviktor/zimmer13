@@ -7,6 +7,7 @@ Columns: 0
 # tools/build_colors.py zeichnet daraus map_colors.png (Vorlage zum Zeichnen).
   0   0   0	Wand
 255 136  85	Zimmer
+199 153 134	Zimmer leer
 212 228 241	Flur
 190 246 176	Garten
 191 223 183	Terrasse
@@ -121,6 +122,7 @@ Columns: 0
 178 107 201	Möbel: Doppelbett Kopfende
  56 203 223	Möbel: Badewanne
  67 217 236	Möbel: Badewanne Vorderseite
+ 44 184 204	Möbel: Wannenablage
  67 236 214	Möbel: Waschbecken
  74 248 225	Möbel: Waschbecken Vorderseite
  87  66 169	Möbel: Fußmatte
@@ -138,3 +140,8 @@ Columns: 0
  99 183  87	Möbel: Zimmertisch Vorderseite
  87 153 183	Möbel: Stuhl
 109 169 197	Möbel: Stuhl Vorderseite
+176  32  48	Gegenstand: Brecheisen
+214  64  28	Gegenstand: Werkzeugkasten
+150 118  62	Ausstattung: Schlüsselschrank
+ 64  66  98	Dachboden
+201 231 255	Dachfenster

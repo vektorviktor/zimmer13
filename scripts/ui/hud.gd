@@ -1,15 +1,21 @@
 class_name Hud
 extends CanvasLayer
-## Minimales HUD: Fadenkreuz, Interaktions-Hinweis, Gegenstand in der Hand, Tasche (kleine Fächer unten rechts,
+## Minimales HUD: Fadenkreuz, Interaktions-Hinweis (darüber ein Aktions-Symbol, IconArt), Gegenstand in der Hand, Tasche (kleine Fächer unten rechts,
 ## mit [Q] gehalten groß über dem verschwommenen Spiel – Spielkonzept 3.2), Geld,
-## Meldungen, Versteck-Ansicht mit Atem-Anzeige, Debug-Werte (F3) und Bilder pro Sekunde (F10).
+## Meldungen (Todesmeldungen mit Totenkopf), Versteck-Ansicht mit Atem-Anzeige, Debug-Werte (F3) und Bilder pro Sekunde (F10).
 ## Dazu: flackernde Kerze beim Autosave (Spielkonzept 8.6), Untertitel für Geräusche und ein roter
 ## Blitz, wenn dich ein Gast schlägt (6.3).
+
+## Kantenlänge der Symbole über Hinweis und Meldung (Pixel, interne Auflösung)
+const PROMPT_ICON := 24
+const MESSAGE_ICON := 24
 
 var debug_enabled := false
 var fps_enabled := false          ## Bilder pro Sekunde und Bildzeit rechts oben (F10, --fps)
 
 var _prompt: Label
+var _prompt_icon: TextureRect   ## Aktions-Symbol über dem Hinweis (IconArt, PROMPT_ICON Pixel)
+var _message_icon: TextureRect  ## Symbol über einer Meldung (Totenkopf, MESSAGE_ICON Pixel)
 var _held: Label
 var _icons: ItemIcons
 var _bag_mini: Control                    ## kleine Fächer unten rechts (immer, sobald etwas drin ist)
@@ -24,6 +30,7 @@ var _bag_count: Label
 var _bag_filled := false
 var _money: Label
 var _message: Label
+var _sleep_clock: Label   ## Uhrzeit beim Zeitsprung im Schlaf (Spielkonzept 3.6)
 var _debug: Label
 var _crosshair: ColorRect
 var _hide_overlay: ColorRect
@@ -84,6 +91,8 @@ func _ready() -> void:
 
 	_prompt = _label(10, HORIZONTAL_ALIGNMENT_CENTER)
 	_place(_prompt, Vector4(0, 1, 1, 1), Vector4(8, -46, -8, -32))
+	_prompt_icon = _symbol_rect()
+	_place(_prompt_icon, Vector4(0.5, 1, 0.5, 1), Vector4(-PROMPT_ICON / 2.0, -48 - PROMPT_ICON, PROMPT_ICON / 2.0, -48))
 	_held = _label(9, HORIZONTAL_ALIGNMENT_LEFT)
 	_place(_held, Vector4(0, 1, 0.6, 1), Vector4(8, -18, 0, -4))
 	_icons = ItemIcons.new()
@@ -94,6 +103,11 @@ func _ready() -> void:
 	_message = _label(10, HORIZONTAL_ALIGNMENT_CENTER)
 	_message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_place(_message, Vector4(0, 0.12, 1, 0.12), Vector4(16, 0, -16, 80))
+	_message_icon = _symbol_rect()
+	_place(_message_icon, Vector4(0.5, 0.12, 0.5, 0.12), Vector4(-MESSAGE_ICON / 2.0, -MESSAGE_ICON - 2, MESSAGE_ICON / 2.0, -2))
+	_sleep_clock = _label(14, HORIZONTAL_ALIGNMENT_CENTER)
+	_sleep_clock.modulate = Color(0.75, 0.72, 0.68, 0.55)
+	_place(_sleep_clock, Vector4(0, 0.5, 1, 0.5), Vector4(0, -12, 0, 12))
 	_fps = _label(8, HORIZONTAL_ALIGNMENT_RIGHT)
 	_place(_fps, Vector4(0.6, 0, 1, 0), Vector4(0, 20, -8, 32))
 	_fps.visible = false
@@ -194,6 +208,7 @@ func _process(delta: float) -> void:
 	if _message_time > 0.0:
 		_message_time -= delta
 		_message.modulate.a = clampf(_message_time, 0.0, 1.0)
+		_message_icon.modulate.a = _message.modulate.a
 	if Input.is_action_just_pressed("debug_overlay"):
 		debug_enabled = not debug_enabled
 	if Input.is_action_just_pressed("debug_fps"):
@@ -219,8 +234,10 @@ func flash_hurt(amount: float) -> void:
 	_hurt.color.a = clampf(0.25 + amount, 0.3, 0.6)
 
 
-func set_prompt(text: String) -> void:
+## Interaktions-Hinweis; icon: Aktions-Symbol darüber (IconArt-Name, "" = keins).
+func set_prompt(text: String, icon: String = "") -> void:
 	_prompt.text = text
+	_prompt_icon.texture = IconArt.texture(icon, PROMPT_ICON) if text != "" else null
 
 
 func set_held(item_name: String) -> void:
@@ -351,10 +368,13 @@ func _icon_rect(parent: Control, size: int) -> TextureRect:
 	return rect
 
 
-func show_message(text: String, duration: float = 3.5) -> void:
+## Meldung oben; icon: Symbol darüber (IconArt-Name, z. B. „dead“ bei Todesmeldungen).
+func show_message(text: String, duration: float = 3.5, icon: String = "") -> void:
 	_message.text = text
 	_message_time = duration
 	_message.modulate.a = 1.0
+	_message_icon.texture = IconArt.texture(icon, MESSAGE_ICON)
+	_message_icon.modulate.a = 1.0
 
 
 ## Neuer Eintrag im Notizbuch (3.10): kurz „Notiert“ – mehr nicht.
@@ -375,6 +395,12 @@ func set_disguised(on: bool) -> void:
 
 
 ## 0 = kein Versteck, 1 = Schrank, 2 = unter dem Bett, 3 = im Bett schlafen (Augen zu)
+## Uhrzeit mitten im Bild, solange die Zeit im Schlaf springt ("" = aus).
+func set_sleep_clock(text: String) -> void:
+	_sleep_clock.text = text
+	_sleep_clock.visible = text != ""
+
+
 func set_hide_mode(mode: int) -> void:
 	_hide_overlay.visible = mode > 0
 	_hide_material.set_shader_parameter("mode", mode)
@@ -401,6 +427,15 @@ func _label(font_size: int, align: HorizontalAlignment, parent: Node = null) -> 
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	(parent if parent else self).add_child(label)
 	return label
+
+
+func _symbol_rect() -> TextureRect:
+	var rect := TextureRect.new()
+	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(rect)
+	return rect
 
 
 ## anchors/offsets jeweils als (links, oben, rechts, unten)

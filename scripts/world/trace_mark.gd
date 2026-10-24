@@ -22,6 +22,12 @@ const SPLAT_PULL := 0.014
 const DECAL_OVERLAP := 0.45
 ## Kern eines großen Wachsflecks (m), die Tropfen liegen drumherum
 const WAX_CORE := Vector2(0.4, 0.4)
+## Kaffeefleck einer zerbrochenen Tasse (Spielkonzept 3.11): Kern (m), so viele Spritzer, aus der Wachsgrafik in
+## Kaffeebraun, nass glänzend und dünn
+const COFFEE_CORE := Vector2(0.32, 0.28)
+const COFFEE_DROPS := Vector2i(6, 10)
+const COFFEE_TINT := Color(0.3, 0.16, 0.07)
+const COFFEE_LOOK := {"specular": 0.6, "normal_strength": 0.4, "edge_alpha": 0.45, "thick_shade": 0.6, "grain": 0.04}
 ## Grafiken der Flecken am Boden (Umriss aus dem Alpha, psx_decal) – Blutlache und Kern des Wachsflecks
 const BLOOD_TEXTURE := "res://assets/textures/blood_pool.png"
 const WAX_TEXTURE := "res://assets/textures/wax_splash.png"
@@ -33,16 +39,43 @@ const SPLAT_LOOK := {
 	WAX_TEXTURE: {"specular": 0.35, "normal_strength": 1.0, "edge_alpha": 0.7, "thick_shade": 0.92, "grain": 0.08},
 	Item.MUSH_TEXTURE: {"specular": 0.4, "normal_strength": 1.0, "edge_alpha": 0.75, "thick_shade": 0.8, "grain": 0.25},
 }
+## Frische Flecken breiten sich aus und laufen die Treppe hinunter (Spielzeit – Tweens pausieren mit dem Spiel): je Art
+## Fließtempo über eine ebene Fläche (m/s), Dauer, bis ein großer bzw. kleiner Fleck ganz liegt (s), Zeit je Stufe
+## hinunter und davon für den Läufer über die Kante (s), Läufer je Fleck längs auf einer Stufe (von, bis) und ihre
+## Breite (m). Blut breitet sich in etwa 30 s aus, Kürbismatsch liegt sofort und läuft etwa 5 s nach, Wachs ist in 2 s
+## erstarrt.
+const SPREAD := {
+	"blood": {"flow": 0.12, "grow_big": Vector2(8.0, 14.0), "grow_small": Vector2(3.0, 6.0), "step": 2.5, "run": 1.5,
+		"runners": Vector2i(1, 2), "runner_w": Vector2(0.04, 0.09)},
+	"mush": {"flow": 3.0, "grow_big": Vector2(0.15, 0.25), "grow_small": Vector2(0.15, 0.3), "step": 1.6, "run": 1.4,
+		"runners": Vector2i(0, 1), "runner_w": Vector2(0.05, 0.1)},
+	"wax": {"flow": 0.4, "grow_big": Vector2(0.8, 1.2), "grow_small": Vector2(0.3, 0.6), "step": 0.8, "run": 0.5,
+		"runners": Vector2i(0, 1), "runner_w": Vector2(0.025, 0.045)},
+	"coffee": {"flow": 1.2, "grow_big": Vector2(0.4, 0.7), "grow_small": Vector2(0.2, 0.4), "step": 1.0, "run": 0.7,
+		"runners": Vector2i(0, 1), "runner_w": Vector2(0.02, 0.04)},
+}
+## Ungefähre Stufenhöhe (m) – zählt beim Ausbreiten die Stufen hinunter
+const STEP_RISE := 0.2
+## Läufer nur von Flecken, die längs auf der Stufe mindestens so breit sind (m)
+const RUNNER_MIN_WIDTH := 0.15
 const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck",
 	"wax": "Wachsflecken", "drops": "Blutstropfen", "wax_splash": "Ein großer Wachsfleck", "soot": "Ein Rußfleck",
+	"coffee": "Ein Kaffeefleck",
 	"bloody_hand": "Blutige Handabdrücke", "wall_splatter": "Blutspritzer", "wall_smear": "Eine blutige Schmierspur"}
 
 var kind := "scratch"
 ## Gemeinsam für alle Spuren: Ebene 1 × 1 und die Materialien der Textur-Flecken (lay_decal)
 static var _decal_plane: PlaneMesh
+static var _runner_plane: PlaneMesh
 static var _decal_mats := {}
+static var _coffee_mat: ShaderMaterial
 ## Auf Türen nicht anklickbar (sonst ließe sich die Tür nicht mehr öffnen) – bleibt dort.
 var solid := true
+## Gerade entstanden (Traces.add_blood, add_guest_drop): Blut und Wachs breiten sich aus (SPREAD); aus dem Spielstand
+## liegen sie gleich fertig da
+var fresh := false
+## Im Regen verwaschen (Blut, großer Wachsfleck draußen – RainVeil): 0 … 1, bei 1 wird er zum Schleier
+var wash := 0.0
 
 
 func setup(p_kind: String) -> TraceMark:
@@ -143,6 +176,10 @@ func _ready() -> void:
 			# der Fläche darunter, sobald die Spur steht (_spread_wax)
 			Geo.add_box_shape(self, Vector3(0.7, 0.7, 0.04), Vector3.ZERO)
 			_spread_wax.call_deferred()
+		"coffee":
+			# Zerbrochene Kaffeetasse (3.11): brauner Fleck mit Spritzern – gebaut wie der große Wachsfleck (_spread_wax)
+			Geo.add_box_shape(self, Vector3(0.6, 0.6, 0.04), Vector3.ZERO)
+			_spread_wax.call_deferred()
 		"soot":
 			# Verbrannte Deko (5.11): dunkler Rußfleck
 			var soot := Mat.psx(Color(0.07, 0.06, 0.05))
@@ -162,8 +199,9 @@ func _ready() -> void:
 
 ## Blutlache (Spielkonzept 4.13, 6.12): BLOOD_SPLATS Flecken um das Opfer, große in der Mitte, kleine bis BLOOD_RADIUS.
 ## Jeder fällt senkrecht auf die Fläche darunter (place_splat) – auf Treppen also auf die Stufen, nicht auf die Rampe.
-## Auf einer Treppe läuft das Blut die Stufen hinunter (bergauf verteilt sich nichts). Nicht durch Wände. Jeder Fleck ist
-## die Grafik BLOOD_TEXTURE (lay_decal).
+## Auf einer Treppe läuft das Blut die Stufen hinunter (bergauf verteilt sich nichts, über die Stufenkanten Läufer –
+## lay_runners). Nicht durch Wände. Jeder Fleck ist die Grafik BLOOD_TEXTURE (lay_decal). Frisch breitet sie sich
+## langsam aus (SPREAD).
 func _spread_blood() -> void:
 	if not is_inside_tree():
 		return
@@ -174,6 +212,8 @@ func _spread_blood() -> void:
 	rng.randomize()
 	var red := decal_material(BLOOD_TEXTURE)
 	var downhill := downhill_at(space, center)
+	var flow: Dictionary = SPREAD["blood"]
+	var plan: Array = []
 	var count := rng.randi_range(BLOOD_SPLATS.x, BLOOD_SPLATS.y)
 	for i in count:
 		var big := i < 4
@@ -184,25 +224,41 @@ func _spread_blood() -> void:
 			downhill, rng)
 		if spot.is_empty():
 			continue
-		lay_decal(self, spot, red, rng, 0.004 + i * 0.00002)   # Überlappung: die Dicke entscheidet (psx_decal)
+		var lift := 0.004 + i * 0.00002   # Überlappung: die Dicke entscheidet (psx_decal)
+		var pieces := lay_decal(self, spot, red, rng, lift)
+		var runners := lay_runners(self, space, spot, downhill, red, rng, flow, lift)
+		if fresh:
+			plan_spot(plan, pieces, runners, flow, spread_start(flow, center, spot["at"], downhill), big, rng)
+	if fresh:
+		grow(self, plan)
+	if wash > 0.0:
+		RainVeil.show_wash(self, wash, "blood")
 
 
 ## Großer Wachsfleck einer geworfenen Kerze (6.13), gebaut wie eine Blutlache: ein Kern (WAX_CORE) und Tropfen ringsum,
 ## alle aus der Grafik WAX_TEXTURE und jeder auf der Fläche darunter (place_splat) – auf Treppen auf den Stufen, die
-## Tropfen hinunter.
+## Tropfen hinunter, manchmal ein kurzer Läufer über die Kante. Frisch in etwa 2 s erstarrt (SPREAD).
+## Der Kaffeefleck (3.11) ebenso, kleiner, in Kaffeebraun (coffee_material) und flüssiger.
 func _spread_wax() -> void:
 	if not is_inside_tree():
 		return
+	var coffee := kind == "coffee"
 	var space := get_world_3d().direct_space_state
 	var center := global_position
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
-	var wax := decal_material(WAX_TEXTURE)
+	var wax := coffee_material() if coffee else decal_material(WAX_TEXTURE)
 	var downhill := downhill_at(space, center)
-	var core := place_splat(space, center, Vector3.ZERO, WAX_CORE, downhill, rng)
+	var flow: Dictionary = SPREAD["coffee" if coffee else "wax"]
+	var plan: Array = []
+	var core := place_splat(space, center, Vector3.ZERO, COFFEE_CORE if coffee else WAX_CORE, downhill, rng)
 	if not core.is_empty():
-		lay_decal(self, core, wax, rng, 0.004)
-	for i in rng.randi_range(10, 16):
+		var pieces := lay_decal(self, core, wax, rng, 0.004)
+		var runners := lay_runners(self, space, core, downhill, wax, rng, flow, 0.004)
+		if fresh:
+			plan_spot(plan, pieces, runners, flow, 0.0, true, rng)
+	var drop_count := COFFEE_DROPS if coffee else Vector2i(10, 16)
+	for i in rng.randi_range(drop_count.x, drop_count.y):
 		var s := rng.randf_range(0.03, 0.08)   # die Grafik füllt ihr Quadrat nicht ganz
 		var off := scatter_offset(rng, rng.randf_range(0.18, 0.4), downhill, 0.3)
 		var drop := place_splat(space, center, off, Vector2(s * rng.randf_range(1.0, 2.2), s), downhill, rng)
@@ -210,7 +266,13 @@ func _spread_wax() -> void:
 			continue
 		if not drop["along"]:
 			drop["yaw"] = atan2(-off.z, off.x)   # länglich vom Kern weg (lokale X), auf einer Stufe längs
-		lay_decal(self, drop, wax, rng, 0.0045 + i * 0.00002)
+		var drops := lay_decal(self, drop, wax, rng, 0.0045 + i * 0.00002)
+		if fresh:
+			plan_spot(plan, drops, [], flow, spread_start(flow, center, drop["at"], downhill), false, rng)
+	if fresh:
+		grow(self, plan)
+	if wash > 0.0:
+		RainVeil.show_wash(self, wash, "wax")
 
 
 # --- Flecken auf der Fläche darunter (Blut, Wachs, Kürbismatsch – Item._lay_mush) -------------------------------------
@@ -219,7 +281,7 @@ func _spread_wax() -> void:
 ## eine Ebene (zufällig um 180° gedreht), längs auf einer Stufe eine Reihe unverzerrter Quadrate so tief wie die Stufe
 ## (je 85–100 %, beliebig um 90° gedreht), die sich zu DECAL_OVERLAP überlappen – der Shader verschmilzt sie (Tiefe
 ## nach Dicke), auf der Stufe liegt ein zusammenhängender Streifen.
-static func lay_decal(parent: Node3D, spot: Dictionary, mat: Material, rng: RandomNumberGenerator, lift: float) -> void:
+static func lay_decal(parent: Node3D, spot: Dictionary, mat: Material, rng: RandomNumberGenerator, lift: float) -> Array[Node3D]:
 	if _decal_plane == null:
 		_decal_plane = PlaneMesh.new()
 		_decal_plane.size = Vector2.ONE   # Maße über die Basis der Ebene
@@ -228,6 +290,7 @@ static func lay_decal(parent: Node3D, spot: Dictionary, mat: Material, rng: Rand
 	var along: bool = spot["along"]
 	var side := minf(size.x, size.y)
 	var tiles := 1 if not along else 1 + maxi(0, ceili((size.x - side) / (side * (1.0 - DECAL_OVERLAP))))
+	var pieces: Array[Node3D] = []
 	for t in tiles:
 		var dims := size
 		var turn := PI if rng.randf() < 0.5 else 0.0
@@ -242,6 +305,129 @@ static func lay_decal(parent: Node3D, spot: Dictionary, mat: Material, rng: Rand
 		piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		piece.global_transform = Transform3D(Basis(Vector3.UP, yaw + turn) * Basis.from_scale(Vector3(dims.x, 1.0, dims.y)),
 			spot["at"] + Basis(Vector3.UP, yaw) * Vector3(x, 0.0, z) + Vector3.UP * lift)
+		pieces.append(piece)
+	return pieces
+
+
+## Läufer über die Vorderkante der Stufe (nur Flecken längs auf einer Stufe, mindestens RUNNER_MIN_WIDTH breit): je
+## `flow` „runners“ schmale senkrechte Bahnen an der Stirnseite (Setzstufe bzw. Blockstufe – dort endet die
+## Trittfläche, _edge_ahead), von der Stufe bis auf die nächste, darunter ein kleiner Auffangfleck. Auf der Lobbytreppe
+## hängen sie in der Mitte vor dem Teppich-Wasserfall (Meta „carpet_half“/„carpet_out“ der Trittflächen, GrandStair).
+## Die Grafik ist der Fleck, senkrecht gestreckt. → [{runner, landing: [Node3D]}]
+static func lay_runners(parent: Node3D, space: PhysicsDirectSpaceState3D, spot: Dictionary, downhill: Vector3,
+		mat: Material, rng: RandomNumberGenerator, flow: Dictionary, lift: float) -> Array:
+	var size: Vector2 = spot["size"]
+	if downhill == Vector3.ZERO or not spot["along"] or size.x < RUNNER_MIN_WIDTH:
+		return []
+	var count := rng.randi_range((flow["runners"] as Vector2i).x, (flow["runners"] as Vector2i).y)
+	var at: Vector3 = spot["at"]
+	var front := _edge_ahead(space, at, downhill, 0.6) if count > 0 else -1.0
+	if front < 0.0:
+		return []
+	var edge := at + downhill * front
+	var below := Traces.surface_below(space, edge + downhill * 0.06 + Vector3.UP * 0.3, 1.0)
+	if below.is_empty():
+		return []
+	var drop := at.y - (below["position"] as Vector3).y
+	if drop < 0.06 or drop > 0.4:
+		return []
+	if _runner_plane == null:
+		_runner_plane = PlaneMesh.new()
+		_runner_plane.orientation = PlaneMesh.FACE_Z
+		_runner_plane.size = Vector2.ONE
+		_runner_plane.center_offset = Vector3(0, -0.5, 0)   # Ursprung an der Oberkante: wächst nach unten
+	var tread := Traces.surface_below(space, edge - downhill * 0.03 + Vector3.UP * 0.3, 0.5)
+	var across := Basis(Vector3.UP, float(spot["yaw"])) * Vector3.RIGHT
+	var face := Basis.looking_at(-downhill, Vector3.UP)   # +Z zeigt die Treppe hinunter, zum Betrachter
+	var out: Array = []
+	for k in count:
+		var top := edge + across * rng.randf_range(-0.4, 0.4) * size.x
+		var gap := 0.0
+		if not tread.is_empty() and (tread["collider"] as Object).has_meta("carpet_half"):
+			var body := tread["collider"] as Node3D
+			if absf((body.global_transform.affine_inverse() * top).x) < float(body.get_meta("carpet_half")):
+				gap = float(body.get_meta("carpet_out"))
+		var w := rng.randf_range((flow["runner_w"] as Vector2).x, (flow["runner_w"] as Vector2).y)
+		var runner := Geo.mesh(parent, _runner_plane, mat, Vector3.ZERO)
+		runner.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		runner.global_transform = Transform3D(face * Basis.from_scale(Vector3(w, drop + 0.01, 1.0)),
+			top + downhill * (gap + 0.002) + Vector3.UP * 0.005)
+		var s := w * 2.2
+		var land := place_splat(space, top + downhill * (gap + 0.01 + 0.65 * s) + Vector3.DOWN * drop, Vector3.ZERO,
+			Vector2.ONE * s, downhill, rng)
+		out.append({"runner": runner, "landing": [] if land.is_empty() else lay_decal(parent, land, mat, rng, lift)})
+	return out
+
+
+## Abstand von `at` bis zur Kante der Fläche in Richtung dir (auf 2 mm genau, höchstens reach); −1 = keine Kante.
+static func _edge_ahead(space: PhysicsDirectSpaceState3D, at: Vector3, dir: Vector3, reach: float) -> float:
+	var flat := 0.0
+	var off := -1.0
+	var d := 0.03
+	while d <= reach:
+		if not _same_level(space, at, at + dir * d):
+			off = d
+			break
+		flat = d
+		d += 0.03
+	if off < 0.0:
+		return -1.0
+	for i in 4:
+		var mid := (flat + off) / 2.0
+		if _same_level(space, at, at + dir * mid):
+			flat = mid
+		else:
+			off = mid
+	return flat
+
+
+static func _same_level(space: PhysicsDirectSpaceState3D, at: Vector3, q: Vector3) -> bool:
+	var hit := Traces.surface_below(space, q + Vector3.UP * 0.3, 0.5)
+	return not hit.is_empty() and absf((hit["position"] as Vector3).y - at.y) <= BLOOD_FLAT
+
+
+## Wann ein frischer Fleck bei `at` anfängt, sich auszubreiten (s nach dem Entstehen): über eine ebene Fläche mit
+## „flow“ m/s von `center` aus, auf einer Treppe je Stufe tiefer „step“ s und quer dazu wieder mit „flow“.
+static func spread_start(flow: Dictionary, center: Vector3, at: Vector3, downhill: Vector3) -> float:
+	var off := Vector3(at.x - center.x, 0.0, at.z - center.z)
+	if downhill == Vector3.ZERO:
+		return off.length() / float(flow["flow"])
+	var steps := roundf(maxf(0.0, center.y - at.y) / STEP_RISE)
+	return steps * float(flow["step"]) + (off - downhill * off.dot(downhill)).length() / float(flow["flow"])
+
+
+## Zeitplan eines frischen Flecks: seine Stücke ab `start` (je etwas versetzt) über „grow_big“ bzw. „grow_small“; seine
+## Läufer, sobald der Fleck die Kante erreicht (so dass sie nach „step“ unten sind), wachsen in „run“ nach unten,
+## danach der Auffangfleck.
+static func plan_spot(plan: Array, pieces: Array[Node3D], runners: Array, flow: Dictionary, start: float, big: bool,
+		rng: RandomNumberGenerator) -> void:
+	var grow_range: Vector2 = flow["grow_big" if big else "grow_small"]
+	var time := rng.randf_range(grow_range.x, grow_range.y)
+	for piece in pieces:
+		plan.append({"node": piece, "at": start + rng.randf_range(0.0, 0.2) * time, "time": time})
+	var run := float(flow["run"])
+	var small: Vector2 = flow["grow_small"]
+	for r in runners:
+		var at := start + maxf(0.0, float(flow["step"]) - run) + rng.randf_range(0.0, 0.3) * run
+		plan.append({"node": r["runner"], "at": at, "time": run, "down": true})
+		for piece in r["landing"]:
+			plan.append({"node": piece, "at": at + run, "time": rng.randf_range(small.x, small.y)})
+
+
+## Lässt die Stücke nach dem Plan wachsen (Spielzeit, pausiert mit dem Spiel): Flecken aus der Mitte auf ihre Größe,
+## Läufer von der Kante nach unten. Bis zu ihrem Start sind sie winzig. → der Tween (null = nichts zu tun)
+static func grow(owner: Node, plan: Array) -> Tween:
+	if plan.is_empty():
+		return null
+	var tween := owner.create_tween().set_parallel(true)
+	for p in plan:
+		var node: Node3D = p["node"]
+		var full := node.scale
+		var down: bool = p.get("down", false)
+		node.scale = Vector3(full.x, full.y * 0.02, full.z) if down else Vector3(full.x * 0.02, full.y, full.z * 0.02)
+		tween.tween_property(node, "scale", full, float(p["time"])).set_delay(float(p["at"])) \
+			.set_trans(Tween.TRANS_LINEAR if down else Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	return tween
 
 
 ## Material für Textur-Flecken (psx_decal, Zug SPLAT_PULL), je Grafik einmal – Kürbismatsch hat ein eigenes (Farbe, Verblassen).
@@ -251,6 +437,17 @@ static func decal_material(path: String) -> ShaderMaterial:
 		splat_look(mat, path)
 		_decal_mats[path] = mat
 	return _decal_mats[path]
+
+
+## Kaffeefleck (3.11): die Wachsgrafik in Kaffeebraun (COFFEE_TINT, COFFEE_LOOK) – ein Material für alle.
+static func coffee_material() -> ShaderMaterial:
+	if _coffee_mat == null:
+		_coffee_mat = Mat.decal(WAX_TEXTURE)
+		_coffee_mat.set_shader_parameter("layer_pull", SPLAT_PULL)
+		_coffee_mat.set_shader_parameter("albedo", COFFEE_TINT)
+		for key in COFFEE_LOOK:
+			_coffee_mat.set_shader_parameter(key, COFFEE_LOOK[key])
+	return _coffee_mat
 
 
 ## Zug zur Kamera (SPLAT_PULL) und Look der Grafik (SPLAT_LOOK) für ein psx_decal-Material.
@@ -285,9 +482,10 @@ static func scatter_offset(rng: RandomNumberGenerator, r: float, downhill: Vecto
 ## (Traces.surface_below: Boden, Stufe, Möbel – nicht die Rampe), nicht durch Wände (auf Kniehöhe geprüft). Er muss ganz
 ## auf derselben Fläche liegen: Ragt er über eine Kante, legt er sich auf einer Treppe längs mittig auf die Stufe (lang
 ## quer zur Laufrichtung, _flat_span misst Tiefe und Breite), sonst wird er kleiner.
-## {} = kein Platz, sonst {at, size, yaw, along}.
+## {} = kein Platz, sonst {at, size, yaw, along}. `yaw` fest (statt zufällig): Schleier im Regen (RainVeil) liegt in
+## Laufrichtung.
 static func place_splat(space: PhysicsDirectSpaceState3D, center: Vector3, off: Vector3, size: Vector2,
-		downhill: Vector3, rng: RandomNumberGenerator) -> Dictionary:
+		downhill: Vector3, rng: RandomNumberGenerator, fixed_yaw: float = INF) -> Dictionary:
 	if off.length() > 0.01:
 		var knee := center + Vector3.UP * 0.3
 		var wall := space.intersect_ray(PhysicsRayQueryParameters3D.create(knee, knee + off, 1))
@@ -297,7 +495,7 @@ static func place_splat(space: PhysicsDirectSpaceState3D, center: Vector3, off: 
 	if hit.is_empty() or (hit["normal"] as Vector3).y < 0.7 or (hit["position"] as Vector3).y < center.y - 2.0:
 		return {}
 	var at: Vector3 = hit["position"]
-	var yaw := rng.randf() * TAU
+	var yaw := rng.randf() * TAU if is_inf(fixed_yaw) else fixed_yaw
 	var along := false
 	for attempt in 6:
 		if _blood_fits(space, at, size, yaw, along):
@@ -348,6 +546,21 @@ static func _blood_fits(space: PhysicsDirectSpaceState3D, at: Vector3, size: Vec
 			if hit.is_empty() or absf((hit["position"] as Vector3).y - at.y) > BLOOD_FLAT:
 				return false
 	return true
+
+
+## Regen auf dem Fleck (Traces._wash_marks): Beim ersten Regen entsteht sein Schleier (RainVeil, wächst nach derselben
+## Formel mit); der Fleck läuft auseinander und wird dünnflüssig, ganz verlaufen ist er weg.
+func wash_by(amount: float) -> void:
+	var look := "wax" if kind == "wax_splash" else "blood"
+	if wash == 0.0:
+		RainVeil.spawn(global_position, look, "", float(RainVeil.SIZE.get(look, 1.0)))
+	wash = minf(1.0, wash + amount)
+	RainVeil.show_wash(self, wash, look)
+	if wash >= 1.0:
+		remove_from_group("trace_marks")
+		if Game.tracing:
+			print("[Regen] %s ganz verlaufen und weg" % NAMES.get(kind, kind))
+		queue_free()
 
 
 func can_wipe() -> bool:

@@ -5,6 +5,9 @@ extends Node
 ##     durchgestrichen, verpasst = „zu spät“, Auftraggeber tot = Kreuz neben dem Namen, die Aufgabe bleibt offen.
 ##     Kein Umsortieren, keine Prioritäten, keine Wegmarken – es ersetzt nur das Gedächtnis der Figur.
 ##   · Notizen: Durchsagen, Aushänge, Anrufe, was ein Zettel verrät – mit Uhrzeit und Quelle, nie mit Urteil.
+##   · Gesehen: die Bedrohungen (Monster, Lakengeist, Kürbismann – IconArt.THREATS), die man selbst gesehen hat, als
+##     Bild mit Tag und Uhrzeit. Das Lesezeichen gibt es erst nach der ersten. Gesehen = aktiv, sichtbar, höchstens
+##     SIGHT_RANGE weit und im Blick (MonsterDirector.player_can_see), geprüft alle SIGHT_EVERY s.
 ## Liegt im Umschlag des Willkommensbriefs (DoorContest). Ohne Notizbuch wird nichts notiert. Neuer Eintrag: Kritzeln
 ## und „Notiert“ (Hud.show_noted). Die Seiten setzt NotebookPage, in der Hand zeigt sie PocketMap (Tab).
 ## Erreichbar über Game.notebook; gespeichert unter „notebook“. In der Zeitschleife (2.2) beginnt es leer.
@@ -16,9 +19,19 @@ var owned := false
 var tasks: Array[Dictionary] = []
 ## {id, text, by, at}
 var notes: Array[Dictionary] = []
+## Bedrohung („monster“, „ghost“, „pumpkin“) → Spielzeit (MonsterDirector.elapsed), als man sie zuerst sah
+var seen := {}
 ## zählen bei jeder Änderung hoch – PocketMap setzt die Seiten dann neu
 var tasks_revision := 0
 var notes_revision := 0
+var seen_revision := 0
+
+const SIGHT_RANGE := 30.0
+const SIGHT_EVERY := 0.3
+## Höhe des Punkts, der zu sehen sein muss (Kopf bzw. Mitte), je Bedrohung
+const SIGHT_HEIGHT := {"monster": 1.6, "ghost": 1.0, "pumpkin": 1.5}
+
+var _sight_timer := 0.0
 
 
 ## Notizbuch einstecken (quiet: ohne Hinweis, z. B. beim Laden).
@@ -105,6 +118,42 @@ func has_note(id: String) -> bool:
 	return false
 
 
+# --- Gesehen --------------------------------------------------------------------------------
+
+func _process(delta: float) -> void:
+	if not owned or Game.game_over or Game.player == null or Game.player.dead or Game.director == null 			or seen.size() >= IconArt.THREAT_ORDER.size():
+		return
+	_sight_timer -= delta
+	if _sight_timer > 0.0:
+		return
+	_sight_timer = SIGHT_EVERY
+	if Game.monster and Game.monster.is_active():
+		_check_sight("monster", Game.monster)
+	if Game.ghost and Game.ghost.is_active():
+		_check_sight("ghost", Game.ghost)
+	if Game.pumpkin and Game.pumpkin.in_house():
+		_check_sight("pumpkin", Game.pumpkin)
+
+
+func _check_sight(id: String, threat: Node3D) -> void:
+	if seen.has(id) or not threat.is_visible_in_tree():
+		return
+	var p := threat.global_position + Vector3.UP * float(SIGHT_HEIGHT[id])
+	if p.distance_to(Game.player.camera.global_position) <= SIGHT_RANGE and Game.director.player_can_see(p):
+		note_seen(id)
+
+
+## Zum ersten Mal gesehen: Bild ins Notizbuch (Lesezeichen „Gesehen“).
+func note_seen(id: String) -> void:
+	if not owned or seen.has(id) or not IconArt.THREATS.has(id):
+		return
+	seen[id] = _now()
+	seen_revision += 1
+	_scribble()
+	if Game.tracing:
+		print("[Notizbuch] gesehen: %s" % IconArt.threat_name(id))
+
+
 # --- Intern ---------------------------------------------------------------------------------
 
 func _tasks_changed() -> void:
@@ -125,7 +174,7 @@ func _now() -> float:
 # --- Spielstand -----------------------------------------------------------------------------
 
 func save_state() -> Dictionary:
-	return {"owned": owned, "tasks": tasks.duplicate(true), "notes": notes.duplicate(true)}
+	return {"owned": owned, "tasks": tasks.duplicate(true), "notes": notes.duplicate(true), "seen": seen.duplicate()}
 
 
 ## Ältere Stände ohne „notebook“: Wer den Brief gelesen hat, hat das Notizbuch (leer).
@@ -140,8 +189,14 @@ func load_state(d: Dictionary, letter_read: bool) -> void:
 	for n: Dictionary in d.get("notes", []):
 		notes.append({"id": String(n.get("id", "")), "text": String(n.get("text", "")), "by": String(n.get("by", "")),
 			"at": float(n.get("at", 0.0))})
+	seen.clear()
+	var s: Dictionary = d.get("seen", {})
+	for id in s:
+		if IconArt.THREATS.has(String(id)):
+			seen[String(id)] = float(s[id])
 	tasks_revision += 1
 	notes_revision += 1
+	seen_revision += 1
 
 
 # --- Debug ----------------------------------------------------------------------------------

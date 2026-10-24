@@ -48,6 +48,11 @@ const MIN_GUESTS := 33
 ## Papa; ihre Beziehung wandert so viel schneller zur Mitte (überall, nicht nur an den Extremen); Süßes oder
 ## Saures: Abstand zwischen zwei Besuchen an Zimmer 13, so lange wartet das Kind an der offenen Tür
 const CHILDREN := 13
+## Eine Tür je Haushalt (Spielkonzept 6.20): so viel Startdeko hängt höchstens an ihr; so weit stehen Mitbewohner
+## beim Einzug auseinander
+const HOUSEHOLD_START_DECO := 3
+var _spot_rooms := {}   ## Versteck → Zimmernummer (spot_room)
+const SPAWN_SPACING := 0.6
 const CHILD_DRIFT := 4.0
 const TRICK_COOLDOWN := Vector2(100.0, 220.0)
 const TRICK_WAIT := 15.0
@@ -178,6 +183,7 @@ var record_player: RecordPlayer
 var decorating: Decorating               ## Schmück-Aktionen (Spielkonzept 5.9)
 var pals: GuestPals                      ## Freundschaften unter Gästen (Spielkonzept 6.16)
 var pranks: Pranks                      ## Streiche der Kinder (Spielkonzept 6.13)
+var access: RoomAccess                  ## Zimmerzugang: Klopfen, Einlass, Hausfriedensbruch (Spielkonzept 6.19)
 var tidying: Tidying                    ## Flecken: Beschweren und Putzen (Spielkonzept 6.13)
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
 var party_active := false
@@ -273,16 +279,22 @@ static func relation_word(value: float) -> String:
 	return TIER_NAMES[tier_of(value)]
 
 
+func _ready() -> void:
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
+
+
 func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	builder = p_builder
 	_world = world
 	GuestProfiles.generated.clear()
-	for id in GuestProfiles.ALL:
-		_spawn(id, true)
-	while guests.size() < START_GUESTS - CHILDREN:
-		if _add_generated(randi(), "", false) == null:
-			break
-	_add_families()
+	GuestProfiles.placed.clear()
+	if not _add_households():   # ohne Haushaltsdatei: die alte Verteilung (jeder für sich, Kinder nebenan)
+		for id in GuestProfiles.ALL:
+			_spawn(id, true)
+		while guests.size() < START_GUESTS - CHILDREN:
+			if _add_generated(randi(), "", false) == null:
+				break
+		_add_families()
 	# Manche Gäste haben schon einen Zettel an ihre Tür gelegt
 	for guest in guests:
 		if randf() < 0.25:
@@ -303,32 +315,121 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	pranks = Pranks.new()   # Streiche der Kinder (Spielkonzept 6.13)
 	pranks.name = "Pranks"
 	add_child(pranks)
+	access = RoomAccess.new()   # Klopfen, Einlass, Hausfriedensbruch (Spielkonzept 6.19)
+	access.name = "RoomAccess"
+	add_child(access)
 	tidying = Tidying.new()   # Flecken: Beschweren und Putzen (6.13)
 	tidying.name = "Tidying"
 	add_child(tidying)
 
 
-## Gast ins Hotel setzen (Profil muss schon bekannt sein); mit Start-Deko vor der Tür.
-func _spawn(id: String, with_deco: bool) -> Guest:
+## Gast ins Hotel setzen (Profil muss schon bekannt sein); mit Start-Deko vor der Tür. slot: Platz im Zimmer, wenn
+## mehrere dort wohnen (nebeneinander statt übereinander).
+func _spawn(id: String, with_deco: bool, slot: int = 0) -> Guest:
 	var profile := GuestProfiles.get_profile(id)
 	var info: Dictionary = builder.rooms[profile["room"]]
 	info["kind"] = "guest"
 	var guest := Guest.new().setup(id, info)
 	guest.name = "Gast_" + id
-	guest.position = (info["center"] as Vector3) + Vector3(0, 0.05, 0)
+	guest.position = (info["center"] as Vector3) + Vector3(0, 0.05, 0) + (info["along"] as Vector3) * SPAWN_SPACING * \
+		(slot - (slot % 2) * 2 * slot) * 0.5
 	_world.add_child(guest)
 	guests.append(guest)
 	if with_deco:
-		for kind in profile["start_deco"]:
-			var item := guest.stock_item(kind)
-			item.owner_id = id
-			item.position = guest.deco_place_point() + Vector3(0, 0.02, 0)
-			_world.add_child(item)
-			if item.can_hang():
-				var spot := guest.door_hang_spot(kind)
-				item.hang(spot["point"], spot["out"], float(spot.get("length", 0.0)))
-		guest.expected_deco = (profile["start_deco"] as Array).size()
+		_place_start_deco(guest, profile["start_deco"])
 	return guest
+
+
+func _place_start_deco(guest: Guest, kinds: Array) -> void:
+	for kind in kinds:
+		var item := guest.stock_item(kind)
+		item.owner_id = guest.id
+		item.position = guest.deco_place_point() + Vector3(0, 0.02, 0)
+		_world.add_child(item)
+		if item.can_hang():
+			var spot := guest.door_hang_spot(kind)
+			item.hang(spot["point"], spot["out"], float(spot.get("length", 0.0)))
+	guest.expected_deco = kinds.size()
+
+
+## Haushalte (Spielkonzept 6.20): wer mit wem in welchem Zimmer wohnt, steht in HAUSHALTE.md (LevelBuilder.households,
+## je Zimmernummer). Kernfiguren behalten ihr eigenes Profil, die übrigen erzeugt der Generator mit fester Identität;
+## erst die Erwachsenen, dann die Kinder. false: keine Haushaltsdatei.
+func _add_households() -> bool:
+	if builder.households.is_empty():
+		return false
+	for no: String in builder.households:
+		var members: Array = builder.households[no]["members"]
+		for child in [false, true]:
+			for i in members.size():
+				if bool(members[i].get("child", false)) == child:
+					_add_member(no, i)
+		_household_deco(no)
+		var sw := LightSwitch.find(get_tree(), no)
+		if sw:
+			sw.set_on.call_deferred(true, true)   # nach dem „Licht aus“ des LevelBuilders
+	return true
+
+
+## Mitglied i des Haushalts in Zimmer no einziehen lassen. Seed fest je Person (von Spiel zu Spiel gleich, 6.20).
+func _add_member(no: String, i: int, id: String = "", restoring: bool = false) -> Guest:
+	var h: Dictionary = builder.households[no]
+	var member: Dictionary = h["members"][i]
+	var is_child := bool(member.get("child", false))
+	var core := String(h.get("core", ""))
+	if core != "" and not is_child and GuestProfiles.ALL.has(core) and GuestProfiles.ALL[core]["name"] == member["name"]:
+		if restoring:
+			return null   # Kernfiguren stehen nicht im Roster
+		var own: Dictionary = GuestProfiles.ALL[core].duplicate(true)
+		own["room"] = no
+		own["surname"] = h["surname"]
+		own["household"] = h["id"]
+		own["member"] = i
+		GuestProfiles.placed[core] = own
+		return _spawn(core, false, i)
+	var gen_seed := ("%s/%s" % [h["id"], member["name"]]).hash() & 0x7FFFFFFF
+	if id == "":
+		id = "gast%d" % _next_guest
+	_next_guest = maxi(_next_guest, int(id.trim_prefix("gast")) + 1)
+	var profile: Dictionary
+	if is_child:
+		var parents := guests.filter(func(g: Guest) -> bool: return g.home["no"] == no and not g.is_child())
+		if parents.is_empty():
+			push_warning("HAUSHALTE.md: %s – Kind %s ohne Erwachsenen im Zimmer" % [h["id"], member["name"]])
+			return null
+		profile = GuestGenerator.make_child(gen_seed, no, parents[0].id, parents[0].profile, member,
+			parents[1].profile if parents.size() > 1 else {})
+	else:
+		profile = GuestGenerator.make_member(gen_seed, no, member, String(h["surname"]))
+	profile["surname"] = h["surname"]
+	profile["household"] = h["id"]
+	profile["member"] = i
+	GuestProfiles.generated[id] = profile
+	var guest := _spawn(id, false, i)
+	guest.gen_seed = gen_seed
+	return guest
+
+
+## Eine Tür je Haushalt (6.20): die Startdeko der Erwachsenen zusammen, höchstens HOUSEHOLD_START_DECO Stück, alle im
+## Besitz des ersten Erwachsenen (household_lead) – er hält sie auch später in Schuss.
+func _household_deco(no: String) -> void:
+	var lead := household_lead(no)
+	if lead == null:
+		return
+	var kinds: Array = []
+	for g in guests:
+		if g.home["no"] == no and not g.is_child():
+			kinds.append_array(g.profile["start_deco"])
+	_place_start_deco(lead, kinds.slice(0, HOUSEHOLD_START_DECO))
+
+
+## Erster lebender Erwachsener eines Zimmers (Haushalt, 6.20): schmückt die Tür, kümmert sich um Lampen und Birnen –
+## damit nicht jeder im Zimmer dasselbe tut. null: keiner (nur Kinder oder niemand).
+func household_lead(no: String) -> Guest:
+	for g in guests:
+		if g.home["no"] == no and not g.dead and not g.is_child():
+			return g
+	return null
 
 
 ## Einen zufälligen Gast erzeugen. room = "": ein freies Zimmer wählen.
@@ -431,8 +532,12 @@ func roster_state() -> Array:
 	var list: Array = []
 	for guest in guests:
 		if guest.gen_seed >= 0:
-			list.append({"id": guest.id, "seed": guest.gen_seed, "room": guest.home["no"], "arrived": bool(guest.get_meta("arrived", false)),
-				"parent": String(guest.profile.get("parent", ""))})
+			var entry := {"id": guest.id, "seed": guest.gen_seed, "room": guest.home["no"], "arrived": bool(guest.get_meta("arrived", false)),
+				"parent": String(guest.profile.get("parent", ""))}
+			if guest.profile.has("household"):   # Haushaltsmitglied (6.20): Identität aus HAUSHALTE.md
+				entry["household"] = guest.profile["household"]
+				entry["member"] = int(guest.profile["member"])
+			list.append(entry)
 	return list
 
 
@@ -441,14 +546,36 @@ func restore_roster(list: Array) -> void:
 	for guest in guests.duplicate():
 		if guest.gen_seed < 0:
 			continue
-		builder.rooms[guest.home["no"]]["kind"] = "vacant"
+		if not builder.households.has(guest.home["no"]):   # Haushaltszimmer bleiben bewohnt (6.20)
+			builder.rooms[guest.home["no"]]["kind"] = "vacant"
 		GuestProfiles.generated.erase(guest.id)
 		guests.erase(guest)
 		guest.queue_free()
 	_reserved.clear()
 	for entry in list:
 		var room := String(entry["room"])
+		if entry.has("household"):
+			if builder.households.has(room) and builder.households[room]["id"] == entry["household"]:
+				_add_member(room, int(entry["member"]), String(entry["id"]), true)
+			continue
 		_add_generated(int(entry["seed"]), room, bool(entry.get("arrived", false)), String(entry["id"]), true, String(entry.get("parent", "")))
+	if not builder.households.is_empty():
+		_household_order()
+
+
+## Gästeliste wieder in die Reihenfolge des Einzugs bringen (je Haushalt erst die Erwachsenen, dann die Kinder) – nach
+## dem Laden stünden sonst die Kernfiguren vorn, weil nur die erzeugten Gäste neu entstehen.
+func _household_order() -> void:
+	var rank := {}
+	for no: String in builder.households:
+		var members: Array = builder.households[no]["members"]
+		for child in [false, true]:
+			for i in members.size():
+				if bool(members[i].get("child", false)) == child:
+					rank["%s/%d" % [no, i]] = rank.size()
+	var key := func(g: Guest) -> int:
+		return int(rank.get("%s/%d" % [g.home["no"], int(g.profile.get("member", -1))], 100000 + guests.find(g)))
+	guests.sort_custom(func(a: Guest, b: Guest) -> bool: return key.call(a) < key.call(b))
 
 
 ## Ein Zettel eines Gastes (Spur der Gäste): an pos, Text aus templates.
@@ -690,20 +817,25 @@ func on_monster_talk(guest: Guest) -> void:
 
 
 ## cause "ghost": vom Lakengeist erwürgt – kein Schrei durchs Hotel, er liegt in seinem Zimmer (6.12).
-## Nach `BELL_DELAY` s läutet bei jedem Tod die Totenglocke.
+## Nach `BELL_DELAY` s läutet bei jedem Tod die Totenglocke. Schläft der Spieler (der Schrei hat ihn nicht geweckt),
+## bekommt er nichts mit – was geschah, findet er später (Morgenbilanz, Spielkonzept 3.6).
 func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	for other in living_guests():
 		other.fear = minf(100.0, other.fear + 50.0)
-	if cause == "ghost":
-		Game.say("Irgendwo im Hotel bricht ein Röcheln ab …", 4.0)
+	if Game.player and Game.player.sleeping:
+		pass
+	elif cause == "ghost":   # mit Totenkopf (IconArt „dead“)
+		Game.say("Irgendwo im Hotel bricht ein Röcheln ab …", 4.0, "dead")
 	elif cause == "pumpkin":
-		Game.say("Ein Schrei – dann ein dumpfer Schlag. Dann ist es still.", 4.0)
+		Game.say("Ein Schrei – dann ein dumpfer Schlag. Dann ist es still.", 4.0, "dead")
 	else:
-		Game.say("Ein Schrei hallt durch das Hotel …", 4.0)
+		Game.say("Ein Schrei hallt durch das Hotel …", 4.0, "dead")
 		get_tree().create_timer(5.0, false).timeout.connect(func() -> void:
-			Game.say("%s ist verschwunden." % guest.display_name, 4.0))
-	# Die Totenglocke läutet – nach dem Schrei, für jeden Toten, im ganzen Hotel zu hören
-	get_tree().create_timer(BELL_DELAY, false).timeout.connect(func() -> void: Game.play_sound("bell"))
+			Game.say("%s ist verschwunden." % guest.display_name, 4.0, "dead"))
+	# Die Totenglocke läutet – nach dem Schrei, für jeden Toten, im ganzen Hotel zu hören (nur nicht im Schlaf)
+	get_tree().create_timer(BELL_DELAY, false).timeout.connect(func() -> void:
+		if not (Game.player and Game.player.sleeping):
+			Game.play_sound("bell"))
 	_memorial_doors.append(guest.home["door_front"])
 	if Game.notebook:   # Kreuz neben seinem Namen bei seinen Aufgaben (3.10)
 		Game.notebook.on_guest_died(guest)
@@ -743,6 +875,8 @@ func find_hide_spot(guest: Guest) -> HideSpot:
 		var d := guest.global_position.distance_to(spot.global_position)
 		if d > 25.0:
 			continue
+		if behind_lock(spot_room(spot), guest):
+			continue   # in einem fremden, abgeschlossenen Zimmer (Spielkonzept 6.19)
 		# Nicht direkt vor dem Monster hineinklettern – es sähe ihn und reißt die Tür gleich wieder auf
 		if Game.monster.is_active() and Game.monster.global_position.distance_to(spot.global_position) < HIDE_MONSTER_DISTANCE:
 			continue
@@ -753,6 +887,23 @@ func find_hide_spot(guest: Guest) -> HideSpot:
 	if best:
 		_reserved[best] = guest
 	return best
+
+
+## Zimmer, in dem ein Versteck steht ("" = keins, etwa im Flur).
+func spot_room(spot: HideSpot) -> String:
+	if _spot_rooms.is_empty():
+		for no in builder.rooms:
+			for s in builder.rooms[no]["spots"]:
+				_spot_rooms[s] = no
+	return String(_spot_rooms.get(spot, ""))
+
+
+## Liegt Zimmer no hinter einer abgeschlossenen Tür, die guest nicht aufschließen kann (fremdes Zimmer, 6.19)?
+func behind_lock(no: String, guest: Guest) -> bool:
+	if no == "" or no == String(guest.home["no"]) or not builder.rooms.has(no):
+		return false
+	var door: Door = builder.rooms[no]["door"]
+	return door.locked and not door.is_open and not door.broken
 
 
 ## Gibt die Reservierung frei – nur die eigene (ein anderer kann das Versteck inzwischen reserviert haben).
@@ -914,6 +1065,32 @@ func night_window(day: int) -> Vector2:
 	var from := Calendar.at(day, SLEEP_START + rng.randf_range(-SLEEP_JITTER, SLEEP_JITTER))
 	var to := Calendar.at(day + 1, SLEEP_END + rng.randf_range(-SLEEP_JITTER, SLEEP_JITTER))
 	return Vector2(from, to)
+
+
+## Spielzeit, zu der die laufende (oder nächste) Nachtruhe endet.
+func night_ends_at() -> float:
+	var now := Game.director.elapsed
+	var day := Calendar.raw_day_of(now)
+	var last := night_window(day - 1)
+	return last.y if now < last.y else night_window(day).y
+
+
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Beziehungen, Gerede, Nachrücker und Pausen um dt.
+func skip_time(dt: float) -> void:
+	for guest in guests:
+		if guest.dead:
+			continue
+		var target := 0.0 if guest.is_child() else clampf(guest.relation, -55.0, 55.0)
+		guest.relation = move_toward(guest.relation, target, DRIFT * (CHILD_DRIFT if guest.is_child() else 1.0) * dt)
+	for entry in _gossip:
+		entry["delay"] = maxf(0.001, float(entry["delay"]) - dt)
+	if _arrival_timer > 0.0:
+		_arrival_timer = maxf(0.001, _arrival_timer - dt)
+	_party_cooldown -= dt
+	_knock_cooldown -= dt
+	_visit_cooldown -= dt
+	_trick_cooldown -= dt
+	_round_cooldown -= dt
 
 
 ## Ist laut Uhr Nachtruhe (auch wenn eine Feier sie gerade noch aufhält)?
@@ -1744,7 +1921,7 @@ func start_round(kid: Guest) -> bool:
 	for guest in living_guests():
 		var g: Guest = guest
 		var no := String(g.home["no"])
-		if g.is_child() or g == parent or no == LevelBuilder.PLAYER_ROOM or no in doors:
+		if g.is_child() or g == parent or no == LevelBuilder.PLAYER_ROOM or no in doors or no == String(kid.home["no"]):
 			continue
 		if (g.home["door_front"] as Vector3).distance_to(kid.global_position) < ROUND_RANGE:
 			doors.append(no)
@@ -1906,7 +2083,8 @@ func _round_done(entry: Dictionary, host: Guest) -> void:
 		host._set_idle(randf_range(3.0, 6.0))
 		get_tree().create_timer(2.5, false).timeout.connect(func() -> void:
 			if is_instance_valid(door) and door.is_open and is_instance_valid(host) and not host.dead:
-				door.set_open(false, false, false, host))
+				door.set_open(false, false, true, host)
+				door.locked = door.room_no == String(host.home["no"]))   # wieder abgeschlossen (6.19)
 	entry["phase"] = "pause"
 	entry["time"] = 0.0
 	entry["next"] = randf_range(1.5, 3.0)

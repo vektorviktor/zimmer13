@@ -18,10 +18,26 @@ const WALL_BLOOD_RANGE := 2.5
 const WALL_BLOOD_HEIGHT := {"wall_splatter": 1.15, "wall_smear": 1.45}
 
 var _footprints: Array[Dictionary] = []   ## {node, material, age, life, alpha}
-var _guest_marks: Array[TraceMark] = []
+var _guest_marks: Array = []   ## TraceMark – weggewischte und verwaschene sind schon freigegeben (ungetypt)
+var _wash_timer := 0.0
+
+
+func _ready() -> void:
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
+
+
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Fußspuren altern (das nächste Bild blendet sie aus).
+func skip_time(dt: float) -> void:
+	for f in _footprints:
+		f["age"] = float(f["age"]) + dt
+	_wash_timer += dt
 
 
 func _process(delta: float) -> void:
+	_wash_timer += delta
+	if _wash_timer >= RainVeil.WASH_TICK:
+		_wash_marks(_wash_timer)
+		_wash_timer = 0.0
 	var i := _footprints.size() - 1
 	while i >= 0:
 		var f := _footprints[i]
@@ -102,13 +118,15 @@ func _drop_oldest_footprint() -> void:
 
 
 ## Wachsfleck oder Blutstropfen eines Gastes auf dem Boden – auch der große Wachsfleck einer geworfenen Kerze
-## („wax_splash“, 6.13) und Ruß verbrannter Deko („soot“, 5.11).
+## („wax_splash“, 6.13), Ruß verbrannter Deko („soot“, 5.11) und der Fleck einer zerbrochenen Kaffeetasse („coffee“, 3.11).
 func add_guest_drop(kind: String, pos: Vector3) -> TraceMark:
 	if _guest_marks.size() >= MAX_GUEST_MARKS:
-		var old: TraceMark = _guest_marks.pop_front()
-		if is_instance_valid(old):
-			old.queue_free()
+		# Weggewischt (TraceMark.wipe) oder vom Regen verwaschen (wash_by): schon fort, zählt nicht mehr mit
+		_guest_marks = _guest_marks.filter(func(m: Variant) -> bool: return is_instance_valid(m))
+		if _guest_marks.size() >= MAX_GUEST_MARKS:
+			(_guest_marks.pop_front() as Node).queue_free()
 	var mark := TraceMark.new().setup(kind)
+	mark.fresh = true   # der große Wachsfleck breitet sich aus (TraceMark.SPREAD)
 	add_child(mark)
 	mark.global_position = Vector3(pos.x, _floor_y(pos) + 0.006, pos.z)
 	mark.rotation = Vector3(-PI / 2.0, randf() * TAU, 0)
@@ -185,6 +203,7 @@ func add_door_scratch(door: Door, from_pos: Vector3) -> TraceMark:
 ## Blut und Schleifspur, wo ein Gast geholt wurde.
 func add_blood(pos: Vector3, yaw: float) -> TraceMark:
 	var mark := TraceMark.new().setup("blood")
+	mark.fresh = true   # breitet sich aus (TraceMark.SPREAD)
 	add_child(mark)
 	mark.global_position = Vector3(pos.x, _floor_y(pos), pos.z)
 	mark.rotation.y = yaw   # die Flecken verteilt TraceMark selbst (auf Treppen die Stufen hinunter)
@@ -266,6 +285,25 @@ func _report(kind: String, pos: Vector3) -> void:
 		Game.social.note_trace(kind, pos)
 
 
+# --- Regen ------------------------------------------------------------------------------
+
+## Im Regen verwaschen (RainVeil): Blutlachen und große Wachsflecken unter freiem Himmel werden heller und dünner, ganz
+## verwaschen zum Schleier. Nur Spuren am Boden (nicht an Türen und Fenstern); ob draußen, merkt sich jede Spur.
+func _wash_marks(delta: float) -> void:
+	if Game.weather == null or Game.weather.intensity < RainVeil.RAIN_MIN:
+		return
+	for node in get_tree().get_nodes_in_group("trace_marks"):
+		var mark := node as TraceMark
+		if not mark.kind in ["blood", "wax_splash"] or mark.get_parent() != self:
+			continue
+		if not mark.has_meta("outdoor"):
+			mark.set_meta("outdoor", RainVeil.is_outdoor(mark.global_position))
+		if mark.get_meta("outdoor"):
+			var step := RainVeil.wash_step(mark.global_position, delta)
+			if step > 0.0:
+				mark.wash_by(step)
+
+
 # --- Speichern ------------------------------------------------------------------------
 
 func save_state() -> Array:
@@ -287,7 +325,11 @@ func save_state() -> Array:
 			entry["at"] = [at.x, at.y]
 		else:
 			entry["global"] = _t(mark.global_transform)
+			if mark.wash > 0.0:
+				entry["wash"] = mark.wash
 		list.append(entry)
+	for node in get_tree().get_nodes_in_group("rain_veils"):
+		list.append((node as RainVeil).to_save())
 	for node in get_tree().get_nodes_in_group("guest_notes"):
 		var note := node as WarningNote
 		list.append({"kind": "note", "title": note.custom_title, "text": note.custom_text, "global": _t(note.global_transform)})
@@ -299,6 +341,8 @@ func load_state(list: Array) -> void:
 		node.queue_free()
 	for node in get_tree().get_nodes_in_group("guest_notes"):
 		node.queue_free()
+	for node in get_tree().get_nodes_in_group("rain_veils"):
+		node.queue_free()
 	_guest_marks.clear()
 	var doors := get_tree().get_nodes_in_group("doors")
 	var windows := get_tree().get_nodes_in_group("windows")
@@ -308,7 +352,11 @@ func load_state(list: Array) -> void:
 			add_child(note)
 			note.global_transform = _from_t(entry["global"])
 			continue
+		if String(entry["kind"]) == "veil":
+			RainVeil.from_save(self, entry)
+			continue
 		var mark := TraceMark.new().setup(String(entry["kind"]))
+		mark.wash = float(entry.get("wash", 0.0))
 		if entry.has("window") and int(entry["window"]) >= 0 and int(entry["window"]) < windows.size():
 			windows[int(entry["window"])].add_child(mark)
 			mark.transform = _from_t(entry["local"])
@@ -323,7 +371,7 @@ func load_state(list: Array) -> void:
 		else:
 			mark.free()   # Tür oder Fenster gibt es nicht mehr – die Spur fällt weg
 			continue
-		if mark.kind in ["wax", "drops", "wax_splash", "soot"]:
+		if mark.kind in ["wax", "drops", "wax_splash", "soot", "coffee"]:
 			_guest_marks.append(mark)
 
 

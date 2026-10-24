@@ -72,8 +72,18 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     der Wettbewerb vorbei, sonst beginnt er von vorn
 ## 37: Notizbuch (Spielkonzept 3.10, „notebook“: Aufgaben und Notizen) und Meilensteine im Tagebuch („diary“:
 ##     aufgeschrieben und noch nicht) – ältere Stände laden weiter: Wer den Brief gelesen hat, hat ein leeres Notizbuch
-const VERSION := 37
-const MIN_VERSION := 32
+## 38: Im Regen verwaschen (Spielkonzept 4.13, RainVeil): Spuren mit „wash“, Schleier als Spur „veil“ in „traces“,
+##     Kürbismatsch „w=…“ im Zusatzfeld – ältere Stände laden weiter, alles unverwaschen
+## 39: Haushalte und Zimmerzugang (Spielkonzept 6.19, 6.20): Roster mit „household“/„member“ (Identität aus
+##     HAUSHALTE.md), Türen mit „broken“, „by_player“, „broken_day“, Gruppe „key_cabinets“ – ältere Stände passen nicht
+##     mehr zu den Haushalten
+## 40: Nächte ohne Schlaf anteilig (Spielkonzept 3.6, player.nights_awake als Kommazahl) – ältere Stände laden weiter
+## 41: Kaffee (Spielkonzept 3.11): player.coffee, coffee_low, caffeine und die Tasse (Item.Kind.COFFEE) – ältere Stände
+##     laden weiter, ohne Kaffee im Blut
+## 42: Notizbuch „seen“ (Spielkonzept 3.10: gesehene Bedrohungen, Lesezeichen „Gesehen“) – ältere Stände laden weiter,
+##     noch nichts gesehen
+const VERSION := 42
+const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)
@@ -81,7 +91,7 @@ const AUTOSAVE_MONSTER_DISTANCE := 25.0
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
-	"windows", "hide_spots", "phones", "dressers", "cats", "elevators"]
+	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "key_cabinets"]
 const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
 var WORLD_FILE := DIR + "world.txt"
@@ -353,6 +363,7 @@ func collect() -> Dictionary:
 			"pos": _v(stand if stand != Vector3.INF else p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
 			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
 			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised,
+			"coffee": p.coffee, "coffee_low": p.coffee_low, "caffeine": p.caffeine,
 			"held": _item_data(p.held) if p.held else null,
 			"bag": p.bag.map(_bag_data),
 			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
@@ -427,7 +438,9 @@ func collect() -> Dictionary:
 	data["pumpkin"] = Game.pumpkin.save_state() if Game.pumpkin else {}
 	data["hide_spots"] = _collect_group("hide_spots", func(n: Node) -> Dictionary: return n.save_state())
 	data["doors"] = _collect_group("doors", func(n: Node) -> Dictionary:
-		return {"open": n.is_open, "locked": n.locked})
+		return {"open": n.is_open, "locked": n.locked, "broken": n.broken, "by_player": n.broken_by_player,
+			"broken_day": n.broken_day})
+	data["key_cabinets"] = _collect_group("key_cabinets", func(n: Node) -> Dictionary: return n.save_state())
 	data["chests"] = _collect_group("chests", func(n: Node) -> Dictionary:
 		return {"open": n.is_open})
 	data["plants"] = _collect_group("pumpkin_plants", func(n: Node) -> Dictionary:
@@ -477,21 +490,28 @@ func apply(data: Dictionary) -> void:
 	visited = (data.get("visited", []) as Array).duplicate()
 	Game.money = int(data.get("money", 5))
 	Game.current_slot = int(data.get("current_slot", Game.current_slot))
-	# Laufendes Schmücken, Deko-Suche und Suppenessen werden nicht gespeichert – und die Gäste gleich neu gebaut
+	# Laufendes Schmücken, Deko-Suche, Suppenessen und Kaffeekochen werden nicht gespeichert – und die Gäste gleich neu gebaut
 	Game.social.decorating.reset()
 	Game.social.search.reset()
 	Game.social.pranks.reset()
 	Game.social.tidying.reset()
 	if Game.kitchen:
 		Game.kitchen.reset()
+	if Game.coffee:
+		Game.coffee.reset()
 	# Zuerst die zufällig erzeugten Gäste – alles Weitere bezieht sich auf ihre IDs
 	Game.social.restore_roster((data.get("social", {}) as Dictionary).get("roster", []))
 
 	# Welt
 	_apply_group("doors", data.get("doors", []), func(n: Node, d: Dictionary) -> void:
 		n.locked = bool(d["locked"])
+		n.broken = false
 		if bool(d["open"]) != n.is_open:
-			n.set_open(bool(d["open"]), true, true))
+			n.set_open(bool(d["open"]), true, true)
+		n.broken = bool(d.get("broken", false))
+		n.broken_by_player = bool(d.get("by_player", false))
+		n.broken_day = int(d.get("broken_day", 0)))
+	_apply_group("key_cabinets", data.get("key_cabinets", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("chests", data.get("chests", []), func(n: Node, d: Dictionary) -> void:
 		n.set_open(bool(d["open"]), true))
 	_apply_group("pumpkin_plants", data.get("plants", []), func(n: Node, d: Dictionary) -> void:
@@ -601,10 +621,13 @@ func apply(data: Dictionary) -> void:
 	p.head.rotation.x = float(pd["pitch"])
 	p.set_crouching(bool(pd.get("crouch", false)))
 	p.shock = float(pd.get("shock", 0.0))
-	p.nights_awake = int(pd.get("nights_awake", 0))
+	p.nights_awake = float(pd.get("nights_awake", 0.0))
 	p.injury = float(pd.get("injury", 0.0))
 	p.drunk = float(pd.get("drunk", 0.0))
 	p.hangover = float(pd.get("hangover", 0.0))
+	p.coffee = float(pd.get("coffee", 0.0))
+	p.coffee_low = float(pd.get("coffee_low", 0.0))
+	p.caffeine = float(pd.get("caffeine", 0.0))
 	p.set_disguised(bool(pd.get("disguised", false)))
 	p.set_pockets(bool(pd.get("compass", false)), pd.get("map_pages", []), pd.get("keyring", []))
 	if pd.get("held") != null:

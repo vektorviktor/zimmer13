@@ -17,8 +17,12 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
   nur laufen lassen, wenn sich am Speichern selbst etwas ändert (Felder in `collect`/`apply`, neue Gruppe →
   auch in `WORLD_GROUPS`).
 - `Item.Kind` und die Zufallsaufrufe in `GuestGenerator.make()` nur am Ende erweitern (Spielstände) – prüft
-  `tests/run.tscn` (`save_rules`). Vor größeren Commits `bash tests/smoke.sh` (TECHNIK.md 10).
-- Spielzeit läuft über `delta` bzw. `MonsterDirector.elapsed` – nie über Systemzeit (Pause!).
+  `tests/run.tscn` (`save_rules`).
+- Rauchtest in drei Stufen (TECHNIK.md 10): nach jeder Änderung `bash tests/smoke.sh schnell` (~½ min), nach Arbeit an
+  einem System dessen Stichwort (`bash tests/smoke.sh schlaf`, Liste: `… stichworte`), vor größeren Commits
+  `bash tests/smoke.sh` (alles, ~13 min). Neue Szenarien bekommen Stichworte, „schnell“ nur ausnahmsweise.
+- Spielzeit läuft über `delta` bzw. `MonsterDirector.elapsed` – nie über Systemzeit (Pause!). Was mit `delta` über
+  Minuten bis Stunden zählt, braucht `skip_time(dt)` in Gruppe `time_skip` (Zeitsprung im Schlaf, TECHNIK.md 3).
 
 ## Dokumentation pflegen
 - Ändert sich ein System oder kommt eines hinzu: **TECHNIK.md im selben Commit anpassen.**

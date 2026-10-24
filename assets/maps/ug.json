@@ -1140,6 +1140,7 @@
 	"balcony_edges": [],
 	"trees": [],
 	"reception": [],
+	"markers": [],
 	"furniture": [],
 	"fittings": [
 		{
@@ -1150,7 +1151,22 @@
 			]
 		}
 	],
-	"items": [],
+	"items": [
+		{
+			"kind": "CROWBAR",
+			"pos": [
+				6.85,
+				-43.95
+			]
+		},
+		{
+			"kind": "TOOLBOX",
+			"pos": [
+				30.05,
+				-38.95
+			]
+		}
+	],
 	"lights": [
 		{
 			"kind": "halogen",

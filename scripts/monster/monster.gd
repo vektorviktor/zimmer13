@@ -113,12 +113,17 @@ func is_active() -> bool:
 
 # --- Steuerung von außen ----------------------------------------------------
 
-## Erscheint (meist im Keller) und streift umher, bis der Director es heimschickt.
-func start_roaming(pos: Vector3) -> void:
+## Erscheint (meist im Keller) und streift umher, bis der Director es heimschickt. roam: erstes Ziel ({"pos", "room"}
+## wie next_roam_target – Zeitsprung im Schlaf, Spielkonzept 3.6), leer = selbst wählen.
+func start_roaming(pos: Vector3, roam: Dictionary = {}) -> void:
 	_appear(pos)
 	_handprinted.clear()
 	_spared.clear()
-	_next_roam()
+	if roam.is_empty():
+		_next_roam()
+	else:
+		_roam = roam
+		_set_state(State.PATROL)
 
 
 ## Für Tests: an einer beliebigen Stelle erscheinen.

@@ -6,10 +6,11 @@
 #
 # Aufbau der Plandatei (Vorlage, mit dem Zeichner abgestimmt):
 #   - Maßstab 1 m = 10 px. Wände sind 2 px dicke Linien in der Palettenfarbe „Wand“ (20 cm).
-#   - Die Stockwerke liegen untereinander auf derselben Ebene, je BAND px hoch (FLAT_FLOORS: oben das Obergeschoss,
-#     in der Mitte das Erdgeschoss, unten der Keller) – deckungsgleich, wenn man sie um BAND verschiebt. Gezählt
+#   - Die Stockwerke liegen untereinander auf derselben Ebene, je BAND px hoch (FLAT_FLOORS: oben das Dachgeschoss,
+#     dann Obergeschoss, Erdgeschoss und Keller; ein Plan mit drei Bändern beginnt beim Obergeschoss) – deckungsgleich, wenn man sie um BAND verschiebt. Gezählt
 #     werden alle normalen Ebenen, egal ob sichtbar; nicht gezählt: Referenzebenen und Ebenen, deren Name mit
-#     „Beschriftung“, „Skizze“ oder „Notiz“ beginnt. Ältere Pläne (map.aseprite) mit einer Ebenengruppe je
+#     „Beschriftung“, „Skizze“, „Notiz“ oder „temp“ beginnt (eine ausgeblendete Abdunkel-Ebene „temp“ hätte sonst den
+#     ganzen Grundriss überdeckt). Ältere Pläne (map.aseprite) mit einer Ebenengruppe je
 #     Stockwerk („EG“, „OG1“ …, „Keller“) gehen weiterhin.
 #   - Die Bedeutung jeder Farbe steht als Name in der **Legende <plan>.gpl** neben der Plandatei (GIMP-Palette,
 #     „R G B<Tab>Name“ je Zeile, FILLS/OPENINGS unten). Aseprite 1.3.18 speichert keine Palettennamen; ohne
@@ -19,6 +20,11 @@
 #   - Türanschlag: ein Pixel „Türanschlag“ statt eines Türpixels an einem Ende des Strichs, in der Wandhälfte
 #     der Seite, in die die Tür aufgeht – dort sitzt das Scharnier, dort steht die offene Tür. Ohne Pixel gilt
 #     die Regel im LevelBuilder (in Räume, nicht in Flure; Scharnier rechts). Bei Doppeltüren zählt nur die Seite.
+#   - Zimmernummern (seit 2026-10-24): schwarze Ziffern in der Pixelschrift der Ebene „Beschriftung“ (6 px hoch,
+#     DIGITS) auf der Fläche eines Zimmers sind seine Nummer – „017“, „13“ (wird „013“, das Schild zeigt „13“), „101“.
+#     Hat ein Stockwerk solche Ziffern, gelten nur sie; ohne zählt der alte Laufweg (WINGS, PINNED, number_from_eg).
+#   - Unbewohnte Zimmer sind im Grundriss in „Zimmer leer“ statt „Zimmer“ gemalt (seit 2026-10-24) – sie zählen
+#     genauso als Zimmerfläche, das Zimmer bekommt in der Ausgabe „vacant“: true (mehr als die Hälfte der Fläche).
 #   - Ebene „Zimmer“: deckende Flächen markieren die Hotelzimmer – alles darunter (Zimmerflächen, Bad,
 #     Verbindungstüren dazwischen) gehört zu einem Zimmer mit einer Nummer. Ohne die Ebene ist jede Fläche
 #     „Zimmer“ ein eigenes Zimmer.
@@ -47,18 +53,20 @@ PREVIEW_DIR = sys.argv[3] if len(sys.argv) > 3 else ""
 
 PX = 0.1                    ## Meter pro Pixel
 BAND = 790                  ## Höhe eines Stockwerks im Plan ohne Ebenengruppen (Versatz zwischen den Stockwerken)
-FLAT_FLOORS = ("OG1", "EG", "UG")   ## Stockwerke von oben nach unten
+ALL_FLAT_FLOORS = ("DG", "OG1", "EG", "UG")   ## Stockwerke von oben nach unten (die unteren zählen von unten)
+FLAT_FLOORS = ALL_FLAT_FLOORS   ## die Stockwerke dieses Plans (nach seiner Höhe, siehe unten)
+ATTIC_LEVEL = 2             ## Dachgeschoss (Spielkonzept 7.10, 4.21) über dem OG1
 UNITS_LAYER = "Zimmer"      ## Ebene mit den Flächen der Hotelzimmer
 MIN_WALL_RUN = 6            ## kürzeste erkannte Wand in Pixeln (kürzere Läufe sind Querschnitte)
 MIN_WALL_NET = 300          ## kleinere Flecken in Wandfarbe sind Schrift, keine Wände
-IGNORED_LAYERS = ("Beschriftung", "Skizze", "Notiz")
+IGNORED_LAYERS = ("Beschriftung", "Skizze", "Notiz", "temp")
 ## Objektebenen → Schlüssel in der Ausgabe. Zählen nicht zum Grundriss.
 OBJECT_LAYERS = {"Möbel": "furniture", "Ausstattung": "fittings", "Gegenstände": "items", "Lichter": "lights",
 	"Teppiche": "rugs"}
 
 ## Palettenname → (Flächenart, draußen = ohne Decke)
 FILLS = {
-	"Zimmer": ("room", False), "Flur": ("corridor", False), "Garten": ("garden", True),
+	"Zimmer": ("room", False), "Zimmer leer": ("room", False), "Flur": ("corridor", False), "Garten": ("garden", True),
 	"Terrasse": ("terrace", True), "Terrassenkante": ("terrace_edge", True), "Baum": ("tree", True),
 	"Pflanzkübel": ("planter", False), "Betriebsraum": ("service", False), "Lagerraum": ("storage", False),
 	"Bar": ("bar", False), "Partyraum": ("party", False), "Toilette": ("toilet", False),
@@ -71,16 +79,20 @@ FILLS = {
 	"Wäscherei": ("laundry_room", False), "Kellerraum": ("cellar_room", False),
 	# Plan map_a (22.10.): Kieswege im Garten, Müllraum im Keller
 	"Kiesweg": ("gravel", True), "Müllraum": ("trash_room", False),
+	# Dachgeschoss (24.10., Spielkonzept 4.21): grobe Bohlen, niedrige Decke
+	"Dachboden": ("attic", False),
 }
 ## Palettenname → Öffnungsart (Strich auf der Wandlinie)
 OPENINGS = {
 	"Tür Flur": "door", "Tür Terrasse": "garden_door", "Fenster": "window", "Doppel-Glastür": "glass_double_door",
 	"Betriebstür": "service_door", "Aufzugtür": "elevator_door", "Haupteingang": "main_entrance",
 	"Kniestocktür": "attic_door",
+	"Dachfenster": "roof_window",   # 24.10.: auf der Außenwand des Dachbodens – das Fenster sitzt in der Dachschräge
 }
 ## Flächen, die wie unbemalt zählen (kein Boden, nichts gebaut)
 EMPTY_FILLS = ("Kellerraum zu",)
 WALL_NAME, GLASS_NAME = "Wand", "Glaswand"
+VACANT_NAME = "Zimmer leer"   ## Zimmerfläche eines unbewohnten Zimmers (Spielkonzept 6.19, 6.20)
 HINGE_NAME = "Türanschlag"   ## ein Pixel auf dem Türstrich: Scharnierende und Aufgehseite
 ## Objektlegende (Palettenname → Art). Möbel und Teppiche sind Rechtecke, alles andere 3×3-Punkte.
 FURNITURE = {
@@ -95,6 +107,7 @@ FURNITURE = {
 	"Möbel: Fußmatte": "doormat", "Möbel: Dusche": "shower", "Möbel: WC": "toilet", "Möbel: Mülleimer": "trash_can",
 	"Möbel: Snackautomat": "snack_machine", "Möbel: Getränkeautomat": "drink_machine",
 	"Möbel: Zimmertisch": "room_table", "Möbel: Stuhl": "chair",
+	"Möbel: Wannenablage": "tub_shelf",   # 24.10.: gefliestes Stück neben der Badewanne, ohne Vorderseite
 }
 FRONT_NAME = "Möbel: Vorderseite"   ## Strich am Rand, gilt für jedes Möbel
 ## Hellere Zeile am Rand, gilt nur für ihr Möbel: „Möbel: Dusche Vorderseite“ → facing. Beim Doppelbett ist sie das
@@ -110,6 +123,7 @@ FITTINGS = {
 	"Ausstattung: Kürbispflanze Butternut": "pumpkin_plant:butternut", "Ausstattung: Kürbispflanze Muskat": "pumpkin_plant:muskat",
 	"Ausstattung: Kürbispflanze Türkenturban": "pumpkin_plant:turban", "Ausstattung: Kürbispflanze Riese": "pumpkin_plant:giant",
 	"Ausstattung: Kalender": "calendar", "Ausstattung: Tagebuch": "diary", "Ausstattung: Dekokiste": "deco_box",
+	"Ausstattung: Schlüsselschrank": "key_cabinet",   # 24.10.: verglast, mit dem Generalschlüssel (6.19)
 }
 ## Teppiche → Art (LevelBuilder.RUG_TEXTURES)
 RUGS = {"Teppich: Läufer": "runner"}
@@ -121,6 +135,8 @@ ITEMS = {
 	"Gegenstand: Gezinkte Würfel": "LOADED_DICE", "Gegenstand: Glühbirne": "BULB", "Gegenstand: Kleidung": "CLOTHING",
 	"Gegenstand: Kompass": "COMPASS", "Gegenstand: Karte": "MAP", "Gegenstand: Taschenlampe": "FLASHLIGHT",
 	"Gegenstand: Batterie": "BATTERY", "Gegenstand: UV-Filter": "UV_FILTER", "Gegenstand: Schachbrett": "CHESS_BOARD",
+	# 24.10. (Spielkonzept 6.19): Zimmertüren aufbrechen und reparieren
+	"Gegenstand: Brecheisen": "CROWBAR", "Gegenstand: Werkzeugkasten": "TOOLBOX",
 }
 ## Lichter → (Art, defekt)
 LIGHTS = {
@@ -153,6 +169,20 @@ SPAN = 50
 WING_NAMES = {"ost": "Ostflügel", "west": "Westflügel"}
 ## Türschilder, die nicht die Nummer zeigen: 013 ist das Spielerzimmer, die führende Null ist abgefallen
 BROKEN_SIGNS = {"013": "13"}
+## Zimmernummern aus der Ebene „Beschriftung“ (2026-10-24): Ziffern der Pixelschrift (Zeilen von oben, # = schwarz)
+LABEL_COLOR = "000000"
+DIGITS = {
+	(".#", "##", ".#", ".#", ".#", ".#"): "1",
+	("###.", "...#", "...#", ".##.", "#...", "####"): "2",
+	("###.", "...#", ".##.", "...#", "...#", "###."): "3",
+	("..#.", ".#..", "#.#.", "####", "..#.", "..#."): "4",
+	("###.", "#...", "###.", "...#", "...#", "###."): "5",
+	(".##.", "#...", "###.", "#..#", "#..#", ".##."): "6",
+	("####", "...#", "..#.", "..#.", ".#..", ".#.."): "7",
+	(".##.", "#..#", ".##.", "#..#", "#..#", ".##."): "8",
+	(".##.", "#..#", "#..#", ".###", "...#", ".##."): "9",
+	(".##.", "#..#", "#..#", "#..#", "#..#", ".##."): "0",
+}
 
 
 # --- Aseprite lesen --------------------------------------------------------------------------------
@@ -220,6 +250,7 @@ W, H, LAYERS, PALETTE, SLICES = read_aseprite(SRC)
 ## Ohne Ebenengruppen liegen die Stockwerke untereinander (FLAT_FLOORS); jedes wird ein eigenes Bild der Höhe BAND
 FLAT = not any(l["level"] == 0 and l["type"] == 1 for l in LAYERS)
 if FLAT:
+	FLAT_FLOORS = ALL_FLAT_FLOORS[-max(1, min(len(ALL_FLAT_FLOORS), round(H / BAND))):]
 	H = BAND
 LEGEND = os.path.splitext(SRC)[0] + ".gpl"
 if os.path.exists(LEGEND):
@@ -232,6 +263,7 @@ FILL_OF = {BY_NAME[n]: k for n, k in FILLS.items() if n in BY_NAME}          # F
 OPENING_OF = {BY_NAME[n]: k for n, k in OPENINGS.items() if n in BY_NAME}    # Farbe → Öffnungsart
 DOOR = BY_NAME["Tür Flur"]
 HINGE = BY_NAME.get(HINGE_NAME, "-")
+VACANT = BY_NAME.get(VACANT_NAME, "-")
 EMPTY = {BY_NAME[n] for n in EMPTY_FILLS if n in BY_NAME}                     # Farben, die wie unbemalt zählen
 KNOWN = set(FILL_OF) | set(OPENING_OF) | {WALL, GLASS}
 
@@ -242,10 +274,13 @@ def floor_level(name):
 		return int(name[2:])
 	if name in ("Keller", "UG"):
 		return -1
+	if name == "DG":
+		return ATTIC_LEVEL
 	return None
 
 OBJECT_IMAGES = {}   # Stockwerk → Objektebene → {Pixelindex: Farbe}
 UNIT_IMAGES = {}     # Stockwerk → {Pixelindex: Farbe} der Ebene „Zimmer“
+LABEL_IMAGES = {}    # Stockwerk → {Pixelindex: Farbe} der Ebene „Beschriftung“ (Zimmernummern)
 
 def paint(layer, img, dy=0):
 	"""Deckende Pixel einer Ebene in img eintragen (Liste oder dict, Index = y·W + x), dy Pixel nach oben versetzt."""
@@ -286,6 +321,9 @@ def floor_images():
 		if not (FLAT or group) or layer["type"] != 0 or layer["flags"] & 64 or layer["cel"] is None:
 			continue
 		if layer["name"].startswith(IGNORED_LAYERS):
+			if layer["name"].startswith("Beschriftung"):   # zählt nicht zum Grundriss, trägt aber die Zimmernummern
+				for n, floor in enumerate(FLAT_FLOORS if FLAT else [group]):
+					paint(layer, LABEL_IMAGES.setdefault(floor, {}), n * BAND if FLAT else 0)
 			continue
 		if FLAT:
 			for n, floor in enumerate(FLAT_FLOORS):
@@ -426,6 +464,27 @@ def build_floor(floor, COL, open_above, eg=None):
 			assert door, "%s: Türanschlag bei Pixel %d,%d liegt an keiner Tür" % (floor, x, y)
 			COL[i] = door
 			hinges[(x, y)] = False   # → True, sobald einer Öffnung zugeordnet
+
+	# Markierungen (24.10.): ein Kreuz in der Farbe „Haupteingang“ mitten auf einer Fläche, ohne Wand daneben – im
+	# Dachgeschoss liegt dort der Kopf des Kürbismanns (Spielkonzept 4.21). Die Pixel werden zur Fläche darum.
+	markers = []
+	if floor != "EG":
+		red = BY_NAME["Haupteingang"]
+		for comp in components(lambda c: c == red, conn8=True):
+			near = {}
+			for j in comp:
+				x, y = j % W, j // W
+				for X, Y in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+					c = col(X, Y)
+					if c != red:
+						near[c] = near.get(c, 0) + 1
+			if WALL in near or not near:
+				continue   # Strich auf einer Wand: verschlossene Tür
+			fill = max(near, key=near.get)
+			for j in comp:
+				COL[j] = fill
+			x0, y0, x1, y1 = bbox(comp)
+			markers.append({"kind": "cross", "pos": m((x0 + x1) / 2, (y0 + y1) / 2)})
 
 	# Unbekannte Farben melden
 	unknown = {}
@@ -823,17 +882,62 @@ def build_floor(floor, COL, open_above, eg=None):
 		if below:
 			r["no"], r["wing"] = "%d%s" % (level, below["no"][1:]), below["wing"]
 
-	for r in rooms if level > 0 and eg else []:
+	def room_label(comp):
+		"""Zimmernummer aus den Ziffern der Ebene „Beschriftung“ auf der Fläche (None = keine)."""
+		img = LABEL_IMAGES.get(floor, {})
+		# auf der ganzen Markierung der Ebene „Zimmer“ suchen (Ziffern dürfen auf Wandlinien liegen), sonst auf der Fläche
+		votes = {}
+		for j in comp:
+			if j in unit_of:
+				votes[unit_of[j]] = votes.get(unit_of[j], 0) + 1
+		area = unit_pixels.get(max(votes, key=votes.get), comp) if votes else comp
+		pts = [j for j in area if img.get(j) == LABEL_COLOR]
+		if not pts:
+			return None
+		cols = sorted({j % W for j in pts})
+		groups = []
+		for c in cols:
+			if groups and c - groups[-1][-1] <= 1:
+				groups[-1].append(c)
+			else:
+				groups.append([c])
+		text = ""
+		for g in groups:
+			gp = {(j % W, j // W) for j in pts if g[0] <= j % W <= g[-1]}
+			x0, y0 = min(p[0] for p in gp), min(p[1] for p in gp)
+			x1, y1 = max(p[0] for p in gp), max(p[1] for p in gp)
+			rows = tuple("".join("#" if (x, y) in gp else "." for x in range(x0, x1 + 1)) for y in range(y0, y1 + 1))
+			text += DIGITS.get(rows, "?")
+		if "?" in text:
+			print("  Warnung: %s – unlesbare Zimmernummer „%s“ bei Pixel %d,%d" % (floor, text, cols[0], pts[0] // W))
+			return None
+		return text
+
+	unit_pixels = {}
+	for j, u in unit_of.items():
+		unit_pixels.setdefault(u, []).append(j)
+	for r in rooms:
+		text = room_label(comps_of[id(r["region"])][0])
+		if text:
+			r["no"], r["sign"], r["wing"] = text.zfill(3), text, "west" if r["cx"] < WING_SPLIT_X else "ost"
+	labelled = any("sign" in r for r in rooms)
+	if labelled:
+		for r in sorted((r for r in rooms if "sign" not in r), key=lambda r: (r["cy"], r["cx"])):
+			used = [int(o["no"]) for o in rooms if "no" in o]
+			r["no"] = "%03d" % (max(used) + 1)
+			r["wing"] = "west" if r["cx"] < WING_SPLIT_X else "ost"
+			print("  Warnung: %s – Zimmer bei %s ohne Nummer in „Beschriftung“, bekommt %s" % (floor, m(r["cx"], r["cy"]), r["no"]))
+	for r in rooms if level > 0 and eg and not labelled else []:
 		number_from_eg(r)
 	# Liegen zwei Zimmer über demselben EG-Zimmer, behält es das mit der Flurtür darüber (sonst das erste)
 	keep = set()
-	for r in sorted((r for r in rooms if "no" in r), key=lambda r: not r["by_door"]):
+	for r in sorted((r for r in rooms if "no" in r and not labelled), key=lambda r: not r["by_door"]):
 		if r["no"] in keep:
 			del r["no"]
 		keep.add(r.get("no"))
 	# Die übrigen (über keinem EG-Zimmer oder verdrängt) zählen im Flügel hinter dessen höchster Nummer weiter,
 	# Norden vor Süden, Westen vor Osten
-	for r in sorted((r for r in rooms if level > 0 and eg and "no" not in r), key=lambda r: (r["cy"], r["cx"])):
+	for r in sorted((r for r in rooms if level > 0 and eg and "no" not in r and not labelled), key=lambda r: (r["cy"], r["cx"])):
 		r["wing"] = "west" if r["cx"] < WING_SPLIT_X else "ost"
 		used = [int(o["no"][1:]) for o in rooms if "no" in o and o["wing"] == r["wing"]] + \
 			[int(e["no"][1:]) for e in eg["rooms"] if e["wing"] == r["wing"]]
@@ -841,12 +945,12 @@ def build_floor(floor, COL, open_above, eg=None):
 	# Laufwege: eigene je Stockwerk, sonst die des EG (darüber gleicher Grundriss); das Untergeschoss hat keine
 	wings = WINGS.get(floor, WINGS["EG"] if level >= 0 else {})
 	pinned = {}
-	for no, (x, y) in PINNED.get(floor, {}).items():
+	for no, (x, y) in (PINNED.get(floor, {}) if not labelled else {}).items():
 		r = next((r for r in rooms if y * W + x in set(comps_of[id(r["region"])][0])), None)
 		assert r, "%s: Zimmer %s bei Pixel %d,%d (PINNED) liegt in keinem Zimmer" % (floor, no, x, y)
 		r["no"], r["wing"] = no, "west" if r["cx"] < WING_SPLIT_X else "ost"
 		pinned[no] = r
-	for name, w in (wings if not (level > 0 and eg) else {}).items():
+	for name, w in (wings if not (level > 0 and eg) and not labelled else {}).items():
 		loop, cross = [], []
 		for r in rooms:
 			if (r["cx"] < WING_SPLIT_X) != (name == "west") or r.get("no") in pinned:
@@ -898,14 +1002,14 @@ def build_floor(floor, COL, open_above, eg=None):
 	numbered = [r["no"] for r in rooms if "no" in r]
 	assert len(numbered) == len(set(numbered)), "%s: doppelte Zimmernummern %s" % (
 		floor, sorted({n for n in numbered if numbered.count(n) > 1}))
-	for r in rooms:
+	for r in rooms if not labelled else []:
 		base = WINGS["EG"][r["wing"]]["base"]
 		assert len(r["no"]) == 3 and base < int(r["no"][1:]) < base + SPAN, \
 			"%s: Zimmer %s passt nicht in den %s (SPAN)" % (floor, r["no"], WING_NAMES[r["wing"]])
 	room_list = []
 	for r in sorted(rooms, key=lambda r: r["no"]):
 		r["region"]["id"] = r["no"]
-		entry = {"no": r["no"], "sign": BROKEN_SIGNS.get(r["no"], r["no"]), "wing": r["wing"],
+		entry = {"no": r["no"], "sign": r.get("sign", BROKEN_SIGNS.get(r["no"], r["no"])), "wing": r["wing"],
 			"rects": r["region"]["rects"], "center": m(r["cx"], r["cy"]), "door": r["door"]}
 		if r["windows"]:
 			entry["windows"] = r["windows"]
@@ -916,6 +1020,9 @@ def build_floor(floor, COL, open_above, eg=None):
 				entry[key] = r[key]
 		if r["suite"]:
 			entry["suite"] = True
+		comp = comps_of[id(r["region"])][0]
+		if sum(COL[j] == VACANT for j in comp) * 2 > len(comp):
+			entry["vacant"] = True
 		room_list.append(entry)
 	dup = sorted({r["no"] for r in room_list if sum(o["no"] == r["no"] for o in room_list) > 1})
 	assert not dup, "%s: doppelte Zimmernummer %s (zwei Zimmer über demselben EG-Zimmer?)" % (floor, ", ".join(dup))
@@ -979,12 +1086,14 @@ def build_floor(floor, COL, open_above, eg=None):
 		"balcony_edges": [r["rects"] for r in take("balcony_edge")],
 		"trees": trees,
 		"reception": [rc for r in take("reception") for rc in r["rects"]],
+		"markers": markers,
 		**placed,
 	}
 	n_ops = sum(len(w.get("openings", [])) for w in walls)
-	print("%s: %d Wände (%d Öffnungen), %d Flächen, %d Zimmer (Ost %d, West %d), %d Treppen, %d Kübel, %d Bäume, "
-		"%d Bereiche, %d Objekte" % (floor, len(walls), n_ops, len(layout["regions"]), len(room_list),
-		sum(r["wing"] == "ost" for r in room_list), sum(r["wing"] == "west" for r in room_list), len(stairs),
+	print("%s: %d Wände (%d Öffnungen), %d Flächen, %d Zimmer (Ost %d, West %d, leer %d), %d Treppen, %d Kübel, "
+		"%d Bäume, %d Bereiche, %d Objekte" % (floor, len(walls), n_ops, len(layout["regions"]), len(room_list),
+		sum(r["wing"] == "ost" for r in room_list), sum(r["wing"] == "west" for r in room_list),
+		sum(1 for r in room_list if r.get("vacant")), len(stairs),
 		len(layout["planters"]), len(trees), len(areas), len(objects)))
 	print("    Objektebenen: %s" % ", ".join("%d %s" % (len(v), k) for k, v in placed.items()))
 	return layout
@@ -1132,7 +1241,7 @@ def preview(layout, path):
 		"pool_deck": "#c3d2de", "elevator": "#a9dccb", "cellar": "#999", "boiler_room": "#821b1b", "plant_room": "#7c6bff",
 		"laundry_room": "#6bb6ff", "cellar_room": "#7b7b7b"}
 	op_colors = {"door": "#2e9e00", "garden_door": "#00d000", "window": "#2a7fd0", "glass_double_door": "#e0c000",
-		"service_door": "#999", "elevator_door": "#00c090", "main_entrance": "#e00000", "attic_door": "#8a5a2a"}
+		"service_door": "#999", "elevator_door": "#00c090", "main_entrance": "#e00000", "attic_door": "#8a5a2a", "roof_window": "#c9e7ff"}
 	out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -118 160 128" width="100%" style="background:#fff">']
 	box = '<rect x="%s" y="%s" width="%s" height="%s" %s/>'
 	for r in layout["regions"]:

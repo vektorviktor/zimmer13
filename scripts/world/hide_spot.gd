@@ -5,9 +5,13 @@ extends StaticBody3D
 ## nutzen dieselbe Schnittstelle; „occupant“ reserviert den Platz.
 
 enum Type { WARDROBE, BED }
+## Ab dieser Breite (m) ist ein Bett ein Doppelbett für zwei (Haushalte, 6.20) – im Plan 1,50 m Einzel-, 2,20 m Doppelbett
+const DOUBLE_WIDTH := 1.8
 
 var type := Type.WARDROBE
 var occupant: Node = null
+## Doppelbett: der zweite Schläfer eines Haushalts (Spielkonzept 6.20) – occupant und partner liegen nebeneinander
+var partner: Node = null
 ## Das Monster hat gesehen, wie jemand hineingegangen ist → es holt ihn.
 var seen_entering := false
 ## Vom Monster geprüft (Spur): Schranktür steht offen / Bett ist zerwühlt.
@@ -17,8 +21,8 @@ var exit_point: Marker3D
 var check_point: Marker3D
 ## Das Bett in Zimmer 13: Darin schläft der Spieler während der Nachtruhe (Spielkonzept 4.18).
 var own_bed := false
-## Bett: Länge (lokal x) und Breite (lokal z) – das Doppelbett aus dem Plan ist größer; vor dem Einfügen setzen
-var bed_size := Vector2(2.05, 1.45)
+## Bett: Länge (lokal x) und Breite (lokal z) = Außenmaß des Balkenbetts (BedModel) aus dem Plan; vor dem Einfügen setzen
+var bed_size := Vector2(2.1, 1.5)
 ## Bett: Seite des Kopfendes auf der lokalen x-Achse (−1 oder +1); heraus geht es immer nach +Z
 var head_x := -1.0
 ## Bett: Plätze auf der Bettkante (Spielkonzept 3.1) – stehend [E] setzt sich, geduckt geht es darunter
@@ -26,7 +30,29 @@ var seat: Seat
 
 var _visual: Node3D
 var _leaves: Array[Node3D] = []
-var _blanket: MeshInstance3D
+var _blanket: Node3D
+var _blanket_rest: Vector3
+
+
+## Ein Doppelbett (breit genug für zwei), in dem schon jemand liegt, und der zweite Platz ist frei.
+func takes_partner() -> bool:
+	return type == Type.BED and bed_size.y >= DOUBLE_WIDTH and occupant != null and occupant is Guest and partner == null
+
+
+## Seitlicher Versatz eines Schläfers (lokal z): im Doppelbett links und rechts, sonst mittig.
+func sleep_offset(second: bool) -> float:
+	if bed_size.y < DOUBLE_WIDTH:
+		return 0.0
+	return bed_size.y * (0.25 if second else -0.25)
+
+
+## Platz freigeben, den who belegt (occupant oder partner).
+func release(who: Node) -> void:
+	if partner == who:
+		partner = null
+	elif occupant == who:
+		occupant = partner
+		partner = null
 
 
 func setup(p_type: Type) -> HideSpot:
@@ -53,8 +79,10 @@ func _ready() -> void:
 func get_prompt(player: Player) -> String:
 	if seat and player.seat == seat:
 		return ""
-	if _can_sleep(player):
-		return "Schlafen [E]    (geduckt: unters Bett)" if occupant == null else "Besetzt"
+	if can_sleep(player):
+		if occupant != null:
+			return "Besetzt"
+		return "Schlafen: %s [E]    (Mausrad: Dauer · geduckt: unters Bett)" % Player.hours_text(player.sleep_hours)
 	if _sits(player):
 		return seat.get_prompt(player)
 	if occupant != null and occupant != player:
@@ -64,10 +92,19 @@ func get_prompt(player: Player) -> String:
 	return "Im Schrank verstecken [E]" if type == Type.WARDROBE else "Unters Bett kriechen [E]"
 
 
+## Aktions-Symbol über dem Hinweis (IconArt): Schlafen im eigenen Bett, sonst Verstecken – nicht beim Hinsetzen.
+func get_icon(player: Player) -> String:
+	if can_sleep(player):
+		return "sleep" if occupant == null else ""
+	if (seat and player.seat == seat) or _sits(player) or (occupant != null and occupant != player):
+		return ""
+	return "closet_enter"
+
+
 func interact(player: Player) -> void:
 	if seat and player.seat == seat:
 		return
-	if _can_sleep(player):
+	if can_sleep(player):
 		if occupant == null:
 			player.start_sleep(self)
 	elif _sits(player):
@@ -76,9 +113,9 @@ func interact(player: Player) -> void:
 		player.enter_hide(self)
 
 
-## Im eigenen Bett (Zimmer 13) schläft man während der Nachtruhe – geduckt kriecht man darunter.
-func _can_sleep(player: Player) -> bool:
-	return own_bed and not player.crouching and Game.social != null and Game.social.sleep_active
+## Im eigenen Bett (Zimmer 13) schläft man, wann man will (Spielkonzept 3.6) – geduckt kriecht man darunter.
+func can_sleep(player: Player) -> bool:
+	return own_bed and not player.crouching
 
 
 ## Stehend auf ein Bett: auf die Kante setzen (auch wenn jemand darunter liegt).
@@ -104,9 +141,8 @@ func set_checked(value: bool) -> void:
 	if type == Type.WARDROBE:
 		_set_leaves(deg_to_rad(38.0) if value else 0.0)
 	elif _blanket:
-		var k := -head_x * bed_size.x / 2.05
-		_blanket.position = Vector3(0.1 * k, 0.56, 0.12) if value else Vector3(0.3 * k, 0.54, 0)
-		_blanket.rotation = Vector3(0.12, 0.35, 0.08) if value else Vector3.ZERO
+		_blanket.position = _blanket_rest + (Vector3(head_x * 0.2, 0.03, 0.12) if value else Vector3.ZERO)
+		_blanket.rotation = Vector3(0.06, 0.3, 0.04) if value else Vector3.ZERO
 
 
 func save_state() -> Dictionary:
@@ -192,25 +228,21 @@ func _build_wardrobe() -> void:
 
 
 func _build_bed() -> void:
-	var wood := Mat.psx(Color(0.3, 0.18, 0.1))
-	var sheet := Mat.psx(Color(0.55, 0.52, 0.48))
-	var blanket := Mat.psx(Color(0.35, 0.08, 0.08))
 	var length := bed_size.x
 	var width := bed_size.y
-	var head := head_x * (length / 2.0 - 0.005)   # Kopfteil
-	Geo.mesh(_visual, Geo.box(Vector3(length, 0.08, width)), wood, Vector3(0, 0.33, 0))
-	Geo.mesh(_visual, Geo.box(Vector3(length - 0.05, 0.16, width - 0.05)), sheet, Vector3(0, 0.45, 0))
-	_blanket = Geo.mesh(_visual, Geo.box(Vector3(length * 0.63, 0.04, width - 0.01)), blanket, Vector3(-head_x * 0.3 * length / 2.05, 0.54, 0))
-	Geo.mesh(_visual, Geo.box(Vector3(0.35, 0.1, width * 0.62)), sheet, Vector3(head_x * (length / 2.0 - 0.275), 0.58, 0))
-	Geo.mesh(_visual, Geo.box(Vector3(0.08, 1.0, width)), wood, Vector3(head, 0.5, 0))
-	for x in [-1.0, 1.0]:
-		for z in [-1.0, 1.0]:
-			Geo.mesh(_visual, Geo.box(Vector3(0.07, 0.3, 0.07)), wood, Vector3(x * (length / 2.0 - 0.075), 0.15, z * (width / 2.0 - 0.075)))
-	Geo.add_box_shape(self, Vector3(length, 0.6, width), Vector3(0, 0.3, 0))
-	Geo.add_box_shape(self, Vector3(0.08, 1.0, width), Vector3(head, 0.5, 0))
+	_blanket = BedModel.build(_visual, bed_size, head_x)
+	_blanket_rest = _blanket.position
+	Geo.add_box_shape(self, Vector3(length, BedModel.TOP, width), Vector3(0, BedModel.TOP / 2.0, 0))
+	# Kopfteil: ein Kasten über dem Kopfbalken, wie die Bretter geneigt
+	var lean := deg_to_rad(BedModel.HEAD_TILT)
+	var rise := 0.6
+	var shape := Geo.add_box_shape(self, Vector3(0.1, rise, width),
+			Vector3(head_x * (length / 2.0 - BedModel.POST / 2.0 + sin(lean) * rise / 2.0), BedModel.TOP + cos(lean) * rise / 2.0 - 0.1, 0))
+	shape.rotation.z = -head_x * lean
 	view_point.position = Vector3(-head_x * 0.2, 0.17, 0.15)
 	exit_point.position = Vector3(0, 0, width / 2.0 + 0.525)
 	check_point.position = Vector3(0, 0, width / 2.0 + 0.625)
-	# Bettkante zum Hinsetzen (stehend [E]), zur Ausstiegsseite, ohne das Kopfkissen
-	seat = Seat.attach(self, "bett", 0.55, Vector3(-head_x * 0.3, 0, width / 2.0 - 0.25), Vector3.BACK, length - 0.6, 0.58)
+	# Bettkante zum Hinsetzen (stehend [E]), zur Ausstiegsseite: auf der Matratze, ohne das Kopfkissen
+	var room := BedModel.inner(bed_size)
+	seat = Seat.attach(self, "bett", BedModel.TOP - 0.03, Vector3(-head_x * 0.25, 0, room.y / 2.0 - 0.15), Vector3.BACK, room.x - 0.5, 0.65)
 	seat.prompt = "Auf die Bettkante setzen [E]    (geduckt: unters Bett)"

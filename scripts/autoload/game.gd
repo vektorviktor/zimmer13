@@ -2,7 +2,7 @@ extends Node
 ## Globaler Spielzustand (Autoload „Game“): Referenzen, Geld, Meldungen, Tastenbelegung.
 
 signal money_changed(amount: int)
-signal message_posted(text: String, duration: float)
+signal message_posted(text: String, duration: float, icon: String)
 signal player_died
 signal caption_posted(text: String)
 
@@ -33,7 +33,10 @@ var traces: Traces
 var phones: PhoneCalls
 var weather: Weather
 var bats: Bats                     ## Fledermäuse draußen (Spielkonzept 4.22)
+var spiders: Spiders               ## Spinnen am Boden und in Schubladen (Spielkonzept 4.23)
+var sleep_skip: SleepSkip          ## Zeitsprung im Schlaf (Spielkonzept 3.6)
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
+var coffee: CoffeeMachine         ## Kaffeemaschine in der Küche (Spielkonzept 3.11), setzt sich selbst
 var confetti: Confetti            ## Konfetti auf Feiern (Spielkonzept 7.6)
 var doll: JuryDoll                 ## die Puppe – „Halloween-Jury“ (Spielkonzept 5.5)
 var contest: DoorContest           ## Türschmuck-Wettbewerb, Brief, Brett, Siegerehrung (Spielkonzept 2.5)
@@ -139,6 +142,7 @@ func reset() -> void:
 	phones = null
 	weather = null
 	kitchen = null
+	coffee = null
 	confetti = null
 	doll = null
 	contest = null
@@ -148,8 +152,9 @@ func reset() -> void:
 	Senses.clear_cache()
 
 
-func say(text: String, duration: float = 3.5) -> void:
-	message_posted.emit(text, duration)
+## Meldung oben im Bild; icon: Symbol darüber (IconArt-Name, z. B. „dead“).
+func say(text: String, duration: float = 3.5, icon: String = "") -> void:
+	message_posted.emit(text, duration, icon)
 
 
 ## `pos`/`who`: Ort und Stimme für menschliche Laute (SynthAudio.VOICES) – die klingen aus ihrer Richtung.
@@ -166,16 +171,31 @@ func sound_at(sound: String, pos: Vector3, loudness: float, source: Node = null,
 	if player == null:
 		return 0.0
 	if source != player:
-		var ear := player.camera.global_position
-		var d := ear.distance_to(pos)
-		var reach := 0.0
-		if d < maxf(2.0 * loudness, Senses.PLAYER_MIN_REACH):
-			var audible := Senses.audible_range(player.get_world_3d(), pos, ear, loudness)
-			reach = maxf(2.0 * audible, Senses.PLAYER_MIN_REACH * audible / loudness)
-		volume *= clampf(1.0 - d / reach, 0.0, 1.0) if reach > 0.0 else 0.0
+		volume *= _heard(pos, loudness)
 	if volume > 0.02:
 		play_sound(sound, volume, pos, source)
 	return volume
+
+
+## Wie laut der Spieler einen Lärm `kind` (Art aus `Senses.NOISE`) an `pos` hörte – ohne ihn zu machen (Zeitsprung,
+## Spielkonzept 3.6: Hörte er es, endet der Sprung vorher). Ab 0,3 weckt Lärm einen Schlafenden (`noise`).
+func heard_volume(kind: String, pos: Vector3) -> float:
+	var data: Dictionary = Senses.NOISE.get(kind, {})
+	if player == null or data.is_empty():
+		return 0.0
+	return float(data["volume"]) * _heard(pos, data["range"])
+
+
+## Anteil (0..1), den der Spieler bei `loudness` m Hörweite von `pos` hört: bis zur doppelten Hörweite, gedämpft durch
+## Wände.
+func _heard(pos: Vector3, loudness: float) -> float:
+	var ear := player.camera.global_position
+	var d := ear.distance_to(pos)
+	var reach := 0.0
+	if d < maxf(2.0 * loudness, Senses.PLAYER_MIN_REACH):
+		var audible := Senses.audible_range(player.get_world_3d(), pos, ear, loudness)
+		reach = maxf(2.0 * audible, Senses.PLAYER_MIN_REACH * audible / loudness)
+	return clampf(1.0 - d / reach, 0.0, 1.0) if reach > 0.0 else 0.0
 
 
 ## Lärm (Spielkonzept 4.15): Geräusch und Lärm in einem. `kind` ist eine Art aus

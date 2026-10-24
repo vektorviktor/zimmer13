@@ -139,8 +139,8 @@ func _player_announce(value: int) -> void:
 		_player_bluffs += 1
 	_dice.hide_dice()
 	var text := "Du schiebst den Becher rüber: „%s“" % Maexchen.label(value)
-	if _actual != value and Game.player.drunk >= BarTap.TIPSY:
-		text += "\nDeine Hand zittert ein wenig."   # betrunken blufft man schlechter (3.7)
+	if _actual != value and (Game.player.drunk >= BarTap.TIPSY or Game.player.jittery()):
+		text += "\nDeine Hand zittert ein wenig."   # betrunken (3.7) oder mit zu viel Kaffee (3.11) blufft man schlechter
 	_say(text)
 	_clear()
 	_guest_respond.call_deferred()
@@ -152,9 +152,10 @@ func _guest_respond() -> void:
 		return
 	var dice: Dictionary = guest.profile["dice"]
 	var plausible := Maexchen.chance_at_least(_claim)
-	# Rausch (3.7): der Spieler zittert beim Bluffen, ein betrunkener Gast passt schlechter auf
+	# Rausch (3.7) und zu viel Kaffee (3.11): der Spieler zittert beim Bluffen, ein betrunkener Gast passt schlechter auf
+	var tremble := maxf(BarTap.sway(Game.player.drunk), 0.5 if Game.player.jittery() else 0.0)
 	var suspicion := float(_player_bluffs) * 0.08 + float(dice["perception"]) * 0.2 * (1.0 - 0.5 * guest.drunk) \
-		+ 0.3 * BarTap.sway(Game.player.drunk) * (1.0 if _actual != _claim else 0.0)
+		+ 0.3 * tremble * (1.0 if _actual != _claim else 0.0)
 	var doubt := clampf((1.0 - plausible) * 0.85 + suspicion - 0.15, 0.05, 0.95)
 	if _claim == 21:
 		doubt = 0.85

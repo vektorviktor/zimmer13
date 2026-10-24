@@ -364,6 +364,10 @@ static func _collision(holder: Node3D, width: float, run: float, rise: float, n:
 	var treads := StaticBody3D.new()
 	treads.collision_layer = LevelBuilder.LAYER_TREAD
 	treads.collision_mask = 0
+	# Für Läufer von Blut, Wachs und Matsch (TraceMark.lay_runners): die Kante der Trittflächen ist die Setzstufe, in der
+	# Mitte hängt der Teppich so weit davor
+	treads.set_meta("carpet_half", RUNNER_W / 2.0)
+	treads.set_meta("carpet_out", NOSING + RUNNER_LIFT)
 	holder.add_child(treads)
 	for k in range(1, n):
 		Geo.add_box_shape(treads, Vector3(2.0 * x_side, 0.05, g), Vector3(0, k * h - 0.025, -(k - 0.5) * g))

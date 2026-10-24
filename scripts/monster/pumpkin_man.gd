@@ -142,7 +142,8 @@ var _strike_len := 0.0        ## Dauer des Schlags (s) …
 var _hit_time := 0.0          ## … und wann er trifft
 var _scared := {}             ## Gast-ID → schon erschrocken (je Auftritt einmal)
 var _door := Vector3.ZERO     ## Ankunft: Mitte der Glastür am Boden, vor der er landet …
-var _roof_y := 0.0            ## … Höhe des Dachs darüber …
+var _roof_y := 0.0            ## … Höhe der Dachkante über der Straßenfassade …
+var _edge_y := 0.0            ## … und der Kante über der Glastür (dazwischen folgt er dem Dach, _surface_y)
 var _ground_y := 0.0          ## … und des Gartens davor
 var _at_edge := false         ## steht an der Dachkante
 var _lobby_left: Array[Vector3] = []   ## Halte in der Lobby, die er noch absuchen will
@@ -166,7 +167,14 @@ static func spawn_in_front_of(p: Player, anim: String) -> PumpkinMan:
 	return man
 
 
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): der Spaßwert fällt weiter (nachts hat keiner Spaß).
+func skip_time(dt: float) -> void:
+	if state == State.INACTIVE and not announcing():
+		fun = fun * exp(-FUN_DECAY * dt)
+
+
 func _ready() -> void:
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
 	var model: Node3D = (load(MODEL) as PackedScene).instantiate()
 	add_child(model)
 	var body: MeshInstance3D = model.find_child("pumpkin_man", true, false)
@@ -575,8 +583,9 @@ func _surface_y(x: float, z: float, below: float = 50.0) -> float:
 ## Physik und NavMesh (Kapsel aus), auf festem Weg; erst im Garten ist er wieder ein Körper.
 func _start_arrival(door: Vector3) -> void:
 	_door = door
-	_roof_y = _surface_y(door.x, door.z + 1.0)
-	_ground_y = _surface_y(door.x, door.z - 2.5, _roof_y - 1.0)
+	_roof_y = _surface_y(door.x, -0.4)   # wo er über die Kante steigt (siehe _climb)
+	_edge_y = _surface_y(door.x, door.z + 0.05)
+	_ground_y = _surface_y(door.x, door.z - 2.5, minf(_roof_y, _edge_y) - 1.0)
 	_at_edge = false
 	_collider.disabled = true
 	global_position = Vector3(door.x, 0.0, FACADE_Z)
@@ -608,12 +617,14 @@ func _climb(delta: float) -> void:
 
 ## Übers Dach bis an die Kante über der Glastür, dort kurz stehen und hinuntersehen – dann ein Schritt ins Leere.
 func _roof(delta: float) -> void:
-	var edge := Vector3(_door.x, _roof_y, _door.z)
+	var edge := Vector3(_door.x, _edge_y, _door.z)
 	if not _at_edge:
 		_animate("walk", ROOF_SPEED)
 		_face(edge, delta)
-		global_position = global_position.move_toward(edge, ROOF_SPEED * delta)
-		if global_position.distance_to(edge) < 0.05:
+		# waagerecht zur Kante, die Höhe folgt dem Dach (Dachgeschoss: Schrägen, flaches Dach dazwischen)
+		var flat := Vector2(global_position.x, global_position.z).move_toward(Vector2(edge.x, edge.z), ROOF_SPEED * delta)
+		global_position = Vector3(flat.x, _surface_y(flat.x, flat.y, global_position.y + 1.5), flat.y)
+		if Vector2(global_position.x - edge.x, global_position.z - edge.z).length() < 0.05:
 			_at_edge = true
 			_timer = EDGE_WAIT
 			Game.shot_event("pumpkin_edge", 30)
@@ -1018,7 +1029,7 @@ func _hit() -> void:
 	else:
 		if Game.tracing:
 			print("[Kürbismann] erschlägt den Spieler")
-		Game.director.player_slain()
+		Game.director.player_slain("pumpkin")
 
 
 # --- Gehen ----------------------------------------------------------------------

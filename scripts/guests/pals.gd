@@ -83,8 +83,8 @@ func are_pals(a: Guest, b: Guest) -> bool:
 		return false
 	if feuds.has(key(a, b)):
 		return false   # verfeindet (6.16)
-	if a.parent_guest() == b or b.parent_guest() == a:
-		return true   # Familie (6.13)
+	if a.parent_guest() == b or b.parent_guest() == a or a.housemate_of(b):
+		return true   # Familie (6.13): Eltern und Kinder, ein Haushalt (6.20)
 	if int(counts.get(key(a, b), 0)) >= PAL_DEEDS:
 		return true
 	return _neighbors(a, b)

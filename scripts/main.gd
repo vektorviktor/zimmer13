@@ -19,6 +19,9 @@ extends Node3D
 ##   --brief                     an den Schreibtisch in Zimmer 13, Blick auf den Willkommensbrief (2.5)
 ##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
 ##                               über drei Tage) und ein paar Einträge im Tagebuch zum Nachlesen (3.10)
+##   --gesehen                   Notizbuch einstecken, alle drei Bedrohungen gelten als gesehen (Lesezeichen „Gesehen“, 3.10) –
+##                               mit --show=gesehen gleich aufgeschlagen
+##   --tot[=monster|geist|kuerbis]   nach 1 s gestorben: Sterbebildschirm mit dem Porträt dessen, der dich geholt hat (8.7)
 ##   --zettel                    erster Angriff gilt als geschehen, der Warnungszettel von 1999 liegt hinter der Tür von
 ##                               Zimmer 13, du stehst davor (2.5)
 ##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
@@ -42,6 +45,9 @@ extends Node3D
 ##   --cook=gast[,id]            ein Gast (oder dieser) kocht gleich Kürbissuppe (er steht 4 m vor dem Herd, du daneben)
 ##   --cook=suppe|braten[,fertig]  Kochen (3.8): Kürbis liegt geschnitten im Topf bzw. in der Pfanne, du stehst am Herd ·
 ##                               fertig: gleich fertig (Suppe: Gäste kommen zum Essen)
+##   --kaffee=n                  n Tassen Kaffee getrunken (3.11; ab der 3. zittert man) – mit --awake=n wird die Sicht klarer
+##   --kaffee=maschine           du stehst vor der Kaffeemaschine in der Küche, die Tasse ist in 1 s fertig
+##   --kaffee=gast[,id]          ein Gast (oder dieser) holt sich gleich Kaffee an der Maschine (er steht 4 m davor, du daneben)
 ##   --mess[=wachs]              Kürbismatsch (bzw. großer Wachsfleck) 3 m vor dir, ein ordentlicher Gast hinter dir putzt ihn weg
 ##                               (6.13; --trace „[Flecken]“)
 ##   --rival=gast1,gast2         gast1 und gast2 sind verfeindet, du wirst gleich mit gast1 befreundet – gast2 steht vor dir und
@@ -58,12 +64,25 @@ extends Node3D
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
 ##   --time=+n|-n                Spieltage vor- oder zurückspulen
 ##   --rot[=welk|eingefallen]    alle Kürbisse 10 s vor welk (5.10) – bzw. gleich welk oder eingefallen
+##   --verwaschen[=schleier]     es regnet sofort, Blut, Wachs und Kürbismatsch draußen verlaufen zehnmal so schnell (4.13,
+##                               RainVeil) – schleier: sofort ganz; z. B. mit
+##                               --pos=45,0.1,-37 --fall=5,giant --verwaschen --trace
 ##   --aufzug[=innen|offen|fahrt]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht (innen: in der
 ##                               Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt: in der Kabine, sie
 ##                               fährt gleich ins oberste Stockwerk)
 ##   --sitzen[=sofa|bank|stuhl|bett|klo]   aufs nächste Sitzmöbel dieser Art setzen (3.1), erster Platz – ohne Angabe Sofa
-##   --attic-door                Kniestocktür zum Ansehen (4.21): Solange kein Dachgeschoss gezeichnet ist, wird beim Aufbau
-##                               die erste 0,8 m breite Tür im OG1 zur Dachbodentür – du stehst vor ihrer Bandseite
+##   --tuer=zimmer               vor die Tür dieses Zimmers stellen (Nummer wie am Schild), Blick auf die Tür (6.19)
+##   --werkzeug=brecheisen|kasten|schluessel   Brecheisen bzw. Werkzeugkasten in die Hand, schluessel: Generalschlüssel
+##                               an den Bund (6.19) – mit --tuer davor: nach 1 s [E] an der Tür (aufbrechen, reparieren,
+##                               aufschließen)
+##   --klopfen[=zimmer[,weg]]    vor die Tür eines Gästezimmers (Nummer wie am Schild, ohne Angabe das nächste bewohnte)
+##                               und nach 1 s klopfen (6.19); weg = ehrlich|lampe|geschenk|panik|geld wählt die
+##                               Antwort im Türgespräch gleich selbst – mit --trace Chance und Ausgang
+##   --attic-door                Kniestocktür zum Ansehen (4.21): du stehst im Dachboden vor ihrer Bandseite (ohne Dachgeschoss
+##                               im Plan wird beim Aufbau die erste 0,8 m breite Tür im OG1 zur Dachbodentür)
+##   --dachboden[=kopf|fenster|treppe]  ins Dachgeschoss (4.21): hinter die Kniestocktür, Blick in die Kammer · kopf: vor
+##                               den Kopf des Kürbismanns · fenster: unter das Dachfenster, durch das der Mond scheint, Blick hinauf
+##                               · treppe: im OG1 an den Fuß der Dachbodentreppe
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -80,11 +99,12 @@ extends Node3D
 ##                               und [G] zum Aufhängen bzw. Verstreuen · ,g: nach 1 s selbst [G] (mit --pos auf eine Wand)
 ##   --fall[=h[,sorte]]          Kürbis fällt 1,5 m vor dir aus h m Höhe (Standard 4) – ab 3 m zerplatzt er zu Kürbismatsch
 ##                               (5.8); Sorte aus PumpkinKinds oder „mini“ (Zierkürbis), z. B. --fall=5,giant; mit
-##                               --time=+2 danach ist der Matsch verblasst und weg
+##                               --time=+2 danach ist der Matsch verblasst und weg · „kerze“ bzw. „birne“: eine Kerze
+##                               (zerbricht ab 2 m) bzw. Glühbirne (platzt ab 1,5 m), z. B. --fall=3,birne
 ##   --kuerbis[=n]               Kürbismodelle (5.8) 1,5 m vor dir, Gesicht zu dir, Blick hinunter: der glatte und die fünf
 ##                               Fratzen mit Kerze in einer Reihe – bzw. nur Fratze n (1–5)
-##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten); aufgaben|notizen:
-##                               das Notizbuch bei diesem Lesezeichen (3.10)
+##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten); aufgaben|notizen|
+##                               gesehen: das Notizbuch bei diesem Lesezeichen (3.10)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
 ##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
 ##   --no-psx · --psx            ohne bzw. mit PS1-Look (wie der Schalter in den Einstellungen, wird nicht gespeichert)
@@ -94,6 +114,8 @@ extends Node3D
 ##   --figur[=schnell]           Erwachen am Waschbecken und Charaktererstellung (3.9) wie bei einem neuen Spiel –
 ##                               schnell: gleich der Bogen vor dem Spiegel (ohne --figur: Standardfigur)
 ##   --perf[=s]                  Frame-Zeiten nach temp/perf.csv schreiben, nach s Sekunden (Standard 20) beenden (PerfLog)
+##   --static-eg[=pfad]          Erdgeschoss als statische Szene speichern (StaticExport, Standard res://temp/eg_static.scn):
+##                               Wände mit Öffnungen, Böden, Decken, Lampen, zum Durchlaufen – als Startparameter danach beenden
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
@@ -115,11 +137,16 @@ extends Node3D
 ##   --ghost=stunde[,n]          Geisterstunde (4.18): die Uhr springt kurz vor Mitternacht, die Glocke schlägt, danach geht
 ##                               er in deinem Flur um (vorher mit --tp/--pos hinstellen, sonst im Obergeschoss) und kommt zum
 ##                               n. Mal (Standard 1; ab 4 würgt er) – der erste Angriff gilt als geschehen
+##   --spinne[=gesicht|schublade] Spinnen (4.23): acht krabbeln sofort vor dir · gesicht: eine springt
+##                               dir ins Gesicht – Maus schnell hin und her schüttelt sie ab, sonst beißt sie (wie ein Glas) ·
+##                               schublade: die nächste Schublade hat eine – beide: der erste Angriff gilt als geschehen
 ##   --fledermaus[=tag|schwarm]  Fledermäuse (4.22): du stehst im Garten vor einem Baum und siehst hinauf – 21 Uhr, sie
 ##                               kreisen · tag: 12 Uhr, sie hängen in der Krone · schwarm: wie tag, nach 3 s fliegen sie auf
-##   --sleep[=bett]              Nachtruhe sofort beginnen – die Uhr springt auf ihren Beginn (Gäste gehen ins Bett) · bett: alle liegen sofort,
-##                               du schläfst im Bett von Zimmer 13
-##   --awake=n                   so viele Nächte ohne Schlaf (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
+##   --sleep[=bett[,h]]          Nachtruhe sofort beginnen – die Uhr springt auf ihren Beginn (Gäste gehen ins Bett) · bett: alle liegen sofort,
+##                               du schläfst im Bett von Zimmer 13, h Stunden (1–8, Standard 1; 3.6) – in der Nachtruhe
+##                               springt die Zeit (mit --uhr=1:10 nach Mitternacht beginnen, sonst weckt die Glocke)
+##   --hoerer                    der Hörer in Zimmer 13 liegt daneben (keine Anrufe, die einen wecken; 4.14)
+##   --awake=n                   so viele Nächte ohne Schlaf, auch Bruchteile (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
 ##                               der erste Angriff gilt dann als geschehen
 ##   --intent=roam|one|rampage|n Absicht beim Aufbruch erzwingen (umsehen, 1 oder 2 Opfer, oder n Opfer; 4.17)
 ##   --bold=n                    Dreistigkeit setzen (0–100)
@@ -129,7 +156,8 @@ extends Node3D
 ##   --follow=id · --visit=id    Gast kommt mit (steht hinter dir) · Gast geht zu Zimmer 13 und klopft an
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
-##   --kill=id                   Gast nach 3 s vom Monster holen lassen (überlebt mit 40 %: Kratzer, 6.17)
+##   --kill=id[,geist|kuerbis]   Gast nach 3 s vom Monster holen lassen (überlebt mit 40 %: Kratzer, 6.17) · geist/kuerbis:
+##                               nach 1,5 s vor dir erwürgt bzw. erschlagen, die Leiche bleibt liegen (Totenkopf)
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
 ##   --steal-test                Ednas Deko unbemerkt nehmen (Schuld-Test)
 ##   --player-deco=x,z           geschnitzten Kürbis des Spielers an diese Stelle stellen
@@ -188,6 +216,7 @@ func _ready() -> void:
 	level.name = "Level"
 	add_child(level)
 	LevelBuilder.refresh_maps()   # Plan geändert? Dann erst neu einlesen
+	LevelBuilder.refresh_households()   # HAUSHALTE.md geändert? Dann die Haushalte neu einlesen (6.20)
 	var builder := LevelBuilder.new(level, self)
 	var t0 := Time.get_ticks_msec()
 	builder.build()
@@ -202,6 +231,7 @@ func _ready() -> void:
 
 	var shadows := ShadowBudget.new()
 	shadows.name = "ShadowBudget"
+	shadows.rooms = builder.light_rooms
 	add_child(shadows)
 
 	var traces := Traces.new()
@@ -285,6 +315,15 @@ func _ready() -> void:
 	add_child(bats)
 	bats.setup(builder)
 	Game.bats = bats
+	var spiders := Spiders.new()   # Spinnen am Boden und in Schubladen (Spielkonzept 4.23)
+	spiders.name = "Spiders"
+	add_child(spiders)
+	spiders.setup(builder)
+	Game.spiders = spiders
+	var sleep_skip := SleepSkip.new()   # Zeitsprung im Schlaf (Spielkonzept 3.6)
+	sleep_skip.name = "SleepSkip"
+	add_child(sleep_skip)
+	Game.sleep_skip = sleep_skip
 
 	var grass := Grass.new()   # Grasbüschel, nur ohne PS1-Look – nach dem NavMesh
 	grass.name = "Grass"
@@ -515,6 +554,17 @@ func _setup_post_fx() -> ShaderMaterial:
 	return material
 
 
+## --static-eg: zwei Bilder warten (Lampen haben dann ihre Stärke), speichern, als Startparameter beenden.
+func _export_static(path: String, quit: bool) -> void:
+	for i in 2:
+		await get_tree().process_frame
+	var err := StaticExport.save(Game.social.builder, self, path)
+	if not quit:
+		Game.say("Statische Szene: %s" % (path if err == OK else error_string(err)), 4.0)
+	else:
+		get_tree().quit()
+
+
 func _on_player_died() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	add_child(DeathScreen.new())
@@ -540,6 +590,8 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--no-psx" or arg == "--psx":
 		Settings.psx_look = arg == "--psx"
 		Settings.apply()
+	elif arg == "--static-eg" or arg.begins_with("--static-eg="):
+		_export_static(arg.substr(12) if arg.length() > 12 else StaticExport.PATH, arg in OS.get_cmdline_user_args())
 	elif arg == "--fps":
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg.begins_with("--tp="):
@@ -565,6 +617,52 @@ func run_debug(arg: String) -> bool:
 		if best == null:
 			return false
 		Game.player.sit_down(best, best.spots[0])
+	elif arg.begins_with("--tuer="):
+		var builder := Game.social.builder
+		var no := arg.substr(7).pad_zeros(3)
+		if not builder.rooms.has(no):
+			return false
+		TeleportUI.place_player(builder.rooms[no]["door_front"], builder.rooms[no]["into"])
+		set_meta("debug_door", builder.rooms[no]["door"])
+	elif arg.begins_with("--werkzeug="):
+		var what := arg.substr(11)
+		if what == "schluessel":
+			Game.player.add_key(KeyCabinet.KEY_ID)
+		else:
+			Game.player.drop_held()
+			Game.player.receive_item(Item.create(Item.Kind.CROWBAR if what == "brecheisen" else Item.Kind.TOOLBOX))
+		if has_meta("debug_door"):
+			var door: Door = get_meta("debug_door")
+			get_tree().create_timer(1.0).timeout.connect(func() -> void:
+				if Game.tracing:
+					print("[Zimmer] Tür %s: %s" % [door.room_no, door.get_prompt(Game.player)])
+				door.interact(Game.player))
+	elif arg == "--klopfen" or arg.begins_with("--klopfen="):
+		var parts := arg.substr(10).split(",") if arg.begins_with("--klopfen=") else PackedStringArray()
+		var builder := Game.social.builder
+		var no := parts[0].pad_zeros(3) if parts.size() > 0 and parts[0] != "" else ""
+		if no == "":
+			var best := INF
+			for n: String in builder.households:
+				var d := (builder.rooms[n]["door_front"] as Vector3).distance_to(Game.player.global_position)
+				if d < best:
+					best = d
+					no = n
+		if not builder.households.has(no):
+			return false
+		var info: Dictionary = builder.rooms[no]
+		TeleportUI.place_player(info["door_front"], info["into"])
+		var door: Door = info["door"]
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: door.interact(Game.player))
+		if parts.size() > 1:
+			var way: String = {"ehrlich": "honest", "lampe": "lie_lamp", "geschenk": "lie_gift", "panik": "panic",
+				"geld": "bribe"}.get(parts[1], "honest")
+			var answer := func(again: Callable) -> void:
+				if Game.dialog.visible and Game.dialog.at_door():
+					Game.dialog.answer_door(way)
+				else:
+					get_tree().create_timer(0.5).timeout.connect(again.bind(again))
+			get_tree().create_timer(1.5).timeout.connect(answer.bind(answer))
 	elif arg == "--attic-door":
 		var builder := Game.social.builder
 		if builder.attic_doors.is_empty():
@@ -573,6 +671,35 @@ func run_debug(arg: String) -> bool:
 		var front := door.global_transform.basis.z   # Aufgehseite: Bänder und Kastenschloss
 		TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + front * 2.2, -front)
 		Game.player.head.rotation.x = deg_to_rad(-12.0)   # die Tür ist niedrig
+	elif arg == "--dachboden" or arg.begins_with("--dachboden="):
+		var builder := Game.social.builder
+		match arg.get_slice("=", 1) if "=" in arg else "":
+			"kopf":
+				if builder.pumpkin_head_spot == Vector3.INF:
+					return false
+				TeleportUI.place_player(builder.pumpkin_head_spot + Vector3(1.4, 0, 0), Vector3.LEFT)
+				Game.player.head.rotation.x = deg_to_rad(-35.0)
+			"fenster":
+				if builder.attic_window_spots.is_empty():
+					return false
+				# das Fenster, durch das der Mond am steilsten hereinscheint
+				var light := -(get_node("Moon") as Node3D).global_basis.z
+				var spot: Transform3D = builder.attic_window_spots[0]
+				for t: Transform3D in builder.attic_window_spots:
+					if (-t.basis.z).dot(-light) > (-spot.basis.z).dot(-light):
+						spot = t
+				TeleportUI.place_player(spot.origin, -spot.basis.z)
+				Game.player.head.rotation.x = deg_to_rad(-8.0)
+			"treppe":
+				var foot := builder.attic_stair_foot
+				TeleportUI.place_player(foot.origin, -foot.basis.z)
+				Game.player.head.rotation.x = deg_to_rad(20.0)
+			_:
+				if builder.attic_doors.is_empty():
+					return false
+				var door: Door = builder.attic_doors[0]
+				var into := door.global_transform.basis.z   # Aufgehseite = in den Dachboden
+				TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + into * 1.6, into)
 	elif arg.begins_with("--time="):
 		# Spieltage vor- oder zurückspulen (+1, -2 …)
 		Game.director.elapsed = maxf(0.0, Game.director.elapsed + arg.substr(7).to_float() * Calendar.DAY_SECONDS)
@@ -655,17 +782,19 @@ func run_debug(arg: String) -> bool:
 		if arg.ends_with(",g"):
 			get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.player.drop_held())
 	elif arg == "--fall" or arg.begins_with("--fall="):
-		# Kürbis fällt 1,5 m vor dir aus h m Höhe (Standard 4) – ab 3 m zerplatzt er (5.8); dahinter Sorte oder „mini“
+		# Kürbis fällt 1,5 m vor dir aus h m Höhe (Standard 4) – ab 3 m zerplatzt er (5.8); dahinter Sorte oder „mini“,
+		# „kerze“ (zerbricht ab 2 m) oder „birne“ (platzt ab 1,5 m)
 		var parts := arg.substr(7).split(",") if arg.length() > 7 else PackedStringArray()
 		var height := parts[0].to_float() if parts.size() > 0 and parts[0] != "" else 4.0
 		var sort := parts[1] if parts.size() > 1 else ""
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
-			var pumpkin := Item.create(Item.Kind.MINI_PUMPKIN) if sort == "mini" else Item.create(Item.Kind.PUMPKIN, sort)
+			var kinds := {"mini": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE, "birne": Item.Kind.BULB}
+			var pumpkin := Item.create(kinds[sort]) if kinds.has(sort) else Item.create(Item.Kind.PUMPKIN, sort)
 			Game.player.get_parent().add_child(pumpkin)
 			var front := -Game.player.global_basis.z
 			pumpkin.global_position = Game.player.global_position + Vector3(front.x, 0, front.z).normalized() * 1.5 + Vector3.UP * height
 			if Game.tracing:
-				print("[Kürbis] fällt aus %.1f m bei %s" % [height, pumpkin.global_position]))
+				print("[Fall] %s fällt aus %.1f m bei %s" % [pumpkin.display_name, height, pumpkin.global_position]))
 	elif arg == "--kuerbis" or arg.begins_with("--kuerbis="):
 		# Kürbismodelle (PumpkinModel, 5.8): glatt und alle Fratzen mit Kerze in einer Reihe vor dir – bzw. nur Fratze n
 		var only := clampi(arg.substr(10).to_int(), 1, PumpkinModel.FACES) if arg.begins_with("--kuerbis=") else 0
@@ -728,8 +857,20 @@ func run_debug(arg: String) -> bool:
 			_put_in_front(attacker, 4.0, false)
 			get_tree().create_timer(1.0).timeout.connect(attacker.start_attack)
 	elif arg.begins_with("--kill="):
-		var victim := _guest(arg.substr(7))
+		var kill_parts := arg.substr(7).split(",")
+		var victim := _guest(kill_parts[0])
 		if victim == null:
+			return true
+		var cause: String = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(
+			kill_parts[1] if kill_parts.size() > 1 else "", "")
+		if cause != "":
+			# Leiche bleibt liegen: nach 1,5 s 1,3 m vor dir erwürgt bzw. erschlagen (Todesmeldung, „… – tot“)
+			get_tree().create_timer(1.5).timeout.connect(func() -> void:
+				if victim.dead:
+					return
+				_put_in_front(victim, 1.3)
+				Game.player.head.rotation.x = deg_to_rad(-45.0)
+				Game.director.guest_slain(victim, cause))
 			return true
 		Game.director.attacks = MonsterDirector.HARMLESS_ATTACKS + 1   # wirklich holen
 		get_tree().create_timer(3.0).timeout.connect(func() -> void:
@@ -879,6 +1020,8 @@ func run_debug(arg: String) -> bool:
 			Game.dialog.open(partner))
 	elif arg == "--ghost=flur":
 		Game.ghost.debug_summon_hall()
+	elif arg == "--spinne" or arg.begins_with("--spinne="):
+		Game.spiders.debug(arg.substr(9) if arg.length() > 9 else "")
 	elif arg == "--fledermaus" or arg.begins_with("--fledermaus="):
 		Game.bats.debug_show(arg.substr(13) if arg.length() > 13 else "")
 	elif arg == "--ghost=stunde" or arg.begins_with("--ghost=stunde,"):
@@ -902,15 +1045,21 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--awake="):
 		# so viele Nächte ohne Schlaf (zählen erst nach dem ersten Angriff, also gilt der als geschehen)
 		Game.director.first_attack_done = true
-		Game.player.nights_awake = arg.substr(8).to_int()
+		Game.player.nights_awake = arg.substr(8).to_float()
 	elif arg == "--sleep":
 		Game.social.debug_sleep()
-	elif arg == "--sleep=bett":
-		# alle Gäste sofort im Bett, du schläfst im Bett von Zimmer 13
+	elif arg == "--hoerer":
+		Game.phones.home_phone.set_off_hook(true)
+	elif arg.begins_with("--sleep=bett"):
+		# alle Gäste sofort im Bett, du schläfst h Stunden im Bett von Zimmer 13
 		Game.social.debug_sleep(true)
-		for spot in Game.director.rooms[LevelBuilder.PLAYER_ROOM]["spots"]:
-			if (spot as HideSpot).own_bed:
-				Game.player.start_sleep(spot)
+		if arg.contains(","):
+			Game.player.sleep_hours = clampi(arg.get_slice(",", 1).to_int(), Player.SLEEP_HOURS.x, Player.SLEEP_HOURS.y)
+		# nach 1,5 s, damit NavMesh und --doll stehen (der Zeitsprung braucht Wege)
+		get_tree().create_timer(1.5).timeout.connect(func() -> void:
+			for spot in Game.director.rooms[LevelBuilder.PLAYER_ROOM]["spots"]:
+				if (spot as HideSpot).own_bed:
+					Game.player.start_sleep(spot))
 	elif arg.begins_with("--ghost="):
 		Game.ghost.debug_summon(arg.substr(8).to_int())
 	elif arg == "--warn":
@@ -942,6 +1091,21 @@ func run_debug(arg: String) -> bool:
 		Game.contest.debug_note()
 	elif arg == "--notizbuch":
 		get_tree().create_timer(0.5).timeout.connect(Game.notebook.debug_fill)   # nach den Gästen
+	elif arg == "--gesehen":
+		Game.notebook.give(true)
+		for id in IconArt.THREAT_ORDER:
+			Game.notebook.note_seen(id)
+	elif arg == "--tot" or arg.begins_with("--tot="):
+		var by: String = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(arg.substr(6), "monster")
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:
+			if Game.game_over:
+				return
+			Game.game_over = true
+			Game.player.dead = true
+			Game.player.killed_by = by
+			if Game.hud:
+				Game.hud.visible = false
+			Game.player_died.emit())
 	elif arg == "--trick=13" or arg.begins_with("--trick=13,"):
 		# Ein Kind steht vor Zimmer 13 (Tür auf) – mit „,n“ gibst du ihm n Süßigkeiten, eine je 1,5 s
 		var give := arg.substr(11).to_int() if arg.begins_with("--trick=13,") else 0
@@ -967,6 +1131,8 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(1.5).timeout.connect(func() -> void: _debug_search(parts))
 	elif arg.begins_with("--cook="):
 		_debug_cook(arg.substr(7).split(","))
+	elif arg.begins_with("--kaffee="):
+		_debug_coffee(arg.substr(9).split(","))
 	elif arg == "--mess" or arg == "--mess=wachs":
 		get_tree().create_timer(1.5, false).timeout.connect(func() -> void: Game.social.tidying.debug(arg.ends_with("wachs")))
 	elif arg.begins_with("--rival="):
@@ -1010,7 +1176,7 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--trace":
 		_trace = true
 		Game.tracing = true
-		Game.message_posted.connect(func(text: String, _d: float) -> void: print("  » " + text.replace("
+		Game.message_posted.connect(func(text: String, _d: float, _icon: String) -> void: print("  » " + text.replace("
 ", " ")))
 	elif arg.begins_with("--noise="):
 		var kind := arg.substr(8)
@@ -1038,6 +1204,10 @@ func run_debug(arg: String) -> bool:
 				item._rot_timer = 0.0
 				count += 1
 		Game.say("%d Kürbisse altern" % count, 2.0)
+	elif arg == "--verwaschen" or arg == "--verwaschen=schleier":
+		# Regen sofort, Flecken draußen verwaschen schneller (4.13, RainVeil) – schleier: gleich ganz
+		RainVeil.debug_speed = 10000.0 if arg.ends_with("schleier") else 10.0
+		Game.weather.set_weather(Weather.Kind.RAIN, true)
 	elif arg.begins_with("--uhr="):
 		# Uhrzeit am aktuellen Tag (hh oder hh:mm); vor der Anreise am 1. Oktober geht es nicht
 		var hm := arg.substr(6).split(":")
@@ -1451,6 +1621,40 @@ func _debug_cook(parts: PackedStringArray) -> void:
 	Game.player.global_position = Vector3(stove.global_position.x, 0.05, stove.global_position.z) + front * 1.4
 	Game.player.rotation.y = atan2(front.x, front.z)
 	Game.player.head.rotation.x = deg_to_rad(-25.0)
+
+
+## --kaffee=n|maschine|gast[,id]: Kaffee (Spielkonzept 3.11) – n Tassen getrunken, vor der Maschine (gleich fertig)
+## oder ein Gast holt sich Kaffee.
+func _debug_coffee(parts: PackedStringArray) -> void:
+	var p := Game.player
+	if parts[0].is_valid_int():
+		for i in parts[0].to_int():
+			var cup := Item.create(Item.Kind.COFFEE)
+			p.receive_item(cup)
+			if p.held != cup:   # Hände voll – nichts anderes austrinken
+				cup.queue_free()
+				return
+			p.drink_coffee()
+		return
+	var machine := Game.coffee
+	if machine == null:
+		Game.say("Keine Kaffeemaschine im Hotel", 3.0)
+		return
+	var front: Vector3 = machine.front
+	var base := Vector3(machine.global_position.x, 0.05, machine.global_position.z)
+	if parts[0] == "gast":
+		var g: Guest = Game.social.guest_by_id(parts[1]) if parts.size() > 1 else Game.social.living_guests().filter(func(c: Guest) -> bool: return not c.is_child())[0]
+		g.global_position = base + front * 4.0
+		g._set_idle(5.0)
+		p.global_position = g.global_position + front.cross(Vector3.UP) * 1.5
+		p.rotation.y = atan2(front.x, front.z)
+		machine.start_guest(g)
+		return
+	p.global_position = base + front * 1.1
+	p.rotation.y = atan2(front.x, front.z)
+	p.head.rotation.x = deg_to_rad(-30.0)
+	machine._start_brew(null, p)
+	machine._timer = 1.0
 
 
 ## --pals=gast1,gast2: gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir (Spielkonzept 6.16).

@@ -22,6 +22,8 @@ var _text: Label
 var _options: GridContainer
 var _buttons: Array[Button] = []
 var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dice" oder "chess")
+var _door: Door = null  ## Gespräch an der Tür (Spielkonzept 6.19): die Zimmertür, durch deren Spalt geredet wird
+var _woken := false
 
 
 func _ready() -> void:
@@ -90,7 +92,72 @@ func open(p_guest: Guest) -> void:
 	_show_main()
 
 
+## Gespräch an der Tür eines Gästezimmers (Spielkonzept 6.19, RoomAccess): der Bewohner im Türspalt, vier Wege hinein.
+func open_door(p_guest: Guest, door: Door, woken: bool) -> void:
+	guest = p_guest
+	_door = door
+	_woken = woken
+	visible = true
+	Game.player.in_dialog = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if Game.hud:
+		Game.hud.set_prompt("")
+	guest.begin_talk()
+	var to := door.center() - Game.player.global_position
+	Game.player.rotation.y = atan2(-to.x, -to.z)
+	_clear()
+	_name.text = "%s – an der Tür" % guest.display_name
+	var tier := Social.tier(guest)
+	if guest.is_child():
+		_say("Wer ist da?" if not Game.social.access.knows_player(guest) else "Ach, du bist's!")
+	elif woken:
+		_say("Weißt du, wie spät es ist? Was willst du?")
+	elif tier <= Social.Tier.ANGRY:
+		_say("Du? Verschwinde.")
+		_option("Gehen", _door_close)
+		return
+	elif tier >= Social.Tier.FRIEND:
+		_say("Ach, du bist's! Was gibt's?")
+	elif tier <= Social.Tier.ANNOYED:
+		_say("Was willst du?")
+	else:
+		_say("Ja, bitte?")
+	_option("Darf ich reinkommen?", _door_try.bind("honest"))
+	_option("Lügen: „Die Rezeption schickt mich – wegen deiner Lampe.“", _door_try.bind("lie_lamp"))
+	_option("Lügen: „Ich hab was für dich.“", _door_try.bind("lie_gift"))
+	_option("Panik machen: „Es ist hinter mir! Lass mich rein!“", _door_try.bind("panic"))
+	_option("Bestechen (%d Geld)" % RoomAccess.BRIBE_MONEY, _door_try.bind("bribe"), Game.money < RoomAccess.BRIBE_MONEY)
+	_option("Schon gut.", _door_close)
+
+
+## Läuft gerade ein Gespräch an der Tür? (Debug --klopfen)
+func at_door() -> bool:
+	return _door != null
+
+
+func answer_door(way: String) -> void:
+	_door_try(way)
+
+
+func _door_try(way: String) -> void:
+	var result: Dictionary = Game.social.access.try_enter(guest, _door, way, _woken)
+	_clear()
+	_say(String(result["line"]))
+	_door = null   # die Tür regelt jetzt RoomAccess (offen oder wieder zu)
+	_option("Weiter", close)
+
+
+func _door_close() -> void:
+	if _door and is_instance_valid(guest):
+		_door.set_open(false, false, true, guest)
+	_door = null
+	close()
+
+
 func close() -> void:
+	if _door and is_instance_valid(guest):   # Esc im Türgespräch: der Spalt geht wieder zu
+		_door.set_open(false, false, true, guest)
+	_door = null
 	visible = false
 	if is_instance_valid(guest):
 		guest.end_talk()
@@ -125,6 +192,10 @@ func _show_main() -> void:
 		_option("Tschüss", close)
 		return
 	var tier := Social.tier(guest)
+	if Game.social.access.can_lend(guest) and Game.player.held == null:   # Konrads Werkzeug (Spielkonzept 6.19)
+		_option("Kannst du mir dein Werkzeug leihen?", func() -> void:
+			_say(Game.social.access.lend(guest))
+			_show_main())
 	if tier <= Social.Tier.ENEMY:
 		var price: int = APOLOGY_PRICE[tier]
 		_option("Entschuldigen (%d Geld)" % price, _apologize.bind(price), Game.money < price)
@@ -382,6 +453,11 @@ func _monster_talked() -> void:
 
 ## Geschenk aus der Hand oder aus der Tasche
 func _gift(item: Item) -> void:
+	if guest.is_child() and item.kind == Item.Kind.COFFEE:
+		_say("Kaffee? Den darf ich nicht trinken.")   # Kinder trinken nie Kaffee (6.13, 3.11)
+		_show_main()
+		return
+	Game.social.access.on_gift(guest)   # ein versprochenes Geschenk (6.19)
 	var kind := item.kind
 	# Kürbis in seiner Lieblingssorte (Spielkonzept 5.8): freut ihn wie etwas, das er mag, und noch ein bisschen mehr
 	var is_pumpkin := kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN, Item.Kind.ROAST_PUMPKIN]
@@ -644,6 +720,12 @@ func _kind_name(kind: int) -> String:
 			return "Süßigkeiten"
 		Item.Kind.SODA_CAN:
 			return "Getränkedose"
+		Item.Kind.COFFEE:
+			return "Tasse Kaffee"
+		Item.Kind.CROWBAR:
+			return "Brecheisen"
+		Item.Kind.TOOLBOX:
+			return "Werkzeugkasten"
 	return "Etwas"
 
 

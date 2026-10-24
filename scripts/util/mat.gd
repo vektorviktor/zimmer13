@@ -28,6 +28,14 @@ const WALLPAPER_GLOSS := {
 ## grob wie die Tapete) und ohne (weich gefiltert, mit Mipmaps – aus der Nähe scharf, in der Ferne ruhig)
 const PHOTO_SIZE_PSX := 256
 const PHOTO_SIZE_SMOOTH := 1024
+## Holz für Mat.wood (Balkenbett): helle Eiche, AO × 0,6 eingebacken
+const WOOD_TEX := "res://assets/textures/Wood_02/Wood02_basecolor.jpg"
+const WOOD_NORMAL := "res://assets/textures/Wood_02/Wood02_normalOgl.jpg"
+## Bohlen (Mat.planks): eine Kachel über so viele Meter, so viele Bretter darin, Fugenbreite in Texeln, Abdunklung
+const PLANK_METERS := 2.0
+const PLANK_ROWS := 8
+const PLANK_GAP := 4
+const PLANK_DARKEN := 0.45
 
 static var _shader: Shader
 static var _shader_two_sided: Shader
@@ -97,38 +105,46 @@ static func model(path: String, src: MeshInstance3D, surface: int = 0, two_sided
 ## Normal Map (normal_path, OpenGL-Format) nur in der großen und nur ohne PS1-Look – Settings.apply schaltet über
 ## set_photo_detail um. Glanz (specular > 0, z. B. 0,5) mit der Rauheit aus roughness_path wirkt in beiden Looks
 ## (wie die Tapete). Die übrigen Karten des Sets löscht tools/photo_set.gd, siehe TECHNIK.md. object_uv: Textur in
-## Modellkoordinaten statt in Weltkoordinaten (Bewegtes wie die Aufzugskabine).
+## Modellkoordinaten statt in Weltkoordinaten (Bewegtes wie die Aufzugskabine). mesh_uv: über die UVs des Meshs (in
+## Metern) – Holz mit Faserrichtung (Geo.grain_box).
 static func photo(path: String, meters: float, normal_path: String = "", roughness_path: String = "",
-		specular: float = 0.0, color: Color = Color(1, 1, 1), object_uv: bool = false) -> ShaderMaterial:
-	var key := "photo|%s|%s|%s|%.2f|%.2f|%s|%s" % [path, normal_path, roughness_path, meters, specular, color.to_html(), object_uv]
+		specular: float = 0.0, color: Color = Color(1, 1, 1), object_uv: bool = false, mesh_uv: bool = false) -> ShaderMaterial:
+	var key := "photo|%s|%s|%s|%.2f|%.2f|%s|%s|%s" % [path, normal_path, roughness_path, meters, specular, color.to_html(), object_uv, mesh_uv]
 	if not _cache.has(key):
-		if _photo_shader == null:
-			_photo_shader = load("res://shaders/psx_photo.gdshader")
-		var img := _photo_image(path)
-		var small := img.duplicate() as Image
-		small.resize(PHOTO_SIZE_PSX, PHOTO_SIZE_PSX, Image.INTERPOLATE_LANCZOS)
-		img.generate_mipmaps()
-		var m := ShaderMaterial.new()
-		m.shader = _photo_shader
-		m.set_shader_parameter("albedo", color)
-		m.set_shader_parameter("tex_scale", 1.0 / meters)
-		m.set_shader_parameter("specular", specular)
-		m.set_shader_parameter("object_uv", object_uv)
-		m.set_meta("photo_psx", ImageTexture.create_from_image(small))
-		m.set_meta("photo_smooth", ImageTexture.create_from_image(img))
-		if normal_path != "":
-			var normal := _photo_image(normal_path)
-			normal.generate_mipmaps(true)   # gemittelte Normalen wieder auf Länge 1
-			m.set_shader_parameter("normal_tex", ImageTexture.create_from_image(normal))
-		if roughness_path != "":
-			var rough := _photo_image(roughness_path)
-			rough.generate_mipmaps()
-			m.set_shader_parameter("roughness_tex", ImageTexture.create_from_image(rough))
-			m.set_shader_parameter("use_roughness", true)
-		_photos.append(m)
-		_cache[key] = m
-		_set_photo_detail(m, Settings.psx_look)
+		_cache[key] = _photo_from(_photo_image(path), _photo_image(normal_path) if normal_path != "" else null,
+			roughness_path, meters, specular, color, object_uv, mesh_uv)
 	return _cache[key]
+
+
+## Fotomaterial aus fertigen Bildern (Farbe RGB8 in PHOTO_SIZE_SMOOTH, Normal Map oder null) – für Mat.photo und
+## zusammengesetzte Bilder wie die Bohlen (Mat.planks).
+static func _photo_from(img: Image, normal: Image, roughness_path: String, meters: float, specular: float, color: Color,
+		object_uv: bool, mesh_uv: bool) -> ShaderMaterial:
+	if _photo_shader == null:
+		_photo_shader = load("res://shaders/psx_photo.gdshader")
+	var small := img.duplicate() as Image
+	small.resize(PHOTO_SIZE_PSX, PHOTO_SIZE_PSX, Image.INTERPOLATE_LANCZOS)
+	img.generate_mipmaps()
+	var m := ShaderMaterial.new()
+	m.shader = _photo_shader
+	m.set_shader_parameter("albedo", color)
+	m.set_shader_parameter("tex_scale", 1.0 / meters)
+	m.set_shader_parameter("specular", specular)
+	m.set_shader_parameter("object_uv", object_uv)
+	m.set_shader_parameter("mesh_uv", mesh_uv)
+	m.set_meta("photo_psx", ImageTexture.create_from_image(small))
+	m.set_meta("photo_smooth", ImageTexture.create_from_image(img))
+	if normal:
+		normal.generate_mipmaps(true)   # gemittelte Normalen wieder auf Länge 1
+		m.set_shader_parameter("normal_tex", ImageTexture.create_from_image(normal))
+	if roughness_path != "":
+		var rough := _photo_image(roughness_path)
+		rough.generate_mipmaps()
+		m.set_shader_parameter("roughness_tex", ImageTexture.create_from_image(rough))
+		m.set_shader_parameter("use_roughness", true)
+	_photos.append(m)
+	_set_photo_detail(m, Settings.psx_look)
+	return m
 
 
 ## Alle Fotomaterialien auf die Stufe für den PS1-Look (psx = true) bzw. ohne ihn umstellen.
@@ -298,6 +314,82 @@ static func _gloss_for(level: int) -> float:
 		if absi(l - level) < absi(best - level):
 			best = l
 	return WALLPAPER_GLOSS[best]
+
+
+## Holz mit eigener Faserrichtung für Geo.grain_box (Balkenbett): Fläche 0 Längsholz als Foto (Wood_02, helle Eiche,
+## Faser im Bild waagerecht, über die UVs in Metern), Fläche 1 Hirnholz (end = true, TexGen „wood_end“ – das Set hat
+## keins). tint färbt beide.
+static func wood(end: bool, tint: Color = Color(1, 1, 1)) -> ShaderMaterial:
+	if not end:
+		return photo(WOOD_TEX, 1.0, WOOD_NORMAL, "", 0.0, tint, false, true)
+	var key := "wood_end|%s" % tint.to_html()
+	if not _cache.has(key):
+		var m := psx(tint, "", 1.0, Color.BLACK, 0.0, false)
+		m.set_shader_parameter("albedo_tex", TexGen.get_tex("wood_end"))
+		_cache[key] = m
+	return _cache[key]
+
+
+## Grobe Bohlen (Dachboden, Spielkonzept 4.21): aus dem Längsholz von Wood_02 zusammengesetzt, eine Kachel über
+## PLANK_METERS – PLANK_ROWS Reihen, jede mit zwei Stößen an zufälliger Stelle, je Brett ein anderer Ausschnitt und
+## eine andere Abdunklung (bis PLANK_DARKEN), dunkle Fugen (PLANK_GAP Texel) dazwischen. Die Faser liegt waagerecht
+## wie im Foto, die Projektion von psx_photo legt die Bretter also an Wänden waagerecht, auf Böden und Decken
+## entlang x. tint färbt alles (altes, graues Holz).
+static func planks(tint: Color) -> ShaderMaterial:
+	var key := "planks|%s" % tint.to_html()
+	if _cache.has(key):
+		return _cache[key]
+	var src := _photo_image(WOOD_TEX)
+	var src_normal := _photo_image(WOOD_NORMAL)
+	var size := src.get_width()
+	var row := size / PLANK_ROWS
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var normal := Image.create(size, size, false, Image.FORMAT_RGB8)
+	src.convert(Image.FORMAT_RGBA8)
+	var shade := Image.create(size, row, false, Image.FORMAT_RGBA8)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4021
+	var joints: Array[Vector2i] = []
+	for r in PLANK_ROWS:
+		var start := rng.randi_range(0, size - 1)
+		var cut := rng.randi_range(size * 2 / 5, size * 3 / 5)
+		for piece in 2:
+			var x := start if piece == 0 else start + cut
+			var length := cut if piece == 0 else size - cut
+			var from := Vector2i(rng.randi_range(0, size - 1), rng.randi_range(0, size - row))
+			_blit_wrapped(img, src, from, Vector2i(x, r * row), length, row)
+			_blit_wrapped(normal, src_normal, from, Vector2i(x, r * row), length, row)
+			shade.fill(Color(0.1, 0.08, 0.06, rng.randf_range(0.0, PLANK_DARKEN)))
+			_blit_wrapped(img, shade, Vector2i.ZERO, Vector2i(x, r * row), length, row, true)
+			joints.append(Vector2i(posmod(x, size), r * row))
+	var gap := Color(0.05, 0.04, 0.03)
+	var flat := Color(0.5, 0.5, 1.0)
+	for r in PLANK_ROWS:
+		img.fill_rect(Rect2i(0, r * row, size, PLANK_GAP), gap)
+		normal.fill_rect(Rect2i(0, r * row, size, PLANK_GAP), flat)
+	for j in joints:
+		img.fill_rect(Rect2i(mini(j.x, size - PLANK_GAP), j.y, PLANK_GAP, row), gap)
+		normal.fill_rect(Rect2i(mini(j.x, size - PLANK_GAP), j.y, PLANK_GAP, row), flat)
+	img.convert(Image.FORMAT_RGB8)
+	_cache[key] = _photo_from(img, normal, "", PLANK_METERS, 0.0, tint, false, false)
+	return _cache[key]
+
+
+## Streifen der Länge length (Zeilen h) aus src ab from nach dst ab to kopieren – beide Bilder kacheln waagerecht,
+## über den Rand geht es vorn weiter. blend: mit Alpha darüberlegen statt ersetzen.
+static func _blit_wrapped(dst: Image, src: Image, from: Vector2i, to: Vector2i, length: int, h: int, blend := false) -> void:
+	var w := dst.get_width()
+	var sw := src.get_width()
+	var done := 0
+	while done < length:
+		var s := posmod(from.x + done, sw)
+		var d := posmod(to.x + done, w)
+		var n := mini(length - done, mini(sw - s, w - d))
+		if blend:
+			dst.blend_rect(src, Rect2i(s, from.y, n, h), Vector2i(d, to.y))
+		else:
+			dst.blit_rect(src, Rect2i(s, from.y, n, h), Vector2i(d, to.y))
+		done += n
 
 
 ## Poliertes Metall (shaders/psx_metal.gdshader): spiegelt einen gedachten Raum, so hell wie die Lampen ihn

@@ -17,7 +17,10 @@ const NOISE := {
 	"door":       {"range": 5.0,  "sound": "door",   "volume": 0.5},    ## Tür öffnen/schließen (echter Klang)
 	"rattle":     {"range": 6.0,  "sound": "thud",   "volume": 0.6},    ## abgeschlossene Tür rütteln
 	"unlock":     {"range": 3.0,  "sound": "jingle", "volume": 0.6},    ## Schlüssel klirren
-	"door_burst": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true},  ## Tür vom Monster aufgerissen
+	"door_burst": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true},
+	"door_force": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true},   ## Zimmertür aufgebrochen (6.19)
+	"repair":     {"range": 6.0,  "sound": "thud",   "volume": 0.5},    ## Tür reparieren (6.19)
+	"glass":      {"range": 16.0, "sound": "bang",   "volume": 0.7, "alarm": true},   ## Scheibe des Schlüsselschranks  ## Tür vom Monster aufgerissen
 	"hide":       {"range": 4.0,  "sound": "creak",  "volume": 0.35},   ## in ein Versteck gehen
 	"hide_burst": {"range": 20.0, "sound": "bang",   "volume": 1.0, "alarm": true},  ## Versteck vom Monster aufgerissen
 	"drop":       {"range": 2.0,  "sound": "thud",   "volume": 0.4},    ## Gegenstand ablegen
@@ -44,6 +47,8 @@ const NOISE := {
 	"map":        {"range": 1.0,  "sound": "rustle", "volume": 0.5},    ## Kartenblatt blättern
 	"bag":        {"range": 1.0,  "sound": "rustle", "volume": 0.3},    ## Kleines in die Tasche / heraus (3.2)
 	"can":        {"range": 3.0,  "sound": "hiss",   "volume": 0.5},    ## Getränkedose aufreißen
+	"coffee":     {"range": 6.0,  "sound": "hiss",   "volume": 0.35},   ## Kaffeemaschine mahlt und gurgelt, alle 5 s (3.11)
+	"cup_break":  {"range": 5.0,  "sound": "bang",   "volume": 0.3},    ## Kaffeetasse zerbricht (3.11)
 	"keys":       {"range": 3.0,  "sound": "jingle", "volume": 0.6},    ## Schlüssel an den Bund
 	"handset":    {"range": 2.0,  "sound": "thud",   "volume": 0.15},   ## Hörer abnehmen/auflegen/daneben legen
 	"gasp":       {"range": 10.0, "sound": "gasp",   "volume": 1.0},    ## nach Luft schnappen

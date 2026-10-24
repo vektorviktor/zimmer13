@@ -34,6 +34,10 @@ uniform float thick_shade = 1.0;
 uniform float grain = 0.0;
 // So viel (Anteil der Kameraentfernung) rückt die dicke Mitte für den Tiefentest vor den dünnen Rand
 uniform float thick_lift = 0.002;
+// Je Fleck (Instanz-Werte, RainVeil): im Regen verwaschen 0 … 1 – dünnflüssig (der dicke Kern verläuft), leuchtender
+// statt blasser, kaum durchsichtiger, nass glänzend; Deckkraft des Stücks (Schleier: nach außen blasser)
+instance uniform float wash = 0.0;
+instance uniform float strength = 1.0;
 // Einstellungen → PS1-Look aus = 1 (Settings)
 global uniform float psx_smooth;
 
@@ -51,9 +55,11 @@ void fragment() {
 		discard;
 	}
 	vec3 detail = use_detail ? texture(detail_tex, UV).rgb : vec3(roughness, 1.0, 0.5);
-	ALBEDO = albedo.rgb * tex.rgb * mix(1.0, thick_shade, detail.g) * (1.0 + (detail.b - 0.5) * grain);
-	ALPHA = fade * mix(edge_alpha, 1.0, detail.g);
-	ROUGHNESS = detail.r;
+	float thick = detail.g * (1.0 - 0.6 * wash);
+	ALBEDO = albedo.rgb * tex.rgb * mix(1.0, thick_shade, thick) * (1.0 + (detail.b - 0.5) * grain);
+	ALBEDO = mix(ALBEDO, min(ALBEDO * 1.5, vec3(1.0)), wash * 0.6);
+	ALPHA = fade * strength * mix(edge_alpha, 1.0, thick) * (1.0 - 0.15 * wash);
+	ROUGHNESS = mix(detail.r, 0.06, wash);
 	SPECULAR = specular;
 	vec4 lifted = PROJECTION_MATRIX * vec4(VERTEX * (1.0 - layer_pull - thick_lift * detail.g), 1.0);
 	DEPTH = lifted.z / lifted.w;

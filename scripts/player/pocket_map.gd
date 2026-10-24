@@ -4,17 +4,18 @@ extends Node3D
 ## oberste Blatt ist zu sehen, dahinter stehen die Kanten der übrigen hervor, oben links eine
 ## Büroklammer. Das letzte Blatt listet den Schlüsselbund. Steht senkrecht, Bildseite +Z
 ## (zur Kamera), Norden oben (+Y).
-## Mit dem Notizbuch (3.10) liegen die Blätter darin: Einband dahinter, rechts drei Reiter für die Lesezeichen Karte,
-## Aufgaben und Notizen (NotebookPage). Mausrad/Linksklick blättern durch das ganze Buch, next_bookmark (Rechtsklick)
+## Mit dem Notizbuch (3.10) liegen die Blätter darin: Einband dahinter, rechts Reiter für die Lesezeichen Karte,
+## Aufgaben, Notizen und – sobald man eine Bedrohung gesehen hat – Gesehen (NotebookPage). Mausrad/Linksklick blättern durch das ganze Buch, next_bookmark (Rechtsklick)
 ## springt zum nächsten Lesezeichen auf die Seite, auf der man dort zuletzt war. Kommt etwas Neues dazu, steht das
 ## Lesezeichen auf der letzten Seite. Seiten des Notizbuchs werden erst beim Ansehen gerendert (je eine Textur).
 
 const KEYS := "keys"   ## Seiten-ID des Schlüsselblatts
 const MAX_EDGES := 3
-const BOOKMARK_ORDER := ["map", "tasks", "notes"]
+const BOOKMARK_ORDER := ["map", "tasks", "notes", "threats"]
 const COVER := Color(0.24, 0.12, 0.08)
 
-## Seiten in Blätter-Reihenfolge: Kartenblätter (HotelMap.PAGES), ggf. KEYS, dann "tasks:0" … und "notes:0" …
+## Seiten in Blätter-Reihenfolge: Kartenblätter (HotelMap.PAGES), ggf. KEYS, dann "tasks:0" …, "notes:0" … und
+## "threats:0"
 var pages: Array[String] = []
 var index := 0
 
@@ -30,9 +31,9 @@ var _keys_list: Label3D
 var _note_material: Material
 var _map_pages: Array[String] = []   ## ohne Notizbuch: nur diese (Karte und Schlüssel)
 ## Notizbuch: gesetzte Seiten je Lesezeichen (NotebookPage.paginate), gesehener Stand, zuletzt gewählte Seite
-var _layout := {"tasks": [[]], "notes": [[]]}
-var _revision := {"tasks": -1, "notes": -1}
-var _remember := {"map": "", "tasks": "", "notes": ""}
+var _layout := {"tasks": [[]], "notes": [[]], "threats": [[]]}
+var _revision := {"tasks": -1, "notes": -1, "threats": -1}
+var _remember := {"map": "", "tasks": "", "notes": "", "threats": ""}
 var _owned := false
 var _textures := {}           ## Seiten-ID → Texture2D
 var _materials := {}          ## Seiten-ID → StandardMaterial3D
@@ -95,7 +96,8 @@ func _process(_delta: float) -> void:
 		return
 	var book := Game.notebook
 	var owned := book != null and book.owned
-	if owned != _owned or (owned and (book.tasks_revision != _revision["tasks"] or book.notes_revision != _revision["notes"])):
+	if owned != _owned or (owned and (book.tasks_revision != _revision["tasks"] or book.notes_revision != _revision["notes"]
+			or book.seen_revision != _revision["threats"])):
 		_rebuild()
 
 
@@ -114,6 +116,18 @@ func _rebuild() -> void:
 				_drop_textures(kind)
 			for i in (_layout[kind] as Array).size():
 				pages.append("%s:%d" % [kind, i])
+		# Gesehen: eine Seite mit den Bildern (NotebookPage), erst nach der ersten Bedrohung
+		if book.seen_revision != _revision["threats"]:
+			_revision["threats"] = book.seen_revision
+			var rows: Array = []
+			for id in IconArt.THREAT_ORDER:
+				if book.seen.has(id):
+					rows.append({"id": id, "at": float(book.seen[id])})
+			_layout["threats"] = [rows]
+			_remember["threats"] = "threats:0"
+			_drop_textures("threats")
+		if not book.seen.is_empty():
+			pages.append("threats:0")
 	index = maxi(0, pages.find(current))
 	_refresh()
 
@@ -173,6 +187,8 @@ func _bookmark_of(page_id: String) -> String:
 
 
 func _has_bookmark(id: String) -> bool:
+	if id == "threats":
+		return _owned and not Game.notebook.seen.is_empty()
 	return not _map_pages.is_empty() if id == "map" else _owned
 
 

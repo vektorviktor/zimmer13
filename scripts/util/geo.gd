@@ -203,6 +203,104 @@ static func wall_mesh(x0: float, x1: float, height: float, thick: float, opening
 	return m
 
 
+## Holzbalken als Quader (Mitte im Ursprung) mit UVs, die der Faser folgen: Die Achse grain (0 = x, 1 = y, 2 = z) läuft
+## auf den vier Längsseiten entlang u (tex.x Meter je Kachel längs, tex.y quer), die beiden Stirnseiten zeigen Hirnholz
+## (end_meters je Kachel). Fläche 0 = Längsholz, Fläche 1 = Hirnholz (Mat.wood). offset verschiebt die Maserung, damit
+## nicht jeder Balken gleich aussieht. Flächen höchstens MAX_FACE lang.
+static func grain_box(size: Vector3, grain: int, tex: Vector2, end_meters: float, offset := Vector2.ZERO) -> ArrayMesh:
+	var h := size / 2.0
+	var parts := [[[], [], [], []], [[], [], [], []]]   # Längsholz, Hirnholz: [Ecken, Normalen, UVs, Indizes]
+	for a in 3:
+		for s in [-1.0, 1.0]:
+			var n := Vector3.ZERO
+			n[a] = s
+			var end := a == grain
+			var b := (a + 1) % 3 if end else grain   # u-Achse
+			var c := 3 - a - b                       # v-Achse
+			var out: Array = parts[1 if end else 0]
+			var nu := maxi(1, ceili(size[b] / MAX_FACE - 0.0001))
+			var nv := maxi(1, ceili(size[c] / MAX_FACE - 0.0001))
+			var first: int = out[0].size()
+			for i in nu + 1:
+				for j in nv + 1:
+					var p := Vector3.ZERO
+					p[a] = s * h[a]
+					p[b] = lerpf(-h[b], h[b], float(i) / nu)
+					p[c] = lerpf(-h[c], h[c], float(j) / nv)
+					out[0].append(p)
+					out[1].append(n)
+					var scale := Vector2(end_meters, end_meters) if end else tex
+					out[2].append(Vector2((p[b] + h[b]) / scale.x, (p[c] + h[c]) / scale.y) + offset)
+			for i in nu:
+				for j in nv:
+					var q := first + i * (nv + 1) + j
+					_quad(out[3], out[0], [q, q + nv + 1, q + nv + 2, q + 1], n)
+	var m := ArrayMesh.new()
+	for part in parts:
+		add_surface(m, PackedVector3Array(part[0]), PackedVector3Array(part[1]), PackedInt32Array(part[3]), PackedVector2Array(part[2]))
+	return m
+
+
+## Kasten mit runden Kanten und Ecken (Radius radius, je Viertelkreis 2 × segments Schritte), Mitte im Ursprung, glatt
+## schattiert – Matratze, Kissen, Bettdecke. puff > 0 bläht ihn zur Mitte hin auf (Kissen): Die Höhe wächst dort um
+## diesen Anteil, an den Rändern nicht. Ein gewürfelter Kasten, dessen Ecken auf den gerundeten Kern gezogen werden.
+static func rounded_box(size: Vector3, radius: float, segments: int = 2, puff: float = 0.0) -> ArrayMesh:
+	var h := size / 2.0
+	radius = minf(radius, minf(h.x, minf(h.y, h.z)))
+	var core := h - Vector3.ONE * radius
+	var lines := []   # Rasterlinien je Achse: Rundung, gerade Strecke (≤ MAX_FACE), Rundung
+	for a in 3:
+		var l := []
+		for k in segments:
+			l.append(-h[a] + radius * k / segments)
+		var steps := maxi(1, ceili(2.0 * core[a] / MAX_FACE - 0.0001)) if core[a] > 0.001 else 0
+		for k in steps + 1:
+			l.append(lerpf(-core[a], core[a], float(k) / steps) if steps > 0 else 0.0)
+		for k in range(1, segments + 1):
+			l.append(core[a] + radius * k / segments)
+		lines.append(l)
+	var verts := []
+	var normals := []
+	var indices := []
+	for a in 3:
+		for s in [-1.0, 1.0]:
+			var face_n := Vector3.ZERO
+			face_n[a] = s
+			var b := (a + 1) % 3
+			var c := (a + 2) % 3
+			var us: Array = lines[b]
+			var vs: Array = lines[c]
+			var first := verts.size()
+			for i in us.size():
+				for j in vs.size():
+					var p := Vector3.ZERO
+					p[a] = s * h[a]
+					p[b] = us[i]
+					p[c] = vs[j]
+					var inner := p.clamp(-core, core)
+					var n := (p - inner).normalized() if not (p - inner).is_zero_approx() else face_n
+					var v := inner + n * radius
+					if puff > 0.0:
+						v.y *= 1.0 + puff * maxf(0.0, 1.0 - pow(v.x / h.x, 2.0)) * maxf(0.0, 1.0 - pow(v.z / h.z, 2.0))
+					verts.append(v)
+					normals.append(n)
+			for i in us.size() - 1:
+				for j in vs.size() - 1:
+					var q := first + i * vs.size() + j
+					_quad(indices, verts, [q, q + vs.size(), q + vs.size() + 1, q + 1], face_n)
+	return add_surface(ArrayMesh.new(), PackedVector3Array(verts), PackedVector3Array(normals), PackedInt32Array(indices))
+
+
+## Viereck c (Indizes in verts) als zwei Dreiecke an indices, im Uhrzeigersinn von der Seite normal aus gesehen.
+static func _quad(indices: Array, verts: Array, c: Array, normal: Vector3) -> void:
+	var e1: Vector3 = verts[c[1]] - verts[c[0]]
+	var e2: Vector3 = verts[c[2]] - verts[c[0]]
+	if e1.cross(e2).dot(normal) > 0.0:
+		indices.append_array([c[0], c[2], c[1], c[0], c[3], c[2]])
+	else:
+		indices.append_array([c[0], c[1], c[2], c[0], c[2], c[3]])
+
+
 ## Hängt eine Dreiecksfläche an m an (leere uvs/colors: ohne) und gibt m zurück.
 static func add_surface(m: ArrayMesh, verts: PackedVector3Array, normals: PackedVector3Array, indices: PackedInt32Array,
 		uvs := PackedVector2Array(), colors := PackedColorArray()) -> ArrayMesh:

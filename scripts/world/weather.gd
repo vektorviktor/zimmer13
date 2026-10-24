@@ -81,6 +81,15 @@ var _bell_timer := 0.0
 var _last_hour := -1.0
 
 
+func _ready() -> void:
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
+
+
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): bis zum nächsten Wetterwechsel um dt näher.
+func skip_time(dt: float) -> void:
+	_timer = maxf(0.001, _timer - dt)
+
+
 func setup(builder: LevelBuilder, moon: DirectionalLight3D, sky: ShaderMaterial) -> void:
 	_builder = builder
 	_moon = moon
@@ -120,7 +129,7 @@ func _process(delta: float) -> void:
 	_update_bell(delta)
 
 
-## Wechselt die Uhr über Mitternacht, schlägt die Glocke BELL_STRIKES-mal.
+## Wechselt die Uhr über Mitternacht, schlägt die Glocke BELL_STRIKES-mal – das weckt (Spielkonzept 3.6).
 func _update_bell(delta: float) -> void:
 	if Game.director == null:
 		return
@@ -129,6 +138,8 @@ func _update_bell(delta: float) -> void:
 		_bell_left = BELL_STRIKES
 		_bell_timer = 0.0
 		Game.caption("[Eine Kirchturmglocke schlägt Mitternacht]")
+		if Game.player and Game.player.sleeping:
+			Game.player.wake_up("Die Kirchturmglocke weckt dich.")   # Termine wecken (Spielkonzept 3.6)
 		if Game.tracing:
 			print("[Wetter] Kirchturmglocke: Mitternacht am %d." % Calendar.today())
 	_last_hour = hour

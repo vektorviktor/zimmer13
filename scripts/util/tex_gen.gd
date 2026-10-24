@@ -24,6 +24,8 @@ static func get_tex(id: String) -> Texture2D:
 			img = _hedge()
 		"leaves":
 			img = _leaves()
+		"wood_end":
+			img = _wood_end()
 		_:
 			img = _concrete()
 	var tex := ImageTexture.create_from_image(img)
@@ -275,3 +277,31 @@ static func _leaf(img: Image, c: Vector2, angle: float, a: float, b: float, col:
 			var v := d.dot(dir.orthogonal()) / b
 			if u * u + v * v <= 1.0:
 				img.set_pixel(x, y, Color(col.lightened(0.15 * u).darkened(0.1), 1.0))
+
+
+## Hirnholz für die Stirnseiten (Geo.grain_box, Mat.wood): Jahresringe um ein Mark neben der Mitte in den Farben der
+## hellen Eiche (Wood_02), etwas dunkler als das Längsholz, mit zwei Trockenrissen vom Mark nach außen.
+static func _wood_end() -> Image:
+	var size := 32
+	var img := Image.create(size, size, false, Image.FORMAT_RGB8)
+	var rng := _rng(12)
+	var pith := Vector2(12.5, 20.5)
+	for y in size:
+		for x in size:
+			var d := Vector2(x, y) - pith
+			var r := d.length() + 0.5 * sin(d.angle() * 3.0 + 0.7)
+			var c := _wood_color(fposmod(r / 2.7, 1.0)).darkened(0.12 + rng.randf() * 0.07)
+			img.set_pixel(x, y, c)
+	for angle in [0.4, 3.6]:
+		for k in range(2, 14):
+			var p := pith + Vector2(cos(angle), sin(angle)) * k
+			var px := clampi(int(p.x), 0, size - 1)
+			var py := clampi(int(p.y), 0, size - 1)
+			img.set_pixel(px, py, img.get_pixel(px, py).darkened(0.35))
+	return img
+
+
+## Holzfarbe an der Stelle t (0…1) eines Jahresrings: hell im Frühholz, dunkel im schmalen Spätholz.
+static func _wood_color(t: float) -> Color:
+	var late := smoothstep(0.55, 0.8, t) * (1.0 - smoothstep(0.88, 1.0, t))
+	return Color(0.66, 0.5, 0.27).lerp(Color(0.42, 0.29, 0.13), late * 0.85)

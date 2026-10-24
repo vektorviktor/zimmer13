@@ -1,0 +1,920 @@
+{
+	"households": [
+		{
+			"id": "H01",
+			"surname": "Brandt",
+			"label": "122",
+			"floor": 1,
+			"px": [
+				209,
+				739
+			],
+			"members": [
+				{
+					"name": "Henrik",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "Bastler"
+				},
+				{
+					"name": "Johanna",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "ängstlich"
+				},
+				{
+					"name": "Max",
+					"sex": "m",
+					"child": true,
+					"age": 9
+				},
+				{
+					"name": "Lina",
+					"sex": "f",
+					"child": true,
+					"age": 7
+				}
+			]
+		},
+		{
+			"id": "H02",
+			"surname": "Aydın",
+			"label": "121",
+			"floor": 1,
+			"px": [
+				429,
+				739
+			],
+			"members": [
+				{
+					"name": "Kemal",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "geschäftstüchtig"
+				},
+				{
+					"name": "Elif",
+					"sex": "f",
+					"gen": "young",
+					"archetype": "Plaudertasche"
+				},
+				{
+					"name": "Ella",
+					"sex": "f",
+					"child": true,
+					"age": 10
+				},
+				{
+					"name": "Jan",
+					"sex": "m",
+					"child": true,
+					"age": 7
+				}
+			]
+		},
+		{
+			"id": "H03",
+			"surname": "Lindner",
+			"label": "124",
+			"floor": 1,
+			"px": [
+				49,
+				579
+			],
+			"members": [
+				{
+					"name": "Simon",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "Skeptiker"
+				},
+				{
+					"name": "Klara",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "Bastler"
+				},
+				{
+					"name": "Paul",
+					"sex": "m",
+					"child": true,
+					"age": 11
+				},
+				{
+					"name": "Pia",
+					"sex": "f",
+					"child": true,
+					"age": 8
+				}
+			]
+		},
+		{
+			"id": "H04",
+			"surname": "Krüger",
+			"label": "104",
+			"floor": 1,
+			"px": [
+				1339,
+				739
+			],
+			"members": [
+				{
+					"name": "Peter",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "Griesgram"
+				},
+				{
+					"name": "Vera",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "geschäftstüchtig"
+				},
+				{
+					"name": "Tom",
+					"sex": "m",
+					"child": true,
+					"age": 9
+				}
+			]
+		},
+		{
+			"id": "H05",
+			"surname": "Sommer",
+			"label": "106",
+			"floor": 1,
+			"px": [
+				1499,
+				579
+			],
+			"members": [
+				{
+					"name": "Luis",
+					"sex": "m",
+					"gen": "young",
+					"archetype": "Plaudertasche"
+				},
+				{
+					"name": "Thea",
+					"sex": "f",
+					"gen": "young",
+					"archetype": "ängstlich"
+				},
+				{
+					"name": "Emma",
+					"sex": "f",
+					"child": true,
+					"age": 6
+				}
+			]
+		},
+		{
+			"id": "H06",
+			"surname": "Demir",
+			"label": "129",
+			"floor": 1,
+			"px": [
+				589,
+				359
+			],
+			"members": [
+				{
+					"name": "Yusuf",
+					"sex": "m",
+					"gen": "young",
+					"archetype": "Bastler"
+				},
+				{
+					"name": "Nora",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "Skeptiker"
+				},
+				{
+					"name": "Ben",
+					"sex": "m",
+					"child": true,
+					"age": 10
+				}
+			]
+		},
+		{
+			"id": "H07",
+			"surname": "Roth",
+			"label": "112",
+			"floor": 1,
+			"px": [
+				959,
+				359
+			],
+			"members": [
+				{
+					"name": "Ines",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "Plaudertasche"
+				},
+				{
+					"name": "Felix",
+					"sex": "m",
+					"child": true,
+					"age": 11
+				},
+				{
+					"name": "Ronja",
+					"sex": "f",
+					"child": true,
+					"age": 9
+				}
+			]
+		},
+		{
+			"id": "H08",
+			"surname": "Albers",
+			"label": "123",
+			"floor": 1,
+			"px": [
+				63,
+				725
+			],
+			"members": [
+				{
+					"name": "Wanda",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "Griesgram"
+				},
+				{
+					"name": "Smilla",
+					"sex": "f",
+					"child": true,
+					"age": 7
+				}
+			]
+		},
+		{
+			"id": "H09",
+			"surname": "Berger",
+			"label": "126",
+			"floor": 1,
+			"px": [
+				199,
+				199
+			],
+			"members": [
+				{
+					"name": "Malte",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "ängstlich"
+				},
+				{
+					"name": "Till",
+					"sex": "m",
+					"child": true,
+					"age": 8
+				}
+			]
+		},
+		{
+			"id": "H10",
+			"surname": "Wagner",
+			"label": "007",
+			"floor": 0,
+			"px": [
+				1485,
+				725
+			],
+			"members": [
+				{
+					"name": "Otto",
+					"sex": "m",
+					"gen": "old",
+					"archetype": "Griesgram"
+				},
+				{
+					"name": "Gerda",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "Plaudertasche"
+				}
+			]
+		},
+		{
+			"id": "H11",
+			"surname": "Lorenz",
+			"label": "036",
+			"floor": 0,
+			"px": [
+				63,
+				725
+			],
+			"members": [
+				{
+					"name": "Konrad",
+					"sex": "m",
+					"gen": "old",
+					"archetype": "Bastler"
+				},
+				{
+					"name": "Hedwig",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "ängstlich"
+				}
+			]
+		},
+		{
+			"id": "H12",
+			"surname": "Schulte",
+			"label": "041",
+			"floor": 0,
+			"px": [
+				539,
+				199
+			],
+			"members": [
+				{
+					"name": "Kurt",
+					"sex": "m",
+					"gen": "old",
+					"archetype": "Skeptiker"
+				},
+				{
+					"name": "Irma",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "geschäftstüchtig"
+				}
+			]
+		},
+		{
+			"id": "H13",
+			"surname": "Weiß",
+			"label": "128",
+			"floor": 1,
+			"px": [
+				549,
+				199
+			],
+			"members": [
+				{
+					"name": "Jonas",
+					"sex": "m",
+					"gen": "young",
+					"archetype": "Plaudertasche"
+				},
+				{
+					"name": "Lena",
+					"sex": "f",
+					"gen": "young",
+					"archetype": "Bastler"
+				}
+			]
+		},
+		{
+			"id": "H14",
+			"surname": "Engel",
+			"label": "130",
+			"floor": 1,
+			"px": [
+				149,
+				549
+			],
+			"members": [
+				{
+					"name": "Leon",
+					"sex": "m",
+					"gen": "young",
+					"archetype": "Skeptiker"
+				},
+				{
+					"name": "Jule",
+					"sex": "f",
+					"gen": "young",
+					"archetype": "ängstlich"
+				}
+			]
+		},
+		{
+			"id": "H15",
+			"surname": "Haas",
+			"label": "111",
+			"floor": 1,
+			"px": [
+				999,
+				199
+			],
+			"members": [
+				{
+					"name": "Bastian",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "geschäftstüchtig"
+				},
+				{
+					"name": "Marta",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "Griesgram"
+				}
+			]
+		},
+		{
+			"id": "H16",
+			"surname": "Vogel",
+			"label": "119",
+			"floor": 1,
+			"px": [
+				1309,
+				299
+			],
+			"members": [
+				{
+					"name": "Arne",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "ängstlich"
+				},
+				{
+					"name": "Selma",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "Plaudertasche"
+				}
+			]
+		},
+		{
+			"id": "H17",
+			"surname": "Nowak",
+			"label": "035",
+			"floor": 0,
+			"px": [
+				209,
+				739
+			],
+			"members": [
+				{
+					"name": "Carla",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "Skeptiker"
+				},
+				{
+					"name": "Rosa",
+					"sex": "f",
+					"gen": "mid",
+					"archetype": "Bastler"
+				}
+			]
+		},
+		{
+			"id": "H18",
+			"surname": "Falk",
+			"label": "034",
+			"floor": 0,
+			"px": [
+				429,
+				739
+			],
+			"members": [
+				{
+					"name": "Niklas",
+					"sex": "m",
+					"gen": "young",
+					"archetype": "Griesgram"
+				},
+				{
+					"name": "Greta",
+					"sex": "f",
+					"gen": "young",
+					"archetype": "geschäftstüchtig"
+				}
+			]
+		},
+		{
+			"id": "H19",
+			"surname": "Wiegand",
+			"label": "003",
+			"floor": 0,
+			"px": [
+				1149,
+				739
+			],
+			"members": [
+				{
+					"name": "Edna",
+					"sex": "f",
+					"gen": "old"
+				}
+			],
+			"core": "edna"
+		},
+		{
+			"id": "H20",
+			"surname": "Kaminski",
+			"label": "102",
+			"floor": 1,
+			"px": [
+				1029,
+				739
+			],
+			"members": [
+				{
+					"name": "Bruno",
+					"sex": "m",
+					"gen": "mid"
+				}
+			],
+			"core": "bruno"
+		},
+		{
+			"id": "H21",
+			"surname": "Hellwig",
+			"label": "021",
+			"floor": 0,
+			"px": [
+				1059,
+				549
+			],
+			"members": [
+				{
+					"name": "Mila",
+					"sex": "f",
+					"gen": "young"
+				}
+			],
+			"core": "mila"
+		},
+		{
+			"id": "H22",
+			"surname": "Teske",
+			"label": "001",
+			"floor": 0,
+			"px": [
+				909,
+				739
+			],
+			"members": [
+				{
+					"name": "Marion",
+					"sex": "f",
+					"gen": "mid"
+				}
+			]
+		},
+		{
+			"id": "H23",
+			"surname": "Ruprecht",
+			"label": "014",
+			"floor": 0,
+			"px": [
+				1499,
+				299
+			],
+			"members": [
+				{
+					"name": "Walter",
+					"sex": "m",
+					"gen": "old",
+					"archetype": "Griesgram"
+				}
+			]
+		},
+		{
+			"id": "H24",
+			"surname": "Möller",
+			"label": "029",
+			"floor": 0,
+			"px": [
+				1279,
+				299
+			],
+			"members": [
+				{
+					"name": "Agnes",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "Plaudertasche"
+				}
+			]
+		},
+		{
+			"id": "H25",
+			"surname": "Peters",
+			"label": "033",
+			"floor": 0,
+			"px": [
+				1059,
+				419
+			],
+			"members": [
+				{
+					"name": "Gustav",
+					"sex": "m",
+					"gen": "old",
+					"archetype": "Skeptiker"
+				}
+			]
+		},
+		{
+			"id": "H26",
+			"surname": "Brück",
+			"label": "025",
+			"floor": 0,
+			"px": [
+				1399,
+				519
+			],
+			"members": [
+				{
+					"name": "Liesel",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "ängstlich"
+				}
+			]
+		},
+		{
+			"id": "H27",
+			"surname": "Stein",
+			"label": "023",
+			"floor": 0,
+			"px": [
+				1339,
+				639
+			],
+			"members": [
+				{
+					"name": "Hugo",
+					"sex": "m",
+					"gen": "old",
+					"archetype": "geschäftstüchtig"
+				}
+			]
+		},
+		{
+			"id": "H28",
+			"surname": "Behrens",
+			"label": "008",
+			"floor": 0,
+			"px": [
+				1499,
+				639
+			],
+			"members": [
+				{
+					"name": "Ruth",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "Bastler"
+				}
+			]
+		},
+		{
+			"id": "H29",
+			"surname": "Kranz",
+			"label": "009",
+			"floor": 0,
+			"px": [
+				1499,
+				579
+			],
+			"members": [
+				{
+					"name": "Ulrich",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "Plaudertasche"
+				}
+			]
+		},
+		{
+			"id": "H30",
+			"surname": "Jansen",
+			"label": "117",
+			"floor": 1,
+			"px": [
+				1399,
+				549
+			],
+			"members": [
+				{
+					"name": "Paula",
+					"sex": "f",
+					"gen": "young",
+					"archetype": "Skeptiker"
+				}
+			]
+		},
+		{
+			"id": "H31",
+			"surname": "Graf",
+			"label": "011",
+			"floor": 0,
+			"px": [
+				1499,
+				419
+			],
+			"members": [
+				{
+					"name": "Moritz",
+					"sex": "m",
+					"gen": "young",
+					"archetype": "ängstlich"
+				}
+			]
+		},
+		{
+			"id": "H32",
+			"surname": "Kühn",
+			"label": "026",
+			"floor": 0,
+			"px": [
+				1399,
+				419
+			],
+			"members": [
+				{
+					"name": "Fiona",
+					"sex": "f",
+					"gen": "young",
+					"archetype": "Plaudertasche"
+				}
+			]
+		},
+		{
+			"id": "H33",
+			"surname": "Hartung",
+			"label": "016",
+			"floor": 0,
+			"px": [
+				1399,
+				199
+			],
+			"members": [
+				{
+					"name": "Emil",
+					"sex": "m",
+					"gen": "young",
+					"archetype": "Bastler"
+				}
+			]
+		},
+		{
+			"id": "H34",
+			"surname": "Lange",
+			"label": "006",
+			"floor": 0,
+			"px": [
+				1399,
+				739
+			],
+			"members": [
+				{
+					"name": "Doris",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "Griesgram"
+				}
+			]
+		},
+		{
+			"id": "H35",
+			"surname": "Busch",
+			"label": "019",
+			"floor": 0,
+			"px": [
+				959,
+				359
+			],
+			"members": [
+				{
+					"name": "Theo",
+					"sex": "m",
+					"gen": "young",
+					"archetype": "geschäftstüchtig"
+				}
+			]
+		},
+		{
+			"id": "H36",
+			"surname": "Seidel",
+			"label": "020",
+			"floor": 0,
+			"px": [
+				959,
+				419
+			],
+			"members": [
+				{
+					"name": "Magda",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "Skeptiker"
+				}
+			]
+		},
+		{
+			"id": "H37",
+			"surname": "Haddad",
+			"label": "039",
+			"floor": 0,
+			"px": [
+				199,
+				199
+			],
+			"members": [
+				{
+					"name": "Sami",
+					"sex": "m",
+					"gen": "mid",
+					"archetype": "Bastler"
+				}
+			]
+		},
+		{
+			"id": "H38",
+			"surname": "Fuchs",
+			"label": "043",
+			"floor": 0,
+			"px": [
+				589,
+				359
+			],
+			"members": [
+				{
+					"name": "Zita",
+					"sex": "f",
+					"gen": "old",
+					"archetype": "geschäftstüchtig"
+				}
+			]
+		},
+		{
+			"id": "H39",
+			"surname": "Pohl",
+			"label": "045",
+			"floor": 0,
+			"px": [
+				489,
+				549
+			],
+			"members": [
+				{
+					"name": "Oskar",
+					"sex": "m",
+					"gen": "old",
+					"archetype": "ängstlich"
+				}
+			]
+		}
+	],
+	"special": [
+		{
+			"label": "13",
+			"floor": 0,
+			"px": [
+				1149,
+				639
+			],
+			"kind": "player"
+		},
+		{
+			"label": "017",
+			"floor": 0,
+			"px": [
+				1329,
+				199
+			],
+			"kind": "abandoned"
+		},
+		{
+			"label": "018",
+			"floor": 0,
+			"px": [
+				959,
+				299
+			],
+			"kind": "locked"
+		},
+		{
+			"label": "105",
+			"floor": 1,
+			"px": [
+				1485,
+				725
+			],
+			"kind": "derelict"
+		},
+		{
+			"label": "125",
+			"floor": 1,
+			"px": [
+				79,
+				199
+			],
+			"kind": "derelict"
+		}
+	]
+}

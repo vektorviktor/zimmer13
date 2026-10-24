@@ -95,7 +95,7 @@ func _init() -> void:
 
 func _is_ao(f: String) -> bool:
 	var l := f.to_lower()
-	return l.contains("ambientocclusion") or l.contains("_ao")
+	return l.contains("ambientocclusion") or l.contains("ambient_occlusion") or l.contains("_ao")
 
 
 func _is_color(f: String) -> bool:

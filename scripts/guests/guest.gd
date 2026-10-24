@@ -37,7 +37,18 @@ const STALL_TIME := 10.0
 const STALL_RANGE := 1.5
 ## Schlafen im Bett (Nachtruhe): Füße so weit vom Bettmittelpunkt zum Fußende, so hoch liegt die Matratze
 const BED_FEET := 0.9
-const BED_TOP := 0.53
+## Türen (Spielkonzept 6.19): so weit voraus schaut er auf seinem Weg, ob er durch eine Tür muss; so weit hinter der
+## Tür schließt er sie, so lange (s) bzw. bis so weit wartet er, wenn jemand im Schwenkbereich steht
+const DOOR_LOOKAHEAD := 4.0
+const DOOR_CLOSE_DISTANCE := 1.4
+const DOOR_SWING_CLEAR := 1.15
+const DOOR_GIVE_UP_DISTANCE := 9.0
+const DOOR_GIVE_UP_WAIT := 12.0
+## Liegen: so weit vom Fußende entfernt liegen die Füße (Bettlänge aus dem Plan, HideSpot.bed_size)
+const BED_FOOT_GAP := (BedModel.POST + BedModel.BEAM) / 2.0 + 0.05
+## So weit von der Zimmermitte gilt ein Mitbewohner als zu Hause (für das Licht beim Schlafengehen)
+const HOME_RADIUS := 6.0
+const BED_TOP := BedModel.TOP
 ## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
 const MUD_STEPS := 14
 const BLEED_TIME := 45.0
@@ -91,8 +102,9 @@ const WEAK_FEAR := 0.6
 const HIT_FLEE_LINES := ["Hilfe! Der ist verrückt!", "Lass mich in Ruhe!", "Au! Hör auf!"]
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.SKULL, Item.Kind.SHEET_GHOST, Item.Kind.LIGHT_STRING, Item.Kind.BROOM,
 	Item.Kind.BAT_GARLAND, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.SPIDER, Item.Kind.LEAVES, Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN]
-## Essbare Geschenke (6.17), auch Getränkedosen: isst bzw. trinkt er nach ein paar Sekunden, statt sie heimzutragen
-const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN, Item.Kind.SODA_CAN]
+## Essbare Geschenke (6.17), auch Getränkedosen und Kaffee (3.11, auch an der Kaffeemaschine): isst bzw. trinkt er nach
+## ein paar Sekunden, statt sie heimzutragen
+const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN, Item.Kind.SODA_CAN, Item.Kind.COFFEE]
 ## Kinder (Spielkonzept 6.13): Grundwert an Schwäche für den Lakengeist; so viel Angst bekommen die Eltern,
 ## wenn ihr Kind erschrickt; so oft rennt ein Kind los (Lärm wie Rennen) und so oft lacht es dabei bzw. auf
 ## Feiern; so oft kann es in der Nachtruhe nicht schlafen und so lange bleibt es dann wach; so oft schenkt es
@@ -214,6 +226,10 @@ var _stall_since := 0.0          ## … seit dieser Spielzeit (Director.elapsed)
 var _stall_seen := -10.0         ## letzter Schritt in _move_to (Spielzeit) – wer zwischendurch stand, fängt neu an
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _door_timer := 0.0
+## Zimmertür, durch die er zuletzt gegangen ist – er schließt sie hinter sich (Spielkonzept 6.19)
+var _door_behind: Door = null
+var _door_side := 0.0
+var _door_wait := 0.0
 var _mud := 0
 var _bleeding := 0.0
 var _step_dist := 0.0
@@ -248,6 +264,7 @@ func setup(p_id: String, p_home: Dictionary) -> Guest:
 
 
 func _ready() -> void:
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
 	collision_layer = 128
 	collision_mask = 1 | 16
 	set_meta("interactable", self)
@@ -387,6 +404,27 @@ func _heal() -> void:
 		wake_up()
 
 
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Angst, Rausch, Pausen und Wunden um dt.
+## Was danach fällig ist (geheilt, aufstehen, Herausforderung verstrichen), meldet das nächste Bild.
+func skip_time(dt: float) -> void:
+	if dead:
+		return
+	fear = maxf(0.0, fear - dt * 0.4)
+	drunk = maxf(0.0, drunk - dt / BarTap.SOBER_TIME)
+	chat_cooldown = maxf(0.0, chat_cooldown - dt)
+	challenge_cooldown = maxf(0.0, challenge_cooldown - dt)
+	gift_cooldown = maxf(0.0, gift_cooldown - dt)
+	_hurt_time = maxf(0.0, _hurt_time - dt)
+	if challenge_time > 0.0:
+		challenge_time = maxf(0.001, challenge_time - dt)
+	if wound != "":
+		wound_left = maxf(0.001, wound_left - dt)
+		if wound_bed > 0.0:
+			wound_bed = maxf(0.001, wound_bed - dt)
+	if _awake_left > 0.0:
+		_awake_left = maxf(0.001, _awake_left - dt)
+
+
 ## Gegessen bzw. heimgetragen nach Wounds.GIFT_HEAL … – Geschenke und Besuche lassen ihn schneller heilen.
 func speed_healing(seconds: float) -> void:
 	if wound == "":
@@ -473,7 +511,7 @@ func _gift_step(delta: float) -> void:
 		held = null
 		item.queue_free()   # aufgegessen
 		if randf() < 0.5:
-			say({Item.Kind.SWEETS: "Mmh.", Item.Kind.SODA_CAN: "Ahh, schön kalt."}.get(item.kind, "Das war lecker."))
+			say({Item.Kind.SWEETS: "Mmh.", Item.Kind.SODA_CAN: "Ahh, schön kalt.", Item.Kind.COFFEE: "Jetzt bin ich wach."}.get(item.kind, "Das war lecker."))
 	elif state in [State.IDLE, State.WALK]:
 		_walk_to(_room_point(), State.CARRY_HOME)
 	else:
@@ -493,7 +531,9 @@ func is_orphan() -> bool:
 
 
 func get_prompt(_player: Player) -> String:
-	if dead or (hiding and not in_sickbed()) or state == State.GHOSTED:
+	if dead:
+		return "%s – tot" % display_name if corpse else ""   # Leiche (Ghost, Kürbismann): mit Totenkopf, get_icon
+	if (hiding and not in_sickbed()) or state == State.GHOSTED:
 		return ""
 	if singing:
 		return "%s singt und hört dich nicht [E]" % display_name
@@ -501,6 +541,11 @@ func get_prompt(_player: Player) -> String:
 	if sweets >= 0 and _player.has_kind(Item.Kind.SWEETS):   # Süßes oder Saures an Zimmer 13 (6.13)
 		return "%s eine Süßigkeit geben (%d/%d) [E]" % [display_name, sweets + 1, Social.TRICK_SWEETS_MAX]
 	return "Mit %s sprechen [E]  (%s)" % [display_name, Social.relation_word(relation)]
+
+
+## Aktions-Symbol über dem Hinweis (IconArt): Totenkopf an der Leiche.
+func get_icon(_player: Player) -> String:
+	return "dead" if dead else ""
 
 
 func interact(_player: Player) -> void:
@@ -676,13 +721,56 @@ func door_hang_spot(kind: int) -> Dictionary:
 	var along: Vector3 = home["along"]
 	var c := door.center()
 	var face := Vector3(c.x, door.global_position.y, c.z) - into * (LevelBuilder.T / 2.0)
-	if kind == Item.Kind.LIGHT_STRING:
+	var hung := _deco_near_door().filter(func(i: Item) -> bool: return i.hung)
+	if kind == Item.Kind.LIGHT_STRING and not hung.any(func(i: Item) -> bool: return i.kind == Item.Kind.LIGHT_STRING):
 		return {"point": face + Vector3.UP * (door.height + 0.12), "out": -into, "length": door.width + 1.0}
-	var hung_here := own_deco_near_door().filter(func(i: Item) -> bool: return i.hung).size()
+	var hung_here := hung.size()
 	var side := 1.0 if (hung_here + id.length()) % 2 == 0 else -1.0
 	var up: float = {Item.Kind.SHEET_GHOST: 2.15, Item.Kind.BAT_GARLAND: 2.25, Item.Kind.SPIDER: 2.35, Item.Kind.BROOM: 0.0}.get(kind, 1.9)
 	var beside := door.width / 2.0 + (0.75 if kind == Item.Kind.BAT_GARLAND else 0.45)
 	return {"point": face + along * side * beside + Vector3.UP * up, "out": -into}
+
+
+## Deko vor der eigenen Tür, egal von wem (Mitbewohner schmücken dieselbe Tür, 6.20).
+func _deco_near_door() -> Array[Item]:
+	var result: Array[Item] = []
+	var door_front: Vector3 = home["door_front"]
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		var flat := Vector2(item.global_position.x - door_front.x, item.global_position.z - door_front.z)
+		if item.owner_id != "" and not item.is_held and flat.length() < 2.5 and absf(item.global_position.y - door_front.y) < 3.0:
+			result.append(item)
+	return result
+
+
+## Wohnt other im selben Haushalt (HAUSHALTE.md, Spielkonzept 6.20)?
+func housemate_of(other: Guest) -> bool:
+	return other != null and other != self and profile.has("household") \
+		and String(other.profile.get("household", "")) == String(profile["household"])
+
+
+## Erster lebender Erwachsener des Zimmers (Social.household_lead): er schmückt die Tür und kümmert sich um die Lampen.
+func is_household_lead() -> bool:
+	return Game.social == null or Game.social.household_lead(home["no"]) == self
+
+
+## Ein anderer aus dem Zimmer ist wach und zu Hause.
+func _housemate_awake() -> bool:
+	if Game.social == null:
+		return false
+	var c: Vector3 = home["center"]
+	for g in Game.social.guests:
+		if g != self and not g.dead and g.home["no"] == home["no"] and not g.is_asleep() \
+				and absf(g.global_position.y - c.y) < 1.5 and g.global_position.distance_to(c) < HOME_RADIUS:
+			return true
+	return false
+
+
+## Gehört der Gegenstand jemandem aus demselben Zimmer?
+func _housemate_item(item: Item) -> bool:
+	if item.owner_id == "" or item.owner_id == "player":
+		return false
+	return String(GuestProfiles.get_profile(item.owner_id).get("room", "")) == String(home["no"])
 
 
 func own_deco_near_door() -> Array[Item]:
@@ -704,7 +792,7 @@ func die(cause: String = "monster") -> void:
 		return
 	dead = true
 	if hiding:
-		hiding.occupant = null
+		hiding.release(self)
 		hiding = null
 	_drop_held()
 	_release_hide_spot()
@@ -752,6 +840,17 @@ func _lie_down() -> void:
 	set_meta("sight_key", "corpse:" + id)
 	set_meta("sight_kind", "corpse")
 	add_to_group("shock_sights")
+	# Der Körper hat keine Kollision mehr – damit man die Leiche ansehen kann („… – tot“), ein flacher Kasten auf
+	# Ebene 4 (Gegenstände, Schalter: hält nichts auf, nur der Interaktionsstrahl trifft ihn), so lang wie der Gast
+	if not has_node("CorpseTouch"):
+		var touch := StaticBody3D.new()
+		touch.name = "CorpseTouch"
+		touch.collision_layer = 4
+		touch.collision_mask = 0
+		touch.set_meta("interactable", self)
+		var length := eye_height() + 0.15
+		Geo.add_box_shape(touch, Vector3(0.5, 0.25, length), Vector3(0, 0.13, length / 2.0))
+		add_child(touch)
 
 
 # --- Ablauf ---------------------------------------------------------------------
@@ -1146,16 +1245,23 @@ func _fall_asleep() -> void:
 	_to_bed = false
 	_set_room_light(wound_bed > 0.0 and not Game.social.sleep_active)   # verletzt liegt er nicht im Dunkeln (6.17)
 	state = State.SLEEP
-	for spot in home["spots"]:
-		var bed := spot as HideSpot
-		if bed.type == HideSpot.Type.BED and bed.occupant == null:
+	# Ein freies Bett – im Doppelbett liegt auch ein Zweiter (Haushalte, Spielkonzept 6.20)
+	for second in [false, true]:
+		for spot in home["spots"]:
+			var bed := spot as HideSpot
+			if bed.type != HideSpot.Type.BED or (bed.occupant != null if not second else not bed.takes_partner()):
+				continue
 			hiding = bed
-			bed.occupant = self
+			if second:
+				bed.partner = self
+			else:
+				bed.occupant = self
 			bed.set_checked(false)
 			_collider.disabled = true
 			velocity = Vector3.ZERO
-			var along := bed.global_transform.basis.x.normalized()
-			global_position = bed.global_position + along * BED_FEET + Vector3.UP * BED_TOP
+			var along := bed.global_transform.basis.x.normalized() * -bed.head_x   # zum Fußende
+			var across := bed.global_transform.basis.z.normalized() * bed.sleep_offset(second)
+			global_position = bed.global_position + along * (bed.bed_size.x / 2.0 - BED_FOOT_GAP) + across + Vector3.UP * BED_TOP
 			rotation.y = atan2(-along.x, -along.z)   # lokale +Z (Kopf beim Liegen) zum Kissen
 			return
 
@@ -1287,7 +1393,10 @@ func _arrive() -> void:
 		State.SEARCH:
 			Game.social.search.on_arrived(self)   # Deko-Suche (5.9)
 		State.EAT:
-			Game.kitchen.on_arrived(self)   # Kürbissuppe (3.8)
+			if Game.coffee and Game.coffee.expects(self):
+				Game.coffee.on_arrived(self)   # Kaffee am Morgen (3.11)
+			else:
+				Game.kitchen.on_arrived(self)   # Kürbissuppe (3.8)
 		State.HIDE_GO:
 			if _hide_spot and _hide_spot.occupant == null:
 				_enter_hide(_hide_spot)
@@ -1312,7 +1421,7 @@ func _at_home() -> void:
 	if profile["carver"] and int(stock.get(Item.Kind.PUMPKIN, 0)) > 0:
 		stock[Item.Kind.PUMPKIN] = int(stock[Item.Kind.PUMPKIN]) - 1
 		stock[Item.Kind.CARVED_PUMPKIN] = int(stock.get(Item.Kind.CARVED_PUMPKIN, 0)) + 1
-	if placed.size() < 2 and held == null:
+	if placed.size() < 2 and held == null and is_household_lead():   # eine Tür je Haushalt (6.20)
 		for kind in DECO_KINDS:
 			if int(stock.get(kind, 0)) > 0:
 				stock[kind] = int(stock[kind]) - 1
@@ -1341,6 +1450,8 @@ func _home_curtains() -> Array[HotelWindow]:
 
 
 func _set_room_light(on: bool) -> void:
+	if not on and _housemate_awake():   # wer schlafen geht, lässt den Wachen das Licht (6.20)
+		return
 	var sw := LightSwitch.find(get_tree(), home["no"])
 	if sw:
 		sw.set_on(on)
@@ -1351,6 +1462,8 @@ func _check_lights() -> void:
 	for win in _home_curtains():
 		win.set_closed(fear >= 30.0 or remembers("ghost"))
 	_set_room_light(true)
+	if not is_household_lead():   # Birnen und Beschwerden: einer je Haushalt (6.20)
+		return
 	for lamp in _home_lamps():
 		if lamp.has_bulb and not lamp.bulb_broken:
 			continue
@@ -1391,7 +1504,7 @@ func _try_steal() -> bool:
 	var best_dist := INF
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
-		if item.is_held or item.deco_strength <= 0.0 or item.owner_id == id:
+		if item.is_held or item.deco_strength <= 0.0 or item.owner_id == id or _housemate_item(item):
 			continue
 		if hostile and item.owner_id != "player":
 			continue
@@ -1426,6 +1539,8 @@ func _bulb_to_steal(hostile: bool) -> Lamp:
 		var lamp := node as Lamp
 		if not lamp.has_bulb or lamp.bulb_broken or lamp.room_id == home["no"] or not lamp.has_socket():
 			continue
+		if Game.social.behind_lock(lamp.room_id, self):
+			continue   # fremdes Zimmer, abgeschlossen (6.19)
 		if lamp.room_id in ["lobby", "aufzug"]:
 			continue   # Lobbydecke – zu hoch; Aufzugskabine – Gäste fahren (noch) nicht mit (7.4)
 		if hostile and lamp.room_id != LevelBuilder.PLAYER_ROOM:
@@ -1846,8 +1961,10 @@ func take_cover() -> void:
 func _shut_in() -> void:
 	_flee_home = false
 	var door: Door = home.get("door")
-	if door and door.is_open:
-		door.set_open(false, false, false, self)
+	if door and door.is_open and not door.broken:
+		door.set_open(false, false, false, self)   # in Panik: nicht leise (6.19)
+	if door and not door.broken:
+		door.locked = true
 	_set_idle(randf_range(20.0, 40.0))
 
 
@@ -1902,7 +2019,7 @@ func _leave_hide() -> void:
 	if spot == null:
 		return
 	hiding = null
-	spot.occupant = null
+	spot.release(self)
 	spot.on_exit()
 	visible = true
 	_collider.disabled = false
@@ -2089,14 +2206,94 @@ func _open_doors(delta: float) -> void:
 	if _door_timer > 0.0:
 		return
 	_door_timer = 0.15
+	_close_behind()
 	# Nur wer geht, macht auf – wer steht (wartet, klopft, ist gerade geladen), lässt die Tür neben sich zu
 	if Vector2(velocity.x, velocity.z).length_squared() < 0.01:
 		return
 	for door: Door in Door.near(global_position):
-		if door.is_open or door.locked:
+		if door.is_open or door.broken:
 			continue
-		if door.center().distance_to(global_position + Vector3.UP) < 1.2:
-			door.set_open(true, false, false, self)
+		# Nur eine Tür, durch die der eigene Weg führt (Spielkonzept 6.19) – nicht jede, an der er vorbeigeht
+		if door.center().distance_to(global_position + Vector3.UP) >= 1.2 or not _path_through(door):
+			continue
+		if door.locked:
+			if door.room_no == "" or door.room_no != String(home["no"]):
+				continue   # abgeschlossen, und es ist nicht sein Zimmer
+			door.locked = false
+		door.set_open(true, false, false, self)
+		if door.room_no != "" and door.room_no != LevelBuilder.PLAYER_ROOM:
+			_door_behind = door   # Zimmertür: hinter sich wieder schließen
+			_door_side = _side_of(door)
+			_door_wait = 0.0
+
+
+## Führt der eigene Weg durch diese Tür? Ein Wegpunkt der nächsten Meter (oder das Ziel) liegt auf der anderen Seite,
+## in der Breite der Öffnung.
+func _path_through(door: Door) -> bool:
+	var side := _side_of(door)
+	var path := agent.get_current_navigation_path()
+	var points: Array[Vector3] = []
+	for k in range(agent.get_current_navigation_path_index(), mini(agent.get_current_navigation_path_index() + 6, path.size())):
+		points.append(path[k])
+	points.append(agent.target_position)
+	var c := door.center()
+	var across := door.global_transform.basis.x.normalized()
+	var normal := door.global_transform.basis.z.normalized()
+	for p in points:
+		if p.distance_to(global_position) > DOOR_LOOKAHEAD and p != agent.target_position:
+			break
+		var d := normal.dot(p - c)
+		if signf(d) != signf(side) and absf(d) > 0.15 and absf(across.dot(p - c)) < door.width / 2.0 + 0.8 \
+				and p.distance_to(c) < DOOR_LOOKAHEAD:
+			return true
+	return false
+
+
+## Seite der Tür, auf der er steht (Vorzeichen entlang der Türnormalen).
+func _side_of(door: Door) -> float:
+	return door.global_transform.basis.z.normalized().dot(global_position - door.center())
+
+
+## Die Zimmertür, durch die er gegangen ist, wieder schließen, sobald er durch ist und niemand im Schwenkbereich steht –
+## leise; in Panik knallt er sie zu. Die eigene schließt er auch ab (6.19).
+func _close_behind() -> void:
+	var door := _door_behind
+	if door == null:
+		return
+	if not is_instance_valid(door) or not door.is_open or door.broken or dead:
+		_door_behind = null
+		return
+	var c := door.center()
+	var flat := Vector2(global_position.x - c.x, global_position.z - c.z).length()
+	if flat < DOOR_CLOSE_DISTANCE:
+		return
+	if flat > DOOR_GIVE_UP_DISTANCE or _door_wait > DOOR_GIVE_UP_WAIT:
+		_door_behind = null   # zu weit weg oder zu lange gewartet – dann bleibt sie eben offen
+		return
+	if _someone_in_swing(door):
+		_door_wait += 0.15
+		return
+	var slam := fear >= 60.0
+	door.set_open(false, slam, not slam, self)
+	if door.room_no == String(home["no"]):
+		door.locked = true
+	_door_behind = null
+
+
+func _someone_in_swing(door: Door) -> bool:
+	var c := door.center()
+	var near := func(n: Node3D) -> bool:
+		return Vector2(n.global_position.x - c.x, n.global_position.z - c.z).length() < DOOR_SWING_CLEAR \
+			and absf(n.global_position.y + 1.0 - c.y) < 1.5
+	if Game.player and near.call(Game.player):
+		return true
+	for g in Game.social.guests if Game.social else []:
+		if g != self and not g.dead and near.call(g):
+			return true
+	for cat in get_tree().get_nodes_in_group("cats"):
+		if near.call(cat):
+			return true
+	return false
 
 
 func _move_to(point: Vector3, speed: float, delta: float) -> bool:

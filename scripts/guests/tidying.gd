@@ -1,8 +1,8 @@
 class_name Tidying
 extends Node
-## Flecken und Putzen (Spielkonzept 6.13, 5.8, 2026-10-22): Kürbismatsch, große Wachsflecken und Ruß bleiben nicht
-## unbemerkt. Wer so etwas vor der eigenen Tür sieht, beschwert sich (einmal je Fleck). Ordentliche Gäste (TIDY_SHARE,
-## fest nach Gast-ID, nur Erwachsene) putzen: Wachs und Ruß wischen sie weg (TraceMark.wipe); Kürbismatsch sammeln sie
+## Flecken und Putzen (Spielkonzept 6.13, 5.8, 2026-10-22): Kürbismatsch, große Wachsflecken, Ruß und Kaffeeflecken
+## (3.11) bleiben nicht unbemerkt. Wer so etwas vor der eigenen Tür sieht, beschwert sich (einmal je Fleck). Ordentliche Gäste (TIDY_SHARE,
+## fest nach Gast-ID, nur Erwachsene) putzen: Wachs, Ruß und Kaffee wischen sie weg (TraceMark.wipe); Kürbismatsch sammeln sie
 ## auf – vom großen Spritzer eine Hand voll (Item.split_handful) – und bringen ihn in die Küche. Ist der Herd frei,
 ## kochen sie daraus Suppe (Stove.claim_cook, dann wie ein kochender Gast), sonst legen sie ihn dort ab.
 ## Läuft über den Besuchsablauf (start_visit, Social.on_visit_arrived fragt on_arrived). Kind von Social:
@@ -16,8 +16,9 @@ const SEE_RANGE := 8.0
 const TIDY_SHARE := 0.4
 const TIDY_RANGE := 14.0
 const TIDY_GAP := 15.0
-const MESS_TRACES := ["wax_splash", "soot"]
+const MESS_TRACES := ["wax_splash", "soot", "coffee"]
 const COMPLAIN_MUSH := ["Wer schmeißt hier mit Kürbissen?!", "Igitt – Kürbismatsch vor meiner Tür.", "Das war bestimmt wieder eins von den Kindern …"]
+const COMPLAIN_COFFEE := ["Wer hat hier seinen Kaffee verschüttet?", "Kaffee vor meiner Tür – und keiner wischt es weg.", "Scherben und Kaffee … na toll."]
 const COMPLAIN_WAX := ["Überall Wachs vor meiner Tür … wer war das?", "Was ist das denn für eine Sauerei?", "Hat hier jemand gezündelt?!"]
 const CLEAN_LINES := ["Das mach ich mal weg.", "So kann das nicht bleiben.", "Na, dann putz ich das eben."]
 const KITCHEN_LINES := ["Daraus wird noch eine Suppe.", "Ab in die Küche damit."]
@@ -66,7 +67,7 @@ func _process(delta: float) -> void:
 				break
 
 
-## Kürbismatsch am Boden, große Wachsflecken und Ruß.
+## Kürbismatsch am Boden, große Wachsflecken, Ruß und Kaffeeflecken.
 func _messes() -> Array[Node3D]:
 	var result: Array[Node3D] = []
 	for node in get_tree().get_nodes_in_group("items"):
@@ -93,9 +94,10 @@ func _complaints(mess: Node3D) -> void:
 				or not Senses.clear_line(g.get_world_3d(), g.global_position + Vector3.UP * g.eye_height(), mess.global_position + Vector3.UP * 0.1, g):
 			continue
 		mess.set_meta("complained", true)
-		g.say((COMPLAIN_MUSH if mess is Item else COMPLAIN_WAX).pick_random())
+		var coffee := mess is TraceMark and (mess as TraceMark).kind == "coffee"
+		g.say((COMPLAIN_MUSH if mess is Item else (COMPLAIN_COFFEE if coffee else COMPLAIN_WAX)).pick_random())
 		if Game.tracing:
-			print("[Flecken] %s beschwert sich über %s vor der Tür" % [g.display_name, "Kürbismatsch" if mess is Item else "Wachs/Ruß"])
+			print("[Flecken] %s beschwert sich über %s vor der Tür" % [g.display_name, "Kürbismatsch" if mess is Item else "Wachs/Ruß/Kaffee"])
 		return
 
 

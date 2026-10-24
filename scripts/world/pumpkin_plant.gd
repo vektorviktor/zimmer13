@@ -42,6 +42,7 @@ func _ready() -> void:
 	collision_mask = 0
 	set_meta("interactable", self)
 	add_to_group("pumpkin_plants")
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
 	var leaf_mat := Mat.psx(Color(0.18, 0.32, 0.1))
 	for i in 4:
 		var leaf := Geo.mesh(self, Geo.box(Vector3(0.4, 0.03, 0.18)), leaf_mat, Vector3(0, 0.03 + i * 0.012, 0))
@@ -76,6 +77,19 @@ func _process(delta: float) -> void:
 	if _timer >= stage_time():
 		_timer = 0.0
 		stage += 1
+		_update_visual()
+
+
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): so viele Stufen, wie in dt wachsen.
+func skip_time(dt: float) -> void:
+	if stage >= RIPE or frozen():
+		return
+	_timer += dt
+	var before := stage
+	while _timer >= stage_time() and stage < RIPE:
+		_timer -= stage_time()
+		stage += 1
+	if stage != before:
 		_update_visual()
 
 

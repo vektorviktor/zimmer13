@@ -31,7 +31,8 @@ extends RigidBody3D
 ## map_pages, keyring; Spielkonzept 3.2).
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
-	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH }
+	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
+	PUMPKIN_HEAD }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -50,6 +51,9 @@ const PRICES := {
 	Kind.BAT_GARLAND: 4, Kind.SPIDER: 2, Kind.SKULL: 8, Kind.BROOM: 7, Kind.BED_SHEET: 1, Kind.ROAST_PUMPKIN: 5,
 	Kind.SODA_CAN: 1,
 	Kind.PUMPKIN_MUSH: 0,
+	Kind.CROWBAR: 6, Kind.TOOLBOX: 8,
+	Kind.COFFEE: 1,
+	Kind.PUMPKIN_HEAD: 0,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
@@ -74,8 +78,17 @@ const LEAF_COLORS: Array[Color] = [Color(0.75, 0.35, 0.08), Color(0.6, 0.15, 0.0
 const JOLT_UNREST := 0.8        ## ab dieser Unruhe kann der Zierkürbis aus den Händen fallen
 ## Zerplatzen (Spielkonzept 5.8): diese Arten, ab so viel Fallhöhe (m); als Aufprall zählt, wenn ein Gegenstand mit
 ## mindestens IMPACT_SPEED (m/s) fällt und auf einen Schlag mehr als die Hälfte davon verliert
-const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN]
+const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.BULB, Kind.COFFEE]
 const BURST_HEIGHT := 3.0
+## Kerzen, Glühbirnen und Kaffeetassen zerbrechen schon aus geringerer Höhe (m; Spielkonzept 5.11, 7.3, 3.11)
+const BREAK_HEIGHT := {Kind.CANDLE: 2.0, Kind.BULB: 1.5, Kind.COFFEE: 1.0}
+## Kaffeetasse (Spielkonzept 3.11): Porzellan und Kaffee
+const CUP_COLOR := Color(0.93, 0.92, 0.88)
+const COFFEE_COLOR := Color(0.18, 0.09, 0.04)
+## Scherben einer platzten Glühbirne: so viele (von, bis), Glas und Gewinde
+const BULB_SHARDS := Vector2i(5, 8)
+const BULB_GLASS := Color(0.9, 0.93, 0.97)
+const BULB_SOCKET := Color(0.62, 0.56, 0.42)
 const IMPACT_SPEED := 3.0
 ## Wurf: als Aufprall zählt, wenn er mit mindestens so viel Tempo (m/s) fliegt und auf einen Schlag die Hälfte verliert
 const THROW_IMPACT := 1.5
@@ -201,6 +214,15 @@ var _last_speed := 0.0   ## Wurf: Tempo im letzten Physikschritt
 var _mush_mat: ShaderMaterial
 ## Kürbismatsch: hier wurden die Flecken zuletzt auf die Fläche gelegt (_lay_mush; INF = noch nicht)
 var _laid_at := Vector3.INF
+## Kürbismatsch gerade zerplatzt (burst): beim ersten Hinlegen breitet er sich aus (TraceMark.SPREAD „mush“) – nicht
+## aus dem Spielstand und nicht nach dem Ablegen; der Tween dazu
+var mush_fresh := false
+## Kürbismatsch draußen im Regen verwaschen (RainVeil): 0 … 1, bei 1 wird er zum Schleier und ist weg – im Zusatzfeld
+## als „w=…“ (die Zahlen davor liest _build der Reihe nach, „w=“ ist keine)
+var mush_wash := 0.0
+var _wash_timer := 0.0
+var _mush_outdoor := -1   ## -1 = noch nicht geprüft, sonst 0/1 (je Ablageort, _lay_mush setzt zurück)
+var _grow_tween: Tween
 
 
 static func create(p_kind: Kind, extra: String = "") -> Item:
@@ -214,6 +236,7 @@ static func create(p_kind: Kind, extra: String = "") -> Item:
 
 func _ready() -> void:
 	add_to_group("items")
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
 	set_meta("interactable", self)
 	set_physics_process(kind in BURST_KINDS)
 
@@ -226,6 +249,7 @@ func _process(delta: float) -> void:
 	if _mush_mat and not is_held:
 		_settle_mush()
 		_rot()
+		_wash_mush(delta)
 	if rot_at < INF:
 		_rot_timer -= delta
 		if _rot_timer <= 0.0:
@@ -238,8 +262,19 @@ func _process(delta: float) -> void:
 		_extinguish()
 
 
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Kerzen und Kürbislichter brennen weiter
+## (Fäulnis hängt an der Uhr, Item.rot_at).
+func skip_time(dt: float) -> void:
+	if lit and burn_time > 0.0:
+		burn_time = maxf(0.001, burn_time - dt)   # ausgehen lässt sie das nächste Bild
+	if _mush_mat:
+		_wash_timer += dt   # Kürbismatsch verwäscht im Regen weiter (das nächste Bild rechnet es nach)
+
+
 ## Beschriftung eines Schlüssels am Bund
 static func key_label(id: String) -> String:
+	if id == KeyCabinet.KEY_ID:
+		return "Generalschlüssel"
 	return "Schlüssel" if id == "" else "Schlüssel %s" % id.replace("zimmer_", "Zimmer ")
 
 
@@ -333,7 +368,7 @@ func create_extra() -> String:
 		Kind.MINI_PUMPKIN:
 			return _rot_extra()
 		Kind.PUMPKIN_MUSH:
-			return mush_extra(variety, mushed_at, mush_size, portions)
+			return mush_extra(variety, mushed_at, mush_size, portions) + (",w=%.3f" % mush_wash if mush_wash > 0.0 else "")
 		Kind.CARVED_PUMPKIN:
 			var parts: Array[String] = []
 			if variety != PumpkinKinds.DEFAULT:
@@ -383,6 +418,14 @@ func get_prompt(player: Player) -> String:
 	if owner_id != "" and owner_id != "player" and Game.social:
 		return "%s %s [E]  – gehört %s" % [display_name, verb, Game.social.guest_name(owner_id)]
 	return "%s %s [E]" % [display_name, verb]
+
+
+## Aktions-Symbol über dem Hinweis (IconArt): Kaffee; Kerze hineinstellen und Zierkürbis in die Hände = Schmücken.
+func get_icon(player: Player) -> String:
+	var held := player.held_kind()
+	if _takes_candle(held) or _takes_mini_pumpkin(held):
+		return "decorate"
+	return "coffee" if kind == Kind.COFFEE else ""
 
 
 func interact(player: Player) -> void:
@@ -734,6 +777,11 @@ func _apply_pose() -> void:
 		Kind.BROOM:
 			# in der Hand schräg vor dem Körper
 			_swing.rotation = Vector3(0.5, 0.3, 0.0) if is_held else Vector3.ZERO
+		Kind.CROWBAR:
+			# in der Hand aufrecht, Klaue oben, leicht nach vorn geneigt
+			_swing.rotation = Vector3(0.0, 0.0, PI / 2.0 - 0.25) if is_held else Vector3.ZERO
+			_swing.position = Vector3(0, 0.05, 0) if is_held else Vector3.ZERO
+			_swing.scale = Vector3.ONE * (0.6 if is_held else 1.0)
 
 
 ## Aufgehängt: leichtes Wehen, bei Unruhe (Monster, Lakengeist) stärker und gleichmäßiger.
@@ -1088,6 +1136,58 @@ func _build(extra: String) -> void:
 			Geo.mesh(self, Geo.cylinder(0.0335, 0.022, 8), Mat.psx(Color(0.95, 0.93, 0.85)), Vector3(0, 0.06, 0))   # Banderole
 			Geo.mesh(self, Geo.cylinder(0.028, 0.012, 8), tin, Vector3(0, 0.116, 0))   # Deckel
 			Geo.mesh(self, Geo.box(Vector3(0.014, 0.003, 0.022)), tin, Vector3(0, 0.123, 0.006))   # Lasche
+		Kind.COFFEE:
+			# Tasse Kaffee (Spielkonzept 3.11): überdeckt die Müdigkeit eine Weile – nur in der Hand, zerbricht leicht
+			display_name = "Tasse Kaffee"
+			mass = 0.3
+			size = Vector3(0.1, 0.09, 0.08)
+			var china := Mat.psx(CUP_COLOR)
+			Geo.mesh(self, Geo.cylinder(0.038, 0.085, 8), china, Vector3(0, 0.0425, 0))
+			Geo.mesh(self, Geo.cylinder(0.033, 0.004, 8), Mat.psx(COFFEE_COLOR), Vector3(0, 0.084, 0))
+			Geo.mesh(self, Geo.box(Vector3(0.022, 0.05, 0.01)), china, Vector3(0.05, 0.045, 0))   # Henkel
+			Geo.mesh(self, Geo.box(Vector3(0.016, 0.01, 0.01)), china, Vector3(0.042, 0.068, 0))
+			Geo.mesh(self, Geo.box(Vector3(0.016, 0.01, 0.01)), china, Vector3(0.042, 0.022, 0))
+		Kind.PUMPKIN_HEAD:
+			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
+			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)
+			display_name = "Kopf des Kürbismanns"
+			mass = 2.0
+			size = Vector3(0.18, 0.24, 0.22)
+			var skin := Mat.psx(Color(0.4, 0.29, 0.19))
+			var hollow := Mat.psx(Color(0.05, 0.035, 0.03))
+			var skull := Geo.mesh(self, Geo.sphere(0.095, 0.2, 9, 5), skin, Vector3(0, 0.13, -0.005))
+			skull.scale = Vector3(0.92, 1.05, 1.1)
+			Geo.mesh(self, Geo.box(Vector3(0.1, 0.07, 0.1)), skin, Vector3(0, 0.045, 0.035))   # eingefallene Wangen, Kiefer
+			Geo.mesh(self, Geo.sphere(0.1, 0.11, 8, 3), Mat.psx(Color(0.13, 0.09, 0.06)), Vector3(0, 0.18, -0.02))   # Haar
+			for side in [-1.0, 1.0]:
+				var socket := Geo.mesh(self, Geo.sphere(0.024, 0.04, 6, 3), hollow, Vector3(side * 0.035, 0.125, 0.085))
+				socket.scale = Vector3(1.0, 0.8, 0.5)
+			Geo.mesh(self, Geo.box(Vector3(0.02, 0.03, 0.02)), hollow, Vector3(0, 0.09, 0.098))   # Nase
+			Geo.mesh(self, Geo.box(Vector3(0.06, 0.012, 0.01)), hollow, Vector3(0, 0.052, 0.086))   # Mund
+		Kind.CROWBAR:
+			# Brecheisen (Spielkonzept 6.19): Zimmertüren aufbrechen – laut, und wer es sieht, erzählt es weiter
+			display_name = "Brecheisen"
+			mass = 1.6
+			size = Vector3(0.62, 0.05, 0.06)
+			_swing = Node3D.new()   # in der Hand aufrecht (_apply_held_pose)
+			add_child(_swing)
+			var steel := Mat.psx(Color(0.62, 0.12, 0.1))
+			Geo.mesh(_swing, Geo.box(Vector3(0.56, 0.022, 0.022)), steel, Vector3(-0.02, 0.011, 0))
+			var claw := Geo.mesh(_swing, Geo.box(Vector3(0.08, 0.02, 0.022)), steel, Vector3(0.27, 0.03, 0))
+			claw.rotation.z = 0.9
+			Geo.mesh(_swing, Geo.box(Vector3(0.03, 0.006, 0.03)), Mat.psx(Color(0.3, 0.3, 0.32)), Vector3(-0.3, 0.011, 0))
+		Kind.TOOLBOX:
+			# Werkzeugkasten (6.19): aufgebrochene Türen reparieren
+			display_name = "Werkzeugkasten"
+			mass = 3.0
+			size = Vector3(0.44, 0.24, 0.2)
+			var paint := Mat.psx(Color(0.7, 0.15, 0.1))
+			Geo.mesh(self, Geo.box(Vector3(0.44, 0.18, 0.2)), paint, Vector3(0, 0.09, 0))
+			Geo.mesh(self, Geo.box(Vector3(0.44, 0.01, 0.21)), Mat.psx(Color(0.4, 0.08, 0.06)), Vector3(0, 0.15, 0))
+			var grip := Mat.psx(Color(0.15, 0.15, 0.16))
+			Geo.mesh(self, Geo.box(Vector3(0.2, 0.02, 0.025)), grip, Vector3(0, 0.235, 0))
+			for x in [-0.1, 0.1]:
+				Geo.mesh(self, Geo.box(Vector3(0.02, 0.05, 0.025)), grip, Vector3(x, 0.205, 0))
 		Kind.MINI_PUMPKIN:
 			display_name = "Zierkürbis"
 			deco_strength = 4.0
@@ -1107,6 +1207,9 @@ func _build(extra: String) -> void:
 				mush_size = String(numbers[1]).to_float()
 			if numbers.size() > 2:
 				portions = maxi(1, String(numbers[2]).to_int())
+			for part in extra.split(","):
+				if part.begins_with("w="):   # im Regen verwaschen (RainVeil)
+					mush_wash = clampf(part.substr(2).to_float(), 0.0, 1.0)
 			display_name = "Kürbismatsch"
 			mass = 0.5
 			size = Vector3(mush_size * 0.7, 0.03, mush_size * 0.7)
@@ -1137,7 +1240,8 @@ func _build(extra: String) -> void:
 
 
 ## Zerplatzen (Spielkonzept 5.8): merkt sich den höchsten Punkt des Falls; beim Aufprall (siehe IMPACT_SPEED) aus mehr
-## als BURST_HEIGHT zerplatzt der Kürbis. Nur für BURST_KINDS, nicht in der Hand oder an der Wand.
+## als BURST_HEIGHT zerplatzt der Kürbis, Kerzen und Glühbirnen zerbrechen schon ab BREAK_HEIGHT (_break). Nur für
+## BURST_KINDS, nicht in der Hand oder an der Wand.
 func _physics_process(_delta: float) -> void:
 	if is_held or freeze or pocketed:
 		_fall_top = -INF
@@ -1149,19 +1253,32 @@ func _physics_process(_delta: float) -> void:
 		var speed := linear_velocity.length()
 		if _last_speed > THROW_IMPACT and speed < _last_speed * 0.5:
 			thrown = false
-			if kind == Kind.CANDLE:
-				_shatter_candle()
-			else:
-				burst()
+			_break()
 			return
 		_last_speed = speed
 	var vy := linear_velocity.y
-	if _last_vy < -IMPACT_SPEED and vy > _last_vy * 0.5 and _fall_top - global_position.y > BURST_HEIGHT:
-		burst()
+	if _last_vy < -IMPACT_SPEED and vy > _last_vy * 0.5 \
+			and _fall_top - global_position.y > float(BREAK_HEIGHT.get(kind, BURST_HEIGHT)):
+		if Game.tracing and kind in BREAK_HEIGHT:
+			print("[Fall] %s nach %.1f m" % [display_name, _fall_top - global_position.y])
+		_break()
 		return
 	if vy > -0.5:
 		_fall_top = global_position.y   # liegt, rollt oder steigt: hier beginnt ein neuer Fall
 	_last_vy = vy
+
+
+## Der Aufprall war zu hart: Kerze zerbricht, Glühbirne platzt, Kürbis zerplatzt.
+func _break() -> void:
+	match kind:
+		Kind.CANDLE:
+			_shatter_candle()
+		Kind.BULB:
+			_shatter_bulb()
+		Kind.COFFEE:
+			_spill_coffee()
+		_:
+			burst()
 
 
 ## Werfen (Streich der Kinder, Spielkonzept 6.13): fliegt von `from` mit `velocity` los und zerplatzt bzw. zerbricht
@@ -1176,7 +1293,8 @@ func throw_from(from: Vector3, velocity: Vector3) -> void:
 	set_physics_process(true)
 
 
-## Eine geworfene Kerze zerbricht: ein großer weißer Wachsfleck; brannte sie, fängt leichte Deko daneben Feuer (5.11).
+## Eine Kerze zerbricht (geworfen oder tiefer als BREAK_HEIGHT gefallen): ein großer weißer Wachsfleck; brannte sie,
+## fängt leichte Deko daneben Feuer (5.11).
 func _shatter_candle() -> void:
 	var at := global_position
 	var hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(at + Vector3.UP * 0.3, at + Vector3.DOWN * 1.5, 1))
@@ -1188,7 +1306,43 @@ func _shatter_candle() -> void:
 	if lit:
 		DecoFire.ignite_near(at, self)
 	if Game.tracing:
-		print("[Streich] Kerze zerbricht%s bei %s" % [" (brennend)" if lit else "", at])
+		print("[Kerze] zerbricht%s bei %s" % [" (brennend)" if lit else "", at])
+	queue_free()
+
+
+## Eine Kaffeetasse zerbricht (Spielkonzept 3.11, geworfen oder tiefer als BREAK_HEIGHT gefallen): ein Kaffeefleck
+## auf dem Boden, ein paar Scherben springen davon. Die Tasse ist weg.
+func _spill_coffee() -> void:
+	var at := global_position
+	var hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(at + Vector3.UP * 0.3, at + Vector3.DOWN * 1.5, 1))
+	if not hit.is_empty():
+		at = hit["position"]
+	if Game.traces:
+		Game.traces.add_guest_drop("coffee", at)
+	_fling_pieces(at, [Mat.psx(CUP_COLOR)], randi_range(3, 5), Vector3(0.02, 0.006, 0.015), Vector3(0.04, 0.012, 0.03),
+		Vector2(0.5, 1.4), Vector2(0.5, 1.2), 0.03, 0.04)
+	Game.noise("cup_break", at, self)
+	if Game.tracing:
+		print("[Kaffee] Tasse zerbricht bei %s" % at)
+	queue_free()
+
+
+## Eine Glühbirne platzt (Spielkonzept 7.3, tiefer als BREAK_HEIGHT gefallen – auch eine durchgebrannte): Knall (Lärm
+## „bulb_burst“ wie beim Durchbrennen einer Lampe, 8 m), feine Splitter und ein paar Scherben aus Glas und dem Gewinde,
+## die davonspringen und nach einer Weile verschwinden. Die Birne ist weg.
+func _shatter_bulb() -> void:
+	var at := global_position
+	var glass := Mat.psx(BULB_GLASS, "", 1.0, BULB_GLASS, 0.15)   # leicht hell – Glas blitzt im Dunkeln
+	_spray(at, Geo.box(Vector3(0.018, 0.005, 0.014)), glass, 30, Vector2(1.5, 3.5), 85.0)
+	var count := randi_range(BULB_SHARDS.x, BULB_SHARDS.y)
+	_fling_pieces(at, [glass], count - 1, Vector3(0.018, 0.004, 0.014), Vector3(0.045, 0.008, 0.035), Vector2(0.8, 2.2),
+		Vector2(0.8, 2.0), 0.03, 0.05)
+	_fling_pieces(at, [Mat.psx(BULB_SOCKET)], 1, Vector3(0.025, 0.025, 0.025), Vector3(0.03, 0.03, 0.03), Vector2(0.3, 0.8),
+		Vector2(0.5, 1.0), 0.0, 0.03)   # das Gewinde
+	if Game.noise("bulb_burst", at, self) >= 0.1:
+		Game.caption("[Eine Glühbirne zerplatzt]")
+	if Game.tracing:
+		print("[Glühbirne] platzt bei %s" % at)
 	queue_free()
 
 
@@ -1205,6 +1359,7 @@ func burst() -> Item:
 	var hands: Vector2i = Vector2i.ONE if mini else d.get("portions", Vector2i.ONE)
 	var mush := Item.create(Kind.PUMPKIN_MUSH, mush_extra(variety, Calendar._elapsed(), splat, randi_range(hands.x, hands.y)))
 	mush.owner_id = owner_id
+	mush.mush_fresh = true
 	get_parent().add_child(mush)
 	mush.global_transform = Transform3D(Basis(Vector3.UP, randf() * TAU), at + Vector3.UP * 0.02)
 	_splash_chunks(at, MINI_COLOR if mini else d["color"], splat)
@@ -1251,6 +1406,7 @@ func split_handful() -> Item:
 ## Der Spritzer verliert eine Hand voll (Fläche je Hand voll).
 func shrink_by_handful() -> void:
 	portions -= 1
+	_finish_spreading()
 	var shrink := sqrt(float(portions) / (portions + 1))
 	mush_size *= shrink
 	for piece in _spread.get_children():   # jeder Fleck um seine eigene Mitte – so bleibt er auf seiner Fläche
@@ -1263,18 +1419,29 @@ func shrink_by_handful() -> void:
 ## wegschrumpfen (Spielzeit – pausiert mit dem Spiel). Sie sind nur Bild, nichts zum Aufheben.
 func _splash_chunks(at: Vector3, skin: Color, splat: float) -> void:
 	var k := sqrt(splat / MUSH_SIZE)   # Riesenkürbis ≈ 2,2, Zierkürbis ≈ 0,7
+	_spray(at, Geo.box(Vector3(0.05, 0.03, 0.04) * minf(k, 1.5)), Mat.psx(mush_color(skin)), int(14 * k),
+		Vector2(1.5, 3.0) * k, 70.0)
+	var size_k := minf(k, 1.6)
+	_fling_pieces(at, [Mat.psx(skin), Mat.psx(mush_color(skin)), Mat.psx(FLESH_COLOR)],
+		mini(CHUNK_MAX, maxi(3, roundi(CHUNKS_PER_M * splat))), Vector3(0.04, 0.02, 0.03) * size_k,
+		Vector3(0.09, 0.04, 0.07) * size_k, Vector2(1.0, 3.0) * k, Vector2(2.0, 4.0) * minf(k, 1.4), 0.2 * k, 0.08 + 0.1 * k)
+
+
+## Einmalige feine Spritzer bzw. Splitter (Partikel `amount` × mesh, Tempo `speed` m/s, nach oben gestreut um `spread`°),
+## räumen sich nach dem Flug selbst weg (pausierbarer Timer).
+func _spray(at: Vector3, mesh: Mesh, mat: Material, amount: int, speed: Vector2, spread: float) -> void:
 	var spray := CPUParticles3D.new()
 	spray.one_shot = true
 	spray.explosiveness = 1.0
-	spray.amount = int(14 * k)
+	spray.amount = maxi(1, amount)
 	spray.lifetime = 0.9
 	spray.local_coords = false
-	spray.mesh = Geo.box(Vector3(0.05, 0.03, 0.04) * minf(k, 1.5))
-	spray.material_override = Mat.psx(mush_color(skin))
+	spray.mesh = mesh
+	spray.material_override = mat
 	spray.direction = Vector3.UP
-	spray.spread = 70.0
-	spray.initial_velocity_min = 1.5 * k
-	spray.initial_velocity_max = 3.0 * k
+	spray.spread = spread
+	spray.initial_velocity_min = speed.x
+	spray.initial_velocity_max = speed.y
 	spray.gravity = Vector3(0, -9.8, 0)
 	spray.angular_velocity_min = -400.0
 	spray.angular_velocity_max = 400.0
@@ -1284,26 +1451,35 @@ func _splash_chunks(at: Vector3, skin: Color, splat: float) -> void:
 	spray.global_position = at + Vector3.UP * 0.1
 	spray.emitting = true
 	get_tree().create_timer(spray.lifetime + 0.2, false).timeout.connect(spray.queue_free)
-	var mats := [Mat.psx(skin), Mat.psx(mush_color(skin)), Mat.psx(FLESH_COLOR)]
-	for i in mini(CHUNK_MAX, maxi(3, roundi(CHUNKS_PER_M * splat))):
+
+
+## Stücke, die davonfliegen, aufschlagen, nach CHUNK_STAY wegschrumpfen und verschwinden (echte Körper, Ebene 0, Maske 1,
+## nicht interagierbar – nur Bild): `count` Quader zwischen dims_lo und dims_hi in den Materialien reihum, starten bis
+## `start_r` m seitlich und `start_h` m über `at`, fliegen mit `out` m/s zur Seite und `up` m/s nach oben.
+func _fling_pieces(at: Vector3, mats: Array, count: int, dims_lo: Vector3, dims_hi: Vector3, out: Vector2, up: Vector2,
+		start_r: float, start_h: float) -> void:
+	for i in count:
 		var piece := RigidBody3D.new()
 		piece.collision_layer = 0
 		piece.collision_mask = 1   # nur Wände und Böden
 		piece.mass = 0.1
-		var dims := Vector3(randf_range(0.04, 0.09), randf_range(0.02, 0.04), randf_range(0.03, 0.07)) * minf(k, 1.6)
-		var look := Geo.mesh(piece, Geo.box(dims), mats[i % mats.size()], Vector3.ZERO)
+		piece.continuous_cd = true   # dünne Scherben fielen sonst durch den Boden
+		var dims := Vector3(randf_range(dims_lo.x, dims_hi.x), randf_range(dims_lo.y, dims_hi.y), randf_range(dims_lo.z, dims_hi.z))
+		var hull := dims.max(Vector3.ONE * 0.02)
+		# das Bild unten im Kasten, sonst schwebt eine flache Scherbe über dem Boden
+		var look := Geo.mesh(piece, Geo.box(dims), mats[i % mats.size()], Vector3(0, (dims.y - hull.y) / 2.0, 0))
 		var shape := CollisionShape3D.new()
 		shape.shape = BoxShape3D.new()
-		(shape.shape as BoxShape3D).size = dims
+		(shape.shape as BoxShape3D).size = hull
 		piece.add_child(shape)
 		get_parent().add_child(piece)
 		var a := randf() * TAU
-		var out := Vector3(cos(a), 0, sin(a))
-		piece.global_position = at + out * randf_range(0.05, 0.2) * k + Vector3.UP * (0.08 + 0.1 * k)
+		var side := Vector3(cos(a), 0, sin(a))
+		piece.global_position = at + side * randf_range(0.25, 1.0) * start_r + Vector3.UP * start_h
 		piece.rotation = Vector3(randf() * TAU, randf() * TAU, randf() * TAU)
-		piece.linear_velocity = out * randf_range(1.0, 3.0) * k + Vector3.UP * randf_range(2.0, 4.0) * minf(k, 1.4)
+		piece.linear_velocity = side * randf_range(out.x, out.y) + Vector3.UP * randf_range(up.x, up.y)
 		piece.angular_velocity = Vector3(randf_range(-12, 12), randf_range(-12, 12), randf_range(-12, 12))
-		# Am Stück selbst (der Kürbis ist dann längst weg); der Körper lässt sich nicht skalieren, nur sein Bild
+		# Am Stück selbst (der Gegenstand ist dann längst weg); der Körper lässt sich nicht skalieren, nur sein Bild
 		var shrink := piece.create_tween()
 		shrink.tween_interval(randf_range(CHUNK_STAY.x, CHUNK_STAY.y))
 		shrink.tween_property(look, "scale", Vector3.ONE * 0.01, 0.8)
@@ -1325,18 +1501,29 @@ func _settle_mush() -> void:
 ## Kürbismatsch am Boden, gebaut wie eine Blutlache (TraceMark.place_splat): ein großer Spritzer mit der Kantenlänge
 ## mush_size und MUSH_SPLATS_PER_M × mush_size kleinere drumherum, jeder senkrecht auf die Fläche darunter gefallen
 ## (Boden, Stufe, Möbel – nicht die Rampe, nicht durch Wände) und ganz auf ihr. Auf einer Treppe liegen sie längs auf
-## den Stufen (dort als überlappende Reihe, TraceMark.lay_decal) und laufen die Stufen hinunter. Jedes Mal anders
+## den Stufen (dort als überlappende Reihe, TraceMark.lay_decal) und laufen die Stufen hinunter, über die Kanten
+## manchmal ein Läufer (lay_runners). Frisch zerplatzt läuft er nach (mush_fresh, TraceMark.SPREAD). Jedes Mal anders
 ## verteilt.
 func _lay_mush() -> void:
+	if _grow_tween:
+		_grow_tween.kill()
+		_grow_tween = null
+	var fresh := mush_fresh
+	mush_fresh = false
 	for child in _spread.get_children():
 		child.free()
 	_laid_at = global_position
-	_spread.global_transform = Transform3D.IDENTITY
+	_spread.global_transform = Transform3D(Basis(), global_position)   # Ursprung in der Mitte: verwaschen läuft er von hier auseinander
 	var space := get_world_3d().direct_space_state
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	var center := global_position
 	var downhill := TraceMark.downhill_at(space, center)
+	var flow: Dictionary = TraceMark.SPREAD["mush"]
+	var plan: Array = []
+	# Ausbreiten von der Fläche unter dem Körper aus (auf einer Treppe ruht er auf der Rampe, über der Stufe)
+	var floor_hit := Traces.surface_below(space, center + Vector3.UP * 0.5, 1.5)
+	var source := center if floor_hit.is_empty() else (floor_hit["position"] as Vector3)
 	var count := 1 + roundi(mush_size * MUSH_SPLATS_PER_M)
 	for i in count:
 		var main := i == 0
@@ -1351,7 +1538,51 @@ func _lay_mush() -> void:
 			r *= 0.5
 		if spot.is_empty():
 			continue
-		TraceMark.lay_decal(_spread, spot, _mush_mat, rng, 0.006 + mini(_spread.get_child_count(), 60) * 0.00002)
+		var lift := 0.006 + mini(_spread.get_child_count(), 60) * 0.00002
+		var pieces := TraceMark.lay_decal(_spread, spot, _mush_mat, rng, lift)
+		var runners := TraceMark.lay_runners(_spread, space, spot, downhill, _mush_mat, rng, flow, lift)
+		if fresh:
+			TraceMark.plan_spot(plan, pieces, runners, flow, TraceMark.spread_start(flow, source, spot["at"], downhill), main, rng)
+	if fresh:
+		_grow_tween = TraceMark.grow(self, plan)
+	_mush_outdoor = -1
+	if mush_wash > 0.0:
+		RainVeil.show_wash(_spread, mush_wash, "mush")
+
+
+## Regen auf dem Matsch (draußen, RainVeil): heller und dünner, ganz verwaschen bleibt nur ein Schleier, der Matsch ist weg.
+func _wash_mush(delta: float) -> void:
+	_wash_timer += delta
+	if _wash_timer < RainVeil.WASH_TICK or is_queued_for_deletion() or _laid_at == Vector3.INF:
+		return
+	var dt := _wash_timer
+	_wash_timer = 0.0
+	if Game.weather == null or Game.weather.intensity < RainVeil.RAIN_MIN:
+		return
+	if _mush_outdoor < 0:
+		_mush_outdoor = 1 if RainVeil.is_outdoor(_laid_at) else 0
+	if _mush_outdoor == 0:
+		return
+	var step := RainVeil.wash_step(_laid_at, dt)
+	if step <= 0.0:
+		return
+	if mush_wash == 0.0:
+		# der erste Regen: sein Schleier entsteht und wächst von nun an mit (RainVeil, gleiche Formel)
+		var floor_hit := Traces.surface_below(get_world_3d().direct_space_state, _laid_at + Vector3.UP * 0.5, 1.5)
+		RainVeil.spawn(_laid_at if floor_hit.is_empty() else (floor_hit["position"] as Vector3), "mush", variety, mush_size)
+	mush_wash = minf(1.0, mush_wash + step)
+	RainVeil.show_wash(_spread, mush_wash, "mush")
+	if mush_wash >= 1.0:
+		if Game.tracing:
+			print("[Regen] Kürbismatsch ganz verlaufen und weg")
+		queue_free()
+
+
+## Breitet sich der Matsch noch aus, liegt er sofort fertig da (vor dem Schrumpfen beim Aufsammeln).
+func _finish_spreading() -> void:
+	if _grow_tween and _grow_tween.is_valid():
+		_grow_tween.custom_step(1000.0)
+	_grow_tween = null
 
 
 ## Kürbismatsch am Boden: nach MUSH_ROT_AFTER verblasst er über MUSH_FADE kaum merklich und verschwindet.

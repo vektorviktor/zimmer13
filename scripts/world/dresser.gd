@@ -37,6 +37,9 @@ class Handle:
 	func get_prompt(player: Player) -> String:
 		return dresser.drawer_prompt(index, player)
 
+	func get_icon(_player: Player) -> String:
+		return "drawer"
+
 	func interact(player: Player) -> void:
 		dresser.use_drawer(index, player)
 
@@ -92,6 +95,8 @@ func use_drawer(i: int, player: Player) -> void:
 			searched[i] = false   # gleich wieder zugeschoben – beim nächsten Mal
 			return
 		_roll_loot(i)
+	if is_open[i] and Game.spiders:   # manchmal springt eine Spinne heraus (Spielkonzept 4.23)
+		Game.spiders.on_drawer_opened(_drawers[i].global_position)
 
 
 func set_open(i: int, open: bool, instant: bool = false) -> void:

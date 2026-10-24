@@ -26,11 +26,14 @@ extends RefCounted
 
 const MAP_PATH := "res://assets/maps/eg.json"
 ## Stockwerke über dem Erdgeschoss, von unten nach oben (fehlt eine Datei, endet das Haus darunter)
-const UPPER_MAP_PATHS := ["res://assets/maps/og1.json"]
+const UPPER_MAP_PATHS := ["res://assets/maps/og1.json", "res://assets/maps/dg.json"]
 ## Untergeschoss (Spielkonzept 7.9) – die Treppenhäuser enden dort
 const LOWER_MAP_PATH := "res://assets/maps/ug.json"
 ## Plan, Legende und Umsetzer: Ist eins davon neuer als die Karten, liest refresh_maps() den Plan neu ein
 const PLAN_SOURCES := ["res://map_a.aseprite", "res://map_a.gpl", "res://tools/build_map.py"]
+## Haushalte (Spielkonzept 6.20): wer mit wem in welchem Zimmer wohnt – aus HAUSHALTE.md (tools/build_households.py)
+const HOUSEHOLDS_PATH := "res://assets/data/households.json"
+const HOUSEHOLD_SOURCES := ["res://HAUSHALTE.md", "res://tools/build_households.py"]
 ## Kellerwände: Brettschalungsbeton (Farbbild und Normal Map des PBR-Sets), eine Kachel = 18 Brettreihen auf
 ## CELLAR_WALL_METERS
 const CELLAR_WALL_TEX := "res://assets/textures/Concrete_WoodPattern_01/Concrete_WoodPattern_01_Base_Color.jpg"
@@ -119,6 +122,8 @@ const PILLAR_PLINTH := Vector3(0.8, 0.3, 0.8)
 const COFFEE_TABLE_SLAB := 0.03
 const COFFEE_TABLE_WOOD := 0.1
 const COFFEE_TABLE_CORNER_SEGMENTS := 4
+## Kaffeemaschine (Spielkonzept 3.11): so weit vom linken Ende der Küchenzeile (Mitte der Maschine)
+const COFFEE_MACHINE_INSET := 0.3
 const H := 3.5
 const T := 0.2
 ## Höhe des Obergeschosses (Oberkante Boden)
@@ -146,7 +151,34 @@ const DOOR_H := 2.1
 const WIDE_DOOR_H := 2.4
 const ENTRANCE_H := 2.8
 ## Kniestocktür zum Dachboden (Planfarbe „Kniestocktür“, Spielkonzept 4.21): niedrig, verschlossen bis zum Schlüssel
-const ATTIC_DOOR_H := 1.6
+const ATTIC_DOOR_H := 1.65
+## Dachgeschoss (Spielkonzept 4.21, Plan „DG“, 24.10.): Deckenhöhe, Kniestock (so hoch ist die Außenwand) und wie weit
+## die Dachschräge darüber in den Raum reicht, bis sie die Decke trifft – flach genug, dass die Türen 1,1 m neben
+## einer Außenwand noch darunter passen
+const ATTIC_H := 2.2
+const ATTIC_KNEE := 1.3
+const ATTIC_SLOPE := 2.0
+## Dachfenster in der Schräge: von/bis als Anteil der Schräge (unten = Kniestock), Rahmen und Kreuz aus Holz
+const ATTIC_WINDOW := Vector2(0.25, 0.85)
+const ATTIC_WINDOW_BAR := 0.06
+## Licht durchs Dachfenster: Kegel (Winkel, Reichweite, Farbe, Anteil im Nebel – der Lichtschacht); Stärke folgt dem Mond
+const ATTIC_SHAFT_ANGLE := 24.0
+const ATTIC_SHAFT_RANGE := 5.0
+const ATTIC_SHAFT_COLOR := Color(0.62, 0.72, 1.0)
+const ATTIC_SHAFT_FOG := 3.0
+const ATTIC_PLANK_TINT := Color(0.62, 0.6, 0.58)   ## grobe Bohlen, alt und grau
+const ATTIC_BEAM_TINT := Color(0.5, 0.45, 0.4)
+const ATTIC_ROOF_COLOR := Color(0.16, 0.15, 0.15)   ## Dachhaut außen
+## Stützbalken: je Feld von etwa ATTIC_BAY m ein Pfosten in der Mitte, darauf ein Balkenkreuz (Unterkante, Querschnitt)
+## bis an die Wände, jeder Arm mit einem Kopfband unter 45° (so weit vom Pfosten)
+const ATTIC_BAY := 6.0
+const ATTIC_BEAM_BOTTOM := 1.98
+const ATTIC_BEAM := 0.2
+const ATTIC_POST := 0.22
+const ATTIC_BRACE := 0.5
+const ATTIC_BRACE_SIZE := 0.12
+const ATTIC_POST_DOOR_GAP := 1.0   ## kein Pfosten so nah an einer Tür
+const ATTIC_BOX_SIZE := 4          ## Kiste mit wertvollerer alter Deko auf dem Dachboden, ohne Nachschub
 const COUCH_MODEL := "res://assets/models/couch.glb"
 ## Rohmodell ist 4,34 Einheiten lang → ~2,4 m lang, Sitzhöhe ~0,45 m, Lehne ~0,92 m.
 const COUCH_SCALE := 0.55
@@ -234,18 +266,15 @@ const WASHERS_PER_WALL := 12
 ## Rasterweite der Flächen-Nachschlagetabelle (Wandmaterial, Raum-IDs)
 const GRID := 0.25
 
-## Zimmer mit besonderer Rolle (Spielkonzept 7.5: die alten zweistelligen Nummern sind die Endziffern). Alle übrigen
-## Zimmer im Ostflügel sind unbewohnt („vacant“), die im Westflügel noch verschlossen (Bauphase).
-## Arten: player, guest, empty, vacant (unbewohnt, Licht aus), laundry, abandoned, derelict, locked.
+## Zimmerarten (Spielkonzept 6.19, 6.20): Wer wo wohnt und welche Zimmer eine besondere Rolle haben, steht in
+## HAUSHALTE.md (HOUSEHOLDS_PATH, je Zimmer über seine Stelle im Plan); alle übrigen sind unbewohnt.
+## Arten: player, guest, vacant (unbewohnt, Licht aus, vom Hotel abgeschlossen), abandoned, derelict, locked.
 const PLAYER_ROOM := "013"
 const COMPASS_ROOM := "026"
 const LOCKED_ROOM := "018"
-const ROOM_KINDS := {
-	"011": "guest", "012": "guest", "013": "player", "014": "empty", "015": "guest",
-	"017": "abandoned", "018": "locked", "037": "derelict",
-}
-## Flügel, deren Zimmer schon bewohnbar sind – im EG bzw. darüber (im Obergeschoss alle, 22.10.)
-const OPEN_WINGS := ["ost"]
+const ROOM_KINDS := {"013": "player"}   ## gilt, wenn die Haushaltsdatei fehlt
+## Flügel, deren Zimmer schon bewohnbar sind – im EG bzw. darüber (seit 24.10. überall: die Haushalte wohnen in beiden)
+const OPEN_WINGS := ["ost", "west"]
 const OPEN_WINGS_UPPER := ["ost", "west"]
 
 ## Inhalt, der nicht im Plan steht, je Raum-ID (Zimmernummer oder Bereich): Münzbetrag (ohne Eintrag 1),
@@ -271,12 +300,66 @@ const BOX_HEIGHTS := {
 const CHAIR_BACK := 0.45
 ## Sitzmöbel (Seat): Aufstehen so weit vor der Sitzkante (Spielerradius und etwas Luft)
 const SEAT_CLEAR := 0.33
-## Spiegel über dem Waschbecken (Mirror): Breite höchstens, Unter- und Oberkante über dem Boden, so nah rechnet er
+## Spiegel über dem Waschbecken-Kasten (Mirror, ohne Modell): Breite höchstens, Unter- und Oberkante über dem Boden,
+## so nah rechnet er
 const MIRROR_WIDTH := 0.6
 const MIRROR_BOTTOM := 1.1
 const MIRROR_TOP := 1.95
 const MIRROR_RANGE := 6.0
 const MIRROR_GAP := 0.03   ## vor der Wand (näher verschwindet er im Vertex-Snapping des PS1-Looks hinter ihr)
+## Bad und Bar aus den Modellen des Nutzers (tools/build_fixtures.py, Maße von dort). Die Flächen „tiles“ bekommen
+## die Fliesen des Raums in Weltkoordinaten: Waschtisch und Duschsockel messen Vielfache einer Fliese (5 cm) und
+## stehen auf dem Fugenraster, die Fugen laufen von Boden und Wand her durch. Fehlt eine Datei, bleiben die Kästen.
+const WASHBASIN_MODEL := "res://assets/models/washbasin.glb"
+const SHOWER_MODEL := "res://assets/models/shower.glb"
+const TOILET_MODEL := "res://assets/models/toilet.glb"
+const BAR_COUNTER_MODEL := "res://assets/models/bar_counter.glb"
+const BACK_BAR_MODEL := "res://assets/models/back_bar.glb"
+const BAR_STOOL_MODEL := "res://assets/models/bar_stool.glb"
+## Waschtisch (Breite, Stärke, Tiefe; 20 × 3 × 10 Fliesen) und seine Oberkante – das Aufsatzbecken steht 12,6 cm
+## darauf, die Armatur reicht bis 28 cm darüber. Am langen Waschtisch der Toiletten je WASH_PLACE ein Becken.
+const WASH_TABLE := Vector3(1.0, 0.15, 0.5)
+const WASH_TABLE_TOP := 0.75
+const WASH_PLACE := 0.8
+## Spiegel über dem Becken: Rahmen ab MIRROR_FRAME_BOTTOM (über der Armatur), darin das Spiegelbild (Mirror) mit
+## Mitte MIRROR_GLASS_MID über der Rahmenunterkante – von 1,10 bis 2,04 m: Figuren von 1,45 bis 2,00 m sehen
+## darin Scheitel und Bauch (Spielkonzept 3.9)
+const MIRROR_FRAME_BOTTOM := 1.07
+const MIRROR_GLASS := Vector2(0.54, 0.94)
+const MIRROR_GLASS_MID := 0.5
+## Duschecke in Plangröße: Sockel 10 cm (2 Fliesenreihen), Wanne darauf bis SHOWER_TRAY, Glas bis SHOWER_GLASS_H,
+## Glaswand (lokal +X) und Tür (+Z) SHOWER_GLASS_INSET innerhalb der Kante. Kollision über der Wanne bis
+## SHOWER_BLOCK – zu hoch zum Hinaufsteigen, damit das NavMesh niemanden durchs Glas hineinschickt.
+const SHOWER_SIZE := 1.1
+const SHOWER_TRAY := 0.16
+const SHOWER_GLASS_H := 2.24
+const SHOWER_GLASS_INSET := 0.019
+const SHOWER_BLOCK := 0.5
+## Wand-WC: Schüssel (Breite, Sitzhöhe, Tiefe ab der Wand), Sitzmitte vor der Wand; der Papierhalter (lokal +X)
+## reicht so weit zur Seite – steht dort eine Wand, kommt er auf die andere Seite
+const TOILET_BOWL := Vector3(0.363, 0.42, 0.54)
+const TOILET_SIT := 0.27
+const TOILET_HOLDER_REACH := 0.5
+const TOILET_CHROME := Color(0.3, 0.3, 0.32)   ## Drückerplatte und Halter: dunkles Chrom
+## Theke (L, Rückschenkel bei −X): Korpus des langen Schenkels und des Rückschenkels (x0, z0, x1, z1), Platte des
+## langen Schenkels (darauf Flasche, Dosen, Kaffee), Oberkante; sie reicht hinten BAR_RETURN bis an die Platte des
+## Barregals. Barregal: Tiefe (Ursprung in der Mitte), Korpus für die Kollision, Glasböden (Oberkanten, Mitte
+## der Tiefe) und Mitten der vier Fächer – darauf die Flaschen.
+const BAR_ARM := Rect2(-3.45, 0.35, 6.9, 0.75)
+const BAR_RETURN_BODY := Rect2(-3.45, -1.1, 0.75, 1.45)
+const BAR_TOP_ARM := Rect2(-3.51, 0.405, 7.02, 0.755)
+const BAR_TOP := 1.2
+const BAR_RETURN := 1.16
+const BACK_BAR_DEPTH := 0.56
+const BACK_BAR_BODY := Vector3(6.0, 2.7, 0.5)
+const BACK_BAR_SHELVES: Array[float] = [1.56, 1.91]
+const BACK_BAR_SHELF_Z := -0.11
+const BACK_BAR_BAYS: Array[float] = [-2.19, -0.73, 0.73, 2.19]
+## Barhocker vor der Theke: so viele, Mitte so weit vor der Plattenkante, Sitzhöhe, Polster
+const BAR_STOOLS := 6
+const BAR_STOOL_OUT := 0.45
+const BAR_STOOL_SEAT := 0.83
+const BAR_CUSHION := Color(0.45, 0.08, 0.07)
 const DOORMAT_H := 0.012
 ## Süßigkeiten-Truhe (Truhe aus dem Plan in einem Hotelzimmer, Spielkonzept 6.13): Höhe, Holz, Inhalt
 const SWEETS_CHEST_H := 0.32
@@ -314,6 +397,8 @@ const COBWEB_Y := 2.4
 const SIGN_FONT := "res://assets/fonts/cinzel_bold.ttf"
 const SIGN_EM := 0.22
 const SIGN_EM_ROOM := 0.17
+## Schlüsselschrank (6.19): Höhe seiner Mitte über dem Boden
+const KEY_CABINET_Y := 1.5
 const SIGN_FONT_SIZE := 16
 const SIGN_CURVE_STEP := 2.0
 ## Wie weit die Buchstaben vor der Platte stehen, Stärke der Platte, Rand um den Text, Messingrand
@@ -359,6 +444,9 @@ var patrol: Array[Dictionary] = []
 var wander_points: Array[Vector3] = []
 ## Zimmernummer → {no, sign, kind, center, door_front, door_inside, along, into, door, spots}
 var rooms := {}
+## Haushalt je Zimmernummer (aus HOUSEHOLDS_PATH, Spielkonzept 6.20) und Zimmerart je Nummer (_index_households)
+var households := {}
+var _room_kinds := {}
 var lobby_center := Vector3.ZERO
 ## Tanzplätze im Partyraum, von der Mitte der Tanzfläche nach außen sortiert (Social.free_party_spot)
 var party_spots: Array[Vector3] = []
@@ -405,6 +493,12 @@ var _cellar_center := Vector3.ZERO
 ## Jedes Zimmer des Plans, auch verschlossene: Nummer → {pos (Mitte am Boden), look (zur Tür)}
 var _room_spots := {}
 var _upper_plans: Array[Dictionary] = []
+var _attic := false                   ## das geladene Stockwerk ist das Dachgeschoss (Plan „DG“)
+var _attic_shaft := ""                ## Treppenhaus, das hinauf ins Dachgeschoss führt (im Stockwerk darunter offen)
+var _eaves: Array[Dictionary] = []    ## Dachgeschoss: Außenwände mit Schräge {horizontal, fixed, from, to, inward}
+var _roof_windows: Array[Dictionary] = []   ## Dachgeschoss: Dachfenster aus dem Plan {pos, width}
+var _window_shafts: Array[SpotLight3D] = []   ## Dachgeschoss: Licht durch die Dachfenster (an AtticHaze)
+var _wall_top := Callable()           ## Dachgeschoss: Oberkante der Wand gerade im Bau (lokal x → y, unter der Schräge)
 
 var _map: Dictionary
 var _parent: Node3D  ## wohin die Bausteine gerade bauen (root oder ein gedrehter Rahmen)
@@ -428,8 +522,15 @@ var _ends := {}
 var _furnishings: Array[Dictionary] = []
 var _doors: Array[Dictionary] = []    ## {pos: Vector3 (Mitte unten), door: Door, kind, into}
 var attic_doors: Array[Door] = []     ## Kniestocktüren aller Ebenen
+var attic_haze: AtticHaze             ## Staubnebel im Dachgeschoss (null ohne Plan „DG“)
+var pumpkin_head_spot := Vector3.INF  ## wo der Kopf des Kürbismanns liegt (rotes Kreuz im Plan „DG“)
+var attic_stair_foot := Transform3D() ## Fuß der Dachbodentreppe im Obergeschoss, Blick hinauf (Debug --dachboden=treppe)
+var attic_window_spots: Array[Transform3D] = []   ## unter jedem Dachfenster, Blick zu ihm (Debug --dachboden=fenster)
+var _attic_posts: Array[Vector2] = []  ## Stützbalken des Dachgeschosses (der Kopf lehnt daneben)
 var elevators: Array[Elevator] = []   ## Aufzüge (je Schacht einer, der erste fährt)
 var _elevator_doors: Array[Dictionary] = []   ## Aufzugtüren aller Stockwerke (_elevators baut sie)
+var structure_parts: Array[Node] = []   ## Wände, Böden, Decken – für ShadowBudget.merge und StaticExport
+var light_rooms := LightRooms.new()     ## Bereiche fürs Licht aus Wänden, Türen und Öffnungen des Plans (ShadowBudget)
 var _open_rooms := {}                 ## Nummern der bewohnbaren Zimmer (OPEN_WINGS)
 
 var _wallpaper: Material
@@ -462,6 +563,8 @@ var _cellar_wall: Material
 var _cellar_floor: Material
 var _cellar_ceiling: Material
 var _sign_font: Font
+var _attic_planks: Material
+var _attic_roof: Material
 
 
 func _init(p_root: Node3D, p_world: Node3D) -> void:
@@ -498,6 +601,26 @@ static func refresh_maps() -> void:
 		push_warning("build_map: fehlgeschlagen (Code %d) – das Spiel nimmt die alten Karten" % code)
 
 
+## Liest HAUSHALTE.md neu ein (python tools/build_households.py), wenn sie oder der Umsetzer neuer sind als die
+## Datendatei – wie refresh_maps nur beim Start aus den Quellen.
+static func refresh_households() -> void:
+	if not OS.has_feature("editor") or not FileAccess.file_exists(HOUSEHOLD_SOURCES[0]):
+		return
+	var built := FileAccess.get_modified_time(HOUSEHOLDS_PATH) if FileAccess.file_exists(HOUSEHOLDS_PATH) else 0
+	var newest := 0
+	for path: String in HOUSEHOLD_SOURCES:
+		newest = maxi(newest, FileAccess.get_modified_time(path))
+	if newest <= built:
+		return
+	print("Haushalte geändert – lese HAUSHALTE.md neu ein (tools/build_households.py) …")
+	OS.set_environment("PYTHONIOENCODING", ":replace")
+	var out := []
+	var code := OS.execute("python", [ProjectSettings.globalize_path("res://tools/build_households.py"),
+		ProjectSettings.globalize_path(HOUSEHOLD_SOURCES[0]), ProjectSettings.globalize_path(HOUSEHOLDS_PATH)], out, true)
+	if code != 0:
+		push_warning("build_households: fehlgeschlagen (Code %d) – %s" % [code, "".join(out).strip_edges()])
+
+
 func build() -> void:
 	_materials()
 	var ground: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
@@ -510,10 +633,13 @@ func build() -> void:
 	var lower: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(LOWER_MAP_PATH))
 	assert(lower != null, "Gebäudeplan %s fehlt – tools/build_map.py ausführen" % LOWER_MAP_PATH)
 	_has_upper = not uppers.is_empty()
-	if "--attic-door" in OS.get_cmdline_user_args():
-		_debug_attic_door(uppers[0] if _has_upper else ground)
 	_upper_plans = uppers
 	_top_level = uppers.size()
+	for plan in uppers:
+		if String(plan.get("floor", "")) == "DG" and not (plan["stairs"] as Array).is_empty():
+			_attic_shaft = String(plan["stairs"][0]["id"])
+	if "--attic-door" in OS.get_cmdline_user_args() and _attic_shaft == "":
+		_debug_attic_door(uppers[0] if _has_upper else ground)
 	_begin_floor(ground, 0)
 	_index_shafts()
 	_build_plan_floor()
@@ -528,9 +654,14 @@ func build() -> void:
 	_stairwells()
 	_floors = [_state()]
 	for i in uppers.size():
-		_upper_floor(uppers[i], i + 1)
+		if String(uppers[i].get("floor", "")) == "DG":
+			_attic_floor(uppers[i], i + 1)
+		else:
+			_upper_floor(uppers[i], i + 1)
 	_lower_floor(lower)
 	_elevators()
+	light_rooms.finish()
+	ShadowBudget.merge(structure_parts, world)
 	_use(_floors[0])
 	var home: Dictionary = rooms[PLAYER_ROOM]
 	player_spawn = (home["center"] as Vector3) + Vector3(0, 0.05, 0) + (home["into"] as Vector3) * 0.1
@@ -596,9 +727,12 @@ func _lower_floor(plan: Dictionary) -> void:
 	_parent = root
 
 
-## Treppenhaustüren dieses Stockwerks absperren – offen ist nur das Treppenhaus Ost.
+## Treppenhaustüren dieses Stockwerks absperren – offen ist nur das Treppenhaus Ost und unter dem Dachgeschoss das
+## Treppenhaus, das hinaufführt (_attic_stair).
 func _seal_stairwells() -> void:
 	for s in _map["stairs"]:
+		if s["id"] == _attic_shaft and _level == _top_level - 1:
+			continue
 		if s["kind"] == "stairwell" and s["id"] != "treppenhaus_ost" and s.has("door"):
 			var door := _door_near(_v3(s["door"]["pos"]), 0.8)
 			if door:
@@ -610,6 +744,7 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 	var lobby := _lobby
 	_map = plan
 	_level = level
+	_attic = String(plan.get("floor", "")) == "DG"
 	_base_y = UP_Y * level
 	_grid = PackedInt32Array()
 	_places = []
@@ -621,6 +756,14 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 	_doors = []
 	_index_places()
 	_index_joints()
+	_index_households()
+	light_rooms.begin_floor(level, _base_y, root, _grid_origin, _grid_size, _grid, _places)
+	for s in _map["stairs"]:   # eine Treppe führt hinauf, Treppenhäuser gehen durch alle Stockwerke
+		light_rooms.opening(_rect(s["rect"]), true, s["kind"] == "stairwell")
+	for rc in _map["open_above"]:
+		light_rooms.opening(_rect(rc), true, false)
+	for rc in _map["voids"]:
+		light_rooms.opening(_rect(rc), false, true)
 	if level > 0:
 		_lobby = lobby   # die Galerie über der Lobby gehört zur Halle (rote Tapete, Lobby-Licht)
 	elif level < 0:
@@ -634,7 +777,7 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 
 ## Zustand des geladenen Stockwerks (für _use).
 func _state() -> Dictionary:
-	return {"map": _map, "level": _level, "base_y": _base_y, "grid": _grid, "grid_origin": _grid_origin,
+	return {"map": _map, "level": _level, "attic": _attic, "base_y": _base_y, "grid": _grid, "grid_origin": _grid_origin,
 		"grid_size": _grid_size, "places": _places, "lobby": _lobby, "named": _named, "wall_index": _wall_index,
 		"faces": _faces, "ends": _ends, "furnishings": _furnishings, "doors": _doors}
 
@@ -642,6 +785,7 @@ func _state() -> Dictionary:
 func _use(s: Dictionary) -> void:
 	_map = s["map"]
 	_level = s["level"]
+	_attic = s["attic"]
 	_base_y = s["base_y"]
 	_grid = s["grid"]
 	_grid_origin = s["grid_origin"]
@@ -729,6 +873,9 @@ func _materials() -> void:
 	_cellar_floor = Mat.psx(Color(0.45, 0.45, 0.45), "concrete", 1.0)
 	_cellar_ceiling = Mat.psx(Color(0.5, 0.5, 0.5), "concrete", 0.5)
 	_sign_font = load(SIGN_FONT)
+	_attic_planks = Mat.planks(ATTIC_PLANK_TINT)
+	_attic_planks.set_meta("floor", "wood")
+	_attic_roof = Mat.psx(ATTIC_ROOF_COLOR, "concrete", 1.0)
 
 
 # --- Plan: Flächen nachschlagen --------------------------------------------------------------------
@@ -785,10 +932,12 @@ func _index_places() -> void:
 				_bath_owner[String(bath["id"])] = String(info["no"])
 
 
-## Vorsatz der Raum-IDs auf diesem Stockwerk („“ im EG, „og1_“ darüber, „ug_“ darunter).
+## Vorsatz der Raum-IDs auf diesem Stockwerk („“ im EG, „og1_“ darüber, „dg_“ im Dachgeschoss, „ug_“ darunter).
 func _prefix() -> String:
 	if _level < 0:
 		return "ug_"
+	if _attic:
+		return "dg_"
 	return "" if _level == 0 else "og%d_" % _level
 
 
@@ -849,6 +998,45 @@ func _wing_open(wing: String) -> bool:
 	return wing in (OPEN_WINGS_UPPER if _level > 0 else OPEN_WINGS)
 
 
+## Haushalte dieses Stockwerks den Zimmern zuordnen: Jeder Haushalt (und jedes Sonderzimmer) hängt an einer Stelle
+## im Plan (Pixel im Band des Stockwerks) – das Zimmer, dessen Fläche sie enthält, bekommt ihn.
+func _index_households() -> void:
+	if not FileAccess.file_exists(HOUSEHOLDS_PATH):
+		return
+	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(HOUSEHOLDS_PATH))
+	var origin: Array = _map["origin_px"]
+	var mpp := float(_map["meters_per_pixel"])
+	var at := func(entry: Dictionary) -> String:
+		var px: Array = entry["px"]
+		var p := Vector2((float(px[0]) - float(origin[0])) * mpp, (float(px[1]) - float(origin[1])) * mpp)
+		for info in _map["rooms"]:
+			for rc in info["rects"]:
+				if _rect(rc).grow(0.05).has_point(p):
+					return String(info["no"])
+		push_warning("HAUSHALTE.md: kein Zimmer an der Stelle von %s (%s)" % [entry.get("id", entry.get("label")), px])
+		return ""
+	for entry: Dictionary in data.get("special", []):
+		if int(entry["floor"]) == _level:
+			var no: String = at.call(entry)
+			if no != "":
+				_room_kinds[no] = String(entry["kind"])
+	for entry: Dictionary in data.get("households", []):
+		if int(entry["floor"]) == _level:
+			var no: String = at.call(entry)
+			if no != "":
+				_room_kinds[no] = "guest"
+				households[no] = entry
+
+
+## Name eines Haushalts an seiner Tür (6.20, beim Hinsehen) und im Hotelregister: mehrere Personen – Nachname, eine –
+## Vor- und Nachname.
+static func door_name(household: Dictionary) -> String:
+	var members: Array = household["members"]
+	if members.size() == 1:
+		return "%s %s" % [members[0]["name"], household["surname"]]
+	return String(household["surname"])
+
+
 func _room_open(no: String) -> bool:
 	return _open_rooms.has(no)
 
@@ -896,6 +1084,11 @@ func _build_wall(w: Dictionary) -> void:
 	var fixed := a.y if horizontal else a.x
 	var openings: Array = w.get("openings", [])
 	var glass := bool(w.get("glass", false))
+	light_rooms.wall(a, b, float(w.get("thickness", T)))
+	if glass:   # Glaswand: je Meter ein Fenster fürs Licht
+		var panes := maxi(1, roundi((s1 - s0) / 1.0))
+		for i in panes:
+			light_rooms.window(a + along * (i + 0.5) * (s1 - s0) / panes, side)
 
 	# Seiten abtasten (alle 25 cm, 30 cm neben der Wandmitte), kurze Läufe (Querwände) glätten
 	var steps := maxi(1, roundi((s1 - s0) / GRID))
@@ -947,6 +1140,8 @@ func _build_wall(w: Dictionary) -> void:
 		for op: Vector4 in ops3:
 			if op.x > p0 and op.x < p1:
 				mine.append(op)
+		if _attic and minus[i] != "attic" and plus[i] != "attic":
+			continue   # Dachgeschoss: Striche ohne Dachboden daneben (Umriss des Treppenschachts) baut _attic_stair
 		if glass:
 			_glass_wall(horizontal, fixed, p0, p1)
 		else:
@@ -1097,7 +1292,7 @@ func _opening_vec(o: Dictionary, s0: float) -> Vector4:
 			return Vector4(center, width, ENTRANCE_H if _level >= 0 else DOOR_H, 0.0)
 		"door", "service_door":
 			return Vector4(center, width, DOOR_H if width < 1.5 else WIDE_DOOR_H, 0.0)
-		"attic_door":
+		"attic_door", "attic_inner_door":
 			return Vector4(center, width, ATTIC_DOOR_H, 0.0)
 	return Vector4(center, width, WIDE_DOOR_H, 0.0)
 
@@ -1105,7 +1300,7 @@ func _opening_vec(o: Dictionary, s0: float) -> Vector4:
 ## Art einer Wandseite: wie _kind_at, an einem Luftraum aber „hall:<Art im EG>“ – im EG darunter wie darüber
 ## (dort liegt im Plan keine Fläche, die Seite wäre sonst draußen und trüge Fassade).
 func _wall_side_kind(p: Vector2) -> String:
-	if _level >= 0:
+	if _level >= 0 and not _attic:
 		for hall in _halls:
 			if (hall["rect"] as Rect2).has_point(p):
 				return "hall:" + String(hall["kind"])
@@ -1115,6 +1310,8 @@ func _wall_side_kind(p: Vector2) -> String:
 func _wall_material(kind: String) -> Material:
 	if _level < 0:
 		return _cellar_wall   # im Untergeschoss überall Beton
+	if _attic:
+		return _attic_planks
 	if kind.begins_with("hall:"):
 		# Halle über zwei Stockwerke: Rauten ohne Leiste bis unter die Decke, die Höhe zählt durchgehend ab dem
 		# EG-Boden (nahtlos zwischen EG- und OG-Wand); unten die Vertäfelung wie sonst
@@ -1166,6 +1363,9 @@ func _wall_piece(horizontal: bool, fixed: float, p0: float, p1: float, openings:
 	# Über dem EG reichen die Wände bis zur Oberkante der Wände darunter hinab (sonst klafft in der Fassade die
 	# Fuge zwischen Decke und Boden)
 	var drop := UP_Y - H if _level > 0 else 0.0
+	var top := ATTIC_H if _attic else H
+	if _attic:   # unter der Dachschräge folgt die Oberkante ihr (Kniestock an den Außenwänden)
+		_wall_top = func(s: float) -> float: return _attic_ceiling(Vector2(s, fixed) if horizontal else Vector2(fixed, s)) + drop
 	if _level < 0:
 		# Im Untergeschoss reichen sie in den Boden darüber und enden mitten in seiner Platte (bündig mit seiner
 		# Oberseite flimmerten sie dort durch); am Treppenschacht, wo oben kein Boden liegt, bis an die Wand darüber
@@ -1182,8 +1382,9 @@ func _wall_piece(horizontal: bool, fixed: float, p0: float, p1: float, openings:
 		var lifted: Array = []
 		for op: Vector4 in openings:
 			lifted.append(Vector4(op.x, op.y, op.z + drop, op.w + drop))
-		_wall_piece_at(horizontal, fixed, p0, p1, lifted, minus, plus, H + drop)
+		_wall_piece_at(horizontal, fixed, p0, p1, lifted, minus, plus, top + drop)
 		_parent = keep
+		_wall_top = Callable()
 		return
 	_wall_piece_at(horizontal, fixed, p0, p1, openings, minus, plus, H)
 
@@ -1225,7 +1426,7 @@ func _wall_piece_at(horizontal: bool, fixed: float, p0: float, p1: float, openin
 			Geo.mesh(holder, Geo.wall_mesh(p0, p1, split, 0.02, openings), skin, Vector3.ZERO)
 			Geo.mesh(holder, Geo.wall_mesh(p0, p1, height - split, 0.02, upper), _bath_paint, Vector3(0, split, 0))
 			continue
-		Geo.mesh(holder, Geo.wall_mesh(p0, p1, height, 0.02, openings), skin, Vector3.ZERO)
+		Geo.mesh(holder, _cap_top(Geo.wall_mesh(p0, p1, height, 0.02, openings + _top_breaks(p0, p1, height))), skin, Vector3.ZERO)
 
 
 ## Aufzüge (Spielkonzept 7.4, 7.10): die Aufzugtüren aller Stockwerke nach Schacht gesammelt, je Schacht ein
@@ -1322,12 +1523,14 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 		win.rotation.y = yaw
 		win.sealed = inside_kind == "sealed"
 		root.add_child(win)
+		light_rooms.window(c, side)
 		return
 	if kind == "elevator_door":   # Türen, Anzeige und Kabine baut _elevators je Schacht über alle Stockwerke
 		var to_shaft := side if _kind_at(c + side * 0.5) == "elevator" else -side
 		var shaft := _place_at(c + to_shaft * 0.5)
 		_elevator_doors.append({"center": c, "out": -to_shaft, "size": Vector2(width, _opening_vec(o, 0.0).z),
 			"y": _base_y, "level": _level, "shaft": _bounds(shaft["rects"]) if not shaft.is_empty() else Rect2()})
+		light_rooms.window(c, side)
 		return
 	var wide := width >= 1.5
 	var height := _opening_vec(o, 0.0).z
@@ -1338,15 +1541,16 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 		hinge = center + Vector3(along.x, 0, along.y) * width / 2.0 * (1.0 if o["hinge"] == "end" else -1.0)
 	var hinge_end := not wide and (hinge - center).dot(right) > 0.0
 	var door := Door.new().setup(width, height, -90.0 if wide else -100.0, wide, glass, hinge_end)
-	match kind:   # gemalte Modelle (tools/build_doors.py): Zimmertüren und die Kniestocktür
+	match kind:   # gemalte Modelle (tools/build_doors.py): Zimmertüren und die Türen im Dachgeschoss
 		"door":
 			door.look = Door.Look.HOTEL
-		"attic_door":
+		"attic_door", "attic_inner_door":
 			door.look = Door.Look.ATTIC
 	door.position = center - right * width / 2.0
 	door.rotation.y = yaw
 	root.add_child(door)
 	_doors.append({"pos": center, "door": door, "kind": kind, "into": into3, "hinge": hinge})
+	light_rooms.door(c, side, door)
 	match kind:
 		"main_entrance" when _level < 0:   # Untergeschoss: verschlossene Räume in der Farbe des Haupteingangs
 			_seal(door, "Abgeschlossen.")
@@ -1384,8 +1588,8 @@ func _inner_side(k_minus: String, k_plus: String, kind: String) -> float:
 	return 1.0 if rank.call(k_plus) >= rank.call(k_minus) else -1.0
 
 
-## Debug --attic-door: Solange kein Dachgeschoss gezeichnet ist, wird die erste 0,8 m breite Tür des Plans (OG1, sonst
-## EG) zur Kniestocktür – zum Ansehen, main.gd stellt dich davor.
+## Debug --attic-door: Ohne Dachgeschoss im Plan wird die erste 0,8 m breite Tür des Plans (OG1, sonst EG) zur
+## Kniestocktür – zum Ansehen, main.gd stellt dich davor (mit Dachgeschoss vor die echte).
 static func _debug_attic_door(plan: Dictionary) -> void:
 	for w: Dictionary in plan["walls"]:
 		for o: Dictionary in w.get("openings", []):
@@ -1481,7 +1685,7 @@ func _floors_and_ceilings() -> void:
 
 ## Deckenplatte über r (H … H + 0,2) auf der Ebene der Decken.
 func _ceiling_slab(r: Rect2, mat: Material) -> void:
-	ShadowBudget.structure(Geo.solid(root, Vector3(r.size.x, 0.2, r.size.y), Vector3(r.get_center().x, H + 0.1, r.get_center().y), mat,
+	structure_parts.append(Geo.solid(root, Vector3(r.size.x, 0.2, r.size.y), Vector3(r.get_center().x, H + 0.1, r.get_center().y), mat,
 		LAYER_CEILING))
 
 
@@ -1490,7 +1694,7 @@ func _ceiling_slab(r: Rect2, mat: Material) -> void:
 func _floor_rect(rc: Array, mat: Material, layer: int = 1) -> void:
 	var thick := 0.2 if _level <= 0 else UP_Y - H - 0.2
 	var size := Vector3(float(rc[2]) - float(rc[0]), thick, float(rc[3]) - float(rc[1]))
-	ShadowBudget.structure(Geo.solid(root, size, Vector3((float(rc[0]) + float(rc[2])) / 2.0, -thick / 2.0,
+	structure_parts.append(Geo.solid(root, size, Vector3((float(rc[0]) + float(rc[2])) / 2.0, -thick / 2.0,
 		(float(rc[1]) + float(rc[3])) / 2.0), mat, layer))
 
 
@@ -1568,7 +1772,10 @@ func _room(plan: Dictionary) -> void:
 	if not _wing_open(String(plan["wing"])):
 		return   # Bauphase: Tür verschlossen (_opening_object), kein Inneres
 	assert(door != null, "Zimmer %s: keine Tür an der Stelle aus dem Plan" % no)
-	var kind: String = ROOM_KINDS.get(no, "vacant")
+	var kind: String = _room_kinds.get(no, ROOM_KINDS.get(no, "vacant"))
+	if bool(plan.get("vacant", false)) != (kind in ["vacant", "abandoned", "derelict", "locked"]):
+		push_warning("Gebäudeplan: Zimmer %s ist im Plan %s, laut HAUSHALTE.md %s" % [no,
+			"leer" if plan.get("vacant", false) else "bewohnt", kind])
 	var holder := Node3D.new()
 	holder.name = "Zimmer_%s" % no
 	holder.position = door_pos
@@ -1603,6 +1810,9 @@ func _room(plan: Dictionary) -> void:
 	}
 	if not plan.get("suite", false):   # Suiten betritt man durchs Nachbarzimmer: kein Schild an der Verbindungstür
 		_sign(label, Vector3(0, 2.45, -0.11), 180.0, SIGN_EM_ROOM)
+	if households.has(no):
+		info["household"] = households[no]
+		door.resident_name = door_name(households[no])   # erscheint beim Hinsehen an der Tür (6.20)
 	# Das Innere steht im Plan (_furniture, _fittings, _items, _lights); hier nur, was die Zimmerart ausmacht
 	match kind:
 		"abandoned", "derelict":
@@ -1611,6 +1821,12 @@ func _room(plan: Dictionary) -> void:
 			door.locked = true
 			door.key_id = "zimmer_18"
 			door.locked_text = "Zimmer %s ist abgeschlossen." % label
+	door.room_no = no
+	if kind in ["guest", "vacant"]:   # Zimmer gehören den Gästen bzw. dem Hotel (Spielkonzept 6.19)
+		door.locked = true
+		door.key_id = "zimmer_%s" % no
+		door.vacant = kind == "vacant"
+		door.locked_text = "Zimmer %s ist abgeschlossen." % label
 	rooms[no] = info
 	_room_spots[no]["pos"] = info["center"]   # Mitte des Rechtecks an der Tür (bei L-Zimmern sicher drinnen)
 	_parent = root
@@ -1663,16 +1879,19 @@ func _furniture() -> void:
 				if kind == "double_bed":
 					spot = _double_bed(rect, String(f.get("head", "")))
 					front = Vector2(sin(spot.rotation.y), cos(spot.rotation.y))
+				elif kind == "bed":   # Länge quer zur Vorderseite, Breite entlang (Außenmaß des Balkenbetts)
+					var deep := rect.size.x if absf(front.x) > 0.5 else rect.size.y
+					spot = _hide_spot(HideSpot.Type.BED, pos, yaw, Vector2(rect.size.x + rect.size.y - deep, deep))
 				else:
-					spot = _hide_spot(HideSpot.Type.BED if kind == "bed" else HideSpot.Type.WARDROBE, pos, yaw)
+					spot = _hide_spot(HideSpot.Type.WARDROBE, pos, yaw)
 				var room: Dictionary = rooms.get(_room_id_at(c), {})
 				if not room.is_empty():
 					spot.own_bed = kind != "wardrobe" and room["kind"] == "player"
 					if spot.own_bed:   # ein frisches Laken zum Verkleiden (Spielkonzept 5.9)
-						_item(Item.Kind.BED_SHEET, pos + Vector3(0, 0.62, 0))
+						_item(Item.Kind.BED_SHEET, pos + Vector3(0, BedModel.blanket_top() + 0.02, 0))
 					(room["spots"] as Array).append(spot)
 				node = spot
-				top = 2.18 if kind == "wardrobe" else 0.6
+				top = 2.18 if kind == "wardrobe" else BedModel.TOP
 			"dresser":
 				node = Dresser.new()   # Schubladen (Spielkonzept 3.5)
 				top = Dresser.SIZE.y
@@ -1695,6 +1914,11 @@ func _furniture() -> void:
 				tub.size = Vector3(rect.size.x if along else rect.size.y, BOX_HEIGHTS["bathtub"], rect.size.y if along else rect.size.x)
 				node = tub
 				top = tub.size.y
+			"tub_shelf":
+				# Ablage zum Anflanschen an die Wanne (24.10.): gefliester Block in Plangröße und Wannenhöhe – die
+				# Fliesen liegen in Weltkoordinaten, die Fugen laufen von der Wanne her durch
+				top = BOX_HEIGHTS["bathtub"]
+				node = Geo.solid(root, Vector3(rect.size.x, top, rect.size.y), Vector3(c.x, top / 2.0, c.y), _bath_tiles)
 			"doormat":
 				node = Geo.mesh(root, Geo.box(Vector3(rect.size.x, DOORMAT_H, rect.size.y)), _doormat, Vector3(c.x, DOORMAT_H / 2.0, c.y))
 				top = DOORMAT_H
@@ -1727,6 +1951,33 @@ func _furniture() -> void:
 				yaw = 0.0   # Stühle stehen in Weltrichtung (_room_table)
 				node = _room_table(rect)
 				top = BOX_HEIGHTS["room_table"]
+			"sink", "washbasin" when ResourceLoader.exists(WASHBASIN_MODEL):
+				# Waschplatz an der Rückwand; im Bad ein Becken, in den Toiletten über die ganze Breite des Plans
+				var back := c - front * _depth_of(rect, front) / 2.0
+				var width := WASH_TABLE.x if kind == "sink" else _depth_of(rect, Vector2(front.y, front.x))
+				node = _washbasin(back, front, width, _bath_tiles if kind == "sink" else _wall_tiles, kind == "sink")
+				rect = _local_rect(back, front, Rect2(-width / 2.0, 0, width, WASH_TABLE.z))   # Tischfläche
+				top = WASH_TABLE_TOP
+			"shower" when ResourceLoader.exists(SHOWER_MODEL):
+				node = _shower(c, front)
+				top = SHOWER_TRAY
+			"toilet" when ResourceLoader.exists(TOILET_MODEL):
+				node = _toilet(c - front * _depth_of(rect, front) / 2.0, front, c)
+				top = BOX_HEIGHTS["toilet"]
+			"bar_counter" when ResourceLoader.exists(BAR_COUNTER_MODEL):
+				var wall := _bar_wall(rect, front)
+				front = wall[1]
+				var origin: Vector2 = wall[0] + front * (BACK_BAR_DEPTH + BAR_RETURN)
+				node = _bar_counter(origin, front)
+				rect = _local_rect(origin, front, BAR_TOP_ARM)   # Platte des langen Schenkels (_common_rooms)
+				_furnishings.append({"kind": "bar_return", "rect": _local_rect(origin, front, BAR_RETURN_BODY),
+					"top": BAR_TOP, "front": front, "node": node})
+				top = BAR_TOP
+			"shelf" when ResourceLoader.exists(BACK_BAR_MODEL) and _named.has("bar") and (_named["bar"] as Rect2).has_point(c):
+				var back := c - front * _depth_of(rect, front) / 2.0
+				node = _back_bar(back, front)
+				rect = _local_rect(back, front, Rect2(-BACK_BAR_BODY.x / 2.0, 0, BACK_BAR_BODY.x, BACK_BAR_DEPTH))
+				top = BAR_TOP
 			"pillar":
 				node = _pillar(rect)
 				top = H
@@ -1902,6 +2153,153 @@ func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) ->
 	return body
 
 
+# --- Bad und Bar aus Modellen (tools/build_fixtures.py) ----------------------------------------------------
+
+## Ausdehnung des Rechtecks entlang dir (waagerecht oder senkrecht).
+func _depth_of(rect: Rect2, dir: Vector2) -> float:
+	return rect.size.x if absf(dir.x) > 0.5 else rect.size.y
+
+
+## Rechteck in Weltkoordinaten zu einem Rechteck im Möbel (x quer, y = lokal z nach vorn) mit Ursprung origin.
+func _local_rect(origin: Vector2, front: Vector2, local: Rect2) -> Rect2:
+	var right := Vector2(front.y, -front.x)   # lokal +X
+	var a := origin + right * local.position.x + front * local.position.y
+	var b := origin + right * local.end.x + front * local.end.y
+	return Rect2(a.min(b), (a - b).abs())
+
+
+## Steht neben der Stelle c in Richtung dir höchstens reach entfernt eine Wand?
+func _wall_beside(c: Vector2, dir: Vector2, reach: float) -> bool:
+	var side := ("east" if dir.x > 0 else "west") if absf(dir.x) > 0.5 else ("south" if dir.y > 0 else "north")
+	return not _on_wall(c, side, reach).is_empty()
+
+
+## Körper an der Stelle origin (Boden), lokal +Z nach front, mit dem Modell darin (Flächen nach _fixture_materials).
+func _fixture_body(path: String, origin: Vector2, front: Vector2, tiles: Material = null) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.collision_mask = 0
+	body.position = Vector3(origin.x, 0, origin.y)
+	body.rotation.y = atan2(front.x, front.y)
+	root.add_child(body)
+	var model: Node3D = (load(path) as PackedScene).instantiate()
+	model.name = "model"
+	body.add_child(model)
+	_fixture_materials(model, path, tiles)
+	return body
+
+
+## Flächen der Bad- und Barmodelle nach ihrem Namen (tools/build_fixtures.py); Farbtexturen über Mat.model.
+func _fixture_materials(model: Node3D, path: String, tiles: Material) -> void:
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		for s in m.mesh.get_surface_count():
+			var src := m.mesh.surface_get_material(s)
+			var mat: Material
+			match src.resource_name if src else "":
+				"tiles":
+					mat = tiles
+				"ceramic":
+					mat = _ceramic
+				"steel":
+					mat = Mat.metal()
+				"chrome":
+					mat = Mat.metal(TOILET_CHROME)
+				"brass":
+					mat = Mat.metal(GrandStair.BRASS)
+				"glass":
+					mat = Mat.glass()
+				"cushion":
+					mat = Mat.psx(BAR_CUSHION)
+				_:
+					mat = Mat.model(path, m, s)
+			m.set_surface_override_material(s, mat)
+
+
+## Waschplatz an der Wand (back = Wandmitte, Blick nach front): gefliester Waschtisch so breit wie width, darauf je
+## WASH_PLACE ein Aufsatzbecken mit Wandarmatur, darüber je ein Spiegel mit Spiegelbild (Mirror). bath: Waschbecken
+## im Bad – dessen Spiegel gehört zu `sink_mirrors` (Charaktererstellung, Spielkonzept 3.9).
+func _washbasin(back: Vector2, front: Vector2, width: float, tiles: Material, bath: bool) -> StaticBody3D:
+	var body := _fixture_body(WASHBASIN_MODEL, back, front, tiles)
+	var first := body.get_node("model") as Node3D
+	var table := first.find_child("table") as Node3D
+	table.position.y = WASH_TABLE_TOP
+	table.scale.x = width / WASH_TABLE.x   # Fliesen in Weltkoordinaten – sie strecken sich nicht mit
+	Geo.add_box_shape(body, Vector3(width, WASH_TABLE.y, WASH_TABLE.z), Vector3(0, WASH_TABLE_TOP - WASH_TABLE.y / 2.0, WASH_TABLE.z / 2.0))
+	var count := maxi(1, floori(width / WASH_PLACE + 0.001))
+	for i in count:
+		var x := (i + 0.5) * width / count - width / 2.0
+		var model := first
+		if i > 0:
+			model = (load(WASHBASIN_MODEL) as PackedScene).instantiate()
+			model.find_child("table").free()   # ein Tisch für alle
+			body.add_child(model)
+			_fixture_materials(model, WASHBASIN_MODEL, tiles)
+		model.find_child("basin").position = Vector3(x, WASH_TABLE_TOP, 0)
+		model.find_child("mirror_frame").position = Vector3(x, MIRROR_FRAME_BOTTOM, 0)
+		var mirror := Mirror.make(body, MIRROR_GLASS, Vector3(x, MIRROR_FRAME_BOTTOM + MIRROR_GLASS_MID, MIRROR_GAP),
+			Vector3.BACK, MIRROR_RANGE)
+		if bath:
+			mirror.add_to_group("sink_mirrors")
+	return body
+
+
+## Duschecke in der Mitte c ihrer Planfläche, Tür nach front. Das Modell hat seine Wand bei −X – steht die Wand im
+## Plan rechts, wird es gespiegelt. Kollision: Sockel samt Wanne (höher, SHOWER_BLOCK) und das Glas (klares Glas,
+## Ebene 7: man sieht hindurch, kommt aber nicht hinein).
+func _shower(c: Vector2, front: Vector2) -> StaticBody3D:
+	var body := _fixture_body(SHOWER_MODEL, c, front, _bath_tiles)
+	var side := -1.0 if _wall_beside(c, Vector2(front.y, -front.x), SHOWER_SIZE / 2.0 + 0.1) else 1.0
+	(body.get_node("model") as Node3D).scale.x = side
+	Geo.add_box_shape(body, Vector3(SHOWER_SIZE, SHOWER_BLOCK, SHOWER_SIZE), Vector3(0, SHOWER_BLOCK / 2.0, 0))
+	var glass := StaticBody3D.new()
+	glass.collision_layer = HotelWindow.LAYER_GLASS
+	glass.collision_mask = 0
+	body.add_child(glass)
+	var g := SHOWER_SIZE / 2.0 - SHOWER_GLASS_INSET
+	Geo.add_box_shape(glass, Vector3(0.02, SHOWER_GLASS_H, SHOWER_SIZE), Vector3(g * side, SHOWER_GLASS_H / 2.0, 0))
+	Geo.add_box_shape(glass, Vector3(SHOWER_SIZE, SHOWER_GLASS_H, 0.02), Vector3(0, SHOWER_GLASS_H / 2.0, g))
+	return body
+
+
+## Wand-WC an der Wand (back = Wandmitte unter der Schüssel), Sitz nach front; der Papierhalter kommt auf die Seite
+## ohne Wand. Sitzplatz wie bisher (Seat „klo“).
+func _toilet(back: Vector2, front: Vector2, c: Vector2) -> StaticBody3D:
+	var body := _fixture_body(TOILET_MODEL, back, front)
+	if _wall_beside(c, Vector2(front.y, -front.x), TOILET_HOLDER_REACH):
+		(body.get_node("model") as Node3D).scale.x = -1.0
+	Geo.add_box_shape(body, TOILET_BOWL, Vector3(0, TOILET_BOWL.y / 2.0, TOILET_BOWL.z / 2.0))
+	Seat.attach(body, "klo", TOILET_BOWL.y, Vector3(0, 0, TOILET_SIT), Vector3.BACK, TOILET_BOWL.x,
+		TOILET_BOWL.z - TOILET_SIT + SEAT_CLEAR)
+	return body
+
+
+## Wand hinter der Bar: Mitte der Rückkante des Barregals aus dem Plan und die Richtung in den Raum – Regal und Theke
+## richten sich danach. Ohne Regal die Rückkante der Theke selbst.
+func _bar_wall(counter: Rect2, front: Vector2) -> Array:
+	for f in _map["furniture"]:
+		var r := _rect(f["rect"])
+		if f["kind"] == "shelf" and _named.has("bar") and (_named["bar"] as Rect2).has_point(r.get_center()):
+			var dir := _facing(String(f.get("facing", "")), r.get_center())
+			return [r.get_center() - dir * _depth_of(r, dir) / 2.0, dir]
+	return [counter.get_center() - front * _depth_of(counter, front) / 2.0, front]
+
+
+## Barregal mit der Rückseite an der Wand (back = Wandmitte). Meta „back_bar“: Flaschen auf die Glasböden.
+func _back_bar(back: Vector2, front: Vector2) -> StaticBody3D:
+	var body := _fixture_body(BACK_BAR_MODEL, back + front * BACK_BAR_DEPTH / 2.0, front)
+	Geo.add_box_shape(body, BACK_BAR_BODY, Vector3(0, BACK_BAR_BODY.y / 2.0, BACK_BAR_BODY.z / 2.0 - BACK_BAR_DEPTH / 2.0))
+	body.set_meta("back_bar", true)
+	return body
+
+
+## Theke (L) mit Ursprung origin, Gästeseite nach front; der Rückschenkel reicht bis an das Barregal.
+func _bar_counter(origin: Vector2, front: Vector2) -> StaticBody3D:
+	var body := _fixture_body(BAR_COUNTER_MODEL, origin, front)
+	for r: Rect2 in [BAR_ARM, BAR_RETURN_BODY]:
+		var mid := r.get_center()
+		Geo.add_box_shape(body, Vector3(r.size.x, BAR_TOP, r.size.y), Vector3(mid.x, BAR_TOP / 2.0, mid.y))
+	return body
+
+
 ## Ausstattung (Ebene „Ausstattung“). Wandsachen hängen an der Wandseite aus dem Plan; Telefone, Zettel, Tagebuch
 ## und Vorräte stehen auf dem Möbel darunter. Zettel-Nummern und UV-Texte kommen aus CONTENT.
 func _fittings() -> void:
@@ -1982,6 +2380,19 @@ func _fittings() -> void:
 				_supply(ResourceSpot.new().setup(Item.Kind.BULB, "Ersatzbirne aus dem Lager", 2, 300.0), Vector3(p.x, BULB_SUPPLY_Y, p.y))
 			"leaf_pile":
 				_supply(ResourceSpot.new().setup(Item.Kind.LEAVES, "Herbstlaub", 4, 60.0), Vector3(p.x, top, p.y))
+			"key_cabinet":   # verglast, mit dem Generalschlüssel (Spielkonzept 6.19)
+				var at := _wall_spot(o, 0.0)
+				var cabinet := KeyCabinet.new()
+				cabinet.position = at.at(KEY_CABINET_Y)
+				cabinet.rotation.y = at.yaw()
+				root.add_child(cabinet)
+			"deco_box" when _attic:
+				# Kiste mit wertvollerer alter Deko auf dem Dachboden (Spielkonzept 4.21, 5.7): wenige starke Stücke, kein
+				# Nachschub – wie die alte Deko im Heizkeller
+				var box := ResourceSpot.new().setup(Item.Kind.BROOM, "Alte Deko vom Dachboden", ATTIC_BOX_SIZE, 0.0) \
+					.with_pool([Item.Kind.SKULL, Item.Kind.BROOM, Item.Kind.LIGHT_STRING, Item.Kind.SKULL])
+				box.rotation.y = _upright_yaw(p)
+				_supply(box, Vector3(p.x, top, p.y))
 			"deco_box":
 				# Karton mit alter Halloween-Deko: Lichterketten (Spielkonzept 5.6)
 				var box := ResourceSpot.new().setup(Item.Kind.LIGHT_STRING, "Deko aus der Kiste", DECO_BOX_SIZE, 0.0) \
@@ -2577,20 +2988,31 @@ func _railing(a: Vector3, b: Vector3) -> void:
 # --- Gemeinschaftsräume, Pool ---------------------------------------------------------------------------
 
 ## Was Bar, Partyraum und Küche über den Plan hinaus brauchen: Flaschen auf dem Barregal, Hocker vor der Theke
-## (Spielkonzept 6.10), Getränkedosen (3.2: auf der Theke für Geld, Kisten in Kühlraum und Lager), Tanzfläche mit
-## Discokugel und Plattenspieler-Tisch, Treffpunkte für Gäste und Monster.
+## (Spielkonzept 6.10), Getränkedosen (3.2: auf der Theke für Geld, Kisten in Kühlraum und Lager), Kaffee (3.11: Tassen
+## auf der Theke, Maschine links auf der Küchenzeile), Tanzfläche mit Discokugel und Plattenspieler-Tisch, Treffpunkte
+## für Gäste und Monster.
 func _common_rooms() -> void:
 	var shelf := _furnishing("shelf", "bar")
 	if not shelf.is_empty():
 		var r: Rect2 = shelf["rect"]
 		var along := Vector2(1, 0) if r.size.x >= r.size.y else Vector2(0, 1)
 		var length := maxf(r.size.x, r.size.y)
+		var spots: Array[Vector3] = []
+		var node: Node3D = shelf["node"]
+		if node.has_meta("back_bar"):   # Barregal-Modell: je Fach zwei Flaschen auf beiden Glasböden
+			for y in BACK_BAR_SHELVES:
+				for bay in BACK_BAR_BAYS:
+					for dx in [-0.3, 0.25]:
+						spots.append(node.transform * Vector3(bay + dx, y, BACK_BAR_SHELF_Z))
+		else:
+			for i in 14:
+				var p := r.get_center() + along * (-length / 2.0 + 0.3 + i * (length - 0.6) / 13.0)
+				spots.append(Vector3(p.x, float(shelf["top"]), p.y))
 		var pack := (load(BOTTLES_MODEL) as PackedScene).instantiate()
 		var bottles := pack.find_children("bottle_*", "MeshInstance3D", true, false)
-		for i in 14:   # jede Flasche nur einmal (5 und 28 sind teilerfremd)
+		for i in spots.size():   # jede Flasche nur einmal (5 und 28 sind teilerfremd)
 			var src: MeshInstance3D = bottles[i * 5 % bottles.size()]
-			var p := r.get_center() + along * (-length / 2.0 + 0.3 + i * (length - 0.6) / 13.0)
-			var bottle := Geo.mesh(root, src.mesh, Mat.model(BOTTLES_MODEL, src), Vector3(p.x, float(shelf["top"]), p.y))
+			var bottle := Geo.mesh(root, src.mesh, Mat.model(BOTTLES_MODEL, src), spots[i])
 			bottle.rotation.y = i * 1.3
 		pack.free()
 	var counter := _furnishing("bar_counter", "bar")
@@ -2599,11 +3021,23 @@ func _common_rooms() -> void:
 		var out: Vector2 = counter["front"]
 		var along := Vector2(1, 0) if r.size.x >= r.size.y else Vector2(0, 1)
 		var span := maxf(r.size.x, r.size.y) - 2.2
-		for i in 4:
-			var p := r.get_center() + along * (-span / 2.0 + i * span / 3.0)
-			var stool := Geo.mesh(root, Geo.cylinder(0.18, 0.05, 8), Mat.psx(Color(0.4, 0.1, 0.1)), Vector3(p.x + out.x * 0.8, 0.7, p.y + out.y * 0.8))
-			Geo.mesh(stool, Geo.cylinder(0.04, 0.7, 5), _dark_wood, Vector3(0, -0.35, 0))
-			bar_spots.append(Vector3(p.x + out.x * 1.2, 0, p.y + out.y * 1.2))
+		if ResourceLoader.exists(BAR_STOOL_MODEL):
+			# Barhocker vor der Platte (Kollision wie ein Stuhl); Gäste stehen dahinter zwischen zwei Hockern
+			var edge := minf(r.size.x, r.size.y) / 2.0
+			for i in BAR_STOOLS:
+				var p := r.get_center() + along * (-span / 2.0 + i * span / (BAR_STOOLS - 1)) + out * (edge + BAR_STOOL_OUT)
+				var stool := _fixture_body(BAR_STOOL_MODEL, p, out)
+				stool.rotation.y += i * 0.4 - 1.0   # nicht alle gleich ausgerichtet
+				Geo.add_box_shape(stool, Vector3(0.4, BAR_STOOL_SEAT, 0.4), Vector3(0, BAR_STOOL_SEAT / 2.0, 0))
+				if i > 0:
+					var s := p - along * span / (BAR_STOOLS - 1) / 2.0 + out * 0.55
+					bar_spots.append(Vector3(s.x, 0, s.y))
+		else:
+			for i in 4:
+				var p := r.get_center() + along * (-span / 2.0 + i * span / 3.0)
+				var stool := Geo.mesh(root, Geo.cylinder(0.18, 0.05, 8), Mat.psx(Color(0.4, 0.1, 0.1)), Vector3(p.x + out.x * 0.8, 0.7, p.y + out.y * 0.8))
+				Geo.mesh(stool, Geo.cylinder(0.04, 0.7, 5), _dark_wood, Vector3(0, -0.35, 0))
+				bar_spots.append(Vector3(p.x + out.x * 1.2, 0, p.y + out.y * 1.2))
 		# Flasche und Glas zum Trinken (3.7): mitten auf der Theke, zur Gästeseite hin
 		var tap := BarTap.new()
 		var at := r.get_center() + out * (minf(r.size.x, r.size.y) / 2.0 - 0.18)
@@ -2615,6 +3049,11 @@ func _common_rooms() -> void:
 		var can_at := at - along * (span / 2.0 + 0.2)
 		cans.rotation.y = tap.rotation.y
 		_supply(cans, Vector3(can_at.x, float(counter["top"]), can_at.y))
+		# Kaffee für Geld (3.11) zwischen Flasche und Stühlen auf der anderen Seite
+		var cups := ResourceSpot.new().setup(Item.Kind.COFFEE, "Tasse Kaffee", 6, 240.0).for_sale(1)
+		var cup_at := at + along * (span / 4.0)
+		cups.rotation.y = tap.rotation.y
+		_supply(cups, Vector3(cup_at.x, float(counter["top"]), cup_at.y))
 	# Getränkekisten auf dem Boden vor dem Regal in Kühlraum und Lager (im Lager weg von den Ersatzbirnen)
 	for room: String in ["kuehlraum", "lager"]:
 		var store := _furnishing("shelf", room)
@@ -2661,6 +3100,19 @@ func _common_rooms() -> void:
 		stove.rotation.y = atan2(sf.x, sf.y)
 		stove.front = Vector3(sf.x, 0, sf.y)
 		root.add_child(stove)
+	# Kaffeemaschine (Spielkonzept 3.11): am linken Ende der Küchenzeile, von vorn gesehen
+	var counter_info := _furnishing("kitchen_counter", "kueche")
+	if not counter_info.is_empty():
+		var kr: Rect2 = counter_info["rect"]
+		var kf: Vector2 = counter_info["front"] if counter_info["front"] != Vector2.ZERO else Vector2(0, 1)
+		var left := Vector2(-kf.y, kf.x)   # von vorn gesehen links
+		var reach := (kr.size.x if absf(kf.x) < 0.5 else kr.size.y) / 2.0 - COFFEE_MACHINE_INSET
+		var mp := kr.get_center() + left * reach
+		var machine := CoffeeMachine.new()
+		machine.position = Vector3(mp.x, float(counter_info["top"]), mp.y)
+		machine.rotation.y = atan2(kf.x, kf.y)
+		machine.front = Vector3(kf.x, 0, kf.y)
+		root.add_child(machine)
 
 
 ## Tanzplätze im Sechseckraster (DANCE_SPACING) über den ganzen Partyraum, die Mitte der Tanzfläche zuerst:
@@ -2926,6 +3378,486 @@ func _lantern(pos: Vector3, broken: bool, energy: float) -> void:
 	light.lamp_material = mat
 	light.add_to_group("lamps")
 	root.add_child(light)
+
+
+# --- Dachgeschoss -----------------------------------------------------------------------------------
+
+## Dachgeschoss (Spielkonzept 4.21, 7.10; Plan „DG“ seit 24.10.): grobe Bohlen an Boden, Wänden und Decke (ATTIC_H),
+## an den Außenwänden ein Kniestock mit Dachschräge und Dachfenstern, niedrige Türen (die zum Treppenhaus ist die
+## verschlossene Kniestocktür), Stützbalken mit Balkenkreuz, blaugrauer Staubnebel, Kisten mit alter Deko und auf dem
+## roten Kreuz des Plans der Kopf des Kürbismanns. Dazu die Treppe vom Obergeschoss herauf (_attic_stair).
+func _attic_floor(plan: Dictionary, level: int) -> void:
+	var ground := root
+	var attic := Node3D.new()
+	attic.name = "Dachgeschoss"
+	attic.position.y = UP_Y * level
+	ground.add_child(attic)
+	root = attic
+	_parent = attic
+	_begin_floor(plan, level)
+	_attic_openings()
+	_attic_eaves()
+	for w in _map["walls"]:
+		_build_wall(w)
+	_attic_surfaces()
+	_attic_slopes()
+	_attic_beams()
+	_furniture()
+	_rugs()
+	_fittings()
+	_items()
+	_lights()
+	_attic_markers()
+	_attic_haze()
+	_floors.append(_state())
+	root = ground
+	_parent = root
+	_attic_stair(plan, level)
+
+
+## Türen und Dachfenster des Plans: Jede Tür im Dachgeschoss ist niedrig (Kniestocktür-Modell); die zum Treppenhaus
+## ist die verschlossene Kniestocktür („attic_door“, Schlüssel im Heizraum), die übrigen gehen auf („attic_inner_door“).
+## Dachfenster sitzen auf der Außenwand – sie kommen in die Schräge darüber (_attic_slopes), nicht in die Wand.
+func _attic_openings() -> void:
+	_roof_windows = []
+	for w in _map["walls"]:
+		var a := _v2(w["a"])
+		var b := _v2(w["b"])
+		var horizontal := is_equal_approx(a.y, b.y)
+		var along := Vector2(1, 0) if horizontal else Vector2(0, 1)
+		var side := Vector2(0, 1) if horizontal else Vector2(1, 0)
+		var keep: Array = []
+		for o: Dictionary in w.get("openings", []):
+			var c := a + along * (float(o["at"]) + float(o["width"]) / 2.0)
+			match String(o["kind"]):
+				"roof_window":
+					_roof_windows.append({"pos": c, "width": float(o["width"])})
+					continue
+				"door", "attic_door":
+					var stairs := "stairs" in [_kind_at(c - side * 0.5), _kind_at(c + side * 0.5)]
+					o["kind"] = "attic_door" if stairs else "attic_inner_door"
+			keep.append(o)
+		w["openings"] = keep
+
+
+## Traufen: Stücke der Außenwände (draußen auf der einen, Dachboden auf der anderen Seite), über denen die Schräge
+## ansetzt – abgetastet wie in _build_wall (alle GRID m, kurze Läufe geglättet).
+func _attic_eaves() -> void:
+	_eaves = []
+	for w in _map["walls"]:
+		var a := _v2(w["a"])
+		var b := _v2(w["b"])
+		var horizontal := is_equal_approx(a.y, b.y)
+		var along := Vector2(1, 0) if horizontal else Vector2(0, 1)
+		var side := Vector2(0, 1) if horizontal else Vector2(1, 0)
+		var s0 := a.x if horizontal else a.y
+		var s1 := b.x if horizontal else b.y
+		var steps := maxi(1, roundi((s1 - s0) / GRID))
+		var minus: Array[String] = []
+		var plus: Array[String] = []
+		for i in steps:
+			var p := a + along * (i + 0.5) * (s1 - s0) / steps
+			minus.append(_kind_at(p - side * 0.3))
+			plus.append(_kind_at(p + side * 0.3))
+		_smooth(minus)
+		_smooth(plus)
+		var start := 0
+		var inward := 0
+		for i in steps + 1:
+			var dir := 0
+			if i < steps:
+				if minus[i] == "outside" and plus[i] == "attic":
+					dir = 1
+				elif plus[i] == "outside" and minus[i] == "attic":
+					dir = -1
+			if dir != inward:
+				if inward != 0:
+					_eaves.append({"horizontal": horizontal, "fixed": a.y if horizontal else a.x, "inward": inward,
+						"from": s0 + start * (s1 - s0) / steps, "to": s0 + i * (s1 - s0) / steps})
+				start = i
+				inward = dir
+
+
+## Höhe der Decke über p im Dachgeschoss (über dem Boden): ATTIC_H, unter einer Schräge tiefer – an der Innenfläche
+## der Außenwand ATTIC_KNEE, ATTIC_SLOPE weiter innen wieder ATTIC_H. skip = Traufe, die nicht zählt (Index in _eaves).
+func _attic_ceiling(p: Vector2, skip: int = -1) -> float:
+	var h := ATTIC_H
+	for i in _eaves.size():
+		if i == skip:
+			continue
+		var e: Dictionary = _eaves[i]
+		var horizontal: bool = e["horizontal"]
+		var s := p.x if horizontal else p.y
+		if s < float(e["from"]) - T / 2.0 or s > float(e["to"]) + T / 2.0:
+			continue
+		var d := ((p.y if horizontal else p.x) - float(e["fixed"])) * float(e["inward"]) - T / 2.0
+		if d < -T or d > ATTIC_SLOPE:
+			continue
+		h = minf(h, ATTIC_KNEE + (ATTIC_H - ATTIC_KNEE) * clampf(d / ATTIC_SLOPE, 0.0, 1.0))
+	return h
+
+
+## Streifen unter der Schräge einer Traufe (von der Innenfläche der Außenwand ATTIC_SLOPE nach innen).
+func _eave_strip(e: Dictionary) -> Rect2:
+	var face := float(e["fixed"]) + float(e["inward"]) * T / 2.0
+	var lo := minf(face, face + float(e["inward"]) * ATTIC_SLOPE)
+	var a0 := float(e["from"]) - T / 2.0
+	var a1 := float(e["to"]) + T / 2.0
+	if e["horizontal"]:
+		return Rect2(a0, lo, a1 - a0, ATTIC_SLOPE)
+	return Rect2(lo, a0, ATTIC_SLOPE, a1 - a0)
+
+
+## Boden aus Bohlen, Decke aus Bohlen auf ATTIC_H (außer unter den Schrägen), darüber die Dachhaut; Schwellen.
+func _attic_surfaces() -> void:
+	var strips: Array[Rect2] = []
+	for e in _eaves:
+		strips.append(_eave_strip(e))
+	for r in _map["regions"]:
+		for rc in r["rects"]:
+			_floor_rect(rc, _attic_planks)
+			# Die Dachhaut reicht über die Wände (halbe Wandstärke); die Decke darunter liegt zwischen ihnen
+			for piece in _subtract(_rect(rc), strips):
+				structure_parts.append(Geo.solid(root, Vector3(piece.size.x, 0.2, piece.size.y),
+					Vector3(piece.get_center().x, ATTIC_H + 0.1, piece.get_center().y), _attic_planks, LAYER_CEILING))
+			for piece in _subtract(_rect(rc).grow(T / 2.0), strips):
+				Geo.mesh(root, Geo.box(Vector3(piece.size.x, 0.04, piece.size.y)), _attic_roof,
+					Vector3(piece.get_center().x, ATTIC_H + 0.22, piece.get_center().y))
+	for d in _doors:
+		var door: Door = d["door"]
+		var into: Vector3 = d["into"]
+		var size := Vector3(door.width, 0.3, T) if absf(into.z) > 0.5 else Vector3(T, 0.3, door.width)
+		Geo.solid(root, size, (d["pos"] as Vector3) + Vector3(0, -0.15, 0), _attic_planks)
+
+
+## Dachschrägen über den Traufen: innen Bohlen, außen die Dachhaut, dazwischen die Dachfenster des Plans (Rahmen und
+## Kreuz aus Holz, Glas ohne Schatten – Mondlicht fällt hindurch). Wo eine Schräge endet und daneben Dachboden mit
+## voller Höhe liegt, schließt ein Giebeldreieck den Spalt darüber.
+func _attic_slopes() -> void:
+	var rise := ATTIC_H - ATTIC_KNEE
+	var length := Vector2(ATTIC_SLOPE, rise).length()
+	var frame_wood := Mat.wood(false, ATTIC_BEAM_TINT)
+	for i in _eaves.size():
+		var e: Dictionary = _eaves[i]
+		var horizontal: bool = e["horizontal"]
+		var inward := float(e["inward"])
+		var a0 := float(e["from"]) - T / 2.0
+		var a1 := float(e["to"]) + T / 2.0
+		var face := float(e["fixed"]) + inward * T / 2.0
+		var x_axis := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
+		var in3 := Vector3(0, 0, inward) if horizontal else Vector3(inward, 0, 0)
+		var y_axis := (in3 * ATTIC_SLOPE + Vector3.UP * rise) / length
+		var z_axis := x_axis.cross(y_axis)
+		var out := 1.0 if z_axis.y > 0.0 else -1.0   # lokale Z-Richtung nach außen (oben)
+		var holder := Node3D.new()
+		holder.transform = Transform3D(Basis(x_axis, y_axis, z_axis),
+			Vector3(0, ATTIC_KNEE, face) if horizontal else Vector3(face, ATTIC_KNEE, 0))
+		root.add_child(holder)
+		var windows: Array = []
+		for wdw in _roof_windows:
+			var p: Vector2 = wdw["pos"]
+			var s := p.x if horizontal else p.y
+			if absf((p.y if horizontal else p.x) - float(e["fixed"])) < 0.2 and s > a0 and s < a1:
+				windows.append(Vector4(s, wdw["width"], ATTIC_WINDOW.y * length, ATTIC_WINDOW.x * length))
+		var inner := Geo.mesh(holder, Geo.wall_mesh(a0, a1, length, 0.04, windows), _attic_planks, Vector3(0, 0, -out * 0.02))
+		var skin := Geo.mesh(holder, Geo.wall_mesh(a0, a1, length, 0.04, windows), _attic_roof, Vector3(0, 0, out * 0.06))
+		structure_parts.append(inner)
+		structure_parts.append(skin)
+		Geo.collider(holder, Vector3(a1 - a0, length, 0.12), Vector3((a0 + a1) / 2.0, length / 2.0, out * 0.02), LAYER_CEILING)
+		for wdw: Vector4 in windows:
+			_roof_window(holder, wdw, out, frame_wood)
+			var below := Vector3(wdw.x, 0, face + inward * (ATTIC_SLOPE + 0.6)) if horizontal \
+				else Vector3(face + inward * (ATTIC_SLOPE + 0.6), 0, wdw.x)
+			attic_window_spots.append(Transform3D(Basis.looking_at(-in3), _global(below)))
+		for end in 2:
+			var s_end := a0 if end == 0 else a1
+			var beyond := s_end + (0.3 if end == 1 else -0.3)
+			var d := face + inward * ATTIC_SLOPE / 2.0
+			var probe := Vector2(beyond, d) if horizontal else Vector2(d, beyond)
+			if _kind_at(probe) == "attic" and _attic_ceiling(probe, i) > ATTIC_H - 0.01:
+				_attic_gable(horizontal, s_end, face, inward)
+
+
+## Dachfenster in der Schräge (lokal: x entlang der Traufe, y die Schräge hinauf, out = lokale Z nach außen): Rahmen,
+## Kreuz aus Holz in der Mitte, Glasscheibe.
+func _roof_window(holder: Node3D, w: Vector4, out: float, wood: Material) -> void:
+	var bar := ATTIC_WINDOW_BAR
+	var mid := (w.z + w.w) / 2.0
+	var tall := w.z - w.w
+	var depth := 0.14
+	var z := out * 0.02
+	for x: float in [w.x - w.y / 2.0 + bar / 2.0, w.x, w.x + w.y / 2.0 - bar / 2.0]:   # Seiten und Mittelpfosten
+		Geo.mesh(holder, Geo.grain_box(Vector3(bar, tall, depth), 1, Vector2(1.0, 0.2), 0.2), wood, Vector3(x, mid, z))
+	for y: float in [w.w + bar / 2.0, mid, w.z - bar / 2.0]:   # unten, Querholz, oben
+		Geo.mesh(holder, Geo.grain_box(Vector3(w.y, bar, depth), 0, Vector2(1.0, 0.2), 0.2), wood, Vector3(w.x, y, z))
+	var pane := QuadMesh.new()
+	pane.size = Vector2(w.y, tall)
+	var glass := Geo.mesh(holder, pane, Mat.glass(), Vector3(w.x, mid, out * 0.04))
+	glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# Licht, das durchs Fenster fällt: kalter Kegel ohne Schatten von außen hinein (AtticHaze regelt ihn mit dem Mond)
+	var shaft := SpotLight3D.new()
+	shaft.position = Vector3(w.x, mid, out * 0.4)
+	if out < 0.0:
+		shaft.rotation.y = PI   # Kegel zeigt entlang −Z: nach innen
+	shaft.spot_angle = ATTIC_SHAFT_ANGLE
+	shaft.spot_range = ATTIC_SHAFT_RANGE
+	shaft.light_color = ATTIC_SHAFT_COLOR
+	shaft.light_volumetric_fog_energy = ATTIC_SHAFT_FOG
+	shaft.distance_fade_enabled = true
+	shaft.distance_fade_begin = 25.0
+	shaft.distance_fade_length = 5.0
+	holder.add_child(shaft)
+	_window_shafts.append(shaft)
+
+
+## Giebeldreieck am Ende einer Schräge (bei s entlang der Traufe, face = Innenfläche der Außenwand): schließt den Raum
+## über der Schräge zur Seite hin, mit Kollision.
+func _attic_gable(horizontal: bool, s: float, face: float, inward: float) -> void:
+	var at := func(d: float, y: float) -> Vector3:
+		var across := face + inward * d
+		return Vector3(s, y, across) if horizontal else Vector3(across, y, s)
+	var pts := PackedVector3Array([at.call(0.0, ATTIC_KNEE), at.call(ATTIC_SLOPE, ATTIC_H), at.call(0.0, ATTIC_H)])
+	var normal := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
+	var front := -(pts[1] - pts[0]).cross(pts[2] - pts[0]).normalized()   # Godot: von vorn im Uhrzeigersinn
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for k in 6:   # beide Seiten
+		st.set_normal(front if k < 3 else -front)
+		st.add_vertex(pts[[0, 1, 2, 0, 2, 1][k]])
+	var gable := Geo.mesh(root, st.commit(), _attic_planks, Vector3.ZERO)
+	structure_parts.append(gable)
+	var body := StaticBody3D.new()
+	body.collision_layer = LAYER_CEILING
+	body.collision_mask = 0
+	root.add_child(body)
+	var shape := ConvexPolygonShape3D.new()
+	var thick := normal * 0.05
+	shape.points = PackedVector3Array([pts[0] - thick, pts[1] - thick, pts[2] - thick, pts[0] + thick, pts[1] + thick, pts[2] + thick])
+	var cs := CollisionShape3D.new()
+	cs.shape = shape
+	body.add_child(cs)
+
+
+## Stützbalken: In jeder Fläche des Dachbodens je Feld von etwa ATTIC_BAY m ein Pfosten in der Mitte (nicht unter der
+## Schräge, nicht vor einer Tür), oben ein Balkenkreuz bis an die Wände bzw. bis zum nächsten Feld, jeder Arm mit
+## einem Kopfband unter 45°. Je Fläche ein Mesh (Längsholz und Hirnholz) und ein Körper mit den Kollisionen.
+func _attic_beams() -> void:
+	var long := Mat.wood(false, ATTIC_BEAM_TINT)
+	var ends := Mat.wood(true, ATTIC_BEAM_TINT)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1987
+	for r in _map["regions"]:
+		if r["kind"] != "attic":
+			continue
+		var parts: Array = []   # [Mesh, Transform3D]
+		var body := StaticBody3D.new()
+		body.collision_mask = 0
+		root.add_child(body)
+		var beam := func(size: Vector3, grain: int, basis: Basis, pos: Vector3, solid: bool) -> void:
+			var m := Geo.grain_box(size, grain, Vector2(2.0, 0.4), 0.3, Vector2(rng.randf(), rng.randf()))
+			parts.append([m, Transform3D(basis, pos)])
+			if solid:
+				Geo.add_box_shape(body, size, pos)
+		var b := _bounds(r["rects"])
+		var n := Vector2i(maxi(1, roundi(b.size.x / ATTIC_BAY)), maxi(1, roundi(b.size.y / ATTIC_BAY)))
+		var cell := b.size / Vector2(n)
+		var arm_y := ATTIC_BEAM_BOTTOM + ATTIC_BEAM / 2.0
+		for ix in n.x:
+			for iz in n.y:
+				var c := b.position + cell * Vector2(ix + 0.5, iz + 0.5)
+				if not _in_region(c, r) or _attic_ceiling(c) < ATTIC_H - 0.01 or _near_door(c, ATTIC_POST_DOOR_GAP):
+					continue
+				beam.call(Vector3(ATTIC_POST, ATTIC_BEAM_BOTTOM, ATTIC_POST), 1, Basis(), Vector3(c.x, ATTIC_BEAM_BOTTOM / 2.0, c.y), true)
+				_attic_posts.append(c)
+				for dir: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN, Vector2.UP]:
+					var reach := (cell.x if dir.x != 0.0 else cell.y) / 2.0
+					var len := 0.0
+					while len < reach:
+						var next := minf(len + 0.1, reach)
+						var p := c + dir * next
+						if not _in_region(p, r) or _attic_ceiling(p) < ATTIC_BEAM_BOTTOM + ATTIC_BEAM:
+							break
+						len = next
+					if len < reach:
+						len += 0.08   # bis an die Wand bzw. in die Schräge
+					if len < ATTIC_POST:
+						continue
+					var x_dir := dir.x != 0.0
+					var mid := c + dir * len / 2.0
+					var size := Vector3(len, ATTIC_BEAM, ATTIC_BEAM) if x_dir else Vector3(ATTIC_BEAM, ATTIC_BEAM, len)
+					beam.call(size, 0 if x_dir else 2, Basis(), Vector3(mid.x, arm_y, mid.y), true)
+					if len < ATTIC_POST / 2.0 + ATTIC_BRACE + 0.1:
+						continue
+					# Kopfband: vom Pfosten schräg hinauf unter den Arm
+					var axis := Vector3(dir.x, 1.0, dir.y).normalized()
+					var side := Vector3(-dir.y, 0.0, dir.x)
+					var basis := Basis(axis, side.cross(axis), side)
+					var at := c + dir * (ATTIC_POST / 2.0 + ATTIC_BRACE / 2.0)
+					beam.call(Vector3(ATTIC_BRACE * sqrt(2.0) + ATTIC_BRACE_SIZE, ATTIC_BRACE_SIZE, ATTIC_BRACE_SIZE), 0, basis,
+						Vector3(at.x, ATTIC_BEAM_BOTTOM - ATTIC_BRACE / 2.0, at.y), false)
+		if parts.is_empty():
+			body.queue_free()
+			continue
+		var mesh := ArrayMesh.new()
+		for surface in 2:
+			var st := SurfaceTool.new()
+			for part: Array in parts:
+				st.append_from(part[0], surface, part[1])
+			st.commit(mesh)
+		var mi := Geo.mesh(root, mesh, null, Vector3.ZERO)
+		mi.set_surface_override_material(0, long)
+		mi.set_surface_override_material(1, ends)
+		structure_parts.append(mi)
+
+
+## Liegt p in der Fläche region (Plan-Region)?
+func _in_region(p: Vector2, region: Dictionary) -> bool:
+	var place := _place_at(p)
+	return not place.is_empty() and is_same(place["region"], region)
+
+
+## Steht eine Tür dieses Stockwerks näher als dist an p?
+func _near_door(p: Vector2, dist: float) -> bool:
+	for d in _doors:
+		var pos: Vector3 = d["pos"]
+		if Vector2(pos.x, pos.z).distance_to(p) < dist:
+			return true
+	return false
+
+
+## Markierungen des Plans: Auf dem roten Kreuz liegt der richtige Kopf des Kürbismanns (Spielkonzept 4.21).
+func _attic_markers() -> void:
+	for m in _map.get("markers", []):
+		if m["kind"] == "cross":
+			var p := _v2(m["pos"])
+			for post in _attic_posts:   # steht dort ein Stützbalken, liegt der Kopf an seinem Fuß
+				if post.distance_to(p) < ATTIC_POST:
+					p = post + Vector2(0, ATTIC_POST / 2.0 + 0.14)
+			_item(Item.Kind.PUMPKIN_HEAD, Vector3(p.x, 0.02, p.y))
+			pumpkin_head_spot = _global(Vector3(p.x, 0.0, p.y))
+
+
+## Staubnebel (AtticHaze) über die Fläche des Dachbodens: das Raster der Flächen in 1-m-Zellen, zu Rechtecken
+## zusammengefasst (über den Innenhöfen kein Nebel).
+func _attic_haze() -> void:
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for r in _map["regions"]:
+		var b := _bounds(r["rects"])
+		lo = Vector2(minf(lo.x, b.position.x), minf(lo.y, b.position.y))
+		hi = Vector2(maxf(hi.x, b.end.x), maxf(hi.y, b.end.y))
+	if lo.x == INF:
+		return
+	var size := Vector2i(ceili(hi.x - lo.x), ceili(hi.y - lo.y))
+	var used := PackedByteArray()
+	used.resize(size.x * size.y)
+	for z in size.y:
+		for x in size.x:
+			var p := lo + Vector2(x + 0.5, z + 0.5)
+			used[z * size.x + x] = 1 if _kind_at(p) in ["attic", "stairs"] else 0
+	var rects: Array[Rect2] = []
+	for z in size.y:
+		var x := 0
+		while x < size.x:
+			if used[z * size.x + x] != 1:
+				x += 1
+				continue
+			var x1 := x
+			while x1 < size.x and used[z * size.x + x1] == 1:
+				x1 += 1
+			var z1 := z + 1
+			while z1 < size.y:
+				var full := true
+				for k in range(x, x1):
+					if used[z1 * size.x + k] != 1:
+						full = false
+						break
+				if not full:
+					break
+				z1 += 1
+			for zz in range(z, z1):
+				for k in range(x, x1):
+					used[zz * size.x + k] = 2
+			rects.append(Rect2(lo + Vector2(x, z), Vector2(x1 - x, z1 - z)))
+			x = x1
+	attic_haze = AtticHaze.new().setup(rects, _base_y, ATTIC_H, _window_shafts)
+	attic_haze.name = "Dachbodennebel"
+	world.add_child(attic_haze)
+
+
+## Treppe vom Obergeschoss in den Dachboden (Spielkonzept 4.21): im Schacht des Treppenhauses unter dem Treppenpodest
+## des Plans „DG“ ein steiler gerader Lauf auf der einen Seite hinauf bis zum Podest an der Rückwand, von dort auf der
+## anderen Seite (Geländer zum Treppenloch) zur Kniestocktür in der Wand des Dachbodens. Unten schließt ein Boden auf
+## Höhe des Obergeschosses den Schacht ab (darunter bleibt das Treppenhaus gesperrt). Über dem Obergeschoss ein
+## Verschlag aus Bohlen mit Dach und einer schwachen Wandleuchte. Gebaut im Rahmen des Schachts (lokal −Z zum Podest,
+## _index_shafts), wie die Treppenhäuser – nur dass die Tür hinauf auf der Podestseite liegt.
+func _attic_stair(plan: Dictionary, level: int) -> void:
+	if not _shafts.has(_attic_shaft):
+		return
+	var sh: Dictionary = _shafts[_attic_shaft]
+	var s: Dictionary = sh["plan"]
+	var stair: Dictionary = plan["stairs"][0]
+	var frame := Node3D.new()
+	frame.name = "Dachbodentreppe"
+	frame.transform = sh["frame"]
+	frame.position.y = UP_Y * (level - 1)
+	root.add_child(frame)
+	_parent = frame
+	var inv := (sh["frame"] as Transform3D).affine_inverse()
+	var r: Rect2 = sh["rect"]
+	var c0 := inv * Vector3(r.position.x, 0, r.position.y)
+	var c1 := inv * Vector3(r.end.x, 0, r.end.y)
+	var x0 := minf(c0.x, c1.x)
+	var x1 := maxf(c0.x, c1.x)
+	var zn := minf(c0.z, c1.z)   # Podestseite
+	var zs := maxf(c0.z, c1.z)   # Türseite
+	var z_land := zn + 1.5
+	var z_door := zs - 1.4
+	if s.has("steps"):
+		var st: Array = s["steps"]
+		var s0 := inv * Vector3(st[0], 0, st[1])
+		var s1 := inv * Vector3(st[2], 0, st[3])
+		z_land = minf(s0.z, s1.z)
+		z_door = maxf(s0.z, s1.z)
+	var mid := (x0 + x1) / 2.0
+	var lane_w := (x1 - x0 - T) / 2.0
+	# Die Kniestocktür (Plan „DG“) liegt auf einer Seite der Mittelwand: dort führt der Gang oben zurück zu ihr, auf der
+	# anderen steigt der Lauf
+	var door_at := inv * _v3(stair["door"]["pos"])
+	var walk_west := door_at.x < mid
+	var walk_x := x0 + lane_w / 2.0 if walk_west else x1 - lane_w / 2.0
+	var flight_x := x1 - lane_w / 2.0 if walk_west else x0 + lane_w / 2.0
+	var z_wall := door_at.z - T / 2.0   # Fläche der Dachbodenwand mit der Kniestocktür
+	var rise := UP_Y
+	var top := rise + ATTIC_H
+	var below := H   # Oberkante der Schachtwände des Stockwerks darunter (über dessen Boden)
+	Geo.solid(frame, Vector3(x1 - x0, 0.3, zs - zn), Vector3(mid, -0.15, (zs + zn) / 2.0), _wood_floor)
+	_flight(flight_x, z_door, z_land, 0.0, rise, lane_w, _attic_planks)
+	Geo.solid(frame, Vector3(x1 - x0, 0.3, z_land - zn), Vector3(mid, rise - 0.15, (zn + z_land) / 2.0), _attic_planks)
+	Geo.solid(frame, Vector3(lane_w, 0.3, z_wall - z_land), Vector3(walk_x, rise - 0.15, (z_land + z_wall) / 2.0), _attic_planks)
+	Geo.solid(frame, Vector3(T, rise, z_door - z_land), Vector3(mid, rise / 2.0, (z_door + z_land) / 2.0), _wallpaper)
+	# Geländer am Treppenloch
+	var rail := z_wall - z_land
+	Geo.collider(frame, Vector3(0.08, 1.0, rail), Vector3(mid, rise + 0.5, (z_land + z_wall) / 2.0))
+	Geo.mesh(frame, Geo.grain_box(Vector3(0.08, 0.06, rail), 2, Vector2(2.0, 0.4), 0.3), Mat.wood(false, ATTIC_BEAM_TINT),
+		Vector3(mid, rise + 0.95, (z_land + z_wall) / 2.0))
+	var posts := maxi(1, roundi(rail / 1.0))
+	for i in posts + 1:
+		Geo.mesh(frame, Geo.box(Vector3(0.06, 0.92, 0.06)), Mat.wood(false, ATTIC_BEAM_TINT),
+			Vector3(mid, rise + 0.46, z_land + rail * i / posts))
+	# Verschlag über dem Obergeschoss bis an die Wand des Dachbodens, mit Dach
+	var h_wall := top - below
+	var y_wall := (top + below) / 2.0
+	structure_parts.append(Geo.solid(frame, Vector3(x1 - x0 + 2.0 * T, h_wall, T), Vector3(mid, y_wall, zn - T / 2.0), _attic_planks))
+	for x: float in [x0 - T / 2.0, x1 + T / 2.0]:
+		structure_parts.append(Geo.solid(frame, Vector3(T, h_wall, z_wall - zn), Vector3(x, y_wall, (zn + z_wall) / 2.0), _attic_planks))
+	structure_parts.append(Geo.solid(frame, Vector3(x1 - x0 + 2.0 * T, 0.2, z_wall - zn + T), Vector3(mid, top + 0.1,
+		(zn - T + z_wall) / 2.0), _attic_planks, LAYER_CEILING))
+	Geo.mesh(frame, Geo.box(Vector3(x1 - x0 + 2.0 * T, 0.04, z_wall - zn + T)), _attic_roof, Vector3(mid, top + 0.22,
+		(zn - T + z_wall) / 2.0))
+	_wall_lamp(Vector3(walk_x, rise + 1.7, zn + WALL_GAP), 0.0, WALL_LAMP_ENERGY * 0.6, 5.0, "treppenhaus")
+	attic_stair_foot = Transform3D(frame.global_basis, frame.global_transform * Vector3(flight_x, 0.0, (zs + z_door) / 2.0))
+	_parent = root
 
 
 # --- Treppenhäuser und Keller -----------------------------------------------------------------------
@@ -3335,6 +4267,12 @@ func room_at(p: Vector3) -> String:
 	return _on_floor(level, func() -> String: return _room_id_at(Vector2(p.x, p.z)))
 
 
+## Wie room_at, nur zählt ein Bad zu dem Zimmer hinter seiner Tür.
+func home_room_at(p: Vector3) -> String:
+	var id := room_at(p)
+	return String(_bath_owner.get(id, id))
+
+
 ## Ist p draußen (Garten, Innenhof, Terrasse, Balkon)?
 func is_outdoor(p: Vector3) -> bool:
 	var level := _level_of(p.y)
@@ -3389,19 +4327,62 @@ func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material,
 		var op: Vector4 = o
 		var a := op.x - op.y / 2.0
 		if a > cursor:
-			Geo.collider(holder, Vector3(a - cursor, height, T), Vector3((cursor + a) / 2.0, height / 2.0, 0))
+			_wall_box(holder, cursor, a, 0.0, height)
 		if op.w > 0.0:
-			Geo.collider(holder, Vector3(op.y, op.w, T), Vector3(op.x, op.w / 2.0, 0))
+			_wall_box(holder, a, op.x + op.y / 2.0, 0.0, op.w)
 		if op.z < height:
-			Geo.collider(holder, Vector3(op.y, height - op.z, T), Vector3(op.x, op.z + (height - op.z) / 2.0, 0))
+			_wall_box(holder, a, op.x + op.y / 2.0, op.z, height)
 		cursor = op.x + op.y / 2.0
 	if a1 > cursor:
-		Geo.collider(holder, Vector3(a1 - cursor, height, T), Vector3((cursor + a1) / 2.0, height / 2.0, 0))
-	var wall := Geo.mesh(holder, Geo.wall_mesh(a0, a1, height, T, openings), null, Vector3.ZERO)
+		_wall_box(holder, cursor, a1, 0.0, height)
+	var wall := Geo.mesh(holder, _cap_top(Geo.wall_mesh(a0, a1, height, T, openings + _top_breaks(a0, a1, height))), null, Vector3.ZERO)
 	wall.set_surface_override_material(0, mat)
-	ShadowBudget.structure(wall)   # hält das Licht aller Lampen auf
+	structure_parts.append(wall)   # hält das Licht aller Lampen auf (ShadowBudget.merge)
 	if wall.mesh.get_surface_count() > 1:
 		wall.set_surface_override_material(1, mat if mat == _concrete else OpeningFrame.trim_material())
+
+
+## Kollisionskasten eines Wandstücks von a bis b (entlang der Wand) und y0 bis y1 – im Dachgeschoss nur so hoch, wie die
+## Wand unter der Schräge reicht (höchster Punkt im Stück).
+func _wall_box(holder: Node3D, a: float, b: float, y0: float, y1: float) -> void:
+	if _wall_top.is_valid():
+		var top := 0.0
+		var n := maxi(1, ceili((b - a) / GRID))
+		for i in n + 1:
+			top = maxf(top, _wall_top.call(lerpf(a, b, float(i) / n)))
+		y1 = minf(y1, top)
+	if y1 - y0 > 0.001:
+		Geo.collider(holder, Vector3(b - a, y1 - y0, T), Vector3((a + b) / 2.0, (y0 + y1) / 2.0, 0))
+
+
+## Dachgeschoss: Stützstellen für die Oberkante unter der Schräge – Öffnungen ohne Breite alle GRID m, wo _wall_top
+## unter height liegt (Geo.wall_mesh legt dort Rasterlinien, _cap_top zieht deren Ecken herab).
+func _top_breaks(a0: float, a1: float, height: float) -> Array:
+	var out := []
+	if not _wall_top.is_valid():
+		return out
+	var n := maxi(1, ceili((a1 - a0) / GRID))
+	for i in range(1, n):
+		var x := lerpf(a0, a1, float(i) / n)
+		if _wall_top.call(x) < height - 0.001 or _wall_top.call(lerpf(a0, a1, float(i - 1) / n)) < height - 0.001 \
+				or _wall_top.call(lerpf(a0, a1, float(i + 1) / n)) < height - 0.001:
+			out.append(Vector4(x, 0.0, height, height))
+	return out
+
+
+## Dachgeschoss: Ecken eines Wand-Meshs (lokal x entlang der Wand) auf die Oberkante _wall_top herabziehen.
+func _cap_top(m: ArrayMesh) -> ArrayMesh:
+	if not _wall_top.is_valid():
+		return m
+	var out := ArrayMesh.new()
+	for i in m.get_surface_count():
+		var arrays := m.surface_get_arrays(i)
+		var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		for k in verts.size():
+			verts[k].y = minf(verts[k].y, _wall_top.call(verts[k].x))
+		arrays[Mesh.ARRAY_VERTEX] = verts
+		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return out
 
 
 ## Schild an der Wand (pos = 1 cm vor der Wandfläche, Schrift zeigt nach +Z): Buchstaben als echte Geometrie
@@ -3518,8 +4499,10 @@ func _switch(room_id: String, label: String, pos: Vector3, yaw: float) -> LightS
 	return sw
 
 
-func _hide_spot(type: HideSpot.Type, pos: Vector3, yaw: float) -> HideSpot:
+func _hide_spot(type: HideSpot.Type, pos: Vector3, yaw: float, bed_size := Vector2.ZERO) -> HideSpot:
 	var spot := HideSpot.new().setup(type)
+	if bed_size != Vector2.ZERO:
+		spot.bed_size = bed_size
 	spot.position = pos
 	spot.rotation.y = yaw
 	_parent.add_child(spot)

@@ -28,6 +28,9 @@ uniform float tex_scale = 1.0;
 // Textur in Modellkoordinaten statt in Weltkoordinaten – für Bewegtes (Aufzugskabine): sonst wanderte das Bild
 // über die Wand, während sie fährt
 uniform bool object_uv = false;
+// Textur über die UVs des Meshs (in Metern, × tex_scale) statt projiziert – für Holz mit Faserrichtung
+// (Geo.grain_box): Tangente und Bild-„oben“ der Normal Map kommen aus den Ableitungen auf dem Bildschirm
+uniform bool mesh_uv = false;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -65,7 +68,21 @@ void fragment() {
 		up_axis = vec3(0.0, 1.0, 0.0);
 	}
 	uv = vec2(uv.x, -uv.y) * tex_scale;
-	if (object_uv) {
+	if (mesh_uv) {
+		uv = UV * tex_scale;
+		vec3 n_w = normalize(world_normal);
+		vec3 dp1 = dFdx(world_pos);
+		vec3 dp2 = dFdy(world_pos);
+		vec2 duv1 = dFdx(uv);
+		vec2 duv2 = dFdy(uv);
+		vec3 dp2perp = cross(dp2, n_w);
+		vec3 dp1perp = cross(n_w, dp1);
+		vec3 t = dp2perp * duv1.x + dp1perp * duv2.x;
+		vec3 b = dp2perp * duv1.y + dp1perp * duv2.y;
+		float inv = inversesqrt(max(max(dot(t, t), dot(b, b)), 1e-12));
+		u_axis = t * inv;
+		up_axis = -b * inv;   // v wächst im Bild nach unten
+	} else if (object_uv) {
 		u_axis = normalize((MODEL_MATRIX * vec4(u_axis, 0.0)).xyz);
 		up_axis = normalize((MODEL_MATRIX * vec4(up_axis, 0.0)).xyz);
 	}

@@ -77,6 +77,7 @@ func _ready() -> void:
 	collision_layer = 4
 	collision_mask = 0
 	add_to_group("lamp_fixtures")
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
 	if style == Style.HALOGEN:
 		_build_halogen()
 		return
@@ -259,6 +260,16 @@ func _process(delta: float) -> void:
 		burn_out()
 
 
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): je Sekunde dieselbe Chance
+## durchzubrennen wie sonst (ohne Monster in der Nähe – es war nicht wirklich da).
+func skip_time(dt: float) -> void:
+	if light == null or not is_lit():
+		return
+	var chance := BREAK_PER_FLICKER * light.flicker * light.flicker
+	if chance > 0.0 and randf() < 1.0 - pow(1.0 - chance, dt):
+		burn_out()
+
+
 ## Die Birne brennt durch: kurzes Aufblitzen, Knall – dann bleibt es dunkel.
 func burn_out() -> void:
 	if not is_lit():
@@ -299,9 +310,13 @@ func insert_bulb(item: Item) -> void:
 	Game.noise("bulb", global_position)
 
 
+## Wem die Lampe gehört: der erste Erwachsene des Zimmers (Haushalt, Spielkonzept 6.20), sonst wer dort wohnt.
 func owner_guest() -> Guest:
 	if Game.social == null:
 		return null
+	var lead := Game.social.household_lead(room_id)
+	if lead:
+		return lead
 	for guest in Game.social.guests:
 		if guest.home["no"] == room_id and not guest.dead:
 			return guest

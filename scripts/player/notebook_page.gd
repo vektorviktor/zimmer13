@@ -6,6 +6,8 @@ extends Control
 ##   Aufgabe: „– Text“, darunter klein Auftraggeber, Zimmer und Frist; erledigt durchgestrichen, verpasst „zu spät“,
 ##            Auftraggeber tot: ein Kreuz hinter seinem Namen.
 ##   Notiz:   klein Uhrzeit und Quelle, darunter der Text.
+## Gesehen (kind „threats“, rows = [{id, at}]): je Bedrohung ein Bild wie ein eingeklebtes Foto (Porträt aus IconArt,
+## dreifach, Pixel für Pixel), darunter Name, Tag und Uhrzeit, als man sie zuerst sah.
 ## Die Seite hat das Seitenverhältnis der Kartenblätter. In der Hand ist oben und unten ein Streifen abgeschnitten
 ## (TOP, BOTTOM halten Abstand), bei 480 × 270 sieht man die Seite etwa halb so groß wie die Textur.
 
@@ -31,7 +33,14 @@ const BOOKMARKS := {
 	"map": {"title": "Karte", "color": Color(0.72, 0.55, 0.22)},
 	"tasks": {"title": "Aufgaben", "color": Color(0.55, 0.13, 0.1)},
 	"notes": {"title": "Notizen", "color": Color(0.2, 0.4, 0.3)},
+	"threats": {"title": "Gesehen", "color": Color(0.22, 0.2, 0.26)},
 }
+## Gesehen: Bild (Porträt × PHOTO_SCALE), Rahmen ringsum, Abstand von oben, Hintergrund des Bilds und Rahmenfarbe
+const PHOTO_SCALE := 3
+const PHOTO_FRAME := 10.0
+const PHOTO_Y := 160.0
+const PHOTO_DARK := Color(0.3, 0.29, 0.33)   # hell genug, dass das dunkle Monster sich abhebt
+const PHOTO_PAPER := Color(0.95, 0.93, 0.88)
 
 var kind := "tasks"
 var rows: Array = []
@@ -49,6 +58,7 @@ func setup(p_kind: String, p_rows: Array, p_page: int, p_pages: int) -> Notebook
 
 func _ready() -> void:
 	size = Vector2(SIZE)
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST   # die Porträts Pixel für Pixel vergrößert
 
 
 ## Die Seiten eines Lesezeichens: Liste von Seiten, jede eine Liste von Zeilen
@@ -159,6 +169,9 @@ func _draw() -> void:
 		var after := TEXT_X + 20.0 + font.get_string_size(String(mark["title"]), HORIZONTAL_ALIGNMENT_LEFT, -1, HEAD_PX).x
 		draw_string(font, Vector2(after + 18.0, HEAD_Y), "Seite %d/%d" % [page + 1, pages], HORIZONTAL_ALIGNMENT_LEFT, -1,
 			SMALL_PX, HotelMap.FADED)
+	if kind == "threats":
+		_draw_threats(font)
+		return
 	if rows.is_empty():
 		draw_string(font, Vector2(TEXT_X + INDENT, TOP + LINE_H * 1.0 - 9.0), "Noch nichts notiert.", HORIZONTAL_ALIGNMENT_LEFT,
 			-1, TEXT_PX, HotelMap.FADED)
@@ -184,3 +197,32 @@ func _draw() -> void:
 		if r["late"]:
 			draw_string(font, Vector2(pos.x + w + (14.0 if t != "" else 0.0), pos.y), "zu spät", HORIZONTAL_ALIGNMENT_LEFT, -1,
 				TEXT_PX, HotelMap.PEN)
+
+
+## Gesehen: nebeneinander je ein Foto mit Rahmen (leicht schief eingeklebt), darunter Name, Tag und Uhrzeit.
+func _draw_threats(font: Font) -> void:
+	var column := (RIGHT - TEXT_X) / 3.0
+	var side := float(IconArt.SIZE * PHOTO_SCALE)
+	for i in rows.size():
+		var r: Dictionary = rows[i]
+		var id := String(r["id"])
+		var cx := TEXT_X + column * (i + 0.5)
+		var tilt := (-0.03 if i % 2 == 0 else 0.025)
+		draw_set_transform(Vector2(cx, PHOTO_Y + side / 2.0), tilt)
+		var frame := Rect2(Vector2(-side / 2.0 - PHOTO_FRAME, -side / 2.0 - PHOTO_FRAME), Vector2(side, side) + Vector2.ONE * PHOTO_FRAME * 2.0)
+		draw_rect(frame.grow(2.0), Color(0, 0, 0, 0.18))   # Schatten unter dem Foto
+		draw_rect(frame, PHOTO_PAPER)
+		draw_rect(Rect2(Vector2(-side / 2.0, -side / 2.0), Vector2(side, side)), PHOTO_DARK)
+		var tex := IconArt.threat(id)
+		if tex:
+			draw_texture_rect(tex, Rect2(Vector2(-side / 2.0, -side / 2.0), Vector2(side, side)), false)
+		draw_set_transform(Vector2.ZERO)
+		var at := float(r["at"])
+		var y := PHOTO_Y + side + PHOTO_FRAME + 44.0
+		for line: Array in [[IconArt.threat_name(id), HEAD_PX, HotelMap.INK], [Calendar.date_text(at), SMALL_PX, HotelMap.FADED],
+				[Calendar.time_text(at), SMALL_PX, HotelMap.FADED]]:
+			var text := String(line[0])
+			var px := int(line[1])
+			var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px).x
+			draw_string(font, Vector2(cx - w / 2.0, y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, px, line[2])
+			y += LINE_H

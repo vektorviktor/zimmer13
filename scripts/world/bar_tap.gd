@@ -34,6 +34,10 @@ func get_prompt(player: Player) -> String:
 	return "Etwas trinken – %d Geld [E]" % PRICE + ("" if Game.money >= PRICE else " (kein Geld)")
 
 
+func get_icon(_player: Player) -> String:
+	return "alcohol"
+
+
 func interact(player: Player) -> void:
 	if player.drunk >= ENOUGH:
 		Game.say("Noch eins, und ich falle um.", 2.5)

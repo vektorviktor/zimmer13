@@ -170,10 +170,14 @@ const ALL := {
 
 ## Zufällig erzeugte Gäste dieser Partie (ID → Profil), siehe GuestGenerator.
 static var generated := {}
+## Kernfiguren in ihrem Haushalt (Spielkonzept 6.20): Kopie aus ALL mit Zimmer, Nachname und Haushalt aus HAUSHALTE.md
+static var placed := {}
 
 
 ## Profil eines Gastes – handgeschrieben oder erzeugt; {} wenn unbekannt.
 static func get_profile(id: String) -> Dictionary:
+	if placed.has(id):
+		return placed[id]
 	if ALL.has(id):
 		return ALL[id]
 	return generated.get(id, {})

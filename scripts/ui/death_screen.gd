@@ -2,6 +2,16 @@ class_name DeathScreen
 extends CanvasLayer
 ## Sterbebildschirm nach dem Jumpscare: verrauschtes Standbild. Danach den letzten
 ## Spielstand laden, einen anderen wählen oder zurück ins Hauptmenü (Spielkonzept 8.7).
+## Oben das Porträt dessen, der einen geholt hat (Player.killed_by, IconArt.THREATS – sonst der Totenkopf), neben
+## der Überschrift je ein kleiner Totenkopf.
+
+## Wer einen geholt hat: Satz unter der Überschrift
+const KILLED_LINES := {
+	"monster": "Das Monster hat dich geholt.",
+	"ghost": "Der Lakengeist hat dir die Luft genommen.",
+	"pumpkin": "Der Kürbismann hat dich erwischt.",
+}
+const TITLE_SKULL := 32
 
 const NOISE_SHADER := """
 shader_type canvas_item;
@@ -45,8 +55,21 @@ func _ready() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 6)
 	root.add_child(box)
-	box.add_child(_label("DU BIST GESTORBEN", 24, Color(0.8, 0.1, 0.08)))
-	box.add_child(_label("Das Hotel lässt niemanden gehen …", 10, Color(0.7, 0.65, 0.6)))
+	var killer := Game.player.killed_by if Game.player else ""
+	var portrait := TextureRect.new()
+	portrait.texture = IconArt.threat(killer) if IconArt.THREATS.has(killer) else IconArt.texture("dead")
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED   # 1 : 1 – Pixel für Pixel
+	portrait.custom_minimum_size = Vector2(IconArt.SIZE, IconArt.SIZE)
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(portrait)
+	var title := HBoxContainer.new()
+	title.alignment = BoxContainer.ALIGNMENT_CENTER
+	title.add_theme_constant_override("separation", 6)
+	title.add_child(_skull())
+	title.add_child(_label("DU BIST GESTORBEN", 24, Color(0.8, 0.1, 0.08)))
+	title.add_child(_skull())
+	box.add_child(title)
+	box.add_child(_label(KILLED_LINES.get(killer, "Das Hotel lässt niemanden gehen …"), 10, Color(0.7, 0.65, 0.6)))
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 10)
 	box.add_child(spacer)
@@ -70,6 +93,14 @@ func _label(text: String, font_size: int, color: Color) -> Label:
 	label.text = text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return label
+
+
+func _skull() -> TextureRect:
+	var skull := TextureRect.new()
+	skull.texture = IconArt.texture("dead", TITLE_SKULL)
+	skull.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	skull.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return skull
 
 
 func _button(text: String, callback: Callable) -> Button:

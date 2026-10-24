@@ -28,6 +28,10 @@ const BOLDNESS_PER_DAY := 12.0         ## nach dem ersten Angriff, je Spieltag (
 ## Anspruch an Deko (Spielkonzept 5.10): ×1 am DEMAND_FROM_DAY, gleitend bis ×DEMAND_MAX an Halloween, dann gedeckelt
 const DEMAND_FROM_DAY := 2.0
 const DEMAND_MAX := 3.0
+## Haushalte (Spielkonzept 6.20): Je weiterem Erwachsenen hinter einer Zimmertür wächst ihr Anspruch um diesen Anteil
+## (mehr Leute bringen mehr Deko, sind aber auch mehr Beute) – gilt bis DOOR_DEMAND_RANGE vor der Tür
+const HOUSEHOLD_DEMAND := 0.35
+const DOOR_DEMAND_RANGE := 1.6
 const DECO_RADIUS := 3.0
 ## Füllmaterial (Item.is_filler: Laub, Spinnweben, Kerzen, Zierkürbisse, kleine Sorten) zählt an einer Stelle
 ## zusammen höchstens so viel – ein Grundschutz, der ab Monatsmitte nie allein reicht (5.10)
@@ -120,6 +124,10 @@ const RUMBLE_START := 0.12
 const RUMBLE_FADE := 0.4
 ## So oft wirkt das Grollen auf die Gäste (Social.on_rumble)
 const RUMBLE_GUEST_EVERY := 3.0
+## Zeitsprung im Schlaf (Spielkonzept 3.6): So lange dauert im Mittel ein Weg zu einem Ziel samt Absuchen – so viele
+## Ziele nimmt es sich je Aktivphase vor; mit Wache biegt es so oft doch nicht zu Zimmer 13 ab
+const SKIP_LEG := 30.0
+const SKIP_GUARD := 0.5
 
 var phase := Phase.CALM
 var boldness := BOLDNESS_START
@@ -129,6 +137,8 @@ var zones: Array[Dictionary] = []
 var spawn_points: Array[Vector3] = []
 var patrol: Array[Dictionary] = []
 var rooms := {}
+var _adults := {}             ## Zimmer → Zahl lebender Erwachsener (_adults_per_room, einmal je Sekunde)
+var _adults_frame := -1000
 var player_door_front := Vector3.ZERO
 var post_material: ShaderMaterial
 ## Dramaturgie
@@ -158,6 +168,7 @@ var _rumble_total := 0.0        ## so lang war die Frist, als das Grollen begann
 var _doll_check := 0.0
 var _rumble_told := false
 var _rumble_tick := 0.0
+var skipping := false            ## Zeitsprung im Schlaf läuft: Zeitplan und Spuk rechnet skip() (SleepSkip)
 
 var _monster: Monster
 var _phase_left := 0.0
@@ -218,7 +229,7 @@ func _physics_process(delta: float) -> void:
 			# „Angst riecht“: ein Spieler unter Schock lockt das Monster an
 			if Game.player and Game.player.shock > 0.1:
 				add_curiosity(Game.player.global_position, Game.player.shock * 3.0)
-		if first_attack_done:
+		if first_attack_done and not skipping:
 			_update_schedule(delta)
 			_update_haunting(delta)
 		_update_hallucination(delta)
@@ -248,8 +259,26 @@ func deterrence_at(p: Vector3) -> float:
 	if _builder and _builder.is_safe(p):
 		return INF   # Katzenraum (Spielkonzept 7.7): dort hinein kommt es nie, wer drinsteht, ist geschützt
 	var light := light_at(p + Vector3.UP)
-	return deco_strength_at(p) * (0.6 + light) / demand() \
+	return deco_strength_at(p) * (0.6 + light) / (demand() * _household_factor(p)) \
 		+ light * LIGHT_DETERRENCE * (1.0 - effective_boldness() / 120.0)
+
+
+## Anspruch einer Zimmertür nach ihren Bewohnern (6.20): 1 vor Türen mit einem Erwachsenen und abseits von Türen.
+func _household_factor(p: Vector3) -> float:
+	var frame := Engine.get_process_frames()
+	if frame - _adults_frame > 60:
+		_adults_frame = frame
+		_adults.clear()
+		if Game.social:
+			for guest in Game.social.living_guests():
+				if not guest.is_child():
+					_adults[guest.home["no"]] = int(_adults.get(guest.home["no"], 0)) + 1
+	for no in _adults:
+		if int(_adults[no]) > 1 and rooms.has(no):
+			var front: Vector3 = rooms[no]["door_front"]
+			if absf(front.y - p.y) < 1.5 and Vector2(front.x - p.x, front.z - p.z).length() < DOOR_DEMAND_RANGE:
+				return 1.0 + HOUSEHOLD_DEMAND * (int(_adults[no]) - 1)
+	return 1.0
 
 
 func is_blocked(p: Vector3, chasing: bool) -> bool:
@@ -988,7 +1017,9 @@ func kill_guest(guest, spot: HideSpot) -> void:
 		Game.noise("scream", guest.global_position, guest)
 		guest.wound_by("scratch", _monster)
 		guest.scared_by_monster()
-		if raided:
+		if skipping:
+			pass   # im Zeitsprung ist es nicht wirklich da
+		elif raided:
 			_monster.continue_raid(guest)
 		else:
 			_monster.after_scare(guest)
@@ -1013,12 +1044,15 @@ func kill_guest(guest, spot: HideSpot) -> void:
 	if Game.tracing:
 		print("[Geholt] %s · noch %d Opfer%s" % [guest.display_name, victims_left, " (Puppenzimmer)" if doomed else ""])
 	if raided:   # gewähltes Zimmer: weiter durchsuchen
-		_monster.continue_raid(null)
+		if not skipping:
+			_monster.continue_raid(null)
 	elif victims_left > 0 or _raiding:   # Raubzug bzw. weiter zur Puppentür
-		_monster.after_kill_hunting()
+		if not skipping:
+			_monster.after_kill_hunting()
 	else:
 		on_guest_taken()
-		_monster.after_feeding()
+		if not skipping:
+			_monster.after_feeding()
 	if Game.social:
 		Game.social.on_guest_died(guest)
 
@@ -1031,7 +1065,8 @@ func _scare_guest(guest, spot: HideSpot) -> void:
 		spot.rip_open()
 	Game.noise("scream", guest.global_position, guest)
 	guest.scared_by_monster()
-	_monster.after_scare(guest)
+	if not skipping:
+		_monster.after_scare(guest)
 
 
 ## Erwischt es den Spieler, stirbt er – immer, auch beim Umsehen und bei den ersten Angriffen (2026-10-22, ersetzt das
@@ -1042,6 +1077,7 @@ func kill_player(spot: HideSpot) -> void:
 	Game.game_over = true
 	var player := Game.player
 	player.dead = true
+	player.killed_by = "monster"
 	if Game.hud:
 		Game.hud.set_prompt("")
 	if spot != null:
@@ -1062,10 +1098,11 @@ func flash(seconds: float) -> void:
 
 
 ## Kürbismann oder Lakengeist hat den Spieler getötet (das Monster hat seinen Jumpscare, kill_player): Spiel aus,
-## HUD weg, Schrei und rotes Aufblitzen, nach 1,5 s der Sterbebildschirm.
-func player_slain() -> void:
+## HUD weg, Schrei und rotes Aufblitzen, nach 1,5 s der Sterbebildschirm. by: „ghost“ oder „pumpkin“ (Porträt dort).
+func player_slain(by: String) -> void:
 	Game.game_over = true
 	Game.player.dead = true
+	Game.player.killed_by = by
 	if Game.hud:
 		Game.hud.set_prompt("")
 		Game.hud.visible = false
@@ -1082,6 +1119,156 @@ func guest_slain(guest: Guest, cause: String) -> void:
 	guest.die(cause)
 	if Game.social:
 		Game.social.on_guest_died(guest, cause)
+
+
+# --- Zeitsprung im Schlaf (Spielkonzept 3.6) --------------------------------------------------
+
+## dt Sekunden auf einmal (SleepSkip): Uhr, versteckte Werte, Spuk und Zeitplan. Ein Aufbruch läuft abstrakt
+## (_skip_activity) – mit denselben Regeln und Würfen, nur ohne zu gehen. Kommt es zu Zimmer 13 oder hörte der Spieler,
+## was es tut, ist es ab da wirklich unterwegs: Rückgabe = Gedanke beim Hochschrecken, sonst "".
+func skip(dt: float) -> String:
+	elapsed += dt
+	if first_attack_done:
+		boldness = minf(100.0, boldness + BOLDNESS_PER_DAY * dt / Calendar.DAY_SECONDS)
+	satiation = maxf(0.0, satiation - 0.1 * dt)
+	grief = maxf(0.0, grief - dt)
+	_update_zones(dt)
+	if not first_attack_done or _monster.is_active():
+		return ""
+	_update_haunting(dt)
+	_phase_left -= dt
+	if not _planned and _phase_left <= _lead:
+		_plan_departure()
+	if _phase_left > 0.0:
+		return ""
+	if other_threat_active(_monster):
+		_phase_left = 10.0
+		return ""
+	return _skip_activity()
+
+
+## Ein Aufbruch im Zeitsprung: Absicht wie sonst (_choose_intent bzw. schon bei der Frist der Puppe), dann mit Puppe
+## der Weg zur Puppentür (_skip_raid), sonst einige Ziele wie beim Umherstreifen (_skip_roam). Danach ruht es wieder.
+func _skip_activity() -> String:
+	attacks += 1
+	if not _planned:
+		_choose_intent(satiation > SATED_ROAM)
+	_planned = false
+	var active := _day_lerp(ACTIVE_TIME) * randf_range(0.8, 1.2) * minf(2.0, 1.0 + 0.2 * maxi(0, victims_left - 1))
+	if Game.tracing:
+		print("[Zeitsprung] %d. Aufbruch%s um %s → %s (%d Opfer)%s" % [attacks, " (harmlos)" if is_harmless() else "",
+			Calendar.time_text(elapsed), INTENT_NAMES[intent], victims_left, ", Puppe vor Zimmer " + doom_room if doom_room != "" else ""])
+	_plan_route(spawn_points[0])
+	var wake := _skip_raid() if _raiding else _skip_roam(active)
+	if wake != "":
+		phase = Phase.ACTIVE
+		_phase_left = active
+		return wake
+	on_monster_gone()
+	return ""
+
+
+## Mit Puppe: Tür für Tür wie next_raid_target – unterwegs nur, solange es hungrig ist und die Deko nicht hält.
+func _skip_raid() -> String:
+	while not _route.is_empty():
+		var no: String = _route[0]
+		var front: Vector3 = rooms[no]["door_front"]
+		if no != doom_room and (victims_left <= 0 or is_blocked(front, false)):
+			_route.pop_front()
+			continue
+		if no == LevelBuilder.PLAYER_ROOM or _skip_heard(no, true):
+			return _skip_wake(front, {})   # der Rest des Wegs steht noch in _route
+		_route.pop_front()
+		raid_room = no
+		for spot: HideSpot in rooms[no]["spots"]:
+			spot.rip_open()   # gewähltes Zimmer: es reißt jedes Versteck auf
+			spot.checked = true
+		for guest in _skip_guests_in(no):
+			kill_guest(guest, guest.hiding)
+		raid_room = ""
+	_finish_raid()
+	return ""
+
+
+## Ohne Puppe: so viele Ziele, wie in die Aktivphase passen (next_roam_target). Vor Deko, die hält, kehrt es um; an
+## Zimmertüren biegt es ab wie sonst (wants_to_enter_room) und sucht ab (_skip_search). Zimmer 13: Es kommt.
+func _skip_roam(active: float) -> String:
+	var at: Vector3 = spawn_points[0]
+	for i in maxi(1, roundi(active / SKIP_LEG)):
+		var target := next_roam_target(at)
+		at = target["pos"]
+		var no: String = target["room"]
+		if no == "" or is_blocked(at, false):
+			continue
+		if no == LevelBuilder.PLAYER_ROOM:
+			if Game.sleep_skip and Game.sleep_skip.guarded() and randf() < SKIP_GUARD:
+				continue
+			return _skip_wake(at, target)
+		if not wants_to_enter_room(no):
+			continue
+		if _skip_heard(no):
+			return _skip_wake(at, target)
+		if _skip_search(no):
+			break   # satt – zurück in den Keller
+	return ""
+
+
+## Ein Zimmer absuchen wie Monster._check_hide_step: Wer offen darin steht, den sieht es; Verstecke (auch Betten mit
+## Schlafenden) reißt es mit dem Wurf aus der Dreistigkeit auf. true = es hat sich satt gefressen.
+func _skip_search(no: String) -> bool:
+	for guest in _skip_guests_in(no):
+		if guest.hiding == null:
+			kill_guest(guest, null)
+	for spot: HideSpot in rooms[no]["spots"]:
+		var occupant = spot.occupant
+		spot.set_checked(true)
+		if occupant is Guest and not occupant.dead and not occupant.is_child() \
+				and randf() < clampf(effective_boldness() / 140.0, 0.1, 0.65):
+			kill_guest(occupant, spot)
+	return satiation > SATED_ROAM
+
+
+## Lebende Erwachsene in diesem Zimmer (Kinder übersieht es, 6.13).
+func _skip_guests_in(no: String) -> Array:
+	if Game.social == null or _builder == null:
+		return []
+	return Game.social.living_guests().filter(func(g: Guest) -> bool:
+		return not g.is_child() and _builder.room_at(g.global_position) == no)
+
+
+## Hörte der Spieler, was es in diesem Zimmer tut, so laut, dass er aufwachte (Game.noise: ab 0,3)? Schrei und
+## aufgerissenes Versteck tragen gleich weit. raid: es reißt alles auf, auch leer – sonst nur, wenn dort jemand ist.
+func _skip_heard(no: String, raid: bool = false) -> bool:
+	return (raid or not _skip_guests_in(no).is_empty()) and Game.heard_volume("hide_burst", rooms[no]["center"]) >= 0.3
+
+
+## Ab hier wirklich: Es erscheint auf dem Weg vom Keller so weit vor `goal`, dass es nach SleepSkip.lead() Sekunden
+## ankommt, mit `roam` als Ziel (leer: das nächste Ziel des Wegs zur Puppe). Die Lichter flackern wie beim Aufbruch.
+func _skip_wake(goal: Vector3, roam: Dictionary) -> String:
+	var lead: float = Game.sleep_skip.lead() if Game.sleep_skip else SleepSkip.LEAD
+	var speed := Monster.SEARCH_SPEED if _raiding else Monster.WALK_SPEED
+	var start := _point_before(goal, speed * lead)
+	shown_victims = victims_left
+	_start_wave(spawn_points[0], shown_victims)
+	_monster.start_roaming(start, roam)
+	if Game.tracing:
+		var to: String = roam.get("room", _route[0] if not _route.is_empty() else "?")
+		print("[Zeitsprung] Es kommt – zu Zimmer %s, %.0f m vor dem Ziel" % [to, start.distance_to(goal)])
+	return "Du schreckst hoch – irgendetwas kommt näher!"
+
+
+## Punkt auf dem Weg vom Keller nach `goal`, `dist` Meter vor dem Ziel (NavMesh).
+func _point_before(goal: Vector3, dist: float) -> Vector3:
+	var path := NavigationServer3D.map_get_path(_monster.get_world_3d().navigation_map, spawn_points[0], goal, true)
+	if path.is_empty():
+		return spawn_points[0]
+	var left := dist
+	for i in range(path.size() - 1, 0, -1):
+		var seg := path[i].distance_to(path[i - 1])
+		if seg >= left:
+			return path[i].lerp(path[i - 1], left / seg)
+		left -= seg
+	return path[0]
 
 
 # --- Unheimliche Kleinigkeiten ---------------------------------------------------------------
@@ -1435,6 +1622,8 @@ func _update_effects(delta: float) -> void:
 			heart_target = maxf(heart_target, player.shock * 0.5)
 		# Außer Atem vom Rennen: Herz und Keuchen (Ausdauer, Spielkonzept 3.1)
 		heart_target = maxf(heart_target, player.exertion() * 0.85)
+		if player.jittery():   # zu viel Kaffee (3.11)
+			heart_target = maxf(heart_target, Player.COFFEE_HEART)
 	# Flackerwelle beim Spieler: Bildflackern, Sirren im Stromnetz, Untertitel (Barrierefreiheit)
 	var wave := wave_at(player.global_position + Vector3.UP) if player else 0.0
 	if wave > 0.0:

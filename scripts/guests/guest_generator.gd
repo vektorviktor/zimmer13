@@ -347,6 +347,29 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 	rng.seed = gen_seed
 	var guest_name: String = NAMES[rng.randi() % NAMES.size()]
 	var arche: Dictionary = ARCHETYPES[rng.randi() % ARCHETYPES.size()]
+	return _build(rng, guest_name, arche, "f" if guest_name in FEMALE else "m", generation(guest_name), room, arrived_room)
+
+
+## Ein Haushaltsmitglied (Spielkonzept 6.20): wer es ist – Name, Geschlecht, Generation, Charakter – steht in
+## HAUSHALTE.md (member), alles Übrige würfelt der Seed wie bei make(): dieselben Zufallszahlen in derselben
+## Reihenfolge (die ersten beiden, sonst Name und Charakter, werden übersprungen).
+static func make_member(gen_seed: int, room: String, member: Dictionary, surname: String) -> Dictionary:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = gen_seed
+	rng.randi()
+	var arche: Dictionary = ARCHETYPES[rng.randi() % ARCHETYPES.size()]
+	for a: Dictionary in ARCHETYPES:
+		if a["kind"] == String(member.get("archetype", "")):
+			arche = a
+	var guest_name := String(member["name"])
+	var profile := _build(rng, guest_name, arche, String(member.get("sex", "f" if guest_name in FEMALE else "m")),
+		String(member.get("gen", generation(guest_name))), room, "")
+	profile["surname"] = surname
+	return profile
+
+
+static func _build(rng: RandomNumberGenerator, guest_name: String, arche: Dictionary, sex: String, gen: String,
+		room: String, arrived_room: String) -> Dictionary:
 	var lines := {}
 	var own: Dictionary = arche["lines"]
 	for key in COMMON:
@@ -378,7 +401,7 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 		activities[key] = float(base[key]) * rng.randf_range(0.6, 1.4)
 	var profile := {
 		"name": guest_name, "room": room, "archetype": arche["kind"], "generated": true,
-		"sex": "f" if guest_name in FEMALE else "m", "gen": generation(guest_name),
+		"sex": sex, "gen": gen,
 		"coat": COATS[rng.randi() % COATS.size()], "pants": PANTS[rng.randi() % PANTS.size()],
 		"hair": HAIR[rng.randi() % HAIR.size()], "height": rng.randf_range(0.92, 1.07),
 		"brave": _range(rng, arche["brave"]), "greed": _range(rng, arche["greed"]),
@@ -428,17 +451,24 @@ static func make(gen_seed: int, room: String, arrived_room: String = "") -> Dict
 
 
 ## Ein Kind (Spielkonzept 6.13) – eigener Zufall, damit make() für gespeicherte Seeds gleich bleibt.
-## Es gehört zu parent_id (erzeugter Erwachsener), wohnt im Zimmer nebenan und spricht von „Mama“ bzw. „Papa“.
-static func make_child(gen_seed: int, room: String, parent_id: String, parent: Dictionary) -> Dictionary:
+## Es gehört zu parent_id und spricht von „Mama“ bzw. „Papa“. Aus HAUSHALTE.md (6.20, member): Name, Alter und
+## Geschlecht fest, es wohnt im Zimmer der Eltern; mit other_parent erbt es die Haarfarbe von einem der beiden (der
+## Seed wählt) und liegt im Hautton zwischen ihnen.
+static func make_child(gen_seed: int, room: String, parent_id: String, parent: Dictionary, member: Dictionary = {},
+		other_parent: Dictionary = {}) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = gen_seed
 	var child_name: String = CHILD_NAMES[rng.randi() % CHILD_NAMES.size()]
+	if member.has("name"):
+		child_name = String(member["name"])
 	var mum: bool = parent.get("sex", "m") == "f"
 	var words := {"eltern": "Mama" if mum else "Papa", "eltern_dat": "meiner Mama" if mum else "meinem Papa"}
 	var lines := {}
 	for key in CHILD_LINES:
 		lines[key] = (CHILD_LINES[key] as Array).map(func(s: String) -> String: return s.format(words))
 	var age := rng.randi_range(6, 11)
+	if member.has("age"):
+		age = int(member["age"])
 	var prodigy := rng.randf() < CHILD_PRODIGY
 	var activities := {}
 	for key in CHILD_ACTIVITIES:
@@ -475,6 +505,18 @@ static func make_child(gen_seed: int, room: String, parent_id: String, parent: D
 	if prodigy:
 		lines["chess_challenge"] = ["Ich hab noch nie verloren. Willst du's versuchen?"]
 		lines["chess_lose"] = ["Das … das gibt's nicht! Revanche! Sofort!"]
+	if member.has("sex"):
+		profile["sex"] = String(member["sex"])
+	if not other_parent.is_empty():   # zwei Eltern: eigener Zufall, die Reihenfolge oben bleibt
+		var both := RandomNumberGenerator.new()
+		both.seed = gen_seed ^ 0x5EED
+		if both.randi() % 2 == 1 and profile["hair"] == parent.get("hair", HAIR[0]):
+			profile["hair"] = other_parent.get("hair", profile["hair"])
+		var a := SKIN.find(parent.get("skin", SKIN[0]))
+		var b := SKIN.find(other_parent.get("skin", SKIN[0]))
+		if a >= 0 and b >= 0:
+			var mid := (a + b) / 2.0
+			profile["skin"] = SKIN[int(floor(mid) if both.randf() < 0.5 else ceil(mid))]
 	return profile
 
 

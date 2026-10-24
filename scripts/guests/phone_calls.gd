@@ -55,6 +55,16 @@ var _ambient_cooldown := 60.0
 var _time := 0.0
 
 
+func _ready() -> void:
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
+
+
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Pausen zwischen Anrufen laufen ab.
+func skip_time(dt: float) -> void:
+	_call_cooldown -= dt
+	_ambient_cooldown -= dt
+
+
 func setup() -> void:
 	for node in get_tree().get_nodes_in_group("phones"):
 		var phone := node as HotelPhone
@@ -410,8 +420,10 @@ func _dial_again() -> void:
 		_show_dial(_active_phone)
 
 
-## Wer nimmt in diesem Zimmer ab? Ein Gast, der zu Hause ist und nicht im Schrank sitzt.
+## Wer nimmt in diesem Zimmer ab? Ein Gast, der zu Hause ist und nicht im Schrank sitzt – lieber ein Erwachsener
+## als ein Kind (Haushalte, Spielkonzept 6.20).
 func _guest_at(phone: HotelPhone) -> Guest:
+	var kid: Guest = null
 	for guest in Game.social.living_guests():
 		var g: Guest = guest
 		if g.home["no"] != phone.room_id or g.hiding:
@@ -420,8 +432,10 @@ func _guest_at(phone: HotelPhone) -> Guest:
 			continue
 		var center: Vector3 = g.home["center"]
 		if g.global_position.distance_to(center) < 3.5:
-			return g
-	return null
+			if not g.is_child():
+				return g
+			kid = g
+	return kid
 
 
 func _update_outgoing(delta: float) -> void:

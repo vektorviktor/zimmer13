@@ -27,6 +27,8 @@ GREY = (120, 120, 120)
 NOTES = {
 	"Wand": "2 px breite Linie (20 cm)",
 	"Glaswand": "wie Wand, aus Glas",
+	"Zimmer leer": "Zimmerfläche eines unbewohnten Zimmers",
+	"Ausstattung: Schlüsselschrank": "an der Wand, verglast – Generalschlüssel",
 	"Luftraum": "kein Boden – darunter offene Decke",
 	"Kellerraum zu": "zählt wie unbemalt, nichts gebaut",
 	"Treppe": "Fläche der Treppe bzw. des Treppenhauses",
@@ -38,6 +40,9 @@ NOTES = {
 	"Haupteingang": "auch: verschlossene Tür",
 	"Türanschlag": "1 px am Ende des Türstrichs, Seite des Scharniers",
 	"Möbel: Vorderseite": "Strich am Rand, gilt für jedes Möbel",
+	"Möbel: Wannenablage": "gefliest, neben die Wanne (1 m = 10 px)",
+	"Dachboden": "Bohlen, Decke 2,2 m, Türen niedrig",
+	"Dachfenster": "auf der Außenwand – Fenster in der Dachschräge",
 }
 ## Gruppen in Spalten: (Überschrift, Zeichenregel, Auswahl)
 COLUMNS = [

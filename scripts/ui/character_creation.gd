@@ -72,13 +72,24 @@ func _ready() -> void:
 		p.intro_blur = 1.0
 
 
-## Spiegel über dem nächsten Waschbecken am Startpunkt (Bad von Zimmer 13)
+## Spiegel über dem Waschbecken im Bad von Zimmer 13 – nicht einfach das nächste: Das Bad des Nachbarzimmers hinter
+## der Wand kann näher am Startpunkt liegen, dann wachte man in einem fremden, abgeschlossenen Zimmer auf. Ohne Bad
+## das nächste Becken im Zimmer selbst, sonst das nächste überhaupt.
 func _find_mirror(from: Vector3) -> Mirror:
+	var builder: LevelBuilder = Game.social.builder if Game.social else null
 	var best: Mirror = null
+	var best_rank := INF
 	for m: Mirror in get_tree().get_nodes_in_group("sink_mirrors"):
 		var d := m.global_position.distance_to(from)
-		if d < SEARCH and (best == null or d < best.global_position.distance_to(from)):
+		if d >= SEARCH:
+			continue
+		var front := m.global_position + m.global_basis.z.normalized() * 0.3   # vor dem Spiegel, nicht in der Wand
+		front.y = from.y   # am Boden – das Stockwerk erkennt room_at an der Höhe
+		var own := builder != null and builder.home_room_at(front) == LevelBuilder.PLAYER_ROOM
+		var rank := d if own else d + SEARCH   # Becken in Zimmer 13 (oder seinem Bad) zuerst
+		if rank < best_rank:
 			best = m
+			best_rank = rank
 	return best
 
 

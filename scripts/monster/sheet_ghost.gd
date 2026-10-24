@@ -196,7 +196,15 @@ var _patrol_check := 0.0
 var _debug_hour_near := false     ## Debug (--ghost=stunde): taucht im Flur des Spielers auf
 
 
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Pausen laufen ab (zu Schlafenden kommt er nicht – das Bett
+## ist ein Versteck).
+func skip_time(dt: float) -> void:
+	_cooldown = maxf(0.0, _cooldown - dt)
+	_hour_pause = maxf(0.0, _hour_pause - dt)
+
+
 func _ready() -> void:
+	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
 	var visual: Node3D = (load(MODEL) as PackedScene).instantiate()
 	add_child(visual)
 	_skeleton = visual.find_children("*", "Skeleton3D", true, false)[0]
@@ -1028,7 +1036,7 @@ func _kill() -> void:
 	player.gripped = false
 	if Game.hud:
 		Game.hud.set_struggle(-1.0)
-	await Game.director.player_slain()
+	await Game.director.player_slain("ghost")
 	_ambience.stop()   # erst mit dem Sterbebildschirm verstummt er
 
 
