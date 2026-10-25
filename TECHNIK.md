@@ -133,6 +133,11 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   Zwei Objekte: `body` (Gehäuse + Schalter) und `lens` – das Glas bekommt statt der Textur das leuchtende
   Material der Lampe. Das Skript gibt die Glasmitte aus → `Flashlight.LENS`, dort sitzt der Lichtkegel.
   Fehlt die Datei, bleiben Rohr, Kopf und roter Schalter.
+  Das Brecheisen `assets/models/crowbar.glb` (`Item.CROWBAR_MODEL`, Item `CROWBAR`): „Crowbar V2“ von Sketchfab
+  (SketchyBot, Sketchfab Standard – keine Namensnennung nötig, das Modell darf aber nicht einzeln weitergegeben
+  werden), `tools/build_crowbar.py` aus `assets/source/crowbar_v2.glb`. 0,6 m lang entlang +X, Klaue am +X-Ende
+  nach oben, Ursprung mittig auf der Unterkante, 140 Dreiecke, 256er-PNG (rostig). Hängt unter `_swing`, damit
+  `_apply_held_pose` es in der Hand aufrichtet. Fehlt die Datei, bleiben die roten Kästen.
   Die Glühbirne `assets/models/bulb.glb` (`Lamp.build_bulb`, für Lampen und das Item `BULB`): „Lightbulb
   (Low-Poly)“ von Sketchfab (Mirai, CC-BY 4.0 – Namensnennung nötig), `tools/build_bulb.py` aus
   `assets/source/lightbulb.glb`. Im Original schräg gestellt – das Skript nimmt die Linie zwischen den Mitten
@@ -145,6 +150,16 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   dem Kolben in den Schirm. Fehlt die Datei, bleibt die Kugel (Lampe) bzw. Kugel auf Zylinder (Gegenstand).
   Die Leuchte selbst (Schirm, Arm, Birne) wirft keinen Schatten: Das Licht der Wandleuchte sitzt 12 cm vor dem
   Schirm, sonst zeichnet er einen langen Keil mit dunklem Strich darüber an die Wand.
+  Die Tasse `assets/models/mug.glb` (`Item.build_cup`, für Kaffee und Tee als Gegenstand und auf den Tabletts der
+  Bartheke): „Coffee Mug (School Project)“ von Sketchfab (Ole Gunnar Isager, CC-BY 4.0 – Namensnennung nötig),
+  `tools/build_mug.py` aus `assets/source/coffee_mug.glb`. 9 cm hoch, Henkel nach +X, Ursprung mittig unten, ~1000
+  Dreiecke (ausgedünnt wird der Rand zackig). Drei Objekte: `mug` (ohne Textur, im Spiel `Item.CUP_COLOR`),
+  `coffee` (Oberfläche mit dem Kaffeefoto des Originals, 128er-PNG) und `tea` – dieselbe Scheibe, das Foto zu
+  Bernstein umgefärbt und weichgezeichnet (Schaumbläschen weg, Spiegelung und heller Rand bleiben), mit einem
+  Teebeutel und seinem Faden; wo sie auf der Scheibe liegen, rechnet das Skript affin aus den UVs zurück.
+  `build_cup` entfernt die nicht gebrauchte Oberfläche und setzt beim Tee den Faden über den Rand und außen das
+  Schildchen an (`Item.MUG_STRING` – vom Skript ausgegeben –, `MUG_RIM`). Auf dem Tablett stehen die Tassen quer,
+  Henkel zu den Gästen (sonst ragen sie in die Nachbartasse). Fehlt die Datei, bleiben Zylinder und Kästen.
   Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh, fläche)` in ein `Mat.psx` (eins pro Textur der
   Modelldatei, Grundfarbe 0,8 Grau – Farbtöne gehören in die Textur, die Materialfarbe wird ignoriert;
   `two_sided` nimmt eine Kopie des Shaders mit `cull_disabled`).

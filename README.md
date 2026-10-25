@@ -177,6 +177,12 @@ Die Taschenlampe (`assets/models/flashlight.glb`) ist „Flashlight“ von [Onur
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_flashlight.py -- assets/source/flashlight.glb assets/models/flashlight.glb
 ```
 
+Das Brecheisen (`assets/models/crowbar.glb`) ist „Crowbar V2“ von [SketchyBot](https://sketchfab.com/SketchyB0t_3D_Fabrication) ([Sketchfab](https://sketchfab.com/3d-models/crowbar-v2-dfb5981c576d4fd9b3fa6870d745abe3), Sketchfab Standard):
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_crowbar.py -- assets/source/crowbar_v2.glb assets/models/crowbar.glb
+```
+
 Die Schilderschrift (`assets/fonts/cinzel_bold.ttf`) ist [Cinzel](https://github.com/NDISCOVER/Cinzel) von Natanael Gama (SIL Open Font License 1.1, `assets/fonts/OFL.txt`), als feste Bold-Instanz ohne überlappende Konturen aus dem Variable Font von [google/fonts](https://github.com/google/fonts/tree/main/ofl/cinzel) (`pip install fonttools skia-pathops`):
 
 ```bash
@@ -187,6 +193,12 @@ Die Glühbirne (`assets/models/bulb.glb`) ist „Lightbulb (Low-Poly)“ von [Mi
 
 ```bash
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_bulb.py -- assets/source/lightbulb.glb assets/models/bulb.glb
+```
+
+Die Tasse für Kaffee und Tee (`assets/models/mug.glb`) ist „Coffee Mug (School Project)“ von [Ole Gunnar Isager](https://sketchfab.com/FrenchBaguette) ([Sketchfab](https://sketchfab.com/3d-models/coffee-mug-school-project-5f5ccee1514c440887c072fae8e0d699), CC-BY 4.0) – die Teeoberfläche mit Teebeutel färbt das Skript aus dem Kaffeefoto um:
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_mug.py -- assets/source/coffee_mug.glb assets/models/mug.glb
 ```
 
 Die Discokugel (`assets/models/disco_ball.glb`) ist „Disco Ball“ von [araghon007](https://sketchfab.com/araghon007) ([Sketchfab](https://sketchfab.com/3d-models/disco-ball-e4c3b485680843c7a7a827d04ac28743), CC-BY 4.0) – von 31 744 auf 2208 Dreiecke, die Spiegelplättchen stecken in einer gebackenen Normal Map:

@@ -117,10 +117,7 @@ func _ready() -> void:
 			# Tablett mit drei dampfenden Tassen auf der Bartheke (3.11, Tee 3.12)
 			Geo.mesh(self, Geo.box(Vector3(0.32, 0.01, 0.13)), Mat.psx(Color(0.55, 0.5, 0.45)), Vector3(0, 0.005, 0))
 			for i in 3:
-				var at := Vector3(-0.1 + i * 0.1, 0.01, 0.0)
-				Geo.mesh(_visual, Geo.cylinder(0.038, 0.085, 8), Mat.psx(Item.CUP_COLOR), at + Vector3(0, 0.0425, 0))
-				Geo.mesh(_visual, Geo.cylinder(0.033, 0.004, 8), Mat.psx(Item.TEA_COLOR if kind == Item.Kind.TEA else Item.COFFEE_COLOR),
-					at + Vector3(0, 0.084, 0))
+				Item.build_cup(_visual, kind == Item.Kind.TEA, Vector3(-0.1 + i * 0.1, 0.01, 0.0), [-1.3, -1.75, -1.5][i])   # Henkel quer, zu den Gästen
 			Geo.add_box_shape(self, Vector3(0.32, 0.1, 0.13), Vector3(0, 0.05, 0))
 	_update_visual()
 

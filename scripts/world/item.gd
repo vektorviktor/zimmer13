@@ -89,6 +89,15 @@ const COFFEE_COLOR := Color(0.18, 0.09, 0.04)
 ## Kräutertee (3.12): Farbe in der Tasse und das Schildchen am Faden des Teebeutels
 const TEA_COLOR := Color(0.62, 0.42, 0.12)
 const TEA_TAG := Color(0.35, 0.6, 0.3)
+## Tasse aus tools/build_mug.py (3.11, 3.12): „mug“ und die Oberflächen „coffee“ und „tea“ (mit Teebeutel), Henkel nach
+## +X, 9 cm hoch. MUG_STRING = wo der Faden auf der Oberfläche an die Wand stößt (vom Skript ausgegeben), MUG_RIM = Wand
+## außen und Oberkante. Fehlt die Datei, bleiben Zylinder und Kästen.
+const MUG_MODEL := "res://assets/models/mug.glb"
+const MUG_STRING := Vector3(-0.012, 0.073, 0.035)
+const MUG_RIM := Vector2(0.041, 0.09)
+## Brecheisen aus tools/build_crowbar.py (6.19): 60 cm entlang +X, die Klaue am +X-Ende nach oben, Ursprung mittig auf
+## der Unterkante. Fehlt die Datei, bleiben die Kästen.
+const CROWBAR_MODEL := "res://assets/models/crowbar.glb"
 ## Scherben einer platzten Glühbirne: so viele (von, bis), Glas und Gewinde
 const BULB_SHARDS := Vector2i(5, 8)
 const BULB_GLASS := Color(0.9, 0.93, 0.97)
@@ -1148,16 +1157,8 @@ func _build(extra: String) -> void:
 			var tea := kind == Kind.TEA
 			display_name = "Tasse Tee" if tea else "Tasse Kaffee"
 			mass = 0.3
-			size = Vector3(0.1, 0.09, 0.08)
-			var china := Mat.psx(CUP_COLOR)
-			Geo.mesh(self, Geo.cylinder(0.038, 0.085, 8), china, Vector3(0, 0.0425, 0))
-			Geo.mesh(self, Geo.cylinder(0.033, 0.004, 8), Mat.psx(TEA_COLOR if tea else COFFEE_COLOR), Vector3(0, 0.084, 0))
-			if tea:
-				Geo.mesh(self, Geo.box(Vector3(0.002, 0.03, 0.002)), Mat.psx(Color(0.9, 0.88, 0.8)), Vector3(-0.02, 0.095, 0.034))
-				Geo.mesh(self, Geo.box(Vector3(0.016, 0.016, 0.003)), Mat.psx(TEA_TAG), Vector3(-0.02, 0.07, 0.04))
-			Geo.mesh(self, Geo.box(Vector3(0.022, 0.05, 0.01)), china, Vector3(0.05, 0.045, 0))   # Henkel
-			Geo.mesh(self, Geo.box(Vector3(0.016, 0.01, 0.01)), china, Vector3(0.042, 0.068, 0))
-			Geo.mesh(self, Geo.box(Vector3(0.016, 0.01, 0.01)), china, Vector3(0.042, 0.022, 0))
+			size = Vector3(0.11, 0.09, 0.085)
+			build_cup(self, tea)
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)
@@ -1179,14 +1180,20 @@ func _build(extra: String) -> void:
 			# Brecheisen (Spielkonzept 6.19): Zimmertüren aufbrechen – laut, und wer es sieht, erzählt es weiter
 			display_name = "Brecheisen"
 			mass = 1.6
-			size = Vector3(0.62, 0.05, 0.06)
+			size = Vector3(0.6, 0.1, 0.04)
 			_swing = Node3D.new()   # in der Hand aufrecht (_apply_held_pose)
 			add_child(_swing)
-			var steel := Mat.psx(Color(0.62, 0.12, 0.1))
-			Geo.mesh(_swing, Geo.box(Vector3(0.56, 0.022, 0.022)), steel, Vector3(-0.02, 0.011, 0))
-			var claw := Geo.mesh(_swing, Geo.box(Vector3(0.08, 0.02, 0.022)), steel, Vector3(0.27, 0.03, 0))
-			claw.rotation.z = 0.9
-			Geo.mesh(_swing, Geo.box(Vector3(0.03, 0.006, 0.03)), Mat.psx(Color(0.3, 0.3, 0.32)), Vector3(-0.3, 0.011, 0))
+			if ResourceLoader.exists(CROWBAR_MODEL):
+				var model: Node3D = (load(CROWBAR_MODEL) as PackedScene).instantiate()
+				_swing.add_child(model)
+				for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+					m.material_override = Mat.model(CROWBAR_MODEL, m)
+			else:
+				var steel := Mat.psx(Color(0.62, 0.12, 0.1))
+				Geo.mesh(_swing, Geo.box(Vector3(0.56, 0.022, 0.022)), steel, Vector3(-0.02, 0.011, 0))
+				var claw := Geo.mesh(_swing, Geo.box(Vector3(0.08, 0.02, 0.022)), steel, Vector3(0.27, 0.03, 0))
+				claw.rotation.z = 0.9
+				Geo.mesh(_swing, Geo.box(Vector3(0.03, 0.006, 0.03)), Mat.psx(Color(0.3, 0.3, 0.32)), Vector3(-0.3, 0.011, 0))
 		Kind.TOOLBOX:
 			# Werkzeugkasten (6.19): aufgebrochene Türen reparieren
 			display_name = "Werkzeugkasten"
@@ -1773,6 +1780,48 @@ func _build_strand() -> void:
 		Geo.mesh(_strand, Geo.sphere(0.022, 0.05, 6, 3), _bulb_materials[i % _bulb_materials.size()], at + Vector3(0, -0.03, 0.005))
 	# ShadowBudget: Lichterketten werfen nie Schatten („no_shadow“), flackern aber mit den Lampen („lamps“)
 	_add_light(Vector3(0, -0.12, 0.2), Color(1.0, 0.62, 0.35), 0.55, 2.5 + length * 0.5, true)
+
+
+## Tasse Kaffee oder Tee unter parent bei at, um turn gedreht (Ursprung mittig unten, Henkel nach +X) – für den
+## Gegenstand und die Tabletts auf der Bartheke (ResourceSpot). Beim Tee hängt der Faden des Beutels über den Rand,
+## außen das Schildchen.
+static func build_cup(parent: Node3D, tea: bool, at: Vector3 = Vector3.ZERO, turn: float = 0.0) -> void:
+	var cup := Node3D.new()
+	cup.position = at
+	cup.rotation.y = turn
+	parent.add_child(cup)
+	var china := Mat.psx(CUP_COLOR)
+	if not ResourceLoader.exists(MUG_MODEL):
+		Geo.mesh(cup, Geo.cylinder(0.038, 0.085, 8), china, Vector3(0, 0.0425, 0))
+		Geo.mesh(cup, Geo.cylinder(0.033, 0.004, 8), Mat.psx(TEA_COLOR if tea else COFFEE_COLOR), Vector3(0, 0.084, 0))
+		if tea:
+			Geo.mesh(cup, Geo.box(Vector3(0.002, 0.03, 0.002)), Mat.psx(Color(0.9, 0.88, 0.8)), Vector3(-0.02, 0.095, 0.034))
+			Geo.mesh(cup, Geo.box(Vector3(0.016, 0.016, 0.003)), Mat.psx(TEA_TAG), Vector3(-0.02, 0.07, 0.04))
+		Geo.mesh(cup, Geo.box(Vector3(0.022, 0.05, 0.01)), china, Vector3(0.05, 0.045, 0))   # Henkel
+		Geo.mesh(cup, Geo.box(Vector3(0.016, 0.01, 0.01)), china, Vector3(0.042, 0.068, 0))
+		Geo.mesh(cup, Geo.box(Vector3(0.016, 0.01, 0.01)), china, Vector3(0.042, 0.022, 0))
+		return
+	var model: Node3D = (load(MUG_MODEL) as PackedScene).instantiate()
+	cup.add_child(model)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		if m.name == ("coffee" if tea else "tea"):
+			m.get_parent().remove_child(m)
+			m.free()
+		else:
+			m.material_override = china if m.name == "mug" else Mat.model(MUG_MODEL, m)
+	if not tea:
+		return
+	# Faden: an der Innenwand hoch, über den Rand, außen hinunter zum Schildchen
+	var thread := Mat.psx(Color(0.92, 0.9, 0.84))
+	var x := MUG_STRING.x
+	var inner := MUG_STRING.z
+	Geo.mesh(cup, Geo.box(Vector3(0.0015, MUG_RIM.y - MUG_STRING.y, 0.0015)), thread,
+		Vector3(x, (MUG_RIM.y + MUG_STRING.y) / 2.0, inner))
+	Geo.mesh(cup, Geo.box(Vector3(0.0015, 0.0015, MUG_RIM.x - inner + 0.002)), thread,
+		Vector3(x, MUG_RIM.y + 0.0008, (MUG_RIM.x + inner) / 2.0 + 0.001))
+	Geo.mesh(cup, Geo.box(Vector3(0.0015, 0.016, 0.0015)), thread, Vector3(x, MUG_RIM.y - 0.008, MUG_RIM.x + 0.002))
+	var tag := Geo.mesh(cup, Geo.box(Vector3(0.016, 0.02, 0.002)), Mat.psx(TEA_TAG), Vector3(x, MUG_RIM.y - 0.026, MUG_RIM.x + 0.003))
+	tag.rotation.y = 0.15
 
 
 ## Messingdose mit Zifferblatt; Nadel und Nordmarke leuchten schwach (Leuchtfarbe),
