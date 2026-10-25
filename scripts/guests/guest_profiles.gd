@@ -29,6 +29,7 @@ const ALL := {
 		"report": "Ich habe %s gesehen … bei %s. Glaube ich. Oder habe ich das geträumt?",
 		"dice": {"likes": false, "honesty": 0.9, "jump": 1, "perception": 0.15, "pride": 0.1, "tell": "Edna kichert nervös und schaut weg."},
 		"chess": {"likes": true, "skill": 0.6, "pride": 0.1},
+		"darts": {"likes": false, "skill": 0.3, "pride": 0.1},
 		"lines": {
 			"greet_friend": ["Ach, du bist es! Schön, ein freundliches Gesicht zu sehen."],
 			"greet": ["Oh! Du hast mich erschreckt.", "Guten Abend … falls es Abend ist. Die Uhren hier stehen alle."],
@@ -63,6 +64,12 @@ const ALL := {
 			"chess_win": ["Matt! Ach, das hat mein Mann immer gehasst."],
 			"chess_lose": ["Sehr schön gespielt. Du hast Geduld, das mag ich."],
 			"chess_challenge": ["Spielst du Schach? In der Lobby steht ein Brett. Ganz gemütlich."],
+			"darts_yes": ["Pfeile werfen? In meinem Alter? Na gut – aber stell dich nicht hinter mich."],
+			"darts_no": ["Ach nein, Liebes, meine Augen sind nicht mehr die besten."],
+			"darts_win": ["Oh! Anfängerglück, Liebes."],
+			"darts_lose": ["Du hast eine ruhige Hand. Das ist selten geworden."],
+			"darts_challenge": ["Zeigst du mir, wie man diese Pfeile wirft? In der Bar hängt doch eine Scheibe."],
+			"darts_caught": ["Liebes, du stehst ja fast an der Wand. So spielt man nicht."],
 		},
 	},
 	"bruno": {
@@ -79,6 +86,7 @@ const ALL := {
 		"report": "Da waren %s, bei %s. Na und? Wahrscheinlich nur Dreck.",
 		"dice": {"likes": true, "honesty": 0.45, "jump": 2, "perception": 0.35, "pride": 0.85, "tell": "Bruno zieht den Mundwinkel hoch."},
 		"chess": {"likes": false, "skill": 0.35, "pride": 0.85},
+		"darts": {"likes": true, "skill": 0.7, "pride": 0.85},   # Kneipenwerfer
 		"lines": {
 			"greet_friend": ["Na, Partner. Was brauchst du?"],
 			"greet": ["Hm. Was gibt's?", "Mach's kurz."],
@@ -113,6 +121,12 @@ const ALL := {
 			"chess_win": ["Matt. Hab ich doch gesagt."],
 			"chess_lose": ["Pff. Dein Läufer stand da nur aus Zufall."],
 			"chess_challenge": ["Revanche. Schachbrett. Lobby. Jetzt."],
+			"darts_yes": ["Darts. Endlich was Vernünftiges. Leg was drauf."],
+			"darts_no": ["Nicht jetzt."],
+			"darts_win": ["Wie immer. Zahlen bitte."],
+			"darts_lose": ["Pff. Die Scheibe hängt schief."],
+			"darts_challenge": ["Revanche. Dartscheibe. Jetzt.", "Na, traust du dich an die Scheibe?"],
+			"darts_caught": ["Über die Linie? Bei mir nicht, Freundchen!"],
 		},
 	},
 	"mila": {
@@ -129,6 +143,7 @@ const ALL := {
 		"report": "Ich schwör's dir: %s, bei %s! Riesig! Überall!",
 		"dice": {"likes": true, "honesty": 0.6, "jump": 1, "perception": 0.55, "pride": 0.4, "tell": "Mila spielt auffällig mit einer Haarsträhne."},
 		"chess": {"likes": true, "skill": 0.85, "pride": 0.4},
+		"darts": {"likes": true, "skill": 0.5, "pride": 0.4},
 		"lines": {
 			"greet_friend": ["Hey du! Ich hab gerade einen neuen Kürbis geschnitzt – willst du sehen?"],
 			"greet": ["Oh, hi! Bist du auch hier gestrandet?", "Hallo! Hast du schon gehört, was Edna erzählt?"],
@@ -163,6 +178,12 @@ const ALL := {
 			"chess_win": ["Matt! Hab ich dir doch gesagt – Schachclub!"],
 			"chess_lose": ["Wow. Okay. Revanche, irgendwann. Ehrlich, gut gespielt!"],
 			"chess_challenge": ["Hey! Lust auf Schach in der Lobby? Ich will sehen, wie du denkst."],
+			"darts_yes": ["Darts! Ich treff sogar manchmal die Scheibe."],
+			"darts_no": ["Nee, grad nicht – meine Hand zittert noch."],
+			"darts_win": ["Ha! Wer hätte das gedacht? Ich nicht!"],
+			"darts_lose": ["Okay, du kannst das. Zeig mir mal, wie du zielst!"],
+			"darts_challenge": ["Hey, Lust auf Darts? Die Scheibe in der Bar wartet!"],
+			"darts_caught": ["Hey! Ich hab genau gesehen, wo dein Fuß war!"],
 		},
 	},
 }

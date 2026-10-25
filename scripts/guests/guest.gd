@@ -16,6 +16,7 @@ enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING
 	FOLLOW, VISIT, ATTACK, STAGGER, DECORATE, SEARCH, EAT }
 
 const WALK_SPEED := 1.4
+const DART_THROW_TIME := 0.55   ## Wurfbewegung beim Darts (throw_dart_pose)
 ## Detailstufe (Leistung bei vielen Gästen): Wer nicht im Blickfeld und weiter als LOD_RANGE vom Spieler ist (oder
 ## weiter als LOD_FAR), rechnet nur jedes LOD_STEP-te Physikbild – mit der aufgesammelten Zeit und entsprechend
 ## längeren Schritten (_lod_scale in _move_to). In der Nähe und im Blick bleibt alles flüssig.
@@ -154,10 +155,12 @@ var gift_cooldown := 0.0
 var monster_line := 0
 var expected_deco := 0      ## so viel eigene Deko sollte vor der Tür stehen
 var money := 0
-var seated := false          ## sitzt am Spieltisch
+var seated := false          ## sitzt am Spieltisch (bzw. steht beim Darts an der Linie)
+var game_stand := false      ## Darts: steht statt zu sitzen (Spielkonzept 6.10)
+var _dart_throw := 0.0       ## > 0: Wurfbewegung läuft (Sekunden)
 var challenge_time := 0.0    ## > 0: hat dich gerade herausgefordert (Sekunden bis es verfällt)
 var challenge_cooldown := 0.0
-var challenge_game := "dice"  ## wozu er herausfordert: "dice" (Mäxchen) oder "chess" (Spielkonzept 6.10)
+var challenge_game := "dice"  ## wozu er herausfordert: "dice" (Mäxchen), "chess" oder "darts" (Spielkonzept 6.10)
 var state := State.IDLE
 var gen_seed := -1           ## ≥ 0: zufällig erzeugter Gast (GuestGenerator)
 var corpse := false          ## tot, liegt aber noch da (Lakengeist, Spielkonzept 6.12)
@@ -668,11 +671,24 @@ func sit_for_game(seat: Vector3, look: Vector3) -> void:
 	_target = seat
 	_game_look = look
 	seated = false
+	game_stand = false
 	state = State.MINIGAME
+
+
+## An die Abwurflinie gehen und dort stehen bleiben (Darts) – sonst wie sit_for_game.
+func stand_for_game(spot: Vector3, look: Vector3) -> void:
+	sit_for_game(spot, look)
+	game_stand = true
+
+
+## Einen Pfeil werfen: Arm hoch, kurz zurück, nach vorn (Darts).
+func throw_dart_pose() -> void:
+	_dart_throw = DART_THROW_TIME
 
 
 func end_game() -> void:
 	seated = false
+	game_stand = false
 	if state == State.MINIGAME:
 		_set_idle(randf_range(3.0, 8.0))
 
@@ -2567,6 +2583,23 @@ func _dance_pose(delta: float) -> void:
 ## Schreckhaltung (6.12): Hände hoch und zittern (flee), Hand vor den Mund (freeze), zusammengesunken
 ## mit den Händen vorm Gesicht (cry). Hypnotisiert: Arme hängen, leises Schwanken. Gewürgt: Hände am
 ## Hals, zappeln.
+## Darts an der Linie: rechter Arm vorn mit dem Pfeil auf Augenhöhe; beim Wurf erst zurück nach oben, dann nach vorn
+## durchgezogen (_dart_throw läuft von DART_THROW_TIME bis 0).
+func _dart_pose(delta: float) -> void:
+	_arm_l.rotation.x = -0.25
+	var aim := -1.55
+	if _dart_throw > 0.0:
+		_dart_throw = maxf(0.0, _dart_throw - delta)
+		var t := 1.0 - _dart_throw / DART_THROW_TIME
+		if t < 0.45:
+			aim = lerpf(-1.55, -2.35, smoothstep(0.0, 0.45, t))     # ausholen
+		elif t < 0.6:
+			aim = lerpf(-2.35, -1.2, (t - 0.45) / 0.15)              # werfen
+		else:
+			aim = lerpf(-1.2, -1.55, smoothstep(0.6, 1.0, t))       # zurück
+	_arm_r.rotation.x = aim
+
+
 func _shock_pose() -> void:
 	var t := _anim
 	if state == State.GHOSTED:
@@ -2682,7 +2715,7 @@ func _animate(delta: float) -> void:
 	if _body and visible:
 		# unter dem Laken hängen die Arme still, sonst schwingen sie beim Gehen heraus (Tanzen darf man sie sehen)
 		var arms_free := _arms_free and not (_costume and _costume.kind == "sheet")
-		_body.animate(delta, speed, running, [_arm_l, _arm_r], arms_free, state == State.MINIGAME and seated)
+		_body.animate(delta, speed, running, [_arm_l, _arm_r], arms_free, state == State.MINIGAME and seated and not game_stand)
 	if _costume and visible:
 		_costume.follow(_head_point(), _visual.global_basis)
 
@@ -2710,6 +2743,9 @@ func _pose(delta: float, speed: float) -> void:
 		_visual.rotation.x = PI / 2.0
 		_arm_l.rotation = Vector3(0, 0, -0.15)
 		_arm_r.rotation = Vector3(0, 0, 0.15)
+		return
+	if state == State.MINIGAME and seated and game_stand:
+		_dart_pose(delta)
 		return
 	if state == State.MINIGAME and seated:
 		_visual.position.y = -(_body.sit_drop() if _body else 0.35)   # sitzt

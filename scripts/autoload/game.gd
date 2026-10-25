@@ -28,6 +28,7 @@ var social: Social
 var dialog: DialogUI
 var dice: DiceMatch
 var chess: ChessMatch
+var darts: DartMatch               ## Darts an der Bar (Spielkonzept 6.10)
 var menus: Menus
 var traces: Traces
 var phones: PhoneCalls
@@ -146,6 +147,7 @@ func reset() -> void:
 	weather = null
 	kitchen = null
 	coffee = null
+	darts = null
 	kettle = null
 	confetti = null
 	doll = null
@@ -162,6 +164,11 @@ func say(text: String, duration: float = 3.5, icon: String = "") -> void:
 
 
 ## `pos`/`who`: Ort und Stimme für menschliche Laute (SynthAudio.VOICES) – die klingen aus ihrer Richtung.
+## Läuft gerade ein Spiel mit dem Spieler – Mäxchen, Schach oder Darts (auch allein)?
+func table_game_active() -> bool:
+	return (dice != null and dice.active) or (chess != null and chess.active) or (darts != null and darts.active)
+
+
 func play_sound(kind: String, volume: float = 1.0, pos := Vector3.INF, who: Node = null) -> void:
 	if audio and not audio.play_shot(kind, volume, pos, who):
 		return

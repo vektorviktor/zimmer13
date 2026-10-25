@@ -89,7 +89,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     entfällt), Kürbis und Totenkopf mit erloschener Kerze (Zusatz „out“), Streichholzschachtel (Item.Kind.MATCHBOX)
 ## 46: Lakengeist in der Dusche (Spielkonzept 4.24): ghost.first_seen (erste Begegnung), „shower“ (wartet, läuft,
 ##     erlebt) – ältere Stände laden weiter: Wer ihm schon begegnet ist, gilt als am Anfang begegnet
-const VERSION := 46
+## 47: Darts (Spielkonzept 6.10): Pfeile (Item.Kind.DARTS), social.darts_watched (wem du beim Werfen zugesehen hast) –
+##     ältere Stände laden weiter, noch niemandem zugesehen
+const VERSION := 47
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -254,7 +256,7 @@ func is_safe_for_autosave() -> bool:
 		return false
 	if not p.is_on_floor():   # nicht im Sprung oder Fall – sonst lädt man womöglich mitten in der Luft oder im Leeren
 		return false
-	if (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active):
+	if Game.table_game_active():
 		return false
 	if Game.menus and Game.menus.is_open():
 		return false
@@ -424,6 +426,7 @@ func collect() -> Dictionary:
 		memorials.append(_v(door_front))
 	data["social"] = {
 		"thefts_ago": thefts, "memorials": memorials, "watched": social._watched.keys(), "chess_watched": social._chess_watched.keys(),
+		"darts_watched": social._darts_watched.keys(),
 		"party_cooldown": social._party_cooldown, "roster": social.roster_state(),
 		"arrival_timer": social._arrival_timer,
 		"cat_thefts": social.cat_thefts, "cat_blame": social.cat_blame, "cats_have_cried": social.cats_have_cried,
@@ -678,6 +681,9 @@ func apply(data: Dictionary) -> void:
 	social._chess_watched = {}
 	for id in sd.get("chess_watched", []):
 		social._chess_watched[id] = true
+	social._darts_watched = {}
+	for id in sd.get("darts_watched", []):
+		social._darts_watched[id] = true
 	social._party_cooldown = float(sd.get("party_cooldown", 150.0))
 	social.cat_thefts = (sd.get("cat_thefts", {}) as Dictionary).duplicate()
 	social.cat_blame = (sd.get("cat_blame", {}) as Dictionary).duplicate()

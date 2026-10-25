@@ -162,6 +162,9 @@ var in_dialog := false
 ## Gebannt (Siegerehrung, Spielkonzept 2.5): keine Steuerung, DoorContest führt den Blick
 var spellbound := false
 var focused := false   ## sitzt konzentriert am Spieltisch → Vorwarnungen fallen weniger auf
+## Steht an der Abwurflinie (Darts, Spielkonzept 6.10): keine Bewegung, die Maus zielt (in_dialog ist dabei gesetzt)
+var at_oche := false
+var fov_zoom := 1.0    ## Anteil des Blickwinkels – beim Zielen enger (DartMatch)
 var inspecting := false  ## schaut auf Karte oder Kompass in der linken Hand
 var trance := 0.0      ## Hypnose des Lakengeists (0..1) – macht langsamer (Spielkonzept 4.18)
 var gripped := false   ## wird gewürgt: steht fest, nur move_input zählt (Losreißen)
@@ -302,6 +305,9 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if at_oche and not dead:
+		_aim_input(event)
+		return
 	# Charaktererstellung: man kann sich nicht bewegen (3.9) – Mausbewegung beim Laden drehte sonst den Blick weg
 	if dead or in_dialog or spellbound or Game.creating:
 		return
@@ -373,6 +379,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		_use_flashlight(event.is_action_pressed("light_mode"))
 
 
+## An der Abwurflinie: nur zielen – je enger der Blick, desto feiner (im Rausch zieht die Sicht nach).
+func _aim_input(event: InputEvent) -> void:
+	if not (event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED):
+		return
+	var rel: Vector2 = (event as InputEventMouseMotion).screen_relative * MOUSE_SENSITIVITY * Settings.mouse_sensitivity
+	rel *= camera.fov / Settings.fov
+	if Settings.invert_y:
+		rel.y = -rel.y
+	if drunk >= BarTap.TIPSY:
+		_look_lag += rel
+	else:
+		_look(rel)
+
+
 ## Mausrad hoch +1, runter −1, sonst 0.
 func _wheel_step(event: InputEvent) -> int:
 	match (event as InputEventMouseButton).button_index:
@@ -398,7 +418,7 @@ func _process(delta: float) -> void:
 		close_bag(true)   # [Q] losgelassen
 	if _look_lag == Vector2.ZERO:
 		return
-	if dead or in_dialog or hiding or spellbound:
+	if dead or (in_dialog and not at_oche) or hiding or spellbound:
 		_look_lag = Vector2.ZERO
 		return
 	var step := _look_lag * minf(1.0, delta * lerpf(LOOK_LAG.x, LOOK_LAG.y, BarTap.sway(drunk)))
@@ -718,6 +738,34 @@ func stand_up() -> void:
 	head.rotation.x = 0.0
 
 
+# --- An der Abwurflinie stehen (Darts, Spielkonzept 6.10) ------------------------------
+
+## Hinstellen und zur Scheibe sehen. Bewegen kann man sich nicht, nur zielen (_aim_input); konzentriert wie am Tisch.
+func stand_at(at: Vector3, look: Vector3) -> void:
+	if hiding:
+		exit_hide()
+	leave_seat(true)
+	set_crouching(false)
+	in_dialog = true
+	at_oche = true
+	focused = true
+	velocity = Vector3.ZERO
+	_shove = Vector3.ZERO
+	global_position = at
+	var to := look - at
+	rotation = Vector3(0, atan2(-to.x, -to.z), 0)
+	head.rotation.x = atan2(look.y - (at.y + eye_height), Vector2(to.x, to.z).length())
+	if Game.hud:
+		Game.hud.set_prompt("")
+
+
+func leave_oche() -> void:
+	in_dialog = false
+	at_oche = false
+	focused = false
+	fov_zoom = 1.0
+
+
 # --- Auf Sitzmöbel setzen (Spielkonzept 3.1) -----------------------------------------
 
 ## Auf einen festen Platz setzen: Blick in Sitzrichtung, höchstens SIT_TURN zur Seite. Großes stellt man ab.
@@ -802,7 +850,7 @@ func aim_point() -> Vector3:
 
 func _update_dread(delta: float) -> void:
 	var threat := Game.director.player_threat if Game.director else 0.0
-	camera.fov = lerpf(camera.fov, Settings.fov - 10.0 * threat, minf(1.0, 2.0 * delta))
+	camera.fov = lerpf(camera.fov, (Settings.fov - 10.0 * threat) * fov_zoom, minf(1.0, (6.0 if at_oche else 2.0) * delta))
 	_dread_time += delta * (1.5 + threat * 1.5)
 	camera.position.y = sin(_dread_time) * 0.012 * threat
 
@@ -1095,7 +1143,7 @@ func _drunk_walk(moving: bool, delta: float) -> void:
 
 ## Seitliches Schwanken des Kopfes im Rausch (nicht im Versteck oder Gespräch).
 func _drunk_roll() -> float:
-	if hiding or in_dialog:
+	if hiding or (in_dialog and not at_oche):
 		return 0.0
 	return sin(_drunk_time * 1.1) * 0.05 * BarTap.sway(drunk)
 

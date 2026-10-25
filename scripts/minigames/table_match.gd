@@ -1,9 +1,10 @@
 class_name TableMatch
 extends CanvasLayer
-## Gemeinsame Grundlage der Tischspiele gegen einen Gast (Spielkonzept 6.10): Mäxchen (DiceMatch) und Schach
-## (ChessMatch). Fenster mit Titel, Verlauf und nummerierten Knöpfen (auch über die Tasten 1, 2 …), Hinsetzen,
-## Einsätze auf dem Tisch (TableStakes), Abbruch bei einer Vorwarnung oder wenn der Gast davonläuft, Aufstehen.
-## Jedes Spiel liefert seinen Tisch (_table) und sein Spielgerät (_gear) und baut sein Fenster mit _build_panel.
+## Gemeinsame Grundlage der Tischspiele gegen einen Gast (Spielkonzept 6.10): Mäxchen (DiceMatch), Schach
+## (ChessMatch) und Darts (DartMatch). Fenster mit Titel, Verlauf und nummerierten Knöpfen (auch über die Tasten 1,
+## 2 …), Hinsetzen, Einsätze auf dem Tisch (TableStakes), Abbruch bei einer Vorwarnung oder wenn der Gast davonläuft,
+## Aufstehen. Jedes Spiel liefert seinen Tisch (_table) und sein Spielgerät (_gear) und baut sein Fenster mit
+## _build_panel; Darts steht statt zu sitzen (_take_places, _leave_places) und kennt auch eine Partie ohne Gast.
 
 const RUN_AWAY := "%s springt auf und rennt davon! Die Einsätze liegen noch auf dem Tisch …"
 
@@ -50,6 +51,20 @@ func _stop() -> void:
 	pass
 
 
+## Beide an ihre Plätze: setzen sich an den Tisch, die Maus wird frei fürs Fenster.
+func _take_places() -> void:
+	var table := _table()
+	Game.player.sit_at(table.player_seat.global_position, table.top_center())
+	guest.sit_for_game(table.guest_seat.global_position, table.top_center())
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+## Partie zu Ende: aufstehen, die Maus steuert wieder den Blick.
+func _leave_places() -> void:
+	Game.player.stand_up()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
 # --- Ablauf ----------------------------------------------------------------------------
 
 func can_stake_item(p_guest: Guest) -> bool:
@@ -86,20 +101,18 @@ func _begin(p_guest: Guest, stake: Dictionary, gear_offset: Vector3) -> void:
 		player.drop_held()
 		gear.global_position = table.top_center() + gear_offset
 	_stakes.place(table, guest, stake)
-	player.sit_at(table.player_seat.global_position, table.top_center())
-	guest.sit_for_game(table.guest_seat.global_position, table.top_center())
+	_take_places()
 	visible = true
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_waiting_for_seat = true
 
 
 func _process(delta: float) -> void:
 	if not active:
 		return
-	if _waiting_for_seat and guest.seated:
+	if _waiting_for_seat and (guest == null or guest.seated):
 		_waiting_for_seat = false
 		_on_seated()
-	if not _over and _guest_leaves(delta):
+	if not _over and guest != null and _guest_leaves(delta):
 		return
 	_update_game(delta)
 
@@ -146,8 +159,7 @@ func _end() -> void:
 	_clear()
 	if guest and not guest.dead:
 		guest.end_game()
-	Game.player.stand_up()
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_leave_places()
 
 
 func _still_playing() -> bool:

@@ -206,8 +206,10 @@ extends Node3D
 ##                               mit --talk=id erzählt er danach davon
 ##   --dice=id                   sofort Mäxchen mit dem Gast (Einsatz 3 Geld)
 ##   --chess=id                  sofort Schach mit dem Gast in der Lobby (Einsatz 3 Geld; mit --autoplay zieht der Spieler selbst)
-##   --challenge=id[,chess]      Gast fordert dich heraus (Mäxchen bzw. Schach)
-##   --autoplay                  Mäxchen-Antworten bzw. Schachzüge automatisch wählen
+##   --darts[=id]                sofort Darts in der Bar: allein üben, mit id gegen den Gast (Einsatz 3 Geld; mit
+##                               --autoplay wirft der Spieler selbst)
+##   --challenge=id[,chess|darts]  Gast fordert dich heraus (Mäxchen, Schach bzw. Darts)
+##   --autoplay                  Mäxchen-Antworten, Schachzüge bzw. Dartwürfe automatisch wählen
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
 ##   --shot-on=jumpscare|strangle|shock|pumpkin|lightning  Screenshot kurz nach einem Ereignis statt nach n Frames
@@ -379,6 +381,12 @@ func _ready() -> void:
 
 	var hud := Hud.new()
 	hud.name = "Hud"
+	var darts := DartMatch.new()
+	darts.name = "DartMatch"
+	darts.board = builder.dart_board
+	add_child(darts)
+	Game.darts = darts
+
 	add_child(hud)
 	Game.hud = hud
 
@@ -479,6 +487,10 @@ func _process(delta: float) -> void:
 			print("[Schach] " + step)
 	if _trace:
 		_trace_frames += 1
+	if _autoplay and Engine.get_process_frames() % 40 == 0 and Game.darts.active:
+		var throw := Game.darts.debug_step()
+		if throw != "":
+			print("[Darts] " + throw)
 		if _trace_frames % 120 == 0:
 			var nav := "--trace-nav" in OS.get_cmdline_user_args()
 			print("[%ds] Monster %s @ %s | Phase %s | Dreistigkeit %.1f" % [_trace_frames / 60,
@@ -781,7 +793,7 @@ func run_debug(arg: String) -> bool:
 			"zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE,
 			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
 			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP,
-			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX}
+			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS}
 		var names := (arg.substr(6) if arg.begins_with("--bag=") else "süßes,cola,zierkürbis,batterie").split(",", false)
 		for what in names:
 			if not kinds.has(what):
@@ -987,7 +999,19 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--challenge="):
 		var challenger := _guest(arg.substr(12).split(",")[0])
 		if challenger:
-			Game.social.challenge(challenger, "chess" if arg.ends_with(",chess") else "dice")
+			var game := arg.get_slice(",", 1) if "," in arg else "dice"
+			Game.social.challenge(challenger, game if game in ["chess", "darts"] else "dice")
+	elif arg == "--darts" or arg.begins_with("--darts="):
+		var dart_opponent := _guest(arg.substr(8)) if arg.begins_with("--darts=") else null
+		if arg.begins_with("--darts=") and dart_opponent == null:
+			return true
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			Game.player.global_position = Game.darts.board.throw_spot(false)
+			if dart_opponent:
+				dart_opponent.global_position = Game.darts.board.guest_seat.global_position + Vector3(0.5, 0.05, 0.8)
+				Game.darts.start(dart_opponent, {"money": 3, "item": false})
+			else:
+				Game.darts.practice())
 	elif arg == "--autoplay":
 		_autoplay = true
 	elif arg.begins_with("--cat="):

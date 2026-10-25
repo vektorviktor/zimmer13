@@ -10,7 +10,7 @@ extends CanvasLayer
 const CHAT_COOLDOWN := 40.0
 const GIFT_COOLDOWN := 150.0
 ## Nicht zu verschenken: Schlüssel und was dem Hotel gehört (Schachbrett, Würfelbecher – Wunsch 2026-10-21)
-const NO_GIFT := [Item.Kind.KEY, Item.Kind.CHESS_BOARD, Item.Kind.DICE_CUP]
+const NO_GIFT := [Item.Kind.KEY, Item.Kind.CHESS_BOARD, Item.Kind.DICE_CUP, Item.Kind.DARTS]
 ## Gebratener Kürbis als Geschenk (Spielkonzept 3.8): so viel weniger Angst
 const ROAST_CALM := 20.0
 ## Plaudern zählt am Tag nur so oft voll (6.3), danach kaum noch
@@ -27,7 +27,7 @@ var _name: Label
 var _text: Label
 var _options: GridContainer
 var _buttons: Array[Button] = []
-var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dice" oder "chess")
+var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dice", "chess" oder "darts")
 var _door: Door = null  ## Gespräch an der Tür (Spielkonzept 6.19): die Zimmertür, durch deren Spalt geredet wird
 var _woken := false
 var _scroll: ScrollContainer
@@ -253,7 +253,7 @@ func _show_main() -> void:
 	for occasion in _occasions().slice(0, MAX_OCCASIONS):
 		_option(String(occasion["label"]), _occasion.bind(String(occasion["key"]), occasion["call"]))
 	if guest.challenge_time > 0.0:
-		_option("Herausforderung annehmen (%s)" % ("Schach" if guest.challenge_game == "chess" else "Mäxchen"),
+		_option("Herausforderung annehmen (%s)" % {"chess": "Schach", "darts": "Darts"}.get(guest.challenge_game, "Mäxchen"),
 			_show_stakes.bind(guest.challenge_game))
 	if Game.social.search.has_offer(guest):
 		_option("Klar, ich such mit!", _search)   # er hat gefragt, ob du mitkommst (5.9)
@@ -277,6 +277,8 @@ func _show_main() -> void:
 		_option("Mäxchen an der Bar spielen", _show_stakes.bind("dice"))
 	if Game.chess and Game.chess.table.has_board(player) and not Game.chess.table.busy:
 		_option("Schach in der Lobby spielen", _show_stakes.bind("chess"))
+	if Game.darts and Game.darts.board and Game.darts.board.has_darts(player) and not Game.darts.board.busy 			and not guest.is_child():
+		_option("Darts in der Bar spielen", _show_stakes.bind("darts"))
 	if Game.director.first_attack_done:
 		_option("Über das Monster reden", _talk_monster)
 	else:
@@ -623,10 +625,10 @@ func _bag_items(gift: bool) -> Array[Item]:
 	return items
 
 
-## Einsatz aushandeln (Spielkonzept 6.10). game: "dice" (Mäxchen) oder "chess" (Schach)
+## Einsatz aushandeln (Spielkonzept 6.10). game: "dice" (Mäxchen), "chess" (Schach) oder "darts"
 func _show_stakes(game: String) -> void:
 	_game = game
-	var match_ui: Node = Game.chess if game == "chess" else Game.dice
+	var match_ui: Node = _match_of(game)
 	var reason: String = match_ui.why_not(guest)
 	if reason != "":
 		_say(reason)
@@ -636,6 +638,8 @@ func _show_stakes(game: String) -> void:
 	_say(guest.line("only_fun") if guest.is_child() else "Um was spielen wir?")
 	if game == "chess" and Game.social.has_watched_chess(guest):
 		_name.text = "%s – %s (du hast zugesehen)" % [guest.display_name, ChessMatch.strength_text(guest)]
+	elif game == "darts" and Game.social.has_watched_darts(guest):
+		_name.text = "%s – %s (du hast zugesehen)" % [guest.display_name, DartMatch.strength_text(guest)]
 	_option("Nur zum Spaß", _play.bind(0, false))
 	if guest.is_child():   # Kinder spielen nie um Einsätze (6.13)
 		_option("Doch nicht", _show_main)
@@ -647,13 +651,24 @@ func _show_stakes(game: String) -> void:
 	_option("Doch nicht", _show_main)
 
 
+func _match_of(game: String) -> Node:
+	return {"chess": Game.chess, "darts": Game.darts}.get(game, Game.dice)
+
+
+## Satz des Gastes zum Spiel: „dice_yes“, „chess_no“ … – Darts mit Rückfall auf DartMatch.LINES.
+func _game_line(game: String, key: String) -> String:
+	if game == "darts":
+		return DartMatch.line_of(guest, "darts_" + key)
+	return guest.line(("chess_" if game == "chess" else "dice_") + key)
+
+
 func _play(money: int, with_item: bool) -> void:
-	var chess := _game == "chess"
-	var prefix := "chess_" if chess else "dice_"
-	var likes := bool((ChessMatch.chess_profile(guest) if chess else guest.profile["dice"])["likes"])
+	var profile: Dictionary = {"chess": ChessMatch.chess_profile(guest), "darts": DartMatch.darts_profile(guest)}.get(_game,
+		guest.profile["dice"])
+	var likes := bool(profile["likes"])
 	var challenged := guest.challenge_time > 0.0 and guest.challenge_game == _game
 	if Social.tier(guest) <= Social.Tier.ANGRY and not challenged:
-		_say(guest.line(prefix + "no"))
+		_say(_game_line(_game, "no"))
 		_show_main()
 		return
 	if money > guest.money:
@@ -665,17 +680,14 @@ func _play(money: int, with_item: bool) -> void:
 		_show_stakes(_game)
 		return
 	if not likes and Social.tier(guest) <= Social.Tier.ANNOYED and not challenged:
-		_say(guest.line(prefix + "no"))
+		_say(_game_line(_game, "no"))
 		_show_main()
 		return
 	guest.challenge_time = 0.0
 	var opponent := guest
-	opponent.say(opponent.line(prefix + "yes"))
+	opponent.say(_game_line(_game, "yes"))
 	close()
-	if chess:
-		Game.chess.start(opponent, {"money": money, "item": with_item})
-	else:
-		Game.dice.start(opponent, {"money": money, "item": with_item})
+	_match_of(_game).start(opponent, {"money": money, "item": with_item})
 
 
 # --- Aktionen ---------------------------------------------------------------------
@@ -1003,6 +1015,8 @@ func _kind_name(kind: int) -> String:
 			return "Gezinkte Würfel"
 		Item.Kind.CHESS_BOARD:
 			return "Schachbrett"
+		Item.Kind.DARTS:
+			return "Dartpfeile"
 		Item.Kind.SWEETS:
 			return "Süßigkeiten"
 		Item.Kind.SODA_CAN:

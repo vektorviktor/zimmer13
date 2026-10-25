@@ -124,6 +124,7 @@ FITTINGS = {
 	"Ausstattung: Kürbispflanze Türkenturban": "pumpkin_plant:turban", "Ausstattung: Kürbispflanze Riese": "pumpkin_plant:giant",
 	"Ausstattung: Kalender": "calendar", "Ausstattung: Tagebuch": "diary", "Ausstattung: Dekokiste": "deco_box",
 	"Ausstattung: Schlüsselschrank": "key_cabinet",   # 24.10.: verglast, mit dem Generalschlüssel (6.19)
+	"Ausstattung: Dartscheibe": "dartboard",   # 25.10.: an der Wand, Linie und Stehtisch davor (6.10)
 }
 ## Teppiche → Art (LevelBuilder.RUG_TEXTURES)
 RUGS = {"Teppich: Läufer": "runner"}
@@ -137,6 +138,7 @@ ITEMS = {
 	"Gegenstand: Batterie": "BATTERY", "Gegenstand: UV-Filter": "UV_FILTER", "Gegenstand: Schachbrett": "CHESS_BOARD",
 	# 24.10. (Spielkonzept 6.19): Zimmertüren aufbrechen und reparieren
 	"Gegenstand: Brecheisen": "CROWBAR", "Gegenstand: Werkzeugkasten": "TOOLBOX",
+	"Gegenstand: Dartpfeile": "DARTS",   # 25.10. (6.10) – ohne Eintrag liegen sie auf dem Stehtisch an der Scheibe
 }
 ## Lichter → (Art, defekt)
 LIGHTS = {

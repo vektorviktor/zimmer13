@@ -97,7 +97,7 @@ static func strength_text(p_guest: Guest) -> String:
 
 ## Kann jetzt mit diesem Gast gespielt werden? Gibt einen Grund zurück oder "".
 func why_not(p_guest: Guest) -> String:
-	if active or table == null or (Game.dice and Game.dice.active):
+	if active or table == null or Game.table_game_active():
 		return "Gerade nicht."
 	if table.busy:
 		return "Am Schachtisch wird schon gespielt."

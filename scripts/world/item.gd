@@ -36,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -60,10 +60,11 @@ const PRICES := {
 	Kind.PUMPKIN_HEAD: 0,
 	Kind.TEA: 1,
 	Kind.MATCHBOX: 5,
+	Kind.DARTS: 4,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
-	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX]
+	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS]
 ## Getränkedose: die Sorten und ihre Farbe
 const SODA_COLORS := {"limo": Color(0.95, 0.55, 0.1), "cola": Color(0.7, 0.07, 0.07)}
 ## Was man an die Wand hängen kann (Spielkonzept 5.6, 5.7) – der Besen lehnt nur daran
@@ -1302,6 +1303,17 @@ func _build(extra: String) -> void:
 					m.material_override = Mat.model(MATCHBOX_MODEL, m)
 			else:
 				Geo.mesh(self, Geo.box(size), Mat.psx(Color(0.75, 0.25, 0.15)), Vector3(0, size.y / 2.0, 0))
+		Kind.DARTS:
+			# Sechs Dartpfeile (Spielkonzept 6.10), drei mit roten, drei mit blauen Flights – ohne sie kein Darts an der
+			# Scheibe in der Bar, wie beim Würfelbecher
+			display_name = "Dartpfeile"
+			mass = 0.15
+			size = Vector3(0.16, 0.03, 0.09)
+			for i in 6:
+				var dart := DartModel.build(DartMatch.PLAYER_FLIGHT if i < 3 else DartMatch.GUEST_FLIGHT)
+				add_child(dart)
+				dart.position = Vector3(-0.075 + (i % 2) * 0.006, 0.012, -0.035 + i * 0.014)
+				dart.basis = Basis(Vector3.UP, PI / 2.0 + (i - 2.5) * 0.04) * Basis(Vector3.BACK, PI / 4.0)
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)

@@ -2699,8 +2699,8 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 
 **Vorschläge für weitere Minispiele**
 
-> **Umfang (entschieden 2026-10-21):** Neben Mäxchen und Schach sind **Darts** und das **Kürbis-Schnitz-Duell** als
-> Nächstes vorgemerkt. Alles andere in dieser Tabelle und in den Ideen darunter (Möbel als Einsatz, Wettschulden,
+> **Umfang (entschieden 2026-10-21):** Neben Mäxchen und Schach sind **Darts** (seit 25.10. umgesetzt, unten) und das
+> **Kürbis-Schnitz-Duell** als Nächstes vorgemerkt. Alles andere in dieser Tabelle und in den Ideen darunter (Möbel als Einsatz, Wettschulden,
 > Turniere …) ist **eingefroren** – eine Ideensammlung, nicht geplant.
 
 | Spiel | Ort / Gegenstand | Besonderheit | Lärm |
@@ -2733,7 +2733,7 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Beziehung:** fair spielen ↑, Lieblingsspiel ↑↑, gewinnen gegen Stolze ↓, knapp verlieren ↑, absichtlich verlieren: bemerkt ↓ / unbemerkt ↑.
 - **Schummeln:** gezinkte Würfel (Zimmer 17) in den Becher schmuggeln → „Gezinkt nachwürfeln“; erwischt: Beziehung ↓↓, Gerücht, Gast nimmt den ganzen Einsatz.
 - **Monster:** jeder Wurf macht Lärm (Neugier ↑ an der Bar); am Tisch ist man konzentriert → Flackern/Rauschen nur halb so stark sichtbar; bei langem Flackern springt der Gast auf (Mutige später) – die Einsätze bleiben liegen und gehören niemandem mehr.
-- Noch offen: weitere Spiele (Darts, Schnitz-Duell, oben).
+- Noch offen: weitere Spiele (Schnitz-Duell, oben; Darts siehe unten).
 
 **Umsetzungsstand (entschieden und umgesetzt 2026-10-18): Schach in der Lobby** – „wie Mäxchen“
 - **Schachtisch** in der Lobby (vorn rechts, unter dem Gartenfenster), zwei Hocker. Das **Schachbrett** ist ein
@@ -2755,6 +2755,35 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Monster:** Schach ist **leise** (kein Lärm), aber man sitzt konzentriert (Flackern/Rauschen schwächer sichtbar).
   Bei langem Flackern springt der Gast auf, die Einsätze bleiben liegen.
 - Noch offen: die fehlende Dame als Suche (Idee oben), Dame/Mühle auf der Rückseite, Schachturnier bei Feiern.
+
+**Umsetzungsstand (entschieden und umgesetzt 2026-10-25): Darts in der Bar** – „wie Mäxchen und Schach“
+- **Ort:** Sisalscheibe nach Turniermaß an einer Wand der Bar (Bull 1,73 m hoch), schwarzer Ring drumherum,
+  Messinglinie 2,37 m davor, ein **Stehtisch** daneben für Pfeile, Getränke und Einsätze. Die **Dartpfeile** (sechs,
+  rot und blau) sind ein normaler Gegenstand wie der Würfelbecher – ohne Pfeile kein Darts. Bis die Scheibe im Plan
+  steht, hängt sie an der Südwand der Bar.
+- **Regeln:** **301, einfaches Aus** – je Aufnahme drei Pfeile, genau auf null gewinnt, wer überwirft, bekommt die
+  Aufnahme nicht angerechnet; nach **zehn Aufnahmen** gewinnt der kleinere Rest (gleich = unentschieden, Einsätze
+  geteilt). Du fängst an.
+- **Werfen:** Du stehst an der Linie und zielst **mit der Maus**, der Blick schwankt leicht (Atmen). **Linksklick
+  halten** verengt den Blick und macht ihn ruhiger – nach knapp einer Sekunde am ruhigsten, nach zweieinhalb zittert
+  der Arm wieder –, **loslassen wirft**. Hastig oder mit bewegter Maus streut es mehr. **Rausch** (Schwanken,
+  nachziehende Sicht), **Kaffeezittern**, **Schock** und **Müdigkeit** machen es deutlich schwerer.
+- **Allein üben:** [E] an Scheibe oder Stehtisch – endlos 301, bei einer Vorwarnung lässt man die Pfeile sinken.
+- **Treffsicherheit je Gast:** Bruno wirft sicher (und ist stolz), Mila ordentlich, Edna unsicher und mag es nicht.
+  Zufallsgäste würfeln Lust (Bastler und Plaudertaschen am liebsten) und Treffsicherheit; Angst und Rausch streuen.
+  Am Ende sucht sich der Gast das Feld, das genau aufgeht. **Kinder spielen nicht** („Pfeile sind nichts für Kinder“).
+- **Einsätze, Beziehung, Revanche** wie bei Schach; knapp verlieren freut ihn. **Absichtlich verlieren** = nüchtern
+  mehrmals neben die Scheibe werfen – gute Werfer merken es.
+- **Schummeln:** **über die Linie treten** – ein gutes Stück näher trifft man sicherer. Der Gast steht direkt daneben:
+  Nach jeder Aufnahme über der Linie bemerkt er es nach seiner Aufmerksamkeit (Mila am ehesten). Erwischt: Beziehung
+  ↓↓, Gerücht, die Partie platzt und er nimmt die Einsätze.
+- **Herausforderungen, Gäste untereinander:** Wer Darts mag und dich mag, fordert dich heraus. Gäste werfen auch
+  untereinander (60–90 s, abwechselnd je drei Pfeile); wer **25 s zusieht**, weiß danach, wie sicher beide werfen.
+- **Monster:** Jeder Pfeil macht etwas Lärm (in der Scheibe 6 m, von der Wand abgeprallt 9 m). An der Linie ist man
+  konzentriert (Flackern/Rauschen schwächer sichtbar); bei einer Vorwarnung rennt der Gast weg, die Einsätze bleiben
+  liegen.
+- Noch offen: eigene Kreidetafel an der Wand statt der Anzeige oben links, Pfeile als Wurfgeschoss außerhalb des
+  Spiels (bewusst nicht, 25.10.), Turnier bei Feiern.
 
 ---
 
@@ -3995,7 +4024,7 @@ Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den K
 
 ## 11. Nächste Schritte
 
-1. Minispiele mit Gästen (6.10): **Darts und Kürbis-Schnitz-Duell** (der Rest eingefroren)
+1. Minispiele mit Gästen (6.10): **Kürbis-Schnitz-Duell** (Darts umgesetzt 25.10., der Rest eingefroren)
 2. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen
    Zetteln (2.2) · Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
 3. Tiefkeller planen und bauen, Fahrstuhl reparieren (ein Schacht), Lager (7.4, 7.10) · Maschinen- und Müllraum im

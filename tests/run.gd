@@ -3,7 +3,7 @@ extends Node
 ## mit `-s` nicht lädt; darum als Szene. Jeder Test ist ein Node mit `run() -> bool`.
 ## Aufruf: Godot --headless --path . res://tests/run.tscn [-- math_checks save_rules] (ohne Namen: alle)
 
-const TESTS := ["math_checks", "save_rules", "bag_checks", "notebook_checks", "throw_checks"]
+const TESTS := ["math_checks", "save_rules", "bag_checks", "notebook_checks", "throw_checks", "darts_checks"]
 
 
 func _ready() -> void:

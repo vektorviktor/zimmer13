@@ -60,6 +60,8 @@ const NOISE := {
 	"knock":      {"range": 8.0,  "sound": "knock",  "volume": 0.7},
 	"phone":      {"range": 18.0, "sound": "ring",   "volume": 0.6},    ## je Klingeln (4.14)
 	"dice":       {"range": 10.0, "sound": "thud",   "volume": 0.4},    ## Würfeln, Spiel am Tisch
+	"dart":       {"range": 6.0,  "sound": "dart",   "volume": 0.5},    ## Pfeil steckt in der Scheibe (6.10)
+	"dart_wall":  {"range": 9.0,  "sound": "thud",   "volume": 0.5},    ## … prallt an der Wand ab und fällt
 	"party":      {"range": 25.0, "sound": "",       "volume": 0.0},    ## Feier mit Musik, alle 8 s
 	"punch":      {"range": 9.0,  "sound": "thud",   "volume": 0.8},    ## Schlag (Spieler oder Gast, 6.3)
 	"scream":     {"range": 20.0, "sound": "scream", "volume": 1.0, "alarm": true},   ## Schreck – Stimme des Gastes (SynthAudio.VOICES)

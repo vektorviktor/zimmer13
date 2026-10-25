@@ -50,7 +50,7 @@ const DURATIONS := {
 	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
 	"rustle": 0.3, "flutter": 1.4, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
 	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
-	"giggle": 0.8,
+	"giggle": 0.8, "dart": 0.12,
 }
 
 var hum := 0.0
@@ -345,6 +345,10 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			return (fmod(ph2, 1.0) * 2.0 - 1.0) * sin(PI * k) * 0.12
 		"thud":
 			return sin(TAU * 75.0 * t) * exp(-t * 16.0) * 0.8
+		"dart":
+			# Pfeil in Sisal: kurzes, trockenes „Tock“ – Rauschen mit hellem Holzton, der Schaft surrt kurz nach
+			return (white * exp(-t * 90.0) * 0.7 + sin(TAU * 420.0 * t) * exp(-t * 55.0) * 0.5
+				+ sin(TAU * 1650.0 * t) * exp(-t * 40.0) * 0.08)
 		"knock":
 			# drei kurze, dumpfe Schläge gegen Holz
 			var kt := fmod(t, 0.2)

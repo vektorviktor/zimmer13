@@ -275,6 +275,8 @@ const GRID := 0.25
 ## HAUSHALTE.md (HOUSEHOLDS_PATH, je Zimmer über seine Stelle im Plan); alle übrigen sind unbewohnt.
 ## Arten: player, guest, vacant (unbewohnt, Licht aus, vom Hotel abgeschlossen), abandoned, derelict, locked.
 const PLAYER_ROOM := "013"
+## Dartscheibe (Spielkonzept 6.10), solange sie nicht im Plan steht: Mitte der Südwand der Bar, Blick nach Norden
+const DART_FALLBACK := {"kind": "dartboard", "pos": [-19.0, -10.25], "wall": "south"}
 const COMPASS_ROOM := "026"
 const LOCKED_ROOM := "018"
 const ROOM_KINDS := {"013": "player"}   ## gilt, wenn die Haushaltsdatei fehlt
@@ -482,6 +484,7 @@ var record_player_pos := Vector3.ZERO
 var party_corner := Vector3.ZERO
 var game_table: GameTable
 var chess_table: ChessTable
+var dart_board: DartBoard                ## Darts in der Bar (Spielkonzept 6.10) – aus dem Plan oder DART_FALLBACK
 var bar_spots: Array[Vector3] = []
 var diary: Diary
 ## Aushangbrett in der Lobby (Spielkonzept 2.5) und Innenmaß der Lobby (x, z)
@@ -665,6 +668,7 @@ func build() -> void:
 	else:
 		_gallery()
 	_common_rooms()
+	_dart_fallback()
 	_pool()
 	_gardens()
 	_stairwells()
@@ -2399,6 +2403,8 @@ func _fittings() -> void:
 				_supply(ResourceSpot.new().setup(Item.Kind.BULB, "Ersatzbirne aus dem Lager", 2, 300.0), Vector3(p.x, BULB_SUPPLY_Y, p.y))
 			"leaf_pile":
 				_supply(ResourceSpot.new().setup(Item.Kind.LEAVES, "Herbstlaub", 4, 60.0), Vector3(p.x, top, p.y))
+			"dartboard":   # Darts (Spielkonzept 6.10): Scheibe an der Wand, Linie und Stehtisch davor, Pfeile darauf
+				_dartboard(o)
 			"key_cabinet":   # verglast, mit dem Generalschlüssel (Spielkonzept 6.19)
 				var at := _wall_spot(o, 0.0)
 				var cabinet := KeyCabinet.new()
@@ -2420,6 +2426,30 @@ func _fittings() -> void:
 				_supply(box, Vector3(p.x, top, p.y))
 			_:
 				push_warning("Gebäudeplan: unbekannte Ausstattung „%s“ bei %s" % [kind, p])
+
+
+## Dartscheibe an der Wand aus dem Plan; die Pfeile liegen auf dem Stehtisch, wenn sie nicht im Plan stehen.
+func _dartboard(o: Dictionary) -> void:
+	if dart_board != null:
+		push_warning("Gebäudeplan: zweite Dartscheibe bei %s – es gibt nur eine" % o["pos"])
+		return
+	var at := _wall_spot(o, 0.0)
+	dart_board = DartBoard.new()
+	dart_board.position = at.at(0.0)
+	dart_board.rotation.y = at.yaw()
+	root.add_child(dart_board)
+	var planned := (_map["items"] as Array).any(func(i: Dictionary) -> bool: return i["kind"] == "DARTS")
+	if not planned:
+		var darts := Item.create(Item.Kind.DARTS)   # Gegenstände liegen in der Hauptszene (_item)
+		darts.position = root.global_transform * (dart_board.transform * (DartBoard.TABLE_AT + Vector3.UP * (DartBoard.TABLE_TOP + 0.005)))
+		darts.rotation.y = dart_board.rotation.y + 0.4
+		world.add_child(darts)
+
+
+## Bis die Dartscheibe im Plan steht (Ausstattung „Dartscheibe“): an der Südwand der Bar.
+func _dart_fallback() -> void:
+	if dart_board == null and _named.has("bar"):
+		_dartboard(DART_FALLBACK)
 
 
 func _supply(spot: ResourceSpot, pos: Vector3) -> void:

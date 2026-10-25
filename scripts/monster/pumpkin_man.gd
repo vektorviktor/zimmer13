@@ -437,7 +437,7 @@ func _update_fun(delta: float) -> void:
 	if not in_house():
 		for guest in Game.social.guests:
 			gain += float(FUN_GAIN.get(Game.social.fun_kind(guest), 0.0))
-		if (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active):
+		if Game.table_game_active():
 			gain += float(FUN_GAIN["game"])
 		elif Game.social.player_has_fun():
 			gain += float(FUN_GAIN["party"])

@@ -114,6 +114,28 @@ const COMMON := {
 	"patronized": ["Du hast mich gewinnen lassen. Lass das."],
 }
 
+## Darts (Spielkonzept 6.10): wie gern jeder Typ wirft, und seine Sätze dazu (fehlt einer: DartMatch.LINES)
+const DARTS_LIKES := {"ängstlich": 0.25, "geschäftstüchtig": 0.5, "Plaudertasche": 0.55, "Skeptiker": 0.35, "Bastler": 0.6, "Griesgram": 0.45}
+const DARTS_LINES := {
+	"ängstlich": {"darts_yes": ["Darts … gut. Aber nicht zu nah an der Tür."], "darts_no": ["Spitze Pfeile? Jetzt? Nein danke."],
+		"darts_win": ["Oh … ich hab gewonnen? Das war Zufall."], "darts_lose": ["Danke. Das hat mich abgelenkt."],
+		"darts_challenge": ["Würdest du … mit mir Darts werfen? In der Bar ist es hell."]},
+	"geschäftstüchtig": {"darts_yes": ["Darts? Gern – um Geld natürlich."], "darts_no": ["Keine Zeit für Spielereien."],
+		"darts_win": ["Treffer, versenkt. Zahlen bitte."], "darts_lose": ["Glück. Reines Glück."],
+		"darts_challenge": ["Eine Runde Darts um ein paar Münzen?"]},
+	"Plaudertasche": {"darts_yes": ["Darts! Da kann man so schön nebenbei reden."], "darts_no": ["Später, ich muss noch was erzählen!"],
+		"darts_win": ["Gewonnen! Das erzähl ich gleich allen."], "darts_lose": ["Du triffst ja richtig gut! Wo hast du das gelernt?"],
+		"darts_challenge": ["Komm, Darts an der Bar! Ich erzähl dir dabei was."]},
+	"Skeptiker": {"darts_yes": ["Darts. Reine Physik. Gut."], "darts_no": ["Nicht jetzt. Ich denke nach."],
+		"darts_win": ["Streuung schlägt Glück."], "darts_lose": ["Interessant. Du wirfst konstanter, als ich dachte."],
+		"darts_challenge": ["Darts? Ich möchte sehen, wie ruhig deine Hand ist."]},
+	"Bastler": {"darts_yes": ["Darts! Ich hab mir mal eigene Flights gebaut."], "darts_no": ["Später, ich bastle gerade."],
+		"darts_win": ["Hehe. Gut ausbalanciert, meine Würfe."], "darts_lose": ["Schöner Wurf, der letzte. Den merk ich mir."],
+		"darts_challenge": ["Lust auf Darts? Die Scheibe in der Bar ist echtes Sisal."]},
+	"Griesgram": {"darts_yes": ["Darts. Wenigstens redet man dabei nicht."], "darts_no": ["Lass mich in Ruhe."],
+		"darts_win": ["Gewonnen. Und jetzt geh."], "darts_lose": ["Hm. Nicht schlecht."],
+		"darts_challenge": ["Du. Darts. Bar. Oder hast du Angst?"]},
+}
 ## Charaktere: Wertebereiche (Vector2 = zufällig dazwischen), Vorlieben und eigene Sätze.
 ## Schach (Spielkonzept 6.10): wie gern jeder Typ spielt, und seine Sätze dazu
 const CHESS_LIKES := {"ängstlich": 0.4, "geschäftstüchtig": 0.3, "Plaudertasche": 0.4, "Skeptiker": 0.85, "Bastler": 0.6, "Griesgram": 0.7}
@@ -447,6 +469,12 @@ static func _build(rng: RandomNumberGenerator, guest_name: String, arche: Dictio
 	elif festive < 0.5:
 		start_deco.append(Item.Kind.SPIDER)
 	profile["skin"] = SKIN[rng.randi() % SKIN.size()]
+	# Darts (Spielkonzept 6.10): Lust und Treffsicherheit 0..1, Stolz wie beim Würfeln
+	profile["darts"] = {"likes": rng.randf() < float(DARTS_LIKES.get(arche["kind"], 0.4)), "skill": rng.randf(),
+		"pride": profile["dice"]["pride"]}
+	var darts_lines: Dictionary = DARTS_LINES.get(arche["kind"], {})
+	for key in darts_lines:
+		lines[key] = darts_lines[key]
 	return profile
 
 

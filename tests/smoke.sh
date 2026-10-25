@@ -124,6 +124,8 @@ done <<'LIST'
 600|werfen,gaeste|--tp=edna --wurf=0.5 --trace
 600|streiche|--prank=topple --trace
 4000|spiele|--dice=bruno --autoplay
+3000|spiele,darts|--darts=bruno --autoplay --trace
+1200|darts|--darts --autoplay --trace
 4000|spiele|--chess=mila --autoplay --trace
 1500|kueche|--cook=suppe,fertig
 2200|kueche,gaeste|--cook=gast --trace

@@ -215,6 +215,9 @@ var _bar_timer := 25.0
 var _chess_watched := {}                 ## Gast-ID → du weißt, wie stark er Schach spielt
 var _chess_game := {}                    ## laufende Schachpartie zweier Gäste in der Lobby
 var _chess_timer := 40.0
+var _darts_watched := {}                 ## Gast-ID → du weißt, wie sicher er Darts wirft
+var _dart_game := {}                     ## laufendes Darts zweier Gäste an der Bar
+var _dart_timer := 35.0
 ## Spuren, von denen die Gäste erzählen: {kind, zone, time}
 var _reports: Array[Dictionary] = []
 ## Hotelkatzen (6.11): Gast-ID → Name der Katze, die ihm etwas weggetragen hat; ob schon eine geweint hat
@@ -245,6 +248,13 @@ const CHESS_LINES := [
 	"%s: „Schach!“ – %s seufzt.",
 	"Es ist still am Schachtisch. %s grübelt, %s trommelt mit den Fingern.",
 	"%s schlägt einen Springer. %s murmelt etwas.",
+]
+
+const DART_LINES := [
+	"%s trifft die Triple-20. %s pfeift anerkennend.",
+	"%s: „Ha, Bull!“ – %s verdreht die Augen.",
+	"Der Pfeil von %s prallt an der Wand ab. %s lacht.",
+	"%s zieht die Pfeile aus der Scheibe. %s rechnet laut nach.",
 ]
 
 const BAR_LINES := [
@@ -965,13 +975,13 @@ func fun_guests() -> Array[Guest]:
 	return result
 
 
-## Der Spieler hat Spaß: Mäxchen oder Schach, auf der Feier im Partyraum, Süßes oder Saures an seiner Tür, beim
+## Der Spieler hat Spaß: Mäxchen, Schach oder Darts, auf der Feier im Partyraum, Süßes oder Saures an seiner Tür, beim
 ## Schmücken dabei (5.9) oder beim gemeinsamen Suppenessen (3.8).
 func player_has_fun() -> bool:
 	var p := Game.player
 	if p == null or p.dead or p.hiding != null:
 		return false
-	if (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active):
+	if Game.table_game_active():
 		return true
 	if decorating and decorating.player_joins():
 		return true
@@ -1231,16 +1241,23 @@ func queue_rematch(guest: Guest) -> void:
 		_rematches.append(guest)
 
 
-## game: "dice" (Mäxchen an der Bar) oder "chess" (Schach in der Lobby)
+## game: "dice" (Mäxchen an der Bar), "chess" (Schach in der Lobby) oder "darts" (Scheibe in der Bar)
 func challenge(guest: Guest, game: String = "dice") -> void:
 	guest.challenge_time = 30.0
 	guest.challenge_cooldown = 240.0
 	guest.challenge_game = game
-	guest.say(guest.line("chess_challenge" if game == "chess" else "challenge"))
+	if game == "darts":
+		guest.say(DartMatch.line_of(guest, "darts_challenge"))
+	else:
+		guest.say(guest.line("chess_challenge" if game == "chess" else "challenge"))
 
 
 func has_watched_chess(guest: Guest) -> bool:
 	return _chess_watched.has(guest.id)
+
+
+func has_watched_darts(guest: Guest) -> bool:
+	return _darts_watched.has(guest.id)
 
 
 func on_challenge_ignored(guest: Guest) -> void:
@@ -1257,7 +1274,7 @@ func _update_challenges(delta: float) -> void:
 		return
 	_challenge_timer = 20.0
 	var p := Game.player
-	if p == null or p.in_dialog or (Game.dice and Game.dice.active) or (Game.chess and Game.chess.active) \
+	if p == null or p.in_dialog or Game.table_game_active() \
 			or not Game.director.is_quiet(p.global_position, 25.0):
 		return
 	for guest in living_guests():
@@ -1280,6 +1297,11 @@ func _update_challenges(delta: float) -> void:
 		var board := builder.chess_table.has_board(null)
 		if chess["likes"] and board and tier(g) >= Tier.FRIENDLY and randf() < (0.15 if dice["likes"] else 0.25):
 			challenge(g, "chess")
+			return
+		var darts := DartMatch.darts_profile(g)
+		var darts_ready := builder.dart_board != null and builder.dart_board.has_darts(null) and not g.is_child()
+		if darts["likes"] and darts_ready and tier(g) >= Tier.FRIENDLY and randf() < 0.2:
+			challenge(g, "darts")
 			return
 		if dice["likes"] and tier(g) >= Tier.FRIENDLY and randf() < 0.25:
 			challenge(g)
@@ -1372,6 +1394,81 @@ func _end_chess_game(completed: bool) -> void:
 	_chess_game = {}
 
 
+## Gäste werfen auch untereinander Darts (laut genug für die Bar): je Aufnahme drei Pfeile, abwechselnd. Wer ≥ 25 s
+## zusieht, weiß danach, wie sicher beide werfen.
+func _update_dart_game(delta: float) -> void:
+	var board := builder.dart_board
+	if board == null:
+		return
+	if _dart_game.is_empty():
+		_dart_timer -= delta
+		if _dart_timer > 0.0:
+			return
+		_dart_timer = 25.0
+		if board.busy or not board.has_darts(null) or not Game.director.is_quiet(board.global_position, 25.0):
+			return
+		var pair := _seat_pair(board, 0.3, func(g: Guest) -> bool:
+			return DartMatch.darts_profile(g)["likes"] and not g.is_child(), true)
+		if pair.is_empty():
+			return
+		_dart_game = {"a": pair[0], "b": pair[1], "time": 0.0, "talk": 10.0, "watch": 0.0, "length": randf_range(60.0, 90.0),
+			"next": 1.5, "darts": 0, "turn": 0}
+		if Game.tracing:
+			print("[Darts] %s gegen %s an der Bar" % [pair[0].display_name, pair[1].display_name])
+		return
+	if _pair_broken(_dart_game, board):
+		_end_dart_game(false)
+		return
+	if not (_dart_game["a"].seated and _dart_game["b"].seated):
+		return
+	var dist := _pair_time(_dart_game, board, delta)
+	_dart_game["next"] = float(_dart_game["next"]) - delta
+	if float(_dart_game["next"]) <= 0.0:
+		# Wer dran ist, tritt vor die Mitte – hier wirft er einfach von seinem Platz; nach drei Pfeilen ziehen
+		if int(_dart_game["darts"]) >= Darts.DARTS_PER_VISIT:
+			board.clear_darts()
+			_dart_game["darts"] = 0
+			_dart_game["turn"] = 1 - int(_dart_game["turn"])
+			_dart_game["next"] = 1.5
+		else:
+			var thrower: Guest = _dart_game["a"] if int(_dart_game["turn"]) == 0 else _dart_game["b"]
+			board.guest_throw(thrower, Darts.aim_point(20, Darts.Ring.TRIPLE), DartMatch.sigma_of(thrower),
+				DartMatch.PLAYER_FLIGHT if int(_dart_game["turn"]) == 0 else DartMatch.GUEST_FLIGHT)
+			_dart_game["darts"] = int(_dart_game["darts"]) + 1
+			_dart_game["next"] = randf_range(1.2, 1.8)
+	_dart_game["talk"] = float(_dart_game["talk"]) - delta
+	if float(_dart_game["talk"]) <= 0.0:
+		_dart_game["talk"] = randf_range(14.0, 22.0)
+		if dist < 8.0:
+			_pair_line(_dart_game, DART_LINES)
+	if float(_dart_game["time"]) > float(_dart_game["length"]):
+		_end_dart_game(true)
+
+
+func _end_dart_game(completed: bool) -> void:
+	var ga: Guest = _dart_game["a"]
+	var gb: Guest = _dart_game["b"]
+	if completed:
+		# Der Sicherere gewinnt meistens
+		var sa := float(DartMatch.darts_profile(ga)["skill"]) + randf_range(-0.35, 0.35)
+		var sb := float(DartMatch.darts_profile(gb)["skill"]) + randf_range(-0.35, 0.35)
+		var winner := ga if sa >= sb else gb
+		var loser := gb if winner == ga else ga
+		pals.note(ga, gb)   # zusammen gespielt (6.16)
+		if Game.tracing:
+			print("[Darts] %s gewinnt gegen %s (zugesehen %.0f s)" % [winner.display_name, loser.display_name, float(_dart_game["watch"])])
+		if Game.player and Game.player.global_position.distance_to(builder.dart_board.global_position) < 8.0:
+			Game.say("%s gewinnt beim Darts gegen %s." % [winner.display_name, loser.display_name], 3.5)
+		if float(_dart_game["watch"]) > 25.0 and not (has_watched_darts(ga) and has_watched_darts(gb)):
+			_darts_watched[ga.id] = true
+			_darts_watched[gb.id] = true
+			Game.say("Du hast zugesehen: %s %s, %s %s." % [ga.display_name, DartMatch.strength_text(ga),
+				gb.display_name, DartMatch.strength_text(gb)], 4.5)
+	builder.dart_board.clear_darts()
+	_release_pair(_dart_game, builder.dart_board)
+	_dart_game = {}
+
+
 func _end_bar_game(completed: bool) -> void:
 	var ga: Guest = _bar_game["a"]
 	var gb: Guest = _bar_game["b"]
@@ -1389,17 +1486,23 @@ func _end_bar_game(completed: bool) -> void:
 	_bar_game = {}
 
 
-## Partien zweier Gäste (Mäxchen an der Bar, Schach in der Lobby): Zwei freie Gäste (IDLE, Angst < 40, nicht zur
-## Feier eingeladen, `likes`) setzen sich an den Tisch – mit dieser Chance. [] = zu wenige oder keine Lust.
-func _seat_pair(table: GameTable, chance: float, likes: Callable) -> Array:
+## Partien zweier Gäste (Mäxchen an der Bar, Schach in der Lobby, Darts): Zwei freie Gäste (IDLE, Angst < 40, nicht
+## zur Feier eingeladen, `likes`) setzen sich an den Tisch – mit dieser Chance; stand: stellen sich an die Linie.
+## [] = zu wenige oder keine Lust.
+func _seat_pair(table: GameTable, chance: float, likes: Callable, stand: bool = false) -> Array:
 	var free: Array = living_guests().filter(func(g: Guest) -> bool:
 		return g.state == Guest.State.IDLE and g.fear < 40.0 and not g.invited and likes.call(g))
 	if free.size() < 2 or randf() > chance:
 		return []
 	free.shuffle()
 	table.busy = true
-	(free[0] as Guest).sit_for_game(table.player_seat.global_position, table.top_center())
-	(free[1] as Guest).sit_for_game(table.guest_seat.global_position, table.top_center())
+	if stand:
+		var board := table as DartBoard
+		(free[0] as Guest).stand_for_game(table.player_seat.global_position, board.bull())
+		(free[1] as Guest).stand_for_game(table.guest_seat.global_position, board.bull())
+	else:
+		(free[0] as Guest).sit_for_game(table.player_seat.global_position, table.top_center())
+		(free[1] as Guest).sit_for_game(table.guest_seat.global_position, table.top_center())
 	return [free[0], free[1]]
 
 
@@ -1455,6 +1558,7 @@ func _process(delta: float) -> void:
 	_update_rounds(delta)
 	_update_bar_game(delta)
 	_update_chess_game(delta)
+	_update_dart_game(delta)
 	_update_challenges(delta)
 	_update_sleep(delta)
 	_update_bonds(delta)
