@@ -285,7 +285,7 @@ Den Kürbismann (`assets/models/pumpkin_man.glb`, Spielkonzept 4.19) baut `tools
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_pumpkin.py -- assets/source/pumpkin_man.glb assets/source/pumpkin_axe.glb assets/models/pumpkin_man.glb
 ```
 
-Die Puppe (`assets/models/doll.glb`, Spielkonzept 5.5) ist ein Meshy-Modell (Auto-Rigging mit Skelettvorlage „Mixamo“, alle Animationen): erst trennt `tools/doll_weights.py` (reines Python) die verschmierten Gewichte von Beinen und Ärmeln, dann baut `tools/build_doll.py` das Spielmodell (nur Farbtextur, unkomprimiert). Ein optionaler dritter Pfad legt Vorschaubilder ab:
+Die Puppe (`assets/models/doll.glb`, Spielkonzept 5.5) ist ein Meshy-Modell (Auto-Rigging mit Skelettvorlage „Mixamo“, alle Animationen): erst trennt `tools/doll_weights.py` (reines Python) die verschmierten Gewichte von Beinen und Ärmeln, dann baut `tools/build_doll.py` das Spielmodell (nur Farbtextur, unkomprimiert; Formschlüssel „sit“, damit der Rock beim Sitzen auf den Beinen liegt). Ein optionaler dritter Pfad legt Vorschaubilder ab:
 
 ```bash
 python tools/doll_weights.py assets/source/doll_meshy.glb assets/source/doll.glb

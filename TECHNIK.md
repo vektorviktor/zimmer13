@@ -363,7 +363,12 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   Schritten: `tools/doll_weights.py` trennt die Gewichte (`assets/source/doll_meshy.glb` → `doll.glb`, unten), dann
   `tools/build_doll.py` (Blender) wie beim Kürbismann – Präfix `mixamorig:` ab, `headfront` raus, nur die Farbtextur
   (1024², unkomprimiert, `meshy_tex.py`; die `.import` liegt im Repo), Meshys „walk“/„run“ (ungenutzt). Größe, Sitzen
-  und Aufstehen macht das Spiel (Abschnitt 5, „Die Puppe“).
+  und Aufstehen macht das Spiel (Abschnitt 5, „Die Puppe“). Dazu der Formschlüssel (glTF-Morph, Godot-Blend-Shape)
+  **„sit“**: Der Rock hängt an den Oberschenkeln und dreht beim Sitzen mit – seine Glocke stünde vorn über den Knien
+  hoch. „sit“ drückt in Ruhepose jeden Rockpunkt unter dem Hüftgelenk (Oberschenkel-Gewicht ≥ ½, weiter als
+  `SKIRT_THIGH` vom Oberschenkel) zur späteren Sitzfläche hin flach (`SKIRT_SEAT` hinter der Hüftachse – im Sitzen
+  darunter): je Höhenband so, dass die Vorderkante der Glocke `SKIRT_LAP` vor der Achse landet (auf dem Schoß), seitlich
+  breitet er sich auf der Sitzfläche aus, hinten verschwindet er darin; eingeblendet über `SKIRT_RAMP` unter der Hüfte.
   **Gewichte der Meshy-Puppe** (`tools/doll_weights.py`):
   Meshys Auto-Rigging (Mixamo-Vorlage) verschmiert die Gewichte, wo Teile in der Ruhepose aneinanderliegen. Das Skript
   (reines Python, `python tools/doll_weights.py <meshy.glb> <ausgabe.glb>`) schreibt nur `JOINTS_0`/`WEIGHTS_0` neu, der
@@ -1397,7 +1402,8 @@ NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angri
 - **Wettbewerb** (2.5): Bis zum ersten Angriff liegt vor ihr ein Schildchen „Jury“ (`_card`, `show_card`; Prompt
   „Die Jury“), Kinder holen sie erst danach (`_update_kids` fragt `first_attack_done`). Sitzen und Aufstehen über die Knochen
   (`stand_pose(k)`, `_turn`: Drehung um eine Achse im Modellraum gegenüber der Ruhepose): sitzend die Oberschenkel 90°
-  nach vorn (Beine ausgestreckt, auf dem Sofa ragen die Füße über die Kante), der Kopf um `HEAD_TILT` geneigt; die Arme
+  nach vorn (Beine ausgestreckt, auf dem Sofa ragen die Füße über die Kante), der Kopf um `HEAD_TILT` geneigt, der Rock
+  über den Formschlüssel „sit“ (`_skirt`, Wert 1 − k) auf dem Schoß statt hochstehend; die Arme
   immer `ARM_DOWN` aus Meshys A-Pose zum Körper. Stehend hängen die Beine unter dem Ursprung – sie schwebt dann.
   `HEAD_HEIGHT` (Kopfmitte, sitzend) nimmt DoorContest als Blickziel. `vanish()` (Rauch bei der Siegerehrung): `gone`,
   unsichtbar, ohne Kollision; beim nächsten Urteil prüft `_try_jump` nur den neuen Platz und zeigt sie dort wieder

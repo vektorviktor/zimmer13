@@ -54,6 +54,8 @@ var _noticed := {}            ## Gast-ID → true: hat sie bei diesem Urteil sch
 var _builder: LevelBuilder
 var _skeleton: Skeleton3D
 var _bones := {}              ## Knochenname → Index (Beine, Arme, Kopf: Sitzen und Aufstehen)
+var _body: MeshInstance3D
+var _skirt := -1              ## Formschlüssel „sit“: Rock liegt auf den Beinen (tools/build_doll.py)
 var _card: Node3D             ## Schildchen „Jury“ (Wettbewerb, 2.5)
 
 
@@ -99,7 +101,8 @@ func show_card(value: bool) -> void:
 		_card.visible = value
 
 
-## Aufstehen bei der Siegerehrung (0 = sitzt, 1 = steht): die Beine schwingen nach unten, der Kopf richtet sich auf.
+## Aufstehen bei der Siegerehrung (0 = sitzt, 1 = steht): die Beine schwingen nach unten, der Kopf richtet sich auf,
+## der Rock löst sich vom Schoß und hängt wieder als Glocke.
 ## Der Ursprung bleibt auf der Sitzfläche – stehend hängen die Beine darunter (sie schwebt dann ohnehin).
 func stand_pose(k: float) -> void:
 	var sit := 1.0 - k
@@ -108,6 +111,7 @@ func stand_pose(k: float) -> void:
 		_turn(prefix + "UpLeg", Vector3.RIGHT, -PI / 2.0 * sit)   # Beine nach vorn ausgestreckt
 		_turn(prefix + "Arm", Vector3.BACK, -side * ARM_DOWN)
 	_turn("Head", HEAD_TILT.normalized(), HEAD_TILT.length() * sit)
+	_body.set_blend_shape_value(_skirt, sit)
 
 
 ## Dreht einen Knochen aus der Ruhepose um eine Achse im Modellraum (die Eltern stehen in Ruhepose).
@@ -372,14 +376,15 @@ func _build() -> void:
 	look.scale = Vector3.ONE * SIZE
 	look.position.y = -SEAT * SIZE
 	add_child(look)
-	var body: MeshInstance3D = look.find_child("doll", true, false)
-	body.material_override = Mat.model(MODEL, body, 0, true)   # Kleidsaum und Haar sind einseitig
+	_body = look.find_child("doll", true, false)
+	_body.material_override = Mat.model(MODEL, _body, 0, true)   # Kleidsaum und Haar sind einseitig
+	_skirt = _body.find_blend_shape_by_name("sit")
 	_skeleton = look.find_children("*", "Skeleton3D", true, false)[0]
 	for side in ["Left", "Right"]:
 		for bone in ["UpLeg", "Arm"]:
 			_bones[side + bone] = _skeleton.find_bone(side + bone)
 	_bones["Head"] = _skeleton.find_bone("Head")
-	assert(not _bones.values().has(-1), "Puppe: Knochen fehlen")
+	assert(not _bones.values().has(-1) and _skirt >= 0, "Puppe: Knochen oder Formschlüssel fehlen")
 	stand_pose(0.0)
 	Geo.add_box_shape(self, Vector3(0.45, 0.66, 0.65), Vector3(0, 0.33, 0.2))
 	_build_card()
