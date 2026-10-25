@@ -186,6 +186,11 @@ func heard_volume(kind: String, pos: Vector3) -> float:
 	return float(data["volume"]) * _heard(pos, data["range"])
 
 
+## Wie laut (0..1) der Spieler eine dauernde Klangquelle mit `loudness` m Hörweite an `pos` hört (Kesselfeuer).
+func hearing(pos: Vector3, loudness: float) -> float:
+	return _heard(pos, loudness) if player else 0.0
+
+
 ## Anteil (0..1), den der Spieler bei `loudness` m Hörweite von `pos` hört: bis zur doppelten Hörweite, gedämpft durch
 ## Wände.
 func _heard(pos: Vector3, loudness: float) -> float:

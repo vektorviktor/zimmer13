@@ -68,6 +68,7 @@ var rumble := 0.0  ## tiefes Grollen im ganzen Hotel, bevor das Monster aufbrich
 ## (`creepy`), und die Kinder singen sie mit (`chorus`, nach Nähe zum nächsten singenden Kind)
 var creepy := 0.0
 var chorus := 0.0
+var fire := 0.0    ## Kohlefeuer im Kessel (Boiler): dumpfes Fauchen, dazu Knistern und ab und zu ein Knacken
 
 var _playback: AudioStreamGeneratorPlayback
 var _time := 0.0
@@ -75,6 +76,7 @@ var _lp_fast := 0.0
 var _lp_slow := 0.0
 var _pant_phase := 1.0   ## 1 = der nächste Atemzug beginnt sofort
 var _pant_depth := 1.0   ## jeder Atemzug etwas anders tief
+var _crackle := 0.0      ## Hüllkurve des letzten Knisterns (`fire`)
 var _breath: AudioStreamPlayer
 var _shots: Array[Dictionary] = []
 var _music_volume := 1.0
@@ -249,6 +251,12 @@ func _sample(dt: float) -> float:
 		s += (_lp_slow * 7.0 * swell + sin(TAU * 33.0 * _time) * 0.18 * swell + sin(TAU * 41.0 * _time) * 0.1) * rumble
 	if creepy > 0.001 or chorus > 0.001:
 		s += _creepy_sample(white)
+	if fire > 0.001:
+		# Knistern: kurze Rauschstöße (~6 ms), etwa zehn je Sekunde, selten ein lautes Knacken
+		if randf() < 0.00045:
+			_crackle = randf_range(0.25, 0.8) * (2.2 if randf() < 0.07 else 1.0)
+		_crackle *= 0.991
+		s += (_lp_slow * 1.8 * (0.8 + 0.2 * sin(TAU * 0.37 * _time)) + white * _crackle) * fire
 	if rain > 0.001:
 		s += (white * 0.16 * (1.0 - rain_muffle) + _lp_fast * 0.3 + _lp_slow * 0.8 * rain_muffle) * rain
 	var i := _shots.size() - 1

@@ -3532,7 +3532,14 @@ gezeichnet im Gebäudeplan (Gruppe „UG“, 7.5).
 - **Gäste** gehen nicht hinunter; das Monster streift auch durch die Kellergänge.
 - **Kartenblatt „Keller“** (Zimmer 0117): die handgezeichnete Skizze zeigt jetzt das ganze Untergeschoss, der
   Heizkeller ist rot eingekreist („hier unten schläft es“).
-- **Offen:** Ausstattung (Kessel, Rohre, Technik) sowie Tiefkeller und Lager aus 7.4.
+- **Kessel und Rohre (2026-10-24):** Mittig an der Ostwand des Heizkellers steht ein alter **Kohlekessel**. Seine
+  Feuerklappe steht offen, im Feuerraum lodern Flammen über der Glut und knistern; die Glut wirft einen orangeroten
+  Lichtkegel aus der Klappe auf den Boden. Das Feuer **brennt vorerst immer** – Anheizen, Kohle, Nachlegen und Ausgehen
+  (7.4) bleiben eingefroren. Wie in 7.4 macht der Schein den Platz am Kessel etwas sicherer: Licht schreckt das
+  Monster ab, macht einen aber auch sichtbarer. Vom Kessel steigt ein Rohr auf und mündet in eine **Ringleitung**, die
+  unter der Decke an allen vier Wänden entlangläuft, mit Abzweigen hinab (Rücklauf über dem Boden, Blindkappe, ein
+  offenes Rohrende, eines durch die Decke) – nur Atmosphäre.
+- **Offen:** übrige Technik sowie Tiefkeller und Lager aus 7.4.
 
 ### 7.10 Kleineres Hotel, mehr Ebenen (entschieden 2026-10-21)
 > Teilweise umgesetzt (2026-10-22): Der neue Plan `map_a.aseprite` (EG, OG1 und UG untereinander, 151 × 60 m) ist

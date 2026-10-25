@@ -415,6 +415,12 @@ const BULB_SUPPLY_Y := 1.4
 const DECO_BOX_SIZE := 15
 const LAUNDRY_BOX_SIZE := 8
 const OLD_DECO_SIZE := 10
+## Heizkeller (Boiler, PipeKit): Kesselmitte so weit vor der Ostwand; Rohrmitte so weit vor den Wänden, die
+## Ringleitung so weit unter der Decke, der Rücklauf so hoch über dem Boden
+const BOILER_WALL := 1.1
+const PIPE_WALL := 0.16
+const PIPE_RING := 0.4
+const PIPE_LOW := 0.45
 ## Reifegrade der Kürbispflanzen in Planreihenfolge (von Norden nach Süden, je Beet von Westen nach Osten)
 const PLANT_STAGES := [0, 3, 2, 3, 1, 3]
 const PAINTING_COLORS: Array[Color] = [Color(0.22, 0.14, 0.12), Color(0.16, 0.2, 0.15), Color(0.12, 0.13, 0.2),
@@ -4001,7 +4007,8 @@ func _flight(x: float, z_from: float, z_to: float, y_from: float, y_to: float, w
 ## Heizkeller im Untergeschoss (Spielkonzept 7.9): Versteck des Monsters, mit allem, was früher im Keller unter dem
 ## Treppenhaus lag – Kisten, altes Regal, Schlüssel zu Zimmer 18, Münzen, Batterie, Zettel 2011, UV-Schrift von 1987,
 ## Spinnweben, alte Deko (5.7), die kaputte Kellerleuchte und ihr Schalter. Der Eingang liegt laut Plan im Norden
-## (schmaler Gang zwischen zwei Kellerräumen); die Sachen stehen in der Halle an der Südwand, weg von der Tür.
+## (schmaler Gang zwischen zwei Kellerräumen); die Sachen stehen in der Halle an der Südwand, weg von der Tür. Dazu der
+## Kohlekessel mittig an der Ostwand (Boiler) und die Rohre (_boiler_pipes).
 func _boiler_room() -> void:
 	var hall := _largest_rect("boiler_room")
 	if not hall.has_area():
@@ -4043,6 +4050,71 @@ func _boiler_room() -> void:
 	old.position = Vector3(w + 1.45, 0.45, s - 0.6)
 	old.rotation.y = PI / 2.0
 	root.add_child(old)
+	# Kohlekessel mittig an der Ostwand, die offene Feuerklappe zur Raummitte (Westen)
+	var boiler := Boiler.new()
+	boiler.position = Vector3(e - BOILER_WALL, 0, c.y)
+	boiler.rotation.y = -PI / 2.0
+	root.add_child(boiler)
+	_boiler_pipes(hall, boiler)
+
+
+## Rohre im Heizkeller (PipeKit, nur Zierde): eine Ringleitung unter der Decke an allen vier Wänden, an Stangen
+## aufgehängt. Vom Stutzen des Kessels steigt ein Rohr auf und mündet per T-Stück in den Ring an der Ostwand.
+## Abzweige: Süd – hinab und als Rücklauf knapp über dem Boden an Süd- und Ostwand entlang bis neben den Kessel, dort
+## in den Boden; West – hinab bis Hüfthöhe, Blindkappe; Nord – Kreuzstück, hinauf durch die Decke und hinab bis zu
+## einem offenen Ende (abseits von Tür, Schalter und Kellerleuchte).
+func _boiler_pipes(hall: Rect2, boiler: Boiler) -> void:
+	var kit := PipeKit.new(_parent)
+	var y := H - PIPE_RING
+	var w := hall.position.x + PIPE_WALL
+	var e := hall.end.x - PIPE_WALL
+	var n := hall.position.y + PIPE_WALL
+	var s := hall.end.y - PIPE_WALL
+	var c := hall.get_center()
+	var top := boiler.position + Boiler.PIPE_TOP
+	var tee_e := Vector3(e, y, top.z)
+	var tee_s := Vector3(c.x + 3.5, y, s)
+	var tee_w := Vector3(w, y, c.y - 4.0)
+	var cross_n := Vector3(_north_pipe_x(hall), y, n)
+	# Ring, an jedem Abzweig unterbrochen
+	kit.run([tee_e, Vector3(e, y, s), tee_s], "joint", "joint", H)
+	kit.run([tee_s, Vector3(w, y, s), tee_w], "joint", "joint", H)
+	kit.run([tee_w, Vector3(w, y, n), cross_n], "joint", "joint", H)
+	kit.run([cross_n, Vector3(e, y, n), tee_e], "joint", "joint", H)
+	kit.tee(tee_e, Vector3.BACK, Vector3.LEFT)
+	kit.tee(tee_s, Vector3.RIGHT, Vector3.DOWN)
+	kit.tee(tee_w, Vector3.BACK, Vector3.DOWN)
+	kit.cross(cross_n, Vector3.RIGHT, Vector3.UP)
+	# Kessel: Flansch auf dem Stutzen, hinauf und hinüber in den Ring
+	kit.piece("flange", top + Vector3(0, 0.025, 0), Vector3.UP, Vector3.BACK)
+	kit.run([top, Vector3(top.x, y, top.z), tee_e], "", "joint")
+	# Abzweige
+	var back := top.z + 1.2   # Rücklauf endet südlich neben dem Kessel
+	kit.run([tee_s, Vector3(tee_s.x, PIPE_LOW, s), Vector3(e, PIPE_LOW, s), Vector3(e, PIPE_LOW, back), Vector3(e, 0.0, back)],
+		"joint", "", 0.0)
+	kit.run([tee_w, Vector3(w, 0.9, tee_w.z)], "joint", "cap")
+	kit.run([cross_n, Vector3(cross_n.x, H, n)], "joint", "")
+	kit.run([cross_n, Vector3(cross_n.x, 1.3, n)], "joint", "open")
+
+
+## x des Abzweigs an der Nordwand: der erste Vorschlag mit mindestens 1 m Luft zu Tür, Schalter (rechts neben der
+## Tür) und kaputter Kellerleuchte (c.x − 6), sonst der mit der meisten.
+func _north_pipe_x(hall: Rect2) -> float:
+	var c := hall.get_center()
+	var best := c.x
+	var best_gap := -INF
+	for x: float in [c.x + 4.5, c.x - 3.0, c.x + 1.5, c.x - 1.5]:
+		var gap := absf(x - (c.x - 6.0))
+		for d in _doors:
+			var p: Vector3 = d["pos"]
+			if absf(p.z - hall.position.y) < 0.3:
+				gap = minf(gap, absf(x - p.x) - (d["door"] as Door).width / 2.0 - 0.6)
+		if gap >= 1.0:
+			return x
+		if gap > best_gap:
+			best = x
+			best_gap = gap
+	return best
 
 
 ## Wäscherei im Untergeschoss (Spielkonzept 7.9): an beiden Längswänden eine Reihe Waschmaschinen (nicht im Plan),

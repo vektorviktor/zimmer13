@@ -812,7 +812,30 @@ Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Ta
   durchs Monster). Im Code: `_boiler_room` (Versteck des Monsters, `cellar_center()` = Mitte der Halle, Inhalt des
   alten Kellers an der Südwand, weg vom Eingang im Norden – Kisten, Regal, Schlüssel 18, Münzen, Batterie, Zettel
   2011, UV-Schrift, Spinnweben, alte Deko, kaputte Leuchte und Schalter `keller` im Eingangsgang) und
-  `_laundry_room` (je Längswand `WASHERS_PER_WALL` Waschmaschinen). Zonen (`_lower_zones`): Heizkeller,
+  `_laundry_room` (je Längswand `WASHERS_PER_WALL` Waschmaschinen).
+  **Kohlekessel** (24.10., `scripts/world/boiler.gd`, `Boiler`, Modell `assets/models/boiler.glb` aus
+  `tools/build_boiler.py`): mittig an der Ostwand (`BOILER_WALL` vor der Wand), Feuerklappe zur Raummitte, Kollision
+  als Zylinder plus Kasten für die offene Klappe (auch fürs NavMesh). Das Modell hat zwei Teile, `boiler` und
+  `fire_door` (Ursprung im Scharnier, geschlossen gebaut) – `DOOR_OPEN` schwenkt sie auf 100°. Im Feuerraum: Glut
+  (emissiver Kasten auf dem Rost), Flammen (`CPUParticles3D`, Billboards wie `DecoFire`, der Feuerraum verdeckt sie
+  bis auf die Öffnung) und selten ein Funke, der herausfliegt. Licht: `SpotLight3D` im Feuerraum mit eigenem
+  Schatten, schräg nach vorn unten (`CONE_*`) – der Kessel selbst begrenzt den Kegel auf die Form der Öffnung, am Boden
+  liegt ein orangerotes Trapez; dazu ein schwacher Schein vor der Klappe (`FlickerLight`, `soft`, in `lamps` wie die
+  Deko-Kerzen: flackert mit dem Monster, Schatten über `ShadowBudget`, zählt für `light_at` – am Kessel schreckt das
+  Monster also etwas zurück, Spielkonzept 7.4). Der Kegel ist kein `light_source` (die Gruppe erwartet
+  `OmniLight3D`); er folgt Helligkeit und Sichtbarkeit des Scheins (Meta `hidden_mask` von `ShadowBudget`). Knistern:
+  `SynthAudio.fire` (gefiltertes Rauschen als Fauchen, dazu kurze Rauschstöße), die Lautstärke setzt der Kessel alle
+  0,25 s aus `Game.hearing` (Entfernung und Wände wie Lärm, `CRACKLE_RANGE`). Kein Lärm fürs Monster, nicht
+  gespeichert, brennt immer (Anheizen eingefroren). **Rohre** (`scripts/level/pipe_kit.gd`, `PipeKit`, Modell
+  `assets/models/pipes.glb`: gerade 0,5/1/2 m, Bogen, T, Kreuz, Flansch, Blindkappe, offenes Ende, Rohrachse +X):
+  `run(punkte, anfang, ende, halter_y)` legt einen achsparallelen Rohrzug mit Bögen an den Ecken (gerade Stücke
+  absteigend nach Länge, der Rest gestaucht, Flansch an jeder Fuge; Enden `""`/`flange`/`cap`/`open`/`joint` – bei
+  `joint` sitzt dort ein T- oder Kreuzstück, `tee`/`cross`), waagerechte Stücke bekommen Halterstangen bis `halter_y`.
+  Keine Kollision, Meshes geteilt. `_boiler_pipes`: Ringleitung `PIPE_RING` unter der Decke an allen vier Wänden
+  (`PIPE_WALL` davor), Kesselrohr vom Stutzen (`Boiler.PIPE_TOP`) hinauf und per T-Stück von der Raumseite in den Ring
+  an der Ostwand; Abzweige Süd (Rücklauf `PIPE_LOW` über dem Boden an Süd- und Ostwand bis neben den Kessel, dort in
+  den Boden), West (Blindkappe in Hüfthöhe), Nord (Kreuzstück: hinauf durch die Decke, hinab bis zu einem offenen Ende,
+  x nach `_north_pipe_x` abseits von Tür, Schalter und Kellerleuchte). Zonen (`_lower_zones`): Heizkeller,
   Technikraum, Wäscherei und „Keller“ für die Gänge; Wegpunkte (`_lower_waypoints`) nur in `patrol` fürs Monster,
   Gäste gehen nicht hinunter.
 - **Wände:** Eine Planwand wird dort geteilt, wo sich die Räume an einer Seite ändern (abgetastet alle 25 cm,
