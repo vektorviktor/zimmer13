@@ -71,7 +71,7 @@ func _ready() -> void:
 		Item.Kind.CANDLE:
 			Geo.mesh(_visual, Geo.box(Vector3(0.32, 0.08, 0.2)), Mat.psx(Color(0.4, 0.28, 0.16)), Vector3(0, 0.04, 0))
 			for i in 3:
-				Geo.mesh(_visual, Geo.cylinder(0.03, 0.14, 6), Mat.psx(Color(0.92, 0.88, 0.75)), Vector3(-0.09 + i * 0.09, 0.15, 0))
+				CandleModel.build(_visual, false, false, Vector3(-0.09 + i * 0.09, 0.08, 0))
 			Geo.add_box_shape(self, Vector3(0.34, 0.24, 0.22), Vector3(0, 0.12, 0))
 		Item.Kind.SHEET_GHOST:
 			# Wäschekiste: ein Laken hängt heraus, ein aufgemaltes Auge schaut hervor

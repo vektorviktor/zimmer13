@@ -114,13 +114,15 @@ func _blocked_hands() -> void:
 		"Fach 1 mit Kürbislaterne: die Laterne wird abgestellt, Süßigkeiten in der Hand")
 	_player.consume_held()
 	var candle := _make(Item.Kind.CANDLE)
+	_check(not candle.lit and candle.fits_pocket(), "neue Kerze brennt nicht und passt hinein (Spielkonzept 5.12)")
+	candle.light_up(false)
 	_check(candle.lit and not candle.fits_pocket(), "brennende Kerze passt nicht hinein")
 	candle._extinguish()
 	_check(candle.fits_pocket(), "ausgegangene Kerze passt hinein")
 	var lamp := _make(Item.Kind.FLASHLIGHT)
 	_player.try_pick_up(lamp)
-	_check(not _player.can_take(Item.Kind.CANDLE) and _player.can_take(Item.Kind.BULB),
-		"Kerze aus dem Vorrat (brennt) nur in die freie Hand, Glühbirne auch in die Tasche")
+	_check(_player.can_take(Item.Kind.CANDLE) and _player.can_take(Item.Kind.BULB),
+		"Kerze aus dem Vorrat (aus) und Glühbirne auch in die Tasche")
 	var can := _make(Item.Kind.SODA_CAN)
 	_player.try_pick_up(can)
 	_check(can.in_bag, "Taschenlampe in der Hand: Kleines trotzdem einstecken")

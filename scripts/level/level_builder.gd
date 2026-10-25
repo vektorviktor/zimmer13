@@ -283,13 +283,15 @@ const OPEN_WINGS := ["ost", "west"]
 const OPEN_WINGS_UPPER := ["ost", "west"]
 
 ## Inhalt, der nicht im Plan steht, je Raum-ID (Zimmernummer oder Bereich): Münzbetrag (ohne Eintrag 1),
-## Kartenblatt, Zettel-Nummer (Spielkonzept 4.12) und UV-Schrift (4.16) der Objekte in diesem Raum.
+## Kartenblatt, Zettel-Nummer (Spielkonzept 4.12) und UV-Schrift (4.16) der Objekte in diesem Raum; „drawer“ = Item.Kind
+## für die oberste Schublade der Kommode im Raum (_drawer_content).
 const CONTENT := {
 	"013": {"coins": "3", "map": "eg", "uv": "DU WARST SCHON\nEINMAL HIER"},
 	"014": {"note": "2003"},
 	"017": {"coins": "2", "map": "keller", "note": "1987",
 		"uv": "ICH HABE ES GEBLENDET.\nJETZT KENNT ES MEINE TÜR.\n– E. K."},
 	"018": {"coins": "5", "uv": "NUR EINER\nKOMMT HINAUS"},
+	"022": {"drawer": "MATCHBOX"},   # Streichholzschachtel neben Zimmer 13 (Spielkonzept 5.12)
 	"ug_laundry_room_1": {"note": "1994"},   # Wäscherei im Keller (seit 23.10. ohne Zimmernummer)
 	"lobby": {"note": "2019", "map": "og"},   # Kartenblatt Obergeschoss an der Rezeption (Spielkonzept 3.2)
 }
@@ -692,10 +694,12 @@ func _build_plan_floor() -> void:
 	_floors_and_ceilings()
 	for info in _map["rooms"]:
 		_room(info)
+	var first_furnishing := _furnishings.size()
 	_furniture()
 	_rugs()
 	_fittings()
 	_items()
+	_drawer_content(first_furnishing)
 	_lights()
 	_auto_switches()
 
@@ -2444,6 +2448,30 @@ func _items() -> void:
 			Item.Kind.KEY:
 				extra = String(content.get("key", ""))
 		_item(kind, Vector3(p.x, _top_at(p) + 0.02, p.y), extra)
+
+
+## Fester Fund in einer Schublade (CONTENT „drawer“, Spielkonzept 5.12): in die oberste Schublade der ersten Kommode
+## im Raum. Steht dort (noch) keine, liegt er auf einem Tisch des Raums. Nur Möbel ab first (dieses Stockwerk).
+func _drawer_content(first: int) -> void:
+	for id: String in CONTENT:
+		if not (CONTENT[id] as Dictionary).has("drawer"):
+			continue
+		var kind := Item.Kind.get(String(CONTENT[id]["drawer"])) as Item.Kind
+		var table := {}
+		var placed := false
+		for f: Dictionary in _furnishings.slice(first):
+			if _room_id_at((f["rect"] as Rect2).get_center()) != id:
+				continue
+			if f["kind"] == "dresser":
+				(f["node"] as Dresser).fixed[0] = kind
+				placed = true
+				break
+			if f["kind"] in ["table", "room_table"] and table.is_empty():
+				table = f
+		if placed or table.is_empty():
+			continue
+		var c := (table["rect"] as Rect2).get_center()
+		_item(kind, Vector3(c.x + 0.2, float(table["top"]) + 0.02, c.y + 0.1))
 
 
 ## Lichter (Ebene „Lichter“): Wandleuchten an der Wand (Höhe und Helligkeit je Fläche, _lamp_style),
@@ -4517,28 +4545,13 @@ func _sign(text: String, pos: Vector3, yaw: float, em: float = SIGN_EM) -> float
 	return pos.y + rim.y / 2.0
 
 
-## Feste Kerze als Deko-Licht (kein Gegenstand): brennt immer, flackert leicht und in Monsternähe.
+## Feste Kerze als Deko-Licht (kein Gegenstand, FixedCandle): brennt, bis jemand sie ausbläst, flackert leicht und in
+## Monsternähe.
 ## Kerzen und Kürbisse sind die hellsten Lichter im Haus (Spielkonzept 7.3).
 func _candle(pos: Vector3) -> void:
-	var holder := Node3D.new()
-	holder.position = pos
-	_parent.add_child(holder)
-	Geo.mesh(holder, Geo.cylinder(0.05, 0.015, 8), Mat.psx(Color(0.6, 0.47, 0.22)), Vector3(0, 0.0075, 0))   # Messingteller
-	Geo.mesh(holder, Geo.cylinder(0.03, 0.18, 6), Mat.psx(Color(0.92, 0.88, 0.75)), Vector3(0, 0.105, 0))
-	var flame := Mat.psx(Color(1, 0.8, 0.3), "", 1.0, Color(1, 0.7, 0.2), 4.0, false)
-	Geo.mesh(holder, Geo.sphere(0.016, 0.04, 5, 2), flame, Vector3(0, 0.215, 0))
-	var light := FlickerLight.new()
-	light.position = Vector3(0, 0.26, 0)
-	light.light_color = Color(1.0, 0.68, 0.32)
-	light.base_energy = CANDLE_ENERGY
-	light.omni_range = 4.5
-	light.soft = true
-	light.shadow_enabled = false
-	light.distance_fade_enabled = true
-	light.distance_fade_begin = 20.0
-	light.distance_fade_length = 5.0
-	light.add_to_group("lamps")
-	holder.add_child(light)
+	var candle := FixedCandle.new().setup(CANDLE_ENERGY)   # auspusten, anzünden, gespeichert (Spielkonzept 5.12)
+	candle.position = pos
+	_parent.add_child(candle)
 
 
 ## Wandleuchte; yaw dreht die lokale +Z-Achse (von der Wand weg) in den Raum.

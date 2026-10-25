@@ -2127,8 +2127,11 @@ func favorite_pumpkin() -> String:
 
 
 ## Ein Gegenstand aus seinem Vorrat – Kürbisse in seiner Lieblingssorte (geschnitzt: Halloween, wenn sie sich nicht schnitzen lässt).
+## Aus dem Koffer brennt nichts: Kerzen sind aus, im geschnitzten Kürbis steckt eine erloschene Kerze (Spielkonzept 5.12).
 func stock_item(kind: int) -> Item:
-	if kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN]:
+	if kind == Item.Kind.CARVED_PUMPKIN:
+		return Item.create(kind, favorite_pumpkin() + ",out")
+	if kind == Item.Kind.PUMPKIN:
 		return Item.create(kind, favorite_pumpkin())
 	return Item.create(kind)
 

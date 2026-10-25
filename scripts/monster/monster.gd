@@ -676,6 +676,10 @@ func _update_traces(delta: float) -> void:
 		var item := node as Item
 		if item.lit and not item.is_held and item.global_position.distance_to(global_position) < CANDLE_RANGE:
 			item.blow_out()
+	for node in get_tree().get_nodes_in_group("fixed_candles"):   # auch die festen Kerzen (Spielkonzept 5.12)
+		var candle := node as FixedCandle
+		if candle.lit and candle.global_position.distance_to(global_position) < CANDLE_RANGE:
+			candle.blow_out()
 	for door: Door in Door.near(global_position):
 		if door.glass or door in _handprinted:
 			continue

@@ -95,17 +95,20 @@ extends Node3D
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --bag[=a,b,…]               Kleines in die Tasche (3.2): süßes, cola, limo, zierkürbis, kerze, messer, batterie, birne,
-##                               uv, würfel, becher – ohne Angabe Süßigkeiten, Cola, Zierkürbis und Batterie
+##                               uv, würfel, becher, streichhölzer (5.12) – ohne Angabe Süßigkeiten, Cola, Zierkürbis und
+##                               Batterie
 ##   --bag-menu[=n]              Tasche offen halten wie mit gehaltenem [Q], Fach n (1–6) gewählt – für Screenshots
 ##   --deco=art[,g]              Deko in die Hand (5.6, 5.7): gespenst, lichter, netz, laub, zierkürbis, fledermaus,
-##                               spinne, totenkopf, besen – an eine Wand sehen
+##                               spinne, totenkopf, besen, kerze (brennend, 5.12) – an eine Wand sehen
 ##                               und [G] zum Aufhängen bzw. Verstreuen · ,g: nach 1 s selbst [G] (mit --pos auf eine Wand)
 ##   --fall[=h[,sorte]]          Kürbis fällt 1,5 m vor dir aus h m Höhe (Standard 4) – ab 3 m zerplatzt er zu Kürbismatsch
 ##                               (5.8); Sorte aus PumpkinKinds oder „mini“ (Zierkürbis), z. B. --fall=5,giant; mit
-##                               --time=+2 danach ist der Matsch verblasst und weg · „kerze“ bzw. „birne“: eine Kerze
-##                               (zerbricht ab 2 m) bzw. Glühbirne (platzt ab 1,5 m), z. B. --fall=3,birne
+##                               --time=+2 danach ist der Matsch verblasst und weg · „kerze“ bzw. „birne“: eine brennende
+##                               Kerze (zerbricht ab 2 m) bzw. Glühbirne (platzt ab 1,5 m), z. B. --fall=3,birne
 ##   --kuerbis[=n]               Kürbismodelle (5.8) 1,5 m vor dir, Gesicht zu dir, Blick hinunter: der glatte und die fünf
 ##                               Fratzen mit Kerze in einer Reihe – bzw. nur Fratze n (1–5)
+##   --kerzen                    Kerzenmodelle 0,8 m vor dir, Blick hinunter: Kerze brennend und aus (Gegenstand), rot und weiß
+##                               brennend auf dem Teller
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten); aufgaben|notizen|
 ##                               gesehen: das Notizbuch bei diesem Lesezeichen (3.10)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
@@ -765,15 +768,14 @@ func run_debug(arg: String) -> bool:
 		var kinds := {"süßes": Item.Kind.SWEETS, "suesses": Item.Kind.SWEETS, "cola": Item.Kind.SODA_CAN, "limo": Item.Kind.SODA_CAN,
 			"zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE,
 			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
-			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP}
+			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP,
+			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX}
 		var names := (arg.substr(6) if arg.begins_with("--bag=") else "süßes,cola,zierkürbis,batterie").split(",", false)
 		for what in names:
 			if not kinds.has(what):
 				Game.say("Tasche: " + ", ".join(kinds.keys()), 3.0)
 				return true
 			var item := Item.create(kinds[what], what if what in ["cola", "limo"] else "")
-			if item.kind == Item.Kind.CANDLE:
-				item._extinguish()   # brennend passt sie nicht hinein
 			if Game.player.bag.size() < Player.BAG_SLOTS:
 				Game.player.bag_add(item)
 			else:
@@ -786,13 +788,14 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--deco="):
 		var kinds := {"gespenst": Item.Kind.SHEET_GHOST, "lichter": Item.Kind.LIGHT_STRING, "netz": Item.Kind.COBWEB,
 			"laub": Item.Kind.LEAVES, "zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN,
-			"fledermaus": Item.Kind.BAT_GARLAND, "spinne": Item.Kind.SPIDER, "totenkopf": Item.Kind.SKULL, "besen": Item.Kind.BROOM}
+			"fledermaus": Item.Kind.BAT_GARLAND, "spinne": Item.Kind.SPIDER, "totenkopf": Item.Kind.SKULL, "besen": Item.Kind.BROOM,
+			"kerze": Item.Kind.CANDLE}
 		var what := arg.substr(7).trim_suffix(",g")
 		if not kinds.has(what):
-			Game.say("Deko: gespenst, lichter, netz, laub, zierkürbis, fledermaus, spinne, totenkopf oder besen", 3.0)
+			Game.say("Deko: gespenst, lichter, netz, laub, zierkürbis, fledermaus, spinne, totenkopf, besen oder kerze", 3.0)
 			return true
 		Game.player.drop_held()
-		Game.player.receive_item(Item.create(kinds[what]))
+		Game.player.receive_item(Item.create(kinds[what], "lit" if what == "kerze" else ""))
 		if arg.ends_with(",g"):
 			get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.player.drop_held())
 	elif arg == "--fall" or arg.begins_with("--fall="):
@@ -803,7 +806,7 @@ func run_debug(arg: String) -> bool:
 		var sort := parts[1] if parts.size() > 1 else ""
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
 			var kinds := {"mini": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE, "birne": Item.Kind.BULB}
-			var pumpkin := Item.create(kinds[sort]) if kinds.has(sort) else Item.create(Item.Kind.PUMPKIN, sort)
+			var pumpkin := Item.create(kinds[sort], "lit" if sort == "kerze" else "") if kinds.has(sort) else Item.create(Item.Kind.PUMPKIN, sort)
 			Game.player.get_parent().add_child(pumpkin)
 			var front := -Game.player.global_basis.z
 			pumpkin.global_position = Game.player.global_position + Vector3(front.x, 0, front.z).normalized() * 1.5 + Vector3.UP * height
@@ -824,6 +827,25 @@ func run_debug(arg: String) -> bool:
 				pumpkin.global_position = Game.player.global_position + front * 1.5 + side * (i - (faces.size() - 1) / 2.0) * 0.5 					+ Vector3.UP * 0.05
 				pumpkin.rotation.y = atan2(-front.x, -front.z)
 			Game.player.head.rotation.x = -0.6)   # Blick hinunter auf die Reihe
+	elif arg == "--kerzen":
+		# Kerzenmodelle (CandleModel): Gegenstand brennend und aus, rot und weiß auf dem Teller (brennend) in einer Reihe
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
+			var front := -Game.player.global_basis.z
+			front = Vector3(front.x, 0, front.z).normalized()
+			var side := front.cross(Vector3.UP)
+			for i in 4:
+				var at := Game.player.global_position + front * 0.8 + side * (i - 1.5) * 0.2 + Vector3.UP * 0.02
+				if i < 2:
+					var candle := Item.create(Item.Kind.CANDLE, "lit" if i == 0 else "")
+					Game.player.get_parent().add_child(candle)
+					candle.global_position = at
+					continue
+				var holder := Node3D.new()
+				Game.player.get_parent().add_child(holder)
+				holder.global_position = at
+				var wick := CandleModel.build(holder, i == 2, true)
+				CandleModel.flame(holder, Vector3(0, wick, 0))
+			Game.player.head.rotation.x = -0.75)   # Blick hinunter auf die Reihe
 	elif arg.begins_with("--show="):
 		Game.player.debug_show = arg.substr(7)
 	elif arg == "--winded":

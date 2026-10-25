@@ -207,6 +207,7 @@ var _hang_hint := false   ## Hinweis aufs Aufhängen schon gezeigt
 var _bag_hint := false    ## Hinweis auf die Tasche schon gezeigt
 var _bag_node: Node3D     ## hier hängen die Gegenstände in der Tasche (unsichtbar)
 var _noise_timer := 0.0
+var _flame_timer := 1.0   ## bis zum nächsten Wurf, ob die Flamme in der Hand ausgeht (_update_flame_wind)
 var _pant_timer := 0.0
 var _step_dist := 0.0
 var _steps: Footsteps
@@ -336,6 +337,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			drop_held()
 	elif event.is_action_pressed("use_item") and _punch_target() != null:
 		_try_punch(_punch_target())
+	elif (event.is_action_pressed("use_item") or event.is_action_pressed("light_mode")) and held and held.has_wick() and not hiding:
+		_use_flame()
+	elif event.is_action_pressed("light_mode") and _snuff_target() != null:
+		_snuff_target().snuff()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.BED_SHEET and not hiding:
 		put_on_sheet()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.ROAST_PUMPKIN and not hiding:
@@ -449,6 +454,7 @@ func _physics_process(delta: float) -> void:
 	var moving := is_on_floor() and input.length() > 0.1
 	if moving:
 		_bob += delta * speed * 2.4
+	_update_flame_wind(delta, moving)
 	_drunk_walk(moving, delta)
 	var eye := crouch_eye if crouching else eye_height
 	var bob := sin(_bob) * 0.03 if moving else 0.0
@@ -525,6 +531,65 @@ func _explain_left_hand(what: String) -> void:
 		Game.say("Du hast keine Karte.")
 	else:
 		Game.say("Du hast keinen Kompass.")
+
+
+## Kerze (Kürbis, Totenkopf mit Kerze) in der Hand, Linksklick oder R (Spielkonzept 5.12): brennt sie, auspusten;
+## sonst mit der Streichholzschachtel aus der Tasche anzünden.
+func _use_flame() -> void:
+	if held.lit:
+		held.snuff()
+	elif has_matches():
+		held.light_up()
+		Game.say("Du zündest sie mit einem Streichholz an.", 2.0)
+	else:
+		Game.say("Du hast nichts, um sie anzuzünden.", 2.0)
+	if Game.hud:
+		Game.hud.set_held(held.display_name)
+
+
+## Streichholzschachtel dabei – in der Tasche oder in der Hand?
+func has_matches() -> bool:
+	if held and held.kind == Item.Kind.MATCHBOX:
+		return true
+	return bag.any(func(item: Item) -> bool: return item.kind == Item.Kind.MATCHBOX)
+
+
+## Flamme in der Welt, auf die man blickt und die [R] auspusten kann (Item oder FixedCandle) – nicht mit der
+## Taschenlampe in der Hand (R schaltet dort UV).
+func _snuff_target() -> Object:
+	if hiding or (held and held.flashlight) or not is_instance_valid(_focus):
+		return null
+	if (_focus is Item and not (_focus as Item).is_held and (_focus as Item).lit) or (_focus is FixedCandle and (_focus as FixedCandle).lit):
+		return _focus
+	return null
+
+
+## Brennendes in der Hand geht in der Bewegung manchmal aus (Spielkonzept 5.12): je Sekunde gewürfelt, beim Rennen im
+## Haus und draußen; Regen draußen macht es wahrscheinlicher, Kürbis und Totenkopf schützen die Flamme.
+func _update_flame_wind(delta: float, moving: bool) -> void:
+	if held == null or not held.lit or not moving:
+		return
+	_flame_timer -= delta
+	if _flame_timer > 0.0:
+		return
+	_flame_timer = 1.0
+	var outside := RainVeil.is_outdoor(global_position)
+	var chance := 0.0
+	if outside:
+		chance = Item.FLAME_OUT_OUTSIDE_RUN if running else Item.FLAME_OUT_OUTSIDE
+		if Game.weather:
+			chance *= 1.0 + Item.FLAME_WEATHER * Game.weather.intensity
+	elif running:
+		chance = Item.FLAME_OUT_RUN
+	if held.kind in Item.CANDLE_HOLDERS:
+		chance *= Item.FLAME_SHELTER
+	if randf() < chance:
+		if Game.tracing:
+			print("[Kerze] geht in der Hand aus (%s, %s)" % ["draußen" if outside else "drinnen", "rennt" if running else "geht"])
+		held._extinguish()
+		Game.say("Der Luftzug löscht die Flamme." if not outside else "Der Wind bläst die Flamme aus.", 2.0)
+		if Game.hud:
+			Game.hud.set_held(held.display_name)
 
 
 ## Taschenlampe in der Hand bedienen. Im Versteck bleibt sie aus – das Licht würde einen verraten.
@@ -1217,12 +1282,12 @@ func bag_takes(item: Item) -> bool:
 	return item.fits_pocket() and carried_cat == null and not hands_blocked() and bag.size() < BAG_SLOTS
 
 
-## Kann er einen neuen Gegenstand dieser Art annehmen – in die freie Hand oder in die Tasche? (Kerzen aus dem Vorrat
-## brennen und passen deshalb nur in die Hand.)
+## Kann er einen neuen Gegenstand dieser Art annehmen – in die freie Hand oder in die Tasche? (Neue Kerzen brennen nicht
+## und passen deshalb auch in die Tasche, Spielkonzept 5.12.)
 func can_take(kind: int) -> bool:
 	if carried_cat:
 		return false
-	return held == null or (kind in Item.POCKET_KINDS and kind != Item.Kind.CANDLE and not hands_blocked() and bag.size() < BAG_SLOTS)
+	return held == null or (kind in Item.POCKET_KINDS and not hands_blocked() and bag.size() < BAG_SLOTS)
 
 
 ## [Q] gedrückt: Fächer einblenden. Das Spiel läuft weiter, man kann weiterlaufen – nur die Maus wählt.

@@ -85,7 +85,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 43: Tee (Spielkonzept 3.12): player.tea und die Tasse (Item.Kind.TEA) – ältere Stände laden weiter, ohne Tee
 ## 44: Gespräche (Spielkonzept 6.9, Talk): je Gast „claims“ (was du ihm gesagt hast) und „stances“ (Haltungen),
 ##     social.talk (deine Erlebnisse, Einbruchsverdacht, Todesfälle) – ältere Stände laden weiter, alle ohne Gedächtnis
-const VERSION := 44
+## 45: Kerzen (Spielkonzept 5.12): feste Kerzen („fixed_candles“, brennen oder nicht), keine Brenndauer mehr („burn“
+##     entfällt), Kürbis und Totenkopf mit erloschener Kerze (Zusatz „out“), Streichholzschachtel (Item.Kind.MATCHBOX)
+const VERSION := 45
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -94,7 +96,7 @@ const AUTOSAVE_MONSTER_DISTANCE := 25.0
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
-	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "key_cabinets"]
+	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "key_cabinets", "fixed_candles"]
 const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
 var WORLD_FILE := DIR + "world.txt"
@@ -453,6 +455,7 @@ func collect() -> Dictionary:
 	data["resources"] = _collect_group("resource_spots", func(n: Node) -> Dictionary:
 		return {"uses": n.uses, "timer": n._timer, "guest_day": n.guest_day})
 	data["lamps"] = _collect_group("lamp_fixtures", func(n: Node) -> Dictionary: return n.save_state())
+	data["fixed_candles"] = _collect_group("fixed_candles", func(n: Node) -> Dictionary: return n.save_state())
 	data["switches"] = _collect_group("light_switches", func(n: Node) -> Dictionary: return n.save_state())
 	data["windows"] = _collect_group("windows", func(n: Node) -> Dictionary: return n.save_state())
 	data["phones"] = _collect_group("phones", func(n: Node) -> Dictionary: return n.save_state())
@@ -474,7 +477,7 @@ func _item_data(item: Item) -> Dictionary:
 	var e := item.global_rotation
 	return {
 		"kind": int(item.kind), "extra": item.create_extra(), "pos": _v(item.global_position),
-		"rot": _v(e), "owner": item.owner_id, "lit": item.lit, "burn": item.burn_time, "hung": item.hung,
+		"rot": _v(e), "owner": item.owner_id, "lit": item.lit, "hung": item.hung,
 	}
 
 
@@ -532,6 +535,8 @@ func apply(data: Dictionary) -> void:
 		n._update_visual())
 	_apply_group("light_switches", data.get("switches", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("lamp_fixtures", data.get("lamps", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	if data.has("fixed_candles"):   # vor 45 brannten sie immer
+		_apply_group("fixed_candles", data["fixed_candles"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("windows", data.get("windows", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("hide_spots", data.get("hide_spots", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("phones", data.get("phones", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
@@ -702,10 +707,10 @@ func _apply_group(group: String, list: Array, fn: Callable) -> void:
 func _make_item(entry: Dictionary) -> Item:
 	var item := Item.create(int(entry["kind"]) as Item.Kind, String(entry.get("extra", "")))
 	item.owner_id = String(entry.get("owner", ""))
-	if item.kind == Item.Kind.CANDLE or item.kind == Item.Kind.CARVED_PUMPKIN:
-		if bool(entry.get("lit", false)):
-			item.burn_time = float(entry.get("burn", item.burn_time))
-		elif item.lit:
+	if item.has_wick():   # brennt oder nicht (Spielkonzept 5.12); in Kürbis und Totenkopf sagt der Zusatz, ob eine Kerze steckt
+		if bool(entry.get("lit", false)) and not item.lit:
+			item.light_up(false)
+		elif not bool(entry.get("lit", false)) and item.lit:
 			item._extinguish()
 	return item
 

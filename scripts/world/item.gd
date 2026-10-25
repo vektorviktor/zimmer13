@@ -4,8 +4,12 @@ extends RigidBody3D
 ## (POCKET_KINDS) passt zusätzlich in die Tasche des Spielers (Player.bag, Spielkonzept 3.2); Münzen werden sofort
 ## zu Geld. Ursprung = Unterseite, lokale +Z-Achse = Vorderseite (z. B. das Gesicht eines geschnitzten Kürbisses).
 ##
-## Handwerk: Messer in der Hand + Kürbis → schnitzen; Kerze in der Hand + geschnitzter
-## Kürbis ohne Licht → Kerze hineinstellen.
+## Handwerk: Messer in der Hand + Kürbis → schnitzen; brennende Kerze in der Hand + geschnitzter
+## Kürbis ohne Kerze → Kerze hineinstellen.
+##
+## Kerzen (Spielkonzept 5.12): brennen unbegrenzt, bis etwas sie ausmacht (Monster, Katze, Wind, Auspusten [R]).
+## Anzünden an jeder Flamme oder mit der Streichholzschachtel (light_prompt, light_by); in Kürbis und Totenkopf
+## kann eine erloschene Kerze stecken (has_candle).
 ##
 ## Kompass: Die Nadel zeigt nach Norden (Welt −Z) und schwingt nach. In der Nähe des
 ## Monsters zittert sie, ganz nah dreht sie sich wild – ebenso bei Halluzinationen.
@@ -32,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA }
+	PUMPKIN_HEAD, TEA, MATCHBOX }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -55,10 +59,11 @@ const PRICES := {
 	Kind.COFFEE: 1,
 	Kind.PUMPKIN_HEAD: 0,
 	Kind.TEA: 1,
+	Kind.MATCHBOX: 5,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
-	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE]
+	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX]
 ## Getränkedose: die Sorten und ihre Farbe
 const SODA_COLORS := {"limo": Color(0.95, 0.55, 0.1), "cola": Color(0.7, 0.07, 0.07)}
 ## Was man an die Wand hängen kann (Spielkonzept 5.6, 5.7) – der Besen lehnt nur daran
@@ -98,6 +103,16 @@ const MUG_RIM := Vector2(0.041, 0.09)
 ## Brecheisen aus tools/build_crowbar.py (6.19): 60 cm entlang +X, die Klaue am +X-Ende nach oben, Ursprung mittig auf
 ## der Unterkante. Fehlt die Datei, bleiben die Kästen.
 const CROWBAR_MODEL := "res://assets/models/crowbar.glb"
+## Streichholzschachtel aus tools/build_matchbox.py (5.12): 66 × 20 × 52 mm, liegt flach, Ursprung mittig unten.
+## Fehlt die Datei, bleibt ein Kasten.
+const MATCHBOX_MODEL := "res://assets/models/matchbox.glb"
+## Brennendes in der Hand (5.12): Wahrscheinlichkeit je Sekunde, dass es in der Bewegung ausgeht – Rennen im Haus, Gehen
+## und Rennen draußen; draußen mal (1 + FLAME_WEATHER × Regenstärke), in Kürbis und Totenkopf mal FLAME_SHELTER
+const FLAME_OUT_RUN := 0.08
+const FLAME_OUT_OUTSIDE := 0.03
+const FLAME_OUT_OUTSIDE_RUN := 0.15
+const FLAME_WEATHER := 2.0
+const FLAME_SHELTER := 1.0 / 3.0
 ## Scherben einer platzten Glühbirne: so viele (von, bis), Glas und Gewinde
 const BULB_SHARDS := Vector2i(5, 8)
 const BULB_GLASS := Color(0.9, 0.93, 0.97)
@@ -166,7 +181,8 @@ var is_held := false
 var owner_id := ""
 var lit := false
 var light: FlickerLight
-var burn_time := 0.0
+## Geschnitzter Kürbis, Totenkopf: Es steckt eine Kerze darin – brennend oder erloschen (Spielkonzept 5.12)
+var has_candle := false
 ## Glühbirne: durchgebrannt (nutzlos, nur noch Scherben im Glas)
 var broken := false
 ## Kleidungsstück: wem es gehörte (Gast-ID) – Spur von Verschwundenen
@@ -175,6 +191,8 @@ var clothing_of := ""
 var flavor := ""
 
 var _glow_material: ShaderMaterial
+## Kerze: die Flamme (CandleModel), sichtbar solange sie brennt
+var _flame: Node3D
 ## Kompass: Nadel (dreht um die lokale Y-Achse), Winkel und Schwung der Feder
 var _needle: Node3D
 var _needle_angle := 0.0
@@ -270,18 +288,11 @@ func _process(delta: float) -> void:
 		if _rot_timer <= 0.0:
 			_rot_timer = ROT_CHECK
 			_decay()
-	if not lit or burn_time <= 0.0:
-		return
-	burn_time -= delta
-	if burn_time <= 0.0:
-		_extinguish()
 
 
-## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Kerzen und Kürbislichter brennen weiter
-## (Fäulnis hängt an der Uhr, Item.rot_at).
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Kerzen brennen unbegrenzt (5.12), Fäulnis hängt an der Uhr
+## (Item.rot_at).
 func skip_time(dt: float) -> void:
-	if lit and burn_time > 0.0:
-		burn_time = maxf(0.001, burn_time - dt)   # ausgehen lässt sie das nächste Bild
 	if _mush_mat:
 		_wash_timer += dt   # Kürbismatsch verwäscht im Regen weiter (das nächste Bild rechnet es nach)
 
@@ -389,11 +400,13 @@ func create_extra() -> String:
 			if variety != PumpkinKinds.DEFAULT:
 				parts.append(variety)
 			if not lit:
-				parts.append("unlit")
+				parts.append("out" if has_candle else "unlit")   # erloschene Kerze darin bzw. gar keine
 			parts.append("f=%d" % face)
 			parts.append(_rot_extra())
 			return ",".join(parts)
 		Kind.SKULL:
+			return "lit" if lit else ("out" if has_candle else "")
+		Kind.CANDLE:
 			return "lit" if lit else ""
 		Kind.CLOTHING:
 			return clothing_of
@@ -413,11 +426,14 @@ func create_extra() -> String:
 func get_prompt(player: Player) -> String:
 	if is_toppled():
 		return "%s aufstellen [E]" % display_name
+	var lighting := Item.light_prompt(self, player)
+	if lighting != "":
+		return lighting
 	var held := player.held_kind()
 	if _carving(held):
 		return "%s schnitzen [E]" % display_name if can_carve() else "%s – zu hart zum Schnitzen" % display_name
 	if _takes_candle(held):
-		return "Kerze hineinstellen [E]"
+		return "Kerze hineinstellen [E]" if player.held.lit else "Erst die Kerze anzünden"
 	var fitting := _fitting_prompt(held, player)
 	if fitting != "":
 		return fitting
@@ -430,9 +446,10 @@ func get_prompt(player: Player) -> String:
 		verb = "aufsammeln (noch %d Hände voll)" % portions
 	if verb == "nehmen" and player.held and player.bag_takes(self):
 		verb = "einstecken"   # die Hand ist voll – Kleines kommt in die Tasche (Spielkonzept 3.2)
+	var blow := Item.blow_hint(self, player)
 	if owner_id != "" and owner_id != "player" and Game.social:
-		return "%s %s [E]  – gehört %s" % [display_name, verb, Game.social.guest_name(owner_id)]
-	return "%s %s [E]" % [display_name, verb]
+		return "%s %s [E]%s  – gehört %s" % [display_name, verb, blow, Game.social.guest_name(owner_id)]
+	return "%s %s [E]%s" % [display_name, verb, blow]
 
 
 ## Aktions-Symbol über dem Hinweis (IconArt): Kaffee, Tee; Kerze hineinstellen und Zierkürbis in die Hände = Schmücken.
@@ -448,6 +465,8 @@ func interact(player: Player) -> void:
 		stand_up()
 		Game.noise("drop", global_position, player)
 		return
+	if Item.light_by(self, player):
+		return
 	var held := player.held_kind()
 	if _carving(held):
 		if can_carve():
@@ -455,6 +474,9 @@ func interact(player: Player) -> void:
 			Game.say("Du schnitzt eine Fratze in den Kürbis.", 2.5)
 		return
 	if _takes_candle(held):
+		if not player.held.lit:
+			Game.say("Eine erloschene Kerze bringt nichts – erst anzünden.", 2.5)
+			return
 		player.consume_held()
 		light_up()
 		Game.say("Die Kerze flackert im Kürbis auf." if kind == Kind.CARVED_PUMPKIN else "Die Augen des Totenkopfs glimmen.", 2.5)
@@ -478,9 +500,68 @@ func _carving(held: int) -> bool:
 	return kind == Kind.PUMPKIN and held == Kind.KNIFE
 
 
-## Kerze in der Hand + Kürbis oder Totenkopf ohne Licht → Kerze hineinstellen
+## Kerze in der Hand + Kürbis oder Totenkopf ohne Kerze → hineinstellen (nur brennend, Spielkonzept 5.12)
 func _takes_candle(held: int) -> bool:
-	return kind in CANDLE_HOLDERS and not lit and held == Kind.CANDLE
+	return kind in CANDLE_HOLDERS and not has_candle and held == Kind.CANDLE
+
+
+# --- Flammen: anzünden, auspusten (Spielkonzept 5.12) ---------------------------------------------------
+
+## Hat einen Docht: Kerze, Kürbis oder Totenkopf mit Kerze (brennend oder nicht).
+func has_wick() -> bool:
+	return kind == Kind.CANDLE or (kind in CANDLE_HOLDERS and has_candle)
+
+
+## Erloschen, aber anzündbar.
+func can_light() -> bool:
+	return has_wick() and not lit
+
+
+## Kurzer Name fürs Anzünden: „Kerze anzünden“, „Kürbis anzünden“ …
+func flame_name() -> String:
+	match kind:
+		Kind.CARVED_PUMPKIN:
+			return "Kürbis"
+		Kind.SKULL:
+			return "Totenkopf"
+	return "Kerze"
+
+
+## Anzünden mit [E] (Ziel: Item oder FixedCandle): eine Flamme (oder die Streichholzschachtel) in der Hand + etwas
+## Erloschenes, oder Erloschenes in der Hand + eine Flamme. "" = nichts davon.
+static func light_prompt(target: Object, player: Player) -> String:
+	var held := player.held
+	if held == null or (target is Item and (target as Item).is_held):
+		return ""
+	if target.can_light() and (held.lit or held.kind == Kind.MATCHBOX):
+		return "%s anzünden [E]" % target.flame_name()
+	if target.lit and held.can_light():
+		return "%s anzünden [E]" % held.flame_name()
+	return ""
+
+
+## Führt light_prompt aus; false, wenn es nichts anzuzünden gab.
+static func light_by(target: Object, player: Player) -> bool:
+	if light_prompt(target, player) == "":
+		return false
+	var held := player.held
+	if target.can_light():
+		target.light_up()
+		Game.say("Du zündest sie mit einem Streichholz an." if held.kind == Kind.MATCHBOX else "Die Flamme springt über.", 2.0)
+	else:
+		held.light_up()
+		Game.say("Die Flamme springt über.", 2.0)
+		if Game.hud:
+			Game.hud.set_held(held.display_name)
+	return true
+
+
+## Hinweis „· auspusten [R]“ hinter dem Hinweis einer Flamme in der Welt – nicht mit der Taschenlampe in der Hand
+## (R schaltet dort UV).
+static func blow_hint(target: Object, player: Player) -> String:
+	if not target.lit or (target is Item and (target as Item).is_held) or (player.held and player.held.flashlight):
+		return ""
+	return "  · auspusten [R]"
 
 
 ## Zierkürbis in der Hand + Lakengespenst mit leeren Händen
@@ -545,16 +626,21 @@ func light_up(with_sound: bool = true) -> void:
 	if light == null:
 		return
 	lit = true
+	has_candle = kind in CANDLE_HOLDERS
 	light.burn_out = false
-	burn_time = 900.0 if kind == Kind.CARVED_PUMPKIN else 600.0
 	if kind == Kind.CARVED_PUMPKIN:
 		deco_strength = 30.0 * _variety_deco()
 		display_name = _carved_name()
 	elif kind == Kind.SKULL:
 		deco_strength = 26.0
 		display_name = "Totenkopf mit Kerze"
+	elif kind == Kind.CANDLE:
+		deco_strength = 8.0
+		display_name = "Kerze"
 	if _glow_material:
 		_glow_material.set_shader_parameter("emission_energy", 3.0)
+	if _flame:
+		_flame.visible = true
 	if with_sound:
 		Game.play_sound("blip", 0.4)
 
@@ -594,23 +680,39 @@ func blow_out() -> void:
 		Game.caption("[Eine Kerze erlischt]")
 
 
+## Der Spieler pustet die Flamme aus ([R] bzw. Linksklick, Spielkonzept 5.12).
+func snuff() -> void:
+	if not lit:
+		return
+	_extinguish()
+	Game.play_sound("blip", 0.2)
+
+
 func _extinguish() -> void:
 	lit = false
-	burn_time = 0.0
 	if light:
 		light.burn_out = true
 	if _glow_material:
 		_glow_material.set_shader_parameter("emission_energy", 0.0)
+	if _flame:
+		_flame.visible = false
 	match kind:
 		Kind.CARVED_PUMPKIN:
 			deco_strength = 20.0 * _variety_deco()
-			display_name = _carved_name() + " (ohne Licht)"
+			display_name = _carved_name() + _unlit_suffix()
 		Kind.CANDLE:
 			deco_strength = 2.0
-			display_name = "Kerzenstummel"
+			display_name = "Kerze (aus)"
 		Kind.SKULL:
 			deco_strength = 16.0
-			display_name = "Totenkopf"
+			display_name = "Totenkopf" + _unlit_suffix()
+
+
+## Kürbis oder Totenkopf ohne Licht: steckt eine erloschene Kerze darin oder gar keine?
+func _unlit_suffix() -> String:
+	if has_candle:
+		return " (Kerze aus)"
+	return " (ohne Licht)" if kind == Kind.CARVED_PUMPKIN else ""
 
 
 ## Kompassnadel: gedämpfte Feder Richtung Norden; das Monster stört sie (Bedrohung wie beim
@@ -891,7 +993,10 @@ func _build(extra: String) -> void:
 			_pumpkin(true)
 			var k := (size as Vector3).x / 0.42
 			_add_light(Vector3(0, 0.18 * k, 0), d.get("glow", Color(1.0, 0.55, 0.15)), 0.9 * sqrt(k), 3.5 * sqrt(k))
-			if "unlit" in extra.split(","):
+			if "unlit" in extra.split(","):   # ohne Kerze
+				_extinguish()
+			elif "out" in extra.split(","):   # mit erloschener Kerze (Spielkonzept 5.12)
+				has_candle = true
 				_extinguish()
 			else:
 				light_up(false)
@@ -899,12 +1004,14 @@ func _build(extra: String) -> void:
 			display_name = "Kerze"
 			deco_strength = 8.0
 			mass = 0.3
-			size = Vector3(0.08, 0.16, 0.08)
-			Geo.mesh(self, Geo.cylinder(0.035, 0.14, 6), Mat.psx(Color(0.92, 0.88, 0.75)), Vector3(0, 0.07, 0))
-			_glow_material = Mat.psx(Color(1, 0.8, 0.3), "", 1.0, Color(1, 0.7, 0.2), 4.0, false)
-			Geo.mesh(self, Geo.sphere(0.018, 0.045, 5, 2), _glow_material, Vector3(0, 0.165, 0))
-			_add_light(Vector3(0, 0.22, 0), Color(1.0, 0.7, 0.35), 0.55, 2.6)
-			light_up(false)
+			size = Vector3(0.05, CandleModel.HEIGHT, 0.05)
+			var wick := CandleModel.build(self)
+			_flame = CandleModel.flame(self, Vector3(0, wick, 0))
+			_add_light(Vector3(0, wick + 0.04, 0), Color(1.0, 0.7, 0.35), 0.55, 2.6)
+			if extra == "lit":   # neue Kerzen brennen nicht (Spielkonzept 5.12)
+				light_up(false)
+			else:
+				_extinguish()
 		Kind.KEY:
 			key_id = extra
 			display_name = key_label(extra)
@@ -1102,6 +1209,7 @@ func _build(extra: String) -> void:
 			size = Vector3(0.2, 0.22, 0.24)
 			_build_skull()
 			_add_light(Vector3(0, 0.11, 0), Color(1.0, 0.65, 0.3), 0.5, 2.8)
+			has_candle = extra == "out"
 			if extra == "lit":
 				light_up(false)
 			else:
@@ -1159,6 +1267,19 @@ func _build(extra: String) -> void:
 			mass = 0.3
 			size = Vector3(0.11, 0.09, 0.085)
 			build_cup(self, tea)
+		Kind.MATCHBOX:
+			# Streichholzschachtel (Spielkonzept 5.12): unbegrenzt – in der Tasche zündet sie die Kerze in der Hand an,
+			# in der Hand eine, die irgendwo steht
+			display_name = "Streichholzschachtel"
+			mass = 0.03
+			size = Vector3(0.066, 0.02, 0.052)
+			if ResourceLoader.exists(MATCHBOX_MODEL):
+				var model: Node3D = (load(MATCHBOX_MODEL) as PackedScene).instantiate()
+				add_child(model)
+				for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+					m.material_override = Mat.model(MATCHBOX_MODEL, m)
+			else:
+				Geo.mesh(self, Geo.box(size), Mat.psx(Color(0.75, 0.25, 0.15)), Vector3(0, size.y / 2.0, 0))
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)
@@ -1921,7 +2042,7 @@ func set_rot_stage(stage: int) -> void:
 				mesh.position *= Vector3(1.12, 0.7, 1.12)
 	rot_stage = stage
 	if kind == Kind.CARVED_PUMPKIN:
-		display_name = _carved_name() + ("" if lit else " (ohne Licht)")
+		display_name = _carved_name() + ("" if lit else _unlit_suffix())
 	else:
 		display_name = display_name.trim_suffix(old_name) + ROT_NAMES[stage]
 	if Game.tracing:

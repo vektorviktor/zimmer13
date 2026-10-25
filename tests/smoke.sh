@@ -111,6 +111,8 @@ done <<'LIST'
 1000|katzen|--cat=minka,tragen
 2000|kinder,streiche|--trick --trace
 600|streiche|--prank=fire --trace
+600|streiche,kerzen|--prank=candle --trace
+500|kerzen,spieler,licht|--deco=kerze --sprint --bag=streichhoelzer --trace
 600|streiche,kuerbis|--prank=pumpkin,111 --trace
 600|streiche|--prank=topple --trace
 4000|spiele|--dice=bruno --autoplay

@@ -16,8 +16,8 @@ const TOPPLE_RANGE := 2.0
 const THROW_FROM := 2.2
 const THROW_AT := 0.5
 const THROW_TIME := 0.55
-## Die Kerze brennt beim Wurf mit dieser Chance
-const LIT_CHANCE := 0.5
+## Eine brennende Kerze der Familie nimmt das Kind mit, wenn sie so nah an der Zimmertür steht (m, Spielkonzept 5.12)
+const FLAME_REACH := 4.0
 ## Zeugen: so weit, so sicher verpetzen sie, so lange dauert es, bis der Bewohner es erfährt (s)
 const WITNESS_RANGE := 14.0
 const TATTLE_CHANCE := 0.85
@@ -59,7 +59,7 @@ func _choose(kid: Guest, no: String) -> String:
 		options["topple"] = WEIGHTS["topple"]
 	if _family_has(kid, [Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN]) != -1:
 		options["pumpkin"] = WEIGHTS["pumpkin"]
-	if _family_has(kid, [Item.Kind.CANDLE]) != -1:
+	if _family_has(kid, [Item.Kind.CANDLE]) != -1 or _family_flame(kid) != null:
 		options["candle"] = WEIGHTS["candle"]
 	var total := 0.0
 	for k in options:
@@ -148,17 +148,31 @@ func _go_throw(kid: Guest, no: String, item: Item) -> void:
 	kid.start_visit((room["door_front"] as Vector3) - (room["into"] as Vector3) * (THROW_FROM - 0.9))
 
 
-## Kürbis (lieber der große) bzw. Kerze aus dem Koffer – eine Kerze brennt manchmal schon.
+## Kürbis (lieber der große) bzw. Kerze. Anzünden können Gäste nicht (Spielkonzept 5.12): Brennt noch eine Kerze der
+## Familie (vor ihrer Tür), nimmt das Kind die mit – sonst eine kalte aus dem Koffer.
 func _take_from_family(kid: Guest, kind: String) -> Item:
+	if kind == "candle":
+		var flame := _family_flame(kid, FLAME_REACH)
+		if flame:
+			return flame
 	var kinds: Array = [Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN] if kind == "pumpkin" else [Item.Kind.CANDLE]
 	for g: Guest in _family(kid):
 		for k in kinds:
 			if int(g.stock.get(k, 0)) > 0:
 				var item := g.stock_item(k)
 				g.stock[k] = int(g.stock[k]) - 1
-				if k == Item.Kind.CANDLE and randf() < LIT_CHANCE:
-					item.light_up(false)
 				return item
+	return null
+
+
+## Eine brennende Kerze der Familie, die irgendwo steht – höchstens reach vom Kind entfernt (null = keine).
+func _family_flame(kid: Guest, reach: float = INF) -> Item:
+	var ids := _family(kid).map(func(g: Guest) -> String: return g.id)
+	for node in Game.social.get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.kind == Item.Kind.CANDLE and item.lit and not item.is_held and item.owner_id in ids \
+				and item.global_position.distance_to(kid.global_position) < reach:
+			return item
 	return null
 
 

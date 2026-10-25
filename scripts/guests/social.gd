@@ -348,6 +348,8 @@ func _place_start_deco(guest: Guest, kinds: Array) -> void:
 	for kind in kinds:
 		var item := guest.stock_item(kind)
 		item.owner_id = guest.id
+		if item.can_light():
+			item.light_up(false)   # die Startdeko brennt schon (Spielkonzept 5.12) – anzünden können Gäste sonst nicht
 		item.position = guest.deco_place_point() + Vector3(0, 0.02, 0)
 		_world.add_child(item)
 		if item.can_hang():

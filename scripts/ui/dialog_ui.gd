@@ -989,6 +989,8 @@ func _kind_name(kind: int) -> String:
 			return "Geschnitzter Kürbis"
 		Item.Kind.CANDLE:
 			return "Kerze"
+		Item.Kind.MATCHBOX:
+			return "Streichholzschachtel"
 		Item.Kind.COBWEB:
 			return "Spinnenweben"
 		Item.Kind.LEAVES:

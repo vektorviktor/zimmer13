@@ -569,7 +569,7 @@ schaut. Belegt ist ein Platz, wenn dort die Katze schläft, die Puppe sitzt oder
   - Mit vollen Händen ist man verwundbar: keine Tür öffnen, nichts anderes aufheben, evtl. langsamer bei großen Dingen.
   - Im Notfall muss man Dinge **fallen lassen**, um zu fliehen – und sie liegen dann im Flur (für Gäste zum Klauen).
 - **Das eigene Zimmer ist das Lager:** Dinge werden auf Tisch, Regal, Bett, Boden abgelegt. Dadurch sind sie auch **sichtbar und klaubar** für unfreundliche Gäste, wenn die Tür offen ist oder sie einen Schlüssel haben.
-- ~~**Offen:** Genau ein Gegenstand gleichzeitig – oder zwei Hände?~~ → **Tasche für Kleines (entschieden 2026-10-22, im Prototyp umgesetzt):** Große Dinge (Kürbisse, Deko, Taschenlampe …) trägt man weiter in der Hand. Kleines passt zusätzlich in eine **Tasche mit 6 Fächern**: Süßigkeiten, **Getränkedosen**, Zierkürbisse, Messer, Batterien, Glühbirnen, UV-Aufsatz, Würfel(becher) und Kerzen, die nicht brennen.
+- ~~**Offen:** Genau ein Gegenstand gleichzeitig – oder zwei Hände?~~ → **Tasche für Kleines (entschieden 2026-10-22, im Prototyp umgesetzt):** Große Dinge (Kürbisse, Deko, Taschenlampe …) trägt man weiter in der Hand. Kleines passt zusätzlich in eine **Tasche mit 6 Fächern**: Süßigkeiten, **Getränkedosen**, Zierkürbisse, Messer, Batterien, Glühbirnen, UV-Aufsatz, Würfel(becher), Kerzen, die nicht brennen, und die Streichholzschachtel (5.12).
   - Kleines nimmt man mit E in die Hand; ist die Hand schon voll, wandert es gleich in die Tasche (mit einem großen Ding in beiden Händen nicht).
   - **[Q] halten** (geändert 2026-10-22, vorher [I]/Mausrad): Die Fächer erscheinen groß mit Bildern der Gegenstände, das Spiel dahinter verschwimmt – **es läuft weiter**, man kann weiterlaufen, nur die Maus wählt (links/rechts, Mausrad oder [1]–[6]). **Loslassen** nimmt den gewählten Gegenstand in die Hand; **was man vorher trug – groß oder klein –, fällt zu Boden** (Lärm wie Ablegen, ein Kürbis poltert). Ein leeres Fach wählen steckt Kleines aus der Hand ein; nichts wählen oder Rechtsklick bricht ab. [1]–[6] ohne [Q] nehmen gleich heraus.
   - Mit einer Katze im Arm kommt man nicht an die Tasche, im Versteck nur mit leerer Hand (dort ist kein Platz zum Ablegen).
@@ -1955,7 +1955,7 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 
 | Deko             | Herkunft                    | Idee zur Wirkung                          | Seltenheit |
 |------------------|-----------------------------|-------------------------------------------|------------|
-| Geschnitzter Kürbis (Jack-o'-Lantern) | Garten → selbst schnitzen | Starker Schutz **+ Licht**, Kerze brennt ab | mittel |
+| Geschnitzter Kürbis (Jack-o'-Lantern) | Garten → selbst schnitzen | Starker Schutz **+ Licht**, Kerze kann ausgehen (5.12) | mittel |
 | Ungeschnitzter Kürbis | Garten                  | Schwacher Schutz, Rohstoff / Handelsware   | häufig     |
 | Spinnenweben     | In bestimmten Hotelbereichen einsammeln | An Tür / im Flur aufhängen; Schutz, evtl. Frühwarnung (bewegen sich bei Monsternähe)? | mittel |
 | Herbstlaub       | Bäume im Garten             | Am Boden auslegen; schwacher Schutz, **raschelt** (verrät Schritte – auch die von Dieben?) | häufig |
@@ -2332,7 +2332,8 @@ ihm.
   sieht, dass sie gerade gewirkt hat.
 
 **4. Verfall**
-- Kerzen brennen ab (wie bisher), das Monster bläst sie aus (4.13).
+- ~~Kerzen brennen ab (wie bisher)~~ → **geändert 2026-10-25 (5.12):** Kerzen brennen unbegrenzt und **gehen aus** –
+  das Monster bläst sie aus (4.13), Wind und Rennen löschen sie; knapp ist die Flamme, nicht das Wachs.
 - **Kürbisse faulen:** geschnitzte nach etwa **drei Tagen**, ungeschnitzte nach etwa **einer Woche** – erst welk, dann
   eingefallen, dann weg. **Laub wird zertreten.**
 - Pflege wird tägliche Aufgabe; daraus entstehen Wünsche für Aufträge („Mein Kürbis fault“, 6.14).
@@ -2357,6 +2358,41 @@ Anspruch sein darf, damit es nie allein reicht · ob die Gäste-Startdeko für d
   bleibt ein Rußfleck. Die Tür ist danach schwächer – vielleicht schwach genug für die Puppe (5.5).
 - **Löschen:** Der Spieler kann brennende Deko austreten [E]; was gelöscht ist, bleibt angesengt erhalten.
 - Brennende Deko zählt nicht als Deko, aber als Licht.
+
+### 5.12 Kerzen: ausgehen, auspusten, anzünden (entschieden 2026-10-25)
+Wunsch des Spielers vom 2026-10-25, im Gespräch ausgearbeitet. Ändert 5.10 (4): Kerzen **brennen nicht mehr ab** –
+sie **gehen aus**. Knapp ist nicht das Wachs, sondern die Flamme.
+
+- **Unbegrenzt:** Kerzen, Kürbislaternen und Totenköpfe mit Kerze brennen, bis etwas sie ausmacht – das Monster (4.13),
+  eine Katze (6.11), der Spieler, der Wind. Der Kerzenstummel entfällt; eine ausgegangene Kerze heißt „Kerze (aus)“.
+- **Auch die festen Kerzen** auf Kommoden, Tischen und Theke (7.3) können ausgehen: Das Monster bläst sie im Vorbeigehen
+  aus, der Spieler kann sie auspusten und wieder anzünden. Sie werden mit dem Spielstand gespeichert.
+- **Auspusten:** Brennt, was man in der Hand hält, pustet **Linksklick / R** es aus. Eine Flamme in der Welt (Kerze,
+  Kürbis, Totenkopf, feste Kerze) pustet **R** aus, wenn man sie ansieht. Wer seine Kerze auspustet, wird schlechter
+  gesehen (Kerze in der Hand +0,6, 4.15).
+- **Ausgehen in der Bewegung:** Mit einer brennenden Kerze in der Hand würfelt jede Sekunde, ob sie ausgeht: **Gehen im
+  Haus nie**, **Rennen im Haus 8 %**, **Gehen draußen 3 %**, **Rennen draußen 15 %**; Regen und Wind verdoppeln draußen bis
+  zum Dreifachen. Im Kürbis oder Totenkopf ist die Flamme geschützt (ein Drittel davon). Stillstehen löscht nichts.
+- **Anzünden an einer Flamme:** Erloschene Kerze in der Hand + brennende Kerze, Kürbislaterne, Totenkopf oder feste Kerze
+  in der Welt → **[E] „Kerze anzünden“** – und umgekehrt: Mit einer brennenden Kerze in der Hand zündet [E] eine erloschene
+  in der Welt an. Ohne Streichhölzer, so oft man will.
+- **Streichholzschachtel** (neuer kleiner Gegenstand, passt in die Tasche): **unbegrenzt**. Steckt sie in der Tasche, zündet
+  **Linksklick / R** eine erloschene Kerze (Kürbis, Totenkopf) **in der Hand** direkt an. Für eine Kerze, die irgendwo
+  steht, muss man die **Schachtel in der Hand** halten ([E] „anzünden“).
+  - **Fundort:** die oberste Schublade einer Kommode in **Zimmer 022** – direkt neben Zimmer 13, unbewohnt und vom Hotel
+    abgeschlossen (6.19): mit dem Generalschlüssel oder dem Brecheisen. Die Kommode setzt der Nutzer in den Plan; bis dahin
+    liegt die Schachtel dort auf dem Tisch.
+- **Kürbis und Totenkopf:** Eine Kerze stellt man nur **brennend** hinein; eine erloschene Kerze geht nicht („erst
+  anzünden“). Ist die Kerze darin ausgegangen, zündet man sie wie eine einzelne Kerze wieder an.
+- **Neue Kerzen brennen nicht:** aus dem Kerzenvorrat in der Küche, aus Schubladen, als Geschenk und aus dem Koffer der
+  Gäste. Nur was zu Spielbeginn schon steht, brennt: die festen Kerzen und die Startdeko der Gäste vor ihren Türen (2.5).
+- **Gäste zünden nichts an.** Ihre Kerzen und Kürbisse bleiben dunkel, sobald sie einmal aus sind – das Monster
+  hinterlässt eine Spur dunkler Türen, und wer einem Gast die Kerze wieder anzündet, hat etwas für ihn getan.
+  - Kinder werfen bei ihren Streichen (6.13) nur dann eine **brennende** Kerze, wenn vor der Tür ihrer Familie noch eine
+    brennt – die nehmen sie mit. Sonst fliegt eine kalte aus dem Koffer; Feuer (5.11) gibt es dann keins.
+- **Kein Brandstifter:** Mit Streichhölzern zündet man nur Kerzen an – keine Deko, kein Feuer (5.11).
+- **Gespeichert:** ob eine Kerze brennt (wie bisher), ob in Kürbis und Totenkopf eine erloschene Kerze steckt, und die
+  festen Kerzen. Debug: `--bag=kerze,streichhoelzer`.
 
 ## 6. Die anderen Gäste (NPCs)
 
@@ -3351,7 +3387,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 **Wandlampen**
 - **Keine Deckenlampen mehr (entschieden 2026-10-17):** Mit Deckenlampen wirkte das Hotel zu hell und zu gemütlich. Licht kommt nur noch von **vereinzelten, gedimmten Wandlampen** und **festen Kerzen** (Flurkommoden, Bank, Lobby, Theke, Zimmertische). Die hellsten Lichter sind Kerzen und Kürbisse; die Decken sind aus demselben Holz wie die Zimmerböden und nur schwach zu erkennen. Ein erster, noch dunklerer Stand war zu finster – jetzt bleiben dunkle Ecken als Umriss sichtbar.
 - **Deckenleuchten wieder, aber gezielt (entschieden 2026-10-19):** Wo der Gebäudeplan eine Deckenleuchte setzt, hängt eine – gedimmt wie die Wandlampen, nicht flächendeckend. Zuerst vier in der Lobby: Über dem Luftraum hängen sie als Pendel von der hohen Decke herab (auch von der Galerie aus zu sehen). Sie gehören zum Raum und hängen am selben Lichtschalter, ihre Birnen lassen sich wie alle anderen herausdrehen, wo man sie erreicht.
-- **Ein Lichtschalter pro Raum** (entschieden): schaltet alle Wandlampen des Raums bzw. Flurabschnitts gemeinsam ein und aus. Die Deko-Kerzen brennen immer. Große Räume dürfen mehrere Schalter haben (an jedem Eingang einen); sie schalten gemeinsam wie eine Wechselschaltung (2026-10-20).
+- **Ein Lichtschalter pro Raum** (entschieden): schaltet alle Wandlampen des Raums bzw. Flurabschnitts gemeinsam ein und aus. Die Deko-Kerzen brennen ~~immer~~ von Spielbeginn an, bis das Monster oder der Spieler sie ausbläst (5.12, 2026-10-25). Große Räume dürfen mehrere Schalter haben (an jedem Eingang einen); sie schalten gemeinsam wie eine Wechselschaltung (2026-10-20).
 - **Licht aus = das Monster kommt** (4.4). Ausschalten ist also eine bewusste Entscheidung – z. B. um nicht gesehen zu werden – mit hohem Preis.
 - **Flackern trotzdem:** Eingeschaltete Lampen flackern weiterhin, wenn das Monster sich ankündigt (4.2). Kaputte Lampen bleiben kaputt, egal wie der Schalter steht.
 - **Glühbirnen herausdrehen & mitnehmen** (entschieden): Jede Lampe hat eine Glühbirne, die man herausdrehen kann. Die Birne ist ein **normaler Gegenstand** (3.2): klein, einhändig, zerbrechlich: **Fällt sie tiefer als 1,5 m, platzt sie** (entschieden und umgesetzt 2026-10-24) – Knall (8 m weit), Splitter und Scherben, die Birne ist weg. Ebenso **zerbricht eine Kerze, die tiefer als 2 m fällt**, zu einem großen Wachsfleck (brennend kann sie Deko anzünden, 5.11); aus der Hand fallen lassen geht beides heil.

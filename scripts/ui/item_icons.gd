@@ -57,7 +57,7 @@ func _render(item: Item) -> Texture2D:
 	copy.set_held(true)
 	copy.process_mode = Node.PROCESS_MODE_DISABLED
 	if not item.lit and copy.lit:
-		copy._extinguish()   # Kerzenstummel
+		copy._extinguish()
 	var box := _bounds(copy)
 	var cam := Camera3D.new()
 	cam.projection = Camera3D.PROJECTION_ORTHOGONAL

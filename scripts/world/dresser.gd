@@ -19,6 +19,9 @@ const LOOT := [Item.Kind.CANDLE, Item.Kind.BULB, Item.Kind.BATTERY, Item.Kind.BA
 	Item.Kind.SWEETS, Item.Kind.SWEETS, Item.Kind.LIGHT_STRING, Item.Kind.SPIDER, Item.Kind.BAT_GARLAND]
 const EMPTY_LINES := ["Nur Staub.", "Ein alter Knopf, sonst nichts.", "Leer – bis auf eine tote Motte.", "Vergilbtes Briefpapier. Leer."]
 
+## Fester Fund je Schublade (Index → Item.Kind), statt gewürfelt – aus LevelBuilder.CONTENT „drawer“ (die
+## Streichholzschachtel in Zimmer 022, Spielkonzept 5.12); 0 = oberste
+var fixed := {}
 var is_open: Array[bool] = []
 var searched: Array[bool] = []
 
@@ -139,6 +142,10 @@ func load_state(d: Dictionary) -> void:
 
 
 func _roll_loot(i: int) -> void:
+	var drawer_index := DRAWERS - 1 - i   # gezählt von oben
+	if fixed.has(drawer_index):
+		_drop_in(i, Item.create(fixed[drawer_index] as Item.Kind))
+		return
 	var roll := randf()
 	if roll < EMPTY_CHANCE:
 		Game.say(EMPTY_LINES[randi() % EMPTY_LINES.size()], 2.0)
@@ -148,8 +155,11 @@ func _roll_loot(i: int) -> void:
 		item = Item.create(Item.Kind.COINS, str(randi_range(1, 4)))
 	else:
 		item = Item.create(LOOT[randi() % LOOT.size()] as Item.Kind)
-		if item.lit:
-			item._extinguish()   # eine Kerze liegt aus, nicht brennend in der Schublade
+	_drop_in(i, item)
+
+
+## Gegenstand in die aufgezogene Schublade i legen.
+func _drop_in(i: int, item: Item) -> void:
 	Game.social.builder.world.add_child(item)
 	# Mitte der aufgezogenen Schublade, knapp über dem Boden – fällt hinein
 	var drawer := _drawers[i]
