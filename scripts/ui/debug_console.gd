@@ -4,7 +4,7 @@ extends CanvasLayer
 ## Startparameter, nur ohne „--“: „shock edna,ghost3“ oder „shock=edna,ghost3“. Ausgeführt werden sie von
 ## `main.run_debug()`, es gibt also keine zweite Liste von Aktionen. Eine Aktion schließt die Konsole, damit
 ## man sieht, was passiert; Auskünfte (help, guests) und Fehler bleiben offen. ↑/↓ blättert durch frühere
-## Eingaben (bleiben bis zum Beenden), Tab ergänzt Befehle und Gast-IDs.
+## Eingaben (bleiben bis zum Beenden), Tab ergänzt Befehle und Gäste. Gäste gehen als ID oder Name („kill emil“).
 ## Nur in Debug-Builds (Editor) oder mit --debug – im exportierten Spiel sonst nicht erreichbar.
 
 ## Befehl → [Werte, Beschreibung]. Neuer Startparameter → auch hier eintragen (Tab, help).
@@ -42,7 +42,8 @@ const COMMANDS := {
 	"notizbuch": ["", "Notizbuch mit Beispielen (Aufgaben, Notizen) und Einträge im Tagebuch (3.10)"],
 	"gesehen": ["", "alle drei Bedrohungen gelten als gesehen – Lesezeichen „Gesehen“ im Notizbuch (3.10)"],
 	"tot": ["[monster|geist|kuerbis]", "nach 1 s gestorben: Sterbebildschirm mit Porträt (8.7)"],
-	"kill": ["gast[,geist|kuerbis]", "Gast nach 3 s vom Monster holen lassen · geist/kuerbis: vor dir, Leiche bleibt liegen"],
+	"kill": ["gast[,geist|kuerbis|leiche|weg][,blut|ohneblut][,hin]", "Gast nach 3 s vom Monster holen lassen · geist/kuerbis: vor dir, Leiche bleibt liegen · leiche/weg: sofort tot, wo er ist (hin: vor dir), liegt da bzw. verschwunden · blut: Lache und Wandspritzer"],
+	"despawn": ["[monster|geist|kuerbis]", "Bedrohung sofort fort (ohne Angabe alle) – auch Flackerwelle und Ankündigung des Kürbismanns"],
 	"knock": ["", "Klopfen an Zimmer 13"],
 	"trick": ["[kind]", "Süßes oder Saures: ein Kind klopft von Tür zu Tür"],
 	"prank": ["leaves|topple|pumpkin|candle|fire[,zimmer]", "Streich eines Kindes vor der Tür (6.13) – fire: brennende Kerze neben Laub (5.11)"],
@@ -113,9 +114,12 @@ const START_ONLY := ["title", "splash", "new", "nointro", "shot", "frames", "sho
 		"attic-door"]
 ## Getippter Name → Startparameter
 const ALIASES := {"save": "diary", "load": "load-slot"}
-## Befehle, deren erster Wert eine Gast-ID ist (wird vorher geprüft)
+## Befehle, deren erster Wert ein Gast ist (wird vorher geprüft)
 const GUEST_FIRST := ["shock", "kill", "talk", "look", "wound", "pals", "friend", "enemy", "relation", "follow", "visit",
 	"attack", "punch", "dice", "chess", "challenge", "bulb-thief"]
+## Befehle, bei denen ein Gast auch weiter hinten stehen kann
+const GUEST_ANY := ["rival", "pals", "drunk", "party", "decorate", "search", "darts", "cook", "tee", "kaffee", "call", "tp",
+	"trick", "pumpkin", "salz"]
 
 static var _history: Array[String] = []
 
@@ -269,14 +273,27 @@ func _run(text: String) -> bool:
 	if cmd in START_ONLY:
 		_print("[color=#d96]„%s“ wirkt nur als Startparameter (--%s).[/color]" % [cmd, cmd])
 		return false
-	if cmd in GUEST_FIRST and Game.social.guest_by_id(value.split(",")[0]) == null:
-		_print("[color=#d96]Keinen Gast „%s“ gefunden – IDs zeigt „guests“.[/color]" % value.split(",")[0])
+	if cmd in GUEST_FIRST and Game.social.find_guest(value.split(",")[0]) == null:
+		_print("[color=#d96]Keinen Gast „%s“ gefunden – Namen und IDs zeigt „guests“.[/color]" % value.split(",")[0])
 		return false
+	if cmd in GUEST_FIRST or cmd in GUEST_ANY:
+		value = _guest_ids(value, not cmd in GUEST_ANY)
 	var arg := "--" + String(ALIASES.get(cmd, cmd)) + ("" if value == "" else "=" + value)
 	if not _runner.is_valid() or not _runner.call(arg):
 		_print("[color=#d96]Unbekannt: %s – „help“ zeigt alle Befehle.[/color]" % arg)
 		return false
 	return true
+
+
+## Gastnamen in einer Werteliste durch IDs ersetzen („kill Emil“ → --kill=gast17): Nur die Kernfiguren haben ihren
+## Namen als ID. first: nur der erste Wert ist ein Gast; sonst jeder, der wie ein Gast heißt.
+func _guest_ids(value: String, first: bool) -> String:
+	var parts := value.split(",")
+	for i in (1 if first else parts.size()):
+		var guest := Game.social.find_guest(parts[i])
+		if guest:
+			parts[i] = guest.id
+	return ",".join(parts)
 
 
 func _help(about: String) -> void:
@@ -311,7 +328,10 @@ func _complete() -> void:
 	else:
 		for guest in Game.social.guests:
 			options.append(guest.id)
-		options.append_array(["blood", "corpse", "ghost1", "ghost2", "ghost3", "ghost4", "flur", "tür"])
+			if not guest.display_name.to_lower() in options:
+				options.append(guest.display_name.to_lower())
+		options.append_array(["blood", "corpse", "ghost1", "ghost2", "ghost3", "ghost4", "flur", "tür", "leiche", "weg", "blut",
+			"ohneblut", "hin", "monster", "geist", "kuerbis"])
 	var hits := options.filter(func(o: String) -> bool: return o.begins_with(word))
 	if hits.is_empty():
 		return

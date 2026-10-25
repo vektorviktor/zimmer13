@@ -915,6 +915,18 @@ func debug_lure() -> void:
 	_monster.investigate(target)
 
 
+## Debug (--despawn): Das Monster ist sofort zurück im Keller, die Flackerwelle bricht ab – danach Ruhephase wie nach
+## jedem Aufbruch. false = es war nicht unterwegs.
+func debug_despawn() -> bool:
+	if not _monster.is_active():
+		return false
+	_monster.deactivate()
+	on_monster_gone()
+	_wave_start = -1000.0
+	_wave_time = 0.0
+	return true
+
+
 ## Debug (F5, --warn): sofort losschicken.
 func start_warning() -> void:
 	first_attack_done = true

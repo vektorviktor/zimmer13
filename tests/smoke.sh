@@ -90,6 +90,10 @@ done <<'LIST'
 2400|puppe,monster|--doll=10,13 --trace
 1600|puppe,kinder|--doll=kind --trace
 1500|monster,gaeste,tod|--kill=mila --trace
+900|gaeste,tod,ui|--console=kill=Emil,leiche,blut,hin;guests --trace
+900|gaeste,tod|--kill=emilhartung,weg,blut --trace
+1200|monster,kuerbismann,despawn|--warn --pumpkin=ankündigung --console=despawn --trace
+900|lakengeist,despawn|--ghost=3 --console=despawn --trace
 3000|kuerbismann|--pumpkin=jagd --trace
 3000|kuerbismann,gaeste|--pumpkin=jagd,edna --trace
 2000|schnell,lakengeist|--ghost=3 --trace

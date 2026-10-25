@@ -15,7 +15,7 @@ extends CanvasLayer
 const GROUPS := [
 	["Teleport", ["tp", "pos"]],
 	["Lakengeist", ["ghost", "dusche", "awake"]],
-	["Monster", ["warn", "doll", "lure", "monster", "intent", "bold", "attacks", "kill", "knock", "noise"]],
+	["Monster", ["warn", "doll", "lure", "monster", "intent", "bold", "attacks", "kill", "despawn", "knock", "noise"]],
 	["Kürbismann", ["pumpkin"]],
 	["Wettbewerb", ["siegerehrung", "brett", "brief", "zettel"]],
 	["Gäste", ["guests", "talk", "look", "shock", "wound", "friend", "enemy", "relation", "pals", "rival", "follow",

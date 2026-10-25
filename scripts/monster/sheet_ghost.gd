@@ -1583,6 +1583,17 @@ func _debug_reset() -> void:
 	_hour_pause = 0.0
 
 
+## Debug (--despawn): Er ist sofort fort, wer im Griff war, kommt los – danach die übliche Pause wie nach einem Besuch.
+## false = er war gar nicht da.
+func debug_despawn() -> bool:
+	if state == State.IDLE:
+		return false
+	_debug_reset()
+	_cooldown = COOLDOWN
+	_hour_pause = HOUR_PAUSE
+	return true
+
+
 ## Debug: Der Spieler bleibt stehen, nur sein Blick geht dorthin.
 func _debug_look_at(point: Vector3) -> void:
 	var to := point - Game.player.global_position

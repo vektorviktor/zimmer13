@@ -909,7 +909,8 @@ den Skripten. Hier der Aufbau.
   Stehende Gäste auf festem Boden rufen kein `move_and_slide` (`_stop`).
 
 ### `Social`
-Der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`, `living_guests()`, `guest_by_id()`),
+Der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`, `living_guests()`, `guest_by_id()`; für Debug
+`find_guest()` – auch nach Namen, da nur die Kernfiguren ihren Namen als ID haben),
 Beziehungen (`change_relation`), Gerüchte mit Verzögerung, Diebstahl mit Zeugen, Reservierung von Verstecken
 (`find_hide_spot` / `release_hide_spot(spot, gast)` – der Gast gibt sie auch frei, wenn sein Weg abbricht oder er stirbt,
 sonst bleibt das Versteck für alle gesperrt), Feiern, Herausforderungen (`challenge`), Gäste-Mäxchen und -Schach,
@@ -1609,7 +1610,9 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
 `press_number`, `plain_label`); `Hud` Prompt/Meldungen/Debug (F3), Bilder pro Sekunde (F10/`--fps`); `Menus`
 pausiert. `TeleportUI` = Debug-Menü (F6): Orte und – nur mit `DebugConsole.enabled()` – alle `DebugConsole.COMMANDS`
 nach `GROUPS`; Ziele aus dem `LevelBuilder`, `_onto_navmesh` rückt auf begehbaren Boden. `DebugConsole` ([^]/F1, nur
-Debug-Build oder `--debug`) = Startparameter im Spiel tippen: `submit()` → `main.run_debug("--name=wert")`.
+Debug-Build oder `--debug`) = Startparameter im Spiel tippen: `submit()` → `main.run_debug("--name=wert")`. Gäste
+gehen als ID oder Name: Bei Befehlen in `GUEST_FIRST` (erster Wert) bzw. `GUEST_ANY` (jeder Wert) setzt `_guest_ids`
+vorher die IDs ein (`Social.find_guest`), `main.gd` sucht ebenfalls mit `find_guest`.
 
 ### Optik
 (`util/mat.gd`, `util/geo.gd`, `shaders/`) Ausgelegt auf den realistischen Look (siehe 1, „Grafik“).
@@ -1717,7 +1720,7 @@ in `Social.TRACE_TEXT`.
 
 **Neuer Debug-Parameter:** Zweig in `main.run_debug()` (gilt damit auch für die Debug-Konsole; `true` = erkannt),
 Kopfkommentar in `main.gd`, Eintrag in `DebugConsole.COMMANDS` (Hilfe, Tab) – bei Gast-ID als erstem Wert auch
-`GUEST_FIRST`, wirkt er nur beim Start stattdessen `START_ONLY` – plus Tabelle im README. Im F6-Menü erscheint er von
+`GUEST_FIRST`, weiter hinten `GUEST_ANY` (Gast in `main.gd` mit `Social.find_guest` suchen), wirkt er nur beim Start stattdessen `START_ONLY` – plus Tabelle im README. Im F6-Menü erscheint er von
 selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Rauchtest eine Zeile mit Stichworten in
 `tests/smoke.sh`. **Keine Debug-Taste auf F8** – das stoppt im Editor das laufende Spiel.
 

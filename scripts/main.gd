@@ -180,6 +180,10 @@ extends Node3D
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
 ##   --kill=id[,geist|kuerbis]   Gast nach 3 s vom Monster holen lassen (überlebt mit 40 %: Kratzer, 6.17) · geist/kuerbis:
 ##                               nach 1,5 s vor dir erwürgt bzw. erschlagen, die Leiche bleibt liegen (Totenkopf)
+##   --kill=id,leiche|weg[,blut][,hin]   sofort tot, ohne Monster: liegt da bzw. ist verschwunden (Kratzer, Schuh) · blut:
+##                               Lache und Wandspritzer (ohneblut: auch beim Kürbismann keins) · hin: 1,3 m vor dir
+##                               Statt der ID geht überall auch der Name (emil, EmilBecker, juergen …)
+##   --despawn[=monster|geist|kuerbis]   die Bedrohung (ohne Angabe alle) ist sofort fort, auch Vorwarnung/Ankündigung
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
 ##   --steal-test                Ednas Deko unbemerkt nehmen (Schuld-Test)
 ##   --player-deco=x,z           geschnitzten Kürbis des Spielers an diese Stelle stellen
@@ -873,6 +877,8 @@ func run_debug(arg: String) -> bool:
 				water.splash(Vector2(at[0].to_float(), at[1].to_float()), 1.0))
 	elif arg == "--lure":
 		get_tree().create_timer(1.0, false).timeout.connect(Game.director.debug_lure)
+	elif arg == "--despawn" or arg.begins_with("--despawn="):
+		_debug_despawn(arg.substr(10))
 	elif arg.begins_with("--pool="):
 		var water := get_tree().get_first_node_in_group("pool_water") as PoolWater
 		if water:
@@ -1045,16 +1051,23 @@ func run_debug(arg: String) -> bool:
 		var victim := _guest(kill_parts[0])
 		if victim == null:
 			return true
-		var cause: String = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(
-			kill_parts[1] if kill_parts.size() > 1 else "", "")
-		if cause != "":
-			# Leiche bleibt liegen: nach 1,5 s 1,3 m vor dir erwürgt bzw. erschlagen (Todesmeldung, „… – tot“)
-			get_tree().create_timer(1.5).timeout.connect(func() -> void:
+		var cause := ""
+		for part in kill_parts.slice(1):
+			cause = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(part, cause)
+		var instant := "leiche" in kill_parts or "weg" in kill_parts
+		if cause != "" or instant:
+			# Sofort tot – geist/kuerbis: vor dir erwürgt bzw. erschlagen, die Leiche bleibt liegen (Todesmeldung, „… – tot“) ·
+			# leiche/weg: wo er gerade ist (hin: vor dir), liegt da bzw. ist verschwunden · blut/ohneblut: Lache und Spritzer
+			var corpse := "leiche" in kill_parts or (cause != "" and not "weg" in kill_parts)
+			var blood := ("blut" in kill_parts or cause == "pumpkin") and not "ohneblut" in kill_parts
+			var here := cause != "" or "hin" in kill_parts
+			get_tree().create_timer(1.5 if here else 0.1).timeout.connect(func() -> void:
 				if victim.dead:
 					return
-				_put_in_front(victim, 1.3)
-				Game.player.head.rotation.x = deg_to_rad(-45.0)
-				Game.director.guest_slain(victim, cause))
+				if here:
+					_put_in_front(victim, 1.3)
+					Game.player.head.rotation.x = deg_to_rad(-45.0)
+				_debug_kill(victim, cause if cause != "" else "ghost" if corpse else "monster", corpse, blood))
 			return true
 		Game.director.attacks = MonsterDirector.HARMLESS_ATTACKS + 1   # wirklich holen
 		get_tree().create_timer(3.0).timeout.connect(func() -> void:
@@ -1067,7 +1080,7 @@ func run_debug(arg: String) -> bool:
 		# Überlebender (Spielkonzept 6.17): gast,scratch|axe|choke[,hin] – verletzt wie nach dem Angriff; hin: er liegt
 		# bzw. steht vor dir (mit --talk=gast erzählt er als Zeuge)
 		var parts := arg.substr(8).split(",")
-		var hurt := Game.social.guest_by_id(parts[0])
+		var hurt := Game.social.find_guest(parts[0])
 		if hurt == null or parts.size() < 2 or not Wounds.KINDS.has(parts[1]):
 			Game.say("--wound=gast,scratch|axe|choke[,hin]", 3.0)
 		else:
@@ -1317,7 +1330,7 @@ func run_debug(arg: String) -> bool:
 		var give := arg.substr(11).to_int() if arg.begins_with("--trick=13,") else 0
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.social.debug_trick_at_13(give))
 	elif arg == "--trick" or arg.begins_with("--trick="):
-		var kid: Guest = Game.social.guest_by_id(arg.substr(8)) if arg.begins_with("--trick=") else null
+		var kid: Guest = Game.social.find_guest(arg.substr(8)) if arg.begins_with("--trick=") else null
 		if kid == null:
 			var kids := Game.social.living_guests().filter(func(g: Guest) -> bool: return g.is_child())
 			kid = kids.pick_random() if not kids.is_empty() else null
@@ -1346,8 +1359,8 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--rival="):
 		# Freund meines Feindes (6.16): gast1 und gast2 sind verfeindet, du wirst gleich mit gast1 befreundet
 		var ids := arg.substr(8).split(",")
-		var a := Game.social.guest_by_id(ids[0])
-		var b := Game.social.guest_by_id(ids[1]) if ids.size() > 1 else null
+		var a := Game.social.find_guest(ids[0])
+		var b := Game.social.find_guest(ids[1]) if ids.size() > 1 else null
 		if a and b:
 			Game.social.pals.add_feud(a, b)
 			b.global_position = Game.player.global_position - Game.player.global_transform.basis.z * 2.5
@@ -1512,7 +1525,7 @@ func _debug_omens(arg: String) -> bool:
 ## --tp: zu einem Ort aus der F6-Liste (lobby, bar, küche, keller …), in ein Zimmer (Nummer) oder vor einen Gast.
 func _debug_teleport(where: String) -> bool:
 	var p := Game.player
-	var guest := Game.social.guest_by_id(where)
+	var guest := Game.social.find_guest(where)
 	if guest and not guest.dead:
 		var front := -guest.global_transform.basis.z
 		TeleportUI.place_player(guest.global_position + front * 1.6, -front)
@@ -1592,9 +1605,41 @@ func _nav_check() -> void:
 	get_tree().quit()
 
 
+## --despawn[=monster|geist|kuerbis]: diese Bedrohung (ohne Angabe alle) ist sofort fort – danach ruht sie wie nach
+## einem Auftritt. Die Meldung sagt, wer weg ist.
+func _debug_despawn(which: String) -> void:
+	if not which in ["", "alle", "monster", "geist", "kuerbis", "kürbis"]:
+		Game.say("--despawn[=monster|geist|kuerbis]", 3.0)
+		return
+	var gone: Array[String] = []
+	if which in ["", "alle", "monster"] and Game.director.debug_despawn():
+		gone.append("Monster")
+	if which in ["", "alle", "geist"] and Game.ghost and Game.ghost.debug_despawn():
+		gone.append("Lakengeist")
+	if which in ["", "alle", "kuerbis", "kürbis"] and Game.pumpkin and Game.pumpkin.debug_despawn():
+		gone.append("Kürbismann")
+	Game.say("Fort: %s" % ", ".join(gone) if not gone.is_empty() else "Keine Bedrohung unterwegs", 3.0)
+
+
+## --kill: Gast sofort tot, ohne dass das Monster kommt. corpse: er liegt da (wie nach Lakengeist und Kürbismann), sonst
+## ist er verschwunden wie vom Monster geholt (Kratzer, ein Schuh); blood: Blutlache und Spritzer an der nächsten Wand.
+## cause ("ghost", "pumpkin", "monster") bestimmt nur, was das Hotel hört und meldet (Social.on_guest_died).
+func _debug_kill(victim: Guest, cause: String, corpse: bool, blood: bool) -> void:
+	var where := victim.global_position
+	if corpse:
+		Game.sound_at("grunt", where, Senses.GRUNT_RANGE, victim)
+	else:
+		Game.noise("death_scream", where, victim)
+	victim.die("ghost" if corpse else "monster")
+	if blood and Game.traces:
+		Game.traces.add_blood(where, randf() * TAU)
+		Game.traces.add_wall_blood(where, "wall_splatter")
+	Game.social.on_guest_died(victim, cause)
+
+
 ## Gast für einen Debug-Befehl – unbekannte ID: Meldung und null.
 func _guest(id: String) -> Guest:
-	var guest := Game.social.guest_by_id(id)
+	var guest := Game.social.find_guest(id)
 	if guest == null:
 		Game.say("Unbekannter Gast: %s" % id, 3.0)
 	return guest
@@ -1826,7 +1871,7 @@ func _debug_pumpkin_hunt(id: String) -> void:
 	await get_tree().create_timer(0.5, false).timeout   # NavMesh muss erst synchronisiert sein
 	var target: Node3D = Game.player
 	if id != "":
-		target = Game.social.guest_by_id(id)
+		target = Game.social.find_guest(id)
 		if target == null:
 			Game.say("Kein Gast „%s“" % id)
 			return
@@ -1843,7 +1888,7 @@ func _debug_search(parts: PackedStringArray) -> void:
 	var who: Guest = null
 	for part in parts:
 		if part != "mit":
-			who = Game.social.guest_by_id(part)
+			who = Game.social.find_guest(part)
 	var walkers: Array = [who] if who else Game.social.living_guests().filter(func(g: Guest) -> bool: return search._available(g))
 	walkers.shuffle()
 	for g: Guest in walkers.slice(0, 8):
@@ -1873,7 +1918,7 @@ func _debug_cook(parts: PackedStringArray) -> void:
 		Game.say("Kein Herd im Hotel", 3.0)
 		return
 	if parts[0] == "gast":   # ein Gast kocht selbst (2026-10-22): er steht 4 m vor dem Herd, du daneben
-		var cook: Guest = Game.social.guest_by_id(parts[1]) if parts.size() > 1 else Game.social.living_guests().filter(func(g: Guest) -> bool: return not g.is_child())[0]
+		var cook: Guest = Game.social.find_guest(parts[1]) if parts.size() > 1 else Game.social.living_guests().filter(func(g: Guest) -> bool: return not g.is_child())[0]
 		var front: Vector3 = stove.front
 		cook.global_position = Vector3(stove.global_position.x, 0.05, stove.global_position.z) + front * 4.0
 		cook._set_idle(5.0)
@@ -1903,8 +1948,8 @@ func _debug_salt(parts: PackedStringArray) -> void:
 	var room := builder.home_room_at(Game.player.global_position)
 	if parts[0] == "zimmer" and parts.size() > 1:
 		room = Game.director.room_by_label(parts[1])
-	elif parts[0] == "gast" and parts.size() > 1 and Game.social.guest_by_id(parts[1]):
-		room = String(Game.social.guest_by_id(parts[1]).home["no"])
+	elif parts[0] == "gast" and parts.size() > 1 and Game.social.find_guest(parts[1]):
+		room = String(Game.social.find_guest(parts[1]).home["no"])
 	var root := Game.player.get_parent()
 	if parts[0] == "streuen":   # wie im Spiel: vor die Tür deines Zimmers stellen, hinsehen, Linksklick
 		var home: Dictionary = Game.director.rooms.get(room, {})
@@ -1962,7 +2007,7 @@ func _debug_coffee(parts: PackedStringArray, tea: bool = false) -> void:
 	var base := Vector3(machine.global_position.x, 0.05, machine.global_position.z)
 	if parts[0] == "gast":
 		# ohne id beim Tee ein Kind (das darf, 3.12), beim Kaffee ein Erwachsener
-		var g: Guest = Game.social.guest_by_id(parts[1]) if parts.size() > 1 else Game.social.living_guests().filter(func(c: Guest) -> bool: return c.is_child() == tea)[0]
+		var g: Guest = Game.social.find_guest(parts[1]) if parts.size() > 1 else Game.social.living_guests().filter(func(c: Guest) -> bool: return c.is_child() == tea)[0]
 		g.global_position = base + front * 4.0
 		g._set_idle(5.0)
 		p.global_position = g.global_position + front.cross(Vector3.UP) * 1.5
@@ -1978,8 +2023,8 @@ func _debug_coffee(parts: PackedStringArray, tea: bool = false) -> void:
 
 ## --pals=gast1,gast2: gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir (Spielkonzept 6.16).
 func _debug_pals(parts: PackedStringArray) -> void:
-	var a := Game.social.guest_by_id(parts[0])
-	var b := Game.social.guest_by_id(parts[1]) if parts.size() > 1 else null
+	var a := Game.social.find_guest(parts[0])
+	var b := Game.social.find_guest(parts[1]) if parts.size() > 1 else null
 	if a == null or b == null:
 		Game.say("--pals: zwei Gäste angeben, z. B. --pals=edna,bruno", 3.0)
 		return
@@ -2000,7 +2045,7 @@ func _debug_decorate(parts: PackedStringArray) -> void:
 	var caller: Guest = null
 	for part in parts:
 		if not part in ["hin", "lobby", "allein", "gross", "hier", "haus"]:
-			caller = Game.social.guest_by_id(part)
+			caller = Game.social.find_guest(part)
 	var deco := Game.social.decorating
 	var spot: Dictionary = {}
 	if "hier" in parts:

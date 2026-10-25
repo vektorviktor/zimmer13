@@ -424,6 +424,18 @@ func debug_announce(seconds: float) -> void:
 		_begin_announce(seconds)
 
 
+## Debug (--despawn): Er ist sofort fort, auch eine laufende Ankündigung bricht ab; der Spaßwert fängt von vorn an.
+## false = er war weder da noch angekündigt.
+func debug_despawn() -> bool:
+	var was := state != State.INACTIVE or announcing()
+	_announce = 0.0
+	_announce_wait = 0.0
+	_stop_singing()
+	if state != State.INACTIVE:
+		_deactivate()
+	return was
+
+
 ## Spaßwert mit dem kurzen Deko-Anteil (0..FUN_MAX).
 func fun_value() -> float:
 	return minf(FUN_MAX, fun + _fun_deco)

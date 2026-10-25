@@ -627,6 +627,29 @@ func guest_by_id(id: String) -> Guest:
 	return null
 
 
+## Debug-Konsole und Startparameter: Gast nach ID oder Namen – Vorname, auch mit Nachnamen („emil“, „EmilBecker“);
+## Groß-/Kleinschreibung egal, ä/ö/ü/ß auch als ae/oe/ue/ss. Heißen zwei gleich, der lebende. null = keiner.
+## (Nur die Kernfiguren haben ihren Namen als ID, alle anderen heißen gast1, gast2 …)
+func find_guest(text: String) -> Guest:
+	var exact := guest_by_id(text)
+	if exact:
+		return exact
+	var key := _name_key(text)
+	if key == "":
+		return null
+	var found: Guest = null
+	for guest in guests:
+		var g: Guest = guest
+		if key in [_name_key(g.id), _name_key(g.display_name), _name_key(g.display_name + String(g.profile.get("surname", "")))]:
+			if found == null or (found.dead and not g.dead):
+				found = g
+	return found
+
+
+static func _name_key(text: String) -> String:
+	return text.to_lower().replace(" ", "").replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")
+
+
 func guest_name(id: String) -> String:
 	var guest := guest_by_id(id)
 	return guest.display_name if guest else id
