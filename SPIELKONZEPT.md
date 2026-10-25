@@ -63,6 +63,8 @@
   - [4.29 Der Albtraum von 1987 (entschieden und umgesetzt 2026-10-25)](#429-der-albtraum-von-1987-entschieden-und-umgesetzt-2026-10-25)
   - [4.30 Die Vogelscheuche, die näher kommt (entschieden und umgesetzt 2026-10-25)](#430-die-vogelscheuche-die-näher-kommt-entschieden-und-umgesetzt-2026-10-25)
   - [4.31 Das Kind zu viel (entschieden und umgesetzt 2026-10-25)](#431-das-kind-zu-viel-entschieden-und-umgesetzt-2026-10-25)
+  - [4.32 Der Name: Leviathan (entschieden 2026-10-25)](#432-der-name-leviathan-entschieden-2026-10-25)
+  - [4.33 Die vier Modi des Leviathan (entschieden 2026-10-25)](#433-die-vier-modi-des-leviathan-entschieden-2026-10-25)
 - [5. Halloween-Dekoration](#5-halloween-dekoration)
   - [5.1 Funktion](#51-funktion)
   - [5.2 Platzierung](#52-platzierung)
@@ -82,6 +84,7 @@
   - [5.16 Das Puppenhaus in der Bibliothek (entschieden und umgesetzt 2026-10-25)](#516-das-puppenhaus-in-der-bibliothek-entschieden-und-umgesetzt-2026-10-25)
   - [5.17 Marions Spieluhr (entschieden und umgesetzt 2026-10-25)](#517-marions-spieluhr-entschieden-und-umgesetzt-2026-10-25)
   - [5.18 Kürbisfratzen (entschieden und umgesetzt 2026-10-25)](#518-kürbisfratzen-entschieden-und-umgesetzt-2026-10-25)
+  - [5.19 Der Maskenball und die verbotenen Masken (entschieden 2026-10-25)](#519-der-maskenball-und-die-verbotenen-masken-entschieden-2026-10-25)
 - [6. Die anderen Gäste (NPCs)](#6-die-anderen-gäste-npcs)
   - [6.0 Gäste im Prototyp](#60-gäste-im-prototyp)
   - [6.1 Rolle](#61-rolle)
@@ -126,6 +129,7 @@
   - [8.8 Was gespeichert wird](#88-was-gespeichert-wird)
   - [8.9 Ausbau-Ideen (später)](#89-ausbau-ideen-später)
   - [8.10 Speicherregel geschärft (entschieden 2026-10-21)](#810-speicherregel-geschärft-entschieden-2026-10-21)
+  - [8.11 Achievements (vorgemerkt 2026-10-25)](#811-achievements-vorgemerkt-2026-10-25)
 - [9. Technische Umsetzung (grob)](#9-technische-umsetzung-grob)
   - [9.1 Godot 4.7](#91-godot-47)
   - [9.2 Blender (lokal)](#92-blender-lokal)
@@ -161,7 +165,8 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Datum sichtbar:** Abreißkalender an der Wand von Zimmer 13, im Spielmenü und kurz eingeblendet, wenn ein neuer Tag beginnt. Spielstände zeigen das Ingame-Datum.
 - **Der friedliche Anfang:** Zu Beginn wirkt alles wie ein **gemütliches Hotel-Party-Spiel** – Gäste kennenlernen, Deko basteln, Kürbisse ziehen, Würfeln, Feiern. Keine Vorwarnung, kein Rauschen, nichts Bedrohliches. Auch Einführungstext und Gäste deuten nichts an. Der Spieler soll glauben, es sei ein friedliches Halloween-Spiel. Den Faden dafür gibt seit 2026-10-23 der **Türschmuck-Wettbewerb** (2.5).
 - **Der erste Angriff bricht das – am Abend des 2. Oktober bei der Siegerehrung des Wettbewerbs in der Lobby (2.5):** Alle stehen um die Puppe, sie steigt auf und löst sich in Rauch auf, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich. Währenddessen holt es den ersten Gast, **Gustav Peters** (2.6, entschieden 2026-10-25).
-- **Danach holen die ersten Angriffe noch keinen Gast** (neun Aufbrüche, etwa anderthalb Spieltage; Gustav ist die eine Ausnahme, 2.6): Es erschreckt sie nur – man sieht es und weiß: Es ist real. Erst danach holt es Gäste. **Den Spieler tötet es von Anfang an**, wenn es ihn erwischt (4.17).
+- **Danach holen die ersten Angriffe noch keinen Gast** (neun Aufbrüche, etwa anderthalb Spieltage; Gustav ist die eine Ausnahme, 2.6): Es erschreckt sie nur – man sieht es und weiß: Es ist real. Erst danach holt es Gäste. **Den Spieler tötet es von Anfang an**, wenn es ihn erwischt (4.17). **Neu (2026-10-25, 4.33):** Die harmlosen
+  Angriffe sind die **ersten drei Raubzüge** – sie brechen kurz vor dem Zugriff ab, auch beim Spieler.
 - **Halloween (31. Oktober):** In einem Zimmer **taucht ein Schlüssel auf** – der Weg hinaus. Es ist **sehr schwer**, an ihn heranzukommen.
 
 **Ideen zum Schlüssel (Auswahl offen)**
@@ -209,7 +214,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 **Grundidee:** Nicht alle Bereiche des Hotels sind von Anfang an erreichbar. Einige sind verschlossen und müssen **verdient** werden. Hinter ihnen liegt nach und nach ein **großes Geheimnis**: warum man hier ist, was das Monster ist, was das Hotel mit den früheren Gästen zu tun hat. Man erfährt es aus **Dokumenten** und von **Mitwissern** – Gästen, die mehr wissen, als sie sagen.
 
 **Fortschritt: Bereiche verdienen statt finden**
-- **Offen bleibt der Alltag:** Erdgeschoss, Zimmerflure, Lobby, Bar, Garten, Keller. Gesperrt werden nur die **Geheimnis-Orte** – damit das Spiel eine Sandbox mit Gästen bleibt und kein Schlüssel-Parcours wird. Die Zimmer der Gäste sind ihr eigener Raum: hinein nur mit Einlass, Schlüssel oder Gewalt (6.19).
+- **Offen bleibt der Alltag:** Erdgeschoss, Zimmerflure, Lobby, Bar, Garten, Keller. Gesperrt werden nur die **Geheimnis-Orte** – damit das Spiel eine Sandbox mit Gästen bleibt. Die Zimmer der Gäste sind ihr eigener Raum: hinein nur mit Einlass, Schlüssel oder Gewalt (6.19); die versiegelten Zimmer von 1987 sind optionale Secrets (6.19 (7)).
 - **Möglichst mehrere Wege hinein.** Was man aufbringt, um einen Bereich zu öffnen:
 
 | Art | Beispiel | baut auf |
@@ -253,7 +258,8 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 **Mitwisser**
 - **Wenige Gäste wissen mehr**, als sie sagen. Sie schweigen aus Angst, Schuld oder Eigennutz.
 - **Zum Reden bringt man sie mit Beziehung *und* Beweis**, nicht mit Beziehung allein.
-- **Sie können lügen und sterben.** Holt das Monster einen Mitwisser, ist sein Wissen weg – oder es liegt nur noch als Notiz in seinem Zimmer. Gäste zu schützen (oder zu opfern, 4.11) bekommt dadurch Gewicht.
+- **Sie können lügen.** ~~Und sterben~~ – seit 2026-10-25 überleben **Kernfiguren jeden Angriff** verletzt (6.17).
+  Holt das Monster einen anderen Mitwisser, ist sein Wissen weg – oder es liegt nur noch als Notiz in seinem Zimmer. Gäste zu schützen (oder zu opfern, 4.11) bekommt dadurch Gewicht.
 - Idee: Das Monster **will gerade die Mitwisser**. Wen man beschützt, entscheidet dann auch, was man erfahren kann.
 
 **Dokumente (Lore)**
@@ -712,10 +718,10 @@ größer, mitten in seinem Revier.
 - **Gar nicht versucht oder nicht fertig** (entschieden, oben): Er bleibt das Monster. Am 31. urteilt die Puppe ein
   letztes Mal, und es greift vor der Öffnung noch einmal an (2.7).
 - *Vorschläge:*
-- **Vertrag verbrannt, aber nicht erlöst** (Marion tot, Sachen fehlen, Tür zu): Er ist **frei, aber nicht erlöst** – der
+- **Vertrag verbrannt, aber nicht erlöst** (Sachen fehlen, Tür zu): Er ist **frei, aber nicht erlöst** – der
   letzte Angriff kommt ohne Puppe und ohne Warnung. Die dunkle Seite von „Abkommen brechen“ (2.3).
-- **Marion stirbt vorher:** Ohne ihre Stimme keine Erlösung. Ihr Wissen liegt als Brief in Zimmer 001 (2.3) – man
-  erfährt, was gewesen wäre.
+- ~~**Marion stirbt vorher:** Ohne ihre Stimme keine Erlösung, nur ihr Brief in Zimmer 001.~~ Entfällt (2026-10-25):
+  Kernfiguren sterben nicht (6.17). Ob es den Brief anders ausgelöst noch gibt, ist offen.
 
 **Zu klären**
 - **Wo liegt das Büro der Direktion** (Personaltrakt hinter der Rezeption?), und gibt es einen zweiten Weg hinein, falls
@@ -1165,6 +1171,9 @@ ausgearbeitet, am 2026-10-25 gebaut (mit Ablenkung fürs Monster).
 
 ## 4. Das Monster
 
+Das Monster heißt ab 2026-10-25 **der Leviathan** – im Spiel, sobald die Gäste ihm den Namen gegeben haben (4.32), in
+diesen Dokumenten von jetzt an. „Monster“ meint weiter dasselbe; die Bezeichner im Code (`MonsterDirector` …) bleiben.
+
 ### 4.1 Grundprinzip
 - Das Monster ist **fast immer unsichtbar oder nur angedeutet**: Silhouette am Flurende, Schatten hinter einem Vorhang, Geräusche hinter Wänden.
 - Es **zeigt sich zufällig** (gewichteter Zufall, siehe unten) – nicht skriptgesteuert und nicht vorhersehbar.
@@ -1232,7 +1241,7 @@ Das Verhalten des Monsters wird aus **für den Spieler unsichtbaren Werten** ber
 > - **Neugier je Zone** (über 300 Zonen, fast ohne Wirkung) wird durch eine **kurze Liste heißer Stellen** ersetzt –
 >   Ort, Stärke, Abklingen (Lärm, Licht aus, Sichtung, „Angst riecht“). Das Urteil der Puppe (5.5) wirkt ohnehin direkt.
 
-**Dreistigkeit (global, 0–100)** – *wie viel traut es sich?*
+**Dreistigkeit (global, ab 0, seit 2026-10-25 ohne Obergrenze – Schwellen der Anforderung bei 55, 80, 105, 4.33)** – *wie viel traut es sich?*
 - ↑ mit der Zeit (langsam, stetig, in Spieltagen)
 - ↑ wenn es Gespräche über sich belauscht (4.7)
 - ↑ wenn es bemerkt wurde / Sichtungen (4.5)
@@ -1267,6 +1276,8 @@ sonst                 → Monster hält sich fern, bleibt diffus im Hintergrund
 - **Debug-Overlay** (nur in Entwicklung): zeigt alle Werte live an.
 
 ### 4.10 Sättigung
+> **Neu gefasst (2026-10-25, 4.33):** Die Sättigung wirkt nur noch als **Abzug auf die Dreistigkeit** – jedes Opfer
+> schiebt die nächste Anforderung hinaus. Wann das Monster kommt, bestimmen die vier Modi.
 - Hat das Monster einen Gast geholt, ist es **eine Zeit lang gesättigt**:
   - Dreistigkeit fällt stark ab, Manifestationen werden seltener, es zieht sich in den Hintergrund zurück.
   - Die Sättigung klingt mit der Zeit ab – danach steigt die Dreistigkeit wieder (evtl. schneller als vorher: „Es hat Geschmack gefunden“).
@@ -1372,7 +1383,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
   jagen; den Erschreckten verschont es bis zur nächsten Aktivphase. Gäste meiden Verstecke in der Nähe des Monsters
   (8 m); denselben Panik-Satz sagt ein Gast höchstens alle 45 s.
 - In den Keller geht es nur am Ende der Aktivphase, satt oder vom UV-Licht vertrieben.
-- Die **ersten neun Aufbrüche** (etwa anderthalb Tage) bleiben für Gäste harmlos (2.1) – auch mit F5 gerufen. Danach
+- *(Ersetzt durch die drei harmlosen Raubzüge, 4.33.)* Die **ersten neun Aufbrüche** (etwa anderthalb Tage) bleiben für Gäste harmlos (2.1) – auch mit F5 gerufen. Danach
   holt es nur jemanden, wenn es das beim Aufbruch will – mit einer Chance, die von Tag zu Tag steigt (4.17).
 
 **Offen**
@@ -1520,6 +1531,10 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Zeigt UV später auch weggewischte Spuren an Zimmer 13?
 
 ### 4.17 Angriffsabsicht & Flacker-Signal (entschieden 2026-10-17)
+> **Neu gefasst (2026-10-25, 4.33):** Die drei Absichten, die Opferzahl je Aufbruch und „vom UV vertrieben → mindestens
+> zwei“ gelten nicht mehr – an ihre Stelle treten die vier Modi des Leviathan. Das Flackersignal bleibt mit neuer
+> Bedeutung: **kurzes Zucken = Snack, mittleres Flackern = Raubzug, langes Flackern = Anforderung**; das Urteil
+> kündigt die Puppe an. Die Kurve der Angriffschance gilt weiter für den Raubzug, skaliert auf 10–13 im Spiel.
 > Ergänzt 4.13, ersetzt sie nicht: Das lokale Flackern bleibt.
 > **Im Prototyp umgesetzt (2026-10-17):** drei Absichten mit Flackerwelle vom Keller aus (über das
 > Treppenhaus ins Obergeschoss), Täuschung, Opferzahl nach 1/n² (Spieler zählt mit), Flackern 1 + 2 × n Sekunden, Umsehen wird
@@ -2059,6 +2074,9 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 - **Muss man ihn hereinbitten?** Vorschlag: ja – er klopft an Türen und Fenstertüren, gibt sich als neuer Gast aus, und
   ein Gast, der ihn nicht erkennt, lässt ihn herein (ab dem 25. gibt es Vampirkostüme, 5.9). Seine Regel wäre dann
   **Leichtsinn und Gastfreundschaft** – neben Dunkelheit (Monster), Schwäche (Lakengeist) und Spaß (Kürbismann).
+- **Auf dem Maskenball (vorgemerkt 2026-10-25):** Der Vampir kommt **verkleidet mit einer verbotenen Maske** – er ist
+  die Maske zu viel beim Maskenspiel (5.19). Die Masken täuschen keine Bedrohung, ihn aber verbergen sie vor den
+  Gästen.
 - **Weiß der Spieler, dass er ein Vampir ist?** Beim Beißen ja – das Foto verrät es dann den anderen.
 - **Herkunft:** Er steht außerhalb von „Das Hotel behält jeden“ (4.20) – bewusst so lassen oder einbinden (etwa ein
   Gast von 1987, der nie abgereist ist)? Lässt das Hotel den Vampir gehen, weil er nicht mehr zum Abkommen gehört?
@@ -2146,30 +2164,57 @@ die Dusche wieder. Speichern ist gesperrt, solange die Kamera gefangen ist.
 
 ### 4.25 Tiere als Vorzeichen: Krähen, Ratten, Motten, Hund (entschieden und umgesetzt 2026-10-25)
 Tiere machen das Hotel unheimlicher, ohne eine weitere Bedrohung zu sein (4.20): Vorzeichen, Ärgernis, Stimmung.
+Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man handeln kann.
 
 - **Krähen im Garten:** hüpfen und picken auf dem Rasen, auch nachts, und flattern krächzend in die Kronen, wenn man
   ihnen zu nah kommt (mit Licht oder rennend schon von weiter weg) oder eine Bedrohung naht – ein aufgescheuchter
   Trupp ist **Lärm** (4.15). **Sie merken sich Gesichter:** Wer nach ihnen wirft (3.13) oder in sie hineinrennt, den
   krächzen sie danach an, sobald er draußen in ihre Nähe kommt – auch das ist Lärm. Der Groll klingt über Tage ab
   (gespeichert). Glänzendes nehmen sie mit: Münzen, die draußen liegen, holt eine Krähe, wenn niemand hinsieht.
+  Gebaut verschwindet die Münze in der Krone – das ersetzt die Erweiterung unten (Nest).
 - **Ratten im Untergeschoss:** huschen an den Wänden, schnuppern, fliehen vor Füßen; neue tauchen auf, wo man nicht
   hinsieht (wie die Spinnen, 4.23). **Frühwarnung unten:** Bricht das Monster aus dem Heizkeller auf oder kommt es
   nah, rennen alle Ratten quiekend in dieselbe Richtung davon – unten gibt es selten Katzen (6.11), die Ratten sind
   ihre Stimme. Ein Hinweis, keine Garantie. Kerzen, die unten am Boden liegen, schleppen sie weg. Nur Klang, kein Lärm.
-- **Rattenkönig:** sieben Ratten mit verknoteten Schwänzen in einem Glas auf einem Wandbord im Müllraum, mit Zettel
-  ([E] lesen) – reine Stimmung. Ort: Ausstattung „Rattenkönig“ im Plan, bis dahin ein fester Ausweichplatz.
 - **Motten** taumeln um brennende Lampen in der Nähe des Spielers – reine Stimmung.
-- **Der Totenkopfschwärmer:** Nach dem ersten Angriff sitzt ein großer Falter mit Schädelzeichnung auf dem Kopfkissen
-  im Zimmer, dessen Tür gerade am schwächsten geschützt ist – dort, wo die Puppe als Nächstes säße. Wer mehr schmückt,
-  schickt ihn weiter. Eine Tendenz, kein Urteil (das bleibt bei der Puppe, 5.5). Kommt man nah, piept er und fliegt
-  auf. Bewohner, die ihn sehen, bekommen Angst und sagen es.
 - **Ein Hund heult** hinter der Waldkante – verstreut und zufällig als Stimmung, alle paar Spielminuten, draußen
   lauter, drinnen gedämpft, im Schlaf nicht (kein Zeichen nach der Totenglocke, Entscheidung 2026-10-25).
-- Debug: `--kraehen`, `--ratten`, `--falter`, `--hund`.
+- Debug: `--kraehen`, `--ratten`, `--hund`.
+
+**Erweiterung: Ruf, Futtertisch und zwei Nester (entschieden 2026-10-25, noch nicht gebaut)**
+> Gebaut holen die Krähen nur Münzen, und die fliegen fast nie draußen herum (nur aus der Tasche eines Gastes in
+> Panik); was sie holen, wird gelöscht. Unnachvollziehbar – darum: Was verschwindet, liegt sichtbar irgendwo und kann
+> zurückkommen.
+
+- **Ruf beim Trupp:** **ein Wert für alle Krähen zusammen**, eine Achse von **Groll** bis **Gunst** – keine einzelne
+  Krähe hasst oder mag einen. Würfe nach ihnen und Hineinrennen senken ihn, Füttern hebt ihn; er klingt über Tage zur
+  Mitte hin ab (gespeichert, ersetzt den bisherigen Groll). Mit Groll krächzen sie einen an wie bisher.
+- **Glänzendes stehlen:** Nicht nur Münzen – alles Glänzende, das draußen liegt: Schlüssel, Messer, Kompass, ein Ring.
+  Eine Krähe holt es, wenn niemand hinsieht, und trägt es **ins Nest im großen Baum**. Erschreckt man sie im Flug,
+  fällt es herunter (wie bisher). Wer Wichtiges draußen ablegt, riskiert es.
+- **Futtertisch im Gärtchen von Zimmer 13** (Innenhofblock Ost; den Tisch setzt der Nutzer als „Möbel: Tisch“ in den
+  Plan): Man legt **Brotkrumen** (Vorrat in der Küche) oder **Kürbiskerne** (fallen beim Schnitzen ab, 5.4) hin.
+  Nach ein paar Spielstunden ist das Futter weg – nur, wenn gerade niemand hinsieht; der Zeitsprung im Schlaf zählt
+  mit. Jede Fütterung hebt den Ruf.
+- **Geschenke:** Ist die Gunst hoch genug, liegt statt des Futters etwas auf dem Tisch – Münzen oder etwas aus dem
+  Nest. **Was sie gestohlen haben, kommt so zurück.** Der **Schlüssel von 1987** (versiegeltes Zimmer, 6.19 (7)) kommt
+  erst bei hoher Gunst, also nach mehreren Fütterungen über Tage.
+- **Nest im großen Baum im Garten:** der große Baum mitten im Garten zwischen Lobby und Nordflügel, gegenüber der
+  Terrassentür von Zimmer 042 (6.19 (7)); das Nest in der Krone sichtbar, im Licht glitzert es. Darin das
+  Gestohlene und seit 1987 der Messingschlüssel mit Zimmeranhänger (HANDLUNG.md K5). **Zwei Wege an den Inhalt:**
+  - **Gewalt:** ins Nest werfen (3.13) – ein Stück fällt herunter, sofort. Laut (aufgescheuchter Trupp, 4.15), und der
+    Ruf fällt stark Richtung Groll.
+  - **Geduld:** füttern und warten, bis sie es als Geschenk bringen – leise, aber Tage.
+- **Nest am Dach:** direkt vor einem **Dachfenster** im Dachgeschoss, mit ausgestrecktem Arm zu erreichen – kein
+  Klettern auf dem Dach. Darin liegt der **Ring** eines Gastes: Er hat ihn draußen auf einem Tisch liegen lassen, eine
+  Krähe hat ihn geholt. Wessen Ring und welcher Auftrag: offen (IDEEN.md).
 
 **Zu klären**
-- **Der Totenkopfschwärmer als Mechanik** (Wunsch des Nutzers, 2026-10-25): gebaut ist er als leises Vorzeichen;
-  wie viel Gewicht er im Spiel haben soll, wird noch besprochen (IDEEN.md).
+- **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (IDEEN.md).
+- **Dachnest:** welches Dachfenster – hängt an der noch offenen Form des Dachs.
+- **Geschenke:** was außer Münzen und Gestohlenem auf dem Tisch liegen kann, und ab welchem Ruf.
+- **Kerzen der Ratten:** Wohin schleppen sie sie? Dieselbe Frage wie bei den Krähen – ein sichtbares Lager wäre die
+  Antwort aus derselben Richtung.
 
 ### 4.26 Die schwarze Kesselkatze (entschieden und umgesetzt 2026-10-25)
 Eine vierte Katze, die es nicht gibt. Nur nachts, erst nach dem ersten Angriff und nur im Untergeschoss sitzt sie im
@@ -2181,6 +2226,9 @@ Katze?“).
   ist sie fort. Streicheln geht nicht: Die Hand greift ins Leere. Einmal je Nacht.
 - Sie ist **Josef Ahrends Katze von 1987** (2.3): Darum tut das Monster Katzen nichts (6.11). Kommt es nah, flieht sie
   nicht – sie setzt sich und sieht ruhig zu ihm hin.
+- **Marion erkennt sie** (entschieden 2026-10-25, noch nicht umgesetzt – Marion gibt es im Spiel noch nicht):
+  Spricht man sie auf die schwarze Katze an, ist sie **die Einzige**, die sie kennt – sie kannte sie schon als Kind,
+  bei ihrem Vater im Heizkeller (2.8). Ein Hinweis für alle, die Marion entlarven wollen (M13).
 - Später (2.8) sitzt sie beim Ritual an der Werkstatttür und geht mit ihm ins Feuer – das Ritual fehlt noch.
 - Debug: `--kesselkatze`.
 
@@ -2237,6 +2285,165 @@ von früher. Das echte Kind bemerkt es nicht.
   ist es fort – mit einem Kichern. Hat es etwas bekommen, liegt die Süßigkeit später verstaubt auf dem Dachboden neben
   dem Kopf des Kürbismanns.
 - Höchstens einmal am Spieltag, wenige Male insgesamt (gespeichert). Debug: `--kind-zu-viel`.
+
+### 4.32 Der Name: Leviathan (entschieden 2026-10-25)
+> Noch nicht umgesetzt. Mit „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
+
+**Grundidee:** Niemand im Hotel kennt den echten Namen des Monsters – dass es Josef Ahrend war, der Heizer (2.3),
+erfährt man erst spät. Also geben ihm die Gäste einen: Nach der ersten bestätigten Sichtung fällt einem von ihnen die
+Ähnlichkeit mit einem mythischen Ungeheuer auf, und von da an heißt es **der Leviathan** – ein Spitzname in
+Ermangelung eines echten.
+
+**Der Auslöser: die erste bestätigte Sichtung**
+- **Bestätigt** heißt: Ein Gast **sieht das Monster und überlebt**. Gerüchte, Rauschen, Flackern und Schreie aus dem
+  Flur zählen nicht.
+- Die **erste** solche Sichtung im Spiel löst die Benennung aus. Bis dahin sagen die Gäste „es“, „das Ding“, „was
+  da unten ist“.
+
+**Hugo Stein gibt ihm den Namen** (H27, Antiquitätenhändler, 6.0)
+- Hugo hört von der Sichtung – vom Zeugen selbst oder über das Gerede seiner Freunde (6.16). Am selben Abend kramt er
+  in der Lobby einen alten Druck aus seinem Koffer: **Gustave Dorés „Die Zerstörung des Leviathan“** (Holzstich aus
+  Dorés Bibel, 1865; gemeinfrei, darf also als echtes Bild ins Spiel).
+- Er legt das Blatt auf den Tisch, die Gäste drängen sich darum. Sätze (Vorschlag):
+  - Hugo: „Die Stacheln am Rücken. Dieser lange Schädel. Das ist er.“
+  - Hugo: „Der Leviathan. Im Buch Hiob heißt es, niemand kann ihn fangen.“
+  - Der Zeuge: „So … ja. So ungefähr. Nur dünner.“
+  - Ein Skeptiker (6.0): „Ein Bild aus einer alten Bibel, Hugo. Mehr nicht.“
+- **Warum Hugo:** Er kauft und deutet ohnehin Fundstücke (2.3), ein alter Druck im Koffer passt zu ihm. Die
+  Ähnlichkeit trägt, weil das Aussehen dazu passt (4.1): Stacheln am Rücken, langgezogener Schädel, offenes Maul.
+
+**Der Name verbreitet sich**
+- Zuerst sagen Hugo und seine Freunde „der Leviathan“, über das Gerede (6.16) dann alle. Die Sätze der Gäste
+  wechseln von „es“ zu „der Leviathan“; das Monster hört das Gerede wie bisher (4.7).
+- **Notizbuch und Tagebuch** des Spielers übernehmen den Namen: „Hugo nennt es den Leviathan.“
+- **Der Druck bleibt sichtbar** (Vorschlag): Hugo hängt ihn an die Fotowand in der Lobby (5.14); man kann ihn
+  ansehen ([E]).
+
+**Kleine Folgen** (Vorschläge)
+- **Liesel Brück** (H26), die abends laut betet, betet von da an gegen den Leviathan.
+- **Marion** (2.8) hört, wie man ihren Vater nennt. Sie sagt nichts und geht hinaus – ein leiser Hinweis für alle,
+  die sie beobachten (M13).
+- **Stirbt Hugo vor der ersten Sichtung**, gibt Liesel dem Monster den Namen, über das Buch Hiob statt über den Druck.
+
+### 4.33 Die vier Modi des Leviathan (entschieden 2026-10-25)
+> Noch nicht umgesetzt. **Ersetzt** die drei Absichten aus 4.17 (Umsehen, einen holen, Raubzug mit n Opfern) und die
+> „fünf Türen unterwegs“ aus 5.5. Das Flackersignal aus 4.17 bleibt, bekommt aber je Modus eine neue Bedeutung. Mit
+> „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
+
+**Grundidee:** Jeder Auftritt des Leviathan folgt einem von **vier Modi** mit eigener Regel, eigenem Signal und
+eigener Häufigkeit. So weiß man nach dem Signal, was kommt, und jeder Modus fordert etwas anderes: das **Urteil**
+die eigene Tür, der **Snack** die eigene Vorsicht, der **Raubzug** Mut und Geschick, die **Anforderung** die Deko des
+ganzen Hotels.
+
+| Modus | Wie oft im Spiel | Ziel | Signal | Bricht Türen auf |
+|---|---|---|---|---|
+| **Urteil** | 8–12 | ein von der Puppe markiertes Zimmer | Puppe vor der Tür, Grollen (5.5) | ja, immer die Puppentür |
+| **Snack** | 4–5 | wer ihm in 30 s über den Weg läuft, zuerst der Spieler | kurzes Zucken (1 s) | nein |
+| **Raubzug** | 10–13 (die ersten drei harmlos) | der Spieler | mittleres Flackern (3 s) | eine, wenn es den Spieler nicht findet |
+| **Anforderung** | 2–3 | alle Türen unter seinem Anspruch | langes, wildes Rauschen, dann langes Flackern | 1–5 |
+
+**Für alle Modi**
+- **Überleben:** Wen der Leviathan, der Kürbismann oder der Lakengeist packt, der überlebt mit **20 %** verletzt
+  (6.17; bisher 40 %). **Für den Spieler gibt es das nicht:** Erwischt es ihn, ist er tot (8.7).
+- **Kinder** sind nie Opfer (6.13). **Kernfiguren** (6.0) können Opfer werden, überleben aber **immer** verletzt –
+  bei jedem Angriff jeder Bedrohung (6.17).
+- **Balltage** (5.19): An ihnen kommt **kein Modus** des Leviathan.
+- **Kein Modus 0:** Ein bloßes Umsehen ohne Ziel gibt es nicht mehr – das sind mit allen vier Modi schon genug
+  Auftritte (24–33 im Spiel).
+- **Zwischen den Modi ohne Körper präsent:** Man hört ihn – Geräusche hinter Wänden, Kratzen, Rauschen ohne Monster
+  (Halluzination, 4.13) –, sieht ihn aber nicht. **Lärm, Licht aus und Gerede** (4.15, 4.4, 4.7) erhöhen die
+  **Dreistigkeit** (und bringen damit die Anforderung näher) und bestimmen, **wo der nächste Snack oder Raubzug
+  beginnt**. So behalten Spuren, Lauschen und „Licht aus lockt“ ihren Sinn.
+- **Patrouille im Keller:** Wer in den Keller geht, riskiert eine Begegnung. Dort patrouilliert er **etwa dreimal am
+  Tag für jeweils etwa 90 Spielminuten** – kein Modus, darum **auch an Balltagen**. Gerät man in seinen
+  Erkennungsradius (4.12), verfolgt er einen; man muss ihn **abschütteln oder sich verstecken**, sonst stirbt man.
+  Dazwischen ist der Keller ruhig – das sind die Fenster für den Abstieg (M7, HANDLUNG.md). **Gäste gehen
+  grundsätzlich nicht in den Keller**, außer ein eigens besprochenes Ereignis oder ein Auftrag verlangt es (bewusst
+  offen gehalten, noch keine Ausnahme).
+- **Sättigung** (4.10) wirkt nur noch als **Abzug auf die Dreistigkeit**: Jedes Opfer schiebt die nächste
+  Anforderung hinaus.
+- **Danach** kehrt der Leviathan jedes Mal in den Keller zurück.
+
+**1. Das Urteil**
+- **8–12 Urteile** im Spiel, das erste nach der Siegerehrung am 2. Oktober (2.5). Sie kommen **etwa alle drei Tage**;
+  die genauen Tage schwanken je Spiel, damit man sie beim zweiten Durchspielen nicht auswendig kennt.
+- **Die Puppe:** Nach jedem Urteil sitzt sie wieder in der Lobby (Kinder dürfen sie von dort mitnehmen, 5.5).
+  **2–5 Spielstunden** vor dem Angriff sitzt sie vor der schwächsten bewohnten Tür, auch vor **Zimmer 13**.
+  Das **Nachbessern** bleibt: Wer bis zum Aufbruch nicht mehr der Schwächste ist, den verlässt sie (5.5).
+- **Wen es trifft:** alle Gäste **außer Kindern und Kernfiguren** (6.0). Wohnen mehrere Erwachsene im Zimmer, ist es
+  der mit der höchsten **Schwäche** (4.18), bei Gleichstand ein zufälliger. Liegt sie vor Zimmer 13, ist es der Spieler.
+- **Der Angriff:** Die Puppentür **bricht immer auf**, auch abgeschlossen und gut geschmückt. Ist der Verurteilte
+  nicht im Zimmer oder versteckt, **holt das Monster ihn trotzdem**, wo er auch ist. Er überlebt mit 20 % verletzt;
+  dann ist das Urteil vorbei, und in dieser Nacht stirbt niemand mehr. Der Spieler stirbt.
+- **Danach** geht das Monster in den Keller zurück und greift niemanden mehr an – außer, jemand stellt sich ihm
+  direkt in den Weg, auch der Spieler.
+- **Die Tür ist kaputt** und muss repariert werden (Werkzeugkasten, 6.19). Bis dahin lässt sich das Zimmer nicht
+  abschließen.
+- **Eltern:** Das Urteil schützt keinen Elternteil, auch nicht den letzten. Waisen sind erlaubt; sie schlafen
+  weiter in ihrem Zimmer und wenden sich tagsüber freundlichen Gästen zu (6.13).
+- **Gegen Fehlverhalten des Spiels:**
+  1. **Prüfung bei der Wahl:** Nur Türen, die vom Keller aus erreichbar sind, kommen in Frage (Pfad auf dem Navmesh).
+  2. **Das Ziel festnageln:** Ab dem Aufbruch geht der Verurteilte nicht mehr an unerreichbare Orte (fahrender
+     Aufzug, Dach, Wald). Fährt er gerade Aufzug, wartet das Monster an der Haltestelle.
+  3. **Notausgang:** Erreicht das Monster ihn nicht in etwa **2 Minuten** oder scheitert der Pfad mehrmals,
+     verschwindet der Gast **unbeobachtet** (wie die Puppe springt), zurück bleibt eine Schleifspur zum Keller (wie
+     bei Gustav, 2.6). Dazu eine Warnung im Debug-Log.
+  4. **Stirbt das Ziel vorher anders** (Kürbismann, Lakengeist), springt die Puppe zur nächstschwächsten Tür; das
+     Urteil bleibt.
+  5. **Rauchtest:** ein Szenario, das prüft, ob jede bewohnte Tür vom Keller aus erreichbar ist.
+
+**2. Der Snack**
+- **4–5 Mal** im Spiel, zufällig an Tagen ohne Urteil und Ball.
+- Der Leviathan steigt aus dem Keller auf die **Etage des Spielers**. Erst dort beginnen die **30 Sekunden**: In den
+  ersten **5–10 Sekunden** läuft er auf den Spieler zu – der Snack ist eine Bedrohung für ihn, und er ist das
+  bevorzugte Opfer. Danach nimmt er, wen er zuerst erwischt, Gast oder Spieler.
+- **Geschlossene Zimmer bleiben zu:** Er bricht nichts auf. Wer drinnen ist, ist sicher.
+- Findet er in den 30 Sekunden niemanden, geht er zurück in den Keller.
+
+**3. Der Raubzug**
+- **10–13 Mal** im Spiel. Er folgt dem bisherigen Muster – die Chance steigt von Tag zu Tag (4.17) –, die Kurve
+  wird aber so skaliert, dass im Schnitt 10–13 Raubzüge herauskommen. Der spielerisch wichtigste Modus: eine echte
+  Begegnung, in der Geschick, Kenntnis des Hotels und die Entscheidung zählen, ob man Gäste schützt.
+- **Ziel ist der Spieler.** Der Leviathan **spürt** ihn, wo er ist – bewusst wie ein Peilsender. Sonst ließe sich
+  ein Raubzug nicht von einem Snack unterscheiden, und Gäste verschwänden irgendwo im Hotel, ohne dass man es erlebt.
+- **Die Gäste** sind durch das Rauschen (4.13) früh genug gewarnt und verschwinden in ihren Zimmern.
+- **Der Spieler** kann auch in sein Zimmer gehen oder sich verstecken – das zählt als **nicht gefunden**. Macht er
+  auf sich aufmerksam (Lärm, Keuchen, 4.15), reißt ihn das Monster aus dem Versteck. Erwischt es ihn, stirbt er.
+- **Findet es den Spieler nicht**, bricht es eine **zufällige Tür mit wenig Deko** auf und holt einen Gast daraus
+  (20 % Überleben).
+- **Verhindern:** Man kann es **ablenken** (Geräusche, Werfen, 3.13) oder mit **UV vertreiben** (4.16). Gelingt das,
+  stirbt niemand. Ob überhaupt jemand stirbt, liegt also allein am Geschick und an den Entscheidungen des Spielers.
+- **Die ersten drei Raubzüge** (sie zählen zu den 10–13) sind **harmlos**: Kurz vor dem Zugriff bricht es ab und
+  verschwindet wieder. Der Spieler wird Zeuge, andere Gäste vielleicht auch (sie reden darüber). Das ersetzt die
+  „neun harmlosen Aufbrüche“ aus 2.1.
+- ~~Vom UV vertrieben → beim nächsten Aufbruch mindestens zwei Opfer (4.17)~~ – entfällt mit den Modi; Vorschlag:
+  UV gibt stattdessen einen Bonus auf die **Dreistigkeit** (4.9) und bringt so die Anforderung näher.
+
+**4. Die Anforderung**
+- **2–3 Mal** im Spiel, gebunden an die **Dreistigkeit** (4.9): Je dreister der Leviathan, desto höher sein
+  **Anspruch** an die Deko. Er bricht **alle bewohnten Türen auf, deren Abschreckung unter dem Anspruch liegt**
+  (4.9: Deko im Lichtschein), die schwächsten zuerst – **mindestens eine, höchstens fünf**.
+- **Opfer insgesamt 1–7**, kleine Zahlen wahrscheinlicher (gewürfelt wie bisher nach 1/n², 4.17: etwa 61 % eins, 15 %
+  zwei, 7 % drei …). Ist die Grenze erreicht, geht er zurück, auch wenn noch Türen übrig sind. Jedes Opfer überlebt
+  mit 20 %, der Spieler nicht.
+- **Ankündigung:** ein **langes, aggressives, wildes Rauschen** im ganzen Hotel, dann beim Aufbruch das **lange
+  Flackern** (4.17).
+- **Wann sie kommt:**
+  - Ab **55** liegt **alle 25 Punkte** eine Schwelle: **55, 80, 105**. Dafür hat die Dreistigkeit **keine Obergrenze
+    100 mehr** (4.9). Überschreitet sie eine Schwelle, ist **eine** Anforderung fällig – höchstens drei im Spiel, die
+    dritte nur bei viel Dreistigkeit. Sie kommt am nächsten Abend ohne Urteil und Ball.
+  - Die Dreistigkeit steigt in Spieltagen, dazu kommen abklingende Boni (belauscht, bemerkt, UV, Panik, Lärm, Licht
+    aus, 4.9) und Abzüge durch Sättigung. Wer viel Lärm macht, über das Monster redet oder es mit UV vertreibt, holt
+    sie früher. Ziel beim Tuning: bei normalem Spiel etwa **Tag 14 und 21**, die dritte selten.
+  - **Garantie:** Ist bis Tag 28 erst eine gekommen, kommt die zweite trotzdem (wie die Garantie des Kürbismanns, 4.19).
+  - **Das Rauschen beginnt etwa eine Spielstunde vorher.** In dieser Zeit kann man **nachbessern** – jede Tür, die
+    man über den Anspruch hebt, fällt nicht – und Gäste aus schwachen Zimmern holen. Die Gäste selbst gehen wie
+    immer heim und schließen die Tür: In einem schwachen Zimmer ist das die Falle.
+  - Kinder sind nie Opfer; Kernfiguren können getroffen werden, überleben aber immer verletzt.
+
+**Grobe Bilanz** (Schätzung, beim Ausprobieren prüfen): Von 54 Erwachsenen holt der Leviathan etwa 15–20 (Urteile
+um 8, Snacks um 2, Raubzüge je nach Spieler 0–8, Anforderungen um 3–4). Dazu kommen Gustav, Kürbismann, Lakengeist
+und später der Vampir. An Halloween kämen damit grob 25–35 Gäste hinaus (2.7).
 
 ---
 
@@ -2298,6 +2505,11 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 > **Mit dem Wettbewerb (2.5, umgesetzt 2026-10-23):** Bis zum ersten Angriff ist sie die **Jury des
 > Türschmuck-Wettbewerbs** auf dem Lobby-Sofa. Bei der Siegerehrung steigt sie auf und löst sich in Rauch auf – das
 > einzige Mal vor den Augen des Spielers. Ihre Regel wird danach **mitgeteilt** (Aushang, Warnungszettel).
+>
+> **Neu gefasst (2026-10-25, 4.33 „Das Urteil“):** 8–12 Urteile etwa alle drei Tage, die Puppe sitzt **2–5
+> Spielstunden** vorher vor der Tür und danach wieder in der Lobby. Das Monster holt **einen** Erwachsenen des
+> Zimmers (nie Kinder oder Kernfiguren), auch aus jedem Versteck außerhalb; er überlebt mit 20 %. Nachbessern bleibt
+> der einzige Ausweg. Die Türen unterwegs gehören jetzt zur Anforderung.
 
 **Grundidee:** Die Puppe ist keine Figur, die herumläuft, sondern das **sichtbare Urteil** des Abkommens (2.3): Kurz vor
 einem Angriff liegt sie vor der Tür dessen, der am wenigsten schmückt – und **dort stirbt jemand**. Was sonst
@@ -2306,10 +2518,8 @@ schwächsten Tür liegt, sagt das Hotel nach dem ersten Angriff selbst: der ver�
 ein Warnungszettel (2.5).
 
 **Das Urteil**
-- **Wann:** nur vor einem **echten Angriff** (einen holen oder Raubzug, 4.17) – nie beim Umsehen. Auch vor den ersten,
-  für Gäste harmlosen Angriffen (2.1): Dann bricht es ebenfalls ein, erschreckt die Gäste aber nur – dich tötet
-  es, wenn es dich erwischt. **1–2 Minuten vor dem Aufbruch** liegt sie plötzlich vor der Tür. Ist die
-  Ruhephase kürzer (spät im Monat, 4.13), wartet das Monster, bis die Frist um ist.
+- **Wann:** nur vor einem **Urteil** (4.33) – 8–12 Mal im Spiel, etwa alle drei Tage. **2–5 Spielstunden vor dem
+  Aufbruch** liegt sie plötzlich vor der Tür (bis 2026-10-25: 1–2 Minuten).
 - **Wen:** nur **bewohnte Türen** – die Zimmer der erwachsenen Gäste und **Zimmer 13**. Keine Flure, keine Lobby, keine
   leeren Zimmer, keine Zimmer, in denen nur Kinder schlafen (sie sind nie Opfer, 6.13).
 - **Wie:** die Tür mit der **wenigsten Deko** (so, wie das Monster sie zählt – im Lichtschein, 5.10). Haben mehrere
@@ -2334,15 +2544,13 @@ ein Warnungszettel (2.5).
   Opfern geht über Diebstahl: Wer dem Nachbarn die Deko klaut, macht ihn zum Schwächsten (4.11).
 
 **Der Angriff** (entschieden 2026-10-22)
-- **Weg:** Vom Keller zur Puppentür. **Unterwegs** greift das Monster bis zu **fünf bewohnte Türen** an, deren Deko
-  nicht hält – undekorierte oder billig geschmückte (4.9: Abschreckung kleiner als der Druck). Das tut es nur,
-  **solange es noch hungrig ist** (Opferzahl aus 4.17); die Puppentür kommt immer zuletzt dran.
-- **Ein gewähltes Zimmer:** Die Tür fällt, auch abgeschlossene. Das Monster geht hinein und **reißt jedes Versteck
-  auf** – Schrank und Bett schützen hier nicht. Jeder darin wird mit **60 %** geholt, sonst überlebt er verletzt
-  (wie 6.17, vier von zehn). Der Spieler stirbt (8.7).
-- **Das Puppenzimmer:** Die Tür fällt **immer**, auch gut geschmückt. **Wer darin ist, stirbt** – keine 40 %. Es zählt
-  nicht gegen die Opferzahl; danach ist das Monster satt und kehrt in den Keller zurück.
-- Wer weiß, wohin es geht, ist **nicht** dort: Die Puppe ist eine Warnung, kein Todesurteil – für den, der sie liest.
+- **Weg:** Vom Keller direkt zur Puppentür. ~~Unterwegs bis zu fünf weitere schwache Türen~~ – die gehören seit
+  2026-10-25 zur **Anforderung** (4.33).
+- **Das Puppenzimmer:** Die Tür fällt **immer**, auch gut geschmückt. Das Monster holt den **Verurteilten** – einen
+  Erwachsenen des Zimmers, 4.33 –, auch wenn er sich anderswo versteckt; er überlebt mit **20 %** verletzt. Danach
+  kehrt das Monster in den Keller zurück. ~~Jeder im gewählten Zimmer mit 60 %~~ entfällt.
+- Die Puppe ist eine Warnung, kein Todesurteil – für den, der sie liest **und nachbessert**. Weglaufen hilft seit
+  2026-10-25 nicht mehr.
 
 **Kinder**
 - Zwischen den Angriffen (erst nach dem ersten – vorher ist sie die Jury in der Lobby, 2.5) sehen Kinder die Puppe, nehmen sie zum Spielen mit und legen sie gern **vor die Tür ihrer
@@ -2353,7 +2561,8 @@ ein Warnungszettel (2.5).
 **Gäste:** Findet ein Gast sie vor seiner Tür, steigt seine Angst, und er sagt es laut („Bei mir sitzt die Puppe …“).
 Um Deko bitten wird er mit den Wünschen (6.14, 6.18).
 
-**Zwischen den Urteilen** bleibt sie, wo sie zuletzt lag – oder wo ein Kind sie hingelegt hat. Am Anfang sitzt sie in
+**Zwischen den Urteilen** sitzt sie wieder **in der Lobby** (2026-10-25, 4.33) – oder dort, wo ein Kind sie
+hingelegt hat. Am Anfang sitzt sie in
 der Lobby, als Jury des Wettbewerbs (2.5); nach der Siegerehrung ist sie fort, bis sie vor dem nächsten echten Angriff
 vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „eine Bedrohung je Ebene“ (4.1, 4.20).
 
@@ -2519,21 +2728,10 @@ ihm.
 - **Verkleiden aus Fundstücken (vorgemerkt 2026-10-23):** Spieler **und Gäste** ziehen sich einfache Verkleidungen
   an – einen **Kürbis als Hut**, **Masken**, **Gespensterlaken** oder andere kleine Gegenstände. Vorschläge: Ein
   geschnitzter, **brennender Kürbis auf dem Kopf leuchtet** – man trägt Licht, das das Monster sieht (4.15).
-  **Masken** sind ein neuer Gegenstand; woher (Kiste im Partyraum, basteln, von Gästen) ist offen.
-- **Maskenspiel „Wer steckt dahinter?“ (vorgemerkt 2026-10-23):** Ein Spiel im **Partyraum** mit den Gästen. Alle
-  Mitspieler tragen Masken, die **Namen über ihnen verschwinden**, und man muss erraten, wer wer ist – **einmal je
-  Gast**. Man sammelt **Beliebtheit**: stärker, wenn man richtig rät, aber auch falsch geraten, weil das Spiel den
-  Gästen Spaß macht. Vorschläge:
-  - **Fair raten:** Die Maske verdeckt Gesicht und Haare; **Kleidung, Größe, Statur, Schuhe und Stimme** bleiben – genau
-    das, was der Gastgenerator variiert (6.0). Wer die Gäste kennt, gewinnt. Laken sind beim Spiel nicht erlaubt.
-  - **Ablauf:** einen Maskierten ansprechen, einen Namen aus der Liste der Mitspielenden wählen.
-  - **Beliebtheit** über die Beziehungen (6.2): richtig **+8**, falsch **+3** (er lacht), dazu ein wenig bei allen
-    Mitspielern.
-  - **Spaß ruft den Kürbismann:** Das Spiel zählt wie Spieltisch und Feier stark für den Spaßwert (4.19).
-  - **Wann:** abends; ausrufen wie das große Schmücken, Gäste starten es auf Feiern auch selbst.
-  - **Twist: eine Maske zu viel** – acht spielen mit, neun stehen im Raum: der hereingebetene Vampir (4.22) oder eine
-    Halluzination.
-  - **Offen:** neuer, hotelweiter Wert „Beliebtheit“ statt der Beziehungen? Erst ab dem 25. oder schon früher?
+  ~~**Masken** sind ein neuer Gegenstand; woher ist offen.~~ Die **Masken** sind entschieden (2026-10-25): Maskenball,
+  eigene Maske und die acht verbotenen Masken stehen in 5.19.
+- ~~**Maskenspiel „Wer steckt dahinter?“ (vorgemerkt 2026-10-23)**~~ – aufgegangen im **Maskenball** (5.19,
+  entschieden 2026-10-25): Es läuft dort den ganzen Ball über, die Regeln von hier gelten weiter.
 - **Gruselgeschichten-Abend:** Abends sitzen Gäste bei Kerzen in der Lobby und erzählen Geschichten – mit wenig
   Licht, also nicht ohne Risiko (4.4). Manche Geschichten enthalten **echte Hinweise** auf das Geheimnis (2.3);
   Mitwisser verraten sich dabei. Erzählt der Spieler selbst eine, steigt die Angst der Zuhörer und damit ihre
@@ -2814,6 +3012,87 @@ Kürbis in der Nähe anders**, wenn man wieder hinsieht – nur, solange man ihn
 (ein kleiner Schreck). Ist der Schock vorbei, haben sie ihr Gesicht wieder. Nur fürs Bild, nichts zu speichern;
 Kürbisse ohne Modell bleiben, wie sie sind. Debug: `--fratzen`.
 
+### 5.19 Der Maskenball und die verbotenen Masken (entschieden 2026-10-25)
+> Noch nicht umgesetzt. Löst „Verkleiden aus Fundstücken“ (nur die Masken) und das Maskenspiel aus 5.9 ab. Mit
+> „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt; was offen ist, steht unten.
+
+**Grundidee:** Dreimal im Monat lädt das Hotel zum **Maskenball** in den Partyraum. Alle wollen dort die schönste
+Maske tragen, denn es gibt einen Preis – und die prächtigsten Masken im Haus sind die **verbotenen**: acht Masken der
+Dinge, die im Hotel umgehen. Wer eine trägt, ruft genau das, was sie zeigt. Der Ball ist damit der Abend mit der
+meisten Beliebtheit und zugleich einer der gefährlichsten.
+
+**Der Ball**
+- **Drei Bälle, feste Termine:** am **9., 18. und 27. Oktober** (Vorschlag; die Tage dürfen sich verschieben). **Alle
+  drei stehen von Anfang an am Aushangbrett** (2.5), dazu Durchsagen am Ballabend.
+- **Uhrzeit:** **20 bis 24 Uhr** im **Partyraum**. Wie jede Feier schiebt der laufende Ball den Beginn der Nachtruhe
+  hinaus (2.4).
+- **Eine eigene Party:** keine spontane Feier (7.1), sondern ein Termin des Hotels – zählt für den **Spaßwert** aber
+  wie eine Feier und ruft damit den **Kürbismann** (4.19).
+- **Kein Angriff an Balltagen:** Die Balltage sind **fest gelegt**, und an ihnen kommt **kein Modus des Leviathan**
+  (4.33) – kein Urteil, kein Snack, kein Raubzug, keine Anforderung.
+- **Kommt eine Bedrohung, ist der Ball sofort vorbei:** Alle fliehen wie beim Aufbruch (5.5), die Wertung fällt aus.
+- **Ohne Maske** darf man hin, spielt aber beim Maskenspiel nicht mit, und alle erkennen einen.
+- **Der Preis:** Die **schönste Maske** des Abends gewinnt **50 Geld**. Darum wollen alle eine besonders gute Maske
+  tragen – Gäste wie der Spieler, und darum leihen sich Gäste auch gern eine verbotene Maske (unten).
+- **Die Kür:** Um **Mitternacht** stimmen die Gäste ab – das ist nur die Erzählung, eine sichtbare Abstimmung gibt es
+  nicht. **Verkündet** wird der Sieger von einem **zufälligen anwesenden Erwachsenen** (nicht dem Sieger selbst):
+  „Die Stimmen sind gezählt! Die schönste Maske des Abends trägt …“ Auch ein Gast kann gewinnen.
+- **Wer gewinnt:** Jede Maske hat eine **Pracht**, die verbotenen die höchste; wer beliebt ist, bekommt Stimmen dazu.
+- Die **Kürbisköpfe** der Kostüme ab dem 25. (5.9) gehören nicht zum Ball: Sie sind eine witzige Verkleidung, die
+  Gäste sich spontan überziehen.
+
+**Die Masken der Gäste**
+- **Jeder Gast bringt seine eigene Maske mit.** Sie ist **kein Gegenstand**: Sie liegt irgendwo in seinem Zimmer
+  herum, der Gast setzt sie zum Ball auf und steckt sie danach wieder weg, ohne Inventar.
+
+**Die eigene Maske**
+- Liest man den Aushang, sagt man zu sich selbst: **„Ach Mann, ich habe meine Maske zu Hause vergessen.“** Man muss
+  sich also eine besorgen.
+- **Zwei Wege, beide offen:** **Ruth Behrens** (H28), die ohnehin Kostüme für die Kinder näht, näht einem eine (6.14,
+  Vorschlag: ab guter Beziehung oder gegen Stoff) – oder man findet eine an einer beliebigen Fundstelle im Hotel.
+
+**Das Maskenspiel „Wer steckt dahinter?“** (aus 5.9)
+- Es läuft **den ganzen Ball über**, nicht als Höhepunkt. Unter den Masken **verschwinden die Namen**; man spricht
+  einen Maskierten an und wählt einen Namen aus der Liste der Mitspielenden – **einmal je Gast und Ball**.
+- **Fair raten:** Die Maske verdeckt Gesicht und Haare; **Kleidung, Größe, Statur, Schuhe und Stimme** bleiben – genau
+  das, was der Gastgenerator variiert (6.0). Wer die Gäste kennt, gewinnt. Laken sind beim Spiel nicht erlaubt.
+- **Beliebtheit über die Beziehungen** (6.2, bleibt so): richtig **+8**, falsch **+3** (er lacht), dazu ein wenig
+  bei allen Mitspielern.
+- **Twist: eine Maske zu viel** – es spielen acht mit, aber neun stehen im Raum: der **verkleidete Vampir mit einer
+  verbotenen Maske** (4.22, kommt mit ihm) oder eine Halluzination.
+
+**Die verbotenen Masken**
+- **„Verboten“ ist keine Hausregel.** Sie sind durch eine **geheimnisvolle Regel** verboten, die erst einmal keiner
+  kennt. Was dahintersteckt, ist offen ([IDEEN.md](IDEEN.md)).
+- **Masken täuschen nie:** Keine Bedrohung lässt sich von einer Maske täuschen, auch nicht von ihrer eigenen.
+- **Jede Maske ruft ihre eigene Bedrohung** – und **verärgert** sie. Wer sie trägt, ob Spieler oder Gast, wird zum
+  Ziel.
+- **Man weiß es vorher:** Bei jeder verbotenen Maske liegt am Versteck ein **Zettel** eines früheren Gastes, der sagt,
+  was sie anzieht (etwa: „Setz sie nicht auf. Es kam sofort.“). Niemand setzt eine auf, ohne gewarnt zu sein.
+
+| Maske | Versteck (Vorschlag) | Wer sie trägt … |
+|---|---|---|
+| **Leviathan** (4.32) | Heizkeller, hinter dem Kessel am Gitter | löst einen **Snack auf den Träger** aus (4.33), zusätzlich zu den 4–5; an Balltagen nichts, weil dort kein Modus kommt |
+| **Kürbismann** | Dachboden, neben seinem Kopf (4.21) | wird sein Ziel, sobald er im Haus ist |
+| **Lakengeist** | Wäscherei, in einer Wäschekiste zwischen den Laken der Verschwundenen (4.20) | bei dem steigt **am Abend danach** die Chance auf den Lakengeist (4.18) |
+| **Vampir** | Friedhof im Garten, in einer Gruft (5.15; die Gruft gibt es noch nicht) | lockt den Vampir (4.22, kommt mit ihm) |
+| **Puppe** (Porzellangesicht) | im Puppenhaus (5.16) | vor dessen Tür liegt beim nächsten Urteil die Puppe (5.5) – sehr gefährlich |
+| **Vogelscheuche** (Jutesack) | Geräteschuppen im Garten (gibt es noch nicht) | auf den rückt die Vogelscheuche zu (4.30) |
+| **Krähe** (Schnabel, wie ein Pestdoktor) | auf dem Lobbydach | den hacken die Krähen, sie klauen ihm (4.25) |
+| **Kesselkatze** | bei den Futternäpfen der Hotelkatzen (6.11) | dem folgt die Katze (4.26) – die einzige harmlose |
+
+- **Die Sammlung:** In **Zimmer 13** hängen **acht Haken** an der Wand. Jede gefundene Maske kommt an ihren Haken; ein
+  leerer Haken zeigt, was noch fehlt. Die Sammlung ist das **Sammelziel** des Spiels: jede Maske eine **Bronze-
+  Trophäe**, das ganze Set eine **goldene** (8.11).
+- **Verleihen, nicht verschenken:** Man kann eine verbotene Maske einem Gast **leihen** – zum Ball, wo sie gute
+  Chancen auf den Preis hat. Der Gast ruft dann ihre Bedrohung zu sich. Das ist ein Werkzeug, auch gegen Feinde
+  (wie das Opfern über Diebstahl, 5.5). Wer die Leviathan-Maske verleiht, bekommt das Achievement **„Snack auf den
+  Träger“** (8.11).
+- **Sie finden von selbst zurück:** Am Morgen nach dem Ball hängt jede ausgeliehene Maske wieder an ihrem Haken in
+  Zimmer 13 – niemand hat sie gebracht. Sie springt nur, wenn man weder Haken noch Träger sieht (wie die Puppe, 5.5),
+  auch wenn der Leiher gestorben ist. Das passt zur unbekannten Regel, und man muss nach einem Ball nichts einsammeln.
+- **Wie die Masken zum Spieler und zu den Gästen kommen**, außer über die Verstecke, ist offen ([IDEEN.md](IDEEN.md)).
+
 ## 6. Die anderen Gäste (NPCs)
 
 ### 6.0 Gäste im Prototyp
@@ -2843,8 +3122,8 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 
 **Zu klären**
 - Welche Rolle Edna, Bruno und Mila im Geheimnis spielen.
-- **Können Kernfiguren sterben?** Das Konzept sagt ja (2.3: „Sie können lügen und sterben“); dann ist ihr Wissen weg
-  oder liegt nur noch als Notiz im Zimmer.
+- ~~**Können Kernfiguren sterben?**~~ – beantwortet 2026-10-25: nein. Sie können Opfer werden, überleben aber jeden
+  Angriff verletzt (6.17).
 - **Balance ohne Nachschub:** Das Monster darf das Hotel nicht vor Halloween leeren. Angriffschance (4.17), Opferzahl,
   Überlebende (6.17), Lakengeist und Kürbismann müssen gegen 54 Erwachsene ausbalanciert werden. Der Kürbismann regelt
   sich selbst (er kommt nur, wenn genug Gäste Spaß haben – Spaßwert, 4.19).
@@ -3256,7 +3535,8 @@ mit Trauerfeier am Grab.
 > Sätze („Mama“/„Papa“), ab und zu ein Schach-Wunderkind. Alles unter „Kinder und die bestehenden Systeme“ – bis auf
 > die Lücken unten. Modelle: alle vier Grundkörper (unten).
 > **Noch nicht:** Das Geheimnis (2.3) gibt es noch nicht – deshalb keine Funde in engen Ecken. Der Lakengeist erschreckt Kinder am Fenster,
-> noch nicht im Flur. Ein Waisenkind schließt sich nur dem Spieler an, noch keinem Gast. „Erzählt es allen“ heißt
+> noch nicht im Flur. Waisen wenden sich noch keinem Gast zu (unten); dem Spieler schließen sie sich seit
+> 2026-10-25 nicht mehr an. „Erzählt es allen“ heißt
 > vorerst: den Eltern und den Erwachsenen in der Nähe.
 - **Der Lakengeist erschreckt Kinder häufiger** – sie sind schwach und ängstlich (hoher Grundwert an Schwäche,
   4.18). Er will Angst säen, nicht töten.
@@ -3341,9 +3621,8 @@ mit Trauerfeier am Grab.
   zurück als bei Erwachsenen (6.3) – in beide Richtungen.
 - **Kinder petzen:** Sehen sie dich klauen, erzählen sie es ihren Eltern – und **das** glauben die sofort. Beim
   Monster glaubt ihnen keiner, beim Diebstahl jeder.
-- **Waisenkind** (6.7, 6.8): Stirbt ein Elternteil und ist keiner mehr da, hängt sich das Kind an den Spieler
-  (wenn er ihm am nächsten steht) oder an einen freundlichen Gast wie Edna und folgt ihm wie ein Begleiter (6.3).
-  Es wird selbst nie geholt, macht aber Lärm – und bringt seinen Beschützer in Gefahr.
+- **Waisenkind** (neu gefasst 2026-10-25): Sterben die Eltern, schläft das Kind weiter in seinem Zimmer und wendet
+  sich tagsüber **freundlichen Gästen** zu – nicht dem Spieler. Darüber hinaus spielt es keine besondere Rolle.
 - **Eigene Schreckreaktion** (6.12): Kinder **klammern sich an die Eltern**, wenn eins in Sicht ist, sonst rennen
   sie zu ihnen. Danach erzählen sie es **allen**, nicht nur beim nächsten Gespräch.
 
@@ -3445,10 +3724,13 @@ Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gute
   erfahren dessen Feinde es nach einer Weile und mögen ihn weniger (−15, je Paar einmal; „Du bist also mit … befreundet?“).
 
 ### 6.17 Überlebende & Verletzungen (entschieden 2026-10-21)
-Nicht jeder Angriff endet tödlich: **Etwa vier von zehn Gästen überleben** – ohne Lebenspunkte, es wird beim Angriff
+Nicht jeder Angriff endet tödlich: **Etwa zwei von zehn Gästen überleben** (20 %, entschieden 2026-10-25 für
+Leviathan, Kürbismann und Lakengeist, umgesetzt am selben Tag; bisher vier von zehn) – ohne Lebenspunkte, es wird beim Angriff
 entschieden. Wer überlebt, ist verletzt, erzählt viel und lässt sich in dieser Zeit schneller gewinnen – oder verlieren.
-Das gilt nur für Gäste (der Spieler stirbt, 8.7); Kinder sind ohnehin nie Opfer (6.13). Wer überlebt, zählt
-nicht als Opfer – das Monster bleibt hungrig (4.10).
+Das gilt nur für Gäste (der Spieler stirbt, 8.7); Kinder sind ohnehin nie Opfer (6.13). **Kernfiguren** (6.0)
+überleben **immer** – bei jedem Angriff jeder Bedrohung (entschieden und umgesetzt 2026-10-25). Wer überlebt, zählt
+nicht als Opfer – das Monster bleibt hungrig (4.10). Ausnahme ist das **Urteil**: Überlebt der Verurteilte, ist es
+vorbei (4.33).
 
 | Angreifer | Was er überlebt | Verletzung | Folgen |
 |-----------|-----------------|------------|--------|
@@ -3570,6 +3852,7 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
   Monster sie aufgerissen hat oder wenn sie kaputt ist (5).
 - **Unbewohnte Zimmer schließt das Hotel ab.** Hinein kommt man mit dem **Generalschlüssel** von der Rezeption
   (schwer zu bekommen, ein Wagnis nach 2.3) oder durch Aufbrechen. Verfallene und verlassene Zimmer bleiben offen.
+  Ausnahme: die **versiegelten Zimmer** von 1987 (7).
 - **Gilt auch umgekehrt:** Gäste klopfen an Zimmer 13 und kommen nur mit Erlaubnis, durch eine offene Tür oder mit
   einem Schlüssel hinein (sie lesen sonst das Tagebuch, 3.10). Sehr wütende Gäste können auch bei dir einbrechen – mit Lärm und Zeugen wie
   beim Spieler.
@@ -3618,8 +3901,29 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
   weiß. Wer seine eigene reparieren will, bekommt nichts dafür (aber auch keinen Malus). Höchstens einmal je Tür und
   Tag, im Tagesbudget aus 6.18 (5).
 
-**Verhältnis zu 2.3:** „Offen bleibt der Alltag“ gilt weiter für Flure, Lobby, Bar, Garten und Keller. Zimmer sind
-kein Geheimnis-Ort, sondern sozialer Raum – mehrere Wege hinein, keiner davon ein Schlüssel-Parcours.
+**7. Versiegelte Zimmer (entschieden 2026-10-25, noch nicht gebaut)**
+- **Einige Zimmer,** die seit Halloween 1987 niemand betreten hat – optionale Secrets. Wer damals darin wohnte,
+  kam nicht hinaus oder hat nie wieder darüber gesprochen.
+- **Eine andere Tür, auf einen Blick:** dunkle Eiche, Messingbeschläge, altes Kastenschloss, die Nummer in alter
+  Schrift. Das **Brecheisen** hilft nicht („Das Holz gibt nicht nach.“), der **Generalschlüssel** passt nicht („Das
+  Schloss ist älter als der Schlüssel.“) – 1988 hat das Hotel alle Schlösser getauscht, nur diese Türen nicht.
+- **Jedes hat seinen eigenen Schlüssel auf einem eigenen Weg** (Arten aus 2.3): Zeit und Geduld (die Krähen, 4.25),
+  Vertrauen (ein Gast als Freund), Wissen (ein Hinweis in einem Dokument), Wagnis (ein Fundort nah am Monster).
+- **Dahinter:** ein **optionaler, nützlicher Gegenstand** und ein Stück 1987 – Staub, ein Kalenderblatt vom Oktober
+  1987, ein ungemachtes Bett, persönliche Dinge.
+- **Auch die Terrassentür ist zu:** von innen verriegelt, die Vorhänge seit 1987 zugezogen, die Terrasse davor
+  verwildert. Der Weg über die Fenstertür (4) gilt hier nicht.
+- **Das erste: Zimmer 042** (EG West, innen, 34 m², Einzelzimmer mit Terrasse) – das Zimmer des Mannes, der 1987
+  nicht mit hinauskam (HANDLUNG.md K5). In jener Nacht floh er durch die Terrassentür in den Garten; darum liegt sein
+  Schlüssel im **Krähennest** (4.25) – im großen Baum mitten im Garten, genau gegenüber seiner Terrassentür. Die Nachbarn
+  wohnen in 041 (Ehepaar Schulte) und 043 (Zita Fuchs). Drinnen: sein **Tagebuch** (Edna, K5) und als nützlicher
+  Gegenstand eine **Sturmlaterne** (Vorschlag) – ein Licht, das draußen nicht ausgeht (vgl. Kerzen, 5.12).
+- **Nicht versiegelt** bleiben die Zimmer mit früh wichtigen Dingen, etwa **022** mit der Streichholzschachtel (5.12):
+  Brecheisen oder Generalschlüssel genügen. Die versiegelten Zimmer sind die schwerere Stufe darüber.
+
+**Verhältnis zu 2.3:** „Offen bleibt der Alltag“ gilt weiter für Flure, Lobby, Bar, Garten und Keller. Bewohnte
+Zimmer sind sozialer Raum mit mehreren Wegen hinein. Die versiegelten Zimmer (7) sind **optionale Secrets**
+(Entscheidung 2026-10-25).
 
 **Haushalte** (6.20): Jeder im Haushalt hat den Schlüssel; über Einlass entscheiden die Erwachsenen. **Kinder allein
 im Zimmer** öffnen nur Bekannten – Freunden der Familie und anderen Kindern („Mama sagt, ich darf nicht aufmachen“).
@@ -3635,7 +3939,7 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
   eigenes Werkzeug und leiht es Freunden.
 - **Generalschlüssel:** im **verglasten Schlüsselschrank an der Ostwand der Lobby**. Die Scheibe einschlagen ist laut,
   mitten in der Lobby – besser nachts. Er öffnet jede Zimmertür, außer der Bewohner ist drin und hat den **Riegel**
-  vorgeschoben. Wer gesehen wird, wie er damit eine fremde Tür aufschließt, gilt als Einbrecher (5), nur ohne Lärm.
+  vorgeschoben, und außer den versiegelten Zimmern (7). Wer gesehen wird, wie er damit eine fremde Tür aufschließt, gilt als Einbrecher (5), nur ohne Lärm.
 - **Erste Zahlen** (zum Probespielen):
   - **Einlass je Stufe** (6.3): guter Freund 95 % · befreundet 80 % · freundlich 60 % · nett 40 % · neutral 20 % ·
     genervt 5 % · ab wütend nie.
@@ -4309,6 +4613,14 @@ Halloween ohne Schlüssel, ist das Spiel aus; ältere Stände bleiben ladbar.
 - Namen nur von **Kernfiguren und zentralen Gästen** (6.0), der Rest wird gezählt: *„Edna ist fort. Neun andere auch.
   Vor meiner Tür brennen zwei Kürbisse.“*
 
+### 8.11 Achievements (vorgemerkt 2026-10-25)
+> Noch nicht umgesetzt. Das Spiel braucht Achievements; welche es außer den Masken gibt und für welche Plattform, ist
+> offen.
+
+- **Verbotene Masken** (5.19): jede einzelne, sobald sie an ihrem Haken in Zimmer 13 hängt, eine **Bronze-Trophäe**,
+  das ganze Set aus acht Masken eine **goldene**.
+- **„Snack auf den Träger“:** einem Gast die Leviathan-Maske leihen (5.19, 4.33).
+
 ---
 
 ## 9. Technische Umsetzung (grob)
@@ -4416,12 +4728,13 @@ Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den K
    Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18)
 7. Deko knapp machen, Stufen 2 und 3: Schutzkreis = Lichtschein, sichtbare Abweisung, Gäste schmücken nach Angst und
    Freundschaft und klauen bei Knappheit (5.10)
-8. Monsterwerte vereinfachen: Dreistigkeit in Spieltagen mit abklingenden Boni, heiße Stellen statt Zonen-Neugier (4.9)
+8. Monsterwerte vereinfachen: Dreistigkeit in Spieltagen mit abklingenden Boni, heiße Stellen statt Zonen-Neugier (4.9) ·
+   die vier Modi des Leviathan: Urteil, Snack, Raubzug, Anforderung, Überleben 20 % (4.33)
 9. Schlaf & Müdigkeit: Wachzeit statt Nächte, fremde Betten, Gäste wecken, ausgeschlafen/übermüdet (3.6) · Zeitsprung
    auch am Tag
 10. Gäste bedienen Lichtschalter aktiv: Licht an im Dunkeln, beim Verlassen leerer Zimmer aus, manchmal vergessen (7.3)
 11. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
-    Verkleiden aus Fundstücken und Maskenspiel „Wer steckt dahinter?“ (5.9) · Puppe als Jury beim Großen Schmücken (5.5)
+    Maskenball mit Maskenspiel und verbotenen Masken (5.19), Achievements (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
 12. Eier-Streich der Kinder (6.13) · Aufträge von Gästen ohne Questmenü (6.14) · Regen an den Scheiben, Gestalt im
     Blitz, Wind, Tiere, dichter werdender Nebel (7.8)
 13. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)

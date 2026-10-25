@@ -24,6 +24,8 @@ Stand: 2026-10-25.
 | Schaltschlüssel (Aufzug) | – | geplant | **Hauptgeschichte** (Aufzug) | Zimmer 18 | 7.4, M8 |
 | Schlüsselbund des Rezeptionisten | – | geplant (Vorschlag) | Nebenstrang (Marion) | in der Jeansjacke des erlösten Kürbismanns; öffnet das Büro der Direktion | 2.8, M15b |
 | Werkstattschlüssel | – | geplant (Vorschlag) | Nebenstrang (Marion) | Schlüsselbrett im Büro der Direktion; öffnet die Werkstatt im Tiefkeller | 2.8, M15b |
+| Schlüssel von 1987 (Messinganhänger) | – | geplant | – (optional; Edna, K5) | im Krähennest im großen Baum; öffnet das versiegelte Zimmer 042 des Mannes, der 1987 nicht hinauskam | 4.25, 6.19 (7) |
+| Schlüssel der übrigen versiegelten Zimmer | – | geplant | – (optional) | je Zimmer ein eigener Weg (Krähen, Freund, Dokument, Wagnis) | 6.19 (7) |
 
 ## 2. Auftrags- und Fundstücke
 
@@ -37,6 +39,7 @@ Stand: 2026-10-25.
 | Blutige Axt | – | geplant | – (Belohnung) | nach der Erlösung; an der Tür klaut keiner | 4.21 |
 | Jeansjacke | – | geplant | Nebenstrang (Marion, Schlüsselbund) | nach der Erlösung; Deko | 4.21, 2.8 |
 | Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Lager, K5) | Lager im Tiefkeller; Namen der Warnungszettel | 7.4, M11 |
+| Ring eines Gastes | – | geplant | – (Gastauftrag, offen) | im Krähennest vor einem Dachfenster | 4.25, IDEEN.md 6 |
 | Kohle | – | eingefroren | – | Kessel anheizen | 7.4 |
 | Bolzenschneider | – | eingefroren | – | Lager aufbrechen | 7.4 |
 
@@ -57,7 +60,8 @@ Stand: 2026-10-25.
 | Kesselbuch des Heizers | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Heizkeller | 2.3, 7.4, M12 |
 | Personalakte des Heizers | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
 | Zeitungsausschnitt „Brand im Grandhotel“ | – | geplant | Hauptgeschichte (Indiz) | offen | 2.3 |
-| Marions Brief | – | geplant | Nebenstrang (falls sie vorher stirbt) | Zimmer 001 | 2.8 |
+| Marions Brief | – | offen | Nebenstrang (war: falls sie vorher stirbt – Kernfiguren sterben seit 2026-10-25 nicht; streichen oder anders auslösen) | Zimmer 001 | 2.8 |
+| Dorés „Die Zerstörung des Leviathan“ | – | geplant | – (gibt dem Monster seinen Namen) | Hugo Steins Koffer, danach an der Fotowand | 4.32 |
 
 ## 4. Deko
 
@@ -75,7 +79,8 @@ Stand: 2026-10-25.
 | Plastikspinne | `SPIDER` | gebaut | – | Deko zum Aufhängen | 5.7 |
 | Totenkopf | `SKULL` | gebaut | – | starke Deko, mit Kerze Licht | 5.7 |
 | Hexenbesen | `BROOM` | gebaut | – | Deko, lehnt an der Wand | 5.7 |
-| Masken | – | vorgemerkt | – | Verkleiden, Maskenspiel | 5.9 |
+| Maske (eigene) | – | geplant | – | für den Maskenball und das Maskenspiel; von Ruth Behrens genäht oder irgendwo gefunden (Gäste-Masken sind keine Gegenstände) | 5.19 |
+| Verbotene Masken (acht: Leviathan, Kürbismann, Lakengeist, Vampir, Puppe, Vogelscheuche, Krähe, Kesselkatze) | – | geplant | – | rufen ihre eigene Bedrohung; Sammlung an acht Haken in Zimmer 13 (Trophäen 8.11), an Gäste nur verliehen | 5.19 |
 
 ## 5. Licht und Werkzeug
 
@@ -91,6 +96,7 @@ Stand: 2026-10-25.
 | Werkzeugkasten | `TOOLBOX` | gebaut | – | Türen reparieren | 6.19 |
 | Kompass | `COMPASS` | gebaut | – | Orientierung | 3.2 |
 | Bettlaken | `BED_SHEET` | gebaut | – | selbst verkleiden; Zimmer 13 | 5.9 |
+| Sturmlaterne | – | geplant (Vorschlag) | – (optional) | Licht, das draußen nicht ausgeht; im versiegelten Zimmer 042 | 6.19 (7), 5.12 |
 | Salzpackung | `SALT` | gebaut | – | Salzlinien an Tür und Fenster halten den Lakengeist aus dem Zimmer; drei auf der Küchenzeile | 5.13 |
 
 ## 6. Essen und Trinken
@@ -104,6 +110,8 @@ Stand: 2026-10-25.
 | Gebratener Kürbis | `ROAST_PUMPKIN` | gebaut | – | Essen | 3.8 |
 | Kürbismatsch | `PUMPKIN_MUSH` | gebaut | – | Rest eines zerplatzten Kürbisses | 5.8, 3.13 |
 | Apfel | `APPLE` | gebaut | – | beim Apfeltauchen erbeutet, essbar | 6.21 |
+| Brotkrumen | – | geplant | – | Krähenfutter für den Tisch im Gärtchen von Zimmer 13; Vorrat in der Küche | 4.25 |
+| Kürbiskerne | – | geplant | – | Krähenfutter; fallen beim Schnitzen ab | 4.25, 5.4 |
 
 ## 7. Spiele und Sonstiges
 
@@ -114,7 +122,7 @@ Stand: 2026-10-25.
 | Schachbrett | `CHESS_BOARD` | gebaut | – | Schach mit Gästen | 6.10 |
 | Dartpfeile | `DARTS` | gebaut | – | Darts | 6.10 |
 | Marions Spieluhr | `MUSIC_BOX` | gebaut | Josef Ahrend, Marion (2.3); später fürs Ritual (2.8) | Aufziehen lockt das Monster, nah horcht es; im Heizkeller auf dem alten Regal | 5.17 |
-| Münzen | `COINS` | gebaut | – | werden zu Geld | 3.2 |
+| Münzen | `COINS` | gebaut | – | werden zu Geld; draußen holen sie die Krähen | 3.2, 4.25 |
 | Kleidungsstück | `CLOTHING` | gebaut | – (Spur eines Geholten) | bleibt nach einem Todesfall liegen | 6.7, 4.13 |
 
 ---

@@ -64,7 +64,7 @@ keiner von ihnen wird je darüber sprechen.
 | M12 | **Kesselbuch** im Heizkeller: Josef Ahrend, Halloween 1987 (K4) | ab dem ersten Abstieg (M7) | fest (2.3, 7.4), Inhalt: Kandidat | Name Ahrend |
 | M13 | **Marion entlarven** – Register „geb. Ahrend“ + Kesselbuch, Beweis und Beziehung (K4) | so früh wie möglich | fest (2.8) | **Marions Auftrag:** ihren Vater erlösen |
 | M14 | Gitter passierbar: Schlüssel zum Dachboden → Kopf des Kürbismanns, Erlösung – im Auftrag von Liesel Brück, die ihn 1987 köpfte (K7) | ab Tag 15 | fest (4.21, 2.7) | Nebenstrang mit Auftraggeberin |
-| M15 | **Das Monster will die Mitwisser:** Edna wird gezielt bedroht (K5) | um den 20.10. | Kandidat | Edna überlebt → sie erzählt; stirbt sie → Notiz im Zimmer |
+| M15 | **Das Monster will die Mitwisser:** Edna wird gezielt bedroht (K5) | um den 20.10. | Kandidat | Edna überlebt immer (Kernfigur, Spielkonzept 6.17) → sie erzählt |
 | M15a | **Seine Sachen** aus dem Lager: Karton „Personal 1987“, Taschenuhr (K4) | nach M11 und M13 | fest (2.8), Inhalt: Vorschlag | Ritual |
 | M15b | **Büro der Direktion** mit dem Schlüsselbund aus der Jeansjacke des Kürbismanns: Vertrag und Werkstattschlüssel (K4) | nach M14 | fest (2.8: Vertrag), Weg: Vorschlag | Ritual |
 
@@ -162,7 +162,7 @@ flowchart TD
   Vater. Wie man ihr hilft, entscheidet nur, ob er erlöst ist, nicht, ob sie lebt. Erlöst: Sie geht mit ihm ins
   Feuer und lässt die Taschenuhr zurück. Nicht erlöst: Sie bleibt in der Lobby sitzen – „Ich warte auf ihn.“
 - **Scheitern:** nicht erlöst → letztes Urteil und letzter Angriff; Vertrag verbrannt, aber nicht erlöst → frei und
-  ohne Warnung; Marion tot → keine Erlösung, nur ihr Brief.
+  ohne Warnung; ~~Marion tot → keine Erlösung, nur ihr Brief~~ (entfällt 2026-10-25: Kernfiguren sterben nicht).
 - **Warum stark:** Der Wendepunkt der Ermittlung wird zum großen Auftrag der zweiten Monatshälfte, verbindet drei
   Anker (Heizkeller, Aufzug/Lager, Halloween) und den Kürbismann-Strang – und belohnt, wer früh ermittelt.
 
@@ -173,6 +173,12 @@ flowchart TD
   Flackern (6.0).
 - **Kandidat:** Im Lager (M11) steht ein Koffer von 1987 mit einem Männernamen – der, der damals nicht mit hinauskam.
   Sie ist zurückgekommen, weil sie das Schweigen nicht mehr aushält.
+- **Kandidat (2026-10-25) – sein Zimmer 042:** Der Mann floh in jener Nacht durch seine Terrassentür noch bis in den
+  Garten. Sein Zimmer ist seitdem **versiegelt** (SPIELKONZEPT 6.19 (7)), sein Zimmerschlüssel mit Messinganhänger liegt
+  im **Krähennest im großen Baum** gegenüber – von Krähengeneration zu Krähengeneration weitergegeben (4.25). Man holt ihn mit Geduld (füttern, er
+  kommt bei hoher Gunst als Geschenk) oder mit Gewalt (ins Nest werfen). Drinnen: ein nützlicher Gegenstand und sein
+  **Tagebuch**, in dem Edna vorkommt – ein Weg zu ihr, bevor sie spricht. Optional, kein Meilenstein; sein Name ist
+  offen.
 - **Kandidat – um den 20.** will das Monster sie (2.3: „Das Monster will gerade die Mitwisser“) – die Puppe sitzt vor
   ihrer Tür. Anders als bei Gustav **kann man sie retten** (Deko, Wache, sie woanders unterbringen). Überlebt sie,
   erzählt sie, wie sich der Haupteingang 1987 geöffnet hat (K6). Stirbt sie, liegt ihr Wissen als Notiz in Zimmer 003.

@@ -146,7 +146,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 039 | EG West, Nordflügel | 68 m² | ja | – | 199, 199 | H37 Sami Haddad |
 | 040 | EG West, Nordflügel | 68 m² | ja | – | 399, 199 | unbewohnt, abgeschlossen |
 | 041 | EG West, Nordflügel | 92 m² | ja | Terrasse | 539, 199 | H12 Ehepaar Schulte |
-| 042 | EG West, innen | 34 m² | – | Terrasse | 589, 299 | unbewohnt, abgeschlossen |
+| 042 | EG West, innen | 34 m² | – | Terrasse | 589, 299 | versiegelt seit 1987 (Spielkonzept 6.19 (7), Schlüssel im Krähennest) |
 | 043 | EG West, innen | 34 m² | – | Terrasse | 589, 359 | H38 Zita Fuchs |
 | 044 | EG West, innen | 34 m² | – | Terrasse | 589, 419 | unbewohnt, abgeschlossen |
 | 045 | EG West, innen | 68 m² | ja | Terrasse | 489, 549 | H39 Oskar Pohl |
