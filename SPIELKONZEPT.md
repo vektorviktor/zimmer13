@@ -1,6 +1,6 @@
 # Spielkonzept – Arbeitstitel: „Zimmer 13“
 
-> Status: Grobkonzept · Stand: 2026-10-11
+> Status: Grobkonzept · Stand: 2026-10-25
 > Engine: **Godot 4.7** · 3D-Assets: **Blender (lokal)**
 
 ---
@@ -14,13 +14,14 @@
   - [2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)](#23-fortschritt--geheimnis-vorgemerkt-2026-10-11)
   - [2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21, umgesetzt 2026-10-23)](#24-tagesuhr--tagesablauf-entschieden-2026-10-21-umgesetzt-2026-10-23)
   - [2.5 Der Anfang: Türschmuck-Wettbewerb (entschieden und umgesetzt 2026-10-23)](#25-der-anfang-türschmuck-wettbewerb-entschieden-und-umgesetzt-2026-10-23)
+  - [2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)](#26-das-erste-opfer-gustav-peters-entschieden-2026-10-25)
 - [3. Core Gameplay Loop](#3-core-gameplay-loop)
   - [3.1 Spieler-Aktionen (Grundumfang)](#31-spieler-aktionen-grundumfang)
   - [3.2 Kein verstecktes Inventar – Hände und Tasche](#32-kein-verstecktes-inventar--hände-und-tasche)
   - [3.3 Truhen](#33-truhen)
   - [3.4 Verstecken (inspiriert von Roblox *Doors*)](#34-verstecken-inspiriert-von-roblox-doors)
   - [3.5 Kommoden im Flur (entschieden und umgesetzt 2026-10-14)](#35-kommoden-im-flur-entschieden-und-umgesetzt-2026-10-14)
-  - [3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19)](#36-schlaf--müdigkeit-vorgemerkt-2026-10-19)
+  - [3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24)](#36-schlaf--müdigkeit-vorgemerkt-2026-10-19-schlafdauer-und-zeitsprung-umgesetzt-2026-10-24)
   - [3.7 Trinken an der Bar (entschieden 2026-10-19)](#37-trinken-an-der-bar-entschieden-2026-10-19)
   - [3.8 Kochen in der Küche (entschieden 2026-10-21)](#38-kochen-in-der-küche-entschieden-2026-10-21)
   - [3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)](#39-spielerfigur-und-charaktererstellung-entschieden-und-umgesetzt-2026-10-23)
@@ -58,10 +59,13 @@
   - [5.3 Ideen für Deko-Typen (vorläufig)](#53-ideen-für-deko-typen-vorläufig)
   - [5.4 Deko selbst herstellen](#54-deko-selbst-herstellen)
   - [5.5 Die Puppe – „Halloween-Jury“ (entschieden 2026-10-21, neu gefasst 2026-10-22)](#55-die-puppe--halloween-jury-entschieden-2026-10-21-neu-gefasst-2026-10-22)
+  - [5.6 Aufhängen, Lakengespenster, Lichterketten (entschieden und umgesetzt 2026-10-20)](#56-aufhängen-lakengespenster-lichterketten-entschieden-und-umgesetzt-2026-10-20)
+  - [5.7 Mehr Deko: Fledermäuse, Spinne, Totenkopf, Hexenbesen (entschieden und umgesetzt 2026-10-20)](#57-mehr-deko-fledermäuse-spinne-totenkopf-hexenbesen-entschieden-und-umgesetzt-2026-10-20)
   - [5.8 Kürbissorten (entschieden und umgesetzt 2026-10-20)](#58-kürbissorten-entschieden-und-umgesetzt-2026-10-20)
   - [5.9 Halloween im Hotel (vorgemerkt 2026-10-20)](#59-halloween-im-hotel-vorgemerkt-2026-10-20)
-  - [5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21)](#510-knappheit-wert--verfall-entschieden-2026-10-21)
+  - [5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23)](#510-knappheit-wert--verfall-entschieden-2026-10-21-stufe-1-umgesetzt-2026-10-23)
   - [5.11 Feuer: Deko kann brennen (entschieden 2026-10-22)](#511-feuer-deko-kann-brennen-entschieden-2026-10-22)
+  - [5.12 Kerzen: ausgehen, auspusten, anzünden (entschieden und umgesetzt 2026-10-25)](#512-kerzen-ausgehen-auspusten-anzünden-entschieden-und-umgesetzt-2026-10-25)
 - [6. Die anderen Gäste (NPCs)](#6-die-anderen-gäste-npcs)
   - [6.0 Gäste im Prototyp](#60-gäste-im-prototyp)
   - [6.1 Rolle](#61-rolle)
@@ -71,7 +75,7 @@
   - [6.5 Panik](#65-panik)
   - [6.6 Gäste-KI & Pathfinding](#66-gäste-ki--pathfinding)
   - [6.7 Gäste können sterben](#67-gäste-können-sterben)
-  - [6.8 Schock & Trauer (Ideen – noch zu diskutieren)](#68-schock--trauer-ideen--noch-zu-diskutieren)
+  - [6.8 Schock & Trauer (großteils umgesetzt)](#68-schock--trauer-großteils-umgesetzt)
   - [6.9 Dialog: Anlässe, Fragen, Erzählen, Lügen, Gedächtnis (entschieden 2026-10-24)](#69-dialog-anlässe-fragen-erzählen-lügen-gedächtnis-entschieden-2026-10-24)
   - [6.10 Minispiele mit Gästen](#610-minispiele-mit-gästen)
   - [6.11 Hotelkatzen (vorgemerkt 2026-10-14, umgesetzt 2026-10-17)](#611-hotelkatzen-vorgemerkt-2026-10-14-umgesetzt-2026-10-17)
@@ -130,20 +134,17 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Inspirationen (Richtung):** Andeutungs-Horror à la „Alien: Isolation“ (Bedrohung präsent, aber selten sichtbar), Retro-Hotel-Atmosphäre à la „The Shining“, soziale Dynamik ähnlich „Animal Crossing“-Beziehungen – nur mit Paranoia.
 
 ### 2.1 Zeit & Dramaturgie: Vom 1. Oktober bis Halloween (entschieden 2026-10-10)
-> Im Prototyp umgesetzt (2026-10-11): Kalender, friedlicher Anfang, erster Angriff bei einer Feier am 3./4. Oktober (spätestens am 5.), zwei harmlose Angriffe. Noch offen: Schlüssel an Halloween und das Scheitern.
-> **Mit der Tagesuhr (2.4, umgesetzt 2026-10-23):** erster Angriff auf einer Feier **am Abend des 2. Oktober**
-> (spätestens am 3. um 20 Uhr), harmlos bleibt es etwa **anderthalb Spieltage** (neun Aufbrüche).
-> **Mit dem Türschmuck-Wettbewerb (2.5, entschieden 2026-10-23):** Der erste Angriff ist die **Siegerehrung am 2. Oktober
-> um 20 Uhr in der Lobby** – sie wartet auf den Spieler, spätestens um 22 Uhr. Die spontane Feier und der Ausweichtermin
-> am 3. entfallen.
+> Im Prototyp umgesetzt: Kalender mit Tagesuhr (2.4), friedlicher Anfang, erster Angriff bei der **Siegerehrung am
+> 2. Oktober um 20 Uhr in der Lobby** (2.5, wartet auf den Spieler, spätestens um 22 Uhr), harmlos bleibt es etwa
+> **anderthalb Spieltage** (neun Aufbrüche). Noch offen: Schlüssel an Halloween und das Scheitern.
 
 - **Kalender:** Das Spiel beginnt am **1. Oktober**. Die Zeit läuft durchgängig und wird in **Ingame-Tagen** gezählt. Draußen ist **immer Nacht** – der „Tag“ ist nur die Zähleinheit, kein Wechsel von Hell und Dunkel.
-- ~~**Tageslänge: ca. 5 Minuten Echtzeit** → 31 Tage ≈ 2,5 Stunden bis Halloween.~~ **Seit 2026-10-21: 24 Minuten
-  Echtzeit** (24 Stunden = 24 Minuten) → 31 Tage ≈ 12½ Stunden, mit Uhrzeit und Tagesablauf (2.4). Zentral einstellbar (Tuning-Wert, `Calendar.DAY_SECONDS`).
+- **Tageslänge: 24 Minuten Echtzeit** (24 Stunden = 24 Minuten) → 31 Tage ≈ 12½ Stunden, mit Uhrzeit und
+  Tagesablauf (2.4). Zentral einstellbar (Tuning-Wert, `Calendar.DAY_SECONDS`).
 - **Datum sichtbar:** Abreißkalender an der Wand von Zimmer 13, im Spielmenü und kurz eingeblendet, wenn ein neuer Tag beginnt. Spielstände zeigen das Ingame-Datum.
 - **Der friedliche Anfang:** Zu Beginn wirkt alles wie ein **gemütliches Hotel-Party-Spiel** – Gäste kennenlernen, Deko basteln, Kürbisse ziehen, Würfeln, Feiern. Keine Vorwarnung, kein Rauschen, nichts Bedrohliches. Auch Einführungstext und Gäste deuten nichts an. Der Spieler soll glauben, es sei ein friedliches Halloween-Spiel. Den Faden dafür gibt seit 2026-10-23 der **Türschmuck-Wettbewerb** (2.5).
-- **Der erste Angriff bricht das – ~~am 3. oder 4. Oktober~~ am Abend des 2. Oktober (seit 2.4) ~~während einer Feier in der Lobby~~ bei der Siegerehrung des Wettbewerbs in der Lobby (seit 2.5):** Alle stehen um die Puppe, sie steigt auf und löst sich in Rauch auf, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich.
-- **Die ersten ein bis zwei Angriffe sind noch nicht tödlich:** Das Monster holt **niemanden**. Erwischt es den Spieler, **steht es direkt vor ihm, starrt ihn an und verschwindet im Flackern** – man sieht es zum ersten Mal und weiß: Es ist real. Erst danach wird es gefährlich.
+- **Der erste Angriff bricht das – am Abend des 2. Oktober bei der Siegerehrung des Wettbewerbs in der Lobby (2.5):** Alle stehen um die Puppe, sie steigt auf und löst sich in Rauch auf, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich. Währenddessen holt es den ersten Gast, **Gustav Peters** (2.6, entschieden 2026-10-25).
+- **Danach holen die ersten Angriffe noch keinen Gast** (neun Aufbrüche, etwa anderthalb Spieltage; Gustav ist die eine Ausnahme, 2.6): Es erschreckt sie nur – man sieht es und weiß: Es ist real. Erst danach holt es Gäste. **Den Spieler tötet es von Anfang an**, wenn es ihn erwischt (4.17).
 - **Halloween (31. Oktober):** In einem Zimmer **taucht ein Schlüssel auf** – der Weg hinaus. Es ist **sehr schwer**, an ihn heranzukommen.
 
 **Ideen zum Schlüssel (Auswahl offen)**
@@ -151,7 +152,6 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - Er liegt in **Zimmer 18**, das seit Spielbeginn verschlossen ist; dafür braucht man vorher Hilfe.
 - Er erscheint in einem **zufälligen Zimmer** – und das Monster weiß es auch.
 - **Man braucht die Gäste:** einer lenkt ab, einer hält Wache – belohnt gute Beziehungen.
-
 - Er liegt im **Lager im Tiefkeller**, in einem Koffer früherer Gäste – erreichbar nur mit dem reparierten Fahrstuhl (7.4).
 
 **Ideen für das Scheitern (Auswahl offen)**
@@ -164,10 +164,12 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 **Grundidee:** Wer an Halloween nicht entkommt, wacht wieder am **1. Oktober in Zimmer 13** auf. Kurz vor dem Ende darf man **Zettel für den nächsten Durchgang** schreiben – und wird so selbst zu einem der „früheren Gäste“, deren Warnungszettel man die ganze Zeit gefunden hat (4.13).
 
 **Ablauf**
-- **Auslöser:** Die Nacht des 31. Oktober endet, ohne dass man das Hotel verlassen hat. (Tod bleibt wie bisher: letzten Spielstand laden, 8.)
+- **Auslöser:** Die Nacht des 31. Oktober endet, ohne dass man das Hotel verlassen hat. (Tod bleibt: letzten Spielstand laden, 8.)
 - **Die letzte Seite:** In der letzten Stunde vor dem Ende bietet das **Tagebuch in Zimmer 13** eine zusätzliche Seite an: *„Für den, der nach mir kommt.“* Man schreibt **bis zu drei Zettel** (kurzer Freitext, ca. 140 Zeichen; alternativ Bausteine wie „Traue nicht …“, „Der Schlüssel liegt …“). Wer es nicht rechtzeitig zum Tagebuch schafft, hinterlässt nichts.
 - **Neuer Durchgang:** Die eigenen Zettel liegen **zwischen den alten Warnungszetteln** – unter Matratzen, im Keller, hinter Bildern –, ohne Jahreszahl und mit „Zimmer 13“ unterschrieben. Man findet sie nicht sofort wieder; sie tauchen nach und nach auf, wie die anderen auch.
 - **„Nur schlimmer“:** Das Monster startet mit etwas höherer Dreistigkeit (4.9), die Ruhephasen sind von Anfang an kürzer, und der friedliche Anfang (2.1) ist um einen Tag kürzer. Pro Durchgang ein wenig, damit eine Schleife kein Strafmarathon wird.
+- **Spielstände:** Die Schleife gilt für alle Stände eines Durchgangs – setzt sie ein, werden die alten zu
+  „Erinnerungen“, nicht mehr ladbar (8.10).
 - **Das Hotel erinnert sich:** Kratzspuren und Kerzenstummel der letzten Schleife sind noch da. Einzelne Gäste haben ein **Déjà-vu** („Kennen wir uns?“, „Du warst doch letztes Jahr schon hier …“). Wer im letzten Durchgang gestorben ist, sagt manchmal einen Satz, den er damals gesagt hat.
 
 **Warum das gut passt**
@@ -177,9 +179,6 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 
 **Zu klären**
 - Was bleibt erhalten? Vorschlag: nur Zettel, Spuren und Déjà-vu – **kein** Geld, keine Gegenstände, der Fahrstuhl (7.4) ist wieder kaputt.
-- ~~Gilt die Schleife pro Spielstand-Slot (Vorschlag: ja, Zähler und Zettel im Spielstand) oder slotübergreifend?~~
-  Übergreifend für alle Stände eines Durchgangs: Setzt die Schleife ein, werden die alten zu „Erinnerungen“, nicht mehr
-  ladbar (8.10, entschieden 2026-10-21).
 - Gibt es nach mehreren Schleifen ein Ende, oder endet es nur durch Flucht?
 
 ### 2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)
@@ -214,14 +213,14 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
   - **Das Gitter wird lockerer** (7.4, 4.8): Das Abkommen hält jedes Jahr schlechter.
   - **Der Schlüssel an Halloween** (2.1) öffnet die Tür für **genau einen**. Das Hotel behält immer einen. Fliehen heißt, jemanden zurückzulassen – Opfern (4.11) wird zur Kernfrage.
 - **Zwei Arten von Mitwissern:**
-  - **Täter, die schweigen:** der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält; der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht.
-  - **Angehörige, die suchen:** die **Tochter des Heizers**, nicht zufällig Gast in diesem Jahr. Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel. **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer die Personalakte des Heizers kennt und das Register liest, erkennt sie (6.20).
+  - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält; der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht.
+  - **Angehörige, die suchen:** die **Tochter des Heizers**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel. **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer die Personalakte des Heizers kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
 - **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** des Heizers mit Foto (die Statur passt) · **Kesselbuch** und die abgeschlossene **Werkstatt** im Tiefkeller · die Koffer früherer Gäste im Lager (7.4).
 - **Enden (Vorschlag):**
   - **Flucht:** mit dem Schlüssel hinaus – jemand bleibt zurück.
   - **Das Abkommen brechen:** den Vertrag im Kessel verbrennen (Ofenklappe, 7.4). Er ist nicht mehr gebunden – ob das gut ist, bleibt offen.
   - **Ihn erlösen:** seine Sachen aus dem Fundsachen-Koffer zurückbringen und den Kessel ein letztes Mal anzünden – mitten in seinem Revier.
-- **Aus der verworfenen Variante „Zimmer 13 bist du“ bleibt nur ein Andeutungs-Twist:** ein Warnungszettel in der Handschrift des Spielers (2.2) – nie erklärt.
+- **Andeutungs-Twist:** ein Warnungszettel in der Handschrift des Spielers (2.2) – nie erklärt.
 
 **Das Geheimnis in Schichten** – man setzt es zusammen, statt es zu lesen:
 1. **Gerücht:** Gäste erzählen Halbwahres (Berichte, Telefon, 4.13/4.14).
@@ -238,11 +237,10 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 **Dokumente (Lore)**
 - **Jedes Dokument zeigt auf etwas** – einen Ort, eine Person, einen Code. Lore, die nur Sammelgut ist, liest niemand.
 - **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch des Heizers (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Lager (7.4).
-- **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Was ein Dokument verrät, notiert der Spieler-Charakter als eine Zeile mit Quelle im **Notizbuch** (Lesezeichen „Notizen“, 3.10), ebenso Gerüchte – mit dem, von dem sie stammen, ohne zu sagen, ob sie stimmen. Wendepunkte der Ermittlung (ein Mitwisser bricht sein Schweigen) schreibt er ins **Tagebuch** (3.10, 8.5). *(Bis 2026-10-23 sollte das Tagebuch selbst das Notizbuch der Ermittlung sein.)*
+- **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Was ein Dokument verrät, notiert der Spieler-Charakter als eine Zeile mit Quelle im **Notizbuch** (Lesezeichen „Notizen“, 3.10), ebenso Gerüchte – mit dem, von dem sie stammen, ohne zu sagen, ob sie stimmen. Wendepunkte der Ermittlung (ein Mitwisser bricht sein Schweigen) schreibt er ins **Tagebuch** (3.10, 8.5).
 - **Zeitschleife (2.2):** Die Welt setzt sich zurück, Wissen kann bleiben – über die eigenen Zettel. Codes, Namen und wer lügt, gibt man sich selbst weiter. So wird jeder Durchgang schneller und tiefer, auch wenn man scheitert.
 
 **Zu klären**
-- ~~**Mitwisser besetzen:** Sind Erbe, Page und Tochter eigene feste Figuren, oder steckt das in Edna, Bruno, Mila?~~ **Entschieden 2026-10-21:** Die **Tochter des Heizers** wird die **vierte Kernfigur** (6.0). Erbe und Page gibt es nur noch über Dokumente und Notizen. Name und wie man sie erkennt: entschieden 2026-10-24 (Marion Teske, geb. Ahrend – über Personalakte und Hotelregister). Offen: Zimmer.
 - **Was ist das Ding unter dem Hotel** vor dem Abkommen gewesen – bleibt das bewusst offen?
 - Wie viel erfährt man **vor dem ersten Angriff** (2.1)? Vorschlag: nichts, was den friedlichen Anfang verrät – höchstens das Gästebuch.
 - **Was überlebt die Zeitschleife?** Nur die eigenen Zettel (2.2), oder erinnern sich auch Mitwisser an einen?
@@ -250,8 +248,6 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - Wie hängt das Geheimnis mit dem **Schlüssel an Halloween** (2.1) zusammen – ist die Wahrheit Voraussetzung für die Flucht, oder ein eigenes, besseres Ende?
 
 ### 2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21, umgesetzt 2026-10-23)
-> Ersetzt die Tageslänge aus 2.1 (5 Minuten) und die Nachtruhe zu zufälligen Zeiten (4.18).
->
 > **Umgesetzt (2026-10-23)** wie unten, mit diesen Entscheidungen aus der Durchsprache am selben Tag:
 > - **Anreise am 1. Oktober um 15 Uhr**; das Kalenderblatt wechselt um Mitternacht, mitten in der Nachtruhe. Die
 >   erste Nacht kommt nach gut 8 Minuten.
@@ -259,32 +255,30 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 >   schiebt den Beginn hinaus.
 > - **Phasen:** Morgens zieht es die Gäste in Küche und Garten, abends an die Bar und in die Lobby, die Zimmer sind
 >   fast leer. Spontane Feiern gibt es nur abends; zum Schmücken und zur Deko-Suche rufen die Gäste nur tagsüber auf
->   (der Spieler jederzeit). Das große Schmücken kommt in Spieltagen wie bisher (anfangs alle 2½–3½ Tage, ab dem 24. täglich).
+>   (der Spieler jederzeit). Das große Schmücken kommt in Spieltagen (anfangs alle 2½–3½ Tage, ab dem 24. täglich).
 > - **Monster:** Ruhe- und Aktivphasen bleiben in Echtzeit – es ist ständig präsent (4.13) und bricht etwa sechsmal am
->   Tag auf statt gut einmal. Die **Angriffschance je Aufbruch ist deshalb ein Fünftel** der bisherigen (4.17), damit es
->   je Tag etwa gleich oft angreift; die übrigen Aufbrüche sind Umsehen. Ebenso eskaliert Gerede nur noch selten (3 %).
->   Harmlos ist es neun Aufbrüche lang (etwa anderthalb Tage wie bisher zwei).
-> - **Dreistigkeit** +12 je Spieltag, **Deko-Anspruch** +100 % je drei Spieltage (wie bisher je Tag); die Umbauten aus
->   4.9 und 5.10 kommen eigens.
+>   Tag auf. Die **Angriffschance je Aufbruch ist deshalb klein** (4.17), damit es nicht zu oft angreift; die übrigen
+>   Aufbrüche sind Umsehen. Ebenso eskaliert Gerede nur selten (3 %). Harmlos ist es neun Aufbrüche lang (etwa
+>   anderthalb Tage).
+> - **Dreistigkeit** +12 je Spieltag; der **Deko-Anspruch** steigt in Spieltagen (5.10). Die Vereinfachung aus 4.9 kommt
+>   eigens.
 > - **Bleiben in Sekunden:** Batterie 5 Minuten Licht (etwa ein Abend, sonst wären Batterien kaum noch knapp), Rausch
 >   5 und Kater 4 Spielstunden, Kürbiswachstum (3c, entscheidet sich mit 5.10), UV-Spuren 15 Spielstunden.
-> - **Nächte ohne Schlaf** zählen weiter bis drei (Lakengeist sicher im Flur, 4.18) – bis Schlaf & Müdigkeit (3.6)
->   sie ersetzt. ~~Ausgeschlafen ist, wer zwei Spielstunden geschlafen hat. Der Spieler schläft wie bisher nur in der
->   Nachtruhe.~~ Seit 2026-10-24 schläft er jederzeit 1–8 Stunden, die Nächte zählen anteilig (3.6).
+> - **Nächte ohne Schlaf** zählen bis drei (Lakengeist sicher im Flur, 4.18), bis die Wachzeit (3.6) sie ersetzt. Der
+>   Spieler schläft jederzeit 1–8 Stunden, die Nächte zählen anteilig (3.6).
 > - **Uhrzeit sichtbar:** Wanduhr in der Lobby, Abreißkalender in Zimmer 13 und Spielmenü.
 
-**Warum:** Bisher gab es zwei Uhren, die nichts miteinander zu tun hatten – den Kalendertag als reine Zähleinheit und
-die Nachtruhe zu zufälligen Zeiten. Die Wanduhr stand fest, obwohl das Konzept Uhrzeiten braucht („die letzte
-Stunde“ 2.2, Mitternachtsglocke 7.8, „Die Bar schließt um Mitternacht“ 5.9), und den Tagesablauf der Gäste (6.6)
-konnte man nicht lernen.
+**Warum:** Das Konzept braucht Uhrzeiten („die letzte Stunde“ 2.2, Mitternachtsglocke 7.8, „Die Bar schließt um
+Mitternacht“ 5.9), und den Tagesablauf der Gäste (6.6) soll man lernen können. Kalendertag und Nachtruhe hängen deshalb
+an einer Uhr.
 
 **Die Uhr**
 - **24 Stunden = 24 Minuten Echtzeit** – eine Spielstunde dauert eine Minute, eine Spielminute eine Sekunde.
-  31 Tage ≈ **12½ Stunden** bis Halloween (bisher 2½). Tuning-Wert bleibt `Calendar.DAY_SECONDS` (dann 1440).
+  31 Tage ≈ **12½ Stunden** bis Halloween. Tuning-Wert ist `Calendar.DAY_SECONDS` (1440).
 - Die **Wanduhr** (über dem Haupteingang) und die Uhren im Hotel zeigen die Zeit; die Zeiger bewegen sich sichtbar.
 - Draußen ist weiterhin **immer Nacht** (2.1). Die Uhr ist der Rhythmus des Hotels, nicht des Himmels.
 
-**Tagesablauf der Gäste – vier Phasen** (Uhrzeiten als Vorschlag)
+**Tagesablauf der Gäste – vier Phasen**
 
 | Phase | Zeit | Was die Gäste tun |
 |-------|------|-------------------|
@@ -293,13 +287,13 @@ konnte man nicht lernen.
 | **Abend** | 18–23 Uhr | Bar (3.7), Feiern (7.1), Gruselgeschichten (5.9) – die Zimmer sind leer |
 | **Nacht** | 23–6 Uhr | **Nachtruhe** (4.18): alle im eigenen Bett, Licht aus |
 
-- **Innerhalb der Phasen** bleibt es zufällig wie bisher. Lernbar wird der Rahmen: Abends sind die Zimmer leer (Zeit
-  zum Klauen, 7.1), nachts schlafen alle.
-- **Feste Nachtruhe mit Streuung:** Beginn und Ende schwanken etwas (Vorschlag ± eine halbe Stunde), damit sie nicht
-  auf die Sekunde vorhersagbar ist. Eine Nachtruhe dauert damit rund 7 Minuten Echtzeit.
+- **Innerhalb der Phasen** ist es zufällig. Lernbar ist der Rahmen: Abends sind die Zimmer leer (Zeit zum Klauen,
+  7.1), nachts schlafen alle.
+- **Feste Nachtruhe mit Streuung:** Beginn und Ende schwanken um ± eine halbe Stunde, damit sie nicht auf die Sekunde
+  vorhersagbar ist. Eine Nachtruhe dauert damit rund 7 Minuten Echtzeit.
 - **Nur für die Gäste.** Der **Spieler** darf so lange wach bleiben, wie er will – mit den Nachteilen der Wachzeit
-  (3.6). Schläft er im eigenen Bett, läuft die Zeit weiter fünfmal so schnell – so lange, wie er gewählt hat (3.6);
-  in der Nachtruhe springt sie (Zeitsprung, 3.6, seit 2026-10-24).
+  (3.6). Schläft er im eigenen Bett, läuft die Zeit fünfmal so schnell – so lange, wie er gewählt hat; in der
+  Nachtruhe springt sie (Zeitsprung, 3.6).
 - **Das Monster bleibt unberechenbar:** Seine Aktivphasen bleiben zufällig, die ständige Präsenz (4.13) gilt weiter.
   Fest wird nur der Rhythmus der Menschen – der Alltag wird planbar, der Horror nicht.
 
@@ -311,19 +305,12 @@ konnte man nicht lernen.
 - **Halloween** bekommt einen Zeitpunkt: das Fest am Abend des 31., danach die letzte Nacht. Wie das Ende abläuft,
   bleibt offen (2.1, 2.2).
 
-**Umrechnen** – der Tag ist fast fünfmal so lang. Alle Werte müssen deshalb einmal durchgesehen werden:
-- **In Spieltagen** (Heilung 2–3 Tage 6.17, Batterie einen Tag 4.16, Zerfall der Beziehung je Tag 6.3, Plaudern
-  zweimal am Tag, Kostüme ab dem 25., Angriffschance und Ruhephasen je Tag 4.13/4.17, Schmück-Häufigkeit 5.9) –
-  bleiben in Tagen und dauern damit entsprechend länger.
-- **In Spielminuten oder Sekunden** (Rausch 5 min, Kater 4 min, Kürbisse 2,5–7,5 min, Nachschub der Deko-Quellen,
-  Dreistigkeit je Sekunde, Deko-Anspruch je 900 s): je Wert entscheiden. Faustregel als Vorschlag: was dem Rhythmus
-  des Hotels folgt (Wachstum, Rausch, Kater, Nachschub), in Spielstunden; was im Moment passiert (Flackern, Jagd,
-  Kochen, Hypnose, Losreißen), in Sekunden wie bisher; die Steigerung des Monsters (Dreistigkeit, Anspruch) in Tagen.
+**Zeiteinheiten** – Faustregel für neue Werte: was dem Rhythmus des Hotels folgt (Wachstum, Rausch, Kater, Nachschub),
+in Spielstunden; was im Moment passiert (Flackern, Jagd, Kochen, Hypnose, Losreißen), in Sekunden; die Steigerung des
+Monsters (Dreistigkeit, Anspruch) in Tagen. In Spieltagen zählen u. a. Heilung (6.17), Zerfall der Beziehung (6.3),
+Plaudern, Kostüme ab dem 25., Ruhephasen (4.13) und die Schmück-Häufigkeit (5.9).
 
 **Zu klären**
-- ~~**Der friedliche Anfang** (2.1) bis zum 3./4. Oktober dauert jetzt rund 1–1½ Stunden. Bleibt das so, oder kommt
-  der erste Angriff früher (z. B. am Abend des 2.)?~~ → **Abend des 2.** (etwa 27–32 min), spätestens am 3. um 20 Uhr
-  (entschieden 2026-10-23).
 - Ob die Uhrzeiten der Phasen so passen – im Spiel prüfen.
 
 ### 2.5 Der Anfang: Türschmuck-Wettbewerb (entschieden und umgesetzt 2026-10-23)
@@ -335,16 +322,15 @@ konnte man nicht lernen.
 > Tag danach. Kein eigener Sieger, kein Preis.
 >
 > Gibt dem friedlichen Anfang (2.1) einen Faden: ein Ziel mit Frist, das nebenbei das Schmücken
-> lehrt, und einen festen Termin für den ersten Angriff. Ändert 5.5: Die Regel der Puppe wird mitgeteilt, und einmal
-> bewegt sie sich vor den Augen des Spielers.
+> lehrt, und einen festen Termin für den ersten Angriff. Die Regel der Puppe wird mitgeteilt, und einmal bewegt sie
+> sich vor den Augen des Spielers (5.5).
 
-**Warum:** Die ersten rund 30 Minuten tragen bisher nur die Systeme. Der Einführungstext sagt „Lerne die anderen Gäste
-kennen, schmücke deine Tür und feiere mit“, ein Ziel gibt es nicht. Alles, was Richtung gibt – Aufzug (7.4), Aufträge
-(6.14), Geheimnis (2.3), Großes Schmücken (5.9) –, setzt erst nach dem ersten Angriff ein. Das Spiel wirkt wie eine
-Sandbox.
+**Warum:** Alles, was sonst Richtung gibt – Aufzug (7.4), Aufträge (6.14), Geheimnis (2.3), Großes Schmücken (5.9) –,
+setzt erst nach dem ersten Angriff ein. Ohne Ziel tragen die ersten rund 30 Minuten nur die Systeme, und das Spiel
+wirkt wie eine Sandbox.
 
 **Spielstart: Brief statt Einführungstext**
-- Der lange Einführungstext entfällt, ebenso die Tastenzeile. Jede Aktion nennt ihre Taste ohnehin im Hinweis
+- Kein Einführungstext, keine Tastenzeile. Jede Aktion nennt ihre Taste ohnehin im Hinweis
   („Brief lesen [E]“), WASD setzen wir voraus. Wer nachsehen will, findet die Hilfeseite im Spielmenü (8.3).
 - Nach dem Bestätigen am Spiegel (3.9) erscheint nur ein **kurzer Gedanke** (ca. 3 s): *„Da liegt ein Brief auf dem
   Schreibtisch.“*
@@ -357,8 +343,8 @@ Sandbox.
 **Das Aushangbrett in der Lobby**
 - Eine **Korktafel** in dunklem Holzrahmen, etwa 1,2 × 0,9 m, oben ein Messingschild **„Mitteilungen der Direktion“**,
   darüber eine eigene kleine **Bilderleuchte** aus Messing – man sieht es von Weitem, und es hängt selbst im Licht.
-- **Wo:** prominent an der Lobbywand, auf die man vom Flur von Zimmer 13 kommend schaut. Die genaue Stelle legen wir im
-  Spiel fest; das Brett setzt der Code, nicht der Plan.
+- **Wo:** an der Westwand der Lobby zwischen der Glastür zur Bar und der Wandleuchte (siehe oben); das Brett setzt der
+  Code, nicht der Plan.
 - **Einzelne Blätter**, jedes für sich lesbar wie ein Warnungszettel: **in der Mitte groß der Wettbewerb** (die
   Überschrift quer durch die Lobby lesbar), **daneben die Hausordnung**.
 - **Nach dem Angriff** hängt in der Mitte der veränderte Aushang. Damit man es merkt, stehen am nächsten Tag Gäste davor
@@ -382,8 +368,7 @@ Sandbox.
 
 **Die Siegerehrung – der erste Angriff**
 - **Am 2. Oktober um 20 Uhr** kommen die Gäste in die Lobby (alle wachen Erwachsenen und die Kinder, wie zu einer
-  Feier, 7.1), stehen um die Puppe herum und reden über den Wettbewerb. Das ersetzt die spontane Feier im Partyraum, auf
-  der bisher der erste Angriff kam (2.1), und den Ausweichtermin am 3. um 20 Uhr.
+  Feier, 7.1; nur Gustav Peters nicht, 2.6), stehen um die Puppe herum und reden über den Wettbewerb.
 - **Sie wartet auf den Spieler:** Die Szene beginnt erst, wenn er in der Lobby ist; bis dahin warten die Gäste und
   reden („Wo bleibt denn die Jury?“). Spätestens um **22 Uhr** passiert es ohne ihn. Dann erfährt er es aus Erzählungen
   (6.12) und sieht an der leeren Sofaecke, dass sie fort ist.
@@ -392,10 +377,11 @@ Sandbox.
   verstummen und schauen ebenfalls hin.
 - **Die Puppe steht auf**, hebt ab, schwebt einen Moment über dem Sofa und **löst sich in einer Rauchwolke auf** (7.6).
   Das ist das **einzige Mal**, dass sie sich vor den Augen des Spielers bewegt (5.5).
-- **Direkt danach** geht das Licht aus, Stille, Rauschen – das Monster steht in der dunklen Ecke der Lobby. Sonst wie
-  bisher beim ersten Angriff (2.1).
+- **Direkt danach** geht das Licht aus, Stille, Rauschen – das Monster steht in der dunklen Ecke der Lobby. Weiter wie
+  beim ersten Angriff in 2.1. **Neu entschieden 2026-10-25 (2.6), noch nicht gebaut:** Das Monster zeigt sich nicht;
+  während alle zur Puppe schauen, holt es Gustav Peters in Zimmer 020.
 
-**Die Regel danach** (abweichend von 5.5, wo der Spieler sie selbst herausfinden sollte)
+**Die Regel danach**
 1. **Der Aushang wechselt** – das trägt die Regel. Nach dem Angriff hängt am Brett derselbe Zettel in derselben
    Schrift, nur mit anderem Text (unten). Niemand hat ihn ausgetauscht. Der Satz „Die Jury sieht nur, was im Licht
    hängt“ steht auf beiden: vorher ein Tipp für den Wettbewerb, nachher eine Überlebensregel – und die einzige Stelle,
@@ -405,12 +391,12 @@ Sandbox.
    (5.5). Für Spieler, die nicht am Brett vorbeikommen.
 3. **Die Bestätigung:** Beim ersten Urteil sagt der Gast es laut („Bei mir sitzt die Puppe …“, 5.5), und die Spielfigur
    notiert es im Tagebuch.
-- **Die harmlose Phase ist die Lernzeit:** Die nächsten Angriffe holen noch niemanden (2.1), die Puppe urteilt aber
+- **Die harmlose Phase ist die Lernzeit:** Die nächsten Angriffe holen noch keinen Gast (2.1), die Puppe urteilt aber
   schon (5.5). Ein- oder zweimal sieht man die Regel, bevor jemand vor der Puppentür stirbt – wie beim Flacker-Signal
   (4.17).
 
 **Die Texte** (entschieden 2026-10-23) – das Hotel spricht förmlich und etwas altmodisch, immer gezeichnet „Die
-Direktion“; die Zettel früherer Gäste wie die bisherigen (4.13): kurz, erste Person, Kürzel und Zimmer, eine Zeile im
+Direktion“; die Zettel früherer Gäste wie die übrigen (4.13): kurz, erste Person, Kürzel und Zimmer, eine Zeile im
 UV-Licht (4.16).
 
 *Gedanke nach der Charaktererstellung:*
@@ -429,8 +415,7 @@ UV-Licht (4.16).
 
 „Wie jedes Jahr“ klingt harmlos und passt später zu den Zetteln früherer Gäste; „Verehrter Gast“ passt zu jeder Figur.
 
-*Erster Tagebucheintrag* (nach dem Lesen des Briefs; ersetzt „Ich bin in Zimmer 13 aufgewacht. Die Tür nach draußen ist
-verriegelt.“, das schon etwas andeutete, 2.1):
+*Erster Tagebucheintrag* (nach dem Lesen des Briefs):
 > Angekommen. Zimmer 13 ist hübsch, wenn auch etwas altmodisch. Morgen Abend kürt eine Jury die schönste Tür – ich
 > brauche Deko.
 
@@ -495,10 +480,101 @@ Die UV-Zeile führt zum Abkommen (2.3), ohne es zu erklären. Nicht „Zimmer 01
 Zimmernummer eingesetzt; der zweite Satz richtet sich danach, wie viel dort tatsächlich hing.
 
 **Zu klären**
-- ~~Wie die Puppe aufsteht~~ → die Beine schwingen nach unten, der Kopf richtet sich auf, sie hebt ab (umgesetzt).
-- ~~Die genaue Stelle des Aushangbretts~~ → Westwand der Lobby (umgesetzt, im Spiel noch einmal ansehen).
 - **Zeitschleife (2.2):** Im nächsten Durchgang weiß man, was bei der Siegerehrung kommt. Rückt sie mit dem um einen Tag
   kürzeren friedlichen Anfang auf den Abend des 1.?
+
+### 2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)
+> Noch nicht umgesetzt. Ändert die Siegerehrung (2.5): Das Monster zeigt sich dort nicht mehr, sondern holt währenddessen
+> Gustav in seinem Zimmer. Bisher holten die ersten Angriffe keinen Gast (2.1) – Gustav ist die eine Ausnahme.
+
+**Warum:** Der erste Tod trifft eine Figur, die man kennt, und erzählt die Regel des Wettbewerbs als Geschichte: Wer vor
+seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür selbst leergeräumt. Sein Tagebuch lehrt
+„Deko schützt“, ohne es auszusprechen, und zeigt dem Spieler, wohin er nach dem Bruch gehen kann.
+
+**Gustav Peters**
+- Pensionierter Lehrer, alt, Skeptiker (H25 in [HAUSHALTE.md](HAUSHALTE.md)) – er glaubt nur, was er sieht, und sieht
+  nicht, was ihn holt. Er wohnt allein in **Zimmer 020** (EG Ost), nur über den Flur vom Partyraum entfernt
+  (getauscht mit Magda Seidel, jetzt 033).
+- **Hasst Halloween:** den Kürbiswahn der anderen Gäste, die Feiern und vor allem die Kinder, die überall alles mit
+  Kürbissen dekorieren wollen. Die Kinder nennen ihn den **„Halloween-Grinch“**.
+- **Schmückt nicht und macht beim Wettbewerb nicht mit** – keine Startdeko. Was die Kinder ihm vor die Tür legen,
+  entsorgt er. Zur Siegerehrung hängt an seiner Tür nichts.
+- **Die Musik aus dem Partyraum** stört ihn; ab und zu geht er hinüber und stellt den Plattenspieler ab.
+- **Er kommt nicht zur Siegerehrung** – als einziger wacher Erwachsener (2.5). Er sitzt in seinem Zimmer und schreibt
+  Tagebuch.
+
+**Die Siegerehrung, neu**
+- Wie in 2.5: Die Gäste stehen um die Puppe, der Blick des Spielers wird zu ihr gezogen, sie steigt auf und löst sich
+  in Rauch auf. Im Partyraum läuft dabei Musik.
+- **Während alle zur Puppe schauen, holt das Monster Gustav.** Es wird dabei **gar nicht gesehen** – weder bei ihm noch
+  in der Lobby; die dunkle Gestalt in der Lobbyecke (2.5) entfällt.
+- Dann geht das Licht aus, Stille, Rauschen, die Gäste schreien. **Gustav hört das nicht mehr** – sein letzter Satz
+  bricht vorher ab. Die Reihenfolge ist wichtig für das Tagebuch: Er schreibt noch über die Feier, nicht über den Schrei.
+- **Man schafft es nicht rechtzeitig:** Wenn der Spieler sich wieder bewegen kann, ist es vorbei.
+- **Sein Tod ist fest** – auch in späteren Durchgängen der Zeitschleife (2.2). Nichts, was der Spieler vorher tut,
+  rettet ihn.
+
+**Was man in Zimmer 020 findet**
+- Die **Zimmertür steht offen.**
+- Eine **blutige Schleifspur** auf dem Boden: von der Mitte des Zimmers zur Tür, draußen nach links (Norden, Richtung
+  Treppenhaus Ost und damit Keller, 7.9) – und nach etwa **2 m endet sie**. Sie deutet nur an, dass es in den Keller
+  ging; eine Leiche gibt es nicht (6.7).
+- **Auf dem Tisch liegt sein Tagebuch, aufgeschlagen.** Man liest es vor Ort wie die anderen Dokumente (2.3).
+
+**Das Tagebuch**
+- Ein neues Heft: nur **jüngere Einträge**, alle von diesem Aufenthalt.
+- **Erster Eintrag – die Anreise:** abfällig über den Halloween-Wahn der anderen Gäste und die nervigen Kinder, die
+  überall alles mit Kürbissen dekorieren wollen.
+- **Vorletzter Eintrag:** verdammt die Deko vor seinem Zimmer – er hat alles, was vor seiner Tür lag, entsorgt.
+- **Letzter Eintrag:** beschwert sich über die laute Musik aus dem Partyraum nebenan (er geht selbst gelegentlich hinüber
+  und stellt den Plattenspieler ab) und über die Feier um die Jury-Puppe in der Lobby. **Der letzte Satz bricht mitten
+  ab, darunter blutige Fingerabdrücke.**
+- **Entwurf der Texte** (Ton: pensionierter Lehrer, spitz, von oben herab):
+
+> **1. Oktober.** Angekommen. Das Zimmer ist ordentlich, mehr lässt sich nicht sagen. Im ganzen Haus Kürbisse, als hätte
+> ein Gemüsehändler Pleite gemacht. Erwachsene Menschen basteln Fledermäuse aus Pappe. Und überall Kinder, die einem
+> Kürbisse vor die Füße stellen und kichern. Vierzig Jahre Schuldienst – ich weiß, wie man das nennt.
+
+> **2. Oktober.** Heute Morgen lag vor meiner Tür ein ganzer Jahrmarkt. „Für den Wettbewerb“, sagt die Kleine. Ich nehme
+> an keinem Wettbewerb teil. Ich habe alles weggeschafft, bis auf das letzte Pappgespenst.
+
+> **2. Oktober, abends.** Seit einer Stunde dröhnt drüben im Partyraum diese Musik. Zweimal war ich schon drüben und habe
+> den Plattenspieler abgestellt, zweimal läuft er wieder. Und jetzt johlen sie auch noch in der Lobby um eine Puppe
+> herum. Eine Jury! Erwachsene Leute! Morgen früh gehe ich als Erstes zur Direktion und
+>
+> *(darunter blutige Fingerabdrücke)*
+
+**Danach reden die Gäste**
+- Nach dem Angriff reden die Gäste darüber, was Schreckliches passiert ist – so erfährt der Spieler, wohin er als
+  Nächstes muss. Beispiele (Entwurf): „Habt ihr gehört? Bei Herrn Peters steht die Tür offen.“ · „Da ist Blut … bis
+  raus auf den Flur.“ · Kind: „Der Grinch ist weg.“
+- **Über das Tagebuch reden:** Hat der Spieler es gelesen, kann er Gästen davon erzählen (6.9) – als eigenes Erlebnis
+  bzw. Gesprächsthema.
+
+**Vorschläge (noch nicht entschieden)**
+- **Sättigung erklärt die harmlose Phase:** Das Monster hat gefressen (4.10) – darum holen die nächsten Aufbrüche
+  noch keinen Gast (2.1), die Lernzeit der Puppe (2.5) bleibt.
+- **Ruß in den Fingerabdrücken:** Blut mit Ruß bzw. Asche (das Monster hinterlässt schon Asche) – eine stille erste
+  Spur zum Heizer und zum Kesselbrand (2.3). Marion Teske fällt es vielleicht auf.
+- **Wohin die Deko ging:** Er schreibt, wohin er sie geschafft hat, etwa in den Müllschlucker (7.10) – dann liegt die
+  Deko der Kinder im Müllraum im Keller: Deko genau dann, wenn sie knapp wird, und ein zweiter Zug in den Keller (2.3:
+  jedes Dokument zeigt auf etwas). Die Kinder wollen ihre Sachen zurück (Auftrag, 6.14).
+- **Ihn vorher erleben:** Man sieht ihn am 1. und 2. Oktober in den Partyraum stapfen und die Nadel heben, und er räumt
+  sichtbar weg, was vor seiner Tür liegt – auch was der Spieler hinlegt. Bei der Siegerehrung fragt ein Gast: „Wo ist
+  eigentlich Herr Peters?“ – ein Kind: „Der Grinch kommt nicht, der hasst Halloween.“
+- **Wer es findet:** Theo Busch (019) auf dem Heimweg sieht die offene Tür nebenan und ruft es durch den Flur.
+- **Reaktionen nach Charakter:** Die Kinder fühlen sich schuldig („Wir haben ihm doch Kürbisse hingelegt …“) und
+  schmücken wie verrückt · Magda Seidel: „Ketchup. Ein Trick der Direktion.“ · Doris Lange (Lärm) war seine einzige
+  Freundin (6.16) und trauert · Hugo Stein will das Tagebuch kaufen (Dokumente, 2.3) · Paula Jansen will es lesen ·
+  Walter Ruprecht sagt nur: „Jedes Jahr einer.“
+- **Weitererzählen hat einen Preis:** Wer vom Tagebuch erzählt, bringt die Gäste auf „Deko schützt“ – sie schmücken
+  mehr, und man wird eher selbst der Schwächste (Kernfrage, 1).
+- **Kleidungsstück** (6.7) am Ende der Spur, etwa ein Hausschuh.
+
+**Zu klären**
+- **Siegerehrung ohne den Spieler** (spätestens 22 Uhr, 2.5): Steht er dann in Zimmer 020, stirbt er mit (wie im
+  Puppenzimmer, 5.5)?
+- **Zeitschleife (2.2):** Kennt Gustav einen im nächsten Durchgang („Sie schon wieder“)? Sein Tod bleibt fest.
 
 ---
 
@@ -524,7 +600,7 @@ Erkunden ──► Gäste treffen / reden / handeln ──► Deko erhalten (ode
 |--------|--------------|
 | **Laufen** | Gehen, Rennen (macht Lärm, kostet Ausdauer – siehe unten) |
 | **Springen** | Normale Sprunghöhe, z. B. über Laubhaufen/Hindernisse |
-| **Ducken** *(Vorschlag)* | Leiser, schwerer zu sehen (die niedrige Kellertür aus 7.2 gibt es seit dem Untergeschoss, 7.9, nicht mehr) |
+| **Ducken** | Schwerer zu sehen (4.15), unters Bett kriechen (3.4) |
 | **Gegenstände nehmen** | Aufheben per Blick + Taste (RayCast) |
 | **Gegenstände benutzen** | Kerze anzünden, Kürbis schnitzen, Pflanze gießen, Deko aufhängen … |
 | **Licht & Vorhänge** | Licht ein-/ausschalten, Vorhänge auf-/zuziehen (siehe 7.3) – Licht aus lockt das Monster an |
@@ -536,9 +612,8 @@ Erkunden ──► Gäste treffen / reden / handeln ──► Deko erhalten (ode
 
 **Spieler-Hitbox:** Kapsel, **1,80 m hoch, 45 cm breit** (Radius 0,225 m). Kamera auf Augenhöhe ca. 1,65–1,70 m.
 
-**Ausdauer (entschieden und umgesetzt 2026-10-19):** Rennen verbraucht Ausdauer – etwa ~~10~~ **15** Sekunden am Stück
-(2026-10-24 erhöht, Abzüge wie der Kater gelten anteilig weiter), dann ist
-man **außer Atem**. Es gibt **keine Anzeige**: Man merkt es nur am Körper. Geht die Ausdauer zur Neige, hört man schon
+**Ausdauer (entschieden und umgesetzt 2026-10-19):** Rennen verbraucht Ausdauer – etwa **15** Sekunden am Stück
+(Abzüge wie der Kater gelten anteilig), dann ist man **außer Atem**. Es gibt **keine Anzeige**: Man merkt es nur am Körper. Geht die Ausdauer zur Neige, hört man schon
 leise den eigenen Atem; ist sie leer, werden **Herzschlag und Keuchen** deutlich hörbar und **Rennen geht nicht mehr**,
 bis man sich beruhigt hat (im Stehen, Sitzen oder Versteck rund 7 Sekunden, beim Gehen doppelt so lange). Beim
 Luftanhalten verstummt das Keuchen. Wer flieht, muss sich also gut überlegen, wann er rennt.
@@ -556,8 +631,8 @@ schaut. Belegt ist ein Platz, wenn dort die Katze schläft, die Puppe sitzt oder
   alles in Reichweite.
 - **Aufstehen:** Leertaste oder eine Bewegungstaste – vor das Möbel, sonst daneben oder dahinter. Ein Stoß (Anrempeln,
   Schlag) oder der Würgegriff des Lakengeists reißt einen hoch.
-- **Bett:** stehend [E] setzt sich auf die Kante, **geduckt [E] kriecht man darunter** (wie schon beim eigenen Bett,
-  wo stehend während der Nachtruhe Schlafen bleibt). Auf der Flucht muss man sich also erst ducken.
+- **Bett:** stehend [E] setzt sich auf die Kante, **geduckt [E] kriecht man darunter** (wie beim eigenen Bett, wo
+  stehend [E] Schlafen ist, 3.6). Auf der Flucht muss man sich also erst ducken.
 - **Nicht dabei:** die Hocker an Spiel- und Schachtisch (nur für Partien, 6.10). Sitzen ist kein Versteck und still;
   man erholt sich wie im Stehen. Gespeichert wird die Stelle, an der man aufstünde – geladen wird stehend.
 
@@ -569,15 +644,15 @@ schaut. Belegt ist ein Platz, wenn dort die Katze schläft, die Puppe sitzt oder
   - Mit vollen Händen ist man verwundbar: keine Tür öffnen, nichts anderes aufheben, evtl. langsamer bei großen Dingen.
   - Im Notfall muss man Dinge **fallen lassen**, um zu fliehen – und sie liegen dann im Flur (für Gäste zum Klauen).
 - **Das eigene Zimmer ist das Lager:** Dinge werden auf Tisch, Regal, Bett, Boden abgelegt. Dadurch sind sie auch **sichtbar und klaubar** für unfreundliche Gäste, wenn die Tür offen ist oder sie einen Schlüssel haben.
-- ~~**Offen:** Genau ein Gegenstand gleichzeitig – oder zwei Hände?~~ → **Tasche für Kleines (entschieden 2026-10-22, im Prototyp umgesetzt):** Große Dinge (Kürbisse, Deko, Taschenlampe …) trägt man weiter in der Hand. Kleines passt zusätzlich in eine **Tasche mit 6 Fächern**: Süßigkeiten, **Getränkedosen**, Zierkürbisse, Messer, Batterien, Glühbirnen, UV-Aufsatz, Würfel(becher), Kerzen, die nicht brennen, und die Streichholzschachtel (5.12).
+- **Tasche für Kleines (entschieden und umgesetzt 2026-10-22):** Große Dinge (Kürbisse, Deko, Taschenlampe …) trägt man weiter in der Hand. Kleines passt zusätzlich in eine **Tasche mit 6 Fächern**: Süßigkeiten, **Getränkedosen**, Zierkürbisse, Messer, Batterien, Glühbirnen, UV-Aufsatz, Würfel(becher), Kerzen, die nicht brennen, und die Streichholzschachtel (5.12).
   - Kleines nimmt man mit E in die Hand; ist die Hand schon voll, wandert es gleich in die Tasche (mit einem großen Ding in beiden Händen nicht).
-  - **[Q] halten** (geändert 2026-10-22, vorher [I]/Mausrad): Die Fächer erscheinen groß mit Bildern der Gegenstände, das Spiel dahinter verschwimmt – **es läuft weiter**, man kann weiterlaufen, nur die Maus wählt (links/rechts, Mausrad oder [1]–[6]). **Loslassen** nimmt den gewählten Gegenstand in die Hand; **was man vorher trug – groß oder klein –, fällt zu Boden** (Lärm wie Ablegen, ein Kürbis poltert). Ein leeres Fach wählen steckt Kleines aus der Hand ein; nichts wählen oder Rechtsklick bricht ab. [1]–[6] ohne [Q] nehmen gleich heraus.
+  - **[Q] halten:** Die Fächer erscheinen groß mit Bildern der Gegenstände, das Spiel dahinter verschwimmt – **es läuft weiter**, man kann weiterlaufen, nur die Maus wählt (links/rechts, Mausrad oder [1]–[6]). **Loslassen** nimmt den gewählten Gegenstand in die Hand; **was man vorher trug – groß oder klein –, fällt zu Boden** (Lärm wie Ablegen, ein Kürbis poltert). Ein leeres Fach wählen steckt Kleines aus der Hand ein; nichts wählen oder Rechtsklick bricht ab. [1]–[6] ohne [Q] nehmen gleich heraus.
   - Mit einer Katze im Arm kommt man nicht an die Tasche, im Versteck nur mit leerer Hand (dort ist kein Platz zum Ablegen).
   - Immer sichtbar: kleine Fächer mit Bildern unten rechts, sobald etwas in der Tasche ist.
   - Die Dinge in der Tasche bleiben echte Gegenstände: Man kann sie wieder herausnehmen, ablegen, verschenken und verkaufen (im Gespräch „Aus der Tasche …“), Kinder an der Tür bekommen Süßigkeiten auch aus der Tasche. Gäste sehen und stehlen sie nicht.
 - **Ausnahme am Körper (entschieden 2026-10-11, im Prototyp umgesetzt):** Drei Dinge trägt man am Körper statt in der Hand – sie sind Werkzeug für Orientierung und Zutritt, keine Beute. Man kann sie nicht ablegen, verlieren, handeln oder gestohlen bekommen.
-  - **Kompass** (Zimmer 226): beim Aufheben eingesteckt, **F halten** holt ihn mit der linken Hand hervor.
-  - **Karte aus losen Blättern** (seit 2026-10-23 im Notizbuch, 3.10), ein Blatt je Ebene, **jedes einzeln zu finden** (Erdgeschoss in Zimmer 13, Obergeschoss an der Rezeption, Kellerskizze eines früheren Gastes in Zimmer 17; künftige Ebenen wie Tiefkeller bekommen eigene Blätter). **Tab halten** zeigt sie, das Blatt der aktuellen Ebene liegt oben, **Linksklick / Mausrad** blättert.
+  - **Kompass** (Zimmer 026): beim Aufheben eingesteckt, **F halten** holt ihn mit der linken Hand hervor.
+  - **Karte aus losen Blättern** (im Notizbuch, 3.10), ein Blatt je Ebene, **jedes einzeln zu finden** (Erdgeschoss in Zimmer 13, Obergeschoss an der Rezeption, Kellerskizze eines früheren Gastes in Zimmer 017; künftige Ebenen wie Tiefkeller bekommen eigene Blätter). **Tab halten** zeigt sie, das Blatt der aktuellen Ebene liegt oben, **Linksklick / Mausrad** blättert.
   - **Schlüsselbund:** Gefundene Schlüssel (später auch Schlüsselkarten) hängen am Bund; Türen schließt man damit auf, egal was die rechte Hand trägt. Das letzte Kartenblatt listet den Bund. **Ausnahme: Der Ausgangsschlüssel an Halloween (2.1) passt nicht an den Bund** – er muss in der Hand getragen werden, die Flucht bleibt ein Lauf, bei dem man ihn nicht fallen lassen darf.
   - Die linke Hand braucht man dafür: Mit einem **großen Gegenstand** (Kürbis) sind beide Hände voll – dann weder Karte noch Kompass noch Aufschließen.
 
@@ -622,23 +697,33 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - **Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
   Nachschub (z. B. der Hausmeister füllt nach)?
 
-### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19)
-Baut auf dem Schlafen im eigenen Bett und der Nachtruhe auf (4.18). Müdigkeit fließt in die **Schwäche** ein, nach
-der sich der Lakengeist seine Opfer sucht (4.18).
+### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24)
+Müdigkeit fließt in die **Schwäche** ein, nach der sich der Lakengeist seine Opfer sucht (4.18). Die feste Nachtruhe
+gilt nur für die Gäste (2.4) – der Spieler bleibt wach, so lange er will, und schläft, wann er will.
 
-> **Entschieden 2026-10-21 (2.4):** Die feste Nachtruhe gilt nur für die Gäste. Der Spieler bleibt wach, so lange er
-> will – die **Wachzeit bleibt** und tritt an die Stelle der gezählten Nächte. Die Stufen unten waren für Tage von
-> 5 Minuten gedacht und werden in Spielstunden umgerechnet.
+> **Umgesetzt (2026-10-24): Schlafdauer wählen.** Am eigenen Bett stellt man mit dem **Mausrad** ein, wie lange man
+> schläft – **1 bis 8 Stunden**, voreingestellt **eine** (nach jedem Schlaf wieder). Schlafen geht **jederzeit**; wer
+> schläft, wenn die Nachtruhe endet, schläft weiter. Sind die Stunden um, steht man auf. Geweckt wird man von Monster
+> in der Nähe und Geräuschen. Die **Nächte ohne Schlaf zählen anteilig** – eine Vorstufe zur Wachzeit unten: **Sechs
+> Stunden** sind ganz ausgeschlafen (die Schuld fällt auf null), weniger baut sie anteilig ab (eine Stunde um ein
+> Sechstel). Am Ende jeder Nachtruhe kommt hinzu, was seit der letzten an sechs Stunden fehlte (gar nicht geschlafen:
+> eine ganze Nacht). Wer jede Nacht nur eine Stunde schläft, ist nach etwa fünf solchen Nächten so müde wie nach drei
+> durchwachten; mit drei Stunden pendelt es sich bei einer Nacht ein, mit vier bei einer halben. Kater gibt es ab zwei
+> Stunden Schlaf im Rausch (3.7). Debug: `--sleep=bett[,h]`.
+>
+> **Umgesetzt (2026-10-20): verschwommene Sicht.** Jede Nacht ohne Schlaf macht die Sicht unschärfer – nach einer
+> Nacht ein Hauch, nach drei deutlich. Sie wird in langsamen Schüben schlimmer und wieder etwas klarer, als fielen
+> einem die Augen zu. Mit Kater ist die Sicht noch leicht getrübt (3.7). Debug: `--awake=n`.
 
+**Ziel (noch nicht gebaut)**
 - **Wachzeit statt Nächte zählen:** Statt „Nächte ohne Schlaf“ zählt die **Zeit seit dem letzten Schlaf** in
-  ~~Spielminuten~~ **Spielstunden** (2.4). Schlaf senkt sie je nach Dauer – eine ganze Nachtruhe auf null, wer früh geweckt wird, ist nur
-  halb erholt.
-- **Stufen** (Vorschlag): ~~ab ~5 min **müde** · ab ~8 min **übermüdet** · nach 10–15 min~~ – umgerechnet auf die
-  Tagesuhr (2.4, Vorschlag 2026-10-21): ab ~**16 Stunden** wach **müde** (Gedanke, Gähnen, die Augen fallen kurz zu) ·
+  **Spielstunden** (2.4). Schlaf senkt sie je nach Dauer – eine ganze Nachtruhe auf null, wer früh geweckt wird, ist
+  nur halb erholt. Die verschwommene Sicht hängt dann auch daran.
+- **Stufen** (Vorschlag): ab ~**16 Stunden** wach **müde** (Gedanke, Gähnen, die Augen fallen kurz zu) ·
   ab ~**24 Stunden** **übermüdet** (Halluzinationen wie in 4.13/6.8, der Lakengeist kommt deutlich öfter, Werte
-  schlechter) · nach **48–72 Stunden ohne Schlaf** kommt der Lakengeist **sicher in den Flur**, sobald man dort allein ist. Keine Anzeige –
-  man merkt es am Körper (wie die Ausdauer, 3.1). Vielleicht bei starker Übermüdung **Sekundenschlaf**: die Augen
-  fallen eine halbe Sekunde zu, auch auf der Flucht.
+  schlechter) · nach **48–72 Stunden ohne Schlaf** kommt der Lakengeist **sicher in den Flur**, sobald man dort allein
+  ist. Keine Anzeige – man merkt es am Körper (wie die Ausdauer, 3.1). Vielleicht bei starker Übermüdung
+  **Sekundenschlaf**: die Augen fallen eine halbe Sekunde zu, auch auf der Flucht.
 - **Ausgeschlafen** (einige Minuten nach einer ganzen Nachtruhe): mehr Ausdauer, länger Luft anhalten, Schock baut
   schneller ab, die Hypnose des Geists ist schwächer, Losreißen leichter. Übermüdet umgekehrt.
 - **In fremden Betten schlafen:**
@@ -653,70 +738,40 @@ der sich der Lakengeist seine Opfer sucht (4.18).
   (etwa aus einer Halluzination) kostet Vertrauen. Ein geweckter Gast ist auch ein Zeuge gegen den Geist, schläft
   aber bald wieder ein.
 
-> **Entschieden und umgesetzt 2026-10-24: Schlafdauer wählen.** Am eigenen Bett stellt man mit dem **Mausrad** ein,
-> wie lange man schläft – **1 bis 8 Stunden**, voreingestellt **eine** (nach jedem Schlaf wieder). Schlafen geht
-> **jederzeit**, nicht nur in der Nachtruhe; wer schläft, wenn sie endet, schläft weiter. Sind die Stunden um, steht
-> man auf. Geweckt wird man wie bisher (Monster nah, Geräusch). Die **Nächte ohne Schlaf zählen anteilig** – eine
-> Vorstufe zur Wachzeit oben: **Sechs Stunden** sind ganz ausgeschlafen (die Schuld fällt auf null), weniger baut sie
-> anteilig ab (eine Stunde um ein Sechstel). Am Ende jeder Nachtruhe kommt hinzu, was seit der letzten an sechs
-> Stunden fehlte (gar nicht geschlafen: eine ganze Nacht). Wer jede Nacht nur eine Stunde schläft, ist nach
-> etwa fünf solchen Nächten so müde wie nach drei durchwachten; mit drei Stunden pendelt es sich bei einer Nacht ein, mit vier bei
-> einer halben. Kater gibt es weiter ab zwei Stunden Schlaf im Rausch (3.7). Debug: `--sleep=bett[,h]`.
+**Zeitsprung beim Schlafen (entschieden und umgesetzt 2026-10-24)**
 
-> **Entschieden und umgesetzt 2026-10-24: Zeitsprung beim Schlafen.** Ein 60-facher Zeitraffer geht nicht: Godot
-> rechnet weiter 60 Physikschritte je Sekunde, jeder wäre eine Spielsekunde lang – Gäste sprängen 1,4 m (ferne über
-> 4 m) je Schritt, das Monster stünde am Bett, bevor man aufwacht. Stattdessen **springt** die Zeit in Stundenschritten.
-> - **So fühlt es sich an:** Augen zu, dunkel, gedämpfte Geräusche, leises Ticken, die Uhrzeit läuft sichtbar mit –
->   etwa **eine halbe Sekunde je Stunde** (8 Stunden ≈ 4 s), mit [E] abbrechbar. Kein Ladebildschirm-Gefühl.
-> - **Was nur an der Zeit hängt, rechnet nach:** Uhr, Kürbisse, Fäulnis, Nachwachsen (5.10), Rausch, Kater, Schock.
-> - **Gefahr wird je Stunde gewürfelt:** ob etwas zu einem kommt – Monster, Lakengeist am Fenster oder im Flur
->   (4.18), ein Gast an der Tür –, aus den Werten, die heute schon zählen: Deko vor der Tür, Tür abgeschlossen,
->   Licht, Vorhang, Schwäche, Dreistigkeit. Kommt etwas, **endet der Sprung einige Sekunden vorher** (Vorschlag:
->   5 s Echtzeit Vorlauf), man schreckt in normalem Tempo hoch – das Monster ist noch auf dem Weg, der Lakengeist
->   steht am Fenster. **Kein Tod im Schlaf ohne Chance zu reagieren.**
-> - **Die anderen leben weiter – Morgenbilanz:** Der Director würfelt seine Aufbrüche auch im Sprung, mit Opfern.
->   Was nachts geschah, erfährt man **danach in der Welt**: ein leeres Zimmer, Spuren, eine Leiche (6.12), Gerede,
->   Tagebuch – keine Übersicht (Vorschlag, wie „man merkt es am Körper“). So hat Schlafen Gewicht und ist kein
->   sicheres Vorspulen.
-> - **Nur in der Nachtruhe** wird gesprungen – dann liegen alle Gäste ohnehin im Bett. Endet sie, endet der Sprung;
->   den Rest der gewählten Stunden schläft man im Zeitraffer ×5 weiter (Vorschlag), ebenso jedes Nickerchen am Tag.
->   Ein Sprung auch am Tag (Gäste stehen danach, wo ihr Tagesablauf sie hinschickt, laufende Aktionen sind vorbei)
->   kommt später.
-> - **Termine wecken** wie ein Geräusch: Mitternachtsglocke (7.8), Geisterstunde (4.18), Durchsagen (5.9), Klopfen
->   vor einem Pflichttermin wie der Siegerehrung (2.5). Verschlafen ist nie ein Fehler, den man nicht kommen sieht.
-> - **Wache (6.18):** Ein guter Freund in Zimmer 13 senkt die Chancen und weckt einen früher (Vorschlag: doppelter
->   Vorlauf).
-> - **Spannung der Nacht (2.4):** Die Nacht bleibt die gefährliche Zeit nur, wenn das Würfeln so gefährlich ist,
->   dass Wachbleiben und Schlafen beide ihren Preis haben – Tuning beim Bauen.
->
-> **So gebaut (2026-10-24):** Gewürfelt wird nicht „je Stunde“ mit eigenen Chancen, sondern mit dem Zeitplan des
-> Monsters selbst – seine Aufbrüche, Absichten, die Puppe, der Weg zur Puppentür, das Abbiegen in Zimmer und das
-> Aufreißen von Verstecken laufen nach denselben Regeln, nur ohne zu gehen. Es kommt zu einem, wenn sein Weg zu
-> Zimmer 13 führt (Puppe davor oder Zimmer 13 als Ziel und die Deko hält nicht) – oder wenn man hörte, was es tut
-> (ein Schrei, ein aufgerissenes Versteck in der Nähe): Dann ist es ab da wirklich unterwegs, 5 s vor dem Ziel.
-> Abweichungen und Ergänzungen:
-> - **Lakengeist:** Zu Schlafenden kommt er nie (das Bett ist ein Versteck), schlafende Gäste sucht er auch nicht auf –
->   im Sprung gibt es für ihn nichts zu würfeln. Geht er um (Geisterstunde) oder ist der Kürbismann angekündigt oder
->   unterwegs, springt die Zeit nicht; sie springt weiter, sobald es wieder ruhig ist.
-> - **Termine:** Die Mitternachtsglocke weckt (auch im Zeitraffer). Durchsagen gibt es nachts keine, die Siegerehrung
->   liegt am Abend.
-> - **Telefon:** Das Telefon in Zimmer 13 klingelt wie sonst (nachts die unheimlichen Anrufe) und weckt – wer
->   durchschlafen will, legt den Hörer daneben (4.14).
-> - **Morgenbilanz:** Wer im Schlaf stirbt, ohne dass man es hört, bekommt keine Meldung und keine Totenglocke – man
->   findet Blut, das Kleidungsstück, aufgerissene Verstecke, verängstigte Gäste, das Notizbuch und das Tagebuch.
-> - **Wache:** Die Wache (6.18) gibt es noch nicht. Ein wacher Erwachsener in Zimmer 13 zählt schon jetzt als Wache.
+Ein 60-facher Zeitraffer geht nicht: Godot rechnet weiter 60 Physikschritte je Sekunde, jeder wäre eine Spielsekunde
+lang – Gäste sprängen 1,4 m (ferne über 4 m) je Schritt, das Monster stünde am Bett, bevor man aufwacht. Stattdessen
+**springt** die Zeit in Stundenschritten.
+- **So fühlt es sich an:** Augen zu, dunkel, gedämpfte Geräusche, leises Ticken, die Uhrzeit läuft sichtbar mit –
+  etwa **eine halbe Sekunde je Stunde** (8 Stunden ≈ 4 s), mit [E] abbrechbar. Kein Ladebildschirm-Gefühl.
+- **Was nur an der Zeit hängt, rechnet nach:** Uhr, Kürbisse, Fäulnis, Nachwachsen (5.10), Rausch, Kater, Schock.
+- **Das Monster lebt im Sprung weiter:** Gewürfelt wird mit seinem eigenen Zeitplan – Aufbrüche, Absichten, die Puppe,
+  der Weg zur Puppentür, das Abbiegen in Zimmer und das Aufreißen von Verstecken laufen nach denselben Regeln, nur ohne
+  zu gehen, mit Opfern. Es kommt zu einem, wenn sein Weg zu Zimmer 13 führt (Puppe davor oder Zimmer 13 als Ziel und
+  die Deko hält nicht) – oder wenn man hörte, was es tut (ein Schrei, ein aufgerissenes Versteck in der Nähe): Dann ist
+  es ab da wirklich unterwegs, und der Sprung endet **5 s vor dem Ziel**; man schreckt in normalem Tempo hoch. **Kein
+  Tod im Schlaf ohne Chance zu reagieren.**
+- **Lakengeist:** Zu Schlafenden kommt er nie (das Bett ist ein Versteck), schlafende Gäste sucht er auch nicht auf –
+  im Sprung gibt es für ihn nichts zu würfeln. Geht er um (Geisterstunde) oder ist der Kürbismann angekündigt oder
+  unterwegs, springt die Zeit nicht; sie springt weiter, sobald es wieder ruhig ist.
+- **Morgenbilanz:** Was nachts geschah, erfährt man **danach in der Welt**, ohne Übersicht. Wer im Schlaf stirbt, ohne
+  dass man es hört, bekommt keine Meldung und keine Totenglocke – man findet Blut, das Kleidungsstück, aufgerissene
+  Verstecke, verängstigte Gäste, das Notizbuch und das Tagebuch (6.12). So hat Schlafen Gewicht und ist kein sicheres
+  Vorspulen.
+- **Nur in der Nachtruhe** wird gesprungen – dann liegen alle Gäste ohnehin im Bett. Endet sie, endet der Sprung; den
+  Rest der gewählten Stunden schläft man im Zeitraffer ×5 weiter, ebenso jedes Nickerchen am Tag. Ein Sprung auch am
+  Tag (Gäste stehen danach, wo ihr Tagesablauf sie hinschickt, laufende Aktionen sind vorbei) kommt später.
+- **Was weckt:** die Mitternachtsglocke (7.8, auch im Zeitraffer) und das Telefon in Zimmer 13 (nachts die unheimlichen
+  Anrufe) – wer durchschlafen will, legt den Hörer daneben (4.14). Durchsagen gibt es nachts keine, die Siegerehrung
+  liegt am Abend.
+- **Wache (6.18):** Ein wacher Erwachsener in Zimmer 13 zählt als Wache. Geplant: Ein guter Freund senkt die Chancen
+  und weckt einen früher (Vorschlag: doppelter Vorlauf).
+- **Spannung der Nacht (2.4):** Die Nacht bleibt die gefährliche Zeit nur, wenn der Sprung so gefährlich ist, dass
+  Wachbleiben und Schlafen beide ihren Preis haben – Tuning im Spiel.
 
 **Zu klären**
-- ~~**Wann schlafen:** nur in der Nachtruhe wie bisher – oder jederzeit ein **Nickerchen** (ohne Zeitraffer, wenig
-  Erholung)?~~ Jederzeit, 1–8 Stunden mit Zeitraffer (2026-10-24, oben).
-- ~~**Ersetzt die Wachzeit die Nächte-Zählung** (4.18: ab 3 Nächten sicher im Flur) ganz?~~ Ja (2.4, 2026-10-21):
-  Der Spieler schläft, wann er will; gezählt wird die Wachzeit. Die verschwommene Sicht (unten) hängt dann auch daran.
 - **Schwelle:** fest (z. B. 60 Stunden) oder zufällig zwischen 48 und 72 Stunden je Spiel?
-- ~~**Wache halten:** Sollen Freunde wach bleiben und aufpassen, während man schläft?~~ Ja: gute Freunde auf Bitte (6.18, 2026-10-21).
-
-> **Umgesetzt (2026-10-20): verschwommene Sicht.** Jede Nacht ohne Schlaf macht die Sicht unschärfer – nach einer
-> Nacht ein Hauch, nach drei deutlich. Sie wird in langsamen Schüben schlimmer und wieder etwas klarer, als fielen
-> einem die Augen zu. Mit Kater ist die Sicht noch leicht getrübt (3.7). Debug: `--awake=n`.
 
 ### 3.7 Trinken an der Bar (entschieden 2026-10-19)
 An der Bar kann man **etwas trinken** (kostet Geld) – und betrunken werden. Rausch fließt in die **Schwäche** ein,
@@ -736,20 +791,20 @@ nach der sich der Lakengeist seine Opfer sucht (4.18).
   blufft schlechter.
 - **Gäste trinken auch:** Sie werden betrunken, gesprächiger (erzählen mehr, auch Gerüchte) und für den Geist
   schwächer. **Kinder** trinken nie (6.13).
-- **Offen:** welche Getränke; ~~ob es auch für Erwachsene Alkoholfreies gibt (für Kinder Kakao und Limo, 6.13)~~ →
-  Kaffee, auch an der Bar (3.11, 2026-10-24).
+- **Alkoholfrei:** für Erwachsene Kaffee und Tee, auch an der Bar (3.11, 3.12), für Kinder Kakao und Limo (6.13).
+  **Offen:** welche Getränke es an der Bar sonst gibt.
 - **Getränkedosen (umgesetzt 2026-10-22, 3.2):** Limo und Cola – Kisten in Kühlraum und Lager, auf der Bartheke für 1 Geld. Eine Dose (Linksklick) bringt einen sofort wieder zu Atem (Ausdauer voll, 3.1) und nimmt etwas Schock; das Zischen beim Öffnen ist leiser Lärm (3 m). Gäste trinken geschenkte Dosen, Kinder freuen sich darüber wie über etwas, das sie mögen.
 - **Automaten (entschieden und umgesetzt 2026-10-22):** **Snackautomaten** (Süßigkeiten) und **Getränkeautomaten**
-  (Cola) für je 1 Geld, ohne Ende. Ihre beleuchtete Front ist ein schwaches Licht im Flur. *Geändert 2026-10-22:* Sie
-  stehen, wo der Plan sie zeigt (bisher ein Paar in der Lobby), statt automatisch auf jedem Stockwerk (7.10).
+  (Cola) für je 1 Geld, ohne Ende. Ihre beleuchtete Front ist ein schwaches Licht im Flur. Sie stehen, wo der Plan
+  sie zeigt (7.10).
 - **Süßigkeiten-Truhe (entschieden und umgesetzt 2026-10-22):** Eine kleine Truhe mit **6 Süßigkeiten** zum Start –
-  sichtbar darin, wie alles (3.2). Gäste geben Kindern daraus (6.13). *Geändert 2026-10-22:* Nicht mehr automatisch in
-  jedem Zimmer – jede Truhe, die der Plan in ein Hotelzimmer stellt, ist dessen Süßigkeiten-Truhe (7.10).
+  sichtbar darin, wie alles (3.2). Gäste geben Kindern daraus (6.13). Jede Truhe, die der Plan in ein Hotelzimmer
+  stellt, ist dessen Süßigkeiten-Truhe (7.10).
 
 > **Umgesetzt (2026-10-19):** Flasche und Glas auf der Bartheke, ein Glas **1 Geld**, nimmt etwas Schock. Ab dem
 > **2. Glas angetrunken** (Blick schwankt und driftet, die Maus zieht nach, man stolpert ab und zu – das ist
-> Lärm), ab dem **3. betrunken** (Halluzinationen), nach dem 3. ist Schluss. Voller Rausch ist nach 5 Spielminuten
-> verflogen. Wer betrunken in seinem Bett ausschläft, wacht mit **Kater** auf (4 min: Rennen erschöpft schneller,
+> Lärm), ab dem **3. betrunken** (Halluzinationen), nach dem 3. ist Schluss. Voller Rausch ist nach 5 Spielstunden
+> verflogen (2.4). Wer betrunken in seinem Bett ausschläft, wacht mit **Kater** auf (4 Spielstunden: Rennen erschöpft schneller,
 > etwas schwächer). Gäste trinken an der Bar meist ein Glas, schwanken, sagen „*hicks*“ und erzählen mehr; „Eine
 > Runde ausgeben“ (2 Geld) hebt die Beziehung. Beim Mäxchen zittert die Hand beim Bluffen, betrunkene Gäste
 > verraten ihre Bluffs. Debug: `--drunk=n[,gast]`.
@@ -778,7 +833,7 @@ Kürbis** für sich.
 - **Gebratener Kürbis – für dich:** Er kommt als Teller in die Hand. Mit [Linksklick] isst man ihn (**Schock −0,2**),
   oder man **verschenkt** ihn im Gespräch: wie ein Geschenk (6.3), in der **Lieblingssorte** des Gastes noch mehr
   (5.8), dazu sinkt seine Angst. Der Teller bleibt im Spielstand; was gerade auf dem Herd steht, nicht.
-- **Offen:** Ob Kochen Lärm macht oder Gäste selbst kochen; Zutaten aus dem Kühlraum (Eier, 6.13).
+- **Offen:** Ob Kochen Lärm macht; Zutaten aus dem Kühlraum (Eier, 6.13).
 
 ### 3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)
 Der Spieler hat einen **Körper**: Er sieht sich im Spiegel – und später sehen ihn Mitspieler, falls es einmal Koop
@@ -795,13 +850,11 @@ an Lampen und Kerzen.
 - **Nur Aussehen:** Größe und Statur ändern weder Tempo noch Ausdauer. Augenhöhe, Kapsel und Hocken wachsen mit
   der Größe – wer 2 m groß ist, sieht über mehr hinweg und stößt sich eher.
 - **Spiegel über dem Waschbecken** reicht von 1,10 bis 2,04 m, damit sich jede Figur darin sieht (Scheitel bei
-  2 m, Bauch bei 1,45 m); seit 24.10. mit Modell (Stahlrahmen über einem Aufsatzbecken mit Wandarmatur).
+  2 m, Bauch bei 1,45 m) – ein Stahlrahmen über einem Aufsatzbecken mit Wandarmatur.
 - **Vorgemerkt:** Atem und Keuchen passend zur Figur (Frau/Mann, Alter); den eigenen Körper beim Blick nach unten
   sehen; Haare später über einen Gegenstand färben.
 
 ### 3.10 Notizbuch und Tagebuch (entschieden 2026-10-23, Stufe 1 umgesetzt 2026-10-23)
-> Ändert 2.3, 2.5, 3.2, 6.14, 7.4 und 8.5.
->
 > **Stufe 1 umgesetzt (2026-10-23):** Notizbuch im Umschlag des Briefs, mit der Karte zusammengelegt, drei Reiter am
 > rechten Rand; **Rechtsklick** (mit Tab) springt zum nächsten Lesezeichen, Mausrad und Linksklick blättern durchs
 > ganze Buch (im Versteck hält Rechtsklick die Luft an, dort reicht das Mausrad). Aufgaben: vorerst nur die eigene
@@ -822,8 +875,7 @@ an Lampen und Kerzen.
 > an Leichen („Edna – tot“). Über dem Interaktions-Hinweis steht ein gezeichnetes Symbol: Tür, Kommode, Verstecken,
 > Versteck verlassen, Schlafen, Bar, Kaffee, Schmücken.
 
-**Warum:** Bisher sollte das Tagebuch alles tragen: Aufträge (6.14), die Seite zur Fahrstuhl-Reparatur (7.4), das
-Wissen der Ermittlung (2.3) – und es liegt fest in Zimmer 13 (8.5). Wer unterwegs wissen will, was er versprochen hat
+**Warum zwei Bücher:** Das Tagebuch liegt fest in Zimmer 13 (8.5) – wer unterwegs wissen will, was er versprochen hat
 und bis wann, müsste zurücklaufen. Durchsagen (5.9) sind eine Einblendung von wenigen Sekunden und dann weg. Deshalb
 zwei Bücher mit klar getrennten Rollen:
 
@@ -840,7 +892,7 @@ zwei Bücher mit klar getrennten Rollen:
   Geschenk der Direktion, also des Abkommens (2.3). Wer den Brief liest, steckt es ein.
 - **Am Körper** wie Kompass und Schlüsselbund (3.2): nicht ablegen, nicht verlieren, nicht handeln, nicht stehlen.
 - **Karte und Notizbuch sind ein Ding:** Die losen Kartenblätter (3.2) liegen darin. **Tab halten** öffnet es mit der
-  linken Hand auf der Karte, wie bisher; drei **Lesezeichen** führen zu **Karte**, **Aufgaben** und **Notizen**. Jedes
+  linken Hand auf der Karte; drei **Lesezeichen** führen zu **Karte**, **Aufgaben** und **Notizen**. Jedes
   Lesezeichen merkt sich seine Seite, die Seiten blättert man wie die Kartenblätter. (Wer noch kein Notizbuch hat,
   sieht mit Tab nur die Blätter.) Den Wechsel der Lesezeichen macht der Rechtsklick (siehe oben).
 - **Das Spiel läuft weiter**, man kann dabei gehen. Mit einem großen Gegenstand in beiden Händen geht es nicht, im
@@ -895,13 +947,11 @@ zwei Bücher mit klar getrennten Rollen:
   bleibt davon getrennt: Er beschreibt den Stand, die Einträge erzählen den Weg dorthin.
 
 **Zu klären**
-- ~~Liest man das Notizbuch im Dunkeln?~~ → ja, die Seiten sind ungeschattet (umgesetzt).
-- ~~Wie viele Zeilen auf eine Seite passen~~ → 14 (umgesetzt, im Spiel noch einmal ansehen).
-- Die **Kartenblätter** haben denselben grauen Schleier wie die Notizbuchseiten vorher – auch ungeschattet machen?
+- Die **Kartenblätter** sind noch schattiert (grauer Schleier) – auch ungeschattet machen wie die Notizbuchseiten?
 
 ### 3.11 Kaffee (entschieden und umgesetzt 2026-10-24)
-Gegen die Müdigkeit (3.6) half bisher nur Schlaf. Kaffee **überdeckt** sie – er baut sie nicht ab. So bleibt die
-Nacht gefährlich (2.4): Wer wach bleibt, zahlt später. Zugleich das Alkoholfreie für Erwachsene, das 3.7 offen ließ.
+Gegen Müdigkeit (3.6) hilft sonst nur Schlaf. Kaffee **überdeckt** sie – er baut sie nicht ab. So bleibt die
+Nacht gefährlich (2.4): Wer wach bleibt, zahlt später. Zugleich das Alkoholfreie für Erwachsene (3.7).
 
 - **Wirkung:** Eine Tasse wirkt **3 Spielstunden**. So lange fühlt man sich, als hätte man **eine Nacht weniger**
   Schlaf nachzuholen – Sicht und Schwäche (Lakengeist, 4.18) wie ausgeruhter. Die Schuld selbst läuft weiter. Weitere
@@ -957,7 +1007,7 @@ ausgearbeitet, am 2026-10-25 gebaut (mit Ablenkung fürs Monster).
   kleiner Strom herunter** bis zum Boden, dort eine kleine Pfütze (wie auf Treppen).
 - **Personen treffen:** Der Gast ruft auf und **mag dich weniger** (mit einem Kürbis stärker); ein getroffenes **Kind**
   verärgert seine Eltern (wie Rammen, 6.13); wer es sieht, erzählt es weiter (Gerede). Das Monster bleibt unbeeindruckt,
-  ebenso der Kürbismann – ihn betäubt nur ein gezeigter Kürbis, nie ein Wurf (4.21, geändert 2026-10-25).
+  ebenso der Kürbismann – ihn betäubt nur ein gezeigter Kürbis, nie ein Wurf (4.21).
 - **Lärm und Ablenkung (entschieden 2026-10-25):** Der Aufprall macht Lärm am Aufschlagort (4.15) – und das Monster
   geht ihm nach wie jedem Geräusch, das es hört: Werfen **taugt ausdrücklich als Ablenkung** (4.11). Wie weit man es
   hört, hängt am Aufprall: ein zerplatzender Kürbis 8 m, eine zerbrechende Kerze oder Tasse 5 m, sonst 6 m, Schweres
@@ -974,39 +1024,32 @@ ausgearbeitet, am 2026-10-25 gebaut (mit Ablenkung fürs Monster).
 - Es **zeigt sich zufällig** (gewichteter Zufall, siehe unten) – nicht skriptgesteuert und nicht vorhersehbar.
 - **Aussehen** (entschieden 2026-10-11): dürr, mit langen Gliedmaßen, Rippen und Stacheln am Rücken, langgezogenem Schädel, offenem Maul und langer Zunge. Es **geht aufrecht auf den Hinterbeinen** und ist dabei gut zwei Meter groß, gestreckt noch größer. Es kann **auf alle Viere** gehen: zum Schleichen, Lauern und an Verstecken. Unter Türen duckt es sich.
   > Im Prototyp umgesetzt (2026-10-11): Meshy-Modell mit Skelett, Bewegung im Stop-Motion-Stil, Hocke beim Wegschleichen, Lauern und Prüfen von Verstecken.
-
-- **Immer nur eine Bedrohung im Haus (entschieden und umgesetzt 2026-10-20):** Monster, Lakengeist (4.18) und Kürbismann
-  (4.19) sind nie gleichzeitig unterwegs. Ist einer da, warten die anderen, bis er wieder weg ist – das Monster
-  verschiebt seinen Aufbruch, der Lakengeist erscheint nicht, der Kürbismann würfelt erst danach.
-  **Ersetzt (2026-10-21):** eine Bedrohung **je Ebene** und außer Hörweite voneinander (4.20).
+- **Eine Bedrohung je Ebene** (entschieden 2026-10-21): Monster, Lakengeist (4.18) und Kürbismann (4.19) sind nie
+  gleichzeitig auf derselben Ebene und nie in Hörweite voneinander (4.20). **Im Prototyp gilt noch „nur eine im
+  Haus“** (umgesetzt 2026-10-20): Ist einer da, warten die anderen, bis er wieder weg ist – das Monster verschiebt
+  seinen Aufbruch, der Lakengeist erscheint nicht, der Kürbismann würfelt erst danach.
 
 ### 4.2 Ankündigung („Manifestation“)
-> Im Prototyp durch 4.13 ersetzt: keine globale Vorwarnung mehr, stattdessen Rauschen nach Entfernung und lokales Flackern.
-
-Bevor das Monster erscheint, gibt es eine Vorwarnphase (z. B. 5–15 Sekunden):
-- **Flackerndes Bild** (Post-Processing-Shader: kurze Helligkeits-/Frame-Aussetzer)
-- **Dezent flackernde Lichter** in der Umgebung (OmniLights / SpotLights mit Flicker-Script)
-- **Rauschen im Bild** (Film-Grain / VHS-Noise-Shader, Intensität steigt an)
-- Optional: Audio-Rauschen, tiefes Brummen, Verstummen der Umgebungsgeräusche
+Es gibt **keine globale Vorwarnung**. Das Monster verrät sich über drei Signale:
+- **Flackerwelle beim Aufbruch** – wie schlimm: ihre Dauer verrät die Absicht (4.17).
+- **Lokales Flackern** der Lampen in seiner Nähe – wo es ist (4.13).
+- **Rauschen** im Bild und als Ton, lauter je näher es kommt, dazu ein Brummen – wie nah (4.13).
 
 ### 4.3 Verhalten
-> Die feste Patrouillenroute ist im Prototyp durch 4.13 ersetzt (Umherstreifen im ganzen Hotel, Ruhephasen im Keller). Abbiegen in Zimmer, Abschreckung durch Deko und die Abweichungen gelten weiter.
-
-- **Phasen:** `Latent` (Hintergrund) → `Vorwarnung` → `Manifestation` (sichtbar/aktiv) → `Rückzug`
-- **Feste Patrouillenroute** (entschieden): Das Monster startet im **Keller** und läuft immer dieselbe Runde – Ostflur an allen Zimmertüren vorbei → Lobby → Garten → Lobby → Küche → Flur → zurück in den Keller. *Wann* es kommt, bleibt zufällig; *wo* es langgeht, kann man lernen.
+- **Umherstreifen statt fester Route:** Aktivphasen im ganzen Hotel im Wechsel mit Ruhephasen im Keller (4.13). Beim
+  Aufbruch wählt es eine Absicht (4.17); vor einem echten Angriff geht es zur Puppentür (5.5).
 - **An jeder Zimmertür** entscheidet es, ob es abbiegt (Neugier des Zimmers × Dreistigkeit). Im Zimmer prüft es Bett und Schrank. Deko vor der Tür hält es schon im Flur auf → es überspringt die Tür.
-- Abweichungen von der Route: Geräusch (nachsehen), bemerkt (Suche ums Spielerzimmer), Sichtung (Jagd) – danach zurück auf die Route.
-- Wahrscheinlichkeit einer Manifestation steigt mit Zeit, Lärm, fehlender Deko in der Nähe.
-- **Deko wirkt abschreckend:** Bereiche mit Deko werden gemieden; zu wenig Deko = Monster kann durch.
+- **Abweichungen:** Geräusch (nachsehen), bemerkt (Suche ums Spielerzimmer, 4.5), Sichtung (Jagd, 4.12).
+- **Deko wirkt abschreckend:** Liegt sein Ziel im Schutz von Deko und Licht, sucht es sich ein anderes; vorbeigehen darf es (4.13).
 
 ### 4.4 Licht & Dunkelheit
 - Das Monster **bevorzugt dunkle Bereiche** und meidet helle.
-- Jeder Bereich hat einen **Helligkeitswert** (Lichtquellen in der Nähe, defekte Lampen, Tageszeit).
+- Jeder Bereich hat einen **Helligkeitswert** (Lichtquellen in der Nähe, defekte Lampen, Vorhänge).
 - Manifestationen und Wege des Monsters werden zur Dunkelheit hin gewichtet.
-- Konsequenz: Licht wird zur Ressource. Flackernde/ausfallende Lampen (Teil der Vorwarnung) machen sichere Zonen plötzlich unsicher.
+- Konsequenz: Licht wird zur Ressource. Flackernde/ausfallende Lampen (4.13, 4.17) machen sichere Zonen plötzlich unsicher.
 - Synergie: Ein **geschnitzter Kürbis mit Kerze** ist Deko *und* Lichtquelle zugleich.
 - **Licht aus = das Monster kommt** (entschieden): Wird ein Raum oder Flurabschnitt per **Lichtschalter** dunkel gemacht (7.3), steigt die Neugier dort stark an und das Monster wird angelockt. Das gilt für Spieler *und* Gäste – wer bei sich das Licht ausmacht, lädt es ein.
-- **Flackern bleibt:** Auch eingeschaltete Lampen **flackern weiterhin**, wenn das Monster sich ankündigt (4.2). Licht schützt, aber es warnt nicht ab.
+- **Flackern bleibt:** Auch eingeschaltete Lampen **flackern**, wenn das Monster aufbricht oder in der Nähe ist (4.2). Licht schützt, aber es warnt nicht ab.
 - **Vorhänge** (7.3) bestimmen, ob Mondlicht hereinfällt – zugezogen wird ein Zimmer dunkler.
 
 ### 4.5 Wahrnehmung: „Es weiß, dass du es gesehen hast“
@@ -1030,7 +1073,7 @@ Bevor das Monster erscheint, gibt es eine Vorwarnphase (z. B. 5–15 Sekunden):
 ### 4.8 Es wird mit der Zeit anspruchsvoller
 - Das Monster gewöhnt sich an Deko: Was in Nacht 1 reicht, reicht in Nacht 3 nicht mehr.
 - Die **benötigte Deko-Stärke** steigt mit der Spielzeit → Spieler muss ständig nachlegen, verbessern, schnitzen, handeln.
-  **Seit 2026-10-21 (5.10):** in Spieltagen gerechnet und gedeckelt – von ×1 beim ersten Angriff auf etwa ×3 an Halloween.
+  In Spieltagen gerechnet und gedeckelt – von ×1 beim ersten Angriff auf etwa ×3 an Halloween (5.10).
 - Evtl. auch **Gewöhnung an konkrete Deko**: Immer derselbe Kürbis an derselben Stelle wirkt schwächer; Abwechslung wirkt besser.
 
 ### 4.9 Versteckte Werte: Dreistigkeit & Neugier
@@ -1044,19 +1087,18 @@ Das Verhalten des Monsters wird aus **für den Spieler unsichtbaren Werten** ber
 >   Ort, Stärke, Abklingen (Lärm, Licht aus, Sichtung, „Angst riecht“). Das Urteil der Puppe (5.5) wirkt ohnehin direkt.
 
 **Dreistigkeit (global, 0–100)** – *wie viel traut es sich?*
-- ↑ mit der Zeit (langsam, stetig – seit 2026-10-21 in Spieltagen)
+- ↑ mit der Zeit (langsam, stetig, in Spieltagen)
 - ↑ wenn es Gespräche über sich belauscht (4.7)
 - ↑ wenn es bemerkt wurde / Sichtungen (4.5)
 - ↑ wenn Gäste in Panik sind (6.5)
-- ~~↓ kurzzeitig, wenn es von starker Deko abgewiesen wurde~~ (entfällt 2026-10-21)
 - ↓↓ **stark, wenn es einen Gast geholt hat → Sättigung** (siehe 4.10)
 
-**Neugier (pro Ort/Zone, 0–100)** – *wohin zieht es?*
+**Neugier (pro Ort/Zone, 0–100; soll zur Liste heißer Stellen werden, siehe oben)** – *wohin zieht es?*
 - ↑ Dunkelheit in der Zone
 - ↑ wenig/schwache Deko (im Verhältnis zum aktuellen Anspruch, 4.8)
 - ↑ Sichtung in der Nähe / Spielerzimmer im Suchmodus (4.5)
 - *Die Puppe (5.5) wirkt nicht über die Neugier, sondern direkt: Vor ihrer Tür endet jeder Angriff, und wer dort
-  ist, stirbt (neu gefasst 2026-10-22; ersetzt „Puppe blockiert/weggetragen“ und „schlechtes Urteil“).*
+  ist, stirbt.*
 - ↑ Lärm
 - ↓ langsamer Abbau über Zeit
 
@@ -1064,8 +1106,8 @@ Das Verhalten des Monsters wird aus **für den Spieler unsichtbaren Werten** ber
 ```
 Abschreckung = (Summe Deko-Stärke × Licht-Faktor) / Anspruch(Zeit)
 ```
-*Seit 2026-10-21 (5.10):* Jede Deko zählt in ihrem **Lichtschein**; Deko ohne Licht nur halb und nur direkt an der
-Tür. Der Anspruch ist an den Tag gebunden und gedeckelt (4.8).
+Jede Deko zählt in ihrem **Lichtschein**; Deko ohne Licht nur halb und nur direkt an der Tür (5.10). Der Anspruch ist
+an den Tag gebunden und gedeckelt (4.8).
 
 **Entscheidung (Vorschlag)**
 ```
@@ -1075,7 +1117,7 @@ sonst                 → Monster hält sich fern, bleibt diffus im Hintergrund
 ```
 - Die Zone mit dem höchsten Druck wird bevorzugt angesteuert (mit etwas Zufall, damit es nicht vorhersehbar wird).
 - Die Wahrscheinlichkeit einer **Manifestation** (Flackern/Rauschen → Erscheinen) wächst mit dem höchsten Druck-Wert.
-- Alle Gewichtungen sind Tuning-Parameter → zentral in einer Ressource, damit man sie im Godot-Editor ausbalancieren kann.
+- Alle Gewichtungen sind Tuning-Parameter, zentral oben im `MonsterDirector`.
 - **Debug-Overlay** (nur in Entwicklung): zeigt alle Werte live an.
 
 ### 4.10 Sättigung
@@ -1090,9 +1132,8 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 | Methode | Wirkung |
 |---------|---------|
-| **Deko eines Gastes klauen** | Seine Zone wird schwächer → Neugier ↑ dort |
+| **Deko eines Gastes klauen** | Seine Zone wird schwächer → Neugier ↑ dort; hat seine Tür dann am wenigsten, liegt die Puppe vor ihr (5.5) |
 | **Licht sabotieren** | Lichtschalter seines Raums ausschalten, **Glühbirnen klauen** (7.3), Kerze auspusten → dunkle Zone; geklaute Birnen machen das eigene Zimmer heller |
-| ~~**Die Puppe vor seine Tür tragen**~~ | entfällt 2026-10-22 – niemand trägt sie mehr hin; statt dessen ihm die Deko klauen: dann liegt sie vor seiner Tür (5.5) |
 | **Lärm machen** | Wecker / Spieluhr / Radio in seinem Zimmer oder Flur abstellen · etwas dorthin werfen – das Monster geht dem Aufschlag nach (3.13) |
 | **Gerüchte & Panik säen** | Mit dem Gast über das Monster reden → er gerät in Panik, macht Lärm, versteckt sich auffällig |
 | **Ihn in den Keller / Garten schicken** | Per Dialog oder Auftrag in eine dunkle Gefahrenzone locken |
@@ -1109,13 +1150,13 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 > verstecken, Licht und Deko schon.
 **Grundsatz: Wer offen im Flur steht, wenn das Monster kommt, ist in Lebensgefahr.** Das Monster muss einen sehen können.
 
-- **Deko schützt nur, wer drinsteht:** Deko (und Licht) bilden einen Schutzbereich um sich herum (Radius, 5.2; seit 2026-10-21 **ihr sichtbarer Lichtschein**, 5.10). Wer **in diesem Bereich steht**, ist sicher – das Monster bricht die Jagd an dessen Rand ab. Wer **hinter** oder **neben** dem Bereich steht, ist **nicht** geschützt: Das Monster darf den Bereich durchqueren, um ihn zu holen. → Zur Deko flüchten rettet einen, sich hinter ihr verstecken nicht.
+- **Deko schützt nur, wer drinsteht:** Deko (und Licht) bilden einen Schutzbereich um sich herum (**ihr sichtbarer Lichtschein**, 5.2, 5.10). Wer **in diesem Bereich steht**, ist sicher – das Monster bricht die Jagd an dessen Rand ab. Wer **hinter** oder **neben** dem Bereich steht, ist **nicht** geschützt: Das Monster darf den Bereich durchqueren, um ihn zu holen. → Zur Deko flüchten rettet einen, sich hinter ihr verstecken nicht.
 - **Kein sicherer Rückzug:** Auch auf dem Rückweg in den Keller nimmt das Monster jeden wahr, den es sieht, und **beginnt die Jagd erneut**. Am Monster vorbeilaufen ist nie sicher.
-- **Sichtweite (Tuning-Werte, Vorschlag):**
+- **Sichtweite (Tuning-Werte):**
 
 | Situation | Sichtweite |
 |-----------|------------|
-| Dunkel | ca. **8 m** (bisher 3 m) |
+| Dunkel | ca. **8 m** |
 | Hell | deutlich mehr (ca. 15–20 m) |
 | Spieler rennt | + Bonus (Lärm, Bewegung) |
 | Spieler duckt sich / steht still | − Abzug |
@@ -1124,17 +1165,15 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 - Verstecken (3.4) bleibt der wichtigste Ausweg: Wer **ungesehen** in ein Versteck kommt, ist vorerst sicher.
 - **Kinder und Katzen** sieht es nicht als Beute – es jagt sie nicht (6.11, 6.13).
-- **Beobachteter Fehler im Prototyp:** Spieler steht im Flur hinter einer Deko-Zone → das Monster jagt ihn, wird an der Deko „abgewiesen“, zieht sich zurück und läuft dabei durch den Spieler hindurch, ohne ihn anzugreifen. Die drei Regeln oben beheben das. *(umgesetzt)*
 
 ### 4.13 Ständige Präsenz (entschieden 2026-10-10)
-> Ersetzt die globale Vorwarnung (4.2) und die feste Route (4.3).
 > **Im Prototyp umgesetzt (2026-10-11):** Umherstreifen im ganzen Hotel im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht dem Blick des Spielers aus, Rauschen ab 20 m (am stärksten bei 4 m), Lampen flackern nur in seiner Nähe, Halluzinationen nach einem Todesfall, alle Spuren aus der Tabelle (Fußspuren verblassen, Kratzspuren bleiben, Spuren an Zimmer 13 lassen sich wegwischen), Klopfen in beiden Varianten, Warnungszettel ab dem ersten Angriff, kleine Veränderungen im Hotel, Gäste berichten (nicht immer zuverlässig) von Spuren, Brummen mit dem Rauschen. Spielstände sichern Monster, Spuren und geprüfte Verstecke.
 > **Noch nicht:** engerer Blick unter Stress.
 
 **Entschieden**
 - **Das Monster patrouilliert im ganzen Hotel** (Flure, Zimmer, Lobby, Küche, Bar, Garten, Keller) und **bleibt dabei oft verborgen**: bewegt sich bevorzugt außerhalb des Blickfelds und im Dunkeln.
 - **Langsamer Einstieg:** In den **ersten Minuten bzw. ersten Phasen kommt es nicht**. Anfangs **zieht es sich regelmäßig in den Keller zurück**; die Ruhephasen werden mit der Zeit kürzer (passt zu 4.8).
-- **Rauschen nach Entfernung:** Das Rauschen beginnt, wenn das Monster eine bestimmte Distanz zum Spieler unterschreitet, und **wird langsam lauter**, je näher es kommt (Vorschlag: ab ca. 20 m, am stärksten bei ca. 4 m) – auch durch Wände.
+- **Rauschen nach Entfernung:** Das Rauschen beginnt, wenn das Monster eine bestimmte Distanz zum Spieler unterschreitet, und **wird langsam lauter**, je näher es kommt (ab ca. 20 m, am stärksten bei ca. 4 m) – auch durch Wände.
 - **Halluzination:** Ist ein Gast gestorben (Schock/Trauer, 6.8), kommt das Rauschen **manchmal auch ohne Monster**.
 - **Der friedliche Anfang** und die **ersten harmlosen Angriffe**: siehe 2.1.
 - **Spuren des Monsters** (entschieden):
@@ -1156,7 +1195,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
   - **Meistens der echte Gast:** Er klopft panisch und schreit „Mach auf!“, weil das Monster hinter ihm ist. Öffnet man nicht, hört man einen Schrei – danach ist es still.
   - **Manchmal nicht:** Es klopft, man hört eine bekannte Stimme. Öffnet man, ist niemand da – nur ein Kleidungsstück auf dem Boden.
 - **Warnungszettel** stammen von **früheren Gästen**, die es nicht hinausgeschafft haben. Sie liegen in verlassenen Zimmern, im Keller, unter Matratzen, geben Tipps zum Monster und deuten den Schlüssel an Halloween an – zugleich der Story-Faden (offene Frage 4).
-- **Lampen flackern nur noch lokal** in der Nähe des Monsters: Flackern zeigt, *wo* es ist; Rauschen zeigt, *wie nah*. (Umgesetzt 2026-10-17: Flackerwelle vom Keller aus beim Aufbruch, ihre Dauer verrät die Absicht, 4.17.)
+- **Lampen flackern lokal** in der Nähe des Monsters: Flackern zeigt, *wo* es ist; Rauschen zeigt, *wie nah*. Dazu die Flackerwelle vom Keller aus beim Aufbruch, ihre Dauer verrät die Absicht (4.17).
 - **Das Poolwasser spürt es (entschieden und umgesetzt 2026-10-19):** gemessen vom Monster zum Wasser, nicht zum
   Spieler. Ab ~30 m legen sich die Wellen, bei 20 m ist das Becken **spiegelglatt**. Ab 20 m (wo das Rauschen
   beginnt) laufen **feine zitternde Ringe** von seiner Seite her übers Wasser, Stoß um Stoß, am stärksten bei 4 m –
@@ -1178,23 +1217,17 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
   verlaufener Kürbismatsch lässt sich nicht mehr aufsammeln (5.8). Drinnen und unter Dach ändert sich nichts.
 - **Technische Atmosphäre:** mehr Nebel, Lichtkegel statt gleichmäßigen Lichts, Brummen mit dem Rauschen, engerer Blick unter Stress.
 
-**Beobachteter Fehler im Prototyp (behoben 2026-10-11):** Nach einem harmlosen Angriff auf einen Gast jagte das Monster ihn beim Rückzug sofort wieder, oder der Gast kletterte direkt vor ihm zurück ins selbe Versteck. Folge: endloses Erschrecken, und Bruno rief in einem fort „Bleib weg!“. Jetzt gilt: Nach einem harmlosen Schreck verschwindet das Monster, ohne erneut zu jagen; Gäste meiden Verstecke in der Nähe des Monsters (8 m); denselben Panik-Satz sagt ein Gast höchstens alle 45 s.
-
-**Angriffe waren zu kurz (beobachtet 2026-10-13, behoben 2026-10-17)**
-- **Beobachtung:** Kaum hatte eine Aktivphase begonnen, kam das Monster nur ein paar Meter aus dem Kellerflur
-  und verschwand wieder – auch mit F5 gerufen.
-- **Ursache:** (1) Die Deko der Gäste säumt die Flure; ihr Schutzradius (3 m) deckt den ganzen Flur ab. Das
-  Monster lauerte deshalb alle paar Meter. (2) Viermal Lauern oder einmal von Deko/Licht zurückgeschreckt
-  führte direkt in den Rückzug, und (3) der Rückzug endet sofort, wenn der Spieler weit weg ist. (4) Nach
-  einem harmlosen Schreck an einem Gast zog es sich ebenfalls zurück.
-- **Jetzt:** Deko und Licht **drängen es ab, statt es nach Hause zu schicken.** Vorbeigehen darf es; abgeschreckt
-  wird es nur, wenn sein **Ziel** im Schutz liegt (beim Jagen wie bisher, wenn der Gejagte im Schutz steht).
-  Zurückgeschreckt sucht es sich ein anderes Ziel und lässt den Geschützten ~15 s in Ruhe. Nach einem
-  harmlosen Schreck schleicht es aus dem Blick und streift weiter; den Erschreckten verschont es bis zur
-  nächsten Aktivphase. In den Keller geht es nur noch am Ende der Aktivphase, satt oder vom UV-Licht vertrieben.
-- Die **ersten beiden Angriffe bleiben harmlos** (2.1) – auch mit F5 gerufen (seit der Tagesuhr, 2.4: die ersten neun
-  Aufbrüche, etwa anderthalb Tage). Erst danach holt es jemanden
-  (seit 4.17 nur, wenn es das beim Aufbruch will – mit einer Chance, die von Tag zu Tag steigt).
+**Regeln für Aktivphasen** (aus Beobachtungen im Prototyp, umgesetzt 2026-10-11 bis 2026-10-17)
+- Deko und Licht **drängen es ab, statt es nach Hause zu schicken.** Die Deko der Gäste säumt die Flure – würde jede
+  Deko es vertreiben, käme es kaum aus dem Keller. Vorbeigehen darf es; abgeschreckt wird es nur, wenn sein **Ziel**
+  im Schutz liegt (beim Jagen, wenn der Gejagte im Schutz steht). Zurückgeschreckt sucht es sich ein anderes Ziel und
+  lässt den Geschützten ~15 s in Ruhe.
+- Nach einem **harmlosen Schreck** an einem Gast schleicht es aus dem Blick und streift weiter, ohne ihn erneut zu
+  jagen; den Erschreckten verschont es bis zur nächsten Aktivphase. Gäste meiden Verstecke in der Nähe des Monsters
+  (8 m); denselben Panik-Satz sagt ein Gast höchstens alle 45 s.
+- In den Keller geht es nur am Ende der Aktivphase, satt oder vom UV-Licht vertrieben.
+- Die **ersten neun Aufbrüche** (etwa anderthalb Tage) bleiben für Gäste harmlos (2.1) – auch mit F5 gerufen. Danach
+  holt es nur jemanden, wenn es das beim Aufbruch will – mit einer Chance, die von Tag zu Tag steigt (4.17).
 
 **Offen**
 - Was steht konkret auf den Warnungszetteln (Story)? (Im Prototyp gibt es fünf erste Zettel aus den Jahren 1987–2019, siehe `scripts/world/warning_note.gd`.)
@@ -1225,9 +1258,10 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Gäste nutzen die Telefone ebenfalls: Gerüchte verbreiten sich schneller, und ängstliche Gäste rufen in Panik herum.
 - Der **reparierte Fahrstuhl** hat ein Notruftelefon in der Kabine (7.4), das manchmal klingelt, wenn niemand darin ist.
 
+- Telefonate nutzen das bestehende Dialogsystem mit eigenen Sätzen, kein Freitext.
+
 **Zu klären**
 - Funktionieren die Telefone von Anfang an, oder muss erst die Telefonzentrale an der Rezeption eingeschaltet werden?
-- Freitext-Gespräche nein – Telefonate nutzen das bestehende Dialogsystem mit eigenen Sätzen.
 
 ### 4.15 Lärm & Sichtbarkeit – ein gemeinsames System (entschieden 2026-10-11)
 > **Im Prototyp umgesetzt (2026-10-11):** Alle Werte stehen in `scripts/util/senses.gd`. Jedes Geräusch in der Welt läuft über einen Einstieg (`Game.noise`) und ist zugleich Lärm nach der Tabelle unten. Gedämpft wird über Sichtlinien-Strahlen: Wände ×0,4, geschlossene Türen (und klares Glas) ×0,6, je Geschossdecke ×0,3. Das Monster geht in Hörweite nachsehen, bis zur doppelten Hörweite wird es neugierig (0,25 Neugier je Meter Hörweite), ruhend zählt nur Lautes ab 8 m. Gäste hören erschreckende Geräusche (Schrei, aufgerissene Tür oder Schrank, platzende Birne) mit halber Reichweite: Angst steigt, ängstliche verstecken sich in Panik, mutige gehen nachsehen, die anderen erzählen davon („Hast du das gehört?“, nicht immer mit dem richtigen Ort). Gäste in Panik machen beim Rennen Lärm. Sehen: eine Rechnung für Jagd, „beim Verstecken gesehen“ und Zeugen beim Klauen, mit eigenem Licht in der Hand.
@@ -1238,58 +1272,58 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 #### Lärm
 - **Lautstärke = Hörweite in Metern.** Was man hört, ist zugleich Lärm in der Welt: Es gibt kein Geräusch mehr, das nur der Spieler hört (Ausnahme: Menüs, Meldungen, Monster-Stinger).
-- **Dämpfung (Vorschlag):** je Wand ×0,4, je geschlossene Tür ×0,6, offene Tür ungedämpft. Durch Decke/Boden zwischen den Geschossen ×0,3.
+- **Dämpfung:** je Wand ×0,4, je geschlossene Tür ×0,6, offene Tür ungedämpft. Durch Decke/Boden zwischen den Geschossen ×0,3.
 - **Monster:** Innerhalb der Hörweite geht es nachsehen (wenn es unterwegs ist); bis zur doppelten Hörweite steigt nur die Neugier dort (4.9). Lautes zählt also auch, wenn es ruht.
 - **Gäste:** hören mit halber Reichweite. Leises ignorieren sie, Lautes (Schrei, Knall, aufgerissene Tür) erschreckt sie, sie sehen nach oder erzählen davon (Gerüchte, 6.5) – ängstliche Gäste geraten in Panik.
 - **Licht aus** (4.4) und **über das Monster reden** (4.7) bleiben eigene Regeln: Das ist kein Geräusch, sondern Einladung bzw. Lauschen.
 
-| Aktion | bisher | Hörweite (Vorschlag) | Anmerkung |
-|--------|--------|----------------------|-----------|
-| Gehen | – | 0 m (Teppich, Rasen) · 2 m (Holz, Fliesen) | geduckt immer 0 |
-| Rennen | 1,0 alle 0,6 s | 10 m | |
-| Landen nach Sprung | – | 4 m | |
-| Tür öffnen/schließen (Knarren) | – | 5 m | |
-| Abgeschlossene Tür rütteln | – | 6 m | |
-| Aufschließen (Schlüssel klirren) | – | 3 m | |
-| Tür vom Monster aufgerissen | – | 20 m | Gäste erschrecken |
-| In ein Versteck gehen (Schranktür) | – | 4 m | |
-| Versteck vom Monster aufgerissen | – | 20 m | |
-| Gegenstand ablegen | – | 2 m · Kürbis 4 m | |
-| Vor Schreck fallen lassen (Schock, 6.8) | – | 6 m | |
-| Truhe öffnen | – | 4 m | |
-| Schublade aufziehen/zuschieben | – | 3 m | |
-| Katze miaut · schnurrt · wirft Deko um | – | 8 m · 1,5 m · 5 m | das Monster überhört Katzen (6.11) |
-| Katze weint (Flucht vor dem Monster) | – | 16 m | Gäste werden unruhig; das Monster überhört es |
-| Vorhang ziehen | – | 2 m | |
-| Glühbirne heraus-/eindrehen | – | 2 m | |
-| Glühbirne platzt | – | 8 m | |
-| Lichtschalter | – | 1 m | Licht aus zusätzlich nach 4.4 |
-| Kürbis ernten · schnitzen | – | 3 m | |
-| Spur wegwischen | – | 2 m | |
-| Kartenblatt blättern | – | 1 m | |
-| Gespräch mit einem Gast | – | 3 m | Lauschen nach 4.7 bleibt |
-| Nach Luft schnappen (Luft zu lange angehalten) | 1,5 einmal | 10 m | |
-| Atmen im Versteck | Sonderregel | – | bleibt: angehaltener Atem senkt die Chance, entdeckt zu werden (×0,35) |
-| Keuchen außer Atem (3.1) | – | 4 m alle 1,5 s | im Versteck zudem ×1,8 Chance, entdeckt zu werden (beim Umsetzen ergänzt) |
-| Klopfen an eine Tür | – | 8 m | |
-| Telefon klingelt | 0,8 je Klingeln | 18 m | 4.14 |
-| Hörer abnehmen, auflegen, daneben legen | – | 2 m | (beim Umsetzen ergänzt) |
-| Würfeln, Spiel am Tisch | 0,7 | 10 m | |
-| Feier mit Musik | 1,5 | 25 m | |
-| Gast schreit | – | 20 m | |
+| Aktion | Hörweite | Anmerkung |
+|--------|----------|-----------|
+| Gehen | 0 m (Teppich, Rasen) · 2 m (Holz, Fliesen) | geduckt immer 0 |
+| Rennen | 10 m | |
+| Landen nach Sprung | 4 m | |
+| Tür öffnen/schließen (Knarren) | 5 m | |
+| Abgeschlossene Tür rütteln | 6 m | |
+| Aufschließen (Schlüssel klirren) | 3 m | |
+| Tür vom Monster aufgerissen | 20 m | Gäste erschrecken |
+| In ein Versteck gehen (Schranktür) | 4 m | |
+| Versteck vom Monster aufgerissen | 20 m | |
+| Gegenstand ablegen | 2 m · Kürbis 4 m | |
+| Vor Schreck fallen lassen (Schock, 6.8) | 6 m | |
+| Truhe öffnen | 4 m | |
+| Schublade aufziehen/zuschieben | 3 m | |
+| Katze miaut · schnurrt · wirft Deko um | 8 m · 1,5 m · 5 m | das Monster überhört Katzen (6.11) |
+| Katze weint (Flucht vor dem Monster) | 16 m | Gäste werden unruhig; das Monster überhört es |
+| Vorhang ziehen | 2 m | |
+| Glühbirne heraus-/eindrehen | 2 m | |
+| Glühbirne platzt | 8 m | |
+| Lichtschalter | 1 m | Licht aus zusätzlich nach 4.4 |
+| Kürbis ernten · schnitzen | 3 m | |
+| Spur wegwischen | 2 m | |
+| Kartenblatt blättern | 1 m | |
+| Gespräch mit einem Gast | 3 m | Lauschen nach 4.7 bleibt |
+| Nach Luft schnappen (Luft zu lange angehalten) | 10 m | |
+| Atmen im Versteck | – | angehaltener Atem senkt die Chance, entdeckt zu werden (×0,35) |
+| Keuchen außer Atem (3.1) | 4 m alle 1,5 s | im Versteck zudem ×1,8 Chance, entdeckt zu werden |
+| Klopfen an eine Tür | 8 m | |
+| Telefon klingelt | 18 m | 4.14 |
+| Hörer abnehmen, auflegen, daneben legen | 2 m | |
+| Würfeln, Spiel am Tisch | 10 m | |
+| Feier mit Musik | 25 m | |
+| Gast schreit | 20 m | |
 
 #### Sichtbarkeit
 - **Sichtweite = Grundweite des Beobachters × Auffälligkeit des Gesehenen**, danach Sichtkegel und freie Sichtlinie.
 - **Auffälligkeit** (Faktor, 1,0 = steht normal im Dunkeln):
 
-| Einfluss | Faktor (Vorschlag) | Anmerkung |
-|----------|--------------------|-----------|
-| Licht am Ort | 1,0 (dunkel) … 2,2 (hell) | entspricht heute 8 m → 18 m beim Monster |
-| Eigenes Licht in der Hand | Kerze +0,6 · Kürbislaterne +0,8 · Taschenlampe +0,9 · UV +1,2 | **neu:** wer Licht trägt, wird gesehen (Taschenlampe: 4.16) |
-| Rennen | +0,4 | heute +3 m |
+| Einfluss | Faktor | Anmerkung |
+|----------|--------|-----------|
+| Licht am Ort | 1,0 (dunkel) … 2,2 (hell) | beim Monster 8 m → 18 m |
+| Eigenes Licht in der Hand | Kerze +0,6 · Kürbislaterne +0,8 · Taschenlampe +0,9 · UV +1,2 | wer Licht trägt, wird gesehen (Taschenlampe: 4.16) |
+| Rennen | +0,4 | |
 | Gehen | ±0 | |
-| Stillstehen | −0,1 | heute −1 m |
-| Ducken | −0,25 | heute −2 m |
+| Stillstehen | −0,1 | |
+| Ducken | −0,25 | |
 | Karte oder Kompass vor dem Gesicht | ±0 | leuchten zu schwach |
 | Im Versteck | unsichtbar | gesehen wird nur das Hineingehen |
 
@@ -1298,15 +1332,13 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Beobachter | Grundweite | Sichtkegel | Besonderheiten |
 |------------|-----------|------------|----------------|
 | Monster | 8 m | ca. 145° | während der Jagd +5 m und kein Kegel (4.12) |
-| Gast | 5 m (heute fest 10 m) | 180° | abgelenkt (Gespräch, Würfeln, Panik) ×0,6 |
+| Gast | 5 m | 180° | abgelenkt (Gespräch, Würfeln, Panik) ×0,6 |
 
-- **Gilt überall gleich:** Jagd beginnen, „beim Verstecken gesehen“ (heute fest 16 m) und Zeugen beim Klauen (heute fest 10 m) nutzen dieselbe Rechnung. → Im Dunkeln und geduckt klaut man unbemerkter; wer mit Kerze in den Schrank steigt, wird gesehen.
+- **Gilt überall gleich:** Jagd beginnen, „beim Verstecken gesehen“ und Zeugen beim Klauen nutzen dieselbe Rechnung. → Im Dunkeln und geduckt klaut man unbemerkter; wer mit Kerze in den Schrank steigt, wird gesehen.
 - Was der **Spieler** sieht (Verschwinden aus dem Blickfeld, 4.13), bleibt der Kamera-Ausschnitt.
 
 **Folgen fürs Spiel:** Türen, Schränke und Truhen werden zu Entscheidungen (leise und langsam oder schnell und laut). Licht in der Hand schützt nicht nur, es verrät auch. Gäste reagieren auf das, was im Hotel passiert, statt nur auf Gespräche.
 
-**Entschieden beim Umsetzen (2026-10-11)**
-- Dämpfungswerte wie vorgeschlagen; Gehen auf Holz und Fliesen macht 2 m Lärm.
 - Gäste reagieren auf erschreckenden Lärm mit Gerüchten **und** gehen nachsehen (die mutigen) – sie können dabei selbst in Gefahr geraten.
 
 **Zu klären**
@@ -1320,7 +1352,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 - **Eine Lampe, zwei Modi:** Man findet früh eine normale Taschenlampe. Der **UV-Aufsatz** ist ein **späterer Fund** (Zimmer 18, Schlüssel im Keller – „Wagnis“ nach 2.3). Danach schaltet man um.
 - **Gegenstand in der Hand** (3.2), nicht am Körper: Mit Lampe trägt man keinen Kürbis. [Linksklick] an/aus, [R] normal ↔ UV.
-- **Batterien** sind kleine Gegenstände. Batterie in der Hand + Lampe (oder umgekehrt) → einlegen, wie die Kerze in den Kürbis. Eine Batterie reicht für ~~**einen Ingame-Tag normales Licht**~~ **5 Minuten normales Licht** (etwa einen Abend, 2.4) – oder für **etwa 9 Sekunden UV**. Skeptiker handeln damit.
+- **Batterien** sind kleine Gegenstände. Batterie in der Hand + Lampe (oder umgekehrt) → einlegen, wie die Kerze in den Kürbis. Eine Batterie reicht für **5 Minuten normales Licht** (Echtzeit, etwa einen Abend, 2.4) – oder für **etwa 9 Sekunden UV**. Skeptiker handeln damit.
 - **Kein Schutzbereich:** Die Lampe zählt nicht als Licht für die Abschreckung (4.9) – sonst wäre sie eine helle Zone zum Mitnehmen.
 - **Verrät einen** (4.15): Auffälligkeit normal **+0,9**, UV **+1,2** (Kerze +0,6).
 - **Flackert in der Nähe des Monsters** wie die Wandlampen; bei schwacher Batterie wird sie dunkel und unruhig.
@@ -1332,7 +1364,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Nicht, wenn es schon zupackt (Jumpscare) oder sich ohnehin zurückzieht.
 
 **UV zeigt Verborgenes**
-- **Fußspuren des Monsters** leuchten unter UV noch lange, nachdem sie für das Auge verblasst sind (~~drei Ingame-Tage~~ 15 Spielstunden, 2.4).
+- **Fußspuren des Monsters** leuchten unter UV noch lange, nachdem sie für das Auge verblasst sind (15 Spielstunden, 2.4).
 - **Schrift an Wänden**, nur unter UV: in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2), in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, der Heizer), in Zimmer 18 („Nur einer kommt hinaus“).
 - **Jeder Warnungszettel** hat eine unsichtbare zweite Zeile, die man nur mit eingeschaltetem UV-Licht liest – Hinweise auf das Abkommen und den Heizer (2.3).
 - **Warum UV?** Bewusst offen. Gäste und Zettel deuten an, dass es „dieses Licht hasst“ – eine Erklärung im Geheimnis (2.3) ist möglich, aber nicht nötig.
@@ -1354,22 +1386,22 @@ Lichter flackern, verrät, **was es vorhat**. Kurzes Zucken: Es will sich umsehe
 Hunger und wird mehrere holen.
 
 **Warum das gut passt**
-- Bisher kommt jede Aktivphase gleich: lautlos aus dem Keller, erst das Rauschen verrät es. Damit wird aus dem
+- Ohne Signal käme jede Aktivphase gleich: lautlos aus dem Keller, erst das Rauschen verrät es. So wird aus dem
   Flackern eine **Information, auf die man reagieren kann**: weitermachen oder sofort in Sicherheit. Das ist genau
   der Kern-Loop „Ankündigung erkennen, rechtzeitig in Sicherheit gehen“ (3).
 - Die drei Signale ergänzen sich: **Flackerwelle = wie schlimm**, lokales Flackern = **wo**, Rauschen =
   **wie nah** (4.13).
 - Die versteckten Werte (4.9) werden spürbar, ohne dass man sie anzeigt.
 
-**Drei Absichten** (gewählt beim Aufbruch, Werte als Vorschlag)
+**Drei Absichten** (gewählt beim Aufbruch)
 
 | Absicht | Was es will | Flackern beim Aufbruch |
 |---------|-------------|------------------------|
 | **Umsehen** | streift umher, hinterlässt Spuren, spukt (Türen, Betten …), holt niemanden | ein kurzes Zucken (1 s) |
-| **Einen holen** | wie heute: holt einen (Gast oder Spieler), danach satt (4.10) | 3 s |
+| **Einen holen** | holt einen (Gast oder Spieler), danach satt (4.10) | 3 s |
 | **Raubzug** | holt **n Opfer** (ab zwei); nach jedem Opfer gleich weiter, erst das letzte macht satt, bleibt länger draußen | 1 + 2 × n Sekunden (zwei: 5 s, drei: 7 s, vier: 9 s …), heftig, einzelne Lampen fallen kurz ganz aus |
 
-- **Wie viele Opfer** (entschieden 2026-10-17, ersetzt „höchstens zwei bis drei“): Greift es an, will es
+- **Wie viele Opfer** (entschieden 2026-10-17): Greift es an, will es
   **n Opfer mit Wahrscheinlichkeit ∝ 1/n²**, normiert. Etwa **61 % eins, 15 % zwei, 7 % drei, 4 % vier** …;
   höchstens so viele, wie Gäste leben, plus den Spieler. Kein fester Deckel – sehr große Raubzüge sind selten,
   aber möglich.
@@ -1380,14 +1412,11 @@ Hunger und wird mehrere holen.
 
   | Tag | bis 4 | 7 | 10 | 20 | ab 30 |
   |-----|-------|---|----|----|-------|
-  | will mindestens einen holen | 20 % | 50 % | 75 % | 90 % | 95 % |
-  | **seit der Tagesuhr (2.4), je Aufbruch** | 4 % | 10 % | 16 % | 19 % | 20 % |
+  | will beim Aufbruch mindestens einen holen | 4 % | 10 % | 16 % | 19 % | 20 % |
 
-  Seit 2026-10-23 bricht es etwa sechsmal am Tag auf statt gut einmal – je Tag greift es damit etwa so oft an wie
-  zuvor nach der oberen Zeile.
-
-  Gedeckelt bei 95 %, damit ein kurzes Zucken auch an Halloween nicht immer gelogen ist. Die ersten Tage bleiben
-  ohne Monster, die ersten beiden Angriffe harmlos (2.1) – die Kurve gilt danach. **Vom UV-Licht vertrieben** (4.16) → beim nächsten Aufbruch mindestens zwei:
+  Bei etwa sechs Aufbrüchen am Tag (2.4) heißt das: anfangs etwa jeden vierten Tag ein Angriff, ab Tag 10 etwa einer
+  am Tag. Gedeckelt, damit ein kurzes Zucken auch an Halloween meist die Wahrheit sagt. Vor der Siegerehrung (2.5)
+  kommt es nicht, danach bleiben neun Aufbrüche für Gäste harmlos (2.1) – die Kurve gilt danach. **Vom UV-Licht vertrieben** (4.16) → beim nächsten Aufbruch mindestens zwei:
   Es kommt wütend zurück. Bei den harmlosen Angriffen (2.1) wird gewürfelt und geflackert, geholt wird niemand.
 - **Unscharf, nicht ablesbar:** Die Dauer schwankt etwas. Wer genau hinsieht, unterscheidet kurz und lang, aber
   „3 Opfer“ lässt sich nicht abzählen.
@@ -1402,9 +1431,8 @@ Hunger und wird mehrere holen.
 - **Die Absicht kann sich ändern:** Lärm, Sichtungen und Gespräche über das Monster (4.7) können aus „Umsehen“
   einen Angriff machen. Die Lichter flackern dann noch einmal.
 - **Die Absicht gilt auch für den Spieler** (entschieden): Der Spieler zählt wie ein Gast.
-  - **Umsehen:** Es jagt dich trotzdem (4.12). ~~Erwischt es dich, starrt es dich an und verschwindet wie bei den
-    harmlosen Angriffen (2.1).~~ **Erwischt es dich, stirbst du – immer** (entschieden 2026-10-22, auch bei den ersten,
-    für Gäste harmlosen Angriffen). Harmlos bleiben die nur für die Gäste.
+  - **Umsehen:** Es jagt dich trotzdem (4.12). **Erwischt es dich, stirbst du – immer**, auch bei den ersten, für
+    Gäste harmlosen Angriffen (entschieden 2026-10-22).
   - **Einen holen:** Du kannst der eine sein.
   - **Raubzug:** Du bist eines der n Opfer.
   - Weil es manchmal täuscht, ist ein kurzes Zucken trotzdem keine Garantie.
@@ -1416,7 +1444,7 @@ Hunger und wird mehrere holen.
   Absicht endet deshalb ohne Opfer). Gäste sprechen darüber („Wenn es lange
   flackert, geh nicht raus.“), ebenso ein Warnungszettel. So lernt der Spieler das Signal.
 - **Die ersten harmlosen Angriffe** (2.1) zeigen das Signal schon. Man lernt es kennen, bevor es ernst wird.
-  Der erste Angriff während der Feier behält seinen eigenen Auftakt (Licht aus, Musik aus).
+  Der erste Angriff bei der Siegerehrung (2.5) behält seinen eigenen Auftakt (Licht aus, Stille).
 - **Halluzinationen** (4.13, 6.8): Nach einem Todesfall flackert es manchmal lang, ohne dass etwas kommt.
 - **Konzentration** (6.10): Beim Würfeln sieht man das Flackern nur halb so stark. Langes Flackern bricht die
   Partie ab, wie die Vorwarnung.
@@ -1431,13 +1459,12 @@ die passende Dauer (alle `lamps`, verzögert nach Abstand zum Kellerabgang, dazu
 `kill_guest` bzw. `kill_player` mit. Die Sättigung je Opfer hängt von der Absicht ab. Absicht und Zähler kommen in den Spielstand
 des Directors. Die Zuordnung fester Weltobjekte ändert sich nicht.
 
-**Entschieden (2026-10-17):** Absicht gilt auch für den Spieler · das Signal täuscht manchmal · höchstens zwei
-bis drei Opfer pro Raubzug · Flackern als Welle vom Keller nach oben. Später am selben Tag geändert: Opferzahl
-nach 1/n² ohne festen Deckel, Flackern 1 + 2 × n Sekunden.
+**Entschieden (2026-10-17):** Absicht gilt auch für den Spieler · das Signal täuscht manchmal · Opferzahl nach 1/n²
+ohne festen Deckel · Flackern 1 + 2 × n Sekunden als Welle vom Keller nach oben.
 
 **Mit der Puppe (2026-10-22, 5.5):** Vor jedem echten Angriff (einen holen, Raubzug) liegt 1–2 Minuten vorher die Puppe
 vor der schwächsten bewohnten Tür, und ein Grollen schwillt im ganzen Hotel an. Beim Aufbruch läuft die Flackerwelle
-wie bisher. Das Monster geht dann nicht mehr ziellos umher, sondern zur Puppentür und greift unterwegs bis zu fünf
+wie oben. Das Monster geht dann nicht mehr ziellos umher, sondern zur Puppentür und greift unterwegs bis zu fünf
 schwache bewohnte Türen an, solange es noch hungrig ist. Die Opferzahl gilt für diese Türen unterwegs; das
 Puppenzimmer kommt immer dazu. Beim Umsehen bleibt alles wie oben.
 
@@ -1450,16 +1477,13 @@ braucht), beim Ausprobieren festlegen.
 > ihm. War er an **Tag 20** noch keine **drei Mal** da, holt er auf: Jeder dunkle Raum mit Fenster ruft ihn sicher, und
 > nach nur wenigen Sekunden kommt er wieder – **mehrmals hintereinander beim Betreten**, auch mehr als dreimal (am
 > Tag 20 den ganzen Tag). Alle diese Besuche zählen für seine Stufen.
-> **Im Prototyp umgesetzt (2026-10-17):** Erscheinen bei Licht aus und offenem Vorhang (70 % beim Betreten,
-> danach 90 s Pause), Stufen 1–4 inklusive Handabdrücken auf der Scheibe, Hypnose (langsamer, Blickzug), Hereinkommen
-> (ab dem 4. Mal durch den Vorhang), Würgen mit Losreißen (drei Richtungswechsel in 1,5 s) oder Tod, Zeugen
-> (ein wacher Gast mit Sicht) vertreiben ihn, Ausblenden in 0,5 s. Erst nach dem ersten Angriff des Monsters,
-> nicht während das Monster nah ist. Debug: F6 und `--ghost=n`.
-> **Später am Tag umgesetzt:** **Nachtruhe zu zufälligen Zeiten** (seit 2026-10-21 entschieden, seit 2026-10-23 umgesetzt: feste Zeit
-> mit Streuung, 23–6 Uhr ± ½ h, nur für die Gäste, 2.4) (~~alle 4–9 min für 70–140 s~~ jede Nacht etwa 7 min: alle Gäste im
-> eigenen Bett, Licht aus; schlafende Gäste sind keine Zeugen und bemerken nichts) und der Geist **im Flur** ab
-> dem 6. Mal, wenn alle schlafen. Außerdem sind die Zimmerfenster jetzt **breiter und deutlich höher**
-> (1,9 m breit, 0,75–3,05 m statt 1,4 m breit, 0,9–2,3 m).
+> **Im Prototyp umgesetzt (2026-10-17):** Erscheinen bei Licht aus und offenem Vorhang, Stufen 1–4 inklusive
+> Handabdrücken auf der Scheibe, Hypnose (langsamer, Blickzug), Hereinkommen (ab dem 4. Mal durch den Vorhang), Würgen
+> mit Losreißen oder Tod, Zeugen (ein wacher Gast mit Sicht) vertreiben ihn, Ausblenden in 0,5 s. Nicht während das
+> Monster nah ist. Debug: F6 und `--ghost=n`. **Nachtruhe** 23–6 Uhr ± ½ h (2.4): alle Gäste im eigenen Bett, Licht
+> aus; schlafende Gäste sind keine Zeugen und bemerken nichts. Der Geist kommt **im Flur** ab dem 6. Mal, wenn alle
+> schlafen. Die Zimmerfenster sind 1,9 m breit und reichen von 0,75 bis 3,05 m.
+> **Noch nicht umgesetzt:** Er spukt im Code schon ab Tag 2 statt erst nach dem ersten Angriff (4.20).
 > **Gäste als Opfer (entschieden und umgesetzt 2026-10-18):** Er behandelt Gäste wie den Spieler, mit eigenem
 > Zähler je Gast; Erwürgte bleiben als Leiche liegen – siehe 6.12.
 > **Gefährlicher und hartnäckiger (entschieden und umgesetzt 2026-10-18):**
@@ -1470,27 +1494,23 @@ braucht), beim Ausprobieren festlegen.
 >   flüstert). Wer herauskommt, wird sofort gepackt. Danach fliegt er mit **40 %** (ab dem 6. Mal **75 %**, +10 % je
 >   Nacht ohne Schlaf) **hinein** und würgt im Schrank – sonst gibt er auf. Luft anhalten senkt die Chance (bis zur
 >   Hälfte), Keuchen verrät einen sofort. Zeugen vertreiben ihn auch hier. Nur ab dem 3. Mal (wenn er ohnehin
->   hereinkäme) und nur am Schrank – unterm Bett verschwindet er wie bisher.
-> - **Schlafen:** Der Spieler schläft **während der Nachtruhe im eigenen Bett** (Zimmer 13; geduckt kriecht man
->   darunter). Augen zu, die Zeit läuft fünfmal so schnell bis zum Ende der Nachtruhe. Das Monster kann einen im
->   Bett finden; ist es nah oder gibt es ein lautes Geräusch, wacht man auf. Eine **Nacht** ist eine Nachtruhe.
-> - **Schlafmangel:** Endet eine Nachtruhe ohne Schlaf (nach dem ersten Angriff), zählt eine Nacht ohne Schlaf.
+>   hereinkäme) und nur am Schrank – unterm Bett verschwindet er.
+> - **Schlafen:** im eigenen Bett (Zimmer 13), Dauer und Zeitsprung siehe 3.6. Zu Schlafenden kommt er nie (das Bett
+>   ist ein Versteck); das Monster kann einen im Bett finden.
+> - **Schlafmangel:** Am Ende jeder Nachtruhe (nach dem ersten Angriff) wächst die Zahl der Nächte ohne Schlaf um das,
+>   was an sechs Stunden Schlaf fehlte (3.6).
 >   Je Nacht kommt er häufiger (+10 % am Fenster, kürzere Pause, öfter im Flur), ab **2** Nächten auch vor dem
 >   6. Mal im Flur, ab **3** Nächten **sicher im Flur**, sobald man dort allein ist – auch ohne Nachtruhe. Zeugen
->   vertreiben ihn weiterhin. Schlafen setzt den Zähler zurück. Debug: `--awake=n`, `--ghost=schrank`, `--sleep=bett`.
-> - **Früher, häufiger, schneller (2026-10-18):** Er spukt ~~**ab Tag 2**~~ (seit 2026-10-21 erst nach dem ersten
->   Angriff, 4.20) (oder schon nach dem ersten Angriff, falls
->   früher). Die Licht-aus-Falle bleibt: Wer im dunklen Raum mit offenem Vorhang **bleibt**, für den wird alle **6 s**
->   neu gewürfelt (**25 %**, beim Betreten weiter 70 %). Pause nach einem Besuch **45 s** statt 90 s, er schwebt
->   schneller heran (1,6 statt 1,1 m/s) und kommt schneller herein (1,1 statt 0,8 m/s). Gilt auch für Gäste.
+>   vertreiben ihn weiterhin. Schlaf baut den Zähler ab (3.6). Debug: `--awake=n`, `--ghost=schrank`, `--sleep=bett`.
+> - **Häufig und schnell (2026-10-18):** Beim Betreten eines dunklen Raums mit offenem Vorhang kommt er mit **70 %**;
+>   wer darin **bleibt**, für den wird alle **6 s** neu gewürfelt (**25 %**). Pause nach einem Besuch **45 s**, er
+>   schwebt mit 1,6 m/s heran und kommt mit 1,1 m/s herein. Gilt auch für Gäste.
 > **Fenstertüren (entschieden und umgesetzt 2026-10-22):** Er kommt auch an Fenstertüren nach draußen (Terrasse,
 > Garten, Balkon) – gerade dort sehr wahrscheinlich: Sie haben keinen Vorhang, es reicht Licht aus. **90 %** beim
-> Betreten, **40 %** alle 6 s beim Bleiben (statt 70 % / 25 %). Er schwebt über dem Boden davor heran, ab dem 2. Mal
+> Betreten, **40 %** alle 6 s beim Bleiben (an Fenstern 70 % / 25 %). Er schwebt über dem Boden davor heran, ab dem 2. Mal
 > Handabdrücke auf der Scheibe, ab dem 3. Mal **öffnet er die Tür lautlos** und kommt herein. Gilt auch für Gäste.
-> **Noch nicht:** Einstellung für den Blickzug. Modell: `temp/Meshy_AI_floating_ghost_3d_…glb` – Laken mit Mundloch, ~1,9 m, zwei
-> blutige Hände nach vorn gestreckt. **Gerigget (2026-10-17):** `tools/build_ghost.py` → `assets/models/ghost.glb`
-> (0,8 MB, 512er-Textur, alle 10 159 Dreiecke behalten, damit die Finger heil bleiben) mit Saum, Rumpf, Kopf,
-> Armen und je fünf Fingern à drei Gliedern. Schweben, Handkreisen und Würgen macht später der Code.
+> **Modell:** Laken mit Mundloch, ~1,9 m, zwei blutige Hände nach vorn gestreckt (`assets/models/ghost.glb`, gerigget
+> mit Saum, Rumpf, Kopf, Armen und Fingern, `tools/build_ghost.py`). **Noch nicht:** Einstellung für den Blickzug.
 
 **Grundidee:** Ein Lakengeist schwebt draußen vor den Außenfenstern heran. Er kommt nur, wenn man es ihm leicht
 macht: **Licht aus und Vorhang offen**. Mit jedem Erscheinen wird er dreister – vom Blick durchs Glas bis zum
@@ -1519,7 +1539,7 @@ Der Blickzug bekommt eine Einstellung zum Abschwächen (wie das Flackern, 8.4).
 **Im Zimmer: Er versucht, dich zu erwürgen.**
 - Er schwebt auf dich zu und greift nach deinem Hals.
 - **Befreien:** Nur wer sich **wild hin und her bewegt**, reißt sich los – und hat dafür **3 Sekunden**, gegen
-  einen Griff, der ständig zurückzieht (2026-10-18; vorher 1,5 s und drei Wechsel). Schafft man es nicht,
+  einen Griff, der ständig zurückzieht. Schafft man es nicht,
   **stirbt man** (Sterbebildschirm wie beim Monster, 4.6).
 - **Er verschwindet, wenn mindestens ein bis zwei weitere Gäste zu sehen sind** – Zeugen vertreiben ihn.
   Allein im dunklen Zimmer ist man ihm ausgeliefert; in Gesellschaft ist man sicher. Das stärkt die Gäste
@@ -1533,13 +1553,11 @@ Der Blickzug bekommt eine Einstellung zum Abschwächen (wie das Flackern, 8.4).
 **Später auch im Flur** (ab dem **6.–7. Mal**): Wenn **alle Gäste schlafen**, taucht er wahrscheinlicher
 **im Flur** auf statt nur vor Fenstern. Dann gibt es keine Zeugen, die ihn vertreiben – der nächtliche Flur wird
 zum gefährlichsten Ort.
-- **Nachtruhe** (entschieden 2026-10-17; seit 2026-10-21 zu **fester Zeit** mit Streuung, 2.4, umgesetzt 2026-10-23): ~~zu **zufälligen Zeiten**~~ gehen alle Gäste schlafen – ins eigene Zimmer,
-  Licht aus, ins Bett. Schlafende zählen nicht als Zeugen und bemerken nichts (auch nicht das Monster, das sie
+- **Nachtruhe** (23–6 Uhr mit Streuung, 2.4): Alle Gäste gehen schlafen – ins eigene Zimmer, Licht aus, ins Bett. Schlafende zählen nicht als Zeugen und bemerken nichts (auch nicht das Monster, das sie
   im Bett finden kann). Danach wachen alle wieder auf.
 
 **Die Geisterstunde (entschieden und umgesetzt 2026-10-23)**
-> **Umgesetzt (2026-10-23)** wie unten, mit den beiden Vorschlägen (kaum sichtbar, ab der 4. Begegnung würgt er) und der
-> Glocke aus 7.8. Er geht im Obergeschoss um; in der Stunde kommt er nicht zu Türen mit Lakengespenstern und nicht zu
+> **Umgesetzt (2026-10-23)** wie unten, mit der Glocke aus 7.8. Er geht im Obergeschoss um; in der Stunde kommt er nicht zu Türen mit Lakengespenstern und nicht zu
 > Gästen an Fenstern – wer dort gerade Besuch hat, den verlässt er, wenn die Glocke ausgeschlagen hat. Debug:
 > `--ghost=stunde[,n]`.
 
@@ -1549,10 +1567,10 @@ Von **0 bis 1 Uhr** (2.4) zieht er durch die **Flure**, jede Nacht – wie alles
   Geisterklang in den Fluren.
 - **Kurz und heftig:** Die Stunde dauert eine Minute Echtzeit (im Bett, fünfmal so schnell, 12 s) – ein Moment,
   kein Abschnitt der Nacht. Genug für ein, zwei Durchgänge durch einen Flur.
-- **Versteckt** (Vorschlag): Bis er einen bemerkt, ist er kaum zu sehen – nur leiser Geisterklang und Flocken. Er
+- **Versteckt:** Bis er einen bemerkt, ist er kaum zu sehen – nur leiser Geisterklang und Flocken. Er
   sieht nach 4.15 (`Senses.can_see`): Ducken und Dunkel helfen, man kann ihm bewusst ausweichen.
 - **Hat er dich gesehen,** schwebt er auf dich zu. Die **ersten Begegnungen** in der Geisterstunde sind eine Warnung:
-  Er verschwindet kurz vor dir (wie die Garantie an Tag 10). Danach – Vorschlag: **ab der 4. Begegnung** – kann er
+  Er verschwindet kurz vor dir (wie die Garantie an Tag 10). Danach – **ab der 4. Begegnung** – kann er
   **würgen** (Losreißen wie im Zimmer). Dafür zählt ein **eigener Zähler** für Begegnungen in der Geisterstunde;
   seine Stufen am Fenster (Tabelle oben) bleiben davon unberührt.
 - **Nur Flure, keine Zimmer:** In den Zimmern gilt weiter die Regel am Fenster. Wer um 0 Uhr mit Licht im Zimmer
@@ -1582,24 +1600,20 @@ Der Geist achtet darauf, wer **schwach und ängstlich** ist. Spieler und Gäste 
 - **Umgesetzt (2026-10-19):** Schwäche 0–1. Spieler: je Nacht ohne Schlaf ⅓, Rausch (betrunken, ab dem 3. Glas, allein schon ganz schwach), halber Schock,
   frische Trauer bis 0,3, Kater 0,2. Gäste: Angst × 0,6 plus Rausch. Volle Schwäche bringt bis zu +30 % Chance und
   eine viermal kürzere Pause; ab **⅔** kommt er auch vor dem 6. Mal in den Flur, ab **1** sicher, sobald man dort
-  allein ist. Zwei bzw. drei Nächte ohne Schlaf wirken damit wie bisher; nach drei Gläsern kommt er etwa eine Minute lang sicher
+  allein ist. Zwei bzw. drei Nächte ohne Schlaf ergeben genau diese Schwellen; nach drei Gläsern kommt er etwa eine Minute lang sicher
   in den Flur, nach zwei auch früher, wenn alle schlafen.
 
+**Herkunft:** die Verschwundenen – mit jedem geholten Gast häufiger (4.20).
+
 **Zu klären**
-- ~~**Herkunft:** Eigenes Wesen, einer der Verschwundenen (mit jedem geholten Gast häufiger?) oder Teil des
-  Monsters? Bisher kennt das Konzept *ein* Monster, und die Geschichte (2.3) hängt daran.~~ Die Verschwundenen – mit
-  jedem geholten Gast häufiger (4.20, 2026-10-21).
-- ~~**Befreien genau:** Wie viel Hin-und-Her reicht?~~ Balken gegen den Griff (2026-10-18). Hilft UV-Licht?
+- Hilft UV-Licht beim Befreien?
 - **Wie viele Zeugen genau:** einer oder zwei? Reicht es, dass sie im Raum sind, oder müssen sie ihn sehen?
-- ~~**Gäste:** Kommt er auch zu Gästen, die bei sich das Licht aus und den Vorhang offen haben?~~ Ja, wie zum Spieler (2026-10-18, 6.12).
 - **Zähler:** gilt er für das ganze Hotel oder pro Zimmer? Wird er zurückgesetzt?
-- ~~**Wechselwirkung mit dem Monster:** Darf der Geist kommen, während das Monster unterwegs ist?~~ Ja, auf einer
-  anderen Ebene und außer Hörweite (4.20, 2026-10-21).
 
 ### 4.19 Der Kürbismann (entschieden und umgesetzt 2026-10-20)
 > **Im Prototyp umgesetzt (2026-10-20):** Auslöser, Jagd, Schlag mit dem Beil in der rechten Hand (Mixamo „Standing
-> Melee Attack Downward“), Leichen in einer Blutlache, Schreck und Erlebnisse der Gäste; seit 2026-10-21 die Ankunft
-> übers Lobbydach mit Sprung in den Garten und Suche in der Lobby. Debug: F9 bzw. `--pumpkin=dach`,
+> Melee Attack Downward“), Leichen in einer Blutlache, Schreck und Erlebnisse der Gäste, die Ankunft übers Lobbydach
+> mit Sprung in den Garten und Suche in der Lobby (2026-10-21), die Ankündigung (4.20, 2026-10-22). Debug: F9 bzw. `--pumpkin=dach`,
 > `--pumpkin=jagd[,gast]`, `--pumpkin=garten`.
 > **Noch nicht:** eigene Geräusche, die Vorgeschichte als Fundstück im Spiel, eigene Kletter- und Landeanimation.
 
@@ -1608,8 +1622,7 @@ Der Geist achtet darauf, wer **schwach und ängstlich** ist. Spieler und Gäste 
 setzten ihm **als Streich einen Kürbis** auf. Seitdem jagt er alle, die Spaß haben.
 
 **Eine dritte Bedrohung mit eigener Regel:** Das Monster kommt aus der Dunkelheit (4.4), der Lakengeist zu den
-Schwachen (4.18), der Kürbismann zum **Spaß**. ~~Er hat nichts mit dem Abkommen (2.3) zu tun.~~ **Seit 2026-10-21:**
-Er war der Rezeptionist von 1987 und gehörte zum Personal des Abkommens – das Hotel behält jeden, der dort stirbt
+Schwachen (4.18), der Kürbismann zum **Spaß**. Er war der Rezeptionist von 1987 und gehörte zum Personal des Abkommens – das Hotel behält jeden, der dort stirbt
 (4.20). Ankündigung in Stufen, gleiche Sicht wie das Monster und keine Feier, solange er im Haus ist: 4.20.
 Aufhalten und erlösen: 4.21.
 
@@ -1617,8 +1630,7 @@ Aufhalten und erlösen: 4.21.
 - Wer Spaß hat: **feiern** (7.1), am **Spieltisch** sitzen (Mäxchen, Schach – Gäste unter sich oder mit dem
   Spieler, 6.10), als Kind zu **Süßes oder Saures** von Tür zu Tür ziehen oder damit an Zimmer 13 stehen (6.13),
   gemeinsam **schmücken** (5.9, entschieden 2026-10-20 – auch der Spieler, wenn er dabei ist).
-- ~~Haben **mindestens 15 Gäste gleichzeitig Spaß**, erscheint er mit **30 %**.~~ **Spaßwert (entschieden und umgesetzt
-  2026-10-22):** Das Hotel hat einen unsichtbaren **Spaßwert** (0–100, Start 30). Er sinkt ständig von selbst gegen 0;
+- **Spaßwert (entschieden und umgesetzt 2026-10-22):** Das Hotel hat einen unsichtbaren **Spaßwert** (0–100, Start 30). Er sinkt ständig von selbst gegen 0;
   jeder Gast mit Spaß hebt ihn je nach Beschäftigung – am **Spieltisch** und auf **Feiern** stark, beim Schmücken,
   Suppenessen und Süßes oder Saures weniger, der Spieler zählt wie ein Gast. **Deko platzieren** hebt ihn kurz. Über der
   **Schwelle (60)** wird alle 30 s gewürfelt: an der Schwelle 40 %, bei 100 dann 90 % – je mehr Spaß, desto sicherer
@@ -1629,8 +1641,7 @@ Aufhalten und erlösen: 4.21.
 - Nicht vor dem **ersten Angriff** des Monsters – der friedliche Anfang (2.1) bleibt.
 
 **Was er tut**
-- ~~Er taucht **an den Kürbisbeeten** auf (entschieden 2026-10-20).~~ **Er kommt übers Lobbydach** (entschieden und
-  umgesetzt 2026-10-21): Er klettert an der Straßenseite neben dem Haupteingang hinauf, geht über das Dach der Lobby,
+- **Er kommt übers Lobbydach** (entschieden und umgesetzt 2026-10-21): Er klettert an der Straßenseite neben dem Haupteingang hinauf, geht über das Dach der Lobby,
   bleibt kurz an der Kante über dem Mittelgarten stehen und springt vor einer der Glastüren der Lobby hinunter –
   mitten zu den Kürbisbeeten; der Aufprall ist weit zu hören. Dann **sucht er zuerst die Lobby ab** (hinter der Tür,
   neben der Treppe, hinter der Rezeption – sein alter Platz –, vor dem Haupteingang). Wen er dabei sieht, den jagt er;
@@ -1654,7 +1665,7 @@ Aufhalten und erlösen: 4.21.
 - **Keine Opfergrenze, sondern Zeit** (entschieden 2026-10-20): Er ist **2–3 Minuten** im Hotel und holt in der Zeit,
   wen er erwischt; ist kein erwachsener Gast mehr da, streift er umher (wer im Weg steht, stirbt trotzdem). Danach hat er **keine Lust mehr**, geht zum **Haupteingang und verlässt das Hotel** – auf dem Weg tut er
   niemandem mehr etwas.
-- **Kinder sind geschützt** (entschieden 2026-10-20, wie 6.13): Sie haben Spaß und zählen bei den 15 mit – sie locken
+- **Kinder sind geschützt** (entschieden 2026-10-20, wie 6.13): Sie haben Spaß und zählen beim Spaßwert mit – sie locken
   ihn also –, aber ihnen tut er nie etwas, auch wenn sie ihm im Weg stehen. Sie sind **kein Schutzschild**: Wer
   neben einem Kind steht, wird genauso gejagt und erschlagen.
 - Der **Spieler** ist ein Opfer wie jeder Gast: Wer mitfeiert oder spielt, wird gejagt; erwischt er ihn, ist das
@@ -1665,27 +1676,26 @@ Aufhalten und erlösen: 4.21.
 - Wo er hinkommt, ist es **nicht ruhig**: Die Musik verstummt, Partien brechen ab, Süßes oder Saures ist vorbei.
 - Wer ihn sieht, **erschrickt** (auch am Spieltisch) und erzählt später davon (6.12).
 
+**Gegenspiel:** Licht und Deko halten ihn nicht auf. Mit gezeigten Kürbissen und Freunden betäubt man ihn, mit seinem
+richtigen Kopf vom Dachboden erlöst man ihn (4.21).
+
 **Zu klären**
-- **Abschreckung:** Hilft irgendetwas gegen ihn – Licht, Deko, Süßigkeiten, die man ihm hinlegt (er wollte ja
-  nichts geben)? Bisher nicht. **Weiter offen (2026-10-21):** Süßigkeiten als Gegenspiel sind verworfen – mit Süßem
-  vor einem Axtmörder zu wedeln, fühlt sich falsch an. **Entschieden (2026-10-21):** mit Kürbissen und Freunden
-  betäuben (seit 2026-10-25 durch Zeigen, nicht durch Treffer), mit seinem richtigen Kopf vom Dachboden erlösen (4.21).
 - **Vorgeschichte im Spiel:** Wie erfährt man sie – Zeitungsausschnitt, Personalakte an der Rezeption, Gerüchte?
-- ~~**Geräusch:** Man sollte ihn hören (schwere Schritte, Axt, die über den Boden schleift).~~ Entschieden als
-  Ankündigung in Stufen (4.20, 2026-10-21).
 
 ### 4.20 Drei Bedrohungen, ein Hotel (entschieden 2026-10-21)
-> Noch nicht umgesetzt. Ersetzt „Immer nur eine Bedrohung im Haus“ (4.1) und ergänzt Lakengeist (4.18) und
-> Kürbismann (4.19).
+> Umgesetzt ist nur die Ankündigung des Kürbismanns (2., 2026-10-22). Im Prototyp gilt noch „nur eine Bedrohung im
+> Haus“ (4.1), der Kürbismann sieht nach eigenen Regeln (18 m rundum, Licht und Ducken egal), und der Lakengeist spukt
+> ab Tag 2.
 
-**Die Probleme bisher**
-- **„Nur eine im Haus“ gegen die Steigerung:** Das Monster ist gegen Monatsende den größten Teil der Zeit unterwegs –
-  Lakengeist und Kürbismann kämen kaum noch dran, gerade wenn Schwäche und große Feiern sie häufiger machen sollen.
-- **Der Kürbismann kommt fast ohne Ankündigung** – der schnellste und tödlichste Angreifer, nur der Aufprall verrät ihn.
-- **Er sieht nach eigenen Regeln** (18 m rundum, Licht und Ducken egal) statt nach 4.15.
-- **Drei Bedrohungen, drei unverbundene Geschichten** – und der Kürbismann ist ein ausgeleuchteter Slasher in einem
-  Spiel, das andeuten will (2).
-- **Der friedliche Anfang war gebrochen:** Der Lakengeist spukte ab Tag 2, vor dem ersten Angriff.
+**Warum**
+- **„Nur eine im Haus“ verträgt die Steigerung nicht:** Das Monster ist gegen Monatsende den größten Teil der Zeit
+  unterwegs – Lakengeist und Kürbismann kämen kaum noch dran, gerade wenn Schwäche und große Feiern sie häufiger machen
+  sollen.
+- **Der Kürbismann** ist der schnellste und tödlichste Angreifer – er braucht eine Ankündigung und dieselbe Sicht wie
+  die anderen (4.15).
+- **Drei Bedrohungen brauchen eine Geschichte** – und keinen ausgeleuchteten Slasher in einem Spiel, das andeuten
+  will (2).
+- **Der friedliche Anfang** (2.1) soll friedlich bleiben.
 
 **1. Eine Bedrohung je Ebene – und außer Hörweite**
 - **Grundsatz:** Zwei Bedrohungen sind **nie gleichzeitig auf derselben Ebene** und **nie in Hörweite voneinander**
@@ -1712,9 +1722,7 @@ Aufhalten und erlösen: 4.21.
 - Die Hausherren aus 7.10 bleiben, wo jeder **zu Hause** ist; unterwegs sein dürfen sie nach der Tabelle.
 
 **2. Der Kürbismann kündigt sich an** – in Stufen wie das Monster mit seiner Flackerwelle (4.17)
-1. ~~**Vorzeichen:** Fällt der Wurf (4.19), **lodern alle geschnitzten Kürbisse im Hotel kurz orange auf** – sein
-   Gegenstück zur Flackerwelle. Zugleich **leiert die Musik**.~~ **Ankündigung (entschieden und umgesetzt 2026-10-22,
-   ersetzt das Auflodern):** Fällt der Wurf (oder die Garantie, 4.19), kommt er erst **3–4 Minuten später – dann aber
+1. **Ankündigung (entschieden und umgesetzt 2026-10-22):** Fällt der Wurf (oder die Garantie, 4.19), kommt er erst **3–4 Minuten später – dann aber
    sicher**, auch wenn der Spaß inzwischen vorbei ist. So lange werden **alle Lampen rot** und flackern ab und zu (rotes
    Licht schützt wie jedes Licht), der **Plattenspieler leiert eine schrille, verzerrte Melodie im ganzen Hotel** (lässt
    sich nicht abstellen), und **alle Kinder bleiben stehen und singen** das Lied vom Kürbiskopf (eigener Text, als
@@ -1724,12 +1732,11 @@ Aufhalten und erlösen: 4.21.
    sich schlechter verstecken. Solange er sich ankündigt, kommen Monster und Lakengeist nicht, gespeichert wird nicht.
 2. **Klettern:** Kratzen an der Fassade, dann schwere Schritte auf dem Lobbydach – in Lobby und Partyraum durch die
    Decke zu hören.
-3. **Landung:** der Aufprall, wie bisher.
+3. **Landung:** der Aufprall (4.19).
 4. **Im Haus:** schwere Schritte und eine **Axt, die über den Boden schleift** – Lärm nach 4.15, die Gäste hören ihn.
 - **Solange er im Haus ist, gibt es keine normale Feier.** Die Musik wechselt sofort zu einer **leiernden Musik, die
   im ganzen Haus zu hören ist** und sich nicht abstellen lässt – bis er das Hotel verlässt.
-- Gäste lernen das Signal und reden darüber („Wenn die Kürbisse auflodern, lauf.“); beim Auflodern verstecken sich
-  die Ängstlichen sofort.
+- Gäste lernen das Signal und reden darüber („Wenn die Lampen rot werden, lauf.“).
 - **Gegenspiel:** mit gezeigten Kürbissen und der Hilfe der Gäste betäuben, mit seinem Kopf erlösen (4.21).
 
 **3. Gleiche Sicht für alle:** Auch der Kürbismann sieht nach 4.15 (`Senses.can_see`), mit eigener Grundweite (Vorschlag
@@ -1741,13 +1748,13 @@ viel.
 - **Kürbismann:** der **Rezeptionist**, ebenfalls Halloween 1987. Er gehörte zum Personal, das das Abkommen am Laufen
   hielt – er führte die Gästeliste. Die Geschichte mit den Kindern (4.19) bleibt: So hat das Hotel ihn sich genommen.
 - **Lakengeist:** die **Verschwundenen** – Laken aus der Wäscherei, die jedes Jahr ein Gesicht mehr bekommen. Mit jedem
-  geholten Gast wird er häufiger (beantwortet „Herkunft“ in 4.18).
+  geholten Gast wird er häufiger.
 - „Das Hotel behält immer einen“ (2.3) wird damit wörtlich.
 - **Ton:** Den Kürbismann sieht man meist als **leuchtendes Kürbisgesicht im Dunkeln**, nicht als ausgeleuchteten
   Slasher.
 
 **5. Der friedliche Anfang bleibt friedlich:** Der Lakengeist kommt **erst nach dem ersten Angriff** des Monsters
-(2.1); „ab Tag 2“ (4.18) entfällt.
+(2.1).
 
 **Vertagt (2026-10-21): der Katzenraum.** 7.7 verspricht, er sei vor allem sicher; tatsächlich kommen Monster und
 Lakengeist nicht hinein, der Kürbismann schon. Zugleich ist Ausharren dort die stärkste Strategie. Bis zur eigenen
@@ -1758,20 +1765,18 @@ sie das Monster überall hinlocken – Vorschlag: nein) · was passiert, wenn ei
 schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe ab).
 
 ### 4.21 Den Kürbismann aufhalten – und erlösen (entschieden 2026-10-21)
-> Noch nicht umgesetzt. Beantwortet „Abschreckung“ aus 4.19 und nutzt das Sozialsystem (6.18): Allein kann man ihn nur
-> kurz aufhalten, mit Freunden lange genug, um ihn zu erlösen.
+> Noch nicht umgesetzt (außer dem Dachboden, 4.). Nutzt das Sozialsystem (6.18): Allein kann man ihn nur kurz
+> aufhalten, mit Freunden lange genug, um ihn zu erlösen.
 
-**1. Betäuben: einen Kürbis zeigen** (geändert 2026-10-25)
+**1. Betäuben: einen Kürbis zeigen** (entschieden 2026-10-25)
 - **Hält man ihm einen Kürbis entgegen,** sodass er ihn sieht, **ist er betäubt** – immer, kein Würfeln. Er bleibt
   wie gebannt stehen. Der Kürbis bleibt dabei heil.
 - **Er wird nie beworfen oder geschlagen:** Würfe (3.13) und Schläge bewirken bei ihm nichts.
 - **Allein hält das nur sehr kurz** – genug zum Fliehen oder um einen Gast aus seiner Reichweite zu holen.
 - **Woher der Kürbis kommt:** aus den Beeten (dort, wo er landet, 4.19) oder von einer Tür – bei Knappheit (5.10)
   eine echte Entscheidung: meine Deko oder die des Nachbarn?
-- *Verworfen:* ein Treffer nur von hinten (zu albern) und eine Trefferwahrscheinlichkeit – seit 2026-10-25 jeder
-  Treffer überhaupt, ob geworfen oder zugeschlagen.
-- **Offen:** wie lange „sehr kurz“ ist, aus welcher Entfernung das Zeigen wirkt und welche Kürbisse zählen (nur große
-  wie bisher, jede Sorte, auch geschnitzte, der Zierkürbis aus der Tasche?).
+- **Offen:** wie lange „sehr kurz“ ist, aus welcher Entfernung das Zeigen wirkt und welche Kürbisse zählen (nur große,
+  jede Sorte, auch geschnitzte, der Zierkürbis aus der Tasche?).
 
 **2. Hilfe der Gäste**
 - **Gute Freunde** in der Nähe holen sich von selbst einen Kürbis, kommen dazu und halten ihn ihm entgegen.
@@ -1784,7 +1789,7 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 
 **3. Erlösen**
 - **Möglich, sobald man seinen richtigen Kopf hat.** Der liegt auf dem **Dachboden** (4) – frühestens ab etwa Tag 15
-  erreichbar (ersetzt „ab Tag 20“ aus der Ideensammlung).
+  erreichbar.
 - **Das Ritual:** Während er betäubt ist, nimmt man ihm den Kürbiskopf ab und setzt ihm seinen Kopf wieder auf – [E]
   einige Sekunden halten (wie die Kurbel, 7.4). Solange die Helfer ihm ihre Kürbisse zeigen, läuft die Betäubung
   weiter.
@@ -1813,16 +1818,12 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 > **blaugrauer Staubnebel**, der leicht flimmert. **Kisten mit wertvollerer alter Deko** (Totenkopf, Hexenbesen,
 > Lichterkette; wenige Stücke, kein Nachschub) setzt der Zeichner als „Ausstattung: Dekokiste“ in den Plan. Die
 > Fensterfarbe des Zeichners: #c9e7ff („Dachfenster“, auf der Außenwand). Die Dachform darüber bleibt offen.
-- ~~**Das Dachgeschoss** (7.10) hat offene Bereiche; der Aufzug hält dort. **Hinter einer niedrigen Kniestocktür** liegt
-  nur der Dachboden: eine **Kette von Kammern** wie in *Doors* – nummerierte Türen hintereinander, mit Schränken, Kisten
-  und Kommoden, **in fester Reihenfolge**. In der letzten liegt der Kopf.~~ (siehe oben)
 - **Der Schlüssel** zur Kniestocktür liegt im **Heizraum hinter dem Gitter** (7.4), das mit jedem Tag lockerer wird – ab
   etwa Tag 15 kommt man hindurch. Ein Wagnis im Revier des Monsters (2.3), wie der Schlüssel zu 0118.
-- **Durch die Tür nur geduckt** – einen großen Kürbis bekommt man nicht mit hinein. (Gilt seit 24.10. für jede Tür
-  dort oben.)
+- **Durch die Tür nur geduckt** – einen großen Kürbis bekommt man nicht mit hinein. (Gilt für jede Tür dort oben.)
 - **Warum der Kopf dort liegt:** Die Kinder von 1987 haben ihn auf dem Dachboden versteckt – Kinder kommen überall hin
   (6.13). Heutige Kinder erzählen davon, und keiner glaubt ihnen: eine Spur.
-- **Nicht wirklich tödlich, aber selten eine kleine Gefahr (präzisiert 2026-10-23):** Spinnen in den Schubladen (4.23)
+- **Nicht wirklich tödlich, aber selten eine kleine Gefahr:** Spinnen in den Schubladen (4.23)
   und ganz selten ein Vampir (4.22) – nur er kann dort sehr stark beißen, sodass man stirbt, oder einen selbst zum
   Vampir machen. Das ist das Schlimmstmögliche auf dem Dachboden.
 - **Still und dunkel, kein eigenes Monster.** Auf dem Dachboden erscheint keine Bedrohung (4.20). **Monster und
@@ -1844,8 +1845,7 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 ### 4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)
 > Noch nicht umgesetzt. Eine vierte Bedrohung – für sie gilt dieselbe Ebenenregel wie für die anderen drei (4.20).
 > Mit „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
-> **Fledermäuse umgesetzt (2026-10-23), ohne Biss:** draußen in den Bäumen des Gartens (das Dachgeschoss fehlt im Plan
-> noch) – tagsüber hängen sie schlafend am unteren Rand der Krone, abends und nachts kreisen sie zackig um die Kronen.
+> **Fledermäuse umgesetzt (2026-10-23), ohne Biss:** draußen in den Bäumen des Gartens (im Dachgeschoss noch nicht) – tagsüber hängen sie schlafend am unteren Rand der Krone, abends und nachts kreisen sie zackig um die Kronen.
 > Scheu, Frühwarnung (sie fliehen vor Monster, Kürbismann und Lakengeist) und der Schwarm als Lärm wie unten
 > vorgeschlagen; wie nah man ihrem Baum kommen darf, hängt an der Auffälligkeit (4.15: Licht, Rennen, Ducken), laute
 > Geräusche wecken sie. Biss, Vampir und Knoblauch/Kreuz kommen mit den offenen Fragen unten. Debug:
@@ -1920,19 +1920,17 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 
 ### 4.23 Spinnen (entschieden und umgesetzt 2026-10-23)
 > **Umgesetzt (2026-10-23)** wie unten. Noch nicht: Katzen jagen Spinnen, Plastikspinnen (5.7) als Kugeln bei der
-> Arachnophobie-Einstellung, das Dachgeschoss (fehlt im Plan). Debug: `--spinne[=gesicht|schublade]`.
+> Arachnophobie-Einstellung. Debug: `--spinne[=gesicht|schublade]`.
 
 Inspiriert von *Doors*. Kleine Tiere, keine Bedrohung im Sinne von 4.20 – ein Ärgernis mit kleinem Preis. **5–6 cm**
-groß (Beinspanne), sehr dunkel (Feinschliff 2026-10-23).
+groß (Beinspanne), sehr dunkel.
 - **Wo:** im **Keller** (Untergeschoss, Tiefkeller) und im **Dachgeschoss** ganz häufig, in den anderen Etagen selten.
   Es gibt sie nur in der Nähe des Spielers; neue tauchen auf, wo man nicht hinsieht.
 - **Krabbeln:** Sie laufen über den Boden. **Wo Spinnen leben, wachsen Spinnweben schneller nach** (5.4, 5.10).
-  Die **Fäden** am Boden (verblassen, reißen, wenn jemand hindurchläuft – Spur wie die Kratzer, 4.13) sind wieder
-  **ausgebaut** (2026-10-24).
 - **Scheu und zertreten:** Nahe Füße scheuchen sie weg (geduckt und still kommt man näher). Wer auf eine tritt,
   **zertritt** sie. **Mutige Gäste** zertreten sie auch, **ängstliche erschrecken** (etwas Angst), Kinder ebenso.
 - **Aus der Schublade ins Gesicht:** Beim Aufziehen einer Schublade (3.5) springt selten eine heraus – in **1 %** der
-  Fälle, überall gleich (2026-10-23; vorher 15 % im Keller, 5 % sonst), danach eine Minute Ruhe. Man **schnappt nach Luft** (Lärm, 4.15 – das
+  Fälle, überall gleich, danach eine Minute Ruhe. Man **schnappt nach Luft** (Lärm, 4.15 – das
   lockt vielleicht das Monster) und muss sie **abschütteln** (Maus ein- bis zweimal hin und her, knapp 2 s). Sonst **beißt sie**:
   Das wirkt wie **ein Glas** an der Bar (angetrunken, 3.7) und macht damit auch schwächer (4.18); mehrere Bisse
   summieren sich wie Gläser.
@@ -1951,7 +1949,7 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 ### 5.2 Platzierung
 - **Vor der eigenen Zimmertür** → schützt den sicheren Rückzugsort
 - **Im Flur** → schützt Wege / schafft sichere Zonen
-- Platzierung über ein einfaches Bau-/Platzierungssystem (Vorschau-Ghost, Raster oder Snap-Punkte)
+- Platziert wird ohne eigenes Bausystem: ablegen, an die Wand hängen oder verstreuen ([G], 5.6)
 
 ### 5.3 Ideen für Deko-Typen (vorläufig)
 
@@ -1959,13 +1957,16 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 |------------------|-----------------------------|-------------------------------------------|------------|
 | Geschnitzter Kürbis (Jack-o'-Lantern) | Garten → selbst schnitzen | Starker Schutz **+ Licht**, Kerze kann ausgehen (5.12) | mittel |
 | Ungeschnitzter Kürbis | Garten                  | Schwacher Schutz, Rohstoff / Handelsware   | häufig     |
-| Spinnenweben     | In bestimmten Hotelbereichen einsammeln | An Tür / im Flur aufhängen; Schutz, evtl. Frühwarnung (bewegen sich bei Monsternähe)? | mittel |
+| Spinnenweben     | In bestimmten Hotelbereichen einsammeln | An Tür / im Flur aufhängen; Schutz, Frühwarnung (schwingen bei Monsternähe, 5.6) | mittel |
 | Herbstlaub       | Bäume im Garten             | Am Boden auslegen; schwacher Schutz, **raschelt** (verrät Schritte – auch die von Dieben?) | häufig |
-| Kerzen           | Fundstücke / Handel         | Kleiner Radius, Licht                       | häufig     |
+| Kerzen           | Kerzenvorrat in der Küche, Schubladen, Handel | Kleiner Radius, Licht; gehen aus (5.12) | häufig     |
 | Girlande / Lichterkette | Handel                | Schützt Flurabschnitt linear, Licht         | mittel     |
 | Vogelscheuche    | Handel / Belohnung          | Großer Radius                               | selten     |
 
-- Mögliche Mechanik: **Verfall/Haltbarkeit** (Kerzen brennen ab, Kürbisse verrotten, Laub wird zertreten), damit Deko nicht einmal platziert und vergessen wird. **Entschieden 2026-10-21 (5.10).**
+- Gebaut sind außerdem Lakengespenster und Lichterketten (5.6), Fledermausgirlande, Plastikspinne, Totenkopf und
+  Hexenbesen (5.7) und sieben Kürbissorten (5.8). Girlande und Vogelscheuche sind Ideen.
+- **Verfall** (Kürbisse faulen, Laub wird zertreten, Kerzen gehen aus), damit Deko nicht einmal platziert und vergessen
+  wird: 5.10, 5.12.
 
 ### 5.4 Deko selbst herstellen
 
@@ -1988,29 +1989,26 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 
 **Garten als Ort**
 - Draußen, aber umzäunt/eingeschlossen (man kommt trotzdem nicht aus dem Hotel heraus).
-- Tagsüber relativ sicher, nachts dunkel und gefährlich → Ernten wird zum Risiko-Abwägen.
+- Draußen ist immer Nacht (2.1): morgens belebt (Gäste ernten, 2.4), spät ohne Zeugen → Ernten wird zum Risiko-Abwägen.
 
 ### 5.5 Die Puppe – „Halloween-Jury“ (entschieden 2026-10-21, neu gefasst 2026-10-22)
-> **Umgesetzt (2026-10-22):** alles außer „Vorgemerkt“. Die Puppe ~~ist vorerst aus Grundkörpern gebaut (Stoffpuppe mit
-> Porzellangesicht, orangem Kleid und Hexenhut)~~ ist seit 2026-10-25 ein Meshy-Modell (Porzellanpuppe mit blonden
-> Locken, rosa Blümchenkleid und blauer Schleife, sitzend ~0,65 m) und sitzt am Anfang auf einem Lobby-Sofa.
-> Ersetzt die Fassung vom 2026-10-21 (Urteil schon beim Rückzug in den Keller, Spieler trägt sie, Opfern durch
-> Hintragen, Monster geht nur „zuerst“ zu ihr) und davor die wandernde Puppe, die Zonen bewertet.
+> **Umgesetzt (2026-10-22):** alles außer „Vorgemerkt“. Die Puppe ist ein Meshy-Modell (Porzellanpuppe mit blonden
+> Locken, rosa Blümchenkleid und blauer Schleife, sitzend ~0,65 m, seit 2026-10-25) und sitzt am Anfang auf einem
+> Lobby-Sofa.
 >
-> **Geändert und umgesetzt 2026-10-23 (2.5):** Bis zum ersten Angriff ist sie die **Jury des
+> **Mit dem Wettbewerb (2.5, umgesetzt 2026-10-23):** Bis zum ersten Angriff ist sie die **Jury des
 > Türschmuck-Wettbewerbs** auf dem Lobby-Sofa. Bei der Siegerehrung steigt sie auf und löst sich in Rauch auf – das
-> einzige Mal vor den Augen des Spielers. Ihre Regel wird danach **mitgeteilt** (Aushang, Warnungszettel), statt dass
-> der Spieler sie selbst herausfinden muss.
+> einzige Mal vor den Augen des Spielers. Ihre Regel wird danach **mitgeteilt** (Aushang, Warnungszettel).
 
 **Grundidee:** Die Puppe ist keine Figur, die herumläuft, sondern das **sichtbare Urteil** des Abkommens (2.3): Kurz vor
-einem Angriff liegt sie vor der Tür dessen, der am wenigsten schmückt – und **dort stirbt jemand**. Was bisher
-unsichtbar ist (wie gut die Deko gegen den wachsenden Anspruch noch reicht, 4.8, 4.9), wird so lesbar. ~~Dass sie
-immer vor der schwächsten Tür liegt, sagt das Spiel nicht – der Spieler muss es selbst herausfinden.~~ Seit 2026-10-23
-sagt es das Hotel nach dem ersten Angriff selbst: der veränderte Aushang am Brett in der Lobby und ein Warnungszettel (2.5).
+einem Angriff liegt sie vor der Tür dessen, der am wenigsten schmückt – und **dort stirbt jemand**. Was sonst
+unsichtbar ist (wie gut die Deko gegen den wachsenden Anspruch noch reicht, 4.8, 4.9), wird so lesbar. Dass sie vor der
+schwächsten Tür liegt, sagt das Hotel nach dem ersten Angriff selbst: der veränderte Aushang am Brett in der Lobby und
+ein Warnungszettel (2.5).
 
 **Das Urteil**
-- **Wann:** nur vor einem **echten Angriff** (einen holen oder Raubzug, 4.17) – nie beim Umsehen. Seit 2026-10-22 auch vor
-  den ersten, für Gäste harmlosen Angriffen (2.1): Dann bricht es ebenfalls ein, erschreckt die Gäste aber nur – dich tötet
+- **Wann:** nur vor einem **echten Angriff** (einen holen oder Raubzug, 4.17) – nie beim Umsehen. Auch vor den ersten,
+  für Gäste harmlosen Angriffen (2.1): Dann bricht es ebenfalls ein, erschreckt die Gäste aber nur – dich tötet
   es, wenn es dich erwischt. **1–2 Minuten vor dem Aufbruch** liegt sie plötzlich vor der Tür. Ist die
   Ruhephase kürzer (spät im Monat, 4.13), wartet das Monster, bis die Frist um ist.
 - **Wen:** nur **bewohnte Türen** – die Zimmer der erwachsenen Gäste und **Zimmer 13**. Keine Flure, keine Lobby, keine
@@ -2034,6 +2032,7 @@ sagt es das Hotel nach dem ersten Angriff selbst: der veränderte Aushang am Bre
 - **Nachbessern hilft:** Wer bis zum Aufbruch Deko nachlegt und nicht mehr der Schwächste ist, den verlässt sie beim
   nächsten unbeobachteten Moment, und sie liegt vor der neuen schwächsten Tür. Mit dem Aufbruch steht das Urteil fest.
 - **Niemand kann sie bewegen** (entschieden 2026-10-22): Der Spieler nie, Kinder nur zwischen den Angriffen (unten).
+  Opfern geht über Diebstahl: Wer dem Nachbarn die Deko klaut, macht ihn zum Schwächsten (4.11).
 
 **Der Angriff** (entschieden 2026-10-22)
 - **Weg:** Vom Keller zur Puppentür. **Unterwegs** greift das Monster bis zu **fünf bewohnte Türen** an, deren Deko
@@ -2053,19 +2052,17 @@ sagt es das Hotel nach dem ersten Angriff selbst: der veränderte Aushang am Bre
 - Kinder erzählen von ihr („Die Puppe hat mich angeguckt“) – keiner glaubt es.
 
 **Gäste:** Findet ein Gast sie vor seiner Tür, steigt seine Angst, und er sagt es laut („Bei mir sitzt die Puppe …“).
-~~Er bittet den Spieler um Deko~~ – kommt mit den Wünschen (6.14, 6.18).
+Um Deko bitten wird er mit den Wünschen (6.14, 6.18).
 
 **Zwischen den Urteilen** bleibt sie, wo sie zuletzt lag – oder wo ein Kind sie hingelegt hat. Am Anfang sitzt sie in
 der Lobby, als Jury des Wettbewerbs (2.5); nach der Siegerehrung ist sie fort, bis sie vor dem nächsten echten Angriff
-vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „immer nur eine Bedrohung im Haus“ (4.1).
+vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „eine Bedrohung je Ebene“ (4.1, 4.20).
 
 **Vorgemerkt**
 - **Jury beim Schmücken (5.9) und beim Schnitz-Wettbewerb (6.10):** Am Ende eines Großen Schmückens sitzt sie an der
   schönsten Stelle – Ruf für die Mitmacher. Kein Muss.
 - **Das letzte Urteil an Halloween:** „Das Hotel behält immer einen“ (2.3) – am 31. sitzt sie ein letztes Mal vor
   einer Tür: bei dem, den das Hotel behält. Erst festlegen, wenn das Ende (2.1) steht.
-- ~~Opfern durch Hintragen, Ruf-Verlust beim Hintragen~~ (entfällt 2026-10-22: niemand trägt sie mehr dorthin). Opfern
-  geht über Diebstahl: Wer dem Nachbarn die Deko klaut, macht ihn zum Schwächsten (4.11).
 
 **Spielstand:** Lage, Urteil (Tür), welches Kind sie trägt, Frist bis zum Aufbruch.
 
@@ -2126,30 +2123,26 @@ vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „
 > Hokkaido ~50 cm, Halloween-Kürbis ~90 cm, **Riesenkürbis 4–5 m**. Der Riesenspritzer reicht für **10–20 Hände voll**
 > Kürbismatsch – man sammelt ihn Hand für Hand auf, er wird dabei kleiner. Beim Aufprall **fliegen Kürbisstücke**
 > (Schale und Fruchtfleisch) davon, schlagen auf, bleiben ein paar Sekunden liegen und vergehen. Der **Riesenkürbis
-> lässt sich jetzt tragen** – mit beiden Händen, man geht nur gut halb so schnell und sieht über ihn kaum hinweg.
+> lässt sich tragen** – mit beiden Händen, man geht nur gut halb so schnell und sieht über ihn kaum hinweg.
 
 Im Garten wachsen nicht nur Halloween-Kürbisse. Welche Sorte wo wächst, bestimmt der Plan – so gibt es Beete, in denen
 nur eine bestimmte Sorte wächst (der Riese nur in seinem eigenen Beet).
 
-> **Felder im Garten (2026-10-20):** Der Mittelgarten hat jetzt acht Kürbisfelder – sieben neue mit je einer Sorte
-> (Hokkaido, Weiß, Butternut, Muskat, Türkenturban, Riese, Halloween-Kürbis) neben dem alten Beet am Südende – und
-> vier weitere Bäume; auch der Innenhof Südwest hat nun einen Baum (Plan `map.aseprite`).
-
 | Sorte | Tragen | Schnitzen | Deko | Wert | Reif nach | Aussehen |
 |-------|--------|-----------|------|------|-----------|----------|
-| **Halloween-Kürbis** | beide Hände | ja | 10 | 4 | ~~etwa 4 min~~ 1 Tag (5.10) | groß, rund, orange |
+| **Halloween-Kürbis** | beide Hände | ja | 10 | 4 | 1 Tag (5.10) | groß, rund, orange |
 | **Hokkaido** | eine Hand | nein | 4 | 2 | ~2,5 min | klein, rot-orange |
-| **Weißer Kürbis** („Casper“) | beide Hände | ja – leuchtet kalt-weiß | 12 | 6 | ~~etwa 5 min~~ 1 Tag | groß, weiß |
+| **Weißer Kürbis** („Casper“) | beide Hände | ja – leuchtet kalt-weiß | 12 | 6 | 1 Tag | groß, weiß |
 | **Butternut** | eine Hand | nein | 5 | 4 | ~3,5 min | beige Flaschenform |
-| **Muskatkürbis** | beide Hände | nein (zu hart) | 8 | 6 | ~~etwa 4,5 min~~ 1 Tag | flach, grün-braun, gerippt |
+| **Muskatkürbis** | beide Hände | nein (zu hart) | 8 | 6 | 1 Tag | flach, grün-braun, gerippt |
 | **Türkenturban** | eine Hand | nein | 9 | 6 | ~4 min | rot-orange mit heller, gestreifter Kappe |
-| **Riesenkürbis** | beide Hände, sehr langsam | ja | 25 | – | ~~etwa 7,5 min~~ 2 Tage | riesig (fast 1 m) |
+| **Riesenkürbis** | beide Hände, sehr langsam | ja | 25 | – | 2 Tage | riesig (fast 1 m) |
 
 - **Kleine Sorten** trägt man in einer Hand – Karte, Kompass und Aufschließen gehen dann weiter (3.2).
 - **Geschnitzt** zählen die Sorten wie ihre Deko-Stärke: der weiße Kürbis mehr, der Riese zweieinhalbmal so viel
   wie der Halloween-Kürbis.
 - **Riesenkürbis:** Beim Ernten rollt er neben das Beet, Gäste ernten ihn nie. Mit dem Messer wird er zur riesigen
-  Laterne. Tragen kann man ihn (seit 2026-10-22) mit beiden Händen, aber nur gut halb so schnell wie sonst.
+  Laterne. Tragen kann man ihn mit beiden Händen, aber nur gut halb so schnell wie sonst.
 - **Lieblingskürbis:** Jeder Gast hat eine Lieblingssorte (nie den Riesen). Schenkt man sie ihm, freut er sich besonders
   (wie über etwas, das er mag, und noch mehr); bei anderen Kürbissen verrät er manchmal, welche er lieber hätte. Beim
   Ernten nimmt er seine Sorte zuerst, und seine eigene Kürbisdeko ist aus dieser Sorte.
@@ -2159,17 +2152,17 @@ Das Gefühl „Halloween mit lauter Leuten“ soll mit jedem Tag wachsen, bis zu
 ihm.
 - **Das Hotel schmückt sich:** Mit jedem Tag hängt mehr Deko. Gäste tragen Girlanden und Kürbisse sichtbar durch die
   Flure, in der letzten Woche herrscht Hochbetrieb. Der Kalender wird so zum spürbaren Countdown.
-  **Partyraum und Lobby sind immer voll geschmückt (entschieden 2026-10-20)** – sie sind die Treffpunkte; wachsen
-  tut die Deko im übrigen Hotel. *(Für die Lobby später am selben Tag geändert: Sie wird mitgeschmückt, siehe unten.)*
+  **Der Partyraum ist immer voll geschmückt (entschieden 2026-10-20)** – er ist der Treffpunkt; die Lobby wird
+  mitgeschmückt (unten), und im übrigen Hotel wächst die Deko.
   > **Umgesetzt (2026-10-20): Schmück-Aktionen.** Ab und zu ruft ein Gast zum gemeinsamen Schmücken auf – eine
   > Zimmertür, einen Flurabschnitt oder eine Flurecke in der Nähe seines Zimmers, nie Lobby oder Partyraum, am liebsten
   > dort, wo noch wenig hängt. Gäste aus der Nähe (auch Kinder) machen mit: Sie holen Deko aus ihrem Zimmer (aus dem
-  > Koffer, sonst ~~etwas Gebasteltes~~ Füllmaterial wie Laub und Spinnweben, seit 5.10), tragen sie sichtbar durch den Flur und hängen bzw. stellen sie auf – oben eine
+  > Koffer, sonst Füllmaterial wie Laub und Spinnweben, 5.10), tragen sie sichtbar durch den Flur und hängen bzw. stellen sie auf – oben eine
   > Lichterkette, an der Wand Lakengespenster, Fledermäuse, Spinnen und Spinnweben, am Boden Kürbisse, Totenköpfe,
   > Besen und Laub. Der Spieler wird per Meldung eingeladen, in Zimmer 13 per Anruf. Wer selbst Deko dazuhängt oder eine
   > Weile dabei ist, gewinnt die Mitmacher als Freunde, sein Schock sinkt; allen Mitmachern sinkt die Angst.
   > Schmücken ist **Spaß** – es lockt also den Kürbismann (4.19), Mitmacher wie den Spieler.
-  > **Auch die Lobby und die Zimmer (entschieden 2026-10-20, ersetzt „Lobby immer voll geschmückt“):** Etwa jede dritte
+  > **Auch die Lobby und die Zimmer (entschieden 2026-10-20):** Etwa jede dritte
   > Aktion schmückt eine Wand der Lobby – dafür kommen Gäste aus dem ganzen Hotel. Außerdem trägt ab und zu ein Gast
   > **allein** ein Stück Deko herum: Er holt es aus einer Kiste im Hotel (Dekokiste, Wäschekiste, Laub im Garten – nie
   > aus dem Keller) und hängt es in **seinem Zimmer** auf, oder er bringt etwas aus seinem Koffer **in die Lobby**. Am
@@ -2260,39 +2253,35 @@ ihm.
   vorgemerkt 2026-10-23).
 
 ### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23)
-> Macht den Pitch (1) wahr – „Die Deko ist knapp“ – und ändert Anspruch (4.8), Abschreckung (4.9) und Schutzbereich
-> (4.12). In drei Stufen: **1** Anspruch, Kisten, Kürbisse und Verfall · **2** Schutzkreis = Lichtschein, sichtbare
+> Macht den Pitch (1) wahr – „Die Deko ist knapp“. In drei Stufen: **1** Anspruch, Kisten, Kürbisse und Verfall · **2** Schutzkreis = Lichtschein, sichtbare
 > Abweisung (Teil 3 unten) · **3** Gäste schmücken mit Plan und klauen bei Knappheit (Teil 5).
 >
 > **Stufe 1 umgesetzt (2026-10-23)** mit diesen Zahlen aus der Durchsprache am selben Tag:
-> - **Anspruch** gleitend von ×1 am 2. Oktober bis ×3 an Halloween, dann gedeckelt (bisher +100 % alle drei Tage,
->   also ×11). Grob gerechnet braucht eine hell beleuchtete Tür zur Monatsmitte 2–3, an Halloween 4 geschnitzte
+> - **Anspruch** gleitend von ×1 am 2. Oktober bis ×3 an Halloween, dann gedeckelt. Grob gerechnet braucht eine hell beleuchtete Tür zur Monatsmitte 2–3, an Halloween 4 geschnitzte
 >   Kürbisse mit Licht.
 > - **Füllmaterial** (Laub, Spinnweben, Kerzen, Zierkürbisse, Hokkaido, Butternut, Turban) zählt an einer Stelle
->   **zusammen höchstens 20** – in den ersten Tagen ein Grundschutz, ab etwa dem 5. reicht es allein nie (beantwortet
->   „wie stark Füllmaterial sein darf“; bis Stufe 2, in der Deko ohne Licht ohnehin nur halb zählt).
+>   **zusammen höchstens 20** – in den ersten Tagen ein Grundschutz, ab etwa dem 5. reicht es allein nie (bis Stufe 2,
+>   in der Deko ohne Licht ohnehin nur halb zählt).
 > - **Kisten ohne Nachschub:** Dekokiste je 15 (Lichterketten, Fledermäuse, Spinnen), Wäschekiste 8 Lakengespenster,
 >   alte Deko im Heizkeller 10 (Totenköpfe, Besen, Fledermäuse). Gäste nehmen aus jeder Kiste **höchstens ein Stück am
->   Spieltag** – so leeren sie sich gegen die Monatsmitte, mit dem Spieler schneller. Dekokisten trägt der Plan
->   (`map_a`) noch nicht – sie kommen von Hand dazu.
+>   Spieltag** – so leeren sie sich gegen die Monatsmitte, mit dem Spieler schneller. Dekokisten setzt der Zeichner
+>   als „Ausstattung: Dekokiste“ in den Plan; noch steht keine darin.
 > - **Nichts Starkes mehr aus dem Nichts:** Mit leerem Koffer bringen Gäste beim Schmücken nur noch Füllmaterial
 >   (Laub, Spinnweben, Zierkürbisse); Lichterketten oben nur aus dem Koffer. Allein-Schmücken und Deko-Suche
 >   verbrauchen den Vorrat der Fundorte (mit dem Tageslimit der Kisten). Katzen bringen weiter einmal am Tag etwas.
 > - **Große Kürbisse:** Halloween, Weißer und Muskat werden je Beet **einmal am Tag** reif, der Riese alle zwei Tage;
->   **Frost ab dem 25.**: Danach tragen große Beete nicht mehr (neu). Kleine Sorten wachsen wie bisher (3c beantwortet).
+>   **Frost ab dem 25.**: Danach tragen große Beete nicht mehr. Kleine Sorten wachsen weiter in Minuten (5.8).
 > - **Faulen:** geschnitzte nach 3 Tagen, ungeschnitzte und Zierkürbisse nach 7; ab 60 % der Zeit **welk** (dunkler,
 >   zählt ×0,7), ab 85 % **eingefallen** (gestaucht, ×0,4), dann weg. Schnitzen setzt die Restzeit auf höchstens 3 Tage.
 >   Was im Koffer eines Gastes liegt (nur gezählt), fault nicht.
 
-**Die Probleme bisher**
-- **Zu viel:** Jede Quelle wächst nach (Laub, Kerzen, Lakengespenster, alte Deko im Keller, über 60 Beete), dazu
-  schmückt sich das Hotel selbst (5.9), Freunde schenken, Katzen bringen. Wer etwas braucht, wartet – Handel und
-  Klauen lohnen nicht, die Kernfrage „vertrauen oder nehmen?“ stellt sich nicht.
-- **Wird wertlos:** Der Anspruch wuchs ohne Obergrenze (an Halloween etwa ×11, mit der Tagesuhr 2.4 sogar ×50) –
-  ab Monatsmitte schützte Deko faktisch nicht mehr, ohne dass man es merkte.
-- **Unsichtbar:** Radius, Stockwerk und dass nur das Ziel geschützt ist, waren nicht zu erkennen.
-- **Einmal hingestellt, erledigt:** Außer Kerzen nutzte sich nichts ab.
-- **Gäste schmückten ohne Plan:** dort, wo wenig hängt, nicht dort, wo es gefährlich ist.
+**Warum**
+- **Knapp statt nachwachsend:** Wächst jede Quelle nach und schmückt sich das Hotel selbst (5.9), wartet man einfach –
+  Handel und Klauen lohnen nicht, die Kernfrage „vertrauen oder nehmen?“ stellt sich nicht.
+- **Wert behalten:** Ein Anspruch ohne Obergrenze macht Deko ab Monatsmitte wertlos, ohne dass man es merkt.
+- **Sichtbar:** Wo Deko schützt und dass nur das Ziel geschützt ist, muss man erkennen können.
+- **Pflege:** Deko soll sich abnutzen – einmal hingestellt darf nicht erledigt heißen.
+- **Gäste mit Plan:** Sie sollen dort schmücken, wo es gefährlich ist, nicht nur dort, wo wenig hängt.
 
 **Grundidee: am Anfang Fülle, am Ende Mangel** – passend zur Dramaturgie (2.1)
 
@@ -2317,25 +2306,25 @@ ihm.
 - **Gäste nehmen aus denselben Kisten.** Das Schmücken (5.9) verbraucht den gemeinsamen Vorrat; in der letzten Woche
   sind die Kisten leer, und die einzige Quelle für starke Deko sind die Türen der anderen.
 
-**2. Anspruch an den Tag gebunden und gedeckelt** (ändert 4.8)
-- Der Anspruch steigt in **Spieltagen** statt Sekunden: von **×1** beim ersten Angriff auf etwa **×3 an Halloween**.
+**2. Anspruch an den Tag gebunden und gedeckelt** (4.8)
+- Der Anspruch steigt in **Spieltagen**: von **×1** beim ersten Angriff auf etwa **×3 an Halloween**.
 - Eine Tür mit drei, vier starken Stücken und Licht schützt damit bis zum Schluss; ein einzelner Kürbis reicht ab
   Monatsmitte nicht mehr.
 - Zusammen mit der Puppe (5.5): Der Anspruch entscheidet, **ob** eine Tür hält, die Puppe, **wer** der Schwächste
   ist. Gut schmücken lohnt sich immer – beim Nachbarn klauen aber auch.
 
-**3. Schutz ist dort, wo ihr Licht hinfällt** (ändert 4.9, 4.12)
+**3. Schutz ist dort, wo ihr Licht hinfällt** (4.9, 4.12)
 - Der **Schutzkreis einer Deko ist ihr sichtbarer Lichtschein** – Kürbis, Totenkopf mit Kerze, Lichterkette, Kerze.
-  Lernbar ohne Anzeige: *Wo der Kerzenschein hinfällt, bin ich sicher.* Der bisherige Licht-Faktor der Abschreckung
-  geht darin auf.
+  Lernbar ohne Anzeige: *Wo der Kerzenschein hinfällt, bin ich sicher.* Der Licht-Faktor der Abschreckung (4.9) geht
+  darin auf.
 - **Deko ohne Licht** (Laub, Spinnweben, Fledermäuse, Spinne, Besen, ungeschnitzte Kürbisse) zählt **nur halb und nur
   direkt an der Tür**.
 - **Abweisung sichtbar machen:** Weist Deko das Monster ab, **ducken sich die Flammen** und die Deko schwingt – man
   sieht, dass sie gerade gewirkt hat.
 
 **4. Verfall**
-- ~~Kerzen brennen ab (wie bisher)~~ → **geändert 2026-10-25 (5.12):** Kerzen brennen unbegrenzt und **gehen aus** –
-  das Monster bläst sie aus (4.13), Wind und Rennen löschen sie; knapp ist die Flamme, nicht das Wachs.
+- **Kerzen gehen aus** statt abzubrennen (5.12): Das Monster bläst sie aus (4.13), Wind und Rennen löschen sie; knapp
+  ist die Flamme, nicht das Wachs.
 - **Kürbisse faulen:** geschnitzte nach etwa **drei Tagen**, ungeschnitzte nach etwa **einer Woche** – erst welk, dann
   eingefallen, dann weg. **Laub wird zertreten.**
 - Pflege wird tägliche Aufgabe; daraus entstehen Wünsche für Aufträge („Mein Kürbis fault“, 6.14).
@@ -2347,8 +2336,8 @@ ihm.
 - **Diebstahl unter Gästen:** Wird es knapp, klauen Gäste auch einander (füllt „Streit unter Gästen“, 6.16). Weil die
   Puppe relativ urteilt, macht jeder Diebstahl jemanden zum Schwächsten.
 
-**Zu klären:** Inhalt und Größe der Kisten (wann genau sie leer sind) · wie stark Füllmaterial im Verhältnis zum
-Anspruch sein darf, damit es nie allein reicht · ob die Gäste-Startdeko für die Kernfiguren (6.0) größer ist.
+**Zu klären:** Inhalt und Größe der Kisten (wann genau sie leer sind) · ob die Gäste-Startdeko für die Kernfiguren
+(6.0) größer ist.
 
 ### 5.11 Feuer: Deko kann brennen (entschieden 2026-10-22)
 > **Umgesetzt (2026-10-22).**
@@ -2361,12 +2350,11 @@ Anspruch sein darf, damit es nie allein reicht · ob die Gäste-Startdeko für d
 - **Löschen:** Der Spieler kann brennende Deko austreten [E]; was gelöscht ist, bleibt angesengt erhalten.
 - Brennende Deko zählt nicht als Deko, aber als Licht.
 
-### 5.12 Kerzen: ausgehen, auspusten, anzünden (entschieden 2026-10-25)
-Wunsch des Spielers vom 2026-10-25, im Gespräch ausgearbeitet. Ändert 5.10 (4): Kerzen **brennen nicht mehr ab** –
-sie **gehen aus**. Knapp ist nicht das Wachs, sondern die Flamme.
+### 5.12 Kerzen: ausgehen, auspusten, anzünden (entschieden und umgesetzt 2026-10-25)
+Kerzen **brennen nicht ab** – sie **gehen aus**. Knapp ist nicht das Wachs, sondern die Flamme (5.10).
 
 - **Unbegrenzt:** Kerzen, Kürbislaternen und Totenköpfe mit Kerze brennen, bis etwas sie ausmacht – das Monster (4.13),
-  eine Katze (6.11), der Spieler, der Wind. Der Kerzenstummel entfällt; eine ausgegangene Kerze heißt „Kerze (aus)“.
+  eine Katze (6.11), der Spieler, der Wind. Eine ausgegangene Kerze heißt „Kerze (aus)“.
 - **Auch die festen Kerzen** auf Kommoden, Tischen und Theke (7.3) können ausgehen: Das Monster bläst sie im Vorbeigehen
   aus, der Spieler kann sie auspusten und wieder anzünden. Sie werden mit dem Spielstand gespeichert.
 - **Auspusten:** Brennt, was man in der Hand hält, pustet **Linksklick / R** es aus. Eine Flamme in der Welt (Kerze,
@@ -2393,7 +2381,7 @@ sie **gehen aus**. Knapp ist nicht das Wachs, sondern die Flamme.
   - Kinder werfen bei ihren Streichen (6.13) nur dann eine **brennende** Kerze, wenn vor der Tür ihrer Familie noch eine
     brennt – die nehmen sie mit. Sonst fliegt eine kalte aus dem Koffer; Feuer (5.11) gibt es dann keins.
 - **Kein Brandstifter:** Mit Streichhölzern zündet man nur Kerzen an – keine Deko, kein Feuer (5.11).
-- **Gespeichert:** ob eine Kerze brennt (wie bisher), ob in Kürbis und Totenkopf eine erloschene Kerze steckt, und die
+- **Gespeichert:** ob eine Kerze brennt, ob in Kürbis und Totenkopf eine erloschene Kerze steckt, und die
   festen Kerzen. Debug: `--bag=kerze,streichhoelzer`.
 
 ## 6. Die anderen Gäste (NPCs)
@@ -2401,20 +2389,21 @@ sie **gehen aus**. Knapp ist nicht das Wachs, sondern die Flamme.
 ### 6.0 Gäste im Prototyp
 | Gast | Zimmer | Persönlichkeit | Besonderheit |
 |------|--------|----------------|--------------|
-| **Edna** | 11 | freundlich, sehr ängstlich | Kerzen, versteckt sich beim ersten Flackern |
-| **Bruno** | 12 | mürrischer Händler, mutig, gierig | teure Preise, erntet Kürbisse, klaut schnell, wenn er dich nicht mag |
-| **Mila** | 15 | junge Künstlerin, gesprächig | erntet und schnitzt Kürbisse, verbreitet Gerüchte am stärksten |
-| **zufällige Gäste** | freie Zimmer | einer von sechs Charakteren | siehe unten |
+| **Edna Wiegand** | 003 | freundlich, sehr ängstlich | Kerzen, versteckt sich beim ersten Flackern |
+| **Bruno Kaminski** | 102 | mürrischer Händler, mutig, gierig | teure Preise, erntet Kürbisse, klaut schnell, wenn er dich nicht mag |
+| **Mila Hellwig** | 021 | junge Künstlerin, gesprächig | erntet und schnitzt Kürbisse, verbreitet Gerüchte am stärksten |
+| **Marion Teske** | 001 | Tochter des Heizers (2.3) | sucht, was 1987 geschah; im Hotelregister „geb. Ahrend“ |
+| **übrige Gäste** | 6.20 | einer von sechs Charakteren | siehe unten |
 
-**Zufällig erzeugte Gäste (umgesetzt 2026-10-11):** Neben den drei festen Figuren erzeugt das Spiel zu Beginn weitere Gäste, sodass **67** im Hotel sind (seit 2026-10-20, vorher 30; davon **13 Kinder**; seit 2026-10-24 in 39 festen Haushalten, 6.20; es kommen keine neuen hinzu, siehe unten). Jeder hat einen Namen, einen Charakter (**ängstlich, geschäftstüchtig, Plaudertasche, Skeptiker, Bastler, Griesgram**) mit passenden Werten (Mut, Gier, Tratsch, Preise, Zuverlässigkeit), eigene Sätze (gemischt mit einem gemeinsamen Grundstock), Vorrat und Start-Deko, Würfelstil mit verräterischer Geste, Kleidungsstück, Farben und Größe.
-- ~~**Nie weniger als 24:** Sterben Gäste und sind weniger als 24 am Leben, **wacht nach einigen Minuten ein neuer Gast in einem freien Zimmer auf** – das Hotel ist ja verschlossen. Er weiß nicht, wie er hergekommen ist („Ich bin in Zimmer 27 aufgewacht …“). Man hört eine Tür, in seinem Zimmer geht das Licht an.~~ Im Code zuletzt 33 statt 24. **Zurückgenommen (2026-10-21):** Es kommen **keine neuen Gäste** hinzu. Wer stirbt, ist weg (6.7) – das Hotel ist ab dem 1. Oktober verschlossen (2.3), und jeder Tod soll zählen. Zimmer von Verschwundenen bleiben leer.
+**Die übrigen Gäste (umgesetzt 2026-10-11, feste Haushalte seit 2026-10-24):** Zusammen mit den Kernfiguren sind **67** Gäste im Hotel, davon **13 Kinder**, in **39 festen Haushalten** (6.20). Jeder hat einen Namen, einen Charakter (**ängstlich, geschäftstüchtig, Plaudertasche, Skeptiker, Bastler, Griesgram**) mit passenden Werten (Mut, Gier, Tratsch, Preise, Zuverlässigkeit), eigene Sätze (gemischt mit einem gemeinsamen Grundstock), Vorrat und Start-Deko, Würfelstil mit verräterischer Geste, Kleidungsstück, Farben und Größe. Wer jemand ist, legt die Liste fest; den Rest würfelt der Generator aus einem festen Seed je Person – aus dem Seed entsteht immer derselbe Gast (6.20, `scripts/guests/guest_generator.gd`).
+- **Keine neuen Gäste** (entschieden 2026-10-21): Wer stirbt, ist weg (6.7) – das Hotel ist ab dem 1. Oktober verschlossen (2.3), und jeder Tod soll zählen. Zimmer von Verschwundenen bleiben leer.
 
 **Drei Ebenen von Gästen (entschieden 2026-10-21):** Es bleibt bei **67 Gästen**, aber nicht alle sind gleich wichtig.
 Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 
 | Ebene | Anzahl | Wer | Was sie bekommen |
 |-------|--------|-----|------------------|
-| **Kernfiguren** | 4 | Edna, Bruno, Mila (6.0) und die **Tochter des Heizers** (2.3, entschieden 2026-10-21) | Klare Priorität: eigene Geschichte, Mitwisser des Geheimnisses (2.3), eigene Aufträge (6.14), die meisten eigenen Sätze |
+| **Kernfiguren** | 4 | Edna, Bruno, Mila und die **Tochter des Heizers** Marion Teske (2.3, entschieden 2026-10-21) | Klare Priorität: eigene Geschichte, Mitwisser des Geheimnisses (2.3), eigene Aufträge (6.14), die meisten eigenen Sätze |
 | **Zentrale Gäste** | ca. 10–12 | noch zu besetzen | Fester Name und Zimmer, ein eigener Faden (Wunsch, Sorge, Beziehung zu anderen), tragen die Beziehungsnetze (6.16) |
 | **Übrige Gäste** | der Rest (ca. 50, mit den Kindern) | erzeugt (`GuestGenerator`) | Füllen das Hotel: schmücken, feiern, tratschen, reagieren – und sind Monsterfutter. Kein eigener Inhalt über Charakter und Grundstock hinaus |
 
@@ -2423,20 +2412,19 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
   viel eigener Inhalt dazukommt.
 
 **Zu klären**
-- ~~**Wer die vierte Kernfigur ist**~~ – die Tochter des Heizers (2026-10-21). Offen: welche Rolle Edna, Bruno und Mila
-  im Geheimnis spielen.
+- Welche Rolle Edna, Bruno und Mila im Geheimnis spielen.
 - **Können Kernfiguren sterben?** Das Konzept sagt ja (2.3: „Sie können lügen und sterben“); dann ist ihr Wissen weg
   oder liegt nur noch als Notiz im Zimmer.
 - **Balance ohne Nachschub:** Das Monster darf das Hotel nicht vor Halloween leeren. Angriffschance (4.17), Opferzahl,
   Überlebende (6.17), Lakengeist und Kürbismann müssen gegen 54 Erwachsene ausbalanciert werden. Der Kürbismann regelt
-  sich selbst (er braucht 15 Gäste, die Spaß haben, 4.19).
+  sich selbst (er kommt nur, wenn genug Gäste Spaß haben – Spaßwert, 4.19).
 - **Wofür das Retten zählt:** Wenn der Schlüssel an Halloween nur für einen die Tür öffnet (2.3), muss das Ende (2.1)
   sagen, was die Geretteten bewirken – zum Beispiel das Gruppenfoto mit den leeren Plätzen (5.9) oder ein anderes Ende.
-- Aus einem Seed entsteht immer derselbe Gast; Spielstände speichern nur Seed und Zimmer (`scripts/guests/guest_generator.gd`).
 
-**Gastmodelle (geplant 2026-10-17, erster Grundkörper „Mann“ eingebaut 2026-10-17, „Frau ~40“, „junge Frau“, „junger Mann“, „alte Frau“ und „alter Mann“ 2026-10-20 – damit alle sechs, Generation
-je Vorname in `GuestGenerator.OLD`/`YOUNG`):** Die Klötzchen-Gäste werden durch Meshy-Modelle ersetzt – keine Einzelmodelle, sondern **eigene Modelle für Edna, Bruno und Mila** und **6–8 Grundkörper** (Frau/Mann × jung/mittel/alt, evtl. weitere Statur) für die erzeugten Gäste. Jeder Grundkörper ist eine ganze Figur mit eigenem Kopf; alle haben denselben Knochenaufbau (Meshy-Auto-Rigging mit Skelettvorlage Mixamo), Animationen gibt es deshalb nur einmal. Der Grundkörper folgt aus Geschlecht und Generation des Namens und wird reihum statt zufällig verteilt, damit sich keiner häuft.
-- **Variiert wird:** Körpergröße **150–185 cm** (selten über 190), Breite **35–50 cm**, Körperbau (schlank bis kräftig), Kleidungs- und Haarfarbe (Einfärben über Masken), seit 2026-10-23 auch der **Hautton** (acht Stufen von sehr hell bis sehr dunkel, Kinder wie ein Elternteil). Kleidung auch hell und bunt (Weiß, Hellrot, Pastell), Hosen zu gut einem Drittel Jeans. Das Kleidungsstück („Lottes Hut“) wird, wo es geht, als echtes Teil am Körper sichtbar.
+**Gastmodelle (umgesetzt 2026-10-17 bis 2026-10-20):** Die Gäste sind Meshy-Modelle – keine Einzelmodelle, sondern
+**sechs Grundkörper** (Frau/Mann × jung/mittel/alt), Generation je Vorname (`GuestGenerator.OLD`/`YOUNG`). Vorgemerkt:
+**eigene Modelle für Edna, Bruno und Mila**, evtl. weitere Statur. Jeder Grundkörper ist eine ganze Figur mit eigenem Kopf; alle haben denselben Knochenaufbau (Meshy-Auto-Rigging mit Skelettvorlage Mixamo), Animationen gibt es deshalb nur einmal. Der Grundkörper folgt aus Geschlecht und Generation des Namens und wird reihum statt zufällig verteilt, damit sich keiner häuft.
+- **Variiert wird:** Körpergröße **150–185 cm** (selten über 190), Breite **35–50 cm**, Körperbau (schlank bis kräftig), Kleidungs- und Haarfarbe (Einfärben über Masken), der **Hautton** (acht Stufen von sehr hell bis sehr dunkel, Kinder wie ein Elternteil). Kleidung auch hell und bunt (Weiß, Hellrot, Pastell), Hosen zu gut einem Drittel Jeans. Das Kleidungsstück („Lottes Hut“) wird, wo es geht, als echtes Teil am Körper sichtbar.
 - **Vorerst nicht:** getrennte Frisuren, andere Kleidungsschnitte, Augenfarbe.
 - Modelle in Meshy: A-Pose, Kleidung und Haare entsättigt hell- bzw. mittelgrau (Ober- und Unterteil verschieden), keine Muster, keine Accessoires, Haare nicht auf den Schultern, keine eingebrannten Schatten.
 
@@ -2448,8 +2436,7 @@ je Vorname in `GuestGenerator.OLD`/`YOUNG`):** Die Klötzchen-Gäste werden durc
 - Jeder Gast hat einen **Beziehungswert** zum Spieler (z. B. -100 … +100).
 - **Positiv** beeinflusst durch: nette Dialogoptionen, Geschenke, Gefallen, faire Trades, Hilfe bei Monster-Ereignissen.
 - **Negativ** beeinflusst durch: unhöfliche Antworten, Deko-Diebstahl, schlechte Trades, „blöde Aktionen“ (z. B. Lärm vor deren Tür, Monster anlocken).
-- Optional: **Ruf / Gerüchte** – Gäste reden miteinander, schlechtes Verhalten spricht sich herum. **Seit 2026-10-21:**
-  über das Freundesnetz, Gutes wie Schlechtes (6.18).
+- **Ruf / Gerüchte:** Gäste reden miteinander – Gutes wie Schlechtes spricht sich über das Freundesnetz herum (6.18).
 
 ### 6.3 Konsequenzen – neun Stufen (entschieden und umgesetzt 2026-10-18)
 
@@ -2465,7 +2452,7 @@ je Vorname in `GuestGenerator.OLD`/`YOUNG`):** Die Klötzchen-Gäste werden durc
 | **Verfeindet** | −80 … −55 | Redet nur noch, wenn du dich entschuldigst; lügt am Telefon |
 | **Stark verfeindet** | ≤ −80 | Nur mit Taten (unten). Droht dir und **schlägt zu**, wenn er dich allein erwischt |
 
-- **Langsamer nach oben:** Je besser man schon steht, desto weniger bringt jede nette Tat (bei 50 gut die Hälfte). Plaudern zählt pro Tag nur zweimal voll, danach kaum noch. **Seit 2026-10-21:** gilt für alle freundlichen Gesten zusammen, dazu eine Gesprächsbereitschaft nach Stufe (6.18).
+- **Langsamer nach oben:** Je besser man schon steht, desto weniger bringt jede nette Tat (bei 50 gut die Hälfte). Plaudern zählt pro Tag nur zweimal voll, danach kaum noch – das soll für alle freundlichen Gesten zusammen gelten, dazu eine Gesprächsbereitschaft nach Stufe (6.18).
 - **Die Extreme brauchen Taten, nicht nur Punkte:**
   - **Guter Freund:** mindestens 3 gemeinsame Partien (Mäxchen oder Schach), 2 Geschenke an ihn **und** 1 Gegenstand von ihm (Deko geschenkt bekommen oder gekauft) – Austausch in beide Richtungen. Bis dahin bleibt er bei „befreundet“ stehen.
   - **Stark verfeindet:** mindestens 4 feindselige Taten von dir (Deko klauen, beleidigen, rammen, schlagen) **und** er hat sich mindestens einmal gerächt (dich bestohlen, angerempelt oder geschlagen). Bis dahin bleibt er bei „verfeindet“.
@@ -2498,8 +2485,8 @@ je Vorname in `GuestGenerator.OLD`/`YOUNG`):** Die Klötzchen-Gäste werden durc
   - Im Garten ernten
 - **Pathfinding:** Gäste bewegen sich über ein NavMesh durchs Hotel, über Etagen (Treppen), durch Türen.
 - **Entscheidungen** über einfache Bedürfnisse/Ziele (Utility-KI): z. B. *Sicherheit*, *Deko besitzen*, *Handeln*, *Ruhe*, *Rache* (bei schlechter Beziehung → Deko klauen).
-- **Tagesablauf:** Essen im Speisesaal, im Zimmer sein, Garten, Lobby → der Spieler kann Gewohnheiten lernen (wann ist welches Zimmer leer?). **Entschieden 2026-10-21:** vier Phasen – Morgen, Tag, Abend, Nacht – nach der Tagesuhr (2.4); innerhalb der Phasen zufällig.
-- **Reagieren auf das Monster:** Vorwarnung erkannt → Panik → nächstes freies Versteck suchen.
+- **Tagesablauf** in vier Phasen – Morgen, Tag, Abend, Nacht – nach der Tagesuhr (2.4), innerhalb der Phasen zufällig → der Spieler kann Gewohnheiten lernen (wann ist welches Zimmer leer?).
+- **Reagieren auf das Monster:** Grollen (5.5) und Flackerwelle (4.17) → heim oder ins nächste freie Versteck.
 
 ### 6.7 Gäste können sterben
 - Das Monster kann Gäste holen: im Flur, in dunklen Bereichen, aus Verstecken (wenn es gesehen hat, wie sie hineingingen).
@@ -2509,17 +2496,17 @@ je Vorname in `GuestGenerator.OLD`/`YOUNG`):** Die Klötzchen-Gäste werden durc
   - Andere Gäste geraten in Panik, Dialoge ändern sich, die Feierstimmung in der Lobby kippt.
   - Monster ist gesättigt (4.10).
 - Evtl. Spuren: zerkratzte Tür, umgekippte Deko, ein einzelner Schuh im Flur – Andeutung statt Gore, passend zum diffusen Horror.
-- **Das Monster** lässt keine Leiche zurück, nur Blut und ein Kleidungsstück. **Der Lakengeist** (4.18) schon: Wen er
-  erwürgt, der bleibt liegen (2026-10-18). Wer Blut oder Leiche sieht, erschrickt und erzählt davon (6.12).
+- **Das Monster** lässt keine Leiche zurück, nur Blut und ein Kleidungsstück. **Lakengeist** (4.18) und **Kürbismann**
+  (4.19) schon: Ihre Opfer bleiben liegen. Wer Blut oder Leiche sieht, erschrickt und erzählt davon (6.12).
 
-### 6.8 Schock & Trauer (Ideen – noch zu diskutieren)
-> **Stand 2026-10-21:** Großteils schon umgesetzt (Schock nach Beziehung, Zittern, Fallenlassen, kürzeres Verstecken,
-> „Angst riecht“, Halluzinationen, Anrufe Toter, Gedenkkerze, Feier). Schock und Trauer werden ein Wert, Schuld folgt
-> aus der Ursache jedes Todes, und die Freunde des Toten trauern mit – siehe 6.18 (2).
+### 6.8 Schock & Trauer (großteils umgesetzt)
+> **Umgesetzt:** Schock nach Beziehung, Zittern, Fallenlassen, kürzeres Verstecken, „Angst riecht“, Halluzinationen,
+> Anrufe Toter, Gedenkkerze, Feier. **Entschieden 2026-10-21, noch nicht gebaut:** Schock und Trauer werden ein Wert,
+> Schuld folgt aus der Ursache jedes Todes, und die Freunde des Toten trauern mit – siehe 6.18 (2).
 
 Stirbt ein Gast, mit dem man **gut befreundet** war, erleidet der Spieler einen **Schock** mit einem Malus. Stärke abhängig vom Beziehungswert.
 
-**Mögliche Mali (Vorschläge):**
+**Mali:**
 - **Zittrige Hände:** Gegenstände rutschen gelegentlich aus der Hand; Schnitzen wird ungenauer → schwächere Kürbisse.
 - **Unruhiger Blick:** Leichtes Kamerazittern, Tunnelblick, schwereres Atmen (lauter → schlechter beim Verstecken).
 - **Kürzere Zeit im Versteck:** Panik setzt schneller ein.
@@ -2527,15 +2514,13 @@ Stirbt ein Gast, mit dem man **gut befreundet** war, erleidet der Spieler einen 
 - **Angst riecht:** Das Monster wird in der Nähe des Spielers neugieriger (Neugier ↑ um den Spieler).
 - **Sozial:** Weniger Lust/Optionen für Smalltalk & Handel.
 
-**Erholung (Vorschläge):**
+**Erholung:**
 - Mit anderen Freunden über den Verstorbenen reden (aber: Monster hört evtl. mit → 4.7).
 - **Gedenken:** Eine Kerze / einen geschnitzten Kürbis vor die Tür des Verstorbenen stellen.
 - An einer Feier in der Lobby teilnehmen (7.1).
 - Zeit.
 
-**Schuld vs. Trauer:**
-- **Trauer** (Freund ist einfach gestorben): Malus wie oben, klingt ab.
-- **Schuld** (man hat das Monster selbst auf ihn gelenkt, 4.11): stärkerer/länger anhaltender Malus, evtl. wiederkehrende Halluzinationen *dieses* Gastes. Bei hoher Schuld: Gäste werden misstrauisch, wenn sie es herausfinden.
+**Schuld:** Jeder Tod merkt sich seine Ursache (6.18, 2) – hat man ihn selbst ins Verderben geschickt (4.11), ist der Malus stärker und hält länger, mit Halluzinationen *dieses* Gastes. Gäste, die die Ursache erfahren, werden misstrauisch.
 
 ### 6.9 Dialog: Anlässe, Fragen, Erzählen, Lügen, Gedächtnis (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten (Talk, DialogUI), mit diesen Abweichungen: „Er war selbst dort“ prüft nur, wo
@@ -2544,12 +2529,11 @@ Stirbt ein Gast, mit dem man **gut befreundet** war, erleidet der Spieler einen 
 > (nett/neutral/unhöflich), nur wahr oder gelogen. Ein Versprechen an ein Kind gilt mit jeder Partie Mäxchen oder Schach
 > als gehalten. Lügen über die Nacht („Es war unheimlich“, obwohl nichts war) fliegen nur auf, wenn er sie sofort
 > durchschaut.
-- Einfaches Dialogsystem mit Antwortoptionen (nett / neutral / unhöflich).
-- ~~Umsetzung in Godot z. B. über eigene Ressourcen oder ein Dialog-Plugin (z. B. Dialogue Manager).~~ Eigenes
-  System im Code (DialogUI), kein Plugin.
+- Einfaches Dialogsystem mit Antwortoptionen (nett / neutral / unhöflich), eigenes System im Code (DialogUI), kein
+  Plugin.
 
-**Ausbau (2026-10-24):** Bisher war das Gespräch ein Menü von Tätigkeiten (Plaudern, Handeln, Schenken …). Jetzt
-kommen Fragen, Bitten, Erzählen und Lügen dazu, und **Gäste merken sich, was du sagst, und handeln danach**.
+**Ausbau (2026-10-24):** Zu den Tätigkeiten (Plaudern, Handeln, Schenken …) kommen Fragen, Bitten, Erzählen und
+Lügen, und **Gäste merken sich, was du sagst, und handeln danach**.
 
 **1. Menü in fester Ordnung**
 - **Oben: Anlässe** – höchstens zwei, je nach Lage (2), auf Taste 1 und 2.
@@ -2648,9 +2632,9 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Schummeln** ist möglich (Karte im Ärmel, Figur verschieben, gezinkte Würfel) – wird man erwischt: Beziehung ↓↓, Partie geplatzt, evtl. Racheklau.
 
 **Das Monster spielt mit**
-- Spiele brauchen **Konzentration**: Während einer Partie ist der Blick aufs Brett gerichtet → eine **Vorwarnung (4.2) wird leichter übersehen**.
+- Spiele brauchen **Konzentration**: Während einer Partie ist der Blick aufs Brett gerichtet → das **Flackern (4.17) wird leichter übersehen**.
 - Jedes Spiel hat einen **Lärmwert** (Schach leise, Würfeln/Billard laut, Kartenrunde mit Gelächter sehr laut) → Neugier ↑ in der Zone.
-- Bei einer Vorwarnung **bricht die Partie ab**: Gäste rennen weg, das Brett bleibt stehen, Einsätze liegen offen auf dem Tisch … (wer holt sie sich zuerst?).
+- Bei langem Flackern **bricht die Partie ab** (4.17): Gäste rennen weg, das Brett bleibt stehen, Einsätze liegen offen auf dem Tisch … (wer holt sie sich zuerst?).
 - Stärkere Gäste/Spiele in **dunklen Bereichen** sind riskanter – helle Spielorte sind sicherer, aber oft belegt.
 
 **Vorschläge für weitere Minispiele**
@@ -2681,15 +2665,15 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Hotel-Spieleschrank:** Ein abschließbarer Schrank in der Lobby mit Spielen; der Schlüssel ist selbst ein begehrter Gegenstand.
 
 **Umsetzungsstand (2026-10-10): Mäxchen an der Hotelbar**
-- **Hotelbar** südöstlich der Lobby: Theke, Flaschen, Würfeltisch mit zwei Hockern. Der **Würfelbecher** ist ein normaler Gegenstand – ohne Becher am Tisch kein Spiel (man kann ihn wegtragen).
+- **Hotelbar** neben der Lobby: Theke, Flaschen, Würfeltisch mit zwei Hockern. Der **Würfelbecher** ist ein normaler Gegenstand – ohne Becher am Tisch kein Spiel (man kann ihn wegtragen).
 - **Regeln:** verdeckt würfeln, ansagen (wahr oder geblufft), glauben oder aufdecken; Mäxchen (21) > Pasch > Rest; Best-of-3.
 - **Starten:** (1) Gast einladen („Mäxchen an der Bar spielen“), (2) Herausforderung eines Gastes annehmen (Revanche nach Niederlage gegen stolze Gäste, Freunde fragen von sich aus; ignorieren kostet etwas Beziehung), (3) Gäste würfeln untereinander – **Zuschauen** (≥ 25 s in der Nähe) verrät ihre Ticks beim Bluffen.
 - **Einsätze** liegen echt auf dem Tisch: nur Spaß · 3 / 8 Geld · der Gegenstand in deiner Hand (Gast setzt Gleichwertiges aus seinem Vorrat). Gewinnst du, nimmst du die Einsätze selbst vom Tisch.
 - **Spielstil der Gäste:** Edna fast immer ehrlich; Bruno blufft dreist, ist stolz und will Revanche, spielt nicht „nur zum Spaß“; Mila durchschaut Bluffs und Schummeleien am besten.
 - **Beziehung:** fair spielen ↑, Lieblingsspiel ↑↑, gewinnen gegen Stolze ↓, knapp verlieren ↑, absichtlich verlieren: bemerkt ↓ / unbemerkt ↑.
 - **Schummeln:** gezinkte Würfel (Zimmer 17) in den Becher schmuggeln → „Gezinkt nachwürfeln“; erwischt: Beziehung ↓↓, Gerücht, Gast nimmt den ganzen Einsatz.
-- **Monster:** jeder Wurf macht Lärm (Neugier ↑ an der Bar); am Tisch ist man konzentriert → Flackern/Rauschen nur halb so stark sichtbar; bei Vorwarnung springt der Gast auf (Mutige später) – die Einsätze bleiben liegen und gehören niemandem mehr.
-- Noch offen: Möbel als Einsatz, Wettschulden, weitere Spiele (Karten, Schnitz-Duell …).
+- **Monster:** jeder Wurf macht Lärm (Neugier ↑ an der Bar); am Tisch ist man konzentriert → Flackern/Rauschen nur halb so stark sichtbar; bei langem Flackern springt der Gast auf (Mutige später) – die Einsätze bleiben liegen und gehören niemandem mehr.
+- Noch offen: weitere Spiele (Darts, Schnitz-Duell, oben).
 
 **Umsetzungsstand (entschieden und umgesetzt 2026-10-18): Schach in der Lobby** – „wie Mäxchen“
 - **Schachtisch** in der Lobby (vorn rechts, unter dem Gartenfenster), zwei Hocker. Das **Schachbrett** ist ein
@@ -2709,7 +2693,7 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Gäste spielen untereinander** Schach (70–120 s, der Stärkere gewinnt meist). Wer **30 s zusieht**, weiß danach,
   wie stark beide spielen – das steht dann schon bei der Frage nach dem Einsatz.
 - **Monster:** Schach ist **leise** (kein Lärm), aber man sitzt konzentriert (Flackern/Rauschen schwächer sichtbar).
-  Bei einer Vorwarnung springt der Gast auf, die Einsätze bleiben liegen.
+  Bei langem Flackern springt der Gast auf, die Einsätze bleiben liegen.
 - Noch offen: die fehlende Dame als Suche (Idee oben), Dame/Mühle auf der Rückseite, Schachturnier bei Feiern.
 
 ---
@@ -2734,12 +2718,12 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 > nach einer Weile (länger, je vertrauter) windet sie sich von selbst heraus. Beim Verstecken, Schlafen oder wenn
 > der Lakengeist zupackt, springt sie herunter. Naht das Monster, faucht sie, kratzt (ein kleiner Schreck) und
 > flieht – auch auf dem Arm ist sie eine Frühwarnung.
-> **Noch nicht:** Heizkeller als Liegeplatz – den Tiefkeller (7.4) gibt es noch nicht.
-- **Ein paar Katzen gehören zum Hotel** (Vorschlag: 2–3, mit Namen, z. B. eine alte, eine scheue, eine neugierige).
+> **Noch nicht:** Heizkeller als Liegeplatz.
+- **Drei Katzen gehören zum Hotel** – eine alte, eine scheue, eine neugierige (oben).
 - **Sie laufen frei durchs Hotel:** NavMesh wie die Gäste, eigene Lieblingsplätze (Rezeption, Sofa in der
   Lobby, warm in der Küche, Fensterbank, Heizkeller), schlafen viel, schlüpfen durch offene Türen.
 - **Streicheln:** Spieler und Gäste können sie streicheln („Streicheln [E]“). Wer gestreichelt wird,
-  schnurrt (Geräusch) – Vorschlag: senkt beim Spieler die Anspannung kurz, bei Gästen die Angst (6.5).
+  schnurrt (Geräusch) – das senkt beim Spieler den Schock, bei Gästen die Angst (6.5).
 - **Mit Menschen:** Katzen suchen sich Lieblingsgäste, folgen ihnen ein Stück, legen sich in ihr Zimmer.
   Gäste reden über die Katzen („Hast du Minka gesehen?“) und streicheln sie im Vorbeigehen.
 - **Das Monster greift keine Katzen an** (entschieden 2026-10-14): Katzen waren immer lieb zu ihm. Es jagt
@@ -2748,7 +2732,7 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
   weg und fangen an zu **weinen** (klagendes Miauen/Jammern) – hörbar auch durch Wände.
   - Das ist eine **Frühwarnung**: Eine weinende, fliehende Katze zeigt, dass es in der Nähe ist – oft
     bevor das Rauschen beginnt (4.13). Ein Hinweis, keine Garantie.
-  - Vorschlag: Das Weinen ist **Lärm** (4.15) – das Monster ignoriert es aber (es mag die Katzen),
+  - Das Weinen ist **Lärm** (16 m, 4.15) – das Monster ignoriert es aber (es mag die Katzen),
     Gäste hören es dagegen und werden unruhig.
 - **Katzen werfen Dekoration um** (entschieden 2026-10-14): beim Herumstreifen, Spielen oder auf der Flucht.
   Umgeworfene Deko (Kürbis, Kerze, 5.) **schützt nicht mehr**, bis jemand sie wieder aufstellt; eine
@@ -2756,10 +2740,10 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
   Das Umwerfen macht ein Geräusch (Lärm, 4.15).
 - **Geschenke und Gesellschaft** (entschieden 2026-10-14), beides mit **geringer Wahrscheinlichkeit**:
   - Eine Katze **bringt dir Dekoration** – sie legt sie vor Zimmer 13 oder in dein Zimmer.
-    Vorschlag: kleine Deko (Spinnweben, Laub, eine Kerze), manchmal auch etwas, das einem Gast gehört –
+    Kleine Deko (Spinnweben, Laub, eine Kerze), manchmal auch etwas, das einem Gast gehört –
     der sucht es dann und verdächtigt vielleicht dich (6.2).
   - Eine Katze **legt sich auf dein Bett** in Zimmer 13 und schläft dort eine Weile.
-  - Vorschlag: Je öfter man eine Katze streichelt, desto eher kommt sie zu einem.
+  - Je öfter man eine Katze streichelt, desto eher kommt sie zu einem.
 - **Ideen für später** (Vorschläge, noch offen):
   - Miauen vor einer geschlossenen Tür kann einen im Versteck verraten – Gästen gegenüber, nicht dem Monster.
 - **Technik:** eigene Klasse ähnlich `Guest` (einfacher Zustandsautomat), interagierbar über
@@ -2772,8 +2756,8 @@ Gäste reagieren **sichtbar erschrocken**, wenn sie etwas Schreckliches sehen, u
 **Was erschreckt**
 - **Blutlachen**, die das Monster hinterlässt, wenn es einen Gast holt (große Blutspur und Kleidungsstück – keine
   Leiche). Kleine Blutstropfen verletzter Gäste erschrecken **nicht** (zu häufig).
-- **Leichen** gibt es vom **Lakengeist** (ein erwürgter Gast bleibt liegen, wo er starb) und seit 2026-10-20 vom
-  **Kürbismann** (4.19: liegt in einer Blutlache).
+- **Leichen** gibt es vom **Lakengeist** (ein erwürgter Gast bleibt liegen, wo er starb) und vom **Kürbismann**
+  (4.19: liegt in einer Blutlache).
 - Der **Lakengeist** selbst – am eigenen Fenster oder als Zeuge, wenn er zu jemand anderem kommt.
 - Jeder Fund erschreckt einen Gast **nur einmal**. Schlafende und Versteckte sehen nichts.
 
@@ -2796,32 +2780,29 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
   Zimmer), kommt er mit derselben Chance – mit **eigenem Zähler je Gast** (1. Mal heranschweben, 2. Handabdrücke
   und Hypnose, ab 3. herein und würgen, ab 4. durch den Vorhang). Der Zähler des Spielers bleibt davon unberührt.
 - Ab der Hypnose bleibt der Gast **gebannt stehen**, statt wegzulaufen.
-- **Würgen:** Mutige reißen sich eher los (5 % + 20 % × Mut, seit 2026-10-18; vorher 25 % + 50 %) und rennen in Panik davon, sonst **stirbt der Gast und
+- **Würgen:** Mutige reißen sich eher los (5 % + 20 % × Mut) und rennen in Panik davon, sonst **stirbt der Gast und
   bleibt als Leiche liegen**. Im Hotel hört man nur ein abbrechendes Röcheln.
 - **Zeugen** vertreiben ihn wie beim Spieler – bei einem Gast zählt **auch der Spieler** als Zeuge. Wer ihn so
   sieht, erschrickt ebenfalls.
 - Wer ihn erlebt hat, **lässt einen Tag lang den Vorhang zu** und ruht nicht im Dunkeln.
-- Zimmer ohne Außenfenster sind sicher. (Seit 2026-10-23 hat im Erdgeschoss jedes Zimmer ein Fenster oder eine Gartentür, auch Milas Zimmer 15 – die Regel greift dort vorerst nicht.)
+- Zimmer ohne Außenfenster sind sicher – im Erdgeschoss hat aber jedes Zimmer ein Fenster oder eine Gartentür.
 
 **Noch offen:** Werden Leichen irgendwann weggebracht (von Gästen, vom Monster)? Trauer der Gäste um Freunde (6.8)?
 
 ### 6.13 Kinder (entschieden und umgesetzt 2026-10-19)
-Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eigene Modelle, Sätze und Tänze brauchen.
-> **Im Prototyp umgesetzt (2026-10-19):** vier Kinder (seit 2026-10-20 dreizehn) (6–11 Jahre) bei je einem erzeugten Erwachsenen, Zimmer nebenan,
-> eigene Namen und Sätze („Mama“/„Papa“), ab und zu ein Schach-Wunderkind. Alles unter „Kinder und die bestehenden
-> Systeme“ – bis auf die Lücken unten. Als Modelle gibt es das Mädchen ~10 (`guest_girl10`) und seit 2026-10-20 auch das
-> Mädchen ~7 und die Jungen ~7 und ~10 (`guest_girl7`, `guest_boy7`, `guest_boy10`) – alle vier Grundkörper.
+> **Im Prototyp umgesetzt (2026-10-19):** dreizehn Kinder (6–11 Jahre) im Zimmer ihrer Eltern (6.20), eigene Namen und
+> Sätze („Mama“/„Papa“), ab und zu ein Schach-Wunderkind. Alles unter „Kinder und die bestehenden Systeme“ – bis auf
+> die Lücken unten. Modelle: alle vier Grundkörper (unten).
 > **Noch nicht:** Das Geheimnis (2.3) und die Zeitschleife (2.2) gibt es noch nicht – deshalb keine
-> Funde in engen Ecken und kein Déjà-vu. Die Puppe (5.5) tragen Kinder seit 2026-10-22. Der Lakengeist erschreckt Kinder am Fenster,
+> Funde in engen Ecken und kein Déjà-vu. Der Lakengeist erschreckt Kinder am Fenster,
 > noch nicht im Flur. Ein Waisenkind schließt sich nur dem Spieler an, noch keinem Gast. „Erzählt es allen“ heißt
 > vorerst: den Eltern und den Erwachsenen in der Nähe.
 - **Der Lakengeist erschreckt Kinder häufiger** – sie sind schwach und ängstlich (hoher Grundwert an Schwäche,
   4.18). Er will Angst säen, nicht töten.
 - **Kinder sind nie Opfer (entschieden 2026-10-19):** Der Geist erschreckt sie (am Fenster, unter dem Bett, im
-  Flur), würgt sie aber nie; auch das **Monster holt keine Kinder**. **Ausnahme (entschieden 2026-10-20):** der
-  **Kürbismann** (4.19) – Kinder haben ihn umgebracht, er jagt sie wie alle, die Spaß haben. **Zurückgenommen
-  (2026-10-20):** Auch er tut Kindern nichts; sie bleiben im ganzen Spiel geschützt.
-- **Familien:** Kinder kommen mit ihren Eltern und wohnen in deren Zimmer (seit 2026-10-24, 6.20; manche nur mit einem Elternteil). Wird ein Kind erschreckt, steigt die Angst der Eltern stark – sie
+  Flur), würgt sie aber nie; auch das **Monster holt keine Kinder**, und der **Kürbismann** (4.19) tut ihnen nichts,
+  obwohl Kinder ihn umgebracht haben – sie bleiben im ganzen Spiel geschützt.
+- **Familien:** Kinder kommen mit ihren Eltern und wohnen in deren Zimmer (6.20; manche nur mit einem Elternteil). Wird ein Kind erschreckt, steigt die Angst der Eltern stark – sie
   werden schwächer, und der Geist kommt über das Kind an die Erwachsenen.
 - **Niemand glaubt ihnen:** Kinder erzählen, was sie gesehen haben, die Erwachsenen tun es ab – der Spieler merkt,
   dass sie recht haben (passt zu den unzuverlässigen Berichten, 4.13).
@@ -2853,7 +2834,7 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
   **Von Tür zu Tür (entschieden und umgesetzt 2026-10-20):** Kinder ziehen auch durch die Flure und klopfen an
   zwei, drei Gästetüren in der Nähe. Ist jemand zu Hause, macht er auf und gibt Süßes (meist) oder schimpft
   (Griesgrame meist); schimpft er oder öffnet keiner, gibt es Saures – Laub vor der Tür. Man hört das Klopfen
-  im Flur. Gibt man ihnen **Süßigkeiten** (neuer kleiner
+  im Flur. Gibt man ihnen **Süßigkeiten** (kleiner
   Gegenstand, in der Küche und in Schubladen, 3.5), steigt die Beziehung; gibt man nichts, spielen sie einen
   **Streich** – Laub vor der Tür oder ein Klingelstreich am Telefon (Lärm, 4.14). Weil Klopfen schon unheimlich
   belegt ist (4.13), weiß man nie sicher, ob es nur die Kinder sind.
@@ -2863,8 +2844,8 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
   der Spieler in der Nähe stand, auf ihn. Am Fenster verdeckt das Eigelb ein Stück der Sicht, und nachts sieht der
   verschmierte Fleck aus wie die Handabdrücke des Lakengeists: Ei oder Geist? Eier gibt es in der Küche (neuer
   Gegenstand) – auch der Spieler kann werfen, etwa an die Tür eines Feindes (Zeugen, 6.3; wie, steht in 3.13).
-  **Streiche (entschieden und umgesetzt 2026-10-22):** Saures ist nicht mehr nur Laub. Das Kind sucht sich einen Streich aus:
-  - **Laub** vor die Tür streuen (wie bisher),
+  **Streiche (entschieden und umgesetzt 2026-10-22):** Für Saures sucht sich das Kind einen Streich aus:
+  - **Laub** vor die Tür streuen,
   - einen **Kürbis holen und vor die Tür werfen** – er zerplatzt beim Aufprall, egal aus welcher Höhe (Kürbismatsch,
     5.8); geholt wird er aus dem Koffer der Familie (Zierkürbis oder Kürbis),
   - eine **Kerze holen und vor die Tür werfen** – sie zerbricht und hinterlässt einen **großen weißen Wachsfleck**;
@@ -2888,7 +2869,7 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
   und **bringen ihn in die Küche** – ist der Herd frei, kochen sie daraus **Kürbissuppe**, sonst legen sie ihn dort ab.
 - **Gebastelte Geschenke:** Kinder schenken dem Spieler kleine, schwache Deko (Laub, eine Kerze) – mehr Herz als
   Schutz, aber es zählt als Geschenk (6.3).
-- **Die Puppe** (5.5, neu gefasst 2026-10-22): Kinder sehen sie und **tragen sie zum Spielen herum** – zwischen den
+- **Die Puppe** (5.5): Kinder sehen sie und **tragen sie zum Spielen herum** – zwischen den
   Angriffen, meist vor die Tür der eigenen Familie. Ihr Urteil wandert nicht mit: Kurz vor einem Angriff springt sie
   unbeobachtet zur schwächsten Tür, und dann kann sie auch kein Kind mehr bewegen.
 
@@ -2920,14 +2901,11 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
 - **Déjà-vu** (2.2): Kinder sagen offener als Erwachsene, dass sie einen kennen („Du warst letztes Jahr auch hier.“).
 
 **Vorschläge (offen, 2026-10-19)**
-- **Bettlaken-Kostüm:** Ein Kind im Laken-Kostüm steht im dunklen Flur – Kind oder Lakengeist? Braucht ein eigenes
-  Modell (Kinderkörper unter einem Laken) und gehört dann zu Halloween bzw. den Feiern.
 - **Versteckspiel mit Kindern:** Kinder fragen den Spieler von sich aus und kennen die besten Verstecke – bis einer
   der Suchenden kein Kind ist (Versteckspiel, 6.10). Ein eigenes Minispiel, deshalb später.
 
-**Modelle (geplant 2026-10-19, „Mädchen ~10“ eingebaut 2026-10-19 als `guest_girl10`, „Mädchen ~7“, „Junge ~7“ und
-„Junge ~10“ 2026-10-20 als `guest_girl7`, `guest_boy7` und `guest_boy10`):** Wie bei den Erwachsenen (6.0) eigene **Grundkörper** statt Einzelmodelle, vier
-Stück: **Mädchen und Junge, je etwa 7 und etwa 10 Jahre**. Dieselben Regeln für Meshy (A-Pose, Kleidung und Haare
+**Modelle (umgesetzt 2026-10-19/20: `guest_girl7`, `guest_girl10`, `guest_boy7`, `guest_boy10`):** Wie bei den
+Erwachsenen (6.0) eigene **Grundkörper** statt Einzelmodelle, vier Stück: **Mädchen und Junge, je etwa 7 und etwa 10 Jahre**. Dieselben Regeln für Meshy (A-Pose, Kleidung und Haare
 entsättigt grau, Oberteil heller als die Hose, Haare nicht auf den Schultern, keine Muster, Accessoires oder
 eingebrannten Schatten) und dasselbe Skelett (Auto-Rigging mit Vorlage **Mixamo**, „Alle hinzugefügt“, eine
 Datei), damit die Tänze und Animationen der Gäste ohne Umbau passen. Dazu:
@@ -2957,8 +2935,7 @@ Full-body 3D character of a 7-year-old girl, child proportions with a slightly l
 
 Gäste bitten den Spieler um Hilfe – kleine Aufgaben, die die bestehenden Systeme nutzen. **Kein Questmenü** (2.3):
 Angenommene Aufträge notiert der Spieler-Charakter im **Notizbuch** unter „Aufgaben“ (3.10) – fortlaufend, mit Name,
-Zimmer und Frist, erledigte durchgestrichen –, der Gast erinnert beim nächsten Gespräch daran. *(Bis 2026-10-23 im
-Tagebuch, das aber in Zimmer 13 liegt.)*
+Zimmer und Frist, erledigte durchgestrichen –, der Gast erinnert beim nächsten Gespräch daran.
 - **Wie man sie bekommt:** im Gespräch (der Gast fragt von sich aus oder auf „Kann ich dir helfen?“), am Telefon
   (4.14, „Ich habe kein Licht mehr“) oder als Zettel an der Tür von Zimmer 13.
 
@@ -2985,25 +2962,6 @@ Tagebuch, das aber in Zimmer 13 liegt.)*
 - **Offen:** wie viele Aufträge gleichzeitig; ob man ablehnen kann, ohne dass die Beziehung sinkt. Fest steht
   (3.10): Ins Notizbuch kommt ein Auftrag erst beim Annehmen, eine abgelehnte Bitte gar nicht.
 
-### 6.15 Freitext-Gespräche (Prototyp 2026-10-20)
-> **Gestrichen (2026-10-21):** Der Prototyp kommt nicht ins Spiel, der Code wird entfernt. Gespräche laufen nur über
-> das Menü. Der Abschnitt bleibt als Historie stehen.
-
-Mit Gästen frei reden statt nur aus dem Menü wählen – über ein **lokales Sprachmodell** (läuft auf dem Rechner des
-Spielers, kein Internet). Das Menü bleibt das Rückgrat; „Etwas fragen …“ kommt als Option dazu.
-- **Wofür:** vor allem **Ausfragen** – Zeugen befragen („Hast du heute Nacht was gehört?“), Gerüchte prüfen, Gäste
-  kennenlernen. Der Spieler muss selbst draufkommen, was er fragt.
-- **Grundsatz: Das Spiel weiß, das Modell formuliert.** Jeder Gast bekommt einen Faktenzettel aus dem Spielzustand
-  (Erlebnisse 6.12, Gerüchte 4.13, Feiern, Beziehung 6.3). Was nicht darauf steht, weiß er nicht. Unzuverlässige Gäste
-  erzählen Gerüchte so falsch wie sonst auch.
-- **Folgen nur über die bestehende Dialoglogik:** Das Modell ordnet die Frage einer Absicht zu (plaudern, Monster,
-  einladen, beleidigen, sonstiges); Beziehung, Einladen und Beleidigen entscheidet das Spiel wie im Menü. Reden über das
-  Monster lockt es weiter an (4.7). Handel, Spiele, Geschenke bleiben im Menü.
-- **Prototyp:** nur Edna und Bruno, Gesprächsverlauf wird nicht gespeichert.
-- **Offen:** Ob es ins fertige Spiel kommt (Downloadgröße +2,5 GB mit Gemma 3 4B, braucht eine Grafikkarte mit ~3 GB freiem Speicher –
-  abschaltbar, das Menü bleibt immer); Telefon (4.14) weiter ohne Freitext; Lügen nach Charakter (Spiel entscheidet,
-  Modell formuliert die Ausrede); Gerüchte über ein Gespräch hinweg gleich halten; erzeugte Gäste.
-
 ### 6.16 Freundschaften unter Gästen (entschieden 2026-10-21)
 Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gutes über dich.
 - **Wie Gäste Freunde werden:** durch gemeinsame Taten – zusammen schmücken (5.9), Deko suchen, Kürbissuppe essen
@@ -3019,8 +2977,7 @@ Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gute
 - Gast-Freundschaften stehen im Spielstand (Zähler je Paar); Familie und Nachbarn ergeben sich aus dem Hotel.
 - **Freunde schmücken die Türen ihrer Freunde mit** (5.10, entschieden 2026-10-21), auch Zimmer 13.
 - **Offen:** Streit unter Gästen (Freundschaften, die zerbrechen – ein Anfang ist Diebstahl unter Gästen bei
-  Knappheit, 5.10). ~~Schlechtes über dich, das Freunde weitertragen.~~ Gutes und Schlechtes laufen künftig über
-  dasselbe Netz (6.18, 1).
+  Knappheit, 5.10). Gutes und Schlechtes über dich laufen über dasselbe Netz (6.18, 1).
 - **Feindschaften (2026-10-22):** Ein erster Anfang sind die Streiche der Kinder (6.13): Wer verpetzt bekommt, wessen
   Kind ihm einen Kürbis vor die Tür geworfen hat, ist mit dessen Eltern **verfeindet** – Verfeindete sind keine
   Freunde mehr, auch nicht als Zimmernachbarn.
@@ -3030,7 +2987,7 @@ Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gute
 ### 6.17 Überlebende & Verletzungen (entschieden 2026-10-21)
 Nicht jeder Angriff endet tödlich: **Etwa vier von zehn Gästen überleben** – ohne Lebenspunkte, es wird beim Angriff
 entschieden. Wer überlebt, ist verletzt, erzählt viel und lässt sich in dieser Zeit schneller gewinnen – oder verlieren.
-Das gilt nur für Gäste (der Spieler stirbt wie bisher, 8.7); Kinder sind ohnehin nie Opfer (6.13). Wer überlebt, zählt
+Das gilt nur für Gäste (der Spieler stirbt, 8.7); Kinder sind ohnehin nie Opfer (6.13). Wer überlebt, zählt
 nicht als Opfer – das Monster bleibt hungrig (4.10).
 
 | Angreifer | Was er überlebt | Verletzung | Folgen |
@@ -3045,9 +3002,8 @@ nicht als Opfer – das Monster bleibt hungrig (4.10).
   lassen ihn etwas schneller heilen. Verletzung und Heilung stehen im Spielstand.
 - **Zeuge:** Ein Überlebender erzählt **viel und zuverlässig** – anders als Gerüchte (4.13) stimmt alles: wo es
   passiert ist, wie der Angreifer aussah, woher er kam und wohin er verschwand, wovor er zurückwich. Bei jedem Gespräch
-  ein neues Detail. Er erzählt es auch seinen Freunden und den Gästen ringsum – die Angst im Hotel steigt. ~~Auch im
-  Freitext-Gespräch (6.15) weiß er es.~~ (Freitext gestrichen 2026-10-21)
-- **Beziehung in dieser Zeit** (gilt seit 2026-10-21 für alle schweren Momente, 6.18): Alles zählt **doppelt** – Plaudern, Hilfe, aber auch Beleidigen und Klauen. **Geschenke
+  ein neues Detail. Er erzählt es auch seinen Freunden und den Gästen ringsum – die Angst im Hotel steigt.
+- **Beziehung in dieser Zeit** (gilt für alle schweren Momente, 6.18): Alles zählt **doppelt** – Plaudern, Hilfe, aber auch Beleidigen und Klauen. **Geschenke
   dreifach**, und **passende** noch mehr: eine Kerze für den, den der Geist gewürgt hat (er hat Angst im Dunkeln),
   Süßes, Suppe oder gebratener Kürbis für den, der im Bett liegt, und immer der Lieblingskürbis. Ein Geschenk zählt in
   dieser Zeit wie zwei für „guter Freund“ (6.3). Wer mit ihm befreundet ist und ihn kein einziges Mal besucht, kränkt
@@ -3058,14 +3014,12 @@ nicht als Opfer – das Monster bleibt hungrig (4.10).
   lassen sich nicht verschenken (entschieden 2026-10-21).
 
 ### 6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)
-> Noch nicht umgesetzt. Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
 **1. Ein Kanal fürs Weitersagen: das Freundesnetz**
-- *Bisher:* drei Kanäle – Negatives lief hotelweit an alle, Positives nur über Freunde (6.16), Monster-Wissen in einem
-  eigenen Topf; gewichtet mit dem Tratsch des *Empfängers*.
-- **Jetzt:** Alles läuft über das Netz aus **Freunden, Familie und Zimmernachbarn** (6.16) – Lob, Klagen (Diebstahl,
+- Alles läuft über das Netz aus **Freunden, Familie und Zimmernachbarn** (6.16) – Lob, Klagen (Diebstahl,
   Schlag, Beleidigung, Puppe vor die Tür gelegt), Monster-Wissen (Erlebnisse 6.12, Zeugenaussagen 6.17) und
   Todesnachrichten. Erzählt wird, wenn sich zwei Freunde treffen.
 - **Stärke:** nach dem Tratsch des **Erzählers** (Mila verbreitet am stärksten, 6.0); bei jedem Weitererzählen halb so
@@ -3076,9 +3030,7 @@ nicht als Opfer – das Monster bleibt hungrig (4.10).
 - **Folge:** Wer keine Freunde hat, hört nichts. Der Ruf hängt davon ab, *wen* man verärgert – ein gut vernetzter
   Gast schadet mehr als ein Einzelgänger.
 
-**2. Jeder Tod hat eine Ursache** (ersetzt „Schuld vs. Trauer“, 6.8)
-- *Bisher:* Schuld hieß nur „kürzlich bestohlen“; Trauer (`grief`) und Schock hatten verschiedene Auslöser und kamen
-  nur beim Monster; die Gedenkkerze wirkte nur auf den Spieler.
+**2. Jeder Tod hat eine Ursache** (6.8)
 - **Jeder Tod merkt sich, wie es dazu kam:** Klopfen an Zimmer 13 ignoriert (4.13) · Puppe vor seine Tür gelegt (5.5) ·
   sein Telefon kurz vorher klingeln lassen (4.14) · als Begleiter mitgenommen (6.3) · Deko oder Birne von ihm geklaut ·
   Licht bei ihm ausgemacht (4.11). Daraus ergibt sich die **Schuld** des Spielers an *diesem* Toten.
@@ -3094,14 +3046,14 @@ nicht als Opfer – das Monster bleibt hungrig (4.10).
 **3. Schwere Momente: empfindlicher Zustand und Wünsche** (verallgemeinert 6.17, erste Form von 6.14)
 - **Zustände:** verletzt (6.17) · trauernd (ein Freund ist gestorben) · verwaist (6.13) · nach einem Angriff des
   Lakengeists · Puppe vor der eigenen Tür (5.5).
-- **Gemeinsame Regeln** (wie bisher bei Verletzten): Taten zählen doppelt, im Guten wie im Schlechten · passende
+- **Gemeinsame Regeln** (wie bei Verletzten, 6.17): Taten zählen doppelt, im Guten wie im Schlechten · passende
   Geschenke · Besuche zählen, und wer als Freund nie kommt, kränkt · eigene Sätze.
 - **Jeder Zustand ergibt einen Wunsch** – der Auftrag aus 6.14 ohne eigenes System: eine Kerze für den Toten, Deko für
   die Tür, Suppe ans Bett, eine Katze zum Trösten, die Deko zurück, die die Katze verschleppt hat. Der Gast nennt ihn
   im Gespräch, das Notizbuch notiert ihn (6.14, 3.10). Erfüllt: Beziehung ↑, und er erzählt es weiter (1).
 - **Nach Ebenen** (6.0): Kernfiguren und zentrale Gäste haben eigene Wünsche, die übrigen allgemeine.
 
-**4. Freundschaft schützt** (Freunde schmücken deine Tür mit: 5.10; Begleiter verstecken sich wirklich: behoben)
+**4. Freundschaft schützt** (dazu: Freunde schmücken deine Tür mit, 5.10)
 - **Zuflucht:** Wirst du gejagt und klopfst bei einem **befreundeten** Gast, macht er auf – das Gegenstück zum Klopfen
   an Zimmer 13 (4.13). Feinde machen nicht auf. Verallgemeinert in 6.19 (Klopfen und Einlass überhaupt).
 - **Warnen:** neue Aktion im Gespräch oder am Telefon, solange es flackert: „Versteck dich!“ – dazu als **Ruf** an alle
@@ -3109,14 +3061,14 @@ nicht als Opfer – das Monster bleibt hungrig (4.10).
   Kam wirklich etwas, steigt die Beziehung deutlich (die „Hilfe bei Monster-Ereignissen“ aus 6.2); ein falscher Alarm
   (z. B. aus einer Halluzination) kostet Vertrauen (wie 3.6).
 - **Wache halten:** Gute Freunde bleiben auf Bitte in Zimmer 13, während du schläfst – ein wacher Zeuge vertreibt den
-  Lakengeist (4.18, beantwortet 3.6).
+  Lakengeist (4.18, 3.6).
 - **Feinde:** schließen ihre Tür ab, wenn sie dich kommen sehen (6.5). Sieht ein **stark Verfeindeter** dich ins
   Versteck gehen, ruft er es laut aus („Da drin ist er!“) – Lärm (4.15).
 
 **5. Die Beziehung lässt sich nicht erschleichen**
-- *Bisher:* Geschenke ohne Pause (Laub liegt gratis herum), Kerze schenken und zurückkaufen erfüllte „guter Freund“,
-  „über das Monster reden“ und „beruhigen“ gingen endlos, Plaudern am Telefon umging das Tageslimit, feindselige Taten
-  verfielen nie – und Schlechtes kam nur durch eigene Taten.
+- **Warum:** Geschenke ohne Pause (Laub liegt gratis herum), Schenken und Zurückkaufen, endlose Monster-Gespräche und
+  Plaudern am Telefon am Tageslimit vorbei lassen sich die Beziehung erschleichen; feindselige Taten müssen verblassen,
+  und Schlechtes soll nicht nur durch eigene Taten kommen.
 - **Zwei Tagesbudgets je Gast:**
   - **Beziehungsbudget:** Alle freundlichen Gesten – Plaudern (Gespräch und Telefon zusammen), Beruhigen,
     Monster-Gespräch – zählen am Spieltag nur **zweimal voll**, danach kaum noch.
@@ -3143,16 +3095,14 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht
 > durchkommen (zu lange jemand im Weg); die Badtür zum Abschließen von innen und das Einbrechen sehr wütender Gäste bei
 > Zimmer 13 fehlen noch; das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal je Tür und Tag
-> gilt). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank stehen im Plan – der Schrank an der
-> **Ostwand der Lobby** statt hinter der Rezeption (dort steht keine Wand, an der Westwand hängt das Aushangbrett).
+> gilt). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank (Ostwand der Lobby) stehen im Plan.
 >
 > Verallgemeinert Zuflucht und Abschließen aus 6.18 (4): Freundschaft öffnet Türen – im
 > wörtlichen Sinn. Zimmer werden sozialer Raum; Verstecke, Diebstahl (6.2) und Birnen (7.3) brauchen erst einen Weg
-> hinein. Anlass: Gäste öffneten jede Tür, an der sie vorbeigingen, und ließen sie offen (nebenbei leuchteten dadurch
-> viel mehr Lampen ins Bild, als nötig).
+> hinein.
 
 **1. Besitz und Schloss**
-- Jedes bewohnte Zimmer **gehört seinem Gast** (bzw. seinem Haushalt – siehe „Zu klären“). Nur er hat den Schlüssel.
+- Jedes bewohnte Zimmer **gehört seinem Gast** (bzw. seinem Haushalt, unten und 6.20). Nur er hat den Schlüssel.
 - **Gäste öffnen eine Zimmertür nur, wenn ihr Weg hindurchführt**, und schließen sie hinter sich – auch, wer nur
   durchgeht. Wer geht, schließt ab; wer daheim ist, hat die Tür zu, aber nicht immer abgeschlossen (Gesellige lassen
   sie manchmal einen Spalt offen).
@@ -3223,7 +3173,7 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 - **Werkzeug:** **ein Brecheisen** im **Heizkeller** (UG) – im Revier des Monsters. Ein **Werkzeugkasten** zum
   Reparieren im **Technikraum** (UG), leichter zu erreichen. **Konrad Lorenz** (Bastler, HAUSHALTE.md H11) hat
   eigenes Werkzeug und leiht es Freunden.
-- **Generalschlüssel:** im **verglasten Schlüsselschrank hinter der Rezeption**. Die Scheibe einschlagen ist laut,
+- **Generalschlüssel:** im **verglasten Schlüsselschrank an der Ostwand der Lobby**. Die Scheibe einschlagen ist laut,
   mitten in der Lobby – besser nachts. Er öffnet jede Zimmertür, außer der Bewohner ist drin und hat den **Riegel**
   vorgeschoben. Wer gesehen wird, wie er damit eine fremde Tür aufschließt, gilt als Einbrecher (5), nur ohne Lärm.
 - **Erste Zahlen** (zum Probespielen):
@@ -3239,8 +3189,7 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 ### 6.20 Haushalte (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten (HAUSHALTE.md → assets/data/households.json, beim Start neu eingelesen).
 >
-> Wer mit wem wohnt, entscheidet, wer eine Tür öffnen darf (6.19). Bisher hatte jedes Kind
-> genau ein Elternteil und wohnte im Zimmer nebenan; jeder Gast hatte ein eigenes Zimmer.
+> Wer mit wem wohnt, entscheidet, wer eine Tür öffnen darf (6.19).
 
 - **67 Gäste = 54 Erwachsene + 13 Kinder in 39 Haushalten** (die Gesamtzahl aus 6.0 bleibt):
 
@@ -3266,16 +3215,16 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 - **Zimmer zugeordnet (2026-10-24) nach Größe:** Familien in die 103-m²-Zimmer (alle im OG1), Haushalte zu zweit in
   80–103 m² (die alten Paare im EG, ohne Treppe), die Kernfiguren in 68-m²-Zimmer (drei um Zimmer 13 – Zimmernachbarn, 6.16 –, Bruno im OG1),
   die übrigen Alleinstehenden in die kleinen 34-m²-Zimmer im EG. Danach fünf Tausche zugunsten von **Terrasse und
-  Balkon** (41 Zimmer haben einen Außenzugang, bewohnt jetzt 17 statt 12): eine Familie ins 103-m²-Zimmer mit Balkon,
+  Balkon** (41 Zimmer haben einen Außenzugang, 17 davon bewohnt): eine Familie ins 103-m²-Zimmer mit Balkon,
   zwei Paare in 68-m²-Zimmer mit Balkon, zwei Alleinstehende in kleine Zimmer mit Terrasse. Weitere Tausche vom Zeichner stehen nur in HAUSHALTE.md. Liste in **[HAUSHALTE.md](HAUSHALTE.md)**
   („Zimmerliste“). Die Nummern sind **Platzhalter** und werden noch ausgetauscht – die Zuordnung hängt an der
   **Stelle** im Plan (Lage, Größe, Mitte in Pixeln), nicht an der Nummer. Nur Zimmer 13 bleibt.
-- **Nachnamen** (entschieden 2026-10-24, präzisiert am selben Tag) erscheinen **beim Hinsehen an der Tür** (im
+- **Nachnamen** (entschieden 2026-10-24) erscheinen **beim Hinsehen an der Tür** (im
   Hinweis, kein Schild an der Wand) und im **Hotelregister** (2.3): bei mehreren Personen der Nachname („Brandt“),
   bei einer Person Vor- und Nachname („Walter Ruprecht“).
 
 - **Liste und Generator** (entschieden 2026-10-24): Die Liste legt fest, **wer** jemand ist – Name, Nachname,
-  Geschlecht, Generation, Charakter, Haushalt. Der Generator würfelt **alles Übrige** wie bisher, mit festem Seed je
+  Geschlecht, Generation, Charakter, Haushalt. Der Generator würfelt **alles Übrige**, mit festem Seed je
   Person (von Spiel zu Spiel gleich): Werte in der Spanne des Charakters (Mut, Gier, Tratsch, Preise, Zuverlässigkeit,
   Geld), Vorrat und Startdeko, Ernten/Schnitzen, Tagesablauf, Sätze, Würfel- und Schachstil, Aussehen (Farben,
   Hautton, Größe, Statur) und das Kleidungsstück für Spuren. Eigene Geschichten bekommen weiter nur Kern- und zentrale
@@ -3287,7 +3236,7 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 - **Kinder mit zwei Eltern:** Je Kind bestimmt der Seed ein Elternteil; von ihm erbt es mit 70 % die Haarfarbe
   (Geschwister können verschieden aussehen). Der **Hautton** liegt zwischen beiden Eltern (Mittel der acht Stufen,
   zufällig gerundet).
-- **Eine Tür je Haushalt** (39 statt rund 66):
+- **Eine Tür je Haushalt** (39 Türen):
   - **Startdeko** der Erwachsenen zusammengelegt, höchstens drei Stück an der Tür. Jeder Erwachsene behält seinen
     eigenen Vorrat und schmückt damit dieselbe Tür.
   - **Anspruch des Monsters** (4.8, 5.10) je Tür × (1 + 0,35 je weiteren Erwachsenen) – ein Paar ×1,35. Kinder zählen
@@ -3299,25 +3248,23 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 
 ## 7. Spielwelt: Das Hotel
 
-- **Bereiche (Vorschlag):** Lobby, Flure mehrerer Etagen, Gästezimmer, Speisesaal/Küche, Wäscherei, Keller, Treppenhaus, **Hotelgarten** (Kürbisbeete, Laubbäume, umzäunt), **Bibliothek / Salon** (Schachbrett, Kamin, Billard), **Hotelbar** (Würfel, Darts).
+- **Bereiche:** Lobby mit Galerie und Rezeption, Bar, Partyraum, Küche und Speisesaal, Schwimmbad, Gärten mit
+  Kürbisfeldern, Zimmerflure in Erd- und Obergeschoss, Katzenraum und Bibliothek (7.7), Untergeschoss mit Heizkeller
+  und Wäscherei (7.9), Dachboden (4.21); geplant ist der Tiefkeller (7.4, 7.10).
 - **Spinnenweben-Zonen:** verlassene Zimmer, Keller, Dachboden – dunkel und gefährlich.
-- **Im Prototyp umgesetzt (2026-10-10, Hotel vergrößert 2026-10-11):**
-  - **Lobby** (West, 14 × 14 m, Decke 5 m): Rezeption, Sofas, Säulen, Plattenspieler, Ausgangs-Doppeltür (verriegelt)
-  - **Küche** (südlich der Lobby): Messer, Kerzenvorrat
-  - **Hotelgarten** hinter einer **Glastür** (plus Fenster in der Lobby-Nordwand): Kürbisbeete, Bäume mit Laubhaufen, Hecken, Laternen, Mondlicht
-  - **Erdgeschoss:** Hauptflur (78 m nach Osten) mit **drei Flurkreuzungen** – A und B mit langen Nord- und Südflügeln, C mit kurzen Flügeln – **44 Zimmer**
-  - **Obergeschoss** (4 m höher) über ein **Treppenhaus** mit Wendepodest am Ende des Nordflügels: Hauptflur mit zwei Kreuzungen, **30 Zimmer** (211–244), zwei davon verfallen (Tür offen, Spinnweben). Zusammen **74 Zimmer** für rund 30 Gäste (veraltet: heute 67 Gäste in 39 Haushalten, 6.20)
-  - Zimmer 11 (Edna), 13 (Spieler), 15 (Mila), 17 (verlassen, dunkel), 12 (Bruno), 14 (leer), 18 (abgeschlossen), 26 (Doppelzimmer für eine Familie, vorgemerkt); die **Wäscherei** hat seit 2026-10-23 keine Zimmernummer mehr, sie liegt im Untergeschoss (Zettel 1994 dort). Der Grundriss des Erdgeschosses bleibt ab 2026-10-23, wie er ist; alle übrigen sind zu Beginn mit Zufallsgästen belegt oder **unbewohnt** – eingerichtet, Licht aus, hier und da eine Kerze oder Münzen. Zimmer, hinter deren Rückwand ein Flügel liegt, haben kein Außenfenster.
-  - **Kellertreppe** hinter der niedrigen Kellertür am Ostende des Erdgeschosses: 3,5 m hinab
-  - **Keller** unter der Erde: Versteck des Monsters, Schlüssel zu Zimmer 18, altes Regal
-  - Noch nicht gebaut: Bibliothek/Salon, Speisesaal, weitere Etagen; Gäste gibt es weiterhin nur drei
+- **Im Prototyp:** Das Hotel entsteht aus dem Gebäudeplan `map_a.aseprite` (7.5, 7.10): Untergeschoss, Erdgeschoss,
+  Obergeschoss und Dachgeschoss auf 151 × 60 m, **81 Zimmer** (EG 48, OG1 33). Wer wo wohnt, steht in
+  [HAUSHALTE.md](HAUSHALTE.md) (6.20). **Sonderzimmer:** 013 Spieler, 017 verlassen und dunkel (Kellerskizze), 018
+  abgeschlossen (Schlüssel im Heizkeller, UV-Aufsatz), 022 unbewohnt mit der Streichholzschachtel (5.12), zwei
+  verfallene (Tür offen, Spinnweben). Den Kompass findet man in Zimmer 026. Unbewohnte Zimmer sind eingerichtet, Licht
+  aus, vom Hotel abgeschlossen (6.19), hier und da eine Kerze oder Münzen.
 
 ### 7.1 Die Lobby – Gemeinschaftsraum
-- Großer, zentraler Raum **in der Mitte des Hotels**; von hier aus gehen Flure und Treppen ab. Hinter der monumentalen Doppeltür (2,50 × 2,50 m) liegt der verschlossene Ausgang.
+- Großer, zentraler Raum; von hier aus gehen Flure, die Lobbytreppe und die Aufzüge ab (7.5). Hinter der monumentalen Doppeltür (2,50 × 2,50 m) liegt der verschlossene Ausgang.
 - Treffpunkt der Gäste: Handeln, Reden, Gerüchte austauschen.
-- **Feiern:** Gäste treffen sich und feiern zusammen (Musik, Kerzen, Snacks, viel Deko).
+- **Feiern** (im Partyraum neben der Lobby, 7.5): Gäste treffen sich und feiern zusammen (Musik, Kerzen, Snacks, viel Deko).
   - Positiv: Beziehungen ↑, Panik ↓, Trauer ↓, gute Handelsgelegenheiten.
-  - Risiko: **Lärm** → Neugier des Monsters ↑ in der Lobby; während alle feiern, sind die **Zimmer leer** → Zeit zum Klauen (für einen selbst – und für andere).
+  - Risiko: **Lärm** → Neugier des Monsters ↑ dort; während alle feiern, sind die **Zimmer leer** → Zeit zum Klauen (für einen selbst – und für andere).
   - Idee: **Deko-Wettbewerb** bei der Feier, die Puppe (Jury) kürt die beste Deko → Belohnung (Geld, seltene Deko).
     Vorgemerkt als Jury beim Großen Schmücken (5.5).
 - **Wann wird gefeiert?** Feiern entstehen **spontan durch die Gäste**, z. B. wenn:
@@ -3330,10 +3277,9 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
   - Gäste persönlich einladen (Dialog) – ob sie kommen, hängt von der Beziehung ab.
   - **Tänze** (umgesetzt 2026-10-14): Gäste tanzen verschieden – hüpfen, wiegen, drehen, Arme hoch, Twist,
     schunkeln. Jeder hat einen Lieblingstanz und wechselt ab und zu.
-    > 2026-10-18: Gäste mit Modell tanzen echte Tanzanimationen (Mixamo): Chicken Dance, Macarena, Hip-Hop –
-    > ein Download gilt für alle Grundkörper. Die Code-Tänze bleiben für die Klötzchenfiguren.
-    > 2026-10-19: Jeder Tänzer hat seinen eigenen Platz mit mindestens 1,5–2 m² Freiraum (Raster mit 1,4 m
-    > Abstand, von der Tanzfläche aus nach außen) – vorher standen alle auf sechs Punkten im Knubbel.
+    > Gäste mit Modell tanzen echte Tanzanimationen (Mixamo): Chicken Dance, Macarena, Hip-Hop – ein Download gilt
+    > für alle Grundkörper; ohne Modell bleiben die Code-Tänze. Jeder Tänzer hat seinen eigenen Platz mit mindestens
+    > 1,5–2 m² Freiraum (Raster mit 1,4 m Abstand, von der Tanzfläche aus nach außen).
   - Vorbereitung physisch in den Händen: Musik (Radio/Plattenspieler), Kerzen, Snacks aus der Küche, Deko in die Lobby tragen. Evtl. Geld für Extras.
   - Gelungene Feier → Beziehungen ↑ bei allen Gästen, Ruf ↑, Trauer/Schock ↓.
   - **Taktischer Einsatz:** Feier als Ablenkung, um in leere Zimmer zu schleichen – oder bewusst Lärm machen, um das Monster in die Lobby statt zum eigenen Zimmer zu locken (riskant für alle Anwesenden!).
@@ -3348,17 +3294,11 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
 | Deckenhöhe | 3,0 – 4,0 m | Hohe Decken, Schatten oben |
 | Standard-Tür (Zimmer) | 1,20 × 2,10 m | Breit, komfortabel |
 | Lobby-Tür | 2,50 × 2,50 m | **Doppeltür**, je Flügel 1,25 m, monumental |
-| Kellertür | 0,90 × 1,80 m | Eng und niedrig |
 | Spieler | 0,45 × 1,80 m | Kapsel-Hitbox |
 
 > **Rahmen (2026-10-17):** Türen, Fenster und Durchgänge haben Rahmen im Craftsman-Stil aus braunem Holz:
 > Zarge in der Laibung, glatte Seitenbekleidung, darüber Leiste, Friesbrett und Abdeckung mit Kehle;
 > Fenster mit Fensterbank, Schürze und Rahmen um die Scheibe. Profil-Kit per Blender-Skript (9.2).
-
-> **Überholt (2026-10-20):** Die niedrige Kellertür ist mit dem Untergeschoss (7.9) weggefallen – das Treppenhaus
-> führt durch eine normale Tür in die Kellergänge.
->
-> ⚠ **Kellertür und Spieler sind beide genau 1,80 m hoch.** Die Kapsel würde stecken bleiben. Optionen: Ducken nötig (passt atmosphärisch: man muss sich in den Keller *bücken*), Kellertür leicht erhöhen (z. B. 1,85 m) oder Hitbox minimal kleiner als 1,80 m.
 
 - **Blender:** Maßeinheit Meter, 1 Blender-Einheit = 1 m = 1 Godot-Einheit. Modulares Kit z. B. im 1-m- oder 2-m-Raster, Wandhöhe 3,5 m als Standard.
 - **Eigenes Zimmer:** sicherer Rückzugsort, Lager für Deko, **einziger Speicherpunkt** (Tagebuch auf dem Schreibtisch, siehe 8.5).
@@ -3366,19 +3306,20 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
   > **Offen (2026-10-20): Die Tapeten sollen wieder Flecken bekommen.** Die Flecken aus Rauschen im Wand-Shader
   > (Wasserränder, matter und etwas dunkler) gefielen nicht und sind vorerst raus; der abgegriffene Sockel bleibt.
   > Vermutlich braucht es eine manuelle Lösung (z. B. von Hand gemalte Flecken).
-- **Eingeschlossen:** Ausgänge verriegelt – warum? (Story-Frage, siehe offene Punkte)
+- **Eingeschlossen:** Ausgänge verriegelt – das Hotel ist ab dem 1. Oktober verschlossen (2.3); harmlos erklärt durch
+  die Hausordnung (2.5).
 
 ### 7.3 Fenster, Vorhänge & Wandlampen
-> Stand: 2026-10-19 · im Prototyp umgesetzt (Außenfenster mit Vorhängen in Lobby und Zimmern, Wandleuchten und Kerzen, Deckenleuchten nur wo der Plan sie setzt – bisher vier in der Lobby, ein Lichtschalter pro Raum/Flurabschnitt, Glühbirnen als Gegenstand)
+> Im Prototyp umgesetzt: Außenfenster mit Vorhängen in Lobby und Zimmern, Wandleuchten und Kerzen, Deckenleuchten
+> nur wo der Plan sie setzt, ein Lichtschalter pro Raum/Flurabschnitt, Glühbirnen als Gegenstand.
 
 Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(actor)` wie Türen und Truhen (9.1) – **Gäste benutzen sie genauso wie der Spieler**.
 
 **Fenster**
 - Wirken wie eine **Wand**: Man kommt nicht hindurch, kann aber **hindurchsehen**.
-- Vorhandene Grundlage: Die Glasscheiben in der Lobby-Nordwand (eigene Kollisionsebene „Glas“) blockieren Bewegung, lassen aber den Blick durch.
-- **Sicht in beide Richtungen (Vorschlag):** Auch Monster und Gäste sehen hindurch → das Monster kann einen durchs Fenster bemerken (4.5), Gäste können einen durchs Fenster beim Klauen beobachten und werden zu Zeugen (6.2).
+- Glas hat eine eigene Kollisionsebene („Glas“): Es blockiert Bewegung, lässt aber den Blick durch.
+- **Sicht in beide Richtungen:** Auch Monster und Gäste sehen hindurch → das Monster kann einen durchs Fenster bemerken (4.5), Gäste können einen durchs Fenster beim Klauen beobachten und werden zu Zeugen (6.2).
 - Mondlicht fällt durch offene Fenster herein (Helligkeit der Zone, 4.4).
-- **Milchglasfenster im Flur** – **entfernt (2026-10-17):** Die Innenfenster zwischen Flur und Zimmern gibt es nicht mehr; Zimmertüren haben stattdessen einen Rahmen mit breiterem, überstehendem Sturz. Handabdrücke des Monsters landen auf den Türen. (Früher: Licht, Schatten und Umrisse sichtbar, keine Sicht für Monster und Zeugen.)
 
 **Vorhänge**
 - Jedes Außenfenster hat Vorhänge, die man **aufziehen und zuziehen** kann.
@@ -3387,11 +3328,10 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 - **Gäste** nutzen Vorhänge ebenfalls, z. B. zieht die ängstliche Edna sie nachts zu, um nicht gesehen zu werden – und macht ihr Zimmer damit dunkler.
 
 **Wandlampen**
-- **Keine Deckenlampen mehr (entschieden 2026-10-17):** Mit Deckenlampen wirkte das Hotel zu hell und zu gemütlich. Licht kommt nur noch von **vereinzelten, gedimmten Wandlampen** und **festen Kerzen** (Flurkommoden, Bank, Lobby, Theke, Zimmertische). Die hellsten Lichter sind Kerzen und Kürbisse; die Decken sind aus demselben Holz wie die Zimmerböden und nur schwach zu erkennen. Ein erster, noch dunklerer Stand war zu finster – jetzt bleiben dunkle Ecken als Umriss sichtbar.
-- **Deckenleuchten wieder, aber gezielt (entschieden 2026-10-19):** Wo der Gebäudeplan eine Deckenleuchte setzt, hängt eine – gedimmt wie die Wandlampen, nicht flächendeckend. Zuerst vier in der Lobby: Über dem Luftraum hängen sie als Pendel von der hohen Decke herab (auch von der Galerie aus zu sehen). Sie gehören zum Raum und hängen am selben Lichtschalter, ihre Birnen lassen sich wie alle anderen herausdrehen, wo man sie erreicht.
-- **Ein Lichtschalter pro Raum** (entschieden): schaltet alle Wandlampen des Raums bzw. Flurabschnitts gemeinsam ein und aus. Die Deko-Kerzen brennen ~~immer~~ von Spielbeginn an, bis das Monster oder der Spieler sie ausbläst (5.12, 2026-10-25). Große Räume dürfen mehrere Schalter haben (an jedem Eingang einen); sie schalten gemeinsam wie eine Wechselschaltung (2026-10-20).
+- **Gedämpftes Licht (entschieden 2026-10-17/19):** Flächendeckende Deckenlampen machen das Hotel zu hell und zu gemütlich. Licht kommt deshalb von **vereinzelten, gedimmten Wandlampen**, **festen Kerzen** (Flurkommoden, Bank, Lobby, Theke, Zimmertische) und **Deckenleuchten nur dort, wo der Gebäudeplan sie setzt** – gedimmt wie die Wandlampen; in der Lobby hängen sie als Pendel von der hohen Decke über dem Luftraum (auch von der Galerie aus zu sehen). Die hellsten Lichter sind Kerzen und Kürbisse; die Decken sind aus demselben Holz wie die Zimmerböden und nur schwach zu erkennen. Dunkle Ecken bleiben als Umriss sichtbar, nicht ganz finster. Sie gehören zum Raum und hängen am selben Lichtschalter, ihre Birnen lassen sich wie alle anderen herausdrehen, wo man sie erreicht.
+- **Ein Lichtschalter pro Raum** (entschieden): schaltet alle Wandlampen des Raums bzw. Flurabschnitts gemeinsam ein und aus. Die festen Kerzen brennen von Spielbeginn an, bis das Monster oder der Spieler sie ausbläst (5.12). Große Räume dürfen mehrere Schalter haben (an jedem Eingang einen); sie schalten gemeinsam wie eine Wechselschaltung.
 - **Licht aus = das Monster kommt** (4.4). Ausschalten ist also eine bewusste Entscheidung – z. B. um nicht gesehen zu werden – mit hohem Preis.
-- **Flackern trotzdem:** Eingeschaltete Lampen flackern weiterhin, wenn das Monster sich ankündigt (4.2). Kaputte Lampen bleiben kaputt, egal wie der Schalter steht.
+- **Flackern trotzdem:** Eingeschaltete Lampen flackern, wenn das Monster aufbricht oder nah ist (4.2). Kaputte Lampen bleiben kaputt, egal wie der Schalter steht.
 - **Glühbirnen herausdrehen & mitnehmen** (entschieden): Jede Lampe hat eine Glühbirne, die man herausdrehen kann. Die Birne ist ein **normaler Gegenstand** (3.2): klein, einhändig, zerbrechlich: **Fällt sie tiefer als 1,5 m, platzt sie** (entschieden und umgesetzt 2026-10-24) – Knall (8 m weit), Splitter und Scherben, die Birne ist weg. Ebenso **zerbricht eine Kerze, die tiefer als 2 m fällt**, zu einem großen Wachsfleck (brennend kann sie Deko anzünden, 5.11); aus der Hand fallen lassen geht beides heil.
   - **Fehlt die Birne, bleibt die Lampe dunkel** – egal wie der Schalter steht → die Zone wird dunkel → das Monster kommt (4.4).
   - **Einsetzen:** Eine Birne kann in jede leere Fassung geschraubt werden – z. B. ins eigene Zimmer, um es heller und sicherer zu machen. Ersatz für kaputte Lampen.
@@ -3400,7 +3340,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
   - **Gäste klauen auch Birnen**, z. B. in Panik für ihr eigenes Zimmer – oder als Racheklau beim Spieler.
   - Birnen sind **Handelsware** (Ersatzbirnen evtl. im Hausmeisterraum/Keller).
   - **Birnen brennen durch** (entschieden): Mit **geringer Wahrscheinlichkeit** geht eine eingeschraubte Birne kaputt, wenn
-    - das Licht **stark flackert** (Vorwarnung, 4.2) – je stärker das Flackern, desto höher die Chance,
+    - das Licht **stark flackert** (Flackerwelle, 4.17) – je stärker das Flackern, desto höher die Chance,
     - das **Monster in der Nähe** ist (je näher, desto wahrscheinlicher).
     - Folge: kurzes Aufblitzen, Knall/Klirren, die Lampe bleibt dunkel → die Zone wird dunkel → das Monster wird noch mehr angezogen (4.4). Eine sichere, helle Zone kann so mitten in einer Begegnung kippen.
     - Kaputte Birnen sind nutzlos (Vorschlag: bleiben als Scherben in der Fassung, müssen herausgedreht und ersetzt werden). Ersatzbirnen werden dadurch wertvoll.
@@ -3421,7 +3361,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 - **Wechselwirkungen:**
   - **Licht aus = das Monster kommt** (4.4): Leere Zimmer werden dunkel und damit für das Monster
     interessanter – ein vergessenes Licht schützt ein Zimmer, das niemand braucht.
-  - **Ausruhen** bleibt wie bisher (bewusst Licht aus im eigenen Zimmer, solange er drin ist).
+  - **Ausruhen** bleibt (bewusst Licht aus im eigenen Zimmer, solange er drin ist).
   - **Fehlende oder kaputte Birne:** Der Schalter hilft nicht → Gast beschwert sich, holt evtl. Ersatz
     oder meidet den Raum (Anknüpfung an Birnen-Klau, 4.11).
   - **Spieler im Zimmer:** Ist der Spieler noch drin, bleibt das Licht an. Ein Gast, der das Licht
@@ -3435,44 +3375,35 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 
 **Zu klären**
 - Brauchen Glühbirnen eine heiße Lampe / Verbrennungsgefahr beim Herausdrehen bei eingeschaltetem Licht? (Vorschlag: erst ausschalten, sonst kurz „Autsch“ und Birne fällt evtl.) – im Prototyp noch ohne.
-- Zerspringt eine heruntergefallene Birne? – im Prototyp noch nicht.
 
 ### 7.4 Fahrstuhl & Tiefkeller (vorgemerkt 2026-10-11)
-> **Stand 2026-10-23 – Aufzug gebaut:** Statt des Gitterfahrstuhls ein Hotelaufzug mit **Teleskoptüren**, die
+> **Aufzug gebaut (2026-10-23):** ein Hotelaufzug mit **Teleskoptüren**, die
 > beidseitig zur Mitte schließen, in einem Holzportal; darüber die **Lampenanzeige** „U“, „0“, „1“ (runde Lampen, 8 cm),
 > daneben ein Rufknopf. Die Kabine **fährt wirklich** zwischen Untergeschoss, Erdgeschoss und Obergeschoss: drei goldene
-> Handläufe wie an der Rezeption, gegenüber der Tür ein **Spiegel** (echtes Spiegelbild, seit 23.10. mit der Spielerfigur, 3.9),
+> Handläufe wie an der Rezeption, gegenüber der Tür ein **Spiegel** (echtes Spiegelbild mit der Spielerfigur, 3.9),
 > eine Deckenleuchte, links ein **Bedienfeld** aus Messing (drei Etagenknöpfe untereinander, darunter Tür auf / Tür zu,
 > darunter Alarm). Motor und Glocke an Abfahrt und Ziel machen das Monster neugierig, der **Alarm** ist laut und
 > erschreckt Gäste. **Aufzug 1 fährt schon jetzt** – die Reparatur unten kommt später als Sperre davor. **Aufzug 2 ist
 > tot** (7.10), sieht aber gleich aus; seine Anzeige wandert ab und zu ohne Kabine. Noch offen: Gäste und Monster im
-> Aufzug (Falle, Nothalt), Notruftelefon, Halt im Tiefkeller und Dachgeschoss (sobald die Pläne stehen).
+> Aufzug (Falle, Nothalt), Notruftelefon, Halt im Tiefkeller und Dachgeschoss.
 >
-> **Stand 2026-10-21 (7.10):** Der **Tiefkeller kommt** – nur mit dem Aufzug erreichbar, Plan steht aus. Von den zwei
-> Schächten wird **einer repariert**, der andere bleibt der Weg des Monsters. Der **Maschinenraum liegt im
-> Untergeschoss** (nicht mehr am Ende des Obergeschosses), der **Heizraum** ebenfalls; der Aufzug hält auf allen
-> Ebenen bis zum neuen **Dachgeschoss**. Was unten über Heizkeller, Kessel und Gitter steht, muss danach neu verortet
-> werden (7.10, „Zu klären“).
->
-> **Stand 2026-10-20:** Der Keller ist jetzt das **Untergeschoss** (7.9) mit einem **Heizkeller** als Versteck des
-> Monsters – noch ohne Kessel, Kohle und Gitter. Ob Tiefkeller und Lager darunter kommen, ist offen.
->
-> Noch nicht umgesetzt. Der bestehende Keller (Versteck des Monsters) bleibt über die Kellertreppe erreichbar; der **Tiefkeller** liegt noch tiefer und ist **nur mit dem Fahrstuhl** erreichbar.
+> **Noch nicht gebaut:** die Reparatur und der **Tiefkeller** (nur mit dem Aufzug erreichbar, 7.10, Plan steht aus).
+> **Heizkeller** (mit Kessel, 7.9) und **Maschinenraum** liegen im Untergeschoss.
 
-**Grundidee:** Neben der Rezeption in der Lobby steht ein alter Gitterfahrstuhl mit dem Schild „Außer Betrieb“. Man kann ihn im Lauf des Oktobers **reparieren** und damit den **Tiefkeller** mit **Heizkeller** und **Lager** freischalten. Die Reparatur ist die erste größere Aufgabe des Spiels: Sie führt einmal durch das ganze Hotel und verlangt jedes Mal eine andere Art von Mut.
+**Grundidee:** Der Aufzug neben der Rezeption ist anfangs **außer Betrieb**. Man kann ihn im Lauf des Oktobers **reparieren** und damit den **Tiefkeller** mit dem **Lager** freischalten. Die Reparatur ist die erste größere Aufgabe des Spiels: Sie führt einmal durch das ganze Hotel und verlangt jedes Mal eine andere Art von Mut.
 
 **Vor der Reparatur – Atmosphäre**
 - Die **Stockwerksanzeige** über der Tür bewegt sich trotzdem manchmal. Niemand weiß, warum. Der Spieler lernt: Wenn die Anzeige wandert, ist etwas unterwegs.
 - Aus dem Schacht hört man gelegentlich Kratzen. **Das Monster klettert im Schacht** – an den Schachttüren tauchen später Handabdrücke auf (neue Spur, 4.13).
 
 **Die Reparatur – drei Teile, drei Gefahren**
-Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es gelesen, schreibt der Spieler-Charakter die drei Mängel als drei Zeilen in sein eigenes **Notizbuch** unter „Aufgaben“ (3.10) und streicht sie durch, sobald sie behoben sind. Der erste Start des Aufzugs ist ein Meilenstein im **Tagebuch**. *(Bis 2026-10-23: eigene Seite im Tagebuch.)*
+Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es gelesen, schreibt der Spieler-Charakter die drei Mängel als drei Zeilen in sein eigenes **Notizbuch** unter „Aufgaben“ (3.10) und streicht sie durch, sobald sie behoben sind. Der erste Start des Aufzugs ist ein Meilenstein im **Tagebuch**.
 
 | Schritt | Wo | Gefahr / Mechanik |
 |---------|----|-------------------|
-| **1. Notizbuch & Schaltschlüssel** | **Zimmer 18** (abgeschlossen; der Schlüssel liegt schon heute im Keller) | Ausflug ins Monster-Versteck – am besten während einer Ruhephase, wenn es woanders schläft, oder in der Sättigung (4.10). Im Zimmer: Notizbuch mit den drei Mängeln und der **Schaltschlüssel** für die Kabine. |
-| **2. Hauptsicherung** | Ein **Gast** hat die Ersatzsicherung (er hat sie dem Hausmeister „abgekauft“) | **Sozial:** Freundschaft, Handel, Mäxchen-Einsatz – oder Klauen mit allen Folgen (6.2). Gerüchte verraten, wer sie hat; nicht immer der Richtige. Eingesetzt wird sie am Sicherungskasten **im Keller** – noch ein Ausflug dorthin. |
-| **3. Bremse lösen** | **Maschinenraum** im Untergeschoss, nahe dem Heizraum (7.10; vorher am Ende des Obergeschosses) | **Lärm:** Die Bremse wird mit einer Kurbel gelöst – E gedrückt halten, ca. 20 Sekunden, laut und quietschend (Neugier ↑ im Untergeschoss – dort, wo das Monster ruht). Loslassen unterbricht, der Fortschritt bleibt. Man steht dabei mit dem Rücken zur Tür. |
+| **1. Notizbuch & Schaltschlüssel** | **Zimmer 18** (abgeschlossen; der Schlüssel liegt im Heizkeller) | Ausflug ins Monster-Versteck – am besten während einer Ruhephase, wenn es woanders schläft, oder in der Sättigung (4.10). Im Zimmer: Notizbuch mit den drei Mängeln und der **Schaltschlüssel** für die Kabine. |
+| **2. Hauptsicherung** | Ein **Gast** hat die Ersatzsicherung (er hat sie dem Hausmeister „abgekauft“) | **Sozial:** Freundschaft, Handel, Mäxchen-Einsatz – oder Klauen mit allen Folgen (6.2). Gerüchte verraten, wer sie hat; nicht immer der Richtige. Eingesetzt wird sie am Sicherungskasten **im Untergeschoss** – noch ein Ausflug dorthin. |
+| **3. Bremse lösen** | **Maschinenraum** im Untergeschoss, nahe dem Heizraum (7.10) | **Lärm:** Die Bremse wird mit einer Kurbel gelöst – E gedrückt halten, ca. 20 Sekunden, laut und quietschend (Neugier ↑ im Untergeschoss – dort, wo das Monster ruht). Loslassen unterbricht, der Fortschritt bleibt. Man steht dabei mit dem Rücken zur Tür. |
 
 - **Tempo:** Realistisch in der zweiten Oktoberwoche, wenn das Monster schon gefährlich ist. Wer früh mutig ist, schafft es eher.
 - **Belohnung beim ersten Start:** Das Licht in der Kabine geht an, ein „Ding“ – und die Anzeige springt ohne Zutun auf **„T“ (Tiefkeller)**. Die Kabine war schon unten.
@@ -3488,22 +3419,21 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 > und das **Kesselbuch**. **Eingefroren** (nicht geplant, erst später wieder anfassen): Kessel **anheizen** (Kohle,
 > Wärme, Rohre), die **Ofenklappe** und der **Bolzenschneider** fürs Lager.
 
-**Heizkeller**
-- Großer, verrußter Raum mit einem **alten Kohlekessel**, Kohlenbunker, Rohren an der Decke und einer Werkzeugwand.
-- *(eingefroren 2026-10-21)* **Anheizen:** Kohle ist ein **großer Gegenstand** (beidhändig, 3.2) und muss vom Bunker zum Kessel getragen werden; angezündet wird mit einer Kerze. Schaufeln ist laut.
-- **Solange der Kessel brennt:**
+**Heizkeller** (im Untergeschoss, 7.9)
+- Großer, verrußter Raum mit einem **alten Kohlekessel**, Kohlenbunker, Rohren an der Decke und einer Werkzeugwand. Der
+  Kessel steht und **brennt vorerst immer** (7.9); die Glut taucht den Platz davor in rotes Licht → etwas sicherer (4.4).
+- *(eingefroren 2026-10-21)* **Anheizen:** Kohle ist ein **großer Gegenstand** (beidhändig, 3.2) und muss vom Bunker zum Kessel getragen werden; angezündet wird mit einer Kerze. Schaufeln ist laut. Geht das Feuer aus, wird der Heizkeller stockdunkel.
+- *(eingefroren 2026-10-21)* **Solange der Kessel brennt:**
   - Das ganze Hotel wird warm → Stimmung der Gäste ↑, Panik klingt schneller ab, Schock und Trauer (6.8) lassen schneller nach.
-  - Die Glut taucht den Heizkeller in rotes Licht → er ist hell und damit relativ sicher (4.4). Geht das Feuer aus, wird er stockdunkel.
   - **Die Rohre klopfen und zischen im ganzen Hotel.** Das überdeckt eigenen Lärm (Rennen, Würfeln locken weniger) – aber auch Rauschen und Schritte des Monsters sind schwerer zu hören. Ein Tausch, kein reiner Vorteil.
-- **Nachlegen:** Eine Ladung brennt etwa einen Ingame-Tag. Danach muss jemand wieder hinunter – der Spieler selbst oder ein Gast, den man darum bittet (Beziehung; moralisch heikel, 4.11).
+- *(eingefroren 2026-10-21)* **Nachlegen:** Eine Ladung brennt etwa einen Ingame-Tag. Danach muss jemand wieder hinunter – der Spieler selbst oder ein Gast, den man darum bittet (Beziehung; moralisch heikel, 4.11).
 - *(eingefroren 2026-10-21)* **Ofenklappe:** Hier lassen sich Dinge **verbrennen**: geklaute Gegenstände, blutige Kleidung, belastende Zettel. Ohne Beweis verlieren Gerüchte über einen an Kraft (6.2). Deko verbrennen geht nicht – das Feuer „will“ sie nicht.
-- **Das Gitter:** Zwischen Heizkeller und dem alten Keller (Versteck des Monsters) liegt ein rostiges **Gitter**. Anfangs kommt das Monster nicht hindurch; man hört es dahinter atmen, wenn es ruht – wer dann Kohle schaufelt, weckt es. **Mit jedem Tag wird das Gitter lockerer** (4.8), gegen Ende des Monats ist es offen und der Tiefkeller gehört zu seinem Revier. **Seit 2026-10-21:** Hinter dem
-  Gitter im Heizraum liegt der Schlüssel zur Kniestocktür des Dachbodens – ab etwa Tag 15 kommt man hindurch (4.21).
-  Wo das Gitter genau sitzt, seit der Heizraum im Untergeschoss liegt, ist noch offen (7.10).
+- **Das Gitter:** Ein rostiges **Gitter** sperrt das Versteck des Monsters ab – wo genau im Untergeschoss, ist noch offen (7.10). Anfangs kommt das Monster nicht hindurch; man hört es dahinter atmen, wenn es ruht – wer dann Kohle schaufelt, weckt es. **Mit jedem Tag wird das Gitter lockerer** (4.8), gegen Ende des Monats ist es offen und der Tiefkeller gehört zu seinem Revier. Hinter dem
+  Gitter liegt der Schlüssel zur Kniestocktür des Dachbodens – ab etwa Tag 15 kommt man hindurch (4.21).
 - **Story:** das **Kesselbuch des Heizers** von 1987 – derselbe Name wie auf dem ältesten Warnungszettel.
 
 **Lager**
-- Ein Verschlag aus Maschendraht mit Vorhängeschloss. *(Bolzenschneider eingefroren 2026-10-21 – wie man ins Lager kommt, ist damit offen.)* Den **Bolzenschneider** findet man an der Werkzeugwand im Heizkeller – eine kleine Aufgabe innerhalb des Tiefkellers.
+- Ein Verschlag aus Maschendraht mit Vorhängeschloss – wie man hineinkommt, ist offen (der Bolzenschneider von der Werkzeugwand ist eingefroren, 2026-10-21).
 - **Inhalt (endlich, wird nicht nachgefüllt):**
   - Kisten mit **Ersatzglühbirnen** und **Kerzen** (7.3).
   - **Alte Halloween-Deko früherer Jahre:** Girlanden, Hexenbesen, ein Totenkopf, Laternen – seltene, starke Deko (5.3). Der größte Schatz im Hotel.
@@ -3511,22 +3441,21 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 - **Die soziale Entscheidung:**
   - **Geheim halten:** Man hat alles für sich. Aber Gäste bemerken plötzlich viel Deko vor Zimmer 13 – *„Woher hat sie/er das?“* → Gerüchte, Neid, Diebstahl (6.2).
   - **Teilen:** Ruf ↑ bei allen, vielleicht eine Feier zum Fund. Aber die Vorräte sind schneller weg, und Gäste fahren dann selbst in den Tiefkeller – manche kommen nicht zurück.
-  - Gäste können den Bolzenschneider oder den Schaltschlüssel klauen und das Lager auf eigene Faust plündern.
+  - Gäste können den Schaltschlüssel klauen und das Lager auf eigene Faust plündern.
 
 **Zu klären**
 - Lässt sich der Fahrstuhl nach der Reparatur wieder sabotieren (Sicherung herausdrehen, wie Glühbirnen), etwa von Gästen oder dem Spieler selbst?
-- ~~Später weitere Halte (Dachboden über dem Obergeschoss)?~~ Ja: Dachgeschoss (7.10, entschieden 2026-10-21).
 - Bleibt der Fahrstuhl in einer Zeitschleife (2.2) repariert? (Vorschlag: nein.)
 
 ### 7.5 Neuer Grundriss aus dem Gebäudeplan (entschieden 2026-10-18)
-> Der bisherige, im Code festgelegte Grundriss (7, „Im Prototyp umgesetzt“) ist mit dem Git-Tag `alte-karte`
-> gesichert. Das Hotel wird neu auf Grundlage des gezeichneten Plans `map.aseprite` gebaut.
+> Das Hotel entsteht aus dem gezeichneten Gebäudeplan – heute `map_a.aseprite` (7.10). Der frühere, im Code festgelegte
+> Grundriss ist mit dem Git-Tag `alte-karte` gesichert.
 
 - **Plan statt Code:** Der Grundriss wird in Aseprite gezeichnet, **1 m = 10 px**, Wände 2 px (20 cm). Ein
   Skript liest daraus Wände, Türen, Fenster, Räume und Einbauten; Möbel setzt weiterhin der LevelBuilder.
 - **Vorlage für alle Stockwerke:** je Stockwerk eine Ebenengruppe (`EG`, `OG1` …, `Keller`) mit den Ebenen
   „Grundriss“ und „Beschriftung“ (frei, wird nicht gelesen); in `OG1` liegt das EG als Referenzebene zum
-  Abzeichnen. Die **Legende steht als Farbnamen in `map.gpl`** neben der Plandatei (Aseprite speichert keine
+  Abzeichnen. Die **Legende steht als Farbnamen in `map_a.gpl`** neben der Plandatei (Aseprite speichert keine
   Palettennamen, 19.10.). Raumnamen, Bereiche, Treppen (mit Richtung)
   und künftig einzelne Objekte (mit Vorderseite) werden als **benannte Slices** eingetragen, z. B.
   „Raum: Küche“, „Treppe: Lobby“, „Objekt: Sofa“, im Obergeschoss mit Vorsatz: „OG1 Raum: Bibliothek“.
@@ -3539,17 +3468,13 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
   Türstrichs gibt Scharnier und Aufgehseite vor: Es sitzt in der Wandhälfte, in die die Tür aufgeht, und dort
   steht die offene Tür. Ohne Pixel gehen Türen in Räume auf, nicht in Flure. Lichtschalter gehören auf die
   Griffseite – liegt einer hinter der offenen Tür, warnt der Build.
-- **Größe** (wird verkleinert: Nord-Süd 60 m, 7.10)**:** ca. 151 × 130 m, **129 Zimmer** im Erdgeschoss: Ostflügel und Westflügel mit je einem
-  Rundflur um zwei Innenhöfe, dazwischen ein großer Garten, im Süden die Lobby mit Bar + Spiele, Partyraum
-  und Toiletten, im Westen Küche, Speisesaal, Lager und Kühlräume, im Norden der Indoor-Pool.
-- **Bauphasen:** zuerst **Lobby, Mittelgarten und Ostflügel**, der Westflügel später.
-- **Zimmernummern (dreistellig seit 2026-10-23, vorher vierstellig mit Flügel):** Stockwerk · zwei Ziffern.
-  Erdgeschoss 0, erstes Obergeschoss 1; Ostflügel 01–49, Westflügel 51–99. Gezählt wird nach Laufweg: ab der Lobby
-  einmal um den Rundflur, danach der Querflur zwischen den Höfen; **in Laufrichtung rechts ungerade, links gerade**.
-  Zimmer darüber tragen dieselbe Nummer mit 1 vorne (über 013 liegt 113).
+- **Größe:** 151 × 60 m, 81 Zimmer (EG 48, OG1 33) – Aufbau und Ebenen in 7.10.
+- **Zimmernummern:** dreistellig, Stockwerk · zwei Ziffern (Erdgeschoss 0, erstes Obergeschoss 1). Zimmer darüber
+  tragen dieselbe Nummer mit 1 vorne (über 002 liegt 102). Die Nummern sind noch **Platzhalter** – Zuordnungen hängen
+  an der Stelle im Plan (6.20).
 - **Spielerzimmer ist 013:** An der Tür ist die führende Null abgefallen, zu lesen ist nur **„13“** – anders als
-  bei 012, 014 … nebenan. Gäste sprechen von „Zimmer 13“. Es liegt am rechten Innenhof, seit 23.10. ein
-  Doppelzimmer mit Bad (Waschbecken für das Erwachen, 3.9); die Zimmer rund um diesen Hof werden Doppelzimmer.
+  bei 012, 014 … nebenan. Gäste sprechen von „Zimmer 13“. Es liegt im Innenhofblock Ost (7.10), ein Doppelzimmer
+  mit Bad (Waschbecken für das Erwachen, 3.9).
 - **Lobby mit Galerie:** Über Rezeption und Eingang ist die Lobby doppelt hoch (Luftraum ca. 7,4 × 20 m).
   Das Obergeschoss umschließt ihn als Galerie mit Geländer, von der man in die Halle hinunterschaut. Die
   Treppe hinter der Rezeption führt hinauf; daneben zwei Aufzüge.
@@ -3558,23 +3483,10 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
   hoch, 30 cm tief) auf 6,9 m Lauf, unten offen. Gebeizte Trittstufen, helle Setzstufen und Wangen, Läufer mit
   Messingstangen; beidseitig ein Geländer mit gedrechselten Stäben, Handlauf und Pfosten mit Knauf. Die
   Galeriegeländer bekommen denselben Stil. Im Code gebaut, nicht als Modell: Die Treppe folgt dem Plan.
-- **Treppenhäuser:** zwei am Nordende der Flügel. Sie verbinden Keller, Erdgeschoss und Obergeschoss. Das
-  östliche ist der Kellerzugang der ersten Bauphase.
-- **Bis es Pläne für Obergeschoss und Keller gibt:** Galerie und Treppenhäuser enden oben an verschlossenen
-  Türen; der bisherige Keller kommt sinngemäß unter das östliche Treppenhaus. Vorschlag für später: ein
-  Kellergang unter der Nordseite verbindet beide Treppenhäuser.
-- **Umgesetzt (2026-10-18), erste Bauphase:** Das ganze Erdgeschoss steht; bewohnbar ist der **Ostflügel**.
-  Im Westflügel sind Flure, Innenhöfe und der **Küchenblock** (Küche, Speisesaal, Lager, Kühlräume) offen,
-  die Zimmer bleiben verschlossen (Vorhänge zu, auch das Monster kommt nicht hinein), ebenso das Treppenhaus West.
-  - **Sonderzimmer behalten ihre alten Nummern als Endziffern:** 0111 Edna, 0112 Bruno, 0113 Spieler,
-    0114 leer, 0115 Mila, 0116 Wäscherei, 0117 verlassen, 0118 verschlossen (Schlüssel im Keller), 0126
-    verfallen mit dem Kompass (vorher 226 im Obergeschoss), 0137 verfallen.
-  - **Feiern finden im Partyraum statt** (Plattenspieler, Tanzfläche) statt in der Lobby; dort beginnt auch der
-    erste Angriff. Würfeltisch in der Bar, Schachtisch in der Lobby unter der Galerie.
-  - Das Kartenblatt „Obergeschoss“ liegt vorerst nicht aus (es zeigt nur die Galerie); die Kellerskizze liegt
-    weiter im verlassenen Zimmer.
-
----
+- **Treppenhäuser:** zwei, eines je Flügel. Sie verbinden Untergeschoss, Erdgeschoss und Obergeschoss; vom
+  Treppenhaus West führt eine steile Treppe weiter zum Dachboden (4.21).
+- **Feiern finden im Partyraum statt** (Plattenspieler, Tanzfläche, Galerie darüber, 7.7). Würfeltisch in der Bar,
+  Schachtisch in der Lobby unter der Galerie.
 
 ### 7.6 Partikeleffekte (entschieden und umgesetzt 2026-10-20)
 - **Plattenspieler:** Solange Musik läuft, steigen **Noten** aus dem Trichter – wenige, langsam, schaukelnd, sie
@@ -3593,58 +3505,48 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 - **Konfetti (entschieden 2026-10-21):** Zu Beginn einer Feier und dann alle paar Sekunden schießt buntes
   Konfetti über der Tanzfläche hoch und rieselt herab; zum Abschluss eines großen Schmückens (5.9) auch dort. Was
   landet, bleibt als bunte Schnipsel am Boden liegen und verblasst erst nach einigen Spieltagen.
-- ~~**Tränen (entschieden 2026-10-21):** Wer weint, dem laufen kleine helle Tropfen aus beiden Augen – bei der
-  Schreckreaktion „Weinen“ (6.12) noch auf dem Weg ins Zimmer, bei Kindern, die sich vor Angst an Mama oder Papa
-  klammern, bei umgerannten Kindern, bei Freunden eines Verstorbenen (6.16) und bei Kindern, die Mama oder Papa
-  verloren haben.~~ **Entfernt (2026-10-22):** keine Tränenpartikel mehr.
 - **Lakengeist:** Vom Saum rieseln **weiße Flocken**, sparsam, sie blenden mit ihm ein und aus. Im Flur können
   sie ihn etwas früher verraten – gewollt, als leise Vorwarnung.
 - **Monster:** **keine ständige Aura** – es soll verborgen bleiben (4.13). Stattdessen eine **Aschespur**: Wo es
   war, hängen schwarze Flocken noch einige Sekunden in der Luft und sinken. Sie ist eine Spur wie die
   Fußabdrücke (Tabelle in 4.13). Idee für später: Halluzinationen legen falsche Asche.
 - **Bäume:** Aus den Kronen löst sich **Herbstlaub**, trudelt zu Boden, bleibt kurz flach liegen und verblasst.
-- ~~Alles im PS1-Stil: wenige, kleine, pixelige Partikel~~ → Partikel auf den realistischen Look ausgelegt (9.2, 2026-10-25); sparsam bleiben sie trotzdem.
+- Partikel sind auf den realistischen Look ausgelegt (9.2) und bleiben sparsam.
 
 ### 7.7 Obergeschoss: Zimmer, Balkone, Katzenraum, Bibliothek (vorgemerkt und umgesetzt 2026-10-20)
 - **Zimmer:** grundsätzlich **Doppel- bis Dreibettzimmer**, so groß wie unten (5,8 × 5,8 m) oder über zwei
   Zellen (5,8 × 11,8 m bzw. L-förmig). **Einige haben ein eigenes Bad** (Plan: „Bad“). Manche Zimmer sind über
   **Verbindungstüren** zu Suiten verbunden; die Zimmernummer ist die des EG-Zimmers darunter mit 1 vorne (7.5).
 - **Türanschlag (entschieden 2026-10-20):** meist per Pixel im Plan (7.5). Ohne Pixel gehen **Badtüren ins Zimmer**
-  auf (das Bad ist klein), **Verbindungstüren ins Zimmer mit der höheren Nummer**; Flurtüren wie bisher ins Zimmer.
-- **Betten:** zwei bzw. drei **Einzelbetten** (1,5 × 2,1 m wie unten) statt Doppelbett – jedes bleibt ein Versteck
-  (3.4). Im Plan stehen Betten und Lichter (Nachttisch-, Tür-, Bad- und in großen Zimmern Deckenleuchten); in die
+  auf (das Bad ist klein), **Verbindungstüren ins Zimmer mit der höheren Nummer**; Flurtüren ins Zimmer.
+- **Betten:** Einzel- und Doppelbetten nach dem Plan, je nach Haushalt (6.20) – jedes bleibt ein Versteck (3.4). Im
+  Plan stehen Betten und Lichter (Nachttisch-, Tür-, Bad- und in großen Zimmern Deckenleuchten); in die
   Flure sind die Wandleuchten des EG übernommen.
 - **Balkone:** im Plan „Balkon“ (blassgrün-grau), erreichbar über die Terrassentür des Zimmers, je Zimmer durch
   ein **Balkongeländer** abgetrennt. Sie stehen **gewollt etwa 3 m über** – darunter liegt im Erdgeschoss ein
   überdachter, dunkler Streifen der Terrassen. Zum Mittelgarten hin sind die Balkone vorerst in Terrassenfarbe.
 - **Katzenraum** über der Bar: mit **Kratzbäumen** und **mehr Katzen** als nur den dreien von 6.11. Er ist der
   **einzige Raum, in dem man wirklich vor allem sicher ist** – Katzen waren immer lieb: Monster und Lakengeist
-  kommen nicht hinein. *Der Kürbismann kommt bisher doch hinein, und Ausharren dort ist die stärkste Strategie –
-  vertagt, bis dahin bleibt es so (4.20, 2026-10-21).*
+  kommen nicht hinein. *Der Kürbismann kommt doch hinein, und Ausharren dort ist die stärkste Strategie – vertagt
+  (4.20).*
 - **Bibliothek** im Westflügel (ca. 40 × 18 m) über dem Küchenblock.
 - **Partyraum über zwei Stockwerke:** wie die Lobby mit einer **Galerie** im OG1 rund um den Luftraum, von der man
   auf die Tanzfläche hinunterschaut.
 - **Ideen (Vorschlag):**
-  - **Lakengeist (5.x):** Oben schwebt er nicht mehr nur vor dem Fenster, er **landet auf dem Balkon**, kratzt an
-    der Balkontür und kommt ab einem späteren Mal durch sie herein. Die Balkontür zählt wie ein Außenfenster.
   - **Zwei Seiten:** Mit der Balkontür ist ein Zimmer keine Sackgasse mehr – Fluchtweg, aber auch eine zweite
     Seite, die man im Blick behalten muss. Vom Balkon aus beobachtet man den Garten.
   - **Gäste rauchen nachts auf dem Balkon** – Gespräche über das Geländer, Lauschen (4.7).
   - **Bad:** Badewanne bzw. Duschvorhang als Versteck (3.4), abschließbare Badtür als Schutzraum im Zimmer,
     laufendes Wasser ist Lärm und übertönt zugleich. Wer oben mit Bad wohnt, ist wohlhabender – Gerede und Neid (6.2).
-  - **Mehrbettzimmer:** Paare sind wach füreinander Zeugen (der Lakengeist bleibt weg), schlafend nicht.
-    Verschwindet einer, bleibt der andere als Zeuge und Trauernder zurück (4.18). Familien mit Kindern (6.13)
-    wohnen oben zusammen statt im Zimmer nebenan.
+  - **Mehrbettzimmer** (6.20): Paare sind wach füreinander Zeugen (der Lakengeist bleibt weg), schlafend nicht.
+    Verschwindet einer, bleibt der andere als Zeuge und Trauernder zurück (4.18).
   - **Katzenraum:** Verängstigte Gäste flüchten dorthin; wer sich dort versteckt, verliert nur Zeit (Speichern
     weiter nur in Zimmer 13, die Woche läuft weiter).
-> **Umgesetzt (2026-10-20):** Das Obergeschoss steht im Spiel (Ostflügel bewohnbar, Westflügel wie unten nur mit
-> offenen Fluren; Bibliothek offen): 87 Zimmer 1101–1182 / 1202–1273 mit 2–3 Einzelbetten, Bädern, Balkonen mit
-> Geländern, Suiten über Verbindungstüren; Galerien mit Geländer um die Lufträume von Lobby und Partyraum; das
-> Treppenhaus Ost führt vom Keller bis oben (Treppenhaus West weiter gesperrt). Zimmer ohne Schalter im Plan
-> bekommen einen neben der Tür. **Katzenraum:** acht Kratzbäume, vier eigene Katzen (Luna, Fussel, Tiger, Mausi),
-> Monster und Lakengeist kommen nicht hinein bzw. zu niemandem, der drin ist. Das Kartenblatt „Obergeschoss“
-> zeigt jetzt das ganze Stockwerk; es liegt aus, sobald auf der Rezeption eine Karte im Plan liegt.
-> Zimmer über keinem EG-Zimmer zählen im Flügel weiter (1182, 1273).
+> **Umgesetzt (2026-10-20):** Das Obergeschoss steht im Spiel: Zimmer mit Bädern, Balkonen mit Geländern, Suiten über
+> Verbindungstüren; Galerien mit Geländer um die Lufträume von Lobby und Partyraum; Bibliothek offen. Zimmer ohne
+> Schalter im Plan bekommen einen neben der Tür. **Katzenraum:** acht Kratzbäume, vier eigene Katzen (Luna, Fussel,
+> Tiger, Mausi), Monster und Lakengeist kommen nicht hinein bzw. zu niemandem, der drin ist. Das Kartenblatt
+> „Obergeschoss“ zeigt das ganze Stockwerk und liegt an der Rezeption.
 > **Treppenhäuser (entschieden 2026-10-20):** Was auf der Ebene eines Stockwerks an der Wand gegenüber der
 > Treppenhaustür hängt, sitzt über dem Wendepodest – eine halbe Etage höher. Gilt für jedes Treppenhaus in jeder
 > Ausrichtung; das Podest zum Keller setzt der Code.
@@ -3652,7 +3554,6 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 - **Offen:**
   - Kann man das **Balkongeländer übersteigen** (langsam, laut) – ein geheimer Weg von Zimmer zu Zimmer?
   - **Hinunterspringen** in den Garten (4 m) als Notausgang mit Preis (laut, eine Weile humpeln) – oder gar nicht?
-  - Bei rund 30 Gästen wird das Hotel mit Mehrbettzimmern noch leerer: Gäste oben bündeln, Flügel unten verlassen?
 
 ### 7.8 Wetter & Geräusche von draußen (vorgemerkt 2026-10-20)
 Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, Wolken, Waldkante) steht schon.
@@ -3665,38 +3566,33 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
   Mitternacht zwölfmal schlägt (umgesetzt 2026-10-23, kündigt die Geisterstunde an, 4.18).
 - **Steigerung bis Halloween:** Der Nebel wird mit jedem Tag dichter, der Himmel wolkiger; an Halloween ist
   Vollmond.
-- ~~**Offen:** wann „Mitternacht“ ist, solange es keine echte Uhrzeit gibt (nach Spieltag oder Nachtruhe?).~~ → 0 Uhr
-  der Tagesuhr (2.4).
 > **Umgesetzt (2026-10-20): Regen und Gewitter.** Meist ist es klar; alle paar Spieltage regnet es 2–4 Minuten, gegen
 > Monatsende öfter, und öfter als Gewitter (ein Drittel am Anfang, drei Viertel an Halloween). Der Regen fällt draußen
 > und ist durch die Fenster zu sehen, drinnen nie; man hört ihn (drinnen dumpfer), der Himmel zieht zu und der Mond wird
 > schwächer. Beim Gewitter blitzt es alle 10–30 s – zwei, drei Zuckungen, das Licht fällt kurz durch die Fenster, der
 > Himmel leuchtet auf –, Donner folgt nach bis zu 3,5 s (je später, desto leiser). Donner lockt niemanden, aber
 > **das Monster hört danach ein paar Sekunden schlechter**. Noch nicht: Regen an den Scheiben, Gestalt im Blitz,
-> Wind, Tiere, Kirchturmglocke, dichterer Nebel.
+> Wind, Tiere, dichterer Nebel.
 
 ### 7.9 Untergeschoss (entschieden und umgesetzt 2026-10-20)
-> **Wird neu gezeichnet (7.10, entschieden 2026-10-21):** Das Untergeschoss wird ausgebaut statt verkleinert – mit
-> Heizraum, Maschinenraum, Wäscherei und Müllraum; darunter kommt der Tiefkeller. Gäste gehen künftig mit Grund
-> hinunter.
+> Ausbau entschieden 2026-10-21 (7.10): Heizraum, Maschinenraum, Wäscherei und Müllraum; darunter kommt der
+> Tiefkeller. Gäste sollen mit Grund hinuntergehen.
 
-Der alte Keller hinter der niedrigen Tür unter dem Treppenhaus Ost ist durch ein ganzes **Untergeschoss** ersetzt,
-gezeichnet im Gebäudeplan (Gruppe „UG“, 7.5).
-- **Treppenhäuser:** Beide Treppenhäuser im Norden enden im Untergeschoss, tiefer geht keine Treppe. Offen ist wie
-  oben nur das Treppenhaus Ost; seine Tür führt in die Kellergänge.
-- **Kellergänge:** grauer Boden, Wände aus **Brettschalungsbeton** (Abdruck der Schalbretter, Ankerlöcher;
-  seit 2026-10-21, vorher einfach grau). Licht geben nur
+Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
+- **Treppenhäuser:** Die Treppenhäuser enden im Untergeschoss, tiefer geht keine Treppe; ihre Türen führen in die
+  Kellergänge.
+- **Kellergänge:** grauer Boden, Wände aus **Brettschalungsbeton** (Abdruck der Schalbretter, Ankerlöcher).
+  Licht geben nur
   **Halogenleuchten**: 80 cm lange Röhren unter der Decke, kaltweiß, ohne Schalter. Jede **flackert von selbst**
   alle 10–30 Sekunden ein- bis dreimal kurz – unabhängig vom Monster (dessen Flackern kommt dazu).
-- **Heizkeller** (dunkelrot im Plan): das **Versteck des Monsters**. Dort liegt nur, was früher im Keller lag:
-  Kisten, das alte Regal, der Schlüssel zu Zimmer 18, Münzen, eine Batterie, der Warnungszettel von 2011, die
+- **Heizkeller** (dunkelrot im Plan): das **Versteck des Monsters**. Dort liegen Kisten, das alte Regal, der Schlüssel zu Zimmer 18, Münzen, eine Batterie, der Warnungszettel von 2011, die
   UV-Schrift von 1987, Spinnweben und die Kiste mit alter Deko (5.7), dazu die kaputte Kellerleuchte mit Schalter.
   Der Eingang ist ein schmaler Gang zwischen zwei verschlossenen Kellerräumen.
 - **Technikraum:** zugänglich, aber leer. **Wäscherei:** zugänglich, an beiden Längswänden Waschmaschinen.
 - **Alle anderen Räume** sind verschlossen (rote Türen wie der Haupteingang) und leer; Servicetüren wie oben.
-- **Aufzüge:** auch unten zwei Schachttüren, außer Betrieb.
-- **Gäste** gehen nicht hinunter; das Monster streift auch durch die Kellergänge.
-- **Kartenblatt „Keller“** (Zimmer 0117): die handgezeichnete Skizze zeigt jetzt das ganze Untergeschoss, der
+- **Aufzüge:** auch unten zwei Schachttüren; Aufzug 1 hält hier (7.4).
+- **Gäste** gehen (noch) nicht hinunter (7.10); das Monster streift auch durch die Kellergänge.
+- **Kartenblatt „Keller“** (Zimmer 017): die handgezeichnete Skizze zeigt jetzt das ganze Untergeschoss, der
   Heizkeller ist rot eingekreist („hier unten schläft es“).
 - **Kessel und Rohre (2026-10-24):** Mittig an der Ostwand des Heizkellers steht ein alter **Kohlekessel**. Seine
   Feuerklappe steht offen, im Feuerraum lodern Flammen über der Glut und knistern; die Glut wirft einen orangeroten
@@ -3708,8 +3604,8 @@ gezeichnet im Gebäudeplan (Gruppe „UG“, 7.5).
 - **Offen:** übrige Technik sowie Tiefkeller und Lager aus 7.4.
 
 ### 7.10 Kleineres Hotel, mehr Ebenen (entschieden 2026-10-21)
-> Teilweise umgesetzt (2026-10-22): Der neue Plan `map_a.aseprite` (EG, OG1 und UG untereinander, 151 × 60 m) ist
-> gebaut; Pläne für Tiefkeller und Dachgeschoss stehen noch aus. Alte Spielstände spielen dabei vorerst keine Rolle.
+> Teilweise umgesetzt: Der Plan `map_a.aseprite` (UG, EG, OG1, seit 2026-10-24 auch das Dachgeschoss; 151 × 60 m) ist
+> gebaut; der Plan für den Tiefkeller steht aus.
 >
 > **Entschieden 2026-10-22:** Der Plan wird **von Hand eingerichtet** – der Code stellt nichts mehr selbst in die
 > Zimmer (auch keine Süßigkeiten-Truhen und Automaten, 3.2/6.13); braucht eine Mechanik etwas, kommt es in den Plan.
@@ -3726,33 +3622,28 @@ gezeichnet im Gebäudeplan (Gruppe „UG“, 7.5).
 > (entschieden und umgesetzt 2026-10-22) nur **ohne PS1-Look**: verwildert, bis 30 cm, wiegen sich im Wind und neigen
 > sich unter Schritten und Gegenständen zur Seite – niedrig genug, dass nichts darin verschwindet (beide Looks spielen
 > sich gleich); Wege, Beete, Kübel, Baumwurzeln und Gegenstände des Plans bleiben frei. **Zimmer 13**
-> liegt, wo der Plan es beschriftet (Innenhofblock Ost, Tür zum Südflur); die übrigen fest belegten Zimmer stehen
-> vorerst auf ihren alten Nummern, bis sie neu verteilt sind.
+> liegt, wo der Plan es beschriftet (Innenhofblock Ost, Tür zum Südflur); Haushalte und Sonderzimmer stehen in
+> HAUSHALTE.md (6.20).
 
-**Warum:** Mit ca. 151 × 130 m und rund 130 Zimmern je Stockwerk sind die Wege für 5-Minuten-Tage (2.1) zu lang, und
-viele Zimmer bleiben leer. Ein kompaktes Hotel kennt man nach ein, zwei Tagen – Ortskenntnis (wo steht der nächste
-Schrank?) ist im Horror die halbe Spannung. Dasselbe Monster auf halber Fläche ist dichter: Rauschen, Flackern und
+**Warum:** Ein kompaktes Hotel kennt man nach ein, zwei Tagen – Ortskenntnis (wo steht der nächste
+Schrank?) ist im Horror die halbe Spannung, und es bleiben weniger Zimmer leer. Dasselbe Monster auf kleiner Fläche ist dichter: Rauschen, Flackern und
 Spuren treffen öfter dort, wo der Spieler ist. Statt in die Breite wächst das Hotel **in die Höhe und Tiefe** – und
 das Geheimnis (2.3: Heizer, Kessel, Abkommen) liegt ohnehin unten.
 
 **Grundriss**
-- **Ost-West bleibt, Nord-Süd wird 60 m** statt bisher bis zu 130 m (7.5).
-- **Das Schwimmbad** rutscht nach Süden und bleibt – das Wasser, das das Monster spürt (4.13), ist eine der schönsten
-  Frühwarnungen.
-- **Kürbisfelder** (5.8) und Gärten bekommen im kleineren Plan einen neuen Platz.
-- **Zimmer mit fester Bedeutung** werden neu verteilt (bisher 0111 Edna, 0112 Bruno, 0113 Spieler, 0115 Mila, 0116
-  Wäscherei, 0117 Kellerskizze, 0118 UV-Aufsatz, 0126 Kompass, 7.5).
-- **Gästezahl:** wird separat geklärt (6.0) – weniger Zimmer heißt weniger Gäste.
+- **151 × 60 m**, 81 Zimmer (7.5).
+- **Das Schwimmbad** bleibt – das Wasser, das das Monster spürt (4.13), ist eine der schönsten Frühwarnungen.
+- **Gäste:** 67 in 39 Haushalten, 40 bewohnte Zimmer (6.20).
 
 **Ebenen** (von unten nach oben)
 
 | Ebene | Erreichbar | Inhalt |
 |-------|------------|--------|
-| **Tiefkeller** (neu) | **nur mit dem Aufzug** (7.4) | Lager, Fundsachen-Koffer früherer Gäste (7.4), Kandidat für den Halloween-Schlüssel (2.1) – Plan steht aus |
+| **Tiefkeller** | **nur mit dem Aufzug** (7.4) | Lager, Fundsachen-Koffer früherer Gäste (7.4), Kandidat für den Halloween-Schlüssel (2.1) – Plan steht aus |
 | **Untergeschoss** | Treppenhäuser, Aufzug | Heizraum, Maschinenraum, Wäscherei, Müllraum (unten) |
 | **Erdgeschoss** | | Lobby, Bar, Partyraum, Küche, Garten, Schwimmbad, Zimmer |
 | **1. Obergeschoss** | | Zimmer, Balkone, Katzenraum (7.7) |
-| **Dachgeschoss** (neu) | Treppenhaus, Aufzug | **kleinerer Grundriss**, offene Bereiche mit wenigen, gezielten Aufgaben (Plan steht aus); hinter einer **Kniestocktür** der **Dachboden**: eine Kette von Kammern wie in *Doors*, am Ende der Kopf des Kürbismanns (4.21). Weitere Kandidaten: Spinnweben-Zone (5.4), Séance (6.10) |
+| **Dachgeschoss** (gebaut 2026-10-24) | steile Treppe im Treppenhaus West bis zur verschlossenen Kniestocktür; der Aufzug hält (noch) nicht oben | ganz **Dachboden** (4.21): im Westflügel ein Gewirr aus Kammern, Mitte und Osten offene Böden; dort der Kopf des Kürbismanns. Weitere Kandidaten: Spinnweben-Zone (5.4), Séance (6.10) |
 
 **Jede Ebene hat einen Hausherrn.** Weil jede Bedrohung ihr eigenes Lockmittel hat – das Monster die Dunkelheit,
 der Lakengeist Fenster und Schwäche, der Kürbismann den Spaß –, ergibt sich eine Ordnung, die der Spieler lernen kann:
@@ -3772,13 +3663,13 @@ voneinander; der Tiefkeller gehört allein dem Monster.
 - **Maschinenraum:** Antrieb des Aufzugs. Hier wird die Bremse gelöst (7.4) – die laute Kurbel direkt neben dem
   schlafenden Monster.
 - **Wäscherei:** Waschmaschinen (7.9), Wäschekisten mit den alten Lakengespenstern (5.6) – Laken als Brücke zum
-  Lakengeist. Ersetzt die Wäscherei im Erdgeschoss (0116).
-- **Müllraum** (neu): Ein **Müllschlucker** führt von den oberen Stockwerken hinunter.
+  Lakengeist.
+- **Müllraum:** Ein **Müllschlucker** führt von den oberen Stockwerken hinunter.
   - Er beantwortet die offene Frage, was mit den Leichen passiert (6.12).
   - Er ist ein **Klangkanal**: Was hineinfällt, poltert durchs ganze Haus (Lärm, 4.15).
   - Er ist ein **Kletterweg des Monsters** wie der tote Aufzugsschacht: Kratzen hinter den Klappen auf jeder Etage.
-- **Gäste gehen künftig hinunter** – nicht von selbst, aber mit Grund: Aufträge (6.14), Bitten des Spielers (4.11:
-  „Leg Kohle nach“, „Hol die Wäsche“). Ersetzt „Gäste gehen nicht hinunter“ (7.9), sobald es Gründe gibt.
+- **Gäste gehen hinunter** – nicht von selbst, aber mit Grund: Aufträge (6.14), Bitten des Spielers (4.11:
+  „Leg Kohle nach“, „Hol die Wäsche“). Noch nicht gebaut (7.9).
 
 **Aufzug** (Einzelheiten 7.4)
 - Von den **zwei Schächten** wird nur **einer repariert**. Der andere bleibt tot und ist der Weg des Monsters: Kratzen
@@ -3789,13 +3680,13 @@ voneinander; der Tiefkeller gehört allein dem Monster.
 **Leere Räume** (Speisesaal, Toiletten, Technikraum, Kühlräume, Bibliothek, Balkone …): werden beim Neuzeichnen des
 Plans **einzeln entschieden** (2026-10-21) – je Raum, ob er eine Funktion bekommt, als Atmosphäre bleibt oder entfällt.
 
-**Zu klären:** Pläne für Tiefkeller und Dachgeschoss · ob das Dachgeschoss auch über ein Treppenhaus erreichbar ist
-oder nur mit dem Aufzug · wo Kessel und Gitter (7.4) liegen, seit der Heizraum im Untergeschoss ist.
+**Zu klären:** Plan für den Tiefkeller · ob der Aufzug im Dachgeschoss hält (4.21) · wo das Gitter (7.4) sitzt · die
+Dachform (4.21).
 
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9
-> Nicht umgesetzt: Lautstärke „Stimmen“ (es gibt noch keine Sprachausgabe), Tastenbelegung ändern, Fortschritt Fluchtweg als Autosave-Auslöser (Fluchtweg fehlt noch – bis dahin löst das Aufschließen einer Tür den Autosave aus).
+> Nicht umgesetzt: Lautstärke „Stimmen“ (es gibt noch keine Sprachausgabe), Tastenbelegung ändern, Fortschritt Fluchtweg als Autosave-Auslöser (Fluchtweg fehlt noch), die Speicherregel aus 8.10.
 
 **Leitgedanke:** Speichern ist Teil des Horrors. Man kann **nur im eigenen Zimmer** speichern – jeder Ausflug in Flur, Keller oder Garten ist also ein echtes Risiko. Ein Tod kostet den Fortschritt seit dem letzten Tagebucheintrag.
 
@@ -3804,9 +3695,9 @@ oder nur mit dem Aufzug · wo Kessel und Gitter (7.4) liegen, seit der Heizraum 
 | Thema | Entscheidung |
 |-------|--------------|
 | Speicherort | **Nur in Zimmer 13**, am **Tagebuch auf dem Schreibtisch** |
-| Speichern gesperrt | **Während Vorwarnung und Manifestation** (Flackern, Rauschen, Monster aktiv) |
+| Speichern gesperrt | **Solange das Monster unterwegs ist** (Flackern, Rauschen, Jagd), der Kürbismann im Haus oder der Lakengeist beim Spieler ist (8.5) |
 | Speicherplätze | **3 manuelle Slots + 1 Autosave** |
-| Autosave | **Bei wichtigen Ereignissen**, nur in sicheren Momenten – seit 2026-10-21 nur Fortschritt, neue Bereiche und Aufwachen in Zimmer 13 (8.10) |
+| Autosave | **Bei Fortschritt, neuen Bereichen und Aufwachen in Zimmer 13**, nur in sicheren Momenten (8.6, 8.10) |
 | Nach dem Tod | **Letzten Spielstand laden** (oder Hauptmenü) |
 | Esc-Menü | **Spiel pausiert komplett**; Esc schließt zuerst ein offenes Fenster |
 | Tagebuch-Ansicht | **Pausiert** ebenfalls |
@@ -3814,12 +3705,17 @@ oder nur mit dem Aufzug · wo Kessel und Gitter (7.4) liegen, seit der Heizraum 
 | Titelbildschirm | **Ja**, beim Spielstart |
 
 ### 8.2 Titelbildschirm (Hauptmenü)
-- Erscheint beim Start des Spiels, vor dem Intro.
-- **Hintergrund (Vorschlag):** Die verriegelte Lobby-Doppeltür oder ein langer Flur im PS1-Look – Nebel, eine flackernde Lampe, leichtes Bildrauschen. Ab und zu steht am Flurende eine Silhouette … und beim nächsten Flackern ist sie weg.
+- Erscheint beim Start des Spiels, nach dem Vorspann.
+- **Vorspann** (2026-10-25): Vor dem ersten Titelbildschirm eines Programmstarts das Studiologo (Tsunami Games) auf
+  Schwarz, blendet ein und aus (7,5 s), dazu als Platzhalter das Rauschen einer anrollenden, brechenden Welle (4 s,
+  setzt mit dem Einblenden ein). Nach 1 s lässt es sich mit Leertaste/Enter, Esc oder Mausklick überspringen,
+  ein Hinweis unten rechts sagt das. Kommt man aus dem Spiel zurück ins Hauptmenü, kein Vorspann.
+- **Schrift (2026-10-25):** Cinzel wie auf den Messingschildern im Hotel – im Titelbildschirm und im Spielmenü (8.3).
+- **Hintergrund:** Die Lobby, gesehen von der Haupteingangstür – ein hochaufgelöster Screenshot aus dem Spiel (2026-10-25), flackernd wie eine Lampe, leichtes Bildrauschen. Fehlt das Bild, ein gezeichneter Flur mit einer Silhouette am Ende.
 - **Einträge:**
   - **Fortsetzen** – lädt den neuesten Spielstand (Slot oder Autosave). Nur sichtbar, wenn einer existiert.
-  - **Neues Spiel** – Slot wählen; ist er belegt → Rückfrage „Überschreiben?“. ~~Danach Intro-Text, Start in Zimmer 13.~~ Danach Erwachen am Waschbecken in Zimmer 13 (3.9) und der
-    Willkommensbrief auf dem Schreibtisch statt eines Einführungstexts (2.5, 2026-10-23).
+  - **Neues Spiel** – Slot wählen; ist er belegt → Rückfrage „Überschreiben?“. Danach Erwachen am Waschbecken in
+    Zimmer 13 (3.9) und der Willkommensbrief auf dem Schreibtisch (2.5).
   - **Laden** – Slot-Übersicht (siehe 8.5).
   - **Einstellungen** (siehe 8.4)
   - **Beenden**
@@ -3831,10 +3727,10 @@ oder nur mit dem Aufzug · wo Kessel und Gitter (7.4) liegen, seit der Heizraum 
   - **Fortsetzen** (auch erneut Esc)
   - **Laden**
   - **Einstellungen**
-  - **Steuerung** (Tastenübersicht) – **wird zur Hilfe** (entschieden und umgesetzt 2026-10-23): eine kleine Hilfeseite mit der
-    Tastenübersicht und ein paar Sätzen zu den Grundlagen (Tagebuch speichert, Hand und Tasche, Licht, Hinsetzen …).
-    Ersatz für die Tastenzeile, die bisher im Einführungstext stand (2.5). Vorschlag: nichts, was den friedlichen
-    Anfang verrät (2.1) – Einträge zu Monster und Verstecken erscheinen erst nach dem ersten Angriff.
+  - **Hilfe** (entschieden und umgesetzt 2026-10-23): eine kleine Hilfeseite mit der Tastenübersicht und ein paar
+    Sätzen zu den Grundlagen (Tagebuch speichert, Hand und Tasche, Licht, Hinsetzen …) – es gibt keine Tastenzeile
+    beim Start (2.5). Vorschlag: nichts, was den friedlichen Anfang verrät (2.1) – Einträge zu Monster und Verstecken
+    erscheinen erst nach dem ersten Angriff.
   - **Zum Hauptmenü** – mit Rückfrage und Hinweis „Zuletzt gespeichert vor 12 Minuten – ungespeicherter Fortschritt geht verloren.“
   - **Spiel beenden** – gleiche Rückfrage. Es wird **nicht** automatisch gespeichert (sonst ließe sich die Regel „nur im Zimmer speichern“ umgehen).
   - **Unterbrechen und beenden** (entschieden 2026-10-21, 8.10) – legt einen Zwischenstand an, der beim nächsten Laden gelöscht wird.
@@ -3845,7 +3741,7 @@ oder nur mit dem Aufzug · wo Kessel und Gitter (7.4) liegen, seit der Heizraum 
 - **Kein „Speichern“-Eintrag.** Stattdessen ein ausgegrauter Hinweis: *„Speichern nur am Tagebuch in Zimmer 13.“*
 - **Gesperrt** während Jumpscare und Sterbebildschirm.
 - **Optik (Vorschlag):** Gestaltet wie ein vergilbter Hotel-Meldezettel / eine Seite aus dem Gästebuch, passend zum Retro-Hotel.
-- Das bisherige „Esc = Maus freigeben“ entfällt – das Menü gibt die Maus frei.
+- Das Menü gibt die Maus frei.
 
 ### 8.4 Einstellungen
 Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
@@ -3860,8 +3756,8 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 
 ### 8.5 Speichern am Tagebuch
 - Auf dem Schreibtisch in Zimmer 13 liegt das **Tagebuch** des Spielers. **E** → Blick aufs Tagebuch → **Slot 1–3 wählen** → ein Eintrag wird geschrieben = gespeichert. Solange die Tagebuch-Ansicht offen ist, **pausiert das Spiel** (wie im Menü).
-- **Gesperrt während Vorwarnung/Manifestation** (seit 2026-10-21 auch, solange der Kürbismann im Haus oder der Lakengeist beim Spieler ist)**:** Das Tagebuch lässt sich nicht beschreiben – *„Meine Hände zittern zu sehr.“* Alle anderen Situationen sind erlaubt (auch bei offener Tür oder mit einem Gegenstand in der Hand – der wird einfach mitgespeichert).
-- **Der Eintrag als Slot-Beschreibung:** Das Spiel formuliert automatisch einen kurzen Tagebuchsatz aus dem aktuellen Stand, z. B. *„Edna ist fort. Bruno redet nicht mehr mit mir. Vor meiner Tür brennen zwei Kürbisse.“* Dieser Satz erscheint in der Slot-Übersicht. **Seit 2026-10-21:** Namen nur von Kernfiguren und zentralen Gästen, der Rest wird gezählt (8.10).
+- **Gesperrt, solange das Monster unterwegs ist, der Kürbismann im Haus oder der Lakengeist beim Spieler ist:** Das Tagebuch lässt sich nicht beschreiben – *„Meine Hände zittern zu sehr.“* Alle anderen Situationen sind erlaubt (auch bei offener Tür oder mit einem Gegenstand in der Hand – der wird einfach mitgespeichert).
+- **Der Eintrag als Slot-Beschreibung:** Das Spiel formuliert automatisch einen kurzen Tagebuchsatz aus dem aktuellen Stand, z. B. *„Edna ist fort. Bruno redet nicht mehr mit mir. Vor meiner Tür brennen zwei Kürbisse.“* Dieser Satz erscheint in der Slot-Übersicht. Künftig nennt er nur Kernfiguren und zentrale Gäste mit Namen, der Rest wird gezählt (8.10).
 - **Slot-Übersicht zeigt:** Vorschaubild (480 × 270), Tagebuchsatz, Spielzeit, Datum/Uhrzeit, lebende Gäste.
 - Das Tagebuch ist **fest verankert** (nicht tragbar, nicht klaubar) – sonst könnte man sich das Speichern verbauen.
 - **Meilensteine (3.10, entschieden 2026-10-23):** Beim Speichern schreibt die Figur auf, was seit dem letzten Eintrag
@@ -3872,13 +3768,13 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 ### 8.6 Autosave
 - **Ein eigener Slot**, der sich selbst überschreibt. Kann nur geladen, nicht manuell beschrieben werden.
 - **Auslöser (wichtige Ereignisse):**
-  - ~~Tod eines Gastes (sobald die Gefahr vorbei ist)~~ (gestrichen 2026-10-21, 8.10)
-  - ~~Ende einer Feier~~ (gestrichen 2026-10-21, 8.10)
   - Fortschritt beim Fluchtweg (Schlüssel gefunden, Rätsel gelöst) – auch Aufzug, Kopf, Erlösung (8.10)
-  - Erstes Betreten eines neuen Bereichs (Vorschlag; entschieden 2026-10-21)
-  - **Aufwachen in Zimmer 13** nach einer Nacht Schlaf (neu 2026-10-21, 8.10)
+  - Erstes Betreten eines neuen Bereichs (8.10)
+  - **Aufwachen in Zimmer 13** nach einer Nacht Schlaf (8.10)
+  - *Im Prototyp gelten noch die alten Auslöser (Tod eines Gastes, Ende einer Feier, Aufschließen einer Tür), bis 8.10
+    gebaut ist.*
 - **Nur in sicheren Momenten**, sonst wird der Autosave **aufgeschoben**, bis alle Bedingungen erfüllt sind:
-  - keine Vorwarnung/Manifestation, kein Such- oder Jagdmodus
+  - Monster nicht unterwegs, kein Such- oder Jagdmodus
   - Spieler nicht im Versteck, nicht im Dialog, nicht in einem Minispiel
   - Monster weit genug entfernt (Mindestabstand, Tuning-Wert)
   - Damit wird verhindert, dass ein Autosave den Spieler in eine ausweglose Lage speichert.
@@ -3898,10 +3794,10 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 | Bereich | Inhalt |
 |---------|--------|
 | **Spieler** | Position, Blickrichtung, geduckt, Gegenstand in der Hand, Geld, Schock/Trauer/Schuld (6.8) |
-| **Gegenstände** | Typ (inkl. Glühbirnen), Position/Rotation, Zustand (geschnitzt, Kerze drin, Brenndauer, Verfall), Ort (Boden, Truhe, Hand eines Gastes) |
+| **Gegenstände** | Typ (inkl. Glühbirnen), Position/Rotation, Zustand (geschnitzt, Kerze drin, brennt oder aus, Verfall), Ort (Boden, Truhe, Hand eines Gastes) |
 | **Welt** | Türen (offen/zu/abgeschlossen), Truhen-Inhalte, Lampen (intakt/kaputt, Birne drin/fehlt), Lichtschalter je Raum (an/aus), Vorhänge (offen/zu), Kürbisbeete (Stufe, Wachstum), Laub-/Spinnweben-Vorräte, Plattenspieler, Kommoden (Schubladen offen/zu, schon durchsucht) |
 | **Gäste** | lebt/tot, Position, aktuelle Tätigkeit im Tagesablauf, Beziehung, Panik, Wissen/Gerüchte, Diebstahl-Erinnerungen, Wettschulden, getragener Gegenstand |
-| **Monster** | Position auf der Route, Dreistigkeit, Neugier je Zone, Sättigung, Deko-Anspruch und -Gewöhnung (4.8–4.10) |
+| **Monster** | Position, Phase und Absicht (4.17), Dreistigkeit, Neugier je Zone, Sättigung, Deko-Anspruch und -Gewöhnung (4.8–4.10) |
 | **Puppe** | Position, beurteilte Tür, wer sie trägt (5.5) |
 | **Ablauf** | Spielzeit, laufende Feier, Fortschritt Fluchtweg, Story-Flags, Tagebuchtexte |
 | **Nicht** | Einstellungen (eigene Datei), laufende Minispiel-Partien von Gästen (starten nach dem Laden neu) |
@@ -3911,16 +3807,15 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 - **„Albtraum-Modus“:** ein einziger Slot, der Tod löscht ihn.
 
 ### 8.10 Speicherregel geschärft (entschieden 2026-10-21)
-> Noch nicht umgesetzt (die Sperre während Kürbismann und Lakengeist schon, 2026-10-21). Ändert 8.1, 8.3, 8.5 und
-> 8.6 und beantwortet eine Frage aus 2.2.
+> Noch nicht umgesetzt (die Sperre während Kürbismann und Lakengeist schon, 2026-10-21).
 
-**Die Probleme bisher**
-- **Der Autosave war ein Checkpoint-System:** Tod eines Gastes, Ende einer Feier und das Aufschließen *jeder* Tür
-  speicherten mitten im Hotel – bei 67 Gästen ohne Nachschub (6.0) alle paar Minuten. Der Leitgedanke „jeder Ausflug
-  ist ein Risiko“ (8) war ausgehöhlt.
-- **Beenden kostete viel:** Mit Tagen von 24 Minuten (2.4) verliert man leicht eine halbe Stunde, wenn man aufhören muss.
-- **Die Zeitschleife (2.2) ließ sich umgehen:** einfach einen Stand vor dem 31. laden.
-- **Der Tagebuchsatz** war für drei Gäste geschrieben und wird bei 67 zur Liste.
+**Warum**
+- **Kein Checkpoint-System:** Speichern Tod eines Gastes, Ende einer Feier und das Aufschließen *jeder* Tür mitten im
+  Hotel, ist bei 67 Gästen (6.0) alle paar Minuten gesichert – der Leitgedanke „jeder Ausflug ist ein Risiko“ (8)
+  wäre ausgehöhlt.
+- **Beenden darf nicht viel kosten:** Mit Tagen von 24 Minuten (2.4) verliert man sonst leicht eine halbe Stunde.
+- **Die Zeitschleife (2.2) darf sich nicht umgehen lassen,** etwa durch einen Stand vor dem 31.
+- **Der Tagebuchsatz** wird bei 67 Gästen sonst zur Liste.
 
 **1. Autosave nur bei Fortschritt und beim Aufwachen**
 - **Auslöser:** Fortschritt (Aufzug repariert 7.4, Kopf gefunden und Kürbismann erlöst 4.21, wichtige Schlüssel,
@@ -3937,7 +3832,7 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 - So kann man jederzeit aufhören, ohne Fortschritt zu verlieren – aber nicht speichern und laden, um etwas
   auszuprobieren, denn den Stand gibt es nur einmal. Die Regel „nur in Zimmer 13“ bleibt.
 
-**3. Spielstände gehören zu einem Durchgang** (beantwortet 2.2 „pro Slot oder übergreifend?“)
+**3. Spielstände gehören zu einem Durchgang** (2.2)
 - Setzt die Zeitschleife ein, werden alle Stände des alten Durchgangs zu **„Erinnerungen“**: ansehbar (Tagebuchsatz,
   Bild), aber **nicht mehr ladbar**.
 - Der neue Durchgang beginnt mit den eigenen Zetteln und dem Zähler der Schleife (2.2).
@@ -3950,54 +3845,58 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 
 ## 9. Technische Umsetzung (grob)
 
+Wie es im Einzelnen gebaut ist, steht in [TECHNIK.md](TECHNIK.md). Hier nur die Grundsätze.
+
 ### 9.1 Godot 4.7
-- **Renderer:** Forward+ (für Licht, Schatten, Volumetric Fog)
-- **Spieler:** `CharacterBody3D` + Kamera, Interaktion per RayCast
-- **Monster-KI:** State Machine + `NavigationAgent3D`
-  - Helligkeit: kein echtes Pixel-Sampling, sondern **Licht-Zonen** (`Area3D` mit Helligkeitswert, der sich ändert, wenn Lampen flackern/ausfallen oder Kürbisse ausgehen)
-  - „Bemerkt“-Erkennung: Monster im Kamera-Frustum + RayCast-Sichtlinie + Dauer-Timer
-  - Suchmodus: Wegpunkte rund um das Spielerzimmer
-- **NPCs:** `NavigationAgent3D` mit Avoidance (Gäste weichen einander/Spieler aus), `NavigationLink3D` für Türen & Treppen, Utility-KI + State Machine
-- **Interaktions-Objekte („Smart Objects“):** Schrank, Bett, Truhe, Tür, Beet teilen sich eine gemeinsame Schnittstelle (`interact(actor)`), die **Spieler und Gäste gleichermaßen** nutzen. Verstecke haben eine **Reservierung**, damit nicht zwei Personen gleichzeitig hinein.
-- **Minispiele:** Spieltisch als Smart Object (`GameTable`, gleiche `interact(actor)`-Schnittstelle) → Kamera schwenkt auf den Tisch, Spiel läuft diegetisch auf dem 3D-Brett. Ein gemeinsames **`Wager`-System** (Einsatz aushandeln, hinterlegen, auszahlen, Wettschulden) für alle Spiele. Schach-KI: einfacher Minimax mit Suchtiefe je nach Gast-Spielstärke. Partie-Zustand bleibt beim Abbruch erhalten.
-- **Garten:** Pflanzen als Nodes mit Wachstumsstufen (Timer / Spielzeit), Modell-Wechsel je Stufe
-- **Jumpscare:** eigene Kamera-Animation + Monster-Modell nah vor der Kamera, danach Death-Screen-Szene
-- **NPCs:** State Machine (Tagesablauf, Handeln, Klauen), `NavigationAgent3D`
-- **Effekte:**
-  - Bild-Flackern & Rauschen: Fullscreen-Shader (CanvasLayer + ColorRect mit `screen_texture`) oder Compositor-Effekt
-  - Licht-Flackern: Script auf Lichtquellen, zentral gesteuert über ein `MonsterEventManager`-Signal
-  - Volumetric Fog für diffuse Silhouetten
-- **Systeme (Autoloads):** `GameState`, `RelationshipManager`, `PlayerHands` (Tragen) + `Wallet` (Geld), `MonsterDirector`, `DecorationManager`, `SaveManager`, `Settings`
+- **Alles im Code:** Hotel, Möbel, Gäste und UI entstehen zur Laufzeit (`main.gd`, `LevelBuilder` nach dem
+  Gebäudeplan, 7.5); Editor-Szenen gibt es keine (Wechsel verschoben, unten).
+- **Renderer:** Forward+ (Licht, Schatten, Nebel).
+- **Drei Autoloads:** `Settings`, `Game` (Drehscheibe: Systeme sprechen über die Referenzen in `Game` miteinander,
+  nicht über Signale) und `SaveManager`.
+- **Spieler:** `CharacterBody3D` + Kamera, Interaktion per RayCast.
+- **Monster:** `MonsterDirector` (versteckte Werte, Phasen, Absichten, 4.9, 4.17) und ein Zustandsautomat für das
+  Monster selbst; Helligkeit per Raycast zu den Lichtquellen statt Licht-Zonen.
+- **Gäste:** Zustandsautomat mit Tagesablauf (6.6), Bewegung über das NavMesh.
+- **Interaktions-Objekte („Smart Objects“):** Schrank, Bett, Truhe, Tür, Beet, Spieltisch … teilen sich eine
+  gemeinsame Schnittstelle, die **Spieler und Gäste gleichermaßen** nutzen. Verstecke haben eine **Reservierung**,
+  damit nicht zwei Personen gleichzeitig hinein.
+- **Minispiele:** am Spieltisch, das Spiel läuft auf dem 3D-Brett bzw. dem Würfeltisch; Einsätze liegen echt auf dem
+  Tisch (6.10). Schach-KI rechnet je nach Spielstärke 1–3 Halbzüge voraus.
+- **Effekte:** Bild-Flackern und Rauschen als Vollbild-Shader, Licht-Flackern an den Lampen, gesteuert vom Director.
 - **Speichern & Laden (siehe 8):**
-  - **JSON** in `user://saves/` – `slot_1.json` … `slot_3.json`, `autosave.json`, je ein Vorschaubild `.png`. Jede Datei enthält eine **Versionsnummer**, damit ältere Spielstände nach Updates migriert werden können.
+  - **JSON** in `user://saves/` – je Slot eine Datei mit Vorschaubild, Autosave eigens. Jede Datei hat eine
+    **Versionsnummer**; zu alte Stände und Stände einer anderen Welt (Fingerabdruck des Hotels) werden mit Hinweis
+    abgelehnt – Rückwärtskompatibilität kommt erst spät.
   - **Sicheres Schreiben:** erst in eine `.tmp`-Datei, dann umbenennen → kein kaputter Spielstand bei Absturz.
-  - **Schnittstelle:** Alle speicherbaren Nodes sind in der Gruppe `saveable`, haben eine **stabile `save_id`** und implementieren `save_state() -> Dictionary` / `load_state(data)`.
-  - **Dynamische Gegenstände** (geerntete Kürbisse, geschnitzte Varianten …) werden über ihren Typ neu erzeugt. Laden = Hotel ohne Start-Gegenstände aufbauen, dann alles aus dem Spielstand befüllen.
-  - **Pause:** `get_tree().paused = true`; Menüs mit `process_mode = ALWAYS`. Spielzeit, Timer und Abläufe müssen über pausierbares `delta` laufen (nicht über Systemzeit), damit im Menü wirklich nichts weiterläuft.
-  - **Einstellungen:** `ConfigFile` unter `user://settings.cfg`.
-  - Debug-Startparameter (Vorschlag): `--load=1` (Slot laden), `--savetest` (speichern → laden → Zustand vergleichen).
+  - **Zuordnung:** feste Weltobjekte über Gruppen und ihre Reihenfolge, dynamische Gegenstände werden über ihren Typ
+    neu erzeugt.
+  - **Pause:** `get_tree().paused = true`; Menüs laufen weiter. Spielzeit, Timer und Abläufe laufen über pausierbares
+    `delta` (nie über Systemzeit), damit im Menü wirklich nichts weiterläuft.
+  - **Einstellungen:** eigene Datei, getrennt vom Spielstand.
+  - Debug: `--load=1` (Slot laden), `--savetest` (speichern → laden → Zustand vergleichen).
 
 ### 9.2 Blender (lokal)
-- Modellierung: Hotelmodule (Wand-, Boden-, Türsegmente als modulares Kit), Möbel, Deko-Objekte, Gäste, Monster
+- Modelle: Möbel, Einbauten, Deko-Objekte, Gäste, Monster – aus Blender, Meshy oder Sketchfab, aufbereitet von
+  Bauskripten in `tools/`. Wände, Böden und Rahmen baut der Code.
 - Export: **glTF 2.0 (.glb)** → direkter Import in Godot
 - Godot kann `.blend`-Dateien auch direkt importieren, wenn Blender lokal installiert und im Editor konfiguriert ist
-- ~~**Stil: Low-Poly im PS1-Look** – wenige Polygone, kleine Texturen (64–256 px), Nearest-Filter, keine glatten Normalen nötig~~
 - **Stil: realistischer Look (entschieden 2026-10-25).** Alle neuen Materialien, Shader und Modelle werden auf das Bild
   **ohne** PS1-Look ausgelegt: Texturen in voller Auflösung mit Mipmaps und linearem Filter, Normal- und
   Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf. Der PS1-Look bleibt als Umschalter in den Einstellungen
   (8.4) und darf nicht kaputtgehen, wird aber nicht mehr bevorzugt. Am Ende kommt ein eigens darauf optimierter
   Zusatzmodus (eigene Texturgrößen, Filter, ggf. eigene Materialvarianten).
-- **Aufgabenteilung Blender ↔ Godot (Vorschlag):**
-  - **Blender liefert das Aussehen:** einzelne Assets und ein modulares Kit (Wandsegment, Wandsegment mit Fenster, Vorhang, Wandlampe, Lichtschalter, Tür …) – **keine** große Blender-Szene des ganzen Hotels.
-  - **Godot liefert das Verhalten:** Jedes Asset bekommt eine eigene Szene (`.tscn`), die das `.glb`-Modell mit Kollision, Licht und Skript verbindet (z. B. Fenster mit Glas-Kollisionsebene, Wandlampe mit flackerfähigem Licht).
-  - **Platzieren:** zunächst weiter per Code im LevelBuilder, der diese Szenen statt Platzhalter-Kästen setzt; später optional eine von Hand gebaute Hotel-Szene im Editor.
-  - Vorteil: Ein Objekt funktioniert spielerisch schon als Platzhalter, das Modell wird später einfach ausgetauscht.
+- **Aufgabenteilung Modell ↔ Code:**
+  - **Das Modell liefert das Aussehen:** einzelne Assets als `.glb` – **keine** große Blender-Szene des ganzen Hotels.
+  - **Der Code liefert das Verhalten:** Das Skript des Objekts lädt das Modell und ergänzt Kollision, Licht und
+    Interaktion; der LevelBuilder setzt es nach dem Plan.
+  - Vorteil: Ein Objekt funktioniert spielerisch schon als Platzhalter (ohne Datei bleibt der Kasten), das Modell wird
+    später einfach ausgetauscht.
 
 **Wechsel zu Editor-Szenen – besprochen, bewusst verschoben (2026-10-17)**
 
-Der Code-Workflow funktioniert gut und bleibt vorerst. Erst ausbauen: **Untergeschoss (Keller)** und **Aufzug**.
-Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätestens wenn Räume eher *gestaltet* als
-*gebaut* werden (Deko nach Gefühl statt Koordinatenlisten im LevelBuilder), ist der richtige Zeitpunkt.
+Der Code-Workflow funktioniert gut und bleibt vorerst. Der Wechsel lohnt sich, wenn das Hotel im Grundriss feststeht
+(es fehlt noch der Tiefkeller, 7.10) – spätestens wenn Räume eher *gestaltet* als *gebaut* werden (Deko nach Gefühl
+statt Koordinatenlisten im LevelBuilder).
 
 - **Ziel:** eine `hotel.tscn`, die man im Editor öffnet und als Ganzes sieht. Darin stecken Raum-Szenen als
   Instanzen (`rooms/lobby.tscn`, `rooms/guest_room.tscn` …), darin wiederum Asset-Szenen (`dresser.tscn` = Modell +
@@ -4009,7 +3908,7 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
   leer. Geplant: den Rohbau **einmal per Werkzeug als `.tscn` speichern** und ab dann im Editor pflegen. Der
   LevelBuilder schrumpft entsprechend. (Alternative `@tool`-LevelBuilder nur als Zwischenlösung.)
 - **Speicherformat:** Die Zuordnung über die Reihenfolge in Gruppen ist bei Editor-Szenen nicht verlässlich. Vorher
-  auf **feste `save_id`s** umstellen (siehe 9.1). Reine Deko ohne Zustand ist nicht betroffen.
+  auf **feste Speicher-IDs** umstellen (9.1). Reine Deko ohne Zustand ist nicht betroffen.
 - **Reihenfolge:** 1. Asset-Szenen für vorhandene Modelle · 2. Rohbau exportieren + Raum-Szenen · 3. feste
   Speicher-IDs · danach interaktive Objekte auch in Editor-Szenen.
 - **Zusammenarbeit:** Spieler platziert nach Gefühl im Editor, Claude bearbeitet dieselben `.tscn`-Dateien auf
@@ -4022,26 +3921,12 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 
 ## 10. Offene Fragen für die Detaildiskussion
 
-1. ~~Ziel~~ → **Dem Horrorhotel entkommen** (entschieden). Offen: Wie genau? (Schlüssel für die Lobbytür zusammensuchen, Rätsel, Hilfe der Gäste?)
-2. ~~Zeitstruktur~~ → **durchgängig**, keine Level; Ingame-Tage à ~~ca. 5 min~~ 24 min mit Tagesuhr (2.4) vom 1. Oktober bis Halloween, draußen immer Nacht (2.1, entschieden).
-3. ~~Monster-Kontakt~~ → Jumpscare + Sterbebildschirm, danach letzten Spielstand laden (entschieden, siehe 8).
-3a. **„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren?
-3b. ~~Spieler-Lichtquelle~~ → **Taschenlampe**, verrät die eigene Position, schützt nicht; mit UV-Aufsatz (späterer Fund) kurz vertreiben, kostet Batterien und macht es dreister (4.16, entschieden 2026-10-11).
-3c. ~~**Garten-Zeit:** Wie lange wächst ein Kürbis – Minuten Echtzeit oder Ingame-Tage?~~ → kleine Sorten Minuten, große
-    einen Spieltag (Riese zwei), Frost ab dem 25. (5.10, entschieden 2026-10-23)
-3d. **Kellertür vs. Hitbox:** Ducken, Tür erhöhen oder Hitbox verkleinern?
-3e. ~~Puppe~~ → **sichtbares Urteil statt wandernder Jury:** sitzt vor der am schwächsten geschützten bewohnten Tür,
-    dorthin geht das Monster beim Angriff zuerst; tragen dürfen sie nur Spieler und Kinder (5.5, entschieden 2026-10-21).
-3g. ~~Verstecke~~ → Zeitlimit wie in Doors, beim Hineingehen gesehen = Tod, Gäste können sterben (entschieden).
-3i. **Schock-Malus:** Welche Mali aus 6.9? Wie stark, wie lange?
-3j. ~~Feiern~~ → spontan durch Gäste, Spieler kann auch eine ausrichten (entschieden).
-3k. **Minispiele (6.10):** Welche Spiele für den ersten Umfang? Echte Schachregeln (aufwendiger) oder zuerst ein einfaches Würfel-/Kartenspiel? Welche Möbel dürfen als Einsatz dienen?
-3h. **Truhen:** Abschließbar? Gibt es eine eigene Truhe im Spielerzimmer?
-3f. ~~Tragen~~ → kein Inventar, alles in den Händen, nur Geld als Wert (entschieden); Ausnahme am Körper: Kompass, Kartenblätter, Schlüsselbund (3.2, entschieden 2026-10-11). ~~Offen: ein oder zwei Hände?~~ → eine Hand für alles, dazu eine Tasche mit 6 Fächern für Kleines (3.2, entschieden 2026-10-22) ✔
-4. ~~Story~~ → **Das Abkommen und der Heizer** (2.3, entschieden 2026-10-11). ~~Offen: Mitwisser besetzen~~ (Tochter des Heizers als Kernfigur, 2026-10-21). Offen: was das Ding vor 1987 war.
-5. **Anzahl & Tiefe der Gäste:** Wenige tiefe Charaktere (3–5) oder viele einfache?
-6. **Können Gäste sterben / verschwinden?** (starke emotionale Konsequenz)
-7. ~~Grafikstil~~ → ~~**Low-Poly im PS1-Look**~~ → **realistischer Look**, PS1-Look als optimierter Zusatzmodus am Ende (9.2, entschieden 2026-10-25).
+Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den Kapiteln.
+
+1. **Flucht:** Ziel ist, dem Horrorhotel zu entkommen. Wie genau? (Schlüssel an Halloween 2.1, Rätsel, Hilfe der Gäste?)
+3a. **„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren (4.5)?
+3h. **Truhen:** Abschließbar? Gibt es eine eigene Truhe im Spielerzimmer (3.3)?
+4. **Story:** Das Abkommen und der Heizer (2.3). Offen: was das Ding unter dem Hotel vor 1987 war.
 8. **Umfang:** Kleines Halloween-Projekt (Jam-Größe) oder größeres Spiel?
 9. **Single-Player** – oder später Koop denkbar?
 10. **Sprache:** Deutsch, Englisch, beides?
@@ -4050,72 +3935,32 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 
 ## 11. Nächste Schritte
 
-1. ~~Offene Fragen klären~~ ✔
-2. ~~Godot-Projekt anlegen~~ ✔
-3. ~~Vertical Slice~~ ✔ (2026-10-10)
-4. ~~Ausbau~~ ✔ (2026-10-10): feste Patrouillenroute · Lobby, Küche, Garten mit Glastür, 8 Zimmer, Wäscherei · Kürbisbeet, Laub, Spinnweben, Kerzenvorrat · Schnitzen + Kerze einsetzen · 3 Gäste mit Tagesablauf, Dialog, Handel, Beziehung, Geschenken, Klauen (beidseitig), Zeugen & Gerüchten, Panik, Verstecken, Tod, Sättigung, Schock/Schuld, Gedenken · Feiern (spontan + selbst ausgerichtet)
-5. Minispiele mit Gästen (6.10): ~~Mäxchen an der Hotelbar~~ ✔ · als Nächstes **Darts und Kürbis-Schnitz-Duell** (2026-10-21; der Rest eingefroren) · ~~Möbel-Einsätze~~, Bibliothek/Salon mit Schach
-6. Puppe („Halloween-Jury“) als sichtbares Urteil vor der schwächsten bewohnten Tür (5.5, entschieden 2026-10-21) ·
-   später Jury beim Großen Schmücken
-7. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen Zetteln (2.2) · Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
-7a. Hotel verkleinern (Nord-Süd 60 m), Untergeschoss ausbauen (Heizraum, Maschinenraum, Wäscherei, Müllraum),
-    Tiefkeller und Dachgeschoss dazu – Pläne neu zeichnen (7.10, entschieden 2026-10-21) ·
-    Fahrstuhl reparieren (ein Schacht), Tiefkeller mit Lager (7.4, 7.10) · ~~Zimmertelefone (4.14)~~ ✔ (2026-10-11)
-7b. ~~Lärm & Sichtbarkeit als ein gemeinsames System (4.15)~~ ✔ (2026-10-11)
-7c. ~~Taschenlampe mit Batterien und UV-Aufsatz (4.16)~~ ✔ (2026-10-11)
-7d. Gäste bedienen Lichtschalter aktiv: Licht an im Dunkeln, beim Verlassen leerer Zimmer aus, manchmal vergessen (7.3, vorgemerkt 2026-10-13)
-7e. ~~Angriffe zu kurz – das Monster kehrt nach wenigen Metern um~~ ✔ (4.13, behoben 2026-10-17)
-7f. ~~Hotelkatzen: frei laufend, streicheln, Lieblingsgäste, vom Monster verschont, fliehen und weinen in seiner Nähe, werfen Deko um, bringen selten Deko und schlafen auf deinem Bett (6.11)~~ ✔ (2026-10-17)
-7g. ~~Angriffsabsicht & Flacker-Signal: Eine Flackerwelle vom Keller aus verrät mit ihrer Dauer, ob es sich umsieht, einen holt oder auf Raubzug geht (n Opfer ∝ 1/n², Flackern 1 + 2 × n s, Spieler zählt mit, täuscht manchmal) (4.17)~~ ✔ (2026-10-17)
-7h. ~~Lakengeist am Fenster: kommt bei Licht aus und offenem Vorhang, wird von Mal zu Mal dreister (Handabdrücke auf der Scheibe, Hypnose, kommt herein und würgt), verschwindet vor Zeugen in 0,5 s, ab dem 6. Mal im Flur, wenn alle schlafen (Nachtruhe zu zufälligen Zeiten) (4.18)~~ ✔ (2026-10-17)
-7i. ~~Lakengeist hartnäckiger: Losreißen kaum noch möglich, wartet vor dem Schrank und fliegt hinein, Schlafen im eigenen Bett, Schlafmangel lockt ihn – nach drei Nächten sicher im Flur (4.18)~~ ✔ (2026-10-18)
-7j. ~~Schach in der Lobby: Schachtisch und Brett, KI-Gegner mit Spielstärke je Gast, Einsätze, Herausforderungen, Gäste spielen untereinander (6.10)~~ ✔ (2026-10-18)
-7k. ~~Trinken an der Bar (Rausch, Halluzinationen, Kater, Gäste trinken mit, 3.7) und der Wert **Schwäche**, nach
-    dem sich der Lakengeist seine Opfer sucht (4.18)~~ ✔ (2026-10-19)
-7l. Schlaf & Müdigkeit: Wachzeit statt Nächte, fremde Betten, Gäste wecken, ausgeschlafen/übermüdet (3.6) – vorgemerkt
-    2026-10-19, Fragen offen · ~~Tagesuhr 24 Stunden = 24 Minuten, feste Nachtruhe der Gäste, Tagesablauf in vier
-    Phasen, Werte umrechnen (2.4, entschieden 2026-10-21)~~ ✔ (2026-10-23)
-7m. ~~Kinder: nur erschreckt, nie Opfer, Familien, kein Alkohol, immer auf Feiern, vom Monster übersehen, laut,
-    Süßes oder Saures, petzen, Waisenkind, Kakao (6.13)~~ ✔ (2026-10-19) · alle vier Grundkörper aus Meshy ✔ (2026-10-20)
-7m0. Drei Bedrohungen: eine je Ebene und außer Hörweite, Kürbismann mit Ankündigung in Stufen und leiernder Musik,
-    gleiche Sicht, gemeinsame Lore („Das Hotel behält jeden“), Lakengeist erst nach dem ersten Angriff (4.20,
-    entschieden 2026-10-21) · vertagt: Katzenraum
-7m00. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter dem Gitter
-    (ab etwa Tag 15), Dachboden als Kammernkette mit seinem Kopf, Ritual, Schädel/Axt/Jeansjacke als Deko (4.21,
-    entschieden 2026-10-21)
-7m1. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
-    Zuflucht/Warnen/Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18, entschieden 2026-10-21)
-7m2. Deko knapp machen: ~~Füllmaterial wächst nach, starke Deko endlich, Anspruch je Tag bis ×3~~, Schutzkreis = Lichtschein,
-    ~~Kürbisse faulen~~, Gäste schmücken nach Angst und Freundschaft und klauen bei Knappheit (5.10, entschieden 2026-10-21;
-    Stufe 1 ✔ 2026-10-23)
-7m3. Monsterwerte vereinfachen: Dreistigkeit in Spieltagen mit abklingenden Boni, heiße Stellen statt Zonen-Neugier
-    (4.9) · Freitext-Prototyp entfernen (6.15) · Tiefkeller auf den Kern beschränken (7.4) · Tochter des Heizers als
-    vierte Kernfigur (2.3, 6.0) – entschieden 2026-10-21
-7n. Halloween im Hotel: Hotel schmückt sich bis zum 31., ~~Kostüme mit Lakengeist-Verwechslung, selbst verkleiden~~ ✔
-    (2026-10-20), Gruselgeschichten-Abend, Kürbissuppe, alte Bräuche als Schutz, unheimliche Durchsagen,
-    Gruppenfoto (5.9) – vorgemerkt 2026-10-20
-7o. Eier-Streich der Kinder an Türen und Fenstern (6.13) · Aufträge von Gästen ohne Questmenü, notiert im Notizbuch (3.10)
-    (6.14) · Gewitter, Regen, Kirchturmglocke, dichter werdender Nebel (7.8) – vorgemerkt 2026-10-20
-7p. ~~Geisterstunde: 0–1 Uhr zieht der Lakengeist versteckt durch die Flure, angekündigt von der Kirchturmglocke,
-    schwebt auf einen zu, wenn er einen sieht, verschwindet die ersten Male kurz davor und würgt danach (eigener
-    Zähler), nur Flure (4.18)~~ ✔ (2026-10-23)
-7q. ~~Fledermäuse (scheu, Frühwarnung, Schwarm als Lärm)~~ ✔ (2026-10-23) · Biss und der Vampir als vierte Bedrohung: Biss macht schwach, im schwachen Zustand
-    tödlich, Knoblauch und Kreuz lassen ihn in einen Schwarm zerfallen; Twist: selbst Vampir werden, fehlt auf dem
-    Gruppenfoto und im Spiegel (4.22, vorgemerkt 2026-10-23)
-7q1. ~~Spinnen: krabbeln, zertreten, springen aus Schubladen ins
-    Gesicht – abschütteln oder Biss wie ein Glas; Keller häufig, sonst selten; Arachnophobie-Einstellung (4.23)~~ ✔
-    (2026-10-23)
-7r. Verkleiden aus Fundstücken (Kürbis als Hut, Masken, Laken) und Maskenspiel „Wer steckt dahinter?“ im Partyraum
-    (5.9, vorgemerkt 2026-10-23)
-7s. ~~Türschmuck-Wettbewerb als Faden für den Anfang: Willkommensbrief statt Einführungstext, Aushangbrett in der Lobby,
-    Durchsagen, Puppe als Jury in der Lobby, Siegerehrung am 2. um 20 Uhr als erster Angriff (wartet bis 22 Uhr auf den
-    Spieler, Blick zur Puppe, sie löst sich in Rauch auf), danach veränderter Aushang und Warnungszettel mit der Regel
-    der Puppe · Hilfeseite im Spielmenü statt Tastenzeile (2.5, 8.3, entschieden 2026-10-23)~~ ✔ (2026-10-23)
-7t. ~~Schlafdauer 1–8 Stunden, jederzeit, Nächte anteilig (3.6)~~ ✔ (2026-10-24) · ~~Zeitsprung in der Nachtruhe:
-    Gefahr nach dem Zeitplan des Monsters, Aufwachen mit Vorlauf, Morgenbilanz, Termine wecken, Wache (3.6)~~ ✔
-    (2026-10-24) · Zeitsprung auch am Tag (später)
-8. Echte Modelle aus Blender (glTF) statt Platzhalter, echte Sounds
-9. ~~Titelbildschirm, Spielmenü (Esc), Einstellungen, Speichern/Laden~~ ✔ (2026-10-10, siehe 8) · ~~Fenster, Vorhänge, Wandlampen, Lichtschalter, Glühbirnen~~ ✔ (7.3) · ~~Sehen & Jagen~~ ✔ (4.12) · Speicherregel schärfen: Autosave nur bei Fortschritt, neuen Bereichen und Aufwachen, „Unterbrechen und beenden“, Stände je Durchgang, Tagebuchsatz (8.10, entschieden 2026-10-21)
-10. Balancing, weitere Etagen
-11. Zerbrechende Fenster (7.3, für später vorgemerkt)
-12. Flecken auf den Tapeten, vermutlich von Hand (7.2, offen seit 2026-10-20)
+1. Minispiele mit Gästen (6.10): **Darts und Kürbis-Schnitz-Duell** (der Rest eingefroren)
+2. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen
+   Zetteln (2.2) · Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
+3. Tiefkeller planen und bauen, Fahrstuhl reparieren (ein Schacht), Lager (7.4, 7.10) · Maschinen- und Müllraum im
+   Untergeschoss · Gäste gehen mit Grund hinunter (7.10)
+4. Drei Bedrohungen: eine je Ebene und außer Hörweite, gleiche Sicht für den Kürbismann, Lakengeist erst nach dem
+   ersten Angriff (4.20) · vertagt: Katzenraum
+5. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter dem
+   Gitter (ab etwa Tag 15), Ritual, Schädel/Axt/Jeansjacke als Deko (4.21)
+6. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
+   Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18)
+7. Deko knapp machen, Stufen 2 und 3: Schutzkreis = Lichtschein, sichtbare Abweisung, Gäste schmücken nach Angst und
+   Freundschaft und klauen bei Knappheit (5.10)
+8. Monsterwerte vereinfachen: Dreistigkeit in Spieltagen mit abklingenden Boni, heiße Stellen statt Zonen-Neugier (4.9)
+9. Schlaf & Müdigkeit: Wachzeit statt Nächte, fremde Betten, Gäste wecken, ausgeschlafen/übermüdet (3.6) · Zeitsprung
+   auch am Tag
+10. Gäste bedienen Lichtschalter aktiv: Licht an im Dunkeln, beim Verlassen leerer Zimmer aus, manchmal vergessen (7.3)
+11. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
+    Verkleiden aus Fundstücken und Maskenspiel „Wer steckt dahinter?“ (5.9) · Puppe als Jury beim Großen Schmücken (5.5)
+12. Eier-Streich der Kinder (6.13) · Aufträge von Gästen ohne Questmenü (6.14) · Regen an den Scheiben, Gestalt im
+    Blitz, Wind, Tiere, dichter werdender Nebel (7.8)
+13. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
+14. Speicherregel schärfen: Autosave nur bei Fortschritt, neuen Bereichen und Aufwachen, „Unterbrechen und beenden“,
+    Stände je Durchgang, Tagebuchsatz (8.10)
+15. Echte Modelle und Sounds für die übrigen Platzhalter
+16. Balancing
+17. Zerbrechende Fenster (7.3, für später vorgemerkt)
+18. Flecken auf den Tapeten, vermutlich von Hand (7.2)
+19. Eigener, optimierter PS1-Modus (9.2, am Ende)

@@ -64,7 +64,7 @@ im Spiel.** Fest sind die Anzahlen je Haushaltsart; alles andere (Namen, Paare, 
 | H22 | Marion Teske (Kernfigur) | 001 · 68 m² | Marion (mittel, eigenes Profil) | 1 | Tochter des Heizers Josef Ahrend (2.3) – im Register „geb. Ahrend“; sucht, was 1987 geschah |
 | H23 ★ | Walter Ruprecht | 014 · 34 m² | Walter (alt, Griesgram) | 1 | Dauergast, kennt jeden Winkel – und schweigt |
 | H24 ★ | Agnes Möller | 029 · 34 m² | Agnes (alt, Plaudertasche) | 1 | Witwe, weiß über jeden etwas |
-| H25 | Gustav Peters | 033 · 34 m² | Gustav (alt, Skeptiker) | 1 | Pensionierter Lehrer, glaubt nur, was er sieht |
+| H25 ★ | Gustav Peters | 020 · 34 m² | Gustav (alt, Skeptiker) | 1 | Pensionierter Lehrer, hasst Halloween, die Kinder nennen ihn „Halloween-Grinch“; schmückt nicht – das erste Opfer bei der Siegerehrung (2.6) |
 | H26 | Liesel Brück | 025 · 34 m² | Liesel (alt, ängstlich) | 1 | Betet abends laut, schläft mit Licht |
 | H27 ★ | Hugo Stein | 023 · 34 m² | Hugo (alt, geschäftstüchtig) | 1 | Antiquitätenhändler, kauft Fundstücke (Dokumente, 2.3) |
 | H28 | Ruth Behrens | 008 · 34 m² | Ruth (alt, Bastler) | 1 | Näht Kostüme für die Kinder (5.9) |
@@ -75,7 +75,7 @@ im Spiel.** Fest sind die Anzahlen je Haushaltsart; alles andere (Namen, Paare, 
 | H33 | Emil Hartung | 016 · 34 m² | Emil (jung, Bastler) | 1 | Baut aus allem Kürbislaternen |
 | H34 | Doris Lange | 006 · 34 m² | Doris (alt, Griesgram) | 1 | Beschwert sich über Lärm – über jeden Lärm |
 | H35 | Theo Busch | 019 · 34 m² | Theo (jung, geschäftstüchtig) | 1 | Würfelt um alles (Mäxchen, 6.10) |
-| H36 | Magda Seidel | 020 · 34 m² | Magda (alt, Skeptiker) | 1 | Hält das Monster für einen Trick der Direktion |
+| H36 | Magda Seidel | 033 · 34 m² | Magda (alt, Skeptiker) | 1 | Hält das Monster für einen Trick der Direktion |
 | H37 | Sami Haddad | 039 · 68 m² | Sami (mittel, Bastler) | 1 | Koch von Beruf, hilft in der Küche (3.8) |
 | H38 | Zita Fuchs | 043 · 34 m² | Zita (alt, geschäftstüchtig) | 1 | Verleiht Geld gegen Pfand |
 | H39 | Oskar Pohl | 045 · 68 m² | Oskar (alt, ängstlich) | 1 | Meint, er sei schon einmal hier gewesen – erinnert sich an nichts (2.2) |
@@ -124,7 +124,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 017 | EG Ost, Nordflügel | 45 m² | – | – | 1329, 199 | verlassen, dunkel (bisher „17“: Kellerskizze, UV-Schrift) |
 | 018 | EG Ost, innen | 34 m² | – | Terrasse | 959, 299 | abgeschlossen (bisher „18“: Schaltschlüssel, Notizbuch) |
 | 019 | EG Ost, innen | 34 m² | – | Terrasse | 959, 359 | H35 Theo Busch |
-| 020 | EG Ost, innen | 34 m² | – | Terrasse | 959, 419 | H36 Magda Seidel |
+| 020 | EG Ost, innen | 34 m² | – | Terrasse | 959, 419 | H25 Gustav Peters |
 | 021 | EG Ost, innen | 68 m² | ja | Terrasse | 1059, 549 | H21 Mila Hellwig (Kernfigur) |
 | 022 | EG Ost, innen | 34 m² | – | Terrasse | 1279, 639 | unbewohnt, abgeschlossen |
 | 023 | EG Ost, innen | 34 m² | – | Terrasse | 1339, 639 | H27 Hugo Stein |
@@ -137,7 +137,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 030 | EG Ost, innen | 34 m² | – | Terrasse | 1179, 299 | unbewohnt, abgeschlossen |
 | 031 | EG Ost, innen | 34 m² | – | Terrasse | 1119, 299 | unbewohnt, abgeschlossen |
 | 032 | EG Ost, innen | 34 m² | – | Terrasse | 1059, 359 | unbewohnt, abgeschlossen |
-| 033 | EG Ost, innen | 34 m² | – | Terrasse | 1059, 419 | H25 Gustav Peters |
+| 033 | EG Ost, innen | 34 m² | – | Terrasse | 1059, 419 | H36 Magda Seidel |
 | 034 | EG West, Südseite | 103 m² | ja | – | 429, 739 | H18 Paar Falk |
 | 035 | EG West, Südseite | 103 m² | ja | – | 209, 739 | H17 Paar Nowak |
 | 036 | EG West, Südseite | 80 m² | ja | – | 63, 725 | H11 Ehepaar Lorenz |

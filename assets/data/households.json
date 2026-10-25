@@ -602,10 +602,10 @@
 		{
 			"id": "H25",
 			"surname": "Peters",
-			"label": "033",
+			"label": "020",
 			"floor": 0,
 			"px": [
-				1059,
+				959,
 				419
 			],
 			"members": [
@@ -800,10 +800,10 @@
 		{
 			"id": "H36",
 			"surname": "Seidel",
-			"label": "020",
+			"label": "033",
 			"floor": 0,
 			"px": [
-				959,
+				1059,
 				419
 			],
 			"members": [
