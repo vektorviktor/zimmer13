@@ -1989,8 +1989,9 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 - Tagsüber relativ sicher, nachts dunkel und gefährlich → Ernten wird zum Risiko-Abwägen.
 
 ### 5.5 Die Puppe – „Halloween-Jury“ (entschieden 2026-10-21, neu gefasst 2026-10-22)
-> **Umgesetzt (2026-10-22):** alles außer „Vorgemerkt“. Die Puppe ist vorerst aus Grundkörpern gebaut (Stoffpuppe mit
-> Porzellangesicht, orangem Kleid und Hexenhut) und sitzt am Anfang auf einem Lobby-Sofa.
+> **Umgesetzt (2026-10-22):** alles außer „Vorgemerkt“. Die Puppe ~~ist vorerst aus Grundkörpern gebaut (Stoffpuppe mit
+> Porzellangesicht, orangem Kleid und Hexenhut)~~ ist seit 2026-10-25 ein Meshy-Modell (Porzellanpuppe mit blonden
+> Locken, rosa Blümchenkleid und blauer Schleife, sitzend ~0,65 m) und sitzt am Anfang auf einem Lobby-Sofa.
 > Ersetzt die Fassung vom 2026-10-21 (Urteil schon beim Rückzug in den Keller, Spieler trägt sie, Opfern durch
 > Hintragen, Monster geht nur „zuerst“ zu ihr) und davor die wandernde Puppe, die Zonen bewertet.
 >

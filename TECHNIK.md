@@ -337,6 +337,20 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   Übrige Knochen (Hilfsknochen an Becken und Händen, Augen, Kiefer, Kopfspitze, Requisiten wie die Axt) geben
   ihre Gewichte an den nächsten zugeordneten Vorfahren ab – die Axt hängt fest an `LeftHand`. `HeadTop_End` neu
   auf dem höchsten Kopfpunkt, Figur auf die Hüfte zentriert, Ruhepose (hängende Arme) und Blick bleiben.
+  **Puppe** `assets/models/doll.glb` (Spielkonzept 5.5, `JuryDoll`): Meshy-Modell (Auto-Rigging mit Skelettvorlage
+  **Mixamo**, 65 Knochen mit Fingern, schon in Metern: 1,7 m in A-Pose, Blick nach +Z, ~12 900 Dreiecke), in zwei
+  Schritten: `tools/doll_weights.py` trennt die Gewichte (`assets/source/doll_meshy.glb` → `doll.glb`, unten), dann
+  `tools/build_doll.py` (Blender) wie beim Kürbismann – Präfix `mixamorig:` ab, `headfront` raus, nur die Farbtextur
+  (1024², unkomprimiert, `meshy_tex.py`; die `.import` liegt im Repo), Meshys „walk“/„run“ (ungenutzt). Größe, Sitzen
+  und Aufstehen macht das Spiel (Abschnitt 5, „Die Puppe“).
+  **Gewichte der Meshy-Puppe** (`tools/doll_weights.py`):
+  Meshys Auto-Rigging (Mixamo-Vorlage) verschmiert die Gewichte, wo Teile in der Ruhepose aneinanderliegen. Das Skript
+  (reines Python, `python tools/doll_weights.py <meshy.glb> <ausgabe.glb>`) schreibt nur `JOINTS_0`/`WEIGHTS_0` neu, der
+  Rest der GLB bleibt byte-gleich: Unterschenkel und Schuhe gehören je einer Seite (ganze Netzstücke, die der Beinkette
+  näher als `LEG_RADIUS` kommen – das Kleid bleibt weiter weg –, Seite per Mehrheit im Stück, über dem Knie läuft es über
+  `LEG_RAMP` aus), Ärmel verlieren Rumpf- und Beingewichte, Taille und Rock ab Ellbogenhöhe die Armgewichte. Den Streifen,
+  wo Meshy Ärmel und Mieder verschmolzen hat (`SLEEVE_IN` … `SLEEVE_OUT`), und die Haare lässt es – harte Trennung dort
+  spannte beim Armschwingen eine Haut auf.
   **Kürbismann** `assets/models/pumpkin_man.glb` (Spielkonzept 4.19, `PumpkinMan`, Verhalten siehe 5):
   `tools/build_pumpkin.py` aus zwei Meshy-Modellen – `assets/source/pumpkin_man.glb` (Auto-Rigging mit Skelettvorlage
   **Mixamo**, kleines Skelett mit 23 Knochen ohne Finger, in Zentimetern) und `assets/source/pumpkin_axe.glb` (ohne Rig).
@@ -1348,8 +1362,8 @@ NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angri
 
 ### Die Puppe (`scripts/world/jury_doll.gd`, Spielkonzept 5.5)
 - **`JuryDoll`** (`Game.doll`, in `main.gd` nach Social, Start auf dem ersten Lobby-Sofa: `cat_perches`, deren `floor` ein
-  `lobby_seat` ist): `StaticBody3D` auf Ebene 3 (nur für den Blick, blockiert niemanden), Modell aus Grundkörpern unter einem
-  Knoten mit `SIZE` (sitzend, Gesicht nach +Z). [E] sagt nur, dass sie sich nicht hochheben lässt. `verdict` = Zimmer des
+  `lobby_seat` ist): `StaticBody3D` auf Ebene 3 (nur für den Blick, blockiert niemanden), Modell `doll.glb` (Abschnitt 1) mal
+  `SIZE` (0,65: sitzend ~0,65 m, stehend 1,1 m), Ursprung auf der Sitzfläche (`SEAT` unter der Hüfte), Gesicht nach +Z. [E] sagt nur, dass sie sich nicht hochheben lässt. `verdict` = Zimmer des
   Urteils (`""` = keins), `at_room` = Zimmer, vor dessen Tür sie liegt. `judge(no)` → `_pending`; `_try_jump` (alle
   `MOVE_SCAN` s) setzt sie vor die Tür (`_door_spot`: `door_front` + `into` × `DOOR_GAP`, Blick zur Tür), sobald
   `Director.player_can_see` weder alten noch neuen Platz sieht. `release()` hebt das Urteil auf (nach der Aktivphase,
@@ -1360,8 +1374,11 @@ NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angri
   legt es sie dort vor die Tür bzw. wo es steht. `judge` lässt ein Kind sofort los. Gespeichert unter `doll` (Lage,
   Drehung, `verdict`, `at_room`, `pending`, `gone`; ein getragenes liegt danach, wo es war). Debug `--doll=kind` (`debug_fetch`).
 - **Wettbewerb** (2.5): Bis zum ersten Angriff liegt vor ihr ein Schildchen „Jury“ (`_card`, `show_card`; Prompt
-  „Die Jury“), Kinder holen sie erst danach (`_update_kids` fragt `first_attack_done`). Die Beine hängen an `_legs` (Hüfte),
-  `stand_pose(k)` schwingt sie nach unten und richtet `_head` auf. `vanish()` (Rauch bei der Siegerehrung): `gone`,
+  „Die Jury“), Kinder holen sie erst danach (`_update_kids` fragt `first_attack_done`). Sitzen und Aufstehen über die Knochen
+  (`stand_pose(k)`, `_turn`: Drehung um eine Achse im Modellraum gegenüber der Ruhepose): sitzend die Oberschenkel 90°
+  nach vorn (Beine ausgestreckt, auf dem Sofa ragen die Füße über die Kante), der Kopf um `HEAD_TILT` geneigt; die Arme
+  immer `ARM_DOWN` aus Meshys A-Pose zum Körper. Stehend hängen die Beine unter dem Ursprung – sie schwebt dann.
+  `HEAD_HEIGHT` (Kopfmitte, sitzend) nimmt DoorContest als Blickziel. `vanish()` (Rauch bei der Siegerehrung): `gone`,
   unsichtbar, ohne Kollision; beim nächsten Urteil prüft `_try_jump` nur den neuen Platz und zeigt sie dort wieder
   (`_reappear`). Liegt sie vor der Tür ihres Urteils, meldet sie das `DoorContest.on_doll_placed` (Tagebuch).
 - **Frist und Urteil** (`MonsterDirector`): `on_monster_gone` würfelt `_lead` (`DOLL_LEAD` 60–120 s). In der Ruhephase ruft

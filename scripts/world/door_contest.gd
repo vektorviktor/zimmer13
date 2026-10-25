@@ -337,7 +337,7 @@ func _can_gather(g: Guest) -> bool:
 
 
 func _doll_look() -> Vector3:
-	return Game.doll.global_position + Vector3.UP * 0.35 * JuryDoll.SIZE
+	return Game.doll.global_position + Vector3.UP * JuryDoll.HEAD_HEIGHT
 
 
 func _gathering_step(delta: float) -> void:
@@ -408,7 +408,7 @@ func _scene_step(delta: float) -> void:
 			doll.rotation.y = lerp_angle(doll.rotation.y, atan2(to.x, to.z), minf(1.0, delta * 1.5))
 		if _scene_t >= T_VANISH:
 			_vanished = true
-			_puff(doll.global_position + Vector3.UP * 0.3 * JuryDoll.SIZE)
+			_puff(doll.global_position + Vector3.UP * 0.8 * JuryDoll.HEAD_HEIGHT)
 			Game.play_sound("poof", 0.8)
 			doll.vanish()
 	if _scene_t >= T_DARK:
@@ -418,7 +418,7 @@ func _scene_step(delta: float) -> void:
 ## Kopf und Blick des Spielers sanft zur Puppe (kein Kameraschnitt, Spielkonzept 2.5).
 func _pull_gaze(delta: float) -> void:
 	var p := Game.player
-	var target := Game.doll.global_position + Vector3.UP * 0.4 * JuryDoll.SIZE
+	var target := Game.doll.global_position + Vector3.UP * JuryDoll.HEAD_HEIGHT
 	var to := target - p.camera.global_position
 	var k := 1.0 - exp(-GAZE_SPEED * delta)
 	p.rotation.y = lerp_angle(p.rotation.y, atan2(-to.x, -to.z), k)

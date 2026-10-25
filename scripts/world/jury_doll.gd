@@ -11,7 +11,7 @@ extends StaticBody3D
 ## Erreichbar über Game.doll; gespeichert unter „doll“ (save_state/load_state).
 
 ## Lage vor der Tür: so weit vom Flurpunkt door_front (0,9 m vor der Tür) zur Tür hin, mit dem Gesicht zur Tür
-const DOOR_GAP := 0.4
+const DOOR_GAP := 0.25
 ## Umspringen: so oft wird geprüft, ob der Spieler gerade wegsieht
 const MOVE_SCAN := 0.3
 ## Kinder: so oft schauen sie sich nach ihr um, so nah, mit dieser Chance holt eins sie; danach so lange Ruhe (s)
@@ -25,10 +25,17 @@ const NOTICE_FEAR := 25.0
 const NOTICE_LINES := ["Da sitzt diese Puppe vor meiner Tür …", "Wer hat mir die Puppe vor die Tür gesetzt?!",
 	"Diese Puppe … sie guckt meine Tür an.", "Bei mir sitzt die Puppe. Das gefällt mir nicht."]
 const KID_LINES := ["Die Puppe hat mich angeguckt!", "Komm, Puppe, wir gehen zu Mama!", "Psst, die Puppe schläft."]
-const SKIN := Color(0.9, 0.84, 0.76)
-const DRESS := Color(0.85, 0.42, 0.08)
-## Größe gegenüber dem gebauten Modell (~0,5 m sitzend) – gut sichtbar im dunklen Flur
-const SIZE := 1.35
+## Meshy-Puppe (tools/build_doll.py): 1,7 m in A-Pose, Blick nach +Z, Mixamo-Knochen
+const MODEL := "res://assets/models/doll.glb"
+## Größe gegenüber dem Modell: sitzend ~0,65 m, stehend 1,1 m – gut sichtbar im dunklen Flur
+const SIZE := 0.65
+## Sitzfläche unter dem Ursprung des Modells (m, Modellmaß): Hüftgelenk ~0,76 m minus halber Oberschenkel
+const SEAT := 0.68
+## Kopfmitte über dem Boden, sitzend (m) – dorthin schauen Gäste und Spieler bei der Siegerehrung (DoorContest)
+const HEAD_HEIGHT := (1.45 - SEAT) * SIZE
+## Sitzen: Arme aus der A-Pose (45°) so weit zum Körper (rad), Kopf leicht geneigt (Modellachsen)
+const ARM_DOWN := 0.4
+const HEAD_TILT := Vector3(0.12, 0, 0.16)
 
 ## Zimmer, vor dessen Tür sie gerade urteilt ("" = kein Urteil, Kinder dürfen sie nehmen)
 var verdict := ""
@@ -45,8 +52,8 @@ var _kid_scan := KID_SCAN
 var _kid_rest := 60.0
 var _noticed := {}            ## Gast-ID → true: hat sie bei diesem Urteil schon vor seiner Tür gesehen
 var _builder: LevelBuilder
-var _legs: Node3D             ## Beine (schwingen beim Aufstehen nach unten)
-var _head: Node3D
+var _skeleton: Skeleton3D
+var _bones := {}              ## Knochenname → Index (Beine, Arme, Kopf: Sitzen und Aufstehen)
 var _card: Node3D             ## Schildchen „Jury“ (Wettbewerb, 2.5)
 
 
@@ -93,9 +100,22 @@ func show_card(value: bool) -> void:
 
 
 ## Aufstehen bei der Siegerehrung (0 = sitzt, 1 = steht): die Beine schwingen nach unten, der Kopf richtet sich auf.
+## Der Ursprung bleibt auf der Sitzfläche – stehend hängen die Beine darunter (sie schwebt dann ohnehin).
 func stand_pose(k: float) -> void:
-	_legs.rotation.x = k * PI / 2.0 * 0.95
-	_head.rotation = Vector3(0.12, 0, 0.16) * (1.0 - k)
+	var sit := 1.0 - k
+	for side: float in [1.0, -1.0]:
+		var prefix := "Left" if side > 0.0 else "Right"   # ihre Linke liegt bei +X
+		_turn(prefix + "UpLeg", Vector3.RIGHT, -PI / 2.0 * sit)   # Beine nach vorn ausgestreckt
+		_turn(prefix + "Arm", Vector3.BACK, -side * ARM_DOWN)
+	_turn("Head", HEAD_TILT.normalized(), HEAD_TILT.length() * sit)
+
+
+## Dreht einen Knochen aus der Ruhepose um eine Achse im Modellraum (die Eltern stehen in Ruhepose).
+func _turn(bone: String, axis: Vector3, angle: float) -> void:
+	var i: int = _bones[bone]
+	var parent := _skeleton.get_bone_global_rest(_skeleton.get_bone_parent(i)).basis
+	var local := parent.inverse() * Basis(axis, angle) * parent * _skeleton.get_bone_rest(i).basis
+	_skeleton.set_bone_pose_rotation(i, local.get_rotation_quaternion())
 
 
 ## In Rauch aufgelöst (Siegerehrung): fort, bis sie vor der Tür des nächsten Urteils liegt.
@@ -345,66 +365,30 @@ func load_state(d: Dictionary) -> void:
 
 # --- Aussehen -------------------------------------------------------------------------------
 
-## Sitzende Stoffpuppe (~0,5 m × SIZE): Porzellangesicht mit schwarzen Knopfaugen, orange-schwarzes Kleid, spitzer Hexenhut.
-## Ursprung am Boden, Gesicht nach +Z.
+## Sitzende Porzellanpuppe (Meshy): blonde Locken, rosa Blümchenkleid mit blauer Schleife, Beine nach vorn gestreckt.
+## Ursprung auf der Sitzfläche, Gesicht nach +Z.
 func _build() -> void:
-	var look := Node3D.new()   # alles in einem Knoten, damit sie sich als Ganzes vergrößern lässt
+	var look: Node3D = (load(MODEL) as PackedScene).instantiate()
 	look.scale = Vector3.ONE * SIZE
+	look.position.y = -SEAT * SIZE
 	add_child(look)
-	var skin := Mat.psx(SKIN)
-	var dress := Mat.psx(DRESS)
-	var black := Mat.psx(Color(0.05, 0.04, 0.05))
-	var stripes := Mat.psx(Color(0.92, 0.9, 0.85))
-	# Beine nach vorn ausgestreckt, gestreifte Strümpfe, schwarze Schuhe – an der Hüfte drehbar (stand_pose)
-	_legs = Node3D.new()
-	_legs.position = Vector3(0, 0.03, 0)
-	look.add_child(_legs)
-	for side: float in [-1.0, 1.0]:
-		Geo.mesh(_legs, Geo.box(Vector3(0.05, 0.05, 0.2)), stripes, Vector3(side * 0.045, 0.0, 0.1))
-		for i in 3:
-			Geo.mesh(_legs, Geo.box(Vector3(0.054, 0.054, 0.02)), black, Vector3(side * 0.045, 0.0, 0.04 + i * 0.06))
-		Geo.mesh(_legs, Geo.box(Vector3(0.06, 0.07, 0.08)), black, Vector3(side * 0.045, 0.015, 0.22))
-	# Rock und Oberkörper
-	Geo.mesh(look, Geo.cylinder(0.12, 0.12, 8), dress, Vector3(0, 0.07, 0))
-	Geo.mesh(look, Geo.box(Vector3(0.15, 0.17, 0.1)), dress, Vector3(0, 0.2, 0))
-	Geo.mesh(look, Geo.box(Vector3(0.16, 0.025, 0.11)), black, Vector3(0, 0.13, 0))   # Gürtel
-	Geo.mesh(look, Geo.box(Vector3(0.12, 0.03, 0.11)), stripes, Vector3(0, 0.29, 0))  # Kragen
-	# Arme hängen schlaff herunter
-	for side: float in [-1.0, 1.0]:
-		var arm := Geo.mesh(look, Geo.box(Vector3(0.04, 0.16, 0.045)), dress, Vector3(side * 0.1, 0.19, 0.01))
-		arm.rotation.z = side * 0.18
-		Geo.mesh(look, Geo.sphere(0.024, 0.04, 6, 3), skin, Vector3(side * 0.115, 0.1, 0.02))
-	# Kopf, leicht geneigt
-	var head := Node3D.new()
-	head.position = Vector3(0, 0.37, 0)
-	head.rotation = Vector3(0.12, 0, 0.16)
-	look.add_child(head)
-	_head = head
-	Geo.mesh(head, Geo.sphere(0.075, 0.15, 10, 6), skin, Vector3.ZERO)
-	Geo.mesh(head, Geo.sphere(0.08, 0.1, 10, 4), Mat.psx(Color(0.18, 0.08, 0.04)), Vector3(0, 0.03, -0.012))   # Haar
-	for side: float in [-1.0, 1.0]:
-		Geo.mesh(head, Geo.sphere(0.017, 0.022, 6, 3), black, Vector3(side * 0.028, 0.01, 0.066))   # Knopfaugen
-		Geo.mesh(head, Geo.sphere(0.004, 0.006, 4, 2), stripes, Vector3(side * 0.028 + 0.005, 0.016, 0.079))
-		Geo.mesh(head, Geo.sphere(0.012, 0.008, 6, 2), Mat.psx(Color(0.8, 0.45, 0.45)), Vector3(side * 0.045, -0.02, 0.058))
-	Geo.mesh(head, Geo.box(Vector3(0.03, 0.006, 0.006)), Mat.psx(Color(0.45, 0.05, 0.05)), Vector3(0, -0.036, 0.07))   # Mund
-	# Hexenhut: Krempe und schiefer Kegel
-	Geo.mesh(head, Geo.cylinder(0.1, 0.01, 10), black, Vector3(0, 0.07, -0.005))
-	var cone := CylinderMesh.new()
-	cone.top_radius = 0.0
-	cone.bottom_radius = 0.055
-	cone.height = 0.13
-	cone.radial_segments = 8
-	var tip := Geo.mesh(head, cone, black, Vector3(0, 0.135, -0.01))
-	tip.rotation.x = -0.25
-	Geo.mesh(head, Geo.cylinder(0.057, 0.018, 10), dress, Vector3(0, 0.083, -0.005))   # Hutband
-	Geo.add_box_shape(self, Vector3(0.28, 0.5, 0.32) * SIZE, Vector3(0, 0.25, 0.04) * SIZE)
+	var body: MeshInstance3D = look.find_child("doll", true, false)
+	body.material_override = Mat.model(MODEL, body, 0, true)   # Kleidsaum und Haar sind einseitig
+	_skeleton = look.find_children("*", "Skeleton3D", true, false)[0]
+	for side in ["Left", "Right"]:
+		for bone in ["UpLeg", "Arm"]:
+			_bones[side + bone] = _skeleton.find_bone(side + bone)
+	_bones["Head"] = _skeleton.find_bone("Head")
+	assert(not _bones.values().has(-1), "Puppe: Knochen fehlen")
+	stand_pose(0.0)
+	Geo.add_box_shape(self, Vector3(0.45, 0.66, 0.65), Vector3(0, 0.33, 0.2))
 	_build_card()
 
 
 ## Schildchen „Jury“: gefaltetes Kärtchen neben ihr auf dem Sofa, Schrift zum Betrachter.
 func _build_card() -> void:
 	_card = Node3D.new()
-	_card.position = Vector3(0.25, 0, 0.16)
+	_card.position = Vector3(0.34, 0, 0.12)
 	_card.rotation.y = -0.25
 	add_child(_card)
 	var paper := Mat.psx(Color(0.93, 0.9, 0.82))

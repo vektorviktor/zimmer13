@@ -1,8 +1,9 @@
 .godot/
 *.import
-# … außer bei den Gastmodellen, dem Kürbismann und den Kürbissen: Textur unkomprimiert eingebettet (tools/meshy_tex.py, sonst helle Streifen)
+# … außer bei den Gastmodellen, dem Kürbismann, der Puppe und den Kürbissen: Textur unkomprimiert eingebettet (tools/meshy_tex.py, sonst helle Streifen)
 !assets/models/guest_*.glb.import
 !assets/models/pumpkin_man.glb.import
+!assets/models/doll.glb.import
 !assets/models/pumpkins.glb.import
 # … und bei der Discokugel (Normal Map: Kompression verbiegt die Spiegelplättchen)
 !assets/models/disco_ball.glb.import
