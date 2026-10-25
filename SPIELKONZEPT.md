@@ -10,11 +10,13 @@
 - [1. Kurzbeschreibung (Pitch)](#1-kurzbeschreibung-pitch)
 - [2. Genre & Stimmung](#2-genre--stimmung)
   - [2.1 Zeit & Dramaturgie: Vom 1. Oktober bis Halloween (entschieden 2026-10-10)](#21-zeit--dramaturgie-vom-1-oktober-bis-halloween-entschieden-2026-10-10)
-  - [2.2 Scheitern als Zeitschleife – mit eigenen Zetteln (vorgemerkt 2026-10-11)](#22-scheitern-als-zeitschleife--mit-eigenen-zetteln-vorgemerkt-2026-10-11)
+  - [2.2 Scheitern als Zeitschleife – mit eigenen Zetteln (vorgemerkt 2026-10-11, verworfen 2026-10-25)](#22-scheitern-als-zeitschleife--mit-eigenen-zetteln-vorgemerkt-2026-10-11-verworfen-2026-10-25)
   - [2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)](#23-fortschritt--geheimnis-vorgemerkt-2026-10-11)
   - [2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21, umgesetzt 2026-10-23)](#24-tagesuhr--tagesablauf-entschieden-2026-10-21-umgesetzt-2026-10-23)
   - [2.5 Der Anfang: Türschmuck-Wettbewerb (entschieden und umgesetzt 2026-10-23)](#25-der-anfang-türschmuck-wettbewerb-entschieden-und-umgesetzt-2026-10-23)
   - [2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)](#26-das-erste-opfer-gustav-peters-entschieden-2026-10-25)
+  - [2.7 Das Ende an Halloween: Alle Überlebenden kommen hinaus (entschieden 2026-10-25)](#27-das-ende-an-halloween-alle-überlebenden-kommen-hinaus-entschieden-2026-10-25)
+  - [2.8 Den Heizer erlösen – Marions Auftrag (entschieden 2026-10-25)](#28-den-heizer-erlösen--marions-auftrag-entschieden-2026-10-25)
 - [3. Core Gameplay Loop](#3-core-gameplay-loop)
   - [3.1 Spieler-Aktionen (Grundumfang)](#31-spieler-aktionen-grundumfang)
   - [3.2 Kein verstecktes Inventar – Hände und Tasche](#32-kein-verstecktes-inventar--hände-und-tasche)
@@ -54,6 +56,13 @@
   - [4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)](#422-fledermäuse-und-der-vampir-vorgemerkt-2026-10-23)
   - [4.23 Spinnen (entschieden und umgesetzt 2026-10-23)](#423-spinnen-entschieden-und-umgesetzt-2026-10-23)
   - [4.24 Der Lakengeist in der Dusche (entschieden und umgesetzt 2026-10-25)](#424-der-lakengeist-in-der-dusche-entschieden-und-umgesetzt-2026-10-25)
+  - [4.25 Tiere als Vorzeichen: Krähen, Ratten, Motten, Hund (entschieden und umgesetzt 2026-10-25)](#425-tiere-als-vorzeichen-krähen-ratten-motten-hund-entschieden-und-umgesetzt-2026-10-25)
+  - [4.26 Die schwarze Kesselkatze (entschieden und umgesetzt 2026-10-25)](#426-die-schwarze-kesselkatze-entschieden-und-umgesetzt-2026-10-25)
+  - [4.27 Spiegel: verhängt und mit Gestalt (entschieden und umgesetzt 2026-10-25)](#427-spiegel-verhängt-und-mit-gestalt-entschieden-und-umgesetzt-2026-10-25)
+  - [4.28 Stromausfall im Gewitter (entschieden und umgesetzt 2026-10-25)](#428-stromausfall-im-gewitter-entschieden-und-umgesetzt-2026-10-25)
+  - [4.29 Der Albtraum von 1987 (entschieden und umgesetzt 2026-10-25)](#429-der-albtraum-von-1987-entschieden-und-umgesetzt-2026-10-25)
+  - [4.30 Die Vogelscheuche, die näher kommt (entschieden und umgesetzt 2026-10-25)](#430-die-vogelscheuche-die-näher-kommt-entschieden-und-umgesetzt-2026-10-25)
+  - [4.31 Das Kind zu viel (entschieden und umgesetzt 2026-10-25)](#431-das-kind-zu-viel-entschieden-und-umgesetzt-2026-10-25)
 - [5. Halloween-Dekoration](#5-halloween-dekoration)
   - [5.1 Funktion](#51-funktion)
   - [5.2 Platzierung](#52-platzierung)
@@ -67,6 +76,12 @@
   - [5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23)](#510-knappheit-wert--verfall-entschieden-2026-10-21-stufe-1-umgesetzt-2026-10-23)
   - [5.11 Feuer: Deko kann brennen (entschieden 2026-10-22)](#511-feuer-deko-kann-brennen-entschieden-2026-10-22)
   - [5.12 Kerzen: ausgehen, auspusten, anzünden (entschieden und umgesetzt 2026-10-25)](#512-kerzen-ausgehen-auspusten-anzünden-entschieden-und-umgesetzt-2026-10-25)
+  - [5.13 Salz vor die Tür (entschieden und umgesetzt 2026-10-25)](#513-salz-vor-die-tür-entschieden-und-umgesetzt-2026-10-25)
+  - [5.14 Die Fotowand in der Lobby (entschieden und umgesetzt 2026-10-25)](#514-die-fotowand-in-der-lobby-entschieden-und-umgesetzt-2026-10-25)
+  - [5.15 Grablichter für die Toten (umgesetzt 2026-10-25, Umbau entschieden 2026-10-25)](#515-grablichter-für-die-toten-umgesetzt-2026-10-25-umbau-entschieden-2026-10-25)
+  - [5.16 Das Puppenhaus in der Bibliothek (entschieden und umgesetzt 2026-10-25)](#516-das-puppenhaus-in-der-bibliothek-entschieden-und-umgesetzt-2026-10-25)
+  - [5.17 Marions Spieluhr (entschieden und umgesetzt 2026-10-25)](#517-marions-spieluhr-entschieden-und-umgesetzt-2026-10-25)
+  - [5.18 Kürbisfratzen (entschieden und umgesetzt 2026-10-25)](#518-kürbisfratzen-entschieden-und-umgesetzt-2026-10-25)
 - [6. Die anderen Gäste (NPCs)](#6-die-anderen-gäste-npcs)
   - [6.0 Gäste im Prototyp](#60-gäste-im-prototyp)
   - [6.1 Rolle](#61-rolle)
@@ -88,6 +103,7 @@
   - [6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)](#618-das-sozialsystem-verknüpft-entschieden-2026-10-21)
   - [6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)](#619-zimmer-gehören-den-gästen-klopfen-einlass-aufbrechen-entschieden-2026-10-24)
   - [6.20 Haushalte (entschieden 2026-10-24)](#620-haushalte-entschieden-2026-10-24)
+  - [6.21 Apfeltauchen im Partyraum (entschieden und umgesetzt 2026-10-25)](#621-apfeltauchen-im-partyraum-entschieden-und-umgesetzt-2026-10-25)
 - [7. Spielwelt: Das Hotel](#7-spielwelt-das-hotel)
   - [7.1 Die Lobby – Gemeinschaftsraum](#71-die-lobby--gemeinschaftsraum)
   - [7.2 Maße & Architektur](#72-maße--architektur)
@@ -156,10 +172,15 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - Er liegt im **Lager im Tiefkeller**, in einem Koffer früherer Gäste – erreichbar nur mit dem reparierten Fahrstuhl (7.4).
 
 **Ideen für das Scheitern (Auswahl offen)**
-- **Zeitschleife:** Nach Halloween beginnt alles wieder am 1. Oktober – nur schlimmer. Ausgearbeitet in 2.2.
-- **Das Hotel behält einen:** schlechtes Ende.
+- ~~**Zeitschleife:** Nach Halloween beginnt alles wieder am 1. Oktober – nur schlimmer. Ausgearbeitet in 2.2.~~
+- ~~**Das Hotel behält einen:** schlechtes Ende.~~
+- **Entschieden 2026-10-25 (2.7):** Ohne Schlüssel stirbt jeder, der noch im Hotel ist – auch der Spieler. Keine
+  Zeitschleife.
 
-### 2.2 Scheitern als Zeitschleife – mit eigenen Zetteln (vorgemerkt 2026-10-11)
+### 2.2 Scheitern als Zeitschleife – mit eigenen Zetteln (vorgemerkt 2026-10-11, verworfen 2026-10-25)
+> **Verworfen (2026-10-25, 2.7):** Es gibt keine Zeitschleife. Wer an Halloween nicht hinauskommt, stirbt. Der
+> Abschnitt bleibt als Archiv stehen; Verweise darauf gelten nicht mehr.
+>
 > Favorit für das Scheitern. Noch nicht umgesetzt.
 
 **Grundidee:** Wer an Halloween nicht entkommt, wacht wieder am **1. Oktober in Zimmer 13** auf. Kurz vor dem Ende darf man **Zettel für den nächsten Durchgang** schreiben – und wird so selbst zu einem der „früheren Gäste“, deren Warnungszettel man die ganze Zeit gefunden hat (4.13).
@@ -183,7 +204,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - Gibt es nach mehreren Schleifen ein Ende, oder endet es nur durch Flucht?
 
 ### 2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)
-> Noch nicht umgesetzt. Gibt dem Spiel eine Richtung: Bisher überlebt man, kommt aber nirgendwohin. Verbindet Story (offene Frage 4), Zeitschleife (2.2), Warnungszettel (4.13), Fahrstuhl & Tiefkeller (7.4) und die Gäste (6).
+> Noch nicht umgesetzt. Gibt dem Spiel eine Richtung: Bisher überlebt man, kommt aber nirgendwohin. Verbindet Story (offene Frage 4), Warnungszettel (4.13), Fahrstuhl & Tiefkeller (7.4) und die Gäste (6).
 
 **Grundidee:** Nicht alle Bereiche des Hotels sind von Anfang an erreichbar. Einige sind verschlossen und müssen **verdient** werden. Hinter ihnen liegt nach und nach ein **großes Geheimnis**: warum man hier ist, was das Monster ist, was das Hotel mit den früheren Gästen zu tun hat. Man erfährt es aus **Dokumenten** und von **Mitwissern** – Gästen, die mehr wissen, als sie sagen.
 
@@ -203,7 +224,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 
 **Das Geheimnis: Das Abkommen und der Heizer (entschieden 2026-10-11)**
 - **Das Abkommen:** Die Gründerfamilie des Hotels hat **1987** einen Handel mit dem geschlossen, was unter dem Hotel lebt. Jedes Jahr gibt es eine **Halloween-Woche mit Gästen**, und es darf sich nehmen, wen es will. Dafür besteht das Hotel weiter, und die Familie lebt. Die Gäste werden eingeladen, ohne es zu wissen. Das Hotel ist ab dem 1. Oktober verschlossen.
-- **Der Heizer – das erste Opfer:** Halloween 1987 kam es im **Tiefkeller** zum Unglück (Kesselbrand). Der Heizer blieb beim Feuer, um andere hinauszubringen. Das Personal schloss die Tür hinter ihm ab – so wurde das Abkommen besiegelt. **Er ist zu dem geworden, was es jetzt verlangt.** Das Personal hält ihn seitdem mit Gästen ruhig und hinter dem Gitter (7.4). Bevor er starb, schrieb er den **ältesten Warnungszettel** (4.13); sein **Kesselbuch** liegt im Heizkeller (7.4). **Er hieß Josef Ahrend** (entschieden 2026-10-24) – derselbe Name in Kesselbuch, Personalakte und auf dem ältesten Warnungszettel.
+- **Der Heizer – das erste Opfer:** Halloween 1987 kam es im **Tiefkeller** zum Unglück (Kesselbrand). Der Heizer blieb beim Feuer, um andere hinauszubringen. Das Personal schloss die Tür hinter ihm ab – so wurde das Abkommen besiegelt. **Er ist zu dem geworden, was es jetzt verlangt.** Das Personal hält ihn seitdem mit Gästen ruhig und hinter dem Gitter (7.4). Bevor er starb, schrieb er die **UV-Schrift von 1987 im Heizkeller** (7.9, mit „J. A.“ gezeichnet – geändert 2026-10-25: der älteste Warnungszettel eines Gastes stammt von Edna, 2.7); sein **Kesselbuch** liegt im Heizkeller (7.4). **Er hieß Josef Ahrend** (entschieden 2026-10-24) – derselbe Name in Kesselbuch und Personalakte, die Initialen unter der UV-Schrift.
 - **Was das erklärt:**
   - **Deko schützt**, weil sie einmal Teil des Rituals war: Wer schmückt, gilt als *Gastgeber*, nicht als *Gabe*. Und weil sie ihn an das Fest erinnert, das er retten wollte – in geschmückten Bereichen zögert er.
   - **Die Puppe** (5.5) ist die Jury des Abkommens: Sie bestimmt vor jedem Angriff, wer am wenigsten schmückt und
@@ -212,16 +233,16 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
   - **Das Hotel behält jeden, der dort stirbt** (entschieden 2026-10-21, 4.20): der Heizer als das Monster, der
     Rezeptionist von 1987 als Kürbismann (4.19), die Verschwundenen als Lakengeist (4.18).
   - **Das Gitter wird lockerer** (7.4, 4.8): Das Abkommen hält jedes Jahr schlechter.
-  - **Der Schlüssel an Halloween** (2.1) öffnet die Tür für **genau einen**. Das Hotel behält immer einen. Fliehen heißt, jemanden zurückzulassen – Opfern (4.11) wird zur Kernfrage.
+  - **Der Schlüssel an Halloween** (2.1) öffnet den Haupteingang für **alle, die bis zum 31. überlebt haben** (2.7, entschieden 2026-10-25; vorher „für genau einen“). Wen man im Lauf des Monats verliert oder opfert (4.11), der fehlt beim Hinausgehen.
 - **Zwei Arten von Mitwissern:**
   - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält; der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht.
   - **Angehörige, die suchen:** die **Tochter des Heizers**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel. **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer die Personalakte des Heizers kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
 - **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** des Heizers mit Foto (die Statur passt) · **Kesselbuch** und die abgeschlossene **Werkstatt** im Tiefkeller · die Koffer früherer Gäste im Lager (7.4).
 - **Enden (Vorschlag):**
-  - **Flucht:** mit dem Schlüssel hinaus – jemand bleibt zurück.
-  - **Das Abkommen brechen:** den Vertrag im Kessel verbrennen (Ofenklappe, 7.4). Er ist nicht mehr gebunden – ob das gut ist, bleibt offen.
-  - **Ihn erlösen:** seine Sachen aus dem Fundsachen-Koffer zurückbringen und den Kessel ein letztes Mal anzünden – mitten in seinem Revier.
-- **Andeutungs-Twist:** ein Warnungszettel in der Handschrift des Spielers (2.2) – nie erklärt.
+  - **Flucht:** mit dem Schlüssel hinaus – mit allen Überlebenden (2.7).
+  - **Das Abkommen brechen:** den Vertrag im Kessel verbrennen (Ofenklappe, 7.4). Er ist nicht mehr gebunden – ob das gut ist, bleibt offen. **Seit 2026-10-25 Teil von Marions Auftrag (2.8).**
+  - **Ihn erlösen:** ~~seine Sachen aus dem Fundsachen-Koffer zurückbringen und den Kessel ein letztes Mal anzünden – mitten in seinem Revier.~~ Seit 2026-10-25 **Marions Auftrag (2.8):** seine Sachen, der verbrannte Vertrag, die geöffnete Tür und Marions Stimme – das Feuer von 1987 geht aus.
+- ~~**Andeutungs-Twist:** ein Warnungszettel in der Handschrift des Spielers (2.2) – nie erklärt.~~ (Zeitschleife verworfen, 2.7)
 
 **Das Geheimnis in Schichten** – man setzt es zusammen, statt es zu lesen:
 1. **Gerücht:** Gäste erzählen Halbwahres (Berichte, Telefon, 4.13/4.14).
@@ -239,12 +260,11 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Jedes Dokument zeigt auf etwas** – einen Ort, eine Person, einen Code. Lore, die nur Sammelgut ist, liest niemand.
 - **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch des Heizers (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Lager (7.4).
 - **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Was ein Dokument verrät, notiert der Spieler-Charakter als eine Zeile mit Quelle im **Notizbuch** (Lesezeichen „Notizen“, 3.10), ebenso Gerüchte – mit dem, von dem sie stammen, ohne zu sagen, ob sie stimmen. Wendepunkte der Ermittlung (ein Mitwisser bricht sein Schweigen) schreibt er ins **Tagebuch** (3.10, 8.5).
-- **Zeitschleife (2.2):** Die Welt setzt sich zurück, Wissen kann bleiben – über die eigenen Zettel. Codes, Namen und wer lügt, gibt man sich selbst weiter. So wird jeder Durchgang schneller und tiefer, auch wenn man scheitert.
+- ~~**Zeitschleife (2.2):** Die Welt setzt sich zurück, Wissen kann bleiben – über die eigenen Zettel. Codes, Namen und wer lügt, gibt man sich selbst weiter. So wird jeder Durchgang schneller und tiefer, auch wenn man scheitert.~~ (verworfen, 2.7)
 
 **Zu klären**
 - **Was ist das Ding unter dem Hotel** vor dem Abkommen gewesen – bleibt das bewusst offen?
 - Wie viel erfährt man **vor dem ersten Angriff** (2.1)? Vorschlag: nichts, was den friedlichen Anfang verrät – höchstens das Gästebuch.
-- **Was überlebt die Zeitschleife?** Nur die eigenen Zettel (2.2), oder erinnern sich auch Mitwisser an einen?
 - **Wie viele Sperrbereiche** für den Anfang? Vorschlag: drei bis vier (siehe Kandidaten oben).
 - Wie hängt das Geheimnis mit dem **Schlüssel an Halloween** (2.1) zusammen – ist die Wahrheit Voraussetzung für die Flucht, oder ein eigenes, besseres Ende?
 
@@ -472,8 +492,7 @@ Durchsagen (5.9) erst nach dem Bruch.
 >
 > *Im UV-Licht:* Wer schmückt, ist Gastgeber. Wer nicht, ist die Gabe.
 
-Die UV-Zeile führt zum Abkommen (2.3), ohne es zu erklären. Nicht „Zimmer 013“ – das bleibt dem Twist der Zeitschleife
-(2.2).
+Die UV-Zeile führt zum Abkommen (2.3), ohne es zu erklären. Nicht „Zimmer 013“.
 
 *Tagebuch beim ersten Urteil:*
 > Die Puppe saß vor Zimmer 21. An der Tür hing fast nichts.
@@ -481,8 +500,7 @@ Die UV-Zeile führt zum Abkommen (2.3), ohne es zu erklären. Nicht „Zimmer 01
 Zimmernummer eingesetzt; der zweite Satz richtet sich danach, wie viel dort tatsächlich hing.
 
 **Zu klären**
-- **Zeitschleife (2.2):** Im nächsten Durchgang weiß man, was bei der Siegerehrung kommt. Rückt sie mit dem um einen Tag
-  kürzeren friedlichen Anfang auf den Abend des 1.?
+- ~~**Zeitschleife (2.2):** Rückt die Siegerehrung im nächsten Durchgang vor?~~ (Zeitschleife verworfen, 2.7)
 
 ### 2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)
 > Noch nicht umgesetzt. Ändert die Siegerehrung (2.5): Das Monster zeigt sich dort nicht mehr, sondern holt währenddessen
@@ -512,8 +530,7 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 - Dann geht das Licht aus, Stille, Rauschen, die Gäste schreien. **Gustav hört das nicht mehr** – sein letzter Satz
   bricht vorher ab. Die Reihenfolge ist wichtig für das Tagebuch: Er schreibt noch über die Feier, nicht über den Schrei.
 - **Man schafft es nicht rechtzeitig:** Wenn der Spieler sich wieder bewegen kann, ist es vorbei.
-- **Sein Tod ist fest** – auch in späteren Durchgängen der Zeitschleife (2.2). Nichts, was der Spieler vorher tut,
-  rettet ihn.
+- **Sein Tod ist fest.** Nichts, was der Spieler vorher tut, rettet ihn.
 
 **Was man in Zimmer 020 findet**
 - Die **Zimmertür steht offen.**
@@ -575,7 +592,136 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 **Zu klären**
 - **Siegerehrung ohne den Spieler** (spätestens 22 Uhr, 2.5): Steht er dann in Zimmer 020, stirbt er mit (wie im
   Puppenzimmer, 5.5)?
-- **Zeitschleife (2.2):** Kennt Gustav einen im nächsten Durchgang („Sie schon wieder“)? Sein Tod bleibt fest.
+
+### 2.7 Das Ende an Halloween: Alle Überlebenden kommen hinaus (entschieden 2026-10-25)
+> Noch nicht umgesetzt. Ersetzt „Der Schlüssel öffnet die Tür für genau einen“ aus 2.3 – dort stand zugleich „Das
+> Hotel behält immer einen“ und beim Ende „Flucht“ „jemand bleibt zurück“. Ablauf des ganzen Durchlaufs:
+> [HANDLUNG.md](HANDLUNG.md).
+
+**Entschieden**
+- **Besorgt der Spieler den Schlüssel, öffnet er an Halloween den Haupteingang – und alle, die bis zum 31. Oktober
+  überlebt haben, kommen hinaus:** er selbst und jeder Gast, der noch lebt.
+- **Danach spricht keiner mehr darüber.** Alle sind schwer traumatisiert.
+- **Kein Einsammeln:** Öffnet der Spieler die Tür, kommen alle lebenden Gäste in die Lobby (Fest am Abend, 5.9) und
+  gehen gemeinsam hinaus. **Schlussbild:** Draußen ist zum ersten Mal keine Nacht mehr (2.1) – die Überlebenden gehen
+  schweigend ins Morgengrauen.
+- **Ohne Schlüssel stirbt jeder, der noch drin ist** – auch der Spieler. Am Ende fällt das Monster bzw. das Hotel über
+  alle her; das lässt sich nicht verhindern. **Es gibt keine Zeitschleife** (2.2 verworfen). Ältere Spielstände bleiben
+  ladbar wie sonst (8.10).
+- **Edna Wiegand war 1987 als Erwachsene im Hotel und kam hinaus.** Sie schrieb den Warnungszettel von Oktober
+  1987 („E. K., Zimmer 017“), im Register steht sie mit Geburtsnamen „geb. K…“. Sie bleibt alt.
+- **Den Rezeptionisten hat Liesel Brück geköpft** (H26, Zimmer 025, ängstlich) – 1987 ein Teenager, heute um die
+  55, Generation alt. Sie kam hinaus und ist als Gast zurückgekommen, um ihm seinen Kopf wiederzugeben, den sie
+  damals auf dem Dachboden versteckt hat: die **Auftraggeberin fürs Erlösen** (4.21). **Das zweite Kind kam nicht
+  hinaus** – es ist das Kichern auf dem Dachboden (Blitz-Dreh, 4.21).
+  - Sie betet jeden Abend laut und schläft mit Licht – seit 1987. Sie feiert nie (Spaß ruft ihn, 4.19), und wenn die
+    Kinder das Lied vom Kürbiskopf singen (4.20), erstarrt sie. Sie kennt den Abzählreim der Kinder von 1987.
+  - Auf den Dachboden kommt sie nicht (steile Treppe, Türen nur geduckt, Schlüssel hinter dem Gitter) – darum braucht
+    sie den Spieler. Hat er ihr Vertrauen, erzählt sie, was 1987 geschah, verrät die Kammer im Südwesten und bittet ihn
+    um das Ritual.
+  - **Sie kommt nicht hinaus** – so oder so, wie Marion (2.8): Am letzten Tag bleibt sie **freiwillig** im Hotel, ob der
+    Kürbismann erlöst ist oder nicht. Nach 2.7 heißt das: Sie stirbt. In der letzten Nacht steigt sie zum Dachboden
+    hinauf, zu dem Kind, das 1987 nicht hinauskam – und das Kichern verstummt.
+
+**Was daraus folgt**
+- **Jeder Gast zählt bis zum Schluss.** Schützen, Warnen, Wache halten (6.18) entscheiden, wer mit hinauskommt. Das
+  Gruppenfoto (5.9) zeigt die Überlebenden, die leeren Plätze die anderen. Damit ist die Frage aus 6.0 („Wofür das
+  Retten zählt“) beantwortet.
+- **Opfern (4.11) bleibt eine Entscheidung im Lauf des Monats,** nicht mehr am Ende: Wen man bis zum 31. verliert, der
+  fehlt beim Hinausgehen.
+- **Das Schweigen erklärt das Hotel:** Darum wirkt die Einladung jedes Jahr („Wie jedes Jahr“, 2.5), darum warnt draußen
+  niemand, darum musste Marion selbst kommen, um zu erfahren, was 1987 geschah (2.3). Gäste wie Oskar Pohl, der meint,
+  schon einmal hier gewesen zu sein, und sich an nichts erinnert (H39), können Überlebende früherer Jahre sein.
+- **Die Warnungszettel** stammen von denen, die es nicht hinausgeschafft haben (4.13) – und von Überlebenden wie Edna,
+  solange sie noch drin waren.
+- **In Jahren ohne Schlüssel** kam niemand hinaus. Ihre Koffer stehen im Lager (7.4).
+
+**Zu klären** (je mit Vorschlag)
+- **Wird das Monster erlöst, oder bleibt es das Monster?** → **Marions Auftrag, 2.8** (entschieden 2026-10-25). Davon
+  hängt das **letzte Urteil der Puppe** (5.5) ab.
+- **Zeitpunkt der Öffnung:** mit der Mitternachtsglocke (7.8) oder nach dem Gruppenfoto?
+- ~~**Die anderen Enden aus 2.3** (Abkommen brechen)~~ – in Marions Auftrag aufgegangen (2.8).
+- **Vampir (4.22):** Wer zum Vampir geworden ist, kann nicht ins Morgengrauen – passt zu seinem eigenen, dunklen Ende.
+
+### 2.8 Den Heizer erlösen – Marions Auftrag (entschieden 2026-10-25)
+> Noch nicht umgesetzt. Fasst die Enden „Ihn erlösen“ und „Das Abkommen brechen“ aus 2.3 zu einem Auftrag zusammen.
+> Ablauf im Durchlauf: [HANDLUNG.md](HANDLUNG.md).
+
+**Warum:** Die Hauptgeschichte braucht eine Antwort darauf, ob das Monster das Monster bleibt. Die Antwort kommt von dem
+Menschen, der ihn am besten kannte – seiner Tochter. Wie beim Kürbismann (4.21) gilt: Fluch, Fundstück, Ritual – nur
+größer, mitten in seinem Revier.
+
+**Entschieden**
+- **Marion Teske, geb. Ahrend, ist die Auftraggeberin** (2.3, 6.0). Sie will ihren Vater erlösen.
+- **Ihre Identität findet man selbst heraus** – oder sie offenbart sich ab einem festen Punkt im Spiel von selbst.
+  Dann hat man **weniger Zeit** für die Aufgabe.
+- **Vier Teile** (aus den Optionen vom 2026-10-25):
+  1. **Marion ruft ihn** – ihre Stimme ist der Kern; ohne sie geht es nicht.
+  2. **Seine Sachen** aus den Fundsachen im Lager (Tiefkeller, 7.4) zu ihm bringen.
+  3. **Das Abkommen brechen:** den Vertrag aus dem Büro der Direktion (2.3) in seinem Feuer verbrennen.
+  4. **Die Tür öffnen, die man 1987 hinter ihm abschloss** – die Werkstatt im Tiefkeller (2.3).
+- **Die Erlösung ist Kür:** Hinaus kommt man mit dem Schlüssel allein (2.7). Die Erlösung entscheidet nur über den
+  **letzten Angriff** – ist er nicht erlöst, urteilt die Puppe am 31. ein letztes Mal, und das Monster greift vor der
+  Öffnung noch einmal an; ist er erlöst, bleibt die letzte Nacht ruhig.
+- **Marion kommt nicht hinaus** – so oder so. Sie bleibt am letzten Tag **freiwillig** im Hotel, bei ihrem Vater, ob
+  erlöst oder nicht. Nach 2.7 heißt das: Sie stirbt. Beim Hinausgehen und auf dem Gruppenfoto (5.9) fehlt sie.
+  - **Ist er erlöst,** geht sie mit ihm durch die Tür ins Feuer, bevor es erlischt, und lässt die Taschenuhr zurück.
+  - **Ist er es nicht,** bleibt sie in der Lobby sitzen, als die anderen gehen, und sagt nur: „Ich warte auf ihn.“
+
+**Marions Identität**
+- **Selbst herausfinden:** Im Hotelregister steht „Marion Teske, geb. Ahrend“ (2.3, 6.20); den Namen Ahrend kennt man
+  aus dem Kesselbuch im Heizkeller oder der Personalakte. Mit beidem kann man sie ansprechen („Sie sind Josef Ahrends
+  Tochter.“) – **Beweis und Beziehung** (2.3): Mag sie einen noch nicht genug, streitet sie es ab, und man kann es später
+  noch einmal versuchen.
+- **Sie offenbart sich selbst** (Vorschlag: am **Abend des 24. Oktober**, bevor die letzte Woche mit täglichem Großen
+  Schmücken beginnt, 2.4): Sie klopft an Zimmer 13 und erzählt es. Wer es früher herausfindet, hat Wochen; wer wartet,
+  hat eine Woche – und um den 25. öffnet sich das Gitter, der Tiefkeller gehört dann dem Monster (7.4).
+- **Was sie erzählt:** Sie war 1987 zwölf und im Hotel. Sie hat gesehen, wie das Personal die Tür hinter ihrem Vater
+  abschloss, und sie weiß, dass es einen Vertrag gibt. Sie sagt, was zu tun ist – aber nicht, wo alles liegt.
+- **Ältester Zettel** (entschieden 2026-10-25): Ednas Zettel „E. K.“ von Oktober 1987 ist der älteste eines Gastes (2.7);
+  vom Heizer stammt die UV-Schrift von 1987 im Heizkeller (7.9), mit „J. A.“ gezeichnet – ein Hinweis auf den Namen.
+- **Danach will das Monster sie** (2.3: „Das Monster will gerade die Mitwisser“). Sie zu schützen wird Teil der Aufgabe.
+
+**Die Teile im Einzelnen**
+- **Seine Sachen:** Unter den Fundsachen im Lager liegt ein Karton „Personal 1987“ mit seinen Sachen. Marion sagt, wonach
+  man suchen soll (Vorschlag: seine **Taschenuhr** – „Er hat sie mir immer ans Ohr gehalten“ –, dazu Mütze und ein Foto
+  von ihr). Erreichbar erst mit dem reparierten Aufzug (Anker 2, 7.4).
+- **Der Vertrag:** liegt im **Büro der Direktion** (Sperrbereich, 2.3). Ihn allein zu verbrennen ist gefährlich (unten).
+- **Die Werkstatt:** Hinter der seit 1987 verschlossenen Tür im Tiefkeller liegt der alte Kesselraum, in dem er
+  verbrannte (2.3: Kesselbrand im Tiefkeller). **Dort glimmt das Feuer noch immer** – seit 1987, hinter der Tür. Die
+  Innenseite der Tür ist zerkratzt.
+- **Schlüssel** (Vorschlag): Der Rezeptionist hatte die Schlüssel des Hauses. Sein **Schlüsselbund steckt in der
+  Jeansjacke des Kürbismanns** (4.21) – wer ihn erlöst, kommt ins Büro der Direktion; dort hängt am Schlüsselbrett der
+  Werkstattschlüssel („Kessel – nicht öffnen“). So führt Liesels Auftrag (2.7) in Marions.
+
+**Das Ritual – in der Halloween-Nacht**
+- **Nur in der letzten Nacht** (Vorschlag: vom Fest am Abend bis zur Öffnung des Haupteingangs, 2.7). Vorher sammelt
+  man; erlöst wird erst am 31. – sonst wäre der Rest des Monats ohne Hauptbedrohung.
+- **Ablauf** (Vorschlag):
+  1. Mit Marion im Aufzug hinunter in den Tiefkeller – das Revier, in dem nur das Monster ist (4.20).
+  2. Die Werkstatt aufschließen. Drinnen glimmt das Feuer von 1987.
+  3. Den **Vertrag ins Feuer** werfen: Das Abkommen bricht – Licht flackert im ganzen Hotel, das Gitter fällt. Er ist
+     nicht mehr gebunden und kommt.
+  4. **Marion ruft ihn** und hält ihm seine Sachen entgegen. Er bleibt stehen und erkennt sie.
+  5. Er geht durch die Tür, hinter der man ihn eingeschlossen hat, ins Feuer – und das Feuer geht aus.
+- **Danach** (Vorschlag): Der Kessel im Heizkeller erlischt zum ersten Mal, im Hotel wird es still. Es gibt **keinen
+  letzten Angriff**; die Puppe sitzt leer auf dem Lobby-Sofa wie am Anfang (2.5), das Aushangbrett ist leer. Dann öffnet
+  der Spieler oben den Haupteingang (2.7).
+
+**Wenn es nicht gelingt**
+- **Gar nicht versucht oder nicht fertig** (entschieden, oben): Er bleibt das Monster. Am 31. urteilt die Puppe ein
+  letztes Mal, und es greift vor der Öffnung noch einmal an (2.7).
+- *Vorschläge:*
+- **Vertrag verbrannt, aber nicht erlöst** (Marion tot, Sachen fehlen, Tür zu): Er ist **frei, aber nicht erlöst** – der
+  letzte Angriff kommt ohne Puppe und ohne Warnung. Die dunkle Seite von „Abkommen brechen“ (2.3).
+- **Marion stirbt vorher:** Ohne ihre Stimme keine Erlösung. Ihr Wissen liegt als Brief in Zimmer 001 (2.3) – man
+  erfährt, was gewesen wäre.
+
+**Zu klären**
+- **Wo liegt das Büro der Direktion** (Personaltrakt hinter der Rezeption?), und gibt es einen zweiten Weg hinein, falls
+  der Kürbismann nicht erlöst wird?
+- **Wie das Lager aufgeht** (7.4 offen) – auch mit dem Schlüsselbund?
+- **Lakengeist:** Bleibt er nach der Erlösung, oder werden die Verschwundenen mit frei?
 
 ---
 
@@ -901,7 +1047,6 @@ zwei Bücher mit klar getrennten Rollen:
 - **Neuer Eintrag:** kurzes Kritzeln und der Hinweis *„Notiert.“* – mehr nicht, kein Aufblinken im HUD.
 - **Nur, was die Figur weiß:** handschriftlich, knapp, erste Person. **Keine Wegmarken, keine Zähler wie „2/3“, keine
   Prioritäten.** Das Notizbuch ist kein Questmenü (2.3), es ersetzt nur das Gedächtnis der Figur.
-- **Zeitschleife (2.2):** Das Notizbuch ist im neuen Durchgang leer. Wissen bleibt nur über die eigenen Zettel.
 - **Im Spielstand** (Einträge und ihr Zustand).
 
 **Lesezeichen „Aufgaben“**
@@ -1366,7 +1511,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 **UV zeigt Verborgenes**
 - **Fußspuren des Monsters** leuchten unter UV noch lange, nachdem sie für das Auge verblasst sind (15 Spielstunden, 2.4).
-- **Schrift an Wänden**, nur unter UV: in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2), in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, der Heizer), in Zimmer 18 („Nur einer kommt hinaus“).
+- **Schrift an Wänden**, nur unter UV: ~~in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2)~~, in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, der Heizer), in Zimmer 18 (~~„Nur einer kommt hinaus“~~ – seit 2.7 neu zu fassen, etwa „Nur wer lebt, kommt hinaus“).
 - **Jeder Warnungszettel** hat eine unsichtbare zweite Zeile, die man nur mit eingeschaltetem UV-Licht liest – Hinweise auf das Abkommen und den Heizer (2.3).
 - **Warum UV?** Bewusst offen. Gäste und Zettel deuten an, dass es „dieses Licht hasst“ – eine Erklärung im Geheimnis (2.3) ist möglich, aber nicht nötig.
 
@@ -1620,7 +1765,8 @@ Der Geist achtet darauf, wer **schwach und ängstlich** ist. Spieler und Gäste 
 
 **Vorgeschichte:** Der Kürbismann („Pumpkinhead“) war der **Rezeptionist** des Hotels. An einem Halloween klopften zwei Kinder zu
 **Süßes oder Saures** an seine Tür, und er gab ihnen nichts. Da holten die Kinder **seine Axt**, köpften ihn und
-setzten ihm **als Streich einen Kürbis** auf. Seitdem jagt er alle, die Spaß haben.
+setzten ihm **als Streich einen Kürbis** auf. Seitdem jagt er alle, die Spaß haben. Eines der beiden war **Liesel Brück**,
+damals ein Teenager – sie kam hinaus und ist heute als Gast zurück (2.7); das andere kam nicht hinaus.
 
 **Eine dritte Bedrohung mit eigener Regel:** Das Monster kommt aus der Dunkelheit (4.4), der Lakengeist zu den
 Schwachen (4.18), der Kürbismann zum **Spaß**. Er war der Rezeptionist von 1987 und gehörte zum Personal des Abkommens – das Hotel behält jeden, der dort stirbt
@@ -1750,7 +1896,7 @@ viel.
   hielt – er führte die Gästeliste. Die Geschichte mit den Kindern (4.19) bleibt: So hat das Hotel ihn sich genommen.
 - **Lakengeist:** die **Verschwundenen** – Laken aus der Wäscherei, die jedes Jahr ein Gesicht mehr bekommen. Mit jedem
   geholten Gast wird er häufiger.
-- „Das Hotel behält immer einen“ (2.3) wird damit wörtlich.
+- Wer im Hotel stirbt, bleibt dort – hinaus kommen an Halloween nur die Lebenden (2.7).
 - **Ton:** Den Kürbismann sieht man meist als **leuchtendes Kürbisgesicht im Dunkeln**, nicht als ausgeleuchteten
   Slasher.
 
@@ -1805,7 +1951,7 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
   Helfer werden Freunde.
 - **Das Monster nimmt es als Verlust** – „es hat einen der Seinen verloren“ (4.20, „Das Hotel behält jeden“): Für den
   Rest des Monats liegt die Angriffschance (4.17) eine Stufe höher.
-- **Vorbild fürs Ende:** Dasselbe Muster – Fluch, Fundstück, Ritual – kennt 2.3 als Ende „Ihn erlösen“ für den Heizer.
+- **Vorbild fürs Ende:** Dasselbe Muster – Fluch, Fundstück, Ritual – gilt für den Heizer (Marions Auftrag, 2.8).
   Der Kürbismann ist die kleinere Probe davor.
 
 **4. Der Dachboden**
@@ -1823,7 +1969,7 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
   etwa Tag 15 kommt man hindurch. Ein Wagnis im Revier des Monsters (2.3), wie der Schlüssel zu 0118.
 - **Durch die Tür nur geduckt** – einen großen Kürbis bekommt man nicht mit hinein. (Gilt für jede Tür dort oben.)
 - **Warum der Kopf dort liegt:** Die Kinder von 1987 haben ihn auf dem Dachboden versteckt – Kinder kommen überall hin
-  (6.13). Heutige Kinder erzählen davon, und keiner glaubt ihnen: eine Spur.
+  (6.13). Liesel Brück, eines der beiden, ist heute Gast und schickt den Spieler hinauf (2.7). Heutige Kinder erzählen davon, und keiner glaubt ihnen: eine Spur.
 - **Nicht wirklich tödlich, aber selten eine kleine Gefahr:** Spinnen in den Schubladen (4.23)
   und ganz selten ein Vampir (4.22) – nur er kann dort sehr stark beißen, sodass man stirbt, oder einen selbst zum
   Vampir machen. Das ist das Schlimmstmögliche auf dem Dachboden.
@@ -1898,7 +2044,7 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 - Der Spieler kann selbst zum Vampir werden. Dann muss er **Gäste beißen, sonst verhungert er**.
 - **Am Ende, beim Gruppenfoto** an Halloween (5.9), stellt sich heraus, dass man ein Vampir ist: Man fehlt auf dem Bild
   – ein leerer Platz wie bei den Verschwundenen. **Danach fehlt auch das Spiegelbild** (3.9). Der Vampir versetzt die
-  **Stadt** in Chaos – ein eigenes, dunkles Ende neben der Flucht und der Zeitschleife (2.1, 2.2).
+  **Stadt** in Chaos – ein eigenes, dunkles Ende neben der Flucht und dem Tod aller, die drinbleiben (2.7). Ins Morgengrauen kann er nicht.
 - Vorschläge: Als Vampir spielt man die Rolle des Lakengeists – schlafende Gäste in der Nachtruhe, keine Zeugen, Zeugen
   verraten einen. **Kinder nie** (6.13). Das Spiegelbild **verblasst schon während der Verwandlung** als Hinweis für
   Aufmerksame.
@@ -1939,7 +2085,6 @@ groß (Beinspanne), sehr dunkel.
   dem ersten Angriff.
 - **Arachnophobie:** Einstellung „Spinnen als Kugeln“ (8.4) – schlichte Kugeln ohne Beine, auch im Gesicht.
 - **Nicht gespeichert:** Nach dem Laden krabbeln neue.
-
 
 ### 4.24 Der Lakengeist in der Dusche (entschieden und umgesetzt 2026-10-25)
 > **Umgesetzt (2026-10-25)** wie unten, aus den offenen Ideen übernommen. Dazu die Einstellung „Blickzug“ (8.4), die
@@ -1998,6 +2143,100 @@ die Dusche wieder. Speichern ist gesperrt, solange die Kamera gefangen ist.
 - **Flackern bleibt das Signal des Monsters (4.17):** deshalb eigenes Lichtbild (dunkler, pulsierend).
 - **Regeln des Lakengeists (4.18, 4.20):** gelten bewusst nicht – kein Zeuge vertreibt ihn, keine Stufe, keine Ebene.
 - **Kamerafang:** neu; sonst nimmt das Spiel die Kamera nur beim Tod durch das Monster ganz weg.
+
+### 4.25 Tiere als Vorzeichen: Krähen, Ratten, Motten, Hund (entschieden und umgesetzt 2026-10-25)
+Tiere machen das Hotel unheimlicher, ohne eine weitere Bedrohung zu sein (4.20): Vorzeichen, Ärgernis, Stimmung.
+
+- **Krähen im Garten:** hüpfen und picken auf dem Rasen, auch nachts, und flattern krächzend in die Kronen, wenn man
+  ihnen zu nah kommt (mit Licht oder rennend schon von weiter weg) oder eine Bedrohung naht – ein aufgescheuchter
+  Trupp ist **Lärm** (4.15). **Sie merken sich Gesichter:** Wer nach ihnen wirft (3.13) oder in sie hineinrennt, den
+  krächzen sie danach an, sobald er draußen in ihre Nähe kommt – auch das ist Lärm. Der Groll klingt über Tage ab
+  (gespeichert). Glänzendes nehmen sie mit: Münzen, die draußen liegen, holt eine Krähe, wenn niemand hinsieht.
+- **Ratten im Untergeschoss:** huschen an den Wänden, schnuppern, fliehen vor Füßen; neue tauchen auf, wo man nicht
+  hinsieht (wie die Spinnen, 4.23). **Frühwarnung unten:** Bricht das Monster aus dem Heizkeller auf oder kommt es
+  nah, rennen alle Ratten quiekend in dieselbe Richtung davon – unten gibt es selten Katzen (6.11), die Ratten sind
+  ihre Stimme. Ein Hinweis, keine Garantie. Kerzen, die unten am Boden liegen, schleppen sie weg. Nur Klang, kein Lärm.
+- **Rattenkönig:** sieben Ratten mit verknoteten Schwänzen in einem Glas auf einem Wandbord im Müllraum, mit Zettel
+  ([E] lesen) – reine Stimmung. Ort: Ausstattung „Rattenkönig“ im Plan, bis dahin ein fester Ausweichplatz.
+- **Motten** taumeln um brennende Lampen in der Nähe des Spielers – reine Stimmung.
+- **Der Totenkopfschwärmer:** Nach dem ersten Angriff sitzt ein großer Falter mit Schädelzeichnung auf dem Kopfkissen
+  im Zimmer, dessen Tür gerade am schwächsten geschützt ist – dort, wo die Puppe als Nächstes säße. Wer mehr schmückt,
+  schickt ihn weiter. Eine Tendenz, kein Urteil (das bleibt bei der Puppe, 5.5). Kommt man nah, piept er und fliegt
+  auf. Bewohner, die ihn sehen, bekommen Angst und sagen es.
+- **Ein Hund heult** hinter der Waldkante – verstreut und zufällig als Stimmung, alle paar Spielminuten, draußen
+  lauter, drinnen gedämpft, im Schlaf nicht (kein Zeichen nach der Totenglocke, Entscheidung 2026-10-25).
+- Debug: `--kraehen`, `--ratten`, `--falter`, `--hund`.
+
+**Zu klären**
+- **Der Totenkopfschwärmer als Mechanik** (Wunsch des Nutzers, 2026-10-25): gebaut ist er als leises Vorzeichen;
+  wie viel Gewicht er im Spiel haben soll, wird noch besprochen (IDEEN.md).
+
+### 4.26 Die schwarze Kesselkatze (entschieden und umgesetzt 2026-10-25)
+Eine vierte Katze, die es nicht gibt. Nur nachts, erst nach dem ersten Angriff und nur im Untergeschoss sitzt sie im
+Dunkeln, wo man gerade nicht hinsieht, und sieht einen mit hellen Augen an. Gäste kennen sie nicht („Welche schwarze
+Katze?“).
+
+- Sieht man sie an, steht sie auf und **geht voraus**: zum Kessel im Heizkeller, ist man schon dort, zur UV-Schrift
+  des Heizers. Unterwegs wartet sie, bis man nachkommt; am Ziel sieht sie einen noch einmal an – und wenn man wegsieht,
+  ist sie fort. Streicheln geht nicht: Die Hand greift ins Leere. Einmal je Nacht.
+- Sie ist **Josef Ahrends Katze von 1987** (2.3): Darum tut das Monster Katzen nichts (6.11). Kommt es nah, flieht sie
+  nicht – sie setzt sich und sieht ruhig zu ihm hin.
+- Später (2.8) sitzt sie beim Ritual an der Werkstatttür und geht mit ihm ins Feuer – das Ritual fehlt noch.
+- Debug: `--kesselkatze`.
+
+**Zu klären**
+- **Als Mechanik später besprechen** (Nutzer, 2026-10-25): Geisterkatze, Augen im Dunkeln (IDEEN.md).
+
+### 4.27 Spiegel: verhängt und mit Gestalt (entschieden und umgesetzt 2026-10-25)
+- **Verhängte Spiegel:** Stirbt ein Gast, verhängt seine Familie die Spiegel im Zimmer mit einem dunklen Tuch – ein
+  alter Brauch, damit die Seele nicht darin hängen bleibt. Den Spiegel in Zimmer 13 kann man selbst verhängen und
+  wieder freimachen ([E] vor dem Waschbecken, gespeichert).
+- **Gestalt im Spiegel:** Nach dem ersten Angriff sieht man in einem freien Spiegel selten hinter sich eine Gestalt
+  stehen – den zuletzt Verschwundenen, still, mit hängenden Armen. Dreht man sich um, ist sie fort. Häufiger mit Schock
+  und Schwäche, nachts, im Dunkeln. Ein kleiner Schreck (Schock), keine Gefahr.
+- Debug: `--spiegel`.
+
+### 4.28 Stromausfall im Gewitter (entschieden und umgesetzt 2026-10-25)
+Selten schlägt ein Blitz so nah ein, dass die Hauptsicherung fliegt: Erst zucken alle Lampen ein paar Sekunden
+(Vorwarnung), dann ein Knall, das Netz brummt ab – und **alles Elektrische ist aus**. Nur Kerzen, Kürbisse und das
+Kesselfeuer brennen noch.
+
+- Weil Licht schützt (4.4), ist das hart – darum **höchstens einmal am Spieltag**, nur nach dem ersten Angriff und nur
+  mit Gewitter. Gäste erschrecken und rufen nach Kerzen.
+- **Wieder Strom:** am **Sicherungskasten im Untergeschoss** die Sicherung einlegen ([E], Lärm) – mitten durchs dunkle
+  Haus hinunter. Sonst kommt er nach ein paar Stunden von selbst wieder; wer das tut, weiß niemand (2.5).
+- Gespeichert: ob der Strom aus ist, bis wann, und der Tag des letzten Ausfalls. Debug: `--strom`.
+
+### 4.29 Der Albtraum von 1987 (entschieden und umgesetzt 2026-10-25)
+Einmal im Spiel, nicht in den ersten Tagen, schläft man nachts im eigenen Bett ein – und steht im **Heizkeller,
+Halloween 1987**. Das Bild ist alt und warm getönt, der Kessel faucht, Rauch quillt und wird dichter. Draußen dreht
+sich ein Schlüssel: „Die Direktion will heute Nacht keine Störung.“ Man ist der Heizer: schwarze Hände, eine fremde
+Stimme, die „Macht auf!“ schreit. Zuletzt ruft von fern ein Mädchen „Papa?“ – dann wird es weiß, und man schreckt im
+Bett hoch. Wer vorher aus dem Heizkeller läuft, wacht früher auf.
+
+- **Was man erfährt:** den Vornamen Josef, dass jemand von außen abschloss, und dass er eine Tochter hatte – die
+  Indiz-Stufe vor dem Kesselbuch (2.3, HANDLUNG.md M12). Füllt die Lücke 16.–22. Oktober.
+- Während des Traums wartet jede Bedrohung; kein Zeitsprung, kein Speichern. Gespeichert: ob er schon war.
+- Debug: `--albtraum`.
+
+### 4.30 Die Vogelscheuche, die näher kommt (entschieden und umgesetzt 2026-10-25)
+Bis zum ersten Angriff steht sie ganz hinten im Garten. Danach steht sie **jeden Morgen ein Stück näher am Haus** – auf
+der Linie zur gläsernen Gartentür der Lobby, mit dem Gesicht zum Hotel. An Halloween steht sie direkt vor der Tür.
+
+- Niemand sieht sie wandern: Sie springt nur, wenn man weder den alten noch den neuen Platz sieht (wie die Puppe, 5.5).
+- Keine Bedrohung, keine Mechanik – **ein Countdown, den man sehen kann**. Gäste in der Lobby wundern sich, wer sie
+  umstellt. Lage aus dem Kalender (nicht gespeichert). Debug: `--vogelscheuche`.
+
+### 4.31 Das Kind zu viel (entschieden und umgesetzt 2026-10-25)
+Ab dem 25. (Kostüme, 5.9), abends und nachts, nach dem ersten Angriff: Klopft ein Kind zu Süßes oder Saures an Zimmer
+13 und die Tür ist offen, steht manchmal **ein zweites dahinter** – kleiner, in einem alten, vergilbten Laken, Schuhe
+von früher. Das echte Kind bemerkt es nicht.
+
+- Es ist **das Kind von 1987, das nicht hinauskam** (K7, HANDLUNG.md): das Kichern auf dem Dachboden.
+- Spricht man es an ([E]), sagt es einen Satz; gibt man ihm eine Süßigkeit, bedankt es sich. Sobald niemand hinsieht,
+  ist es fort – mit einem Kichern. Hat es etwas bekommen, liegt die Süßigkeit später verstaubt auf dem Dachboden neben
+  dem Kopf des Kürbismanns.
+- Höchstens einmal am Spieltag, wenige Male insgesamt (gespeichert). Debug: `--kind-zu-viel`.
 
 ---
 
@@ -2121,8 +2360,10 @@ vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „
 **Vorgemerkt**
 - **Jury beim Schmücken (5.9) und beim Schnitz-Wettbewerb (6.10):** Am Ende eines Großen Schmückens sitzt sie an der
   schönsten Stelle – Ruf für die Mitmacher. Kein Muss.
-- **Das letzte Urteil an Halloween:** „Das Hotel behält immer einen“ (2.3) – am 31. sitzt sie ein letztes Mal vor
-  einer Tür: bei dem, den das Hotel behält. Erst festlegen, wenn das Ende (2.1) steht.
+- **Das letzte Urteil an Halloween:** ~~„Das Hotel behält immer einen“ – am 31. sitzt sie ein letztes Mal vor
+  einer Tür: bei dem, den das Hotel behält.~~ Seit 2.7 (2026-10-25) kommen alle Überlebenden hinaus. **Entschieden
+  2026-10-25 (2.8):** Ist der Heizer bis dahin nicht erlöst, urteilt sie am 31. ein letztes Mal, und das Monster greift
+  vor der Öffnung noch einmal an.
 
 **Spielstand:** Lage, Urteil (Tür), welches Kind sie trägt, Frist bis zum Aufbruch.
 
@@ -2301,15 +2542,14 @@ ihm.
   mag den Spieler mehr – entschieden 2026-10-21, siehe 3.8), die Lobby zusammen schmücken, der Kürbis-Schnitz-Wettbewerb (6.10) mit der Puppe als
   Jury (5.5, vorgemerkt).
 - **Alte Bräuche als Schutz:** eine **Kerze ins Fenster** (hält den Lakengeist vielleicht fern, ohne den Vorhang
-  zuzuziehen), **Salz** vor die Tür, **Rübenlaternen** als ältere Form des Kürbisses. Sie dürfen nie ganz sicher
-  machen – offen, wie stark sie wirken.
+  zuzuziehen), **Salz** vor die Tür (entschieden und umgesetzt 2026-10-25, 5.13), ~~**Rübenlaternen** als ältere
+  Form des Kürbisses~~ (gestrichen 2026-10-25). Sie dürfen nie ganz sicher machen.
 - **Durchsagen:** Die Rezeption sagt über Lautsprecher an, was im Hotel passiert („Die Bar schließt um
   Mitternacht“, „Feier im Partyraum“, Nachtruhe). Nachts klingen sie verzerrt – und manchmal kommt eine Durchsage,
   die es nicht geben dürfte: der Name eines Verschwundenen, „Zimmer 13 wird erwartet“. Wer spricht da (2.3)? Alle
   Durchsagen notiert die Figur mit Uhrzeit im Notizbuch (3.10) – die falschen genauso nüchtern wie die echten.
 - **Gruppenfoto an Halloween:** Beim Fest am 31. ein Gruppenbild aller Überlebenden – mit leeren Plätzen für die
-  Verschwundenen. Es landet im Tagebuch bzw. im Abspann. Mit der Zeitschleife (2.2) hängt das Foto des letzten
-  Durchgangs in der Lobby – und man steht selbst darauf. Wer zum Vampir geworden ist, **fehlt auf dem Bild** (4.22,
+  Verschwundenen. Es landet im Tagebuch bzw. im Abspann. Wer zum Vampir geworden ist, **fehlt auf dem Bild** (4.22,
   vorgemerkt 2026-10-23).
 
 ### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23)
@@ -2330,7 +2570,8 @@ ihm.
 >   (Laub, Spinnweben, Zierkürbisse); Lichterketten oben nur aus dem Koffer. Allein-Schmücken und Deko-Suche
 >   verbrauchen den Vorrat der Fundorte (mit dem Tageslimit der Kisten). Katzen bringen weiter einmal am Tag etwas.
 > - **Große Kürbisse:** Halloween, Weißer und Muskat werden je Beet **einmal am Tag** reif, der Riese alle zwei Tage;
->   **Frost ab dem 25.**: Danach tragen große Beete nicht mehr. Kleine Sorten wachsen weiter in Minuten (5.8).
+>   ~~**Frost ab dem 25.**: Danach tragen große Beete nicht mehr.~~ Gestrichen 2026-10-25: **Alle Beete tragen bis
+>   Halloween.** Kleine Sorten wachsen weiter in Minuten (5.8).
 > - **Faulen:** geschnitzte nach 3 Tagen, ungeschnitzte und Zierkürbisse nach 7; ab 60 % der Zeit **welk** (dunkler,
 >   zählt ×0,7), ab 85 % **eingefallen** (gestaucht, ×0,4), dann weg. Schnitzen setzt die Restzeit auf höchstens 3 Tage.
 >   Was im Koffer eines Gastes liegt (nur gezählt), fault nicht.
@@ -2444,6 +2685,90 @@ Kerzen **brennen nicht ab** – sie **gehen aus**. Knapp ist nicht das Wachs, so
 - **Gespeichert:** ob eine Kerze brennt, ob in Kürbis und Totenkopf eine erloschene Kerze steckt, und die
   festen Kerzen. Debug: `--bag=kerze,streichhoelzer`.
 
+### 5.13 Salz vor die Tür (entschieden und umgesetzt 2026-10-25)
+Ein alter Brauch aus 5.9: **Salz über die Schwelle oder auf die Fensterbank** hält den Lakengeist (4.18) aus einem
+Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gestrichen.
+
+- **Salzpackung** (neuer kleiner Gegenstand, passt in die Tasche): **drei Packungen** auf der Küchenzeile, ohne
+  Nachschub (5.10). Eine Packung reicht für **vier Linien**; die leere ist weg.
+- **Streuen:** Packung in der Hand, eine Tür (oder den Boden direkt davor) bzw. ein Außenfenster ansehen →
+  **Linksklick**. An der Tür liegt die Linie auf der eigenen Seite. Wer zu nah an der Schwelle steht, muss einen Schritt
+  zurücktreten. Eine neue Linie ersetzt die alte an derselben Stelle.
+- **Eine Linie schützt das ganze Zimmer** (mit Bad), gleich an welcher Öffnung sie liegt: Zimmertür, Fenster oder
+  Fenstertür. So rettet man auch Gäste, deren Zimmer man nicht betreten kann – Salz vor ihre Tür im Flur reicht.
+- **Was der Lakengeist dann tut:** Er kommt weiter ans Glas, fasst die Scheibe an und kreist mit den Händen (die Hypnose
+  wirkt wie sonst), aber **herein kommt er nicht** – zu niemandem, der drinnen ist. Vor einer Tür mit Lakengespenstern
+  (5.6) erscheint er gar nicht erst. Durch den Vorhang (ab dem 4. Mal) und in den Schrank kommt er ebenfalls nicht.
+- **Nie ganz sicher:**
+  - Nach **zwei Abweisungen** wird das Salz grau und hält nichts mehr – man muss nachstreuen.
+  - **Wer über die Schwelle geht, verwischt die Linie** – Gäste, das Monster, der Spieler selbst. **Geduckt** steigt der
+    Spieler vorsichtig darüber. Salz auf der Fensterbank verwischt niemand.
+  - Wer **die Tür öffnet und hinausgeht**, ist nicht mehr geschützt: Im Flur packt er zu (vor der Tür, 4.18).
+  - Ist er schon drinnen, hilft frisches Salz nicht mehr. In der Dusche (4.24) hilft keins.
+- **Das Monster** zögert vor einer heilen Linie an einer Tür **drei Sekunden** und starrt darauf – dann geht es hindurch
+  und verwischt sie. Ein paar Sekunden Vorsprung, mehr nicht.
+- **Sichtbar:** frisch weiß, nach der ersten Abweisung angegraut, dann grau; verwischt mit einer Lücke, in der das Salz
+  breit verstreut liegt. Beim Abweisen zischt es leise.
+- **Gespeichert:** die Linien (Lage, Zimmer, Abweisungen, Lücke) und was in der Packung übrig ist. Debug:
+  `--salz[=fenster|tür|monster|zimmer,nr|gast,id]`.
+
+**Zu klären**
+- **Zwei Gäste, die der Lakengeist heimsucht (Vorschlag des Nutzers, 2026-10-25):** Sie erzählen, dass sie etwas mit
+  kreisenden Händen vor dem Fenster gesehen haben – hilft man ihnen nicht mit Salz, sind sie am nächsten Tag erwürgt.
+  Noch offen: welche Gäste, an welchen Tagen, ob es fest geplant ist oder sich aus den Besuchen ergibt.
+- Kennen ältere Gäste den Brauch und streuen selbst (Edna, 1987 im Hotel, 2.7)?
+
+### 5.14 Die Fotowand in der Lobby (entschieden und umgesetzt 2026-10-25)
+Jedes Jahr seit 1987 ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, in Holzrahmen nebeneinander – alte
+vergilbt, neue farbig; daneben ein leerer Rahmen „Halloween 2026“.
+
+- Wer in jenem Oktober geholt wurde, ist **verwischt**, als hätte er sich bewegt.
+- Ein Gesicht ist auf jedem Foto und **altert nie**: hinten rechts der weißhaarige alte Herr mit Gehstock – der Erbe
+  der Familie (2.3). Wer genug Fotos ansieht, merkt es (Notizbuch).
+- Auf 1987 außerdem Marion als Mädchen mit Zöpfen, der Heizer im Kittel, Edna jung und Liesel – die Indiz-Stufe für
+  Marion, Edna und Liesel (2.3, 2.7).
+- Ort: Ausstattung „Fotowand“ im Plan, bis dahin Westwand der Lobby. Debug: `--fotos`.
+
+### 5.15 Grablichter für die Toten (umgesetzt 2026-10-25, Umbau entschieden 2026-10-25)
+**Gebaut (vorläufig):** ein Wandtischchen in der Lobby mit einem roten Grablicht und Namenskärtchen je Toten, am Tag
+danach Blumen. Vor den Lichtern gedenken ([E]) senkt den Schock, einmal je Spieltag spürbar. **Warnsignal:** Kommt
+das Monster durch die Lobby, gehen alle Lichter zugleich aus; wieder anzünden mit Streichhölzern oder einer Flamme,
+am Morgen tun es die Gäste. Aus den Toten abgeleitet (nicht gespeichert). Debug: `--gedenken`.
+
+**Umbau (entschieden 2026-10-25, noch nicht gebaut):** Die Grablichter stehen **im Garten**. **Ein Holzschild** trägt
+die Namen der Toten – keine Kärtchen je Toten.
+
+**Zu klären**
+- **Wie die Lichter auftauchen.** Vorschlag des Nutzers: Man kann die Grablichter selbst aufstellen – das mögen die
+  Freunde des Opfers (Beliebtheit steigt, 6.2). Tut man es nicht, stehen sie nach dem nächsten Schlaf von selbst da.
+- Was aus Gedenken und Warnsignal wird, wenn die Lichter draußen stehen.
+
+### 5.16 Das Puppenhaus in der Bibliothek (entschieden und umgesetzt 2026-10-25)
+Ein Modell des Hotels im Maßstab 1:100 auf einem langen Tisch, die Geschosse als Pläne unter Glas. Darauf **eine
+Holzfigur je erwachsenem Gast, dort, wo er gerade ist**; Tote liegen umgekippt in ihrem Zimmer.
+
+- Vor einer Tür steht eine winzige Puppe: **das Urteil** (5.5), sobald es gefällt ist – auch wenn die große Puppe
+  noch wartet. Vorwarnung um Minuten; das Urteil bleibt bei der Puppe.
+- Die Figuren bewegen sich nur, wenn niemand hinsieht. **Das Modell lügt:** unter Schock oder in einer Halluzination
+  stehen sie falsch, und die kleine Puppe steht vor Zimmer 13.
+- Ort: Möbel „Puppenhaus“ im Plan, bis dahin Mitte der Bibliothek. Debug: `--puppenhaus`.
+
+### 5.17 Marions Spieluhr (entschieden und umgesetzt 2026-10-25)
+Ein Holzkästchen mit Messingkurbel, im Deckel ein eingebranntes „M.“ – Josef Ahrend hat sie 1987 für seine Tochter
+gekauft. Sie liegt im Heizkeller oben auf dem alten Regal (neuer Gegenstand).
+
+- **Aufziehen** (Linksklick in der Hand): Das Wiegenlied läuft gut eine Viertelminute und wird am Ende langsamer. Das
+  ist **Lärm** – das Monster kommt. Ist es aber nah, **bleibt es stehen und horcht**, auch mitten in der Jagd: Er kennt
+  die Melodie. Das wirkt einmal je Aufbruch, danach lockt sie nur noch.
+- Marion erkennt sie, wenn sie dabei ist. Später gehört sie zu seinen Sachen fürs Ritual (2.8).
+- Debug: `--spieluhr`.
+
+### 5.18 Kürbisfratzen (entschieden und umgesetzt 2026-10-25)
+Unter Schock oder in einer Halluzination (wie das Rauschen ohne Monster, 4.13) **grinst ab und zu ein geschnitzter
+Kürbis in der Nähe anders**, wenn man wieder hinsieht – nur, solange man ihn nicht ansieht. Aus der Nähe stutzt man
+(ein kleiner Schreck). Ist der Schock vorbei, haben sie ihr Gesicht wieder. Nur fürs Bild, nichts zu speichern;
+Kürbisse ohne Modell bleiben, wie sie sind. Debug: `--fratzen`.
+
 ## 6. Die anderen Gäste (NPCs)
 
 ### 6.0 Gäste im Prototyp
@@ -2478,8 +2803,7 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 - **Balance ohne Nachschub:** Das Monster darf das Hotel nicht vor Halloween leeren. Angriffschance (4.17), Opferzahl,
   Überlebende (6.17), Lakengeist und Kürbismann müssen gegen 54 Erwachsene ausbalanciert werden. Der Kürbismann regelt
   sich selbst (er kommt nur, wenn genug Gäste Spaß haben – Spaßwert, 4.19).
-- **Wofür das Retten zählt:** Wenn der Schlüssel an Halloween nur für einen die Tür öffnet (2.3), muss das Ende (2.1)
-  sagen, was die Geretteten bewirken – zum Beispiel das Gruppenfoto mit den leeren Plätzen (5.9) oder ein anderes Ende.
+- ~~**Wofür das Retten zählt**~~ – beantwortet 2026-10-25 (2.7): Mit dem Schlüssel kommen alle Überlebenden hinaus.
 
 **Gastmodelle (umgesetzt 2026-10-17 bis 2026-10-20):** Die Gäste sind Meshy-Modelle – keine Einzelmodelle, sondern
 **sechs Grundkörper** (Frau/Mann × jung/mittel/alt), Generation je Vorname (`GuestGenerator.OLD`/`YOUNG`). Vorgemerkt:
@@ -2882,8 +3206,7 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
 > **Im Prototyp umgesetzt (2026-10-19):** dreizehn Kinder (6–11 Jahre) im Zimmer ihrer Eltern (6.20), eigene Namen und
 > Sätze („Mama“/„Papa“), ab und zu ein Schach-Wunderkind. Alles unter „Kinder und die bestehenden Systeme“ – bis auf
 > die Lücken unten. Modelle: alle vier Grundkörper (unten).
-> **Noch nicht:** Das Geheimnis (2.3) und die Zeitschleife (2.2) gibt es noch nicht – deshalb keine
-> Funde in engen Ecken und kein Déjà-vu. Der Lakengeist erschreckt Kinder am Fenster,
+> **Noch nicht:** Das Geheimnis (2.3) gibt es noch nicht – deshalb keine Funde in engen Ecken. Der Lakengeist erschreckt Kinder am Fenster,
 > noch nicht im Flur. Ein Waisenkind schließt sich nur dem Spieler an, noch keinem Gast. „Erzählt es allen“ heißt
 > vorerst: den Eltern und den Erwachsenen in der Nähe.
 - **Der Lakengeist erschreckt Kinder häufiger** – sie sind schwach und ängstlich (hoher Grundwert an Schwäche,
@@ -2984,10 +3307,9 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
   einen Erwachsenen.
 - **Tauschen statt kaufen** (6.4): Kinder haben kaum Geld. Sie tauschen Süßigkeiten, Laub oder Fundstücke.
 
-*Geheimnis und Zeitschleife*
+*Geheimnis*
 - **Kinder kommen überall hin** (2.3): Sie finden Dinge unter Möbeln und in engen Ecken – auch Dokumente und
   Hinweise – und erzählen davon in Kindersprache.
-- **Déjà-vu** (2.2): Kinder sagen offener als Erwachsene, dass sie einen kennen („Du warst letztes Jahr auch hier.“).
 
 **Vorschläge (offen, 2026-10-19)**
 - **Versteckspiel mit Kindern:** Kinder fragen den Spieler von sich aus und kennen die besten Verstecke – bis einer
@@ -3335,6 +3657,18 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 - **Nachnamen der Kernfiguren:** **Edna Wiegand**, **Bruno Kaminski**, **Mila Hellwig**; die Tochter des Heizers heißt
   **Marion Teske, geb. Ahrend** (2.3) – an der Tür „Marion Teske“, im Hotelregister mit „geb. Ahrend“.
 
+### 6.21 Apfeltauchen im Partyraum (entschieden und umgesetzt 2026-10-25)
+Ein Holzbottich mit Wasser und schwimmenden Äpfeln. Mit leeren Händen [E]: Man beugt sich darüber und taucht mit
+gehaltenem **Linksklick** das Gesicht ins Wasser – die Sicht verschwimmt, es blubbert (Lärm).
+
+- Bleibt das Fadenkreuz lange genug auf einem Apfel, beißt man zu und hat ihn (neuer Gegenstand); die Äpfel weichen
+  dem Mund aus. Die Luft reicht nur ein paar Sekunden am Stück, dann kommt man prustend hoch. [E] beendet.
+- Zählt als Spaß (lockt den Kürbismann, 4.19); wer es auf einer Feier schafft, wird gefeiert.
+- **Das Gesicht im Wasser:** Nach dem ersten Angriff, nachts, spiegelt sich beim Hochkommen manchmal ein bleiches
+  Gesicht hinter dem eigenen – wer sich umdreht, sieht niemanden. Höchstens einmal je Feier.
+- Die Äpfel wachsen je Spieltag nach. Ort: Ausstattung „Apfelbottich“ im Plan, bis dahin Südostecke des Partyraums.
+  Debug: `--apfel`.
+
 ## 7. Spielwelt: Das Hotel
 
 - **Bereiche:** Lobby mit Galerie und Rezeption, Bar, Partyraum, Küche und Speisesaal, Schwimmbad, Gärten mit
@@ -3519,7 +3853,7 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 - *(eingefroren 2026-10-21)* **Ofenklappe:** Hier lassen sich Dinge **verbrennen**: geklaute Gegenstände, blutige Kleidung, belastende Zettel. Ohne Beweis verlieren Gerüchte über einen an Kraft (6.2). Deko verbrennen geht nicht – das Feuer „will“ sie nicht.
 - **Das Gitter:** Ein rostiges **Gitter** sperrt das Versteck des Monsters ab – wo genau im Untergeschoss, ist noch offen (7.10). Anfangs kommt das Monster nicht hindurch; man hört es dahinter atmen, wenn es ruht – wer dann Kohle schaufelt, weckt es. **Mit jedem Tag wird das Gitter lockerer** (4.8), gegen Ende des Monats ist es offen und der Tiefkeller gehört zu seinem Revier. Hinter dem
   Gitter liegt der Schlüssel zur Kniestocktür des Dachbodens – ab etwa Tag 15 kommt man hindurch (4.21).
-- **Story:** das **Kesselbuch des Heizers** von 1987 – derselbe Name wie auf dem ältesten Warnungszettel.
+- **Story:** das **Kesselbuch des Heizers** von 1987 – derselbe Name wie in der Personalakte, dieselben Initialen wie unter der UV-Schrift von 1987 (7.9).
 
 **Lager**
 - Ein Verschlag aus Maschendraht mit Vorhängeschloss – wie man hineinkommt, ist offen (der Bolzenschneider von der Werkzeugwand ist eingefroren, 2026-10-21).
@@ -3534,7 +3868,6 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 
 **Zu klären**
 - Lässt sich der Fahrstuhl nach der Reparatur wieder sabotieren (Sicherung herausdrehen, wie Glühbirnen), etwa von Gästen oder dem Spieler selbst?
-- Bleibt der Fahrstuhl in einer Zeitschleife (2.2) repariert? (Vorschlag: nein.)
 
 ### 7.5 Neuer Grundriss aus dem Gebäudeplan (entschieden 2026-10-18)
 > Das Hotel entsteht aus dem gezeichneten Gebäudeplan – heute `map_a.aseprite` (7.10). Der frühere, im Code festgelegte
@@ -3903,7 +4236,7 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
   Hotel, ist bei 67 Gästen (6.0) alle paar Minuten gesichert – der Leitgedanke „jeder Ausflug ist ein Risiko“ (8)
   wäre ausgehöhlt.
 - **Beenden darf nicht viel kosten:** Mit Tagen von 24 Minuten (2.4) verliert man sonst leicht eine halbe Stunde.
-- **Die Zeitschleife (2.2) darf sich nicht umgehen lassen,** etwa durch einen Stand vor dem 31.
+- ~~**Die Zeitschleife (2.2) darf sich nicht umgehen lassen,** etwa durch einen Stand vor dem 31.~~ (verworfen, 2.7)
 - **Der Tagebuchsatz** wird bei 67 Gästen sonst zur Liste.
 
 **1. Autosave nur bei Fortschritt und beim Aufwachen**
@@ -3921,10 +4254,8 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 - So kann man jederzeit aufhören, ohne Fortschritt zu verlieren – aber nicht speichern und laden, um etwas
   auszuprobieren, denn den Stand gibt es nur einmal. Die Regel „nur in Zimmer 13“ bleibt.
 
-**3. Spielstände gehören zu einem Durchgang** (2.2)
-- Setzt die Zeitschleife ein, werden alle Stände des alten Durchgangs zu **„Erinnerungen“**: ansehbar (Tagebuchsatz,
-  Bild), aber **nicht mehr ladbar**.
-- Der neue Durchgang beginnt mit den eigenen Zetteln und dem Zähler der Schleife (2.2).
+**3. ~~Spielstände gehören zu einem Durchgang~~** – entfällt (2026-10-25): Es gibt keine Zeitschleife (2.7). Endet
+Halloween ohne Schlüssel, ist das Spiel aus; ältere Stände bleiben ladbar.
 
 **4. Der Tagebuchsatz nennt nur, wer zählt**
 - Namen nur von **Kernfiguren und zentralen Gästen** (6.0), der Rest wird gezählt: *„Edna ist fort. Neun andere auch.
@@ -4025,8 +4356,8 @@ Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den K
 ## 11. Nächste Schritte
 
 1. Minispiele mit Gästen (6.10): **Kürbis-Schnitz-Duell** (Darts umgesetzt 25.10., der Rest eingefroren)
-2. Fluchtweg aus dem Hotel (Ausgangsschlüssel / Rätsel / Hilfe der Gäste) · Scheitern als Zeitschleife mit eigenen
-   Zetteln (2.2) · Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
+2. Fluchtweg aus dem Hotel: Schlüssel, Haupteingang, Ende mit allen Überlebenden (2.7, Ablauf in HANDLUNG.md) ·
+   Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
 3. Tiefkeller planen und bauen, Fahrstuhl reparieren (ein Schacht), Lager (7.4, 7.10) · Maschinen- und Müllraum im
    Untergeschoss · Gäste gehen mit Grund hinunter (7.10)
 4. Drei Bedrohungen: eine je Ebene und außer Hörweite, gleiche Sicht für den Kürbismann, Lakengeist erst nach dem
@@ -4047,7 +4378,7 @@ Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den K
     Blitz, Wind, Tiere, dichter werdender Nebel (7.8)
 13. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
 14. Speicherregel schärfen: Autosave nur bei Fortschritt, neuen Bereichen und Aufwachen, „Unterbrechen und beenden“,
-    Stände je Durchgang, Tagebuchsatz (8.10)
+    Tagebuchsatz (8.10)
 15. Echte Modelle und Sounds für die übrigen Platzhalter
 16. Balancing
 17. Zerbrechende Fenster (7.3, für später vorgemerkt)

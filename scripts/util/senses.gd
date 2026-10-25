@@ -45,6 +45,7 @@ const NOISE := {
 	"switch":     {"range": 1.0,  "sound": "blip",   "volume": 0.5},    ## Licht aus zusätzlich nach 4.4
 	"harvest":    {"range": 3.0,  "sound": "thud",   "volume": 0.5},
 	"carve":      {"range": 3.0,  "sound": "creak",  "volume": 0.6},
+	"salt":       {"range": 1.5,  "sound": "rustle", "volume": 0.3},    ## Salzlinie streuen (5.13)
 	"wipe":       {"range": 2.0,  "sound": "creak",  "volume": 0.15},   ## Spur wegwischen
 	"map":        {"range": 1.0,  "sound": "rustle", "volume": 0.5},    ## Kartenblatt blättern
 	"bag":        {"range": 1.0,  "sound": "rustle", "volume": 0.3},    ## Kleines in die Tasche / heraus (3.2)
@@ -73,6 +74,12 @@ const NOISE := {
 	"elevator":   {"range": 14.0, "sound": "motor",  "volume": 0.5},
 	"elevator_bell": {"range": 14.0, "sound": "ding", "volume": 0.6},
 	"elevator_alarm": {"range": 30.0, "sound": "alarm", "volume": 1.0, "alarm": true},
+	## Vorzeichen und Spuk (Spielkonzept 4.25–4.28, 5.17, 6.21)
+	"crows":      {"range": 10.0, "sound": "caw",    "volume": 0.6},    ## aufgescheuchter Krähentrupp
+	"crow":       {"range": 14.0, "sound": "caw",    "volume": 0.75},   ## eine Krähe krächzt dich an (Groll) – das Monster hört es
+	"music_box":  {"range": 12.0, "sound": "",       "volume": 0.0},    ## Spieluhr spielt, alle 3 s – Ton spielt sie selbst
+	"fuse":       {"range": 10.0, "sound": "fuse",   "volume": 0.8},    ## Sicherung wieder eingelegt (Stromausfall)
+	"apple_tub":  {"range": 4.0,  "sound": "bubble", "volume": 0.5},    ## Apfeltauchen, Gesicht ins Wasser
 }
 ## Dämpfung je Hindernis zwischen Quelle und Hörer (offene Tür: ungedämpft)
 const DAMP_WALL := 0.4

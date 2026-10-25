@@ -16,6 +16,7 @@ uniform float gamma = 1.0;   // Einstellungen → Helligkeit
 uniform float blur = 0.0;    // Unschärfe 0..1 (Müdigkeit, Rausch – Spielkonzept 3.6/3.7)
 uniform float warp = 0.0;    // Wabern und Doppelbild im Rausch 0..1
 uniform float blur_time = 0.0;   // Spielzeit fürs Wabern (steht in der Pause)
+uniform float dream = 0.0;   // Albtraum von 1987 (Spielkonzept 4.29): verblichenes Foto in Rauchorange, dunkler Rand; über 1 weiß
 
 const float BLUR_RADIUS = 0.012;   // Radius bei blur = 1, Anteil der Bildhöhe
 const float WARP_SHIFT = 0.004;    // Verzerrung bei warp = 1, Anteil der Bildhöhe
@@ -74,9 +75,16 @@ void fragment() {
 	col *= 1.0 - flicker;
 	// Helligkeit (vor Vignette und Farbreduktion)
 	col = pow(max(col, vec3(0.0)), vec3(1.0 / gamma));
+	// Albtraum: entsättigt wie ein altes Foto, warm getönt, Rand dunkler und unruhig
+	if (dream > 0.001) {
+		float lum = dot(col, vec3(0.3, 0.55, 0.15));
+		vec3 old = vec3(lum * 1.15, lum * 0.82, lum * 0.55) + vec3(0.03, 0.012, 0.0);
+		col = mix(col, old, min(dream, 1.0) * 0.85);
+		col = mix(col, vec3(1.0, 0.96, 0.9), clamp(dream - 1.0, 0.0, 1.0));   // > 1: es wird gleißend weiß
+	}
 	// Vignette
 	vec2 d = uv - 0.5;
-	col *= clamp(1.0 - dot(d, d) * vignette * 2.0, 0.0, 1.0);
+	col *= clamp(1.0 - dot(d, d) * (vignette + min(dream, 1.0) * (1.6 + 0.3 * sin(TIME * 2.3))) * 2.0, 0.0, 1.0);
 	col.r += red_tint;
 	// Dithering + Farbreduktion
 	col += (bayer4(FRAGCOORD.xy) - 0.5) * dither / color_levels;

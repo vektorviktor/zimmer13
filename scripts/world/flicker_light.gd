@@ -14,6 +14,10 @@ const NEAR_BOOST := 0.9        ## direkt neben ihm so viel heller
 
 static var red := 0.0
 static var hot_spot := Vector3.INF
+## Stromausfall im Gewitter (PowerCut, Spielkonzept 4.28): alles Elektrische ist aus, nur Flammen (`soft`) brennen –
+## `brownout` (0..1) lässt es vorher unruhig dunkler werden
+static var power_off := false
+static var brownout := 0.0
 
 var base_energy := 1.0
 var broken := false        ## Defekte Lampe: meist aus, selten ein Funke.
@@ -98,8 +102,10 @@ func _update_stutter(delta: float) -> void:
 
 
 func _pick_level() -> float:
-	if burn_out or (switched_off and hold < 0.0):
+	if burn_out or (switched_off and hold < 0.0) or (power_off and not soft):
 		return 0.0
+	if brownout > 0.0 and not soft and randf() < brownout:
+		return randf_range(0.05, 0.6)
 	if broken:
 		return randf_range(0.3, 0.8) if randf() < 0.025 else 0.0
 	var level := randf_range(0.82, 1.0) if soft else 1.0

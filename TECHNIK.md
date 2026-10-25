@@ -2,464 +2,22 @@
 
 Wie der Prototyp gebaut ist: Aufbau, Konventionen, Zusammenspiel der Systeme und Stolperfallen.
 Was das Spiel *sein soll*, steht in [SPIELKONZEPT.md](SPIELKONZEPT.md), Bedienung und Debug-Parameter
-stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort sieht.
-
-> **Hinweis:** Kapitel 9 im Spielkonzept ist der ursprüngliche Plan. Die Umsetzung weicht an einigen
-> Stellen ab (keine Gruppe `saveable`/`save_id`, Helligkeit per Raycast statt `Area3D`-Licht-Zonen,
-> keine Autoloads `RelationshipManager`/`DecorationManager` …). Maßgeblich ist dieses Handbuch.
+stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort sieht – Zahlenwerte stehen als
+Konstanten im Code, hier nur deren Namen.
 
 ---
 
 ## 1. Grundprinzipien
 
-- **Alles entsteht im Code.** Es gibt nur zwei winzige Szenen (`title.tscn`, `main.tscn`), beide
-  hängen nur ein Skript an. Hotel, Möbel, Gäste und UI baut `main.gd` bzw. `LevelBuilder` zur Laufzeit.
-  Modelle, Texturen (`TexGen`) und Sounds (`SynthAudio`) sind prozedurale Platzhalter. Erster echter Sound:
-  `assets/sound/ghost_ambience.mp3` am Lakengeist (`SheetGhost._ambience`), dazu die Schritte
-  `assets/sound/step_carpet.wav` (Teppichflure) und `step_tiles.wav` (Fliesen, `Footsteps`), das Türgeräusch `assets/sound/door_open.wav` und die Totenglocke `church_bell.wav` (`SynthAudio.SAMPLES`), der Atemzug
-  `assets/sound/breath.wav` beim Keuchen (`SynthAudio.BREATH`), zwei Feierstücke `assets/sound/party_1/2.mp3`
-  (`RecordPlayer.TRACKS`, siehe 6) und die Schreie in `assets/sound/screams/` (`SynthAudio.VOICES`, siehe 2, „`Game` als Drehscheibe“). Ausnahmen bei den Modellen: das
-  Monster-Modell `assets/models/monster.glb` (siehe 5, „Aussehen & Animation“) und die Lobby-Sofas
-  `assets/models/couch.glb` (`LevelBuilder._couch()`: Rohmodell in Blender-Einheiten, per
-  `COUCH_SCALE` auf ~2,4 m Länge gebracht; Kollision als zwei Boxen) und die Barflaschen
-  `assets/models/bottles.glb` (28 Objekte `bottle_NN` in Metern, Ursprung mittig unten; gebaut von
-  `tools/build_bottles.py` aus dem Paket in `assets/source/`) und der Plattenspieler
-  `assets/models/record_player.glb` (`tools/build_record_player.py`: Objekte `body` und `record`, die
-  Platte ist eine eigene runde Scheibe mit Ursprung auf der Drehachse, damit `RecordPlayer` sie drehen
-  kann; Noten aus dem Trichter siehe Partikel in 8). Die **Wanduhr** `assets/models/clock.glb` (`WallClock`,
-  `LevelBuilder._clock`): offene Eisenuhr mit römischen Ziffern, `tools/build_clock.py` aus
-  `assets/source/clock.glb`. Im Rohmodell stecken die Zeiger im selben Netz wie der Rahmen; das Skript findet sie
-  als lose Teile (flach unter `HAND_DEPTH`, über die Mitte, länger als `HAND_MIN`; der längere = Minute), trennt
-  sie als `hour_hand`/`minute_hand` ab und dreht sie auf 12 Uhr. Rest = `frame`. Dazu `dial`: Scheibe
-  `DIAL_INSET` vor der Rückseite bis in die Mitte des äußeren Rings (ihr Rand verschwindet dahinter, Speichen und
-  innerer Ring liegen davor). Ursprung Mitte Rückseite, Zifferblatt nach +Z, Modell 2 m Durchmesser (im Spiel
-  `CLOCK_DIAMETER` 3 m), ~16 900 Dreiecke, ohne Texturen: Das Spiel setzt mattes Schwarz `WallClock.IRON`
-  (poliertes Eisen ging im Halbdunkel vor der roten Tapete unter), das Blatt gebrochen weiß (`DIAL`). `set_time(stunden)` dreht die
-  Zeiger um lokal −Z; `_process` stellt sie jedes Bild auf `Calendar.hour_of` (Tagesuhr, Spielkonzept 2.4). Sie hängt mittig
-  über dem Haupteingang, auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds (`_sign` gibt sie zurück,
-  `_exit_sign_top`) und der Hallendecke, `CLOCK_GAP` vor der Wand, ohne Kollision. Die **Rezeption**
-  `assets/models/reception.glb` (`LevelBuilder._reception`, `RECEPTION_MODEL`): `tools/build_reception.py` baut sie
-  neu nach dem Vorbild `assets/source/reception_desk.glb` (Sketchfab, eckig und zu zerstückelt zum Umbiegen) und
-  übernimmt nur dessen Holz- und Sockeltextur (Platzhalter). Alles sind Bänder entlang einer U-Linie (`outer(d)` =
-  Außenkontur um d versetzt, Bögen konzentrisch): Holzwange 5 cm, vordere Ecken außen 40 cm Radius, innen 35 cm;
-  Endkappen hinten an den Armen, zurückgesetzter schwarzer Sockel, Ablage innen auf 0,79 m; Platte 5 cm, steht 3 cm
-  über, Innenkante mit eigenem Radius 20 cm (Platte 40/50 cm breit, konzentrisch ginge nicht); zwei Rohre Ø 8 cm
-  10 cm unter der Platte und über dem Boden, 2 cm vor dem Holz auf Haltern. 5 × 1,5 × 1,1 m (`RECEPTION_SIZE`,
-  Rohre stehen 7 cm über), Ursprung mittig unten, Kundenseite nach +Z, Flächen `wood`, `stone`, `plinth`, `gold`.
-  Im Spiel: `stone` = Säulenstein `_pillar_stone`, `gold` = `Mat.metal(GrandStair.BRASS)`, Holz und Sockel per
-  `Mat.model`. Platziert mittig in der Hülle der Planrechtecke, +Z zum größten Rechteck (der Front); Kollision und
-  NavMesh aus dem Netz (`create_trimesh_shape`), damit die Rundungen stimmen. Die Planrechtecke bleiben in
-  `_furnishings` (Höhe für Telefon, Kerze, Katzen); ohne Datei die alten Kästen. Die Pflanzkübel `assets/models/planter.glb` (`LevelBuilder._planter()`): Granitbecken mit Erde,
-  Steinen und großblättrigen Pflanzen von Meshy, `tools/build_planter.py` aus `assets/source/planter.glb`.
-  Das Skript misst das Becken an den Punkten unter 20 % der Höhe, skaliert es auf genau 2 × 2 m (x und y
-  einzeln, Meshy trifft das Quadrat nicht; Höhe mit dem Mittel, ~2,1 m mit Pflanzen), Ursprung mittig unten,
-  ohne Unterseite, nur Farbtextur (1024er-PNG, ~8600 Dreiecke). Es gibt die Beckenkante aus →
-  `PLANTER_H` (0,46 m), so hoch ist der Kollisionsquader über der Grundfläche. Die Blätter sind einseitig,
-  deshalb `Mat.model(…, two_sided = true)`. Fehlt die Datei, bleiben Steinquader und Heckenkugel.
-  Die Gartenbäume `assets/models/tree_1.glb` … `tree_3.glb` (`LevelBuilder._tree()`): die drei großen Laubbäume
-  aus „Realistic Trees Collection“ von Sketchfab (Jungle Jim, CC-BY 4.0 – Namensnennung nötig, mit EZ-Tree
-  erzeugt), `tools/build_trees.py` aus `assets/source/realistic_trees_collection.glb` (alle Bäume in einer Datei,
-  das Skript sucht sie nach Namen). Je Baum ein Mesh mit zwei Flächen: Rinde (`bark`) und Blattkarten (`leaves`,
-  Alpha), Ursprung auf der Stammachse am Boden (Mitte der Astpunkte am Stammfuß), in Metern (ein Rohwert = 1 mm:
-  10,3 / 8,2 / 10,7 m hoch), nur Farbtexturen (512er-PNG; Normal Maps und die zweite UV-Ebene fallen weg),
-  ~15 000 / 42 000 / 23 000 Dreiecke. Das Skript gibt je Baum eine Zeile für `TREE_MODELS` aus: Kronenradius,
-  Höhe, Krone als Höhenanteile (ohne die untersten 10 % der Blattpunkte) und Stammdurchmesser in 1 m Höhe.
-  Der Plan zeigt nur den Standort (die Fläche „Baum“ ist eine Markierung); die Bäume wechseln sich in der
-  Reihenfolge des Plans ab, jeder um `TREE_TURN` weitergedreht. Blätter mit `Mat.model(…, cutout = true)` –
-  `shaders/psx_leaves.gdshader` wie bei den Hecken: ausgestanzt nach Alpha, beidseitig –, erkannt am
-  Materialnamen `leaves`; die Rinde einseitig. Kollision nur als Stammquader bis `TREE_TRUNK_H` (3 m), unter der
-  Krone kann man durchgehen. Fehlt eine Datei, steht dort der Platzhalter (Stammquader mit drei Herbstkugeln).
-  Alle verlieren Herbstlaub (`_falling_leaves` mit Höhe und Krone des Baums, siehe Partikel in 8).
-  Die Parkbank `assets/models/bench.glb` (`LevelBuilder._bench()`, Bänke im Außenbereich): „Park Bench“ von
-  Sketchfab (Decoratopia, CC-BY 4.0 – Namensnennung nötig), `tools/build_bench.py` aus
-  `assets/source/park_bench.glb`. 1,6 m lang (`BENCH_LENGTH`), 0,64 m tief, 0,84 m hoch, Sitzseite nach +Z,
-  Ursprung mittig unten, 328 Dreiecke; eine Fläche `metal` (gusseiserne Seiten) und eine `wood` (Latten), nur
-  Farbtexturen (512er-PNG). Das Skript gibt Sitzhöhe (`BENCH_SEAT`, 0,476 m) und Lehne aus – daraus die
-  Kollision (Sitzblock und Lehne). Im Spiel gleichmäßig auf die lange Seite des Plan-Rechtecks skaliert; liegt
-  die Vorderseite aus dem Plan längs, nimmt es die Querrichtung zur Mitte der Fläche (sonst +Z). Bänke drinnen
-  und ohne Datei bleiben ein dunkler Holzkasten (`_box_furniture`).
-  Die Tischgruppen in den Zimmern `assets/models/room_table.glb` (`LevelBuilder._room_table()`, Planfarbe
-  „Zimmertisch“): „Old wooden table and chair“ von Sketchfab (MaX3Dd, CC-BY 4.0 – Namensnennung nötig),
-  `tools/build_room_table.py` aus `assets/source/old_wooden_table_and_chair.glb`. Zwei Objekte, Ursprung
-  jeweils mittig unten: `table` – im Original 1,2 × 0,7 m, quadratisch gemacht, indem nur das Mittelstück
-  zwischen den Beinen (|x| < `LEG_INNER`) entlang der Länge gestaucht wird; Beine, Zarge und runde Ecken bleiben
-  unverzerrt; dann 1 × 1 × 0,75 m – und `chair` (nur der gerade stehende der beiden Stühle, auf 0,46 m Sitzhöhe,
-  0,84 m hoch, Sitzseite nach +Z; im Original ist der Tisch für den Stuhl zu niedrig, darum getrennt skaliert).
-  Nur Farbtexturen (512er-PNG statt 4096), ~1300 + 1400 Dreiecke. Im Spiel je Gruppe zwei Stühle einander
-  gegenüber (`ROOM_CHAIR_GAP` von der Tischmitte), auch wenn der Plan drei zeigt: Die Stühle aus dem Plan im
-  Umkreis `ROOM_CHAIR_REACH` um einen Zimmertisch fallen weg, ein Paar gegenüberstehender gibt nur die Achse vor
-  (sonst Ost–West). Der Tisch kollidiert als voller Quader (NavMesh wie bisher), jeder Stuhl als eigener Körper
-  mit Sitzblock und Lehne (`ROOM_CHAIR`). Ohne Datei bleiben Kasten-Tisch und alle Kasten-Stühle aus dem Plan.
-  **Bad und Bar** (24.10.): `tools/build_fixtures.py` baut aus den Rohmodellen des Nutzers in `assets/source/`
-  (`wash_table`, `washbasin`, `wall_faucet`, `mirror`, `shower`, `shower_system`, `toilet`, `bar_counter`,
-  `back_bar`, `bar_stool`) sechs Spielmodelle, Flächen nach Namen (`LevelBuilder._fixture_materials`): `tiles` = die
-  Fliesen des Raums (`_bath_tiles` bzw. in den Toiletten `_wall_tiles`, Weltkoordinaten), `ceramic` = `_ceramic`,
-  `steel`/`chrome`/`brass` = `Mat.metal` (Chrom dunkler, `TOILET_CHROME`; Messing `GrandStair.BRASS`), `glass` =
-  `Mat.glass()`, `cushion` = `BAR_CUSHION`, sonst die Farbtextur per `Mat.model`. **Fliesenmaß:** Waschtisch
-  (1,00 × 0,15 × 0,50 m) und Duschsockel (1,10 × 0,10 × 1,10 m) messen Vielfache einer Fliese (5 cm) und stehen mit
-  den Kanten auf dem Fugenraster (Plan auf 10 cm, Wandfläche des Plans, Höhen 0,60/0,75 bzw. 0/0,10 m) – die Fugen
-  laufen von Boden und Wand her über sie hinweg. Die Fliesenhaut der Wände liegt `SKIN_FRONT` (2,2 cm) vor der
-  Wandfläche des Plans (`_wall_piece_at`: T/2 + 0,012 + halbe Hautdicke); Wandsachen sitzen an der Wandfläche und
-  stecken so weit darin – flache (Drückerplatte) setzt das Skript davor (`PLATE_GAP`).
-  `washbasin.glb` (`_washbasin`, Plan `sink` und `washbasin`): Objekte `table` (Ursprung Oberkante an der Wand,
-  `WASH_TABLE_TOP` 0,75 m), `basin` (Aufsatzbecken 0,60 × 0,40 × 0,126 m mit Abfluss und Wandarmatur bis 28 cm über dem
-  Tisch; steht `SKIN_FRONT` vor der Wandfläche – der Rand stößt an die Fliesen, die 5 mm flachen Rosetten der Armatur
-  liegen bündig darauf) und `mirror_frame` (0,60 × 1,00 m, im Skript auf 4 cm Tiefe gebracht, ab `MIRROR_FRAME_BOTTOM`
-  1,07 m). Das Glas des Rohmodells fällt weg, an seiner Stelle der `Mirror` (`MIRROR_GLASS` 0,54 × 0,94 m, 1,10 bis 2,04 m, `MIRROR_GAP`
-  vor der Wand – 1 cm hinter der Rahmenkante). Im Bad ein Becken auf dem 1-m-Tisch mittig an der Rückwand, Spiegel in
-  `sink_mirrors`; in den Toiletten (`washbasin`) streckt sich der Tisch über die Breite des Plans (`scale.x` – die
-  Fliesen strecken sich nicht mit), je `WASH_PLACE` ein Becken mit Spiegel. Kollision: der Tisch.
-  `shower.glb` (`_shower`): Duschecke auf `SHOWER_SIZE` 1,1 m gestaucht (Original 1,2 m), Wände des Rohmodells weg (die
-  Zimmerwände stehen dort), Wanne 4 cm angehoben, damit sie auf dem 10-cm-Sockel liegt (`SHOWER_TRAY` 0,16 m), Glas bis
-  2,24 m, Duschsäule an der Rückwand. Ursprung mittig unten, Tür +Z, Wand −X: Steht die Wand im Plan rechts
-  (`_wall_beside`), wird das Modell gespiegelt (`scale.x` −1). Kollision: Block bis `SHOWER_BLOCK` (0,5 m – zu hoch für
-  das NavMesh, sonst schickte es Gäste durchs Glas auf die Wanne) und die beiden Glasseiten auf Ebene 7 (klares Glas).
-  `toilet.glb` (`_toilet`): Wand-WC (Rohmodell mit verschachtelten Skalierungen), Schüssel × `TOILET_SCALE` 0,85 und
-  auf Sitzhöhe 0,42 m gesetzt (Original 0,60 m), Drückerplatte 1,0–1,16 m, Papierhalter lokal +X bis
-  `TOILET_HOLDER_REACH` – steht dort eine Wand, wird gespiegelt. Ursprung an der Wand unter der Schüsselmitte.
-  Kollision `TOILET_BOWL`, Sitzplatz `Seat` „klo“ über `TOILET_SIT`.
-  `bar_counter.glb`, `back_bar.glb`, `bar_stool.glb` (`_bar_counter`, `_back_bar`, `_common_rooms`): Theke als L
-  (6,9 × 2,2 m, Platte 1,2 m, Messing-Fußleiste, Rückschenkel bei −X), Barregal (6 × 0,56 × 2,7 m, vier Fächer mit zwei
-  Glasböden, Messingstifte), Hocker (Sitz 0,83 m, Polster `BAR_CUSHION`); Holztexturen 512². Das Barregal steht mit
-  der Rückseite an der Wand hinter dem Plan-Regal (`_bar_wall`), die Theke so weit davor, dass ihr Rückschenkel an
-  die Regalplatte stößt (`BAR_RETURN`) – rund 1,5 m Gang, die Gästeseite 2,9 m vor der Wand (der Plan hat die Theke
-  0,3 m vor dem Regal, das ließe keinen Platz). `_furnishings`: Platte des langen Schenkels als `bar_counter` (darauf
-  Flasche, Dosen, Kaffee), Rückschenkel `bar_return`, Regalplatte `shelf`. Flaschen je Fach zwei auf beiden Glasböden
-  (`BACK_BAR_SHELVES`), `BAR_STOOLS` Hocker vor der Platte (Kollision wie ein Stuhl, jeder etwas anders gedreht),
-  `bar_spots` zwischen ihnen 1 m vor der Platte. ~2800 + 3500 + 5100 + 3700 + 3500 + 430 Dreiecke.
-  Fehlt eine Datei, bleiben die Kästen und Zylinder-Hocker.
-  Die Taschenlampe `assets/models/flashlight.glb` (`Flashlight`): schwarze Stablampe von Sketchfab (Onur,
-  CC-BY 4.0 – Namensnennung nötig), `tools/build_flashlight.py` aus `assets/source/flashlight.glb`. 0,25 m lang,
-  Leuchtrichtung +Z, Schalter oben, Ursprung mittig in der Länge auf der Unterkante, ~2500 Dreiecke, 256er-PNG.
-  Zwei Objekte: `body` (Gehäuse + Schalter) und `lens` – das Glas bekommt statt der Textur das leuchtende
-  Material der Lampe. Das Skript gibt die Glasmitte aus → `Flashlight.LENS`, dort sitzt der Lichtkegel.
-  Fehlt die Datei, bleiben Rohr, Kopf und roter Schalter.
-  Das Brecheisen `assets/models/crowbar.glb` (`Item.CROWBAR_MODEL`, Item `CROWBAR`): „Crowbar V2“ von Sketchfab
-  (SketchyBot, Sketchfab Standard – keine Namensnennung nötig, das Modell darf aber nicht einzeln weitergegeben
-  werden), `tools/build_crowbar.py` aus `assets/source/crowbar_v2.glb`. 0,6 m lang entlang +X, Klaue am +X-Ende
-  nach oben, Ursprung mittig auf der Unterkante, 140 Dreiecke, 256er-PNG (rostig). Hängt unter `_swing`, damit
-  `_apply_held_pose` es in der Hand aufrichtet. Fehlt die Datei, bleiben die roten Kästen.
-  Die Streichholzschachtel `assets/models/matchbox.glb` (`Item.MATCHBOX_MODEL`, Item `MATCHBOX`, Spielkonzept 5.12):
-  „Matchbox-Freepoly.org“ von Freepoly.org (Sketchfab, CC-BY 4.0), `tools/build_matchbox.py` aus
-  `assets/source/matchbox_freepoly.glb`. 66 × 20 × 52 mm, liegt flach (Länge X, Breite Z), Katzen-Etikett oben und
-  unten, Ursprung mittig unten, 36 Dreiecke, 256er-PNG (nur Farbe, Normal- und Glanzkarte entfallen). Fehlt die Datei,
-  bleibt ein roter Kasten.
-  Die Glühbirne `assets/models/bulb.glb` (`Lamp.build_bulb`, für Lampen und das Item `BULB`): „Lightbulb
-  (Low-Poly)“ von Sketchfab (Mirai, CC-BY 4.0 – Namensnennung nötig), `tools/build_bulb.py` aus
-  `assets/source/lightbulb.glb`. Im Original schräg gestellt – das Skript nimmt die Linie zwischen den Mitten
-  von Sockel und Kolben als Achse. 0,11 m lang, Glas nach +Y, Ursprung am Gewindeende, Kolben 6,7 cm, Gewinde
-  3 cm. Glühwendel und Halter fallen weg (der Kolben ist undurchsichtig), Punkte an UV-Nähten werden vor dem
-  Ausdünnen verschmolzen (sonst reißt es Löcher): ~150 + 180 Dreiecke, 128er-PNG nur für den Sockel. Zwei
-  Objekte: `socket` und `glass` – das Glas bekommt das leuchtende Material der Lampe bzw. als Gegenstand die
-  Glasfarbe (dunkel, wenn kaputt). An der Decke hängt die Birne kopfüber, `BULB_SCREWED_IN` (2 cm) des
-  Gewindes stecken in der Fassung. Fehlt die Datei, bleibt die Kugel (Lampe) bzw. Kugel auf Zylinder (Gegenstand).
-  Die Wandleuchte `assets/models/wall_lamp.glb` (`Lamp.WALL_MODEL`, `Lamp._build_wall`): einfaches Blender-Modell
-  ohne Textur und ohne Bauskript, so übernommen – runde Wandplatte mit Band um eine Glaskugel
-  (`WallLamp_Body`, 11 cm, Anthrazit über `Mat.metal`) und die Kugel (`WallLamp_Ball`, 9 cm, Mitte
-  `WALL_BALL` 5,3 cm vor der Wand), Ursprung an der Wand, Kugel nach +Z, ~710 Dreiecke. Im Spiel `WALL_SCALE`
-  (1,5) mal so groß – Platte 17 cm, Kugel 13 cm, in Originalgröße wirkte sie verloren. Die Kugel bekommt das
-  leuchtende Material der Birne (wie das Glas der Kupferleuchte); die Birne ist nur ein leerer Knoten –
-  herausdrehen, einschrauben und durchbrennen laufen wie sonst, ohne Birne bleibt die Kugel dunkel. Fehlt die
-  Datei, bleibt die Messingleuchte (Halter, Arm, Schirm, die Birne steht auf einer Fassung am Armende).
-  Die Leuchte selbst wirft keinen Schatten: Das Licht der Wandleuchte sitzt 30 cm vor der Wand (`WALL_LIGHT`,
-  bei beiden Formen gleich, die Helligkeit der Räume hängt daran), sonst zeichnete der Schirm einen langen Keil
-  mit dunklem Strich darüber an die Wand.
-  Die Tasse `assets/models/mug.glb` (`Item.build_cup`, für Kaffee und Tee als Gegenstand und auf den Tabletts der
-  Bartheke): „Coffee Mug (School Project)“ von Sketchfab (Ole Gunnar Isager, CC-BY 4.0 – Namensnennung nötig),
-  `tools/build_mug.py` aus `assets/source/coffee_mug.glb`. 9 cm hoch, Henkel nach +X, Ursprung mittig unten, ~1000
-  Dreiecke (ausgedünnt wird der Rand zackig). Drei Objekte: `mug` (ohne Textur, im Spiel `Item.CUP_COLOR`),
-  `coffee` (Oberfläche mit dem Kaffeefoto des Originals, 128er-PNG) und `tea` – dieselbe Scheibe, das Foto zu
-  Bernstein umgefärbt und weichgezeichnet (Schaumbläschen weg, Spiegelung und heller Rand bleiben), mit einem
-  Teebeutel und seinem Faden; wo sie auf der Scheibe liegen, rechnet das Skript affin aus den UVs zurück.
-  `build_cup` entfernt die nicht gebrauchte Oberfläche und setzt beim Tee den Faden über den Rand und außen das
-  Schildchen an (`Item.MUG_STRING` – vom Skript ausgegeben –, `MUG_RIM`). Auf dem Tablett stehen die Tassen quer,
-  Henkel zu den Gästen (sonst ragen sie in die Nachbartasse). Fehlt die Datei, bleiben Zylinder und Kästen.
-  Die Kerzen `assets/models/candle.glb` und `candle_flame.glb` (`CandleModel`, für das Item `CANDLE`, die feste
-  Deko-Kerze `FixedCandle` aus `LevelBuilder._candle` und den Kerzenvorrat in `ResourceSpot`): `tools/build_candle.py` aus drei
-  Sketchfab-Modellen in `assets/source/` – die Kerze aus „Candlestick“ (FlukierJupiter, CC-BY 4.0) ohne Ständer, 16 cm
-  Wachs (`HEIGHT`), Radius 1,6 cm, Docht bis `WICK_TOP` 17,1 cm, unten geschlossen, ~120 Dreiecke, als `candle_red`
-  (Original) und `candle_white` (dasselbe Netz, Wachs umgefärbt, Flecken schwächer); der Teller `plate` aus „Lowpoly
-  Candle“ (matoteus, CC-BY 4.0) ohne Säule und Tülle, das Loch schließt eine Scheibe mit gespiegelter Bodentextur,
-  die Gravur der Normal Map steckt als Licht und Schatten in der Farbtextur, Radius 6 cm, Boden bei `PLATE_FLOOR`; die
-  Flamme aus „Candles set“ (shuvalov.di, **CC-BY-SA 4.0** – Namensnennung, Änderungen unter gleicher Lizenz), 4,4 cm
-  hoch, Ursprung am Fuß, ohne Textur. Ihre Bewegung sind 100 Formschlüssel (absolute Lagen, Animation „flicker“ in
-  der GLB); `CandleModel._load` macht daraus 100 fertige Netze, und jede Flamme (`CandleFlame`, eigener Versatz)
-  tauscht mit `FPS` (24) ihr Netz – keine Blend-Shape-Rechnung und kein AnimationPlayer pro Kerze. Farbe und
-  Leuchten macht `shaders/candle_flame.gdshader` (additiv, ungeschattet): nach der Höhe bläulicher Fuß, fast weißer
-  Kern, gelb bis orange zur Spitze, zum Rand weich auslaufend; dazu ein Schein als Billboard (`HALO_SIZE` 9 cm,
-  `halo = true`), sonst ist die Flamme im PS1-Bild nur ein paar Pixel. Brennt die Kerze nicht, ist die Flamme
-  unsichtbar (Item `_flame`). Rote Kerzen gibt es im Spiel noch nicht (`build(…, red = true)`). Fehlen die Dateien,
-  bleiben Zylinder, Messingscheibe und leuchtende Kugel.
-  Die Farbtextur der GLB kommt per `Mat.model(pfad, mesh, fläche)` in ein `Mat.psx` (eins pro Textur der
-  Modelldatei, Grundfarbe 0,8 Grau – Farbtöne gehören in die Textur, die Materialfarbe wird ignoriert;
-  `two_sided` nimmt eine Kopie des Shaders mit `cull_disabled`).
-  **Discokugel** `assets/models/disco_ball.glb` (`DiscoBall`, siehe Feiern in 6): „Disco Ball“ von Sketchfab
-  (araghon007, CC-BY 4.0 – Namensnennung nötig), `tools/build_disco_ball.py` aus `assets/source/disco_ball.glb`.
-  Das Original hat 31 744 Dreiecke (1920 Spiegelplättchen, 64 Spalten × 30 Reihen, auf einem Grundkörper mit
-  hochgezogenen Kanten) – die Plättchen allein bräuchten 3840. Das Skript baut eine glatte UV-Kugel (48 × 24,
-  2208 Dreiecke, radiale Normalen, Naht bei ±180° in einer Fuge, Diagonalen fest) und backt in Cycles:
-  Spiegelmaske (Emission nur der Spiegel), Verschattung der Fugen (AO, 256 Samples) und die Normal Map. Jedes
-  Plättchen bekommt die exakte Flächennormale aus dem Original (nicht die gebackene – schon Bruchteile eines Grads
-  Rauschen lassen Spiegelbilder zittern); die Plättchen liegen genau in Zellen von 5,625°. Den Tangentenraum
-  rechnet Blender selbst um (Kopie der Kugel mit Object-Space-Map als Fließkommabild, darauf gebacken), die Fugen
-  bleiben glatt, die Plättchennormale reicht ein Pixel in die Fuge (sonst blitzen Randpixel). Texturen 1024 × 512:
-  Farbe, Normal Map, Metallic/Roughness (Maske hart). In Godot unkomprimiert eingebettet (`.glb.import` mit
-  `embedded_image_handling=3`, .gitignore-Ausnahme), `DiscoBall` erzeugt die Mipmaps selbst – sonst flimmern die
-  Fugen bei 480 × 270 als Striche. Grenze: 8 Bit je Kanal, ganz nah zeigen scharfe Spiegelbilder feine Treppen.
-  **Tapeten** `assets/textures/wallpaper_<variante>.png` (teal für Flure, Küche, Bar und Treppenhaus, beige für die Zimmer, red für Lobby und Katzenraum) + gemeinsame Höhenkarte
-  `wallpaper_bump.png`, siehe „Optik“ in 9.
-  **Fototexturen** (PBR-Sets, je ein Ordner `assets/textures/<set>/`): `Mat.photo(pfad, meter, normal_pfad,
-  rauheit_pfad, glanz)` mit `shaders/psx_photo.gdshader` (wie `psx_surface`, Weltkoordinaten; mit `object_uv` in
-  Modellkoordinaten – für Bewegtes wie die Aufzugskabine; mit `mesh_uv` über die UVs des Meshs in Metern – Holz mit
-  Faserrichtung, `Geo.grain_box`, Tangente und Bild-„oben“ der Normal Map dann aus den Bildschirm-Ableitungen) spannt das Farbbild über so viele
-  Meter und hält es in zwei Stufen: 256² ohne Mipmaps für den PS1-Look (grob wie die Tapete), 1024² mit Mipmaps
-  ohne ihn (`PHOTO_SIZE_PSX`/`_SMOOTH`). Die Normal Map (OpenGL-Format) wirkt nur ohne PS1-Look (`use_normal`; die
-  PS1 kannte keine, bei 256² glitzerte sie nur); der Shader bildet Tangente und Bild-„oben“ aus der Hauptachse der
-  Fläche (u entlang +x bzw. +z, oben = +y, auf Böden +z), Mipmaps mit wieder normierten Normalen.
-  `Settings.apply` → `Mat.set_photo_detail` schaltet alle Fotomaterialien beim Umschalten um. **Glanz** nur bei
-  glatten Oberflächen (polierte Fliesen, Lack, Metall): `glanz` > 0 (`specular`, 0,5 = übliches Nichtmetall),
-  Rauheit aus dem Rotkanal der Karte (512² reicht, sie ist flächig), in beiden Looks wie bei der Tapete.
-  `specular_schlick_ggx` mit `specular` 0 bleibt matt wie `psx_surface` (Godot rechnet mit F0 = 0 auch am Rand
-  keinen Glanz). Glanzlichter kommen von Lampen, Kerzen und Taschenlampe, Spiegelbilder von der
-  **Bildschirmspiegelung** (SSR, `main._setup_environment`, 128 Schritte; Einstellungen → Bild → Spiegelungen,
-  `Settings.reflections` → `env.ssr_enabled` und Shader-Global `reflections`, das `metallic` mit ausschaltet – sonst
-  wäre der Boden ohne SSR nur dunkler): Sie spiegelt nur, was im Bild ist,
-  blendet zum Rand aus und rechnet für Nichtmetalle fest mit 4 % Reflexion (Fresnel) – `specular` ändert daran
-  nichts. Sichtbarer wird sie über `metallic` (hebt F0, nimmt Grundfarbe weg) und `roughness_scale` (schärfer);
-  auf hellem Marmor fallen vor allem angestrahlte Wände und Lampen als Lichtbahnen auf, Gleichfarbiges
-  verschwimmt. Das Environment selbst spiegelt weiter nichts (kein Himmel in Tapete und Fliesen). Nicht genutzt:
-  AO (wirkt in Godot nur aufs Umgebungslicht, das im Hotel fast null ist; oft einfarbig), Metallic-Karten (bei
-  Stein, Beton, Holz 0), Height/Displacement (Parallax kostet und verzieht sich bei flachem Blick, die Normal Map
-  reicht).
-  **Neues Set:** Ordner ist eine Kopie (Originale hat der Nutzer). Erst prüfen
-  (`godot --headless --path . -s tools/photo_set.gd -- assets/textures/<set>`: Größe und Wertebereich jeder Karte –
-  einfarbige sind leer –, Format jeder Normal Map aus der Höhenkarte geschätzt; liefert ein Set beide, die
-  OpenGL-Variante nehmen), Karten je Look bewerten und den Maßstab am Bild schätzen (Bretter, Fliesen, Ziegel),
-  dann zuschneiden (`… -- assets/textures/<set> basecolor normalogl roughness:512 [--dx]`): behält die Karten, deren
-  Name ein Stichwort enthält, auf 1024² bzw. der Größe hinter dem Doppelpunkt als JPEG, dreht mit `--dx` Grün der
-  Normal Map (DirectX → OpenGL), löscht alle übrigen Bilder samt `.import`. `--ao[=stärke]` backt vorher die
-  AO-Karte (Name mit `ambientocclusion`, `ambient_occlusion` oder `_ao`) ins Farbbild (× mix(1, AO, stärke)) – für Sets, deren Muster fast nur in AO/Normal/Height steckt
-  (`psx_photo` hat keinen AO-Eingang, im PS1-Look fehlt auch die Normal Map); Height bräuchte Parallax, gibt es nicht. Danach braucht es keine besonderen
-  Import-Einstellungen. Herkunft und Lizenz vor dem Commit klären; bisher alle Sets von Julio Sillet (JulioVII,
-  itch.io, CC-BY) – Namensnennung im README.
-  Bisher: **Kellerwände** `Concrete_WoodPattern_01` (Brettschalungsbeton, Farbbild + Normal Map, DirectX gedreht)
-  über `LevelBuilder.CELLAR_WALL_METERS` (3 m = 18 Brettreihen, je ~17 cm) · **Lobbyboden** `TilesMarble_01`
-  (polierter Marmor, Farbbild + Normal Map + Rauheit 0,22…0,53 × `LOBBY_FLOOR_ROUGHNESS_SCALE` 0,6, Glanz
-  `LOBBY_FLOOR_SPECULAR` 0,5, Spiegelanteil `LOBBY_FLOOR_MIRROR` 0,3) über
-  `LOBBY_FLOOR_METERS` (2,4 m = 4 × 4 Platten à 60 cm), nur der Lobbyteil des Flurbodens im EG (`_floor`) · **Poolbecken** `pool` (Tiles_06, glasierte
-  Fliesen in Blau und Grün, Farbbild + Normal Map + Rauheit, Glanz `POOL_TILES_SPECULAR` 0,5) über
-  `POOL_TILES_METERS` (0,6 m = 6 × 6 Fliesen à 10 cm, die Fugen treffen die Beckenkanten): Boden, Wände, ihr 20 cm
-  breiter Rand oben und die Einstiegstreppen (`_pool`) · **Poolhalle, Umgang** `TilesBasic_01` (hellgraue Fliesen,
-  Farbbild + Normal Map + Rauheit, Glanz `POOL_FLOOR_SPECULAR` 0,5) über `POOL_FLOOR_METERS` (1 m = 4 × 4 Fliesen
-  à 25 cm, die Fugen treffen die Beckenkanten), Fläche `pool_deck` in `_floor_material` · **Poolhalle, Wände**
-  `Stone_EngraveWall_01` (Steinriemchen, Farbbild mit eingebackener AO – ohne sie fast musterlos – + Normal Map)
-  über `POOL_WALL_METERS` (3 m = 6 Spalten × ~22 Reihen, Steine ~50 × 14 cm) als Haut der Seite `pool`
-  (`_skin_material`); Toiletten behalten `_wall_tiles` · **Bäder** (23.10.): beige Variante von Tiles_06
-  (`Tiles_06_beige_basecolor.jpg`, aus dem Farbbild mit `tools/tint_tiles.gd`: Helligkeit bleibt, Farbton beige,
-  grünlich/bläulich → wärmer/kühler, Fugen im 6×6-Raster neutral; Normal Map und Rauheit von Tiles_06) über
-  `BATH_TILES_METERS` (0,3 m = 6 × 6 Fliesen à 5 cm) als `_bath_tiles`: Haut der Seite `bath` bis `BATH_TILE_HEIGHT`
-  (2 m, `_wall_piece_at` teilt die Haut dort), Boden `bath` (`_floor_material`) und Wannensockel (`Bathtub.tiles`) –
-  alles in Weltkoordinaten, die Fugen laufen durch; darüber und an der Decke `Scifi_PaintedWall_01` (gespachtelter
-  Anstrich in Grünbeige; Farbbild + Normal Map + Rauheit 0,2…0,4, Glanz `BATH_PAINT_SPECULAR` 0,3; Glossiness,
-  Höhe und DirectX-Normal-Map weggelassen, AO hat das Set nicht) über `BATH_PAINT_METERS` (2,5 m) als `_bath_paint`
-  · **Kieswege im Garten** `StoneWall_01` (Kopfsteine in
-  Moos; Farbbild mit eingebackener AO + Normal Map, `GRAVEL_NORMAL_STRENGTH` 2 – ohne beides wirkten sie flach; Rauheit
-  und Höhe weggelassen, matt) über `GRAVEL_METERS` (0,5 m, Steine 10–18 cm), Fläche `gravel` in `_floor_material` ·
-  **Außenwände** `StoneFloor_02` (Bruchsteinplatten; Farbbild mit eingebackener AO – die Fugen liegen tiefer – + Normal
-  Map, `FACADE_NORMAL_STRENGTH` 2; Metallic und `MS` leer, `ORM` nur gepackt) über `FACADE_METERS` (2 m, Platten
-  20–40 cm) als Haut der Seite `outside` (`_skin_material`, `_facade`) · **Holzdecken** `Wood_Panels_01` (dunkle
-  Kassettendecke mit Schnitzwerk; Farbbild mit eingebackener AO × 0,7 + Normal Map + Rauheit 0,09…1, Glanz
-  `CEILING_SPECULAR` 0,5 – lackiert; Glossiness = umgekehrte Rauheit, Höhe und Metallic weggelassen) über
-  `CEILING_METERS` (2 m = 2 × 2 Kassetten à 1 m) für alle Holzdecken (`_ceiling`, `_room_ceiling`: Flure, Lobby,
-  Galerie, Hallen, Treppenhäuser, Zimmer; der Keller bleibt Beton); das Farbbild ist dunkler als die frühere
-  TexGen-Holzdecke, daher aufgehellt – Flure `CEILING_SHADE` ×1,2, Zimmer `ROOM_CEILING_SHADE` ×1,8 · **Holzböden**
-  `WoodenFloor_03` (lackierte Dielen, 16 je Kachel, längs +z; Farbbild + Normal Map + Rauheit 0,2…0,84, Glanz
-  `WOOD_FLOOR_SPECULAR` 0,5; kein AO im Set, die DirectX-Normal-Map gelöscht) über `WOOD_FLOOR_METERS` (2 m, Dielen
-  ~12,5 cm) für alle Holzböden (`_wood_floor`: Zimmer, Bar, Partyraum, Katzenzimmer, Bibliothek, Podeste der
-  Treppenhäuser; ersetzt die TexGen-Dielen) – Schritte klingen wie bisher auf Holz (Fototexturen ohne `floor`-Meta = "") ·
-  **Balkenbett, Holz** `Wood_02` (helle Eiche, Faser im Bild waagerecht; Farbbild mit eingebackener AO × 0,6 + Normal
-  Map, matt; Rauheit, Glossiness, Höhe, Metallic und DirectX-Normal-Map weggelassen; Ordner hieß „Wood 02 (light
-  oak)“) über die UVs von `Geo.grain_box` (`Mat.wood`, 1,2 m je Kachel), Hirnholz aus TexGen `wood_end`; dasselbe
-  Längsholz liefert die **groben Bohlen** des Dachgeschosses (`Mat.planks(tint)`, 24.10.): beim ersten Aufruf ein Bild
-  aus `PLANK_ROWS` Reihen über `PLANK_METERS`, je Reihe zwei Stöße an zufälliger Stelle, je Brett ein anderer
-  Ausschnitt (auch der Normal Map) und eine Abdunklung bis `PLANK_DARKEN`, `PLANK_GAP` Texel dunkle Fugen (`Image.blit_rect`/
-  `blend_rect`, über den Rand weiter – `_blit_wrapped`); daraus ein Fotomaterial (`Mat._photo_from`, das auch `Mat.photo`
-  nimmt) · **Bettwäsche**
-  `Fabric_Pattern_08` (helles Gestrick, das Muster steckt fast nur in AO und Normal Map; Farbbild mit AO × 0,6 + Normal
-  Map, matt) über `BedModel.FABRIC_METERS` (0,35 m) in Modellkoordinaten: Laken und Kissen (24.10., beide Sets von Julio Sillet; Originale von
-  Farbbild, AO und Normal Map beider Sets bis zur Abnahme in `temp/tex_orig/`) · **Säulen der Lobby** `TerrazzoDark_01` (polierter
-  dunkler Terrazzo, Farbbild + Rauheit 0,15…0,79, Glanz `PILLAR_SPECULAR` 0,5; AO, Höhe und Metallic leer, die Normal Map
-  flach) über `PILLAR_METERS` (1 m, Steinchen 5–8 mm): `_pillar` baut mittig in der Planfläche zwei quadratische
-  Sockel `PILLAR_PLINTH` (80 × 80 × 30 cm) unten und unter der Galerie, dazwischen einen runden Schaft
-  (`PILLAR_SHAFT_RADIUS` 0,3 m, 24 Segmente, Kollision als Zylinder) – die Projektion nach der Hauptachse wechselt am
-  Schaft alle 90°, im Korn sieht man die Nähte nicht. Derselbe Stein ist die Platte des **Couchtischs der Lobby**
-  (`_coffee_table`, nur für `coffee_table` in der Lobby; anderswo bleibt der Kasten): quadratisch mit der kurzen Seite
-  des Plan-Rechtecks (der Eintrag in `_furnishings` wird mit verkleinert, Kerzen stehen darauf), Platte
-  `COFFEE_TABLE_SLAB` 3 cm stark, 3 cm Überstand, 3 cm Eckradius (`_rounded_slab`, `GrandStair.Shape`, je Ecke
-  `COFFEE_TABLE_CORNER_SEGMENTS` 4, Seiten an den Ecken weich schattiert), Oberkante `BOX_HEIGHTS` 0,4 m; darunter
-  vier Beine und eine Zarge aus `_dark_wood`, Kantholz `COFFEE_TABLE_WOOD` 10 cm, außen bündig; Kollision ein
-  Quader über die ganze Fläche. Böden mit Fototextur nennen
-  `Footsteps.floor_under` ihre Bodenart per `set_meta("floor", …)` (Lobby: `"tiles"`), weil der Abgleich sonst über die TexGen-Textur läuft.
-  **Katzenmodell** `assets/models/cat.glb` (`HotelCat`, Spielkonzept 6.11): `tools/build_cat.py` aus
-  Meshys Zip (Auto-Rigging-Preset „Hund“, in `assets/source/`). 27 Knochen (`Hips`, `chest`, `head`,
-  `earend`/`R_earend`, `tail`…`tail3`, je Bein `frontleg`/`backleg` + `0`–`2`, rechts mit `R_`), ~2500
-  Dreiecke, Animation `walk` (1 s). Das Skript hängt falsch zugeordnete Beingewichte um (Punkt gehört
-  zum nächstgelegenen Beinknochen). Größe (0,34 m hoch) und Blick nach −Z stehen nur am Wurzelknoten
-  der Armatur – angewendet würden die Translations-Schlüssel der Animation nicht mitskaliert.
-  **Lakengeist** `assets/models/ghost.glb` (Spielkonzept 4.18, `SheetGhost`): `tools/build_ghost.py` riggt
-  Meshys Modell selbst – Knochen `root` → `hem` · `spine` → `head` · je Seite `upper_arm`/`forearm`/`hand` +
-  `thumb|index|middle|ring|pinky` `1`–`3` (Suffix `.L`/`.R`, L = Geist-links). Finger werden über die Hautfarbe
-  der Textur gefunden (Spitzen = weiteste Punkte vom Handgelenk über die Oberfläche, Daumen = Finger zur
-  Körpermitte); lokal X der Hand-/Fingerknochen beugt zur Handfläche (positiv = krallen). Eigene Gewichte statt
-  Bone-Heat (das Netz ist nach dem Verschmelzen ein Stück, aber nicht sauber geschlossen). 10 159 Dreiecke,
-  1,9 m, Blick nach −Z, Ursprung mittig unten, keine Animationen.
-  **Gast-Grundkörper** `assets/models/guest_<name>.glb` (Spielkonzept 6.0, `GuestBody`): `tools/build_guest.py`
-  aus Meshys GLB (Auto-Rigging mit Skelettvorlage **Mixamo**, „Alle hinzugefügt“, einzelne Datei; Rohmodell
-  als `assets/source/guest_<name>.glb`). Knochen ohne `mixamorig:` (`Hips`, `Spine`…`Spine2`, `Neck`, `Head`,
-  `LeftArm`/`LeftForeArm`/`LeftHand` …, `LeftUpLeg`/`LeftLeg`/`LeftFoot` …), Animationen `walk` und `run`
-  (auf der Stelle), Netz unverändert von Meshy (höchstens 15 000 Dreiecke – Reduzieren zieht Dreiecke über
-  Meshys winzige UV-Inseln und macht Schlieren), 1024er-Textur als PNG (JPEG färbt die Inselränder), Lücken
-  zwischen den Inseln vor dem Verkleinern gefüllt, Blick nach −Z, Füße auf 0, Maße in Metern. **Färbemaske** als
-  Punktfarbe je Fläche (R/G/B = Oberteil/Hose/Haare): Kopf-/Hals-Knochen → Haare (nur das größte zusammen-
-  hängende Stück – Iris und Augenweiß sind kleine Inseln im Gesicht, `HAIR_MIN_PART`), sonst hellere Grautöne →
-  Oberteil, dunklere → Hose; Haut, Schuhe, Hände bleiben. **Formschlüssel `build`** (Körperbau, 1 = kräftig,
-  negativ = schlank) und **`fit`** (definiert, 0 … 1, `FIT_PUSH`: Schultern, Oberarme, Brust und Waden nach außen,
-  Bauch flacher, Brust `CHEST_FORWARD` nach vorn – für die Spielerfigur, Spielkonzept 3.9; die Kinderkörper haben ihn
-  erst nach dem nächsten Neubau, gebraucht wird er dort nicht). Das Skript gibt die Zeile für `GuestBody.BODIES` aus (Höhe, Schulterbreite, Laufweite
-  der Animationen, mittlere Helligkeit je Färbebereich) – nach jedem Neubau übernehmen. Erwachsene: `man`/`woman`
-  (mittel), `man_young`/`woman_young`, `man_old`/`woman_old` (`gen` in `BODIES`); `guest_woman_young` ist vorläufig –
-  Meshys Gehen/Rennen klappt ihre Hände um bis zu 90° ab, das Modell wird neu geliefert. Kinderkörper (6.13,
-  `guest_girl7`, `guest_girl10`, `guest_boy7`, `guest_boy10`) liefert Meshy mit kleinem Mixamo-Skelett (23 Knochen: keine Finger, kein
-  `LeftToe_End`/`HeadTop_End`) und in Zentimetern (Objekt × 0,01) – Skript und `retarget()` rechnen beides mit
-  ein, die Hände bleiben bei den Tänzen in Ruhedrehung. **Arme absenken:** Stehen die Arme in Meshys Ruhepose
-  weiter als `ARM_MAX` (32°, Schulter → Handgelenk gegen die Senkrechte) ab – bisher `guest_boy10` (43°) und `guest_woman_old`
-  (37°), die übrigen 14–29° –, dreht das Skript die Oberarme samt Netz auf `ARM_DOWN` (20°) und übernimmt das als Ruhepose;
-  Gehen und Rennen sind relativ zur Ruhepose gespeichert und senken sich mit, die Tänze rechnet `retarget()` ohnehin
-  aus der Ruhepose. Alle anderen Körper bauen dadurch byte-gleich.
-  **Textur in Godot unkomprimiert** (`gltf/embedded_image_handling=3`, „Embed as Uncompressed“ in
-  `assets/models/guest_<name>.glb.import`, schreibt `build_guest.py`; diese `.import` sind als Ausnahme im Repo).
-  Von sich aus zieht Godot die Textur als PNG heraus und packt sie per VRAM-Kompression (S3TC) – deren
-  4×4-Blöcke mischen an den UV-Nähten Haut in den Stoff, auf kräftig getönter Kleidung (`psx_guest.gdshader`
-  färbt nur graue Texel) helle Streifen an Ärmeln, Bündchen und Seitennähten. Eine `.import` der PNG ins Repo
-  zu legen reicht nicht: Ohne die (gitignorierte) PNG zieht Godot sie dann nicht neu heraus.
-  **Mixamo-Animationen:** jede `assets/source/anim/<name>.fbx` (Mixamo, „Without Skin“, 30 fps, am
-  Standard-Charakter heruntergeladen) landet als Animation `<name>` in **jeder** Gast-GLB – ein Download gilt für
-  alle Grundkörper, solange sie Meshys Mixamo-Skelett haben. Umbenennen reicht nicht, weil Mixamo in T-Pose steht
-  und unsere Gäste mit hängenden Armen: `retarget()` (`tools/mixamo_retarget.py`, auch für den Kürbismann) dreht den Gast rechnerisch in die T-Pose der Quelle
-  (Knochenrichtung zum Kind, bei Hüfte und Händen zusätzlich die Querachse, `ALIGN`) und gibt jedem Knochen
-  dieselbe Weltdrehung gegenüber dieser Pose wie in der Quelle gegenüber ihrer Ruhepose. Hüfthöhe im Verhältnis
-  (Hüfte über Fuß), seitliches Wandern der Hüfte über `DRIFT_WINDOW` (2 s, als Schleife) gemittelt und abgezogen –
-  Wackeln bleibt, der Gast tanzt auf der Stelle. Szenen-Bildrate bleibt (der FBX-Import stellt sie um, sonst
-  liefen `walk`/`run` zu schnell). Die FBX liegen nicht im Repo (Mixamo-Lizenz: keine Weitergabe der Rohdateien).
-  **SmartRig → Mixamo** (`tools/smartrig_to_mixamo.py`): Meshy-Figuren mit Skelettvorlage „SmartRig“
-  (`Bone_000`…) bekommen dasselbe Skelett wie Meshys Mixamo-Vorlage (65 Knochen `mixamorig:…`, Hierarchie wie
-  `guest_*.glb` ohne `headfront`). Zuordnung fest in `MAP`, abgelesen am alten Kürbismann (Meshy-SmartRig, inzwischen ersetzt);
-  Meshy nummeriert die Finger links und rechts verschieden, das Skript prüft die Reihenfolge an den Gewichten.
-  Übrige Knochen (Hilfsknochen an Becken und Händen, Augen, Kiefer, Kopfspitze, Requisiten wie die Axt) geben
-  ihre Gewichte an den nächsten zugeordneten Vorfahren ab – die Axt hängt fest an `LeftHand`. `HeadTop_End` neu
-  auf dem höchsten Kopfpunkt, Figur auf die Hüfte zentriert, Ruhepose (hängende Arme) und Blick bleiben.
-  **Puppe** `assets/models/doll.glb` (Spielkonzept 5.5, `JuryDoll`): Meshy-Modell (Auto-Rigging mit Skelettvorlage
-  **Mixamo**, 65 Knochen mit Fingern, schon in Metern: 1,7 m in A-Pose, Blick nach +Z, ~12 900 Dreiecke), in zwei
-  Schritten: `tools/doll_weights.py` trennt die Gewichte (`assets/source/doll_meshy.glb` → `doll.glb`, unten), dann
-  `tools/build_doll.py` (Blender) wie beim Kürbismann – Präfix `mixamorig:` ab, `headfront` raus, nur die Farbtextur
-  (1024², unkomprimiert, `meshy_tex.py`; die `.import` liegt im Repo), Meshys „walk“/„run“ (ungenutzt). Größe, Sitzen
-  und Aufstehen macht das Spiel (Abschnitt 5, „Die Puppe“). Dazu der Formschlüssel (glTF-Morph, Godot-Blend-Shape)
-  **„sit“**: Der Rock hängt an den Oberschenkeln und dreht beim Sitzen mit – seine Glocke stünde vorn über den Knien
-  hoch. „sit“ drückt in Ruhepose jeden Rockpunkt unter dem Hüftgelenk (Oberschenkel-Gewicht ≥ ½, weiter als
-  `SKIRT_THIGH` vom Oberschenkel) zur späteren Sitzfläche hin flach (`SKIRT_SEAT` hinter der Hüftachse – im Sitzen
-  darunter): je Höhenband so, dass die Vorderkante der Glocke `SKIRT_LAP` vor der Achse landet (auf dem Schoß), seitlich
-  breitet er sich auf der Sitzfläche aus, hinten verschwindet er darin; eingeblendet über `SKIRT_RAMP` unter der Hüfte.
-  **Gewichte der Meshy-Puppe** (`tools/doll_weights.py`):
-  Meshys Auto-Rigging (Mixamo-Vorlage) verschmiert die Gewichte, wo Teile in der Ruhepose aneinanderliegen. Das Skript
-  (reines Python, `python tools/doll_weights.py <meshy.glb> <ausgabe.glb>`) schreibt nur `JOINTS_0`/`WEIGHTS_0` neu, der
-  Rest der GLB bleibt byte-gleich: Unterschenkel und Schuhe gehören je einer Seite (ganze Netzstücke, die der Beinkette
-  näher als `LEG_RADIUS` kommen – das Kleid bleibt weiter weg –, Seite per Mehrheit im Stück, über dem Knie läuft es über
-  `LEG_RAMP` aus), Ärmel verlieren Rumpf- und Beingewichte, Taille und Rock ab Ellbogenhöhe die Armgewichte. Den Streifen,
-  wo Meshy Ärmel und Mieder verschmolzen hat (`SLEEVE_IN` … `SLEEVE_OUT`), und die Haare lässt es – harte Trennung dort
-  spannte beim Armschwingen eine Haut auf.
-  **Kürbismann** `assets/models/pumpkin_man.glb` (Spielkonzept 4.19, `PumpkinMan`, Verhalten siehe 5):
-  `tools/build_pumpkin.py` aus zwei Meshy-Modellen – `assets/source/pumpkin_man.glb` (Auto-Rigging mit Skelettvorlage
-  **Mixamo**, kleines Skelett mit 23 Knochen ohne Finger, in Zentimetern) und `assets/source/pumpkin_axe.glb` (ohne Rig).
-  Knochen, Netz und Hüftwege rechnet das Skript in Meter um und bringt ihn auf `HEIGHT` 2,0 m (Meshy: 1,63 m; statt
-  die Armatur zu skalieren), Blick nach −Z, Netz unverändert (~10 300 Dreiecke), nur Farbtexturen (Körper 1024², Axt 256², Lücken gefüllt, in Godot
-  unkomprimiert – `meshy_tex.py`, gemeinsam mit `build_guest.py`; die `.import` liegt im Repo). Animationen von Meshy
-  `walk`, `run`, `spin_jump` (auf der Stelle gesetzt – Meshys Sprung trägt ihn 3,1 m nach vorn, das müsste das Spiel
-  selbst gehen), dazu jede Mixamo-FBX aus `assets/source/anim/` wie bei den Gästen und aus `assets/source/anim/pumpkin/`
-  nur für ihn (`OWN_ANIM_DIR`; `attack` = Mixamo „Standing Melee Attack Downward“, rechtshändig).
-  **Axt:** eigenes, starres Objekt am Knochen `RightHand` (`AXE_SIDE` – rechts, weil Mixamos Schläge rechtshändig sind;
-  Spiegeln von Modell oder Animation wäre aufwendiger), nicht ins Körpernetz gewichtet – Godot macht daraus ein
-  `BoneAttachment3D` `RightHand` mit `MeshInstance3D` `axe` (`PumpkinMan.axe`): folgt jeder Animation, lässt sich einzeln
-  ausblenden, abnehmen oder werfen. Ursprung = Griffpunkt, Stiel entlang +Y (Kopf oben), Schneide −X; einhändiges
-  Beil, 0,45 m (`AXE_LENGTH`), gegriffen an der Wicklung (`GRIP_AT`). **Faust:** Ohne Fingerknochen biegt das Skript die Finger
-  der Axthand im Netz um den Stiel (Abstand hinter dem Fingeransatz `KNUCKLE` wird zum Bogen um die Stielachse,
-  Normalen mitgedreht) – die Ruhepose behält das. Handrahmen aus dem Netz: Fingerrichtung = Handgelenk → Mitte der
-  Handpunkte, Daumenseite = die Seite, die nah am Handgelenk weiter absteht, Handfläche je nach Seite gespiegelt
-  (`chiral`); der Stiel liegt um `GRIP_TILT` (15°)
-  schräg in der Faust, Kopf auf der Daumenseite, Schneide in Schlagrichtung. **Ruhiger Axtarm:** Meshys Gehen und
-  Rennen schwingen und drehen den Axtarm so weit, dass die starre Axt fast einmal herumkreiste – für `walk`/`run`
-  zieht das Skript `AXE_ARM` (Ober-, Unterarm, Hand) zur mittleren Haltung hin (`AXE_SWING` 0,35 bleibt vom
-  Schwung); das Beil hängt dann vorn-unten neben dem Oberschenkel. Tänze, Drehsprung und der Schlag
-  bleiben ungedämpft. Ein optionaler vierter Pfad legt Vorschaubilder ab (Ruhe, Hand, jede Animation).
-  **Kürbisse** `assets/models/pumpkins.glb` (`PumpkinModel`, Spielkonzept 5.8): `tools/build_pumpkins.py` aus Meshys
-  Kürbisgruppe `assets/source/pumpkins.glb` (ein Netz mit sechs Kürbissen, UV-Atlas, ohne Material). Sechs Objekte
-  `pumpkin_plain` und `jack_o_lantern_1` … `_5` (`PumpkinModel.FACES`), Ursprung mittig unten, Gesicht nach +Z – das
-  Skript findet es per Strahltest aus der Mitte (die geschnitzten sind hohl, durch die Öffnungen geht der Strahl ins
-  Freie) und dreht danach. Meshys großer glatter Kürbis wird auf die Breite der geschnitzten verkleinert (~0,40 m). Meshy
-  trennt die Punkte an jeder UV-Naht, jede Insel hatte eigene Normalen (Lichtkanten im Zickzack): verschweißt (UVs
-  hängen an den Ecken) und nach Winkel geglättet (`SMOOTH_ANGLE` 50°, Schnittkanten bleiben hart). Texturiert wird
-  prozedural im Skript – Merkmale je Punkt (Lage, Stiel aus dem Höhenprofil, Fruchtfleisch = Innenwand zeigt zur Mitte
-  oder liegt unter der Außenhaut) plus Rauschen, in Cycles in einen gemeinsamen Atlas gebacken (2048², als 1024²
-  gespeichert; auf einer verbundenen Kopie, einzeln überschriebe der Randausgleich jedes Kürbisses die Inseln der anderen):
-  Farbe (Schale orange gestreift, Stiel bräunlich-grün, Fruchtfleisch hellgelb bis dunkel), Rauheit (glTF-Grünkanal),
-  Normal Map und als Emission die Glutmaske. Unkomprimiert eingebettet (`meshy_tex.write_import`, `.import` im Repo).
-  Im Spiel: `shaders/psx_model.gdshader` (wie `psx_surface` mit Mesh-UVs, `specular_schlick_ggx`, Rauheit aus der Karte,
-  Normal Map nur ohne PS1-Look über `psx_smooth`, Emission × Glutmaske; in `Settings.PSX_SHADERS`). `PumpkinModel.material`
-  liefert je Kürbis ein eigenes Material (welk dunkelt `albedo`, geschnitzt ist es `Item._glow_material`, die Glut
-  `GLOW_SCALE` × Farbe der Sorte), die reife Frucht an der Pflanze teilt sich `shared_material()`.
-  **Pool-Handlauf** `assets/models/pool_handrail.glb` (`LevelBuilder.HANDRAIL_MODEL`): `tools/build_handrail.py` legt
-  die Mittellinie als Polygonzug (Pfosten 0,9 m, 0,45 m waagerecht, die Treppe hinab bis 0,9 m über die unterste
-  Stufe, senkrecht auf den Beckenboden), rundet die drei Ecken mit 15 cm Biegeradius aus und zieht ein Rohr
-  (Ø 5 cm, 10 Ecken) darum. Ursprung am Pfostenfuß auf dem Umgang, die Treppe hinab entlang −Z; Tiefe und Lauf
-  (1,4/2,1 m) sind eingebacken und müssen zu `_pool` passen. Material in Godot (`Mat.metal()`, Edelstahl, als `material_override`);
-  fehlt die Datei, baut `_pool` wie früher gerade `_rod`-Stangen.
-  **Gartenlaterne** `assets/models/lantern.glb` (`LevelBuilder.LANTERN_MODEL`, nach einer Skizze des Nutzers):
-  `tools/build_lantern.py` baut sie ohne Ausgangsmodell, 3 m hoch. Unten alles achteckig als gedrehtes Profil
-  (Bodenplatte 0,56 m, Fuß mit Kehle, Wulst, Mast 8 cm, Kragen), oben ein eckiger Kopf (ab 2,4 m, 0,6 m hoch) aus Pyramidenstümpfen
-  (Bodenplatte, nach oben weiter werdender Glaskasten mit Eckstreben und Rahmenleisten, Gesims, Walmdach,
-  Deckplatte, Spitze); Knicke unter 30° glatt schattiert. Drei Teile ohne Material: `post` und `head` bekommen
-  dunkles Eisen, `glass` das leuchtende Lampenmaterial. Das Licht sitzt in der Glasmitte (`LANTERN_LIGHT_Y`) –
-  Kopf und Glas werfen darum keinen Schatten. Kollision: Fuß- und Mastquader. Fehlt die Datei, Platzhalter.
-  **Gemalte Türen** `assets/models/door_hotel.glb` (Zimmertür) und `door_attic.glb` (Kniestocktür zum Dachboden,
-  Spielkonzept 4.21): `tools/build_doors.py` baut sie ohne Ausgangsmodell aus den Pixelbildern in `assets/source/`
-  (`door_hotel.png` 64 × 112, `door_attic.png` 80 × 144 mit Zarge, die nicht mitkommt) – Quader und Prismen im
-  Pixelraster: Zimmertür als Rahmenhölzer mit vier 1,2 cm tiefen Kassetten (Bogen und Umriss sind gemalt),
-  Kniestocktür als dunkles Feld mit zwei Riegeln und vier Brettern mit halbelliptischen Enden, darauf Langbänder
-  und Kastenschloss. Vorder- und Rückseite tragen das Bild in Draufsicht (Pixel = Texel, `Closest`), Seiten die
-  Farbe des Randpixels. Die Textur ist doppelt so breit: links das Bild mit übermalten Beschlägen (`clean`:
-  Rechteck ← versetzte Pixel), rechts das Original, auf dessen Pixel die UVs der 3D-Beschläge zeigen.
-  Eingebettet und unkomprimiert (`meshy_tex.write_import`, .gitignore-Ausnahme). Lage: Scharnierkante x = 0,
-  Blatt nach +X, Unterkante y = 0, Blattmitte z = 0, Aufgehseite +Z (Bänder, Schloss). Teile: `leaf`
-  (`Door.HOTEL_LEAF` 1,18 × 2,08 m bzw. `ATTIC_LEAF` 0,78 × 1,55 m – müssen zu `size` im Skript passen),
-  bei der Zimmertür dazu `handle` (Klinke beidseits, Ursprung auf der Drückerachse) und `hinge` (ein Band).
-  Neu bauen: `blender -b --python tools/build_doors.py -- assets/source assets/models [vorschau-ordner]`.
-  **Rahmen-Kit** `assets/models/frames.glb` (Spielkonzept 7.2, `OpeningFrame`): `tools/build_frames.py` zieht
-  2D-Profile ohne Ausgangsmodell zu 1 m langen Teilen aus – `casing` (Seitenbekleidung), `fillet`, `frieze`,
-  `cap` (Kopfpartie im Craftsman-Stil), `stool` (Fensterbank), `board` (Einheitswürfel für Zarge und
-  Fensterrahmen). Lage: Länge entlang +X, Profilbreite +Y, Stärke +Z (Rückseite auf der Wand bei z = 0).
-  Die Profile stecken 1,5 cm tief in der Wand, und benachbarte Teile überlappen sich (`OpeningFrame.TUCK`):
-  Beim Vertex-Snapping rastet jedes Teil für sich ein, bloß aneinanderstoßende Teile öffnen Fugen, durch die
-  die Tapete blitzt. Dazu zieht das Rahmenmaterial (`OpeningFrame.trim_material()` = `Mat.layer` mit
-  `PULL` 0,5 %) die Rahmen leicht zur Kamera, und die Laibungen der Wände tragen dasselbe Holz – rutscht die
-  Zarge weg, sieht man Holz statt Tapete (außer im Beton des Kellerdurchgangs). `OpeningFrame` (ein `MeshInstance3D` pro Öffnung) streckt die Teile nur in der Länge,
-  teilt sie in Stücke ≤ 1 m, dreht bei gespiegelter Lage die Dreiecke um und fügt alles zu einem Mesh
-  zusammen (gleiche Öffnungen teilen sich das Mesh). Benutzt von `Door`, `HotelWindow` und für Durchgänge ohne Tür
-  (`LevelBuilder._frame_x/_frame_z`). Reine Optik: keine Kollision, nicht im Spielstand, nicht im NavMesh.
+- **Alles entsteht im Code.** Es gibt nur zwei winzige Szenen (`title.tscn`, `main.tscn`), beide hängen nur ein
+  Skript an. Hotel, Möbel, Gäste und UI baut `main.gd` bzw. `LevelBuilder` zur Laufzeit. Modelle kommen als GLB aus
+  `assets/models/` (Bauskripte in `tools/`, Übersicht unten); **fehlt eine Modelldatei, baut der Code einen
+  Platzhalter** aus Grundkörpern. Was keine Datei hat, ist prozedural: Texturen aus `TexGen`, Klänge aus `SynthAudio`.
 - **Kein verstecktes Inventar.** Ein Gegenstand in der Hand (`Player.held` / `Guest.held`), Geld ist der einzige
-  abstrakte Besitz (`Game.money`). Gäste haben zusätzlich einen abstrakten Vorrat (`Guest.stock`).
-  Der Spieler hat dazu eine **Tasche für Kleines** (`Player.bag`, 6 Fächer, `Item.POCKET_KINDS`) – echte `Item`s,
-  nur unsichtbar beim Spieler (siehe 8, „Tasche“). Ausnahme am Körper des Spielers: Kompass, Kartenblätter,
-  Schlüsselbund (`Player.has_compass`, `map_pages`, `keyring`) – siehe 8, „Am Körper“.
-  Darum ist **die Welt der Spielstand** (siehe 7).
+  abstrakte Besitz (`Game.money`). Gäste haben zusätzlich einen abstrakten Vorrat (`Guest.stock`). Der Spieler hat
+  eine **Tasche für Kleines** (`Player.bag`, `Item.POCKET_KINDS`) – echte `Item`s, nur unsichtbar (siehe 8,
+  „Tasche“) – und am Körper Kompass, Kartenblätter, Schlüsselbund (`has_compass`, `map_pages`, `keyring`; 8, „Am
+  Körper“). Darum ist **die Welt der Spielstand** (siehe 7).
 - **Spieler und Gäste nutzen dieselben Dinge** (Türen, Verstecke, Lampen, Vorhänge, Gegenstände).
 - **Sprache:** Code-Bezeichner englisch, Kommentare, Doc-Kommentare (`##`) und alle Texte deutsch.
   Doc-Kommentare verweisen auf Abschnitte im Spielkonzept, z. B. `(Spielkonzept 4.13)`.
@@ -470,12 +28,173 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   `position`/`rotation` setzen und `add_child`. Gegenstände über die Fabrik `Item.create(kind, extra)`.
 - **Engine:** Godot 4.7 (Forward+), GDScript mit Typangaben. 3D in Fensterauflösung, mit PS1-Look intern
   480×270, hochskaliert; die Bedienoberfläche ist immer auf 480×270 ausgelegt.
-- **Grafik: Maßstab ist der realistische Look** (Spielkonzept 9.2, seit 2026-10-25). Neue Materialien, Shader und
-  Modelle werden für das Bild *ohne* PS1-Look gebaut und geprüft: Texturen in voller Größe mit Mipmaps und linearem
-  Filter, Normal-/Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf. Der PS1-Look (`Settings.psx_look`)
-  bleibt als Umschalter und darf nicht brechen (Snapping-Include, Eintrag in `Settings.PSX_SHADERS`), wird aber
-  nicht mehr bevorzugt – kein Verzicht auf Details nur weil er sie nicht zeigt. Ein darauf optimierter Zusatzmodus
-  kommt am Ende. Ältere Stellen, die noch vom PS1-Look her gedacht sind (kleine Texturen, `Closest`), sind kein Vorbild.
+- **Grafik: Maßstab ist der realistische Look** (Spielkonzept 9.2). Neue Materialien, Shader und Modelle werden für
+  das Bild *ohne* PS1-Look gebaut und geprüft (`--no-psx`): Texturen in voller Größe mit Mipmaps und linearem Filter,
+  Normal-/Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf. Der PS1-Look (`Settings.psx_look`, Standard aus)
+  bleibt als Umschalter und darf nicht brechen (Snapping-Include, Eintrag in `Settings.PSX_SHADERS`, siehe 8
+  „Optik“), wird aber nicht bevorzugt – kein Verzicht auf Details, nur weil er sie nicht zeigt. Ein darauf
+  optimierter Modus kommt am Ende. Ältere Stellen, die vom PS1-Look her gedacht sind (kleine Texturen, `Closest`),
+  sind kein Vorbild.
+
+### Modelle (`assets/models/`)
+
+Gemeinsame Regeln:
+- **Lage:** Ursprung meist mittig unten, Vorderseite nach +Z (Ausnahmen in der Tabelle; Figuren blicken nach −Z).
+  Maße in Metern. Die Bauskripte geben Werte aus, die als Konstanten ins Spiel gehören (z. B. `GuestBody.BODIES`,
+  `TREE_MODELS`, `Flashlight.LENS`) – nach jedem Neubau übernehmen. Wie ein Skript arbeitet, steht in seinem
+  Kopfkommentar.
+- **Material:** `Mat.model(pfad, mesh, fläche)` macht aus der Farbtextur der GLB ein `Mat.psx` (eins pro Textur,
+  Grundfarbe 0,8 Grau – Farbtöne gehören in die Textur, die Materialfarbe der GLB wird ignoriert; `two_sided` für
+  einseitige Blätter, `cutout` für Alpha-Blätter). Flächen mit sprechenden Namen (`glass`, `lens`, `brass` …)
+  bekommen im Spiel eigene Materialien.
+- **Texturen unkomprimiert einbetten**, wo Godots VRAM-Kompression (S3TC, 4×4-Blöcke) an UV-Nähten Farben
+  verschmiert (Meshy-Modelle: helle Streifen an Ärmeln und Nähten) oder feine Fugen flimmern (Discokugel):
+  `gltf/embedded_image_handling=3` („Embed as Uncompressed“) in der `.glb.import`, geschrieben von
+  `tools/meshy_tex.py` (`write_import`). Diese `.import`-Dateien sind als Ausnahme im Repo (`.gitignore`). Eine
+  `.import` der herausgezogenen PNG reicht nicht – ohne die (gitignorierte) PNG zieht Godot sie nicht neu heraus.
+- **Meshy-Netze nicht ausdünnen:** Reduzieren zieht Dreiecke über Meshys winzige UV-Inseln und macht Schlieren;
+  Farbtextur als PNG (JPEG färbt die Inselränder), Lücken zwischen den Inseln vor dem Verkleinern füllen
+  (`meshy_tex.py`).
+- **Lizenzen:** Sketchfab-Modelle sind meist CC-BY 4.0 – Namensnennung im README nötig. Ausnahmen: die
+  Kerzenflamme ist **CC-BY-SA 4.0** (Änderungen unter gleicher Lizenz), das Brecheisen „Sketchfab Standard“ (keine
+  Namensnennung, darf aber nicht einzeln weitergegeben werden). Mixamo-FBX liegen nicht im Repo (keine Weitergabe der
+  Rohdateien). Rohmodelle liegen in `assets/source/`.
+
+| Datei | Im Spiel | Bauskript, Quelle | Worauf achten |
+|-------|----------|-------------------|---------------|
+| `couch.glb` | Lobby-Sofas, `LevelBuilder._couch` | Rohmodell in Blender-Einheiten | `COUCH_SCALE`; Kollision zwei Boxen |
+| `bottles.glb` | Barflaschen (`bottle_NN`) | `build_bottles.py`, Sketchfab-Paket | je Fach zwei auf beiden Glasböden (`BACK_BAR_SHELVES`) |
+| `record_player.glb` | `RecordPlayer` | `build_record_player.py` | Platte `record` eigene Scheibe mit Ursprung auf der Drehachse |
+| `clock.glb` | Wanduhr `WallClock`, `LevelBuilder._clock` | `build_clock.py` | Zeiger aus dem Rahmennetz getrennt (`hour_hand`/`minute_hand`, auf 12 Uhr), drehen um lokal −Z; mattes Schwarz `WallClock.IRON` – poliertes Eisen ging vor der roten Tapete unter |
+| `reception.glb` | Rezeption, `_reception` | `build_reception.py`, neu gebaut nach Sketchfab-Vorbild (nur dessen Texturen) | Kollision und NavMesh aus dem Netz (`create_trimesh_shape`) wegen der Rundungen; Planrechtecke bleiben in `_furnishings` (Höhe für Telefon, Kerze, Katzen) |
+| `planter.glb` | Pflanzkübel, `_planter` | `build_planter.py`, Meshy | Kollision bis Beckenkante `PLANTER_H`; Blätter `two_sided` |
+| `tree_1…3.glb` | Gartenbäume, `_tree` | `build_trees.py`, „Realistic Trees Collection“ (Jungle Jim, CC-BY) | Zeile für `TREE_MODELS`; Blätter `cutout` (`psx_leaves`); Kollision nur Stamm bis `TREE_TRUNK_H` – unter der Krone kann man durch; der Plan zeigt nur den Standort |
+| `bench.glb` | Parkbänke draußen, `_bench` | `build_bench.py`, Sketchfab (Decoratopia, CC-BY) | Kollision aus `BENCH_SEAT` und Lehne; drinnen bleibt der Holzkasten |
+| `room_table.glb` | Tischgruppen in Zimmern, `_room_table` | `build_room_table.py`, Sketchfab (MaX3Dd, CC-BY) | immer zwei Stühle gegenüber; Plan-Stühle im Umkreis `ROOM_CHAIR_REACH` fallen weg |
+| `washbasin`, `shower`, `toilet`, `bar_counter`, `back_bar`, `bar_stool` | Bad und Bar | `build_fixtures.py`, Rohmodelle des Nutzers | Flächen nach Namen (`_fixture_materials`); siehe unten „Bad und Bar“ |
+| `flashlight.glb` | `Flashlight` | `build_flashlight.py`, Sketchfab (Onur, CC-BY) | Glas `lens` bekommt das Lampenmaterial; Kegel an `Flashlight.LENS` |
+| `crowbar.glb` | Item `CROWBAR` | `build_crowbar.py`, Sketchfab (SketchyBot, Standard-Lizenz) | hängt unter `_swing`, damit `_apply_held_pose` es aufrichtet |
+| `matchbox.glb` | Item `MATCHBOX` | `build_matchbox.py`, Sketchfab (Freepoly.org, CC-BY) | liegt flach |
+| `bulb.glb` | `Lamp.build_bulb`, Item `BULB` | `build_bulb.py`, Sketchfab (Mirai, CC-BY) | `glass` bekommt Lampenmaterial bzw. Glasfarbe; an der Decke kopfüber, `BULB_SCREWED_IN` in der Fassung |
+| `wall_lamp.glb` | `Lamp._build_wall` | Blender-Modell ohne Bauskript | `WALL_SCALE`; Kugel leuchtet mit dem Material der Birne, die Birne ist ein leerer Knoten (herausdrehen geht wie sonst); Licht `WALL_LIGHT` vor der Wand – sonst zeichnet die Leuchte einen Schattenkeil an die Wand |
+| `mug.glb` | `Item.build_cup` (Kaffee, Tee, Tabletts) | `build_mug.py`, Sketchfab (Ole Gunnar Isager, CC-BY) | Oberflächen `coffee`/`tea`, `build_cup` entfernt die ungenutzte; Tassen auf dem Tablett quer, Henkel zu den Gästen |
+| `candle.glb`, `candle_flame.glb` | `CandleModel` (Item `CANDLE`, `FixedCandle`, Vorrat in `ResourceSpot`) | `build_candle.py` aus drei Sketchfab-Modellen (Kerze, Teller CC-BY; Flamme **CC-BY-SA**) | Flamme: 100 Formschlüssel → `CandleModel._load` macht 100 Netze, `CandleFlame` tauscht mit `FPS` das Netz (keine Blend-Shapes, kein AnimationPlayer je Kerze), steht immer senkrecht (auch an gekippter oder liegender Kerze), `FLAME_WIDEN` breiter als das Netz. Farbe aus `shaders/candle_flame.gdshader`, auf das Bild ohne PS1-Look ausgelegt (Vorbild Kerzenfoto): additiv in HDR – Kern `core_energy` wird unter Filmic weiß, Hülle gelb → orange zu Spitze und Rand, Fuß schwach blau mit violettem Übergang, innen dunkel; Lichthof-Billboard (`halo`, `HALO_SIZE`) in zwei Stufen, `halo_pull` zur Kamera gezogen (steckt nicht in der Kerze) und weich vor Flächen dahinter (Tiefentextur, `halo_soft`). **Wachs:** eigener Shader `shaders/candle_wax.gdshader` (in `PSX_SHADERS`) – Licht greift herum (`wrap`), schimmert durch (`scatter`), matter Glanz; `instance uniform glow` lässt das Wachs unter der Flamme glühen (`glow_depth`), `CandleFlame` setzt es bei jeder Sichtbarkeitsänderung (Wachs als Meta „candle_wax“ am Elternknoten aus `build`). Nahaufnahme: `--kerzen=nah`. `candle_red` noch ungenutzt |
+| `disco_ball.glb` | `DiscoBall` | `build_disco_ball.py`, Sketchfab (araghon007, CC-BY) | glatte Kugel mit gebackener Normal Map, exakte Plättchennormalen (Rauschen ließe Spiegelbilder zittern); unkomprimiert, `DiscoBall` erzeugt Mipmaps selbst (sonst flimmern die Fugen) |
+| `cat.glb` | `HotelCat` | `build_cat.py`, Meshy (Rig-Preset „Hund“) | Größe und Blickrichtung nur am Wurzelknoten der Armatur – angewendet würden Translations-Schlüssel nicht mitskaliert |
+| `ghost.glb` | `SheetGhost` | `build_ghost.py`, Meshy ohne Rig | eigenes Skelett mit Fingern; lokal X der Finger beugt zur Handfläche |
+| `guest_<name>.glb` | `GuestBody` | `build_guest.py`, Meshy (Mixamo-Vorlage) | siehe unten „Gastkörper“ |
+| `doll.glb` | `JuryDoll` | `doll_weights.py`, dann `build_doll.py` | siehe unten „Puppe“ |
+| `pumpkin_man.glb` | `PumpkinMan` | `build_pumpkin.py`, Meshy (Figur + Axt) | siehe unten „Kürbismann“ |
+| `pumpkins.glb` | `PumpkinModel` | `build_pumpkins.py`, Meshy-Kürbisgruppe, Textur prozedural gebacken | `psx_model.gdshader` (in `PSX_SHADERS`); `PumpkinModel.material` je Kürbis ein eigenes Material, reife Früchte an der Pflanze teilen `shared_material()` |
+| `monster.glb` | `Monster` | `build_monster.py`, Meshy | siehe 5, „Aussehen & Animation“ |
+| `pool_handrail.glb` | `HANDRAIL_MODEL` | `build_handrail.py` | Tiefe und Lauf der Treppe sind eingebacken und müssen zu `_pool` passen |
+| `lantern.glb` | Gartenlaterne, `LANTERN_MODEL` | `build_lantern.py`, nach Skizze des Nutzers | Licht in der Glasmitte (`LANTERN_LIGHT_Y`), Kopf und Glas werfen keinen Schatten |
+| `door_hotel.glb`, `door_attic.glb` | `Door.Look` | `build_doors.py` aus den Pixelbildern `assets/source/door_*.png` | Blattgröße `Door.HOTEL_LEAF`/`ATTIC_LEAF` muss zu `size` im Skript passen; Scharnierkante x = 0, Aufgehseite +Z |
+| `frames.glb` | `OpeningFrame` | `build_frames.py` | siehe unten „Rahmen“ |
+| `boiler.glb`, `pipes.glb` | `Boiler`, `PipeKit` | `build_boiler.py` | siehe 4, „Untergeschoss“ |
+
+**Bad und Bar** (`build_fixtures.py`): Flächen `tiles` = Fliesen des Raums (`_bath_tiles`, in Toiletten
+`_wall_tiles`, Weltkoordinaten), `ceramic`, `steel`/`chrome`/`brass` = `Mat.metal`, `glass`, `cushion`. **Fliesenmaß:**
+Waschtisch und Duschsockel messen Vielfache einer Fliese und stehen auf dem Fugenraster, damit die Fugen über sie
+hinweglaufen. Die Fliesenhaut liegt `SKIN_FRONT` vor der Wandfläche des Plans – Wandsachen (Becken, Rosetten) sitzen
+deshalb um `SKIN_FRONT` vorgerückt, flache (Drückerplatte) setzt das Skript davor (`PLATE_GAP`). Spiegelglas des
+Rohmodells fällt weg, an seiner Stelle ein `Mirror` (8). Dusche: wird gespiegelt, wenn die Wand rechts steht
+(`_wall_beside`); Kollisionsblock bis `SHOWER_BLOCK` – **zu hoch fürs NavMesh**, sonst schickte es Gäste durchs Glas
+auf die Wanne; Glasseiten auf Ebene 7. WC: Sitzplatz `Seat` „klo“. Bar: Das Barregal steht mit der Rückseite an der
+Wand hinter dem Plan-Regal (`_bar_wall`), die Theke so weit davor, dass ihr Rückschenkel ans Regal stößt
+(`BAR_RETURN`) – der Plan hätte zu wenig Gang. `_furnishings`: `bar_counter` (Flaschen, Dosen, Kaffee),
+`bar_return`, `shelf`; `bar_spots` zwischen den Hockern.
+
+**Gastkörper** (`build_guest.py`, Spielkonzept 6.0): Meshy-Auto-Rigging mit Skelettvorlage **Mixamo** („Alle
+hinzugefügt“), Knochen ohne `mixamorig:`. Netz unverändert. **Färbemaske** als Punktfarbe (R/G/B = Oberteil/Hose/
+Haare; Haare = größtes zusammenhängendes Stück am Kopf, `HAIR_MIN_PART`), `psx_guest.gdshader` färbt nur graue
+Texel. Formschlüssel `build` (Körperbau) und `fit` (definiert, für die Spielerfigur, Spielkonzept 3.9). Das Skript
+gibt die Zeile für `GuestBody.BODIES` aus. Kinderkörper haben ein kleines Skelett (keine Finger) und kommen in
+Zentimetern – Skript und `retarget()` rechnen das ein. Arme, die in Meshys Ruhepose weiter als `ARM_MAX` abstehen,
+dreht das Skript auf `ARM_DOWN` (übrige Körper bauen byte-gleich). `guest_woman_young` ist vorläufig (Meshy klappt
+die Hände beim Gehen ab).
+**Mixamo-Animationen:** jede `assets/source/anim/<name>.fbx` („Without Skin“, 30 fps) landet als Animation in
+**jeder** Gast-GLB. Umbenennen reicht nicht (Mixamo steht in T-Pose, die Gäste mit hängenden Armen): `retarget()`
+(`tools/mixamo_retarget.py`, auch für den Kürbismann) rechnet die Weltdrehungen gegen die T-Pose der Quelle um,
+mittelt seitliches Wandern der Hüfte heraus (`DRIFT_WINDOW`, tanzt auf der Stelle) und behält die Szenen-Bildrate
+(sonst liefen `walk`/`run` zu schnell). **SmartRig → Mixamo** (`tools/smartrig_to_mixamo.py`): Meshy-Figuren mit
+„SmartRig“ bekommen Mixamos Skelett; Zuordnung in `MAP`, Finger prüft es an den Gewichten.
+
+**Puppe** (`JuryDoll`, Spielkonzept 5.5): Meshy mit Mixamo-Vorlage, in zwei Schritten – `tools/doll_weights.py`
+(reines Python, ändert nur `JOINTS_0`/`WEIGHTS_0`) trennt Meshys verschmierte Gewichte an Beinen und Ärmeln, lässt aber
+den Streifen, wo Ärmel und Mieder verschmolzen sind (`SLEEVE_IN`…`SLEEVE_OUT`), und die Haare – harte Trennung dort
+spannte beim Armschwingen eine Haut. Dann `build_doll.py`; es legt den Formschlüssel **„sit“** an: Der Rock hängt an
+den Oberschenkeln und dreht beim Sitzen mit – seine Glocke stünde vorn über den Knien hoch. „sit“ drückt jeden Rockpunkt
+unter dem Hüftgelenk zur späteren Sitzfläche hin flach (`SKIRT_THIGH`, `SKIRT_SEAT`, `SKIRT_LAP`, `SKIRT_RAMP`).
+Sitzen und Aufstehen macht das Spiel (5, „Die Puppe“).
+
+**Kürbismann** (`build_pumpkin.py`): Meshy-Figur (kleines Mixamo-Skelett, Zentimeter → Meter, auf `HEIGHT`) und
+Axt. Animationen von Meshy (`spin_jump` auf die Stelle gesetzt), dazu alle Mixamo-FBX wie bei den Gästen und aus
+`assets/source/anim/pumpkin/` nur für ihn (`attack`). **Axt** ist ein starres Objekt am Knochen `RightHand` (Mixamos
+Schläge sind rechtshändig) → in Godot `BoneAttachment3D` mit `axe` (`PumpkinMan.axe`): folgt jeder Animation, lässt
+sich ausblenden, abnehmen, werfen. Ohne Fingerknochen biegt das Skript die Finger der Axthand im Netz zur Faust. Für
+`walk`/`run` dämpft es den Axtarm (`AXE_ARM`, `AXE_SWING`) – sonst kreiste die starre Axt fast einmal herum.
+
+**Rahmen** (`frames.glb`, `OpeningFrame`, Spielkonzept 7.2): 1 m lange Profilteile (`casing`, `fillet`, `frieze`,
+`cap`, `stool`, `board`), im Spiel nur in der Länge gestreckt und je Öffnung zu einem Mesh gefügt (gleiche Öffnungen
+teilen es). Die Teile stecken in der Wand und **überlappen sich** (`OpeningFrame.TUCK`): Beim Vertex-Snapping rastet
+jedes Teil für sich ein, bloß aneinanderstoßende öffnen Fugen. Das Rahmenmaterial (`trim_material()` = `Mat.layer`)
+zieht leicht zur Kamera, die Laibungen tragen dasselbe Holz (rutscht die Zarge weg, sieht man Holz statt Tapete). Für
+`Door` und `HotelWindow`; Durchgänge ohne Tür haben nur die Laibungen (`Geo.wall_mesh`, Fläche 1). Reine Optik, keine
+Kollision, nicht im Spielstand.
+
+### Klänge (`assets/sound/`)
+Einzelne Aufnahmen statt `SynthAudio`: Lakengeist-Atmosphäre (`ghost_ambience.mp3`, `SheetGhost._ambience`),
+Schritte `step_carpet`/`step_tiles` (`Footsteps`), `door_open`, Totenglocke `church_bell` (`SynthAudio.SAMPLES`), Atem
+`breath` (`SynthAudio.BREATH`), Feiermusik `party_1/2` (`RecordPlayer.TRACKS`), Axttreffer `axe_hit`
+(`PumpkinMan.HIT_SOUND`), Vorspann `splash_wave` (`SlideShow`), Schreie in `screams/` (`SynthAudio.VOICES`, siehe 2).
+
+### Texturen
+**Tapeten** `assets/textures/wallpaper_<variante>.png` + gemeinsame Höhenkarte `wallpaper_bump.png`, siehe 8,
+„Optik“.
+
+**Fototexturen** (PBR-Sets, je ein Ordner `assets/textures/<set>/`): `Mat.photo(pfad, meter, normal_pfad,
+rauheit_pfad, glanz)` mit `shaders/psx_photo.gdshader`, Projektion in Weltkoordinaten; `object_uv` in
+Modellkoordinaten (für Bewegtes wie die Aufzugskabine – in Weltkoordinaten wanderte die Textur), `mesh_uv` über die
+UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
+- Zwei Detailstufen (`PHOTO_SIZE_PSX`/`_SMOOTH`); die Normal Map (OpenGL-Format) wirkt nur ohne PS1-Look.
+  `Settings.apply` → `Mat.set_photo_detail` schaltet alle Fotomaterialien um. Tangente aus der Hauptachse der Fläche.
+- **Glanz** nur bei glatten Oberflächen (polierte Fliesen, Lack, Metall): `glanz` > 0 (`specular`), Rauheit aus dem
+  Rotkanal. `specular` 0 bleibt matt (Godot rechnet mit F0 = 0 auch am Rand keinen Glanz).
+- **Bildschirmspiegelung** (SSR, `main._setup_environment`; `Settings.reflections` → `env.ssr_enabled` und
+  Shader-Global `reflections`, das `metallic` mit ausschaltet – sonst wäre der Boden ohne SSR nur dunkler): spiegelt
+  nur, was im Bild ist, und rechnet für Nichtmetalle fest mit 4 % – `specular` ändert daran nichts. Sichtbarer wird
+  sie über `metallic` und `roughness_scale`. Das Environment spiegelt nichts (kein Himmel in Tapete und Fliesen).
+- **Nicht genutzt:** AO-Karten (wirken in Godot nur aufs Umgebungslicht, das im Hotel fast null ist), Metallic-Karten,
+  Height/Parallax.
+- **Böden mit Fototextur** nennen `Footsteps.floor_under` ihre Bodenart per `set_meta("floor", …)` (Lobby
+  `"tiles"`); ohne Meta klingen sie wie Holz.
+- **Neues Set:** Der Ordner ist eine Kopie (Originale hat der Nutzer). Erst prüfen:
+  `godot --headless --path . -s tools/photo_set.gd -- assets/textures/<set>` (Größe, Wertebereich – einfarbige
+  Karten sind leer –, Format der Normal Map; liefert ein Set beide, die OpenGL-Variante nehmen). Karten je Look
+  bewerten, Maßstab am Bild schätzen, dann zuschneiden:
+  `… -- assets/textures/<set> basecolor normalogl roughness:512 [--dx] [--ao[=stärke]]` – behält die Karten mit
+  diesen Stichwörtern, verkleinert, dreht mit `--dx` Grün (DirectX → OpenGL), backt mit `--ao` die AO ins Farbbild
+  (für Sets, deren Muster fast nur in AO/Normal steckt) und löscht den Rest. Herkunft und Lizenz vor dem Commit
+  klären; bisher alle Sets von Julio Sillet (JulioVII, itch.io, CC-BY) – Namensnennung im README.
+- **Verwendet** (Maßstab je Konstante `*_METERS`, Glanz `*_SPECULAR`):
+
+| Set | Wo | Hinweis |
+|-----|----|---------|
+| `Concrete_WoodPattern_01` | Kellerwände (`_cellar_wall`) | `CELLAR_WALL_METERS` |
+| `TilesMarble_01` | Lobbyboden (`_floor`) | Spiegelanteil `LOBBY_FLOOR_MIRROR`, `LOBBY_FLOOR_ROUGHNESS_SCALE` |
+| `pool` (Tiles_06) | Poolbecken, Rand, Einstiegstreppen (`_pool_tiles`) | Fugen treffen die Beckenkanten (`POOL_TILES_METERS`) |
+| `TilesBasic_01` | Pool-Umgang (`pool_deck`) | |
+| `Stone_EngraveWall_01` | Poolhalle, Wände (Haut der Seite `pool`) | AO eingebacken – ohne fast musterlos |
+| Tiles_06 beige | Bäder bis `BATH_TILE_HEIGHT`, Boden, Wannensockel (`_bath_tiles`) | Farbbild mit `tools/tint_tiles.gd` umgefärbt; Weltkoordinaten, die Fugen laufen durch |
+| `Scifi_PaintedWall_01` | Bad darüber und Decke (`_bath_paint`) | |
+| `StoneWall_01` | Kieswege (`gravel`) | `GRAVEL_NORMAL_STRENGTH` – ohne wirkten sie flach |
+| `StoneFloor_02` | Außenwände (Haut der Seite `outside`, `_facade`) | |
+| `Wood_Panels_01` | alle Holzdecken (`_ceiling`, `_room_ceiling`), Aufzugskabine | aufgehellt `CEILING_SHADE`/`ROOM_CEILING_SHADE` |
+| `WoodenFloor_03` | alle Holzböden (`_wood_floor`) | |
+| `Wood_02` | Balkenbett, Stützbalken (`Mat.wood`, UVs von `Geo.grain_box`); grobe Bohlen des Dachgeschosses (`Mat.planks`: Bild aus Brettern mit Stößen, Fugen und Abdunklung, `PLANK_*`, `Mat._photo_from`) | Hirnholz aus TexGen `wood_end` |
+| `Fabric_Pattern_08` | Laken und Kissen (`BedModel.FABRIC_METERS`, Modellkoordinaten) | |
+| `TerrazzoDark_01` | Säulen der Lobby (`_pillar`), Platte des Couchtischs (`_coffee_table`) | |
 
 ## 2. Aufbau zur Laufzeit
 
@@ -487,65 +206,45 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
 | `SaveManager` | `scripts/autoload/save_manager.gd` | Speichern/Laden, Autosave, Tagebuchsatz |
 
 ### `Game` als Drehscheibe
-`main.gd` erzeugt die Systeme und trägt sie in `Game` ein: `player`, `monster`, `ghost`, `pumpkin`, `director`, `social`,
-`traces`, `audio`, `hud`, `dialog`, `phones`, `dice`, `menus`, `doll` (Puppe, 5.5), `contest` (Türschmuck-Wettbewerb, 2.5), `shower_scare` (Dusche, 4.24). Systeme rufen sich **direkt** über diese
-Referenzen auf (`Game.director.on_noise(...)`), nicht über Signale. Signale gibt es nur für
-UI-nahe Dinge (`Game.message_posted`, `money_changed`, `player_died`, `caption_posted`,
-`Settings.changed`, `SaveManager.autosaved`).
+`main.gd` erzeugt die Systeme und trägt sie in `Game` ein: `player`, `monster`, `ghost`, `pumpkin`, `director`,
+`social`, `traces`, `audio`, `hud`, `dialog`, `phones`, `dice`, `menus`, `doll` (Puppe, 5.5), `contest`
+(Türschmuck-Wettbewerb, 2.5), `sleep_skip`, `shower_scare` (Dusche, 4.24), `weather` …. Systeme rufen sich **direkt** über diese Referenzen auf
+(`Game.director.on_noise(...)`), nicht über Signale. Signale gibt es nur für UI-nahe Dinge (`Game.message_posted`,
+`money_changed`, `player_died`, `caption_posted`, `Settings.changed`, `SaveManager.autosaved`).
 
 - Referenzen können `null` sein (Titelbildschirm, Szenenwechsel) → bei Aufrufen aus Welt-Objekten
   mit `if Game.traces:` / `if Game.social:` absichern.
 - `Game.reset()` am Anfang von `main._ready()` leert alles.
 - Text für den Spieler: `Game.say(text, dauer)`. **Geräusch in der Welt:** `Game.noise(art, ort, quelle)`
-  – Geräusch *und* Lärm in einem (siehe 8a). Nur reine UI-, Meldungs- und Monster-Stinger-Geräusche
-  gehen direkt über `Game.play_sound(kind, volume)` – setzt bei Lautstärke ≥ 0,3 auch Untertitel
-  (`Game.SOUND_CAPTIONS`). Sound-Arten stehen in `SynthAudio.play_shot` (`scream`, `sting`, `growl`,
-  `gasp`, `bang`, `blip`, `creak`, `thud`, `knock`, `ring`). Arten mit echtem Klang stehen in
-  `SynthAudio.SAMPLES` (Datei mono mit Spitze −6 dB, Pegel in dB) und laufen reihum über `SAMPLE_VOICES`
-  eigene `AudioStreamPlayer` – bisher `door` (Hoteltüren, aus `temp/audio/104533__skyumori__door_open_02.wav`).
-  Lange Klänge mit `"solo"` bekommen eine eigene Stimme, die kein anderer abbricht (`_solo_voices`): `bell`
-  (Totenglocke, mono 11 kHz, 4,4 s) – `Social.on_guest_died` spielt sie bei jedem toten Gast nach `BELL_DELAY`
-  (3 s, Timer pausiert mit dem Spiel), überall gleich laut, Untertitel `[Eine Totenglocke läutet]`. Nicht beim
-  Laden (`SaveManager` ruft nur `Guest.die`) und nicht beim Tod des Spielers. Ebenfalls über `SAMPLES`:
-  `shriek` (Kreischen beim Spielertod durch Monster, Lakengeist und Kürbismann, „solo“) und `cry` (die
-  Hotelkatze auf der Flucht, Lärm `cat_cry`).
+  – Geräusch *und* Lärm in einem (siehe 8a). **Nur Klang, ohne Lärm:** `Game.sound_at(klang, ort, hörweite, quelle,
+  lautstärke)` – so laut, wie der Spieler es hört, aber niemand reagiert. Reine UI-, Meldungs- und Stinger-Geräusche
+  gehen direkt über `Game.play_sound(kind, volume)` – ab Lautstärke 0,3 mit Untertitel (`Game.SOUND_CAPTIONS`).
+- **Klangarten:** synthetisch in `SynthAudio.play_shot`; Aufnahmen in `SynthAudio.SAMPLES` (Datei mono, Spitze
+  −6 dB, Pegel in dB), reihum über `SAMPLE_VOICES` Player. Lange Klänge mit `"solo"` bekommen eine eigene Stimme, die
+  niemand abbricht (`_solo_voices`): `bell` (Totenglocke – `Social.on_guest_died` nach `BELL_DELAY`, nicht beim Laden,
+  nicht beim Tod des Spielers), `shriek` (Spielertod). `cry` = Hotelkatze auf der Flucht.
 - **Menschliche Laute (Schreie):** `SynthAudio.VOICES` – Klang → Aufnahmen je Stimme (`m`, `f`, `child`), Pegel,
-  Tonhöhe (`pitch`) und Abbruch (`cut`). Gespielt, wenn `Game.play_sound` Ort und Quelle bekommt und die Quelle
-  `voice()` hat (`Guest.voice()`: Stimme, feste Aufnahme nach `hash(id)`, Tonhöhe, Länge). Jeder Gast klingt
-  immer gleich: Grundtonhöhe ± `VOICE_SPREAD` nach der Id, × `VOICE_AGE` (alt tiefer, jung höher), Kinder nach
-  Alter und Geschlecht (die Aufnahmen sind Mädchen), Angst höher (`VOICE_FEAR`), Rausch tiefer (`VOICE_DRUNK`),
-  dazu jedes Mal ± `VOICE_JITTER`. Tonhöhe ändert auch die Länge (`pitch_scale`). Pegel der Schreie seit
-  2026-10-22 deutlich höher: `scream` +6 dB, `death_scream` +7 dB (Aufnahmen mit Spitze −6 dB, also knapp
-  unter Vollaussteuerung), Lärm `scream` mit Lautstärke 1,0. Der Schreckensschrei `scream`
-  läuft bei Mutigen kürzer (bis `VOICE_BRAVE` früher abgeblendet), der Todesschrei `death_scream` ist tiefer und
-  bricht bei 45–75 % jäh ab (`VOICE_FADE`), das Ächzen `grunt` gibt es nur für Männer. Sie laufen auf
-  `VOICE_PLAYERS` `AudioStreamPlayer3D` am Ort des Gastes (ohne Abschwächung über die Entfernung – die Lautstärke
-  kommt gedämpft aus `Game.sound_at`, der Lautsprecher gibt nur die Richtung); wer schon ruft, nimmt seinen
-  eigenen, `cut_voice(wer)` blendet ab. Ohne passende Stimme spielt `synth` (der synthetische `scream`).
-  **Wo:** Lärm `scream` (erschreckt: `_scare_guest`, Kinder, Klopfen an Zimmer 13 – abgewiesen und überlebt),
-  Lärm `death_scream` (vom Monster geholt, `kill_guest`, eigener Eintrag in `Social.HEARD_TEXT`), Kürbismann:
-  `Guest.cower` schreit beim Ausholen (nur Klang), der Treffer bricht ihn ab und ein Mann ächzt; Lakengeist:
-  ein Mann ächzt, wenn er erwürgt wird (nur Klang, `Senses.GRUNT_RANGE`). Feste Gäste haben dafür `sex`/`gen`
-  im Profil. **Aufnahmen** aus `temp/audio/screams/` (Ordner `male_scream`, `female_scream`, `child_scream`,
-  `male_grunt`, `feline`, `monster_scream`, nummeriert in Ordnerreihenfolge; `male_1` ist der Wilhelmsschrei – bewusst drin): mono 44,1 kHz, Stille vorn und
-  hinten weg, auf gleiche Lautheit (Mittel −18 dB, Spitze höchstens −6 dB). Neue Aufnahme: umwandeln wie
-  diese und den Namen in `SCREAMS` (bzw. `VOICES`) eintragen.
-- **Nur Klang, ohne Lärm:** `Game.sound_at(klang, ort, hörweite, quelle, lautstärke)` – so laut, wie der Spieler
-  es hört (dieselbe Rechnung wie `noise`, die sie benutzt), aber niemand sonst reagiert.
+  Tonhöhe, Abbruch. Gespielt, wenn `Game.play_sound` Ort und Quelle bekommt und die Quelle `voice()` hat
+  (`Guest.voice()`): Jeder Gast klingt immer gleich (Aufnahme und Grundtonhöhe nach `hash(id)`, `VOICE_AGE`), Angst
+  höher, Rausch tiefer, dazu `VOICE_JITTER`. `death_scream` bricht jäh ab (`VOICE_FADE`), `grunt` nur Männer. Die
+  `AudioStreamPlayer3D` (`VOICE_PLAYERS`) haben keine Entfernungsabschwächung – die Lautstärke kommt gedämpft aus
+  `Game.sound_at`, der Lautsprecher gibt nur die Richtung. Ohne passende Stimme spielt der synthetische `scream`.
+  **Aufnahmen** in `assets/sound/screams/` (aus `temp/audio/screams/`): mono 44,1 kHz, Stille vorn und hinten weg, auf
+  gleiche Lautheit (Mittel −18 dB, Spitze höchstens −6 dB); neue Aufnahme genauso umwandeln und in `SCREAMS`/`VOICES`
+  eintragen. `male_1` ist der Wilhelmsschrei – bewusst.
 
 ### Reihenfolge in `main._ready()`
-Umgebung → `LevelBuilder.build()` → NavMesh backen → SynthAudio → ShadowBudget → Traces → Player (mit
-`PlayerBody.default_look()`) →
-Monster → MonsterDirector (`setup(builder, monster)`) → Post-FX → Social (`setup(builder, self)`,
-erzeugt die Gäste) → Puppe → DoorContest (`setup(builder)`: Brett, Brief) → Katzen → … → Dialog → PhoneCalls (findet die Telefone) → DiceMatch → ChessMatch → Hud → Menus → dann entweder Spielstand anwenden
+Umgebung → `LevelBuilder.refresh_maps()` / `build()` → NavMesh backen → SynthAudio → ShadowBudget → Traces → Player
+(mit `PlayerBody.default_look()`) → Monster → MonsterDirector (`setup(builder, monster)`) → Post-FX → Social
+(`setup(builder, self)`, erzeugt die Gäste) → Puppe → DoorContest (`setup(builder)`: Brett, Brief) → Katzen → … →
+Dialog → PhoneCalls (findet die Telefone) → DiceMatch → ChessMatch → Hud → Menus → dann entweder Spielstand anwenden
 (`_load_pending`, deferred) oder Neues Spiel: vom Titelbildschirm erst die Charaktererstellung (`_start_creation`,
 `CharacterCreation`), nach „Ja“ der Gedanke an den Brief (`DoorContest.welcome`) und Startzustand speichern
-(Tagebuchsatz `DoorContest.ARRIVAL_ENTRY`); Debug-Starts ohne `--figur` sofort mit Standardfigur und Gedanken
-(`--nointro`: ohne). Zum Schluss
-`_parse_debug_args` (deferred).
+(Tagebuchsatz `DoorContest.ARRIVAL_ENTRY`); Debug-Starts ohne `--figur` sofort mit Standardfigur (`--nointro`: ohne
+Gedanken). Zum Schluss `_parse_debug_args` (deferred).
 
-**Wichtig:** Die Reihenfolge, in der der LevelBuilder Objekte erzeugt, ist Teil des
-Speicherformats (siehe 7) – ändert sie sich, passen alte Spielstände nicht mehr (Fingerabdruck).
+**Wichtig:** Die Reihenfolge, in der der LevelBuilder Objekte erzeugt, ist Teil des Speicherformats (siehe 7) –
+ändert sie sich, lehnt der Fingerabdruck alte Spielstände ab.
 
 ### Szenenbaum (grob)
 ```
@@ -553,26 +252,28 @@ Main (Node3D, main.gd)
 ├─ WorldEnvironment (Nachthimmel), DirectionalLight (Mond)
 ├─ Level (NavigationRegion3D)        ← statische Geometrie, Türen, Lampen, Schalter, Verstecke …
 │   ├─ Wände, Böden, Decken, Türen … ← aus assets/maps/eg.json, direkt unter Level
-│   ├─ Zimmer_0101 …                 ← je Zimmer ein gedrehter Rahmen (Ursprung = Türmitte)
+│   ├─ Zimmer_013 …                  ← je Zimmer ein gedrehter Rahmen (Ursprung = Türmitte)
 │   ├─ Treppenhaus                   ← Rahmen des Schachts Ost (Läufe, Podeste, Mittelwand vom UG bis oben)
-│   ├─ Obergeschoss (y 4)            ← dasselbe aus assets/maps/og1.json, Zimmer_1101 …
+│   ├─ Obergeschoss (y 4)            ← dasselbe aus assets/maps/og1.json
+│   ├─ Dachgeschoss (y 8)            ← eigener Durchgang aus assets/maps/dg.json
 │   └─ Untergeschoss (y −4)          ← dasselbe aus assets/maps/ug.json, darin der Heizkeller
 ├─ Items, Gäste, Plattenspieler      ← dynamisch, direkt unter Main (LevelBuilder.world)
-├─ Aufzug_1, Aufzug_2                ← Elevator je Schacht (bewegte Kabine – nicht im NavMesh), direkt unter Main
-├─ SynthAudio, ShadowBudget, Traces, Player, Monster, MonsterDirector, Social, PhoneCalls
+├─ Aufzug_1, Aufzug_2                ← Elevator je Schacht (bewegte Kabine – nicht im NavMesh)
+├─ SynthAudio, ShadowBudget, Traces, Player, Monster, MonsterDirector, Social, PhoneCalls …
 └─ CanvasLayer: PostFx (5), Hud (10), Dialog/DiceMatch/ChessMatch/PhoneUI (15), DeathScreen (20), Menus (30)
 ```
 
 ## 3. Konventionen
 
 ### Koordinaten & Ausrichtung
-- 1 Einheit = 1 m. Erdgeschoss y = 0, Obergeschoss y = `LevelBuilder.UP_Y` (4), Untergeschoss y =
-  `LevelBuilder.CELLAR_Y` (−4).
-- Ursprung = Mitte des Haupteingangs auf der Südwand; x nach Osten, z nach Süden (Norden = −Z). Das Gebäude
-  reicht etwa von x −76 … 76 und z −112 … 0, die Lobby liegt in der Mitte (x ±7,4, z −28 … 0).
+- 1 Einheit = 1 m. Erdgeschoss y = 0, Stockwerke je `LevelBuilder.UP_Y` höher, Untergeschoss y =
+  `LevelBuilder.CELLAR_Y`.
+- Ursprung = Mitte des Haupteingangs auf der Südwand; x nach Osten, z nach Süden (Norden = −Z), die Lobby liegt
+  mittig nördlich davon.
 - **Lokale +Z zeigt „nach vorn / in den Raum / von der Wand weg“** (Items: Vorderseite, Verstecke:
-  heraus, Fenster/Schalter/Kalender/Spuren: in den Raum). Ausnahme: Monster schaut entlang **−Z**.
-- Ursprung von Gegenständen = Unterseite; von Türen = Rahmenecke am Boden (Scharnier, mit `hinge_end` die andere Ecke); von Fenstern = Mitte der Öffnung.
+  heraus, Fenster/Schalter/Kalender/Spuren: in den Raum). Ausnahme: Figuren (Monster, Gäste) schauen entlang **−Z**.
+- Ursprung von Gegenständen = Unterseite; von Türen = Rahmenecke am Boden (Scharnier, mit `hinge_end` die andere
+  Ecke); von Fenstern = Mitte der Öffnung.
 - Die Stockwerke liegen übereinander → „angekommen“ heißt immer auch `|Δy| < 1,5`; Zonen gelten nur
   bei `|Δy| ≤ 2,5`. Wer Positionen vergleicht, muss das Stockwerk mitprüfen.
 
@@ -583,7 +284,7 @@ Main (Node3D, main.gd)
 | 2 | 2 | Türen | nicht im NavMesh → Wegplanung geht durch Türöffnungen |
 | 3 | 4 | Gegenstände, Lampen, Schalter, Pflanzen, Tagebuch, Kalender, Spuren | blockiert den Spieler nicht |
 | 4 | 8 | Spieler | |
-| 5 | 16 | Decke | |
+| 5 | 16 | Decke; Böden verschlossener Zimmer und Kellerräume | nicht im NavMesh |
 | 6 | 32 | Monster | |
 | 7 | 64 | klares Glas (Fenster, Glastür, Duschglas) | Sicht geht durch |
 | 8 | 128 | Gäste | |
@@ -593,1789 +294,1461 @@ Main (Node3D, main.gd)
 | 12 | 2048 | Trittflächen der Treppenstufen (`LevelBuilder.LAYER_TREAD`) | blockiert niemanden; nur für Spuren (`Traces.surface_below`) |
 
 **Sichtebenen** (render layers, nicht Kollision): 11 = Discokugel (`DiscoBall.LAYER`), 15 = Schatten vom Bau
-(`ShadowBudget.LAYER`: zusammengefasste Kacheln, nur Schatten, dazu die Türen), 18 = Schattenkopie der
-Spielerfigur (`PlayerBody.SHADOW_LAYER`, nur Schatten), 19 = Spielerfigur (`PlayerBody.LAYER`, fehlt in der
-`cull_mask` der Spielerkamera), 20 = Spiegelflächen (`Mirror.LAYER`, fehlt in der der Spiegelkameras).
-Lichter (`lamps`, `light_source`), die die Kamera nach dem Grundriss nicht erreicht (`LightRooms`, Abschnitt 8 „Licht“),
-bekommen von `ShadowBudget` `light_cull_mask` 0 und keinen Schatten; die eigenen Werte liegen solange in den Metas
-`hidden_mask`/`hidden_shadow` und kommen zurück – wer einem Licht später eine eigene Maske gibt, sollte das wissen.
+(`ShadowBudget.LAYER`), 18 = Schattenkopie der Spielerfigur (`PlayerBody.SHADOW_LAYER`), 19 = Spielerfigur
+(`PlayerBody.LAYER`, fehlt in der `cull_mask` der Spielerkamera), 20 = Spiegelflächen (`Mirror.LAYER`, fehlt in der
+der Spiegelkameras). Lichter, die die Kamera nach dem Grundriss nicht erreicht (`LightRooms`, 8 „Licht“), bekommen
+von `ShadowBudget` `light_cull_mask` 0 und keinen Schatten; die eigenen Werte liegen solange in den Metas
+`hidden_mask`/`hidden_shadow` – wer einem Licht eine eigene Maske gibt, muss das wissen.
 
-Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` = `1 | 2 | 256 | 512` – als Strahl immer über
-`Senses.clear_line(world, von, nach, ohne, maske)` –, Lichtprüfungen `1 | 2`, Lärm-Dämpfung `1 | 2 | 64`.
+Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10) – als Strahl immer über
+`Senses.clear_line(world, von, nach, ohne, maske)` –, Lichtprüfungen Ebenen 1 und 2, Lärm-Dämpfung 1, 2 und 7.
 
 ### Interaktion („Smart Objects“)
-- Ein Kollisionskörper bekommt `set_meta("interactable", objekt)`. Der Spieler-RayCast
-  (`Player._update_focus`, Reichweite 2,2 m) fragt `objekt.get_prompt(player) -> String` ab und ruft
-  bei [E] `objekt.interact(player)` auf.
+- Ein Kollisionskörper bekommt `set_meta("interactable", objekt)`. Der Spieler-RayCast (`Player._update_focus`)
+  fragt `objekt.get_prompt(player) -> String` ab und ruft bei [E] `objekt.interact(player)` auf.
 - **Leerer Prompt = nicht interagierbar.** Zum Abschalten `set_meta("interactable", null)`.
 - Große Gegenstände blockieren Türen/Truhen: `player.hands_blocked()` prüfen.
-- **Gegenstände in der Hand** hängen als Kind am Hand-Knoten und sind über `Item.set_held(true)`
-  **statisch** eingefroren (`FREEZE_MODE_STATIC`). Kinematisch eingefroren schreibt die Physik die alte
-  Lage zurück – der Gegenstand dreht dann nicht mit. Immer `set_held()` benutzen, nie `freeze` direkt.
-- **Bodenlage:** Godots Physik lässt ruhende Körper bis `contact_max_allowed_penetration` (1 cm) einsinken. Die
-  Kollisionsform jedes Gegenstands liegt deshalb um `Item.SINK` tiefer als das Sichtbare – sonst versinken flache Dinge
-  (Schachbrett 2,4 cm, verstreutes Laub) halb oder ganz im Boden. Wer in `_apply_pose` Formen setzt, zieht `SINK` ab
-  (nur am Boden, nicht aufgehängt). Das verstreute Laub nutzt `Mat.layer` (gegen Flimmern beim Vertex-Snapping).
-- **Aufgehängte Deko** (Spielkonzept 5.6, `Item.HANGABLE`: Lakengespenst, Lichterkette, Spinnweben): `Item.hang(point,
-  out, length)` friert kinematisch ein (`hung`, Ebene 4 bleibt interagierbar, Maske 0), Ursprung = Haken bzw. Mitte
-  der Aufhängelinie, lokale +Z von der Wand weg; `set_held()` hebt `hung` wieder auf, `restore_hung()` beim Laden.
-  Was schwingt, hängt unter `_swing` (Drehpunkt am Haken); `_apply_pose()` setzt Teile und Kollisionsform je nach
-  Hand, Boden oder Wand (Laub: Haufen in der Hand, verstreut am Boden).
+- **Gegenstände in der Hand** hängen als Kind am Hand-Knoten und sind über `Item.set_held(true)` **statisch**
+  eingefroren (`FREEZE_MODE_STATIC`). Kinematisch eingefroren schreibt die Physik die alte Lage zurück – der
+  Gegenstand dreht dann nicht mit. Immer `set_held()` benutzen, nie `freeze` direkt.
+- **Bodenlage:** Godots Physik lässt ruhende Körper bis `contact_max_allowed_penetration` einsinken. Die
+  Kollisionsform jedes Gegenstands liegt deshalb um `Item.SINK` tiefer als das Sichtbare – sonst versinken flache
+  Dinge. Wer in `_apply_pose` Formen setzt, zieht `SINK` ab (nur am Boden, nicht aufgehängt).
+- **Aufgehängte Deko** (Spielkonzept 5.6, `Item.HANGABLE`): `Item.hang(point, out, length)` friert kinematisch ein
+  (`hung`, Ebene 3 bleibt interagierbar, Maske 0), Ursprung = Haken bzw. Mitte der Aufhängelinie, lokale +Z von der
+  Wand weg; `set_held()` hebt `hung` wieder auf, `restore_hung()` beim Laden. Was schwingt, hängt unter `_swing`
+  (Drehpunkt am Haken); `_apply_pose()` setzt Teile und Kollisionsform je nach Hand, Boden oder Wand.
 
 ### Gruppen (zum Finden und Speichern)
-`items`, `guests`, `player`, `doors`, `chests`, `hide_spots`, `lamp_fixtures` (die Lampen),
-`lamps` (deren Lichter), `light_source` (alles, was für die Helligkeit zählt – `FlickerLight`),
-`light_switches`, `windows`, `pumpkin_plants`, `resource_spots`, `trace_marks`, `warning_notes`,
-`guest_notes`, `diaries`, `phones`, `dressers`, `cats`, `elevators` (der fahrende Aufzug), `fixed_candles` (feste Kerzen), `uv_marks` (nicht gespeichert),
-`seats` (Sitzmöbel, nicht gespeichert), `time_skip` (hat `skip_time(dt)` für den Zeitsprung im Schlaf, nicht gespeichert).
+`items`, `guests`, `player`, `doors`, `chests`, `hide_spots`, `lamp_fixtures` (die Lampen), `lamps` (deren Lichter),
+`light_source` (alles, was für die Helligkeit zählt – `FlickerLight`), `light_switches`, `windows`,
+`pumpkin_plants`, `resource_spots`, `trace_marks`, `warning_notes`, `guest_notes`, `diaries`, `phones`, `dressers`,
+`cats`, `elevators` (der fahrende Aufzug), `fixed_candles`; nicht gespeichert: `uv_marks`, `seats` (Sitzmöbel),
+`time_skip` (hat `skip_time(dt)`, siehe unten). Neue gespeicherte Gruppe → auch in `SaveManager.WORLD_GROUPS`.
 
 ### Räume & IDs
-- **Raum-ID** = Zimmernummer (`"013"`, `"113"`, dreistellig seit 23.10.) oder Bereichs-ID (`"lobby"`, `"flur_west"`,
-  `"treppenhaus"`, `"keller"` (Heizkeller), `"og_mitte"`, `"ug_cellar_1"` …). Lampen und Schalter gehören über `room_id` zu einem
-  Raum; `LightSwitch.find(tree, room_id)` schaltet alle Lampen des Raums. Malt der Plan mehrere
-  Schalter in einen Raum, ist das eine Wechselschaltung: `set_on` stellt alle Schalter mit derselben
-  `room_id` mit um (Lärm und `on_lights_off` nur vom betätigten), `find()` darf also irgendeinen liefern.
-- **Zonen** (`LevelBuilder.zones`, Kreise mit `name`, `center`, `radius`, `curiosity`) sind etwas anderes:
-  sie tragen den Anzeigenamen („Nordflügel“, „Zimmer 13“) und die Neugier des Monsters.
-  `MonsterDirector._zone_at(pos)` / `zone_name_at(pos)`.
-- **Gast-IDs:** feste Gäste `edna`, `bruno`, `mila`; erzeugte `gast1`, `gast2` … (laufend).
+- **Raum-ID** = Zimmernummer (dreistellig: `"013"`, `"113"`) oder Bereichs-ID (`"lobby"`, `"treppenhaus"`,
+  `"keller"` (Heizkeller), `"og1_flure"`, `"ug_cellar_1"` …). Lampen und Schalter gehören über `room_id` zu einem Raum;
+  `LightSwitch.find(tree, room_id)` schaltet alle Lampen des Raums. Mehrere Schalter in einem Raum sind eine
+  Wechselschaltung: `set_on` stellt alle mit derselben `room_id` um (Lärm und `on_lights_off` nur vom betätigten),
+  `find()` darf also irgendeinen liefern.
+- **Zonen** (`LevelBuilder.zones`, Kreise mit `name`, `center`, `radius`, `curiosity`) sind etwas anderes: Sie tragen
+  den Anzeigenamen („Nordflügel“, „Zimmer 13“) und die Neugier des Monsters. `MonsterDirector._zone_at(pos)` /
+  `zone_name_at(pos)`.
+- **Gast-IDs:** feste Gäste `edna`, `bruno`, `mila` (`GuestProfiles`); erzeugte `gast1`, `gast2` … (laufend).
 - **Besitz** (`Item.owner_id`): `""` niemand, `"player"` oder eine Gast-ID.
 
 ### Pause & Zeit
 - Menüs pausieren mit `get_tree().paused = true`. Was im Menü laufen muss, hat
   `process_mode = PROCESS_MODE_ALWAYS` (Game, Settings, SynthAudio, Menus, DeathScreen, TitleScreen).
-- Auch die **Charaktererstellung** pausiert (`CharacterCreation`, `Game.creating`: kein Spielmenü auf Esc, SynthAudio
-  ungedämpft). Dort laufen weiter: `Mirror` (Spiegelbild, Wandprüfung entfällt – die Physik steht), `PlayerBody`
+- Auch die **Charaktererstellung** pausiert (`CharacterCreation`, `Game.creating`: kein Spielmenü auf Esc, keine
+  Eingaben an den Spieler). Dort laufen weiter: `Mirror` (Wandprüfung entfällt – die Physik steht), `PlayerBody`
   (Atmen) und die Erstellung selbst; sie setzt die Unschärfe direkt am Post-Shader (`main._process` steht).
 - **Spielzeit ist `MonsterDirector.elapsed`** (pausiert, wird gespeichert). Datum und Uhrzeit daraus über `Calendar`
-  (Spielkonzept 2.4): ein Tag = `Calendar.DAY_SECONDS` (1440 s, 24 Stunden = 24 Minuten, `HOUR` = 60 s), Spielzeit 0 =
-  1. Oktober `START_HOUR` (15 Uhr). `today()`/`day_of(elapsed)` (bis 31), `raw_day_of` (ohne Obergrenze), `day_float`
-  (gleitend, für Kurven über den Monat), `hour_of`, `at(tag, stunde)` (→ Spielzeit, vor der Anreise negativ),
-  `phase()`/`phase_at(stunde)` (`Phase.MORNING` 6, `DAY` 11, `EVENING` 18, `NIGHT` 23 Uhr), `date_text`/`time_text`.
+  (Spielkonzept 2.4): ein Tag = `Calendar.DAY_SECONDS`, Stunde `HOUR`, Spielzeit 0 = 1. Oktober `START_HOUR`.
+  `today()`/`day_of(elapsed)` (bis 31), `raw_day_of`, `day_float` (gleitend, für Kurven über den Monat), `hour_of`,
+  `at(tag, stunde)` (→ Spielzeit, vor der Anreise negativ), `phase()`/`phase_at(stunde)`, `date_text`/`time_text`.
   Werte, die je Spieltag gelten, rechnen mit `Calendar.DAY_SECONDS` statt mit festen Sekunden.
-- Spielablauf-Timer laufen über `delta`, nie über Systemzeit. Bei `get_tree().create_timer()` für
-  Spielereignisse `process_always = false` übergeben (`create_timer(t, false)`), sonst laufen sie im
-  Menü weiter.
-- **Einzige Zeitraffung:** Schläft der Spieler (`Player.start_sleep`), steht `Engine.time_scale` auf
-  `SLEEP_SPEED` (5). Zurück auf 1 in `_stop_sleep()` – beim Aufwachen, Aufstehen, Tod und in `_exit_tree`.
+- Spielablauf-Timer laufen über `delta`, nie über Systemzeit. Bei `get_tree().create_timer()` für Spielereignisse
+  `process_always = false` übergeben (`create_timer(t, false)`), sonst laufen sie im Menü weiter.
+- **Zeitraffer:** Schläft der Spieler (`Player.start_sleep`), steht `Engine.time_scale` auf `SLEEP_SPEED`. Zurück auf
+  1 in `_stop_sleep()` – beim Aufwachen, Aufstehen, Tod und in `_exit_tree`.
 - **Zeitsprung im Schlaf** (`scripts/player/sleep_skip.gd`, `Game.sleep_skip`, Spielkonzept 3.6): In der Nachtruhe
-  springt die Uhr statt zu raffen – ein 60-facher Zeitraffer ginge nicht (60 Physikschritte je Sekunde, jeder eine
-  Spielsekunde: Gäste und Monster sprängen meterweise). `SleepSkip.try_begin()` (aus `start_sleep`, im Zeitraffer jede
-  Sekunde erneut) springt nur, wenn `Social.sleep_active` und `MonsterDirector.other_threat_active(null)` falsch ist
-  (kein Monster, Lakengeist, Kürbismann unterwegs oder angekündigt), bis `min(Ende der gewählten Stunden
-  (Player.sleep_left), Social.night_ends_at())`, mindestens `MIN_SKIP`. `Engine.time_scale` = 1; je Bild rückt die
-  Zeit um delta / `HOUR_REAL` × `Calendar.HOUR` vor (0,5 s Echtzeit je Spielstunde): erst `MonsterDirector.skip(dt)`,
-  dann `call_group("time_skip", "skip_time", dt)`. Die Welt läuft daneben im normalen Takt weiter (Gäste schlafen,
-  Social beendet die Nachtruhe nach der Uhr); das Spielmenü hält den Sprung an (`PROCESS_MODE_PAUSABLE`). Die Uhrzeit
-  steht mitten im Bild (`Hud.set_sleep_clock`). Ende: Stunden um (Player steht auf), Nachtruhe vorbei (weiter mit
-  `SLEEP_SPEED`), geweckt (Lärm ≥ 0,3, Mitternachtsglocke `Weather._update_bell`, Monster nah) oder eine Bedrohung
-  taucht auf. **`skip_time(dt)`** rechnet nach, was sonst je Bild mit delta zählt: Player (Schock, Rausch, Kater,
-  Verletzung, Ausdauer, `_slept`/`_sleep_now`), Guest (Angst, Rausch, Pausen, Wunde – Fälliges meldet das nächste Bild,
-  darum bleiben Restzeiten bei 0,001), Social (Beziehungsdrift, Gerede, Nachrücker, Pausen), ResourceSpot und
-  PumpkinPlant (mehrere Stufen auf einmal), Item (Kürbismatsch verwäscht; Kerzen brennen unbegrenzt), Lamp (Durchbrennen als Wurf über dt), Traces
-  (Fußspuren altern), Weather (nächster Wechsel), HotelCat (Mitbringsel), PumpkinMan (Spaßwert fällt), SheetGhost
-  (Pausen), PhoneCalls (Pausen – das Telefon in Zimmer 13 klingelt also wie sonst und weckt, außer der Hörer liegt
-  daneben). Was an der Uhr hängt (Fäulnis, Frost, Termine, Garantien), holt von selbst auf. Bewusst nicht: kurze
-  Pausen der Tagesgäste (Schmücken, Deko-Suche, Herd, Aufzug, Freundes-Warteschlange) – nachts schlafen alle.
-  **Das Monster im Sprung** (`MonsterDirector.skip`, `skipping` hält `_update_schedule`/`_update_haunting` je Bild
-  an): Werte und Spuk wie sonst, `_phase_left` läuft ab, die Frist der Puppe (`_plan_departure`) ebenso. Ein Aufbruch
-  (`_skip_activity`) würfelt die Absicht wie sonst; mit Puppe geht `_skip_raid` den Weg aus `_plan_route` Tür für Tür
-  (unterwegs nur, solange hungrig und die Deko nicht hält; im Zimmer alle Verstecke auf, jeder Erwachsene →
-  `kill_guest`), ohne Puppe nimmt sich `_skip_roam` `ACTIVE_TIME` / `SKIP_LEG` Ziele aus `next_roam_target` vor (Deko,
-  die hält → umkehren; `wants_to_enter_room` → `_skip_search`: offen Stehende sieht es, Verstecke und Betten mit dem
-  Wurf aus der Dreistigkeit wie `Monster._check_hide_step`). `kill_guest`/`_scare_guest` rufen im Sprung nichts am
-  Monster auf. **Übergabe:** Ist das Ziel Zimmer 13 (mit Wache – ein wacher Erwachsener in Zimmer 13,
-  `SleepSkip.guarded()`, Andockstelle für 6.18 – zu `SKIP_GUARD` nicht) oder hörte der Spieler, was es tut
-  (`Game.heard_volume("hide_burst", Zimmermitte)` ≥ 0,3; `_skip_heard`), ist es ab da wirklich unterwegs: `_skip_wake`
-  stellt es `SleepSkip.lead()` Sekunden (`LEAD` 5, mit Wache × `GUARD_LEAD`) vor das Ziel auf den Weg vom Keller
-  (`_point_before`), `Monster.start_roaming(pos, roam)` mit dem Ziel, Flackerwelle; der Spieler schreckt hoch und
-  bleibt im Bett. **Morgenbilanz:** Wer im Sprung stirbt, liegt da wie sonst (Blut, Kleidungsstück, Angst, Notizbuch,
-  Tagebuch) – nur `Social.on_guest_died` schweigt, solange der Spieler schläft (keine Meldung, keine Totenglocke).
-  Der Lakengeist kommt nie zu Schlafenden (das Bett ist ein Versteck), schlafende Gäste sucht er ebenfalls nicht auf –
-  im Sprung gibt es für ihn nichts zu würfeln. Debug: `--sleep=bett[,h]` (nach 1,5 s), `--uhr=1:10` (nach der
-  Glocke), `--hoerer`, `--trace` „[Zeitsprung] …“.
+  springt die Uhr statt zu raffen – ein 60-facher Zeitraffer ginge nicht (jeder Physikschritt eine Spielsekunde:
+  Gäste und Monster sprängen meterweise).
+  - `SleepSkip.try_begin()` (aus `start_sleep`, im Zeitraffer jede Sekunde erneut) springt nur, wenn
+    `Social.sleep_active` und keine Bedrohung unterwegs oder angekündigt ist
+    (`MonsterDirector.other_threat_active(null)`), bis `min(Ende der gewählten Stunden, Social.night_ends_at())`,
+    mindestens `MIN_SKIP`. `Engine.time_scale` = 1; je Bild rückt die Zeit um delta / `HOUR_REAL` Spielstunden vor:
+    erst `MonsterDirector.skip(dt)`, dann `call_group("time_skip", "skip_time", dt)`. Die Welt läuft daneben im
+    normalen Takt; das Spielmenü hält den Sprung an. Uhrzeit mitten im Bild (`Hud.set_sleep_clock`).
+  - Ende: Stunden um, Nachtruhe vorbei (weiter mit `SLEEP_SPEED`), geweckt (Lärm ≥ 0,3, Mitternachtsglocke
+    `Weather._update_bell`, Monster nah) oder eine Bedrohung taucht auf.
+  - **`skip_time(dt)`** rechnet nach, was sonst je Bild mit `delta` zählt: Player (Schock, Rausch, Kater,
+    Verletzung, Ausdauer, Schlaf), Guest (Angst, Rausch, Pausen, Wunde – Restzeiten bleiben bei 0,001, Fälliges meldet
+    das nächste Bild), Social (Beziehungsdrift, Gerede, Nachrücker, Pausen), ResourceSpot und PumpkinPlant (mehrere
+    Stufen auf einmal), Item (Kürbismatsch verwäscht), Lamp (Durchbrennen als Wurf über dt), Traces, RainVeil,
+    Weather, HotelCat, PumpkinMan, SheetGhost, PhoneCalls (das Telefon in Zimmer 13 klingelt also und weckt). Was an
+    der Uhr hängt (Fäulnis, Termine), holt von selbst auf. **Neues System, das mit `delta` über Minuten bis
+    Stunden zählt → in die Gruppe `time_skip`.** Bewusst nicht: kurze Pausen der Tagesgäste – nachts schlafen alle.
+  - **Das Monster im Sprung** (`MonsterDirector.skip`; `skipping` hält `_update_schedule`/`_update_haunting` an):
+    Werte und Spuk wie sonst. Ein Aufbruch (`_skip_activity`) würfelt die Absicht wie sonst; mit Puppe geht
+    `_skip_raid` den Weg aus `_plan_route` Tür für Tür (im Zimmer alle Verstecke auf, jeder Erwachsene →
+    `kill_guest`), ohne Puppe nimmt sich `_skip_roam` Ziele aus `next_roam_target` vor (`_skip_search` würfelt
+    Verstecke wie `Monster._check_hide_step`). `kill_guest`/`_scare_guest` rufen im Sprung nichts am Monster auf.
+  - **Übergabe:** Ist das Ziel Zimmer 13 (mit Wache – `SleepSkip.guarded()` – zu `SKIP_GUARD` nicht) oder hört der
+    Spieler, was es tut (`_skip_heard`), wird es echt: `_skip_wake` stellt es `SleepSkip.lead()` Sekunden vor das Ziel
+    auf den Weg (`_point_before`), `Monster.start_roaming`, Flackerwelle; der Spieler schreckt hoch.
+  - Wer im Sprung stirbt, liegt da wie sonst – nur `Social.on_guest_died` schweigt, solange der Spieler schläft. Der
+    Lakengeist kommt nie zu Schlafenden. Debug: `--sleep=bett[,h]`, `--uhr=1:10`, `--hoerer`, `--trace`
+    „[Zeitsprung] …“.
 
 ### Bewegung von Gästen und Monster
 - `NavigationAgent3D` mit `path_height_offset = 0.2` (NavMesh liegt ~0,2 m über dem Boden). Monster und Kürbismann
-  suchen ohne Grenze (`path_search_max_polygons = 0`): Godot bricht sonst nach 4096 Polygonen ab und liefert einen Weg
-  nur bis zum bis dahin nächsten Punkt – vom Heizkeller in die Flügel sind es mehr (seit dem Untergeschoss); der
-  Kürbismann hielt dort für „angekommen“ und verschwand beim Gehen fern vom Ausgang.
-- Eigene `_move_to(point, speed, delta) -> bool` (true = angekommen) mit **Festgefahren-Erkennung**:
-  bewegt sich der Körper kaum, nach 0,6–1 s seitlich 15 cm ausweichen und Ziel minimal verschieben,
-  damit der Pfad neu berechnet wird. Monster und Kürbismann erben das samt `_stop`, `_face` und Schwerkraft von
-  **`NavWalker`** (`scripts/monster/nav_walker.gd`, das Monster drosselt im UV-Kegel per `super`); neue Akteure auf
-  dem NavMesh sollten davon erben. Gäste haben eine eigene Fassung (Detailstufe `_lod_scale`) und geben zusätzlich
-  auf, wenn sie in `HIDE_GO` oder `WALK` `STALL_TIME` (10 s) lang nicht `STALL_RANGE` (1,5 m) vorankommen
-  (`_stalled`/`_give_up_walk`: Versteck freigeben und heim bzw. kurz warten; Trace „kommt nicht weiter“) – Netz für
-  alles, was die Wegfindung nicht löst.
+  suchen ohne Grenze (`path_search_max_polygons = 0`): Godot bricht sonst nach 4096 Polygonen ab und liefert einen
+  Weg nur bis zum bis dahin nächsten Punkt – vom Heizkeller in die Flügel sind es mehr.
+- Eigene `_move_to(point, speed, delta) -> bool` (true = angekommen) mit **Festgefahren-Erkennung**: bewegt sich der
+  Körper kaum, nach kurzer Zeit seitlich ausweichen und das Ziel minimal verschieben, damit der Pfad neu berechnet
+  wird. Monster und Kürbismann erben das samt `_stop`, `_face` und Schwerkraft von **`NavWalker`**
+  (`scripts/monster/nav_walker.gd`); neue Akteure auf dem NavMesh sollten davon erben. Gäste haben eine eigene Fassung
+  (Detailstufe `_lod_scale`) und geben zusätzlich auf, wenn sie `STALL_TIME` lang nicht `STALL_RANGE` vorankommen
+  (`_stalled`/`_give_up_walk`, Trace „kommt nicht weiter“) – Netz für alles, was die Wegfindung nicht löst.
 - **Wegpunkt-Abstand wächst mit der Schrittlänge:** `_move_to` setzt `path_desired_distance` auf mindestens
-  Tempo × Schrittzeit × 1,5 (Gäste mal `_lod_scale`). Ferne Gäste (Detailstufe ×3), Zeitraffer beim Schlafen
-  (`SLEEP_SPEED` 5) oder wenige Bilder machen Schritte über 0,3 m – sie sprangen über den Wegpunkt, kamen ihm nie nah
-  genug und pendelten minutenlang um ihn herum (Lärm `run` lockte dabei das Monster).
-- Türen öffnen Gäste/Monster selbst, wenn sie nahe sind (`_open_doors()`), Gäste nur im Gehen (wer steht – wartet,
-  klopft, ist gerade geladen –, öffnet keine Tür neben sich). Die Türen in der Nähe liefert **`Door.near(pos)`**
-  (Raster aus `Door.CELL` = 4 m, entsteht nach dem Bau beim ersten Abfragen) – nicht die Gruppe `doors` je Frame
-  durchgehen (≈ 500 Türen × 67 Gäste, Katzen, Monster).
+  Tempo × Schrittzeit × 1,5. Ferne Gäste (Detailstufe), Zeitraffer oder wenige Bilder machen große Schritte – sonst
+  springen sie über den Wegpunkt und pendeln minutenlang um ihn herum.
+- Türen öffnen Gäste/Monster selbst, wenn sie nahe sind (`_open_doors()`), Gäste nur im Gehen. Die Türen in der Nähe
+  liefert **`Door.near(pos)`** (Raster `Door.CELL`) – nicht die Gruppe `doors` je Frame durchgehen (Hunderte Türen ×
+  Dutzende Gäste).
 - Treppen: Rampe als Kollision (Ebene 1, fürs NavMesh, Meta `stair_ramp`) + Stufen als Optik mit eigenen
-  Trittflächen (Ebene 12, nur für Spuren). Läufe müssen bündig an der Flurkante enden, sonst Stolperkante (eine
-  Kante, die die Gastkapsel nicht nimmt, verbindet das NavMesh mit `agent_max_climb` 0,2 m trotzdem).
-  Die Lobbytreppe (`GrandStair`) ist unten offen – unter ihrem hohen Ende ist Platz zum Laufen.
-- **Spuren auf dem Boden** suchen die Fläche mit `Traces.surface_below` (Ebene 1 + Trittflächen, die Rampe wird
-  übersprungen) – sonst schweben sie vorn an jeder Stufe. **Blut** (`TraceMark` „blood“) besteht aus `BLOOD_SPLATS`
-  (18–28) Flecken (Grafik `assets/textures/blood_pool.png`), bis `BLOOD_RADIUS` (1,8 m) um das Opfer verteilt und jeder senkrecht auf die
-  Fläche darunter gefallen (Boden, Stufe, Möbel; nicht durch Wände, auf Kniehöhe geprüft); auf einer Treppe laufen sie
-  bis `BLOOD_DOWNHILL` die Stufen hinunter. Kein Fleck ragt über eine Kante: `_blood_fits` prüft Ecken und Kantenmitten
-  (Höhe höchstens `BLOOD_FLAT` anders); passt er nicht, legt er sich auf einer Treppe längs mittig auf die Stufe
-  (`_flat_span` misst Tiefe und Breite), sonst wird er kleiner. Verteilt wird erst nach dem Platzieren (`call_deferred`, auch beim Laden – jedes
-  Mal anders). Leichen auf einer Treppe legt `Guest._lie_down` an die Schräge. Die Platzierung eines Flecks ist statisch
-  (`TraceMark.downhill_at`, `scatter_offset`, `place_splat` – `{}`, wenn kein Platz ist, auch wenn längs auf der Stufe
-  weniger als 2 cm bleiben) und wird genauso für den großen Wachsfleck (`_spread_wax`) und den Kürbismatsch
-  (`Item._lay_mush`) benutzt. Gezeichnet wird jeder Fleck mit `TraceMark.lay_decal`: eine `PlaneMesh`-Ebene 1 × 1 mit
-  Grafik (`shaders/psx_decal.gdshader`, Umriss aus dem Alpha, Maße über die Basis), frei gedreht eine, längs auf einer
-  Stufe eine Reihe unverzerrter Quadrate so tief wie die Stufe, die sich zu `DECAL_OVERLAP` (45 %) überlappen (vorher
-  bis 2 : 1 gestreckt – auf der Treppe sah das gequetscht aus); Ebene und Materialien je Grafik teilen sich alle
-  Spuren (`decal_material`, statisch), der Kürbismatsch hat ein eigenes Material (Farbe, Verblassen). Grafiken: Blut
-  `blood_pool.png`, Wachs `wax_splash.png` (beide 256 × 256, schon eingefärbt), Matsch `pumpkin_splash.png` (eingefärbt
-  über `albedo`). Alle drei ziehen sich mit `SPLAT_PULL` (0,014 der Kameraentfernung) zur Kamera – mehr
-  als Auflagen am Boden (`Mat.layer` 0,01): Mit dem früheren 0,004 verdeckte der Treppenläufer der Lobby Blut und Matsch.
-- **Glanz, Relief und Rand der Flecken** (2026-10-23): `tools/splat_maps.gd` erzeugt aus dem Umriss jeder Grafik
-  `<name>_n.png` (Normal Map, OpenGL) und `<name>_d.png` (R Rauheit, G Dicke, B Rauschen). Die Dicke ist der Abstand
-  zum Rand (Chamfer), bis `edge` Pixel weich ansteigend – die Höhe dafür ist Dicke + leichtes Wertrauschen (drei Stufen
-  ab `grain` Pixeln). `Mat.decal` lädt beide, wenn sie neben der Grafik liegen; `TraceMark.splat_look` stellt je Grafik
-  `SPLAT_LOOK` ein (auch für den Kürbismatsch): `specular` (Glanz, Rauheit aus der Karte), `edge_alpha` (Deckkraft am
-  dünnen Rand, innen 1), `thick_shade` (Farbe der dicken Mitte, am Rand × 1), `grain` (Rauschen auf der Farbe),
-  `normal_strength`. **Überlappende Flecken verschmelzen:** Der Shader schreibt die Tiefe nach der Dicke (`DEPTH`,
-  `depth_draw_always`, die dicke Mitte um `thick_lift` 0,002 der Kameraentfernung näher als der dünne Rand) – an jedem
-  Pixel gewinnt der dickste Fleck, in jeder Zeichenreihenfolge; heller, durchscheinender Rand und Wulst der Normal Map
-  liegen nicht mehr über der Mitte eines Nachbarn, sichtbar bleibt nur der Rand der gemeinsamen Fläche. Darum sind die
-  Flecken nur noch hauchdünn gestaffelt (`lift` je Fleck 0,02 mm statt 0,2 mm). Die Normal Map gilt wie bei den Fototexturen nur ohne PS1-Look (globaler Shader-Wert
-  `psx_smooth`), Glanz und Rand auch mit. Die Karten wurden so erzeugt (nach einer neuen Grafik wieder aufrufen):
+  Trittflächen (Ebene 12, nur für Spuren). Läufe müssen bündig an der Flurkante enden, sonst Stolperkante (das NavMesh
+  verbindet über `agent_max_climb` trotzdem, die Gastkapsel kommt aber nicht hinauf). Die Lobbytreppe ist unten offen.
+
+### Spuren auf dem Boden
+(`scripts/world/trace_mark.gd`, `Traces`)
+- **Fläche finden:** `Traces.surface_below` (Ebene 1 + Trittflächen, die Rampe wird übersprungen) – sonst schweben
+  Spuren vorn an jeder Stufe. Leichen auf einer Treppe legt `Guest._lie_down` an die Schräge.
+- **Flecken** (Blut, großer Wachsfleck `_spread_wax`, Kürbismatsch `Item._lay_mush`) teilen sich die statische
+  Platzierung (`TraceMark.downhill_at`, `scatter_offset`, `place_splat` – `{}`, wenn kein Platz ist): Jeder Fleck
+  fällt senkrecht auf die Fläche darunter, auf Treppen bergab; kein Fleck ragt über eine Kante (`_blood_fits`), sonst
+  längs mittig auf die Stufe (`_flat_span`) oder kleiner. Verteilt wird erst nach dem Platzieren (`call_deferred`, auch
+  beim Laden – jedes Mal anders).
+- **Zeichnen:** `TraceMark.lay_decal` – `PlaneMesh` mit `shaders/psx_decal.gdshader` (Umriss aus dem Alpha); auf
+  einer Stufe eine Reihe **unverzerrter** Quadrate, die sich überlappen (`DECAL_OVERLAP`) – gestreckte Grafiken sahen
+  gequetscht aus. Material je Grafik geteilt (`decal_material`), der Kürbismatsch hat ein eigenes. Alle ziehen sich mit
+  `SPLAT_PULL` zur Kamera – mehr als Auflagen (`Mat.layer`), sonst verdeckt der Treppenläufer Blut und Matsch.
+- **Glanz, Relief, Rand:** `tools/splat_maps.gd` erzeugt aus dem Umriss jeder Grafik `<name>_n.png` (Normal Map) und
+  `<name>_d.png` (R Rauheit, G Dicke, B Rauschen); `Mat.decal` lädt beide, `TraceMark.SPLAT_LOOK` stellt je Grafik
+  ein. **Überlappende Flecken verschmelzen,** weil der Shader die Tiefe nach der Dicke schreibt (`depth_draw_always`,
+  `thick_lift`) – an jedem Pixel gewinnt der dickste Fleck, unabhängig von der Zeichenreihenfolge; deshalb sind die
+  Flecken nur hauchdünn gestaffelt (`lift`). Die Karten nach einer neuen Grafik neu erzeugen:
   `godot --headless --path . -s tools/splat_maps.gd -- assets/textures/blood_pool.png edge=10 rough=0.06,0.4 bump=1.6 noise=0.1 grain=8 seed=1`,
   `… wax_splash.png edge=14 rough=0.3,0.55 bump=4 noise=0.35 grain=6 seed=2`,
   `… pumpkin_splash.png edge=8 rough=0.5,0.75 bump=3 noise=0.4 grain=5 seed=3` – feineres Rauschen oder mehr
   `bump` glitzert ohne PS1-Look wie Zucker.
-- **Runterlaufen und Ausbreiten** (2026-10-23, Strom seit 2026-10-24): Auf einer Treppe bleiben von Blut nur die großen
-  Flecken, vom Kürbismatsch nur der große Spritzer (die verstreuten kleinen sahen auf den Stufen abgehackt aus); vom
-  ersten, der längs auf einer Stufe liegt, läuft **ein durchgehender kleiner Strom** hinunter (`TraceMark.lay_stream`):
-  eine Kette unverzerrter Quadrate aus der Grafik (Kantenlänge = Breite `stream_w`, je `STREAM_SPACING` × Breite
-  weiter, verschmelzen über die Tiefe nach Dicke zu einem Band – gestauchte Grafiken sahen schlecht aus), auf jeder
-  Trittfläche liegend von der Setzstufe bis an die Kante, an jeder Stirnseite senkrecht bis auf die nächste Stufe
-  (`PlaneMesh` `FACE_Z`, Ursprung an der Oberkante, wächst nach unten), leicht schlängelnd, nach unten etwas breiter,
-  höchstens `stream_steps` Stufen. Wo die Fläche eben weiterläuft (Fuß der Treppe, Podest), sammelt er sich zu einer
-  Pfütze (`puddle`). Die Kante sucht `_edge_ahead` auf 2 mm genau – das Ende der Trittfläche ist auf der Lobbytreppe
-  die Setzstufe, im Treppenhaus die Blockstufe; in der Mitte der Lobbytreppe hängt der Teppich als Wasserfall `NOSING`
-  + `RUNNER_LIFT` davor, daneben die Nase der Stufe (`NOSING`, `TREAD_T` dick) – das geben ihre Trittflächen als Meta
-  `carpet_half` / `carpet_out` / `nosing` / `nosing_t` mit (`GrandStair.build`, `_edge_front`): Die Kette auf der Stufe
-  reicht bis an diese sichtbare Vorderkante, das oberste Stück der Bahn liegt davor (sonst blieb an der Kante eine Lücke). Der Riesenkürbis gibt einen breiteren Strom und eine größere Pfütze (`Item._lay_mush`: × √(Größe /
-  0,9), 0,7…2). **Frische** Flecken breiten sich aus (`TraceMark.fresh` aus `Traces.add_blood` / `add_guest_drop`,
-  `Item.mush_fresh` aus `burst` – aus dem Spielstand und nach dem Ablegen liegen sie gleich fertig): `spread_start`
-  gibt jedem Fleck einen Start (Fließtempo `flow` über ebene Fläche, je Stufe hinunter `step` s), `plan_spot` die Dauer
-  (`grow_big` / `grow_small`) und hängt den Zeitplan des Stroms an (je Stufe `step` s, davon `run` an der Stirnseite,
-  jedes Quadrat wächst in `STREAM_GROW`, die Pfütze in `grow_big`), `grow` macht daraus einen parallelen Tween am
-  Besitzer (Spielzeit, pausiert mit dem Spiel; bis zum Start sind die Stücke auf 2 % gestaucht). Werte in
-  `TraceMark.SPREAD`: Blut breitet sich in etwa 30 s aus und läuft bis 20 Stufen hinunter, Matsch ebenso weit, Wachs
-  ist in 2 s erstarrt (Strom über 3 Stufen), Kaffee 10 Stufen. Aufsammeln während des Ausbreitens beendet es sofort
-  (`Item._finish_spreading` vor `shrink_by_handful`); `_lay_mush` beendet einen laufenden Tween. Kein neues
-  Speicherfeld.
-- **Im Regen verwaschen** (`world/rain_veil.gd`, Spielkonzept 4.13, 2026-10-23/24): Blutlachen und große Wachsflecken
-  (`Traces._wash_marks`, alle `RainVeil.WASH_TICK` 0,2 s, nur Spuren am Boden, ob draußen merkt sich jede als Meta
-  `outdoor`) und Kürbismatsch (`Item._wash_mush`, am Ablageort `_laid_at`) verlaufen, solange es regnet
-  (`Game.weather.intensity` ≥ `RAIN_MIN`) und sie unter freiem Himmel liegen (`LevelBuilder.is_outdoor`: Garten, Kies,
-  Terrasse, Balkon): `wash` steigt um Zeit × Regenstärke / `WASH_TIME` (90 s) – es beginnt mit dem ersten Regen und
-  geht langsam. `RainVeil.show_wash` streckt den Fleck waagrecht um seinen Ursprung (× 1 + `WASH_WIDEN` × wash, bis
-  × 1,8 – beim gekippten Wachsfleck in X/Y, beim Matsch liegt der Ursprung von `_spread` dafür in der Mitte) und setzt
-  den Instanz-Wert „wash“ von `psx_decal` an jedem Stück (kein eigenes Material je Fleck): der dicke Kern verläuft
-  (Dicke × 1 − 0,6 wash), die Farbe wird leuchtender statt blasser (bis × 1,5), Deckkraft nur −15 %, Rauheit → 0,06
-  (nass) – Blut im Regen soll dramatisch aussehen. Beim **ersten** Regen (wash war 0) legt `RainVeil.spawn` den
-  **Schleier** an; er wächst von da an selbst nach derselben Formel (`wash_step` an seinem Ort, `progress`) – Fleck und
-  Schleier bleiben so ohne Verbindung im Gleichschritt, auch nach dem Laden. Bei wash 1 ist der Fleck weg
-  (`TraceMark.wash_by` bzw. `queue_free`), der Schleier ganz da; erst dann verblasst er über `life` (Material-`fade`,
-  im Regen `VEIL_FADE_RAIN` 180 s, sonst `VEIL_FADE_DRY` 420 s) und ist weg. **Aufbau** (`_build`, alles auf einmal aus
-  dem Seed): Grundrichtung mit dem Wind (`Weather.FALL` waagrecht, ±0,4 rad), auf Treppen bergab (`downhill_at`),
-  Länge `VEIL_LENGTH` 15–25 m. Darunter eine breite blasse Fläche: `VEIL_ARMS` (3–5) Arme, der erste in der Mitte, die
-  übrigen abwechselnd links und rechts bis `VEIL_FAN` (0,6 rad), Schritt 1,6 m, nach außen breiter (× 1,1 bis
-  `VEIL_MAX_WIDTH` 5 m), Deckkraft `SHEET_STRENGTH` 0,55 → 0,15. Darüber `VEIL_STREAKS` (10–16) **Schlieren**
-  gleichmäßig über `STREAK_FAN` (0,8 rad), schmal (`STREAK_WIDTH` 0,12–0,45 m) und lang gezogen (Stück 1,8 × der
-  Schritt von 2 m), kräftig (`STREAK_STRENGTH` 1 → 0,35). Jeder Arm (`_arm`) geht leicht schlängelnd Stück für Stück
-  weiter, an Wänden entlang (frontal: Ende), nie ins Haus (`is_outdoor`); jedes Stück fällt über `place_splat` (fester
-  Winkel `fixed_yaw` in Laufrichtung) auf die Fläche; alles verschmilzt (Tiefe nach Dicke). **Wachsen**
-  (`_show_progress`): jedes Stück hat eine Schwelle = sein Anteil entlang des Arms × `REACH` (0,85), bis dahin
-  unsichtbar, dann wächst es über `GROW_SPAN` (0,15) wash auf seine Größe. Grafik ist immer die rundliche
-  Wachsgrafik, getönt (`VEIL_COLOR`: Blut satt rot, Matsch in seiner Farbe) – lang gezogen gibt sie Schlieren, die
-  stacheligen Spritzer nicht. **Je Art** (`LOOK`, 2026-10-24): alle Längen und Breiten von Schleier und Auseinanderlaufen
-  × „size“ (Blut 0,45, Kürbismatsch 0,2, Wachs 1; Schritte mindestens 0,4 bzw. 0,5 m, Schlieren mindestens 35 % breit),
-  Arme und Schlieren × 1,5 × size (höchstens alle), Deckkraft × „alpha“ (Blut 0,7, Matsch 0,6); Relief flach (`VEIL_NORMAL`), sonst glitzert er. Zeitsprung im Schlaf: Traces, Item
-  und RainVeil zählen die Zeit in `skip_time` mit (das nächste Bild rechnet nach). **Gespeichert** (Spielstand 38):
-  `wash` je Spur, Schleier als Spur `{"kind": "veil", look, variety, width, seed, progress, life, at}`, Kürbismatsch
-  als „w=…“ im Zusatzfeld. Debug `--verwaschen` (Regen sofort, `RainVeil.debug_speed` 10: ganz da nach 9 s) bzw.
-  `--verwaschen=schleier` (sofort ganz); Rauchtest-Szenario `spuren,wetter,kuerbis` (mit Speichertest mittendrin).
+- **Runterlaufen und Ausbreiten:** Auf einer Treppe bleiben nur die großen Flecken; vom ersten, der längs auf einer
+  Stufe liegt, läuft ein **Strom** hinunter (`TraceMark.lay_stream`: Kette unverzerrter Quadrate, auf jeder
+  Trittfläche liegend, an jeder Stirnseite senkrecht, unten eine Pfütze). Die Vorderkante sucht `_edge_ahead`; auf der
+  Lobbytreppe geben die Trittflächen Teppich und Stufennase als Meta mit (`carpet_half`, `carpet_out`, `nosing`,
+  `nosing_t`, aus `GrandStair.build`). **Frische** Flecken (`TraceMark.fresh`, `Item.mush_fresh`) breiten sich als
+  Tween in Spielzeit aus (`spread_start`, `plan_spot`, `grow`; Werte je Art in `TraceMark.SPREAD`); aus dem Spielstand
+  liegen sie gleich fertig. Aufsammeln beendet das Ausbreiten sofort (`Item._finish_spreading`).
+- **Im Regen verwaschen** (`world/rain_veil.gd`, Spielkonzept 4.13): Blutlachen, große Wachsflecken
+  (`Traces._wash_marks`) und Kürbismatsch (`Item._wash_mush`) unter freiem Himmel (`LevelBuilder.is_outdoor`, Meta
+  `outdoor`) verlaufen, solange es regnet: `wash` steigt mit Zeit × Regenstärke / `WASH_TIME`; `RainVeil.show_wash`
+  streckt den Fleck und setzt den Instanz-Wert „wash“ von `psx_decal` (kein eigenes Material je Fleck). Beim ersten
+  Regen legt `RainVeil.spawn` einen **Schleier** an (Arme und Schlieren mit dem Wind bzw. bergab, aus einem Seed
+  gebaut), der nach derselben Formel weiterwächst – Fleck und Schleier bleiben ohne Verbindung im Gleichschritt, auch
+  nach dem Laden. Bei wash 1 ist der Fleck weg, der Schleier verblasst danach über `life`. Je Art Maße und Deckkraft in
+  `LOOK`. **Gespeichert:** `wash` je Spur, Schleier als Spur `{"kind": "veil", …}`, Kürbismatsch als „w=…“ im
+  Zusatzfeld. Debug `--verwaschen[=schleier]`; Rauchtest `spuren`, `wetter`, `kuerbis`.
+- **An der Wand** (Spielkonzept 3.13, `Traces.add_wall_splash`, `TraceMark._spread_wall`): Geworfenes Flüssiges ist
+  eine Spur „splash_mush:<sorte>“ (Zierkürbis „:mini“), „splash_wax“, „splash_coffee“ oder „splash_tea“ – die Sorte
+  steckt im Namen, darum kein neues Speicherfeld. +Z von der Wand weg, Ursprung am Treffpunkt. Ein Fleck als Ebene
+  (`_wall_plane`, `FACE_Z`) an der Wand, darunter ein Strom aus `_runner_mesh`-Quadraten bis zum Boden
+  (`Traces.surface_below` vor der Wand), unten eine Pfütze (`place_splat`); Maße und Fließtempo je Flüssigem in
+  `WALL_SPLASH`, Kürbis nach der Sorte skaliert. Material: Matsch je Sorte wie `Item._mush_mat`, Kaffee und Tee matter
+  als am Boden (`WALL_COFFEE_SPECULAR` – senkrecht wirkte der Glanz grau). Frisch läuft er herunter (`grow`). Zählt zu
+  den Spuren der Gäste (`MAX_GUEST_MARKS`).
 
 ## 4. Level (`scripts/level/level_builder.gd`)
 
-Baut Erdgeschoss, Obergeschoss und Untergeschoss aus dem Gebäudeplan (`assets/maps/eg.json`, `og1.json`,
-`ug.json`, Abschnitt unten).
-Der alte, im Code festgelegte Grundriss (`ROWS`/`FLOORS`) liegt unter dem Git-Tag `alte-karte`.
-- **Ablauf von `build()`:** EG laden (`_begin_floor`: Flächen-Raster `_index_places`, 25 cm, Wandstöße),
-  Treppenschächte (`_index_shafts`) → `_build_plan_floor()`: jede Wand des Plans (`_build_wall`) → Böden und
-  Decken je Fläche → Zimmer → Einrichtung aus dem Plan (`_furniture`, `_fittings`, `_items`, `_lights`) →
-  Schalter für Zimmer ohne Plan-Schalter (`_auto_switches`) → Lobby, Treppe zur Galerie (`_lobby_flight`; ohne
-  `og1.json` die alte Galerie `_gallery`), Bar/Partyraum/Küche (`_common_rooms`), Pool, Gärten → Treppenhäuser
-  → je oberes Stockwerk `_upper_floor` → Untergeschoss `_lower_floor` → Aufzüge → Bereiche fürs Licht
-  (`light_rooms.finish()`; gemeldet haben `_begin_floor` Raster, Treppen, `open_above` und `voids`, `_build_wall` jede
-  Wand und je Meter Glaswand ein Fenster, `_opening_object` Türen, Fenster und Aufzugtüren) → Schatten vom Bau
-  (`ShadowBudget.merge(structure_parts)`: Wände aus `_wall`, Böden aus `_floor_rect`, Decken aus `_ceiling_slab`) → Zonen,
-  Wegpunkte.
-- **Stockwerke (Spielkonzept 7.7):** `UPPER_MAP_PATHS` (fehlt eine Datei, endet das Haus darunter). Jedes
-  obere Stockwerk ist ein zweiter Durchgang von `_build_plan_floor()` unter dem Knoten „Obergeschoss“
-  (`root` vorübergehend dorthin, y = `UP_Y` × Stockwerk); danach Geländer an den Lufträumen
-  mit Blende (`_void_edges`: wo Boden angrenzt, außer wo die Lobbytreppe ankommt; wo eine Wand angrenzt, nichts – siehe
-  „Wände“, Hallen), Balkon- und Terrassengeländer (`_balconies`), gesperrte Treppenhaustüren. Der Zustand je Stockwerk
-  (Plan, Raster, Wandstöße, Möbel, Türen, `_level`, `_base_y`) liegt in `_floors` (`_state`/`_use`); Abfragen
-  anderer Systeme wählen ihn über die Höhe (`_level_of`, ±1,5 m um den Boden, `_on_floor`). Raum-IDs ohne
-  Zimmernummer tragen oben den Vorsatz `og1_` (`_prefix`: `og1_flure`, `og1_cat_room_1`, Flurabschnitte
-  `og1_ost_suedflur` …), damit oben und unten nicht dieselben Schalter schalten; Treppenhäuser bleiben ein Raum
-  über alle Stockwerke, die Galerie über der Lobby gehört zur Lobby (`_lobby` bleibt: rote Tapete, Lobby-Licht).
-  `_floors` hat das Untergeschoss als letzten Eintrag (`_lower`); `_level_of` vergleicht mit `base_y` jedes Stockwerks
-  und liefert den Index in `_floors`.
-  Oben reichen die Wände bis 3,5 m hinab (`_wall_piece`: Fassade ohne Fuge), Böden sind 0,3 m stark und liegen
-  auf der Decke darunter (`_floor_rect`), über den Lufträumen (`voids`) schließt eine Decke die Halle. Bäder
-  gehören zum Zimmer hinter ihrer Tür (`_bath_owner`: Licht, Verschluss); Suiten (`suite`) bekommen kein
-  Türschild. `_auto_switches`: Schalter innen neben der Tür auf der Griffseite, sonst neben dem Türblatt.
-- **Dachgeschoss** (`_attic_floor`, Spielkonzept 4.21, Plan „DG“ seit 24.10.): Die Karte `dg.json` (zweiter Eintrag in
-  `UPPER_MAP_PATHS`, `"floor": "DG"`) baut nicht `_build_plan_floor`, sondern ein eigener Durchgang unter dem Knoten
-  „Dachgeschoss“ (y = `UP_Y` × 2, `_attic` an, Raum-IDs mit Vorsatz `dg_`). Alles aus **groben Bohlen**
-  (`Mat.planks`, siehe Optik): Böden, Wände (beide Seiten, draußen die Fassadenhaut), Decke auf `ATTIC_H` (2,2 m),
-  darüber die Dachhaut `_attic_roof` (dunkel, eine Wandstärke breiter). **Schrägen** (`_attic_eaves`, `_eave_strip`,
-  `_attic_slopes`): Wo eine Wand draußen auf der einen und Dachboden auf der anderen Seite hat (abgetastet wie in
-  `_build_wall`), ist sie nur `ATTIC_KNEE` (1,3 m) hoch (Kniestock), darüber steigt eine Schräge über `ATTIC_SLOPE`
-  (2 m) in den Raum bis zur Decke – innen Bohlen, außen Dachhaut, Kollision auf Ebene 5 (Decke). `_attic_ceiling(p)`
-  liefert die Deckenhöhe an jeder Stelle (kleinste aller Schrägen); `_wall_piece` kappt damit jede Wand (`_wall_top`:
-  `_top_breaks` legt Rasterlinien, `_cap_top` zieht die Ecken herab, `_wall_box` kürzt die Kollision), so stoßen
-  Trennwände sauber an die Schräge. Die Maße sind so gewählt, dass die Türen 1,1 m neben einer Außenwand noch passen.
-  Endet eine Schräge neben Dachboden mit voller Höhe, schließt ein Giebeldreieck den Spalt (`_attic_gable`, mit
-  Kollision). **Dachfenster** (`roof_window` auf der Außenwand) kommen nicht in die Wand, sondern in die Schräge
-  darüber (`_attic_openings` sammelt sie, `_roof_window`): Rahmen und Kreuz aus Holz (`Mat.wood`), Glas ohne Schatten,
-  dazu ein kalter Lichtkegel ohne Schatten von außen hinein (`ATTIC_SHAFT_*`, im Nebel ein Lichtschacht – `AtticHaze`
-  regelt ihn mit dem Mond). **Türen:** Jede Tür des Plans wird niedrig mit dem Modell der Kniestocktür
-  (`attic_inner_door`, `ATTIC_DOOR_H` 1,65 m, offen); die zum Treppenhaus ist die verschlossene Kniestocktür
-  (`attic_door`). **Stützbalken** (`_attic_beams`): je Fläche Felder von etwa `ATTIC_BAY` (6 m), in jedem ein Pfosten
-  in der Mitte (nicht unter einer Schräge, nicht näher als `ATTIC_POST_DOOR_GAP` an einer Tür), darauf ein Balkenkreuz
-  (Unterkante `ATTIC_BEAM_BOTTOM` 1,98 m, Oberkante knapp unter der Decke) bis an die Wände, in die Schräge oder bis
-  zum Nachbarfeld, je Arm ein Kopfband unter 45° (`ATTIC_BRACE`); `Geo.grain_box` aus `Mat.wood`, je Fläche ein Mesh
-  (`SurfaceTool.append_from`) und ein Körper mit den Kollisionen von Pfosten und Armen. **Ausstattung:**
-  Möbel, Ausstattung, Gegenstände und Lichter des Plans wie sonst; `Ausstattung: Dekokiste` wird hier zur Kiste mit
-  alter Deko vom Dachboden (`ATTIC_BOX_SIZE` Stücke aus Totenkopf, Hexenbesen, Lichterkette, ohne Nachschub).
-  **Kopf des Kürbismanns** (`_attic_markers`): auf der Markierung `cross` des Plans (rotes Kreuz) ein
-  `Item.Kind.PUMPKIN_HEAD`, steht dort ein Pfosten, am Fuß daneben; `pumpkin_head_spot`. **Nebel:** `_attic_haze`
-  fasst die Fläche in 1-m-Zellen zu Rechtecken zusammen und erzeugt `AtticHaze` (Abschnitt 8). **Treppe**
-  (`_attic_stair`, Spielkonzept 4.21): im Schacht des Treppenhauses, an dem das Treppenpodest des Plans liegt (West),
-  ein steiler gerader Lauf (4 m auf die Länge der Treppenstufen) auf der einen Seite hinauf zum Podest an der
-  Rückwand, auf der anderen Seite ein Gang mit Geländer zurück zur Kniestocktür; unten ein Boden auf Höhe des OG1
-  (im EG bleibt das Treppenhaus gesperrt, im OG1 lässt `_seal_stairwells` seine Tür offen), oben ein Verschlag aus
-  Bohlen mit Dach und einer schwachen Wandleuchte. Planstriche ohne Dachboden daneben (der gezeichnete Umriss des
-  Treppenschachts) baut `_build_wall` nicht. Debug `--dachboden[=kopf|fenster|treppe]` (`attic_stair_foot`,
-  `attic_window_spots`).
-- **Untergeschoss** (`_lower_floor`, Spielkonzept 7.9): dritter Durchgang von `_build_plan_floor()` unter dem
-  Knoten „Untergeschoss“ (y = `CELLAR_Y`, `_level` −1, Raum-IDs mit Vorsatz `ug_`). Wände aus Brettschalungsbeton
-  `_cellar_wall` (`Mat.photo`, ohne Häute und Holzpfeiler), Böden `_cellar_floor`, Decken `_cellar_ceiling`; die Wände reichen
-  in den EG-Boden und enden 10 cm unter seiner Oberseite mitten in der Platte (bündig flimmerten ihre Köpfe durch
-  die Bodentextur); nur Wände am Treppenschacht (`_in_shaft` 30 cm daneben) gehen die vollen 4 m bis an die Wand
-  darüber (sonst Fuge im Treppenhaus). Flächen `cellar` (Gänge – Türen gehen nicht in sie
-  auf), `boiler_room`, `plant_room`, `laundry_room`, `cellar_room` (Boden auf Ebene 5 wie verschlossene Zimmer).
-  Öffnungen in der Farbe des Haupteingangs sind hier verschlossene Türen (`DOOR_H`, „Abgeschlossen.“), die Tür des
-  Treppenhauses West ist versiegelt (`_seal_stairwells`). Licht nur aus den **Halogenleuchten** des Plans
-  (`_halogen`, `Lamp.Style.HALOGEN`: 80-cm-Röhre unter einem Blechgehäuse, kaltweiß, `HALOGEN_ENERGY`/`_RANGE`,
-  ohne Schalter – brennen immer; keine Birne: nicht herauszudrehen, brennt nicht durch, Gäste klauen nichts;
-  `FlickerLight.stutter`: alle 10–30 s Spielzeit 1–3 Aussetzer von 40–120 ms auf 5 %, zusätzlich zum Flackern
-  durchs Monster). Im Code: `_boiler_room` (Versteck des Monsters, `cellar_center()` = Mitte der Halle, Inhalt des
-  alten Kellers an der Südwand, weg vom Eingang im Norden – Kisten, Regal, Schlüssel 18, Münzen, Batterie, Zettel
-  2011, UV-Schrift, Spinnweben, alte Deko, kaputte Leuchte und Schalter `keller` im Eingangsgang) und
-  `_laundry_room` (je Längswand `WASHERS_PER_WALL` Waschmaschinen).
-  **Kohlekessel** (24.10., `scripts/world/boiler.gd`, `Boiler`, Modell `assets/models/boiler.glb` aus
-  `tools/build_boiler.py`): mittig an der Ostwand (`BOILER_WALL` vor der Wand), Feuerklappe zur Raummitte, Kollision
-  als Zylinder plus Kasten für die offene Klappe (auch fürs NavMesh). Das Modell hat zwei Teile, `boiler` und
-  `fire_door` (Ursprung im Scharnier, geschlossen gebaut) – `DOOR_OPEN` schwenkt sie auf 100°. Im Feuerraum: Glut
-  (emissiver Kasten auf dem Rost), Flammen (`CPUParticles3D`, Billboards wie `DecoFire`, der Feuerraum verdeckt sie
-  bis auf die Öffnung) und selten ein Funke, der herausfliegt. Licht: `SpotLight3D` im Feuerraum mit eigenem
-  Schatten, schräg nach vorn unten (`CONE_*`) – der Kessel selbst begrenzt den Kegel auf die Form der Öffnung, am Boden
-  liegt ein orangerotes Trapez; dazu ein schwacher Schein vor der Klappe (`FlickerLight`, `soft`, in `lamps` wie die
-  Deko-Kerzen: flackert mit dem Monster, Schatten über `ShadowBudget`, zählt für `light_at` – am Kessel schreckt das
-  Monster also etwas zurück, Spielkonzept 7.4). Der Kegel ist kein `light_source` (die Gruppe erwartet
-  `OmniLight3D`); er folgt Helligkeit und Sichtbarkeit des Scheins (Meta `hidden_mask` von `ShadowBudget`). Knistern:
-  `SynthAudio.fire` (gefiltertes Rauschen als Fauchen, dazu kurze Rauschstöße), die Lautstärke setzt der Kessel alle
-  0,25 s aus `Game.hearing` (Entfernung und Wände wie Lärm, `CRACKLE_RANGE`). Kein Lärm fürs Monster, nicht
-  gespeichert, brennt immer (Anheizen eingefroren). **Rohre** (`scripts/level/pipe_kit.gd`, `PipeKit`, Modell
-  `assets/models/pipes.glb`: gerade 0,5/1/2 m, Bogen, T, Kreuz, Flansch, Blindkappe, offenes Ende, Rohrachse +X):
-  `run(punkte, anfang, ende, halter_y)` legt einen achsparallelen Rohrzug mit Bögen an den Ecken (gerade Stücke
-  absteigend nach Länge, der Rest gestaucht, Flansch an jeder Fuge; Enden `""`/`flange`/`cap`/`open`/`joint` – bei
-  `joint` sitzt dort ein T- oder Kreuzstück, `tee`/`cross`), waagerechte Stücke bekommen Halterstangen bis `halter_y`.
-  Keine Kollision, Meshes geteilt. `_boiler_pipes`: Ringleitung `PIPE_RING` unter der Decke an allen vier Wänden
-  (`PIPE_WALL` davor), Kesselrohr vom Stutzen (`Boiler.PIPE_TOP`) hinauf und per T-Stück von der Raumseite in den Ring
-  an der Ostwand; Abzweige Süd (Rücklauf `PIPE_LOW` über dem Boden an Süd- und Ostwand bis neben den Kessel, dort in
-  den Boden), West (Blindkappe in Hüfthöhe), Nord (Kreuzstück: hinauf durch die Decke, hinab bis zu einem offenen Ende,
-  x nach `_north_pipe_x` abseits von Tür, Schalter und Kellerleuchte). Zonen (`_lower_zones`): Heizkeller,
-  Technikraum, Wäscherei und „Keller“ für die Gänge; Wegpunkte (`_lower_waypoints`) nur in `patrol` fürs Monster,
-  Gäste gehen nicht hinunter.
-- **Wände:** Eine Planwand wird dort geteilt, wo sich die Räume an einer Seite ändern (abgetastet alle 25 cm,
-  30 cm neben der Mitte; kurze Läufe an Querwänden geglättet). Tapete je Seite über `Mat.wallpaper_split`
-  (Zimmer beige, Lobby und Katzenraum rot, sonst teal); Seiten ohne Tapete (draußen = Fassade, Toilette/Pool = Fliesen,
-  Lager = Beton) bekommen eine 2-cm-Haut knapp vor der Wand. Glaswände (Pool) als Scheibe auf Ebene 7.
-  **Hallen über zwei Stockwerke** (Lufträume, z. B. über dem Haupteingang): Die Seiten werden mit
-  `_wall_side_kind` abgetastet – im EG unter `open_above`, darüber in `voids` heißt die Seite `hall:<Art im EG>`
-  (`_halls`, beim EG-Plan gemerkt; oben liegt dort keine Fläche, sonst wäre die Seite „draußen“ mit Fassade).
-  Ihre Tapete ist die des EG mit `wall_top` = `storey` = `HALL_WALL_TOP` (100 m): keine Leiste, die Höhe zählt
-  durchgehend ab dem EG-Boden, die Rauten laufen nahtlos von der EG- in die OG-Wand bis unter die Decke, unten
-  bleibt die Vertäfelung. `_subtract` verwirft Reste unter 1 mm (sonst stak dort eine Deckenplatte ohne Tiefe in
-  der Wandfläche).
-- **Böden** (`_floor`): ein `Geo.solid` je Planrechteck, Textur in Weltkoordinaten (Muster läuft über alle
-  Stöße durch). Flure tragen Teppich, die Lobby Fliesen; ein Flurrechteck, das in die Lobby ragt (der Südflur
-  ist ein Stück quer hindurch), wird an deren Rand geteilt.
-- **Pool** (`_pool`): Becken 1,4 m tief (Sprung reicht nur ~0,7 m), darüber die Holzdecke der Flure wie über dem
-  Umgang (`_floors_and_ceilings` überspringt bei `pool_water` nur den Boden – dicht auch gegen Regen, `Weather`), Boden, Wände und Rand aus `Geo.solid`s mit `_pool_tiles` (Fototextur). Heraus kommt
-  man über die Einstiegstreppen an beiden Schmalseiten (`_flight` mit Fliesen von der Südkante entlang
-  der West- bzw. Ostwand, Handlauf `HANDRAIL_MODEL` ohne Kollision): 7 Stufen à 20 × 30 cm auf 2,1 m
-  (`_flight(…, step_h)`, sonst 0,25 m), damit Kanten und Flächen auf dem 10-cm-Raster der Beckenfliesen liegen. **Unterwasserlampen**: je Längswand
-  `POOL_LAMPS_PER_SIDE` (2) gleichmäßig verteilt (Drittel der Länge), `POOL_LAMP_Y` unter dem Boden, nicht im Plan;
-  `Lamp.Style.POOL`: Chromring mit Glasscheibe bündig an der Wand, ohne Birne (wie Halogen, `has_socket()` falsch –
-  Gäste klauen nichts), am Schalter des Umgangs (`pool`). Jede läuft einmal durch den Regenbogen und wieder von vorn
-  (`Color.from_hsv`, Licht und Scheibe), Anfangsfarbe und Dauer (`POOL_CYCLE` 18–26 s) zufällig – nie im Gleichschritt.
-  Wasser = `PoolWater`
-  (`world/pool_water.gd`): `PlaneMesh` im 25-cm-Raster 0,3 m unter dem Boden mit `shaders/psx_water.gdshader`,
-  halbtransparent, beidseitig, wirft keinen Schatten. Alle Wellen sind rein optisch im Vertex-Shader (keine
-  Physik, kein Auftrieb, Normalen per Differenz): Grundwellen ±7 cm über `wave_time` (Spielzeit aus `delta`,
-  steht in der Pause) und bis zu `MAX_RIPPLES` (32, Shader-Konstante gleich halten) **Wellenringe** im Array
-  `ripples` (x, z, Alter, Stärke; nach `RIPPLE_LIFE` 9 s frei, sonst ersetzt `ripple()` den schwächsten). Ein Ring
-  ist ein Wellenpaket, das mit `ripple_speed` nach außen läuft, abklingend mit `RIPPLE_DECAY` und 1/√Weg.
-  **Abprall:** jeder Ring zählt zusätzlich als Spiegelquelle hinter den vier Innenwänden (× `wall_reflect` 0,6)
-  und den vier Ecken (× 0,6²) – für ein rechteckiges Becken genau die erste Reflexion; die Treppen werfen
-  nichts zurück. Alles wird addiert, wo Kämme zusammenkommen, steigt die Höhe über `foam_from` und es bricht.
-  `_track()` prüft Spieler und Monster:
-  Füße im Becken → alle `WAKE_EVERY` m ein Ring (schneller als Gehen stärker), stillstehend ab und zu ein
-  schwacher; Eintauchen mit mehr als `SPLASH_SPEED` Fallgeschwindigkeit → `splash()` (hoher Ring,
-  Nachschwapper, Tropfen als `CPUParticles3D` im Ring um die Stelle). **Brechen** im Fragment-Shader: Schaum,
-  wo die Höhe über `foam_from` steigt oder ein Ring innerhalb 0,6 m der Innenkante (`pool_rect`) anschlägt.
-  Fresnel (`sheen`) macht flache Blickwinkel heller und dichter – daran sieht man die Wellen.
-  **Monster** (`_update_unrest`, Spielkonzept 4.13): Abstand vom aktiven, sichtbaren Monster zum nächsten Punkt
-  der Wasserfläche → Zielwerte, angeglichen mit `CALM_RATE`/`TREMOR_RATE`/`SLOSH_UP`/`SLOSH_DOWN` je Sekunde.
-  `STILL_FROM`→`STILL_FULL` (32→20 m) senkt `base_scale` auf 0 (glatt); `TREMOR_FROM`→`TREMOR_FULL` (= Rauschen
-  20→4 m) `tremor`: nur im Fragment-Shader, kippt die Normale um feine Ringe (22 cm) ab `tremor_src` (Punkt am
-  Rand zum Monster hin), alle 0,9 s ein Stoß, der mit 2,5 m/s läuft – das Raster ist dafür zu grob. Monster in
-  `hall` (Region `pool`) → `slosh`: stehende Welle der Länge nach (`SLOSH_HEIGHT` 15 cm, `SLOSH_PERIOD` 9 s) plus
-  eine schnellere quer, Grundwellen × `SLOSH_WAVES`; Schaum am Rand auch aus dem Schwappen, Gischt (`_drops`)
-  entlang des hohen Endes, wenn die Längswelle anschlägt. Alles zusammen höchstens `max_rise` (27 cm) – das Wasser
-  bleibt unter der Kante. Debug `--pool=still|tremor|slosh|off` setzt die Stufe ohne Übergang.
-- **Öffnungen → Objekte** (`_opening_object`): Türen gehen in Zimmer und Räume auf, nie in den Flur
-  (`_inner_side`, Scharnier vom Flur aus rechts) – außer der Plan gibt mit einem Türanschlag (`hinge`/`opens`)
-  Scharnierende und Aufgehseite vor (`Door.hinge_end`: Scharnier bei x = width); ab 1,5 m Breite Doppeltür
-  (dann zählt nur die Seite). Liegt ein Lichtschalter des Plans neben dem Scharnier auf der Aufgehseite, keine
-  Blattbreite weit (`_behind_door`), warnt der Build mit der Pixelposition: Die offene Tür verdeckt ihn.
-  **Aussehen** (`Door.look`, vor dem Einhängen): `door` bekommt das gemalte Zimmertür-Modell (`Look.HOTEL`, auch
-  beide Flügel der Doppeltür), `attic_door` die Kniestocktür (`Look.ATTIC`, `ATTIC_DOOR_H` 1,65 m hoch,
-  verschlossen mit Schlüssel `dachboden`, das Monster bricht sie nicht auf, `attic_doors`), `attic_inner_door` die
-  übrigen Türen im Dachgeschoss (gleiches Modell, offen); Betriebstüren behalten das gebaute Blatt. Ohne Dachgeschoss
-  im Plan macht `--attic-door` die erste 0,8 m breite Tür des OG1 zur Kniestocktür (`_debug_attic_door`, ändert den
-  Fingerabdruck der Welt), sonst stellt es einen vor die echte. Terrassen- und Glastüren sind gläserne Doppeltüren, Aufzugtüren
-  baut der Aufzug (unten), der Haupteingang ist verriegelt. Fenster schauen von innen nach draußen; ihre
-  `room_id` ist die Fläche dahinter (Zimmernummer, Bereich oder Flurabschnitt, `_room_id_at`). Unter jeder
+Baut alle Stockwerke aus dem Gebäudeplan (`assets/maps/eg.json`, `og1.json`, `dg.json`, `ug.json`, Abschnitt
+unten). **Den Plan zeichnet und möbliert der Zeichner von Hand; der Code stellt nichts dazu.** Braucht eine Mechanik
+etwas im Zimmer, kommt es in den Plan. Was der Plan nicht kennt (Münzbetrag, Zettel-Nummer, UV-Text, Schubladeninhalt),
+steht in `CONTENT` je Raum-ID; Höhen und Helligkeiten in `BOX_HEIGHTS`, `_lamp_style` und Konstanten.
+
+### Ablauf von `build()`
+EG laden (`_begin_floor`: Flächen-Raster `_index_places`, Wandstöße, Haushalte), Treppenschächte (`_index_shafts`) →
+`_build_plan_floor()`: Wände (`_build_wall`) → Böden und Decken → Zimmer → Einrichtung (`_furniture`, `_fittings`,
+`_rugs`, `_items`, `_lights`) → Schalter für Zimmer ohne Plan-Schalter (`_auto_switches`) → Lobby und Lobbytreppe
+(`_lobby_flight`), Bar/Partyraum/Küche (`_common_rooms`), Pool, Gärten → Treppenhäuser → obere Stockwerke
+(`_upper_floor`, Dachgeschoss `_attic_floor`) → Untergeschoss (`_lower_floor`) → Aufzüge → Lichtbereiche
+(`light_rooms.finish()`) → Schatten vom Bau (`ShadowBudget.merge(structure_parts)`) → Zonen, Wegpunkte.
+
+**Die Reihenfolge ist Teil des Speicherformats** (Gruppen-Index, siehe 7). Jede Änderung an Lampen, Schaltern,
+Verstecken, Kommoden, Truhen, Telefonen, Pflanzen oder Vorräten im Plan verschiebt sie – alte Spielstände werden dann
+vom Fingerabdruck abgelehnt, zu tun ist nichts.
+
+- Bauen in **lokalen Rahmen**: `_parent` ist das gerade aktive Bauteil (root, Zimmerrahmen, Schacht); `_wall_x/_wall_z`
+  mit Öffnungen als `Vector4(mitte, breite, oberkante, unterkante)`. Gegenstände kommen in die Hauptszene (`world`),
+  umgerechnet über `_global()`.
+- **Stockwerke** (`UPPER_MAP_PATHS`, fehlt eine Datei, endet das Haus darunter): Jedes obere Stockwerk ist ein weiterer
+  Durchgang von `_build_plan_floor()` unter eigenem Knoten (`root` vorübergehend dorthin). Der Zustand je Stockwerk liegt
+  in `_floors` (`_state`/`_use`, das UG als letzter Eintrag `_lower`); Abfragen anderer Systeme wählen ihn über die Höhe
+  (`_level_of`, `_on_floor`). Raum-IDs ohne Zimmernummer tragen einen Vorsatz (`og1_`, `dg_`, `ug_`; `_prefix`), damit
+  oben und unten nicht dieselben Schalter schalten; Treppenhäuser bleiben ein Raum über alle Stockwerke, die Galerie
+  über der Lobby gehört zur Lobby. Oben reichen die Wände bis in die Decke darunter (Fassade ohne Fuge), über Lufträumen
+  (`voids`) schließt eine Decke die Halle; Geländer mit Blende an Lufträumen (`_void_edges`), Balkone (`_balconies`).
+  Bäder gehören zum Zimmer hinter ihrer Tür (`_bath_owner`: Licht, Verschluss); Suiten (`suite`) haben kein Türschild.
+
+### Wände, Böden, Stöße
+- **Wände:** Eine Planwand wird dort geteilt, wo sich die Räume an einer Seite ändern (abgetastet, kurze Läufe
+  geglättet). Tapete je Seite über `Mat.wallpaper_split` (Zimmer beige, Lobby und Katzenraum rot, sonst teal); Seiten
+  ohne Tapete (draußen = Fassade, Bad/Toilette/Pool = Fliesen, Lager = Beton) bekommen eine Haut knapp vor der Wand
+  (`_skin_material`). Glaswände als Scheibe auf Ebene 7. Kollision als Kästen um jede Öffnung, die Optik als **ein**
+  Mesh pro Wand (`Geo.wall_mesh`, Fläche 0 = Wand, 1 = Laibungen in Rahmenholz) mit gemeinsamen Ecken auf einem Raster
+  – getrennte Kästen stießen mit Ecken mitten auf Nachbarkanten, beim Snapping klafften Fugen.
+- **Hallen über zwei Stockwerke** (Lufträume): Seiten über `_wall_side_kind` abgetastet, oben heißt die Seite
+  `hall:<Art im EG>` (`_halls`); Tapete des EG mit `wall_top` = `HALL_WALL_TOP` – die Rauten laufen nahtlos bis unter
+  die Decke. `_subtract` verwirft Reste unter 1 mm (sonst stak eine Deckenplatte ohne Tiefe in der Wand).
+- **Wandstöße** (`_index_joints`): Senkrechte Wände ragen bis zur Mitte der waagerechten (`_joint_depth`); läuft eine
+  waagerechte durch eine senkrechte (T-Stoß), weicht ihr Kopf bis zu deren Mitte zurück (`_head_inset`) – sonst
+  blitzte ihre Tapete durch. Wechselt die Tapete an einer anstoßenden Wand, liegt der Schnitt in deren Mitte
+  (`_joints_on`). **Holzpfeiler** (`_corner_posts`, reine Optik) fassen jeden freien Wandkopf ein, an dem zwei Tapeten
+  zusammenkommen – kein Eintrag im Plan nötig.
+- **Böden** (`_floor`): ein `Geo.solid` je Planrechteck, Textur in Weltkoordinaten (das Muster läuft über die Stöße).
+  Ein Flurrechteck, das in die Lobby ragt, wird an deren Rand geteilt. Verschlossene Zimmer haben einen Boden auf der
+  Ebene der Decken (5) – nicht im NavMesh, sonst planten Gäste und Monster Wege durch gesperrte Türen. Unter jeder
   benutzbaren Tür liegt eine Schwelle – ohne Boden in der Wandlücke risse das NavMesh ab.
-- **Zimmer** (`_room`): Rahmen am Türmittelpunkt (+X an der Flurwand entlang, +Z ins Zimmer); Innenmaß aus
-  dem Rechteck an der Tür (Eckzimmer sind L-förmig). Das Innere kommt aus dem Plan; `_room` legt nur die
-  Zimmerart fest (Tür offen bei `abandoned`/`derelict`, abgeschlossen bei `locked`). Arten: `player`, `guest`,
-  `vacant`, `abandoned`, `derelict`, `locked` (`laundry` gibt es seit 23.10. nicht mehr als Zimmer – die Wäscherei ist der Kellerraum `ug_laundry_room_1`, ihr Zettel steht in `CONTENT`).
-  **Seit 24.10. aus HAUSHALTE.md** (Spielkonzept 6.19, 6.20): `_index_households` (in `_begin_floor`) liest
-  `assets/data/households.json` und ordnet jeden Haushalt und jedes Sonderzimmer über seine Stelle im Plan (Pixel im
-  Band, `origin_px`/`meters_per_pixel` → Meter) dem Zimmer zu, dessen Fläche sie enthält: `households[no]`,
-  `_room_kinds[no]` (`guest` bzw. `player`/`abandoned`/`locked`/`derelict`), alle übrigen `vacant`; `ROOM_KINDS`
-  bleibt nur Rückfall (013 ohne Datei). Weicht das vom Plan ab (`"vacant"` aus „Zimmer leer“), warnt `_room`. Die
-  Zimmertür bekommt `room_no`, Gäste- und unbewohnte Zimmer sind abgeschlossen (`key_id` `zimmer_<nr>`, `vacant`),
-  bewohnte `resident_name` (`door_name`: mehrere Personen Nachname, eine Vor- und Nachname – erscheint im Hinweis an
-  der Tür, kein Schild). `PLAYER_ROOM` 013, `LOCKED_ROOM` 018, `COMPASS_ROOM` 026. **Bauphase:** Nur Flügel in
-  `OPEN_WINGS` (im EG, seit 24.10. beide) bzw. `OPEN_WINGS_UPPER` (darüber, seit 22.10. beide Flügel; `_wing_open`) sind bewohnbar; Zimmer anderer Flügel haben eine versiegelte Tür (`_seal`: abgeschlossen, auch
-  für das Monster) und dauerhaft zugezogene Vorhänge (`HotelWindow.sealed`), aber kein Inneres und keinen Boden.
-  Objekte des Plans auf versiegelten Flächen werden übersprungen.
-- **Einrichtung aus dem Plan** (Objektebenen, Abschnitt unten), in dieser Reihenfolge – sie bestimmt die
-  Gruppen-Reihenfolge im Spielstand:
-  - `_furniture`: Rezeption (Modell über ihre Planrechtecke, siehe 1), dann `furniture`. Bett/Schrank → `HideSpot` (ins `spots` des Zimmers),
-    Kommode, Truhe, Schach- und Spieltisch, Sofa als eigene Bauteile in der Rechteckmitte mit Blick nach
-    `facing` (ohne: zur Flächenmitte); alles andere ein Kasten in Plangröße mit Höhe aus `BOX_HEIGHTS`.
-    **Betten** sind Balkenbetten (`BedModel`, siehe unten) in Plangröße (`bed_size`): das Einzelbett (`bed`, im Plan
-    2,10 × 1,50 m) mit der Länge quer zu `facing`, Kopfteil immer lokal −X; neue Möbel aus `map_legend.png` (22.10.):
-    **Doppelbett** (`_double_bed`, 2,20 × 2,20 m) ist ein Bett-`HideSpot` in Plangröße, Kopfteil zur Seite `head`
-    (`head_x`), heraus geht es zu der Längsseite mit mehr Platz im Zimmer (`_free_run`). Doppelbett für zwei
-    Schläfer ab `HideSpot.DOUBLE_WIDTH` 1,8 m Breite; die **Badewanne** ist ein `Bathtub` (`world/bathtub.gd`,
-    23.10.): gefliester Block in Plangröße (Länge quer zur Vorderseite, Höhe `BOX_HEIGHTS` 60 cm = 50 cm Wanne auf 10 cm
-    Sockel), darin die Keramikwanne
-    `TUB_LENGTH` 2,2 m als hohles Becken aus Ringen (`_loop`, abgerundete Rechtecke mit gleich vielen Punkten,
-    Rückenschräge am Kopfende −X, Übergang zum Boden als Bézierkurve über `FILLET_*`), Keramikrand `RAISE` 1 cm auf
-    den Fliesen aufgesetzt, Außenecken `CORNER_OUTER` (der Fliesenausschnitt ist `CUT` größer als die Öffnung, sonst
-    flimmert er in der Beckenwand), Abfluss und Überlauf; Wandarmatur aus glatten Messingzylindern (`_tube`,
-    `MIXER_SIDES`) an der Rückseite, 10 cm über den Fliesen und unter der Fensterbrüstung (`WINDOW_SILL` 90 cm überall, die Schürze unter der Fensterbank endet
-    gut 80 cm hoch) (Rosetten, Rohr, Drehgriffe mit Rille, schräger
-    Auslauf, Mundstück ganz darunter); Meshes über `GrandStair.Shape`, Kollision = die vier Fliesenquader und der
-    Beckenboden (man kann hineinsteigen). Die **Wannenablage** (`tub_shelf`, 24.10.) ist ein Stück gefliester Block
-    zum Ansetzen an die Wanne (für 3,8 m breite Bäder: Wanne 2,8 m + Ablage 1 m): `Geo.solid` in Plangröße, Höhe wie
-    die Wanne, `_bath_tiles` – die Fugen laufen über die Stoßkante durch; keine Vorderseite. Waschbecken, Dusche und WC
-    sind Modelle (siehe 1, „Bad und Bar“; Spiegel mit Spiegelbild `Mirror`, `MIRROR_GAP` 3 cm vor der Wand – näher
-    verschwindet er im Vertex-Snapping hinter ihr, `MIRROR_RANGE` 6 m; Gruppe `sink_mirrors`), ohne Datei Kästen (der
-    Spiegel dann `MIRROR_WIDTH` 0,6 m, `MIRROR_BOTTOM` 1,10 bis `MIRROR_TOP` 1,95 m). Mülleimer, Zimmertisch und Stuhl
-    (Lehne `CHAIR_BACK` hinten) sind Kästen;
-    die Fußmatte liegt flach ohne Kollision; Snack- und Getränkeautomat sind `VendingMachine`, eine Truhe in einem
-    Hotelzimmer ist dessen Süßigkeiten-Truhe (siehe Tabelle unten).
-    Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert daraus die Höhe, auf der
+- **Tapete, Fototexturen, Optik** siehe 1 „Texturen“ und 8 „Optik“.
+
+### Öffnungen, Zimmer, Einrichtung
+- **Öffnungen → Objekte** (`_opening_object`): Türen gehen in Zimmer und Räume auf, nie in den Flur (`_inner_side`) –
+  außer der Plan gibt mit einem Türanschlag (`hinge`/`opens`) Scharnier und Aufgehseite vor (`Door.hinge_end`); ab
+  breiten Öffnungen Doppeltür. Liegt ein Lichtschalter hinter der offenen Tür (`_behind_door`), warnt der Build mit
+  Pixelposition. **Aussehen** (`Door.look`): `door` = gemaltes Zimmertür-Modell, `attic_door` = Kniestocktür
+  (verschlossen mit Schlüssel `dachboden`, das Monster bricht sie nicht auf), `attic_inner_door` = übrige Türen im
+  Dachgeschoss; Betriebstüren behalten das gebaute Blatt. Terrassen- und Glastüren sind gläserne Doppeltüren; Fenstertüren
+  nach draußen kommen in die Gruppe `french_doors` (Lakengeist). Der Haupteingang ist verriegelt. Fenster: `room_id` =
+  Fläche dahinter (`_room_id_at`).
+- **Zimmer** (`_room`): Rahmen am Türmittelpunkt (+X an der Flurwand entlang, +Z ins Zimmer); das Innere kommt aus dem
+  Plan, `_room` legt nur die Zimmerart fest: `player`, `guest`, `vacant`, `abandoned`, `derelict`, `locked`.
+  **Belegung aus HAUSHALTE.md** (Spielkonzept 6.19, 6.20): `_index_households` liest `assets/data/households.json` und
+  ordnet jeden Haushalt und jedes Sonderzimmer über seine Stelle im Plan dem Zimmer zu (`households[no]`,
+  `_room_kinds[no]`), alle übrigen sind `vacant`; `ROOM_KINDS` ist nur Rückfall ohne Datei. Weicht das vom Plan ab
+  („Zimmer leer“), warnt `_room`. Gäste- und unbewohnte Zimmer sind abgeschlossen (`key_id` `zimmer_<nr>`), bewohnte
+  tragen `resident_name` (im Hinweis an der Tür). `PLAYER_ROOM`, `LOCKED_ROOM`, `COMPASS_ROOM`. **Bauphase:** Nur Flügel
+  in `OPEN_WINGS`/`OPEN_WINGS_UPPER` sind bewohnbar (`_wing_open`); Zimmer anderer Flügel werden versiegelt (`_seal`,
+  auch für das Monster, Vorhänge `HotelWindow.sealed`, kein Inneres).
+- **Einrichtung aus dem Plan**, in dieser Reihenfolge (bestimmt die Gruppen-Reihenfolge im Spielstand):
+  - `_furniture`: Rezeption (Modell, siehe 1), dann `furniture`. Bett/Schrank → `HideSpot`; Kommode, Truhe, Schach- und
+    Spieltisch, Sofa, Bank, Zimmertisch als eigene Bauteile mit Blick nach `facing`; sonst ein Kasten in Plangröße mit
+    Höhe aus `BOX_HEIGHTS`. **Betten** = Balkenbetten (`BedModel`, 8) in Plangröße (`bed_size`); das Doppelbett hat das
+    Kopfteil zur Seite `head`, heraus geht es zur Längsseite mit mehr Platz (`_free_run`), ab `HideSpot.DOUBLE_WIDTH`
+    für zwei Schläfer. **Badewanne** = `Bathtub` (`world/bathtub.gd`): gefliester Block in Plangröße mit hohlem
+    Keramikbecken; der Fliesenausschnitt ist `CUT` größer als die Öffnung (sonst flimmert er in der Beckenwand); man kann
+    hineinsteigen. **Wannenablage** (`tub_shelf`): gefliester Block zum Ansetzen. Waschbecken, Dusche, WC, Bar siehe 1.
+    Eine Truhe in einem Hotelzimmer ist dessen Süßigkeiten-Truhe (`_sweets_chest`); Snack- und Getränkeautomat sind
+    `VendingMachine`. Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert die Höhe, auf der
     Kerzen, Telefone, Zettel und Gegenstände stehen.
-  - `_fittings`: Wandsachen (Schalter, Bild, Spinnwebe, UV-Schrift, Kalender) über `_wall_spot` an die
-    Wandfläche der Seite `wall` (`_on_wall` sucht im `_wall_index`), Höhen als Konstanten (`SWITCH_Y` …).
-    Telefon, Zettel, Tagebuch und Vorräte auf dem Möbel darunter, Kürbispflanzen mit `PLANT_STAGES` – die Sorte kommt
-    aus der Palettenfarbe („Ausstattung: Kürbispflanze Hokkaido“ → Art `pumpkin_plant:hokkaido`, Spielkonzept 5.8).
-  - `_rugs`: Teppiche (`rugs`) als flache Auflage ohne Kollision 1 cm über dem Boden (`Mat.layer_uv`). Ein
-    Läufer läuft entlang der langen Seite seines Rechtecks: `Geo.runner_mesh` legt eigene UVs an – quer spannt
-    sich die Textur über die ganze Breite, an beiden Enden ein Abschluss, dazwischen eine ganze Zahl
-    Musterkacheln (leicht gestreckt, damit das Muster symmetrisch sitzt). Textur `TexGen._runner` (32 px
-    breit: Abschluss 16 Zeilen, Kachel 32 Zeilen; Pixel quadratisch, also Kachel so lang wie der Läufer
-    breit). Stöße und Abzweigungen entscheidet der Plan: Ein Läufer endet mit seinem Abschluss am anderen.
-    Art → Textur in `RUG_TEXTURES`. Dazu im Katzenraum sechs lose Teppiche auf dem Holzboden, nicht aus dem
-    Plan (`_cat_room_rugs`, `CAT_ROOM_RUGS`: Mitte als Anteil der Raumgrenzen, Größe, Drehung, Farbe): je ein
-    `PlaneMesh` mit `Mat.layer_tex` und einer eigenen Textur `TexGen.rug(farbe, w, h)` – ganzer Teppich in einem
-    Bild, ein Pixel ≈ `RUG_PIXEL` (8 cm), Fransen an den Enden, Bordüre mit Rauten, Medaillon und Eckstücke,
-    fünf Farbstellungen in `TexGen.RUG_COLORS`; jeder liegt 3 mm höher als der vorige (Überlappen ohne Flimmern).
+  - `_fittings`: Wandsachen (Schalter, Bild, Spinnwebe, UV-Schrift, Kalender) über `_wall_spot` an die Wandfläche
+    (`_on_wall`), Höhen als Konstanten (`SWITCH_Y` …). Telefon, Zettel, Tagebuch und Vorräte auf dem Möbel darunter,
+    Kürbispflanzen mit der Sorte aus der Palettenfarbe (`pumpkin_plant:<sorte>`).
+  - `_rugs`: Teppiche als flache Auflage (`Mat.layer_uv`). Ein Läufer läuft entlang der langen Seite
+    (`Geo.runner_mesh`: Abschluss an beiden Enden, ganze Zahl Musterkacheln); Art → Textur in `RUG_TEXTURES`. Im
+    Katzenraum lose Teppiche aus `CAT_ROOM_RUGS` (`TexGen.rug`), jeder etwas höher als der vorige (Überlappen ohne
+    Flimmern).
   - `_items`: `Item.Kind`-Name aus dem Plan, auf dem Möbel darunter.
-  - `_lights`: Wandleuchten mit Höhe/Helligkeit/Reichweite je Flächenart (`_lamp_style`), Deckenleuchten
-    (`_ceiling_lamp`: `Lamp.Style.FLUSH` bündig an der Decke, über `open_above` `Lamp.Style.CEILING` als Pendel an
-    einer Schnur bis `PENDANT_Y` – das Pendel bekommt noch ein eigenes Modell), Kerzen auf dem Möbel, Laternen;
-    `broken` aus dem Plan. **Kupferleuchte** (`FLUSH`, `Lamp._build_flush`): Ringe nach `FLUSH_PROFILE` von der
-    Decke abwärts (Radius, Höhe, Rille – breiter Rand mit zwei Rillen, abgesetzter Korpus mit einer Rille, 16,5 cm
-    hoch, 48 cm breit, 24 Segmente) aus `Mat.metal(COPPER)`, Rillen matt dunkel; unten Opalglas (`FLUSH_GLASS`,
-    8 mm vorstehend – die Ringe sind volle Zylinder, knapper flimmerte ihr Boden beim Vertex-Snapping durchs Glas)
-    mit dem Material der Birne in `FLUSH_GLASS_GLOW`: Es leuchtet, flackert und erlischt mit ihr. Die Birne steckt
-    unsichtbar dahinter und lässt sich wie sonst herausdrehen (`has_socket()`). Das Licht sitzt
-    `FLUSH_LIGHT_BELOW` (35 cm) unter dem Glas – näher strahlte es das Kupfer von unten grell orange an.
-  - Was der Plan nicht kennt, steht in `CONTENT` je Raum-ID: Münzbetrag, Kartenblatt, Zettel-Nummer, UV-Text.
-    Lampen und Schalter gehören zur Raum-ID der Fläche davor (`_light_room_at`: Umkleiden/Duschen teilen sich
-    `umkleiden`); Schalter in unbewohnten Zimmern starten aus.
-  - Nicht im Plan und weiter im Code: die Leuchte über dem Podest zum Untergeschoss (und Ersatzleuchten im
-    Treppenhaus, wo ein Plan keine setzt), der Inhalt des Heizkellers und die Waschmaschinen im UG; dazu Flaschen (auf den Glasböden des Barregals), Barhocker, Tanzfläche, Teppiche, Beete und die
-    Treffpunkte für Gäste (`_common_rooms`, `_lobby_hall`, `_garden_beds`).
-  - **Podestregel im Treppenhaus:** Eine Wandleuchte an der Wand gegenüber der Treppenhaustür (`_landing_side`)
-    hängt eine halbe Etage höher, über dem Wendepodest zum Stockwerk darüber (nicht im obersten Stockwerk).
-  - **Kratzbaum** (`cat_tree`, `_cat_tree`): Kasten-Kollision bis `CAT_TREE_TOP`, oben ein Liegeplatz in
-    `cat_perches` (`cat_room` = im Katzenraum).
-  - **Hecken** (`scripts/level/hedge.gd`, `Hedge.build` aus `_gardens`; Spielkonzept 7): Die Terrassenkanten
-    im EG (`terrace_edges`, im Plan 20-cm-Linien) werden Formschnitthecken, `WIDTH` 0,5 m dick und `HEIGHT` 1,6 m
-    hoch, mittig auf der Linie. `_lines` fasst Stücke auf derselben Mittellinie zusammen (der Plan teilt die
-    Front dort, wo ein Querstück anstößt). Abschlüsse (`_end`): stößt das Ende auf eine Hecke, die dort ebenfalls
-    endet → Gehrung; läuft die andere durch → offenes Ende in deren Mitte (verdeckt); frei → Stirnfläche, vor einer
-    Hauswand bis in deren Mittellinie (`WALL_SNAP`). Netz je Linie: Querschnitt (`_profile`, spiegelgleich, oben um
-    `TAPER` schmaler, Oberkante mit Radius `ROUND`) im Raster `STEP` entlang der Linie gezogen; die Ecken wandern
-    um `BUMP` nach einem Vektor-Rauschen ihrer **Weltlage** (oben stärker in der Höhe, `BUMP_TOP`) – gleiche Ecken
-    zweier Stücke wandern gleich, an Gehrungen bleibt keine Fuge. Normalen aus den Nachbarecken. Eckfarben dunkeln
-    zum Boden ab und sprenkeln (`_shade`; `psx_surface` mit `use_vertex_color`), Textur `TexGen` „hedge“.
-    **Blattkarten** (`_cards`): einzelne Vierecke mit `TexGen` „leaves“ (Büschel mit Alpha, ein paar
-    herbstgelbe Blätter), `CARDS_TOP` je Meter auf der Oberkante, `CARDS_SIDE` an den Seiten, zur Hälfte aus der
-    Fläche ragend, nach außen gekippt – sie brechen den geraden Umriss auf. `Mat.leaves` mit
-    `shaders/psx_leaves.gdshader`: ausgestanzt (`ALPHA_SCISSOR_THRESHOLD`), beidseitig; Normale = die der Fläche
-    darunter, auf der Rückseite wieder umgedreht, so werden die Blätter wie die Hecke beleuchtet. Eigener Zufall
-    je Linie (Spielstände unberührt). Ein Mesh für Körper und eins für Blätter je Linienzug des Plans, Kollision
-    als Quader je Linie (auch fürs NavMesh); ~670 m Hecke kosten ~0,25 s Bauzeit.
-- **Lobby und Galerie:** Mit `og1.json` baut das Obergeschoss die Galerie aus seinem Plan (Boden, Wände, Türen,
-  Leuchten, Schalter, Geländer), die Lobby hat ihre Decke bis auf den Luftraum (`open_above`); hier nur die
-  Treppe (`stairs`, `up` = oberes Ende). Ohne `og1.json` die alte Galerie (`_gallery`): 0,5 m Boden auf 3,5–4 m,
-  Geländer, Wände bis 7,5 m, zwei gesperrte Türen. Der Partyraum hat wie die Lobby einen Luftraum mit Galerie.
-- **Lobbytreppe** (`scripts/level/grand_stair.gd`, `GrandStair.build` aus `_lobby_flight`; Spielkonzept 7.5):
-  gerade Wangentreppe im Rechteck des Plans (Treppe mittig im Luftraum, 3,8 × 6,9 m), unten offen. Stufenzahl
-  aus der Höhe (`RISER` 17 cm → 24 Steigungen à 16,7 cm), Auftritt aus der Lauflänge (30 cm). Gebaut im Rahmen
-  der Treppe (lokal −Z bergauf, `up` dreht ihn): gebeizte Trittstufen mit Überstand, lackierte Setzstufen, zwei
-  Wangen, dazwischen eine schräge Untersicht; Läufer (TexGen „runner“) im Wasserfall-Stil – die Musterkachel
-  wiederholt sich entlang des Wegs, in jeder Falte eine Messingstange (`Mat.metal`). Geländer beidseitig:
-  Handlauf als gezogener Querschnitt (`RAIL_PROFILE`), gedrechselte Stäbe (zwei je Stufe, ein `MultiMesh` je
-  Reihe), Pfosten mit Fußblock, Kappe und Knauf; die oberen hängen mit einem Zapfen unter die Galeriekante. Ein
-  Mesh je Material (`GrandStair.Shape`: Quader, Drehkörper, gezogener Strang, Felder ≤ `Geo.MAX_FACE`).
-  Kollision wie bei `_flight`: Rampe unten durch die Mitte der ersten Trittstufe bis auf den Boden, oben bündig mit der
-  Galeriekante (Ebene 1, `stair_ramp`; lief sie auch oben durch die Trittmitten, blieb eine halbe Stufe Kante, an der
-  Gäste festhingen), Trittflächen auf `LAYER_TREAD`, für die Geländer schräge Prismen mit senkrechten Enden (ein gekippter
-  Kasten ragte mit seiner Stirn auf Hüfthöhe vor die Treppe, Gäste blieben am Eck hängen), die Pfosten. Der Läufer hängt
-  an der Rampe – `Footsteps.floor_under` hört Teppich (Gehen leise wie auf den Fluren).
-  **Galeriegeländer** (`GrandStair.railing`, aus `_void_edges` für alle Lufträume): Bodenholm, dieselben Stäbe
-  (höchstens `BALUSTER_GAP`), Handlauf auf 1 m, Pfosten an den Enden und alle höchstens `BAY` (3 m); an einer
-  Ecke nur einer (Meta `gallery_posts` am Stockwerk). Neben einer Treppe endet es genau an ihrer Kante
-  (`_stair_edge`), dort steht der obere Treppenpfosten. Balkone und die alte Galerie behalten `_railing`.
-  Davor eine **Blende** (`GrandStair.fascia`, lackiert wie die Pfosten): Brett `FASCIA_DEPTH` (10 cm) vor der Kante von
-  `FASCIA_BELOW` unter der Decke bis zum Galerieboden, darauf eine Abdeckleiste und unten eine Leiste (`FASCIA_LIP`,
-  12,5 × 3,5 cm) – deckt die Stirn von Decke und Teppichboden und die 8,5 cm vorstehenden Pfostenfüße; an Ecken um
-  die Leistentiefe verlängert, neben der Treppe nicht. `out` zeigt in den Luftraum (in `_void_edges` heißt die
-  Gegenrichtung `out`) – andersherum steckt die Blende in der Platte und flimmert mit deren Stirn.
-- **Wandstöße** (`_index_joints`): Senkrechte Wände enden laut Plan bündig an der Fläche einer waagerechten –
-  ihr Mesh ragt bis zu deren Mitte hinein (`_joint_depth`). Läuft umgekehrt eine waagerechte Wand durch eine
-  senkrechte hindurch bis an deren ferne Fläche (T-Stoß: Zimmertrennwand an der Flurwand, im EG rund 140), weicht ihr
-  Kopf bis zur Mitte der senkrechten zurück (`_head_inset`) – sonst läge er in einer Ebene mit deren Fläche und
-  blitzte mit seiner Tapete (Zimmer) durch die Flurtapete. Wechselt die Tapete einer waagerechten Wand an einer
-  anstoßenden Wand, liegt der Schnitt zwischen den Stücken in deren Mitte (`_joints_on`), damit ihr Körper die
-  Stoßkante abdeckt; sonst blitzt in der Ecke beim Snapping der Boden dahinter durch. Holzpfeiler
-  (`_corner_posts`, reine Optik, nicht im NavMesh) fassen jeden freien Wandkopf mit Außenecke ein, an dem zwei
-  verschiedene Tapeten zusammenkommen – die beiden Wandseiten (der Kopf selbst trägt die Tapete der Nordseite,
-  an Zimmerblöcken also Zimmertapete im Flur) oder der Raum vor dem Kopf (Lobby ↔ Querflur). Kein Eintrag im
-  Plan nötig; Wandköpfe ins Freie bekommen keinen. Im EG sind es rund 90.
-- **Treppenhaus Ost:** Schacht von −4 bis 7,5 m, gebaut im Rahmen des Schachts (`_index_shafts`: Ursprung
-  Mitte, lokal −Z von der Tür zum Podest gegenüber – jede Ausrichtung geht). Je Geschoss zwei Läufe mit
-  Wendepodest; Anfang und Ende der Läufe aus den Treppenstufen im Plan (`steps`), sonst 1,4 m Türzone und
-  1,5 m Podest. Die Mittelwand über alle Geschosse baut der Schacht (Planwände im Schacht werden übersprungen,
-  `_in_shaft`; im UG Beton), die Außenwände und Türen die Pläne. Im Untergeschoss endet die Treppe (der Plan zeigt
-  dort nur noch den Lauf hinauf), die Tür des UG-Plans führt in die Kellergänge. Treppenhaus West ist verschlossen
-  (auf allen Stockwerken).
-- **Aufzug** (`scripts/world/elevator.gd`, Spielkonzept 7.4, 7.10): `_opening_object` sammelt die Aufzugtüren aller
-  Stockwerke (`_elevator_doors`), `_elevators()` baut daraus je Schacht (Fläche `elevator`) einen `Elevator` unter der
-  Hauptszene (`world` – die Kabine bewegt sich, sie darf nicht ins NavMesh) im Rahmen der EG-Tür: Ursprung Mitte der
-  Öffnung auf der Wandmittellinie, lokal +Z aus dem Schacht. Halte = Stockwerke mit Aufzugtür. Der westlichste Schacht
-  fährt (`working`, Gruppe `elevators`), die übrigen sind tot. Der Plan lässt den Schacht offen (`_floors_and_ceilings`
-  überspringt `elevator`), Grube und Decke baut der Aufzug.
-  - **Türen:** je Halt Teleskoptüren aus vier Blättern, die zur Mitte schließen (je Seite außen das langsame, innen das
-    schnelle mit doppeltem Weg), offen hinter der Leibung gestapelt. Die lichte Breite folgt aus dem Platz im Schacht
-    (`_layout`: das offene Paket muss in Schachthälfte − `SIDE_ROOM` passen – beim 3,3-m-Schacht 2,04 m statt der 2,5 m im
-    Plan); den Rest der Planöffnung füllt ein Portal aus dunklem Holz mit Messingkante, lichte Höhe = Öffnung − `HEAD`.
-    Schachttüren sind `AnimatableBody3D` auf Ebene 2. Die Kabinentür ist nur Optik, solange sie zu ist, schließt
-    `_doorway` (eine Form am Kabinenkörper) die Öffnung. Lichtschranke: Steht der Spieler in der Türebene
-    (`_in_doorway`), geht sie wieder auf.
-  - **Anzeige** über jeder Tür und innen über der Kabinentür: runde Lampen (`LAMP_D` 8 cm) im Messingring mit Buchstaben
-    in Cinzel (U, 0, 1 …, T für einen Tiefkeller), links das unterste Stockwerk; ein Material je Halt für alle Anzeigen
-    des Schachts. Rufknopf rechts neben dem Portal (`CALL_Y`).
-  - **Kabine:** `AnimatableBody3D` (`sync_to_physics`) auf Ebene 1, alle Formen am Körper selbst – nur so bekommt der
-    Spieler die Geschwindigkeit der Plattform und fährt mit (Gegenstände auch). Wände `Wood_Panels_01` über
-    `Mat.photo(…, object_uv = true)` (in Weltkoordinaten wanderte die Textur beim Fahren über die Wand), Boden Teppich,
-    Decke hell. Drei Messinghandläufe (`_rails`: Rohr mit Viertelbögen zur Wand, Rosetten, Halter alle ≤ `RAIL_BAY`),
-    Deckenleuchte `Lamp` FLUSH (`room_id` „aufzug“, ohne Schalter; Gäste klauen ihre Birne nicht), Bedienfeld links vom
-    Eingang (`_panel`: Etagenknöpfe untereinander, darunter Tür auf/zu, darunter Alarm; jeder Knopf ein `Elevator.Push`).
-  - **Spiegel** an der Rückwand (`_mirror_wall`, Messingrahmen): `Mirror` (siehe 8, „Spiegel“), `MIRROR_RANGE` 12 m,
-    im toten Schacht `active = false` (matt). Darin sieht man die Spielerfigur (`PlayerBody`).
-  - **Ablauf** (`_physics_process`): Warteschlange gewählter Halte (`_queue`); Tür auf → `DOOR_HOLD` (Etage gewählt:
-    `DOOR_HOLD_CHOSEN`) → zu → nächste Fahrt mit `ACCEL`/`SPEED`, Bremsweg aus √(2·a·s). Lärm: `elevator` (Motor) an der
-    Abfahrt, `elevator_bell` (Glocke) am Ziel – beides macht das Monster neugierig –, `elevator_alarm` (Alarmknopf,
-    erschreckt Gäste); Türen und Motor während der Fahrt nur als Klang (`Game.sound_at`). Klänge `ding`, `motor`,
-    `slide`, `alarm` in `SynthAudio`.
-  - **Toter Schacht** (`_ghost`): Nach `GHOST_PAUSE` geht eine Lampe an und wandert Halt für Halt (`GHOST_STEP`) zu
-    einem anderen Stockwerk, bleibt `GHOST_HOLD`, manchmal klingt dort leise die Glocke (nur Klang); nicht gespeichert.
-    Sein Rufknopf leuchtet nur kurz.
-  - Gäste und Monster benutzen den Aufzug noch nicht, die Reparatur (7.4) fehlt – er fährt von Anfang an.
-- **Schilder** (`_sign`: Zimmernummern, AUSGANG, BAR, KELLER …): Buchstaben als `TextMesh` (1 cm tief, grober
-  `curve_step`) im PS1-Material aus Messing auf einer dunklen Holzplatte mit Messingrand. So bekommen sie Licht,
-  Schatten und Vertex-Snapping wie alles andere (früher ein ungeschattetes `Label3D`). Zimmernummern
-  `SIGN_EM_ROOM` (0,17 m Geviert), Wegweiser `SIGN_EM` (0,22 m). Wie schief ein Schild hängt (bis 1,5°) und welches
-  Messing es hat (blank, matt, angelaufen), folgt aus dem Hash des Texts und bleibt so bei jedem Start gleich.
-  Schrift: Cinzel Bold (SIL OFL 1.1, `assets/fonts/OFL.txt`), gebaut von `tools/build_font.py` aus dem Variable
-  Font in `assets/source/cinzel_variable.ttf` (google/fonts). TextMesh verträgt keine überlappenden Konturen
-  (8, und bei Bold A, K, V, W, Y), deshalb eine feste Instanz mit verschmolzenen Konturen, ohne die doppelten
-  Eckpunkte, die das Verschmelzen hinterlässt (sonst scheitert die Zerlegung bei M, V, W, Y). Neue Zeichen auf
-  Schildern bei Fehlern „Triangulation/Convex decomposing failed“ dort prüfen.
-- Bauen in **lokalen Rahmen**: `_parent` ist das gerade aktive Bauteil (root, Zimmerrahmen, Schacht);
-  `_wall_x/_wall_z` mit Öffnungen als `Vector4(mitte, breite, oberkante, unterkante)`. Gegenstände kommen in
-  die Hauptszene (`world`), umgerechnet über `_global()`.
-- Ergebnisse für andere Systeme: `rooms` (Nummer → `{no, sign, kind, center, door_front, door_inside,
-  along, into, door, spots}`), `zones`, `spawn_points` (`[0]` = Heizkeller), `patrol` (`{pos, room}`),
-  `wander_points`, `player_spawn`, `player_door_front`, Lobby-/Bar-/Garten-/Feier-Punkte, `party_corner`,
-  `stairwell_point`, `game_table`, `chess_table`, `diary`, `cat_perches`. `room_spot(no)`: Mitte und Blick zur Tür
-  jedes Zimmers im Plan, auch verschlossener (Debug-Teleport `--tp`/`tp`). Verschlossene Zimmer haben einen Boden
-  zum Draufstehen auf der Ebene der Decken (5) – nicht im NavMesh, sonst planten Gäste und Monster Wege durch
-  gesperrte Türen. Abfragen (alle Stockwerke, nach der
-  Höhe): `in_lobby(p)`, `in_area(p, id)`, `is_outdoor(p)` (auch Balkone), `in_corridor(p)` (Flur nach Grundriss,
-  ohne Lobby und Galerien), `room_at(p)` (Raum-ID wie bei Fenstern und Schaltern: Zimmer, Bereich,
-  Flurabschnitt, `lobby`, im UG `ug_…`; leer auf Podesten; das Stockwerk aus der Höhe – Punkte am Boden abfragen),
-  `home_room_at(p)` (wie `room_at`, ein Bad zählt zum Zimmer hinter seiner Tür, `_bath_owner`), `is_safe(p)` (Katzenraum), `cellar_center()`
-  (Heizkeller).
-- NavMesh wird in `main._bake_navigation` zur Laufzeit gebacken (nur Ebene 1, Agent 0,3 m / 1,6 m).
-  `--navcheck` misst Bau- und Backzeit (EG + OG1 + UG: ca. 3,1 s + 0,85 s) und prüft die Wege zu allen wichtigen
-  Orten (ohne Suchgrenze wie das Monster), oben zu Katzenraum, Bibliothek, einem Flur und einem Zimmer, unten zu
-  Kellergang am Treppenhaus, Heizkeller („Keller“), Technikraum und Wäscherei.
-- Ein neues Zimmer: im Plan zeichnen und in den Objektebenen einrichten (Bett, Schrank, Leuchte, Schalter …),
-  `tools/build_map.py` laufen lassen – Wände, Tür, Einrichtung, Zone und Wegpunkt entstehen daraus. Den Plan
-  zeichnet und möbliert der Zeichner von Hand; der Code stellt nichts dazu (seit 22.10. auch keine Truhen und
-  Automaten mehr). Braucht eine Mechanik etwas im Zimmer, kommt es in den Plan.
-  Jede Änderung an Lampen, Schaltern, Verstecken, Kommoden, Truhen, Telefonen, Pflanzen oder Vorräten im Plan
-  verschiebt die Reihenfolge – alte Spielstände werden dann abgelehnt (siehe 7), zu tun ist nichts.
+  - `_lights`: Wandleuchten je Flächenart (`_lamp_style`), Deckenleuchten (`_ceiling_lamp`: `Lamp.Style.FLUSH` =
+    Kupferleuchte, über `open_above` Pendel `CEILING`), Kerzen auf dem Möbel, Laternen; `broken` aus dem Plan.
+    Kupferleuchte: Opalglas mit dem Material der Birne (leuchtet, flackert, erlischt mit ihr), die Birne steckt unsichtbar
+    dahinter; Licht `FLUSH_LIGHT_BELOW` unter dem Glas – näher strahlte es das Kupfer grell an. Lampen und Schalter
+    gehören zur Raum-ID der Fläche davor (`_light_room_at`); Schalter in unbewohnten Zimmern starten aus.
+    **Podestregel im Treppenhaus:** Eine Wandleuchte gegenüber der Treppenhaustür hängt eine halbe Etage höher.
+  - Nicht im Plan, im Code: Ersatzleuchten im Treppenhaus, Inhalt des Heizkellers, Waschmaschinen, Flaschen, Hocker,
+    Tanzfläche, Beete, Treffpunkte der Gäste (`_common_rooms`, `_lobby_hall`, `_garden_beds`).
+- **Kratzbaum** (`_cat_tree`): Liegeplatz in `cat_perches`.
+- **Hecken** (`scripts/level/hedge.gd`, `Hedge.build` aus `_gardens`): Terrassenkanten im EG werden Formschnitthecken.
+  `_lines` fasst Stücke einer Mittellinie zusammen, Abschlüsse (`_end`) mit Gehrung oder verdeckt. Die Ecken wandern
+  nach einem Rauschen ihrer **Weltlage** – gleiche Ecken zweier Stücke wandern gleich, an Gehrungen bleibt keine Fuge.
+  Blattkarten (`_cards`, `psx_leaves`) brechen den Umriss auf; Normale der Fläche darunter, damit die Blätter wie die
+  Hecke beleuchtet werden. Eigener Zufall je Linie (Spielstände unberührt).
+- **Schilder** (`_sign`): Buchstaben als `TextMesh` aus Messing auf Holzplatte – bekommen Licht, Schatten und Snapping
+  wie alles andere. Schiefe und Messingart aus dem Hash des Texts. Schrift Cinzel Bold (SIL OFL 1.1,
+  `assets/fonts/OFL.txt`), gebaut von `tools/build_font.py`: TextMesh verträgt keine überlappenden Konturen, deshalb
+  eine feste Instanz mit verschmolzenen Konturen ohne doppelte Eckpunkte. Bei „Triangulation/Convex decomposing failed“
+  neue Zeichen dort prüfen.
+
+### Lobby, Treppen, Aufzug, Pool
+- **Lobby und Galerie:** Mit `og1.json` baut das Obergeschoss die Galerie aus seinem Plan, die Lobby hat ihre Decke
+  bis auf den Luftraum (`open_above`); ohne die Datei die alte Galerie (`_gallery`).
+- **Lobbytreppe** (`scripts/level/grand_stair.gd`, `GrandStair.build` aus `_lobby_flight`): gerade Wangentreppe im
+  Rechteck des Plans, unten offen; Läufer im Wasserfall-Stil, gedrechselte Stäbe als `MultiMesh`. Ein Mesh je Material
+  (`GrandStair.Shape`). **Kollision:** Rampe unten durch die Mitte der ersten Trittstufe, oben bündig mit der
+  Galeriekante (lief sie auch oben durch die Trittmitten, blieb eine halbe Stufe Kante, an der Gäste festhingen);
+  Geländer als schräge Prismen mit senkrechten Enden (ein gekippter Kasten ragte auf Hüfthöhe vor die Treppe). Der Läufer
+  hängt an der Rampe – `Footsteps.floor_under` hört Teppich. Geprüft in `tests/math_checks.gd`.
+  **Galeriegeländer** (`GrandStair.railing`, aus `_void_edges`) mit **Blende** (`GrandStair.fascia`): `out` zeigt in
+  den Luftraum – andersherum steckt die Blende in der Platte und flimmert.
+- **Treppenhaus Ost:** Schacht über alle Geschosse im eigenen Rahmen (`_index_shafts`), je Geschoss zwei Läufe mit
+  Wendepodest; Anfang und Ende aus den Treppenstufen im Plan (`steps`). Die Mittelwand baut der Schacht (Planwände im
+  Schacht werden übersprungen, `_in_shaft`), Außenwände und Türen die Pläne. Treppenhaus West ist auf allen Stockwerken
+  versiegelt (`_seal_stairwells`), außer der Tür im OG1 zur Dachbodentreppe.
+- **Aufzug** (`scripts/world/elevator.gd`, Spielkonzept 7.4): `_elevators()` baut je Schacht (Fläche `elevator`) einen
+  `Elevator` unter `world` – **die Kabine bewegt sich, sie darf nicht ins NavMesh**. Der westlichste Schacht fährt
+  (`working`, Gruppe `elevators`), die übrigen sind tot (`_ghost`: wandernde Anzeige, nicht gespeichert).
+  - Kabine: `AnimatableBody3D` (`sync_to_physics`), **alle Formen am Körper selbst** – nur so bekommt der Spieler die
+    Geschwindigkeit der Plattform und fährt mit. Wände `Mat.photo(…, object_uv = true)` (in Weltkoordinaten wanderte die
+    Textur). Spiegel an der Rückwand (`_mirror_wall`, `Mirror`).
+  - Teleskoptüren je Halt (`_layout`: lichte Breite aus dem Platz im Schacht, den Rest füllt ein Portal), Schachttüren
+    `AnimatableBody3D` auf Ebene 2; die Kabinentür ist nur Optik, solange sie zu ist, schließt `_doorway` die Öffnung.
+    Lichtschranke `_in_doorway`.
+  - Ablauf in `_physics_process` (Warteschlange `_queue`); Lärm `elevator`, `elevator_bell` (machen das Monster
+    neugierig), `elevator_alarm`. Gäste und Monster benutzen ihn nicht; die Reparatur (Spielkonzept 7.4) fehlt.
+- **Pool** (`_pool`): Becken mit Fototextur-Fliesen, Einstiegstreppen (`_flight(…, step_h)` – Stufen auf dem
+  Fliesenraster), Handlauf `HANDRAIL_MODEL`. Darüber die Holzdecke (dicht auch gegen Regen). **Unterwasserlampen**
+  (`Lamp.Style.POOL`, nicht im Plan, ohne Birne – `has_socket()` falsch, Gäste klauen nichts) laufen durch den
+  Regenbogen. **Wasser** = `PoolWater` (`world/pool_water.gd`, `shaders/psx_water.gdshader`): Wellen rein optisch im
+  Vertex-Shader; Wellenringe im Array `ripples` (`MAX_RIPPLES` – **Shader-Konstante gleich halten**), Abprall als
+  Spiegelquellen hinter den Wänden; `_track()` erzeugt Ringe für Spieler und Monster, `splash()` beim Eintauchen;
+  Schaum, wo Kämme zusammenkommen. **Monster** (`_update_unrest`, Spielkonzept 4.13): nah → glatt, näher → Zittern
+  (`tremor`, nur Fragment-Shader), in der Halle → Schwappen (`slosh`), höchstens `max_rise` – das Wasser bleibt unter der
+  Kante. Debug `--pool=still|tremor|slosh|off`.
+
+### Dachgeschoss (`_attic_floor`, Spielkonzept 4.21)
+Eigener Durchgang statt `_build_plan_floor` (`dg.json`, `_attic` an, Raum-IDs mit `dg_`). Alles aus **groben Bohlen**
+(`Mat.planks`). **Schrägen** (`_attic_eaves`, `_eave_strip`, `_attic_slopes`): Wo eine Wand draußen auf der einen und
+Dachboden auf der anderen Seite hat, ist sie nur Kniestock (`ATTIC_KNEE`) hoch, darüber steigt eine Schräge bis zur
+Decke (Kollision auf Ebene 5). `_attic_ceiling(p)` liefert die Deckenhöhe an jeder Stelle; `_wall_piece` kappt damit
+jede Wand (`_wall_top`, `_top_breaks`, `_cap_top`, `_wall_box`). Giebeldreiecke schließen Spalte (`_attic_gable`).
+**Dachfenster** (`roof_window` auf der Außenwand) sitzen in der Schräge darüber (`_roof_window`), mit kaltem Lichtkegel
+von außen (`ATTIC_SHAFT_*`, `AtticHaze` regelt ihn mit dem Mond). **Türen:** alle niedrig (Kniestocktür-Modell), die
+zum Treppenhaus verschlossen. **Stützbalken** (`_attic_beams`): Felder von etwa `ATTIC_BAY`, je ein Pfosten mit
+Balkenkreuz und Kopfbändern, nie unter einer Schräge oder zu nah an einer Tür. „Dekokiste“ wird hier zur Kiste mit alter
+Deko. **Kopf des Kürbismanns** auf der Markierung `cross` des Plans (`_attic_markers`, `pumpkin_head_spot`). Nebel
+`_attic_haze` (`AtticHaze`, 8), Spuk `AtticSpook` (8). **Treppe** (`_attic_stair`): im Schacht des Treppenhauses West ein
+steiler Lauf hinauf, oben ein Verschlag; Planstriche ohne Dachboden daneben baut `_build_wall` nicht. Debug
+`--dachboden[=kopf|fenster|treppe|blitz]`.
+
+### Untergeschoss (`_lower_floor`, Spielkonzept 7.9)
+Durchgang unter „Untergeschoss“ (y = `CELLAR_Y`, Raum-IDs mit `ug_`). Wände aus Brettschalungsbeton (`_cellar_wall`,
+ohne Häute und Holzpfeiler); sie reichen in den EG-Boden und **enden mitten in der Platte** (bündig flimmerten ihre
+Köpfe durch die Bodentextur), nur am Treppenschacht die vollen Höhe (sonst Fuge im Treppenhaus). Flächen `cellar`
+(Gänge – Türen gehen nicht in sie auf), `boiler_room`, `plant_room`, `laundry_room`, `trash_room`, `cellar_room` (Boden
+auf Ebene 5 wie verschlossene Zimmer). Öffnungen in der Farbe des Haupteingangs sind hier verschlossene Türen. Licht nur
+aus **Halogenleuchten** (`_halogen`, `Lamp.Style.HALOGEN`: brennen immer, keine Birne, `FlickerLight.stutter`
+Aussetzer). Zonen `_lower_zones`; Wegpunkte (`_lower_waypoints`) nur in `patrol` fürs Monster – Gäste gehen nicht
+hinunter.
+- **Heizkeller** (`_boiler_room`): Versteck des Monsters, `cellar_center()`, dazu Kisten, Schlüssel 18, Zettel, alte
+  Deko. **Kohlekessel** (`scripts/world/boiler.gd`, `Boiler`, `boiler.glb` aus `tools/build_boiler.py`): Feuerklappe
+  (`fire_door`, Ursprung im Scharnier) offen, Glut, Flammen-Partikel; Licht als `SpotLight3D` mit eigenem Schatten im
+  Feuerraum – der Kessel selbst begrenzt den Kegel auf die Öffnung – plus schwacher Schein (`FlickerLight` in `lamps`,
+  zählt für `light_at`: am Kessel schreckt das Monster etwas zurück). Der Kegel ist kein `light_source` (die Gruppe
+  erwartet `OmniLight3D`), er folgt dem Schein (Meta `hidden_mask`). Knistern `SynthAudio.fire` über `Game.hearing`.
+  Nicht gespeichert.
+- **Rohre** (`scripts/level/pipe_kit.gd`, `PipeKit`, `pipes.glb`): `run(punkte, anfang, ende, halter_y)` legt einen
+  achsparallelen Rohrzug mit Bögen, Flanschen und Haltern; keine Kollision, Meshes geteilt. `_boiler_pipes` legt die
+  Leitungen im Heizkeller.
+
+### Ergebnisse für andere Systeme
+`rooms` (Nummer → `{no, sign, kind, center, door_front, door_inside, along, into, door, spots}`), `zones`,
+`spawn_points` (`[0]` = Heizkeller), `patrol` (`{pos, room}`), `wander_points`, `player_spawn`, `player_door_front`,
+Lobby-/Bar-/Garten-/Feier-Punkte, `party_corner`, `stairwell_point`, `game_table`, `chess_table`, `diary`,
+`cat_perches`, `tree_spots`, `room_spot(no)` (Debug-Teleport). Abfragen (alle Stockwerke, nach der Höhe – Punkte am
+Boden abfragen): `in_lobby(p)`, `in_area(p, id)`, `is_outdoor(p)` (auch Balkone), `in_corridor(p)` (Flur nach Grundriss,
+ohne Lobby und Galerien), `room_at(p)` (Raum-ID wie bei Fenstern und Schaltern, leer auf Podesten), `home_room_at(p)`
+(Bad zählt zum Zimmer), `is_safe(p)` (Katzenraum), `cellar_center()`.
+
+**NavMesh** wird in `main._bake_navigation` zur Laufzeit gebacken (nur Ebene 1). `--navcheck` misst Bau- und Backzeit
+und prüft die Wege zu allen wichtigen Orten (ohne Suchgrenze wie das Monster).
+
+**Ein neues Zimmer:** im Plan zeichnen und in den Objektebenen einrichten (Bett, Schrank, Leuchte, Schalter …),
+Bewohner in HAUSHALTE.md – Wände, Tür, Einrichtung, Zone und Wegpunkt entstehen daraus.
 
 ### Gebäudeplan (`map_a.aseprite` → `tools/build_map.py` → `assets/maps/<stockwerk>.json`)
-Grundriss seit Spielkonzept 7.5, seit 22.10. der kleinere Plan `map_a.aseprite` (7.10; der alte `map.aseprite` mit
-Ebenengruppen lässt sich weiter umsetzen). Der Plan liegt im Projektwurzelverzeichnis (der Zeichner speichert
-dort) und wird **nur gelesen**; das Skript ist reines Python ohne Zusatzpakete und braucht ca. 10 s je Stockwerk:
-`python tools/build_map.py [map_a.aseprite] [assets/maps] [vorschau-ordner]`. Die Vorschau (`<stockwerk>.svg`)
-zeichnet das Ergebnis **aus den JSON-Daten** (nicht aus dem Bild) – gut zum Prüfen nach Planänderungen.
-**Automatisch beim Spielstart** (`LevelBuilder.refresh_maps()`, aus `main._ready` vor dem Bauen): Ist
-`map_a.aseprite`, `map_a.gpl` oder `tools/build_map.py` (`PLAN_SOURCES`) neuer als die älteste Karte, ruft das Spiel
-`python tools/build_map.py` auf (blockierend, ~40 s) – nur mit dem Feature `editor` (Editor, `godot --path .`, auch
-Rauchtest), im Export fehlt der Plan. Warnungen des Skripts erscheinen als `push_warning` „build_map: …“; schlägt es
-fehl, baut das Spiel aus den alten Karten. `PYTHONIOENCODING=:replace` hält Python in der Codepage, in der Godot
-die Ausgabe liest (Umlaute). `source` in den Karten ist nur der Dateiname des Plans (keine absoluten Pfade).
-- **Aufbau der Plandatei (Vorlage):** Ohne Ebenengruppen liegen die Stockwerke untereinander, je `BAND` (790 px)
-  hoch und um genau so viel versetzt deckungsgleich: seit 24.10. oben das Dachgeschoss (DG), dann OG1, EG und UG
-  (`ALL_FLAT_FLOORS`; ein Plan mit drei Bändern beginnt beim OG1 – `FLAT_FLOORS` richtet sich nach der Höhe; die
-  türkisen Marken links oben in `Beschriftung` zeigen die Grenzen). Jedes wird zu `dg.json`, `og1.json`, `eg.json`,
-  `ug.json` – sobald es Wände enthält. Das DG hat `level` `ATTIC_LEVEL` (2). Gezählt werden alle normalen Ebenen, **egal ob sichtbar**; nicht
-  gezählt werden Referenzebenen und Ebenen, deren Name mit `Beschriftung`, `Skizze`, `Notiz` oder `temp` beginnt
-  (`IGNORED_LAYERS`; seit 24.10.: die ausgeblendete, ganzflächig halbtransparent schwarze Ebene `temp` übermalte sonst
-  den Grundriss – kein Haupteingang, Abbruch). Ältere
-  Pläne mit einer Ebenengruppe je Stockwerk (`EG`, `OG1` …, `Keller`) gehen weiterhin. Der **Ursprung** ist die Mitte
-  des Haupteingangs im EG (`entrance_origin`, beim neuen Plan Pixel 775, 770), `WING_SPLIT_X` dessen x.
-- **Ebene `Zimmer`** (`UNITS_LAYER`, 22.10.): deckende Flächen markieren die Hotelzimmer. Alle Flächen „Zimmer“
-  unter einer zusammenhängenden Markierung werden eine Fläche mit einer Nummer (`rects` mit mehreren Rechtecken);
-  Türen zwischen ihnen sind Innentüren (`door_to` → `inner`, in keiner Liste), Bäder darunter bleiben Flächen `bath`
-  mit `bath_doors`. Ohne Markierung ist jede Fläche „Zimmer“ ein eigenes Zimmer (Warnung, wenn es die Ebene gibt).
-  Die Normale einer Zimmeröffnung kommt aus der Seite der Wand, auf der das Zimmer liegt (die Mitte eines
-  L-förmigen Zimmers trügt).
-- **Unbewohnte Zimmer** (24.10.): Ihre Fläche ist im Grundriss in **„Zimmer leer“** (#c79986) statt „Zimmer“
-  (#ff8855) gemalt (`VACANT_NAME`). Sie zählt genauso als Zimmerfläche; ist mehr als die Hälfte eines Zimmers so
-  gemalt, bekommt es in der Ausgabe `"vacant": true` (Zusammenfassung: „leer n“). Der LevelBuilder wertet das noch
-  nicht aus – unbewohnt ist im Spiel weiter, was er selbst so festlegt (Spielkonzept 6.19, 6.20; Belegung in
-  `HAUSHALTE.md`).
-- **Legende = `<plan>.gpl`** (`map_a.gpl`): Die Bedeutung jeder Farbe steht als Name in der Legende neben der
-  Plandatei (GIMP-Palette, „R G B<Tab>Name“, Zeile = Paletten-Index; `FILLS`, `OPENINGS`, `Wand`, `Glaswand` oben
-  im Skript, Zuordnung nach Farbwert). Nicht in der Plandatei: Aseprite 1.3.18 behält keine Palettennamen,
-  schon Öffnen und Speichern verwirft sie (19.10.). Neue Farbe → Zeile in der `.gpl`, Farbwert geändert → dort
-  auch, danach `python tools/build_colors.py` (zeichnet `map_colors.png` neu); die Bedeutung der neuen Möbel erklärt der Zeichner in `map_legend.png`. Farben ohne Legendeneintrag meldet das Skript mit Pixelposition. Slices liest es nach
-  Namen sortiert, weil Aseprite ihre Reihenfolge beim Speichern ändert (sonst wechselt z. B. die Reihenfolge der
-  Treppen und mit ihr der Fingerabdruck der Welt). **Vorlage beim Zeichnen ist `map_colors.png`**
-  (23.10.): alle Farben der `.gpl` als Farbfelder mit Name, Hex-Wert und Kurzbeschreibung (`NOTES` im Skript),
-  gruppiert wie in `build_map.py` (Flächen/Öffnungen aus `FILLS`/`OPENINGS`, sonst nach Vorsatz), Möbel mit
-  ihrer Vorderseite daneben; die Felder haben exakt die Legendenfarbe (Pipette). Die Palette in der Plandatei
-  wird dafür nicht mehr gepflegt (die Aseprite-Erweiterung Palettennamen ist seit 23.10. entfernt).
-  1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie (**Türanschlag**: ein Pixel
-  `Türanschlag` statt eines Türpixels an einem Ende des Strichs, in der Wandhälfte, in die die Tür aufgeht – dort
-  sitzt das Scharnier; es zählt als Türpixel, falsch gesetzt bricht das Skript mit der Position ab), Flächen als Füllfarben, `Luftraum` = hier kein Boden (wird beim
-  Stockwerk darunter zu `open_above`). Schrift in Wandfarbe im Grundriss wird über ihre Größe erkannt und
-  übermalt, gehört aber in die Ebene `Beschriftung`.
-- **Objektebenen** je Stockwerk: `Möbel`, `Ausstattung`, `Gegenstände`, `Lichter`, `Teppiche`. Sie zählen nicht
-  zum Grundriss und haben eine eigene Legende (Palettennamen mit Vorsatz `Möbel:`, `Ausstattung:`, `Gegenstand:`,
-  `Licht:`, `Teppich:` → `FURNITURE`, `FITTINGS`, `ITEMS`, `LIGHTS`, `RUGS` im Skript). Möbel sind Rechtecke in
-  Grundfläche, ein Strich `Möbel: Vorderseite` am Rand zeigt die Vorderseite. Die Möbel aus `map_legend.png`
-  (22.10.: Doppelbett, Badewanne, Waschbecken, Fußmatte, Dusche, WC, Mülleimer, Snack- und Getränkeautomat,
-  Zimmertisch, Stuhl) tragen stattdessen eine Zeile in ihrer helleren Farbe `<Möbel> Vorderseite`
-  (`FRONT_SUFFIXES`, gilt nur für dieses Möbel); beim Doppelbett heißt sie `Kopfende` und wird zu `head` statt
-  `facing`. Teppiche sind volle Rechtecke auf
-  eigener Ebene (dürfen unter Möbeln liegen; `Teppich: Läufer` läuft entlang der langen Seite). Alles andere ist ein 3×3-Punkt; Wandsachen
-  (Leuchten, Schalter, Bilder, Spinnweben, UV-Schrift, Kalender) liegen innen an der Wand, daraus ergibt sich
-  ihre Wandseite. **Halogenleuchten** (`Licht: Halogenleuchte`) sind Striche in ihrer Länge (8×2 px = 80 cm),
-  die Ausgabe bekommt `axis` (`x`/`z`) und `length`. Gleichfarbige Punkte dürfen sich nicht berühren (sonst wird
-  es einer). Höhe, Helligkeit und
-  Inhalt (Zettel-Nummer, Münzen, UV-Text) stehen nicht im Plan, sondern im LevelBuilder (`CONTENT`,
-  `_lamp_style`, `BOX_HEIGHTS`). Die Ebenen wurden am 2026-10-19 aus dem laufenden Spiel übertragen.
-- **Untergeschoss** (unteres Drittel bzw. Gruppe `UG`, 20.10.): Flächen `Kellerboden` (`cellar`, Gänge), `Heizkeller`,
-  `Technikraum`, `Wäscherei`, `Müllraum` (`trash_room`, 22.10.), `Kellerraum` (leer, verschlossen); unbemalte Räume
-  und `Kellerraum zu` (`EMPTY_FILLS`: noch zu und nicht gebaut) hinter verschlossenen Türen (Farbe `Haupteingang`)
-  haben keinen Boden. Das Skript baut zuerst das EG, damit die Treppenflächen des UG dem Schacht darüber zugeordnet
-  werden (wie oben); Laufwege und Flurabschnitte (`WINGS`) gibt es unten nicht.
-- **Slices** (sprite-weit; sie gelten im Stockwerk, in dem ihre Mitte liegt – bei Ebenengruppen über den Vorsatz,
-  ohne Vorsatz EG: `OG1 Raum: Bibliothek`):
-  `Raum: <Name>` benennt die Fläche mit den meisten Pixeln im Slice (ID = Name klein, Umlaute ausgeschrieben),
-  `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen Kante**) und `Treppenhaus: <Name>` →
-  `stairs`, `Objekt: <Name>` (Pivot an der Vorderseite) → `objects` (Vorsatz `UG` für das Untergeschoss). Unbenannte Flächen heißen `<art>_<n>`,
-  der einzige Flur `flure`.
-- **Ausgabe** (Meter, x Ost, z Süd, Ursprung = Mitte Haupteingang auf der Südwand, Rechtecke `[x0, z0, x1, z1]`):
-  `walls` (`a`, `b`, `thickness`, optional `glass`, `openings` mit `kind`/`at` = Abstand ab `a`/`width`, mit Türanschlag dazu `hinge` = `start`/`end` (West- bzw.
-  Nordende) und `opens` = ±1 (+1 = nach Süden bzw. Osten);
-  waagerechte Wände laufen durch, senkrechte enden bündig an ihnen), `regions` (`id`, `kind`, `outdoor`,
-  `rects`, optional `name`; die Fläche `flure` umfasst alle Flure **und** die Lobby), `rooms` (`no`, `sign`,
-  `wing`, `rects`, `center`, `door` mit `pos`/`normal` in den Flur, `windows`, `garden_doors`, optional
-  `bath_doors` und `connecting_doors`), `stairs` (`id`,
-  `kind` `stair`/`stairwell`, `rect`, `up` bzw. `door`), `voids`, `open_above`, `areas`, `objects` (`name`,
-  `rect`, `facing`), `corridors` (Flurabschnitte: `id`, `name`, `wing`, Mittellinie `a`–`b`), `floor_patches`
-  (Boden unter Kübeln, Bäumen, Rezeption und freien Treppen, mit der Art der umgebenden Fläche), `planters`,
-  `terrace_edges`, `balcony_edges` (Balkongeländer, Rechtecke wie die Terrassenkanten), `trees` (nur `center`),
-  `reception`; aus den Objektebenen `furniture` (`kind`, `rect`, optional `facing` bzw. `head`),
-  `fittings` und `items` (`kind`, `pos`, optional `wall` = Wandseite, Gegenstände mit `Item.Kind`-Namen),
-  `lights` (dazu optional `broken`) und `rugs` (`kind`, `rect`).
-- **Türarten:** Alle Zimmertüren sind Striche in `Tür Flur`; das Skript liest beiderseits der Wand, wohin sie führen:
-  ans **Bad** (Fläche `Bad`, Art `bath`) → `bath_doors`, beiderseits Zimmer → **Verbindungstür** (`connecting_doors`),
-  sonst Flurtür; liegen beide Seiten unter derselben Markierung der Ebene `Zimmer`, ist es eine Innentür. Ein
-  Zimmer darf mehrere Flurtüren haben (die erste ist die Zimmertür, die übrigen `side_doors`), über dem EG auch
-  keine (Suite, `suite`, Tür = erste Verbindungstür); ein Zimmer ganz ohne Tür bleibt geschlossen (Hinweis mit
-  Pixelposition beim Bauen). Ohne Türanschlag gehen Badtüren ins Zimmer
-  auf, Verbindungstüren ins Zimmer mit der höheren Nummer (`opens`, Spielkonzept 7.7). Weitere Flächen seit dem
-  OG1 (20.10.): `Katzenraum` (`cat_room`, rote Tapete, lose Teppiche aus `CAT_ROOM_RUGS`), `Bibliothek` (`library`), `Balkon` (`balcony`, draußen) mit
-  `Balkongeländer` (`balcony_edge`, Einbau); Möbel `Möbel: Kratzbaum` (`cat_tree`). Öffnungsfarbe
-  `Kniestocktür` (`attic_door`, 22.10.) für die niedrige Tür zum Dachboden – steht in `OPENINGS`, ohne Farbe in der
-  `.gpl` (im Dachgeschoss wird jede Tür niedrig, die zum Treppenhaus zur Kniestocktür). Seit 24.10.: Fläche
-  `Dachboden` (`attic`, #404262) und Öffnung `Dachfenster` (`roof_window`, #c9e7ff, Strich auf der Außenwand – das
-  Fenster sitzt in der Schräge darüber). **Markierungen** (`markers`, 24.10.): Ein Kreuz in der Farbe `Haupteingang`
-  mitten auf einer Fläche, ohne Wand daneben (außer im EG), wird zu `{"kind": "cross", "pos"}` und seine Pixel zur
-  Fläche darum – im Dachgeschoss liegt dort der Kopf des Kürbismanns. Seit `map_a` (22.10.): Fläche `Kiesweg` (`gravel`, draußen –
-  Wege im Garten, Platzhalter-Material bis zur Kieseltextur), Bäume (`Baum`) markieren nur den Standort.
-- **Treppenhäuser über dem EG** brauchen keine eigenen Slices: Treppenflächen über einem Treppenhaus des EG
-  gehören zu dessen Schacht (gleiche ID). Die Tür eines Treppenhauses darf jede Türart sein (Flur-, Glas-,
-  Betriebstür); `steps` = Rechteck der Treppenstufen (dort beginnen und enden die Läufe).
-- **Zimmernummern aus der Beschriftung** (24.10.): Schwarze Ziffern der Pixelschrift in der Ebene „Beschriftung“
-  (6 px hoch, Vorlagen in `DIGITS`, `LABEL_COLOR`) auf der Markierung eines Zimmers in der Ebene „Zimmer“ (dürfen auf
-  Wandlinien liegen) sind seine Nummer (`room_label`; „13“ → `no` „013“, `sign` „13“). Die Ebene zählt sonst nicht
-  zum Grundriss (`LABEL_IMAGES` statt `floor_images`). Hat ein Stockwerk solche Ziffern, gelten nur sie: ohne Ziffer
-  Warnung und die nächste freie Nummer, unlesbare Ziffern werden gemeldet; Laufwege, `PINNED`, `number_from_eg` und
-  die `SPAN`-Prüfung entfallen dann. Ohne Ziffern wie bisher:
-- **Zimmernummern (alter Weg)** entstehen im Skript (`WINGS`: Laufweg je Flügel als Flurmittellinien in Pixeln des Stockwerks,
-  optional ein Querflur; rechts ungerade). Dreistellig seit 23.10.: Stockwerk + zwei Ziffern, Ost ab `base` 0 (001 …),
-  West ab 50 (051 …); jeder Flügel bleibt unter `base + SPAN` (50), doppelte Nummern brechen das Skript ab. Beim Plan `map_a` laufen beide Flügel von der Lobby über Süd-, Außen-,
-  Nord- und Gartenflur einmal um ihren Innenhof. Liegt ein Zimmer an keinem bekannten Flur, bricht das Skript ab
-  – dann `WINGS` ergänzen. `PINNED`: Zimmer mit fester Nummer, wo der Plan sie beschriftet (013 bei Pixel
-  1120, 640 im EG); der Laufweg überspringt sie und ihre Nummer. Darüber (`number_from_eg`): Nummer des EG-Zimmers 1 m hinter der Flurtür mit dem Stockwerk vorne,
-  sonst das mit der größten Überdeckung; zwei Zimmer über demselben behalten es für das mit der Flurtür darüber,
-  die übrigen und Zimmer über keinem EG-Zimmer zählen im Flügel hinter der höchsten Nummer weiter (Norden vor
-  Süden, Westen vor Osten). `BROKEN_SIGNS`: abweichende Türschilder (013 → „13“, die führende Null ist abgefallen). Die
-  Sonderzimmer im LevelBuilder (`ROOM_KINDS`, `CONTENT`) und die festen Gäste (`GuestProfiles`) hängen an der Nummer,
-  nicht am Ort – ändert der Plan die Zählung, wandern sie mit; was der Plan an Gegenständen in ein Zimmer malt, nicht.
-- `export_presets.cfg` packt `assets/maps/*.json` mit ein (`include_filter`), weil JSON keine Godot-Ressource ist.
+Der Plan liegt im Projektwurzelverzeichnis und wird **nur gelesen** (nie bearbeiten). Umsetzen:
+`python tools/build_map.py [map_a.aseprite] [assets/maps] [vorschau-ordner]` (reines Python). Die Vorschau
+(`<stockwerk>.svg`) zeichnet das Ergebnis **aus den JSON-Daten** – gut zum Prüfen nach Planänderungen.
+**Automatisch beim Spielstart** (`LevelBuilder.refresh_maps()`): Ist eine Datei aus `PLAN_SOURCES` neuer als die
+älteste Karte, ruft das Spiel `build_map.py` auf (blockierend) – nur mit dem Feature `editor`, im Export fehlt der Plan.
+Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, baut das Spiel aus den alten Karten.
+`PYTHONIOENCODING=:replace` hält Python in der Codepage, in der Godot die Ausgabe liest (Umlaute).
+- **Aufbau der Plandatei:** Die Stockwerke liegen untereinander, je `BAND` hoch und deckungsgleich versetzt (DG, OG1,
+  EG, UG – `ALL_FLAT_FLOORS`; ein Plan mit weniger Bändern beginnt weiter unten). Gezählt werden alle normalen Ebenen,
+  **egal ob sichtbar**; nicht gezählt Referenzebenen und Ebenen, deren Name mit `Beschriftung`, `Skizze`, `Notiz` oder
+  `temp` beginnt (`IGNORED_LAYERS`). Ältere Pläne mit Ebenengruppen je Stockwerk gehen weiterhin. Ursprung = Mitte des
+  Haupteingangs im EG (`entrance_origin`), `WING_SPLIT_X` dessen x.
+- **Legende = `<plan>.gpl`** (`map_a.gpl`, GIMP-Palette „R G B<Tab>Name“): Bedeutung jeder Farbe als Name; `FILLS`,
+  `OPENINGS`, `Wand`, `Glaswand` oben im Skript. **Nicht in der Plandatei**: Aseprite behält keine Palettennamen. Neue
+  Farbe → Zeile in der `.gpl`, dann `python tools/build_colors.py` (zeichnet `map_colors.png` – die Vorlage beim
+  Zeichnen, mit exakten Farben für die Pipette; Bedeutung neuer Möbel erklärt der Zeichner in `map_legend.png`). Farben
+  ohne Legendeneintrag meldet das Skript mit Pixelposition. Slices liest es nach Namen sortiert (Aseprite ändert ihre
+  Reihenfolge beim Speichern – sonst wechselte der Fingerabdruck der Welt).
+- **Grundriss:** 1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie (**Türanschlag**: ein Pixel
+  `Türanschlag` statt eines Türpixels an einem Ende, in der Wandhälfte, in die die Tür aufgeht; falsch gesetzt bricht
+  das Skript mit Position ab), Flächen als Füllfarben, `Luftraum` = hier kein Boden (darunter `open_above`). Schrift in
+  Wandfarbe wird übermalt, gehört aber in die Ebene `Beschriftung`.
+- **Ebene `Zimmer`** (`UNITS_LAYER`): deckende Flächen markieren die Hotelzimmer; alle Flächen „Zimmer“ unter einer
+  Markierung werden ein Zimmer (Türen dazwischen sind Innentüren, Bäder bleiben `bath`). **„Zimmer leer“** statt
+  „Zimmer“ gemalt → `"vacant": true`. **Zimmernummern** aus schwarzen Pixelziffern (`DIGITS`) in der Ebene
+  `Beschriftung` auf der Markierung („13“ → `no` „013“, `sign` „13“); ohne Ziffern zählt das Skript selbst (`WINGS`,
+  `PINNED`, `number_from_eg`, `BROKEN_SIGNS`). Sonderzimmer und feste Gäste hängen an der Nummer, nicht am Ort.
+- **Objektebenen** je Stockwerk: `Möbel`, `Ausstattung`, `Gegenstände`, `Lichter`, `Teppiche` (eigene Legende mit
+  Vorsatz `Möbel:` … → `FURNITURE`, `FITTINGS`, `ITEMS`, `LIGHTS`, `RUGS`). Möbel sind Rechtecke, `Möbel: Vorderseite`
+  bzw. `<Möbel> Vorderseite` (`FRONT_SUFFIXES`; Doppelbett `Kopfende` → `head`) zeigt die Vorderseite. Alles andere ist
+  ein 3×3-Punkt; Wandsachen liegen innen an der Wand (daraus die Wandseite); Halogenleuchten sind Striche in ihrer
+  Länge. Gleichfarbige Punkte dürfen sich nicht berühren.
+- **Türarten:** Zimmertüren sind Striche in `Tür Flur`; das Skript liest beiderseits, wohin sie führen: Bad →
+  `bath_doors`, beiderseits Zimmer → `connecting_doors`, sonst Flurtür (weitere Flurtüren `side_doors`; ohne Flurtür
+  über dem EG eine Suite). Ein Zimmer ganz ohne Tür bleibt geschlossen (Hinweis beim Bauen).
+- **Slices:** `Raum: <Name>` benennt eine Fläche, `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen
+  Kante**) und `Treppenhaus: <Name>` → `stairs`, `Objekt: <Name>` (Pivot an der Vorderseite) → `objects`. Treppenhäuser
+  über dem EG brauchen keine eigenen Slices (gleiche ID wie der Schacht im EG). Das Skript baut zuerst das EG, damit die
+  Treppenflächen darüber und darunter dem Schacht zugeordnet werden.
+- **Markierungen:** Ein Kreuz in der Farbe `Haupteingang` mitten auf einer Fläche → `{"kind": "cross", "pos"}`.
+- **Ausgabe** (Meter, x Ost, z Süd, Ursprung = Mitte Haupteingang, Rechtecke `[x0, z0, x1, z1]`):
+  `walls` (`a`, `b`, `thickness`, optional `glass`, `openings` mit `kind`/`at` = Abstand ab `a`/`width`, mit
+  Türanschlag `hinge` = `start`/`end` und `opens` = ±1 (+1 = nach Süden bzw. Osten); waagerechte Wände laufen durch,
+  senkrechte enden bündig an ihnen), `regions` (`id`, `kind`, `outdoor`, `rects`, optional `name`; die Fläche `flure`
+  umfasst alle Flure **und** die Lobby), `rooms` (`no`, `sign`, `wing`, `rects`, `center`, `door` mit `pos`/`normal` in
+  den Flur, `windows`, `garden_doors`, optional `bath_doors`, `connecting_doors`, `side_doors`, `suite`, `vacant`),
+  `stairs` (`id`, `kind` `stair`/`stairwell`, `rect`, `up` bzw. `door`, `steps`), `voids`, `open_above`, `areas`,
+  `objects` (`name`, `rect`, `facing`), `corridors` (Flurabschnitte mit Mittellinie), `floor_patches` (Boden unter
+  Kübeln, Bäumen, Rezeption, freien Treppen), `planters`, `terrace_edges`, `balcony_edges`, `trees`, `reception`,
+  `markers`; aus den Objektebenen `furniture` (`kind`, `rect`, optional `facing` bzw. `head`), `fittings` und `items`
+  (`kind`, `pos`, optional `wall`), `lights` (optional `broken`, Halogen mit `axis`/`length`) und `rugs`.
+- `export_presets.cfg` packt `assets/maps/*.json` und `assets/data/*.json` (Haushalte) mit ein (`include_filter`),
+  weil JSON keine Godot-Ressource ist. Fehlt die Haushaltsdatei, fällt das Spiel auf `ROOM_KINDS` und die alte
+  Gästeverteilung zurück.
 
 ## 5. Das Monster
 
 Zwei Teile: **`MonsterDirector`** entscheidet *ob/wann/wohin* (versteckte Werte, Dramaturgie,
 Effekte), **`Monster`** führt aus (Zustandsautomat, Bewegung, Sicht, Spuren).
 
-**Nur eine Bedrohung im Haus** (Spielkonzept 4.1): `MonsterDirector.other_threat_active(wer)` – Monster aktiv,
-`SheetGhost.is_active()` oder `PumpkinMan.in_house()` (jagt oder geht, keine Testfigur), außer dem Fragenden selbst.
-Gefragt wird beim natürlichen Erscheinen: `_update_schedule` (Aufbruch verschoben, alle 10 s neu), die Siegerehrung (`DoorContest`),
-`SheetGhost._check_spawn` (ganz am Anfang, also auch Tür, Flur und Gäste), `PumpkinMan._check_spawn` (vor dem Wurf –
-der bleibt scharf). Debug-Aufrufe (F5/F7/F9, `--warn`, `--ghost`, `--pumpkin=…`) fragen nicht.
+**Nur eine Bedrohung im Haus** (Spielkonzept 4.20): `MonsterDirector.other_threat_active(wer)` – Monster aktiv,
+`SheetGhost.is_active()`, `PumpkinMan.in_house()` oder seine Ankündigung, außer dem Fragenden selbst. Gefragt wird beim
+natürlichen Erscheinen: `_update_schedule` (Aufbruch verschoben, später neu), die Siegerehrung (`DoorContest`),
+`SheetGhost._check_spawn`, `PumpkinMan._check_spawn` (vor dem Wurf), der Zeitsprung. Debug-Aufrufe (F5/F7/F9,
+`--warn`, `--ghost`, `--pumpkin=…`) fragen nicht.
 
 ### Versteckte Werte (Director)
-- `boldness` (Dreistigkeit, global, steigt nach dem ersten Angriff um `BOLDNESS_PER_DAY` je Spieltag) − `satiation` =
-  `effective_boldness()` (keine Delle nach einer Abweisung mehr, entschieden 2026-10-21). `demand()` (Anspruch an Deko,
-  Spielkonzept 5.10) gleitend nach Tag von ×1 am `DEMAND_FROM_DAY` (2.) bis ×`DEMAND_MAX` (3) an Halloween, danach gedeckelt.
-- `curiosity` je Zone: strebt jede Sekunde zu einem Grundwert aus Dunkelheit und fehlender Deko,
-  Ereignisse addieren direkt (`add_curiosity`). `_update_zones(delta)` nimmt je Physik-Frame nur ein Stück der
-  Zonen dran, jede einmal je `ZONE_PERIOD` (1 s) – alle auf einmal (334 Zonen × 547 Lichter) ließen das Spiel
-  jede Sekunde ~140 ms hängen (21.10.).
-- `pressure_at(p) = Dreistigkeit × (0,5 + 0,5 × Neugier/100)` (+ Bonus beim Jagen),
-  `deterrence_at(p)` aus Deko × Licht / `demand()` plus Licht allein, im Katzenraum unendlich
-  (`LevelBuilder.is_safe`: dort hinein kommt es nie, wer drinsteht, ist auch bei der Jagd geschützt). Deko zählt nur
-  auf demselben Stockwerk (±2,5 m), mit `Item.deco_value()` (welke und eingefallene Kürbisse weniger); Füllmaterial
-  (`Item.is_filler()`) zusammen höchstens `FILLER_CAP` (20) je Stelle (`_deco_strength`, auch für die Puppe). `is_blocked` / `is_protected`.
-- `light_at(p)`: Summe aller `light_source` mit freier Sichtlinie (Raycast) + Mondlicht durch
-  Außenfenster mit offenem Vorhang. Teuer → sparsam aufrufen. Die Lichter kommen aus einem Raster
-  (`_lights_near`: Zellen `LIGHT_CELL` 8 m, alle `LIGHT_GRID_FRAMES` neu einsortiert, Suchradius größte Reichweite
-  + `LIGHT_GRID_SLACK` für getragene Lichter); An/Aus und Helligkeit prüft `light_at` jedes Mal selbst.
+- `boldness` (Dreistigkeit, steigt nach dem ersten Angriff je Spieltag) − `satiation` = `effective_boldness()`.
+  `demand()` (Anspruch an Deko, Spielkonzept 5.10) gleitend nach Tag von `DEMAND_FROM_DAY` bis `DEMAND_MAX`.
+- `curiosity` je Zone: strebt zu einem Grundwert aus Dunkelheit und fehlender Deko, Ereignisse addieren
+  (`add_curiosity`). `_update_zones(delta)` nimmt je Physik-Frame nur ein Stück der Zonen dran (jede einmal je
+  `ZONE_PERIOD`) – alle auf einmal (Hunderte Zonen × Hunderte Lichter) ließen das Spiel jede Sekunde merklich hängen.
+- `pressure_at(p)` aus Dreistigkeit und Neugier, `deterrence_at(p)` aus Deko × Licht / `demand()` plus Licht allein,
+  im Katzenraum unendlich (`LevelBuilder.is_safe`). Deko zählt nur auf demselben Stockwerk, mit `Item.deco_value()`;
+  Füllmaterial (`Item.is_filler()`) zusammen höchstens `FILLER_CAP` je Stelle (`_deco_strength`, auch für die Puppe).
+  `is_blocked` / `is_protected`.
+- `light_at(p)`: Summe aller `light_source` mit freier Sichtlinie (Raycast) + Mondlicht durch Außenfenster mit offenem
+  Vorhang. Teuer → sparsam aufrufen. Die Lichter kommen aus einem Raster (`_lights_near`, `LIGHT_CELL`, neu einsortiert
+  alle `LIGHT_GRID_FRAMES`, Spielraum `LIGHT_GRID_SLACK` für getragene Lichter); An/Aus prüft `light_at` selbst.
 
 ### Ereignis-Schnittstelle (andere Systeme melden, der Director reagiert)
-`on_noise(pos, hörweite, quelle)` (nur über `Game.noise`) · `on_lights_off(pos)` · `on_actor_hid(spot, actor)` · `on_monster_talk(pos)` ·
-`on_monster_noticed()` · `on_monster_uv()` · `on_monster_gone()` · `kill_guest(guest, spot)` ·
+`on_noise(pos, hörweite, quelle)` (nur über `Game.noise`) · `on_lights_off(pos)` · `on_actor_hid(spot, actor)` ·
+`on_monster_talk(pos)` · `on_monster_noticed()` · `on_monster_uv()` · `on_monster_gone()` · `kill_guest(guest, spot)` ·
 `kill_player(spot)`. Neue Spielmechaniken, die das Monster beeinflussen sollen, melden sich hier. Kürbismann und
-Lakengeist töten über `player_slain()` (Spiel aus, Schrei, Aufblitzen, Sterbebildschirm) bzw. `guest_slain(gast, ursache)`
-(Ächzen, Leiche, das Hotel erfährt es). Versteckt sich jemand während `REVEAL` (oder `KILL`), schickt `on_actor_hid` das
-Monster nicht nachsehen – es stand sonst schon vor dem Spieler und wurde trotzdem versetzt.
+Lakengeist töten über `player_slain()` (Spiel aus, Schrei, Sterbebildschirm) bzw. `guest_slain(gast, ursache)`.
+`on_actor_hid` schickt das Monster nicht nachsehen, während es tötet (`KILL`).
 Debug: F5 = `start_warning()` (nur wenn es ruht), F7/`--lure` = `debug_lure()`: ruht es, `spawn_at()` auf dem
-NavMesh-Punkt ~`LURE_DISTANCE` (25 m) vom Spieler (zählt damit als erster Angriff), dann `investigate(Spieler)`.
+NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `investigate(Spieler)`.
 
 ### Dramaturgie
-- Vor dem ersten Angriff: kein Monster. Den ersten Angriff löst die Siegerehrung des Türschmuck-Wettbewerbs aus
-  (`DoorContest`, Abschnitt 8, „Der Anfang“): `first_attack_in_lobby(ecke, puppe)` – `first_attack_done`, `_start_activity`
-  ohne Welle in der dunklen Ecke der Lobby, `investigate` dorthin, wo die Puppe saß. Kein eigener Zeitplan mehr im Director.
-- Danach Wechsel `Phase.CALM` (Keller) ↔ `Phase.ACTIVE` (streift umher); Dauern über `_day_lerp`.
-- `attacks <= HARMLESS_ATTACKS` (9 Aufbrüche ≈ anderthalb Spieltage) → `is_harmless()`: es holt keinen Gast, `kill_guest` wird zu Erschrecken
-  (`_scare_guest`). **Den Spieler tötet es immer, wenn es ihn erwischt** (2026-10-22, auch harmlos und beim Umsehen –
-  das frühere Anstarren und Verschwinden, `_reveal_to_player`/`REVEAL`, ist entfernt).
+- Vor dem ersten Angriff: kein Monster. Den ersten Angriff löst die Siegerehrung aus (`DoorContest`, 8 „Der
+  Anfang“): `first_attack_in_lobby(ecke, puppe)` – ohne Flackerwelle, in der dunklen Ecke der Lobby.
+- Danach Wechsel `Phase.CALM` (Keller) ↔ `Phase.ACTIVE` (streift umher); Dauern über `_day_lerp`, in Echtzeit.
+- `attacks <= HARMLESS_ATTACKS` → `is_harmless()`: es holt keinen Gast, `kill_guest` wird zu Erschrecken
+  (`_scare_guest`). **Den Spieler tötet es immer, wenn es ihn erwischt.**
 - **Absicht** (Spielkonzept 4.17): `_start_activity` → `_choose_intent` setzt `victims_left`: 0 (umsehen) oder – mit
-  `attack_chance()`, gleitend nach Tag aus `ATTACK_CHANCE` (seit der Tagesuhr ein Fünftel der Werte aus Spielkonzept 4.17:
-  Ruhe- und Aktivphasen sind in Sekunden, es bricht etwa sechsmal am Tag auf; so greift es je Tag etwa gleich oft an) – `_draw_victims()` – n ∝ 1/n², höchstens `_max_victims()` (lebende Gäste + Spieler).
-  `intent` (`ROAM`/`ONE`/`RAMPAGE`) folgt nur daraus (`_intent_for`). `kill_*` holen nur, wenn `wants_victim()` (nicht harmlos und
-  `victims_left > 0`), sonst Erschrecken wie bei harmlosen Angriffen – nur für Gäste; der Spieler stirbt immer.
-  Raubzug: nach einem Opfer `Monster.after_kill_hunting()` (weiterstreifen, keine Sättigung), erst das
-  letzte macht satt (`after_feeding`). Satt (`satiation > SATED_ROAM`) → immer `ROAM`. Sichtung/Gerede
-  können `ROAM` per `_escalate` zu `ONE` machen. `victims_left` und `_uv_angry` stehen im Spielstand.
-  `--attacks=10` macht es nur nicht mehr harmlos – ob es holt, würfelt `_choose_intent` (Tag 1–4: 4 %); sicher
-  mit `--intent`. `--trace` zeigt beim Aufbruch Angriffsnummer, Tag, Chance (bzw. satt/erzwungen) und Absicht,
-  dazu `[Geholt]` aus `kill_guest` und `[Erschreckt]` aus `_scare_guest`.
-- **Flackerwelle**: `_start_wave(ursprung, opfer)` – Dauer `SIGNAL_BASE + SIGNAL_PER_VICTIM × opfer` (1 + 2 × n s),
-  Stufe `_wave_level` 0 / 1 / ab 2 Opfern (Stärke, Untertitel, Gäste, `long_signal_near`); `wave_delay(p)` = Weg vom Ursprung (Heizkeller)
-  über das Stockwerk, in jedes andere Stockwerk über `_stairwell`, durch `WAVE_SPEED`. Jede Lampe bekommt
-  `FlickerLight.wave` (getrennt von `flicker`, damit die Welle keine Birnen durchbrennen lässt). Angezeigt
-  wird `shown_victims` – das kann gelogen sein (0) (`DECEIVE_CHANCE` × Dreistigkeit). Beim Spieler:
-  Bildflackern, `SynthAudio.buzz`, Untertitel. Gäste bekommen `Guest.on_flicker_signal(stufe, verzögerung)`.
-  Halluzination startet manchmal eine Welle mit `fake = true` (Gäste reagieren nicht). Nicht gespeichert.
-  Folgen: `is_signalling()` sperrt das Tagebuch, `long_signal_near()` bricht Würfelpartien ab.
-  Der erste Angriff bei der Siegerehrung hat keine Welle.
+  `attack_chance()` aus `ATTACK_CHANCE` – `_draw_victims()` (n ∝ 1/n², höchstens `_max_victims()`). `intent`
+  (`ROAM`/`ONE`/`RAMPAGE`) folgt nur daraus (`_intent_for`). `kill_*` holen nur, wenn `wants_victim()`, sonst
+  Erschrecken (nur Gäste). Raubzug: nach einem Opfer `Monster.after_kill_hunting()`, erst das letzte macht satt
+  (`after_feeding`). Satt (`SATED_ROAM`) → immer `ROAM`. Sichtung/Gerede können `ROAM` per `_escalate` zu `ONE` machen.
+  `victims_left` und `_uv_angry` stehen im Spielstand. `--attacks=10` macht es nur nicht mehr harmlos, sicher holen
+  mit `--intent`; `--trace` zeigt Aufbruch, Chance, Absicht, `[Geholt]`, `[Erschreckt]`.
+- **Flackerwelle**: `_start_wave(ursprung, opfer)` – Dauer und Stufe nach der Opferzahl; `wave_delay(p)` = Weg vom
+  Ursprung über das Stockwerk, in andere Stockwerke über `_stairwell`, durch `WAVE_SPEED`. Jede Lampe bekommt
+  `FlickerLight.wave` (getrennt von `flicker`, damit die Welle keine Birnen durchbrennen lässt). Angezeigt wird
+  `shown_victims` – kann gelogen sein (`DECEIVE_CHANCE`). Gäste: `Guest.on_flicker_signal(stufe, verzögerung)`.
+  Halluzination startet Wellen mit `fake = true` (Gäste reagieren nicht). Nicht gespeichert. `is_signalling()` sperrt
+  das Tagebuch, `long_signal_near()` bricht Würfelpartien ab.
 - Haunting (Türen, Vorhänge, Licht, Betten, Zimmer 13) nur, wo der Spieler nicht hinsieht (`_unseen`).
 
 ### Die Puppe (`scripts/world/jury_doll.gd`, Spielkonzept 5.5)
-- **`JuryDoll`** (`Game.doll`, in `main.gd` nach Social, Start auf dem ersten Lobby-Sofa: `cat_perches`, deren `floor` ein
-  `lobby_seat` ist): `StaticBody3D` auf Ebene 3 (nur für den Blick, blockiert niemanden), Modell `doll.glb` (Abschnitt 1) mal
-  `SIZE` (0,65: sitzend ~0,65 m, stehend 1,1 m), Ursprung auf der Sitzfläche (`SEAT` unter der Hüfte), Gesicht nach +Z. [E] sagt nur, dass sie sich nicht hochheben lässt. `verdict` = Zimmer des
-  Urteils (`""` = keins), `at_room` = Zimmer, vor dessen Tür sie liegt. `judge(no)` → `_pending`; `_try_jump` (alle
-  `MOVE_SCAN` s) setzt sie vor die Tür (`_door_spot`: `door_front` + `into` × `DOOR_GAP`, Blick zur Tür), sobald
-  `Director.player_can_see` weder alten noch neuen Platz sieht. `release()` hebt das Urteil auf (nach der Aktivphase,
-  `Director._end_raid`). Gäste der Tür, die sie sehen (`_in_view`, `NOTICE_RANGE`), bekommen einmal je Urteil Angst und sagen
-  es (`NOTICE_LINES`). **Kinder** (`_update_kids` alle `KID_SCAN` s, nur ohne Urteil, nach `KID_REST`): ein freies Kind in
-  `KID_RANGE` mit Sichtlinie geht mit `KID_CHANCE` hin (`_fetcher`, Zustand `WALK`), nimmt sie in 1 m (`carrier`,
-  `_carried_step` hält sie an `Guest._hand`) und trägt sie zur Tür der Familie (Eltern, sonst eigene); hört es auf zu gehen,
-  legt es sie dort vor die Tür bzw. wo es steht. `judge` lässt ein Kind sofort los. Gespeichert unter `doll` (Lage,
-  Drehung, `verdict`, `at_room`, `pending`, `gone`; ein getragenes liegt danach, wo es war). Debug `--doll=kind` (`debug_fetch`).
-- **Wettbewerb** (2.5): Bis zum ersten Angriff liegt vor ihr ein Schildchen „Jury“ (`_card`, `show_card`; Prompt
-  „Die Jury“), Kinder holen sie erst danach (`_update_kids` fragt `first_attack_done`). Sitzen und Aufstehen über die Knochen
-  (`stand_pose(k)`, `_turn`: Drehung um eine Achse im Modellraum gegenüber der Ruhepose): sitzend die Oberschenkel 90°
-  nach vorn (Beine ausgestreckt, auf dem Sofa ragen die Füße über die Kante), der Kopf um `HEAD_TILT` geneigt, der Rock
-  über den Formschlüssel „sit“ (`_skirt`, Wert 1 − k) auf dem Schoß statt hochstehend; die Arme
-  immer `ARM_DOWN` aus Meshys A-Pose zum Körper. Stehend hängen die Beine unter dem Ursprung – sie schwebt dann.
-  `HEAD_HEIGHT` (Kopfmitte, sitzend) nimmt DoorContest als Blickziel. `vanish()` (Rauch bei der Siegerehrung): `gone`,
-  unsichtbar, ohne Kollision; beim nächsten Urteil prüft `_try_jump` nur den neuen Platz und zeigt sie dort wieder
-  (`_reappear`). Liegt sie vor der Tür ihres Urteils, meldet sie das `DoorContest.on_doll_placed` (Tagebuch).
-- **Frist und Urteil** (`MonsterDirector`): `on_monster_gone` würfelt `_lead` (`DOLL_LEAD` 60–120 s). In der Ruhephase ruft
-  `_update_schedule` bei `_phase_left <= _lead` einmal `_plan_departure()`: Absicht jetzt wählen (`_planned`, `_start_activity`
-  wählt dann nicht neu; Sättigung hochgerechnet auf den Aufbruch). Nur wenn `victims_left > 0` (auch vor harmlosen
-  Angriffen – dann erschreckt es im gewählten Zimmer nur, `raided` verlangt `not is_harmless()`): Ruhe auf mindestens `_lead` verlängern, `_rumble_total`, `_judge(_weakest_door())`, Untertitel.
-  `_weakest_door()`: unter `inhabited_rooms()` (Zimmer lebender Erwachsener + 13) die mit der wenigsten Deko
-  (`_deco_strength` am `door_front`, Gleichstand bis `DOLL_DECO_TIE` – die bisherige Tür bleibt, wenn sie dabei ist), dann
-  die dunkelste (`light_at`, `DOLL_LIGHT_TIE`), dann Zufall; alle `DOLL_RECHECK` s neu (Nachbessern). `debug_doom` erzwingt
-  ein Zimmer. **Grollen:** `SynthAudio.rumble` von `RUMBLE_START` quadratisch bis 1 am Ende der Frist, nach dem Aufbruch
-  ausgeblendet (`RUMBLE_FADE`); bei 60 % „[Das Grollen wird lauter]“.
-- **Weg** (`_plan_route` in `_start_activity`): `NavigationServer3D.map_get_path` vom Keller zur Puppentür; bewohnte Türen mit
-  `door_front` höchstens `ROUTE_REACH` neben dem Weg (gleiche Höhe) und Deko, die nicht hält (`!is_blocked`), nach Lage auf
-  dem Weg, höchstens `ROUTE_DOORS`, dann die Puppentür → `_route`, `_raiding`. `Monster._next_roam` fragt zuerst
-  `next_raid_target()`: nächste Tür (unterwegs nur bei `victims_left > 0` und solange sie nicht hält, sonst übersprungen),
-  `{"home": true}` nach dem Puppenzimmer (`_finish_raid`: satt, wenn `_raid_kills` > 0). `wants_to_enter_room` nimmt die
-  Tür vom Weg und setzt `raid_room`. Unterwegs `SEARCH_SPEED`, `investigate` wird überhört. `_update_schedule` schickt es
-  während `_raiding` nicht heim, erst nach `RAID_OVERTIME` über der Aktivzeit.
-- **Gewähltes Zimmer** (`in_raid_room`): `_check_hide_step` holt jeden Versteckten sofort (wie `seen_entering`) und reißt
-  leere Verstecke auf (`rip_open`); `_search_step` jagt zuerst jeden, der offen im Zimmer steht (`raid_prey`), und
-  `_chase_step` verliert ihn dort nicht (`is_raid_prey`). `kill_guest`: im Zimmer auch ohne `wants_victim`, 40 % reißen
-  sich los (`Wounds`), im Puppenzimmer nie; Opfer dort zählen nicht gegen `victims_left`; danach `Monster.continue_raid`
-  (weiter durchsuchen). `kill_player` tötet im gewählten Zimmer immer. `is_blocked` ist an der Puppentür (3,5 m) und im
-  Puppenzimmer immer falsch (`_at_doom`) – sie fällt auch gut geschmückt. Gespeichert im Director: `planned`, `lead`,
-  `rumble_total`, `doom_room`, `raiding`, `route` (ein angefangenes Zimmer wieder vorn), `raid_kills`. Debug
-  `--doll[=s[,zimmer]]` (`debug_doll`, ein Opfer), `--trace`: `[Puppe]`.
-
-- **Gäste beim Grollen und Aufbruch** (2026-10-22): Während der Frist ruft der Director alle `RUMBLE_GUEST_EVERY` s
-  `Social.on_rumble(k)` (k = Anteil der Frist): Angst + `RUMBLE_FEAR` × k × (1,2 − Mut), Erlebnis „rumble“ (erzählt mit
-  `RUMBLE_STORIES`), ab Angst 60 `Guest.take_cover()`, Kinder `_run_to_parent`, ab `RUMBLE_PARTY_END` `end_party`; einer mit
-  Gesellschaft sagt etwas aus `RUMBLE_LINES`, mit `RUMBLE_TALK_CHANCE` → `on_monster_talk`. Die Flackerwelle beim Aufbruch
-  ruft bei jedem Gast `_react_to_flicker` → Angst und `take_cover()` (auch Feiernde; nicht im Gespräch, am Spieltisch, im
-  Bett): in `COVER_HOME_RANGE` vom eigenen `door_front` (gleiches Stockwerk) rennend heim (`_flee_home`, Zustand `WALK`),
-  dort `_shut_in()` – Tür zu –, sonst `_go_hide()`. Solange `Game.monster.is_active()`, bleibt `_next_activity` daheim
-  (`_set_idle`) bzw. bringt ihn wieder in Sicherheit.
+- **`JuryDoll`** (`Game.doll`, Start auf dem ersten Lobby-Sofa): `StaticBody3D` auf Ebene 3 (nur für den Blick),
+  Modell `doll.glb` × `SIZE`, Ursprung auf der Sitzfläche, Gesicht nach +Z. `verdict` = Zimmer des Urteils,
+  `at_room` = Zimmer, vor dessen Tür sie liegt. `judge(no)` → `_pending`; `_try_jump` setzt sie vor die Tür
+  (`_door_spot`), sobald `Director.player_can_see` weder alten noch neuen Platz sieht – **sie bewegt sich nie
+  sichtbar**. `release()` hebt das Urteil auf (`Director._end_raid`). Gäste der Tür, die sie sehen, bekommen Angst und
+  sagen es (`NOTICE_LINES`).
+- **Kinder** (`_update_kids`, nur ohne Urteil, erst nach `first_attack_done`) holen sie und tragen sie zur Tür der
+  Familie (`carrier`, `_carried_step` an `Guest._hand`); `judge` lässt sofort los. Debug `--doll=kind`.
+- **Wettbewerb** (Spielkonzept 2.5): Schildchen „Jury“ (`_card`) bis zum ersten Angriff. Sitzen und Aufstehen über die
+  Knochen (`stand_pose(k)`, `_turn`: Drehung im Modellraum gegenüber der Ruhepose), der Rock über den Formschlüssel
+  „sit“ (`_skirt`, Wert 1 − k); Arme immer `ARM_DOWN` aus Meshys A-Pose. `HEAD_HEIGHT` = Blickziel für DoorContest. `vanish()` (Rauch bei der Siegerehrung): `gone`, unsichtbar;
+  `_reappear` beim nächsten Urteil. `DoorContest.on_doll_placed` schreibt das erste Urteil ins Tagebuch.
+- Gespeichert unter `doll` (Lage, Drehung, `verdict`, `at_room`, `pending`, `gone`).
+- **Frist und Urteil** (`MonsterDirector`): `on_monster_gone` würfelt `_lead` (`DOLL_LEAD`). In der Ruhephase ruft
+  `_update_schedule` bei `_phase_left <= _lead` einmal `_plan_departure()`: Absicht jetzt wählen (`_planned`); nur wenn
+  `victims_left > 0` (auch vor harmlosen Angriffen – dann erschreckt es nur): Ruhe auf `_lead` verlängern,
+  `_judge(_weakest_door())`, Grollen. `_weakest_door()`: unter `inhabited_rooms()` die mit der wenigsten Deko
+  (Gleichstand `DOLL_DECO_TIE`, die bisherige Tür bleibt), dann die dunkelste (`DOLL_LIGHT_TIE`), dann Zufall; alle
+  `DOLL_RECHECK` neu (Nachbessern). **Grollen:** `SynthAudio.rumble` steigt bis zum Ende der Frist.
+- **Weg** (`_plan_route`): `NavigationServer3D.map_get_path` vom Keller zur Puppentür; bewohnte Türen nah am Weg
+  (`ROUTE_REACH`, höchstens `ROUTE_DOORS`), deren Deko nicht hält, kommen vorher dran → `_route`, `_raiding`.
+  `Monster._next_roam` fragt zuerst `next_raid_target()`, danach `{"home": true}` (`_finish_raid`).
+  `_update_schedule` schickt es während `_raiding` erst nach `RAID_OVERTIME` heim.
+- **Gewähltes Zimmer** (`in_raid_room`): Versteckte werden sofort geholt, leere Verstecke aufgerissen (`rip_open`),
+  wer offen steht, gejagt und nicht verloren (`raid_prey`). `kill_guest` dort auch ohne `wants_victim`; ein Teil reißt
+  sich los (`Wounds`), im Puppenzimmer nie. `is_blocked` ist an der Puppentür und im Puppenzimmer immer falsch
+  (`_at_doom`) – sie fällt auch gut geschmückt. Gespeichert im Director: `planned`, `lead`, `rumble_total`,
+  `doom_room`, `raiding`, `route`, `raid_kills`. Debug `--doll[=s[,zimmer]]`, `--trace` `[Puppe]`.
+- **Gäste beim Grollen und Aufbruch:** Während der Frist `Social.on_rumble(k)` (Angst, Erlebnis „rumble“, in Deckung,
+  Feiern enden ab `RUMBLE_PARTY_END`). Die Flackerwelle ruft bei jedem Gast `_react_to_flicker` → `take_cover()`:
+  nah am eigenen Zimmer heim (`_flee_home`, dann `_shut_in()` – Tür zu), sonst `_go_hide()`. Solange
+  `Game.monster.is_active()`, bleibt `_next_activity` daheim.
 
 ### Monster-Zustände
-`INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK, REVEAL`.
-Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `start_roaming`,
-`investigate`, `go_check`, `stare`, `go_home`, `spawn_at` (Tests), `spawn_near_unseen`, `deactivate`.
-Sieht der Spieler es ohne Jagd länger als 0,35 s → `SLINK` (aus dem Blick verschwinden).
-UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, dann `RETREAT` mit
-`_fleeing` (Jagdtempo, `_calm_retreat`: jagt niemanden).
-**Abschreckung** (`_check_deterrence`): Deko + Licht blockieren nur, wenn das Ziel (`_goal()`) selbst im
-Schutz liegt – vorbeigehen darf es (die Deko vor den Türen deckt sonst den ganzen Flur ab). Beim Jagen gilt
-`is_protected(Gejagter)`. Zurückgeschreckt ohne UV → anderes Ziel (`_next_roam`), der Gejagte kommt für
-`REBUFF_TIME` in `_rebuffed`; nach `LURK` ebenso weiter. **Rückzug (`RETREAT`) nur:** Ende der Aktivphase
-(`go_home`), satt (`after_feeding`), UV. Nach einem harmlosen Schreck `after_scare(opfer)` → `SLINK` und
-weiterstreifen; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
-**Tempo** (2026-10-22): `WALK_SPEED` 3,6, `SEARCH_SPEED` 4,2, `CHASE_SPEED` 7,2 m/s – es rast durch die Flure, jagend weit
-schneller als der rennende Spieler (4,8); auf dem Weg zur Puppe streift es mit `SEARCH_SPEED`.
+`INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK`.
+Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `start_roaming`, `investigate`, `go_check`,
+`stare`, `go_home`, `spawn_at` (Tests), `spawn_near_unseen`, `deactivate`.
+- Sieht der Spieler es ohne Jagd länger als einen Moment → `SLINK` (aus dem Blick verschwinden).
+- UV-Licht: `uv_flinch()` (im Kegel langsamer), `uv_repel()` → kurz `REPELLED`, dann `RETREAT` mit `_fleeing`.
+- **Abschreckung** (`_check_deterrence`): Deko + Licht blockieren nur, wenn das Ziel (`_goal()`) selbst im Schutz
+  liegt – vorbeigehen darf es (die Deko vor den Türen deckte sonst den ganzen Flur ab). Beim Jagen gilt
+  `is_protected(Gejagter)`. Zurückgeschreckt ohne UV → anderes Ziel (`_next_roam`), der Gejagte kommt für
+  `REBUFF_TIME` in `_rebuffed`.
+- **Rückzug (`RETREAT`) nur:** Ende der Aktivphase (`go_home`), satt (`after_feeding`), UV. Nach einem harmlosen
+  Schreck `after_scare(opfer)` → `SLINK`; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
+- Tempo `WALK_SPEED`, `SEARCH_SPEED`, `CHASE_SPEED` – jagend weit schneller als der rennende Spieler.
 
 ### Aussehen & Animation
-- **Modell:** `assets/models/monster.glb` wird von `tools/build_monster.py` (Blender 4.3) aus dem
-  Meshy-Original (`assets/source/`, nicht im Repo, `.gdignore`) gebaut: auf 8000 Dreiecke reduziert, Blick nach −Z, ~2,15 m hoch, 512er-Farbtextur,
-  Skelett mit 24 Knochen (`hips` … `toe.R`, linke Seite bei −X). **Grundpose = aufrecht**, die
-  ursprüngliche Hocke auf allen Vieren steckt als Animation `crouch` (ein Bild) in der Datei.
-  Neu bauen: `blender -b --python tools/build_monster.py -- <meshy.glb> assets/models/monster.glb`.
-  Die Augenpositionen druckt das Skript aus → `Monster.EYES`. Die von Godot entpackte Textur
-  (`assets/models/*.jpg`) ist in `.gitignore`.
-- **Animation ist Code:** `_animate()` setzt alle `ANIM_STEP` (0,09 s, Stop-Motion) eine neue Pose.
-  Pro Knochen wird aufrecht ↔ Hocke gemischt (`_crouch`, Ziel aus `_crouch_target()`: `SLINK` auf
-  allen Vieren, `LURK`/`CHECK_HIDE` halb, an Türen geduckt), darauf kommen mit `_turn(knochen, achse,
-  winkel)` Gang, Vorbeugen, Arme, Kopf, Kiefer und Zunge. `_turn` dreht um Achsen im **Modellraum**
-  (die Knochenachsen aus Blender sind uneinheitlich) – Eltern immer vor Kindern drehen.
-- Der `AnimationPlayer` aus der GLB wird nur ausgelesen und dann gelöscht. Material: `Mat.psx` mit
-  der Modelltextur. Augen hängen per `BoneAttachment3D` am Knochen `head`.
-- Kollision und NavMesh-Agent bleiben 1,6 m hoch. Türen sind 2,1 m hoch → `_near_door` lässt es
-  sich ducken. `EYE_HEIGHT` (2,1 m) ist auch die Höhe für seine Sichtprüfungen.
+- **Modell:** `assets/models/monster.glb`, gebaut von `tools/build_monster.py` (Blender) aus dem Meshy-Original
+  (`assets/source/`, nicht im Repo, `.gdignore`): **Grundpose aufrecht**, die ursprüngliche Hocke auf allen Vieren
+  steckt als Animation `crouch` (ein Bild) in der Datei. Neu bauen:
+  `blender -b --python tools/build_monster.py -- <meshy.glb> assets/models/monster.glb`. Die Augenpositionen druckt das
+  Skript aus → `Monster.EYES`. Die entpackte Textur (`assets/models/*.jpg`) ist in `.gitignore`.
+- **Animation ist Code:** `_animate()` setzt alle `ANIM_STEP` eine neue Pose (Stop-Motion). Pro Knochen wird
+  aufrecht ↔ Hocke gemischt (`_crouch`, Ziel aus `_crouch_target()`), darauf kommen mit `_turn(knochen, achse,
+  winkel)` Gang, Vorbeugen, Arme, Kopf, Kiefer und Zunge. `_turn` dreht um Achsen im **Modellraum** (die
+  Knochenachsen aus Blender sind uneinheitlich) – Eltern immer vor Kindern drehen.
+- Der `AnimationPlayer` aus der GLB wird nur ausgelesen und dann gelöscht. Augen hängen per `BoneAttachment3D` am
+  Knochen `head`.
+- Kollision und NavMesh-Agent sind niedriger als das Modell; Türen sind niedriger als das Monster → `_near_door`
+  lässt es sich ducken. `EYE_HEIGHT` ist auch die Höhe für seine Sichtprüfungen.
 
-### Der Kürbismann (`scripts/monster/pumpkin_man.gd`, Spielkonzept 4.19)
-Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`, Ebene 32 wie das Monster) in
-`Game.pumpkin`. Spielt die Animationen der GLB (`walk`/`run`, Abspieltempo aus der Laufweite), kein Code-Rig.
-- **Spaß** zählt `Social.has_fun(gast)`: Zustand `PARTY` oder `MINIGAME`, Kind auf Süßes-oder-Saures-Runde
-  (`_rounds`) oder an Zimmer 13 (`_trick`), beim Schmücken dabei (`Decorating.is_crew`, 5.9); `player_has_fun()`:
-  `Game.dice`/`Game.chess` aktiv, Feier und im Partyraum, `_trick` oder in `PRESENT_RANGE` einer laufenden
-  Schmück-Aktion (`Decorating.player_joins`). `fun_actors()` = beides zusammen.
-- **Auslöser: Spaßwert** (`_check_spawn`, je Sekunde, 2026-10-22): `fun` (0..`FUN_MAX`, Start `FUN_START`) – `_update_fun`:
-  je Gast `FUN_GAIN[Social.fun_kind(g)]` („game“, „party“, „decorate“, „eat“, „trick“), der Spieler „game“ bei laufender
-  Partie, sonst „party“, wenn `player_has_fun`; Abfall `fun × FUN_DECAY` je Sekunde; im Hotel steigt nichts, `_deactivate`
-  setzt 0. `on_deco_placed()` (aus `Player.drop_held`, Hinlegen und Aufhängen von Deko) gibt `_fun_deco` += `FUN_DECO`,
-  das in `FUN_DECO_TIME` verfliegt; `fun_value()` = Summe. Ab `FUN_THRESHOLD` alle `FUN_ROLL_EVERY` s ein Wurf mit
-  `FUN_CHANCE` (linear bis `FUN_MAX`) → `_start_any()` (die Spaß-Akteure, sonst alle Lebenden und der Spieler).
-  **Garantie** `_guarantee_due()`: am `GUARANTEE_DAY` einmal (`guarantee_checked`) – bei `visits` < `GUARANTEE_VISITS` je
-  ein Zeitpunkt in `GUARANTEE_TIME` dieses und des nächsten Tages (`guarantee_at`); fällig → `_start_any()`. `start_hunt`
-  zählt `visits` und streicht Garantien des heutigen Tags. Erst nach `first_attack_done`, nie neben einer anderen
-  Bedrohung, erst mit fertigem NavMesh (`map_get_iteration_id`). Gespeichert unter `pumpkin` (`fun`, `visits`,
-  `guarantee_at`, `guarantee_checked`; er selbst nicht). F3 zeigt den Wert, `--trace`: `[Kürbismann] Spaßwert … – Wurf`,
-  `Garantie`.
-- **Ankündigung** (2026-10-22): Wurf und Garantie rufen `_begin_announce()` statt gleich `_start_any()`: `_announce`
-  (`ANNOUNCE_TIME` 180–240 s), alle Kinder `Guest.singing`, Erwachsene (nicht betrunken) Angst + (1 − Mut) × 45.
-  Solange `announcing()`, läuft im Zustand `INACTIVE` `_announce_step` statt `_check_spawn`: alle `SONG_LINE_TIME` s eine
-  Zeile aus `SONG` als Untertitel (in `CHORUS_RANGE` des nächsten Sängers, sonst ab und zu „[Irgendwo singen Kinder]“);
-  ist die Zeit um, `_start_any()` jede Sekunde, bis es klappt (höchstens 60 s), dann `_stop_singing()`. `_update_omens`
-  (jedes Bild): `FlickerLight.red` in `RED_FADE` s auf 1, solange er sich ankündigt oder im Hotel ist, `FlickerLight.hot_spot`
-  = sein Kopf, solange er im Haus ist (nicht beim Klettern), `SynthAudio.creepy` (`CREEPY_VOLUME` × Musiklautstärke) und
-  `SynthAudio.chorus` (nach Nähe zum nächsten Sänger, mindestens `CHORUS_FAR`). `Director.other_threat_active` und
-  `SaveManager.can_save` zählen `announcing()` mit. Nicht gespeichert (Speichern ist gesperrt). Debug
-  `--pumpkin=ankündigung[,s]` (`debug_announce`), `--trace`: `[Kürbismann] kündigt sich an`.
-  **Lampen** (`FlickerLight`, statisch für alle): `red` färbt `light_color` (aus `_base_color`) und die Emission des
-  Lampenmaterials (`_base_emission`, geteilte Materialien sind gewollt) nach `RED`, rotes Flackern `RED_FLICKER`; in
-  `NEAR_RANGE` um `hot_spot` × (1 + `NEAR_BOOST` × Nähe) und Flackern bis 0,6. `PumpkinMan._ready` setzt beides zurück.
-  **Klang** (`SynthAudio._creepy_sample`): `CREEPY_TUNE` (eigene Melodie, `CREEPY_BEAT`), Plattenspieler = Rechteck + Säge
-  mit schwankender Tonhöhe, grob gestuft, Knistern; Chor = drei verstimmte Stimmen mit Vibrato und Obertönen.
-  **Kinder** (`Guest.singing`): stehen (`_stop`), sehen zu `lobby_center`, außer im Bett, Versteck, Gespräch oder gewürgt;
-  [E] → `say(PumpkinMan.song_line())` statt Gespräch.
-- **Ankunft übers Lobbydach** (entschieden 2026-10-21): `start_hunt(akteure)` sucht die Glastür von der Lobby in
-  den Mittelgarten, die einem davon am nächsten liegt (`_garden_door`: Tür mit `glass` aus der Gruppe `doors`, Lobby
-  davor – `in_lobby` –, Garten dahinter – `is_outdoor`; heute x ±5,5 in der Nordwand z = −28). Warum dort: Der
-  Haupteingang ist verriegelt, der Luftraum oben geschlossen, die Galerie hat kein Fenster nach draußen – die
-  Gartentüren sind der einzige Weg in die Lobby, und der Garten mit den Kürbisbeeten liegt direkt dahinter. Ablauf
-  ohne Physik und NavMesh (Kapsel aus, Position direkt gesetzt): `CLIMB` an der Straßenfassade genau gegenüber
-  (`FACADE_Z` vor der Südwand, `CLIMB_SPEED`, oben `LEDGE_TIME` über die Kante) → `ROOF` mit `ROOF_SPEED` bis an die
-  Dachkante über der Tür, dort `EDGE_WAIT` stehen (Silhouette vor dem Nachthimmel) → `LEAP` (Schritt mit `LEAP_SPEED`,
-  freier Fall) → `LAND` im Garten (Kapsel an, Lärm `pumpkin_land` 16 m mit `alarm`, `Social.HEARD_TEXT`; `LAND_TIME`)
-  → `LOBBY`: durch die Glastür, Halte hinter der Tür und `LOBBY_STOPS` (Seitengang neben der Treppe, hinter der
-  Rezeption, vor dem Haupteingang; x zur Seite seiner Tür gespiegelt, auf den NavMesh gezogen), an jedem `LOBBY_LOOK`
-  umsehen. Alle `LOOK_EVERY` s `_spot_someone`: wen er sieht (jeder Erwachsene und der Spieler, mit `_forced` nur
-  der), den jagt er (`CHASE`); wer im Weg steht, stirbt, danach sucht er weiter (`_lobby_left`). Danach `_next_victim`.
-  Dach- und Gartenhöhe per Strahl nach unten (`_surface_y`, Ebene 1 und Decke 16): Er klettert bis zur Dachkante über
-  der Straßenfassade (`_roof_y`, seit dem Dachgeschoss 24.10. auf dem Kniestock, ~9,5 m), geht waagerecht zur Kante
-  über der Glastür (`_edge_y`) und folgt dabei der Höhe des Dachs (Schräge hinauf, flaches Dach, Schräge hinab); ein
-  späteres Dach muss nur trittfest auf diesen Ebenen liegen. `arriving()` (`CLIMB`/`ROOF`/`LEAP`):
-  `_hunt_left` läuft erst ab der Landung, `is_hunting()` erst ab `LAND` (Feiern laufen weiter, bis er unten ist),
-  `in_house()` schon (keine zweite Bedrohung); `_scare_onlookers` nimmt dann die Decke dazu (sonst sähen ihn die Gäste
-  darunter hindurch). Animationen `climb`/`land` (`CLIMB_ANIM`/`LAND_ANIM`, Mixamo-FBX nach `assets/source/anim/pumpkin/`)
-  nimmt er, sobald die GLB sie hat – bis dahin Gehen beim Klettern, Stand in der Gehpose im Fall und nach dem Aufprall.
-  `spin_jump` taugt nicht: Meshys Drehsprung dreht ihn fast über die ganze Länge. Ohne Gartentür (anderer Plan)
-  erscheint er wie früher an einem Kürbisbeet.
-- **Jagd:** mit `at` (Debug) bzw. ohne Gartentür erscheint er an einem Kürbisbeet
-  (`_bed_point`: NavMesh-Punkt höchstens `BED_REACH` neben der Pflanze aus `pumpkin_plants`, die einem davon am nächsten
-  liegt, außer Sicht des Spielers – `MonsterDirector.player_can_see`); ohne freies Beet `SPAWN_DISTANCE` vom Opfer. Zustände
-  `STALK` (zum Opfer aus `_pick`: zuerst dem Nächsten, den er im Partyraum sieht – `_seen_in_party_room()`, Gäste und
-  Spieler mit oder ohne Spaß, `_sees` + `LevelBuilder.in_area(…, "partyraum")`; zu ihnen sprintet er (`_has_fun`) –, dann
-  dem Spieler, wenn er ihn in `PLAYER_NOTICE` (14 m) sieht (`_player_near`, auch ohne Spaß; in `CHASE` wechselt er alle
-  `RECHECK` s auf ihn, außer das Opfer ist im Partyraum oder `_forced`), dann dem Nächsten aus `Social.fun_actors()` – dann sprintet er mit `CHASE_SPEED` –, sonst
-  dem nächsten erwachsenen Gast, gehend; alle `RECHECK` s neu ausgesucht; `_forced` nur für `--pumpkin=jagd,…`) → `CHASE` (sieht ihn: Raycast `Senses.SIGHT_MASK`, rennt mit `CHASE_SPEED`)
-  → `STRIKE` (in `STRIKE_RANGE`: Gast `cower()` erstarrt; Animation `attack` mit `ATTACK_SPEED` 1,3, Treffer bei
-  `HIT_AT` 0,4 ≈ 0,7 s – da saust das Beil herunter; fehlt sie, nach `WINDUP`; getroffen wird, wer noch in `HIT_RANGE` ist) → nächstes Opfer (`_next_victim` → `_pick`; kein
-  erwachsener Gast mehr → `ROAM`, umherstreifen). Keine Opfergrenze: nach `HUNT_TIME` (120–180 s) →
-  `LEAVE` zum Haupteingang (`EXIT`), tut niemandem mehr etwas, weg, sobald er dort ist und der Spieler ihn nicht sieht. Opfer versteckt / `LOSE_SIGHT` ohne Sicht → `SEARCH` an der letzten
-  Stelle, dann das nächste. Türen öffnet er wie das Monster (`monster_open`). **Im Weg** (`_strike_blocker`, in
-  `STALK`/`CHASE`): ein jagbarer Erwachsener oder der Spieler näher als `BLOCK_RANGE` und vor ihm (`BLOCK_DOT`) wird
-  geschlagen (`_strike_target`), auch ohne Spaß; danach weiter hinter dem eigentlichen Opfer (`_victim`) her.
-- **Folgen:** `Guest.die("pumpkin")` → Leiche (`_lie_down`) in einer Blutlache (`Traces.add_blood`); gespeichert wie
-  die Leichen des Lakengeists (`corpse`), daher kein neues Speicherfeld. `Social.on_guest_died(gast, "pumpkin")`;
-  Kinder schließt `_can_hunt` aus (Spielkonzept 6.13). **Ton:** beim Schlag `assets/sound/axe_hit.mp3` als
-  `AudioStreamPlayer3D` am Kürbismann; dazu Lärm `axe_swing` (ohne eigenes Geräusch, erschreckt Gäste). Das Opfer
-  schreit beim Ausholen (`Guest.cower`), trifft die Axt, bricht der Schrei ab (`SynthAudio.cut_voice`), Männer ächzen. Gäste mit Sicht auf ihn: `Guest.see_pumpkin()` (beendet Spieltisch
-  und Klopfen, dann `shock("pumpkin")`, Erlebnis „pumpkin“ in `Social.EXPERIENCE_LINES`). Spieler: Sterbebildschirm wie
-  beim Lakengeist.
-- **Ruhe:** `MonsterDirector.is_quiet` ist auch dort falsch, wo er jagt – Feier, Partien und Süßes oder Saures enden
-  damit von selbst, ohne eigene Abfragen.
-- Nicht gespeichert (wie der Lakengeist mitten im Auftritt). Debug: F9 bzw. `--pumpkin=dach` (`debug_roof`, Aktion
-  `debug_pumpkin`: übers Lobbydach – nicht F8, das stoppt im Editor das laufende Spiel), `--pumpkin=garten`
-  (`debug_garden`: gleich an den Beeten im Garten), `--pumpkin=jagd[,gast]` (`debug_hunt`, auch übers Dach), `--trace`,
-  `--shot-on=pumpkin` (Schlag) bzw. `pumpkin_roof`, `pumpkin_edge`, `pumpkin_leap`, `pumpkin_land`, `pumpkin_lobby`
-  (oben angekommen, an der Kante, im Sprung, gelandet, erster Halt in der Lobby); `--pumpkin[=anim]` stellt eine
-  Testfigur ohne Verhalten auf (`spawn_in_front_of`).
+### Der Kürbismann (`scripts/monster/pumpkin_man.gd`, Spielkonzept 4.19, 4.21)
+Dritte Bedrohung, eigener Akteur (`CharacterBody3D`, Kollisionsbit 32 wie das Monster, erbt `NavWalker`) in
+`Game.pumpkin`. Spielt die Animationen der GLB (Abspieltempo aus der Laufweite), kein Code-Rig.
+- **Spaß** zählt `Social.has_fun(gast)` (Feier, Minispiel, Süßes oder Saures, Schmücken – `Decorating.is_crew`) und
+  `player_has_fun()`; `fun_actors()` = beides.
+- **Auslöser: Spaßwert** (`_check_spawn`): `fun` steigt je Gast nach `FUN_GAIN[Social.fun_kind(g)]`, fällt mit
+  `FUN_DECAY`; `on_deco_placed()` (aus `Player.drop_held`) gibt kurz `_fun_deco` dazu; `fun_value()` = Summe. Ab
+  `FUN_THRESHOLD` regelmäßig ein Wurf → Ankündigung. **Garantie** `_guarantee_due()` ab `GUARANTEE_DAY`, wenn er
+  selten kam (`visits`, `guarantee_at`). Erst nach `first_attack_done`, nie neben einer anderen Bedrohung, erst mit
+  fertigem NavMesh (`map_get_iteration_id`). Gespeichert unter `pumpkin` (`fun`, `visits`, `guarantee_at`,
+  `guarantee_checked`; er selbst nicht). F3 zeigt den Wert.
+- **Ankündigung** (`_begin_announce`, `announcing()`): Kinder singen (`Guest.singing`: stehen, sehen zur Lobby, [E] gibt
+  eine Liedzeile), Erwachsene bekommen Angst; Liedzeilen aus `SONG` als Untertitel. `_update_omens`: `FlickerLight.red`
+  färbt alle Lampen (Licht und Emission des Lampenmaterials – geteilte Materialien sind gewollt), `hot_spot` = sein
+  Kopf, solange er im Haus ist; dazu `SynthAudio.creepy` (leiernde Plattenspielermelodie) und `chorus` (Kinderchor). `PumpkinMan._ready` setzt beides
+  zurück. `Director.other_threat_active` und `SaveManager.can_save` zählen `announcing()` mit; nicht gespeichert.
+  Debug `--pumpkin=ankündigung[,s]`.
+- **Ankunft übers Lobbydach** (`start_hunt`): sucht die Glastür von der Lobby in den Mittelgarten (`_garden_door`: Tür
+  mit `glass`, Lobby davor, Garten dahinter) – der einzige Weg in die Lobby. Ablauf **ohne Physik und NavMesh**
+  (Kapsel aus, Position direkt gesetzt): `CLIMB` an der Straßenfassade gegenüber → `ROOF` bis zur Dachkante über der
+  Tür, `EDGE_WAIT` als Silhouette → `LEAP` → `LAND` im Garten (Kapsel an, Lärm `pumpkin_land`) → `LOBBY` mit Halten
+  (`LOBBY_STOPS`) und Umsehen. Dach- und Gartenhöhe per Strahl nach unten (`_surface_y`, Ebene 1 und Decke):
+  `_roof_y`/`_edge_y` folgen der Dachform – ein späteres Dach muss nur trittfest auf diesen Ebenen liegen.
+  `arriving()`: `is_hunting()` erst ab `LAND` (Feiern laufen weiter, bis er unten ist), `in_house()` schon;
+  `_scare_onlookers` nimmt dann die Decke dazu (sonst sähen ihn Gäste hindurch). Animationen `climb`/`land`
+  (`CLIMB_ANIM`/`LAND_ANIM`) nimmt er, sobald die GLB sie hat; `spin_jump` taugt nicht (trägt ihn weit nach vorn).
+  Ohne Gartentür erscheint er an einem Kürbisbeet (`_bed_point`, außer Sicht des Spielers).
+- **Jagd:** `STALK` (Opfer aus `_pick`: zuerst wer im Partyraum zu sehen ist, dann der Spieler in `PLAYER_NOTICE`,
+  dann Spaß-Akteure – zu ihnen sprintet er –, sonst der nächste erwachsene Gast; alle `RECHECK` neu) → `CHASE` (Sicht
+  über `Senses.SIGHT_MASK`) → `STRIKE` (Gast `cower()`, Animation `attack`, Treffer bei `HIT_AT`, getroffen wird, wer
+  noch in `HIT_RANGE` ist) → nächstes Opfer bzw. `ROAM`. Nach `HUNT_TIME` → `LEAVE` zum Haupteingang, weg, sobald der
+  Spieler ihn nicht sieht. Versteckt / `LOSE_SIGHT` → `SEARCH`. **Im Weg** (`_strike_blocker`): wer näher als
+  `BLOCK_RANGE` vor ihm steht, wird geschlagen, auch ohne Spaß. Kinder schließt `_can_hunt` aus (Spielkonzept 6.13).
+- **Folgen:** `Guest.die("pumpkin")` → Leiche in Blutlache, gespeichert wie die Leichen des Lakengeists (`corpse`).
+  Ton: `PumpkinMan.HIT_SOUND` am Kürbismann, Lärm `axe_swing`; das Opfer schreit beim Ausholen, der Treffer bricht
+  ab (`SynthAudio.cut_voice`). Gäste mit Sicht: `Guest.see_pumpkin()`. `MonsterDirector.is_quiet` ist dort falsch, wo
+  er jagt – Feier, Partien, Süßes oder Saures enden damit von selbst.
+- **Den Kürbismann aufhalten** (Spielkonzept 4.21): bisher liegt nur sein Kopf (`Item.Kind.PUMPKIN_HEAD`) im
+  Dachgeschoss (4, „Dachgeschoss“), die Mechanik fehlt.
+- Nicht gespeichert. Debug: F9 bzw. `--pumpkin=dach` (Aktion `debug_pumpkin` – **nicht F8**, das stoppt im Editor
+  das laufende Spiel), `--pumpkin=garten`, `--pumpkin=jagd[,gast]`, `--shot-on=pumpkin|pumpkin_roof|pumpkin_edge|
+  pumpkin_leap|pumpkin_land|pumpkin_lobby`; `--pumpkin[=anim]` stellt eine Testfigur ohne Verhalten auf.
 
 ## 6. Gäste & Soziales
 
-- **`GuestProfiles`**: feste Gäste in `ALL`, erzeugte in `static var generated`; Zugriff immer über
-  `GuestProfiles.get_profile(id)`. Alle Profile haben dieselbe Form (Werte, `activities`-Gewichte,
+Die Regeln (wer was wann tut, Beziehungswerte, Sätze) stehen im Spielkonzept, Kapitel 6; Zahlen als Konstanten oben in
+den Skripten. Hier der Aufbau.
+
+### Profile, Erzeugung, Aussehen
+- **`GuestProfiles`**: feste Gäste in `ALL`, erzeugte in `static var generated`, in Haushalte eingesetzte in `placed`;
+  Zugriff immer über `GuestProfiles.get_profile(id)`. Alle Profile haben dieselbe Form (Werte, `activities`-Gewichte,
   `dice`, `lines`). Sätze über `guest.line(key)`.
-- **`GuestGenerator.make(seed, room, arrived_room)`**: deterministisch aus dem Seed.
-  **Achtung:** Die Reihenfolge der `rng`-Aufrufe in `make()` bestimmt, wer der Gast ist. Neue
-  Zufallswerte nur **ans Ende** anhängen, sonst werden aus gespeicherten Seeds andere Gäste.
-  `name_for(seed)` verlässt sich darauf, dass der Name die **erste** Zufallszahl ist.
-- **Aussehen** (Spielkonzept 6.0, „Gastmodelle“): `GuestBody.pick(profile, id)` wählt für erzeugte Gäste einen
-  Grundkörper aus `GuestBody.BODIES` passend zu Geschlecht (`GuestGenerator.FEMALE`) und Generation des Vornamens
-  (`GuestGenerator.generation()`: `OLD`/`YOUNG`, alle übrigen „mid“; im Profil `gen`, kein Zufall – Spielstände
-  bleiben gleich). Fehlt der Körper der Generation, nimmt `pick` den der nächsten (`GENERATIONS`), bei mehreren
-  reihum nach der Gastnummer. Kinderkörper (Eintrag mit `age`, 6.13) bekommen nur Kinder (`child` im Profil) – den mit dem
-  nächsten Alter –, alle übrigen nur Erwachsene. Ohne passenden Körper (feste Gäste, bis sie
-  eigene Modelle haben) bleibt die Klötzchenfigur (`_build_blocks`). Je Gast aus dem Profil: `height_cm`, `width_cm`
-  (Breite nur in `WIDTH_LIMIT`, Kopfknochen gegengestreckt; `head` vergrößert ihn nur auf Erwachsenenkörpern),
-  `build`, Farben `coat`/`pants`/`hair` als Instanz-Uniforms von `psx_guest.gdshader`
-  (färbt nur graue Texel, Farbe × Helligkeit / Mittelwert). Die `Color` geht unverändert hinein – Godot rechnet
-  Farben bei Instanz-Uniforms selbst nach linear um; ein zusätzliches `srgb_to_linear()` machte bis 2026-10-23 alle
-  Gäste zu dunkel und zu satt. **Hautton** `skin` (`GuestGenerator.SKIN`, acht Stufen; Kinder erben ihn vom
-  Elternteil): Der Shader erkennt Haut an der Texelfarbe (rot > grün > blau, mäßig gesättigt, nicht gelb, nicht zu
-  dunkel, außerhalb der gefärbten Texel) und multipliziert sie mit `tint_skin`. Den Faktor rechnet `GuestBody`
-  als `Vector3` (wird nicht umgerechnet) aus Zielton / mittlerer Textur-Haut des Grundkörpers (`_skin_ref`, einmal
-  je Körper aus der auf 128² verkleinerten Textur) – so sieht derselbe Ton auf jedem Modell gleich aus.
-  `debug_skin` im Material färbt die erkannte Haut magenta. **Bewegung:** `walk`/`run` aus der GLB
-  (`AnimationPlayer` manuell vorgespult, Tempo nach Laufweite × Größe), im Stand Ruhepose mit Atmen. Die Posen
-  in `Guest._pose()`/`_dance_pose()` drehen weiter nur die Pivots `_arm_l`/`_arm_r` (beim Modell unsichtbar);
-  `GuestBody` richtet die Oberarmknochen danach aus (`_aim`), außer `_arms_free` (normales Gehen/Stehen).
-  Sitzen: Beine angewinkelt, Absenken über `sit_drop()`.
-- **`Guest`**: Zustandsautomat (`IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING,
-  PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP, SHOCKED, GHOSTED`, dazu `FOLLOW, VISIT, ATTACK, STAGGER, DECORATE,
-  SEARCH, EAT`; der Zustand wird nicht gespeichert, neue Zustände also einfach hinten anfügen). In `IDLE` wählt `_next_activity()` gewichtet aus
-  `profile.activities`, je Phase der Uhr mit den Faktoren aus `Guest.PHASE_ACTIVITIES` (`_phase_activities`: morgens
-  Küche und Garten, abends Bar und Lobby, Zimmer fast leer – Spielkonzept 2.4); `_arrive()` verarbeitet das Ankommen je Zustand.
-  Spontane Feiern (`Social._update_party`) nur in `Phase.EVENING`.
-- **Nachtruhe** (Spielkonzept 2.4, 4.18): nach der Uhr, `SLEEP_START` 23 bis `SLEEP_END` 6 Uhr, Beginn und Ende je
-  Nacht um bis zu `SLEEP_JITTER` (½ h) gestreut – `night_window(tag)` würfelt die Nacht, die am Abend von `tag` beginnt,
-  aus `hash([night_seed, tag])`, damit Laden und Debug-Sprünge der Uhr dieselbe Nacht ergeben. `night_due()`,
-  `seconds_to_night()`. `Social._update_sleep` startet sie, sobald sie fällig ist und keine Feier oder Schmück-Aktion
-  mehr läuft, und beendet sie am Morgen (`_end_sleep`) → `Guest.bedtime()`: ins Zimmer, Licht aus, still ins eigene Bett
-  (`hiding` = Bett, aber Zustand `SLEEP` – kein Versteck-Lärm, kein `_watch_monster`; das Monster kann sie im
-  Bett finden). Sie bleiben sichtbar und liegen auf dem Rücken auf der Matratze (`BED_FEET`/`BED_TOP`, Kopf zum
-  Kissen = lokal −X des Betts; Pose in `_pose`, wie die Leiche um X gekippt). Wer redet, spielt, klopft oder sich versteckt, geht danach (`_next_activity`). Ende →
-  `wake_up()`. `Social.all_asleep()` für den Lakengeist im Flur. Gespeichert: `sleep_active`, `night_seed`
-  (Gäste laden wach und gehen wieder ins Bett). Debug `debug_sleep(sofort)` (`--sleep`, Lakengeist im Flur) stellt die
-  Uhr auf den Beginn der heutigen Nacht.
-  **Der Spieler schläft, wann er will** (3.6, 4.18): Nur das Bett mit `HideSpot.own_bed` (Zimmer 13, gesetzt im
-  LevelBuilder) bietet „Schlafen: 1 Stunde [E]“ an (`HideSpot.can_sleep`, geduckt: darunter kriechen), jederzeit.
-  Das Mausrad stellt dabei `Player.sleep_hours` in `SLEEP_HOURS` (1–8) ein (`_wheel_step` in `_unhandled_input`,
-  nur mit dem eigenen Bett im Fokus); nach jedem Schlaf wieder 1. `Player.start_sleep()` = `enter_hide()` +
-  `sleeping` + Zeitraffer + Overlay-Modus 3 (Augen zu); man liegt wie in einem Versteck im Bett, das Monster kann
-  einen dort finden (in der Nachtruhe springt die Zeit, siehe Pause & Zeit). Sind die Stunden um (`sleep_left()` = 0), steht man auf
-  (`_wake_rested`, Gedanke je nach Müdigkeit). Aufwachen ohne Aufstehen (`wake_up`, bleibt im Bett): Monster nah
-  (`player_threat` > `SLEEP_WAKE_THREAT`) oder ein fremdes Geräusch mit Lautstärke ≥ 0,3 (`Game.noise`).
-  **Anteilig:** `nights_awake` ist eine Kommazahl. Jedes Schlafende (`_stop_sleep`: Stunden um, geweckt,
-  aufgestanden) multipliziert sie mit 1 − (`_sleep_now` − `_sleep_lost`) / `SLEEP_FULL` (360 = sechs Spielstunden, ab da
-  null; `_sleep_lost` = was nicht erholte, weil Kaffee wirkte – `_sleep_credit`, 3.11). Ende
-  der Nachtruhe → `Player.on_night_over()` (vor `Guest.wake_up`): + 1 − `_slept` / `SLEEP_FULL` (`_slept` = seit dem
-  Ende der letzten Nachtruhe geschlafen, auch tagsüber und über das Ende hinaus – wer schläft, schläft weiter), erst
-  nach dem ersten Angriff; ganz ohne Schlaf ein Gedanke 3,6 s später, damit die Gäste-Meldung ihn nicht überschreibt.
-  Wer jede Nacht h Stunden schläft, pendelt sich bei (6 − h) / h Nächten ein (1 h: 5, 3 h: 1, 4 h: ½).
-  `nights_awake` steht im Spielstand unter `player`. Wer im Rausch (`_sleep_drunk` ≥ `BarTap.TIPSY`, höchster
-  Rausch in diesem Schlaf) mindestens `SLEEP_MIN` (zwei Spielstunden) geschlafen hat, wacht mit **Kater** auf
-  (`hangover` = `HANGOVER_TIME` s, 3.7). Nächte ohne Schlaf machen die Sicht unscharf (`Player._update_sight`,
-  siehe Optik).
-  Tanzplätze: `LevelBuilder.party_spots` ist ein Sechseckraster mit `DANCE_SPACING` 1,4 m (≈ 1,7 m² je Tänzer)
-  über den ganzen Partyraum – 1 m von den Wänden, 0,7 m von Möbeln, nicht in der dunklen Ecke –, von der Mitte
-  der Tanzfläche (`party_center`) nach außen sortiert. `Social.free_party_spot(guest)` gibt jedem Gast den
-  innersten freien Platz (`_dance_spots`: Gast-ID → Index; belegt, solange der Gast in `PARTY` ist, bei
-  `start_party` geleert); Gäste kollidieren nicht miteinander, darum gehen sie in `PARTY` die letzten 0,6 m, an
-  denen `_move_to` aufhört, genau auf den Platz.
-  **Feiermusik:** `RecordPlayer.TRACKS` = das Original (`""` → `SynthAudio.music`, Walzer) und `party_1/2.mp3`
-  (`AudioStreamPlayer` am Plattenspieler, `loop`, × `TRACK_GAIN` × `Settings.music_volume`). Jede Feier
-  (`set_playing(true)`) nimmt ein anderes Stück als die letzte, die erste ein zufälliges. Lautstärke rechnet
-  `Social._process` wie bisher aus der Entfernung; `synth_track()` entscheidet, ob sie an `Game.audio.music` oder an
-  `RecordPlayer.fade_to()` geht. `--trace` zeigt `[Feier] Musik: …`. Nicht gespeichert.
-  **Discokugel** (`world/disco_ball.gd`): `LevelBuilder._common_rooms` hängt sie über `party_center`, Mitte auf
-  `DISCO_Y` (5,4 m, vom Boden wie von der Galerie aus zu sehen), Schnur bis zur Decke über dem Luftraum. Läuft
-  `Social.party_active`, dreht sie sich (`SPIN`) und eine `OmniLight3D` in ihrer Mitte blendet in `DOTS_FADE` s
-  ein: `light_projector` = Punktemuster aus `_dot_pattern()` (1024², 900 Punkte, fester Seed, ein paar farbig),
-  dreht sich mit; ohne `shadow_enabled` gäbe es keinen Projektor – die Lampe ist nicht in der Gruppe „lamps“,
-  `ShadowBudget` lässt sie in Ruhe. Projektorfilter Linear ohne Mipmaps (`project.godot`
-  `textures/light_projectors/filter`), mit Mipmaps verschwammen die Punkte zu Flecken. Die Kugel liegt auf
-  `LAYER` (Ebene 11), die ihre Lampe auslässt, und wirft keinen Schatten. Material `shaders/psx_mirror.gdshader`
-  mit eigenem `light()`: Das Environment spiegelt nichts, darum spiegelt jedes Plättchen je Lampe ein
-  Rauschmuster in Spiegelrichtung (Weltkoordinaten, wandert beim Drehen über die Plättchen) × deren Licht und
-  blitzt, wo die Lampe selbst im Plättchen steht (`glint_cos`, `glint_energy`); Fugen matt. Ohne Licht bleibt
-  sie dunkel. Nicht gespeichert (Drehwinkel egal).
-  **Partylampen** (`world/party_lights.gd`, Spielkonzept 7.6): `LevelBuilder._common_rooms` setzt `PartyLights.setup(raum,
-  höhe, party_center)` – sechs Strahler (Ecken und Mitte der langen Wände, 0,35 m eingerückt, knapp unter `H`), jeder
-  ein Gehäuse mit Linse (unschattiertes `StandardMaterial3D`, Farbe wie das Licht) und `SpotLight3D` ohne Schatten
-  (`ANGLE`, `ENERGY`, Reichweite 1,6 × Abstand zur Tanzfläche, `spot_attenuation` 0,4 – die Strahler hängen 8–12 m
-  entfernt, mit dem üblichen Abfall kam auf der Tanzfläche kaum Farbe an), auf einen Punkt bis 1,5 m neben `party_center` gerichtet
-  (`Basis.looking_at`, die Knoten hängen beim Aufbau noch nicht im Baum). Mit `Social.party_active` blenden sie in `FADE` s
-  ein; Farbe aus `COLORS` nach Phase (`HOLD` s halten, `BLEND` s überblenden, je Strahler versetzt), alle `SYNC_GAP` s für
-  `SYNC_TIME` alle dieselbe. Nicht in „lamps“, nicht gespeichert.
-  **Konfetti** (`world/confetti.gd`, `Game.confetti`, ebenfalls aus `_common_rooms`): `burst(pos, anzahl)` = einmaliges
-  `CPUParticles3D` (Schnipsel als `QuadMesh`, Farben über `color_initial_ramp` mit konstanter Interpolation, Dämpfung →
-  flattert); nach `LIFETIME` × 0,6 legt `_lay` je `PER_DECAL` Schnipsel ein `Decal` (Strahl nach unten auf Ebene 1, Größe
-  `DECAL_SIZE`, Bild aus `_paper_image()` – 128², feste Schnipsel, gedreht) in den Streukreis. Höchstens `MAX_DECALS`,
-  nach `DECAL_LIFE` s verblasst (`modulate`). Auf Feiern: zu Beginn `START_AMOUNT` über `party_center`, dann alle
-  `PARTY_GAP` s über einem der inneren Tanzplätze; Ende eines großen Schmückens: an der letzten Stelle. Nicht gespeichert.
-  Tanzen auf Feiern: `_dance_pose()` – Lieblingstanz aus `hash(id)`, alle 7–15 s Wechsel (60 % Lieblingstanz).
-  Gastmodelle tanzen die Mixamo-Animationen aus `GuestBody.DANCES` (Chicken Dance, Macarena, Hip-Hop; Guest setzt
-  `_body.dance`, `GuestBody` spielt sie ab zufälliger Stelle, damit nicht alle im Gleichtakt sind, und lässt die
-  Arme dann in Ruhe). Die Klötzchenfigur tanzt weiter die Code-Posen aus `DANCES` (hüpfen, wiegen, drehen, arme
-  hoch, twist, schunkeln); Arme drehen dabei auch um z (seitlich) – `_animate()` setzt das außerhalb des Tanzens
-  zurück.
-- **Schreck & Erlebnisse** (Spielkonzept 6.12): Was erschreckt, steht in der Gruppe `shock_sights` mit Meta
-  `sight_key`/`sight_kind` – Blutlachen (`Traces._as_sight`, Schlüssel aus dem Ort, auch nach dem Laden) und Leichen
-  (`Guest._lie_down`, `corpse:<id>`). `Guest._scan_for_shock` alle 0,5 s (≤ 7 m, Blickfeld, Sichtlinie), jeder Schlüssel
-  einmal (`seen_sights`) → `shock()`: Zustand `SHOCKED` für 2–5 s (`brave`), Haltung aus `_shock_pose()` je
-  `shock_style()` (`profile["shock"]` bzw. `SHOCK_STYLES` nach Archetyp – keine neuen Zufallszahlen im Generator),
-  danach `_after_shock()` (flee → verstecken, cry → heim, freeze → weiter). `remember()` legt ein Erlebnis an
-  (`experiences`: kind, zone, who, at = `Director.elapsed`, told); `DialogUI.open` erzählt das älteste unerzählte
-  (`Social.experience_line`), `_talk_monster` am selben Spieltag (`recent_experience`) noch einmal. Wer den Geist
-  erlebt hat (`remembers("ghost")`), ruht nicht im Dunkeln und zieht den Vorhang zu. Leiche: `die("ghost")` –
-  sichtbar, gekippt, ohne Kollision; `on_guest_died(guest, "ghost")` ohne Schrei/„verschwunden“.
-- **Haushalte** (Spielkonzept 6.20, 24.10.): **HAUSHALTE.md** ist die Quelle (von Hand gepflegt: Tabellen H01–H39 und
-  Zimmerliste mit Stelle im Plan). `tools/build_households.py` macht daraus `assets/data/households.json`
-  (`households`: id, surname, label, floor, px, members [name, sex, gen, archetype bzw. child/age], core für
-  Edna/Bruno/Mila; `special`: Sonderzimmer). `LevelBuilder.refresh_households()` (in `main._ready` nach
-  `refresh_maps`) liest neu ein, wenn HAUSHALTE.md oder der Umsetzer neuer sind (nur aus den Quellen, wie
-  `refresh_maps`). `Social._add_households()` lässt je Zimmer erst die Erwachsenen, dann die Kinder einziehen
-  (`_add_member`): Kernfiguren als Kopie aus `GuestProfiles.ALL` mit Zimmer, Nachname, Haushalt
-  (`GuestProfiles.placed`, vor `ALL` in `get_profile`), die übrigen über `GuestGenerator.make_member(seed, zimmer,
-  member, nachname)` – Name, Geschlecht, Generation und Charakter aus der Liste, alles Übrige aus demselben Seed in
-  derselben Reihenfolge wie `make()` (die ersten beiden Zufallszahlen werden übersprungen; `make()` und `_build`
-  liefern für alte Seeds dieselben Werte); Seed fest je Person (`"H05/Luis".hash()`). Kinder über
-  `make_child(..., member, other_parent)`: Name, Alter, Geschlecht fest, Haare von einem der Eltern (eigener Zufall
-  `seed ^ 0x5EED`), Hautton in der Mitte zwischen beiden. Profil: `surname`, `household`, `member`. Ohne Datei die
-  alte Verteilung (`_add_families`). Mitbewohner stehen beim Einzug nebeneinander (`SPAWN_SPACING`).
-  - **Eine Tür je Haushalt:** `_household_deco` legt die Startdeko der Erwachsenen zusammen (höchstens
-    `HOUSEHOLD_START_DECO` 3) in den Besitz von `household_lead(no)` (erster lebender Erwachsener). Nur er füllt die
-    Tür auf, prüft Lampen und Birnen und beschwert sich (`Guest.is_household_lead`); `door_hang_spot` zählt alles, was
-    an der Tür hängt (`_deco_near_door`), eine zweite Lichterkette kommt an die Seite; Mitbewohner klauen einander nichts
-    (`_housemate_item`). Licht aus beim Schlafengehen nur, wenn kein Mitbewohner wach zu Hause ist (`_housemate_awake`,
-    `HOME_RADIUS`). `MonsterDirector._household_factor`: vor einer Tür mit mehreren Erwachsenen (bis
-    `DOOR_DEMAND_RANGE`) wächst der Anspruch um `HOUSEHOLD_DEMAND` (0,35) je weiterem Erwachsenen. Das Tageslimit der
-    Kisten gilt ohnehin je Kiste für alle Gäste zusammen.
-  - **Betten:** `HideSpot.partner` – im Doppelbett (`bed_size.y ≥ DOUBLE_WIDTH` 1,3 m) liegt ein Zweiter
-    (`takes_partner`, `sleep_offset` links/rechts), Füße am Fußende nach `head_x` und `bed_size` (`BED_FOOT_GAP`);
-    `release(who)` gibt den eigenen Platz frei.
-  - **Familie:** `Guest.housemate_of` (gleicher `household`) zählt in `GuestPals.are_pals` als Familie; Streiche und
-    Süßes-oder-Saures-Runden gehen nie an die eigene Tür; der andere Elternteil gehört zu `Pranks._family`, der
-    Bewohner einer getroffenen Tür im eigenen Haushalt ist kein Opfer. `Lamp.owner_guest` und
-    `PhoneCalls._guest_at` nehmen lieber einen Erwachsenen.
-  - **Spielstand** (Version 39): Roster-Einträge mit `household` und `member`; `restore_roster` baut sie über
-    `_add_member` neu, lässt Haushaltszimmer bewohnt und stellt die Reihenfolge des Einzugs wieder her
-    (`_household_order`).
-- **Zimmerzugang** (Spielkonzept 6.19, 24.10., `guests/room_access.gd`, `RoomAccess` als `Social.access`):
-  - **Gästetüren:** `Guest._open_doors` öffnet nur Türen, durch die der eigene Weg führt (`_path_through`: ein
-    Wegpunkt der nächsten `DOOR_LOOKAHEAD` m oder das Ziel liegt auf der anderen Seite in der Breite der Öffnung), die
-    eigene Zimmertür schließt er dazu auf. Zimmertüren (außer 013) merkt er sich (`_door_behind`) und schließt sie,
-    sobald er `DOOR_CLOSE_DISTANCE` dahinter ist und niemand im Schwenkbereich steht (`_someone_in_swing`: Spieler,
-    Gäste, Katzen) – leise, in Panik laut; die eigene schließt er ab; nach `DOOR_GIVE_UP_*` bleibt sie offen.
-    `Social.behind_lock`/`spot_room`: keine Verstecke und keine Birnen hinter fremden Schlössern. Heimflucht
-    (`_shut_in`) und Süßes oder Saures schließen wieder ab.
-  - **Klopfen** (`Door._knockable` → `knock`): Lärm `knock`; ist niemand drin (`residents_home`: lebend, nicht im
-    Versteck, `room_at` = Zimmer), „Niemand macht auf“; schlafen alle, wacht einer genervt auf (`WOKEN_RELATION`);
-    sonst geht einer an die Tür (lieber ein Erwachsener), öffnet einen Spalt (`Door.set_ajar`, zählt nicht als offen)
-    und `DialogUI.open_door` zeigt das Gespräch: ehrlich fragen, zwei Lügen, Panik machen, Bestechen
-    (`BRIBE_MONEY`). `chance()`: `BASE_CHANCE` je Stufe (ab wütend nie), Zuschläge für Lüge/Panik/Bestechen,
-    Skeptiker und Ängstliche, nachts, Gefahr (`Monster.is_active`: Freunde eher, Fremde eher nicht), geweckt; Kinder
-    öffnen nur Bekannten (`knows_player`: das Kind oder ein Erwachsener des Zimmers mindestens freundlich), lassen
-    sich aber leichter beschwatzen – dann sind die Eltern sauer (`KID_TRICKED`). Je Gast ein Versuch pro
-    Spielstunde (`RETRY`).
-  - **Besuch** (`visit`): Tür auf, Gastgeber tritt beiseite; nach `VISIT_TIME` bittet er zu gehen, nach
-    `LEAVE_GRACE` wird er laut. Versprochenes Geschenk (`DialogUI._gift` → `on_gift`) bzw. Panik ohne Gefahr fällt
-    nach `PROMISE_TIME` auf. Verlässt der Spieler das Zimmer, schließt der Gastgeber ab.
-  - **Von innen** geht jede abgeschlossene Zimmertür auf (`Door._inside`: Spieler laut `home_room_at` im Zimmer oder
-    seinem Bad – [E] schließt auf und öffnet, der Besitzer schließt später wieder ab); niemand wird eingesperrt. Das
-    Namensschild (`resident_name`) steht nur draußen vor dem Hinweis.
-  - **Hausfriedensbruch** (`_watch_trespass`, alle 0,5 s): Sieht ein Bewohner den Spieler uneingeladen in seinem
-    Zimmer, fliegt er raus – Beziehung, feindselige Tat, Zeugen, Gerede (`TRESPASS_*`).
-  - **Aufbrechen** (Brecheisen `Item.Kind.CROWBAR` in der Hand, `Door._forcible`: Zimmertüren mit `zimmer_<nr>`):
-    `Door._work` 4 s (`FORCE_TIME`, dabeibleiben), Lärm `door_force` (20 m, Alarm); die Tür ist danach `broken`
-    (offen, `set_open(false)` greift nicht) – `RoomAccess.on_forced`: Besitzer (zu Hause oder Zeuge) und Zeugen,
-    Gerede; ungesehen weiß es niemand. Dasselbe leise mit dem **Generalschlüssel** (`KeyCabinet.KEY_ID`, passt nicht,
-    wenn jemand drin ist: Riegel). `Door.monster_open` macht eine abgeschlossene Zimmertür ebenfalls kaputt.
-  - **Reparieren** (Werkzeugkasten `TOOLBOX`, 6 s): `on_repaired` – Dank je Erwachsenem (`REPAIR_THANKS`), nicht für
-    selbst aufgebrochene (`broken_by_player`), einmal je Tür und Tag; danach wieder abgeschlossen, wenn der Spieler
-    draußen steht. Am Morgen (`_morning_repairs`) repariert jeder Haushalt seine Tür selbst, frühestens am Tag danach
-    (`broken_day`); ohne lebenden Erwachsenen bleibt sie kaputt. Konrad Lorenz (`LENDER_HOUSEHOLD` H11) leiht
-    Freunden einmal am Tag seinen Werkzeugkasten (`can_lend`/`lend`, Option im Gespräch).
-  - **Schlüsselschrank** (`world/key_cabinet.gd`, Ausstattung `key_cabinet`): Scheibe einschlagen (Lärm `glass`,
-    Zeugen `on_smashed`), dann den Generalschlüssel an den Bund. Gruppe `key_cabinets` im Spielstand.
-  - Debug: `--klopfen[=zimmer[,weg]]`, `--tuer=zimmer`, `--werkzeug=brecheisen|kasten|schluessel`.
-- **Kinder** (Spielkonzept 6.13): `Social._add_families()` macht nach den Erwachsenen `CHILDREN` (4) Kinder – je ein
-  anderer erzeugter Erwachsener ist Mama oder Papa (`profile["parent"]`), das Kind wohnt im freien Zimmer am nächsten
-  (`_room_near`). Profil aus `GuestGenerator.make_child(seed, zimmer, eltern_id, eltern_profil)` mit eigenem Zufall
-  (`make()` bleibt unberührt; Name = erste Zufallszahl, `child_name_for`): `child`, `age` 6–11, `height_cm` 112–148,
-  `head` 1,25, Archetyp „Kind“, Schreckreaktion `cling`, Sätze aus `CHILD_LINES` (`{eltern}`/`{eltern_dat}` → Mama
-  bzw. Papa, auch `phone_*`), Tagesablauf ohne Bar, 20 % Schach-Wunderkind (`prodigy`, Stärke 0,97).
-  `Guest.is_child()`, `parent_guest()`, `is_orphan()`.
-  - **Nie Opfer:** `Monster._actors()` ohne Kinder (keine Jagd), `_check_hide_step` behandelt ein Kind im Versteck als
-    leer, `Director.on_actor_hid`/`kill_guest` übergehen Kinder, `_max_victims` zählt sie nicht. Sieht ein Kind das
-    Monster (`_watch_monster`), merkt es sich `monster`, schreit (Lärm `scream`) und erzählt es (`_tell_grown_ups`).
-    Der Lakengeist kommt öfter (`weakness()` + `CHILD_WEAKNESS`), würgt aber nie: `_grab` → `_frighten_child`
-    (Schreck `ghost_attack`, `_vanish`). Kinder zählen nicht als Zeugen (`_witness_guests`) und nicht für `all_asleep()`.
-  - **Familie:** Bei jedem Schreck schreit das Kind, Mama oder Papa bekommen `CHILD_SCARE_FEAR` Angst, die Eltern und
-    Erwachsene in 12 m merken sich `child_saw` und erzählen es als Kinderfantasie (`Social.CHILD_SAW_LINES`). Nach dem
-    Schreck (`cling`: klammern, zittern) und nach dem Umrennen rennt es zu den Eltern (`_run_to_parent`). Stirbt der
-    Elternteil: Angst 100, das Waisenkind schließt sich dem Spieler an (`_child_approach`, `ORPHAN_FOLLOW`, 240 s).
-  - **Verhalten:** trinkt nie (`drink`, Bar; Dialog „Einen Kakao ausgeben“ `_cocoa` statt Runde), kommt immer zu
-    Feiern (`start_party`, Einladen), klaut, rempelt, droht und schlägt nicht; tobt (`_romp` mit `CHILD_ROMP`: rennen
-    → Lärm `run`, lachen → `laugh` 8 m, auch auf Feiern), schenkt dir ab „nett“ Laub oder eine Kerze
-    (`_child_approach`, `CHILD_GIFT`; „Hast du Deko?“ ab „nett“); die Beziehung wandert überall `CHILD_DRIFT`-mal
-    schneller zur Mitte. Spieler: Schlagen geht nicht (`Player._try_punch`), Rammen → Eltern −20, Zeugen −6; ein Messer
-    schenken → Eltern −20; Mäxchen und Schach nur zum Spaß. Kinder als Zeugen beim Diebstahl petzen (`tattle`, Eltern −10).
-  - **Nachtruhe:** `bedtime()` würfelt `SLEEPLESS_CHANCE` (30 %) → `sleepless` für `SLEEPLESS_TIME`: `_night_activity()`
-    (Licht aus, Vorhang auf, ans Fenster – dort findet es der Geist; durch den Flur; an Zimmer 13 klopfen über
-    `Social.sleepless_visit`). Dialog „Ab ins Bett mit dir“ (`send_to_bed`, Eltern +8). In der Nachtruhe startet
-    keine spontane Feier mehr.
-  - **Süßes oder Saures:** `Social._update_tricks` (alle `TRICK_COOLDOWN`, Spieler in Zimmer 13, ruhig) schickt ein Kind
-    mit Meta `visit = "trick"` zu Zimmer 13 (Besuchsablauf, `why` in `_knock`). Tür auf → `_trick_at_door`: es wartet
-    `TRICK_WAIT` vor der Tür. Süßes: [E] am Kind (`Guest.get_prompt`/`interact` → `trick_sweets_given`, `give_trick_sweet`,
-    `Player.has_kind`/`consume_kind`) oder Schenken im Gespräch (`on_sweets_given`) – bis `TRICK_SWEETS_MAX` (3), Beziehung
-    `TREAT_RELATION` je Stück (die späteren mehr), danach wartet es nur `TRICK_MORE_WAIT` und geht zufrieden (`_treat_done`).
-    Ohne Süßes → `_trick_prank`: Laub vor die Tür oder 15–30 s später ein Klingelstreich (`PhoneCalls.kid_prank`, Anruf `kid_prank`).
-    Süßigkeiten liegen in Kommoden (`Dresser.LOOT`), bei Edna und Bruno im Vorrat, in den Süßigkeiten-Truhen der Zimmer
-    (Truhe aus dem Plan, `LevelBuilder._sweets_chest`) und im Snackautomaten. Debug `--trick=13[,n]` (`debug_trick_at_13`).
-  - **Von Tür zu Tür** (`Social._update_rounds`, alle `ROUND_COOLDOWN`, nicht in Nachtruhe, Feier oder bei aktivem
-    Monster; Debug `--trick[=kind]`): `start_round(kid)` nimmt bis zu `ROUND_DOORS` Gästetüren im Umkreis
-    `ROUND_RANGE` (nicht Zimmer 13, nicht die Eltern; zuerst, wo jemand zu Hause ist). `_rounds[id]` führt die
-    Phasen `walk` (Besuchsablauf, `on_visit_arrived` → `_round_arrived`), `knock` (`Game.noise("knock")` alle
-    `ROUND_KNOCK_EVERY` s, höchstens dreimal; Untertitel „[Es klopft an Zimmer …]“ im Umkreis von 12 m), `host`
-    (`_round_host`: wach, im Zimmer, `IDLE`/`WALK` → geht zu `door_inside`, `_open_doors` öffnet) und `pause` (über delta in
-    `time`/`next`, wartet während eines Gesprächs; gerät das Kind in einen anderen Zustand – Feier, Schreck, Folgen –,
-    endet die Runde, vorher holte ein Zeitgeber es mitten daraus zur nächsten Tür).
-    `_round_answer`: Süßes aus dem Vorrat, sonst mit `TRICK_GIVE` (Griesgram `TRICK_GIVE_GRUMPY`) aus der Süßigkeiten-Truhe
-    seines Zimmers (`take_room_sweet`: ein Stück, das darin liegt, verschwindet; leer → Schimpfe) – das Kind
-    bekommt `SWEETS` in den Vorrat; sonst Schimpfe (`TRICK_SCOLD_LINES`) bzw. keiner da → `_round_prank`: Laub vor die
-    Tür. `_round_done` schließt die Tür nach 2,5 s. `Guest.knock_politely(face)` sieht dabei zur Tür (`_knock_face`).
-  - Gespeichert wird nur `parent` in der Gästeliste (Version 22); `sleepless`, Besuche und Süßes oder Saures nicht.
-    `--trace` zeigt `[Süßes oder Saures]` und `[Lakengeist] … erschreckt`; die Kinder-IDs folgen auf die Erwachsenen
-    (erstes Kind `gast24`).
-- **Flecken und Putzen** (`guests/tidying.gd`, `Tidying`, Kind von Social: `Game.social.tidying`, Spielkonzept 6.13, 2026-10-22):
-  alle `SCAN` s `_messes()` = Kürbismatsch am Boden und Spuren `MESS_TRACES` (`wax_splash`/`soot`/`coffee`; Kaffee mit
-  eigenen Sätzen `COMPLAIN_COFFEE`). `_complaints`: ein wacher Erwachsener,
-  dessen `door_front` höchstens `COMPLAIN_RANGE` vom Fleck liegt und der ihn in `SEE_RANGE` frei sieht, sagt einmal je
-  Fleck (Meta `complained`) einen Satz. `_send_cleaner` (Pause `TIDY_GAP`, nicht in der Nachtruhe): der nächste freie
-  `is_tidy` (`TIDY_SHARE`, nach `hash(id)`) in `TIDY_RANGE` mit freier Sicht → `start_visit` (Meta `cleaning`). `on_arrived`
-  (aus `Social.on_visit_arrived`): Spur → `TraceMark.wipe(gast)`; Matsch → in die Hand (Riesenspritzer: `Item.split_handful`
-  + `shrink_by_handful`), dann `Stove.claim_cook` → Zustand `EAT` zu `cook_spot()` (kocht wie ein Gast, `_start_guest_soup`),
-  sonst Phase `drop`: in der Küche fallen lassen. Abbruch: Matsch fällt zu Boden. Nicht gespeichert (`reset`). Debug
-  `--mess[=wachs]`, `--trace`: `[Flecken]`.
-- **Streiche** (`guests/pranks.gd`, `Pranks`, Kind von Social: `Game.social.pranks`, Spielkonzept 6.13): Saures an Zimmer 13
-  (`_trick_prank`, 50 % weiter Klingelstreich) und auf der Runde (`_round_prank`) läuft über `play(kind, zimmer)`: gewichtet
-  (`WEIGHTS`) unter dem, was geht – `leaves` (`Social._leaves_at`), `topple` (Deko aus `Item.TOPPLE_KINDS` in `TOPPLE_RANGE`
-  stehend vor der Tür → `knock_over`, Lärm `cat_knock`), `pumpkin`/`candle`, wenn Kind oder Eltern so etwas im Koffer haben.
-  Werfen geht über den Besuchsablauf (`start_visit`, `Social.on_visit_arrived` fragt zuerst `on_arrived`): zur Tür der Familie
-  (`fetch`, aus dem Koffer – Kürbis vor Zierkürbis; eine Kerze brennt nur, wenn eine brennende der Familie in `FLAME_REACH`
-  steht – die nimmt das Kind mit, `_family_flame`, Spielkonzept 5.12), dann `THROW_FROM` vor die Zieltür
-  (`_go_throw`), dort `_throw`: Bogen auf `THROW_AT` vor der Tür in `THROW_TIME` s → `Item.throw_from`; dann lachend heim
-  (`_run_off`, `_romp`). Holt das Kind etwas, endet die Runde (`play` gibt true). Bricht es ab (nicht mehr `VISIT`), wandert
-  das Geholte zurück in seinen Koffer. **Zeugen** (`_witnesses`, nur mit lebenden Eltern): Erwachsene außer den Eltern, wach,
-  in `WITNESS_RANGE`, die das Kind sehen (`can_see_actor`), rufen mit `TATTLE_CHANCE` etwas; der erste erzählt es nach
-  `TATTLE_DELAY` dem Bewohner der Tür (`_tell`, Satz aus `TOLD_LINES`) → `pals.add_feud(bewohner, eltern)`. An Zimmer 13
-  sagt er es dem Spieler, wenn er in 12 m ist. Laufende Streiche nicht gespeichert (`reset`). Debug `--prank=art[,zimmer]`
-  (`debug`: der Bewohner steht als Zeuge im Flur, Wurfgeschoss gleich in der Hand; `fire` legt Laub und ein Lakengespenst
-  daneben), `--trace`: `[Streich]`, `[Feinde]`.
-- **Freitext-Gespräche** (Prototyp, Spielkonzept 6.15: lokales Sprachmodell über llama-server, `GuestChat`, `LlmClient`)
-  sind am 2026-10-21 entfernt worden – Aufbau, Faktenzettel und Modellvergleich stehen im Git-Verlauf davor.
-- **Schmück-Aktionen** (`guests/decorating.gd`, `Decorating`, Kind von Social: `Game.social.decorating`, Spielkonzept 5.9;
-  zählen als Spaß für den Kürbismann – `is_crew`, `player_joins`):
-  Pause bis zur nächsten Aktion von `GAP_EARLY` (1.) linear bis `GAP_LATE` (31.); von selbst rufen die Gäste nur in
-  `Phase.DAY` auf (`_guests_call`, Spielkonzept 2.4), der Spieler jederzeit; `_can_start`: keine Feier, keine
-  Nachtruhe (auch nicht in den nächsten 60 s), Monster, Lakengeist und Kürbismann nicht unterwegs, kein Tag des ersten
-  Angriffs. `start(gast)` (Debug `--decorate[=gast][,hin]`): ein freier Erwachsener ruft auf, `_find_site` sucht in 30 m
-  um seine Wohnung (gleiches Stockwerk) unter Zimmertüren (`_door_site`, nicht 13 und 18) und Flurwegpunkten
-  (`_corridor_site`, Wände per Strahl in vier Richtungen, ab drei Wänden „Ecke“) – nur wo `LevelBuilder.in_corridor`, also
-  nie Galerie oder Partyraum (Lobby: siehe unten) – die mit den meisten freien Plätzen und der wenigsten Deko in 6 m. Plätze je Ebene:
-  `top` (Lichterkette, reicht wie beim Spieler bis zur nächsten Wand, über Türen `door.height` + 0,12), `wall` (Höhe je Art
-  `WALL_HEIGHT`), `floor`; frei heißt glatte Wand (`_wall_at`: Ebene 1, keine Tür, an drei Stellen und zwei Höhen) und
-  nichts auf Ebene 2/4 im Umkreis (`_space_free`, erfasst Deko, Lampen, Schalter). Mitmacher (`HELPERS` nach Tag, auch
-  Kinder): frei (`IDLE`/`WALK`, leere Hände, Angst < 50, nicht betrunken, kein Spaß laut `Social.has_fun`), wohnen in
-  `HOME_RANGE`. Jeder macht `TRIPS` Gänge im neuen Gast-Zustand `DECORATE` (`Guest._arrive` → `on_arrived`): `fetch`
-  (ins Zimmer, Platz reservieren, Deko aus dem Koffer passend zur Ebene, sonst Füllmaterial nach `HOMEMADE` – Starkes nicht mehr aus dem Nichts, 5.10;
-  `_reserve_slot` nur auf Ebenen, für die er etwas mitbringen kann, `_bring_layers` – Lichterketten oben nur aus dem Koffer; Kürbisse in
-  der Lieblingssorte) → `carry` (sichtbar in der Hand zum Platz) → `hang` (`Guest.reach_up`, nach 1,1 s `Item.hang` bzw.
-  hinstellen, Besitzer bleibt der Gast) → `admire`; der Rufer wartet danach (`wait`) bis `MIN_TIME`, damit der Spieler
-  dazukommen kann. Fällt einer aus (anderer Zustand), wandert die Deko zurück in den
-  Koffer; im Gespräch wartet er. Höchstens `LIGHT_STRING_CAP` hängende Lichterketten im Hotel, sonst Fledermäuse.
-  Einladung: in Zimmer 13 Anruf (`PhoneCalls.decorate_call`, Art `decorate`, „Ich komme!“ → `on_accepted`), sonst Meldung.
-  Spieler: neue Deko mit Besitzer „player“ im Umkreis `SITE_RADIUS` zählt (`_check_player_deco`, alle 0,5 s), sonst
-  `PRESENT_TIME` in `PRESENT_RANGE`. Ende (alle fertig oder `MAX_TIME`): Angst − `FEAR_RELIEF`, hat der Spieler
-  mitgemacht, Beziehung + `RELATION` (+ je Stück, bis `RELATION_MAX`) und Schock − `SHOCK_RELIEF` (kein Autosave, 8.6). Abbruch bei
-  Feier, Nachtruhe oder Unruhe (`Director.is_quiet` 30 m, Lakengeist in 20 m); `_update_sleep` schiebt die Nachtruhe
-  auf, solange eine Aktion läuft. Nichts davon wird gespeichert – die Deko sind normale Gegenstände (aufgehängt mit
-  `hung`). `--trace`: `[Schmücken]` mit Stelle, Mitmachern, jedem Stück und Ende.
-  **Lobby:** mit `LOBBY_CHANCE` (oder `start(gast, true)`) `_lobby_site()` – `_wall_site(p, "lobby", 6 m)` von
-  `lobby_center`, `lobby_seats` und Lobby-Punkten aus `patrol`; Plätze nur, wo `_in_place` (`in_lobby`, nicht
-  Partyraum); Mitmacher wohnen dann in `LOBBY_HOME_RANGE` auf jedem Stockwerk. `_corridor_site` = `_wall_site(p,
-  "corridor", 3 m)`; Zimmer: Zimmernummer als `place` (`room_at`).
-  **Allein unterwegs** (`_update_solo`, alle `SOLO_GAP_EARLY`…`SOLO_GAP_LATE` nach Tag, höchstens `SOLO_MAX`, nicht bei
-  Feier, Nachtruhe, Monster oder jagendem Kürbismann): `start_solo(gast, lobby)` – mit `SOLO_LOBBY` aus dem Koffer in
-  die Lobby, sonst ins eigene Zimmer (`_room_site`) mit Deko aus der nächsten passenden `ResourceSpot` (`_source_for`:
-  nicht im Keller, keine Spinnweben-Ecken, nur wo `guest_can_take()`, `_reachable` = NavMesh-Weg ohne verschlossene Tür in 1 m; am
-  Fundort `ResourceSpot.guest_consume()` – verbraucht den Vorrat, aus Kisten ohne Nachschub höchstens ein Stück am Tag; Art nach
-  `pool`/`kind`, passend zu einem freien Platz). Eigene Einträge in `_solo` (Stelle je Gast), gleicher Ablauf und
-  gleicher Zustand `DECORATE` (`on_arrived` → `_solo_arrived`), kein Spaß, keine Belohnung. Debug
-  `--decorate=allein[,gast][,lobby|haus][,hin]` (1,5 s verzögert, das NavMesh muss fertig sein).
-  **Dauerhaft (2026-10-21):** Sind weniger als `SOLO_MIN` (1, ab Monatsmitte 2) unterwegs, startet `_update_solo` alle
-  4 s einen neuen (`_solo_need`), sonst nach der Pause; `SOLO_MAX` 4. Mit `SOLO_HOTEL` geht das Stück aus dem Koffer
-  irgendwohin (`_hotel_site`: 8 zufällige Zimmertüren und Flurpunkte auf allen Stockwerken, beste nach `_score` minus
-  Weg/40 m) – so füllt sich das Hotel bis Halloween. Beim Tragen gehen sie mit `SOLO_STROLL` × Tempo
-  (`strolls(g)` → `Guest._speed_factor`).
-  **Mehrere Aktionen (2026-10-21):** Jede Stelle ist eine `Decorating.Action` (innere Klasse: `site`, `host`, `crew`,
-  `helped`, `time`, `known`, `min_time`/`max_time`, `scan`, `group`); `actions` hält alle, `_member` Gast-ID → Action.
-  `active` und `site` sind Getter (Nachtruhe, Debug). `group` = `{name, big, by_player, items, present}` – geteilt
-  von allen Stellen eines großen Schmückens; Deko und Anwesenheit des Spielers zählen für die ganze Gruppe, Belohnung je
-  Stelle für ihre Mitmacher, Meldung, Schock und Konfetti erst, wenn die letzte Stelle der Gruppe endet (`_first_of`).
-  Gäste-Aktionen: höchstens `MAX_SMALL` (1, ab Monatsmitte 2) gleichzeitig, Pause `_next_gap` ab dem Start; Stellen
-  gleichzeitiger Aktionen liegen `SITE_SPACING` auseinander (`_site_taken` in `_score`). Mitmacher: zuerst Freunde des
-  Rufers (`GuestPals.pals_of`, bis `PAL_RANGE`), dann wie bisher (`_helpers_for`). Bei Abschluss merken sich die
-  Mitmacher einander (`pals.note_group`).
-  **Armvoll:** `_enlist` würfelt `armful` (groß `ARMFUL` 2–3, klein mit `SMALL_ARMFUL` × Fortschritt 2); `on_arrived`
-  „fetch“ reserviert je Stück einen Platz, das erste kommt in die Hand, die übrigen (`load`) stapelt `_stack_in_arms`
-  eingefroren über der Hand (`set_held(true)` – werden darum nicht gespeichert). Nach dem Aufhängen holt
-  `_next_from_load` das nächste in die Hand und geht zum nächsten Platz; `_drop_out` legt alles zurück in den Koffer.
-  **Selbst aufrufen:** `call_here(gast, groß)` (Dialog „Wollen wir zusammen …“, `DialogUI._decorate_here`; Debug
-  `--decorate=hier[,gast]`) gibt "" oder den Satz des Gastes zurück. Klein: `_site_here(spielerposition)` – nächste
-  Zimmertür in `DOOR_REACH` (auch 13, nie 18), sonst Lobby- bzw. Flurwände, mindestens 2 Plätze; je Gast einmal am
-  Spieltag (`_called`), `by_player` → ein Mitmacher mehr, gilt als mitgemacht. Groß: `can_call_big()` (≥ `BIG_FRIENDS`
-  mindestens „freundlich“, `_big_player_day`) → `start_big(gast, position, true)`.
-  **Großes Schmücken:** `start_big(wer, mitte, by_player, lobby)` alle `_next_big_gap` (von `BIG_GAP_EARLY` zu
-  `BIG_GAP_LATE` in Spieltagen, Fortschritt × `BIG_RAMP`; von selbst nur tagsüber; nicht neben einer anderen großen Aktion, keine kleinen währenddessen).
-  Mitte: Lobby (`LOBBY_CHANCE`) oder `_big_center()` (Flurpunkt mit vielen Wohnungen in der Nähe, wenig Deko);
-  `_sites_around` bewertet bis zu 28 Türen, Flurpunkte (und Lobbypunkte) in `BIG_RADIUS` auf demselben Stockwerk und nimmt
-  die besten `BIG_SITES` mit `SITE_SPACING` Abstand (Zimmer 13 nur, wenn der Spieler aufruft). Gäste: die `BIG_GUESTS`
-  nächsten freien (ganzes Hotel), reihum auf die Stellen verteilt, der erste ist jeweils Rufer; `BIG_MIN_TIME`/
-  `BIG_MAX_TIME`. Debug `--decorate=gross[,gast][,lobby][,hin]`.
-- **Deko-Suche** (`guests/deco_search.gd`, `DecoSearch`, Kind von Social: `Game.social.search`, Spielkonzept 5.9): alle
-  `GAP_EARLY`…`GAP_LATE` s (nach Tag, nur in `Phase.DAY`) startet ein freier Gast (`Decorating._available`), höchstens `MAX_TRIPS` gleichzeitig,
-  nicht bei Feier, Nachtruhe, Monster oder jagendem Kürbismann. `_source_for`: die 5 nächsten `ResourceSpot`s, Mutige
-  (`BRAVE`, mit `DANGER_CHANCE`) nur Spinnweben-Ecken und Keller, sonst nur die übrigen; erreichbar über
-  `Decorating._reachable`. Mit `PAIR_CHANCE` geht ein Freund (sonst ein Gast in 12 m) mit (`leader` gesetzt). Neuer
-  Gast-Zustand `SEARCH` (`Guest._arrive` → `on_arrived`). Begegnet ein allein Suchender dem Spieler (`ASK_RANGE`, sieht und
-  erkennt ihn, mindestens „neutral“), fragt er einmal – `has_offer` zeigt im Dialog „Klar, ich such mit!“ (`OFFER_TIME`);
-  „Wollen wir zusammen …“ → „… Deko suchen gehen?“ startet sofort (`ask`, danach `lead_off`). Mit dem Spieler
-  (`partner` = "player"): ist er weiter als `LAG_RANGE` weg, wartet der Gast (`IDLE`, `_timer` hochgehalten), ab 0,6 ×
-  `LAG_RANGE` geht er weiter, nach `LOSE_TIME` s über `LOSE_RANGE` gibt er auf. Am Fundort (`on_arrived`): ein Stück aus
-  `pool`/`kind` in die Hand, heim mit `CARRY_HOME` (wandert in den Vorrat); war der Spieler in 1,5 × `LAG_RANGE`, bekommt
-  er ein zweites (`receive_item`), Beziehung + `RELATION`, Tat `gifts_from`, `pals.praise(gast, PRAISE)`. Zu zweit:
-  `pals.note`. Beide Stücke kommen aus dem Vorrat (`guest_consume` mit Tageslimit, das zweite `consume`; leer → kein
-  Teilen), `_source_for` nimmt nur Fundorte mit `guest_can_take()`, nichts gespeichert. Debug `--search[=gast][,mit]`, `--trace`:
-  `[Deko-Suche]`.
-- **Freundschaften unter Gästen** (`guests/pals.gd`, `GuestPals`, Kind von Social: `Game.social.pals`, Spielkonzept 6.16):
-  `counts` = `"id_a|id_b"` (sortiert, `key`) → gemeinsame Taten; `note(a, b)` bzw. `note_group(liste)` (über
-  `GROUP_PAIRS` + 1 merkt sich jeder nur `GROUP_PAIRS` zufällige andere). Gezählt wird: Ende einer Schmück-Aktion,
-  Deko-Suche zu zweit, Suppe gegessen (`Stove._end_soup`), Gäste-Mäxchen und -Schach (`Social._end_bar_game`/
-  `_end_chess_game`), Ende einer Feier (alle in `PARTY`), an der Bar trinken (`Guest._drink_with_someone`: einer, der
-  in 3 m steht). `are_pals`: Familie (`parent_guest`), ≥ `PAL_DEEDS` Taten oder Zimmernachbarn (Türen in
-  `NEIGHBOR_RANGE`, gleiches Stockwerk – nicht gespeichert, ergibt sich aus dem Hotel). **Weitererzählen**
-  (`_update_telling` alle `TELL_SCAN` s): ein Gast mindestens „befreundet“ und ein Freund unter „befreundet“ und über
-  „verfeindet“, beide frei (`IDLE`/`WALK`/`PARTY`, Angst < 60) in `TELL_RANGE` → Sprechblase, `change_relation(b,
-  TELL_AMOUNT, TELL_CAP)` (neuer Parameter `cap`: Zuwachs höchstens bis 79, also nie „guter Freund“), Antwort 2,5 s
-  später; je Paar einmal am Spieltag (`_told`), einer je Durchgang. `heard[b] = a` → `DialogUI.open` hängt
-  `take_heard_line` an die Begrüßung – nur ohne Erlebnis oder Detail des Verletzten (bloßer Gruß `Wounds.GREET` geht),
-  sonst bleibt `heard` für ein späteres Gespräch stehen. `praise(gast, n)`: alle seine Freunde nach `PRAISE_DELAY` (`_queue`).
-  **Feindschaften:** `feuds` (`"id_a|id_b"` → true, `add_feud` aus `Pranks`, `are_feuding`) – `are_pals` ist für Verfeindete
-  immer falsch, auch für Nachbarn. **Freund meines Feindes:** `Social.change_relation` ruft beim Aufstieg auf „befreundet“
-  `pals.on_player_befriended(gast)` – seine Feinde (`are_feuding`) bekommen nach `RIVAL_DELAY` `RIVAL_AMOUNT` und einen
-  Satz, je Paar einmal (`_rivals`, nicht gespeichert). Debug `--rival=gast1,gast2`. Gespeichert
-  werden `counts` und `feuds` (`social.pals`, Version 25 bzw. 29); `heard`, `_told`, `_queue` nicht. Debug `--pals=gast1,gast2`, `--trace`:
-  `[Freunde]`. `are_pals(a, b, despite_rumor)`: Wer einem Gerücht „X hat geklaut“ glaubt (Haltung `distrusts:<id>`, 6.9),
-  ist mit X nicht befreundet – `despite_rumor` fragt, ob sie es vorher waren (Widerspruch des Beschuldigten).
-- **Gespräche: Anlässe, Erzählen, Lügen, Fragen, Gedächtnis** (`guests/talk.gd`, `Talk`, Kind von Social:
-  `Game.social.talk`, Spielkonzept 6.9, 24.10.). Die Knöpfe baut `DialogUI`, die Logik liegt in `Talk`.
-  - **Menü** (`DialogUI._show_main`): oben bis `MAX_OCCASIONS` Anlässe aus `_occasions()` (Vorrang: Warnen bei aktivem
-    Monster → `take_cover`, frischestes unerzähltes Erlebnis, `grieving`, `Guest.talk_prev` = Zustand vor dem Gespräch
-    `DECORATE`/`PLACE_DECO`/`EAT`, Gewitter, nächster Gast in `NEIGHBOR_RANGE` → „Was hältst du von …?“; je Gast und Tag
-    einmal, `_done`, nicht gespeichert), dann fest: Plaudern · „Ich muss dir was erzählen …“ (`_show_tell`, Lügen über
-    `_show_lie` → `_show_lie_who`/`_show_lie_where`: vier Orte, einer davon der, an dem er gerade steht) · „Sag mal …“
-    (`_show_ask`: `Talk.opinion`, `plans`, `room13`, `door_verdict`) · „Könntest du …“ (`_show_please`: Deko, Werkzeug,
-    zusammen …, mitkommen, `_stay_in` → Haltung `wary` + `Guest.go_home`) · Handeln … · Tschüss. Die Optionen liegen in
-    einem `ScrollContainer`; Zeilen über zehn haben keine Ziffer. Freundliche Gesten der neuen Optionen laufen über
-    `Talk.friendly` (dasselbe Tagesbudget wie Plaudern, `chats_today`).
-  - **Erlebnisse des Spielers** (`log`: id, kind, zone, who, at): `_scan_sights` alle `SCAN_EVERY` s – Monster,
-    Lakengeist, Kürbismann im Blick (`SIGHT_RANGE`, dieselbe Art erst nach `SIGHT_AGAIN` s wieder), Lakengeist beim
-    Spieler (`ghost_visit`), Funde aus `shock_sights` in `FIND_RANGE` (`blood`, `corpse` mit Gast-ID, einmal je
-    `sight_key`); `attic` aus `AtticSpook.on_flash`. `untold(gast)`: heutige Erlebnisse, zu denen er noch keine Aussage hat.
-  - **Gedächtnis** je Gast: `Guest.claims` (topic, zone, who, lie, at, from = "player" oder Gast-ID, hops, src = id des
-    Erlebnisses bzw. der Lüge, spread, exposed, believed, stance = Haltung, die daraus entstand, value = Antwort) –
-    höchstens `MAX_CLAIMS`. `said(gast, topic)` = letzte Aussage des Spielers zu einem Thema.
-  - **Erzählen/Lügen** (`tell(gast, story, lie)`): Lüge über einen Spuk an dem Ort, an dem er steht → sofort `expose`
-    („there“); `no_trust` → glaubt nichts; sonst durchschaut er die Lüge mit `_see_through` (Würfel-`perception` × 0,5,
-    Skeptiker + 0,2). `_believes` nach `temper(gast)` (Archetyp, „Kind“, bei festen Gästen aus den Werten): Kinder
-    alles, wer es selbst erlebt hat (`SAME_EXPERIENCE`) auch, Skeptiker nur Handfestes (60 %), „X hat geklaut“ nur, wer
-    mit X nicht befreundet ist. Geglaubt (`_believed`): Angst `STORY_FEAR` × (1,2 − Mut), Haltung `wary`, Lauschen
-    (`on_monster_talk`) bei Monster/Geist/Kürbismann, `friendly` +5 („Du auch?!“) bzw. +2, Eltern eines Kindes −3.
-    Widerspruch zu „Ich glaube nicht an Geister“ halbiert die Chance (`CONTRADICTION`).
-  - **Auffliegen** (`expose(gast, aussage, wie)`: −12, über Menschen/„da war nichts“/Einbruch −20, weitererzählte halb;
-    Haltungen `no_trust` (1 Tag) und `confront` (nächstes Gespräch: `greeting`), Freunde nach 20–60 s −4, `--trace`
-    `[Gespräch] Lüge aufgeflogen`): `_check_lies` jede Sekunde – Leiche lebt und ist in `ALIVE_RANGE` zu sehen, der
-    Beschuldigte in `DENY_RANGE` widerspricht einmal (`contested`; er glaubt ihm, wenn sie vorher Freunde waren, sonst
-    zu 50 %), `expose_at` erreicht („da war nichts“, aber ein Todesfall: `TRUTH_DELAY`). Beim Weitererzählen vergleichen
-    Freunde (`_compare`): dieselbe Spuk-Art vom Spieler an verschiedenen Orten, eine davon gelogen.
-  - **Weitererzählen** (`_update_spread` alle `TELL_SCAN` s, nicht in der Nachtruhe): Freunde in `TELL_RANGE`, beide frei,
-    geglaubte Geschichte von heute, `hops` < `MAX_HOPS`, je Empfänger einmal (`spread`), mit Wahrscheinlichkeit `gossip`
-    (mindestens 0,3) → Satz aus `RUMOR`, Kopie mit `from`/`hops` + 1, der Empfänger glaubt nach `_believes`.
-  - **Fragen der Gäste** (`pick_question` zu Beginn von `DialogUI.open`, nicht nach Erlebnis/Verletzung/`greeting`,
-    Wahrscheinlichkeit `ASK_CHANCE` nach Stufe ab „neutral“): `ghosts`, `night` (nach dem ersten Angriff, morgens/tags,
-    einmal am Tag; „da war nichts“ ist gelogen, wenn `_night_had_events`), `contest` (bis zur Siegerehrung), `room`
-    (`suspects` aus `RoomAccess.on_forced`, wenn kein Bewohner es mitbekam), `brave`, Kinder `play`; `escort` hat Vorrang,
-    wenn er dich für mutig hält (`brave_thinks`) und Angst ≥ `ESCORT_FEAR` hat (Ja → `start_follow`). `answer()` merkt
-    die Antwort, setzt Haltungen und gibt die Reaktion.
-  - **Haltungen** `Guest.stances` (Name → {until = `Director.elapsed`, …}; `has_stance`/`set_stance`/`clear_stance`,
-    `prune_stances` jede Sekunde): `wary` → `Guest.activity_weights` × `WARY_ACTIVITIES`, Flackern × 1,4 Angst, versteckt
-    sich beim Hören des Monsters eher; `careless` → × `CARELESS_ACTIVITIES`, kurzes Flackern zu 60 % abgetan
-    (`CARELESS_LINES`), versteckt sich seltener – stirbt er so, `on_guest_died` → Schock mit Schuld und Meilenstein
-    „careless_death“; `distrusts:<id>` (`are_pals`); `brave_thinks`; `promise` (Kind, `PROMISE_TIME`, erfüllt, sobald
-    `deeds.games` steigt, sonst −10, Eltern −3, `promise_broken`); `no_trust`, `confront`, `grieving` (Freunde eines Toten).
-  - Gespeichert (Version 44): je Gast `claims`, `stances`; `social.talk` = `log`, `next_id`, `suspects`, `deaths`.
-    Nicht: `_done`, `_queue`, `_seen_finds`. Debug `--gespraech=frage|erlebnis|luege,…` (Kopf von `main.gd`), `--trace`:
-    `[Gespräch]`.
-- **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze; Zustand im Gast, Spielkonzept 6.17):
-  `Wounds.survives()` (`SURVIVE` 0,4) in `MonsterDirector.kill_guest` (nach `wants_victim`: Lärm `scream`,
-  `wound_by("scratch", monster)`, `scared_by_monster`, `after_scare` – zählt nicht als Opfer, keine Sättigung) und
-  `PumpkinMan._hit` (`wound_by("axe", self)`, Ächzen; weiter wie nach einem tödlichen Treffer am Ende von `_strike`, also
-  ohne abgebrochenen Schlag und ohne das eigentliche Opfer fallen zu lassen; `_can_hunt` übergeht Gäste mit Axtwunde). Lakengeist:
-  `GUEST_ESCAPE` jetzt 0,3 + 0,2 × Mut, beim Losreißen `wound_by("choke")`. `Guest.wound_by(art, angreifer)`: `wound`,
-  `wound_left` (`KINDS.heal`), `wound_bed` (`bed`), `_bleeding` (`bleed` – über 60 s jeder Schritt ein Tropfen, sonst jeder
-  zweite: die Blutspur der Axtwunde), Angst ≥ 50 (ansprechbar), `wound_facts` (`zone`; `went` = Zone des Angreifers 8 s
-  später), `_update_wound_marks` und `_spread_wound_news` (Freunde und Gäste in `SPREAD_RANGE`: Angst + `SPREAD_FEAR`,
-  Erlebnis `survivor_<art>` → `Social.experience_line` mit `Wounds.HEARD`). `_wound_step`: Zeiten nach `delta`; solange
-  `wound_bed` läuft, geht er ins eigene Bett (`_go_to_bed` → `_fall_asleep`, Licht an außer in der Nachtruhe) und bleibt
-  dort (`wake_up` und der `SLEEP`-Zweig warten), `in_sickbed()`: ansprechbar (`get_prompt`/`interact`), `begin_talk`/
-  `end_talk` lassen ihn liegen; heiser: alle `WHEEZE_GAP` s `Game.sound_at("wheeze")` (neuer `SynthAudio.VOICES`-Eintrag mit
-  eigenem `dir`: `breath.wav` tiefer in seiner Stimmlage), `say` mit „*heiser*“. Geheilt (`_heal`): befreundet und nie
-  besucht → `NEGLECT`, `wound_note` für das nächste Gespräch. Wirkung: `_speed_factor` × `speed`, `can_run()` (Axt nicht),
-  `weakness` + `CHOKE_WEAKNESS`, nicht verfügbar für Schmücken und Suche (`Decorating._available`), keine Feier im Bett
-  (`start_party`). Marken: `GuestBody.attach(knochen)` = `BoneAttachment3D` + Halter, der den Maßstab des Skeletts
-  ausgleicht (manche Modelle sind intern in Zentimetern); Kratzer an `Head`/`LeftForeArm`, Verband und Blut an `LeftLeg`/
-  `LeftUpLeg`, Ring an `Neck`; Klötzchenfiguren in fester Höhe. **Dialog:** `DialogUI._wound_visit` (besucht, einmal am
-  Spieltag `VISIT_HEAL`) erzählt `witness_line()` (nächstes aus `WITNESS`, alles stimmt) statt eines Erlebnisses, danach
-  `GREET`; `change_relation` × `RELATION_FACTOR` (auch negativ); `_gift` × `GIFT_FACTOR`, `+FITTING` bei
-  `Wounds.fitting`, Tat `gifts_to` × `GIFT_DEEDS`, `GIFT_HEAL`.
-  Gespeichert je Gast (Version 26): `wound`, `wound_left`, `wound_bed`, `wound_facts`, `wound_told`, `wound_visited`. Debug
-  `--wound=gast,art[,hin]`, `--kill=gast` (würfelt mit), `--trace`: `[Verletzt]`, `[Losgerissen]`, `[Kürbismann] verletzt`.
-- **Geschenke in der Hand** (6.17): `DialogUI._gift` gibt den Gegenstand per `Player.hand_over()` an `Guest.receive_gift`
-  (in die Hand, `_gift_hold`); nach dem Gespräch trägt er ihn heim (`_carry_gift_home` → `CARRY_HOME` → Vorrat), Essbares
-  (Süßes, gebratener Kürbis) isst er nach ein paar Sekunden (`_gift_step`), im Bett wandert es nach der Zeit in den Vorrat.
-  Volle Hände → wie früher gleich in den Vorrat. Nicht zu verschenken: `DialogUI.NO_GIFT` (Schlüssel, Schachbrett,
-  Würfelbecher – Hotelgegenstände).
-- **Kochen** (`world/stove.gd`, `Stove`, `Game.kitchen`, Spielkonzept 3.8): `LevelBuilder._common_rooms` setzt ihn auf die
-  Plan-Ausstattung „stove“ in der Küche (Höhe `top`, gedreht nach `front`). `phase`: `empty` → (`dish_for(gehalten)`:
-  `SOUP_VARIETIES` in den Topf, `ROAST_VARIETIES` und Zierkürbis in die Pfanne) `raw` → Messer in der Hand → `cooking`
-  (`SOUP_TIME`/`ROAST_TIME`, Spielzeit über `delta`; Inhalt wippt, Dampf als `CPUParticles3D`) → Braten: Teller
-  `Item.Kind.ROAST_PUMPKIN` (Sorte im Zusatzfeld) auf die Pfanne, `empty`; Suppe: `soup` mit `PORTIONS`, nach `COLD_TIME`
-  kalt. `raw` mit leeren Händen: Kürbis zurück. Kürbismatsch (`PUMPKIN_MUSH`, 5.8) gibt jede Sorte Suppe und geht
-  gleich nach `cooking` (kein Schneiden). `_call_eaters`: die `EATERS` nächsten freien Gäste in `EAT_RANGE`
-  (Stockwerk), Plätze vor dem Herd in zwei Reihen (aufs NavMesh gezogen), neuer Gast-Zustand `EAT` (`Guest._arrive` →
-  `on_arrived`: Schale nehmen, `EAT_TIME` s zum Herd sehen). Danach Angst − `FEAR_RELIEF`, Beziehung + `RELATION`;
-  `_end_soup` (leer oder kalt) → `pals.note_group(_ate)`. Spieler: [E] am Topf einmal je Topf, Schock − `SHOCK_RELIEF`.
-  Essen ist Spaß: `is_eating` in `Social.has_fun`, `player_eats` (am Topf, während Gäste essen) in `player_has_fun`.
-  Teller: [Linksklick] → `Player.eat_held()` (Schock − `EAT_CALM`); verschenkt (`DialogUI._gift`) zählt die
-  Lieblingssorte wie beim Kürbis, Angst − `ROAST_CALM`. Herd und Gäste beim Essen werden nicht gespeichert, der Teller
-  schon (Gegenstand). Debug `--cook=suppe|braten[,fertig]`, `--trace`: `[Kochen]`.
-  **Gäste kochen** (2026-10-22): `_update_guest_cook` (nur bei leerem Herd) ruft alle `COOK_GAP` s `start_guest_cook(null)`:
-  ein freier Erwachsener mit `PUMPKIN` im Koffer in `COOK_RANGE` (Stockwerk), nicht bei Feier, Nachtruhe oder Unruhe
-  (`Director.is_quiet`); Kürbis aus dem Koffer in die Hand, Zustand `EAT` zum Herd (`_cook`). `on_arrived` →
-  `_start_guest_soup`: Topf, `cooking` mit `SOUP_TIME`, `_guest_cooked`, er wartet am Herd. Bricht er ab, wandert der Kürbis
-  zurück. Bei `_guest_cooked` keine Beziehung zum Spieler, beim Ende `pals.note(esser, koch)`. Debug `--cook=gast[,id]`.
-  Den Zustand `EAT` teilt sich der Herd mit der Kaffeemaschine: `Guest._arrive` fragt erst `CoffeeMachine.expects(gast)`.
-- **`Social`** ist der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`,
-  `living_guests()`, `guest_by_id()`), Beziehungen (`change_relation`), Gerüchte mit Verzögerung,
-  Diebstahl mit Zeugen, Reservierung von Verstecken (`find_hide_spot` / `release_hide_spot(spot, gast)` – nur die eigene; der Gast gibt sie
-  auch frei, wenn sein Weg dorthin abbricht oder er stirbt, sonst blieb das Versteck für alle gesperrt),
-  Feiern, Herausforderungen (`challenge(guest, game)`, `Guest.challenge_game`; ab „wütend“ keine, auch offene Revanchen in
-  `_rematches` verfallen), Gäste-Mäxchen und Gäste-Schach
-  (`_update_chess_game`, Zuschauen ≥ 30 s → `has_watched_chess`), Berichte über Spuren (`note_trace` → `report_line`),
-  Klopfen an Zimmer 13, Zettel, Neuankömmlinge (`START_GUESTS` 67 einschließlich `CHILDREN` 13 Kinder, `MIN_GUESTS` 33;
-  Neuankömmlinge sind immer Erwachsene).
-- **Detailstufe** (Leistung bei vielen Gästen): Gäste außerhalb des Blickfelds und weiter als `Guest.LOD_RANGE` (15 m)
-  bzw. weiter als `LOD_FAR` (45 m) rechnen nur jedes `LOD_STEP`-te (3.) Physikbild – mit der aufgesammelten Zeit, und
-  `_move_to` macht entsprechend längere Schritte (`_lod_scale`). Im Gespräch, beim Spiel, gewürgt, taumelnd oder
-  angreifend immer voll. Stehende Gäste auf festem Boden rufen kein `move_and_slide` (`_stop`). Gemessen (Lobby,
-  Hintergrundfenster): 30 Gäste ~35 fps; 67 Gäste ohne Detailstufe ~22, mit ~29 fps.
-- **Freundschaftsstufen** (Spielkonzept 6.3): `Social.Tier` (9 Stufen, `tier(guest)` / `tier_of(wert)`,
-  Grenzen −80/−55/−30/−10/10/30/55/80, Namen `TIER_NAMES`). **Im Code nie mehr `relation` mit Zahlen
-  vergleichen, sondern Stufen** (`Social.tier(g) >= Social.Tier.FRIEND`). `change_relation` dämpft Zuwächse
-  (× 1 − Wert/110) und deckelt bei ±79, solange die Taten fehlen: `Guest.deeds` (`games`, `gifts_to`,
-  `gifts_from`, `hostile`, `revenge`; `add_deed`) gegen `BOND_*` bzw. `FEUD_*`. Taten zählen in
-  `DiceMatch`/`ChessMatch._finish` (Partie), Dialog (Geschenk, Deko erbeten, Kauf, Beleidigen), `on_player_took`
-  (Diebstahl), Gast klaut/Birne aus 13 (`revenge`), Rammen, Schlagen. `_update_bonds`: Zerfall der Extreme
-  (`DRIFT`), Besuche (`_update_visits` → `Guest.start_visit` → `on_visit_arrived`: offene Tür → `enter_shelter`,
-  sonst höfliches Klopfen über `_knock` mit `"visit"`, eigene `_visit_step`) und Erzfeinde (`_update_feuds`, alle
-  2 s: allein und sichtbar → erst Drohung `threatened`, beim nächsten Mal `Guest.start_attack`). Plaudern zählt
-  pro Spieltag `CHATS_PER_DAY` mal voll (`Guest.chat_day/chats_today`). Neue Gast-Zustände `FOLLOW` (bleibt
-  `FOLLOW_GAP` hinter dir; im Gespräch gemerkt über `_resume_follow`; versteckst du dich, sucht er sich mit `_go_hide` selbst eins), `VISIT`, `ATTACK` (rennt hin, `Player.hurt`,
-  dann heim), `STAGGER` (Rückstoß `_push`, danach `_after_stagger`: zurückschlagen bei Mut ≥ 0,55, Stolz ≥ 0,65 oder
-  „verfeindet“, sonst verstecken; geschlagen humpelt er `HURT_TIME` mit `HURT_SLOW`). Wütende halten im Gehen auf den
-  Spieler zu und rempeln ihn an (`_wants_to_bump`/`_check_bump` → `Player.shove`).
-- **Spieler schlägt und rammt** (`player.gd`): Linksklick (`use_item`) schlägt, wenn `_punch_target()` einen Gast
-  in `PUNCH_REACH` im Fokus hat und keine Taschenlampe in der Hand ist (sonst wie bisher Lampe); außer bei
-  „wütend“ und schlimmer erst nach Nachfrage (zweiter Klick in `PUNCH_CONFIRM_TIME`) → `Social.on_player_punched`
-  (höchstens „wütend“, Zeugen −10, Gerede, Lärm `punch`). Rennen gegen einen Gast (`_check_ram`) →
+- **`GuestGenerator.make(seed, room, arrived_room)`**: deterministisch aus dem Seed. **Achtung:** Die Reihenfolge der
+  `rng`-Aufrufe in `make()` bestimmt, wer der Gast ist. Neue Zufallswerte nur **ans Ende** anhängen, sonst werden aus
+  gespeicherten Seeds andere Gäste (`tests/run.tscn`, `save_rules`, prüft das). `name_for(seed)` verlässt sich darauf,
+  dass der Name die **erste** Zufallszahl ist. `make_member` (Haushalte) überspringt die ersten beiden Zufallszahlen und
+  zieht den Rest in derselben Reihenfolge; `make_child` hat eigenen Zufall.
+- **Aussehen** (`GuestBody`, Spielkonzept 6.0): `GuestBody.pick(profile, id)` wählt einen Grundkörper aus
+  `GuestBody.BODIES` passend zu Geschlecht und Generation (`GuestGenerator.generation()`, im Profil `gen` – kein
+  Zufall, Spielstände bleiben gleich); Kinderkörper nur für Kinder (nächstes Alter). Ohne passenden Körper bleibt die
+  Klötzchenfigur (`_build_blocks`). Je Gast `height_cm`, `width_cm` (`WIDTH_LIMIT`, Kopf gegengestreckt), `head`,
+  `build`, Farben `coat`/`pants`/`hair` als Instanz-Uniforms von `psx_guest.gdshader` (färbt nur graue Texel). **Die
+  `Color` geht unverändert hinein** – Godot rechnet Instanz-Uniforms selbst nach linear um; ein zusätzliches
+  `srgb_to_linear()` macht die Gäste zu dunkel und zu satt. **Hautton** `skin` (`GuestGenerator.SKIN`, Kinder erben
+  ihn): Der Shader erkennt Haut an der Texelfarbe und multipliziert sie mit `tint_skin`, einem `Vector3` (wird nicht
+  umgerechnet) aus Zielton / mittlerer Haut des Körpers (`_skin_ref`) – so sieht derselbe Ton auf jedem Modell gleich
+  aus. `debug_skin` im Material färbt die erkannte Haut magenta.
+- **Bewegung:** `walk`/`run` aus der GLB (`AnimationPlayer` manuell vorgespult, Tempo nach Laufweite × Größe), im
+  Stand Ruhepose mit Atmen. Die Posen in `Guest._pose()`/`_dance_pose()` drehen die Pivots `_arm_l`/`_arm_r` (beim
+  Modell unsichtbar); `GuestBody` richtet die Oberarmknochen danach aus (`_aim`), außer `_arms_free`. Tänze auf Feiern:
+  Mixamo-Animationen aus `GuestBody.DANCES`, ab zufälliger Stelle (nicht im Gleichtakt); die Klötzchenfigur tanzt
+  Code-Posen. Sitzen: `sit_drop()`.
+- **Marken am Körper** (Wunden): `GuestBody.attach(knochen)` = `BoneAttachment3D` + Halter, der den Maßstab des
+  Skeletts ausgleicht (manche Modelle sind intern in Zentimetern).
+
+### `Guest` (Zustandsautomat)
+- Zustände `IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD,
+  KNOCK, SHELTER, SLEEP, SHOCKED, GHOSTED, FOLLOW, VISIT, ATTACK, STAGGER, DECORATE, SEARCH, EAT`. Der Zustand wird
+  nicht gespeichert – neue Zustände einfach hinten anfügen.
+- In `IDLE` wählt `_next_activity()` gewichtet aus `profile.activities`, je Phase der Uhr mit `PHASE_ACTIVITIES`
+  (Spielkonzept 2.4) und Haltungen (`activity_weights`). `_arrive()` verarbeitet das Ankommen je Zustand; Systeme mit
+  eigenem Ablauf (Schmücken, Suche, Herd, Kaffeemaschine, Streiche, Putzen) bekommen es über ihr `on_arrived` – den
+  Zustand `EAT` teilen sich Herd und Kaffeemaschine (`CoffeeMachine.expects(gast)` zuerst).
+- Gäste melden sich mit `Game.social.on_*` (Diebstahl, fehlende Deko/Birne, Monster gesehen …).
+- **Detailstufe** (Leistung bei vielen Gästen): außerhalb des Blickfelds und weiter als `Guest.LOD_RANGE` bzw.
+  weiter als `LOD_FAR` rechnen Gäste nur jedes `LOD_STEP`-te Physikbild – mit der aufgesammelten Zeit, `_move_to` macht
+  entsprechend längere Schritte (`_lod_scale`). Im Gespräch, Spiel, gewürgt, taumelnd oder angreifend immer voll.
+  Stehende Gäste auf festem Boden rufen kein `move_and_slide` (`_stop`).
+
+### `Social`
+Der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`, `living_guests()`, `guest_by_id()`),
+Beziehungen (`change_relation`), Gerüchte mit Verzögerung, Diebstahl mit Zeugen, Reservierung von Verstecken
+(`find_hide_spot` / `release_hide_spot(spot, gast)` – der Gast gibt sie auch frei, wenn sein Weg abbricht oder er stirbt,
+sonst bleibt das Versteck für alle gesperrt), Feiern, Herausforderungen (`challenge`), Gäste-Mäxchen und -Schach,
+Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Zettel, Nachrücker (`START_GUESTS`,
+`MIN_GUESTS`; Nachrücker sind immer Erwachsene). Teilsysteme hängen als Kinder an Social (`Game.social.tidying`,
+`pranks`, `decorating`, `search`, `pals`, `talk`, `access`).
+- **Freundschaftsstufen** (Spielkonzept 6.3): `Social.Tier` (`tier(guest)` / `tier_of(wert)`, `TIER_NAMES`). **Im
+  Code nie `relation` mit Zahlen vergleichen, sondern Stufen** (`Social.tier(g) >= Social.Tier.FRIEND`).
+  `change_relation` dämpft Zuwächse und deckelt, solange die Taten fehlen: `Guest.deeds` (`games`, `gifts_to`,
+  `gifts_from`, `hostile`, `revenge`; `add_deed`) gegen `BOND_*`/`FEUD_*`. `_update_bonds`: Zerfall, Besuche
+  (`Guest.start_visit` → `on_visit_arrived`), Erzfeinde (`_update_feuds`: Drohung, dann `Guest.start_attack`).
+  Plaudern zählt je Spieltag `CHATS_PER_DAY` mal voll.
+- **Spieler schlägt und rammt** (`player.gd`): Linksklick schlägt, wenn `_punch_target()` einen Gast im Fokus hat
+  (außer bei „wütend“ erst nach Nachfrage) → `Social.on_player_punched`; Rennen gegen einen Gast (`_check_ram`) →
   `on_player_rammed`; ein Wurf trifft (3.13) → `on_player_threw_at`: `THROWN_AT` bzw. mit Zerplatzendem
   `THROWN_AT_MESSY`, Eltern wie beim Rammen, Zeugen −3/−6 und nur mit Zeugen Gerede, der Gast taumelt (`stagger`).
-  `injury` (0..1, gespeichert) macht langsamer (`INJURY_SLOW`), heilt in `INJURY_HEAL_TIME`;
-  nach einem Treffer `BLEED_TIME` Blutstropfen (`Traces.add_guest_drop("drops")`), roter Blitz `Hud.flash_hurt`.
-- Gäste melden sich mit `Game.social.on_*` (Diebstahl, fehlende Deko/Birne, Monster gesehen …).
-- **`HotelCat`** (`guests/hotel_cat.gd`, Spielkonzept 6.11, 7.7): sieben Katzen aus `HotelCat.PROFILES`, vier
-  davon mit `home` im Katzenraum (starten auf den Kratzbäumen, Nickerchen und Streifzüge mit `HOME_STAY` dort,
-  folgen selten, bringen nichts, gehen nicht auf dein Bett), erzeugt in
-  `main.gd` nach den Gästen (`place_at_start()`; Lieblingsgast = `hash(id)` über die lebenden Gäste).
-  Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH` (holt Gast-Deko, `Social.cat_thefts`), `CARRIED`
-  (auf dem Arm: [E] im Zustand `PET` → `pick_up()`, scheue erst ab `CARRY_TRUST` Streicheln; `_carried_step` setzt sie
-  jeden Frame vor die Brust des Spielers, Ebene 0, Schock − `CARRY_CALM`/s, Schnurren; `Player.carried_cat` sperrt
-  Gegenstände, [G] → `put_down()` (vor einer Wand dichter heran); von selbst nach `CARRY_TIME`, beim Verstecken,
-  Schlafen, Würgen, und mit Fauchen/`add_shock` + `FLEE`, wenn das Monster näher als `FEAR_DISTANCE` ist; gespeichert
-  zu Füßen des Spielers, Debug `--cat=id,tragen`); Bewegung wie Gäste (NavigationAgent,
-  Festgefahren-Erkennung). **Türen:** Kollisionsmaske ohne Türen (wie Gäste), geschlossene Türen erkennt
-  `_door_ahead()` → `WAIT_DOOR` (miaut, gibt nach 12–20 s auf und schläft) bzw. auf der Flucht `_cowering`.
-  **Möbel:** `perches()` = `LevelBuilder.cat_perches` (Sofas, Rezeption) + Betten und Fensterbänke aller
-  bewohnbaren Zimmer + Lobbyfenster (`{floor, top, yaw?, room?}`, feste Reihenfolge – der Index wird
-  gespeichert); gewählt wird über `_usable_perches()` (Lobby, Zimmer 13, bewohnte Zimmer); hoch/runter per Tween (`_hop`), oben ohne Schwerkraft. **Monster:** `_monster_near()`
-  auch, wenn es unsichtbar umherstreift → `FLEE` mit Lärm `cat_cry` (Art mit `alarm` → Gäste); der
-  Director ignoriert Lärm mit `quelle is HotelCat`, das Monster sieht Katzen nicht (eigene Ebene).
-  **Deko umwerfen:** `_check_surroundings()` alle 0,4 s, `Item.knock_over()` für `Item.TOPPLE_KINDS`;
-  `Item.is_toppled()` zählt nicht in `deco_strength_at`, Spieler stellt per [E] auf, Gäste in `_at_home()`.
-  **Aussehen:** Laufen = Animation `walk` (`speed_scale` nach Tempo), sonst `_player.stop()` und Posen aus
-  `POSES` per `_turn()` im Skelettraum (X = linke Seite, Y = oben, Z = Blickrichtung), weich überblendet;
-  Fell = `Mat.psx(tint)` mit der GLB-Textur. Geschenk hängt am Knoten `_mouth`. Gespeichert (Gruppe `cats`,
-  ab Version 8, angewendet nach den Gegenständen): Lage, Lieblingsgast, Zuneigung, Geschenk-Timer,
-  Liegeplatz, Schlaf, Beute im Maul (liegt nach dem Laden vor ihr). Gespräche: `Social.cat_line()`
-  (Plaudern), `Social.cat_monster_line()` (nach dem ersten Weinen, `cats_have_cried`). **Verdacht:** Merkt ein Gast mit
-  Eintrag in `cat_thefts` fehlende Deko (`on_guest_noticed_missing`), steht der Abzug für ein Stück in `Social.cat_blame`
-  (gespeichert ab Version 27); erzählt er in `cat_line`, welche Katze es war, bekommt der Spieler ihn zurück (`_clear_cat_blame`).
+  `injury` (gespeichert) macht langsamer; Blutstropfen über `Traces.add_guest_drop`.
+- **Nachtruhe** (Spielkonzept 2.4): `night_window(tag)` würfelt Beginn und Ende aus `hash([night_seed, tag])`, damit
+  Laden und Debug-Sprünge der Uhr dieselbe Nacht ergeben (`night_due()`, `seconds_to_night()`, `night_ends_at()`).
+  `_update_sleep` startet sie, sobald keine Feier oder Schmück-Aktion mehr läuft → `Guest.bedtime()`: ins Zimmer, Licht
+  aus (nur, wenn kein Mitbewohner wach ist), ins eigene Bett (`hiding` = Bett, aber Zustand `SLEEP` – kein
+  Versteck-Lärm; das Monster kann sie dort finden). Im Doppelbett liegt ein Zweiter (`HideSpot.partner`,
+  `takes_partner`, `sleep_offset`). `Social.all_asleep()` für den Lakengeist. Gespeichert: `sleep_active`,
+  `night_seed` (Gäste laden wach und gehen wieder ins Bett). Debug `debug_sleep` (`--sleep`).
+- **Der Spieler schläft, wann er will** (Spielkonzept 3.6): Nur das eigene Bett (`HideSpot.own_bed`, Zimmer 13) bietet
+  Schlafen an; das Mausrad stellt `Player.sleep_hours` ein (`_wheel_step`, nur mit dem Bett im Fokus).
+  `Player.start_sleep()` = `enter_hide()` + `sleeping` + Zeitraffer (in der Nachtruhe Zeitsprung, 3 „Pause & Zeit“).
+  Aufwachen ohne Aufstehen (`wake_up`): Monster nah oder fremder Lärm. **Müdigkeit** `nights_awake` ist eine Kommazahl
+  (gespeichert unter `player`): jedes Schlafende (`_stop_sleep`) zieht anteilig ab (`SLEEP_FULL`, abzüglich
+  `_sleep_lost` durch Kaffee, 3.11), `Player.on_night_over()` am Ende der Nachtruhe addiert, was nicht geschlafen wurde
+  (`_slept`), erst nach dem ersten Angriff. Rausch beim Einschlafen → **Kater** (`HANGOVER_TIME`, 3.7).
+- **Feiern:** Tanzplätze `LevelBuilder.party_spots` (Sechseckraster `DANCE_SPACING`, von der Mitte nach außen);
+  `Social.free_party_spot(guest)` vergibt den innersten freien. Gäste kollidieren nicht miteinander, darum gehen sie
+  in `PARTY` die letzten Zentimeter, an denen `_move_to` aufhört, genau auf den Platz. Spontane Feiern
+  (`_update_party`) nur abends.
+  - **Musik:** `RecordPlayer.TRACKS` (`""` → `SynthAudio.music`, dazu die MP3), jede Feier ein anderes Stück;
+    `synth_track()` entscheidet, ob die Lautstärke an `Game.audio.music` oder `RecordPlayer.fade_to()` geht.
+  - **Discokugel** (`world/disco_ball.gd`, über `party_center`): dreht sich auf Feiern; eine `OmniLight3D` in ihrer Mitte
+    projiziert Punkte (`light_projector` aus `_dot_pattern()`). Ohne `shadow_enabled` gibt es keinen Projektor – die
+    Lampe ist nicht in „lamps“, `ShadowBudget` lässt sie in Ruhe. Projektorfilter Linear ohne Mipmaps
+    (`project.godot` `textures/light_projectors/filter`), mit Mipmaps verschwammen die Punkte. Die Kugel liegt auf
+    Sichtebene 11, die ihre Lampe auslässt. Material `psx_mirror.gdshader` mit eigenem `light()`: Das Environment
+    spiegelt nichts, darum spiegelt jedes Plättchen je Lampe ein Rauschmuster × deren Licht und blitzt (`glint_*`);
+    ohne Licht bleibt sie dunkel.
+  - **Partylampen** (`world/party_lights.gd`, Spielkonzept 7.6): `SpotLight3D` ohne Schatten mit flachem
+    `spot_attenuation` – mit dem üblichen Abfall kam auf der Tanzfläche kaum Farbe an; ausgerichtet per
+    `Basis.looking_at` (die Knoten hängen beim Aufbau noch nicht im Baum). Nicht in „lamps“.
+  - **Konfetti** (`world/confetti.gd`, `Game.confetti`): `burst(pos, anzahl)` = einmaliges `CPUParticles3D`, danach
+    `Decal`-Schnipsel am Boden (`MAX_DECALS`, verblassen). Auf Feiern und am Ende eines großen Schmückens.
+  - Nichts davon gespeichert.
+
+### Schreck, Erlebnisse, Wunden
+- **Schreck** (Spielkonzept 6.12): Was erschreckt, steht in der Gruppe `shock_sights` mit Meta `sight_key`/
+  `sight_kind` – Blutlachen (`Traces._as_sight`, Schlüssel aus dem Ort, auch nach dem Laden) und Leichen
+  (`corpse:<id>`). `Guest._scan_for_shock` → jeder Schlüssel einmal (`seen_sights`) → `shock()`: `SHOCKED`, Haltung
+  je `shock_style()` (aus dem Archetyp – keine neuen Zufallszahlen im Generator), dann `_after_shock()`. `remember()`
+  legt ein Erlebnis an (`experiences`), `DialogUI.open` erzählt das älteste unerzählte (`Social.experience_line`).
+- **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze, Zustand im Gast; Spielkonzept
+  6.17): `Wounds.survives()` in `MonsterDirector.kill_guest` (zählt dann nicht als Opfer) und `PumpkinMan._hit`; der
+  Lakengeist verwundet beim Losreißen. `Guest.wound_by(art, angreifer)` setzt Wunde, Heilzeit, Bettruhe
+  (`_go_to_bed`, `in_sickbed()` – ansprechbar), Blutspur (`_bleeding`), `wound_facts` und erzählt es weiter
+  (`_spread_wound_news`). Heiser: `Game.sound_at("wheeze")` (eigener `VOICES`-Eintrag aus `breath.wav`). Besuch am
+  Krankenbett: `DialogUI._wound_visit`. Gespeichert je Gast: `wound`, `wound_left`, `wound_bed`, `wound_facts`,
+  `wound_told`, `wound_visited`. Debug `--wound=gast,art[,hin]`, `--kill=gast`.
+- **Geschenke in der Hand:** `DialogUI._gift` → `Player.hand_over()` → `Guest.receive_gift` (Hand); danach trägt er es
+  heim (`_carry_gift_home`) oder isst es (`_gift_step`). Nicht zu verschenken: `DialogUI.NO_GIFT` (Hotelgegenstände).
+
+### Haushalte (Spielkonzept 6.20)
+- **HAUSHALTE.md** ist die Quelle (von Hand gepflegt). `tools/build_households.py` macht daraus
+  `assets/data/households.json` (`households` mit Mitgliedern, `special`: Sonderzimmer). `LevelBuilder.refresh_households()`
+  (in `main._ready` nach `refresh_maps`) setzt neu um, wenn HAUSHALTE.md oder der Umsetzer neuer sind. Der LevelBuilder
+  ordnet Haushalte über ihre Stelle im Plan den Zimmern zu (4, „Zimmer“).
+- `Social._add_households()`: je Zimmer erst Erwachsene, dann Kinder (`_add_member`); Kernfiguren als Kopie aus
+  `GuestProfiles.ALL` (`placed`), die übrigen über `GuestGenerator.make_member` bzw. `make_child`, Seed fest je Person
+  (`"H05/Luis".hash()`). Profil: `surname`, `household`, `member`. Ohne Datei die alte Verteilung (`_add_families`).
+- **Eine Tür je Haushalt:** Startdeko gebündelt beim `household_lead(no)`; nur er füllt die Tür auf, prüft Lampen und
+  beschwert sich (`Guest.is_household_lead`). Mitbewohner klauen einander nichts. `MonsterDirector._household_factor`:
+  der Deko-Anspruch wächst je weiterem Erwachsenen (`HOUSEHOLD_DEMAND`). `Guest.housemate_of` zählt als Familie.
+- **Spielstand:** Roster-Einträge mit `household` und `member`; `restore_roster` baut sie über `_add_member` neu und
+  stellt die Reihenfolge des Einzugs wieder her (`_household_order`).
+
+### Zimmerzugang (Spielkonzept 6.19, `guests/room_access.gd`, `RoomAccess` als `Social.access`)
+- **Gästetüren:** `Guest._open_doors` öffnet nur Türen, durch die der eigene Weg führt (`_path_through`), die eigene
+  schließt er dazu auf. Zimmertüren (außer 013) schließt er hinter sich (`_door_behind`), sobald niemand im
+  Schwenkbereich steht (`_someone_in_swing`), die eigene schließt er ab. `Social.behind_lock`/`spot_room`: keine
+  Verstecke und keine Birnen hinter fremden Schlössern.
+- **Klopfen** (`Door._knockable` → `knock`): niemand da (`residents_home`) → „Niemand macht auf“; sonst öffnet einer
+  einen Spalt (`Door.set_ajar`, zählt nicht als offen) und `DialogUI.open_door` zeigt das Gespräch (fragen, lügen,
+  Panik, bestechen). `chance()` aus Stufe und Zuschlägen; je Gast ein Versuch pro Spielstunde (`RETRY`).
+- **Besuch** (`visit`), **von innen** geht jede abgeschlossene Zimmertür auf (`Door._inside`, niemand wird
+  eingesperrt), **Hausfriedensbruch** (`_watch_trespass`).
+- **Aufbrechen** (Brecheisen, `Door._forcible`, `Door._work`): Tür danach `broken` (offen, `set_open(false)` greift
+  nicht) → `RoomAccess.on_forced` (Zeugen, Gerede, `suspects`). Leise mit dem **Generalschlüssel** aus dem
+  **Schlüsselschrank** (`world/key_cabinet.gd`, Gruppe `key_cabinets` im Spielstand). `Door.monster_open` macht eine
+  abgeschlossene Zimmertür ebenfalls kaputt. **Reparieren** mit Werkzeugkasten (`on_repaired`); am Morgen
+  (`_morning_repairs`) repariert jeder Haushalt seine Tür selbst; `LENDER_HOUSEHOLD` leiht seinen Werkzeugkasten.
+- Debug: `--klopfen[=zimmer[,weg]]`, `--tuer=zimmer`, `--werkzeug=brecheisen|kasten|schluessel`.
+
+### Kinder (Spielkonzept 6.13)
+- `Guest.is_child()`, `parent_guest()`, `is_orphan()`; Profil mit `child`, `age`, Archetyp „Kind“, Sätze aus
+  `CHILD_LINES` (`{eltern}` → Mama bzw. Papa).
+- **Nie Opfer** – an allen Stellen einzeln abgesichert: `Monster._actors()` ohne Kinder, `_check_hide_step` behandelt
+  ein Kind im Versteck als leer, `Director.on_actor_hid`/`kill_guest` übergehen Kinder, `_max_victims` zählt sie nicht,
+  der Lakengeist würgt nie (`_frighten_child`), der Kürbismann jagt sie nicht (`_can_hunt`). Kinder zählen nicht als
+  Zeugen (`_witness_guests`) und nicht für `all_asleep()`. Neue Bedrohung → dasselbe beachten.
+- Familie: Schreck des Kindes trifft die Eltern; stirbt der Elternteil, schließt sich das Waisenkind dem Spieler an.
+- **Nachtruhe:** `sleepless` (`_night_activity()`: ans Fenster, durch den Flur, an Zimmer 13 klopfen).
+- **Süßes oder Saures:** an Zimmer 13 (`Social._update_tricks`, `_trick_at_door`, `give_trick_sweet`, sonst
+  `_trick_prank`) und **von Tür zu Tür** (`_update_rounds`, `start_round`, `_rounds[id]` mit Phasen `walk`, `knock`,
+  `host`, `pause`; `_round_answer` nimmt Süßes aus dem Vorrat oder der Süßigkeiten-Truhe des Zimmers –
+  `take_room_sweet`). Süßigkeiten liegen in Kommoden (`Dresser.LOOT`), Vorräten, Süßigkeiten-Truhen
+  (`LevelBuilder._sweets_chest`) und im Snackautomaten. Debug `--trick=13[,n]`, `--trick[=kind]`.
+- Gespeichert wird nur `parent` in der Gästeliste; `sleepless`, Besuche und Süßes oder Saures nicht.
+
+### Weitere Teilsysteme (Kinder von `Social`)
+- **Flecken und Putzen** (`guests/tidying.gd`): `_messes()` = Kürbismatsch und Spuren `MESS_TRACES`; Beschwerden
+  (`_complaints`, Meta `complained`), ein ordentlicher Gast (`is_tidy`) wischt (`TraceMark.wipe`) oder trägt Matsch
+  in die Küche bzw. kocht ihn (`Stove.claim_cook`). Nicht gespeichert. Debug `--mess[=wachs]`.
+- **Streiche** (`guests/pranks.gd`): `play(kind, zimmer)` wählt nach `WEIGHTS`: `leaves`, `topple`
+  (`Item.knock_over`), `pumpkin`/`candle` werfen (aus dem Koffer der Familie holen, `_go_throw`, `_throw` →
+  `Item.throw_from`). **Zeugen** (`_witnesses`) erzählen es dem Bewohner → `pals.add_feud`. Debug
+  `--prank=art[,zimmer]`.
+- **Schmück-Aktionen** (`guests/decorating.gd`, Spielkonzept 5.9; zählen als Spaß für den Kürbismann – `is_crew`,
+  `player_joins`): Jede Stelle ist eine `Decorating.Action` (`site`, `host`, `crew`, `group` …); eine `group` umfasst
+  alle Stellen eines großen Schmückens (Belohnung und Konfetti, wenn die letzte endet). Ablauf je Mitmacher im Zustand
+  `DECORATE`: `fetch` (Platz reservieren `_reserve_slot`, Deko aus dem Koffer passend zur Ebene `top`/`wall`/`floor`)
+  → `carry` → `hang` (`Item.hang`) → `admire`; mehrere Stücke tragen sie gestapelt (`_stack_in_arms`, eingefroren –
+  darum nicht gespeichert). Platzsuche: `_find_site`/`_door_site`/`_wall_site`/`_lobby_site`, frei heißt glatte Wand
+  (`_wall_at`) und nichts im Umkreis (`_space_free`). Arten: klein (Gast ruft auf, nur tagsüber), **allein**
+  (`_update_solo`, dauerhaft mindestens `SOLO_MIN` unterwegs – so füllt sich das Hotel bis Halloween; Deko aus einer
+  `ResourceSpot` mit Tageslimit), **groß** (`start_big`, mehrere Stellen), vom Spieler aufgerufen (`call_here`).
+  Abbruch bei Feier, Nachtruhe oder Unruhe; `_update_sleep` schiebt die Nachtruhe auf, solange eine Aktion läuft.
+  Nichts gespeichert – die Deko sind normale Gegenstände (`hung`). Debug `--decorate[=…]`, `--trace` `[Schmücken]`.
+- **Deko-Suche** (`guests/deco_search.gd`, Spielkonzept 5.9): ein freier Gast (nur tagsüber) geht zu einer
+  erreichbaren `ResourceSpot` (`Decorating._reachable`, `guest_can_take()`), Mutige zu Spinnweben und Keller, manchmal
+  zu zweit; bietet dem Spieler an mitzukommen (`has_offer`, `ask`). Zustand `SEARCH`. Nicht gespeichert. Debug
+  `--search[=gast][,mit]`.
+- **Freundschaften unter Gästen** (`guests/pals.gd`, `GuestPals`, Spielkonzept 6.16): `counts` (`"id_a|id_b"` →
+  gemeinsame Taten; `note`, `note_group`), `are_pals` (Familie, genug Taten oder Zimmernachbarn – nie bei `feuds`, nicht
+  bei Gerücht `distrusts:<id>`), Weitererzählen (`_update_telling`, `heard`), `praise`, Feindschaften (`feuds`,
+  `add_feud`), „Freund meines Feindes“ (`on_player_befriended`). Gespeichert: `counts`, `feuds`. Debug
+  `--pals=…`, `--rival=…`.
+- **Gespräche** (`guests/talk.gd`, `Talk`, Spielkonzept 6.9): Die Knöpfe baut `DialogUI` (`_show_main`, Optionen in
+  einem `ScrollContainer`), die Logik liegt in `Talk`: Anlässe (`_occasions()`), Erlebnisse des Spielers (`log`,
+  `_scan_sights`), Gedächtnis je Gast (`Guest.claims`, höchstens `MAX_CLAIMS`), Erzählen/Lügen (`tell`, `_believes`,
+  `_see_through`), Auffliegen (`expose`, `_check_lies`), Weitererzählen (`_update_spread`), Fragen der Gäste
+  (`pick_question`, `answer()`), Haltungen `Guest.stances` (`wary`, `careless`, `distrusts:<id>`, `brave_thinks`,
+  `promise`, `no_trust`, `confront`, `grieving`; `set_stance`/`has_stance`, `prune_stances`). Freundliche Gesten über
+  `Talk.friendly` (Tagesbudget wie Plaudern). Gespeichert je Gast `claims`, `stances`; `social.talk` = `log`, `next_id`,
+  `suspects`, `deaths`. Debug `--gespraech=frage|erlebnis|luege,…`, `--trace` `[Gespräch]`.
+
+### Kochen (`world/stove.gd`, `Stove`, `Game.kitchen`, Spielkonzept 3.8)
+Herd auf der Plan-Ausstattung „stove“. `phase`: `empty` → `raw` (`dish_for`) → Messer → `cooking` (Spielzeit über
+`delta`) → Teller `ROAST_PUMPKIN` bzw. Suppe mit Portionen, die kalt wird. `_call_eaters` holt Gäste in den Zustand
+`EAT`; `_end_soup` → `pals.note_group`. **Gäste kochen** selbst (`_update_guest_cook`, `start_guest_cook`). Essen ist
+Spaß (`is_eating`, `player_eats`). Herd und Essende nicht gespeichert, der Teller schon. Debug
+`--cook=suppe|braten[,fertig]`, `--cook=gast[,id]`.
+
+### `HotelCat` (`guests/hotel_cat.gd`, Spielkonzept 6.11)
+Katzen aus `HotelCat.PROFILES` (einige mit `home` im Katzenraum), erzeugt nach den Gästen (`place_at_start()`).
+Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED`.
+- **Tragen:** `pick_up()`/`put_down()`, `_carried_step` setzt sie jeden Frame vor die Brust, `Player.carried_cat`
+  sperrt Gegenstände; gespeichert zu Füßen des Spielers. Debug `--cat=id,tragen`.
+- **Türen:** Kollisionsmaske ohne Türen (wie Gäste); geschlossene Türen erkennt `_door_ahead()` → `WAIT_DOOR`.
+- **Möbel:** `perches()` = `LevelBuilder.cat_perches` + Betten und Fensterbänke bewohnbarer Zimmer + Lobbyfenster –
+  **feste Reihenfolge, der Index wird gespeichert**. Hoch/runter per Tween (`_hop`), oben ohne Schwerkraft.
+- **Monster:** `_monster_near()` auch, wenn es unsichtbar umherstreift → `FLEE` mit Lärm `cat_cry`; der Director
+  ignoriert Lärm mit `quelle is HotelCat`, das Monster sieht Katzen nicht (eigene Ebene).
+- **Deko umwerfen:** `Item.knock_over()` für `Item.TOPPLE_KINDS`; `Item.is_toppled()` zählt nicht als Deko, Spieler
+  stellt per [E] auf, Gäste daheim. Gast-Deko holen: `FETCH`, `Social.cat_thefts`, Verdacht `Social.cat_blame`.
+- **Aussehen:** Laufen = Animation `walk`, sonst Posen aus `POSES` per `_turn()` im Skelettraum.
+- Gespeichert (Gruppe `cats`, angewendet nach den Gegenständen): Lage, Lieblingsgast, Zuneigung, Geschenk-Timer,
+  Liegeplatz, Schlaf, Beute im Maul.
 
 ## 7. Speichern & Laden
 
-- JSON in `user://saves/` (`slot_1..3.json`, `autosave.json` + `.png`), geschrieben über `.tmp` +
-  Umbenennen. `SaveManager.collect()` sammelt, `SaveManager.apply(data)` stellt her. Headless (Testläufe, Rauchtest)
-  und mit `--bg` (Screenshot-Läufe nebenher, seit 22.10.) stattdessen `user://saves_headless/` (`SaveManager.DIR`) – sonst überschrieb ein Testlauf den echten Autosave, und
-  „Letzten Spielstand laden“ nach dem Tod landete an dessen Testposition.
-- **Laden = Hauptszene neu aufbauen, dann befüllen.** `load_slot` setzt `Game.pending_load` und
-  wechselt die Szene; `main.gd` ruft nach dem Aufbau `SaveManager.apply` auf.
-- **Feste Welt-Objekte werden über die Reihenfolge in ihrer Gruppe zugeordnet** (`_apply_group`:
-  Index i im Spielstand ↔ i-ter Knoten der Gruppe). Passt die Anzahl nicht, wird die ganze Gruppe
-  mit Warnung übersprungen. Spuren an Türen/Fenstern speichern ebenfalls den Index in `doors`/`windows`.
-- **Fingerabdruck der Welt** statt Versionssprung bei jedem Umbau (Entscheidung 19.10.: Kompatibilität alter
-  Stände erst spät): `main.gd` ruft nach dem Aufbau `SaveManager.note_world()` – MD5 über Anzahl und Lage
-  (auf 10 cm) der Knoten jeder Gruppe in `WORLD_GROUPS`, bei `COUNT_ONLY` (Katzen, Startplatz wechselt) nur
-  die Anzahl. Steht als `world` im Spielstand und in `user://saves/world.txt`, damit die Slot-Übersicht ihn
-  vor dem Aufbau kennt. `fits(data)` = passende `VERSION` und gleicher Abdruck; nicht passende Stände zeigt
-  `SlotList` gesperrt mit „passt nicht mehr zu diesem Hotel“, `newest_slot` (Fortsetzen) übergeht sie. Ist
-  `world.txt` veraltet (Code seit dem letzten Start geändert), prüft `main._load_pending` nach dem Aufbau
-  erneut und startet bei Abweichung neu mit Hinweis. Neue Gruppe mit Zustand → in `WORLD_GROUPS` eintragen.
-- `VERSION`/`MIN_VERSION` nur noch für den Aufbau des Spielstands selbst (Felder in `collect`/`apply`),
-  mit Kommentarzeile.
-- Gegenstände werden nicht zugeordnet: beim Laden werden alle gelöscht und aus `kind` + `extra`
-  (`Item.create_extra()`) neu erzeugt. Neuer Gegenstandszustand → in `create_extra()`/`_build()`
-  abbilden oder in `_item_data`/`_make_item` ergänzen.
-- Tasche des Spielers (ab Version 28): `player.bag` – Gegenstände wie oben, nur ohne `pos`/`rot`/`hung`
-  (`_bag_data`); nach dem Gegenstand in der Hand über `Player.set_bag`.
-- Erzeugte Gäste: nur `{id, seed, room, arrived, parent}` (`Social.roster_state` / `restore_roster`; `parent` ≠ "" →
-  Kind über `make_child`, ab Version 22 – die Liste steht in Erzeugungsreihenfolge, Eltern also vor ihren Kindern), wird
-  **zuerst** angewendet, weil sich alles Weitere auf Gast-IDs bezieht. Danach Welt → Director-Werte →
-  Gäste → Gegenstände → Spieler → Soziales → Monster zuletzt.
+- JSON in `user://saves/` (`slot_1..3.json`, `autosave.json` + `.png`), geschrieben über `.tmp` + Umbenennen.
+  `SaveManager.collect()` sammelt, `SaveManager.apply(data)` stellt her. Headless (Testläufe, Rauchtest) und mit `--bg`
+  stattdessen `user://saves_headless/` (`SaveManager.DIR`) – sonst überschreibt ein Testlauf den echten Autosave.
+- **Laden = Hauptszene neu aufbauen, dann befüllen.** `load_slot` setzt `Game.pending_load` und wechselt die Szene;
+  `main.gd` ruft nach dem Aufbau `SaveManager.apply` auf.
+- **Feste Welt-Objekte werden über die Reihenfolge in ihrer Gruppe zugeordnet** (`_apply_group`: Index i im
+  Spielstand ↔ i-ter Knoten der Gruppe). Passt die Anzahl nicht, wird die ganze Gruppe mit Warnung übersprungen.
+  Spuren an Türen/Fenstern speichern ebenfalls den Index in `doors`/`windows`.
+- **Fingerabdruck der Welt** statt Versionssprung bei jedem Umbau (Rückwärtskompatibilität erst spät, Entscheidung
+  19.10.): `main.gd` ruft nach dem Aufbau `SaveManager.note_world()` – MD5 über Anzahl und Lage der Knoten jeder Gruppe
+  in `WORLD_GROUPS` (bei `COUNT_ONLY` nur die Anzahl). Steht als `world` im Spielstand und in `user://saves/world.txt`,
+  damit die Slot-Übersicht ihn vor dem Aufbau kennt. `fits(data)` = passende Version und gleicher Abdruck; nicht passende
+  Stände zeigt `SlotList` gesperrt („passt nicht mehr zu diesem Hotel“), `newest_slot` übergeht sie. Ist `world.txt`
+  veraltet, prüft `main._load_pending` nach dem Aufbau erneut. **Neue gespeicherte Gruppe → in `WORLD_GROUPS`.**
+- `VERSION`/`MIN_VERSION` nur für den Aufbau des Spielstands selbst (Felder in `collect`/`apply`), mit Kommentarzeile.
+- **Gegenstände** werden nicht zugeordnet: beim Laden alle gelöscht und aus `kind` + `extra` (`Item.create_extra()`)
+  neu erzeugt. Neuer Gegenstandszustand → in `create_extra()`/`_build()` abbilden oder in `_item_data`/`_make_item`
+  ergänzen. Viele Zustände stecken im Zusatzfeld (Kürbissorte, Fratze `f=`, Faulzeit `r=`, Matsch `mush_extra` mit `w=`,
+  Kerze `lit`/`out`/`unlit`, Taschenlampe `c=…;uv;on`).
+- **Reihenfolge beim Anwenden:** erzeugte Gäste zuerst (`Social.roster_state` / `restore_roster`: nur
+  `{id, seed, room, arrived, parent, household, member}`, in Erzeugungsreihenfolge), weil sich alles Weitere auf
+  Gast-IDs bezieht. Dann Welt → Director-Werte → Gäste → Gegenstände → Spieler (`look` zuerst über `Player.set_look`,
+  dann Hand, Tasche `bag` über `Player.set_bag`) → Soziales → Monster zuletzt.
 - Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp, HotelPhone,
-  LightSwitch, HotelWindow, Dresser, Elevator, FixedCandle) oder werden in `collect()` direkt ausgelesen (Door, Chest, Plant, Resource).
-  Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()`.
-- Beim Laden: `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
-- Nicht gespeichert, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating.reset()`, `DecoSearch.reset()`,
-  `Stove.reset()`, `CoffeeMachine.reset()` (auch der Wasserkocher), `Pranks.reset()`, `Tidying.reset()` – sonst zeigten laufende Aktionen nach `--savetest` auf die neu gebauten Gäste ins Leere.
-- Verletzungen (ab Version 26, Spielkonzept 6.17): je Gast `wound`, `wound_left`, `wound_bed`, `wound_facts`, `wound_told`,
-  `wound_visited`; nach dem Laden `_update_wound_marks`, ins Bett geht er von selbst wieder.
-- Freundschaften unter Gästen (ab Version 25): `social.pals` = `GuestPals.counts` (`"id_a|id_b"` → Anzahl); ältere
-  Stände laden ohne (nur Familie und Nachbarn).
-- Gespräche (ab Version 44, Spielkonzept 6.9): je Gast `claims` (über `Talk.load_claims`: `src`/`hops` wieder als Zahl)
-  und `stances`, `social.talk` = `Talk.save_state` (Erlebnisse des Spielers, Zähler, Einbruchsverdacht, Todesfälle). Ältere
-  Stände laden weiter, niemand erinnert sich an etwas.
-- Spielerfigur (ab Version 33, Spielkonzept 3.9): `player.look` (`PlayerBody.look`: `body`, `height`, `slim`, `fit`,
-  Farben als HTML-Text), angewendet zuerst über `Player.set_look` (Kapsel und Augenhöhe); ältere Stände laden mit
-  `PlayerBody.default_look()`. Savetest stellt vorher eine andere Figur ein und setzt sie nach dem Sammeln zurück.
-- Fratze geschnitzter Kürbisse (ab Version 34): im Zusatzfeld `f=1…5` (`Item.face`, `PumpkinModel`); ältere Stände laden
-  weiter, die Fratze wird dann beim Laden ausgewürfelt.
-- Tagesuhr (ab Version 31): `social.night_seed` statt `sleep_timer`. Knappheit (ab Version 32, Spielkonzept 5.10): Faulzeit
-  der Kürbisse im Zusatzfeld (`r=…`), `resources[].guest_day`; ältere Stände laden nicht.
-- Aufzug (ab Version 30): `elevators` = `Elevator.save_state` (Höhe der Kabine, gewählte Halte mit dem laufenden Ziel
-  vorn, Tür offen); mitten in der Fahrt gespeichert, fährt sie nach dem Laden weiter.
-- Im Regen verwaschen (ab Version 38, Spielkonzept 4.13, `RainVeil`): `wash` je Spur am Boden, Schleier als Spur
-  `{"kind": "veil", look, variety, width, seed, progress, life, at}` in `traces`, Kürbismatsch „w=…“ im Zusatzfeld. Ältere
-  Stände laden weiter, alles unverwaschen.
-- Notizbuch und Tagebuch (ab Version 37, Spielkonzept 3.10): `notebook` = `Notebook.save_state` (`owned`, Aufgaben mit
-  Zustand und Kreuz, Notizen), `diary` = `Diary.save_state` (aufgeschriebene und noch offene Meilensteine). Ältere Stände
-  laden weiter: Wer den Brief gelesen hat, hat ein leeres Notizbuch; das Tagebuch ist leer.
-- Lakengeist in der Dusche (ab Version 46, Spielkonzept 4.24): `ghost.first_seen` (erste Begegnung), `shower` =
-  `ShowerScare.save_state` (`waiting`/`running`/`done`). Ältere Stände laden weiter: Wer ihm schon begegnet ist, gilt als am
-  Anfang begegnet.
-- Türschmuck-Wettbewerb (ab Version 36, Spielkonzept 2.5): `contest` = `DoorContest.save_state` (Abschnitt – mitten in der
-  Szene gespeichert als Versammlung –, Brief gelesen, Durchsagen, Zettel, Tag des Angriffs, erstes Urteil), Puppe `gone`;
-  `director.first_attack_day` entfällt. Ältere Stände laden weiter: Ist der erste Angriff gewesen, ist der Wettbewerb
-  vorbei (der Zettel liegt nicht), sonst beginnt er von vorn. Laden mitten in der Versammlung: die Gäste kommen erst beim
-  nächsten Rundgang (5 s), sonst ließen sie gleich fallen, was sie gespeichert in der Hand hielten.
-- Puppe und Feindschaften (ab Version 29): `doll` (`JuryDoll.save_state`), im Director Frist, Urteil und Weg; `social.pals`
-  ist jetzt `{counts, feuds}` (`feuds` = Liste verfeindeter Paare) – `GuestPals.load_state` liest auch die alte Form; dazu
-  `pumpkin` (Spaßwert, Besuche, Garantie) und `ghost.catch_up_day`.
-- Je Gast außerdem (ab Version 11) `corpse` (tote Gäste mit Leiche → `die("ghost")`), `ghost_visits`, `seen`
-  (gesehene Blutlachen/Leichen) und `experiences` (Zeitpunkte als `Director.elapsed`).
-- Speichern am Tagebuch gesperrt bei Jagd oder Monster näher als `NOISE_START`, während der Flackerwelle, solange der
-  Kürbismann im Hotel ist (`PumpkinMan.in_house`, er wird nicht gespeichert) und der Lakengeist beim Spieler ist
-  (`SheetGhost.with_player`) und die Dusche den Blick gefangen hat (`ShowerScare.busy`); Autosave nur in sicheren Momenten (`is_safe_for_autosave`, schließt `can_save` ein),
-  sonst aufgeschoben – auch, solange der Spieler keinen Boden unter den Füßen hat (Sprung, Fall ins Leere). Auslöser nur nach 8.6: Tod eines Gastes, Ende einer Feier, Tür aufgeschlossen, neuer Bereich.
-- **Prüfen:** `--savetest` sammelt → wendet an → sammelt erneut und meldet Unterschiede – nur nötig, wenn sich
-  am Speichern etwas ändert. Bekanntes Rauschen gleicht `main._settle` an und meldet es als „(kein Fehler)“: Türen mit
-  einem Gast im Türrahmen, Lage und Drehung von Dingen in der Hand (folgen der Hand), Drehung liegender Gegenstände bis
-  15° (Euler-Mehrdeutigkeit, Nachrollen), Katzen, deren Zeitgeber zwischen den Messungen ablief. Selten bleibt ein
-  Gegenstand, den ein Gast dazwischen anstößt (Schwung wird nicht gespeichert).
+  LightSwitch, HotelWindow, Dresser, Elevator, FixedCandle, KeyCabinet …) oder werden in `collect()` direkt ausgelesen
+  (Door, Chest, Plant, Resource). Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()` + `WORLD_GROUPS`.
+- Beim Laden `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
+- **Nicht gespeichert**, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating`, `DecoSearch`, `Stove`,
+  `CoffeeMachine` (auch der Wasserkocher), `Pranks`, `Tidying` (`reset()`) – sonst zeigten laufende Aktionen nach
+  `--savetest` auf die neu gebauten Gäste ins Leere. Ebenso nicht: Auftritte von Lakengeist und Kürbismann, Wetter,
+  Flackerwelle, Feiern, Spinnen, Fledermäuse.
+- **Was wo steht** (Überblick; Einzelheiten in `collect`): `player` (Lage, Hand, `bag`, `look`, Geld, Schock,
+  `nights_awake`, `drunk`/`hangover`, `coffee`/`caffeine`/`tea`, `injury`, `disguised`, Kompass, Kartenblätter,
+  Schlüssel), `guests` (je Gast Lage, Werte, Vorrat, Erlebnisse, `seen`, `corpse`, Wunden, `claims`, `stances`),
+  `social` (Beziehungen, `pals` = `{counts, feuds}`, `talk`, `sleep_active`, `night_seed`, `cat_blame`), `director`
+  (Werte, Phase, Absicht, Puppenfrist und Weg), `doll`, `ghost` (`visits`, `catch_up_day`, `hour_meetings`,
+  `first_seen`), `shower` (Dusche in Zimmer 13: `stage`), `pumpkin`
+  (Spaßwert, Besuche, Garantie), `contest`, `notebook` (mit `seen`), `diary`, `traces` (mit Schleiern), `elevators`,
+  `resources` (mit `guest_day`) und die Welt-Gruppen.
+- **Speichern gesperrt** (`can_save`) bei Jagd oder Monster in der Nähe, während der Flackerwelle, solange der
+  Kürbismann sich ankündigt oder im Hotel ist und der Lakengeist beim Spieler ist; Autosave nur in sicheren Momenten
+  (`is_safe_for_autosave`, auch nicht ohne Boden unter den Füßen), sonst aufgeschoben. Auslöser: Spielkonzept 8.6.
+- **Prüfen:** `--savetest` sammelt → wendet an → sammelt erneut und meldet Unterschiede – nur nötig, wenn sich am
+  Speichern etwas ändert. Bekanntes Rauschen gleicht `main._settle` an und meldet es als „(kein Fehler)“: Türen mit
+  einem Gast im Türrahmen, Dinge in der Hand, Drehung liegender Gegenstände (Euler-Mehrdeutigkeit, Nachrollen),
+  Katzen, deren Zeitgeber zwischen den Messungen ablief. Selten bleibt ein Gegenstand, den ein Gast dazwischen anstößt.
+  Der Savetest stellt vorher eine andere Spielerfigur ein und setzt sie danach zurück.
 
-## 8. Weitere Systeme (Kurzüberblick)
+## 8. Weitere Systeme
 
-| System | Datei(en) | Merkpunkte |
-|--------|-----------|------------|
-| Licht | `lamp.gd`, `light_switch.gd`, `flicker_light.gd`, `world/fixed_candle.gd`, `util/shadow_budget.gd`, `level/light_rooms.gd`, `level_builder.gd` (`_wall_lamp`, `_candle`, `_halogen`, `structure_parts`), `world/candle_model.gd`, `world/candle_flame.gd` | Lampe = Fassung + Birne (Item `BULB`; Halogenröhren im UG und Unterwasserlampen im Pool ohne Birne, Abschnitt 4); `flicker` (Nähe des Monsters, kann Birnen durchbrennen) und `wave` (Flackerwelle, 4.17) setzt der Director; Godot hält Licht nur mit Schatten an Wänden auf; eine Lampe ohne Schatten scheint durch alles hindurch (früher warfen nur 12 Lampen Schatten, die übrigen leuchteten durch Wände und in die Flure, und wechselte eine die Seite, ging im Flur Licht an oder aus). Darum werfen alle Lampen (`lamps`, außer `no_shadow`) dauerhaft Schatten (`ShadowBudget`), die meisten nur vom Bau (`shadow_caster_mask` = `LAYER`, Ebene 15): Wände, Böden und Decken fasst `ShadowBudget.merge` nach dem Bau je Kachel (`TILE` 10 m, je Stockwerk; ein Mesh kommt ganz in die Kachel seiner Mitte, ~1 700 Teile → ~330 Kacheln, 0,3 s) zu einem unsichtbaren Mesh in Weltkoordinaten zusammen, das nur Schatten wirft (`SHADOWS_ONLY`, Knoten „Schattenbau“ unter Main); Türen liegen selbst auf der Ebene (`structure`, sie bewegen sich). Die 12 nächsten (`FULL`, bis 18 m, alle 0,25 s: Abstand zur Kamera minus Reichweite, wer schon alles nimmt, behält es mit 1,5 m Vorsprung) nehmen alles außer den Kacheln (Möbel, Gäste, die eigene Figur, die echten Wände) – wechselt dort eine, ändern sich nur Möbel- und Figurenschatten. Der Schatten der Lampen blendet erst mit dem Licht aus (`distance_fade_shadow` = Anfang + Länge der Licht-Ausblendung, früher 16 m: dazwischen schien es durch Wände). Godot 4.7 rendert Punktlicht-Schatten jedes Bild neu, auch ohne jede Bewegung (Mini-Szene geprüft); Paraboloid-Schatten (2 statt 6 Durchgänge) verbiegen große Wandflächen und lassen Licht in Flecken durch (23.10. verworfen). Gemessen 23.10. (abwechselnd, je zwei Läufe `--perf`, Mediane, Flur `--pos=40,0,-8` / Lobby, 21 Uhr): vorher 10,3 / 12,2 ms CPU- und 8,0 / 9,4 ms GPU-Renderzeit, 13 000 / 16 000 Zeichenaufrufe; mit Schatten vom Bau aus den echten Bauteilen 17–23 / 18–21 ms CPU, 19 000 / 21 000 Aufrufe; zusammengefasst 18,6 / 18,7 ms CPU, 11,0 / 12,3 ms GPU, 15 000 / 14 700 Aufrufe – die Aufrufe sind zurück, die CPU-Zeit nicht: Sie hängt an der Zahl der Schattenlampen (Flur 134, Lobby 150 bis 32 m, davon 10–14 Kerzen), nicht an der der Meshes. Der Schattenatlas hat 88 Plätze (4096, Viertel 4/4/16/64); mehr Plätze machten es teurer. **Abschalten nach Grundriss (24.10.):** Lichter (`lamps` und `light_source`), die die Kamera nicht erreicht, schaltet `ShadowBudget` für die Darstellung ab (`light_cull_mask` 0, kein Schatten; eigene Werte in den Metas `hidden_mask`/`hidden_shadow`, Bereich je Licht in `light_room`, neu nach 0,25 m Bewegung) – sie konkurrierten sonst um die 88 Plätze, und wer keinen bekommt, scheint durch Wände. Unsichtbar, weil alle erreichbaren Lampen Wand-Schatten werfen; An/Aus, Energie und `light_at` bleiben unberührt. Die Bereiche baut `LightRooms` (`level/light_rooms.gd`, `LevelBuilder.light_rooms`, nichts von Hand gepflegt): je Stockwerk ein 25-cm-Raster wie `_grid`, jede Wand des Plans mindestens 0,25 m dick und um ihre halbe Dicke verlängert gerastert (Ecken dicht), je Rasterzeile die freien Läufe, Läufe, die einen der Zeile darüber überlappen, per Union-Find zu Bereichen (~200 für drei Stockwerke, ~30 ms). Dauerhaft verbunden: Treppenhäuser mit dem Stockwerk darüber und darunter, Treppen (`stair`) und `open_above` mit dem darüber, `voids` mit dem darunter (Stichproben je Meter im Rechteck), freier Himmel (auf beiden Stockwerken keine Fläche des Plans oder eine draußen, alle 2 m, nicht ins UG – vom Hof sieht man die Fenster oben). Türen verbinden, solange `Door.lets_light()` (offen oder das Blatt noch > 0,03 rad offen), Fenster, Aufzugtüren, Glaswände (je Meter ein Fenster) und geschlossene Glastüren nur einen Schritt weit; Seiten einer Öffnung ±0,45 m quer zur Wand, in einer Wandzelle die nächste freie (bis 2 Zellen). `reach` alle 0,25 s und gleich nach `Door.set_open` (`ShadowBudget.wake`, sonst käme das Licht durch den Spalt zu spät); liegt die Kamera in keinem Bereich, bleibt alles an. Stockwerk eines Lichts nach seinem Wurzelknoten (Unterwasserlampen liegen unter ihrem Boden), lose Lichter und Kamera nach Höhe (Boden höchstens 0,5 m über ihnen – Lichterketten hängen über 2 m; liegt dort keine Fläche, aber im Stockwerk darüber bis 2 m, das). Im Code gebaute Wände ohne Plan-Eintrag trennen keine Bereiche. Gezählt (Lichter mit Schatten, deren Kugel ins Bild reicht, bis zur Ausblendung, kurz nach dem Start): Südflur `--pos=67.5,0,-10` 38 → 12, Ostflur `--pos=40,0,-8` 38 → 12, Lobby 94 → 70, Zimmer 13 34 → 1, Garten vor dem Hotel 40 → 23; vorher schienen Zimmerlampen dicht hinter der Flurwand auf die Kupferdecke und UG-Röhren durch den Rasen an die Fassade. Nach 20 s ist die Lobby wieder bei 93: Gäste öffnen jede Tür, an der sie vorbeigehen (`Guest._open_doors`), und lassen sie offen (~70 nach 8 s), dazu die Unterwasserlampen hinter der Poolglaswand. Kosten (abwechselnd, je 2–4 Läufe `--perf=25`, Mediane ab 8 s, 21 Uhr): Flur 20,2 → 20,0 ms CPU, 7,7 → 7,6 ms GPU; Lobby 20,6 → 26,0 ms CPU, 9,2 → 12,3 ms GPU, 14 800 → 18 400 Aufrufe – dort bekommen jetzt mehr Lampen wirklich ihren Schatten. Atlas 8192 (4/16/64/256 oder 16/64/256/256, alle Plätze ≥ 256 px) kostete Lobby 40–46, Flur 26 ms CPU – verworfen. Licht aus → `on_lights_off`. `FlickerLight.hold` (≥ 0) legt die Helligkeit fest, egal was der Schalter sagt – das Flackern kommt noch dazu (Badlampe der Dusche, 4.24); −1 = aus. Deckenleuchten nur, wo der Plan sie setzt (`_ceiling_lamp`, Kupferleuchte bzw. Pendel); jeder Raum hat mindestens eine Wandleuchte (`WALL_LAMP_ENERGY`, Lobby ×1,3), sonst schaltet sein Schalter nichts. Zimmer haben zwei hellere (`ROOM_LAMP_ENERGY`, Tür- und Fensterwand) und eine hellere Holzdecke (`_room_ceiling`) als die Flure (`_ceiling`, abgedunkelt). Feste Deko-Kerzen (`_candle`, `CANDLE_ENERGY`, kein Item, nicht gespeichert, in `lamps` → flackern mit) auf Flurkommoden, Bank, Lobby, Theke und Zimmertischen (nicht in dunklen/unbewohnten Zimmern) sind mit den Kürbissen die hellsten Lichter. Wandleuchten und Laternen laufen zusätzlich durch `Lamp.BRIGHTNESS` (Stärke ×1,35) und `Lamp.REACH` (Reichweite ×1,3). Umgebungslicht 0,14 und Mond 0,32 (`main._setup_environment`), damit dunkle Ecken als Umriss bleiben und die Nacht nicht pechschwarz ist. Helligkeit nachjustieren: `BRIGHTNESS`/`REACH` für alle Lampen gemeinsam, sonst die drei Konstanten, die Deckenfarben, Umgebungslicht und Mond |
-| Statische Testszene | `util/static_export.gd` (`StaticExport`), `util/static_walker.gd` (`StaticWalker`), `main._export_static` | Debug `--static-eg[=pfad]` (auch in der Konsole): nach dem Bau des ganzen Hotels zwei Bilder warten, dann aus `LevelBuilder.structure_parts` alles im Erdgeschoss (unter `root`, nicht unter „Obergeschoss…“/„Untergeschoss“) kopieren – Wände samt Kollisionsknoten, Häute, Böden, Decken mit ihren Materialien –, dazu jede eingeschaltete Lampe (`lamps`, ohne Kerzen, defekte und `no_shadow`) als schlichte `OmniLight3D` mit `base_energy`, alle mit Schatten, die sichtbaren Meshes ihrer Leuchte, Umgebung und Mond, einen Fangboden bei y = −3 (Aufzugschacht und Becken fehlen) und `StaticWalker` am Spielerstart (WASD, Maus, Umschalt, Leertaste, Esc; eigene Tasten, hängt an keinem Autoload). Gespeichert als `res://temp/eg_static.scn` (temp/ ist nicht im Repo; ~70 MB, weil die zur Laufzeit aufbereiteten Fototexturen eingebettet sind). Ohne Türen, Fenster (Öffnungen bleiben offen), Möbel, Treppen, Spiellogik. 23.10.: 924 Bauteile, 172 Lampen; in Zimmer 13 1,2 ms CPU / 2,2 ms GPU – mit allen Schatten, weil kaum Objekte in der Szene sind |
-| Fenster | `hotel_window.gd` | klares Glas / Vorhang (Ebene 10 nur für Sicht & Mond); Milchglas kann die Klasse noch, ist aber nicht mehr verbaut |
-| Türen | `door.gd` | Blatt auf Ebene 2 (Glastür 7); Rahmen über `OpeningFrame` (Zarge, Bekleidung, Kopfpartie auf beiden Wandseiten, nur Optik). Blatt gebaut (`Look.PLAIN`, Glastüren immer) oder gemaltes Modell (`HOTEL`, `ATTIC`, siehe 1): `leaf` auf die Blattgröße gestreckt, bei `dir` = −1 über `scale.x` gespiegelt; Klinke (`HANDLE_INSET`, `HANDLE_HEIGHT`) und Bänder (`HINGE_AT`) ungestreckt; Teile einmal geladen (`_model_parts`), Kollision wie beim gebauten Blatt. Spuren über `attach_mark(mark, seite, at)` – Kratzer mittig, Handabdrücke (`Traces.add_door_handprint`) höher; `at` wird mitgespeichert |
-| Spuren | `traces.gd`, `trace_mark.gd` | zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`; Fußabdrücke verblassen, Marken bleiben. **Blut an Wänden** (`add_wall_blood(pos, kind)`): sucht in 16 Richtungen in Spurhöhe (`WALL_BLOOD_HEIGHT`) die nächste Wand bis `WALL_BLOOD_RANGE` (2,5 m, Ebene 1, Normale waagrecht) und setzt dort `wall_splatter` (Kern, Spritzer, Läufer – wo das Monster einen Gast holt, `MonsterDirector`, und beim Kürbismann, `Guest.die`) bzw. `wall_smear` (Hand mit vier herabgezogenen Fingerstreifen – Spuk `MonsterDirector._haunt_wall_blood`: mit `WALL_SMEAR_CHANCE` je Spuk-Runde dabei, an einem Patrouillenpunkt im Flur außer Sicht, höchstens `MAX_WALL_SMEARS`, gezählt an den Spuren selbst). Beide sind Schreck-Anblicke wie Blutlachen (`_as_sight`, auch nach dem Laden) und an Zimmer 13 abwischbar; Debug `--wallblood[=smear]` an die Wand im Blick. Die Aschespur des Monsters ist nur Optik (Partikel, `monster.gd`), keine Spur in `Traces` – Gäste erzählen nicht davon |
-| Partikel | `shaders/psx_particle.gdshader`, `Mat.particle`, `Geo.particles`; `record_player.gd` (`_build_notes`), `sheet_ghost.gd` (`_build_flakes`), `monster.gd` (`_build_ash`), `level_builder.gd` (`_falling_leaves`, `_leaf_texture`) | Spielkonzept 7.6. Alles `CPUParticles3D` in Weltkoordinaten (`local_coords` aus – Partikel bleiben, wo sie entstanden), quadratische `QuadMesh`, keine Schatten. Der Shader macht das Billboard selbst (`skip_vertex_transform`, Vertex-Snapping wie `psx_surface`) und blendet über das 4×4-Raster aus: Deckkraft = `fade` × `COLOR.a`, `COLOR` = `color` × `color_ramp` (`Geo.particles` legt die Rampe mit `fade_in`/`fade_out` an) × `color_initial_ramp`. Je Partikel liest er `INSTANCE_CUSTOM.x` (Startwinkel, `angle_min/max` 0…360 → Zufallswert: Bild, Farbton, Phase) und `.y` (Anteil der Lebenszeit) – darüber laufen `sway`/`tilt`/`sway_cycles`/`spin` und der Farbton, so steht alles in der Pause. `frames` = Bilder nebeneinander in `albedo_tex`; `rainbow` ersetzt den Farbton der Textur (Startton zufällig, wandert um `hue_drift` je Leben), `brighten` hebt den HSV-Wert, `glow` = Eigenleuchten. `floor_y` (Welt): darunter liegt ein Partikel flach auf dem Boden statt weiterzufallen (Laub; CPUParticles kennen keine Kollision), das Schaukeln läuft auf dem letzten halben Meter aus. **Noten:** `assets/textures/note_1…4.png` (32², rot gemalt, damit der Farbton sauber ersetzt wird) zur Laufzeit zu einem Streifen zusammengesetzt, Emitter an der Trichteröffnung (`HORN_MOUTH`), `emitting` = `playing`. **Flocken:** Ring knapp außerhalb des Lakens (Breite aus der Mesh-AABB, ohne die Arme in Z) auf `FLAKE_FROM` der Höhe – weiter innen verdeckt sie das Laken, weiter unten die Fensterbrüstung; `fade` folgt `_fade`, `_hide()` löscht alte per `restart()`. **Asche:** eigener Knoten neben dem Monster (`get_parent()`, deferred), folgt ihm auf `ASH_HEIGHT` und sendet, solange es aktiv ist – so bleibt die Spur, wenn es verschwindet. **Laub:** je Baum ein Emitter unter `world` (nicht `root`, das NavMesh liest dort), Kasten in der Krone (`crown` aus `TREE_MODELS` × Höhe), konstante Sinkgeschwindigkeit ohne Schwerkraft, `LEAF_LIFE` reicht für Fall und Liegen; `preprocess`, damit beim Start schon Laub liegt. Neuer Partikeleffekt: `Mat.particle` + `Geo.particles`, Bewegung am Emitter setzen |
-| Zettel | `warning_note.gd` | feste Warnungszettel (`warning_notes`, erst nach dem 1. Angriff sichtbar) und Gäste-Zettel (`guest_notes`, max. 30); „1999“ steht nicht im Plan, `DoorContest` legt ihn hinter die Tür von Zimmer 13 |
-| Der Anfang | `world/door_contest.gd` (`DoorContest`, `Letter`), `world/notice_board.gd` (`NoticeBoard`, `Sheet`), `level_builder.gd` (`_lobby_hall`: `notice_board`, `lobby_rect`, `NOTICE_BOARD_Z`/`_Y`), `jury_doll.gd`, `guest.gd` (`join_party(platz, blick)`), `player.gd` (`spellbound`), `menus.gd` (`_show_help`) | Spielkonzept 2.5. `Game.contest`, Abschnitte `Stage` CONTEST → GATHERING → SCENE → DONE. **Brief:** `Letter` neben dem Tagebuch – `_place_letter` sucht nach zwei Physikbildern rund um das Tagebuch (12 Richtungen, zwei Abstände) einen Platz, an dem eine Kastenabfrage nichts trifft und vier Strahlen die Tischplatte auf Tagebuchhöhe finden. Lesen → `letter_read` (Tagebuchsatz `ARRIVAL_ENTRY` am 1.; das erste Mal auch Notizbuch, erste Aufgabe und Meilenstein, siehe Notizbuch & Tagebuch). **Brett:** `NoticeBoard` an der Westwand der Lobby (`NOTICE_BOARD_Z`, zwischen Glastür zur Bar und Wandleuchte), Korktafel, Messingschild und eigene Bilderleuchte (`FlickerLight` in `lamps`, aus, wenn der Lobbyschalter aus ist); `pin(id, …)` heftet `Sheet`s an (Papier, `Label3D` beleuchtet, [E] → `Menus.open_note`). `_pin_board` setzt Wettbewerb bzw. nach `first_attack_done` den veränderten Aushang und die Hausordnung. **Durchsagen:** `ANNOUNCEMENTS` (Tag, Stunde, Text) → `announce`: Gong (`SynthAudio` „chime“) und Meldung; verpasste nur bis `ANNOUNCE_LATE` (eine Spielstunde) nachgeholt. **Siegerehrung:** ab `CEREMONY_DAY`/`CEREMONY_HOUR` `_begin_gathering`: Plätze `_gather_spots` (Raster `SPOT_GRID` über `lobby_rect`, NavMesh, vor dem Sofa, ab `SPOT_MIN` – davor bleibt ein Halbkreis frei), freie Gäste `join_party(platz, puppe)` (Zustand `PARTY`, schauen hin statt zu tanzen, `_gather_look`), alle 5 s Nachzügler, Gerede `GATHER_LINES`. `Social` feiert an dem Abend nicht (`holds_parties`), keine Besuche und kein Süßes oder Saures (`is_gathering`), `GroupDecorating` ruft nicht auf. Beginn, sobald der Spieler `START_DELAY` in der Lobby steht (nicht versteckt, kein Gespräch, kein Menü) und `ARRIVED_SHARE` an ihren Plätzen sind (sonst nach `WAIT_FOR_GUESTS`), nie neben einer anderen Bedrohung; spätestens `CEREMONY_LATEST` ohne ihn. **Szene** (`T_*`): `Player.spellbound` (keine Eingabe, keine Bewegung), `_pull_gaze` dreht Körper und Kopf weich zur Puppe; Kinder still; Puppe `stand_pose`, steigt `RISE_HEIGHT`, schwebt, dreht sich zum Spieler; `_puff` (Rauchballen aus `Geo.particles`, Textur zur Laufzeit) + „poof“, `vanish`; `_end_scene`: Lobbyschalter aus, `first_attack_in_lobby(_monster_corner(), …)` (Ecke weit weg vom Spieler), Gäste `take_cover`, Spieler frei. Autosave nicht während der Szene. **Danach:** `_deliver_note` (WarningNote „1999“, `NOTE_INSIDE` hinter der Tür von Zimmer 13) ab `NOTE_HOUR` am Tag danach, sobald der Spieler die Stelle nicht sieht (Rascheln); am Tag nach dem Angriff gehen höchstens `READERS` Gäste zum Brett (`reading_spot`) und sagen `BOARD_LINES`; erstes Urteil der Puppe → `verdict_text` im Tagebuchsatz (bis zum Tag danach). **Hilfe** (Spielmenü): `Menus.CONTROLS`/`BASICS`, Einträge mit „danach“ erst nach dem ersten Angriff, „debug“ nur mit Debug-Konsole. Debug `--siegerehrung[=ohne]`, `--brett[=nachher]`, `--brief`, `--zettel`; `--trace` „[Wettbewerb]“ |
-| Kommoden | `world/dresser.gd` | Aus dem Plan (Ebene `Möbel`, `LevelBuilder._furniture`). Drei Schubladen als eigene Körper; interagierbar ist je ein `Dresser.Handle` (leitet mit Index weiter). Hohler Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen einer Schublade (`searched`): leer / Münzen / Gegenstand aus `LOOT`. Beim Auf-/Zuschieben werden die darin liegenden Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“ – sie liegen nicht in der Hand). Lärm `drawer`. Gespeichert: `open`, `searched` (ab Version 7) |
-| Aufgehängte Deko | `item.gd` (`HANGABLE`, `hang`, `_sway`, `_build_sheet_ghost`, `_build_strand`), `player.gd` (`_hang_spot`, `drop_held`), `guest.gd` (`door_hang_spot`), `monster_director.gd` (`deco_unrest_at`) | Spielkonzept 5.6. [G] auf eine Wand (Strahl Ebene 1, Normale fast waagerecht) hängt auf statt abzulegen; der Prompt zeigt „… aufhängen [G]“ bzw. „Herbstlaub verstreuen [G]“. Lakengespenst: Haken 1,6–2,5 m über dem Boden, Kopf an der Wand (`GHOST_DEPTH`). Lichterkette: Linie 1,7–2,5 m, reicht nach beiden Seiten bis zur nächsten Wand oder Tür (Strahl Ebene 1+2), höchstens 3 m, Bögen mit `STRING_SAG`, ein `FlickerLight` ohne Schatten (Meta `no_shadow` → `ShadowBudget` überspringt es) in Gruppe `lamps` – flackert also wie die Lampen; die Birnen folgen dessen Helligkeit. Gäste hängen eigene Deko an die Flurseite ihrer Tür (`door_hang_spot`: Lichterkette über, Gespenst/Spinnweben neben der Tür), auch die Start-Deko (`Social._spawn`). `own_deco_near_door` und der Tagebuchsatz messen waagerecht. **Unruhe** `deco_unrest_at(p)` 0..1: Monster linear von `DECO_UNREST_RANGE` (16 m) bis 3 m, Flackerwelle × 0,6, Lakengeist bis `DECO_UNREST_GHOST` (10 m) × 0,75; jeder hängende Gegenstand fragt alle 0,2 s, schwingt immer ein wenig (`SWAY.x`) und bei Unruhe gleichmäßiger und stärker (`SWAY.y`), nie in die Wand; seitlich neigt es sich leicht weg von der Quelle (`deco_unrest_source`, `_lean`). Ab `JOLT_UNREST` fällt der Zierkürbis aus den Händen (`drop_pumpkin`, eigener Gegenstand `MINI_PUMPKIN`, Untertitel). `circling_with` (der Lakengeist vor der Tür) lässt Lakengespenster im Takt seiner Hände kreisen (`SheetGhost.hand_phase`). Herkunft: Wäschekiste (Möbel `laundry_box` → `ResourceSpot` `SHEET_GHOST`), Plan-Ausstattung „Dekokiste“ (`deco_box` → `LIGHT_STRING`), Kommoden (`Dresser.LOOT`), Kürbisbeete (`MINI_CHANCE` je Ernte ein Zierkürbis daneben), Vorräte von Mila, Bruno, Edna und manchen erzeugten Gästen (am Ende von `GuestGenerator.make`). Debug `--deco=art[,g]`. **Mehr Deko** (5.7): `BAT_GARLAND` (`_build_bats`, Flügel `_wings` flattern mit der Unruhe), `SPIDER` (`_build_spider`, `_thread`/`_spider` wippen), `BROOM` (lehnt schräg, `BROOM_LEAN` steckt in der Drehung des Körpers; `topple_broom()` ab `JOLT_UNREST`), `SKULL` (`CANDLE_HOLDERS` wie der geschnitzte Kürbis, `extra` `"lit"`, kippt um). `ResourceSpot.with_pool()` gibt abwechselnd verschiedene Arten (Dekokiste: Lichterkette, Fledermäuse, Spinne; alte Deko im Heizkeller, `LevelBuilder._boiler_room`: Totenkopf, Besen, Fledermäuse) |
-| Verstecke | `hide_spot.gd` | `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur; `own_bed` = Bett in Zimmer 13 (Schlafen, 4.18); `rattle()`/`burst_open()` für den Lakengeist; Bett: `bed_size` (Außenmaß Länge × Breite aus dem Plan) und `head_x` (Seite des Kopfteils) vor dem Einfügen; Kollision: Kasten bis zur Matratze + geneigter Kasten fürs Kopfteil; Bettkante auf der Matratze (`BedModel.TOP` − 3 cm); zerwühlt verschiebt und dreht `set_checked` die Bettdecke gegen ihre Ruhelage |
-| Balkenbett | `bed_model.gd` | `BedModel.build(parent, size, head_x)` für alle Betten (24.10.): vier Pfosten `POST` 19 × 19 cm, dazwischen Längs- und Querbalken `BEAM` 17 × 17 cm mittig auf den Pfosten (die stehen ringsum und oben 1 cm vor), `FREE` 33 cm Luft darunter; Matratze in der lichten Weite (`inner` = Außenmaß − 36 cm) auf unsichtbarem Lattenrost 0,42–`TOP` 0,6 m, Rundung 4 cm (`Geo.rounded_box`); Kopfteil zwei Bretter 4 cm (15 + 20 cm hoch) auf zwei Latten 6 × 3 cm, die 10 cm im Kopfbalken stecken, alles `HEAD_TILT` 15° nach hinten (ragt oben ~8 cm über das Außenmaß); ein Kissen, ab `HideSpot.DOUBLE_WIDTH` zwei; Bettdecke mit Umschlag (Rückgabe, für `set_checked`). Holz: `Geo.grain_box` – UVs folgen der Faser (Pfosten und Latten senkrecht, Balken und Bretter längs), Stirnseiten als eigene Fläche mit Hirnholz (`Mat.wood`); Meshes je Maß geteilt. `Guest.BED_TOP`/`BED_FOOT_GAP` und der Katzenplatz (`BedModel.blanket_top`) richten sich danach |
-| Sitzen | `world/seat.gd`, `player.gd` (`sit_down`, `_update_seated`, `leave_seat`, `stand_position`, `aim_point`, `_look`), `level_builder.gd` (`_couch`, `_bench`, `_room_table`, `_box_furniture`), `hide_spot.gd` (`seat`, `_sits`) | Spielkonzept 3.1. `Seat.attach(körper, art, sitzhöhe, boden, blick, länge, aufstehen)` hängt einen `Seat` unter den Möbelkörper und setzt dessen Meta `interactable` (außer der Körper hat schon eine – Betten: `HideSpot` fragt `seat` selbst; stehend Bettkante, geduckt drunter, das eigene Bett nachts schläft man stehend). Plätze = `Marker3D` am Boden unter der Sitzmitte, lokal −Z = Blick, je `SPOT_WIDTH` (0,6 m) der Länge einer: Sofa 3, Parkbank 2, Bettkante 2 (Ausstiegsseite, ohne Kissen), Stuhl, Toilette und Zimmerstuhl 1; die Hocker der Spieltische nicht. `free_spot(aim_point())` nimmt den freien Platz, auf den man schaut; besetzt, wenn Katze (`cats`), Puppe (`jury_doll`) oder ein Gast, der sich nicht versteckt, waagerecht näher als `BLOCK_RANGE` ist. **Spieler:** `seat`/`_seat_spot`, Kollision aus, Augen `top` + `EYE_ABOVE`; `_look` dreht nur `_sit_turn` (± `SIT_TURN` = 90°) um die Sitzrichtung, die Neigung bleibt frei. `_physics_process` ruft im Sitzen nur `_update_seated` (Fokus ja, Bewegung, Ducken, Schritte, Lärm nein; Ausdauer erholt sich wie im Stehen). Leertaste oder Bewegungstaste → `leave_seat()`; `stand_position()` sucht in drei Abständen ab `stand_out` je acht Richtungen (vorn zuerst) einen Platz für die Kapsel (`_can_stand(at)`) mit freiem Strahl auf 1,4 m Höhe (Ebene 1 – nie durch die Wand), INF = keiner („Hier ist kein Platz zum Aufstehen.“). `leave_seat(true)` (vor `shove`, Verstecken, Spieltisch, `TeleportUI.place_player`, Laden, Würgen) steht notfalls vor dem Platz auf. **Speichern:** `pos` = `stand_position()` – das Format bleibt, geladen wird stehend. Debug `--sitzen[=sofa|bank|stuhl|bett|klo]` (nächstes Möbel dieser Art, erster Platz; `--trace` „[Sitzen]“) |
-| Ausdauer | `player.gd` (`_update_stamina`, `exertion()`), `monster_director.gd` (`_update_effects`), `util/synth_audio.gd` (`pant`, `_update_pant`) | Spielkonzept 3.1. `stamina` 0..1, nicht im HUD und nicht gespeichert. Rennen (Wert aus dem letzten Frame) zieht `1/STAMINA_RUN_TIME` je Sekunde ab, sonst kommt `1/STAMINA_REST_TIME` dazu (in Bewegung × `STAMINA_WALK_SLOW`). Leer → `winded`: `running` bleibt aus bis `STAMINA_CALM`. `exertion()` = Lautstärke von Herz und Atem (außer Atem 1 → 0 bis zum Beruhigen, sonst leise unter `STAMINA_HINT`); der Director nimmt sie in `heart_target` (× 0,85) und setzt `audio.pant`/`pant_rate` (stumm bei `holding_breath`). Klang: `SynthAudio._update_pant` spielt alle `1 / pant_rate` s einen Atemzug `assets/sound/breath.wav` (aus `temp/audio/345961__hkkit__breath.mp3`, mono, Spitze −6 dB) mit `BREATH_DB`, Tiefe und Tonhöhe leicht gewürfelt; die Lautstärke folgt `pant` laufend, unter 0,02 bricht der Atemzug ab. Untertitel `[Du keuchst]`. **Keuchen verrät:** `is_panting()` (ab `PANT_NOISE_FROM`, nicht beim Luftanhalten) → Lärm `pant` alle `PANT_EVERY` s; `Monster._check_hide_step` × `PANT_FOUND`; `SheetGhost._lurk` merkt es in `_heard_pant` → `PANT_CHANCE` mehr. Luftanhalten verbraucht `breath` × (1 + `WINDED_BREATH_DRAIN` × `exertion()`). F3 zeigt die Ausdauer, `--sprint`/`--winded` zum Prüfen |
-| Schritte | `util/footsteps.gd`, `player.gd` (Schrittzähler in `_physics_process`), `guest.gd` (`_leave_traces`) | Reiner Ton, kein Lärm (der läuft weiter über `Game.noise("step"/"run")`, 4.15). `Footsteps` ist ein `AudioStreamPlayer3D` an den Füßen jedes Spielers und Gastes; `step(boden, rennt, kind)` spielt den nächsten Klang aus `SOUNDS[boden]` (abwechselnd linker/rechter Fuß, Tonhöhe ± `PITCH_JITTER`, Rennen + `RUN_DB`, Kinder leiser und heller) × `Settings.effects_volume`, hörbar bis `RANGE` (12 m, ungedämpft durch Wände). Bisher `carpet` (Teppichflure) und `tiles` (Fliesen: Lobby, Küche und alle anderen gefliesten Räume) – Holz und Rasen bleiben stumm, ein neuer Klang ist nur ein Eintrag in `SOUNDS` (Textur dazu in `FLOOR_TEXTURES`). `Footsteps.floor_under(körper)`: Strahl nach unten (Ebene 1), Textur-Id des getroffenen Bodens aus `FLOOR_TEXTURES`, `""` sonst, `"air"` ohne Treffer – auch der Spieler entscheidet damit, ob Gehen Lärm macht (`SOFT_FLOORS`). Spieler: Schritt alle `STEP_LENGTH` (0,75 m), rennend alle `RUN_STEP_LENGTH` (1,3 m), geduckt still; Gäste alle 0,8 m, als rennend gilt > 1,5 × `WALK_SPEED`. `step_carpet.wav` stammt aus `temp/audio/footsteps_carpet.wav` (um 20 dB angehoben, ausgeblendet), `step_tiles.wav` aus `temp/audio/footstep_church.wav` (Stille vorn jeweils weg; mono, Spitze −6 dB) |
-| Notizbuch & Tagebuch | `world/notebook.gd` (`Notebook`), `player/pocket_map.gd`, `player/notebook_page.gd` (`NotebookPage`), `world/diary.gd` (`Diary`), `menus.gd` (`_show_diary`, `_show_diary_pages`, `_write_diary`), `hud.gd` (`show_noted`), `tests/notebook_checks.gd` | Spielkonzept 3.10. **Notizbuch** `Game.notebook` (Knoten in `main.gd`): `owned` (der Brief gibt es, `DoorContest.on_letter_read`), ohne wird nichts notiert. `add_task(id, text, by, gast, frist)` hängt hinten an (id einmalig, `""` immer neu; Gast → Name, `by_id`, Zimmer `home.sign`), `finish_task`/`miss_task` nur aus `OPEN` (`TaskState` DONE/LATE), `on_guest_died` (aus `Social.on_guest_died`) setzt `dead` bei allen seinen Aufgaben – Zustand bleibt. `add_note(id, text, quelle)` mit `at` = `Director.elapsed`, id einmalig. Jede Änderung: `tasks_revision`/`notes_revision` +1, `Hud.show_noted` und leises „rustle“. Quellen: `DoorContest` (erste Aufgabe `TASK_ID`, bei der Siegerehrung bzw. `_skip_to_done` `_settle_task`: Deko vor der Tür → erledigt, sonst zu spät; Durchsagen mit Kurzfassung als 4. Wert in `ANNOUNCEMENTS`), `NoticeBoard.pin(…, jot_id, jot)` beim Lesen eines `Sheet`, `WarningNote.NOTES` `jot`/`by` (UV-Zeile als eigene Notiz), `PhoneCalls` (Feier, Einladung zum Schmücken, Anruf eines Toten). **In der Hand:** `PocketMap` hängt nach den Kartenblättern die Seiten `tasks:n`/`notes:n` an (`NotebookPage.paginate`: Zeilen je Seite `ROWS`, Tageskopf je Spieltag – auf neuer Seite wiederholt, keine Leerzeile oben –, ein Eintrag bricht nicht um); Seite erst beim Ansehen in einem eigenen SubViewport gerendert (`NotebookPage.SIZE`, Seitenverhältnis der Kartenblätter, Inhalt im in der Hand sichtbaren Ausschnitt `TOP`…`ROWS`), Material **ungeschattet** (beleuchtet war die Schrift unter Filmic grau auf grau; lesbar auch im Dunkeln). Einband und drei Reiter (`BOOKMARKS`) nur mit Notizbuch, Büroklammer nur ohne. Mausrad/Linksklick blättern durchs ganze Buch, Rechtsklick (`next_bookmark`, nicht im Versteck – dort hält er die Luft an) springt zum nächsten Lesezeichen auf seine zuletzt gezeigte Seite; Neues stellt das Lesezeichen auf die letzte Seite. Tab öffnet auf der Karte (ohne Kartenblatt bei den Aufgaben), `PocketMap._process` setzt neu, wenn sich eine Revision ändert. **Tagebuch** `Game.diary` (= `LevelBuilder.diary`): `note(id, text)` sammelt Meilensteine in `pending` (jede id einmal, auch wenn schon aufgeschrieben) – Ankunft, `first_attack` (Siegerehrung mit/ohne Spieler, sonst `FIRST_SIGHT_ENTRY`), `first_verdict`, `first_death`, `first_theft` (`Social.on_player_took`), selbst alle `CHECK_EVERY` s `first_ghost` (`SheetGhost.with_player`) und `pumpkin_man` (im Haus und `player_can_see`). `Menus._write_diary` schreibt vor `save_to` alles auf (`write_pending`, mit `strange_diary` die fremde Zeile, `foreign`), scheitert das Speichern, `unwrite`. „Im Tagebuch blättern“ (`DIARY_PER_PAGE`). Der Tagebuchsatz der Slots bleibt getrennt. Gespeichert unter `notebook` und `diary` (ab Version 37). Debug `--notizbuch`, `--show=aufgaben`/`notizen`, `--menu=diary_pages`; `--trace` „[Tagebuch]“ |
-| Symbole & Porträts | `ui/icon_art.gd` (`IconArt`), `assets/textures/icons/Icon_<name>.png` (64 × 64, Quelle `Icon_themonster.aseprite` im Hauptordner), `hud.gd` (`set_prompt(text, icon)`, `show_message(text, dauer, icon)`, `PROMPT_ICON`, `MESSAGE_ICON`), `player.gd` (`_update_focus`, `killed_by`), `game.gd` (`say(text, dauer, icon)`, Signal `message_posted` mit icon), `death_screen.gd`, `notebook.gd` (`seen`, `note_seen`, `_check_sight`), `pocket_map.gd`, `notebook_page.gd` (`_draw_threats`) | Spielkonzept 3.10 (Ergänzung 2026-10-24). `IconArt.texture(name, größe)`: 64 = die Datei, kleiner einmal mit Lanczos verkleinert und je Größe zwischengespeichert (Nearest zerriss bei 480 × 270 die Striche). **Aktions-Symbol:** Interaktionsobjekte können `get_icon(spieler) -> String` haben – `_update_focus` fragt es, wenn der Hinweis nicht leer ist; `Door` „door“, `Dresser.Handle` „drawer“, `HideSpot` „closet_enter“ bzw. eigenes Bett „sleep“ (nicht beim Sitzen, nicht besetzt), `BarTap` „alcohol“, `CoffeeMachine`, Tablett (`ResourceSpot`) und Tasse „coffee“, `Item` „decorate“ für Kerze hinein / Zierkürbis in die Hände, Leiche (`Guest`) „dead“; ohne Objekt „decorate“ fürs Aufhängen und Laubverstreuen, im Versteck „closet_exit“, im Schlaf „sleep“. Das Symbol steht `PROMPT_ICON` (24) Pixel groß mittig über dem Hinweis. **Totenkopf:** `Social.on_guest_died` meldet mit `Game.say(…, "dead")` (über der Meldung, `MESSAGE_ICON` 24, blendet mit ihr aus). Leichen (`Guest._lie_down`, Lakengeist und Kürbismann) bekommen einen Kasten `CorpseTouch` auf Ebene 4 (Meta interactable = Gast; der Körper selbst hat keine Kollision mehr) – Hinweis „Name – tot“. **Sterbebildschirm:** `Player.killed_by` setzt `MonsterDirector.kill_player` („monster“) bzw. `player_slain(by)` („ghost“, „pumpkin“); oben das Porträt 1 : 1 (sonst der Totenkopf), neben der Überschrift je ein Totenkopf (`TITLE_SKULL` 32), darunter `KILLED_LINES`. **Gesehen:** `Notebook._process` prüft alle `SIGHT_EVERY` s die aktiven Bedrohungen (`Monster.is_active`, `SheetGhost.is_active`, `PumpkinMan.in_house`, sichtbar) – bis `SIGHT_RANGE` und `MonsterDirector.player_can_see` (Punkt `SIGHT_HEIGHT` über dem Ursprung) → `note_seen(id)`: Spielzeit in `seen`, `seen_revision`, Kritzeln. `PocketMap`: Lesezeichen „threats“ (vierter Reiter, nur mit `seen`), eine Seite „threats:0“; `NotebookPage._draw_threats` zeichnet je Bedrohung ein Foto (Porträt × `PHOTO_SCALE`, Nearest, auf `PHOTO_DARK` mit Rahmen, leicht schief), Name, Tag und Uhrzeit. Gespeichert im Notizbuch als „seen“ (Version 42). Debug `--gesehen`, `--show=gesehen`, `--tot[=geist|kuerbis]`, `--kill=gast,geist|kuerbis`, `--trace`: `[Notizbuch] gesehen` |
-| Am Körper | `player.gd` (`_pocket`, `_update_hand`, `set_pockets`), `player/pocket_map.gd` | `Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den Welt-Gegenstand und trägt ihn in `has_compass`/`map_pages`/`keyring` ein – braucht keine freie Hand. Linke Hand (`_left_hand`) für Aktionen `map` (Tab) und `compass` (F), nicht bei `hands_blocked()` oder im Gespräch; `inspecting` halbiert das Tempo. Türen fragen `player.has_key(id)`. Gespeichert unter `player` |
-| Tasche | `player.gd` (`bag`, `BAG_SLOTS`, `open_bag`/`close_bag`/`_bag_input`, `bag_takes`, `can_take`, `stow_held`, `take_from_bag`, `consume_kind`, `give_away`), `item.gd` (`POCKET_KINDS`, `fits_pocket`, `put_in_bag`/`take_from_bag`), `hud.gd` (`set_bag`, `show_bag_menu`), `ui/item_icons.gd`, `shaders/bag_blur.gdshader`, `tests/bag_checks.gd` | Spielkonzept 3.2. Kleines (`Item.POCKET_KINDS`: Süßigkeiten, Getränkedose, Zierkürbis, Kerze, Messer, Batterie, Glühbirne, UV-Aufsatz, Würfelbecher, gezinkte Würfel – Brennendes nicht, `fits_pocket`) kommt bei voller Hand mit [E] gleich in die Tasche (`try_pick_up`, `receive_item`). **[Q] halten** (Aktion `bag`, Ablegen deshalb nur noch [G]): `bag_open`, die Maus wählt statt sich umzusehen (`_bag_cursor`, `BAG_MOUSE_STEP` Pixel je Fach, Mitte `BAG_DEAD_ZONE` = nichts), Mausrad und [1]–[6] (`bag_1`…) springen, Rechtsklick bricht ab; Laufen und alles andere laufen weiter, nur E/G/Linksklick ruhen. Loslassen (`_process` fragt die Taste ab) → `close_bag(true)`: gefülltes Fach → `take_from_bag` (was die Hand hielt, fällt per `drop_held(false, false)` zu Boden, ohne Aufhängen; mit Katze im Arm oder im Versteck mit voller Hand nicht), leeres Fach → `stow_held`. [1]–[6] ohne offene Tasche nehmen gleich heraus. Gespräch, Würgen, Tod schließen ohne Wahl. Die Gegenstände hängen unsichtbar und ohne Verarbeitung unter dem Spieler, raus aus Gruppe `items` und Interaktion (`Item.in_bag`) – Gäste sehen und stehlen sie nicht. Wer Hand-Gegenstände prüft, fragt für Neues `player.can_take(kind)` (Kiste, Fassung, Kauf, Deko vom Gast), für Verbrauch `consume_kind`/`consume_item`/`give_away` (Süßes oder Saures, Schenken und Verkaufen aus der Tasche im Gespräch). HUD: kleine Fächer mit Bildern unten rechts, sobald etwas drin ist; bei offener Tasche große Fächer (Rahmen orange = gewählt, darunter was beim Loslassen passiert) über dem verschwommenen, abgedunkelten Spiel (`bag_blur`, liest den Bildschirm, liegt als Letztes im HUD). Bilder: `ItemIcons` rendert jede Art mit Extra einmal in einem eigenen SubViewport (orthogonal, schräg von oben), `RENDER_FRAMES` Bilder lang – beim ersten Bild sind die Shader im Spiel oft noch nicht übersetzt –, dann eingefroren. Gespeichert unter `player.bag` (ohne Lage, ab Version 28) |
-| Getränkedosen | `item.gd` (`Kind.SODA_CAN`, `SODA_COLORS`), `player.gd` (`drink_can`), `resource_spot.gd` (`for_sale`), `level_builder.gd` (`_common_rooms`) | Limo oder Cola (`flavor`, als Extra gespeichert). [Linksklick] trinkt: Ausdauer voll, nicht mehr außer Atem, Schock −`CAN_CALM`, Lärm `can` (3 m, Zischen `hiss`). Tablett auf der Bartheke (1 Geld, `ResourceSpot.price`), Kisten vor den Regalen in Kühlraum und Lager; Deko-Suche der Gäste übergeht sie. Gäste trinken geschenkte Dosen (`Guest.FOOD_GIFTS`), Kinder freuen sich wie über etwas, das sie mögen |
-| Kaffee | `world/coffee_machine.gd` (`CoffeeMachine`, `Game.coffee`), `player.gd` (`coffee`, `coffee_low`, `caffeine`, `tiredness`, `jittery`, `_update_coffee`, `drink_coffee`, `_sleep_credit`), `item.gd` (`Kind.COFFEE`, `_spill_coffee`), `trace_mark.gd` („coffee“, `coffee_material`), `resource_spot.gd`, `level_builder.gd` (`_common_rooms`, `COFFEE_MACHINE_INSET`), `guest.gd` (`_arrive`, `FOOD_GIFTS`), `dialog_ui.gd` (`_gift`), `dice_match.gd`, `monster_director.gd` (`_update_effects`) | Spielkonzept 3.11. **Wirkung:** `drink_coffee` setzt `coffee` = `COFFEE_TIME` (180 s, jede Tasse von vorn), beendet `coffee_low`, `caffeine` + 1. `tiredness()` = `nights_awake` − `COFFEE_MASK` (1 Nacht, nicht unter 0), solange `coffee` > 0, sonst + `COFFEE_LOW` (½) während `coffee_low` – ersetzt `nights_awake` in `weakness()` und `_update_sight`; die Schuld selbst bleibt. `_update_coffee`: `caffeine` sinkt um 1 je `COFFEE_FADE` (120 s); läuft `coffee` wach aus → `coffee_low` = `COFFEE_LOW_TIME` (60 s) und ein Gedanke (schlafend kein Tief; `skip_time` rechnet alles ohne Tief nach). Schlaf: `_sleep_credit(dt)` zählt die Zeit mit Kaffee nur × `COFFEE_SLEEP` (½) für `_slept` und die Erholung, `_sleep_now` (Dauer, `sleep_left`) läuft voll. **Zittern** `jittery()` ab `caffeine` ≥ `COFFEE_JITTER` (2,5): Hand bebt (`TREMOR`, `TREMOR_RATE` in `_update_hand`), Herz mindestens `COFFEE_HEART` (Director), Bluff beim Mäxchen wie halb betrunken. **Maschine:** `LevelBuilder` stellt sie `COFFEE_MACHINE_INSET` vom linken Ende (von vorn gesehen) der Küchenzeile in der Küche, `front` nach dem Plan. [E] mit leeren Händen → `_start_brew`: `BREW_TIME` 20 s, Lämpchen, Dampf, Lärm `coffee` (6 m, alle `NOISE_EVERY` s), dann `Item.Kind.COFFEE` auf `CUP_SPOT`; steht sie dort noch (`_cup_waiting`), nimmt [E] an der Maschine die Tasse. Gäste: nur morgens (`Calendar.Phase.MORNING`), alle `GUEST_GAP` s ein freier Erwachsener in `GUEST_RANGE` (Stockwerk, nicht bei Feier, Nachtruhe, Unruhe) → Zustand `EAT` zu `guest_spot()`, `on_arrived` brüht für ihn, `_done` gibt ihm die Tasse über `receive_gift` (trinkt nach 8–14 s, `FOOD_GIFTS`), `_note_drinker`: `pals.note` mit allen, die in `TOGETHER` (90 s) davor hier tranken. Nicht gespeichert (`reset`). **Tasse:** nur in der Hand, `BURST_KINDS` mit `BREAK_HEIGHT` 1 m und beim Wurf → `_spill_coffee`: Spur „coffee“ (`Traces.add_guest_drop`, gebaut wie `wax_splash` in `_spread_wax`, kleiner – `COFFEE_CORE`, `COFFEE_DROPS` –, Wachsgrafik in `COFFEE_TINT`, Look `COFFEE_LOOK`, `SPREAD["coffee"]`, verwäscht nicht im Regen), Scherben, Lärm `cup_break` (5 m). Bar: `ResourceSpot` Tablett mit drei Tassen (`for_sale(1)`, 6, 240 s). Verschenken wie eine Dose, Kinder lehnen in `DialogUI._gift` ab. Gespeichert unter `player`: `coffee`, `coffee_low`, `caffeine` (Version 41). Debug `--kaffee=n|maschine|gast[,id]`, `--trace`: `[Kaffee]` |
-| Tee | `world/tea_kettle.gd` (`TeaKettle` erbt von `CoffeeMachine`, `Game.kettle`), `player.gd` (`tea`, `drink_tea`, `_sleep_credit`), `item.gd` (`Kind.TEA`, `TEA_COLOR`, `TEA_TAG`), `trace_mark.gd` („tea“, `coffee_material(tea)`, `TEA_TINT`), `guest.gd` (`TEA_CALM`, `FOOD_GIFTS`, `_arrive`), `dialog_ui.gd` (`_gift`), `tidying.gd` (`COMPLAIN_TEA`), `level_builder.gd` (`KETTLE_GAP`, `BAR_TEA_GAP`), `icon_art.gd` (`drink_icon`) | Spielkonzept 3.12. `CoffeeMachine` hat dafür statt fester Werte Felder (`drink_kind`, `brew_time`, `noise_kind`, `guest_phase`, `children`, `lines`, `cup_spot`, `texts`) und die Haken `_register`, `_build`, `_steam_spot`, `_finished`; `TeaKettle._init` setzt Tee, `KETTLE_TIME` 15 s, Lärm `kettle` (4 m) und am Ende `kettle_whistle` (8 m), abends (`Calendar.Phase.EVENING`), auch Kinder, Tasse rechts daneben (`KETTLE_CUP`). Ein Gast geht nie zu beiden zugleich (`_taken`); `Guest._arrive` fragt Kaffeemaschine, dann Wasserkocher, dann den Herd. **Wirkung:** `drink_tea`: Schock − `TEA_CALM` (0,1), `tea` = `TEA_TIME` (120 s). `_sleep_credit(dt)`: der Anteil mit Tee zählt × `TEA_SLEEP` (1,3, auch mit Kaffee), der Rest wie beim Kaffee – `_sleep_lost` kann dadurch negativ werden. `tea` läuft in `_update_coffee` und `skip_time` ab. **Gäste:** getrunkener Tee (`_gift_step`) nimmt `Guest.TEA_CALM` (15) Angst; geschenkt freut er Kinder wie Limo (`DialogUI._gift`). Fleck „tea“ wie „coffee“ in `TEA_TINT`, in `Tidying.MESS_TRACES`. Bar: Tablett `BAR_TEA_GAP` neben dem Kaffee. Symbol: `IconArt.drink_icon` nimmt `Icon_tea.png`, sobald es da ist, sonst das vom Kaffee. Gespeichert: `player.tea` (Version 43). Debug `--tee=n|kocher|gast[,id]` (ohne id ein Kind), `--trace`: `[Tee]` |
-| Kompass | `item.gd` (`Kind.COMPASS`) | Nadel = Feder Richtung Welt −Z (Norden), in Teilschritten ≤ 20 ms gerechnet (`Item.needle_step`, geprüft in `tests/math_checks.gd`) (die steife Feder schaukelte sich bei einem langen Frame bis NaN auf), gestört über `director.threat_at()` und – nur eingesteckt (`pocketed`) – `is_hallucinating()`; der Kompass in der linken Hand ist ein `Item` mit `make_pocketed()` (raus aus Gruppe `items`); liegt in `LevelBuilder.COMPASS_ROOM` |
-| Karte | `world/hotel_map.gd`, `item.gd` (`Kind.MAP`, `extra` = Blatt-ID), `player/pocket_map.gd` | `HotelMap.PAGES` = Blätter (id, Titel, Höhenbereich, Geschoss oder eigene Zeichnung); gedruckter EG-Plan aus `assets/maps/eg.json` (neue Zimmer erscheinen von selbst), OG-Blatt aus `og1.json` (ohne die Datei nur die Galerie; ausgelegt wird es an der Rezeption über `CONTENT["lobby"]["map"]`, sobald dort eine Karte im Plan liegt), Kellerskizze von Hand gezittert (das Untergeschoss aus `ug.json`: Wände mit Lücken für offene Türen, verschlossene
-zugezeichnet, Heizkeller rot eingekreist). Alle Blätter einmal untereinander in einem SubViewport gerendert → geteilte `ImageTexture` (ohne Grafik: nur Papierfarbe); `HotelMap.material(id)` schneidet per `uv1_offset` aus. `PocketMap` = Blätterstapel in der linken Hand, Schlüsselblatt (`KEYS`) zuletzt; beim Hervorholen oben das Blatt zu `HotelMap.page_at(y)`. Neue Ebene: Eintrag in `PAGES`, Zeichnung in `_draw()`, Blatt im `LevelBuilder` auslegen |
-| Kostüme | `guests/costume.gd`, `guest.gd` (`_update_costume`, `_head_point`), `guest_body.gd` (`head_origin`, `head_shrink`) | Spielkonzept 5.9. `Costume.pick(guest)`: ab `FROM_DAY` (25.) fest nach `hash(id + ":kostüm")` – `WEIGHTS` bzw. `CHILD_WEIGHTS` für `sheet`, `witch`, `pumpkin`, `cape`, der Rest unverkleidet; nichts gespeichert, kein Zufall aus dem Spielstand. Guest prüft jede Sekunde (`_update_costume`), im Bett (`SLEEP` + `hiding`) aus. `Costume` hängt unter `_visual` (Skalierung der Klötzchenfiguren aufgehoben): **Laken** = Drehkörper aus `SurfaceTool` (Ringe unter dem Scheitel `eye_height() + 0.12`, `SHEET_SEGMENTS` 12, gewellter Saum bei `HEM` 0,16 m, Vorderseite im Uhrzeigersinn), Augen/Mund als flache dunkle Kugeln vorn (−Z); darunter `GuestBody.head_shrink` 0,6 bzw. Kopf und Arme der Klötzchenfigur aus, `animate(…, arms_free = false)` (Arme hängen, außer beim Tanzen), kein Namensschild. **Umhang** = Box am Rücken (+Z) und gekippter Kragen. **Hut/Kürbis** sind `top_level` und werden in `Guest._animate` nach `body.animate` per `follow(kopf, _visual.global_basis)` auf den Kopfknochen (`GuestBody.head_origin`, Klötzchen: `_head_pivot`) plus `head_lift` gesetzt – aufrecht, damit sie beim Tanzen nicht kippen. Größe über `size` (Scheitelhöhe / 1,8, ab 0,65). Debug `--costumes[=art]` (`Costume.force`: `all` oder eine Art). **Spieler im Laken:** `Item.Kind.BED_SHEET` (liegt auf dem `own_bed`, gesetzt in `LevelBuilder._furniture`); in der Hand `use_item` → `Player.put_on_sheet()` (verbraucht, `set_disguised(true)`, `disguise_count` + 1), `drop` mit leeren Händen → `take_off_sheet()` (neues Laken in die Hand). `Hud.set_disguised` blendet `_sheet_overlay` ein (`shaders/sheet_overlay.gdshader`: Stoff mit Falten, zwei ausgefranste Augenlöcher, `aspect` aus der Größe) – unabhängig vom Versteck-Overlay. `Player.recognized_by(guest)`: verkleidet nur unter `RECOGNIZE_RANGE` (1,5 m). Geprüft in `Social.on_player_took` (wer nur ein Laken sieht → Satz statt Strafe), Feind-Angriff, `_witnesses_of_player` (Schlagen, Rammen), `Guest._wants_to_bump`, Anschließen guter Freunde, `_child_approach`. `Guest._notice_disguise` (alle 0,5 s, einmal je `disguise_count`): Kinder freuen sich, im Dunkeln (`light_at` < `DISGUISE_DARK`) Angst + `DISGUISE_FRIGHT`, sonst „Huch!“; `DialogUi.open` setzt „Wer steckt denn da drunter?“ davor. Gespeichert: `player.disguised` (Version 24). Debug `--disguise` |
-| Spielerfigur | `player/player_body.gd`, `player.gd` (`set_look`, `body_height`, `eye_height`, `crouch_height`, `crouch_eye`, `intro_blur`), `guests/guest_body.gd` (`fit`, `head_pitch`) | Spielkonzept 3.9. `PlayerBody` (Kind des Spielers, `PROCESS_MODE_ALWAYS`) baut aus `look` per `profile_of` einen `GuestBody`: Dreieck (Anteile `slim`, `fit`, Rest kräftig) → `build` = kräftig + `SLIM_BUILD` (−0,7) × schlank, `fit` = (3 × definiert − 1) / 2 (Mitte = Grundkörper), Schulterbreite × (1 + `FIT_WIDTH` × fit + `HEAVY_WIDTH` × kräftig − `SLIM_WIDTH` × schlank); Größe `HEIGHT_RANGE` 1,45–2,00 m; nur Erwachsene (`adult_bodies`; Grundkörper mit `age` werden zu `man`). Alle Netze auf `LAYER` (19) ohne Schatten, je eine `duplicate()` am selben Skelett mit `SHADOWS_ONLY` auf `SHADOW_LAYER` (18) – Godot rechnet Schatten nur für Netze, die die Kamera sieht. Lichter des gehaltenen Gegenstands bekommen `shadow_caster_mask` ohne `SHADOW_LAYER` (sonst stünde der Kopf vor der Taschenlampe), beim Weglegen wieder alles. Jedes Bild: weg im Versteck, im Bett und tot; gehockt oder sitzend `animate(…, sitting)` und um `sit_drop` tiefer; rechter Arm vorn mit etwas in der Hand oder der Katze, linker bei Karte/Kompass; Kopf folgt `head.rotation.x` (`GuestBody.head_pitch`: 40 % Hals, 60 % Kopf); im Laken (`disguised`) ein `Costume` „sheet“ und `head_shrink` 0,6. `Player.set_look`: Kapsel, Augenhöhe und Hocken = Standard × Größe / 1,8 (`HEIGHT` usw. bleiben die Werte für 1,80 m). `PlayerBody.default_look()`: Mann mittleren Alters, 1,80 m, Mitte des Dreiecks |
-| Spiegel | `world/mirror.gd`, `shaders/mirror_view.gdshader` | `Mirror.make(eltern, größe, mitte, normale, reichweite)` – `QuadMesh` auf `LAYER` (20), matt (`DULL`), solange nicht zu sehen. `_visible_to(kamera)`: `active`, „Spiegelungen“ an oder `force` (Charaktererstellung), Kamera davor, näher als `reach`, höchstens `FLOOR_SPAN` (2,5 m) höher/tiefer, Mitte oder Ecke im Frustum, kein Treffer auf Ebene 1 bis 8 cm vor die Mitte (im pausierten Spiel entfällt der Strahl). SubViewport (`PX` 320 breit) und Kamera entstehen beim ersten Hinsehen: Spiegelpunkt der Spielerkamera, schiefes Frustum genau durch die Fläche (`set_frustum`, near = Abstand zur Ebene), eigene Umgebung ohne Tonemapping, SSR, Lichtnebel und Glow; der Shader zeigt das Bild unbeleuchtet und seitenverkehrt × `TINT`. Benutzt von Aufzug (`Elevator._mirror_wall`) und Waschbecken (`LevelBuilder._box_furniture`, Gruppe `sink_mirrors`) |
-| Charaktererstellung | `ui/character_creation.gd` (`ShapeTriangle`), `main.gd` (`_start_creation`), `util/synth_audio.gd` (`tap`, `splash`) | Spielkonzept 3.9. Neues Spiel vom Titelbildschirm oder `--figur[=schnell]`: CanvasLayer 25, `Game.creating`, `Mirror.force`, Hud aus. Stellt den Spieler `MIRROR_EYE` (0,95 m) vor den Spiegel im Bad von Zimmer 13 (`_find_mirror`: `sink_mirrors` höchstens `SEARCH` 12 m weit, die mit `home_room_at` = `PLAYER_ROOM` zuerst – das Bad von Zimmer 021 hinter der Wand liegt näher am Startpunkt, dort wachte man bis 24.10. in Milas abgeschlossenem Zimmer auf), mittig vor dem Becken, Blick genau auf die Spiegelmitte. Solange `Game.creating` gilt, nimmt `Player` weder Maus noch Tasten an (bis 25.10. drehte Mausbewegung beim Laden, vor `T_PAUSE`, den Blick vom Spiegel weg). Ablauf in Sekunden (`T_*`): pausiert ab `T_PAUSE`, Wasserhahn, Klatsch, Schwarz blendet aus, `Player.intro_blur` klärt sich, Neigung von `DOWN_PITCH` (Becken) zu `MIRROR_PITCH` (fest, −0,17 rad, leicht nach unten: Das eigene Spiegelbild liegt immer auf Augenhöhe, so bleiben Scheitel und Spiegelunterkante bei 1,45–2,00 m und Sichtfeld 60–95° im Bild), dann der Bogen rechts (Maus frei): Frau/Mann, Alter (`GuestBody.GENERATIONS`), Größe, Statur-Dreieck (baryzentrisch, ins Dreieck geklemmt), Farbfelder aus `GuestGenerator.SKIN`/`HAIR`/`COATS`/`PANTS`. Änderungen → `Player.set_look` höchstens alle `APPLY_EVERY` (0,08 s); die Augenhöhe wandert, die Neigung bleibt. „So sehe ich aus.“ → Nachfrage → `_finish`: Pause aus, Maus gefangen, Hud an, `finished` (main: Gedanke an den Brief, Startzustand speichern) |
-| Bar & Rausch | `world/bar_tap.gd`, `player.gd` (`drink`, `_update_drunk`, `_update_sight`, `_drunk_walk`, `_process`), `guest.gd` (`drink`), `dialog_ui.gd` (`_round`), `dice_match.gd`, `monster_director.gd` (`_update_hallucination`) | Spielkonzept 3.7. `BarTap` (Flasche und Glas, Ebene 4, interagierbar) steht mitten auf der Bartheke (`LevelBuilder._common_rooms`): ein Glas kostet `PRICE`, Rausch `drunk` + `DRINK` (0,3), höchstens `ENOUGH`; Schock − `CALM` (Gäste: Angst − 15). Abbau linear über `SOBER_TIME` (300 s für 1,0). Stufen: ab `TIPSY` (2. Glas) angetrunken, ab `DRUNK` (3.) betrunken; `BarTap.sway(drunk)` = 0..1 ab `TIPSY`. **Spieler:** Kopf rollt (`_drunk_roll` in `head.rotation.z`), Blick driftet (`rotate_y`), die Maus läuft über `_look_lag` und folgt in `_process` mit `LOOK_LAG` (30/s nüchtern … 7/s voll), im Gehen `STUMBLE_RATE` × sway je Sekunde ein Stolpern (`shove` zur Seite, Lärm `stumble` 5 m). Betrunken halluziniert man (Director: wie nach einem Todesfall, Rate × (1 + Rausch)). **Verschwommene Sicht** siehe Optik. Kater: Rennen leert die Ausdauer × `HANGOVER_DRAIN`. **Gäste:** kommen sie an der Bar an (`_arrive`, `in_area(…, "bar")`), trinken sie mit `BAR_DRINK` (70 %); angetrunken schwanken sie (`_visual.rotation.z`), grüßen mit „*hicks*“ und erzählen beim Monster-Thema öfter von Spuren (+ 40 % × Rausch). „Eine Runde ausgeben“ (nur an der Bar, 2 × `PRICE`): beide trinken, Beziehung + 5. **Mäxchen:** Bluff des Spielers mit Rausch → Hinweis „Deine Hand zittert“ und + 0,3 × sway Misstrauen; Wahrnehmung eines Gastes × (1 − 0,5 × Rausch), angetrunkene Gäste zeigen ihre Bluff-Gesten auch ohne Zusehen. Gespeichert: `player.drunk`/`hangover`, Gast `drunk` (Version 21). Debug `--drunk=n[,gast]` |
-| Wetter | `world/weather.gd`, `shaders/rain.gdshader`, `night_sky.gdshader` (`flash`), `synth_audio.gd` (`rain`, `thunder`), `monster_director.gd` (`on_noise`) | Spielkonzept 7.8. `Game.weather`, erzeugt in `main.gd` mit dem Mondlicht (Knoten „Moon“) und dem Himmel. `kind` CLEAR/RAIN/STORM nach Zeitplan (`CLEAR_EARLY`→`CLEAR_LATE` nach Tag, `SHOWER_TIME`, `STORM_CHANCE`), `intensity` blendet über `FADE`. **Regen:** ein `GPUParticles3D` mit eigenem Partikel-Shader, `DROPS` Tropfen im Kasten ±`HALF_EXTENT` um den Spieler (`center`), jeder fällt bis zur obersten Fläche darunter und beginnt dann oben (`TOP`) neu – die Höhen stehen in einer Dach-Höhenkarte (`_build_roof_rows`: Strahl von oben auf Ebene 1 + Decke je `CELL` 0,5 m über alle Zonen + `MARGIN`, verteilt auf die ersten Bilder, `FORMAT_RF`); vorher regnet es nicht. `amount_ratio` = `intensity`, Fallgeschwindigkeit samt Wind `FALL`. Tropfen mit PS1-Look: `BoxMesh` `DROP_SIZE`; ohne (`_set_drops`, folgt `Settings.psx_look` laufend, neue `amount` startet die Partikel neu) `DROPS_FINE` Quads mit `shaders/rain_streak.gdshader`: längs `FALL` auf `STREAK` gestreckt, quer zum Blick gedreht, nie schmaler als `STREAK_PIXELS` Bildpunkte – wäre er dünner, wird er blasser (Wurzel des Verhältnisses), Enden und Ränder weich, unter `near_fade` vor der Kamera aus. Wolken: `cloud_cover` → `CLOUDS_RAIN`, Mond schwächer. **Gewitter:** `lightning()` alle `LIGHTNING_GAP` s – 2–3 Zuckungen (`_flash`, Abklingen `FLASH_DECAY`): Mondlicht + `FLASH_ENERGY` (Schatten an → Licht nur durch die Fenster), Himmel `flash`; Donner (`SynthAudio` „thunder“, Untertitel) nach `THUNDER_DELAY`, später leiser; danach `masking()` < 1 für bis zu `MASK_TIME` s – `MonsterDirector.on_noise` multipliziert die Lautstärke damit. **Klang:** `SynthAudio.rain` (draußen `RAIN_OUT`, drinnen `RAIN_IN`, `rain_muffle` dumpfer). **Kirchturmglocke** (`_update_bell`): Springt `Calendar.hour_of` von ≥ 23 auf < 1, schlägt `assets/sound/church_bell.wav` auf eigenem `AudioStreamPlayer` (`BELL_PITCH` tiefer, `max_polyphony` 3) `BELL_STRIKES`-mal im Abstand `BELL_GAP`, Pegel `BELL_DB`, drinnen × `BELL_INSIDE`; kein Lärm; Untertitel, `--trace` „[Wetter] Kirchturmglocke“. Ein Sprung mit `--uhr` auf 0 Uhr läutet nicht. Nicht gespeichert (nach dem Laden klar). Debug `--weather=klar|regen|gewitter|blitz`, `--shot-on=lightning`, `--trace` (`[Wetter] …`) |
-| Gras | `world/grass.gd`, `shaders/grass.gdshader`, `level_builder.gd` (`is_lawn`, `garden_beds`) | 2026-10-22, nur ohne PS1-Look: `main.gd` erzeugt `Grass` nach dem NavMesh (nicht darin, keine Kollision, nicht gespeichert). `setup` verteilt mit festem Zufall (`SEED`) `DENSITY` Büschel je m² auf die Rechtecke der Fläche `garden` und die Bodenflicken darunter; nur wo `is_lawn` auch `EDGE` daneben gilt (Abstand zu Wegen, Terrassen, Wänden) und außerhalb von Kreisen um Baumstämme (`CLEAR_TREE`), Gegenstände und Ausstattung des Plans (`CLEAR_ITEM`), Laternen und von Beeten (`garden_beds`) und Kübeln (`CLEAR_BED`). Ein Büschel = drei um 60° gedrehte Karten (`CARD_WIDTH` × 1 m, Ursprung am Grund, Höhe `HEIGHT` und Breite `SPREAD` je Büschel, Farbton aus `COLORS`); je `CHUNK`-Kachel ein `MultiMeshInstance3D` mit `visibility_range_end` `VISIBLE` (Ausblenden `VISIBLE_FADE`), ohne Schatten. Halmkarte `_blade_texture` (`BLADE_TEX`², `BLADES` spitz zulaufende, gebogene Halme in `BLADE_COLORS`, Alpha mit Mipmaps). Shader: ausgestanzt (`alpha_cut`), beidseitig, Normale nach oben (beleuchtet wie der Boden), zum Grund dunkler (`base_shade`); Wind über `wind_time` (zählt `_process` aus delta hoch – steht in der Pause), Ausschlag × Höhe²; `pushers` (bis `MAX_PUSHERS`: Spieler, Gäste, Monster und Kürbismann bis `PUSH_RANGE`, Radius `PUSH_FOOT`; Gegenstände am Boden, alle `ITEM_SCAN` s gesucht, `PUSH_ITEM`) drücken jedes Büschel nach Abstand seiner Wurzel weg (`push_strength`) und nieder (`push_down`). `visible = not Settings.psx_look`, laufend. `--trace`: `[Gras] n Büschel in k Kacheln` |
-| Spuk im Dachboden (Blitz-Dreh) | `world/attic_spook.gd`, `weather.gd` (`_update_flash` → `on_flash`), `hud.gd` (`flash_white`), `synth_audio.gd` (`giggle`), `level_builder.gd` (`_attic_haze`: Kammern) | Spielkonzept 4.21 (24.10.). `LevelBuilder.attic_spook`, erzeugt mit dem Staubnebel; seine Rechtecke sind die Kammern (Flächen des Dachbodens, die in ein Feld der Stützbalken passen – nicht die offenen Böden). Jedes Blitzbild meldet `Weather._update_flash` per `on_flash`: Steht der Spieler in einer Kammer (`in_chamber`), nicht im Versteck und nicht im Sitzen, mit `CHANCE` je Blitz und nur, wenn nichts hinter ihm her ist (`_threatened`: `MonsterDirector.threat_at` > 0 oder Lakengeist `with_player`) – höchstens einmal je Gewitter (`_done`, frei, sobald `Weather.kind` nicht mehr STORM ist): grellweißer Bildblitz (`Hud.flash_white(WHITE)`, verblasst mit `WHITE_FADE`), im selben Bild `Player.rotation.y` ± 90°, nach `GIGGLE_DELAY` Spielsekunden leises Kichern (`SynthAudio` „giggle“: fünf hohe, hauchige Silben; Untertitel „[leises Kichern]“). Bei `Settings.flicker_intensity` < 1 (Flackern abgeschwächt) kein Dreh und kein Bildblitz, nur das Kichern. `--trace` „[Dachboden] Blitz – …“, Bildereignis `attic_turn`. Nicht gespeichert. Debug `--dachboden=blitz` (`forced`: Gewitter, nach 3 s ein Blitz, der sicher dreht) |
-| Staubnebel im Dachgeschoss | `world/attic_haze.gd`, `shaders/attic_dust.gdshader`, `level_builder.gd` (`_attic_haze`, `_roof_window`) | Spielkonzept 4.21. `LevelBuilder.attic_haze`, erzeugt beim Bau des Dachgeschosses (Kind von `world`). Je Rechteck der Dachbodenfläche ein `FogVolume` (Kasten bis zur Decke) mit einem gemeinsamen Nebel-Shader (`shader_type fog`): Dichte `DENSITY` × Rauschen in Weltkoordinaten (zwei Oktaven, treibt langsam – die Rechtecke stoßen nahtlos), × (1 ± `flicker`) aus schnellerem Rauschen über die Zeit (Flimmern), blaugrau (`ALBEDO`) mit etwas Eigenleuchten (`EMISSION`). Die Zeit ist das Uniform `t`, hochgezählt mit `delta` (steht in der Pause). Staub: `CPUParticles3D` (`DUST` Teilchen, `Mat.particle`) im Kasten `DUST_BOX` um die Kamera, nur solange sie im Dachboden ist (`contains`). Das Licht der Dachfenster (Kegel des LevelBuilders) setzt es jedes Bild auf `light_energy` des Mondes × `SHAFT_ENERGY` – Wolken dämpfen es, Blitze leuchten durch. Nicht gespeichert. Debug `--dachboden=fenster` |
-| Spinnen | `world/spiders.gd`, `shaders/psx_spider.gdshader`, `dresser.gd` (`use_drawer` → `on_drawer_opened`), `resource_spot.gd` (`grow`), `settings.gd` (`spider_blobs`) | Spielkonzept 4.23. `Game.spiders`, erzeugt in `main.gd` nach den Fledermäusen. Bis `MAX` Spinnen (`SIZE` 5–6 cm Beinspanne, sehr dunkel) in einem `MultiMeshInstance3D` (Arrays `_pos`, `_goal`, `_yaw`, `_size`, `_speed`, `_state` WALK/PAUSE/FLEE/DEAD …), nur nahe beim Spieler: alle `SPAWN_EVERY` s eine neue `SPAWN_RANGE` entfernt auf seinem Stockwerk, wo er nicht hinsieht (`_floor_spot_near`: `NavigationServer3D.map_get_closest_point`, erst nach der ersten Synchronisierung, dann Strahl nach unten, nicht im Katzenraum), bis `_wanted` (Keller unter 0 m und Dachgeschoss über `UP_Y` + 2,5 m `CELLAR_COUNT`/`ATTIC_COUNT`, sonst `OTHER_COUNT` mit `OTHER_CHANCE` je Versuch); weiter als `NEAR` oder auf einem anderen Stockwerk und ungesehen → weg. Modell `build_mesh` (`SurfaceTool`: zwei Ellipsoide, acht Beine aus waagerechten Bändern, Eckfarbe r = Beinphase, g = Gewicht; `blob` = eine Kugel); der Shader bewegt die Beine mit `INSTANCE_CUSTOM` (Laufphase, Gangstärke – vom Skript, steht in der Pause). Laufen: Ziel `LEG` entfernt ohne Wand dazwischen (Strahl 5 cm über dem Boden, Ebene 1), Boden alle 0,25 m per Strahl (Kante > 0,35 m → stehen bleiben). Nahe Füße (`FLEE_RANGE`, Spieler bewegt sich oder steht nicht geduckt) → `FLEE`; Spieler schneller als `SQUASH_SPEED` darüber (`SQUASH_RANGE` × Größe) → zertreten (`DEAD`, flach, `DEAD_TIME`). Fäden gab es kurz, sind wieder ausgebaut (2026-10-24). Alle 5 s wachsen `resource_spots` mit Spinnweben bis `COBWEB_RANGE` schneller nach (`ResourceSpot.grow`, je Spinne `COBWEB_BOOST`, höchstens doppelt). **Gäste** (`_guests_react`, alle `CHECK_EVERY` s, bis 15 m vom Spieler): Spinne näher als `GUEST_RANGE` – ab `GUEST_BRAVE` Mut zertreten (keine Kinder), sonst flieht sie, unter `GUEST_TIMID` (und Kinder) + `GUEST_FEAR` Angst; Sprüche je Gast höchstens alle `GUEST_LINE_PAUSE` s. **Schublade:** `Dresser.use_drawer` meldet jedes Aufziehen; nach dem ersten Angriff mit `DRAWER_CHANCE` (1 %), danach `DRAWER_PAUSE` → `jump_at_face`: `MeshInstance3D` unter der Kamera (`single` im Shader), fliegt in `JUMP_TIME` von der Schublade nach `FACE_POS` (Bauch zur Kamera), Lärm `gasp` am Spieler, Schock `FACE_SHOCK`. Kopfdrehen (Gieren + Nicken) summiert sich; `SHAKE` rad (ein- bis zweimal hin und her) in `FACE_TIME` → abgeschüttelt, sonst Biss: `Player.drunk` + `BITE` (= `BarTap.DRINK`, wie ein Glas, ohne dessen Beruhigung). Danach landet sie vor dem Spieler und flieht. **Arachnophobie:** `Settings.spider_blobs` (Einstellungen → Barrierefreiheit) tauscht das Mesh laufend. Nicht gespeichert. Debug `--spinne[=gesicht|schublade]` (`debug`), `--trace` „[Spinnen] …“. Noch nicht: Katzen jagen Spinnen, Plastikspinnen als Kugeln |
-| Fledermäuse | `world/bats.gd`, `shaders/psx_bat.gdshader`, `level_builder.gd` (`tree_spots`), `game.gd` (`noise` → `Bats.on_noise`), `senses.gd` (`bats`), `synth_audio.gd` (`flutter`) | Spielkonzept 4.22 (ohne Biss und Vampir). `Game.bats`, erzeugt in `main.gd` nach dem Wetter. `COUNT` Fledermäuse in einem `MultiMeshInstance3D` (Mesh aus `SurfaceTool`: Körper, Ohren, Flügel mit gezacktem Hinterrand, vorn −Z; `custom_aabb` groß, keine Schatten). Der Shader schlägt die Flügel um die Schulter (`INSTANCE_CUSTOM.x` = Phase, rechnet das Skript – steht in der Pause; `.y` = angelegt beim Hängen) und wackelt wie `psx_surface`. Je Fledermaus Arrays (`_pos`, `_vel`, `_mode` ROOST/FLY/HOME/FLEE, Schlafbaum `_tree`, Schlafplatz `_roost` um den unteren Kronenrand, Kreisbahn um den Baum außerhalb der Krone: `_center`/`_radius` (`_fit_orbit` verkleinert, bis acht Punkte draußen liegen)/`_height`/`_angle`/`_spin`). Bäume aus `LevelBuilder.tree_spots` (in `_tree` gesammelt), nur die draußen. Draußen = `LevelBuilder.is_outdoor` am Boden, je 1-m-Zelle zwischengespeichert (`_outdoor`). **Tagesrhythmus:** Abend und Nacht (`Calendar.phase`) fliegen sie, Morgen und Tag hängen sie; beim Wechsel gestaffelt über `STAGGER` (eine Spielstunde). **Flug** (`_step`): Steuern mit `ACCEL` auf die Bahn, zackig durch `JITTER` alle `JITTER_EVERY` s; unter `ROOF_CLEAR` nie über das Haus (Blick 0,4 s voraus, sonst hinauf und zurück zur Bahnmitte); `HOME` fliegt zum Schlafplatz. **Scheu und Warnung** (`_look_around`, alle `CHECK_EVERY` s): Monster (aktiv), Kürbismann (im Haus) und Lakengeist (aktiv und sichtbar) bis `THREAT_RANGE` → Schlafbäume fliegen auf (`_flush`), Fliegende fliehen (`_flee_from`: weg und hinauf `FLEE_UP`, `FLEE_SPEED`, `FLEE_TIME`). Spieler draußen: am Schlafbaum bis `ROOST_DISTURB` × `Senses.conspicuity(spieler, 0)` (Licht, Rennen, Ducken), Fliegende weichen ihm bis `SHY_RANGE` für `SHY_TIME` aus. Nach einer Flucht kreisen sie; am Tag nach `SETTLE_PAUSE` wieder heim. `_flush` macht je Baum höchstens alle `NOISE_PAUSE` s Lärm `bats` (8 m, Klang `flutter`, Untertitel „[Flügelschlagen]“). Laute Geräusche wecken sie: `Game.noise` ruft `on_noise`, hängt ein Schwarm näher als 0,6 × Hörweite, fliegt er auf (eigener Lärm zählt nicht). Nicht gespeichert. Debug `--fledermaus[=tag|schwarm]` (`debug_show`: Uhr 21 bzw. 12 Uhr, Spieler `DEBUG_STAND` vor dem ersten Baum, Blick hinauf; schwarm: nach 3 s fliegen sie auf, wie von der anderen Seite aufgeschreckt), `--trace` „[Fledermäuse] Schwarm fliegt auf …“. Noch nicht: Dachgeschoss (fehlt im Plan), Biss und Vampir |
-| Lakengeist | `monster/sheet_ghost.gd`, `shaders/psx_ghost.gdshader`, `traces.gd` (`add_window_handprints`, `add_french_door_handprints`), `door.gd` (`room_id`, `outward`) | Spielkonzept 4.18. `Game.ghost`, eigener Knoten neben dem Monster, kein NavMesh und keine Kollision (schwebt durch Glas und Vorhang). Prüft alle 0,5 s `_window_near()`: Außenfenster mit Vorhang, ≤ 7 m, freie Sicht, alle `lamp_fixtures` mit dieser `room_id` aus, Vorhang offen (ab `THROUGH_CURTAIN_FROM` egal). **Fenstertüren** (2026-10-22): `LevelBuilder._opening_object` legt jede `garden_door` mit genau einer Seite draußen (nicht versiegelt) in die Gruppe `french_doors` und setzt `Door.room_id` (Raum drinnen) und `Door.outward`; `_windows` liest sie vor den Fenstern, `_window_near` nimmt sie ohne Vorhang (nur nicht verschlossen, Raum dunkel, Punkt 0,4 m innen). `_window`/`_last_window`/`_guest_windows` sind daher `Node3D` (HotelWindow oder Door), `_window_center()` für den Abstand. Gewürfelt wird je neuem Fenster (`_last_window`, `SPAWN_CHANCE`, an Fenstertüren `FRENCH_DOOR_CHANCE` 0,9) und, solange der Spieler dort bleibt, alle `STAY_EVERY` s erneut (`STAY_CHANCE`, an Fenstertüren `FRENCH_DOOR_STAY` 0,4, `_stay`); nicht während Rauschen (`player_threat`), nicht in Gesellschaft, nicht im Katzenraum (`LevelBuilder.is_safe`, auch bei Gästen), erst ab Tag `FROM_DAY` (2) oder nach dem ersten Angriff (`_haunting()`, gilt auch für Gäste). Abklingzeit `COOLDOWN` 45 s, Schweben `FLOAT_SPEED`/`INSIDE_SPEED` 1,6/1,1 m/s. `visits` = Stufe (gespeichert unter `ghost`, dazu die Abklingzeit; laufende Auftritte nicht). An einer Fenstertür schwebt er über dem Boden davor (Hände auf Halshöhe für `Player.EYE_HEIGHT`), ab dem 2. Mal Handabdrücke außen auf dem ersten Flügel (`Traces.add_french_door_handprints`, gespeichert wie Türspuren; offene Tür: keine), ab `ENTER_FROM` öffnet er sie lautlos (`_open_french_door`, `--trace`: „öffnet die Fenstertür“). Zustände `APPROACH → HOVER → ENTER → STRANGLE` (dazu `LURK → FLY_IN` am Schrank), Ende immer über `FADE` (0,5 s, Raster-Ausblenden im Shader statt Transparenz). Spieler: `trance` (macht langsamer, `TRANCE_SLOW`), `gripped` (steht fest), `move_input` (auch im Versteck, solange `gripped`). **Losreißen** (`_struggle`): Balken `_escape`, je Richtungswechsel `ESCAPE_GAIN`, der Griff zieht `ESCAPE_GRIP` je Sekunde ab (ab dem 4. Mal fester), `ESCAPE_TIME` 3 s – erst ab ~6,5 Wechseln/s schaffbar; HUD-Balken `Hud.set_struggle()`. Solange `gripped`, gehen weder [E] noch die Versteck-Zeitgrenze. **Schrank** (`_lost_victim` → `_start_lurk`): Versteckt sich der Spieler in einem Schrank, wenn er ohnehin hereinkäme (ab `ENTER_FROM`, im Flur), wartet er `LURK_TIME` vor `check_point` und rüttelt (`HideSpot.rattle()`). Kommt der Spieler heraus → `ENTER` (packt sofort zu); keucht er (Atem leer) → sofort `FLY_IN`; sonst Wurf `FLY_IN_CHANCE` (ab `HALL_FROM` `FLY_IN_CHANCE_LATE`, + `FLY_IN_WEAK` × Schwäche, angehaltene Luft senkt sie um bis zu `BREATH_SAVES`). `FLY_IN`: `HideSpot.burst_open()` (Lärm `rattle`, nicht `hide_burst` – lockt das Monster nicht), schwebt an den Hals, würgt im Schrank; losgerissen → `exit_hide()`. Unterm Bett verschwindet er wie bisher. Tod über `Game.game_over` + `director.flash()` + `player_died`. **Klang:** `_ambience` (`AudioStreamPlayer3D` auf Handhöhe) spielt `assets/sound/ghost_ambience.mp3` in Schleife, solange er sichtbar ist – Lautstärke `AMBIENCE_DB` + `_fade` × `Settings.effects_volume` (blendet mit Erscheinen/`FADE` ein und aus), räumlich ungedämpft bis `AMBIENCE_UNIT` (4 m), stumm ab `AMBIENCE_RANGE` (30 m); jeder Auftritt beginnt an zufälliger Stelle, im Pausenmenü pausiert er mit dem Baum. Stopp in `_hide()`, nach dem eigenen Würgetod mit dem Sterbebildschirm, bei einem Tod durchs Monster sofort. Knochen werden pro Frame aus der Ruhepose gedreht (`_pose`: Schweben, Saum, Handkreisen, Krallen). Weiße Flocken vom Saum: `_flakes` (siehe Partikel). Flur: ab `HALL_FROM` (6.) Mal, nur wenn `Social.all_asleep()` und der Spieler in einem Flur steht (`_in_hall` → `LevelBuilder.in_corridor()` – nach dem Grundriss; die Flurnamen in `eg.json` schreiben „…flur“ klein, eine Namensprüfung auf „Flur“ traf nie), `HALL_CHANCE` je Sekunde; taucht an einem Patrouillenpunkt 8–16 m entfernt außer Sicht (auch keines wachen Gastes) auf und kommt gleich auf ihn zu, gibt auf ab `HALL_GIVE_UP` (20 m) Abstand. **Schwäche** (`Player.weakness()`, `Guest.weakness()`, 0..1, `_weakness(victim)`): Fensterchance (Spieler und Gäste, `_spawn_chance(victim)`) und Bleibe-Chance + `WEAK_CHANCE` × w, Abklingzeit `COOLDOWN / (1 + WEAK_FASTER × w)` (Schwäche des letzten Opfers), Flurchance × (1 + `WEAK_FASTER` × w), ab `WEAK_HALL` (0,66) auch vor dem 6. Mal, ab `WEAK_SURE` (1,0) sicher im Flur, sobald kein wacher Gast den Spieler sieht – auch ohne Nachtruhe; Zeugen vertreiben ihn trotzdem. Spieler: `nights_awake / WEAK_NIGHTS` (3) + `drunk × WEAK_DRUNK` (betrunken = ganz schwach) + `shock × WEAK_SHOCK` + Trauer (`director.grief / GRIEF_TIME` × `WEAK_GRIEF`) + `WEAK_HANGOVER` bei Kater – zwei Nächte ohne Schlaf ergeben wie früher den Flur, drei sicher. Gast: `fear / 100 × WEAK_FEAR` + `drunk`. Mit `--trace` stehen Rausch und Schwäche in der Zustandszeile. **Gäste als Opfer** (6.12): `_victim` (Player oder Guest), `_stage` = Zähler des Opfers (`visits` bzw. `Guest.ghost_visits`); `_check_guests()` würfelt wie beim Spieler je neuem Fenster pro Gast (`_guest_windows`), Augenpunkt `Guest.eye_height()`. Der Gast sieht ihn (`_guest_sees_me` → `shock("ghost", …, entranced)` ab Hypnose-Stufe: bleibt stehen), `ghost_grab()` → `GHOSTED`, Losreißen nach Zufall (`GUEST_ESCAPE`: 5 % + 20 % × `brave`), sonst `_kill_guest()`. Bei Gästen zählt der Spieler als Zeuge (außer `debug_ignore_player`); Zeugen, die ihn vertreiben, erschrecken. **Debug** (F6, `--ghost=…`, Konsole `ghost`): `debug_summon(n)` lässt ihn ohne Sprung sofort (`_appear`, ohne Würfel und Reichweite) ans nächste Außenfenster mit Vorhang oder die nächste Fenstertür (wird dabei geschlossen) von `room_at(Spieler)` kommen – Licht aus, Vorhänge auf (ab 4 zu), Blick dorthin; `debug_summon_hall()` legt alle Gäste ins Bett und setzt ihn im Flurabschnitt des Spielers Richtung dessen weitesten Wegpunkts, höchstens `DEBUG_HALL_DISTANCE` (19 m) entfernt. Ohne Fenster bzw. Flur nur `Game.say()` (Rückgabe false). Ein laufender Auftritt wird dabei abgebrochen (`_debug_reset`). **Vor der Tür** (Spielkonzept 5.6, Zustand `DOOR`): `_check_doors()` (vor Fenster und Flur, alle 0,5 s) sucht aufgehängte Lakengespenster bis `DOOR_DECO_RANGE` an einer geschlossenen Zimmertür, hinter der jemand Waches ist (`_door_victim`: Spieler per `room_at`, sonst ein Gast, der dort wohnt). Chance `DOOR_CHANCE` je Gespenst × (1 + Schwäche), nur ungesehen. `_appear_at_door` stellt ihn `DOOR_STAND` vor die Tür (Handhöhe für `Player.EYE_HEIGHT`), zählt den Besuch, setzt `circling_with` an den Gespenstern; `_door_watch`: `DOOR_TIME` (90–150 s) lautlos (`_update_ambience` → 0), Hände kreisen. Spieler drinnen: Blick dreht durch die Wand mit `DOOR_PULL` × (1 + Schwäche) zur Tür (nur Gieren, bis `DOOR_PULL_RANGE`, keine Trance). Gast drinnen: `Guest.door_trance()` – starrt (`SHOCKED` + `_entranced`); nur mit `DOOR_OPEN` + `DOOR_OPEN_WEAK` × Schwäche geht er nach `DOOR_TRANCE` × (1 − ½ Schwäche) zu `door_inside` und öffnet; ist jemand Waches bei ihm (`_company_at_home`), wartet er weiter, ein Gespräch holt ihn heraus. Tür auf oder Opfer im Flur näher als `DOOR_GRAB_RANGE` → `ENTER` (mindestens Stufe `ENTER_FROM`) – dann hört man ihn. Gäste vertreiben ihn vor der Tür erst ab `DOOR_WITNESS_RANGE` (6 m), der Spieler wie sonst. Debug `--ghost=tür [--answer]`, `--shock=id,tür`. **Garantien** (2026-10-22): `_check_guarantee_hall` (vor `_check_hall`) – noch nie beim Spieler (`visits` 0) und ab `GUARANTEE_DAY` (10): sobald der Spieler allein im Flur ist, `_appear_in_hall` an `_hall_spot` mit `_warn_only` – in `ENTER` verschwindet er `WARN_RANGE` vor ihm (`_vanish`). `catching_up()`: ab `CATCH_UP_DAY` (20), solange `visits` < `CATCH_UP_VISITS` (am Tag 20 selbst den ganzen Tag, `catch_up_day`, gespeichert unter `ghost`) – Fenster- und Bleibe-Chance 1 (`_spawn_chance`, `_check_spawn`), Abklingzeit `CATCH_UP_COOLDOWN` (8 s). **Geisterstunde** (2026-10-23, Zustand `PATROL`): `ghost_hour()` – nach dem ersten Angriff von `HOUR_START` (wenn die Mitternachtsglocke aus `Weather` ausgeschlagen hat: `BELL_STRIKES` × `BELL_GAP` in Spielstunden) bis `HOUR_END` (1 Uhr). `_check_spawn` startet nach Tür, Flur und Fenster des Spielers, vor den Gästen `_start_patrol()`: an einem Flurpunkt (`_corridor_points(boden)`: `wander_points` mit `in_corridor`, je Stockwerk einmal gesammelt) des Obergeschosses (`_hour_floor`, ohne Flure dort das Erdgeschoss), mindestens `PATROL_AWAY` vom Spieler und außer dessen Sicht. `_patrol`: von Flurpunkt zu Flurpunkt (`_next_leg`: Ziel `PATROL_LEG` entfernt, Weg `NavigationServer3D.map_get_path`, Höhe `_hover` wie im Flur), `PATROL_SPEED`; sichtbar nur `PATROL_FADE` (Raster), Klang `PATROL_SOUND`, Flocken `PATROL_FLAKES`; keine Zeugenprüfung. Alle `CHECK_EVERY` `_patrol_look`: Greift eine Flur-Regel (`_hall_rule`, `_guarantee_rule` – aus `_check_hall`/`_check_guarantee_hall` herausgelöst; Spieler auf demselben Stockwerk, näher als `HALL_GIVE_UP`) → `_turn_to` (gewöhnlicher Besuch von dort aus, zählt `visits`); ruft ihn ein dunkles Fenster (`_check_player_window`) → `_appear` dort; sieht er den Spieler im Flur (`_sees` → `Senses.can_see` mit `_eyes`, einem formlosen `Area3D` als Beobachter, `PATROL_SIGHT`/`PATROL_FOV`) → `_meet_in_hour`: `hour_meetings` + 1 (gespeichert unter `ghost`), `ENTER` mit `_warn_only` bis `HOUR_WARNINGS` (3), danach würgt er; `_stage` = `visits` (keine neue Stufe). Schwache Gäste (≥ `WEAK_HALL`, wach, im Flur, gesehen) → `_turn_to(gast)`. Nach einer Begegnung (`_hour_meeting`) und am Ende der Stunde Abklingzeit `HOUR_PAUSE` (8 s), dann geht er wieder um. Eine Warnung (`_warn_only`) wartet nie vor dem Schrank (`_start_lurk`). Solange er umgeht, ist er aktiv (`is_active`): Das Monster verschiebt seinen Aufbruch (nur eine Bedrohung im Haus); ist es um 0 Uhr unterwegs, fängt die Geisterstunde erst an, wenn es wieder ruht. Nicht gespeichert (wie jeder Auftritt). Debug `--ghost=stunde[,n]` (`debug_ghost_hour`: Uhr 3 Spielminuten vor Mitternacht, erster Angriff gilt, `hour_meetings` = n − 1, `_debug_hour_near` – im Flur des Spielers 8–16 m entfernt, erst auf ihn zu), `--trace` „[Lakengeist] Geisterstunde: …“. **Blickzug** (Hypnose, Würgen, vor der Tür) × `Settings.look_pull` (Einstellung „Blickzug“, 0,2 … 1). `first_seen`: Spielzeit der ersten Begegnung mit dem Spieler (`_start_visit`, also auch Warnung und Geisterstunde; `NEVER_SEEN` = noch nie, `met()`), gespeichert unter `ghost` – danach richtet sich die Dusche |
-| Lakengeist in der Dusche | `world/shower_scare.gd` (`ShowerScare`), `shaders/shower_steam.gdshader`, `sheet_ghost.gd` (`shower_visit`, `first_seen`), `flicker_light.gd` (`hold`), `synth_audio.gd` (`shower`), `traces.gd` (`add_shower_handprints`) | Spielkonzept 4.24. `Game.shower_scare`. Findet beim Start die Duschecke im Bad von Zimmer 13 (LevelBuilder, Gruppe `showers`, `home_room_at` = Zimmer 13), die Lampen darüber (`lamp_fixtures` im selben Raum) und das Glas des Modells (Flächen mit `Mat.glass`; Außenfläche vorn = `_door_z`). Stufen `WAITING → RUNNING → CAUGHT → CLEARING → DONE`. **Auslöser:** `Social.start_sleep` → `on_night_rest()`: läuft, wenn `SheetGhost.first_seen` mindestens `Calendar.DAY_SECONDS` zurückliegt; schläft der Spieler, `Player.wake_up`. **RUNNING:** zwei `FogVolume` (Duschecke bis über das Glas, Schwade darüber und vor der Tür) mit eigenem Nebelshader (steigt auf, weicher Rand über `UVW`, Eigenleuchten – sonst stünde im dunklen Bad ein dunkler Block), Dampfballen (`CPUParticles3D`, durchsichtig, ohne Licht), Flocken wie am Geist, beschlagenes Glas (Kopie von `Mat.glass`, milchig mit etwas Eigenleuchten), Badlampe über `FlickerLight.hold` (langsam von „wie geschaltet“ in den Puls, ohne Birne nichts). Wasser: `SynthAudio.shower` (Rauschen mit Tropfenschlägen, `shower_muffle` außerhalb des Bads) über `Game.hearing` – **kein Lärm**; leiser Geisterklang als eigener `AudioStreamPlayer3D`, bis der Geist selbst da ist. `blocks_sleep()` → `HideSpot.interact` lehnt ab; `reserves(player)` → `SheetGhost._player_free` lässt ihn in Zimmer 13 nicht auf gewöhnlichem Weg kommen. **Fang** (`_check_catch`): im Bad, waagerecht höchstens `CATCH_RANGE` vor der Tür, keine Bedrohung (`other_threat_active(null)`, `is_signalling`, Geisterstunde). `Player.spellbound`, Blick per `_pull_gaze` zum Nebel, dann zum Geist – mit `Settings.look_pull` 1 gerissen (`SNAP_SPEED`), darunter sanft. Nach `GHOST_DELAY` `SheetGhost.shower_visit()`: eigener Auftritt (`_scripted`: keine Zeugen, zählt nicht für `visits`, `_stage` = `ENTER_FROM`), `HOVER` im Nebel, dann mit `SHOWER_SPEED` durch die Glastür und `_grab`. Ab `gripped` ist `spellbound` aus (Losreißen braucht die Bewegungstasten). Speichern gesperrt (`busy()` in `SaveManager.can_save`). **Losgerissen:** `_struggle` → `on_escaped()`: Lampen frei, `Traces.add_shower_handprints` (außen auf der Tür, Weltlage wie Spuren am Boden), Wasser in `WATER_STOP`, Nebel und Glas in `CLEAR_TIME`. Erwürgt: nichts – gespeichert war `running`. Gespeichert unter `shower` (`waiting`/`running`/`done`; gefangen zählt als laufend). Debug `--dusche[=fang|los|nacht]` (`debug`, `debug_night`; `los` drückt abwechselnd links/rechts über `Input.action_press`), `--trace` „[Dusche] …“ |
-| Kürbismann | `monster/pumpkin_man.gd` | Spielkonzept 4.19, Verhalten siehe 5 („Der Kürbismann“). Zusätzlich Testfigur ohne Verhalten: `PumpkinMan.spawn_in_front_of(player, anim)` (Debug `--pumpkin[=anim]`) stellt sie `DISTANCE` (2,5 m) vor den Spieler (Gruppe `pumpkin_men`) und spielt die Animation in Schleife (`chicken` → `dance_chicken`). Material `Mat.model(…, two_sided)` – die Jackenfetzen sind einseitig |
-| Kürbissorten | `world/pumpkin_kinds.gd`, `item.gd` (`variety`, `_pumpkin`, `carry_speed`, `hold_offset`, `can_carve`), `pumpkin_plant.gd`, `guest.gd` (`favorite_pumpkin`, `stock_item`, `_ripe_plant`), `dialog_ui.gd` (`_gift`) | Spielkonzept 5.8. `PumpkinKinds.DATA` je Sorte: Form (`round`/`flat`/`bottle`/`turban`), Farbe, Maße, beide Hände, schnitzbar, Deko, Preis, Wachstum, Masse, Leuchtfarbe geschnitzt, Spritzergröße `splat`, beim Riesen `portions` (Hände voll Matsch) und `slow` (Gehtempo beim Tragen). Die Sorte steht im Zusatzfeld des Gegenstands (`"hokkaido"`, geschnitzt `"casper,unlit"`; leer = Halloween) – kein neues Speicherfeld, alte Stände laden als Halloween-Kürbis. Pflanzen bekommen sie aus dem Plan (Art `pumpkin_plant:<sorte>`); der Riese (`PumpkinPlant.is_giant`) landet beim Ernten neben dem Beet (`harvest` gibt null). Getragen wird er seit 2026-10-22 wie jeder große Kürbis, aber mit `Item.carry_speed()` = `slow` 0,45 statt `LARGE_SPEED` 0,8 (`Player`: Tempo × `held.carry_speed()`) und tiefer und weiter vorn in der Hand (`Item.hold_offset`). Geschnitzt: Deko × `deco`/10 (`_variety_deco`). Lieblingskürbis fest aus der Gast-ID (`favorite_of`, ohne Zufallsaufruf in `GuestGenerator`). Neue Sorten nur hinten an `ORDER` anfügen. **Modell** (`PumpkinModel.VARIETIES`: Halloween- und Riesenkürbis, 2026-10-23): statt der Grundkörper das Meshy-Modell (`Item._pumpkin_model`), gleichmäßig auf die Breite der Sorte skaliert; geschnitzt mit der Fratze `Item.face` (beim Erzeugen ausgewürfelt, Zusatz `f=n`) und ohne die leuchtenden Kästchen – mit Kerze glüht das Fruchtfleisch über die Glutmaske; an der Pflanze ist die reife Frucht das glatte Modell, die grünen Stufen davor bleiben die Kugel. Weißer Kürbis und Hokkaido bleiben vorerst Grundkörper (die orange Textur lässt sich nicht weiß färben – bräuchte einen zweiten Atlas). Debug `--kuerbis[=n]`. Große Sorten wachsen seit 5.10 einen Spieltag (der Riese zwei), ab `PumpkinPlant.FROST_DAY` (25.) nicht mehr (`frozen`) |
-| Knappheit & Verfall | `monster_director.gd` (`demand`, `FILLER_CAP`, `_deco_strength`), `item.gd` (`ROT_*`, `deco_value`, `is_filler`, `_read_rot`, `_decay`, `set_rot_stage`), `resource_spot.gd` (`runs_out`, `guest_can_take`, `guest_consume`, `consume`), `level_builder.gd` (`DECO_BOX_SIZE`, `LAUNDRY_BOX_SIZE`, `OLD_DECO_SIZE`), `pumpkin_plant.gd` (`FROST_DAY`) | Spielkonzept 5.10, Stufe 1. **Kisten mit starker Deko** (Dekokiste 15, Wäschekiste 8, alte Deko im Heizkeller 10) haben `regen_time` 0 (`runs_out`) und leeren sich; Gäste nehmen je Kiste höchstens ein Stück am Spieltag (`guest_day`, gespeichert unter `resources`), der Spieler beliebig. **Kürbisse faulen** (`ROT_KINDS`: Kürbis, geschnitzter, Zierkürbis): `rot_at` = Spielzeit, zu der er weg ist, im Zusatzfeld als `r=<s>` (`create_extra`, ohne Angabe ab jetzt – Laden behält die Zeit); `ROT_CARVED` 3, `ROT_WHOLE` 7 Spieltage, `carve()` kürzt auf höchstens 3. Alle `ROT_CHECK` s `_decay`: ab `ROT_WILT` (60 %) welk (Materialien dunkler/bräunlich, Deko × 0,7), ab `ROT_SAG` (85 %) eingefallen (Meshes gestaucht, × 0,4), dann `queue_free` – in Hand oder Tasche erst, wenn er wieder liegt. Die Stufe steht im Namen; `ItemIcons` lässt `r=` aus dem Schlüssel. Debug `--rot[=welk|eingefallen]`; `--day`/`--time` lassen die Zeit springen, Kürbisse altern mit |
-| Zerplatzen, Kürbismatsch | `item.gd` (`BURST_KINDS`, `_physics_process`, `burst`, `_splash_chunks`, `Kind.PUMPKIN_MUSH`, `mush_extra`, `mush_color`, `_take_portion`, `_settle_mush`, `_lay_mush`, `_rot`), `trace_mark.gd` (`place_splat`), `shaders/psx_decal.gdshader`, `Mat.decal`, `stove.gd` (`dish_for`) | Spielkonzept 5.8 (2026-10-22). Nur `BURST_KINDS` (`PUMPKIN`, `CARVED_PUMPKIN`, `MINI_PUMPKIN`, seit 2026-10-24 auch `CANDLE`, `BULB` und `COFFEE`) haben `_physics_process` (in `_ready` an): Solange der Körper frei ist (nicht gehalten, eingefroren, eingesteckt), merkt er sich den Punkt, an dem ein Fall beginnt (`_fall_top`, jedes Bild neu, solange `linear_velocity.y` > −0,5); war er im letzten Bild schneller als `IMPACT_SPEED` (3 m/s) nach unten und hat jetzt mehr als die Hälfte davon verloren, ist das ein Aufprall – aus mehr als `BURST_HEIGHT` (3 m; Kerze, Glühbirne und Kaffeetasse früher, `BREAK_HEIGHT` 2, 1,5 bzw. 1 m) → `_break()`: Kerze `_shatter_candle` (Wachsfleck, siehe Werfen), Tasse `_spill_coffee` (Kaffeefleck, siehe Kaffee), **Glühbirne `_shatter_bulb`** (auch durchgebrannte: Lärm `bulb_burst` 8 m wie beim Durchbrennen einer Lampe, Untertitel „[Eine Glühbirne zerplatzt]“, Splitter über `_spray` und `BULB_SHARDS` Scherben aus Glas `BULB_GLASS` – leicht leuchtend – und dem Gewinde über `_fling_pieces`; die Birne ist weg, Trace `[Glühbirne]`), sonst `burst()`: Strahl nach unten (Ebene 1) für den Boden, dort Kürbismatsch gleicher Sorte und gleichen Besitzers mit zufälliger Drehung – Kantenlänge `PumpkinKinds` `splat` (Zierkürbis `MINI_SPLAT` 0,4 m) ± 10 %, Hände voll aus `portions` (Riese 10–20, sonst 1). `_splash_chunks` (über die gemeinsamen Helfer `_spray` und `_fling_pieces`; Stücke mit `continuous_cd` und Kollision mindestens 2 cm dick – dünne Scherben fielen sonst durch den Boden – das Bild unten im Kasten) je nach Spritzergröße (`k` = √(splat/0,9)): einmalige `CPUParticles3D` (räumen sich per pausierbarem Timer weg) und `CHUNKS_PER_M` × splat (3…`CHUNK_MAX`) echte `RigidBody3D`-Stücke (Ebene 0, Maske 1, nicht interagierbar) in Schalen-, Matsch- und Fruchtfleischfarbe, die davonfliegen, aufschlagen und nach `CHUNK_STAY` (5–9 s) per Tween am Stück selbst wegschrumpfen (Tweens pausieren mit dem Spiel; der Kürbis ist da schon frei, darum kein Lambda an ihm). Lärm `pumpkin_splat` (8 m), Untertitel in 12 m, Trace `[Kürbis]`. Die Kerze eines geschnitzten Kürbisses geht mit verloren. **Kürbismatsch** (`PUMPKIN_MUSH`, hinten an `Item.Kind`): am Boden seit 2026-10-23 gebaut wie eine Blutlache (`_lay_mush`): ein großer Spritzer mit der Kantenlänge `mush_size` und `MUSH_SPLATS_PER_M` × `mush_size` kleinere (0,2–0,4 × so groß, 0,4–0,75 × `mush_size` vom Mittelpunkt), jeder über `TraceMark.place_splat` senkrecht auf die Fläche darunter gefallen und ganz auf ihr – auf einer Treppe längs auf den Stufen (dort als Reihe von Spritzern, höchstens 2 : 1 gestreckt, damit die Textur nicht verzerrt) und bis `mush_size` die Stufen hinunter; findet ein kleiner keinen Platz (neben der Treppe, hinter der Wand), versucht er es zweimal näher an der Mitte. Vorher lag eine einzige Ebene in der Lage des Körpers – auf einer Treppe ruht der auf der Rampe, die Fläche schwebte über den Stufen und steckte in ihnen. Die Flecken (`TraceMark.lay_decal`) liegen unter `_spread`, das `top_level` ist (Weltlage, unabhängig davon, wie der Körper liegt). `_settle_mush` (in `_process`, nicht in der Hand): Liegt der Matsch still an einer neuen Stelle (frisch, geladen, abgelegt, mehr als 5 cm gerutscht – `_laid_at`), legt er die Flecken dort neu, jedes Mal anders verteilt; solange er fliegt oder rutscht, sieht man die Klumpen. Material `Mat.decal` mit `assets/textures/pumpkin_splash.png` (eigenes Material für alle Flecken eines Matschs: Umriss aus dem Alpha, `fade` als echte Transparenz, damit das Verblassen kaum auffällt), zur Kamera gezogen mit `TraceMark.SPLAT_PULL` 0,014 (wie Blut und Wachs), eingefärbt über `albedo` = `mush_color` / `MUSH_TEX_COLOR` (mittlere Texturfarbe, je Kanal – so bleibt die Schattierung der Textur); `mush_color` = Schale halb zu `FLESH_COLOR`, dann zu 40 % zu `MUSH_DULL` (breiiges Braun – reines Orange war zu grell; seit 2026-10-24, dazu matter, klumpiger und deckender: `SPLAT_LOOK`, Karten neu mit `edge=8 rough=0.5,0.75 bump=3 noise=0.4 grain=5 seed=3`). In der Hand vier Klumpen (`_pile`/`_spread` wie Herbstlaub, „aufsammeln“), Deko 0, Preis 0. Der Spieler schiebt Matsch nicht weg (`Player._push_items`); mit mehr als einer Hand voll ist er eingefroren. Zusatzfeld `mush_extra` = `"sorte,zeitpunkt,größe,hände"` (z. B. `"giant,1234.50,4.37,15"`, kein neues Speicherfeld; die Zahlen werden der Reihe nach gelesen, ältere Stände mit nur dem Zeitpunkt laden mit 0,9 m; dahinter wahlweise „w=…“ und „s=drehung:länge“ – langer Spritzer, siehe Werfen). **Riesenspritzer:** `interact` mit `portions` > 1 → `_take_portion`: neuer Matsch mit einer Hand voll (`HANDFUL_SPLAT` 0,6 m) über `Player.try_pick_up` (Hände voll → wieder weg), der Spritzer verliert eine Hand voll und schrumpft auf √((n−1)/n) seiner Kantenlänge – jeder Fleck um seine eigene Mitte, so bleibt er auf seiner Fläche –, Kollisionsbox mit; die letzte Hand voll ist er selbst. `mushed_at` = Spielzeit des Zerplatzens. `_rot()` (in `_process`, nicht in der Hand): nach `MUSH_ROT_AFTER` (ein Tag, `Calendar.DAY_SECONDS`) über `MUSH_FADE` (halber Tag) ausblenden, dann `queue_free` (Trace). Debug `--fall[=h[,sorte]]` (Kürbis aus h m vor dir, nach 1 s; Sorte oder `mini`) |
-| Werfen | `player.gd` (`_update_throw`, `throw_held`, `throw_speed`, `THROW_*`), `item.gd` (`throw_from`, `thrown`, `THROW_IMPACT`, `THROW_MASK`, `_sweep`, `_throw_hit`, `_splash_wall`, `_lay_streak`, `STREAK_*`, `_shatter_candle`), `trace_mark.gd` (`wax_splash`, `_spread_wall`, `WALL_SPLASH`), `traces.gd` (`add_wall_splash`), `guests/social.gd` (`on_player_threw_at`), `guests/pranks.gd`, `hud.gd` (`set_throw_power`), `senses.gd` (`throw_land`) | **Spieler** (Spielkonzept 3.13): [G] mit etwas in der Hand setzt `_throw_hold`; losgelassen vor `THROW_HOLD` (0,3 s) legt bzw. hängt es wie bisher ab (`drop_held` – also erst beim Loslassen), länger gehalten steigt `throw_power` bis `THROW_FULL` (1,2 s), die Hand geht um `THROW_WINDUP` zurück, unter dem Fadenkreuz ein Balken (`Hud.set_throw_power`). Loslassen wirft aus der Hand in Blickrichtung (+`THROW_LIFT`) mit `throw_speed(masse, kraft)` = `THROW_PUSH` / Masse^`THROW_MASS_EXP`, höchstens `THROW_MAX`, mit wenig Kraft `THROW_WEAK` davon (Kürbis 4 kg ≈ 5,7 m/s, Riese ≈ 1 m/s), dazu das eigene Tempo; 0,5 s keine Kollision mit dem Spieler. **Flug:** Solange `thrown`, fegt `_physics_process` je Schritt eine Kugel (0,45 × größte Kante der Kollisionskiste) vom letzten Ort bis einen Schritt voraus (`_sweep`: `cast_motion` + `get_rest_info`, `THROW_MASK` = `MASK` | Gäste, ohne Werfer – auch die Kinder übergeben sich als Werfer) – ein Strahl aus der Mitte kam zu spät, die Physik hatte den Körper schon gebremst; als Rückfall zählt der harte Aufprall (unten). **Treffer** (`_throw_hit`): Gast → `Social.on_player_threw_at` (nur vom Spieler). `BURST_KINDS` zerplatzen bzw. zerbrechen (`_break`): an einer Wand (Normale flach, keine Tür `_is_door`, kein Glas) zuerst `_splash_wall` → `Traces.add_wall_splash`, der Kürbismatsch fällt davor herunter; am Boden merkt sich `_impact_velocity` das Tempo, und `burst` schreibt ab `STREAK_MIN` m/s „s=richtung:länge“ (`STREAK_PER_SPEED` je m/s, höchstens `STREAK_MAX`) in den Matsch. Alles andere prallt ab und macht Lärm `throw_land` bzw. ab `THROW_HEAVY` kg `throw_land_heavy` am Aufschlag – Quelle ist der Gegenstand, also geht das Monster dorthin (`MonsterDirector.on_noise` → `investigate`, Ablenkung 4.11). **Langer Spritzer** (`_lay_streak`, nur auf ebener Fläche): vom Aufschlag in Flugrichtung eine Kette unverzerrter Flecken wie der Strom auf Treppen, vorn 0,55, hinten 0,15 × Spritzergröße, leicht schlängelnd, jeder über `place_splat`; endet an Wand, Kante oder Stufe; frisch rutscht er mit `STREAK_FLOW` nach vorn; aufgehoben ist er weg. **An der Wand** (`TraceMark._spread_wall`): Spur „splash_mush:<sorte>“ (Zierkürbis „:mini“), „splash_wax“, „splash_coffee“, „splash_tea“ – die Sorte steckt im Namen, kein neues Speicherfeld; +Z von der Wand weg. Ein Fleck als Ebene (`FACE_Z`) an der Wand, darunter ein Strom aus Quadraten (`_runner_mesh`) bis zum Boden (`Traces.surface_below` vor der Wand), unten eine Pfütze (`place_splat`); Maße und Fließtempo in `WALL_SPLASH`, Kürbis nach der Sorte skaliert; Kaffee und Tee matter als am Boden (`WALL_COFFEE_SPECULAR` – senkrecht wirkte der Glanz grau); frisch läuft er herunter; zählt zu den Gästespuren. Debug `--wurf=k[,gegenstand]`; Test `throw_checks`, Rauchtest `werfen`. **Streiche** (Spielkonzept 6.13): `throw_from(start, tempo, wer)` löst den Gegenstand aus der Hand, setzt Schwung und Drall und schaltet `_physics_process` ein (auch für Kerzen). Solange `thrown`: verliert er bei mehr als `THROW_IMPACT` m/s auf einen Schlag die Hälfte seines Tempos, ist das der Aufprall – Kürbisse und Zierkürbisse `burst()` (aus jeder Höhe), Kerzen `_shatter_candle()` (auch nach einem Fall ab 2 m, Trace `[Kerze]`): Spur `wax_splash` am Boden (`Traces.add_guest_drop`; Kern `WAX_CORE` und 10–16 Tropfen aus der Grafik `wax_splash.png`, wie Blut einzeln auf die Fläche darunter, `TraceMark._spread_wax` – auf Treppen auf den Stufen, Zug zur Kamera `SPLAT_PULL`; zählt zu den Gästespuren, wird gespeichert), Lärm `wax_splat`, brennend `DecoFire.ignite_near`, die Kerze ist weg. Trace `[Streich]` |
-| Feuer | `world/deco_fire.gd` (`DecoFire`), `trace_mark.gd` (`soot`) | Spielkonzept 5.11. `DecoFire.FLAMMABLE` (Laub, Spinnweben, Lakengespenst, Fledermäuse, Spinne, Besen, Bettlaken). `ignite_near(ort)`: freie leichte Deko bis `IGNITE_RANGE` waagerecht und `IGNITE_HEIGHT` darüber → `ignite(item)`: eigener `StaticBody3D` neben dem Gegenstand (Meta `fire` am Gegenstand), Ebene 3 – fängt den Blick ab: „… brennt – austreten [E]“ → Deko-Stärke × `SCORCHED`, Name „(angesengt)“. Brennend `deco_strength` 0, Flammen (`CPUParticles3D`, Farbverlauf), `OmniLight3D` in Gruppe `light_source` (zählt in `light_at`), Lärm `fire` alle `NOISE_EVERY` s, springt alle `SPREAD_EVERY` s mit `SPREAD_CHANCE` auf leichte Deko in `SPREAD_RANGE` über; nach `BURN_TIME` Ruß (`soot`) am Boden, Gegenstand weg. Hebt jemand ihn auf, erstickt es. Nicht gespeichert. Trace `[Feuer]` |
-| Kerzen | `item.gd` (`lit`, `has_candle`, `has_wick`, `can_light`, `light_up`, `snuff`, `blow_out`, `_extinguish`, `light_prompt`, `light_by`, `blow_hint`, `FLAME_OUT_*`), `world/fixed_candle.gd` (`FixedCandle`), `player.gd` (`_use_flame`, `has_matches`, `_snuff_target`, `_update_flame_wind`), `dresser.gd` (`fixed`), `level_builder.gd` (`CONTENT` „drawer“, `_drawer_content`) | Spielkonzept 5.12. Kerzen, Kürbisse und Totenköpfe brennen unbegrenzt – keine Brenndauer mehr. Neue Kerzen (`Item.create`) brennen nicht, nur mit Zusatz `lit`; aus dem Koffer (`Guest.stock_item`) brennt nichts, im geschnitzten Kürbis steckt dann eine erloschene Kerze (Zusatz `out`); die Startdeko der Gäste zündet `Social._place_start_deco` an. In Kürbis und Totenkopf: Zusatz `unlit` bzw. leer = ohne Kerze, `out` = Kerze erloschen (`has_candle`); hineinstellen nur brennend (`_takes_candle`). [E] auf ein Item oder eine `FixedCandle`: `Item.light_prompt`/`light_by` – Flamme oder `MATCHBOX` in der Hand + Erloschenes, oder Erloschenes in der Hand + Flamme. Linksklick/R mit Docht in der Hand: `_use_flame` (auspusten bzw. mit der Schachtel aus der Tasche anzünden); R auf eine Flamme in der Welt: `_snuff_target` → `snuff()` (nicht mit der Taschenlampe in der Hand). In der Bewegung würfelt `_update_flame_wind` je Sekunde (`FLAME_OUT_RUN` im Haus, `FLAME_OUT_OUTSIDE`/`_RUN` draußen über `RainVeil.is_outdoor`, × (1 + `FLAME_WEATHER` × `Weather.intensity`), in Kürbis/Totenkopf × `FLAME_SHELTER`), Trace `[Kerze]`. `FixedCandle` (feste Kerze auf Möbeln, `StaticBody3D` auf Ebene 4): Licht in `lamps`, `burn_out` statt Abbrennen, das Monster bläst sie wie Items aus (`Monster`, `CANDLE_RANGE`), gespeichert in `fixed_candles` (`WORLD_GROUPS`). Fundort der Schachtel: `CONTENT["022"]["drawer"]` → `Dresser.fixed[0]` (oberste Schublade der ersten Kommode im Zimmer), ohne Kommode auf dem Tisch des Zimmers. Szenarien `kerzen` |
-| Süßigkeiten-Truhen, Automaten | `level_builder.gd` (`_furniture`: `chest` → `_sweets_chest`, `snack_machine`/`drink_machine`), `world/vending_machine.gd` (`size`), `world/chest.gd` (`size`, `wood_color`, `title`) | Spielkonzept 3.2, 6.13; seit 22.10. nur aus dem Plan (vorher stellte `ExtraFixtures` sie selbst auf – der Plan wird von Hand eingerichtet). **Truhe** (`Möbel: Truhe`) in einem Hotelzimmer = dessen Süßigkeiten-Truhe: Größe aus dem Plan, Höhe `SWEETS_CHEST_H`, Meta `sweets_room`, Gruppe `sweet_chests` (und wie jede Truhe `chests` – gespeichert, im Fingerabdruck), darin `SWEETS_CHEST_COUNT` Süßigkeiten als Gegenstände. `Social.take_room_sweet(zimmer)` nimmt eins heraus (Gäste an der Tür); ohne Truhe im Zimmer gibt es von dort nichts. **Automaten** (`Möbel: Snackautomat` → `snack`/`SWEETS`, `Möbel: Getränkeautomat` → `cola`/`SODA_CAN` „cola“, `PRICE` 1): Breite und Tiefe aus dem Plan, Höhe `VendingMachine.SIZE.y`, Front zur helleren Kante. Ebene 1 (im NavMesh), Front leuchtet (`OmniLight3D` in `light_source`), Schild als `Label3D`. Nicht gespeichert (kein Zustand) |
-| Taschenlampe | `world/flashlight.gd`, `world/uv_mark.gd`, `item.gd` (`FLASHLIGHT`, `BATTERY`, `UV_FILTER`) | `Flashlight` hängt als Kind am Item (`item.flashlight`), Zustand steckt in `create_extra()` (`"c=0.42;uv;m=uv;on"`), also kein eigener Speicher-Eintrag. Bewusst **ein `SpotLight3D` außerhalb von `light_source`** – zählt nicht für Helligkeit/Abschreckung (`light_at` castet ohnehin auf `OmniLight3D`) und nicht als `item.lit` (sonst bläst das Monster sie aus, Gäste tropfen Wachs …). Auffälligkeit über `flashlight.carried_conspicuity()` in `Senses.conspicuity`. Nur in der Hand des Spielers: UV prüft alle 0,1 s die Gruppe `uv_marks` (Kegel + Sichtlinie `SIGHT_MASK`, `UvMark.shine()`) und jeden Frame das Monster (`can_be_repelled_by_uv`, Brust im Kegel) → nach `director.uv_repel_time()` `on_monster_uv()`. Einsetzen von Batterie/UV-Aufsatz in `Item._fitting_prompt/_fit` (nur eigene oder herrenlose Teile). `UvMark`: Leuchtschrift (`setup_text`, im LevelBuilder `_uv_writing`) oder Kästen (`add_box`, Nachglanz der Fußspuren in `Traces`); läuft nur, solange es leuchtet. Warnungszettel: `NOTES[id]["uv"]` |
-| Kalender & Tagesuhr | `calendar.gd`, `wall_clock.gd`, `social.gd` (`night_window`), `guest.gd` (`PHASE_ACTIVITIES`) | statische Datums- und Uhrzeitfunktionen, Phasen des Tages (Spielkonzept 2.4) + Abreißkalender in Zimmer 13 (zeigt Datum und Uhrzeit) |
-| Telefone | `world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd` | `HotelPhone` auf jedem Zimmertisch (nicht Wäscherei) + Haupttelefon an der Rezeption (`room_id` `"lobby"`, Nummer `"0"`); gespeichert wird nur `off_hook` (Gruppe `phones`, ab Spielstand-Version 5). `PhoneCalls` (`Game.phones`) hat die Anrufe: eingehend nur für Zimmer 13 (warnen/lügen/plaudern/unheimlich), ausgehend per Wählseite, ferne Telefone als Atmosphäre. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`, eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die Zufallsfolge). Unheimliche Anrufe hinterlassen einen Hörer neben dem Apparat im Herkunftszimmer. Laufende Anrufe werden nicht gespeichert |
-| Spieltische | `minigames/table_match.gd` | `TableMatch` (CanvasLayer 15) = gemeinsame Basis von `DiceMatch`, `ChessMatch` und `DartMatch`: Fensterrahmen, nummerierte Knöpfe (`UiKit.flat_option`, Tasten 1–9/0 über `UiKit.press_number`), Hinsetzen, Gast springt auf bzw. Vorwarnung, Abbruch, Aufstehen, `can_stake_item`, Ablehnungsgründe; die Partie füllt die Hooks `_table`, `_gear`, `_on_seated`, `_update_game`, `_stop`, `_take_places`/`_leave_places` (Standard: hinsetzen, Maus frei; Darts: stehen, Maus gefangen); ob gerade eins läuft: `Game.table_game_active()` (Autosave, Herausforderungen, Kürbismann) |
-| Mäxchen | `minigames/` | `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI, `GameTable` = Tisch; Würfeln macht Lärm (`dice`). Einsätze über `TableStakes` (auch Schach: `place`, `take_for_player`, `give_to_guest`, `abandon`, `split` bei Remis) |
-| Schach | `minigames/chess*.gd`, `tests/chess_*.gd` | Spielkonzept 6.10. `Chess` = Regeln als reine Daten (Felder 0–63, Züge als Bitfeld, deutsche Notation, Perft). `ChessAI` = Alpha-Beta + Ruhesuche, Bewertung Material + Feldboni; rechnet in einem `Thread` (`think` / `is_done` / `take_move`, `cancel` beim Abbruch, vor einer neuen Suche und in `ChessMatch._exit_tree`). Stärke aus `profile["chess"]["skill"]`: Tiefe 1–3 (`ChessMatch.depth_of`), Patzer 45 %→5 % plus Angst (`blunder_of`). `ChessMatch` (erbt `TableMatch`) = Partie wie `DiceMatch` (Spieler Weiß, Gast überlegt mind. 1–2,6 s, gibt ohne Stolz bei < −900 auf, nimmt Remis an, wenn er nicht klar besser steht), `ChessBoardView` = Brett von oben mit Mausbedienung, `ChessTable` (erbt `GameTable`) in der Lobby, Brett = `Item.Kind.CHESS_BOARD`. Gäste: `profile["chess"]` = {likes, skill, pride}; bei erzeugten Gästen am Ende von `GuestGenerator.make()` gewürfelt, Sätze `chess_*` je Typ aus `CHESS_LINES`. Tests: `-s res://tests/chess_perft.gd` (Zuggenerierung), `-s res://tests/chess_ai_speed.gd` (Zeit je Tiefe, Matt in 1) |
-| Darts | `minigames/darts.gd`, `dart_board.gd`, `dart_model.gd`, `dart_match.gd`, `shaders/dartboard.gdshader`, `tests/darts_checks.gd` | Spielkonzept 6.10. `Darts` = Regeln als Rechnung (Turniermaße, `score_at`, `aim_point`, `target_for` – Zielfeld des Gastes für seinen Rest, `apply` – 301 mit einfachem Aus, Überwerfen setzt auf den Stand vor der Aufnahme zurück). `DartBoard` erbt von `GameTable`: Scheibe als Shader auf einem Quad (Felder, Sisalrauschen, Einstiche, Drähte höchstens pixelbreit), Zahlen als `TextMesh`, schwarzer Ring, Messinglinie `OCHE` vor der Vorderseite, Stehtisch (`top_center`/`stake_spot` dort, Pfeile `Item.Kind.DARTS` liegen darauf); `player_seat`/`guest_seat` sind Stehplätze an der Linie; Ursprung am Wandfuß, lokal +Z in den Raum. `throw_dart` fliegt per Tween, steckt (Scheibe, Ring) oder fällt von der Wand, Lärm `dart`/`dart_wall`; `guest_throw` mit `Guest.throw_dart_pose` und Loslassen nach `RELEASE`; `clear_darts` nach jeder Aufnahme. `DartModel` = Pfeil aus Grundkörpern (Spitze am Ursprung, entlang +Z). **Ort:** Ausstattung „Dartscheibe“ im Plan (Wandseite), sonst `LevelBuilder.DART_FALLBACK` (Südwand der Bar); ohne „Gegenstand: Dartpfeile“ liegen sie auf dem Stehtisch. **`DartMatch`:** Spieler mit `Player.stand_at` (setzt `in_dialog` und `at_oche`; `_aim_input` dreht nur den Blick, feiner je enger, `fov_zoom` verengt ihn), Knöpfe über die Zahlentasten. `_aim`: Schwanken als Summe von Sinuswellen (`SWAY` × Schwäche × Rausch, beim Halten bis `STEADY_MIN`, ab `TIRE_AFTER` mehr), Zittern bei `jittery()`/Schock, als Differenz auf Gier und Neigung gelegt; Loslassen streut den Strahl aus der Bildmitte (`SPREAD`, hastig `QUICK_FACTOR`, Mausgeschwindigkeit) und trifft die Ebene der Scheibe (`ray_to_board`). Gast: `sigma_of` aus `profile["darts"]["skill"]` (+ Angst, Rausch). Ablauf über `_after` (Pausen), `_landed` zählt. Schummeln = `throw_spot(true)`, nach der Aufnahme `_noticed_cheat` mit `dice.perception`; ≥ 3 nüchtern neben die Scheibe = absichtlich verloren. Ohne Gast `practice()` (endlos, bricht bei Vorwarnung ab). Sätze `darts_*` aus dem Profil, sonst `DartMatch.LINES`; Kinder spielen nicht. Gäste untereinander: `Social._update_dart_game` (`_seat_pair(…, stand = true)`, `Guest.stand_for_game`), Zuschauen → `darts_watched` (gespeichert, Version 47). Debug `--darts[=gast]`, Rauchtest `darts` |
-| UI | `ui/` | `UiKit` = Meldezettel-Optik für Menüs, dazu die schlichten Bausteine für Gespräch, Telefon und Spieltische (`dark_panel`, `option_grid`, `flat_option`, `press_number`, `plain_label`); `Hud` Prompt/Meldungen/Debug (F3), Bilder pro Sekunde (F10/`--fps`, `Engine.get_frames_per_second`, alle 0,25 s); `Menus` pausiert; `TeleportUI` = Debug-Menü (F6, pausiert, `ScrollContainer` mit `follow_focus`: Mausrad, ↑/↓ + Enter, Bild↑/↓, 1–9 für die ersten Orte; `TeleportUI.place_player(pos, blick)` auch für die Startparameter): Orte, Lakengeist zum 1.–4. Mal bzw. im Flur (feste Einträge, auch im Export) und – nur wenn `DebugConsole.enabled()` – alle `DebugConsole.COMMANDS` nach `GROUPS` (nicht einsortierte unter „Sonstiges“, `HIDDEN`: help, clear, navcheck); ohne Werte läuft ein Befehl sofort, mit Werten öffnet sich unten eine Eingabezeile (Format als Platzhalter, bei Gästen die IDs als Hinweis, letzter Wert je Befehl bleibt), ausgeführt über `DebugConsole.submit()` – `false` (Auskunft, Fehler) öffnet die Konsole; Ziele in `_destinations()` aus dem `LevelBuilder` (`find()` für `--tp`: erstes Wort genau, sonst Namensanfang); Räume ohne festen Standpunkt (Partyraum, Westflügel, Flur oben, Katzenraum, Bibliothek, Kellergang, Technikraum, Wäscherei unten) über `_zone()` aus `LevelBuilder.zones` (in Fluren Blick zur nächsten gleichnamigen Zone), danach rückt `_onto_navmesh` den Spieler auf den nächsten begehbaren Punkt (Zonenmitte kann in Möbeln liegen; wartet beim Start auf die erste Synchronisierung der Karte), `DebugConsole` ([^]/F1, nur Debug-Build oder `--debug`) = Startparameter im Spiel tippen: `submit()` → `main.run_debug("--name=wert")`, Aktion schließt die Konsole, Auskunft (`help`, `guests`) und Fehler bleiben stehen; Verlauf als `static var` |
-| Optik | `util/mat.gd`, `shaders/` | Ausgelegt auf den realistischen Look (siehe 1, „Grafik“). Materialien über die Fabriken in `Mat` (`Mat.psx(...)` heißt nur noch so; für Neues mit Karten eher `Mat.photo`/`Mat.model` oder ein eigener Shader mit voller Auflösung). Vertex-Snapping für den PS1-Umschalter über Shader-Global `psx_snap`; alle `psx_*`-Shader holen es per `#include "res://shaders/psx_snap.gdshaderinc"` und `clip = psx_snap_clip(clip)` – neuer Shader: ebenso, damit der Umschalter greift; flache Auflagen auf anderen Flächen (Teppich, Türkassetten, Rahmen mit kleinerem `pull`) über `Mat.layer(...)`, sonst flimmert die Unterlage durch. `Geo.box` unterteilt Flächen in ≤ 1-m-Stücke, damit große Böden beim Snapping nicht schwimmen. Glasscheiben sind einzelne Flächen (`QuadMesh`), keine Boxen; Poolwasser hat einen eigenen Shader (`psx_water.gdshader`: Snapping wie `psx_surface`, ohne Textur, Wellen und Schaum siehe Pool in 4, etwas Glanz); poliertes Metall = `Mat.metal(farbe)` (`psx_metal.gdshader`, Pool-Handläufe, Standard Edelstahl): spiegelt einen gedachten Raum in Spiegelrichtung (Boden dunkel, Streifen am Horizont hell, Decke mittel) nur so hell, wie jede Lampe ihn beleuchtet, dazu ein scharfer Glanzpunkt der Lampe in Metallfarbe – das Environment spiegelt nichts, SSR taugt für dünne Rohre nicht; ohne Licht bleibt es dunkel (wie die Discokugel, `psx_mirror`); Post-FX (`shaders/psx_post.gdshader`, `CanvasLayer` 5 unter der Bedienoberfläche ab Ebene 10): Gamma, Dithering, Rauschen, Flackern. **Verschwommene Sicht** (Spielkonzept 3.6/3.7): `Player._update_sight` (in `_update_drunk`, also nach Spielzeit) setzt `sight_blur` (0..1) = Müdigkeit `nights_awake / WEAK_NIGHTS` × `SIGHT_TIRED` (0,7) in Schüben (× 0,55…1, Periode ~14 s) + Rausch ab `SIGHT_DRUNK_FROM` (0,25) bis `BarTap.ENOUGH` hoch 1,5 (2. Glas ≈ 0,4, 3. Glas 1), pulsierend × 0,75…1 + `SIGHT_HANGOVER` bei Kater; `sight_warp` = `BarTap.sway(drunk)`. Beide folgen mit `SIGHT_FADE` (0,5/s). `main._process` reicht sie als `blur`, `warp` und `blur_time` (= `_sky_time`, steht in der Pause) an den Post-Shader: Scheibe aus 16 Abtastungen (Goldener Winkel), Radius `BLUR_RADIUS` × Bildhöhe, aus einer zweiten Screen-Textur mit `filter_linear_mipmap` und passender Mip-Stufe (weich trotz weniger Abtastungen); `warp` verzieht das Bild in langsamen Wellen und mischt ein blasses Doppelbild dazu. Läuft vor Gamma, Vignette und Farbreduktion, darum mit und ohne PS1-Look gleich; bei 0 liest der Shader wie bisher nur einen Bildpunkt. **PS1-Look aus** (`Settings.psx_look`, Standard seit 2026-10-25 – eine gespeicherte `settings.cfg` behält ihren Wert; Debug `--no-psx`, umgekehrt `--psx`): 3D in Fensterauflösung (`CONTENT_SCALE_MODE_CANVAS_ITEMS`, Bedienoberfläche weiter auf 480 × 270 ausgelegt), kein Snapping/Dithering, `color_levels` 255; Filter-Hinweise lassen sich nicht per Uniform schalten, darum schreibt `Settings._apply_texture_filter` den Code der geteilten Shader in `PSX_SHADERS` von `filter_nearest` auf `filter_linear_mipmap` um (neuer PSX-Shader mit Textur → dort eintragen). Fototexturen (`Mat.photo`, `psx_photo.gdshader`, auch in `PSX_SHADERS`) wechseln zusätzlich die Textur: ohne PS1-Look 1024² mit Mipmaps und Normal Map statt 256² (siehe Assets oben). Die Tapete liest per `texelFetch` und filtert über das Shader-Global `psx_smooth` bilinear von Hand; ihre Glanzkanten bleiben texelgenau. **Spiegelungen** (abschaltbar, `Settings.reflections`): Bildschirmspiegelung (SSR, 128 Schritte) auf allem Glatten – Lobbymarmor, Lack der Tapete, Poolwasser; matte `psx_surface`-Flächen bleiben unberührt (siehe Fototexturen bei den Assets). **Nebel** (`main._setup_environment`): Tiefennebel 4 → 66 m bis Schwarz, Volumennebel nur auf 12 m (sonst verschleiert Lampenlicht das Flurende beige); `camera.far` = 70 m knapp dahinter, weil `player_can_see` am Frustum hängt. **Himmel** (`shaders/night_sky.gdshader`, `Sky` im Modus `REALTIME`): Verlauf, Mond in Richtung von `LIGHT0` (= Mondlicht, Scheibe größer als echt), Wolken als fbm auf einer flachen Ebene (`EYEDIR.xz / y`) mit Silberrand – Dichte einen Schritt weiter zum Mond hin abgezogen –, Sterne aus einem Zellraster auf der Blickrichtung. Rundum eine schwarze **Waldkante** (`treeline`, `treeline_color`) als Höhenlinie über dem Azimut – Hügel aus fbm auf dem Kreis (nahtlos), darauf `tree_count` Nadelbäume als Dreiecke mit eigener Höhe, Breite und Lage, Dichte wechselt; sie liegt im Himmel, also ohne Geometrie und ohne Parallaxe, und verdeckt auch alles unter dem Horizont. Der Zug kommt aus dem Uniform `sky_time`, das `main._process` hochzählt (steht in der Pause, `TIME` liefe weiter); Hash ohne Sinus, damit lange Laufzeiten nicht flimmern. Der Himmel leuchtet nichts aus: Umgebungslicht bleibt Farbe, `reflected_light_source` aus (sonst spiegelte er sich in Tapete und Fliesen), der Strahlungs-Durchgang (`AT_CUBEMAP_PASS`) gibt nur den Verlauf aus; `fog_sky_affect` 0, damit der Tiefennebel ihn nicht schwärzt. Zwei Detailstufen über `psx_smooth`: mit PS1-Look 3 Oktaven, Wolkenebene in Texel gerundet (`psx_texels`), Mondscheibe in Blöcken, Sterne als harte Punkte; ohne zusätzlich verzerrtes Rauschen (Fasern), weicher Rand, Mondflecken, Funkeln – Grundform, Sternorte und Zug sind gleich. **Tapete** = `Mat.wallpaper(wandhöhe, stockwerk, variante)` mit `shaders/psx_wall.gdshader`, neben dem Poolwasser das einzige Material mit Glanz: Das Bild (512², Wandansicht) wird auf 256² verkleinert und in drei Bändern in Metern ab Stockwerksboden (`mod(y, stockwerk)`) aufgetragen – Vertäfelung unten, Rauten (eine 128-px-Wiederholung, `WALLPAPER_FIELD`) dazwischen, Leiste unter `wandhöhe`. Lobby hat ein eigenes Material (5 m, rot); ihre Wand zu Küche und Bar ist per `Mat.wallpaper_split(a, b, normale)` auf der Seite mit Normale +Z teal und 3,5 m hoch – so für jede Wand zwischen zwei Räumen mit anderer Tapete oder Deckenhöhe. Zimmerreihen (`_room_row`): Trennwände und Rückwand ganz beige, Flurwand und die beiden Endwände geteilt (Zimmerseite beige, Normale in Weltkoordinaten); Trennwände beginnen erst in der Flurwand, sonst flimmert ihre Stirnseite im Flur. Aus der Höhenkarte entsteht beim ersten Aufruf eine Oberflächentextur: R = Höhe → Normale aus dem Sprung zum Nachbar-Texel (Glanzkanten, `bump_depth`), G = Glanz je Graustufe (`WALLPAPER_GLOSS`) → Rauheit (`specular_toon`) und Rim-Schimmer. Abgegriffener Sockel: direkt über dem Boden weniger Glanz (`scuff_gloss`). Flecken hat die Tapete vorerst keine – die per Rauschen im Shader gefielen nicht, sie sollen wieder kommen, vermutlich von Hand (Spielkonzept 7.2, offen seit 2026-10-20). Neue Farbvariante: Bild mit gleichem Aufbau als `wallpaper_<name>.png` ablegen; neue Höhenstufe im Bild → Eintrag in `WALLPAPER_GLOSS` |
-| Geometrie | `util/geo.gd` | `Geo.solid(parent, größe, pos, mat, ebene)` für Kollisionskästen, `Geo.mesh` für reine Optik, `Geo.collider` für Kästen ohne Mesh, `Geo.box_part(körper, größe, pos, mat)` für Mesh plus gleich große Form an einem vorhandenen Körper (Truhe, Kommode), `Geo.add_surface(mesh, ecken, normalen, indizes, uvs, farben)` für selbst gebaute Flächen (Hecke, Rahmen, Wände, Läufer). **Wände** (`LevelBuilder._wall_x/_wall_z`): Kollision weiter als Kästen links/unter/über jeder Öffnung/rechts, die Optik als *ein* Mesh pro Wand (`Geo.wall_mesh`, Fläche 0 = Wand, Fläche 1 = Laibungen in Rahmenholz) mit gemeinsamen Ecken auf einem Raster aus Wandenden, Öffnungskanten und ≤ 1-m-Schritten – getrennte Kästen stießen mit Ecken mitten auf Nachbarkanten, beim Snapping klafften dort Fugen und die Tapete war versetzt |
+### Licht
+(`lamp.gd`, `light_switch.gd`, `flicker_light.gd`, `world/fixed_candle.gd`, `util/shadow_budget.gd`,
+`level/light_rooms.gd`, `LevelBuilder._wall_lamp`/`_candle`/`_halogen`)
+- Lampe = Fassung + Birne (Item `BULB`; Halogenröhren und Unterwasserlampen ohne Birne – `has_socket()` falsch).
+  `flicker` (Nähe des Monsters, kann Birnen durchbrennen), `wave` (Flackerwelle), `red`/`hot_spot` (Kürbismann) setzt
+  der Director bzw. der Kürbismann. Licht aus → `on_lights_off`. `FlickerLight.hold` (≥ 0) legt die Helligkeit fest,
+  egal was der Schalter sagt – das Flackern kommt noch dazu (Badlampe der Dusche, 4.24); −1 = aus.
+- **Alle Lampen werfen Schatten** (`lamps`, außer Meta `no_shadow`): Godot hält Licht nur mit Schatten an Wänden auf –
+  eine Lampe ohne Schatten scheint durch alles hindurch. Damit das bezahlbar ist, werfen die meisten nur Schatten vom
+  Bau (`shadow_caster_mask` = `ShadowBudget.LAYER`, Sichtebene 15): Wände, Böden und Decken fasst `ShadowBudget.merge`
+  nach dem Bau je Kachel (`TILE`, je Stockwerk) zu unsichtbaren Meshes zusammen, die nur Schatten werfen
+  (`SHADOWS_ONLY`, Knoten „Schattenbau“); Türen liegen selbst auf der Ebene (sie bewegen sich). Die `FULL` nächsten
+  Lampen nehmen alles außer den Kacheln (Möbel, Figuren, echte Wände). Der Schatten blendet erst mit dem Licht aus
+  (`distance_fade_shadow` = Anfang + Länge der Licht-Ausblendung) – sonst schien es dazwischen durch Wände.
+- **Geprüft und verworfen:** Paraboloid-Schatten (verbiegen große Wandflächen, lassen Licht in Flecken durch), größerer
+  Schattenatlas 8192 (deutlich teurer). Godot 4.7 rendert Punktlicht-Schatten jedes Bild neu, auch ohne Bewegung; die
+  CPU-Zeit hängt an der Zahl der Schattenlampen, nicht der Meshes. Der Atlas hat 88 Plätze.
+- **Abschalten nach Grundriss:** Lichter (`lamps` und `light_source`), die die Kamera nicht erreicht, schaltet
+  `ShadowBudget` für die Darstellung ab (`light_cull_mask` 0, kein Schatten; eigene Werte in den Metas
+  `hidden_mask`/`hidden_shadow`) – sie konkurrierten sonst um die Atlasplätze, und wer keinen bekommt, scheint durch
+  Wände. An/Aus, Energie und `light_at` bleiben unberührt. Die Bereiche baut `LightRooms` (`LevelBuilder.light_rooms`)
+  automatisch aus dem Plan: Raster je Stockwerk, Wände gerastert, freie Läufe per Union-Find zu Bereichen. Dauerhaft
+  verbunden: Treppenhäuser, Treppen, `open_above`/`voids`, freier Himmel. Türen verbinden, solange `Door.lets_light()`;
+  Fenster, Aufzugtüren, Glaswände nur einen Schritt weit. `reach` regelmäßig und sofort nach `Door.set_open`
+  (`ShadowBudget.wake`, sonst kommt das Licht durch den Spalt zu spät); liegt die Kamera in keinem Bereich, bleibt alles
+  an. **Im Code gebaute Wände ohne Plan-Eintrag trennen keine Bereiche.**
+- Jeder Raum hat mindestens eine Wandleuchte, sonst schaltet sein Schalter nichts. **Helligkeit nachjustieren:**
+  `Lamp.BRIGHTNESS`/`REACH` für alle gemeinsam, sonst `WALL_LAMP_ENERGY`, `ROOM_LAMP_ENERGY`, `CANDLE_ENERGY`, die
+  Deckenfarben (`CEILING_SHADE` …), Umgebungslicht und Mond (`main._setup_environment`).
+- **Feste Kerzen** (`FixedCandle`, aus `_candle` auf Möbeln) siehe „Kerzen“.
+- **Statische Testszene** (`util/static_export.gd`, `util/static_walker.gd`, Debug `--static-eg[=pfad]`): kopiert das
+  Erdgeschoss (Bauteile aus `structure_parts`, eingeschaltete Lampen als schlichte `OmniLight3D` mit Schatten) in
+  `res://temp/eg_static.scn` mit eigenem Läufer – zum Messen der Renderkosten ohne Spiellogik.
+
+### Fenster, Türen, Verstecke, Kommoden
+- **Fenster** (`hotel_window.gd`): klares Glas / Vorhang (Ebene 10 nur für Sicht & Mond); Milchglas kann die Klasse,
+  ist aber nicht verbaut.
+- **Türen** (`door.gd`): Blatt auf Ebene 2 (Glastür 7); Rahmen über `OpeningFrame`. Blatt gebaut (`Look.PLAIN`,
+  Glastüren) oder Modell (`HOTEL`, `ATTIC`): `leaf` auf die Blattgröße gestreckt, bei `dir` = −1 gespiegelt; Klinke und
+  Bänder ungestreckt. Spuren über `attach_mark(mark, seite, at)`. Zustände `locked`, `broken`, angelehnt
+  (`set_ajar`), Zimmerzugang siehe 6.
+- **Verstecke** (`hide_spot.gd`): `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur;
+  `own_bed` = Bett in Zimmer 13; `rattle()`/`burst_open()` für den Lakengeist; Betten mit `bed_size`, `head_x`,
+  `partner`. Zerwühlt verschiebt `set_checked` die Bettdecke.
+- **Balkenbett** (`bed_model.gd`): `BedModel.build(parent, size, head_x)` für alle Betten; Holz über `Geo.grain_box`
+  (UVs folgen der Faser, Hirnholz an den Stirnseiten), Meshes je Maß geteilt. `Guest.BED_TOP`/`BED_FOOT_GAP` und der
+  Katzenplatz (`BedModel.blanket_top`) richten sich danach.
+- **Kommoden** (`world/dresser.gd`): Drei Schubladen als eigene Körper, interagierbar je ein `Dresser.Handle`. Hohler
+  Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen
+  (`searched`, `LOOT`); feste Inhalte aus `CONTENT[…]["drawer"]` (`fixed`). Beim Schieben werden die darin liegenden
+  Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“).
+- **Süßigkeiten-Truhen, Automaten** (`world/chest.gd`, `world/vending_machine.gd`): nur aus dem Plan. Truhe in einem
+  Hotelzimmer = Süßigkeiten-Truhe (Meta `sweets_room`, Gruppe `sweet_chests` und `chests`); Automaten mit leuchtender
+  Front (`light_source`), nicht gespeichert.
+
+### Sitzen
+(`world/seat.gd`, `player.gd` `sit_down`/`leave_seat`/`stand_position`, Spielkonzept 3.1)
+`Seat.attach(körper, art, sitzhöhe, boden, blick, länge, aufstehen)` hängt Plätze (`Marker3D`, je `SPOT_WIDTH`) unter
+den Möbelkörper und setzt dessen `interactable` (außer der Körper hat schon eine – Betten fragt `HideSpot`).
+`free_spot(aim_point())` nimmt den freien Platz, auf den man schaut. Spieler: Kollision aus, `_look` dreht nur um die
+Sitzrichtung (± `SIT_TURN`). `stand_position()` sucht einen Platz für die Kapsel mit freiem Strahl (nie durch die
+Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, Würgen) steht notfalls vor dem Platz auf.
+**Gespeichert** wird `pos` = `stand_position()` – geladen wird stehend. Debug `--sitzen[=…]`.
+
+### Ausdauer, Schritte
+- **Ausdauer** (`player.gd` `_update_stamina`, `exertion()`; Spielkonzept 3.1): nicht im HUD, nicht gespeichert.
+  `exertion()` speist Herz und Atem (`SynthAudio._update_pant` spielt `breath.wav`). **Keuchen verrät:**
+  `is_panting()` → Lärm `pant`; `Monster._check_hide_step` × `PANT_FOUND`; der Lakengeist merkt es. Debug
+  `--sprint`/`--winded`.
+- **Schritte** (`util/footsteps.gd`): Reiner Ton, kein Lärm (der läuft über `Game.noise("step"/"run")`). `Footsteps`
+  ist ein `AudioStreamPlayer3D` an den Füßen; `step(boden, rennt, kind)` spielt aus `SOUNDS[boden]`.
+  `Footsteps.floor_under(körper)`: Textur-Id des Bodens aus `FLOOR_TEXTURES` bzw. Meta `floor` (Fototexturen), `"air"`
+  ohne Treffer – auch der Spieler entscheidet damit, ob Gehen Lärm macht (`Player.SOFT_FLOORS`). Neuer Klang = Eintrag in
+  `SOUNDS`.
+
+### Gegenstände
+- **Aufgehängte Deko** (Spielkonzept 5.6, `item.gd` `HANGABLE`, `hang`, `_sway`; `player.gd` `_hang_spot`):
+  [G] auf eine Wand hängt auf statt abzulegen. Lichterkette = `FlickerLight` ohne Schatten (Meta `no_shadow`) in
+  `lamps` – flackert also wie die Lampen. Gäste hängen eigene Deko an ihre Tür (`door_hang_spot`). **Unruhe**
+  `MonsterDirector.deco_unrest_at(p)`: jeder hängende Gegenstand schwingt danach, nie in die Wand; ab `JOLT_UNREST`
+  fallen Dinge herunter. Weitere Deko (5.7): `BAT_GARLAND`, `SPIDER`, `BROOM`, `SKULL` (`CANDLE_HOLDERS`).
+  `ResourceSpot.with_pool()` gibt abwechselnd verschiedene Arten. Debug `--deco=art[,g]`.
+- **Kürbissorten** (`world/pumpkin_kinds.gd`, Spielkonzept 5.8): `PumpkinKinds.DATA` je Sorte; die Sorte steht im
+  Zusatzfeld (`"hokkaido"`, geschnitzt `"casper,unlit"`; leer = Halloween). **Neue Sorten nur hinten an `ORDER`.**
+  Lieblingskürbis aus der Gast-ID (`favorite_of`, ohne Zufallsaufruf im Generator). Der Riese landet beim Ernten neben
+  dem Beet und bremst beim Tragen (`Item.carry_speed`, `hold_offset`). Modell für Halloween- und Riesenkürbis
+  (`PumpkinModel.VARIETIES`), Weißer und Hokkaido noch Grundkörper. Debug `--kuerbis[=n]`.
+- **Knappheit & Verfall** (Spielkonzept 5.10): Kisten mit starker Deko leeren sich (`runs_out`), Gäste nehmen je Kiste
+  höchstens ein Stück am Spieltag (`guest_day`, gespeichert). **Kürbisse faulen** (`ROT_KINDS`, `rot_at` im Zusatzfeld
+  `r=`): welk, eingefallen, weg (`_decay`). Füllmaterial zählt begrenzt (`FILLER_CAP`). Debug `--rot[=…]`.
+- **Zerplatzen, Kürbismatsch** (`item.gd` `BURST_KINDS`, `burst`, `_break`): Nur `BURST_KINDS` haben
+  `_physics_process` (andere nur im Flug, siehe Werfen); ein Aufprall aus mehr als `BURST_HEIGHT` (Kerze, Birne, Tasse: `BREAK_HEIGHT`) zerbricht sie
+  (`_shatter_candle`, `_shatter_bulb`, `_spill_coffee`, sonst `burst()` → `PUMPKIN_MUSH`). Stücke (`_splash_chunks`)
+  mit `continuous_cd` und mindestens 2 cm Kollision – dünne fielen durch den Boden; sie schrumpfen per Tween am Stück
+  selbst weg (der Kürbis ist da schon frei – kein Lambda an ihm). **Kürbismatsch** liegt wie eine Blutlache
+  (`_lay_mush`, Flecken unter `_spread` mit `top_level`), wird neu gelegt, sobald er still an einer neuen Stelle liegt
+  (`_settle_mush`), Farbe über `albedo` = `mush_color` / `MUSH_TEX_COLOR`. Riesenspritzer: Hände voll entnehmen
+  (`_take_portion`). Zusatzfeld `mush_extra` = `"sorte,zeitpunkt,größe,hände"`, dahinter wahlweise „w=…“ (Regen) und
+  „s=drehung:länge“ (langer Spritzer, siehe Werfen). Debug `--fall[=h[,sorte]]`.
+- **Werfen** (Spielkonzept 3.13; `player.gd` `_update_throw`, `throw_held`, `throw_speed`, `THROW_*`; `item.gd`
+  `throw_from`, `_sweep`, `_throw_hit`, `_splash_wall`, `_lay_streak`; `hud.gd` `set_throw_power`): [G] mit etwas in
+  der Hand setzt `_throw_hold`; losgelassen vor `THROW_HOLD` (0,3 s) legt bzw. hängt es wie bisher ab (`drop_held` –
+  also erst beim Loslassen), länger gehalten steigt `throw_power` bis `THROW_FULL` (1,2 s), die Hand geht um
+  `THROW_WINDUP` zurück, unter dem Fadenkreuz ein Balken. Loslassen wirft aus der Hand in Blickrichtung (+`THROW_LIFT`)
+  mit `throw_speed(masse, kraft)` = `THROW_PUSH` / Masse^`THROW_MASS_EXP`, höchstens `THROW_MAX`, mit wenig Kraft
+  `THROW_WEAK` davon (Kürbis 4 kg ≈ 5,7 m/s, Riese ≈ 1 m/s), dazu das eigene Tempo; 0,5 s keine Kollision mit dem
+  Spieler. Auch die Kinder (`Pranks._throw`) werfen über `throw_from(start, tempo, wer)`. **Flug:** Solange `thrown`,
+  fegt `_physics_process` je Schritt eine Kugel (0,45 × größte Kante der Kollisionskiste) vom letzten Ort bis einen
+  Schritt voraus (`cast_motion` + `get_rest_info`, `THROW_MASK` = `MASK` | Gäste, ohne Werfer) – ein Strahl aus der
+  Mitte kam zu spät, die Physik hatte den Körper schon gebremst; dazu als Rückfall der harte Aufprall (`THROW_IMPACT`).
+  **Treffer** (`_throw_hit`): Gast → `Social.on_player_threw_at` (nur vom Spieler). `BURST_KINDS` zerplatzen bzw.
+  zerbrechen (`_break`): an einer Wand (Normale flach, keine Tür `_is_door`, kein Glas) zuerst `_splash_wall` →
+  `Traces.add_wall_splash`, der Kürbismatsch fällt davor herunter; am Boden merkt sich `_impact_velocity` das Tempo, und
+  `burst` schreibt ab `STREAK_MIN` m/s „s=richtung:länge“ (`STREAK_PER_SPEED` je m/s, höchstens `STREAK_MAX`) in den
+  Matsch. Alles andere prallt ab und macht Lärm `throw_land` bzw. ab `THROW_HEAVY` kg `throw_land_heavy` am Aufschlag –
+  Quelle ist der Gegenstand, also geht das Monster dorthin (`MonsterDirector.on_noise` → `investigate`, Ablenkung 4.11).
+  **Langer Spritzer** (`_lay_streak`, nur auf ebener Fläche): vom Aufschlag in Flugrichtung eine Kette unverzerrter
+  Flecken wie der Strom auf Treppen, vorn 0,55, hinten 0,15 × Spritzergröße, leicht schlängelnd, jeder über
+  `place_splat`; endet an Wand, Kante oder Stufe; frisch rutscht er mit `STREAK_FLOW` nach vorn. Aufgehoben ist er weg.
+  Debug `--wurf=k[,gegenstand]`; Test `throw_checks`, Rauchtest `werfen`.
+- **Feuer** (`world/deco_fire.gd`, Spielkonzept 5.11): `DecoFire.ignite_near(ort)` zündet leichte Deko
+  (`FLAMMABLE`) an: eigener Körper mit Prompt „austreten [E]“, Licht in `light_source`, springt über, hinterlässt Ruß
+  (`soot`). Nicht gespeichert.
+- **Kerzen** (Spielkonzept 5.12; `item.gd` `lit`, `has_candle`, `light_up`, `snuff`, `blow_out`, `light_by`;
+  `player.gd` `_use_flame`, `_snuff_target`, `_update_flame_wind`): brennen unbegrenzt. Neue Kerzen brennen nicht, nur
+  mit Zusatz `lit`; Kürbis/Totenkopf: `unlit` = ohne Kerze, `out` = Kerze erloschen. Anzünden mit Flamme oder
+  `MATCHBOX` (Fundort `CONTENT["022"]["drawer"]`), auspusten, ausdrücken; in Bewegung kann der Wind sie ausblasen
+  (`FLAME_OUT_*`, draußen und bei Wetter mehr, in Kürbis/Totenkopf geschützt). `FixedCandle` (feste Kerze auf Möbeln):
+  Licht in `lamps`, das Monster bläst sie aus, gespeichert in `fixed_candles`. Rauchtest `kerzen`.
+- **Salz** (Spielkonzept 5.13; `world/salt_line.gd` `SaltLine`; `item.gd` `SALT`, `salt_left` im Zusatzfeld,
+  `use_salt`; `player.gd` `salt_spot`, `strew_salt`): Linksklick mit der Packung → `SaltLine.spot_for(öffnung, von)`
+  (Tür: Schwelle auf der eigenen Seite, `THRESHOLD_Z`, zu nah = `STEP_BACK`; Außenfenster mit Vorhang: in der Laibung
+  auf der unteren Zarge) → `SaltLine.lay`. Das Zimmer kommt aus `room_of` (Zimmertür `room_no`, sonst `room_id` über
+  `LevelBuilder.home_of` – ein Bad gehört zum Zimmer). `guarding(zimmer)` = heile Linie dafür (`intact`: keine Lücke,
+  weniger als `HOLDS` Abweisungen). **Lakengeist** `_salt_repels()`: Opfer im geschützten Zimmer, er selbst nicht → `repel()`
+  und `_vanish()` – am Ende von HOVER, in ENTER (Vorhang, Tür auf), in `_check_doors` und `_start_lurk`; nicht in der
+  Dusche (`_scripted`). **Monster** `_check_salt`: auf eine heile Türlinie zu (`SALT_NEAR`) → `SALT_PAUSE` s stehen,
+  je Linie höchstens alle `SALT_AGAIN` s. **Verwischen:** jede Linie prüft alle `CHECK_EVERY` s Spieler (nicht geduckt),
+  Gäste und Monster im Band (`SMUDGE_DEPTH`). Körner als MultiMesh aus `grain_seed`, neu gebaut bei jeder Änderung.
+  Gespeichert unter `salt` (Speicherstand 48), Packungen auf der Küchenzeile (`LevelBuilder.SALT_BOXES`, solange kein
+  `SALT` im Plan steht). Debug `--salz[=…]`, Rauchtest `salz`.
+- **Getränkedosen** (`Kind.SODA_CAN`, `drink_can`), **Kaffee** (`world/coffee_machine.gd`, Spielkonzept 3.11),
+  **Tee** (`world/tea_kettle.gd`, `TeaKettle` erbt von `CoffeeMachine`, Spielkonzept 3.12): `CoffeeMachine` hat Felder
+  statt fester Werte (`drink_kind`, `brew_time`, `noise_kind`, `guest_phase`, `children`, `lines`, `cup_spot`) und Haken
+  (`_register`, `_build`, `_steam_spot`, `_finished`). Gäste holen sich morgens Kaffee, abends Tee (Zustand `EAT`, nie
+  zu beiden zugleich – `_taken`). **Wirkung:** `Player.tiredness()` ersetzt `nights_awake` in `weakness()` und
+  `_update_sight` (Kaffee verdeckt Müdigkeit, danach ein Tief), `jittery()` bei viel Koffein (Hand zittert, Bluff
+  verrät); `_sleep_credit(dt)` rechnet Schlaf mit Kaffee schwächer, mit Tee stärker an. Tasse zerbricht → Fleck
+  „coffee“/„tea“ (gebaut wie Wachs). Gespeichert unter `player`: `coffee`, `coffee_low`, `caffeine`, `tea`. Debug
+  `--kaffee=…`, `--tee=…`.
+- **Bar & Rausch** (`world/bar_tap.gd`, Spielkonzept 3.7): `BarTap` mitten auf der Theke; Rausch `drunk`, Stufen
+  `TIPSY`/`DRUNK`, `BarTap.sway(drunk)`. Spieler: Kopf rollt, Maus folgt verzögert (`_look_lag`), Stolpern; betrunken
+  halluziniert man. Gäste trinken an der Bar. Gespeichert: `player.drunk`/`hangover`, Gast `drunk`. Debug
+  `--drunk=n[,gast]`.
+- **Taschenlampe** (`world/flashlight.gd`, `world/uv_mark.gd`): `Flashlight` hängt als Kind am Item, Zustand in
+  `create_extra()` (`"c=0.42;uv;m=uv;on"`). Bewusst **ein `SpotLight3D` außerhalb von `light_source`** – zählt nicht
+  für Helligkeit/Abschreckung und nicht als `item.lit` (sonst bläst das Monster sie aus …). Auffälligkeit über
+  `flashlight.carried_conspicuity()`. UV nur in der Hand des Spielers: prüft `uv_marks` und das Monster
+  (`can_be_repelled_by_uv`) → `on_monster_uv()`. `UvMark`: Leuchtschrift (`_uv_writing`) oder Kästen (Nachglanz der
+  Fußspuren).
+- **Kompass** (`Kind.COMPASS`): Nadel = Feder Richtung Norden (−Z), **in Teilschritten ≤ 20 ms gerechnet**
+  (`Item.needle_step`, geprüft in `tests/math_checks.gd`) – die steife Feder schaukelte sich bei einem langen Frame bis
+  NaN auf; gestört über `director.threat_at()` und `is_hallucinating()`.
+- **Karte** (`world/hotel_map.gd`, `Kind.MAP` mit Blatt-ID): `HotelMap.PAGES` = Blätter; gedruckte Pläne aus den
+  JSON-Karten (neue Zimmer erscheinen von selbst), Kellerskizze von Hand gezittert. Alle Blätter einmal in einem
+  SubViewport gerendert → geteilte Textur, `HotelMap.material(id)` schneidet aus. Neue Ebene: Eintrag in `PAGES`,
+  Zeichnung in `_draw()`, Blatt im Plan auslegen.
+- **Kostüme** (`guests/costume.gd`, Spielkonzept 5.9): ab `FROM_DAY` fest nach `hash(id + ":kostüm")` – nichts
+  gespeichert, kein Zufall aus dem Spielstand. Hut/Kürbis sind `top_level` und folgen dem Kopfknochen
+  (`GuestBody.head_origin`) aufrecht, damit sie beim Tanzen nicht kippen. **Spieler im Laken** (`BED_SHEET` auf dem
+  eigenen Bett): `put_on_sheet()`/`take_off_sheet()`, Overlay `shaders/sheet_overlay.gdshader`;
+  `Player.recognized_by(guest)` prüfen überall, wo Gäste den Spieler erkennen (Diebstahl, Angriff, Zeugen, Rempeln …).
+  Gespeichert: `player.disguised`. Debug `--costumes[=art]`, `--disguise`.
+
+### Am Körper
+(`player.gd` `_pocket`, `_update_hand`, `set_pockets`; `player/pocket_map.gd`)
+`Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den
+Welt-Gegenstand und trägt ihn in `has_compass`/`map_pages`/`keyring` ein. Linke Hand für Karte (Tab) und Kompass (F),
+nicht bei `hands_blocked()`. Türen fragen `player.has_key(id)`. Der Kompass in der linken Hand ist ein `Item` mit
+`make_pocketed()` (raus aus Gruppe `items`).
+
+### Tasche
+(`player.gd` `bag`, `open_bag`/`close_bag`, `stow_held`, `take_from_bag`, `consume_kind`, `give_away`; `item.gd`
+`POCKET_KINDS`, `fits_pocket`; `hud.gd`; `ui/item_icons.gd`; `shaders/bag_blur.gdshader`; `tests/bag_checks.gd`;
+Spielkonzept 3.2)
+- Kleines kommt bei voller Hand mit [E] gleich in die Tasche. **[Q] halten** öffnet sie, die Maus wählt
+  (`_bag_cursor`), Loslassen nimmt heraus bzw. steckt ein. Die Gegenstände hängen unsichtbar unter dem Spieler, raus aus
+  Gruppe `items` und Interaktion (`Item.in_bag`) – Gäste sehen und stehlen sie nicht.
+- **Wer Hand-Gegenstände prüft**, fragt für Neues `player.can_take(kind)`, für Verbrauch
+  `consume_kind`/`consume_item`/`give_away` – sonst übersieht er die Tasche.
+- Bilder: `ItemIcons` rendert jede Art einmal in einem SubViewport, `RENDER_FRAMES` Bilder lang (beim ersten Bild sind
+  die Shader oft noch nicht übersetzt), dann eingefroren. Gespeichert unter `player.bag` (ohne Lage).
+
+### Notizbuch & Tagebuch
+(`world/notebook.gd`, `world/diary.gd`, `player/notebook_page.gd`, `player/pocket_map.gd`, `menus.gd`
+`_write_diary`; `tests/notebook_checks.gd`; Spielkonzept 3.10)
+- **Notizbuch** `Game.notebook`: `owned` (kommt mit dem Brief), sonst wird nichts notiert. `add_task(id, text, by,
+  gast, frist)`, `finish_task`/`miss_task` nur aus `OPEN`, `on_guest_died` setzt `dead`; `add_note(id, text, quelle)`.
+  Jede Änderung erhöht `tasks_revision`/`notes_revision` (die Seiten werden dann neu gesetzt). Quellen: `DoorContest`,
+  `NoticeBoard.pin(…, jot_id, jot)`, `WarningNote.NOTES` (`jot`/`by`), `PhoneCalls`.
+- **In der Hand:** `PocketMap` hängt nach den Kartenblättern die Seiten an (`NotebookPage.paginate`); jede Seite wird
+  erst beim Ansehen in einem eigenen SubViewport gerendert. Material **ungeschattet** – beleuchtet war die Schrift unter
+  Filmic grau auf grau. Lesezeichen (`BOOKMARKS`), Rechtsklick springt (`next_bookmark`).
+- **Gesehene Bedrohungen** (`Notebook.note_seen`, `seen`): `_check_sight` prüft die aktiven Bedrohungen mit
+  `player_can_see`; Seite „threats“ mit Porträts (`NotebookPage._draw_threats`).
+- **Tagebuch** `Game.diary` (= `LevelBuilder.diary`): `note(id, text)` sammelt Meilensteine in `pending` (jede id
+  einmal); `Menus._write_diary` schreibt sie vor dem Speichern auf (`write_pending`), scheitert das Speichern, `unwrite`.
+- Gespeichert unter `notebook` und `diary`. Debug `--notizbuch`, `--show=aufgaben|notizen|gesehen`,
+  `--menu=diary_pages`.
+
+### Symbole & Porträts
+(`ui/icon_art.gd`, `assets/textures/icons/Icon_<name>.png`, Quelle `Icon_themonster.aseprite`)
+`IconArt.texture(name, größe)`: kleiner einmal mit Lanczos verkleinert und zwischengespeichert (Nearest zerriss die
+Striche). **Aktions-Symbol:** Interaktionsobjekte können `get_icon(spieler) -> String` haben – `_update_focus` fragt
+es, wenn der Hinweis nicht leer ist. Meldungen mit Symbol über `Game.say(text, dauer, icon)`. Leichen bekommen einen
+Kasten `CorpseTouch` (Meta interactable = Gast; der Körper selbst hat keine Kollision mehr). Sterbebildschirm mit
+Porträt nach `Player.killed_by`. Debug `--tot[=geist|kuerbis]`.
+
+### Der Anfang
+(`world/door_contest.gd` `DoorContest`/`Letter`, `world/notice_board.gd` `NoticeBoard`/`Sheet`,
+`LevelBuilder._lobby_hall`, `jury_doll.gd`, `guest.gd` `join_party(platz, blick)`, `player.gd` `spellbound`;
+Spielkonzept 2.5)
+- `Game.contest`, Abschnitte `Stage` CONTEST → GATHERING → SCENE → DONE.
+- **Brief:** `Letter` neben dem Tagebuch – `_place_letter` sucht nach zwei Physikbildern einen freien Platz auf der
+  Tischplatte. Lesen → `letter_read` (Tagebuchsatz, Notizbuch, erste Aufgabe).
+- **Brett:** `NoticeBoard` an der Lobbywand (`NOTICE_BOARD_Z`/`_Y`), eigene Bilderleuchte in `lamps`; `pin(id, …)`
+  heftet `Sheet`s an ([E] → `Menus.open_note`). `_pin_board` wechselt nach `first_attack_done` den Aushang.
+- **Durchsagen:** `ANNOUNCEMENTS` (Tag, Stunde, Text, Kurzfassung) → Gong und Meldung; verpasste bis `ANNOUNCE_LATE`.
+- **Siegerehrung:** `_begin_gathering` stellt die Gäste auf (`_gather_spots`, vor der Puppe bleibt ein Halbkreis frei),
+  `Social` feiert an dem Abend nicht (`holds_parties`), keine Besuche (`is_gathering`). Beginn, sobald der Spieler in
+  der Lobby steht und genug Gäste da sind, nie neben einer anderen Bedrohung, spätestens `CEREMONY_LATEST` ohne ihn.
+- **Szene** (`T_*`): `Player.spellbound` (keine Eingabe), `_pull_gaze` zur Puppe, Puppe steigt und verpufft
+  (`_puff`, `vanish`), `_end_scene` → `first_attack_in_lobby`. Autosave nicht während der Szene. Laden mitten in der
+  Versammlung: die Gäste kommen erst beim nächsten Rundgang (sonst ließen sie fallen, was sie in der Hand hielten).
+- **Danach:** `_deliver_note` (Zettel „1999“ hinter der Tür von Zimmer 13, sobald der Spieler die Stelle nicht sieht),
+  Gäste lesen am Brett, erstes Urteil der Puppe ins Tagebuch.
+- Gespeichert unter `contest`. Debug `--siegerehrung[=ohne]`, `--brett[=nachher]`, `--brief`, `--zettel`.
+- **Hilfe** (Spielmenü, `Menus._show_help`, `CONTROLS`/`BASICS`; Einträge mit „danach“ erst nach dem ersten Angriff,
+  „debug“ nur mit Debug-Konsole): muss in 480 × 270 passen – neue Einträge mit `--attacks=1 --menu=help` prüfen.
+
+### Titelbildschirm, Vorspann
+(`ui/title_screen.gd`, `ui/slide_show.gd` `SlideShow`; Spielkonzept 8.2)
+- **Vorspann:** `SlideShow` mit inneren Klassen `Slide` (Bild, Text, Klang, Dauer) und `Sequence`; überspringbar nach
+  `skippable_after`. `SlideShow.splash()` = Logo mit `splash_wave.wav` (Platzhalter aus `tools/build_wave_sound.py`).
+  `TitleScreen._ready` wartet darauf (`await finished`) – **erst danach Knöpfe mit Fokus**, sonst löste die Leertaste
+  „Fortsetzen“ aus. Einmal je Programmlauf, nur ohne Debug-Parameter oder mit `--title --splash`.
+- **Schrift:** `UiKit.menu_theme()` mit `UiKit.MENU_FONT` (Cinzel) für Titelbildschirm und Spielmenü.
+- **Hintergrund** `LOBBY_IMAGE` (`title_lobby.jpg`, Screenshot vom Haupteingang): `TextureRect` mit
+  `TEXTURE_FILTER_LINEAR_WITH_MIPMAPS` (Standardfilter des Projekts ist Nearest), Flackern über `modulate`, Rauschen
+  darüber. Neu erzeugen: Befehl im Kommentar über `LOBBY_IMAGE`. `--shot-size=BxH` macht das Fenster rahmenlos und so
+  groß (Windows begrenzt Fenster mit Rahmen auf den Bildschirm).
+
+### Spielerfigur, Spiegel, Charaktererstellung
+- **Spielerfigur** (`player/player_body.gd`, Spielkonzept 3.9): `PlayerBody` baut aus `look` (`profile_of`) einen
+  `GuestBody`. Netze auf Sichtebene 19 (fehlt in der Kamera), je eine `duplicate()` mit `SHADOWS_ONLY` auf Ebene 18 –
+  **Godot rechnet Schatten nur für Netze, die die Kamera sieht**. Lichter des gehaltenen Gegenstands lassen Ebene 18
+  aus (sonst stünde der Kopf vor der Taschenlampe). `Player.set_look`: Kapsel, Augenhöhe und Hocken = Standard ×
+  Größe / 1,8 (`HEIGHT` usw. bleiben die Werte für 1,80 m).
+- **Spiegel** (`world/mirror.gd`, `shaders/mirror_view.gdshader`): `Mirror.make(eltern, größe, mitte, normale,
+  reichweite)` – matt (`DULL`), solange nicht zu sehen (`_visible_to`). SubViewport und Kamera entstehen beim ersten
+  Hinsehen: Spiegelpunkt der Spielerkamera, schiefes Frustum genau durch die Fläche (`set_frustum`), eigene Umgebung
+  ohne Tonemapping, SSR und Glow. Benutzt von Aufzug und Waschbecken (`sink_mirrors`).
+- **Charaktererstellung** (`ui/character_creation.gd`, `main._start_creation`): `Game.creating`, `Mirror.force`;
+  `_find_mirror` sucht den Spiegel im Bad von Zimmer 13 (`home_room_at` = `PLAYER_ROOM` zuerst – das Bad nebenan liegt
+  näher). Solange `Game.creating` gilt, nimmt `Player` weder Maus noch Tasten an. Neigung fest `MIRROR_PITCH`, damit
+  Scheitel und Spiegelunterkante bei jeder Größe im Bild bleiben. Änderungen → `Player.set_look` höchstens alle
+  `APPLY_EVERY`. Debug `--figur[=schnell]`.
+
+### Wetter, Natur
+- **Wetter** (`world/weather.gd`, Spielkonzept 7.8): `Game.weather`, `kind` CLEAR/RAIN/STORM nach Zeitplan,
+  `intensity` blendet. **Regen:** `GPUParticles3D` um den Spieler; jeder Tropfen fällt bis zur obersten Fläche darunter
+  – aus einer Dach-Höhenkarte (`_build_roof_rows`, auf die ersten Bilder verteilt); vorher regnet es nicht. Ohne
+  PS1-Look Striche (`shaders/rain_streak.gdshader`, nie schmaler als `STREAK_PIXELS`, sonst blasser). **Gewitter:**
+  Blitze über Mondlicht und Himmel `flash`, Donner, danach `masking()` – `MonsterDirector.on_noise` multipliziert die
+  Lautstärke damit. **Kirchturmglocke** um Mitternacht (`_update_bell`, kein Lärm). Nicht gespeichert. Debug
+  `--weather=klar|regen|gewitter|blitz`.
+- **Gras** (`world/grass.gd`, `shaders/grass.gdshader`): nur ohne PS1-Look (`visible = not Settings.psx_look`). Nach
+  dem NavMesh erzeugt (nicht darin, keine Kollision, nicht gespeichert), fester Zufall (`SEED`), nur wo `is_lawn` und
+  frei von Bäumen, Beeten, Gegenständen. `MultiMeshInstance3D` je Kachel mit `visibility_range_end`. Wind über
+  `wind_time` (steht in der Pause); `pushers` (Figuren, Gegenstände) drücken das Gras weg.
+- **Fledermäuse** (`world/bats.gd`, `shaders/psx_bat.gdshader`, Spielkonzept 4.22 ohne Biss und Vampir): ein
+  `MultiMeshInstance3D`, Daten in Arrays; Flügelschlag im Shader über `INSTANCE_CUSTOM` (vom Skript – steht in der
+  Pause). Schlafbäume aus `LevelBuilder.tree_spots`; abends und nachts fliegen sie, nie über das Haus. Scheu vor
+  Bedrohungen und lautem Lärm (`Game.noise` → `Bats.on_noise`) – flattern auf (Lärm `bats`). Nicht gespeichert. Debug
+  `--fledermaus[=tag|schwarm]`.
+- **Spinnen** (`world/spiders.gd`, `shaders/psx_spider.gdshader`, Spielkonzept 4.23): `Game.spiders`, ein
+  `MultiMeshInstance3D`, nur nahe beim Spieler und wo er nicht hinsieht (`_floor_spot_near`), Beine im Shader. Fliehen,
+  werden zertreten; Gäste reagieren nach Mut. Lassen Spinnweben-Vorräte schneller nachwachsen (`ResourceSpot.grow`).
+  **Schublade:** selten springt eine ins Gesicht (`jump_at_face`, abschütteln oder Biss = Rausch). **Arachnophobie:**
+  `Settings.spider_blobs` tauscht das Mesh. Nicht gespeichert. Debug `--spinne[=gesicht|schublade]`.
+
+### Dachgeschoss: Staub und Spuk
+- **Staubnebel** (`world/attic_haze.gd`, `shaders/attic_dust.gdshader`): je Rechteck der Dachbodenfläche ein
+  `FogVolume` mit gemeinsamem Nebel-Shader (Rauschen in Weltkoordinaten – die Rechtecke stoßen nahtlos), Zeit als
+  Uniform aus `delta`; Staubpartikel um die Kamera nur im Dachboden. Setzt das Licht der Dachfenster nach dem Mond.
+- **Spuk im Dachboden** (`world/attic_spook.gd`, Spielkonzept 4.21): Ein Blitz (`Weather._update_flash` → `on_flash`)
+  dreht den Spieler in einer Kammer selten um 90° (weißer Bildblitz, Kichern), höchstens einmal je Gewitter, nie bei
+  Bedrohung; bei abgeschwächtem Flackern nur das Kichern. Debug `--dachboden=blitz`.
+
+### Lakengeist
+(`monster/sheet_ghost.gd`, `shaders/psx_ghost.gdshader`, Spielkonzept 4.18)
+- `Game.ghost`, eigener Knoten, **kein NavMesh und keine Kollision** (schwebt durch Glas und Vorhang). Erscheint an
+  dunklen Außenfenstern mit offenem Vorhang (`_window_near()`) und an Fenstertüren (Gruppe `french_doors`, `Door.room_id`,
+  `Door.outward`), nicht in Gesellschaft, nicht im Katzenraum, erst ab `FROM_DAY` oder nach dem ersten Angriff. `visits`
+  = Stufe (gespeichert unter `ghost`; laufende Auftritte nicht).
+- Zustände `APPROACH → HOVER → ENTER → STRANGLE`, dazu `LURK → FLY_IN` am Schrank, `DOOR` vor der Tür, `PATROL` in der
+  Geisterstunde; Ende immer über `FADE` (Raster-Ausblenden im Shader statt Transparenz). Knochen werden pro Frame aus
+  der Ruhepose gedreht (`_pose`).
+- **Spieler:** `trance`, `gripped`; **Losreißen** (`_struggle`, Richtungswechsel, `Hud.set_struggle()`); solange
+  `gripped`, gehen weder [E] noch die Versteck-Zeitgrenze. **Schrank:** wartet davor und rüttelt (`HideSpot.rattle()`),
+  fliegt hinein (`burst_open()`, Lärm `rattle` – nicht `hide_burst`, lockt das Monster nicht). Unterm Bett verschwindet er.
+- **Flur** (`_in_hall` → `LevelBuilder.in_corridor()`): wenn alle schlafen und der Spieler im Flur steht.
+  **Schwäche** (`Player.weakness()`, `Guest.weakness()`) aus Müdigkeit, Rausch, Schock, Trauer, Kater – macht alles
+  wahrscheinlicher. **Gäste als Opfer** (`_check_guests()`, `ghost_grab()` → `GHOSTED`); Kinder würgt er nie.
+- **Vor der Tür** (Spielkonzept 5.6): aufgehängte Lakengespenster an einer Zimmertür rufen ihn (`_check_doors()`),
+  er wartet lautlos, zieht den Blick des Spielers durch die Wand bzw. lässt einen Gast öffnen (`door_trance`).
+- **Garantien** (`_check_guarantee_hall`, `catching_up()`) und **Geisterstunde** (`ghost_hour()` nach der
+  Mitternachtsglocke: geht im Obergeschoss um, `_patrol`, `_meet_in_hour`, die ersten Begegnungen nur Warnung). Solange
+  er umgeht, ist er aktiv – das Monster wartet.
+- **Klang:** `_ambience` spielt `ghost_ambience.mp3`, solange er sichtbar ist (an zufälliger Stelle, pausiert mit dem
+  Baum). Weiße Flocken vom Saum (`_flakes`, siehe Partikel).
+- **Blickzug** (Hypnose, Würgen, vor der Tür) × `Settings.look_pull` (Einstellung „Blickzug“, 0,2 … 1).
+- `first_seen`: Spielzeit der ersten Begegnung mit dem Spieler (`_start_visit`, also auch Warnung und Geisterstunde;
+  `NEVER_SEEN` = noch nie, `met()`), gespeichert unter `ghost` – danach richtet sich die Dusche.
+- Debug (F6, `--ghost=…`, Konsole `ghost`): `debug_summon(n)`, `debug_summon_hall()`, `--ghost=tür`,
+  `--ghost=stunde[,n]`, `--shock=id,tür`; `--trace` „[Lakengeist] …“.
+
+### Lakengeist in der Dusche
+(`world/shower_scare.gd`, `ShowerScare` als `Game.shower_scare`, `shaders/shower_steam.gdshader`, Spielkonzept 4.24)
+- Findet beim Start die Duschecke im Bad von Zimmer 13 (LevelBuilder, Gruppe `showers`, `home_room_at` = Zimmer 13),
+  die Lampen darüber (`lamp_fixtures` im selben Raum) und das Glas des Modells (Flächen mit `Mat.glass`; deren
+  Außenfläche vorn = `_door_z`). Stufen `WAITING → RUNNING → CAUGHT → CLEARING → DONE`.
+- **Auslöser:** `Social.start_sleep` → `on_night_rest()`: läuft, wenn `SheetGhost.first_seen` mindestens
+  `Calendar.DAY_SECONDS` zurückliegt. Schläft der Spieler, `Player.wake_up`.
+- **RUNNING:** zwei `FogVolume` (Duschecke bis über das Glas, Schwade darüber und vor der Tür) mit eigenem Nebelshader
+  (steigt auf, weicher Rand über `UVW`, Eigenleuchten – sonst stünde im dunklen Bad ein dunkler Block), Dampfballen
+  (`CPUParticles3D`, durchsichtig, ohne Licht), Flocken wie am Geist, beschlagenes Glas (Kopie von `Mat.glass`, milchig mit
+  etwas Eigenleuchten), Badlampe über `FlickerLight.hold` (langsam von „wie geschaltet“ in den Puls, ohne Birne nichts).
+  Wasser: `SynthAudio.shower` (Rauschen mit Tropfenschlägen, `shower_muffle` außerhalb des Bads) über `Game.hearing` –
+  **kein Lärm**; leiser Geisterklang als eigener `AudioStreamPlayer3D`, bis der Geist selbst da ist. `blocks_sleep()` →
+  `HideSpot.interact` lehnt ab; `reserves(player)` → `SheetGhost._player_free` lässt ihn in Zimmer 13 nicht auf
+  gewöhnlichem Weg kommen.
+- **Fang** (`_check_catch`): im Bad, waagerecht höchstens `CATCH_RANGE` vor der Tür, keine Bedrohung (`other_threat_active(null)`,
+  `is_signalling`, Geisterstunde). `Player.spellbound` (steht fest, keine Maus), Blick per `_pull_gaze` zum Nebel, dann zum
+  Geist – mit `look_pull` 1 gerissen (`SNAP_SPEED`), darunter sanft. Nach `GHOST_DELAY` `SheetGhost.shower_visit()`:
+  eigener Auftritt (`_scripted`: keine Zeugen, zählt nicht für `visits`, `_stage` = `ENTER_FROM`), `HOVER` im Nebel, dann
+  mit `SHOWER_SPEED` durch die Glastür und `_grab`. Ab `gripped` ist `spellbound` aus (Losreißen braucht die
+  Bewegungstasten). Speichern gesperrt (`busy()` in `SaveManager.can_save`).
+- **Losgerissen:** `_struggle` → `on_escaped()`: Lampen frei, `Traces.add_shower_handprints` (außen auf der Tür, Weltlage
+  wie Spuren am Boden), Wasser in `WATER_STOP`, Nebel und Glas in `CLEAR_TIME`. Erwürgt: nichts – gespeichert war `running`.
+- Gespeichert unter `shower` (`waiting`/`running`/`done`; gefangen zählt als laufend). Debug `--dusche[=fang|los|nacht]`
+  (`debug`, `debug_night`; `los` drückt abwechselnd links/rechts über `Input.action_press`), `--trace` „[Dusche] …“.
+
+### Kürbismann
+Verhalten siehe 5 („Der Kürbismann“). Testfigur ohne Verhalten: `PumpkinMan.spawn_in_front_of(player, anim)`
+(Debug `--pumpkin[=anim]`, Gruppe `pumpkin_men`). Material `Mat.model(…, two_sided)` – die Jackenfetzen sind einseitig.
+
+### Vorzeichen, Tiere, Erinnerungsstücke (Spielkonzept 4.25–4.31, 5.14–5.18, 6.21)
+Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`), alle in `scripts/world/` außer
+`guests/extra_child.gd`. Fast alles setzt erst nach dem ersten Angriff ein und ist reine Stimmung ohne eigene Bedrohung.
+- **Tiere** `Crows`, `Rats` (+ `RatKing` im Glas, `RatKing.place`), `Moths`: je ein MultiMesh mit
+  `shaders/psx_bird.gdshader` (matt), Flug/Hüpfen/Flügelschlag im Skript, in der Pause steht alles. Krähen: Scheu über
+  `Senses.conspicuity`, Groll (`grudge`) nach Würfen/Rammen, Krächzen ist Lärm; holen Münzen, wenn niemand hinsieht
+  (`_carry` je Krähe – vor dem Zugriff `is_instance_valid` prüfen, die Münze kann inzwischen gelöscht sein). Ratten:
+  Welle weg vom Monster (`WAVE_RANGE`), nur Klang. Totenkopfschwärmer in `Moths` über `MonsterDirector.forecast_room`.
+- **Hund:** `Weather.howl(delay)`, zufällig alle `HOWL_EVERY` s Spielzeit (`_howl_timer`, im Schlaf nur weitergezählt).
+- **`BoilerCat`** (Modell `cat.glb` fast schwarz, leuchtende Augen) führt zu Kessel bzw. UV-Schrift, einmal je Nacht.
+- **`MirrorOmens`:** verhängte Spiegel aus den Toten abgeleitet (`Mirror.active`), Spiegel in 13 selbst verhängbar;
+  Gestalt im Spiegel auf `PlayerBody.LAYER` (nur im Spiegel sichtbar), `FIGURE_TIME`.
+- **`PowerCut`:** `FlickerLight.brownout` → `FlickerLight.power_off`, Sicherungskasten `FuseBox` im Untergeschoss,
+  sonst nach `RESTORE` Stunden. Höchstens einmal je Spieltag, nur mit Gewitter.
+- **`Nightmare`:** einmal ab `FROM_DAY` im eigenen Bett; Post-Shader-Modus `dream`, während des Traums
+  `MonsterDirector.other_threat_active`, kein Zeitsprung, `SaveManager.can_save` gesperrt.
+- **`Scarecrow`:** Lage aus dem Kalender (`FAR` → Lobby-Gartentür), springt nur ungesehen. Grundkörper.
+- **`ExtraChild`:** beim Süßes oder Saures an 13, höchstens einmal je Spieltag, `MAX_VISITS`.
+- **`PhotoWall`** (Fotos als `Image` im Code, je Jahr fester Zufall), **`Memorial`** (Grablichter, eine gemeinsame
+  `FlickerLight`, gehen aus, wenn das Monster durch die Lobby kommt; `Social._memorial_doors`), **`DollHouse`**
+  (Pläne über `HotelMap`, Figuren je Gast, Urteil aus `JuryDoll.verdict`), **`PumpkinFaces`** (tauscht nur das Netz,
+  `PumpkinModel.mesh_of`; `Item.face` bleibt).
+- **Neue Gegenstände** (hinten an `Item.Kind`): `MUSIC_BOX` (`MusicBox.build`/`MusicBox.wind`: Lärm alle `NOISE_EVERY`
+  s, nahes Monster horcht über `Monster.listen_to`, einmal je Aktivphase) und `APPLE` aus **`AppleTub`**
+  (`Player.stand_at`, `BITE_TIME`, `BREATH`, Lärm „apple_tub“).
+- **Ausstattung im Plan fehlt noch** für Rattenkönig, Fotowand, Gedenktisch, Puppenhaus, Apfelbottich – bis dahin
+  feste Ausweichplätze (`FALLBACK`/`WALL`/`SPOT`) im jeweiligen Skript.
+- **Gespeichert** (Speicherstand 49) unter `omens`: `crows`, `mirrors`, `power`, `nightmare`, `extra_child`
+  (`SaveManager._collect_omens`/`_apply_omens`); alles andere wird aus Toten, Kalender oder Gegenständen abgeleitet.
+- Debug: `--kraehen`, `--ratten`, `--falter`, `--hund`, `--kesselkatze`, `--spiegel`, `--strom`, `--albtraum`,
+  `--vogelscheuche`, `--kind-zu-viel`, `--fotos`, `--gedenken`, `--puppenhaus`, `--fratzen`, `--apfel`, `--spieluhr`;
+  Rauchtest-Stichwort `halloween`.
+
+### Partikel
+(`shaders/psx_particle.gdshader`, `Mat.particle`, `Geo.particles`; Spielkonzept 7.6)
+Alles `CPUParticles3D` in Weltkoordinaten (`local_coords` aus), `QuadMesh`, keine Schatten. Der Shader macht das
+Billboard selbst und liest je Partikel `INSTANCE_CUSTOM.x` (Zufallswert) und `.y` (Anteil der Lebenszeit) – darüber
+laufen Schaukeln, Drehen und Farbton, **so steht alles in der Pause**. `frames` = Bilder nebeneinander, `rainbow`,
+`brighten`, `glow`; `floor_y`: darunter liegt ein Partikel flach (CPUParticles kennen keine Kollision). Beispiele:
+Noten am Plattenspieler, Flocken des Lakengeists, Asche des Monsters (eigener Knoten neben ihm – die Spur bleibt, wenn
+es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMesh liest dort; `preprocess`).
+**Neuer Partikeleffekt:** `Mat.particle` + `Geo.particles`, Bewegung am Emitter setzen.
+
+### Spuren, Zettel
+- **Spuren** (`traces.gd`, `trace_mark.gd`): zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`.
+  Fußabdrücke verblassen, Marken bleiben. **Blut an Wänden** (`add_wall_blood(pos, kind)`: `wall_splatter`,
+  `wall_smear`) sucht die nächste Wand in Spurhöhe; Schreck-Anblick wie Blutlachen. Die Aschespur des Monsters ist nur
+  Optik, keine Spur – Gäste erzählen nicht davon. Flecken am Boden siehe 3 „Spuren auf dem Boden“. Debug
+  `--wallblood[=smear]`.
+- **Zettel** (`warning_note.gd`): feste Warnungszettel (`warning_notes`, erst nach dem ersten Angriff sichtbar) und
+  Gäste-Zettel (`guest_notes`, begrenzt); der Zettel „1999“ steht nicht im Plan, `DoorContest` legt ihn.
+
+### Telefone, Spieltische
+- **Telefone** (`world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd`): `HotelPhone` auf jedem Zimmertisch
+  + Haupttelefon an der Rezeption (`"0"`); gespeichert nur `off_hook`. `PhoneCalls` (`Game.phones`): eingehend nur für
+  Zimmer 13, ausgehend per Wählseite. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`,
+  eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die
+  Zufallsfolge). Laufende Anrufe nicht gespeichert.
+- **Spieltische** (`minigames/`): `TableMatch` (CanvasLayer 15) = Basis von `DiceMatch`, `ChessMatch` und `DartMatch`
+  (Hooks `_table`, `_gear`, `_on_seated`, `_update_game`, `_stop`, `_take_places`/`_leave_places` – Standard: hinsetzen,
+  Maus frei); Einsätze über `TableStakes`. Ob gerade eins läuft: `Game.table_game_active()` (Autosave, Herausforderungen,
+  Kürbismann). **Mäxchen:** `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI, `GameTable` = Tisch. **Schach:**
+  `Chess` = Regeln als reine Daten, `ChessAI` = Alpha-Beta in einem `Thread` (`think`/`is_done`/`take_move`,
+  **`cancel`** beim Abbruch, vor neuer Suche und in `ChessMatch._exit_tree`); Stärke aus `profile["chess"]`.
+- **Darts** (Spielkonzept 6.10): `Darts` = Regeln als Rechnung (Turniermaße, `score_at`, `aim_point`, `target_for` –
+  Zielfeld des Gastes für seinen Rest, `apply` – 301 mit einfachem Aus, Überwerfen setzt auf den Stand vor der
+  Aufnahme zurück). `DartBoard` erbt von `GameTable`: Scheibe (`shaders/dartboard.gdshader` auf einem Quad – Felder,
+  Sisalrauschen, Einstiche, Drähte höchstens pixelbreit), Zahlen als `TextMesh`, schwarzer Ring, Messinglinie `OCHE`
+  vor der Vorderseite, Stehtisch (`top_center`/`stake_spot` dort, Pfeile `Item.Kind.DARTS` liegen darauf);
+  `player_seat`/`guest_seat` sind Stehplätze an der Linie. Ursprung am Wandfuß, lokal +Z in den Raum. `throw_dart`
+  fliegt per Tween, steckt (Scheibe, Ring) oder fällt von der Wand, Lärm `dart`/`dart_wall`; `guest_throw` mit
+  `Guest.throw_dart_pose` und Loslassen nach `RELEASE`; `clear_darts` nach jeder Aufnahme. `DartModel` = Pfeil aus
+  Grundkörpern (Spitze am Ursprung, entlang +Z). **Ort:** Ausstattung „Dartscheibe“ im Plan (Wandseite), sonst
+  `LevelBuilder.DART_FALLBACK` (Südwand der Bar); ohne „Gegenstand: Dartpfeile“ im Plan liegen sie auf dem Stehtisch.
+  **`DartMatch`:** Spieler mit `Player.stand_at` (setzt `in_dialog` und `at_oche`; `_aim_input` dreht nur den Blick,
+  feiner je enger, `fov_zoom` verengt ihn), Maus bleibt gefangen, Knöpfe über die Zahlentasten. Zielen in `_aim`:
+  Schwanken als Summe von Sinuswellen (`SWAY` × Schwäche × Rausch, beim Halten bis `STEADY_MIN`, ab `TIRE_AFTER`
+  mehr), Zittern bei `jittery()`/Schock, als Differenz auf Gier und Neigung gelegt; Loslassen streut den Strahl aus der
+  Bildmitte (`SPREAD`, hastig `QUICK_FACTOR`, Mausgeschwindigkeit) und trifft die Ebene der Scheibe
+  (`ray_to_board`). Gast: Streuung `sigma_of` aus `profile["darts"]["skill"]` (+ Angst, Rausch). Ablauf über `_after`
+  (Pausen), `_landed` zählt. Schummeln = `throw_spot(true)`, nach der Aufnahme `_noticed_cheat` mit
+  `dice.perception`; ≥ 3 nüchtern neben die Scheibe = absichtlich verloren. Ohne Gast `practice()` (endlos, bricht bei
+  Vorwarnung ab). Sätze `darts_*` aus dem Profil, sonst `DartMatch.LINES`; Kinder spielen nicht. Gäste untereinander:
+  `Social._update_dart_game` (`_seat_pair(…, stand = true)`, `Guest.stand_for_game`), Zuschauen → `darts_watched`
+  (gespeichert). Debug `--darts[=gast]`, Test `darts_checks`, Rauchtest `darts`.
+
+### UI
+(`ui/`) `UiKit` = Meldezettel-Optik und schlichte Bausteine (`dark_panel`, `option_grid`, `flat_option`,
+`press_number`, `plain_label`); `Hud` Prompt/Meldungen/Debug (F3), Bilder pro Sekunde (F10/`--fps`); `Menus`
+pausiert. `TeleportUI` = Debug-Menü (F6): Orte und – nur mit `DebugConsole.enabled()` – alle `DebugConsole.COMMANDS`
+nach `GROUPS`; Ziele aus dem `LevelBuilder`, `_onto_navmesh` rückt auf begehbaren Boden. `DebugConsole` ([^]/F1, nur
+Debug-Build oder `--debug`) = Startparameter im Spiel tippen: `submit()` → `main.run_debug("--name=wert")`.
+
+### Optik
+(`util/mat.gd`, `util/geo.gd`, `shaders/`) Ausgelegt auf den realistischen Look (siehe 1, „Grafik“).
+- **Materialien** über die Fabriken in `Mat` (`Mat.psx(...)` heißt nur noch so; für Neues mit Karten eher
+  `Mat.photo`/`Mat.model` oder ein eigener Shader mit voller Auflösung).
+- **PS1-Umschalter:** Vertex-Snapping über das Shader-Global `psx_snap`; alle `psx_*`-Shader holen es per
+  `#include "res://shaders/psx_snap.gdshaderinc"` und `clip = psx_snap_clip(clip)` – **neuer Shader: ebenso**. Filter
+  lassen sich nicht per Uniform schalten, darum schreibt `Settings._apply_texture_filter` den Code der Shader in
+  `PSX_SHADERS` von `filter_nearest` auf `filter_linear_mipmap` um – **neuer Shader mit Textur → dort eintragen**. Ohne
+  PS1-Look: 3D in Fensterauflösung (`CONTENT_SCALE_MODE_CANVAS_ITEMS`), kein Snapping/Dithering, Shader-Global
+  `psx_smooth` für Detailstufen. Debug `--no-psx`/`--psx`; eine gespeicherte `settings.cfg` behält ihren Wert.
+- **Gegen Flimmern beim Snapping:** flache Auflagen (Teppich, Türkassetten, Rahmen) über `Mat.layer(...)` (zieht zur
+  Kamera); `Geo.box` unterteilt Flächen in ≤ 1-m-Stücke, damit große Böden nicht schwimmen. Glasscheiben sind einzelne
+  Flächen (`QuadMesh`), keine Boxen.
+- **Poliertes Metall** = `Mat.metal(farbe)` (`psx_metal.gdshader`): spiegelt einen gedachten Raum nur so hell, wie jede
+  Lampe ihn beleuchtet, plus Glanzpunkt – das Environment spiegelt nichts, SSR taugt für dünne Rohre nicht.
+- **Post-FX** (`shaders/psx_post.gdshader`, `CanvasLayer` 5 unter der Bedienoberfläche): Gamma, Dithering, Rauschen,
+  Flackern, dazu **verschwommene Sicht** (Spielkonzept 3.6/3.7): `Player._update_sight` setzt `sight_blur` (Müdigkeit
+  über `tiredness()`, Rausch, Kater) und `sight_warp`; `main._process` reicht sie mit `blur_time` (steht in der Pause)
+  an den Shader – Scheibe aus Abtastungen über eine Mip-Stufe der Screen-Textur.
+- **Nebel** (`main._setup_environment`): Tiefennebel bis Schwarz, Volumennebel nur nah (sonst verschleiert Lampenlicht
+  das Flurende beige); `camera.far` knapp dahinter, weil `player_can_see` am Frustum hängt.
+- **Himmel** (`shaders/night_sky.gdshader`, `Sky` `REALTIME`): Verlauf, Mond in Richtung von `LIGHT0`, Wolken, Sterne,
+  rundum eine **Waldkante** im Himmel (ohne Geometrie, verdeckt alles unter dem Horizont). Zug über das Uniform
+  `sky_time` (steht in der Pause, `TIME` liefe weiter); Hash ohne Sinus, damit lange Laufzeiten nicht flimmern. Der
+  Himmel leuchtet nichts aus: `reflected_light_source` aus (sonst spiegelte er sich in Tapete und Fliesen),
+  `fog_sky_affect` 0.
+- **Tapete** = `Mat.wallpaper(wandhöhe, stockwerk, variante)` mit `shaders/psx_wall.gdshader`: Bild in drei Bändern
+  ab Stockwerksboden (Vertäfelung, Rauten, Leiste unter `wandhöhe`); `Mat.wallpaper_split(a, b, normale)` für Wände
+  zwischen zwei Räumen. Aus der Höhenkarte entsteht eine Oberflächentextur: Normale aus dem Sprung zum Nachbar-Texel,
+  Glanz je Graustufe (`WALLPAPER_GLOSS`). Die Tapete liest per `texelFetch` und filtert über `psx_smooth` von Hand.
+  Neue Farbvariante: Bild mit gleichem Aufbau als `wallpaper_<name>.png`; neue Höhenstufe → `WALLPAPER_GLOSS`. Flecken
+  auf der Tapete sind offen (Spielkonzept 7.2).
+- **Geometrie** (`util/geo.gd`): `Geo.solid` (Kollisionskasten mit Mesh), `Geo.mesh` (nur Optik), `Geo.collider`
+  (Kasten ohne Mesh), `Geo.box_part` (Mesh + Form an vorhandenem Körper), `Geo.add_surface` (eigene Flächen),
+  `Geo.wall_mesh` (siehe 4 „Wände“), `Geo.grain_box`, `Geo.rounded_box`, `Geo.runner_mesh`.
 
 ## 8a. Lärm & Sichtbarkeit (`scripts/util/senses.gd`, Spielkonzept 4.15)
 
-Alle Werte stehen in `Senses`: die Lärmtabelle `NOISE` (Art → Hörweite in m, Geräusch, Lautstärke,
-`alarm`), Dämpfung, Auffälligkeit und Grundweiten der Beobachter.
+Alle Werte stehen in `Senses`: die Lärmtabelle `NOISE` (Art → Hörweite in m, Geräusch, Lautstärke, `alarm`),
+Dämpfung, Auffälligkeit und Grundweiten der Beobachter.
 
 **Lärm:** `Game.noise(art, ort, quelle)` ist der einzige Einstieg.
-1. Spieler: hört fremde Geräusche bis zur doppelten gedämpften Hörweite (mindestens
-   `PLAYER_MIN_REACH`), linear leiser; eigene (`quelle == player`) in voller Lautstärke. Rückgabe =
-   gespielte Lautstärke (z. B. für Untertitel beim Telefon).
-2. `MonsterDirector.on_noise`: aktiv → innerhalb der gedämpften Hörweite `investigate`, bis zum
-   Doppelten nur Neugier (`Hörweite × NOISE_CURIOSITY`); ruhend → nur Lautes (≥ `Senses.LOUD`) als
-   Neugier. Eigene Geräusche (`quelle == monster`) ignoriert es.
-3. `Social.on_alarm` (nur Arten mit `alarm`): Gäste in halber gedämpfter Hörweite →
-   `Guest.hear_alarm` (Angst ↑, Panik → verstecken, mutig → hingehen, sonst Gerücht in `_reports`
-   mit `heard`, das `report_line` als „Hast du das gehört? …“ erzählt). 20 s Pause je Gast.
+1. Spieler: hört fremde Geräusche bis zur doppelten gedämpften Hörweite (mindestens `PLAYER_MIN_REACH`), linear
+   leiser; eigene (`quelle == player`) in voller Lautstärke. Rückgabe = gespielte Lautstärke (z. B. für Untertitel).
+2. `MonsterDirector.on_noise`: aktiv → innerhalb der gedämpften Hörweite `investigate`, bis zum Doppelten nur Neugier;
+   ruhend → nur Lautes (≥ `Senses.LOUD`) als Neugier. Eigene Geräusche (`quelle == monster`) und Katzen ignoriert es;
+   Donner dämpft (`Weather.masking()`).
+3. `Social.on_alarm` (nur Arten mit `alarm`): Gäste in halber gedämpfter Hörweite → `Guest.hear_alarm` (Angst,
+   verstecken, hingehen oder Gerücht).
+4. Fledermäuse (`Bats.on_noise`).
 
-**Dämpfung** (`Senses.audible_range`): Strahl von Ohrhöhe (1,2 m über dem Boden des Stockwerks) zu
-Ohrhöhe; jeder Treffer wird ausgeschlossen und neu geworfen (max. 4). Wand = Körper auf Ebene 1 mit
-Box ≥ 2,5 m Höhe (×0,4, Ergebnis je Körper gecacht), Tür = Vorfahr `Door` (geschlossen ×0,6, offen ×1),
-klares Glas ×0,6, je Geschossdecke ×0,3. Möbel, Böden und Brüstungen dämpfen nicht.
-→ Wer eine neue Wand baut, die niedriger als 2,5 m ist, dämpft keinen Lärm.
+**Dämpfung** (`Senses.audible_range`): Strahl von Ohrhöhe zu Ohrhöhe; jeder Treffer wird ausgeschlossen und neu
+geworfen (höchstens 4). Wand = Körper auf Ebene 1 mit Box ≥ 2,5 m Höhe (Ergebnis je Körper gecacht), Tür = Vorfahr
+`Door` (geschlossen dämpft, offen nicht), klares Glas, je Geschossdecke. Möbel, Böden und Brüstungen dämpfen nicht.
+→ **Wer eine neue Wand baut, die niedriger als 2,5 m ist, dämpft keinen Lärm.**
 
-**Neues Geräusch in der Welt:** Eintrag in `Senses.NOISE`, Aufruf `Game.noise(...)` mit `quelle`, wo
-bekannt (sonst hört sich z. B. das Monster selbst und läuft seinen eigenen Türen nach).
-Spielerschritte: `Player._on_soft_floor()` erkennt Teppich/Rasen an der `albedo_tex` des Bodens.
-Gäste machen nur beim Rennen (Panik; Kinder auch beim Toben, dazu Lachen `laugh`) Schrittlärm.
+**Neues Geräusch in der Welt:** Eintrag in `Senses.NOISE`, Aufruf `Game.noise(...)` mit `quelle`, wo bekannt (sonst
+hört sich z. B. das Monster selbst und läuft seinen eigenen Türen nach). Gäste machen nur beim Rennen Schrittlärm.
 
-**Sichtbarkeit:** `Senses.can_see(beobachter, auge, blick, grundweite, kegel, akteur, bonus, …)`:
-Sichtweite = Grundweite × `conspicuity(akteur)` + Bonus, dann Kegel (näher als 2 m ohne Kegel) und
-freie Sichtlinie. Auffälligkeit = 1 + 1,2 × Licht am Ort (`light_at(p, skip)` ohne das eigene Licht
-in der Hand) + Licht in der Hand (Kerze/Kürbis über `lit`, Taschenlampe über `flashlight`) + Rennen/Stillstehen/Ducken. Benutzt von `Monster.can_see_actor`
-(auch für „beim Verstecken gesehen“: `at` = `exit_point` des Verstecks, Stillstehen zählt nicht) und
-`Guest.can_see_actor` (Zeugen beim Diebstahl, abgelenkt ×0,6). Unverändert eigene Regeln:
-`player_can_see` (Kamera), Gäste sehen das Monster (`_watch_monster`), Licht aus (4.4), Lauschen (4.7),
-angehaltener Atem (×0,35) bzw. Keuchen (× `Monster.PANT_FOUND`).
+**Sichtbarkeit:** `Senses.can_see(beobachter, auge, blick, grundweite, kegel, akteur, bonus, …)`: Sichtweite =
+Grundweite × `conspicuity(akteur)` + Bonus, dann Kegel (ganz nah ohne Kegel) und freie Sichtlinie. Auffälligkeit aus
+Licht am Ort (`light_at(p, skip)` ohne das eigene Licht in der Hand), Licht in der Hand (Kerze/Kürbis über `lit`,
+Taschenlampe über `flashlight`), Rennen/Stillstehen/Ducken. Benutzt von `Monster.can_see_actor` (auch „beim Verstecken
+gesehen“: `at` = `exit_point` des Verstecks) und `Guest.can_see_actor` (Zeugen). Eigene Regeln: `player_can_see`
+(Kamera), Gäste sehen das Monster (`_watch_monster`), Licht aus (Spielkonzept 4.4), Lauschen (4.7), angehaltener Atem
+bzw. Keuchen.
 
-**Debug:** `Game.noise_log` (letzte 5, im F3-Text des Directors), `--trace` druckt jedes Ereignis,
-`--noise=art` erzeugt alle 6 s Lärm am Spieler.
+**Debug:** `Game.noise_log` (letzte 5, im F3-Text), `--trace` druckt jedes Ereignis, `--noise=art` erzeugt
+regelmäßig Lärm am Spieler.
 
 ## 9. Rezepte
 
-**Neuer Gegenstand:** `Item.Kind` ergänzen (nur **ans Ende**, Spielstände speichern den Zahlenwert),
-Preis in `PRICES`, Aussehen/`deco_strength` in `_build()`, ggf. `create_extra()`.
+**Neuer Gegenstand:** `Item.Kind` ergänzen (nur **ans Ende**, Spielstände speichern den Zahlenwert – `save_rules`
+prüft das), Preis in `PRICES`, Aussehen/`deco_strength` in `_build()`, ggf. `create_extra()`. Kleines für die Tasche
+→ `POCKET_KINDS`; Symbol entsteht über `ItemIcons` von selbst.
 
-**Neues interagierbares Objekt:** Körper auf passender Ebene (meist 3 = Bit 4),
-`set_meta("interactable", self)`, `get_prompt`/`interact`, Gruppe. Platzieren über den Plan: Farbe mit
-Namen in die Palette (`Ausstattung: …`/`Möbel: …`), Eintrag in `FITTINGS`/`FURNITURE` von `tools/build_map.py`,
-Fall in `LevelBuilder._fittings`/`_furniture`. Hat es Zustand → `save_state`/`load_state` + SaveManager
-(Gruppe auch in `WORLD_GROUPS`) + `VERSION` erhöhen.
+**Neues interagierbares Objekt:** Körper auf passender Ebene (meist 3 = Bit 4), `set_meta("interactable", self)`,
+`get_prompt`/`interact` (optional `get_icon`), Gruppe. Platzieren über den Plan: Farbe mit Namen in die Legende
+(`map_a.gpl`, Vorsatz `Ausstattung: …`/`Möbel: …`), Eintrag in `FITTINGS`/`FURNITURE` von `tools/build_map.py`, Fall in
+`LevelBuilder._fittings`/`_furniture`. Hat es Zustand → `save_state`/`load_state` + SaveManager (Gruppe auch in
+`WORLD_GROUPS`) + `VERSION` erhöhen.
 
-**Neue Gast-Aktivität:** Schlüssel in `activities` der Profile/Archetypen, Fall in
-`Guest._next_activity()`, ggf. eigener `State` und Fall in `_arrive()`.
+**Neue Gast-Aktivität:** Schlüssel in `activities` der Profile/Archetypen, Fall in `Guest._next_activity()`, ggf.
+eigener `State` (hinten anfügen) und Fall in `_arrive()`.
 
-**Neuer Dialogsatz-Typ:** Schlüssel in `GuestGenerator.COMMON` (Fallback für alle) und bei Bedarf in
-den festen Profilen und Archetypen.
+**Neuer Dialogsatz-Typ:** Schlüssel in `GuestGenerator.COMMON` (Rückfall für alle) und bei Bedarf in den festen
+Profilen und Archetypen. Telefonsätze nicht in `COMMON` (siehe Telefone).
 
-**Neue Monster-Reaktion:** Ereignis-Funktion `on_xyz()` im Director, Aufruf von der Quelle aus.
-Tuning-Konstante oben im Director.
+**Neue Monster-Reaktion:** Ereignis-Funktion `on_xyz()` im Director, Aufruf von der Quelle aus. Tuning-Konstante oben
+im Director.
 
-**Neues System, das mit delta über Minuten bis Stunden zählt** (Abklingen, Nachwachsen, Pausen, Brenndauer):
-Gruppe `time_skip` und `skip_time(dt)`, sonst bleibt es beim Zeitsprung im Schlaf stehen (Pause & Zeit). Lieber
-gleich an `MonsterDirector.elapsed` festmachen (Zeitstempel), dann holt es von selbst auf.
+**Neue Bedrohung oder neuer Angreifer:** `MonsterDirector.other_threat_active` einbeziehen, Kinder ausnehmen (6
+„Kinder“), `SaveManager.can_save` sperren, `Notebook` „gesehen“ und `Talk._scan_sights` ergänzen.
 
-**Neue Spur:** `add_xyz()` in `Traces`, `TraceMark`-Art, in `save_state`/`load_state` abdecken,
-Text für Gästeberichte in `Social.TRACE_TEXT`.
+**Neues System, das mit delta über Minuten bis Stunden zählt** (Abklingen, Nachwachsen, Pausen): Gruppe `time_skip`
+und `skip_time(dt)`, sonst bleibt es beim Zeitsprung im Schlaf stehen (3 „Pause & Zeit“). Lieber gleich an
+`MonsterDirector.elapsed` festmachen (Zeitstempel), dann holt es von selbst auf.
+
+**Neue Spur:** `add_xyz()` in `Traces`, `TraceMark`-Art, in `save_state`/`load_state` abdecken, Text für Gästeberichte
+in `Social.TRACE_TEXT`.
+
+**Neues Modell:** Bauskript in `tools/` mit Kopfkommentar (Quelle, Lizenz, Lage, Ausgabewerte), Rohmodell in
+`assets/source/`, Platzhalter im Code behalten, Lizenz ins README; Meshy-Texturen unkomprimiert (1 „Modelle“).
 
 **Neuer Debug-Parameter:** Zweig in `main.run_debug()` (gilt damit auch für die Debug-Konsole; `true` = erkannt),
 Kopfkommentar in `main.gd`, Eintrag in `DebugConsole.COMMANDS` (Hilfe, Tab) – bei Gast-ID als erstem Wert auch
-`GUEST_FIRST`, wirkt er nur beim Start (liest jemand anderes die Startparameter) stattdessen `START_ONLY` – plus
-Tabelle im README. Im F6-Menü erscheint er von selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“).
+`GUEST_FIRST`, wirkt er nur beim Start stattdessen `START_ONLY` – plus Tabelle im README. Im F6-Menü erscheint er von
+selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Rauchtest eine Zeile mit Stichworten in
+`tests/smoke.sh`. **Keine Debug-Taste auf F8** – das stoppt im Editor das laufende Spiel.
 
 ## 10. Testen
 
-- Start mit Godot 4.7.2 (Pfad im README), Parameter nach `--`. Schnelle Läufe ohne Fenster-Interaktion:
-  `--time-scale 3` (headless besser mit `--fixed-fps 60`, siehe Rauchtest), `--quit-after N`, `--trace` (Zustand alle 2 s in die Konsole; im Code immer `Game.tracing`
-  abfragen, nicht die Startparameter – so wirkt auch `trace` aus der Konsole), `--day=n`,
-  `--attacks=n`, `--kill=id`, `--knock` …
-- Screenshots zum Prüfen: `--shot=pfad.png --frames=n` oder `--shot-on=jumpscare`; Menüs mit `--menu=…`.
-  Mit `--bg` (in `Game._ready`) nimmt das Fenster keinen Fokus und liegt außerhalb des Bildschirms – nicht
-  minimiert, sonst zeichnet Godot nicht und der Screenshot bleibt leer. Der Fokus würde schon beim Erstellen
-  des Fensters geklaut, deshalb startet jeder Lauf mit dem Editor-Binary ohne Fokus
-  (`window/size/no_focus.editor_runtime` in `project.godot`); ohne `--bg` holt `Game._ready` ihn sofort nach.
-  Exportierte Spiele betrifft das nicht.
-- Nach Änderungen am Speichern (nicht an der Welt): `--savetest` laufen lassen (`alles gleich` erwartet).
-- Headless gibt es kein Bild: das Autosave speichert dann ohne Vorschau (in `user://saves_headless/`, nicht in die echten Stände), Shader werden nicht kompiliert (Shader-Änderungen
-  mit Fenster und `--bg --shot=…` prüfen).
-- **Bekannt, offen:** Headless-Läufe enden nach dem Hotel in etwa jedem dritten Fall beim Beenden mit Segfault (Exit 139),
-  selten hängen sie stattdessen; der Titelbildschirm allein nie. Eingegrenzt (2026-10-22): nicht der Abbau der Szene (alles vorher freigegeben und
-  30 Frames gewartet – stürzt trotzdem), nicht die statischen Caches, nicht die asynchrone Navigation; erst wieder
-  zurück zum Titel hilft auch nicht. Ohne Debug-Symbole von Godot nicht weiter zu finden.
+- Start mit Godot 4.7.2 (Pfad im README), Parameter nach `--`. Schnelle Läufe: `--time-scale 3` (headless mit
+  `--fixed-fps 60`, siehe Rauchtest), `--quit-after N`, `--trace` (Zustand alle 2 s in die Konsole; im Code immer
+  `Game.tracing` abfragen, nicht die Startparameter – so wirkt auch `trace` aus der Konsole), `--day=n`, `--attacks=n`,
+  `--kill=id` …
+- Screenshots zum Prüfen: `--shot=pfad.png --frames=n` oder `--shot-on=ereignis`; Menüs mit `--menu=…`. Mit `--bg`
+  nimmt das Fenster keinen Fokus und liegt außerhalb des Bildschirms – nicht minimiert, sonst zeichnet Godot nicht und
+  der Screenshot bleibt leer. Der Fokus würde schon beim Erstellen des Fensters geklaut, deshalb startet jeder Lauf mit
+  dem Editor-Binary ohne Fokus (`window/size/no_focus.editor_runtime` in `project.godot`); ohne `--bg` holt
+  `Game._ready` ihn sofort nach. Grafik ohne PS1-Look prüfen (`--no-psx`, 1 „Grafik“).
+- Nach Änderungen am Speichern (nicht an der Welt): `--savetest` (`alles gleich` erwartet).
+- Headless gibt es kein Bild: Autosave ohne Vorschau (in `user://saves_headless/`), Shader werden nicht kompiliert
+  (Shader-Änderungen mit Fenster und `--bg --shot=…` prüfen).
+- **Bekannt, offen:** Headless-Läufe enden nach dem Hotel in etwa jedem dritten Fall beim Beenden mit Segfault
+  (Exit 139), selten hängen sie; der Titelbildschirm allein nie. Ausgeschlossen: Abbau der Szene, statische Caches,
+  asynchrone Navigation, Rückkehr zum Titel. Ohne Debug-Symbole von Godot nicht weiter zu finden.
 - **Tests** (`tests/`, nicht im Export). Neue Klassen kennt Godot erst nach einem Import (`--headless --import`).
-  - **Rauchtest** `bash tests/smoke.sh [stufe]` (`JOBS` = 6 Läufe nebeneinander, Protokolle in `temp/smoke/`), drei
-    Stufen (2026-10-24): **`schnell`** nach jeder Änderung (~½ min: die Szenarien mit Stichwort „schnell“ – Savetest,
-    Monster-Aufbruch, Lakengeist, Feier, Zeitsprung mit Opfern, Gespräch – und die Spielstand-Regeln), **ein
-    Stichwort** nach Arbeit an einem System (`schlaf`, `monster`, `gaeste` …; trifft auch Wörter in den Parametern wie
-    früher, etwa `pumpkin`; ohne die Tests danach; `stichworte` listet alle mit Zahl), **ohne Angabe** alles vor
-    größeren Commits (~13 min). Die Liste im Skript steht als `Frames|Stichworte|Parameter`. Das Skript
-    spielt die Debug-Szenarien headless mit fester Schrittweite durch (`--fixed-fps 60 --time-scale 3`: jedes Bild genau
-    0,05 s Spielzeit – ohne holt Godot bei langsamen Bildern bis zu 8 Physikschritte je Bild nach, die Läufe ziehen sich
-    in einer Abwärtsspirale; Kosten ≈ simulierte Spielzeit, darum je Szenario nur so lange wie nötig) und meldet je Lauf Skriptfehler, NaN (`is_finite`), mehr als 10× „kommt nicht
-    weiter“, Zeitüberschreitung, Savetest ohne „alles gleich“, unerreichbare Orte im Navcheck; danach die Tests unten
-    und den Titelbildschirm. Absturz oder Hängen nach der Endmarke `[Ende]` (`Game._exit_tree`, nur headless) ist das
-    offene Problem oben und zählt nicht. Neue Mechanik mit Debug-Parameter → Zeile in seine Liste mit
-    Stichworten; „schnell“ nur für wenige Szenarien, die viel auf einmal berühren (die Stufe soll unter einer Minute
-    bleiben).
+  - **Rauchtest** `bash tests/smoke.sh [stufe]` (`JOBS` Läufe nebeneinander, Protokolle in `temp/smoke/`), drei Stufen:
+    **`schnell`** nach jeder Änderung (~½ min: Szenarien mit Stichwort „schnell“ und die Spielstand-Regeln), **ein
+    Stichwort** nach Arbeit an einem System (`schlaf`, `monster`, `gaeste` …; trifft auch Wörter in den Parametern;
+    `stichworte` listet alle), **ohne Angabe** alles vor größeren Commits (lang, nur nach Rückfrage). Die Liste im
+    Skript steht als `Frames|Stichworte|Parameter`. Das Skript spielt die Debug-Szenarien headless mit fester
+    Schrittweite (`--fixed-fps 60 --time-scale 3`: jedes Bild genau 0,05 s Spielzeit – ohne holt Godot bei langsamen
+    Bildern Physikschritte nach und die Läufe ziehen sich in einer Abwärtsspirale; Kosten ≈ simulierte Spielzeit, darum
+    je Szenario nur so lange wie nötig) und meldet Skriptfehler, NaN, festhängende Gäste („kommt nicht weiter“),
+    Zeitüberschreitung, Savetest ohne „alles gleich“, unerreichbare Orte im Navcheck; danach die Tests unten und den
+    Titelbildschirm. Absturz oder Hängen nach der Endmarke `[Ende]` (`Game._exit_tree`, nur headless) ist das offene
+    Problem oben und zählt nicht. Neue Mechanik mit Debug-Parameter → Zeile mit Stichworten; „schnell“ nur
+    ausnahmsweise (die Stufe soll unter einer Minute bleiben).
   - **Spielstand-Regeln und Rechentests** über die Szene `res://tests/run.tscn` (`tests/run.gd`; Klassen des Spiels
     brauchen die Autoloads, die Godot mit `-s` nicht lädt): `Godot --headless --path . res://tests/run.tscn
     [-- name …]`, jeder Test ein Node mit `run() -> bool`, neue in `run.gd` `TESTS` eintragen.
-    `save_rules`: `Item.Kind` behält Namen und Reihenfolge (neue nur hinten), `GuestGenerator.make`/`make_child`
-    liefern für feste Seeds dieselben Werte (neue Felder erlaubt), jede gespeicherte Gruppe steht in `WORLD_GROUPS`
-    und wird geladen – Vergleichswerte in `tests/golden/save_rules.json`, nach gewollter Änderung (Spielstand-Version
-    erhöhen!) mit `… res://tests/run.tscn -- save_rules --update` neu schreiben. `math_checks`: Rampe der Lobbytreppe
-    (vorn auf dem Boden, oben bündig, zwischen Trittflächen und Stufenkanten), Kompassnadel (`Item.needle_step`
-    endlich bei jedem Frame, schwingt ein), `Door.near` (findet alle Türen im Umkreis, vergisst freigegebene).
-    `bag_checks`: Tasche an einem Spieler ohne Hotel – einstecken, [Q] halten und wählen (Gehaltenes fällt zu
-    Boden), abbrechen, volle Tasche, große Dinge und brennende Kerzen, Verbrauchen und Weggeben aus der Tasche.
-    `throw_checks`: Abwurftempo nach Masse und Kraft, langer Spritzer im Zusatzfeld des Kürbismatschs (3.13).
-    `darts_checks`: Felder der Dartscheibe, Zielpunkte, Zielwahl der Gäste, 301-Regeln und eine Simulation der
-    Aufnahmen je Treffsicherheit (6.10).
-    `notebook_checks`: Notizbuch und Tagebuch ohne Hotel – Aufgaben (einmalig, Enden nur aus offen, Kreuz beim Tod),
-    Notizen, Seiten setzen (Tageskopf, nichts geht verloren), Brief → Notizbuch, Meilensteine (aufschreiben,
-    zurücknehmen) und Spielstand über JSON.
+    `save_rules`: `Item.Kind` behält Namen und Reihenfolge, `GuestGenerator.make`/`make_child` liefern für feste Seeds
+    dieselben Werte, jede gespeicherte Gruppe steht in `WORLD_GROUPS` und wird geladen – Vergleichswerte in
+    `tests/golden/save_rules.json`, nach gewollter Änderung (Spielstand-Version erhöhen!) mit
+    `… res://tests/run.tscn -- save_rules --update` neu schreiben. `math_checks`: Rampe der Lobbytreppe, Kompassnadel,
+    `Door.near`. `bag_checks`: Tasche ohne Hotel. `notebook_checks`: Notizbuch und Tagebuch ohne Hotel.
+    `throw_checks`: Abwurftempo und langer Spritzer im Zusatzfeld (Spielkonzept 3.13). `darts_checks`: Felder der
+    Dartscheibe, Zielpunkte, Zielwahl der Gäste, 301-Regeln und eine Simulation der Aufnahmen je Treffsicherheit.
   - Schach ohne Autoloads mit `-s`: `-s res://tests/chess_perft.gd` (Zuggenerierung) bzw. `…/chess_ai_speed.gd`.
   - Sonst Prüfung über Debug-Parameter, Konsole und Screenshots.
 
 ## 11. Export
 
-- Preset „Windows Desktop“ in `export_presets.cfg`, Befehl im README. `binary_format/embed_pck=true` →
-  eine einzelne `.exe`; Skripte als Binär-Tokens (`script_export_mode=2`); Ziel `build/` (Git-ignoriert).
-- Export-Filter „alle Ressourcen“: alles unter `res://` landet im Paket, außer `exclude_filter`
-  (`assets/source/*`, `tools/*`, `build/*`, `temp/*`, `addons/meshy-godot-plugin/*`). Neue reine Arbeitsdateien dort ergänzen.
-  `reference/` (Vorlagen, Referenzbilder) hat eine `.gdignore` – Godot sieht den Ordner gar nicht.
-- Nur `load()` mit festen `res://`-Pfaden verwenden – zusammengesetzte Pfade findet der Export nicht
-  immer, und `res://` ist im Export schreibgeschützt. Alles Veränderliche gehört nach `user://`
-  (Spielstände, `settings.cfg`), das im Export unter `%APPDATA%/Godot/app_userdata/Zimmer 13/` liegt.
+- Preset „Windows Desktop“ in `export_presets.cfg`, Befehl im README. `binary_format/embed_pck=true` → eine einzelne
+  `.exe`; Skripte als Binär-Tokens (`script_export_mode=2`); Ziel `build/` (Git-ignoriert).
+- Export-Filter „alle Ressourcen“: alles unter `res://` landet im Paket, außer `exclude_filter` (`assets/source/*`,
+  `tools/*`, `build/*`, `temp/*`, `addons/meshy-godot-plugin/*`). Neue reine Arbeitsdateien dort ergänzen. Dateien, die
+  keine Godot-Ressource sind (JSON), brauchen einen Eintrag in `include_filter` (siehe 4, Gebäudeplan).
+  `reference/` hat eine `.gdignore` – Godot sieht den Ordner gar nicht.
+- Nur `load()` mit festen `res://`-Pfaden verwenden – zusammengesetzte Pfade findet der Export nicht immer, und
+  `res://` ist im Export schreibgeschützt. Alles Veränderliche gehört nach `user://` (Spielstände, `settings.cfg`), das
+  im Export unter `%APPDATA%/Godot/app_userdata/Zimmer 13/` liegt.
 - Export-Vorlagen müssen exakt zur Editor-Version passen (4.7.2).
-- Debug-Tasten und Startparameter sind nicht an `OS.is_debug_build()` gebunden, also auch im
-  Release-Export aktiv.
+- Debug-Tasten und Startparameter sind nicht an `OS.is_debug_build()` gebunden, also auch im Release-Export aktiv.

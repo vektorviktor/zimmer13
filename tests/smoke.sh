@@ -102,6 +102,10 @@ done <<'LIST'
 500|lakengeist,dusche|--dusche=fang --trace
 900|lakengeist,dusche,schlaf,nacht|--day=3 --uhr=1:10 --hoerer --sleep=bett,8 --dusche=nacht --trace
 600|dusche,speichern|--dusche --savetest
+900|salz,lakengeist|--trace --salz=fenster --ghost=3
+900|salz,lakengeist,gaeste|--trace --salz=gast,edna --shock=edna,ghost3
+500|salz,monster|--trace --salz=monster
+600|salz,speichern|--salz=tür --savetest
 600|tiere|--fledermaus --trace
 600|tiere|--fledermaus=schwarm --trace
 600|tiere|--tp=keller --spinne --trace
@@ -126,6 +130,25 @@ done <<'LIST'
 4000|spiele|--dice=bruno --autoplay
 3000|spiele,darts|--darts=bruno --autoplay --trace
 1200|darts|--darts --autoplay --trace
+600|halloween,tiere|--kraehen=groll --trace
+600|halloween,tiere,speichern|--kraehen --savetest
+600|halloween,tiere|--tp=keller --ratten=welle --trace
+600|halloween,tiere|--falter --trace
+400|halloween,tiere|--hund --trace
+900|halloween,tiere|--kesselkatze --trace
+600|halloween,spuk|--spiegel --trace
+600|halloween,spuk,speichern|--spiegel=tuch --savetest
+900|halloween,spuk,licht|--strom --trace
+600|halloween,spuk,licht,speichern|--strom=kasten --savetest
+1500|halloween,spuk,schlaf|--albtraum --trace
+600|halloween,spuk|--vogelscheuche --trace
+900|halloween,spuk,kinder|--kind-zu-viel --trace
+500|halloween,erinnerung|--fotos=1987 --trace
+900|halloween,erinnerung,monster|--gedenken=aus --trace
+900|halloween,erinnerung|--puppenhaus=urteil --trace
+900|halloween,erinnerung,monster|--spieluhr=monster --trace
+600|halloween,erinnerung|--fratzen --trace
+900|halloween,spiele|--apfel=gesicht --trace
 4000|spiele|--chess=mila --autoplay --trace
 1500|kueche|--cook=suppe,fertig
 2200|kueche,gaeste|--cook=gast --trace

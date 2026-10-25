@@ -857,6 +857,10 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 		if not (Game.player and Game.player.sleeping):
 			Game.play_sound("bell"))
 	_memorial_doors.append(guest.home["door_front"])
+	if Game.memorial:   # ein Grablicht in der Lobby (5.15)
+		Game.memorial.on_guest_died(guest)
+	if Game.mirror_omens:   # die Familie verhängt die Spiegel (4.27)
+		Game.mirror_omens.on_guest_died(guest)
 	if talk:   # Schuld bei „da war nichts“, Trauer der Freunde (6.9)
 		talk.on_guest_died(guest)
 	if Game.notebook:   # Kreuz neben seinem Namen bei seinen Aufgaben (3.10)
@@ -986,6 +990,8 @@ func player_has_fun() -> bool:
 	if decorating and decorating.player_joins():
 		return true
 	if Game.kitchen and Game.kitchen.player_eats():
+		return true
+	if Game.apple_tub and Game.apple_tub.active:   # Apfeltauchen (6.21)
 		return true
 	return (party_active and builder.in_area(p.global_position, "partyraum")) or not _trick.is_empty()
 
@@ -1947,6 +1953,8 @@ func _trick_at_door(kid: Guest) -> void:
 	kid.knock_politely()   # bleibt vor der Tür stehen
 	kid.say(kid.line("trick"))
 	_trick = {"guest": kid, "time": TRICK_WAIT, "given": 0}
+	if Game.extra_child:   # manchmal steht eins zu viel dahinter (4.31)
+		Game.extra_child.on_trick_at_door(kid)
 
 
 ## Wartet dieses Kind gerade vor Zimmer 13 auf (weitere) Süßigkeiten? Gibt zurück, wie viele es schon hat, sonst −1.

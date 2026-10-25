@@ -55,7 +55,12 @@ const BELL_GAP := 1.3
 const BELL_DB := -9.0
 const BELL_INSIDE := 0.5
 const BELL_PITCH := 0.6
+## Hund hinter der Waldkante (4.25): so laut (draußen), drinnen × BELL_INSIDE
+const HOWL_VOLUME := 0.55
+## Abstand zwischen zwei Heulern in Sekunden Spielzeit, zufällig (Tuning)
+const HOWL_EVERY := Vector2(240.0, 720.0)
 
+var _howl_timer := 0.0           ## bis zum nächsten Heulen (4.25)
 var kind := Kind.CLEAR
 var intensity := 0.0              ## 0 … 1, folgt dem Wetter weich
 
@@ -88,6 +93,7 @@ func _ready() -> void:
 ## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): bis zum nächsten Wetterwechsel um dt näher.
 func skip_time(dt: float) -> void:
 	_timer = maxf(0.001, _timer - dt)
+	_howl_timer = fposmod(_howl_timer - dt, HOWL_EVERY.y)   # im Schlaf hört man ihn nicht
 
 
 func setup(builder: LevelBuilder, moon: DirectionalLight3D, sky: ShaderMaterial) -> void:
@@ -98,6 +104,7 @@ func setup(builder: LevelBuilder, moon: DirectionalLight3D, sky: ShaderMaterial)
 	var cover = sky.get_shader_parameter("cloud_cover")   # null, solange der Standardwert gilt
 	_clouds = float(cover) if cover != null else 0.4
 	_timer = randf_range(FIRST_CLEAR.x, FIRST_CLEAR.y)
+	_howl_timer = randf_range(HOWL_EVERY.x, HOWL_EVERY.y)
 	_prepare_roofs()
 	_build_rain()
 	_bell = AudioStreamPlayer.new()
@@ -111,6 +118,10 @@ func _process(delta: float) -> void:
 	if _builder == null:
 		return
 	_build_roof_rows()
+	_howl_timer -= delta
+	if _howl_timer <= 0.0:
+		_howl_timer = randf_range(HOWL_EVERY.x, HOWL_EVERY.y)
+		howl(0.0)
 	_timer -= delta
 	if _timer <= 0.0:
 		if kind == Kind.CLEAR:
@@ -156,6 +167,19 @@ func _update_bell(delta: float) -> void:
 	if gain > 0.0:
 		_bell.volume_db = BELL_DB + linear_to_db(gain)
 		_bell.play()
+
+
+## Ein Hund heult hinter der Waldkante (Spielkonzept 4.25) – verstreut und zufällig als Stimmung (HOWL_EVERY), nach
+## `delay` Sekunden. Nur Klang, weit weg: draußen lauter, drinnen gedämpft; im Schlaf hört man ihn nicht.
+func howl(delay: float) -> void:
+	get_tree().create_timer(delay, false).timeout.connect(func() -> void:
+		var p := Game.player
+		if p == null or p.dead or p.sleeping:
+			return
+		var inside := not _builder.is_outdoor(p.global_position)
+		Game.play_sound("howl", HOWL_VOLUME * (BELL_INSIDE if inside else 1.0))
+		if Game.tracing:
+			print("[Wetter] Ein Hund heult in der Ferne"))
 
 
 ## Debug (--weather=…) und Zeitplan: Wetter wechseln. instant: sofort volle Stärke.
@@ -207,6 +231,8 @@ func _update_flash(delta: float) -> void:
 			Game.shot_event("lightning", 4)   # im Hintergrundfenster hinkt das Bild nach
 			if _builder and _builder.attic_spook:   # Spuk im Dachboden: dreht den Spieler im Blitzbild
 				_builder.attic_spook.on_flash()
+			if Game.power_cut:   # Stromausfall im Gewitter (Spielkonzept 4.28)
+				Game.power_cut.on_flash()
 	_flash = maxf(0.0, _flash - delta * FLASH_DECAY)
 	var overcast := intensity * (1.0 if kind != Kind.CLEAR else 0.6)
 	if _moon:

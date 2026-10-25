@@ -464,6 +464,8 @@ func is_quiet(pos: Vector3, radius: float = 25.0) -> bool:
 ## Immer nur eine Bedrohung im Haus (entschieden 2026-10-20): Ist das Monster, der Lakengeist oder der Kürbismann
 ## unterwegs, warten die anderen, bis er weg ist. who: wer fragt – er selbst zählt nicht. Debug-Aufrufe fragen nicht.
 func other_threat_active(who: Node) -> bool:
+	if Game.nightmare and Game.nightmare.active():   # im Albtraum von 1987 wartet alles (4.29)
+		return true
 	if who != _monster and _monster.is_active():
 		return true
 	if who != Game.ghost and Game.ghost and Game.ghost.is_active():
@@ -740,6 +742,12 @@ func inhabited_rooms() -> Array[String]:
 			if not guest.is_child() and rooms.has(no) and not no in result:
 				result.append(no)
 	return result
+
+
+## Wohin die Puppe als Nächstes ginge (Totenkopfschwärmer, Spielkonzept 4.25): das Zimmer des Urteils, sonst die
+## schwächste bewohnte Tür – eine Tendenz, die sich mit jeder Deko ändern kann.
+func forecast_room() -> String:
+	return doom_room if doom_room != "" else _weakest_door()
 
 
 ## Die schwächste bewohnte Tür: am wenigsten Deko (wie das Monster sie zählt), bei Gleichstand die dunkelste, sonst

@@ -51,7 +51,14 @@ const DURATIONS := {
 	"rustle": 0.3, "flutter": 1.4, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
 	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
 	"giggle": 0.8, "dart": 0.12,
+	"caw": 0.5, "squeak": 0.16, "moth": 0.6, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
+	"bite": 0.3, "power_down": 1.6,
 }
+## Spieluhr (Spielkonzept 5.17): Marions Wiegenlied, eigene Melodie in e-Moll, je Ton MUSIC_BOX_BEAT Sekunden – gegen
+## Ende läuft das Werk aus und wird langsamer
+const MUSIC_BOX_BEAT := 0.42
+const MUSIC_BOX_TUNE := [659.3, 784.0, 987.8, 784.0, 659.3, 587.3, 659.3, 493.9, 523.3, 587.3, 659.3, 587.3, 523.3, 493.9,
+	440.0, 493.9, 659.3, 784.0, 987.8, 1174.7, 987.8, 784.0, 740.0, 659.3, 587.3, 659.3, 740.0, 784.0, 659.3, 493.9, 659.3, 659.3]
 
 var hum := 0.0
 var static_noise := 0.0
@@ -444,6 +451,69 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			var crack := white * exp(-t * 14.0) * 0.5
 			var roll := _lp_slow * 9.0 * (0.6 + 0.4 * sin(TAU * 1.7 * t + 2.0 * sin(TAU * 0.4 * t)))
 			return (crack + roll) * minf(1.0, t * 30.0) * exp(-t * 0.75)
+		"caw":
+			# Krähe (4.25): heiseres „Kraah“ – rauer Sägezahn, Tonhöhe fällt, dazu Rauschen und schnelles Schnarren
+			var cf := lerpf(760.0, 520.0, k)
+			var cph: float = shot["phase"] + cf * dt
+			shot["phase"] = cph
+			var rasp := 0.6 + 0.4 * sin(TAU * 38.0 * t)
+			var raw := (fmod(cph, 1.0) * 2.0 - 1.0) * 0.5 + sin(TAU * cph * 2.0) * 0.25 + white * 0.35
+			return raw * rasp * minf(1.0, t * 40.0) * pow(1.0 - k, 0.6) * 0.3
+		"squeak":
+			# Ratte (4.25): kurzes, sehr hohes Fiepen, das ansteigt
+			var sf := 3000.0 + 1400.0 * k
+			var sph: float = shot["phase"] + sf * dt
+			shot["phase"] = sph
+			return sin(TAU * sph) * sin(PI * k) * 0.12
+		"moth":
+			# Totenkopfschwärmer (4.25): vier kurze, scharfe Pieptöne – Luft durch den Rüssel
+			var mt := fmod(t, 0.14)
+			if t > 0.56 or mt > 0.07:
+				return 0.0
+			return (sin(TAU * 2600.0 * mt) * 0.7 + white * 0.3) * sin(PI * mt / 0.07) * 0.16
+		"howl":
+			# Hund in der Ferne (4.25): langes Heulen – steigt an, hält mit Vibrato, sinkt; dumpf (weit weg)
+			var hf := 330.0 + 260.0 * sin(PI * minf(k * 1.6, 1.0)) - 120.0 * maxf(0.0, k - 0.6)
+			hf *= 1.0 + 0.012 * sin(TAU * 5.0 * t)
+			var hph: float = shot["phase"] + hf * dt
+			shot["phase"] = hph
+			var tone := sin(TAU * hph) + 0.35 * sin(TAU * hph * 2.0) + 0.12 * sin(TAU * hph * 3.0)
+			return tone * sin(PI * k) * minf(1.0, t * 3.0) * 0.12
+		"music_box":
+			# Spieluhr (5.17): gezupfte Stahlzungen – heller Ton mit Glockenobertönen, klingt schnell aus; das Werk
+			# läuft gegen Ende aus (die Töne kommen langsamer und etwas tiefer)
+			var slow := 1.0 + 1.6 * pow(k, 3.0)
+			var beat := MUSIC_BOX_BEAT * slow
+			var pos: float = shot.get("box_pos", 0.0) + dt / beat
+			shot["box_pos"] = pos
+			var note := int(pos)
+			var nt := (pos - note) * beat
+			var bf: float = MUSIC_BOX_TUNE[note % MUSIC_BOX_TUNE.size()] * (1.0 - 0.02 * k)
+			var pluck := sin(TAU * bf * nt) + 0.4 * sin(TAU * bf * 2.0 * nt) * exp(-nt * 9.0) + 0.15 * sin(TAU * bf * 5.4 * nt) * exp(-nt * 20.0)
+			return pluck * exp(-nt * 5.0) * minf(1.0, nt * 400.0) * minf(1.0, (float(shot["dur"]) - t) * 2.0) * 0.16
+		"fuse":
+			# Sicherung (4.28): hartes Klacken, kurz brummt der Strom
+			var clack := white * exp(-t * 60.0) * 0.8 + sin(TAU * 180.0 * t) * exp(-t * 40.0) * 0.6
+			var buzz := (sin(TAU * 100.0 * t) * 0.5 + sin(TAU * 150.0 * t) * 0.3) * exp(-t * 6.0) * 0.25
+			return clack + buzz
+		"power_down":
+			# Stromausfall (4.28): das Netzbrummen sackt ab und erstirbt
+			var pf := lerpf(100.0, 18.0, k)
+			var pph: float = shot["phase"] + pf * dt
+			shot["phase"] = pph
+			return (sin(TAU * pph) * 0.6 + sin(TAU * pph * 3.0) * 0.2) * (1.0 - k) * 0.3
+		"bubble":
+			# Apfeltauchen (6.21): Wasser schwappt, ein paar Blasen steigen auf
+			var slosh := _lp_fast * (0.5 + 0.5 * sin(TAU * 3.0 * t)) * sin(PI * k) * 1.2
+			var blub := 0.0
+			for b: float in [0.15, 0.32, 0.5, 0.66]:
+				if t > b:
+					blub += sin(TAU * (420.0 + 900.0 * (t - b)) * (t - b)) * exp(-(t - b) * 30.0) * 0.18
+			return slosh + blub
+		"bite":
+			# Biss in einen Apfel: knackiges Rauschen in zwei Stößen
+			var bt := fmod(t, 0.12)
+			return white * exp(-bt * 45.0) * 0.5 * (1.0 if t < 0.24 else 0.0)
 	return 0.0
 
 

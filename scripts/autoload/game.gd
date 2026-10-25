@@ -15,6 +15,9 @@ const SOUND_CAPTIONS := {
 	"cry": "[Eine Katze kreischt]", "meow": "[Miau]", "bell": "[Eine Totenglocke läutet]",
 	"ding": "[Ding – der Aufzug]", "motor": "[Ein Motor brummt im Schacht]", "alarm": "[Eine Alarmglocke schrillt]",
 	"chime": "[Gong – eine Durchsage]", "poof": "[Ein Fauchen]", "flutter": "[Flügelschlagen]",
+	"howl": "[Ein Hund heult in der Ferne]", "caw": "[Eine Krähe krächzt]", "squeak": "[Ratten quieken]",
+	"moth": "[Ein feines Piepen]", "music_box": "[Eine Spieluhr spielt]", "fuse": "[Klack – eine Sicherung]",
+	"power_down": "[Der Strom fällt aus]",
 }
 
 var player: Player
@@ -37,6 +40,20 @@ var bats: Bats                     ## Fledermäuse draußen (Spielkonzept 4.22)
 var spiders: Spiders               ## Spinnen am Boden und in Schubladen (Spielkonzept 4.23)
 var sleep_skip: SleepSkip          ## Zeitsprung im Schlaf (Spielkonzept 3.6)
 var shower_scare: ShowerScare      ## Lakengeist in der Dusche von Zimmer 13 (Spielkonzept 4.24)
+var crows: Crows                   ## Krähen im Garten, merken sich Gesichter (Spielkonzept 4.25)
+var rats: Rats                     ## Ratten im Untergeschoss, rennen vor dem Monster (Spielkonzept 4.25)
+var moths: Moths                   ## Motten an den Lampen und der Totenkopfschwärmer (Spielkonzept 4.25)
+var boiler_cat: BoilerCat          ## die schwarze Kesselkatze des Heizers (Spielkonzept 4.26)
+var mirror_omens: MirrorOmens      ## Gestalt im Spiegel, verhängte Spiegel (Spielkonzept 4.27)
+var power_cut: PowerCut            ## Stromausfall im Gewitter (Spielkonzept 4.28)
+var nightmare: Nightmare           ## der Albtraum von 1987 (Spielkonzept 4.29)
+var scarecrow: Scarecrow           ## die Vogelscheuche, die näher kommt (Spielkonzept 4.30)
+var extra_child: ExtraChild        ## das Kind zu viel beim Süßes oder Saures (Spielkonzept 4.31)
+var photo_wall: PhotoWall          ## Gruppenfotos 1987–2025 in der Lobby (Spielkonzept 5.14)
+var memorial: Memorial             ## Grablichter für die Toten in der Lobby (Spielkonzept 5.15)
+var doll_house: DollHouse          ## Puppenhaus in der Bibliothek (Spielkonzept 5.16)
+var pumpkin_faces: PumpkinFaces    ## Kürbisgesichter, die sich verändern (Spielkonzept 5.18)
+var apple_tub: AppleTub            ## Apfeltauchen im Partyraum (Spielkonzept 6.21)
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
 var coffee: CoffeeMachine         ## Kaffeemaschine in der Küche (Spielkonzept 3.11), setzt sich selbst
 var kettle: TeaKettle             ## Wasserkocher in der Küche (Spielkonzept 3.12), setzt sich selbst
@@ -68,6 +85,8 @@ var money := 0:
 ## Debug: --shot=pfad.png speichert nach --frames=n Frames einen Screenshot und beendet
 ## das Spiel – auch im Titelbildschirm und bei offenem (pausierendem) Menü.
 ## Mit --shot-on=ereignis stattdessen kurz nach einem Ereignis (siehe shot_event).
+## --shot-size=BxH: rahmenloses Fenster in dieser Größe, auch größer als der Bildschirm (Windows begrenzt
+## Fenster mit Rahmen auf die Bildschirmfläche) – für hochaufgelöste Bilder wie den Hintergrund des Titelbildschirms.
 var _shot_path := ""
 var _shot_at := 120
 var _shot_frames := 0
@@ -96,6 +115,10 @@ func _ready() -> void:
 		elif arg.begins_with("--shot-on="):
 			_shot_on = arg.substr(10)
 			_shot_at = -1   # erst beim Ereignis
+		elif arg.begins_with("--shot-size="):
+			var size := arg.substr(12).split("x")
+			get_window().borderless = true
+			get_window().size = Vector2i(size[0].to_int(), size[1].to_int())
 		elif arg == "--bg":
 			_to_background()
 		elif arg == "--trace":
@@ -141,21 +164,40 @@ func reset() -> void:
 	dialog = null
 	dice = null
 	chess = null
+	darts = null
 	menus = null
 	traces = null
 	phones = null
 	weather = null
 	kitchen = null
 	coffee = null
-	darts = null
 	kettle = null
 	confetti = null
 	doll = null
 	contest = null
 	notebook = null
 	diary = null
+	crows = null
+	rats = null
+	moths = null
+	boiler_cat = null
+	mirror_omens = null
+	power_cut = null
+	nightmare = null
+	scarecrow = null
+	extra_child = null
+	photo_wall = null
+	memorial = null
+	doll_house = null
+	pumpkin_faces = null
+	apple_tub = null
 	noise_log.clear()
 	Senses.clear_cache()
+
+
+## Läuft gerade ein Spiel mit dem Spieler – Mäxchen, Schach oder Darts (auch allein)?
+func table_game_active() -> bool:
+	return (dice != null and dice.active) or (chess != null and chess.active) or (darts != null and darts.active)
 
 
 ## Meldung oben im Bild; icon: Symbol darüber (IconArt-Name, z. B. „dead“).
@@ -164,11 +206,6 @@ func say(text: String, duration: float = 3.5, icon: String = "") -> void:
 
 
 ## `pos`/`who`: Ort und Stimme für menschliche Laute (SynthAudio.VOICES) – die klingen aus ihrer Richtung.
-## Läuft gerade ein Spiel mit dem Spieler – Mäxchen, Schach oder Darts (auch allein)?
-func table_game_active() -> bool:
-	return (dice != null and dice.active) or (chess != null and chess.active) or (darts != null and darts.active)
-
-
 func play_sound(kind: String, volume: float = 1.0, pos := Vector3.INF, who: Node = null) -> void:
 	if audio and not audio.play_shot(kind, volume, pos, who):
 		return
@@ -238,6 +275,8 @@ func noise(kind: String, pos: Vector3, source: Node = null) -> float:
 		heard.append_array(social.on_alarm(kind, pos, loudness, source))
 	if bats:
 		bats.on_noise(pos, loudness, source)
+	if crows:
+		crows.on_noise(pos, loudness, source)
 	var line := "[%ds] Lärm %s %.0f m @ (%.1f, %.1f, %.1f)%s" % [int(director.elapsed) if director else 0,
 		kind, loudness, pos.x, pos.y, pos.z, "" if heard.is_empty() else " → " + ", ".join(heard)]
 	noise_log.append(line)

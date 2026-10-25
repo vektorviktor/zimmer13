@@ -61,7 +61,7 @@ extends Node3D
 ##   --dial=n|lobby              vom Telefon in Zimmer 13 aus Zimmer n anrufen (0 = Rezeption) ·
 ##                               lobby: Wählseite am Haupttelefon mit Gästeverzeichnis
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, diary_pages, settings, load, help)
-##   --title                     trotz Parametern mit dem Titelbildschirm starten
+##   --title                     trotz Parametern mit dem Titelbildschirm starten · --title --splash: samt Vorspann (Logo)
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
 ##   --time=+n|-n                Spieltage vor- oder zurückspulen
@@ -110,14 +110,16 @@ extends Node3D
 ##                               kaffee, tee, dose, messer, taschenlampe; z. B. --pos=…,blick,neigung --wurf=0.6,kerze
 ##   --kuerbis[=n]               Kürbismodelle (5.8) 1,5 m vor dir, Gesicht zu dir, Blick hinunter: der glatte und die fünf
 ##                               Fratzen mit Kerze in einer Reihe – bzw. nur Fratze n (1–5)
-##   --kerzen                    Kerzenmodelle 0,8 m vor dir, Blick hinunter: Kerze brennend und aus (Gegenstand), rot und weiß
-##                               brennend auf dem Teller
+##   --kerzen[=nah]              Kerzenmodelle 0,8 m vor dir, Blick hinunter: Kerze brennend und aus (Gegenstand), rot und weiß
+##                               brennend auf dem Teller · nah: weiß auf dem Teller 30 cm vor dem Auge, Flamme auf Augenhöhe,
+##                               rot daneben (für Nahaufnahmen der Flamme)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten); aufgaben|notizen|
 ##                               gesehen: das Notizbuch bei diesem Lesezeichen (3.10)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
 ##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
 ##   --no-psx · --psx            ohne bzw. mit PS1-Look (wie der Schalter in den Einstellungen, wird nicht gespeichert)
 ##   --fps                       Bilder pro Sekunde einblenden (wie F10)
+##   --nohud                     HUD ausblenden (Geld, Hinweise, Fadenkreuz) – für Screenshots
 ##   --debug                     Debug-Werte einblenden
 ##   --nointro                   ohne den Gedanken an den Brief beim Start (2.5)
 ##   --figur[=schnell]           Erwachen am Waschbecken und Charaktererstellung (3.9) wie bei einem neuen Spiel –
@@ -159,6 +161,12 @@ extends Node3D
 ##                               Nebel · los: dazu reißt du dich los (Handabdrücke, erlebt) · nacht: die erste Begegnung mit
 ##                               ihm liegt über einen Tag zurück, nach 3 s beginnt die Nachtruhe – die Dusche läuft nach der
 ##                               Regel (mit --sleep=bett wachst du davon auf)
+##   --salz[=fenster|tür|monster|streuen|zimmer,nr|gast,id]  Salz (5.13): eine Salzpackung in der Hand · fenster: dazu Salz auf allen
+##                               Außenfenstern und Fenstertüren deines Zimmers (beim Start 13; mit --ghost=3 kommt er nicht herein) · tür:
+##                               innen vor seiner Tür · monster: dazu kommt das Monster den Flur entlang und will
+##                               herein – es zögert an der Linie und verwischt sie · streuen: du stehst in deinem Zimmer
+##                               vor der Tür, siehst hin und streust nach 0,5 s selbst · zimmer,nr / gast,id: auf den Fenstern von Zimmer nr bzw. des Gastes
+##                               (mit --shock=id,ghost3 würgt er ihn nicht)
 ##   --hoerer                    der Hörer in Zimmer 13 liegt daneben (keine Anrufe, die einen wecken; 4.14)
 ##   --awake=n                   so viele Nächte ohne Schlaf, auch Bruchteile (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
 ##                               der erste Angriff gilt dann als geschehen
@@ -212,10 +220,29 @@ extends Node3D
 ##   --autoplay                  Mäxchen-Antworten, Schachzüge bzw. Dartwürfe automatisch wählen
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
+##   --shot-size=BxH             Fenster für den Screenshot in dieser Größe (rahmenlos, auch über den Bildschirm hinaus)
 ##   --shot-on=jumpscare|strangle|shock|pumpkin|lightning  Screenshot kurz nach einem Ereignis statt nach n Frames
 ##                               (Kürbismann auch pumpkin_roof|pumpkin_edge|pumpkin_leap|pumpkin_land|pumpkin_lobby)
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
 ##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)
+## Vorzeichen und Spuk (4.25–4.31, 5.14–5.18, 6.21):
+##   --kraehen[=groll]           im Garten 7 m vor den Krähen · groll: sie haben sich dich gemerkt und krächzen dich an
+##   --ratten[=welle]            fünf Ratten um dich im Keller (sonst im Heizkeller) · welle: nach 2 s rennen sie davon, als käme
+##                               das Monster aus dem Heizkeller
+##   --falter[=zimmer]           der Totenkopfschwärmer sitzt auf dem Kopfkissen im Zimmer der Vorhersage (oder diesem), du in der Tür
+##   --hund                      nach 1 s heult hinter der Waldkante ein Hund (sonst zufällig alle paar Spielminuten)
+##   --kesselkatze               Nacht, Kellergang: die schwarze Kesselkatze sitzt 5 m vor dir – sieh hin, sie geht voraus
+##   --spiegel[=tuch]            vor dem Spiegel in Zimmer 13, nach 2 s steht die Gestalt hinter dir · tuch: er ist verhängt
+##   --strom[=kasten]            Gewitter, gleich fliegt die Sicherung · kasten: Strom aus, du vor dem Sicherungskasten im UG
+##   --albtraum                  Nacht am 16., du schläfst in Zimmer 13 ein – nach 3 s der Traum vom Heizkeller 1987
+##   --vogelscheuche[=tag]       sie steht, wo sie an Halloween (bzw. an diesem Tag) stünde, du in der Lobby vor der Gartentür
+##   --kind-zu-viel              der 28. abends, ein Kind vor deiner offenen Tür – und eins zu viel dahinter
+##   --fotos[=jahr]              vor die Fotowand in der Lobby · jahr: dieses Foto gleich aufgeschlagen (1987 … 2026)
+##   --gedenken[=aus]            drei Grablichter in der Lobby, du davor · aus: gleich kommt das Monster durch die Lobby
+##   --puppenhaus[=urteil]       vor das Puppenhaus in der Bibliothek · urteil: die Puppe urteilt gleich (die kleine weiß es zuerst)
+##   --fratzen                   unter Schock, drei geschnitzte Kürbisse vor dir – sieh weg und wieder hin
+##   --apfel[=gesicht]           über den Apfelbottich im Partyraum gebeugt · gesicht: nachts, beim Hochkommen das Gesicht im Wasser
+##   --spieluhr[=monster]        Spieluhr in die Hand · monster: es kommt zu dir, nach 3 s ziehst du sie auf
 
 var _post: ShaderMaterial
 ## Nachthimmel (shaders/night_sky.gdshader) – Wolkenzug nach Spielzeit
@@ -350,6 +377,7 @@ func _ready() -> void:
 	shower_scare.name = "ShowerScare"
 	add_child(shower_scare)
 	Game.shower_scare = shower_scare
+	_setup_omens(builder)
 
 	var grass := Grass.new()   # Grasbüschel, nur ohne PS1-Look – nach dem NavMesh
 	grass.name = "Grass"
@@ -379,14 +407,14 @@ func _ready() -> void:
 	add_child(chess)
 	Game.chess = chess
 
-	var hud := Hud.new()
-	hud.name = "Hud"
 	var darts := DartMatch.new()
 	darts.name = "DartMatch"
 	darts.board = builder.dart_board
 	add_child(darts)
 	Game.darts = darts
 
+	var hud := Hud.new()
+	hud.name = "Hud"
 	add_child(hud)
 	Game.hud = hud
 
@@ -422,6 +450,71 @@ func _ready() -> void:
 			Game.contest.welcome()
 		Game.new_game_slot = 0
 	_parse_debug_args.call_deferred()
+
+
+## Vorzeichen und Spuk (Spielkonzept 4.25–4.31, 5.14–5.18, 6.21): Tiere, Artefakte und seltene Momente.
+func _setup_omens(builder: LevelBuilder) -> void:
+	var crows := Crows.new()   # Krähen im Garten, merken sich Gesichter (4.25)
+	crows.name = "Crows"
+	add_child(crows)
+	crows.setup(builder)
+	Game.crows = crows
+	var rats := Rats.new()   # Ratten im Untergeschoss, rennen vor dem Monster (4.25)
+	rats.name = "Rats"
+	add_child(rats)
+	rats.setup(builder)
+	Game.rats = rats
+	RatKing.place(self)
+	var moths := Moths.new()   # Motten an den Lampen, der Totenkopfschwärmer (4.25)
+	moths.name = "Moths"
+	add_child(moths)
+	moths.setup(builder)
+	Game.moths = moths
+	var boiler_cat := BoilerCat.new().setup(builder)   # die schwarze Kesselkatze (4.26)
+	boiler_cat.name = "Kesselkatze"
+	add_child(boiler_cat)
+	Game.boiler_cat = boiler_cat
+	var mirrors := MirrorOmens.new()   # verhängte Spiegel, Gestalt im Spiegel (4.27)
+	mirrors.name = "MirrorOmens"
+	mirrors.setup(builder)
+	add_child(mirrors)
+	Game.mirror_omens = mirrors
+	var power := PowerCut.new().setup(builder)   # Stromausfall im Gewitter (4.28)
+	power.name = "PowerCut"
+	add_child(power)
+	Game.power_cut = power
+	var nightmare := Nightmare.new().setup(builder)   # der Albtraum von 1987 (4.29)
+	nightmare.name = "Nightmare"
+	add_child(nightmare)
+	Game.nightmare = nightmare
+	var scarecrow := Scarecrow.new().setup(builder)   # die Vogelscheuche, die näher kommt (4.30)
+	scarecrow.name = "Vogelscheuche"
+	add_child(scarecrow)
+	Game.scarecrow = scarecrow
+	var extra := ExtraChild.new()   # das Kind zu viel (4.31)
+	extra.name = "KindZuViel"
+	add_child(extra)
+	Game.extra_child = extra
+	var photos := PhotoWall.new()   # Gruppenfotos in der Lobby (5.14)
+	photos.name = "Fotowand"
+	add_child(photos)
+	Game.photo_wall = photos
+	var memorial := Memorial.new()   # Grablichter in der Lobby (5.15)
+	memorial.name = "Gedenken"
+	add_child(memorial)
+	Game.memorial = memorial
+	var doll_house := DollHouse.new()   # Puppenhaus in der Bibliothek (5.16)
+	doll_house.name = "Puppenhaus"
+	add_child(doll_house)
+	Game.doll_house = doll_house
+	var faces := PumpkinFaces.new()   # Kürbisgesichter, die sich verändern (5.18)
+	faces.name = "PumpkinFaces"
+	add_child(faces)
+	Game.pumpkin_faces = faces
+	var tub := AppleTub.new()   # Apfeltauchen im Partyraum (6.21)
+	tub.name = "Apfelbottich"
+	add_child(tub)
+	Game.apple_tub = tub
 
 
 func _load_pending() -> void:
@@ -485,12 +578,12 @@ func _process(delta: float) -> void:
 		var step := Game.chess.debug_step()
 		if step != "":
 			print("[Schach] " + step)
-	if _trace:
-		_trace_frames += 1
 	if _autoplay and Engine.get_process_frames() % 40 == 0 and Game.darts.active:
 		var throw := Game.darts.debug_step()
 		if throw != "":
 			print("[Darts] " + throw)
+	if _trace:
+		_trace_frames += 1
 		if _trace_frames % 120 == 0:
 			var nav := "--trace-nav" in OS.get_cmdline_user_args()
 			print("[%ds] Monster %s @ %s | Phase %s | Dreistigkeit %.1f" % [_trace_frames / 60,
@@ -630,6 +723,8 @@ func run_debug(arg: String) -> bool:
 		_export_static(arg.substr(12) if arg.length() > 12 else StaticExport.PATH, arg in OS.get_cmdline_user_args())
 	elif arg == "--fps":
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
+	elif arg == "--nohud":
+		Game.hud.visible = not Game.hud.visible
 	elif arg.begins_with("--tp="):
 		return _debug_teleport(arg.substr(5))
 	elif arg == "--aufzug" or arg.begins_with("--aufzug="):
@@ -793,7 +888,7 @@ func run_debug(arg: String) -> bool:
 			"zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE,
 			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
 			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP,
-			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS}
+			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS, "salz": Item.Kind.SALT}
 		var names := (arg.substr(6) if arg.begins_with("--bag=") else "süßes,cola,zierkürbis,batterie").split(",", false)
 		for what in names:
 			if not kinds.has(what):
@@ -866,12 +961,24 @@ func run_debug(arg: String) -> bool:
 				pumpkin.global_position = Game.player.global_position + front * 1.5 + side * (i - (faces.size() - 1) / 2.0) * 0.5 					+ Vector3.UP * 0.05
 				pumpkin.rotation.y = atan2(-front.x, -front.z)
 			Game.player.head.rotation.x = -0.6)   # Blick hinunter auf die Reihe
-	elif arg == "--kerzen":
-		# Kerzenmodelle (CandleModel): Gegenstand brennend und aus, rot und weiß auf dem Teller (brennend) in einer Reihe
+	elif arg == "--kerzen" or arg == "--kerzen=nah":
+		# Kerzenmodelle (CandleModel): Gegenstand brennend und aus, rot und weiß auf dem Teller (brennend) in einer Reihe –
+		# nah: weiß auf dem Teller 30 cm vor dem Auge, die Flamme auf Augenhöhe, daneben rot ohne Teller
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
 			var front := -Game.player.global_basis.z
 			front = Vector3(front.x, 0, front.z).normalized()
 			var side := front.cross(Vector3.UP)
+			if arg == "--kerzen=nah":
+				Game.player.head.rotation.x = 0.0
+				var eye := Game.player.camera.global_position
+				for red in [false, true]:
+					var holder := Node3D.new()
+					Game.player.get_parent().add_child(holder)
+					holder.global_position = eye + front * (0.3 if not red else 0.38) + side * (0.0 if not red else 0.11) \
+						- Vector3.UP * (CandleModel.WICK_TOP + CandleModel.PLATE_FLOOR + 0.012)
+					var wick := CandleModel.build(holder, red, not red)
+					CandleModel.flame(holder, Vector3(0, wick, 0))
+				return
 			for i in 4:
 				var at := Game.player.global_position + front * 0.8 + side * (i - 1.5) * 0.2 + Vector3.UP * 0.02
 				if i < 2:
@@ -996,11 +1103,6 @@ func run_debug(arg: String) -> bool:
 			return true
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:
 			Game.chess.start(chess_opponent, {"money": 3, "item": false}))
-	elif arg.begins_with("--challenge="):
-		var challenger := _guest(arg.substr(12).split(",")[0])
-		if challenger:
-			var game := arg.get_slice(",", 1) if "," in arg else "dice"
-			Game.social.challenge(challenger, game if game in ["chess", "darts"] else "dice")
 	elif arg == "--darts" or arg.begins_with("--darts="):
 		var dart_opponent := _guest(arg.substr(8)) if arg.begins_with("--darts=") else null
 		if arg.begins_with("--darts=") and dart_opponent == null:
@@ -1012,6 +1114,11 @@ func run_debug(arg: String) -> bool:
 				Game.darts.start(dart_opponent, {"money": 3, "item": false})
 			else:
 				Game.darts.practice())
+	elif arg.begins_with("--challenge="):
+		var challenger := _guest(arg.substr(12).split(",")[0])
+		if challenger:
+			var game := arg.get_slice(",", 1) if "," in arg else "dice"
+			Game.social.challenge(challenger, game if game in ["chess", "darts"] else "dice")
 	elif arg == "--autoplay":
 		_autoplay = true
 	elif arg.begins_with("--cat="):
@@ -1137,6 +1244,8 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(3.0).timeout.connect(Game.shower_scare.debug_night)
 	elif arg == "--dusche" or arg.begins_with("--dusche="):
 		Game.shower_scare.debug(arg.substr(9) if arg.length() > 9 else "")
+	elif arg == "--salz" or arg.begins_with("--salz="):
+		_debug_salt((arg.substr(7) if arg.length() > 7 else "").split(","))
 	elif arg.begins_with("--awake="):
 		# so viele Nächte ohne Schlaf (zählen erst nach dem ersten Angriff, also gilt der als geschehen)
 		Game.director.first_attack_done = true
@@ -1341,8 +1450,58 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(6.0).timeout.connect(_save_test)
 	elif arg == "--navcheck":
 		get_tree().create_timer(2.0).timeout.connect(_nav_check)
+	elif _debug_omens(arg):
+		pass
 	else:
 		return false
+	return true
+
+
+## Vorzeichen und Spuk (Spielkonzept 4.25–4.31, 5.14–5.18, 6.21) – Wert nach „=“, leer ohne. false = kein solcher Befehl.
+## Was das NavMesh braucht (Katze, Ratten), läuft nach 1 s.
+func _debug_omens(arg: String) -> bool:
+	var cmd := arg.get_slice("=", 0)
+	var value := arg.substr(cmd.length() + 1) if "=" in arg else ""
+	match cmd:
+		"--kraehen":
+			Game.crows.debug_show(value)
+		"--ratten":
+			get_tree().create_timer(1.0).timeout.connect(Game.rats.debug.bind(value))
+		"--falter":
+			Game.moths.debug_show(value)
+		"--hund":
+			Game.weather.howl(1.0)
+		"--kesselkatze":
+			get_tree().create_timer(1.0).timeout.connect(Game.boiler_cat.debug_show)
+		"--spiegel":
+			get_tree().create_timer(0.5).timeout.connect(Game.mirror_omens.debug.bind(value))
+		"--strom":
+			Game.power_cut.debug(value)
+		"--albtraum":
+			Game.nightmare.debug()
+		"--vogelscheuche":
+			Game.scarecrow.debug_show(value)
+		"--kind-zu-viel":
+			get_tree().create_timer(1.0).timeout.connect(Game.extra_child.debug)
+		"--fotos":
+			Game.photo_wall.debug_show(value)
+		"--gedenken":
+			Game.memorial.debug_show(value)
+		"--puppenhaus":
+			Game.doll_house.debug_show(value)
+		"--fratzen":
+			Game.pumpkin_faces.debug()
+		"--apfel":
+			Game.apple_tub.debug(value)
+		"--spieluhr":
+			Game.player.receive_item(Item.create(Item.Kind.MUSIC_BOX))
+			if value == "monster":   # es kommt, nach 3 s ziehst du sie auf
+				Game.director.debug_lure()
+				get_tree().create_timer(3.0, false).timeout.connect(func() -> void:
+					if Game.player.held and Game.player.held.kind == Item.Kind.MUSIC_BOX:
+						MusicBox.wind(Game.player.held, Game.player))
+		_:
+			return false
 	return true
 
 
@@ -1728,6 +1887,51 @@ func _debug_cook(parts: PackedStringArray) -> void:
 	Game.player.global_position = Vector3(stove.global_position.x, 0.05, stove.global_position.z) + front * 1.4
 	Game.player.rotation.y = atan2(front.x, front.z)
 	Game.player.head.rotation.x = deg_to_rad(-25.0)
+
+
+## --salz[=fenster|tür|monster|zimmer,nr|gast,id]: Salz (Spielkonzept 5.13) – eine Packung in der Hand; fenster: dazu
+## Linien auf allen Außenfenstern und Fenstertüren deines Zimmers (beim Start Zimmer 13), tür: innen vor seiner Tür,
+## monster: dazu kommt das Monster den Flur entlang herein, zimmer/gast: auf den Fenstern von Zimmer nr bzw. des Gastes.
+func _debug_salt(parts: PackedStringArray) -> void:
+	Game.player.drop_held()
+	Game.player.receive_item(Item.create(Item.Kind.SALT))
+	var builder := Game.social.builder
+	var room := builder.home_room_at(Game.player.global_position)
+	if parts[0] == "zimmer" and parts.size() > 1:
+		room = Game.director.room_by_label(parts[1])
+	elif parts[0] == "gast" and parts.size() > 1 and Game.social.guest_by_id(parts[1]):
+		room = String(Game.social.guest_by_id(parts[1]).home["no"])
+	var root := Game.player.get_parent()
+	if parts[0] == "streuen":   # wie im Spiel: vor die Tür deines Zimmers stellen, hinsehen, Linksklick
+		var home: Dictionary = Game.director.rooms.get(room, {})
+		if home.is_empty():
+			return
+		Game.player.global_position = (home["door_inside"] as Vector3) + (home["into"] as Vector3) * 0.3
+		_face_toward((home["door"] as Door).center())
+		Game.player.head.rotation.x = deg_to_rad(-38.0)   # auf den Boden vor der Tür
+		get_tree().create_timer(0.5).timeout.connect(Game.player.strew_salt)
+		return
+	if parts[0] in ["tür", "tuer", "monster"]:
+		var info: Dictionary = Game.director.rooms.get(room, {})
+		if info.is_empty():
+			Game.say("Salz: Hier ist kein Zimmer.", 2.5)
+			return
+		SaltLine.lay(root, SaltLine.spot_for(info["door"], info["door_inside"]))
+		if parts[0] == "monster":   # nach 1,5 s (NavMesh) 5 m den Flur hinunter, es will ins Zimmer
+			get_tree().create_timer(1.5).timeout.connect(func() -> void:
+				var along: Vector3 = info["along"]
+				Game.monster.spawn_at(info["door_front"] + along * 5.0)
+				Game.monster.investigate(info["door_inside"] + (info["into"] as Vector3) * 1.0))
+	elif parts[0] in ["fenster", "zimmer", "gast"]:
+		var laid := 0
+		for node in get_tree().get_nodes_in_group("windows") + get_tree().get_nodes_in_group("french_doors"):
+			var door := node as Door
+			var spot := SaltLine.spot_for(node, door.center() - door.outward if door else Vector3.ZERO)
+			if spot.has("pos") and spot["room"] == room:
+				SaltLine.lay(root, spot)
+				laid += 1
+		if laid == 0:
+			Game.say("Salz: Zimmer %s hat kein Außenfenster und keine Fenstertür." % room, 2.5)
 
 
 ## --kaffee=n|maschine|gast[,id]: Kaffee (Spielkonzept 3.11) – n Tassen getrunken, vor der Maschine (gleich fertig)

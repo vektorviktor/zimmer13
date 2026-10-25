@@ -91,7 +91,12 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     erlebt) – ältere Stände laden weiter: Wer ihm schon begegnet ist, gilt als am Anfang begegnet
 ## 47: Darts (Spielkonzept 6.10): Pfeile (Item.Kind.DARTS), social.darts_watched (wem du beim Werfen zugesehen hast) –
 ##     ältere Stände laden weiter, noch niemandem zugesehen
-const VERSION := 47
+## 48: Salz (Spielkonzept 5.13): Salzpackung (Item.Kind.SALT, Zusatz = übrige Linien), Salzlinien („salt“) – ältere
+##     Stände laden weiter, ohne Salz
+## 49: Vorzeichen und Spuk (Spielkonzept 4.25–4.31, 5.17, 6.21): „omens“ (Groll der Krähen, verhängter Spiegel in
+##     Zimmer 13, Stromausfall, Albtraum, Kind zu viel), Spieluhr und Apfel (Item.Kind.MUSIC_BOX, APPLE) – ältere Stände
+##     laden weiter, alles wie am Anfang
+const VERSION := 49
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -226,11 +231,30 @@ func can_save() -> bool:
 		return false
 	if Game.shower_scare and Game.shower_scare.busy():   # die Dusche hat den Blick gefangen (4.24)
 		return false
+	if Game.nightmare and Game.nightmare.active():   # im Albtraum von 1987 (4.29)
+		return false
 	var monster := Game.monster
 	if not monster.is_active():
 		return true
 	return monster.state != Monster.State.CHASE \
 		and monster.global_position.distance_to(Game.player.global_position) >= MonsterDirector.NOISE_START
+
+
+## Vorzeichen und Spuk (Spielkonzept 4.25–4.31): je System ein Eintrag, fehlende bleiben wie am Anfang.
+func _collect_omens() -> Dictionary:
+	var omens := {}
+	for entry in [["crows", Game.crows], ["mirrors", Game.mirror_omens], ["power", Game.power_cut],
+			["nightmare", Game.nightmare], ["extra_child", Game.extra_child]]:
+		if entry[1]:
+			omens[entry[0]] = entry[1].save_state()
+	return omens
+
+
+func _apply_omens(omens: Dictionary) -> void:
+	for entry in [["crows", Game.crows], ["mirrors", Game.mirror_omens], ["power", Game.power_cut],
+			["nightmare", Game.nightmare], ["extra_child", Game.extra_child]]:
+		if entry[1]:
+			entry[1].load_state(omens.get(entry[0], {}))
 
 
 func save_to(slot: int, text: String, thumb: Image) -> bool:
@@ -444,8 +468,11 @@ func collect() -> Dictionary:
 		"curiosity": curiosity, "state": director.save_state(),
 	}
 	data["traces"] = Game.traces.save_state() if Game.traces else []
+	# gelegte Salzlinien: kein fester Welt-Teil (nicht in WORLD_GROUPS), beim Laden neu erzeugt
+	data["salt"] = get_tree().get_nodes_in_group("salt_lines").map(func(n: Node) -> Dictionary: return n.save_state())
 	data["ghost"] = Game.ghost.save_state() if Game.ghost else {}
 	data["shower"] = Game.shower_scare.save_state() if Game.shower_scare else {}
+	data["omens"] = _collect_omens()
 	data["doll"] = Game.doll.save_state() if Game.doll else {}
 	data["contest"] = Game.contest.save_state() if Game.contest else {}
 	data["notebook"] = Game.notebook.save_state() if Game.notebook else {}
@@ -552,10 +579,18 @@ func apply(data: Dictionary) -> void:
 	_apply_group("elevators", data.get("elevators", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if Game.traces:
 		Game.traces.load_state(data.get("traces", []))
+	for node in tree.get_nodes_in_group("salt_lines"):
+		node.free()
+	for entry in data.get("salt", []):
+		var line := SaltLine.from_state(entry)
+		parent.add_child(line)
+		line.global_position = _vec(entry["pos"])
+		line.global_rotation = Vector3(0, float(entry.get("yaw", 0.0)), 0)
 	if Game.ghost:
 		Game.ghost.load_state(data.get("ghost", {}))
 	if Game.shower_scare:
 		Game.shower_scare.load_state(data.get("shower", {}))
+	_apply_omens(data.get("omens", {}))
 	if Game.dice and Game.dice.table:
 		Game.dice.table.loaded = bool(data.get("table_loaded", false))
 
