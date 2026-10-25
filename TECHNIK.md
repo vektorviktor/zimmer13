@@ -98,13 +98,14 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   `Mat.glass()`, `cushion` = `BAR_CUSHION`, sonst die Farbtextur per `Mat.model`. **Fliesenmaß:** Waschtisch
   (1,00 × 0,15 × 0,50 m) und Duschsockel (1,10 × 0,10 × 1,10 m) messen Vielfache einer Fliese (5 cm) und stehen mit
   den Kanten auf dem Fugenraster (Plan auf 10 cm, Wandfläche des Plans, Höhen 0,60/0,75 bzw. 0/0,10 m) – die Fugen
-  laufen von Boden und Wand her über sie hinweg. Die Fliesenhaut der Wände liegt 2,2 cm vor der Wandfläche des Plans
-  (`_wall`: T/2 + 0,012 + halbe Hautdicke); Wandsachen sitzen an der Wandfläche und stecken so weit darin – flache
-  (Drückerplatte) setzt das Skript davor (`PLATE_GAP`).
+  laufen von Boden und Wand her über sie hinweg. Die Fliesenhaut der Wände liegt `SKIN_FRONT` (2,2 cm) vor der
+  Wandfläche des Plans (`_wall_piece_at`: T/2 + 0,012 + halbe Hautdicke); Wandsachen sitzen an der Wandfläche und
+  stecken so weit darin – flache (Drückerplatte) setzt das Skript davor (`PLATE_GAP`).
   `washbasin.glb` (`_washbasin`, Plan `sink` und `washbasin`): Objekte `table` (Ursprung Oberkante an der Wand,
   `WASH_TABLE_TOP` 0,75 m), `basin` (Aufsatzbecken 0,60 × 0,40 × 0,126 m mit Abfluss und Wandarmatur bis 28 cm über dem
-  Tisch) und `mirror_frame` (0,60 × 1,00 m, im Skript auf 4 cm Tiefe gebracht, ab `MIRROR_FRAME_BOTTOM` 1,07 m). Das Glas
-  des Rohmodells fällt weg, an seiner Stelle der `Mirror` (`MIRROR_GLASS` 0,54 × 0,94 m, 1,10 bis 2,04 m, `MIRROR_GAP`
+  Tisch; steht `SKIN_FRONT` vor der Wandfläche – der Rand stößt an die Fliesen, die 5 mm flachen Rosetten der Armatur
+  liegen bündig darauf) und `mirror_frame` (0,60 × 1,00 m, im Skript auf 4 cm Tiefe gebracht, ab `MIRROR_FRAME_BOTTOM`
+  1,07 m). Das Glas des Rohmodells fällt weg, an seiner Stelle der `Mirror` (`MIRROR_GLASS` 0,54 × 0,94 m, 1,10 bis 2,04 m, `MIRROR_GAP`
   vor der Wand – 1 cm hinter der Rahmenkante). Im Bad ein Becken auf dem 1-m-Tisch mittig an der Rückwand, Spiegel in
   `sink_mirrors`; in den Toiletten (`washbasin`) streckt sich der Tisch über die Breite des Plans (`scale.x` – die
   Fliesen strecken sich nicht mit), je `WASH_PLACE` ein Becken mit Spiegel. Kollision: der Tisch.

@@ -129,6 +129,8 @@ const KETTLE_GAP := 0.38
 const BAR_TEA_GAP := 0.42
 const H := 3.5
 const T := 0.2
+## Häute (Fliesen, Fassade, Beton): 2 cm stark, ihre Vorderseite so weit vor der Wandfläche (_wall_piece_at)
+const SKIN_FRONT := 0.022
 ## Höhe des Obergeschosses (Oberkante Boden)
 const UP_Y := 4.0
 ## Wandhöhe der Tapete in Hallen über zwei Stockwerke (Lufträume): so hoch, dass keine Leiste und kein neues
@@ -320,7 +322,9 @@ const BAR_COUNTER_MODEL := "res://assets/models/bar_counter.glb"
 const BACK_BAR_MODEL := "res://assets/models/back_bar.glb"
 const BAR_STOOL_MODEL := "res://assets/models/bar_stool.glb"
 ## Waschtisch (Breite, Stärke, Tiefe; 20 × 3 × 10 Fliesen) und seine Oberkante – das Aufsatzbecken steht 12,6 cm
-## darauf, die Armatur reicht bis 28 cm darüber. Am langen Waschtisch der Toiletten je WASH_PLACE ein Becken.
+## darauf, die Armatur reicht bis 28 cm darüber. Am langen Waschtisch der Toiletten je WASH_PLACE ein Becken. Der
+## Tisch steht an der Wandfläche (Fugenraster), das Becken SKIN_FRONT davor: Sein Rand stößt an die Fliesen, die
+## Rosetten der Armatur liegen bündig auf ihnen.
 const WASH_TABLE := Vector3(1.0, 0.15, 0.5)
 const WASH_TABLE_TOP := 0.75
 const WASH_PLACE := 0.8
@@ -1418,7 +1422,7 @@ func _wall_piece_at(horizontal: bool, fixed: float, p0: float, p1: float, openin
 		var skin := _skin_material(kind)
 		if skin == null:
 			continue
-		var offset := s * (T / 2.0 + 0.012)
+		var offset := s * (T / 2.0 + SKIN_FRONT - 0.01)
 		var holder := Node3D.new()
 		if horizontal:
 			holder.position = Vector3(0, 0, fixed + offset)
@@ -2243,7 +2247,7 @@ func _washbasin(back: Vector2, front: Vector2, width: float, tiles: Material, ba
 			model.find_child("table").free()   # ein Tisch für alle
 			body.add_child(model)
 			_fixture_materials(model, WASHBASIN_MODEL, tiles)
-		model.find_child("basin").position = Vector3(x, WASH_TABLE_TOP, 0)
+		model.find_child("basin").position = Vector3(x, WASH_TABLE_TOP, SKIN_FRONT)
 		model.find_child("mirror_frame").position = Vector3(x, MIRROR_FRAME_BOTTOM, 0)
 		var mirror := Mirror.make(body, MIRROR_GLASS, Vector3(x, MIRROR_FRAME_BOTTOM + MIRROR_GLASS_MID, MIRROR_GAP),
 			Vector3.BACK, MIRROR_RANGE)
