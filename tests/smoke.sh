@@ -137,7 +137,6 @@ done <<'LIST'
 600|halloween,tiere|--kraehen=groll --trace
 600|halloween,tiere,speichern|--kraehen --savetest
 600|halloween,tiere|--tp=keller --ratten=welle --trace
-600|halloween,tiere|--falter --trace
 400|halloween,tiere|--hund --trace
 900|halloween,tiere|--kesselkatze --trace
 600|halloween,spuk|--spiegel --trace

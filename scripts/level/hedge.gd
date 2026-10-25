@@ -374,4 +374,3 @@ static func _cards(out: Parts, line: Line, profile: PackedVector2Array, noise: F
 ## Wie weit Blattkarten zum Abschluss hin reichen: nicht in die Hecke hinein, in der eine Linie endet
 static func _card_limit(end: End, out: float, s: float) -> float:
 	return end.at - out * WIDTH / 2.0 if end.kind == "open" else end.along(out, s)
-

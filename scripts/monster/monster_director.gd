@@ -744,7 +744,7 @@ func inhabited_rooms() -> Array[String]:
 	return result
 
 
-## Wohin die Puppe als Nächstes ginge (Totenkopfschwärmer, Spielkonzept 4.25): das Zimmer des Urteils, sonst die
+## Wohin die Puppe als Nächstes ginge (Puppenhaus, Spielkonzept 5.16): das Zimmer des Urteils, sonst die
 ## schwächste bewohnte Tür – eine Tendenz, die sich mit jeder Deko ändern kann.
 func forecast_room() -> String:
 	return doom_room if doom_room != "" else _weakest_door()

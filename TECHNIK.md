@@ -1501,7 +1501,7 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   `shaders/psx_bird.gdshader` (matt), Flug/Hüpfen/Flügelschlag im Skript, in der Pause steht alles. Krähen: Scheu über
   `Senses.conspicuity`, Groll (`grudge`) nach Würfen/Rammen, Krächzen ist Lärm; holen Münzen, wenn niemand hinsieht
   (`_carry` je Krähe – vor dem Zugriff `is_instance_valid` prüfen, die Münze kann inzwischen gelöscht sein). Ratten:
-  Welle weg vom Monster (`WAVE_RANGE`), nur Klang. Totenkopfschwärmer in `Moths` über `MonsterDirector.forecast_room`.
+  Welle weg vom Monster (`WAVE_RANGE`), nur Klang.
 - **Hund:** `Weather.howl(delay)`, zufällig alle `HOWL_EVERY` s Spielzeit (`_howl_timer`, im Schlaf nur weitergezählt).
 - **`BoilerCat`** (Modell `cat.glb` fast schwarz, leuchtende Augen) führt zu Kessel bzw. UV-Schrift, einmal je Nacht.
 - **`MirrorOmens`:** verhängte Spiegel aus den Toten abgeleitet (`Mirror.active`), Spiegel in 13 selbst verhängbar;
@@ -1522,7 +1522,7 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   feste Ausweichplätze (`FALLBACK`/`WALL`/`SPOT`) im jeweiligen Skript.
 - **Gespeichert** (Speicherstand 49) unter `omens`: `crows`, `mirrors`, `power`, `nightmare`, `extra_child`
   (`SaveManager._collect_omens`/`_apply_omens`); alles andere wird aus Toten, Kalender oder Gegenständen abgeleitet.
-- Debug: `--kraehen`, `--ratten`, `--falter`, `--hund`, `--kesselkatze`, `--spiegel`, `--strom`, `--albtraum`,
+- Debug: `--kraehen`, `--ratten`, `--hund`, `--kesselkatze`, `--spiegel`, `--strom`, `--albtraum`,
   `--vogelscheuche`, `--kind-zu-viel`, `--fotos`, `--gedenken`, `--puppenhaus`, `--fratzen`, `--apfel`, `--spieluhr`;
   Rauchtest-Stichwort `halloween`.
 

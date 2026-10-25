@@ -233,7 +233,6 @@ extends Node3D
 ##   --kraehen[=groll]           im Garten 7 m vor den Krähen · groll: sie haben sich dich gemerkt und krächzen dich an
 ##   --ratten[=welle]            fünf Ratten um dich im Keller (sonst im Heizkeller) · welle: nach 2 s rennen sie davon, als käme
 ##                               das Monster aus dem Heizkeller
-##   --falter[=zimmer]           der Totenkopfschwärmer sitzt auf dem Kopfkissen im Zimmer der Vorhersage (oder diesem), du in der Tür
 ##   --hund                      nach 1 s heult hinter der Waldkante ein Hund (sonst zufällig alle paar Spielminuten)
 ##   --kesselkatze               Nacht, Kellergang: die schwarze Kesselkatze sitzt 5 m vor dir – sieh hin, sie geht voraus
 ##   --spiegel[=tuch]            vor dem Spiegel in Zimmer 13, nach 2 s steht die Gestalt hinter dir · tuch: er ist verhängt
@@ -470,7 +469,7 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	rats.setup(builder)
 	Game.rats = rats
 	RatKing.place(self)
-	var moths := Moths.new()   # Motten an den Lampen, der Totenkopfschwärmer (4.25)
+	var moths := Moths.new()   # Motten an den Lampen (4.25)
 	moths.name = "Moths"
 	add_child(moths)
 	moths.setup(builder)
@@ -1482,8 +1481,6 @@ func _debug_omens(arg: String) -> bool:
 			Game.crows.debug_show(value)
 		"--ratten":
 			get_tree().create_timer(1.0).timeout.connect(Game.rats.debug.bind(value))
-		"--falter":
-			Game.moths.debug_show(value)
 		"--hund":
 			Game.weather.howl(1.0)
 		"--kesselkatze":

@@ -51,7 +51,7 @@ const DURATIONS := {
 	"rustle": 0.3, "flutter": 1.4, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
 	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
 	"giggle": 0.8, "dart": 0.12,
-	"caw": 0.5, "squeak": 0.16, "moth": 0.6, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
+	"caw": 0.5, "squeak": 0.16, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
 	"bite": 0.3, "power_down": 1.6,
 }
 ## Spieluhr (Spielkonzept 5.17): Marions Wiegenlied, eigene Melodie in e-Moll, je Ton MUSIC_BOX_BEAT Sekunden – gegen
@@ -465,12 +465,6 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			var sph: float = shot["phase"] + sf * dt
 			shot["phase"] = sph
 			return sin(TAU * sph) * sin(PI * k) * 0.12
-		"moth":
-			# Totenkopfschwärmer (4.25): vier kurze, scharfe Pieptöne – Luft durch den Rüssel
-			var mt := fmod(t, 0.14)
-			if t > 0.56 or mt > 0.07:
-				return 0.0
-			return (sin(TAU * 2600.0 * mt) * 0.7 + white * 0.3) * sin(PI * mt / 0.07) * 0.16
 		"howl":
 			# Hund in der Ferne (4.25): langes Heulen – steigt an, hält mit Vibrato, sinkt; dumpf (weit weg)
 			var hf := 330.0 + 260.0 * sin(PI * minf(k * 1.6, 1.0)) - 120.0 * maxf(0.0, k - 0.6)

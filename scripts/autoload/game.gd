@@ -16,7 +16,7 @@ const SOUND_CAPTIONS := {
 	"ding": "[Ding – der Aufzug]", "motor": "[Ein Motor brummt im Schacht]", "alarm": "[Eine Alarmglocke schrillt]",
 	"chime": "[Gong – eine Durchsage]", "poof": "[Ein Fauchen]", "flutter": "[Flügelschlagen]",
 	"howl": "[Ein Hund heult in der Ferne]", "caw": "[Eine Krähe krächzt]", "squeak": "[Ratten quieken]",
-	"moth": "[Ein feines Piepen]", "music_box": "[Eine Spieluhr spielt]", "fuse": "[Klack – eine Sicherung]",
+	"music_box": "[Eine Spieluhr spielt]", "fuse": "[Klack – eine Sicherung]",
 	"power_down": "[Der Strom fällt aus]",
 }
 
@@ -42,7 +42,7 @@ var sleep_skip: SleepSkip          ## Zeitsprung im Schlaf (Spielkonzept 3.6)
 var shower_scare: ShowerScare      ## Lakengeist in der Dusche von Zimmer 13 (Spielkonzept 4.24)
 var crows: Crows                   ## Krähen im Garten, merken sich Gesichter (Spielkonzept 4.25)
 var rats: Rats                     ## Ratten im Untergeschoss, rennen vor dem Monster (Spielkonzept 4.25)
-var moths: Moths                   ## Motten an den Lampen und der Totenkopfschwärmer (Spielkonzept 4.25)
+var moths: Moths                   ## Motten an den Lampen (Spielkonzept 4.25)
 var boiler_cat: BoilerCat          ## die schwarze Kesselkatze des Heizers (Spielkonzept 4.26)
 var mirror_omens: MirrorOmens      ## Gestalt im Spiegel, verhängte Spiegel (Spielkonzept 4.27)
 var power_cut: PowerCut            ## Stromausfall im Gewitter (Spielkonzept 4.28)
