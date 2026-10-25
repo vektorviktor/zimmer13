@@ -147,10 +147,18 @@ stehen im [README](README.md). Hier steht nur, was man aus dem Code nicht sofort
   Ausdünnen verschmolzen (sonst reißt es Löcher): ~150 + 180 Dreiecke, 128er-PNG nur für den Sockel. Zwei
   Objekte: `socket` und `glass` – das Glas bekommt das leuchtende Material der Lampe bzw. als Gegenstand die
   Glasfarbe (dunkel, wenn kaputt). An der Decke hängt die Birne kopfüber, `BULB_SCREWED_IN` (2 cm) des
-  Gewindes stecken in der Fassung; an der Wandleuchte steht sie auf einer Fassung am Armende und reicht mit
-  dem Kolben in den Schirm. Fehlt die Datei, bleibt die Kugel (Lampe) bzw. Kugel auf Zylinder (Gegenstand).
-  Die Leuchte selbst (Schirm, Arm, Birne) wirft keinen Schatten: Das Licht der Wandleuchte sitzt 12 cm vor dem
-  Schirm, sonst zeichnet er einen langen Keil mit dunklem Strich darüber an die Wand.
+  Gewindes stecken in der Fassung. Fehlt die Datei, bleibt die Kugel (Lampe) bzw. Kugel auf Zylinder (Gegenstand).
+  Die Wandleuchte `assets/models/wall_lamp.glb` (`Lamp.WALL_MODEL`, `Lamp._build_wall`): einfaches Blender-Modell
+  ohne Textur und ohne Bauskript, so übernommen – runde Wandplatte mit Band um eine Glaskugel
+  (`WallLamp_Body`, 11 cm, Anthrazit über `Mat.metal`) und die Kugel (`WallLamp_Ball`, 9 cm, Mitte
+  `WALL_BALL` 5,3 cm vor der Wand), Ursprung an der Wand, Kugel nach +Z, ~710 Dreiecke. Im Spiel `WALL_SCALE`
+  (1,5) mal so groß – Platte 17 cm, Kugel 13 cm, in Originalgröße wirkte sie verloren. Die Kugel bekommt das
+  leuchtende Material der Birne (wie das Glas der Kupferleuchte); die Birne ist nur ein leerer Knoten –
+  herausdrehen, einschrauben und durchbrennen laufen wie sonst, ohne Birne bleibt die Kugel dunkel. Fehlt die
+  Datei, bleibt die Messingleuchte (Halter, Arm, Schirm, die Birne steht auf einer Fassung am Armende).
+  Die Leuchte selbst wirft keinen Schatten: Das Licht der Wandleuchte sitzt 30 cm vor der Wand (`WALL_LIGHT`,
+  bei beiden Formen gleich, die Helligkeit der Räume hängt daran), sonst zeichnete der Schirm einen langen Keil
+  mit dunklem Strich darüber an die Wand.
   Die Tasse `assets/models/mug.glb` (`Item.build_cup`, für Kaffee und Tee als Gegenstand und auf den Tabletts der
   Bartheke): „Coffee Mug (School Project)“ von Sketchfab (Ole Gunnar Isager, CC-BY 4.0 – Namensnennung nötig),
   `tools/build_mug.py` aus `assets/source/coffee_mug.glb`. 9 cm hoch, Henkel nach +X, Ursprung mittig unten, ~1000

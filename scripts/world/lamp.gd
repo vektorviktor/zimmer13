@@ -41,6 +41,17 @@ const REACH := 1.3
 const BULB_MODEL := "res://assets/models/bulb.glb"
 ## So weit steckt das Gewinde (3 cm) in der Fassung
 const BULB_SCREWED_IN := 0.02
+## Wandleuchte aus Blender: runde Wandplatte in Anthrazit („WallLamp_Body“, 11 cm) mit Band um die Glaskugel
+## („WallLamp_Ball“, 9 cm), Ursprung an der Wand, Kugel nach +Z. Die Kugel leuchtet statt der Birne (die steckt
+## unsichtbar dahinter und lässt sich wie sonst herausdrehen). Fehlt die Datei, bleibt die Messingleuchte.
+const WALL_MODEL := "res://assets/models/wall_lamp.glb"
+const WALL_BODY_COLOR := Color(0.22, 0.22, 0.23)
+## Im Spiel 1,5-mal so groß (Platte 17 cm, Kugel 13 cm) – in Originalgröße wirkte sie an der Wand verloren
+const WALL_SCALE := 1.5
+## Mitte der Kugel in Modellmaßen (vor dem Skalieren)
+const WALL_BALL := Vector3(0, 0, 0.053)
+## Das Licht sitzt wie bei der Messingleuchte 30 cm vor der Wand – die Helligkeit der Räume bleibt gleich
+const WALL_LIGHT := Vector3(0, 0.04, 0.3)
 ## Unterwasserlampe: Sekunden für einmal durch den Regenbogen (je Lampe zufällig dazwischen)
 const POOL_CYCLE := Vector2(18.0, 26.0)
 
@@ -94,9 +105,12 @@ func _ready() -> void:
 	elif style == Style.FLUSH:
 		bulb_pos = _build_flush()
 		socket = Vector3(0, -0.03, 0)
+	elif ResourceLoader.exists(WALL_MODEL):
+		_build_wall()
+		bulb_pos = WALL_BALL * WALL_SCALE
 	else:
-		# Wandleuchte: Halter an der Wand (lokale +Z zeigt in den Raum), Fassung am Ende, die Birne steht
-		# darauf und reicht mit dem Kolben in den Schirm
+		# Wandleuchte ohne Modell: Messinghalter an der Wand (lokale +Z zeigt in den Raum), Fassung am Ende, die
+		# Birne steht darauf und reicht mit dem Kolben in den Schirm
 		var brass := Mat.psx(Color(0.7, 0.55, 0.25))
 		Geo.mesh(self, Geo.box(Vector3(0.12, 0.18, 0.03)), brass, Vector3(0, 0, 0.015))
 		Geo.mesh(self, Geo.box(Vector3(0.03, 0.03, 0.16)), brass, Vector3(0, 0, 0.1))
@@ -104,13 +118,14 @@ func _ready() -> void:
 		Geo.mesh(self, Geo.cylinder(0.09, 0.1, 8), Mat.psx(Color(0.85, 0.75, 0.55)), Vector3(0, 0.13, 0.18))
 		bulb_pos = Vector3(0, 0.04, 0.18)
 		socket = Vector3(0, 0.04 - BULB_SCREWED_IN, 0.18)
-	_bulb = build_bulb(self, _bulb_material)
-	if _bulb:
-		_bulb.position = socket
-		if style == Style.CEILING or style == Style.FLUSH:
-			_bulb.rotation.x = PI   # hängt mit dem Kolben nach unten
-	else:
-		_bulb = Geo.mesh(self, Geo.sphere(0.045, 0.1, 6, 3), _bulb_material, bulb_pos)
+	if _bulb == null:   # die Wandleuchte aus dem Modell hat ihre unsichtbare Birne schon (_build_wall)
+		_bulb = build_bulb(self, _bulb_material)
+		if _bulb:
+			_bulb.position = socket
+			if style == Style.CEILING or style == Style.FLUSH:
+				_bulb.rotation.x = PI   # hängt mit dem Kolben nach unten
+		else:
+			_bulb = Geo.mesh(self, Geo.sphere(0.045, 0.1, 6, 3), _bulb_material, bulb_pos)
 	# Die Leuchte selbst wirft keinen Schatten: Das Licht sitzt vor dem Schirm, sonst zeichnet er einen langen
 	# Keil mit dunklem Strich darüber an die Wand
 	_no_shadows()
@@ -124,9 +139,23 @@ func _ready() -> void:
 			light_pos = bulb_pos + Vector3(0, -0.13, 0)
 		Style.FLUSH:
 			light_pos = bulb_pos + Vector3(0, -FLUSH_LIGHT_BELOW, 0)
+		Style.WALL:
+			light_pos = WALL_LIGHT
 	_add_light(light_pos, Color(1.0, 0.8, 0.55))
 	_break_timer = randf()
 	apply_state()
+
+
+## Wandleuchte aus WALL_MODEL: Platte in Anthrazit, die Kugel mit dem Material der Birne (leuchtet, flackert und
+## erlischt mit ihr). Die Birne selbst ist nur ein leerer Knoten – zu sehen ist sie hinter dem Glas nicht.
+func _build_wall() -> void:
+	var model: Node3D = (load(WALL_MODEL) as PackedScene).instantiate()
+	model.scale = Vector3.ONE * WALL_SCALE
+	add_child(model)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		m.material_override = _bulb_material if m.name == "WallLamp_Ball" else Mat.metal(WALL_BODY_COLOR)
+	_bulb = Node3D.new()
+	add_child(_bulb)
 
 
 ## Das Licht der Leuchte (Gruppe „lamps“, flackert mit der Birne bzw. Röhre oder Scheibe).
