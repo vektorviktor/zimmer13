@@ -37,6 +37,13 @@ const BASICS := [
 	["Deko im Licht vor deiner Tür hält es fern – die Puppe zeigt, wessen Tür am schwächsten ist.", "danach"],
 ]
 
+## Hilfe: Breite des Bogens und der Beschreibungen neben den Tasten (umbrechend), Schriftgröße, Zeilenabstand
+## (Cinzel hat hohe Zeilen – enger gesetzt, sonst passt die Seite nicht in 270 Pixel Höhe)
+const HELP_WIDTH := 464.0
+const HELP_TEXT_WIDTH := 150.0
+const HELP_FONT_SIZE := 7
+const HELP_LINE_SPACING := -2
+
 ## Tagebuch nachlesen: Einträge je Seite, Farbe der fremden Zeile (MonsterDirector.strange_diary)
 const DIARY_PER_PAGE := 3
 const FOREIGN_INK := Color(0.5, 0.08, 0.06)
@@ -51,7 +58,7 @@ func _ready() -> void:
 	layer = 30
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_root = Control.new()
-	_root.theme = UiKit.theme()
+	_root.theme = UiKit.menu_theme()
 	add_child(_root)
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.visible = false
@@ -97,6 +104,23 @@ func open_note(title: String, text: String) -> void:
 	_open()
 	var box := _new_sheet("note", title, 260.0)
 	box.add_child(UiKit.wrap_label(text, 9, UiKit.INK))
+	var back := UiKit.button("Weglegen", close)
+	box.add_child(back)
+	back.grab_focus.call_deferred()
+
+
+## Ein Foto aus der Nähe (Fotowand, Spielkonzept 5.14): Bild, darunter, was man darauf sieht.
+func open_photo(title: String, picture: Texture2D, text: String) -> void:
+	_open()
+	var box := _new_sheet("note", title, 260.0)
+	var pic := TextureRect.new()
+	pic.texture = picture
+	pic.custom_minimum_size = Vector2(240, 150)
+	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	pic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	pic.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	box.add_child(pic)
+	box.add_child(UiKit.wrap_label(text, 8, UiKit.INK))
 	var back := UiKit.button("Weglegen", close)
 	box.add_child(back)
 	back.grab_focus.call_deferred()
@@ -161,34 +185,62 @@ func _show_settings() -> void:
 	box.add_child(panel)
 
 
-## Hilfe: links die Tasten, rechts die Grundlagen.
+## Hilfe: oben die Tasten in zwei Spalten, darunter die Grundlagen über die ganze Breite, „Zurück“ in der Kopfzeile –
+## passt mit Cinzel (breiter und höher als die alte Schrift) auch nach dem ersten Angriff und mit Debug-Zeile in 480 × 270.
 func _show_help() -> void:
-	var box := _new_sheet("help", "Hilfe", 450.0)
+	var box := _new_sheet("help", "", HELP_WIDTH)
+	var head := HBoxContainer.new()
+	box.add_child(head)
+	var title := UiKit.label("Hilfe", 13, UiKit.ACCENT)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(title)
+	head.add_child(UiKit.button("Zurück", _show_pause))
+	var rule := ColorRect.new()
+	rule.color = Color(0.35, 0.22, 0.12, 0.6)
+	rule.custom_minimum_size = Vector2(0, 1)
+	box.add_child(rule)
 	var after := Game.director != null and Game.director.first_attack_done
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 14)
-	box.add_child(row)
-	var grid := GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 1)
-	row.add_child(grid)
+	var shown: Array = []
 	for entry: Array in CONTROLS:
 		var tag := String(entry[2]) if entry.size() > 2 else ""
-		if (tag == "danach" and not after) or (tag == "debug" and not DebugConsole.enabled()):
-			continue
-		grid.add_child(UiKit.label(entry[0], 8, UiKit.ACCENT))
-		grid.add_child(UiKit.label(entry[1], 8))
+		if not ((tag == "danach" and not after) or (tag == "debug" and not DebugConsole.enabled())):
+			shown.append(entry)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	box.add_child(row)
+	var half := ceili(shown.size() / 2.0) + 1   # rechts stehen die längeren Beschreibungen (mehr Umbrüche)
+	for part: Array in [shown.slice(0, half), shown.slice(half)]:
+		var grid := GridContainer.new()
+		grid.columns = 2
+		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_theme_constant_override("h_separation", 6)
+		grid.add_theme_constant_override("v_separation", 1)
+		row.add_child(grid)
+		for entry: Array in part:
+			grid.add_child(_help_label(entry[0], UiKit.ACCENT))
+			grid.add_child(_help_label(entry[1], UiKit.INK, HELP_TEXT_WIDTH))
+	var line := ColorRect.new()
+	line.color = Color(0.35, 0.22, 0.12, 0.35)
+	line.custom_minimum_size = Vector2(0, 1)
+	box.add_child(line)
 	var basics := VBoxContainer.new()
-	basics.custom_minimum_size.x = 130.0
-	basics.add_theme_constant_override("separation", 4)
-	row.add_child(basics)
-	basics.add_child(UiKit.label("Grundlagen", 9, UiKit.ACCENT))
+	basics.add_theme_constant_override("separation", 1)
+	box.add_child(basics)
+	basics.add_child(UiKit.label("Grundlagen", 8, UiKit.ACCENT))
 	for entry: Array in BASICS:
 		if entry.size() > 1 and not after:
 			continue
-		basics.add_child(UiKit.wrap_label(entry[0], 8, UiKit.INK))
-	box.add_child(UiKit.button("Zurück", _show_pause))
+		basics.add_child(_help_label(entry[0], UiKit.INK, 0.0))
+
+
+## Zeile der Hilfe: klein und eng gesetzt; mit Breite (auch 0 = so breit wie Platz ist) umbrechend.
+func _help_label(text: String, color: Color, wrap_width := -1.0) -> Label:
+	var label := UiKit.label(text, HELP_FONT_SIZE, color)
+	label.add_theme_constant_override("line_spacing", HELP_LINE_SPACING)
+	if wrap_width >= 0.0:
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.custom_minimum_size.x = wrap_width
+	return label
 
 
 ## Rückfrage mit Hinweis, wann zuletzt gespeichert wurde.

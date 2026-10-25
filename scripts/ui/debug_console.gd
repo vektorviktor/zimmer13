@@ -97,6 +97,7 @@ const COMMANDS := {
 	"noise": ["art", "alle 6 s Lärm am Spieler"],
 	"no-psx": ["", "PS1-Look aus"],
 	"fps": ["", "Bilder pro Sekunde ein/aus (wie F10)"],
+	"nohud": ["", "HUD aus/ein (für Screenshots)"],
 	"static-eg": ["[=pfad]", "Erdgeschoss als statische Szene speichern (Wände, Böden, Decken, Lampen – Standard res://temp/eg_static.scn)"],
 	"psx": ["", "PS1-Look an"],
 	"debug": ["", "Debug-Werte einblenden"],
@@ -108,7 +109,7 @@ const COMMANDS := {
 	"clear": ["", "Ausgabe leeren"],
 }
 ## Wirken nur beim Start (andere Stellen lesen sie aus den Startparametern)
-const START_ONLY := ["title", "new", "nointro", "shot", "frames", "shot-on", "bg", "perf", "trace-nav", "knock-fake", "answer",
+const START_ONLY := ["title", "splash", "new", "nointro", "shot", "frames", "shot-on", "shot-size", "bg", "perf", "trace-nav", "knock-fake", "answer",
 		"attic-door"]
 ## Getippter Name → Startparameter
 const ALIASES := {"save": "diary", "load": "load-slot"}

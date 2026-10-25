@@ -8,7 +8,11 @@ const INK := Color(0.2, 0.12, 0.07)
 const INK_FAINT := Color(0.38, 0.28, 0.18)
 const ACCENT := Color(0.55, 0.08, 0.06)
 
+## Schrift der Menüs (Titelbildschirm, Spielmenü): Cinzel wie die Schilder im Hotel (2026-10-25); "" = Godots Standardschrift
+const MENU_FONT := "res://assets/fonts/cinzel_bold.ttf"
+
 static var _theme: Theme
+static var _menu_theme: Theme
 
 
 static func theme() -> Theme:
@@ -105,6 +109,16 @@ static func theme() -> Theme:
 	t.set_stylebox("scroll", "VScrollBar", scroll_bg)
 	_theme = t
 	return t
+
+
+## theme() mit MENU_FONT – für Titelbildschirm und Spielmenü (Charaktererstellung bleibt bei theme()).
+static func menu_theme() -> Theme:
+	if _menu_theme:
+		return _menu_theme
+	_menu_theme = theme().duplicate() as Theme
+	if MENU_FONT != "":
+		_menu_theme.default_font = load(MENU_FONT)
+	return _menu_theme
 
 
 static func _grabber_texture() -> Texture2D:

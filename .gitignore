@@ -9,6 +9,9 @@
 !assets/models/disco_ball.glb.import
 # … und bei den gemalten Türen (tools/build_doors.py: Pixel = Texel, 4×4-Blöcke würden sie verwischen)
 !assets/models/door_*.glb.import
+# … und beim Lobbybild im Titelbildschirm und den Bildern des Vorspanns (Mipmaps – verkleinert flimmert es sonst)
+!assets/textures/title_lobby.jpg.import
+!assets/textures/splash/*.png.import
 
 # Von Godot aus GLB-Dateien entpackte Texturen (entstehen beim Import neu)
 assets/models/*.jpg

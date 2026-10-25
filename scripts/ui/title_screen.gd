@@ -1,10 +1,12 @@
 extends Control
-## Titelbildschirm (Spielkonzept 8.2): langer Hotelflur im PS1-Look, flackernde Lampe,
-## Bildrauschen – ab und zu steht am Flurende eine Silhouette … beim nächsten Flackern
-## ist sie weg. Fortsetzen / Neues Spiel / Laden / Einstellungen / Beenden.
+## Titelbildschirm (Spielkonzept 8.2): die Lobby, gesehen vom Haupteingang (LOBBY_IMAGE), flackernd wie eine Lampe,
+## Bildrauschen. Fehlt das Bild, der gezeichnete lange Hotelflur von vorher – ab und zu steht am Flurende eine
+## Silhouette … beim nächsten Flackern ist sie weg. Fortsetzen / Neues Spiel / Laden / Einstellungen / Beenden.
+##
+## Davor einmal je Programmstart der Vorspann (SlideShow.splash: Studiologo), nicht beim Zurückkehren aus dem Spiel.
 ##
 ## Mit Debug-Startparametern (nach „--“) geht es direkt ins Spiel; --load=n lädt Slot n,
-## --new=n startet ein neues Spiel in Slot n.
+## --new=n startet ein neues Spiel in Slot n; --title zeigt trotzdem den Titelbildschirm, mit --splash samt Vorspann.
 
 const NOISE_SHADER := """
 shader_type canvas_item;
@@ -18,14 +20,25 @@ void fragment() {
 	COLOR.rgb *= 1.0 - vig;
 }
 """
-const VP := Vector2(300, 118)       ## Fluchtpunkt
+## Hintergrund (2026-10-25): Screenshot aus dem Spiel in 4K, neu erzeugen mit
+## `--path . -- --bg --shot-size=3840x2160 --no-psx --nointro --nohud --pos=0,0.1,-1.0,0,0 --shot=temp/lobby.png --frames=240`,
+## dann als JPG (Qualität 92) hierher. Import mit Mipmaps – verkleinert sonst flimmernd.
+const LOBBY_IMAGE := "res://assets/textures/title_lobby.jpg"
+## Helligkeit des Bilds hinter dem Menü (Schrift bleibt lesbar)
+const LOBBY_BRIGHTNESS := 0.8
+const VP := Vector2(300, 118)       ## Fluchtpunkt des gezeichneten Flurs
 ## Selbst eingeschätzte Altersempfehlung – keine offizielle USK-/PEGI-Prüfung.
 ## Begründung: dauerhafte Bedrohung und Schreckmomente, Figuren sterben (angedeutet,
 ## Blutspuren statt Gore), Opfern anderer Gäste als Spielmechanik, Glücksspiel um Spielgeld.
 const AGE_RECOMMENDATION := 16
 const CONTENT_NOTES := "Horror und plötzliche Schreckmomente, Tod von Figuren (angedeutet, Blutspuren), Stehlen und das Opfern anderer Gäste, Würfelglücksspiel um Spielgeld"
 
+## Der Vorspann lief schon (gilt für den ganzen Programmlauf)
+static var _splash_played := false
+
 var _scene: Control
+## Das Lobbybild – null, wenn die Datei fehlt (dann der gezeichnete Flur)
+var _photo: TextureRect
 var _menu: Control
 var _flicker := 1.0
 var _flicker_timer := 0.0
@@ -37,15 +50,32 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
 	Game.reset()   # keine Verweise auf die alte Spielwelt
-	theme = UiKit.theme()
+	theme = UiKit.menu_theme()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if _handle_debug_args():
 		return
+	if _wants_splash():
+		_splash_played = true
+		var show := SlideShow.new()
+		add_child(show)
+		show.play(SlideShow.splash())
+		await show.finished
+		show.queue_free()   # erst danach das Menü – sonst löste [Leertaste] den fokussierten Knopf aus
 	_scene = Control.new()
 	_scene.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_scene)
 	_scene.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_scene.draw.connect(_draw_corridor)
+	if ResourceLoader.exists(LOBBY_IMAGE):
+		_photo = TextureRect.new()
+		_photo.texture = load(LOBBY_IMAGE)
+		_photo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_photo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		_photo.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		_photo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_scene.add_child(_photo)
+		_photo.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	else:
+		_scene.draw.connect(_draw_corridor)
 	var noise := ColorRect.new()
 	var shader := Shader.new()
 	shader.code = NOISE_SHADER
@@ -95,7 +125,10 @@ func _process(delta: float) -> void:
 	elif _figure and _figure_timer <= 0.0:
 		_figure = false
 		_figure_timer = randf_range(6.0, 12.0)
-	_scene.queue_redraw()
+	if _photo:
+		_photo.modulate = _shade(Color(LOBBY_BRIGHTNESS, LOBBY_BRIGHTNESS, LOBBY_BRIGHTNESS))
+	else:
+		_scene.queue_redraw()
 
 
 # --- Menüs --------------------------------------------------------------------------
@@ -221,7 +254,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-# --- Hintergrund: der Flur ------------------------------------------------------------
+# --- Hintergrund ohne Lobbybild: der Flur ---------------------------------------------
 
 func _shade(c: Color, k: float = 1.0) -> Color:
 	var f := _flicker * k
@@ -273,6 +306,14 @@ func _draw_corridor() -> void:
 		s.draw_rect(Rect2(base + Vector2(4, -25), Vector2(2, 19)), dark)
 		s.draw_rect(Rect2(base + Vector2(-1.5, -30), Vector2(1, 1)), Color(0.9, 0.2, 0.1))
 		s.draw_rect(Rect2(base + Vector2(1.0, -30), Vector2(1, 1)), Color(0.9, 0.2, 0.1))
+
+
+## Vorspann beim ersten Titelbildschirm eines normalen Starts; mit Debug-Parametern nur bei --title --splash.
+func _wants_splash() -> bool:
+	if _splash_played:
+		return false
+	var args := OS.get_cmdline_user_args()
+	return args.is_empty() or "--splash" in args
 
 
 # --- Debug -----------------------------------------------------------------------------
