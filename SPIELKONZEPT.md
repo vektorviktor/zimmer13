@@ -27,6 +27,7 @@
   - [3.10 Notizbuch und Tagebuch (entschieden 2026-10-23, Stufe 1 umgesetzt 2026-10-23)](#310-notizbuch-und-tagebuch-entschieden-2026-10-23-stufe-1-umgesetzt-2026-10-23)
   - [3.11 Kaffee (entschieden und umgesetzt 2026-10-24)](#311-kaffee-entschieden-und-umgesetzt-2026-10-24)
   - [3.12 Tee (entschieden und umgesetzt 2026-10-24)](#312-tee-entschieden-und-umgesetzt-2026-10-24)
+  - [3.13 Werfen (Entwurf 2026-10-25, noch nicht gebaut)](#313-werfen-entwurf-2026-10-25-noch-nicht-gebaut)
 - [4. Das Monster](#4-das-monster)
   - [4.1 Grundprinzip](#41-grundprinzip)
   - [4.2 Ankündigung („Manifestation“)](#42-ankündigung-manifestation)
@@ -528,7 +529,7 @@ Erkunden ──► Gäste treffen / reden / handeln ──► Deko erhalten (ode
 | **Gegenstände benutzen** | Kerze anzünden, Kürbis schnitzen, Pflanze gießen, Deko aufhängen … |
 | **Licht & Vorhänge** | Licht ein-/ausschalten, Vorhänge auf-/zuziehen (siehe 7.3) – Licht aus lockt das Monster an |
 | **Gegenstände tragen** | Alles wird **sichtbar in den Händen** getragen, einzeln (siehe 3.2) |
-| **Ablegen / Werfen** | Gegenstand bewusst abstellen, platzieren oder fallen lassen |
+| **Ablegen / Werfen** | Gegenstand bewusst abstellen, platzieren oder fallen lassen; werfen mit G lange halten (3.13, noch nicht gebaut) |
 | **Mit Gästen interagieren** | Ansprechen, Dialog, Handel, Geschenke |
 | **Mit Gästen spielen** | An einem Spieltisch (Schachbrett, Kartentisch …) eine Partie starten, evtl. um einen Einsatz (siehe 6.10) |
 | **Hinsetzen** | Auf Sofas, Bänke, Stühle, Bettkanten und Toiletten (siehe unten) |
@@ -940,6 +941,26 @@ macht den Schlaf, der sie abbaut, besser.
 - **Verschenken:** Der Gast trinkt ihn gleich, seine Angst sinkt. **Kinder** freuen sich darüber wie über Limo.
 - **Symbol:** Bis es ein eigenes gibt (Icon_tea.png), steht über dem Hinweis die Tasse vom Kaffee.
 - **Gespeichert:** die Nachwirkung beim Spieler und die Tasse. Debug: `--tee=n|kocher|gast[,id]`.
+
+### 3.13 Werfen (Entwurf 2026-10-25, noch nicht gebaut)
+Bisher werfen nur Kinder bei ihren Streichen (6.13), dort steht schon: „auch der Spieler kann werfen“. So soll es gehen –
+Wunsch des Spielers vom 2026-10-24, im Gespräch ausgearbeitet; die letzte Frage unten ist noch offen.
+
+- **Steuerung:** **G kurz** bleibt Aufhängen bzw. Verstreuen (5.6). **G lange halten** holt aus: ab etwa 0,3 s baut sich
+  die Wurfkraft auf (voll nach etwa 1,2 s), **Loslassen wirft** in Blickrichtung. Schweres fliegt weniger weit (Masse);
+  den Riesenkürbis kann man nur kurz wegschubsen. Eine kleine Anzeige am Fadenkreuz zeigt die Kraft.
+- **Aufprall** (wie bei den Streichen, `Item.throw_from`): **Kürbisse zerplatzen** aus jeder Höhe, **Kerzen zerbrechen**,
+  **Glühbirnen platzen** (7.3), alles andere landet einfach.
+- **Lange Spritzer:** Ein geworfener Kürbis hinterlässt einen **langen, in Flugrichtung gezogenen Fleck** – je schneller,
+  desto länger. Gebaut wie der Strom auf Treppen: als Kette unverzerrter Flecken, keine gestauchten Grafiken.
+- **Wände:** Trifft etwas Flüssiges eine Wand (Kürbis, Kerze, Kaffee, Tee), klatscht ein Fleck an die Wand und **läuft als
+  kleiner Strom herunter** bis zum Boden, dort eine kleine Pfütze (wie auf Treppen).
+- **Personen treffen:** Der Gast ruft auf und **mag dich weniger** (mit einem Kürbis stärker); ein getroffenes **Kind**
+  verärgert seine Eltern (wie Rammen, 6.13); wer es sieht, erzählt es weiter (Gerede). Das Monster bleibt unbeeindruckt.
+- **Lärm:** Der Aufprall macht Lärm am Aufschlagort (4.15). **Offen:** Soll Werfen damit ausdrücklich als **Ablenkung
+  fürs Monster** taugen (es geht zum Aufschlagort)? Das wäre ein großer Zuwachs an Spielmechanik – Vorschlag ja.
+- **Gespeichert:** nichts Neues – die Folgen sind Flecken und Beziehungen, die schon gespeichert werden.
+  Debug: `--wurf=kraft[,gegenstand]`.
 
 ---
 
@@ -2796,7 +2817,7 @@ Kinder als neue Gästegruppe – kommt **nach** dem Trinken (3.7), weil sie eige
   bis man ihn wegwischt (wie die Spuren an Zimmer 13, 4.13); getroffene Gäste sind sauer – auf die Kinder oder, wenn
   der Spieler in der Nähe stand, auf ihn. Am Fenster verdeckt das Eigelb ein Stück der Sicht, und nachts sieht der
   verschmierte Fleck aus wie die Handabdrücke des Lakengeists: Ei oder Geist? Eier gibt es in der Küche (neuer
-  Gegenstand) – auch der Spieler kann werfen, etwa an die Tür eines Feindes (Zeugen, 6.3).
+  Gegenstand) – auch der Spieler kann werfen, etwa an die Tür eines Feindes (Zeugen, 6.3; wie, steht in 3.13).
   **Streiche (entschieden und umgesetzt 2026-10-22):** Saures ist nicht mehr nur Laub. Das Kind sucht sich einen Streich aus:
   - **Laub** vor die Tür streuen (wie bisher),
   - einen **Kürbis holen und vor die Tür werfen** – er zerplatzt beim Aufprall, egal aus welcher Höhe (Kürbismatsch,
