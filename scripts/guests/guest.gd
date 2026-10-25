@@ -164,6 +164,7 @@ var challenge_game := "dice"  ## wozu er herausfordert: "dice" (Mäxchen), "ches
 var state := State.IDLE
 var gen_seed := -1           ## ≥ 0: zufällig erzeugter Gast (GuestGenerator)
 var corpse := false          ## tot, liegt aber noch da (Lakengeist, Spielkonzept 6.12)
+var buried := false          ## auf dem Friedhof begraben (Cemetery, Spielkonzept 5.15) – die Leiche ist fort
 var ghost_visits := 0        ## so oft kam der Lakengeist schon zu ihm (Stufe, wie beim Spieler)
 var drunk := 0.0             ## Rausch (0..1) von der Bar – Stufen in BarTap (Spielkonzept 3.7)
 var seen_sights: Array = []  ## Blutlachen und Leichen, die er schon gesehen hat (sight_key)
@@ -551,7 +552,11 @@ func is_orphan() -> bool:
 
 func get_prompt(_player: Player) -> String:
 	if dead:
-		return "%s – tot" % display_name if corpse else ""   # Leiche (Ghost, Kürbismann): mit Totenkopf, get_icon
+		if not corpse:
+			return ""
+		if Game.cemetery and Game.cemetery.can_bury(self):   # selbst beerdigen (5.15)
+			return "%s – tot · beerdigen [E]" % display_name
+		return "%s – tot" % display_name   # Leiche (Ghost, Kürbismann): mit Totenkopf, get_icon
 	if (hiding and not in_sickbed()) or state == State.GHOSTED:
 		return ""
 	if singing:
@@ -568,6 +573,9 @@ func get_icon(_player: Player) -> String:
 
 
 func interact(_player: Player) -> void:
+	if dead and corpse and Game.cemetery and Game.cemetery.can_bury(self):
+		Game.cemetery.bury_by_player(self)
+		return
 	if singing and Game.pumpkin:
 		say(Game.pumpkin.song_line())   # antwortet nur mit der nächsten Liedzeile
 		return
@@ -843,6 +851,10 @@ func die(cause: String = "monster") -> void:
 	if cause in ["ghost", "pumpkin"]:
 		_lie_down()
 		return
+	if cause == "buried":   # Spielstand: liegt schon auf dem Friedhof (5.15)
+		corpse = true
+		bury()
+		return
 	visible = false
 	# Spuren statt Gore: Kratzer am Boden und ein einzelner Schuh
 	var traces := Node3D.new()
@@ -852,6 +864,18 @@ func die(cause: String = "monster") -> void:
 		var scratch := Geo.mesh(traces, Geo.box(Vector3(1.1, 0.01, 0.05)), Mat.psx(Color(0.12, 0.02, 0.02)), Vector3(0, 0.012, -0.12 + i * 0.12))
 		scratch.rotation.y = 0.3
 	Geo.mesh(traces, Geo.box(Vector3(0.12, 0.08, 0.26)), Mat.psx(profile["pants"]), Vector3(0.5, 0.04, 0.3))
+
+
+## Begraben (Cemetery, Spielkonzept 5.15): Die Leiche ist fort – nichts mehr zu sehen, zu erschrecken, anzusehen.
+func bury() -> void:
+	if not corpse:
+		return
+	corpse = false
+	buried = true
+	visible = false
+	remove_from_group("shock_sights")
+	if has_node("CorpseTouch"):
+		get_node("CorpseTouch").queue_free()
 
 
 ## Leiche: auf den Rücken gekippt, Arme zur Seite. Andere Gäste erschrecken davor (Gruppe shock_sights).

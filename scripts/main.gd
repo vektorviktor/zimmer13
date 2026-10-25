@@ -238,7 +238,8 @@ extends Node3D
 ##   --vogelscheuche[=tag]       sie steht, wo sie an Halloween (bzw. an diesem Tag) stünde, du in der Lobby vor der Gartentür
 ##   --kind-zu-viel              der 28. abends, ein Kind vor deiner offenen Tür – und eins zu viel dahinter
 ##   --fotos[=jahr]              vor die Fotowand in der Lobby · jahr: dieses Foto gleich aufgeschlagen (1987 … 2026)
-##   --gedenken[=aus]            drei Grablichter in der Lobby, du davor · aus: gleich kommt das Monster durch die Lobby
+##   --beerdigen[=gast]          ein erwürgter Gast liegt vor der Gedenkstätte auf dem Friedhof – [E] beerdigt ihn
+##   --trauerfeier               zwei Gäste liegen seit gestern, 20 s vor der Totenglocke (9:30), du an der Gedenkstätte
 ##   --puppenhaus[=urteil]       vor das Puppenhaus in der Bibliothek · urteil: die Puppe urteilt gleich (die kleine weiß es zuerst)
 ##   --fratzen                   unter Schock, drei geschnitzte Kürbisse vor dir – sieh weg und wieder hin
 ##   --apfel[=gesicht]           über den Apfelbottich im Partyraum gebeugt · gesicht: nachts, beim Hochkommen das Gesicht im Wasser
@@ -499,10 +500,11 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	photos.name = "Fotowand"
 	add_child(photos)
 	Game.photo_wall = photos
-	var memorial := Memorial.new()   # Grablichter in der Lobby (5.15)
-	memorial.name = "Gedenken"
-	add_child(memorial)
-	Game.memorial = memorial
+	var cemetery := Cemetery.new()   # Friedhof westlich des Kürbisfelds (5.15)
+	cemetery.name = "Friedhof"
+	add_child(cemetery)
+	cemetery.setup(builder.grave_slots, builder.memorial_spot)
+	Game.cemetery = cemetery
 	var doll_house := DollHouse.new()   # Puppenhaus in der Bibliothek (5.16)
 	doll_house.name = "Puppenhaus"
 	add_child(doll_house)
@@ -1485,8 +1487,10 @@ func _debug_omens(arg: String) -> bool:
 			get_tree().create_timer(1.0).timeout.connect(Game.extra_child.debug)
 		"--fotos":
 			Game.photo_wall.debug_show(value)
-		"--gedenken":
-			Game.memorial.debug_show(value)
+		"--beerdigen":
+			Game.cemetery.debug_show("beerdigen," + value)
+		"--trauerfeier":
+			Game.cemetery.debug_show("trauerfeier")
 		"--puppenhaus":
 			Game.doll_house.debug_show(value)
 		"--fratzen":

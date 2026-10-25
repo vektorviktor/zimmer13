@@ -486,6 +486,13 @@ var record_player_pos := Vector3.ZERO
 var party_corner := Vector3.ZERO
 var game_table: GameTable
 var chess_table: ChessTable
+## Friedhof (Spielkonzept 5.15) aus dem Plan: Grabplätze {pos, head} (head = Richtung zum Kopfende mit dem Kreuz) und
+## die Gedenkstätte {pos, front, size}
+var grave_slots: Array[Dictionary] = []
+const ARCH_POST_H := 1.9    ## Torbogen aus Hecke: Höhe der Pfosten
+const ARCH_RISE := 0.55     ## so hoch wölbt sich der Bogen darüber
+const ARCH_INSET := 0.25    ## Pfosten mittig auf dem Heckenende (keine Fuge, 1,3 m Durchgang)
+var memorial_spot: Dictionary = {}
 var dart_board: DartBoard                ## Darts in der Bar (Spielkonzept 6.10) – aus dem Plan oder DART_FALLBACK
 var bar_spots: Array[Vector3] = []
 var diary: Diary
@@ -1695,6 +1702,8 @@ func _floors_and_ceilings() -> void:
 	for rs in _map["terrace_edges"] + _map.get("balcony_edges", []):
 		for rc in rs:
 			_floor_rect(rc, _stone)
+	for rc in _map.get("hedge_arches", []):   # Rasen unter dem Torbogen
+		_floor_rect(rc, _grass)
 	# Über einem Luftraum (Lobby, Partyraum) schließt die Decke dieses Stockwerks die Halle nach oben ab
 	for rc in _map["voids"]:
 		_ceiling_slab(_rect(rc), _ceiling)
@@ -2006,6 +2015,12 @@ func _furniture() -> void:
 			"pillar":
 				node = _pillar(rect)
 				top = H
+			"grave":   # baut der Friedhof (Cemetery) – hier nur der Platz
+				grave_slots.append({"pos": Vector3(c.x, _base_y, c.y), "head": Vector3(-front.x, 0, -front.y)})
+				continue
+			"memorial":
+				memorial_spot = {"pos": Vector3(c.x, _base_y, c.y), "front": Vector3(front.x, 0, front.y), "size": rect.size}
+				continue
 			"cat_tree":
 				node = _cat_tree(rect)
 				top = CAT_TREE_TOP
@@ -3322,6 +3337,31 @@ func _gardens() -> void:
 			Geo.solid(root, Vector3(size.x, PLANTER_H, size.y), c + Vector3(0, PLANTER_H / 2.0, 0), _stone)
 			Geo.mesh(root, Geo.sphere(size.x * 0.4, 1.2, 7, 4), _hedge, c + Vector3(0, PLANTER_H + 0.5, 0))
 	Hedge.build(root, _map["terrace_edges"], _map["walls"])
+	for rc in _map.get("hedge_arches", []):
+		_hedge_arch(_rect(rc))
+
+
+## Torbogen aus Hecke (Friedhof, Spielkonzept 5.15): auf beiden Seiten der Lücke ein Pfosten so dick wie die Hecke,
+## darüber ein Halbbogen aus Heckenstücken. Kollision nur an den Pfosten, der Bogen liegt über Kopfhöhe.
+func _hedge_arch(r: Rect2) -> void:
+	var along := Vector3(0, 0, 1) if r.size.y >= r.size.x else Vector3(1, 0, 0)
+	var span := maxf(r.size.x, r.size.y)
+	var c := Vector3(r.get_center().x, _base_y, r.get_center().y)
+	var post := Hedge.WIDTH
+	var post_h := ARCH_POST_H
+	var size := Vector3(post, post_h, post)
+	for s: float in [-1.0, 1.0]:
+		var p := c + along * s * (span / 2.0 - post / 2.0 + ARCH_INSET) + Vector3.UP * post_h / 2.0
+		Geo.solid(root, size, p, _hedge)
+	var radius := span / 2.0 - post / 2.0 + ARCH_INSET
+	var steps := 9
+	for i in steps:
+		var a0 := PI * float(i) / steps
+		var a1 := PI * float(i + 1) / steps
+		var p0 := c + along * cos(a0) * radius + Vector3.UP * (post_h + sin(a0) * ARCH_RISE)
+		var p1 := c + along * cos(a1) * radius + Vector3.UP * (post_h + sin(a1) * ARCH_RISE)
+		var piece := Geo.mesh(root, Geo.box(Vector3(post, post * 0.8, p0.distance_to(p1) + 0.12)), _hedge, (p0 + p1) / 2.0)
+		piece.basis = Basis.looking_at(p1 - p0, along.cross(Vector3.UP))
 
 
 ## Pflanzkübel aus `PLANTER_MODEL` auf der Bodenmitte c; Kollision (auch für das NavMesh) nur als Quader

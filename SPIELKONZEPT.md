@@ -78,7 +78,7 @@
   - [5.12 Kerzen: ausgehen, auspusten, anzünden (entschieden und umgesetzt 2026-10-25)](#512-kerzen-ausgehen-auspusten-anzünden-entschieden-und-umgesetzt-2026-10-25)
   - [5.13 Salz vor die Tür (entschieden und umgesetzt 2026-10-25)](#513-salz-vor-die-tür-entschieden-und-umgesetzt-2026-10-25)
   - [5.14 Die Fotowand in der Lobby (entschieden und umgesetzt 2026-10-25)](#514-die-fotowand-in-der-lobby-entschieden-und-umgesetzt-2026-10-25)
-  - [5.15 Grablichter für die Toten (umgesetzt 2026-10-25, Umbau entschieden 2026-10-25)](#515-grablichter-für-die-toten-umgesetzt-2026-10-25-umbau-entschieden-2026-10-25)
+  - [5.15 Friedhof und Grablichter (entschieden und umgesetzt 2026-10-25)](#515-friedhof-und-grablichter-entschieden-und-umgesetzt-2026-10-25)
   - [5.16 Das Puppenhaus in der Bibliothek (entschieden und umgesetzt 2026-10-25)](#516-das-puppenhaus-in-der-bibliothek-entschieden-und-umgesetzt-2026-10-25)
   - [5.17 Marions Spieluhr (entschieden und umgesetzt 2026-10-25)](#517-marions-spieluhr-entschieden-und-umgesetzt-2026-10-25)
   - [5.18 Kürbisfratzen (entschieden und umgesetzt 2026-10-25)](#518-kürbisfratzen-entschieden-und-umgesetzt-2026-10-25)
@@ -2729,19 +2729,64 @@ vergilbt, neue farbig; daneben ein leerer Rahmen „Halloween 2026“.
   Marion, Edna und Liesel (2.3, 2.7).
 - Ort: Ausstattung „Fotowand“ im Plan, bis dahin Westwand der Lobby. Debug: `--fotos`.
 
-### 5.15 Grablichter für die Toten (umgesetzt 2026-10-25, Umbau entschieden 2026-10-25)
-**Gebaut (vorläufig):** ein Wandtischchen in der Lobby mit einem roten Grablicht und Namenskärtchen je Toten, am Tag
-danach Blumen. Vor den Lichtern gedenken ([E]) senkt den Schock, einmal je Spieltag spürbar. **Warnsignal:** Kommt
-das Monster durch die Lobby, gehen alle Lichter zugleich aus; wieder anzünden mit Streichhölzern oder einer Flamme,
-am Morgen tun es die Gäste. Aus den Toten abgeleitet (nicht gespeichert). Debug: `--gedenken`.
+### 5.15 Friedhof und Grablichter (entschieden und umgesetzt 2026-10-25)
+> **Umgesetzt (2026-10-25)** wie unten (Cemetery), mit diesen Abweichungen: Die Trauernden stehen zu beiden Seiten des
+> Grabs und am Fußende, ohne gesenkten Kopf. Beerdigen sperren nur das Monster und der Kürbismann – der Lakengeist
+> bleibt an den Fenstern. Bei mehreren Toten danken die Freunde je Toten. Das Lobbytischchen mit den Grablichtern
+> (vorläufig gebaut am selben Tag, mit Warnsignal) ist dafür entfallen. Debug: `--beerdigen[=gast|jetzt]`,
+> `--trauerfeier`.
 
-**Umbau (entschieden 2026-10-25, noch nicht gebaut):** Die Grablichter stehen **im Garten**. **Ein Holzschild** trägt
-die Namen der Toten – keine Kärtchen je Toten.
+**Der Friedhof** – ersetzt das Lobbytischchen und den zuvor geplanten Umbau (Grablichter im Garten, ein Holzschild mit
+allen Namen). Er beantwortet, was aus den Leichen wird (6.12).
 
-**Zu klären**
-- **Wie die Lichter auftauchen.** Vorschlag des Nutzers: Man kann die Grablichter selbst aufstellen – das mögen die
-  Freunde des Opfers (Beliebtheit steigt, 6.2). Tut man es nicht, stehen sie nach dem nächsten Schlaf von selbst da.
-- Was aus Gedenken und Warnsignal wird, wenn die Lichter draußen stehen.
+- **Wer:** Jeder Tote, der **eine Leiche hinterlässt** – Opfer von Lakengeist (4.18) und Kürbismann (4.19) –, wird
+  beerdigt. Die Opfer des Monsters hinterlassen keine (6.7): Ihre Namen stehen auf der **Gedenktafel**, die
+  Vermissten. Die Tafel wird länger, ohne dass Gräber dazukommen.
+- **Ort (geändert 2026-10-25):** **westlich des Kürbisfelds**, ringsum durch eine **Hecke** vom übrigen Garten
+  getrennt. Hinein geht es durch einen **Torbogen aus Hecke** auf der Ostseite, vom Kürbisfeld her.
+- **Im Plan:** Die **Grabplätze** sind Möbel-Rechtecke von 2 × 1 m; die hellere Zeile an der Vorderkante ist das
+  Fußende, die **Westseite die Kopfseite** mit dem Kreuz. Eingezeichnet sind 43 Plätze in fünf Spalten. Die **große
+  hellere Fläche** ist die **Gedenkstätte** mit den Grablichtern und der Gedenktafel. Der Torbogen ist eine altrosa
+  Linie in der Hecke. Jeder Tote bekommt einen zufälligen freien Grabplatz.
+- **Das Grab:** Erdhügel, am Kopfende ein schlichtes **Holzkreuz** ohne Schrift, am Morgen danach Blumen. Der Name
+  steht wie an Zimmertüren nur im Hinweis beim Ansehen („Edna Wiegand · † 14. Oktober“).
+- **Alte Gräber gibt es nicht:** Das Hotel räumt den Friedhof nach jeder Saison. Es liegen nur die Toten dieses
+  Oktobers dort.
+- **Die Totenglocke** ist die Kirchturmglocke hinter der Waldkante (7.8), langsam und einzeln geschlagen. Sie ist
+  überall zu hören und lockt niemanden.
+
+**Selbst beerdigen** – wie beim selbst aufgestellten Grablicht (Vorschlag des Nutzers): Es mögen die Freunde des Toten.
+- **[E] an der Leiche** („Edna beerdigen“). Abblenden, **eine Spielstunde** vergeht (Zeitsprung wie beim Schlaf, 3.6),
+  man steht vor dem fertigen Grab. Beim **Einblenden läutet die Totenglocke**, die Freunde des Toten stehen schon um
+  das Grab. Nicht während einer Jagd oder bei Flackern.
+- **Lohn:** Beziehung bei den Freunden des Toten (**+10**, mehr als eine Kerze), sie erzählen es weiter (6.18, 1). Für
+  den Spieler zählt es als Gedenken: Schock und Schuld sinken (6.8).
+- **Erlaubt und gefährlich**, auch nachts: Der Garten bleibt, was er ist – der Zeitsprung läuft mit allen Bedrohungen
+  weiter wie der Schlaf und wird wie er unterbrochen, wenn eine nahe kommt (das Grab ist dann trotzdem fertig). Die
+  Freunde kommen auch nachts aus dem Bett und sind draußen so gefährdet wie der Spieler. Die Häufigkeit des
+  Kürbismanns ändert sich dadurch nicht.
+
+**Sonst beerdigen ihn die Gäste**
+- Die Leiche bleibt liegen bis zum ersten Vormittag, der mindestens sechs Spielstunden nach dem Tod liegt. Um
+  **9:30 läutet die Totenglocke**, die Leiche ist fort, das Grab fertig; um **10 Uhr ist die Trauerfeier** am Grab.
+  Mehrere Tote: eine gemeinsame Feier.
+- **Teilnehmen** bringt bei den Freunden ein wenig (+3) und zählt als Gedenken.
+
+**Die Trauernden**
+- Die Freunde des Toten unter den Gästen (Familie, Zimmernachbarn, Freundschaften 6.16), **Familie zuerst, höchstens
+  sechs**. Sie stehen **1–2 Spielstunden** im Halbkreis um das Grab, Kopf gesenkt, Kinder bei ihren Eltern; danach
+  sind sie trauernd (6.18, 3) und erzählen beim nächsten Gespräch davon.
+
+**Die Schaufel:** Ab der ersten Beerdigung steckt eine Schaufel in der Erde, immer am **nächsten freien Grabplatz**.
+Benutzen geht nicht; beim Ansehen nur ein Hinweis: „Die Erde ist schon gelockert. Für den Nächsten.“
+
+**Die Gedenkstätte**
+- Die Gedenktafel trägt **nur die Vermissten**; vor ihr steht **je Vermisstem eine Grabkerze**. Die Beerdigten haben
+  ihr Grablicht am Kreuz. Gedenken ([E] an der Gedenkstätte oder vor einem Grab) bleibt wie am Lobbytischchen: einmal
+  je Spieltag spürbar weniger Schock.
+- **Die Grablichter gehen nie aus (geändert 2026-10-25)** – kein Warnsignal, nichts anzuzünden.
+- **Gespeichert:** die Gräber (Platz, Gast, Todestag, selbst beerdigt) und anstehende Trauerfeiern; Tafel und Lichter
+  ergeben sich aus den Toten. Debug: `--beerdigen[=gast]`, `--trauerfeier`.
 
 ### 5.16 Das Puppenhaus in der Bibliothek (entschieden und umgesetzt 2026-10-25)
 Ein Modell des Hotels im Maßstab 1:100 auf einem langen Tisch, die Geschosse als Pläne unter Glas. Darauf **eine
@@ -2900,7 +2945,8 @@ Stirbt ein Gast, mit dem man **gut befreundet** war, erleidet der Spieler einen 
 
 **Erholung:**
 - Mit anderen Freunden über den Verstorbenen reden (aber: Monster hört evtl. mit → 4.7).
-- **Gedenken:** Eine Kerze / einen geschnitzten Kürbis vor die Tür des Verstorbenen stellen.
+- **Gedenken:** Eine Kerze / einen geschnitzten Kürbis vor die Tür des Verstorbenen stellen, ihn beerdigen oder an
+  seiner Trauerfeier teilnehmen (5.15).
 - An einer Feier in der Lobby teilnehmen (7.1).
 - Zeit.
 
@@ -3200,7 +3246,10 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
 - Wer ihn erlebt hat, **lässt einen Tag lang den Vorhang zu** und ruht nicht im Dunkeln.
 - Zimmer ohne Außenfenster sind sicher – im Erdgeschoss hat aber jedes Zimmer ein Fenster oder eine Gartentür.
 
-**Noch offen:** Werden Leichen irgendwann weggebracht (von Gästen, vom Monster)? Trauer der Gäste um Freunde (6.8)?
+**Leichen werden beerdigt** (entschieden 2026-10-25, 5.15): vom Spieler selbst oder von den Gästen am Vormittag danach,
+mit Trauerfeier am Grab.
+
+**Noch offen:** Trauer der Gäste um Freunde (6.8)?
 
 ### 6.13 Kinder (entschieden und umgesetzt 2026-10-19)
 > **Im Prototyp umgesetzt (2026-10-19):** dreizehn Kinder (6–11 Jahre) im Zimmer ihrer Eltern (6.20), eigene Namen und
@@ -3452,7 +3501,7 @@ nicht als Opfer – das Monster bleibt hungrig (4.10).
 - **Seine Freunde trauern** (3). Erfahren sie die Ursache – als Zeuge oder über das Netz (1) –, sinkt ihre Beziehung
   zum Spieler stark.
 - **Gedenken:** Eine Kerze vor seiner Tür senkt Schuld und Schock und bringt *seinen Freunden* Beziehung. Gäste zünden
-  dort auch selbst Kerzen an – ein sichtbarer Gedenkort.
+  dort auch selbst Kerzen an – ein sichtbarer Gedenkort. Hinterlässt er eine Leiche, kommt das Grab dazu (5.15).
 
 **3. Schwere Momente: empfindlicher Zustand und Wünsche** (verallgemeinert 6.17, erste Form von 6.14)
 - **Zustände:** verletzt (6.17) · trauernd (ein Freund ist gestorben) · verwaist (6.13) · nach einem Angriff des
@@ -4087,7 +4136,6 @@ voneinander; der Tiefkeller gehört allein dem Monster.
 - **Wäscherei:** Waschmaschinen (7.9), Wäschekisten mit den alten Lakengespenstern (5.6) – Laken als Brücke zum
   Lakengeist.
 - **Müllraum:** Ein **Müllschlucker** führt von den oberen Stockwerken hinunter.
-  - Er beantwortet die offene Frage, was mit den Leichen passiert (6.12).
   - Er ist ein **Klangkanal**: Was hineinfällt, poltert durchs ganze Haus (Lärm, 4.15).
   - Er ist ein **Kletterweg des Monsters** wie der tote Aufzugsschacht: Kratzen hinter den Klappen auf jeder Etage.
 - **Gäste gehen hinunter** – nicht von selbst, aber mit Grund: Aufträge (6.14), Bitten des Spielers (4.11:

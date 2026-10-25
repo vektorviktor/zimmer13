@@ -857,8 +857,8 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 		if not (Game.player and Game.player.sleeping):
 			Game.play_sound("bell"))
 	_memorial_doors.append(guest.home["door_front"])
-	if Game.memorial:   # ein Grablicht in der Lobby (5.15)
-		Game.memorial.on_guest_died(guest)
+	if Game.cemetery:   # Grab oder Gedenktafel auf dem Friedhof (5.15)
+		Game.cemetery.on_guest_died(guest)
 	if Game.mirror_omens:   # die Familie verhängt die Spiegel (4.27)
 		Game.mirror_omens.on_guest_died(guest)
 	if talk:   # Schuld bei „da war nichts“, Trauer der Freunde (6.9)

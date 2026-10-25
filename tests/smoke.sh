@@ -144,7 +144,9 @@ done <<'LIST'
 600|halloween,spuk|--vogelscheuche --trace
 900|halloween,spuk,kinder|--kind-zu-viel --trace
 500|halloween,erinnerung|--fotos=1987 --trace
-900|halloween,erinnerung,monster|--gedenken=aus --trace
+900|halloween,erinnerung,friedhof|--beerdigen=jetzt --trace
+600|halloween,erinnerung,friedhof,speichern|--beerdigen=jetzt --savetest
+1500|halloween,erinnerung,friedhof|--trauerfeier --trace
 900|halloween,erinnerung|--puppenhaus=urteil --trace
 900|halloween,erinnerung,monster|--spieluhr=monster --trace
 600|halloween,erinnerung|--fratzen --trace

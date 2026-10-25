@@ -50,7 +50,7 @@ var nightmare: Nightmare           ## der Albtraum von 1987 (Spielkonzept 4.29)
 var scarecrow: Scarecrow           ## die Vogelscheuche, die näher kommt (Spielkonzept 4.30)
 var extra_child: ExtraChild        ## das Kind zu viel beim Süßes oder Saures (Spielkonzept 4.31)
 var photo_wall: PhotoWall          ## Gruppenfotos 1987–2025 in der Lobby (Spielkonzept 5.14)
-var memorial: Memorial             ## Grablichter für die Toten in der Lobby (Spielkonzept 5.15)
+var cemetery: Cemetery             ## Friedhof mit Gräbern und Gedenkstätte (Spielkonzept 5.15)
 var doll_house: DollHouse          ## Puppenhaus in der Bibliothek (Spielkonzept 5.16)
 var pumpkin_faces: PumpkinFaces    ## Kürbisgesichter, die sich verändern (Spielkonzept 5.18)
 var apple_tub: AppleTub            ## Apfeltauchen im Partyraum (Spielkonzept 6.21)
@@ -187,7 +187,7 @@ func reset() -> void:
 	scarecrow = null
 	extra_child = null
 	photo_wall = null
-	memorial = null
+	cemetery = null
 	doll_house = null
 	pumpkin_faces = null
 	apple_tub = null

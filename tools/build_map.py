@@ -81,6 +81,8 @@ FILLS = {
 	"Kiesweg": ("gravel", True), "Müllraum": ("trash_room", False),
 	# Dachgeschoss (24.10., Spielkonzept 4.21): grobe Bohlen, niedrige Decke
 	"Dachboden": ("attic", False),
+	# Friedhof (25.10., Spielkonzept 5.15): Torbogen aus Hecke – eine Lücke in der Terrassenkante
+	"Heckenbogen": ("hedge_arch", True),
 }
 ## Palettenname → Öffnungsart (Strich auf der Wandlinie)
 OPENINGS = {
@@ -108,6 +110,8 @@ FURNITURE = {
 	"Möbel: Snackautomat": "snack_machine", "Möbel: Getränkeautomat": "drink_machine",
 	"Möbel: Zimmertisch": "room_table", "Möbel: Stuhl": "chair",
 	"Möbel: Wannenablage": "tub_shelf",   # 24.10.: gefliestes Stück neben der Badewanne, ohne Vorderseite
+	# Friedhof (25.10., Spielkonzept 5.15): Grabplatz 2 × 1 m (Vorderseite = Fußende), Gedenkstätte mit Tafel
+	"Möbel: Grab": "grave", "Möbel: Gedenkstätte": "memorial",
 }
 FRONT_NAME = "Möbel: Vorderseite"   ## Strich am Rand, gilt für jedes Möbel
 ## Hellere Zeile am Rand, gilt nur für ihr Möbel: „Möbel: Dusche Vorderseite“ → facing. Beim Doppelbett ist sie das
@@ -147,7 +151,7 @@ LIGHTS = {
 	"Licht: Deckenleuchte": ("ceiling_lamp", False), "Licht: Halogenleuchte": ("halogen", False),
 }
 ## Einbauten, die keine eigenen Bodenflächen sind
-FIXTURES = ("tree", "planter", "reception", "terrace_edge", "balcony_edge", "stairs", "void")
+FIXTURES = ("tree", "planter", "reception", "terrace_edge", "balcony_edge", "stairs", "void", "hedge_arch")
 
 ## Zimmernummern (Spielkonzept 7.5): je Flügel ein Laufweg ab der Lobby um den Rundflur (Mittellinien in px des
 ## Stockwerks), optional danach ein Querflur (cross = (y, x-Anfang, Richtung), cross_end = Ende). Rechte Hand ungerade,
@@ -1085,6 +1089,7 @@ def build_floor(floor, COL, open_above, eg=None):
 		"objects": objects,
 		"planters": [outer(r["rects"]) for r in take("planter")],
 		"terrace_edges": [r["rects"] for r in take("terrace_edge")],
+		"hedge_arches": [outer(r["rects"]) for r in take("hedge_arch")],
 		"balcony_edges": [r["rects"] for r in take("balcony_edge")],
 		"trees": trees,
 		"reception": [rc for r in take("reception") for rc in r["rects"]],
@@ -1294,9 +1299,33 @@ def preview(layout, path):
 		f.write("\n".join(out))
 
 
+def lift_furniture(floors):
+	"""Möbel, die im Grundriss statt in der Ebene „Möbel“ gemalt sind (der Friedhof, 25.10.): in die Objektebene
+	heben, darunter bekommt der Boden die Farbe der umgebenden Fläche."""
+	colors = {BY_NAME[n] for n in FURNITURE if n in BY_NAME}
+	colors |= {BY_NAME[n + s] for n in FURNITURE for s in FRONT_SUFFIXES if n + s in BY_NAME}
+	for floor, col in floors.items():
+		moved = [i for i, c in enumerate(col) if c in colors]
+		if not moved:
+			continue
+		img = OBJECT_IMAGES.setdefault(floor, {}).setdefault("Möbel", {})
+		for i in moved:
+			img.setdefault(i, col[i])
+			col[i] = ""
+		q = deque(i for i in range(W * H) if col[i] in FILL_OF and any(
+			0 <= k < W * H and col[k] == "" and k in img for k in (i + 1, i - 1, i + W, i - W)))
+		while q:
+			i = q.popleft()
+			for k in (i + 1, i - 1, i + W, i - W):
+				if 0 <= k < W * H and col[k] == "" and k in img and abs(k % W - i % W) <= 1:
+					col[k] = col[i]
+					q.append(k)
+
+
 # --- Ablauf ------------------------------------------------------------------------------------------
 
 floors = floor_images()
+lift_furniture(floors)
 ORIGIN = entrance_origin(floors["EG"])
 WING_SPLIT_X = ORIGIN[0]   ## Zimmer westlich davon gehören zum Westflügel
 by_level = {floor_level(f): f for f in floors}

@@ -96,7 +96,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 49: Vorzeichen und Spuk (Spielkonzept 4.25–4.31, 5.17, 6.21): „omens“ (Groll der Krähen, verhängter Spiegel in
 ##     Zimmer 13, Stromausfall, Albtraum, Kind zu viel), Spieluhr und Apfel (Item.Kind.MUSIC_BOX, APPLE) – ältere Stände
 ##     laden weiter, alles wie am Anfang
-const VERSION := 49
+## 50: Friedhof (Spielkonzept 5.15): je Gast „buried“, „cemetery“ (Gräber, wartende Leichen) – ältere Stände laden
+##     weiter, ihre Leichen warten dann aufs Grab
+const VERSION := 50
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -433,7 +435,7 @@ func collect() -> Dictionary:
 			"chat_cooldown": g.chat_cooldown, "gift_cooldown": g.gift_cooldown,
 			"challenge_cooldown": g.challenge_cooldown, "monster_line": g.monster_line,
 			"held": _item_data(g.held) if g.held else null,
-			"corpse": g.corpse, "ghost_visits": g.ghost_visits, "seen": g.seen_sights, "experiences": g.experiences,
+			"corpse": g.corpse, "buried": g.buried, "ghost_visits": g.ghost_visits, "seen": g.seen_sights, "experiences": g.experiences,
 			"drunk": g.drunk,
 			"deeds": g.deeds, "chat_day": g.chat_day, "chats_today": g.chats_today,
 			"wound": g.wound, "wound_left": g.wound_left, "wound_bed": g.wound_bed, "wound_facts": g.wound_facts,
@@ -473,6 +475,8 @@ func collect() -> Dictionary:
 	data["ghost"] = Game.ghost.save_state() if Game.ghost else {}
 	data["shower"] = Game.shower_scare.save_state() if Game.shower_scare else {}
 	data["omens"] = _collect_omens()
+	if Game.cemetery:
+		data["cemetery"] = Game.cemetery.save_state()
 	data["doll"] = Game.doll.save_state() if Game.doll else {}
 	data["contest"] = Game.contest.save_state() if Game.contest else {}
 	data["notebook"] = Game.notebook.save_state() if Game.notebook else {}
@@ -591,6 +595,8 @@ func apply(data: Dictionary) -> void:
 	if Game.shower_scare:
 		Game.shower_scare.load_state(data.get("shower", {}))
 	_apply_omens(data.get("omens", {}))
+	if Game.cemetery:
+		Game.cemetery.load_state(data.get("cemetery", {}))
 	if Game.dice and Game.dice.table:
 		Game.dice.table.loaded = bool(data.get("table_loaded", false))
 
@@ -644,7 +650,7 @@ func apply(data: Dictionary) -> void:
 			g.stock[int(key)] = int(stock[key])
 		g._set_idle(randf_range(1.0, 4.0))
 		if bool(d["dead"]):
-			g.die("ghost" if bool(d.get("corpse", false)) else "monster")
+			g.die("buried" if bool(d.get("buried", false)) else "ghost" if bool(d.get("corpse", false)) else "monster")
 
 	# Gegenstände: alle Start-Gegenstände weg, dann aus dem Spielstand neu erzeugen
 	Game.player.held = null

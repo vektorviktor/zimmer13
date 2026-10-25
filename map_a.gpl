@@ -145,3 +145,9 @@ Columns: 0
 150 118  62	Ausstattung: Schlüsselschrank
  64  66  98	Dachboden
 201 231 255	Dachfenster
+# Friedhof (25.10., Spielkonzept 5.15): Grabplätze und Gedenkstätte mit hellerer Vorderseite, Torbogen in der Hecke
+ 32  99 137	Möbel: Grab
+ 46 125 170	Möbel: Grab Vorderseite
+ 69 123 154	Möbel: Gedenkstätte
+ 83 139 170	Möbel: Gedenkstätte Vorderseite
+157  96 123	Heckenbogen

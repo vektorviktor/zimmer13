@@ -34,6 +34,7 @@ var _bag_filled := false
 var _money: Label
 var _message: Label
 var _sleep_clock: Label   ## Uhrzeit beim Zeitsprung im Schlaf (Spielkonzept 3.6)
+var _black: ColorRect     ## Schwarzblende (Beerdigen, Spielkonzept 5.15) – unter den Meldungen
 var _debug: Label
 var _crosshair: ColorRect
 var _throw_bar: ColorRect    ## Wurfkraft unter dem Fadenkreuz beim Ausholen (Spielkonzept 3.13)
@@ -74,6 +75,11 @@ func _ready() -> void:
 
 	var sheet_material := ShaderMaterial.new()
 	sheet_material.shader = load("res://shaders/sheet_overlay.gdshader")
+	_black = ColorRect.new()
+	_black.color = Color(0, 0, 0, 0)
+	_black.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_black)
+	_black.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_sheet_overlay = ColorRect.new()
 	_sheet_overlay.material = sheet_material
 	_sheet_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -430,6 +436,12 @@ func set_disguised(on: bool) -> void:
 
 
 ## 0 = kein Versteck, 1 = Schrank, 2 = unter dem Bett, 3 = im Bett schlafen (Augen zu)
+## Ab- (black) oder wieder aufblenden in t Sekunden.
+func fade_black(black: bool, t: float) -> void:
+	var tween := create_tween()
+	tween.tween_property(_black, "color:a", 1.0 if black else 0.0, t)
+
+
 ## Uhrzeit mitten im Bild, solange die Zeit im Schlaf springt ("" = aus).
 func set_sleep_clock(text: String) -> void:
 	_sleep_clock.text = text

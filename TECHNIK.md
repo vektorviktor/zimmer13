@@ -1511,20 +1511,45 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   `MonsterDirector.other_threat_active`, kein Zeitsprung, `SaveManager.can_save` gesperrt.
 - **`Scarecrow`:** Lage aus dem Kalender (`FAR` → Lobby-Gartentür), springt nur ungesehen. Grundkörper.
 - **`ExtraChild`:** beim Süßes oder Saures an 13, höchstens einmal je Spieltag, `MAX_VISITS`.
-- **`PhotoWall`** (Fotos als `Image` im Code, je Jahr fester Zufall), **`Memorial`** (Grablichter, eine gemeinsame
-  `FlickerLight`, gehen aus, wenn das Monster durch die Lobby kommt; `Social._memorial_doors`), **`DollHouse`**
+- **`PhotoWall`** (Fotos als `Image` im Code, je Jahr fester Zufall), **`DollHouse`**
   (Pläne über `HotelMap`, Figuren je Gast, Urteil aus `JuryDoll.verdict`), **`PumpkinFaces`** (tauscht nur das Netz,
   `PumpkinModel.mesh_of`; `Item.face` bleibt).
 - **Neue Gegenstände** (hinten an `Item.Kind`): `MUSIC_BOX` (`MusicBox.build`/`MusicBox.wind`: Lärm alle `NOISE_EVERY`
   s, nahes Monster horcht über `Monster.listen_to`, einmal je Aktivphase) und `APPLE` aus **`AppleTub`**
   (`Player.stand_at`, `BITE_TIME`, `BREATH`, Lärm „apple_tub“).
-- **Ausstattung im Plan fehlt noch** für Rattenkönig, Fotowand, Gedenktisch, Puppenhaus, Apfelbottich – bis dahin
+- **Ausstattung im Plan fehlt noch** für Rattenkönig, Fotowand, Puppenhaus, Apfelbottich – bis dahin
   feste Ausweichplätze (`FALLBACK`/`WALL`/`SPOT`) im jeweiligen Skript.
 - **Gespeichert** (Speicherstand 49) unter `omens`: `crows`, `mirrors`, `power`, `nightmare`, `extra_child`
   (`SaveManager._collect_omens`/`_apply_omens`); alles andere wird aus Toten, Kalender oder Gegenständen abgeleitet.
 - Debug: `--kraehen`, `--ratten`, `--falter`, `--hund`, `--kesselkatze`, `--spiegel`, `--strom`, `--albtraum`,
   `--vogelscheuche`, `--kind-zu-viel`, `--fotos`, `--gedenken`, `--puppenhaus`, `--fratzen`, `--apfel`, `--spieluhr`;
   Rauchtest-Stichwort `halloween`.
+
+### Friedhof (Spielkonzept 5.15)
+- **Plan:** `Möbel: Grab` (2 × 1 m, hellere Zeile `… Vorderseite` = Fußende, gegenüber das Kopfende mit dem Kreuz),
+  `Möbel: Gedenkstätte` (mit Vorderseite) und die Fläche `Heckenbogen` (Lücke in der `Terrassenkante`). Grab und
+  Gedenkstätte sind im **Grundriss** gemalt: `build_map.lift_furniture` hebt Möbelfarben aus dem Grundriss in die
+  Objektebene und füllt den Boden darunter mit der umgebenden Fläche. Ausgabe `hedge_arches` (je ein Rechteck).
+- **LevelBuilder:** `grave_slots` ({pos, head}) und `memorial_spot` ({pos, front, size}) statt Möbeln;
+  `_hedge_arch` (zwei Pfosten aus `_hedge` mittig auf den Heckenenden, `ARCH_POST_H`, Halbbogen `ARCH_RISE` ohne
+  Kollision), Rasen darunter.
+- **`Cemetery`** (`scripts/world/cemetery.gd`, `Game.cemetery`, nach dem Bau mit `setup`): `on_guest_died` (aus
+  `Social.on_guest_died`) → Leichen in `pending` (ID → Todeszeit), sonst auf die Tafel (`_refresh_missing`: tot, keine
+  Leiche, nicht `buried`). Platz `_free_slot` fest je Gast (`hash(id)`). **Selbst beerdigen:** `Guest.get_prompt`/
+  `interact` an der Leiche → `bury_by_player`: `threat()` (Monster aktiv, Kürbismann im Haus oder angekündigt,
+  Albtraum – der Lakengeist hält nicht auf), `Player.spellbound`, `Hud.fade_black`, `_bury` (`Guest.bury`: unsichtbar,
+  raus aus `shock_sights`, `CorpseTouch` weg), Zeitsprung `BURY_TIME` in `BURY_STEP`-Schritten über
+  `MonsterDirector.skip` und Gruppe `time_skip` (bricht bei `threat()` ab, das Grab bleibt), Spieler ans Fußende,
+  `_gather` (Trauernde sofort dort), Glocke `bell`, `_thank` (`GAIN_BURY`, je Toter und Gast einmal über Meta).
+  **Sonst** `_update_funeral`: `funeral_time` = erste 10 Uhr ≥ `MIN_LIE` nach dem Tod, ab 9:30 begraben und Glocke,
+  Trauernde gehen hin, ab 10 Uhr zählt der Spieler in `ATTEND_RANGE` als dabei (`GAIN_ATTEND`).
+- **Trauernde:** `mourners_of` – Haushalt, Eltern/Kinder, dann `GuestPals.are_pals`, höchstens `MAX_MOURNERS`;
+  `Guest.join_party(spot, grab)` (Angst vorher auf 50 gedeckelt), Ende nach `MOURN_TIME` mit `leave_party`.
+- **Bild:** Erdhügel, Kreuz, Grablicht (eigene `FlickerLight`, geht nie aus), Blumen nach `FLOWERS_AFTER` ungesehen;
+  `GraveTouch`/`TabletTouch`/`ShovelTouch` (Ebene 4) für Hinweis und Gedenken (`remember`, einmal je Spieltag
+  `COMFORT`). Tafel als ungeschattetes `Label3D`, Kerzen je Vermisstem davor. Schaufel am ersten freien Platz.
+- **Gespeichert** (Speicherstand 50): `cemetery` (`graves`, `pending`), je Gast `buried` (`Guest.die("buried")` beim
+  Laden). Trauernde und laufende Feier nicht. Debug `--beerdigen[=gast|jetzt]`, `--trauerfeier`.
 
 ### Partikel
 (`shaders/psx_particle.gdshader`, `Mat.particle`, `Geo.particles`; Spielkonzept 7.6)
