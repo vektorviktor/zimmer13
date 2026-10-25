@@ -58,14 +58,14 @@ im Spiel.** Fest sind die Anzahlen je Haushaltsart; alles andere (Namen, Paare, 
 
 | Nr | Haushalt | Zimmer | Gast | Betten | Idee |
 |----|----------|--------|------|--------|------|
-| H19 | Edna Wiegand (Kernfigur) | 003 · 68 m² | Edna (alt, eigenes Profil) | 1 | 6.0 |
+| H19 | Edna Wiegand (Kernfigur) | 003 · 68 m² | Edna (alt, eigenes Profil) | 1 | 6.0 – war 1987 schon hier und kam hinaus, schrieb den Zettel „E. K.“; im Register „geb. K…“ (2.7) |
 | H20 | Bruno Kaminski (Kernfigur) | 102 · 68 m² | Bruno (mittel, eigenes Profil) | 1 | 6.0 |
 | H21 | Mila Hellwig (Kernfigur) | 021 · 68 m² | Mila (jung, eigenes Profil) | 1 | 6.0 |
-| H22 | Marion Teske (Kernfigur) | 001 · 68 m² | Marion (mittel, eigenes Profil) | 1 | Tochter des Heizers Josef Ahrend (2.3) – im Register „geb. Ahrend“; sucht, was 1987 geschah |
+| H22 | Marion Teske (Kernfigur) | 001 · 68 m² | Marion (mittel, eigenes Profil) | 1 | Tochter des Heizers Josef Ahrend (2.3) – im Register „geb. Ahrend“; sucht, was 1987 geschah, und will ihren Vater erlösen (Auftraggeberin, 2.8); bleibt am 31. freiwillig im Hotel |
 | H23 ★ | Walter Ruprecht | 014 · 34 m² | Walter (alt, Griesgram) | 1 | Dauergast, kennt jeden Winkel – und schweigt |
 | H24 ★ | Agnes Möller | 029 · 34 m² | Agnes (alt, Plaudertasche) | 1 | Witwe, weiß über jeden etwas |
 | H25 ★ | Gustav Peters | 020 · 34 m² | Gustav (alt, Skeptiker) | 1 | Pensionierter Lehrer, hasst Halloween, die Kinder nennen ihn „Halloween-Grinch“; schmückt nicht – das erste Opfer bei der Siegerehrung (2.6) |
-| H26 | Liesel Brück | 025 · 34 m² | Liesel (alt, ängstlich) | 1 | Betet abends laut, schläft mit Licht |
+| H26 ★ | Liesel Brück | 025 · 34 m² | Liesel (alt, ängstlich) | 1 | Betet abends laut, schläft mit Licht – köpfte 1987 als Teenager den Rezeptionisten, will ihm den Kopf wiedergeben (2.7, 4.21); bleibt am 31. freiwillig im Hotel |
 | H27 ★ | Hugo Stein | 023 · 34 m² | Hugo (alt, geschäftstüchtig) | 1 | Antiquitätenhändler, kauft Fundstücke (Dokumente, 2.3) |
 | H28 | Ruth Behrens | 008 · 34 m² | Ruth (alt, Bastler) | 1 | Näht Kostüme für die Kinder (5.9) |
 | H29 | Ulrich Kranz | 009 · 34 m² | Ulrich (mittel, Plaudertasche) | 1 | Vertreter, verteilt Visitenkarten |

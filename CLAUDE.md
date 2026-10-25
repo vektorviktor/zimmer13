@@ -3,6 +3,9 @@
 First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (keine Editor-Szenen).
 
 - **Was das Spiel sein soll:** [SPIELKONZEPT.md](SPIELKONZEPT.md) (Entscheidungen mit Datum)
+- **Hauptgeschichte, Meilensteine eines optimalen Durchlaufs:** [HANDLUNG.md](HANDLUNG.md)
+- **Alle Gegenstände mit Stand und Handlungsbezug:** [GEGENSTAENDE.md](GEGENSTAENDE.md) – bei neuen Gegenständen pflegen
+- **Offene, noch nicht entschiedene Ideen:** [IDEEN.md](IDEEN.md)
 - **Wie es gebaut ist:** [TECHNIK.md](TECHNIK.md) – vor Änderungen an einem System den passenden Abschnitt lesen
 - **Starten, Steuerung, Debug-Parameter:** [README.md](README.md)
 
