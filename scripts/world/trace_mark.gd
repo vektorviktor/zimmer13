@@ -33,31 +33,33 @@ const BLOOD_TEXTURE := "res://assets/textures/blood_pool.png"
 const WAX_TEXTURE := "res://assets/textures/wax_splash.png"
 ## Look je Grafik (psx_decal, Karten aus tools/splat_maps.gd): Glanz, Stärke der Normal Map, Deckkraft am dünnen Rand,
 ## Farbe der dicken Mitte, Rauschen auf der Farbe. Blut nass glänzend, am Rand dünn und hell; Wachs matter Schimmer,
-## Rand durchscheinend; Kürbismatsch feucht und körnig.
+## Rand durchscheinend; Kürbismatsch breiig: matt, klumpig, deckend.
 const SPLAT_LOOK := {
 	BLOOD_TEXTURE: {"specular": 0.5, "normal_strength": 1.0, "edge_alpha": 0.55, "thick_shade": 0.55, "grain": 0.12},
 	WAX_TEXTURE: {"specular": 0.35, "normal_strength": 1.0, "edge_alpha": 0.7, "thick_shade": 0.92, "grain": 0.08},
-	Item.MUSH_TEXTURE: {"specular": 0.4, "normal_strength": 1.0, "edge_alpha": 0.75, "thick_shade": 0.8, "grain": 0.25},
+	Item.MUSH_TEXTURE: {"specular": 0.2, "normal_strength": 1.6, "edge_alpha": 0.92, "thick_shade": 0.7, "grain": 0.35},
 }
 ## Frische Flecken breiten sich aus und laufen die Treppe hinunter (Spielzeit – Tweens pausieren mit dem Spiel): je Art
 ## Fließtempo über eine ebene Fläche (m/s), Dauer, bis ein großer bzw. kleiner Fleck ganz liegt (s), Zeit je Stufe
-## hinunter und davon für den Läufer über die Kante (s), Läufer je Fleck längs auf einer Stufe (von, bis) und ihre
-## Breite (m). Blut breitet sich in etwa 30 s aus, Kürbismatsch liegt sofort und läuft etwa 5 s nach, Wachs ist in 2 s
-## erstarrt.
+## hinunter und davon für die Bahn an der Stirnseite (s), auf Treppen ein durchgehender Strom (lay_stream) über höchstens
+## so viele Stufen, so breit (m), unten eine Pfütze so groß (m). Blut breitet sich in etwa 30 s aus, Kürbismatsch liegt
+## sofort und läuft nach, Wachs ist in 2 s erstarrt (nur ein kurzer Strom).
 const SPREAD := {
 	"blood": {"flow": 0.12, "grow_big": Vector2(8.0, 14.0), "grow_small": Vector2(3.0, 6.0), "step": 2.5, "run": 1.5,
-		"runners": Vector2i(1, 2), "runner_w": Vector2(0.04, 0.09)},
+		"stream_steps": 20, "stream_w": Vector2(0.1, 0.15), "puddle": Vector2(0.6, 0.9)},
 	"mush": {"flow": 3.0, "grow_big": Vector2(0.15, 0.25), "grow_small": Vector2(0.15, 0.3), "step": 1.6, "run": 1.4,
-		"runners": Vector2i(0, 1), "runner_w": Vector2(0.05, 0.1)},
+		"stream_steps": 20, "stream_w": Vector2(0.11, 0.16), "puddle": Vector2(0.4, 0.7)},
 	"wax": {"flow": 0.4, "grow_big": Vector2(0.8, 1.2), "grow_small": Vector2(0.3, 0.6), "step": 0.8, "run": 0.5,
-		"runners": Vector2i(0, 1), "runner_w": Vector2(0.025, 0.045)},
+		"stream_steps": 3, "stream_w": Vector2(0.05, 0.08), "puddle": Vector2(0.15, 0.25)},
 	"coffee": {"flow": 1.2, "grow_big": Vector2(0.4, 0.7), "grow_small": Vector2(0.2, 0.4), "step": 1.0, "run": 0.7,
-		"runners": Vector2i(0, 1), "runner_w": Vector2(0.02, 0.04)},
+		"stream_steps": 10, "stream_w": Vector2(0.05, 0.08), "puddle": Vector2(0.2, 0.35)},
 }
 ## Ungefähre Stufenhöhe (m) – zählt beim Ausbreiten die Stufen hinunter
 const STEP_RISE := 0.2
-## Läufer nur von Flecken, die längs auf der Stufe mindestens so breit sind (m)
-const RUNNER_MIN_WIDTH := 0.15
+## Strom die Treppe hinunter (lay_stream): die Quadrate der Kette liegen so weit auseinander (× ihre Kantenlänge, sie
+## überlappen) und wachsen jedes so schnell (s)
+const STREAM_SPACING := 0.5
+const STREAM_GROW := 0.4
 const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck",
 	"wax": "Wachsflecken", "drops": "Blutstropfen", "wax_splash": "Ein großer Wachsfleck", "soot": "Ein Rußfleck",
 	"coffee": "Ein Kaffeefleck",
@@ -199,8 +201,8 @@ func _ready() -> void:
 
 ## Blutlache (Spielkonzept 4.13, 6.12): BLOOD_SPLATS Flecken um das Opfer, große in der Mitte, kleine bis BLOOD_RADIUS.
 ## Jeder fällt senkrecht auf die Fläche darunter (place_splat) – auf Treppen also auf die Stufen, nicht auf die Rampe.
-## Auf einer Treppe läuft das Blut die Stufen hinunter (bergauf verteilt sich nichts, über die Stufenkanten Läufer –
-## lay_runners). Nicht durch Wände. Jeder Fleck ist die Grafik BLOOD_TEXTURE (lay_decal). Frisch breitet sie sich
+## Auf einer Treppe bleiben nur die großen Flecken, von dort läuft ein durchgehender Strom die Stufen hinunter bis zu
+## einer Pfütze (lay_stream). Nicht durch Wände. Jeder Fleck ist die Grafik BLOOD_TEXTURE (lay_decal). Frisch breitet sie sich
 ## langsam aus (SPREAD).
 func _spread_blood() -> void:
 	if not is_inside_tree():
@@ -215,8 +217,11 @@ func _spread_blood() -> void:
 	var flow: Dictionary = SPREAD["blood"]
 	var plan: Array = []
 	var count := rng.randi_range(BLOOD_SPLATS.x, BLOOD_SPLATS.y)
+	var streamed := false
 	for i in count:
 		var big := i < 4
+		if downhill != Vector3.ZERO and not big:
+			continue   # auf der Treppe läuft das Blut als Strom hinunter statt in Flecken (lay_stream)
 		var r := rng.randf_range(0.0, 0.35) if big else sqrt(rng.randf()) * BLOOD_RADIUS
 		var size := Vector2.ONE * (rng.randf_range(BLOOD_BIG.x, BLOOD_BIG.y) if big else rng.randf_range(BLOOD_SMALL.x, BLOOD_SMALL.y))
 		size.y *= rng.randf_range(0.8, 1.0)   # nicht zu oval – die Grafik ist rund
@@ -226,9 +231,10 @@ func _spread_blood() -> void:
 			continue
 		var lift := 0.004 + i * 0.00002   # Überlappung: die Dicke entscheidet (psx_decal)
 		var pieces := lay_decal(self, spot, red, rng, lift)
-		var runners := lay_runners(self, space, spot, downhill, red, rng, flow, lift)
+		var stream := [] if streamed else lay_stream(self, space, spot, downhill, red, rng, flow, lift)
+		streamed = streamed or not stream.is_empty()
 		if fresh:
-			plan_spot(plan, pieces, runners, flow, spread_start(flow, center, spot["at"], downhill), big, rng)
+			plan_spot(plan, pieces, stream, flow, spread_start(flow, center, spot["at"], downhill), big, rng)
 	if fresh:
 		grow(self, plan)
 	if wash > 0.0:
@@ -237,8 +243,8 @@ func _spread_blood() -> void:
 
 ## Großer Wachsfleck einer geworfenen Kerze (6.13), gebaut wie eine Blutlache: ein Kern (WAX_CORE) und Tropfen ringsum,
 ## alle aus der Grafik WAX_TEXTURE und jeder auf der Fläche darunter (place_splat) – auf Treppen auf den Stufen, die
-## Tropfen hinunter, manchmal ein kurzer Läufer über die Kante. Frisch in etwa 2 s erstarrt (SPREAD).
 ## Der Kaffeefleck (3.11) ebenso, kleiner, in Kaffeebraun (coffee_material) und flüssiger.
+## Tropfen hinunter, ein kurzer Strom über wenige Stufen (lay_stream). Frisch in etwa 2 s erstarrt (SPREAD).
 func _spread_wax() -> void:
 	if not is_inside_tree():
 		return
@@ -254,9 +260,9 @@ func _spread_wax() -> void:
 	var core := place_splat(space, center, Vector3.ZERO, COFFEE_CORE if coffee else WAX_CORE, downhill, rng)
 	if not core.is_empty():
 		var pieces := lay_decal(self, core, wax, rng, 0.004)
-		var runners := lay_runners(self, space, core, downhill, wax, rng, flow, 0.004)
+		var stream := lay_stream(self, space, core, downhill, wax, rng, flow, 0.004)
 		if fresh:
-			plan_spot(plan, pieces, runners, flow, 0.0, true, rng)
+			plan_spot(plan, pieces, stream, flow, 0.0, true, rng)
 	var drop_count := COFFEE_DROPS if coffee else Vector2i(10, 16)
 	for i in rng.randi_range(drop_count.x, drop_count.y):
 		var s := rng.randf_range(0.03, 0.08)   # die Grafik füllt ihr Quadrat nicht ganz
@@ -309,54 +315,106 @@ static func lay_decal(parent: Node3D, spot: Dictionary, mat: Material, rng: Rand
 	return pieces
 
 
-## Läufer über die Vorderkante der Stufe (nur Flecken längs auf einer Stufe, mindestens RUNNER_MIN_WIDTH breit): je
-## `flow` „runners“ schmale senkrechte Bahnen an der Stirnseite (Setzstufe bzw. Blockstufe – dort endet die
-## Trittfläche, _edge_ahead), von der Stufe bis auf die nächste, darunter ein kleiner Auffangfleck. Auf der Lobbytreppe
-## hängen sie in der Mitte vor dem Teppich-Wasserfall (Meta „carpet_half“/„carpet_out“ der Trittflächen, GrandStair).
-## Die Grafik ist der Fleck, senkrecht gestreckt. → [{runner, landing: [Node3D]}]
-static func lay_runners(parent: Node3D, space: PhysicsDirectSpaceState3D, spot: Dictionary, downhill: Vector3,
+## Ein Strom die Treppe hinunter (2026-10-24): Von einem Fleck längs auf einer Stufe läuft ein durchgehender kleiner Strom
+## Stufe für Stufe hinunter – als Kette kleiner, unverzerrter Quadrate aus der Grafik (Kantenlänge = Breite des Stroms,
+## je STREAM_SPACING × Breite weiter, sie verschmelzen über die Tiefe nach Dicke zu einem Band): auf jeder Trittfläche
+## liegend von der Setzstufe bis an die Kante, an jeder Stirnseite senkrecht bis auf die nächste Stufe (Setzstufe bzw.
+## Blockstufe – dort endet die Trittfläche, _edge_ahead), bis an die sichtbare Vorderkante (_edge_front: auf der
+## Lobbytreppe die Nase der Stufe, in der Mitte der Teppich-Wasserfall – das oberste Stück der Bahn liegt davor, sonst
+## bliebe an der Kante eine Lücke). Leicht schlängelnd, nach unten etwas breiter, höchstens „stream_steps“ Stufen; wo die Fläche eben
+## weiterläuft (Fuß der Treppe, Podest), sammelt er sich zu einer Pfütze („puddle“ m). Breite „stream_w“ (m).
+## → Zeitplan relativ zum Fleck [{node, at, time, down}]: je Stufe „step“ s, davon „run“ an der Stirnseite, die Pfütze
+## wächst in „grow_big“.
+static func lay_stream(parent: Node3D, space: PhysicsDirectSpaceState3D, spot: Dictionary, downhill: Vector3,
 		mat: Material, rng: RandomNumberGenerator, flow: Dictionary, lift: float) -> Array:
-	var size: Vector2 = spot["size"]
-	if downhill == Vector3.ZERO or not spot["along"] or size.x < RUNNER_MIN_WIDTH:
-		return []
-	var count := rng.randi_range((flow["runners"] as Vector2i).x, (flow["runners"] as Vector2i).y)
-	var at: Vector3 = spot["at"]
-	var front := _edge_ahead(space, at, downhill, 0.6) if count > 0 else -1.0
-	if front < 0.0:
-		return []
-	var edge := at + downhill * front
-	var below := Traces.surface_below(space, edge + downhill * 0.06 + Vector3.UP * 0.3, 1.0)
-	if below.is_empty():
-		return []
-	var drop := at.y - (below["position"] as Vector3).y
-	if drop < 0.06 or drop > 0.4:
-		return []
+	var plan: Array = []
+	if downhill == Vector3.ZERO or not spot["along"] or int(flow["stream_steps"]) <= 0:
+		return plan
 	if _runner_plane == null:
 		_runner_plane = PlaneMesh.new()
 		_runner_plane.orientation = PlaneMesh.FACE_Z
 		_runner_plane.size = Vector2.ONE
 		_runner_plane.center_offset = Vector3(0, -0.5, 0)   # Ursprung an der Oberkante: wächst nach unten
-	var tread := Traces.surface_below(space, edge - downhill * 0.03 + Vector3.UP * 0.3, 0.5)
+	var size: Vector2 = spot["size"]
 	var across := Basis(Vector3.UP, float(spot["yaw"])) * Vector3.RIGHT
 	var face := Basis.looking_at(-downhill, Vector3.UP)   # +Z zeigt die Treppe hinunter, zum Betrachter
-	var out: Array = []
-	for k in count:
-		var top := edge + across * rng.randf_range(-0.4, 0.4) * size.x
-		var gap := 0.0
-		if not tread.is_empty() and (tread["collider"] as Object).has_meta("carpet_half"):
-			var body := tread["collider"] as Node3D
-			if absf((body.global_transform.affine_inverse() * top).x) < float(body.get_meta("carpet_half")):
-				gap = float(body.get_meta("carpet_out"))
-		var w := rng.randf_range((flow["runner_w"] as Vector2).x, (flow["runner_w"] as Vector2).y)
-		var runner := Geo.mesh(parent, _runner_plane, mat, Vector3.ZERO)
-		runner.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		runner.global_transform = Transform3D(face * Basis.from_scale(Vector3(w, drop + 0.01, 1.0)),
-			top + downhill * (gap + 0.002) + Vector3.UP * 0.005)
-		var s := w * 2.2
-		var land := place_splat(space, top + downhill * (gap + 0.01 + 0.65 * s) + Vector3.DOWN * drop, Vector3.ZERO,
-			Vector2.ONE * s, downhill, rng)
-		out.append({"runner": runner, "landing": [] if land.is_empty() else lay_decal(parent, land, mat, rng, lift)})
-	return out
+	var widths: Vector2 = flow["stream_w"]
+	var puddle: Vector2 = flow["puddle"]
+	var grow_big: Vector2 = flow["grow_big"]
+	var step_time := float(flow["step"])
+	var run := float(flow["run"])
+	var p: Vector3 = spot["at"] + across * rng.randf_range(-0.25, 0.25) * size.x
+	var w := rng.randf_range(widths.x, widths.y)
+	var t := 0.0
+	var pool := false
+	var back := 0.0   # ab der zweiten Stufe beginnt die Kette schon an der Setzstufe
+	for s in int(flow["stream_steps"]):
+		var front := _edge_ahead(space, p, downhill, 1.0)
+		if front < 0.0:
+			pool = s > 0   # die Fläche läuft eben weiter: unten angekommen
+			break
+		# liegend auf der Trittfläche, von hinten bis an die sichtbare Vorderkante (Nase bzw. Teppich darüber)
+		var edge_at := p + downhill * front
+		var lip := _edge_front(space, edge_at, downhill)
+		var from := -back + w * 0.35
+		var to := front + float(lip["front"]) - w * 0.15
+		var n := maxi(1, ceili((to - from) / (w * STREAM_SPACING)) + 1)
+		for i in n:
+			var d := from if n == 1 else lerpf(from, to, float(i) / (n - 1))
+			var side := w * rng.randf_range(0.9, 1.1)
+			var square := {"at": p + downhill * d + across * rng.randf_range(-0.12, 0.12) * w, "size": Vector2(side, side),
+				"yaw": rng.randi_range(0, 3) * PI / 2.0, "along": false}
+			for piece in lay_decal(parent, square, mat, rng, lift + 0.0002):
+				plan.append({"node": piece, "at": t + (step_time - run) * float(i) / n, "time": STREAM_GROW})
+		var edge := edge_at
+		var below := Traces.surface_below(space, edge + downhill * (0.05 + float(lip["front"])) + Vector3.UP * 0.3, 1.0)
+		if below.is_empty():
+			break
+		var drop := p.y - (below["position"] as Vector3).y
+		if drop < 0.06:   # kaum eine Stufe: eben weiter, die Pfütze gleich hinter der Kante
+			p = edge + downhill * 0.05
+			pool = true
+			break
+		if drop > 0.45:
+			break
+		# senkrecht an der Stirnseite, von der Kante bis auf die nächste Stufe: vor dem Teppich ganz, sonst das oberste Stück
+		# auf der Stirn der Nase, der Rest an der Setzstufe
+		var gap: float = lip["front"] if lip["carpet"] else 0.0
+		var rows := maxi(1, ceili((drop - w * 0.5) / (w * STREAM_SPACING)) + 1)
+		for i in rows:
+			var top := 0.01 - (0.0 if rows == 1 else (drop - w * 0.6) * float(i) / (rows - 1))
+			var side := w * rng.randf_range(0.9, 1.1)
+			var piece := Geo.mesh(parent, _runner_plane, mat, Vector3.ZERO)
+			piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			var off: float = lip["front"] if (lip["carpet"] or i == 0) else 0.0
+			piece.global_transform = Transform3D(face * Basis.from_scale(Vector3(side, side, 1.0)),
+				edge + downhill * (off + 0.002 + i * 0.0002) + Vector3.UP * top)
+			plan.append({"node": piece, "at": t + step_time - run + run * float(i) / rows, "time": STREAM_GROW, "down": true})
+		p = Vector3(edge.x, (below["position"] as Vector3).y, edge.z) + downhill * (gap + 0.01) \
+			+ across * rng.randf_range(-0.02, 0.02)
+		back = gap + 0.01
+		w = minf(w * 1.03, widths.y * 1.4)
+		t += step_time
+	if pool:
+		var side := rng.randf_range(puddle.x, puddle.y)
+		var spot_p := place_splat(space, p, downhill * side * 0.4, Vector2(side, side), Vector3.ZERO, rng)
+		if not spot_p.is_empty():
+			for piece in lay_decal(parent, spot_p, mat, rng, lift):
+				plan.append({"node": piece, "at": t, "time": rng.randf_range(grow_big.x, grow_big.y)})
+	return plan
+
+
+## Die sichtbare Vorderkante einer Stufe vor der Kante ihrer Trittfläche (der Setzstufe): auf der Lobbytreppe in der
+## Mitte der Teppich-Wasserfall (Meta „carpet_half“/„carpet_out“ der Trittflächen, GrandStair), daneben die Nase der
+## Stufe (Meta „nosing“, dick „nosing_t“); im Treppenhaus (Blockstufen) nichts. → {front (m davor), carpet, lip_t (m)}
+static func _edge_front(space: PhysicsDirectSpaceState3D, edge: Vector3, downhill: Vector3) -> Dictionary:
+	var tread := Traces.surface_below(space, edge - downhill * 0.03 + Vector3.UP * 0.3, 0.5)
+	if tread.is_empty() or not (tread["collider"] as Object).has_meta("carpet_half"):
+		return {"front": 0.0, "carpet": false, "lip_t": 0.0}
+	var body := tread["collider"] as Node3D
+	if absf((body.global_transform.affine_inverse() * edge).x) < float(body.get_meta("carpet_half")):
+		return {"front": float(body.get_meta("carpet_out")), "carpet": true, "lip_t": 0.0}
+	return {"front": float(body.get_meta("nosing", 0.0)), "carpet": false, "lip_t": float(body.get_meta("nosing_t", 0.0))}
 
 
 ## Abstand von `at` bis zur Kante der Fläche in Richtung dir (auf 2 mm genau, höchstens reach); −1 = keine Kante.
@@ -396,22 +454,18 @@ static func spread_start(flow: Dictionary, center: Vector3, at: Vector3, downhil
 	return steps * float(flow["step"]) + (off - downhill * off.dot(downhill)).length() / float(flow["flow"])
 
 
-## Zeitplan eines frischen Flecks: seine Stücke ab `start` (je etwas versetzt) über „grow_big“ bzw. „grow_small“; seine
-## Läufer, sobald der Fleck die Kante erreicht (so dass sie nach „step“ unten sind), wachsen in „run“ nach unten,
-## danach der Auffangfleck.
-static func plan_spot(plan: Array, pieces: Array[Node3D], runners: Array, flow: Dictionary, start: float, big: bool,
+## Zeitplan eines frischen Flecks: seine Stücke ab `start` (je etwas versetzt) über „grow_big“ bzw. „grow_small“; sein
+## Strom die Treppe hinunter (Zeitplan aus lay_stream, relativ zum Fleck) ab `start`.
+static func plan_spot(plan: Array, pieces: Array[Node3D], stream: Array, flow: Dictionary, start: float, big: bool,
 		rng: RandomNumberGenerator) -> void:
 	var grow_range: Vector2 = flow["grow_big" if big else "grow_small"]
 	var time := rng.randf_range(grow_range.x, grow_range.y)
 	for piece in pieces:
 		plan.append({"node": piece, "at": start + rng.randf_range(0.0, 0.2) * time, "time": time})
-	var run := float(flow["run"])
-	var small: Vector2 = flow["grow_small"]
-	for r in runners:
-		var at := start + maxf(0.0, float(flow["step"]) - run) + rng.randf_range(0.0, 0.3) * run
-		plan.append({"node": r["runner"], "at": at, "time": run, "down": true})
-		for piece in r["landing"]:
-			plan.append({"node": piece, "at": at + run, "time": rng.randf_range(small.x, small.y)})
+	for e in stream:
+		var entry: Dictionary = (e as Dictionary).duplicate()
+		entry["at"] = float(entry["at"]) + start
+		plan.append(entry)
 
 
 ## Lässt die Stücke nach dem Plan wachsen (Spielzeit, pausiert mit dem Spiel): Flecken aus der Mitte auf ihre Größe,

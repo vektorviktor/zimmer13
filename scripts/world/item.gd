@@ -97,6 +97,8 @@ const MUSH_TEXTURE := "res://assets/textures/pumpkin_splash.png"
 const MUSH_TEX_COLOR := Color(0.836, 0.674, 0.361)
 ## Fruchtfleisch: Kürbismatsch hat zur Hälfte diese Farbe, zur Hälfte die der Schale
 const FLESH_COLOR := Color(0.95, 0.6, 0.2)
+## Breiiges Braun, zu dem die Farbe des Matschs gedämpft wird (mush_color)
+const MUSH_DULL := Color(0.42, 0.24, 0.09)
 const MUSH_SIZE := 0.9          ## Kantenlänge des Spritzers (m), wenn nichts anderes gespeichert ist
 const MINI_SPLAT := 0.4         ## Spritzer eines Zierkürbisses (m; Sorten: PumpkinKinds „splat“)
 const HANDFUL_SPLAT := 0.6      ## eine Hand voll aus einem großen Spritzer, wieder abgelegt (m)
@@ -1377,9 +1379,10 @@ static func mush_extra(p_variety: String, at_time: float, splat: float, hands: i
 	return "%s,%.2f,%.2f,%d" % [p_variety, at_time, splat, hands]
 
 
-## Farbe des Kürbismatschs: halb Schale, halb Fruchtfleisch – ein weißer Kürbis gibt hellen, ein grüner bräunlichen.
+## Farbe des Kürbismatschs: halb Schale, halb Fruchtfleisch, gedämpft zu Brei (MUSH_DULL – reines Orange war zu grell) –
+## ein weißer Kürbis gibt hellen, ein grüner bräunlichen.
 static func mush_color(skin: Color) -> Color:
-	return skin.lerp(FLESH_COLOR, 0.5)
+	return skin.lerp(FLESH_COLOR, 0.5).lerp(MUSH_DULL, 0.4)
 
 
 ## Großer Spritzer (Riesenkürbis): eine Hand voll nehmen – sie liegt als eigener Kürbismatsch in der Hand, der
@@ -1502,7 +1505,8 @@ func _settle_mush() -> void:
 ## mush_size und MUSH_SPLATS_PER_M × mush_size kleinere drumherum, jeder senkrecht auf die Fläche darunter gefallen
 ## (Boden, Stufe, Möbel – nicht die Rampe, nicht durch Wände) und ganz auf ihr. Auf einer Treppe liegen sie längs auf
 ## den Stufen (dort als überlappende Reihe, TraceMark.lay_decal) und laufen die Stufen hinunter, über die Kanten
-## manchmal ein Läufer (lay_runners). Frisch zerplatzt läuft er nach (mush_fresh, TraceMark.SPREAD). Jedes Mal anders
+## vom großen Spritzer ein durchgehender Strom bis zu einer Pfütze (lay_stream; nur der große Spritzer, ein Riese gibt
+## einen breiteren Strom und eine größere Pfütze). Frisch zerplatzt läuft er nach (mush_fresh, TraceMark.SPREAD). Jedes Mal anders
 ## verteilt.
 func _lay_mush() -> void:
 	if _grow_tween:
@@ -1520,6 +1524,11 @@ func _lay_mush() -> void:
 	var center := global_position
 	var downhill := TraceMark.downhill_at(space, center)
 	var flow: Dictionary = TraceMark.SPREAD["mush"]
+	# der Strom je nach Spritzergröße: ein Riese gibt einen breiteren Strom und eine größere Pfütze
+	var stream_flow := flow.duplicate()
+	var k := clampf(sqrt(mush_size / MUSH_SIZE), 0.7, 2.0)
+	stream_flow["stream_w"] = (flow["stream_w"] as Vector2) * k
+	stream_flow["puddle"] = (flow["puddle"] as Vector2) * k
 	var plan: Array = []
 	# Ausbreiten von der Fläche unter dem Körper aus (auf einer Treppe ruht er auf der Rampe, über der Stufe)
 	var floor_hit := Traces.surface_below(space, center + Vector3.UP * 0.5, 1.5)
@@ -1527,6 +1536,8 @@ func _lay_mush() -> void:
 	var count := 1 + roundi(mush_size * MUSH_SPLATS_PER_M)
 	for i in count:
 		var main := i == 0
+		if downhill != Vector3.ZERO and not main:
+			continue   # auf der Treppe läuft er als Strom hinunter statt in Spritzern (lay_stream)
 		var r := 0.0 if main else mush_size * rng.randf_range(0.4, 0.75)
 		var spot := {}
 		for attempt in 3:   # kein Platz (neben der Treppe, hinter der Wand): näher an der Mitte noch einmal
@@ -1540,9 +1551,9 @@ func _lay_mush() -> void:
 			continue
 		var lift := 0.006 + mini(_spread.get_child_count(), 60) * 0.00002
 		var pieces := TraceMark.lay_decal(_spread, spot, _mush_mat, rng, lift)
-		var runners := TraceMark.lay_runners(_spread, space, spot, downhill, _mush_mat, rng, flow, lift)
+		var stream := TraceMark.lay_stream(_spread, space, spot, downhill, _mush_mat, rng, stream_flow, lift) if main else []
 		if fresh:
-			TraceMark.plan_spot(plan, pieces, runners, flow, TraceMark.spread_start(flow, source, spot["at"], downhill), main, rng)
+			TraceMark.plan_spot(plan, pieces, stream, flow, TraceMark.spread_start(flow, source, spot["at"], downhill), main, rng)
 	if fresh:
 		_grow_tween = TraceMark.grow(self, plan)
 	_mush_outdoor = -1
