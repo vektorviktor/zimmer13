@@ -44,6 +44,17 @@ const SLEEP_MIN := 120.0
 const SLEEP_WAKE_THREAT := 0.3
 ## Hand mit dem Gegenstand: unten rechts
 const HAND_REST := Vector3(0.22, -0.22, -0.45)
+## Werfen (Spielkonzept 3.13): [G] so lange halten (s), dann holt man aus – voll nach THROW_FULL s; die Hand geht dabei
+## bis THROW_WINDUP zurück (zur Ruhelage dazu). Abwurftempo (m/s) = THROW_PUSH / Masse^THROW_MASS_EXP, höchstens
+## THROW_MAX, mit wenig Kraft THROW_WEAK davon; etwas nach oben (THROW_LIFT, Anteil des Tempos)
+const THROW_HOLD := 0.3
+const THROW_FULL := 1.2
+const THROW_WINDUP := Vector3(0.06, 0.1, 0.22)
+const THROW_PUSH := 13.0
+const THROW_MASS_EXP := 0.6
+const THROW_MAX := 14.0
+const THROW_WEAK := 0.35
+const THROW_LIFT := 0.12
 ## Linke Hand: Karte bildfüllend vors Gesicht, Kompass vor die Brust (Zifferblatt zum Gesicht
 ## gekippt); beim Hervorholen kommt sie von unten
 const MAP_VIEW := Vector3(0.0, -0.005, -0.12)
@@ -208,6 +219,11 @@ var _bag_hint := false    ## Hinweis auf die Tasche schon gezeigt
 var _bag_node: Node3D     ## hier hängen die Gegenstände in der Tasche (unsichtbar)
 var _noise_timer := 0.0
 var _flame_timer := 1.0   ## bis zum nächsten Wurf, ob die Flamme in der Hand ausgeht (_update_flame_wind)
+## [G] mit etwas in der Hand: so lange schon gehalten (s; −1 = nicht gedrückt). Kurz losgelassen hängt es auf bzw.
+## legt ab, länger gehalten wirft es (3.13, _update_throw)
+var _throw_hold := -1.0
+## Wurfkraft 0 … 1 beim Ausholen (0 = holt nicht aus) – für Hand und Anzeige am Fadenkreuz
+var throw_power := 0.0
 var _pant_timer := 0.0
 var _step_dist := 0.0
 var _steps: Footsteps
@@ -333,6 +349,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("drop") and not hiding:
 		if held == null and disguised:
 			take_off_sheet()
+		elif held:
+			_throw_hold = 0.0   # erst beim Loslassen: kurz = ablegen bzw. aufhängen, lang = werfen (_update_throw)
 		else:
 			drop_held()
 	elif event.is_action_pressed("use_item") and _punch_target() != null:
@@ -399,6 +417,7 @@ func _physics_process(delta: float) -> void:
 	_update_coffee(delta)
 	_update_shock(delta)
 	_update_dread(delta)
+	_update_throw(delta)
 	_update_hand(delta)
 	_update_injury(delta)
 	_update_stamina(delta)
@@ -507,7 +526,7 @@ func _update_hand(delta: float) -> void:
 	_left_hand.visible = _left_shown != ""
 	_pocket_map.visible = _left_shown == "map"
 	_compass_holder.visible = _left_shown == "compass"
-	_hand.position = _hand.position.lerp(HAND_REST, minf(1.0, 10.0 * delta))
+	_hand.position = _hand.position.lerp(HAND_REST + THROW_WINDUP * throw_power, minf(1.0, 10.0 * delta))
 	if jittery():   # zu viel Kaffee (3.11): die Hand bebt
 		var shake := _drunk_time * TREMOR_RATE
 		_hand.position += Vector3(sin(shake * 1.3), sin(shake * 1.7 + 1.0), 0.0) * TREMOR
@@ -1222,6 +1241,74 @@ func drop_held(shocked: bool = false, hang: bool = true) -> void:
 		Game.pumpkin.on_deco_placed()   # Deko platzieren macht kurz Spaß (4.19)
 	if Game.hud:
 		Game.hud.set_held("")
+
+
+## [G] gehalten (Spielkonzept 3.13): Vor THROW_HOLD losgelassen hängt man auf bzw. legt ab wie bisher; länger gehalten
+## holt man aus (throw_power bis THROW_FULL), Loslassen wirft. Leere Hand, Versteck, Gespräch oder Bann brechen ab.
+func _update_throw(delta: float) -> void:
+	if _throw_hold < 0.0:
+		return
+	if held == null or hiding or in_dialog or spellbound or Game.creating:
+		_throw_hold = -1.0
+		_set_throw_power(0.0)
+		return
+	if Input.is_action_pressed("drop"):
+		_throw_hold += delta
+		_set_throw_power(clampf((_throw_hold - THROW_HOLD) / (THROW_FULL - THROW_HOLD), 0.0, 1.0) \
+			if _throw_hold >= THROW_HOLD else 0.0)
+		return
+	var long := _throw_hold >= THROW_HOLD
+	var power := throw_power
+	_throw_hold = -1.0
+	_set_throw_power(0.0)
+	if long:
+		throw_held(power)
+	else:
+		drop_held()
+
+
+func _set_throw_power(power: float) -> void:
+	throw_power = power
+	if Game.hud:
+		Game.hud.set_throw_power(power if _throw_hold >= THROW_HOLD else 0.0)
+
+
+## Werfen (Spielkonzept 3.13): in Blickrichtung, etwas nach oben, dazu das eigene Tempo. Wie schnell, hängt an Kraft
+## (0 … 1) und Masse (THROW_*) – Schweres fliegt kaum, den Riesenkürbis schubst man nur weg. Was beim Aufschlag passiert,
+## entscheidet der Gegenstand (Item._throw_hit).
+func throw_held(power: float) -> void:
+	if held == null:
+		return
+	var item := held
+	held = null
+	var forward := -camera.global_basis.z
+	var start := _hand.global_position + forward * 0.25
+	var query := PhysicsRayQueryParameters3D.create(camera.global_position, start, 1)
+	query.exclude = [get_rid()]
+	var blocked := get_world_3d().direct_space_state.intersect_ray(query)
+	if not blocked.is_empty():   # dicht vor einer Wand: vor ihr loslassen, nicht in ihr
+		start = (blocked["position"] as Vector3) - forward * 0.12
+	var speed := throw_speed(item.mass, power)
+	var push :=(forward + Vector3.UP * THROW_LIFT).normalized() * speed + Vector3(velocity.x, 0.0, velocity.z)
+	item.reparent(get_parent(), false)
+	item.rotation = Vector3(0, rotation.y, 0)
+	item.add_collision_exception_with(self)   # nicht am eigenen Körper abprallen
+	var id := item.get_instance_id()   # der Gegenstand kann vorher zerplatzen
+	get_tree().create_timer(0.5).timeout.connect(func() -> void:
+		var thrown := instance_from_id(id) as Item
+		if thrown:
+			thrown.remove_collision_exception_with(self))
+	item.throw_from(start, push, self)
+	if Game.hud:
+		Game.hud.set_held("")
+	if Game.tracing:
+		print("[Wurf] %s mit Kraft %.2f – %.1f m/s (%.1f kg)" % [item.display_name, power, speed, item.mass])
+
+
+## Abwurftempo (m/s) für einen Gegenstand dieser Masse (kg) mit dieser Kraft (0 … 1): Kürbis voll gut 5,5, Kerze und
+## Dose bis THROW_MAX, der Riesenkürbis kaum mehr als 1.
+static func throw_speed(mass: float, power: float) -> float:
+	return minf(THROW_MAX, THROW_PUSH / pow(maxf(mass, 0.05), THROW_MASS_EXP)) * lerpf(THROW_WEAK, 1.0, clampf(power, 0.0, 1.0))
 
 
 ## Neuer Gegenstand direkt in die Hand (Ernte, Vorrat, Kauf, Geschenk).

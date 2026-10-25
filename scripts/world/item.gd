@@ -120,6 +120,16 @@ const BULB_SOCKET := Color(0.62, 0.56, 0.42)
 const IMPACT_SPEED := 3.0
 ## Wurf: als Aufprall zählt, wenn er mit mindestens so viel Tempo (m/s) fliegt und auf einen Schlag die Hälfte verliert
 const THROW_IMPACT := 1.5
+## Werfen (Spielkonzept 3.13): Der Flug wird je Physikschritt gegen alles geprüft, woran er auch physikalisch stößt (MASK),
+## dazu Gäste (Ebene 128) – _sweep. Was nicht zerplatzt oder zerbricht, landet mit Lärm, ab THROW_HEAVY kg lauter.
+const THROW_MASK := MASK | 128
+const THROW_HEAVY := 2.0
+## Langer Spritzer eines geworfenen Kürbisses (3.13): so viele m je m/s waagrechtes Tempo beim Aufschlag, höchstens
+## STREAK_MAX m, ab STREAK_MIN m/s; frisch rutscht er mit STREAK_FLOW m/s nach vorn
+const STREAK_PER_SPEED := 0.25
+const STREAK_MAX := 2.5
+const STREAK_MIN := 1.5
+const STREAK_FLOW := 4.0
 const MUSH_TEXTURE := "res://assets/textures/pumpkin_splash.png"
 ## Mittlere Farbe der Textur – die Spritzer werden durch sie geteilt und in der Farbe des Kürbisses eingefärbt
 const MUSH_TEX_COLOR := Color(0.836, 0.674, 0.361)
@@ -220,8 +230,15 @@ var circling_with: Node3D
 var mushed_at := 0.0
 var mush_size := MUSH_SIZE
 var portions := 1
-## Geworfen (Streich, 6.13): zerplatzt bzw. zerbricht beim ersten Aufprall (throw_from)
+## Geworfen (Streich 6.13, Spieler 3.13): zerplatzt bzw. zerbricht beim ersten Aufprall, alles andere landet
+## (throw_from, _throw_hit)
 var thrown := false
+## Wer geworfen hat (der Spieler; null bei den Streichen der Kinder)
+var thrower: Node3D
+## Kürbismatsch eines geworfenen Kürbisses: langer Spritzer in Flugrichtung (Richtung als Drehung um Y – 0 = +Z –,
+## Länge m; 0 = keiner) – im Zusatzfeld als „s=Drehung:Länge“, aufgehoben ist er weg
+var streak_yaw := 0.0
+var streak_len := 0.0
 
 var _shape: CollisionShape3D
 ## Drehpunkt am Haken: alles, was schwingt (Lakengespenst, Lichterkette, Spinnweben)
@@ -244,6 +261,8 @@ var _lean := 0.0          ## seitlich weg von der Quelle der Unruhe (−1..1, lo
 var _fall_top := -INF     ## Zerplatzen: höchster Punkt des laufenden Falls
 var _last_vy := 0.0
 var _last_speed := 0.0   ## Wurf: Tempo im letzten Physikschritt
+var _throw_prev := Vector3.INF   ## Wurf: Ort im letzten Physikschritt (Strahl bis zum nächsten)
+var _impact_velocity := Vector3.ZERO   ## Wurf: Tempo beim Aufschlag am Boden – burst zieht daraus den langen Spritzer
 var _mush_mat: ShaderMaterial
 ## Kürbismatsch: hier wurden die Flecken zuletzt auf die Fläche gelegt (_lay_mush; INF = noch nicht)
 var _laid_at := Vector3.INF
@@ -394,7 +413,8 @@ func create_extra() -> String:
 		Kind.MINI_PUMPKIN:
 			return _rot_extra()
 		Kind.PUMPKIN_MUSH:
-			return mush_extra(variety, mushed_at, mush_size, portions) + (",w=%.3f" % mush_wash if mush_wash > 0.0 else "")
+			return mush_extra(variety, mushed_at, mush_size, portions) + (",w=%.3f" % mush_wash if mush_wash > 0.0 else "") \
+				+ (",s=%.3f:%.2f" % [streak_yaw, streak_len] if streak_len > 0.0 else "")
 		Kind.CARVED_PUMPKIN:
 			var parts: Array[String] = []
 			if variety != PumpkinKinds.DEFAULT:
@@ -876,6 +896,8 @@ func _apply_pose() -> void:
 			if kind == Kind.PUMPKIN_MUSH and (is_held or _laid_at == Vector3.INF):
 				# Matsch: die Flecken liegen in Weltlage – abgelegt kommen sie neu auf die Fläche (_settle_mush)
 				_laid_at = Vector3.INF
+				if is_held:
+					streak_len = 0.0   # aufgehoben: abgelegt ist es ein gewöhnlicher Spritzer
 				_pile.visible = true
 				_spread.visible = false
 		Kind.BAT_GARLAND:
@@ -1349,6 +1371,11 @@ func _build(extra: String) -> void:
 			for part in extra.split(","):
 				if part.begins_with("w="):   # im Regen verwaschen (RainVeil)
 					mush_wash = clampf(part.substr(2).to_float(), 0.0, 1.0)
+				elif part.begins_with("s="):   # langer Spritzer eines geworfenen Kürbisses (3.13): Drehung:Länge
+					var streak := part.substr(2).split(":")
+					if streak.size() == 2:
+						streak_yaw = streak[0].to_float()
+						streak_len = clampf(streak[1].to_float(), 0.0, STREAK_MAX)
 			display_name = "Kürbismatsch"
 			mass = 0.5
 			size = Vector3(mush_size * 0.7, 0.03, mush_size * 0.7)
@@ -1380,21 +1407,34 @@ func _build(extra: String) -> void:
 
 ## Zerplatzen (Spielkonzept 5.8): merkt sich den höchsten Punkt des Falls; beim Aufprall (siehe IMPACT_SPEED) aus mehr
 ## als BURST_HEIGHT zerplatzt der Kürbis, Kerzen und Glühbirnen zerbrechen schon ab BREAK_HEIGHT (_break). Nur für
-## BURST_KINDS, nicht in der Hand oder an der Wand.
-func _physics_process(_delta: float) -> void:
+## BURST_KINDS, nicht in der Hand oder an der Wand. Geworfenes (throw_from) prüft dazu seinen Flug (_throw_hit).
+func _physics_process(delta: float) -> void:
 	if is_held or freeze or pocketed:
 		_fall_top = -INF
 		_last_vy = 0.0
 		thrown = false
 		return
 	if thrown:
-		# Geworfen (Streich, 6.13): beim ersten harten Aufprall, egal aus welcher Höhe – Kürbis zerplatzt, Kerze zerbricht
+		# Geworfen (Streich 6.13, Spieler 3.13): eine Kugel so groß wie der Gegenstand, vom letzten Ort bis einen Schritt
+		# voraus gefegt, trifft Wand, Boden, Möbel oder Gast, bevor die Physik ihn abbremst (_sweep); sonst zählt ein harter
+		# Aufprall, den sie nicht sah (Tempo auf einen Schlag halbiert)
+		var at := _shape.global_position   # Mitte (der Ursprung liegt unten)
+		if _throw_prev != Vector3.INF:
+			var hit := _sweep(_throw_prev, at + linear_velocity * delta)
+			if not hit.is_empty():
+				_throw_hit(hit)
+				return
+		_throw_prev = at
 		var speed := linear_velocity.length()
 		if _last_speed > THROW_IMPACT and speed < _last_speed * 0.5:
-			thrown = false
-			_break()
+			_throw_hit({})
 			return
 		_last_speed = speed
+		if kind not in BURST_KINDS:
+			return
+	elif kind not in BURST_KINDS:
+		set_physics_process(false)   # nur für den Flug eingeschaltet (throw_from)
+		return
 	var vy := linear_velocity.y
 	if _last_vy < -IMPACT_SPEED and vy > _last_vy * 0.5 \
 			and _fall_top - global_position.y > float(BREAK_HEIGHT.get(kind, BURST_HEIGHT)):
@@ -1420,16 +1460,106 @@ func _break() -> void:
 			burst()
 
 
-## Werfen (Streich der Kinder, Spielkonzept 6.13): fliegt von `from` mit `velocity` los und zerplatzt bzw. zerbricht
-## beim ersten Aufprall (Kürbis, Zierkürbis, Kerze).
-func throw_from(from: Vector3, velocity: Vector3) -> void:
+## Werfen (Streich der Kinder 6.13, Spieler 3.13): fliegt von `from` mit `velocity` los; beim ersten Aufprall zerplatzt
+## bzw. zerbricht, was das kann (BURST_KINDS), alles andere landet (_throw_hit). `by`: wer wirft (Spieler – trifft er
+## einen Gast, nimmt der es ihm übel).
+func throw_from(from: Vector3, velocity: Vector3, by: Node3D = null) -> void:
 	set_held(false)
 	global_position = from
 	linear_velocity = velocity
 	angular_velocity = Vector3(randf_range(-6, 6), randf_range(-6, 6), randf_range(-6, 6))
 	thrown = true
+	thrower = by
+	_throw_prev = Vector3.INF   # ab dem nächsten Physikschritt (Mitte des Körpers, _shape)
 	_last_speed = velocity.length()
 	set_physics_process(true)
+
+
+## Ein Wurf trifft (Spielkonzept 3.13) – `hit` aus dem Strahl (leer: harter Aufprall ohne Strahl). Ein Gast nimmt es
+## übel (nur vom Spieler). Kürbisse zerplatzen, Kerzen zerbrechen, Glühbirnen platzen, Tassen zerspringen: an einer Wand
+## klatscht das Flüssige daran und läuft herunter (_splash_wall), am Boden zieht ein Kürbis einen langen Spritzer in
+## Flugrichtung (burst). Alles andere prallt ab und landet mit Lärm am Aufschlagort – das Monster geht dem nach (4.15).
+func _throw_hit(hit: Dictionary) -> void:
+	thrown = false
+	var velocity := linear_velocity
+	var normal: Vector3 = hit.get("normal", Vector3.UP)
+	var at: Vector3 = hit.get("position", global_position)
+	var target: Object = hit.get("collider")
+	var guest := target as Guest
+	if guest and thrower == Game.player and Game.social:
+		Game.social.on_player_threw_at(guest, self, velocity)
+	var wall := guest == null and absf(normal.y) < 0.5 and not _is_door(target) 		and not (target is CollisionObject3D and (target as CollisionObject3D).collision_layer & (64 | 256))   # kein Glas
+	if Game.tracing:
+		print("[Wurf] %s trifft %s bei %s (%.1f m/s)" % [display_name,
+			guest.display_name if guest else ("Wand" if wall else ("Boden" if normal.y >= 0.5 else "etwas")), at, velocity.length()])
+	if kind in BURST_KINDS:
+		if wall:
+			_splash_wall(at, normal)
+			global_position = at + normal * 0.15   # vor der Wand herunter, nicht in ihr
+		elif guest == null:
+			_impact_velocity = velocity
+		_break()
+		return
+	if guest or wall:
+		linear_velocity = velocity.bounce(normal.normalized()) * 0.3
+	Game.noise("throw_land_heavy" if mass >= THROW_HEAVY else "throw_land", at, self)
+
+
+## Wurf: eine Kugel (gut die halbe größte Kantenlänge des Körpers) von `from` nach `to` gefegt (THROW_MASK, ohne sich
+## selbst und den Werfer) → {position, normal, collider} am ersten Treffer, {} = frei.
+func _sweep(from: Vector3, to: Vector3) -> Dictionary:
+	var box := _shape.shape as BoxShape3D
+	var ball := SphereShape3D.new()
+	ball.radius = 0.08 if box == null else maxf(0.03, maxf(box.size.x, maxf(box.size.y, box.size.z)) * 0.45)
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = ball
+	query.transform = Transform3D(Basis(), from)
+	query.motion = to - from
+	query.collision_mask = THROW_MASK
+	var skip: Array[RID] = [get_rid()]
+	if thrower is CollisionObject3D:
+		skip.append((thrower as CollisionObject3D).get_rid())
+	query.exclude = skip
+	var space := get_world_3d().direct_space_state
+	var part := space.cast_motion(query)
+	if part.is_empty() or part[1] >= 1.0:
+		return {}
+	query.transform = Transform3D(Basis(), from + query.motion * part[1])
+	query.motion = Vector3.ZERO
+	var info := space.get_rest_info(query)
+	if info.is_empty():
+		return {}
+	return {"position": info["point"], "normal": info["normal"], "collider": instance_from_id(int(info["collider_id"]))}
+
+
+## Gehört der Körper zu einer Tür? (Dort klatscht nichts an – der Fleck bliebe beim Öffnen in der Luft; ebenso wenig
+## an Glas.)
+static func _is_door(body: Object) -> bool:
+	var node := body as Node
+	while node:
+		if node is Door:
+			return true
+		node = node.get_parent()
+	return false
+
+
+## Flüssiges trifft eine Wand (3.13): Kürbis, Kerze (Wachs), Kaffee und Tee klatschen als Fleck daran und laufen bis zum
+## Boden herunter (Traces.add_wall_splash). Eine Glühbirne hat nichts Flüssiges.
+func _splash_wall(at: Vector3, normal: Vector3) -> void:
+	if Game.traces == null:
+		return
+	var what := ""
+	match kind:
+		Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN:
+			what = "splash_mush:" + ("mini" if kind == Kind.MINI_PUMPKIN else variety)
+		Kind.CANDLE:
+			what = "splash_wax"
+		Kind.COFFEE:
+			what = "splash_coffee"
+		Kind.TEA:
+			what = "splash_tea"
+	if what != "":
+		Game.traces.add_wall_splash(what, at, normal)
 
 
 ## Eine Kerze zerbricht (geworfen oder tiefer als BREAK_HEIGHT gefallen): ein großer weißer Wachsfleck; brannte sie,
@@ -1496,7 +1626,11 @@ func burst() -> Item:
 	var mini := kind == Kind.MINI_PUMPKIN
 	var splat := (MINI_SPLAT if mini else float(d["splat"])) * randf_range(0.9, 1.1)
 	var hands: Vector2i = Vector2i.ONE if mini else d.get("portions", Vector2i.ONE)
-	var mush := Item.create(Kind.PUMPKIN_MUSH, mush_extra(variety, Calendar._elapsed(), splat, randi_range(hands.x, hands.y)))
+	var extra := mush_extra(variety, Calendar._elapsed(), splat, randi_range(hands.x, hands.y))
+	var flat := Vector3(_impact_velocity.x, 0.0, _impact_velocity.z)
+	if flat.length() >= STREAK_MIN:   # geworfen (3.13): langer Spritzer in Flugrichtung, je schneller, desto länger
+		extra += ",s=%.3f:%.2f" % [atan2(flat.x, flat.z), minf(STREAK_MAX, flat.length() * STREAK_PER_SPEED)]
+	var mush := Item.create(Kind.PUMPKIN_MUSH, extra)
 	mush.owner_id = owner_id
 	mush.mush_fresh = true
 	get_parent().add_child(mush)
@@ -1506,7 +1640,9 @@ func burst() -> Item:
 	if Game.player and Game.player.global_position.distance_to(at) < 12.0:
 		Game.caption("[Ein Kürbis zerplatzt]")
 	if Game.tracing:
-		print("[Kürbis] %s zerplatzt nach %.1f m Fall – Spritzer %.2f m, %d Hände voll" % [display_name, _fall_top - global_position.y, splat, mush.portions])
+		var how := "geworfen" if _throw_prev != Vector3.INF else "nach %.1f m Fall" % (_fall_top - global_position.y)
+		print("[Kürbis] %s zerplatzt %s – Spritzer %.2f m, %d Hände voll%s" % [display_name, how, splat, mush.portions,
+			"" if mush.streak_len <= 0.0 else ", langer Spritzer %.1f m" % mush.streak_len])
 	queue_free()
 	return mush
 
@@ -1691,11 +1827,38 @@ func _lay_mush() -> void:
 		var stream := TraceMark.lay_stream(_spread, space, spot, downhill, _mush_mat, rng, stream_flow, lift) if main else []
 		if fresh:
 			TraceMark.plan_spot(plan, pieces, stream, flow, TraceMark.spread_start(flow, source, spot["at"], downhill), main, rng)
+	if streak_len > 0.0 and downhill == Vector3.ZERO:
+		_lay_streak(space, center, rng, plan if fresh else [])
 	if fresh:
 		_grow_tween = TraceMark.grow(self, plan)
 	_mush_outdoor = -1
 	if mush_wash > 0.0:
 		RainVeil.show_wash(_spread, mush_wash, "mush")
+
+
+## Langer Spritzer eines geworfenen Kürbisses (Spielkonzept 3.13): vom Aufschlag in Flugrichtung eine Kette unverzerrter
+## Flecken wie der Strom auf Treppen (TraceMark.lay_stream) – vorn gut halb so breit wie der Spritzer, zum Ende schmal,
+## leicht schlängelnd. Jeder fällt auf die Fläche darunter (place_splat); an einer Wand, Kante oder Treppe endet er.
+## Frisch rutscht er mit STREAK_FLOW nach vorn (Einträge in `plan`).
+func _lay_streak(space: PhysicsDirectSpaceState3D, center: Vector3, rng: RandomNumberGenerator, plan: Array) -> void:
+	var dir := Vector3(sin(streak_yaw), 0.0, cos(streak_yaw))
+	var across := dir.cross(Vector3.UP)
+	var d := mush_size * 0.3
+	var drift := 0.0
+	for i in 80:
+		if d >= streak_len:
+			break
+		var t := d / streak_len
+		var w := mush_size * lerpf(0.55, 0.15, t) * rng.randf_range(0.9, 1.1)
+		drift = clampf(drift + rng.randf_range(-0.03, 0.03), -0.1, 0.1)
+		var spot := TraceMark.place_splat(space, center, dir * d + across * drift, Vector2(w, w), Vector3.ZERO, rng)
+		var off: Vector3 = spot.get("at", center) - center
+		if spot.is_empty() or absf(off.y) > TraceMark.BLOOD_FLAT * 3.0 or Vector2(off.x, off.z).length() < d * 0.9:
+			break   # Möbelkante, Stufe oder Wand (place_splat hat ihn davor gezogen)
+		var lift := 0.006 + mini(_spread.get_child_count(), 60) * 0.00002
+		for piece in TraceMark.lay_decal(_spread, spot, _mush_mat, rng, lift):
+			plan.append({"node": piece, "at": d / STREAK_FLOW, "time": 0.12})
+		d += w * TraceMark.STREAM_SPACING
 
 
 ## Regen auf dem Matsch (draußen, RainVeil): heller und dünner, ganz verwaschen bleibt nur ein Schleier, der Matsch ist weg.

@@ -189,7 +189,7 @@ func _throw(kid: Guest, job: Dictionary) -> void:
 	item.reparent(Game.social._world, true)
 	var gravity := Vector3(0, -float(ProjectSettings.get_setting("physics/3d/default_gravity")), 0)
 	var velocity := (target - start) / THROW_TIME - gravity * THROW_TIME * 0.5
-	item.throw_from(start, velocity)
+	item.throw_from(start, velocity, kid)   # das Kind selbst trifft der Wurf nicht
 	_witnesses(kid, String(job["no"]))
 	_run_off(kid)
 

@@ -11,6 +11,7 @@ const PROMPT_ICON := 24
 const MESSAGE_ICON := 24
 
 const WHITE_FADE := 3.5   ## flash_white: so schnell verblasst der Blitz (Deckkraft je Sekunde)
+const THROW_BAR := 24.0    ## Breite des Kraftbalkens beim Ausholen (Pixel, interne Auflösung, 3.13)
 
 var debug_enabled := false
 var fps_enabled := false          ## Bilder pro Sekunde und Bildzeit rechts oben (F10, --fps)
@@ -35,6 +36,8 @@ var _message: Label
 var _sleep_clock: Label   ## Uhrzeit beim Zeitsprung im Schlaf (Spielkonzept 3.6)
 var _debug: Label
 var _crosshair: ColorRect
+var _throw_bar: ColorRect    ## Wurfkraft unter dem Fadenkreuz beim Ausholen (Spielkonzept 3.13)
+var _throw_fill: ColorRect
 var _hide_overlay: ColorRect
 var _hide_material: ShaderMaterial
 var _breath_bg: ColorRect
@@ -96,6 +99,16 @@ func _ready() -> void:
 	_crosshair.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_crosshair)
 	_place(_crosshair, Vector4(0.5, 0.5, 0.5, 0.5), Vector4(-1, -1, 1, 1))
+	_throw_bar = ColorRect.new()
+	_throw_bar.color = Color(0, 0, 0, 0.45)
+	_throw_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_throw_bar.visible = false
+	add_child(_throw_bar)
+	_place(_throw_bar, Vector4(0.5, 0.5, 0.5, 0.5), Vector4(-THROW_BAR / 2.0, 5, THROW_BAR / 2.0, 7))
+	_throw_fill = ColorRect.new()
+	_throw_fill.color = Color(1, 1, 1, 0.75)
+	_throw_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_throw_bar.add_child(_throw_fill)
 
 	_prompt = _label(10, HORIZONTAL_ALIGNMENT_CENTER)
 	_place(_prompt, Vector4(0, 1, 1, 1), Vector4(8, -46, -8, -32))
@@ -254,6 +267,12 @@ func flash_hurt(amount: float) -> void:
 func set_prompt(text: String, icon: String = "") -> void:
 	_prompt.text = text
 	_prompt_icon.texture = IconArt.texture(icon, PROMPT_ICON) if text != "" else null
+
+
+## Wurfkraft beim Ausholen (Spielkonzept 3.13): 0 … 1 als schmaler Balken unter dem Fadenkreuz, 0 = weg.
+func set_throw_power(power: float) -> void:
+	_throw_bar.visible = power > 0.0
+	_throw_fill.size = Vector2(THROW_BAR * power, 2.0)
 
 
 func set_held(item_name: String) -> void:

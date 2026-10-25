@@ -56,6 +56,14 @@ const SPREAD := {
 	"coffee": {"flow": 1.2, "grow_big": Vector2(0.4, 0.7), "grow_small": Vector2(0.2, 0.4), "step": 1.0, "run": 0.7,
 		"stream_steps": 10, "stream_w": Vector2(0.05, 0.08), "puddle": Vector2(0.2, 0.35)},
 }
+## Geworfenes an der Wand (Spielkonzept 3.13, Traces.add_wall_splash, _spread_wall): je Flüssigem der Fleck (m;
+## Kürbis: halber Spritzer der Sorte), der Strom herunter (m/s, Breite m) und die Pfütze am Boden (m)
+const WALL_SPLASH := {
+	"mush": {"splat": 0.5, "speed": 0.35, "width": Vector2(0.05, 0.08), "puddle": Vector2(0.25, 0.4)},
+	"wax": {"splat": 0.2, "speed": 0.5, "width": Vector2(0.025, 0.04), "puddle": Vector2(0.1, 0.16)},
+	"coffee": {"splat": 0.26, "speed": 0.6, "width": Vector2(0.03, 0.05), "puddle": Vector2(0.18, 0.28)},
+}
+const WALL_COFFEE_SPECULAR := 0.15
 ## Ungefähre Stufenhöhe (m) – zählt beim Ausbreiten die Stufen hinunter
 const STEP_RISE := 0.2
 ## Strom die Treppe hinunter (lay_stream): die Quadrate der Kette liegen so weit auseinander (× ihre Kantenlänge, sie
@@ -65,7 +73,9 @@ const STREAM_GROW := 0.4
 const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck",
 	"wax": "Wachsflecken", "drops": "Blutstropfen", "wax_splash": "Ein großer Wachsfleck", "soot": "Ein Rußfleck",
 	"coffee": "Ein Kaffeefleck", "tea": "Ein Teefleck",
-	"bloody_hand": "Blutige Handabdrücke", "wall_splatter": "Blutspritzer", "wall_smear": "Eine blutige Schmierspur"}
+	"bloody_hand": "Blutige Handabdrücke", "wall_splatter": "Blutspritzer", "wall_smear": "Eine blutige Schmierspur",
+	"splash_mush": "Kürbismatsch an der Wand", "splash_wax": "Wachs an der Wand", "splash_coffee": "Kaffee an der Wand",
+	"splash_tea": "Tee an der Wand"}
 
 var kind := "scratch"
 ## Gemeinsam für alle Spuren: Ebene 1 × 1 und die Materialien der Textur-Flecken (lay_decal)
@@ -74,6 +84,8 @@ static var _runner_plane: PlaneMesh
 static var _decal_mats := {}
 static var _coffee_mat: ShaderMaterial
 static var _tea_mat: ShaderMaterial
+static var _wall_plane: PlaneMesh
+static var _mush_mats := {}   ## an der Wand: Kürbismatsch je Sorte, dazu „coffee“ und „tea“ (_wall_material)
 ## Auf Türen nicht anklickbar (sonst ließe sich die Tür nicht mehr öffnen) – bleibt dort.
 var solid := true
 ## Gerade entstanden (Traces.add_blood, add_guest_drop): Blut und Wachs breiten sich aus (SPREAD); aus dem Spielstand
@@ -201,6 +213,10 @@ func _ready() -> void:
 				var s := rng.randf_range(0.015, 0.035)
 				Geo.mesh(self, Geo.box(Vector3(s, s, 0.005)), red, Vector3(rng.randf_range(-0.1, 0.1), rng.randf_range(-0.1, 0.1), 0.0025))
 			Geo.add_box_shape(self, Vector3(0.25, 0.25, 0.04), Vector3.ZERO)
+	if kind.begins_with("splash_"):
+		# Geworfenes an der Wand (3.13): Fleck, Strom herunter, Pfütze – sobald die Spur steht (_spread_wall)
+		Geo.add_box_shape(self, Vector3(0.4, 0.4, 0.04), Vector3.ZERO)
+		_spread_wall.call_deferred()
 
 
 ## Blutlache (Spielkonzept 4.13, 6.12): BLOOD_SPLATS Flecken um das Opfer, große in der Mitte, kleine bis BLOOD_RADIUS.
@@ -285,6 +301,102 @@ func _spread_wax() -> void:
 		RainVeil.show_wash(self, wash, "wax")
 
 
+## Geworfenes an der Wand (Spielkonzept 3.13): „splash_mush:<sorte>“ (bzw. „:mini“ für den Zierkürbis), „splash_wax“,
+## „splash_coffee“, „splash_tea“. Lokale +Z zeigt von der Wand weg, Ursprung am Treffpunkt. Ein Fleck (Grafik wie am
+## Boden, als Ebene an der Wand), darunter ein kleiner Strom bis zum Boden – eine Kette unverzerrter Quadrate wie auf der
+## Treppe (lay_stream: Ursprung oben, wachsen nach unten) – und unten eine Pfütze (place_splat). Frisch läuft er mit
+## WALL_SPLASH „speed“ herunter; aus dem Spielstand liegt alles fertig da (jedes Mal etwas anders).
+func _spread_wall() -> void:
+	if not is_inside_tree():
+		return
+	var liquid := kind.trim_prefix("splash_").get_slice(":", 0)
+	var look: Dictionary = WALL_SPLASH["coffee" if liquid == "tea" else liquid]
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var space := get_world_3d().direct_space_state
+	var mat := _wall_material(liquid)
+	var size := float(look["splat"])
+	var k := 1.0
+	if liquid == "mush":
+		var sort := kind.get_slice(":", 1)
+		var full := Item.MINI_SPLAT if sort == "mini" else float(PumpkinKinds.data(sort).get("splat", Item.MUSH_SIZE))
+		k = full / Item.MUSH_SIZE
+		size *= k
+	if _wall_plane == null:
+		_wall_plane = PlaneMesh.new()
+		_wall_plane.orientation = PlaneMesh.FACE_Z
+		_wall_plane.size = Vector2.ONE
+	_runner_mesh()
+	var plan: Array = []
+	var splat := Geo.mesh(self, _wall_plane, mat, Vector3(0, 0, 0.001))
+	splat.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	splat.basis = Basis(Vector3.BACK, rng.randf() * TAU) * Basis.from_scale(Vector3(size, size * rng.randf_range(0.8, 1.0), 1.0))
+	plan.append({"node": splat, "at": 0.0, "time": 0.12})
+	var out := global_basis.z
+	var floor_hit := Traces.surface_below(space, global_position + out * 0.05, 4.0)
+	if not floor_hit.is_empty():
+		var floor_at: Vector3 = floor_hit["position"]
+		var drop := global_position.y - floor_at.y
+		var speed := float(look["speed"])
+		var widths: Vector2 = look["width"]
+		var w := rng.randf_range(widths.x, widths.y) * sqrt(k)
+		var top := -size * 0.2
+		var x := rng.randf_range(-0.15, 0.15) * size
+		var i := 0
+		while top > -drop and i < 200:
+			var side := minf(w * rng.randf_range(0.9, 1.1), top + drop)   # das letzte Stück endet am Boden
+			var piece := Geo.mesh(self, _runner_plane, mat, Vector3.ZERO)
+			piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			piece.transform = Transform3D(Basis.from_scale(Vector3(side, side, 1.0)), Vector3(x, top, 0.0015 + i * 0.00002))
+			plan.append({"node": piece, "at": 0.1 + (-size * 0.2 - top) / speed, "time": STREAM_GROW, "down": true})
+			x += rng.randf_range(-0.004, 0.004)
+			top -= w * STREAM_SPACING
+			i += 1
+		var puddles: Vector2 = look["puddle"]
+		var p := rng.randf_range(puddles.x, puddles.y) * sqrt(k)
+		var spot := place_splat(space, floor_at + out * (p * 0.45 + 0.02), Vector3.ZERO, Vector2(p, p), Vector3.ZERO, rng)
+		if not spot.is_empty():
+			for piece in lay_decal(self, spot, mat, rng, 0.004):
+				plan.append({"node": piece, "at": 0.1 + maxf(0.0, drop - size * 0.2) / speed, "time": rng.randf_range(0.4, 0.8)})
+	if fresh:
+		grow(self, plan)
+
+
+## Material des Flecks an der Wand (_spread_wall): Kürbismatsch in der Farbe der Sorte (wie Item._mush_mat), Wachs wie
+## am Boden, Kaffee und Tee matter als am Boden (WALL_COFFEE_SPECULAR – senkrecht fing der nasse Glanz das Licht und
+## sah grau aus).
+func _wall_material(liquid: String) -> ShaderMaterial:
+	match liquid:
+		"wax":
+			return decal_material(WAX_TEXTURE)
+		"coffee", "tea":
+			if not _mush_mats.has(liquid):
+				var mat := coffee_material(liquid == "tea").duplicate() as ShaderMaterial
+				mat.set_shader_parameter("specular", WALL_COFFEE_SPECULAR)
+				_mush_mats[liquid] = mat
+			return _mush_mats[liquid]
+	var sort := kind.get_slice(":", 1)
+	if not _mush_mats.has(sort):
+		var skin: Color = Item.MINI_COLOR if sort == "mini" else PumpkinKinds.data(sort)["color"]
+		var color := Item.mush_color(skin)
+		var mat := Mat.decal(Item.MUSH_TEXTURE)
+		mat.set_shader_parameter("albedo", Color(color.r / Item.MUSH_TEX_COLOR.r, color.g / Item.MUSH_TEX_COLOR.g,
+			color.b / Item.MUSH_TEX_COLOR.b))
+		splat_look(mat, Item.MUSH_TEXTURE)
+		_mush_mats[sort] = mat
+	return _mush_mats[sort]
+
+
+## Die Ebene der Ströme (FACE_Z, Ursprung an der Oberkante – wächst nach unten), einmal für alle.
+static func _runner_mesh() -> PlaneMesh:
+	if _runner_plane == null:
+		_runner_plane = PlaneMesh.new()
+		_runner_plane.orientation = PlaneMesh.FACE_Z
+		_runner_plane.size = Vector2.ONE
+		_runner_plane.center_offset = Vector3(0, -0.5, 0)   # Ursprung an der Oberkante: wächst nach unten
+	return _runner_plane
+
+
 # --- Flecken auf der Fläche darunter (Blut, Wachs, Kürbismatsch – Item._lay_mush) -------------------------------------
 
 ## Ein Fleck aus place_splat als Ebene mit Grafik (psx_decal) unter `parent`, `lift` m über der Fläche: frei gedreht
@@ -334,11 +446,7 @@ static func lay_stream(parent: Node3D, space: PhysicsDirectSpaceState3D, spot: D
 	var plan: Array = []
 	if downhill == Vector3.ZERO or not spot["along"] or int(flow["stream_steps"]) <= 0:
 		return plan
-	if _runner_plane == null:
-		_runner_plane = PlaneMesh.new()
-		_runner_plane.orientation = PlaneMesh.FACE_Z
-		_runner_plane.size = Vector2.ONE
-		_runner_plane.center_offset = Vector3(0, -0.5, 0)   # Ursprung an der Oberkante: wächst nach unten
+	_runner_mesh()
 	var size: Vector2 = spot["size"]
 	var across := Basis(Vector3.UP, float(spot["yaw"])) * Vector3.RIGHT
 	var face := Basis.looking_at(-downhill, Vector3.UP)   # +Z zeigt die Treppe hinunter, zum Betrachter
@@ -633,7 +741,7 @@ func can_wipe() -> bool:
 
 
 func get_prompt(_player: Player) -> String:
-	var label: String = NAMES.get(kind, "Eine Spur")
+	var label: String = NAMES.get(kind.get_slice(":", 0), "Eine Spur")   # „splash_mush:<sorte>“
 	return "%s – wegwischen [E]" % label if can_wipe() else label
 
 

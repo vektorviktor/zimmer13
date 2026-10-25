@@ -13,7 +13,7 @@ const CONTROLS := [
 	["Leertaste", "Springen · Aufstehen"],
 	["Strg / C", "Ducken"],
 	["E", "Nehmen, Benutzen, Reden, Hinsetzen"],
-	["G", "Gegenstand ablegen"],
+	["G", "Ablegen · lange halten: werfen"],
 	["Q (halten)", "Tasche: wählen, loslassen nimmt in die Hand"],
 	["1–6", "Fach der Tasche gleich in die Hand"],
 	["Rechtsklick (halten)", "Im Versteck Luft anhalten", "danach"],

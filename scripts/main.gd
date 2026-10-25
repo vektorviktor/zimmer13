@@ -105,6 +105,9 @@ extends Node3D
 ##                               (5.8); Sorte aus PumpkinKinds oder „mini“ (Zierkürbis), z. B. --fall=5,giant; mit
 ##                               --time=+2 danach ist der Matsch verblasst und weg · „kerze“ bzw. „birne“: eine brennende
 ##                               Kerze (zerbricht ab 2 m) bzw. Glühbirne (platzt ab 1,5 m), z. B. --fall=3,birne
+##   --wurf[=k[,gegenstand]]     Werfen (3.13): nach 1 s einen Gegenstand in die Hand und mit Kraft k (0 … 1, Standard 1)
+##                               in Blickrichtung werfen – Standard ein Kürbis; Sorte aus PumpkinKinds, mini, kerze, birne,
+##                               kaffee, tee, dose, messer, taschenlampe; z. B. --pos=…,blick,neigung --wurf=0.6,kerze
 ##   --kuerbis[=n]               Kürbismodelle (5.8) 1,5 m vor dir, Gesicht zu dir, Blick hinunter: der glatte und die fünf
 ##                               Fratzen mit Kerze in einer Reihe – bzw. nur Fratze n (1–5)
 ##   --kerzen                    Kerzenmodelle 0,8 m vor dir, Blick hinunter: Kerze brennend und aus (Gegenstand), rot und weiß
@@ -812,6 +815,21 @@ func run_debug(arg: String) -> bool:
 			pumpkin.global_position = Game.player.global_position + Vector3(front.x, 0, front.z).normalized() * 1.5 + Vector3.UP * height
 			if Game.tracing:
 				print("[Fall] %s fällt aus %.1f m bei %s" % [pumpkin.display_name, height, pumpkin.global_position]))
+	elif arg == "--wurf" or arg.begins_with("--wurf="):
+		# Werfen (3.13): nach 1 s einen Gegenstand in die Hand und mit Kraft k (0 … 1, Standard 1) in Blickrichtung werfen –
+		# Standard ein Kürbis; Sorte aus PumpkinKinds, mini, kerze (brennend), birne, kaffee, tee, dose, messer, taschenlampe
+		var parts := arg.substr(7).split(",") if arg.length() > 7 else PackedStringArray()
+		var power := clampf(parts[0].to_float(), 0.0, 1.0) if parts.size() > 0 and parts[0] != "" else 1.0
+		var what := parts[1] if parts.size() > 1 else ""
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
+			var kinds := {"mini": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE,
+				"birne": Item.Kind.BULB, "kaffee": Item.Kind.COFFEE, "tee": Item.Kind.TEA, "dose": Item.Kind.SODA_CAN,
+				"messer": Item.Kind.KNIFE, "taschenlampe": Item.Kind.FLASHLIGHT}
+			var item := Item.create(kinds[what], "lit" if what == "kerze" else "") if kinds.has(what) \
+				else Item.create(Item.Kind.PUMPKIN, "" if what in ["", "kuerbis", "kürbis"] else what)
+			Game.player.drop_held()
+			Game.player.receive_item(item)
+			get_tree().create_timer(0.3).timeout.connect(func() -> void: Game.player.throw_held(power)))
 	elif arg == "--kuerbis" or arg.begins_with("--kuerbis="):
 		# Kürbismodelle (PumpkinModel, 5.8): glatt und alle Fratzen mit Kerze in einer Reihe vor dir – bzw. nur Fratze n
 		var only := clampi(arg.substr(10).to_int(), 1, PumpkinModel.FACES) if arg.begins_with("--kuerbis=") else 0

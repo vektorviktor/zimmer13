@@ -62,6 +62,10 @@ const TRICK_SWEETS_MAX := 3
 const TREAT_RELATION := [5.0, 7.0, 9.0]
 const TRICK_MORE_WAIT := 8.0
 const TREAT_LINES := ["Danke!", "Noch eins? Juhu!", "Drei! Danke, danke, danke!"]
+## Mit einem Wurf getroffen (Spielkonzept 3.13): so viel weniger mag dich der Gast – mit Kürbis, Kerze, Tasse (was
+## zerplatzt oder zerbricht) stärker
+const THROWN_AT := -6.0
+const THROWN_AT_MESSY := -12.0
 ## Von Tür zu Tür (Spielkonzept 6.13): so oft zieht ein Kind los, zu so vielen Türen, so lange klopft es
 const ROUND_COOLDOWN := Vector2(45.0, 110.0)
 const ROUND_DOORS := 3
@@ -2187,6 +2191,34 @@ func on_player_rammed(guest: Guest, dir: Vector3) -> void:
 		add_deed(parent, "hostile")
 		parent.say("Lass mein Kind in Ruhe!")
 	guest.stagger(dir * 2.5, false)
+
+
+## Der Spieler trifft einen Gast mit einem Wurf (Spielkonzept 3.13): Er ruft auf und mag dich weniger, mit einem Kürbis
+## (oder etwas, das zerplatzt bzw. zerbricht) stärker; ein getroffenes Kind verärgert seine Eltern (wie Rammen, 6.13);
+## Zeugen mögen dich weniger und erzählen es weiter (Gerede).
+func on_player_threw_at(guest: Guest, item: Item, velocity: Vector3) -> void:
+	if guest.dead:
+		return
+	var messy := item.kind in Item.BURST_KINDS
+	add_deed(guest, "hostile")
+	change_relation(guest, THROWN_AT_MESSY if messy else THROWN_AT)
+	var witnesses := _witnesses_of_player(guest)
+	for witness in witnesses:
+		change_relation(witness, -6.0 if guest.is_child() else -3.0)
+	var parent := guest.parent_guest()
+	if parent:
+		change_relation(parent, -20.0)
+		add_deed(parent, "hostile")
+		parent.say("Lass mein Kind in Ruhe!")
+	if not witnesses.is_empty():   # wer es sah, erzählt es weiter
+		var involved: Array = [guest]
+		involved.append_array(witnesses)
+		_spread_gossip(-4.0, involved)
+	var push := Vector3(velocity.x, 0.0, velocity.z)
+	guest.stagger(push.normalized() * minf(2.5, 0.25 * push.length() * sqrt(item.mass)), false)
+	if Game.tracing:
+		print("[Wurf] %s getroffen (%s)%s" % [guest.display_name, item.display_name,
+			" – %d Zeugen" % witnesses.size() if not witnesses.is_empty() else ""])
 
 
 ## Ein wütender Gast rempelt dich an – seine Rache.

@@ -27,7 +27,7 @@
   - [3.10 Notizbuch und Tagebuch (entschieden 2026-10-23, Stufe 1 umgesetzt 2026-10-23)](#310-notizbuch-und-tagebuch-entschieden-2026-10-23-stufe-1-umgesetzt-2026-10-23)
   - [3.11 Kaffee (entschieden und umgesetzt 2026-10-24)](#311-kaffee-entschieden-und-umgesetzt-2026-10-24)
   - [3.12 Tee (entschieden und umgesetzt 2026-10-24)](#312-tee-entschieden-und-umgesetzt-2026-10-24)
-  - [3.13 Werfen (Entwurf 2026-10-25, noch nicht gebaut)](#313-werfen-entwurf-2026-10-25-noch-nicht-gebaut)
+  - [3.13 Werfen (entschieden und umgesetzt 2026-10-25)](#313-werfen-entschieden-und-umgesetzt-2026-10-25)
 - [4. Das Monster](#4-das-monster)
   - [4.1 Grundprinzip](#41-grundprinzip)
   - [4.2 Ankündigung („Manifestation“)](#42-ankündigung-manifestation)
@@ -529,7 +529,7 @@ Erkunden ──► Gäste treffen / reden / handeln ──► Deko erhalten (ode
 | **Gegenstände benutzen** | Kerze anzünden, Kürbis schnitzen, Pflanze gießen, Deko aufhängen … |
 | **Licht & Vorhänge** | Licht ein-/ausschalten, Vorhänge auf-/zuziehen (siehe 7.3) – Licht aus lockt das Monster an |
 | **Gegenstände tragen** | Alles wird **sichtbar in den Händen** getragen, einzeln (siehe 3.2) |
-| **Ablegen / Werfen** | Gegenstand bewusst abstellen, platzieren oder fallen lassen; werfen mit G lange halten (3.13, noch nicht gebaut) |
+| **Ablegen / Werfen** | Gegenstand bewusst abstellen, platzieren oder fallen lassen; werfen mit G lange halten (3.13) |
 | **Mit Gästen interagieren** | Ansprechen, Dialog, Handel, Geschenke |
 | **Mit Gästen spielen** | An einem Spieltisch (Schachbrett, Kartentisch …) eine Partie starten, evtl. um einen Einsatz (siehe 6.10) |
 | **Hinsetzen** | Auf Sofas, Bänke, Stühle, Bettkanten und Toiletten (siehe unten) |
@@ -942,15 +942,15 @@ macht den Schlaf, der sie abbaut, besser.
 - **Symbol:** Bis es ein eigenes gibt (Icon_tea.png), steht über dem Hinweis die Tasse vom Kaffee.
 - **Gespeichert:** die Nachwirkung beim Spieler und die Tasse. Debug: `--tee=n|kocher|gast[,id]`.
 
-### 3.13 Werfen (Entwurf 2026-10-25, noch nicht gebaut)
-Bisher werfen nur Kinder bei ihren Streichen (6.13), dort steht schon: „auch der Spieler kann werfen“. So soll es gehen –
-Wunsch des Spielers vom 2026-10-24, im Gespräch ausgearbeitet; die letzte Frage unten ist noch offen.
+### 3.13 Werfen (entschieden und umgesetzt 2026-10-25)
+Bisher warfen nur Kinder bei ihren Streichen (6.13). So wirft der Spieler – Wunsch vom 2026-10-24, im Gespräch
+ausgearbeitet, am 2026-10-25 gebaut (mit Ablenkung fürs Monster).
 
 - **Steuerung:** **G kurz** bleibt Aufhängen bzw. Verstreuen (5.6). **G lange halten** holt aus: ab etwa 0,3 s baut sich
   die Wurfkraft auf (voll nach etwa 1,2 s), **Loslassen wirft** in Blickrichtung. Schweres fliegt weniger weit (Masse);
   den Riesenkürbis kann man nur kurz wegschubsen. Eine kleine Anzeige am Fadenkreuz zeigt die Kraft.
 - **Aufprall** (wie bei den Streichen, `Item.throw_from`): **Kürbisse zerplatzen** aus jeder Höhe, **Kerzen zerbrechen**,
-  **Glühbirnen platzen** (7.3), alles andere landet einfach.
+  **Glühbirnen platzen** (7.3), Tassen zerspringen, alles andere prallt ab und landet. Wer getroffen wird, taumelt.
 - **Lange Spritzer:** Ein geworfener Kürbis hinterlässt einen **langen, in Flugrichtung gezogenen Fleck** – je schneller,
   desto länger. Gebaut wie der Strom auf Treppen: als Kette unverzerrter Flecken, keine gestauchten Grafiken.
 - **Wände:** Trifft etwas Flüssiges eine Wand (Kürbis, Kerze, Kaffee, Tee), klatscht ein Fleck an die Wand und **läuft als
@@ -958,10 +958,12 @@ Wunsch des Spielers vom 2026-10-24, im Gespräch ausgearbeitet; die letzte Frage
 - **Personen treffen:** Der Gast ruft auf und **mag dich weniger** (mit einem Kürbis stärker); ein getroffenes **Kind**
   verärgert seine Eltern (wie Rammen, 6.13); wer es sieht, erzählt es weiter (Gerede). Das Monster bleibt unbeeindruckt,
   ebenso der Kürbismann – ihn betäubt nur ein gezeigter Kürbis, nie ein Wurf (4.21, geändert 2026-10-25).
-- **Lärm:** Der Aufprall macht Lärm am Aufschlagort (4.15). **Offen:** Soll Werfen damit ausdrücklich als **Ablenkung
-  fürs Monster** taugen (es geht zum Aufschlagort)? Das wäre ein großer Zuwachs an Spielmechanik – Vorschlag ja.
-- **Gespeichert:** nichts Neues – die Folgen sind Flecken und Beziehungen, die schon gespeichert werden.
-  Debug: `--wurf=kraft[,gegenstand]`.
+- **Lärm und Ablenkung (entschieden 2026-10-25):** Der Aufprall macht Lärm am Aufschlagort (4.15) – und das Monster
+  geht ihm nach wie jedem Geräusch, das es hört: Werfen **taugt ausdrücklich als Ablenkung** (4.11). Wie weit man es
+  hört, hängt am Aufprall: ein zerplatzender Kürbis 8 m, eine zerbrechende Kerze oder Tasse 5 m, sonst 6 m, Schweres
+  (ab 2 kg) 9 m. Wer es jagt oder auf dem Weg zur Puppe ist, lässt sich nicht ablenken.
+- **Gespeichert:** nichts Neues – die Folgen sind Flecken und Beziehungen, die schon gespeichert werden (der lange
+  Spritzer und die Flecken an der Wand gehören dazu). Debug: `--wurf=kraft[,gegenstand]`.
 
 ---
 
@@ -1091,7 +1093,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | **Deko eines Gastes klauen** | Seine Zone wird schwächer → Neugier ↑ dort |
 | **Licht sabotieren** | Lichtschalter seines Raums ausschalten, **Glühbirnen klauen** (7.3), Kerze auspusten → dunkle Zone; geklaute Birnen machen das eigene Zimmer heller |
 | ~~**Die Puppe vor seine Tür tragen**~~ | entfällt 2026-10-22 – niemand trägt sie mehr hin; statt dessen ihm die Deko klauen: dann liegt sie vor seiner Tür (5.5) |
-| **Lärm machen** | Wecker / Spieluhr / Radio in seinem Zimmer oder Flur abstellen |
+| **Lärm machen** | Wecker / Spieluhr / Radio in seinem Zimmer oder Flur abstellen · etwas dorthin werfen – das Monster geht dem Aufschlag nach (3.13) |
 | **Gerüchte & Panik säen** | Mit dem Gast über das Monster reden → er gerät in Panik, macht Lärm, versteckt sich auffällig |
 | **Ihn in den Keller / Garten schicken** | Per Dialog oder Auftrag in eine dunkle Gefahrenzone locken |
 | **Sein Zimmertelefon klingeln lassen** | Klingeln ist Lärm in seinem Zimmer → Neugier ↑ dort (4.14) |

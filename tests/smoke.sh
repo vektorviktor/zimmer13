@@ -114,6 +114,10 @@ done <<'LIST'
 600|streiche,kerzen|--prank=candle --trace
 500|kerzen,spieler,licht|--deco=kerze --sprint --bag=streichhoelzer --trace
 600|streiche,kuerbis|--prank=pumpkin,111 --trace
+600|werfen,kuerbis,speichern|--pos=-6,0,-21,180,-25 --wurf --savetest --trace
+600|werfen,speichern|--pos=-6,0,-18,90,0 --wurf=1,kaffee --savetest --trace
+600|werfen,monster|--monster=-2,0,-15 --pos=-6,0,-21,180,-25 --wurf=1,dose --trace
+600|werfen,gaeste|--tp=edna --wurf=0.5 --trace
 600|streiche|--prank=topple --trace
 4000|spiele|--dice=bruno --autoplay
 4000|spiele|--chess=mila --autoplay --trace

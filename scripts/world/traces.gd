@@ -136,6 +136,24 @@ func add_guest_drop(kind: String, pos: Vector3) -> TraceMark:
 	return mark
 
 
+## Geworfenes Flüssiges an der Wand (Spielkonzept 3.13): „splash_mush:<sorte>“, „splash_wax“, „splash_coffee“,
+## „splash_tea“ – ein Fleck am Treffpunkt, der bis zum Boden herunterläuft (TraceMark._spread_wall). Zählt zu den
+## Spuren der Gäste (MAX_GUEST_MARKS).
+func add_wall_splash(kind: String, pos: Vector3, normal: Vector3) -> TraceMark:
+	if _guest_marks.size() >= MAX_GUEST_MARKS:
+		_guest_marks = _guest_marks.filter(func(m: Variant) -> bool: return is_instance_valid(m))
+		if _guest_marks.size() >= MAX_GUEST_MARKS:
+			(_guest_marks.pop_front() as Node).queue_free()
+	var flat := Vector3(normal.x, 0.0, normal.z).normalized()
+	var mark := TraceMark.new().setup(kind)
+	mark.fresh = true   # läuft herunter
+	add_child(mark)
+	mark.global_position = pos + flat * 0.012
+	mark.look_at(mark.global_position - flat, Vector3.UP)
+	_guest_marks.append(mark)
+	return mark
+
+
 ## Ein Zettel, den ein Gast hinterlässt (vor seiner Tür, an einem Fundort …).
 func add_guest_note(pos: Vector3, title: String, text: String) -> WarningNote:
 	var note := WarningNote.new().setup_custom(title, text)
@@ -371,7 +389,7 @@ func load_state(list: Array) -> void:
 		else:
 			mark.free()   # Tür oder Fenster gibt es nicht mehr – die Spur fällt weg
 			continue
-		if mark.kind in ["wax", "drops", "wax_splash", "soot", "coffee", "tea"]:
+		if mark.kind in ["wax", "drops", "wax_splash", "soot", "coffee", "tea"] or mark.kind.begins_with("splash_"):
 			_guest_marks.append(mark)
 
 
