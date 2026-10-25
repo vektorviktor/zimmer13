@@ -19,7 +19,7 @@ var vsync := true
 var fov := 72.0
 var reflections := true          ## Spiegelungen auf glatten Flächen (SSR: Lobbymarmor, Pool, Tapetenlack) – kostet Leistung
 # PS1-Look
-var psx_look := true             ## Hauptschalter: aus = volle Auflösung, glatte Texturen, kein Wackeln/Dithering
+var psx_look := false            ## Hauptschalter: aus = volle Auflösung, glatte Texturen, kein Wackeln/Dithering; Standard aus (Spielkonzept 9.2)
 var resolution := 0              ## Index in RESOLUTIONS
 var vertex_wobble := true
 var dithering := true

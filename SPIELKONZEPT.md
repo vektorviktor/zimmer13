@@ -119,7 +119,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 
 **Kernfrage für den Spieler:** *Vertraue ich den anderen Gästen – oder nehme ich mir, was ich zum Überleben brauche?*
 
-**Spielziel:** Dem Horrorhotel **entkommen**. Die Zeit läuft **durchgängig** (keine Level), gezählt in **Ingame-Tagen vom 1. Oktober bis Halloween** – draußen ist immer Nacht (siehe 2.1). Grafik: **Low-Poly im PS1-Look**.
+**Spielziel:** Dem Horrorhotel **entkommen**. Die Zeit läuft **durchgängig** (keine Level), gezählt in **Ingame-Tagen vom 1. Oktober bis Halloween** – draußen ist immer Nacht (siehe 2.1). Grafik: **realistischer Look** – der PS1-Look bleibt als Umschalter und wird am Ende als eigener Modus nachoptimiert (9.2, Entscheidung 2026-10-25).
 
 ---
 
@@ -2892,7 +2892,7 @@ Stück: **Mädchen und Junge, je etwa 7 und etwa 10 Jahre**. Dieselben Regeln f�
 entsättigt grau, Oberteil heller als die Hose, Haare nicht auf den Schultern, keine Muster, Accessoires oder
 eingebrannten Schatten) und dasselbe Skelett (Auto-Rigging mit Vorlage **Mixamo**, „Alle hinzugefügt“, eine
 Datei), damit die Tänze und Animationen der Gäste ohne Umbau passen. Dazu:
-- **Kopf etwas größer** als bei Erwachsenen, damit man Kinder im PS1-Look auch auf Entfernung erkennt.
+- **Kopf etwas größer** als bei Erwachsenen, damit man Kinder auch auf Entfernung und im Halbdunkel erkennt.
 - **Freundliche Gesichter**, Mund zu – Kinder sind Ziel des Geists, keine Horrorfiguren.
 - **Lange Hosen, keine Röcke oder Kleider** (Stoff zwischen den Beinen verzieht sich beim Riggen), **keine Kapuze**
   (Kopf- und Hals-Knochen werden als Haare eingefärbt, `build_guest.py`).
@@ -3564,7 +3564,7 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
   war, hängen schwarze Flocken noch einige Sekunden in der Luft und sinken. Sie ist eine Spur wie die
   Fußabdrücke (Tabelle in 4.13). Idee für später: Halluzinationen legen falsche Asche.
 - **Bäume:** Aus den Kronen löst sich **Herbstlaub**, trudelt zu Boden, bleibt kurz flach liegen und verblasst.
-- Alles im PS1-Stil: wenige, kleine, pixelige Partikel, Ein- und Ausblenden über das Raster wie beim Lakengeist.
+- ~~Alles im PS1-Stil: wenige, kleine, pixelige Partikel~~ → Partikel auf den realistischen Look ausgelegt (9.2, 2026-10-25); sparsam bleiben sie trotzdem.
 
 ### 7.7 Obergeschoss: Zimmer, Balkone, Katzenraum, Bibliothek (vorgemerkt und umgesetzt 2026-10-20)
 - **Zimmer:** grundsätzlich **Doppel- bis Dreibettzimmer**, so groß wie unten (5,8 × 5,8 m) oder über zwei
@@ -3823,7 +3823,7 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 - Auf dem Schreibtisch in Zimmer 13 liegt das **Tagebuch** des Spielers. **E** → Blick aufs Tagebuch → **Slot 1–3 wählen** → ein Eintrag wird geschrieben = gespeichert. Solange die Tagebuch-Ansicht offen ist, **pausiert das Spiel** (wie im Menü).
 - **Gesperrt während Vorwarnung/Manifestation** (seit 2026-10-21 auch, solange der Kürbismann im Haus oder der Lakengeist beim Spieler ist)**:** Das Tagebuch lässt sich nicht beschreiben – *„Meine Hände zittern zu sehr.“* Alle anderen Situationen sind erlaubt (auch bei offener Tür oder mit einem Gegenstand in der Hand – der wird einfach mitgespeichert).
 - **Der Eintrag als Slot-Beschreibung:** Das Spiel formuliert automatisch einen kurzen Tagebuchsatz aus dem aktuellen Stand, z. B. *„Edna ist fort. Bruno redet nicht mehr mit mir. Vor meiner Tür brennen zwei Kürbisse.“* Dieser Satz erscheint in der Slot-Übersicht. **Seit 2026-10-21:** Namen nur von Kernfiguren und zentralen Gästen, der Rest wird gezählt (8.10).
-- **Slot-Übersicht zeigt:** Vorschaubild (480 × 270, passt zum PS1-Look), Tagebuchsatz, Spielzeit, Datum/Uhrzeit, lebende Gäste.
+- **Slot-Übersicht zeigt:** Vorschaubild (480 × 270), Tagebuchsatz, Spielzeit, Datum/Uhrzeit, lebende Gäste.
 - Das Tagebuch ist **fest verankert** (nicht tragbar, nicht klaubar) – sonst könnte man sich das Speichern verbauen.
 - **Meilensteine (3.10, entschieden 2026-10-23):** Beim Speichern schreibt die Figur auf, was seit dem letzten Eintrag
   an Wendepunkten geschehen ist – erstes Auftauchen des Monsters, erster Tod, Aufzug repariert, aber auch ein
@@ -3942,7 +3942,12 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 - Modellierung: Hotelmodule (Wand-, Boden-, Türsegmente als modulares Kit), Möbel, Deko-Objekte, Gäste, Monster
 - Export: **glTF 2.0 (.glb)** → direkter Import in Godot
 - Godot kann `.blend`-Dateien auch direkt importieren, wenn Blender lokal installiert und im Editor konfiguriert ist
-- **Stil: Low-Poly im PS1-Look** – wenige Polygone, kleine Texturen (64–256 px), Nearest-Filter, keine glatten Normalen nötig
+- ~~**Stil: Low-Poly im PS1-Look** – wenige Polygone, kleine Texturen (64–256 px), Nearest-Filter, keine glatten Normalen nötig~~
+- **Stil: realistischer Look (entschieden 2026-10-25).** Alle neuen Materialien, Shader und Modelle werden auf das Bild
+  **ohne** PS1-Look ausgelegt: Texturen in voller Auflösung mit Mipmaps und linearem Filter, Normal- und
+  Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf. Der PS1-Look bleibt als Umschalter in den Einstellungen
+  (8.4) und darf nicht kaputtgehen, wird aber nicht mehr bevorzugt. Am Ende kommt ein eigens darauf optimierter
+  Zusatzmodus (eigene Texturgrößen, Filter, ggf. eigene Materialvarianten).
 - **Aufgabenteilung Blender ↔ Godot (Vorschlag):**
   - **Blender liefert das Aussehen:** einzelne Assets und ein modulares Kit (Wandsegment, Wandsegment mit Fenster, Vorhang, Wandlampe, Lichtschalter, Tür …) – **keine** große Blender-Szene des ganzen Hotels.
   - **Godot liefert das Verhalten:** Jedes Asset bekommt eine eigene Szene (`.tscn`), die das `.glb`-Modell mit Kollision, Licht und Skript verbindet (z. B. Fenster mit Glas-Kollisionsebene, Wandlampe mit flackerfähigem Licht).
@@ -3997,7 +4002,7 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 4. ~~Story~~ → **Das Abkommen und der Heizer** (2.3, entschieden 2026-10-11). ~~Offen: Mitwisser besetzen~~ (Tochter des Heizers als Kernfigur, 2026-10-21). Offen: was das Ding vor 1987 war.
 5. **Anzahl & Tiefe der Gäste:** Wenige tiefe Charaktere (3–5) oder viele einfache?
 6. **Können Gäste sterben / verschwinden?** (starke emotionale Konsequenz)
-7. ~~Grafikstil~~ → **Low-Poly im PS1-Look** (entschieden).
+7. ~~Grafikstil~~ → ~~**Low-Poly im PS1-Look**~~ → **realistischer Look**, PS1-Look als optimierter Zusatzmodus am Ende (9.2, entschieden 2026-10-25).
 8. **Umfang:** Kleines Halloween-Projekt (Jam-Größe) oder größeres Spiel?
 9. **Single-Player** – oder später Koop denkbar?
 10. **Sprache:** Deutsch, Englisch, beides?

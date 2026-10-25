@@ -16,6 +16,9 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
   kompatibilität kommt erst spät (Entscheidung 19.10.). `VERSION`/`MIN_VERSION` nur erhöhen und `--savetest`
   nur laufen lassen, wenn sich am Speichern selbst etwas ändert (Felder in `collect`/`apply`, neue Gruppe →
   auch in `WORLD_GROUPS`).
+- **Grafik realistisch, nicht PS1:** Neue Materialien, Shader und Modelle auf das Bild *ohne* PS1-Look auslegen
+  und so prüfen (`--no-psx`). Der PS1-Umschalter bleibt und darf nicht brechen, wird aber nicht bevorzugt; ein
+  darauf optimierter Modus kommt erst am Ende (Spielkonzept 9.2, Entscheidung 25.10., TECHNIK.md 1 „Grafik“).
 - `Item.Kind` und die Zufallsaufrufe in `GuestGenerator.make()` nur am Ende erweitern (Spielstände) – prüft
   `tests/run.tscn` (`save_rules`).
 - Rauchtest in drei Stufen (TECHNIK.md 10): nach jeder Änderung `bash tests/smoke.sh schnell` (~½ min), nach Arbeit an
