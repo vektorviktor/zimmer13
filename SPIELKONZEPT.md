@@ -956,7 +956,8 @@ Wunsch des Spielers vom 2026-10-24, im Gespräch ausgearbeitet; die letzte Frage
 - **Wände:** Trifft etwas Flüssiges eine Wand (Kürbis, Kerze, Kaffee, Tee), klatscht ein Fleck an die Wand und **läuft als
   kleiner Strom herunter** bis zum Boden, dort eine kleine Pfütze (wie auf Treppen).
 - **Personen treffen:** Der Gast ruft auf und **mag dich weniger** (mit einem Kürbis stärker); ein getroffenes **Kind**
-  verärgert seine Eltern (wie Rammen, 6.13); wer es sieht, erzählt es weiter (Gerede). Das Monster bleibt unbeeindruckt.
+  verärgert seine Eltern (wie Rammen, 6.13); wer es sieht, erzählt es weiter (Gerede). Das Monster bleibt unbeeindruckt,
+  ebenso der Kürbismann – ihn betäubt nur ein gezeigter Kürbis, nie ein Wurf (4.21, geändert 2026-10-25).
 - **Lärm:** Der Aufprall macht Lärm am Aufschlagort (4.15). **Offen:** Soll Werfen damit ausdrücklich als **Ablenkung
   fürs Monster** taugen (es geht zum Aufschlagort)? Das wäre ein großer Zuwachs an Spielmechanik – Vorschlag ja.
 - **Gespeichert:** nichts Neues – die Folgen sind Flecken und Beziehungen, die schon gespeichert werden.
@@ -1666,7 +1667,7 @@ Aufhalten und erlösen: 4.21.
 - **Abschreckung:** Hilft irgendetwas gegen ihn – Licht, Deko, Süßigkeiten, die man ihm hinlegt (er wollte ja
   nichts geben)? Bisher nicht. **Weiter offen (2026-10-21):** Süßigkeiten als Gegenspiel sind verworfen – mit Süßem
   vor einem Axtmörder zu wedeln, fühlt sich falsch an. **Entschieden (2026-10-21):** mit Kürbissen und Freunden
-  betäuben, mit seinem richtigen Kopf vom Dachboden erlösen (4.21).
+  betäuben (seit 2026-10-25 durch Zeigen, nicht durch Treffer), mit seinem richtigen Kopf vom Dachboden erlösen (4.21).
 - **Vorgeschichte im Spiel:** Wie erfährt man sie – Zeitungsausschnitt, Personalakte an der Rezeption, Gerüchte?
 - ~~**Geräusch:** Man sollte ihn hören (schwere Schritte, Axt, die über den Boden schleift).~~ Entschieden als
   Ankündigung in Stufen (4.20, 2026-10-21).
@@ -1727,7 +1728,7 @@ Aufhalten und erlösen: 4.21.
   im ganzen Haus zu hören ist** und sich nicht abstellen lässt – bis er das Hotel verlässt.
 - Gäste lernen das Signal und reden darüber („Wenn die Kürbisse auflodern, lauf.“); beim Auflodern verstecken sich
   die Ängstlichen sofort.
-- **Gegenspiel:** mit Kürbissen und der Hilfe der Gäste betäuben, mit seinem Kopf erlösen (4.21).
+- **Gegenspiel:** mit gezeigten Kürbissen und der Hilfe der Gäste betäuben, mit seinem Kopf erlösen (4.21).
 
 **3. Gleiche Sicht für alle:** Auch der Kürbismann sieht nach 4.15 (`Senses.can_see`), mit eigener Grundweite (Vorschlag
 etwa 12 m). Licht und Ducken wirken bei ihm wie beim Monster – im hellen Partyraum ändert das wenig, im dunklen Flur
@@ -1758,28 +1759,33 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 > Noch nicht umgesetzt. Beantwortet „Abschreckung“ aus 4.19 und nutzt das Sozialsystem (6.18): Allein kann man ihn nur
 > kurz aufhalten, mit Freunden lange genug, um ihn zu erlösen.
 
-**1. Betäuben mit einem Kürbis**
-- Ein Treffer mit einem **großen Kürbis** (beide Hände, 3.2) **betäubt ihn immer** – kein Würfeln. Der Kürbis
-  zerplatzt, sein Kürbiskopf verrutscht, er taumelt blind.
+**1. Betäuben: einen Kürbis zeigen** (geändert 2026-10-25)
+- **Hält man ihm einen Kürbis entgegen,** sodass er ihn sieht, **ist er betäubt** – immer, kein Würfeln. Er bleibt
+  wie gebannt stehen. Der Kürbis bleibt dabei heil.
+- **Er wird nie beworfen oder geschlagen:** Würfe (3.13) und Schläge bewirken bei ihm nichts.
 - **Allein hält das nur sehr kurz** – genug zum Fliehen oder um einen Gast aus seiner Reichweite zu holen.
 - **Woher der Kürbis kommt:** aus den Beeten (dort, wo er landet, 4.19) oder von einer Tür – bei Knappheit (5.10)
   eine echte Entscheidung: meine Deko oder die des Nachbarn?
-- *Verworfen:* ein Treffer nur von hinten (zu albern) und eine Trefferwahrscheinlichkeit.
-- **Offen:** wie getroffen wird (werfen, zuschlagen) und wie lange „sehr kurz“ ist.
+- *Verworfen:* ein Treffer nur von hinten (zu albern) und eine Trefferwahrscheinlichkeit – seit 2026-10-25 jeder
+  Treffer überhaupt, ob geworfen oder zugeschlagen.
+- **Offen:** wie lange „sehr kurz“ ist, aus welcher Entfernung das Zeigen wirkt und welche Kürbisse zählen (nur große
+  wie bisher, jede Sorte, auch geschnitzte, der Zierkürbis aus der Tasche?).
 
 **2. Hilfe der Gäste**
-- **Gute Freunde** in der Nähe holen sich von selbst einen Kürbis und kommen dazu.
+- **Gute Freunde** in der Nähe holen sich von selbst einen Kürbis, kommen dazu und halten ihn ihm entgegen.
 - **Rufen:** eine Ruf-Aktion an alle Gäste in Hörweite – „Holt Kürbisse!“ (dieselbe Mechanik wie „Warnen“, 6.18: beim
   Flackern „Versteckt euch!“). Jeder entscheidet selbst nach Beziehung, Angst und Mut; wer wenig von dir hält oder viel
   Angst hat, flieht schreiend. Rufen ist Lärm – auch der Kürbismann hört es.
-- **Jeder Helfer verlängert die Betäubung.** Zu dritt, zu viert reicht sie für das Ritual (3).
+- **Jeder Helfer, der ihm einen Kürbis zeigt, verlängert die Betäubung.** Zu dritt, zu viert reicht sie für das
+  Ritual (3).
 - **Der Preis:** Helfer können sterben – das zählt als Ursache in der Schuld-Kette (6.18).
 
 **3. Erlösen**
 - **Möglich, sobald man seinen richtigen Kopf hat.** Der liegt auf dem **Dachboden** (4) – frühestens ab etwa Tag 15
   erreichbar (ersetzt „ab Tag 20“ aus der Ideensammlung).
-- **Das Ritual:** Während er betäubt ist, nimmt man ihm den Kürbis ab und setzt ihm seinen Kopf wieder auf – [E]
-  einige Sekunden halten (wie die Kurbel, 7.4). Solange die Helfer ihn niederhalten, läuft die Betäubung weiter.
+- **Das Ritual:** Während er betäubt ist, nimmt man ihm den Kürbiskopf ab und setzt ihm seinen Kopf wieder auf – [E]
+  einige Sekunden halten (wie die Kurbel, 7.4). Solange die Helfer ihm ihre Kürbisse zeigen, läuft die Betäubung
+  weiter.
   Bricht man ab, wacht er auf – wütend.
 - **Danach** ist er vom Fluch befreit und **verschwindet für immer**. Feiern sind wieder sicher, das Erdgeschoss ist
   frei (4.20).
@@ -4030,7 +4036,7 @@ Danach steht das Hotel im Grundriss fest, und der Wechsel lohnt sich. Spätesten
 7m0. Drei Bedrohungen: eine je Ebene und außer Hörweite, Kürbismann mit Ankündigung in Stufen und leiernder Musik,
     gleiche Sicht, gemeinsame Lore („Das Hotel behält jeden“), Lakengeist erst nach dem ersten Angriff (4.20,
     entschieden 2026-10-21) · vertagt: Katzenraum
-7m00. Kürbismann aufhalten und erlösen: mit Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter dem Gitter
+7m00. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter dem Gitter
     (ab etwa Tag 15), Dachboden als Kammernkette mit seinem Kopf, Ritual, Schädel/Axt/Jeansjacke als Deko (4.21,
     entschieden 2026-10-21)
 7m1. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
