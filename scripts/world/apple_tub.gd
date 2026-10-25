@@ -54,13 +54,38 @@ func _ready() -> void:
 	staves.bottom_radius = RADIUS * 0.9
 	staves.height = TUB_H
 	staves.radial_segments = 20
+	staves.cap_top = false   # oben offen, sonst liegt ein Deckel über Wasser und Äpfeln
 	Geo.mesh(self, staves, wood, Vector3(0, TUB_H / 2.0, 0))
-	for y in [0.1, TUB_H - 0.08]:   # Eisenreifen
-		Geo.mesh(self, Geo.cylinder(RADIUS * (0.93 if y < 0.3 else 1.0) + 0.006, 0.035, 20), Mat.metal(Color(0.3, 0.3, 0.32)), Vector3(0, y, 0))
+	var inner := staves.duplicate() as CylinderMesh   # Innenwand: Flächen nach innen, sonst sieht man durch die Wand
+	inner.top_radius = RADIUS - 0.025
+	inner.bottom_radius = RADIUS * 0.9 - 0.025
+	inner.cap_bottom = false
+	inner.flip_faces = true
+	Geo.mesh(self, inner, wood, Vector3(0, TUB_H / 2.0, 0))
+	var rim := TorusMesh.new()   # Rand der Dauben oben
+	rim.inner_radius = RADIUS - 0.027
+	rim.outer_radius = RADIUS + 0.002
+	rim.rings = 20
+	rim.ring_segments = 6
+	Geo.mesh(self, rim, wood, Vector3(0, TUB_H, 0))
+	for y in [0.1, TUB_H - 0.08]:   # Eisenreifen, offene Ringe
+		var hoop := Geo.cylinder(RADIUS * (0.93 if y < 0.3 else 1.0) + 0.006, 0.035, 20)
+		hoop.cap_top = false
+		hoop.cap_bottom = false
+		Geo.mesh(self, hoop, Mat.metal(Color(0.3, 0.3, 0.32)), Vector3(0, y, 0))
 	var water := StandardMaterial3D.new()
-	water.albedo_color = Color(0.05, 0.08, 0.08)
-	water.metallic = 0.6
-	water.roughness = 0.05
+	water.albedo_color = Color(0.16, 0.22, 0.2)
+	water.roughness = 0.06
+	var ripples := NoiseTexture2D.new()   # leichte Wellen, die langsam treiben (_float)
+	ripples.noise = FastNoiseLite.new()
+	ripples.noise.frequency = 0.03
+	ripples.seamless = true
+	ripples.as_normal_map = true
+	ripples.bump_strength = 4.0
+	water.normal_enabled = true
+	water.normal_texture = ripples
+	water.normal_scale = 0.6
+	water.uv1_scale = Vector3(2, 2, 2)
 	_water = Geo.mesh(self, Geo.cylinder(RADIUS - 0.03, 0.01, 20), water, Vector3(0, WATER_Y, 0))
 	Geo.add_box_shape(self, Vector3(RADIUS * 2.0, TUB_H, RADIUS * 2.0), Vector3(0, TUB_H / 2.0, 0))
 	var face_mat := StandardMaterial3D.new()
@@ -253,6 +278,8 @@ func _stop(p: Player, text: String) -> void:
 
 ## Äpfel schaukeln auf dem Wasser, treiben langsam, stoßen an den Rand.
 func _float(delta: float) -> void:
+	var w := _water.material_override as StandardMaterial3D
+	w.uv1_offset += Vector3(0.01, 0.006, 0) * delta * (4.0 if _under else 1.0)
 	for a in _apples:
 		var pos: Vector2 = a["pos"]
 		var vel: Vector2 = a["vel"]
