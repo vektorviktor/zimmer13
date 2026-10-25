@@ -969,8 +969,9 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   je `shock_style()` (aus dem Archetyp – keine neuen Zufallszahlen im Generator), dann `_after_shock()`. `remember()`
   legt ein Erlebnis an (`experiences`), `DialogUI.open` erzählt das älteste unerzählte (`Social.experience_line`).
 - **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze, Zustand im Gast; Spielkonzept
-  6.17): `Wounds.survives()` in `MonsterDirector.kill_guest` (zählt dann nicht als Opfer) und `PumpkinMan._hit`; der
-  Lakengeist verwundet beim Losreißen. `Guest.wound_by(art, angreifer)` setzt Wunde, Heilzeit, Bettruhe
+  6.17): `Wounds.survives(gast)` (20 %, `SURVIVE`) in `MonsterDirector.kill_guest` (zählt dann nicht als Opfer) und
+  `PumpkinMan._hit`; der Lakengeist verwundet beim Losreißen (`SheetGhost.GUEST_ESCAPE`, im Mittel ebenso 20 %).
+  **Kernfiguren** (`Guest.is_core()`: Profil aus `GuestProfiles.ALL`) überleben jeden Angriff, auch im Puppenzimmer. `Guest.wound_by(art, angreifer)` setzt Wunde, Heilzeit, Bettruhe
   (`_go_to_bed`, `in_sickbed()` – ansprechbar), Blutspur (`_bleeding`), `wound_facts` und erzählt es weiter
   (`_spread_wound_news`). Heiser: `Game.sound_at("wheeze")` (eigener `VOICES`-Eintrag aus `breath.wav`). Besuch am
   Krankenbett: `DialogUI._wound_visit`. Gespeichert je Gast: `wound`, `wound_left`, `wound_bed`, `wound_facts`,
@@ -1016,7 +1017,8 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   ein Kind im Versteck als leer, `Director.on_actor_hid`/`kill_guest` übergehen Kinder, `_max_victims` zählt sie nicht,
   der Lakengeist würgt nie (`_frighten_child`), der Kürbismann jagt sie nicht (`_can_hunt`). Kinder zählen nicht als
   Zeugen (`_witness_guests`) und nicht für `all_asleep()`. Neue Bedrohung → dasselbe beachten.
-- Familie: Schreck des Kindes trifft die Eltern; stirbt der Elternteil, schließt sich das Waisenkind dem Spieler an.
+- Familie: Schreck des Kindes trifft die Eltern. Waisen (`is_orphan()`) schließen sich dem Spieler nicht an (seit
+  2026-10-25); die Zeile „orphan“ im Generator ist ungenutzt, bleibt aber (Spielstände, `save_rules`).
 - **Nachtruhe:** `sleepless` (`_night_activity()`: ans Fenster, durch den Flur, an Zimmer 13 klopfen).
 - **Süßes oder Saures:** an Zimmer 13 (`Social._update_tricks`, `_trick_at_door`, `give_trick_sweet`, sonst
   `_trick_prank`) und **von Tür zu Tür** (`_update_rounds`, `start_round`, `_rounds[id]` mit Phasen `walk`, `knock`,

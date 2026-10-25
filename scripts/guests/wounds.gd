@@ -1,12 +1,12 @@
 class_name Wounds
-## Überlebende & Verletzungen (Spielkonzept 6.17, entschieden 2026-10-21): Etwa vier von zehn Gästen überleben einen
-## Angriff – entschieden beim Angriff, ohne Lebenspunkte. Je Angreifer eine Verletzung: Kratzer vom Monster (nichts
+## Überlebende & Verletzungen (Spielkonzept 6.17, entschieden 2026-10-21): Etwa zwei von zehn Gästen überleben einen
+## Angriff (seit 2026-10-25, vorher vier von zehn), Kernfiguren immer – entschieden beim Angriff, ohne Lebenspunkte. Je Angreifer eine Verletzung: Kratzer vom Monster (nichts
 ## Großes), Axtwunde vom Kürbismann (humpelt, blutet eine Spur), Würgemale vom Lakengeist (heiser, atmet schwer). Wer
 ## verletzt ist, erzählt zuverlässig, was er erlebt hat, und die Beziehung zu ihm ändert sich doppelt so schnell.
 ## Nur Daten und Sätze – den Zustand trägt der Gast (Guest.wound …).
 
 ## So oft überlebt ein Gast einen Angriff (Lakengeist: SheetGhost.GUEST_ESCAPE, im Mittel ebenso)
-const SURVIVE := 0.4
+const SURVIVE := 0.2
 ## Je Art: Name, Heilung (Spielsekunden, 300 = ein Spieltag), davon im Bett, Gehtempo, ob er rennen kann, wie lange er
 ## blutet (Spur), ob er heiser ist und schwer atmet
 const KINDS := {
@@ -78,8 +78,11 @@ static func data(kind: String) -> Dictionary:
 	return KINDS.get(kind, {})
 
 
-## Überlebt er? (Monster, Kürbismann – beim Lakengeist entscheidet SheetGhost über das Losreißen)
-static func survives() -> bool:
+## Überlebt er? (Monster, Kürbismann – beim Lakengeist entscheidet SheetGhost über das Losreißen.) Kernfiguren
+## überleben jeden Angriff (Spielkonzept 4.33, 6.17).
+static func survives(guest: Guest = null) -> bool:
+	if guest != null and guest.is_core():
+		return true
 	return randf() < SURVIVE
 
 

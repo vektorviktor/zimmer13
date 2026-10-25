@@ -1028,8 +1028,9 @@ func kill_guest(guest, spot: HideSpot) -> void:
 	if not wants_victim() and not raided:   # harmlos, oder es sieht sich nur um (4.17)
 		_scare_guest(guest, spot)
 		return
-	if not doomed and Wounds.survives():
-		# Er reißt sich los, als es ihn wegschleppen will (Spielkonzept 6.17): nur Kratzer – es bleibt hungrig
+	if guest.is_core() or (not doomed and Wounds.survives()):
+		# Er reißt sich los, als es ihn wegschleppen will (Spielkonzept 6.17): nur Kratzer – es bleibt hungrig.
+		# Kernfiguren überleben immer, auch im Puppenzimmer (4.33)
 		if Game.tracing:
 			print("[Losgerissen] %s" % guest.display_name)
 		if spot != null:

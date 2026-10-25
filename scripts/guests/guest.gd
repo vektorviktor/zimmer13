@@ -111,7 +111,7 @@ const TEA_CALM := 15.0
 ## Kinder (Spielkonzept 6.13): Grundwert an Schwäche für den Lakengeist; so viel Angst bekommen die Eltern,
 ## wenn ihr Kind erschrickt; so oft rennt ein Kind los (Lärm wie Rennen) und so oft lacht es dabei bzw. auf
 ## Feiern; so oft kann es in der Nachtruhe nicht schlafen und so lange bleibt es dann wach; so oft schenkt es
-## dir etwas, wenn es dich mag; so oft schließt sich ein Waisenkind dir an
+## dir etwas, wenn es dich mag
 const CHILD_WEAKNESS := 0.5
 const CHILD_SCARE_FEAR := 40.0
 const CHILD_ROMP := 0.35
@@ -119,7 +119,6 @@ const CHILD_LAUGH := Vector2(6.0, 14.0)
 const SLEEPLESS_CHANCE := 0.3
 const SLEEPLESS_TIME := Vector2(120.0, 240.0)
 const CHILD_GIFT := 0.2
-const ORPHAN_FOLLOW := 0.5
 ## Tagesablauf (Spielkonzept 2.4): Faktoren auf die Vorlieben des Gasts (profile.activities) je Phase der Uhr –
 ## morgens Küche und Garten, tagsüber wie gewohnt, abends Bar und Lobby, die Zimmer sind dann fast leer
 const PHASE_ACTIVITIES := {
@@ -312,6 +311,11 @@ func _ready() -> void:
 ## Kind (Spielkonzept 6.13): nie Opfer, trinkt nicht, kommt immer zu Feiern, schlägt und klaut nicht.
 func is_child() -> bool:
 	return bool(profile.get("child", false))
+
+
+## Kernfigur (Spielkonzept 6.0) – handgeschriebenes Profil statt erzeugtem; überlebt jeden Angriff (4.33, 6.17).
+func is_core() -> bool:
+	return GuestProfiles.ALL.has(id)
 
 
 ## Seine Stimme für SynthAudio.play_shot: "voice" ("m", "f", "child"), "pick" (immer dieselbe Aufnahme),
@@ -1901,16 +1905,13 @@ func _run_to_parent() -> void:
 	_romp = true
 
 
-## Kinder, die dich mögen, schenken dir ab und zu etwas; ein Waisenkind bleibt bei dir. true = beschäftigt.
+## Kinder, die dich mögen, schenken dir ab und zu etwas. Waisen schließen sich dir nicht an (Spielkonzept 6.13,
+## 2026-10-25). true = beschäftigt.
 func _child_approach() -> bool:
 	var p := Game.player
 	if p == null or p.dead or p.hiding != null or p.in_dialog or not can_see_actor(p) or not p.recognized_by(self):
 		return false
 	var d := p.global_position.distance_to(global_position)
-	if is_orphan() and d < 8.0 and Social.tier(self) >= Social.Tier.NEUTRAL and randf() < ORPHAN_FOLLOW:
-		say(line("orphan"))
-		start_follow(240.0)
-		return true
 	if d < 4.0 and p.held == null and gift_cooldown <= 0.0 and Social.tier(self) >= Social.Tier.NICE and randf() < CHILD_GIFT:
 		for kind in [Item.Kind.LEAVES, Item.Kind.CANDLE]:
 			if int(stock.get(kind, 0)) > 0:

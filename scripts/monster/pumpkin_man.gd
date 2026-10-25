@@ -1021,7 +1021,7 @@ func _hit() -> void:
 		if Game.tracing:
 			print("[Kürbismann] schlägt daneben")
 		return
-	if target is Guest and Wounds.survives():
+	if target is Guest and Wounds.survives(target as Guest):
 		# Der Hieb trifft nicht voll (Spielkonzept 6.17): Axtwunde, er blutet eine Spur und humpelt davon
 		var survivor := target as Guest
 		if Game.tracing:
