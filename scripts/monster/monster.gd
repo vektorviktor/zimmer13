@@ -33,6 +33,11 @@ const ASH := 60
 const ASH_LIFE := 7.0
 const ASH_SIZE := 0.035
 const ASH_HEIGHT := 1.0            ## Mitte des Bereichs (±0,6 m), in dem sie entstehen
+## Salz (Spielkonzept 5.13): vor einer heilen Linie zögert es so lange (s), wenn es so nah (quer zur Linie) auf sie
+## zugeht – dann geht es hindurch und verwischt sie; an derselben Linie frühestens wieder nach SALT_AGAIN s
+const SALT_PAUSE := 3.0
+const SALT_NEAR := 0.9
+const SALT_AGAIN := 60.0
 
 var state := State.INACTIVE
 var noticed := false
@@ -79,6 +84,11 @@ var _look_timer := 0.0
 var _deter_timer := 0.0
 var _anim_time := 0.0
 var _anim_step := 0.0
+var _salt_wait := 0.0            ## zögert gerade vor einer Salzlinie (5.13)
+var _listen_wait := 0.0          ## lauscht gerade der Spieluhr (5.17)
+var _listen_at := Vector3.ZERO
+var _salt_line: SaltLine
+var _salt_seen := {}             ## SaltLine → Spielzeit, wann es zuletzt davor gezögert hat
 
 
 func _ready() -> void:
@@ -345,6 +355,13 @@ func _physics_process(delta: float) -> void:
 		return
 	_uv_slow = maxf(0.0, _uv_slow - delta)
 	_update_traces(delta)
+	if _listen_wait > 0.0:   # die Spieluhr (5.17): es bleibt stehen und horcht
+		_listen_wait -= delta
+		_stop(delta)
+		_face(_listen_at, delta)
+		return
+	if _check_salt(delta):
+		return
 	_state_timer += delta
 	var seen = _visible_actor()
 	_update_noticed(delta)
@@ -642,6 +659,54 @@ func _check_deterrence(delta: float) -> void:
 	else:
 		_search.clear()
 		_set_state(State.LURK)
+
+
+## Die Spieluhr (Spielkonzept 5.17): Es bleibt `seconds` lang stehen, sieht zu ihr hin und horcht – auch mitten in der
+## Jagd. Wie oft, entscheidet die Spieluhr (MusicBox).
+func listen_to(pos: Vector3, seconds: float) -> void:
+	if state in [State.INACTIVE, State.KILL]:
+		return
+	_listen_at = pos
+	_listen_wait = seconds
+	if Game.tracing:
+		print("[Monster] horcht auf die Spieluhr (%.0f s)" % seconds)
+
+
+## Salz (Spielkonzept 5.13): Geht es auf eine heile Salzlinie an einer Tür zu, bleibt es SALT_PAUSE s stehen und
+## starrt darauf – dann weiter (über die Linie, die es dabei verwischt). Fensterbänke sind ihm egal.
+func _check_salt(delta: float) -> bool:
+	if _salt_wait > 0.0:
+		_salt_wait -= delta
+		_stop(delta)
+		if is_instance_valid(_salt_line):
+			_face(_salt_line.global_position, delta)
+		if _salt_wait <= 0.0 and Game.tracing:
+			print("[Monster] geht über das Salz")
+		return _salt_wait > 0.0
+	if not state in [State.PATROL, State.INVESTIGATE, State.SEARCH, State.CHASE, State.SLINK]:
+		return false
+	var flat := Vector3(velocity.x, 0, velocity.z)
+	if flat.length() < 0.5:
+		return false
+	for node in get_tree().get_nodes_in_group("salt_lines"):
+		var line := node as SaltLine
+		if line.on_sill or not line.intact():
+			continue
+		var local: Vector3 = line.global_transform.affine_inverse() * global_position
+		if absf(local.x) > line.length / 2.0 + 0.3 or absf(local.z) > SALT_NEAR or absf(local.y) > 0.6:
+			continue
+		var toward := (line.global_transform.basis.inverse() * flat).z * local.z < 0.0
+		if not toward or Game.director.elapsed - float(_salt_seen.get(line, -INF)) < SALT_AGAIN:
+			continue
+		_salt_seen[line] = Game.director.elapsed
+		_salt_line = line
+		_salt_wait = SALT_PAUSE
+		Game.sound_at("hiss", line.global_position, 6.0, self, 0.6)
+		if Game.tracing:
+			print("[Monster] zögert vor dem Salz (%s) @ %s, Linie @ %s" % [line.room if line.room != "" else "Tür",
+				global_position.snapped(Vector3.ONE * 0.1), line.global_position.snapped(Vector3.ONE * 0.1)])
+		return true
+	return false
 
 
 func _open_doors() -> void:

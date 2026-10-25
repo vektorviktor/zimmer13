@@ -328,12 +328,14 @@ func _physics_process(delta: float) -> void:
 		State.HOVER:
 			_timer -= delta
 			if _timer <= 0.0:
-				if _stage >= ENTER_FROM:
+				if _stage < ENTER_FROM:
+					_vanish()
+				elif not _salt_repels():
 					_open_french_door()
 					state = State.ENTER
-				else:
-					_vanish()
 		State.ENTER:
+			if _salt_repels():   # durchs Fenster hinter dem Vorhang, vor der geöffneten Tür (5.13)
+				return
 			var neck := _eye_of(_victim) - Vector3(0, NECK_BELOW_EYES, 0)
 			var flat := Vector3(neck.x - global_position.x, 0, neck.z - global_position.z)
 			if _warn_only and flat.length() < WARN_RANGE:
@@ -575,6 +577,10 @@ func _check_doors() -> bool:
 			continue
 		if randf() >= DOOR_CHANCE * (by_room[no] as Array).size() * (1.0 + _weakness(victim)):
 			continue
+		var salt := SaltLine.guarding(no)
+		if salt:   # Salz an der Tür oder am Fenster (5.13): er kommt nicht
+			salt.repel()
+			continue
 		var stand := _door_stand(room)
 		if _witness_guests(stand + Vector3.UP * HANDS_Y, victim).size() >= WITNESSES \
 				or Game.director.player_can_see(stand + Vector3.UP * 1.2):
@@ -791,6 +797,28 @@ func _open_french_door() -> void:
 		print("[Lakengeist] öffnet die Fenstertür (%s)" % door.room_id)
 	if _victim is Player:
 		Game.caption("[Die Fenstertür schwingt auf]")
+
+
+## Salz (Spielkonzept 5.13): Ist das Opfer in einem Zimmer, das eine heile Salzlinie schützt, und er selbst draußen,
+## kommt er nicht hinein – die Linie zählt die Abweisung, er verschwindet. In der Dusche (4.24) hilft kein Salz.
+func _salt_repels() -> bool:
+	if _scripted or _victim == null or Game.social == null:
+		return false
+	var builder := Game.social.builder
+	var room := builder.home_room_at(_victim.global_position)
+	if room == "" or builder.home_room_at(global_position) == room:
+		return false
+	var line := SaltLine.guarding(room)
+	if line == null:
+		return false
+	line.repel()
+	if _victim is Player:
+		Game.caption("[Er kommt nicht über das Salz]")
+	if Game.tracing:
+		print("[Lakengeist] %d. Mal – das Salz hält ihn aus %s fern (bei %s)" % [_stage, room,
+			(_victim as Guest).display_name if _victim is Guest else "dir"])
+	_vanish()
+	return true
 
 
 ## Mitte des Fensters bzw. der Fenstertür (für den Abstand, ab dem er aufgibt).
@@ -1178,6 +1206,10 @@ func _start_lurk(spot: HideSpot) -> bool:
 	if spot == null or spot.type != HideSpot.Type.WARDROBE or state == State.STRANGLE or _warn_only \
 			or not (_stage >= ENTER_FROM or _window == null):
 		return false
+	var builder := Game.social.builder
+	var room := builder.home_room_at(spot.global_position)
+	if SaltLine.guarding(room) != null and builder.home_room_at(global_position) != room:
+		return false   # das Zimmer mit dem Schrank ist gesalzen (5.13)
 	_lurk_spot = spot
 	state = State.LURK
 	_timer = randf_range(LURK_TIME.x, LURK_TIME.y)

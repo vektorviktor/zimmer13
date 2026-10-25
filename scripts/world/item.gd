@@ -36,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -61,10 +61,13 @@ const PRICES := {
 	Kind.TEA: 1,
 	Kind.MATCHBOX: 5,
 	Kind.DARTS: 4,
+	Kind.SALT: 2,
+	Kind.MUSIC_BOX: 0,
+	Kind.APPLE: 1,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
-	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS]
+	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS, Kind.SALT, Kind.MUSIC_BOX, Kind.APPLE]
 ## Getränkedose: die Sorten und ihre Farbe
 const SODA_COLORS := {"limo": Color(0.95, 0.55, 0.1), "cola": Color(0.7, 0.07, 0.07)}
 ## Was man an die Wand hängen kann (Spielkonzept 5.6, 5.7) – der Besen lehnt nur daran
@@ -107,6 +110,8 @@ const CROWBAR_MODEL := "res://assets/models/crowbar.glb"
 ## Streichholzschachtel aus tools/build_matchbox.py (5.12): 66 × 20 × 52 mm, liegt flach, Ursprung mittig unten.
 ## Fehlt die Datei, bleibt ein Kasten.
 const MATCHBOX_MODEL := "res://assets/models/matchbox.glb"
+## Salzpackung (5.13): so viele Linien aus einer vollen Packung
+const SALT_LINES := 4
 ## Brennendes in der Hand (5.12): Wahrscheinlichkeit je Sekunde, dass es in der Bewegung ausgeht – Rennen im Haus, Gehen
 ## und Rennen draußen; draußen mal (1 + FLAME_WEATHER × Regenstärke), in Kürbis und Totenkopf mal FLAME_SHELTER
 const FLAME_OUT_RUN := 0.08
@@ -200,6 +205,8 @@ var broken := false
 var clothing_of := ""
 ## Getränkedose: „limo“ oder „cola“ (SODA_COLORS)
 var flavor := ""
+## Salzpackung (Spielkonzept 5.13): reicht noch für so viele Linien (im Zusatzfeld)
+var salt_left := 0
 
 var _glow_material: ShaderMaterial
 ## Kerze: die Flamme (CandleModel), sichtbar solange sie brennt
@@ -441,6 +448,8 @@ func create_extra() -> String:
 			return ("%.2f" % string_length) if hung else ""
 		Kind.SODA_CAN:
 			return flavor
+		Kind.SALT:
+			return str(salt_left)
 	return ""
 
 
@@ -1314,6 +1323,33 @@ func _build(extra: String) -> void:
 				add_child(dart)
 				dart.position = Vector3(-0.075 + (i % 2) * 0.006, 0.012, -0.035 + i * 0.014)
 				dart.basis = Basis(Vector3.UP, PI / 2.0 + (i - 2.5) * 0.04) * Basis(Vector3.BACK, PI / 4.0)
+		Kind.SALT:
+			# Salzpackung (Spielkonzept 5.13): Pappschachtel mit Ausgießer, blau mit weißem Band – reicht für SALT_LINES
+			# Linien vor Türen und auf Fensterbänken
+			salt_left = clampi(extra.to_int(), 1, SALT_LINES) if extra.is_valid_int() else SALT_LINES
+			display_name = _salt_name()
+			mass = 0.5
+			size = Vector3(0.075, 0.12, 0.045)
+			Geo.mesh(self, Geo.box(size), Mat.psx(Color(0.2, 0.38, 0.75)), Vector3(0, size.y / 2.0, 0))
+			Geo.mesh(self, Geo.box(Vector3(size.x + 0.002, 0.035, size.z + 0.002)), Mat.psx(Color(0.94, 0.94, 0.92)), Vector3(0, 0.065, 0))
+			Geo.mesh(self, Geo.box(Vector3(0.016, 0.004, 0.012)), Mat.metal(), Vector3(0.022, size.y + 0.002, 0.01))   # Ausgießer
+		Kind.MUSIC_BOX:
+			# Spieluhr (Spielkonzept 5.17): Kästchen aus dunklem Holz mit Messingkurbel, im Deckel „M.“ – Marions, 1987 vom
+			# Vater für Halloween gekauft und nie verschenkt. Aufziehen mit Linksklick (MusicBox)
+			display_name = "Spieluhr"
+			mass = 0.25
+			size = Vector3(0.09, 0.055, 0.065)
+			MusicBox.build(self, size)
+		Kind.APPLE:
+			# Apfel aus dem Bottich (Apfeltauchen, Spielkonzept 6.21) – essen mit Linksklick
+			display_name = "Apfel"
+			mass = 0.18
+			size = Vector3(0.075, 0.075, 0.075)
+			var apple := Geo.mesh(self, Geo.sphere(0.038, 0.07, 10, 6), Mat.psx(Color(0.72, 0.08, 0.06)), Vector3(0, 0.036, 0))
+			apple.scale = Vector3(1.0, 0.92, 1.0)
+			Geo.mesh(self, Geo.cylinder(0.003, 0.02, 4), Mat.psx(Color(0.3, 0.2, 0.1)), Vector3(0.002, 0.075, 0))
+			var leaf := Geo.mesh(self, Geo.box(Vector3(0.022, 0.002, 0.011)), Mat.psx(Color(0.25, 0.5, 0.15)), Vector3(0.012, 0.078, 0))
+			leaf.rotation.z = 0.4
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)
@@ -2149,6 +2185,18 @@ func _build_map() -> void:
 	var sheet := Geo.mesh(self, plane, HotelMap.material(page_id), Vector3(0, 0.002, 0))
 	sheet.rotation.y = PI   # PlaneMesh: Bildoberkante liegt bei −Z
 	Geo.mesh(self, Geo.box(Vector3(MAP_WIDTH, 0.0015, depth)), Mat.psx(Color(0.7, 0.64, 0.52)), Vector3(0, 0.00075, 0))
+
+
+## Salzpackung mit dem, was noch drin ist
+func _salt_name() -> String:
+	return "Salz" + ("" if salt_left >= SALT_LINES else (" (fast leer)" if salt_left == 1 else " (noch %d Linien)" % salt_left))
+
+
+## Eine Linie gestreut (Spielkonzept 5.13): true = die Packung ist jetzt leer.
+func use_salt() -> bool:
+	salt_left -= 1
+	display_name = _salt_name()
+	return salt_left <= 0
 
 
 ## Geschnitzt: „Geschnitzter Kürbis“, bei anderen Sorten mit deren Namen

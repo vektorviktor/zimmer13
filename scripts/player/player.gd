@@ -22,6 +22,8 @@ const RUN_SPEED := 4.8
 const CROUCH_SPEED := 1.3
 const JUMP_VELOCITY := 3.6
 const REACH := 2.2
+## Salz (Spielkonzept 5.13): Blick auf den Boden so nah an einer Tür streut vor sie
+const SALT_FLOOR_RANGE := 1.0
 ## Tasche für Kleines (Spielkonzept 3.2): so viele Fächer, je ein Gegenstand (Item.POCKET_KINDS)
 const BAG_SLOTS := 6
 ## Getränkedose trinken: so viel Schock weniger (die Ausdauer ist danach voll)
@@ -375,6 +377,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		drink_coffee()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.TEA and not hiding:
 		drink_tea()
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.SALT and not hiding:
+		strew_salt()
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.MUSIC_BOX and not hiding:
+		MusicBox.wind(held, self)   # Spieluhr aufziehen (5.17)
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.APPLE and not hiding:
+		eat_apple()
 	elif event.is_action_pressed("use_item") or event.is_action_pressed("light_mode"):
 		_use_flashlight(event.is_action_pressed("light_mode"))
 
@@ -1380,6 +1388,14 @@ func eat_held() -> void:
 	Game.say("Warm, süß und ein bisschen rauchig. Das tut gut.", 3.0)
 
 
+## Apfel essen (Apfeltauchen, Spielkonzept 6.21): knackig, etwas ruhiger.
+func eat_apple() -> void:
+	shock = maxf(0.0, shock - CAN_CALM)
+	consume_held()
+	Game.play_sound("bite", 0.7)
+	Game.say("Knackig und kalt vom Wasser.", 2.5)
+
+
 ## Getränkedose trinken (Spielkonzept 3.1, 3.2): wieder ganz bei Atem und etwas ruhiger – das Zischen hört man.
 func drink_can() -> void:
 	var cola := held.flavor == "cola"
@@ -1713,7 +1729,67 @@ func _update_focus() -> void:
 			elif held.kind == Item.Kind.LEAVES:
 				text = "Herbstlaub verstreuen [G]"
 				icon = "decorate"
+			elif held.kind == Item.Kind.MUSIC_BOX:
+				text = "Spieluhr aufziehen [Linksklick]" if not MusicBox.playing(held) else "Die Spieluhr spielt …"
+			elif held.kind == Item.Kind.APPLE:
+				text = "Apfel essen [Linksklick]"
+		if held and held.kind == Item.Kind.SALT and hiding == null:
+			var salt := salt_spot()
+			if not salt.is_empty():
+				# zusätzlich zum Hinweis der Tür bzw. des Vorhangs – [E] geht dort weiter
+				text = ("%s
+" % text if text != "" else "") + String(salt["prompt"])
 		Game.hud.set_prompt(text, icon)
+
+
+# --- Salz (Spielkonzept 5.13) ------------------------------------------------
+
+## Wohin eine Salzlinie käme: Tür (Schwelle, auf der eigenen Seite) oder Außenfenster (Fensterbank innen), die man
+## ansieht – oder Boden direkt vor einer Tür. {} = nirgends; sonst {"pos", "yaw", "len", "room", "sill", "prompt"};
+## "pos" fehlt, wenn man zu nah an der Schwelle steht.
+func salt_spot() -> Dictionary:
+	var space := get_world_3d().direct_space_state
+	var from := camera.global_position
+	var query := PhysicsRayQueryParameters3D.create(from, from - camera.global_transform.basis.z * REACH,
+		1 | 2 | 64 | HotelWindow.LAYER_BLOCK)
+	query.exclude = [get_rid()]
+	var hit := space.intersect_ray(query)
+	if hit.is_empty():
+		return {}
+	var opening: Node3D = null
+	var node := hit["collider"] as Node
+	while node != null and opening == null:
+		if node is Door or node is HotelWindow:
+			opening = node as Node3D
+		node = node.get_parent()
+	if opening == null and (hit["normal"] as Vector3).y > 0.6:   # Boden: die Tür, vor der man steht
+		var best := SALT_FLOOR_RANGE
+		var at: Vector3 = hit["position"]
+		for door: Door in Door.near(at):
+			var c := door.center()
+			var d := Vector2(c.x - at.x, c.z - at.z).length()
+			if d < best and absf(door.global_position.y - at.y) < 0.3:
+				best = d
+				opening = door
+	return SaltLine.spot_for(opening, global_position) if opening else {}
+
+
+## Eine Linie aus der Packung in der Hand streuen – eine alte Linie an derselben Stelle ersetzt sie.
+func strew_salt() -> void:
+	var spot := salt_spot()
+	if spot.is_empty():
+		Game.say("Salz gehört vor eine Tür oder auf eine Fensterbank.", 2.5)
+		return
+	if not spot.has("pos"):
+		Game.say("Du stehst zu nah an der Schwelle.", 2.0)
+		return
+	SaltLine.lay(get_parent(), spot)
+	Game.noise("salt", spot["pos"], self)
+	if held.use_salt():
+		consume_held()
+		Game.say("Die Salzpackung ist leer.", 2.5)
+	elif Game.hud:
+		Game.hud.set_held(held.display_name)
 
 
 # --- Ducken ---------------------------------------------------------------
@@ -1878,6 +1954,8 @@ func start_sleep(bed: HideSpot) -> void:
 	Game.say("Du schläfst ein … (%s)" % hours_text(sleep_hours), 2.0)
 	if Game.tracing:
 		print("[Schlaf] eingeschlafen für %d h (%.2f Nächte ohne Schlaf)" % [sleep_hours, nights_awake])
+	if Game.nightmare:   # einmal der Traum von 1987 statt des Zeitsprungs (4.29)
+		Game.nightmare.on_fell_asleep(bed)
 	if Game.sleep_skip:
 		Game.sleep_skip.try_begin()   # in der Nachtruhe springt die Zeit (3.6)
 

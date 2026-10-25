@@ -1003,6 +1003,8 @@ func _kind_name(kind: int) -> String:
 			return "Kerze"
 		Item.Kind.MATCHBOX:
 			return "Streichholzschachtel"
+		Item.Kind.SALT:
+			return "Salz"
 		Item.Kind.COBWEB:
 			return "Spinnenweben"
 		Item.Kind.LEAVES:

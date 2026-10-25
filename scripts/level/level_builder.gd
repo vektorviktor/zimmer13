@@ -127,6 +127,8 @@ const COFFEE_MACHINE_INSET := 0.3
 ## Wasserkocher (3.12): so weit rechts neben der Kaffeemaschine (Mitte zu Mitte); Tee-Tablett so weit neben dem Kaffee
 const KETTLE_GAP := 0.38
 const BAR_TEA_GAP := 0.42
+## Salzpackungen (Spielkonzept 5.13) in der Küche, bis sie im Plan stehen – ohne Nachschub
+const SALT_BOXES := 3
 const H := 3.5
 const T := 0.2
 ## Häute (Fliesen, Fassade, Beton): 2 cm stark, ihre Vorderseite so weit vor der Wandfläche (_wall_piece_at)
@@ -3198,6 +3200,14 @@ func _common_rooms() -> void:
 		kettle.rotation.y = machine.rotation.y
 		kettle.front = machine.front
 		root.add_child(kettle)
+		# Salz (5.13): solange keins im Plan steht, SALT_BOXES Packungen am rechten Ende der Küchenzeile
+		if not (_map["items"] as Array).any(func(i: Dictionary) -> bool: return i["kind"] == "SALT"):
+			for i in SALT_BOXES:
+				var sp := kr.get_center() - left * (reach - i * 0.09) - kf * 0.12
+				var salt := Item.create(Item.Kind.SALT)
+				salt.position = root.global_transform * Vector3(sp.x, float(counter_info["top"]) + 0.005, sp.y)
+				salt.rotation.y = machine.rotation.y + randf_range(-0.2, 0.2)
+				world.add_child(salt)
 
 
 ## Tanzplätze im Sechseckraster (DANCE_SPACING) über den ganzen Partyraum, die Mitte der Tanzfläche zuerst:
@@ -4118,6 +4128,7 @@ func _boiler_room() -> void:
 	_item(Item.Kind.KEY, Vector3(e - 0.8, 0.72, s - 0.8), "zimmer_18")
 	_item(Item.Kind.COINS, Vector3(c.x + 1.5, 0.02, n + 1.2), "2")
 	_item(Item.Kind.BATTERY, Vector3(w + 0.3, 1.61, c.y + 1.4))   # auf dem alten Regal
+	_item(Item.Kind.MUSIC_BOX, Vector3(w + 0.28, 1.61, c.y + 0.5))   # Marions Spieluhr (5.17), daneben
 	_note("2011", Vector3(w + 0.7, 0.61, s - 0.7))
 	_uv_writing("31.10.1987\nSIE HABEN IHN\nEINGESCHLOSSEN", Vector3(c.x, 1.5, s - 0.01), PI)
 	_resource_web(Vector3(e - 0.5, 1.7, s - 0.02), PI)
@@ -4430,7 +4441,11 @@ func room_at(p: Vector3) -> String:
 
 ## Wie room_at, nur zählt ein Bad zu dem Zimmer hinter seiner Tür.
 func home_room_at(p: Vector3) -> String:
-	var id := room_at(p)
+	return home_of(room_at(p))
+
+
+## Raum-ID → das Zimmer, zu dem sie gehört (ein Bad zum Zimmer davor, sonst sie selbst).
+func home_of(id: String) -> String:
 	return String(_bath_owner.get(id, id))
 
 
