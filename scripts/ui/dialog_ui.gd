@@ -462,8 +462,8 @@ func _gift(item: Item) -> void:
 	# Kürbis in seiner Lieblingssorte (Spielkonzept 5.8): freut ihn wie etwas, das er mag, und noch ein bisschen mehr
 	var is_pumpkin := kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN, Item.Kind.ROAST_PUMPKIN]
 	var favorite := is_pumpkin and item.variety == guest.favorite_pumpkin()
-	# Limo freut jedes Kind (6.13)
-	var liked := kind in (guest.profile["likes"] as Array) or favorite or (guest.is_child() and kind == Item.Kind.SODA_CAN)
+	# Limo und Tee freuen jedes Kind (6.13, 3.12)
+	var liked := kind in (guest.profile["likes"] as Array) or favorite or (guest.is_child() and kind in [Item.Kind.SODA_CAN, Item.Kind.TEA])
 	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + (8.0 if favorite else 0.0) + 3.0
 	var fitting := false
 	if guest.wound != "":
@@ -722,6 +722,8 @@ func _kind_name(kind: int) -> String:
 			return "Getränkedose"
 		Item.Kind.COFFEE:
 			return "Tasse Kaffee"
+		Item.Kind.TEA:
+			return "Tasse Tee"
 		Item.Kind.CROWBAR:
 			return "Brecheisen"
 		Item.Kind.TOOLBOX:

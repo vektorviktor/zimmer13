@@ -104,7 +104,9 @@ const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.SKULL, Item.Kind.SHEET_
 	Item.Kind.BAT_GARLAND, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.SPIDER, Item.Kind.LEAVES, Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN]
 ## Essbare Geschenke (6.17), auch Getränkedosen und Kaffee (3.11, auch an der Kaffeemaschine): isst bzw. trinkt er nach
 ## ein paar Sekunden, statt sie heimzutragen
-const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN, Item.Kind.SODA_CAN, Item.Kind.COFFEE]
+const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN, Item.Kind.SODA_CAN, Item.Kind.COFFEE, Item.Kind.TEA]
+## Eine Tasse Kräutertee (3.12) nimmt so viel Angst – geschenkt oder am Wasserkocher
+const TEA_CALM := 15.0
 ## Kinder (Spielkonzept 6.13): Grundwert an Schwäche für den Lakengeist; so viel Angst bekommen die Eltern,
 ## wenn ihr Kind erschrickt; so oft rennt ein Kind los (Lärm wie Rennen) und so oft lacht es dabei bzw. auf
 ## Feiern; so oft kann es in der Nachtruhe nicht schlafen und so lange bleibt es dann wach; so oft schenkt es
@@ -510,8 +512,11 @@ func _gift_step(delta: float) -> void:
 	if item.kind in FOOD_GIFTS:
 		held = null
 		item.queue_free()   # aufgegessen
+		if item.kind == Item.Kind.TEA:
+			fear = maxf(0.0, fear - TEA_CALM)   # Kräutertee beruhigt (3.12)
 		if randf() < 0.5:
-			say({Item.Kind.SWEETS: "Mmh.", Item.Kind.SODA_CAN: "Ahh, schön kalt.", Item.Kind.COFFEE: "Jetzt bin ich wach."}.get(item.kind, "Das war lecker."))
+			say({Item.Kind.SWEETS: "Mmh.", Item.Kind.SODA_CAN: "Ahh, schön kalt.", Item.Kind.COFFEE: "Jetzt bin ich wach.",
+				Item.Kind.TEA: "Ah, das tut gut."}.get(item.kind, "Das war lecker."))
 	elif state in [State.IDLE, State.WALK]:
 		_walk_to(_room_point(), State.CARRY_HOME)
 	else:
@@ -1395,6 +1400,8 @@ func _arrive() -> void:
 		State.EAT:
 			if Game.coffee and Game.coffee.expects(self):
 				Game.coffee.on_arrived(self)   # Kaffee am Morgen (3.11)
+			elif Game.kettle and Game.kettle.expects(self):
+				Game.kettle.on_arrived(self)   # Tee am Abend (3.12)
 			else:
 				Game.kitchen.on_arrived(self)   # Kürbissuppe (3.8)
 		State.HIDE_GO:

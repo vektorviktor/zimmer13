@@ -48,6 +48,7 @@ const COMMANDS := {
 	"decorate": ["[gast][,lobby][,allein|gross|hier][,haus][,hin]", "Schmück-Aktion: Gäste schmücken Tür, Flur oder Lobby · allein: ein Gast trägt Deko in sein Zimmer (haus: irgendwohin) · gross: großes Schmücken · hier: wo du stehst (hin: du stehst davor)"],
 	"search": ["[gast][,mit]", "Deko-Suche (5.9) – mit: du gehst mit"],
 	"cook": ["suppe|braten[,fertig]|gast[,id]", "Kochen (3.8): Kürbis liegt im Topf bzw. in der Pfanne, du stehst am Herd · gast: ein Gast kocht Suppe"],
+	"tee": ["n|kocher|gast[,id]", "Tee (3.12): n Tassen getrunken · kocher: du stehst davor, gleich fertig · gast: ein Gast holt sich Tee"],
 	"kaffee": ["n|maschine|gast[,id]", "Kaffee (3.11): n Tassen getrunken · maschine: du stehst davor, gleich fertig · gast: ein Gast holt sich Kaffee"],
 	"mess": ["[wachs]", "Kürbismatsch (oder Wachsfleck) vor dir, ein ordentlicher Gast putzt ihn weg (6.13)"],
 	"rival": ["gast1,gast2", "gast1 und gast2 verfeindet, du wirst mit gast1 befreundet – gast2 mag dich weniger (6.16)"],

@@ -121,6 +121,10 @@ done <<'LIST'
 2400|kaffee,kueche,gaeste|--kaffee=gast --trace
 4800|kaffee|--awake=2 --kaffee=3 --trace
 1800|kaffee,schlaf|--awake=2 --kaffee=1 --sleep=bett,2 --trace
+1200|tee,kueche|--tee=kocher --trace
+2000|tee,kueche,gaeste,kinder|--tee=gast --trace
+1800|tee,schlaf|--awake=2 --kaffee=1 --tee=1 --sleep=bett,2 --trace
+600|tee,speichern|--tee=1 --kaffee=1 --savetest
 600|symbole,notizbuch,speichern|--gesehen --show=gesehen --savetest
 900|symbole,gaeste|--kill=edna,geist --trace
 900|symbole,kuerbis|--kill=bruno,kuerbis --trace

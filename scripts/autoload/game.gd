@@ -37,6 +37,7 @@ var spiders: Spiders               ## Spinnen am Boden und in Schubladen (Spielk
 var sleep_skip: SleepSkip          ## Zeitsprung im Schlaf (Spielkonzept 3.6)
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
 var coffee: CoffeeMachine         ## Kaffeemaschine in der Küche (Spielkonzept 3.11), setzt sich selbst
+var kettle: TeaKettle             ## Wasserkocher in der Küche (Spielkonzept 3.12), setzt sich selbst
 var confetti: Confetti            ## Konfetti auf Feiern (Spielkonzept 7.6)
 var doll: JuryDoll                 ## die Puppe – „Halloween-Jury“ (Spielkonzept 5.5)
 var contest: DoorContest           ## Türschmuck-Wettbewerb, Brief, Brett, Siegerehrung (Spielkonzept 2.5)
@@ -143,6 +144,7 @@ func reset() -> void:
 	weather = null
 	kitchen = null
 	coffee = null
+	kettle = null
 	confetti = null
 	doll = null
 	contest = null

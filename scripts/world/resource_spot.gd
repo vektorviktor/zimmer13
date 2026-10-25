@@ -3,7 +3,7 @@ extends StaticBody3D
 ## Stelle, an der man Material bekommt: Laubhaufen unter Bäumen, Spinnweben in
 ## dunklen Ecken, Kerzenvorrat in der Küche, Lakengespenster in der Wäschekiste, Lichterketten
 ## in der Dekokiste (Spielkonzept 5.6), alte Deko im Keller (5.7), Getränkedosen in Kühlraum und Lager und – für Geld –
-## auf der Bartheke (3.2), ebenso Tassen Kaffee (3.11). Begrenzter Vorrat, wächst langsam nach – außer in den Kisten mit starker Deko
+## auf der Bartheke (3.2), ebenso Tassen Kaffee und Tee (3.11, 3.12). Begrenzter Vorrat, wächst langsam nach – außer in den Kisten mit starker Deko
 ## (regen_time 0, Spielkonzept 5.10): Die leeren sich, und Gäste nehmen aus jeder höchstens ein Stück am Spieltag.
 ## Mit `pool` gibt es abwechselnd verschiedene Dinge (Dekokiste, alte Deko); `kind` bestimmt nur das Aussehen.
 ## Spinnweben: lokale +Z zeigt von der Wand weg.
@@ -113,13 +113,14 @@ func _ready() -> void:
 				Geo.mesh(_visual, Geo.cylinder(0.033, 0.11, 8), Mat.psx(Item.SODA_COLORS[flavors[i % flavors.size()]]), at + Vector3(0, 0.065, 0))
 				Geo.mesh(_visual, Geo.cylinder(0.028, 0.012, 8), Mat.psx(Color(0.75, 0.76, 0.78)), at + Vector3(0, 0.126, 0))
 			Geo.add_box_shape(self, Vector3(0.4, 0.14, 0.27) if price == 0 else Vector3(0.3, 0.14, 0.12), Vector3(0, 0.07, 0))
-		Item.Kind.COFFEE:
-			# Tablett mit drei dampfenden Tassen auf der Bartheke (3.11)
+		Item.Kind.COFFEE, Item.Kind.TEA:
+			# Tablett mit drei dampfenden Tassen auf der Bartheke (3.11, Tee 3.12)
 			Geo.mesh(self, Geo.box(Vector3(0.32, 0.01, 0.13)), Mat.psx(Color(0.55, 0.5, 0.45)), Vector3(0, 0.005, 0))
 			for i in 3:
 				var at := Vector3(-0.1 + i * 0.1, 0.01, 0.0)
 				Geo.mesh(_visual, Geo.cylinder(0.038, 0.085, 8), Mat.psx(Item.CUP_COLOR), at + Vector3(0, 0.0425, 0))
-				Geo.mesh(_visual, Geo.cylinder(0.033, 0.004, 8), Mat.psx(Item.COFFEE_COLOR), at + Vector3(0, 0.084, 0))
+				Geo.mesh(_visual, Geo.cylinder(0.033, 0.004, 8), Mat.psx(Item.TEA_COLOR if kind == Item.Kind.TEA else Item.COFFEE_COLOR),
+					at + Vector3(0, 0.084, 0))
 			Geo.add_box_shape(self, Vector3(0.32, 0.1, 0.13), Vector3(0, 0.05, 0))
 	_update_visual()
 
@@ -203,9 +204,9 @@ func get_prompt(player: Player) -> String:
 	return "%s nehmen [E]" % label
 
 
-## Aktions-Symbol über dem Hinweis (IconArt): Kaffee an der Bar.
+## Aktions-Symbol über dem Hinweis (IconArt): Kaffee und Tee an der Bar.
 func get_icon(_player: Player) -> String:
-	return "coffee" if kind == Item.Kind.COFFEE else ""
+	return IconArt.drink_icon(kind)
 
 
 func interact(player: Player) -> void:

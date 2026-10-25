@@ -40,6 +40,14 @@ static func texture(name: String, size: int = SIZE) -> Texture2D:
 	return tex
 
 
+## Aktions-Symbol eines Getränks: Kaffee, Tee (eigenes Icon_tea.png, sobald es das gibt – bis dahin die Tasse vom
+## Kaffee).
+static func drink_icon(kind: int) -> String:
+	if kind == Item.Kind.TEA:
+		return "tea" if ResourceLoader.exists(DIR % "tea") else "coffee"
+	return "coffee" if kind == Item.Kind.COFFEE else ""
+
+
 ## Porträt einer Bedrohung („monster“, „ghost“, „pumpkin“).
 static func threat(id: String, size: int = SIZE) -> Texture2D:
 	return texture(String(THREATS[id]["icon"]), size) if THREATS.has(id) else null

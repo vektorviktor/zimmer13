@@ -82,7 +82,8 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     laden weiter, ohne Kaffee im Blut
 ## 42: Notizbuch „seen“ (Spielkonzept 3.10: gesehene Bedrohungen, Lesezeichen „Gesehen“) – ältere Stände laden weiter,
 ##     noch nichts gesehen
-const VERSION := 42
+## 43: Tee (Spielkonzept 3.12): player.tea und die Tasse (Item.Kind.TEA) – ältere Stände laden weiter, ohne Tee
+const VERSION := 43
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -363,7 +364,7 @@ func collect() -> Dictionary:
 			"pos": _v(stand if stand != Vector3.INF else p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
 			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
 			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised,
-			"coffee": p.coffee, "coffee_low": p.coffee_low, "caffeine": p.caffeine,
+			"coffee": p.coffee, "coffee_low": p.coffee_low, "caffeine": p.caffeine, "tea": p.tea,
 			"held": _item_data(p.held) if p.held else null,
 			"bag": p.bag.map(_bag_data),
 			"compass": p.has_compass, "map_pages": p.map_pages.duplicate(), "keyring": p.keyring.duplicate(),
@@ -499,6 +500,8 @@ func apply(data: Dictionary) -> void:
 		Game.kitchen.reset()
 	if Game.coffee:
 		Game.coffee.reset()
+	if Game.kettle:
+		Game.kettle.reset()
 	# Zuerst die zufällig erzeugten Gäste – alles Weitere bezieht sich auf ihre IDs
 	Game.social.restore_roster((data.get("social", {}) as Dictionary).get("roster", []))
 
@@ -628,6 +631,7 @@ func apply(data: Dictionary) -> void:
 	p.coffee = float(pd.get("coffee", 0.0))
 	p.coffee_low = float(pd.get("coffee_low", 0.0))
 	p.caffeine = float(pd.get("caffeine", 0.0))
+	p.tea = float(pd.get("tea", 0.0))
 	p.set_disguised(bool(pd.get("disguised", false)))
 	p.set_pockets(bool(pd.get("compass", false)), pd.get("map_pages", []), pd.get("keyring", []))
 	if pd.get("held") != null:

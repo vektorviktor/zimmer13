@@ -124,6 +124,9 @@ const COFFEE_TABLE_WOOD := 0.1
 const COFFEE_TABLE_CORNER_SEGMENTS := 4
 ## Kaffeemaschine (Spielkonzept 3.11): so weit vom linken Ende der Küchenzeile (Mitte der Maschine)
 const COFFEE_MACHINE_INSET := 0.3
+## Wasserkocher (3.12): so weit rechts neben der Kaffeemaschine (Mitte zu Mitte); Tee-Tablett so weit neben dem Kaffee
+const KETTLE_GAP := 0.38
+const BAR_TEA_GAP := 0.42
 const H := 3.5
 const T := 0.2
 ## Höhe des Obergeschosses (Oberkante Boden)
@@ -3061,6 +3064,11 @@ func _common_rooms() -> void:
 		var cup_at := at + along * (span / 4.0)
 		cups.rotation.y = tap.rotation.y
 		_supply(cups, Vector3(cup_at.x, float(counter["top"]), cup_at.y))
+		# Tee daneben (3.12)
+		var teas := ResourceSpot.new().setup(Item.Kind.TEA, "Tasse Tee", 6, 240.0).for_sale(1)
+		var tea_at := cup_at + along * BAR_TEA_GAP
+		teas.rotation.y = tap.rotation.y
+		_supply(teas, Vector3(tea_at.x, float(counter["top"]), tea_at.y))
 	# Getränkekisten auf dem Boden vor dem Regal in Kühlraum und Lager (im Lager weg von den Ersatzbirnen)
 	for room: String in ["kuehlraum", "lager"]:
 		var store := _furnishing("shelf", room)
@@ -3107,7 +3115,7 @@ func _common_rooms() -> void:
 		stove.rotation.y = atan2(sf.x, sf.y)
 		stove.front = Vector3(sf.x, 0, sf.y)
 		root.add_child(stove)
-	# Kaffeemaschine (Spielkonzept 3.11): am linken Ende der Küchenzeile, von vorn gesehen
+	# Kaffeemaschine (Spielkonzept 3.11): am linken Ende der Küchenzeile, von vorn gesehen – rechts daneben der Wasserkocher
 	var counter_info := _furnishing("kitchen_counter", "kueche")
 	if not counter_info.is_empty():
 		var kr: Rect2 = counter_info["rect"]
@@ -3120,6 +3128,13 @@ func _common_rooms() -> void:
 		machine.rotation.y = atan2(kf.x, kf.y)
 		machine.front = Vector3(kf.x, 0, kf.y)
 		root.add_child(machine)
+		# Wasserkocher (3.12) rechts daneben
+		var kp := mp - left * KETTLE_GAP
+		var kettle := TeaKettle.new()
+		kettle.position = Vector3(kp.x, float(counter_info["top"]), kp.y)
+		kettle.rotation.y = machine.rotation.y
+		kettle.front = machine.front
+		root.add_child(kettle)
 
 
 ## Tanzplätze im Sechseckraster (DANCE_SPACING) über den ganzen Partyraum, die Mitte der Tanzfläche zuerst:

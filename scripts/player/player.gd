@@ -6,7 +6,7 @@ extends CharacterBody3D
 ## Fächer über dem verschwommenen Spiel (es läuft weiter), Maus / Mausrad / [1]–[6] wählen, Loslassen nimmt den
 ## Gegenstand in die Hand – was die Hand hielt, fällt zu Boden; ein leeres Fach steckt Kleines aus der Hand ein.
 ## Am Körper: Kompass, Kartenblätter und Schlüsselbund – Karte (Tab) und Kompass (F) holt die linke Hand hervor.
-## Getränkedose oder Tasse Kaffee in der Hand: [Linksklick] trinkt.
+## Getränkedose, Tasse Kaffee oder Tee in der Hand: [Linksklick] trinkt.
 ## Kann sich in Schränken und unter Betten verstecken (3.4) und auf Sitzmöbel setzen (Seat, 3.1).
 ## Taschenlampe in der Hand: [Linksklick] an/aus, [R] normales Licht ↔ UV (4.16).
 
@@ -106,6 +106,11 @@ const COFFEE_SLEEP := 0.5
 const COFFEE_FADE := 120.0
 const COFFEE_JITTER := 2.5
 const COFFEE_HEART := 0.4
+## Kräutertee (Spielkonzept 3.12): nimmt so viel Schock; so viele Spielsekunden danach schläft man besser – Schlaf zählt
+## TEA_SLEEP-fach (30 % mehr) und der Kaffee stört dabei nicht mehr
+const TEA_CALM := 0.1
+const TEA_TIME := 120.0
+const TEA_SLEEP := 1.3
 ## Zittern der Hand vor Koffein: so weit (m) und so schnell (Hz)
 const TREMOR := 0.006
 const TREMOR_RATE := 23.0
@@ -157,7 +162,7 @@ var nights_awake := 0.0
 var sleep_hours := SLEEP_HOURS.x   ## so lange will man schlafen – am eigenen Bett mit dem Mausrad (3.6)
 var _slept := 0.0      ## seit dem Ende der letzten Nachtruhe geschlafen (Spielsekunden)
 var _sleep_now := 0.0  ## in diesem Schlaf geschlafen (Spielsekunden)
-var _sleep_lost := 0.0 ## davon nicht erholsam – Kaffee wirkte noch (3.11)
+var _sleep_lost := 0.0 ## davon nicht erholsam – Kaffee wirkte noch (3.11); negativ: nach Tee erholsamer (3.12)
 ## Am Körper (Spielkonzept 3.2): Kompass, Kartenblätter (HotelMap.PAGES-IDs), Schlüssel-IDs
 var has_compass := false
 var map_pages: Array[String] = []
@@ -174,6 +179,7 @@ var hangover := 0.0    ## Sekunden Kater nach dem Schlaf im Rausch
 var coffee := 0.0      ## so viele Spielsekunden wirkt der Kaffee noch – überdeckt die Müdigkeit (3.11)
 var coffee_low := 0.0  ## so viele Spielsekunden noch das Tief danach
 var caffeine := 0.0    ## Koffeinspiegel in Tassen – ab COFFEE_JITTER zittert man
+var tea := 0.0         ## so viele Spielsekunden schläft man nach einem Tee noch besser (3.12)
 var sight_blur := 0.0   ## verschwommene Sicht (0..1) aus Müdigkeit und Rausch – Post-Shader `blur` (3.6/3.7)
 var sight_warp := 0.0   ## Wabern und Doppelbild im Rausch (0..1) – Post-Shader `warp`
 var seat: Seat          ## sitzt auf diesem Möbel (3.1) – Platz in _seat_spot
@@ -337,6 +343,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		drink_can()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.COFFEE and not hiding:
 		drink_coffee()
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.TEA and not hiding:
+		drink_tea()
 	elif event.is_action_pressed("use_item") or event.is_action_pressed("light_mode"):
 		_use_flashlight(event.is_action_pressed("light_mode"))
 
@@ -920,6 +928,7 @@ func jittery() -> bool:
 func _update_coffee(delta: float) -> void:
 	caffeine = maxf(0.0, caffeine - delta / COFFEE_FADE)
 	coffee_low = maxf(0.0, coffee_low - delta)
+	tea = maxf(0.0, tea - delta)
 	if coffee <= 0.0:
 		return
 	coffee = maxf(0.0, coffee - delta)
@@ -949,10 +958,26 @@ func drink_coffee() -> void:
 		print("[Kaffee] getrunken – Koffein %.1f, Müdigkeit fühlt sich an wie %.2f statt %.2f Nächte" % [caffeine, tiredness(), nights_awake])
 
 
-## So viel von dt Schlaf erholt: solange der Kaffee wirkt nur COFFEE_SLEEP (3.11) – vor dem Abbau des Kaffees rechnen.
+## Tasse Kräutertee trinken (Spielkonzept 3.12): etwas weniger Schock, und TEA_TIME lang schläft man besser.
+func drink_tea() -> void:
+	consume_held()
+	shock = maxf(0.0, shock - TEA_CALM)
+	tea = TEA_TIME
+	if coffee > 0.0:
+		Game.say("Kräutertee nach dem Kaffee. Vielleicht kann ich jetzt trotzdem schlafen.", 3.0)
+	else:
+		Game.say("Warmer Kräutertee. Die Schultern werden locker.", 3.0)
+	if Game.tracing:
+		print("[Tee] getrunken – Schock %.2f, schläft %.0f s lang besser" % [shock, tea])
+
+
+## So viel von dt Schlaf erholt: nach einem Tee TEA_SLEEP (3.12, auch mit Kaffee), sonst solange der Kaffee wirkt nur
+## COFFEE_SLEEP (3.11) – vor dem Abbau von Tee und Kaffee rechnen.
 func _sleep_credit(dt: float) -> float:
-	var awake := minf(dt, coffee)
-	return awake * COFFEE_SLEEP + (dt - awake)
+	var calm := minf(dt, tea)
+	var rest := dt - calm
+	var awake := minf(rest, maxf(0.0, coffee - calm))
+	return calm * TEA_SLEEP + awake * COFFEE_SLEEP + (rest - awake)
 
 
 ## Verschwommene Sicht (Spielkonzept 3.6/3.7): je Nacht ohne Schlaf unschärfer, in Schüben, als fielen die Augen
@@ -1682,6 +1707,7 @@ func skip_time(dt: float) -> void:
 	caffeine = maxf(0.0, caffeine - dt / COFFEE_FADE)
 	coffee_low = maxf(0.0, coffee_low - dt)
 	coffee = maxf(0.0, coffee - dt)   # im Schlaf ohne Tief
+	tea = maxf(0.0, tea - dt)
 
 
 func _update_sleep(delta: float) -> void:

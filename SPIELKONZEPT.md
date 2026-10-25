@@ -26,6 +26,7 @@
   - [3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)](#39-spielerfigur-und-charaktererstellung-entschieden-und-umgesetzt-2026-10-23)
   - [3.10 Notizbuch und Tagebuch (entschieden 2026-10-23, Stufe 1 umgesetzt 2026-10-23)](#310-notizbuch-und-tagebuch-entschieden-2026-10-23-stufe-1-umgesetzt-2026-10-23)
   - [3.11 Kaffee (entschieden und umgesetzt 2026-10-24)](#311-kaffee-entschieden-und-umgesetzt-2026-10-24)
+  - [3.12 Tee (entschieden und umgesetzt 2026-10-24)](#312-tee-entschieden-und-umgesetzt-2026-10-24)
 - [4. Das Monster](#4-das-monster)
   - [4.1 Grundprinzip](#41-grundprinzip)
   - [4.2 Ankündigung („Manifestation“)](#42-ankündigung-manifestation)
@@ -922,6 +923,23 @@ Nacht gefährlich (2.4): Wer wach bleibt, zahlt später. Zugleich das Alkoholfre
 - **Verschenken:** wie eine Getränkedose – der Gast trinkt ihn gleich. Kinder lehnen ab.
 - **Gespeichert:** Wirkung, Tief und Zittern des Spielers, die Tasse als Gegenstand. Was die Maschine gerade tut, nicht.
   Debug: `--kaffee=n` (n Tassen getrunken), `--kaffee=maschine` (vor der Maschine, fast fertig), `--kaffee=gast[,id]`.
+
+### 3.12 Tee (entschieden und umgesetzt 2026-10-24)
+Das Gegenstück zum Kaffee (3.11): **Kräutertee** beruhigt und hilft beim Schlafen. Er überdeckt keine Müdigkeit – er
+macht den Schlaf, der sie abbaut, besser.
+
+- **Wirkung:** Eine Tasse nimmt etwas **Schock** (−0,1). **2 Spielstunden** lang danach ist Schlaf um **30 % besser**
+  (zählt ×1,3), und der Kaffee stört ihn in der Zeit nicht mehr – Kaffee am Abend, Tee vor dem Bett geht also.
+- **Wasserkocher in der Küche:** rechts neben der Kaffeemaschine, umsonst. [E] mit leeren Händen – das Wasser rauscht
+  **15 Sekunden** (leiser Lärm, 4 m), zum Schluss pfeift er leise (8 m), dann steht die Tasse neben ihm.
+- **An der Bar:** Tassen Tee neben dem Kaffee, **1 Geld** je Tasse.
+- **Die Tasse:** wie beim Kaffee – nur in der Hand, [Linksklick] trinkt, zerbricht ab einem Meter und hinterlässt einen
+  hellen **Teefleck** (Beschwerden und Putzen wie beim Kaffee).
+- **Gäste trinken abends Tee:** Zwischen 18 und 23 Uhr holt sich ab und zu ein Gast aus der Küche einen Tee am
+  Wasserkocher, **auch Kinder** – Tee nimmt ihnen Angst, und wer kurz nacheinander dort trinkt, wird vertrauter (6.16).
+- **Verschenken:** Der Gast trinkt ihn gleich, seine Angst sinkt. **Kinder** freuen sich darüber wie über Limo.
+- **Symbol:** Bis es ein eigenes gibt (Icon_tea.png), steht über dem Hinweis die Tasse vom Kaffee.
+- **Gespeichert:** die Nachwirkung beim Spieler und die Tasse. Debug: `--tee=n|kocher|gast[,id]`.
 
 ---
 

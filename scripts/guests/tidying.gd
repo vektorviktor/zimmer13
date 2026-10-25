@@ -16,9 +16,10 @@ const SEE_RANGE := 8.0
 const TIDY_SHARE := 0.4
 const TIDY_RANGE := 14.0
 const TIDY_GAP := 15.0
-const MESS_TRACES := ["wax_splash", "soot", "coffee"]
+const MESS_TRACES := ["wax_splash", "soot", "coffee", "tea"]
 const COMPLAIN_MUSH := ["Wer schmeißt hier mit Kürbissen?!", "Igitt – Kürbismatsch vor meiner Tür.", "Das war bestimmt wieder eins von den Kindern …"]
 const COMPLAIN_COFFEE := ["Wer hat hier seinen Kaffee verschüttet?", "Kaffee vor meiner Tür – und keiner wischt es weg.", "Scherben und Kaffee … na toll."]
+const COMPLAIN_TEA := ["Wer hat hier seinen Tee verschüttet?", "Tee und Scherben vor meiner Tür … wer war das?"]
 const COMPLAIN_WAX := ["Überall Wachs vor meiner Tür … wer war das?", "Was ist das denn für eine Sauerei?", "Hat hier jemand gezündelt?!"]
 const CLEAN_LINES := ["Das mach ich mal weg.", "So kann das nicht bleiben.", "Na, dann putz ich das eben."]
 const KITCHEN_LINES := ["Daraus wird noch eine Suppe.", "Ab in die Küche damit."]
@@ -94,8 +95,9 @@ func _complaints(mess: Node3D) -> void:
 				or not Senses.clear_line(g.get_world_3d(), g.global_position + Vector3.UP * g.eye_height(), mess.global_position + Vector3.UP * 0.1, g):
 			continue
 		mess.set_meta("complained", true)
-		var coffee := mess is TraceMark and (mess as TraceMark).kind == "coffee"
-		g.say((COMPLAIN_MUSH if mess is Item else (COMPLAIN_COFFEE if coffee else COMPLAIN_WAX)).pick_random())
+		var mark_kind := (mess as TraceMark).kind if mess is TraceMark else ""
+		var lines: Array = COMPLAIN_MUSH if mess is Item else {"coffee": COMPLAIN_COFFEE, "tea": COMPLAIN_TEA}.get(mark_kind, COMPLAIN_WAX)
+		g.say(lines.pick_random())
 		if Game.tracing:
 			print("[Flecken] %s beschwert sich über %s vor der Tür" % [g.display_name, "Kürbismatsch" if mess is Item else "Wachs/Ruß/Kaffee"])
 		return

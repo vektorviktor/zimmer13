@@ -32,7 +32,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD }
+	PUMPKIN_HEAD, TEA }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -54,6 +54,7 @@ const PRICES := {
 	Kind.CROWBAR: 6, Kind.TOOLBOX: 8,
 	Kind.COFFEE: 1,
 	Kind.PUMPKIN_HEAD: 0,
+	Kind.TEA: 1,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
@@ -78,13 +79,16 @@ const LEAF_COLORS: Array[Color] = [Color(0.75, 0.35, 0.08), Color(0.6, 0.15, 0.0
 const JOLT_UNREST := 0.8        ## ab dieser Unruhe kann der Zierkürbis aus den Händen fallen
 ## Zerplatzen (Spielkonzept 5.8): diese Arten, ab so viel Fallhöhe (m); als Aufprall zählt, wenn ein Gegenstand mit
 ## mindestens IMPACT_SPEED (m/s) fällt und auf einen Schlag mehr als die Hälfte davon verliert
-const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.BULB, Kind.COFFEE]
+const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.BULB, Kind.COFFEE, Kind.TEA]
 const BURST_HEIGHT := 3.0
-## Kerzen, Glühbirnen und Kaffeetassen zerbrechen schon aus geringerer Höhe (m; Spielkonzept 5.11, 7.3, 3.11)
-const BREAK_HEIGHT := {Kind.CANDLE: 2.0, Kind.BULB: 1.5, Kind.COFFEE: 1.0}
+## Kerzen, Glühbirnen und Tassen (Kaffee, Tee) zerbrechen schon aus geringerer Höhe (m; Spielkonzept 5.11, 7.3, 3.11)
+const BREAK_HEIGHT := {Kind.CANDLE: 2.0, Kind.BULB: 1.5, Kind.COFFEE: 1.0, Kind.TEA: 1.0}
 ## Kaffeetasse (Spielkonzept 3.11): Porzellan und Kaffee
 const CUP_COLOR := Color(0.93, 0.92, 0.88)
 const COFFEE_COLOR := Color(0.18, 0.09, 0.04)
+## Kräutertee (3.12): Farbe in der Tasse und das Schildchen am Faden des Teebeutels
+const TEA_COLOR := Color(0.62, 0.42, 0.12)
+const TEA_TAG := Color(0.35, 0.6, 0.3)
 ## Scherben einer platzten Glühbirne: so viele (von, bis), Glas und Gewinde
 const BULB_SHARDS := Vector2i(5, 8)
 const BULB_GLASS := Color(0.9, 0.93, 0.97)
@@ -422,12 +426,12 @@ func get_prompt(player: Player) -> String:
 	return "%s %s [E]" % [display_name, verb]
 
 
-## Aktions-Symbol über dem Hinweis (IconArt): Kaffee; Kerze hineinstellen und Zierkürbis in die Hände = Schmücken.
+## Aktions-Symbol über dem Hinweis (IconArt): Kaffee, Tee; Kerze hineinstellen und Zierkürbis in die Hände = Schmücken.
 func get_icon(player: Player) -> String:
 	var held := player.held_kind()
 	if _takes_candle(held) or _takes_mini_pumpkin(held):
 		return "decorate"
-	return "coffee" if kind == Kind.COFFEE else ""
+	return IconArt.drink_icon(kind)
 
 
 func interact(player: Player) -> void:
@@ -1138,14 +1142,19 @@ func _build(extra: String) -> void:
 			Geo.mesh(self, Geo.cylinder(0.0335, 0.022, 8), Mat.psx(Color(0.95, 0.93, 0.85)), Vector3(0, 0.06, 0))   # Banderole
 			Geo.mesh(self, Geo.cylinder(0.028, 0.012, 8), tin, Vector3(0, 0.116, 0))   # Deckel
 			Geo.mesh(self, Geo.box(Vector3(0.014, 0.003, 0.022)), tin, Vector3(0, 0.123, 0.006))   # Lasche
-		Kind.COFFEE:
-			# Tasse Kaffee (Spielkonzept 3.11): überdeckt die Müdigkeit eine Weile – nur in der Hand, zerbricht leicht
-			display_name = "Tasse Kaffee"
+		Kind.COFFEE, Kind.TEA:
+			# Tasse Kaffee (Spielkonzept 3.11): überdeckt die Müdigkeit eine Weile – Tasse Kräutertee (3.12): beruhigt, man
+			# schläft danach besser; Teebeutel am Faden mit Schildchen. Nur in der Hand, zerbricht leicht
+			var tea := kind == Kind.TEA
+			display_name = "Tasse Tee" if tea else "Tasse Kaffee"
 			mass = 0.3
 			size = Vector3(0.1, 0.09, 0.08)
 			var china := Mat.psx(CUP_COLOR)
 			Geo.mesh(self, Geo.cylinder(0.038, 0.085, 8), china, Vector3(0, 0.0425, 0))
-			Geo.mesh(self, Geo.cylinder(0.033, 0.004, 8), Mat.psx(COFFEE_COLOR), Vector3(0, 0.084, 0))
+			Geo.mesh(self, Geo.cylinder(0.033, 0.004, 8), Mat.psx(TEA_COLOR if tea else COFFEE_COLOR), Vector3(0, 0.084, 0))
+			if tea:
+				Geo.mesh(self, Geo.box(Vector3(0.002, 0.03, 0.002)), Mat.psx(Color(0.9, 0.88, 0.8)), Vector3(-0.02, 0.095, 0.034))
+				Geo.mesh(self, Geo.box(Vector3(0.016, 0.016, 0.003)), Mat.psx(TEA_TAG), Vector3(-0.02, 0.07, 0.04))
 			Geo.mesh(self, Geo.box(Vector3(0.022, 0.05, 0.01)), china, Vector3(0.05, 0.045, 0))   # Henkel
 			Geo.mesh(self, Geo.box(Vector3(0.016, 0.01, 0.01)), china, Vector3(0.042, 0.068, 0))
 			Geo.mesh(self, Geo.box(Vector3(0.016, 0.01, 0.01)), china, Vector3(0.042, 0.022, 0))
@@ -1277,7 +1286,7 @@ func _break() -> void:
 			_shatter_candle()
 		Kind.BULB:
 			_shatter_bulb()
-		Kind.COFFEE:
+		Kind.COFFEE, Kind.TEA:
 			_spill_coffee()
 		_:
 			burst()
@@ -1312,20 +1321,20 @@ func _shatter_candle() -> void:
 	queue_free()
 
 
-## Eine Kaffeetasse zerbricht (Spielkonzept 3.11, geworfen oder tiefer als BREAK_HEIGHT gefallen): ein Kaffeefleck
-## auf dem Boden, ein paar Scherben springen davon. Die Tasse ist weg.
+## Eine Tasse zerbricht (Spielkonzept 3.11, 3.12 – geworfen oder tiefer als BREAK_HEIGHT gefallen): ein Kaffee- bzw.
+## Teefleck auf dem Boden, ein paar Scherben springen davon. Die Tasse ist weg.
 func _spill_coffee() -> void:
 	var at := global_position
 	var hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(at + Vector3.UP * 0.3, at + Vector3.DOWN * 1.5, 1))
 	if not hit.is_empty():
 		at = hit["position"]
 	if Game.traces:
-		Game.traces.add_guest_drop("coffee", at)
+		Game.traces.add_guest_drop("tea" if kind == Kind.TEA else "coffee", at)
 	_fling_pieces(at, [Mat.psx(CUP_COLOR)], randi_range(3, 5), Vector3(0.02, 0.006, 0.015), Vector3(0.04, 0.012, 0.03),
 		Vector2(0.5, 1.4), Vector2(0.5, 1.2), 0.03, 0.04)
 	Game.noise("cup_break", at, self)
 	if Game.tracing:
-		print("[Kaffee] Tasse zerbricht bei %s" % at)
+		print("[%s] Tasse zerbricht bei %s" % ["Tee" if kind == Kind.TEA else "Kaffee", at])
 	queue_free()
 
 

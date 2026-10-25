@@ -371,7 +371,7 @@ func load_state(list: Array) -> void:
 		else:
 			mark.free()   # Tür oder Fenster gibt es nicht mehr – die Spur fällt weg
 			continue
-		if mark.kind in ["wax", "drops", "wax_splash", "soot", "coffee"]:
+		if mark.kind in ["wax", "drops", "wax_splash", "soot", "coffee", "tea"]:
 			_guest_marks.append(mark)
 
 

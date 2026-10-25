@@ -48,6 +48,8 @@ extends Node3D
 ##   --kaffee=n                  n Tassen Kaffee getrunken (3.11; ab der 3. zittert man) – mit --awake=n wird die Sicht klarer
 ##   --kaffee=maschine           du stehst vor der Kaffeemaschine in der Küche, die Tasse ist in 1 s fertig
 ##   --kaffee=gast[,id]          ein Gast (oder dieser) holt sich gleich Kaffee an der Maschine (er steht 4 m davor, du daneben)
+##   --tee=n|kocher|gast[,id]    Tee (3.12) wie --kaffee: n Tassen getrunken · vor dem Wasserkocher, gleich fertig · ein Gast
+##                               (ohne id ein Kind) holt sich Tee
 ##   --mess[=wachs]              Kürbismatsch (bzw. großer Wachsfleck) 3 m vor dir, ein ordentlicher Gast hinter dir putzt ihn weg
 ##                               (6.13; --trace „[Flecken]“)
 ##   --rival=gast1,gast2         gast1 und gast2 sind verfeindet, du wirst gleich mit gast1 befreundet – gast2 steht vor dir und
@@ -1139,6 +1141,8 @@ func run_debug(arg: String) -> bool:
 		_debug_cook(arg.substr(7).split(","))
 	elif arg.begins_with("--kaffee="):
 		_debug_coffee(arg.substr(9).split(","))
+	elif arg.begins_with("--tee="):
+		_debug_coffee(arg.substr(6).split(","), true)
 	elif arg == "--mess" or arg == "--mess=wachs":
 		get_tree().create_timer(1.5, false).timeout.connect(func() -> void: Game.social.tidying.debug(arg.ends_with("wachs")))
 	elif arg.begins_with("--rival="):
@@ -1630,26 +1634,30 @@ func _debug_cook(parts: PackedStringArray) -> void:
 
 
 ## --kaffee=n|maschine|gast[,id]: Kaffee (Spielkonzept 3.11) – n Tassen getrunken, vor der Maschine (gleich fertig)
-## oder ein Gast holt sich Kaffee.
-func _debug_coffee(parts: PackedStringArray) -> void:
+## oder ein Gast holt sich Kaffee. tea: dasselbe mit Tee am Wasserkocher (--tee=n|kocher|gast, 3.12).
+func _debug_coffee(parts: PackedStringArray, tea: bool = false) -> void:
 	var p := Game.player
 	if parts[0].is_valid_int():
 		for i in parts[0].to_int():
-			var cup := Item.create(Item.Kind.COFFEE)
+			var cup := Item.create(Item.Kind.TEA if tea else Item.Kind.COFFEE)
 			p.receive_item(cup)
 			if p.held != cup:   # Hände voll – nichts anderes austrinken
 				cup.queue_free()
 				return
-			p.drink_coffee()
+			if tea:
+				p.drink_tea()
+			else:
+				p.drink_coffee()
 		return
-	var machine := Game.coffee
+	var machine: CoffeeMachine = Game.kettle if tea else Game.coffee
 	if machine == null:
-		Game.say("Keine Kaffeemaschine im Hotel", 3.0)
+		Game.say("Kein Wasserkocher im Hotel" if tea else "Keine Kaffeemaschine im Hotel", 3.0)
 		return
 	var front: Vector3 = machine.front
 	var base := Vector3(machine.global_position.x, 0.05, machine.global_position.z)
 	if parts[0] == "gast":
-		var g: Guest = Game.social.guest_by_id(parts[1]) if parts.size() > 1 else Game.social.living_guests().filter(func(c: Guest) -> bool: return not c.is_child())[0]
+		# ohne id beim Tee ein Kind (das darf, 3.12), beim Kaffee ein Erwachsener
+		var g: Guest = Game.social.guest_by_id(parts[1]) if parts.size() > 1 else Game.social.living_guests().filter(func(c: Guest) -> bool: return c.is_child() == tea)[0]
 		g.global_position = base + front * 4.0
 		g._set_idle(5.0)
 		p.global_position = g.global_position + front.cross(Vector3.UP) * 1.5

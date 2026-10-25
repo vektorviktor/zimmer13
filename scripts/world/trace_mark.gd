@@ -27,6 +27,8 @@ const WAX_CORE := Vector2(0.4, 0.4)
 const COFFEE_CORE := Vector2(0.32, 0.28)
 const COFFEE_DROPS := Vector2i(6, 10)
 const COFFEE_TINT := Color(0.3, 0.16, 0.07)
+## Teefleck (3.12): wie der Kaffeefleck, heller und goldbraun
+const TEA_TINT := Color(0.72, 0.5, 0.2)
 const COFFEE_LOOK := {"specular": 0.6, "normal_strength": 0.4, "edge_alpha": 0.45, "thick_shade": 0.6, "grain": 0.04}
 ## Grafiken der Flecken am Boden (Umriss aus dem Alpha, psx_decal) – Blutlache und Kern des Wachsflecks
 const BLOOD_TEXTURE := "res://assets/textures/blood_pool.png"
@@ -62,7 +64,7 @@ const STREAM_SPACING := 0.5
 const STREAM_GROW := 0.4
 const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "Ein Handabdruck",
 	"wax": "Wachsflecken", "drops": "Blutstropfen", "wax_splash": "Ein großer Wachsfleck", "soot": "Ein Rußfleck",
-	"coffee": "Ein Kaffeefleck",
+	"coffee": "Ein Kaffeefleck", "tea": "Ein Teefleck",
 	"bloody_hand": "Blutige Handabdrücke", "wall_splatter": "Blutspritzer", "wall_smear": "Eine blutige Schmierspur"}
 
 var kind := "scratch"
@@ -71,6 +73,7 @@ static var _decal_plane: PlaneMesh
 static var _runner_plane: PlaneMesh
 static var _decal_mats := {}
 static var _coffee_mat: ShaderMaterial
+static var _tea_mat: ShaderMaterial
 ## Auf Türen nicht anklickbar (sonst ließe sich die Tür nicht mehr öffnen) – bleibt dort.
 var solid := true
 ## Gerade entstanden (Traces.add_blood, add_guest_drop): Blut und Wachs breiten sich aus (SPREAD); aus dem Spielstand
@@ -178,8 +181,9 @@ func _ready() -> void:
 			# der Fläche darunter, sobald die Spur steht (_spread_wax)
 			Geo.add_box_shape(self, Vector3(0.7, 0.7, 0.04), Vector3.ZERO)
 			_spread_wax.call_deferred()
-		"coffee":
-			# Zerbrochene Kaffeetasse (3.11): brauner Fleck mit Spritzern – gebaut wie der große Wachsfleck (_spread_wax)
+		"coffee", "tea":
+			# Zerbrochene Tasse (3.11, 3.12): brauner bzw. goldbrauner Fleck mit Spritzern – gebaut wie der große Wachsfleck
+			# (_spread_wax)
 			Geo.add_box_shape(self, Vector3(0.6, 0.6, 0.04), Vector3.ZERO)
 			_spread_wax.call_deferred()
 		"soot":
@@ -243,17 +247,17 @@ func _spread_blood() -> void:
 
 ## Großer Wachsfleck einer geworfenen Kerze (6.13), gebaut wie eine Blutlache: ein Kern (WAX_CORE) und Tropfen ringsum,
 ## alle aus der Grafik WAX_TEXTURE und jeder auf der Fläche darunter (place_splat) – auf Treppen auf den Stufen, die
-## Der Kaffeefleck (3.11) ebenso, kleiner, in Kaffeebraun (coffee_material) und flüssiger.
 ## Tropfen hinunter, ein kurzer Strom über wenige Stufen (lay_stream). Frisch in etwa 2 s erstarrt (SPREAD).
+## Der Kaffee- und der Teefleck (3.11, 3.12) ebenso, kleiner, in ihrer Farbe (coffee_material) und flüssiger.
 func _spread_wax() -> void:
 	if not is_inside_tree():
 		return
-	var coffee := kind == "coffee"
+	var coffee := kind in ["coffee", "tea"]
 	var space := get_world_3d().direct_space_state
 	var center := global_position
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
-	var wax := coffee_material() if coffee else decal_material(WAX_TEXTURE)
+	var wax := coffee_material(kind == "tea") if coffee else decal_material(WAX_TEXTURE)
 	var downhill := downhill_at(space, center)
 	var flow: Dictionary = SPREAD["coffee" if coffee else "wax"]
 	var plan: Array = []
@@ -493,15 +497,21 @@ static func decal_material(path: String) -> ShaderMaterial:
 	return _decal_mats[path]
 
 
-## Kaffeefleck (3.11): die Wachsgrafik in Kaffeebraun (COFFEE_TINT, COFFEE_LOOK) – ein Material für alle.
-static func coffee_material() -> ShaderMaterial:
-	if _coffee_mat == null:
-		_coffee_mat = Mat.decal(WAX_TEXTURE)
-		_coffee_mat.set_shader_parameter("layer_pull", SPLAT_PULL)
-		_coffee_mat.set_shader_parameter("albedo", COFFEE_TINT)
+## Kaffeefleck (3.11): die Wachsgrafik in Kaffeebraun (COFFEE_TINT, COFFEE_LOOK) – ein Material für alle; tea: der
+## Teefleck (3.12) in TEA_TINT.
+static func coffee_material(tea: bool = false) -> ShaderMaterial:
+	var mat := _tea_mat if tea else _coffee_mat
+	if mat == null:
+		mat = Mat.decal(WAX_TEXTURE)
+		mat.set_shader_parameter("layer_pull", SPLAT_PULL)
+		mat.set_shader_parameter("albedo", TEA_TINT if tea else COFFEE_TINT)
 		for key in COFFEE_LOOK:
-			_coffee_mat.set_shader_parameter(key, COFFEE_LOOK[key])
-	return _coffee_mat
+			mat.set_shader_parameter(key, COFFEE_LOOK[key])
+		if tea:
+			_tea_mat = mat
+		else:
+			_coffee_mat = mat
+	return mat
 
 
 ## Zug zur Kamera (SPLAT_PULL) und Look der Grafik (SPLAT_LOOK) für ein psx_decal-Material.
