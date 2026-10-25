@@ -1136,6 +1136,8 @@ func start_sleep(instant: bool = false) -> void:
 	for guest in living_guests():
 		guest.bedtime(instant)
 	Game.say("Im Hotel wird es still – die Gäste gehen schlafen.", 3.5)
+	if Game.shower_scare:
+		Game.shower_scare.on_night_rest()   # im Bad von Zimmer 13 läuft vielleicht die Dusche (4.24)
 	if Game.tracing:
 		print("[Nachtruhe] %s, %s" % [Calendar.date_text(Game.director.elapsed), Calendar.time_text(Game.director.elapsed)])
 

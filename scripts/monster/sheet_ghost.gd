@@ -28,6 +28,9 @@ extends Node3D
 ## (Senses.can_see), schwebt er auf ihn zu: Die ersten HOUR_WARNINGS Begegnungen verschwindet er kurz vor ihm, danach
 ## würgt er (eigener Zähler hour_meetings, seine Stufe bleibt). Greift eine der Flur-Regeln (Schwäche, ab dem 6. Mal,
 ## Garantie) oder kommt man ihm ans dunkle Fenster, wird ein gewöhnlicher Besuch daraus; schwache Gäste im Flur ebenso.
+## In der Dusche (Spielkonzept 4.24, ShowerScare): einmal taucht er im Nebel der Duschecke von Zimmer 13 auf und würgt –
+## eigene Inszenierung (shower_visit): zählt nicht für die Stufe, kein Zeuge vertreibt ihn. Der Blickzug folgt der
+## Einstellung Settings.look_pull.
 
 enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN, DOOR, PATROL }
 
@@ -143,12 +146,19 @@ const PATROL_LEG := Vector2(8.0, 30.0)   ## so weit liegt das nächste Ziel im F
 const PATROL_AWAY := 15.0             ## so weit vom Spieler taucht er auf (wo der nicht hinsieht)
 const HOUR_PAUSE := 8.0               ## nach einer Begegnung so lange, bis er wieder umgeht
 const DEBUG_CALM := 120.0             ## Debug (--ghost=stunde): so lange ruht das Monster mindestens
+## Dusche (4.24): so lange steht er im Nebel und kreist mit den Händen, dann kommt er so schnell durch die Glastür
+const SHOWER_HOVER := 1.6
+const SHOWER_SPEED := 1.8
+const NEVER_SEEN := -1.0e9
 
 var visits := 0          ## so oft ist er schon beim Spieler erschienen (Stufe)
 var hour_meetings := 0   ## so oft hat er den Spieler in der Geisterstunde bemerkt (gespeichert)
 var state := State.IDLE
 var debug_ignore_player := false   ## Debug (--shock=id,ghost): Spieler zählt bei Gästen nicht als Zeuge
 var catch_up_day := false   ## am CATCH_UP_DAY hat er aufgeholt – der ganze Tag zählt (gespeichert)
+## Spielzeit (MonsterDirector.elapsed) seiner ersten Begegnung mit dem Spieler – Fenster, Flur, Warnung, Geisterstunde;
+## NEVER_SEEN = noch nie (gespeichert; danach richtet sich die Dusche, 4.24 – Debug setzt auch Zeiten vor dem Spielbeginn)
+var first_seen := NEVER_SEEN
 
 var _victim: Node3D      ## Player oder Guest, zu dem er gerade kommt
 var _warn_only := false  ## garantierter erster Auftritt im Flur: nur heranschweben, dann weg
@@ -194,6 +204,7 @@ var _path := PackedVector3Array()
 var _path_i := 0
 var _patrol_check := 0.0
 var _debug_hour_near := false     ## Debug (--ghost=stunde): taucht im Flur des Spielers auf
+var _scripted := false            ## der Auftritt in der Dusche (4.24): keine Zeugen, nicht gezählt
 
 
 ## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Pausen laufen ab (zu Schlafenden kommt er nicht – das Bett
@@ -293,7 +304,7 @@ func _physics_process(delta: float) -> void:
 		if state != State.FADE:   # das Monster war schneller – ihn selbst hört man nicht mehr
 			_ambience.stop()
 		return
-	if state not in [State.FADE, State.PATROL]:   # beim Umgehen sieht ihn kaum einer, ein Opfer hat er nicht
+	if state not in [State.FADE, State.PATROL] and not _scripted:   # beim Umgehen sieht ihn kaum einer; in der Dusche zählt kein Zeuge
 		var seen_by := _witness_guests(global_position + Vector3.UP * HANDS_Y, _victim, DOOR_WITNESS_RANGE if state == State.DOOR else WITNESS_RANGE)
 		if seen_by.size() + _player_witness(global_position + Vector3.UP * HANDS_Y) >= WITNESSES:
 			for guest in seen_by:
@@ -330,7 +341,7 @@ func _physics_process(delta: float) -> void:
 					print("[Lakengeist] Warnung im Flur – verschwunden")
 				_vanish()
 				return
-			if _float_to(_grip_spot(), INSIDE_SPEED, delta) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
+			if _float_to(_grip_spot(), SHOWER_SPEED if _scripted else INSIDE_SPEED, delta) or flat.length() < HANDS_AHEAD + GRIP_RANGE:
 				_grab()
 			elif _victim.global_position.distance_to(_window_center(_window) if _window else global_position) > (LEAVE_RANGE if _window else HALL_GIVE_UP):
 				_vanish()
@@ -398,8 +409,11 @@ func _refresh_windows() -> void:
 	_dark.clear()
 
 
-## Kann er zum Spieler kommen? Nicht zu Toten, Versteckten, im Gespräch und im Katzenraum (Spielkonzept 7.7).
+## Kann er zum Spieler kommen? Nicht zu Toten, Versteckten, im Gespräch und im Katzenraum (Spielkonzept 7.7) – und nicht
+## in Zimmer 13, solange dort die Dusche läuft: Der Moment im Bad wartet auf ihn (4.24).
 func _player_free(player: Player) -> bool:
+	if Game.shower_scare and Game.shower_scare.reserves(player):
+		return false
 	return not (player.dead or player.hiding != null or player.in_dialog or Game.social.builder.is_safe(player.global_position))
 
 
@@ -745,6 +759,8 @@ func _start_visit(victim: Node3D, window: Node3D) -> void:
 	else:
 		visits += 1
 		_stage = visits
+		if not met() and Game.director:
+			first_seen = Game.director.elapsed
 	_window = window
 	_lurk_spot = null
 	visible = true
@@ -1018,6 +1034,8 @@ func _struggle(delta: float) -> void:
 		Game.say("Losgerissen!", 1.5)
 		if player.hiding:
 			player.exit_hide()   # aus dem Schrank gestürzt
+		if _scripted and Game.shower_scare:
+			Game.shower_scare.on_escaped()
 		_vanish()
 		return
 	_timer -= delta
@@ -1080,6 +1098,7 @@ func _vanish() -> void:
 
 func _hide() -> void:
 	state = State.IDLE
+	_scripted = false
 	visible = false
 	_fade = 0.0
 	_window = null
@@ -1281,15 +1300,15 @@ func _update_trance(delta: float) -> void:
 		player.trance = minf(1.0, player.trance + TRANCE_GAIN * delta)
 	else:
 		player.trance = maxf(0.0, player.trance - TRANCE_DECAY * delta)
-	var pull := PULL * player.trance
+	var pull := PULL * player.trance * Settings.look_pull
 	if state == State.STRANGLE and mine:
-		pull = PULL * 2.0
+		pull = PULL * 2.0 * Settings.look_pull
 	if player.hiding:   # im Versteck ist der Blick fest
 		return
 	if state == State.DOOR and mine and global_position.distance_to(player.global_position) < DOOR_PULL_RANGE:
 		# Hypnose durch die Wand: nur der Blick dreht sich, ganz langsam, zur Tür
 		var at := head - player.camera.global_position
-		var door_pull := DOOR_PULL * (1.0 + player.weakness())
+		var door_pull := DOOR_PULL * (1.0 + player.weakness()) * Settings.look_pull
 		player.rotation.y = rotate_toward(player.rotation.y, atan2(-at.x, -at.z), door_pull * delta)
 	if pull <= 0.0:
 		return
@@ -1353,6 +1372,42 @@ func _rotate2(bone_name: String, axis_a: Vector3, a: float, axis_b: Vector3, b: 
 	var i: int = _bone.get(bone_name, -1)
 	if i >= 0:
 		_skeleton.set_bone_pose_rotation(i, _rest[i] * Quaternion(axis_a, a) * Quaternion(axis_b, b))
+
+
+# --- Dusche (Spielkonzept 4.24) -------------------------------------------------------------
+
+## Ist er dem Spieler schon begegnet (first_seen)?
+func met() -> bool:
+	return first_seen > NEVER_SEEN
+
+## Er taucht im Nebel der Duschecke auf (spot = Boden in ihrer Mitte), kreist kurz mit den Händen und kommt durch die
+## Glastür, um zu würgen – Losreißen wie sonst (_struggle meldet es ShowerScare.on_escaped), sonst stirbt man. Zählt
+## nicht für die Stufe; er greift so fest zu wie beim 3. Mal.
+func shower_visit(spot: Vector3) -> void:
+	if state != State.IDLE:
+		_debug_reset()
+	var player := Game.player
+	_victim = player
+	_warn_only = false
+	_hour_meeting = false
+	_victim_saw = false
+	_stage = ENTER_FROM
+	_window = null
+	_last_window = null
+	_lurk_spot = null
+	_scripted = true
+	_swings = 0
+	_last_sign = 0
+	visible = true
+	_fade = 0.0
+	var neck := player.camera.global_position.y - NECK_BELOW_EYES
+	global_position = Vector3(spot.x, neck - HANDS_Y, spot.z)
+	_face(player.global_position - global_position)
+	state = State.HOVER
+	_timer = SHOWER_HOVER
+	Game.caption("[Etwas bewegt sich im Nebel]")
+	if Game.tracing:
+		print("[Lakengeist] in der Dusche – im Nebel aufgetaucht")
 
 
 # --- Debug & Speichern ----------------------------------------------------------------------
@@ -1527,11 +1582,13 @@ func debug_summon_guest(guest: Guest, stage: int) -> void:
 
 
 func save_state() -> Dictionary:
-	return {"visits": visits, "cooldown": _cooldown, "catch_up_day": catch_up_day, "hour_meetings": hour_meetings}
+	return {"visits": visits, "cooldown": _cooldown, "catch_up_day": catch_up_day, "hour_meetings": hour_meetings,
+		"first_seen": first_seen}
 
 
 func load_state(d: Dictionary) -> void:
 	visits = int(d.get("visits", 0))
+	first_seen = float(d.get("first_seen", NEVER_SEEN if visits == 0 else 0.0))
 	hour_meetings = int(d.get("hour_meetings", 0))
 	catch_up_day = bool(d.get("catch_up_day", false))
 	_cooldown = float(d.get("cooldown", 0.0))

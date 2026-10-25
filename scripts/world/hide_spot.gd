@@ -105,7 +105,9 @@ func interact(player: Player) -> void:
 	if seat and player.seat == seat:
 		return
 	if can_sleep(player):
-		if occupant == null:
+		if Game.shower_scare and Game.shower_scare.blocks_sleep():
+			Game.say("Ich kann nicht schlafen, solange da Wasser läuft.", 3.0)   # Spielkonzept 4.24
+		elif occupant == null:
 			player.start_sleep(self)
 	elif _sits(player):
 		seat.interact(player)

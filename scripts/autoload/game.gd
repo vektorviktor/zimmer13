@@ -35,6 +35,7 @@ var weather: Weather
 var bats: Bats                     ## Fledermäuse draußen (Spielkonzept 4.22)
 var spiders: Spiders               ## Spinnen am Boden und in Schubladen (Spielkonzept 4.23)
 var sleep_skip: SleepSkip          ## Zeitsprung im Schlaf (Spielkonzept 3.6)
+var shower_scare: ShowerScare      ## Lakengeist in der Dusche von Zimmer 13 (Spielkonzept 4.24)
 var kitchen: Stove                ## Herd in der Küche (Spielkonzept 3.8), setzt sich selbst
 var coffee: CoffeeMachine         ## Kaffeemaschine in der Küche (Spielkonzept 3.11), setzt sich selbst
 var kettle: TeaKettle             ## Wasserkocher in der Küche (Spielkonzept 3.12), setzt sich selbst
@@ -131,6 +132,7 @@ func reset() -> void:
 	director = null
 	monster = null
 	ghost = null
+	shower_scare = null
 	pumpkin = null
 	hud = null
 	audio = null

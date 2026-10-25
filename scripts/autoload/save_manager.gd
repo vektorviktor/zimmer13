@@ -87,7 +87,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     social.talk (deine Erlebnisse, Einbruchsverdacht, Todesfälle) – ältere Stände laden weiter, alle ohne Gedächtnis
 ## 45: Kerzen (Spielkonzept 5.12): feste Kerzen („fixed_candles“, brennen oder nicht), keine Brenndauer mehr („burn“
 ##     entfällt), Kürbis und Totenkopf mit erloschener Kerze (Zusatz „out“), Streichholzschachtel (Item.Kind.MATCHBOX)
-const VERSION := 45
+## 46: Lakengeist in der Dusche (Spielkonzept 4.24): ghost.first_seen (erste Begegnung), „shower“ (wartet, läuft,
+##     erlebt) – ältere Stände laden weiter: Wer ihm schon begegnet ist, gilt als am Anfang begegnet
+const VERSION := 46
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -219,6 +221,8 @@ func can_save() -> bool:
 	if Game.director == null or Game.game_over or Game.player == null or Game.director.is_signalling():
 		return false
 	if (Game.pumpkin and (Game.pumpkin.in_house() or Game.pumpkin.announcing())) or (Game.ghost and Game.ghost.with_player()):
+		return false
+	if Game.shower_scare and Game.shower_scare.busy():   # die Dusche hat den Blick gefangen (4.24)
 		return false
 	var monster := Game.monster
 	if not monster.is_active():
@@ -438,6 +442,7 @@ func collect() -> Dictionary:
 	}
 	data["traces"] = Game.traces.save_state() if Game.traces else []
 	data["ghost"] = Game.ghost.save_state() if Game.ghost else {}
+	data["shower"] = Game.shower_scare.save_state() if Game.shower_scare else {}
 	data["doll"] = Game.doll.save_state() if Game.doll else {}
 	data["contest"] = Game.contest.save_state() if Game.contest else {}
 	data["notebook"] = Game.notebook.save_state() if Game.notebook else {}
@@ -546,6 +551,8 @@ func apply(data: Dictionary) -> void:
 		Game.traces.load_state(data.get("traces", []))
 	if Game.ghost:
 		Game.ghost.load_state(data.get("ghost", {}))
+	if Game.shower_scare:
+		Game.shower_scare.load_state(data.get("shower", {}))
 	if Game.dice and Game.dice.table:
 		Game.dice.table.loaded = bool(data.get("table_loaded", false))
 

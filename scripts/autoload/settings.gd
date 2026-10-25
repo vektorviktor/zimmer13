@@ -33,6 +33,7 @@ var invert_y := false
 var crouch_toggle := false
 # Barrierefreiheit
 var flicker_intensity := 1.0     ## Flackern und Bildrauschen (0,2 … 1)
+var look_pull := 1.0             ## Blickzug des Lakengeists (0,2 … 1; Spielkonzept 4.18, 4.24) – unter 1 nur sanft gelenkt
 var subtitles := false
 var spider_blobs := false        ## Arachnophobie: Spinnen als schlichte Kugeln ohne Beine (Spielkonzept 4.23)
 var warning_shown := false       ## Hinweis zur Lichtempfindlichkeit schon gezeigt
@@ -43,7 +44,7 @@ var _shaders: Array[Shader] = []
 
 const KEYS := ["gamma", "vsync", "fov", "reflections", "psx_look", "resolution", "vertex_wobble", "dithering",
 	"master_volume", "music_volume", "effects_volume", "mouse_sensitivity", "invert_y",
-	"crouch_toggle", "flicker_intensity", "subtitles", "spider_blobs", "warning_shown", "age_notice_shown"]
+	"crouch_toggle", "flicker_intensity", "look_pull", "subtitles", "spider_blobs", "warning_shown", "age_notice_shown"]
 
 
 func _ready() -> void:

@@ -24,6 +24,9 @@ var burn_out := false      ## Abgebrannt (Kerze, Kürbis).
 var switched_off := false  ## Lichtschalter aus, Birne fehlt oder ist durchgebrannt.
 var flicker := 0.0
 var wave := 0.0
+## Feste Helligkeit 0..1 (≥ 0), unabhängig vom Schalter – das Flackern des Monsters kommt noch dazu. Die Badlampe beim
+## Lakengeist in der Dusche (ShowerScare, Spielkonzept 4.24): dunkel und pulsierend, der Schalter ändert nichts. −1 = aus.
+var hold := -1.0
 var lamp_material: ShaderMaterial
 
 var _level := 1.0
@@ -62,6 +65,8 @@ func _process(delta: float) -> void:
 			lamp_material.set_shader_parameter("emission", _base_emission.lerp(RED * 0.8, red))
 	_near = 0.0 if not hot_spot.is_finite() else clampf(1.0 - global_position.distance_to(hot_spot) / NEAR_RANGE, 0.0, 1.0)
 	var level := _level * (0.05 if _stutter_off else 1.0) * (1.0 + NEAR_BOOST * _near)
+	if hold >= 0.0:
+		level = _level * hold
 	light_energy = base_energy * level
 	# Nur schreiben, wenn sich etwas ändert – Hunderte Lampen, und das Flackern wechselt nur alle paar Bilder
 	if lamp_material and lamp_material.get_shader_parameter("emission_energy") != 2.5 * level:
@@ -93,7 +98,7 @@ func _update_stutter(delta: float) -> void:
 
 
 func _pick_level() -> float:
-	if burn_out or switched_off:
+	if burn_out or (switched_off and hold < 0.0):
 		return 0.0
 	if broken:
 		return randf_range(0.3, 0.8) if randf() < 0.025 else 0.0

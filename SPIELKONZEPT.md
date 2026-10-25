@@ -53,6 +53,7 @@
   - [4.21 Den Kürbismann aufhalten – und erlösen (entschieden 2026-10-21)](#421-den-kürbismann-aufhalten--und-erlösen-entschieden-2026-10-21)
   - [4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)](#422-fledermäuse-und-der-vampir-vorgemerkt-2026-10-23)
   - [4.23 Spinnen (entschieden und umgesetzt 2026-10-23)](#423-spinnen-entschieden-und-umgesetzt-2026-10-23)
+  - [4.24 Der Lakengeist in der Dusche (entschieden und umgesetzt 2026-10-25)](#424-der-lakengeist-in-der-dusche-entschieden-und-umgesetzt-2026-10-25)
 - [5. Halloween-Dekoration](#5-halloween-dekoration)
   - [5.1 Funktion](#51-funktion)
   - [5.2 Platzierung](#52-platzierung)
@@ -1510,7 +1511,7 @@ braucht), beim Ausprobieren festlegen.
 > Betreten, **40 %** alle 6 s beim Bleiben (an Fenstern 70 % / 25 %). Er schwebt über dem Boden davor heran, ab dem 2. Mal
 > Handabdrücke auf der Scheibe, ab dem 3. Mal **öffnet er die Tür lautlos** und kommt herein. Gilt auch für Gäste.
 > **Modell:** Laken mit Mundloch, ~1,9 m, zwei blutige Hände nach vorn gestreckt (`assets/models/ghost.glb`, gerigget
-> mit Saum, Rumpf, Kopf, Armen und Fingern, `tools/build_ghost.py`). **Noch nicht:** Einstellung für den Blickzug.
+> mit Saum, Rumpf, Kopf, Armen und Fingern, `tools/build_ghost.py`). **Blickzug abschwächen (umgesetzt 2026-10-25):** Einstellung „Blickzug“ (8.4).
 
 **Grundidee:** Ein Lakengeist schwebt draußen vor den Außenfenstern heran. Er kommt nur, wenn man es ihm leicht
 macht: **Licht aus und Vorhang offen**. Mit jedem Erscheinen wird er dreister – vom Blick durchs Glas bis zum
@@ -1534,7 +1535,7 @@ Würgen im Zimmer.
 
 **Hypnose** (ab dem 2./3. Mal): Solange du ihn ansiehst, während er die Hände kreisen lässt, wirst du
 **langsamer**, und dein Blick wird sanft zu ihm gezogen. Wegsehen lässt die Hypnose wieder abklingen.
-Der Blickzug bekommt eine Einstellung zum Abschwächen (wie das Flackern, 8.4).
+Der Blickzug hat eine Einstellung zum Abschwächen (wie das Flackern, 8.4).
 
 **Im Zimmer: Er versucht, dich zu erwürgen.**
 - Er schwebt auf dich zu und greift nach deinem Hals.
@@ -1938,6 +1939,65 @@ groß (Beinspanne), sehr dunkel.
   dem ersten Angriff.
 - **Arachnophobie:** Einstellung „Spinnen als Kugeln“ (8.4) – schlichte Kugeln ohne Beine, auch im Gesicht.
 - **Nicht gespeichert:** Nach dem Laden krabbeln neue.
+
+
+### 4.24 Der Lakengeist in der Dusche (entschieden und umgesetzt 2026-10-25)
+> **Umgesetzt (2026-10-25)** wie unten, aus den offenen Ideen übernommen. Dazu die Einstellung „Blickzug“ (8.4), die
+> auch die Hypnose am Fenster und vor der Tür abschwächt. Debug: `--dusche[=fang|los|nacht]`.
+
+Ein **einmaliger, fest gesetzter Moment** im **Bad von Zimmer 13** – eigene Inszenierung, nicht Teil der Regeln des
+Lakengeists (4.18): keine Würfel, keine Zeugen, zählt nicht für seine Stufen.
+
+**Wann**
+- In der **ersten Nachtruhe, die mindestens einen Spieltag nach der ersten Begegnung mit dem Lakengeist beginnt** – egal
+  wo man ihm zum ersten Mal begegnet ist (am Fenster, im Flur, als Warnung an Tag 10, in der Geisterstunde).
+- Nur der Spieler, nie ein Gast.
+
+**Ablauf**
+1. Im Bad von Zimmer 13 **läuft die Dusche** – man hört das Wasser schon im Zimmer, obwohl niemand drin sein sollte. Wer
+   gerade schläft, wacht davon auf.
+2. Die **Badlampe** wird langsam **dunkler und pulsiert** – bewusst *nicht* das Flackern des Monsters (4.17). Dazu
+   leiser Geisterklang und Flocken im Nebel (die Signale des Lakengeists, 4.20).
+3. Die Duschecke ist mit **dichtem weißem Nebel** gefüllt, die Glaswände sind beschlagen – man sieht nicht hinein.
+4. Erst **direkt vor der Dusche (1,5 m)** **fängt die Kamera den Spieler**: Der Blick wird auf die Dusche gerissen,
+   man kann nicht mehr wegsehen und steht fest. Bis dahin kann man umkehren – Neugier ist die Falle.
+5. Der **Lakengeist taucht im Nebel auf**, kreist kurz mit den Händen, kommt durch die Glastür und greift zu – der
+   **übliche Würgeangriff** (4.18), so fest wie beim 3. Mal.
+6. Befreien mit dem **Losreißen** (wild hin und her, Balken gegen den Griff); schafft man es nicht, stirbt man
+   (Sterbebildschirm wie sonst).
+
+**Bis man hingeht**
+- **Wasser und Nebel bleiben**, bis man ins Bad geht und den Moment erlebt – der Moment wartet, man entgeht ihm nicht.
+- **Schlafen geht nicht**, solange die Dusche läuft: „Ich kann nicht schlafen, solange da Wasser läuft.“ So zwingt
+  sie einen irgendwann ins Bad.
+- **Nur für den Spieler:** Das Wasser ist kein Lärm für das Monster, Gäste bemerken nichts.
+- Solange die Dusche läuft, kommt der Lakengeist in Zimmer 13 nicht auf gewöhnlichem Weg zum Spieler – der Moment ist
+  ihm vorbehalten.
+
+**Andere Bedrohung im Haus** (Monster unterwegs oder angekündigt, Kürbismann, der Lakengeist anderswo, Geisterstunde):
+Der Moment **wartet**. Wasser und Nebel bleiben, aber der Geist erscheint erst, wenn keine andere Bedrohung im Haus ist –
+bis dahin passiert am Duschnebel nichts, auch wenn man direkt davorsteht.
+
+**Gegenwehr hilft nicht:** Der Schalter klickt, die Lampe bleibt dunkel und pulsiert. Die Armatur ist in der Dusche im
+Nebel – wer sie abdrehen will, muss hin.
+
+**Kamerafang abschwächen:** über die Einstellung **„Blickzug“** (8.4). Abgeschwächt wird der Blick nur sanft zur Dusche
+gelenkt statt gerissen; der Geist greift trotzdem zu.
+
+**Danach**
+- Das Wasser hört auf, der Nebel verzieht sich, die Scheibe klart auf. Auf der Glastür bleiben **blutige
+  Handabdrücke** als Spur (wie an den Fensterscheiben).
+- Danach passiert es nie wieder.
+
+**Tod und Laden:** Der Moment gilt erst als erlebt, wenn man sich **losgerissen** hat. Stirbt man und lädt, läuft
+die Dusche wieder. Speichern ist gesperrt, solange die Kamera gefangen ist.
+
+**Abgewogen gegen das Spielkonzept**
+- **Tonalität (1):** „Unterschwelliger Horror statt Dauer-Jumpscares“ – passt, weil es nur ein einziger gesetzter
+  Moment ist.
+- **Flackern bleibt das Signal des Monsters (4.17):** deshalb eigenes Lichtbild (dunkler, pulsierend).
+- **Regeln des Lakengeists (4.18, 4.20):** gelten bewusst nicht – kein Zeuge vertreibt ihn, keine Stufe, keine Ebene.
+- **Kamerafang:** neu; sonst nimmt das Spiel die Kamera nur beim Tod durch das Monster ganz weg.
 
 ---
 
@@ -3752,7 +3812,7 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 | **PS1-Look** | Hauptschalter an/aus · Interne Auflösung · Vertex-Wackeln an/aus · Dithering an/aus |
 | **Ton** | Gesamt · Musik · Effekte · Stimmen |
 | **Steuerung** | Mausempfindlichkeit · Y-Achse invertieren · Ducken halten/umschalten · später Tastenbelegung |
-| **Barrierefreiheit** | **Flacker- und Rausch-Intensität reduzieren** (Fotosensibilität – Warnhinweis beim ersten Start) · Untertitel für wichtige Geräusche („Schritte hinter der Wand“) · **Spinnen als Kugeln** (Arachnophobie, 4.23, umgesetzt 2026-10-23) |
+| **Barrierefreiheit** | **Flacker- und Rausch-Intensität reduzieren** (Fotosensibilität – Warnhinweis beim ersten Start) · Untertitel für wichtige Geräusche („Schritte hinter der Wand“) · **Spinnen als Kugeln** (Arachnophobie, 4.23, umgesetzt 2026-10-23) · **Blickzug** des Lakengeists abschwächen (Hypnose, Kamerafang in der Dusche – 4.18, 4.24, umgesetzt 2026-10-25) |
 
 ### 8.5 Speichern am Tagebuch
 - Auf dem Schreibtisch in Zimmer 13 liegt das **Tagebuch** des Spielers. **E** → Blick aufs Tagebuch → **Slot 1–3 wählen** → ein Eintrag wird geschrieben = gespeichert. Solange die Tagebuch-Ansicht offen ist, **pausiert das Spiel** (wie im Menü).

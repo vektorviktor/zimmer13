@@ -154,6 +154,11 @@ extends Node3D
 ##   --sleep[=bett[,h]]          Nachtruhe sofort beginnen – die Uhr springt auf ihren Beginn (Gäste gehen ins Bett) · bett: alle liegen sofort,
 ##                               du schläfst im Bett von Zimmer 13, h Stunden (1–8, Standard 1; 3.6) – in der Nachtruhe
 ##                               springt die Zeit (mit --uhr=1:10 nach Mitternacht beginnen, sonst weckt die Glocke)
+##   --dusche[=fang|los|nacht]   Lakengeist in der Dusche (4.24): die Dusche in Zimmer 13 läuft sofort, du stehst im Bad,
+##                               Blick zu ihr · fang: knapp vor der Duschtür – die Kamera fängt dich gleich, er kommt aus dem
+##                               Nebel · los: dazu reißt du dich los (Handabdrücke, erlebt) · nacht: die erste Begegnung mit
+##                               ihm liegt über einen Tag zurück, nach 3 s beginnt die Nachtruhe – die Dusche läuft nach der
+##                               Regel (mit --sleep=bett wachst du davon auf)
 ##   --hoerer                    der Hörer in Zimmer 13 liegt daneben (keine Anrufe, die einen wecken; 4.14)
 ##   --awake=n                   so viele Nächte ohne Schlaf, auch Bruchteile (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
 ##                               der erste Angriff gilt dann als geschehen
@@ -339,6 +344,10 @@ func _ready() -> void:
 	sleep_skip.name = "SleepSkip"
 	add_child(sleep_skip)
 	Game.sleep_skip = sleep_skip
+	var shower_scare := ShowerScare.new().setup(builder)   # Lakengeist in der Dusche von Zimmer 13 (Spielkonzept 4.24)
+	shower_scare.name = "ShowerScare"
+	add_child(shower_scare)
+	Game.shower_scare = shower_scare
 
 	var grass := Grass.new()   # Grasbüschel, nur ohne PS1-Look – nach dem NavMesh
 	grass.name = "Grass"
@@ -1099,6 +1108,11 @@ func run_debug(arg: String) -> bool:
 			get_tree().create_timer(1.5).timeout.connect(func() -> void:
 				if Game.player.hiding == null:
 					Game.player.enter_hide(wardrobe))
+	elif arg == "--dusche=nacht":
+		# erst nach 3 s – mit --sleep=bett schläfst du dann schon und wachst vom Wasser auf
+		get_tree().create_timer(3.0).timeout.connect(Game.shower_scare.debug_night)
+	elif arg == "--dusche" or arg.begins_with("--dusche="):
+		Game.shower_scare.debug(arg.substr(9) if arg.length() > 9 else "")
 	elif arg.begins_with("--awake="):
 		# so viele Nächte ohne Schlaf (zählen erst nach dem ersten Angriff, also gilt der als geschehen)
 		Game.director.first_attack_done = true

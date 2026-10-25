@@ -98,6 +98,10 @@ done <<'LIST'
 2000|lakengeist|--pos=34.45,0.1,-13.5 --ghost=4 --trace
 1400|lakengeist,nacht|--pos=31.5,0,-8 --ghost=stunde --trace
 900|lakengeist,nacht|--pos=31.5,0,-8 --ghost=stunde,4 --trace
+700|lakengeist,dusche|--dusche=los --trace
+500|lakengeist,dusche|--dusche=fang --trace
+900|lakengeist,dusche,schlaf,nacht|--day=3 --uhr=1:10 --hoerer --sleep=bett,8 --dusche=nacht --trace
+600|dusche,speichern|--dusche --savetest
 600|tiere|--fledermaus --trace
 600|tiere|--fledermaus=schwarm --trace
 600|tiere|--tp=keller --spinne --trace

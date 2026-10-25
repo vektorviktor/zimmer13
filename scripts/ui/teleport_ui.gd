@@ -14,7 +14,7 @@ extends CanvasLayer
 ## Gruppen der Konsolenbefehle in dieser Reihenfolge („Teleport“ und „Lakengeist“ hängen an die festen Einträge an)
 const GROUPS := [
 	["Teleport", ["tp", "pos"]],
-	["Lakengeist", ["ghost", "awake"]],
+	["Lakengeist", ["ghost", "dusche", "awake"]],
 	["Monster", ["warn", "doll", "lure", "monster", "intent", "bold", "attacks", "kill", "knock", "noise"]],
 	["Kürbismann", ["pumpkin"]],
 	["Wettbewerb", ["siegerehrung", "brett", "brief", "zettel"]],

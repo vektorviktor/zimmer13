@@ -1978,6 +1978,7 @@ func _furniture() -> void:
 				top = WASH_TABLE_TOP
 			"shower" when ResourceLoader.exists(SHOWER_MODEL):
 				node = _shower(c, front)
+				node.add_to_group("showers")   # Lakengeist in der Dusche (ShowerScare, Spielkonzept 4.24)
 				top = SHOWER_TRAY
 			"toilet" when ResourceLoader.exists(TOILET_MODEL):
 				node = _toilet(c - front * _depth_of(rect, front) / 2.0, front, c)

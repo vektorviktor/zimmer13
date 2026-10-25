@@ -298,6 +298,20 @@ func add_french_door_handprints(door: Door) -> void:
 	_report("handprint", door.center())
 
 
+## Blutige Handabdrücke auf der Glastür der Duschecke von Zimmer 13 (Lakengeist in der Dusche, Spielkonzept 4.24) – außen,
+## wo er hindurchgegriffen hat (innen lägen sie im Schatten der Scheibe). door_z = Außenfläche der Tür (lokal z der
+## Duschecke); gespeichert wie Spuren am Boden (Weltlage).
+func add_shower_handprints(shower: Node3D, door_z: float) -> void:
+	for side in [-1.0, 1.0]:
+		var mark := TraceMark.new().setup("bloody_hand")
+		mark.solid = false
+		add_child(mark)
+		var local := Transform3D(Basis(Vector3.BACK, side * randf_range(0.1, 0.3)),
+			Vector3(side * randf_range(0.14, 0.24), randf_range(1.35, 1.6), door_z + 0.004))
+		mark.global_transform = shower.global_transform * local
+	_report("handprint", shower.global_position)
+
+
 func _report(kind: String, pos: Vector3) -> void:
 	if Game.social:
 		Game.social.note_trace(kind, pos)

@@ -58,6 +58,8 @@ func _ready() -> void:
 	_section(list, "Barrierefreiheit")
 	_slider(list, "Flackern & Bildrauschen", "flicker_intensity", 0.2, 1.0, 0.05)
 	list.add_child(UiKit.wrap_label("Weniger Flackern bei Lichtempfindlichkeit. Das Monster kündigt sich trotzdem an.", 8))
+	_slider(list, "Blickzug", "look_pull", 0.2, 1.0, 0.05)
+	list.add_child(UiKit.wrap_label("Wie stark der Lakengeist deinen Blick zu sich zieht. Darunter wird er nur sanft gelenkt.", 8))
 	_check(list, "Untertitel für Geräusche", "subtitles")
 	_check(list, "Spinnen als Kugeln (Arachnophobie)", "spider_blobs")
 

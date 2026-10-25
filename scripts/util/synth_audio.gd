@@ -69,6 +69,8 @@ var rumble := 0.0  ## tiefes Grollen im ganzen Hotel, bevor das Monster aufbrich
 var creepy := 0.0
 var chorus := 0.0
 var fire := 0.0    ## Kohlefeuer im Kessel (Boiler): dumpfes Fauchen, dazu Knistern und ab und zu ein Knacken
+var shower := 0.0  ## laufende Dusche im Bad von Zimmer 13 (ShowerScare, Spielkonzept 4.24): Prasseln auf der Wanne
+var shower_muffle := 0.0   ## 1 = hinter Wänden und Türen: dumpfer
 
 var _playback: AudioStreamGeneratorPlayback
 var _time := 0.0
@@ -77,6 +79,7 @@ var _lp_slow := 0.0
 var _pant_phase := 1.0   ## 1 = der nächste Atemzug beginnt sofort
 var _pant_depth := 1.0   ## jeder Atemzug etwas anders tief
 var _crackle := 0.0      ## Hüllkurve des letzten Knisterns (`fire`)
+var _drip := 0.0         ## Hüllkurve des letzten Tropfenschlags (`shower`)
 var _breath: AudioStreamPlayer
 var _shots: Array[Dictionary] = []
 var _music_volume := 1.0
@@ -257,6 +260,13 @@ func _sample(dt: float) -> float:
 			_crackle = randf_range(0.25, 0.8) * (2.2 if randf() < 0.07 else 1.0)
 		_crackle *= 0.991
 		s += (_lp_slow * 1.8 * (0.8 + 0.2 * sin(TAU * 0.37 * _time)) + white * _crackle) * fire
+	if shower > 0.001:
+		# Wasser auf der Wanne: helles Rauschen ohne Tiefen, dazu dichte kleine Tropfenschläge; hinter der Wand dumpf
+		if randf() < 0.012:
+			_drip = randf_range(0.15, 0.5)
+		_drip *= 0.9
+		var hiss := white * 0.14 + (_lp_fast - _lp_slow) * 0.35 + white * _drip * 0.5
+		s += (hiss * (1.0 - shower_muffle) + (_lp_fast * 0.35 + _lp_slow * 0.6) * shower_muffle) * shower
 	if rain > 0.001:
 		s += (white * 0.16 * (1.0 - rain_muffle) + _lp_fast * 0.3 + _lp_slow * 0.8 * rain_muffle) * rain
 	var i := _shots.size() - 1
