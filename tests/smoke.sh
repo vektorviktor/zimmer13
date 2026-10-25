@@ -164,6 +164,12 @@ done <<'LIST'
 400|spieler|--sitzen=bett --trace
 600|gaeste,beziehungen|--pals=edna,bruno --trace
 2000|spieler|--sprint --trace
+600|gespraech,gaeste|--gespraech=frage,night,bruno,2 --trace
+600|gespraech,gaeste|--gespraech=frage,brave,edna,1 --trace
+600|gespraech,gaeste|--gespraech=erlebnis,ghost,edna,erzaehlen --trace
+900|gespraech,gaeste|--gespraech=luege,leiche,edna,mila --trace
+900|gespraech,gaeste,beziehungen|--gespraech=luege,dieb,edna,bruno --trace
+600|gespraech,speichern|--gespraech=luege,geist,edna --savetest
 LIST
 wait
 

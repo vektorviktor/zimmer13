@@ -1857,7 +1857,57 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   `pals.on_player_befriended(gast)` – seine Feinde (`are_feuding`) bekommen nach `RIVAL_DELAY` `RIVAL_AMOUNT` und einen
   Satz, je Paar einmal (`_rivals`, nicht gespeichert). Debug `--rival=gast1,gast2`. Gespeichert
   werden `counts` und `feuds` (`social.pals`, Version 25 bzw. 29); `heard`, `_told`, `_queue` nicht. Debug `--pals=gast1,gast2`, `--trace`:
-  `[Freunde]`.
+  `[Freunde]`. `are_pals(a, b, despite_rumor)`: Wer einem Gerücht „X hat geklaut“ glaubt (Haltung `distrusts:<id>`, 6.9),
+  ist mit X nicht befreundet – `despite_rumor` fragt, ob sie es vorher waren (Widerspruch des Beschuldigten).
+- **Gespräche: Anlässe, Erzählen, Lügen, Fragen, Gedächtnis** (`guests/talk.gd`, `Talk`, Kind von Social:
+  `Game.social.talk`, Spielkonzept 6.9, 24.10.). Die Knöpfe baut `DialogUI`, die Logik liegt in `Talk`.
+  - **Menü** (`DialogUI._show_main`): oben bis `MAX_OCCASIONS` Anlässe aus `_occasions()` (Vorrang: Warnen bei aktivem
+    Monster → `take_cover`, frischestes unerzähltes Erlebnis, `grieving`, `Guest.talk_prev` = Zustand vor dem Gespräch
+    `DECORATE`/`PLACE_DECO`/`EAT`, Gewitter, nächster Gast in `NEIGHBOR_RANGE` → „Was hältst du von …?“; je Gast und Tag
+    einmal, `_done`, nicht gespeichert), dann fest: Plaudern · „Ich muss dir was erzählen …“ (`_show_tell`, Lügen über
+    `_show_lie` → `_show_lie_who`/`_show_lie_where`: vier Orte, einer davon der, an dem er gerade steht) · „Sag mal …“
+    (`_show_ask`: `Talk.opinion`, `plans`, `room13`, `door_verdict`) · „Könntest du …“ (`_show_please`: Deko, Werkzeug,
+    zusammen …, mitkommen, `_stay_in` → Haltung `wary` + `Guest.go_home`) · Handeln … · Tschüss. Die Optionen liegen in
+    einem `ScrollContainer`; Zeilen über zehn haben keine Ziffer. Freundliche Gesten der neuen Optionen laufen über
+    `Talk.friendly` (dasselbe Tagesbudget wie Plaudern, `chats_today`).
+  - **Erlebnisse des Spielers** (`log`: id, kind, zone, who, at): `_scan_sights` alle `SCAN_EVERY` s – Monster,
+    Lakengeist, Kürbismann im Blick (`SIGHT_RANGE`, dieselbe Art erst nach `SIGHT_AGAIN` s wieder), Lakengeist beim
+    Spieler (`ghost_visit`), Funde aus `shock_sights` in `FIND_RANGE` (`blood`, `corpse` mit Gast-ID, einmal je
+    `sight_key`); `attic` aus `AtticSpook.on_flash`. `untold(gast)`: heutige Erlebnisse, zu denen er noch keine Aussage hat.
+  - **Gedächtnis** je Gast: `Guest.claims` (topic, zone, who, lie, at, from = "player" oder Gast-ID, hops, src = id des
+    Erlebnisses bzw. der Lüge, spread, exposed, believed, stance = Haltung, die daraus entstand, value = Antwort) –
+    höchstens `MAX_CLAIMS`. `said(gast, topic)` = letzte Aussage des Spielers zu einem Thema.
+  - **Erzählen/Lügen** (`tell(gast, story, lie)`): Lüge über einen Spuk an dem Ort, an dem er steht → sofort `expose`
+    („there“); `no_trust` → glaubt nichts; sonst durchschaut er die Lüge mit `_see_through` (Würfel-`perception` × 0,5,
+    Skeptiker + 0,2). `_believes` nach `temper(gast)` (Archetyp, „Kind“, bei festen Gästen aus den Werten): Kinder
+    alles, wer es selbst erlebt hat (`SAME_EXPERIENCE`) auch, Skeptiker nur Handfestes (60 %), „X hat geklaut“ nur, wer
+    mit X nicht befreundet ist. Geglaubt (`_believed`): Angst `STORY_FEAR` × (1,2 − Mut), Haltung `wary`, Lauschen
+    (`on_monster_talk`) bei Monster/Geist/Kürbismann, `friendly` +5 („Du auch?!“) bzw. +2, Eltern eines Kindes −3.
+    Widerspruch zu „Ich glaube nicht an Geister“ halbiert die Chance (`CONTRADICTION`).
+  - **Auffliegen** (`expose(gast, aussage, wie)`: −12, über Menschen/„da war nichts“/Einbruch −20, weitererzählte halb;
+    Haltungen `no_trust` (1 Tag) und `confront` (nächstes Gespräch: `greeting`), Freunde nach 20–60 s −4, `--trace`
+    `[Gespräch] Lüge aufgeflogen`): `_check_lies` jede Sekunde – Leiche lebt und ist in `ALIVE_RANGE` zu sehen, der
+    Beschuldigte in `DENY_RANGE` widerspricht einmal (`contested`; er glaubt ihm, wenn sie vorher Freunde waren, sonst
+    zu 50 %), `expose_at` erreicht („da war nichts“, aber ein Todesfall: `TRUTH_DELAY`). Beim Weitererzählen vergleichen
+    Freunde (`_compare`): dieselbe Spuk-Art vom Spieler an verschiedenen Orten, eine davon gelogen.
+  - **Weitererzählen** (`_update_spread` alle `TELL_SCAN` s, nicht in der Nachtruhe): Freunde in `TELL_RANGE`, beide frei,
+    geglaubte Geschichte von heute, `hops` < `MAX_HOPS`, je Empfänger einmal (`spread`), mit Wahrscheinlichkeit `gossip`
+    (mindestens 0,3) → Satz aus `RUMOR`, Kopie mit `from`/`hops` + 1, der Empfänger glaubt nach `_believes`.
+  - **Fragen der Gäste** (`pick_question` zu Beginn von `DialogUI.open`, nicht nach Erlebnis/Verletzung/`greeting`,
+    Wahrscheinlichkeit `ASK_CHANCE` nach Stufe ab „neutral“): `ghosts`, `night` (nach dem ersten Angriff, morgens/tags,
+    einmal am Tag; „da war nichts“ ist gelogen, wenn `_night_had_events`), `contest` (bis zur Siegerehrung), `room`
+    (`suspects` aus `RoomAccess.on_forced`, wenn kein Bewohner es mitbekam), `brave`, Kinder `play`; `escort` hat Vorrang,
+    wenn er dich für mutig hält (`brave_thinks`) und Angst ≥ `ESCORT_FEAR` hat (Ja → `start_follow`). `answer()` merkt
+    die Antwort, setzt Haltungen und gibt die Reaktion.
+  - **Haltungen** `Guest.stances` (Name → {until = `Director.elapsed`, …}; `has_stance`/`set_stance`/`clear_stance`,
+    `prune_stances` jede Sekunde): `wary` → `Guest.activity_weights` × `WARY_ACTIVITIES`, Flackern × 1,4 Angst, versteckt
+    sich beim Hören des Monsters eher; `careless` → × `CARELESS_ACTIVITIES`, kurzes Flackern zu 60 % abgetan
+    (`CARELESS_LINES`), versteckt sich seltener – stirbt er so, `on_guest_died` → Schock mit Schuld und Meilenstein
+    „careless_death“; `distrusts:<id>` (`are_pals`); `brave_thinks`; `promise` (Kind, `PROMISE_TIME`, erfüllt, sobald
+    `deeds.games` steigt, sonst −10, Eltern −3, `promise_broken`); `no_trust`, `confront`, `grieving` (Freunde eines Toten).
+  - Gespeichert (Version 44): je Gast `claims`, `stances`; `social.talk` = `log`, `next_id`, `suspects`, `deaths`.
+    Nicht: `_done`, `_queue`, `_seen_finds`. Debug `--gespraech=frage|erlebnis|luege,…` (Kopf von `main.gd`), `--trace`:
+    `[Gespräch]`.
 - **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze; Zustand im Gast, Spielkonzept 6.17):
   `Wounds.survives()` (`SURVIVE` 0,4) in `MonsterDirector.kill_guest` (nach `wants_victim`: Lärm `scream`,
   `wound_by("scratch", monster)`, `scared_by_monster`, `after_scare` – zählt nicht als Opfer, keine Sättigung) und
@@ -2011,6 +2061,9 @@ Dritte Bedrohung neben Monster und Lakengeist, eigener Akteur (`CharacterBody3D`
   `wound_visited`; nach dem Laden `_update_wound_marks`, ins Bett geht er von selbst wieder.
 - Freundschaften unter Gästen (ab Version 25): `social.pals` = `GuestPals.counts` (`"id_a|id_b"` → Anzahl); ältere
   Stände laden ohne (nur Familie und Nachbarn).
+- Gespräche (ab Version 44, Spielkonzept 6.9): je Gast `claims` (über `Talk.load_claims`: `src`/`hops` wieder als Zahl)
+  und `stances`, `social.talk` = `Talk.save_state` (Erlebnisse des Spielers, Zähler, Einbruchsverdacht, Todesfälle). Ältere
+  Stände laden weiter, niemand erinnert sich an etwas.
 - Spielerfigur (ab Version 33, Spielkonzept 3.9): `player.look` (`PlayerBody.look`: `body`, `height`, `slim`, `fit`,
   Farben als HTML-Text), angewendet zuerst über `Player.set_look` (Kapsel und Augenhöhe); ältere Stände laden mit
   `PlayerBody.default_look()`. Savetest stellt vorher eine andere Figur ein und setzt sie nach dem Sammeln zurück.

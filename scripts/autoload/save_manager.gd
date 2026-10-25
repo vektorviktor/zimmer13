@@ -83,7 +83,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 42: Notizbuch „seen“ (Spielkonzept 3.10: gesehene Bedrohungen, Lesezeichen „Gesehen“) – ältere Stände laden weiter,
 ##     noch nichts gesehen
 ## 43: Tee (Spielkonzept 3.12): player.tea und die Tasse (Item.Kind.TEA) – ältere Stände laden weiter, ohne Tee
-const VERSION := 43
+## 44: Gespräche (Spielkonzept 6.9, Talk): je Gast „claims“ (was du ihm gesagt hast) und „stances“ (Haltungen),
+##     social.talk (deine Erlebnisse, Einbruchsverdacht, Todesfälle) – ältere Stände laden weiter, alle ohne Gedächtnis
+const VERSION := 44
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -404,6 +406,7 @@ func collect() -> Dictionary:
 			"deeds": g.deeds, "chat_day": g.chat_day, "chats_today": g.chats_today,
 			"wound": g.wound, "wound_left": g.wound_left, "wound_bed": g.wound_bed, "wound_facts": g.wound_facts,
 			"wound_told": g.wound_told, "wound_visited": g.wound_visited,
+			"claims": g.claims, "stances": g.stances,
 		}
 	data["alive"] = alive
 	var social := Game.social
@@ -420,6 +423,7 @@ func collect() -> Dictionary:
 		"cat_thefts": social.cat_thefts, "cat_blame": social.cat_blame, "cats_have_cried": social.cats_have_cried,
 		"sleep_active": social.sleep_active, "night_seed": social.night_seed,
 		"pals": social.pals.save_state(),
+		"talk": social.talk.save_state(),
 	}
 	var director := Game.director
 	var curiosity: Array = []
@@ -581,6 +585,8 @@ func apply(data: Dictionary) -> void:
 		g.wound_facts = (d.get("wound_facts", {}) as Dictionary).duplicate()
 		g.wound_told = int(d.get("wound_told", 0))
 		g.wound_visited = bool(d.get("wound_visited", false))
+		g.claims = Talk.load_claims(d.get("claims", []))
+		g.stances = (d.get("stances", {}) as Dictionary).duplicate(true)
 		g._update_wound_marks()
 		g.stock = {}
 		var stock: Dictionary = d["stock"]
@@ -668,6 +674,7 @@ func apply(data: Dictionary) -> void:
 	social.night_seed = int(sd.get("night_seed", social.night_seed))
 	social._arrival_timer = float(sd.get("arrival_timer", -1.0))
 	social.pals.load_state(sd.get("pals", {}))
+	social.talk.load_state(sd.get("talk", {}))
 	if Game.doll:
 		Game.doll.load_state(data.get("doll", {}))
 	if Game.pumpkin:

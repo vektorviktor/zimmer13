@@ -42,6 +42,8 @@ func on_flash() -> void:
 		return
 	forced = false
 	_done = true
+	if Game.social and Game.social.talk:   # ein Erlebnis zum Erzählen (6.9)
+		Game.social.talk.note("attic", p.global_position)
 	var turn := Settings.flicker_intensity >= 1.0
 	var dir := 1.0 if randf() < 0.5 else -1.0
 	if turn:

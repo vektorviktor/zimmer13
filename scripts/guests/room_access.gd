@@ -365,6 +365,8 @@ func on_forced(door: Door, loud: bool) -> void:
 		if not w in involved:
 			social.change_relation(w, FORCED_WITNESS)
 			involved.append(w)
+	if not involved.any(func(g: Guest) -> bool: return g.home["no"] == no) and social.talk:
+		social.talk.on_break_in(no)   # ungesehen: die Bewohner fragen nach (6.9)
 	if involved.is_empty():
 		return
 	var first: Guest = involved[0]

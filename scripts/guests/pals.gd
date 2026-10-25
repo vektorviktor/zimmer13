@@ -78,11 +78,14 @@ func note_group(group: Array) -> void:
 			note(g, o)
 
 
-func are_pals(a: Guest, b: Guest) -> bool:
+## despite_rumor: Misstrauen aus einem geglaubten Gerücht (6.9) übergehen – waren sie vorher Freunde?
+func are_pals(a: Guest, b: Guest, despite_rumor: bool = false) -> bool:
 	if a == null or b == null or a == b:
 		return false
 	if feuds.has(key(a, b)):
 		return false   # verfeindet (6.16)
+	if not despite_rumor and (a.has_stance("distrusts:" + b.id) or b.has_stance("distrusts:" + a.id)):
+		return false   # „X hat geklaut“ – geglaubt (6.9)
 	if a.parent_guest() == b or b.parent_guest() == a or a.housemate_of(b):
 		return true   # Familie (6.13): Eltern und Kinder, ein Haushalt (6.20)
 	if int(counts.get(key(a, b), 0)) >= PAL_DEEDS:

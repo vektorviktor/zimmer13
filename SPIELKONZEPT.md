@@ -71,7 +71,7 @@
   - [6.6 Gäste-KI & Pathfinding](#66-gäste-ki--pathfinding)
   - [6.7 Gäste können sterben](#67-gäste-können-sterben)
   - [6.8 Schock & Trauer (Ideen – noch zu diskutieren)](#68-schock--trauer-ideen--noch-zu-diskutieren)
-  - [6.9 Dialog](#69-dialog)
+  - [6.9 Dialog: Anlässe, Fragen, Erzählen, Lügen, Gedächtnis (entschieden 2026-10-24)](#69-dialog-anlässe-fragen-erzählen-lügen-gedächtnis-entschieden-2026-10-24)
   - [6.10 Minispiele mit Gästen](#610-minispiele-mit-gästen)
   - [6.11 Hotelkatzen (vorgemerkt 2026-10-14, umgesetzt 2026-10-17)](#611-hotelkatzen-vorgemerkt-2026-10-14-umgesetzt-2026-10-17)
   - [6.12 Schreck & Erlebnisse (entschieden und umgesetzt 2026-10-18)](#612-schreck--erlebnisse-entschieden-und-umgesetzt-2026-10-18)
@@ -2471,9 +2471,91 @@ Stirbt ein Gast, mit dem man **gut befreundet** war, erleidet der Spieler einen 
 - **Trauer** (Freund ist einfach gestorben): Malus wie oben, klingt ab.
 - **Schuld** (man hat das Monster selbst auf ihn gelenkt, 4.11): stärkerer/länger anhaltender Malus, evtl. wiederkehrende Halluzinationen *dieses* Gastes. Bei hoher Schuld: Gäste werden misstrauisch, wenn sie es herausfinden.
 
-### 6.9 Dialog
+### 6.9 Dialog: Anlässe, Fragen, Erzählen, Lügen, Gedächtnis (entschieden 2026-10-24)
+> **Umgesetzt (2026-10-24)** wie unten (Talk, DialogUI), mit diesen Abweichungen: „Er war selbst dort“ prüft nur, wo
+> er beim Lügen gerade steht (einer der vier angebotenen Orte ist immer seiner). Warnen gibt es nur im Gespräch, nicht
+> am Telefon und nicht als Ruf an alle (6.18). Die Antworten auf Fragen haben noch keine eigenen Tonlagen
+> (nett/neutral/unhöflich), nur wahr oder gelogen. Ein Versprechen an ein Kind gilt mit jeder Partie Mäxchen oder Schach
+> als gehalten. Lügen über die Nacht („Es war unheimlich“, obwohl nichts war) fliegen nur auf, wenn er sie sofort
+> durchschaut.
 - Einfaches Dialogsystem mit Antwortoptionen (nett / neutral / unhöflich).
-- Umsetzung in Godot z. B. über eigene Ressourcen oder ein Dialog-Plugin (z. B. Dialogue Manager).
+- ~~Umsetzung in Godot z. B. über eigene Ressourcen oder ein Dialog-Plugin (z. B. Dialogue Manager).~~ Eigenes
+  System im Code (DialogUI), kein Plugin.
+
+**Ausbau (2026-10-24):** Bisher war das Gespräch ein Menü von Tätigkeiten (Plaudern, Handeln, Schenken …). Jetzt
+kommen Fragen, Bitten, Erzählen und Lügen dazu, und **Gäste merken sich, was du sagst, und handeln danach**.
+
+**1. Menü in fester Ordnung**
+- **Oben: Anlässe** – höchstens zwei, je nach Lage (2), auf Taste 1 und 2.
+- **Mitte, immer in derselben Reihenfolge:** Plaudern · Ich muss dir was erzählen … · Sag mal … · Könntest du … ·
+  Handeln · Schenken · Spielen · über das Monster reden.
+- **Unten** das Seltene (Einladen, Beleidigen), ganz zuletzt **Tschüss** (auch Esc).
+- Reicht der Platz nicht, **scrollt** die Liste (Mausrad); Ziffern 1–9 und 0 gelten für die ersten zehn Zeilen.
+
+**2. Anlässe: Die Lage bestimmt, was man sagen kann**
+- Was der Gast gerade tut: schmückt → „Schön geworden!“ · isst → „Lass es dir schmecken.“
+- Was gerade los ist: Gewitter → „Hast du auch Angst vor dem Gewitter?“ · das Monster ist unterwegs → „Versteck
+  dich!“ (das Warnen aus 6.18: er bringt sich in Sicherheit, Beziehung ↑)
+- Wie es ihm geht: ein Freund von ihm ist gestorben → „Er fehlt mir auch.“ (tröstet, Angst ↓)
+- Wer daneben steht: ein anderer Gast in der Nähe → „Was hältst du von …?“ rückt nach oben.
+- Das frischeste eigene Erlebnis (3), das man ihm noch nicht erzählt hat → „Hast du das Gespenst gesehen?“
+- **Jeder Anlass einmal je Lage** (je Gast und Spieltag), und er zählt zum Beziehungsbudget (6.18) – sonst wird
+  „Schön geworden!“ zur Beziehungsquelle.
+
+**3. Erzählen, was man erlebt hat**
+- Der Spieler sammelt **eigene Erlebnisse** wie die Gäste (6.12): Monster, Lakengeist, Kürbismann gesehen, eine Leiche
+  oder eine Blutlache gefunden, vom Lakengeist heimgesucht, im Dachboden umgedreht worden (4.21).
+- **Frisch** ist ein Erlebnis am Tag, an dem es geschah; **jedem Gast erzählt man es einmal**.
+- Die Antwort hängt vom Gast ab: Hat er es **auch erlebt** → „Du auch?!“, das verbindet. **Ängstliche** glauben es,
+  bekommen Angst und erzählen es weiter. **Skeptiker** glauben es nicht („Du hast zu viel Punsch getrunken.“), außer sie
+  haben selbst etwas erlebt. **Kinder** sind aufgeregt – Mama oder Papa finden das gar nicht gut.
+- Wie jedes Monster-Gespräch hört das Monster mit (4.7).
+
+**4. Lügen**
+- Unter „Ich muss dir was erzählen …“ steht **„Mir ist was passiert …“**: erst *was* (Geist, Monster, Kürbismann, eine
+  Leiche von …, … hat geklaut), dann *wo*. Wer es glaubt, reagiert wie auf die Wahrheit (3).
+- **Wie eine Lüge auffliegt:**
+  1. **Gegenbeweis:** Der angeblich Tote läuft ihm über den Weg.
+  2. **Er war selbst dort:** „Ich war die ganze Zeit an der Bar – da war nichts.“ (fliegt sofort auf)
+  3. **Der Beschuldigte widerspricht:** Treffen sich er und der angebliche Dieb, glaubt er dem eher, mit dem er
+     befreundet ist.
+  4. **Vergleich unter Gästen:** Zwei Freunde merken, dass du ihnen dasselbe an verschiedenen Orten erzählt hast.
+  5. **Die Wahrheit kommt raus:** Wer „Da war nichts“ gehört hat, erfährt bald, dass doch jemand gestorben ist.
+- Spuk-Lügen ohne Ort, den er kennt, sind kaum zu widerlegen: sichere Lüge, kleine Wirkung. Lügen über Menschen
+  wirken stark und sind riskant.
+- **Aufgeflogen:** Er ist **sauer** (Beziehung ↓↓), sagt es dir, wenn du in Hörweite bist, und spricht dich beim
+  nächsten Gespräch darauf an. Er **erzählt es seinen Freunden** („Glaub ihm kein Wort.“) und **glaubt dir einen Tag
+  lang nichts** – auch nicht die Wahrheit.
+- Das Notizbuch merkt sich Lügen **nicht** – sich zu erinnern, wem man was erzählt hat, gehört zum Risiko.
+
+**5. Gäste fragen – und du antwortest**
+- Höchstens **eine Frage je Gespräch**, gleich zu Beginn statt der Begrüßung; ab „neutral“, Freunde öfter.
+- **Ein Wechsel:** Frage → Antwort → Reaktion, danach zurück ins Menü. Keine Gesprächsbäume.
+- Erste Fragen: „Glaubst du an Geister?“ · „Hast du letzte Nacht was gehört?“ · „Wer gewinnt wohl den
+  Türschmuck?“ (bis zur Siegerehrung) · „Warst du in meinem Zimmer?“ (nach einem Einbruch, bei dem er dich nicht
+  gesehen hat) · „Hast du eigentlich keine Angst hier?“ · Kinder: „Spielst du mit mir?“
+- Antworten haben einen Ton (nett / neutral / unhöflich) und sind **wahr oder gelogen**.
+
+**6. Gedächtnis und Haltungen**
+- Jeder Gast merkt sich, **was du ihm gesagt hast** – Antworten, Erzähltes, Lügen. Darauf greift er später zurück
+  („Du hast doch gesagt, du glaubst nicht an Geister!“), und daran fliegen Lügen auf (4).
+- Aus dem Gesagten entstehen **Haltungen**, die sein **Verhalten** steuern:
+
+  | Du sagst … | Haltung | Er … |
+  |---|---|---|
+  | „Ja, nachts war was“ / eine Spukgeschichte, die er glaubt | vorsichtig | bleibt öfter im Zimmer, meidet Flure und Garten, versteckt sich schneller |
+  | „Ach, da war nichts“ | sorglos | läuft mehr herum, nimmt Flackern nicht ernst. Stirbt er so, ist das **Schuld** (6.8) |
+  | „X hat geklaut“ | misstraut X | ist mit X nicht mehr befreundet (6.16), solange es gilt |
+  | „Ich hab keine Angst“ | hält dich für mutig | bittet dich, ihn heimzubringen, wenn er Angst hat – lehnst du ab, war es gelogen |
+  | Kind: „Später, versprochen!“ | wartet | erinnert dich; spielst du nicht bis zum Abend mit ihm, ist es enttäuscht |
+  | „Ich glaube (nicht) an Geister“ | Meinung | Gleiche Meinung verbindet; widersprichst du dir später, wird er misstrauisch |
+
+- Haltungen **verfallen** nach einem Tag (das Versprechen am Abend). Neues überschreibt Altes.
+- **Weitererzählen:** Was er glaubt, erzählt er Freunden, die er trifft (6.16) – sie bekommen etwas Angst und hören
+  dieselbe Geschichte. **Bremse:** nur Freunde, jede Geschichte einmal je Paar, höchstens zwei Schritte weit.
+
+**Zu klären:** weitere Fragen und Anlässe (Balkon, Dachboden, offene Aufgabe) · ob Skeptiker dich in den Keller
+mitnehmen · „Ich mag Kürbissuppe“ → er bringt dir welche · Wache halten (6.18) als Bitte.
 
 ### 6.10 Minispiele mit Gästen
 Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um sich anzufreunden, um Zeit zu überbrücken oder **um einen Einsatz** (Geld, Deko, sogar Einrichtungsgegenstände).

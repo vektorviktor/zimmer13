@@ -3,6 +3,9 @@ extends CanvasLayer
 ## Gespräch mit einem Gast (Spielkonzept 6.2–6.5, 6.9): Plaudern, über das Monster
 ## reden, Handeln, Schenken, um Deko bitten, beruhigen, zur Feier einladen,
 ## beleidigen, entschuldigen, mitkommen lassen (6.3). Auswahl per Maus oder Zifferntasten 1–9 und 0, Esc schließt.
+## Ausbau 6.9 (2026-10-24, Logik in Talk): oben bis zu zwei Anlässe je nach Lage, dann in fester Ordnung Plaudern,
+## „Ich muss dir was erzählen …“ (Erlebnisse und Lügen), „Sag mal …“ (Fragen), „Könntest du …“ (Bitten), Handeln …,
+## zuletzt Tschüss; zu Beginn stellt der Gast manchmal selbst eine Frage. Zu lange Listen scrollen.
 
 const CHAT_COOLDOWN := 40.0
 const GIFT_COOLDOWN := 150.0
@@ -14,6 +17,9 @@ const ROAST_CALM := 20.0
 const CHATS_PER_DAY := 2
 ## Entschuldigen kostet je nach Stufe (verfeindet / stark verfeindet)
 const APOLOGY_PRICE := {Social.Tier.ENEMY: 5, Social.Tier.STRONG_ENEMY: 15}
+## Anlässe (6.9): höchstens so viele oben im Menü; „Was hältst du von …?“ für Gäste bis so weit weg
+const MAX_OCCASIONS := 2
+const NEIGHBOR_RANGE := 4.0
 
 var guest: Guest
 
@@ -24,6 +30,9 @@ var _buttons: Array[Button] = []
 var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dice" oder "chess")
 var _door: Door = null  ## Gespräch an der Tür (Spielkonzept 6.19): die Zimmertür, durch deren Spalt geredet wird
 var _woken := false
+var _scroll: ScrollContainer
+var _question := {}     ## Frage des Gastes, auf die du gerade antwortest (Talk.pick_question)
+var _done := {}         ## "gast|anlass" → Spieltag: Anlass schon genutzt (nicht gespeichert)
 
 
 func _ready() -> void:
@@ -35,11 +44,31 @@ func _ready() -> void:
 	_text = UiKit.plain_label(10, Color(0.9, 0.88, 0.85))
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_text)
-	_options = UiKit.option_grid(box)
+	# Lange Listen scrollen (6.9) – Leiste im Ton des Kastens
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(_scroll)
+	var bar := _scroll.get_v_scroll_bar()
+	var grab := StyleBoxFlat.new()
+	grab.bg_color = Color(0.45, 0.3, 0.15, 0.8)
+	grab.content_margin_left = 2
+	grab.content_margin_right = 2
+	for style_name in ["grabber", "grabber_highlight", "grabber_pressed"]:
+		bar.add_theme_stylebox_override(style_name, grab)
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(1, 1, 1, 0.05)
+	track.content_margin_left = 2
+	track.content_margin_right = 2
+	bar.add_theme_stylebox_override("scroll", track)
+	_options = UiKit.option_grid(_scroll)
+	_options.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 
-func open(p_guest: Guest) -> void:
+## force_question: diese Frage stellt er sicher (Debug --gespraech=frage).
+func open(p_guest: Guest, force_question: String = "") -> void:
 	guest = p_guest
+	_question = {}
 	visible = true
 	Game.player.in_dialog = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -53,6 +82,13 @@ func open(p_guest: Guest) -> void:
 	var experience := guest.untold_experience()
 	var greeting_only := false   # nur ein Gruß des Verletzten – danach passt „X hat mir von dir erzählt“ noch
 	var witness := _wound_visit()
+	# Was er sich über dich gemerkt hat (6.9) – aufgeflogene Lüge, Versprechen –, sonst vielleicht eine Frage
+	var talk := Game.social.talk
+	var remembered := ""
+	if experience.is_empty() and guest.wound == "" and guest.wound_note == "" and guest.fear < 60.0:
+		remembered = talk.greeting(guest)
+		if remembered == "":
+			_question = talk.pick_question(guest, force_question)
 	if witness != "":
 		_say(witness)   # Überlebender (6.17): bei jedem Gespräch ein neues Detail, alles stimmt
 		Game.social.on_monster_talk(guest)
@@ -69,6 +105,10 @@ func open(p_guest: Guest) -> void:
 		experience["told"] = true
 		_say(Game.social.experience_line(guest, experience))
 		Game.social.on_monster_talk(guest)
+	elif remembered != "":
+		_say(remembered)
+	elif not _question.is_empty():
+		_say(String(_question["text"]))
 	elif guest.fear >= 60.0:
 		_say(guest.line("panic"))
 	elif Social.tier(guest) == Social.Tier.STRONG_ENEMY:
@@ -81,7 +121,7 @@ func open(p_guest: Guest) -> void:
 		_say(guest.line("greet"))
 	# Ein Freund hat ihm Gutes über dich erzählt (Spielkonzept 6.16) – nach einem Erlebnis oder einem Detail des
 	# Verletzten (6.17) erst in einem späteren Gespräch, darum nur abholen, wenn der Satz auch kommt
-	if (experience.is_empty() or greeting_only) and guest.fear < 60.0:
+	if (experience.is_empty() or greeting_only) and guest.fear < 60.0 and _question.is_empty():
 		var heard := Game.social.pals.take_heard_line(guest)
 		if heard != "":
 			_text.text += " " + heard
@@ -89,7 +129,18 @@ func open(p_guest: Guest) -> void:
 		_text.text = "*hicks* " + _text.text
 	if Game.player.disguised:   # unter dem Laken (5.9)
 		_text.text = "„Wer steckt denn da drunter? … Ach, du bist's!“ " + _text.text
-	_show_main()
+	if not _question.is_empty():
+		_show_question()
+	else:
+		_show_main()
+	if talk.debug_answer >= 0:   # --gespraech: gleich antworten bzw. den ersten Anlass wählen
+		var pick := talk.debug_answer
+		talk.debug_answer = -1
+		get_tree().create_timer(1.5, false).timeout.connect(func() -> void:
+			if visible and pick < _buttons.size():
+				print("[Gespräch] wähle: %s" % _buttons[pick].text)
+				_buttons[pick].pressed.emit()
+				print("[Gespräch] %s: %s" % [_name.text, _text.text]))
 
 
 ## Gespräch an der Tür eines Gästezimmers (Spielkonzept 6.19, RoomAccess): der Bewohner im Türspalt, vier Wege hinein.
@@ -183,6 +234,8 @@ func _process(_delta: float) -> void:
 
 # --- Seiten -------------------------------------------------------------------------
 
+## Hauptmenü in fester Ordnung (Spielkonzept 6.9): Anlässe, Angebote des Gastes, Plaudern, die drei Gruppen, Handeln,
+## Schenken, Spielen, Monster, Beruhigen, Feier, Beleidigen, Tschüss.
 func _show_main() -> void:
 	_clear()
 	_name.text = "%s – %s" % [guest.display_name, Social.relation_word(guest.relation)]
@@ -192,48 +245,42 @@ func _show_main() -> void:
 		_option("Tschüss", close)
 		return
 	var tier := Social.tier(guest)
-	if Game.social.access.can_lend(guest) and Game.player.held == null:   # Konrads Werkzeug (Spielkonzept 6.19)
-		_option("Kannst du mir dein Werkzeug leihen?", func() -> void:
-			_say(Game.social.access.lend(guest))
-			_show_main())
 	if tier <= Social.Tier.ENEMY:
 		var price: int = APOLOGY_PRICE[tier]
 		_option("Entschuldigen (%d Geld)" % price, _apologize.bind(price), Game.money < price)
 		_option("Tschüss", close)
 		return
+	for occasion in _occasions().slice(0, MAX_OCCASIONS):
+		_option(String(occasion["label"]), _occasion.bind(String(occasion["key"]), occasion["call"]))
 	if guest.challenge_time > 0.0:
 		_option("Herausforderung annehmen (%s)" % ("Schach" if guest.challenge_game == "chess" else "Mäxchen"),
 			_show_stakes.bind(guest.challenge_game))
 	if Game.social.search.has_offer(guest):
 		_option("Klar, ich such mit!", _search)   # er hat gefragt, ob du mitkommst (5.9)
+	if guest.sleepless and Game.social.sleep_active:
+		_option("Ab ins Bett mit dir", _to_bed)
 	_option("Plaudern", _chat)
-	if Game.director.first_attack_done:
-		_option("Über das Monster reden", _talk_monster)
-	else:
-		_option("Ist dir hier etwas aufgefallen?", _talk_odd)
+	_option("Ich muss dir was erzählen …", _show_tell)
+	_option("Sag mal …", _show_ask)
+	_option("Könntest du …", _show_please)
 	_option("Handeln", _show_trade)
 	if Game.social.builder.in_area(player.global_position, "bar"):
 		if guest.is_child():
 			_option("Einen Kakao ausgeben (%d Geld)" % BarTap.PRICE, _cocoa, Game.money < BarTap.PRICE)
 		else:
 			_option("Eine Runde ausgeben (%d Geld)" % (BarTap.PRICE * 2), _round, Game.money < BarTap.PRICE * 2)
-	if Game.dice and Game.dice.table.has_cup(player) and not Game.dice.table.busy:
-		_option("Mäxchen an der Bar spielen", _show_stakes.bind("dice"))
-	if Game.chess and Game.chess.table.has_board(player) and not Game.chess.table.busy:
-		_option("Schach in der Lobby spielen", _show_stakes.bind("chess"))
 	if player.held and not player.held.kind in NO_GIFT:
 		_option("%s schenken" % player.held.display_name, _gift.bind(player.held))
 	if not _bag_items(true).is_empty():
 		_option("Aus der Tasche schenken …", _show_bag.bind(true))
-	_option("Hast du Deko für mich?", _ask_deco)
-	if tier >= Social.Tier.NICE and not Game.social.party_active:
-		_option("Wollen wir zusammen …", _show_together)
-	if guest.is_following():
-		_option("Du kannst gehen", _dismiss)
-	elif tier >= Social.Tier.FRIEND:
-		_option("Komm mit", _follow)
-	if guest.sleepless and Game.social.sleep_active:
-		_option("Ab ins Bett mit dir", _to_bed)
+	if Game.dice and Game.dice.table.has_cup(player) and not Game.dice.table.busy:
+		_option("Mäxchen an der Bar spielen", _show_stakes.bind("dice"))
+	if Game.chess and Game.chess.table.has_board(player) and not Game.chess.table.busy:
+		_option("Schach in der Lobby spielen", _show_stakes.bind("chess"))
+	if Game.director.first_attack_done:
+		_option("Über das Monster reden", _talk_monster)
+	else:
+		_option("Ist dir hier etwas aufgefallen?", _talk_odd)
 	if guest.fear >= 30.0:
 		_option("Beruhigen", _calm)
 	if Game.social.party_active:
@@ -243,6 +290,244 @@ func _show_main() -> void:
 		_option("Zur Feier in den Partyraum einladen", _invite)
 	_option("Beleidigen", _insult)
 	_option("Tschüss", close)
+
+
+# --- Anlässe, Erzählen, Fragen, Bitten (Spielkonzept 6.9) ----------------------------------------
+
+## Was die Lage gerade hergibt, nach Vorrang: Warnen, ein frisches Erlebnis, Trauer, was er gerade tut, Gewitter,
+## wer daneben steht. Jeder Anlass einmal je Gast und Spieltag.
+func _occasions() -> Array[Dictionary]:
+	var list: Array[Dictionary] = []
+	var talk := Game.social.talk
+	var day := Calendar.today()
+	var add := func(key: String, label: String, call: Callable) -> void:
+		if int(_done.get(guest.id + "|" + key, -1)) != day:
+			list.append({"key": key, "label": label, "call": call})
+	if Game.monster and Game.monster.is_active() and guest.hiding == null:
+		add.call("warn:%d" % Game.director.attacks, "Versteck dich! Es ist unterwegs!", _warn)
+	var fresh := talk.untold(guest)
+	if not fresh.is_empty():
+		add.call("tell:%d" % int(fresh[0]["id"]), talk.tell_label(fresh[0]), _tell_story.bind(fresh[0]))
+	if guest.has_stance("grieving"):
+		add.call("grief", "%s fehlt mir auch." % String(guest.stances["grieving"].get("who", "")), _comfort)
+	if guest.talk_prev in [Guest.State.DECORATE, Guest.State.PLACE_DECO]:
+		add.call("deco", "Schön geworden!", _praise_deco)
+	elif guest.talk_prev == Guest.State.EAT:
+		add.call("eat", "Lass es dir schmecken.", _enjoy_meal)
+	if Game.weather and Game.weather.kind == Weather.Kind.STORM:
+		add.call("storm", "Hast du auch Angst vor dem Gewitter?", _storm_talk)
+	var near: Guest = null
+	var near_d := NEIGHBOR_RANGE
+	for other in Game.social.living_guests():
+		var g: Guest = other
+		var d := g.global_position.distance_to(guest.global_position)
+		if g != guest and d < near_d:
+			near = g
+			near_d = d
+	if near:
+		add.call("opinion:" + near.id, "Was hältst du von %s?" % near.display_name, _opinion.bind(near))
+	return list
+
+
+func _occasion(key: String, call: Callable) -> void:
+	_done[guest.id + "|" + key] = Calendar.today()
+	call.call()
+
+
+## Warnen (6.18): Er bringt sich in Sicherheit – es ist ja wirklich etwas unterwegs.
+func _warn() -> void:
+	Game.social.talk.friendly(guest, 6.0)
+	var partner := guest
+	close()
+	partner.say("Danke! Ich bin weg!" if not partner.is_child() else "Ich hab Angst! Ich lauf heim!")
+	partner.take_cover()
+
+
+func _comfort() -> void:
+	guest.fear = maxf(0.0, guest.fear - 20.0)
+	Game.social.talk.friendly(guest, 4.0)
+	_say("*schnieft* Danke." if guest.is_child() else "Danke … das tut gut, das zu hören.")
+	_show_main()
+
+
+func _praise_deco() -> void:
+	Game.social.talk.friendly(guest, 3.0)
+	_say("Findest du? Danke! Ich bin noch nicht fertig.")
+	_show_main()
+
+
+func _enjoy_meal() -> void:
+	Game.social.talk.friendly(guest, 2.0)
+	_say("Danke! Willst du was abhaben? … War nur ein Witz.")
+	_show_main()
+
+
+func _storm_talk() -> void:
+	if Talk.temper(guest) in ["ängstlich", "Kind"]:
+		guest.fear = maxf(0.0, guest.fear - 10.0)
+		Game.social.talk.friendly(guest, 4.0)
+		_say("Ja! Gut, dass ich nicht allein bin.")
+	else:
+		Game.social.talk.friendly(guest, 1.0)
+		_say("Ach was. Aber gemütlich ist es nicht.")
+	_show_main()
+
+
+func _opinion(other: Guest) -> void:
+	_say(Game.social.talk.opinion(guest, other) if is_instance_valid(other) else "Wen meinst du?")
+	_show_main()
+
+
+## „Ich muss dir was erzählen …“: frische Erlebnisse, die er noch nicht kennt – und das Erfinden.
+func _show_tell() -> void:
+	_clear()
+	_say("Ja? Was denn?")
+	var talk := Game.social.talk
+	for e in talk.untold(guest).slice(0, 4):
+		_option(talk.tell_label(e), _tell_story.bind(e))
+	_option("Mir ist was passiert …", _show_lie)
+	_option("Zurück", _show_main)
+
+
+func _tell_story(e: Dictionary) -> void:
+	_say(Game.social.talk.tell(guest, e, false))
+	_show_main()
+
+
+## Lügen (6.9): erst was, dann wer bzw. wo.
+func _show_lie() -> void:
+	_clear()
+	_say("Was ist passiert?")
+	for kind in Talk.LIE_LABEL:
+		var k: String = kind
+		if k == "corpse" or k == "thief":
+			_option(String(Talk.LIE_LABEL[k]), _show_lie_who.bind(k))
+		else:
+			_option(String(Talk.LIE_LABEL[k]), _show_lie_where.bind(k, ""))
+	_option("Ach, nichts.", _show_main)
+
+
+func _show_lie_who(kind: String) -> void:
+	_clear()
+	_say("Wer?")
+	for other in Game.social.talk.opinion_names(guest, 6):
+		_option(other.display_name, _show_lie_where.bind(kind, other.id) if kind == "corpse" else _lie.bind(kind, other.id, ""))
+	_option("Ach, nichts.", _show_main)
+
+
+## Vier Orte zur Auswahl – einer davon ist, wo er gerade selbst steht (das fliegt sofort auf).
+func _show_lie_where(kind: String, who: String) -> void:
+	_clear()
+	_say("Wo?")
+	var zones: Array[String] = []
+	var here := Game.director.zone_name_at(guest.global_position)
+	if here != "":
+		zones.append(here)
+	for i in 12:
+		var z := Game.social.random_zone_name()
+		if z != "" and not z in zones:
+			zones.append(z)
+		if zones.size() >= 4:
+			break
+	zones.shuffle()
+	for z in zones:
+		_option("… bei %s" % z, _lie.bind(kind, who, z))
+	_option("Ach, nichts.", _show_main)
+
+
+func _lie(kind: String, who: String, zone: String) -> void:
+	_say(Game.social.talk.tell(guest, {"kind": kind, "zone": zone, "who": who}, true))
+	_show_main()
+
+
+## „Sag mal …“: Fragen an ihn.
+func _show_ask() -> void:
+	_clear()
+	_say("Hm?")
+	_option("Was hältst du von …?", _show_opinions)
+	_option("Was hast du heute noch vor?", func() -> void:
+		_say(Game.social.talk.plans(guest))
+		_show_ask())
+	_option("Was weißt du über Zimmer 13?", func() -> void:
+		_say(Game.social.talk.room13(guest))
+		_show_ask())
+	if Game.contest and Game.contest.stage == DoorContest.Stage.CONTEST:
+		_option("Wie gefällt dir meine Tür?", func() -> void:
+			_say(Game.social.talk.door_verdict(guest))
+			_show_ask())
+	_option("Zurück", _show_main)
+
+
+func _show_opinions() -> void:
+	_clear()
+	_say("Von wem?")
+	for other in Game.social.talk.opinion_names(guest, 8):
+		var o: Guest = other
+		_option(o.display_name, func() -> void:
+			_say(Game.social.talk.opinion(guest, o))
+			_show_opinions())
+	_option("Zurück", _show_ask)
+
+
+## „Könntest du …“: Bitten.
+func _show_please() -> void:
+	_clear()
+	_say("Kommt drauf an.")
+	var tier := Social.tier(guest)
+	_option("… mir Deko geben?", _ask_deco)
+	if Game.social.access.can_lend(guest) and Game.player.held == null:   # Konrads Werkzeug (Spielkonzept 6.19)
+		_option("… mir dein Werkzeug leihen?", func() -> void:
+			_say(Game.social.access.lend(guest))
+			_show_please())
+	if tier >= Social.Tier.NICE and not Game.social.party_active:
+		_option("Wollen wir zusammen …", _show_together)
+	if guest.is_following():
+		_option("Du kannst gehen", _dismiss)
+	elif tier >= Social.Tier.FRIEND:
+		_option("… mitkommen?", _follow)
+	if Game.director.first_attack_done and not guest.is_child():
+		_option("… heute in deinem Zimmer bleiben?", _stay_in)
+	_option("Zurück", _show_main)
+
+
+## Bitte (6.9): Er bleibt einen halben Tag vorsichtig und geht gleich heim – Skeptiker nur, wenn sie dich mögen.
+func _stay_in() -> void:
+	if Talk.temper(guest) == "Skeptiker" and Social.tier(guest) < Social.Tier.FRIEND and guest.fear < 30.0:
+		_say("Warum? Weil du Angst hast? Nein, danke.")
+		_show_please()
+		return
+	if Social.tier(guest) < Social.Tier.NICE and guest.fear < 30.0:
+		_say("Ich geh, wohin ich will.")
+		_show_please()
+		return
+	guest.clear_stance("careless")
+	guest.set_stance("wary", Talk.STANCE_TIME * 0.5)
+	Game.social.talk.friendly(guest, 2.0)
+	_say("Na gut. Ich geh heim und schließ ab.")
+	var partner := guest   # geht los, sobald das Gespräch vorbei ist
+	get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+		if is_instance_valid(partner) and partner.state != Guest.State.TALKING:
+			partner.go_home())
+	_show_main()
+
+
+## Frage des Gastes (6.9): eine Antwort wählen, er reagiert, dann das Menü.
+func _show_question() -> void:
+	_clear()
+	for a in _question["answers"]:
+		_option(String(a[1]), _answer.bind(String(a[0])))
+
+
+func _answer(key: String) -> void:
+	var result: Dictionary = Game.social.talk.answer(guest, _question, key)
+	_question = {}
+	_say(String(result["line"]))
+	if result["after"] == "follow":   # Heimbringen: er kommt mit
+		var partner := guest
+		close()
+		partner.start_follow(120.0)
+		return
+	_show_main()
 
 
 ## Besuch bei einem Verletzten (Spielkonzept 6.17): zählt als Besuch, einmal am Spieltag heilt es etwas schneller; das
@@ -273,7 +558,7 @@ func _show_together() -> void:
 		if Game.social.decorating.can_call_big():
 			_option("… ein großes Schmücken ausrufen?", _decorate_here.bind(true))
 	_option("… Deko suchen gehen?", _search)
-	_option("Zurück", _show_main)
+	_option("Zurück", _show_please)
 
 
 func _decorate_here(big: bool) -> void:
@@ -739,9 +1024,13 @@ func _clear() -> void:
 	for button in _buttons:
 		button.queue_free()
 	_buttons.clear()
+	if _scroll:
+		_scroll.scroll_vertical = 0
 
 
+## Zeilen über zehn (Taste 0) haben keine Ziffer – nur Maus und Mausrad (6.9).
 func _option(text: String, callback: Callable, disabled: bool = false) -> void:
-	var button := UiKit.flat_option("%d. %s" % [_buttons.size() + 1, text], callback, disabled)
+	var n := _buttons.size() + 1
+	var button := UiKit.flat_option(("%d. %s" % [n % 10, text]) if n <= 10 else "    " + text, callback, disabled)
 	_options.add_child(button)
 	_buttons.append(button)

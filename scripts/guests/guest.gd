@@ -128,6 +128,10 @@ const PHASE_ACTIVITIES := {
 }
 ## Monster unterwegs: so nah am eigenen Zimmer rennt er heim (Tür zu), sonst sucht er ein Versteck
 const COVER_HOME_RANGE := 80.0
+## Haltungen aus Gesprächen (Spielkonzept 6.9, Talk): vorsichtig → mehr im Zimmer, sorglos → mehr unterwegs
+const WARY_ACTIVITIES := {"room": 3.0, "wander": 0.3, "garden": 0.4, "bar": 0.6}
+const CARELESS_ACTIVITIES := {"room": 0.5, "wander": 1.8, "garden": 1.3}
+const CARELESS_LINES := ["Ach, das ist nur der Strom.", "Wieder die alten Leitungen.", "Da war doch nichts, hieß es."]
 
 var id := ""
 var profile: Dictionary
@@ -180,6 +184,13 @@ var wound_facts := {}
 var wound_told := 0
 var wound_visited := false
 var wound_note := ""         ## beim nächsten Gespräch: "healed" oder "neglect" (nicht gespeichert)
+## Gedächtnis fürs Gespräch (Spielkonzept 6.9, Talk): was der Spieler (oder ein Freund) ihm gesagt hat –
+## {topic, zone, who, lie, at, from, hops, src, spread, exposed, believed, stance, value}
+var claims: Array = []
+## Haltungen daraus: Name → {until (Director.elapsed), …} – wary, careless, distrusts:<id>, brave_thinks, promise,
+## no_trust, confront, grieving
+var stances := {}
+var talk_prev := State.IDLE  ## was er tat, bevor das Gespräch begann (Anlässe, DialogUI)
 var _wheeze := 3.0
 var _wound_nodes: Array[Node3D] = []   ## Verletzungsmarken am Körper
 var _gift_item: Item         ## Geschenk in der Hand (6.17): er trägt es heim bzw. isst es nach _gift_hold Sekunden
@@ -564,6 +575,7 @@ func interact(_player: Player) -> void:
 
 
 func begin_talk() -> void:
+	talk_prev = state
 	if in_sickbed():
 		return   # bleibt liegen (6.17)
 	_resume_follow = _timer if state == State.FOLLOW else 0.0
@@ -1906,8 +1918,9 @@ func _watch_monster() -> void:
 		_warned = false
 	elif d < HEAR_DISTANCE and not _warned and state != State.HIDE_GO:
 		_warned = true
-		# Sie hören es (Rauschen, Flackern) – vorsichtige Gäste verstecken sich sofort
-		if randf() > float(profile["brave"]) and state != State.PARTY:
+		# Sie hören es (Rauschen, Flackern) – vorsichtige Gäste verstecken sich sofort (Haltungen aus Gesprächen, 6.9)
+		var nerve := float(profile["brave"]) * (0.5 if has_stance("wary") else 1.0) + (0.4 if has_stance("careless") else 0.0)
+		if randf() > nerve and state != State.PARTY:
 			fear = minf(100.0, fear + 15.0)
 			_go_hide()
 			return
@@ -1944,7 +1957,11 @@ func on_flicker_signal(level: int, delay: float) -> void:
 func _react_to_flicker(level: int) -> void:
 	if dead or hiding != null or state in [State.HIDE_GO, State.TALKING, State.MINIGAME, State.DEAD, State.GHOSTED, State.SLEEP]:
 		return
-	fear = minf(100.0, fear + [10.0, 15.0, 25.0][level])
+	if has_stance("careless") and level < 2 and randf() < 0.6:   # „da war nichts“ (6.9)
+		fear = minf(100.0, fear + 5.0)
+		say(CARELESS_LINES.pick_random())
+		return
+	fear = minf(100.0, fear + [10.0, 15.0, 25.0][level] * (1.4 if has_stance("wary") else 1.0))
 	_flicker_fear = 30.0 + 15.0 * level
 	take_cover()
 
@@ -2177,11 +2194,48 @@ func _jitter(r: float) -> Vector3:
 
 ## Vorlieben des Gasts, gewichtet nach der Phase des Tages (PHASE_ACTIVITIES).
 func _phase_activities() -> Dictionary:
-	var factors: Dictionary = PHASE_ACTIVITIES.get(Calendar.phase(), {})
+	return activity_weights(Calendar.phase())
+
+
+## Vorlieben in einer Phase – mit den Haltungen aus Gesprächen (6.9): vorsichtig bzw. sorglos.
+func activity_weights(phase: Calendar.Phase) -> Dictionary:
+	var factors: Dictionary = PHASE_ACTIVITIES.get(phase, {})
+	var mood: Dictionary = WARY_ACTIVITIES if has_stance("wary") else (CARELESS_ACTIVITIES if has_stance("careless") else {})
 	var weights := {}
 	for key in profile["activities"]:
-		weights[key] = float(profile["activities"][key]) * float(factors.get(key, 1.0))
+		weights[key] = float(profile["activities"][key]) * float(factors.get(key, 1.0)) * float(mood.get(key, 1.0))
 	return weights
+
+
+# --- Haltungen (Spielkonzept 6.9, Talk) -------------------------------------------------------
+
+## Gilt die Haltung noch?
+func has_stance(key: String) -> bool:
+	return stances.has(key) and float(stances[key]["until"]) > (Game.director.elapsed if Game.director else 0.0)
+
+
+## Haltung für duration Sekunden Spielzeit (überschreibt eine ältere gleichen Namens); extra: weitere Felder.
+func set_stance(key: String, duration: float, extra: Dictionary = {}) -> void:
+	var s := extra.duplicate()
+	s["until"] = (Game.director.elapsed if Game.director else 0.0) + duration
+	stances[key] = s
+
+
+func clear_stance(key: String) -> void:
+	stances.erase(key)
+
+
+## Abgelaufene Haltungen entfernen (Talk, ab und zu) – „promise“ bleibt, bis Talk es auswertet.
+func prune_stances() -> void:
+	for key in stances.keys():
+		if key != "promise" and not has_stance(key):
+			stances.erase(key)
+
+
+## Heim ins eigene Zimmer (Bitte im Gespräch, 6.9).
+func go_home() -> void:
+	if not dead and hiding == null and state in [State.IDLE, State.WALK, State.TALKING]:
+		_walk_to(_room_point(), State.WALK)
 
 
 func _weighted_choice(weights: Dictionary) -> String:

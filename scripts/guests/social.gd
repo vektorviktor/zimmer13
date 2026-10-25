@@ -186,6 +186,7 @@ var pranks: Pranks                      ## Streiche der Kinder (Spielkonzept 6.1
 var access: RoomAccess                  ## Zimmerzugang: Klopfen, Einlass, Hausfriedensbruch (Spielkonzept 6.19)
 var tidying: Tidying                    ## Flecken: Beschweren und Putzen (Spielkonzept 6.13)
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
+var talk: Talk                           ## Erzählen, Lügen, Fragen, Gedächtnis der Gäste (Spielkonzept 6.9)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
 
@@ -321,6 +322,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	tidying = Tidying.new()   # Flecken: Beschweren und Putzen (6.13)
 	tidying.name = "Tidying"
 	add_child(tidying)
+	talk = Talk.new()   # Erzählen, Lügen, Fragen, Gedächtnis (6.9)
+	talk.name = "Talk"
+	add_child(talk)
 
 
 ## Gast ins Hotel setzen (Profil muss schon bekannt sein); mit Start-Deko vor der Tür. slot: Platz im Zimmer, wenn
@@ -837,6 +841,8 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 		if not (Game.player and Game.player.sleeping):
 			Game.play_sound("bell"))
 	_memorial_doors.append(guest.home["door_front"])
+	if talk:   # Schuld bei „da war nichts“, Trauer der Freunde (6.9)
+		talk.on_guest_died(guest)
 	if Game.notebook:   # Kreuz neben seinem Namen bei seinen Aufgaben (3.10)
 		Game.notebook.on_guest_died(guest)
 	if Game.diary:

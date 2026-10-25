@@ -181,6 +181,12 @@ extends Node3D
 ##   --pumpkin=dach              wie F9: Kürbismann klettert übers Lobbydach, springt in den Garten, sucht die Lobby ab
 ##   --pumpkin=garten            Kürbismann gleich an den Kürbisbeeten im Garten (ohne Dach), jagt alle mit Spaß und dich
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
+##   --gespraech=frage,id,gast[,n]   Gespräch, in dem der Gast diese Frage stellt (6.9: ghosts, night, contest, room,
+##                               brave, play, escort), mit n gleich die n-te Antwort
+##   --gespraech=erlebnis,art,gast[,erzaehlen]   ein eigenes Erlebnis (monster, ghost, pumpkin, corpse, blood,
+##                               ghost_visit, attic) hier, dann Gespräch – mit erzaehlen gleich als Anlass erzählt
+##   --gespraech=luege,art,gast[,wer]   dem Gast etwas vorlügen (geist, monster, kuerbis, leiche, dieb); bei leiche/dieb
+##                               kommt der Genannte nach 3 s vorbei – die Lüge fliegt auf (--trace)
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
 ##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
 ##                               zum Prüfen der Gastmodelle
@@ -1026,6 +1032,9 @@ func run_debug(arg: String) -> bool:
 				Game.player.global_position = partner.global_position + front * 1.4
 			_face_toward(partner.global_position)
 			Game.dialog.open(partner))
+	elif arg.begins_with("--gespraech="):
+		var parts := arg.substr(12).split(",")
+		get_tree().create_timer(0.5).timeout.connect(Game.social.talk.debug.bind(parts))
 	elif arg == "--ghost=flur":
 		Game.ghost.debug_summon_hall()
 	elif arg == "--spinne" or arg.begins_with("--spinne="):
@@ -1361,6 +1370,16 @@ func _put_in_front(guest: Guest, distance: float, face: bool = true) -> void:
 func _face_toward(point: Vector3) -> void:
 	var to := point - Game.player.global_position
 	Game.player.rotation.y = atan2(-to.x, -to.z)
+
+
+## --gespraech (Talk.debug): Der Gast kommt vor den Spieler (nicht umgekehrt – in seinem Zimmer wäre es
+## Hausfriedensbruch, 6.19), dann Gespräch – mit question stellt er diese Frage (6.9).
+func _debug_talk(guest: Guest, question: String) -> void:
+	_put_in_front(guest, 1.4)
+	guest._set_idle(5.0)
+	get_tree().create_timer(0.5).timeout.connect(func() -> void:
+		_face_toward(guest.global_position)
+		Game.dialog.open(guest, question))
 
 
 ## --look: Spieler vor den Gast (in dessen Blickrichtung), der Gast bleibt stehen und schaut her.
