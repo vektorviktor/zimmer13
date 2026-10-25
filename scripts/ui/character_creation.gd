@@ -19,6 +19,9 @@ const T_LOOK := Vector2(6.8, 9.6)
 const T_UI := 9.8
 const T_PAUSE := 0.15        ## erst nach ein paar Bildern pausieren (Schattenbudget, Lampen sind dann gesetzt)
 const DOWN_PITCH := -1.05    ## Blick ins Becken
+## Blick in den Spiegel, leicht nach unten: Das eigene Spiegelbild liegt immer auf Augenhöhe – so bleiben Scheitel
+## und Spiegelunterkante bei jeder Größe (1,45–2,00 m) und jedem Sichtfeld (60–95°) im Bild
+const MIRROR_PITCH := -0.17
 const MIRROR_EYE := 0.95     ## so weit steht das Auge vor dem Spiegel
 const SEARCH := 12.0         ## Waschbecken höchstens so weit vom Startpunkt
 const PANEL_W := 156.0
@@ -35,7 +38,6 @@ var _root: Control
 var _black: ColorRect
 var _panel: PanelContainer
 var _box: VBoxContainer
-var _yaw := 0.0
 var _dirty := false
 var _since_apply := 0.0
 var _sounds := 0
@@ -66,7 +68,7 @@ func _ready() -> void:
 	if quick:
 		_t = T_UI
 		_black.visible = false
-		p.head.rotation.x = _mirror_pitch(p)
+		p.head.rotation.x = MIRROR_PITCH
 	else:
 		p.head.rotation.x = DOWN_PITCH
 		p.intro_blur = 1.0
@@ -93,10 +95,9 @@ func _find_mirror(from: Vector3) -> Mirror:
 	return best
 
 
-## Vor das Becken stellen, Blick auf den Spiegel – etwas nach rechts gedreht, damit er links neben dem Bogen steht.
+## Mittig vor das Becken stellen (der Spiegel hängt genau darüber), Blick genau auf die Mitte des Spiegels.
 func _place(p: Player) -> void:
 	if _mirror == null:
-		_yaw = p.rotation.y
 		return
 	var n := _mirror.global_basis.z
 	n.y = 0.0
@@ -104,20 +105,7 @@ func _place(p: Player) -> void:
 	var floor_y := p.global_position.y
 	var at := _mirror.global_position + n * MIRROR_EYE
 	p.global_position = Vector3(at.x, floor_y, at.z)
-	var cam := p.camera
-	var aspect := 480.0 / 270.0
-	var half_h := atan(tan(deg_to_rad(cam.fov) / 2.0) * aspect)
-	var shift := atan((PANEL_W / 2.0 + 6.0) / 240.0 * tan(half_h))
-	_yaw = atan2(n.x, n.z) - shift
-	p.rotation.y = _yaw
-
-
-## Neigung, unter der das Auge die Spiegelmitte sieht
-func _mirror_pitch(p: Player) -> float:
-	if _mirror == null:
-		return 0.0
-	var eye := p.global_position.y + p.eye_height
-	return atan2(_mirror.global_position.y - eye, MIRROR_EYE)
+	p.rotation.y = atan2(n.x, n.z)
 
 
 func _process(delta: float) -> void:
@@ -136,11 +124,7 @@ func _process(delta: float) -> void:
 			_sounds = 2
 		_black.color.a = 1.0 - smoothstep(T_FADE.x, T_FADE.y, _t)
 		p.intro_blur = 1.0 - smoothstep(T_CLEAR.x, T_CLEAR.y, _t)
-	var target := _mirror_pitch(p)
-	if _t < T_LOOK.y:
-		p.head.rotation.x = lerpf(DOWN_PITCH, target, smoothstep(T_LOOK.x, T_LOOK.y, _t))
-	else:   # die Augenhöhe wandert mit der Größe – der Blick bleibt auf dem Spiegel
-		p.head.rotation.x = lerpf(p.head.rotation.x, target, minf(1.0, delta * 6.0))
+	p.head.rotation.x = lerpf(DOWN_PITCH, MIRROR_PITCH, smoothstep(T_LOOK.x, T_LOOK.y, _t))
 	if Game.director and Game.director.post_material:
 		Game.director.post_material.set_shader_parameter("blur", maxf(p.sight_blur, p.intro_blur))
 	if _t >= T_UI and not _ui_shown:

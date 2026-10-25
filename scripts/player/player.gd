@@ -285,7 +285,8 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if dead or in_dialog or spellbound:
+	# Charaktererstellung: man kann sich nicht bewegen (3.9) – Mausbewegung beim Laden drehte sonst den Blick weg
+	if dead or in_dialog or spellbound or Game.creating:
 		return
 	if bag_open:
 		_bag_input(event)
@@ -396,7 +397,7 @@ func _physics_process(delta: float) -> void:
 	_update_hand(delta)
 	_update_injury(delta)
 	_update_stamina(delta)
-	if in_dialog or spellbound:
+	if in_dialog or spellbound or Game.creating:
 		velocity = Vector3.ZERO
 		running = false
 		return
