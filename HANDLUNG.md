@@ -84,7 +84,9 @@ keiner von ihnen wird je darüber sprechen.
 | M19 | Fest am Abend, Gruppenfoto mit leeren Plätzen | 31.10. abends | vorgemerkt (5.9) | – |
 | M19a | **Das Ritual:** mit Marion in den Tiefkeller, Werkstatt öffnen, Vertrag ins Feuer von 1987, Marion ruft ihn mit seinen Sachen – er geht ins Feuer, es erlischt | Halloween-Nacht | fest (2.8), Ablauf: Vorschlag | kein letzter Angriff |
 | M20 | Letztes Urteil der Puppe und letzter Angriff – nur wenn er nicht erlöst ist (Erlösung ist Kür) | 31.10. | fest (2.8) | – |
-| M21 | **Der Haupteingang öffnet sich** – alle Überlebenden gehen schweigend hinaus | 31.10., Mitternacht? | fest (2.7) | Ende; ohne Schlüssel sterben alle, die noch drin sind |
+| M21 | **Ende mit Schlüssel:** Versammlung am Tor, Schlüssel ins Schloss, draußen das erste Morgengrauen; die Bedrohungen laufen zur Tür, die vor ihnen zufällt, der Vampir zerfällt im Licht; alle gehen hinaus, Gruppenfoto vor dem Hotel, das Bild wird dunkel | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
+| M21a | **Ende ohne Schlüssel, nicht erlöst:** alle drängen panisch ans Tor, der Leviathan holt sie in der Lobby einzeln, zuletzt den Spieler | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
+| M21b | **Ende ohne Schlüssel, erlöst:** das Hotel nimmt den Spieler als neuen Heizer – Licht aus, der Kessel springt an, er sieht mit den Augen des Leviathan und frisst die Gäste Stück für Stück; das Bild wird dunkel | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
 
 ### Abhängigkeiten
 
@@ -111,9 +113,11 @@ flowchart TD
   M15b --> M19a
   M19a -.->|nicht erlöst| M20[M20 Letzter Angriff]
   M15 --> M18[M18 Schlüssel holen]
-  M18 --> M21[M21 Haupteingang]
+  M18 --> M21[M21 Haupteingang: alle hinaus]
   M19a --> M21
   M20 --> M21
+  M20 -.->|kein Schlüssel| M21a[M21a Er holt alle]
+  M19a -.->|kein Schlüssel| M21b[M21b Spieler wird Heizer]
 ```
 
 ---
@@ -195,9 +199,11 @@ flowchart TD
   - von **Edna**, die weiß, wie es 1987 ging (K5).
 - **Fest (2.7):** Kein Einsammeln – alle Lebenden kommen in die Lobby und gehen gemeinsam schweigend ins erste
   Morgengrauen. Ohne Schlüssel stirbt jeder, der noch drin ist, auch der Spieler; keine Zeitschleife.
-- **Offen (2.7):** Mitternachtsglocke oder nach dem Gruppenfoto.
+- **Fest (2.7, 2026-10-26):** Die Mitternachtsglocke löst eins von drei Enden aus (M21, M21a, M21b), das Gruppenfoto
+  wird danach draußen gemacht.
 - **Den Heizer erlösen** (Marions Auftrag, K4, 2.8) entscheidet, ob die letzte Nacht einen letzten Angriff hat; hinaus
-  kommt man mit dem Schlüssel allein.
+  kommt man mit dem Schlüssel allein. Ohne Schlüssel entscheidet es, wer die Gäste holt: der Leviathan (M21a) oder
+  der Spieler als neuer Heizer (M21b).
 
 ### K7 – Liesel Brück, die den Rezeptionisten köpfte (Akt IV, Auftraggeberin)
 - **Fest (2.7):** Eines der beiden Kinder, die den Rezeptionisten an Halloween 1987 köpften (4.19), kam hinaus und ist

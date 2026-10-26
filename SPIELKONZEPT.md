@@ -1,6 +1,6 @@
 # Spielkonzept – Arbeitstitel: „Zimmer 13“
 
-> Status: Grobkonzept · Stand: 2026-10-25
+> Status: Grobkonzept · Stand: 2026-10-26
 > Engine: **Godot 4.7** · 3D-Assets: **Blender (lokal)**
 
 ---
@@ -614,6 +614,39 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 - **Ohne Schlüssel stirbt jeder, der noch drin ist** – auch der Spieler. Am Ende fällt das Monster bzw. das Hotel über
   alle her; das lässt sich nicht verhindern. **Es gibt keine Zeitschleife** (2.2 verworfen). Ältere Spielstände bleiben
   ladbar wie sonst (8.10).
+
+**Die drei Enden (entschieden 2026-10-26, noch nicht umgesetzt)** – je eine Zwischensequenz, ausgelöst von der
+**Mitternachtsglocke** (7.8, zwölf Schläge) in der Nacht zum 1. November. Damit ist der Zeitpunkt der Öffnung
+entschieden. Marion und Liesel sind in keinem der drei am Tor: Sie bleiben freiwillig (2.8, oben) – ihre Plätze
+bleiben leer.
+1. **Mit Schlüssel – alle kommen hinaus.** Der Spieler und alle lebenden Gäste versammeln sich am Haupteingang. Der
+   Spieler steckt den Schlüssel ins Schlüsselloch, das Tor öffnet sich; draußen ist zum ersten Mal keine Nacht, sondern
+   das erste Morgengrauen (2.1) – um Mitternacht, gegen jede Uhr. Die Bedrohungen, die noch umgehen, laufen verärgert
+   zur Tür; sie fällt vor ihnen zu, und sie bleiben drinnen. Ist der Leviathan erlöst (2.8), ist er nicht dabei, ebenso
+   ein erlöster Kürbismann (4.21). Den Vampir (4.22, falls gebaut) erwischt im Hintergrund das erste Morgenlicht, und er
+   zerfällt zu Staub. Alle gehen schweigend hinaus, vor dem Hotel wird das **Gruppenfoto** gemacht (5.9) – mit den
+   Lücken für die Toten –, und das Bild wird langsam dunkel.
+2. **Ohne Schlüssel, der Leviathan nicht erlöst – er holt alle.** Das Tor bleibt zu. Alle drängen sich panisch davor,
+   rütteln, schlagen dagegen; im Hintergrund holt der Leviathan in der Lobby einen nach dem anderen. Zuletzt steht er
+   vor dem Spieler – und holt auch ihn.
+3. **Ohne Schlüssel, der Leviathan erlöst – der Spieler wird der neue Heizer.** Das Abkommen von 1987 (2.3) braucht ein
+   Monster; seit 1988 ist es der Heizer, den man an Halloween einschloss (2.8). Ist Josef Ahrend erlöst und der Schlüssel
+   fehlt, nimmt das Hotel den Spieler an seine Stelle: Das Tor bleibt zu, kein Angriff, Stille. Die Lampen in der Lobby
+   gehen eine nach der anderen aus, unten springt der Kessel wieder an, der seit dem Ritual erloschen war. Der Blick
+   wechselt: Der Spieler sieht jetzt mit den Augen des Monsters (verzerrt, flackernd) – er **ist** der Leviathan – und
+   frisst die Gäste in der Lobby **Stück für Stück**, einen nach dem anderen. Das Bild wird dunkel.
+   - **Warum so:** Die Erlösung bleibt etwas wert und ist doch kein Trostpreis – ohne Schlüssel kommt keiner hinaus,
+     und es ist das bitterste der drei Enden, weil der Spieler es selbst tut. Es erklärt, warum es jedes Jahr wieder
+     ein Monster gibt.
+
+**Zu den Enden noch offen**
+- Ein **Epilog im nächsten Jahr** (vorgeschlagen, nicht entschieden): Am 1. Oktober kommen neue Gäste an, an der
+  Fotowand (5.14) hängt das Gruppenfoto 2026 mit lauter verwischten Gesichtern, in Zimmer 13 liegt ein Warnungszettel
+  in der Schrift des Spielers. Für Ende 2 und 3?
+- **Wer selbst zum Vampir geworden ist** (4.22), kann bei Ende 1 nicht ins Licht – braucht ein eigenes Ende.
+- **Lässt sich die Sequenz steuern** (den Schlüssel selbst drehen, in Ende 3 selbst zugreifen) oder läuft sie ganz
+  von allein ab?
+- Wie wird das Fressen in Ende 3 gezeigt, ohne die Altersempfehlung (ab 16) zu sprengen – Schnitte, Schatten, Ton?
 - **Edna Wiegand war 1987 als Erwachsene im Hotel und kam hinaus.** Sie schrieb den Warnungszettel von Oktober
   1987 („E. K., Zimmer 017“), im Register steht sie mit Geburtsnamen „geb. K…“. Sie bleibt alt.
 - **Den Rezeptionisten hat Liesel Brück geköpft** (H26, Zimmer 025, ängstlich) – 1987 ein Teenager, heute um die
@@ -645,7 +678,8 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 **Zu klären** (je mit Vorschlag)
 - **Wird das Monster erlöst, oder bleibt es das Monster?** → **Marions Auftrag, 2.8** (entschieden 2026-10-25). Davon
   hängt das **letzte Urteil der Puppe** (5.5) ab.
-- **Zeitpunkt der Öffnung:** mit der Mitternachtsglocke (7.8) oder nach dem Gruppenfoto?
+- ~~**Zeitpunkt der Öffnung:** mit der Mitternachtsglocke (7.8) oder nach dem Gruppenfoto?~~ → Mitternachtsglocke,
+  das Gruppenfoto kommt danach draußen (die drei Enden, oben, 2026-10-26).
 - ~~**Die anderen Enden aus 2.3** (Abkommen brechen)~~ – in Marions Auftrag aufgegangen (2.8).
 - **Vampir (4.22):** Wer zum Vampir geworden ist, kann nicht ins Morgengrauen – passt zu seinem eigenen, dunklen Ende.
 
@@ -1869,7 +1903,7 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
 
   | Ebene | Monster | Lakengeist | Kürbismann |
   |-------|---------|------------|------------|
-  | **Dachgeschoss** | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden (4.21) | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden | erscheint nicht, verfolgt einen hinauf, aber **nie in den Dachboden** (4.21) |
+  | **Dachgeschoss** | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden (4.21); **Ausnahme:** beim Urteil gegen den Spieler erscheint es dort 1–2 Kammern neben ihm (Notausgang, 4.33) | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden | erscheint nicht, verfolgt einen hinauf, aber **nie in den Dachboden** (4.21) |
   | **Obergeschoss** | ja | **ja** (zu Hause) | ja |
   | **Erdgeschoss** | ja | **ja**, solange dort keine andere Bedrohung ist | **ja** (zu Hause, kommt übers Lobbydach) |
   | **Untergeschoss** | **ja** (zu Hause) | erscheint nicht, verfolgt einen aber durchs Treppenhaus hinunter | ja |
@@ -1877,7 +1911,9 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
 
 - „ja“ heißt: darf dort unterwegs sein, solange die Ebene frei ist. **Erscheinen** tut das Monster im Untergeschoss
   (Ruhephase im Heizraum), der Lakengeist an Fenstern und in Fluren von Obergeschoss und Erdgeschoss (4.18), der
-  Kürbismann übers Lobbydach (4.19).
+  Kürbismann übers Lobbydach (4.19). **Ausnahme (2026-10-26):** Kommt das Monster beim Urteil gegen den Spieler nicht
+  rechtzeitig an ihn heran, erscheint es auf jeder Ebene 1–2 Räume neben ihm – auch im Dachgeschoss (Notausgang für den
+  Spieler, 4.33). Für die Belegung der Ebene gilt dann dasselbe wie sonst.
 - **Der Lakengeist bevorzugt das Obergeschoss:** Dort kommt er mit der vollen Chance (4.18); im Erdgeschoss mit etwa
   **einem Drittel** davon und **nur an Außenfenstern**. Lakengespenster an einer Tür (5.6) ziehen ihn auf beiden
   Ebenen an.
@@ -2388,6 +2424,21 @@ ganzen Hotels.
   3. **Notausgang:** Erreicht das Monster ihn nicht in etwa **2 Minuten** oder scheitert der Pfad mehrmals,
      verschwindet der Gast **unbeobachtet** (wie die Puppe springt), zurück bleibt eine Schleifspur zum Keller (wie
      bei Gustav, 2.6). Dazu eine Warnung im Debug-Log.
+  3a. **Notausgang für den Spieler (entschieden 2026-10-26):** Liegt die Puppe vor Zimmer 13, kann man sich nirgends
+     dem Urteil entziehen. Erreicht das Monster den Spieler nicht in etwa **einer Minute** oder scheitert der Pfad,
+     **erscheint es 1–2 Räume neben ihm** – überall: Balkon, Lobbydach, Garten am Waldrand, ein verbarrikadierter Raum,
+     später der Tiefkeller. Nur im fahrenden Aufzug bleibt es dabei: Es wartet an der Haltestelle (2.).
+     - **Hauptfall Dachboden** (4.21): Wer sich bei einem Urteil oben versteckt, hört die Kniestocktür unten
+       aufknarren, dann Schritte über die Bohlen. Das Monster erscheint 1–2 Kammern neben der, die der Spieler zuletzt
+       betreten hat, duckt sich und stößt die niedrige Tür (1,65 m) auf und fällt über ihn her.
+     - **Nur ungesehen:** Es erscheint nur in einem Raum, den der Spieler gerade nicht sieht (wie die Puppe springt,
+       5.5); schaut er auf die Tür, nimmt es eine andere.
+     - **Kurze Warnung, kein Entkommen:** etwa 3–5 s zwischen dem ersten Geräusch und dem Angriff (Knarren, Schritte,
+       Staub in der Türöffnung) – nur fürs Drama, damit der Tod nicht wie ein Fehler des Spiels wirkt. Retten kann man
+       sich beim Urteil nur vorher: nachbessern, bis man nicht mehr der Schwächste ist.
+     - **Höhe:** Unter die Decke des Dachbodens (2,2 m) passt es gerade eben aufrecht – ducken muss es sich nur an den
+       Türen.
+     - **Offen:** ob dasselbe mit längerer Frist auch beim Raubzug gilt (dem man entkommen kann).
   4. **Stirbt das Ziel vorher anders** (Kürbismann, Lakengeist), springt die Puppe zur nächstschwächsten Tür; das
      Urteil bleibt.
   5. **Rauchtest:** ein Szenario, das prüft, ob jede bewohnte Tür vom Keller aus erreichbar ist.
