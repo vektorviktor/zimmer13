@@ -43,6 +43,9 @@ const FUN_GAIN := {"game": 0.12, "party": 0.06, "decorate": 0.04, "eat": 0.04, "
 const FUN_DECO := 3.0
 const FUN_DECO_TIME := 60.0
 const FUN_THRESHOLD := 60.0
+## Trägt der Spieler die Kürbismann-Maske (Spielkonzept 5.19), liegt die Schwelle so tief – schon der Grundspaß des
+## Hotels (FUN_START) reicht, und gewürfelt wird mit mehr Chance (threshold)
+const MASK_THRESHOLD := 10.0
 const FUN_ROLL_EVERY := 30.0
 const FUN_CHANCE := Vector2(0.4, 0.9)
 ## Garantie: War er bis GUARANTEE_DAY noch keine GUARANTEE_VISITS Mal da, kommt er an diesem und am nächsten Tag
@@ -316,14 +319,15 @@ func _check_spawn() -> void:
 		_begin_announce()
 		return
 	var value := fun_value()
-	if value < FUN_THRESHOLD:
+	var limit := threshold()
+	if value < limit:
 		_roll = FUN_ROLL_EVERY * 0.5   # gleich über der Schwelle wird bald gewürfelt
 		return
 	_roll -= CHECK_EVERY
 	if _roll > 0.0:
 		return
 	_roll = FUN_ROLL_EVERY
-	var chance := lerpf(FUN_CHANCE.x, FUN_CHANCE.y, clampf((value - FUN_THRESHOLD) / (FUN_MAX - FUN_THRESHOLD), 0.0, 1.0))
+	var chance := lerpf(FUN_CHANCE.x, FUN_CHANCE.y, clampf((value - limit) / (FUN_MAX - limit), 0.0, 1.0))
 	var roll := randf()
 	if Game.tracing:
 		print("[Kürbismann] Spaßwert %.0f – Wurf %.2f gegen %.2f" % [value, roll, chance])
@@ -434,6 +438,11 @@ func debug_despawn() -> bool:
 	if state != State.INACTIVE:
 		_deactivate()
 	return was
+
+
+## Ab diesem Spaßwert wird gewürfelt: FUN_THRESHOLD, mit der Kürbismann-Maske auf dem Kopf MASK_THRESHOLD (5.19).
+func threshold() -> float:
+	return MASK_THRESHOLD if Game.player and Game.player.mask == "pumpkin" else FUN_THRESHOLD
 
 
 ## Spaßwert mit dem kurzen Deko-Anteil (0..FUN_MAX).
@@ -769,6 +778,8 @@ func _next_victim() -> void:
 func _pick() -> Node3D:
 	if _can_hunt(_forced):
 		return _forced
+	if Game.player.mask == "pumpkin" and _can_hunt(Game.player):
+		return Game.player   # wer seine Maske trägt, ist sein Ziel, sobald er im Haus ist (5.19)
 	if Game.social == null:
 		return null
 	var party := _nearest(_seen_in_party_room())

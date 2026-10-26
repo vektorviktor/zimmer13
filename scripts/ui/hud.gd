@@ -60,6 +60,13 @@ var _fps_timer := 0.0
 var _hurt: ColorRect
 var _white: ColorRect   ## Blitz übers ganze Bild (Spuk im Dachboden, flash_white)
 var _sheet_overlay: ColorRect   ## unter dem Bettlaken: Sicht durch die Augenlöcher (5.9)
+var _mask_overlay: ColorRect    ## unter einer verbotenen Maske: Sicht durch ihre Augenlöcher (5.19)
+## Innenseite und Augenlöcher je Maske (shaders/mask_overlay.gdshader): Farbe innen, Stern statt Mandel, Größe,
+## Abstand von der Mitte
+const MASK_VIEWS := {
+	"pumpkin": {"inside": Color(0.2, 0.12, 0.05), "star": 1.0, "hole": Vector2(0.15, 0.17), "gap": 0.24},
+	"doll": {"inside": Color(0.55, 0.5, 0.45), "star": 0.0, "hole": Vector2(0.15, 0.08), "gap": 0.21},
+}
 
 
 func _ready() -> void:
@@ -88,6 +95,16 @@ func _ready() -> void:
 	_sheet_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_sheet_overlay.resized.connect(func() -> void:
 		sheet_material.set_shader_parameter("aspect", _sheet_overlay.size.x / maxf(_sheet_overlay.size.y, 1.0)))
+	var mask_material := ShaderMaterial.new()
+	mask_material.shader = load("res://shaders/mask_overlay.gdshader")
+	_mask_overlay = ColorRect.new()
+	_mask_overlay.material = mask_material
+	_mask_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_mask_overlay.visible = false
+	add_child(_mask_overlay)
+	_mask_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_mask_overlay.resized.connect(func() -> void:
+		mask_material.set_shader_parameter("aspect", _mask_overlay.size.x / maxf(_mask_overlay.size.y, 1.0)))
 
 	_hurt = ColorRect.new()
 	_hurt.color = Color(0.6, 0.0, 0.0, 0.0)
@@ -433,6 +450,20 @@ func set_struggle(value: float) -> void:
 ## Bettlaken übergeworfen (Spielkonzept 5.9): Stoff ringsum, Blick durch zwei Augenlöcher – auch im Versteck.
 func set_disguised(on: bool) -> void:
 	_sheet_overlay.visible = on
+
+
+## Verbotene Maske auf ("" = keine): Sicht durch ihre Augenlöcher.
+func set_mask(id: String) -> void:
+	_mask_overlay.visible = id != ""
+	if id == "":
+		return
+	var view: Dictionary = MASK_VIEWS.get(id, MASK_VIEWS["doll"])
+	var m := _mask_overlay.material as ShaderMaterial
+	var inside: Color = view["inside"]
+	m.set_shader_parameter("inside", Vector3(inside.r, inside.g, inside.b))
+	m.set_shader_parameter("star", view["star"])
+	m.set_shader_parameter("hole_size", view["hole"])
+	m.set_shader_parameter("eye_gap", view["gap"])
 
 
 ## 0 = kein Versteck, 1 = Schrank, 2 = unter dem Bett, 3 = im Bett schlafen (Augen zu)

@@ -80,7 +80,7 @@ Stand: 2026-10-26.
 | Totenkopf | `SKULL` | gebaut | – | starke Deko, mit Kerze Licht · Herzensbitte der Geschäftstüchtigen, 15 Geld (6.14) | 5.7 |
 | Hexenbesen | `BROOM` | gebaut | – | Deko, lehnt an der Wand | 5.7 |
 | Maske (eigene) | – | geplant | – | für den Maskenball und das Maskenspiel; von Ruth Behrens genäht oder irgendwo gefunden (Gäste-Masken sind keine Gegenstände) | 5.19 |
-| Verbotene Masken (acht: Leviathan, Kürbismann, Lakengeist, Vampir, Puppe, Vogelscheuche, Krähe, Kesselkatze) | – | geplant | – | rufen ihre eigene Bedrohung; Sammlung an acht Haken in Zimmer 13 (Trophäen 8.11), an Gäste nur verliehen | 5.19 |
+| Verbotene Masken (acht: Leviathan, Kürbismann, Lakengeist, Vampir, Puppe, Vogelscheuche, Krähe, Kesselkatze) | `MASK` „pumpkin“, „doll“ | **teilweise** – Kürbismann und Puppe gebaut (Modell, tragen, Wirkung), die übrigen sechs fehlen; Verstecke, Zettel, Verleihen und Trophäen fehlen | – | rufen ihre eigene Bedrohung; acht Haken in Zimmer 13 (leere zeigen, was fehlt) – Kürbismann und Puppe hängen vorerst von Anfang an dort; Kürbismann: Spaßschwelle drastisch tiefer, Träger ist sein Ziel · Puppe: nächstes Urteil auf die Tür des Trägers | 5.19 |
 
 ## 5. Licht und Werkzeug
 

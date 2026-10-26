@@ -86,6 +86,7 @@ Gemeinsame Regeln:
 | `doll.glb` | `JuryDoll` | `doll_weights.py`, dann `build_doll.py` | siehe unten „Puppe“ |
 | `pumpkin_man.glb` | `PumpkinMan` | `build_pumpkin.py`, Meshy (Figur + Axt) | siehe unten „Kürbismann“ |
 | `pumpkins.glb` | `PumpkinModel` | `build_pumpkins.py`, Meshy-Kürbisgruppe, Textur prozedural gebacken | `psx_model.gdshader` (in `PSX_SHADERS`); `PumpkinModel.material` je Kürbis ein eigenes Material, reife Früchte an der Pflanze teilen `shared_material()` |
+| `masks.glb` | `MaskModel` (Item `MASK`, `MaskHook`) | `build_masks.py`, Meshy (je Maske ein Bild-zu-3D-Modell) | Netz „mask_<id>“, Ursprung mittig hinten, Gesicht +Z, echte Größe (`HEIGHT` im Skript → `MaskModel.SIZES`); alles, was ganz hinter dem Gesicht liegt, fällt weg (Meshys Rückschale beim Kürbismann); Farbe, Normal Map und Rauheit 1024², `psx_model.gdshader` |
 | `monster.glb` | `Monster` | `build_monster.py`, Meshy | siehe 5, „Aussehen & Animation“ |
 | `pool_handrail.glb` | `HANDRAIL_MODEL` | `build_handrail.py` | Tiefe und Lauf der Treppe sind eingebacken und müssen zu `_pool` passen |
 | `lantern.glb` | Gartenlaterne, `LANTERN_MODEL` | `build_lantern.py`, nach Skizze des Nutzers | Licht in der Glasmitte (`LANTERN_LIGHT_Y`), Kopf und Glas werfen keinen Schatten |
@@ -775,7 +776,8 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
 - **Frist und Urteil** (`MonsterDirector`): `on_monster_gone` würfelt `_lead` (`DOLL_LEAD`). In der Ruhephase ruft
   `_update_schedule` bei `_phase_left <= _lead` einmal `_plan_departure()`: Absicht jetzt wählen (`_planned`); nur wenn
   `victims_left > 0` (auch vor harmlosen Angriffen – dann erschreckt es nur): Ruhe auf `_lead` verlängern,
-  `_judge(_weakest_door())`, Grollen. `_weakest_door()`: unter `inhabited_rooms()` die mit der wenigsten Deko
+  `_judge(_weakest_door())`, Grollen. `_weakest_door()`: zuerst `doll_mask` (Puppenmaske getragen, 5.19), sonst unter
+  `inhabited_rooms()` die mit der wenigsten Deko
   (Gleichstand `DOLL_DECO_TIE`, die bisherige Tür bleibt), dann die dunkelste (`DOLL_LIGHT_TIE`), dann Zufall; alle
   `DOLL_RECHECK` neu (Nachbessern). **Grollen:** `SynthAudio.rumble` steigt bis zum Ende der Frist.
 - **Weg** (`_plan_route`): `NavigationServer3D.map_get_path` vom Keller zur Puppentür; bewohnte Türen nah am Weg
@@ -828,7 +830,7 @@ Dritte Bedrohung, eigener Akteur (`CharacterBody3D`, Kollisionsbit 32 wie das Mo
   `player_has_fun()`; `fun_actors()` = beides.
 - **Auslöser: Spaßwert** (`_check_spawn`): `fun` steigt je Gast nach `FUN_GAIN[Social.fun_kind(g)]`, fällt mit
   `FUN_DECAY`; `on_deco_placed()` (aus `Player.drop_held`) gibt kurz `_fun_deco` dazu; `fun_value()` = Summe. Ab
-  `FUN_THRESHOLD` regelmäßig ein Wurf → Ankündigung. **Garantie** `_guarantee_due()` ab `GUARANTEE_DAY`, wenn er
+  `threshold()` (`FUN_THRESHOLD`, mit der Kürbismann-Maske `MASK_THRESHOLD`, 5.19) regelmäßig ein Wurf → Ankündigung. **Garantie** `_guarantee_due()` ab `GUARANTEE_DAY`, wenn er
   selten kam (`visits`, `guarantee_at`). Erst nach `first_attack_done`, nie neben einer anderen Bedrohung, erst mit
   fertigem NavMesh (`map_get_iteration_id`). Gespeichert unter `pumpkin` (`fun`, `visits`, `guarantee_at`,
   `guarantee_checked`; er selbst nicht). F3 zeigt den Wert.
@@ -1345,6 +1347,20 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   eigenen Bett): `put_on_sheet()`/`take_off_sheet()`, Overlay `shaders/sheet_overlay.gdshader`;
   `Player.recognized_by(guest)` prüfen überall, wo Gäste den Spieler erkennen (Diebstahl, Angriff, Zeugen, Rempeln …).
   Gespeichert: `player.disguised`. Debug `--costumes[=art]`, `--disguise`.
+- **Verbotene Masken** (Spielkonzept 5.19; `world/mask_model.gd` `MaskModel`, `world/mask_hook.gd` `MaskHook`, `item.gd`
+  `MASK` mit `mask_id` im Zusatzfeld; `player.gd` `mask`, `put_on_mask`, `take_off_mask`): `MaskModel.ORDER` = die acht
+  in der Reihenfolge der Haken, `SIZES` = die mit Modell (Kürbismann, Puppe). **Haken:** `LevelBuilder._mask_hooks`
+  hängt acht `MaskHook` an die längste freie Wand von Zimmer 13 (`_free_wall`: ohne Öffnungen, Möbel, Wandsachen bis
+  0,6 m davor; `MASK_WALL_MARGIN`, `MASK_WALL_MIN`), von vorn gelesen von links nach rechts – ein Platz im Plan fehlt
+  noch. Jeder Haken hat ein Schildchen (`Label3D`) und zeigt seine Maske, solange `hanging`; [E] nimmt sie in die Hand,
+  mit ihr in der Hand hängt [E] sie zurück (nur an den eigenen Haken). Masken mit Modell hängen von Anfang an.
+  **Tragen:** Linksklick mit der Maske in der Hand, [G] mit leeren Händen nimmt sie ab (nicht zusammen mit dem Laken);
+  Overlay `shaders/mask_overlay.gdshader` (`Hud.MASK_VIEWS`: Innenfarbe, Stern- oder Mandelaugen); `recognized_by`
+  wie unter dem Laken. **Wirkung:** Kürbismann `PumpkinMan.threshold()` = `MASK_THRESHOLD` statt `FUN_THRESHOLD`, in
+  `_pick` ist der Träger sein erstes Ziel; Puppe `MonsterDirector.mark_doll_mask(zimmer)` → `doll_mask`, das
+  `_weakest_door()` vor allen anderen nimmt, bis `_end_raid` das Urteil dort vollstreckt hat. Gespeichert:
+  `player.mask`, `mask_hooks` (je Masken-ID, ob sie hängt – nicht nach Reihenfolge), `director.doll_mask`. Debug
+  `--maske[=id]`, Rauchtest `masken`.
 
 ### Am Körper
 (`player.gd` `_pocket`, `_update_hand`, `set_pockets`; `player/pocket_map.gd`)

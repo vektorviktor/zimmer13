@@ -159,6 +159,8 @@ var debug_doom := ""             ## --doll=s,zimmer: die Puppe urteilt immer üb
 ## die Puppentür zuletzt) und das Zimmer, das es gerade durchsucht
 var doom_room := ""
 var raid_room := ""
+## Puppenmaske (5.19): Zimmer ihres Trägers – vor dessen Tür liegt beim nächsten Urteil die Puppe ("" = keins)
+var doll_mask := ""
 var _route: Array[String] = []
 var _raid_kills := 0
 var _raiding := false            ## unterwegs zur Puppentür (Weg geplant, Puppenzimmer noch nicht durchsucht)
@@ -713,6 +715,12 @@ func _plan_departure() -> void:
 		print("[Puppe] %s (%d Opfer) in %.0f s – Urteil: Zimmer %s" % [INTENT_NAMES[intent], victims_left, _phase_left, doom_room])
 
 
+## Puppenmaske aufgesetzt (Player.put_on_mask, Spielkonzept 5.19): Das nächste Urteil trifft dieses Zimmer; läuft
+## schon eine Frist, wechselt die Puppe beim nächsten Nachbessern (DOLL_RECHECK) dorthin.
+func mark_doll_mask(no: String) -> void:
+	doll_mask = no
+
+
 func _judge(no: String) -> void:
 	if no == "" or no == doom_room:
 		return
@@ -768,6 +776,8 @@ func forecast_room() -> String:
 func _weakest_door() -> String:
 	if rooms.has(debug_doom):
 		return debug_doom
+	if rooms.has(doll_mask):
+		return doll_mask   # wer die Puppenmaske trug, wird geurteilt – egal wie gut seine Tür geschmückt ist (5.19)
 	var decos := _deco_items()
 	var entries: Array[Dictionary] = []
 	for no in inhabited_rooms():
@@ -904,6 +914,8 @@ func _finish_raid() -> void:
 func _end_raid() -> void:
 	if doom_room != "" and Game.doll:
 		Game.doll.release()
+	if doom_room == doll_mask:
+		doll_mask = ""   # das Urteil ist vollstreckt
 	doom_room = ""
 	raid_room = ""
 	_route.clear()
@@ -1594,6 +1606,7 @@ func save_state() -> Dictionary:
 		# Puppe (5.5): Frist, Urteil und Weg – ein angefangenes Zimmer kommt wieder an den Anfang
 		"planned": _planned, "lead": _lead, "rumble_total": _rumble_total, "doom_room": doom_room, "raiding": _raiding,
 		"route": ([raid_room] if raid_room != "" else []) + _route, "raid_kills": _raid_kills,
+		"doll_mask": doll_mask,
 	}
 
 
@@ -1612,6 +1625,7 @@ func load_state(d: Dictionary) -> void:
 	_lead = float(d.get("lead", randf_range(DOLL_LEAD.x, DOLL_LEAD.y)))
 	_rumble_total = float(d.get("rumble_total", 0.0))
 	doom_room = String(d.get("doom_room", ""))
+	doll_mask = String(d.get("doll_mask", ""))
 	_raiding = bool(d.get("raiding", false))
 	_route.clear()
 	for no in d.get("route", []):
@@ -1723,7 +1737,7 @@ func debug_text() -> String:
 	s += "Absicht: %s (noch %d Opfer) · Flackern zeigte %d · Angriffschance %.0f %%\n" % [INTENT_NAMES[intent], victims_left, shown_victims, attack_chance() * 100.0]
 	s += "Monster: %s\n" % Monster.State.keys()[_monster.state]
 	if Game.pumpkin:
-		s += "Kürbismann: Spaßwert %.0f (Schwelle %.0f) · %d× da%s\n" % [Game.pumpkin.fun_value(), PumpkinMan.FUN_THRESHOLD,
+		s += "Kürbismann: Spaßwert %.0f (Schwelle %.0f) · %d× da%s\n" % [Game.pumpkin.fun_value(), Game.pumpkin.threshold(),
 			Game.pumpkin.visits, " · Garantie offen" if not Game.pumpkin.guarantee_at.is_empty() else ""]
 	if doom_room != "":
 		s += "Puppe: Zimmer %s%s · Weg %s\n" % [doom_room, " (Frist %d s)" % int(_phase_left) if phase == Phase.CALM else "",

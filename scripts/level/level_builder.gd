@@ -280,6 +280,10 @@ const PLAYER_ROOM := "013"
 ## Dartscheibe (Spielkonzept 6.10), solange sie nicht im Plan steht: Mitte der Südwand der Bar, Blick nach Norden
 const DART_FALLBACK := {"kind": "dartboard", "pos": [-19.0, -10.25], "wall": "south"}
 const COMPASS_ROOM := "026"
+## Maskensammlung (Spielkonzept 5.19), solange sie nicht im Plan steht: so weit bleiben die Haken von Ecken und
+## Öffnungen weg, und so viel freie Wand (m) muss es in Zimmer 13 mindestens geben
+const MASK_WALL_MARGIN := 0.2
+const MASK_WALL_MIN := 1.6
 const LOCKED_ROOM := "018"
 const ROOM_KINDS := {"013": "player"}   ## gilt, wenn die Haushaltsdatei fehlt
 ## Flügel, deren Zimmer schon bewohnbar sind – im EG bzw. darüber (seit 24.10. überall: die Haushalte wohnen in beiden)
@@ -697,6 +701,7 @@ func build() -> void:
 	var home: Dictionary = rooms[PLAYER_ROOM]
 	player_spawn = (home["center"] as Vector3) + Vector3(0, 0.05, 0) + (home["into"] as Vector3) * 0.1
 	player_door_front = home["door_front"]
+	_mask_hooks()
 	_zones()
 	_waypoints()
 
@@ -2654,6 +2659,96 @@ func _wall_spot(o: Dictionary, gap: float) -> WallSpot:
 	spot.pos = on_face + spot.out * gap
 	spot.inside = p + spot.out * 0.3
 	return spot
+
+
+## Maskensammlung (Spielkonzept 5.19): acht Haken (MaskHook) nebeneinander an der längsten freien Wand von Zimmer 13 –
+## frei heißt ohne Tür und Fenster, ohne Möbel davor und ohne Wandsache (Schalter, Telefon, Lampe). Ein Platz im Plan
+## dafür fehlt noch; soll die Sammlung woanders hängen, reicht es, dort die längste Wand frei zu lassen.
+func _mask_hooks() -> void:
+	var info := {}
+	for r in _map["rooms"]:
+		if String(r["no"]) == PLAYER_ROOM:
+			info = r
+	var best := {}
+	for rc in info.get("rects", []):
+		for side in ["north", "south", "west", "east"]:
+			var span := _free_wall(_rect(rc), side, info)
+			if not span.is_empty() and (best.is_empty() or float(span["length"]) > float(best["length"])):
+				best = span
+	if best.is_empty() or float(best["length"]) < MASK_WALL_MIN:
+		push_warning("Gebäudeplan: Zimmer %s hat keine %.1f m freie Wand für die Maskenhaken" % [PLAYER_ROOM, MASK_WALL_MIN])
+		return
+	var count := MaskModel.ORDER.size()
+	var spacing := minf(MaskHook.SPACING, float(best["length"]) / count)
+	var dir := _dir(best["side"])
+	var middle := (float(best["from"]) + float(best["to"])) / 2.0
+	var rightward := signf(-dir.y if best["horizontal"] else dir.x)   # von vorn gesehen von links nach rechts
+	for i in count:
+		var along := middle + (i - (count - 1) / 2.0) * spacing * rightward
+		var line := float(best["line"])
+		var p := Vector2(along, line) if best["horizontal"] else Vector2(line, along)
+		var face: Vector2 = _on_wall(p - dir * 0.2, best["side"], 0.6).get("pos", p)
+		var hook := MaskHook.new().setup(MaskModel.ORDER[i])
+		hook.position = Vector3(face.x, MaskHook.HEIGHT, face.y) - Vector3(dir.x, 0, dir.y) * 0.035
+		hook.rotation.y = atan2(-dir.x, -dir.y)
+		root.add_child(hook)
+
+
+## Längstes freies Stück an der Seite side eines Zimmerrechtecks (_mask_hooks): {side, horizontal, line, from, to,
+## length} oder {}. Blockiert: Öffnungen der Wände auf dieser Linie, Türen und Fenster des Zimmers, Möbel, Wandsachen
+## und Lichter bis 0,6 m davor.
+func _free_wall(rect: Rect2, side: String, info: Dictionary) -> Dictionary:
+	var dir := _dir(side)
+	var horizontal := absf(dir.y) > 0.5   # Wand verläuft entlang x
+	var toward := dir.y if horizontal else dir.x
+	var line := (rect.end.y if toward > 0.0 else rect.position.y) if horizontal else (rect.end.x if toward > 0.0 else rect.position.x)
+	var lo := (rect.position.x if horizontal else rect.position.y) + MASK_WALL_MARGIN
+	var hi := (rect.end.x if horizontal else rect.end.y) - MASK_WALL_MARGIN
+	var along := func(p: Vector2) -> float: return p.x if horizontal else p.y
+	var inward := func(p: Vector2) -> float: return ((p.y if horizontal else p.x) - line) * -toward
+	var blocked: Array[Vector2] = []
+	for w in _map["walls"]:
+		var a := _v2(w["a"])
+		var b := _v2(w["b"])
+		if (absf(a.y - b.y) < 0.01) != horizontal or absf(float(inward.call(a))) > 0.4:
+			continue
+		var step := signf(float(along.call(b)) - float(along.call(a)))
+		for o in w.get("openings", []):
+			var start := float(along.call(a)) + step * float(o["at"])
+			var end := start + step * float(o["width"])
+			blocked.append(Vector2(minf(start, end), maxf(start, end)))
+	var openings: Array = [info["door"]] if info.has("door") else []
+	for key in ["windows", "garden_doors", "bath_doors"]:
+		openings.append_array(info.get(key, []))
+	for o in openings:
+		var p := _v2(o["pos"])
+		if absf(float(inward.call(p))) < 0.4:
+			var c := float(along.call(p))
+			blocked.append(Vector2(c - float(o["width"]) / 2.0, c + float(o["width"]) / 2.0))
+	for f in _map["furniture"]:
+		var r := _rect(f["rect"])
+		var d0 := float(inward.call(r.position))
+		var d1 := float(inward.call(r.end))
+		if minf(d0, d1) < 0.6 and maxf(d0, d1) > 0.0:
+			var x0 := float(along.call(r.position))
+			var x1 := float(along.call(r.end))
+			blocked.append(Vector2(minf(x0, x1), maxf(x0, x1)))
+	for o in _map["fittings"] + _map["lights"]:
+		if o.has("pos"):
+			var d := float(inward.call(_v2(o["pos"])))
+			if d > -0.15 and d < 0.6:
+				var c := float(along.call(_v2(o["pos"])))
+				blocked.append(Vector2(c - 0.2, c + 0.2))
+	blocked.sort_custom(func(u: Vector2, v: Vector2) -> bool: return u.x < v.x)
+	blocked.append(Vector2(hi + MASK_WALL_MARGIN, INF))
+	var best := {}
+	var from := lo
+	for bl in blocked:
+		var to := minf(bl.x - MASK_WALL_MARGIN, hi)
+		if to - from > float(best.get("length", 0.0)):
+			best = {"side": side, "horizontal": horizontal, "line": line, "from": from, "to": to, "length": to - from}
+		from = maxf(from, bl.y + MASK_WALL_MARGIN)
+	return best
 
 
 ## Nächste Wandfläche von p aus in Richtung side (höchstens max_dist entfernt): {pos} oder {}.

@@ -190,6 +190,7 @@ var winded := false    ## außer Atem: kein Rennen, bis man sich beruhigt hat
 var debug_sprint := false   ## --sprint: rennt vorwärts wie mit W + Shift, bis er außer Atem ist
 var disguised := false   ## Bettlaken übergeworfen – Gäste erkennen ihn nur aus der Nähe (5.9)
 var disguise_count := 0  ## wie oft schon übergeworfen – jeder Gast staunt einmal je Mal (Guest._notice_disguise)
+var mask := ""           ## aufgesetzte verbotene Maske (MaskModel.ORDER, "" = keine) – ruft ihre Bedrohung (5.19)
 var drunk := 0.0       ## Rausch (0..1) von der Bar – Stufen in BarTap (3.7)
 var hangover := 0.0    ## Sekunden Kater nach dem Schlaf im Rausch
 var coffee := 0.0      ## so viele Spielsekunden wirkt der Kaffee noch – überdeckt die Müdigkeit (3.11)
@@ -357,6 +358,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("drop") and not hiding:
 		if held == null and disguised:
 			take_off_sheet()
+		elif held == null and mask != "":
+			take_off_mask()
 		elif held:
 			_throw_hold = 0.0   # erst beim Loslassen: kurz = ablegen bzw. aufhängen, lang = werfen (_update_throw)
 		else:
@@ -369,6 +372,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_snuff_target().snuff()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.BED_SHEET and not hiding:
 		put_on_sheet()
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.MASK and not hiding:
+		put_on_mask()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.ROAST_PUMPKIN and not hiding:
 		eat_held()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.SODA_CAN and not hiding:
@@ -979,6 +984,9 @@ func hurt(amount: float, from: Vector3) -> void:
 ## Bettlaken aus der Hand überwerfen: Man sieht nur noch durch die Augenlöcher, Gäste erkennen einen nur aus
 ## der Nähe (recognized_by) – als Zeugen beim Klauen, beim Rempeln, beim Anschließen.
 func put_on_sheet() -> void:
+	if mask != "":
+		Game.say("Erst die Maske abnehmen ([G] mit leeren Händen).", 3.0)
+		return
 	consume_held()
 	set_disguised(true)
 	Game.say("Du wirfst dir das Laken über. Wer bist du jetzt? ([G] mit leeren Händen: abnehmen)", 4.0)
@@ -988,6 +996,34 @@ func put_on_sheet() -> void:
 func take_off_sheet() -> void:
 	set_disguised(false)
 	receive_item(Item.create(Item.Kind.BED_SHEET))
+
+
+## Verbotene Maske aus der Hand aufsetzen (Spielkonzept 5.19): Sicht durch ihre Augenlöcher, Gäste erkennen einen
+## nur aus der Nähe wie unter dem Laken – aber keine Bedrohung lässt sich täuschen, die eigene ruft man herbei
+## (MaskModel, Kürbismann: PumpkinMan.threshold und _pick, Puppe: MonsterDirector.doll_mask).
+func put_on_mask() -> void:
+	if disguised:
+		Game.say("Unter dem Laken passt keine Maske.", 3.0)
+		return
+	var id := held.mask_id
+	consume_held()
+	set_mask(id)
+	Game.say("Du setzt dir die %s auf. ([G] mit leeren Händen: abnehmen)" % MaskModel.display_name(id), 4.0)
+	if id == "doll" and Game.director:
+		Game.director.mark_doll_mask(LevelBuilder.PLAYER_ROOM)
+
+
+## Abnehmen: Die Maske kommt zurück in die Hand.
+func take_off_mask() -> void:
+	var id := mask
+	set_mask("")
+	receive_item(Item.create(Item.Kind.MASK, id))
+
+
+func set_mask(id: String) -> void:
+	mask = id
+	if Game.hud:
+		Game.hud.set_mask(id)
 
 
 func set_disguised(value: bool) -> void:
@@ -1011,9 +1047,9 @@ func set_look(look: Dictionary) -> void:
 		head.position.y = crouch_eye if crouching else eye_height
 
 
-## Erkennt dieser Gast den Spieler? Verkleidet nur aus RECOGNIZE_RANGE.
+## Erkennt dieser Gast den Spieler? Verkleidet (Laken, Maske) nur aus RECOGNIZE_RANGE.
 func recognized_by(guest: Node3D) -> bool:
-	return not disguised or guest.global_position.distance_to(global_position) < RECOGNIZE_RANGE
+	return not (disguised or mask != "") or guest.global_position.distance_to(global_position) < RECOGNIZE_RANGE
 
 
 # --- Rausch & Schwäche (Spielkonzept 3.7, 4.18) ---------------------------------------

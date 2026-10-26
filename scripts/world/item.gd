@@ -36,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -64,6 +64,7 @@ const PRICES := {
 	Kind.SALT: 2,
 	Kind.MUSIC_BOX: 0,
 	Kind.APPLE: 1,
+	Kind.MASK: 0,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
@@ -219,6 +220,8 @@ var _needle_spin := 0.0
 var _needle_time := 0.0
 ## Kartenblatt: welche Ebene (HotelMap.PAGES)
 var page_id := ""
+## Verbotene Maske (Spielkonzept 5.19): welche (MaskModel.ORDER)
+var mask_id := ""
 ## Taschenlampe: Licht, Batterie, UV (nur bei Kind.FLASHLIGHT)
 var flashlight: Flashlight
 ## Steckt beim Spieler in der Tasche (Kompass in der linken Hand) – nicht mehr in der Welt
@@ -450,6 +453,8 @@ func create_extra() -> String:
 			return flavor
 		Kind.SALT:
 			return str(salt_left)
+		Kind.MASK:
+			return mask_id
 	return ""
 
 
@@ -1340,6 +1345,16 @@ func _build(extra: String) -> void:
 			mass = 0.25
 			size = Vector3(0.09, 0.055, 0.065)
 			MusicBox.build(self, size)
+		Kind.MASK:
+			# Verbotene Maske (Spielkonzept 5.19): liegt mit dem Gesicht nach oben, Linksklick setzt sie auf
+			mask_id = extra if extra in MaskModel.ORDER else "pumpkin"
+			display_name = MaskModel.display_name(mask_id)
+			mass = 0.4
+			var dims: Vector3 = MaskModel.SIZES.get(mask_id, Vector3(0.2, 0.26, 0.1))
+			size = Vector3(dims.x, dims.z, dims.y)
+			var mask := MaskModel.build(mask_id)
+			mask.rotation.x = -PI / 2.0
+			add_child(mask)
 		Kind.APPLE:
 			# Apfel aus dem Bottich (Apfeltauchen, Spielkonzept 6.21) – essen mit Linksklick
 			display_name = "Apfel"

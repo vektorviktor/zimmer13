@@ -97,6 +97,9 @@ done <<'LIST'
 1200|grinch,wettbewerb,speichern|--grinch=tot --savetest --trace
 2400|puppe,monster|--doll=10,13 --trace
 1600|puppe,kinder|--doll=kind --trace
+600|masken,speichern|--maske=doll --savetest
+900|masken,puppe|--maske=doll --doll=20 --trace
+2400|masken,kuerbismann|--maske=pumpkin --pumpkin=jagd --trace
 1500|monster,gaeste,tod|--kill=mila --trace
 900|gaeste,tod,ui|--console=kill=Emil,leiche,blut,hin;guests --trace
 900|gaeste,tod|--kill=emilhartung,weg,blut --trace

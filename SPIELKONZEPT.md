@@ -1867,7 +1867,8 @@ Aufhalten und erlösen: 4.21.
   jeder Gast mit Spaß hebt ihn je nach Beschäftigung – am **Spieltisch** und auf **Feiern** stark, beim Schmücken,
   Suppenessen und Süßes oder Saures weniger, der Spieler zählt wie ein Gast. **Deko platzieren** hebt ihn kurz. Über der
   **Schwelle (60)** wird alle 30 s gewürfelt: an der Schwelle 40 %, bei 100 dann 90 % – je mehr Spaß, desto sicherer
-  kommt er. Nach seinem Besuch fängt der Wert bei 0 an.
+  kommt er. Nach seinem Besuch fängt der Wert bei 0 an. Trägt der Spieler die **Kürbismann-Maske** (5.19), liegt die
+  Schwelle bei **10** statt 60 (entschieden und umgesetzt 2026-10-26).
 - **Garantie:** War er bis **Tag 15** noch keine zwei Mal da, kommt er **an Tag 15 und an Tag 16 sicher** – zu einer
   zufälligen Tageszeit, auch wenn gerade keiner Spaß hat (dann zu den Gästen und dem Spieler). Kam er an einem dieser
   Tage schon von selbst, zählt das.
@@ -3101,8 +3102,13 @@ Kürbis in der Nähe anders**, wenn man wieder hinsieht – nur, solange man ihn
 Kürbisse ohne Modell bleiben, wie sie sind. Debug: `--fratzen`.
 
 ### 5.19 Der Maskenball und die verbotenen Masken (entschieden 2026-10-25)
-> Noch nicht umgesetzt. Löst „Verkleiden aus Fundstücken“ (nur die Masken) und das Maskenspiel aus 5.9 ab. Mit
-> „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt; was offen ist, steht unten.
+> Löst „Verkleiden aus Fundstücken“ (nur die Masken) und das Maskenspiel aus 5.9 ab. Mit „Vorschlag“ markierte Punkte
+> sind aus der Durchsprache noch nicht bestätigt; was offen ist, steht unten.
+> **Teilweise umgesetzt (2026-10-26):** die acht Haken in Zimmer 13 mit Namensschildchen, die Masken **Kürbismann** und
+> **Puppe** als Modell – abnehmen, tragen (Linksklick, Sicht durch ihre Augenlöcher, Gäste erkennen einen nur aus der
+> Nähe), mit [G] abnehmen, zurückhängen – und ihre Wirkung auf den Spieler. Bis es die Verstecke gibt, hängen die beiden
+> **von Anfang an** an ihren Haken. Es fehlen: die übrigen sechs Masken, Verstecke und Zettel, der Ball, Verleihen,
+> Rückkehr an den Haken, Trophäen.
 
 **Grundidee:** Dreimal im Monat lädt das Hotel zum **Maskenball** in den Partyraum. Alle wollen dort die schönste
 Maske tragen, denn es gibt einen Preis – und die prächtigsten Masken im Haus sind die **verbotenen**: acht Masken der
@@ -3161,7 +3167,7 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 | Maske | Versteck (Vorschlag) | Wer sie trägt … |
 |---|---|---|
 | **Leviathan** (4.32) | Heizkeller, hinter dem Kessel am Gitter | löst einen **Snack auf den Träger** aus (4.33), zusätzlich zu den 4–5; an Balltagen nichts, weil dort kein Modus kommt |
-| **Kürbismann** | Dachboden, neben seinem Kopf (4.21) | wird sein Ziel, sobald er im Haus ist |
+| **Kürbismann** | Dachboden, neben seinem Kopf (4.21) | wird sein Ziel, sobald er im Haus ist; solange sie getragen wird, liegt die Schwelle des Spaßwerts (4.19) **drastisch tiefer** – schon der Grundspaß des Hotels kann ihn rufen (entschieden 2026-10-26) |
 | **Lakengeist** | Wäscherei, in einer Wäschekiste zwischen den Laken der Verschwundenen (4.20) | bei dem steigt **am Abend danach** die Chance auf den Lakengeist (4.18) |
 | **Vampir** | Friedhof im Garten, in einer Gruft (5.15; die Gruft gibt es noch nicht) | lockt den Vampir (4.22, kommt mit ihm) |
 | **Puppe** (Porzellangesicht) | im Puppenhaus (5.16) | vor dessen Tür liegt beim nächsten Urteil die Puppe (5.5) – sehr gefährlich |

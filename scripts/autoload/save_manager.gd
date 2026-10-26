@@ -100,7 +100,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     weiter, ihre Leichen warten dann aufs Grab
 ## 51: Bitten der Gäste (Spielkonzept 6.14): social.requests (offene Bitten, erfüllte Herzensbitten) – ältere Stände
 ##     laden weiter, ohne Bitten
-const VERSION := 51
+## 52: Verbotene Masken (Spielkonzept 5.19): Item.Kind.MASK, player.mask (aufgesetzt), „mask_hooks“ (je Maske, ob sie in
+##     Zimmer 13 hängt), director.doll_mask – ältere Stände laden weiter, die Masken hängen dann an ihren Haken
+const VERSION := 52
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -401,7 +403,7 @@ func collect() -> Dictionary:
 		"player": {
 			"pos": _v(stand if stand != Vector3.INF else p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
 			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
-			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised,
+			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised, "mask": p.mask,
 			"coffee": p.coffee, "coffee_low": p.coffee_low, "caffeine": p.caffeine, "tea": p.tea,
 			"held": _item_data(p.held) if p.held else null,
 			"bag": p.bag.map(_bag_data),
@@ -490,6 +492,11 @@ func collect() -> Dictionary:
 		return {"open": n.is_open, "locked": n.locked, "broken": n.broken, "by_player": n.broken_by_player,
 			"broken_day": n.broken_day})
 	data["key_cabinets"] = _collect_group("key_cabinets", func(n: Node) -> Dictionary: return n.save_state())
+	# Maskenhaken in Zimmer 13 (5.19): je Maske, ob sie hängt – nach der Maske, nicht nach der Reihenfolge
+	var hooks := {}
+	for hook: MaskHook in get_tree().get_nodes_in_group("mask_hooks"):
+		hooks[hook.mask_id] = hook.hanging
+	data["mask_hooks"] = hooks
 	data["chests"] = _collect_group("chests", func(n: Node) -> Dictionary:
 		return {"open": n.is_open})
 	data["plants"] = _collect_group("pumpkin_plants", func(n: Node) -> Dictionary:
@@ -581,6 +588,10 @@ func apply(data: Dictionary) -> void:
 		_apply_group("fixed_candles", data["fixed_candles"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("windows", data.get("windows", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("hide_spots", data.get("hide_spots", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	var hooks: Dictionary = data.get("mask_hooks", {})
+	for hook: MaskHook in get_tree().get_nodes_in_group("mask_hooks"):
+		if hooks.has(hook.mask_id):
+			hook.set_hanging(bool(hooks[hook.mask_id]))
 	_apply_group("phones", data.get("phones", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("dressers", data.get("dressers", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("elevators", data.get("elevators", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
@@ -698,6 +709,7 @@ func apply(data: Dictionary) -> void:
 	p.caffeine = float(pd.get("caffeine", 0.0))
 	p.tea = float(pd.get("tea", 0.0))
 	p.set_disguised(bool(pd.get("disguised", false)))
+	p.set_mask(String(pd.get("mask", "")))
 	p.set_pockets(bool(pd.get("compass", false)), pd.get("map_pages", []), pd.get("keyring", []))
 	if pd.get("held") != null:
 		var held_item := _make_item(pd["held"])

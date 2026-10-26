@@ -196,6 +196,8 @@ extends Node3D
 ##   --costumes[=art]            alle Gäste sofort verkleidet (sonst ab dem 25.): jeder sein Kostüm, art = sheet|witch|
 ##                               pumpkin|cape für alle gleich (5.9)
 ##   --disguise                  Bettlaken übergeworfen (5.9): Sicht durch Augenlöcher, Gäste erkennen dich nur aus der Nähe
+##   --maske[=id]                verbotene Masken (5.19): vor den Haken in Zimmer 13 stehen · id (pumpkin|doll): diese
+##                               Maske gleich aufgesetzt (Kürbismann: Spaßschwelle tief, Puppe: nächstes Urteil auf 13)
 ##   --drunk=n[,gast]            n Gläser getrunken (du, mit Gast: er) – ab 2 angetrunken, ab 3 betrunken (3.7)
 ##   --weather=klar|regen|gewitter|blitz   Wetter sofort in voller Stärke (7.8) · blitz: gleich ein Blitz (mit Gewitter)
 ##   --party[=gast]              sofort eine Feier im Partyraum starten (mit Gast: er lädt ein, ~3/4 kommen;
@@ -1177,6 +1179,8 @@ func run_debug(arg: String) -> bool:
 		Costume.force = arg.substr(11) if arg.begins_with("--costumes=") else "all"
 	elif arg == "--disguise":
 		Game.player.set_disguised(true)
+	elif arg == "--maske" or arg.begins_with("--maske="):
+		_debug_masks(arg.substr(8) if arg.begins_with("--maske=") else "")
 	elif arg.begins_with("--drunk="):
 		var parts := arg.substr(8).split(",")
 		var glasses := parts[0].to_int()
@@ -1965,6 +1969,31 @@ func _debug_cook(parts: PackedStringArray) -> void:
 	Game.player.global_position = Vector3(stove.global_position.x, 0.05, stove.global_position.z) + front * 1.4
 	Game.player.rotation.y = atan2(front.x, front.z)
 	Game.player.head.rotation.x = deg_to_rad(-25.0)
+
+
+## --maske[=id]: Vor die Maskenhaken in Zimmer 13 (Spielkonzept 5.19), Blick darauf; mit id die Maske vom Haken
+## gleich aufgesetzt.
+func _debug_masks(id: String) -> void:
+	var hooks := get_tree().get_nodes_in_group("mask_hooks")
+	if hooks.is_empty():
+		Game.say("Keine Maskenhaken in Zimmer 13.", 3.0)
+		return
+	var first := hooks[0] as Node3D
+	var last := hooks[hooks.size() - 1] as Node3D
+	var middle := (first.global_position + last.global_position) / 2.0
+	var stand := middle + first.global_basis.z * 1.6
+	Game.player.global_position = Vector3(stand.x, Game.player.global_position.y, stand.z)
+	var to := middle - stand
+	Game.player.rotation.y = atan2(-to.x, -to.z)   # die Kamera blickt nach −Z
+	Game.player.head.rotation.x = deg_to_rad(5.0)
+	if id == "":
+		return
+	for hook: MaskHook in hooks:
+		if hook.mask_id == id and hook.hanging:
+			hook.interact(Game.player)
+			Game.player.put_on_mask()
+			return
+	Game.say("Keine Maske „%s“ am Haken." % id, 3.0)
 
 
 ## --salz[=fenster|tür|monster|zimmer,nr|gast,id]: Salz (Spielkonzept 5.13) – eine Packung in der Hand; fenster: dazu
