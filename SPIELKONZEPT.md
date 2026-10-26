@@ -100,7 +100,7 @@
   - [6.11 Hotelkatzen (vorgemerkt 2026-10-14, umgesetzt 2026-10-17)](#611-hotelkatzen-vorgemerkt-2026-10-14-umgesetzt-2026-10-17)
   - [6.12 Schreck & Erlebnisse (entschieden und umgesetzt 2026-10-18)](#612-schreck--erlebnisse-entschieden-und-umgesetzt-2026-10-18)
   - [6.13 Kinder (entschieden und umgesetzt 2026-10-19)](#613-kinder-entschieden-und-umgesetzt-2026-10-19)
-  - [6.14 Aufträge von Gästen (vorgemerkt 2026-10-20)](#614-aufträge-von-gästen-vorgemerkt-2026-10-20)
+  - [6.14 Aufträge von Gästen (vorgemerkt 2026-10-20, entschieden 2026-10-26)](#614-aufträge-von-gästen-vorgemerkt-2026-10-20-entschieden-2026-10-26)
   - [6.16 Freundschaften unter Gästen (entschieden 2026-10-21)](#616-freundschaften-unter-gästen-entschieden-2026-10-21)
   - [6.17 Überlebende & Verletzungen (entschieden 2026-10-21)](#617-überlebende--verletzungen-entschieden-2026-10-21)
   - [6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)](#618-das-sozialsystem-verknüpft-entschieden-2026-10-21)
@@ -3719,9 +3719,39 @@ nach der Tabelle tauschen):
 Full-body 3D character of a 7-year-old girl, child proportions with a slightly larger head, slim build. Standing in A-pose, arms angled down away from the body, hands open with fingers slightly apart, legs straight and slightly apart. Friendly, calm face, mouth closed. Short chin-length bob, hair not touching the shoulders, medium gray hair. Plain light gray long-sleeved sweater, plain medium gray long trousers, simple dark shoes. No patterns, no logos, no accessories, no hood, no bag, no toys. Even flat lighting, no baked shadows.
 ```
 
-### 6.14 Aufträge von Gästen (vorgemerkt 2026-10-20)
+### 6.14 Aufträge von Gästen (vorgemerkt 2026-10-20, entschieden 2026-10-26)
 > **Erste Form (entschieden 2026-10-21):** Wünsche aus schweren Momenten – verletzt, trauernd, verwaist, nach dem
 > Lakengeist, Puppe vor der Tür (6.18, 3). Die Tabelle unten bleibt der Ausbau.
+>
+> **Jeder Gast hat eine Bitte, die zu ihm passt (entschieden und umgesetzt 2026-10-26).** Zwei Schichten:
+> - **Herzensbitte:** je Gast **eine** im ganzen Spiel, ab guter Beziehung, eher früh im Oktober (bei 20 % Überleben,
+>   6.17, soll sie nicht meist mit Kreuz enden). Sie ergibt sich aus dem **Archetyp** bzw. Alter (Haushalte, 6.20):
+>   Bastler – eine Glühbirne für seine Lampe; Ängstliche – zur Bar begleiten; Geschäftstüchtige – etwas besorgen gegen
+>   gutes Geld; Plaudertaschen – etwas an einen anderen Gast überbringen; Skeptiker – eine Mutprobe als Beweis;
+>   Kinder – spielen oder das Kuscheltier wiederfinden. **Kernfiguren und zentrale Gäste** (6.0) haben eine eigene,
+>   handgeschriebene – nur sie führen zum Geheimnis (Hinweis, Schlüssel), sonst wäre es zu billig gelöst. Die übrigen
+>   belohnen mit Deko, Geld, Beziehung – und Freundschaft heißt Zuflucht (6.18, 4). Liegt außerhalb des
+>   Beziehungsbudgets (6.18, 5), weil es sie nur einmal gibt.
+> - **Kleine Bitten zwischendurch**, zufällig, aber nach Gast und Lage: kein Licht → Kerze (5.12), kahle Tür → Deko,
+>   ein Glas von der Bar, Süßigkeiten. **Selten** – Richtwert eine am Tag im ganzen Hotel, kein Lieferdienst. Zählen
+>   zum Beziehungsbudget.
+> - **Lieblingskürbis als Wunsch** (5.8): *„Ich hätte so gern einen Casper vor meiner Tür – geschnitzt.“* Geschnitzt nur
+>   bei den schnitzbaren Sorten (Halloween-Kürbis, Casper), sonst immer ungeschnitzt. Der Gast stellt ihn vor seine
+>   Tür – er zählt dort als seine Deko. In der Knappheit (5.10): eigene Tür oder seine?
+> - **Lieblingsgegenstände** genauso: *„Bring mir eine Fledermaus“*, *„ein Glas Rotwein“*.
+> - **Neue Art „Spielen“** (Tabelle): eine Runde Minispiel (6.10), Apfeltauchen (6.21), mit Kindern Verstecken – auch
+>   wenn es flackert.
+> - **Kein eigenes Questmenü:** Alle Aufgaben stehen im Notizbuch unter „Aufgaben“ (3.10) – so bleibt es.
+> - **Zahlen (gebaut):** Herzensbitte ab „freundlich“, +12 Beziehung und Lob bei seinen Freunden; kleine Bitten ab
+>   „neutral“, eine am Tag im Hotel, höchstens drei zugleich, gelten bis zum Ende des Spieltags (verpasst −2). Ablehnen
+>   kostet nichts, bei Freunden −1; die Herzensbitte stellt er an einem anderen Tag wieder. Aus Archetyp und Gast-ID,
+>   ohne neue Zufallsaufrufe im Generator.
+> - **Gebaut:** Bastler – Glühbirne, ängstlich – zur Bar begleiten, geschäftstüchtig – Totenkopf gegen 15 Geld,
+>   Plaudertasche – einem Freund ausrichten, Skeptiker – Spinnweben aus dem Keller, Griesgram – Tee, Kinder – eine
+>   Partie; Edna – eine Kerze fürs Fenster, Bruno – ein geschnitzter Lieblingskürbis, Mila – eine Partie Schach.
+> - **Noch offen:** der Bezug der Kernfiguren-Bitten zum Geheimnis (ihre Rolle darin ist noch nicht geklärt, 6.0),
+>   zentrale Gäste (noch nicht besetzt), Verstecken mit Kindern und Apfeltauchen als „Spielen“, Kuscheltier
+>   wiederfinden, Bitten am Telefon und als Zettel an Zimmer 13.
 
 Gäste bitten den Spieler um Hilfe – kleine Aufgaben, die die bestehenden Systeme nutzen. **Kein Questmenü** (2.3):
 Angenommene Aufträge notiert der Spieler-Charakter im **Notizbuch** unter „Aufgaben“ (3.10) – fortlaufend, mit Name,
@@ -3741,6 +3771,7 @@ Zimmer und Frist, erledigte durchgestrichen –, der Gast erinnert beim nächste
 | **Suchen** | „Minka ist seit gestern weg“ | Hotelkatzen (6.11) |
 | **Mutprobe** | Kinder und Mutige: „Hol einen Stein aus dem Keller“ | Wagnis (2.3) |
 | **Streich** | Kinder: „Besorg uns Eier“ – man macht sich mitschuldig (6.13) | Küche, Zeugen |
+| **Spielen** | „Spielst du eine Runde Mäxchen mit mir?“, Kinder: Verstecken | Minispiele (6.10), Apfeltauchen (6.21) |
 
 - **Belohnung:** Geld, Deko aus dem Vorrat des Gastes, Beziehung ↑ – und manchmal ein **Hinweis** zum Geheimnis oder
   ein **Schlüssel** (2.3). Mitwisser geben das Wichtigste nur über Aufträge heraus.

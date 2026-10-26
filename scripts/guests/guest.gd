@@ -198,6 +198,7 @@ var _wheeze := 3.0
 var _wound_nodes: Array[Node3D] = []   ## Verletzungsmarken am Körper
 var _gift_item: Item         ## Geschenk in der Hand (6.17): er trägt es heim bzw. isst es nach _gift_hold Sekunden
 var _gift_hold := 0.0
+var gift_to_door := false     ## das Geschenk war seine Bitte (Lieblingskürbis, 6.14): vor die Tür statt in den Vorrat
 
 var agent: NavigationAgent3D
 var _collider: CollisionShape3D
@@ -509,10 +510,16 @@ func receive_gift(item: Item) -> bool:
 
 
 ## Nach dem Gespräch: mit dem Geschenk heim (CARRY_HOME legt es in den Vorrat). false = nichts zu tragen.
+## gift_to_door: der erbetene Lieblingskürbis (6.14) – er stellt ihn gleich vor seine Tür.
 func _carry_gift_home() -> bool:
 	if _gift_item == null or held != _gift_item or _gift_item.kind in FOOD_GIFTS:
+		gift_to_door = false
 		return false
 	_gift_item = null
+	if gift_to_door:
+		gift_to_door = false
+		_walk_to(deco_place_point(), State.PLACE_DECO)
+		return true
 	_walk_to(_room_point(), State.CARRY_HOME)
 	return true
 

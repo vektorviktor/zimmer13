@@ -210,6 +210,8 @@ extends Node3D
 ##                               ghost_visit, attic) hier, dann Gespräch – mit erzaehlen gleich als Anlass erzählt
 ##   --gespraech=luege,art,gast[,wer]   dem Gast etwas vorlügen (geist, monster, kuerbis, leiche, dieb); bei leiche/dieb
 ##                               kommt der Genannte nach 3 s vorbei – die Lüge fliegt auf (--trace)
+##   --bitte=gast[,art[,annehmen|erfuellen]]  der Gast stellt seine Bitte (6.14; art: herz – Standard –, kuerbis,
+##                               kerze, kaffee, suess, mag); annehmen: gleich zusagen, erfuellen: auch erfüllen ([Bitte])
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
 ##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
 ##                               zum Prüfen der Gastmodelle
@@ -1226,6 +1228,9 @@ func run_debug(arg: String) -> bool:
 				Game.player.global_position = partner.global_position + front * 1.4
 			_face_toward(partner.global_position)
 			Game.dialog.open(partner))
+	elif arg.begins_with("--bitte="):
+		var parts := arg.substr(8).split(",")
+		get_tree().create_timer(0.5).timeout.connect(Game.social.requests.debug.bind(parts))
 	elif arg.begins_with("--gespraech="):
 		var parts := arg.substr(12).split(",")
 		get_tree().create_timer(0.5).timeout.connect(Game.social.talk.debug.bind(parts))

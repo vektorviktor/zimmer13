@@ -64,6 +64,7 @@ const COMMANDS := {
 	"weather": ["klar|regen|gewitter|blitz", "Wetter sofort (Regen, Gewitter, ein Blitz)"],
 	"party": ["[gast]", "Feier im Partyraum starten (mit Gast: er lädt ein)"],
 	"talk": ["gast", "Gespräch öffnen"],
+	"bitte": ["gast[,art[,annehmen|erfuellen]]", "Der Gast stellt seine Bitte (herz, kuerbis, kerze, kaffee, suess, mag)"],
 	"look": ["gast[,pose]", "Gast ansehen (carry, panic, dance, sit, walk)"],
 	"wound": ["gast,scratch|axe|choke[,hin]", "Gast hat einen Angriff überlebt (6.17) – hin: steht vor dir"],
 	"friend": ["gast", "mit dem Gast befreundet"],
@@ -116,7 +117,7 @@ const START_ONLY := ["title", "splash", "new", "nointro", "shot", "frames", "sho
 const ALIASES := {"save": "diary", "load": "load-slot"}
 ## Befehle, deren erster Wert ein Gast ist (wird vorher geprüft)
 const GUEST_FIRST := ["shock", "kill", "talk", "look", "wound", "pals", "friend", "enemy", "relation", "follow", "visit",
-	"attack", "punch", "dice", "chess", "challenge", "bulb-thief"]
+	"attack", "punch", "dice", "chess", "challenge", "bulb-thief", "bitte"]
 ## Befehle, bei denen ein Gast auch weiter hinten stehen kann
 const GUEST_ANY := ["rival", "pals", "drunk", "party", "decorate", "search", "darts", "cook", "tee", "kaffee", "call", "tp",
 	"trick", "pumpkin", "salz"]

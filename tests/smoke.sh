@@ -77,6 +77,12 @@ while IFS='|' read -r frames tags args; do
 done <<'LIST'
 600|schnell,speichern|--savetest
 600|speichern,notizbuch|--notizbuch --show=aufgaben --savetest
+400|bitten,gaeste|--bitte=edna,herz,erfuellen --trace
+2000|bitten,kuerbis|--bitte=kemal,kuerbis,erfuellen --trace
+900|bitten|--bitte=johanna,herz,erfuellen --trace
+400|bitten|--bitte=elif,herz,erfuellen --trace
+400|bitten,kinder|--bitte=max,herz,erfuellen --trace
+600|bitten,speichern,notizbuch|--notizbuch --bitte=simon,herz,annehmen --savetest --trace
 600|speichern|--savetest --day=20
 600|speichern,spieler|--bag --flashlight --savetest
 600|speichern,kuerbis|--day=12 --rot=eingefallen --savetest --trace

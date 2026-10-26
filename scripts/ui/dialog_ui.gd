@@ -84,10 +84,17 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 	var witness := _wound_visit()
 	# Was er sich über dich gemerkt hat (6.9) – aufgeflogene Lüge, Versprechen –, sonst vielleicht eine Frage
 	var talk := Game.social.talk
+	var requests := Game.social.requests
 	var remembered := ""
+	var thanks := ""   # Dank für eine ausgerichtete Nachricht (6.14)
+	var offer := {}    # eine Bitte, die er von sich aus stellt (6.14)
 	if experience.is_empty() and guest.wound == "" and guest.wound_note == "" and guest.fear < 60.0:
 		remembered = talk.greeting(guest)
 		if remembered == "":
+			thanks = requests.thanks_on_greet(guest)
+		if remembered == "" and thanks == "" and force_question == "":
+			offer = requests.offer_for(guest)
+		if remembered == "" and thanks == "" and offer.is_empty():
 			_question = talk.pick_question(guest, force_question)
 	if witness != "":
 		_say(witness)   # Überlebender (6.17): bei jedem Gespräch ein neues Detail, alles stimmt
@@ -107,6 +114,10 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 		Game.social.on_monster_talk(guest)
 	elif remembered != "":
 		_say(remembered)
+	elif thanks != "":
+		_say(thanks)
+	elif not offer.is_empty():
+		_say(String(offer["ask"]))
 	elif not _question.is_empty():
 		_say(String(_question["text"]))
 	elif guest.fear >= 60.0:
@@ -125,12 +136,17 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 		var heard := Game.social.pals.take_heard_line(guest)
 		if heard != "":
 			_text.text += " " + heard
+		var nudge := requests.reminder(guest) if offer.is_empty() and thanks == "" else ""
+		if nudge != "":
+			_text.text += " „%s“" % nudge
 	if guest.drunk >= BarTap.TIPSY:
 		_text.text = "*hicks* " + _text.text
 	if Game.player.disguised:   # unter dem Laken (5.9)
 		_text.text = "„Wer steckt denn da drunter? … Ach, du bist's!“ " + _text.text
 	if not _question.is_empty():
 		_show_question()
+	elif not offer.is_empty():
+		_show_offer(offer)
 	else:
 		_show_main()
 	if talk.debug_answer >= 0:   # --gespraech: gleich antworten bzw. den ersten Anlass wählen
@@ -259,6 +275,9 @@ func _show_main() -> void:
 		_option("Klar, ich such mit!", _search)   # er hat gefragt, ob du mitkommst (5.9)
 	if guest.sleepless and Game.social.sleep_active:
 		_option("Ab ins Bett mit dir", _to_bed)
+	var own: Dictionary = Game.social.requests.request_of(guest)
+	if own.get("kind", "") == "escort" and not guest.is_following():
+		_option("Komm, ich bring dich zur Bar", _escort)   # seine Bitte (6.14)
 	_option("Plaudern", _chat)
 	_option("Ich muss dir was erzählen …", _show_tell)
 	_option("Sag mal …", _show_ask)
@@ -307,6 +326,9 @@ func _occasions() -> Array[Dictionary]:
 			list.append({"key": key, "label": label, "call": call})
 	if Game.monster and Game.monster.is_active() and guest.hiding == null:
 		add.call("warn:%d" % Game.director.attacks, "Versteck dich! Es ist unterwegs!", _warn)
+	var message := Game.social.requests.message_for(guest)   # etwas ausrichten (6.14)
+	if not message.is_empty():
+		add.call("msg:" + String(message["id"]), String(message["say"]), _deliver.bind(message))
 	var fresh := talk.untold(guest)
 	if not fresh.is_empty():
 		add.call("tell:%d" % int(fresh[0]["id"]), talk.tell_label(fresh[0]), _tell_story.bind(fresh[0]))
@@ -457,6 +479,7 @@ func _show_ask() -> void:
 		_option("Wie gefällt dir meine Tür?", func() -> void:
 			_say(Game.social.talk.door_verdict(guest))
 			_show_ask())
+	_option("Kann ich dir irgendwie helfen?", _offer_help)
 	_option("Zurück", _show_main)
 
 
@@ -469,6 +492,52 @@ func _show_opinions() -> void:
 			_say(Game.social.talk.opinion(guest, o))
 			_show_opinions())
 	_option("Zurück", _show_ask)
+
+
+## Seine Bitte (Spielkonzept 6.14): annehmen oder ablehnen.
+func _show_offer(req: Dictionary) -> void:
+	_clear()
+	_option("Mach ich.", _accept.bind(req))
+	_option("Tut mir leid, gerade nicht.", func() -> void:
+		_say(Game.social.requests.decline(guest, req))
+		_show_main())
+
+
+func _accept(req: Dictionary) -> void:
+	_say(Game.social.requests.accept(guest, req))
+	if req["kind"] == "escort":
+		_escort()
+		return
+	_show_main()
+
+
+## „Kann ich dir irgendwie helfen?“ – seine Bitte ohne Zufall, wenn er eine hat.
+func _offer_help() -> void:
+	var requests := Game.social.requests
+	if requests.own_request(guest):
+		_say("Du hilfst mir doch schon. Eins nach dem anderen.")
+		_show_ask()
+		return
+	var req := requests.offer_for(guest, true)
+	if req.is_empty():
+		_say("Gerade nicht. Lieb von dir, dass du fragst." if not guest.is_child() else "Nö. Aber danke!")
+		_show_ask()
+		return
+	_say(String(req["ask"]))
+	_show_offer(req)
+
+
+## Zur Bar begleiten (6.14): er kommt mit, bis ihr dort seid.
+func _escort() -> void:
+	var partner := guest   # close() setzt guest auf null
+	close()
+	Game.social.requests.start_escort(partner)
+
+
+## Etwas ausrichten (6.14): der Empfänger antwortet, der Auftraggeber dankt beim nächsten Gespräch.
+func _deliver(req: Dictionary) -> void:
+	_say(Game.social.requests.deliver(guest, req))
+	_show_main()
 
 
 ## „Könntest du …“: Bitten.
@@ -755,6 +824,7 @@ func _gift(item: Item) -> void:
 		_show_main()
 		return
 	Game.social.access.on_gift(guest)   # ein versprochenes Geschenk (6.19)
+	var wish := Game.social.requests.on_gift(guest, item)   # darum hat er dich gebeten (6.14) – sein Dank
 	var kind := item.kind
 	# Kürbis in seiner Lieblingssorte (Spielkonzept 5.8): freut ihn wie etwas, das er mag, und noch ein bisschen mehr
 	var is_pumpkin := kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN, Item.Kind.ROAST_PUMPKIN]
@@ -790,6 +860,8 @@ func _gift(item: Item) -> void:
 		_say("%s Mein Lieblingskürbis ist ja der %s." % [guest.line("thanks"), fav_name])   # ein Hinweis für das nächste Mal
 	else:
 		_say(guest.line("thanks_like" if liked else "thanks"))
+	if wish != "":
+		_say(wish)
 	if guest.is_child() and kind == Item.Kind.KNIFE:
 		# Ein Messer für ein Kind (6.13): Mama oder Papa erfahren es – und sind wütend
 		_say(guest.line("knife"))

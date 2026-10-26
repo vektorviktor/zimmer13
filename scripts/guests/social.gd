@@ -191,6 +191,7 @@ var access: RoomAccess                  ## Zimmerzugang: Klopfen, Einlass, Hausf
 var tidying: Tidying                    ## Flecken: Beschweren und Putzen (Spielkonzept 6.13)
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
 var talk: Talk                           ## Erzählen, Lügen, Fragen, Gedächtnis der Gäste (Spielkonzept 6.9)
+var requests: GuestRequests              ## Bitten der Gäste (Spielkonzept 6.14)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
 
@@ -339,6 +340,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	talk = Talk.new()   # Erzählen, Lügen, Fragen, Gedächtnis (6.9)
 	talk.name = "Talk"
 	add_child(talk)
+	requests = GuestRequests.new()   # Bitten der Gäste (6.14)
+	requests.name = "Requests"
+	add_child(requests)
 
 
 ## Gast ins Hotel setzen (Profil muss schon bekannt sein); mit Start-Deko vor der Tür. slot: Platz im Zimmer, wenn
@@ -888,6 +892,8 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 		talk.on_guest_died(guest)
 	if Game.notebook:   # Kreuz neben seinem Namen bei seinen Aufgaben (3.10)
 		Game.notebook.on_guest_died(guest)
+	if requests:   # seine Bitte fällt weg, im Notizbuch bleibt sie offen (6.14)
+		requests.on_guest_died(guest)
 	if Game.diary:
 		Game.diary.note("first_death", "%s aus Zimmer %s ist tot. Bis heute dachte ich, es tut niemandem etwas." % [
 			guest.display_name, String(guest.home["sign"])])

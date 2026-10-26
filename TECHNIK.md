@@ -916,7 +916,7 @@ Beziehungen (`change_relation`), Gerüchte mit Verzögerung, Diebstahl mit Zeuge
 sonst bleibt das Versteck für alle gesperrt), Feiern, Herausforderungen (`challenge`), Gäste-Mäxchen und -Schach,
 Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Zettel, Nachrücker (`START_GUESTS`,
 `MIN_GUESTS`; Nachrücker sind immer Erwachsene). Teilsysteme hängen als Kinder an Social (`Game.social.tidying`,
-`pranks`, `decorating`, `search`, `pals`, `talk`, `access`).
+`pranks`, `decorating`, `search`, `pals`, `talk`, `access`, `requests`).
 - **Freundschaftsstufen** (Spielkonzept 6.3): `Social.Tier` (`tier(guest)` / `tier_of(wert)`, `TIER_NAMES`). **Im
   Code nie `relation` mit Zahlen vergleichen, sondern Stufen** (`Social.tier(g) >= Social.Tier.FRIEND`).
   `change_relation` dämpft Zuwächse und deckelt, solange die Taten fehlen: `Guest.deeds` (`games`, `gifts_to`,
@@ -1063,6 +1063,21 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `promise`, `no_trust`, `confront`, `grieving`; `set_stance`/`has_stance`, `prune_stances`). Freundliche Gesten über
   `Talk.friendly` (Tagesbudget wie Plaudern). Gespeichert je Gast `claims`, `stances`; `social.talk` = `log`, `next_id`,
   `suspects`, `deaths`. Debug `--gespraech=frage|erlebnis|luege,…`, `--trace` `[Gespräch]`.
+- **Bitten** (`guests/requests.gd`, `GuestRequests`, Spielkonzept 6.14): Eine Bitte ist ein Dictionary (`kind` = `item`,
+  `escort`, `message`, `game`; `heart`; `item`/`variety`, `target`, `game`, `money`; Texte `ask`, `task`, `thanks`,
+  `say`, `reply`). **Herzensbitte** je Gast einmal (`hearts`: offen/erfüllt), aus `CORE` (Kernfiguren) bzw. `HEART`
+  nach `Talk.temper` – ohne Zufall, Plaudertaschen wählen den Empfänger fest aus der ID (`_message_target`).
+  **Kleine Bitten** nach Lage (`_make_small`: Kind → Süßes, kahle Tür des Haushaltsvorstands → Lieblingskürbis, abends
+  Kerze, morgens Kaffee, sonst `profile.likes`), `SMALL_PER_DAY` im ganzen Hotel, `MAX_SMALL` zugleich, verfallen am
+  Ende des Spieltags (`_end_of_day` → `Notebook.miss_task`). Ablauf: `DialogUI.open` fragt `offer_for` (vor den Fragen
+  des Gastes; „Sag mal …“ → „Kann ich dir irgendwie helfen?“ ohne Zufall) → `_show_offer` → `accept`
+  (`Notebook.add_task` mit der Bitte-ID) bzw. `decline`. Erfüllen: `on_gift` aus `DialogUI._gift` (Kürbis →
+  `Guest.gift_to_door`: `_carry_gift_home` geht mit `PLACE_DECO` vor die Tür), `on_game_played` aus Würfel-, Schach-
+  und Dartspiel, Begleiten (`start_escort` = `start_follow`, `_check_escort`: an der Bar), Ausrichten als Anlass beim
+  Empfänger (`message_for`/`deliver`), der Auftraggeber dankt beim nächsten Gespräch (`thanks_on_greet`). `_complete`:
+  Herzensbitte `HEART_REWARD` direkt (außerhalb des Budgets), kleine über `Talk.friendly`, dazu `pals.praise`.
+  Gespeichert unter `social.requests` (`active`, `hearts`, Tageszähler). Debug `--bitte=gast[,art[,annehmen|erfuellen]]`,
+  `--trace` `[Bitte]`.
 
 ### Kochen (`world/stove.gd`, `Stove`, `Game.kitchen`, Spielkonzept 3.8)
 Herd auf der Plan-Ausstattung „stove“. `phase`: `empty` → `raw` (`dish_for`) → Messer → `cooking` (Spielzeit über

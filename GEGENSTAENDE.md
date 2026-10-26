@@ -9,7 +9,7 @@ nicht gebaut · **eingefroren** = bewusst zurückgestellt.
 **Handlung:** **Hauptgeschichte** = ohne ihn kein Fortschritt in der Hauptgeschichte (HANDLUNG.md) · **Nebenstrang** =
 trägt einen Auftrag (Kürbismann, Marion) · **–** = Spielmechanik, nicht handlungsrelevant.
 
-Stand: 2026-10-25.
+Stand: 2026-10-26.
 
 ---
 
@@ -67,17 +67,17 @@ Stand: 2026-10-25.
 
 | Gegenstand | Code | Stand | Handlung | Wozu | Konzept |
 |---|---|---|---|---|---|
-| Kürbis (Sorten bis Riesenkürbis) | `PUMPKIN` | gebaut | – | Deko, schnitzen, braten, werfen; betäubt den Kürbismann | 5.8, 4.21 |
-| Geschnitzter Kürbis | `CARVED_PUMPKIN` | gebaut | – | Deko, mit Kerze Licht | 5.4 |
+| Kürbis (Sorten bis Riesenkürbis) | `PUMPKIN` | gebaut | – | Deko, schnitzen, braten, werfen; betäubt den Kürbismann · als Lieblingskürbis erbeten (Bitte, 6.14) | 5.8, 4.21 |
+| Geschnitzter Kürbis | `CARVED_PUMPKIN` | gebaut | – | Deko, mit Kerze Licht · Brunos Herzensbitte, Lieblingskürbis geschnitzt (6.14) | 5.4 |
 | Zierkürbis | `MINI_PUMPKIN` | gebaut | – | kleine Deko, passt in die Tasche | 5.8 |
-| Kerze | `CANDLE` | gebaut | – | Licht, geht aus, anzünden | 5.12 |
+| Kerze | `CANDLE` | gebaut | – | Licht, geht aus, anzünden · Ednas Herzensbitte, kleine Bitte am Abend (6.14) | 5.12 |
 | Lakengespenst | `SHEET_GHOST` | gebaut | – | Deko zum Aufhängen; lockt den Lakengeist | 5.6 |
 | Lichterkette | `LIGHT_STRING` | gebaut | – | Deko zum Aufhängen | 5.6 |
-| Spinnenweben | `COBWEB` | gebaut | – | Deko aus dunklen Ecken | 5.4 |
+| Spinnenweben | `COBWEB` | gebaut | – | Deko aus dunklen Ecken · Herzensbitte der Skeptiker (6.14) | 5.4 |
 | Herbstlaub | `LEAVES` | gebaut | – | Deko aus dem Garten | 5.4 |
 | Fledermausgirlande | `BAT_GARLAND` | gebaut | – | Deko zum Aufhängen | 5.7 |
 | Plastikspinne | `SPIDER` | gebaut | – | Deko zum Aufhängen | 5.7 |
-| Totenkopf | `SKULL` | gebaut | – | starke Deko, mit Kerze Licht | 5.7 |
+| Totenkopf | `SKULL` | gebaut | – | starke Deko, mit Kerze Licht · Herzensbitte der Geschäftstüchtigen, 15 Geld (6.14) | 5.7 |
 | Hexenbesen | `BROOM` | gebaut | – | Deko, lehnt an der Wand | 5.7 |
 | Maske (eigene) | – | geplant | – | für den Maskenball und das Maskenspiel; von Ruth Behrens genäht oder irgendwo gefunden (Gäste-Masken sind keine Gegenstände) | 5.19 |
 | Verbotene Masken (acht: Leviathan, Kürbismann, Lakengeist, Vampir, Puppe, Vogelscheuche, Krähe, Kesselkatze) | – | geplant | – | rufen ihre eigene Bedrohung; Sammlung an acht Haken in Zimmer 13 (Trophäen 8.11), an Gäste nur verliehen | 5.19 |
@@ -89,7 +89,7 @@ Stand: 2026-10-25.
 | Taschenlampe | `FLASHLIGHT` | gebaut | – | Licht, mit Aufsatz UV | 4.16 |
 | Batterie | `BATTERY` | gebaut | – | Taschenlampe | 4.16 |
 | UV-Aufsatz | `UV_FILTER` | gebaut | – (zeigt UV-Hinweise, vertreibt das Monster) | Taschenlampe | 4.16 |
-| Glühbirne (heil/kaputt) | `BULB` | gebaut | – | Lampen ein- und ausdrehen | 7.3 |
+| Glühbirne (heil/kaputt) | `BULB` | gebaut | – | Lampen ein- und ausdrehen · Herzensbitte der Bastler (6.14) | 7.3 |
 | Streichholzschachtel | `MATCHBOX` | gebaut | – | Kerzen anzünden; Zimmer 022 | 5.12 |
 | Messer | `KNIFE` | gebaut | – | schnitzen | 5.4 |
 | Brecheisen | `CROWBAR` | gebaut | – | Zimmertüren aufbrechen; Heizkeller | 6.19 |
@@ -103,10 +103,10 @@ Stand: 2026-10-25.
 
 | Gegenstand | Code | Stand | Handlung | Wozu | Konzept |
 |---|---|---|---|---|---|
-| Süßigkeiten | `SWEETS` | gebaut | – | Kinder, Süßes oder Saures, Geschenk | 6.13 |
+| Süßigkeiten | `SWEETS` | gebaut | – | Kinder, Süßes oder Saures, Geschenk · kleine Bitte der Kinder (6.14) | 6.13 |
 | Getränkedose (Cola, Limo) | `SODA_CAN` | gebaut | – | zu Atem kommen, beruhigt | 3.2 |
-| Kaffee | `COFFEE` | gebaut | – | wach halten | 3.11 |
-| Tee | `TEA` | gebaut | – | beruhigt | 3.12 |
+| Kaffee | `COFFEE` | gebaut | – | wach halten · kleine Bitte am Morgen (6.14) | 3.11 |
+| Tee | `TEA` | gebaut | – | beruhigt · Herzensbitte der Griesgrame (6.14) | 3.12 |
 | Gebratener Kürbis | `ROAST_PUMPKIN` | gebaut | – | Essen | 3.8 |
 | Kürbismatsch | `PUMPKIN_MUSH` | gebaut | – | Rest eines zerplatzten Kürbisses | 5.8, 3.13 |
 | Apfel | `APPLE` | gebaut | – | beim Apfeltauchen erbeutet, essbar | 6.21 |

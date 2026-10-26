@@ -98,7 +98,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     laden weiter, alles wie am Anfang
 ## 50: Friedhof (Spielkonzept 5.15): je Gast „buried“, „cemetery“ (Gräber, wartende Leichen) – ältere Stände laden
 ##     weiter, ihre Leichen warten dann aufs Grab
-const VERSION := 50
+## 51: Bitten der Gäste (Spielkonzept 6.14): social.requests (offene Bitten, erfüllte Herzensbitten) – ältere Stände
+##     laden weiter, ohne Bitten
+const VERSION := 51
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -459,6 +461,7 @@ func collect() -> Dictionary:
 		"sleep_active": social.sleep_active, "night_seed": social.night_seed,
 		"pals": social.pals.save_state(),
 		"talk": social.talk.save_state(),
+		"requests": social.requests.save_state(),
 	}
 	var director := Game.director
 	var curiosity: Array = []
@@ -734,6 +737,7 @@ func apply(data: Dictionary) -> void:
 	social._arrival_timer = float(sd.get("arrival_timer", -1.0))
 	social.pals.load_state(sd.get("pals", {}))
 	social.talk.load_state(sd.get("talk", {}))
+	social.requests.load_state(sd.get("requests", {}))
 	if Game.doll:
 		Game.doll.load_state(data.get("doll", {}))
 	if Game.pumpkin:
