@@ -7,8 +7,9 @@ extends Node
 ##   · Durchsagen der Direktion zu festen Uhrzeiten (Gong und Einblendung)
 ##   · Siegerehrung: Die Gäste versammeln sich um die Puppe (Jury) und warten auf den Spieler, spätestens bis 22 Uhr.
 ##     Sein Blick wird zur Puppe gezogen (die Steuerung ist gesperrt), sie steigt auf, schwebt und löst sich in Rauch
-##     auf – das einzige Mal, dass sie sich vor seinen Augen bewegt (5.5). Dann geht das Licht aus, das Monster steht in
-##     der dunklen Ecke der Lobby (MonsterDirector.first_attack_in_lobby)
+##     auf – das einzige Mal, dass sie sich vor seinen Augen bewegt (5.5). Im Partyraum läuft dabei Musik. Während alle
+##     hinsehen, holt das Monster ungesehen Gustav Peters aus Zimmer 020 (2.6, MonsterDirector.first_attack_unseen,
+##     Grinch.taken), dann geht das Licht aus und die Musik verstummt – zu sehen ist nichts
 ##   · Die Regel danach: Warnungszettel von 1999 am Morgen danach unter der Tür von Zimmer 13, Gäste reden am Brett,
 ##     beim ersten Urteil der Puppe ein Satz im Tagebuch
 ##   · Notizbuch (3.10): steckt im Umschlag des Briefs, erste Aufgabe ist die eigene Tür (bei der Siegerehrung
@@ -24,8 +25,8 @@ const LETTER_TEXT := "Verehrter Gast,\nherzlich willkommen in Zimmer 13. Wir wü
 ## Erster Tagebucheintrag – Satz des Startstands und am 1. Oktober, sobald der Brief gelesen ist
 const ARRIVAL_ENTRY := "Angekommen. Zimmer 13 ist hübsch, wenn auch etwas altmodisch. Morgen Abend kürt eine Jury die schönste Tür – ich brauche Deko."
 ## Meilensteine im Tagebuch (3.10): Siegerehrung mit bzw. ohne den Spieler, erster Angriff auf anderem Weg (Debug)
-const CEREMONY_ENTRY := "Die Siegerehrung. Die Puppe ist aufgestanden, über uns geschwebt und in einer Rauchwolke verschwunden. Dann ging das Licht aus, und in der Ecke der Lobby stand etwas. Einen Sieger gab es nicht."
-const CEREMONY_MISSED_ENTRY := "Die Siegerehrung habe ich verpasst. Unten erzählen sie, die Puppe sei aufgestanden und in Rauch aufgegangen – und als das Licht ausging, habe in der Ecke etwas gestanden."
+const CEREMONY_ENTRY := "Die Siegerehrung. Die Puppe ist aufgestanden, über uns geschwebt und in einer Rauchwolke verschwunden. Dann ging das Licht aus, und alle haben geschrien. Einen Sieger gab es nicht."
+const CEREMONY_MISSED_ENTRY := "Die Siegerehrung habe ich verpasst. Unten erzählen sie, die Puppe sei aufgestanden und in Rauch aufgegangen – und dann sei das Licht ausgegangen."
 const FIRST_SIGHT_ENTRY := "Heute habe ich es zum ersten Mal gesehen. Ich weiß nicht, was es ist. Ich weiß nur, dass es mich auch gesehen hat."
 ## Erste Aufgabe im Notizbuch (3.10)
 const TASK_ID := "contest"
@@ -67,7 +68,8 @@ const WAIT_FOR_GUESTS := 25.0
 const SPOT_GRID := 0.9
 const SPOT_MIN := 2.6
 const GATHER_LINES := ["Wo bleibt denn die Jury?", "Wer wohl gewinnt?", "Meine Tür ist die schönste, ganz klar.",
-	"Die Puppe ist die Jury? Wie putzig.", "Wann geht's denn los?", "Hast du die Türen im Ostflügel gesehen? Wunderschön."]
+	"Die Puppe ist die Jury? Wie putzig.", "Wann geht's denn los?", "Hast du die Türen im Ostflügel gesehen? Wunderschön.",
+	"Wo ist eigentlich Herr Peters?", "Herr Peters kommt bestimmt nicht. Der hasst Halloween."]
 const GATHER_TALK := Vector2(6.0, 12.0)
 ## Ablauf der Szene (s): Blick zur Puppe, sie steht auf und steigt, schwebt, Rauch, Licht aus
 const T_TURN := 1.6
@@ -332,6 +334,8 @@ func _gather_guests() -> void:
 
 
 func _can_gather(g: Guest) -> bool:
+	if Grinch.is_grinch(g):
+		return false   # Gustav kommt nicht (2.6)
 	return not g.dead and g.hiding == null and g.fear < 60.0 and g.wound_bed <= 0.0 and g.state in [Guest.State.IDLE,
 		Guest.State.WALK, Guest.State.CARRY_HOME, Guest.State.PLACE_DECO, Guest.State.HARVEST]
 
@@ -382,6 +386,8 @@ func _begin_scene(with_player: bool) -> void:
 		if g.is_child():
 			g._laugh = T_DARK + 5.0   # auch die Kinder sind still
 	_talk = T_DARK + 5.0
+	if not Game.social.party_active:
+		Game.social.record_player.set_playing(true)   # drüben im Partyraum läuft Musik (2.6)
 	if with_player:
 		var p := Game.player
 		p.leave_seat(true)
@@ -411,6 +417,8 @@ func _scene_step(delta: float) -> void:
 			_puff(doll.global_position + Vector3.UP * 0.8 * JuryDoll.HEAD_HEIGHT)
 			Game.play_sound("poof", 0.8)
 			doll.vanish()
+			# Während alle hinsehen, holt es Gustav (2.6)
+			Game.director.first_attack_unseen(Game.social.grinch.gustav if Game.social.grinch else null)
 	if _scene_t >= T_DARK:
 		_end_scene()
 
@@ -455,7 +463,7 @@ func _puff(at: Vector3) -> void:
 	get_tree().create_timer(4.0, false).timeout.connect(smoke.queue_free)
 
 
-## Licht aus, das Monster in der dunklen Ecke – der erste Angriff (harmlos, 2.1). Die Gäste fliehen heim.
+## Licht aus, die Musik verstummt, die Gäste schreien und fliehen heim. Das Monster zeigt sich nicht (2.6).
 func _end_scene() -> void:
 	stage = Stage.DONE
 	attack_day = Calendar.today()
@@ -463,32 +471,19 @@ func _end_scene() -> void:
 	if sw:
 		sw.set_on(false)
 	Game.play_sound("bang", 0.6)
+	if not Game.social.party_active:
+		Game.social.record_player.set_playing(false)
 	if _with_player:
 		Game.say("Das Licht geht aus.", 3.0)
 		Game.player.spellbound = false
-	Game.director.first_attack_in_lobby(_monster_corner(), _doll_base)
+	if not Game.director.first_attack_done:   # Spielstand mitten in der Szene o. Ä.
+		Game.director.first_attack_unseen(Game.social.grinch.gustav if Game.social.grinch else null)
 	_release_guests(true)
 	_settle_task()
 	if Game.diary:
 		Game.diary.note("first_attack", CEREMONY_ENTRY if _with_player else CEREMONY_MISSED_ENTRY)
 	if Game.tracing:
-		print("[Wettbewerb] Licht aus – erster Angriff in der Lobby")
-
-
-## Ecke der Lobby, die am weitesten vom Spieler (bzw. von der Puppe) weg ist – auf dem NavMesh.
-func _monster_corner() -> Vector3:
-	var rect := _builder.lobby_rect.grow(-1.0)
-	var from := Game.player.global_position if _with_player else _doll_base
-	var map := Game.doll.get_world_3d().navigation_map
-	var best := Vector3.ZERO
-	var best_d := -1.0
-	for c: Vector2 in [rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)]:
-		var p := NavigationServer3D.map_get_closest_point(map, Vector3(c.x, 0, c.y))
-		var d := Vector2(p.x - from.x, p.z - from.z).length()
-		if d > best_d:
-			best_d = d
-			best = p
-	return best
+		print("[Wettbewerb] Licht aus – der erste Angriff war ungesehen")
 
 
 func _release_guests(scared: bool) -> void:
@@ -600,7 +595,11 @@ func _settle_task() -> void:
 # --- Spielstand -----------------------------------------------------------------------------------
 
 func save_state() -> Dictionary:
-	return {"stage": int(Stage.GATHERING if stage == Stage.SCENE else stage), "letter_read": letter_read,
+	# mitten in der Szene: vor Gustavs Ende (2.6) noch die Versammlung, danach ist der Bruch schon geschehen
+	var saved := stage
+	if stage == Stage.SCENE:
+		saved = Stage.DONE if Game.director.first_attack_done else Stage.GATHERING
+	return {"stage": int(saved), "letter_read": letter_read,
 		"announced": announced, "note_delivered": note_delivered, "attack_day": attack_day, "verdict_room": verdict_room,
 		"verdict_text": verdict_text, "verdict_day": verdict_day}
 

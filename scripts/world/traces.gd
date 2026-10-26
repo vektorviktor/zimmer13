@@ -230,6 +230,32 @@ func add_blood(pos: Vector3, yaw: float) -> TraceMark:
 	return mark
 
 
+## Schleifspur aus Blut (Spielkonzept 2.6) entlang der Punkte `path` (Boden): Stück an Stück (TraceMark „drag“), die
+## letzten `thin` Meter dünner und lückenhaft („drag_end“). Andere Gäste erschrecken davor wie vor Blut.
+func add_drag_trail(path: PackedVector3Array, thin: float = 1.2) -> void:
+	var total := 0.0
+	for i in range(1, path.size()):
+		total += path[i - 1].distance_to(path[i])
+	var walked := 0.0
+	for i in range(1, path.size()):
+		var a := path[i - 1]
+		var b := path[i]
+		var flat := Vector3(b.x - a.x, 0.0, b.z - a.z)
+		var length := flat.length()
+		if length < 0.01:
+			continue
+		var pieces := maxi(1, roundi(length / TraceMark.DRAG_LENGTH))
+		for j in pieces:
+			var t := (j + 0.5) / pieces
+			var at := a.lerp(b, t)
+			var mark := TraceMark.new().setup("drag_end" if total - (walked + length * t) < thin else "drag")
+			add_child(mark)
+			mark.global_position = Vector3(at.x, _floor_y(at), at.z)
+			mark.rotation.y = atan2(flat.x, flat.z)
+			_as_sight(mark)
+		walked += length
+
+
 ## Blut an der nächsten Wand (Spielkonzept 4.13): „wall_splatter“, wo das Monster einen Gast geholt oder der
 ## Kürbismann zugeschlagen hat; „wall_smear“ – eine blutige Hand, die hinuntergerutscht ist – als Spuk
 ## (MonsterDirector._haunt_wall_blood). Sucht ringsum in Spurhöhe die nächste Wand bis WALL_BLOOD_RANGE; null = keine.
@@ -398,7 +424,7 @@ func load_state(list: Array) -> void:
 		elif entry.has("global"):
 			add_child(mark)
 			mark.global_transform = _from_t(entry["global"])
-			if mark.kind in ["blood", "wall_splatter", "wall_smear"]:
+			if mark.kind in ["blood", "wall_splatter", "wall_smear", "drag", "drag_end"]:
 				_as_sight(mark)
 		else:
 			mark.free()   # Tür oder Fenster gibt es nicht mehr – die Spur fällt weg

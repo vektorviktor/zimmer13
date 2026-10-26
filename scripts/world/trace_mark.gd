@@ -75,7 +75,11 @@ const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "E
 	"coffee": "Ein Kaffeefleck", "tea": "Ein Teefleck",
 	"bloody_hand": "Blutige Handabdrücke", "wall_splatter": "Blutspritzer", "wall_smear": "Eine blutige Schmierspur",
 	"splash_mush": "Kürbismatsch an der Wand", "splash_wax": "Wachs an der Wand", "splash_coffee": "Kaffee an der Wand",
-	"splash_tea": "Tee an der Wand"}
+	"splash_tea": "Tee an der Wand", "drag": "Eine Schleifspur aus Blut", "drag_end": "Eine Schleifspur aus Blut"}
+## Schleifspur (Spielkonzept 2.6): ein Stück ist so lang (m, längs der lokalen Z), seine Flecken so groß (quer, längs);
+## am Ende („drag_end“) dünner und lückenhaft
+const DRAG_LENGTH := 0.6
+const DRAG_SPLAT := Vector2(0.34, 0.5)
 
 var kind := "scratch"
 ## Gemeinsam für alle Spuren: Ebene 1 × 1 und die Materialien der Textur-Flecken (lay_decal)
@@ -206,6 +210,10 @@ func _ready() -> void:
 					Vector3(rng.randf_range(-0.06, 0.06), rng.randf_range(-0.06, 0.06), 0.003 + i * 0.0004))
 				patch.rotation.z = rng.randf() * TAU
 			Geo.add_box_shape(self, Vector3(0.45, 0.45, 0.04), Vector3.ZERO)
+		"drag", "drag_end":
+			# Schleifspur (2.6): längliche Flecken in einer Bahn, sobald die Spur steht (_spread_drag)
+			Geo.add_box_shape(self, Vector3(0.4, 0.05, DRAG_LENGTH), Vector3(0, 0.025, 0))
+			_spread_drag.call_deferred()
 		"drops":
 			# Spur eines verletzten Gastes: einzelne Blutstropfen
 			var red := Mat.psx(Color(0.3, 0.02, 0.02))
@@ -259,6 +267,30 @@ func _spread_blood() -> void:
 		grow(self, plan)
 	if wash > 0.0:
 		RainVeil.show_wash(self, wash, "blood")
+
+
+## Schleifspur (Spielkonzept 2.6): Flecken aus der Blutgrafik, in Zugrichtung (lokale Z) gestreckt, Stück an Stück –
+## am Ende kleiner und mit Lücken. Liegt gleich fertig da (man findet sie erst später).
+func _spread_drag() -> void:
+	if not is_inside_tree():
+		return
+	rotation = Vector3(0, rotation.y, 0)
+	var space := get_world_3d().direct_space_state
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(str(global_position.snapped(Vector3.ONE * 0.1)))
+	var red := decal_material(BLOOD_TEXTURE)
+	var end := kind == "drag_end"
+	var count := 3
+	for i in count:
+		if end and rng.randf() < 0.35 * (i + 1):
+			continue   # zum Ende hin reißt sie ab
+		var k := (0.6 - 0.15 * i) if end else 1.0
+		var along := (float(i) + 0.5) / count * DRAG_LENGTH - DRAG_LENGTH / 2.0
+		var off := global_basis.z * along + global_basis.x * rng.randf_range(-0.04, 0.04)
+		var size := Vector2(DRAG_SPLAT.x * k * rng.randf_range(0.85, 1.1), DRAG_SPLAT.y * rng.randf_range(0.9, 1.15))
+		var spot := place_splat(space, global_position, off, size, Vector3.ZERO, rng, rotation.y)
+		if not spot.is_empty():
+			lay_decal(self, spot, red, rng, 0.004 + i * 0.00002)
 
 
 ## Großer Wachsfleck einer geworfenen Kerze (6.13), gebaut wie eine Blutlache: ein Kern (WAX_CORE) und Tropfen ringsum,

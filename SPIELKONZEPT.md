@@ -405,7 +405,7 @@ wirkt wie eine Sandbox.
 - **Die Puppe steht auf**, hebt ab, schwebt einen Moment über dem Sofa und **löst sich in einer Rauchwolke auf** (7.6).
   Das ist das **einzige Mal**, dass sie sich vor den Augen des Spielers bewegt (5.5).
 - **Direkt danach** geht das Licht aus, Stille, Rauschen – das Monster steht in der dunklen Ecke der Lobby. Weiter wie
-  beim ersten Angriff in 2.1. **Neu entschieden 2026-10-25 (2.6), noch nicht gebaut:** Das Monster zeigt sich nicht;
+  beim ersten Angriff in 2.1. **Neu entschieden 2026-10-25 (2.6), gebaut 2026-10-26:** Das Monster zeigt sich nicht;
   während alle zur Puppe schauen, holt es Gustav Peters in Zimmer 020.
 
 **Die Regel danach**
@@ -509,8 +509,11 @@ Zimmernummer eingesetzt; der zweite Satz richtet sich danach, wie viel dort tats
 - ~~**Zeitschleife (2.2):** Rückt die Siegerehrung im nächsten Durchgang vor?~~ (Zeitschleife verworfen, 2.7)
 
 ### 2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)
-> Noch nicht umgesetzt. Ändert die Siegerehrung (2.5): Das Monster zeigt sich dort nicht mehr, sondern holt währenddessen
-> Gustav in seinem Zimmer. Bisher holten die ersten Angriffe keinen Gast (2.1) – Gustav ist die eine Ausnahme.
+> Umgesetzt 2026-10-26 (`Grinch`, `MonsterDirector.first_attack_unseen`). Ändert die Siegerehrung (2.5): Das Monster
+> zeigt sich dort nicht mehr, sondern holt währenddessen Gustav in seinem Zimmer. Bisher holten die ersten Angriffe
+> keinen Gast (2.1) – Gustav ist die eine Ausnahme. Dazu 2026-10-26 entschieden und gebaut: **Der Grinch im Hotel**
+> (unten) – er hasst alle, macht im Partyraum das Licht aus, verdirbt die Stimmung, zerstört Deko, wirft mit Sachen
+> und schlägt zu.
 
 **Warum:** Der erste Tod trifft eine Figur, die man kennt, und erzählt die Regel des Wettbewerbs als Geschichte: Wer vor
 seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür selbst leergeräumt. Sein Tagebuch lehrt
@@ -595,9 +598,43 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
   mehr, und man wird eher selbst der Schwächste (Kernfrage, 1).
 - **Kleidungsstück** (6.7) am Ende der Spur, etwa ein Hausschuh.
 
+**Der Grinch im Hotel (entschieden und gebaut 2026-10-26)**
+> Wunsch des Nutzers: Er macht im Partyraum immer das Licht aus, verdirbt allen die Stimmung, zerstört Deko und wirft
+> sie weg, hasst alle und bewirft oder schlägt die Leute. Nimmt „Ihn vorher erleben“ und „Wohin die Deko ging“ aus den
+> Vorschlägen auf – die Deko landet aber im Flur, nicht im Müllschlucker.
+- **Er hasst alle**, auch den Spieler (Beziehung höchstens „wütend“). Er sucht Streit: Immer wieder geht er zu jemandem
+  hin. Wer ihm über den Weg läuft, bekommt einen Spruch („Halloween. Was für ein Unfug.“).
+- **Er verdirbt die Stimmung:** Kinder hören auf zu toben und laufen weinend zu Mama oder Papa, Feiernde verlassen die
+  Feier, manche Erwachsene sind danach mit ihm verfeindet (6.16).
+- **Partyraum:** Brennt dort Licht, geht er hinüber und schaltet es aus („Strom kostet Geld“); läuft eine Feier, stellt
+  er den Plattenspieler ab und macht das Licht aus.
+- **Seine Tür:** Am Anfang liegt dort ein „Jahrmarkt“ der Kinder (Kürbis, Zierkürbis, Lakengespenst, Laub). Was vor
+  seiner Tür liegt – auch was der Spieler hinlegt –, holt er und wirft es den Flur hinunter; ist dort kein Platz oder
+  liegt es schon zum zweiten Mal da, zerreißt bzw. zertritt er es.
+- **Fremde Türen:** Ab und zu geht er an eine Tür auf seinem Stockwerk (auch Zimmer 13), wirft die Deko um und eins
+  davon weg; Kürbisse und Kerzen zerschmettert er vor seinen Füßen. Der Besitzer weiß, wer es war (kein Verdacht auf den
+  Spieler) und ist mit ihm verfeindet.
+- **Bewerfen und Schlagen:** Bei einer Begegnung (höchstens alle ein bis zwei Minuten) wirft er manchmal, was in
+  Reichweite liegt oder in seinem Koffer ist, oder er schlägt zu. Getroffene taumeln; ein Kind weint, die Eltern sind
+  wütend auf ihn. Kinder schlägt er nicht, den Spieler schon (verletzt, wie bei Erzfeinden, 6.3). Einem Wurf kann der
+  Spieler ausweichen.
+- Er schmückt nicht, feiert nicht, gibt Kindern nichts Süßes und hat keine Bitte (6.14). Um 20 Uhr am 2. Oktober geht
+  er heim und schreibt Tagebuch.
+
+**Gebaut 2026-10-26, wie oben** – dazu:
+- **Sein Tagebuch wächst mit den Tagen:** Wer vorher in Zimmer 020 kommt, liest nur, was schon dasteht. Der zweite
+  Eintrag (1. Oktober, abends) erzählt vom „Jahrmarkt“ und dem Licht im Partyraum, der letzte steht erst nach seinem Tod
+  da (Licht ausgeknipst und Plattenspieler abgestellt, bricht ab, darunter blutige Fingerabdrücke).
+- **Man erfährt es spät:** Kein Schrei, keine Meldung. Bis der Spieler Zimmer 020 betritt oder das Tagebuch liest,
+  reden Gäste in seiner Nähe darüber („Bei Herrn Peters steht die Tür offen.“, Kind: „Der Grinch ist weg.“); dann
+  kommt es ins Tagebuch des Spielers (statt des gewöhnlichen „erster Toter“), sein Tagebuch ins Notizbuch.
+- **Am Ende der Spur** liegt ein Kleidungsstück (6.7) – der Vorschlag mit dem Hausschuh. Danach ist das Monster satt
+  (4.10, Vorschlag „Sättigung“), Gustav zählt als erster Aufbruch der harmlosen Phase.
+- In der Lobby fragen Gäste bei der Versammlung: „Wo ist eigentlich Herr Peters?“
+
 **Zu klären**
-- **Siegerehrung ohne den Spieler** (spätestens 22 Uhr, 2.5): Steht er dann in Zimmer 020, stirbt er mit (wie im
-  Puppenzimmer, 5.5)?
+- ~~**Siegerehrung ohne den Spieler** (spätestens 22 Uhr, 2.5): Steht er dann in Zimmer 020, stirbt er mit (wie im
+  Puppenzimmer, 5.5)?~~ Gebaut 2026-10-26: ja, er stirbt mit (bei Bedarf ändern).
 
 ### 2.7 Das Ende an Halloween: Alle Überlebenden kommen hinaus (entschieden 2026-10-25)
 > Noch nicht umgesetzt. Ersetzt „Der Schlüssel öffnet die Tür für genau einen“ aus 2.3 – dort stand zugleich „Das

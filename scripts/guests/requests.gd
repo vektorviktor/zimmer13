@@ -129,7 +129,7 @@ func _process(_delta: float) -> void:
 ## Bitte, die er zu Beginn des Gesprächs von sich aus stellt ({} = keine). asked: der Spieler hat gefragt
 ## („Kann ich dir irgendwie helfen?“) – dann ohne Zufall.
 func offer_for(g: Guest, asked: bool = false) -> Dictionary:
-	if g.dead or own_request(g) or (not asked and _forced == "" and int(_offered.get(g.id, -1)) == Calendar.today()):
+	if g.dead or Grinch.is_grinch(g) or own_request(g) or (not asked and _forced == "" and int(_offered.get(g.id, -1)) == Calendar.today()):
 		return {}
 	var req := {}
 	if _forced != "":

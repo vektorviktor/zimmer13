@@ -500,6 +500,8 @@ var diary: Diary
 var notice_board: NoticeBoard
 var lobby_rect := Rect2()
 ## Treppenhaus zwischen den Geschossen (Ausbreitung der Flacker-Welle, MonsterDirector.wave_delay)
+## Zimmer → Mitte der Platte seines ersten Tischs (global) – dort liegt etwa Gustavs Tagebuch (Spielkonzept 2.6)
+var room_tables := {}
 var stairwell_point := Vector3.ZERO
 
 ## Plan und Nachschlagetabellen je Stockwerk (_state), nach dem Bau für die Abfragen anderer Systeme
@@ -718,6 +720,7 @@ func _build_plan_floor() -> void:
 
 
 ## Obergeschoss (Spielkonzept 7.7): derselbe Bau wie im Erdgeschoss, nur unter einem um UP_Y angehobenen
+	_note_room_tables(first_furnishing)
 ## Knoten. Dazu Geländer an Lufträumen und Balkonen, gesperrte Treppenhaustüren.
 func _upper_floor(plan: Dictionary, level: int) -> void:
 	var ground := root
@@ -2503,6 +2506,17 @@ func _items() -> void:
 func _drawer_content(first: int) -> void:
 	for id: String in CONTENT:
 		if not (CONTENT[id] as Dictionary).has("drawer"):
+## Den ersten Tisch je Zimmer merken (room_tables). Nur Möbel ab first (dieses Stockwerk).
+func _note_room_tables(first: int) -> void:
+	for f: Dictionary in _furnishings.slice(first):
+		if not f["kind"] in ["table", "room_table"]:
+			continue
+		var c := (f["rect"] as Rect2).get_center()
+		var id := _room_id_at(c)
+		if rooms.has(id) and not room_tables.has(id):
+			room_tables[id] = _global(Vector3(c.x, float(f["top"]), c.y))
+
+
 			continue
 		var kind := Item.Kind.get(String(CONTENT[id]["drawer"])) as Item.Kind
 		var table := {}

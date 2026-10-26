@@ -93,6 +93,8 @@ done <<'LIST'
 2400|wettbewerb,puppe|--siegerehrung=ohne --trace
 2400|schnell,monster,gaeste|--warn --intent=one --day=10 --trace
 3000|puppe,monster|--doll --trace
+2400|grinch,gaeste|--grinch --trace
+1200|grinch,wettbewerb,speichern|--grinch=tot --savetest --trace
 2400|puppe,monster|--doll=10,13 --trace
 1600|puppe,kinder|--doll=kind --trace
 1500|monster,gaeste,tod|--kill=mila --trace

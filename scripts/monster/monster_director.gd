@@ -473,12 +473,25 @@ func other_threat_active(who: Node) -> bool:
 	return who != Game.pumpkin and Game.pumpkin != null and (Game.pumpkin.in_house() or Game.pumpkin.announcing())
 
 
-## Der erste Angriff (Spielkonzept 2.1, 2.5): Bei der Siegerehrung hat sich die Puppe in Rauch aufgelöst, das Licht in der
-## Lobby ist aus – es steht in deren dunkler Ecke und geht dorthin, wo sie saß.
-func first_attack_in_lobby(corner: Vector3, look: Vector3) -> void:
+## Der erste Angriff (Spielkonzept 2.5, 2.6): Während alle zur Puppe schauen, holt es ungesehen Gustav Peters aus
+## Zimmer 020 – es zeigt sich nicht und streift danach nicht herum. Er zählt als erster Aufbruch (die harmlose Phase
+## danach bleibt gleich lang), satt ist es auch (4.10). Steht der Spieler in Zimmer 020, holt es ihn mit (wie im
+## Puppenzimmer, 5.5). victim null: kein Gustav (alte Haushaltsdatei) – dann nur der Bruch.
+func first_attack_unseen(victim: Guest) -> void:
 	first_attack_done = true
-	_start_activity(corner + Vector3(0, 0.05, 0), false)
-	_monster.investigate(look)
+	attacks += 1
+	if victim and not victim.dead:
+		var no := String(victim.home["no"])
+		if Game.tracing:
+			print("[Geholt] %s in Zimmer %s – ungesehen (erster Angriff)" % [victim.display_name, no])
+		if Game.social and Game.social.grinch:
+			Game.social.grinch.taken(victim)
+		grief = GRIEF_TIME
+		on_guest_taken()
+		var p := Game.player
+		if p and not p.dead and _builder.room_at(p.global_position) == no:
+			kill_player(null)
+	on_monster_gone()
 
 
 ## Aufbruch: Absicht wählen, Flackerwelle vom Keller aus (der erste Angriff bei der Siegerehrung hat

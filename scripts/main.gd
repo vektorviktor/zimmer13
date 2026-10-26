@@ -14,7 +14,10 @@ extends Node3D
 ##   --attacks=n                 so viele Angriffe gab es schon (> 9: nicht mehr harmlos, ob es holt, entscheidet die Tageskurve; sicher mit --intent)
 ##   --siegerehrung[=ohne]       Siegerehrung des Türschmuck-Wettbewerbs (2.5) sofort: Uhr auf den 2. Oktober 20 Uhr, die
 ##                               Gäste stehen schon um die Puppe, du vor ihr – gleich steht sie auf, dann der erste
-##                               Angriff (ohne: du bleibst, wo du bist, die Uhr springt auf 22 Uhr, es geschieht ohne dich)
+##                               Angriff: Gustav Peters wird ungesehen geholt (ohne: du bleibst, wo du bist, die Uhr
+##                               springt auf 22 Uhr, es geschieht ohne dich)
+##   --grinch[=tot]              vor Zimmer 020, Gustav Peters (der „Halloween-Grinch“, 2.6) steht daneben – tot: er ist
+##                               schon geholt, die Tür offen, Schleifspur und sein Tagebuch auf dem Tisch
 ##   --brett[=nachher]           vor das Aushangbrett in der Lobby (2.5) – nachher: der erste Angriff gilt als geschehen
 ##   --brief                     an den Schreibtisch in Zimmer 13, Blick auf den Willkommensbrief (2.5)
 ##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
@@ -1320,6 +1323,9 @@ func run_debug(arg: String) -> bool:
 			Game.notebook.note_seen(id)
 	elif arg == "--tot" or arg.begins_with("--tot="):
 		var by: String = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(arg.substr(6), "monster")
+	elif arg == "--grinch" or arg == "--grinch=tot":
+		# nach 1 s, damit NavMesh und Gäste stehen
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.social.grinch.debug(arg.ends_with("tot")))
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
 			if Game.game_over:
 				return
@@ -1785,8 +1791,17 @@ func _save_test() -> void:
 				continue
 			if before[key] is Dictionary and after.get(key) is Dictionary:
 				for sub in before[key]:
-					if not _same(before[key][sub], after[key].get(sub)):
-						print("[savetest]   %s.%s: %s → %s" % [key, sub, JSON.stringify(before[key][sub]).left(600), JSON.stringify(after[key].get(sub)).left(600)])
+					var was = before[key][sub]
+					var now = after[key].get(sub)
+					if _same(was, now):
+						continue
+					if was is Dictionary and now is Dictionary:   # nur die Felder, die abweichen (Gäste sind lang)
+						for field in was:
+							if not _same(was[field], now.get(field)):
+								print("[savetest]   %s.%s.%s: %s → %s" % [key, sub, field, JSON.stringify(was[field]).left(600),
+									JSON.stringify(now.get(field)).left(600)])
+						continue
+					print("[savetest]   %s.%s: %s → %s" % [key, sub, JSON.stringify(was).left(600), JSON.stringify(now).left(600)])
 				continue
 			print("[savetest] Unterschied in „%s“:\n  vorher  %s\n  nachher %s" % [key,
 				JSON.stringify(before[key]).left(400), JSON.stringify(after.get(key)).left(400)])
@@ -1855,6 +1870,18 @@ func _same(a, b) -> bool:
 	if a is Array:
 		if a.size() != b.size():
 			return false
+	# Wer auf dem Weg ins Versteck war (Zustand wird nicht gespeichert), sieht sich nach dem Laden gleich wieder um und
+	# erschrickt vor Blut, an dem er gerade vorbeigerannt ist (Guest._scan_for_shock)
+	var guests_was: Dictionary = before.get("guests", {})
+	var guests_now: Dictionary = after.get("guests", {})
+	for id in guests_was:
+		var a: Dictionary = guests_was[id]
+		var b: Dictionary = guests_now.get(id, {})
+		if b.is_empty() or (b.get("seen", []) as Array).size() != (a.get("seen", []) as Array).size() + 1:
+			continue
+		for key in ["seen", "experiences", "fear"]:
+			b[key] = a.get(key)
+		notes.append("guests.%s: hat nach dem Laden gleich etwas Erschreckendes gesehen" % id)
 		for i in a.size():
 			if not _same(a[i], b[i]):
 				return false

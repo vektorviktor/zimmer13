@@ -219,7 +219,7 @@ func start(who: Guest, lobby: bool = false) -> bool:
 
 func _available(g: Guest) -> bool:
 	return not g.dead and g.hiding == null and g.held == null and g.state in [Guest.State.IDLE, Guest.State.WALK] \
-		and g.fear < 50.0 and g.drunk < BarTap.DRUNK and not g.is_following() and not Game.social.has_fun(g) \
+		and not Grinch.is_grinch(g) and g.fear < 50.0 and g.drunk < BarTap.DRUNK and not g.is_following() and not Game.social.has_fun(g) \
 		and not _member.has(g.id) and not _solo.has(g.id) and not Game.social.search.is_busy(g) and g.wound == ""
 
 

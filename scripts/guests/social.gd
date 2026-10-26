@@ -192,6 +192,7 @@ var tidying: Tidying                    ## Flecken: Beschweren und Putzen (Spiel
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
 var talk: Talk                           ## Erzählen, Lügen, Fragen, Gedächtnis der Gäste (Spielkonzept 6.9)
 var requests: GuestRequests              ## Bitten der Gäste (Spielkonzept 6.14)
+var grinch: Grinch                       ## Gustav Peters, der „Halloween-Grinch“, und sein Ende (Spielkonzept 2.6)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
 
@@ -343,6 +344,10 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	requests = GuestRequests.new()   # Bitten der Gäste (6.14)
 	requests.name = "Requests"
 	add_child(requests)
+	grinch = Grinch.new()   # Gustav Peters (2.6)
+	grinch.name = "Grinch"
+	add_child(grinch)
+	grinch.setup(builder)
 
 
 ## Gast ins Hotel setzen (Profil muss schon bekannt sein); mit Start-Deko vor der Tür. slot: Platz im Zimmer, wenn
@@ -440,6 +445,8 @@ func _household_deco(no: String) -> void:
 	var lead := household_lead(no)
 	if lead == null:
 		return
+	if Grinch.is_grinch(lead):
+		return   # Gustav schmückt nicht (2.6)
 	var kinds: Array = []
 	for g in guests:
 		if g.home["no"] == no and not g.is_child():
@@ -869,8 +876,8 @@ func on_monster_talk(guest: Guest) -> void:
 func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	for other in living_guests():
 		other.fear = minf(100.0, other.fear + 50.0)
-	if Game.player and Game.player.sleeping:
-		pass
+	if (Game.player and Game.player.sleeping) or cause == "unseen":
+		pass   # unseen: Gustav bei der Siegerehrung (2.6) – keiner hat es gehört, man erfährt es später (Grinch)
 	elif cause == "ghost":   # mit Totenkopf (IconArt „dead“)
 		Game.say("Irgendwo im Hotel bricht ein Röcheln ab …", 4.0, "dead")
 	elif cause == "pumpkin":
@@ -894,7 +901,7 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 		Game.notebook.on_guest_died(guest)
 	if requests:   # seine Bitte fällt weg, im Notizbuch bleibt sie offen (6.14)
 		requests.on_guest_died(guest)
-	if Game.diary:
+	if Game.diary and cause != "unseen":   # Gustav: erst, wenn man Zimmer 020 findet (Grinch)
 		Game.diary.note("first_death", "%s aus Zimmer %s ist tot. Bis heute dachte ich, es tut niemandem etwas." % [
 			guest.display_name, String(guest.home["sign"])])
 	# Ein Kind verliert Mama oder Papa (6.13): große Angst – es sucht sich jemanden, bei dem es bleiben kann
@@ -1079,7 +1086,9 @@ func start_party(host: String) -> bool:
 	var coming: Array[String] = []
 	for guest in living_guests():
 		var comes := false
-		if guest.is_child():
+		if Grinch.is_grinch(guest):
+			comes = false   # Gustav hasst Feiern (2.6)
+		elif guest.is_child():
 			comes = true   # Kinder kommen immer (6.13)
 		elif host == "player":
 			comes = guest.invited or tier(guest) >= Tier.FRIENDLY
@@ -1883,6 +1892,8 @@ func start_visit(guest: Guest) -> void:
 ## Der Gast steht vor Zimmer 13: Bei offener Tür kommt er gleich herein, sonst klopft er.
 ## why (Meta „visit“ am Gast): "" Besuch eines Freundes, "trick" Süßes oder Saures, "sleepless" Kind kann nicht schlafen.
 func on_visit_arrived(guest: Guest) -> void:
+	if grinch.on_arrived(guest):   # Gustav räumt Deko weg, stellt die Musik ab, geht auf jemanden los (2.6)
+		return
 	if pranks.on_arrived(guest):   # holt etwas für einen Streich bzw. wirft es (6.13)
 		return
 	if tidying.on_arrived(guest):   # putzt einen Fleck weg bzw. bringt Kürbismatsch in die Küche
@@ -2184,9 +2195,10 @@ func _round_host(no: String) -> Guest:
 func _round_answer(entry: Dictionary, host: Guest) -> void:
 	var kid: Guest = entry["kid"]
 	var grumpy := String(host.profile.get("archetype", "")) == "Griesgram"
-	var sweets := int(host.stock.get(Item.Kind.SWEETS, 0))
+	var grinch := Grinch.is_grinch(host)   # Gustav gibt nie etwas (2.6)
+	var sweets := 0 if grinch else int(host.stock.get(Item.Kind.SWEETS, 0))
 	# Mit Süßem im Koffer gibt er immer, sonst nach Laune – aus der Süßigkeiten-Truhe seines Zimmers, solange sie nicht leer ist
-	if sweets > 0 or (randf() < (TRICK_GIVE_GRUMPY if grumpy else TRICK_GIVE) and take_room_sweet(String(host.home["no"]))):
+	if sweets > 0 or (not grinch and randf() < (TRICK_GIVE_GRUMPY if grumpy else TRICK_GIVE) and take_room_sweet(String(host.home["no"]))):
 		if sweets > 0:
 			host.stock[Item.Kind.SWEETS] = sweets - 1
 		kid.stock[Item.Kind.SWEETS] = int(kid.stock.get(Item.Kind.SWEETS, 0)) + 1

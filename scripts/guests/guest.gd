@@ -1491,7 +1491,7 @@ func _at_home() -> void:
 	if profile["carver"] and int(stock.get(Item.Kind.PUMPKIN, 0)) > 0:
 		stock[Item.Kind.PUMPKIN] = int(stock[Item.Kind.PUMPKIN]) - 1
 		stock[Item.Kind.CARVED_PUMPKIN] = int(stock.get(Item.Kind.CARVED_PUMPKIN, 0)) + 1
-	if placed.size() < 2 and held == null and is_household_lead():   # eine Tür je Haushalt (6.20)
+	if placed.size() < 2 and held == null and is_household_lead() and not Grinch.is_grinch(self):   # eine Tür je Haushalt (6.20); Gustav schmückt nicht (2.6)
 		for kind in DECO_KINDS:
 			if int(stock.get(kind, 0)) > 0:
 				stock[kind] = int(stock[kind]) - 1

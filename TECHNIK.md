@@ -737,7 +737,9 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
 
 ### Dramaturgie
 - Vor dem ersten Angriff: kein Monster. Den ersten Angriff löst die Siegerehrung aus (`DoorContest`, 8 „Der
-  Anfang“): `first_attack_in_lobby(ecke, puppe)` – ohne Flackerwelle, in der dunklen Ecke der Lobby.
+  Anfang“): `first_attack_unseen(gustav)` – es zeigt sich nicht und streift nicht, holt Gustav Peters
+  (`Grinch.taken`), zählt als Aufbruch (`attacks += 1`), ist satt (`on_guest_taken`) und geht gleich in die Ruhephase
+  (`on_monster_gone`). Steht der Spieler in Zimmer 020, stirbt er mit (`kill_player`).
 - Danach Wechsel `Phase.CALM` (Keller) ↔ `Phase.ACTIVE` (streift umher); Dauern über `_day_lerp`, in Echtzeit.
 - `attacks <= HARMLESS_ATTACKS` → `is_harmless()`: es holt keinen Gast, `kill_guest` wird zu Erschrecken
   (`_scare_guest`). **Den Spieler tötet es immer, wenn es ihn erwischt.**
@@ -1033,6 +1035,22 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   in die Küche bzw. kocht ihn (`Stove.claim_cook`). Nicht gespeichert. Debug `--mess[=wachs]`.
 - **Streiche** (`guests/pranks.gd`): `play(kind, zimmer)` wählt nach `WEIGHTS`: `leaves`, `topple`
   (`Item.knock_over`), `pumpkin`/`candle` werfen (aus dem Koffer der Familie holen, `_go_throw`, `_throw` →
+- **Der Grinch** (`guests/grinch.gd`, Spielkonzept 2.6; `Social.grinch`): Gustav Peters = Gast mit Haushalt `H25`
+  (`Grinch.is_grinch`, static – Hooks in `start_party`, `_household_deco`, `Guest._at_home`, `Decorating._available`,
+  `GuestRequests.offer_for`, `_round_answer`, `DoorContest._can_gather`). `relation` beim Start höchstens −35.
+  `_process` alle `SCAN` s: Gänge (`_job`: `door`, `wreck`, `party`, `punch`) laufen über `start_visit` →
+  `Social.on_visit_arrived` → `on_arrived`; ohne Gang der Reihe nach Partyraum (`_party_due`: Feier oder Licht an),
+  eigene Tür (`_go_door`), Begegnung (`_meet`: Spruch, `_spoil`, oder mit `ATTACK_CHANCE` `_attack`), fremde Tür
+  (`_go_wreck`), Streit suchen (`_seek`). Wegwerfen (`_dispose`): Zerbrechliches an fremden Türen vor die Füße,
+  sonst den Flur hinunter in die freiere Richtung (Strahl), zu kurz oder zum zweiten Mal (`grinch_tossed`) →
+  `_tear`. Würfe über `Item.throw_from` mit Gustav als Werfer – Treffer an Gästen meldet `Item._throw_hit` an
+  `on_thrown_hit`; den Spieler trifft Geworfenes physikalisch nicht (`THROW_MASK`), daher `_check_player_hit` nach
+  der Flugzeit. Schlag gegen Gäste: `stagger` und `_hit_back = false`; gegen den Spieler `Guest.start_attack`.
+  Während der Versammlung (`is_gathering`) geht er heim. `taken`: Tür auf und entriegelt, `Traces.add_drag_trail`,
+  `die`, Kleidungsstück, `Social.on_guest_died(g, "unseen")` (keine Meldung, kein „first_death“). Danach Gerede bis
+  `found()` (Zimmer 020 betreten oder Tagebuch gelesen → Tagebuch „first_death“). `GustavDiary` (innere Klasse) auf
+  `LevelBuilder.room_tables[020]`, Text nach Uhrzeit (`DIARY`, letzter Eintrag erst nach seinem Tod). Nicht
+  gespeichert – alles ergibt sich aus Gustav tot, Tür, Spuren und dem Tagebuch des Spielers. Debug `--grinch[=tot]`.
   `Item.throw_from`). **Zeugen** (`_witnesses`) erzählen es dem Bewohner → `pals.add_feud`. Debug
   `--prank=art[,zimmer]`.
 - **Schmück-Aktionen** (`guests/decorating.gd`, Spielkonzept 5.9; zählen als Spaß für den Kürbismann – `is_crew`,
@@ -1386,7 +1404,8 @@ Spielkonzept 2.5)
   `Social` feiert an dem Abend nicht (`holds_parties`), keine Besuche (`is_gathering`). Beginn, sobald der Spieler in
   der Lobby steht und genug Gäste da sind, nie neben einer anderen Bedrohung, spätestens `CEREMONY_LATEST` ohne ihn.
 - **Szene** (`T_*`): `Player.spellbound` (keine Eingabe), `_pull_gaze` zur Puppe, Puppe steigt und verpufft
-  (`_puff`, `vanish`), `_end_scene` → `first_attack_in_lobby`. Autosave nicht während der Szene. Laden mitten in der
+  (`_puff`, `vanish`) – beim Verschwinden `MonsterDirector.first_attack_unseen` (Gustav, 2.6), im Partyraum läuft dabei
+  Musik (`RecordPlayer.set_playing` ohne Feier); `_end_scene`: Licht aus, Musik aus, Gäste fliehen. Autosave nicht während der Szene. Laden mitten in der
   Versammlung: die Gäste kommen erst beim nächsten Rundgang (sonst ließen sie fallen, was sie in der Hand hielten).
 - **Danach:** `_deliver_note` (Zettel „1999“ hinter der Tür von Zimmer 13, sobald der Spieler die Stelle nicht sieht),
   Gäste lesen am Brett, erstes Urteil der Puppe ins Tagebuch.
@@ -1582,7 +1601,9 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
 ### Spuren, Zettel
 - **Spuren** (`traces.gd`, `trace_mark.gd`): zentrale Stelle für alle Spuren; jede neue Spur → `Social.note_trace`.
   Fußabdrücke verblassen, Marken bleiben. **Blut an Wänden** (`add_wall_blood(pos, kind)`: `wall_splatter`,
-  `wall_smear`) sucht die nächste Wand in Spurhöhe; Schreck-Anblick wie Blutlachen. Die Aschespur des Monsters ist nur
+  `wall_smear`) sucht die nächste Wand in Spurhöhe; Schreck-Anblick wie Blutlachen. **Schleifspur**
+  (`add_drag_trail(punkte)`, Spielkonzept 2.6): Stücke `drag` bzw. am Ende `drag_end` (je `DRAG_LENGTH`, lokale Z in
+  Zugrichtung, `_spread_drag` legt gestreckte Blutflecken), ebenfalls Schreck-Anblick. Die Aschespur des Monsters ist nur
   Optik, keine Spur – Gäste erzählen nicht davon. Flecken am Boden siehe 3 „Spuren auf dem Boden“. Debug
   `--wallblood[=smear]`.
 - **Zettel** (`warning_note.gd`): feste Warnungszettel (`warning_notes`, erst nach dem ersten Angriff sichtbar) und
