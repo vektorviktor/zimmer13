@@ -1023,9 +1023,20 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - **Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
   Nachschub (z. B. der Hausmeister füllt nach)?
 
-### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24, Wachzeit, fremde Betten und Sprung am Tag umgesetzt 2026-10-27)
+### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24, Wachzeit, fremde Betten, Sprung am Tag und Gäste wecken umgesetzt 2026-10-27)
 Müdigkeit fließt in die **Schwäche** ein, nach der sich der Lakengeist seine Opfer sucht (4.18). Die feste Nachtruhe
 gilt nur für die Gäste (2.4) – der Spieler bleibt wach, so lange er will, und schläft, wann er will.
+
+> **Umgesetzt (2026-10-27): Gäste wecken.** Am Bett eines schlafenden Gastes („… wecken [E]“, rütteln) oder durch
+> Klopfen an seiner Tür (schlafen alle, wacht einer auf). Was er davon hält, hängt am **Grund**: **Gefahr** – das
+> Monster unterwegs im selben Geschoss oder näher als 25 m, eine echte Flackerwelle, der Lakengeist geht um, der
+> Kürbismann ist im Haus oder angekündigt – macht ihn **dankbar** (Beziehung +6); er steht auf, macht Licht und
+> bleibt **1–2 Spielstunden wach** im Zimmer – so lange ist er ein Zeuge gegen den Geist. **Ohne Grund** sinkt die
+> Beziehung um 5 (bei Freunden um 2), er ist **2 Spielstunden gereizt** (spricht nicht, nimmt nichts an, „gereizt“ im
+> Hinweis) und legt sich nach 20–40 s wieder hin. **Falscher Alarm** – es läuft nur eine Halluzination (Rauschen,
+> falsche Flackerwelle) – kostet 8 und **Vertrauen**: 6 Spielstunden lang glaubt er einem Wecken nicht, auch wenn es
+> dann echt ist (kein Dank). Feuer zählt noch nicht als Grund (es gibt kein Feuer im Haus). Debug:
+> `--wecken=id[,gefahr|halluzination|klopfen]`.
 
 > **Umgesetzt (2026-10-27): Wachzeit, Stufen, fremde Betten, Sprung am Tag.** Die Nächte ohne Schlaf sind ersetzt: Es
 > zählt die **Wachzeit in Spielstunden, von Anfang an** (Ankunft ausgeschlafen). Schlaf senkt sie anteilig – sechs
@@ -1057,7 +1068,7 @@ gilt nur für die Gäste (2.4) – der Spieler bleibt wach, so lange er will, un
 > Nacht ein Hauch, nach drei deutlich. Sie wird in langsamen Schüben schlimmer und wieder etwas klarer, als fielen
 > einem die Augen zu. Mit Kater ist die Sicht noch leicht getrübt (3.7). Debug: `--awake=n`.
 
-**Ziel (gebaut 2026-10-27 bis auf „Gäste wecken“ – siehe oben)**
+**Ziel (gebaut 2026-10-27 – siehe oben)**
 - **Wachzeit statt Nächte zählen:** Statt „Nächte ohne Schlaf“ zählt die **Zeit seit dem letzten Schlaf** in
   **Spielstunden** (2.4). Schlaf senkt sie je nach Dauer – eine ganze Nachtruhe auf null, wer früh geweckt wird, ist
   nur halb erholt. Die verschwommene Sicht hängt dann auch daran.
@@ -4410,10 +4421,20 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 > Umgesetzt: Gäste gehen zum Schalter (Weg, kurze Pause, Klick) – an beim Betreten dunkler Räume (Chance nach Mut
 > und Angst), aus, wenn sie als Letzte ein Hotelzimmer verlassen (je Gast 10–30 % vergessen, betrunken öfter, in
 > Panik immer). Zimmer 13 schalten sie nie aus. Sitzt im Hotelzimmer schon jemand im Dunkeln oder schläft/ruht dort
-> jemand, bleibt es dunkel. Fehlt die Birne oder ist sie kaputt, beschweren sie sich (Ersatz holen oder den Raum
-> meiden: noch nicht). Schlafen, Ausruhen und Aufwachen im eigenen Zimmer schalten weiter ohne Gang. Der
-> Schreckmoment „Gast macht aus, während der Spieler sich drin versteckt“ ist bewusst nicht gebaut (Spieler im Raum
-> → Licht bleibt an).
+> jemand, bleibt es dunkel. Fehlt die Birne oder ist sie kaputt, beschweren sie sich. Schlafen, Ausruhen und
+> Aufwachen im eigenen Zimmer schalten weiter ohne Gang.
+>
+> **Umgesetzt (2026-10-27): Ersatz holen oder meiden, Schreckmoment.** Brennt daheim keine Lampe und hat der Haushalt
+> keine Birne im Vorrat, holt der Vorstand tagsüber Ersatz (höchstens einmal je Spielstunde): aus dem
+> **Ersatzbirnen-Lager** („Ausstattung: Ersatzbirnen“ im Plan, z. B. im Lager im EG – noch nicht gemalt), ist keins
+> da oder leer, dreht er – **mutig oder dem Spieler feind** – eine aus einem **leeren Raum oder Flur** heraus (keine
+> Bewohner, niemand drin, nicht Lobby oder Aufzug, nie, wenn der Spieler nah ist; feindselig auch aus Zimmer 13) und
+> schraubt sie daheim ein. **Ängstliche meiden das dunkle Zimmer:** Tagsüber bleibt der ganze Haushalt weg, nachts
+> schläft er bei einem Freund (lieber mit freiem Bett, sonst im Sitzen; der Freund lässt ihn herein) oder bleibt in
+> der Lobby – bis wieder Licht ist, etwa weil der Spieler eine Birne einsetzt. **Schreckmoment:** Wer sich im
+> Schrank oder unterm Bett versteckt, zählt beim Hinausgehen nicht – der Gast macht das Licht aus (Klick, das Zimmer
+> wird dunkel und lockt das Monster). Sichtbar im Raum bleibt das Licht an. Debug: `--birnenersatz=id[,lager|klauen|
+> meiden]`, `--lichtgang=id,versteckt`.
 - **Dunkelheit ist unangenehm:** Betritt ein Gast einen dunklen Raum oder Flurabschnitt, geht er zum
   Schalter und macht das Licht an – in jedem Raum, nicht nur bei sich. Ängstliche Gäste schneller und
   zuverlässiger, mutige lassen es auch mal dunkel.
@@ -4426,10 +4447,10 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
   - **Licht aus = das Monster kommt** (4.4): Leere Zimmer werden dunkel und damit für das Monster
     interessanter – ein vergessenes Licht schützt ein Zimmer, das niemand braucht.
   - **Ausruhen** bleibt (bewusst Licht aus im eigenen Zimmer, solange er drin ist).
-  - **Fehlende oder kaputte Birne:** Der Schalter hilft nicht → Gast beschwert sich, holt evtl. Ersatz
-    oder meidet den Raum (Anknüpfung an Birnen-Klau, 4.11).
-  - **Spieler im Zimmer:** Ist der Spieler noch drin, bleibt das Licht an. Ein Gast, der das Licht
-    ausmacht, während der Spieler sich darin versteckt, wäre ein eigener Schreckmoment (später).
+  - **Fehlende oder kaputte Birne:** Der Schalter hilft nicht → Gast beschwert sich, holt Ersatz
+    oder meidet den Raum (Anknüpfung an Birnen-Klau, 4.11; gebaut 2026-10-27).
+  - **Spieler im Zimmer:** Ist der Spieler sichtbar drin, bleibt das Licht an. Versteckt er sich, macht der
+    Gast aus – ein eigener Schreckmoment (gebaut 2026-10-27).
 - **Technik-Ideen:** Wer ist im Raum? (Raum-Zuordnung über Position, wie bei `LightSwitch.find()`);
   Schalter als Wegziel; neuer Gast-Zustand fürs Schalten; Spielstand ändert sich nicht (Schalter werden
   schon gespeichert).
@@ -5095,7 +5116,7 @@ Müdigkeit bis auf das Wecken, Lichtschalter, Aufträge der Gäste, Erfolge, Mas
 5. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter der
    Leviathanmauer (ab etwa Tag 15), Ritual, Schädel/Axt/Jeansjacke als Deko (4.21)
 6. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
-   Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18) · Gäste wecken (3.6)
+   Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18)
 7. Deko knapp machen, Stufen 2 und 3: Schutzkreis = Lichtschein, sichtbare Abweisung, Gäste schmücken nach Angst und
    Freundschaft und klauen bei Knappheit (5.10)
 8. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·

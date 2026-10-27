@@ -271,6 +271,7 @@ var _wave_time := 0.0
 var _wave_strength := 0.0
 var _wave_level := 0        ## 0 = Zucken, 1 = Flackern, 2 = langes Flackern
 var _wave_told := true      ## Untertitel beim Spieler schon gezeigt
+var wave_fake := false      ## die letzte Welle war eine Halluzination (Gäste wecken, Spielkonzept 3.6)
 var _stairwell := Vector3.ZERO
 var _builder: LevelBuilder
 
@@ -1246,6 +1247,7 @@ func _start_wave(origin: Vector3, level: int, fake: bool = false) -> void:
 	_wave_level = level
 	_wave_strength = SIGNAL_STRENGTH[level]
 	_wave_told = false
+	wave_fake = fake
 	if fake or Game.social == null:
 		return
 	for guest in Game.social.guests:

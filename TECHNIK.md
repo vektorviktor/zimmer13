@@ -975,14 +975,27 @@ den Skripten. Hier der Aufbau.
 - Gäste melden sich mit `Game.social.on_*` (Diebstahl, fehlende Deko/Birne, Monster gesehen …).
 - **Lichtschalter** (Spielkonzept 7.3): `_track_light_room` schaut alle `LIGHT_CHECK` s nach dem Raum unter ihm
   (`LevelBuilder.light_room_at` – Schalter-ID, Bad gehört zum Zimmer). Beim Wechsel: verlässt er als Letzter ein
-  Hotelzimmer (nicht 13; auch der Spieler zählt, im Versteck ebenso), geht er zurück und macht aus – außer er vergisst es
+  Hotelzimmer (nicht 13; auch der Spieler zählt, nur nicht im Versteck – Schreckmoment: Licht aus, während man im
+  Schrank oder unterm Bett sitzt), geht er zurück und macht aus – außer er vergisst es
   (`_forget_light`, fest je Gast aus der ID, betrunken öfter, ab Angst 60 immer); betritt er einen dunklen Raum, macht er
   an (Chance nach `brave` und Angst), nicht wenn dort jemand schläft oder ruht bzw. im Hotelzimmer schon jemand im
   Dunkeln sitzt. Brennt keine Lampe des Raums (Birne fehlt/kaputt), beschwert er sich (`_complain_dark`). Der Gang
   (`_switch`, `_switch_step`) ist kein eigener Zustand: Er läuft nur in `SWITCH_STATES` und ohne Rennen, danach geht der
   alte Zustand mit seinem Ziel weiter; was dazwischenkommt, bricht ihn ab. Höchstens `SWITCH_REACH` m weit, aufgeben
   nach `SWITCH_GIVE_UP` s. Schlafen, Ausruhen, Aufwachen im eigenen Zimmer schalten weiter direkt (`_set_room_light`).
-  Nichts davon wird gespeichert (`"?"` = nach Laden/Erscheinen erst merken, nicht schalten). Debug `--lichtgang=id`.
+  Nichts davon wird gespeichert (`"?"` = nach Laden/Erscheinen erst merken, nicht schalten). Debug `--lichtgang=id`
+  (`,versteckt`: du sitzt in seinem Schrank).
+- **Ersatzbirne** (Spielkonzept 7.3): Brennt daheim keine Lampe (`home_dark`, Wackelkontakt zählt als Licht) und hat der
+  Haushaltsvorstand keine Birne im Vorrat, geht er tagsüber in `_next_activity` los (`_seek_bulb`, höchstens alle
+  `BULB_RETRY` s, Haltung `bulb_tried`): zum nächsten erreichbaren `ResourceSpot` mit `Item.Kind.BULB`
+  (`_bulb_supply`, Gang als `State.STEAL` mit `_bulb_spot` → `_take_supply_bulb`, `guest_consume`) – im Plan
+  „Ausstattung: Ersatzbirnen“ –, sonst ab `BULB_BRAVE` Mut oder feindselig zu einer Lampe in einem leeren Raum oder
+  Flur (`_bulb_for_home`: keine Bewohner, niemand drin, nicht Lobby/Aufzug, 13 nur feindselig, nicht unter den Augen des
+  Spielers, `_finish_steal`). Die Birne geht in `stock`, `_check_lights` schraubt sie daheim ein. Wer sich nicht traut,
+  meidet das Zimmer (`avoids_home`, gilt für den ganzen Haushalt): `activity_weights` setzt „room“ auf 0, in der
+  Nachtruhe schläft er bei einem Freund (`pals_of`) mit freiem Bett in einem hellen, offenen Zimmer (`_dark_refuge`,
+  `_bed_host`, `_bed_home` für Weg und Bett, dort nur Einzelplätze, Licht des Gastgebers bleibt) oder sitzt in der Lobby.
+  Nicht gespeichert (nach dem Laden entscheidet `_go_to_bed` neu). Debug `--birnenersatz=id[,lager|klauen|meiden]`.
 - **Detailstufe** (Leistung bei vielen Gästen): außerhalb des Blickfelds und weiter als `Guest.LOD_RANGE` bzw.
   weiter als `LOD_FAR` rechnen Gäste nur jedes `LOD_STEP`-te Physikbild – mit der aufgesammelten Zeit, `_move_to` macht
   entsprechend längere Schritte (`_lod_scale`). Im Gespräch, Spiel, gewürgt, taumelnd oder angreifend immer voll.
@@ -1033,6 +1046,16 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   gute Freunde halten mit `BED_GUARD_CHANCE` Wache (`wait_awake`, Meta `guards_player` – zählt für `guarded()`),
   neutrale bis genervte und Kinder wecken (`BED_ANNOY`, Gerede, Meta `woke_player` → beim nächsten Mal hinauswerfen,
   `BED_EVICT`), Verfeindete klauen `BED_ROB` Münzen (`Player.robbed`, gemeldet beim Aufwachen) oder schlagen wach.
+  **Gäste wecken:** Am Bett (`HideSpot._sleeper` → „… wecken [E]“, auch am im Stehen Schlafenden, `Guest.get_prompt`)
+  oder durch Klopfen (`RoomAccess.knock`, `residents_home(no, true)` zählt Schlafende im Bett mit) ruft
+  `Social.wake_guest`. Grund aus `wake_reason`: „danger“ (Monster aktiv im selben Geschoss oder näher als
+  `WAKE_DANGER_RANGE`, echte Flackerwelle – `MonsterDirector.wave_fake` –, Lakengeist aktiv, Kürbismann im Haus oder
+  angekündigt) → `WAKE_THANKS`, Haltung `woken_alert` (`WAKE_ALERT` s wach im Zimmer bei Licht, `_next_activity`;
+  aus dem Bett heraus ist er Zeuge gegen den Geist); „false“ (Halluzination läuft) → `WAKE_FALSE` und `doubts_waking`
+  (`WAKE_DOUBT` s: auch echte Gefahr bringt keinen Dank); sonst `WAKE_ANNOY` (Freunde `WAKE_ANNOY_FRIEND`). Ohne Dank
+  Haltung `grumpy` (`WAKE_GRUMPY` s: kein Gespräch, keine Geschenke, „gereizt“ im Hinweis) und nach `WAKE_BACK` s
+  wieder ins Bett (`Guest.after_woken`). Haltungen werden mit dem Gast gespeichert. Debug
+  `--wecken=id[,gefahr|halluzination|klopfen]`.
 - **Feiern:** Tanzplätze `LevelBuilder.party_spots` (Sechseckraster `DANCE_SPACING`, von der Mitte nach außen);
   `Social.free_party_spot(guest)` vergibt den innersten freien. Gäste kollidieren nicht miteinander, darum gehen sie
   in `PARTY` die letzten Zentimeter, an denen `_move_to` aufhört, genau auf den Platz. Spontane Feiern
@@ -1089,7 +1112,9 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   schließt er dazu auf. Zimmertüren (außer 013) schließt er hinter sich (`_door_behind`), sobald niemand im
   Schwenkbereich steht (`_someone_in_swing`), die eigene schließt er ab. `Social.behind_lock`/`spot_room`: keine
   Verstecke und keine Birnen hinter fremden Schlössern.
-- **Klopfen** (`Door._knockable` → `knock`): niemand da (`residents_home`) → „Niemand macht auf“; sonst öffnet einer
+- **Klopfen** (`Door._knockable` → `knock`): niemand da (`residents_home`, mit Schlafenden im Bett) → „Niemand macht
+  auf“; schlafen alle, weckt es einen (`Social.wake_guest`, Grund wie am Bett – mit gutem Grund ohne `WOKEN_MALUS`);
+  sonst öffnet einer
   einen Spalt (`Door.set_ajar`, zählt nicht als offen) und `DialogUI.open_door` zeigt das Gespräch (fragen, lügen,
   Panik, bestechen). `chance()` aus Stufe und Zuschlägen; je Gast ein Versuch pro Spielstunde (`RETRY`).
 - **Besuch** (`visit`), **von innen** geht jede abgeschlossene Zimmertür auf (`Door._inside`, niemand wird

@@ -26,7 +26,6 @@ const NIGHT_MALUS := -20.0
 const DANGER_FRIEND := 20.0
 const DANGER_STRANGER := -20.0
 const WOKEN_MALUS := -15.0
-const WOKEN_RELATION := -3.0
 ## Je Gast ein Versuch pro Spielstunde; so lange dauert ein Besuch, so lange hat man danach zum Gehen
 const RETRY := Calendar.HOUR
 const VISIT_TIME := 2.0 * Calendar.HOUR
@@ -81,7 +80,7 @@ func knock(door: Door) -> void:
 	Game.noise("knock", door.center(), Game.player)
 	if not _pending.is_empty() or (Game.dialog and Game.dialog.visible):
 		return
-	var residents := residents_home(door.room_no)
+	var residents := residents_home(door.room_no, true)
 	if residents.is_empty():
 		_later(func() -> void: Game.say("Niemand macht auf."))
 		return
@@ -91,13 +90,11 @@ func knock(door: Door) -> void:
 		if responder == null or (responder.is_child() and not g.is_child()):
 			responder = g
 	var woken := false
-	if responder == null:   # alle schlafen: einer wacht auf, genervt
+	if responder == null:   # alle schlafen: einer wacht auf – genervt, außer es gibt einen guten Grund (3.6)
 		for g: Guest in residents:
 			if responder == null or (responder.is_child() and not g.is_child()):
 				responder = g
-		woken = true
-		responder.wake_up()
-		_social().change_relation(responder, WOKEN_RELATION)
+		woken = _social().wake_guest(responder, true) != "danger"
 	if _now() - float(_tries.get(responder.id, -INF)) < RETRY:
 		_later(func() -> void: responder.say("Ich hab doch schon nein gesagt."))
 		return
@@ -105,15 +102,15 @@ func knock(door: Door) -> void:
 	responder._walk_to(responder.home["door_inside"], Guest.State.WALK)
 
 
-## Wer aus diesem Zimmer gerade drinnen ist (lebend, nicht im Versteck).
-func residents_home(no: String) -> Array[Guest]:
+## Wer aus diesem Zimmer gerade drinnen ist (lebend, nicht im Versteck – sleepers: auch, wer im Bett schläft).
+func residents_home(no: String, sleepers: bool = false) -> Array[Guest]:
 	var result: Array[Guest] = []
 	var social := _social()
 	if not social.builder.rooms.has(no):
 		return result
 	for g in social.living_guests():
 		var guest: Guest = g
-		if guest.home["no"] == no and guest.hiding == null and social.builder.room_at(guest.global_position) == no:
+		if guest.home["no"] == no and (guest.hiding == null or (sleepers and guest.is_asleep() and not guest.in_sickbed())) 				and social.builder.room_at(guest.global_position) == no:
 			result.append(guest)
 	return result
 

@@ -55,6 +55,10 @@ const LIGHT_CHECK := 0.4
 const SWITCH_REACH := 10.0
 const SWITCH_GIVE_UP := 10.0
 const FORGET_LIGHT := Vector2(0.1, 0.3)
+## Keine heile Birne daheim (Spielkonzept 7.3): höchstens so oft (s) losgehen, um Ersatz zu holen; ab BULB_BRAVE Mut
+## (oder feindselig) wird notfalls geklaut, Ängstlichere meiden das dunkle Zimmer.
+const BULB_RETRY := Calendar.HOUR
+const BULB_BRAVE := 0.5
 ## Bei diesen Tätigkeiten macht er den Umweg zum Schalter (nicht beim Klauen, Verstecken, Rennen …)
 const SWITCH_STATES := [State.IDLE, State.WALK, State.CARRY_HOME, State.PLACE_DECO, State.HARVEST, State.VISIT,
 	State.DECORATE, State.SEARCH, State.EAT]
@@ -238,6 +242,8 @@ var _switch_to := false      ## … und schaltet das Licht dann ein (true) oder 
 var _switch_time := 0.0      ## so lange schon unterwegs
 var _switch_pause := -1.0    ## am Schalter: so lange noch, bis es klickt (−1 = noch auf dem Weg)
 var _dark_said := -1000.0    ## zuletzt über eine dunkle Lampe beschwert (Director.elapsed)
+var _bulb_spot: ResourceSpot = null   ## auf dem Weg zum Ersatzbirnen-Lager (7.3)
+var _bed_host: Guest = null  ## schläft diese Nacht bei diesem Freund – das eigene Zimmer ist dunkel (7.3)
 var _plant: PumpkinPlant
 var _hide_spot: HideSpot
 var _steal_timer := 0.0
@@ -584,6 +590,8 @@ func get_prompt(_player: Player) -> String:
 		if Game.cemetery and Game.cemetery.can_bury(self):   # selbst beerdigen (5.15)
 			return "%s – tot · beerdigen [E]" % display_name
 		return "%s – tot" % display_name   # Leiche (Ghost, Kürbismann): mit Totenkopf, get_icon
+	if is_asleep() and not in_sickbed():   # schläft im Stehen (Bett belegt) – im Bett weckt man ihn dort (HideSpot)
+		return "%s wecken [E]" % display_name
 	if (hiding and not in_sickbed()) or state == State.GHOSTED:
 		return ""
 	if singing:
@@ -591,7 +599,7 @@ func get_prompt(_player: Player) -> String:
 	var sweets := Game.social.trick_sweets_given(self) if Game.social else -1
 	if sweets >= 0 and _player.has_kind(Item.Kind.SWEETS):   # Süßes oder Saures an Zimmer 13 (6.13)
 		return "%s eine Süßigkeit geben (%d/%d) [E]" % [display_name, sweets + 1, Social.TRICK_SWEETS_MAX]
-	return "Mit %s sprechen [E]  (%s)" % [display_name, Social.relation_word(relation)]
+	return "Mit %s sprechen [E]  (%s%s)" % [display_name, Social.relation_word(relation), " · gereizt" if has_stance("grumpy") else ""]
 
 
 ## Aktions-Symbol über dem Hinweis (IconArt): Totenkopf an der Leiche.
@@ -606,7 +614,13 @@ func interact(_player: Player) -> void:
 	if singing and Game.pumpkin:
 		say(Game.pumpkin.song_line())   # antwortet nur mit der nächsten Liedzeile
 		return
+	if is_asleep() and not in_sickbed() and Game.social:
+		Game.social.wake_guest(self)
+		return
 	if Game.social and Game.social.give_trick_sweet(self):
+		return
+	if has_stance("grumpy") and not in_sickbed():   # geweckt: kurz angebunden, nimmt nichts an (Spielkonzept 3.6)
+		say(["Lass mich in Ruhe.", "Nicht jetzt. Du hast mich geweckt.", "Ich bin müde – geh einfach."].pick_random())
 		return
 	if not dead and (not hiding or in_sickbed()) and state != State.GHOSTED and Game.dialog:
 		Game.dialog.open(self)
@@ -1331,7 +1345,23 @@ func bedtime(instant: bool = false) -> void:
 
 func _go_to_bed() -> void:
 	_to_bed = true
-	_walk_to(_room_point(), State.WALK)
+	_bed_host = null
+	if wound_bed <= 0.0 and avoids_home():   # dunkles Zimmer (7.3): bei einem Freund schlafen oder wegbleiben
+		_bed_host = _dark_refuge()
+		if _bed_host == null:
+			_to_bed = false
+			_walk_to(Game.social.builder.lobby_seats.pick_random() + _jitter(0.4), State.WALK)
+			if Game.tracing:
+				print("[Birne] %s bleibt in der Lobby – das eigene Zimmer ist dunkel" % display_name)
+			return
+		if Game.tracing:
+			print("[Birne] %s schläft bei %s – das eigene Zimmer ist dunkel" % [display_name, _bed_host.display_name])
+	_walk_to(_bed_home()["center"] + _jitter(1.0), State.WALK)
+
+
+## Das Zimmer, in dem er heute schläft: sein eigenes oder das des Freundes (_bed_host).
+func _bed_home() -> Dictionary:
+	return _bed_host.home if _bed_host and is_instance_valid(_bed_host) else home
 
 
 ## Licht aus, ins eigene Bett (still – kein Versteck-Geräusch): Er liegt sichtbar auf dem Rücken, den Kopf
@@ -1340,11 +1370,15 @@ func _fall_asleep() -> void:
 	_to_bed = false
 	if Game.social.player_in_bed(self):   # der Spieler liegt in seinem Bett (Spielkonzept 3.6)
 		return
-	_set_room_light(wound_bed > 0.0 and not Game.social.sleep_active)   # verletzt liegt er nicht im Dunkeln (6.17)
+	var guest_bed := _bed_home() != home   # beim Freund: dessen Licht und Doppelbett gehören ihm
+	if guest_bed and Game.tracing:
+		print("[Birne] %s legt sich bei %s schlafen" % [display_name, _bed_host.display_name])
+	if not guest_bed:
+		_set_room_light(wound_bed > 0.0 and not Game.social.sleep_active)   # verletzt liegt er nicht im Dunkeln (6.17)
 	state = State.SLEEP
 	# Ein freies Bett – im Doppelbett liegt auch ein Zweiter (Haushalte, Spielkonzept 6.20)
-	for second in [false, true]:
-		for spot in home["spots"]:
+	for second in ([false] if guest_bed else [false, true]):
+		for spot in _bed_home()["spots"]:
 			var bed := spot as HideSpot
 			if bed.type != HideSpot.Type.BED or (bed.occupant != null if not second else not bed.takes_partner()):
 				continue
@@ -1388,6 +1422,7 @@ func after_day_skip() -> void:
 ## Nachtruhe vorbei: aus dem Bett, Licht an.
 func wake_up() -> void:
 	_to_bed = false
+	_bed_host = null
 	sleepless = false
 	if state != State.SLEEP or wound_bed > 0.0:   # verletzt bleibt er liegen (6.17)
 		return
@@ -1395,6 +1430,14 @@ func wake_up() -> void:
 		_leave_hide()
 	_set_room_light(true)
 	_set_idle(randf_range(2.0, 8.0))
+
+
+## Vom Spieler geweckt (Social.wake_guest, Spielkonzept 3.6): mit gutem Grund bleibt er wach im Zimmer (Haltung
+## „woken_alert“, _next_activity) und ist Zeuge gegen den Geist – sonst legt er sich nach einer Weile wieder hin.
+func after_woken(alert: bool) -> void:
+	if state != State.IDLE:
+		return   # verletzt im Bett o. Ä. (wake_up hat ihn liegen lassen)
+	_set_idle(randf_range(10.0, 20.0) if alert else randf_range(Social.WAKE_BACK.x, Social.WAKE_BACK.y))
 
 
 func _set_idle(duration: float) -> void:
@@ -1410,7 +1453,13 @@ func _next_activity() -> void:
 		_resting = false
 		_set_room_light(true)
 	if Game.social.sleep_active:
-		if sleepless and _awake_left > 0.0:
+		if has_stance("woken_alert"):   # mit gutem Grund geweckt: bleibt wach, Licht an (3.6)
+			if _is_home():
+				_set_room_light(true)
+				_set_idle(randf_range(10.0, 20.0))
+			else:
+				_walk_to(_room_point(), State.WALK)
+		elif sleepless and _awake_left > 0.0:
 			_night_activity()
 		else:
 			sleepless = false
@@ -1427,6 +1476,8 @@ func _next_activity() -> void:
 		return
 	if fear >= 60.0:
 		_walk_to(_room_point(), State.WALK)
+		return
+	if _seek_bulb():   # daheim brennt keine Lampe – Ersatz holen (7.3)
 		return
 	# Gute Freunde schließen sich manchmal von selbst an (6.3)
 	var p := Game.player
@@ -1483,7 +1534,7 @@ func pin_down() -> void:
 func _arrive() -> void:
 	match state:
 		State.WALK:
-			if _to_bed and _is_home():
+			if _to_bed and global_position.distance_to(_bed_home()["center"]) < 2.5:
 				_fall_asleep()
 				return
 			if _flee_home:
@@ -1517,7 +1568,10 @@ func _arrive() -> void:
 			expected_deco += 1
 			_set_idle(randf_range(5.0, 12.0))
 		State.STEAL:
-			_finish_steal()
+			if _bulb_spot:
+				_take_supply_bulb()
+			else:
+				_finish_steal()
 		State.VISIT:
 			Game.social.on_visit_arrived(self)
 		State.DECORATE:
@@ -1612,6 +1666,8 @@ func _check_lights() -> void:
 			if lamp.has_bulb:
 				lamp.take_bulb()
 			lamp.insert_bulb(Item.create(Item.Kind.BULB))
+			if Game.tracing:
+				print("[Birne] %s schraubt daheim eine Birne ein" % display_name)
 		elif not lamp.has_bulb:
 			Game.social.on_guest_noticed_missing_bulb(self)
 		else:
@@ -1677,12 +1733,13 @@ func _enter_light(room: String) -> bool:
 	return _go_switch(sw, true)
 
 
-## Wer sonst noch im Raum ist. Beim Hinausgehen zählen alle (auch der Spieler, auch im Versteck). Beim Hineingehen in
-## ein Hotelzimmer jeder Gast (wer im Dunkeln sitzt, will es so – schläft, ruht), sonst nur Schlafende.
+## Wer sonst noch im Raum ist. Beim Hinausgehen zählen alle Gäste (auch versteckte) und der Spieler, solange er nicht
+## versteckt ist – im Schrank oder unterm Bett sieht ihn keiner, das Licht geht aus (Schreckmoment, Spielkonzept 7.3).
+## Beim Hineingehen in ein Hotelzimmer jeder Gast (wer im Dunkeln sitzt, will es so – schläft, ruht), sonst nur Schlafende.
 func _others_in_light_room(room: String, entering: bool) -> bool:
 	var builder := Game.social.builder
 	var p := Game.player
-	if not entering and p and not p.dead and builder.light_room_at(p.global_position) == room:
+	if not entering and p and not p.dead and p.hiding == null and builder.light_room_at(p.global_position) == room:
 		return true
 	var hotel_room := builder.rooms.has(room)
 	for guest in Game.social.guests:
@@ -1761,6 +1818,153 @@ func _complain_dark(lamps: Array[Lamp]) -> void:
 		say("Durchgebrannt. Na toll, im Dunkeln.")
 
 
+# --- Ersatzbirne (Spielkonzept 7.3) ----------------------------------------------------
+# Brennt daheim keine Lampe und hat er keine Birne im Vorrat, holt der Haushaltsvorstand Ersatz: aus dem Lager
+# („Ausstattung: Ersatzbirnen“), sonst dreht er – mutig oder dem Spieler feind – eine aus einem leeren Raum oder Flur
+# (feindselig auch aus Zimmer 13). Wer das nicht wagt, meidet das dunkle Zimmer: Tagsüber bleibt der Haushalt weg,
+# nachts schläft er bei einem Freund mit freiem Bett oder sitzt in der Lobby. Die Birne kommt in den Vorrat, und
+# _check_lights schraubt sie daheim ein.
+
+## Brennt im eigenen Zimmer keine Lampe (Birne fehlt oder kaputt; der alte Wackelkontakt zählt als Licht)?
+func home_dark() -> bool:
+	var lamps := _home_lamps()
+	return not lamps.is_empty() and not lamps.any(func(l: Lamp) -> bool:
+		return l.has_bulb and (not l.bulb_broken or l.sparking))
+
+
+## Meidet der Haushalt das dunkle Zimmer? Der Vorstand ist zu ängstlich, um zu klauen, und hat keine Birne.
+func avoids_home() -> bool:
+	if Game.social == null or not home_dark():
+		return false
+	var lead := Game.social.household_lead(home["no"])
+	if lead == null or int(lead.stock.get(Item.Kind.BULB, 0)) > 0:
+		return false
+	return float(lead.profile.get("brave", 0.5)) < BULB_BRAVE and Social.tier(lead) > Social.Tier.ANGRY
+
+
+## Am Tag, frei: Ersatz holen (höchstens alle BULB_RETRY s). true = unterwegs.
+func _seek_bulb() -> bool:
+	if held or is_child() or Game.social.sleep_active or not is_household_lead() or has_stance("bulb_tried"):
+		return false
+	if not home_dark() or int(stock.get(Item.Kind.BULB, 0)) > 0:
+		return false
+	set_stance("bulb_tried", BULB_RETRY)
+	var spot := _bulb_supply()
+	if spot:
+		_bulb_spot = spot
+		_steal_lamp = null
+		_steal_item = null
+		_walk_to(NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, spot.global_position), State.STEAL)
+		if Game.tracing:
+			print("[Birne] %s holt Ersatz aus dem Lager" % display_name)
+		return true
+	var hostile := Social.tier(self) <= Social.Tier.ANGRY
+	if not hostile and float(profile.get("brave", 0.5)) < BULB_BRAVE:
+		if Game.tracing:
+			print("[Birne] %s meidet das dunkle Zimmer" % display_name)
+		return false
+	var lamp := _bulb_for_home(hostile)
+	if lamp == null:
+		return false
+	_steal_lamp = lamp
+	_steal_item = null
+	_walk_to(_floor_below(lamp.global_position) + _toward_room(lamp), State.STEAL)
+	if Game.tracing:
+		print("[Birne] %s holt sich eine Birne (%s)" % [display_name, lamp.room_id])
+	return true
+
+
+## Das nächste erreichbare Ersatzbirnen-Lager mit Vorrat.
+func _bulb_supply() -> ResourceSpot:
+	var deco := Game.social.decorating
+	var best: ResourceSpot = null
+	var best_dist := INF
+	for node in get_tree().get_nodes_in_group("resource_spots"):
+		var spot := node as ResourceSpot
+		if spot.kind != Item.Kind.BULB or not spot.pool.is_empty() or spot.price > 0 or not spot.guest_can_take():
+			continue
+		var d := global_position.distance_to(spot.global_position)
+		if d < best_dist and (deco == null or deco._reachable(global_position, spot.global_position, home["door"])):
+			best_dist = d
+			best = spot
+	return best
+
+
+## Eine Lampe mit heiler Birne in einem leeren Raum oder Flur: nicht daheim, nicht in Lobby oder Aufzug, nicht bei
+## anderen Gästen (lebende Bewohner oder jemand im Raum), Zimmer 13 nur feindselig – und nie unter den Augen des
+## Spielers (wie beim Klauen).
+func _bulb_for_home(hostile: bool) -> Lamp:
+	var builder := Game.social.builder
+	var occupied := {}
+	for g in Game.social.living_guests():
+		occupied[String(g.home["no"])] = true
+		if g != self:
+			occupied[builder.light_room_at(g.global_position)] = true
+	var best: Lamp = null
+	var best_dist := INF
+	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
+		var lamp := node as Lamp
+		if not lamp.has_bulb or lamp.bulb_broken or not lamp.has_socket() or lamp.room_id in ["lobby", "aufzug"]:
+			continue
+		if occupied.has(lamp.room_id) or Game.social.behind_lock(lamp.room_id, self):
+			continue
+		if lamp.room_id == LevelBuilder.PLAYER_ROOM and not hostile:
+			continue
+		if Game.player and Game.player.global_position.distance_to(lamp.global_position) < 8.0:
+			continue
+		var d := global_position.distance_to(lamp.global_position)
+		if d < best_dist and absf(lamp.global_position.y - global_position.y) < LevelBuilder.UP_Y:
+			best_dist = d
+			best = lamp
+	return best
+
+
+## Am Lager angekommen: eine Birne nehmen und heimtragen (leer → er beschwert sich und versucht es später).
+func _take_supply_bulb() -> void:
+	var spot := _bulb_spot
+	_bulb_spot = null
+	if held or not is_instance_valid(spot) or not spot.guest_consume():
+		say("Keine Birnen mehr da … auch das noch.")
+		_set_idle(randf_range(3.0, 6.0))
+		return
+	_take_into_hand(Item.create(Item.Kind.BULB))
+	_walk_to(_room_point(), State.CARRY_HOME)
+	if Game.tracing:
+		print("[Birne] %s trägt eine Ersatzbirne heim" % display_name)
+
+
+## Ein Freund mit hellem Zimmer, bei dem noch keiner übernachtet (er lässt ihn auch herein, wenn abgeschlossen ist) –
+## lieber einer mit freiem Bett, sonst schläft er dort wie bei einem belegten Bett im Sitzen (_fall_asleep). null: keiner.
+func _dark_refuge() -> Guest:
+	var builder := Game.social.builder
+	var fallback: Guest = null
+	for f: Guest in Game.social.pals.pals_of(self):
+		var no := String(f.home["no"])
+		if f.dead or no == home["no"] or f.home_dark() or not builder.rooms.has(no):
+			continue
+		var beds := 0
+		for spot in f.home["spots"]:
+			if (spot as HideSpot).type == HideSpot.Type.BED:
+				beds += 1
+		var sleepers := 0
+		var hosted := false
+		for g in Game.social.living_guests():
+			var other: Guest = g
+			if other == self:
+				continue
+			var guest_there: bool = other._bed_host != null and is_instance_valid(other._bed_host) and other._bed_host.home["no"] == no
+			hosted = hosted or guest_there
+			if other.home["no"] == no or guest_there:
+				sleepers += 1
+		if hosted:
+			continue
+		if beds > sleepers:
+			return f
+		if fallback == null:
+			fallback = f
+	return fallback
+
+
 ## Platz neben der eigenen Tür (im Flur), an dem Deko steht.
 func deco_place_point() -> Vector3:
 	var door_front: Vector3 = home["door_front"]
@@ -1797,6 +2001,7 @@ func _try_steal() -> bool:
 		if d < best_dist:
 			best_dist = d
 			best = item
+	_bulb_spot = null   # ein abgebrochener Gang zum Lager gilt nicht mehr
 	if best == null or randf() < 0.35:
 		var lamp := _bulb_to_steal(hostile)
 		if lamp:
@@ -2468,6 +2673,8 @@ func activity_weights(phase: Calendar.Phase) -> Dictionary:
 	var weights := {}
 	for key in profile["activities"]:
 		weights[key] = float(profile["activities"][key]) * float(factors.get(key, 1.0)) * float(mood.get(key, 1.0))
+	if weights.has("room") and avoids_home():
+		weights["room"] = 0.0   # dunkles Zimmer – er bleibt weg, bis wieder Licht ist (7.3)
 	return weights
 
 
@@ -2542,8 +2749,9 @@ func _open_doors(delta: float) -> void:
 		if door.center().distance_to(global_position + Vector3.UP) >= 1.2 or not _path_through(door):
 			continue
 		if door.locked:
-			if door.room_no == "" or door.room_no != String(home["no"]):
-				continue   # abgeschlossen, und es ist nicht sein Zimmer
+			var host_door := _bed_host != null and is_instance_valid(_bed_host) and door.room_no == String(_bed_host.home["no"])
+			if door.room_no == "" or (door.room_no != String(home["no"]) and not host_door):
+				continue   # abgeschlossen, und es ist nicht sein Zimmer (oder das des Freundes, bei dem er schläft – 7.3)
 			door.locked = false
 		door.set_open(true, false, false, self)
 		if door.room_no != "" and door.room_no != LevelBuilder.PLAYER_ROOM:

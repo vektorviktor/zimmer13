@@ -97,8 +97,6 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   Neid) – SK 6.18 (großteils offen). Daran hängen: Schock+Trauer als ein Wert – SK 6.8; Gerüchte im Notizbuch – SK 3.10.
 - Zimmerzugang, Reste: Einbruch sehr wütender Gäste bei 13, Schlüssel stehlen, Zweitschlüssel, Reparatur-Tagesbudget,
   Badtür-Riegel – SK 6.19.
-- Lichtschalter, Reste: bei fehlender Birne Ersatz holen oder den Raum meiden, Schreckmoment „Gast macht aus, während
-  der Spieler sich drin versteckt“ – SK 7.3.
 - Telefon: Gäste rufen sich an, Panik-Anrufe, Telefonzentrale – SK 4.14.
 - Aufträge, Reste: zentrale Gäste, Verstecken/Apfeltauchen als „Spielen“, Kuscheltier, Bitten am Telefon/als Zettel –
   SK 6.14. Antworten mit Tonlage – SK 6.9.
@@ -106,9 +104,11 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - Gäste gehen mit Grund ins UG („Leg Kohle nach“, „Hol die Wäsche“) – SK 7.9, 7.10.
 
 **Spieler**
-- **Schlaf & Müdigkeit:** Gäste wecken (Dank bei echter Gefahr, falscher Alarm kostet Vertrauen) – SK 3.6. Gebaut
-  27.10.: Wachzeit, Stufen, ausgeschlafen/übermüdet, fremde Betten, Sprung am Tag; Werte (16/24/36 h, 48–72 h,
-  ausgeschlafen 4 min) nur headless geprüft – im Spiel tunen. Wache eines Freundes in Zimmer 13 (6.18) fehlt weiter.
+- **Schlaf & Müdigkeit:** Gebaut 27.10.: Wachzeit, Stufen, ausgeschlafen/übermüdet, fremde Betten, Sprung am Tag,
+  Gäste wecken; Werte (16/24/36 h, 48–72 h, ausgeschlafen 4 min, Wecken +6/−5/−8) nur headless geprüft – im Spiel
+  tunen. Wache eines Freundes in Zimmer 13 (6.18) fehlt weiter. Feuer als Weckgrund, sobald es Feuer gibt.
+- **Ersatzbirnen-Lager:** „Ausstattung: Ersatzbirnen“ ist in keinem Plan gemalt (z. B. Lager im EG) – bis dahin holen
+  Gäste Ersatz nur durch Klauen oder meiden das Zimmer (SK 7.3).
 - Taschenlampe: alles gebaut; UV-Spuren an 13 offen (s. 2).
 
 **Deko und Halloween**

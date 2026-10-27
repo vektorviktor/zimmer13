@@ -207,6 +207,19 @@ const BED_GUARD_CHANCE := 0.5
 const BED_ANNOY := -8.0
 const BED_EVICT := -4.0
 const BED_ROB := Vector2i(3, 8)
+## Gäste wecken (Spielkonzept 3.6): mit gutem Grund (echte Gefahr) dankbar und WAKE_ALERT s wach (Zeuge gegen den
+## Geist), ohne Grund verärgert (Freunde weniger) und WAKE_GRUMPY s gereizt, er legt sich nach WAKE_BACK s wieder hin.
+## Falscher Alarm (Halluzination) kostet mehr – WAKE_DOUBT s lang glaubt er einem Wecken nicht. Gefahr: das Monster
+## unterwegs im selben Geschoss oder näher als WAKE_DANGER_RANGE m, eine echte Flackerwelle, Lakengeist, Kürbismann.
+const WAKE_THANKS := 6.0
+const WAKE_ANNOY := -5.0
+const WAKE_ANNOY_FRIEND := -2.0
+const WAKE_FALSE := -8.0
+const WAKE_ALERT := Vector2(Calendar.HOUR, 2.0 * Calendar.HOUR)
+const WAKE_BACK := Vector2(20.0, 40.0)
+const WAKE_GRUMPY := 2.0 * Calendar.HOUR
+const WAKE_DOUBT := 6.0 * Calendar.HOUR
+const WAKE_DANGER_RANGE := 25.0
 
 
 var guests: Array[Guest] = []
@@ -1371,6 +1384,60 @@ func _update_party(delta: float) -> void:
 	if total_fear / alive.size() < 35.0 and randf() < 0.15:
 		var host: Guest = alive[randi() % alive.size()]
 		start_party(host.id)
+
+
+# --- Gäste wecken (Spielkonzept 3.6) --------------------------------------------------------------
+
+## Der Spieler weckt einen schlafenden Gast (am Bett oder durch Klopfen, knock). Was er davon hält, hängt am Grund:
+## echte Gefahr → dankbar, steht auf und bleibt wach; keine → verärgert und gereizt, legt sich wieder hin; nur eine
+## Halluzination → falscher Alarm, er glaubt dir eine Weile nicht. Gibt den Grund zurück ("danger", "none", "false").
+func wake_guest(guest: Guest, knock: bool = false) -> String:
+	var why := wake_reason(guest)
+	if guest.has_stance("doubts_waking") and why != "none":
+		why = "doubted"   # nach einem falschen Alarm glaubt er dir nicht – auch wenn es diesmal echt ist
+	guest.wake_up()
+	match why:
+		"danger":
+			change_relation(guest, WAKE_THANKS)
+			guest.set_stance("woken_alert", randf_range(WAKE_ALERT.x, WAKE_ALERT.y))
+			guest.clear_stance("grumpy")
+			guest.say(["Was ist … das Licht flackert! Danke, dass du mich geweckt hast.", "Es ist unterwegs, oder? Danke!",
+					"Gut, dass du mich geweckt hast. Ich bleib wach."].pick_random())
+		"false":
+			change_relation(guest, WAKE_FALSE)
+			guest.set_stance("doubts_waking", WAKE_DOUBT)
+			guest.set_stance("grumpy", WAKE_GRUMPY)
+			guest.say(["Da ist doch nichts! Du siehst Gespenster.", "Alles ruhig. Weck mich nie wieder wegen nichts!"].pick_random())
+		"doubted":
+			guest.set_stance("grumpy", WAKE_GRUMPY)
+			guest.say("Schon wieder? Ich glaub dir kein Wort.")
+		_:
+			change_relation(guest, WAKE_ANNOY_FRIEND if tier(guest) >= Tier.FRIEND else WAKE_ANNOY)
+			guest.set_stance("grumpy", WAKE_GRUMPY)
+			guest.say(["Was soll das? Ich hab geschlafen!", "Mitten in der Nacht … was willst du?",
+					"Hast du eine Ahnung, wie spät es ist?"].pick_random())
+	if not knock:   # beim Klopfen geht er zur Tür (RoomAccess) und danach wieder ins Bett bzw. bleibt wach
+		guest.after_woken(why == "danger")
+	if Game.tracing:
+		print("[Wecken] %s (%s, Beziehung %.0f)" % [guest.display_name, why, guest.relation])
+	return why
+
+
+## Gibt es gerade einen guten Grund, ihn zu wecken? "danger" (echte Gefahr), "false" (nur eine Halluzination), "none".
+func wake_reason(guest: Guest) -> String:
+	var director := Game.director
+	if director == null:
+		return "none"
+	var p := guest.global_position
+	var m := Game.monster
+	if m and m.is_active() and (absf(m.global_position.y - p.y) < LevelBuilder.UP_Y / 2.0
+			or m.global_position.distance_to(p) < WAKE_DANGER_RANGE):
+		return "danger"
+	if director.is_signalling() and not director.wave_fake:
+		return "danger"
+	if (Game.ghost and Game.ghost.is_active()) or (Game.pumpkin and (Game.pumpkin.in_house() or Game.pumpkin.announcing())):
+		return "danger"
+	return "false" if director.is_hallucinating() or (director.is_signalling() and director.wave_fake) else "none"
 
 
 # --- Minispiele -------------------------------------------------------------------------
