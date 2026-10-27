@@ -278,6 +278,9 @@ func _process(delta: float) -> void:
 	_update_funeral(d.elapsed)
 	for i in range(_mourners.size() - 1, -1, -1):
 		var e: Dictionary = _mourners[i]
+		if not is_instance_valid(e["guest"]):
+			_mourners.remove_at(i)
+			continue
 		var g: Guest = e["guest"]
 		if g.dead or d.elapsed >= float(e["until"]) or g.state != Guest.State.PARTY:
 			if not g.dead and g.state == Guest.State.PARTY:
@@ -550,6 +553,7 @@ func save_state() -> Dictionary:
 func load_state(data: Dictionary) -> void:
 	graves.clear()
 	pending.clear()
+	_mourners.clear()   # Gäste werden beim Laden neu gebaut – die alten sind freigegeben
 	for n in _grave_nodes.values():
 		(n as Node3D).queue_free()
 	_grave_nodes.clear()

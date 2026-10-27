@@ -914,8 +914,9 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 		Game.say("Ein Schrei – dann ein dumpfer Schlag. Dann ist es still.", 4.0, "dead")
 	else:
 		Game.say("Ein Schrei hallt durch das Hotel …", 4.0, "dead")
+		var gone := guest.display_name
 		get_tree().create_timer(5.0, false).timeout.connect(func() -> void:
-			Game.say("%s ist verschwunden." % guest.display_name, 4.0, "dead"))
+			Game.say("%s ist verschwunden." % gone, 4.0, "dead"))
 	# Die Totenglocke läutet – nach dem Schrei, für jeden Toten, im ganzen Hotel zu hören (nur nicht im Schlaf)
 	get_tree().create_timer(BELL_DELAY, false).timeout.connect(func() -> void:
 		if not (Game.player and Game.player.sleeping):
@@ -941,11 +942,12 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 	# Ein, zwei Gäste schreiben einen Zettel und legen ihn vor ihre Tür
 	var writers := living_guests()
 	writers.shuffle()
+	var dead_name := guest.display_name   # der Tote kann beim Laden freigegeben sein, bevor der Zettel kommt
 	for writer in writers.slice(0, randi_range(1, 2)):
 		var w: Guest = writer
 		get_tree().create_timer(randf_range(20.0, 60.0), false).timeout.connect(func() -> void:
 			if is_instance_valid(w) and not w.dead:
-				_leave_note(w, DEATH_NOTES, w.home["door_front"], guest.display_name))
+				_leave_note(w, DEATH_NOTES, w.home["door_front"], dead_name))
 	SaveManager.request_autosave("Tod eines Gastes")
 	if party_active and party_host == guest.id:
 		end_party("")
