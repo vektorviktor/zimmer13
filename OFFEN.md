@@ -102,7 +102,6 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - Lichtschalter, Reste: bei fehlender Birne Ersatz holen oder den Raum meiden, Schreckmoment „Gast macht aus, während
   der Spieler sich drin versteckt“ – SK 7.3.
 - Telefon: Gäste rufen sich an, Panik-Anrufe, Telefonzentrale – SK 4.14.
-- Lärm: Untertitel für leise Geräusche, Gäste ärgern sich über Lärm vor ihrer Tür – SK 4.15.
 - Aufträge, Reste: zentrale Gäste, Verstecken/Apfeltauchen als „Spielen“, Kuscheltier, Bitten am Telefon/als Zettel –
   SK 6.14. Antworten mit Tonlage – SK 6.9.
 - Kinder: Funde in engen Ecken (am Geheimnis), Eier-Streich – SK 6.13.

@@ -66,6 +66,22 @@ const TREAT_LINES := ["Danke!", "Noch eins? Juhu!", "Drei! Danke, danke, danke!"
 ## zerplatzt oder zerbricht) stärker
 const THROWN_AT := -6.0
 const THROWN_AT_MESSY := -12.0
+## Lärm vor der Tür (Spielkonzept 4.15, 6.2): Lautes ab NOISE_ANNOY_MIN m Hörweite, das der Spieler höchstens
+## NOISE_ANNOY_REACH m vor einer Zimmertür macht, ärgert alle, die drin sind – schlafend doppelt. Je Gast nur alle
+## NOISE_ANNOY_QUIET s, sonst kostet einmal Vorbeirennen mehrfach. Klopfen, Tür auf/zu und Schlüssel sind höflich
+## bzw. alltäglich, Aufbrechen und Schlagen haben eigene Folgen; ist das Monster hinter dem Spieler her, zählt es nicht.
+const NOISE_ANNOY_MIN := 4.0
+const NOISE_ANNOY_REACH := 4.0
+const NOISE_ANNOY := -3.0
+const NOISE_ANNOY_ASLEEP := -6.0
+const NOISE_ANNOY_QUIET := 30.0
+const NOISE_POLITE := ["knock", "door", "unlock", "keys", "door_force", "punch"]
+## Was sie durch die Tür rufen – nicht in GuestGenerator.COMMON (verschöbe die Zufallsfolge); feste Gäste können
+## eigene unter demselben Schlüssel in ihren lines haben
+const NOISE_LINES := {
+	"noise": ["Ruhe da draußen!", "Geht's vielleicht auch leiser?", "Muss das ausgerechnet vor meiner Tür sein?"],
+	"noise_night": ["Es ist mitten in der Nacht!", "Manche Leute wollen hier schlafen!"],
+}
 ## Von Tür zu Tür (Spielkonzept 6.13): so oft zieht ein Kind los, zu so vielen Türen, so lange klopft es
 const ROUND_COOLDOWN := Vector2(45.0, 110.0)
 const ROUND_DOORS := 3
@@ -210,6 +226,7 @@ var _party_cooldown := 150.0
 var _spontaneous_timer := 30.0
 var _gossip: Array[Dictionary] = []      ## {delay, amount}
 var _thefts := {}                        ## Gast-ID → Zeitpunkt des letzten Diebstahls durch den Spieler
+var _noise_annoyed := {}                 ## Gast-ID → Zeitpunkt, an dem ihn zuletzt Lärm vor der Tür geärgert hat
 var _reserved := {}                      ## HideSpot → Guest
 var _memorial_doors: Array[Vector3] = []
 var _check_timer := 0.0
@@ -1666,6 +1683,36 @@ func on_alarm(kind: String, pos: Vector3, loudness: float, source: Node) -> Arra
 		if reaction == "erzählt davon" and not told:
 			told = true
 			_add_report({"kind": kind, "heard": true, "zone": Game.director.zone_name_at(pos), "time": _time})
+	return result
+
+
+## Lärm des Spielers vor einer Zimmertür (Spielkonzept 4.15, 6.2): Wer drin ist, ärgert sich und schimpft durch die
+## Tür. Gibt die Reaktionen zurück (Debug).
+func on_player_noise(kind: String, pos: Vector3, loudness: float) -> Array[String]:
+	var result: Array[String] = []
+	if loudness < NOISE_ANNOY_MIN or kind in NOISE_POLITE or Game.director.player_threat > 0.0:
+		return result   # auf der Flucht vor dem Monster nimmt es keiner übel
+	var player_room := builder.room_at(Game.player.global_position)
+	var spoken := {}
+	for guest in guests:
+		if guest.dead or guest.hiding or guest.is_child():
+			continue
+		var no := String(guest.home["no"])
+		if player_room == no or builder.room_at(guest.global_position) != no:
+			continue   # Besuch drinnen oder nicht zu Hause
+		var front: Vector3 = guest.home["door_front"]
+		if absf(front.y - pos.y) > 2.0 or Vector2(front.x - pos.x, front.z - pos.z).length() > NOISE_ANNOY_REACH:
+			continue
+		if _time - float(_noise_annoyed.get(guest.id, -INF)) < NOISE_ANNOY_QUIET:
+			continue
+		_noise_annoyed[guest.id] = _time
+		var asleep := guest.is_asleep()
+		change_relation(guest, NOISE_ANNOY_ASLEEP if asleep else NOISE_ANNOY)
+		if not spoken.has(no):   # je Zimmer schimpft nur einer
+			spoken[no] = true
+			var key := "noise_night" if asleep else "noise"
+			guest.say(guest.line(key) if guest.profile["lines"].has(key) else NOISE_LINES[key].pick_random())
+		result.append("%s ärgert sich" % guest.display_name)
 	return result
 
 

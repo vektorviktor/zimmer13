@@ -210,22 +210,26 @@ func say(text: String, duration: float = 3.5, icon: String = "") -> void:
 
 
 ## `pos`/`who`: Ort und Stimme für menschliche Laute (SynthAudio.VOICES) – die klingen aus ihrer Richtung.
-func play_sound(kind: String, volume: float = 1.0, pos := Vector3.INF, who: Node = null) -> void:
+## `caption_text`: eigener Untertitel (Lärmtabelle, Spielkonzept 4.15) – kommt auch bei leisen Geräuschen.
+func play_sound(kind: String, volume: float = 1.0, pos := Vector3.INF, who: Node = null, caption_text := "") -> void:
 	if audio and not audio.play_shot(kind, volume, pos, who):
 		return
-	if volume >= 0.3 and SOUND_CAPTIONS.has(kind):
+	if caption_text != "":
+		caption(caption_text)
+	elif volume >= 0.3 and SOUND_CAPTIONS.has(kind):
 		caption(SOUND_CAPTIONS[kind])
 
 
 ## Nur der Klang, ohne Lärm (niemand sonst reagiert): so laut, wie der Spieler ihn bei `loudness` m Hörweite
 ## hört – bis zur doppelten Hörweite, gedämpft durch Wände wie bei `noise`. Gibt die Lautstärke zurück.
-func sound_at(sound: String, pos: Vector3, loudness: float, source: Node = null, volume: float = 1.0) -> float:
+func sound_at(sound: String, pos: Vector3, loudness: float, source: Node = null, volume: float = 1.0,
+		caption_text := "") -> float:
 	if player == null:
 		return 0.0
 	if source != player:
 		volume *= _heard(pos, loudness)
 	if volume > 0.02:
-		play_sound(sound, volume, pos, source)
+		play_sound(sound, volume, pos, source, caption_text)
 	return volume
 
 
@@ -267,7 +271,7 @@ func noise(kind: String, pos: Vector3, source: Node = null) -> float:
 	var loudness: float = data["range"]
 	var volume := 0.0
 	if player and String(data["sound"]) != "":
-		volume = sound_at(data["sound"], pos, loudness, source, float(data["volume"]))
+		volume = sound_at(data["sound"], pos, loudness, source, float(data["volume"]), data.get("caption", ""))
 		if player.sleeping and source != player and volume >= 0.3:
 			player.wake_up("Ein Geräusch weckt dich.")
 	var heard: Array[String] = []
@@ -277,6 +281,8 @@ func noise(kind: String, pos: Vector3, source: Node = null) -> float:
 			heard.append(r)
 	if social and data.get("alarm", false):
 		heard.append_array(social.on_alarm(kind, pos, loudness, source))
+	if social and player and source == player:
+		heard.append_array(social.on_player_noise(kind, pos, loudness))
 	if bats:
 		bats.on_noise(pos, loudness, source)
 	if crows:

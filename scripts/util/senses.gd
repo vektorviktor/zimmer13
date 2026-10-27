@@ -7,68 +7,69 @@ class_name Senses
 ## meldet es dem Director (Monster) und Social (Gäste).
 
 # --- Tuning: Lärm -------------------------------------------------------------------
-## Art → Hörweite in m (`range`), Geräusch für den Spieler (`sound`, `volume`), erschreckt Gäste (`alarm`).
+## Art → Hörweite in m (`range`), Geräusch für den Spieler (`sound`, `volume`), erschreckt Gäste (`alarm`),
+## Untertitel (`caption`) – erscheint, sobald man es überhaupt hört, auch leise (Einstellung „Untertitel“).
 ## Ohne `sound` ist es Lärm, den man nicht eigens hört (Schritte, Musik läuft extra).
 const NOISE := {
 	"step":       {"range": 2.0,  "sound": "",       "volume": 0.0},    ## Gehen auf Holz/Fliesen (Teppich, geduckt: still)
 	"run":        {"range": 10.0, "sound": "",       "volume": 0.0},    ## alle 0,6 s
-	"land":       {"range": 4.0,  "sound": "thud",   "volume": 0.2},    ## nach einem Sprung
-	"stumble":    {"range": 5.0,  "sound": "thud",   "volume": 0.35},   ## im Rausch gestolpert (3.7)
-	"door":       {"range": 5.0,  "sound": "door",   "volume": 0.5},    ## Tür öffnen/schließen (echter Klang)
-	"rattle":     {"range": 6.0,  "sound": "thud",   "volume": 0.6},    ## abgeschlossene Tür rütteln
-	"unlock":     {"range": 3.0,  "sound": "jingle", "volume": 0.6},    ## Schlüssel klirren
-	"door_burst": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true},
-	"door_force": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true},   ## Zimmertür aufgebrochen (6.19)
-	"repair":     {"range": 6.0,  "sound": "thud",   "volume": 0.5},    ## Tür reparieren (6.19)
-	"glass":      {"range": 16.0, "sound": "bang",   "volume": 0.7, "alarm": true},   ## Scheibe des Schlüsselschranks  ## Tür vom Monster aufgerissen
-	"hide":       {"range": 4.0,  "sound": "creak",  "volume": 0.35},   ## in ein Versteck gehen
-	"hide_burst": {"range": 20.0, "sound": "bang",   "volume": 1.0, "alarm": true},  ## Versteck vom Monster aufgerissen
-	"drop":       {"range": 2.0,  "sound": "thud",   "volume": 0.4},    ## Gegenstand ablegen
-	"drop_heavy": {"range": 4.0,  "sound": "thud",   "volume": 0.5},    ## Kürbis oder großer Gegenstand
-	"pumpkin_splat": {"range": 8.0, "sound": "thud", "volume": 0.8},    ## Kürbis zerplatzt nach tiefem Fall (5.8)
-	"wax_splat":  {"range": 5.0,  "sound": "thud",   "volume": 0.5},    ## geworfene Kerze zerbricht (Streich, 6.13)
-	"throw_land": {"range": 6.0,  "sound": "thud",   "volume": 0.5},    ## Geworfenes landet (3.13) – lockt das Monster hin
-	"throw_land_heavy": {"range": 9.0, "sound": "thud", "volume": 0.7},  ## … ab Item.THROW_HEAVY kg
-	"fire":       {"range": 5.0,  "sound": "rustle", "volume": 0.6},    ## Deko brennt, alle 2 s (5.11)
-	"shock_drop": {"range": 6.0,  "sound": "thud",   "volume": 0.6},    ## vor Schreck fallen gelassen (6.8)
-	"chest":      {"range": 4.0,  "sound": "creak",  "volume": 0.4},
-	"drawer":     {"range": 3.0,  "sound": "creak",  "volume": 0.3},    ## Schublade einer Kommode
+	"land":       {"range": 4.0,  "sound": "thud",   "volume": 0.2, "caption": "[Ein dumpfer Aufprall]"},    ## nach einem Sprung
+	"stumble":    {"range": 5.0,  "sound": "thud",   "volume": 0.35, "caption": "[Stolpern]"},   ## im Rausch gestolpert (3.7)
+	"door":       {"range": 5.0,  "sound": "door",   "volume": 0.5, "caption": "[Eine Tür knarrt]"},    ## Tür öffnen/schließen (echter Klang)
+	"rattle":     {"range": 6.0,  "sound": "thud",   "volume": 0.6, "caption": "[Rütteln an einer Tür]"},    ## abgeschlossene Tür rütteln
+	"unlock":     {"range": 3.0,  "sound": "jingle", "volume": 0.6, "caption": "[Schlüssel klirren im Schloss]"},    ## Schlüssel klirren
+	"door_burst": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true, "caption": "[Eine Tür kracht auf]"},
+	"door_force": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true, "caption": "[Eine Tür wird aufgebrochen]"},   ## Zimmertür aufgebrochen (6.19)
+	"repair":     {"range": 6.0,  "sound": "thud",   "volume": 0.5, "caption": "[Hämmern an einer Tür]"},    ## Tür reparieren (6.19)
+	"glass":      {"range": 16.0, "sound": "bang",   "volume": 0.7, "alarm": true, "caption": "[Glas splittert]"},   ## Scheibe des Schlüsselschranks  ## Tür vom Monster aufgerissen
+	"hide":       {"range": 4.0,  "sound": "creak",  "volume": 0.35, "caption": "[Eine Schranktür knarrt]"},   ## in ein Versteck gehen
+	"hide_burst": {"range": 20.0, "sound": "bang",   "volume": 1.0, "alarm": true, "caption": "[Eine Schranktür kracht auf]"},  ## Versteck vom Monster aufgerissen
+	"drop":       {"range": 2.0,  "sound": "thud",   "volume": 0.4, "caption": "[Etwas wird abgestellt]"},    ## Gegenstand ablegen
+	"drop_heavy": {"range": 4.0,  "sound": "thud",   "volume": 0.5, "caption": "[Etwas Schweres plumpst]"},    ## Kürbis oder großer Gegenstand
+	"pumpkin_splat": {"range": 8.0, "sound": "thud", "volume": 0.8, "caption": "[Ein Kürbis zerplatzt]"},    ## Kürbis zerplatzt nach tiefem Fall (5.8)
+	"wax_splat":  {"range": 5.0,  "sound": "thud",   "volume": 0.5, "caption": "[Eine Kerze zerbricht]"},    ## geworfene Kerze zerbricht (Streich, 6.13)
+	"throw_land": {"range": 6.0,  "sound": "thud",   "volume": 0.5, "caption": "[Etwas fällt polternd]"},    ## Geworfenes landet (3.13) – lockt das Monster hin
+	"throw_land_heavy": {"range": 9.0, "sound": "thud", "volume": 0.7, "caption": "[Etwas Schweres kracht zu Boden]"},  ## … ab Item.THROW_HEAVY kg
+	"fire":       {"range": 5.0,  "sound": "rustle", "volume": 0.6, "caption": "[Feuer knistert]"},    ## Deko brennt, alle 2 s (5.11)
+	"shock_drop": {"range": 6.0,  "sound": "thud",   "volume": 0.6, "caption": "[Etwas fällt zu Boden]"},    ## vor Schreck fallen gelassen (6.8)
+	"chest":      {"range": 4.0,  "sound": "creak",  "volume": 0.4, "caption": "[Ein Truhendeckel knarrt]"},
+	"drawer":     {"range": 3.0,  "sound": "creak",  "volume": 0.3, "caption": "[Eine Schublade schabt]"},    ## Schublade einer Kommode
 	## Hotelkatzen (Spielkonzept 6.11) – das Monster überhört sie, es mag die Katzen
 	"cat_meow":   {"range": 8.0,  "sound": "meow",   "volume": 0.45},   ## miaut (vor einer Tür, Geschenk)
-	"cat_purr":   {"range": 1.5,  "sound": "purr",   "volume": 0.6},    ## schnurrt beim Streicheln
+	"cat_purr":   {"range": 1.5,  "sound": "purr",   "volume": 0.6, "caption": "[Schnurren]"},    ## schnurrt beim Streicheln
 	"cat_cry":    {"range": 16.0, "sound": "cry",    "volume": 0.6, "alarm": true},  ## weint auf der Flucht vor dem Monster
-	"cat_knock":  {"range": 5.0,  "sound": "thud",   "volume": 0.5},    ## wirft Deko um
+	"cat_knock":  {"range": 5.0,  "sound": "thud",   "volume": 0.5, "caption": "[Etwas fällt um]"},    ## wirft Deko um
 	"bats":       {"range": 8.0,  "sound": "flutter", "volume": 0.7},   ## aufgeschreckter Fledermausschwarm (4.22)
-	"curtain":    {"range": 2.0,  "sound": "creak",  "volume": 0.15},
-	"bulb":       {"range": 2.0,  "sound": "creak",  "volume": 0.2},    ## Glühbirne heraus-/eindrehen
-	"bulb_burst": {"range": 8.0,  "sound": "bang",   "volume": 0.35, "alarm": true},
-	"switch":     {"range": 1.0,  "sound": "blip",   "volume": 0.5},    ## Licht aus zusätzlich nach 4.4
-	"harvest":    {"range": 3.0,  "sound": "thud",   "volume": 0.5},
-	"carve":      {"range": 3.0,  "sound": "creak",  "volume": 0.6},
-	"salt":       {"range": 1.5,  "sound": "rustle", "volume": 0.3},    ## Salzlinie streuen (5.13)
-	"wipe":       {"range": 2.0,  "sound": "creak",  "volume": 0.15},   ## Spur wegwischen
-	"map":        {"range": 1.0,  "sound": "rustle", "volume": 0.5},    ## Kartenblatt blättern
-	"bag":        {"range": 1.0,  "sound": "rustle", "volume": 0.3},    ## Kleines in die Tasche / heraus (3.2)
-	"can":        {"range": 3.0,  "sound": "hiss",   "volume": 0.5},    ## Getränkedose aufreißen
-	"coffee":     {"range": 6.0,  "sound": "hiss",   "volume": 0.35},   ## Kaffeemaschine mahlt und gurgelt, alle 5 s (3.11)
-	"cup_break":  {"range": 5.0,  "sound": "bang",   "volume": 0.3},    ## Tasse zerbricht (3.11, 3.12)
-	"kettle":     {"range": 4.0,  "sound": "hiss",   "volume": 0.25},   ## Wasserkocher rauscht, alle 5 s (3.12)
-	"kettle_whistle": {"range": 8.0, "sound": "hiss", "volume": 0.5},   ## Wasserkocher pfeift leise, wenn er fertig ist
-	"keys":       {"range": 3.0,  "sound": "jingle", "volume": 0.6},    ## Schlüssel an den Bund
-	"handset":    {"range": 2.0,  "sound": "thud",   "volume": 0.15},   ## Hörer abnehmen/auflegen/daneben legen
-	"gasp":       {"range": 10.0, "sound": "gasp",   "volume": 1.0},    ## nach Luft schnappen
+	"curtain":    {"range": 2.0,  "sound": "creak",  "volume": 0.15, "caption": "[Ein Vorhang raschelt]"},
+	"bulb":       {"range": 2.0,  "sound": "creak",  "volume": 0.2, "caption": "[Eine Glühbirne quietscht im Gewinde]"},    ## Glühbirne heraus-/eindrehen
+	"bulb_burst": {"range": 8.0,  "sound": "bang",   "volume": 0.35, "alarm": true, "caption": "[Eine Glühbirne platzt]"},
+	"switch":     {"range": 1.0,  "sound": "blip",   "volume": 0.5, "caption": "[Klick – ein Lichtschalter]"},    ## Licht aus zusätzlich nach 4.4
+	"harvest":    {"range": 3.0,  "sound": "thud",   "volume": 0.5, "caption": "[Ein Kürbisstiel reißt]"},
+	"carve":      {"range": 3.0,  "sound": "creak",  "volume": 0.6, "caption": "[Ein Messer schabt im Kürbis]"},
+	"salt":       {"range": 1.5,  "sound": "rustle", "volume": 0.3, "caption": "[Salz rieselt]"},    ## Salzlinie streuen (5.13)
+	"wipe":       {"range": 2.0,  "sound": "creak",  "volume": 0.15, "caption": "[Wischen]"},   ## Spur wegwischen
+	"map":        {"range": 1.0,  "sound": "rustle", "volume": 0.5, "caption": "[Papier raschelt]"},    ## Kartenblatt blättern
+	"bag":        {"range": 1.0,  "sound": "rustle", "volume": 0.3, "caption": "[Rascheln in einer Tasche]"},    ## Kleines in die Tasche / heraus (3.2)
+	"can":        {"range": 3.0,  "sound": "hiss",   "volume": 0.5, "caption": "[Zischen – eine Dose]"},    ## Getränkedose aufreißen
+	"coffee":     {"range": 6.0,  "sound": "hiss",   "volume": 0.35, "caption": "[Die Kaffeemaschine gurgelt]"},   ## Kaffeemaschine mahlt und gurgelt, alle 5 s (3.11)
+	"cup_break":  {"range": 5.0,  "sound": "bang",   "volume": 0.3, "caption": "[Eine Tasse zerbricht]"},    ## Tasse zerbricht (3.11, 3.12)
+	"kettle":     {"range": 4.0,  "sound": "hiss",   "volume": 0.25, "caption": "[Ein Wasserkocher rauscht]"},   ## Wasserkocher rauscht, alle 5 s (3.12)
+	"kettle_whistle": {"range": 8.0, "sound": "hiss", "volume": 0.5, "caption": "[Ein Wasserkocher pfeift]"},   ## Wasserkocher pfeift leise, wenn er fertig ist
+	"keys":       {"range": 3.0,  "sound": "jingle", "volume": 0.6, "caption": "[Schlüssel klirren]"},    ## Schlüssel an den Bund
+	"handset":    {"range": 2.0,  "sound": "thud",   "volume": 0.15, "caption": "[Ein Telefonhörer klappert]"},   ## Hörer abnehmen/auflegen/daneben legen
+	"gasp":       {"range": 10.0, "sound": "gasp",   "volume": 1.0, "caption": "[Hastiges Luftholen]"},    ## nach Luft schnappen
 	"pant":       {"range": 4.0,  "sound": "",       "volume": 0.0},    ## Keuchen außer Atem, alle 1,5 s (3.1) – zu hören über SynthAudio
-	"knock":      {"range": 8.0,  "sound": "knock",  "volume": 0.7},
-	"phone":      {"range": 18.0, "sound": "ring",   "volume": 0.6},    ## je Klingeln (4.14)
-	"dice":       {"range": 10.0, "sound": "thud",   "volume": 0.4},    ## Würfeln, Spiel am Tisch
-	"dart":       {"range": 6.0,  "sound": "dart",   "volume": 0.5},    ## Pfeil steckt in der Scheibe (6.10)
-	"dart_wall":  {"range": 9.0,  "sound": "thud",   "volume": 0.5},    ## … prallt an der Wand ab und fällt
+	"knock":      {"range": 8.0,  "sound": "knock",  "volume": 0.7, "caption": "[Es klopft]"},
+	"phone":      {"range": 18.0, "sound": "ring",   "volume": 0.6, "caption": "[Ein Telefon klingelt]"},    ## je Klingeln (4.14)
+	"dice":       {"range": 10.0, "sound": "thud",   "volume": 0.4, "caption": "[Würfel klappern]"},    ## Würfeln, Spiel am Tisch
+	"dart":       {"range": 6.0,  "sound": "dart",   "volume": 0.5, "caption": "[Ein Pfeil trifft die Scheibe]"},    ## Pfeil steckt in der Scheibe (6.10)
+	"dart_wall":  {"range": 9.0,  "sound": "thud",   "volume": 0.5, "caption": "[Ein Pfeil prallt ab]"},    ## … prallt an der Wand ab und fällt
 	"party":      {"range": 25.0, "sound": "",       "volume": 0.0},    ## Feier mit Musik, alle 8 s
-	"punch":      {"range": 9.0,  "sound": "thud",   "volume": 0.8},    ## Schlag (Spieler oder Gast, 6.3)
+	"punch":      {"range": 9.0,  "sound": "thud",   "volume": 0.8, "caption": "[Ein Schlag]"},    ## Schlag (Spieler oder Gast, 6.3)
 	"scream":     {"range": 20.0, "sound": "scream", "volume": 1.0, "alarm": true},   ## Schreck – Stimme des Gastes (SynthAudio.VOICES)
 	"death_scream": {"range": 20.0, "sound": "death_scream", "volume": 1.0, "alarm": true},   ## vom Monster geholt – jäh abgerissen
 	"axe_swing":  {"range": 20.0, "sound": "",       "volume": 0.0, "alarm": true},   ## Kürbismann schlägt zu (4.19) – Ton spielt er selbst (3D)
-	"pumpkin_land": {"range": 16.0, "sound": "thud", "volume": 1.0, "alarm": true},   ## Kürbismann springt vom Lobbydach in den Garten (4.19)
+	"pumpkin_land": {"range": 16.0, "sound": "thud", "volume": 1.0, "alarm": true, "caption": "[Ein schwerer Aufprall im Garten]"},   ## Kürbismann springt vom Lobbydach in den Garten (4.19)
 	"laugh":      {"range": 8.0,  "sound": "",       "volume": 0.0},    ## Kinder lachen beim Toben und auf Feiern (6.13)
 	## Aufzug (7.4): Motor an der Abfahrt, Glocke am Ziel – beide machen das Monster neugierig; Alarmknopf in der Kabine
 	"elevator":   {"range": 14.0, "sound": "motor",  "volume": 0.5},
@@ -79,7 +80,7 @@ const NOISE := {
 	"crow":       {"range": 14.0, "sound": "caw",    "volume": 0.75},   ## eine Krähe krächzt dich an (Groll) – das Monster hört es
 	"music_box":  {"range": 12.0, "sound": "",       "volume": 0.0},    ## Spieluhr spielt, alle 3 s – Ton spielt sie selbst
 	"fuse":       {"range": 10.0, "sound": "fuse",   "volume": 0.8},    ## Sicherung wieder eingelegt (Stromausfall)
-	"apple_tub":  {"range": 4.0,  "sound": "bubble", "volume": 0.5},    ## Apfeltauchen, Gesicht ins Wasser
+	"apple_tub":  {"range": 4.0,  "sound": "bubble", "volume": 0.5, "caption": "[Blubbern im Wasser]"},    ## Apfeltauchen, Gesicht ins Wasser
 }
 ## Dämpfung je Hindernis zwischen Quelle und Hörer (offene Tür: ungedämpft)
 const DAMP_WALL := 0.4

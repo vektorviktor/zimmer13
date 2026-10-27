@@ -1770,14 +1770,20 @@ Dämpfung, Auffälligkeit und Grundweiten der Beobachter.
    Donner dämpft (`Weather.masking()`).
 3. `Social.on_alarm` (nur Arten mit `alarm`): Gäste in halber gedämpfter Hörweite → `Guest.hear_alarm` (Angst,
    verstecken, hingehen oder Gerücht).
-4. Fledermäuse (`Bats.on_noise`).
+4. `Social.on_player_noise` (nur `quelle == player`): Lärm ab `NOISE_ANNOY_MIN` m Hörweite bis `NOISE_ANNOY_REACH` m
+   vor einer Zimmertür ärgert, wer drin ist (`change_relation`, schlafend doppelt, je Gast Sperrzeit), Sätze aus
+   `Social.NOISE_LINES`. Ausgenommen `NOISE_POLITE` (Klopfen, Tür, Schlüssel, Aufbrechen, Schlag) und `player_threat > 0`.
+5. Fledermäuse (`Bats.on_noise`), Krähen.
+
+**Untertitel:** `caption` in `Senses.NOISE` geht über `sound_at` → `play_sound(…, caption_text)` und erscheint bei
+jeder hörbaren Lautstärke (> 0,02); ohne `caption` gilt `Game.SOUND_CAPTIONS` erst ab 0,3. Nur mit `Settings.subtitles`.
 
 **Dämpfung** (`Senses.audible_range`): Strahl von Ohrhöhe zu Ohrhöhe; jeder Treffer wird ausgeschlossen und neu
 geworfen (höchstens 4). Wand = Körper auf Ebene 1 mit Box ≥ 2,5 m Höhe (Ergebnis je Körper gecacht), Tür = Vorfahr
 `Door` (geschlossen dämpft, offen nicht), klares Glas, je Geschossdecke. Möbel, Böden und Brüstungen dämpfen nicht.
 → **Wer eine neue Wand baut, die niedriger als 2,5 m ist, dämpft keinen Lärm.**
 
-**Neues Geräusch in der Welt:** Eintrag in `Senses.NOISE`, Aufruf `Game.noise(...)` mit `quelle`, wo bekannt (sonst
+**Neues Geräusch in der Welt:** Eintrag in `Senses.NOISE` (mit `caption`), Aufruf `Game.noise(...)` mit `quelle`, wo bekannt (sonst
 hört sich z. B. das Monster selbst und läuft seinen eigenen Türen nach). Gäste machen nur beim Rennen Schrittlärm.
 
 **Sichtbarkeit:** `Senses.can_see(beobachter, auge, blick, grundweite, kegel, akteur, bonus, …)`: Sichtweite =
