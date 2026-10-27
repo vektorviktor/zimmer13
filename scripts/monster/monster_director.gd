@@ -25,6 +25,18 @@ const INTENT_NAMES := ["Umsehen", "Einen holen", "Raubzug"]
 # --- Tuning -------------------------------------------------------------------
 const BOLDNESS_START := 25.0
 const BOLDNESS_PER_DAY := 12.0         ## nach dem ersten Angriff, je Spieltag (2.4)
+## Ereignisse (belauscht, bemerkt, UV) geben Boni obendrauf, die mit dieser Halbwertszeit abklingen (Spielkonzept 4.9)
+const BOLDNESS_BONUS_HALF_LIFE := Calendar.HOUR * 6.0
+## Heiße Stellen statt Neugier je Zone (Spielkonzept 4.9): überall gilt die Grundneugier, eine Stelle (Lärm, Licht aus,
+## Sichtung, „Angst riecht“) wirkt voll bis HOT_CORE und auslaufend bis HOT_RADIUS auf demselben Stockwerk, klingt
+## mit HOT_HALF_LIFE ab und verschmilzt mit einer Stelle unter HOT_MERGE; höchstens HOT_MAX, die schwächste fällt heraus
+const CURIOSITY_BASE := 40.0
+const HOT_RADIUS := 10.0
+const HOT_CORE := 3.0
+const HOT_HALF_LIFE := 40.0
+const HOT_MERGE := 3.0
+const HOT_MAX := 24
+const HOT_MIN := 2.0
 ## Anspruch an Deko (Spielkonzept 5.10): ×1 am DEMAND_FROM_DAY, gleitend bis ×DEMAND_MAX an Halloween, dann gedeckelt
 const DEMAND_FROM_DAY := 2.0
 const DEMAND_MAX := 3.0
@@ -45,9 +57,6 @@ const MOONLIGHT_RANGE := 5.0
 const LIGHT_CELL := 8.0
 const LIGHT_GRID_FRAMES := 30
 const LIGHT_GRID_SLACK := 3.0
-## In so vielen Sekunden führt jede Zone einmal ihre Neugier nach – verteilt auf die Physik-Frames, sonst
-## hängt das Spiel bei ein paar hundert Zonen jede Sekunde kurz
-const ZONE_PERIOD := 1.0
 const LIGHTS_OFF_CURIOSITY := 30.0     ## Licht aus = das Monster kommt (4.4)
 const NOISE_CURIOSITY := 0.25          ## Neugier je Meter Hörweite (Rennen: +2,5 alle 0,6 s)
 ## Rauschen nach Entfernung zum Spieler (auch durch Wände)
@@ -71,6 +80,12 @@ const HAUNT_INTERVAL := Vector2(80.0, 170.0)
 ## Blutige Schmierspuren an Flurwänden als Spuk: so oft kommt die Möglichkeit dazu, höchstens so viele im Spiel
 const WALL_SMEAR_CHANCE := 0.35
 const MAX_WALL_SMEARS := 12
+## Engerer Blick unter Stress (4.13): Vignette am Bildschirmrand (Grundwert + bei vollem Stress), so schnell steigt
+## und fällt der Stress je Sekunde
+const VIGNETTE := 0.6
+const STRESS_VIGNETTE := 1.2
+const STRESS_RISE := 1.5
+const STRESS_FALL := 0.25
 ## Halluzination: mittlere Sekunden zwischen zwei Rausch-Anfällen nach einem Todesfall
 const HALLUCINATION_EVERY := 70.0
 const GRIEF_TIME := 900.0
@@ -131,6 +146,9 @@ const SKIP_GUARD := 0.5
 
 var phase := Phase.CALM
 var boldness := BOLDNESS_START
+var boldness_bonus := 0.0   ## abklingende Boni aus Ereignissen (4.9)
+## Heiße Stellen (4.9): {"pos": Vector3, "heat": float}
+var hot_spots: Array[Dictionary] = []
 var satiation := 0.0        ## gesättigt, nachdem es einen Gast geholt hat (4.10)
 var elapsed := 0.0
 var zones: Array[Dictionary] = []
@@ -146,8 +164,10 @@ var first_attack_done := false
 var attacks := 0            ## Aktivphasen seit dem ersten Angriff
 var grief := 0.0            ## Sekunden „Trauerzeit“ nach einem Todesfall → Halluzinationen
 var strange_diary := false  ## im Tagebuch steht beim nächsten Mal eine fremde Zeile
-## Bedrohung beim Spieler (0..1) – Rauschen, Brummen, engerer Blick
+## Bedrohung beim Spieler (0..1) – Rauschen, Brummen
 var player_threat := 0.0
+## Stress des Spielers (0..1, geglättet): Bedrohung, Jagd, Versteck, Schock – der Blick wird enger (4.13)
+var player_stress := 0.0
 var uv_count := 0           ## so oft schon mit UV vertrieben (Gewöhnung, 4.8)
 ## Absicht der laufenden Aktivphase und wie viele es noch holen will (4.17)
 var intent := Intent.ONE
@@ -175,11 +195,9 @@ var skipping := false            ## Zeitsprung im Schlaf läuft: Zeitplan und Sp
 var _monster: Monster
 var _phase_left := 0.0
 var _zone_timer := 0.0
-var _zone_next := 0.0           ## nächste nachzuführende Zone (mit Bruchteil, _update_zones)
-## Mitten und Radien der Zonen in gepackten Listen – _zone_at läuft oft (next_roam_target: für jede Zone über alle)
+## Mitten und Radien der Zonen in gepackten Listen – _zone_at läuft oft
 var _zone_centers := PackedVector3Array()
 var _zone_radii := PackedFloat64Array()
-var _roam_zones := {}           ## Ziel von next_roam_target (Zonenmitte, vor der Zimmertür) → Zone dort
 var _light_grid := {}           ## Vector2i (Zelle) → Lichter darin
 var _light_reach := 0.0         ## größte Reichweite im Raster
 var _windows: Array[Node] = []  ## Fenster fürs Mondlicht, mit dem Raster neu gelesen
@@ -226,7 +244,7 @@ func _physics_process(delta: float) -> void:
 			boldness = minf(100.0, boldness + BOLDNESS_PER_DAY * delta / Calendar.DAY_SECONDS)
 		satiation = maxf(0.0, satiation - 0.1 * delta)
 		grief = maxf(0.0, grief - delta)
-		_update_zones(delta)
+		_cool_down(delta)
 		_zone_timer -= delta
 		if _zone_timer <= 0.0:
 			_zone_timer = 1.0
@@ -242,8 +260,13 @@ func _physics_process(delta: float) -> void:
 
 # --- Versteckte Werte ---------------------------------------------------------------
 
+## Grundwert (steigt in Spieltagen) + abklingende Boni − Sättigung (4.9, 4.10).
 func effective_boldness() -> float:
-	return clampf(boldness - satiation, 0.0, 100.0)
+	return clampf(boldness + boldness_bonus - satiation, 0.0, 100.0)
+
+
+func add_boldness(amount: float) -> void:
+	boldness_bonus += amount
 
 
 func demand() -> float:
@@ -252,11 +275,7 @@ func demand() -> float:
 
 
 func pressure_at(p: Vector3, chasing: bool = false) -> float:
-	return _pressure_in(_zone_at(p), chasing)
-
-
-func _pressure_in(zone: Dictionary, chasing: bool = false) -> float:
-	return effective_boldness() * (0.5 + 0.5 * _curiosity_of(zone) / 100.0) + (CHASE_BONUS if chasing else 0.0)
+	return effective_boldness() * (0.5 + 0.5 * curiosity_at(p) / 100.0) + (CHASE_BONUS if chasing else 0.0)
 
 
 func deterrence_at(p: Vector3) -> float:
@@ -386,18 +405,47 @@ func _lights_near(p: Vector3) -> Array:
 	return result
 
 
+## Neugier an einer Stelle: Grundwert + heiße Stellen in der Nähe auf demselben Stockwerk (4.9).
 func curiosity_at(p: Vector3) -> float:
-	return _curiosity_of(_zone_at(p))
+	var c := CURIOSITY_BASE
+	for spot in hot_spots:
+		var sp: Vector3 = spot["pos"]
+		if absf(p.y - sp.y) > 2.5:
+			continue
+		var d := Vector2(p.x - sp.x, p.z - sp.z).length()
+		if d < HOT_RADIUS:
+			c += float(spot["heat"]) * clampf((HOT_RADIUS - d) / (HOT_RADIUS - HOT_CORE), 0.0, 1.0)
+	return minf(c, 100.0)
 
 
-func _curiosity_of(zone: Dictionary) -> float:
-	return 40.0 if zone.is_empty() else float(zone["curiosity"])
-
-
+## Macht eine Stelle heiß – oder heißer, wenn schon eine nah genug liegt.
 func add_curiosity(p: Vector3, amount: float) -> void:
-	var zone := _zone_at(p)
-	if not zone.is_empty():
-		zone["curiosity"] = clampf(float(zone["curiosity"]) + amount, 0.0, 100.0)
+	if amount <= 0.0:
+		return
+	for spot in hot_spots:
+		var sp: Vector3 = spot["pos"]
+		if absf(p.y - sp.y) <= 2.5 and Vector2(p.x - sp.x, p.z - sp.z).length() < HOT_MERGE:
+			spot["heat"] = minf(100.0, float(spot["heat"]) + amount)
+			return
+	hot_spots.append({"pos": p, "heat": minf(100.0, amount)})
+	if hot_spots.size() > HOT_MAX:
+		var weakest := 0
+		for i in hot_spots.size():
+			if float(hot_spots[i]["heat"]) < float(hot_spots[weakest]["heat"]):
+				weakest = i
+		hot_spots.remove_at(weakest)
+
+
+## Heiße Stellen und Boni der Dreistigkeit klingen ab (4.9) – auch im Zeitsprung.
+func _cool_down(dt: float) -> void:
+	boldness_bonus *= pow(0.5, dt / BOLDNESS_BONUS_HALF_LIFE)
+	var k := pow(0.5, dt / HOT_HALF_LIFE)
+	for i in range(hot_spots.size() - 1, -1, -1):
+		var heat := float(hot_spots[i]["heat"]) * k
+		if heat < HOT_MIN:
+			hot_spots.remove_at(i)
+		else:
+			hot_spots[i]["heat"] = heat
 
 
 ## Zonen sind Kreise auf einem Stockwerk (Keller, Erdgeschoss, Obergeschoss).
@@ -424,29 +472,6 @@ func _zone_at(p: Vector3) -> Dictionary:
 func zone_name_at(p: Vector3) -> String:
 	var zone := _zone_at(p)
 	return "" if zone.is_empty() else String(zone["name"])
-
-
-## Neugier strebt langsam zu einem Grundwert aus Dunkelheit und fehlender Deko;
-## Ereignisse (Lärm, Sichtung …) addieren direkt darauf.
-## Je Physik-Frame ein Stück der Zonen, sodass jede einmal je ZONE_PERIOD drankommt.
-func _update_zones(delta: float) -> void:
-	if zones.is_empty():
-		return
-	var until := _zone_next + zones.size() * delta / ZONE_PERIOD
-	var first := int(_zone_next)
-	var count := mini(int(until) - first, zones.size())
-	_zone_next = fmod(until, float(zones.size()))
-	if count <= 0:
-		return
-	var decos := _deco_items()
-	for i in count:
-		var zone: Dictionary = zones[(first + i) % zones.size()]
-		var c: Vector3 = zone["center"]
-		var light := light_at(c + Vector3.UP)
-		var deco := _deco_strength(c, decos) / demand()
-		var base := 10.0 + (1.0 - light) * 55.0 + clampf(25.0 - deco, 0.0, 25.0)
-		var current: float = zone["curiosity"]
-		zone["curiosity"] = clampf(lerpf(current, base, 0.04), 0.0, 100.0)
 
 
 # --- Dramaturgie ------------------------------------------------------------------------
@@ -1004,7 +1029,7 @@ func on_actor_hid(spot: HideSpot, actor: Node3D) -> void:
 
 
 func on_monster_noticed() -> void:
-	boldness = minf(100.0, boldness + 8.0)
+	add_boldness(8.0)
 	add_curiosity(player_door_front, 40.0)
 	Game.play_sound("sting", 1.0)
 	_monster.stare()
@@ -1013,7 +1038,7 @@ func on_monster_noticed() -> void:
 
 ## Jemand redet über das Monster – es hört mit und wird dreister (Spielkonzept 4.7).
 func on_monster_talk(pos: Vector3) -> void:
-	boldness = minf(100.0, boldness + 3.0)
+	add_boldness(3.0)
 	add_curiosity(pos, 10.0)
 	_escalate(ESCALATE_ON_TALK)
 
@@ -1034,7 +1059,7 @@ func uv_repel_time() -> float:
 ## Dafür weiß es, wer es war – dreister, Neugier rund um Zimmer 13, und es gewöhnt sich daran.
 func on_monster_uv() -> void:
 	uv_count += 1
-	boldness = minf(100.0, boldness + UV_BOLDNESS)
+	add_boldness(UV_BOLDNESS)
 	add_curiosity(player_door_front, UV_CURIOSITY)
 	_uv_driven = true
 	_uv_angry = true
@@ -1180,7 +1205,7 @@ func skip(dt: float) -> String:
 		boldness = minf(100.0, boldness + BOLDNESS_PER_DAY * dt / Calendar.DAY_SECONDS)
 	satiation = maxf(0.0, satiation - 0.1 * dt)
 	grief = maxf(0.0, grief - dt)
-	_update_zones(dt)
+	_cool_down(dt)
 	if not first_attack_done or _monster.is_active():
 		return ""
 	_update_haunting(dt)
@@ -1457,8 +1482,8 @@ func _haunt_room_13() -> bool:
 
 # --- Ziele ----------------------------------------------------------------------------------
 
-## Nächstes Ziel beim Umherstreifen: irgendwo im Hotel, gewichtet nach Druck (Dunkelheit,
-## Neugier, wenig Deko). Lieber Orte, die der Spieler gerade nicht sieht.
+## Nächstes Ziel beim Umherstreifen: irgendwo im Hotel, gewichtet nach Druck (Dreistigkeit und heiße
+## Stellen, 4.9). Lieber Orte, die der Spieler gerade nicht sieht.
 func next_roam_target(from: Vector3) -> Dictionary:
 	var candidates: Array[Dictionary] = []
 	var weights: Array[float] = []
@@ -1473,9 +1498,7 @@ func next_roam_target(from: Vector3) -> Dictionary:
 			if rooms.has(no):
 				target = {"pos": (rooms[no] as Dictionary)["door_front"] as Vector3, "room": no}
 		var pos: Vector3 = target["pos"]
-		if not _roam_zones.has(pos):   # die Ziele liegen fest – ihre Zone auch
-			_roam_zones[pos] = _zone_at(pos)
-		var w := pow(maxf(_pressure_in(_roam_zones[pos]), 1.0), 2.0)
+		var w := pow(maxf(pressure_at(pos), 1.0), 2.0)
 		if Game.player and player_can_see(pos + Vector3.UP * 1.2) and pos.distance_to(Game.player.global_position) < 15.0:
 			w *= 0.15
 		candidates.append(target)
@@ -1609,6 +1632,11 @@ func save_state() -> Dictionary:
 		"planned": _planned, "lead": _lead, "rumble_total": _rumble_total, "doom_room": doom_room, "raiding": _raiding,
 		"route": ([raid_room] if raid_room != "" else []) + _route, "raid_kills": _raid_kills,
 		"doll_mask": doll_mask,
+		# versteckte Werte (4.9): abklingende Boni und heiße Stellen
+		"boldness_bonus": boldness_bonus,
+		"hot_spots": hot_spots.map(func(h: Dictionary) -> Array:
+			var p: Vector3 = h["pos"]
+			return [p.x, p.y, p.z, h["heat"]]),
 	}
 
 
@@ -1628,6 +1656,11 @@ func load_state(d: Dictionary) -> void:
 	_rumble_total = float(d.get("rumble_total", 0.0))
 	doom_room = String(d.get("doom_room", ""))
 	doll_mask = String(d.get("doll_mask", ""))
+	boldness_bonus = float(d.get("boldness_bonus", 0.0))
+	hot_spots.clear()
+	for h in d.get("hot_spots", []):
+		var a: Array = h
+		hot_spots.append({"pos": Vector3(float(a[0]), float(a[1]), float(a[2])), "heat": float(a[3])})
 	_raiding = bool(d.get("raiding", false))
 	_route.clear()
 	for no in d.get("route", []):
@@ -1674,6 +1707,13 @@ func _update_effects(delta: float) -> void:
 		heart_target = maxf(heart_target, player.exertion() * 0.85)
 		if player.jittery():   # zu viel Kaffee (3.11)
 			heart_target = maxf(heart_target, Player.COFFEE_HEART)
+	# Engerer Blick unter Stress (4.13): schnell eng, langsam wieder weit
+	var stress := 0.0
+	if player and not player.dead:
+		stress = maxf(maxf(player_threat, player.hide_stress), player.shock * 0.6)
+		if _monster.state == Monster.State.CHASE and player_threat > 0.0:
+			stress = 1.0
+	player_stress = move_toward(player_stress, stress, delta * (STRESS_RISE if stress > player_stress else STRESS_FALL))
 	# Flackerwelle beim Spieler: Bildflackern, Sirren im Stromnetz, Untertitel (Barrierefreiheit)
 	var wave := wave_at(player.global_position + Vector3.UP) if player else 0.0
 	if wave > 0.0:
@@ -1699,6 +1739,7 @@ func _update_effects(delta: float) -> void:
 		post_material.set_shader_parameter("noise_amount", _noise * focus)
 		post_material.set_shader_parameter("flicker", _pulse * 0.6 * focus)
 		post_material.set_shader_parameter("red_tint", 0.12 if _jumpscare > 0.0 else 0.0)
+		post_material.set_shader_parameter("vignette", VIGNETTE + STRESS_VIGNETTE * player_stress)
 	# Lampen flackern in der Nähe des Monsters – und wenn die Flackerwelle vorbeizieht
 	var active := _monster.is_active()
 	var mpos := _monster.global_position
@@ -1733,8 +1774,8 @@ func _update_effects(delta: float) -> void:
 func debug_text() -> String:
 	var s := "%s %s · Phase %s (%ds) · Angriff %d%s\n" % [Calendar.date_text(elapsed), Calendar.time_text(elapsed),
 		Phase.keys()[phase], int(_phase_left), attacks, " harmlos" if is_harmless() else ""]
-	s += "Dreistigkeit %.1f (effektiv %.1f) · Anspruch ×%.2f · Bedrohung %.2f\n" % [boldness, effective_boldness(), demand(),
-		player_threat]
+	s += "Dreistigkeit %.1f + %.1f (effektiv %.1f) · Anspruch ×%.2f · Bedrohung %.2f · Stress %.2f\n" % [boldness,
+		boldness_bonus, effective_boldness(), demand(), player_threat, player_stress]
 	s += "UV vertrieben: %d× (nötig %.1f s)\n" % [uv_count, uv_repel_time()]
 	s += "Absicht: %s (noch %d Opfer) · Flackern zeigte %d · Angriffschance %.0f %%\n" % [INTENT_NAMES[intent], victims_left, shown_victims, attack_chance() * 100.0]
 	s += "Monster: %s\n" % Monster.State.keys()[_monster.state]
@@ -1747,10 +1788,11 @@ func debug_text() -> String:
 	if Game.player:
 		s += "Licht beim Spieler: %.2f · Ausdauer %.2f%s\n" % [light_at(Game.player.global_position + Vector3.UP),
 			Game.player.stamina, " außer Atem" if Game.player.winded else ""]
-	s += "Zone        Neugier Druck Abschr.\n"
-	for zone in zones:
-		var c: Vector3 = zone["center"]
-		s += "%-11s %5.0f %5.1f %5.1f\n" % [zone["name"], zone["curiosity"], pressure_at(c), deterrence_at(c)]
+	s += "Heiße Stelle  Hitze Neugier Druck Abschr.\n"
+	for spot in hot_spots:
+		var c: Vector3 = spot["pos"]
+		s += "%-13s %5.0f %7.0f %5.1f %5.1f\n" % [zone_name_at(c), spot["heat"], curiosity_at(c), pressure_at(c),
+			deterrence_at(c)]
 	if not Game.noise_log.is_empty():
 		s += "Lärm:\n  " + "\n  ".join(Game.noise_log) + "\n"
 	s += "F5 = Monster losschicken"

@@ -863,7 +863,8 @@ func aim_point() -> Vector3:
 
 func _update_dread(delta: float) -> void:
 	var threat := Game.director.player_threat if Game.director else 0.0
-	camera.fov = lerpf(camera.fov, (Settings.fov - 10.0 * threat) * fov_zoom, minf(1.0, (6.0 if at_oche else 2.0) * delta))
+	var stress := Game.director.player_stress if Game.director else 0.0   # Versteck und Schock zählen mit
+	camera.fov = lerpf(camera.fov, (Settings.fov - 12.0 * stress) * fov_zoom, minf(1.0, (6.0 if at_oche else 2.0) * delta))
 	_dread_time += delta * (1.5 + threat * 1.5)
 	camera.position.y = sin(_dread_time) * 0.012 * threat
 

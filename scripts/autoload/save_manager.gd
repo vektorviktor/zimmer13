@@ -102,7 +102,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     laden weiter, ohne Bitten
 ## 52: Verbotene Masken (Spielkonzept 5.19): Item.Kind.MASK, player.mask (aufgesetzt), „mask_hooks“ (je Maske, ob sie in
 ##     Zimmer 13 hängt), director.doll_mask – ältere Stände laden weiter, die Masken hängen dann an ihren Haken
-const VERSION := 52
+## 53: Heiße Stellen statt Neugier je Zone (Spielkonzept 4.9): director.state.hot_spots und boldness_bonus statt
+##     director.curiosity – ältere Stände laden weiter, ohne heiße Stellen und Boni
+const VERSION := 53
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -466,13 +468,10 @@ func collect() -> Dictionary:
 		"requests": social.requests.save_state(),
 	}
 	var director := Game.director
-	var curiosity: Array = []
-	for zone in director.zones:
-		curiosity.append(float(zone["curiosity"]))
 	data["director"] = {
 		"boldness": director.boldness,
 		"satiation": director.satiation, "elapsed": director.elapsed,
-		"curiosity": curiosity, "state": director.save_state(),
+		"state": director.save_state(),
 	}
 	data["traces"] = Game.traces.save_state() if Game.traces else []
 	# gelegte Salzlinien: kein fester Welt-Teil (nicht in WORLD_GROUPS), beim Laden neu erzeugt
@@ -621,9 +620,6 @@ func apply(data: Dictionary) -> void:
 	director.satiation = float(dd.get("satiation", 0.0))
 	director.elapsed = float(dd.get("elapsed", 0.0))
 	director.phase = MonsterDirector.Phase.CALM
-	var curiosity: Array = dd.get("curiosity", [])
-	for i in mini(curiosity.size(), director.zones.size()):
-		director.zones[i]["curiosity"] = float(curiosity[i])
 
 	# Gäste (vor den Gegenständen: ein toter Gast gibt seine Sachen frei)
 	var gd: Dictionary = data.get("guests", {})

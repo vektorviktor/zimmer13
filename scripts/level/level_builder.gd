@@ -4414,8 +4414,6 @@ func _zones() -> void:
 	for no in rooms:
 		var info: Dictionary = rooms[no]
 		zones.append({"name": "Zimmer " + String(info["sign"]), "center": info["center"], "radius": 3.2})
-	for zone in zones:
-		zone["curiosity"] = 50.0
 	spawn_points = [
 		cellar_center() + Vector3(0, 0.05, 0),                             # Heizkeller – das Versteck des Monsters
 		(rooms["017"]["center"] as Vector3) + Vector3(0, 0.05, 0),        # verlassenes Zimmer

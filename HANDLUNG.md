@@ -3,7 +3,7 @@
 Der rote Faden eines **optimalen Durchlaufs**: welche Meilensteine die Hauptgeschichte trägt, wann man sie frühestens
 bzw. idealerweise erreicht und was jeder freischaltet. Entschieden wird weiter im [Spielkonzept](SPIELKONZEPT.md)
 (mit Datum); hier steht der Ablauf, der die Entscheidungen verbindet. Lose Ideen ohne Platz im Ablauf gehören nach
-[IDEEN.md](IDEEN.md).
+[OFFEN.md](OFFEN.md) (6).
 
 **Status je Meilenstein:** **fest** = im Spielkonzept entschieden · **Anker** = als Eckpunkt gesetzt, Ausgestaltung
 offen · **Kandidat** = Vorschlag, noch nicht entschieden.

@@ -1,0 +1,200 @@
+# Zimmer 13 – Offene Punkte
+
+Alles, was noch nicht fertig oder nicht entschieden ist, an einer Stelle. Ausführlich steht es in den verlinkten
+Kapiteln; hier nur Stichpunkte und Verweis. Was keinen ausführlicheren Ort hat, ist knapp beschrieben (vor allem die
+Ideen in 6, früher IDEEN.md).
+
+**Kürzel:** SK = [SPIELKONZEPT.md](SPIELKONZEPT.md) · HA = [HANDLUNG.md](HANDLUNG.md) (M = Meilenstein,
+K = Kandidat) · GE = [GEGENSTAENDE.md](GEGENSTAENDE.md) · TE = [TECHNIK.md](TECHNIK.md)
+
+**Pflege:** Entschiedenes wandert mit Datum ins Spielkonzept, Gebautes fliegt hier raus. Neue Ideen kommen nach 6.
+
+Stand: 2026-10-27
+
+---
+
+## 1. Hauptgeschichte: was dem Durchlauf noch fehlt
+
+Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). Alles entschieden, nichts davon gebaut.
+
+| Stück | Verweis | Stand |
+|---|---|---|
+| Doris' Suche: Bitte, Suchtrupp an der Kellertür, Brille am Gitter, Abschied/Brief | SK 2.9 · HA M5a–M7b, K8 | nicht gebaut; Gitter im Plan gemalt, ohne Legende |
+| Mitteilung „abgereist“ am Brett | SK 2.9 · HA M6 · GE | nicht gebaut |
+| Hotelregister mit Kreuzen, „geb. Ahrend“, „geb. K…“ | SK 2.3 · HA K1, M6, M13 · GE | nicht gebaut |
+| Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel | SK 7.4 · HA M8 · GE | nicht gebaut |
+| Aufzug reparieren: Ersatzsicherung, Bremse, erste Fahrt nach „T“ | SK 7.4 · HA M9–M11, K3 | Aufzug fährt, Reparatur als Sperre fehlt |
+| **Tiefkeller** (Lager, Werkstatt, Fundsachen-Koffer) | SK 7.4, 7.10 · HA M11, M17 | **Plan steht aus** |
+| Kesselbuch, Marion entlarven, Marions Auftrag | SK 2.8 · HA M12–M13, M16a, K4 | Marion gibt es im Spiel noch nicht |
+| Kürbismann aufhalten und erlösen (Gitter, Dachbodenschlüssel, Ritual, Belohnungen) | SK 4.21 · HA M14, K7 · GE | nur der Dachboden mit Platzhalterkopf |
+| Seine Sachen, Büro der Direktion, Vertrag, Werkstattschlüssel | SK 2.8 · HA M15a–b · GE | nicht gebaut |
+| Schlüssel zum Haupteingang holen | SK 2.1, 2.7 · HA M18, K6 · GE | Tür gebaut, Schlüssel und Fundort fehlen |
+| Ritual in der Halloween-Nacht | SK 2.8 · HA M19a | nicht gebaut |
+| Die drei Enden (mit/ohne Schlüssel, erlöst/nicht erlöst) als Zwischensequenzen | SK 2.7 · HA M21–M21b | nicht gebaut |
+| Autosave bei Fortschritt im Fluchtweg | SK 8, 8.10 | hängt am Fluchtweg |
+
+## 2. Konzeptlücken (Entscheidung fehlt)
+
+### Geschichte
+- **Fundort des Ausgangsschlüssels** und wie die Gäste helfen – SK 2.7, HA K6, M18.
+- **Wer hat die Ersatzsicherung** (Kandidat Bruno) – HA K3.
+- **Edna als Mitwisserin** (Bedrohung um den 20.10.) noch Kandidat; **Lücke 16.–22. Oktober** braucht evtl. einen
+  zweiten festen Moment – HA K5, HA 4.
+- **Büro der Direktion:** Lage, zweiter Weg hinein ohne erlösten Kürbismann – HA 4, SK 2.8, 6.19.
+- **Mila Hellwig** ohne Rolle im Geheimnis (Vorschlag Skizzen) – HA 4; allgemein Bezug der Kernfiguren-Bitten zum
+  Geheimnis – SK 6.14.
+- **Lore 1987:** Warnungszettel vor dem Kesselbrand; was das Ding unter dem Hotel vorher war – HA 4, SK 10 (Frage 4).
+- **Enden:** Epilog im nächsten Jahr? eigenes Vampir-Ende? Sequenz steuerbar? Darstellung von Ende 3 bei ab 16 –
+  SK 2.7 „Zu den Enden noch offen“.
+- **Marions Brief:** auslösen anders oder streichen (Kernfiguren sterben nicht mehr) – GE.
+- **Mit „Vorschlag“ markierte Punkte** in SK 2.9, 4.22, 4.32, 4.33, 5.19 und HA (Daten, Inhalte, Wege) sind noch
+  zu bestätigen.
+
+### Systeme
+- **Grundsatzfragen** SK 10: Bemerkt-Auslöser (3a), Truhen abschließbar/eigene Truhe (3h), Umfang (8), Koop (9),
+  Sprache (10).
+- **Leviathan-Modi:** gilt die längere Frist auch beim Raubzug? – SK 4.33. Tuning-Werte Angriffe – SK 4.17.
+- **Kürbismann aufhalten:** wie lang „sehr kurz“, Zeige-Entfernung, welche Kürbisse zählen – SK 4.21.
+- **Vampir:** Biss, Verwandlung, „schwach“, hereinbitten – fast alles Vorschlag – SK 4.22.
+- **Versiegelte Zimmer:** welche drei neben 042, Schlüssel, Gegenstände – SK 6.19 (7).
+- **Krähen:** welches Dachfenster fürs Dachnest (hängt am Dach) – SK 4.25.
+- **Salz:** zwei Gäste mit „kreisenden Händen“ – welche, wann, fest oder zufällig; streuen ältere Gäste selbst? – SK 5.13.
+- **Aufträge:** wie viele gleichzeitig, Ablehnen ohne Beziehungsverlust – SK 6.14. Streit unter Gästen – SK 6.16.
+- **Handel:** woher kommt Geld – SK 6.4.
+- **Bar/Küche:** weitere Getränke; macht Kochen Lärm, Zutaten aus dem Kühlraum – SK 3.7, 3.8.
+- **Balkon:** Geländer übersteigen, in den Garten springen? – SK 7.7.
+- **UV:** zeigt es weggewischte Spuren an Zimmer 13? – SK 4.16.
+- **Katzenraum:** vertagt (Kürbismann kommt hinein) – SK 4.20, 7.7.
+- **Kommoden:** Gäste durchsuchen/befüllen, Kommoden in Zimmern – SK 3.5.
+- **Kesselraum-Käfig:** wie man hineinkommt – SK 7.4.
+- **Trauer der Gäste um Freunde** – SK 6.12.
+- **Aufzug:** hält er im Dachgeschoss (heute nicht)? Gäste und Monster im Aufzug? – SK 7.10 „Zu klären“, 7.4.
+- **Dachform** offen (eigene Idee des Nutzers), Dachgeschoss mit flacher Zwischenlösung – SK 7.10.
+
+## 3. Entschieden, noch nicht gebaut (Systeme)
+
+**Bedrohungen**
+- Name Leviathan (Hugo Stein, Doré-Buch) – SK 4.32 · GE.
+- **Vier Modi** des Leviathan (Urteil, Snack, Raubzug, Anforderung) statt der Absichten aus 4.17 – SK 4.33.
+- **Drei Bedrohungen** je Ebene, gleiche Sicht für den Kürbismann, Lakengeist erst nach dem ersten Angriff
+  (spukt im Code ab Tag 2) – SK 4.20, 4.18.
+- Vampir als vierte Bedrohung (Fledermäuse ohne Biss gebaut, im Dachgeschoss noch keine) – SK 4.22.
+- Krähen-Erweiterung: Ruf, Futtertisch, zwei Nester, Ring – SK 4.25 · GE (Brotkrumen, Kürbiskerne).
+- Kesselkatze: Marion erkennt sie, beim Ritual – SK 4.26.
+
+**Gäste und Sozialsystem**
+- **Sozialsystem verknüpft** (Gerüchte als Kanal, Tod mit Ursache, Wünsche, Wache, Tagesbudgets, Geschenke, Vergebung,
+  Neid) – SK 6.18 (großteils offen). Daran hängen: Schock+Trauer als ein Wert – SK 6.8; Gerüchte im Notizbuch – SK 3.10.
+- Zimmerzugang, Reste: Einbruch sehr wütender Gäste bei 13, Schlüssel stehlen, Zweitschlüssel, Reparatur-Tagesbudget,
+  Badtür-Riegel – SK 6.19.
+- Gäste bedienen Lichtschalter aktiv – SK 7.3.
+- Telefon: Gäste rufen sich an, Panik-Anrufe, Telefonzentrale – SK 4.14.
+- Lärm: Untertitel für leise Geräusche, Gäste ärgern sich über Lärm vor ihrer Tür – SK 4.15.
+- Aufträge, Reste: zentrale Gäste, Verstecken/Apfeltauchen als „Spielen“, Kuscheltier, Bitten am Telefon/als Zettel –
+  SK 6.14. Antworten mit Tonlage – SK 6.9.
+- Kinder: Funde in engen Ecken (am Geheimnis), Eier-Streich – SK 6.13.
+- Gäste gehen mit Grund ins UG („Leg Kohle nach“, „Hol die Wäsche“) – SK 7.9, 7.10.
+
+**Spieler**
+- **Schlaf & Müdigkeit:** Wachzeit statt Nächte, Stufen, ausgeschlafen/übermüdet, fremde Betten, Zeitsprung auch am
+  Tag – SK 3.6.
+- Taschenlampe: alles gebaut; UV-Spuren an 13 offen (s. 2).
+
+**Deko und Halloween**
+- Knappheit Stufe 2 (Schutzkreis = Lichtschein, sichtbare Abweisung) und 3 (Gäste schmücken mit Plan, klauen) – SK 5.10.
+- Puppe: die „vorgemerkten“ Punkte, u. a. Jury beim Großen Schmücken – SK 5.5.
+- **Maskenball**, Reste: sechs Masken, Verstecke und Zettel, der Ball, Verleihen, Rückkehr an den Haken, Trophäen;
+  eigene Maske (Ruth Behrens) – SK 5.19 · GE. Dazu die Masken-Erfolge – SK 8.11.
+- Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche, Durchsagen, **Gruppenfoto** mit leeren Plätzen – SK 5.9 · HA M19.
+- Minispiele: Kürbis-Schnitz-Duell; Schach-Dame als Suche, Mühle, Turnier; Darts-Kreidetafel – SK 6.10.
+
+**Welt**
+- Wetter, Reste: Regen an den Scheiben, Gestalt im Blitz, Wind, Tiere, dichter werdender Nebel, Vollmond – SK 7.8.
+- UG: Maschinen- und Müllraum fertig ausbauen; Kessel anheizen **eingefroren** – SK 7.4, 7.9.
+- Flecken auf den Tapeten – SK 7.2.
+
+**Menüs und Speichern**
+- **Speicherregel 8.10:** Autosave nur bei Fortschritt/neuem Bereich/Aufwachen, „Unterbrechen und beenden“,
+  Tagebuchsatz – SK 8.10.
+- Lautstärke „Stimmen“, Tastenbelegung – SK 8 (Kopf), 8.4. Ausbau-Ideen – SK 8.9.
+
+## 4. Gebäudeplan, Modelle, Ton
+
+Plan nur der Nutzer (`map*.aseprite`).
+- **Tiefkeller-Plan** fehlt – SK 7.10.
+- **Gitter #9c5a5a** im Heizkeller: Legende und Einbau fehlen – SK 2.9.
+- Ausstattung im Plan fehlt für Rattenkönig, Fotowand, Puppenhaus, Apfelbottich (laufen auf festen Ausweichplätzen) – TE 1573 ff.
+- Kommode in Zimmer 022 (Streichhölzer) – SK 5.12 · TE (`CONTENT["022"]`).
+- Echte Modelle und Klänge für die übrigen Platzhalter, u. a. weißer Kürbis wie der orange (Meshy + Farbatlas),
+  Kopf des Kürbismanns, Splash-Klang – SK 11 (15), TE 1, GE.
+- Kieseltextur für die Kieswege – SK 7.10.
+- Eigener PS1-Modus – ganz am Ende – SK 9.2.
+
+## 5. Technik und Pflege
+
+- **Segfault beim Beenden** headless (etwa jeder dritte Lauf, Exit 139), Ursache unbekannt – TE (Bekannt, offen).
+- Balancing insgesamt – SK 11 (16).
+- **SK 11 „Nächste Schritte“ ist veraltet** (Achievements, Gästebitten, Masken teils gebaut) – s. 7.
+
+## 6. Ideen (unentschieden, früher IDEEN.md)
+
+Je Idee: kurz, wozu sie passt, offene Fragen.
+
+**I1 – Lakengeist in der Dusche** → entschieden und gebaut (SK 4.24).
+
+**I2 – Die Kesselkatze als Mechanik** (2026-10-25). Gebaut als Führerin zu Kessel und UV-Schrift (SK 4.26). Der
+Nutzer möchte sie später als Mechanik besprechen: Geisterkatze, Augen im Dunkeln.
+Offen: Wann und wo zeigt sie sich (nur unten, nur nachts)? Hilft oder warnt sie, und wie unterscheidet sie sich von
+den drei Hotelkatzen (SK 6.11)?
+
+**I3 – Der Rattenkönig im Glas** (2026-10-25, **ruht**, bis der Nutzer ihn anspricht). Sieben Ratten mit verknoteten
+Schwänzen in trübem Spiritus, Glas auf einem Wandbord im Müllraum; reine Stimmung neben den Ratten (SK 4.25).
+- Stand: `scripts/world/rat_king.gd` (`RatKing.place` in `main.gd`); [E] zeigt den Zettel und legt einen
+  Notizbuch-Eintrag an („Müllraum“), nicht gespeichert. Kein Modell (Grundkörper), kein Platz im Plan (`FALLBACK`
+  an der Nordwand), kein Debug-Parameter, kein Rauchtest, im Spiel nicht angesehen.
+- Zettel frei erfunden („Gefunden im Kohlenkeller, Winter 1962. Sieben Stück. Nicht wegwerfen. – A. R.“); wer
+  „A. R.“ ist und was 1962 war, steht nirgends.
+- Offen: Bleibt er? Wenn ja: Modell, Platz im Plan, Zettel mit Bezug zur Geschichte oder neutral?
+
+**I4 – Das Foto vom Leviathan** (2026-10-25). Ein Gast fotografiert ihn während eines Angriffs; danach ist die
+Bedrohung erstmals greifbar – ein Bild statt Gerücht. Zweiter Schritt nach der Benennung durch Hugo Stein (SK 4.32);
+passt zur Fotowand (SK 5.14) und zur Frage, ob ein Foto einen Vampir verrät (SK 4.22).
+Offen: Welcher Gast (Paula Jansen H30, die über das Hotel schreibt, oder das Paar Engel H14, das den Spuk beweisen
+will)? Fest oder bei einem beliebigen Angriff? Hängt es an der Fotowand? Was ändert sich bei den Gästen (Angst,
+Skeptiker geben auf, Magda Seidel H36 sieht den Trick der Direktion bestätigt)?
+
+**I5 – Die verbotenen Masken: Regel und Herkunft** (2026-10-25). Die acht Masken sind entschieden (SK 5.19); offen
+ist, **warum** sie verboten sind und **wie** sie in Umlauf kommen. Darf dem Bau des Maskenballs nicht im Weg stehen.
+- Wer oder was verbietet sie? Teil des Abkommens von 1987 (SK 2.3) – etwa Masken vom ersten Ball, nach denen das
+  Hotel die heutigen Dinge geformt hat? Erfährt man die Regel je (Dokument, Edna, Hugo)?
+- Nur feste Verstecke (Vorschläge in 5.19) oder tauchen sie auch auf – morgens vor 13, bei einem Gast, als
+  Ballgewinn? Finden Gäste selbst eine und tragen sie ahnungslos?
+- Kann Hugo Stein (H27) sie erkennen, kaufen, verkaufen?
+
+**I6 – Der Ring im Dachnest** (2026-10-25). Ein Gast ließ seinen Ring draußen liegen, eine Krähe holte ihn ins Nest
+vor einem Dachfenster, mit ausgestrecktem Arm erreichbar (SK 4.25, Erweiterung). Gastauftrag „Wiederfinden“ (SK 6.14).
+Offen: Wessen Ring (Ehering, Erbstück, Bezug zu 1987)? Fragt der Gast, oder findet man ihn zuerst und sucht den
+Besitzer? Welches Dachfenster (hängt am Dach)? Lohn?
+
+**I7 – Ein eigenes Grab für jeden Toten** (2026-10-26). Bisher bekommen nur Tote mit Leiche ein Grab; Opfer des
+Leviathan stehen nur auf der Gedenktafel mit einer Kerze je Name (SK 5.15). Dort wirkt ein abgelegtes Fundstück
+(Gustavs Brille, SK 2.9) zwischen vielen Grablichtern zufällig. Ein eigener Platz je Toten – auch leeres Grab oder
+Gedenkstein für Vermisste – erlaubt Ablegen von Brille, Hausschuh, Briefen.
+Offen: Leeres Grab oder Gedenkstein? Reichen die 43 Grabplätze? Bringt Ablegen etwas (Gedenken, Beziehung bei
+Freunden) oder nur Stimmung? Legen Gäste selbst etwas ab?
+
+## 7. Leichte Ausbaustufen (direkt ableitbar)
+
+Nur was sich fast ohne neue Entscheidung aus Bestehendem ergibt.
+- **Lakengeist erst nach dem ersten Angriff:** entschieden (SK 4.20); in `sheet_ghost.gd` (Zeile ~446) steht noch
+  `first_attack_done or Calendar.today() >= FROM_DAY` – die Tagesbedingung entfällt.
+- **Mitteilung „Herr Peters ist abgereist“** am 3.10. morgens: Text steht (SK 2.9), das Brett kann Aushänge
+  (`NoticeBoard`) – unabhängig vom übrigen Doris-Strang baubar.
+- **Fledermäuse im Dachgeschoss:** Verhalten draußen gebaut, oben entschieden (schlafen an den Balken, kein Biss,
+  SK 4.22) – es fehlen nur Hängeplätze auf dem Dachboden.
+- **Kochen macht Lärm:** eine Entscheidung, dann ein `Game.noise`-Aufruf am Herd (SK 3.8, 4.15).
+- **Kürbiskerne beim Schnitzen** als Gegenstand fallen lassen – Schnitzen gebaut (SK 5.4), Kerne sind fürs Krähenfutter
+  ohnehin geplant (SK 4.25, GE).
+- **Marions Brief streichen** (GE): Auslöser entfällt seit 2026-10-25.
+- **SK 11 „Nächste Schritte“ aufräumen:** gebaute Punkte (Achievements, Gästebitten, Masken teils) streichen, auf
+  dieses Dokument verweisen.

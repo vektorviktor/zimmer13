@@ -333,9 +333,8 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
   `LightSwitch.find(tree, room_id)` schaltet alle Lampen des Raums. Mehrere Schalter in einem Raum sind eine
   Wechselschaltung: `set_on` stellt alle mit derselben `room_id` um (Lärm und `on_lights_off` nur vom betätigten),
   `find()` darf also irgendeinen liefern.
-- **Zonen** (`LevelBuilder.zones`, Kreise mit `name`, `center`, `radius`, `curiosity`) sind etwas anderes: Sie tragen
-  den Anzeigenamen („Nordflügel“, „Zimmer 13“) und die Neugier des Monsters. `MonsterDirector._zone_at(pos)` /
-  `zone_name_at(pos)`.
+- **Zonen** (`LevelBuilder.zones`, Kreise mit `name`, `center`, `radius`) sind etwas anderes: Sie tragen nur den
+  Anzeigenamen („Nordflügel“, „Zimmer 13“). `MonsterDirector._zone_at(pos)` / `zone_name_at(pos)`.
 - **Gast-IDs:** feste Gäste `edna`, `bruno`, `mila` (`GuestProfiles`); erzeugte `gast1`, `gast2` … (laufend).
 - **Besitz** (`Item.owner_id`): `""` niemand, `"player"` oder eine Gast-ID.
 
@@ -714,11 +713,14 @@ natürlichen Erscheinen: `_update_schedule` (Aufbruch verschoben, später neu), 
 `--warn`, `--ghost`, `--pumpkin=…`) fragen nicht.
 
 ### Versteckte Werte (Director)
-- `boldness` (Dreistigkeit, steigt nach dem ersten Angriff je Spieltag) − `satiation` = `effective_boldness()`.
-  `demand()` (Anspruch an Deko, Spielkonzept 5.10) gleitend nach Tag von `DEMAND_FROM_DAY` bis `DEMAND_MAX`.
-- `curiosity` je Zone: strebt zu einem Grundwert aus Dunkelheit und fehlender Deko, Ereignisse addieren
-  (`add_curiosity`). `_update_zones(delta)` nimmt je Physik-Frame nur ein Stück der Zonen dran (jede einmal je
-  `ZONE_PERIOD`) – alle auf einmal (Hunderte Zonen × Hunderte Lichter) ließen das Spiel jede Sekunde merklich hängen.
+- `boldness` (Dreistigkeit, steigt nach dem ersten Angriff je Spieltag) + `boldness_bonus` (Ereignisse über
+  `add_boldness`: bemerkt, belauscht, UV; Halbwertszeit `BOLDNESS_BONUS_HALF_LIFE`) − `satiation` =
+  `effective_boldness()` (Spielkonzept 4.9). `demand()` (Anspruch an Deko, Spielkonzept 5.10) gleitend nach Tag von
+  `DEMAND_FROM_DAY` bis `DEMAND_MAX`.
+- **Heiße Stellen** statt Neugier je Zone (4.9): `hot_spots` ({pos, heat}, höchstens `HOT_MAX`). `add_curiosity(p, n)`
+  macht eine Stelle heiß oder verschmilzt mit einer unter `HOT_MERGE`; `curiosity_at(p)` = `CURIOSITY_BASE` + Hitze der
+  Stellen auf demselben Stockwerk (voll bis `HOT_CORE`, auslaufend bis `HOT_RADIUS`). `_cool_down(dt)` lässt Hitze
+  (`HOT_HALF_LIFE`) und Boni abklingen, je Frame und im Zeitsprung. Gespeichert in `save_state` (Speicherformat 53).
 - `pressure_at(p)` aus Dreistigkeit und Neugier, `deterrence_at(p)` aus Deko × Licht / `demand()` plus Licht allein,
   im Katzenraum unendlich (`LevelBuilder.is_safe`). Deko zählt nur auf demselben Stockwerk, mit `Item.deco_value()`;
   Füllmaterial (`Item.is_filler()`) zusammen höchstens `FILLER_CAP` je Stelle (`_deco_strength`, auch für die Puppe).
@@ -1705,6 +1707,10 @@ vorher die IDs ein (`Social.find_guest`), `main.gd` sucht ebenfalls mit `find_gu
   Flackern, dazu **verschwommene Sicht** (Spielkonzept 3.6/3.7): `Player._update_sight` setzt `sight_blur` (Müdigkeit
   über `tiredness()`, Rausch, Kater) und `sight_warp`; `main._process` reicht sie mit `blur_time` (steht in der Pause)
   an den Shader – Scheibe aus Abtastungen über eine Mip-Stufe der Screen-Textur.
+- **Engerer Blick unter Stress** (Spielkonzept 4.13): `MonsterDirector.player_stress` (geglättet, schnell hoch
+  `STRESS_RISE`, langsam runter `STRESS_FALL`) aus Bedrohung, Versteck-Stress, Schock, Jagd = 1. `_update_effects`
+  setzt damit `vignette` (`VIGNETTE` + `STRESS_VIGNETTE` × Stress), `Player._update_dread` verkleinert den Blickwinkel
+  um bis zu 12°.
 - **Nebel** (`main._setup_environment`): Tiefennebel bis Schwarz, Volumennebel nur nah (sonst verschleiert Lampenlicht
   das Flurende beige); `camera.far` knapp dahinter, weil `player_can_see` am Frustum hängt.
 - **Himmel** (`shaders/night_sky.gdshader`, `Sky` `REALTIME`): Verlauf, Mond in Richtung von `LIGHT0`, Wolken, Sterne,

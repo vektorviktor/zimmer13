@@ -1408,7 +1408,8 @@ Es gibt **keine globale Vorwarnung**. Das Monster verrät sich über drei Signal
 ### 4.9 Versteckte Werte: Dreistigkeit & Neugier
 Das Verhalten des Monsters wird aus **für den Spieler unsichtbaren Werten** berechnet. Der Spieler soll sie nur indirekt spüren (häufigere Vorwarnungen, Geräusche näher am Zimmer, …).
 
-> **Vereinfacht (entschieden 2026-10-21), noch nicht umgesetzt:**
+> **Vereinfacht (entschieden 2026-10-21, umgesetzt 2026-10-27; Boni klingen mit 6 Spielstunden Halbwertszeit ab,
+> heiße Stellen mit 40 s, Grundneugier überall 40 – Dunkelheit und Deko wirken nur noch über die Abschreckung):**
 > - **Dreistigkeit** steigt wie der Anspruch (4.8) **in Spieltagen** statt je Sekunde – mit der Tagesuhr (2.4) wäre
 >   sie sonst nach gut einem Tag bei 100, und danach wirkte kein Ereignis mehr. Ereignisse (belauscht, bemerkt, UV)
 >   geben **abklingende Boni** obendrauf. Die „Delle“ nach einer Abweisung entfällt.
@@ -1499,7 +1500,8 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 ### 4.13 Ständige Präsenz (entschieden 2026-10-10)
 > **Im Prototyp umgesetzt (2026-10-11):** Umherstreifen im ganzen Hotel im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht dem Blick des Spielers aus, Rauschen ab 20 m (am stärksten bei 4 m), Lampen flackern nur in seiner Nähe, Halluzinationen nach einem Todesfall, alle Spuren aus der Tabelle (Fußspuren verblassen, Kratzspuren bleiben, Spuren an Zimmer 13 lassen sich wegwischen), Klopfen in beiden Varianten, Warnungszettel ab dem ersten Angriff, kleine Veränderungen im Hotel, Gäste berichten (nicht immer zuverlässig) von Spuren, Brummen mit dem Rauschen. Spielstände sichern Monster, Spuren und geprüfte Verstecke.
-> **Noch nicht:** engerer Blick unter Stress.
+> **Engerer Blick unter Stress umgesetzt (2026-10-27):** Monster nah, Jagd, Versteck oder Schock → der Bildrand wird
+> dunkel und der Blickwinkel kleiner; schnell eng, langsam wieder weit.
 
 **Entschieden**
 - **Das Monster patrouilliert im ganzen Hotel** (Flure, Zimmer, Lobby, Küche, Bar, Garten, Keller) und **bleibt dabei oft verborgen**: bewegt sich bevorzugt außerhalb des Blickfelds und im Dunkeln.
@@ -2384,10 +2386,10 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
   - **Geduld:** füttern und warten, bis sie es als Geschenk bringen – leise, aber Tage.
 - **Nest am Dach:** direkt vor einem **Dachfenster** im Dachgeschoss, mit ausgestrecktem Arm zu erreichen – kein
   Klettern auf dem Dach. Darin liegt der **Ring** eines Gastes: Er hat ihn draußen auf einem Tisch liegen lassen, eine
-  Krähe hat ihn geholt. Wessen Ring und welcher Auftrag: offen (IDEEN.md).
+  Krähe hat ihn geholt. Wessen Ring und welcher Auftrag: offen (OFFEN.md I6).
 
 **Zu klären**
-- **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (IDEEN.md).
+- **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (OFFEN.md I3).
 - **Dachnest:** welches Dachfenster – hängt an der noch offenen Form des Dachs.
 - **Geschenke:** was außer Münzen und Gestohlenem auf dem Tisch liegen kann, und ab welchem Ruf.
 - **Kerzen der Ratten:** Wohin schleppen sie sie? Dieselbe Frage wie bei den Krähen – ein sichtbares Lager wäre die
@@ -2410,7 +2412,7 @@ Katze?“).
 - Debug: `--kesselkatze`.
 
 **Zu klären**
-- **Als Mechanik später besprechen** (Nutzer, 2026-10-25): Geisterkatze, Augen im Dunkeln (IDEEN.md).
+- **Als Mechanik später besprechen** (Nutzer, 2026-10-25): Geisterkatze, Augen im Dunkeln (OFFEN.md I2).
 
 ### 4.27 Spiegel: verhängt und mit Gestalt (entschieden und umgesetzt 2026-10-25)
 - **Verhängte Spiegel:** Stirbt ein Gast, verhängt seine Familie die Spiegel im Zimmer mit einem dunklen Tuch – ein
@@ -3261,7 +3263,7 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 
 **Die verbotenen Masken**
 - **„Verboten“ ist keine Hausregel.** Sie sind durch eine **geheimnisvolle Regel** verboten, die erst einmal keiner
-  kennt. Was dahintersteckt, ist offen ([IDEEN.md](IDEEN.md)).
+  kennt. Was dahintersteckt, ist offen ([OFFEN.md](OFFEN.md) I5).
 - **Masken täuschen nie:** Keine Bedrohung lässt sich von einer Maske täuschen, auch nicht von ihrer eigenen.
 - **Jede Maske ruft ihre eigene Bedrohung** – und **verärgert** sie. Wer sie trägt, ob Spieler oder Gast, wird zum
   Ziel.
@@ -3289,7 +3291,7 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 - **Sie finden von selbst zurück:** Am Morgen nach dem Ball hängt jede ausgeliehene Maske wieder an ihrem Haken in
   Zimmer 13 – niemand hat sie gebracht. Sie springt nur, wenn man weder Haken noch Träger sieht (wie die Puppe, 5.5),
   auch wenn der Leiher gestorben ist. Das passt zur unbekannten Regel, und man muss nach einem Ball nichts einsammeln.
-- **Wie die Masken zum Spieler und zu den Gästen kommen**, außer über die Verstecke, ist offen ([IDEEN.md](IDEEN.md)).
+- **Wie die Masken zum Spieler und zu den Gästen kommen**, außer über die Verstecke, ist offen ([OFFEN.md](OFFEN.md) I5).
 
 ## 6. Die anderen Gäste (NPCs)
 
@@ -4389,9 +4391,6 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 - **Technik-Ideen:** Wer ist im Raum? (Raum-Zuordnung über Position, wie bei `LightSwitch.find()`);
   Schalter als Wegziel; neuer Gast-Zustand fürs Schalten; Spielstand ändert sich nicht (Schalter werden
   schon gespeichert).
-
-**Für später vorgemerkt**
-- **Zerbrechende Fenster** – wird in einer späteren Runde geplant (bis dahin sind Fenster unzerbrechlich).
 
 **Zu klären**
 - Brauchen Glühbirnen eine heiße Lampe / Verbrennungsgefahr beim Herausdrehen bei eingeschaltetem Licht? (Vorschlag: erst ausschalten, sonst kurz „Autsch“ und Birne fällt evtl.) – im Prototyp noch ohne.
