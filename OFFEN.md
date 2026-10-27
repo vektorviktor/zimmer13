@@ -34,7 +34,7 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 | Schlüssel zum Haupteingang holen | SK 2.1, 2.7 · HA M18, K6 · GE | Tür gebaut, Schlüssel und Fundort fehlen |
 | Ritual in der Halloween-Nacht | SK 2.8 · HA M19a | nicht gebaut |
 | Die drei Enden (mit/ohne Schlüssel, erlöst/nicht erlöst) als Zwischensequenzen | SK 2.7 · HA M21–M21b | nicht gebaut |
-| Autosave bei Fortschritt im Fluchtweg | SK 8, 8.10 | hängt am Fluchtweg |
+| Autosave bei Fortschritt: Aufzug, Erlösung, Fluchtweg rufen `SaveManager.on_progress` (Schlüssel zu Zimmer 18 und Dachboden schon; Zimmer 18 mit Schaltschlüssel beim Zusammenführen nachziehen) | SK 8.6, 8.10 · TE 7 | Aufruf gebaut, die Ereignisse fehlen |
 
 ## 2. Konzeptlücken (Entscheidung fehlt)
 
@@ -131,8 +131,9 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - Flecken auf den Tapeten – SK 7.2.
 
 **Menüs und Speichern**
-- **Speicherregel 8.10:** Autosave nur bei Fortschritt/neuem Bereich/Aufwachen, „Unterbrechen und beenden“,
-  Tagebuchsatz – SK 8.10.
+- **Speicherregel 8.10** gebaut (2026-10-28). Offen: zentrale Gäste für den Tagebuchsatz besetzen
+  (`SaveManager._named_in_diary`, SK 6.0); weitere Sperrbereiche (Personaltrakt, Büro der Direktion) und U2 in
+  `NEW_AREAS`, sobald gebaut – SK 8.10, 2.3.
 - Lautstärke „Stimmen“ (es gibt keine Sprachausgabe) – SK 8 (Kopf), 8.4. Ausbau-Ideen – SK 8.9.
 
 ## 4. Gebäudeplan, Modelle, Ton

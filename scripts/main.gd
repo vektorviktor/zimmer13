@@ -9,6 +9,10 @@ extends Node3D
 ##   --new=n                     neues Spiel in Slot n (TitleScreen)
 ##   --savetest                  Speichern → Laden → Vergleichen (Ausgabe in der Konsole)
 ##   --diary=n                   nach 2 s wie am Tagebuch in Slot n speichern
+##   --unterbrechen[=laden]      nach 2 s „Unterbrechen und beenden“ wie im Spielmenü (8.10): Zwischenstand schreiben und
+##                               beenden · laden: statt zu beenden gleich wieder laden – danach ist er gelöscht (Load 4)
+##   --fortschritt[=grund]       nach 2 s Fortschritt melden (SaveManager.on_progress, 8.10) – Autosave im nächsten
+##                               sicheren Moment; mit --trace „[Autosave]“
 ##   --day=n                     zu Tag n im Oktober springen (15 Uhr)
 ##   --uhr=hh[:mm]               Uhrzeit am aktuellen Tag stellen (2.4; am 1. Oktober frühestens 15 Uhr) – nach --day
 ##   --attacks=n                 so viele Raubzüge gab es schon (ab 3 ist der nächste nicht mehr harmlos, 4.33)
@@ -603,6 +607,7 @@ func _start_creation(slot: int, quick: bool) -> void:
 func _fresh_session() -> void:
 	SaveManager.visited = []
 	SaveManager.last_save_msec = -1
+	SaveManager.reset_pending()
 
 
 ## Neues Spiel in einem Slot: Startzustand gleich speichern, damit „Fortsetzen“ greift.
@@ -1575,6 +1580,24 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(2.0).timeout.connect(func() -> void:
 			var ok := SaveManager.save_to(slot, SaveManager.diary_sentence(), get_viewport().get_texture().get_image())
 			print("[diary] Slot %d gespeichert: %s – „%s“" % [slot, ok, SaveManager.diary_sentence()]))
+	elif arg == "--unterbrechen" or arg == "--unterbrechen=laden":
+		if Engine.has_meta("debug_suspended"):   # nach dem Laden laufen die Parameter erneut – nur einmal
+			return true
+		Engine.set_meta("debug_suspended", true)
+		get_tree().create_timer(2.0).timeout.connect(func() -> void:
+			var ok := SaveManager.suspend(null)
+			print("[Zwischenstand] %s – „%s“" % ["geschrieben" if ok else "gesperrt", SaveManager.diary_sentence()])
+			if not ok:
+				return
+			if arg == "--unterbrechen":
+				get_tree().quit()
+				return
+			SaveManager.load_slot(SaveManager.SUSPEND)
+			print("[Zwischenstand] geladen, Datei %s" % ("noch da – FEHLER" if SaveManager.slot_exists(SaveManager.SUSPEND)
+				else "gelöscht")))
+	elif arg == "--fortschritt" or arg.begins_with("--fortschritt="):
+		get_tree().create_timer(2.0).timeout.connect(SaveManager.on_progress.bind(
+			arg.substr(14) if arg.length() > 14 else "Debug"))
 	elif arg.begins_with("--menu="):
 		# Menü für Screenshots öffnen: pause, diary, diary_pages, settings, load, help, achievements (controls: alter Name der Hilfe)
 		var which := "help" if arg.substr(7) == "controls" else arg.substr(7)

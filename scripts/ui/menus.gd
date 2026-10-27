@@ -168,6 +168,7 @@ func _show_pause() -> void:
 	box.add_child(UiKit.button("Hilfe", _show_help))
 	box.add_child(UiKit.button("Zum Hauptmenü", _confirm.bind("Zum Hauptmenü?", Game.go_to_title)))
 	box.add_child(UiKit.button("Spiel beenden", _confirm.bind("Spiel beenden?", func() -> void: get_tree().quit())))
+	box.add_child(UiKit.button("Unterbrechen und beenden", _confirm_suspend))
 	box.add_child(UiKit.wrap_label("Speichern nur am Tagebuch in Zimmer 13.", 8, Color(0.45, 0.4, 0.32)))
 	box.add_child(UiKit.wrap_label(_last_saved_text(), 8, Color(0.45, 0.4, 0.32)))
 	first.grab_focus.call_deferred()
@@ -315,6 +316,43 @@ func _confirm(question: String, action: Callable) -> void:
 	var no := UiKit.button("Nein", _show_load if previous == "load" else _show_pause)
 	row.add_child(no)
 	no.grab_focus.call_deferred()
+
+
+## „Unterbrechen und beenden“ (Spielkonzept 8.10): ein Zwischenstand, der sich genau einmal laden lässt. Gesperrt,
+## solange auch das Tagebuch gesperrt ist (SaveManager.can_save) – Kürbismann und Lakengeist hält kein Spielstand fest.
+func _confirm_suspend() -> void:
+	var can := SaveManager.can_save()
+	var box := _new_sheet("confirm", "Unterbrechen und beenden?" if can else "Nicht jetzt", 220.0)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	var no := UiKit.button("Nein" if can else "Zurück", _show_pause)
+	if can:
+		box.add_child(UiKit.wrap_label("Das Spiel merkt sich, wo du gerade bist, und endet. Diesen Zwischenstand kannst " +
+			"du genau einmal laden – danach ist er fort, ebenso, wenn du vorher etwas anderes lädst oder neu beginnst.", 9))
+		row.add_child(UiKit.button("Ja", _suspend))
+	else:
+		box.add_child(UiKit.wrap_label("Meine Hände zittern zu sehr. Erst, wenn es wieder ruhig ist.", 9))
+	box.add_child(row)
+	row.add_child(no)
+	no.grab_focus.call_deferred()
+
+
+## Ohne Menü ein Bild für die Slot-Übersicht aufnehmen, Zwischenstand schreiben, Spiel beenden.
+func _suspend() -> void:
+	var thumb: Image = null
+	if DisplayServer.get_name() != "headless":   # headless (Testläufe) gibt es kein Bild
+		_root.visible = false
+		await RenderingServer.frame_post_draw
+		thumb = get_viewport().get_texture().get_image()
+	if SaveManager.suspend(thumb):
+		get_tree().quit()
+		return
+	_root.visible = true
+	var box := _new_sheet("confirm", "Unterbrechen und beenden", 220.0)
+	box.add_child(UiKit.wrap_label("Der Zwischenstand ließ sich nicht schreiben. (Speichern fehlgeschlagen)", 9))
+	var back := UiKit.button("Zurück", _show_pause)
+	box.add_child(back)
+	back.grab_focus.call_deferred()
 
 
 func _last_saved_text() -> String:

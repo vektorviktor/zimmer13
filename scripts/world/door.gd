@@ -266,7 +266,6 @@ func interact(player: Player) -> void:
 			set_open(true, false, false, player)
 			if general and Game.social and Game.social.access:
 				Game.social.access.on_forced(self, false)   # mit dem Generalschlüssel in ein fremdes Zimmer (6.19)
-			SaveManager.request_autosave("Tür aufgeschlossen")
 		elif _forcible() and _holding(player, Item.Kind.CROWBAR):
 			_work(player, Item.Kind.CROWBAR, FORCE_TIME, "Du setzt das Brecheisen an …", _forced)
 		elif _knockable():

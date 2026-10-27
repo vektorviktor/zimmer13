@@ -22,6 +22,8 @@ const COMMANDS := {
 	"save": ["n", "nach 2 s in Slot n speichern (wie am Tagebuch)"],
 	"load": ["n", "Spielstand n laden (0 = Autosave)"],
 	"savetest": ["", "Speichern → Laden → Vergleichen (Konsole)"],
+	"unterbrechen": ["[laden]", "„Unterbrechen und beenden“ nach 2 s (8.10) – laden: gleich wieder laden statt beenden"],
+	"fortschritt": ["[grund]", "Fortschritt melden – Autosave im nächsten sicheren Moment (8.10)"],
 	"shock": ["gast[,blood|corpse|ghostN|tür]", "Gast erschrecken (6.12) – tür: Lakengeist vor seiner Tür (5.6)"],
 	"ghost": ["n|flur|schrank|tür", "Lakengeist zum n. Mal am Fenster deines Raums, knapp 20 m vor dir im Flur, vor deinem Schrank bzw. lautlos vor deiner Tür"],
 	"dusche": ["[fang|los|nacht]", "Lakengeist in der Dusche (4.24): die Dusche in Zimmer 13 läuft, du stehst im Bad (fang: knapp davor – er kommt · los: du reißt dich los · nacht: nach der Regel mit der nächsten Nachtruhe)"],

@@ -4499,7 +4499,7 @@ func _upper_waypoints() -> void:
 
 
 ## Zonen des Untergeschosses (Plan geladen): Heizkeller, Technikraum und Wäscherei je ein Kreis, die Gänge als
-## Kette von Kreisen je Planrechteck („Keller“ – der erste Besuch löst einen Autosave aus, SaveManager.NEW_AREAS).
+## Kette von Kreisen je Planrechteck („Keller“).
 func _lower_zones() -> void:
 	var seen := {}   # je Art ein Kreis, auch wenn der Plan sie auf mehrere Flächen verteilt
 	for r in _map["regions"]:

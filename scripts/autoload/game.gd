@@ -313,6 +313,7 @@ func start_new_game(slot: int) -> void:
 	new_game_slot = slot
 	if slot > 0:
 		current_slot = slot
+	SaveManager.drop_suspend()   # ein neues Spiel verwirft den Zwischenstand (8.10)
 	enter_game()
 
 
