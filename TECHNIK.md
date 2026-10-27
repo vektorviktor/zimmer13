@@ -1059,7 +1059,10 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 - **Schreck** (Spielkonzept 6.12): Was erschreckt, steht in der Gruppe `shock_sights` mit Meta `sight_key`/
   `sight_kind` – Blutlachen (`Traces._as_sight`, Schlüssel aus dem Ort, auch nach dem Laden) und Leichen
   (`corpse:<id>`). `Guest._scan_for_shock` → jeder Schlüssel einmal (`seen_sights`) → `shock()`: `SHOCKED`, Haltung
-  je `shock_style()` (aus dem Archetyp – keine neuen Zufallszahlen im Generator), dann `_after_shock()`. `remember()`
+  je `shock_style()` (aus dem Archetyp – keine neuen Zufallszahlen im Generator), dann `_after_shock()`. Steht er dabei
+  in der Lache bzw. an der Leiche (`_keep_off`: Rand `TraceMark.keep_off()` bzw. `SHOCK_CORPSE`, plus `SHOCK_GAP`),
+  tritt er zuerst rückwärts dorthin zurück, Blick hin (Richtung übers Navigationsnetz, gerade Linie, höchstens
+  `SHOCK_BACK_TIME`) – der Schreck läuft erst danach ab. `remember()`
   legt ein Erlebnis an (`experiences`), `DialogUI.open` erzählt das älteste unerzählte (`Social.experience_line`).
 - **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze, Zustand im Gast; Spielkonzept
   6.17): `Wounds.survives(gast)` (20 %, `SURVIVE`) in `MonsterDirector.kill_guest` (zählt dann nicht als Opfer) und
@@ -1303,7 +1306,10 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   verbunden: Treppenhäuser, Treppen, `open_above`/`voids`, freier Himmel. Türen verbinden, solange `Door.lets_light()`;
   Fenster, Aufzugtüren, Glaswände nur einen Schritt weit. `reach` regelmäßig und sofort nach `Door.set_open`
   (`ShadowBudget.wake`, sonst kommt das Licht durch den Spalt zu spät); liegt die Kamera in keinem Bereich, bleibt alles
-  an. **Im Code gebaute Wände ohne Plan-Eintrag trennen keine Bereiche.**
+  an. Stockwerk der Kamera nach der Höhe (`_floor_at`); liegt unter ihr keine Fläche, aber im Stockwerk darüber (bis
+  `BELOW`), gehört sie dorthin (ins Becken gefallen) – nicht, wenn bis `NEAR` eine Fläche ihres Stockwerks liegt oder
+  sie über einem `voids`-Luftraum steht (sonst kippte sie im Sprung an Wänden und an der Galerie über der Lobby ins
+  Dachgeschoss). **Im Code gebaute Wände ohne Plan-Eintrag trennen keine Bereiche.**
 - Jeder Raum hat mindestens eine Wandleuchte, sonst schaltet sein Schalter nichts. **Helligkeit nachjustieren:**
   `Lamp.BRIGHTNESS`/`REACH` für alle gemeinsam, sonst `WALL_LAMP_ENERGY`, `ROOM_LAMP_ENERGY`, `CANDLE_ENERGY`, die
   Deckenfarben (`CEILING_SHADE` …), Umgebungslicht und Mond (`main._setup_environment`).
@@ -1554,6 +1560,10 @@ Spielkonzept 2.5)
   `TitleScreen._ready` wartet darauf (`await finished`) – **erst danach Knöpfe mit Fokus**, sonst löste die Leertaste
   „Fortsetzen“ aus. Einmal je Programmlauf, nur ohne Debug-Parameter oder mit `--title --splash`.
 - **Schrift:** `UiKit.menu_theme()` mit `UiKit.MENU_FONT` (Cinzel) für Titelbildschirm und Spielmenü.
+- **Laden:** Neues Spiel, Fortsetzen und Laden (auch aus Spielmenü und Todesbildschirm) gehen über `Game.enter_game()`:
+  sofort abgedunkelt mit „Lädt …“ (`CanvasLayer` am Game-Knoten, fängt Klicks ab), zwei Bilder warten, dann
+  `change_scene_to_file`; weg nach dem ersten Bild der neuen Szene (`scene_changed`). Solange `Game.entering`, zählen
+  weitere Aufrufe nicht (kein doppelter Start).
 - **Hintergrund** `LOBBY_IMAGE` (`title_lobby.jpg`, Screenshot vom Haupteingang): `TextureRect` mit
   `TEXTURE_FILTER_LINEAR_WITH_MIPMAPS` (Standardfilter des Projekts ist Nearest), Flackern über `modulate`, Rauschen
   darüber. Neu erzeugen: Befehl im Kommentar über `LOBBY_IMAGE`. `--shot-size=BxH` macht das Fenster rahmenlos und so

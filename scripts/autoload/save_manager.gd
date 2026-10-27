@@ -330,6 +330,8 @@ func _check_new_area() -> void:
 # --- Laden -------------------------------------------------------------------------
 
 func load_slot(slot: int) -> bool:
+	if Game.entering:
+		return true
 	var data := _read(slot)
 	if data.is_empty() or not fits(data):
 		return false
@@ -337,8 +339,7 @@ func load_slot(slot: int) -> bool:
 	Game.new_game_slot = 0
 	if slot != AUTOSAVE:
 		Game.current_slot = slot
-	get_tree().paused = false
-	get_tree().change_scene_to_file(Game.MAIN_SCENE)
+	Game.enter_game()
 	return true
 
 

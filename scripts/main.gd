@@ -243,9 +243,9 @@ extends Node3D
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
 ##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
 ##                               zum Prüfen der Gastmodelle
-##   --shock=id[,blood|corpse|ghostN|tür]  Gast erschrecken (6.12): Blutlache bzw. Leiche vor ihm im Flur, oder der
-##                               Lakengeist kommt zum N. Mal an sein dunkles Zimmerfenster (ab 3 würgt er) –
-##                               mit --talk=id erzählt er danach davon
+##   --shock=id[,blood|lache|corpse|ghostN|tür]  Gast erschrecken (6.12): Blutlache bzw. Leiche vor ihm im Flur (lache:
+##                               fast unter ihm – er tritt an ihren Rand zurück, 4.13), oder der Lakengeist kommt zum N.
+##                               Mal an sein dunkles Zimmerfenster (ab 3 würgt er) – mit --talk=id erzählt er davon
 ##   --dice=id                   sofort Mäxchen mit dem Gast (Einsatz 3 Geld)
 ##   --chess=id                  sofort Schach mit dem Gast in der Lobby (Einsatz 3 Geld; mit --autoplay zieht der Spieler selbst)
 ##   --darts[=id]                sofort Darts in der Bar: allein üben, mit id gegen den Gast (Einsatz 3 Geld; mit
@@ -1879,7 +1879,7 @@ func _debug_shock(guest: Guest, what: String) -> void:
 		along = -along
 	guest.global_position = front + Vector3(0, 0.05, 0)
 	guest.rotation.y = atan2(-along.x, -along.z)
-	var spot := front + along * 2.5
+	var spot := front + along * (0.8 if what == "lache" else 2.5)   # lache: so nah, dass er zurücktritt (4.13)
 	if what == "corpse":
 		for other in Game.social.living_guests():
 			if other != guest and other.gen_seed >= 0:

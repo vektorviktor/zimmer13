@@ -75,6 +75,12 @@ const VOICE_BRAVE := 0.35
 ## Reaktion je Charakter (feste Gäste: profile["shock"])
 const SHOCK_RANGE := 7.0
 const SHOCK_SCAN := 0.5
+## Steht er beim Schreck in der Lache bzw. an der Leiche, tritt er zurück bis an ihren Rand (TraceMark.keep_off, Leiche
+## SHOCK_CORPSE) plus SHOCK_GAP, mit Blick hin, so schnell, höchstens so lange (Spielkonzept 4.13)
+const SHOCK_GAP := 0.6
+const SHOCK_CORPSE := 1.0
+const SHOCK_BACK_SPEED := 1.0
+const SHOCK_BACK_TIME := 4.0
 const SHOCK_STYLES := {
 	"ängstlich": "flee", "geschäftstüchtig": "flee", "Plaudertasche": "cry", "Bastler": "cry",
 	"Skeptiker": "freeze", "Griesgram": "freeze",
@@ -271,6 +277,8 @@ var _trace_pos := Vector3.ZERO
 var _steps: Footsteps
 var _shock_scan := 0.0
 var _shock_look := Vector3.ZERO
+var _shock_back := Vector3.INF   ## Schreck: erst bis hierher zurücktreten (aus der Lache), dann starren
+var _shock_back_time := 0.0
 var _shock_style := ""
 var _entranced := false    ## vom Lakengeist hypnotisiert – bleibt stehen, bis er weg ist
 var _door_trance := 0.0    ## Lakengeist vor der Tür: so lange starrt er noch hin, dann geht er aufmachen
@@ -1072,6 +1080,22 @@ func _physics_process(delta: float) -> void:
 				global_position = Vector3(_target.x, global_position.y, _target.z)
 				seated = true
 		State.SHOCKED:
+			if _shock_back.is_finite():
+				# rückwärts aus der Lache, den Blick darauf (_keep_off) – erst dann läuft der Schreck ab
+				# geradewegs, Wände halten ihn auf; nach _shock_back_time steht er, wo er ist
+				var to := Vector2(_shock_back.x - global_position.x, _shock_back.z - global_position.z)
+				_shock_back_time -= delta
+				if to.length() < 0.15 or _shock_back_time <= 0.0:
+					_shock_back = Vector3.INF
+					if Game.tracing:
+						print("[Schreck] %s steht jetzt %.1f m von der Mitte" % [display_name,
+							Vector2(global_position.x - _shock_look.x, global_position.z - _shock_look.z).length()])
+				else:
+					var step := to.normalized() * minf(SHOCK_BACK_SPEED, to.length() / maxf(delta, 0.001))
+					velocity = Vector3(step.x, 0.0 if is_on_floor() else velocity.y - _gravity * delta, step.y)
+					move_and_slide()
+				_face(_shock_look, delta)
+				return
 			_stop(delta)
 			_face(_shock_look, delta)
 			if _door_trance > 0.0:
@@ -1910,7 +1934,43 @@ func _scan_for_shock(delta: float) -> void:
 			continue
 		seen_sights.append(key)
 		shock(String(sight.get_meta("sight_kind", "blood")), sight.global_position, (sight as Guest).display_name if sight is Guest else "")
+		if state == State.SHOCKED:
+			_keep_off(sight.global_position, (sight as TraceMark).keep_off() if sight is TraceMark else SHOCK_CORPSE)
 		return
+
+
+## Steht er näher als reach + SHOCK_GAP an center (Lache, Leiche): Rückzugspunkt dorthin, wo der Abstand reicht – möglichst
+## gerade weg, sonst die nächstbeste Richtung auf dem Navigationsnetz (Flur, Ecke); ist das noch nicht fertig, gerade weg.
+func _keep_off(center: Vector3, reach: float) -> void:
+	var want := reach + SHOCK_GAP
+	var flat := Vector3(global_position.x - center.x, 0.0, global_position.z - center.z)
+	if reach <= 0.0 or flat.length() >= want:
+		return
+	var away := flat.normalized() if flat.length() > 0.05 else global_transform.basis.z
+	var base := Vector3(center.x, global_position.y, center.z)
+	var map := get_world_3d().navigation_map
+	var best := base + away * (want + 0.1)
+	if NavigationServer3D.map_get_iteration_id(map) > 0:
+		var best_d := -1.0
+		for i in 8:
+			var dir := away.rotated(Vector3.UP, (ceili(i / 2.0) * (1.0 if i % 2 == 1 else -1.0)) * PI / 4.0)
+			var at := NavigationServer3D.map_get_closest_point(map, base + dir * (want + 0.1))
+			if absf(at.y - global_position.y) > 1.0:
+				continue
+			var d := Vector2(at.x - center.x, at.z - center.z).length()
+			if d > best_d:
+				best_d = d
+				best = at
+			if d >= want:
+				break
+	var gain := Vector2(best.x - global_position.x, best.z - global_position.z).length()
+	if gain < 0.3:
+		return
+	_shock_back = best
+	_shock_back_time = minf(SHOCK_BACK_TIME, gain / SHOCK_BACK_SPEED + 1.0)
+	if Game.tracing:
+		print("[Schreck] %s steht %.1f m von der Mitte, tritt zurück auf %.1f m" % [display_name, flat.length(),
+			Vector2(best.x - center.x, best.z - center.z).length()])
 
 
 ## Schreck: bleibt 2–5 s stehen (je mutiger, desto kürzer) und starrt hin – danach je nach Charakter
@@ -1928,6 +1988,7 @@ func shock(kind: String, pos: Vector3, who: String = "", entranced: bool = false
 	var brave := float(profile["brave"])
 	_shock_style = shock_style()
 	_shock_look = pos
+	_shock_back = Vector3.INF
 	_entranced = entranced
 	state = State.SHOCKED
 	_timer = lerpf(5.0, 2.0, brave)
@@ -1976,6 +2037,7 @@ func cower(pos: Vector3) -> void:
 	seated = false
 	_shock_style = "freeze"
 	_shock_look = pos
+	_shock_back = Vector3.INF
 	_entranced = false
 	_door_trance = 0.0   # die Axt geht vor – kein Gang mehr zur Tür des Lakengeists
 	state = State.SHOCKED
@@ -2008,6 +2070,7 @@ func door_trance(door_point: Vector3) -> void:
 	_drop_held()
 	_shock_style = "stare"
 	_shock_look = door_point
+	_shock_back = Vector3.INF
 	_entranced = true
 	var weak := weakness()
 	_door_trance = randf_range(DOOR_TRANCE.x, DOOR_TRANCE.y) * (1.0 - 0.5 * weak) if randf() < DOOR_OPEN + DOOR_OPEN_WEAK * weak else 0.0

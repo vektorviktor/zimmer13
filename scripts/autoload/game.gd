@@ -75,6 +75,8 @@ var tracing := false
 var pending_load: Dictionary = {}
 ## Neues Spiel: in diesen Slot gleich den Startzustand schreiben (0 = keiner)
 var new_game_slot := 0
+## Wechsel in die Hauptszene läuft (enter_game) – „Lädt …“ steht, weitere Klicks zählen nicht
+var entering := false
 ## Bevorzugter Slot für das Tagebuch (1–3)
 var current_slot := 1
 ## Geld ist der einzige abstrakte Besitz – alles andere wird in den Händen getragen.
@@ -305,12 +307,43 @@ func caption(text: String) -> void:
 
 ## Neues Spiel starten; slot > 0 → Startzustand gleich dorthin speichern.
 func start_new_game(slot: int) -> void:
+	if entering:
+		return
 	pending_load = {}
 	new_game_slot = slot
 	if slot > 0:
 		current_slot = slot
+	enter_game()
+
+
+## In die Hauptszene wechseln (Neues Spiel, Fortsetzen, Laden – Spielkonzept 8): Der Bau des Hotels hält das Bild
+## sekundenlang an – ohne Rückmeldung glaubt man, daneben geklickt zu haben. Darum zuerst abdunkeln und „Lädt …“
+## zeigen, zwei Bilder warten, bis es zu sehen ist, dann wechseln. Die Tafel hängt am Game-Knoten, übersteht den
+## Wechsel und fängt bis zum ersten Bild der neuen Szene alle Klicks ab; weitere Aufrufe zählen solange nicht.
+func enter_game() -> void:
+	if entering:
+		return
+	entering = true
+	var layer := CanvasLayer.new()
+	layer.layer = 128
+	add_child(layer)
+	var dim := ColorRect.new()
+	dim.color = Color(0, 0, 0, 0.8)
+	dim.theme = UiKit.menu_theme()
+	layer.add_child(dim)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var label := UiKit.label("Lädt …", 14, UiKit.PAPER, HORIZONTAL_ALIGNMENT_CENTER)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	dim.add_child(label)
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	await get_tree().process_frame
+	await get_tree().process_frame
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_SCENE)
+	await get_tree().scene_changed
+	await get_tree().process_frame
+	layer.queue_free()
+	entering = false
 
 
 func go_to_title() -> void:

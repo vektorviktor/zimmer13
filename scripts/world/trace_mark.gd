@@ -227,6 +227,17 @@ func _ready() -> void:
 		_spread_wall.call_deferred()
 
 
+## So weit reicht die Spur am Boden um ihren Mittelpunkt (m) – davon halten erschrockene Gäste Abstand
+## (Guest.shock, Spielkonzept 4.13); Spuren an Wand und Tür 0.
+func keep_off() -> float:
+	match kind:
+		"blood":
+			return BLOOD_RADIUS
+		"drag", "drag_end":
+			return DRAG_LENGTH
+	return 0.0
+
+
 ## Blutlache (Spielkonzept 4.13, 6.12): BLOOD_SPLATS Flecken um das Opfer, große in der Mitte, kleine bis BLOOD_RADIUS.
 ## Jeder fällt senkrecht auf die Fläche darunter (place_splat) – auf Treppen also auf die Stufen, nicht auf die Rampe.
 ## Auf einer Treppe bleiben nur die großen Flecken, von dort läuft ein durchgehender Strom die Stufen hinunter bis zu

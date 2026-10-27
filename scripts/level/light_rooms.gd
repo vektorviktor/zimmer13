@@ -19,9 +19,12 @@ const MIN_WALL := 0.25
 const SAMPLE := 1.0
 const SKY_SAMPLE := 2.0
 ## Lose Lichter (Gegenstände) und die Kamera gehören zum höchsten Stockwerk, dessen Boden höchstens ABOVE über ihnen
-## liegt – liegt dort keine Fläche des Plans, aber im Stockwerk darüber (bis BELOW), zu dem (ins Becken gefallen)
+## liegt – liegt dort keine Fläche des Plans, aber im Stockwerk darüber (bis BELOW), zu dem (ins Becken gefallen).
+## Nicht, solange eine Fläche bis NEAR daneben liegt oder p im Luftraum des Stockwerks: Sonst kippte die Kamera im
+## Sprung an Wänden und an der Galerie über der Lobby ins Stockwerk darüber (Lichter dort an, hier aus).
 const ABOVE := 0.5
 const BELOW := 2.0
+const NEAR := 0.5
 ## Flächenarten draußen, wenn der Plan es nicht sagt (Terrassen- und Balkonkanten, Kies)
 const OUTDOOR_KINDS := ["garden", "terrace", "balcony", "gravel"]
 
@@ -56,7 +59,7 @@ func begin_floor(level: int, base_y: float, root: Node3D, origin: Vector2, size:
 	for y in size.y:
 		walls[y] = []
 	_floors.append({"level": level, "base_y": base_y, "origin": origin, "size": size, "places": places,
-		"outdoor": outdoor, "walls": walls, "runs": []})
+		"outdoor": outdoor, "walls": walls, "runs": [], "voids": []})
 	_roots[root] = _floors.size() - 1
 
 
@@ -88,6 +91,8 @@ func window(c: Vector2, side: Vector2) -> void:
 ## Treppe bzw. Luftraum: verbindet dauerhaft mit dem Stockwerk darüber (up) bzw. darunter (down).
 func opening(r: Rect2, up: bool, down: bool) -> void:
 	_openings.append([_floors.size() - 1, r, up, down])
+	if down and not up:
+		(_floors[-1]["voids"] as Array).append(r)
 
 
 ## Nach dem Bau aller Stockwerke: Läufe zu Bereichen, Stockwerke verbinden, Türen und Fenster einhängen.
@@ -335,9 +340,28 @@ func _floor_at(pos: Vector3, node: Node) -> int:
 		return -1
 	var p := Vector2(pos.x, pos.z)
 	var above := _floor_of_level(int(_floors[best]["level"]) + 1)
-	if above >= 0 and float(_floors[above]["base_y"]) <= pos.y + BELOW and _place(best, p) == 0 and _place(above, p) != 0:
+	if above >= 0 and float(_floors[above]["base_y"]) <= pos.y + BELOW and not _place_near(best, p) \
+			and _place(above, p) != 0 and not _in_void(best, p):
 		return above
 	return best
+
+
+## Liegt um p (bis NEAR) eine Fläche des Stockwerks? Dann steht die Kamera dort – an einer Wand oder an der Galerie
+## über einem Luftraum, auch im Sprung – und ist nicht ins Becken darunter gefallen.
+func _place_near(fi: int, p: Vector2) -> bool:
+	for dy in [-NEAR, 0.0, NEAR]:
+		for dx in [-NEAR, 0.0, NEAR]:
+			if _place(fi, p + Vector2(dx, dy)) != 0:
+				return true
+	return false
+
+
+## Liegt p in einem Luftraum des Stockwerks (Galerie über der Lobby)? Darüber zählt nie das Stockwerk darüber.
+func _in_void(fi: int, p: Vector2) -> bool:
+	for r: Rect2 in _floors[fi]["voids"]:
+		if r.grow(NEAR).has_point(p):
+			return true
+	return false
 
 
 func _floor_of_level(level: int) -> int:

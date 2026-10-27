@@ -215,6 +215,7 @@ done <<'LIST'
 1200|licht,gaeste|--lichtgang=bruno --trace
 800|gaeste,tod,ui|--wound=edna,axe,hin --talk=edna
 1200|gaeste,tod|--shock=mila,corpse --trace
+600|gaeste,tod|--shock=bruno,lache --trace
 2400|schlaf,nacht|--sleep=bett --trace
 1800|schlaf,nacht|--awake=40 --sleep=bett,2 --trace
 1500|schnell,schlaf,nacht,monster,puppe|--day=10 --uhr=1:10 --awake=40 --doll=5,13 --hoerer --sleep=bett,8 --trace
