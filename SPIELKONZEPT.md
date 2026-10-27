@@ -1599,7 +1599,8 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 ### 4.14 Zimmertelefone (vorgemerkt 2026-10-11)
 > **Im Prototyp umgesetzt (2026-10-11):** Telefon in jedem Zimmer (außer Wäscherei), Haupttelefon mit Gästeverzeichnis an der Rezeption (Nummer 0). Anrufe für Zimmer 13: Freunde warnen (nicht immer richtig), Feinde lügen, Bekannte plaudern oder laden zur Feier ein, unheimliche Anrufe (Atmen aus einem leeren Zimmer oder Zimmer 18, Stimme eines Verschwundenen, es steht vor der Tür) – danach liegt dort ein Hörer daneben. Selbst anrufen: plaudern (halbe Beziehung), nach dem Monster fragen, einladen; Klingeln ist Lärm im Zielzimmer; Telefonstreiche sprechen sich herum; in leeren Zimmern nimmt manchmal doch jemand ab. Hörer daneben legen. Ferne Telefone klingeln als Atmosphäre (und Lärm).
-> **Noch nicht:** Gäste rufen sich gegenseitig an und verbreiten Gerüchte schneller, Panik-Anrufe ängstlicher Gäste, Telefonzentrale.
+> **Umgesetzt (2026-10-28):** Gäste rufen sich gegenseitig an – Freunde erzählen sich Geschichten über jede Entfernung (Gerüchte verbreiten sich schneller), jedes Klingeln ist Lärm im Zielzimmer. Ängstliche Gäste rufen in großer Angst in Panik herum, auch nachts und auch bei dir (beruhigen oder auflegen), und stecken den Angerufenen mit ihrer Angst an.
+> **Noch nicht:** Telefonzentrale (siehe „Zu klären“).
 
 **Grundidee:** In jedem Zimmer steht ein altes **Wählscheibentelefon**, an der Rezeption der Hauptapparat mit der Zimmerliste. Das Telefon verbindet das Klopfen (4.13), das Ablenken (4.11) und die Beziehungen zu den Gästen (6.2) – mit wenig neuer Technik.
 

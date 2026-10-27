@@ -1966,6 +1966,14 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   Zimmer 13, ausgehend per Wählseite. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`,
   eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die
   Zufallsfolge). Laufende Anrufe nicht gespeichert.
+  **Gäste rufen sich an** (`_update_ambient` → `_pick_guest_call`, je Anruf ein `_ambient`): Anrufer ist ein
+  Erwachsener daheim (`_at_home` = `home_room_at`), wach und frei; angerufen wird ein Freund (`pals_of`) in einem
+  anderen Zimmer, lieber einer, der abnimmt (`_answers`). Jedes Klingeln im Zielzimmer ist Lärm (`_ring`); ab
+  `GUEST_ANSWER_RINGS` nimmt er ab, beide stehen `GUEST_CALL_TIME` am Hörer, `Talk.phone_spread` gibt eine Geschichte
+  weiter wie `_update_spread` (`_try_pass`), nur ohne `TELL_RANGE`. **Panik:** `_panicky` (Angst ≥ `PANIC_FROM`,
+  Mut < `PANIC_BRAVE`) ruft zuerst und auch in der Nachtruhe, Pause `PANIC_COOLDOWN`, zur Not den nächsten Nachbarn,
+  der abnimmt; Angst steckt an (`PANIC_FEAR`), der Anrufer wird ruhiger. Eingehend für Zimmer 13 Art `"panic"`
+  (beruhigen: Angst −25, `Talk.friendly` 1,5). Debug `--gastanruf`, `--call=id,panik`. Telefonzentrale fehlt (4.14).
 - **Spieltische** (`minigames/`): `TableMatch` (CanvasLayer 15) = Basis von `DiceMatch`, `ChessMatch` und `DartMatch`
   (Hooks `_table`, `_gear`, `_on_seated`, `_update_game`, `_stop`, `_take_places`/`_leave_places` – Standard: hinsetzen,
   Maus frei); Einsätze über `TableStakes`. Ob gerade eins läuft: `Game.table_game_active()` (Autosave, Herausforderungen,

@@ -823,21 +823,32 @@ func _update_spread() -> void:
 				continue
 			if not social.pals.are_pals(a, b):
 				continue
-			if _compare(a, b):
+			if _compare(a, b) or _try_pass(a, b, now):
 				return
-			for c: Dictionary in a.claims:
-				if not c["believed"] or c["exposed"] or int(c["hops"]) >= MAX_HOPS or not (c["topic"] in STORIES or c["topic"] == "thief"):
-					continue
-				if now - float(c["at"]) > Calendar.DAY_SECONDS or b.id in c["spread"] or not _claim_of(b, int(c["src"])).is_empty():
-					continue
-				if c["topic"] == "thief" and c["who"] == b.id:
-					continue
-				if randf() > maxf(0.3, float(a.profile["gossip"])):
-					c["spread"].append(b.id)   # behält es diesmal für sich
-					continue
-				c["spread"].append(b.id)
-				_pass_on(a, b, c)
-				return
+
+
+## a erzählt b eine Geschichte weiter, die b noch nicht kennt (eine, je nach Tratschfreude) – true, wenn erzählt.
+func _try_pass(a: Guest, b: Guest, now: float) -> bool:
+	for c: Dictionary in a.claims:
+		if not c["believed"] or c["exposed"] or int(c["hops"]) >= MAX_HOPS or not (c["topic"] in STORIES or c["topic"] == "thief"):
+			continue
+		if now - float(c["at"]) > Calendar.DAY_SECONDS or b.id in c["spread"] or not _claim_of(b, int(c["src"])).is_empty():
+			continue
+		if c["topic"] == "thief" and c["who"] == b.id:
+			continue
+		if randf() > maxf(0.3, float(a.profile["gossip"])):
+			c["spread"].append(b.id)   # behält es diesmal für sich
+			continue
+		c["spread"].append(b.id)
+		_pass_on(a, b, c)
+		return true
+	return false
+
+
+## Am Telefon (PhoneCalls, Spielkonzept 4.14): Freunde erzählen sich Geschichten über jede Entfernung – Gerüchte
+## verbreiten sich so schneller als nur von Angesicht zu Angesicht. true, wenn a etwas weitererzählt hat.
+func phone_spread(a: Guest, b: Guest) -> bool:
+	return Game.social.pals.are_pals(a, b) and _try_pass(a, b, _now())
 
 
 ## Zwei Freunde merken, dass du ihnen dieselbe Sichtung an verschiedenen Orten erzählt hast.

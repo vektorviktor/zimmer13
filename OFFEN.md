@@ -101,7 +101,7 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   Neid) – SK 6.18 (großteils offen). Daran hängen: Schock+Trauer als ein Wert – SK 6.8; Gerüchte im Notizbuch – SK 3.10.
 - Zimmerzugang, Reste: Reparatur-Tagesbudget, Zweitschlüssel zurückverlangen, wenn die Freundschaft zerbricht (offen),
   Folgen des Tagebuchlesens beim Einbruch (8.9), Zeugen eines Einbruchs bei 13 unter den Gästen – SK 6.19.
-- Telefon: Gäste rufen sich an, Panik-Anrufe, Telefonzentrale – SK 4.14.
+- Telefon: Telefonzentrale – SK 4.14 (dort „Zu klären“; Gäste rufen sich an und Panikanrufe gebaut 28.10.).
 - Aufträge, Reste: zentrale Gäste, Verstecken/Apfeltauchen als „Spielen“, Kuscheltier, Bitten am Telefon/als Zettel –
   SK 6.14. Antworten mit Tonlage – SK 6.9.
 - Kinder: Funde in engen Ecken (am Geheimnis), Eier-Streich – SK 6.13.

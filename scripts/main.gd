@@ -70,8 +70,10 @@ extends Node3D
 ##                               erfährt es nach 20–60 s (--trace „[Feinde]“)
 ##   --pals=gast1,gast2          Weitererzählen (6.16): gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir
 ##                               nebeneinander – gast1 erzählt gast2 gleich Gutes über dich (mit --trace: Beziehung)
-##   --call=id|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast, Atmen, Verschwundener,
-##                               vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
+##   --call=id[,panik]|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast – mit ,panik ein Panikanruf –,
+##                               Atmen, Verschwundener, vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
+##   --gastanruf=id[,panik]      Gäste telefonieren (4.14): der Gast steht daheim, kennt eine frische Geschichte und ruft
+##                               einen Freund an, der sie weitererfährt · panik: Panikanruf; mit --trace „[Telefon]“
 ##   --dial=n|lobby              vom Telefon in Zimmer 13 aus Zimmer n anrufen (0 = Rezeption) ·
 ##                               lobby: Wählseite am Haupttelefon mit Gästeverzeichnis
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, diary_pages, settings, load, help, achievements)
@@ -1556,6 +1558,8 @@ func run_debug(arg: String) -> bool:
 			# nach 4 s öffnet der Spieler die Tür
 			get_tree().create_timer(4.0).timeout.connect(func() -> void:
 				(Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]["door"] as Door).set_open(true))
+	elif arg.begins_with("--gastanruf="):
+		get_tree().create_timer(1.0).timeout.connect(Game.phones.debug_guest_call.bind(arg.substr(12).split(",")))
 	elif arg.begins_with("--call=") or arg.begins_with("--dial="):
 		# Telefon: Spieler steht in Zimmer 13 vor dem Schreibtisch und sieht auf den Apparat
 		var phone_pos := Game.phones.home_phone.global_position

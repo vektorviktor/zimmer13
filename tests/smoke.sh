@@ -195,6 +195,9 @@ done <<'LIST'
 2400|deko,gaeste|--search=,mit --trace
 1500|schnell,feier,gaeste|--party --trace
 1000|telefon,ui|--call=edna --answer
+600|telefon,gaeste|--call=edna,panik --answer --trace
+900|telefon,gaeste|--gastanruf=edna --trace
+900|telefon,gaeste|--gastanruf=edna,panik --trace
 1000|katzen|--cat=minka,tragen
 2000|kinder,streiche|--trick --trace
 600|streiche|--prank=fire --trace

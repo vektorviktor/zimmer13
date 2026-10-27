@@ -8,7 +8,8 @@ extends Node
 ##     Wer anruft und sofort auflegt, macht Telefonstreiche – das spricht sich herum.
 ##   · Der Preis: Auch das eigene Telefon klingelt laut. Hörer daneben legen macht still,
 ##     aber dann erreicht einen auch keine Warnung.
-##   · Ab und zu klingelt irgendwo im Hotel ein Telefon (Gäste rufen sich an).
+##   · Gäste rufen sich gegenseitig an: Freunde erzählen sich Geschichten über jede Entfernung (Gerüchte
+##     verbreiten sich schneller), ängstliche Gäste rufen in Panik herum – auch dich. Jedes Klingeln ist Lärm.
 
 # --- Tuning -------------------------------------------------------------------
 const RING_INTERVAL := 3.0
@@ -19,6 +20,16 @@ const AMBIENT_COOLDOWN := Vector2(90.0, 200.0)
 const PRANK_TIME := 2.0                    ## wer so schnell wieder auflegt, macht Telefonstreiche
 const QUICK_DIAL_MAX := 10                 ## Einträge der Zimmerliste an der Rezeption
 const CREEPY_PICKUP := 0.12                ## in einem leeren Zimmer nimmt doch jemand ab
+## Gäste rufen sich an: so lange reden sie, nach so vielen Klingeln nimmt der Angerufene frühestens ab. Ein ängstlicher
+## Gast (Mut unter PANIC_BRAVE) ab PANIC_FROM Angst ruft in Panik herum – auch nachts, mit kürzerer Pause
+## (PANIC_COOLDOWN); der Angerufene bekommt PANIC_FEAR Angst (× (1,2 − Mut)) ab, der Anrufer wird PANIC_CALM ruhiger.
+const GUEST_CALL_TIME := Vector2(10.0, 20.0)
+const GUEST_ANSWER_RINGS := 2
+const PANIC_FROM := 60.0
+const PANIC_BRAVE := 0.4
+const PANIC_FEAR := 15.0
+const PANIC_CALM := 8.0
+const PANIC_COOLDOWN := Vector2(20.0, 45.0)
 
 ## Sätze am Telefon ({name}, {room}, {where}). Feste Gäste können eigene haben: "phone_<key>"
 ## in ihren lines (nicht in GuestGenerator.COMMON – das verschöbe die Zufallsfolge).
@@ -37,6 +48,11 @@ const LINES := {
 	"prank_again": ["Hör auf, hier anzurufen! Ich weiß, dass du das bist!", "Noch einmal, und alle erfahren, was du hier treibst!"],
 	"dead": ["Ich bin's … {name}. Warum bist du nicht gekommen? Zimmer {room}. Ich warte.", "Hallo? … Hier ist {name}. Es ist so dunkel hier. Komm mich holen."],
 	"reception": ["Rezeption.", "Rezeption, guten Abend."],
+	"panic": ["{name} hier … Es ist irgendwo da draußen, ich hör es! Was soll ich denn tun?", "Bitte, du musst mir helfen – ich hab solche Angst! Ist es bei dir auch?"],
+	"guest_call": ["*am Telefon* Ich bin's. Na, wie geht's dir?", "*am Telefon* Hallo, du! Hast du kurz Zeit?"],
+	"guest_answer": ["*nimmt ab* Ja? … Ach, du bist's!", "*nimmt ab* Hallo? Schön, dass du anrufst."],
+	"panic_call": ["*am Telefon* Hast du das gehört?! Es ist hier irgendwo! Schließ deine Tür ab!", "*am Telefon* Ich halt das nicht aus … Ist es bei dir auch? Sag doch was!"],
+	"panic_answer": ["Was? Wo?! … Ich mach die Tür zu.", "Hör auf, du machst mir Angst!"],
 }
 
 var ui: PhoneUI
@@ -45,7 +61,7 @@ var home_phone: HotelPhone                 ## das Telefon in Zimmer 13
 var _phones := {}                          ## Raum-ID (Zimmernummer, "0" = Rezeption) → HotelPhone
 var _incoming: Dictionary = {}             ## {kind, guest, room, variant, rings, next}
 var _outgoing: Dictionary = {}             ## {phone, guest, rings, next, answer_at, creepy}
-var _ambient: Dictionary = {}              ## {phone, rings, max, next}
+var _ambient: Dictionary = {}              ## Gast ruft Gast an: {phone, caller, target, panic, rings, max, next}
 var _talk: Dictionary = {}                 ## {guest, since, chose}
 var _pranks := {}                          ## Gast-ID → Anzahl Telefonstreiche
 var _active_phone: HotelPhone              ## Hörer in der Hand des Spielers
@@ -142,11 +158,14 @@ func _pick_incoming() -> Dictionary:
 	var warners: Array = []
 	var liars: Array = []
 	var chatters: Array = []
+	var panicked: Array = []
 	for guest in Game.social.living_guests():
 		var g: Guest = guest
 		if g.hiding or g.state in [Guest.State.KNOCK, Guest.State.SHELTER, Guest.State.TALKING, Guest.State.MINIGAME]:
 			continue
-		if out and Social.tier(g) >= Social.Tier.FRIENDLY:
+		if _panicky(g) and _at_home(g) and Social.tier(g) >= Social.Tier.NEUTRAL:
+			panicked.append(g)   # ruft in Panik herum – auch dich
+		elif out and Social.tier(g) >= Social.Tier.FRIENDLY:
 			warners.append(g)
 		elif out and Social.tier(g) <= Social.Tier.ANGRY:
 			liars.append(g)
@@ -159,6 +178,8 @@ func _pick_incoming() -> Dictionary:
 		choices.append([1.0, "lie", liars])
 	if not chatters.is_empty():
 		choices.append([1.5, "chat", chatters])
+	if not panicked.is_empty():
+		choices.append([2.0, "panic", panicked])
 	if director.first_attack_done:
 		choices.append([0.6 + (2.0 if _grieving() else 0.0), "creepy", []])
 	if choices.is_empty():
@@ -268,6 +289,16 @@ func _take_incoming(call: Dictionary) -> void:
 			ui.show_page("%s – %s" % [title, guest.display_name], "„%s“" % text, [
 				["Danke!", func() -> void:
 					Game.social.change_relation(guest, 3.0)
+					hang_up()],
+				["Auflegen", hang_up],
+			])
+		"panic":
+			if Game.tracing:
+				print("[Telefon] Panikanruf von %s" % guest.display_name)
+			ui.show_page("%s – %s" % [title, guest.display_name], "„%s“" % _line(guest, "panic"), [
+				["Beruhig dich. Schließ ab und bleib, wo du bist.", func() -> void:
+					guest.fear = maxf(0.0, guest.fear - 25.0)
+					Game.social.talk.friendly(guest, 1.5)   # am Telefon halb so viel wie Trösten (6.9)
 					hang_up()],
 				["Auflegen", hang_up],
 			])
@@ -599,38 +630,139 @@ func _prank(guest: Guest) -> void:
 	Game.say("Du hörst noch, wie %s schimpft: „%s“" % [guest.display_name, _line(guest, "prank_again" if count >= 2 else "prank")], 4.0)
 
 
-# --- Ferne Telefone ------------------------------------------------------------------------
+# --- Gäste rufen sich an -------------------------------------------------------------------
 
-## Irgendwo im Hotel klingelt es – Gäste rufen sich an. Auch das hört das Monster.
+## Irgendwo im Hotel klingelt es – ein Gast ruft einen anderen an (4.14). Auch das hört das Monster.
 func _update_ambient(delta: float) -> void:
 	if not _ambient.is_empty():
-		var phone: HotelPhone = _ambient["phone"]
-		_ambient["next"] = float(_ambient["next"]) - delta
-		if float(_ambient["next"]) > 0.0:
-			return
-		if int(_ambient["rings"]) >= int(_ambient["max"]) or phone.off_hook:
-			phone.ringing = false
-			_ambient = {}
-			return
-		_ambient["rings"] = int(_ambient["rings"]) + 1
-		_ambient["next"] = RING_INTERVAL
-		_ring(phone)
+		_guest_call_step(delta)
 		return
 	_ambient_cooldown -= delta
 	if _ambient_cooldown > 0.0:
 		return
-	_ambient_cooldown = randf_range(AMBIENT_COOLDOWN.x, AMBIENT_COOLDOWN.y)
-	var candidates: Array = []
-	for guest in Game.social.living_guests():
-		var g: Guest = guest
+	var call := _pick_guest_call()
+	var panic: bool = call.get("panic", false)
+	_ambient_cooldown = randf_range(PANIC_COOLDOWN.x, PANIC_COOLDOWN.y) if panic else randf_range(AMBIENT_COOLDOWN.x, AMBIENT_COOLDOWN.y)
+	if not call.is_empty():
+		_start_guest_call(call["caller"], call["target"], panic)
+
+
+## Wer ruft wen an? Lieber ein ängstlicher Gast in Panik, sonst (nicht in der Nachtruhe) irgendein Erwachsener, der
+## daheim ist – angerufen wird ein Freund (6.16), in Panik zur Not ein Nachbar. {} = gerade keiner.
+func _pick_guest_call() -> Dictionary:
+	var panicked: Array[Guest] = []
+	var callers: Array[Guest] = []
+	for g: Guest in Game.social.living_guests():
+		if g.is_child() or g.hiding or g.is_asleep() or not g.state in [Guest.State.IDLE, Guest.State.WALK] or not _at_home(g):
+			continue
+		var phone: HotelPhone = _phones.get(String(g.home["no"]))
+		if phone == null or phone == home_phone or phone.off_hook:
+			continue
+		if _panicky(g):
+			panicked.append(g)
+		elif not Game.social.sleep_active:
+			callers.append(g)
+	panicked.shuffle()
+	callers.shuffle()
+	for caller in panicked:
+		var target := _call_target(caller, true)
+		if target:
+			return {"caller": caller, "target": target, "panic": true}
+	for caller in callers:
+		var target := _call_target(caller, false)
+		if target:
+			return {"caller": caller, "target": target, "panic": false}
+	return {}
+
+
+## Ein Freund mit Telefon in einem anderen Zimmer – lieber einer, der daheim und wach ist; in Panik (panic) zur Not der
+## nächste Nachbar auf demselben Stockwerk, der abnimmt. null = keiner.
+func _call_target(caller: Guest, panic: bool) -> Guest:
+	var best: Guest = null
+	var fallback: Guest = null
+	var pals := Game.social.pals.pals_of(caller)
+	for g: Guest in Game.social.living_guests():
+		if g == caller or g.home["no"] == caller.home["no"]:
+			continue
 		var phone: HotelPhone = _phones.get(String(g.home["no"]))
 		if phone == null or phone == home_phone or phone.off_hook or phone.ringing:
 			continue
-		if Game.player and Game.player.global_position.distance_to(phone.global_position) < 8.0:
+		if not g in pals:
+			if panic and absf(g.global_position.y - caller.global_position.y) < 2.5 and _answers(g) and (fallback == null \
+					or g.global_position.distance_to(caller.global_position) < fallback.global_position.distance_to(caller.global_position)):
+				fallback = g
 			continue
-		candidates.append(phone)
-	if not candidates.is_empty():
-		_ambient = {"phone": candidates[randi() % candidates.size()], "rings": 0, "max": randi_range(2, 4), "next": 0.0}
+		if best == null or (_answers(g) and not _answers(best)):
+			best = g
+	return best if best else fallback
+
+
+func _start_guest_call(caller: Guest, target: Guest, panic: bool) -> void:
+	var rings := randi_range(3, 5)
+	_ambient = {"phone": _phones[String(target.home["no"])], "caller": caller, "target": target, "panic": panic,
+		"rings": 0, "max": rings, "next": randf_range(0.5, 1.5)}
+	caller.wait_awake(RING_INTERVAL * (rings + 1))   # wählt und wartet am Hörer
+
+
+func _guest_call_step(delta: float) -> void:
+	var phone: HotelPhone = _ambient["phone"]
+	_ambient["next"] = float(_ambient["next"]) - delta
+	if float(_ambient["next"]) > 0.0:
+		return
+	var caller = _ambient["caller"]   # untypisiert: nach dem Laden kann der Gast neu erzeugt worden sein
+	var target = _ambient["target"]
+	var panic: bool = _ambient["panic"]
+	if not is_instance_valid(caller) or caller.dead or caller.hiding or phone.off_hook \
+			or int(_ambient["rings"]) >= int(_ambient["max"]):
+		phone.ringing = false
+		_ambient = {}
+		return
+	if int(_ambient["rings"]) >= GUEST_ANSWER_RINGS and is_instance_valid(target) and _answers(target):
+		phone.ringing = false
+		_ambient = {}
+		_guest_call(caller, target, panic)
+		return
+	_ambient["rings"] = int(_ambient["rings"]) + 1
+	_ambient["next"] = RING_INTERVAL
+	_ring(phone)
+
+
+## Das Gespräch: Beide bleiben am Hörer stehen. Freunde erzählen sich eine Geschichte weiter (Talk.phone_spread),
+## in Panik steckt die Angst den anderen an.
+func _guest_call(caller: Guest, target: Guest, panic: bool) -> void:
+	var time := randf_range(GUEST_CALL_TIME.x, GUEST_CALL_TIME.y)
+	caller.wait_awake(time)
+	target.wait_awake(time)
+	target.say(_line(target, "guest_answer"))
+	if panic:
+		target.fear = minf(100.0, target.fear + PANIC_FEAR * (1.2 - float(target.profile["brave"])))
+		caller.fear = maxf(0.0, caller.fear - PANIC_CALM)
+	var told := Game.social.talk.phone_spread(caller, target)
+	if not told:
+		caller.say(_line(caller, "panic_call" if panic else "guest_call"))
+	if panic:
+		get_tree().create_timer(3.0, false).timeout.connect(func() -> void:
+			if is_instance_valid(target) and not target.dead:
+				target.say(_line(target, "panic_answer")))
+	if Game.tracing:
+		print("[Telefon] %s ruft %s an%s%s" % [caller.display_name, target.display_name, " (Panik)" if panic else "",
+			", erzählt weiter" if told else ""])
+
+
+## Nimmt er ab? Daheim, wach, nicht versteckt und nicht beschäftigt.
+func _answers(g: Guest) -> bool:
+	return not g.dead and g.hiding == null and not g.is_asleep() and _at_home(g) \
+		and g.state in [Guest.State.IDLE, Guest.State.WALK, Guest.State.PARTY]
+
+
+## In seinem Zimmer (mit Bad), wo das Telefon steht.
+func _at_home(g: Guest) -> bool:
+	return Game.social.builder.home_room_at(g.global_position) == String(g.home["no"])
+
+
+## Ängstlich und in Angst: ruft in Panik herum.
+func _panicky(g: Guest) -> bool:
+	return not g.is_child() and g.fear >= PANIC_FROM and float(g.profile["brave"]) < PANIC_BRAVE
 
 
 # --- Hilfen -----------------------------------------------------------------------------
@@ -681,14 +813,52 @@ func debug_call(who: String) -> void:
 				call = {"kind": "creepy", "variant": "door", "room": LevelBuilder.PLAYER_ROOM}
 			start_incoming(call)
 		_:
-			var guest := Game.social.guest_by_id(who)
+			var guest := Game.social.find_guest(who.get_slice(",", 0))
 			if guest == null:
 				push_warning("--call: unbekannter Gast %s" % who)
 				return
 			var kind := "chat"
-			if Game.monster.is_active():
+			if who.ends_with(",panik"):   # ruft in Panik an (Angst 80)
+				guest.fear = 80.0
+				kind = "panic"
+			elif Game.monster.is_active():
 				kind = "lie" if Social.tier(guest) <= Social.Tier.ANGRY else "warn"
 			start_incoming({"kind": kind, "guest": guest, "room": guest.home["no"]})
+
+
+## Debug (--gastanruf=id[,panik]): Dieser Gast steht daheim, kennt eine frische Geschichte (Geist gesehen) und ruft
+## gleich einen Freund an (ohne Freund wird der nächste Gast mit Telefon einer), der auch daheim steht · panik: in Panik
+## (Angst 80).
+func debug_guest_call(args: PackedStringArray) -> void:
+	var caller := Game.social.find_guest(args[0])
+	if caller == null:
+		push_warning("--gastanruf: unbekannter Gast %s" % args[0])
+		return
+	var panic := args.size() > 1 and args[1] == "panik"
+	caller.global_position = caller.home["center"]
+	caller.wait_awake(5.0)
+	if panic:
+		caller.fear = 80.0
+	var target := _call_target(caller, panic)
+	if target == null or not Game.social.pals.are_pals(caller, target):   # ohne Freund: der nächste Gast mit Telefon wird einer
+		for g: Guest in Game.social.living_guests():
+			if not g.is_child() and g.home["no"] != caller.home["no"] and _phones.has(String(g.home["no"])) and (target == null 					or g.home["center"].distance_to(caller.home["center"]) < target.home["center"].distance_to(caller.home["center"])):
+				target = g
+		if target:
+			Game.social.pals.note(caller, target, GuestPals.PAL_DEEDS)
+	if target == null:
+		push_warning("--gastanruf: %s hat niemanden zum Anrufen" % caller.display_name)
+		return
+	target.global_position = target.home["center"]
+	target.wait_awake(20.0)
+	var talk := Game.social.talk
+	talk._remember(caller, talk._claim("ghost", {"zone": Game.social.random_zone_name(), "from": caller.id, "src": -1 - randi() % 100000}))
+	caller.profile = caller.profile.duplicate()
+	caller.profile["gossip"] = 1.0   # erzählt es sicher weiter
+	_ambient = {}
+	_start_guest_call(caller, target, panic)
+	if Game.tracing:
+		print("[Telefon] Debug: %s ruft %s an (Zimmer %s → %s)" % [caller.display_name, target.display_name, caller.home["no"], target.home["no"]])
 
 
 ## Debug (--dial=n): vom Telefon in Zimmer 13 aus wählen. "lobby": Wählseite am Haupttelefon.
