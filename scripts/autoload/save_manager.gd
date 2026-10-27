@@ -111,7 +111,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     laden nicht mehr (ihre Dreistigkeit läge weit über den Schwellen der Anforderung)
 ## 56: Wachzeit statt Nächte ohne Schlaf (Spielkonzept 3.6): player.awake_time, sure_awake, rested – ältere Stände laden
 ##     weiter, ihre Nächte ohne Schlaf werden zu je 24 Stunden wach
-const VERSION := 56
+## 57: Kerzen brennen ab (Spielkonzept 5.12): übriges Wachs im Zusatz („w=…“ bei Kerze, Kürbis, Totenkopf) und bei den
+##     festen Kerzen („wax“), Kerzenvorrat mit „refill_day“ – ältere Stände laden weiter, alle Kerzen dann neu
+const VERSION := 57
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -511,7 +513,7 @@ func collect() -> Dictionary:
 	data["plants"] = _collect_group("pumpkin_plants", func(n: Node) -> Dictionary:
 		return {"stage": n.stage, "timer": n._timer})
 	data["resources"] = _collect_group("resource_spots", func(n: Node) -> Dictionary:
-		return {"uses": n.uses, "timer": n._timer, "guest_day": n.guest_day})
+		return {"uses": n.uses, "timer": n._timer, "guest_day": n.guest_day, "refill_day": n.refill_day})
 	data["lamps"] = _collect_group("lamp_fixtures", func(n: Node) -> Dictionary: return n.save_state())
 	data["fixed_candles"] = _collect_group("fixed_candles", func(n: Node) -> Dictionary: return n.save_state())
 	data["switches"] = _collect_group("light_switches", func(n: Node) -> Dictionary: return n.save_state())
@@ -561,6 +563,7 @@ func apply(data: Dictionary) -> void:
 	Game.social.search.reset()
 	Game.social.pranks.reset()
 	Game.social.tidying.reset()
+	Game.social.candles.reset()
 	if Game.kitchen:
 		Game.kitchen.reset()
 	if Game.coffee:
@@ -590,6 +593,7 @@ func apply(data: Dictionary) -> void:
 		n.uses = int(d["uses"])
 		n._timer = float(d["timer"])
 		n.guest_day = int(d.get("guest_day", 0))
+		n.refill_day = int(d.get("refill_day", 0))
 		n._update_visual())
 	_apply_group("light_switches", data.get("switches", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("lamp_fixtures", data.get("lamps", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))

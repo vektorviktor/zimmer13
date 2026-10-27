@@ -148,6 +148,10 @@ done <<'LIST'
 600|streiche|--prank=fire --trace
 600|streiche,kerzen|--prank=candle --trace
 500|kerzen,spieler,licht|--deco=kerze --sprint --bag=streichhoelzer --trace
+2400|kerzen,abbrennen,gaeste|--abbrennen --trace
+2400|kerzen,abbrennen,gaeste|--kerzenpflege=bruno --trace
+2400|kerzen,abbrennen,gaeste|--kerzenpflege=edna,ohne --trace
+600|kerzen,abbrennen,speichern|--abbrennen=0.5 --savetest
 600|streiche,kuerbis|--prank=pumpkin,111 --trace
 600|werfen,kuerbis,speichern|--pos=-6,0,-21,180,-25 --wurf --savetest --trace
 600|werfen,speichern|--pos=-6,0,-18,90,0 --wurf=1,kaffee --savetest --trace

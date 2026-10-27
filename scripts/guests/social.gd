@@ -217,6 +217,7 @@ var pals: GuestPals                      ## Freundschaften unter Gästen (Spielk
 var pranks: Pranks                      ## Streiche der Kinder (Spielkonzept 6.13)
 var access: RoomAccess                  ## Zimmerzugang: Klopfen, Einlass, Hausfriedensbruch (Spielkonzept 6.19)
 var tidying: Tidying                    ## Flecken: Beschweren und Putzen (Spielkonzept 6.13)
+var candles: CandleCare                 ## Kerzen anzünden und ersetzen (Spielkonzept 5.12)
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
 var talk: Talk                           ## Erzählen, Lügen, Fragen, Gedächtnis der Gäste (Spielkonzept 6.9)
 var requests: GuestRequests              ## Bitten der Gäste (Spielkonzept 6.14)
@@ -367,6 +368,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	tidying = Tidying.new()   # Flecken: Beschweren und Putzen (6.13)
 	tidying.name = "Tidying"
 	add_child(tidying)
+	candles = CandleCare.new()   # Kerzen anzünden und ersetzen (5.12)
+	candles.name = "CandleCare"
+	add_child(candles)
 	talk = Talk.new()   # Erzählen, Lügen, Fragen, Gedächtnis (6.9)
 	talk.name = "Talk"
 	add_child(talk)
@@ -401,7 +405,8 @@ func _place_start_deco(guest: Guest, kinds: Array) -> void:
 		var item := guest.stock_item(kind)
 		item.owner_id = guest.id
 		if item.can_light():
-			item.light_up(false)   # die Startdeko brennt schon (Spielkonzept 5.12) – anzünden können Gäste sonst nicht
+			item.light_up(false)   # die Startdeko brennt schon (Spielkonzept 5.12)
+			item.set_wax(randf_range(FixedCandle.START_WAX.x, FixedCandle.START_WAX.y))   # nicht alle gehen zugleich aus
 		item.position = guest.deco_place_point() + Vector3(0, 0.02, 0)
 		_world.add_child(item)
 		if item.can_hang():
@@ -838,6 +843,19 @@ func on_guest_noticed_missing(guest: Guest, count: int) -> void:
 	if cat_thefts.has(guest.id) and count > 0:   # ein Stück davon hat eine Katze weggetragen (6.11)
 		cat_blame[guest.id] = float(cat_blame.get(guest.id, 0.0)) + (before - guest.relation) / count
 	guest.say(guest.line("missing"))
+
+
+## Eine Kerze ist ganz heruntergebrannt (Item._burn_out, Spielkonzept 5.12): Wer sie in der Hand hielt, hat sie nicht
+## mehr; vor der Tür hält der Besitzer sie nicht für gestohlen.
+func on_candle_burned_out(item: Item) -> void:
+	for g in guests:
+		if g.held == item:
+			g.held = null
+	if item.owner_id in ["", "player"] or item.is_held:
+		return
+	var owner_guest := guest_by_id(item.owner_id)
+	if owner_guest and item in owner_guest.own_deco_near_door():
+		owner_guest.expected_deco = maxi(0, owner_guest.expected_deco - 1)
 
 
 ## Er weiß jetzt, dass es die Katze war (Spielkonzept 6.11): Der Verdacht gegen den Spieler ist vom Tisch.
@@ -2030,6 +2048,8 @@ func on_visit_arrived(guest: Guest) -> void:
 	if pranks.on_arrived(guest):   # holt etwas für einen Streich bzw. wirft es (6.13)
 		return
 	if tidying.on_arrived(guest):   # putzt einen Fleck weg bzw. bringt Kürbismatsch in die Küche
+		return
+	if candles.on_arrived(guest):   # zündet eine Kerze an, holt eine neue oder bringt seine zur Flamme (5.12)
 		return
 	if _rounds.has(guest.id):
 		_round_arrived(guest)

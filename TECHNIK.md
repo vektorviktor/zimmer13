@@ -1124,6 +1124,18 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   in die Küche bzw. kocht ihn (`Stove.claim_cook`). Nicht gespeichert. Debug `--mess[=wachs]`.
 - **Der Grinch** (`guests/grinch.gd`, Spielkonzept 2.6; `Social.grinch`): Gustav Peters = Gast mit Haushalt `H25`
   (`Grinch.is_grinch`, static – Hooks in `start_party`, `_household_deco`, `Guest._at_home`, `Decorating._available`,
+- **Kerzenpflege** (`guests/candle_care.gd`, Spielkonzept 5.12; `Social.candles`): alle `SCAN` s, nicht in der
+  Nachtruhe und nicht, solange das Monster unterwegs ist (`_quiet`), höchstens ein Gang je `GAP`. `_own_doors`: der
+  Haushaltsvorstand (bis `DOOR_RANGE`, gleiches Stockwerk) sieht nach dunkler eigener Deko (`is_dark`: Kerze, Kürbis,
+  Totenkopf aus oder ohne Kerze), Wahrscheinlichkeit `_care_chance` (Angst rauf, `Guest._forget_light` runter).
+  `_passing`: feste Kerzen in `PASS_RANGE` mit Blick, `PASS_CHANCE`. `_send` plant die Schritte (`steps`, Meta
+  `candle_care` am Ziel): `fetch` (neue Kerze aus dem Kerzenvorrat, `ResourceSpot.guest_consume`; aus dem Koffer
+  `stock` gleich in die Hand), `flame` (ohne Feuer: zur nächsten brennenden Flamme `_nearest_flame`, `FLAME_RANGE`),
+  `go` (`_tend`: anzünden bzw. `Item.insert_candle`/`FixedCandle.renew`), ohne Feuer an der eigenen Tür `pickup` →
+  `flame` → `place` (über `PLACE_DECO`, `expected_deco` −1/+1). Feuer: `has_fire` fest nach Gast-ID (`FIRE_SHARE`,
+  Kinder nie). Keine Flamme: `_ask_player` (`ASK_RANGE`, `ASK_GAP`). Gänge über `start_visit` →
+  `Social.on_visit_arrived` → `on_arrived`; abgebrochen (`_process`): geholte Kerze in den Koffer, eigene Deko fällt.
+  Nicht gespeichert. Debug `--kerzenpflege=id[,ohne]`.
   `GuestRequests.offer_for`, `_round_answer`, `DoorContest._can_gather`). `relation` beim Start höchstens −35.
   `_process` alle `SCAN` s: Gänge (`_job`: `door`, `wreck`, `party`, `punch`) laufen über `start_visit` →
   `Social.on_visit_arrived` → `on_arrived`; ohne Gang der Reihe nach Partyraum (`_party_due`: Feier oder Licht an),
@@ -1242,7 +1254,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   (Door, Chest, Plant, Resource). Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()` + `WORLD_GROUPS`.
 - Beim Laden `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
 - **Nicht gespeichert**, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating`, `DecoSearch`, `Stove`,
-  `CoffeeMachine` (auch der Wasserkocher), `Pranks`, `Tidying` (`reset()`) – sonst zeigten laufende Aktionen nach
+  `CoffeeMachine` (auch der Wasserkocher), `Pranks`, `Tidying`, `CandleCare` (`reset()`) – sonst zeigten laufende Aktionen nach
   `--savetest` auf die neu gebauten Gäste ins Leere. Ebenso nicht: Auftritte von Lakengeist und Kürbismann, Wetter,
   Flackerwelle, Feiern, Spinnen, Fledermäuse.
 - **Was wo steht** (Überblick; Einzelheiten in `collect`): `player` (Lage, Hand, `bag`, `look`, Geld, Schock,
@@ -1388,11 +1400,22 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   (`FLAMMABLE`) an: eigener Körper mit Prompt „austreten [E]“, Licht in `light_source`, springt über, hinterlässt Ruß
   (`soot`). Nicht gespeichert.
 - **Kerzen** (Spielkonzept 5.12; `item.gd` `lit`, `has_candle`, `light_up`, `snuff`, `blow_out`, `light_by`;
-  `player.gd` `_use_flame`, `_snuff_target`, `_update_flame_wind`): brennen unbegrenzt. Neue Kerzen brennen nicht, nur
+  `player.gd` `_use_flame`, `_snuff_target`, `_update_flame_wind`). Neue Kerzen brennen nicht, nur
   mit Zusatz `lit`; Kürbis/Totenkopf: `unlit` = ohne Kerze, `out` = Kerze erloschen. Anzünden mit Flamme oder
   `MATCHBOX` (Fundort `CONTENT["022"]["drawer"]`), auspusten, ausdrücken; in Bewegung kann der Wind sie ausblasen
-  (`FLAME_OUT_*`, draußen und bei Wetter mehr, in Kürbis/Totenkopf geschützt). `FixedCandle` (feste Kerze auf Möbeln):
-  Licht in `lamps`, das Monster bläst sie aus, gespeichert in `fixed_candles`. Rauchtest `kerzen`.
+  (`FLAME_OUT_*`, draußen und bei Wetter mehr, in Kürbis/Totenkopf geschützt, Stummel mal `STUB_WIND`). `FixedCandle`
+  (feste Kerze auf Möbeln): Licht in `lamps`, das Monster bläst sie aus, gespeichert in `fixed_candles` (`lit`, `wax`).
+  **Abbrennen** (2026-10-27): `Item.wax` (1 = neu) sinkt, solange sie brennt, um dt / `BURN_TIME` (ein Spieltag) –
+  in `_process` alle `BURN_STEP` s und in `skip_time` (Zeitsprung); gespeichert im Zusatz `w=…` (Kerze, Kürbis,
+  Totenkopf). `set_wax`: `CandleModel.burn_down` staucht das Wachs-Netz (Meta „candle_wax“, mindestens `MIN_STUB`) und
+  setzt Flamme und Licht auf die neue Dochtspitze; unter `STUB` heißt sie „Kerzenstummel“, Licht `STUB_LIGHT`
+  (`_light_full` = Licht der vollen Flamme aus `_add_light`). Bei 0 `_burn_out`: Kerze weg (aus der Spielerhand mit
+  Satz, `Social.on_candle_burned_out` nimmt sie aus Gästehänden und senkt `expected_deco` des Besitzers), Kürbis und
+  Totenkopf `has_candle = false`. Kerze in den Kürbis behält ihre Länge (`insert_candle`). `FixedCandle` genauso
+  (`burn`, `renew`); leerer Teller nimmt eine Kerze aus der Hand. Startlängen zufällig in `FixedCandle.START_WAX`
+  (feste Kerzen, Startdeko der Gäste). Kerzenvorrat: `ResourceSpot.refill_mornings` – kein laufender Nachwuchs, ab
+  6 Uhr (erstes Bild sofort) auf ⌈bewohnte Zimmer / 2⌉ (`MonsterDirector.inhabited_rooms`), `refill_day` gespeichert.
+  Gäste zünden an: `CandleCare` (s. Gäste). Debug `--abbrennen[=rest]`. Rauchtest `kerzen`, `abbrennen`.
 - **Salz** (Spielkonzept 5.13; `world/salt_line.gd` `SaltLine`; `item.gd` `SALT`, `salt_left` im Zusatzfeld,
   `use_salt`; `player.gd` `salt_spot`, `strew_salt`): Linksklick mit der Packung → `SaltLine.spot_for(öffnung, von)`
   (Tür: Schwelle auf der eigenen Seite, `THRESHOLD_Z`, zu nah = `STEP_BACK`; Außenfenster mit Vorhang: in der Laibung

@@ -663,6 +663,8 @@ func _update_flame_wind(delta: float, moving: bool) -> void:
 		chance = Item.FLAME_OUT_RUN
 	if held.kind in Item.CANDLE_HOLDERS:
 		chance *= Item.FLAME_SHELTER
+	if held.is_stub():
+		chance *= Item.STUB_WIND   # ein Stummel flackert und geht leichter aus
 	if randf() < chance:
 		if Game.tracing:
 			print("[Kerze] geht in der Hand aus (%s, %s)" % ["draußen" if outside else "drinnen", "rennt" if running else "geht"])

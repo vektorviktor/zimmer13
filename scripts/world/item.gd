@@ -122,6 +122,14 @@ const FLAME_OUT_OUTSIDE := 0.03
 const FLAME_OUT_OUTSIDE_RUN := 0.15
 const FLAME_WEATHER := 2.0
 const FLAME_SHELTER := 1.0 / 3.0
+## Abbrennen (5.12): Eine neue Kerze brennt einen Spieltag lang (Sekunden Spielzeit). Im letzten Viertel (STUB) ist sie
+## ein Stummel – das Licht hat STUB_LIGHT der Kraft, in der Bewegung geht sie STUB_WIND-mal so leicht aus. Nachgerechnet
+## wird alle BURN_STEP Sekunden.
+const BURN_TIME := Calendar.DAY_SECONDS
+const STUB := 0.25
+const STUB_LIGHT := 0.6
+const STUB_WIND := 1.5
+const BURN_STEP := 1.0
 ## Scherben einer platzten Glühbirne: so viele (von, bis), Glas und Gewinde
 const BULB_SHARDS := Vector2i(5, 8)
 const BULB_GLASS := Color(0.9, 0.93, 0.97)
@@ -202,6 +210,13 @@ var lit := false
 var light: FlickerLight
 ## Geschnitzter Kürbis, Totenkopf: Es steckt eine Kerze darin – brennend oder erloschen (Spielkonzept 5.12)
 var has_candle := false
+## Kerze, auch die in Kürbis und Totenkopf (5.12): so viel Wachs ist noch übrig (1 = neu). Brennt nur ab, solange sie
+## brennt; im Zusatz als „w=…“ gespeichert.
+var wax := 1.0
+var _burn_acc := 0.0
+## Kerze: Höhe der Dochtspitze, solange sie neu ist (CandleModel.build); Licht der vollen Flamme (Energie, Reichweite)
+var _wick := 0.0
+var _light_full := Vector2.ZERO
 ## Glühbirne: durchgebrannt (nutzlos, nur noch Scherben im Glas)
 var broken := false
 ## Kleidungsstück: wem es gehörte (Gast-ID) – Spur von Verschwundenen
@@ -296,6 +311,10 @@ static func create(p_kind: Kind, extra: String = "") -> Item:
 	item._build(extra)
 	if p_kind in ROT_KINDS:
 		item._read_rot(extra)
+	if p_kind == Kind.CANDLE or p_kind in CANDLE_HOLDERS:
+		for part in extra.split(","):
+			if part.begins_with("w="):
+				item.set_wax(part.substr(2).to_float())
 	return item
 
 
@@ -320,13 +339,20 @@ func _process(delta: float) -> void:
 		if _rot_timer <= 0.0:
 			_rot_timer = ROT_CHECK
 			_decay()
+	if lit:
+		_burn_acc += delta
+		if _burn_acc >= BURN_STEP:
+			burn(_burn_acc)
+			_burn_acc = 0.0
 
 
-## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Kerzen brennen unbegrenzt (5.12), Fäulnis hängt an der Uhr
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Kerzen brennen weiter ab (5.12), Fäulnis hängt an der Uhr
 ## (Item.rot_at).
 func skip_time(dt: float) -> void:
 	if _mush_mat:
 		_wash_timer += dt   # Kürbismatsch verwäscht im Regen weiter (das nächste Bild rechnet es nach)
+	if lit:
+		burn(dt)
 
 
 ## Beschriftung eines Schlüssels am Bund
@@ -436,11 +462,14 @@ func create_extra() -> String:
 				parts.append("out" if has_candle else "unlit")   # erloschene Kerze darin bzw. gar keine
 			parts.append("f=%d" % face)
 			parts.append(_rot_extra())
+			if has_candle and wax < 1.0:
+				parts.append(_wax_extra())
 			return ",".join(parts)
 		Kind.SKULL:
-			return "lit" if lit else ("out" if has_candle else "")
+			var state := "lit" if lit else ("out" if has_candle else "")
+			return state + ("," + _wax_extra() if has_candle and wax < 1.0 else "")
 		Kind.CANDLE:
-			return "lit" if lit else ""
+			return ("lit" if lit else "") + ("," + _wax_extra() if wax < 1.0 else "")
 		Kind.CLOTHING:
 			return clothing_of
 		Kind.MAP:
@@ -514,8 +543,10 @@ func interact(player: Player) -> void:
 		if not player.held.lit:
 			Game.say("Eine erloschene Kerze bringt nichts – erst anzünden.", 2.5)
 			return
+		var rest := player.held.wax
 		player.consume_held()
 		light_up()
+		set_wax(rest)   # sie bleibt so lang, wie sie war (5.12)
 		Game.say("Die Kerze flackert im Kürbis auf." if kind == Kind.CARVED_PUMPKIN else "Die Augen des Totenkopfs glimmen.", 2.5)
 		return
 	if _fitting_prompt(held, player) != "":
@@ -687,7 +718,7 @@ func light_up(with_sound: bool = true) -> void:
 		display_name = "Totenkopf mit Kerze"
 	elif kind == Kind.CANDLE:
 		deco_strength = 8.0
-		display_name = "Kerze"
+		display_name = _candle_name()
 	if _glow_material:
 		_glow_material.set_shader_parameter("emission_energy", 3.0)
 	if _flame:
@@ -753,10 +784,78 @@ func _extinguish() -> void:
 			display_name = _carved_name() + _unlit_suffix()
 		Kind.CANDLE:
 			deco_strength = 2.0
-			display_name = "Kerze (aus)"
+			display_name = _candle_name() + " (aus)"
 		Kind.SKULL:
 			deco_strength = 16.0
 			display_name = "Totenkopf" + _unlit_suffix()
+
+
+# --- Abbrennen (Spielkonzept 5.12) -------------------------------------------------------
+
+## Noch übriges Wachs setzen (1 = neu): Die Kerze wird kürzer, die Flamme wandert mit; als Stummel wird das Licht
+## schwächer. In Kürbis und Totenkopf sieht man nur das Licht.
+func set_wax(rest: float) -> void:
+	var was_stub := is_stub()
+	wax = clampf(rest, 0.0, 1.0)
+	if kind == Kind.CANDLE and _wick > 0.0:
+		var tip := CandleModel.burn_down(self, _flame, _wick, wax)
+		if light:
+			light.position.y = tip + 0.04
+	if light and _light_full != Vector2.ZERO:
+		var k := STUB_LIGHT if is_stub() else 1.0
+		light.base_energy = _light_full.x * k
+		light.omni_range = _light_full.y * sqrt(k)
+	if kind == Kind.CANDLE and is_stub() != was_stub:
+		display_name = _candle_name() + ("" if lit else " (aus)")
+		if Game.player and Game.player.held == self and Game.hud:
+			Game.hud.set_held(display_name)
+
+
+## Im letzten Viertel: kleineres Licht, geht in der Bewegung leichter aus.
+func is_stub() -> bool:
+	return has_wick() and wax < STUB
+
+
+func _candle_name() -> String:
+	return "Kerzenstummel" if wax < STUB else "Kerze"
+
+
+func _wax_extra() -> String:
+	return "w=%.3f" % wax
+
+
+## Brennt dt Sekunden Spielzeit weiter (_process, Zeitsprung). Ganz abgebrannt: _burn_out.
+func burn(dt: float) -> void:
+	if not lit or not has_wick():
+		return
+	set_wax(wax - dt / BURN_TIME)
+	if wax <= 0.0:
+		_burn_out()
+
+
+## Ganz abgebrannt: Eine Kerze ist weg – auch aus der Hand –, Kürbis und Totenkopf stehen leer und dunkel.
+func _burn_out() -> void:
+	if Game.tracing:
+		print("[Kerze] %s ist heruntergebrannt bei %s" % [display_name, global_position.snapped(Vector3.ONE * 0.1)])
+	if kind in CANDLE_HOLDERS:
+		has_candle = false
+		_extinguish()
+		wax = 1.0   # die nächste Kerze bringt ihre eigene Länge mit
+		return
+	lit = false
+	if Game.player and Game.player.held == self:
+		Game.player.consume_held()
+		Game.say("Die Kerze ist heruntergebrannt.", 2.5)
+		return
+	if Game.social:
+		Game.social.on_candle_burned_out(self)
+	queue_free()
+
+
+## Ein Gast stellt eine brennende Kerze mit rest Wachs hinein (Kürbis, Totenkopf ohne Kerze, CandleCare).
+func insert_candle(rest: float) -> void:
+	light_up(false)
+	set_wax(rest)
 
 
 ## Kürbis oder Totenkopf ohne Licht: steckt eine erloschene Kerze darin oder gar keine?
@@ -1058,10 +1157,10 @@ func _build(extra: String) -> void:
 			deco_strength = 8.0
 			mass = 0.3
 			size = Vector3(0.05, CandleModel.HEIGHT, 0.05)
-			var wick := CandleModel.build(self)
-			_flame = CandleModel.flame(self, Vector3(0, wick, 0))
-			_add_light(Vector3(0, wick + 0.04, 0), Color(1.0, 0.7, 0.35), 0.55, 2.6)
-			if extra == "lit":   # neue Kerzen brennen nicht (Spielkonzept 5.12)
+			_wick = CandleModel.build(self)
+			_flame = CandleModel.flame(self, Vector3(0, _wick, 0))
+			_add_light(Vector3(0, _wick + 0.04, 0), Color(1.0, 0.7, 0.35), 0.55, 2.6)
+			if "lit" in extra.split(","):   # neue Kerzen brennen nicht (Spielkonzept 5.12)
 				light_up(false)
 			else:
 				_extinguish()
@@ -1262,8 +1361,8 @@ func _build(extra: String) -> void:
 			size = Vector3(0.2, 0.22, 0.24)
 			_build_skull()
 			_add_light(Vector3(0, 0.11, 0), Color(1.0, 0.65, 0.3), 0.5, 2.8)
-			has_candle = extra == "out"
-			if extra == "lit":
+			has_candle = "out" in extra.split(",")
+			if "lit" in extra.split(","):
 				light_up(false)
 			else:
 				_extinguish()
@@ -2397,6 +2496,7 @@ func _add_light(pos: Vector3, color: Color, energy: float, light_range: float, a
 	light.light_color = color
 	light.base_energy = energy
 	light.omni_range = light_range
+	_light_full = Vector2(energy, light_range)
 	light.soft = true
 	light.shadow_enabled = false
 	if as_lamp:

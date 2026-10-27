@@ -18,6 +18,10 @@ var pool: Array = []
 var price := 0
 ## Kiste ohne Nachschub: Spieltag, an dem zuletzt ein Gast etwas genommen hat (gespeichert)
 var guest_day := 0
+## Kerzenvorrat (Spielkonzept 5.12): wächst nicht laufend nach, sondern füllt sich morgens auf – auf halb so viele
+## Stück, wie Zimmer bewohnt sind (MonsterDirector.inhabited_rooms). refill_day = Spieltag der letzten Füllung (gespeichert).
+var morning_refill := false
+var refill_day := 0
 
 var _timer := 0.0
 var _visual: Node3D
@@ -29,6 +33,12 @@ func setup(p_kind: Item.Kind, p_label: String, p_max_uses: int, p_regen_time: fl
 	max_uses = p_max_uses
 	uses = p_max_uses
 	regen_time = p_regen_time
+	return self
+
+
+## Füllt sich morgens auf statt laufend (Kerzenvorrat, 5.12).
+func refill_mornings() -> ResourceSpot:
+	morning_refill = true
 	return self
 
 
@@ -123,6 +133,9 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if morning_refill:
+		_refill()
+		return
 	if uses >= max_uses or regen_time <= 0.0:
 		return
 	_timer += delta
@@ -140,8 +153,8 @@ func grow(seconds: float) -> void:
 
 ## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): so viel wächst nach, wie in dt passt.
 func skip_time(dt: float) -> void:
-	if uses >= max_uses or regen_time <= 0.0:
-		return
+	if morning_refill or uses >= max_uses or regen_time <= 0.0:
+		return   # der Kerzenvorrat füllt sich im nächsten Bild auf, wenn der Morgen da ist
 	_timer += dt
 	var before := uses
 	while _timer >= regen_time and uses < max_uses:
@@ -149,6 +162,24 @@ func skip_time(dt: float) -> void:
 		uses += 1
 	if uses != before:
 		_update_visual()
+
+
+## Morgens (ab 6 Uhr, beim ersten Mal sofort): auf halb so viele Stück, wie Zimmer bewohnt sind – was noch da ist,
+## bleibt. Nach Halloween bleibt der Tag beim 31. stehen, dann kommt nichts mehr.
+func _refill() -> void:
+	var today := Calendar.today()
+	if today == refill_day or (refill_day != 0 and Calendar.hour_of(Calendar._elapsed()) < Calendar.PHASE_START[0]):
+		return
+	refill_day = today
+	var target := max_uses
+	if Game.director:
+		target = ceili(Game.director.inhabited_rooms().size() / 2.0)
+	max_uses = maxi(target, 1)
+	if uses < target:
+		uses = target
+		_update_visual()
+	if Game.tracing:
+		print("[Vorrat] %s am %d.: %d Stück" % [label, today, uses])
 
 
 ## Kiste mit starker Deko, die nicht nachwächst (5.10)?

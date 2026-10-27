@@ -207,6 +207,10 @@ extends Node3D
 ##   --despawn[=monster|geist|kuerbis]   die Bedrohung (ohne Angabe alle) ist sofort fort, auch Vorwarnung/Ankündigung
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
 ##   --lichtgang=id              Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3)
+##   --kerzenpflege=id[,ohne]    Kerzen vor der Tür des Gastes gehen aus (ohne: in Kürbis und Totenkopf abgebrannt), er
+##                               steht ein paar Meter davor und kümmert sich darum (5.12)
+##   --abbrennen[=rest]          alle Kerzen (auch feste, in Kürbis und Totenkopf) haben nur noch rest übrig (Standard
+##                               0,02 – etwa eine halbe Minute), 5.12
 ##   --steal-test                Ednas Deko unbemerkt nehmen (Schuld-Test)
 ##   --player-deco=x,z           geschnitzten Kürbis des Spielers an diese Stelle stellen
 ##   --wound=gast,scratch|axe|choke[,hin]   Gast hat überlebt (6.17): Kratzer, Axtwunde (Blutspur, ein Tag im Bett) bzw.
@@ -1542,6 +1546,24 @@ func run_debug(arg: String) -> bool:
 			get_tree().create_timer(30.0, false).timeout.connect(func() -> void:
 				if not walker.dead:
 					walker._walk_to(Game.social.builder.lobby_seats.pick_random(), Guest.State.WALK))
+	elif arg.begins_with("--kerzenpflege="):
+		# Gast kümmert sich um die dunklen Kerzen vor seiner Tür (5.12) – nach 1 s, wenn die Startdeko steht
+		var parts := arg.substr(15).split(",")
+		var carer := _guest(parts[0])
+		if carer:
+			get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+				Game.social.candles.debug(carer, parts.size() > 1 and parts[1] == "ohne"))
+	elif arg == "--abbrennen" or arg.begins_with("--abbrennen="):
+		# Alle Kerzen fast heruntergebrannt (5.12) – nach 1 s, wenn die Startdeko steht
+		var rest := arg.substr(12).to_float() if arg.begins_with("--abbrennen=") else 0.02
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+			for node in get_tree().get_nodes_in_group("items"):
+				var item := node as Item
+				if item.has_wick():
+					item.set_wax(rest)
+			for node in get_tree().get_nodes_in_group("fixed_candles"):
+				(node as FixedCandle).renew(rest, (node as FixedCandle).lit)
+			print("[Kerzen] Debug: alle Kerzen auf %.0f %%" % (rest * 100.0)))
 	elif arg.begins_with("--diary="):
 		# wie am Tagebuch speichern (nach 2 s)
 		var slot := arg.substr(8).to_int()

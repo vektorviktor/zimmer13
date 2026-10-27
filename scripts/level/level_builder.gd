@@ -2435,7 +2435,7 @@ func _fittings() -> void:
 				diary.rotation.y = _upright_yaw(p) + 0.3   # leicht schräg hingelegt
 				root.add_child(diary)
 			"candle_supply":
-				_supply(ResourceSpot.new().setup(Item.Kind.CANDLE, "Kerze aus dem Vorrat", 3, 150.0), Vector3(p.x, top, p.y))
+				_supply(ResourceSpot.new().setup(Item.Kind.CANDLE, "Kerze aus dem Vorrat", 3, 150.0).refill_mornings(), Vector3(p.x, top, p.y))   # morgens (5.12)
 			"bulb_supply":
 				_supply(ResourceSpot.new().setup(Item.Kind.BULB, "Ersatzbirne aus dem Lager", 2, 300.0), Vector3(p.x, BULB_SUPPLY_Y, p.y))
 			"leaf_pile":

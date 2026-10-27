@@ -112,6 +112,8 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - Taschenlampe: alles gebaut; UV-Spuren an 13 offen (s. 2).
 
 **Deko und Halloween**
+- Kerzen brennen ab (gebaut 27.10.), Reste: Werte (Brenndauer, Stummel, Anteil mit Feuer, Pflege-Wahrscheinlichkeit)
+  nur headless geprüft – im Spiel tunen; „Feuer?“ ist nur ein Satz, keine Bitte im Notizbuch – SK 5.12.
 - Knappheit Stufe 2 (Schutzkreis = Lichtschein, sichtbare Abweisung) und 3 (Gäste schmücken mit Plan, klauen) – SK 5.10.
 - Puppe: die „vorgemerkten“ Punkte, u. a. Jury beim Großen Schmücken – SK 5.5.
 - **Maskenball**, Reste: sechs Masken, Verstecke und Zettel, der Ball, Verleihen, Rückkehr an den Haken, Trophäen;

@@ -78,7 +78,7 @@
   - [5.9 Halloween im Hotel (vorgemerkt 2026-10-20)](#59-halloween-im-hotel-vorgemerkt-2026-10-20)
   - [5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23)](#510-knappheit-wert--verfall-entschieden-2026-10-21-stufe-1-umgesetzt-2026-10-23)
   - [5.11 Feuer: Deko kann brennen (entschieden 2026-10-22)](#511-feuer-deko-kann-brennen-entschieden-2026-10-22)
-  - [5.12 Kerzen: ausgehen, auspusten, anzünden (entschieden und umgesetzt 2026-10-25)](#512-kerzen-ausgehen-auspusten-anzünden-entschieden-und-umgesetzt-2026-10-25)
+  - [5.12 Kerzen: ausgehen, auspusten, anzünden, abbrennen (entschieden und umgesetzt 2026-10-25, Abbrennen 2026-10-27)](#512-kerzen-ausgehen-auspusten-anzünden-abbrennen-entschieden-und-umgesetzt-2026-10-25-abbrennen-2026-10-27)
   - [5.13 Salz vor die Tür (entschieden und umgesetzt 2026-10-25)](#513-salz-vor-die-tür-entschieden-und-umgesetzt-2026-10-25)
   - [5.14 Die Fotowand in der Lobby (entschieden und umgesetzt 2026-10-25)](#514-die-fotowand-in-der-lobby-entschieden-und-umgesetzt-2026-10-25)
   - [5.15 Friedhof und Grablichter (entschieden und umgesetzt 2026-10-25)](#515-friedhof-und-grablichter-entschieden-und-umgesetzt-2026-10-25)
@@ -2688,7 +2688,7 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 | Ungeschnitzter Kürbis | Garten                  | Schwacher Schutz, Rohstoff / Handelsware   | häufig     |
 | Spinnenweben     | In bestimmten Hotelbereichen einsammeln | An Tür / im Flur aufhängen; Schutz, Frühwarnung (schwingen bei Monsternähe, 5.6) | mittel |
 | Herbstlaub       | Bäume im Garten             | Am Boden auslegen; schwacher Schutz, **raschelt** (verrät Schritte – auch die von Dieben?) | häufig |
-| Kerzen           | Kerzenvorrat in der Küche, Schubladen, Handel | Kleiner Radius, Licht; gehen aus (5.12) | häufig     |
+| Kerzen           | Kerzenvorrat in der Küche, Schubladen, Handel | Kleiner Radius, Licht; gehen aus, brennen ab (5.12) | häufig     |
 | Girlande / Lichterkette | Handel                | Schützt Flurabschnitt linear, Licht         | mittel     |
 | Vogelscheuche    | Handel / Belohnung          | Großer Radius                               | selten     |
 
@@ -3055,8 +3055,8 @@ ihm.
   sieht, dass sie gerade gewirkt hat.
 
 **4. Verfall**
-- **Kerzen gehen aus** statt abzubrennen (5.12): Das Monster bläst sie aus (4.13), Wind und Rennen löschen sie; knapp
-  ist die Flamme, nicht das Wachs.
+- **Kerzen gehen aus und brennen ab** (5.12, Abbrennen 2026-10-27): Das Monster bläst sie aus (4.13), Wind und Rennen
+  löschen sie; nach etwa einem Spieltag ist das Wachs verbraucht. Gäste zünden wieder an und ersetzen Abgebranntes.
 - **Kürbisse faulen:** geschnitzte nach etwa **drei Tagen**, ungeschnitzte nach etwa **einer Woche** – erst welk, dann
   eingefallen, dann weg. **Laub wird zertreten.**
 - Pflege wird tägliche Aufgabe; daraus entstehen Wünsche für Aufträge („Mein Kürbis fault“, 6.14).
@@ -3082,11 +3082,15 @@ ihm.
 - **Löschen:** Der Spieler kann brennende Deko austreten [E]; was gelöscht ist, bleibt angesengt erhalten.
 - Brennende Deko zählt nicht als Deko, aber als Licht.
 
-### 5.12 Kerzen: ausgehen, auspusten, anzünden (entschieden und umgesetzt 2026-10-25)
-Kerzen **brennen nicht ab** – sie **gehen aus**. Knapp ist nicht das Wachs, sondern die Flamme (5.10).
+### 5.12 Kerzen: ausgehen, auspusten, anzünden, abbrennen (entschieden und umgesetzt 2026-10-25, Abbrennen 2026-10-27)
+> **Geändert und umgesetzt 2026-10-27:** Kerzen **brennen ab** (siehe „Abbrennen“ unten), und **Gäste zünden an**.
+> Das ersetzt „Unbegrenzt“, „Neue Kerzen brennen nicht“ (für Gäste) und „Gäste zünden nichts an“ von 2026-10-25.
 
-- **Unbegrenzt:** Kerzen, Kürbislaternen und Totenköpfe mit Kerze brennen, bis etwas sie ausmacht – das Monster (4.13),
-  eine Katze (6.11), der Spieler, der Wind. Eine ausgegangene Kerze heißt „Kerze (aus)“.
+Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick und das Wachs über die Tage (5.10).
+
+- **Unbegrenzt** *(Stand 2026-10-25, wird durch „Abbrennen“ ersetzt)*: Kerzen, Kürbislaternen und Totenköpfe mit Kerze
+  brennen, bis etwas sie ausmacht – das Monster (4.13), eine Katze (6.11), der Spieler, der Wind. Eine ausgegangene
+  Kerze heißt „Kerze (aus)“.
 - **Auch die festen Kerzen** auf Kommoden, Tischen und Theke (7.3) können ausgehen: Das Monster bläst sie im Vorbeigehen
   aus, der Spieler kann sie auspusten und wieder anzünden. Sie werden mit dem Spielstand gespeichert.
 - **Auspusten:** Brennt, was man in der Hand hält, pustet **Linksklick / R** es aus. Eine Flamme in der Welt (Kerze,
@@ -3108,8 +3112,9 @@ Kerzen **brennen nicht ab** – sie **gehen aus**. Knapp ist nicht das Wachs, so
   anzünden“). Ist die Kerze darin ausgegangen, zündet man sie wie eine einzelne Kerze wieder an.
 - **Neue Kerzen brennen nicht:** aus dem Kerzenvorrat in der Küche, aus Schubladen, als Geschenk und aus dem Koffer der
   Gäste. Nur was zu Spielbeginn schon steht, brennt: die festen Kerzen und die Startdeko der Gäste vor ihren Türen (2.5).
-- **Gäste zünden nichts an.** Ihre Kerzen und Kürbisse bleiben dunkel, sobald sie einmal aus sind – das Monster
-  hinterlässt eine Spur dunkler Türen, und wer einem Gast die Kerze wieder anzündet, hat etwas für ihn getan.
+- **Gäste zünden nichts an** *(Stand 2026-10-25, wird durch „Gäste zünden an“ ersetzt)*. Ihre Kerzen und Kürbisse
+  bleiben dunkel, sobald sie einmal aus sind – das Monster hinterlässt eine Spur dunkler Türen, und wer einem Gast die
+  Kerze wieder anzündet, hat etwas für ihn getan.
   - Kinder werfen bei ihren Streichen (6.13) nur dann eine **brennende** Kerze, wenn vor der Tür ihrer Familie noch eine
     brennt – die nehmen sie mit. Sonst fliegt eine kalte aus dem Koffer; Feuer (5.11) gibt es dann keins.
 - **Kein Brandstifter:** Mit Streichhölzern zündet man nur Kerzen an – keine Deko, kein Feuer (5.11).
@@ -3119,6 +3124,36 @@ Kerzen **brennen nicht ab** – sie **gehen aus**. Knapp ist nicht das Wachs, so
 ### 5.13 Salz vor die Tür (entschieden und umgesetzt 2026-10-25)
 Ein alter Brauch aus 5.9: **Salz über die Schwelle oder auf die Fensterbank** hält den Lakengeist (4.18) aus einem
 Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gestrichen.
+**Abbrennen (entschieden und umgesetzt 2026-10-27)**
+- **Brenndauer:** Eine Kerze brennt etwa **einen Spieltag (24 Spielstunden)** herunter. Es zählt nur die Zeit, in der
+  sie brennt – ausgepustet hält sie. Auch im Schlaf brennt sie weiter (Zeitsprung).
+- **Man sieht es:** Das Wachs wird kürzer, die Flamme wandert mit nach unten, Wachs läuft am Teller herab. Im letzten
+  Viertel ist es ein **Stummel**: kleinerer Lichtkreis, die Flamme flackert und geht leichter aus. Ist das Wachs
+  verbraucht, geht sie aus und ist weg – in der Hand („Die Kerze ist heruntergebrannt.“), im Kürbis und im Totenkopf
+  (die stehen dann leer und dunkel) und auf dem Teller der festen Kerzen (der leere Teller bleibt).
+- **Nicht alle zugleich:** Feste Kerzen und die Startdeko der Gäste beginnen unterschiedlich lang, damit nicht alle in
+  derselben Stunde ausgehen.
+- **Feste Kerzen** brennen genauso ab. Gäste, die an einem leeren Teller oder einer erloschenen Kerze vorbeikommen,
+  setzen eine neue ein bzw. zünden sie an – nebenbei, wie beim Lichtschalter (7.3), nicht jeder und nicht immer.
+- **Gäste zünden an.** Gäste kümmern sich um ihre Tür: Ist die Kerze aus, zünden sie sie wieder an; ist sie abgebrannt,
+  holen sie eine neue (Koffer, Kerzenvorrat, Schublade) und zünden sie an. Ängstliche zuerst, Nachlässige und
+  Betrunkene vergessen es öfter (wie das Licht, 7.3).
+  - **Feuer haben nur manche:** Einige Gäste haben Streichhölzer oder ein Feuerzeug (je Gast nach Charakter gewürfelt).
+    Die anderen tragen ihre Kerze zu einer brennenden Flamme in der Nähe oder bitten den Spieler darum (kleine Bitte,
+    6.14) – dann ist Anzünden weiter ein Gefallen.
+  - **Nachts nicht:** In der Nachtruhe schlafen die Gäste; was das Monster ausbläst, bleibt bis zum Morgen dunkel. Die
+    Spur dunkler Türen gibt es also weiter, nur nicht mehr dauerhaft.
+- **Nachschub:** Der Kerzenvorrat in der Küche füllt sich **morgens** wieder auf statt laufend: auf **halb so viele
+  Kerzen, wie Zimmer bewohnt sind** (wächst und schrumpft mit der Belegung). Wer zu spät kommt, geht leer aus; werden
+  Kerzen knapp, klauen Gäste sie einander (5.10). Dazu kommen die Kerzen in den Koffern der Gäste. Der Spieler bedient
+  sich am selben Vorrat.
+- **Kürbis und Totenkopf:** Die Regel oben bleibt – hinein kommt nur eine brennende Kerze, auch bei Gästen. Gäste mit
+  Feuer zünden die neue Kerze an und setzen sie ein; Gäste ohne gehen damit erst zu einer Flamme (oder bitten den
+  Spieler).
+- **Ganz abgebrannt ist einfach weg** – kein Stummel, kein Wachsrest, kein Fleck. Eine halb abgebrannte Kerze behält
+  ihre Länge, wenn man sie mitnimmt, einsteckt oder weitergibt.
+- **Gespeichert** zusätzlich: wie lang jede Kerze noch ist und welche Gäste Feuer haben.
+
 
 - **Salzpackung** (neuer kleiner Gegenstand, passt in die Tasche): **drei Packungen** auf der Küchenzeile, ohne
   Nachschub (5.10). Eine Packung reicht für **vier Linien**; die leere ist weg.
@@ -4389,7 +4424,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 
 **Wandlampen**
 - **Gedämpftes Licht (entschieden 2026-10-17/19):** Flächendeckende Deckenlampen machen das Hotel zu hell und zu gemütlich. Licht kommt deshalb von **vereinzelten, gedimmten Wandlampen**, **festen Kerzen** (Flurkommoden, Bank, Lobby, Theke, Zimmertische) und **Deckenleuchten nur dort, wo der Gebäudeplan sie setzt** – gedimmt wie die Wandlampen; in der Lobby hängen sie als Pendel von der hohen Decke über dem Luftraum (auch von der Galerie aus zu sehen). Die hellsten Lichter sind Kerzen und Kürbisse; die Decken sind aus demselben Holz wie die Zimmerböden und nur schwach zu erkennen. Dunkle Ecken bleiben als Umriss sichtbar, nicht ganz finster. Sie gehören zum Raum und hängen am selben Lichtschalter, ihre Birnen lassen sich wie alle anderen herausdrehen, wo man sie erreicht.
-- **Ein Lichtschalter pro Raum** (entschieden): schaltet alle Wandlampen des Raums bzw. Flurabschnitts gemeinsam ein und aus. Die festen Kerzen brennen von Spielbeginn an, bis das Monster oder der Spieler sie ausbläst (5.12). Große Räume dürfen mehrere Schalter haben (an jedem Eingang einen); sie schalten gemeinsam wie eine Wechselschaltung.
+- **Ein Lichtschalter pro Raum** (entschieden): schaltet alle Wandlampen des Raums bzw. Flurabschnitts gemeinsam ein und aus. Die festen Kerzen brennen von Spielbeginn an, bis das Monster oder der Spieler sie ausbläst oder sie abgebrannt sind; Gäste zünden sie wieder an und ersetzen sie (5.12). Große Räume dürfen mehrere Schalter haben (an jedem Eingang einen); sie schalten gemeinsam wie eine Wechselschaltung.
 - **Licht aus = das Monster kommt** (4.4). Ausschalten ist also eine bewusste Entscheidung – z. B. um nicht gesehen zu werden – mit hohem Preis.
 - **Flackern trotzdem:** Eingeschaltete Lampen flackern, wenn das Monster aufbricht oder nah ist (4.2). Kaputte Lampen bleiben kaputt, egal wie der Schalter steht.
 - **Glühbirnen herausdrehen & mitnehmen** (entschieden): Jede Lampe hat eine Glühbirne, die man herausdrehen kann. Die Birne ist ein **normaler Gegenstand** (3.2): klein, einhändig, zerbrechlich: **Fällt sie tiefer als 1,5 m, platzt sie** (entschieden und umgesetzt 2026-10-24) – Knall (8 m weit), Splitter und Scherben, die Birne ist weg. Ebenso **zerbricht eine Kerze, die tiefer als 2 m fällt**, zu einem großen Wachsfleck (brennend kann sie Deko anzünden, 5.11); aus der Hand fallen lassen geht beides heil.

@@ -21,6 +21,8 @@ const FLAME_WIDEN := 1.2
 const FPS := 24.0
 ## Lichthof um die Flamme (Billboard, Kantenlänge in m) – der Schein, den das Auge bzw. eine Kamera um eine Flamme sieht
 const HALO_SIZE := 0.16
+## Abgebrannt (burn_down): so viel der Höhe bleibt mindestens sichtbar
+const MIN_STUB := 0.06
 
 static var _meshes := {}
 static var _mats := {}
@@ -49,6 +51,20 @@ static func build(parent: Node3D, red: bool = false, plate: bool = false, at: Ve
 		var wax := Color(0.7, 0.1, 0.08) if red else Color(0.92, 0.88, 0.75)
 		Geo.mesh(parent, Geo.cylinder(0.03, HEIGHT, 6), Mat.psx(wax), Vector3(at.x, y + HEIGHT / 2.0, at.z))
 	return y + WICK_TOP
+
+
+## Abgebrannt bis auf rest (1 = neu, Spielkonzept 5.12): Das Wachs (Meta „candle_wax“ am parent) wird kürzer, die
+## Flamme wandert mit nach unten. wick = Höhe der Dochtspitze der neuen Kerze (aus build). Gibt die neue Höhe zurück.
+## Ein Rest bleibt immer sichtbar (MIN_STUB), bis die Kerze ganz weg ist.
+static func burn_down(parent: Node3D, flame_node: Node3D, wick: float, rest: float) -> float:
+	var r := maxf(clampf(rest, 0.0, 1.0), MIN_STUB)
+	var wax_mesh: Node3D = parent.get_meta("candle_wax", null)
+	if is_instance_valid(wax_mesh):
+		wax_mesh.scale.y = r
+	var tip := wick - WICK_TOP * (1.0 - r)
+	if flame_node:
+		flame_node.position.y = tip - FLAME_SINK
+	return tip
 
 
 ## Brennende Flamme mit Schein, Fuß auf der Dochtspitze bei wick (Höhe aus build). Sichtbarkeit = brennt.
