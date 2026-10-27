@@ -908,6 +908,15 @@ func _sense(hide_check: bool) -> void:
 	_monster.track(p.global_position)
 
 
+## Zimmer, in dessen Bett der Spieler gerade schläft, falls nicht Zimmer 13 ("" = keins) – das Monster biegt dort
+## ein wie in Zimmer 13 (Spielkonzept 3.6).
+func foreign_sleep_room() -> String:
+	var p := Game.player
+	if p == null or not p.sleeping or p.hiding == null or p.hiding.own_bed:
+		return ""
+	return p.hiding.room_no
+
+
 ## Zählt als „nicht gefunden“: Der Spieler ist in seinem Zimmer (4.33, Raubzug).
 func player_safe() -> bool:
 	return Game.player != null and _builder != null and _builder.room_at(Game.player.global_position) == LevelBuilder.PLAYER_ROOM
@@ -931,8 +940,11 @@ func _end_raid_search() -> void:
 func _plan_break_in() -> bool:
 	var decos := _deco_items()
 	var entries: Array[Dictionary] = []
+	var bed_room := foreign_sleep_room()   # schläft er in einem fremden Bett, ist das Zimmer dabei (3.6)
+	if rooms.has(bed_room):
+		entries.append({"no": bed_room, "deco": _deco_strength(rooms[bed_room]["door_front"], decos)})
 	for no in inhabited_rooms():
-		if no != LevelBuilder.PLAYER_ROOM and not _skip_guests_in(no).is_empty():
+		if no != LevelBuilder.PLAYER_ROOM and no != bed_room and not _skip_guests_in(no).is_empty():
 			entries.append({"no": no, "deco": _deco_strength(rooms[no]["door_front"], decos)})
 	if entries.is_empty():
 		return false
@@ -1774,7 +1786,7 @@ func _skip_raid() -> String:
 			_route.pop_front()
 			continue
 		var front: Vector3 = rooms[no]["door_front"]
-		if no == LevelBuilder.PLAYER_ROOM or _skip_heard(no, true):
+		if no == LevelBuilder.PLAYER_ROOM or no == foreign_sleep_room() or _skip_heard(no, true):
 			return _skip_wake(front)   # der Rest des Wegs steht noch in _route
 		_route.pop_front()
 		raid_room = no
@@ -1839,7 +1851,7 @@ func is_hallucinating() -> bool:
 	return _hallucination > 0.0
 
 
-## Halluzination nach einem Todesfall, unter Schock oder betrunken (3.7): Rauschen ohne Monster.
+## Halluzination nach einem Todesfall, unter Schock, betrunken (3.7) oder übermüdet (3.6): Rauschen ohne Monster.
 func _update_hallucination(delta: float) -> void:
 	if _hallucination > 0.0:
 		_hallucination -= delta
@@ -1848,7 +1860,7 @@ func _update_hallucination(delta: float) -> void:
 	if p == null or p.dead:
 		return
 	var drunk := p.drunk >= BarTap.DRUNK
-	if (grief > 0.0 or p.shock > 0.15 or drunk) and randf() < delta / HALLUCINATION_EVERY * (1.0 + (p.drunk if drunk else 0.0)):
+	if (grief > 0.0 or p.shock > 0.15 or drunk or p.overtired()) and randf() < delta / HALLUCINATION_EVERY * (1.0 + (p.drunk if drunk else 0.0)):
 		_hallucination = randf_range(6.0, 11.0)
 		if not _monster.is_active() and randf() < FAKE_SIGNAL_CHANCE:   # langes Flackern – und nichts kommt
 			_start_wave(spawn_points[0], 2, true)

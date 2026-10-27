@@ -180,11 +180,11 @@ done <<'LIST'
 2200|kueche,gaeste|--cook=gast --trace
 1200|kaffee,kueche|--kaffee=maschine --trace
 2400|kaffee,kueche,gaeste|--kaffee=gast --trace
-4800|kaffee|--awake=2 --kaffee=3 --trace
-1800|kaffee,schlaf|--awake=2 --kaffee=1 --sleep=bett,2 --trace
+4800|kaffee|--awake=40 --kaffee=3 --trace
+1800|kaffee,schlaf|--awake=40 --kaffee=1 --sleep=bett,2 --trace
 1200|tee,kueche|--tee=kocher --trace
 2000|tee,kueche,gaeste,kinder|--tee=gast --trace
-1800|tee,schlaf|--awake=2 --kaffee=1 --tee=1 --sleep=bett,2 --trace
+1800|tee,schlaf|--awake=40 --kaffee=1 --tee=1 --sleep=bett,2 --trace
 600|tee,speichern|--tee=1 --kaffee=1 --savetest
 600|symbole,notizbuch,speichern|--gesehen --show=gesehen --savetest
 900|symbole,gaeste|--kill=edna,geist --trace
@@ -207,9 +207,16 @@ done <<'LIST'
 800|gaeste,tod,ui|--wound=edna,axe,hin --talk=edna
 1200|gaeste,tod|--shock=mila,corpse --trace
 2400|schlaf,nacht|--sleep=bett --trace
-1800|schlaf,nacht|--awake=2 --sleep=bett,2 --trace
-1500|schnell,schlaf,nacht,monster,puppe|--day=10 --uhr=1:10 --awake=2 --doll=5,13 --hoerer --sleep=bett,8 --trace
-1500|schlaf,lakengeist|--awake=3 --pos=50.5,0.1,-7 --trace
+1800|schlaf,nacht|--awake=40 --sleep=bett,2 --trace
+1500|schnell,schlaf,nacht,monster,puppe|--day=10 --uhr=1:10 --awake=40 --doll=5,13 --hoerer --sleep=bett,8 --trace
+1500|schlaf,lakengeist|--awake=72,sicher --pos=50.5,0.1,-7 --trace
+900|schlaf,muede|--awake=37 --trace
+2400|schlaf,fremdbett,gaeste|--fremdbett=edna,0 --trace
+2400|schlaf,fremdbett,gaeste|--fremdbett=bruno,-70 --trace
+2400|schlaf,fremdbett,gaeste|--fremdbett=edna,90 --trace
+1800|schlaf,fremdbett|--fremdbett=frei,3 --trace
+1800|schlaf,tag|--sleep=tag,4 --trace
+600|schlaf,speichern|--awake=30 --savetest
 600|kuerbis|--pos=45,0.1,-37 --fall=5,giant --trace
 600|kuerbis|--pos=45,0.1,-37 --fall=4,mini --trace
 900|spuren,wetter,kuerbis|--pos=45,0.1,-37 --fall=5,giant --verwaschen --savetest --trace

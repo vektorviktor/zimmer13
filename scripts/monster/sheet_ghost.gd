@@ -92,8 +92,8 @@ const HALL_GIVE_UP := LEAVE_RANGE + 6.0   ## im Flur gibt er auf, wenn man so we
 const DEBUG_HALL_DISTANCE := HALL_GIVE_UP - 1.0
 ## Schwäche des Opfers (0..1, Spielkonzept 4.18 – Player.weakness(), Guest.weakness()): bis zu so viel mehr
 ## Chance, Pause und Flur-Chance bis zu (1 + WEAK_FASTER)-mal kürzer bzw. häufiger; ab WEAK_HALL auch vor dem
-## 6. Mal im Flur, ab WEAK_SURE sicher im Flur, sobald man dort allein ist (auch ohne Nachtruhe). Eine Nacht
-## ohne Schlaf ist ein Drittel Schwäche – zwei Nächte reichen für den Flur, drei für sicher.
+## 6. Mal im Flur, ab WEAK_SURE sicher im Flur, sobald man dort allein ist (auch ohne Nachtruhe). Die Müdigkeit
+## allein erreicht WEAK_SURE nach 48–72 Stunden wach (Player.sure_awake, je Spiel gewürfelt, 3.6).
 const WEAK_CHANCE := 0.3
 const WEAK_FASTER := 3.0
 const WEAK_HALL := 0.66
@@ -1050,7 +1050,7 @@ func _struggle(delta: float) -> void:
 			_swings += 1
 			_escape += ESCAPE_GAIN
 		_last_sign = dir
-	var grip := ESCAPE_GRIP + minf(0.3, ESCAPE_GRIP_STAGE * maxi(0, _stage - ENTER_FROM))
+	var grip := (ESCAPE_GRIP + minf(0.3, ESCAPE_GRIP_STAGE * maxi(0, _stage - ENTER_FROM))) * Game.player.strain()   # 3.6
 	_escape = maxf(0.0, _escape - grip * delta)
 	if Game.hud:
 		Game.hud.set_struggle(_escape)
@@ -1331,7 +1331,7 @@ func _update_trance(delta: float) -> void:
 	var mine := _victim == player   # bei einem Gast hält er den Spieler nicht fest
 	var hypnotizing := mine and _stage >= HYPNOSIS_FROM and state in [State.HOVER, State.ENTER] and _fade > 0.5
 	if hypnotizing and Game.director.player_can_see(head):
-		player.trance = minf(1.0, player.trance + TRANCE_GAIN * delta)
+		player.trance = minf(1.0, player.trance + TRANCE_GAIN * delta * player.strain())   # ausgeschlafen schwächer (3.6)
 	else:
 		player.trance = maxf(0.0, player.trance - TRANCE_DECAY * delta)
 	var pull := PULL * player.trance * Settings.look_pull

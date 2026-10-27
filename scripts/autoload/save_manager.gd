@@ -109,7 +109,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 55: Die vier Modi des Leviathan (Spielkonzept 4.33): Plan der Modi, laufender Modus, Verurteilter, Raubzüge,
 ##     Anforderungen, stärkste Lockung; die Dreistigkeit steigt viel langsamer und ohne Obergrenze – ältere Stände
 ##     laden nicht mehr (ihre Dreistigkeit läge weit über den Schwellen der Anforderung)
-const VERSION := 55
+## 56: Wachzeit statt Nächte ohne Schlaf (Spielkonzept 3.6): player.awake_time, sure_awake, rested – ältere Stände laden
+##     weiter, ihre Nächte ohne Schlaf werden zu je 24 Stunden wach
+const VERSION := 56
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -409,7 +411,8 @@ func collect() -> Dictionary:
 		"visited": visited.duplicate(),
 		"player": {
 			"pos": _v(stand if stand != Vector3.INF else p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
-			"crouch": p.crouching, "shock": p.shock, "nights_awake": p.nights_awake, "injury": p.injury,
+			"crouch": p.crouching, "shock": p.shock, "injury": p.injury,
+			"awake_time": p.awake_time, "sure_awake": p.sure_awake, "rested": p.rested,
 			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised, "mask": p.mask,
 			"coffee": p.coffee, "coffee_low": p.coffee_low, "caffeine": p.caffeine, "tea": p.tea,
 			"held": _item_data(p.held) if p.held else null,
@@ -705,7 +708,9 @@ func apply(data: Dictionary) -> void:
 	p.head.rotation.x = float(pd["pitch"])
 	p.set_crouching(bool(pd.get("crouch", false)))
 	p.shock = float(pd.get("shock", 0.0))
-	p.nights_awake = float(pd.get("nights_awake", 0.0))
+	p.awake_time = float(pd.get("awake_time", float(pd.get("nights_awake", 0.0)) * Calendar.DAY_SECONDS))
+	p.sure_awake = float(pd.get("sure_awake", p.sure_awake))
+	p.rested = float(pd.get("rested", 0.0))
 	p.injury = float(pd.get("injury", 0.0))
 	p.drunk = float(pd.get("drunk", 0.0))
 	p.hangover = float(pd.get("hangover", 0.0))

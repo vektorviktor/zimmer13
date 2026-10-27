@@ -1022,10 +1022,26 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - **Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
   Nachschub (z. B. der Hausmeister füllt nach)?
 
-### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24)
+### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24, Wachzeit, fremde Betten und Sprung am Tag umgesetzt 2026-10-27)
 Müdigkeit fließt in die **Schwäche** ein, nach der sich der Lakengeist seine Opfer sucht (4.18). Die feste Nachtruhe
 gilt nur für die Gäste (2.4) – der Spieler bleibt wach, so lange er will, und schläft, wann er will.
 
+> **Umgesetzt (2026-10-27): Wachzeit, Stufen, fremde Betten, Sprung am Tag.** Die Nächte ohne Schlaf sind ersetzt: Es
+> zählt die **Wachzeit in Spielstunden, von Anfang an** (Ankunft ausgeschlafen). Schlaf senkt sie anteilig – sechs
+> Stunden auf null, eine um ein Sechstel; Kaffee zählt den Schlaf halb, Tee mehr (3.11/3.12) und überdeckt 12 Stunden.
+> **Stufen:** ab **16 h** müde (Gedanke, Gähnen, die Augen fallen kurz zu), ab **24 h** übermüdet (Halluzinationen,
+> etwas mehr Schwäche – der Lakengeist kommt öfter –, Ausdauer, Luft, Hypnose und Griff zehren stärker, der Schock
+> klingt langsamer ab), ab **36 h** Sekundenschlaf (eine halbe Sekunde schwarz, auch auf der Flucht), ab der
+> **Schwelle** sicher im Flur – **je Spiel zufällig zwischen 48 und 72 Stunden** (entschieden 2026-10-27). Keine
+> Anzeige. Die Sicht verschwimmt ab 16 h, bis zur Schwelle voll. **Ausgeschlafen** nach einer ganzen Mütze Schlaf, vier
+> Spielstunden lang (4 min): das Gegenteil von übermüdet. **Fremde Betten:** Am fremden Bett dreht man das Mausrad
+> hoch, sonst setzt man sich auf die Kante. Freies Bett wie oben (das Zimmer würfelt beim Einbruch nach dem Raubzug mit, keine eigene
+> Deko); Gäste reagieren wie oben, Verfeindete klauen 3–8 Münzen (man merkt es beim Aufwachen) oder schlagen; wer
+> geweckt wurde und liegen bleibt, fliegt hinaus. **Sprung am Tag:** wie nachts, solange keine Feier, kein Schmücken
+> und keine Siegerehrung läuft, bis zur Nachtruhe und bis kurz vor den nächsten Auftritt des Monsters (der am Tag also
+> immer echt bleibt); danach stehen die Gäste, wo ihr Tagesablauf sie hinschickt. Debug: `--awake=h[,sicher]`,
+> `--sleep=tag[,h]`, `--fremdbett=id[,beziehung]`, `--fremdbett=frei[,h]`.
+>
 > **Umgesetzt (2026-10-24): Schlafdauer wählen.** Am eigenen Bett stellt man mit dem **Mausrad** ein, wie lange man
 > schläft – **1 bis 8 Stunden**, voreingestellt **eine** (nach jedem Schlaf wieder). Schlafen geht **jederzeit**; wer
 > schläft, wenn die Nachtruhe endet, schläft weiter. Sind die Stunden um, steht man auf. Geweckt wird man von Monster
@@ -1040,7 +1056,7 @@ gilt nur für die Gäste (2.4) – der Spieler bleibt wach, so lange er will, un
 > Nacht ein Hauch, nach drei deutlich. Sie wird in langsamen Schüben schlimmer und wieder etwas klarer, als fielen
 > einem die Augen zu. Mit Kater ist die Sicht noch leicht getrübt (3.7). Debug: `--awake=n`.
 
-**Ziel (noch nicht gebaut)**
+**Ziel (gebaut 2026-10-27 bis auf „Gäste wecken“ – siehe oben)**
 - **Wachzeit statt Nächte zählen:** Statt „Nächte ohne Schlaf“ zählt die **Zeit seit dem letzten Schlaf** in
   **Spielstunden** (2.4). Schlaf senkt sie je nach Dauer – eine ganze Nachtruhe auf null, wer früh geweckt wird, ist
   nur halb erholt. Die verschwommene Sicht hängt dann auch daran.
@@ -1084,9 +1100,8 @@ lang – Gäste sprängen 1,4 m (ferne über 4 m) je Schritt, das Monster stünd
   dass man es hört, bekommt keine Meldung und keine Totenglocke – man findet Blut, das Kleidungsstück, aufgerissene
   Verstecke, verängstigte Gäste, das Notizbuch und das Tagebuch (6.12). So hat Schlafen Gewicht und ist kein sicheres
   Vorspulen.
-- **Nur in der Nachtruhe** wird gesprungen – dann liegen alle Gäste ohnehin im Bett. Endet sie, endet der Sprung; den
-  Rest der gewählten Stunden schläft man im Zeitraffer ×5 weiter, ebenso jedes Nickerchen am Tag. Ein Sprung auch am
-  Tag (Gäste stehen danach, wo ihr Tagesablauf sie hinschickt, laufende Aktionen sind vorbei) kommt später.
+- **Nachts und am Tag** wird gesprungen (am Tag seit 2026-10-27, siehe oben). Endet die Nachtruhe, endet der
+  Nachtsprung und es geht als Tagessprung weiter; Reste unter einer Spielminute schläft man im Zeitraffer ×5.
 - **Was weckt:** die Mitternachtsglocke (7.8, auch im Zeitraffer) und das Telefon in Zimmer 13 (nachts die unheimlichen
   Anrufe) – wer durchschlafen will, legt den Hörer daneben (4.14). Durchsagen gibt es nachts keine, die Siegerehrung
   liegt am Abend.
@@ -1095,8 +1110,9 @@ lang – Gäste sprängen 1,4 m (ferne über 4 m) je Schritt, das Monster stünd
 - **Spannung der Nacht (2.4):** Die Nacht bleibt die gefährliche Zeit nur, wenn der Sprung so gefährlich ist, dass
   Wachbleiben und Schlafen beide ihren Preis haben – Tuning im Spiel.
 
-**Zu klären**
-- **Schwelle:** fest (z. B. 60 Stunden) oder zufällig zwischen 48 und 72 Stunden je Spiel?
+**Entschieden (2026-10-27)**
+- **Schwelle:** zufällig zwischen 48 und 72 Stunden je Spiel (gespeichert).
+- **Ab wann:** Die Wachzeit zählt von Anfang an, nicht erst nach dem ersten Angriff.
 
 ### 3.7 Trinken an der Bar (entschieden 2026-10-19)
 An der Bar kann man **etwas trinken** (kostet Geld) – und betrunken werden. Rausch fließt in die **Schwäche** ein,

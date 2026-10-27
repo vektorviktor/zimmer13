@@ -108,8 +108,9 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - Gäste gehen mit Grund ins UG („Leg Kohle nach“, „Hol die Wäsche“) – SK 7.9, 7.10.
 
 **Spieler**
-- **Schlaf & Müdigkeit:** Wachzeit statt Nächte, Stufen, ausgeschlafen/übermüdet, fremde Betten, Zeitsprung auch am
-  Tag – SK 3.6.
+- **Schlaf & Müdigkeit:** Gäste wecken (Dank bei echter Gefahr, falscher Alarm kostet Vertrauen) – SK 3.6. Gebaut
+  27.10.: Wachzeit, Stufen, ausgeschlafen/übermüdet, fremde Betten, Sprung am Tag; Werte (16/24/36 h, 48–72 h,
+  ausgeschlafen 4 min) nur headless geprüft – im Spiel tunen. Wache eines Freundes in Zimmer 13 (6.18) fehlt weiter.
 - Taschenlampe: alles gebaut; UV-Spuren an 13 offen (s. 2).
 
 **Deko und Halloween**

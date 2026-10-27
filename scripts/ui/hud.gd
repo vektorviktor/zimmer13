@@ -35,6 +35,8 @@ var _money: Label
 var _message: Label
 var _sleep_clock: Label   ## Uhrzeit beim Zeitsprung im Schlaf (Spielkonzept 3.6)
 var _black: ColorRect     ## Schwarzblende (Beerdigen, Spielkonzept 5.15) – unter den Meldungen
+var _lids: ColorRect      ## Augenlider: müde fallen die Augen kurz zu, Sekundenschlaf (Spielkonzept 3.6)
+var _lids_tween: Tween
 var _debug: Label
 var _crosshair: ColorRect
 var _throw_bar: ColorRect    ## Wurfkraft unter dem Fadenkreuz beim Ausholen (Spielkonzept 3.13)
@@ -87,6 +89,11 @@ func _ready() -> void:
 	_black.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_black)
 	_black.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_lids = ColorRect.new()
+	_lids.color = Color(0, 0, 0, 0)
+	_lids.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_lids)
+	_lids.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_sheet_overlay = ColorRect.new()
 	_sheet_overlay.material = sheet_material
 	_sheet_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -471,6 +478,16 @@ func set_mask(id: String) -> void:
 func fade_black(black: bool, t: float) -> void:
 	var tween := create_tween()
 	tween.tween_property(_black, "color:a", 1.0 if black else 0.0, t)
+
+
+## Die Augen fallen zu (Spielkonzept 3.6): in `fall` Sekunden schwarz, `hold` Sekunden zu, dann langsam wieder auf.
+func close_eyes(hold: float, fall: float) -> void:
+	if _lids_tween:
+		_lids_tween.kill()
+	_lids_tween = create_tween()
+	_lids_tween.tween_property(_lids, "color:a", 0.97, fall)
+	_lids_tween.tween_interval(hold)
+	_lids_tween.tween_property(_lids, "color:a", 0.0, 0.35)
 
 
 ## Uhrzeit mitten im Bild, solange die Zeit im Schlaf springt ("" = aus).

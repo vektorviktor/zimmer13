@@ -1338,6 +1338,8 @@ func _go_to_bed() -> void:
 ## am Kissen (lokal −X des Betts; Pose in _pose). Ist das Bett belegt, schläft er im Stehen.
 func _fall_asleep() -> void:
 	_to_bed = false
+	if Game.social.player_in_bed(self):   # der Spieler liegt in seinem Bett (Spielkonzept 3.6)
+		return
 	_set_room_light(wound_bed > 0.0 and not Game.social.sleep_active)   # verletzt liegt er nicht im Dunkeln (6.17)
 	state = State.SLEEP
 	# Ein freies Bett – im Doppelbett liegt auch ein Zweiter (Haushalte, Spielkonzept 6.20)
@@ -1363,6 +1365,24 @@ func _fall_asleep() -> void:
 
 func is_asleep() -> bool:
 	return state == State.SLEEP
+
+
+## Noch nicht ins Bett: so lange wach im Zimmer stehen (fremdes Bett, Social.player_in_bed) – danach geht er wieder.
+func wait_awake(duration: float) -> void:
+	_set_idle(duration)
+
+
+## Nach einem Zeitsprung am Tag (SleepSkip, Spielkonzept 3.6): Wer frei unterwegs war, steht jetzt, wo ihn sein
+## Tagesablauf hinschickt – was er gerade tat, ist vorbei (angekommen, abgelegt, geerntet).
+func after_day_skip() -> void:
+	if dead or hiding or wound_bed > 0.0:
+		return
+	if state == State.IDLE:
+		_next_activity()
+	if state in [State.WALK, State.HARVEST, State.CARRY_HOME, State.PLACE_DECO]:
+		global_position = _target
+		velocity = Vector3.ZERO
+		_arrive()
 
 
 ## Nachtruhe vorbei: aus dem Bett, Licht an.

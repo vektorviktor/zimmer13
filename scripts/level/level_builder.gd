@@ -1930,6 +1930,8 @@ func _furniture() -> void:
 				var room: Dictionary = rooms.get(_room_id_at(c), {})
 				if not room.is_empty():
 					spot.own_bed = kind != "wardrobe" and room["kind"] == "player"
+					if kind != "wardrobe":
+						spot.room_no = String(room["no"])   # auch fremde Betten (Spielkonzept 3.6)
 					if spot.own_bed:   # ein frisches Laken zum Verkleiden (Spielkonzept 5.9)
 						_item(Item.Kind.BED_SHEET, pos + Vector3(0, BedModel.blanket_top() + 0.02, 0))
 					(room["spots"] as Array).append(spot)

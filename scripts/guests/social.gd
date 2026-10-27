@@ -201,6 +201,12 @@ const MAX_GUEST_NOTES := 30
 const SLEEP_START := 23.0
 const SLEEP_END := 6.0
 const SLEEP_JITTER := 0.5
+## Fremdes Bett (Spielkonzept 3.6): So oft hält ein guter Freund Wache, statt sich woanders hinzulegen; so viel kostet
+## es, wenn ein Gast dich wecken muss (beim Hinauswerfen noch BED_EVICT), so viele Münzen klaut ein Feind im Schlaf
+const BED_GUARD_CHANCE := 0.5
+const BED_ANNOY := -8.0
+const BED_EVICT := -4.0
+const BED_ROB := Vector2i(3, 8)
 
 
 var guests: Array[Guest] = []
@@ -1201,11 +1207,82 @@ func seconds_to_night() -> float:
 
 func _end_sleep() -> void:
 	sleep_active = false
-	if Game.player:
-		Game.player.on_night_over()   # Schlaf oder eine Nacht mehr ohne (Spielkonzept 4.18)
 	for guest in living_guests():
 		guest.wake_up()
 	Game.say("Türen gehen auf, Schritte im Flur – die Gäste sind wieder wach.", 3.5)
+
+
+## Zeitsprung am Tag vorbei (SleepSkip, Spielkonzept 3.6): Die Gäste stehen, wo ihr Tagesablauf sie hinschickt.
+func after_day_skip() -> void:
+	for guest in living_guests():
+		guest.after_day_skip()
+
+
+# --- Fremdes Bett (Spielkonzept 3.6) --------------------------------------------------------------
+
+## Ein Gast will schlafen und findet den Spieler schlafend in einem Bett seines Zimmers. Freunde stört das nicht – ein
+## guter Freund hält vielleicht Wache, sonst legen sie sich woanders hin. Neutrale bis genervte (und Kinder) wecken ihn:
+## Die Beziehung sinkt, es spricht sich herum; liegt er beim nächsten Mal noch da, werfen sie ihn hinaus. Verfeindete
+## beklauen ihn im Schlaf oder wecken ihn mit einem Schlag. true = der Gast legt sich (noch) nicht hin.
+func player_in_bed(guest: Guest) -> bool:
+	var p := Game.player
+	var bed: HideSpot = p.hiding if p and not p.dead else null
+	if bed == null or bed.type != HideSpot.Type.BED or bed.own_bed or not bed in guest.home["spots"]:
+		guest.remove_meta("guards_player")
+		guest.remove_meta("woke_player")
+		return false
+	if not p.sleeping:
+		if not guest.has_meta("woke_player"):
+			return false   # liegt wach darunter – wie in jedem Versteck
+		guest.remove_meta("woke_player")
+		guest.say("Raus aus meinem Bett. Sofort!")
+		p.exit_hide()
+		change_relation(guest, BED_EVICT)
+		guest.wait_awake(4.0)
+		if Game.tracing:
+			print("[Fremdes Bett] %s wirft dich hinaus" % guest.display_name)
+		return true
+	var t := tier(guest)
+	if t >= Tier.FRIEND:
+		if t == Tier.GOOD_FRIEND and not guest.is_child() and (guest.has_meta("guards_player") or randf() < BED_GUARD_CHANCE):
+			if not guest.has_meta("guards_player"):
+				guest.set_meta("guards_player", true)
+				guest.say("Schlaf nur. Ich pass auf dich auf.")
+				if Game.tracing:
+					print("[Fremdes Bett] %s hält Wache" % guest.display_name)
+			guest.wait_awake(30.0)
+			return true
+		if Game.tracing:
+			print("[Fremdes Bett] %s legt sich woanders hin" % guest.display_name)
+		return false   # _fall_asleep: kein freies Bett – er schläft im Sessel bzw. im Stehen
+	if t >= Tier.ANNOYED or guest.is_child():
+		p.wake_up("Jemand rüttelt dich wach – %s steht vor dem Bett." % guest.display_name)
+		guest.say(["Das ist MEIN Bett!", "Was machst du in meinem Bett?!", "Raus da, das ist mein Zimmer!"].pick_random())
+		change_relation(guest, BED_ANNOY)
+		_spread_gossip(-2.0, [guest])   # „hat in meinem Bett geschlafen“
+		guest.set_meta("woke_player", true)
+		guest.wait_awake(6.0)
+		if Game.tracing:
+			print("[Fremdes Bett] %s weckt dich (Beziehung %.0f)" % [guest.display_name, guest.relation])
+		return true
+	if randf() < 0.5 and Game.money > 0:
+		var n := mini(Game.money, randi_range(BED_ROB.x, BED_ROB.y))
+		Game.money -= n
+		guest.money += n
+		add_deed(guest, "revenge")
+		p.robbed = "Mir fehlen %d Münzen. Wer war hier, während ich geschlafen habe?" % n
+		if Game.tracing:
+			print("[Fremdes Bett] %s beklaut dich im Schlaf (%d Münzen)" % [guest.display_name, n])
+		return false
+	p.wake_up("Ein Schlag reißt dich aus dem Schlaf – %s!" % guest.display_name)
+	p.hurt(0.25, guest.global_position)
+	on_guest_hit_player(guest)
+	guest.say("Verschwinde aus meinem Bett!")
+	guest.set_meta("woke_player", true)
+	guest.wait_awake(5.0)
+	if Game.tracing:
+		print("[Fremdes Bett] %s schlägt dich wach" % guest.display_name)
+	return true
 
 
 ## instant (Debug): alle liegen sofort im Bett.

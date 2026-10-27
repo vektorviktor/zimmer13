@@ -174,8 +174,13 @@ extends Node3D
 ##                               vor der Tür, siehst hin und streust nach 0,5 s selbst · zimmer,nr / gast,id: auf den Fenstern von Zimmer nr bzw. des Gastes
 ##                               (mit --shock=id,ghost3 würgt er ihn nicht)
 ##   --hoerer                    der Hörer in Zimmer 13 liegt daneben (keine Anrufe, die einen wecken; 4.14)
-##   --awake=n                   so viele Nächte ohne Schlaf, auch Bruchteile (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
-##                               der erste Angriff gilt dann als geschehen
+##   --awake=h[,sicher]          so viele Stunden wach (3.6): ab 16 müde, ab 24 übermüdet, ab 36 Sekundenschlaf, ab 48–72 (je
+##                               Spiel gewürfelt) sicher im Flur (4.18) – mit ,sicher ab genau dieser Wachzeit; der erste
+##                               Angriff gilt als geschehen
+##   --sleep=tag[,h]             am Tag h Stunden (Standard 1) im Bett von Zimmer 13 schlafen – die Zeit springt auch am Tag (3.6)
+##   --fremdbett=id[,beziehung]  du schläfst ab 1,5 s im Bett dieses Gastes (Beziehung gesetzt), er steht in seinem Zimmer,
+##                               zugleich beginnt die Nachtruhe und er findet dich (3.6) · frei[,h]: h Stunden (Standard 4)
+##                               im Bett eines Zimmers ohne lebende Bewohner (sonst irgendeinem fremden), am Tag
 ##   --mode=urteil|snack|raubzug|harmlos|anforderung|keller[,s]  dieser Modus des Leviathan (4.33) in s Sekunden
 ##                               (Standard 0) · urteil wie --doll · raubzug nicht harmlos, harmlos wie der erste ·
 ##                               keller: Runde im Keller; mit --trace „[Aufbruch]“
@@ -1305,9 +1310,12 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--salz" or arg.begins_with("--salz="):
 		_debug_salt((arg.substr(7) if arg.length() > 7 else "").split(","))
 	elif arg.begins_with("--awake="):
-		# so viele Nächte ohne Schlaf (zählen erst nach dem ersten Angriff, also gilt der als geschehen)
+		# so viele Stunden wach (Spielkonzept 3.6), mit ",sicher": ab dann sicher im Flur; der erste Angriff gilt als
+		# geschehen, sonst spukt der Lakengeist noch nicht
 		Game.director.first_attack_done = true
-		Game.player.nights_awake = arg.substr(8).to_float()
+		Game.player.awake_time = arg.substr(8).get_slice(",", 0).to_float() * Calendar.HOUR
+		if arg.ends_with(",sicher"):
+			Game.player.sure_awake = maxf(Game.player.awake_time, Player.TIRED_FROM + Calendar.HOUR)
 	elif arg == "--sleep":
 		Game.social.debug_sleep()
 	elif arg == "--hoerer":
@@ -1322,6 +1330,16 @@ func run_debug(arg: String) -> bool:
 			for spot in Game.director.rooms[LevelBuilder.PLAYER_ROOM]["spots"]:
 				if (spot as HideSpot).own_bed:
 					Game.player.start_sleep(spot))
+	elif arg.begins_with("--sleep=tag"):
+		# am Tag h Stunden im Bett von Zimmer 13 – die Zeit springt auch am Tag (3.6)
+		if arg.contains(","):
+			Game.player.sleep_hours = clampi(arg.get_slice(",", 1).to_int(), Player.SLEEP_HOURS.x, Player.SLEEP_HOURS.y)
+		get_tree().create_timer(1.5).timeout.connect(func() -> void:
+			for spot in Game.director.rooms[LevelBuilder.PLAYER_ROOM]["spots"]:
+				if (spot as HideSpot).own_bed:
+					Game.player.start_sleep(spot))
+	elif arg.begins_with("--fremdbett="):
+		_debug_foreign_bed(arg.substr(12).split(","))
 	elif arg.begins_with("--ghost="):
 		Game.ghost.debug_summon(arg.substr(8).to_int())
 	elif arg == "--warn":
@@ -2043,6 +2061,45 @@ func _debug_masks(id: String) -> void:
 			Game.player.put_on_mask()
 			return
 	Game.say("Keine Maske „%s“ am Haken." % id, 3.0)
+
+
+## --fremdbett=id[,beziehung] | frei[,h] (Spielkonzept 3.6): im Bett eines Gastes, der gleich schlafen geht – oder in
+## einem Zimmer ohne lebende Bewohner.
+func _debug_foreign_bed(args: PackedStringArray) -> void:
+	var bed: HideSpot = null
+	var guest: Guest = null
+	if args[0] == "frei":   # ein Bett in einem Zimmer ohne lebende Bewohner – zu Beginn gibt es keins, dann irgendein fremdes
+		var homes := Game.social.living_guests().map(func(g: Guest) -> String: return String(g.home["no"]))
+		for node in get_tree().get_nodes_in_group("hide_spots"):
+			var spot := node as HideSpot
+			if spot.type == HideSpot.Type.BED and spot.room_no != "" and not spot.own_bed and (bed == null or not spot.room_no in homes):
+				bed = spot
+				if not spot.room_no in homes:
+					break
+	else:
+		guest = Game.social.find_guest(args[0])
+		if guest == null:
+			push_warning("--fremdbett: kein Gast „%s“" % args[0])
+			return
+		if args.size() > 1:
+			guest.relation = args[1].to_float()
+		for spot: HideSpot in guest.home["spots"]:
+			if spot.type == HideSpot.Type.BED and bed == null:
+				bed = spot
+	if bed == null:
+		push_warning("--fremdbett: kein Bett gefunden")
+		return
+	Game.player.global_position = bed.exit_point.global_position
+	if guest:
+		guest.global_position = guest.home["center"]
+	var hours := (args[1].to_int() if args.size() > 1 else 4) if guest == null else Player.SLEEP_HOURS.y
+	get_tree().create_timer(1.5).timeout.connect(func() -> void:
+		Game.player.bed_hours = clampi(hours, 1, Player.SLEEP_HOURS.y)
+		Game.player.start_sleep(bed)
+		if guest:
+			Game.social.debug_sleep())   # Nachtruhe: Er geht ins Bett und findet dich
+	if Game.tracing:
+		print("[Fremdes Bett] Debug: Zimmer %s%s" % [bed.room_no, ", %s (Beziehung %.0f)" % [guest.display_name, guest.relation] if guest else ""])
 
 
 ## --salz[=fenster|tür|monster|zimmer,nr|gast,id]: Salz (Spielkonzept 5.13) – eine Packung in der Hand; fenster: dazu

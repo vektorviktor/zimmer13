@@ -356,13 +356,18 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
   `process_always = false` übergeben (`create_timer(t, false)`), sonst laufen sie im Menü weiter.
 - **Zeitraffer:** Schläft der Spieler (`Player.start_sleep`), steht `Engine.time_scale` auf `SLEEP_SPEED`. Zurück auf
   1 in `_stop_sleep()` – beim Aufwachen, Aufstehen, Tod und in `_exit_tree`.
-- **Zeitsprung im Schlaf** (`scripts/player/sleep_skip.gd`, `Game.sleep_skip`, Spielkonzept 3.6): In der Nachtruhe
-  springt die Uhr statt zu raffen – ein 60-facher Zeitraffer ginge nicht (jeder Physikschritt eine Spielsekunde:
-  Gäste und Monster sprängen meterweise).
-  - `SleepSkip.try_begin()` (aus `start_sleep`, im Zeitraffer jede Sekunde erneut) springt nur, wenn
-    `Social.sleep_active` und keine Bedrohung unterwegs oder angekündigt ist
-    (`MonsterDirector.other_threat_active(null)`), bis `min(Ende der gewählten Stunden, Social.night_ends_at())`,
-    mindestens `MIN_SKIP`. `Engine.time_scale` = 1; je Bild rückt die Zeit um delta / `HOUR_REAL` Spielstunden vor:
+- **Zeitsprung im Schlaf** (`scripts/player/sleep_skip.gd`, `Game.sleep_skip`, Spielkonzept 3.6): Im Schlaf springt
+  die Uhr statt zu raffen – ein 60-facher Zeitraffer ginge nicht (jeder Physikschritt eine Spielsekunde: Gäste und
+  Monster sprängen meterweise).
+  - `SleepSkip.try_begin()` (aus `start_sleep`, im Zeitraffer jede Sekunde erneut) springt nur, wenn keine Bedrohung
+    unterwegs oder angekündigt ist (`MonsterDirector.other_threat_active(null)`): in der Nachtruhe
+    (`Social.sleep_active`) bis `min(Ende der gewählten Stunden, Social.night_ends_at())`, **am Tag** (`_day`) nur,
+    solange `_quiet_day()` (keine Feier, kein Schmücken, keine Siegerehrung), bis zur Nachtruhe
+    (`seconds_to_night`) und bis `DAY_MARGIN` vor dem nächsten Eintrag im Plan des Monsters (`next_planned`, je Bild
+    neu – ein Auftritt am Tag ist so immer echt); jeweils mindestens `MIN_SKIP`. Endet ein Sprung am Tag, stellt
+    `Social.after_day_skip()` → `Guest.after_day_skip()` die Gäste an ihre Plätze: Wer frei war, wählt seine nächste
+    Tätigkeit (`_next_activity`), steht am Ziel (`_target`) und kommt an (`_arrive` – ablegen, ernten, heimtragen);
+    Versteckte, Verletzte im Bett und Beschäftigte (Gespräch, Spiel, Feier …) bleiben, wo sie sind. `Engine.time_scale` = 1; je Bild rückt die Zeit um delta / `HOUR_REAL` Spielstunden vor:
     erst `MonsterDirector.skip(dt)`, dann `call_group("time_skip", "skip_time", dt)`. Die Welt läuft daneben im
     normalen Takt; das Spielmenü hält den Sprung an. Uhrzeit mitten im Bild (`Hud.set_sleep_clock`).
   - Ende: Stunden um, Nachtruhe vorbei (weiter mit `SLEEP_SPEED`), geweckt (Lärm ≥ 0,3, Mitternachtsglocke
@@ -373,13 +378,15 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
     Stufen auf einmal), Item (Kürbismatsch verwäscht), Lamp (Durchbrennen als Wurf über dt), Traces, RainVeil,
     Weather, HotelCat, PumpkinMan, SheetGhost, PhoneCalls (das Telefon in Zimmer 13 klingelt also und weckt). Was an
     der Uhr hängt (Fäulnis, Termine), holt von selbst auf. **Neues System, das mit `delta` über Minuten bis
-    Stunden zählt → in die Gruppe `time_skip`.** Bewusst nicht: kurze Pausen der Tagesgäste – nachts schlafen alle.
+    Stunden zählt → in die Gruppe `time_skip`.** Bewusst nicht: kurze Pausen der Tagesgäste – nachts schlafen alle, am Tag stellt `after_day_skip` sie neu auf.
   - **Das Monster im Sprung** (`MonsterDirector.skip`; `skipping` hält `_update_schedule`/`_update_haunting` an):
     Werte und Spuk wie sonst. Ein Aufbruch (`_skip_activity`) würfelt die Absicht wie sonst; mit Puppe geht
     `_skip_raid` den Weg aus `_plan_route` Tür für Tür (im Zimmer alle Verstecke auf, jeder Erwachsene →
     `kill_guest`), ohne Puppe nimmt sich `_skip_roam` Ziele aus `next_roam_target` vor (`_skip_search` würfelt
     Verstecke wie `Monster._check_hide_step`). `kill_guest`/`_scare_guest` rufen im Sprung nichts am Monster auf.
-  - **Übergabe:** Ist das Ziel Zimmer 13 (mit Wache – `SleepSkip.guarded()` – zu `SKIP_GUARD` nicht) oder hört der
+  - **Übergabe:** Ist das Ziel Zimmer 13 oder das Zimmer des fremden Betts, in dem der Spieler schläft
+    (`MonsterDirector.foreign_sleep_room()`, das auch beim Einbruch nach dem Raubzug mitwürfelt – `_plan_break_in`), mit
+    Wache – `SleepSkip.guarded()`: ein wacher Erwachsener in diesem Zimmer – zu `SKIP_GUARD` nicht, oder hört der
     Spieler, was es tut (`_skip_heard`), wird es echt: `_skip_wake` stellt es `SleepSkip.lead()` Sekunden vor das Ziel
     auf den Weg (`_point_before`), `Monster.start_roaming`, Flackerwelle; der Spieler schreckt hoch.
   - Wer im Sprung stirbt, liegt da wie sonst – nur `Social.on_guest_died` schweigt, solange der Spieler schläft. Der
@@ -989,13 +996,24 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   Versteck-Lärm; das Monster kann sie dort finden). Im Doppelbett liegt ein Zweiter (`HideSpot.partner`,
   `takes_partner`, `sleep_offset`). `Social.all_asleep()` für den Lakengeist. Gespeichert: `sleep_active`,
   `night_seed` (Gäste laden wach und gehen wieder ins Bett). Debug `debug_sleep` (`--sleep`).
-- **Der Spieler schläft, wann er will** (Spielkonzept 3.6): Nur das eigene Bett (`HideSpot.own_bed`, Zimmer 13) bietet
-  Schlafen an; das Mausrad stellt `Player.sleep_hours` ein (`_wheel_step`, nur mit dem Bett im Fokus).
-  `Player.start_sleep()` = `enter_hide()` + `sleeping` + Zeitraffer (in der Nachtruhe Zeitsprung, 3 „Pause & Zeit“).
-  Aufwachen ohne Aufstehen (`wake_up`): Monster nah oder fremder Lärm. **Müdigkeit** `nights_awake` ist eine Kommazahl
-  (gespeichert unter `player`): jedes Schlafende (`_stop_sleep`) zieht anteilig ab (`SLEEP_FULL`, abzüglich
-  `_sleep_lost` durch Kaffee, 3.11), `Player.on_night_over()` am Ende der Nachtruhe addiert, was nicht geschlafen wurde
-  (`_slept`), erst nach dem ersten Angriff. Rausch beim Einschlafen → **Kater** (`HANGOVER_TIME`, 3.7).
+- **Der Spieler schläft, wann er will** (Spielkonzept 3.6): Jedes Bett in einem Zimmer (`HideSpot.room_no`, von
+  `LevelBuilder` gesetzt; `sleepable`) – im eigenen (`own_bed`, Zimmer 13) stellt das Mausrad `Player.sleep_hours` ein,
+  im fremden `bed_hours` (0 = auf die Kante setzen, so bleibt Sitzen möglich; neuer Fokus setzt es zurück);
+  `can_sleep` = schlafbereit. `Player.start_sleep()` = `enter_hide()` + `sleeping` + Zeitraffer (Zeitsprung, 3 „Pause
+  & Zeit“). Aufwachen ohne Aufstehen (`wake_up`): Monster nah oder fremder Lärm.
+  **Wachzeit** `awake_time` (Spielsekunden, von Anfang an) zählt wach in `_update_awake`; Schlaf senkt sie je Sekunde
+  um `_sleep_from × credit / SLEEP_FULL` (`_rest`, Kaffee/Tee über `_sleep_credit`) – eine ganze Mütze auf null und
+  `rested` = `RESTED_TIME`. `tiredness()` = gefühlte Wachzeit (Kaffee), `tired_stage()` 0–4 (`TIRED_FROM` 16 h,
+  `OVERTIRED_FROM` 24 h, `NODDING_FROM` 36 h, `sure_awake` je Spiel aus `SURE_AWAKE` 48–72 h, eigener
+  `RandomNumberGenerator`): neue Stufe → Gedanke, müde Gähnen/Lider (`Hud.close_eyes`), ab 36 h Sekundenschlaf.
+  `tired_weakness()` (bis `sure_awake` auf 1, übermüdet + `OVERTIRED_WEAK`) geht in `weakness()` und die Sicht;
+  `strain()` (ausgeschlafen `RESTED_STRAIN`, übermüdet `OVERTIRED_STRAIN`) auf Ausdauer, Luft, Schockabbau, Hypnose
+  und Griff des Lakengeists; übermüdet halluziniert man (`MonsterDirector._update_hallucination`). Gespeichert unter
+  `player`: `awake_time`, `sure_awake`, `rested`. Rausch beim Einschlafen → **Kater** (`HANGOVER_TIME`, 3.7).
+  **Fremdes Bett:** `Guest._fall_asleep` fragt zuerst `Social.player_in_bed(guest)`: Freunde legen sich woanders hin,
+  gute Freunde halten mit `BED_GUARD_CHANCE` Wache (`wait_awake`, Meta `guards_player` – zählt für `guarded()`),
+  neutrale bis genervte und Kinder wecken (`BED_ANNOY`, Gerede, Meta `woke_player` → beim nächsten Mal hinauswerfen,
+  `BED_EVICT`), Verfeindete klauen `BED_ROB` Münzen (`Player.robbed`, gemeldet beim Aufwachen) oder schlagen wach.
 - **Feiern:** Tanzplätze `LevelBuilder.party_spots` (Sechseckraster `DANCE_SPACING`, von der Mitte nach außen);
   `Social.free_party_spot(guest)` vergibt den innersten freien. Gäste kollidieren nicht miteinander, darum gehen sie
   in `PARTY` die letzten Zentimeter, an denen `_move_to` aufhört, genau auf den Platz. Spontane Feiern
@@ -1206,7 +1224,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   `--savetest` auf die neu gebauten Gäste ins Leere. Ebenso nicht: Auftritte von Lakengeist und Kürbismann, Wetter,
   Flackerwelle, Feiern, Spinnen, Fledermäuse.
 - **Was wo steht** (Überblick; Einzelheiten in `collect`): `player` (Lage, Hand, `bag`, `look`, Geld, Schock,
-  `nights_awake`, `drunk`/`hangover`, `coffee`/`caffeine`/`tea`, `injury`, `disguised`, Kompass, Kartenblätter,
+  `awake_time`/`sure_awake`/`rested`, `drunk`/`hangover`, `coffee`/`caffeine`/`tea`, `injury`, `disguised`, Kompass, Kartenblätter,
   Schlüssel), `guests` (je Gast Lage, Werte, Vorrat, Erlebnisse, `seen`, `corpse`, Wunden, `claims`, `stances`),
   `social` (Beziehungen, `pals` = `{counts, feuds}`, `talk`, `sleep_active`, `night_seed`, `cat_blame`), `director`
   (Werte, Phase, Absicht, Puppenfrist und Weg), `doll`, `ghost` (`visits`, `catch_up_day`, `hour_meetings`,
@@ -1266,7 +1284,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   Bänder ungestreckt. Spuren über `attach_mark(mark, seite, at)`. Zustände `locked`, `broken`, angelehnt
   (`set_ajar`), Zimmerzugang siehe 6.
 - **Verstecke** (`hide_spot.gd`): `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur;
-  `own_bed` = Bett in Zimmer 13; `rattle()`/`burst_open()` für den Lakengeist; Betten mit `bed_size`, `head_x`,
+  `own_bed` = Bett in Zimmer 13, `room_no` = Zimmer jedes Betts (fremde Betten, 3.6); `rattle()`/`burst_open()` für den Lakengeist; Betten mit `bed_size`, `head_x`,
   `partner`. Zerwühlt verschiebt `set_checked` die Bettdecke.
 - **Balkenbett** (`bed_model.gd`): `BedModel.build(parent, size, head_x)` für alle Betten; Holz über `Geo.grain_box`
   (UVs folgen der Faser, Hirnholz an den Stirnseiten), Meshes je Maß geteilt. `Guest.BED_TOP`/`BED_FOOT_GAP` und der
@@ -1369,7 +1387,7 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   **Tee** (`world/tea_kettle.gd`, `TeaKettle` erbt von `CoffeeMachine`, Spielkonzept 3.12): `CoffeeMachine` hat Felder
   statt fester Werte (`drink_kind`, `brew_time`, `noise_kind`, `guest_phase`, `children`, `lines`, `cup_spot`) und Haken
   (`_register`, `_build`, `_steam_spot`, `_finished`). Gäste holen sich morgens Kaffee, abends Tee (Zustand `EAT`, nie
-  zu beiden zugleich – `_taken`). **Wirkung:** `Player.tiredness()` ersetzt `nights_awake` in `weakness()` und
+  zu beiden zugleich – `_taken`). **Wirkung:** `Player.tiredness()` ersetzt `awake_time` in `weakness()` und
   `_update_sight` (Kaffee verdeckt Müdigkeit, danach ein Tief), `jittery()` bei viel Koffein (Hand zittert, Bluff
   verrät); `_sleep_credit(dt)` rechnet Schlaf mit Kaffee schwächer, mit Tee stärker an. Tasse zerbricht → Fleck
   „coffee“/„tea“ (gebaut wie Wachs). Gespeichert unter `player`: `coffee`, `coffee_low`, `caffeine`, `tea`. Debug

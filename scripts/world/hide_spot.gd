@@ -21,6 +21,8 @@ var exit_point: Marker3D
 var check_point: Marker3D
 ## Das Bett in Zimmer 13: Darin schläft der Spieler während der Nachtruhe (Spielkonzept 4.18).
 var own_bed := false
+## Zimmer des Betts (LevelBuilder.rooms, "" = keins) – auch in fremden Betten schläft man (Spielkonzept 3.6)
+var room_no := ""
 ## Bett: Länge (lokal x) und Breite (lokal z) = Außenmaß des Balkenbetts (BedModel) aus dem Plan; vor dem Einfügen setzen
 var bed_size := Vector2(2.1, 1.5)
 ## Bett: Seite des Kopfendes auf der lokalen x-Achse (−1 oder +1); heraus geht es immer nach +Z
@@ -82,9 +84,12 @@ func get_prompt(player: Player) -> String:
 	if can_sleep(player):
 		if occupant != null:
 			return "Besetzt"
+		if not own_bed:
+			return "Im fremden Bett schlafen: %s [E]    (Mausrad: Dauer, ganz runter: hinsetzen)" % Player.hours_text(player.bed_hours)
 		return "Schlafen: %s [E]    (Mausrad: Dauer · geduckt: unters Bett)" % Player.hours_text(player.sleep_hours)
 	if _sits(player):
-		return seat.get_prompt(player)
+		var text := seat.get_prompt(player)
+		return text + ("    (Mausrad: schlafen)" if sleepable(player) and text != "Besetzt" and player.seat == null else "")
 	if occupant != null and occupant != player:
 		return "Besetzt"
 	if checked and type == HideSpot.Type.BED:
@@ -115,9 +120,15 @@ func interact(player: Player) -> void:
 		player.enter_hide(self)
 
 
-## Im eigenen Bett (Zimmer 13) schläft man, wann man will (Spielkonzept 3.6) – geduckt kriecht man darunter.
+## Im eigenen Bett (Zimmer 13) schläft man, wann man will (Spielkonzept 3.6), im fremden, sobald man mit dem Mausrad
+## Stunden gewählt hat (sonst setzt man sich auf die Kante) – geduckt kriecht man darunter.
 func can_sleep(player: Player) -> bool:
-	return own_bed and not player.crouching
+	return sleepable(player) and (own_bed or player.bed_hours > 0)
+
+
+## Hier kann man überhaupt schlafen: in jedem Bett eines Zimmers, stehend.
+func sleepable(player: Player) -> bool:
+	return type == Type.BED and (own_bed or room_no != "") and not player.crouching
 
 
 ## Stehend auf ein Bett: auf die Kante setzen (auch wenn jemand darunter liegt).

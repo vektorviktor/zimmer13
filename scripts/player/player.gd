@@ -35,15 +35,31 @@ const MOUSE_SENSITIVITY := 0.0022
 const HIDE_COMFORT_TIME := 22.0   ## ab hier wird es im Versteck unangenehm
 const HIDE_MAX_TIME := 38.0       ## dann muss man raus (wie in „Doors“)
 const BREATH_MAX := 6.0
-## Schlafen im eigenen Bett, jederzeit (Spielkonzept 3.6, 4.18): die Zeit läuft so viel schneller; man wählt 1–8
-## Stunden (SLEEP_HOURS, voreingestellt die erste); so viele Spielsekunden (= Spielminuten, 2.4) sind eine ganze
-## Mütze Schlaf (SLEEP_FULL, darunter anteilig), so viele im Rausch geben Kater (SLEEP_MIN); ab dieser Nähe des
-## Monsters wacht man auf
+## Schlafen, jederzeit (Spielkonzept 3.6, 4.18): die Zeit läuft so viel schneller; man wählt 1–8 Stunden
+## (SLEEP_HOURS, voreingestellt die erste; am fremden Bett ab 0 = hinsetzen); so viele Spielsekunden (= Spielminuten,
+## 2.4) sind eine ganze Mütze Schlaf (SLEEP_FULL – die Wachzeit fällt auf null, darunter anteilig, danach ist man
+## RESTED_TIME lang ausgeschlafen), so viele im Rausch geben Kater (SLEEP_MIN); ab dieser Nähe des Monsters wacht man auf
 const SLEEP_SPEED := 5.0
 const SLEEP_HOURS := Vector2i(1, 8)
 const SLEEP_FULL := 360.0
 const SLEEP_MIN := 120.0
 const SLEEP_WAKE_THREAT := 0.3
+## Wachzeit (Spielkonzept 3.6, Spielsekunden seit dem Schlaf): ab TIRED_FROM müde (Gedanke, Gähnen, die Augen fallen
+## kurz zu – etwa alle TIRED_EVERY s), ab OVERTIRED_FROM übermüdet (Halluzinationen, OVERTIRED_WEAK mehr Schwäche, Werte
+## schlechter), ab NODDING_FROM Sekundenschlaf (NOD_TIME s Augen zu, auch auf der Flucht); ab sure_awake (je Spiel
+## zwischen SURE_AWAKE gewürfelt) ist die Schwäche aus Müdigkeit voll – der Lakengeist kommt sicher in den Flur (4.18)
+const TIRED_FROM := 16.0 * Calendar.HOUR
+const OVERTIRED_FROM := 24.0 * Calendar.HOUR
+const NODDING_FROM := 36.0 * Calendar.HOUR
+const SURE_AWAKE := Vector2(48.0 * Calendar.HOUR, 72.0 * Calendar.HOUR)
+const OVERTIRED_WEAK := 0.15
+const TIRED_EVERY := Vector2(40.0, 90.0)
+const NOD_TIME := 0.5
+## Ausgeschlafen bzw. übermüdet (3.6): Ausdauer, Luft, Hypnose und Griff des Geists zehren so viel (strain) – der
+## Schock klingt umgekehrt schneller bzw. langsamer ab
+const RESTED_TIME := 240.0
+const RESTED_STRAIN := 0.75
+const OVERTIRED_STRAIN := 1.3
 ## Hand mit dem Gegenstand: unten rechts
 const HAND_REST := Vector3(0.22, -0.22, -0.45)
 ## Werfen (Spielkonzept 3.13): [G] so lange halten (s), dann holt man aus – voll nach THROW_FULL s; die Hand geht dabei
@@ -98,23 +114,22 @@ const LOOK_LAG := Vector2(30.0, 7.0)
 const STUMBLE_RATE := 0.25
 const HANGOVER_TIME := 240.0
 const HANGOVER_DRAIN := 1.4
-## Schwäche (Spielkonzept 4.18): so viele Nächte ohne Schlaf machen ganz schwach, betrunken (BarTap.DRUNK, ab dem
-## 3. Glas) ebenso; so viel zählen Schock, Trauer (frisch) und Kater
-const WEAK_NIGHTS := 3.0
+## Schwäche (Spielkonzept 4.18): Wachzeit bis sure_awake macht ganz schwach (tired_weakness), betrunken
+## (BarTap.DRUNK, ab dem 3. Glas) ebenso; so viel zählen Schock, Trauer (frisch) und Kater
 ## Unter dem Bettlaken (Spielkonzept 5.9) erkennen Gäste den Spieler nur aus dieser Nähe
 const RECOGNIZE_RANGE := 1.5
 const WEAK_DRUNK := 1.0 / BarTap.DRUNK
 const WEAK_SHOCK := 0.5
 const WEAK_GRIEF := 0.3
 const WEAK_HANGOVER := 0.2
-## Kaffee (Spielkonzept 3.11): eine Tasse wirkt so viele Spielsekunden (= Spielminuten) und überdeckt so viele Nächte
-## ohne Schlaf; danach kommt das Tief so lange mit so viel mehr Müdigkeit. Solange er wirkt, zählt Schlaf nur so viel.
+## Kaffee (Spielkonzept 3.11): eine Tasse wirkt so viele Spielsekunden (= Spielminuten) und überdeckt so viel Wachzeit
+## (Spielsekunden); danach kommt das Tief so lange mit so viel mehr Müdigkeit. Solange er wirkt, zählt Schlaf nur so viel.
 ## Jede Tasse hebt den Koffeinspiegel um 1, er sinkt um 1 je COFFEE_FADE s – ab COFFEE_JITTER zittert man
 ## (dritte Tasse kurz hintereinander), das Herz klopft so laut (0..1, SynthAudio.heart)
 const COFFEE_TIME := 180.0
-const COFFEE_MASK := 1.0
+const COFFEE_MASK := 12.0 * Calendar.HOUR
 const COFFEE_LOW_TIME := 60.0
-const COFFEE_LOW := 0.5
+const COFFEE_LOW := 6.0 * Calendar.HOUR
 const COFFEE_SLEEP := 0.5
 const COFFEE_FADE := 120.0
 const COFFEE_JITTER := 2.5
@@ -127,7 +142,7 @@ const TEA_SLEEP := 1.3
 ## Zittern der Hand vor Koffein: so weit (m) und so schnell (Hz)
 const TREMOR := 0.006
 const TREMOR_RATE := 23.0
-## Verschwommene Sicht (Spielkonzept 3.6/3.7): so unscharf nach WEAK_NIGHTS Nächten ohne Schlaf (in Schüben
+## Verschwommene Sicht (Spielkonzept 3.6/3.7): so unscharf ab sure_awake Wachzeit (ab TIRED_FROM, in Schüben
 ## schwächer), ab diesem Rausch (1. Glas noch klar), bei Kater; so schnell (je Sekunde) folgt die Sicht dem Zustand
 const SIGHT_TIRED := 0.7
 const SIGHT_DRUNK_FROM := 0.25
@@ -171,12 +186,18 @@ var inspecting := false  ## schaut auf Karte oder Kompass in der linken Hand
 var trance := 0.0      ## Hypnose des Lakengeists (0..1) – macht langsamer (Spielkonzept 4.18)
 var gripped := false   ## wird gewürgt: steht fest, nur move_input zählt (Losreißen)
 var move_input := Vector2.ZERO   ## Bewegungstasten dieses Frames
-var sleeping := false  ## schläft im eigenen Bett (liegt dabei als Versteck darin)
-## Nachtruhen ohne Schlaf seit dem ersten Angriff – lockt den Lakengeist (Spielkonzept 4.18). Anteilig: Wenig Schlaf
-## zählt als Bruchteil einer Nacht, Schlaf baut die Schuld anteilig ab (3.6)
-var nights_awake := 0.0
-var sleep_hours := SLEEP_HOURS.x   ## so lange will man schlafen – am eigenen Bett mit dem Mausrad (3.6)
-var _slept := 0.0      ## seit dem Ende der letzten Nachtruhe geschlafen (Spielsekunden)
+var sleeping := false  ## schläft in einem Bett (liegt dabei als Versteck darin)
+## Wachzeit (Spielkonzept 3.6): Spielsekunden seit dem letzten Schlaf – macht müde und lockt den Lakengeist (4.18).
+## Schlaf senkt sie anteilig (SLEEP_FULL auf null)
+var awake_time := 0.0
+var sure_awake := SURE_AWAKE.y   ## ab dieser Wachzeit sicher im Flur – je Spiel gewürfelt (_ready, Spielstand)
+var rested := 0.0      ## so viele Spielsekunden noch ausgeschlafen (nach einer ganzen Mütze Schlaf)
+var sleep_hours := SLEEP_HOURS.x   ## so lange will man schlafen – am Bett mit dem Mausrad (3.6)
+var bed_hours := 0     ## am fremden Bett mit dem Mausrad: 0 = hinsetzen, sonst so viele Stunden schlafen (3.6)
+var robbed := ""       ## im fremden Bett beklaut (3.6) – merkt man beim Aufwachen
+var _tired_stage := 0  ## zuletzt gemeldete Stufe der Müdigkeit (tired_stage)
+var _tired_timer := 60.0
+var _sleep_from := 0.0 ## Wachzeit beim Einschlafen – der Schlaf baut sie anteilig ab
 var _sleep_now := 0.0  ## in diesem Schlaf geschlafen (Spielsekunden)
 var _sleep_lost := 0.0 ## davon nicht erholsam – Kaffee wirkte noch (3.11); negativ: nach Tee erholsamer (3.12)
 ## Am Körper (Spielkonzept 3.2): Kompass, Kartenblätter (HotelMap.PAGES-IDs), Schlüssel-IDs
@@ -259,6 +280,9 @@ var _sit_turn := 0.0            ## Blick gegenüber der Sitzrichtung, höchstens
 
 func _ready() -> void:
 	add_to_group("time_skip")   # Zeitsprung im Schlaf (SleepSkip)
+	var rng := RandomNumberGenerator.new()   # eigener Würfel – der gemeinsame bleibt unberührt
+	rng.randomize()
+	sure_awake = rng.randf_range(SURE_AWAKE.x, SURE_AWAKE.y)
 	add_to_group("player")
 	collision_layer = 8
 	# Ebene 4 (Gegenstände, Pflanzen, Schalter) blockiert nicht – lose Dinge werden weggeschoben
@@ -341,9 +365,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pocket_map.next_bookmark()
 	elif event.is_action_pressed("map") or event.is_action_pressed("compass"):
 		_explain_left_hand("map" if event.is_action_pressed("map") else "compass")
-	elif event is InputEventMouseButton and event.pressed and _wheel_step(event) != 0 and _focus is HideSpot 			and hiding == null and (_focus as HideSpot).can_sleep(self):
-		# am eigenen Bett: Mausrad hoch = länger schlafen, runter = kürzer (3.6)
-		sleep_hours = clampi(sleep_hours + _wheel_step(event), SLEEP_HOURS.x, SLEEP_HOURS.y)
+	elif event is InputEventMouseButton and event.pressed and _wheel_step(event) != 0 and _focus is HideSpot 			and hiding == null and (_focus as HideSpot).sleepable(self):
+		# am Bett: Mausrad hoch = länger schlafen, runter = kürzer (3.6) – am fremden bis 0 = hinsetzen
+		if (_focus as HideSpot).own_bed:
+			sleep_hours = clampi(sleep_hours + _wheel_step(event), SLEEP_HOURS.x, SLEEP_HOURS.y)
+		else:
+			bed_hours = clampi(bed_hours + _wheel_step(event), 0, SLEEP_HOURS.y)
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event.is_action_pressed("bag") and not gripped:
@@ -448,6 +475,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_update_drunk(delta)
 	_update_coffee(delta)
+	_update_awake(delta)
 	_update_shock(delta)
 	_update_dread(delta)
 	_update_throw(delta)
@@ -882,7 +910,7 @@ func _update_shock(delta: float) -> void:
 	if shock <= 0.0:
 		camera.rotation = Vector3.ZERO
 		return
-	shock = maxf(0.0, shock - delta / 180.0 * shock_recovery)
+	shock = maxf(0.0, shock - delta / 180.0 * shock_recovery / strain())
 	# Zittern
 	camera.rotation = Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)) * shock * 0.008
 	# Zittrige Hände: ab und zu fällt etwas herunter
@@ -1076,7 +1104,7 @@ func weakness() -> float:
 	var grief := 0.0
 	if Game.director:
 		grief = clampf(Game.director.grief / MonsterDirector.GRIEF_TIME, 0.0, 1.0)
-	return clampf(tiredness() / WEAK_NIGHTS + drunk * WEAK_DRUNK + shock * WEAK_SHOCK + grief * WEAK_GRIEF
+	return clampf(tired_weakness() + drunk * WEAK_DRUNK + shock * WEAK_SHOCK + grief * WEAK_GRIEF
 		+ (WEAK_HANGOVER if hangover > 0.0 else 0.0), 0.0, 1.0)
 
 
@@ -1089,12 +1117,83 @@ func _update_drunk(delta: float) -> void:
 	_update_sight(delta)
 
 
-## Nächte ohne Schlaf, wie sie sich gerade anfühlen (Spielkonzept 3.11) – für Schwäche und Sicht: Kaffee überdeckt
-## COFFEE_MASK davon, das Tief danach legt COFFEE_LOW drauf. Die Schuld selbst (nights_awake) bleibt.
+## Wachzeit, wie sie sich gerade anfühlt (Spielkonzept 3.6, 3.11) – für Stufen, Schwäche und Sicht: Kaffee überdeckt
+## COFFEE_MASK davon, das Tief danach legt COFFEE_LOW drauf. Die Wachzeit selbst (awake_time) bleibt.
 func tiredness() -> float:
 	if coffee > 0.0:
-		return maxf(0.0, nights_awake - COFFEE_MASK)
-	return nights_awake + (COFFEE_LOW if coffee_low > 0.0 else 0.0)
+		return maxf(0.0, awake_time - COFFEE_MASK)
+	return awake_time + (COFFEE_LOW if coffee_low > 0.0 else 0.0)
+
+
+## Anteil der Müdigkeit von TIRED_FROM bis sure_awake (0..1) – für Sicht und Schwäche.
+func _tired_share() -> float:
+	return clampf((tiredness() - TIRED_FROM) / (sure_awake - TIRED_FROM), 0.0, 1.0)
+
+
+## Schwäche aus Müdigkeit (4.18): bei sure_awake 1 (dann sicher im Flur), übermüdet OVERTIRED_WEAK mehr.
+func tired_weakness() -> float:
+	return _tired_share() + (OVERTIRED_WEAK if overtired() else 0.0)
+
+
+## Stufe der Müdigkeit (3.6): 0 wach, 1 müde, 2 übermüdet, 3 Sekundenschlaf, 4 sicher im Flur.
+func tired_stage() -> int:
+	var t := tiredness()
+	if t >= sure_awake:
+		return 4
+	if t >= NODDING_FROM:
+		return 3
+	if t >= OVERTIRED_FROM:
+		return 2
+	return 1 if t >= TIRED_FROM else 0
+
+
+func overtired() -> bool:
+	return tiredness() >= OVERTIRED_FROM
+
+
+## So sehr zehren Ausdauer, Luft, Hypnose und Griff des Geists (3.6): ausgeschlafen weniger, übermüdet mehr.
+func strain() -> float:
+	if rested > 0.0:
+		return RESTED_STRAIN
+	return OVERTIRED_STRAIN if overtired() else 1.0
+
+
+## Wach zählt die Zeit (3.6). Eine neue Stufe meldet ein Gedanke; müde gähnt man und die Augen fallen kurz zu, ab
+## NODDING_FROM kommt Sekundenschlaf – auch auf der Flucht. Keine Anzeige: man merkt es am Körper.
+func _update_awake(delta: float) -> void:
+	if sleeping or Game.creating:
+		return
+	awake_time += delta
+	rested = maxf(0.0, rested - delta)
+	var stage := tired_stage()
+	if stage < _tired_stage:
+		_tired_stage = stage
+	elif stage > _tired_stage and not in_dialog:
+		_tired_stage = stage
+		match stage:
+			1: Game.say("Ich bin müde. Bald sollte ich schlafen.", 3.5)
+			2: Game.say("Seit über einem Tag wach … Mir fallen fast die Augen zu.", 3.5)
+			3: Game.say("Ich nicke im Stehen ein. Ich brauche ein Bett – egal, welches.", 3.5)
+			4: Game.say("So müde … Und im Flur ist es auf einmal so kalt.", 4.0)
+		if Game.tracing:
+			print("[Müdigkeit] Stufe %d nach %.1f h wach (sicher im Flur ab %.1f h)" % [stage, awake_time / Calendar.HOUR,
+				sure_awake / Calendar.HOUR])
+	if stage == 0:
+		return
+	_tired_timer -= delta * (1.0 + 0.5 * (mini(stage, 3) - 1))
+	if _tired_timer > 0.0 or in_dialog or hiding:
+		return
+	_tired_timer = randf_range(TIRED_EVERY.x, TIRED_EVERY.y)
+	if stage >= 3 and randf() < 0.6:
+		if Game.hud:
+			Game.hud.close_eyes(NOD_TIME, 0.08)
+		Game.caption("[Sekundenschlaf]")
+		if Game.tracing:
+			print("[Müdigkeit] Sekundenschlaf")
+	elif randf() < 0.5:
+		Game.caption("[Du gähnst]")
+	elif Game.hud:
+		Game.hud.close_eyes(0.15, 0.12)   # die Augen fallen kurz zu
 
 
 ## Zu viel Kaffee (3.11): die Hand zittert, das Herz klopft, beim Bluffen verrät es einen.
@@ -1115,14 +1214,14 @@ func _update_coffee(delta: float) -> void:
 	coffee_low = COFFEE_LOW_TIME
 	Game.say("Der Kaffee lässt nach. Die Müdigkeit kommt zurück – schwerer als vorher.", 3.5)
 	if Game.tracing:
-		print("[Kaffee] Wirkung vorbei – Tief, Müdigkeit %.2f" % tiredness())
+		print("[Kaffee] Wirkung vorbei – Tief, Müdigkeit %.1f h" % (tiredness() / Calendar.HOUR))
 
 
 ## Tasse Kaffee trinken (Spielkonzept 3.11): überdeckt die Müdigkeit COFFEE_TIME lang (jede weitere Tasse verlängert
 ## nur) und beendet ein Tief; ab der dritten kurz hintereinander zittert man.
 func drink_coffee() -> void:
 	consume_held()
-	var tired := nights_awake >= 0.5 or coffee_low > 0.0
+	var tired := tiredness() >= TIRED_FROM or coffee_low > 0.0
 	coffee = COFFEE_TIME
 	coffee_low = 0.0
 	caffeine += 1.0
@@ -1133,7 +1232,8 @@ func drink_coffee() -> void:
 	else:
 		Game.say("Heiß und bitter. Schmeckt nach Hotel.", 3.0)
 	if Game.tracing:
-		print("[Kaffee] getrunken – Koffein %.1f, Müdigkeit fühlt sich an wie %.2f statt %.2f Nächte" % [caffeine, tiredness(), nights_awake])
+		print("[Kaffee] getrunken – Koffein %.1f, Müdigkeit fühlt sich an wie %.1f statt %.1f h wach" % [caffeine,
+			tiredness() / Calendar.HOUR, awake_time / Calendar.HOUR])
 
 
 ## Tasse Kräutertee trinken (Spielkonzept 3.12): etwas weniger Schock, und TEA_TIME lang schläft man besser.
@@ -1158,11 +1258,11 @@ func _sleep_credit(dt: float) -> float:
 	return calm * TEA_SLEEP + awake * COFFEE_SLEEP + (rest - awake)
 
 
-## Verschwommene Sicht (Spielkonzept 3.6/3.7): je Nacht ohne Schlaf unschärfer, in Schüben, als fielen die Augen
+## Verschwommene Sicht (Spielkonzept 3.6/3.7): je länger wach (ab TIRED_FROM), desto unschärfer, in Schüben, als fielen die Augen
 ## zu; im Rausch angetrunken leicht, betrunken deutlich, pulsierend, dazu Wabern und Doppelbild; Kater ein Hauch.
 func _update_sight(delta: float) -> void:
 	var t := _drunk_time
-	var tired := clampf(tiredness() / WEAK_NIGHTS, 0.0, 1.0) * SIGHT_TIRED
+	var tired := _tired_share() * SIGHT_TIRED
 	tired *= 0.55 + 0.45 * pow(0.5 + 0.5 * sin(t * 0.45), 4.0) + 0.05 * sin(t * 1.7)
 	var tipsy := pow(clampf((drunk - SIGHT_DRUNK_FROM) / (BarTap.ENOUGH - SIGHT_DRUNK_FROM), 0.0, 1.0), 1.5)
 	tipsy *= 0.75 + 0.25 * sin(t * 0.9)
@@ -1220,7 +1320,7 @@ func _update_stamina(delta: float) -> void:
 		_pant_timer = PANT_EVERY
 		Game.noise("pant", global_position, self)
 	if running:
-		stamina = maxf(0.0, stamina - delta / STAMINA_RUN_TIME * (HANGOVER_DRAIN if hangover > 0.0 else 1.0))
+		stamina = maxf(0.0, stamina - delta / STAMINA_RUN_TIME * (HANGOVER_DRAIN if hangover > 0.0 else 1.0) * strain())
 		if stamina <= 0.0 and not winded:
 			winded = true
 			Game.caption("[Du keuchst]")
@@ -1743,11 +1843,14 @@ func _hang_spot() -> Dictionary:
 
 
 func _update_focus() -> void:
+	var before = _focus
 	_focus = null
 	if _ray.is_colliding():
 		var collider := _ray.get_collider()
 		if collider and collider.has_meta("interactable"):
 			_focus = collider.get_meta("interactable")
+	if _focus != before:
+		bed_hours = 0   # am nächsten fremden Bett wieder erst hinsetzen (3.6)
 	if Game.hud:
 		var text := ""
 		var icon := ""   # Aktions-Symbol über dem Hinweis (IconArt) – vom Objekt, falls es get_icon hat
@@ -1953,7 +2056,7 @@ func _update_hiding(delta: float) -> void:
 		_breath_locked = false
 	holding_breath = Input.is_action_pressed("hold_breath") and not _breath_locked and breath > 0.0
 	if holding_breath:
-		breath -= delta * (1.0 + WINDED_BREATH_DRAIN * exertion())   # außer Atem geht es kürzer
+		breath -= delta * (1.0 + WINDED_BREATH_DRAIN * exertion()) * strain()   # außer Atem und übermüdet kürzer
 		if breath <= 0.0:
 			breath = 0.0
 			holding_breath = false
@@ -1975,22 +2078,27 @@ func _update_hiding(delta: float) -> void:
 
 # --- Schlafen (Spielkonzept 3.6, 4.18) ----------------------------------------
 
-## Im eigenen Bett, wann man will: Augen zu, die Zeit läuft schneller (in der Nachtruhe springt sie, SleepSkip), bis
-## sleep_hours um sind (dann steht man auf).
+## In einem Bett, wann man will (im fremden mit bed_hours): Augen zu, die Zeit läuft schneller (springt, SleepSkip),
+## bis sleep_hours um sind (dann steht man auf).
 ## Man liegt dabei wie in einem Versteck im Bett – das Monster kann einen dort finden.
 func start_sleep(bed: HideSpot) -> void:
+	if not bed.own_bed:
+		sleep_hours = maxi(bed_hours, SLEEP_HOURS.x)
+	bed_hours = 0
 	enter_hide(bed)
 	sleeping = true
 	_sleep_now = 0.0
 	_sleep_lost = 0.0
+	_sleep_from = awake_time
 	_sleep_drunk = drunk
 	Engine.time_scale = SLEEP_SPEED
 	if Game.hud:
 		Game.hud.set_hide_mode(3)
 		Game.hud.set_prompt("Aufstehen [E]", "sleep")
-	Game.say("Du schläfst ein … (%s)" % hours_text(sleep_hours), 2.0)
+	Game.say("Du schläfst ein … (%s)" % hours_text(sleep_hours) if bed.own_bed
+		else "Du schläfst in einem fremden Bett ein … (%s)" % hours_text(sleep_hours), 2.0)
 	if Game.tracing:
-		print("[Schlaf] eingeschlafen für %d h (%.2f Nächte ohne Schlaf)" % [sleep_hours, nights_awake])
+		print("[Schlaf] eingeschlafen für %d h in Zimmer %s (%.1f h wach)" % [sleep_hours, bed.room_no, awake_time / Calendar.HOUR])
 	if Game.nightmare:   # einmal der Traum von 1987 statt des Zeitsprungs (4.29)
 		Game.nightmare.on_fell_asleep(bed)
 	if Game.sleep_skip:
@@ -2010,25 +2118,33 @@ func sleep_left() -> float:
 ## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): was sonst je Bild abklingt oder sich
 ## erholt, um dt auf einmal; der Schlaf zählt mit.
 func skip_time(dt: float) -> void:
-	shock = maxf(0.0, shock - dt / 180.0 * shock_recovery)
+	shock = maxf(0.0, shock - dt / 180.0 * shock_recovery / strain())
 	drunk = maxf(0.0, drunk - dt / BarTap.SOBER_TIME)
 	hangover = maxf(0.0, hangover - dt)
 	injury = maxf(0.0, injury - dt / INJURY_HEAL_TIME)
 	stamina = minf(1.0, stamina + dt / STAMINA_REST_TIME)
 	if sleeping:
 		var credit := _sleep_credit(dt)
-		_slept += credit
+		_rest(credit)
 		_sleep_now += dt
 		_sleep_lost += dt - credit
+	else:
+		awake_time += dt
+		rested = maxf(0.0, rested - dt)
 	caffeine = maxf(0.0, caffeine - dt / COFFEE_FADE)
 	coffee_low = maxf(0.0, coffee_low - dt)
 	coffee = maxf(0.0, coffee - dt)   # im Schlaf ohne Tief
 	tea = maxf(0.0, tea - dt)
 
 
+## Schlaf baut die Wachzeit anteilig ab: eine ganze Mütze (SLEEP_FULL) die vom Einschlafen auf null (3.6).
+func _rest(credit: float) -> void:
+	awake_time = maxf(0.0, awake_time - _sleep_from * credit / SLEEP_FULL)
+
+
 func _update_sleep(delta: float) -> void:
 	var credit := _sleep_credit(delta)
-	_slept += credit
+	_rest(credit)
 	_sleep_now += delta
 	_sleep_lost += delta - credit
 	if Game.hud:
@@ -2043,19 +2159,21 @@ func _update_sleep(delta: float) -> void:
 func _wake_rested() -> void:
 	var hours := sleep_hours
 	var hungover := _sleep_drunk >= BarTap.TIPSY and _sleep_now >= SLEEP_MIN
-	exit_hide()   # → _stop_sleep: Erholung, Kater
+	exit_hide()   # → _stop_sleep: ausgeschlafen, Kater
 	var text := "Du wachst auf. "
 	if hungover:
 		text += "Mir brummt der Schädel."
-	elif nights_awake <= 0.0:
+	elif rested > 0.0:
 		text += "Endlich ausgeschlafen."
-	elif nights_awake < 1.0:
+	elif tiredness() >= TIRED_FROM:
+		text += "Das war zu kurz – ich bin immer noch hundemüde."
+	elif awake_time >= 4.0 * Calendar.HOUR:
 		text += "Noch ein bisschen müde."
 	else:
-		text += "Das war zu kurz – ich bin immer noch hundemüde."
+		text += "Das tat gut."
 	Game.say(text, 3.5)
 	if Game.tracing:
-		print("[Schlaf] nach %d h aufgewacht (%.2f Nächte ohne Schlaf)" % [hours, nights_awake])
+		print("[Schlaf] nach %d h aufgewacht (%.1f h wach%s)" % [hours, awake_time / Calendar.HOUR, ", ausgeschlafen" if rested > 0.0 else ""])
 
 
 ## Aufwachen, aber im Bett bleiben (darunter versteckt).
@@ -2069,43 +2187,27 @@ func wake_up(text: String) -> void:
 		Game.hud.set_hide_mode(2)
 	Game.say(text, 3.0)
 	if Game.tracing:
-		print("[Schlaf] geweckt nach %.0f s: %s (%.2f Nächte ohne Schlaf)" % [slept, text, nights_awake])
+		print("[Schlaf] geweckt nach %.0f s: %s (%.1f h wach)" % [slept, text, awake_time / Calendar.HOUR])
 
 
-## Schlaf endet (gewählte Zeit um, geweckt, aufgestanden, tot): Er baut die Nächte ohne Schlaf anteilig ab – eine ganze
-## Mütze (SLEEP_FULL) auf null, solange Kaffee wirkte nur halb (3.11) –, im Rausch ab SLEEP_MIN mit Kater (3.7). Die Wahl springt zurück auf eine Stunde.
+## Schlaf endet (gewählte Zeit um, geweckt, aufgestanden, tot): Nach einer ganzen Mütze (SLEEP_FULL, solange Kaffee
+## wirkte nur halb, 3.11) ist man ausgeschlafen, im Rausch ab SLEEP_MIN verkatert (3.7); wer beklaut wurde, merkt es.
+## Die Wahl springt zurück auf eine Stunde.
 func _stop_sleep() -> void:
 	sleeping = false
 	Engine.time_scale = 1.0
 	if not dead:
-		nights_awake *= 1.0 - minf(1.0, (_sleep_now - _sleep_lost) / SLEEP_FULL)
+		if _sleep_now - _sleep_lost >= SLEEP_FULL - 0.001:
+			rested = RESTED_TIME
 		if _sleep_drunk >= BarTap.TIPSY and _sleep_now >= SLEEP_MIN:
 			hangover = HANGOVER_TIME
+		if robbed != "":
+			get_tree().create_timer(3.6, false).timeout.connect(Game.say.bind(robbed, 4.0))
+	robbed = ""
 	_sleep_now = 0.0
 	_sleep_lost = 0.0
 	_sleep_drunk = 0.0
 	sleep_hours = SLEEP_HOURS.x
-
-
-## Ende der Nachtruhe (Social): Wer seit der letzten zu wenig geschlafen hat, hat anteilig eine Nacht mehr ohne Schlaf
-## (gar nicht: eine ganze, SLEEP_FULL: keine). Wer gerade schläft, schläft weiter. Gezählt wird erst nach dem ersten
-## Angriff (der friedliche Anfang soll niemanden bestrafen).
-func on_night_over() -> void:
-	var missed := 1.0 - minf(1.0, _slept / SLEEP_FULL)
-	_slept = 0.0
-	if not Game.director or not Game.director.first_attack_done or dead or missed <= 0.0:
-		return
-	nights_awake += missed
-	if missed >= 1.0:
-		var text := ""
-		match roundi(nights_awake):
-			1: text = "Wieder eine Nacht ohne Schlaf."
-			2: text = "Zwei Nächte wach … Ich sollte mich in meinem Bett ausschlafen."
-			_: text = "Mir fallen die Augen zu. Und draußen im Flur wartet etwas auf mich."
-		# nach der Meldung, dass die Gäste aufwachen
-		get_tree().create_timer(3.6, false).timeout.connect(Game.say.bind(text, 4.0))
-	if Game.tracing:
-		print("[Schlaf] Nachtruhe vorbei – %.2f Nacht verpasst, %.2f Nächte ohne Schlaf" % [missed, nights_awake])
 
 
 func _exit_tree() -> void:
