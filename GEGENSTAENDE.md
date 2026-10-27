@@ -31,6 +31,8 @@ Stand: 2026-10-26.
 
 | Gegenstand | Code | Stand | Handlung | Wozu / wo | Konzept |
 |---|---|---|---|---|---|
+| Gustavs Brille | – | geplant | **Hauptgeschichte** (Grund für den ersten Abstieg; Doris' Aufgabe) | am Gitter im Heizkeller; Doris geben bis 4.10., 20 Uhr, dann verschwindet sie – sonst gewöhnlicher Gegenstand, Gäste stehlen sie nicht | 2.9, M7, M7a |
+| Gustavs Blechdose | – | geplant (eigener Gegenstand oder nur der Inhalt: offen) | – (Doris' Dank; Faden der Kinder) | Doris gibt sie nach der Brille; darin Süßes, Pappgespenst, Zierkürbis für die Kinder | 2.9, M7a |
 | Kopf des Kürbismanns | `PUMPKIN_HEAD` | **teilweise** – Platzhaltermodell auf dem Dachboden, Ritual fehlt | Nebenstrang (Liesel) | Kürbismann erlösen | 4.21, 2.7, M14 |
 | Ersatzsicherung | – | geplant | **Hauptgeschichte** (Aufzug) | ein Gast hat sie (Kandidat: Bruno); Sicherungskasten im UG | 7.4, M9 |
 | Seine Sachen: Taschenuhr, Mütze, Foto von Marion | – | geplant (Inhalt: Vorschlag) | Nebenstrang (Marion) | Karton „Personal 1987“ im Lager im Tiefkeller | 2.8, M15a |
@@ -55,6 +57,8 @@ Stand: 2026-10-26.
 | Kartenblätter (EG, OG, Keller) | `MAP` | gebaut | – (Orientierung; Keller: „hier unten schläft es“) | Keller-Skizze in Zimmer 017 | 3.2, 7.9 |
 | UV-Schrift an Wänden (Heizer 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizkeller, Zimmer 017, Zimmer 18 | 4.16, 2.3 |
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
+| Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | geplant | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
+| Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
 | Hotelregister | – | geplant | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“) | Rezeption | 2.3, K1, M6, M13 |
 | Notizbuch des Hausmeisters | – | geplant | **Hauptgeschichte** (drei Mängel am Aufzug) | Zimmer 18 | 7.4, M8 |
 | Kesselbuch des Heizers | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Heizkeller | 2.3, 7.4, M12 |
@@ -130,7 +134,7 @@ Stand: 2026-10-26.
 ## Lücken für die Hauptgeschichte
 
 Was die Hauptgeschichte braucht und noch fehlt, in der Reihenfolge des Durchlaufs (HANDLUNG.md):
-1. Gustavs Tagebuch (M4) · Hotelregister (M6)
+1. Gustavs Tagebuch (M4) · Hotelregister (M6) · Gustavs Brille (M7)
 2. Notizbuch des Hausmeisters und Schaltschlüssel (M8) · Ersatzsicherung (M9)
 3. Kesselbuch (M12) · Dachbodenschlüssel (M14)
 4. Seine Sachen, Vertrag, Schlüsselbund, Werkstattschlüssel (M15a, M15b) – nur für die Erlösung (Kür, 2.8)

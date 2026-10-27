@@ -15,7 +15,8 @@ Angelegt 2026-10-25.
 ## 1. Der rote Faden in Kürze
 
 Ein friedliches Halloween-Hotel mit Türschmuck-Wettbewerb kippt bei der Siegerehrung: Gustav Peters wird geholt, und die
-Puppe entpuppt sich als Urteil. Eine Spur führt in den Keller, dort beginnt die Ermittlung. Der Aufzug öffnet den
+Puppe entpuppt sich als Urteil. Seine Freundin Doris bittet, ihn zu suchen – die Suche führt in den Keller, dort beginnt
+die Ermittlung. Der Aufzug öffnet den
 Tiefkeller mit den Koffern früherer Gäste, der Heizkeller verrät, wer das Monster war. Am Ende steht das Abkommen von 1987
 und der Haupteingang: Wer an Halloween den Schlüssel hat, bringt alle hinaus, die bis dahin überlebt haben (2.7) – und
 keiner von ihnen wird je darüber sprechen.
@@ -41,12 +42,16 @@ keiner von ihnen wird je darüber sprechen.
 | M4 | Zimmer 020: offene Tür, Schleifspur Richtung Keller, Gustavs Tagebuch | 2.10. abends | fest (2.6) | „Deko schützt“; erster Zug zum Keller |
 | M5 | Die Regel: veränderter Aushang, Warnungszettel 1999, erstes Urteil der Puppe | 3.10. | fest (2.5, 5.5) | Puppe lesen lernen |
 
-### Akt II – Das Hotel führt Buch (3.–7. Oktober) · Kandidaten
+### Akt II – Das Hotel führt Buch (3.–7. Oktober) · bis M8 **fest**
 
 | Nr | Meilenstein | Wann (optimal) | Status | Zeigt auf / schaltet frei |
 |----|-------------|----------------|--------|---------------------------|
-| M6 | **Das Kreuz im Register** (K1) | 3.10. | Kandidat | Hotelregister: Kreuze seit 1987, „geb. Ahrend“ |
-| M7 | **Erster Abstieg im satten Fenster** (K2): Heizkeller, Schlüssel zu Zimmer 18 | 3.–4.10. | Kandidat (Schlüssel im Heizkeller: fest, 7.4) | Zimmer 18 |
+| M5a | **Doris bittet: Gustav finden** (K8) – bis 4.10., 20 Uhr | 2.10. nachts – 3.10. morgens | fest (2.9) | Aufgabe im Notizbuch |
+| M6 | **Das Kreuz im Register** (K1) – Gustavs letzter Satz führt zur Rezeption; Mitteilung „abgereist“ am Brett | 3.10. morgens | fest (2.9) | Hotelregister: Kreuze seit 1987, „geb. Ahrend“ |
+| M6a | **Der Suchtrupp** bleibt an der Kellertür stehen (K8) | 3.10. tagsüber | fest (2.9) | Lernfenster: keine Patrouille, solange er läuft |
+| M7 | **Erster Abstieg** (K2): Gustavs Brille am Gitter, Schlüssel zu Zimmer 18 | 3.–4.10. | fest (2.9, 7.4) | Zimmer 18 |
+| M7a | **Die Brille für Doris:** Abschied an der Gedenktafel, Gustavs Blechdose für die Kinder, Doris als Ohrenzeugin | bis 4.10., 20 Uhr | fest (2.9) | Kinder, Gerede über den Leviathan |
+| M7b | *sonst:* **Doris geht allein** – Brief in 033, Blutflecken vor dem Gitter, ihr Tod ist sicher | 4.10., 20 Uhr | fest (2.9) | Schuld im Tagebuch |
 | M8 | Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel | 4.–6.10. | fest (7.4) | drei Aufgaben im Notizbuch |
 
 ### Akt III – Der Aufzug (8.–14. Oktober) · **Anker 2**
@@ -93,8 +98,12 @@ keiner von ihnen wird je darüber sprechen.
 ```mermaid
 flowchart TD
   M3[M3 Siegerehrung, Gustav] --> M4[M4 Zimmer 020, Tagebuch]
-  M4 --> M6[M6 Kreuz im Register]
-  M4 --> M7[M7 Erster Abstieg: Schlüssel 18]
+  M4 --> M5a[M5a Doris: Gustav finden]
+  M5a --> M6[M6 Kreuz im Register]
+  M5a --> M6a[M6a Suchtrupp an der Kellertür]
+  M6a --> M7[M7 Erster Abstieg: Brille, Schlüssel 18]
+  M7 --> M7a[M7a Brille für Doris]
+  M5a -.->|bis 4.10., 20 Uhr nicht| M7b[M7b Doris geht allein]
   M7 --> M8[M8 Zimmer 18: Hausmeister]
   M8 --> M9[M9 Sicherung von Bruno]
   M8 --> M10[M10 Bremse]
@@ -124,7 +133,8 @@ flowchart TD
 
 ## 3. Kandidaten im Detail
 
-### K1 – Das Kreuz im Register (Akt II)
+### K1 – Das Kreuz im Register (Akt II) · fest (2.9)
+- Man kommt hin über Gustavs letzten Satz („Morgen früh gehe ich als Erstes zur Direktion und …“, 2.6, 2.9).
 - Am Morgen nach der Siegerehrung steht im **Hotelregister** an der Rezeption ein frisches Kreuz neben „Gustav Peters“.
   Niemand hat es gemacht – Personal sieht man nie (2.5).
 - Wer zurückblättert, findet **Kreuze seit 1987**, jedes Jahr im Oktober: Das Hotel macht das jedes Jahr. Dazu
@@ -134,13 +144,26 @@ flowchart TD
   sich an 2.3 („vor dem ersten Angriff höchstens das Gästebuch“). Jeder weitere Tod bekommt sein Kreuz – das Register
   wird zur Chronik des Oktobers.
 
-### K2 – Erster Abstieg im satten Fenster (Akt II)
-- Nach Gustav ist das Monster **satt** (4.10) – das ist das sichere Zeitfenster für den ersten Weg in den Keller.
-  Die Schleifspur aus 020 zeigt in Richtung Treppenhaus Ost, Gäste reden vom Keller („Da unten soll es schlafen.“).
+### K2 – Erster Abstieg (Akt II) · fest (2.9)
+- ~~Nach Gustav ist das Monster **satt** (4.10) – das ist das sichere Zeitfenster.~~ Seit 4.33 senkt Sättigung nur die
+  Dreistigkeit. **Das Fenster ist der Suchtrupp** (K8): Solange er an der Kellertür wartet, patrouilliert der Leviathan
+  nicht. Die Schleifspur aus 020 zeigt in Richtung Treppenhaus Ost, Gäste reden vom Keller („Da unten soll es schlafen.“).
+- Am Gitter liegt **Gustavs Brille** – der Grund, hinunterzugehen (K8).
 - Im Heizkeller liegt der **Schlüssel zu Zimmer 18** (7.4, fest). Man sieht den Kessel und das Gitter zum ersten Mal,
   hört dahinter etwas atmen.
-- **Warum stark:** Story und Mechanik fallen zusammen – die Sättigung nach dem ersten Tod belohnt den Mutigen, und das
-  Fenster schließt sich. Damit wäre auch der Vorschlag aus 2.6 entschieden (Sättigung erklärt die harmlose Phase).
+- **Warum stark:** Story und Mechanik fallen zusammen – das Fenster des Suchtrupps belohnt den Mutigen, und es schließt
+  sich.
+
+### K8 – Wo ist Herr Peters? (Akt I–II) · fest (2.9)
+- **Doris Lange** (zieht nach 033, gegenüber von 020), Gustavs einzige Freundin, glaubt nicht an seinen Tod und bittet
+  den Spieler, ihn zu finden – auch wenn sie ihn nicht leiden kann. Frist: 4. Oktober, 20 Uhr, im Notizbuch.
+- Die Direktion behauptet am Brett, er sei abgereist; sein Koffer steht noch in 020. Der Suchtrupp (Doris, Theo, Paula)
+  bleibt an der Kellertür stehen.
+- Unten am Gitter liegt **seine Brille** – die einzige Spur. **Bringt man sie Doris**, nimmt sie Abschied, gibt Gustavs
+  Blechdose mit dem, was er den Kindern abgenommen hat, und wird zur Ohrenzeugin. **Sonst geht sie selbst** und stirbt
+  sicher; ihr Brief liegt in 033.
+- **Warum stark:** gibt dem ersten Abstieg einen Grund statt nur Gerüchte, macht aus der Pflicht eine Frist mit Folgen
+  und zeigt früh, dass der Spieler Tode verantworten kann – zwischen Gustav (fest) und Edna (rettbar, K5).
 
 ### K3 – Bruno hat die Sicherung (Akt III)
 - 7.4 sagt: Ein Gast hat die Ersatzsicherung, er hat sie dem Hausmeister „abgekauft“. **Bruno Kaminski** (Kernfigur,

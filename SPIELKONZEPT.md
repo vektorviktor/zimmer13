@@ -17,6 +17,7 @@
   - [2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)](#26-das-erste-opfer-gustav-peters-entschieden-2026-10-25)
   - [2.7 Das Ende an Halloween: Alle Überlebenden kommen hinaus (entschieden 2026-10-25)](#27-das-ende-an-halloween-alle-überlebenden-kommen-hinaus-entschieden-2026-10-25)
   - [2.8 Den Heizer erlösen – Marions Auftrag (entschieden 2026-10-25)](#28-den-heizer-erlösen--marions-auftrag-entschieden-2026-10-25)
+  - [2.9 Wo ist Herr Peters? – Doris' Suche (entschieden 2026-10-26)](#29-wo-ist-herr-peters--doris-suche-entschieden-2026-10-26)
 - [3. Core Gameplay Loop](#3-core-gameplay-loop)
   - [3.1 Spieler-Aktionen (Grundumfang)](#31-spieler-aktionen-grundumfang)
   - [3.2 Kein verstecktes Inventar – Hände und Tasche](#32-kein-verstecktes-inventar--hände-und-tasche)
@@ -522,7 +523,7 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 **Gustav Peters**
 - Pensionierter Lehrer, alt, Skeptiker (H25 in [HAUSHALTE.md](HAUSHALTE.md)) – er glaubt nur, was er sieht, und sieht
   nicht, was ihn holt. Er wohnt allein in **Zimmer 020** (EG Ost), nur über den Flur vom Partyraum entfernt
-  (getauscht mit Magda Seidel, jetzt 033).
+  (getauscht mit Magda Seidel, jetzt 006 – 033 bekommt Doris Lange, 2.9).
 - **Hasst Halloween:** den Kürbiswahn der anderen Gäste, die Feiern und vor allem die Kinder, die überall alles mit
   Kürbissen dekorieren wollen. Die Kinder nennen ihn den **„Halloween-Grinch“**.
 - **Schmückt nicht und macht beim Wettbewerb nicht mit** – keine Startdeko. Was die Kinder ihm vor die Tür legen,
@@ -592,7 +593,7 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 - **Wer es findet:** Theo Busch (019) auf dem Heimweg sieht die offene Tür nebenan und ruft es durch den Flur.
 - **Reaktionen nach Charakter:** Die Kinder fühlen sich schuldig („Wir haben ihm doch Kürbisse hingelegt …“) und
   schmücken wie verrückt · Magda Seidel: „Ketchup. Ein Trick der Direktion.“ · Doris Lange (Lärm) war seine einzige
-  Freundin (6.16) und trauert · Hugo Stein will das Tagebuch kaufen (Dokumente, 2.3) · Paula Jansen will es lesen ·
+  Freundin (6.16) und trauert – entschieden als eigener Bogen (2.9) · Hugo Stein will das Tagebuch kaufen (Dokumente, 2.3) · Paula Jansen will es lesen ·
   Walter Ruprecht sagt nur: „Jedes Jahr einer.“
 - **Weitererzählen hat einen Preis:** Wer vom Tagebuch erzählt, bringt die Gäste auf „Deko schützt“ – sie schmücken
   mehr, und man wird eher selbst der Schwächste (Kernfrage, 1).
@@ -799,6 +800,108 @@ größer, mitten in seinem Revier.
   der Kürbismann nicht erlöst wird?
 - **Wie das Lager aufgeht** (7.4 offen) – auch mit dem Schlüsselbund?
 - **Lakengeist:** Bleibt er nach der Erlösung, oder werden die Verschwundenen mit frei?
+
+### 2.9 Wo ist Herr Peters? – Doris' Suche (entschieden 2026-10-26)
+> Noch nicht gebaut. Der Bogen zwischen Gustavs Tod (2.6, M4) und dem ersten Abstieg (M7): Er gibt dem Weg in den
+> Keller einen Grund. Ablauf in [HANDLUNG.md](HANDLUNG.md) (M5a–M7b). Mit „Vorschlag“ markierte Punkte sind aus der
+> Durchsprache noch nicht bestätigt.
+
+**Grundidee:** Gustav ist tot (2.6) – aber die Gäste wissen es noch nicht. Der Bogen erzählt die Hoffnung, dass er noch
+lebt, und wie sie zerbricht. Sie führt Schritt für Schritt nach unten: zur Rezeption, an die Kellertür, ans Gitter. Wer
+die Bitte nicht erfüllt, verantwortet den zweiten Tod.
+
+**Doris Lange** (H34, alt, Griesgram, beschwert sich über jeden Lärm)
+- Gustavs einzige Freundin (6.16) – beide hassten die Musik aus dem Partyraum.
+- **Sie zieht nach Zimmer 033**, gegenüber von 020 über den Flur; Magda Seidel bekommt dafür 006 (HAUSHALTE.md). Von
+  ihrer Tür sieht sie auf seine.
+- Ihre Herzensbitte (Tee, 6.14) bleibt; die Suche ist eine eigene Aufgabe daneben.
+
+**1. Die Bitte (2. Oktober nachts)**
+- Nach der Siegerehrung sitzt Doris mit einer Kerze vor der offenen Tür von 020. Sie glaubt nicht an einen Tod: „Er ist
+  alt. Er ist irgendwo hingefallen.“
+- **Sie kommt von sich aus zum Spieler** – spätestens am 3. Oktober morgens sucht sie ihn im Flur, in der Lobby oder
+  klopft an Zimmer 13. Sie fragt **auch, wenn sie ihm feindlich gesinnt ist** (Entwurf): „Ich kann Sie nicht leiden.
+  Aber Sie sind der Einzige, der nachts hier herumläuft.“
+- **Notizbuch, Aufgaben** (3.10): „Doris (033): Gustav finden – bis 4. Oktober, 20 Uhr.“ Die Frist steht mit Uhrzeit da.
+- **Ablehnen geht** – dann geht sie trotzdem allein (6.). **Ausnahme zu 3.10:** Die Aufgabe kommt auch abgelehnt ins
+  Notizbuch, als Erinnerung.
+
+**2. „Morgen früh gehe ich als Erstes zur Direktion und …“ (3. Oktober morgens)**
+- Gustavs abgebrochener letzter Satz (2.6) zeigt zur **Rezeption**. Dort ist niemand, nur die Klingel. Im
+  **Hotelregister** steht ein frisches Kreuz neben „Gustav Peters“ (M6, HANDLUNG K1).
+- **Am Brett hängt eine neue Mitteilung** (dieselbe Schrift wie der Aushang, 2.5):
+  > Verehrte Gäste,
+  > Herr Peters ist heute früh abgereist. Die Direktion wünscht ihm eine gute Heimreise.
+  >
+  > *Die Direktion*
+- Dabei ist der Haupteingang verschlossen (2.5, Hausordnung). Die Gäste sind uneins: Magda Seidel: „Siehst du,
+  abgereist. Und das Blut war Ketchup.“ – Doris: „Ohne seinen Koffer?“ **Sein Koffer steht noch in 020** – der Spieler
+  kann die Lüge selbst prüfen (Gerücht gegen Indiz, 2.3).
+
+**3. Der Suchtrupp (3. Oktober tagsüber)**
+- Doris, Theo Busch (019) und Paula Jansen suchen das Erdgeschoss ab; der Spieler kann mitgehen oder vorauslaufen.
+  Uhrzeiten (Vorschlag): Aufbruch um 10 Uhr in der Lobby, um 12 Uhr an der Kellertür, dort warten sie bis 14 Uhr.
+- An der **Tür zum Untergeschoss im Treppenhaus Ost** bleiben alle stehen: kalte Luft, Ruß. „Weiter geh ich nicht.“ –
+  Theo: „Du bist doch der, der nachts rumläuft.“ Das ist das erste besprochene Ereignis aus 4.33: Gäste gehen **bis an
+  den Keller, nicht hinein**.
+- **Solange der Suchtrupp läuft, patrouilliert der Leviathan nicht im Keller** (4.33) – das Lernfenster für den ersten
+  Abstieg.
+
+**4. Die Brille am Gitter (erster Abstieg, M7)**
+- Im Heizkeller liegt am **Gitter** (7.4) **Gustavs Lesebrille**, zertreten und rußig – die **einzige Spur**, keine
+  Schnitzeljagd. Dahinter atmet etwas. Daneben wie bisher der Schlüssel zu Zimmer 18 (M8).
+- Ein gewöhnlicher Gegenstand (Hände, Tasche, 3.2): Man kann sie ablegen und wegwerfen. **Gäste stehlen sie nicht.**
+  Wer sie wegwirft, hat Pech.
+
+**5. Die Übergabe**
+- **Erfüllt ist die Aufgabe nur, wenn man Doris die Brille gibt** – sehen oder erzählen reicht nicht. Sie nimmt sie,
+  die Brille verschwindet. Danach gibt sie die Hoffnung auf.
+- **Abschied:** Gustav hat keine Leiche und darum kein Grab (6.7, 5.15) – sein Name steht auf der Gedenktafel. Doris geht
+  zur Gedenkstätte und steht eine Weile vor seinem Namen (Vorschlag).
+- **Gustavs Blechdose:** Doris hat einen Ersatzschlüssel zu 020, den er ihr gegeben hatte. Danach holt sie aus seinem
+  Koffer eine alte Blechdose und gibt sie dem Spieler (Entwurf): *„Er hat ihnen alles abgenommen. Weggeworfen hat er nie
+  was. Gib's den Kindern zurück.“* Darin, was er den Kindern in den ersten zwei Tagen weggenommen hat (Vorschlag):
+  Süßes, ein Pappgespenst, ein Zierkürbis. Wer es den Kindern gibt, bekommt Beziehung bei ihnen – und schließt ihren
+  Faden aus 2.6 („Wir haben ihm doch Kürbisse hingelegt …“): Gustav war nicht nur der Grinch.
+- **Doris als Ohrenzeugin:** Danach ist sie befreundet und erzählt, was sie nachts hört („Heute Nacht hat es unter dem
+  Flur gekratzt.“) – Gerede (6.16), das über die Wege des Leviathan **wirklich stimmt**.
+
+**6. Doris geht allein (4. Oktober, 20 Uhr)**
+- Hat sie die Brille bis dahin nicht, geht sie selbst. Vorher legt sie **einen Brief auf den Tisch in 033** (Entwurf):
+  > Ich habe gewartet. Wenn ihn keiner sucht, such ich ihn eben selbst. Er hat mich nie warten lassen.
+  > – D. L.
+- **Ihr Weg:** von 033 über den Flur ins Treppenhaus Ost, hinunter, durch die Kellergänge zum Heizkeller ans Gitter. Sie
+  geht wirklich.
+- **Aufhalten:** Trifft der Spieler sie mit der Brille, **bevor sie die Kellertür erreicht**, gilt die Aufgabe als
+  erfüllt. Ist er schon unten und hat die Brille, gilt die Übergabe auch dort, **solange sie lebt**; dann muss er sie
+  wieder hinaufbringen – mitten im Keller.
+- **Ihr Tod ist sicher** – keine 20 % (6.17). Es ist der Tod, den der Spieler zu verantworten hat. Unten wird sie geholt:
+  - **Sieht der Spieler sie nicht,** sobald sie außer Sicht ist: ein kurzer Schrei, Stille. Wer im Untergeschoss ist,
+    hört ihn, sieht aber nichts.
+  - **Behält er sie im Blick,** gehen am Gitter die Halogenleuchten aus (Rauschen, 2–3 s), ein Schrei – wenn das Licht
+    zurückkommt, ist sie fort. Wer dann ganz nah steht, stirbt mit (wie in Zimmer 020, 2.6).
+  - Danach liegen **Blutflecken vor dem Gitter**.
+- Sie **zählt als Opfer** (Sättigung, 4.10): Ihr Tod schiebt die nächste Anforderung hinaus. Ihr Kreuz steht im Register,
+  ihr Name auf der Gedenktafel.
+- **Am 5. Oktober morgens** reden die Gäste: „Doris war nicht beim Frühstück.“ Die Tür von 033 ist unverschlossen, der
+  Brief liegt auf dem Tisch. Liest der Spieler ihn, schreibt er statt des gewöhnlichen Toten-Eintrags ins **Tagebuch**
+  (Entwurf): „Doris ist allein in den Keller gegangen. Sie hat auf mich gewartet.“ Im Notizbuch bekommt die Aufgabe das
+  Kreuz (6.14).
+- Die Brille bleibt dann ein gewöhnlicher Gegenstand, ohne eigene Verwendung.
+
+**Im Plan:** Das Gitter zum Heizkeller hat die Farbe **#9c5a5a** (7.4); der Nutzer zeichnet es ein.
+
+**Zu klären**
+- **Was hinter dem Gitter liegt (2026-10-27):** Das Gitter ist im Plan gemalt – in der Ebene `Ausstattung` als Strich
+  auf der Ostwand des Heizkellers (UG, Pixel 849,310; etwa 5 m nördlich vom Kessel). Dahinter liegt aber der offene
+  Kellergang (x 7,6–11,4 m), der Nord- und Südgang verbindet – kein Versteck. Zur Wahl: den Gang an beiden Enden
+  zumauern (Sackgasse als Verschlag des Leviathan, Dachbodenschlüssel darin) oder das Gitter an eine Wand mit eigenem
+  Raum dahinter verlegen. Erst danach bauen. Beim Bau: Eintrag für #9c5a5a in `map_a.gpl`, `build_map.py` liest es aus
+  `Ausstattung` als Strich auf der Wand.
+- Uhrzeiten des Suchtrupps; Inhalt der Blechdose (eigener Gegenstand oder nur ihr Inhalt?); liegt 033 wirklich gegenüber
+  von 020 (im Plan prüfen)?
+- Was, wenn Doris vorher stirbt (sie ist keine Kernfigur)? Vorschlag: In der harmlosen Phase kann sie es nicht – die
+  ersten Angriffe holen niemanden (2.1).
 
 ---
 
@@ -2432,8 +2535,9 @@ ganzen Hotels.
   Tag für jeweils etwa 90 Spielminuten** – kein Modus, darum **auch an Balltagen**. Gerät man in seinen
   Erkennungsradius (4.12), verfolgt er einen; man muss ihn **abschütteln oder sich verstecken**, sonst stirbt man.
   Dazwischen ist der Keller ruhig – das sind die Fenster für den Abstieg (M7, HANDLUNG.md). **Gäste gehen
-  grundsätzlich nicht in den Keller**, außer ein eigens besprochenes Ereignis oder ein Auftrag verlangt es (bewusst
-  offen gehalten, noch keine Ausnahme).
+  grundsätzlich nicht in den Keller**, außer ein eigens besprochenes Ereignis oder ein Auftrag verlangt es. Erste
+  Ausnahmen (2.9, 2026-10-26): Der Suchtrupp nach Gustav geht bis an die Kellertür, nicht hinein – solange er läuft,
+  patrouilliert der Leviathan nicht; Doris Lange geht allein bis ans Gitter, wenn man ihr die Brille nicht bringt.
 - **Sättigung** (4.10) wirkt nur noch als **Abzug auf die Dreistigkeit**: Jedes Opfer schiebt die nächste
   Anforderung hinaus.
 - **Danach** kehrt der Leviathan jedes Mal in den Keller zurück.
@@ -4013,6 +4117,10 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
   die Beziehung sinkt, und er erzählt es weiter.
 - **Hinterherschlüpfen,** wenn er gerade aufschließt.
 - **Den Schlüssel** stehlen – oder ein **guter Freund** gibt dir einen Zweitschlüssel (Belohnung der höchsten Stufe).
+  Beide sind kein Gegenstand in der Hand, sondern ein Eintrag am **Schlüsselbund** wie der Generalschlüssel
+  (entschieden 2026-10-26). Gestohlen wird er einem **schlafenden** Gast vom Nachttisch, mit den Zeugenregeln des
+  Diebstahls (6.2). Am nächsten Morgen merkt der Gast es und lässt das Schloss tauschen – der gestohlene Schlüssel passt
+  dann nicht mehr; wer es war, bleibt unbekannt.
 - Eine offene **Fenstertür** von Terrasse, Garten oder Balkon (die nutzt auch der Lakengeist, 4.18).
 
 **5. Aufbrechen**
@@ -4040,6 +4148,8 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
   Schloss ist älter als der Schlüssel.“) – 1988 hat das Hotel alle Schlösser getauscht, nur diese Türen nicht.
 - **Jedes hat seinen eigenen Schlüssel auf einem eigenen Weg** (Arten aus 2.3): Zeit und Geduld (die Krähen, 4.25),
   Vertrauen (ein Gast als Freund), Wissen (ein Hinweis in einem Dokument), Wagnis (ein Fundort nah am Monster).
+- **Vier Zimmer, je Weg eins** (entschieden 2026-10-26): 042 (Geduld, die Krähen) und je eines für Vertrauen, Wissen
+  und Wagnis. Welche Zimmer, Schlüssel und Gegenstände das sind, ist noch offen.
 - **Dahinter:** ein **optionaler, nützlicher Gegenstand** und ein Stück 1987 – Staub, ein Kalenderblatt vom Oktober
   1987, ein ungemachtes Bett, persönliche Dinge.
 - **Auch die Terrassentür ist zu:** von innen verriegelt, die Vorhänge seit 1987 zugezogen, die Terrasse davor
@@ -4120,10 +4230,6 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 - **Nachnamen** (entschieden 2026-10-24) erscheinen **beim Hinsehen an der Tür** (im
   Hinweis, kein Schild an der Wand) und im **Hotelregister** (2.3): bei mehreren Personen der Nachname („Brandt“),
   bei einer Person Vor- und Nachname („Walter Ruprecht“).
-  Beide sind kein Gegenstand in der Hand, sondern ein Eintrag am **Schlüsselbund** wie der Generalschlüssel
-  (entschieden 2026-10-26). Gestohlen wird er einem **schlafenden** Gast vom Nachttisch, mit den Zeugenregeln des
-  Diebstahls (6.2). Am nächsten Morgen merkt der Gast es und lässt das Schloss tauschen – der gestohlene Schlüssel passt
-  dann nicht mehr; wer es war, bleibt unbekannt.
 
 - **Liste und Generator** (entschieden 2026-10-24): Die Liste legt fest, **wer** jemand ist – Name, Nachname,
   Geschlecht, Generation, Charakter, Haushalt. Der Generator würfelt **alles Übrige**, mit festem Seed je
@@ -4151,8 +4257,6 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 ### 6.21 Apfeltauchen im Partyraum (entschieden und umgesetzt 2026-10-25)
 Ein Holzbottich mit Wasser und schwimmenden Äpfeln. Mit leeren Händen [E]: Man beugt sich darüber und taucht mit
 gehaltenem **Linksklick** das Gesicht ins Wasser – die Sicht verschwimmt, es blubbert (Lärm).
-- **Vier Zimmer, je Weg eins** (entschieden 2026-10-26): 042 (Geduld, die Krähen) und je eines für Vertrauen, Wissen
-  und Wagnis. Welche Zimmer, Schlüssel und Gegenstände das sind, ist noch offen.
 
 - Bleibt das Fadenkreuz lange genug auf einem Apfel, beißt man zu und hat ihn (neuer Gegenstand); die Äpfel weichen
   dem Mund aus. Die Luft reicht nur ein paar Sekunden am Stück, dann kommt man prustend hoch. [E] beendet.
@@ -4344,7 +4448,7 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
   - **Die Rohre klopfen und zischen im ganzen Hotel.** Das überdeckt eigenen Lärm (Rennen, Würfeln locken weniger) – aber auch Rauschen und Schritte des Monsters sind schwerer zu hören. Ein Tausch, kein reiner Vorteil.
 - *(eingefroren 2026-10-21)* **Nachlegen:** Eine Ladung brennt etwa einen Ingame-Tag. Danach muss jemand wieder hinunter – der Spieler selbst oder ein Gast, den man darum bittet (Beziehung; moralisch heikel, 4.11).
 - *(eingefroren 2026-10-21)* **Ofenklappe:** Hier lassen sich Dinge **verbrennen**: geklaute Gegenstände, blutige Kleidung, belastende Zettel. Ohne Beweis verlieren Gerüchte über einen an Kraft (6.2). Deko verbrennen geht nicht – das Feuer „will“ sie nicht.
-- **Das Gitter:** Ein rostiges **Gitter** sperrt das Versteck des Monsters ab – wo genau im Untergeschoss, ist noch offen (7.10). Anfangs kommt das Monster nicht hindurch; man hört es dahinter atmen, wenn es ruht – wer dann Kohle schaufelt, weckt es. **Mit jedem Tag wird das Gitter lockerer** (4.8), gegen Ende des Monats ist es offen und der Tiefkeller gehört zu seinem Revier. Hinter dem
+- **Das Gitter:** Ein rostiges **Gitter** sperrt das Versteck des Monsters ab – im Heizkeller, im Plan mit der Farbe **#9c5a5a** (2026-10-26; der Nutzer zeichnet es ein). Davor liegt nach Gustavs Tod seine Brille, und dort stirbt Doris, wenn man sie ihr nicht bringt (2.9). Anfangs kommt das Monster nicht hindurch; man hört es dahinter atmen, wenn es ruht – wer dann Kohle schaufelt, weckt es. **Mit jedem Tag wird das Gitter lockerer** (4.8), gegen Ende des Monats ist es offen und der Tiefkeller gehört zu seinem Revier. Hinter dem
   Gitter liegt der Schlüssel zur Kniestocktür des Dachbodens – ab etwa Tag 15 kommt man hindurch (4.21).
 - **Story:** das **Kesselbuch des Heizers** von 1987 – derselbe Name wie in der Personalakte, dieselben Initialen wie unter der UV-Schrift von 1987 (7.9).
 

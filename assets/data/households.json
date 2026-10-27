@@ -764,11 +764,11 @@
 		{
 			"id": "H34",
 			"surname": "Lange",
-			"label": "006",
+			"label": "033",
 			"floor": 0,
 			"px": [
-				1399,
-				739
+				1059,
+				419
 			],
 			"members": [
 				{
@@ -800,11 +800,11 @@
 		{
 			"id": "H36",
 			"surname": "Seidel",
-			"label": "033",
+			"label": "006",
 			"floor": 0,
 			"px": [
-				1059,
-				419
+				1399,
+				739
 			],
 			"members": [
 				{

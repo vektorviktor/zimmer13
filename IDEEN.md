@@ -77,3 +77,14 @@ Erweiterung). Passt als Gastauftrag der Art „Wiederfinden“ (6.14).
 Offene Fragen: Wessen Ring (Ehering, Erbstück, ein Ring mit Bezug zu 1987)? Wie kommt der Auftrag zum Spieler –
 fragt der Gast, oder findet man den Ring zuerst und muss den Besitzer suchen? Welches Dachfenster (hängt an der Form
 des Dachs)? Was ist der Lohn?
+
+## 7. Ein eigenes Grab für jeden Toten (2026-10-26)
+
+Bisher bekommen nur Tote mit Leiche ein Grab (Lakengeist, Kürbismann); die Opfer des Leviathan stehen nur auf der
+Gedenktafel, mit einer Grabkerze je Name ([Spielkonzept 5.15](SPIELKONZEPT.md#515-friedhof-und-grablichter-entschieden-und-umgesetzt-2026-10-25)).
+Dort lassen sich keine persönlichen Dinge ablegen: Zwischen 2 und 30 Grablichtern wirkt etwa Gustavs Brille (2.9)
+zufällig. Mit einem **eigenen Platz je Toten** – auch für Vermisste, ein leeres Grab oder ein Gedenkstein – könnte man
+Fundstücke dort ablegen (Brille, Hausschuh, Briefe), und die Frage stellt sich nicht bei jedem Gast neu.
+
+Offene Fragen: Leeres Grab oder Gedenkstein für Vermisste? Reichen die 43 Grabplätze? Bringt Ablegen etwas (Gedenken,
+Beziehung bei den Freunden) oder ist es nur Stimmung? Legen Gäste selbst Dinge ab?

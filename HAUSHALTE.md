@@ -73,9 +73,9 @@ im Spiel.** Fest sind die Anzahlen je Haushaltsart; alles andere (Namen, Paare, 
 | H31 | Moritz Graf | 011 · 34 m² | Moritz (jung, ängstlich) | 1 | Kam mit Freunden, die nie ankamen |
 | H32 | Fiona Kühn | 026 · 34 m² | Fiona (jung, Plaudertasche) | 1 | Immer an der Bar, kennt alle Gerüchte zuerst |
 | H33 | Emil Hartung | 016 · 34 m² | Emil (jung, Bastler) | 1 | Baut aus allem Kürbislaternen |
-| H34 | Doris Lange | 006 · 34 m² | Doris (alt, Griesgram) | 1 | Beschwert sich über Lärm – über jeden Lärm |
+| H34 | Doris Lange | 033 · 34 m² | Doris (alt, Griesgram) | 1 | Beschwert sich über Lärm – über jeden Lärm; Gustavs einzige Freundin, wohnt gegenüber (Spielkonzept 2.9) |
 | H35 | Theo Busch | 019 · 34 m² | Theo (jung, geschäftstüchtig) | 1 | Würfelt um alles (Mäxchen, 6.10) |
-| H36 | Magda Seidel | 033 · 34 m² | Magda (alt, Skeptiker) | 1 | Hält das Monster für einen Trick der Direktion |
+| H36 | Magda Seidel | 006 · 34 m² | Magda (alt, Skeptiker) | 1 | Hält das Monster für einen Trick der Direktion |
 | H37 | Sami Haddad | 039 · 68 m² | Sami (mittel, Bastler) | 1 | Koch von Beruf, hilft in der Küche (3.8) |
 | H38 | Zita Fuchs | 043 · 34 m² | Zita (alt, geschäftstüchtig) | 1 | Verleiht Geld gegen Pfand |
 | H39 | Oskar Pohl | 045 · 68 m² | Oskar (alt, ängstlich) | 1 | Meint, er sei schon einmal hier gewesen – erinnert sich an nichts (2.2) |
@@ -111,7 +111,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 003 | EG Ost, Südseite | 68 m² | ja | – | 1149, 739 | H19 Edna Wiegand (Kernfigur) |
 | 004 | EG Ost, Südseite | 34 m² | – | – | 1279, 739 | unbewohnt, abgeschlossen |
 | 005 | EG Ost, Südseite | 34 m² | – | – | 1339, 739 | unbewohnt, abgeschlossen |
-| 006 | EG Ost, Südseite | 34 m² | – | – | 1399, 739 | H34 Doris Lange |
+| 006 | EG Ost, Südseite | 34 m² | – | – | 1399, 739 | H36 Magda Seidel |
 | 007 | EG Ost, Südseite | 80 m² | ja | – | 1485, 725 | H10 Ehepaar Wagner |
 | 008 | EG Ost, innen | 34 m² | – | – | 1499, 639 | H28 Ruth Behrens |
 | 009 | EG Ost, innen | 34 m² | – | – | 1499, 579 | H29 Ulrich Kranz |
@@ -137,7 +137,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 030 | EG Ost, innen | 34 m² | – | Terrasse | 1179, 299 | unbewohnt, abgeschlossen |
 | 031 | EG Ost, innen | 34 m² | – | Terrasse | 1119, 299 | unbewohnt, abgeschlossen |
 | 032 | EG Ost, innen | 34 m² | – | Terrasse | 1059, 359 | unbewohnt, abgeschlossen |
-| 033 | EG Ost, innen | 34 m² | – | Terrasse | 1059, 419 | H36 Magda Seidel |
+| 033 | EG Ost, innen | 34 m² | – | Terrasse | 1059, 419 | H34 Doris Lange |
 | 034 | EG West, Südseite | 103 m² | ja | – | 429, 739 | H18 Paar Falk |
 | 035 | EG West, Südseite | 103 m² | ja | – | 209, 739 | H17 Paar Nowak |
 | 036 | EG West, Südseite | 80 m² | ja | – | 63, 725 | H11 Ehepaar Lorenz |
