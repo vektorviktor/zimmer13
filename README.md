@@ -112,7 +112,8 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7/F
   fliegt raus · **Brecheisen** (Heizkeller) bricht Zimmertüren auf – laut, und wer es sieht, erzählt es weiter; die Tür
   bleibt offen, bis sie repariert ist (auch nach einem Angriff des Monsters) · **Werkzeugkasten** (Technikraum, oder
   Konrad leiht dir seinen) repariert sie – Dank, außer man hat sie selbst aufgebrochen · **Schlüsselschrank** an der
-  Ostwand der Lobby: Scheibe einschlagen, der **Generalschlüssel** öffnet jede Zimmertür, außer jemand ist drin
+  Ostwand der Lobby: Scheibe einschlagen, der **Generalschlüssel** öffnet jede Zimmertür, außer jemand ist drin ·
+  Gäste gehen ab und zu in ihr Bad und machen die Badtür zu (abschließen lässt sie sich nicht – „Besetzt!“)
 - **Schlafen:** jederzeit, im eigenen Bett in Zimmer 13 oder in einem fremden – am Bett stellt das Mausrad ein, wie lange (1–8 Stunden, voreingestellt eine) · Augen zu, die Zeit springt (die Uhr läuft mitten im Bild mit), nachts wie am Tag, und das Hotel lebt weiter: Was das Monster nachts tut, findest du erst danach, am Tag stehen die Gäste danach woanders · kommt es zu dir, schreckst du ein paar Sekunden vorher hoch · die Mitternachtsglocke und dein Telefon wecken dich (Hörer daneben legen hilft) · das Monster in der Nähe oder ein Geräusch weckt dich
 - **Müdigkeit:** Es zählt die Zeit seit dem letzten Schlaf – nach 16 Stunden wach bist du müde (Gähnen, die Augen fallen kurz zu), ab einem Tag übermüdet (Halluzinationen, der Lakengeist kommt öfter, Ausdauer und Luft reichen kürzer), ab 36 Stunden kommt Sekundenschlaf, nach 48–72 Stunden steht der Lakengeist sicher im Flur, sobald du dort allein bist · die Sicht verschwimmt in Schüben · keine Anzeige, du merkst es am Körper · sechs Stunden Schlaf machen dich ganz wach, weniger anteilig · danach bist du eine Weile **ausgeschlafen**: mehr Ausdauer, länger Luft, Schock vergeht schneller, der Geist hypnotisiert schwächer und lässt leichter los
 - **Fremde Betten:** In einem freien Bett geht es, aber vor der Tür steht keine Deko – das Monster biegt eher ab · im Bett eines Gastes findet er dich zur Nachtruhe: Freunde legen sich woanders hin, gute Freunde halten vielleicht Wache, Neutrale und Genervte wecken dich (die Beziehung sinkt, es spricht sich herum) und werfen dich hinaus, Verfeindete schlagen zu oder beklauen dich im Schlaf
@@ -481,6 +482,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--erfolge-zurueck` | alle Erfolge im Profil löschen |
 | `--bulb-thief=bruno` | Gast klaut sofort eine Glühbirne aus Zimmer 13 |
 | `--lichtgang=bruno` | Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3) |
+| `--bad=edna` | Gast geht gleich in sein Bad und schließt die Tür (6.19), du stehst im Zimmer davor |
 | `--kerzenpflege=bruno[,ohne]` | Kerzen vor der Tür des Gastes gehen aus (ohne: in Kürbis und Totenkopf abgebrannt), er kümmert sich darum (5.12) |
 | `--abbrennen[=rest]` | alle Kerzen fast heruntergebrannt (Standard 0,02 ≈ eine halbe Minute), 5.12 |
 | `--steal-test` · `--player-deco=x,z` | Ednas Deko unbemerkt nehmen (Schuld-Test) · geschnitzten Kürbis des Spielers an diese Stelle stellen |

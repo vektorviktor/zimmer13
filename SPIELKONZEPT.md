@@ -4145,6 +4145,7 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 > durchkommen (zu lange jemand im Weg); das Einbrechen sehr wütender Gäste bei Zimmer 13 (1), Schlüssel stehlen und
 > Zweitschlüssel (4) fehlen noch; das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal je Tür und Tag
 > gilt). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank (Ostwand der Lobby) stehen im Plan.
+> **Badtüren (2026-10-28):** Gäste gehen ab und zu in ihr Bad und schließen die Tür hinter sich; ein Schloss gibt es nicht.
 >
 > Verallgemeinert Zuflucht und Abschließen aus 6.18 (4): Freundschaft öffnet Türen – im
 > wörtlichen Sinn. Zimmer werden sozialer Raum; Verstecke, Diebstahl (6.2) und Birnen (7.3) brauchen erst einen Weg

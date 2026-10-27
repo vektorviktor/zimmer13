@@ -209,6 +209,7 @@ extends Node3D
 ##   --despawn[=monster|geist|kuerbis]   die Bedrohung (ohne Angabe alle) ist sofort fort, auch Vorwarnung/Ankündigung
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
 ##   --lichtgang=id              Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3)
+##   --bad=id                    Gast geht gleich in sein Bad und schließt die Tür (6.19), du stehst im Zimmer davor
 ##   --kerzenpflege=id[,ohne]    Kerzen vor der Tür des Gastes gehen aus (ohne: in Kürbis und Totenkopf abgebrannt), er
 ##                               steht ein paar Meter davor und kümmert sich darum (5.12)
 ##   --abbrennen[=rest]          alle Kerzen (auch feste, in Kürbis und Totenkopf) haben nur noch rest übrig (Standard
@@ -1549,6 +1550,11 @@ func run_debug(arg: String) -> bool:
 			get_tree().create_timer(30.0, false).timeout.connect(func() -> void:
 				if not walker.dead:
 					walker._walk_to(Game.social.builder.lobby_seats.pick_random(), Guest.State.WALK))
+	elif arg.begins_with("--bad="):
+		# Gast geht ins Bad (6.19) – nach 1 s, wenn alle stehen
+		var bather := _guest(arg.substr(6))
+		if bather:
+			get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.bath.debug(bather))
 	elif arg.begins_with("--kerzenpflege="):
 		# Gast kümmert sich um die dunklen Kerzen vor seiner Tür (5.12) – nach 1 s, wenn die Startdeko steht
 		var parts := arg.substr(15).split(",")

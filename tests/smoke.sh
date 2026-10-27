@@ -152,6 +152,7 @@ done <<'LIST'
 2400|kerzen,abbrennen,gaeste|--abbrennen --trace
 2400|kerzen,abbrennen,gaeste|--kerzenpflege=bruno --trace
 2400|kerzen,abbrennen,gaeste|--kerzenpflege=edna,ohne --trace
+1200|zimmerzugang,gaeste|--bad=edna --trace
 600|kerzen,abbrennen,speichern|--abbrennen=0.5 --savetest
 600|streiche,kuerbis|--prank=pumpkin,111 --trace
 600|werfen,kuerbis,speichern|--pos=-6,0,-21,180,-25 --wurf --savetest --trace

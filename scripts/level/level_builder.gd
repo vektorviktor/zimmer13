@@ -292,6 +292,8 @@ const MASK_WALL_MARGIN := 0.2
 const MASK_WALL_MIN := 1.6
 const LOCKED_ROOM := "018"
 const ROOM_KINDS := {"013": "player"}   ## gilt, wenn die Haushaltsdatei fehlt
+## So weit hinter der Badtür steht ein Gast, der das Bad benutzt (BathUse, Spielkonzept 6.19)
+const BATH_SPOT_DEPTH := 1.0
 ## Flügel, deren Zimmer schon bewohnbar sind – im EG bzw. darüber (seit 24.10. überall: die Haushalte wohnen in beiden)
 const OPEN_WINGS := ["ost", "west"]
 const OPEN_WINGS_UPPER := ["ost", "west"]
@@ -1861,6 +1863,7 @@ func _room(plan: Dictionary) -> void:
 		"into": into,                                             # vom Flur ins Zimmer
 		"door": door,
 		"spots": [],
+		"baths": _room_baths(plan, holder),
 	}
 	if not plan.get("suite", false):   # Suiten betritt man durchs Nachbarzimmer: kein Schild an der Verbindungstür
 		_sign(label, Vector3(0, 2.45, -0.11), 180.0, SIGN_EM_ROOM)
@@ -1884,6 +1887,21 @@ func _room(plan: Dictionary) -> void:
 	rooms[no] = info
 	_room_spots[no]["pos"] = info["center"]   # Mitte des Rechtecks an der Tür (bei L-Zimmern sicher drinnen)
 	_parent = root
+
+
+## Bäder des Zimmers (Spielkonzept 6.19, Badbenutzung der Gäste): je Badtür {door, id (Raum-ID des Bads), spot (ein
+## Stück hinter der Tür im Bad)}.
+func _room_baths(plan: Dictionary, holder: Node3D) -> Array:
+	var baths := []
+	for d in plan.get("bath_doors", []):
+		var door := _door_near(_v3(d["pos"]))
+		var place := _place_at(_v2(d["pos"]) + _v2(d["normal"]) * 0.4)
+		if door == null or place.is_empty() or place["kind"] != "bath":
+			continue
+		var p := _v2(d["pos"]) + _v2(d["normal"]) * BATH_SPOT_DEPTH
+		baths.append({"door": door, "id": String(place["id"]),
+			"spot": _global(holder.transform.affine_inverse() * Vector3(p.x, 0.0, p.y))})
+	return baths
 
 
 # --- Einrichtung aus dem Plan ---------------------------------------------------------------------------

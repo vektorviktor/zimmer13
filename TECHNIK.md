@@ -1104,7 +1104,13 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   **Schlüsselschrank** (`world/key_cabinet.gd`, Gruppe `key_cabinets` im Spielstand). `Door.monster_open` macht eine
   abgeschlossene Zimmertür ebenfalls kaputt. **Reparieren** mit Werkzeugkasten (`on_repaired`); am Morgen
   (`_morning_repairs`) repariert jeder Haushalt seine Tür selbst; `LENDER_HOUSEHOLD` leiht seinen Werkzeugkasten.
-- Debug: `--klopfen[=zimmer[,weg]]`, `--tuer=zimmer`, `--werkzeug=brecheisen|kasten|schluessel`.
+- **Bad** (`guests/bath_use.gd`, `BathUse` als `Social.bath`): `LevelBuilder._room_baths` legt je Zimmer `baths`
+  an ({door, id, spot `BATH_SPOT_DEPTH` hinter der Badtür}). Wer zu Hause herumsteht (`IDLE`, `_is_home`), geht mit
+  `CHANCE` je Blick (alle `SCAN` s, höchstens alle `GAP`) über den Besuchsablauf hinein, wenn niemand drin oder auf dem
+  Weg ist (`occupied`), schließt die Tür leise (`_someone_in_swing`, bis `CLOSE_TRIES`) und steht `STAY` s; hinaus geht
+  er mit dem nächsten Vorhaben (`_open_doors` öffnet sie, sie bleibt offen). Kein Schloss; wer aufmacht, hört
+  „Besetzt!“. Nicht in Nachtruhe, Feier, solange das Monster unterwegs ist. Nicht gespeichert.
+- Debug: `--klopfen[=zimmer[,weg]]`, `--tuer=zimmer`, `--werkzeug=brecheisen|kasten|schluessel`, `--bad=id`.
 
 ### Kinder (Spielkonzept 6.13)
 - `Guest.is_child()`, `parent_guest()`, `is_orphan()`; Profil mit `child`, `age`, Archetyp „Kind“, Sätze aus
