@@ -12,6 +12,7 @@ extends Node
 ##     Grinch.taken), dann geht das Licht aus und die Musik verstummt – zu sehen ist nichts
 ##   · Die Regel danach: Warnungszettel von 1999 am Morgen danach unter der Tür von Zimmer 13, Gäste reden am Brett,
 ##     beim ersten Urteil der Puppe ein Satz im Tagebuch
+##   · Am selben Morgen die Mitteilung „Herr Peters ist heute früh abgereist“ am Brett (2.9) – die erste Lüge der Direktion
 ##   · Notizbuch (3.10): steckt im Umschlag des Briefs, erste Aufgabe ist die eigene Tür (bei der Siegerehrung
 ##     durchgestrichen bzw. „zu spät“); Durchsagen und Aushänge kommen als Notiz hinein, Ankunft, Siegerehrung und
 ##     erstes Urteil als Meilensteine ins Tagebuch
@@ -42,6 +43,14 @@ const RULES_TEXT := "Nachtruhe von 23 bis 6 Uhr.\nDie Bar schließt um Mitternac
 const POSTER_BEFORE_JOT := "Türschmuck-Wettbewerb: Die Jury kürt am 2. Okt. um 20 Uhr die schönste Tür. Sie sieht nur, was im Licht hängt."
 const POSTER_AFTER_JOT := "Der Aushang ist ein anderer: Die Jury besucht jetzt die Tür, die am wenigsten zu bieten hat. Sie sieht nur, was im Licht hängt."
 const RULES_JOT := "Hausordnung: Nachtruhe 23–6 Uhr, die Bar schließt um Mitternacht, der Haupteingang bleibt nachts zu."
+## Die Lüge der Direktion (Spielkonzept 2.9, HANDLUNG M6): am Morgen nach der Siegerehrung ab dieser Stunde, solange
+## Gustav fort ist – unten rechts unter der Hausordnung
+const DEPARTURE_HOUR := 6.0
+const DEPARTURE_TITLE := "Mitteilung der Direktion"
+const DEPARTURE_TEXT := "Verehrte Gäste,\nHerr Peters ist heute früh abgereist. Die Direktion wünscht ihm eine gute Heimreise.\n\nDie Direktion"
+const DEPARTURE_JOT := "Am Brett steht, Herr Peters sei heute früh abgereist. Dabei ist der Haupteingang nachts verschlossen."
+const DEPARTURE_LINES := ["Siehst du, abgereist. Und das Blut war Ketchup.", "Abgereist? Mitten in der Nacht?",
+	"Der Haupteingang ist doch nachts zu. Wie ist er denn rausgekommen?", "Abgereist … ohne sich zu verabschieden?"]
 ## Durchsagen: Tag, Uhrzeit, Text, Notiz im Notizbuch – verpasste (Uhr vorgestellt, Schlaf) holt das Spiel höchstens
 ## eine Spielstunde später nach
 const ANNOUNCEMENTS := [
@@ -117,6 +126,7 @@ var _reads_today := 0
 var _read_day := 0
 var _tick := 0.0
 var _after_shown := false
+var _departure_shown := false
 
 
 func setup(builder: LevelBuilder) -> DoorContest:
@@ -237,6 +247,24 @@ func _pin_board() -> void:
 		"board_after" if after else "board_before", POSTER_AFTER_JOT if after else POSTER_BEFORE_JOT)
 	board.pin("rules", Vector2(0.33, 0.12), Vector2(0.34, 0.42), RULES_TITLE.to_upper(), RULES_TEXT, RULES_TITLE, RULES_TEXT,
 		"board_rules", RULES_JOT)
+	var was := _departure_shown
+	_departure_shown = _departure_due()
+	if _departure_shown and not was and Game.tracing:
+		print("[Wettbewerb] Mitteilung „abgereist“ am Brett")
+	if _departure_shown:
+		board.pin("departure", Vector2(0.33, -0.27), Vector2(0.32, 0.3), "MITTEILUNG", DEPARTURE_TEXT, DEPARTURE_TITLE,
+			DEPARTURE_TEXT, "board_departure", DEPARTURE_JOT)
+	else:
+		board.unpin("departure")
+
+
+## Hängt die Mitteilung „abgereist“ (2.9)? Ab dem Morgen nach der Siegerehrung, wenn Gustav nicht mehr lebt.
+func _departure_due() -> bool:
+	if stage != Stage.DONE or attack_day == 0 or Game.director == null or Game.director.elapsed < Calendar.at(attack_day + 1, DEPARTURE_HOUR) \
+			or Game.social == null or Game.social.grinch == null:
+		return false
+	var gustav := Game.social.grinch.gustav
+	return gustav == null or gustav.dead   # null: schon beerdigt und freigegeben
 
 
 func _update_announcements() -> void:
@@ -507,6 +535,8 @@ func _release_guests(scared: bool) -> void:
 func _after_step() -> void:
 	if not note_delivered and Game.director.elapsed >= Calendar.at(attack_day + 1, NOTE_HOUR):
 		_deliver_note(true)
+	if board and _departure_due() != _departure_shown:
+		_pin_board()
 	_board_readers()
 
 
@@ -550,7 +580,7 @@ func _board_readers() -> void:
 			var to := board.global_position - g.global_position
 			g.rotation.y = atan2(-to.x, -to.z)
 			g._set_idle(randf_range(6.0, 10.0))
-			g.say(BOARD_LINES.pick_random())
+			g.say((BOARD_LINES + DEPARTURE_LINES if _departure_shown else BOARD_LINES).pick_random())
 			_readers.erase(id)
 	_read_timer -= 1.0
 	if _read_timer > 0.0 or _readers.size() >= READERS or _reads_today >= READS_PER_DAY:
@@ -647,10 +677,19 @@ func debug_ceremony(without_player: bool) -> void:
 		TeleportUI.place_player(spot, -forward)
 
 
-## --brett[=nachher]: Spieler vor das Aushangbrett (nachher: der erste Angriff gilt als geschehen).
-func debug_board(after: bool) -> void:
-	if after:
+## --brett[=nachher|abgereist]: Spieler vor das Aushangbrett (nachher: der erste Angriff gilt als geschehen; abgereist:
+## Gustav ist bei der Siegerehrung geholt worden, es ist der Morgen danach, 7 Uhr – die Mitteilung hängt).
+func debug_board(mode: String) -> void:
+	if mode == "nachher":
 		Game.director.first_attack_done = true
+	elif mode == "abgereist":
+		Game.director.elapsed = maxf(Game.director.elapsed, Calendar.at(CEREMONY_DAY + 1, DEPARTURE_HOUR + 1.0))
+		if not Game.director.first_attack_done:
+			Game.director.first_attack_unseen(Game.social.grinch.gustav if Game.social.grinch else null)
+		if stage != Stage.DONE:
+			_skip_to_done()
+		attack_day = CEREMONY_DAY
+		_pin_board()
 	TeleportUI.place_player(board.reading_spot(0.0) + board.global_basis.z * 0.4, -board.global_basis.z)
 	Game.player.head.rotation.x = deg_to_rad(4.0)
 

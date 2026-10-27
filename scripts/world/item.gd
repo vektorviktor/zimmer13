@@ -36,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -65,10 +65,12 @@ const PRICES := {
 	Kind.MUSIC_BOX: 0,
 	Kind.APPLE: 1,
 	Kind.MASK: 0,
+	Kind.PUMPKIN_SEEDS: 1,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
-	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS, Kind.SALT, Kind.MUSIC_BOX, Kind.APPLE]
+	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS, Kind.SALT, Kind.MUSIC_BOX, Kind.APPLE,
+	Kind.PUMPKIN_SEEDS]
 ## Getränkedose: die Sorten und ihre Farbe
 const SODA_COLORS := {"limo": Color(0.95, 0.55, 0.1), "cola": Color(0.7, 0.07, 0.07)}
 ## Was man an die Wand hängen kann (Spielkonzept 5.6, 5.7) – der Besen lehnt nur daran
@@ -505,8 +507,8 @@ func interact(player: Player) -> void:
 	var held := player.held_kind()
 	if _carving(held):
 		if can_carve():
-			carve()
-			Game.say("Du schnitzt eine Fratze in den Kürbis.", 2.5)
+			_drop_seeds(carve())
+			Game.say("Du schnitzt eine Fratze in den Kürbis. Die Kerne legst du daneben.", 2.5)
 		return
 	if _takes_candle(held):
 		if not player.held.lit:
@@ -655,6 +657,20 @@ func carve() -> Item:
 	Game.noise("carve", carved.global_position)
 	queue_free()
 	return carved
+
+
+## Beim Schnitzen fällt eine Handvoll Kerne ab (Spielkonzept 5.4) – neben dem Kürbis, auf der Seite zum Spieler.
+func _drop_seeds(carved: Item) -> void:
+	var seeds := Item.create(Kind.PUMPKIN_SEEDS)
+	carved.get_parent().add_child(seeds)
+	var side := Vector3.RIGHT
+	if Game.player:
+		var to := Game.player.global_position - carved.global_position
+		to.y = 0.0
+		if to.length() > 0.05:
+			side = to.normalized().rotated(Vector3.UP, 0.6)
+	var reach := maxf(carved.size.x, carved.size.z) / 2.0 + 0.07
+	seeds.global_position = carved.global_position + side * reach + Vector3.UP * 0.03
 
 
 func light_up(with_sound: bool = true) -> void:
@@ -1365,6 +1381,21 @@ func _build(extra: String) -> void:
 			Geo.mesh(self, Geo.cylinder(0.003, 0.02, 4), Mat.psx(Color(0.3, 0.2, 0.1)), Vector3(0.002, 0.075, 0))
 			var leaf := Geo.mesh(self, Geo.box(Vector3(0.022, 0.002, 0.011)), Mat.psx(Color(0.25, 0.5, 0.15)), Vector3(0.012, 0.078, 0))
 			leaf.rotation.z = 0.4
+		Kind.PUMPKIN_SEEDS:
+			# Kürbiskerne (Spielkonzept 5.4, 4.25): eine Handvoll, fällt beim Schnitzen ab – später Krähenfutter
+			display_name = "Kürbiskerne"
+			mass = 0.05
+			size = Vector3(0.09, 0.025, 0.07)
+			var seed_mat := Mat.psx(Color(0.9, 0.85, 0.66))
+			var rng := RandomNumberGenerator.new()
+			rng.seed = 513
+			for i in 16:   # flacher Haufen, die oberen schräg auf den unteren
+				var r := sqrt(rng.randf()) * 0.035
+				var a := rng.randf() * TAU
+				var kernel := Geo.mesh(self, Geo.sphere(0.008, 0.016, 6, 3), seed_mat,
+					Vector3(cos(a) * r, 0.004 + (0.035 - r) * 0.25, sin(a) * r * 0.8))
+				kernel.scale = Vector3(1.0, 0.3, 0.62)
+				kernel.rotation = Vector3(rng.randf_range(-0.3, 0.3), rng.randf() * TAU, rng.randf_range(-0.3, 0.3))
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)

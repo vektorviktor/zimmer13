@@ -483,6 +483,9 @@ var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kei
 ## Bäume: {pos (Stammachse am Boden), radius (Krone), height, crown (Höhenbereich der Krone als Anteile)} – für die
 ## Fledermäuse (Bats)
 var tree_spots: Array[Dictionary] = []
+## Stützbalken auf dem Dachboden: {pos (Fuß des Pfostens), arms (Array von [Richtung, Länge] je Arm des Balkenkreuzes)} –
+## dort hängen tagsüber Fledermäuse (Bats, Spielkonzept 4.22)
+var attic_beams: Array[Dictionary] = []
 var player_spawn := Vector3.ZERO
 var player_door_front := Vector3.ZERO
 var record_player_pos := Vector3.ZERO
@@ -3918,6 +3921,8 @@ func _attic_beams() -> void:
 					continue
 				beam.call(Vector3(ATTIC_POST, ATTIC_BEAM_BOTTOM, ATTIC_POST), 1, Basis(), Vector3(c.x, ATTIC_BEAM_BOTTOM / 2.0, c.y), true)
 				_attic_posts.append(c)
+				var arms: Array = []
+				attic_beams.append({"pos": Vector3(c.x, _base_y, c.y), "arms": arms})
 				for dir: Vector2 in [Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN, Vector2.UP]:
 					var reach := (cell.x if dir.x != 0.0 else cell.y) / 2.0
 					var len := 0.0
@@ -3931,6 +3936,7 @@ func _attic_beams() -> void:
 						len += 0.08   # bis an die Wand bzw. in die Schräge
 					if len < ATTIC_POST:
 						continue
+					arms.append([Vector3(dir.x, 0.0, dir.y), len])
 					var x_dir := dir.x != 0.0
 					var mid := c + dir * len / 2.0
 					var size := Vector3(len, ATTIC_BEAM, ATTIC_BEAM) if x_dir else Vector3(ATTIC_BEAM, ATTIC_BEAM, len)

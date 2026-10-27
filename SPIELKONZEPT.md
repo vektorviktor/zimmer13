@@ -794,7 +794,7 @@ größer, mitten in seinem Revier.
 - **Vertrag verbrannt, aber nicht erlöst** (Sachen fehlen): Er ist **frei, aber nicht erlöst** – der
   letzte Angriff kommt ohne Puppe und ohne Warnung. Die dunkle Seite von „Abkommen brechen“ (2.3).
 - ~~**Marion stirbt vorher:** Ohne ihre Stimme keine Erlösung, nur ihr Brief in Zimmer 001.~~ Entfällt (2026-10-25):
-  Kernfiguren sterben nicht (6.17). Ob es den Brief anders ausgelöst noch gibt, ist offen.
+  Kernfiguren sterben nicht (6.17). Der Brief ist gestrichen (2026-10-27).
 
 **Zu klären**
 - **Wo liegt das Büro der Direktion** (Personaltrakt hinter der Rezeption?), und gibt es einen zweiten Weg hinein, falls
@@ -830,7 +830,8 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 **2. „Morgen früh gehe ich als Erstes zur Direktion und …“ (3. Oktober morgens)**
 - Gustavs abgebrochener letzter Satz (2.6) zeigt zur **Rezeption**. Dort ist niemand, nur die Klingel. Im
   **Hotelregister** steht ein frisches Kreuz neben „Gustav Peters“ (M6, HANDLUNG K1).
-- **Am Brett hängt eine neue Mitteilung** (dieselbe Schrift wie der Aushang, 2.5):
+- **Am Brett hängt eine neue Mitteilung** (dieselbe Schrift wie der Aushang, 2.5; umgesetzt 2026-10-27 – ab 6 Uhr am
+  Morgen nach der Siegerehrung, solange Gustav tot ist; Gäste am Brett reden auch darüber):
   > Verehrte Gäste,
   > Herr Peters ist heute früh abgereist. Die Direktion wünscht ihm eine gute Heimreise.
   >
@@ -2200,11 +2201,11 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 ### 4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)
 > Noch nicht umgesetzt. Eine vierte Bedrohung – für sie gilt dieselbe Ebenenregel wie für die anderen drei (4.20).
 > Mit „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
-> **Fledermäuse umgesetzt (2026-10-23), ohne Biss:** draußen in den Bäumen des Gartens (im Dachgeschoss noch nicht) – tagsüber hängen sie schlafend am unteren Rand der Krone, abends und nachts kreisen sie zackig um die Kronen.
+> **Fledermäuse umgesetzt (2026-10-23), ohne Biss:** draußen in den Bäumen des Gartens – tagsüber hängen sie schlafend am unteren Rand der Krone, abends und nachts kreisen sie zackig um die Kronen. **Dachboden (2026-10-27):** tagsüber kleine Kolonien unter den Balkenkreuzen der Stützbalken; aufgeschreckt flattern sie in der Kammer um den Pfosten und hängen sich wieder hin, nachts sind sie draußen.
 > Scheu, Frühwarnung (sie fliehen vor Monster, Kürbismann und Lakengeist) und der Schwarm als Lärm wie unten
 > vorgeschlagen; wie nah man ihrem Baum kommen darf, hängt an der Auffälligkeit (4.15: Licht, Rennen, Ducken), laute
 > Geräusche wecken sie. Biss, Vampir und Knoblauch/Kreuz kommen mit den offenen Fragen unten. Debug:
-> `--fledermaus[=tag|schwarm]`.
+> `--fledermaus[=tag|schwarm|dachboden]`.
 
 **Fledermäuse**
 - Echte Fledermäuse im **Dachgeschoss** und **draußen**. Meist sind sie **scheu** und fliegen vom Spieler weg.
@@ -2701,6 +2702,8 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
   - Mini-Spiel: Gesicht aus Vorlagen wählen oder frei schnitzen
   - Messer nötig (Werkzeug-Item), Kerze nötig für die Leuchtwirkung
   - Evtl. „gruseligere“ Schnitzerei = stärkerer Schutz?
+  - **Kürbiskerne** (umgesetzt 2026-10-27): Schnitzt der Spieler, fällt eine Handvoll Kerne neben den Kürbis – passt in
+    die Tasche, später Krähenfutter (4.25).
 - Kürbisse sind auch **Handelsware** – wer einen guten Garten hat, ist bei den Gästen beliebt.
 - Konfliktpotenzial: Gäste können auch **aus dem Garten klauen** bzw. selbst anbauen.
 
@@ -5076,6 +5079,10 @@ Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den K
 
 ## 11. Nächste Schritte
 
+Grobe Reihenfolge der großen Brocken. Was im Einzelnen offen ist (auch Kleinigkeiten und Lücken), steht in
+[OFFEN.md](OFFEN.md); Gebautes fliegt hier raus (aufgeräumt 2026-10-27: Monsterwerte und Modi des Leviathan, Schlaf &
+Müdigkeit bis auf das Wecken, Lichtschalter, Aufträge der Gäste, Erfolge, Masken teils).
+
 1. Minispiele mit Gästen (6.10): **Kürbis-Schnitz-Duell** (Darts umgesetzt 25.10., der Rest eingefroren)
 2. Fluchtweg aus dem Hotel: Schlüssel, Haupteingang, Ende mit allen Überlebenden (2.7, Ablauf in HANDLUNG.md) ·
    Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
@@ -5083,26 +5090,20 @@ Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den K
    Untergeschoss · Gäste gehen mit Grund hinunter (7.10)
 4. Drei Bedrohungen: eine je Ebene und außer Hörweite, gleiche Sicht für den Kürbismann, Lakengeist erst nach dem
    ersten Angriff (4.20) · vertagt: Katzenraum
-5. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter dem
+5. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter der
    Leviathanmauer (ab etwa Tag 15), Ritual, Schädel/Axt/Jeansjacke als Deko (4.21)
 6. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
-   Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18)
+   Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18) · Gäste wecken (3.6)
 7. Deko knapp machen, Stufen 2 und 3: Schutzkreis = Lichtschein, sichtbare Abweisung, Gäste schmücken nach Angst und
    Freundschaft und klauen bei Knappheit (5.10)
-8. Monsterwerte vereinfachen: Dreistigkeit in Spieltagen mit abklingenden Boni, heiße Stellen statt Zonen-Neugier (4.9) ·
-   die vier Modi des Leviathan: Urteil, Snack, Raubzug, Anforderung, Überleben 20 % (4.33)
-9. Schlaf & Müdigkeit: Wachzeit statt Nächte, fremde Betten, Gäste wecken, ausgeschlafen/übermüdet (3.6) · Zeitsprung
-   auch am Tag
-10. Gäste bedienen Lichtschalter aktiv: Licht an im Dunkeln, beim Verlassen leerer Zimmer aus, manchmal vergessen (7.3)
-11. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
-    Maskenball mit Maskenspiel und verbotenen Masken (5.19), Achievements (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
-12. Eier-Streich der Kinder (6.13) · Aufträge von Gästen ohne Questmenü (6.14) · Regen an den Scheiben, Gestalt im
-    Blitz, Wind, Tiere, dichter werdender Nebel (7.8)
-13. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
-14. Speicherregel schärfen: Autosave nur bei Fortschritt, neuen Bereichen und Aufwachen, „Unterbrechen und beenden“,
+8. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
+   Rest des Maskenballs (5.19) mit den Masken-Erfolgen (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
+9. Eier-Streich der Kinder (6.13) · Regen an den Scheiben, Gestalt im Blitz, Wind, Tiere, dichter werdender Nebel (7.8)
+10. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
+11. Speicherregel schärfen: Autosave nur bei Fortschritt, neuen Bereichen und Aufwachen, „Unterbrechen und beenden“,
     Tagebuchsatz (8.10)
-15. Echte Modelle und Sounds für die übrigen Platzhalter
-16. Balancing
-17. Zerbrechende Fenster (7.3, für später vorgemerkt)
-18. Flecken auf den Tapeten, vermutlich von Hand (7.2)
-19. Eigener, optimierter PS1-Modus (9.2, am Ende)
+12. Echte Modelle und Sounds für die übrigen Platzhalter
+13. Balancing
+14. Zerbrechende Fenster (7.3, für später vorgemerkt)
+15. Flecken auf den Tapeten, vermutlich von Hand (7.2)
+16. Eigener, optimierter PS1-Modus (9.2, am Ende)

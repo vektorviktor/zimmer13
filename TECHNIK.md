@@ -1482,7 +1482,10 @@ Spielkonzept 2.5)
 - **Brief:** `Letter` neben dem Tagebuch – `_place_letter` sucht nach zwei Physikbildern einen freien Platz auf der
   Tischplatte. Lesen → `letter_read` (Tagebuchsatz, Notizbuch, erste Aufgabe).
 - **Brett:** `NoticeBoard` an der Lobbywand (`NOTICE_BOARD_Z`/`_Y`), eigene Bilderleuchte in `lamps`; `pin(id, …)`
-  heftet `Sheet`s an ([E] → `Menus.open_note`). `_pin_board` wechselt nach `first_attack_done` den Aushang.
+  heftet `Sheet`s an ([E] → `Menus.open_note`), `unpin(id)` nimmt eins ab. `_pin_board` wechselt nach `first_attack_done`
+  den Aushang und heftet ab `DEPARTURE_HOUR` am Morgen nach der Siegerehrung die Mitteilung „abgereist“ an
+  (`_departure_due`: Gustav tot oder schon freigegeben, 2.9) – abgeleitet, nicht gespeichert; `_after_step` prüft es je
+  Sekunde, Laden heftet neu an bzw. ab.
 - **Durchsagen:** `ANNOUNCEMENTS` (Tag, Stunde, Text, Kurzfassung) → Gong und Meldung; verpasste bis `ANNOUNCE_LATE`.
 - **Siegerehrung:** `_begin_gathering` stellt die Gäste auf (`_gather_spots`, vor der Puppe bleibt ein Halbkreis frei),
   `Social` feiert an dem Abend nicht (`holds_parties`), keine Besuche (`is_gathering`). Beginn, sobald der Spieler in
@@ -1492,8 +1495,8 @@ Spielkonzept 2.5)
   Musik (`RecordPlayer.set_playing` ohne Feier); `_end_scene`: Licht aus, Musik aus, Gäste fliehen. Autosave nicht während der Szene. Laden mitten in der
   Versammlung: die Gäste kommen erst beim nächsten Rundgang (sonst ließen sie fallen, was sie in der Hand hielten).
 - **Danach:** `_deliver_note` (Zettel „1999“ hinter der Tür von Zimmer 13, sobald der Spieler die Stelle nicht sieht),
-  Gäste lesen am Brett, erstes Urteil der Puppe ins Tagebuch.
-- Gespeichert unter `contest`. Debug `--siegerehrung[=ohne]`, `--brett[=nachher]`, `--brief`, `--zettel`.
+  Gäste lesen am Brett (hängt die Mitteilung, auch `DEPARTURE_LINES`), erstes Urteil der Puppe ins Tagebuch.
+- Gespeichert unter `contest`. Debug `--siegerehrung[=ohne]`, `--brett[=nachher|abgereist]`, `--brief`, `--zettel`.
 - **Hilfe** (Spielmenü, `Menus._show_help`, `CONTROLS`/`BASICS`; Einträge mit „danach“ erst nach dem ersten Angriff,
   „debug“ nur mit Debug-Konsole): muss in 480 × 270 passen – neue Einträge mit `--attacks=1 --menu=help` prüfen.
 
@@ -1541,7 +1544,12 @@ Spielkonzept 2.5)
   `MultiMeshInstance3D`, Daten in Arrays; Flügelschlag im Shader über `INSTANCE_CUSTOM` (vom Skript – steht in der
   Pause). Schlafbäume aus `LevelBuilder.tree_spots`; abends und nachts fliegen sie, nie über das Haus. Scheu vor
   Bedrohungen und lautem Lärm (`Game.noise` → `Bats.on_noise`) – flattern auf (Lärm `bats`). Nicht gespeichert. Debug
-  `--fledermaus[=tag|schwarm]`.
+  `--fledermaus[=tag|schwarm|dachboden]`.
+  **Dachboden:** `LevelBuilder.attic_beams` ({pos, arms}) aus `_attic_beams`; `ATTIC_COUNT` Fledermäuse ab Index `COUNT`
+  in Kolonien an zufälligen Pfosten (Gruppe `_trees.size() + k`, `_roost_center` = Balkenkreuz), hängen unter einem Arm.
+  Aufgeschreckt (`_flutter`) kreisen sie in der Kammer um den Pfosten (Halbmesser nach dem kürzesten Arm, unter den
+  Balken festgehalten), dann `HOME`. Nachts `OUT` (nicht gezeichnet); der Wechsel ROOST ↔ OUT nur, solange der Spieler
+  nicht im Dachgeschoss ist (`_player_in_attic`, Höhe). Keine Flucht durch Wände: `_flee_from` nur für die draußen.
 - **Spinnen** (`world/spiders.gd`, `shaders/psx_spider.gdshader`, Spielkonzept 4.23): `Game.spiders`, ein
   `MultiMeshInstance3D`, nur nahe beim Spieler und wo er nicht hinsieht (`_floor_spot_near`), Beine im Shader. Fliehen,
   werden zertreten; Gäste reagieren nach Mut. Lassen Spinnweben-Vorräte schneller nachwachsen (`ResourceSpot.grow`).
@@ -1638,6 +1646,8 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
 - **Neue Gegenstände** (hinten an `Item.Kind`): `MUSIC_BOX` (`MusicBox.build`/`MusicBox.wind`: Lärm alle `NOISE_EVERY`
   s, nahes Monster horcht über `Monster.listen_to`, einmal je Aktivphase) und `APPLE` aus **`AppleTub`**
   (`Player.stand_at`, `BITE_TIME`, `BREATH`, Lärm „apple_tub“).
+- `PUMPKIN_SEEDS` (Kürbiskerne, 5.4): Schnitzt der Spieler (`Item.interact` → `carve`), legt `_drop_seeds` eine Handvoll
+  neben den Kürbis, auf seine Seite – Gäste schnitzen ohne Kerne. Tasche; Krähenfutter (4.25) noch nicht.
 - **Ausstattung im Plan fehlt noch** für Rattenkönig, Fotowand, Puppenhaus, Apfelbottich – bis dahin
   feste Ausweichplätze (`FALLBACK`/`WALL`/`SPOT`) im jeweiligen Skript.
 - **Gespeichert** (Speicherstand 49) unter `omens`: `crows`, `mirrors`, `power`, `nightmare`, `extra_child`

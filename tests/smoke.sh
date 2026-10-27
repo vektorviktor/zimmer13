@@ -95,6 +95,7 @@ done <<'LIST'
 2400|wettbewerb,puppe|--siegerehrung=ohne --trace
 2400|grinch,gaeste|--grinch --trace
 1200|grinch,wettbewerb,speichern|--grinch=tot --savetest --trace
+900|wettbewerb,grinch,speichern|--brett=abgereist --savetest --trace
 2400|schnell,monster,gaeste,modi|--warn --day=10 --trace
 1500|monster,modi|--pos=31.5,0,-8 --mode=snack --day=8 --trace
 1500|monster,modi|--pos=31.5,0,-8 --mode=harmlos --day=5 --trace
@@ -130,6 +131,7 @@ done <<'LIST'
 600|salz,speichern|--salz=tür --savetest
 600|tiere|--fledermaus --trace
 600|tiere|--fledermaus=schwarm --trace
+600|tiere,dachboden|--fledermaus=dachboden --flashlight --trace
 600|tiere|--tp=keller --spinne --trace
 600|tiere|--spinne=schublade --trace
 1500|monster|--lure --trace

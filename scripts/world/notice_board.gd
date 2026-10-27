@@ -52,6 +52,14 @@ func pin(id: String, at: Vector2, size: Vector2, headline: String, body: String,
 	sheet.jot = jot
 
 
+## Blatt abnehmen (Spielstand von vorher geladen) – fehlt es, geschieht nichts.
+func unpin(id: String) -> void:
+	var sheet: Sheet = _sheets.get(id)
+	if sheet:
+		_sheets.erase(id)
+		sheet.queue_free()
+
+
 ## Punkt vor der Tafel am Boden (Gäste lesen dort) – side verschiebt seitlich (m).
 func reading_spot(side: float) -> Vector3:
 	var p := global_transform * Vector3(side, 0, 1.1)

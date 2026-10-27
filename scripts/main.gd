@@ -18,7 +18,8 @@ extends Node3D
 ##                               springt auf 22 Uhr, es geschieht ohne dich)
 ##   --grinch[=tot]              vor Zimmer 020, Gustav Peters (der „Halloween-Grinch“, 2.6) steht daneben – tot: er ist
 ##                               schon geholt, die Tür offen, Schleifspur und sein Tagebuch auf dem Tisch
-##   --brett[=nachher]           vor das Aushangbrett in der Lobby (2.5) – nachher: der erste Angriff gilt als geschehen
+##   --brett[=nachher|abgereist] vor das Aushangbrett in der Lobby (2.5) – nachher: der erste Angriff gilt als geschehen;
+##                               abgereist: Gustav geholt, Morgen danach 7 Uhr, die Mitteilung „abgereist“ hängt (2.9)
 ##   --brief                     an den Schreibtisch in Zimmer 13, Blick auf den Willkommensbrief (2.5)
 ##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
 ##                               über drei Tage) und ein paar Einträge im Tagebuch zum Nachlesen (3.10)
@@ -101,7 +102,8 @@ extends Node3D
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --bag[=a,b,…]               Kleines in die Tasche (3.2): süßes, cola, limo, zierkürbis, kerze, messer, batterie, birne,
-##                               uv, würfel, becher, streichhölzer (5.12) – ohne Angabe Süßigkeiten, Cola, Zierkürbis und
+##                               uv, würfel, becher, streichhölzer (5.12), dartpfeile, salz, kerne (Kürbiskerne, 5.4) – ohne
+##                               Angabe Süßigkeiten, Cola, Zierkürbis und
 ##                               Batterie
 ##   --bag-menu[=n]              Tasche offen halten wie mit gehaltenem [Q], Fach n (1–6) gewählt – für Screenshots
 ##   --deco=art[,g]              Deko in die Hand (5.6, 5.7): gespenst, lichter, netz, laub, zierkürbis, fledermaus,
@@ -157,8 +159,10 @@ extends Node3D
 ##   --spinne[=gesicht|schublade] Spinnen (4.23): acht krabbeln sofort vor dir · gesicht: eine springt
 ##                               dir ins Gesicht – Maus schnell hin und her schüttelt sie ab, sonst beißt sie (wie ein Glas) ·
 ##                               schublade: die nächste Schublade hat eine – beide: der erste Angriff gilt als geschehen
-##   --fledermaus[=tag|schwarm]  Fledermäuse (4.22): du stehst im Garten vor einem Baum und siehst hinauf – 21 Uhr, sie
-##                               kreisen · tag: 12 Uhr, sie hängen in der Krone · schwarm: wie tag, nach 3 s fliegen sie auf
+##   --fledermaus[=tag|schwarm|dachboden]  Fledermäuse (4.22): du stehst im Garten vor einem Baum und siehst hinauf –
+##                               21 Uhr, sie kreisen · tag: 12 Uhr, sie hängen in der Krone · schwarm: wie tag, nach 3 s
+##                               fliegen sie auf · dachboden: 12 Uhr auf dem Dachboden neben einem Pfosten, sie hängen
+##                               unter dem Balkenkreuz (Licht oder Rennen scheucht sie auf)
 ##   --sleep[=bett[,h]]          Nachtruhe sofort beginnen – die Uhr springt auf ihren Beginn (Gäste gehen ins Bett) · bett: alle liegen sofort,
 ##                               du schläfst im Bett von Zimmer 13, h Stunden (1–8, Standard 1; 3.6) – in der Nachtruhe
 ##                               springt die Zeit (mit --uhr=1:10 nach Mitternacht beginnen, sonst weckt die Glocke)
@@ -940,7 +944,8 @@ func run_debug(arg: String) -> bool:
 			"zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE,
 			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
 			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP,
-			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS, "salz": Item.Kind.SALT}
+			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS, "salz": Item.Kind.SALT,
+			"kerne": Item.Kind.PUMPKIN_SEEDS}
 		var names := (arg.substr(6) if arg.begins_with("--bag=") else "süßes,cola,zierkürbis,batterie").split(",", false)
 		for what in names:
 			if not kinds.has(what):
@@ -1368,7 +1373,10 @@ func run_debug(arg: String) -> bool:
 		# nach 1 s, damit NavMesh und Gäste stehen
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.social.grinch.debug(arg.ends_with("tot")))
 	elif arg == "--brett" or arg == "--brett=nachher":
-		Game.contest.debug_board(arg.ends_with("nachher"))
+		Game.contest.debug_board(arg.substr(8))
+	elif arg == "--brett=abgereist":
+		# nach 1 s, damit die Gäste stehen (Gustav wird geholt)
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.contest.debug_board("abgereist"))
 	elif arg == "--brief":
 		Game.contest.debug_letter()
 	elif arg == "--zettel":

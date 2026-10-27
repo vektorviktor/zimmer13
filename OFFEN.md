@@ -15,12 +15,12 @@ Stand: 2026-10-27
 
 ## 1. Hauptgeschichte: was dem Durchlauf noch fehlt
 
-Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). Alles entschieden, nichts davon gebaut.
+Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). Alles entschieden, nichts davon gebaut
+(gebaut 27.10.: die Mitteilung „abgereist“ am Brett).
 
 | Stück | Verweis | Stand |
 |---|---|---|
 | Doris' Suche: Bitte, Suchtrupp an der Kellertür, Brille an der Leviathanmauer, Abschied/Brief | SK 2.9 · HA M5a–M7b, K8 | nicht gebaut; Mauer malt der Nutzer neu |
-| Mitteilung „abgereist“ am Brett | SK 2.9 · HA M6 · GE | nicht gebaut |
 | Hotelregister mit Kreuzen, „geb. Ahrend“, „geb. K…“ | SK 2.3 · HA K1, M6, M13 · GE | nicht gebaut |
 | Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel | SK 7.4 · HA M8 · GE | nicht gebaut |
 | Aufzug reparieren: Ersatzsicherung, Bremse, erste Fahrt nach „T“ | SK 7.4 · HA M9–M11, K3 | Aufzug fährt, Reparatur als Sperre fehlt |
@@ -49,7 +49,6 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - **Lore 1987:** Warnungszettel vor dem Kesselbrand; was das Ding unter dem Hotel vorher war – HA 4, SK 10 (Frage 4).
 - **Enden:** Epilog im nächsten Jahr? eigenes Vampir-Ende? Sequenz steuerbar? Darstellung von Ende 3 bei ab 16 –
   SK 2.7 „Zu den Enden noch offen“.
-- **Marions Brief:** auslösen anders oder streichen (Kernfiguren sterben nicht mehr) – GE.
 - **Mit „Vorschlag“ markierte Punkte** in SK 2.9, 4.22, 4.32, 4.33, 5.19 und HA (Daten, Inhalte, Wege) sind noch
   zu bestätigen. In 4.32 gebaut wie vorgeschlagen: Hugos Sätze, Druck an der Wand (zwischen Aushangbrett und
   Wandlampe statt an der vollen Fotowand); Liesel benennt ihn, wenn Hugo tot ist. Neu dazu: Kinder zählen nicht als
@@ -90,8 +89,9 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   Plan der Modi, Urteil, Snack, Raubzug (die ersten drei harmlos), Anforderung, Kellerrunde, Geräusche ohne Körper.
 - **Drei Bedrohungen** je Ebene, gleiche Sicht für den Kürbismann, Lakengeist erst nach dem ersten Angriff
   (spukt im Code ab Tag 2) – SK 4.20, 4.18.
-- Vampir als vierte Bedrohung (Fledermäuse ohne Biss gebaut, im Dachgeschoss noch keine) – SK 4.22.
-- Krähen-Erweiterung: Ruf, Futtertisch, zwei Nester, Ring – SK 4.25 · GE (Brotkrumen, Kürbiskerne).
+- Vampir als vierte Bedrohung (Fledermäuse ohne Biss gebaut, draußen und auf dem Dachboden) – SK 4.22.
+- Krähen-Erweiterung: Ruf, Futtertisch, zwei Nester, Ring – SK 4.25 · GE (Brotkrumen; Kürbiskerne fallen seit 27.10.
+  beim Schnitzen ab).
 - Kesselkatze: Marion erkennt sie, beim Ritual – SK 4.26.
 
 **Gäste und Sozialsystem**
@@ -144,15 +144,14 @@ Plan nur der Nutzer (`map*.aseprite`).
 - Ausstattung im Plan fehlt für Rattenkönig, Fotowand, Puppenhaus, Apfelbottich (laufen auf festen Ausweichplätzen) – TE 1573 ff.
 - Kommode in Zimmer 022 (Streichhölzer) – SK 5.12 · TE (`CONTENT["022"]`).
 - Echte Modelle und Klänge für die übrigen Platzhalter, u. a. weißer Kürbis wie der orange (Meshy + Farbatlas),
-  Kopf des Kürbismanns, Splash-Klang – SK 11 (15), TE 1, GE.
+  Kopf des Kürbismanns, Splash-Klang – SK 11 (12), TE 1, GE.
 - Kieseltextur für die Kieswege – SK 7.10.
 - Eigener PS1-Modus – ganz am Ende – SK 9.2.
 
 ## 5. Technik und Pflege
 
 - **Segfault beim Beenden** headless (etwa jeder dritte Lauf, Exit 139), Ursache unbekannt – TE (Bekannt, offen).
-- Balancing insgesamt – SK 11 (16).
-- **SK 11 „Nächste Schritte“ ist veraltet** (Achievements, Gästebitten, Masken teils gebaut) – s. 7.
+- Balancing insgesamt – SK 11 (13).
 
 ## 6. Ideen (unentschieden, früher IDEEN.md)
 
@@ -206,13 +205,4 @@ Freunden) oder nur Stimmung? Legen Gäste selbst etwas ab?
 Nur was sich fast ohne neue Entscheidung aus Bestehendem ergibt.
 - **Lakengeist erst nach dem ersten Angriff:** entschieden (SK 4.20); in `sheet_ghost.gd` (Zeile ~446) steht noch
   `first_attack_done or Calendar.today() >= FROM_DAY` – die Tagesbedingung entfällt.
-- **Mitteilung „Herr Peters ist abgereist“** am 3.10. morgens: Text steht (SK 2.9), das Brett kann Aushänge
-  (`NoticeBoard`) – unabhängig vom übrigen Doris-Strang baubar.
-- **Fledermäuse im Dachgeschoss:** Verhalten draußen gebaut, oben entschieden (schlafen an den Balken, kein Biss,
-  SK 4.22) – es fehlen nur Hängeplätze auf dem Dachboden.
 - **Kochen macht Lärm:** eine Entscheidung, dann ein `Game.noise`-Aufruf am Herd (SK 3.8, 4.15).
-- **Kürbiskerne beim Schnitzen** als Gegenstand fallen lassen – Schnitzen gebaut (SK 5.4), Kerne sind fürs Krähenfutter
-  ohnehin geplant (SK 4.25, GE).
-- **Marions Brief streichen** (GE): Auslöser entfällt seit 2026-10-25.
-- **SK 11 „Nächste Schritte“ aufräumen:** gebaute Punkte (Achievements, Gästebitten, Masken teils) streichen, auf
-  dieses Dokument verweisen.

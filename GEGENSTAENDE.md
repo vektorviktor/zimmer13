@@ -57,14 +57,13 @@ Stand: 2026-10-26.
 | Kartenblätter (EG, OG, Keller) | `MAP` | gebaut | – (Orientierung; Keller: „hier unten schläft es“) | Keller-Skizze in Zimmer 017 | 3.2, 7.9 |
 | UV-Schrift an Wänden (Heizer 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18 (dazu Hinweise von 13 und 018 aus 2003, Texte offen) | 4.16, 2.3, 7.4 |
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
-| Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | geplant | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
+| Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | gebaut | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
 | Hotelregister | – | geplant | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“) | Rezeption | 2.3, K1, M6, M13 |
 | Notizbuch des Hausmeisters | – | geplant | **Hauptgeschichte** (drei Mängel am Aufzug) | Zimmer 18 | 7.4, M8 |
 | Kesselbuch des Heizers | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Spind des Heizers im Heizraum | 2.3, 7.4, M12 |
 | Personalakte des Heizers | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
 | Zeitungsausschnitt „Brand im Grandhotel“ | – | geplant | Hauptgeschichte (Indiz) | offen | 2.3 |
-| Marions Brief | – | offen | Nebenstrang (war: falls sie vorher stirbt – Kernfiguren sterben seit 2026-10-25 nicht; streichen oder anders auslösen) | Zimmer 001 | 2.8 |
 | Dorés „Die Zerstörung des Leviathan“ | – (fester Druck, `LeviathanName.PrintSheet`) | **gebaut** – echter Holzstich (gemeinfrei), [E] ansehen | – (gibt dem Monster seinen Namen) | Hugo Steins Koffer → Couchtisch der Lobby → Westwand der Lobby neben dem Aushangbrett | 4.32 |
 
 ## 4. Deko
@@ -115,7 +114,7 @@ Stand: 2026-10-26.
 | Kürbismatsch | `PUMPKIN_MUSH` | gebaut | – | Rest eines zerplatzten Kürbisses | 5.8, 3.13 |
 | Apfel | `APPLE` | gebaut | – | beim Apfeltauchen erbeutet, essbar | 6.21 |
 | Brotkrumen | – | geplant | – | Krähenfutter für den Tisch im Gärtchen von Zimmer 13; Vorrat in der Küche | 4.25 |
-| Kürbiskerne | – | geplant | – | Krähenfutter; fallen beim Schnitzen ab | 4.25, 5.4 |
+| Kürbiskerne | `PUMPKIN_SEEDS` | gebaut | – | fallen beim Schnitzen ab (Tasche); Krähenfutter geplant | 4.25, 5.4 |
 
 ## 7. Spiele und Sonstiges
 
