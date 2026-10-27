@@ -14,6 +14,8 @@ extends Node3D
 enum State { GONE, WAIT, LEAD, SIT, ARRIVED }
 
 const MODEL := HotelCat.MODEL
+## Maßstab des Modells – groß wie Kasimir, die größte der Hotelkatzen
+const SIZE := 1.6
 const FUR := Color(0.07, 0.065, 0.07)
 const EYE := Color(0.75, 0.95, 0.35)
 const EYE_ENERGY := 2.5
@@ -64,6 +66,7 @@ func setup(builder: LevelBuilder) -> BoilerCat:
 func _ready() -> void:
 	visible = false
 	_visual = (load(MODEL) as PackedScene).instantiate()
+	_visual.scale = Vector3.ONE * SIZE
 	add_child(_visual)
 	_skeleton = _visual.find_children("*", "Skeleton3D", true, false)[0]
 	_anim = _visual.find_children("*", "AnimationPlayer", true, false)[0]
@@ -93,7 +96,7 @@ func _ready() -> void:
 	_body.collision_layer = HotelCat.LAYER
 	_body.collision_mask = 0
 	_body.set_meta("interactable", self)
-	Geo.add_box_shape(_body, Vector3(0.16, 0.26, 0.42), Vector3(0, 0.14, 0))
+	Geo.add_box_shape(_body, Vector3(0.16, 0.26, 0.42) * SIZE, Vector3(0, 0.14 * SIZE, 0))
 	add_child(_body)
 
 
@@ -279,7 +282,7 @@ func _animate(delta: float) -> void:
 	if _moving:
 		if _anim.current_animation != "walk":
 			_anim.play("walk")
-		_anim.speed_scale = clampf(WALK_SPEED / ANIM_SPEED, 0.6, 3.0)
+		_anim.speed_scale = clampf(WALK_SPEED / (ANIM_SPEED * SIZE), 0.6, 3.0)
 		_visual.position.y = 0.0
 		return
 	if _anim.is_playing():
@@ -287,7 +290,7 @@ func _animate(delta: float) -> void:
 	if _look_at.is_finite():   # dreht sich langsam zu dem hin, den sie ansieht
 		var to := _look_at - global_position
 		rotation.y = lerp_angle(rotation.y, atan2(-to.x, -to.z), minf(1.0, delta * 1.5))
-	_visual.position.y = lerpf(_visual.position.y, -SIT_DROP, minf(1.0, 6.0 * delta))
+	_visual.position.y = lerpf(_visual.position.y, -SIT_DROP * SIZE, minf(1.0, 6.0 * delta))
 	_rot = _rest.duplicate()
 	for t in SIT_TURNS:
 		_turn(t[0], t[1], t[2])

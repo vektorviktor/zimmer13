@@ -36,16 +36,17 @@ const CARRY_TRUST := 3
 ## Zimmer-Arten ohne Liegeplätze für Katzen
 const UNINHABITABLE := ["laundry", "abandoned", "derelict", "locked"]
 ## Persönlichkeit: schläfrig (Nickerchen), scheu (weicht beim Streicheln aus), neugierig (streift,
-## bringt Geschenke), tollpatschig (wirft Deko um). Färbung über die Fell-Textur. home: wohnt im Katzenraum
-## (Spielkonzept 7.7) – schläft und streift meist dort, folgt selten jemandem hinaus, bringt nichts.
+## bringt Geschenke), tollpatschig (wirft Deko um). Färbung über die Fell-Textur. size: Maßstab des Modells
+## (cat.glb ist 0,34 m bis zu den Ohren) – jede Katze anders groß, alle größer als eine Hauskatze.
+## home: wohnt im Katzenraum (Spielkonzept 7.7) – schläft und streift meist dort, folgt selten jemandem hinaus, bringt nichts.
 const PROFILES := {
-	"minka": {"name": "Minka", "tint": Color(1.0, 1.0, 1.0), "sleepy": 0.7, "shy": 0.05, "curious": 0.3, "clumsy": 0.12},
-	"socke": {"name": "Socke", "tint": Color(0.5, 0.46, 0.44), "sleepy": 0.45, "shy": 0.5, "curious": 0.45, "clumsy": 0.2},
-	"kasimir": {"name": "Kasimir", "tint": Color(1.0, 0.7, 0.42), "sleepy": 0.25, "shy": 0.0, "curious": 0.85, "clumsy": 0.35},
-	"luna": {"name": "Luna", "tint": Color(0.3, 0.28, 0.3), "sleepy": 0.6, "shy": 0.2, "curious": 0.3, "clumsy": 0.1, "home": true},
-	"fussel": {"name": "Fussel", "tint": Color(1.0, 0.95, 0.85), "sleepy": 0.5, "shy": 0.35, "curious": 0.25, "clumsy": 0.25, "home": true},
-	"tiger": {"name": "Tiger", "tint": Color(0.95, 0.62, 0.32), "sleepy": 0.35, "shy": 0.0, "curious": 0.5, "clumsy": 0.3, "home": true},
-	"mausi": {"name": "Mausi", "tint": Color(0.68, 0.66, 0.66), "sleepy": 0.8, "shy": 0.6, "curious": 0.15, "clumsy": 0.1, "home": true},
+	"minka": {"name": "Minka", "size": 1.3, "tint": Color(1.0, 1.0, 1.0), "sleepy": 0.7, "shy": 0.05, "curious": 0.3, "clumsy": 0.12},
+	"socke": {"name": "Socke", "size": 1.4, "tint": Color(0.5, 0.46, 0.44), "sleepy": 0.45, "shy": 0.5, "curious": 0.45, "clumsy": 0.2},
+	"kasimir": {"name": "Kasimir", "size": 1.6, "tint": Color(1.0, 0.7, 0.42), "sleepy": 0.25, "shy": 0.0, "curious": 0.85, "clumsy": 0.35},
+	"luna": {"name": "Luna", "size": 1.25, "tint": Color(0.3, 0.28, 0.3), "sleepy": 0.6, "shy": 0.2, "curious": 0.3, "clumsy": 0.1, "home": true},
+	"fussel": {"name": "Fussel", "size": 1.5, "tint": Color(1.0, 0.95, 0.85), "sleepy": 0.5, "shy": 0.35, "curious": 0.25, "clumsy": 0.25, "home": true},
+	"tiger": {"name": "Tiger", "size": 1.45, "tint": Color(0.95, 0.62, 0.32), "sleepy": 0.35, "shy": 0.0, "curious": 0.5, "clumsy": 0.3, "home": true},
+	"mausi": {"name": "Mausi", "size": 1.1, "tint": Color(0.68, 0.66, 0.66), "sleepy": 0.8, "shy": 0.6, "curious": 0.15, "clumsy": 0.1, "home": true},
 }
 ## So oft bleibt eine Katzenraum-Katze bei Nickerchen und Streifzügen dort
 const HOME_STAY := 0.85
@@ -67,6 +68,7 @@ var display_name := ""
 var favourite := ""           ## Gast-ID des Lieblingsgasts
 var affection := 0            ## wie oft der Spieler sie gestreichelt hat
 var state := State.IDLE
+var size := 1.0               ## Maßstab aus dem Profil
 
 var _builder: LevelBuilder
 var _visual: Node3D
@@ -108,6 +110,7 @@ func setup(p_id: String, builder: LevelBuilder) -> HotelCat:
 	id = p_id
 	profile = PROFILES[p_id]
 	display_name = profile["name"]
+	size = profile["size"]
 	_builder = builder
 	_gift_timer = randf_range(0.3, 1.0) * GIFT_COOLDOWN
 	return self
@@ -126,13 +129,13 @@ func _ready() -> void:
 	add_to_group("cats")
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(0.16, 0.26, 0.42)
+	box.size = Vector3(0.16, 0.26, 0.42) * size
 	shape.shape = box
-	shape.position.y = 0.14
+	shape.position.y = 0.14 * size
 	add_child(shape)
 	agent = NavigationAgent3D.new()
-	agent.radius = 0.15
-	agent.height = 0.3
+	agent.radius = 0.15 * size
+	agent.height = 0.3 * size
 	agent.path_desired_distance = 0.3
 	agent.target_desired_distance = 0.3
 	agent.path_height_offset = 0.2
@@ -240,7 +243,8 @@ func _carried_step(delta: float) -> void:
 		_start_flee()
 		return
 	var forward := -p.global_basis.z
-	global_position = p.global_position + Vector3.UP * 0.95 + forward * 0.42 + p.global_basis.x * 0.04
+	# Große Katzen sitzen tiefer im Arm, damit sie nicht die Sicht verdecken
+	global_position = p.global_position + Vector3.UP * (0.95 - (size - 1.0) * 0.25) + forward * 0.42 + p.global_basis.x * 0.04
 	rotation.y = p.rotation.y + PI / 2.0   # quer im Arm
 	velocity = Vector3.ZERO
 	p.shock = maxf(0.0, p.shock - CARRY_CALM * delta)
@@ -731,6 +735,7 @@ func _carry(item: Item) -> void:
 	item.set_held(true)
 	item.reparent(_mouth, false)
 	item.position = Vector3.ZERO
+	item.scale = Vector3.ONE / size   # das Maul ist mit dem Modell skaliert, die Beute nicht
 	item.rotation = Vector3(0, 0, PI / 2.0) if item.kind == Item.Kind.CANDLE else Vector3.ZERO
 	_carried = item
 
@@ -741,6 +746,7 @@ func _drop_carried() -> void:
 	var item := _carried
 	_carried = null
 	item.reparent(_builder.world, true)
+	item.scale = Vector3.ONE
 	item.global_position = Vector3(item.global_position.x, global_position.y + 0.02, item.global_position.z)
 	item.rotation = Vector3(0, rotation.y, 0)
 	item.set_held(false)
@@ -889,6 +895,7 @@ func _weighted_choice(weights: Dictionary) -> String:
 
 func _build_visual() -> void:
 	_visual = (load(MODEL) as PackedScene).instantiate()
+	_visual.scale = Vector3.ONE * size
 	add_child(_visual)
 	_skeleton = _visual.find_children("*", "Skeleton3D", true, false)[0]
 	_player = _visual.find_children("*", "AnimationPlayer", true, false)[0]
@@ -912,13 +919,13 @@ func _animate(delta: float) -> void:
 	if speed > 0.05 or _hopping:
 		if _player.current_animation != "walk":
 			_player.play("walk")
-		_player.speed_scale = clampf(speed / ANIM_SPEED, 0.6, 4.0) if not _hopping else 2.0
+		_player.speed_scale = clampf(speed / (ANIM_SPEED * size), 0.6, 4.0) if not _hopping else 2.0
 		_visual.position.y = 0.0
 		return
 	if _player.is_playing():
 		_player.stop()
 	var pose: Dictionary = POSES[_pose_for_state()]
-	_visual.position.y = lerpf(_visual.position.y, -float(pose["drop"]), minf(1.0, 6.0 * delta))
+	_visual.position.y = lerpf(_visual.position.y, -float(pose["drop"]) * size, minf(1.0, 6.0 * delta))
 	_rot = _rest.duplicate()
 	for t in pose["turns"]:
 		_turn(t[0], t[1], t[2])

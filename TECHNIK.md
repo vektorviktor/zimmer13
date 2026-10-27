@@ -1177,6 +1177,9 @@ Spaß (`is_eating`, `player_eats`). Herd und Essende nicht gespeichert, der Tell
 ### `HotelCat` (`guests/hotel_cat.gd`, Spielkonzept 6.11)
 Katzen aus `HotelCat.PROFILES` (einige mit `home` im Katzenraum), erzeugt nach den Gästen (`place_at_start()`).
 Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED`.
+- **Größe:** `size` je Profil (1,1 Mausi bis 1,6 Kasimir) skaliert `_visual`, Kollisionsbox, Agent, Posen-`drop` und
+  das Lauftempo der Animation; Beute im Maul wird gegenskaliert, auf dem Arm sitzen große Katzen tiefer.
+  `BoilerCat.SIZE` = 1,6.
 - **Tragen:** `pick_up()`/`put_down()`, `_carried_step` setzt sie jeden Frame vor die Brust, `Player.carried_cat`
   sperrt Gegenstände; gespeichert zu Füßen des Spielers. Debug `--cat=id,tragen`.
 - **Türen:** Kollisionsmaske ohne Türen (wie Gäste); geschlossene Türen erkennt `_door_ahead()` → `WAIT_DOOR`.
