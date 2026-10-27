@@ -3121,9 +3121,6 @@ Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick 
 - **Gespeichert:** ob eine Kerze brennt, ob in Kürbis und Totenkopf eine erloschene Kerze steckt, und die
   festen Kerzen. Debug: `--bag=kerze,streichhoelzer`.
 
-### 5.13 Salz vor die Tür (entschieden und umgesetzt 2026-10-25)
-Ein alter Brauch aus 5.9: **Salz über die Schwelle oder auf die Fensterbank** hält den Lakengeist (4.18) aus einem
-Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gestrichen.
 **Abbrennen (entschieden und umgesetzt 2026-10-27)**
 - **Brenndauer:** Eine Kerze brennt etwa **einen Spieltag (24 Spielstunden)** herunter. Es zählt nur die Zeit, in der
   sie brennt – ausgepustet hält sie. Auch im Schlaf brennt sie weiter (Zeitsprung).
@@ -3154,6 +3151,9 @@ Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gest
   ihre Länge, wenn man sie mitnimmt, einsteckt oder weitergibt.
 - **Gespeichert** zusätzlich: wie lang jede Kerze noch ist und welche Gäste Feuer haben.
 
+### 5.13 Salz vor die Tür (entschieden und umgesetzt 2026-10-25)
+Ein alter Brauch aus 5.9: **Salz über die Schwelle oder auf die Fensterbank** hält den Lakengeist (4.18) aus einem
+Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gestrichen.
 
 - **Salzpackung** (neuer kleiner Gegenstand, passt in die Tasche): **drei Packungen** auf der Küchenzeile, ohne
   Nachschub (5.10). Eine Packung reicht für **vier Linien**; die leere ist weg.

@@ -1122,8 +1122,6 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 - **Flecken und Putzen** (`guests/tidying.gd`): `_messes()` = Kürbismatsch und Spuren `MESS_TRACES`; Beschwerden
   (`_complaints`, Meta `complained`), ein ordentlicher Gast (`is_tidy`) wischt (`TraceMark.wipe`) oder trägt Matsch
   in die Küche bzw. kocht ihn (`Stove.claim_cook`). Nicht gespeichert. Debug `--mess[=wachs]`.
-- **Der Grinch** (`guests/grinch.gd`, Spielkonzept 2.6; `Social.grinch`): Gustav Peters = Gast mit Haushalt `H25`
-  (`Grinch.is_grinch`, static – Hooks in `start_party`, `_household_deco`, `Guest._at_home`, `Decorating._available`,
 - **Kerzenpflege** (`guests/candle_care.gd`, Spielkonzept 5.12; `Social.candles`): alle `SCAN` s, nicht in der
   Nachtruhe und nicht, solange das Monster unterwegs ist (`_quiet`), höchstens ein Gang je `GAP`. `_own_doors`: der
   Haushaltsvorstand (bis `DOOR_RANGE`, gleiches Stockwerk) sieht nach dunkler eigener Deko (`is_dark`: Kerze, Kürbis,
@@ -1136,6 +1134,8 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   Kinder nie). Keine Flamme: `_ask_player` (`ASK_RANGE`, `ASK_GAP`). Gänge über `start_visit` →
   `Social.on_visit_arrived` → `on_arrived`; abgebrochen (`_process`): geholte Kerze in den Koffer, eigene Deko fällt.
   Nicht gespeichert. Debug `--kerzenpflege=id[,ohne]`.
+- **Der Grinch** (`guests/grinch.gd`, Spielkonzept 2.6; `Social.grinch`): Gustav Peters = Gast mit Haushalt `H25`
+  (`Grinch.is_grinch`, static – Hooks in `start_party`, `_household_deco`, `Guest._at_home`, `Decorating._available`,
   `GuestRequests.offer_for`, `_round_answer`, `DoorContest._can_gather`). `relation` beim Start höchstens −35.
   `_process` alle `SCAN` s: Gänge (`_job`: `door`, `wreck`, `party`, `punch`) laufen über `start_visit` →
   `Social.on_visit_arrived` → `on_arrived`; ohne Gang der Reihe nach Partyraum (`_party_due`: Feier oder Licht an),
