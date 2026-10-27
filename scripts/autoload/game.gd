@@ -62,6 +62,7 @@ var doll: JuryDoll                 ## die Puppe – „Halloween-Jury“ (Spielk
 var contest: DoorContest           ## Türschmuck-Wettbewerb, Brief, Brett, Siegerehrung (Spielkonzept 2.5)
 var notebook: Notebook             ## Notizbuch am Körper: Aufgaben und Notizen (Spielkonzept 3.10)
 var diary: Diary                   ## Tagebuch in Zimmer 13: Speichern und Meilensteine (Spielkonzept 3.10, 8.5)
+var achievements: Achievements     ## Erfolge in Bronze, Silber, Gold, im Profil gespeichert (Spielkonzept 8.11)
 var game_over := false
 ## Charaktererstellung am Waschbecken läuft (Spielkonzept 3.9) – kein Spielmenü, das Spiel ist pausiert
 var creating := false
@@ -177,6 +178,7 @@ func reset() -> void:
 	contest = null
 	notebook = null
 	diary = null
+	achievements = null
 	crows = null
 	rats = null
 	moths = null

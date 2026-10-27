@@ -1551,6 +1551,8 @@ func _throw_hit(hit: Dictionary) -> void:
 	var guest := target as Guest
 	if guest and thrower == Game.player and Game.social:
 		Game.social.on_player_threw_at(guest, self, velocity)
+	elif guest and is_instance_valid(thrower) and Grinch.is_grinch(thrower as Guest) and Game.social:
+		Game.social.grinch.on_thrown_hit(thrower, guest, self, velocity)   # Gustav wirft (2.6)
 	var wall := guest == null and absf(normal.y) < 0.5 and not _is_door(target) 		and not (target is CollisionObject3D and (target as CollisionObject3D).collision_layer & (64 | 256))   # kein Glas
 	if Game.tracing:
 		print("[Wurf] %s trifft %s bei %s (%.1f m/s)" % [display_name,
@@ -1566,8 +1568,6 @@ func _throw_hit(hit: Dictionary) -> void:
 	if guest or wall:
 		linear_velocity = velocity.bounce(normal.normalized()) * 0.3
 	Game.noise("throw_land_heavy" if mass >= THROW_HEAVY else "throw_land", at, self)
-	elif guest and is_instance_valid(thrower) and Grinch.is_grinch(thrower as Guest) and Game.social:
-		Game.social.grinch.on_thrown_hit(thrower, guest, self, velocity)   # Gustav wirft (2.6)
 
 
 ## Wurf: eine Kugel (gut die halbe größte Kantenlänge des Körpers) von `from` nach `to` gefegt (THROW_MASK, ohne sich

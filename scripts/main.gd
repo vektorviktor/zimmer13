@@ -63,7 +63,10 @@ extends Node3D
 ##                               vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --dial=n|lobby              vom Telefon in Zimmer 13 aus Zimmer n anrufen (0 = Rezeption) ·
 ##                               lobby: Wählseite am Haupttelefon mit Gästeverzeichnis
-##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, diary_pages, settings, load, help)
+##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, diary_pages, settings, load, help, achievements)
+##   --erfolg=id|alle            Erfolg (8.11) freischalten und einblenden, z. B. --erfolg=chess – alle: alle still (für
+##                               --menu=achievements); in Debug-Starts nur für die Sitzung, nichts wird gespeichert
+##   --erfolge-zurueck           alle Erfolge im Profil (user://achievements.cfg) löschen
 ##   --title                     trotz Parametern mit dem Titelbildschirm starten · --title --splash: samt Vorspann (Logo)
 ##   --pos=x,y,z[,blickwinkel[,neigung]]   Spieler versetzen (Neigung in Grad, positiv = nach oben)
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
@@ -434,6 +437,11 @@ func _ready() -> void:
 	add_child(menus)
 	Game.menus = menus
 
+	var achievements := Achievements.new()
+	achievements.name = "Achievements"
+	add_child(achievements)
+	Game.achievements = achievements
+
 	var teleport := TeleportUI.new()   # nach den Menüs: bekommt Esc/F6 zuerst
 	teleport.name = "Teleport"
 	add_child(teleport)
@@ -443,7 +451,9 @@ func _ready() -> void:
 		var console := DebugConsole.new()
 		console.name = "DebugConsole"
 		add_child(console)
-		console.setup(run_debug)
+		console.setup(func(arg: String) -> bool:
+			Game.achievements.cheated()   # wer in der Konsole tippt, schaltet nur noch für diese Sitzung frei (8.11)
+			return run_debug(arg))
 
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--perf" or arg.begins_with("--perf="):
@@ -1313,6 +1323,9 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--siegerehrung" or arg == "--siegerehrung=ohne":
 		# Siegerehrung (2.5) – nach 1 s, damit NavMesh und Gäste stehen
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.contest.debug_ceremony(arg.ends_with("ohne")))
+	elif arg == "--grinch" or arg == "--grinch=tot":
+		# nach 1 s, damit NavMesh und Gäste stehen
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.social.grinch.debug(arg.ends_with("tot")))
 	elif arg == "--brett" or arg == "--brett=nachher":
 		Game.contest.debug_board(arg.ends_with("nachher"))
 	elif arg == "--brief":
@@ -1327,9 +1340,6 @@ func run_debug(arg: String) -> bool:
 			Game.notebook.note_seen(id)
 	elif arg == "--tot" or arg.begins_with("--tot="):
 		var by: String = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(arg.substr(6), "monster")
-	elif arg == "--grinch" or arg == "--grinch=tot":
-		# nach 1 s, damit NavMesh und Gäste stehen
-		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.social.grinch.debug(arg.ends_with("tot")))
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
 			if Game.game_over:
 				return
@@ -1462,7 +1472,7 @@ func run_debug(arg: String) -> bool:
 			var ok := SaveManager.save_to(slot, SaveManager.diary_sentence(), get_viewport().get_texture().get_image())
 			print("[diary] Slot %d gespeichert: %s – „%s“" % [slot, ok, SaveManager.diary_sentence()]))
 	elif arg.begins_with("--menu="):
-		# Menü für Screenshots öffnen: pause, diary, diary_pages, settings, load, help (controls: alter Name der Hilfe)
+		# Menü für Screenshots öffnen: pause, diary, diary_pages, settings, load, help, achievements (controls: alter Name der Hilfe)
 		var which := "help" if arg.substr(7) == "controls" else arg.substr(7)
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
 			if which in ["diary", "diary_pages"]:
@@ -1473,6 +1483,8 @@ func run_debug(arg: String) -> bool:
 				Game.menus.open_pause()
 				if which != "pause":
 					Game.menus.call("_show_" + which))
+	elif arg.begins_with("--erfolg=") or arg == "--erfolge-zurueck":
+		return Game.achievements.debug_command(arg)
 	elif arg == "--figur" or arg == "--figur=schnell":
 		_start_creation(0, arg.ends_with("schnell"))
 	elif arg == "--savetest":
@@ -1858,6 +1870,18 @@ func _settle(before: Dictionary, after: Dictionary) -> Array[String]:
 			if float(cats_was[i].get("timer", 1.0)) <= 0.05 and not _same(cats_was[i], cats_now[i]):
 				cats_now[i] = cats_was[i]   # neuer Zeitgeber, neue Richtung – sie hat gerade etwas Neues angefangen
 				notes.append("cats[%d]: Zeitgeber lief zwischen den Messungen ab" % i)
+	# Wer auf dem Weg ins Versteck war (Zustand wird nicht gespeichert), sieht sich nach dem Laden gleich wieder um und
+	# erschrickt vor Blut, an dem er gerade vorbeigerannt ist (Guest._scan_for_shock)
+	var guests_was: Dictionary = before.get("guests", {})
+	var guests_now: Dictionary = after.get("guests", {})
+	for id in guests_was:
+		var a: Dictionary = guests_was[id]
+		var b: Dictionary = guests_now.get(id, {})
+		if b.is_empty() or (b.get("seen", []) as Array).size() != (a.get("seen", []) as Array).size() + 1:
+			continue
+		for key in ["seen", "experiences", "fear"]:
+			b[key] = a.get(key)
+		notes.append("guests.%s: hat nach dem Laden gleich etwas Erschreckendes gesehen" % id)
 	return notes
 
 
@@ -1874,18 +1898,6 @@ func _same(a, b) -> bool:
 	if a is Array:
 		if a.size() != b.size():
 			return false
-	# Wer auf dem Weg ins Versteck war (Zustand wird nicht gespeichert), sieht sich nach dem Laden gleich wieder um und
-	# erschrickt vor Blut, an dem er gerade vorbeigerannt ist (Guest._scan_for_shock)
-	var guests_was: Dictionary = before.get("guests", {})
-	var guests_now: Dictionary = after.get("guests", {})
-	for id in guests_was:
-		var a: Dictionary = guests_was[id]
-		var b: Dictionary = guests_now.get(id, {})
-		if b.is_empty() or (b.get("seen", []) as Array).size() != (a.get("seen", []) as Array).size() + 1:
-			continue
-		for key in ["seen", "experiences", "fear"]:
-			b[key] = a.get(key)
-		notes.append("guests.%s: hat nach dem Laden gleich etwas Erschreckendes gesehen" % id)
 		for i in a.size():
 			if not _same(a[i], b[i]):
 				return false

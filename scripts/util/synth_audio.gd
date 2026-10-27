@@ -52,7 +52,7 @@ const DURATIONS := {
 	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
 	"giggle": 0.8, "dart": 0.12,
 	"caw": 0.5, "squeak": 0.16, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
-	"bite": 0.3, "power_down": 1.6,
+	"bite": 0.3, "power_down": 1.6, "trophy": 1.6,
 }
 ## Spieluhr (Spielkonzept 5.17): Marions Wiegenlied, eigene Melodie in e-Moll, je Ton MUSIC_BOX_BEAT Sekunden – gegen
 ## Ende läuft das Werk aus und wird langsamer
@@ -443,6 +443,16 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			var tone := 659.3 if t < 0.55 else 523.3
 			var tt := t if t < 0.55 else t - 0.55
 			return (sin(TAU * tone * tt) + sin(TAU * tone * 2.0 * tt) * 0.2) * minf(1.0, tt * 80.0) * exp(-tt * 2.2) * 0.22
+		"trophy":
+			# Erfolg (Spielkonzept 8.11): drei helle Glöckchen aufwärts (E-Dur), weich ausklingend – kein Geräusch im Hotel
+			var bell := 0.0
+			for i in 3:
+				var start := 0.11 * i
+				if t > start:
+					var bt := t - start
+					var f: float = [659.3, 830.6, 987.8][i]
+					bell += (sin(TAU * f * bt) + sin(TAU * f * 2.76 * bt) * 0.15) * minf(1.0, bt * 120.0) * exp(-bt * 3.2)
+			return bell * 0.12
 		"poof":
 			# Puppe löst sich in Rauch auf (2.5): weiches Fauchen, das schnell anschwillt und verweht
 			return (_lp_fast * 1.6 + white * 0.15) * minf(1.0, t * 25.0) * exp(-t * 3.5) * 0.7

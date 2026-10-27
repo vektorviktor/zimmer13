@@ -44,6 +44,10 @@ const HELP_TEXT_WIDTH := 150.0
 const HELP_FONT_SIZE := 7
 const HELP_LINE_SPACING := -2
 
+## Erfolge: Breite des Bogens, Höhe der Liste (rollt)
+const ACHIEVEMENTS_WIDTH := 330.0
+const ACHIEVEMENTS_HEIGHT := 200.0
+
 ## Tagebuch nachlesen: Einträge je Seite, Farbe der fremden Zeile (MonsterDirector.strange_diary)
 const DIARY_PER_PAGE := 3
 const FOREIGN_INK := Color(0.5, 0.08, 0.06)
@@ -72,7 +76,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("pause") or Game.game_over or Game.creating:
 		return
 	if _screen != "":
-		if _screen in ["load", "settings", "help", "confirm"]:
+		if _screen in ["load", "settings", "help", "confirm", "achievements"]:
 			_show_pause()
 		elif _screen == "diary_pages":
 			_show_diary()
@@ -159,6 +163,7 @@ func _show_pause() -> void:
 	box.add_child(first)
 	box.add_child(UiKit.button("Laden", _show_load))
 	box.add_child(UiKit.button("Einstellungen", _show_settings))
+	box.add_child(UiKit.button("Erfolge", _show_achievements))
 	box.add_child(UiKit.button("Hilfe", _show_help))
 	box.add_child(UiKit.button("Zum Hauptmenü", _confirm.bind("Zum Hauptmenü?", Game.go_to_title)))
 	box.add_child(UiKit.button("Spiel beenden", _confirm.bind("Spiel beenden?", func() -> void: get_tree().quit())))
@@ -183,6 +188,60 @@ func _show_settings() -> void:
 	var panel := SettingsPanel.new()
 	panel.closed.connect(_show_pause)
 	box.add_child(panel)
+
+
+## Erfolge (Spielkonzept 8.11): alle in der Reihenfolge von Achievements.LIST, Zähler und „Zurück“ in der Kopfzeile.
+## Freigeschaltet mit Symbol, Name in der Farbe der Stufe und Beschreibung; gesperrte blass, geheime als „???“.
+func _show_achievements() -> void:
+	var box := _new_sheet("achievements", "", ACHIEVEMENTS_WIDTH)
+	var ach := Game.achievements
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 8)
+	box.add_child(head)
+	head.add_child(UiKit.label("Erfolge", 13, UiKit.ACCENT))
+	var counter := UiKit.label("%d von %d" % [ach.count(), Achievements.LIST.size()], 8, UiKit.INK_FAINT)
+	counter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	counter.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	head.add_child(counter)
+	var back := UiKit.button("Zurück", _show_pause)
+	head.add_child(back)
+	var rule := ColorRect.new()
+	rule.color = Color(0.35, 0.22, 0.12, 0.6)
+	rule.custom_minimum_size = Vector2(0, 1)
+	box.add_child(rule)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, ACHIEVEMENTS_HEIGHT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	box.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list.add_theme_constant_override("separation", 4)
+	scroll.add_child(list)
+	for id: String in Achievements.LIST:
+		var entry: Dictionary = Achievements.LIST[id]
+		var open := ach.has(id)
+		var hidden: bool = not open and entry.get("secret", false)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		list.add_child(row)
+		row.add_child(ach.medal(id, open))
+		var col := VBoxContainer.new()
+		col.add_theme_constant_override("separation", 0)
+		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(col)
+		var top := HBoxContainer.new()
+		col.add_child(top)
+		var tier: int = entry["tier"]
+		var name_label := UiKit.label("???" if hidden else String(entry["name"]), 9,
+			Achievements.TIER_COLORS[tier].darkened(0.45) if open else Color(0.45, 0.4, 0.32))
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		top.add_child(name_label)
+		top.add_child(UiKit.label(Achievements.TIER_NAMES[tier], 7,
+			Achievements.TIER_COLORS[tier].darkened(0.45) if open else Color(0.45, 0.4, 0.32)))
+		var text := _help_label("Geheimer Erfolg." if hidden else String(entry["text"]),
+			UiKit.INK if open else Color(0.45, 0.4, 0.32), 0.0)
+		col.add_child(text)
+	back.grab_focus.call_deferred()
 
 
 ## Hilfe: oben die Tasten in zwei Spalten, darunter die Grundlagen über die ganze Breite, „Zurück“ in der Kopfzeile –

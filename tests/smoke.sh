@@ -77,7 +77,9 @@ while IFS='|' read -r frames tags args; do
 done <<'LIST'
 600|schnell,speichern|--savetest
 600|speichern,notizbuch|--notizbuch --show=aufgaben --savetest
-400|bitten,gaeste|--bitte=edna,herz,erfuellen --trace
+400|bitten,gaeste,erfolge|--bitte=edna,herz,erfuellen --trace
+300|erfolge|--erfolg=chess --erfolg=alle --menu=achievements
+400|erfolge|--day=31 --trace
 2000|bitten,kuerbis|--bitte=kemal,kuerbis,erfuellen --trace
 900|bitten|--bitte=johanna,herz,erfuellen --trace
 400|bitten|--bitte=elif,herz,erfuellen --trace
@@ -91,10 +93,10 @@ done <<'LIST'
 3000|navmesh,level|--navcheck
 3000|wettbewerb,puppe,monster|--day=12 --siegerehrung --trace
 2400|wettbewerb,puppe|--siegerehrung=ohne --trace
-2400|schnell,monster,gaeste|--warn --intent=one --day=10 --trace
-3000|puppe,monster|--doll --trace
 2400|grinch,gaeste|--grinch --trace
 1200|grinch,wettbewerb,speichern|--grinch=tot --savetest --trace
+2400|schnell,monster,gaeste|--warn --intent=one --day=10 --trace
+3000|puppe,monster|--doll --trace
 2400|puppe,monster|--doll=10,13 --trace
 1600|puppe,kinder|--doll=kind --trace
 600|masken,speichern|--maske=doll --savetest

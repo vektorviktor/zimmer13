@@ -1060,6 +1060,8 @@ func _struggle(delta: float) -> void:
 			print("[Lakengeist] losgerissen nach %.1f s (%d Wechsel, %.1f je s)" % [held, _swings, _swings / maxf(0.1, held)])
 		player.add_shock(0.25, false)
 		Game.say("Losgerissen!", 1.5)
+		if Game.achievements:
+			Game.achievements.unlock("ghost_escape")   # Spielkonzept 8.11
 		if player.hiding:
 			player.exit_hide()   # aus dem Schrank gestürzt
 		if _scripted and Game.shower_scare:

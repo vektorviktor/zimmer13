@@ -702,6 +702,8 @@ func _check_salt(delta: float) -> bool:
 		_salt_line = line
 		_salt_wait = SALT_PAUSE
 		Game.sound_at("hiss", line.global_position, 6.0, self, 0.6)
+		if Game.achievements:
+			Game.achievements.unlock("salt")   # Spielkonzept 8.11
 		if Game.tracing:
 			print("[Monster] zögert vor dem Salz (%s) @ %s, Linie @ %s" % [line.room if line.room != "" else "Tür",
 				global_position.snapped(Vector3.ONE * 0.1), line.global_position.snapped(Vector3.ONE * 0.1)])

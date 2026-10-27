@@ -238,7 +238,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 Umgebung → `LevelBuilder.refresh_maps()` / `build()` → NavMesh backen → SynthAudio → ShadowBudget → Traces → Player
 (mit `PlayerBody.default_look()`) → Monster → MonsterDirector (`setup(builder, monster)`) → Post-FX → Social
 (`setup(builder, self)`, erzeugt die Gäste) → Puppe → DoorContest (`setup(builder)`: Brett, Brief) → Katzen → … →
-Dialog → PhoneCalls (findet die Telefone) → DiceMatch → ChessMatch → Hud → Menus → dann entweder Spielstand anwenden
+Dialog → PhoneCalls (findet die Telefone) → DiceMatch → ChessMatch → Hud → Menus → Achievements → dann entweder Spielstand anwenden
 (`_load_pending`, deferred) oder Neues Spiel: vom Titelbildschirm erst die Charaktererstellung (`_start_creation`,
 `CharacterCreation`), nach „Ja“ der Gedanke an den Brief (`DoorContest.welcome`) und Startzustand speichern
 (Tagebuchsatz `DoorContest.ARRIVAL_ENTRY`); Debug-Starts ohne `--figur` sofort mit Standardfigur (`--nointro`: ohne
@@ -1035,8 +1035,6 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 - **Flecken und Putzen** (`guests/tidying.gd`): `_messes()` = Kürbismatsch und Spuren `MESS_TRACES`; Beschwerden
   (`_complaints`, Meta `complained`), ein ordentlicher Gast (`is_tidy`) wischt (`TraceMark.wipe`) oder trägt Matsch
   in die Küche bzw. kocht ihn (`Stove.claim_cook`). Nicht gespeichert. Debug `--mess[=wachs]`.
-- **Streiche** (`guests/pranks.gd`): `play(kind, zimmer)` wählt nach `WEIGHTS`: `leaves`, `topple`
-  (`Item.knock_over`), `pumpkin`/`candle` werfen (aus dem Koffer der Familie holen, `_go_throw`, `_throw` →
 - **Der Grinch** (`guests/grinch.gd`, Spielkonzept 2.6; `Social.grinch`): Gustav Peters = Gast mit Haushalt `H25`
   (`Grinch.is_grinch`, static – Hooks in `start_party`, `_household_deco`, `Guest._at_home`, `Decorating._available`,
   `GuestRequests.offer_for`, `_round_answer`, `DoorContest._can_gather`). `relation` beim Start höchstens −35.
@@ -1053,6 +1051,8 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `found()` (Zimmer 020 betreten oder Tagebuch gelesen → Tagebuch „first_death“). `GustavDiary` (innere Klasse) auf
   `LevelBuilder.room_tables[020]`, Text nach Uhrzeit (`DIARY`, letzter Eintrag erst nach seinem Tod). Nicht
   gespeichert – alles ergibt sich aus Gustav tot, Tür, Spuren und dem Tagebuch des Spielers. Debug `--grinch[=tot]`.
+- **Streiche** (`guests/pranks.gd`): `play(kind, zimmer)` wählt nach `WEIGHTS`: `leaves`, `topple`
+  (`Item.knock_over`), `pumpkin`/`candle` werfen (aus dem Koffer der Familie holen, `_go_throw`, `_throw` →
   `Item.throw_from`). **Zeugen** (`_witnesses`) erzählen es dem Bewohner → `pals.add_feud`. Debug
   `--prank=art[,zimmer]`.
 - **Schmück-Aktionen** (`guests/decorating.gd`, Spielkonzept 5.9; zählen als Spaß für den Kürbismann – `is_crew`,
@@ -1667,6 +1667,24 @@ nach `GROUPS`; Ziele aus dem `LevelBuilder`, `_onto_navmesh` rückt auf begehbar
 Debug-Build oder `--debug`) = Startparameter im Spiel tippen: `submit()` → `main.run_debug("--name=wert")`. Gäste
 gehen als ID oder Name: Bei Befehlen in `GUEST_FIRST` (erster Wert) bzw. `GUEST_ANY` (jeder Wert) setzt `_guest_ids`
 vorher die IDs ein (`Social.find_guest`), `main.gd` sucht ebenfalls mit `find_guest`.
+
+### Erfolge (`ui/achievements.gd`, `Achievements` als `Game.achievements`, Spielkonzept 8.11)
+- **Liste:** `Achievements.LIST` – ID (englisch, später für Steam) → Name, Text, Stufe (`Tier`: Bronze, Silber,
+  Gold), Symbol (`art:<name>` = `IconArt`, `item:<Item.Kind>` = wie in der Tasche gerendert, eigene `ItemIcons`),
+  `secret`. Reihenfolge = Spielmenü. Neuer Erfolg: Eintrag in `LIST` und `Game.achievements.unlock("id")` an der
+  Stelle im Spiel (mit `if Game.achievements:` absichern).
+- **Auslöser:** `unlock` direkt in `GuestRequests._complete` (Herzensbitte), `DiceMatch._finish`, `ChessMatch._finish`,
+  `Monster._check_salt`, `SheetGhost._struggle` (Spieler losgerissen), `PumpkinMan._search` (Suche nach dem Spieler
+  vorbei), `JuryDoll.interact`. Was am Zustand abzulesen ist, prüft `_check` jede Sekunde (nicht in der Pause):
+  Kalendertag (3 mit erstem Angriff, 8, 31), gute Freunde (`Social.tier`), gesehene Bedrohungen (`Notebook.seen`),
+  brennender geschnitzter Kürbis am Boden vor Zimmer 13 (`door_front`). Nach dem eigenen Tod schaltet nichts mehr frei.
+- **Profil statt Spielstand:** `user://achievements.cfg` (Abschnitt `unlocked`, ID → Unix-Zeit). Nichts davon steht im
+  Spielstand, am Speicherformat ändert es nichts. `debug` = nur für die Sitzung freischalten, nicht schreiben: headless
+  (beginnt leer), Startparameter außer `HARMLESS_ARGS`, Debug-Konsole, F5/F6/F7/F9 (`cheated()`).
+- **Einblendung:** `CanvasLayer` 35 (über Menü und Sterbebildschirm), läuft in der Pause weiter; eine Karte zur Zeit
+  aus `_queue`, Tween herein (`SLIDE_TIME`), `SHOW_TIME` stehen, hinaus. `medal()` (Symbol auf dunklem Grund, Rahmen in
+  der Stufenfarbe, gesperrt grau) nutzt auch die Seite „Erfolge“ im Spielmenü (`Menus._show_achievements`). Klang
+  `trophy` (`SynthAudio`, ohne Untertitel).
 
 ### Optik
 (`util/mat.gd`, `util/geo.gd`, `shaders/`) Ausgelegt auf den realistischen Look (siehe 1, „Grafik“).

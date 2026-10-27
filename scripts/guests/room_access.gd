@@ -205,8 +205,6 @@ func _danger() -> bool:
 ## Ergebnis des Gesprächs an der Tür: {ok, line}. Bei Erfolg geht die Tür auf und der Besuch beginnt.
 func try_enter(guest: Guest, door: Door, way: String, woken: bool) -> Dictionary:
 	_tries[guest.id] = _now()
-	if way == "bribe":
-		Game.money -= BRIBE_MONEY
 	var odds := chance(guest, way, woken)
 	var ok := randf() * 100.0 < odds
 	if Game.tracing:
@@ -215,6 +213,8 @@ func try_enter(guest: Guest, door: Door, way: String, woken: bool) -> Dictionary
 	if not ok:
 		door.set_open(false, false, true, guest)
 		return {"ok": false, "line": _refusal(guest)}
+	if way == "bribe":   # genommen wird nur, wer hereinkommt – zählt nicht als Geschenk
+		Game.money -= BRIBE_MONEY
 	if guest.is_child() and not knows_player(guest):   # beschwatzt – die Eltern erfahren es
 		for g in _social().living_guests():
 			var adult: Guest = g

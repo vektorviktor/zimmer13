@@ -280,6 +280,8 @@ func _finish(result: String) -> void:
 	match result:
 		"player":
 			change -= float(chess["pride"]) * 8.0                # Stolz gekränkt
+			if Game.achievements:
+				Game.achievements.unlock("chess")                 # Spielkonzept 8.11
 			line = guest.line("chess_lose")
 			if float(chess["pride"]) > 0.5:
 				guest.challenge_cooldown = randf_range(90.0, 150.0)

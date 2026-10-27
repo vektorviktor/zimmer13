@@ -89,6 +89,8 @@ func get_prompt(_player: Player) -> String:
 
 
 func interact(_player: Player) -> void:
+	if Game.achievements:
+		Game.achievements.unlock("jury_doll")   # Spielkonzept 8.11
 	if _card and _card.visible:
 		Game.say("Ein Schildchen vor ihr: „Jury“. Sie lässt sich nicht hochheben – als wäre sie festgewachsen.", 3.5)
 	else:

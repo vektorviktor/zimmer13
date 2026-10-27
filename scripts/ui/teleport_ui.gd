@@ -348,6 +348,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if visible:
 			close()
 		else:
+			Game.achievements.cheated()   # Erfolge nur noch für diese Sitzung (8.11)
 			open()
 		get_viewport().set_input_as_handled()
 		return

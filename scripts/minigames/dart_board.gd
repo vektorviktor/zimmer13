@@ -146,7 +146,8 @@ func throw_dart(from: Vector3, p: Vector2, flight: Color, done: Callable = Calla
 	var dir := (end - start).normalized()
 	dart.position = start
 	dart.basis = Basis.looking_at(dir)
-	var tween := create_tween()
+	# Am Pfeil, nicht an der Scheibe: räumt clear_darts ihn mitten im Flug weg (Aufgabe, Ende), endet der Flug mit ihm
+	var tween := dart.create_tween()
 	tween.tween_method(func(t: float) -> void:
 		dart.position = start.lerp(end, t) + Vector3.UP * sin(PI * t) * 0.05
 		dart.basis = Basis.looking_at((dir + Vector3.DOWN * (t - 0.5) * 0.1).normalized()), 0.0, 1.0, FLIGHT_TIME)
@@ -165,7 +166,7 @@ func throw_dart(from: Vector3, p: Vector2, flight: Color, done: Callable = Calla
 func _fall(dart: Node3D, at: Vector3) -> void:
 	var floor_at := Vector3(at.x + randf_range(-0.1, 0.1), 0.012, randf_range(0.15, 0.45))
 	var lying := Basis(Vector3.UP, randf() * TAU) * Basis(Vector3.BACK, PI / 4.0)   # flach, die Flights über Kreuz
-	var tween := create_tween().set_parallel()
+	var tween := dart.create_tween().set_parallel()
 	tween.tween_property(dart, "position", floor_at, 0.45).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 	tween.tween_property(dart, "basis", lying, 0.45)
 
@@ -175,6 +176,8 @@ func _fall(dart: Node3D, at: Vector3) -> void:
 func guest_throw(guest: Guest, aim: Vector2, sigma: float, flight: Color, done: Callable = Callable()) -> void:
 	guest.throw_dart_pose()
 	create_tween().tween_callback(func() -> void:
+		if not is_instance_valid(guest):
+			return
 		var hand := guest.global_position + Vector3.UP * 1.55 + guest.global_basis.x * 0.18 - guest.global_basis.z * 0.3
 		throw_dart(hand, Darts.scatter(aim, sigma), flight, done)).set_delay(RELEASE)
 

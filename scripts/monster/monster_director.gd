@@ -216,8 +216,10 @@ func setup(builder: LevelBuilder, monster: Monster) -> void:
 func _physics_process(delta: float) -> void:
 	if not Game.game_over:
 		if Input.is_action_just_pressed("debug_manifest") and not _monster.is_active():
+			Game.achievements.cheated()   # Erfolge nur noch für diese Sitzung (8.11)
 			start_warning()
 		if Input.is_action_just_pressed("debug_lure"):
+			Game.achievements.cheated()
 			debug_lure()
 		elapsed += delta
 		if first_attack_done:

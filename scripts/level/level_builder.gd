@@ -500,12 +500,12 @@ var memorial_spot: Dictionary = {}
 var dart_board: DartBoard                ## Darts in der Bar (Spielkonzept 6.10) – aus dem Plan oder DART_FALLBACK
 var bar_spots: Array[Vector3] = []
 var diary: Diary
+## Zimmer → Mitte der Platte seines ersten Tischs (global) – dort liegt etwa Gustavs Tagebuch (Spielkonzept 2.6)
+var room_tables := {}
 ## Aushangbrett in der Lobby (Spielkonzept 2.5) und Innenmaß der Lobby (x, z)
 var notice_board: NoticeBoard
 var lobby_rect := Rect2()
 ## Treppenhaus zwischen den Geschossen (Ausbreitung der Flacker-Welle, MonsterDirector.wave_delay)
-## Zimmer → Mitte der Platte seines ersten Tischs (global) – dort liegt etwa Gustavs Tagebuch (Spielkonzept 2.6)
-var room_tables := {}
 var stairwell_point := Vector3.ZERO
 
 ## Plan und Nachschlagetabellen je Stockwerk (_state), nach dem Bau für die Abfragen anderer Systeme
@@ -720,12 +720,12 @@ func _build_plan_floor() -> void:
 	_fittings()
 	_items()
 	_drawer_content(first_furnishing)
+	_note_room_tables(first_furnishing)
 	_lights()
 	_auto_switches()
 
 
 ## Obergeschoss (Spielkonzept 7.7): derselbe Bau wie im Erdgeschoss, nur unter einem um UP_Y angehobenen
-	_note_room_tables(first_furnishing)
 ## Knoten. Dazu Geländer an Lufträumen und Balkonen, gesperrte Treppenhaustüren.
 func _upper_floor(plan: Dictionary, level: int) -> void:
 	var ground := root
@@ -2506,11 +2506,6 @@ func _items() -> void:
 		_item(kind, Vector3(p.x, _top_at(p) + 0.02, p.y), extra)
 
 
-## Fester Fund in einer Schublade (CONTENT „drawer“, Spielkonzept 5.12): in die oberste Schublade der ersten Kommode
-## im Raum. Steht dort (noch) keine, liegt er auf einem Tisch des Raums. Nur Möbel ab first (dieses Stockwerk).
-func _drawer_content(first: int) -> void:
-	for id: String in CONTENT:
-		if not (CONTENT[id] as Dictionary).has("drawer"):
 ## Den ersten Tisch je Zimmer merken (room_tables). Nur Möbel ab first (dieses Stockwerk).
 func _note_room_tables(first: int) -> void:
 	for f: Dictionary in _furnishings.slice(first):
@@ -2522,6 +2517,11 @@ func _note_room_tables(first: int) -> void:
 			room_tables[id] = _global(Vector3(c.x, float(f["top"]), c.y))
 
 
+## Fester Fund in einer Schublade (CONTENT „drawer“, Spielkonzept 5.12): in die oberste Schublade der ersten Kommode
+## im Raum. Steht dort (noch) keine, liegt er auf einem Tisch des Raums. Nur Möbel ab first (dieses Stockwerk).
+func _drawer_content(first: int) -> void:
+	for id: String in CONTENT:
+		if not (CONTENT[id] as Dictionary).has("drawer"):
 			continue
 		var kind := Item.Kind.get(String(CONTENT[id]["drawer"])) as Item.Kind
 		var table := {}

@@ -129,7 +129,7 @@
   - [8.8 Was gespeichert wird](#88-was-gespeichert-wird)
   - [8.9 Ausbau-Ideen (später)](#89-ausbau-ideen-später)
   - [8.10 Speicherregel geschärft (entschieden 2026-10-21)](#810-speicherregel-geschärft-entschieden-2026-10-21)
-  - [8.11 Achievements (vorgemerkt 2026-10-25)](#811-achievements-vorgemerkt-2026-10-25)
+  - [8.11 Achievements (entschieden und gebaut 2026-10-26)](#811-achievements-entschieden-und-gebaut-2026-10-26)
 - [9. Technische Umsetzung (grob)](#9-technische-umsetzung-grob)
   - [9.1 Godot 4.7](#91-godot-47)
   - [9.2 Blender (lokal)](#92-blender-lokal)
@@ -3960,8 +3960,8 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 
 ### 6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht
-> durchkommen (zu lange jemand im Weg); die Badtür zum Abschließen von innen und das Einbrechen sehr wütender Gäste bei
-> Zimmer 13 fehlen noch; das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal je Tür und Tag
+> durchkommen (zu lange jemand im Weg); das Einbrechen sehr wütender Gäste bei Zimmer 13 (1), Schlüssel stehlen und
+> Zweitschlüssel (4) fehlen noch; das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal je Tür und Tag
 > gilt). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank (Ostwand der Lobby) stehen im Plan.
 >
 > Verallgemeinert Zuflucht und Abschließen aus 6.18 (4): Freundschaft öffnet Türen – im
@@ -3980,7 +3980,11 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
   Ausnahme: die **versiegelten Zimmer** von 1987 (7).
 - **Gilt auch umgekehrt:** Gäste klopfen an Zimmer 13 und kommen nur mit Erlaubnis, durch eine offene Tür oder mit
   einem Schlüssel hinein (sie lesen sonst das Tagebuch, 3.10). Sehr wütende Gäste können auch bei dir einbrechen – mit Lärm und Zeugen wie
-  beim Spieler.
+  beim Spieler. **Racheakt** (entschieden 2026-10-26): erst ab „stark verfeindet“ und nur, wenn der Spieler nicht im
+  Zimmer ist. Er bricht laut auf (Tür danach kaputt, 5), nimmt sich zurück, was der Spieler ihm genommen hat – sonst ein
+  Stück Deko oder Geld –, und liest das Tagebuch.
+- **Stirbt ein ganzer Haushalt** (entschieden 2026-10-26), schließt das Hotel sein Zimmer ab wie ein unbewohntes. Ist die
+  Tür kaputt, bleibt sie es und steht offen – der Gedenkort aus 6.18 (2). Nachrücker ziehen nur in leere Zimmer.
 
 **2. Klopfen**
 - An einer verschlossenen Zimmertür heißt [E] **„Klopfen“** (Lärm, 8 m, 4.15).
@@ -3998,7 +4002,9 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
   Beziehung, und es spricht sich herum (6.18, 1).
 - **Panik machen:** „Es ist hinter mir, lass mich rein!“ – wirkt bei Ängstlichen stark. Kommt nichts, zählt es als
   **falscher Alarm** und kostet Vertrauen (6.18, 4).
-- **Bestechen:** Geld oder ein Geschenk in der Hand als Eintritt (physischer Handel, 6.4).
+- **Bestechen:** Geld oder ein Geschenk in der Hand als Eintritt (physischer Handel, 6.4). Der Gast nimmt es nur, wenn
+  er dich hereinlässt; abgewiesen behältst du es. Es zählt nicht als Geschenk für die Beziehung (6.18, 5) (entschieden
+  2026-10-26).
 - **Drinnen** behält der Gast dich im Auge: Wer vor seinen Augen etwas nimmt, ist ein ertappter Dieb (6.2). Nach einer
   Weile bittet er dich zu gehen.
 
@@ -4055,14 +4061,17 @@ im Zimmer** öffnen nur Bekannten – Freunden der Familie und anderen Kindern (
 Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wütend.
 
 **Einzelheiten (entschieden 2026-10-24)**
-- **Badtüren** gehören nicht zur Zugangsregel: Gäste schließen sie, wenn sie das Bad benutzen, und von innen lässt sie
-  sich abschließen – ein Schutzraum im Zimmer (Idee „Bad“, 7.7).
+- **Badtüren** gehören nicht zur Zugangsregel: Gäste schließen sie, wenn sie das Bad benutzen. Abschließen lassen sie
+  sich nicht (entschieden 2026-10-26).
 - **Leise schließen:** Gäste schließen Zimmertüren leise; nur wer in Panik oder wütend ist, **knallt** sie (Lärm,
   4.15). Das Öffnen knarrt weiter.
 - **Werkzeug:** **ein Brecheisen** im **Heizkeller** (UG) – im Revier des Monsters. Ein **Werkzeugkasten** zum
   Reparieren im **Technikraum** (UG), leichter zu erreichen. **Konrad Lorenz** (Bastler, HAUSHALTE.md H11) hat
   eigenes Werkzeug und leiht es Freunden.
-- **Generalschlüssel:** im **verglasten Schlüsselschrank an der Ostwand der Lobby**. Die Scheibe einschlagen ist laut,
+- **Generalschlüssel:** *wird neu gefasst (2026-10-26):* Der Schrank darf nicht offen in der Lobby hängen, und eine
+  Scheibe einzuschlagen ist zu billig. Der Schlüssel soll an einem schwer zugänglichen Ort liegen und Mühe kosten –
+  erster Kandidat ist das **Büro der Direktion**, in das man erst hineinkommen muss. Bis dahin gilt der gebaute Stand:
+  im **verglasten Schlüsselschrank an der Ostwand der Lobby**. Die Scheibe einschlagen ist laut,
   mitten in der Lobby – besser nachts. Er öffnet jede Zimmertür, außer der Bewohner ist drin und hat den **Riegel**
   vorgeschoben, und außer den versiegelten Zimmern (7). Wer gesehen wird, wie er damit eine fremde Tür aufschließt, gilt als Einbrecher (5), nur ohne Lärm.
 - **Erste Zahlen** (zum Probespielen):
@@ -4111,6 +4120,10 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 - **Nachnamen** (entschieden 2026-10-24) erscheinen **beim Hinsehen an der Tür** (im
   Hinweis, kein Schild an der Wand) und im **Hotelregister** (2.3): bei mehreren Personen der Nachname („Brandt“),
   bei einer Person Vor- und Nachname („Walter Ruprecht“).
+  Beide sind kein Gegenstand in der Hand, sondern ein Eintrag am **Schlüsselbund** wie der Generalschlüssel
+  (entschieden 2026-10-26). Gestohlen wird er einem **schlafenden** Gast vom Nachttisch, mit den Zeugenregeln des
+  Diebstahls (6.2). Am nächsten Morgen merkt der Gast es und lässt das Schloss tauschen – der gestohlene Schlüssel passt
+  dann nicht mehr; wer es war, bleibt unbekannt.
 
 - **Liste und Generator** (entschieden 2026-10-24): Die Liste legt fest, **wer** jemand ist – Name, Nachname,
   Geschlecht, Generation, Charakter, Haushalt. Der Generator würfelt **alles Übrige**, mit festem Seed je
@@ -4138,6 +4151,8 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 ### 6.21 Apfeltauchen im Partyraum (entschieden und umgesetzt 2026-10-25)
 Ein Holzbottich mit Wasser und schwimmenden Äpfeln. Mit leeren Händen [E]: Man beugt sich darüber und taucht mit
 gehaltenem **Linksklick** das Gesicht ins Wasser – die Sicht verschwimmt, es blubbert (Lärm).
+- **Vier Zimmer, je Weg eins** (entschieden 2026-10-26): 042 (Geduld, die Krähen) und je eines für Vertrauen, Wissen
+  und Wagnis. Welche Zimmer, Schlüssel und Gegenstände das sind, ist noch offen.
 
 - Bleibt das Fadenkreuz lange genug auf einem Apfel, beißt man zu und hat ihn (neuer Gegenstand); die Äpfel weichen
   dem Mund aus. Die Luft reicht nur ein paar Sekunden am Stück, dann kommt man prustend hoch. [E] beendet.
@@ -4436,7 +4451,7 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
   - **Zwei Seiten:** Mit der Balkontür ist ein Zimmer keine Sackgasse mehr – Fluchtweg, aber auch eine zweite
     Seite, die man im Blick behalten muss. Vom Balkon aus beobachtet man den Garten.
   - **Gäste rauchen nachts auf dem Balkon** – Gespräche über das Geländer, Lauschen (4.7).
-  - **Bad:** Badewanne bzw. Duschvorhang als Versteck (3.4), abschließbare Badtür als Schutzraum im Zimmer,
+  - **Bad:** Badewanne bzw. Duschvorhang als Versteck (3.4),
     laufendes Wasser ist Lärm und übertönt zugleich. Wer oben mit Bad wohnt, ist wohlhabender – Gerede und Neid (6.2).
   - **Mehrbettzimmer** (6.20): Paare sind wach füreinander Zeugen (der Lakengeist bleibt weg), schlafend nicht.
     Verschwindet einer, bleibt der andere als Zeuge und Trauernder zurück (4.18).
@@ -4738,9 +4753,44 @@ Halloween ohne Schlüssel, ist das Spiel aus; ältere Stände bleiben ladbar.
 - Namen nur von **Kernfiguren und zentralen Gästen** (6.0), der Rest wird gezählt: *„Edna ist fort. Neun andere auch.
   Vor meiner Tür brennen zwei Kürbisse.“*
 
-### 8.11 Achievements (vorgemerkt 2026-10-25)
-> Noch nicht umgesetzt. Das Spiel braucht Achievements; welche es außer den Masken gibt und für welche Plattform, ist
-> offen.
+### 8.11 Achievements (entschieden und gebaut 2026-10-26)
+> Vorgemerkt 2026-10-25, Form und erste Liste entschieden und gebaut 2026-10-26. Die Plattform bleibt offen – jeder
+> Erfolg hat eine englische ID, die sich später 1:1 auf Steam abbilden lässt.
+
+**Stufen:** Bronze, Silber, Gold – je nach Seltenheit, für jeden Erfolg einzeln festgelegt.
+
+**Einblendung:** Freigeschaltet gleitet eine Karte oben rechts herein, bleibt **5 Sekunden** und gleitet rechts aus dem
+Bild. Oben der Name, darunter Symbol und kurze Beschreibung, Rahmen und Name in der Farbe der Stufe, dazu ein leises
+Glöckchen. Mehrere kommen nacheinander.
+
+**Spielmenü → „Erfolge“:** alle Erfolge mit Zähler („2 von 14“) – freigeschaltet mit Symbol in Farbe, gesperrt blass
+mit Name und Beschreibung, damit man weiß, wonach man suchen kann. **Geheime** Erfolge stehen gesperrt nur als „???“
+da: alles, was den friedlichen Anfang (2.1) oder die Bedrohungen verraten würde.
+
+**Gehören zum Profil, nicht zum Spielstand:** Erfolge bleiben über neue Spiele, Tod und das Laden alter Stände.
+**Debug-Starts** (Startparameter) und Debug-Eingriffe (Konsole, Teleport, Bedrohung rufen) schalten nur für die
+Sitzung frei, nichts davon bleibt.
+
+**Erste Liste** (Symbole vorerst aus den vorhandenen, eigene Bilder später):
+
+| Erfolg | Wofür | Stufe |
+|---|---|---|
+| Herzenssache | einem Gast seine Herzensbitte erfüllt (6.14) | Bronze |
+| Ein guter Freund | mit einem Gast „guter Freund“ (6.3) | Bronze |
+| Mäxchen | einen Gast beim Mäxchen geschlagen | Bronze |
+| Schachmatt | eine Schachpartie gewonnen | Bronze |
+| Ein Licht vor der Tür | geschnitzter Kürbis mit brennender Kerze vor Zimmer 13 | Bronze |
+| Bis hierher *(geheim)* | eine Salzlinie hat das Monster aufgehalten (5.13) | Bronze |
+| Festgewachsen *(geheim)* | versucht, die Puppe hochzuheben (5.5) | Bronze |
+| Licht aus *(geheim)* | die Nacht der Siegerehrung überstanden (2.5) | Silber |
+| Losgerissen *(geheim)* | aus dem Griff des Lakengeists befreit (4.18) | Silber |
+| Kopflos *(geheim)* | den Kürbismann abgeschüttelt (4.19) | Silber |
+| Eine Woche Zimmer 13 | den 8. Oktober erlebt | Silber |
+| Stammtisch | fünf gute Freunde zugleich | Silber |
+| Halloween | den 31. Oktober erreicht | Gold |
+| Alle drei *(geheim)* | Monster, Lakengeist und Kürbismann gesehen und noch am Leben | Gold |
+
+**Kommen mit dem Maskenball (5.19, noch nicht gebaut):**
 
 - **Verbotene Masken** (5.19): jede einzelne, sobald sie an ihrem Haken in Zimmer 13 hängt, eine **Bronze-Trophäe**,
   das ganze Set aus acht Masken eine **goldene**.

@@ -268,6 +268,8 @@ func _complete(g: Guest, req: Dictionary) -> String:
 		Game.notebook.finish_task(String(req["id"]))
 	if req["heart"]:
 		hearts[g.id] = "done"
+		if Game.achievements:
+			Game.achievements.unlock("heart_request")   # Spielkonzept 8.11
 		Game.social.change_relation(g, HEART_REWARD)   # einmalig, außerhalb des Tagesbudgets (6.18, 5)
 		Game.social.pals.praise(g, HEART_PRAISE)
 	else:

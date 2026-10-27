@@ -297,6 +297,8 @@ func _finish() -> void:
 	var line := ""
 	if player_won:
 		change -= float(dice["pride"]) * 8.0                # Stolz gekränkt
+		if Game.achievements:
+			Game.achievements.unlock("maexchen")             # Spielkonzept 8.11
 		line = guest.line("dice_lose")
 		if float(dice["pride"]) > 0.5:
 			guest.challenge_cooldown = randf_range(90.0, 150.0)

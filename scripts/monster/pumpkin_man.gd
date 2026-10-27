@@ -252,6 +252,7 @@ func _physics_process(delta: float) -> void:
 	if _test:
 		return
 	if Input.is_action_just_pressed("debug_pumpkin") and not Game.game_over:
+		Game.achievements.cheated()   # Erfolge nur noch für diese Sitzung (8.11)
 		debug_roof()
 	_update_omens(delta)
 	if state == State.INACTIVE:
@@ -959,6 +960,8 @@ func _search(delta: float) -> void:
 	_animate("walk", 0.0)
 	rotation.y += delta * 0.8   # sieht sich um
 	if _timer <= 0.0:
+		if _victim == Game.player and Game.achievements:
+			Game.achievements.unlock("pumpkin_escape")   # abgeschüttelt (Spielkonzept 8.11)
 		_next_victim()
 
 
