@@ -55,6 +55,7 @@ const DURATIONS := {
 	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
 	"giggle": 0.8, "dart": 0.12,
 	"caw": 0.5, "squeak": 0.16, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
+	"owl": 4.6, "owl_kewick": 0.55, "bark": 1.3, "bark_deep": 1.6,
 	"bite": 0.3, "power_down": 1.6, "trophy": 1.6,
 }
 ## Spieluhr (Spielkonzept 5.17): Marions Wiegenlied, eigene Melodie in e-Moll, je Ton MUSIC_BOX_BEAT Sekunden – gegen
@@ -496,6 +497,47 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			shot["phase"] = hph
 			var tone := sin(TAU * hph) + 0.35 * sin(TAU * hph * 2.0) + 0.12 * sin(TAU * hph * 3.0)
 			return tone * sin(PI * k) * minf(1.0, t * 3.0) * 0.12
+		"owl":
+			# Waldkauz in der Ferne (7.8): ein langes „Huuu“, Pause, ein kurzes „hu“, dann ein bebendes „hu-hu-huuu“
+			var of := 0.0
+			var oenv := 0.0
+			if t < 0.9:
+				of = 470.0 + 45.0 * sin(PI * t / 0.9)
+				oenv = pow(sin(PI * t / 0.9), 0.7)
+			elif t > 2.55 and t < 2.75:
+				of = 500.0
+				oenv = sin(PI * (t - 2.55) / 0.2)
+			elif t > 2.95:
+				var ok := (t - 2.95) / 1.65
+				of = lerpf(510.0, 440.0, ok)
+				oenv = pow(sin(PI * ok), 0.5) * (0.55 + 0.45 * absf(sin(TAU * 5.0 * minf(t - 2.95, 0.7))))
+			if oenv <= 0.0:
+				return 0.0
+			var oph: float = shot["phase"] + of * dt
+			shot["phase"] = oph
+			return (sin(TAU * oph) + 0.12 * sin(TAU * oph * 2.0) + white * 0.04) * oenv * 0.15
+		"owl_kewick":
+			# Waldkauz-Weibchen (7.8): scharfes „ke-wick“ – steigt erst schrill an, kippt dann rau nach unten
+			var kf := lerpf(1150.0, 1750.0, k * 4.0) if k < 0.25 else lerpf(1650.0, 950.0, (k - 0.25) / 0.75)
+			var kph: float = shot["phase"] + kf * dt
+			shot["phase"] = kph
+			var kraw := sin(TAU * kph) * 0.7 + (fmod(kph, 1.0) * 2.0 - 1.0) * 0.2 + white * 0.1
+			return kraw * sin(PI * k) * (0.3 if k > 0.22 and k < 0.32 else 1.0) * 0.09
+		"bark", "bark_deep":
+			# Hunde in der Ferne (7.8): kurze, raue „Wuff“ – mittlerer Hund dreimal, großer zweimal tiefer und langsamer
+			var deep: bool = shot["kind"] == "bark_deep"
+			var gap := 0.7 if deep else 0.42
+			var blen := 0.22 if deep else 0.16
+			var n := int(t / gap)
+			var bt := t - n * gap
+			if n >= (2 if deep else 3) or bt > blen:
+				return 0.0
+			var bk := bt / blen
+			var bf := lerpf(300.0, 170.0, bk) if deep else lerpf(540.0, 310.0, bk)
+			var bph: float = shot["phase"] + bf * dt
+			shot["phase"] = bph
+			var braw := sin(TAU * bph) + 0.4 * (fmod(bph, 1.0) * 2.0 - 1.0) + white * 0.25
+			return braw * minf(1.0, bt * 60.0) * pow(1.0 - bk, 1.5) * 0.14
 		"music_box":
 			# Spieluhr (5.17): gezupfte Stahlzungen – heller Ton mit Glockenobertönen, klingt schnell aus; das Werk
 			# läuft gegen Ende aus (die Töne kommen langsamer und etwas tiefer)

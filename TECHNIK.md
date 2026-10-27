@@ -1597,6 +1597,10 @@ Spielkonzept 2.5)
   **Scheiben:** `wet` folgt `intensity` (`WET_RATE`, trocknet in `DRY_TIME`); jedes klare Außenfenster hat vor dem Glas
   eine Fläche mit `shaders/window_rain.gdshader` (Gruppe `rain_panes`, nur sichtbar, solange nass; `render_priority` 1
   wegen des Glases). Muster in Metern auf der Scheibe, je Fenster verschoben; Brechung über `hint_screen_texture`.
+  Die Fläche baut `HotelWindow.rain_drops(parent, quad, offset)` – auch für die Dachfenster (`LevelBuilder._roof_window`,
+  knapp über dem Glas). Der Shader liest die Neigung aus der Modellmatrix (`steep`: lokal +Y = bergauf, senkrecht 1):
+  Rinnsale laufen entlang lokal −Y, auf schrägem Glas seltener und langsamer (flach keine), dafür mehr, rundere und
+  eine Lage großer stehender Tropfen. Senkrechte Fenster bleiben unverändert.
   **Wind** (`wind`, 0 … 1): Grundbrise nach `_season()`, `WIND_RAIN`/`WIND_STORM` × `intensity`, Böen. Wirkt auf Gras
   (`Grass`: Ausschlag und Takt), Baumblätter (`psx_leaves.gdshader`, Uniform `sway` nur an Bäumen), Laub
   (`LevelBuilder.leaf_emitters`: `speed_scale`, `direction`), Regenschräge, Nebel und Klang (`SynthAudio.wind`,
@@ -1717,6 +1721,12 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   (`_carry` je Krähe – vor dem Zugriff `is_instance_valid` prüfen, die Münze kann inzwischen gelöscht sein). Ratten:
   Welle weg vom Monster (`WAVE_RANGE`), nur Klang.
 - **Hund:** `Weather.howl(delay)`, zufällig alle `HOWL_EVERY` s Spielzeit (`_howl_timer`, im Schlaf nur weitergezählt).
+- **Tiere in der Ferne** (7.8): `DistantAnimals` unter `Weather` (`Weather.animals`), nur Klang (`SynthAudio`: `owl`,
+  `owl_kewick`, `caw`, `bark`, `bark_deep`), draußen `*_VOLUME`, drinnen × `Weather.BELL_INSIDE`, im Schlaf nichts.
+  Je Tier ein Zeitgeber (`*_EVERY`, Gruppe `time_skip`: im Schlaf nur weitergezählt); beim Ablauf entscheiden Uhrzeit
+  (Kauz `OWL_HOURS`, Krähen `CROW_ACTIVITY` je Tagesphase, Hunde nachts `BARK_NIGHT`) und Wetter (`RAIN_QUIET`,
+  `RAIN_DAMP`), ob gerufen wird. `on_thunder(loud)` aus `Weather._thunder`: Hunde schlagen an, Krähen fliegen auf.
+  Debug `--tiere[=eule|kraehen|hunde]`.
 - **`BoilerCat`** (Modell `cat.glb` fast schwarz, leuchtende Augen) führt zu Kessel bzw. UV-Schrift, einmal je Nacht.
 - **`MirrorOmens`:** verhängte Spiegel aus den Toten abgeleitet (`Mirror.active`), Spiegel in 13 selbst verhängbar;
   Gestalt im Spiegel auf `PlayerBody.LAYER` (nur im Spiegel sichtbar), `FIGURE_TIME`.

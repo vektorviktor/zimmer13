@@ -3852,7 +3852,7 @@ func _attic_slopes() -> void:
 
 
 ## Dachfenster in der Schräge (lokal: x entlang der Traufe, y die Schräge hinauf, out = lokale Z nach außen): Rahmen,
-## Kreuz aus Holz in der Mitte, Glasscheibe.
+## Kreuz aus Holz in der Mitte, Glasscheibe mit Regentropfen.
 func _roof_window(holder: Node3D, w: Vector4, out: float, wood: Material) -> void:
 	var bar := ATTIC_WINDOW_BAR
 	var mid := (w.z + w.w) / 2.0
@@ -3867,6 +3867,8 @@ func _roof_window(holder: Node3D, w: Vector4, out: float, wood: Material) -> voi
 	pane.size = Vector2(w.y, tall)
 	var glass := Geo.mesh(holder, pane, Mat.glass(), Vector3(w.x, mid, out * 0.04))
 	glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# Regen auf der Scheibe (7.8): Tropfen knapp über dem Glas; Rinnsale laufen die Schräge hinab
+	HotelWindow.rain_drops(holder, pane, Vector3(w.x, mid, out * (0.04 + HotelWindow.DROPS_GAP)))
 	# Licht, das durchs Fenster fällt: kalter Kegel ohne Schatten von außen hinein (AtticHaze regelt ihn mit dem Mond)
 	var shaft := SpotLight3D.new()
 	shaft.position = Vector3(w.x, mid, out * 0.4)

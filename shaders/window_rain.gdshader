@@ -6,6 +6,9 @@
 // langsam ab), die Zeit weather_time – beide aus Weather, Spielzeit (steht in der Pause). Blutregen (rain_blood): die
 // Tropfen färben das Bild rot; danach bleiben eingetrocknete rote Flecken mit dunklerem Rand (pane_stain), bis normaler
 // Regen sie abwäscht.
+// Auch auf den Dachfenstern (LevelBuilder): Die Neigung der Fläche (steep, aus der Modellmatrix: lokal +Y = bergauf)
+// macht die Rinnsale seltener und langsamer – sie laufen die Schräge hinab –, auf flachem Glas bleiben eher stehende
+// Tropfen, größer, runder und mehr davon. Senkrechte Fenster: steep = 1.
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, cull_disabled, shadows_disabled, specular_schlick_ggx;
 
@@ -25,7 +28,8 @@ uniform float trail = 0.45;           // so lang (m) ist die Spur über einem Ri
 uniform vec3 blood_tint : source_color = vec3(0.85, 0.12, 0.08);   // so färbt Blutregen das Bild im Tropfen
 uniform vec3 stain_color : source_color = vec3(0.22, 0.045, 0.03);  // eingetrocknete Flecken
 
-varying vec2 pane;                    // Ort auf der Scheibe in Metern, +y oben
+varying vec2 pane;                    // Ort auf der Scheibe in Metern, +y oben (bergauf)
+varying float steep;                  // 1 = senkrechte Scheibe, 0 = flach liegend
 
 float hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -36,7 +40,7 @@ float hash(vec2 p) {
 // Stehende Tropfen in einem Raster (Zelle cell m): je Zelle höchstens einer, an zufälliger Stelle und in zufälliger
 // Größe; er erscheint bei Nässe über seiner Schwelle, bleibt eine Weile und verschwindet (läuft ab, neuer Treffer).
 // Rückgabe: xy = Neigung der Oberfläche (−1 … 1) × Deckung, z = Deckung
-vec3 static_drops(vec2 p, float cell, float wet, float seed) {
+vec3 static_drops(vec2 p, float cell, float wet, float seed, float stretch) {
 	vec2 g = p / cell;
 	vec2 id = floor(g);
 	vec2 f = fract(g) - 0.5;
@@ -45,24 +49,24 @@ vec3 static_drops(vec2 p, float cell, float wet, float seed) {
 	float r = mix(0.12, 0.34, hash(id + seed + 3.7));
 	float life = fract(weather_time * mix(0.02, 0.07, hash(id + seed + 5.9)) + h * 13.0);
 	float present = step(h, wet) * smoothstep(0.0, 0.04, life) * (1.0 - smoothstep(0.8, 1.0, life));
-	vec2 d = (f - off) * vec2(1.0, 1.1);   // ein wenig länglich: das Wasser zieht nach unten
+	vec2 d = (f - off) * vec2(1.0, stretch);   // ein wenig länglich: das Wasser zieht nach unten (liegend: rund)
 	float m = smoothstep(r, r * 0.7, length(d)) * present;
 	return vec3(d / r * m, m);
 }
 
 // Rinnsale: in jeder Spalte (run_width) mit Nässe über ihrer Schwelle rutscht ein Tropfen ruckweise hinab und lässt
-// darüber eine Spur kleiner Tropfen zurück.
-vec3 running_drops(vec2 p, float wet) {
+// darüber eine Spur kleiner Tropfen zurück. Je flacher die Scheibe, desto seltener und langsamer; liegend keine.
+vec3 running_drops(vec2 p, float wet, float steepness) {
 	float col = floor(p.x / run_width);
 	float h = hash(vec2(col, 17.0));
-	if (h > wet * 0.55) {
+	if (h > wet * 0.55 * smoothstep(0.15, 0.7, steepness)) {
 		return vec3(0.0);
 	}
 	float tile = floor(p.y / run_height);
 	float hh = hash(vec2(col, tile + 3.0));
 	float y = p.y - tile * run_height;
 	// Ruckweise: drei Rutscher je Durchgang, dazwischen hängt er
-	float u = weather_time * mix(0.25, 0.6, hh) + hh * 7.0;
+	float u = weather_time * mix(0.25, 0.6, hh) * mix(0.35, 1.0, steepness) + hh * 7.0;
 	float jumps = 3.0;
 	float pos = (floor(u * jumps) + smoothstep(0.55, 1.0, fract(u * jumps))) / jumps;
 	float head = run_height * (1.0 - fract(pos)) * 0.9 + run_height * 0.05;
@@ -103,6 +107,7 @@ float stain_spots(vec2 p, float cell, float amount) {
 
 void vertex() {
 	pane = VERTEX.xy;
+	steep = clamp(normalize((MODEL_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz).y, 0.0, 1.0);
 }
 
 void fragment() {
@@ -114,12 +119,19 @@ void fragment() {
 	if (psx_smooth < 0.5) {
 		p = floor(p * 120.0) / 120.0;   // PS1-Look: grobe Texel
 	}
-	vec3 a = static_drops(p, 0.026, wet * 0.85, 0.0);
-	vec3 b = static_drops(p + 0.3, 0.06, wet * 0.5, 11.0);
-	vec3 c = running_drops(p, wet);
+	float lying = 1.0 - steep;
+	float stretch = mix(1.0, 1.1, steep);
+	vec3 a = static_drops(p, 0.026, wet * mix(0.85, 1.0, lying), 0.0, stretch);
+	vec3 b = static_drops(p + 0.3, 0.06, wet * mix(0.5, 0.8, lying), 11.0, stretch);
+	vec3 c = running_drops(p, wet, steep);
 	vec3 d = a;
 	if (b.z > d.z) { d = b; }
 	if (c.z > d.z) { d = c; }
+	if (lying > 0.05) {
+		// schräges oder liegendes Glas: dazu große, flache Tropfen, die stehen bleiben statt abzulaufen
+		vec3 e = static_drops(p + 0.7, 0.075, wet * 0.4 * lying, 23.0, 1.0);
+		if (e.z > d.z) { d = e; }
+	}
 	float m = wet < 0.002 ? 0.0 : d.z;
 	float stain = pane_stain > 0.01 ? stain_spots(p, 0.026, 0.85) * pane_stain : 0.0;
 	if (m < 0.02) {

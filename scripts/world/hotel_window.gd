@@ -86,14 +86,21 @@ func _ready() -> void:
 ## Regen an der Scheibe (Spielkonzept 7.8): Tropfen auf der Außenseite, knapp vor dem Glas. Weather schaltet alle
 ## (Gruppe „rain_panes“) nur sichtbar, solange die Scheiben nass sind.
 func _rain_drops(quad: QuadMesh) -> void:
+	HotelWindow.rain_drops(self, quad, Vector3(0, 0, -DROPS_GAP))
+
+
+## Tropfenfläche (window_rain.gdshader) für eine Scheibe in `parent`, bei `offset` vor ihrer Außenseite – auch für die
+## Dachfenster (LevelBuilder): Der Shader liest die Neigung aus der Lage der Fläche (lokal +Y = bergauf).
+static func rain_drops(parent: Node3D, quad: QuadMesh, offset: Vector3) -> MeshInstance3D:
 	if _drops_mat == null:
 		_drops_mat = ShaderMaterial.new()
 		_drops_mat.shader = load("res://shaders/window_rain.gdshader")
 		_drops_mat.render_priority = 1   # nach dem Glas zeichnen, das fast an derselben Stelle liegt
-	var drops := Geo.mesh(self, quad, _drops_mat, Vector3(0, 0, -DROPS_GAP))
+	var drops := Geo.mesh(parent, quad, _drops_mat, offset)
 	drops.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	drops.visible = Game.weather != null and Game.weather.panes_wet()
 	drops.add_to_group("rain_panes")
+	return drops
 
 
 func has_curtains() -> bool:

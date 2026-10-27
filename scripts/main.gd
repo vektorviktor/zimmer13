@@ -269,6 +269,8 @@ extends Node3D
 ##   --ratten[=welle]            fünf Ratten um dich im Keller (sonst im Heizkeller) · welle: nach 2 s rennen sie davon, als käme
 ##                               das Monster aus dem Heizkeller
 ##   --hund                      nach 1 s heult hinter der Waldkante ein Hund (sonst zufällig alle paar Spielminuten)
+##   --tiere[=eule|kraehen|hunde]  Tiere in der Ferne (7.8): nach 1 s ruft die Eule, krächzen Krähen, bellen Hunde –
+##                               ohne Wert alle nacheinander (sonst je nach Uhrzeit und Wetter)
 ##   --kesselkatze               Nacht, Kellergang: die schwarze Kesselkatze sitzt 5 m vor dir – sieh hin, sie geht voraus
 ##   --spiegel[=tuch]            vor dem Spiegel in Zimmer 13, nach 2 s steht die Gestalt hinter dir · tuch: er ist verhängt
 ##   --strom[=kasten]            Gewitter, gleich fliegt die Sicherung · kasten: Strom aus, du vor dem Sicherungskasten im UG
@@ -1614,6 +1616,8 @@ func _debug_omens(arg: String) -> bool:
 			get_tree().create_timer(1.0).timeout.connect(Game.rats.debug.bind(value))
 		"--hund":
 			Game.weather.howl(1.0)
+		"--tiere":
+			Game.weather.animals.debug(value)
 		"--kesselkatze":
 			get_tree().create_timer(1.0).timeout.connect(Game.boiler_cat.debug_show)
 		"--spiegel":
