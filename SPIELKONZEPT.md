@@ -129,7 +129,7 @@
   - [8.7 Laden & Tod](#87-laden--tod)
   - [8.8 Was gespeichert wird](#88-was-gespeichert-wird)
   - [8.9 Ausbau-Ideen (später)](#89-ausbau-ideen-später)
-  - [8.10 Speicherregel geschärft (entschieden 2026-10-21)](#810-speicherregel-geschärft-entschieden-2026-10-21)
+  - [8.10 Speicherregel geschärft (entschieden 2026-10-21, umgesetzt 2026-10-28)](#810-speicherregel-geschärft-entschieden-2026-10-21-umgesetzt-2026-10-28)
   - [8.11 Achievements (entschieden und gebaut 2026-10-26)](#811-achievements-entschieden-und-gebaut-2026-10-26)
 - [9. Technische Umsetzung (grob)](#9-technische-umsetzung-grob)
   - [9.1 Godot 4.7](#91-godot-47)
@@ -4857,7 +4857,7 @@ Dachform (4.21).
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9
-> Nicht umgesetzt: Lautstärke „Stimmen“ (es gibt noch keine Sprachausgabe), Tastenbelegung ändern, Fortschritt Fluchtweg als Autosave-Auslöser (Fluchtweg fehlt noch), die Speicherregel aus 8.10.
+> Nicht umgesetzt: Lautstärke „Stimmen“ (es gibt noch keine Sprachausgabe), Tastenbelegung ändern, Fortschritt Fluchtweg als Autosave-Auslöser (Fluchtweg fehlt noch). Die Speicherregel aus 8.10 ist seit 2026-10-28 gebaut.
 
 **Leitgedanke:** Speichern ist Teil des Horrors. Man kann **nur im eigenen Zimmer** speichern – jeder Ausflug in Flur, Keller oder Garten ist also ein echtes Risiko. Ein Tod kostet den Fortschritt seit dem letzten Tagebucheintrag.
 
@@ -4904,7 +4904,7 @@ Dachform (4.21).
     erscheinen erst nach dem ersten Angriff.
   - **Zum Hauptmenü** – mit Rückfrage und Hinweis „Zuletzt gespeichert vor 12 Minuten – ungespeicherter Fortschritt geht verloren.“
   - **Spiel beenden** – gleiche Rückfrage. Es wird **nicht** automatisch gespeichert (sonst ließe sich die Regel „nur im Zimmer speichern“ umgehen).
-  - **Unterbrechen und beenden** (entschieden 2026-10-21, 8.10) – legt einen Zwischenstand an, der beim nächsten Laden gelöscht wird.
+  - **Unterbrechen und beenden** (entschieden 2026-10-21, umgesetzt 2026-10-28, 8.10) – legt einen Zwischenstand an, der beim nächsten Laden gelöscht wird.
 - **Esc-Reihenfolge:**
   1. Ist ein Fenster offen (Dialog, Schnitzen, Tagebuch, Handel) → Esc **schließt dieses Fenster**.
   2. Sonst → Esc **öffnet das Spielmenü**.
@@ -4928,7 +4928,7 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 ### 8.5 Speichern am Tagebuch
 - Auf dem Schreibtisch in Zimmer 13 liegt das **Tagebuch** des Spielers. **E** → Blick aufs Tagebuch → **Slot 1–3 wählen** → ein Eintrag wird geschrieben = gespeichert. Solange die Tagebuch-Ansicht offen ist, **pausiert das Spiel** (wie im Menü).
 - **Gesperrt, solange das Monster unterwegs ist, der Kürbismann im Haus oder der Lakengeist beim Spieler ist:** Das Tagebuch lässt sich nicht beschreiben – *„Meine Hände zittern zu sehr.“* Alle anderen Situationen sind erlaubt (auch bei offener Tür oder mit einem Gegenstand in der Hand – der wird einfach mitgespeichert).
-- **Der Eintrag als Slot-Beschreibung:** Das Spiel formuliert automatisch einen kurzen Tagebuchsatz aus dem aktuellen Stand, z. B. *„Edna ist fort. Bruno redet nicht mehr mit mir. Vor meiner Tür brennen zwei Kürbisse.“* Dieser Satz erscheint in der Slot-Übersicht. Künftig nennt er nur Kernfiguren und zentrale Gäste mit Namen, der Rest wird gezählt (8.10).
+- **Der Eintrag als Slot-Beschreibung:** Das Spiel formuliert automatisch einen kurzen Tagebuchsatz aus dem aktuellen Stand, z. B. *„Edna ist fort. Bruno redet nicht mehr mit mir. Vor meiner Tür brennen zwei Kürbisse.“* Dieser Satz erscheint in der Slot-Übersicht. Er nennt nur Kernfiguren und zentrale Gäste mit Namen, der Rest wird gezählt (8.10, umgesetzt 2026-10-28 – bisher nur die Kernfiguren, die zentralen Gäste sind noch nicht besetzt, 6.0).
 - **Slot-Übersicht zeigt:** Vorschaubild (480 × 270), Tagebuchsatz, Spielzeit, Datum/Uhrzeit, lebende Gäste.
 - Das Tagebuch ist **fest verankert** (nicht tragbar, nicht klaubar) – sonst könnte man sich das Speichern verbauen.
 - **Meilensteine (3.10, entschieden 2026-10-23):** Beim Speichern schreibt die Figur auf, was seit dem letzten Eintrag
@@ -4942,8 +4942,9 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
   - Fortschritt beim Fluchtweg (Schlüssel gefunden, Rätsel gelöst) – auch Aufzug, Kopf, Erlösung (8.10)
   - Erstes Betreten eines neuen Bereichs (8.10)
   - **Aufwachen in Zimmer 13** nach einer Nacht Schlaf (8.10)
-  - *Im Prototyp gelten noch die alten Auslöser (Tod eines Gastes, Ende einer Feier, Aufschließen einer Tür), bis 8.10
-    gebaut ist.*
+  - *Umgesetzt 2026-10-28 (8.10): Die alten Auslöser (Tod eines Gastes, Ende einer Feier, Aufschließen einer Tür) sind
+    weg. Fortschritt ist bisher nur der Fund der Schlüssel zu Zimmer 18 und zum Dachboden – Aufzug, Erlösung und
+    Fluchtweg gibt es noch nicht, sie melden sich dann selbst (`SaveManager.on_progress`).*
 - **Nur in sicheren Momenten**, sonst wird der Autosave **aufgeschoben**, bis alle Bedingungen erfüllt sind:
   - Monster nicht unterwegs, kein Such- oder Jagdmodus
   - Spieler nicht im Versteck, nicht im Dialog, nicht in einem Minispiel
@@ -4977,8 +4978,21 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 - **Gäste lesen das Tagebuch:** Kommt ein Gast in Zimmer 13 (offene Tür, Schlüssel, Feier), kann er das Tagebuch lesen und so erfahren, wen man bestohlen oder dem Monster „geopfert“ hat (4.11, 6.2) → Abschließen lohnt sich doppelt. Das Tagebuch bleibt dabei fest im Zimmer. Drin steht es erst, wenn man seitdem gespeichert hat (3.10); das Notizbuch am Körper liest niemand.
 - **„Albtraum-Modus“:** ein einziger Slot, der Tod löscht ihn.
 
-### 8.10 Speicherregel geschärft (entschieden 2026-10-21)
-> Noch nicht umgesetzt (die Sperre während Kürbismann und Lakengeist schon, 2026-10-21).
+### 8.10 Speicherregel geschärft (entschieden 2026-10-21, umgesetzt 2026-10-28)
+> **Umgesetzt (2026-10-28)** wie unten (die Sperre während Kürbismann und Lakengeist schon seit 2026-10-21), mit diesen
+> Festlegungen beim Bau:
+> - **Neue Bereiche** sind nur noch Dachboden, U2 (sobald es gebaut ist) und Zimmer 18 als bisher einziger gebauter
+>   Sperrbereich (2.3) – Lobby, Flure, Keller und die übrigen Räume lösen keinen Autosave mehr aus.
+> - **Fortschritt** sind bisher die Schlüssel zu Zimmer 18 und zum Dachboden. Der Generalschlüssel (6.19) zählt nicht –
+>   er öffnet Gästezimmer, keinen Geheimnis-Ort. Aufzug, Erlösung des Kürbismanns und Fluchtweg rufen den Autosave,
+>   sobald sie gebaut sind.
+> - **Nach einer Nacht Schlaf** heißt: im eigenen Bett in Zimmer 13, mindestens zwei Stunden davon in der Nachtruhe;
+>   einmal je Nacht. Gesichert wird, sobald man aus dem Bett ist (sichere Momente, 8.6).
+> - **Zwischenstand:** gesperrt, solange auch das Tagebuch gesperrt ist (Monster unterwegs, Kürbismann, Lakengeist …) –
+>   diese Auftritte hält kein Spielstand fest. Er wird beim nächsten Laden gelöscht, auch wenn man einen anderen Stand
+>   lädt, und bei einem neuen Spiel. „Fortsetzen“ lädt ihn, in der Slot-Übersicht steht er als „Zwischenstand“.
+> - **Tagebuchsatz:** Namen bisher nur der Kernfiguren (zentrale Gäste noch nicht besetzt, 6.0), gleiche Beziehungen
+>   in einem Satz („Auf Edna und Bruno kann ich mich verlassen. Mit vier anderen bin ich befreundet.“).
 
 **Warum**
 - **Kein Checkpoint-System:** Speichern Tod eines Gastes, Ende einer Feier und das Aufschließen *jeder* Tür mitten im
@@ -5167,10 +5181,8 @@ Müdigkeit bis auf das Wecken, Lichtschalter, Aufträge der Gäste, Erfolge, Mas
    Rest des Maskenballs (5.19) mit den Masken-Erfolgen (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
 9. Eier-Streich der Kinder (6.13) · Tiere als Klang (7.8)
 10. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
-11. Speicherregel schärfen: Autosave nur bei Fortschritt, neuen Bereichen und Aufwachen, „Unterbrechen und beenden“,
-    Tagebuchsatz (8.10)
-12. Echte Modelle und Sounds für die übrigen Platzhalter
-13. Balancing
-14. Zerbrechende Fenster (7.3, für später vorgemerkt)
-15. Flecken auf den Tapeten, vermutlich von Hand (7.2)
+11. Echte Modelle und Sounds für die übrigen Platzhalter
+12. Balancing
+13. Zerbrechende Fenster (7.3, für später vorgemerkt)
+14. Flecken auf den Tapeten, vermutlich von Hand (7.2)
 16. Eigener, optimierter PS1-Modus (9.2, am Ende)

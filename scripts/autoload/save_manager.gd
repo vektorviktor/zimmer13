@@ -1,6 +1,8 @@
 extends Node
 ## Speichern & Laden (Autoload „SaveManager“, Spielkonzept 8).
-##   Slot 1–3: manuell am Tagebuch in Zimmer 13 · Slot 0: Autosave bei wichtigen Ereignissen.
+##   Slot 1–3: manuell am Tagebuch in Zimmer 13 · Slot 0: Autosave bei Fortschritt (on_progress), beim ersten Betreten
+##   eines neuen Bereichs (NEW_AREAS) und beim Aufwachen in Zimmer 13 nach einer Nacht Schlaf (8.10) ·
+##   Zwischenstand (SUSPEND): „Unterbrechen und beenden“ im Spielmenü, beim nächsten Laden gelöscht (8.10).
 ## Weil es kein Inventar gibt, ist die Welt der Spielstand: jeder Gegenstand mit Ort und
 ## Zustand, alle Gäste, die versteckten Werte des Monsters, Lampen, Türen, Vorhänge …
 ## Dateien: user://saves/slot_N.json (+ .png Vorschaubild), sicher geschrieben über .tmp.
@@ -117,8 +119,15 @@ const VERSION := 58
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
+## Zwischenstand von „Unterbrechen und beenden“ (8.10): nur einmal ladbar, steht in keiner Slot-Nummer 1–3
+const SUSPEND := SLOTS + 1
 ## Mindestabstand zum Monster für den Autosave (Tuning)
 const AUTOSAVE_MONSTER_DISTANCE := 25.0
+## Aufwachen in Zimmer 13 (8.10): so viele Spielsekunden muss der Schlaf in der Nachtruhe gelegen haben
+## (= Player.SLEEP_MIN, zwei Stunden) – wer nur kurz nachts die Augen zumacht, hat keine Nacht geschlafen
+const NIGHT_SLEEP := 120.0
+## Schlüssel, deren Fund Fortschritt ist (8.10): Zimmer 18 (Sperrbereich 2.3, Aufzug 7.4) und Dachboden (4.21)
+const PROGRESS_KEYS := ["zimmer_18", "dachboden"]
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
@@ -126,9 +135,10 @@ const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "l
 const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
 var WORLD_FILE := DIR + "world.txt"
-## Bereiche, deren erster Besuch einen Autosave auslöst
-const NEW_AREAS := ["Lobby", "Galerie", "Küche", "Speisesaal", "Bar", "Partyraum", "Pool", "Garten", "Innenhof Nordost", "Innenhof Südost",
-	"Ostflügel, Nordflur", "Westflügel, Südflur", "Treppenhaus", "Keller", "Zimmer 016", "Zimmer 017", "Zimmer 018"]
+## Neue Bereiche (8.10): Ihr erster Besuch löst einen Autosave aus – nur Dachboden, U2 (sobald es die Zone gibt, 7.4)
+## und die Sperrbereiche (2.3, bisher Zimmer 18), nicht mehr der Alltag (Lobby, Flure, Keller …). Weitere Sperrbereiche
+## (Personaltrakt, Büro der Direktion) kommen hierher, sobald sie gebaut sind. Namen wie in _area_at.
+const NEW_AREAS := ["Dachboden", "U2", "Zimmer 018"]
 
 ## Zeitpunkt (Ticks in ms) des letzten Speicherns oder Ladens in dieser Sitzung
 var last_save_msec := -1
@@ -138,6 +148,9 @@ var visited: Array = []
 var world := ""
 var _pending_autosave := ""
 var _check_timer := 0.0
+var _sleep_from := -1.0      ## Spielzeit, seit der der Spieler schläft (−1 = wach)
+var _sleep_home := false     ## … im eigenen Bett in Zimmer 13
+var _night_saved := -1.0     ## Ende der Nachtruhe, nach der zuletzt beim Aufwachen gesichert wurde (einmal je Nacht)
 
 
 func _ready() -> void:
@@ -155,6 +168,7 @@ func _process(delta: float) -> void:
 		return
 	_check_timer = 1.0
 	_check_new_area()
+	_check_wake()
 	if _pending_autosave != "" and is_safe_for_autosave():
 		var reason := _pending_autosave
 		_pending_autosave = ""
@@ -164,7 +178,8 @@ func _process(delta: float) -> void:
 # --- Slots -------------------------------------------------------------------------
 
 func slot_path(slot: int, ext: String = "json") -> String:
-	return DIR + ("autosave" if slot == AUTOSAVE else "slot_%d" % slot) + "." + ext
+	var file := "autosave" if slot == AUTOSAVE else ("suspend" if slot == SUSPEND else "slot_%d" % slot)
+	return DIR + file + "." + ext
 
 
 func slot_exists(slot: int) -> bool:
@@ -220,11 +235,11 @@ func thumbnail(slot: int) -> Texture2D:
 	return ImageTexture.create_from_image(img) if img else null
 
 
-## Neuester Spielstand (Slots und Autosave), −1 = keiner.
+## Neuester Spielstand (Slots, Autosave und Zwischenstand), −1 = keiner.
 func newest_slot() -> int:
 	var best := -1
 	var best_time := -1
-	for slot in range(0, SLOTS + 1):
+	for slot in range(0, SUSPEND + 1):
 		var info := slot_info(slot)
 		if not info.is_empty() and info["fits"] and int(info["saved_at"]) > best_time:
 			best_time = int(info["saved_at"])
@@ -286,8 +301,25 @@ func save_to(slot: int, text: String, thumb: Image) -> bool:
 	return ok
 
 
+## Autosave im nächsten sicheren Moment (8.6). Auslöser nur noch Fortschritt, neue Bereiche und das Aufwachen (8.10) –
+## nicht Tod eines Gastes, Ende einer Feier oder eine aufgeschlossene Tür: sonst wäre man alle paar Minuten gesichert.
 func request_autosave(reason: String) -> void:
 	_pending_autosave = reason
+	if Game.tracing:
+		print("[Autosave] vorgemerkt: %s" % reason)
+
+
+## Fortschritt (Spielkonzept 8.10): Systeme rufen das, wenn ein großer Schritt geschafft ist – Aufzug repariert (7.4),
+## Kopf gefunden und Kürbismann erlöst (4.21), ein wichtiger Schlüssel (on_key), später der Fluchtweg. Einmal je
+## Ereignis rufen; der Autosave folgt im nächsten sicheren Moment.
+func on_progress(reason: String) -> void:
+	request_autosave("Fortschritt: " + reason)
+
+
+## Ein Schlüssel kommt an den Bund (Player.add_key): Die aus PROGRESS_KEYS sind Fortschritt.
+func on_key(id: String) -> void:
+	if id in PROGRESS_KEYS:
+		on_progress("Schlüssel „%s“" % id)
 
 
 ## Nur in sicheren Momenten (8.6) – sonst wird der Autosave aufgeschoben.
@@ -310,21 +342,77 @@ func is_safe_for_autosave() -> bool:
 	return true
 
 
-func autosave(_reason: String) -> void:
+func autosave(reason: String) -> void:
 	# Headless (Testläufe) gibt es kein Bild – dann ohne Vorschau
 	var thumb: Image = null if DisplayServer.get_name() == "headless" else get_viewport().get_texture().get_image()
-	if save_to(AUTOSAVE, diary_sentence(), thumb):
+	var text := diary_sentence()
+	if save_to(AUTOSAVE, text, thumb):
 		autosaved.emit()
+		if Game.tracing:
+			print("[Autosave] gespeichert (%s): „%s“" % [reason, text])
 
 
 func _check_new_area() -> void:
-	var zone := Game.director._zone_at(Game.player.global_position)
-	if zone.is_empty():
+	var area := _area_at(Game.player.global_position)
+	if area in NEW_AREAS and not area in visited:
+		visited.append(area)
+		request_autosave("Neuer Bereich: " + area)
+
+
+## Bereich für NEW_AREAS: der Name der Zone – im Dachgeschoss „Dachboden“ (dessen Flurzonen heißen wie die im
+## Obergeschoss; Höhe des Bodens wie bei den Fledermäusen aus den Pfosten).
+func _area_at(p: Vector3) -> String:
+	var builder: LevelBuilder = Game.social.builder if Game.social else null
+	if builder and not builder.attic_beams.is_empty() and absf(p.y - (builder.attic_beams[0]["pos"] as Vector3).y) < 1.5:
+		return "Dachboden"
+	return Game.director.zone_name_at(p)
+
+
+## Aufwachen in Zimmer 13 nach einer Nacht Schlaf (8.10, 2.4, 3.6): Der Schlaf im eigenen Bett lag mindestens
+## NIGHT_SLEEP in einer Nachtruhe – dann ein Autosave, einmal je Nacht. Fremde Betten zählen nicht. Hier abgefragt
+## statt im Schlaf selbst, damit Player und SleepSkip unberührt bleiben.
+func _check_wake() -> void:
+	var p := Game.player
+	var now := Game.director.elapsed
+	if p.sleeping:
+		if _sleep_from < 0.0:
+			_sleep_from = now
+			_sleep_home = p.hiding != null and p.hiding.own_bed
 		return
-	var zone_name: String = zone["name"]
-	if zone_name in NEW_AREAS and not zone_name in visited:
-		visited.append(zone_name)
-		request_autosave("Neuer Bereich: " + zone_name)
+	if _sleep_from < 0.0:
+		return
+	var from := _sleep_from
+	_sleep_from = -1.0
+	if not _sleep_home or p.dead or Game.social == null:
+		return
+	var day := Calendar.raw_day_of(from)
+	for d in [day - 1, day]:
+		var night: Vector2 = Game.social.night_window(d)
+		if minf(now, night.y) - maxf(from, night.x) >= NIGHT_SLEEP and night.y != _night_saved:
+			_night_saved = night.y
+			request_autosave("Aufgewacht in Zimmer 13")
+			return
+
+
+## Neues Spiel oder geladener Stand: nichts mehr vorgemerkt, Schlaf von vorn.
+func reset_pending() -> void:
+	_pending_autosave = ""
+	_sleep_from = -1.0
+	_night_saved = -1.0
+
+
+## „Unterbrechen und beenden“ (8.10): legt den Zwischenstand an – jederzeit, aber nicht in Momenten, die der
+## Spielstand nicht festhält (can_save: Monster unterwegs, Kürbismann, Lakengeist …). false = nicht gespeichert.
+func suspend(thumb: Image) -> bool:
+	return can_save() and save_to(SUSPEND, diary_sentence(), thumb)
+
+
+## Den Zwischenstand gibt es nur einmal: Beim nächsten Laden – egal welchen Standes – und bei einem neuen Spiel
+## vom Titelbildschirm ist er weg.
+func drop_suspend() -> void:
+	for ext in ["json", "png"]:
+		if FileAccess.file_exists(slot_path(SUSPEND, ext)):
+			DirAccess.remove_absolute(slot_path(SUSPEND, ext))
 
 
 # --- Laden -------------------------------------------------------------------------
@@ -337,8 +425,9 @@ func load_slot(slot: int) -> bool:
 		return false
 	Game.pending_load = data
 	Game.new_game_slot = 0
-	if slot != AUTOSAVE:
+	if slot != AUTOSAVE and slot != SUSPEND:
 		Game.current_slot = slot
+	drop_suspend()   # nur einmal ladbar (8.10) – der Stand steckt jetzt in pending_load
 	Game.enter_game()
 	return true
 
@@ -350,27 +439,20 @@ func load_newest() -> bool:
 
 # --- Tagebuchsatz ---------------------------------------------------------------------
 
-## Ein kurzer Tagebuchsatz aus dem aktuellen Stand – erscheint in der Slot-Übersicht.
+## Zahlwörter für den Tagebuchsatz („zwei Kürbisse“), darüber Ziffern
+const NUMBER_WORDS := ["null", "ein", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun", "zehn", "elf",
+	"zwölf"]
+
+
+## Ein kurzer Tagebuchsatz aus dem aktuellen Stand – erscheint in der Slot-Übersicht. Mit Namen nur, wer zählt
+## (_named_in_diary), die übrigen Gäste werden gezählt (8.10): „Edna ist fort. Neun andere auch.“
 func diary_sentence() -> String:
 	var parts: Array[String] = []
 	var contest_line := Game.contest.diary_line() if Game.contest else ""   # Ankunft bzw. erstes Urteil der Puppe (2.5)
 	if contest_line != "":
 		parts.append(contest_line)
 	if Game.social:
-		for guest in Game.social.guests:
-			if guest.dead:
-				parts.append("%s ist fort." % guest.display_name)
-		for guest in Game.social.living_guests():
-			var g: Guest = guest
-			match Social.tier(g):
-				Social.Tier.STRONG_ENEMY:
-					parts.append("%s hasst mich. Ich gehe ihm aus dem Weg." % g.display_name)
-				Social.Tier.ENEMY:
-					parts.append("%s redet nicht mehr mit mir." % g.display_name)
-				Social.Tier.FRIEND:
-					parts.append("%s und ich sind Freunde geworden." % g.display_name)
-				Social.Tier.GOOD_FRIEND:
-					parts.append("Auf %s kann ich mich verlassen." % g.display_name)
+		parts.append_array(_guest_lines())
 	var lit := 0
 	var deco := 0
 	if Game.director:
@@ -384,7 +466,7 @@ func diary_sentence() -> String:
 				if item.lit and item.kind == Item.Kind.CARVED_PUMPKIN:
 					lit += 1
 	if lit > 0:
-		parts.append("Vor meiner Tür brennen %s." % ("ein Kürbis" if lit == 1 else "%d Kürbisse" % lit))
+		parts.append("Vor meiner Tür brennt ein Kürbis." if lit == 1 else "Vor meiner Tür brennen %s Kürbisse." % _number(lit))
 	elif deco == 0:
 		parts.append("Vor meiner Tür steht nichts. Gar nichts.")
 	if Game.player and Game.player.shock > 0.3:
@@ -398,12 +480,78 @@ func diary_sentence() -> String:
 	return date + " ".join(parts.slice(0, 3))
 
 
+## Wer im Tagebuchsatz mit Namen vorkommt (8.10): die Kernfiguren (6.0). Die zentralen Gäste kommen hier dazu, sobald
+## sie besetzt sind.
+static func _named_in_diary(guest: Guest) -> bool:
+	return guest.is_core()
+
+
+## Die Gäste im Tagebuchsatz, je Gruppe ein Teil: die Toten, wer nicht mehr mit mir redet, Freunde. Mit Namen nur
+## _named_in_diary, die übrigen als Zahl dahinter – „Edna ist fort. Neun andere auch.“
+func _guest_lines() -> Array[String]:
+	var names := {"dead": [], Social.Tier.STRONG_ENEMY: [], Social.Tier.ENEMY: [], Social.Tier.FRIEND: [],
+		Social.Tier.GOOD_FRIEND: []}
+	var count := {"dead": 0, "enemies": 0, "friends": 0}
+	for guest in Game.social.guests:
+		var g: Guest = guest
+		var tier := Social.tier(g) if not g.dead else Social.Tier.NEUTRAL
+		var group := "dead" if g.dead else ("enemies" if tier in [Social.Tier.ENEMY, Social.Tier.STRONG_ENEMY]
+			else ("friends" if tier in [Social.Tier.FRIEND, Social.Tier.GOOD_FRIEND] else ""))
+		if group == "":
+			continue
+		if _named_in_diary(g):
+			names["dead" if g.dead else tier].append(g.display_name)
+		else:
+			count[group] += 1
+	# Benannte: je Stufe ein Satz, mehrere Namen darin zusammen („Auf Edna und Bruno kann ich mich verlassen.“)
+	var said := func(key: Variant, one: String, many: String) -> String:
+		var list: Array = names[key]
+		return "" if list.is_empty() else (one if list.size() == 1 else many) % _names(list)
+	var enemies := " ".join([said.call(Social.Tier.STRONG_ENEMY, "%s hasst mich. Ich halte mich fern.",
+		"%s hassen mich. Ich halte mich fern."), said.call(Social.Tier.ENEMY, "%s redet nicht mehr mit mir.",
+		"%s reden nicht mehr mit mir.")]).strip_edges()
+	var friends := " ".join([said.call(Social.Tier.GOOD_FRIEND, "Auf %s kann ich mich verlassen.",
+		"Auf %s kann ich mich verlassen."), said.call(Social.Tier.FRIEND, "%s und ich sind Freunde geworden.",
+		"Mit %s bin ich befreundet.")]).strip_edges()
+	var lines: Array[String] = []
+	for entry in [
+			[said.call("dead", "%s ist fort.", "%s sind fort."), count["dead"],
+				["Und noch einer.", "%s andere auch.", "Ein Gast ist fort.", "%s Gäste sind fort."], true],
+			[enemies, count["enemies"], ["Noch einer redet nicht mehr mit mir.", "%s andere reden nicht mehr mit mir.",
+				"Ein Gast redet nicht mehr mit mir.", "%s Gäste reden nicht mehr mit mir."], true],
+			[friends, count["friends"], ["Mit noch einem bin ich befreundet.", "Mit %s anderen bin ich befreundet.",
+				"Mit einem Gast bin ich befreundet.", "Mit %s Gästen bin ich befreundet."], false]]:
+		var text: String = entry[0]
+		var n: int = entry[1]
+		if n > 0:
+			var form: String = entry[2][(0 if text != "" else 2) + (0 if n == 1 else 1)]
+			text += (" " if text != "" else "") + (form % _number(n, entry[3]) if n > 1 else form)
+		if text != "":
+			lines.append(text)
+	return lines
+
+
+## „Edna“, „Edna und Bruno“, „Edna, Bruno und Mila“.
+static func _names(names: Array) -> String:
+	if names.size() == 1:
+		return names[0]
+	return ", ".join(names.slice(0, names.size() - 1)) + " und " + names[-1]
+
+
+## Zahl als Wort bis zwölf („neun“, am Satzanfang „Neun“), darüber in Ziffern.
+static func _number(n: int, capital: bool = false) -> String:
+	var word: String = NUMBER_WORDS[n] if n < NUMBER_WORDS.size() else str(n)
+	return word.capitalize() if capital else word
+
+
 # --- Zustand einsammeln ------------------------------------------------------------------
 
 func collect() -> Dictionary:
 	var tree := get_tree()
 	var p := Game.player
 	var stand := p.stand_position()   # im Sitzen: wo er aufstünde (geladen wird stehend)
+	if p.hiding:   # im Versteck oder Bett (nur beim Zwischenstand, 8.10): davor
+		stand = p.hiding.exit_point.global_position
 	var data := {
 		"version": VERSION,
 		"world": world,
@@ -557,6 +705,7 @@ func apply(data: Dictionary) -> void:
 	var tree := get_tree()
 	var parent := Game.player.get_parent()   # dort liegen die Gegenstände (nicht `world`, das ist der Fingerabdruck)
 	visited = (data.get("visited", []) as Array).duplicate()
+	reset_pending()
 	Game.money = int(data.get("money", 5))
 	Game.current_slot = int(data.get("current_slot", Game.current_slot))
 	# Laufendes Schmücken, Deko-Suche, Suppenessen und Kaffeekochen werden nicht gespeichert – und die Gäste gleich neu gebaut

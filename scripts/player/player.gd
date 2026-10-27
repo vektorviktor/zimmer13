@@ -732,6 +732,7 @@ func add_map_page(id: String) -> void:
 func add_key(id: String) -> void:
 	if not id in keyring:
 		keyring.append(id)
+		SaveManager.on_key(id)   # wichtige Schlüssel sind Fortschritt – Autosave (8.10)
 	_pocket_map.set_content(map_pages, keyring)
 
 

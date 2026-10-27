@@ -969,7 +969,6 @@ func on_guest_died(guest: Guest, cause: String = "monster", quiet: bool = false)
 		get_tree().create_timer(randf_range(20.0, 60.0), false).timeout.connect(func() -> void:
 			if is_instance_valid(w) and not w.dead:
 				_leave_note(w, DEATH_NOTES, w.home["door_front"], dead_name))
-	SaveManager.request_autosave("Tod eines Gastes")
 	if party_active and party_host == guest.id:
 		end_party("")
 	# Schock, wenn es ein Freund war – stärker, wenn man ihn vorher bestohlen hat (Schuld)
@@ -1355,7 +1354,6 @@ func end_party(message: String) -> void:
 	_party_cooldown = PARTY_COOLDOWN
 	if message != "":
 		Game.say(message, 3.5)
-	SaveManager.request_autosave("Ende einer Feier")
 
 
 func _update_party(delta: float) -> void:

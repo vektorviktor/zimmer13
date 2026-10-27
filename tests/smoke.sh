@@ -86,6 +86,11 @@ done <<'LIST'
 400|bitten,kinder|--bitte=max,herz,erfuellen --trace
 600|bitten,speichern,notizbuch|--notizbuch --bitte=simon,herz,annehmen --savetest --trace
 600|speichern|--savetest --day=20
+400|speichern,autosave|--pocket --fortschritt --trace
+600|speichern,autosave,dachboden|--dachboden --trace
+1100|speichern,autosave,schlaf|--day=3 --uhr=1:10 --hoerer --sleep=bett,8 --trace
+400|speichern,autosave|--unterbrechen=laden --trace
+600|speichern,autosave,tod|--kill=emilhartung,weg,blut --fortschritt --trace
 600|speichern,spieler|--bag --flashlight --savetest
 600|speichern,kuerbis|--day=12 --rot=eingefallen --savetest --trace
 1200|kuerbis,deko|--day=26 --rot --decorate=allein --trace

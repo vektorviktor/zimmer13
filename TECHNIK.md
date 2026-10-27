@@ -1231,7 +1231,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
 
 ## 7. Speichern & Laden
 
-- JSON in `user://saves/` (`slot_1..3.json`, `autosave.json` + `.png`), geschrieben über `.tmp` + Umbenennen.
+- JSON in `user://saves/` (`slot_1..3.json`, `autosave.json`, `suspend.json` + `.png`), geschrieben über `.tmp` + Umbenennen.
   `SaveManager.collect()` sammelt, `SaveManager.apply(data)` stellt her. Headless (Testläufe, Rauchtest) und mit `--bg`
   stattdessen `user://saves_headless/` (`SaveManager.DIR`) – sonst überschreibt ein Testlauf den echten Autosave.
 - **Laden = Hauptszene neu aufbauen, dann befüllen.** `load_slot` setzt `Game.pending_load` und wechselt die Szene;
@@ -1272,7 +1272,29 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   `resources` (mit `guest_day`) und die Welt-Gruppen.
 - **Speichern gesperrt** (`can_save`) bei Jagd oder Monster in der Nähe, während der Flackerwelle, solange der
   Kürbismann sich ankündigt oder im Hotel ist und der Lakengeist beim Spieler ist; Autosave nur in sicheren Momenten
-  (`is_safe_for_autosave`, auch nicht ohne Boden unter den Füßen), sonst aufgeschoben. Auslöser: Spielkonzept 8.6.
+  (`is_safe_for_autosave`, auch nicht ohne Boden unter den Füßen), sonst aufgeschoben (`request_autosave` merkt einen
+  Grund vor, `_process` prüft jede Sekunde).
+- **Autosave-Auslöser (Spielkonzept 8.10)** – nur noch drei, nicht mehr Tod eines Gastes, Ende einer Feier oder
+  aufgeschlossene Türen:
+  - **Fortschritt:** `SaveManager.on_progress(grund)` – der Aufruf für alle Systeme, die einen großen Schritt erkennen
+    (Aufzug repariert, Kürbismann erlöst, Fluchtweg …); einmal je Ereignis rufen. Heute hängt daran nur
+    `Player.add_key` → `on_key(id)`: Schlüssel aus `PROGRESS_KEYS` (`zimmer_18`, `dachboden`). Debug `--fortschritt`.
+  - **Neuer Bereich:** `NEW_AREAS` (Dachboden, U2, Sperrbereiche – bisher Zimmer 018), erster Besuch je Spiel in
+    `visited` (gespeichert). `_area_at` nimmt den Zonennamen, im Dachgeschoss „Dachboden“ (dessen Flurzonen heißen wie
+    im OG; Bodenhöhe aus `LevelBuilder.attic_beams`).
+  - **Aufwachen in Zimmer 13:** `_check_wake` merkt sich beim Einschlafen Zeit und Bett (`HideSpot.own_bed`) und
+    sichert beim Aufwachen, wenn der Schlaf mindestens `NIGHT_SLEEP` in einer Nachtruhe (`Social.night_window`) lag –
+    einmal je Nacht (`_night_saved`). Abgefragt statt im Schlafsystem eingehängt; der Autosave folgt, sobald man aus
+    dem Bett ist (sichere Momente).
+  `reset_pending` (neues Spiel, `apply`) verwirft Vorgemerktes. Mit `--trace` „[Autosave] vorgemerkt/gespeichert“.
+- **Zwischenstand (8.10):** „Unterbrechen und beenden“ im Spielmenü (`Menus._confirm_suspend`) → `SaveManager.suspend`
+  schreibt Slot `SUSPEND` (`suspend.json`, Bild ohne Menü nach einem gezeichneten Bild) und beendet. Gesperrt wie das
+  Tagebuch (`can_save`). Im Versteck oder Bett speichert `collect` die Lage vor dem Versteck (`exit_point`). `load_slot`
+  löscht ihn bei jedem Laden (`drop_suspend` – der Stand steckt dann in `pending_load`), ebenso `Game.start_new_game`.
+  `newest_slot` (Fortsetzen) und `SlotList` im Modus LOAD kennen ihn. Debug `--unterbrechen[=laden]`.
+- **Tagebuchsatz** (`diary_sentence`, 8.5, 8.10): Zeile der Puppe, dann je Gruppe ein Teil (`_guest_lines`: Tote,
+  Feinde, Freunde) – mit Namen nur `_named_in_diary` (Kernfiguren; zentrale Gäste docken dort an), der Rest gezählt
+  („Edna ist fort. Neun andere auch.“, Zahlwörter bis zwölf), dann Kürbisse vor der Tür, Zittern; höchstens drei Teile.
 - **Prüfen:** `--savetest` sammelt → wendet an → sammelt erneut und meldet Unterschiede – nur nötig, wenn sich am
   Speichern etwas ändert. Bekanntes Rauschen gleicht `main._settle` an und meldet es als „(kein Fehler)“: Türen mit
   einem Gast im Türrahmen, Dinge in der Hand, Drehung liegender Gegenstände (Euler-Mehrdeutigkeit, Nachrollen),

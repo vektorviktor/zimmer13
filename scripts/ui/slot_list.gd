@@ -1,7 +1,8 @@
 class_name SlotList
 extends VBoxContainer
 ## Slot-Übersicht (Spielkonzept 8.5): Vorschaubild, Tagebuchsatz, Spielzeit, Datum,
-## lebende Gäste. Modus LOAD zeigt zusätzlich den Autosave; leere und nicht mehr passende Slots
+## lebende Gäste. Modus LOAD zeigt zusätzlich den Autosave und, falls es ihn gibt, den Zwischenstand von
+## „Unterbrechen und beenden“ (8.10, nur einmal ladbar); leere und nicht mehr passende Slots
 ## (SaveManager.fits) sind dann gesperrt.
 
 signal picked(slot: int)
@@ -28,6 +29,8 @@ func refresh() -> void:
 	var slots: Array[int] = [1, 2, 3]
 	if mode == Mode.LOAD:
 		slots.push_front(SaveManager.AUTOSAVE)
+		if SaveManager.slot_exists(SaveManager.SUSPEND):
+			slots.push_front(SaveManager.SUSPEND)
 	for slot in slots:
 		add_child(_row(slot))
 
@@ -66,6 +69,8 @@ func _row(slot: int) -> Control:
 	text.add_theme_constant_override("separation", 0)
 	row.add_child(text)
 	var slot_name := "Autosave" if slot == SaveManager.AUTOSAVE else "Slot %d" % slot
+	if slot == SaveManager.SUSPEND:
+		slot_name = "Zwischenstand (nur einmal ladbar)"
 	if slot == highlight:
 		slot_name += "  (aktuell)"
 	var head := UiKit.label(slot_name, 10, UiKit.ACCENT if slot == highlight else UiKit.INK)
