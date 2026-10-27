@@ -34,3 +34,7 @@ reference/*
 
 # Python-Zwischendateien (tools/mixamo_retarget.py wird von den Blender-Skripten importiert)
 __pycache__/
+
+# Wiederhergestellte Aseprite-Dateien nach Absturz und verirrte Rauchtest-Ergebnisse
+*-Recovered.aseprite
+/.res
