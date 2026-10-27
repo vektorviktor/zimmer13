@@ -28,6 +28,8 @@ var burn_out := false      ## Abgebrannt (Kerze, Kürbis).
 var switched_off := false  ## Lichtschalter aus, Birne fehlt oder ist durchgebrannt.
 var flicker := 0.0
 var wave := 0.0
+## 0..1: die Flamme duckt sich – Deko hat gerade das Monster abgewiesen (Item.flinch, Spielkonzept 5.10)
+var duck := 0.0
 ## Feste Helligkeit 0..1 (≥ 0), unabhängig vom Schalter – das Flackern des Monsters kommt noch dazu. Die Badlampe beim
 ## Lakengeist in der Dusche (ShowerScare, Spielkonzept 4.24): dunkel und pulsierend, der Schalter ändert nichts. −1 = aus.
 var hold := -1.0
@@ -71,7 +73,7 @@ func _process(delta: float) -> void:
 	var level := _level * (0.05 if _stutter_off else 1.0) * (1.0 + NEAR_BOOST * _near)
 	if hold >= 0.0:
 		level = _level * hold
-	light_energy = base_energy * level
+	light_energy = base_energy * level * (1.0 - 0.7 * duck)
 	# Nur schreiben, wenn sich etwas ändert – Hunderte Lampen, und das Flackern wechselt nur alle paar Bilder
 	if lamp_material and lamp_material.get_shader_parameter("emission_energy") != 2.5 * level:
 		lamp_material.set_shader_parameter("emission_energy", 2.5 * level)

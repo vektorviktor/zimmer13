@@ -209,6 +209,8 @@ done <<'LIST'
 4000|feier,monster,gaeste|--attacks=10 --party --trace
 400|spieler,spuren|--flashlight=uv
 600|deko,licht|--deco=lichter,g --pos=55,0.1,-7.9,180,14
+600|deko,abschreckung,monster|--abweisung --trace
+600|deko,abschreckung,monster|--abweisung=dunkel --trace
 600|welt,wetter|--weather=blitz
 600|wetter|--day=31 --uhr=23 --pos=45,0.1,-37,180 --weather=gestalt --trace
 600|wetter|--day=25 --pos=45,0.1,-37,180 --weather=blut --savetest --trace

@@ -7,6 +7,9 @@ extends MeshInstance3D
 var frames: Array[ArrayMesh] = []
 var wax: GeometryInstance3D
 var _time := randf() * 10.0
+## 0..1: duckt sich – flacher und breiter (Deko hat das Monster abgewiesen, Item.flinch, Spielkonzept 5.10)
+var duck := 0.0
+var _scale := Vector3.ZERO   ## Größe ungeduckt (beim ersten Bild gemerkt)
 
 
 func _notification(what: int) -> void:
@@ -18,7 +21,9 @@ func _notification(what: int) -> void:
 func _process(delta: float) -> void:
 	if not is_visible_in_tree():
 		return
-	global_basis = Basis.from_scale(global_basis.get_scale())
+	if _scale == Vector3.ZERO:
+		_scale = global_basis.get_scale()
+	global_basis = Basis.from_scale(_scale * Vector3(1.0 + 0.35 * duck, 1.0 - 0.6 * duck, 1.0 + 0.35 * duck))
 	if frames.is_empty():
 		return
 	_time += delta

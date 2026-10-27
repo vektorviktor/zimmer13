@@ -738,10 +738,18 @@ natürlichen Erscheinen: `_update_schedule` (Auftritt um 10 s verschoben), die S
   macht eine Stelle heiß oder verschmilzt mit einer unter `HOT_MERGE`; `curiosity_at(p)` = `CURIOSITY_BASE` + Hitze der
   Stellen auf demselben Stockwerk (voll bis `HOT_CORE`, auslaufend bis `HOT_RADIUS`). `_cool_down(dt)` lässt Hitze
   (`HOT_HALF_LIFE`) und Boni abklingen, je Frame und im Zeitsprung. Gespeichert in `save_state` (Speicherformat 53).
-- `pressure_at(p)` aus Dreistigkeit und Neugier, `deterrence_at(p)` aus Deko × Licht / `demand()` plus Licht allein,
+- `pressure_at(p)` aus Dreistigkeit und Neugier, `deterrence_at(p)` aus Deko / `demand()` plus Licht allein,
   im Katzenraum unendlich (`LevelBuilder.is_safe`). Deko zählt nur auf demselben Stockwerk, mit `Item.deco_value()`;
   Füllmaterial (`Item.is_filler()`) zusammen höchstens `FILLER_CAP` je Stelle (`_deco_strength`, auch für die Puppe).
   `is_blocked` / `is_protected`.
+- **Schutzkreis = Lichtschein** (5.10, Stufe 2, `_deco_share`): Deko mit Licht zählt bis `Item.glow_reach()`
+  (`GLOW_REACH` × Lichtreichweite; 0, wenn aus, ohne Kerze oder im Stromausfall) und nur, wenn ihr Schein p erreicht
+  (`_glow_reaches`, Strahl vom Licht wie in `light_at`), ×`GLOW_DECO`, zum Rand hin halb – darin ist der frühere
+  Licht-Faktor aufgegangen. Deko ohne Licht zählt ×`DARK_DECO` und nur vor einer Zimmertür (`_door_front_at`, bis
+  `DOOR_DEMAND_RANGE`), wenn sie höchstens `DARK_DECO_RADIUS` von ihr steht oder hängt. **Sichtbare Abweisung:**
+  `show_repel(p)` (aus `Monster._check_deterrence`) ruft `Item.flinch` an allem, was bei p schützt – Flamme
+  (`CandleFlame.duck`) und Licht (`FlickerLight.duck`) ducken sich `FLINCH_TIME` s, der Kürbis glüht schwächer,
+  hängende Deko schwingt mit `FLINCH_UNREST`. Debug `--abweisung[=dunkel]`, `--trace` `[Abweisung]`, `--shot-on=repel`.
 - `light_at(p)`: Summe aller `light_source` mit freier Sichtlinie (Raycast) + Mondlicht durch Außenfenster mit offenem
   Vorhang. Teuer → sparsam aufrufen. Die Lichter kommen aus einem Raster (`_lights_near`, `LIGHT_CELL`, neu einsortiert
   alle `LIGHT_GRID_FRAMES`, Spielraum `LIGHT_GRID_SLACK` für getragene Lichter); An/Aus prüft `light_at` selbst.
@@ -867,7 +875,7 @@ Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `st
 - **Abschreckung** (`_check_deterrence`): Deko + Licht blockieren nur, wenn das Ziel (`_goal()`) selbst im Schutz
   liegt – vorbeigehen darf es (die Deko vor den Türen deckte sonst den ganzen Flur ab). Beim Jagen gilt
   `is_protected(Gejagter)`. Zurückgeschreckt ohne UV → anderes Ziel (`_next_roam`), der Gejagte kommt für
-  `REBUFF_TIME` in `_rebuffed`.
+  `REBUFF_TIME` in `_rebuffed`. Was abgewiesen hat, zeigt es (`MonsterDirector.show_repel`).
 - **Rückzug (`RETREAT`) nur:** Ende des Auftritts (`go_home`), nach einem Opfer (`after_feeding`), UV, harmloser
   Raubzug (`_abort`). Nach einem Schreck `after_scare(opfer)` → `SLINK` (nicht auf dem Rückweg); das Opfer steht bis
   zum nächsten Auftritt in `_spared`. Von außen außerdem `track(pos)` (Peilen), `replan()` (neues Ziel vom Director),

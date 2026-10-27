@@ -2986,7 +2986,7 @@ ihm.
   Verschwundenen. Es landet im Tagebuch bzw. im Abspann. Wer zum Vampir geworden ist, **fehlt auf dem Bild** (4.22,
   vorgemerkt 2026-10-23).
 
-### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23)
+### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23, Stufe 2 2026-10-28)
 > Macht den Pitch (1) wahr – „Die Deko ist knapp“. In drei Stufen: **1** Anspruch, Kisten, Kürbisse und Verfall · **2** Schutzkreis = Lichtschein, sichtbare
 > Abweisung (Teil 3 unten) · **3** Gäste schmücken mit Plan und klauen bei Knappheit (Teil 5).
 >
@@ -3009,6 +3009,13 @@ ihm.
 > - **Faulen:** geschnitzte nach 3 Tagen, ungeschnitzte und Zierkürbisse nach 7; ab 60 % der Zeit **welk** (dunkler,
 >   zählt ×0,7), ab 85 % **eingefallen** (gestaucht, ×0,4), dann weg. Schnitzen setzt die Restzeit auf höchstens 3 Tage.
 >   Was im Koffer eines Gastes liegt (nur gezählt), fault nicht.
+>
+> **Stufe 2 umgesetzt (2026-10-28):** Deko mit Licht zählt so weit, wie ihr Schein sichtbar hinfällt (etwa 80 % der
+> Lichtreichweite: Kürbis ~2,8 m, Totenkopf ~2,2 m, Kerze ~2 m, Stummel weniger, Lichterkette je nach Länge), nicht durch
+> Wände und geschlossene Türen, zum Rand hin halb so viel. Damit sie so stark bleibt wie bisher an einer hellen Tür,
+> zählt sie im Schein ×1,6 (der alte Licht-Faktor). Deko ohne Licht zählt ×0,5 und nur vor einer Zimmertür, an der sie
+> selbst steht oder hängt (bis 1,5 m). Weist Deko das Monster ab, ducken sich die Flammen gut eine Sekunde lang (flacher,
+> schwächeres Licht, der Kürbis glüht matter), hängende Deko schwingt; stehende Kürbisse wackeln nicht.
 
 **Warum**
 - **Knapp statt nachwachsend:** Wächst jede Quelle nach und schmückt sich das Hotel selbst (5.9), wartet man einfach –
