@@ -4857,7 +4857,8 @@ Dachform (4.21).
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9
-> Nicht umgesetzt: Lautstärke „Stimmen“ (es gibt noch keine Sprachausgabe), Tastenbelegung ändern, Fortschritt Fluchtweg als Autosave-Auslöser (Fluchtweg fehlt noch), die Speicherregel aus 8.10.
+> Tastenbelegung ändern umgesetzt 2026-10-28 (8.4).
+> Nicht umgesetzt: Lautstärke „Stimmen“ (es gibt noch keine Sprachausgabe), Fortschritt Fluchtweg als Autosave-Auslöser (Fluchtweg fehlt noch), die Speicherregel aus 8.10.
 
 **Leitgedanke:** Speichern ist Teil des Horrors. Man kann **nur im eigenen Zimmer** speichern – jeder Ausflug in Flur, Keller oder Garten ist also ein echtes Risiko. Ein Tod kostet den Fortschritt seit dem letzten Tagebucheintrag.
 
@@ -4922,7 +4923,7 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 | **Bild** | **Helligkeit/Gamma mit Kalibrierbild** („Der Kürbis soll gerade noch erkennbar sein“) – wichtig, weil Dunkelheit Spielmechanik ist (4.4) · Vollbild/Fenster (Start immer im Fenster, 11.10.2026) · VSync · Sichtfeld (FOV, Standard 90°, 60–120° – 27.10.2026) · Spiegelungen an/aus (glatte Flächen spiegeln, kostet Leistung – 21.10.2026) |
 | **PS1-Look** | Hauptschalter an/aus · Interne Auflösung · Vertex-Wackeln an/aus · Dithering an/aus |
 | **Ton** | Gesamt · Musik · Effekte · Stimmen |
-| **Steuerung** | Mausempfindlichkeit · Y-Achse invertieren · Ducken halten/umschalten · später Tastenbelegung |
+| **Steuerung** | Mausempfindlichkeit · Y-Achse invertieren · Ducken halten/umschalten · **Tastenbelegung** (umgesetzt 2026-10-28): je Aktion Haupt- und Zweittaste, Taste oder Maustaste; Doppelbelegung wird getauscht, verliert eine Aktion dabei ihre letzte Taste, warnt das Menü deutlich; „Standard wiederherstellen“; fest bleiben Esc, Taschenfächer 1–6, Mausrad und Debug-Tasten, F8 nie; Hinweise im Spiel nennen die eigene Belegung |
 | **Barrierefreiheit** | **Flacker- und Rausch-Intensität reduzieren** (Fotosensibilität – Warnhinweis beim ersten Start) · Untertitel für wichtige Geräusche („Schritte hinter der Wand“) · **Spinnen als Kugeln** (Arachnophobie, 4.23, umgesetzt 2026-10-23) · **Blickzug** des Lakengeists abschwächen (Hypnose, Kamerafang in der Dusche – 4.18, 4.24, umgesetzt 2026-10-25) |
 
 ### 8.5 Speichern am Tagebuch

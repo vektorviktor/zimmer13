@@ -31,6 +31,7 @@ var effects_volume := 1.0
 var mouse_sensitivity := 1.0     ## Faktor
 var invert_y := false
 var crouch_toggle := false
+var key_bindings := {}           ## Tastenbelegung: nur Abweichungen vom Standard, Aktion → Tasten (Keys, Spielkonzept 8.4)
 # Barrierefreiheit
 var flicker_intensity := 1.0     ## Flackern und Bildrauschen (0,2 … 1)
 var look_pull := 1.0             ## Blickzug des Lakengeists (0,2 … 1; Spielkonzept 4.18, 4.24) – unter 1 nur sanft gelenkt
@@ -44,7 +45,7 @@ var _shaders: Array[Shader] = []
 
 const KEYS := ["gamma", "vsync", "fov", "reflections", "psx_look", "resolution", "vertex_wobble", "dithering",
 	"master_volume", "music_volume", "effects_volume", "mouse_sensitivity", "invert_y",
-	"crouch_toggle", "flicker_intensity", "look_pull", "subtitles", "spider_blobs", "warning_shown", "age_notice_shown"]
+	"crouch_toggle", "key_bindings", "flicker_intensity", "look_pull", "subtitles", "spider_blobs", "warning_shown", "age_notice_shown"]
 
 
 func _ready() -> void:
@@ -101,6 +102,12 @@ func apply() -> void:
 	Mat.set_photo_detail(psx_look)
 	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(master_volume, 0.0001)))
 	changed.emit()
+
+
+## Geänderte Tastenbelegung (InputMap) ins Profil übernehmen und speichern.
+func store_key_bindings() -> void:
+	key_bindings = Keys.changed()
+	save_settings()
 
 
 ## Dithering im Nachbearbeitungs-Shader – nur mit PS1-Look

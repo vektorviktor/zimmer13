@@ -6,21 +6,22 @@ extends CanvasLayer
 ## Hilfe (2.5): Tastenübersicht und ein paar Sätze zu den Grundlagen – Einträge zu Monster und Verstecken erst nach dem
 ## ersten Angriff, damit sie den friedlichen Anfang nicht verraten (2.1).
 
-## Taste, Bedeutung – mit drittem Eintrag "danach" erst nach dem ersten Angriff, "debug" nur mit Debug-Konsole
+## Taste, Bedeutung – mit drittem Eintrag "danach" erst nach dem ersten Angriff, "debug" nur mit Debug-Konsole.
+## {aktion} setzt die aktuelle Belegung ein, {aktion.1} nur die Haupttaste (Keys.fill, Spielkonzept 8.4).
 const CONTROLS := [
-	["W A S D / Maus", "Laufen / Umsehen"],
-	["Shift", "Rennen (macht Lärm, kostet Ausdauer)"],
-	["Leertaste", "Springen · Aufstehen"],
-	["Strg / C", "Ducken"],
-	["E", "Nehmen, Benutzen, Reden, Hinsetzen"],
-	["G", "Ablegen · lange halten: werfen"],
-	["Q (halten)", "Tasche: wählen, loslassen nimmt in die Hand"],
+	["{move_forward.1} {move_left.1} {move_back.1} {move_right.1} / Maus", "Laufen / Umsehen"],
+	["{run}", "Rennen (macht Lärm, kostet Ausdauer)"],
+	["{jump}", "Springen · Aufstehen"],
+	["{crouch}", "Ducken"],
+	["{interact}", "Nehmen, Benutzen, Reden, Hinsetzen"],
+	["{drop}", "Ablegen · lange halten: werfen"],
+	["{bag} (halten)", "Tasche: wählen, loslassen nimmt in die Hand"],
 	["1–6", "Fach der Tasche gleich in die Hand"],
-	["Rechtsklick (halten)", "Im Versteck Luft anhalten", "danach"],
-	["Tab (halten)", "Notizbuch und Karte – Klick / Mausrad blättert"],
-	["Rechtsklick", "mit Tab: nächstes Lesezeichen (Karte, Aufgaben, Notizen)"],
-	["F (halten)", "Kompass ansehen"],
-	["Linksklick / R", "Lampe an/aus / Licht ↔ UV · Dose trinken"],
+	["{hold_breath} (halten)", "Im Versteck Luft anhalten", "danach"],
+	["{map} (halten)", "Notizbuch und Karte – {use_item.1} / Mausrad blättert"],
+	["{hold_breath.1}", "mit {map.1}: nächstes Lesezeichen (Karte, Aufgaben, Notizen)"],
+	["{compass} (halten)", "Kompass ansehen"],
+	["{use_item.1} / {light_mode.1}", "Lampe an/aus / Licht ↔ UV · Dose trinken"],
 	["1–9", "Antwort im Gespräch wählen"],
 	["Esc", "Fenster schließen / Spielmenü"],
 	["F3 / F5 / F6", "Debug-Werte / Monster rufen / Teleport", "debug"],
@@ -276,8 +277,8 @@ func _show_help() -> void:
 		grid.add_theme_constant_override("v_separation", 1)
 		row.add_child(grid)
 		for entry: Array in part:
-			grid.add_child(_help_label(entry[0], UiKit.ACCENT))
-			grid.add_child(_help_label(entry[1], UiKit.INK, HELP_TEXT_WIDTH))
+			grid.add_child(_help_label(Keys.fill(entry[0]), UiKit.ACCENT))
+			grid.add_child(_help_label(Keys.fill(entry[1]), UiKit.INK, HELP_TEXT_WIDTH))
 	var line := ColorRect.new()
 	line.color = Color(0.35, 0.22, 0.12, 0.35)
 	line.custom_minimum_size = Vector2(0, 1)
@@ -289,7 +290,7 @@ func _show_help() -> void:
 	for entry: Array in BASICS:
 		if entry.size() > 1 and not after:
 			continue
-		basics.add_child(_help_label(entry[0], UiKit.INK, 0.0))
+		basics.add_child(_help_label(Keys.localize(entry[0]), UiKit.INK, 0.0))
 
 
 ## Zeile der Hilfe: klein und eng gesetzt; mit Breite (auch 0 = so breit wie Platz ist) umbrechend.

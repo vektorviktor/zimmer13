@@ -379,6 +379,7 @@ func _setup_input() -> void:
 	_bind_keys("debug_console", [KEY_QUOTELEFT, KEY_F1])   # [^] auf deutscher Tastatur
 	_bind_keys("pause", [KEY_ESCAPE])
 	_bind_mouse("hold_breath", MOUSE_BUTTON_RIGHT)
+	Keys.apply_saved(Settings.key_bindings)   # eigene Belegung aus dem Profil (Spielkonzept 8.4)
 
 
 func _ensure_action(action: StringName) -> void:

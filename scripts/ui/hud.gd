@@ -30,6 +30,7 @@ var _bag_frames: Array[ColorRect] = []
 var _bag_slot_icons: Array[TextureRect] = []
 var _bag_info: Label
 var _bag_count: Label
+var _bag_hint: Label   ## Bedienhinweis unter den Fächern – nennt die aktuelle Belegung
 var _bag_filled := false
 var _money: Label
 var _message: Label
@@ -293,9 +294,10 @@ func flash_hurt(amount: float) -> void:
 	_hurt.color.a = clampf(0.25 + amount, 0.3, 0.6)
 
 
-## Interaktions-Hinweis; icon: Aktions-Symbol darüber (IconArt-Name, "" = keins).
+## Interaktions-Hinweis; icon: Aktions-Symbol darüber (IconArt-Name, "" = keins). Standardtasten in Klammern („[E]“)
+## werden zur aktuellen Belegung (Keys.localize, Spielkonzept 8.4).
 func set_prompt(text: String, icon: String = "") -> void:
-	_prompt.text = text
+	_prompt.text = Keys.localize(text)
 	_prompt_icon.texture = IconArt.texture(icon, PROMPT_ICON) if text != "" else null
 
 
@@ -333,6 +335,8 @@ func show_bag_menu(open: bool, items: Array[Item] = [], slots: int = 0, sel: int
 		_bag_blur_material.set_shader_parameter("amount", 0.0)
 	_bag_menu.visible = open
 	_bag_blur.visible = open
+	_bag_hint.text = "Maus · Mausrad · 1–6 wählen   ·   %s loslassen: in die Hand   ·   %s: abbrechen" % [
+		Keys.key_name("bag"), Keys.key_name("hold_breath")]
 	_crosshair.visible = not open and not _hide_overlay.visible
 	_bag_mini.visible = not open and _bag_filled
 	if not open:
@@ -417,7 +421,7 @@ func _build_bag_menu() -> void:
 	_place(_bag_info, Vector4(0, 0.5, 1, 0.5), Vector4(8, BAG_SLOT / 2.0 + 8, -8, BAG_SLOT / 2.0 + 24))
 	var hint := _label(8, HORIZONTAL_ALIGNMENT_CENTER, _bag_menu)
 	hint.label_settings.font_color = Color(0.75, 0.72, 0.65)
-	hint.text = "Maus · Mausrad · 1–6 wählen   ·   Q loslassen: in die Hand   ·   Rechtsklick: abbrechen"
+	_bag_hint = hint
 	_place(hint, Vector4(0, 0.5, 1, 0.5), Vector4(8, BAG_SLOT / 2.0 + 26, -8, BAG_SLOT / 2.0 + 40))
 
 
@@ -435,7 +439,7 @@ func _icon_rect(parent: Control, size: int) -> TextureRect:
 
 ## Meldung oben; icon: Symbol darüber (IconArt-Name, z. B. „dead“ bei Todesmeldungen).
 func show_message(text: String, duration: float = 3.5, icon: String = "") -> void:
-	_message.text = text
+	_message.text = Keys.localize(text)
 	_message_time = duration
 	_message.modulate.a = 1.0
 	_message_icon.texture = IconArt.texture(icon, MESSAGE_ICON)

@@ -133,7 +133,7 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 **Menüs und Speichern**
 - **Speicherregel 8.10:** Autosave nur bei Fortschritt/neuem Bereich/Aufwachen, „Unterbrechen und beenden“,
   Tagebuchsatz – SK 8.10.
-- Lautstärke „Stimmen“, Tastenbelegung – SK 8 (Kopf), 8.4. Ausbau-Ideen – SK 8.9.
+- Lautstärke „Stimmen“ (es gibt keine Sprachausgabe) – SK 8 (Kopf), 8.4. Ausbau-Ideen – SK 8.9.
 
 ## 4. Gebäudeplan, Modelle, Ton
 

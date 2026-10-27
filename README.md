@@ -40,6 +40,8 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7/F
 
 ## Steuerung
 
+Standardbelegung – umbelegen in den Einstellungen unter „Steuerung“ (fest bleiben Esc, 1–6, Mausrad und die Debug-Tasten).
+
 | Taste | Aktion |
 |-------|--------|
 | WASD / Maus | Laufen / Umsehen |
@@ -147,7 +149,7 @@ funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7/F
 - **Verbotene Masken:** in Zimmer 13 hängen acht Messinghaken mit Namensschildchen, an zweien schon eine Maske – die des **Kürbismanns** und die der **Puppe** (die übrigen Haken bleiben leer) · [E] nimmt sie ab, [Linksklick] setzt sie auf (Sicht durch ihre Augenlöcher, Gäste erkennen dich nur aus der Nähe), [G] mit leeren Händen nimmt sie wieder ab, [E] am Haken hängt sie zurück · keine Bedrohung lässt sich täuschen – jede Maske ruft ihre: Mit der Kürbismann-Maske reicht schon wenig Spaß im Hotel, damit er kommt, und dann will er dich · wer die Puppenmaske trug, vor dessen Tür liegt beim nächsten Urteil die Puppe
 - **Bar:** etwas trinken (1 Geld) nimmt Schock – angetrunken schwankt der Blick, die Maus zieht nach, man stolpert (Lärm) und sieht leicht verschwommen, betrunken wabert alles, verschwimmt deutlich und doppelt, betrunken halluziniert man, wer im Rausch schläft, hat Kater · Gäste trinken auch (schwanken, „*hicks*“, erzählen mehr) · eine Runde ausgeben · betrunken blufft man beim Mäxchen schlechter, Milchglas zwischen Flur und Zimmern (nur Umrisse)
 - **Kalender & Tagesuhr:** vom 1. Oktober (Anreise um 15 Uhr) bis Halloween, 24 Stunden = 24 Minuten, draußen immer Nacht · die Wanduhr in der Lobby läuft mit, Abreißkalender in Zimmer 13 und Spielmenü zeigen Datum und Uhrzeit · **Tagesablauf der Gäste:** morgens Küche und Garten, tagsüber Schmücken und Deko-Suche, abends Bar und Feiern (die Zimmer sind dann leer), 23–6 Uhr Nachtruhe (Beginn und Ende schwanken etwas)
-- **Menüs & Speichern:** Vorspann mit Studiologo (überspringbar), Titelbildschirm vor der Lobby, Spielmenü (Esc), Einstellungen (Helligkeit mit Testbild, Spiegelungen, PS1-Look, Ton, Maus, weniger Flackern, Blickzug, Untertitel – auch für leise Geräusche wie „[Eine Tür knarrt]“, sobald man sie hört, Spinnen als Kugeln) · Speichern nur am **Tagebuch in Zimmer 13** (3 Slots, nicht während Vorwarnung/Monster, Kürbismann im Hotel oder Lakengeist bei dir) · Autosave bei wichtigen Ereignissen in sicheren Momenten · nach dem Tod letzten Spielstand laden
+- **Menüs & Speichern:** Vorspann mit Studiologo (überspringbar), Titelbildschirm vor der Lobby, Spielmenü (Esc), Einstellungen (Helligkeit mit Testbild, Spiegelungen, PS1-Look, Ton, Maus, Tastenbelegung – Haupt- und Zweittaste je Aktion, bei Doppelbelegung wird getauscht, Hinweise im Spiel nennen die eigene Taste –, weniger Flackern, Blickzug, Untertitel – auch für leise Geräusche wie „[Eine Tür knarrt]“, sobald man sie hört, Spinnen als Kugeln) · Speichern nur am **Tagebuch in Zimmer 13** (3 Slots, nicht während Vorwarnung/Monster, Kürbismann im Hotel oder Lakengeist bei dir) · Autosave bei wichtigen Ereignissen in sicheren Momenten · nach dem Tod letzten Spielstand laden
 - **Erfolge (8.11):** in Bronze, Silber und Gold – freigeschaltet gleitet oben rechts eine Karte mit Name, Symbol und
   Beschreibung herein und nach 5 s wieder hinaus · Spielmenü → „Erfolge“ zeigt alle, gesperrte blass, geheime als „???“ ·
   sie gehören zum Profil (`user://achievements.cfg`), nicht zum Spielstand · Debug-Starts schalten nur für die Sitzung frei
@@ -477,6 +479,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--navcheck` | Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu Lobby, Galerie, Bar, Küche, Heizkeller, Innenhöfen, Katzenraum, Bibliothek, einem Flur und Zimmer oben, Kellergang, Technikraum, Wäscherei … (unerreichbare Orte werden gemeldet) |
 | `--navcheck=tueren` | Erreicht das Monster vom Keller aus jede bewohnte Zimmertür (Spielkonzept 4.33)? Listet die Türen mit Bewohnern, meldet unerreichbare und beendet das Spiel |
 | `--menu=pause` | Menü öffnen (`pause`, `diary`, `diary_pages` – im Tagebuch blättern, `settings`, `load`, `help`, `achievements`) |
+| `--taste=aktion,taste[,platz]` | Tastenbelegung (8.4) nur für die Sitzung, z. B. `--taste=interact,g` (tauscht mit Ablegen) oder `--taste=hold_breath,maus3` · Platz 1 = Zweittaste |
 | `--erfolg=id\|alle` | Erfolg (8.11) freischalten und einblenden, z. B. `--erfolg=chess` · `alle`: alle still (mit `--menu=achievements`) – im Debug-Start nur für die Sitzung |
 | `--erfolge-zurueck` | alle Erfolge im Profil löschen |
 | `--bulb-thief=bruno` | Gast klaut sofort eine Glühbirne aus Zimmer 13 |

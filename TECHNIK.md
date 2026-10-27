@@ -205,7 +205,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 ### Autoloads (`project.godot`)
 | Name | Datei | Aufgabe |
 |------|-------|---------|
-| `Settings` | `scripts/autoload/settings.gd` | Einstellungen, `user://settings.cfg`, Signal `changed`; Vollbild steht nicht in `KEYS` (Start immer im Fenster) |
+| `Settings` | `scripts/autoload/settings.gd` | Einstellungen, `user://settings.cfg`, Signal `changed`; Vollbild steht nicht in `KEYS` (Start immer im Fenster); `key_bindings` = Abweichungen der Tastenbelegung (`Keys`) |
 | `Game` | `scripts/autoload/game.gd` | Referenzen auf alle Systeme, Geld, Meldungen, Tastenbelegung, Szenenwechsel, Screenshot-Debug |
 | `SaveManager` | `scripts/autoload/save_manager.gd` | Speichern/Laden, Autosave, Tagebuchsatz |
 
@@ -1860,6 +1860,30 @@ vorher die IDs ein (`Social.find_guest`), `main.gd` sucht ebenfalls mit `find_gu
 `GUEST_ALL` (Befehl → Stelle des Gastes); `main._debug_all` fängt das vor allen anderen Zweigen ab und ruft `run_debug`
 je lebendem Gast auf, `kill` direkt über `_debug_kill(…, quiet)` – `Social.on_guest_died(…, quiet)` ohne Meldung und
 Glocke, dafür eine Sammelmeldung.
+
+### Tastenbelegung (`util/keys.gd`, `Keys`, Spielkonzept 8.4)
+- **Standard** legt `Game._setup_input` in der InputMap an (physische Tasten, also unabhängig vom Tastaturlayout),
+  danach `Keys.apply_saved(Settings.key_bindings)`: merkt beim ersten Mal den Standard und setzt die Abweichungen aus
+  dem Profil (`settings.cfg`, Schlüssel `key_bindings`: Aktion → Liste „key:<physischer Code>“ bzw. „mouse:<Taste>“).
+  Nichts davon steht im Spielstand. Ungültiges oder Gesperrtes aus der Datei wird übergangen.
+- **Umbelegbar** sind nur `Keys.ACTIONS` (Laufen, Rennen, Springen, Ducken, Interagieren, Ablegen/Werfen, Tasche,
+  Notizbuch, Kompass, Benutzen, Licht/UV, Luft anhalten), je zwei Plätze (`SLOTS`). Fest bleiben Esc (`pause`),
+  `bag_1`–`bag_6`, das Mausrad (Tasche, Notizbuch, Schlafdauer), alle `debug_*` und die Tasten in Fenstern
+  (Telefon, Gespräch, Diashow, Brettspiele). `Keys.allowed` lehnt diese und **F8** (stoppt im Editor das Spiel) ab.
+- **Doppelbelegung → Tausch** (`Keys.assign`): Liegt die neue Taste schon auf einer anderen umbelegbaren Aktion,
+  bekommt die die bisherige Taste des Platzes; war der Platz leer, verliert sie die Taste – die Einstellungen warnen
+  dann deutlich („hat jetzt keine Taste mehr“). `Keys.clear` (Entf) lässt jeder Aktion mindestens eine Taste.
+- **Einstellungen** (`SettingsPanel._key_list`): Knopf je Aktion und Platz; nach dem Klick fängt `_input` die nächste
+  Taste oder Maustaste vor allem anderen ab (auch vor Esc des Menüs, das Mausrad rollt weiter), Esc bricht ab.
+  Jede Änderung → `Settings.store_key_bindings()` (`Keys.changed()`), „Standard wiederherstellen“ → `Keys.reset()`.
+- **Texte:** Hinweise und Meldungen schreiben weiter die Standardtaste in Klammern („Öffnen [E]“, „[Linksklick]“).
+  `Hud.set_prompt`/`show_message` setzen mit `Keys.localize` die aktuelle ein (`Keys.TAGS`, ein Durchgang – getauschte
+  Tasten werden nicht doppelt ersetzt; Untertitel wie „[Ein Knall]“ bleiben). Die Hilfe im Menü nutzt Platzhalter
+  `{aktion}` bzw. `{aktion.1}` (`Keys.fill`), der Hinweis unter der Tasche `Keys.key_name`. Texte außerhalb des Huds
+  (Telefon, Diashow) nennen nur feste Tasten. Notizbuch-Blättern und Abbrechen der Tasche hängen an `use_item` bzw.
+  `hold_breath` statt an Links-/Rechtsklick.
+- Debug `--taste=aktion,taste[,platz]` belegt nur für die Sitzung um; Test `tests/key_checks.gd`, Rauchtest-Stichwort
+  `tasten`.
 
 ### Erfolge (`ui/achievements.gd`, `Achievements` als `Game.achievements`, Spielkonzept 8.11)
 - **Liste:** `Achievements.LIST` – ID (englisch, später für Steam) → Name, Text, Stufe (`Tier`: Bronze, Silber,

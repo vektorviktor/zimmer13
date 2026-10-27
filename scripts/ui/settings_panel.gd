@@ -1,6 +1,6 @@
 class_name SettingsPanel
 extends VBoxContainer
-## Einstellungen (Spielkonzept 8.4): Bild, PS1-Look, Ton, Steuerung, Barrierefreiheit.
+## Einstellungen (Spielkonzept 8.4): Bild, PS1-Look, Ton, Steuerung samt Tastenbelegung, Barrierefreiheit.
 ## Jede Änderung wirkt sofort und wird gespeichert (Autoload „Settings“).
 
 signal closed
@@ -9,6 +9,10 @@ signal closed
 var list_height := 175.0
 
 var _calibration: Array[ColorRect] = []
+## Tastenbelegung: Knopf je Aktion und Platz („aktion:platz“), [Aktion, Platz] solange auf eine Taste gewartet wird
+var _key_buttons := {}
+var _capture := []
+var _key_note: Label
 
 
 func _ready() -> void:
@@ -54,6 +58,7 @@ func _ready() -> void:
 	_slider(list, "Mausempfindlichkeit", "mouse_sensitivity", 0.3, 2.5, 0.05)
 	_check(list, "Y-Achse invertieren", "invert_y")
 	_check(list, "Ducken umschalten statt halten", "crouch_toggle")
+	_key_list(list)
 
 	_section(list, "Barrierefreiheit")
 	_slider(list, "Flackern & Bildrauschen", "flicker_intensity", 0.2, 1.0, 0.05)
@@ -65,6 +70,69 @@ func _ready() -> void:
 
 	add_child(UiKit.button("Zurück", func() -> void: closed.emit()))
 	_update_calibration()
+
+
+## Tastenbelegung (Spielkonzept 8.4): je Aktion Haupt- und Zweittaste. Anklicken, dann die neue Taste oder Maustaste
+## drücken; liegt sie schon auf einer anderen Aktion, wird getauscht (Keys.assign) und der Tausch darunter genannt.
+func _key_list(list: VBoxContainer) -> void:
+	list.add_child(UiKit.wrap_label("Tasten: anklicken, dann die neue Taste oder Maustaste drücken. Esc bricht ab, Entf leert den Platz.", 8))
+	for entry: Array in Keys.ACTIONS:
+		var row := _row(list, entry[1])
+		(row.get_child(0) as Label).clip_text = true   # Knöpfe stehen bündig untereinander
+		for slot in Keys.SLOTS:
+			var button := UiKit.button("", _start_capture.bind(entry[0], slot))
+			button.custom_minimum_size = Vector2(84, 0)
+			button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+			button.clip_text = true
+			button.add_theme_font_size_override("font_size", 9)
+			row.add_child(button)
+			_key_buttons["%s:%d" % [entry[0], slot]] = button
+	_key_note = UiKit.wrap_label("", 8, UiKit.ACCENT)
+	list.add_child(_key_note)
+	list.add_child(UiKit.button("Tasten: Standard wiederherstellen", func() -> void:
+		_capture = []
+		Keys.reset()
+		Settings.store_key_bindings()
+		_key_note.text = ""
+		_update_keys()))
+	_update_keys()
+
+
+func _start_capture(action: String, slot: int) -> void:
+	_update_keys()
+	_capture = [action, slot]
+	_key_buttons["%s:%d" % [action, slot]].text = "Taste …"
+	_key_note.text = ""
+
+
+## Wartet ein Platz auf eine Taste, nimmt _input sie vor allem anderen (auch vor Esc des Menüs). Das Mausrad rollt
+## weiter die Liste.
+func _input(event: InputEvent) -> void:
+	if _capture.is_empty() or not event.is_pressed() or event.is_echo():
+		return
+	if not (event is InputEventKey or event is InputEventMouseButton):
+		return
+	if event is InputEventMouseButton and (event as InputEventMouseButton).button_index in Keys.WHEEL:
+		return
+	get_viewport().set_input_as_handled()
+	var action: String = _capture[0]
+	var slot: int = _capture[1]
+	_capture = []
+	var key := event as InputEventKey
+	if key and key.physical_keycode == KEY_ESCAPE:
+		_key_note.text = ""
+	elif key and key.physical_keycode == KEY_DELETE:
+		_key_note.text = Keys.clear(action, slot)
+	else:
+		_key_note.text = Keys.assign(action, slot, Keys.from_input(event))
+	Settings.store_key_bindings()
+	_update_keys()
+
+
+func _update_keys() -> void:
+	for id: String in _key_buttons:
+		var event := Keys.slot_event(id.get_slice(":", 0), id.get_slice(":", 1).to_int())
+		(_key_buttons[id] as Button).text = Keys.event_name(event) if event else "–"
 
 
 func _section(list: VBoxContainer, title: String) -> void:

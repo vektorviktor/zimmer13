@@ -353,15 +353,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			_look_lag += rel   # die Sicht zieht nach (_process)
 		else:
 			_look(rel)
-	elif event is InputEventMouseButton and event.pressed and _left_shown == "map" and inspecting:
-		# Blättern: Linksklick / Mausrad runter = nächstes Blatt, Mausrad hoch = voriges; Rechtsklick = nächstes
-		# Lesezeichen des Notizbuchs (3.10) – im Versteck hält Rechtsklick die Luft an, dort reicht das Mausrad
-		var button := (event as InputEventMouseButton).button_index
-		if button == MOUSE_BUTTON_LEFT or button == MOUSE_BUTTON_WHEEL_DOWN:
+	elif _left_shown == "map" and inspecting and ((event is InputEventMouseButton and event.pressed) \
+			or event.is_action_pressed("use_item") or event.is_action_pressed("hold_breath")):
+		# Blättern: [Linksklick] / Mausrad runter = nächstes Blatt, Mausrad hoch = voriges; [Rechtsklick] = nächstes
+		# Lesezeichen des Notizbuchs (3.10) – im Versteck hält er die Luft an, dort reicht das Mausrad. Die Tasten
+		# folgen der Belegung (8.4), andere Maustasten tun hier nichts.
+		if event.is_action_pressed("use_item") or _wheel_step(event) == -1:
 			_pocket_map.flip(1)
-		elif button == MOUSE_BUTTON_WHEEL_UP:
+		elif _wheel_step(event) == 1:
 			_pocket_map.flip(-1)
-		elif button == MOUSE_BUTTON_RIGHT and hiding == null:
+		elif event.is_action_pressed("hold_breath") and hiding == null:
 			_pocket_map.next_bookmark()
 	elif event.is_action_pressed("map") or event.is_action_pressed("compass"):
 		_explain_left_hand("map" if event.is_action_pressed("map") else "compass")
@@ -435,6 +436,8 @@ func _aim_input(event: InputEvent) -> void:
 
 ## Mausrad hoch +1, runter −1, sonst 0.
 func _wheel_step(event: InputEvent) -> int:
+	if not event is InputEventMouseButton:
+		return 0
 	match (event as InputEventMouseButton).button_index:
 		MOUSE_BUTTON_WHEEL_UP: return 1
 		MOUSE_BUTTON_WHEEL_DOWN: return -1
@@ -1607,15 +1610,15 @@ func _bag_input(event: InputEvent) -> void:
 		var dx := (event as InputEventMouseMotion).screen_relative.x * Settings.mouse_sensitivity / BAG_MOUSE_STEP
 		_bag_cursor = clampf(_bag_cursor + dx, -half, half)
 		bag_sel = -1 if absf(_bag_cursor) < BAG_DEAD_ZONE else clampi(floori(_bag_cursor + half), 0, BAG_SLOTS - 1)
+	elif event.is_action_pressed("hold_breath"):   # Rechtsklick bzw. was darauf liegt (8.4) bricht ab
+		close_bag(false)
+		return
 	elif event is InputEventMouseButton and event.pressed:
 		match (event as InputEventMouseButton).button_index:
 			MOUSE_BUTTON_WHEEL_DOWN:
 				_select_bag_slot((bag_sel + 1) % BAG_SLOTS)
 			MOUSE_BUTTON_WHEEL_UP:
 				_select_bag_slot((bag_sel - 1 + BAG_SLOTS) % BAG_SLOTS if bag_sel >= 0 else BAG_SLOTS - 1)
-			MOUSE_BUTTON_RIGHT:
-				close_bag(false)
-				return
 	elif _bag_slot_pressed(event) >= 0:
 		_select_bag_slot(_bag_slot_pressed(event))
 	else:

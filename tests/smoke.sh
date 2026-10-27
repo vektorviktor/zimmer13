@@ -237,6 +237,8 @@ done <<'LIST'
 400|deko,spuren|--fall=2.5,kerze --trace
 400|ui|--console=guests;tp keller
 400|ui|--menu=pause
+400|ui,tasten|--taste=interact,g --taste=hold_breath,maus3 --menu=settings
+400|tasten|--taste=bag,maus2 --flashlight --bag-menu=2
 400|schnell,ui,gaeste|--talk=edna
 400|telefon,ui|--dial=lobby
 400|level,dachboden|--attic-door --flashlight

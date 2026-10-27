@@ -65,6 +65,8 @@ extends Node3D
 ##   --dial=n|lobby              vom Telefon in Zimmer 13 aus Zimmer n anrufen (0 = Rezeption) ·
 ##                               lobby: Wählseite am Haupttelefon mit Gästeverzeichnis
 ##   --menu=name                 nach 1 s ein Menü öffnen (pause, diary, diary_pages, settings, load, help, achievements)
+##   --taste=aktion,taste[,platz]  Tastenbelegung (8.4) nur für die Sitzung, z. B. --taste=interact,f oder
+##                               --taste=hold_breath,maus3 (Platz 1 = Zweittaste); getauscht wird wie in den Einstellungen
 ##   --erfolg=id|alle            Erfolg (8.11) freischalten und einblenden, z. B. --erfolg=chess – alle: alle still (für
 ##                               --menu=achievements); in Debug-Starts nur für die Sitzung, nichts wird gespeichert
 ##   --erfolge-zurueck           alle Erfolge im Profil (user://achievements.cfg) löschen
@@ -1585,6 +1587,20 @@ func run_debug(arg: String) -> bool:
 				Game.menus.open_pause()
 				if which != "pause":
 					Game.menus.call("_show_" + which))
+	elif arg.begins_with("--taste="):
+		# Tastenbelegung (8.4) nur für die Sitzung: --taste=aktion,taste[,platz] – Taste wie „f“, „space“ oder „maus2“
+		var parts := arg.substr(8).split(",")
+		var event: InputEvent = null
+		if parts.size() >= 2 and parts[1].begins_with("maus"):
+			event = Keys.decode("mouse:" + parts[1].substr(4))
+		elif parts.size() >= 2:
+			event = Keys.decode("key:%d" % OS.find_keycode_from_string(parts[1].capitalize()))
+		if event == null or not InputMap.has_action(parts[0]):
+			push_warning("--taste: Aktion oder Taste unbekannt – " + arg)
+		else:
+			var note := Keys.assign(parts[0], parts[2].to_int() if parts.size() > 2 else 0, event)
+			print("[Tasten] %s → %s %s · „%s“" % [parts[0], Keys.key_names(parts[0]), note,
+				Keys.localize("Öffnen [E] · ablegen [G] · [Linksklick] · [Ein Knall]")])
 	elif arg.begins_with("--erfolg=") or arg == "--erfolge-zurueck":
 		return Game.achievements.debug_command(arg)
 	elif arg == "--figur" or arg == "--figur=schnell":
