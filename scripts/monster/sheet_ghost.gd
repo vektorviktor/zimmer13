@@ -38,7 +38,6 @@ const MODEL := "res://assets/models/ghost.glb"
 const AMBIENCE := "res://assets/sound/ghost_ambience.mp3"
 
 # --- Tuning -------------------------------------------------------------------
-const FROM_DAY := 2                   ## spukt ab diesem Tag (oder schon nach dem ersten Angriff)
 const SPAWN_CHANCE := 0.7             ## beim Betreten eines dunklen Raums mit offenem Vorhang
 const STAY_CHANCE := 0.25             ## … und alle STAY_EVERY Sekunden, solange man darin bleibt
 const STAY_EVERY := 6.0
@@ -383,7 +382,7 @@ func _physics_process(delta: float) -> void:
 ## Betritt der Spieler einen dunklen Raum mit Außenfenster (Vorhang offen – ab dem 4. Mal egal) oder Fenstertür,
 ## würfelt es (SPAWN_CHANCE bzw. FRENCH_DOOR_CHANCE); bleibt er darin, alle STAY_EVERY Sekunden erneut
 ## (STAY_CHANCE bzw. FRENCH_DOOR_STAY).
-## Ab Tag FROM_DAY oder nach dem ersten Angriff des Monsters (der Anfang bleibt friedlich, 2.1).
+## Erst nach dem ersten Angriff des Monsters (der Anfang bleibt friedlich, Spielkonzept 2.1, 4.20).
 func _check_spawn() -> void:
 	var player := Game.player
 	var director := Game.director
@@ -441,9 +440,9 @@ func _check_player_window(player: Player) -> bool:
 	return false
 
 
-## Spukt er schon? Ab Tag FROM_DAY oder nach dem ersten Angriff, je nachdem, was früher kommt.
+## Spukt er schon? Erst nach dem ersten Angriff des Monsters (Spielkonzept 4.20).
 func _haunting() -> bool:
-	return Game.director.first_attack_done or Calendar.today() >= FROM_DAY
+	return Game.director.first_attack_done
 
 
 ## Gäste behandelt er wie den Spieler (Spielkonzept 6.12): Steht ein wacher Gast in einem dunklen Raum mit
@@ -1449,6 +1448,12 @@ func shower_visit(spot: Vector3) -> void:
 ## Debug (F6, --ghost=n): Er kommt sofort zum `stage`. Mal ans nächste Außenfenster bzw. an die nächste
 ## Fenstertür des Raums, in dem der Spieler steht – Licht dort aus, Vorhänge auf (ab dem 4. Mal zu), Blick
 ## dorthin. Ohne beides nur eine Meldung (false).
+## Debug (--dachboden=urteil, --aufzug=urteil): so lange kommt er nicht – sonst hielte er als andere Bedrohung den
+## Aufbruch des Monsters auf.
+func debug_rest(seconds: float) -> void:
+	_cooldown = maxf(_cooldown, seconds)
+
+
 func debug_summon(stage: int) -> bool:
 	var player := Game.player
 	var room := Game.social.builder.room_at(player.global_position)

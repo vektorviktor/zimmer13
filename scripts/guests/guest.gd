@@ -1459,8 +1459,25 @@ func _next_activity() -> void:
 
 
 func _walk_to(point: Vector3, new_state: State) -> void:
+	if Game.director and Game.director.is_condemned(self) and not Game.director.reachable(point):
+		if new_state == State.HIDE_GO:
+			_release_hide_spot()
+		point = _room_point()   # verurteilt: nicht dorthin, wo das Monster nicht hinkommt (Spielkonzept 4.33)
+		new_state = State.WALK
 	_target = point
 	state = new_state
+
+
+## Aufbruch des Urteils über ihn (Spielkonzept 4.33, „Das Ziel festnageln“): Ist er gerade unterwegs an einen Ort,
+## den das Monster vom Keller aus nicht erreicht, geht er stattdessen heim. Danach hält _walk_to ihn davon fern.
+func pin_down() -> void:
+	if state in [State.WALK, State.HIDE_GO, State.HARVEST, State.CARRY_HOME, State.PARTY, State.MINIGAME] \
+			and not Game.director.reachable(_target):
+		if Game.tracing:
+			print("[Urteil] %s wollte an einen unerreichbaren Ort – geht heim" % display_name)
+		if state == State.HIDE_GO:
+			_release_hide_spot()
+		_walk_to(_room_point(), State.WALK)
 
 
 func _arrive() -> void:

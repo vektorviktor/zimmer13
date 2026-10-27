@@ -8,13 +8,17 @@ extends NavWalker
 ## die dort, wo es war, noch eine Weile in der Luft hängen und langsam sinken.
 ## Lokale −Z-Achse = Blickrichtung. Bewegt sich ruckartig („Stop-Motion“).
 
-enum State { INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK }
+enum State { INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK, WAIT }
 
 ## Tempo (m/s, 2026-10-22): Es rast durch die Flure – jagend deutlich schneller als der rennende Spieler (4,8)
 const WALK_SPEED := 3.6
 const SEARCH_SPEED := 4.2
 const CHASE_SPEED := 7.2
 const KILL_DISTANCE := 1.1
+## Ist der Weg zu Ende, der Gejagte aber noch so nah daneben (Aufzugkabine, nicht im NavMesh), geht es geradeaus
+const STRAIGHT_RANGE := 3.0
+## Beim Warten (WAIT) jagt es, wen es so nah sieht und jagen darf
+const WAIT_SEE := 8.0
 ## Wird es länger als so lange gesehen, verschwindet es aus dem Blickfeld
 const SEEN_BEFORE_SLINK := 0.35
 const STEP_LENGTH := 0.85          ## Abstand der Fußspuren
@@ -54,6 +58,9 @@ var _crouch_hips := Vector3.ZERO
 var _crouch := 0.0                      ## 0 = aufrecht, 1 = auf allen Vieren
 var _gait := 0.0                        ## Schrittphase
 var _near_door := false                 ## unter dem Türsturz (2,1 m) ducken
+var _low_door := false                  ## an einer Kniestocktür (1,65 m, Spielkonzept 4.33): tiefer ducken
+var _wait_pos := Vector3.ZERO           ## WAIT: hier stehen …
+var _wait_look := Vector3.ZERO          ## … und dorthin sehen
 var _eye_mat: ShaderMaterial
 var _face_light: OmniLight3D
 var _ash: CPUParticles3D
@@ -205,6 +212,31 @@ func ambush(pos: Vector3, actor) -> void:
 	global_position = pos
 	_last_pos = pos
 	_start_chase(actor)
+
+
+## Warten (Spielkonzept 4.33): an der Haltestelle des Aufzugs, in dem der Verurteilte fährt, oder geduckt hinter einer
+## Kammertür im Dachboden. Es geht hin, bleibt stehen und sieht nach look; wen es dabei nah sieht und jagen darf, den
+## jagt es. Eine laufende Jagd bricht es dafür nicht ab.
+func wait_at(pos: Vector3, look: Vector3) -> void:
+	_wait_pos = pos
+	_wait_look = look
+	if not state in [State.WAIT, State.CHASE, State.KILL, State.INACTIVE]:
+		_set_state(State.WAIT)
+
+
+## Ungesehen nach pos versetzen und dort warten, Blick nach look (Notausgang auf dem Dachboden, 4.33, 3a) – bricht
+## auch eine laufende Jagd ab.
+func hide_at(pos: Vector3, look: Vector3) -> void:
+	_appear(pos)
+	agent.target_position = pos
+	_wait_pos = pos
+	_wait_look = look
+	_set_state(State.WAIT)
+
+
+## Wartet es gerade (wait_at)?
+func waiting() -> bool:
+	return state == State.WAIT
 
 
 ## Gezielt ein Versteck aufsuchen (es hat gesehen, wie jemand hineinging).
@@ -447,6 +479,11 @@ func _physics_process(delta: float) -> void:
 			_check_hide_step(delta)
 		State.CHASE:
 			_chase_step(seen, delta)
+		State.WAIT:
+			if seen != null and global_position.distance_to(seen.global_position) < WAIT_SEE:
+				_start_chase(seen)
+			elif _move_to(_wait_pos, CHASE_SPEED, delta):
+				_face(_wait_look, delta)
 		State.REPELLED:
 			_stop(delta)
 			if _state_timer > (0.5 if _fleeing else 1.6):
@@ -565,6 +602,7 @@ func _start_chase(actor) -> void:
 
 
 func _chase_step(seen, delta: float) -> void:
+	var sighted = seen   # wirklich gesehen (nicht nur als Verurteilter gespürt)
 	if seen == null and _chase_target != null and is_instance_valid(_chase_target) and not _chase_target.dead \
 			and (Game.director.is_raid_prey(_chase_target) or Game.director.is_condemned(_chase_target)):
 		seen = _chase_target   # im gewählten Zimmer (5.5) und als Verurteilter (4.33) entkommt es keiner
@@ -577,11 +615,30 @@ func _chase_step(seen, delta: float) -> void:
 	if _lose_timer > 3.5:
 		_start_search(_last_seen)
 		return
-	_move_to(_last_seen, CHASE_SPEED, delta)
+	# In der Aufzugkabine ist kein NavMesh (4.33, Haltestelle): sieht es ihn dort, geradeaus hinein
+	var direct: bool = sighted != null and Game.director.lift_with(sighted) != null \
+		and _step_straight(sighted.global_position, CHASE_SPEED, delta)
+	if not direct and _move_to(_last_seen, CHASE_SPEED, delta) and sighted != null:
+		_step_straight(sighted.global_position, CHASE_SPEED, delta)
 	if seen != null and Game.director.is_harmless() and global_position.distance_to(seen.global_position) < MonsterDirector.HARMLESS_ABORT:
 		_abort()
 	elif seen != null and global_position.distance_to(seen.global_position) < KILL_DISTANCE:
 		_kill(seen, seen.hiding)
+
+
+## Der Gejagte steht knapp daneben, wo kein NavMesh ist (Aufzugkabine), oder der Weg ist schon zu Ende: geradeaus
+## auf ihn zu. false = zu weit weg (STRAIGHT_RANGE) oder auf anderer Höhe.
+func _step_straight(to: Vector3, speed: float, delta: float) -> bool:
+	var flat := Vector3(to.x - global_position.x, 0.0, to.z - global_position.z)
+	if flat.length() > STRAIGHT_RANGE or flat.length() < 0.3 or absf(to.y - global_position.y) > 1.0:
+		return false
+	var dir := flat.normalized()
+	rotation.y = lerp_angle(rotation.y, atan2(-dir.x, -dir.z), minf(1.0, 8.0 * delta))
+	velocity.x = dir.x * speed
+	velocity.z = dir.z * speed
+	_apply_gravity(delta)
+	move_and_slide()
+	return true
 
 
 func _start_search(center: Vector3) -> void:
@@ -761,10 +818,14 @@ func _check_salt(delta: float) -> bool:
 
 func _open_doors() -> void:
 	_near_door = false
+	_low_door = false
 	for door: Door in Door.near(global_position):
 		if door.center().distance_to(global_position + Vector3.UP) >= 1.5:
 			continue
 		_near_door = true
+		_low_door = _low_door or door.height <= LevelBuilder.ATTIC_DOOR_H
+		if state == State.WAIT:
+			continue   # wartet geduckt hinter der Tür (Dachboden, 4.33) – aufgestoßen wird sie erst beim Angriff
 		if door.is_open or not door.monster_can_open or not Game.director.may_open(door):
 			continue
 		door.monster_open(Game.director.breaks(door))
@@ -900,13 +961,15 @@ func _crouch_target() -> float:
 	match state:
 		State.SLINK:
 			c = 0.6
-		State.LURK, State.CHECK_HIDE:
+		State.LURK, State.CHECK_HIDE, State.WAIT:
 			c = 0.4
 		State.SEARCH:
 			c = 0.15
 		State.KILL:
 			return 0.0
-	return maxf(c, 0.3) if _near_door else c
+	if _near_door:
+		return maxf(c, 0.65 if _low_door else 0.3)
+	return c
 
 
 ## Pose aus aufrecht ↔ Hocke mischen, dann Gang, Haltung, Kopf und Kiefer daraufsetzen.
@@ -942,7 +1005,7 @@ func _animate(delta: float) -> void:
 			nod = 0.2
 			tilt = 0.3 + randf_range(-0.25, 0.25)
 			jaw = 0.4 + randf_range(-0.05, 0.05)
-		State.STARE, State.LURK:
+		State.STARE, State.LURK, State.WAIT:
 			nod = 0.3
 			tilt = sin(_anim_time * 0.4) * 0.45 + randf_range(-0.04, 0.04)
 		State.REPELLED:

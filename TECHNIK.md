@@ -593,8 +593,10 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   - Teleskoptüren je Halt (`_layout`: lichte Breite aus dem Platz im Schacht, den Rest füllt ein Portal), Schachttüren
     `AnimatableBody3D` auf Ebene 2; die Kabinentür ist nur Optik, solange sie zu ist, schließt `_doorway` die Öffnung.
     Lichtschranke `_in_doorway`.
+  - Für das Monster beim Urteil (4.33): `carries(pos)`, `moving()`, `next_stop()`, `waiting_spot(i)`, `call_cabin(i)`.
   - Ablauf in `_physics_process` (Warteschlange `_queue`); Lärm `elevator`, `elevator_bell` (machen das Monster
-    neugierig), `elevator_alarm`. Gäste und Monster benutzen ihn nicht; die Reparatur (Spielkonzept 7.4) fehlt.
+    neugierig), `elevator_alarm`. Gäste und Monster benutzen ihn nicht (beim Urteil wartet das Monster an der
+    Haltestelle, s. u.); die Reparatur (Spielkonzept 7.4) fehlt.
 - **Pool** (`_pool`): Becken mit Fototextur-Fliesen, Einstiegstreppen (`_flight(…, step_h)` – Stufen auf dem
   Fliesenraster), Handlauf `HANDRAIL_MODEL`. Darüber die Holzdecke (dicht auch gegen Regen). **Unterwasserlampen**
   (`Lamp.Style.POOL`, nicht im Plan, ohne Birne – `has_socket()` falsch, Gäste klauen nichts) laufen durch den
@@ -613,12 +615,13 @@ Decke (Kollision auf Ebene 5). `_attic_ceiling(p)` liefert die Deckenhöhe an je
 jede Wand (`_wall_top`, `_top_breaks`, `_cap_top`, `_wall_box`). Giebeldreiecke schließen Spalte (`_attic_gable`).
 **Dachfenster** (`roof_window` auf der Außenwand) sitzen in der Schräge darüber (`_roof_window`), mit kaltem Lichtkegel
 von außen (`ATTIC_SHAFT_*`, `AtticHaze` regelt ihn mit dem Mond). **Türen:** alle niedrig (Kniestocktür-Modell), die
-zum Treppenhaus verschlossen. **Stützbalken** (`_attic_beams`): Felder von etwa `ATTIC_BAY`, je ein Pfosten mit
+zum Treppenhaus verschlossen. Unter ihnen bäckt das NavMesh nicht durch (Agentenhöhe 1,6 m): Jede Kammertür bekommt
+einen `NavigationLink3D` (`ATTIC_LINK_REACH`), die Kniestocktür keinen – der Dachboden bleibt vom Rest getrennt. **Stützbalken** (`_attic_beams`): Felder von etwa `ATTIC_BAY`, je ein Pfosten mit
 Balkenkreuz und Kopfbändern, nie unter einer Schräge oder zu nah an einer Tür. „Dekokiste“ wird hier zur Kiste mit alter
 Deko. **Kopf des Kürbismanns** auf der Markierung `cross` des Plans (`_attic_markers`, `pumpkin_head_spot`). Nebel
 `_attic_haze` (`AtticHaze`, 8), Spuk `AtticSpook` (8). **Treppe** (`_attic_stair`): im Schacht des Treppenhauses West ein
 steiler Lauf hinauf, oben ein Verschlag; Planstriche ohne Dachboden daneben baut `_build_wall` nicht. Debug
-`--dachboden[=kopf|fenster|treppe|blitz]`.
+`--dachboden[=kopf|fenster|treppe|blitz|urteil]`.
 
 ### Untergeschoss (`_lower_floor`, Spielkonzept 7.9)
 Durchgang unter „Untergeschoss“ (y = `CELLAR_Y`, Raum-IDs mit `ug_`). Wände aus Brettschalungsbeton (`_cellar_wall`,
@@ -650,7 +653,8 @@ ohne Lobby und Galerien), `room_at(p)` (Raum-ID wie bei Fenstern und Schaltern, 
 (Bad zählt zum Zimmer), `is_safe(p)` (Katzenraum), `cellar_center()`.
 
 **NavMesh** wird in `main._bake_navigation` zur Laufzeit gebacken (nur Ebene 1). `--navcheck` misst Bau- und Backzeit
-und prüft die Wege zu allen wichtigen Orten (ohne Suchgrenze wie das Monster).
+und prüft die Wege zu allen wichtigen Orten (ohne Suchgrenze wie das Monster). `--navcheck=tueren` prüft, ob das
+Monster vom Keller aus jede bewohnte Zimmertür erreicht (`MonsterDirector.reachable`, Spielkonzept 4.33).
 
 **Ein neues Zimmer:** im Plan zeichnen und in den Objektebenen einrichten (Bett, Schrank, Leuchte, Schalter …),
 Bewohner in HAUSHALTE.md – Wände, Tür, Einrichtung, Zone und Wegpunkt entstehen daraus.
@@ -780,6 +784,19 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
   verschwindet mit Schleifspur Richtung Keller (`push_warning`), beim Spieler taucht es ungesehen daneben auf
   (`Monster.ambush`). Danach (`_judged`) nur noch heim; `on_monster_gone` schiebt Snacks und Raubzüge bis zum Morgen.
   Kein UV (`can_be_repelled_by_uv`), keine Ablenkung (`investigate`).
+  - **Gegen Fehlverhalten** (4.33): `reachable(pos)` – Weg vom Keller (`spawn_points[0]`) auf dem NavMesh wie
+    `--navcheck` (ohne Polygongrenze, nächster Punkt ≤ 1 m neben pos). `judgeable_rooms()` nimmt nur Türen mit
+    `door_reachable(no)` (einmal je Zimmer, `_door_reach`). **Ziel festnageln:** Beim Aufbruch `Guest.pin_down()` (ist
+    das Ziel unerreichbar, geht er heim), danach lenkt `Guest._walk_to` den Verurteilten von unerreichbaren Zielen heim.
+    **Haltestelle** (`_wait_for_lift`, nach der Puppentür): Steht der Verurteilte in einer Kabine (`lift_with` →
+    `Elevator.carries`), wartet es (`Monster.wait_at`) vor dem nächsten Halt (`next_stop`, `waiting_spot`); steht die
+    Kabine dort zu, drückt es den Rufknopf (`call_cabin`). Solange die Kabine fährt oder es wartet, ruht die Frist
+    (`_reach_timer`); in die Kabine (kein NavMesh) geht es geradeaus (`Monster._step_straight`). **Dachboden**
+    (`_start_attic_scene`, Spieler in einem Raum von `AtticSpook`): `ambush_spot` wählt eine Kammer 1–2 Türen weiter,
+    die er nicht sieht (lieber eine, deren Tür er nicht ansieht); `Monster.hide_at` dort, dann `_update_attic`:
+    Kniestocktür knarrt, Schritte (`thud`) alle `ATTIC_STEP` s, `ATTIC_DUST` s vor Schluss Staub (`AtticSpook.dust`),
+    nach `ATTIC_WARN` s `ambush` – es stößt die Tür geduckt auf. Sieht es ihn vorher, jagt es gleich. Debug
+    `--dachboden=urteil`, `--aufzug=urteil` (`debug_reach`, `SheetGhost.debug_rest`), `--navcheck=tueren`.
 - **Snack** (`Mode.SNACK`): erscheint ungesehen auf der Etage des Spielers (`_floor_spawn`, nah an der stärksten
   Lockung `_lure`), Zucken; `SNACK_RUSH` lang auf den Spieler zu (`_sense`, `Monster.track`), dann umherstreifen auf
   dieser Etage, `SNACK_TIME` lang. Ein Opfer, dann heim.
@@ -840,7 +857,7 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
   `Game.monster.is_active()`, bleibt `_next_activity` daheim.
 
 ### Monster-Zustände
-`INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK`.
+`INACTIVE, PATROL, INVESTIGATE, LURK, STARE, SEARCH, CHECK_HIDE, CHASE, REPELLED, RETREAT, KILL, SLINK, WAIT`.
 Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `start_roaming`, `investigate`, `go_check`,
 `stare`, `go_home`, `spawn_at` (Tests), `spawn_near_unseen`, `deactivate`.
 - Sieht der Spieler es ohne Jagd länger als einen Moment → `SLINK` (aus dem Blick verschwinden).
@@ -852,7 +869,9 @@ Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `st
 - **Rückzug (`RETREAT`) nur:** Ende des Auftritts (`go_home`), nach einem Opfer (`after_feeding`), UV, harmloser
   Raubzug (`_abort`). Nach einem Schreck `after_scare(opfer)` → `SLINK` (nicht auf dem Rückweg); das Opfer steht bis
   zum nächsten Auftritt in `_spared`. Von außen außerdem `track(pos)` (Peilen), `replan()` (neues Ziel vom Director),
-  `ambush(pos, akteur)` (Notausgang beim Urteil).
+  `ambush(pos, akteur)` (Notausgang beim Urteil), `wait_at(pos, blick)` (`WAIT`: hingehen, stehen, wer gemeint ist und
+  näher als `WAIT_SEE` kommt, wird gejagt; Türen öffnet es dabei nicht) und `hide_at` (ungesehen dorthin versetzen).
+- **Ducken:** unter Türen (`_near_door`) halb, an niedrigen Türen (`_low_door`, Dachboden 1,65 m) tiefer.
 - Tempo `WALK_SPEED`, `SEARCH_SPEED`, `CHASE_SPEED` – jagend weit schneller als der rennende Spieler.
 
 ### Aussehen & Animation
@@ -1565,13 +1584,15 @@ Spielkonzept 2.5)
   Uniform aus `delta`; Staubpartikel um die Kamera nur im Dachboden. Setzt das Licht der Dachfenster nach dem Mond.
 - **Spuk im Dachboden** (`world/attic_spook.gd`, Spielkonzept 4.21): Ein Blitz (`Weather._update_flash` → `on_flash`)
   dreht den Spieler in einer Kammer selten um 90° (weißer Bildblitz, Kichern), höchstens einmal je Gewitter, nie bei
-  Bedrohung; bei abgeschwächtem Flackern nur das Kichern. Debug `--dachboden=blitz`.
+  Bedrohung; bei abgeschwächtem Flackern nur das Kichern. Debug `--dachboden=blitz`. Außerdem kennt er alle Räume des
+  Dachbodens (`_rooms`, `room_at`, `last_room`) und ihre Türen (`_link_rooms`, beim ersten Gebrauch) für den Notausgang
+  beim Urteil (`ambush_spot`, `dust`, 4.33).
 
 ### Lakengeist
 (`monster/sheet_ghost.gd`, `shaders/psx_ghost.gdshader`, Spielkonzept 4.18)
 - `Game.ghost`, eigener Knoten, **kein NavMesh und keine Kollision** (schwebt durch Glas und Vorhang). Erscheint an
   dunklen Außenfenstern mit offenem Vorhang (`_window_near()`) und an Fenstertüren (Gruppe `french_doors`, `Door.room_id`,
-  `Door.outward`), nicht in Gesellschaft, nicht im Katzenraum, erst ab `FROM_DAY` oder nach dem ersten Angriff. `visits`
+  `Door.outward`), nicht in Gesellschaft, nicht im Katzenraum, erst nach dem ersten Angriff (4.20). `visits`
   = Stufe (gespeichert unter `ghost`; laufende Auftritte nicht).
 - Zustände `APPROACH → HOVER → ENTER → STRANGLE`, dazu `LURK → FLY_IN` am Schrank, `DOOR` vor der Tür, `PATROL` in der
   Geisterstunde; Ende immer über `FADE` (Raster-Ausblenden im Shader statt Transparenz). Knochen werden pro Frame aus

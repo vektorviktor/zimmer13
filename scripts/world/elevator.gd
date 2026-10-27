@@ -791,6 +791,37 @@ func ride_to_top() -> void:
 	_request(stops.size() - 1 if _at != stops.size() - 1 else maxi(0, levels.find(0)), true)
 
 
+## Steht pos (Welt, Füße) in der Kabine dieses Aufzugs?
+func carries(pos: Vector3) -> bool:
+	if not working:
+		return false
+	var p := to_local(pos)
+	var floor_y := _cab_y - position.y
+	return p.y > floor_y - 0.3 and p.y < floor_y + CAB_H and absf(p.x) < _cab_side and p.z < _cab_front and p.z > _cab_back
+
+
+## Fährt die Kabine gerade?
+func moving() -> bool:
+	return _target >= 0
+
+
+## Der Halt, an dem die Kabine als Nächstes steht: ihr Fahrtziel, sonst der, an dem sie steht.
+func next_stop() -> int:
+	return _target if _target >= 0 else maxi(0, _at)
+
+
+## Wo man vor der Tür am Halt i auf die Kabine wartet (Welt, Boden): so weit vor der Schachtwand, dorthin sieht man.
+func waiting_spot(i: int, out: float = 1.2) -> Array[Vector3]:
+	var y := stops[i] - position.y
+	return [to_global(Vector3(0, y, out)), to_global(Vector3(0, y + 1.2, 0))]
+
+
+## Den Rufknopf am Halt i drücken (Spielkonzept 4.33: das Monster an der Haltestelle) – steht die Kabine dort mit
+## geschlossener Tür, geht sie auf.
+func call_cabin(i: int) -> void:
+	_request(i, false)
+
+
 ## Wo man steht und wohin man schaut (Welt) – vor der Tür am Halt der Kabine oder darin mit Blick aufs Bedienfeld
 ## (Debug: --aufzug).
 func spot(inside: bool) -> Array[Vector3]:
