@@ -58,7 +58,7 @@ var _crouch_hips := Vector3.ZERO
 var _crouch := 0.0                      ## 0 = aufrecht, 1 = auf allen Vieren
 var _gait := 0.0                        ## Schrittphase
 var _near_door := false                 ## unter dem Türsturz (2,1 m) ducken
-var _low_door := false                  ## an einer Kniestocktür (1,65 m, Spielkonzept 4.33): tiefer ducken
+var _low_door := false                  ## an einer niedrigen Tür (Dachboden unter der Schräge, 4.33): tiefer ducken
 var _wait_pos := Vector3.ZERO           ## WAIT: hier stehen …
 var _wait_look := Vector3.ZERO          ## … und dorthin sehen
 var _eye_mat: ShaderMaterial
@@ -823,7 +823,7 @@ func _open_doors() -> void:
 		if door.center().distance_to(global_position + Vector3.UP) >= 1.5:
 			continue
 		_near_door = true
-		_low_door = _low_door or door.height <= LevelBuilder.ATTIC_DOOR_H
+		_low_door = _low_door or door.height < LevelBuilder.DOOR_H - 0.1
 		if state == State.WAIT:
 			continue   # wartet geduckt hinter der Tür (Dachboden, 4.33) – aufgestoßen wird sie erst beim Angriff
 		if door.is_open or not door.monster_can_open or not Game.director.may_open(door):

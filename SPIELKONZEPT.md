@@ -694,7 +694,7 @@ bleiben leer.
   hinaus** – es ist das Kichern auf dem Dachboden (Blitz-Dreh, 4.21).
   - Sie betet jeden Abend laut und schläft mit Licht – seit 1987. Sie feiert nie (Spaß ruft ihn, 4.19), und wenn die
     Kinder das Lied vom Kürbiskopf singen (4.20), erstarrt sie. Sie kennt den Abzählreim der Kinder von 1987.
-  - Auf den Dachboden kommt sie nicht (steile Treppe, Türen nur geduckt, Schlüssel hinter der Leviathanmauer) – darum braucht
+  - Auf den Dachboden kommt sie nicht (steile Treppe, Schlüssel hinter der Leviathanmauer) – darum braucht
     sie den Spieler. Hat er ihr Vertrauen, erzählt sie, was 1987 geschah, verrät die Kammer im Südwesten und bittet ihn
     um das Ritual.
   - **Sie kommt nicht hinaus** – so oder so, wie Marion (2.8): Am letzten Tag bleibt sie **freiwillig** im Hotel, ob der
@@ -2168,15 +2168,18 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 > Statt einer Kette in fester Reihenfolge ist der Westflügel ein **Gewirr aus Kammern** (je 6 × 6 m, viele Türen, keine
 > Nummern), Mitte und Ostflügel sind große offene Böden. Hinauf führt eine **steile Treppe im Treppenhaus West** vom
 > Obergeschoss zur verschlossenen Kniestocktür; der Aufzug hält (noch) nicht oben. Der Kopf liegt auf dem roten Kreuz
-> des Plans (Kammer im Südwesten). Aussehen: grobe Bohlen an Boden, Wänden und Decke (2,2 m), **alle Türen 1,65 m**
-> (nur geduckt), in jeder Kammer ein **Stützbalken** mit Balkenkreuz auf knapp 2 m und Kopfbändern unter 45°, an den
+> des Plans (Kammer im Südwesten). Aussehen: grobe Bohlen an Boden, Wänden und Decke (2,2 m), **alle Türen 2,1 m** wie
+> im übrigen Hotel (bis 27.10. 1,65 m, nur geduckt), in jeder Kammer ein **Stützbalken** mit Balkenkreuz auf knapp 2 m und Kopfbändern unter 45°, an den
 > Außenwänden ein Kniestock (1,3 m) mit **Dachschräge** und **Fenstern mit Holzkreuz**, durch die kaltes Licht fällt,
 > **blaugrauer Staubnebel**, der leicht flimmert. **Kisten mit wertvollerer alter Deko** (Totenkopf, Hexenbesen,
 > Lichterkette; wenige Stücke, kein Nachschub) setzt der Zeichner als „Ausstattung: Dekokiste“ in den Plan. Die
 > Fensterfarbe des Zeichners: #c9e7ff („Dachfenster“, auf der Außenwand). Die Dachform darüber bleibt offen.
 - **Der Schlüssel** zur Kniestocktür liegt **hinter der Leviathanmauer** im Heizraum (7.4), die mit jedem Tag später schließt –
   ab etwa Tag 15 bleibt sie nach einem Angriff eine Weile offen, und man kann hindurchschlüpfen. Ein Wagnis im Revier des Monsters (2.3), wie der Schlüssel zu 0118.
-- **Durch die Tür nur geduckt** – einen großen Kürbis bekommt man nicht mit hinein. (Gilt für jede Tür dort oben.)
+- **Türen so hoch wie im übrigen Hotel** (entschieden 2026-10-27): 2,1 m statt 1,65 m, weil das ständige Ducken lästig
+  war. Nur zwei Kammertüren dicht unter der Dachschräge bleiben niedrig (1,65 m). Damit fällt die frühere Regel „nur
+  geduckt, ein großer Kürbis kommt nicht mit hinein“ weg. Die Decke bleibt 2,2 m; ein Arm eines Balkenkreuzes, der
+  neben einer Tür auf die Wand träfe, entfällt.
 - **Warum der Kopf dort liegt:** Die Kinder von 1987 haben ihn auf dem Dachboden versteckt – Kinder kommen überall hin
   (6.13). Liesel Brück, eines der beiden, ist heute Gast und schickt den Spieler hinauf (2.7). Heutige Kinder erzählen davon, und keiner glaubt ihnen: eine Spur.
 - **Nicht wirklich tödlich, aber selten eine kleine Gefahr:** Spinnen in den Schubladen (4.23)
@@ -2602,7 +2605,7 @@ ganzen Hotels.
      später U2. Nur im fahrenden Aufzug bleibt es dabei: Es wartet an der Haltestelle (2.).
      - **Hauptfall Dachboden** (4.21): Wer sich bei einem Urteil oben versteckt, hört die Kniestocktür unten
        aufknarren, dann Schritte über die Bohlen. Das Monster erscheint 1–2 Kammern neben der, die der Spieler zuletzt
-       betreten hat, duckt sich und stößt die niedrige Tür (1,65 m) auf und fällt über ihn her.
+       betreten hat, duckt sich und stößt die Tür auf und fällt über ihn her.
      - **Nur ungesehen:** Es erscheint nur in einem Raum, den der Spieler gerade nicht sieht (wie die Puppe springt,
        5.5); schaut er auf die Tür, nimmt es eine andere.
      - **Kurze Warnung, kein Entkommen:** etwa 3–5 s zwischen dem ersten Geräusch und dem Angriff (Knarren, Schritte,

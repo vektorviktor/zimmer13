@@ -157,11 +157,12 @@ const DOOR_H := 2.1
 ## Doppeltüren, Glastüren, Terrassentüren
 const WIDE_DOOR_H := 2.4
 const ENTRANCE_H := 2.8
-## Kniestocktür zum Dachboden (Planfarbe „Kniestocktür“, Spielkonzept 4.21): niedrig, verschlossen bis zum Schlüssel
-const ATTIC_DOOR_H := 1.65
+## Türen im Dachgeschoss (Spielkonzept 4.21, seit 27.10. so hoch wie die übrigen): unter einer Dachschräge nur so
+## hoch, dass über dem Sturz noch ATTIC_DOOR_HEAD bis zur Schräge bleibt – dort muss man sich weiter ducken
+const ATTIC_DOOR_H := 2.1
+const ATTIC_DOOR_HEAD := 0.1
 ## Dachgeschoss (Spielkonzept 4.21, Plan „DG“, 24.10.): Deckenhöhe, Kniestock (so hoch ist die Außenwand) und wie weit
-## die Dachschräge darüber in den Raum reicht, bis sie die Decke trifft – flach genug, dass die Türen 1,1 m neben
-## einer Außenwand noch darunter passen
+## die Dachschräge darüber in den Raum reicht, bis sie die Decke trifft
 const ATTIC_H := 2.2
 const ATTIC_KNEE := 1.3
 const ATTIC_SLOPE := 2.0
@@ -185,9 +186,10 @@ const ATTIC_POST := 0.22
 const ATTIC_BRACE := 0.5
 const ATTIC_BRACE_SIZE := 0.12
 const ATTIC_POST_DOOR_GAP := 1.0   ## kein Pfosten so nah an einer Tür
-## Unter den niedrigen Türen (1,65 m) bäckt das NavMesh nicht durch (Agentenhöhe 1,6 m): Je Kammertür verbindet ein
-## NavigationLink3D die beiden Seiten, so weit vor und hinter der Wand – das Monster duckt sich hindurch (4.33, 3a).
-## Die Kniestocktür bekommt keinen (verschlossen, das Monster bricht sie nicht auf).
+const ATTIC_ARM_DOOR_GAP := 0.75   ## kein Balkenarm, der so nah an einer Tür endet (die Türen reichen über ATTIC_BEAM_BOTTOM)
+## Unter niedrigen Türen (unter der Schräge) bäckt das NavMesh nicht durch (Agentenhöhe 1,6 m): Je niedrige Kammertür
+## verbindet ein NavigationLink3D die beiden Seiten, so weit vor und hinter der Wand – das Monster duckt sich hindurch
+## (4.33, 3a). Die Kniestocktür bekommt keinen (verschlossen, das Monster bricht sie nicht auf).
 const ATTIC_LINK_REACH := 0.8
 const ATTIC_BOX_SIZE := 4          ## Kiste mit wertvollerer alter Deko auf dem Dachboden, ohne Nachschub
 const COUCH_MODEL := "res://assets/models/couch.glb"
@@ -1341,7 +1343,7 @@ func _opening_vec(o: Dictionary, s0: float) -> Vector4:
 		"door", "service_door":
 			return Vector4(center, width, DOOR_H if width < 1.5 else WIDE_DOOR_H, 0.0)
 		"attic_door", "attic_inner_door":
-			return Vector4(center, width, ATTIC_DOOR_H, 0.0)
+			return Vector4(center, width, float(o.get("height", ATTIC_DOOR_H)), 0.0)
 	return Vector4(center, width, WIDE_DOOR_H, 0.0)
 
 
@@ -3651,8 +3653,8 @@ func _attic_floor(plan: Dictionary, level: int) -> void:
 	root = attic
 	_parent = attic
 	_begin_floor(plan, level)
-	_attic_openings()
 	_attic_eaves()
+	_attic_openings()
 	for w in _map["walls"]:
 		_build_wall(w)
 	_attic_surfaces()
@@ -3671,9 +3673,10 @@ func _attic_floor(plan: Dictionary, level: int) -> void:
 	_attic_stair(plan, level)
 
 
-## Türen und Dachfenster des Plans: Jede Tür im Dachgeschoss ist niedrig (Kniestocktür-Modell); die zum Treppenhaus
-## ist die verschlossene Kniestocktür („attic_door“, Schlüssel im Heizraum), die übrigen gehen auf („attic_inner_door“).
-## Dachfenster sitzen auf der Außenwand – sie kommen in die Schräge darüber (_attic_slopes), nicht in die Wand.
+## Türen und Dachfenster des Plans: Jede Tür im Dachgeschoss hat das Kniestocktür-Modell, ATTIC_DOOR_H hoch (unter
+## einer Schräge niedriger, braucht dafür _eaves); die zum Treppenhaus ist die verschlossene Kniestocktür („attic_door“,
+## Schlüssel im Heizraum), die übrigen gehen auf („attic_inner_door“). Dachfenster sitzen auf der Außenwand – sie kommen
+## in die Schräge darüber (_attic_slopes), nicht in die Wand.
 func _attic_openings() -> void:
 	_roof_windows = []
 	for w in _map["walls"]:
@@ -3692,6 +3695,9 @@ func _attic_openings() -> void:
 				"door", "attic_door":
 					var stairs := "stairs" in [_kind_at(c - side * 0.5), _kind_at(c + side * 0.5)]
 					o["kind"] = "attic_door" if stairs else "attic_inner_door"
+					var jamb := along * float(o["width"]) / 2.0
+					var low := minf(_attic_ceiling(c - jamb), _attic_ceiling(c + jamb))
+					o["height"] = minf(ATTIC_DOOR_H, floorf((low - ATTIC_DOOR_HEAD) / 0.05 + 0.001) * 0.05)
 			keep.append(o)
 		w["openings"] = keep
 
@@ -3784,7 +3790,7 @@ func _attic_surfaces() -> void:
 		var into: Vector3 = d["into"]
 		var size := Vector3(door.width, 0.3, T) if absf(into.z) > 0.5 else Vector3(T, 0.3, door.width)
 		Geo.solid(root, size, (d["pos"] as Vector3) + Vector3(0, -0.15, 0), _attic_planks)
-		if d["kind"] == "attic_inner_door":
+		if d["kind"] == "attic_inner_door" and door.height < ATTIC_DOOR_H - 0.01:
 			var link := NavigationLink3D.new()
 			link.start_position = (d["pos"] as Vector3) - into * ATTIC_LINK_REACH
 			link.end_position = (d["pos"] as Vector3) + into * ATTIC_LINK_REACH
@@ -3943,8 +3949,8 @@ func _attic_beams() -> void:
 						len = next
 					if len < reach:
 						len += 0.08   # bis an die Wand bzw. in die Schräge
-					if len < ATTIC_POST:
-						continue
+					if len < ATTIC_POST or _near_door(c + dir * len, ATTIC_ARM_DOOR_GAP):
+						continue   # kein Arm, der neben einer Tür auf die Wand trifft – er säße im Rahmen
 					arms.append([Vector3(dir.x, 0.0, dir.y), len])
 					var x_dir := dir.x != 0.0
 					var mid := c + dir * len / 2.0

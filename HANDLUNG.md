@@ -236,7 +236,7 @@ flowchart TD
 - **Fest (2.7): Liesel Brück** (H26, Zimmer 025, ängstlich), 1987 ein Teenager, heute um die 55, Generation alt –
   „betet abends laut, schläft mit Licht“, seit 1987.
   - Sie feiert nie (Spaß ruft ihn, 4.19); wenn die Kinder das Lied vom Kürbiskopf singen (4.20), erstarrt sie.
-  - Hinauf kommt sie nicht (steile Treppe, Türen nur geduckt, Schlüssel hinter der Leviathanmauer). Darum braucht sie den
+  - Hinauf kommt sie nicht (steile Treppe, Schlüssel hinter der Leviathanmauer). Darum braucht sie den
     Spieler: Hat er ihr Vertrauen, erzählt sie, was 1987 geschah, verrät die Kammer im Südwesten und bittet ihn um das
     Ritual (4.21). Erst dann weiß man, wonach man auf dem Dachboden sucht.
   - Sie kennt den Abzählreim der Kinder von 1987 (4.21) – ein Hinweis, bevor sie spricht.

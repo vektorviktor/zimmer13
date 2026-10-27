@@ -614,10 +614,12 @@ Dachboden auf der anderen Seite hat, ist sie nur Kniestock (`ATTIC_KNEE`) hoch, 
 Decke (Kollision auf Ebene 5). `_attic_ceiling(p)` liefert die Deckenhöhe an jeder Stelle; `_wall_piece` kappt damit
 jede Wand (`_wall_top`, `_top_breaks`, `_cap_top`, `_wall_box`). Giebeldreiecke schließen Spalte (`_attic_gable`).
 **Dachfenster** (`roof_window` auf der Außenwand) sitzen in der Schräge darüber (`_roof_window`), mit kaltem Lichtkegel
-von außen (`ATTIC_SHAFT_*`, `AtticHaze` regelt ihn mit dem Mond). **Türen:** alle niedrig (Kniestocktür-Modell), die
-zum Treppenhaus verschlossen. Unter ihnen bäckt das NavMesh nicht durch (Agentenhöhe 1,6 m): Jede Kammertür bekommt
-einen `NavigationLink3D` (`ATTIC_LINK_REACH`), die Kniestocktür keinen – der Dachboden bleibt vom Rest getrennt. **Stützbalken** (`_attic_beams`): Felder von etwa `ATTIC_BAY`, je ein Pfosten mit
-Balkenkreuz und Kopfbändern, nie unter einer Schräge oder zu nah an einer Tür. „Dekokiste“ wird hier zur Kiste mit alter
+von außen (`ATTIC_SHAFT_*`, `AtticHaze` regelt ihn mit dem Mond). **Türen:** Kniestocktür-Modell, `ATTIC_DOOR_H` (2,1 m) hoch,
+unter einer Schräge nur so hoch, dass `ATTIC_DOOR_HEAD` bis zu ihr bleibt (`_attic_openings` → `o["height"]`, darum
+laufen `_attic_eaves` vorher); die zum Treppenhaus verschlossen. Unter niedrigen bäckt das NavMesh nicht durch
+(Agentenhöhe 1,6 m): Jede niedrige Kammertür bekommt einen `NavigationLink3D` (`ATTIC_LINK_REACH`), die Kniestocktür keinen – der Dachboden bleibt vom Rest getrennt. **Stützbalken** (`_attic_beams`): Felder von etwa `ATTIC_BAY`, je ein Pfosten mit
+Balkenkreuz und Kopfbändern, nie unter einer Schräge oder zu nah an einer Tür; ein Arm, der näher als
+`ATTIC_ARM_DOOR_GAP` an einer Tür auf die Wand träfe, entfällt (die Türen reichen über die Balkenunterkante). „Dekokiste“ wird hier zur Kiste mit alter
 Deko. **Kopf des Kürbismanns** auf der Markierung `cross` des Plans (`_attic_markers`, `pumpkin_head_spot`). Nebel
 `_attic_haze` (`AtticHaze`, 8), Spuk `AtticSpook` (8). **Treppe** (`_attic_stair`): im Schacht des Treppenhauses West ein
 steiler Lauf hinauf, oben ein Verschlag; Planstriche ohne Dachboden daneben baut `_build_wall` nicht. Debug
@@ -871,7 +873,7 @@ Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `st
   zum nächsten Auftritt in `_spared`. Von außen außerdem `track(pos)` (Peilen), `replan()` (neues Ziel vom Director),
   `ambush(pos, akteur)` (Notausgang beim Urteil), `wait_at(pos, blick)` (`WAIT`: hingehen, stehen, wer gemeint ist und
   näher als `WAIT_SEE` kommt, wird gejagt; Türen öffnet es dabei nicht) und `hide_at` (ungesehen dorthin versetzen).
-- **Ducken:** unter Türen (`_near_door`) halb, an niedrigen Türen (`_low_door`, Dachboden 1,65 m) tiefer.
+- **Ducken:** unter Türen (`_near_door`) halb, an niedrigen Türen (`_low_door`, Dachboden unter der Schräge) tiefer.
 - Tempo `WALK_SPEED`, `SEARCH_SPEED`, `CHASE_SPEED` – jagend weit schneller als der rennende Spieler.
 
 ### Aussehen & Animation
