@@ -424,10 +424,13 @@ func _show_lie() -> void:
 	_say("Was ist passiert?")
 	for kind in Talk.LIE_LABEL:
 		var k: String = kind
+		var label := String(Talk.LIE_LABEL[k])
+		if Game.leviathan_name:   # kennt er den Namen, sagt er ihn (4.32)
+			label = Game.leviathan_name.name_for(label, Game.leviathan_name.player_knows)
 		if k == "corpse" or k == "thief":
-			_option(String(Talk.LIE_LABEL[k]), _show_lie_who.bind(k))
+			_option(label, _show_lie_who.bind(k))
 		else:
-			_option(String(Talk.LIE_LABEL[k]), _show_lie_where.bind(k, ""))
+			_option(label, _show_lie_where.bind(k, ""))
 	_option("Ach, nichts.", _show_main)
 
 

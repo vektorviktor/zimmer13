@@ -160,6 +160,9 @@ done <<'LIST'
 600|halloween,spuk|--vogelscheuche --trace
 900|halloween,spuk,kinder|--kind-zu-viel --trace
 500|halloween,erinnerung|--fotos=1987 --trace
+2400|monster,gaeste,leviathan|--leviathan --trace
+3600|monster,gaeste,leviathan|--leviathan=liesel --trace
+600|monster,leviathan,speichern|--leviathan=benannt --savetest
 900|halloween,erinnerung,friedhof|--beerdigen=jetzt --trace
 600|halloween,erinnerung,friedhof,speichern|--beerdigen=jetzt --savetest
 1500|halloween,erinnerung,friedhof|--trauerfeier --trace

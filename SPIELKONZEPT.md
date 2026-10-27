@@ -2466,7 +2466,11 @@ von früher. Das echte Kind bemerkt es nicht.
 - Höchstens einmal am Spieltag, wenige Male insgesamt (gespeichert). Debug: `--kind-zu-viel`.
 
 ### 4.32 Der Name: Leviathan (entschieden 2026-10-25)
-> Noch nicht umgesetzt. Mit „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
+> Umgesetzt 2026-10-27: Sichtung, Hugos Szene am Couchtisch der Lobby mit Dorés Druck (danach an der Westwand der
+> Lobby neben dem Aushangbrett – die Fotowand ist voll), Liesel statt Hugo, Satzwechsel, Notizbuch und Tagebuch.
+> Bestätigt gilt eine Sichtung, wenn der erwachsene Zeuge zwei Minuten danach noch lebt; Kinder zählen nicht (6.13).
+> Noch nicht: Liesels Abendgebet und Marion – beide gibt es im Spiel noch nicht. Mit „Vorschlag“ markierte Punkte
+> sind aus der Durchsprache noch nicht bestätigt.
 
 **Grundidee:** Niemand im Hotel kennt den echten Namen des Monsters – dass es Josef Ahrend war, der Heizer (2.3),
 erfährt man erst spät. Also geben ihm die Gäste einen: Nach der ersten bestätigten Sichtung fällt einem von ihnen die

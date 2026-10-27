@@ -48,7 +48,9 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   SK 2.7 „Zu den Enden noch offen“.
 - **Marions Brief:** auslösen anders oder streichen (Kernfiguren sterben nicht mehr) – GE.
 - **Mit „Vorschlag“ markierte Punkte** in SK 2.9, 4.22, 4.32, 4.33, 5.19 und HA (Daten, Inhalte, Wege) sind noch
-  zu bestätigen.
+  zu bestätigen. In 4.32 gebaut wie vorgeschlagen: Hugos Sätze, Druck an der Wand (zwischen Aushangbrett und
+  Wandlampe statt an der vollen Fotowand); Liesel benennt ihn, wenn Hugo tot ist. Neu dazu: Kinder zählen nicht als
+  Zeugen, „überlebt“ = 2 min danach noch am Leben, Hugo wartet ¾ Stunde am Tisch auf den Spieler.
 
 ### Systeme
 - **Grundsatzfragen** SK 10: Bemerkt-Auslöser (3a), Truhen abschließbar/eigene Truhe (3h), Umfang (8), Koop (9),
@@ -74,7 +76,8 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 ## 3. Entschieden, noch nicht gebaut (Systeme)
 
 **Bedrohungen**
-- Name Leviathan (Hugo Stein, Doré-Buch) – SK 4.32 · GE.
+- Name Leviathan, Reste: Liesels Abendgebet gegen den Leviathan, Marion geht hinaus, wenn sie den Namen hört (beides
+  gibt es im Spiel noch nicht) – SK 4.32. Gebaut 27.10.: Sichtung, Hugos Szene mit Doré-Druck, Satzwechsel.
 - **Vier Modi** des Leviathan (Urteil, Snack, Raubzug, Anforderung) statt der Absichten aus 4.17 – SK 4.33.
 - **Drei Bedrohungen** je Ebene, gleiche Sicht für den Kürbismann, Lakengeist erst nach dem ersten Angriff
   (spukt im Code ab Tag 2) – SK 4.20, 4.18.

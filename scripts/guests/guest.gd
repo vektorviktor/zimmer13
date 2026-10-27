@@ -630,8 +630,10 @@ func say_panic() -> void:
 	say(line("panic"))
 
 
+## Kennt er den Namen Leviathan, sagt er ihn statt „es“ (Spielkonzept 4.32).
 func line(key: String) -> String:
-	return GuestProfiles.line(profile, key)
+	var text := GuestProfiles.line(profile, key)
+	return Game.leviathan_name.speak(self, key, text) if Game.leviathan_name else text
 
 
 ## An Zimmer 13 klopfen (Spielkonzept 4.13). Die Tür ist zu – ist der Gast weit weg,
@@ -665,6 +667,8 @@ func scared_by_monster() -> void:
 		_leave_hide()
 	fear = 100.0
 	say_panic()
+	if Game.leviathan_name:   # er hat es aus nächster Nähe gesehen (4.32)
+		Game.leviathan_name.on_sighting(self)
 	if randf() < 0.6 and not is_child() and wound == "":
 		_bleeding = BLEED_TIME   # verletzt – hinterlässt Blutstropfen
 	if randf() < 0.35:
@@ -1988,6 +1992,8 @@ func _watch_monster() -> void:
 		_tell_grown_ups(monster.global_position)
 	fear = minf(100.0, fear + 45.0 * (1.2 - float(profile["brave"])))
 	Game.social.on_guest_saw_monster(self)
+	if Game.leviathan_name:   # überlebt er es, ist es die erste bestätigte Sichtung (4.32)
+		Game.leviathan_name.on_sighting(self)
 	if randf() < 0.1:
 		_lose_coins()
 	_go_hide()

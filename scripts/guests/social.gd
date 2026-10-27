@@ -166,6 +166,12 @@ const SIGHT_NOTES := [
 	"Es stand am Ende des Flurs und hat mich angesehen. {zone}. Ich schwöre es.\n– {name}",
 	"Nicht rennen. Nicht hinsehen. Verstecken.\n– {name}",
 ]
+## Dieselben, wenn er den Namen Leviathan kennt (Spielkonzept 4.32)
+const SIGHT_NOTES_NAMED := [
+	"Ich habe den Leviathan gesehen. Hier. ({zone})\nKommt nicht allein hierher.\n– {name}",
+	"Der Leviathan stand am Ende des Flurs und hat mich angesehen. {zone}. Ich schwöre es.\n– {name}",
+	"Nicht rennen. Nicht hinsehen. Verstecken.\n– {name}",
+]
 const DOOR_NOTES := [
 	"Bitte nicht stören.\n– {name}",
 	"Tausche Kerzen gegen Kürbisse. Einfach klopfen.\n– {name}, Zimmer {room}",
@@ -862,7 +868,8 @@ func _spread_gossip(amount: float, exclude: Array) -> void:
 func on_guest_saw_monster(guest: Guest) -> void:
 	guest.say_panic()
 	if randf() < 0.08:
-		_leave_note(guest, SIGHT_NOTES, guest.global_position, "")
+		var named := Game.leviathan_name != null and Game.leviathan_name.knows(guest)
+		_leave_note(guest, SIGHT_NOTES_NAMED if named else SIGHT_NOTES, guest.global_position, "")
 
 
 ## Über das Monster reden: hilfreich – aber es hört mit (Spielkonzept 4.7).

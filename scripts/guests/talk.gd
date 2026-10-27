@@ -198,7 +198,8 @@ func untold(g: Guest) -> Array[Dictionary]:
 func tell_label(story: Dictionary) -> String:
 	var who := Game.social.guest_name(String(story.get("who", "")))
 	var zone := String(story.get("zone", ""))
-	return String(TELL_LABEL.get(story["kind"], "Mir ist was passiert …")).format({"zone": zone if zone != "" else "hier", "who": who})
+	var text := String(TELL_LABEL.get(story["kind"], "Mir ist was passiert …")).format({"zone": zone if zone != "" else "hier", "who": who})
+	return Game.leviathan_name.name_for(text, Game.leviathan_name.player_knows) if Game.leviathan_name else text
 
 
 func _scan_sights() -> void:
@@ -860,7 +861,10 @@ func _compare(a: Guest, b: Guest) -> bool:
 func _pass_on(a: Guest, b: Guest, c: Dictionary) -> void:
 	var topic := String(c["topic"])
 	var group := "spook" if topic in SPOOK else ("corpse" if topic == "corpse" else ("thief" if topic == "thief" else "other"))
-	a.say(_fill((RUMOR[group] as Array).pick_random(), a, {"thing": String(THING.get(topic, "etwas")),
+	var thing := String(THING.get(topic, "etwas"))
+	if Game.leviathan_name:   # wer den Namen kennt, sagt ihn (4.32)
+		thing = Game.leviathan_name.name_for(thing, Game.leviathan_name.knows(a))
+	a.say(_fill((RUMOR[group] as Array).pick_random(), a, {"thing": thing,
 		"zone": c["zone"] if c["zone"] != "" else "hier", "who": Game.social.guest_name(String(c["who"]))}))
 	var copy := c.duplicate(true)
 	copy["from"] = a.id

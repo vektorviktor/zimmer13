@@ -65,7 +65,7 @@ Stand: 2026-10-26.
 | Personalakte des Heizers | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
 | Zeitungsausschnitt „Brand im Grandhotel“ | – | geplant | Hauptgeschichte (Indiz) | offen | 2.3 |
 | Marions Brief | – | offen | Nebenstrang (war: falls sie vorher stirbt – Kernfiguren sterben seit 2026-10-25 nicht; streichen oder anders auslösen) | Zimmer 001 | 2.8 |
-| Dorés „Die Zerstörung des Leviathan“ | – | geplant | – (gibt dem Monster seinen Namen) | Hugo Steins Koffer, danach an der Fotowand | 4.32 |
+| Dorés „Die Zerstörung des Leviathan“ | – (fester Druck, `LeviathanName.PrintSheet`) | **gebaut** – echter Holzstich (gemeinfrei), [E] ansehen | – (gibt dem Monster seinen Namen) | Hugo Steins Koffer → Couchtisch der Lobby → Westwand der Lobby neben dem Aushangbrett | 4.32 |
 
 ## 4. Deko
 

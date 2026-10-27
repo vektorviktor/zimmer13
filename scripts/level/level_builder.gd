@@ -502,6 +502,8 @@ var bar_spots: Array[Vector3] = []
 var diary: Diary
 ## Zimmer → Mitte der Platte seines ersten Tischs (global) – dort liegt etwa Gustavs Tagebuch (Spielkonzept 2.6)
 var room_tables := {}
+## Mitte der Platte des Lobby-Couchtischs (global) – dort legt Hugo Dorés Druck hin (Spielkonzept 4.32)
+var lobby_table := Vector3.INF
 ## Aushangbrett in der Lobby (Spielkonzept 2.5) und Innenmaß der Lobby (x, z)
 var notice_board: NoticeBoard
 var lobby_rect := Rect2()
@@ -1988,6 +1990,7 @@ func _furniture() -> void:
 				rect = Rect2(c - Vector2(side, side) / 2.0, Vector2(side, side))   # quadratisch, für _top_at
 				node = _coffee_table(side)
 				top = BOX_HEIGHTS["coffee_table"]
+				lobby_table = Vector3(c.x, _base_y + top, c.y)
 			"room_table" when ResourceLoader.exists(ROOM_TABLE_MODEL):
 				yaw = 0.0   # Stühle stehen in Weltrichtung (_room_table)
 				node = _room_table(rect)

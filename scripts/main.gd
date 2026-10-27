@@ -251,6 +251,8 @@ extends Node3D
 ##   --vogelscheuche[=tag]       sie steht, wo sie an Halloween (bzw. an diesem Tag) stünde, du in der Lobby vor der Gartentür
 ##   --kind-zu-viel              der 28. abends, ein Kind vor deiner offenen Tür – und eins zu viel dahinter
 ##   --fotos[=jahr]              vor die Fotowand in der Lobby · jahr: dieses Foto gleich aufgeschlagen (1987 … 2026)
+##   --leviathan[=benannt|liesel] erste bestätigte Sichtung: Hugo holt Dorés Druck, du am Couchtisch der Lobby (4.32) ·
+##                               benannt: schon geschehen, du vor dem Druck an der Wand · liesel: Hugo ist tot
 ##   --beerdigen[=gast]          ein erwürgter Gast liegt vor der Gedenkstätte auf dem Friedhof – [E] beerdigt ihn
 ##   --trauerfeier               zwei Gäste liegen seit gestern, 20 s vor der Totenglocke (9:30), du an der Gedenkstätte
 ##   --puppenhaus[=urteil]       vor das Puppenhaus in der Bibliothek · urteil: die Puppe urteilt gleich (die kleine weiß es zuerst)
@@ -525,6 +527,10 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	add_child(cemetery)
 	cemetery.setup(builder.grave_slots, builder.memorial_spot)
 	Game.cemetery = cemetery
+	var naming := LeviathanName.new().setup(builder)   # der Name Leviathan, Hugos Druck (4.32)
+	naming.name = "NameLeviathan"
+	add_child(naming)
+	Game.leviathan_name = naming
 	var doll_house := DollHouse.new()   # Puppenhaus in der Bibliothek (5.16)
 	doll_house.name = "Puppenhaus"
 	add_child(doll_house)
@@ -1524,6 +1530,8 @@ func _debug_omens(arg: String) -> bool:
 			get_tree().create_timer(1.0).timeout.connect(Game.extra_child.debug)
 		"--fotos":
 			Game.photo_wall.debug_show(value)
+		"--leviathan":
+			get_tree().create_timer(1.0).timeout.connect(Game.leviathan_name.debug.bind(value))
 		"--beerdigen":
 			Game.cemetery.debug_show("beerdigen," + value)
 		"--trauerfeier":

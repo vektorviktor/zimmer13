@@ -154,6 +154,9 @@ Schritte `step_carpet`/`step_tiles` (`Footsteps`), `door_open`, Totenglocke `chu
 **Tapeten** `assets/textures/wallpaper_<variante>.png` + gemeinsame Höhenkarte `wallpaper_bump.png`, siehe 8,
 „Optik“.
 
+**Dorés „Die Zerstörung des Leviathan“** (`assets/textures/dore_leviathan.jpg`, Spielkonzept 4.32): Holzstich von
+1865, gemeinfrei (Wikimedia Commons, `File:Destruction_of_Leviathan.png`), auf 800 px Breite in Graustufen verkleinert.
+
 **Fototexturen** (PBR-Sets, je ein Ordner `assets/textures/<set>/`): `Mat.photo(pfad, meter, normal_pfad,
 rauheit_pfad, glanz)` mit `shaders/psx_photo.gdshader`, Projektion in Weltkoordinaten; `object_uv` in
 Modellkoordinaten (für Bewegtes wie die Aufzugskabine – in Weltkoordinaten wanderte die Textur), `mesh_uv` über die
@@ -1580,6 +1583,32 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   `--vogelscheuche`, `--kind-zu-viel`, `--fotos`, `--gedenken`, `--puppenhaus`, `--fratzen`, `--apfel`, `--spieluhr`;
   Rauchtest-Stichwort `halloween`.
 
+### Der Name Leviathan (Spielkonzept 4.32)
+- **`LeviathanName`** (`scripts/guests/leviathan_name.gd`, `Game.leviathan_name`, `setup(builder)`), Stufen `NONE →
+  SEEN → GATHERING → SCENE → NAMED`. **Sichtung:** `Guest._watch_monster` (Sichtlinie) und `Guest.scared_by_monster`
+  melden `on_sighting` (nur Erwachsene, nicht im Zeitsprung); bestätigt, wenn der Zeuge `CONFIRM_AFTER` s später
+  noch lebt (`witness`, `seen_at`).
+- **Szene:** ab `EVENING` (nach `LATEST` erst am nächsten Abend) und nur in Ruhe (`_quiet`: kein Monster, keine andere
+  Bedrohung, kein Schlaf, keine Feier, keine Siegerehrung). Benenner `_namer_guest`: Haushalt `H27` (Hugo), sonst
+  `H26` (Liesel); beide tot → benannt ohne Szene. `_gather`: Benenner, Zeuge, `pals_of(Benenner)`, ein Skeptiker
+  (`Talk.temper`), höchstens `MAX_GATHER`, Plätze im Kreis um `LevelBuilder.lobby_table` (Mitte der Couchtischplatte),
+  `Guest.join_party(platz, tisch)`. Ist Hugo am Platz, liegt der Druck (`PrintSheet`) auf dem Tisch; Sätze
+  (`SCENE_HUGO`/`SCENE_LIESEL`, fehlender Sprecher entfällt) beginnen, wenn der Spieler 3 s in der Lobby ist, nach
+  `WAIT_PLAYER` bzw. spätestens `GATHER_MAX`. Sätze mit dem Namen → `Social.on_monster_talk` (4.7). Danach `knowers`,
+  der Druck hängt an `PRINT_AT` (Westwand der Lobby, zwischen Aushangbrett und Wandlampe), `leave_party` nach `LINGER`.
+- **Verbreitung:** `_spread` alle `TELL_SCAN` s – zwei freie Freunde (`are_pals`) in `TELL_RANGE`, Chance
+  `max(TELL_CHANCE, gossip)`; nach `ALL_KNOW_AFTER` kennen ihn alle (`knows`).
+- **Sätze:** `Guest.line` → `speak`: Wer den Namen kennt (keine Kinder), sagt statt des Satzes den aus `RENAMED`
+  (Satz → Satz, wörtlich; neue Monster-Sätze mit „es“ dort nachtragen – `tests/run.tscn` `leviathan_checks` prüft,
+  dass jeder Schlüssel bei den Gästen steht), bei „monster“ mit `OWN_LINE_CHANCE` einen aus `OWN_LINES`. `name_for`
+  macht aus „das Monster“ „den Leviathan“: Gerüchte (`Talk._pass_on`), Erzähl- und Lügenknöpfe des Spielers
+  (`Talk.tell_label`, `DialogUI._show_lie`); Zettel `Social.SIGHT_NOTES_NAMED`.
+- **Spieler:** `learn()` – in der Lobby bei der Szene, ein Satz mit dem Namen in `HEAR_RANGE` (`_heard`) oder den Druck
+  ansehen (`Menus.open_photo`): Notiz `leviathan`, Tagebuch-Meilenstein `leviathan`.
+- **Gespeichert** (Speicherstand 54) unter `leviathan`: Stufe (Versammlung/Szene als `SEEN` – beginnt neu), Zeuge,
+  Zeiten, Benenner, `knowers`, `player_knows`. Unbestätigte Sichtungen nicht. Debug `--leviathan[=benannt|liesel]`,
+  Rauchtest-Stichwort `leviathan`.
+
 ### Friedhof (Spielkonzept 5.15)
 - **Plan:** `Möbel: Grab` (2 × 1 m, hellere Zeile `… Vorderseite` = Fußende, gegenüber das Kopfende mit dem Kreuz),
   `Möbel: Gedenkstätte` (mit Vorderseite) und die Fläche `Heckenbogen` (Lücke in der `Terrassenkante`). Grab und
@@ -1842,6 +1871,7 @@ selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Ra
     `Door.near`. `bag_checks`: Tasche ohne Hotel. `notebook_checks`: Notizbuch und Tagebuch ohne Hotel.
     `throw_checks`: Abwurftempo und langer Spritzer im Zusatzfeld (Spielkonzept 3.13). `darts_checks`: Felder der
     Dartscheibe, Zielpunkte, Zielwahl der Gäste, 301-Regeln und eine Simulation der Aufnahmen je Treffsicherheit.
+    `leviathan_checks`: jeder Satz in `LeviathanName.RENAMED` steht wörtlich bei den Gäste-Sätzen (4.32).
   - Schach ohne Autoloads mit `-s`: `-s res://tests/chess_perft.gd` (Zuggenerierung) bzw. `…/chess_ai_speed.gd`.
   - Sonst Prüfung über Debug-Parameter, Konsole und Screenshots.
 

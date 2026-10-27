@@ -104,7 +104,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     Zimmer 13 hängt), director.doll_mask – ältere Stände laden weiter, die Masken hängen dann an ihren Haken
 ## 53: Heiße Stellen statt Neugier je Zone (Spielkonzept 4.9): director.state.hot_spots und boldness_bonus statt
 ##     director.curiosity – ältere Stände laden weiter, ohne heiße Stellen und Boni
-const VERSION := 53
+## 54: Der Name Leviathan (Spielkonzept 4.32): „leviathan“ (Stufe, Zeuge, wer den Namen kennt) – ältere Stände laden
+##     weiter, noch ohne Sichtung
+const VERSION := 54
 const MIN_VERSION := 39
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -481,6 +483,8 @@ func collect() -> Dictionary:
 	data["omens"] = _collect_omens()
 	if Game.cemetery:
 		data["cemetery"] = Game.cemetery.save_state()
+	if Game.leviathan_name:
+		data["leviathan"] = Game.leviathan_name.save_state()
 	data["doll"] = Game.doll.save_state() if Game.doll else {}
 	data["contest"] = Game.contest.save_state() if Game.contest else {}
 	data["notebook"] = Game.notebook.save_state() if Game.notebook else {}
@@ -610,6 +614,8 @@ func apply(data: Dictionary) -> void:
 	_apply_omens(data.get("omens", {}))
 	if Game.cemetery:
 		Game.cemetery.load_state(data.get("cemetery", {}))
+	if Game.leviathan_name:
+		Game.leviathan_name.load_state(data.get("leviathan", {}))
 	if Game.dice and Game.dice.table:
 		Game.dice.table.loaded = bool(data.get("table_loaded", false))
 
