@@ -1885,7 +1885,7 @@ func _knock_ignored(guest: Guest, fake: bool) -> void:
 		if Game.traces:
 			Game.traces.add_door_scratch(builder.rooms[LevelBuilder.PLAYER_ROOM]["door"], builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"] + Vector3(0, 0, -1.0))
 		return
-	if Game.director.is_harmless() or guest.is_child() or randf() < 0.5:
+	if Game.director.is_harmless() or not Game.director.may_hunt(guest) or guest.is_child() or randf() < 0.5:
 		Game.noise("scream", guest.global_position, guest)
 		guest.scared_by_monster()
 		change_relation(guest, -20.0)

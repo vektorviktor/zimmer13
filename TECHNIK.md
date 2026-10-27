@@ -711,14 +711,15 @@ Effekte), **`Monster`** führt aus (Zustandsautomat, Bewegung, Sicht, Spuren).
 
 **Nur eine Bedrohung im Haus** (Spielkonzept 4.20): `MonsterDirector.other_threat_active(wer)` – Monster aktiv,
 `SheetGhost.is_active()`, `PumpkinMan.in_house()` oder seine Ankündigung, außer dem Fragenden selbst. Gefragt wird beim
-natürlichen Erscheinen: `_update_schedule` (Aufbruch verschoben, später neu), die Siegerehrung (`DoorContest`),
+natürlichen Erscheinen: `_update_schedule` (Auftritt um 10 s verschoben), die Siegerehrung (`DoorContest`),
 `SheetGhost._check_spawn`, `PumpkinMan._check_spawn` (vor dem Wurf), der Zeitsprung. Debug-Aufrufe (F5/F7/F9,
-`--warn`, `--ghost`, `--pumpkin=…`) fragen nicht.
+`--warn`, `--ghost`, `--pumpkin=…`) fragen nicht. Die Runde im Keller (`Mode.PATROL`) zählt nicht als Bedrohung.
 
 ### Versteckte Werte (Director)
-- `boldness` (Dreistigkeit, steigt nach dem ersten Angriff je Spieltag) + `boldness_bonus` (Ereignisse über
-  `add_boldness`: bemerkt, belauscht, UV; Halbwertszeit `BOLDNESS_BONUS_HALF_LIFE`) − `satiation` =
-  `effective_boldness()` (Spielkonzept 4.9). `demand()` (Anspruch an Deko, Spielkonzept 5.10) gleitend nach Tag von
+- `boldness` (Dreistigkeit, steigt nach dem ersten Angriff um `BOLDNESS_PER_DAY` je Spieltag, **ohne Obergrenze**,
+  jedes Opfer zieht `VICTIM_BOLDNESS` ab) + `boldness_bonus` (Ereignisse über `add_boldness`: bemerkt, UV; Gerede
+  `TALK_BOLDNESS`, Lärm und Licht aus `LURE_BOLDNESS` – je höchstens einmal in `LURE_EVERY`; Halbwertszeit
+  `BOLDNESS_BONUS_HALF_LIFE`) − `satiation` (`SATIATION` nach einem Opfer) = `effective_boldness()` (4.9, 4.33). `demand()` (Anspruch an Deko, Spielkonzept 5.10) gleitend nach Tag von
   `DEMAND_FROM_DAY` bis `DEMAND_MAX`.
 - **Heiße Stellen** statt Neugier je Zone (4.9): `hot_spots` ({pos, heat}, höchstens `HOT_MAX`). `add_curiosity(p, n)`
   macht eine Stelle heiß oder verschmilzt mit einer unter `HOT_MERGE`; `curiosity_at(p)` = `CURIOSITY_BASE` + Hitze der
@@ -738,30 +739,68 @@ natürlichen Erscheinen: `_update_schedule` (Aufbruch verschoben, später neu), 
 `kill_player(spot)`. Neue Spielmechaniken, die das Monster beeinflussen sollen, melden sich hier. Kürbismann und
 Lakengeist töten über `player_slain()` (Spiel aus, Schrei, Sterbebildschirm) bzw. `guest_slain(gast, ursache)`.
 `on_actor_hid` schickt das Monster nicht nachsehen, während es tötet (`KILL`).
-Debug: F5 = `start_warning()` (nur wenn es ruht), F7/`--lure` = `debug_lure()`: ruht es, `spawn_at()` auf dem
+Debug: F5 = `start_warning()` (ein Raubzug, nur wenn es ruht), F7/`--lure` = `debug_lure()`: ruht es, `spawn_at()` auf dem
 NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `investigate(Spieler)`.
 
-### Dramaturgie
+### Dramaturgie: die vier Modi (Spielkonzept 4.33)
 - Vor dem ersten Angriff: kein Monster. Den ersten Angriff löst die Siegerehrung aus (`DoorContest`, 8 „Der
-  Anfang“): `first_attack_unseen(gustav)` – es zeigt sich nicht und streift nicht, holt Gustav Peters
-  (`Grinch.taken`), zählt als Aufbruch (`attacks += 1`), ist satt (`on_guest_taken`) und geht gleich in die Ruhephase
-  (`on_monster_gone`). Steht der Spieler in Zimmer 020, stirbt er mit (`kill_player`).
-- Danach Wechsel `Phase.CALM` (Keller) ↔ `Phase.ACTIVE` (streift umher); Dauern über `_day_lerp`, in Echtzeit.
-- `attacks <= HARMLESS_ATTACKS` → `is_harmless()`: es holt keinen Gast, `kill_guest` wird zu Erschrecken
-  (`_scare_guest`). **Den Spieler tötet es immer, wenn es ihn erwischt.**
-- **Absicht** (Spielkonzept 4.17): `_start_activity` → `_choose_intent` setzt `victims_left`: 0 (umsehen) oder – mit
-  `attack_chance()` aus `ATTACK_CHANCE` – `_draw_victims()` (n ∝ 1/n², höchstens `_max_victims()`). `intent`
-  (`ROAM`/`ONE`/`RAMPAGE`) folgt nur daraus (`_intent_for`). `kill_*` holen nur, wenn `wants_victim()`, sonst
-  Erschrecken (nur Gäste). Raubzug: nach einem Opfer `Monster.after_kill_hunting()`, erst das letzte macht satt
-  (`after_feeding`). Satt (`SATED_ROAM`) → immer `ROAM`. Sichtung/Gerede können `ROAM` per `_escalate` zu `ONE` machen.
-  `victims_left` und `_uv_angry` stehen im Spielstand. `--attacks=10` macht es nur nicht mehr harmlos, sicher holen
-  mit `--intent`; `--trace` zeigt Aufbruch, Chance, Absicht, `[Geholt]`, `[Erschreckt]`.
-- **Flackerwelle**: `_start_wave(ursprung, opfer)` – Dauer und Stufe nach der Opferzahl; `wave_delay(p)` = Weg vom
-  Ursprung über das Stockwerk, in andere Stockwerke über `_stairwell`, durch `WAVE_SPEED`. Jede Lampe bekommt
-  `FlickerLight.wave` (getrennt von `flicker`, damit die Welle keine Birnen durchbrennen lässt). Angezeigt wird
-  `shown_victims` – kann gelogen sein (`DECEIVE_CHANCE`). Gäste: `Guest.on_flicker_signal(stufe, verzögerung)`.
-  Halluzination startet Wellen mit `fake = true` (Gäste reagieren nicht). Nicht gespeichert. `is_signalling()` sperrt
-  das Tagebuch, `long_signal_near()` bricht Würfelpartien ab.
+  Anfang“): `first_attack_unseen(gustav)` – es zeigt sich nicht, holt Gustav Peters (`Grinch.taken`), zählt als
+  Auftritt (`attacks += 1`), ist satt (`on_guest_taken`). Steht der Spieler in Zimmer 020, stirbt er mit
+  (`kill_player`). Läuft schon ein Auftritt (Debug), bleibt er.
+- **Plan:** Danach würfelt `_make_plan()` einmal (lazy in `_update_schedule`, `_plan_made`) alle Auftritte bis
+  Halloween in `plan` ({mode, day, at, lead}, nach Zeit sortiert): `JUDGMENTS` Urteile gleichmäßig ab
+  `JUDGMENT_FIRST` mit Streuung, `SNACKS` an Tagen ohne Urteil, `RAIDS` Raubzüge nach `RAID_WEIGHT` (Tageskurve,
+  ohne Zurücklegen); Uhrzeit je Modus (`*_HOUR`, über 24 = nach Mitternacht), `_space_plan()` hält `MODE_GAP`
+  Abstand. `_check_demand()` (jede Sekunde) setzt eine **Anforderung** an den nächsten Abend ohne Urteil, sobald
+  `effective_boldness()` die nächste Schwelle (`DEMAND_FIRST` + `DEMAND_STEP` × bisherige) überschreitet, höchstens
+  `DEMANDS`, ab `DEMAND_GUARANTEE_DAY` sicher die zweite. Prüft `tests/mode_checks.gd` (Zahlen, Abstände).
+- **Ohne Körper** (`Phase.CALM`, `_update_calm`): Puppe und Grollen vor dem Urteil (unten), das Rauschen vor der
+  Anforderung (`demand_warning()`: `DEMAND_WARN` lang Rauschen, Brummen, `Social.on_rumble`), Geräusche hinter Wänden
+  (`_update_presence`, `PRESENCE_EVERY`, an `_point_near_unseen`), Spuk, Halluzinationen. Etwa dreimal am Tag eine
+  **Runde im Keller** (`Mode.PATROL`, `PATROL_GAP`/`PATROL_TIME`, Ziele nur auf `LevelBuilder.CELLAR_Y`), nicht
+  kurz vor einem Auftritt. Ist ein Auftritt fällig: `_start_mode(m)` (`_begin_mode` setzt alles zurück, Signal,
+  Ort), danach `_update_mode(delta)` jedes Bild bis `on_monster_gone()`. Überfällig um mehr als eine Spielstunde
+  (Uhr gesprungen) → verworfen.
+- **Wen es jagt** (`may_hunt(akteur, abstand)` in `Monster._visible_actor` und `_check_hide_step`): Urteil nur den
+  Verurteilten (`condemned`), Raubzug den Spieler (nicht in Zimmer 13, `player_safe()`), Anforderung den Spieler und
+  wer im aufgebrochenen Zimmer steht, Snack und Kellerrunde jeden; wer näher als `IN_THE_WAY` kommt, immer. Auf dem
+  Rückweg nur, wer im Weg steht (`hunts_on_retreat`). **Türen** (`may_open`, `Monster._open_doors`): Snack keine
+  Zimmertür, Raubzug nie Zimmer 13, sonst nur unverschlossene; die Tür, die es gerade aufbricht (`breaks`), immer –
+  `Door.monster_open(smash)` macht sie kaputt. `is_blocked` ist dort immer falsch (`_at_target`).
+- **Urteil** (`Mode.JUDGMENT`): Weg nur zur Puppentür (`_route = [doom_room]`), im Zimmer packt es nur den
+  Verurteilten; ist er woanders, `next_target` → `{"hunt": …}`: Jagd, die er nicht verliert (`is_condemned`, keine Deko
+  hält). **Notausgang** `_judgment_escape()` nach `JUDGMENT_REACH` (Spieler `JUDGMENT_REACH_PLAYER`): ein Gast
+  verschwindet mit Schleifspur Richtung Keller (`push_warning`), beim Spieler taucht es ungesehen daneben auf
+  (`Monster.ambush`). Danach (`_judged`) nur noch heim; `on_monster_gone` schiebt Snacks und Raubzüge bis zum Morgen.
+  Kein UV (`can_be_repelled_by_uv`), keine Ablenkung (`investigate`).
+- **Snack** (`Mode.SNACK`): erscheint ungesehen auf der Etage des Spielers (`_floor_spawn`, nah an der stärksten
+  Lockung `_lure`), Zucken; `SNACK_RUSH` lang auf den Spieler zu (`_sense`, `Monster.track`), dann umherstreifen auf
+  dieser Etage, `SNACK_TIME` lang. Ein Opfer, dann heim.
+- **Raubzug** (`Mode.RAID`, `raids`): beginnt an `_lure_spawn()` (stärkste Lockung, sonst Keller), mittleres Flackern.
+  Alle `RAID_SENSE` s peilt es den Spieler an; versteckt sucht es dieses Versteck einmal ab (`_checked_spot`) und findet
+  ihn nur, wenn er keucht. Nach `RAID_TIME` (`_end_raid_search`): hat es ihn gejagt, ist es einem Wurf gefolgt
+  (`on_noise` mit `Item` als Quelle) oder wurde es mit UV vertrieben (`_no_break_in`, `_uv_driven`), geht es heim –
+  sonst `_plan_break_in()`: eine der schwächsten bewohnten Türen (`RAID_WEAK_SHARE`), hinter der jemand ist, ein Opfer.
+  Die ersten `HARMLESS_RAIDS` sind harmlos (`is_harmless()`): `Monster._abort()` kurz vor dem Zugriff
+  (`HARMLESS_ABORT`), kein Einbruch.
+- **Anforderung** (`Mode.DEMAND`, `demands`): `_draw_victims()` (1–7, ∝ 1/n²), `_demand_doors()`: bewohnte Türen, deren
+  Deko nicht hält (`is_blocked`), schwächste zuerst, `DEMAND_DOORS`; langes Flackern. Tür für Tür bis die Opferzahl
+  erreicht ist.
+- **Opfer** (`kill_guest`): geholt wird nur, wen der Modus will (sonst `_scare_guest`); 20 % überleben verletzt
+  (`Wounds.survives`, Kernfiguren immer) – zählt trotzdem als Opfer; der Verletzte kommt in `_spared`. **Den Spieler
+  tötet es immer** (außer harmlos). Gespeichert: Plan, Modus, Verurteilter (Gast-ID/„player“), `raids`, `demands`,
+  `_lure`, Restzeiten (Speicherformat 55). Debug `--mode=…`, `--plan`, `--warn`, `--doll`, `--attacks=n` (Raubzüge
+  bisher); `--trace` zeigt `[Plan]`, `[Aufbruch]`, `[Raubzug]`, `[Urteil]`, `[Anforderung]`, `[Geholt]`,
+  `[Losgerissen]`, `[Erschreckt]`.
+- **Flackerwelle**: `_start_wave(ursprung, stufe)` – 0 Zucken (Snack), 1 Flackern (Raubzug), 2 lang (Anforderung),
+  Dauer `SIGNAL_TIME`; das Urteil hat keine (die Puppe kündigt es an). `wave_delay(p)` = Weg vom Ursprung über das
+  Stockwerk, in andere Stockwerke über `_stairwell`, durch `WAVE_SPEED`. Jede Lampe bekommt `FlickerLight.wave`
+  (getrennt von `flicker`, damit die Welle keine Birnen durchbrennen lässt). Gäste: `Guest.on_flicker_signal(stufe,
+  verzögerung)`. Halluzination startet Wellen mit `fake = true` (Gäste reagieren nicht). Nicht gespeichert.
+  `is_signalling()` sperrt das Tagebuch, `long_signal_near()` bricht Würfelpartien ab.
+- **Zeitsprung** (`skip`): derselbe Plan; `_skip_mode` – Snack holt niemanden (alle hinter ihren Türen), Raubzug findet
+  den Spieler in Zimmer 13 nicht und bricht ein, Urteil und Anforderung gehen ihre Türen ab (`_skip_raid`). Zimmer 13
+  oder hörbarer Lärm → `_skip_wake`.
 - Haunting (Türen, Vorhänge, Licht, Betten, Zimmer 13) nur, wo der Spieler nicht hinsieht (`_unseen`).
 
 ### Die Puppe (`scripts/world/jury_doll.gd`, Spielkonzept 5.5)
@@ -778,22 +817,16 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
   „sit“ (`_skirt`, Wert 1 − k); Arme immer `ARM_DOWN` aus Meshys A-Pose. `HEAD_HEIGHT` = Blickziel für DoorContest. `vanish()` (Rauch bei der Siegerehrung): `gone`, unsichtbar;
   `_reappear` beim nächsten Urteil. `DoorContest.on_doll_placed` schreibt das erste Urteil ins Tagebuch.
 - Gespeichert unter `doll` (Lage, Drehung, `verdict`, `at_room`, `pending`, `gone`).
-- **Frist und Urteil** (`MonsterDirector`): `on_monster_gone` würfelt `_lead` (`DOLL_LEAD`). In der Ruhephase ruft
-  `_update_schedule` bei `_phase_left <= _lead` einmal `_plan_departure()`: Absicht jetzt wählen (`_planned`); nur wenn
-  `victims_left > 0` (auch vor harmlosen Angriffen – dann erschreckt es nur): Ruhe auf `_lead` verlängern,
-  `_judge(_weakest_door())`, Grollen. `_weakest_door()`: zuerst `doll_mask` (Puppenmaske getragen, 5.19), sonst unter
-  `inhabited_rooms()` die mit der wenigsten Deko
-  (Gleichstand `DOLL_DECO_TIE`, die bisherige Tür bleibt), dann die dunkelste (`DOLL_LIGHT_TIE`), dann Zufall; alle
-  `DOLL_RECHECK` neu (Nachbessern). **Grollen:** `SynthAudio.rumble` steigt bis zum Ende der Frist.
-- **Weg** (`_plan_route`): `NavigationServer3D.map_get_path` vom Keller zur Puppentür; bewohnte Türen nah am Weg
-  (`ROUTE_REACH`, höchstens `ROUTE_DOORS`), deren Deko nicht hält, kommen vorher dran → `_route`, `_raiding`.
-  `Monster._next_roam` fragt zuerst `next_raid_target()`, danach `{"home": true}` (`_finish_raid`).
-  `_update_schedule` schickt es während `_raiding` erst nach `RAID_OVERTIME` heim.
-- **Gewähltes Zimmer** (`in_raid_room`): Versteckte werden sofort geholt, leere Verstecke aufgerissen (`rip_open`),
-  wer offen steht, gejagt und nicht verloren (`raid_prey`). `kill_guest` dort auch ohne `wants_victim`; ein Teil reißt
-  sich los (`Wounds`), im Puppenzimmer nie. `is_blocked` ist an der Puppentür und im Puppenzimmer immer falsch
-  (`_at_doom`) – sie fällt auch gut geschmückt. Gespeichert im Director: `planned`, `lead`, `rumble_total`,
-  `doom_room`, `raiding`, `route`, `raid_kills`. Debug `--doll[=s[,zimmer]]`, `--trace` `[Puppe]`.
+- **Frist und Urteil** (`MonsterDirector`): Ist das nächste Urteil im Plan näher als sein `lead` (`DOLL_LEAD`),
+  `_place_doll()`: `_judge(_weakest_door())`, Grollen. `_weakest_door()`: zuerst `doll_mask` (Puppenmaske getragen,
+  5.19), sonst unter `judgeable_rooms()` (Zimmer 13 und Zimmer mit einem Erwachsenen, der keine Kernfigur ist) die mit
+  der wenigsten Deko (Gleichstand `DOLL_DECO_TIE`, die bisherige Tür bleibt), dann die dunkelste (`DOLL_LIGHT_TIE`),
+  dann Zufall; alle `DOLL_RECHECK` neu (Nachbessern). Beim Aufbruch `_condemned_in(zimmer)`: der Spieler bzw. der
+  Bewohner mit der höchsten `Guest.weakness()`. **Grollen:** `SynthAudio.rumble` steigt bis zum Ende der Frist.
+  `_end_raid(true)` (nur nach dem Urteil) gibt die Puppe frei.
+- **Gewähltes Zimmer** (`in_raid_room`): Verstecke aufgerissen (`rip_open`), wer offen steht und gemeint ist, gejagt und
+  nicht verloren (`raid_prey`, beim Urteil nur der Verurteilte). Gespeichert im Director: `rumble_total`, `doom_room`,
+  `raiding`, `route`, `raid_kills`. Debug `--doll[=s[,zimmer]]`, `--trace` `[Puppe]`, `[Urteil]`.
 - **Gäste beim Grollen und Aufbruch:** Während der Frist `Social.on_rumble(k)` (Angst, Erlebnis „rumble“, in Deckung,
   Feiern enden ab `RUMBLE_PARTY_END`). Die Flackerwelle ruft bei jedem Gast `_react_to_flicker` → `take_cover()`:
   nah am eigenen Zimmer heim (`_flee_home`, dann `_shut_in()` – Tür zu), sonst `_go_hide()`. Solange
@@ -809,8 +842,10 @@ Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `st
   liegt – vorbeigehen darf es (die Deko vor den Türen deckte sonst den ganzen Flur ab). Beim Jagen gilt
   `is_protected(Gejagter)`. Zurückgeschreckt ohne UV → anderes Ziel (`_next_roam`), der Gejagte kommt für
   `REBUFF_TIME` in `_rebuffed`.
-- **Rückzug (`RETREAT`) nur:** Ende der Aktivphase (`go_home`), satt (`after_feeding`), UV. Nach einem harmlosen
-  Schreck `after_scare(opfer)` → `SLINK`; das Opfer steht bis zur nächsten Aktivphase in `_spared`.
+- **Rückzug (`RETREAT`) nur:** Ende des Auftritts (`go_home`), nach einem Opfer (`after_feeding`), UV, harmloser
+  Raubzug (`_abort`). Nach einem Schreck `after_scare(opfer)` → `SLINK` (nicht auf dem Rückweg); das Opfer steht bis
+  zum nächsten Auftritt in `_spared`. Von außen außerdem `track(pos)` (Peilen), `replan()` (neues Ziel vom Director),
+  `ambush(pos, akteur)` (Notausgang beim Urteil).
 - Tempo `WALK_SPEED`, `SEARCH_SPEED`, `CHASE_SPEED` – jagend weit schneller als der rennende Spieler.
 
 ### Aussehen & Animation

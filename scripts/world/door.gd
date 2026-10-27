@@ -299,11 +299,15 @@ func set_open(open: bool, fast: bool = false, quiet: bool = false, source: Node 
 		Game.noise("door", center(), source)
 
 
-## Das Monster reißt die Tür auf (auch abgeschlossene – außer der Lobbytür).
-func monster_open() -> void:
-	if is_open or not monster_can_open:
+## Das Monster reißt die Tür auf (auch abgeschlossene – außer der Lobbytür). smash: es bricht sie auf (Puppentür,
+## Anforderung, Einbruch nach dem Raubzug, 4.33) – kaputt, auch wenn sie offen war.
+func monster_open(smash: bool = false) -> void:
+	if not monster_can_open:
 		return
-	if locked and room_no != "":   # „Die Tür fällt, auch abgeschlossene“ (5.5): danach ist sie kaputt (6.19)
+	if is_open and not smash:
+		return
+	# „Die Tür fällt, auch abgeschlossene“ (5.5): danach ist sie kaputt (6.19)
+	if (locked or smash) and room_no != "" and not broken:
 		broken = true
 		broken_by_player = false
 		broken_day = Calendar.today()

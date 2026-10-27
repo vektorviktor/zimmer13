@@ -1559,10 +1559,9 @@ func debug_ghost_hour(meeting: int) -> void:
 	_debug_reset()
 	var director := Game.director
 	director.first_attack_done = true
-	if director.phase != MonsterDirector.Phase.ACTIVE:   # das Monster bleibt im Keller, sonst wartete die Geisterstunde
-		director._phase_left = maxf(director._phase_left, DEBUG_CALM)
 	hour_meetings = maxi(0, meeting - 1)
 	director.elapsed = Calendar.at(Calendar.day_of(director.elapsed), 24.0 - 3.0 / Calendar.HOUR)
+	director.hold(DEBUG_CALM)   # das Monster bleibt im Keller, sonst wartete die Geisterstunde
 	_debug_hour_near = true
 
 

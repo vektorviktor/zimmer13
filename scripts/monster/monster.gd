@@ -140,7 +140,9 @@ func start_roaming(pos: Vector3, roam: Dictionary = {}) -> void:
 func spawn_at(pos: Vector3) -> void:
 	Game.director.first_attack_done = true
 	Game.director.phase = MonsterDirector.Phase.ACTIVE
-	Game.director._phase_left = MonsterDirector.ACTIVE_TIME.x
+	Game.director._mode_left = 70.0   # ohne Modus (Debug): so lange, dann zurück in den Keller
+	if Game.director.mode == MonsterDirector.Mode.NONE:
+		Game.director.victims_left = 1
 	start_roaming(pos)
 
 
@@ -176,11 +178,33 @@ func deactivate() -> void:
 
 ## Geräusch gehört → nachsehen, danach weiter auf der Route.
 func investigate(pos: Vector3) -> void:
-	if Game.director.raid_active():
-		return   # auf dem Weg zur Puppe (5.5) lässt es sich von Geräuschen nicht ablenken
+	if Game.director.raid_active() or Game.director.mode == MonsterDirector.Mode.JUDGMENT:
+		return   # auf dem Weg zu einer Tür oder zum Verurteilten (5.5, 4.33) lässt es sich nicht ablenken
 	if state in [State.PATROL, State.LURK, State.SEARCH, State.INVESTIGATE, State.SLINK]:
 		_target = pos
 		_set_state(State.INVESTIGATE)
+
+
+## Es spürt den Spieler hier (Raubzug, Snack, 4.33): dorthin, ohne gerade Gejagtes oder Abgesuchtes abzubrechen.
+func track(pos: Vector3) -> void:
+	if state in [State.PATROL, State.LURK, State.SEARCH, State.SLINK, State.STARE]:
+		_search.clear()
+		_roam = {"pos": pos, "room": ""}
+		_set_state(State.PATROL)
+
+
+## Neues Ziel vom Director holen (z. B. Einbruch nach dem Raubzug).
+func replan() -> void:
+	if state in [State.PATROL, State.LURK, State.SEARCH, State.SLINK, State.INVESTIGATE, State.STARE]:
+		_chase_target = null
+		_next_roam()
+
+
+## Notausgang beim Urteil (4.33): Es taucht ungesehen bei `pos` auf und fällt über den Verurteilten her.
+func ambush(pos: Vector3, actor) -> void:
+	global_position = pos
+	_last_pos = pos
+	_start_chase(actor)
 
 
 ## Gezielt ein Versteck aufsuchen (es hat gesehen, wie jemand hineinging).
@@ -212,6 +236,8 @@ func play_jumpscare(cam: Camera3D) -> void:
 
 ## Kann UV-Licht es gerade vertreiben? (nicht beim Holen, nicht schon auf dem Rückzug)
 func can_be_repelled_by_uv() -> bool:
+	if Game.director.mode == MonsterDirector.Mode.JUDGMENT:
+		return false   # dem Urteil entgeht man nur vorher, durch Nachbessern (4.33)
 	return state in [State.PATROL, State.INVESTIGATE, State.LURK, State.STARE, State.SEARCH,
 		State.CHECK_HIDE, State.CHASE, State.SLINK]
 
@@ -239,11 +265,17 @@ func after_feeding() -> void:
 	_start_retreat()
 
 
-## Raubzug (Spielkonzept 4.17): Nach einem Opfer gleich weiter zum nächsten.
-func after_kill_hunting() -> void:
-	_chase_target = null
-	_eye_mat.set_shader_parameter("emission_energy", 1.2)
-	_next_roam()
+## Harmloser Raubzug (4.33): Kurz vor dem Zugriff bricht es ab, kreischt und verschwindet wieder.
+func _abort(spot: HideSpot = null) -> void:
+	if spot != null:
+		spot.rip_open()
+	if Game.tracing:
+		print("[Raubzug] harmlos – es bricht kurz vor dem Zugriff ab")
+	Game.play_sound("growl", 1.0)
+	Game.director.on_chase(Game.player)   # gefunden: kein Einbruch danach
+	_hide_target = null
+	_start_retreat()
+	_calm_retreat = true
 
 
 ## Harmloser Angriff (die ersten Male): den Gast erschreckt, dann aus dem Blick schleichen und
@@ -315,8 +347,10 @@ func _visible_actor():
 	for actor in _actors():
 		if actor in _spared or Game.director.elapsed - float(_rebuffed.get(actor, -999.0)) < REBUFF_TIME:
 			continue
+		var d := global_position.distance_to(actor.global_position)
+		if state != State.RETREAT and not Game.director.may_hunt(actor, d):
+			continue   # wen es jagt, bestimmt der Modus (4.33)
 		if can_see_actor(actor):
-			var d := global_position.distance_to(actor.global_position)
 			if d < best_dist:
 				best_dist = d
 				best = actor
@@ -429,10 +463,9 @@ func _physics_process(delta: float) -> void:
 					_eye_mat.set_shader_parameter("emission_energy", 1.2)
 					_next_roam()
 		State.RETREAT:
-			# Kein sicherer Rückzug (4.12): Wen es sieht, den jagt es wieder – außer es ist satt
-			# oder der Gesehene steht im Schutz von Deko und Licht. Nach einem harmlosen Schreck
-			# verschwindet es einfach – sonst erschreckt es denselben Gast immer wieder.
-			if seen != null and not _calm_retreat and Game.director.satiation <= 0.0 and not Game.director.is_protected(seen.global_position):
+			# Auf dem Rückweg in den Keller (4.33) greift es nur an, wer ihm direkt in den Weg tritt. Nach
+			# einem harmlosen Schreck verschwindet es einfach – sonst erschreckt es denselben Gast immer wieder.
+			if seen != null and not _calm_retreat and Game.director.hunts_on_retreat(seen):
 				_start_chase(seen)
 			elif _move_to(_target, CHASE_SPEED if _fleeing else SEARCH_SPEED, delta) or _state_timer > 30.0 or _can_vanish():
 				Game.director.on_monster_gone()
@@ -452,7 +485,7 @@ func _patrol_step(delta: float) -> void:
 	if _roam.is_empty():
 		_next_roam()
 		return
-	if not _move_to(_roam["pos"], SEARCH_SPEED if Game.director.raid_active() else WALK_SPEED, delta):
+	if not _move_to(_roam["pos"], SEARCH_SPEED if Game.director.hurries() else WALK_SPEED, delta):
 		return
 	var room: String = _roam["room"]
 	if room != "" and Game.director.wants_to_enter_room(room):
@@ -475,15 +508,18 @@ func _goal() -> Vector3:
 	return _target
 
 
-## Neues Ziel irgendwo im Hotel – mit Puppe (Spielkonzept 5.5) die nächste Tür auf dem Weg zu ihr; ist das
-## Puppenzimmer durchsucht, zurück in den Keller.
+## Neues Ziel vom Director (Modus, 4.33): die nächste Tür, die es aufbricht, den Verurteilten, irgendwo im Hotel –
+## oder zurück in den Keller.
 func _next_roam() -> void:
-	var raid := Game.director.next_raid_target()
-	if raid.get("home", false):
+	var next := Game.director.next_target(global_position)
+	if next.get("home", false):
 		_chase_target = null
 		_start_retreat()
 		return
-	_roam = raid if not raid.is_empty() else Game.director.next_roam_target(global_position)
+	if next.has("hunt"):
+		_start_chase(next["hunt"])
+		return
+	_roam = next
 	_set_state(State.PATROL)
 
 
@@ -520,6 +556,7 @@ func _check_seen(delta: float) -> void:
 func _start_chase(actor) -> void:
 	if state != State.CHASE:
 		Game.play_sound("sting", 0.8)
+	Game.director.on_chase(actor)
 	_chase_target = actor
 	_eye_mat.set_shader_parameter("emission_energy", 3.0)
 	_last_seen = actor.global_position
@@ -528,8 +565,9 @@ func _start_chase(actor) -> void:
 
 
 func _chase_step(seen, delta: float) -> void:
-	if seen == null and _chase_target != null and Game.director.is_raid_prey(_chase_target):
-		seen = _chase_target   # im gewählten Zimmer (Puppe, 5.5) entkommt es keiner, auch nicht im Dunkeln
+	if seen == null and _chase_target != null and is_instance_valid(_chase_target) and not _chase_target.dead \
+			and (Game.director.is_raid_prey(_chase_target) or Game.director.is_condemned(_chase_target)):
+		seen = _chase_target   # im gewählten Zimmer (5.5) und als Verurteilter (4.33) entkommt es keiner
 	if seen != null:
 		_chase_target = seen
 		_last_seen = seen.global_position
@@ -540,8 +578,10 @@ func _chase_step(seen, delta: float) -> void:
 		_start_search(_last_seen)
 		return
 	_move_to(_last_seen, CHASE_SPEED, delta)
-	if seen != null and global_position.distance_to(seen.global_position) < KILL_DISTANCE:
-		_kill(seen, null)
+	if seen != null and Game.director.is_harmless() and global_position.distance_to(seen.global_position) < MonsterDirector.HARMLESS_ABORT:
+		_abort()
+	elif seen != null and global_position.distance_to(seen.global_position) < KILL_DISTANCE:
+		_kill(seen, seen.hiding)
 
 
 func _start_search(center: Vector3) -> void:
@@ -598,6 +638,8 @@ func _check_hide_step(delta: float) -> void:
 	var occupant = _hide_target.occupant
 	if occupant is Guest and (occupant as Guest).is_child():
 		occupant = null   # ein Kind im Versteck übersieht es (6.13)
+	if occupant != null and not Game.director.may_hunt(occupant):
+		occupant = null   # wen der Modus nicht will, den lässt es im Versteck (4.33)
 	# Gesehen, wie er hineinging – oder ein gewähltes Zimmer (Puppe, 5.5): dort reißt es jedes Versteck auf
 	if occupant != null and (_hide_target.seen_entering or Game.director.in_raid_room(_hide_target.global_position)) \
 			and _state_timer > 0.4:
@@ -620,11 +662,17 @@ func _check_hide_step(delta: float) -> void:
 				chance *= 0.35
 			elif occupant == Game.player and Game.player.is_panting():
 				chance = minf(0.9, chance * PANT_FOUND)
+			if occupant == Game.player and Game.director.mode == MonsterDirector.Mode.RAID:
+				# Raubzug (4.33): versteckt zählt als nicht gefunden – außer er macht auf sich aufmerksam
+				chance = 1.0 if Game.player.is_panting() else 0.0
 			if randf() < chance:
 				_kill(occupant, spot)
 
 
 func _kill(actor, spot: HideSpot) -> void:
+	if Game.director.is_harmless():
+		_abort(spot)
+		return
 	if actor == Game.player:
 		Game.director.kill_player(spot)
 	else:
@@ -649,8 +697,8 @@ func _check_deterrence(delta: float) -> void:
 	# Deko schützt nur, wer drinsteht (4.12): Steht der Gejagte außerhalb des Schutzes,
 	# geht das Monster durch die Deko hindurch.
 	if state == State.CHASE and _chase_target != null and is_instance_valid(_chase_target) \
-			and not Game.director.is_protected(_chase_target.global_position):
-		return
+			and (not Game.director.is_protected(_chase_target.global_position) or Game.director.is_condemned(_chase_target)):
+		return   # den Verurteilten hält keine Deko (4.33)
 	if not _scratched and Game.traces:
 		_scratched = Game.traces.scratch_wall_ahead(self)
 	if state == State.CHASE:
@@ -717,9 +765,9 @@ func _open_doors() -> void:
 		if door.center().distance_to(global_position + Vector3.UP) >= 1.5:
 			continue
 		_near_door = true
-		if door.is_open or not door.monster_can_open:
+		if door.is_open or not door.monster_can_open or not Game.director.may_open(door):
 			continue
-		door.monster_open()
+		door.monster_open(Game.director.breaks(door))
 		if Game.traces and randf() < 0.6:
 			Game.traces.add_door_scratch(door, global_position)
 

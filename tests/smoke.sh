@@ -95,7 +95,12 @@ done <<'LIST'
 2400|wettbewerb,puppe|--siegerehrung=ohne --trace
 2400|grinch,gaeste|--grinch --trace
 1200|grinch,wettbewerb,speichern|--grinch=tot --savetest --trace
-2400|schnell,monster,gaeste|--warn --intent=one --day=10 --trace
+2400|schnell,monster,gaeste,modi|--warn --day=10 --trace
+1500|monster,modi|--pos=31.5,0,-8 --mode=snack --day=8 --trace
+1500|monster,modi|--pos=31.5,0,-8 --mode=harmlos --day=5 --trace
+3000|monster,modi,gaeste|--mode=anforderung --day=14 --trace
+1500|monster,modi|--mode=keller --day=6 --trace
+900|monster,modi,speichern|--plan --mode=anforderung,30 --day=12 --savetest --trace
 3000|puppe,monster|--doll --trace
 2400|puppe,monster|--doll=10,13 --trace
 1600|puppe,kinder|--doll=kind --trace
@@ -203,7 +208,7 @@ done <<'LIST'
 1200|gaeste,tod|--shock=mila,corpse --trace
 2400|schlaf,nacht|--sleep=bett --trace
 1800|schlaf,nacht|--awake=2 --sleep=bett,2 --trace
-1500|schnell,schlaf,nacht,monster,puppe|--day=10 --uhr=1:10 --awake=2 --attacks=12 --intent=one --doll=5,13 --hoerer --sleep=bett,8 --trace
+1500|schnell,schlaf,nacht,monster,puppe|--day=10 --uhr=1:10 --awake=2 --doll=5,13 --hoerer --sleep=bett,8 --trace
 1500|schlaf,lakengeist|--awake=3 --pos=50.5,0.1,-7 --trace
 600|kuerbis|--pos=45,0.1,-37 --fall=5,giant --trace
 600|kuerbis|--pos=45,0.1,-37 --fall=4,mini --trace

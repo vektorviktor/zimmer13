@@ -106,8 +106,11 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     director.curiosity – ältere Stände laden weiter, ohne heiße Stellen und Boni
 ## 54: Der Name Leviathan (Spielkonzept 4.32): „leviathan“ (Stufe, Zeuge, wer den Namen kennt) – ältere Stände laden
 ##     weiter, noch ohne Sichtung
-const VERSION := 54
-const MIN_VERSION := 39
+## 55: Die vier Modi des Leviathan (Spielkonzept 4.33): Plan der Modi, laufender Modus, Verurteilter, Raubzüge,
+##     Anforderungen, stärkste Lockung; die Dreistigkeit steigt viel langsamer und ohne Obergrenze – ältere Stände
+##     laden nicht mehr (ihre Dreistigkeit läge weit über den Schwellen der Anforderung)
+const VERSION := 55
+const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
 ## Mindestabstand zum Monster für den Autosave (Tuning)

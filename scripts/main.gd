@@ -11,7 +11,7 @@ extends Node3D
 ##   --diary=n                   nach 2 s wie am Tagebuch in Slot n speichern
 ##   --day=n                     zu Tag n im Oktober springen (15 Uhr)
 ##   --uhr=hh[:mm]               Uhrzeit am aktuellen Tag stellen (2.4; am 1. Oktober frühestens 15 Uhr) – nach --day
-##   --attacks=n                 so viele Angriffe gab es schon (> 9: nicht mehr harmlos, ob es holt, entscheidet die Tageskurve; sicher mit --intent)
+##   --attacks=n                 so viele Raubzüge gab es schon (ab 3 ist der nächste nicht mehr harmlos, 4.33)
 ##   --siegerehrung[=ohne]       Siegerehrung des Türschmuck-Wettbewerbs (2.5) sofort: Uhr auf den 2. Oktober 20 Uhr, die
 ##                               Gäste stehen schon um die Puppe, du vor ihr – gleich steht sie auf, dann der erste
 ##                               Angriff: Gustav Peters wird ungesehen geholt (ohne: du bleibst, wo du bist, die Uhr
@@ -136,12 +136,12 @@ extends Node3D
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
-##   --warn                      sofort Vorwarnung → Monster erscheint
+##   --warn                      sofort ein Raubzug (4.33, nicht harmlos) – wie --mode=raubzug
 ##   --pumpkin=ankündigung[,s]   Kürbismann kündigt sich an (4.19): Lampen rot, schrille Melodie, Kinder singen – in s
 ##                               Sekunden (Standard 20) kommt er übers Lobbydach; mit --trace „[Kürbismann] kündigt sich an“
-##   --doll[=s[,zimmer]]         die Puppe (5.5): in s Sekunden (Standard 20) bricht das Monster zu einem Angriff mit
-##                               einem Opfer auf (wie --intent=one), sie liegt sofort vor der schwächsten bewohnten Tür (bzw.
-##                               vor diesem Zimmer, z. B. 13 oder 113) und es grollt; mit --trace „[Puppe]“ mit Weg und Opfern
+##   --doll[=s[,zimmer]]         ein Urteil (5.5, 4.33): die Puppe liegt sofort vor der schwächsten bewohnten Tür (bzw.
+##                               vor diesem Zimmer, z. B. 13 oder 113), es grollt, in s Sekunden (Standard 20) bricht das
+##                               Monster auf und holt den Verurteilten; mit --trace „[Puppe]“, „[Urteil]“
 ##   --doll=kind                 ein Kind holt die Puppe gleich und legt sie vor die Tür seiner Familie
 ##   --ghost=n|flur|schrank|tür  Lakengeist sofort zum n. Mal am Außenfenster bzw. an der Fenstertür des Raums, in dem
 ##                               du stehst (beim Start Zimmer 13): Licht aus, Vorhang auf, Blick dorthin (4.18) · flur: alle Gäste
@@ -176,8 +176,11 @@ extends Node3D
 ##   --hoerer                    der Hörer in Zimmer 13 liegt daneben (keine Anrufe, die einen wecken; 4.14)
 ##   --awake=n                   so viele Nächte ohne Schlaf, auch Bruchteile (Lakengeist häufiger, ab 3 sicher im Flur; 4.18) –
 ##                               der erste Angriff gilt dann als geschehen
-##   --intent=roam|one|rampage|n Absicht beim Aufbruch erzwingen (umsehen, 1 oder 2 Opfer, oder n Opfer; 4.17)
-##   --bold=n                    Dreistigkeit setzen (0–100)
+##   --mode=urteil|snack|raubzug|harmlos|anforderung|keller[,s]  dieser Modus des Leviathan (4.33) in s Sekunden
+##                               (Standard 0) · urteil wie --doll · raubzug nicht harmlos, harmlos wie der erste ·
+##                               keller: Runde im Keller; mit --trace „[Aufbruch]“
+##   --plan                      mit --trace: den Plan der Modi gleich würfeln und ausgeben (der erste Angriff gilt als geschehen)
+##   --bold=n                    Dreistigkeit setzen (ohne Obergrenze, Anforderung ab 55, 4.33)
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
 ##   --enemy=id                  mit einem Gast verfeindet starten
 ##   --relation=id,wert          Beziehung setzen (−100 … 100); ab ±80 werden die nötigen Taten mit eingetragen (6.3)
@@ -730,11 +733,11 @@ func _on_player_died() -> void:
 
 func _parse_debug_args() -> void:
 	var args := OS.get_cmdline_user_args()
-	for arg in args:   # vor allem, was einen Aufbruch auslöst (--warn …)
-		if arg.begins_with("--intent=") or arg in ["--no-psx", "--psx"]:
+	for arg in args:   # vor allem anderen (Grafik)
+		if arg in ["--no-psx", "--psx"]:
 			run_debug(arg)
 	for arg in args:
-		if not (arg.begins_with("--intent=") or arg in ["--no-psx", "--psx"]):
+		if not arg in ["--no-psx", "--psx"]:
 			run_debug(arg)
 
 
@@ -742,9 +745,22 @@ func _parse_debug_args() -> void:
 ## (DebugConsole, dort ohne „--“ getippt). false = unbekannt. Neuer Befehl: hier ein Zweig, eine Zeile
 ## im Kopfkommentar, in DebugConsole.COMMANDS und in der README.
 func run_debug(arg: String) -> bool:
-	if arg.begins_with("--intent="):
-		var wanted := arg.substr(9)
-		Game.director.debug_victims = wanted.to_int() if wanted.is_valid_int() else ["roam", "one", "rampage"].find(wanted)
+	if arg.begins_with("--mode="):
+		# ein Modus des Leviathan (4.33) in s Sekunden – nach 1 s, damit Gäste und NavMesh stehen
+		var parts := arg.substr(7).split(",")
+		var m := ["", "urteil", "snack", "raubzug", "anforderung", "keller", "harmlos"].find(parts[0])
+		if m <= 0:
+			return false
+		var seconds := parts[1].to_float() if parts.size() > 1 else 0.0
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:
+			if m == 6:   # harmlos: der erste Raubzug (4.33)
+				Game.director.debug_start(MonsterDirector.Mode.RAID, seconds)
+				Game.director.raids = 0
+			else:
+				Game.director.debug_start(m as MonsterDirector.Mode, seconds))
+	elif arg == "--plan":
+		Game.director.first_attack_done = true
+		Game.director._make_plan()
 	elif arg == "--no-psx" or arg == "--psx":
 		Settings.psx_look = arg == "--psx"
 		Settings.apply()
@@ -1092,7 +1108,6 @@ func run_debug(arg: String) -> bool:
 					Game.player.head.rotation.x = deg_to_rad(-45.0)
 				_debug_kill(victim, cause if cause != "" else "ghost" if corpse else "monster", corpse, blood))
 			return true
-		Game.director.attacks = MonsterDirector.HARMLESS_ATTACKS + 1   # wirklich holen
 		get_tree().create_timer(3.0).timeout.connect(func() -> void:
 			if victim.dead:
 				return
@@ -1310,7 +1325,7 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--ghost="):
 		Game.ghost.debug_summon(arg.substr(8).to_int())
 	elif arg == "--warn":
-		Game.director.start_warning()
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.director.start_warning())
 	elif arg.begins_with("--prank="):
 		var prank := arg.substr(8).split(",")
 		var prank_room := Game.director.room_by_label(prank[1]) if prank.size() > 1 else LevelBuilder.PLAYER_ROOM
@@ -1322,11 +1337,12 @@ func run_debug(arg: String) -> bool:
 		var parts := arg.substr(7).split(",") if arg.length() > 7 else PackedStringArray()
 		var seconds := parts[0].to_float() if parts.size() > 0 and parts[0] != "" else 20.0
 		Game.director.debug_doom = Game.director.room_by_label(parts[1]) if parts.size() > 1 else ""
-		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.director.debug_doll(seconds))
+		get_tree().create_timer(1.0).timeout.connect(func() -> void:
+			Game.director.debug_start(MonsterDirector.Mode.JUDGMENT, seconds))
 	elif arg.begins_with("--attacks="):
-		# so viele Angriffe gab es schon (über 2 = gefährlich, ob es holt, würfelt _choose_intent nach Tag)
+		# so viele Raubzüge gab es schon (ab HARMLESS_RAIDS ist der nächste nicht mehr harmlos, 4.33)
 		Game.director.first_attack_done = true
-		Game.director.attacks = arg.substr(10).to_int()
+		Game.director.raids = arg.substr(10).to_int()
 	elif arg == "--siegerehrung" or arg == "--siegerehrung=ohne":
 		# Siegerehrung (2.5) – nach 1 s, damit NavMesh und Gäste stehen
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.contest.debug_ceremony(arg.ends_with("ohne")))
