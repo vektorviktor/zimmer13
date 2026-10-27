@@ -80,6 +80,7 @@ const COMMANDS := {
 	"challenge": ["gast[,chess|darts]", "Gast fordert dich heraus (Mäxchen, Schach oder Darts)"],
 	"autoplay": ["", "Mäxchen-Antworten, Schachzüge bzw. Dartwürfe automatisch"],
 	"bulb-thief": ["gast", "Gast klaut eine Birne aus Zimmer 13"],
+	"lichtgang": ["gast", "Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3)"],
 	"steal-test": ["", "Ednas Deko unbemerkt nehmen (Schuld-Test)"],
 	"player-deco": ["x,z", "geschnitzten Kürbis des Spielers dort hinstellen"],
 	"cat": ["minka|socke|kasimir|luna|fussel|tiger|mausi[,tragen]", "Katze vor den Spieler setzen (tragen: gleich auf den Arm)"],
@@ -119,7 +120,7 @@ const START_ONLY := ["title", "splash", "new", "nointro", "shot", "frames", "sho
 const ALIASES := {"save": "diary", "load": "load-slot"}
 ## Befehle, deren erster Wert ein Gast ist (wird vorher geprüft)
 const GUEST_FIRST := ["shock", "kill", "talk", "look", "wound", "pals", "friend", "enemy", "relation", "follow", "visit",
-	"attack", "punch", "dice", "chess", "challenge", "bulb-thief", "bitte"]
+	"attack", "punch", "dice", "chess", "challenge", "bulb-thief", "bitte", "lichtgang"]
 ## Befehle, bei denen ein Gast auch weiter hinten stehen kann
 const GUEST_ANY := ["rival", "pals", "drunk", "party", "decorate", "search", "darts", "cook", "tee", "kaffee", "call", "tp",
 	"trick", "pumpkin", "salz"]

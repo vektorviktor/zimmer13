@@ -19,7 +19,7 @@ const GROUPS := [
 	["Kürbismann", ["pumpkin"]],
 	["Wettbewerb", ["siegerehrung", "brett", "brief", "zettel"]],
 	["Gäste", ["guests", "talk", "look", "shock", "wound", "friend", "enemy", "relation", "pals", "rival", "follow",
-		"visit", "attack", "punch", "bulb-thief", "steal-test"]],
+		"visit", "attack", "punch", "bulb-thief", "lichtgang", "steal-test"]],
 	["Spiele", ["dice", "chess", "darts", "challenge", "autoplay"]],
 	["Feiern & Deko", ["party", "trick", "prank", "mess", "decorate", "search", "cook", "costumes", "player-deco"]],
 	["Telefon", ["call", "dial"]],

@@ -49,6 +49,15 @@ const DOOR_GIVE_UP_WAIT := 12.0
 const BED_FOOT_GAP := (BedModel.POST + BedModel.BEAM) / 2.0 + 0.05
 ## So weit von der Zimmermitte gilt ein Mitbewohner als zu Hause (für das Licht beim Schlafengehen)
 const HOME_RADIUS := 6.0
+## Lichtschalter (Spielkonzept 7.3): so oft schaut er, in welchem Raum er steht; nur so weit (und aufs selbe
+## Stockwerk) geht er zum Schalter, so lange höchstens; so oft vergisst er je nach Gast das Ausschalten (fest je Gast)
+const LIGHT_CHECK := 0.4
+const SWITCH_REACH := 10.0
+const SWITCH_GIVE_UP := 10.0
+const FORGET_LIGHT := Vector2(0.1, 0.3)
+## Bei diesen Tätigkeiten macht er den Umweg zum Schalter (nicht beim Klauen, Verstecken, Rennen …)
+const SWITCH_STATES := [State.IDLE, State.WALK, State.CARRY_HOME, State.PLACE_DECO, State.HARVEST, State.VISIT,
+	State.DECORATE, State.SEARCH, State.EAT]
 const BED_TOP := BedModel.TOP
 ## Spuren: so viele schlammige Schritte nach dem Garten, so lange blutet ein Gast nach einem Angriff
 const MUD_STEPS := 14
@@ -222,6 +231,13 @@ var _timer := 0.0
 var _steal_item: Item
 var _steal_lamp: Lamp
 var _resting := false        ## ruht im Zimmer bei ausgeschaltetem Licht
+var _light_room := "?"       ## Raum (Schalter-ID), in dem er zuletzt stand (7.3); "?" = noch nicht geschaut
+var _light_check := 0.0
+var _switch: LightSwitch     ## geht gerade zu diesem Schalter (7.3) …
+var _switch_to := false      ## … und schaltet das Licht dann ein (true) oder aus
+var _switch_time := 0.0      ## so lange schon unterwegs
+var _switch_pause := -1.0    ## am Schalter: so lange noch, bis es klickt (−1 = noch auf dem Weg)
+var _dark_said := -1000.0    ## zuletzt über eine dunkle Lampe beschwert (Director.elapsed)
 var _plant: PumpkinPlant
 var _hide_spot: HideSpot
 var _steal_timer := 0.0
@@ -1020,6 +1036,13 @@ func _physics_process(delta: float) -> void:
 			_run_noise = 0.6
 			Game.noise("run", global_position, self)
 	var speed := (RUN_SPEED if running and can_run() else WALK_SPEED) * _speed_factor()
+	_track_light_room(delta)
+	if _switch:
+		if state in SWITCH_STATES and not running and is_instance_valid(_switch):
+			_switch_step(speed, delta)
+			_open_doors(delta)
+			return
+		_switch = null   # etwas anderes kam dazwischen
 	match state:
 		State.IDLE:
 			_stop(delta)
@@ -1505,10 +1528,14 @@ func _at_home() -> void:
 
 
 func _home_lamps() -> Array[Lamp]:
+	return _room_lamps(home["no"])
+
+
+func _room_lamps(room: String) -> Array[Lamp]:
 	var result: Array[Lamp] = []
 	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
 		var lamp := node as Lamp
-		if lamp.room_id == home["no"]:
+		if lamp.room_id == room:
 			result.append(lamp)
 	return result
 
@@ -1552,6 +1579,149 @@ func _check_lights() -> void:
 			Game.social.on_guest_noticed_missing_bulb(self)
 		else:
 			say("Meine Lampe ist durchgebrannt … jetzt sitze ich im Dunkeln.")
+
+
+# --- Lichtschalter (Spielkonzept 7.3) -------------------------------------------------
+# Gäste gehen wirklich zum Schalter (Weg, kurze Pause, Klick): an, wenn sie einen dunklen Raum betreten, aus, wenn
+# sie als Letzte ein Hotelzimmer verlassen. Schlafen, Ausruhen und Aufwachen im eigenen Zimmer schalten weiter direkt
+# (_set_room_light) – da steht er ohnehin drin.
+
+## Welchen Raum betritt bzw. verlässt er gerade? Daran hängt der Gang zum Schalter.
+func _track_light_room(delta: float) -> void:
+	_light_check -= delta
+	if _light_check > 0.0 or Game.social == null:
+		return
+	_light_check = LIGHT_CHECK
+	var now := Game.social.builder.light_room_at(global_position)
+	if now == _light_room:
+		return
+	var left := _light_room
+	_light_room = now
+	if left == "?":
+		return   # gerade erst erschienen oder geladen – er ist nicht hereingekommen
+	if _switch or not state in SWITCH_STATES or running:
+		return   # wer flieht oder in Panik rennt, denkt nicht ans Licht
+	if left != "" and _leave_light(left):
+		return
+	if now != "":
+		_enter_light(now)
+
+
+## Als Letzter aus einem Hotelzimmer (mit Bad): Licht aus – außer er vergisst es. Zimmer 13 gehört dem Spieler.
+func _leave_light(room: String) -> bool:
+	if not Game.social.builder.rooms.has(room) or room == LevelBuilder.PLAYER_ROOM:
+		return false
+	var sw := _nearest_switch(room)
+	if sw == null or not sw.on or fear >= 60.0 or randf() < _forget_light():
+		return false
+	if _others_in_light_room(room, false):
+		return false
+	return _go_switch(sw, false)
+
+
+## Dunkler Raum: Licht an. Ängstliche fast immer, Mutige lassen es auch mal dunkel. Brennt keine Lampe, weil die
+## Birne fehlt oder kaputt ist, hilft der Schalter nicht – er beschwert sich.
+func _enter_light(room: String) -> bool:
+	var lamps := _room_lamps(room)
+	if lamps.is_empty():
+		return false
+	var sw := _nearest_switch(room)
+	if sw == null:
+		return false
+	if not lamps.any(func(l: Lamp) -> bool: return l.has_bulb and not l.bulb_broken):
+		if room != home["no"]:   # im eigenen Zimmer kümmert sich _check_lights darum
+			_complain_dark(lamps)
+		return false
+	if sw.on or _others_in_light_room(room, true):
+		return false
+	var brave := float(profile.get("brave", 0.5))
+	if randf() >= clampf(1.0 - 0.6 * brave + fear / 100.0, 0.0, 1.0):
+		return false
+	return _go_switch(sw, true)
+
+
+## Wer sonst noch im Raum ist. Beim Hinausgehen zählen alle (auch der Spieler, auch im Versteck). Beim Hineingehen in
+## ein Hotelzimmer jeder Gast (wer im Dunkeln sitzt, will es so – schläft, ruht), sonst nur Schlafende.
+func _others_in_light_room(room: String, entering: bool) -> bool:
+	var builder := Game.social.builder
+	var p := Game.player
+	if not entering and p and not p.dead and builder.light_room_at(p.global_position) == room:
+		return true
+	var hotel_room := builder.rooms.has(room)
+	for guest in Game.social.guests:
+		var g: Guest = guest
+		if g == self or g.dead or builder.light_room_at(g.global_position) != room:
+			continue
+		if not entering or hotel_room or g.is_asleep() or g._resting:
+			return true
+	return false
+
+
+## Fest je Gast zwischen FORGET_LIGHT.x und .y, betrunken öfter.
+func _forget_light() -> float:
+	var chance := lerpf(FORGET_LIGHT.x, FORGET_LIGHT.y, float(absi(String(id).hash()) % 100) / 99.0)
+	return chance + (0.3 if drunk >= BarTap.DRUNK else 0.0)
+
+
+## Der nächste Schalter des Raums (große Räume haben an jedem Eingang einen – Wechselschaltung).
+func _nearest_switch(room: String) -> LightSwitch:
+	var best: LightSwitch = null
+	for node in get_tree().get_nodes_in_group("light_switches"):
+		var sw := node as LightSwitch
+		if sw.room_id == room and (best == null or sw.global_position.distance_squared_to(global_position)
+				< best.global_position.distance_squared_to(global_position)):
+			best = sw
+	return best
+
+
+func _go_switch(sw: LightSwitch, on: bool) -> bool:
+	var dy := sw.global_position.y - global_position.y
+	if dy < -0.5 or dy > 2.5 or sw.global_position.distance_to(global_position) > SWITCH_REACH:
+		return false
+	_switch = sw
+	_switch_to = on
+	_switch_time = 0.0
+	_switch_pause = -1.0
+	if Game.tracing:
+		print("[Licht] %s geht zum Schalter (%s, %s)" % [display_name, sw.room_label, "an" if on else "aus"])
+	return true
+
+
+## Hin zum Schalter, kurz davor stehen (Ängstliche drücken schneller), klick – dann weiter wie vorher.
+func _switch_step(speed: float, delta: float) -> void:
+	_switch_time += delta
+	if _switch_pause < 0.0:
+		var front := _switch.global_position + _switch.global_basis.z * 0.35
+		front.y = global_position.y
+		if _move_to(front, speed, delta):
+			_switch_pause = 0.3 + 0.6 * float(profile.get("brave", 0.5)) if _switch_to else 0.5
+			reach_up(_switch_pause + 0.2)
+		elif _switch_time > SWITCH_GIVE_UP:
+			_switch = null   # kommt nicht hin
+		return
+	_stop(delta)
+	_face(_switch.global_position, delta)
+	_switch_pause -= delta
+	if _switch_pause > 0.0:
+		return
+	# Ausschalten nur, wenn inzwischen niemand hereingekommen ist
+	if _switch.on != _switch_to and (_switch_to or not _others_in_light_room(_switch.room_id, false)):
+		_switch.set_on(_switch_to)
+		if Game.tracing:
+			print("[Licht] %s schaltet %s %s" % [display_name, _switch.room_label, "an" if _switch_to else "aus"])
+	_switch = null
+
+
+## Licht geht nicht: Birne fehlt (geklaut?) oder ist durchgebrannt (4.11). Nicht ständig.
+func _complain_dark(lamps: Array[Lamp]) -> void:
+	var now := Game.director.elapsed if Game.director else 0.0
+	if now - _dark_said < 90.0:
+		return
+	_dark_said = now
+	if lamps.any(func(l: Lamp) -> bool: return not l.has_bulb):
+		say("Hier fehlt ja die Birne … wer klaut denn so was?")
+	else:
+		say("Durchgebrannt. Na toll, im Dunkeln.")
 
 
 ## Platz neben der eigenen Tür (im Flur), an dem Deko steht.

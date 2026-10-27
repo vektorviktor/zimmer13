@@ -912,6 +912,16 @@ den Skripten. Hier der Aufbau.
   eigenem Ablauf (Schmücken, Suche, Herd, Kaffeemaschine, Streiche, Putzen) bekommen es über ihr `on_arrived` – den
   Zustand `EAT` teilen sich Herd und Kaffeemaschine (`CoffeeMachine.expects(gast)` zuerst).
 - Gäste melden sich mit `Game.social.on_*` (Diebstahl, fehlende Deko/Birne, Monster gesehen …).
+- **Lichtschalter** (Spielkonzept 7.3): `_track_light_room` schaut alle `LIGHT_CHECK` s nach dem Raum unter ihm
+  (`LevelBuilder.light_room_at` – Schalter-ID, Bad gehört zum Zimmer). Beim Wechsel: verlässt er als Letzter ein
+  Hotelzimmer (nicht 13; auch der Spieler zählt, im Versteck ebenso), geht er zurück und macht aus – außer er vergisst es
+  (`_forget_light`, fest je Gast aus der ID, betrunken öfter, ab Angst 60 immer); betritt er einen dunklen Raum, macht er
+  an (Chance nach `brave` und Angst), nicht wenn dort jemand schläft oder ruht bzw. im Hotelzimmer schon jemand im
+  Dunkeln sitzt. Brennt keine Lampe des Raums (Birne fehlt/kaputt), beschwert er sich (`_complain_dark`). Der Gang
+  (`_switch`, `_switch_step`) ist kein eigener Zustand: Er läuft nur in `SWITCH_STATES` und ohne Rennen, danach geht der
+  alte Zustand mit seinem Ziel weiter; was dazwischenkommt, bricht ihn ab. Höchstens `SWITCH_REACH` m weit, aufgeben
+  nach `SWITCH_GIVE_UP` s. Schlafen, Ausruhen, Aufwachen im eigenen Zimmer schalten weiter direkt (`_set_room_light`).
+  Nichts davon wird gespeichert (`"?"` = nach Laden/Erscheinen erst merken, nicht schalten). Debug `--lichtgang=id`.
 - **Detailstufe** (Leistung bei vielen Gästen): außerhalb des Blickfelds und weiter als `Guest.LOD_RANGE` bzw.
   weiter als `LOD_FAR` rechnen Gäste nur jedes `LOD_STEP`-te Physikbild – mit der aufgesammelten Zeit, `_move_to` macht
   entsprechend längere Schritte (`_lod_scale`). Im Gespräch, Spiel, gewürgt, taumelnd oder angreifend immer voll.

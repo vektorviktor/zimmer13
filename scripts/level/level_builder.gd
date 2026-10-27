@@ -4589,6 +4589,15 @@ func room_at(p: Vector3) -> String:
 	return _on_floor(level, func() -> String: return _room_id_at(Vector2(p.x, p.z)))
 
 
+## Raum an p, wie ihn Lampen und Schalter kennen (LightSwitch.room_id): Bad schaltet mit dem Zimmer, Umkleiden und
+## Duschen teilen sich einen Schalter. Leer draußen und auf Treppenpodesten.
+func light_room_at(p: Vector3) -> String:
+	var level := _level_of(p.y)
+	if level < 0:
+		return ""
+	return _on_floor(level, func() -> String: return _light_room_at(Vector2(p.x, p.z)))
+
+
 ## Wie room_at, nur zählt ein Bad zu dem Zimmer hinter seiner Tür.
 func home_room_at(p: Vector3) -> String:
 	return home_of(room_at(p))

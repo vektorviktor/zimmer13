@@ -191,6 +191,7 @@ extends Node3D
 ##                               Statt der ID geht überall auch der Name (emil, EmilBecker, juergen …)
 ##   --despawn[=monster|geist|kuerbis]   die Bedrohung (ohne Angabe alle) ist sofort fort, auch Vorwarnung/Ankündigung
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
+##   --lichtgang=id              Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3)
 ##   --steal-test                Ednas Deko unbemerkt nehmen (Schuld-Test)
 ##   --player-deco=x,z           geschnitzten Kürbis des Spielers an diese Stelle stellen
 ##   --wound=gast,scratch|axe|choke[,hin]   Gast hat überlebt (6.17): Kratzer, Axtwunde (Blutspur, ein Tag im Bett) bzw.
@@ -1471,6 +1472,18 @@ func run_debug(arg: String) -> bool:
 		if lamp:
 			thief._steal_lamp = lamp
 			thief._walk_to(Vector3(lamp.global_position.x, 0, lamp.global_position.z) + thief._toward_room(lamp), Guest.State.STEAL)
+	elif arg.begins_with("--lichtgang="):
+		# Gast steht vor seiner Tür, drinnen ist das Licht aus: Er geht hinein und zum Schalter (7.3), nach 30 s
+		# wieder hinaus in die Lobby und macht als Letzter aus (außer er vergisst es)
+		var walker := _guest(arg.substr(12))
+		var sw := LightSwitch.find(get_tree(), String(walker.home["no"])) if walker else null
+		if sw:
+			sw.set_on(false, true)
+			walker.global_position = walker.home["door_front"]
+			walker._walk_to(walker._room_point(), Guest.State.WALK)
+			get_tree().create_timer(30.0, false).timeout.connect(func() -> void:
+				if not walker.dead:
+					walker._walk_to(Game.social.builder.lobby_seats.pick_random(), Guest.State.WALK))
 	elif arg.begins_with("--diary="):
 		# wie am Tagebuch speichern (nach 2 s)
 		var slot := arg.substr(8).to_int()

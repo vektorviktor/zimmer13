@@ -198,6 +198,7 @@ done <<'LIST'
 400|welt|--pool=slosh
 400|spuren,monster|--wallblood
 1200|licht,gaeste,streiche|--bulb-thief=bruno
+1200|licht,gaeste|--lichtgang=bruno --trace
 800|gaeste,tod,ui|--wound=edna,axe,hin --talk=edna
 1200|gaeste,tod|--shock=mila,corpse --trace
 2400|schlaf,nacht|--sleep=bett --trace
