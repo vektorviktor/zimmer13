@@ -6,8 +6,16 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
 - **Hauptgeschichte, Meilensteine eines optimalen Durchlaufs:** [HANDLUNG.md](HANDLUNG.md)
 - **Alle Gegenstände mit Stand und Handlungsbezug:** [GEGENSTAENDE.md](GEGENSTAENDE.md) – bei neuen Gegenständen pflegen
 - **Offene, noch nicht entschiedene Ideen:** [IDEEN.md](IDEEN.md)
-- **Wie es gebaut ist:** [TECHNIK.md](TECHNIK.md) – vor Änderungen an einem System den passenden Abschnitt lesen
+- **Wie es gebaut ist:** [TECHNIK.md](TECHNIK.md)
 - **Starten, Steuerung, Debug-Parameter:** [README.md](README.md)
+
+## Sparsam lesen (Token!)
+- Diese Dokumente **nie vorsorglich oder ganz lesen**, nur wenn die Aufgabe es wirklich verlangt.
+- Dann **gezielt**: erst per Grep nach Stichwort, Kapitelnummer (`5.13`) oder Überschrift suchen, danach nur
+  den gefundenen Abschnitt mit `offset`/`limit` lesen.
+- Was schon im Gespräch steht oder aus dem Code hervorgeht, nicht noch einmal nachlesen.
+- Code genauso: zuerst Grep, dann nur die betroffenen Stellen lesen statt ganzer Dateien.
+- Beim Pflegen der Doku (siehe unten) nur den betroffenen Abschnitt lesen und ändern.
 
 ## Wichtigste Regeln
 - Kommentare, Doc-Kommentare (`##`) und Spieltexte auf Deutsch, Bezeichner auf Englisch. Doc-Kommentare
