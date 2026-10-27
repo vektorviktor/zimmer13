@@ -101,6 +101,9 @@ done <<'LIST'
 3000|monster,modi,gaeste|--mode=anforderung --day=14 --trace
 1500|monster,modi|--mode=keller --day=6 --trace
 900|monster,modi,speichern|--plan --mode=anforderung,30 --day=12 --savetest --trace
+3000|monster,modi,urteil,dachboden|--dachboden=urteil --trace
+3000|monster,modi,urteil,aufzug|--aufzug=urteil --trace
+900|modi,urteil,navmesh|--navcheck=tueren
 3000|puppe,monster|--doll --trace
 2400|puppe,monster|--doll=10,13 --trace
 1600|puppe,kinder|--doll=kind --trace

@@ -185,6 +185,10 @@ const ATTIC_POST := 0.22
 const ATTIC_BRACE := 0.5
 const ATTIC_BRACE_SIZE := 0.12
 const ATTIC_POST_DOOR_GAP := 1.0   ## kein Pfosten so nah an einer Tür
+## Unter den niedrigen Türen (1,65 m) bäckt das NavMesh nicht durch (Agentenhöhe 1,6 m): Je Kammertür verbindet ein
+## NavigationLink3D die beiden Seiten, so weit vor und hinter der Wand – das Monster duckt sich hindurch (4.33, 3a).
+## Die Kniestocktür bekommt keinen (verschlossen, das Monster bricht sie nicht auf).
+const ATTIC_LINK_REACH := 0.8
 const ATTIC_BOX_SIZE := 4          ## Kiste mit wertvollerer alter Deko auf dem Dachboden, ohne Nachschub
 const COUCH_MODEL := "res://assets/models/couch.glb"
 ## Rohmodell ist 4,34 Einheiten lang → ~2,4 m lang, Sitzhöhe ~0,45 m, Lehne ~0,92 m.
@@ -3777,6 +3781,11 @@ func _attic_surfaces() -> void:
 		var into: Vector3 = d["into"]
 		var size := Vector3(door.width, 0.3, T) if absf(into.z) > 0.5 else Vector3(T, 0.3, door.width)
 		Geo.solid(root, size, (d["pos"] as Vector3) + Vector3(0, -0.15, 0), _attic_planks)
+		if d["kind"] == "attic_inner_door":
+			var link := NavigationLink3D.new()
+			link.start_position = (d["pos"] as Vector3) - into * ATTIC_LINK_REACH
+			link.end_position = (d["pos"] as Vector3) + into * ATTIC_LINK_REACH
+			root.add_child(link)
 
 
 ## Dachschrägen über den Traufen: innen Bohlen, außen die Dachhaut, dazwischen die Dachfenster des Plans (Rahmen und
@@ -4033,13 +4042,20 @@ func _attic_haze() -> void:
 	attic_haze.name = "Dachbodennebel"
 	world.add_child(attic_haze)
 	# Kammern (nicht die offenen Böden): Flächen, die in ein Feld der Stützbalken passen – dort spukt es beim Blitz
+	# – und alle Räume des Dachbodens für den Notausgang beim Urteil (4.33)
 	var chambers: Array[Rect2] = []
+	var all_rooms: Array = []
 	for r in _map["regions"]:
+		if r["kind"] != "attic":
+			continue
 		var b := _bounds(r["rects"])
-		if r["kind"] == "attic" and b.size.x < ATTIC_BAY * 1.25 and b.size.y < ATTIC_BAY * 1.25:
-			for rc in r["rects"]:
-				chambers.append(_rect(rc))
-	attic_spook = AtticSpook.new().setup(chambers, _base_y, ATTIC_H)
+		var room: Array[Rect2] = []
+		for rc in r["rects"]:
+			room.append(_rect(rc))
+		all_rooms.append(room)
+		if b.size.x < ATTIC_BAY * 1.25 and b.size.y < ATTIC_BAY * 1.25:
+			chambers.append_array(room)
+	attic_spook = AtticSpook.new().setup(chambers, all_rooms, _base_y, ATTIC_H)
 	attic_spook.name = "Dachbodenspuk"
 	world.add_child(attic_spook)
 

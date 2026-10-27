@@ -83,13 +83,11 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 **Bedrohungen**
 - Name Leviathan, Reste: Liesels Abendgebet gegen den Leviathan, Marion geht hinaus, wenn sie den Namen hört (beides
   gibt es im Spiel noch nicht) – SK 4.32. Gebaut 27.10.: Sichtung, Hugos Szene mit Doré-Druck, Satzwechsel.
-- Vier Modi des Leviathan, Reste: kein Modus an Balltagen (Bälle gibt es noch nicht, 5.19); der Verurteilte meidet
-  ab dem Aufbruch unerreichbare Orte nicht, das Monster wartet nicht an der Aufzug-Haltestelle; Notausgang beim
-  Spieler ohne die Dachboden-Szene (Kniestocktür, ducken, Staub); keine Kellerrunde, solange der Suchtrupp nach Gustav
-  läuft (2.9, nicht gebaut); Rauchtest „jede bewohnte Tür vom Keller aus erreichbar“ fehlt – SK 4.33. Gebaut 27.10.:
-  Plan der Modi, Urteil, Snack, Raubzug (die ersten drei harmlos), Anforderung, Kellerrunde, Geräusche ohne Körper.
-- **Drei Bedrohungen** je Ebene, gleiche Sicht für den Kürbismann, Lakengeist erst nach dem ersten Angriff
-  (spukt im Code ab Tag 2) – SK 4.20, 4.18.
+- Vier Modi des Leviathan, Reste: kein Modus an Balltagen (Bälle gibt es noch nicht, 5.19); keine Kellerrunde,
+  solange der Suchtrupp nach Gustav läuft (2.9, nicht gebaut) – SK 4.33. Gebaut 27.10.: Plan der Modi, Urteil, Snack,
+  Raubzug (die ersten drei harmlos), Anforderung, Kellerrunde, Geräusche ohne Körper, Schutz gegen Fehlverhalten
+  (Erreichbarkeit, Ziel festnageln, Aufzug-Haltestelle, Dachboden-Szene, `--navcheck=tueren`).
+- **Drei Bedrohungen** je Ebene, gleiche Sicht für den Kürbismann – SK 4.20.
 - Vampir als vierte Bedrohung (Fledermäuse ohne Biss gebaut, im Dachgeschoss noch keine) – SK 4.22.
 - Krähen-Erweiterung: Ruf, Futtertisch, zwei Nester, Ring – SK 4.25 · GE (Brotkrumen, Kürbiskerne).
 - Kesselkatze: Marion erkennt sie, beim Ritual – SK 4.26.
@@ -204,8 +202,6 @@ Freunden) oder nur Stimmung? Legen Gäste selbst etwas ab?
 ## 7. Leichte Ausbaustufen (direkt ableitbar)
 
 Nur was sich fast ohne neue Entscheidung aus Bestehendem ergibt.
-- **Lakengeist erst nach dem ersten Angriff:** entschieden (SK 4.20); in `sheet_ghost.gd` (Zeile ~446) steht noch
-  `first_attack_done or Calendar.today() >= FROM_DAY` – die Tagesbedingung entfällt.
 - **Mitteilung „Herr Peters ist abgereist“** am 3.10. morgens: Text steht (SK 2.9), das Brett kann Aushänge
   (`NoticeBoard`) – unabhängig vom übrigen Doris-Strang baubar.
 - **Fledermäuse im Dachgeschoss:** Verhalten draußen gebaut, oben entschieden (schlafen an den Balken, kein Biss,

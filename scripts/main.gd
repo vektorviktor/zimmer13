@@ -75,9 +75,10 @@ extends Node3D
 ##   --verwaschen[=schleier]     es regnet sofort, Blut, Wachs und Kürbismatsch draußen verlaufen zehnmal so schnell (4.13,
 ##                               RainVeil) – schleier: sofort ganz; z. B. mit
 ##                               --pos=45,0.1,-37 --fall=5,giant --verwaschen --trace
-##   --aufzug[=innen|offen|fahrt]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht (innen: in der
-##                               Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt: in der Kabine, sie
-##                               fährt gleich ins oberste Stockwerk)
+##   --aufzug[=innen|offen|fahrt|urteil]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht (innen:
+##                               in der Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt: in der
+##                               Kabine, sie fährt gleich ins oberste Stockwerk · urteil: in der Kabine, nach 3 s ein Urteil
+##                               über Zimmer 13 (4.33), die Kabine pendelt alle 10 s – das Monster wartet an der Haltestelle)
 ##   --sitzen[=sofa|bank|stuhl|bett|klo]   aufs nächste Sitzmöbel dieser Art setzen (3.1), erster Platz – ohne Angabe Sofa
 ##   --tuer=zimmer               vor die Tür dieses Zimmers stellen (Nummer wie am Schild), Blick auf die Tür (6.19)
 ##   --werkzeug=brecheisen|kasten|schluessel   Brecheisen bzw. Werkzeugkasten in die Hand, schluessel: Generalschlüssel
@@ -91,7 +92,9 @@ extends Node3D
 ##   --dachboden[=kopf|fenster|treppe|blitz]  ins Dachgeschoss (4.21): hinter die Kniestocktür, Blick in die Kammer · kopf: vor
 ##                               den Kopf des Kürbismanns · fenster: unter das Dachfenster, durch das der Mond scheint, Blick hinauf
 ##                               · treppe: im OG1 an den Fuß der Dachbodentreppe · blitz: in die Kammer, Gewitter, nach 3 s
-##                               ein Blitz, der dich sicher um 90° dreht (Spuk, --shot-on=attic_turn)
+##                               ein Blitz, der dich sicher um 90° dreht (Spuk, --shot-on=attic_turn) · urteil: in die Kammer,
+##                               nach 3 s ein Urteil über Zimmer 13, Notausgang 5 s nach dem Aufbruch der Tür – die
+##                               Dachboden-Szene (4.33, 3a: Kniestocktür, Schritte, Staub, es stößt eine Kammertür auf)
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -248,6 +251,7 @@ extends Node3D
 ##                               (Kürbismann auch pumpkin_roof|pumpkin_edge|pumpkin_leap|pumpkin_land|pumpkin_lobby)
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
 ##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)
+##   --navcheck=tueren           Wege vom Keller (Versteck des Monsters) zu jeder bewohnten Zimmertür (4.33, Punkt 5)
 ## Vorzeichen und Spuk (4.25–4.31, 5.14–5.18, 6.21):
 ##   --kraehen[=groll]           im Garten 7 m vor den Krähen · groll: sie haben sich dich gemerkt und krächzen dich an
 ##   --ratten[=welle]            fünf Ratten um dich im Keller (sonst im Heizkeller) · welle: nach 2 s rennen sie davon, als käme
@@ -781,12 +785,21 @@ func run_debug(arg: String) -> bool:
 		var lifts := Game.social.builder.elevators
 		if lifts.is_empty():
 			return false
-		var at := lifts[0].spot(arg.ends_with("=innen") or arg.ends_with("=fahrt"))
+		var at := lifts[0].spot(arg.ends_with("=innen") or arg.ends_with("=fahrt") or arg.ends_with("=urteil"))
 		TeleportUI.place_player(at[0], at[1])
 		if arg.ends_with("=offen"):
 			lifts[0].open_doors()
 		elif arg.ends_with("=fahrt"):
 			lifts[0].ride_to_top()
+		elif arg.ends_with("=urteil"):
+			_debug_judgment_on_13()
+			var shuttle := Timer.new()
+			shuttle.wait_time = 10.0
+			shuttle.timeout.connect(func() -> void:
+				if not lifts[0].moving():
+					lifts[0].ride_to_top())
+			add_child(shuttle)
+			shuttle.start()
 	elif arg == "--sitzen" or arg.begins_with("--sitzen="):
 		var want := arg.substr(9) if arg.begins_with("--sitzen=") else "sofa"
 		var here := Game.player.global_position
@@ -881,6 +894,9 @@ func run_debug(arg: String) -> bool:
 				var door: Door = builder.attic_doors[0]
 				var into := door.global_transform.basis.z   # Aufgehseite = in den Dachboden
 				TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + into * 1.6, into)
+				if arg == "--dachboden=urteil":
+					_debug_judgment_on_13()
+					Game.director.debug_reach = 5.0
 				if arg == "--dachboden=blitz" and builder.attic_spook:
 					builder.attic_spook.forced = true
 					if Game.weather.kind != Weather.Kind.STORM:
@@ -1544,6 +1560,8 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(6.0).timeout.connect(_save_test)
 	elif arg == "--navcheck":
 		get_tree().create_timer(2.0).timeout.connect(_nav_check)
+	elif arg == "--navcheck=tueren" or arg == "--navcheck=türen":
+		get_tree().create_timer(2.0).timeout.connect(_nav_check_doors)
 	elif _debug_omens(arg):
 		pass
 	else:
@@ -1682,6 +1700,32 @@ func _nav_check() -> void:
 		bad += 0 if reached else 1
 	print("[navcheck] alles erreichbar" if bad == 0 else "[navcheck] %d Orte unerreichbar" % bad)
 	get_tree().quit()
+
+
+## --navcheck=tueren: Erreicht das Monster vom Keller aus (MonsterDirector.reachable, wie bei der Wahl der Puppentür)
+## jede bewohnte Zimmertür (Spielkonzept 4.33, gegen Fehlverhalten des Spiels, Punkt 5)? Meldet wie --navcheck.
+func _nav_check_doors() -> void:
+	var director := Game.director
+	var bad := 0
+	var rooms := director.inhabited_rooms()
+	for no in rooms:
+		var reached := director.reachable(director.rooms[no]["door_front"])
+		var who := "Spieler" if no == LevelBuilder.PLAYER_ROOM else ", ".join(Game.social.living_guests() \
+			.filter(func(g: Guest) -> bool: return String(g.home["no"]) == no) \
+			.map(func(g: Guest) -> String: return String(g.display_name)))
+		print("[navcheck]   Zimmer %-6s %-30s %s" % [no, who, "erreichbar" if reached else "UNERREICHBAR"])
+		bad += 0 if reached else 1
+	print("[navcheck] %d bewohnte Türen geprüft" % rooms.size())
+	print("[navcheck] alles erreichbar" if bad == 0 else "[navcheck] %d Orte unerreichbar" % bad)
+	get_tree().quit()
+
+
+## Debug (--dachboden=urteil, --aufzug=urteil): nach 1 s ein Urteil über Zimmer 13 in 2 s (4.33).
+func _debug_judgment_on_13() -> void:
+	Game.director.debug_doom = LevelBuilder.PLAYER_ROOM
+	Game.ghost.debug_rest(600.0)   # der Lakengeist hielte den Aufbruch auf (nur eine Bedrohung im Haus)
+	get_tree().create_timer(1.0).timeout.connect(func() -> void:
+		Game.director.debug_start(MonsterDirector.Mode.JUDGMENT, 2.0))
 
 
 ## --despawn[=monster|geist|kuerbis]: diese Bedrohung (ohne Angabe alle) ist sofort fort – danach ruht sie wie nach

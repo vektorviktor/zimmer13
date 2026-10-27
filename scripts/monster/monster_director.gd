@@ -106,6 +106,11 @@ const DOLL_LIGHT_TIE := 0.03
 ## Spieler holt es schon nach JUDGMENT_REACH_PLAYER, dann taucht es ungesehen neben ihm auf
 const JUDGMENT_REACH := 120.0
 const JUDGMENT_REACH_PLAYER := 60.0
+## Notausgang auf dem Dachboden (4.33, 3a): so lange (s) vom Knarren der Kniestocktür bis zum Angriff; dazwischen
+## Schritte über die Bohlen alle ATTIC_STEP s, Staub aus der Tür so lange vor dem Angriff
+const ATTIC_WARN := Vector2(3.0, 5.0)
+const ATTIC_STEP := 0.7
+const ATTIC_DUST := 0.9
 ## Nach dem Urteil greift es nur noch an, wer ihm so nah in den Weg tritt
 const IN_THE_WAY := 1.8
 ## Snack: so lange auf der Etage des Spielers, davon zuerst so lange auf ihn zu
@@ -222,6 +227,10 @@ var _raid_kills := 0
 var _raiding := false            ## unterwegs zu Türen, die es aufbricht (bis die letzte durchsucht ist)
 var _judged := false             ## das Urteil ist vollstreckt – danach greift es nur an, wer ihm in den Weg tritt
 var _reach_timer := 0.0          ## so lange ist es schon hinter dem Verurteilten her
+var _lift_wait := false          ## wartet an der Haltestelle des Aufzugs, in dem der Verurteilte fährt (4.33)
+var _attic := {}                 ## Notausgang auf dem Dachboden, läuft: {"t", "end", "door", "from", "to", "step"}
+var _door_reach := {}            ## Zimmer → seine Tür ist vom Keller aus erreichbar (NavMesh, einmal je Zimmer)
+var debug_reach := -1.0          ## --dachboden=urteil: Frist bis zum Notausgang (s) statt JUDGMENT_REACH(_PLAYER)
 var _mode_left := 0.0            ## Restzeit von Snack, Raubzug-Suche und Kellerrunde
 var _rush_left := 0.0            ## Snack: noch so lange geradewegs auf den Spieler zu
 var _sense_timer := 0.0          ## Raubzug: bis es den Spieler wieder anpeilt
@@ -790,6 +799,8 @@ func _begin_mode(m: Mode) -> void:
 	victims_left = 1
 	_judged = false
 	_reach_timer = 0.0
+	_lift_wait = false
+	_attic = {}
 	_no_break_in = false
 	_checked_spot = null
 	_uv_driven = false
@@ -806,6 +817,8 @@ func _begin_mode(m: Mode) -> void:
 			if condemned != null:
 				_route.append(doom_room)
 				_raiding = true
+			if condemned is Guest:
+				condemned.pin_down()   # ab dem Aufbruch nicht mehr dorthin, wo es nicht hinkommt (4.33, 2.)
 		Mode.SNACK:
 			_mode_left = SNACK_TIME
 			_rush_left = randf_range(SNACK_RUSH.x, SNACK_RUSH.y)
@@ -856,8 +869,14 @@ func _update_mode(delta: float) -> void:
 				_finish_raid()
 				_monster.go_home()   # anders gestorben – das Urteil ist hinfällig
 				return
+			if not _attic.is_empty():
+				_update_attic(delta)
+				return
+			if not _raiding and _wait_for_lift():
+				return   # fährt er Aufzug, wartet es an der Haltestelle – die Frist des Notausgangs ruht (4.33, 2.)
 			_reach_timer += delta
-			var limit := JUDGMENT_REACH_PLAYER if condemned == Game.player else JUDGMENT_REACH
+			var limit := debug_reach if debug_reach >= 0.0 else JUDGMENT_REACH_PLAYER if condemned == Game.player \
+				else JUDGMENT_REACH
 			if (not _raiding and _reach_timer > limit) or _reach_timer > limit + RAID_OVERTIME:
 				_judgment_escape()
 		Mode.SNACK:
@@ -958,6 +977,132 @@ func _plan_break_in() -> bool:
 	return true
 
 
+## Fährt der Verurteilte Aufzug (4.33, 2.), wartet es an der Haltestelle, an der die Kabine als Nächstes hält; steht
+## sie dort mit geschlossener Tür, drückt es den Rufknopf (sie geht auf). Steigt er aus, jagt es weiter.
+## true = es wartet (die Frist des Notausgangs ruht).
+func _wait_for_lift() -> bool:
+	var lift := lift_with(condemned)
+	if lift == null:
+		if _lift_wait:
+			_lift_wait = false
+			if _monster.waiting():
+				_monster.ambush(_monster.global_position, condemned)
+		return false
+	if not _lift_wait and Game.tracing:
+		print("[Urteil] %s fährt Aufzug – es wartet an der Haltestelle" % _actor_name(condemned))
+	_lift_wait = true
+	var i := lift.next_stop()
+	var spot := lift.waiting_spot(i)
+	_monster.wait_at(spot[0], spot[1])
+	var there := Vector2(spot[0].x - _monster.global_position.x, spot[0].z - _monster.global_position.z).length() < 1.0 \
+		and absf(spot[0].y - _monster.global_position.y) < 1.5
+	if there and not lift.moving():
+		lift.call_cabin(i)
+	return lift.moving() or _monster.waiting()
+
+
+## Der Aufzug, in dessen Kabine der Akteur steht (null = keiner).
+func lift_with(actor) -> Elevator:
+	if _builder == null or actor == null or not is_instance_valid(actor):
+		return null
+	for lift in _builder.elevators:
+		if lift.carries(actor.global_position):
+			return lift
+	return null
+
+
+## Notausgang auf dem Dachboden (4.33, 3a, Hauptfall): Unten knarrt die Kniestocktür, Schritte kommen über die Bohlen,
+## Staub rieselt aus einer Kammertür – nach ATTIC_WARN s stößt es sie geduckt auf und fällt über den Spieler her. Bis
+## dahin wartet es ungesehen in einer Kammer 1–2 Türen neben ihm (AtticSpook.ambush_spot). false = der Spieler ist
+## nicht oben oder es gibt dort keine solche Kammer.
+func _start_attic_scene() -> bool:
+	var spook := _builder.attic_spook if _builder else null
+	var p := Game.player
+	if spook == null or spook.room_at(p.global_position) < 0:
+		return false
+	var spot := spook.ambush_spot(p)
+	if spot.is_empty():
+		return false
+	var door: Door = spot["door"]
+	var knee: Vector3 = spot["pos"]
+	for d in _builder.attic_doors:   # die Kniestocktür auf dieser Höhe
+		if absf(d.global_position.y - p.global_position.y) < 1.5:
+			knee = d.center()
+	push_warning("[Urteil] Notausgang auf dem Dachboden: Das Monster kommt durch eine Kammertür")
+	_monster.hide_at(spot["pos"], door.center())
+	_attic = {"t": 0.0, "end": randf_range(ATTIC_WARN.x, ATTIC_WARN.y), "door": door, "from": knee, "to": spot["pos"],
+		"step": 0.0}
+	Game.play_sound("creak", 0.7, knee, null, "[Unten knarrt die Kniestocktür]")
+	if Game.tracing:
+		print("[Urteil] Notausgang Dachboden: Kniestocktür knarrt, Angriff in %.1f s durch die Tür @ %s" % [
+			_attic["end"], door.center().snapped(Vector3.ONE * 0.1)])
+	return true
+
+
+## Ablauf der Dachboden-Szene: Schritte, Staub, dann der Angriff. Sieht es den Spieler schon vorher (er kam herein),
+## jagt es gleich.
+func _update_attic(delta: float) -> void:
+	var t: float = _attic["t"] + delta
+	var end: float = _attic["end"]
+	var door: Door = _attic["door"]
+	_attic["t"] = t
+	if not _monster.waiting():
+		_attic = {}
+		return
+	if t >= 1.0 and t < end - ATTIC_DUST and t - float(_attic["step"]) >= ATTIC_STEP:
+		var k := clampf((t - 1.0) / maxf(0.1, end - ATTIC_DUST - 1.0), 0.0, 1.0)
+		var at: Vector3 = (_attic["from"] as Vector3).lerp(_attic["to"], k)
+		var first := float(_attic["step"]) == 0.0
+		Game.play_sound("thud", 0.3 + 0.3 * k, at, null, "[Schwere Schritte über die Bohlen]" if first else "")
+		_attic["step"] = t
+	if t >= end - ATTIC_DUST and not _attic.has("dust"):
+		_attic["dust"] = true
+		if _builder.attic_spook:
+			_builder.attic_spook.dust(door)
+		Game.play_sound("creak", 0.5, door.center(), null, "[Etwas drückt gegen die Tür]")
+	if t >= end:
+		_attic = {}
+		if Game.tracing:
+			print("[Urteil] Notausgang Dachboden: es stößt die Tür auf")
+		_monster.ambush(_monster.global_position, Game.player)
+
+
+## Kommt das Monster vom Keller aus (spawn_points[0]) auf dem NavMesh bis pos? Wie --navcheck: Der nächste Punkt des
+## NavMesh liegt höchstens 1 m neben pos, und der Weg endet dort (4.33, gegen Fehlverhalten des Spiels). Ohne fertiges
+## NavMesh: ja.
+func reachable(pos: Vector3) -> bool:
+	if spawn_points.is_empty() or _monster == null or not _monster.is_inside_tree():
+		return true
+	var map := _monster.get_world_3d().navigation_map
+	if NavigationServer3D.map_get_iteration_id(map) == 0:
+		return true
+	var to := NavigationServer3D.map_get_closest_point(map, pos)
+	if to.distance_to(pos) > 1.0:
+		return false
+	var query := NavigationPathQueryParameters3D.new()
+	query.map = map
+	query.start_position = NavigationServer3D.map_get_closest_point(map, spawn_points[0])
+	query.target_position = to
+	query.path_search_max_polygons = 0   # wie das Monster (Monster.agent): vom Keller bis in die Flügel ist es weit
+	var result := NavigationPathQueryResult3D.new()
+	NavigationServer3D.query_path(query, result)
+	var path := result.path
+	return not path.is_empty() and path[path.size() - 1].distance_to(to) < 0.5
+
+
+## Ist die Tür dieses Zimmers vom Keller aus erreichbar (4.33, Prüfung bei der Wahl)? Einmal je Zimmer berechnet –
+## das NavMesh ändert sich im Spiel nicht. Ohne fertiges NavMesh: ja (und später noch einmal).
+func door_reachable(no: String) -> bool:
+	if not _door_reach.has(no):
+		if _monster == null or not _monster.is_inside_tree() \
+				or NavigationServer3D.map_get_iteration_id(_monster.get_world_3d().navigation_map) == 0:
+			return true
+		_door_reach[no] = reachable(rooms[no]["door_front"])
+		if not _door_reach[no]:
+			push_warning("[Urteil] Zimmer %s: Tür vom Keller aus nicht erreichbar" % no)
+	return _door_reach[no]
+
+
 ## Kommt es nicht ans Ziel (Weg gescheitert), gibt es auf und geht heim.
 func _give_up() -> void:
 	if Game.tracing:
@@ -971,6 +1116,8 @@ func _give_up() -> void:
 func _judgment_escape() -> void:
 	_reach_timer = 0.0
 	if condemned == Game.player:
+		if _start_attic_scene():
+			return
 		var p := Game.player
 		var at := _point_near_unseen(p.global_position, Vector2(5.0, 12.0))
 		push_warning("[Urteil] Notausgang: Das Monster erscheint neben dem Spieler")
@@ -1308,11 +1455,12 @@ func inhabited_rooms() -> Array[String]:
 	return result
 
 
-## Türen, vor die die Puppe sich setzt (4.33): Zimmer 13 und Zimmer mit einem Erwachsenen, der keine Kernfigur ist.
+## Türen, vor die die Puppe sich setzt (4.33): Zimmer 13 und Zimmer mit einem Erwachsenen, der keine Kernfigur ist –
+## nur, wenn das Monster ihre Tür vom Keller aus erreicht.
 func judgeable_rooms() -> Array[String]:
 	var result: Array[String] = []
 	for no in inhabited_rooms():
-		if _condemned_in(no) != null:
+		if _condemned_in(no) != null and door_reachable(no):   # nur Türen, die es erreicht (Prüfung bei der Wahl)
 			result.append(no)
 	return result
 

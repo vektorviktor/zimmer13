@@ -1834,7 +1834,7 @@ braucht), beim Ausprobieren festlegen.
 > Monster nah ist. Debug: F6 und `--ghost=n`. **Nachtruhe** 23–6 Uhr ± ½ h (2.4): alle Gäste im eigenen Bett, Licht
 > aus; schlafende Gäste sind keine Zeugen und bemerken nichts. Der Geist kommt **im Flur** ab dem 6. Mal, wenn alle
 > schlafen. Die Zimmerfenster sind 1,9 m breit und reichen von 0,75 bis 3,05 m.
-> **Noch nicht umgesetzt:** Er spukt im Code schon ab Tag 2 statt erst nach dem ersten Angriff (4.20).
+> **Umgesetzt (2026-10-27):** Er spukt erst nach dem ersten Angriff (4.20), nicht mehr schon ab Tag 2.
 > **Gäste als Opfer (entschieden und umgesetzt 2026-10-18):** Er behandelt Gäste wie den Spieler, mit eigenem
 > Zähler je Gast; Erwürgte bleiben als Leiche liegen – siehe 6.12.
 > **Gefährlicher und hartnäckiger (entschieden und umgesetzt 2026-10-18):**
@@ -2036,9 +2036,9 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
 - **Vorgeschichte im Spiel:** Wie erfährt man sie – Zeitungsausschnitt, Personalakte an der Rezeption, Gerüchte?
 
 ### 4.20 Drei Bedrohungen, ein Hotel (entschieden 2026-10-21)
-> Umgesetzt ist nur die Ankündigung des Kürbismanns (2., 2026-10-22). Im Prototyp gilt noch „nur eine Bedrohung im
-> Haus“ (4.1), der Kürbismann sieht nach eigenen Regeln (18 m rundum, Licht und Ducken egal), und der Lakengeist spukt
-> ab Tag 2.
+> Umgesetzt sind die Ankündigung des Kürbismanns (2., 2026-10-22) und der friedliche Anfang (5., 2026-10-27: der
+> Lakengeist spukt erst nach dem ersten Angriff). Im Prototyp gilt noch „nur eine Bedrohung im Haus“ (4.1), und der
+> Kürbismann sieht nach eigenen Regeln (18 m rundum, Licht und Ducken egal).
 
 **Warum**
 - **„Nur eine im Haus“ verträgt die Steigerung nicht:** Das Monster ist gegen Monatsende den größten Teil der Zeit
@@ -2527,8 +2527,11 @@ Ermangelung eines echten.
 ### 4.33 Die vier Modi des Leviathan (entschieden 2026-10-25)
 > **Umgesetzt (2026-10-27):** Plan der Modi je Spiel, alle vier Modi, Kellerrunde, Geräusche ohne Körper, Notausgang
 > beim Urteil (Gast mit Schleifspur, beim Spieler ungesehen daneben). Dreistigkeit +2,7 je Spieltag ohne Obergrenze,
-> Boni aus Gerede, Lärm und Licht aus je höchstens einmal je Spielstunde. Noch offen (OFFEN.md 3): Balltage, Aufzug-
-> Haltestelle, Dachboden-Szene, Suchtrupp, Erreichbarkeits-Rauchtest; das Tuning ist nur headless geprüft.
+> Boni aus Gerede, Lärm und Licht aus je höchstens einmal je Spielstunde. Dazu gegen Fehlverhalten (1., 2., 3a., 5.):
+> Puppe nur vor Türen, die das Monster vom Keller aus erreicht; der Verurteilte geht ab dem Aufbruch nicht mehr an
+> unerreichbare Orte; fährt er Aufzug, wartet es an der Haltestelle; die Dachboden-Szene (Kniestocktür, Schritte,
+> Staub, geduckt durch eine Kammertür); Rauchtest `--navcheck=tueren`. Noch offen (OFFEN.md 3): Balltage, Suchtrupp,
+> längere Frist beim Raubzug (3a., offen); das Tuning ist nur headless geprüft.
 > **Ersetzt** die drei Absichten aus 4.17 (Umsehen, einen holen, Raubzug mit n Opfern) und die
 > „fünf Türen unterwegs“ aus 5.5. Das Flackersignal aus 4.17 bleibt, bekommt aber je Modus eine neue Bedeutung. Mit
 > „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
