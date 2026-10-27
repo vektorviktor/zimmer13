@@ -113,6 +113,47 @@ func open_note(title: String, text: String) -> void:
 	back.grab_focus.call_deferred()
 
 
+## Ein Heft mit mehreren Seiten lesen (Notizbuch des Hausmeisters, 7.4): je Seite ein Text, blättern mit den Knöpfen.
+func open_pages(title: String, pages: Array, page: int = 0) -> void:
+	_open()
+	page = clampi(page, 0, pages.size() - 1)
+	var box := _new_sheet("note", "%s – Seite %d/%d" % [title, page + 1, pages.size()] if pages.size() > 1 else title, 330.0)
+	var text := UiKit.wrap_label(String(pages[page]), 9, UiKit.INK)
+	text.add_theme_constant_override("line_spacing", HELP_LINE_SPACING)   # Cinzel hat hohe Zeilen (wie die Hilfe)
+	box.add_child(text)
+	var back := _flip_row(box, open_pages.bind(title, pages, page - 1), page == 0,
+		open_pages.bind(title, pages, page + 1), page >= pages.size() - 1)
+	back.grab_focus.call_deferred()
+
+
+## Das Hotelregister an der Rezeption (Spielkonzept 2.3): eine Doppelseite, aufgeschlagen beim laufenden Oktober;
+## zurückblättern bis 1987.
+func open_register(register: HotelRegister, page: int = -1) -> void:
+	_open()
+	var pages := register.pages()
+	page = register.current_page() if page < 0 else clampi(page, 0, pages.size() - 1)
+	page -= page % 2
+	var shown: Array = pages.slice(page, page + 2)
+	var box := _new_sheet("note", "", RegisterView.SIZE.x)
+	box.add_child(RegisterView.new().setup(shown[0], shown[1] if shown.size() > 1 else {}))
+	var back := _flip_row(box, open_register.bind(register, page - 2), page == 0,
+		open_register.bind(register, page + 2), page + 2 >= pages.size())
+	back.grab_focus.call_deferred()
+	register.on_pages_read(shown)
+
+
+## Knöpfe unter einem Heft: zurück, weiter, weglegen – gibt „Weglegen“ zurück.
+func _flip_row(box: VBoxContainer, prev: Callable, no_prev: bool, next: Callable, no_next: bool) -> Button:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	box.add_child(row)
+	row.add_child(UiKit.button("« Zurückblättern", prev, no_prev))
+	row.add_child(UiKit.button("Weiterblättern »", next, no_next))
+	var done := UiKit.button("Weglegen", close)
+	row.add_child(done)
+	return done
+
+
 ## Ein Foto aus der Nähe (Fotowand, Spielkonzept 5.14): Bild, darunter, was man darauf sieht.
 func open_photo(title: String, picture: Texture2D, text: String) -> void:
 	_open()

@@ -21,7 +21,7 @@ Stand: 2026-10-26.
 | Generalschlüssel | Schlüsselbund | gebaut | – | Schlüsselschrank in der Lobby, Scheibe einschlagen; öffnet jede Zimmertür | 6.19 |
 | Dachbodenschlüssel | `KEY` „dachboden“ | **teilweise** – Tür gebaut, Schlüssel fehlt | Nebenstrang (Kürbismann) | hinter der Leviathanmauer, ab etwa Tag 15 | 4.21, M14 |
 | Schlüssel zum Haupteingang | `KEY` „ausgang“ | **teilweise** – Tür gebaut, Schlüssel fehlt (nur in der Hand, nicht am Bund) | **Hauptgeschichte** (Ende) | an Halloween; Fundort offen (K6) | 2.1, 2.7, M18 |
-| Schaltschlüssel (Aufzug) | – | geplant | **Hauptgeschichte** (Aufzug) | Zimmer 18 | 7.4, M8 |
+| Schaltschlüssel (Aufzug) | `KEY` „aufzug“ | **teilweise** – gebaut 28.10., liegt in Zimmer 18 und kommt an den Bund; im Aufzug noch ohne Wirkung (Reparatur offen) | **Hauptgeschichte** (Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
 | Schlüsselbund des Rezeptionisten | – | geplant (Vorschlag) | Nebenstrang (Marion) | in der Jeansjacke des erlösten Kürbismanns; öffnet das Büro der Direktion | 2.8, M15b |
 | ~~Werkstattschlüssel~~ | – | gestrichen 2026-10-27 (Werkstatt entfällt zugunsten des alten Heizkellers) | – | – | 2.8, 7.4 |
 | Schlüssel von 1987 (Messinganhänger) | – | geplant | – (optional; Edna, K5) | im Krähennest im großen Baum; öffnet das versiegelte Zimmer 042 des Mannes, der 1987 nicht hinauskam | 4.25, 6.19 (7) |
@@ -59,8 +59,8 @@ Stand: 2026-10-26.
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
 | Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | gebaut | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
-| Hotelregister | – | geplant | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“) | Rezeption | 2.3, K1, M6, M13 |
-| Notizbuch des Hausmeisters | – | geplant | **Hauptgeschichte** (drei Mängel am Aufzug) | Zimmer 18 | 7.4, M8 |
+| Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“) | Rezeption | 2.3, K1, M6, M13 |
+| Notizbuch des Hausmeisters | – (festes Buch, `CaretakerBook`) | gebaut 28.10. – vier Seiten, gelesen: drei Aufgaben im Notizbuch; Texte Vorschlag | **Hauptgeschichte** (drei Mängel am Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
 | Kesselbuch des Heizers | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Spind des Heizers im Heizraum | 2.3, 7.4, M12 |
 | Personalakte des Heizers | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
 | Zeitungsausschnitt „Brand im Grandhotel“ | – | geplant | Hauptgeschichte (Indiz) | offen | 2.3 |
@@ -91,7 +91,7 @@ Stand: 2026-10-26.
 |---|---|---|---|---|---|
 | Taschenlampe | `FLASHLIGHT` | gebaut | – | Licht, mit Aufsatz UV | 4.16 |
 | Batterie | `BATTERY` | gebaut | – | Taschenlampe | 4.16 |
-| UV-Aufsatz | `UV_FILTER` | gebaut | – (zeigt UV-Hinweise, vertreibt das Monster) | Taschenlampe | 4.16 |
+| UV-Aufsatz | `UV_FILTER` | gebaut | – (zeigt UV-Hinweise, vertreibt das Monster) | auf die Taschenlampe; liegt auf dem Tisch in Zimmer 18 (fehlte seit dem Gebäudeplan, wieder da seit 28.10.) | 4.16, 7.4 |
 | Glühbirne (heil/kaputt) | `BULB` | gebaut | – | Lampen ein- und ausdrehen · Herzensbitte der Bastler (6.14) | 7.3 |
 | Streichholzschachtel | `MATCHBOX` | gebaut | – | Kerzen anzünden; Zimmer 022 | 5.12 |
 | Messer | `KNIFE` | gebaut | – | schnitzen | 5.4 |

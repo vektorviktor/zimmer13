@@ -20,6 +20,12 @@ extends Node3D
 ##                               schon geholt, die Tür offen, Schleifspur und sein Tagebuch auf dem Tisch
 ##   --brett[=nachher|abgereist] vor das Aushangbrett in der Lobby (2.5) – nachher: der erste Angriff gilt als geschehen;
 ##                               abgereist: Gustav geholt, Morgen danach 7 Uhr, die Mitteilung „abgereist“ hängt (2.9)
+##   --register[=tot][,offen|anfang]   vor die Rezeption, Blick aufs Hotelregister (2.3) – tot: Gustav ist geholt,
+##                               3. Oktober 7 Uhr, sein Kreuz steht da (mit --kill=id weitere Tote) · offen: nach 1 s
+##                               aufgeschlagen beim laufenden Oktober · anfang: bei Oktober 1987
+##   --zimmer18[=offen|gelesen]  in Zimmer 18 vor den Tisch mit dem Notizbuch des Hausmeisters, Schaltschlüssel und
+##                               UV-Aufsatz (7.4) – offen: nach 1 s aufgeschlagen · gelesen: die drei Mängel stehen im
+##                               Notizbuch (mit --show=aufgaben gleich aufgeschlagen)
 ##   --brief                     an den Schreibtisch in Zimmer 13, Blick auf den Willkommensbrief (2.5)
 ##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
 ##                               über drei Tage) und ein paar Einträge im Tagebuch zum Nachlesen (3.10)
@@ -547,6 +553,12 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	photos.name = "Fotowand"
 	add_child(photos)
 	Game.photo_wall = photos
+	var register := HotelRegister.new().setup(builder)   # Hotelregister auf der Rezeption (2.3)
+	register.name = "Hotelregister"
+	add_child(register)
+	register.global_transform = builder.register_spot
+	Game.register = register
+	CaretakerBook.furnish(builder)   # Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel, UV-Aufsatz (7.4)
 	var cemetery := Cemetery.new()   # Friedhof westlich des Kürbisfelds (5.15)
 	cemetery.name = "Friedhof"
 	add_child(cemetery)
@@ -1400,6 +1412,14 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--brett=abgereist":
 		# nach 1 s, damit die Gäste stehen (Gustav wird geholt)
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.contest.debug_board("abgereist"))
+	elif arg == "--register" or arg.begins_with("--register="):
+		# nach 1 s, damit die Gäste stehen (tot: Gustav wird geholt)
+		var opts := arg.substr(11).split(",")
+		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.register.debug("tot" in opts, "offen" in opts, "anfang" in opts))
+	elif arg == "--zimmer18" or arg.begins_with("--zimmer18="):
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:   # nach dem Aufbau des Spielers
+			for book in get_tree().get_nodes_in_group("caretaker_books"):
+				(book as CaretakerBook).debug(arg.substr(11)))
 	elif arg == "--brief":
 		Game.contest.debug_letter()
 	elif arg == "--zettel":

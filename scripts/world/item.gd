@@ -359,6 +359,8 @@ func skip_time(dt: float) -> void:
 static func key_label(id: String) -> String:
 	if id == KeyCabinet.KEY_ID:
 		return "Generalschlüssel"
+	if id == CaretakerBook.KEY_ID:   # Schaltschlüssel des Aufzugs aus Zimmer 18 (7.4)
+		return "Schaltschlüssel"
 	return "Schlüssel" if id == "" else "Schlüssel %s" % id.replace("zimmer_", "Zimmer ")
 
 
@@ -1169,7 +1171,7 @@ func _build(extra: String) -> void:
 			display_name = key_label(extra)
 			mass = 0.1
 			size = Vector3(0.14, 0.03, 0.05)
-			var gold := Mat.psx(Color(0.85, 0.68, 0.25))
+			var gold := Mat.psx(Color(0.72, 0.73, 0.76) if extra == CaretakerBook.KEY_ID else Color(0.85, 0.68, 0.25))   # Schaltschlüssel: Stahl
 			Geo.mesh(self, Geo.box(Vector3(0.09, 0.015, 0.02)), gold, Vector3(0.02, 0.01, 0))
 			Geo.mesh(self, Geo.box(Vector3(0.04, 0.02, 0.045)), gold, Vector3(-0.045, 0.01, 0))
 		Kind.COBWEB:
