@@ -389,6 +389,8 @@ const SWEETS_CHEST_H := 0.32
 const SWEETS_CHEST_COLOR := Color(0.55, 0.22, 0.1)
 const SWEETS_CHEST_COUNT := 6
 const RECEPTION_H := 1.1
+## Hotelregister so weit neben der Mitte der Rezeptionsfront (zwischen Kerze und Kartenblatt, 2.3)
+const REGISTER_SHIFT := 0.35
 ## Rezeption als U mit runden vorderen Ecken (tools/build_reception.py): Holzkorpus, Platte im Terrazzo der Säulen,
 ## zwei Messingrohre; Kundenseite nach +Z, Ursprung mittig im Grundriss am Boden, Grundriss 5 × 1,5 m wie im Plan.
 ## Fehlt die Datei, bleiben die Kästen aus dem Plan.
@@ -513,6 +515,7 @@ var bar_spots: Array[Vector3] = []
 var diary: Diary
 ## Zimmer → Mitte der Platte seines ersten Tischs (global) – dort liegt etwa Gustavs Tagebuch (Spielkonzept 2.6)
 var room_tables := {}
+var room_table_axes := {}   ## Zimmernummer → halbe Länge des Tischs entlang seiner langen Seite (global)
 ## Mitte der Platte des Lobby-Couchtischs (global) – dort legt Hugo Dorés Druck hin (Spielkonzept 4.32)
 var lobby_table := Vector3.INF
 ## Aushangbrett in der Lobby (Spielkonzept 2.5) und Innenmaß der Lobby (x, z)
@@ -570,6 +573,7 @@ var _doors: Array[Dictionary] = []    ## {pos: Vector3 (Mitte unten), door: Door
 var attic_doors: Array[Door] = []     ## Kniestocktüren aller Ebenen
 var attic_haze: AtticHaze             ## Staubnebel im Dachgeschoss (null ohne Plan „DG“)
 var attic_spook: AtticSpook           ## Blitz-Dreh in den Kammern des Dachbodens (null ohne Plan „DG“)
+var register_spot := Transform3D()    ## Hotelregister auf der Rezeption (2.3): auf der Platte, +Z zu den Gästen
 var pumpkin_head_spot := Vector3.INF  ## wo der Kopf des Kürbismanns liegt (rotes Kreuz im Plan „DG“)
 var attic_stair_foot := Transform3D() ## Fuß der Dachbodentreppe im Obergeschoss, Blick hinauf (Debug --dachboden=treppe)
 var attic_window_spots: Array[Transform3D] = []   ## unter jedem Dachfenster, Blick zu ihm (Debug --dachboden=fenster)
@@ -2531,6 +2535,9 @@ func _note_room_tables(first: int) -> void:
 		var id := _room_id_at(c)
 		if rooms.has(id) and not room_tables.has(id):
 			room_tables[id] = _global(Vector3(c.x, float(f["top"]), c.y))
+			var r := f["rect"] as Rect2
+			var long := Vector3.RIGHT * r.size.x / 2.0 if r.size.x >= r.size.y else Vector3.BACK * r.size.y / 2.0
+			room_table_axes[id] = _parent.global_basis * long
 
 
 ## Fester Fund in einer Schublade (CONTENT „drawer“, Spielkonzept 5.12): in die oberste Schublade der ersten Kommode
@@ -2871,6 +2878,15 @@ func _lobby_hall() -> void:
 			front = rc
 	var fz := (float(front[1]) + float(front[3])) / 2.0
 	cat_perches.append({"floor": Vector3(2.9, 0, fz - 0.8), "top": Vector3(2.3, RECEPTION_H + 0.02, fz - 0.8), "yaw": PI / 2.0})
+	# Hotelregister (2.3): auf der Front der Rezeption etwas neben der Mitte, zu den Gästen gedreht
+	var hull := _rect(front)
+	for rc in _map["reception"]:
+		hull = hull.merge(_rect(rc))
+	var fc := _rect(front).get_center()
+	var guest_side := (fc - hull.get_center()).normalized()
+	var book := fc + Vector2(guest_side.y, -guest_side.x) * REGISTER_SHIFT
+	register_spot = Transform3D(Basis(Vector3.UP, atan2(guest_side.x, guest_side.y)),
+		_global(Vector3(book.x, _top_at(book), book.y)))
 	# Vor jedem Sofa zwei Sitzplätze für Gäste, obendrauf zwei Liegeplätze für die Katzen
 	for f in _furnishings:
 		var c: Vector2 = (f["rect"] as Rect2).get_center()

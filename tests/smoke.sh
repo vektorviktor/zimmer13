@@ -101,6 +101,11 @@ done <<'LIST'
 2400|grinch,gaeste|--grinch --trace
 1200|grinch,wettbewerb,speichern|--grinch=tot --savetest --trace
 900|wettbewerb,grinch,speichern|--brett=abgereist --savetest --trace
+900|register,wettbewerb,speichern|--register=tot --kill=doris,weg,hin --savetest --trace
+300|register|--register=tot,offen --trace
+300|register|--register=anfang
+600|zimmer18,notizbuch,speichern|--zimmer18=gelesen --show=aufgaben --savetest --trace
+300|zimmer18|--zimmer18=offen
 2400|schnell,monster,gaeste,modi|--warn --day=10 --trace
 1500|monster,modi|--pos=31.5,0,-8 --mode=snack --day=8 --trace
 1500|monster,modi|--pos=31.5,0,-8 --mode=harmlos --day=5 --trace

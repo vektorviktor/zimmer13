@@ -21,9 +21,7 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 | Stück | Verweis | Stand |
 |---|---|---|
 | Doris' Suche: Bitte, Suchtrupp an der Kellertür, Brille an der Leviathanmauer, Abschied/Brief | SK 2.9 · HA M5a–M7b, K8 | nicht gebaut; Mauer malt der Nutzer neu |
-| Hotelregister mit Kreuzen, „geb. Ahrend“, „geb. K…“ | SK 2.3 · HA K1, M6, M13 · GE | nicht gebaut |
-| Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel | SK 7.4 · HA M8 · GE | nicht gebaut |
-| Aufzug reparieren: Ersatzsicherung, Bremse, erste Fahrt nach „T“ | SK 7.4 · HA M9–M11, K3 | Aufzug fährt, Reparatur als Sperre fehlt |
+| Aufzug reparieren: Schaltschlüssel einstecken, Ersatzsicherung, Bremse, erste Fahrt nach „T“ | SK 7.4 · HA M9–M11, K3 | Aufzug fährt, Reparatur als Sperre fehlt; Schaltschlüssel und die drei Aufgaben im Notizbuch gibt es (Durchstreichen: `CaretakerBook.fixed`) |
 | **U2** (Lager, Fundsachen-Koffer, alter Heizkeller, Deko des Monsters) | SK 7.4, 7.10 · HA M11, M17 | **Plan steht aus** |
 | **Keller-Ordnung** (7.4, 2026-10-27): Vorhängeschlösser Ost/West, Monster bricht Ost auf, Westschlüssel im Keller, zugemauerte Treppen, Heizraum als Attrappe (moderner Kessel, heiße Rohre nach unten, Spind), Leviathanmauer statt Gitter, Monster nur Minuten draußen, U2-Knopf/Hugo | SK 7.4 · HA K2, M11, M14, M17 | nicht gebaut; der Plan (Schlösser, Mauer, Treppen) malt der Nutzer |
 | Zimmer 18 als Zimmer des Gastes von 2003, UV-Hinweise 13/018, Jahresfoto 2003 | SK 7.4, 5.14 | nicht gebaut |
@@ -44,12 +42,16 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - **Edna als Mitwisserin** (Bedrohung um den 20.10.) noch Kandidat; **Lücke 16.–22. Oktober** braucht evtl. einen
   zweiten festen Moment – HA K5, HA 4.
 - **Büro der Direktion:** Lage, zweiter Weg hinein ohne erlösten Kürbismann – HA 4, SK 2.8, 6.19.
+- **Hotelregister** (gebaut 28.10.): Ednas voller Geburtsname (steht als „geb. K…“); wer 2003 in 13 und 018 wohnte
+  (beide Zimmer bleiben in den alten Jahren leer); ob Zimmer 13 – der Spieler – darin steht (bisher nicht, die Figur
+  hat keinen Namen); die Namen früherer Jahre sind gewürfelt (fester Seed) – sollen sie zu den Koffern im Lager und den
+  Warnungszetteln passen? – SK 2.3, 2.7, 7.4.
 - **Mila Hellwig** ohne Rolle im Geheimnis (Vorschlag Skizzen) – HA 4; allgemein Bezug der Kernfiguren-Bitten zum
   Geheimnis – SK 6.14.
 - **Lore 1987:** Warnungszettel vor dem Kesselbrand; was das Ding unter dem Hotel vorher war – HA 4, SK 10 (Frage 4).
 - **Enden:** Epilog im nächsten Jahr? eigenes Vampir-Ende? Sequenz steuerbar? Darstellung von Ende 3 bei ab 16 –
   SK 2.7 „Zu den Enden noch offen“.
-- **Mit „Vorschlag“ markierte Punkte** in SK 2.9, 4.22, 4.32, 4.33, 5.19 und HA (Daten, Inhalte, Wege) sind noch
+- **Mit „Vorschlag“ markierte Punkte** in SK 2.9, 4.22, 4.32, 4.33, 5.19, 7.4 (Texte im Notizbuch des Hausmeisters) und HA (Daten, Inhalte, Wege) sind noch
   zu bestätigen. In 4.32 gebaut wie vorgeschlagen: Hugos Sätze, Druck an der Wand (zwischen Aushangbrett und
   Wandlampe statt an der vollen Fotowand); Liesel benennt ihn, wenn Hugo tot ist. Neu dazu: Kinder zählen nicht als
   Zeugen, „überlebt“ = 2 min danach noch am Leben, Hugo wartet ¾ Stunde am Tisch auf den Spieler.

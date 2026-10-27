@@ -1541,6 +1541,29 @@ Spielkonzept 3.2)
 - Gespeichert unter `notebook` und `diary`. Debug `--notizbuch`, `--show=aufgaben|notizen|gesehen`,
   `--menu=diary_pages`.
 
+### Hotelregister, Zimmer 18 (Dokumente)
+- **Hotelregister** (`world/hotel_register.gd` `HotelRegister`, `ui/register_view.gd` `RegisterView`; Spielkonzept 2.3,
+  2.9, HANDLUNG K1): festes Buch auf `LevelBuilder.register_spot` (in `_lobby_hall`: Front der Rezeption,
+  `REGISTER_SHIFT` neben der Mitte, +Z zu den Gästen), `Game.register`. [E] → `Menus.open_register` (Doppelseite,
+  blättern baut den Bogen neu wie das Tagebuch). `pages()`: die Jahre 1987–2025 einmal gesetzt (`_old_rows`: fester
+  Seed je Jahr, Kreuze = `PhotoWall.TAKEN`, Zimmer aus `rooms` ohne 13/18, Vornamen nach `ERA_YEAR`, keine Nachnamen der
+  heutigen Haushalte, `FIXED` = Edna 1987 in 017), dann Oktober 2026 frisch aus `builder.households` und
+  `Game.social.guests` (Mitglied über `profile["member"]`, Name `LevelBuilder.door_name`, `BIRTH_NAMES`). Der laufende
+  Oktober beginnt auf einer linken Seite. `RegisterView.paginate` verteilt Jahresblöcke auf `ROWS` Zeilen (ein Jahr
+  bricht nur, wenn es allein nicht passt); Kreuze zeichnet `_draw_page` wie `NotebookPage` (Zeile `crosses` = Zeichen
+  davor, drei Leerzeichen Platz). **Kreuz** (`is_crossed`): tot und `next_morning(Todeszeit)` erreicht (`CROSS_HOUR`).
+  Die Todeszeit kommt über `Social.on_guest_died` → `on_guest_died` und lebt nur in der Sitzung (`_died_at`); ohne sie
+  (nach dem Laden) steht das Kreuz sofort, Gustav immer ab dem 3. Oktober, 6 Uhr – **nichts davon wird gespeichert**.
+  `on_pages_read` schreibt Notizen (`register_old`, `register_<Gast>`). Debug `--register[=tot][,offen|anfang]`.
+- **Zimmer 18** (`world/caretaker_book.gd` `CaretakerBook`; Spielkonzept 7.4, HANDLUNG M8): `furnish(builder)` aus
+  `main` legt die Kladde, den Schaltschlüssel (`Item.Kind.KEY` „aufzug“ = `KEY_ID`, `Item.key_label` „Schaltschlüssel“,
+  Stahl statt Messing) und den UV-Aufsatz auf den ersten Tisch des Zimmers (`room_tables`, entlang
+  `LevelBuilder.room_table_axes` – halbe Länge der langen Tischseite; das Telefon steht in der Mitte). Schlüssel und
+  Aufsatz sind gewöhnliche Gegenstände (gespeichert in „items“). [E] → `Menus.open_pages` (`PAGES`, eine Seite je
+  Bogen), `read()` trägt `TASKS` mit `TASK_BY` ein – `Notebook.add_task` übergeht vorhandene IDs, gespeichert ist es
+  nur im Notizbuch. `fixed(part)` streicht einen Mangel durch – aufrufen, sobald die Reparatur gebaut ist. Debug
+  `--zimmer18[=offen|gelesen]`.
+
 ### Symbole & Porträts
 (`ui/icon_art.gd`, `assets/textures/icons/Icon_<name>.png`, Quelle `Icon_themonster.aseprite`)
 `IconArt.texture(name, größe)`: kleiner einmal mit Lanczos verkleinert und zwischengespeichert (Nearest zerriss die

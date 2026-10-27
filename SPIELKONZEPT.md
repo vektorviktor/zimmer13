@@ -244,7 +244,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Zwei Arten von Mitwissern:**
   - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält; der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht.
   - **Angehörige, die suchen:** die **Tochter des Heizers**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel. **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer die Personalakte des Heizers kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
-- **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** des Heizers mit Foto (die Statur passt) · **Kesselbuch** im Spind des Heizers · der **alte Heizkeller** in U2 · die Koffer früherer Gäste im Lager (7.4).
+- **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 (umgesetzt 2026-10-28: aufgeschlagen auf der Rezeption, 2.9) · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** des Heizers mit Foto (die Statur passt) · **Kesselbuch** im Spind des Heizers · der **alte Heizkeller** in U2 · die Koffer früherer Gäste im Lager (7.4).
 - **Enden (Vorschlag):**
   - **Flucht:** mit dem Schlüssel hinaus – mit allen Überlebenden (2.7).
   - **Das Abkommen brechen:** den Vertrag im Feuer von 1987 verbrennen (alter Heizkeller, 7.4). Er ist nicht mehr gebunden – ob das gut ist, bleibt offen. **Seit 2026-10-25 Teil von Marions Auftrag (2.8).**
@@ -829,7 +829,13 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 
 **2. „Morgen früh gehe ich als Erstes zur Direktion und …“ (3. Oktober morgens)**
 - Gustavs abgebrochener letzter Satz (2.6) zeigt zur **Rezeption**. Dort ist niemand, nur die Klingel. Im
-  **Hotelregister** steht ein frisches Kreuz neben „Gustav Peters“ (M6, HANDLUNG K1).
+  **Hotelregister** steht ein frisches Kreuz neben „Gustav Peters“ (M6, HANDLUNG K1). *Umgesetzt 2026-10-28:* ein
+  aufgeschlagenes Buch auf der Rezeption, [E] liest es. Oktober 2026 nennt je Haushalt Zimmer und Namen wie an der Tür
+  (6.20), dazu „geb. Ahrend“ und „geb. K…“; jeder Tote bekommt sein Kreuz **am Morgen danach ab 6 Uhr** (wie die
+  Mitteilung), Gustav also am 3. Oktober. Zurückblättern zeigt jeden Oktober seit 1987 mit ein paar Zeilen und so vielen
+  Kreuzen, wie auf dem Gruppenfoto des Jahres Gesichter verwischt sind (5.14); Edna steht 1987 als „Edna K…“ in
+  Zimmer 017. Die Namen früherer Jahre sind erfunden (Vorschlag). Gelesen: ein neues Kreuz und die alten Jahre je als
+  Notiz im Notizbuch (3.10).
 - **Am Brett hängt eine neue Mitteilung** (dieselbe Schrift wie der Aushang, 2.5; umgesetzt 2026-10-27 – ab 6 Uhr am
   Morgen nach der Siegerehrung, solange Gustav tot ist; Gäste am Brett reden auch darüber):
   > Verehrte Gäste,
@@ -1259,7 +1265,7 @@ zwei Bücher mit klar getrennten Rollen:
 - Alte offene Aufgaben rutschen auf frühere Seiten – das ist gewollt. Erinnern tut der Gast im Gespräch (6.14).
 - **Die ersten Einträge:** *„Tür schmücken – Direktion · bis 2. Okt., 20 Uhr“* nach dem Lesen des Briefs (2.5),
   durchgestrichen bei der Siegerehrung. Später die drei Mängel am Aufzug aus dem Notizbuch des Hausmeisters (7.4) als
-  drei Zeilen.
+  drei Zeilen (umgesetzt 2026-10-28; durchgestrichen wird, sobald die Reparatur gebaut ist).
 
 **Lesezeichen „Notizen“**
 - **Fortlaufend mit Datum und Uhrzeit**, dazu von wem: *„2. Okt., 12:00 – Durchsage: noch acht Stunden bis zur
@@ -1694,7 +1700,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Die Dämpfung im Spiel nachhören: Reicht ×0,4 je Wand, oder hört man Zimmer nebenan zu gut bzw. zu schlecht?
 
 ### 4.16 Taschenlampe & UV-Licht (entschieden 2026-10-11)
-> **Im Prototyp umgesetzt (2026-10-11):** Taschenlampe an der Rezeption (halb leer), Batterien in Wäscherei, Keller und einigen unbewohnten Zimmern sowie bei Skeptikern im Handel, UV-Aufsatz in Zimmer 18. Werte in `scripts/world/flashlight.gd` und oben im `MonsterDirector`.
+> **Im Prototyp umgesetzt (2026-10-11):** Taschenlampe an der Rezeption (halb leer), Batterien in Wäscherei, Keller und einigen unbewohnten Zimmern sowie bei Skeptikern im Handel, UV-Aufsatz in Zimmer 18 (fehlte nach dem Gebäudeplan, seit 2026-10-28 wieder auf dem Tisch dort, 7.4). Werte in `scripts/world/flashlight.gd` und oben im `MonsterDirector`.
 
 **Grundsatz:** Die Taschenlampe ist Licht zum **Sehen**, kein Schutz. Erst der UV-Aufsatz macht sie zur Notwehr – teuer und mit Folgen. Deko und Verstecken bleiben der eigentliche Schutz (4.12, 3.4).
 
@@ -4572,6 +4578,26 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   dass sie es vielleicht nicht schaffen – die Zeichen sollten spätere Jahre warnen. Texte und Orte offen (Zimmer 18
   hat schon UV-Schrift, 4.16).
 - **Jahresfoto 2003** an der Fotowand (5.14): Beide sind verwischt; das Foto gibt Hinweise auf die beiden (welche, offen).
+- *Umgesetzt (2026-10-28):* Auf dem Tisch in Zimmer 18 liegen das **Notizbuch des Hausmeisters** (festes Buch, [E]
+  liest es, vier Seiten), der **Schaltschlüssel** (an den Bund, im Aufzug noch ohne Wirkung) und der **UV-Aufsatz**. Hat
+  man das Notizbuch gelesen, stehen die drei Mängel als drei Zeilen unter „Aufgaben“ (3.10): *„Aufzug: Schaltschlüssel
+  ins Bedienfeld der Kabine“*, *„Aufzug: Ersatzsicherung in den Sicherungskasten im Untergeschoss – ein Gast hat sie“*,
+  *„Aufzug: Bremse im Maschinenraum mit der Kurbel lösen (laut)“*. Durchgestrichen wird, sobald die Reparatur gebaut ist.
+  **Texte: Vorschlag** – drei Seiten Hausmeister, eine in Bleistift vom Gast aus 018:
+  > AUFZUG 1 – steht. Die Direktion sagt: nicht im Oktober. Drei Sachen, dann fährt er wieder: 1. Schaltschlüssel.
+  > Ohne den rührt sich das Bedienfeld in der Kabine nicht. Bleibt bei mir. 2. Hauptsicherung durch. Sicherungskasten
+  > im Untergeschoss. Die Ersatzsicherung hat mir ein Gast abgekauft. Hat gut bezahlt. Hätte ich nicht tun sollen.
+  > 3. Bremse festgefressen. Maschinenraum im Untergeschoss, neben dem Heizraum. Mit der Kurbel lösen – dauert, und
+  > quietscht durch den ganzen Keller. Nicht nachts.
+  >
+  > Heizraum: Der neue Kessel ist nicht angeschlossen. Trotzdem ist es da unten heiß. Die Rohre gehen nach unten, nicht
+  > nach oben. Nicht meine Sache, sagt die Direktion. – Im Oktober keine Arbeiten im Keller. Anweisung. – Die schwarze
+  > Katze war wieder im Heizraum. Ich weiß nicht, wem sie gehört.
+  >
+  > *(Bleistift)* Oktober 2003. Das Buch habe ich an mich genommen, den Schaltschlüssel auch. Hier steht mehr über
+  > dieses Haus als in jedem Prospekt. – Nicht darüber reden. Es hört zu. 13 hat es zuerst gemerkt. – Das violette
+  > Licht erträgt es nicht. Nicht lange, aber es geht. – Falls wir es nicht schaffen: Wir hinterlassen Zeichen, die man
+  > nur in diesem Licht sieht. Wer das liest – such sie.
 
 **Lager**
 - Ein Verschlag aus Maschendraht mit Vorhängeschloss – wie man hineinkommt, ist offen (der Bolzenschneider von der Werkzeugwand ist eingefroren, 2026-10-21).
