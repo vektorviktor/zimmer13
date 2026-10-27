@@ -423,7 +423,8 @@ func light_at(p: Vector3, skip: Node = null) -> float:
 			continue
 		var att := 1.0 - d / light.omni_range
 		total += light.light_energy * att * att * 1.6
-	# Mondlicht durch Außenfenster mit offenen Vorhängen
+	# Mondlicht durch Außenfenster mit offenen Vorhängen – so hell, wie Phase und Wolken es zulassen (Weather, 7.8)
+	var moon := Game.weather.moonlight() if Game.weather else 1.0
 	for node in _windows:
 		var win := node as HotelWindow
 		if not is_instance_valid(win) or not win.lets_moonlight():
@@ -434,7 +435,7 @@ func light_at(p: Vector3, skip: Node = null) -> float:
 			continue
 		var moon_query := PhysicsRayQueryParameters3D.create(wp, p, 1 | 2)
 		if space.intersect_ray(moon_query).is_empty():
-			total += MOONLIGHT * (1.0 - wd / MOONLIGHT_RANGE)
+			total += MOONLIGHT * moon * (1.0 - wd / MOONLIGHT_RANGE)
 	return clampf(total, 0.0, 1.0)
 
 

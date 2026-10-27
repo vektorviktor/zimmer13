@@ -921,10 +921,13 @@ func on_monster_talk(guest: Guest) -> void:
 ## cause "ghost": vom Lakengeist erwürgt – kein Schrei durchs Hotel, er liegt in seinem Zimmer (6.12).
 ## Nach `BELL_DELAY` s läutet bei jedem Tod die Totenglocke. Schläft der Spieler (der Schrei hat ihn nicht geweckt),
 ## bekommt er nichts mit – was geschah, findet er später (Morgenbilanz, Spielkonzept 3.6).
-func on_guest_died(guest: Guest, cause: String = "monster") -> void:
+## quiet: ohne Meldung und Glocke (Debug --kill=alle meldet und läutet einmal für alle).
+func on_guest_died(guest: Guest, cause: String = "monster", quiet: bool = false) -> void:
 	for other in living_guests():
 		other.fear = minf(100.0, other.fear + 50.0)
-	if (Game.player and Game.player.sleeping) or cause == "unseen":
+	if quiet:
+		pass
+	elif (Game.player and Game.player.sleeping) or cause == "unseen":
 		pass   # unseen: Gustav bei der Siegerehrung (2.6) – keiner hat es gehört, man erfährt es später (Grinch)
 	elif cause == "ghost":   # mit Totenkopf (IconArt „dead“)
 		Game.say("Irgendwo im Hotel bricht ein Röcheln ab …", 4.0, "dead")
@@ -937,7 +940,7 @@ func on_guest_died(guest: Guest, cause: String = "monster") -> void:
 			Game.say("%s ist verschwunden." % gone, 4.0, "dead"))
 	# Die Totenglocke läutet – nach dem Schrei, für jeden Toten, im ganzen Hotel zu hören (nur nicht im Schlaf)
 	get_tree().create_timer(BELL_DELAY, false).timeout.connect(func() -> void:
-		if not (Game.player and Game.player.sleeping):
+		if not quiet and not (Game.player and Game.player.sleeping):
 			Game.play_sound("bell"))
 	_memorial_doors.append(guest.home["door_front"])
 	if Game.cemetery:   # Grab oder Gedenktafel auf dem Friedhof (5.15)

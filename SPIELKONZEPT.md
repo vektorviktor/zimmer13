@@ -4711,8 +4711,35 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
 > und ist durch die Fenster zu sehen, drinnen nie; man hört ihn (drinnen dumpfer), der Himmel zieht zu und der Mond wird
 > schwächer. Beim Gewitter blitzt es alle 10–30 s – zwei, drei Zuckungen, das Licht fällt kurz durch die Fenster, der
 > Himmel leuchtet auf –, Donner folgt nach bis zu 3,5 s (je später, desto leiser). Donner lockt niemanden, aber
-> **das Monster hört danach ein paar Sekunden schlechter**. Noch nicht: Regen an den Scheiben, Gestalt im Blitz,
-> Wind, Tiere, dichterer Nebel.
+> **das Monster hört danach ein paar Sekunden schlechter**.
+>
+> **Umgesetzt (2026-10-27): die übrigen Punkte außer den Tieren.**
+> - **Regen an den Scheiben:** Auf allen Außenfenstern aus klarem Glas sitzen im Regen Tropfen, die das Bild dahinter
+>   brechen und im Lampenlicht glänzen; Rinnsale rutschen ruckweise hinab und ziehen eine Spur kleiner Tropfen nach.
+>   Die Scheiben werden in einer halben Minute nass und trocknen nach dem Regen in etwa fünf Minuten.
+> - **Gestalt im Blitz:** Bei etwa jedem fünften Blitz, höchstens einmal je Gewitter, steht im ersten Aufzucken eine
+>   dunkle, etwas zu große Gestalt im Garten, am liebsten neben einem Baum – nur dort, wohin man gerade sieht (im Garten
+>   oder durch ein Fenster mit offenem Vorhang, 9–40 m entfernt). Beim nächsten Aufzucken ist sie fort. Sie tut nichts,
+>   niemand sonst sieht sie; wer sie sieht, erschrickt ein wenig (Schock). Ob Halluzination oder Lakengeist, bleibt offen.
+>   Da es keinen Wald mit echten Bäumen gibt, steht sie im Garten statt an der Waldkante.
+> - **Wind:** immer eine leichte Brise (gegen Monatsende etwas mehr), im Regen stärker, im Gewitter am stärksten, dazu
+>   Böen. Gras und Blätter der Bäume wiegen sich stärker, das Laub fällt schneller und schräg, der Regen fällt schräger,
+>   der Nebel treibt; man hört ihn rauschen und in Böen heulen, drinnen dumpf.
+> - **Nebel:** Draußen (nie drinnen) liegt Bodennebel, am 1. Oktober kaum, an Halloween dicht; er ist fleckig und
+>   treibt mit dem Wind. Im Blitz leuchtet er nur schwach auf. Der Himmel wird bis Halloween wolkiger.
+> - **Mond:** Er nimmt nach dem Kalender ab und zu – am Monatsanfang fast voll, Neumond um den 17., **Vollmond in der
+>   Nacht von Halloween**. Bei Neumond ist es draußen dunkler, die Scheibe nur schwach zu ahnen (Erdschein), und durch
+>   die Fenster fällt weniger Mondlicht – das Monster sieht einen dort schlechter.
+>
+> **Blutregen – Seltenwetter (entschieden und umgesetzt 2026-10-27).** Einmal je Spiel fällt ein Schauer (Regen oder
+> Gewitter) rot. **Echt, aber deutbar:** Alle sehen ihn, Gäste in der Nähe fürchten sich, zwei sagen etwas („Das ist
+> doch Blut!“, „Ein Zeichen …“), zuletzt erklärt der Mutigste nüchtern: Saharastaub. Omen oder Natur bleibt offen,
+> wie bei der Gestalt im Blitz. **Er wird erlebt:** frühestens ab dem 20. Oktober, und nur, wenn der Spieler wach ist
+> und draußen steht oder bis 8 m an einem Außenfenster mit offenem Vorhang; die Chance je solchem Schauer steigt von
+> einem Viertel bis sicher am 28. – sonst wartet er auf den nächsten. **Was bleibt:** eingetrocknete rote Flecken auf
+> den Scheiben und rötliche Pfützen draußen, bis normaler Regen sie abwäscht (etwa anderthalb Minuten voller Regen).
+> Das zählt nicht als Blutspur (4.13), echte Spuren bleiben eindeutig. Gespeichert wird, ob er schon fiel und wie viel
+> Rot noch zu sehen ist.
 
 ### 7.9 Untergeschoss (entschieden und umgesetzt 2026-10-20)
 > Ausbau entschieden 2026-10-21 (7.10): Heizraum, Maschinenraum, Wäscherei und Müllraum; darunter kommt
@@ -4892,7 +4919,7 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 
 | Bereich | Optionen (Vorschlag) |
 |---------|----------------------|
-| **Bild** | **Helligkeit/Gamma mit Kalibrierbild** („Der Kürbis soll gerade noch erkennbar sein“) – wichtig, weil Dunkelheit Spielmechanik ist (4.4) · Vollbild/Fenster (Start immer im Fenster, 11.10.2026) · VSync · Sichtfeld (FOV) · Spiegelungen an/aus (glatte Flächen spiegeln, kostet Leistung – 21.10.2026) |
+| **Bild** | **Helligkeit/Gamma mit Kalibrierbild** („Der Kürbis soll gerade noch erkennbar sein“) – wichtig, weil Dunkelheit Spielmechanik ist (4.4) · Vollbild/Fenster (Start immer im Fenster, 11.10.2026) · VSync · Sichtfeld (FOV, Standard 90°, 60–120° – 27.10.2026) · Spiegelungen an/aus (glatte Flächen spiegeln, kostet Leistung – 21.10.2026) |
 | **PS1-Look** | Hauptschalter an/aus · Interne Auflösung · Vertex-Wackeln an/aus · Dithering an/aus |
 | **Ton** | Gesamt · Musik · Effekte · Stimmen |
 | **Steuerung** | Mausempfindlichkeit · Y-Achse invertieren · Ducken halten/umschalten · später Tastenbelegung |
@@ -5138,7 +5165,7 @@ Müdigkeit bis auf das Wecken, Lichtschalter, Aufträge der Gäste, Erfolge, Mas
    Freundschaft und klauen bei Knappheit (5.10)
 8. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
    Rest des Maskenballs (5.19) mit den Masken-Erfolgen (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
-9. Eier-Streich der Kinder (6.13) · Regen an den Scheiben, Gestalt im Blitz, Wind, Tiere, dichter werdender Nebel (7.8)
+9. Eier-Streich der Kinder (6.13) · Tiere als Klang (7.8)
 10. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
 11. Speicherregel schärfen: Autosave nur bei Fortschritt, neuen Bereichen und Aufwachen, „Unterbrechen und beenden“,
     Tagebuchsatz (8.10)

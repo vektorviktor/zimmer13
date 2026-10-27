@@ -20,7 +20,7 @@ const T_UI := 9.8
 const T_PAUSE := 0.15        ## erst nach ein paar Bildern pausieren (Schattenbudget, Lampen sind dann gesetzt)
 const DOWN_PITCH := -1.05    ## Blick ins Becken
 ## Blick in den Spiegel, leicht nach unten: Das eigene Spiegelbild liegt immer auf Augenhöhe – so bleiben Scheitel
-## und Spiegelunterkante bei jeder Größe (1,45–2,00 m) und jedem Sichtfeld (60–95°) im Bild
+## und Spiegelunterkante bei jeder Größe (1,45–2,00 m) und jedem Sichtfeld (60–120°) im Bild
 const MIRROR_PITCH := -0.17
 const MIRROR_EYE := 0.95     ## so weit steht das Auge vor dem Spiegel
 const SEARCH := 12.0         ## Waschbecken höchstens so weit vom Startpunkt

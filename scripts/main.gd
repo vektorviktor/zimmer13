@@ -204,6 +204,8 @@ extends Node3D
 ##   --kill=id,leiche|weg[,blut][,hin]   sofort tot, ohne Monster: liegt da bzw. ist verschwunden (Kratzer, Schuh) · blut:
 ##                               Lache und Wandspritzer (ohneblut: auch beim Kürbismann keins) · hin: 1,3 m vor dir
 ##                               Statt der ID geht überall auch der Name (emil, EmilBecker, juergen …)
+##   alle statt Gast             bei --relation, --friend, --enemy, --drunk=n,alle, --wound, --kill (nur sofort): für jeden
+##                               lebenden Gast; kill/wound ohne Kinder (kinder: mit), hin wird ignoriert
 ##   --despawn[=monster|geist|kuerbis]   die Bedrohung (ohne Angabe alle) ist sofort fort, auch Vorwarnung/Ankündigung
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
 ##   --lichtgang=id              Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3)
@@ -222,7 +224,9 @@ extends Node3D
 ##   --maske[=id]                verbotene Masken (5.19): vor den Haken in Zimmer 13 stehen · id (pumpkin|doll): diese
 ##                               Maske gleich aufgesetzt (Kürbismann: Spaßschwelle tief, Puppe: nächstes Urteil auf 13)
 ##   --drunk=n[,gast]            n Gläser getrunken (du, mit Gast: er) – ab 2 angetrunken, ab 3 betrunken (3.7)
-##   --weather=klar|regen|gewitter|blitz   Wetter sofort in voller Stärke (7.8) · blitz: gleich ein Blitz (mit Gewitter)
+##   --weather=klar|regen|gewitter|blitz|gestalt|blut   Wetter sofort in voller Stärke (7.8) · blitz: gleich ein Blitz
+##                       (mit Gewitter) · gestalt: dazu eine Gestalt zwischen den Bäumen, der Spieler wird hingedreht ·
+##                       blut: Blutregen (Seltenwetter)
 ##   --party[=gast]              sofort eine Feier im Partyraum starten (mit Gast: er lädt ein, ~3/4 kommen;
 ##                               sonst du – dann kommen nur Eingeladene und Freunde)
 ##   --cat=id[,tragen]           Hotelkatze vor den Spieler setzen (minka, socke, kasimir; im Katzenraum luna, fussel, tiger, mausi) – mit tragen gleich auf den Arm
@@ -762,6 +766,8 @@ func _parse_debug_args() -> void:
 ## (DebugConsole, dort ohne „--“ getippt). false = unbekannt. Neuer Befehl: hier ein Zweig, eine Zeile
 ## im Kopfkommentar, in DebugConsole.COMMANDS und in der README.
 func run_debug(arg: String) -> bool:
+	if _debug_all(arg):
+		return true
 	if arg.begins_with("--mode="):
 		# ein Modus des Leviathan (4.33) in s Sekunden – nach 1 s, damit Gäste und NavMesh stehen
 		var parts := arg.substr(7).split(",")
@@ -1120,23 +1126,17 @@ func run_debug(arg: String) -> bool:
 		var victim := _guest(kill_parts[0])
 		if victim == null:
 			return true
-		var cause := ""
-		for part in kill_parts.slice(1):
-			cause = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(part, cause)
-		var instant := "leiche" in kill_parts or "weg" in kill_parts
-		if cause != "" or instant:
+		var opt := _kill_options(kill_parts)
+		if opt["instant"]:
 			# Sofort tot – geist/kuerbis: vor dir erwürgt bzw. erschlagen, die Leiche bleibt liegen (Todesmeldung, „… – tot“) ·
 			# leiche/weg: wo er gerade ist (hin: vor dir), liegt da bzw. ist verschwunden · blut/ohneblut: Lache und Spritzer
-			var corpse := "leiche" in kill_parts or (cause != "" and not "weg" in kill_parts)
-			var blood := ("blut" in kill_parts or cause == "pumpkin") and not "ohneblut" in kill_parts
-			var here := cause != "" or "hin" in kill_parts
-			get_tree().create_timer(1.5 if here else 0.1).timeout.connect(func() -> void:
+			get_tree().create_timer(1.5 if opt["here"] else 0.1).timeout.connect(func() -> void:
 				if victim.dead:
 					return
-				if here:
+				if opt["here"]:
 					_put_in_front(victim, 1.3)
 					Game.player.head.rotation.x = deg_to_rad(-45.0)
-				_debug_kill(victim, cause if cause != "" else "ghost" if corpse else "monster", corpse, blood))
+				_debug_kill(victim, opt["cause"], opt["corpse"], opt["blood"]))
 			return true
 		get_tree().create_timer(3.0).timeout.connect(func() -> void:
 			if victim.dead:
@@ -1263,12 +1263,15 @@ func run_debug(arg: String) -> bool:
 				Game.weather.set_weather(Weather.Kind.RAIN, true)
 			"gewitter":
 				Game.weather.set_weather(Weather.Kind.STORM, true)
-			"blitz":
+			"blut":
+				Game.weather.set_weather(Weather.Kind.RAIN, true, true)
+			"blitz", "gestalt":
 				if Game.weather.kind != Weather.Kind.STORM:
 					Game.weather.set_weather(Weather.Kind.STORM, true)
-				get_tree().create_timer(3.0).timeout.connect(Game.weather.lightning)   # erst, wenn es regnet
+				var figure := arg == "--weather=gestalt"   # Gestalt im Blitz neben dem Baum, der am ehesten im Blick liegt
+				get_tree().create_timer(3.0).timeout.connect(Game.weather.lightning.bind(figure))   # erst, wenn es regnet
 			_:
-				Game.say("Wetter: klar, regen, gewitter oder blitz", 3.0)
+				Game.say("Wetter: klar, regen, gewitter, blitz, gestalt oder blut", 3.0)
 	elif arg == "--party" or arg.begins_with("--party="):
 		var host := arg.substr(8) if arg.begins_with("--party=") else "player"
 		if host == "player" or _guest(host):
@@ -1777,7 +1780,8 @@ func _debug_despawn(which: String) -> void:
 ## --kill: Gast sofort tot, ohne dass das Monster kommt. corpse: er liegt da (wie nach Lakengeist und Kürbismann), sonst
 ## ist er verschwunden wie vom Monster geholt (Kratzer, ein Schuh); blood: Blutlache und Spritzer an der nächsten Wand.
 ## cause ("ghost", "pumpkin", "monster") bestimmt nur, was das Hotel hört und meldet (Social.on_guest_died).
-func _debug_kill(victim: Guest, cause: String, corpse: bool, blood: bool) -> void:
+## quiet: ohne Meldung und Glocke (--kill=alle meldet einmal für alle).
+func _debug_kill(victim: Guest, cause: String, corpse: bool, blood: bool, quiet: bool = false) -> void:
 	var where := victim.global_position
 	if corpse:
 		Game.sound_at("grunt", where, Senses.GRUNT_RANGE, victim)
@@ -1787,7 +1791,53 @@ func _debug_kill(victim: Guest, cause: String, corpse: bool, blood: bool) -> voi
 	if blood and Game.traces:
 		Game.traces.add_blood(where, randf() * TAU)
 		Game.traces.add_wall_blood(where, "wall_splatter")
-	Game.social.on_guest_died(victim, cause)
+	Game.social.on_guest_died(victim, cause, quiet)
+
+
+## Werte von --kill=gast,… : cause ("ghost"/"pumpkin"/"" = Monster holt ihn), instant (sofort tot statt Monster),
+## corpse, blood, here (vor dich stellen).
+func _kill_options(parts: PackedStringArray) -> Dictionary:
+	var cause := ""
+	for part in parts.slice(1):
+		cause = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(part, cause)
+	var corpse := "leiche" in parts or (cause != "" and not "weg" in parts)
+	return {"cause": cause if cause != "" else "ghost" if corpse else "monster", "instant": cause != "" or "leiche" in parts
+		or "weg" in parts, "corpse": corpse, "blood": ("blut" in parts or cause == "pumpkin") and not "ohneblut" in parts,
+		"here": cause != "" or "hin" in parts}
+
+
+## „alle“ statt eines Gastes (Debug-Konsole und Startparameter): Der Befehl läuft für jeden lebenden Gast – bei kill und
+## wound ohne Kinder, außer mit „kinder“. Welche Befehle es können und wo der Gast steht: DebugConsole.GUEST_ALL.
+## false = kein „alle“ in diesem Befehl.
+func _debug_all(arg: String) -> bool:
+	var eq := arg.find("=")
+	var cmd := arg.substr(2, eq - 2) if eq > 0 else ""
+	if not DebugConsole.GUEST_ALL.has(cmd):
+		return false
+	var parts := arg.substr(eq + 1).split(",")
+	var slot: int = DebugConsole.GUEST_ALL[cmd]
+	if parts.size() <= slot or parts[slot] != "alle":
+		return false
+	var kids := "kinder" in parts or not cmd in ["kill", "wound"]
+	var targets := Game.social.living_guests().filter(func(g: Guest) -> bool: return kids or not g.is_child())
+	if cmd == "kill":
+		var opt := _kill_options(parts)
+		if not opt["instant"]:
+			Game.say("kill=alle nur mit leiche, weg, geist oder kuerbis – das Monster holt nicht alle auf einmal", 4.0)
+			return true
+		for g: Guest in targets:   # wo jeder gerade ist – „hin“ würde alle auf einen Fleck stellen
+			_debug_kill(g, opt["cause"], opt["corpse"], opt["blood"], true)
+		Game.say("%d Gäste tot" % targets.size(), 4.0, "dead")
+		get_tree().create_timer(Social.BELL_DELAY, false).timeout.connect(Game.play_sound.bind("bell"))
+		return true
+	for word in ["kinder", "hin"]:   # hin: alle vor dich – ergibt keinen Sinn
+		if word in parts:
+			parts.remove_at(parts.find(word))
+	for g: Guest in targets:
+		parts[slot] = g.id
+		run_debug("--%s=%s" % [cmd, ",".join(parts)])
+	Game.say("%s für %d Gäste" % [cmd, targets.size()], 3.0)
+	return true
 
 
 ## Gast für einen Debug-Befehl – unbekannte ID: Meldung und null.

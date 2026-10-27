@@ -22,6 +22,10 @@ uniform vec3 moon_color : source_color = vec3(0.85, 0.88, 0.95);
 uniform float moon_radius = 0.045;
 uniform float moon_energy = 1.6;
 uniform float halo_energy = 0.12;
+// Mondphase (Weather, Spielkonzept 7.8) als Winkel: 0 Vollmond, ±π Neumond, negativ zunehmend (rechts hell, wie auf
+// der Nordhalbkugel); die dunkle Seite schimmert schwach (Erdschein)
+uniform float moon_phase = 0.0;
+uniform float earthshine = 0.04;
 uniform vec3 cloud_dark : source_color = vec3(0.012, 0.013, 0.018);
 uniform vec3 cloud_lit : source_color = vec3(0.42, 0.45, 0.52);
 // Bedeckung: Rauschwert, ab dem Wolke ist (kleiner = mehr Wolken)
@@ -158,7 +162,13 @@ void sky() {
 		float disc = smooth_look ? smoothstep(1.0, 0.94, r) : step(r, 1.0);
 		float maria = smooth_look ? 1.0 - 0.32 * smoothstep(0.45, 0.7, fbm(local * 2.2 + vec2(4.0, 1.0), 4)) : 1.0;
 		float limb = smooth_look ? mix(0.8, 1.0, sqrt(max(0.0, 1.0 - r * r))) : 1.0;
-		float halo = exp(-ang / (moon_radius * 3.0)) * 0.8 + exp(-ang / (moon_radius * 10.0)) * 0.2;
+		float lit_part = 0.5 + 0.5 * cos(moon_phase);   // beleuchteter Anteil der Scheibe
+		float halo = (exp(-ang / (moon_radius * 3.0)) * 0.8 + exp(-ang / (moon_radius * 10.0)) * 0.2) * lit_part;
+		// Phase: Schattengrenze auf der Kugel, die Sonne seitlich hinter (zunehmend: rechts) dem Mond
+		vec3 sun = vec3(-sin(moon_phase), 0.0, cos(moon_phase));
+		float facing = dot(vec3(local, sqrt(max(0.0, 1.0 - r * r))), sun);
+		float sunlit = smooth_look ? smoothstep(-0.05, 0.07, facing) : step(0.0, facing);
+		float phase_light = mix(earthshine, 1.0, sunlit);
 
 		// Wolken auf einer flachen Ebene über dem Hof; zum Horizont hin dünner und dunkler
 		float horizon_fade = smoothstep(0.02, 0.25, up);
@@ -172,14 +182,14 @@ void sky() {
 		vec2 to_moon = normalize(moon_plane - plane + vec2(1e-4)) * 0.06;
 		float d_moon = clouds(plane + to_moon, smooth_look) * horizon_fade;
 		float edge = clamp((d - d_moon) * 3.0 + (1.0 - d) * 0.6, 0.0, 1.0);
-		float near_moon = exp(-ang / (moon_radius * 7.0));
+		float near_moon = exp(-ang / (moon_radius * 7.0)) * lit_part;
 		float lit = clamp(edge * (0.12 + near_moon * 1.4), 0.0, 1.0);
 		vec3 cloud = mix(cloud_dark, cloud_lit, lit) + moon_color * near_moon * 0.08;
 
 		// Hinter den Wolken: Sterne und Mond, durch dünne Wolke schimmert der Mond als Fleck
 		float star = stars(dir, smooth_look) * star_energy * smoothstep(0.05, 0.3, up);
-		vec3 behind = col + vec3(star) + moon_color * (disc * maria * limb * moon_energy + halo * halo_energy);
-		col = mix(behind, cloud, d) + moon_color * disc * moon_energy * 0.25 * d * (1.0 - d);
+		vec3 behind = col + vec3(star) * (1.0 - disc) + moon_color * (disc * maria * limb * phase_light * moon_energy + halo * halo_energy);
+		col = mix(behind, cloud, d) + moon_color * disc * moon_energy * 0.25 * d * (1.0 - d) * lit_part;
 		col += flash * mix(vec3(0.25, 0.27, 0.35), vec3(0.75, 0.78, 0.9), d) * smoothstep(-0.02, 0.2, up);
 		// Wald und Hügel davor (auch unter dem Horizont, über den Rand des Grundstücks hinaus)
 		float line = treeline(dir, smooth_look);

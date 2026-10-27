@@ -62,3 +62,23 @@ reflections={
 "type": "float",
 "value": 1.0
 }
+rain_wet={
+"type": "float",
+"value": 0.0
+}
+weather_time={
+"type": "float",
+"value": 0.0
+}
+wind_strength={
+"type": "float",
+"value": 0.2
+}
+rain_blood={
+"type": "float",
+"value": 0.0
+}
+pane_stain={
+"type": "float",
+"value": 0.0
+}

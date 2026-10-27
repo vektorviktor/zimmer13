@@ -113,7 +113,7 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     weiter, ihre Nächte ohne Schlaf werden zu je 24 Stunden wach
 ## 57: Kerzen brennen ab (Spielkonzept 5.12): übriges Wachs im Zusatz („w=…“ bei Kerze, Kürbis, Totenkopf) und bei den
 ##     festen Kerzen („wax“), Kerzenvorrat mit „refill_day“ – ältere Stände laden weiter, alle Kerzen dann neu
-const VERSION := 57
+const VERSION := 58
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -261,7 +261,7 @@ func can_save() -> bool:
 func _collect_omens() -> Dictionary:
 	var omens := {}
 	for entry in [["crows", Game.crows], ["mirrors", Game.mirror_omens], ["power", Game.power_cut],
-			["nightmare", Game.nightmare], ["extra_child", Game.extra_child]]:
+			["nightmare", Game.nightmare], ["extra_child", Game.extra_child], ["weather", Game.weather]]:
 		if entry[1]:
 			omens[entry[0]] = entry[1].save_state()
 	return omens
@@ -269,7 +269,7 @@ func _collect_omens() -> Dictionary:
 
 func _apply_omens(omens: Dictionary) -> void:
 	for entry in [["crows", Game.crows], ["mirrors", Game.mirror_omens], ["power", Game.power_cut],
-			["nightmare", Game.nightmare], ["extra_child", Game.extra_child]]:
+			["nightmare", Game.nightmare], ["extra_child", Game.extra_child], ["weather", Game.weather]]:
 		if entry[1]:
 			entry[1].load_state(omens.get(entry[0], {}))
 

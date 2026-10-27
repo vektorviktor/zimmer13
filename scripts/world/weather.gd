@@ -8,7 +8,17 @@ extends Node3D
 ## niemanden, übertönt aber kurz alles, das Monster hört schlechter (masking, MonsterDirector.on_noise).
 ## Um Mitternacht schlägt hinter der Waldkante eine Kirchturmglocke zwölfmal, tief und fern, drinnen leiser – kein
 ## Lärm. Danach beginnt die Geisterstunde (SheetGhost, Spielkonzept 4.18).
-## Nicht gespeichert: Nach dem Laden ist es klar.
+## Dazu (alles 7.8): Regen an den Scheiben (rain_wet, window_rain.gdshader – nass im Regen, trocknet danach langsam);
+## Wind (`wind`, Grundbrise, im Regen und Gewitter stärker, in Böen) – Gras, Blätter, fallendes Laub, Regen, Klang;
+## Nebel draußen (ground_fog.gdshader), mit jedem Tag dichter, der Himmel wolkiger; der Mond nimmt ab und zu – Neumond
+## Mitte Oktober, Vollmond an Halloween – und so hell scheint er (auch für die Sicht des Monsters, moonlight()).
+## Bei manchem Blitz steht kurz eine Gestalt zwischen den Bäumen (LightningFigure).
+## Blutregen (Seltenwetter): einmal je Spiel fällt ein Schauer rot – ab dem 20. Oktober, nur wenn der Spieler wach ist
+## und ihn sieht (draußen oder am Außenfenster), spätestens ab dem 28. sicher beim nächsten solchen Schauer. Gäste in der
+## Nähe fürchten sich, der mutigste erklärt ihn nüchtern (Saharastaub) – Omen oder Natur bleibt offen. Danach bleiben
+## rote Flecken auf den Scheiben und rötliche Pfützen draußen, bis normaler Regen sie abwäscht; kein Blut für die Spuren.
+## Nicht gespeichert: Nach dem Laden ist es klar; Mond und Nebel folgen dem Kalender. Gespeichert (bei den Omen): ob es
+## schon Blut geregnet hat und wie viel davon noch zu sehen ist.
 
 enum Kind { CLEAR, RAIN, STORM }
 
@@ -46,6 +56,7 @@ const MASK := 0.6
 ## Blitz: Mondlicht so viel heller, so schnell klingt eine Zuckung ab (je s); Bedeckung bei Regen (Shader: kleiner = mehr Wolken)
 const FLASH_ENERGY := 6.0
 const FLASH_DECAY := 6.0
+const FLASH_FOG := 0.5            ## so viel davon kommt im Nebel an
 const CLOUDS_RAIN := 0.12
 ## Kirchturmglocke um Mitternacht (Spielkonzept 7.8): so viele Schläge, so weit auseinander (s), Pegel, drinnen so viel
 ## davon, Tonhöhe (tiefer als die Totenglocke – eine große Glocke weit weg)
@@ -59,6 +70,54 @@ const BELL_PITCH := 0.6
 const HOWL_VOLUME := 0.55
 ## Abstand zwischen zwei Heulern in Sekunden Spielzeit, zufällig (Tuning)
 const HOWL_EVERY := Vector2(240.0, 720.0)
+## Regen an den Scheiben: so schnell werden sie bei vollem Regen nass (je s), so lange trocknen sie danach (s)
+const WET_RATE := 1.0 / 30.0
+const DRY_TIME := 300.0
+## Wind (0 … 1): Grundbrise am 1. Oktober … an Halloween, so viel mehr bei Regen und bei Gewitter, Böen bis so viel
+## dazu, eine Böe dauert so lange (s); Klang draußen und drinnen
+const WIND_CALM := Vector2(0.15, 0.3)
+const WIND_RAIN := 0.3
+const WIND_STORM := 0.55
+const GUST := 0.3
+const GUST_TIME := Vector2(2.0, 7.0)
+const WIND_OUT := 0.4
+const WIND_IN := 0.18
+## Fallendes Laub im Wind: so viel schneller (× 1 + wind × das), so schräg
+const LEAF_RUSH := 1.5
+const LEAF_SLANT := 1.4
+## Nebel draußen: Dichte am 1. Oktober … an Halloween, Höhe der Schicht (m, halbiert sie etwa), Kasten bis so hoch (m)
+const FOG_DENSITY := Vector2(0.006, 0.16)
+const FOG_HEIGHT := Vector2(1.2, 3.0)
+const FOG_TOP := 14.0
+## Wolken: Bedeckung bei klarem Himmel am 1. Oktober … an Halloween (Shader: kleiner = mehr Wolken)
+const CLOUDS_LATE := 0.3
+## Mond: Umlauf (Tage), Vollmond um Mitternacht nach Halloween (Calendar.day_float), Mondlicht bei Neumond (Anteil)
+const SYNODIC := 29.53
+const FULL_MOON := 32.0
+const MOON_DARK := 0.15
+## Blutregen: frühestens ab diesem Tag, ab diesem sicher; Chance je passendem Schauer dazwischen (steigt bis 1); der
+## Spieler sieht ihn draußen oder bis so weit (m) von einem Außenfenster mit offenem Vorhang
+const BLOOD_FROM := 20
+const BLOOD_SURE := 28
+const BLOOD_CHANCE := 0.25
+const BLOOD_WINDOW := 8.0
+## so lange wäscht normaler Regen voller Stärke die roten Reste ab (s); Farbe der Tropfen (PS1-Klötzchen, Striche)
+const BLOOD_WASH := 90.0
+const BLOOD_DROP := Color(0.45, 0.05, 0.04, 0.3)
+const BLOOD_STREAK := Color(0.62, 0.1, 0.08, 0.38)
+## Gäste: so nah (m) am Spieler reagieren sie, so viel Angst (× 1,2 − Mut), so viele sagen etwas (dazu der Mutigste)
+const BLOOD_GUESTS := 25.0
+const BLOOD_FEAR := 25.0
+const BLOOD_VOICES := 2
+const BLOOD_LINES: Array[String] = ["Der Regen … der ist ja rot!", "Das ist Blut. Das ist doch Blut!",
+	"Ein Zeichen. Ich hab's euch gesagt – ein Zeichen.", "Fasst das nicht an!"]
+const BLOOD_CHILD := "Es regnet Blut! Es regnet Blut!"
+const BLOOD_CALM := "Saharastaub. Der Wind trägt ihn bis zu uns herauf, das kommt alle paar Jahre vor."
+## Rötliche Pfützen: so viele, so groß (m), Farbe, fester Zufall für die Stellen
+const PUDDLES := 90
+const PUDDLE_SIZE := Vector2(0.7, 2.2)
+const PUDDLE_COLOR := Color(0.32, 0.05, 0.035)
+const PUDDLE_SEED := 2610
 
 var _howl_timer := 0.0           ## bis zum nächsten Heulen (4.25)
 var kind := Kind.CLEAR
@@ -84,6 +143,29 @@ var _bell: AudioStreamPlayer
 var _bell_left := 0               ## so viele Schläge stehen noch aus
 var _bell_timer := 0.0
 var _last_hour := -1.0
+var wet := 0.0                    ## 0 … 1: so nass sind die Scheiben
+var wind := 0.25                  ## 0 … 1: Windstärke gerade
+var _gust := 0.0
+var _gust_target := 0.0
+var _gust_timer := 0.0
+var _time := 0.0                  ## Spielzeit für die Shader (weather_time)
+var _leaf_timer := 0.0
+var _moon_light := 1.0            ## Mondphase × Bewölkung: so viel vom vollen Mondlicht kommt an
+var _fog: FogVolume
+var _fog_mat: ShaderMaterial
+var _figure: LightningFigure
+var _flickers := 0                ## Zuckungen des laufenden Blitzes bisher
+var _drops_on := false            ## Tropfen an den Scheiben gerade sichtbar
+var _stormy := false              ## der letzte Schauer war ein Gewitter (Wind auch beim Abklingen)
+var _fog_drift := Vector2.ZERO    ## so weit ist der Nebel getrieben (m)
+var _figure_seen := false         ## in diesem Gewitter stand schon eine Gestalt im Blitz
+var blood_done := false           ## es hat in diesem Spiel schon Blut geregnet
+var stain := 0.0                  ## 0 … 1: so viel Rot ist noch auf Scheiben und in Pfützen
+var _blood := false               ## der laufende (oder letzte) Schauer ist Blutregen
+var _blood_reacted := false
+var _blood_tinted := false        ## Regentropfen gerade rot gefärbt
+var _roof_img: Image              ## Dach-Höhenkarte (für die Pfützen)
+var _puddles: Array[Decal] = []
 
 
 func _ready() -> void:
@@ -94,6 +176,8 @@ func _ready() -> void:
 func skip_time(dt: float) -> void:
 	_timer = maxf(0.001, _timer - dt)
 	_howl_timer = fposmod(_howl_timer - dt, HOWL_EVERY.y)   # im Schlaf hört man ihn nicht
+	if kind == Kind.CLEAR:
+		wet = move_toward(wet, 0.0, dt / DRY_TIME)
 
 
 func setup(builder: LevelBuilder, moon: DirectionalLight3D, sky: ShaderMaterial) -> void:
@@ -107,6 +191,10 @@ func setup(builder: LevelBuilder, moon: DirectionalLight3D, sky: ShaderMaterial)
 	_howl_timer = randf_range(HOWL_EVERY.x, HOWL_EVERY.y)
 	_prepare_roofs()
 	_build_rain()
+	_build_fog()
+	_figure = LightningFigure.new()
+	_figure.builder = builder
+	add_child(_figure)
 	_bell = AudioStreamPlayer.new()
 	_bell.stream = load(BELL)
 	_bell.pitch_scale = BELL_PITCH
@@ -126,7 +214,7 @@ func _process(delta: float) -> void:
 	if _timer <= 0.0:
 		if kind == Kind.CLEAR:
 			var storm := randf() < lerpf(STORM_CHANCE.x, STORM_CHANCE.y, _progress())
-			set_weather(Kind.STORM if storm else Kind.RAIN)
+			set_weather(Kind.STORM if storm else Kind.RAIN, false, _blood_due())
 		else:
 			set_weather(Kind.CLEAR)
 	intensity = move_toward(intensity, 0.0 if kind == Kind.CLEAR else 1.0, delta / FADE)
@@ -134,9 +222,16 @@ func _process(delta: float) -> void:
 		_lightning -= delta
 		if _lightning <= 0.0:
 			lightning()
+	_time += delta
+	RenderingServer.global_shader_parameter_set("weather_time", fposmod(_time, 3600.0))
+	_update_moon()
 	_update_flash(delta)
 	_mask = maxf(0.0, _mask - delta)
 	_update_rain()
+	_update_wet(delta)
+	_update_wind(delta)
+	_update_fog()
+	_update_blood(delta)
 	_update_bell(delta)
 
 
@@ -182,9 +277,20 @@ func howl(delay: float) -> void:
 			print("[Wetter] Ein Hund heult in der Ferne"))
 
 
-## Debug (--weather=…) und Zeitplan: Wetter wechseln. instant: sofort volle Stärke.
-func set_weather(new_kind: Kind, instant: bool = false) -> void:
+## Debug (--weather=…) und Zeitplan: Wetter wechseln. instant: sofort volle Stärke. blood: der Schauer ist Blutregen.
+func set_weather(new_kind: Kind, instant: bool = false, blood: bool = false) -> void:
 	kind = new_kind
+	if kind != Kind.CLEAR:
+		_stormy = kind == Kind.STORM
+		_figure_seen = false
+		_blood = blood
+		_blood_reacted = false
+		if blood:
+			blood_done = true
+			if instant:
+				stain = 1.0
+			if Game.tracing:
+				print("[Wetter] Blutregen")
 	if kind == Kind.CLEAR:
 		_timer = _gap(CLEAR_EARLY, CLEAR_LATE)
 	else:
@@ -192,15 +298,22 @@ func set_weather(new_kind: Kind, instant: bool = false) -> void:
 		_lightning = randf_range(3.0, 8.0) if instant else randf_range(LIGHTNING_GAP.x, LIGHTNING_GAP.y)
 	if instant:
 		intensity = 0.0 if kind == Kind.CLEAR else 1.0
+		wet = intensity   # die Scheiben gleich mit
 	if Game.tracing:
 		print("[Wetter] %s für %d s" % [["klar", "Regen", "Gewitter"][kind], int(_timer)])
 
 
-## Ein Blitz: zwei, drei Zuckungen, dann (je nach Entfernung) der Donner.
-func lightning() -> void:
+## Ein Blitz: zwei, drei Zuckungen, dann (je nach Entfernung) der Donner. Manchmal steht im ersten Aufzucken eine
+## Gestalt zwischen den Bäumen (LightningFigure) – dann folgt die zweite Zuckung später, und sie ist fort.
+## figure: Gestalt sicher (Debug --weather=gestalt).
+func lightning(figure: bool = false) -> void:
 	_lightning = randf_range(LIGHTNING_GAP.x, LIGHTNING_GAP.y)
 	_flash_queue = [0.0, randf_range(0.08, 0.14)]
-	if randf() < 0.5:
+	_flickers = 0
+	if (figure or (not _figure_seen and randf() < LightningFigure.CHANCE)) and _figure.place(figure):
+		_figure_seen = true   # höchstens einmal je Gewitter
+		_flash_queue = [0.0, randf_range(LightningFigure.GONE.x, LightningFigure.GONE.y)]
+	elif randf() < 0.5:
 		_flash_queue.append(randf_range(0.25, 0.4))
 	var delay := randf_range(THUNDER_DELAY.x, THUNDER_DELAY.y)
 	var loud := clampf(1.3 - delay / THUNDER_DELAY.y, 0.4, 1.0)
@@ -228,19 +341,128 @@ func _update_flash(delta: float) -> void:
 		if _flash_queue[i] <= 0.0:
 			_flash_queue.remove_at(i)
 			_flash = randf_range(0.7, 1.0)
+			_flickers += 1
+			if _figure.placed:   # nur im ersten Aufzucken, beim zweiten ist sie fort
+				_figure.set_shown(_flickers == 1)
 			Game.shot_event("lightning", 4)   # im Hintergrundfenster hinkt das Bild nach
 			if _builder and _builder.attic_spook:   # Spuk im Dachboden: dreht den Spieler im Blitzbild
 				_builder.attic_spook.on_flash()
 			if Game.power_cut:   # Stromausfall im Gewitter (Spielkonzept 4.28)
 				Game.power_cut.on_flash()
 	_flash = maxf(0.0, _flash - delta * FLASH_DECAY)
+	if _figure.placed and _flash_queue.is_empty() and _flash < 0.05:
+		_figure.set_shown(false)
 	var overcast := intensity * (1.0 if kind != Kind.CLEAR else 0.6)
+	_moon_light = _moon_phase_light() * (1.0 - 0.6 * overcast)
 	if _moon:
-		_moon.light_energy = _moon_energy * (1.0 - 0.6 * overcast) + _flash * FLASH_ENERGY
+		_moon.light_energy = _moon_energy * _moon_light + _flash * FLASH_ENERGY
+		# im Nebel nur schwach aufleuchten – sonst wird er im Blitz eine weiße Wand
+		_moon.light_volumetric_fog_energy = (_moon_energy * _moon_light + _flash * FLASH_FOG) / _moon.light_energy
 		_moon.light_color = Color(0.55, 0.65, 1.0).lerp(Color(0.85, 0.9, 1.0), clampf(_flash, 0.0, 1.0))
 	if _sky:
 		_sky.set_shader_parameter("flash", _flash)
-		_sky.set_shader_parameter("cloud_cover", lerpf(_clouds, CLOUDS_RAIN, overcast))
+		var clear_sky := lerpf(_clouds, CLOUDS_LATE, _season())   # bis Halloween wolkiger
+		_sky.set_shader_parameter("cloud_cover", lerpf(clear_sky, CLOUDS_RAIN, overcast))
+
+
+## So viel vom vollen Mondlicht kommt gerade an (Phase und Wolken, ohne Blitz) – auch für das Mondlicht durch die
+## Fenster, das das Monster sehen lässt (MonsterDirector.light_at).
+func moonlight() -> float:
+	return _moon_light
+
+
+# --- Mond, Wind, Nebel, nasse Scheiben (7.8) -----------------------------------------------------
+
+## Mondalter als Winkel: 0 Vollmond, ±PI Neumond, negativ zunehmend.
+func moon_phase() -> float:
+	var day := Calendar.day_float(Game.director.elapsed) if Game.director else float(Calendar.FIRST_DAY)
+	return wrapf(TAU * (day - FULL_MOON) / SYNODIC, -PI, PI)
+
+
+func _moon_phase_light() -> float:
+	return lerpf(MOON_DARK, 1.0, 0.5 + 0.5 * cos(moon_phase()))
+
+
+func _update_moon() -> void:
+	if _sky:
+		_sky.set_shader_parameter("moon_phase", moon_phase())
+
+
+## 0 am 1. Oktober … 1 an Halloween, gleitend über den Tag.
+func _season() -> float:
+	var day := Calendar.day_float(Game.director.elapsed) if Game.director else float(Calendar.FIRST_DAY)
+	return clampf((day - Calendar.FIRST_DAY) / float(Calendar.HALLOWEEN - Calendar.FIRST_DAY), 0.0, 1.0)
+
+
+## Sind auf den Scheiben gerade Tropfen oder rote Flecken zu sehen?
+func panes_wet() -> bool:
+	return wet > 0.002 or stain > 0.01
+
+
+func _update_wet(delta: float) -> void:
+	if intensity > 0.05:
+		wet = move_toward(wet, intensity, delta * WET_RATE)
+	else:
+		wet = move_toward(wet, 0.0, delta / DRY_TIME)
+	RenderingServer.global_shader_parameter_set("rain_wet", wet)
+	if panes_wet() != _drops_on:
+		_drops_on = panes_wet()
+		get_tree().set_group("rain_panes", "visible", _drops_on)
+
+
+func _update_wind(delta: float) -> void:
+	_gust_timer -= delta
+	if _gust_timer <= 0.0:
+		_gust_timer = randf_range(GUST_TIME.x, GUST_TIME.y)
+		_gust_target = randf() * randf()   # meist schwach, selten heftig
+	_gust = move_toward(_gust, _gust_target, delta / 1.5)
+	var weather_wind := WIND_STORM if _stormy else WIND_RAIN
+	wind = clampf(lerpf(WIND_CALM.x, WIND_CALM.y, _season()) + intensity * weather_wind + _gust * GUST * (0.5 + intensity), 0.0, 1.0)
+	_fog_drift += Vector2(FALL.x, FALL.z).normalized() * (0.15 + 0.8 * wind) * delta
+	RenderingServer.global_shader_parameter_set("wind_strength", wind)
+	if _rain_mat:   # Regen fällt im Wind schräger
+		var slant := Vector2(FALL.x, FALL.z) * (0.4 + 1.2 * wind)
+		_rain_mat.set_shader_parameter("wind", slant)
+		if not _rain_psx and _rain.draw_pass_1:
+			(_rain.draw_pass_1.surface_get_material(0) as ShaderMaterial).set_shader_parameter("fall", Vector3(slant.x, FALL.y, slant.y))
+	var p := Game.player
+	if Game.audio:
+		var outside := p != null and _builder.is_outdoor(p.global_position)
+		Game.audio.wind = smoothstep(0.1, 1.0, wind) * (WIND_OUT if outside else WIND_IN)
+		Game.audio.wind_gust = clampf(_gust + 0.4 * intensity, 0.0, 1.0)
+	_leaf_timer -= delta
+	if _leaf_timer <= 0.0:
+		_leaf_timer = 0.25
+		var slant := Vector3(FALL.x, 0.0, FALL.z).normalized() * wind * LEAF_SLANT
+		for leaves in _builder.leaf_emitters:
+			leaves.speed_scale = 1.0 + wind * LEAF_RUSH
+			leaves.direction = (Vector3.DOWN + slant).normalized()
+
+
+func _build_fog() -> void:
+	_fog_mat = ShaderMaterial.new()
+	_fog_mat.shader = load("res://shaders/ground_fog.gdshader")
+	_fog_mat.set_shader_parameter("cell", CELL)
+	_fog_mat.set_shader_parameter("map_origin", _origin)
+	_fog = FogVolume.new()
+	_fog.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX
+	var bottom := LevelBuilder.CELLAR_Y - 1.0
+	var size := Vector2(_roofs.get_width(), _roofs.get_height()) * CELL
+	_fog.size = Vector3(size.x, FOG_TOP - bottom, size.y)
+	_fog.position = Vector3(_origin.x + size.x / 2.0, (FOG_TOP + bottom) / 2.0, _origin.y + size.y / 2.0)
+	_fog.material = _fog_mat
+	_fog.visible = false   # erst mit fertiger Dachkarte
+	add_child(_fog)
+
+
+func _update_fog() -> void:
+	if _roofs != null:
+		return
+	_fog.visible = true
+	var s := _season()
+	_fog_mat.set_shader_parameter("density", lerpf(FOG_DENSITY.x, FOG_DENSITY.y, s * s))
+	_fog_mat.set_shader_parameter("height", lerpf(FOG_HEIGHT.x, FOG_HEIGHT.y, s))
+	_fog_mat.set_shader_parameter("drift", Vector2(fposmod(_fog_drift.x, 1000.0), fposmod(_fog_drift.y, 1000.0)))
 
 
 func _gap(early: Vector2, late: Vector2) -> float:
@@ -250,6 +472,161 @@ func _gap(early: Vector2, late: Vector2) -> float:
 
 func _progress() -> float:
 	return clampf(float(Calendar.today() - Calendar.FIRST_DAY) / float(Calendar.HALLOWEEN - Calendar.FIRST_DAY), 0.0, 1.0)
+
+
+# --- Blutregen (Seltenwetter, 7.8) ---------------------------------------------------------------
+
+func save_state() -> Dictionary:
+	return {"blood_done": blood_done, "stain": snappedf(stain, 0.001)}
+
+
+func load_state(data: Dictionary) -> void:
+	blood_done = bool(data.get("blood_done", false))
+	stain = float(data.get("stain", 0.0))
+
+
+## Soll der Schauer, der gerade beginnt, Blutregen sein? Einmal je Spiel, ab BLOOD_FROM mit steigender Chance, ab
+## BLOOD_SURE sicher – aber nur, wenn der Spieler wach ist und ihn sieht.
+func _blood_due() -> bool:
+	var day := Calendar.today()
+	if blood_done or day < BLOOD_FROM or not _player_sees_rain():
+		return false
+	return day >= BLOOD_SURE or randf() < lerpf(BLOOD_CHANCE, 1.0, float(day - BLOOD_FROM) / float(BLOOD_SURE - BLOOD_FROM))
+
+
+## Wach und draußen – oder nah an einem Außenfenster mit offenem Vorhang.
+func _player_sees_rain() -> bool:
+	var p := Game.player
+	if p == null or p.dead or p.sleeping:
+		return false
+	if _builder.is_outdoor(p.global_position):
+		return true
+	for node in get_tree().get_nodes_in_group("windows"):
+		var win := node as HotelWindow
+		if win.lets_moonlight() and not win.frosted and win.global_position.distance_to(p.global_position) < BLOOD_WINDOW:
+			return true
+	return false
+
+
+func _update_blood(delta: float) -> void:
+	if _blood:
+		stain = maxf(stain, wet)
+	elif kind != Kind.CLEAR and intensity > 0.05:
+		stain = move_toward(stain, 0.0, delta * intensity / BLOOD_WASH)   # normaler Regen wäscht es ab
+	RenderingServer.global_shader_parameter_set("rain_blood", 1.0 if _blood else 0.0)
+	RenderingServer.global_shader_parameter_set("pane_stain", stain)
+	if _blood != _blood_tinted:
+		_tint_rain(_blood)
+	if _blood and not _blood_reacted and intensity > 0.4:
+		_blood_reacted = true
+		_blood_reactions()
+	_update_puddles()
+
+
+## Regentropfen rot (Blutregen) oder wie sonst.
+func _tint_rain(blood: bool) -> void:
+	_blood_tinted = blood
+	var mat := _rain.draw_pass_1.surface_get_material(0) if _rain.draw_pass_1 else null
+	if mat is StandardMaterial3D:
+		(mat as StandardMaterial3D).albedo_color = BLOOD_DROP if blood else DROP_COLOR
+	elif mat is ShaderMaterial:
+		(mat as ShaderMaterial).set_shader_parameter("color", BLOOD_STREAK if blood else STREAK_COLOR)
+
+
+## Der Spieler merkt es, Gäste in der Nähe fürchten sich, zwei sagen etwas, zuletzt erklärt der Mutigste.
+func _blood_reactions() -> void:
+	Game.say("Der Regen … er ist rot.", 4.0)
+	var p := Game.player
+	var near: Array = []
+	for g: Guest in Game.social.guests:
+		if not g.dead and not g.is_asleep() and g.global_position.distance_to(p.global_position) < BLOOD_GUESTS:
+			near.append(g)
+	near.sort_custom(func(a: Guest, b: Guest) -> bool:
+		return a.global_position.distance_squared_to(p.global_position) < b.global_position.distance_squared_to(p.global_position))
+	var calm: Guest = null
+	for g: Guest in near:
+		var brave := float(g.profile["brave"])
+		g.fear = minf(100.0, g.fear + BLOOD_FEAR * (1.2 - brave))
+		if not g.is_child() and (calm == null or brave > float(calm.profile["brave"])):
+			calm = g
+	var lines := BLOOD_LINES.duplicate()
+	lines.shuffle()
+	var delay := 2.5
+	var voices := 0
+	for g: Guest in near:
+		if g == calm or voices >= BLOOD_VOICES:
+			continue
+		var line: String = BLOOD_CHILD if g.is_child() else lines[voices]
+		get_tree().create_timer(delay, false).timeout.connect(func() -> void:
+			if is_instance_valid(g) and not g.dead:
+				g.say(line))
+		delay += 3.0
+		voices += 1
+	if calm:
+		get_tree().create_timer(delay + 1.0, false).timeout.connect(func() -> void:
+			if is_instance_valid(calm) and not calm.dead:
+				calm.say(BLOOD_CALM))
+	if Game.tracing:
+		print("[Wetter] Blutregen: %d Gäste in der Nähe, erklärt: %s" % [near.size(), calm.display_name if calm else "-"])
+
+
+## Rötliche Pfützen draußen (Decals auf ebenem Boden unter freiem Himmel, feste Stellen), so kräftig wie stain.
+func _update_puddles() -> void:
+	if stain < 0.01:
+		if not _puddles.is_empty() and _puddles[0].visible:
+			for d in _puddles:
+				d.visible = false
+		return
+	if _puddles.is_empty():
+		if _roof_img == null:
+			return
+		_build_puddles()
+	for d in _puddles:
+		d.visible = true
+		d.modulate = Color(PUDDLE_COLOR, stain)
+
+
+func _build_puddles() -> void:
+	var tex := ImageTexture.create_from_image(_puddle_image())
+	var rng := RandomNumberGenerator.new()
+	rng.seed = PUDDLE_SEED
+	var size := Vector2i(_roof_img.get_width(), _roof_img.get_height())
+	for i in PUDDLES * 60:
+		if _puddles.size() >= PUDDLES:
+			break
+		var cell := Vector2i(rng.randi_range(0, size.x - 1), rng.randi_range(0, size.y - 1))
+		var y := _roof_img.get_pixel(cell.x, cell.y).r
+		var flat := _origin + (Vector2(cell) + Vector2.ONE * 0.5) * CELL
+		var pos := Vector3(flat.x, y, flat.y)
+		if absf(y) > 0.3 or not _builder.is_outdoor(pos + Vector3.UP * 0.3):
+			continue
+		var d := Decal.new()
+		var s := rng.randf_range(PUDDLE_SIZE.x, PUDDLE_SIZE.y)
+		d.size = Vector3(s, 0.6, s * rng.randf_range(0.5, 0.9))
+		d.position = pos
+		d.rotation.y = rng.randf() * TAU
+		d.texture_albedo = tex
+		d.modulate = Color(PUDDLE_COLOR, 0.0)
+		d.upper_fade = 0.2
+		d.lower_fade = 0.2
+		add_child(d)
+		_puddles.append(d)
+
+
+## Weicher, unregelmäßiger Fleck (weiß, Deckkraft zum Rand hin weg) – die Farbe gibt modulate.
+func _puddle_image() -> Image:
+	var n := 64
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	var noise := FastNoiseLite.new()
+	noise.seed = PUDDLE_SEED
+	noise.frequency = 0.08
+	for y in n:
+		for x in n:
+			var v := (Vector2(x, y) + Vector2.ONE * 0.5) / n * 2.0 - Vector2.ONE
+			var edge := 0.75 + 0.25 * noise.get_noise_2d(x, y)
+			var a := clampf((edge - v.length()) / 0.25, 0.0, 1.0)
+			img.set_pixel(x, y, Color(1, 1, 1, a * (0.75 + 0.25 * noise.get_noise_2d(x * 3.0, y * 3.0))))
+	return img
 
 
 # --- Regen ----------------------------------------------------------------------------------
@@ -319,6 +696,8 @@ func _set_drops(psx: bool) -> void:
 		quad.material = mat
 		_rain.amount = DROPS_FINE
 		_rain.draw_pass_1 = quad
+	if _blood_tinted:
+		_tint_rain(true)
 
 
 ## Dach-Höhenkarte über dem ganzen Plan (+ Rand): je Zelle die Höhe der obersten Fläche (Strahl von oben, Ebenen 1 und
@@ -356,7 +735,10 @@ func _build_roof_rows() -> void:
 			_roofs.set_pixel(x, y, Color((hit["position"] as Vector3).y if not hit.is_empty() else -2.0, 0, 0))
 	_rows_done = last
 	if _rows_done >= _roofs.get_height():
-		_rain_mat.set_shader_parameter("roof_height", ImageTexture.create_from_image(_roofs))
+		_roof_img = _roofs
+		var tex := ImageTexture.create_from_image(_roofs)
+		_rain_mat.set_shader_parameter("roof_height", tex)
 		_rain_mat.set_shader_parameter("map_origin", _origin)
+		_fog_mat.set_shader_parameter("roof_height", tex)   # Nebel nur unter freiem Himmel
 		_roofs = null   # die Textur hat jetzt die Daten
 		_rows_done = 1 << 30

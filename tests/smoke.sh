@@ -114,6 +114,7 @@ done <<'LIST'
 1500|monster,gaeste,tod|--kill=mila --trace
 900|gaeste,tod,ui|--console=kill=Emil,leiche,blut,hin;guests --trace
 900|gaeste,tod|--kill=emilhartung,weg,blut --trace
+900|gaeste,tod,friedhof|--console=relation=alle,90;drunk=2,alle;kill=alle,leiche --trace
 1200|monster,kuerbismann,despawn|--warn --pumpkin=ankündigung --console=despawn --trace
 900|lakengeist,despawn|--ghost=3 --console=despawn --trace
 3000|kuerbismann|--pumpkin=jagd --trace
@@ -209,6 +210,8 @@ done <<'LIST'
 400|spieler,spuren|--flashlight=uv
 600|deko,licht|--deco=lichter,g --pos=55,0.1,-7.9,180,14
 600|welt,wetter|--weather=blitz
+600|wetter|--day=31 --uhr=23 --pos=45,0.1,-37,180 --weather=gestalt --trace
+600|wetter|--day=25 --pos=45,0.1,-37,180 --weather=blut --savetest --trace
 400|welt|--pool=slosh
 400|spuren,monster|--wallblood
 1200|licht,gaeste,streiche|--bulb-thief=bruno

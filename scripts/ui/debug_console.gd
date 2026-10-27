@@ -43,7 +43,7 @@ const COMMANDS := {
 	"notizbuch": ["", "Notizbuch mit Beispielen (Aufgaben, Notizen) und Einträge im Tagebuch (3.10)"],
 	"gesehen": ["", "alle drei Bedrohungen gelten als gesehen – Lesezeichen „Gesehen“ im Notizbuch (3.10)"],
 	"tot": ["[monster|geist|kuerbis]", "nach 1 s gestorben: Sterbebildschirm mit Porträt (8.7)"],
-	"kill": ["gast[,geist|kuerbis|leiche|weg][,blut|ohneblut][,hin]", "Gast nach 3 s vom Monster holen lassen · geist/kuerbis: vor dir, Leiche bleibt liegen · leiche/weg: sofort tot, wo er ist (hin: vor dir), liegt da bzw. verschwunden · blut: Lache und Wandspritzer"],
+	"kill": ["gast|alle[,geist|kuerbis|leiche|weg][,blut|ohneblut][,hin]", "Gast nach 3 s vom Monster holen lassen · geist/kuerbis: vor dir, Leiche bleibt liegen · leiche/weg: sofort tot, wo er ist (hin: vor dir), liegt da bzw. verschwunden · blut: Lache und Wandspritzer · alle: nur sofort, ohne Kinder (kinder: mit)"],
 	"despawn": ["[monster|geist|kuerbis]", "Bedrohung sofort fort (ohne Angabe alle) – auch Flackerwelle und Ankündigung des Kürbismanns"],
 	"knock": ["", "Klopfen an Zimmer 13"],
 	"trick": ["[kind]", "Süßes oder Saures: ein Kind klopft von Tür zu Tür"],
@@ -61,16 +61,16 @@ const COMMANDS := {
 	"wallblood": ["[smear]", "Blut an die nächste Wand"],
 	"costumes": ["[sheet|witch|pumpkin|cape]", "alle Gäste sofort verkleidet"],
 	"disguise": ["", "Bettlaken überwerfen"],
-	"drunk": ["n[,gast]", "n Gläser getrunken (du oder der Gast)"],
+	"drunk": ["n[,gast|alle]", "n Gläser getrunken (du, der Gast oder alle)"],
 	"weather": ["klar|regen|gewitter|blitz", "Wetter sofort (Regen, Gewitter, ein Blitz)"],
 	"party": ["[gast]", "Feier im Partyraum starten (mit Gast: er lädt ein)"],
 	"talk": ["gast", "Gespräch öffnen"],
 	"bitte": ["gast[,art[,annehmen|erfuellen]]", "Der Gast stellt seine Bitte (herz, kuerbis, kerze, kaffee, suess, mag)"],
 	"look": ["gast[,pose]", "Gast ansehen (carry, panic, dance, sit, walk)"],
-	"wound": ["gast,scratch|axe|choke[,hin]", "Gast hat einen Angriff überlebt (6.17) – hin: steht vor dir"],
-	"friend": ["gast", "mit dem Gast befreundet"],
-	"enemy": ["gast", "mit dem Gast verfeindet"],
-	"relation": ["gast,wert", "Beziehung setzen (ab ±80 mit Taten)"],
+	"wound": ["gast|alle,scratch|axe|choke[,hin]", "Gast hat einen Angriff überlebt (6.17) – hin: steht vor dir · alle: ohne Kinder (kinder: mit)"],
+	"friend": ["gast|alle", "mit dem Gast (allen) befreundet"],
+	"enemy": ["gast|alle", "mit dem Gast (allen) verfeindet"],
+	"relation": ["gast|alle,wert", "Beziehung setzen (ab ±80 mit Taten) – alle: bei jedem lebenden Gast"],
 	"follow": ["gast", "Gast kommt mit"],
 	"visit": ["gast", "Gast besucht Zimmer 13"],
 	"attack": ["gast", "Gast schlägt zu"],
@@ -122,6 +122,8 @@ const ALIASES := {"save": "diary", "load": "load-slot"}
 ## Befehle, deren erster Wert ein Gast ist (wird vorher geprüft)
 const GUEST_FIRST := ["shock", "kill", "talk", "look", "wound", "pals", "friend", "enemy", "relation", "follow", "visit",
 	"attack", "punch", "dice", "chess", "challenge", "bulb-thief", "bitte", "lichtgang"]
+## Befehle, die statt eines Gastes „alle“ können → Stelle des Gastes in den Werten (main._debug_all)
+const GUEST_ALL := {"relation": 0, "friend": 0, "enemy": 0, "kill": 0, "wound": 0, "drunk": 1}
 ## Befehle, bei denen ein Gast auch weiter hinten stehen kann
 const GUEST_ANY := ["rival", "pals", "drunk", "party", "decorate", "search", "darts", "cook", "tee", "kaffee", "call", "tp",
 	"trick", "pumpkin", "salz"]
@@ -278,7 +280,8 @@ func _run(text: String) -> bool:
 	if cmd in START_ONLY:
 		_print("[color=#d96]„%s“ wirkt nur als Startparameter (--%s).[/color]" % [cmd, cmd])
 		return false
-	if cmd in GUEST_FIRST and Game.social.find_guest(value.split(",")[0]) == null:
+	var all: bool = GUEST_ALL.has(cmd) and value.split(",").size() > GUEST_ALL[cmd] and value.split(",")[GUEST_ALL[cmd]] == "alle"
+	if cmd in GUEST_FIRST and not all and Game.social.find_guest(value.split(",")[0]) == null:
 		_print("[color=#d96]Keinen Gast „%s“ gefunden – Namen und IDs zeigt „guests“.[/color]" % value.split(",")[0])
 		return false
 	if cmd in GUEST_FIRST or cmd in GUEST_ANY:
@@ -336,7 +339,7 @@ func _complete() -> void:
 			if not guest.display_name.to_lower() in options:
 				options.append(guest.display_name.to_lower())
 		options.append_array(["blood", "corpse", "ghost1", "ghost2", "ghost3", "ghost4", "flur", "tür", "leiche", "weg", "blut",
-			"ohneblut", "hin", "monster", "geist", "kuerbis"])
+			"ohneblut", "hin", "monster", "geist", "kuerbis", "alle", "kinder"])
 	var hits := options.filter(func(o: String) -> bool: return o.begins_with(word))
 	if hits.is_empty():
 		return

@@ -1591,8 +1591,35 @@ Spielkonzept 2.5)
   – aus einer Dach-Höhenkarte (`_build_roof_rows`, auf die ersten Bilder verteilt); vorher regnet es nicht. Ohne
   PS1-Look Striche (`shaders/rain_streak.gdshader`, nie schmaler als `STREAK_PIXELS`, sonst blasser). **Gewitter:**
   Blitze über Mondlicht und Himmel `flash`, Donner, danach `masking()` – `MonsterDirector.on_noise` multipliziert die
-  Lautstärke damit. **Kirchturmglocke** um Mitternacht (`_update_bell`, kein Lärm). Nicht gespeichert. Debug
-  `--weather=klar|regen|gewitter|blitz`.
+  Lautstärke damit. **Kirchturmglocke** um Mitternacht (`_update_bell`, kein Lärm). Nicht gespeichert (außer Blutregen). Debug
+  `--weather=klar|regen|gewitter|blitz|gestalt|blut`.
+  Globale Shader-Werte (project.godot) aus Weather: `weather_time` (Spielzeit), `rain_wet`, `wind_strength`.
+  **Scheiben:** `wet` folgt `intensity` (`WET_RATE`, trocknet in `DRY_TIME`); jedes klare Außenfenster hat vor dem Glas
+  eine Fläche mit `shaders/window_rain.gdshader` (Gruppe `rain_panes`, nur sichtbar, solange nass; `render_priority` 1
+  wegen des Glases). Muster in Metern auf der Scheibe, je Fenster verschoben; Brechung über `hint_screen_texture`.
+  **Wind** (`wind`, 0 … 1): Grundbrise nach `_season()`, `WIND_RAIN`/`WIND_STORM` × `intensity`, Böen. Wirkt auf Gras
+  (`Grass`: Ausschlag und Takt), Baumblätter (`psx_leaves.gdshader`, Uniform `sway` nur an Bäumen), Laub
+  (`LevelBuilder.leaf_emitters`: `speed_scale`, `direction`), Regenschräge, Nebel und Klang (`SynthAudio.wind`,
+  `wind_gust`: Rauschen durch ein Bandfilter, dessen Mitte mit der Böe steigt). Werte mit Wirkung über die Zeit
+  (Nebeldrift, Grastakt) werden aufsummiert, nie als Zeit × Wind gerechnet – sonst springen sie.
+  **Nebel:** ein `FogVolume` über dem Plan mit `shaders/ground_fog.gdshader`; Dichte nur über der obersten Fläche der
+  Dach-Höhenkarte des Regens (dieselbe Textur) – drinnen keine. Dichte und Schichthöhe nach `_season()`. Nur sichtbar
+  bis `volumetric_fog_length`; im Blitz begrenzt `light_volumetric_fog_energy` des Monds (`FLASH_FOG`) das Aufleuchten.
+  **Mond:** `moon_phase()` aus `Calendar.day_float` (`SYNODIC`, `FULL_MOON` = Mitternacht nach Halloween) → Shader
+  `moon_phase` (Schattengrenze, Erdschein, Hof); Mondlicht × Phase × Bewölkung (`moonlight()`), auch in
+  `MonsterDirector.light_at` (Mondlicht durch Fenster). Bewölkung bei klarem Himmel steigt bis Halloween (`CLOUDS_LATE`).
+  **Gestalt im Blitz** (`world/lightning_figure.gd`, `LightningFigure`): `lightning()` ruft `place` (Chance, einmal je
+  Gewitter) – Stellen neben Bäumen und im Blickfeld, draußen, freie Sicht (Ebenen 1, Vorhang, Milchglas) und kein
+  Stamm in der Sichtlinie (`_behind_trunk`, der sichtbare Stamm ist dicker als die Kollision); dann zweite Zuckung
+  erst nach `GONE`. `_update_flash` zeigt sie in der ersten Zuckung, danach weg. Schock `SHOCK`. Gestalt aus
+  Grundkörpern. `--shot-on=figure`.
+  **Blutregen** (Seltenwetter): `set_weather(kind, instant, blood)`; der Zeitplan fragt `_blood_due()` (einmal je Spiel,
+  `BLOOD_FROM`…`BLOOD_SURE`, nur wenn `_player_sees_rain()`). `_blood` gilt bis zum nächsten Schauer: globale
+  `rain_blood` (Tropfen färben das Bild), Regenfarbe (`_tint_rain`, auch nach `_set_drops`). `stain` (0 … 1) steigt mit
+  `wet`, normaler Regen wäscht es ab (`BLOOD_WASH`): globale `pane_stain` (eingetrocknete Flecken im Scheiben-Shader,
+  die Scheiben bleiben dafür sichtbar, `panes_wet`) und rötliche Pfützen (`Decal`, `PUDDLES` feste Stellen aus der
+  Dach-Höhenkarte, nur ebener Boden draußen, erst bei Bedarf gebaut). Gäste: `_blood_reactions` (Angst, Sätze, der
+  Mutigste erklärt). Gespeichert bei den Omen (`SaveManager._collect_omens`, Schlüssel „weather“: `blood_done`, `stain`).
 - **Gras** (`world/grass.gd`, `shaders/grass.gdshader`): nur ohne PS1-Look (`visible = not Settings.psx_look`). Nach
   dem NavMesh erzeugt (nicht darin, keine Kollision, nicht gespeichert), fester Zufall (`SEED`), nur wo `is_lawn` und
   frei von Bäumen, Beeten, Gegenständen. `MultiMeshInstance3D` je Kachel mit `visibility_range_end`. Wind über
@@ -1829,7 +1856,10 @@ pausiert. `TeleportUI` = Debug-Menü (F6): Orte und – nur mit `DebugConsole.en
 nach `GROUPS`; Ziele aus dem `LevelBuilder`, `_onto_navmesh` rückt auf begehbaren Boden. `DebugConsole` ([^]/F1, nur
 Debug-Build oder `--debug`) = Startparameter im Spiel tippen: `submit()` → `main.run_debug("--name=wert")`. Gäste
 gehen als ID oder Name: Bei Befehlen in `GUEST_FIRST` (erster Wert) bzw. `GUEST_ANY` (jeder Wert) setzt `_guest_ids`
-vorher die IDs ein (`Social.find_guest`), `main.gd` sucht ebenfalls mit `find_guest`.
+vorher die IDs ein (`Social.find_guest`), `main.gd` sucht ebenfalls mit `find_guest`. „alle“ statt eines Gastes:
+`GUEST_ALL` (Befehl → Stelle des Gastes); `main._debug_all` fängt das vor allen anderen Zweigen ab und ruft `run_debug`
+je lebendem Gast auf, `kill` direkt über `_debug_kill(…, quiet)` – `Social.on_guest_died(…, quiet)` ohne Meldung und
+Glocke, dafür eine Sammelmeldung.
 
 ### Erfolge (`ui/achievements.gd`, `Achievements` als `Game.achievements`, Spielkonzept 8.11)
 - **Liste:** `Achievements.LIST` – ID (englisch, später für Steam) → Name, Text, Stufe (`Tier`: Bronze, Silber,

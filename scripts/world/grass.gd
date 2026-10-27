@@ -28,6 +28,9 @@ const PUSH_RANGE := 20.0
 const MAX_PUSHERS := 24                  ## = MAX_PUSHERS im Shader
 const ITEM_SCAN := 0.25                  ## Gegenstände am Boden so oft neu suchen (s)
 const SEED := 1031
+## Wind (Weather.wind, 7.8): Ausschlag der Halme bei Flaute … Sturm (m), Takt des Wiegens (× Spielzeit)
+const WIND_BEND := Vector2(0.02, 0.14)
+const WIND_PACE := Vector2(0.6, 1.8)
 ## Halmkarte: Kantenlänge in Pixeln, Anzahl Halme, Farben
 const BLADE_TEX := 128
 const BLADES := 18
@@ -91,8 +94,10 @@ func _process(delta: float) -> void:
 	visible = not Settings.psx_look
 	if not visible or Game.player == null:
 		return
-	_time += delta
+	var wind := Game.weather.wind if Game.weather else 0.25
+	_time += delta * lerpf(WIND_PACE.x, WIND_PACE.y, wind)
 	_mat.set_shader_parameter("wind_time", _time)
+	_mat.set_shader_parameter("wind_strength", lerpf(WIND_BEND.x, WIND_BEND.y, wind))
 	_scan -= delta
 	if _scan <= 0.0:
 		_scan = ITEM_SCAN

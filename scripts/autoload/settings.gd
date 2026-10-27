@@ -16,7 +16,7 @@ const PSX_SHADERS := ["res://shaders/psx_surface.gdshader", "res://shaders/psx_g
 var gamma := 1.0                 ## Helligkeit (0,6 … 1,8)
 var fullscreen := false          ## wird nicht gespeichert – das Spiel startet immer im Fenster
 var vsync := true
-var fov := 72.0
+var fov := 90.0                  ## Sichtfeld senkrecht in Grad (60 … 120)
 var reflections := true          ## Spiegelungen auf glatten Flächen (SSR: Lobbymarmor, Pool, Tapetenlack) – kostet Leistung
 # PS1-Look
 var psx_look := false            ## Hauptschalter: aus = volle Auflösung, glatte Texturen, kein Wackeln/Dithering; Standard aus (Spielkonzept 9.2)

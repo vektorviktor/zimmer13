@@ -122,7 +122,8 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - Minispiele: Kürbis-Schnitz-Duell; Schach-Dame als Suche, Mühle, Turnier; Darts-Kreidetafel – SK 6.10.
 
 **Welt**
-- Wetter, Reste: Regen an den Scheiben, Gestalt im Blitz, Wind, Tiere, dichter werdender Nebel, Vollmond – SK 7.8.
+- Wetter, Reste: Tiere (Krähen, Eule, ferne Hunde als Klang) – SK 7.8. Regen auf den Dachfenstern des Dachgeschosses
+  (nur die Fenster in den Wänden haben Tropfen); Wind an den Kerzen (Flamme geht im Garten bisher nach Regen aus).
 - UG: Maschinen- und Müllraum fertig ausbauen – SK 7.9. Der gebaute Kohlekessel mit Feuerschein und Schutzwirkung
   muss dem modernen Attrappenkessel weichen; Kesselkatze (Ziel: heiße Rohre), Leviathan-Sichtung (an der Mauer statt
   hinter dem Kessel), Monster-Versteck (`spawn_points[0]`, `cellar_center()` → U2) und die Aufzugsanzeige („T“ → „U2“)

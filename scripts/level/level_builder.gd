@@ -489,6 +489,8 @@ var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kei
 ## Bäume: {pos (Stammachse am Boden), radius (Krone), height, crown (Höhenbereich der Krone als Anteile)} – für die
 ## Fledermäuse (Bats)
 var tree_spots: Array[Dictionary] = []
+## Fallendes Laub je Baum – Weather lässt es im Wind schneller und schräg fallen (7.8)
+var leaf_emitters: Array[CPUParticles3D] = []
 ## Stützbalken auf dem Dachboden: {pos (Fuß des Pfostens), arms (Array von [Richtung, Länge] je Arm des Balkenkreuzes)} –
 ## dort hängen tagsüber Fledermäuse (Bats, Spielkonzept 4.22)
 var attic_beams: Array[Dictionary] = []
@@ -3537,7 +3539,10 @@ func _tree(pos: Vector3, index: int) -> void:
 		for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 			for i in m.mesh.get_surface_count():
 				var leaves := m.get_active_material(i).resource_name == "leaves"
-				m.set_surface_override_material(i, Mat.model(path, m, i, false, leaves))
+				var mat := Mat.model(path, m, i, false, leaves)
+				if leaves:
+					mat.set_shader_parameter("sway", 1.0)   # Blätter flattern im Wind (Weather, 7.8)
+				m.set_surface_override_material(i, mat)
 		_falling_leaves(pos, info["radius"], info["height"], info["crown"])
 		return
 	var radius := TREE_RADIUS
@@ -3578,6 +3583,7 @@ func _falling_leaves(pos: Vector3, radius: float, height: float, crown: Vector2)
 	leaves.preprocess = LEAF_LIFE   # beim Betreten des Gartens liegt schon Laub
 	leaves.emitting = true
 	world.add_child(leaves)   # nicht unter root: das NavMesh liest dort die Geometrie
+	leaf_emitters.append(leaves)
 
 
 ## Blatt 12 × 12 px, diagonal: Linse mit Stiel, die Mittelrippe etwas dunkler – weiß, die Farbe kommt

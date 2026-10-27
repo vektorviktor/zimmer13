@@ -13,6 +13,10 @@ const LAYER_BLOCK := 512
 ## Kollision der Scheibe so tief wie die Wand – eine Nische in der Wand fängt die
 ## Spielerkapsel ein, wenn man schräg daran entlangläuft.
 const PANE_DEPTH := 0.2
+## Regentropfen: so weit (m) vor der Außenseite des Glases
+const DROPS_GAP := 0.006
+
+static var _drops_mat: ShaderMaterial
 
 var width := 1.4
 var height := 1.4
@@ -56,6 +60,8 @@ func _ready() -> void:
 	var frame := Mat.psx(OpeningFrame.COLOR)
 	Geo.mesh(pane, Geo.box(Vector3(width, 0.05, 0.05)), frame, Vector3.ZERO)
 	Geo.mesh(pane, Geo.box(Vector3(0.05, height, 0.05)), frame, Vector3.ZERO)
+	if exterior and not frosted:
+		_rain_drops(quad)
 	if not has_curtains():
 		return
 	if sealed:
@@ -75,6 +81,19 @@ func _ready() -> void:
 	add_child(_block)
 	Geo.add_box_shape(_block, Vector3(width + 0.3, height + 0.3, 0.05), Vector3(0, 0, 0.2))
 	_apply(true)
+
+
+## Regen an der Scheibe (Spielkonzept 7.8): Tropfen auf der Außenseite, knapp vor dem Glas. Weather schaltet alle
+## (Gruppe „rain_panes“) nur sichtbar, solange die Scheiben nass sind.
+func _rain_drops(quad: QuadMesh) -> void:
+	if _drops_mat == null:
+		_drops_mat = ShaderMaterial.new()
+		_drops_mat.shader = load("res://shaders/window_rain.gdshader")
+		_drops_mat.render_priority = 1   # nach dem Glas zeichnen, das fast an derselben Stelle liegt
+	var drops := Geo.mesh(self, quad, _drops_mat, Vector3(0, 0, -DROPS_GAP))
+	drops.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	drops.visible = Game.weather != null and Game.weather.panes_wet()
+	drops.add_to_group("rain_panes")
 
 
 func has_curtains() -> bool:

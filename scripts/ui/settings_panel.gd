@@ -27,7 +27,7 @@ func _ready() -> void:
 	list.add_child(_calibration_row())
 	_check(list, "Vollbild", "fullscreen")
 	_check(list, "VSync", "vsync")
-	_slider(list, "Sichtfeld (FOV)", "fov", 60.0, 95.0, 1.0)
+	_slider(list, "Sichtfeld (FOV)", "fov", 60.0, 120.0, 1.0)
 	_check(list, "Spiegelungen", "reflections")
 	list.add_child(UiKit.wrap_label("Marmor, Wasser und Lack spiegeln, was zu sehen ist. Aus, wenn das Spiel ruckelt.", 8))
 

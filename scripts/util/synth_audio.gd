@@ -38,6 +38,9 @@ const SAMPLE_PITCH_JITTER := 0.05 ## jedes Mal etwas anders
 const BREATH := "res://assets/sound/breath.wav"   ## ein Atemzug, ein und aus (Keuchen, `pant`)
 const BREATH_DB := -4.0
 const RATE := 22050.0
+## Wind: Mitte des Heulens bei Flaute … in der Böe (Hz), Dämpfung des Filters (kleiner = pfeifender)
+const WIND_PITCH := Vector2(260.0, 720.0)
+const WIND_DAMP := 0.18
 const MUSIC_BEAT := 60.0 / 132.0
 ## Walzer in a-Moll: Am – F – G – E
 const MUSIC_CHORDS := [[220.0, 261.6, 329.6], [174.6, 220.0, 261.6], [196.0, 246.9, 293.7], [164.8, 207.7, 246.9]]
@@ -70,6 +73,8 @@ var pant := 0.0    ## Keuchen des Spielers nach dem Rennen (Ausdauer, Spielkonze
 var pant_rate := 0.4   ## Atemzüge pro Sekunde
 var rain := 0.0    ## Regenrauschen (Wetter, Spielkonzept 7.8)
 var rain_muffle := 0.0   ## 1 = drinnen: dumpfer
+var wind := 0.0    ## Wind (Wetter, Spielkonzept 7.8): Rauschen, das in Böen aufheult; drinnen dumpf (rain_muffle)
+var wind_gust := 0.0   ## 0 … 1: Böe – das Heulen steigt
 var rumble := 0.0  ## tiefes Grollen im ganzen Hotel, bevor das Monster aufbricht (Puppe, Spielkonzept 5.5)
 ## Kürbismann kündigt sich an (Spielkonzept 4.19): der Plattenspieler leiert überall eine schrille, verzerrte Melodie
 ## (`creepy`), und die Kinder singen sie mit (`chorus`, nach Nähe zum nächsten singenden Kind)
@@ -87,6 +92,8 @@ var _pant_phase := 1.0   ## 1 = der nächste Atemzug beginnt sofort
 var _pant_depth := 1.0   ## jeder Atemzug etwas anders tief
 var _crackle := 0.0      ## Hüllkurve des letzten Knisterns (`fire`)
 var _drip := 0.0         ## Hüllkurve des letzten Tropfenschlags (`shower`)
+var _wind_low := 0.0     ## Bandfilter des Winds (`wind`): Tiefpass- und Bandanteil
+var _wind_band := 0.0
 var _breath: AudioStreamPlayer
 var _shots: Array[Dictionary] = []
 var _music_volume := 1.0
@@ -276,6 +283,12 @@ func _sample(dt: float) -> float:
 		s += (hiss * (1.0 - shower_muffle) + (_lp_fast * 0.35 + _lp_slow * 0.6) * shower_muffle) * shower
 	if rain > 0.001:
 		s += (white * 0.16 * (1.0 - rain_muffle) + _lp_fast * 0.3 + _lp_slow * 0.8 * rain_muffle) * rain
+	if wind > 0.001:
+		# Rauschen durch ein enges Bandfilter, dessen Mitte mit der Böe steigt – es heult auf und ab; dazu Brausen
+		var f := 2.0 * sin(PI * lerpf(WIND_PITCH.x, WIND_PITCH.y, wind_gust) / RATE)
+		_wind_low += f * _wind_band
+		_wind_band += f * (white - _wind_low - WIND_DAMP * _wind_band)
+		s += (_wind_band * 0.22 * (1.0 - 0.7 * rain_muffle) + _lp_slow * 1.4 + _lp_fast * 0.12 * (1.0 - rain_muffle)) * wind
 	var i := _shots.size() - 1
 	while i >= 0:
 		var shot := _shots[i]
