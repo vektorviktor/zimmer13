@@ -17,13 +17,13 @@ Stand: 2026-10-26.
 
 | Gegenstand | Code | Stand | Handlung | Wozu / wo | Konzept |
 |---|---|---|---|---|---|
-| Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | liegt im Heizkeller; öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
+| Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | an der Leviathanmauer im Heizraum (2003 vom Gast aus 018 verloren); öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
 | Generalschlüssel | Schlüsselbund | gebaut | – | Schlüsselschrank in der Lobby, Scheibe einschlagen; öffnet jede Zimmertür | 6.19 |
-| Dachbodenschlüssel | `KEY` „dachboden“ | **teilweise** – Tür gebaut, Schlüssel fehlt | Nebenstrang (Kürbismann) | hinter dem Gitter im Heizkeller, ab etwa Tag 15 | 4.21, M14 |
+| Dachbodenschlüssel | `KEY` „dachboden“ | **teilweise** – Tür gebaut, Schlüssel fehlt | Nebenstrang (Kürbismann) | hinter der Leviathanmauer, ab etwa Tag 15 | 4.21, M14 |
 | Schlüssel zum Haupteingang | `KEY` „ausgang“ | **teilweise** – Tür gebaut, Schlüssel fehlt (nur in der Hand, nicht am Bund) | **Hauptgeschichte** (Ende) | an Halloween; Fundort offen (K6) | 2.1, 2.7, M18 |
 | Schaltschlüssel (Aufzug) | – | geplant | **Hauptgeschichte** (Aufzug) | Zimmer 18 | 7.4, M8 |
 | Schlüsselbund des Rezeptionisten | – | geplant (Vorschlag) | Nebenstrang (Marion) | in der Jeansjacke des erlösten Kürbismanns; öffnet das Büro der Direktion | 2.8, M15b |
-| Werkstattschlüssel | – | geplant (Vorschlag) | Nebenstrang (Marion) | Schlüsselbrett im Büro der Direktion; öffnet die Werkstatt im Tiefkeller | 2.8, M15b |
+| ~~Werkstattschlüssel~~ | – | gestrichen 2026-10-27 (Werkstatt entfällt zugunsten des alten Heizkellers) | – | – | 2.8, 7.4 |
 | Schlüssel von 1987 (Messinganhänger) | – | geplant | – (optional; Edna, K5) | im Krähennest im großen Baum; öffnet das versiegelte Zimmer 042 des Mannes, der 1987 nicht hinauskam | 4.25, 6.19 (7) |
 | Schlüssel der übrigen versiegelten Zimmer | – | geplant | – (optional) | je Zimmer ein eigener Weg (Krähen, Freund, Dokument, Wagnis) | 6.19 (7) |
 
@@ -31,18 +31,18 @@ Stand: 2026-10-26.
 
 | Gegenstand | Code | Stand | Handlung | Wozu / wo | Konzept |
 |---|---|---|---|---|---|
-| Gustavs Brille | – | geplant | **Hauptgeschichte** (Grund für den ersten Abstieg; Doris' Aufgabe) | am Gitter im Heizkeller; Doris geben bis 4.10., 20 Uhr, dann verschwindet sie – sonst gewöhnlicher Gegenstand, Gäste stehlen sie nicht | 2.9, M7, M7a |
+| Gustavs Brille | – | geplant | **Hauptgeschichte** (Grund für den ersten Abstieg; Doris' Aufgabe) | an der Leviathanmauer im Heizraum; Doris geben bis 4.10., 20 Uhr, dann verschwindet sie – sonst gewöhnlicher Gegenstand, Gäste stehlen sie nicht | 2.9, M7, M7a |
 | Gustavs Blechdose | – | geplant (eigener Gegenstand oder nur der Inhalt: offen) | – (Doris' Dank; Faden der Kinder) | Doris gibt sie nach der Brille; darin Süßes, Pappgespenst, Zierkürbis für die Kinder | 2.9, M7a |
 | Kopf des Kürbismanns | `PUMPKIN_HEAD` | **teilweise** – Platzhaltermodell auf dem Dachboden, Ritual fehlt | Nebenstrang (Liesel) | Kürbismann erlösen | 4.21, 2.7, M14 |
 | Ersatzsicherung | – | geplant | **Hauptgeschichte** (Aufzug) | ein Gast hat sie (Kandidat: Bruno); Sicherungskasten im UG | 7.4, M9 |
-| Seine Sachen: Taschenuhr, Mütze, Foto von Marion | – | geplant (Inhalt: Vorschlag) | Nebenstrang (Marion) | Karton „Personal 1987“ im Lager im Tiefkeller | 2.8, M15a |
+| Seine Sachen: Taschenuhr, Mütze, Foto von Marion | – | geplant (Inhalt: Vorschlag) | Nebenstrang (Marion) | Karton „Personal 1987“ im Lager in U2 | 2.8, M15a |
 | Vertrag (das Abkommen) | – | geplant | Nebenstrang (Marion) | Büro der Direktion; im Feuer von 1987 verbrennen | 2.3, 2.8, M15b |
 | Schädel des Kürbismanns | – | geplant | – (Belohnung) | nach der Erlösung; stärkste Deko | 4.21 |
 | Blutige Axt | – | geplant | – (Belohnung) | nach der Erlösung; an der Tür klaut keiner | 4.21 |
 | Jeansjacke | – | geplant | Nebenstrang (Marion, Schlüsselbund) | nach der Erlösung; Deko | 4.21, 2.8 |
-| Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Lager, K5) | Lager im Tiefkeller; Namen der Warnungszettel | 7.4, M11 |
+| Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Lager, K5) | Lager in U2; Namen der Warnungszettel | 7.4, M11 |
 | Ring eines Gastes | – | geplant | – (Gastauftrag, offen) | im Krähennest vor einem Dachfenster | 4.25, OFFEN.md I6 |
-| Kohle | – | eingefroren | – | Kessel anheizen | 7.4 |
+| ~~Kohle~~ | – | gestrichen 2026-10-27 (Kessel ist Attrappe) | – | – | 7.4 |
 | Bolzenschneider | – | eingefroren | – | Lager aufbrechen | 7.4 |
 
 ## 3. Dokumente und Lesbares
@@ -55,13 +55,13 @@ Stand: 2026-10-26.
 | Aushangbrett (Wettbewerb, Hausordnung) | `NoticeBoard` | gebaut | **Hauptgeschichte** (Regel der Puppe) | Lobby | 2.5, M5 |
 | Warnungszettel 1987–2019 | `WarningNote` | gebaut (sechs Zettel) | Hauptgeschichte (Hinweise; 1987 = Edna) | verteilt; je eine UV-Zeile | 4.13, 2.5, 2.7 |
 | Kartenblätter (EG, OG, Keller) | `MAP` | gebaut | – (Orientierung; Keller: „hier unten schläft es“) | Keller-Skizze in Zimmer 017 | 3.2, 7.9 |
-| UV-Schrift an Wänden (Heizer 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizkeller, Zimmer 017, Zimmer 18 | 4.16, 2.3 |
+| UV-Schrift an Wänden (Heizer 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18 (dazu Hinweise von 13 und 018 aus 2003, Texte offen) | 4.16, 2.3, 7.4 |
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
 | Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | geplant | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
 | Hotelregister | – | geplant | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“) | Rezeption | 2.3, K1, M6, M13 |
 | Notizbuch des Hausmeisters | – | geplant | **Hauptgeschichte** (drei Mängel am Aufzug) | Zimmer 18 | 7.4, M8 |
-| Kesselbuch des Heizers | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Heizkeller | 2.3, 7.4, M12 |
+| Kesselbuch des Heizers | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Spind des Heizers im Heizraum | 2.3, 7.4, M12 |
 | Personalakte des Heizers | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
 | Zeitungsausschnitt „Brand im Grandhotel“ | – | geplant | Hauptgeschichte (Indiz) | offen | 2.3 |
 | Marions Brief | – | offen | Nebenstrang (war: falls sie vorher stirbt – Kernfiguren sterben seit 2026-10-25 nicht; streichen oder anders auslösen) | Zimmer 001 | 2.8 |
@@ -96,7 +96,7 @@ Stand: 2026-10-26.
 | Glühbirne (heil/kaputt) | `BULB` | gebaut | – | Lampen ein- und ausdrehen · Herzensbitte der Bastler (6.14) | 7.3 |
 | Streichholzschachtel | `MATCHBOX` | gebaut | – | Kerzen anzünden; Zimmer 022 | 5.12 |
 | Messer | `KNIFE` | gebaut | – | schnitzen | 5.4 |
-| Brecheisen | `CROWBAR` | gebaut | – | Zimmertüren aufbrechen; Heizkeller | 6.19 |
+| Brecheisen | `CROWBAR` | gebaut | – | Zimmertüren aufbrechen; Heizraum | 6.19 |
 | Werkzeugkasten | `TOOLBOX` | gebaut | – | Türen reparieren | 6.19 |
 | Kompass | `COMPASS` | gebaut | – | Orientierung | 3.2 |
 | Bettlaken | `BED_SHEET` | gebaut | – | selbst verkleiden; Zimmer 13 | 5.9 |
@@ -125,7 +125,7 @@ Stand: 2026-10-26.
 | Gezinkte Würfel | `LOADED_DICE` | gebaut | – | beim Mäxchen schummeln | 6.10 |
 | Schachbrett | `CHESS_BOARD` | gebaut | – | Schach mit Gästen | 6.10 |
 | Dartpfeile | `DARTS` | gebaut | – | Darts | 6.10 |
-| Marions Spieluhr | `MUSIC_BOX` | gebaut | Josef Ahrend, Marion (2.3); später fürs Ritual (2.8) | Aufziehen lockt das Monster, nah horcht es; im Heizkeller auf dem alten Regal | 5.17 |
+| Marions Spieluhr | `MUSIC_BOX` | gebaut | Josef Ahrend, Marion (2.3); später fürs Ritual (2.8) | Aufziehen lockt das Monster, nah horcht es; im Heizraum auf dem alten Regal | 5.17 |
 | Münzen | `COINS` | gebaut | – | werden zu Geld; draußen holen sie die Krähen | 3.2, 4.25 |
 | Kleidungsstück | `CLOTHING` | gebaut | – (Spur eines Geholten) | bleibt nach einem Todesfall liegen | 6.7, 4.13 |
 
@@ -137,5 +137,5 @@ Was die Hauptgeschichte braucht und noch fehlt, in der Reihenfolge des Durchlauf
 1. Gustavs Tagebuch (M4) · Hotelregister (M6) · Gustavs Brille (M7)
 2. Notizbuch des Hausmeisters und Schaltschlüssel (M8) · Ersatzsicherung (M9)
 3. Kesselbuch (M12) · Dachbodenschlüssel (M14)
-4. Seine Sachen, Vertrag, Schlüsselbund, Werkstattschlüssel (M15a, M15b) – nur für die Erlösung (Kür, 2.8)
+4. Seine Sachen, Vertrag, Schlüsselbund (M15a, M15b) – nur für die Erlösung (Kür, 2.8)
 5. Schlüssel zum Haupteingang (M18) – Fundort noch offen

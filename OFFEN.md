@@ -19,15 +19,18 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 
 | Stück | Verweis | Stand |
 |---|---|---|
-| Doris' Suche: Bitte, Suchtrupp an der Kellertür, Brille am Gitter, Abschied/Brief | SK 2.9 · HA M5a–M7b, K8 | nicht gebaut; Gitter im Plan gemalt, ohne Legende |
+| Doris' Suche: Bitte, Suchtrupp an der Kellertür, Brille an der Leviathanmauer, Abschied/Brief | SK 2.9 · HA M5a–M7b, K8 | nicht gebaut; Mauer malt der Nutzer neu |
 | Mitteilung „abgereist“ am Brett | SK 2.9 · HA M6 · GE | nicht gebaut |
 | Hotelregister mit Kreuzen, „geb. Ahrend“, „geb. K…“ | SK 2.3 · HA K1, M6, M13 · GE | nicht gebaut |
 | Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel | SK 7.4 · HA M8 · GE | nicht gebaut |
 | Aufzug reparieren: Ersatzsicherung, Bremse, erste Fahrt nach „T“ | SK 7.4 · HA M9–M11, K3 | Aufzug fährt, Reparatur als Sperre fehlt |
-| **Tiefkeller** (Lager, Werkstatt, Fundsachen-Koffer) | SK 7.4, 7.10 · HA M11, M17 | **Plan steht aus** |
+| **U2** (Lager, Fundsachen-Koffer, alter Heizkeller, Deko des Monsters) | SK 7.4, 7.10 · HA M11, M17 | **Plan steht aus** |
+| **Keller-Ordnung** (7.4, 2026-10-27): Vorhängeschlösser Ost/West, Monster bricht Ost auf, Westschlüssel im Keller, zugemauerte Treppen, Heizraum als Attrappe (moderner Kessel, heiße Rohre nach unten, Spind), Leviathanmauer statt Gitter, Monster nur Minuten draußen, U2-Knopf/Hugo | SK 7.4 · HA K2, M11, M14, M17 | nicht gebaut; der Plan (Schlösser, Mauer, Treppen) malt der Nutzer |
+| Zimmer 18 als Zimmer des Gastes von 2003, UV-Hinweise 13/018, Jahresfoto 2003 | SK 7.4, 5.14 | nicht gebaut |
+| Puppe: Herkunft (Marion), Brandspuren unter UV, Marion erstarrt vor ihr | SK 5.5 | nicht gebaut |
 | Kesselbuch, Marion entlarven, Marions Auftrag | SK 2.8 · HA M12–M13, M16a, K4 | Marion gibt es im Spiel noch nicht |
-| Kürbismann aufhalten und erlösen (Gitter, Dachbodenschlüssel, Ritual, Belohnungen) | SK 4.21 · HA M14, K7 · GE | nur der Dachboden mit Platzhalterkopf |
-| Seine Sachen, Büro der Direktion, Vertrag, Werkstattschlüssel | SK 2.8 · HA M15a–b · GE | nicht gebaut |
+| Kürbismann aufhalten und erlösen (Leviathanmauer, Dachbodenschlüssel, Ritual, Belohnungen) | SK 4.21 · HA M14, K7 · GE | nur der Dachboden mit Platzhalterkopf |
+| Seine Sachen, Büro der Direktion, Vertrag | SK 2.8 · HA M15a–b · GE | nicht gebaut |
 | Schlüssel zum Haupteingang holen | SK 2.1, 2.7 · HA M18, K6 · GE | Tür gebaut, Schlüssel und Fundort fehlen |
 | Ritual in der Halloween-Nacht | SK 2.8 · HA M19a | nicht gebaut |
 | Die drei Enden (mit/ohne Schlüssel, erlöst/nicht erlöst) als Zwischensequenzen | SK 2.7 · HA M21–M21b | nicht gebaut |
@@ -55,7 +58,9 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 ### Systeme
 - **Grundsatzfragen** SK 10: Bemerkt-Auslöser (3a), Truhen abschließbar/eigene Truhe (3h), Umfang (8), Koop (9),
   Sprache (10).
-- **Leviathan-Modi:** gilt die längere Frist auch beim Raubzug? – SK 4.33. Tuning-Werte Angriffe – SK 4.17.
+- **Leviathan-Modi:** gilt die längere Frist auch beim Raubzug? – SK 4.33. Tuning (Anforderungen um Tag 14 und 21,
+  Bilanz 15–20 Opfer, Gerede-/Lärm-Boni, langsamere Dreistigkeit gegen Deko-Abschreckung) bisher nur headless
+  geprüft – SK 4.33, 4.9.
 - **Kürbismann aufhalten:** wie lang „sehr kurz“, Zeige-Entfernung, welche Kürbisse zählen – SK 4.21.
 - **Vampir:** Biss, Verwandlung, „schwach“, hereinbitten – fast alles Vorschlag – SK 4.22.
 - **Versiegelte Zimmer:** welche drei neben 042, Schlüssel, Gegenstände – SK 6.19 (7).
@@ -78,7 +83,11 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 **Bedrohungen**
 - Name Leviathan, Reste: Liesels Abendgebet gegen den Leviathan, Marion geht hinaus, wenn sie den Namen hört (beides
   gibt es im Spiel noch nicht) – SK 4.32. Gebaut 27.10.: Sichtung, Hugos Szene mit Doré-Druck, Satzwechsel.
-- **Vier Modi** des Leviathan (Urteil, Snack, Raubzug, Anforderung) statt der Absichten aus 4.17 – SK 4.33.
+- Vier Modi des Leviathan, Reste: kein Modus an Balltagen (Bälle gibt es noch nicht, 5.19); der Verurteilte meidet
+  ab dem Aufbruch unerreichbare Orte nicht, das Monster wartet nicht an der Aufzug-Haltestelle; Notausgang beim
+  Spieler ohne die Dachboden-Szene (Kniestocktür, ducken, Staub); keine Kellerrunde, solange der Suchtrupp nach Gustav
+  läuft (2.9, nicht gebaut); Rauchtest „jede bewohnte Tür vom Keller aus erreichbar“ fehlt – SK 4.33. Gebaut 27.10.:
+  Plan der Modi, Urteil, Snack, Raubzug (die ersten drei harmlos), Anforderung, Kellerrunde, Geräusche ohne Körper.
 - **Drei Bedrohungen** je Ebene, gleiche Sicht für den Kürbismann, Lakengeist erst nach dem ersten Angriff
   (spukt im Code ab Tag 2) – SK 4.20, 4.18.
 - Vampir als vierte Bedrohung (Fledermäuse ohne Biss gebaut, im Dachgeschoss noch keine) – SK 4.22.
@@ -90,7 +99,8 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   Neid) – SK 6.18 (großteils offen). Daran hängen: Schock+Trauer als ein Wert – SK 6.8; Gerüchte im Notizbuch – SK 3.10.
 - Zimmerzugang, Reste: Einbruch sehr wütender Gäste bei 13, Schlüssel stehlen, Zweitschlüssel, Reparatur-Tagesbudget,
   Badtür-Riegel – SK 6.19.
-- Gäste bedienen Lichtschalter aktiv – SK 7.3.
+- Lichtschalter, Reste: bei fehlender Birne Ersatz holen oder den Raum meiden, Schreckmoment „Gast macht aus, während
+  der Spieler sich drin versteckt“ – SK 7.3.
 - Telefon: Gäste rufen sich an, Panik-Anrufe, Telefonzentrale – SK 4.14.
 - Lärm: Untertitel für leise Geräusche, Gäste ärgern sich über Lärm vor ihrer Tür – SK 4.15.
 - Aufträge, Reste: zentrale Gäste, Verstecken/Apfeltauchen als „Spielen“, Kuscheltier, Bitten am Telefon/als Zettel –
@@ -113,7 +123,10 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 
 **Welt**
 - Wetter, Reste: Regen an den Scheiben, Gestalt im Blitz, Wind, Tiere, dichter werdender Nebel, Vollmond – SK 7.8.
-- UG: Maschinen- und Müllraum fertig ausbauen; Kessel anheizen **eingefroren** – SK 7.4, 7.9.
+- UG: Maschinen- und Müllraum fertig ausbauen – SK 7.9. Der gebaute Kohlekessel mit Feuerschein und Schutzwirkung
+  muss dem modernen Attrappenkessel weichen; Kesselkatze (Ziel: heiße Rohre), Leviathan-Sichtung (an der Mauer statt
+  hinter dem Kessel), Monster-Versteck (`spawn_points[0]`, `cellar_center()` → U2) und die Aufzugsanzeige („T“ → „U2“)
+  ziehen nach – SK 7.4, 4.26, 4.32.
 - Flecken auf den Tapeten – SK 7.2.
 
 **Menüs und Speichern**
@@ -124,8 +137,10 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 ## 4. Gebäudeplan, Modelle, Ton
 
 Plan nur der Nutzer (`map*.aseprite`).
-- **Tiefkeller-Plan** fehlt – SK 7.10.
-- **Gitter #9c5a5a** im Heizkeller: Legende und Einbau fehlen – SK 2.9.
+- **U2-Plan** fehlt – SK 7.10.
+- **Leviathanmauer #9c5a5a** im Heizraum: neu malen, Legende und Einbau fehlen – SK 2.9, 7.4.
+- Offen aus 7.4: Ort des Westschlüssels, Kommentar zu den zugemauerten Treppen, Hugos Text zum U2-Knopf, UV-Texte von
+  13/018, Hinweise auf dem Jahresfoto 2003, Deko des Monsters in U2.
 - Ausstattung im Plan fehlt für Rattenkönig, Fotowand, Puppenhaus, Apfelbottich (laufen auf festen Ausweichplätzen) – TE 1573 ff.
 - Kommode in Zimmer 022 (Streichhölzer) – SK 5.12 · TE (`CONTENT["022"]`).
 - Echte Modelle und Klänge für die übrigen Platzhalter, u. a. weißer Kürbis wie der orange (Meshy + Farbatlas),

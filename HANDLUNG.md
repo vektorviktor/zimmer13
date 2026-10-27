@@ -16,8 +16,8 @@ Angelegt 2026-10-25.
 
 Ein friedliches Halloween-Hotel mit Türschmuck-Wettbewerb kippt bei der Siegerehrung: Gustav Peters wird geholt, und die
 Puppe entpuppt sich als Urteil. Seine Freundin Doris bittet, ihn zu suchen – die Suche führt in den Keller, dort beginnt
-die Ermittlung. Der Aufzug öffnet den
-Tiefkeller mit den Koffern früherer Gäste, der Heizkeller verrät, wer das Monster war. Am Ende steht das Abkommen von 1987
+die Ermittlung. Der Aufzug öffnet
+U2 mit den Koffern früherer Gäste, der Heizraum verrät, wer das Monster war. Am Ende steht das Abkommen von 1987
 und der Haupteingang: Wer an Halloween den Schlüssel hat, bringt alle hinaus, die bis dahin überlebt haben (2.7) – und
 keiner von ihnen wird je darüber sprechen.
 
@@ -49,10 +49,10 @@ keiner von ihnen wird je darüber sprechen.
 | M5a | **Doris bittet: Gustav finden** (K8) – bis 4.10., 20 Uhr | 2.10. nachts – 3.10. morgens | fest (2.9) | Aufgabe im Notizbuch |
 | M6 | **Das Kreuz im Register** (K1) – Gustavs letzter Satz führt zur Rezeption; Mitteilung „abgereist“ am Brett | 3.10. morgens | fest (2.9) | Hotelregister: Kreuze seit 1987, „geb. Ahrend“ |
 | M6a | **Der Suchtrupp** bleibt an der Kellertür stehen (K8) | 3.10. tagsüber | fest (2.9) | Lernfenster: keine Patrouille, solange er läuft |
-| M7 | **Erster Abstieg** (K2): Gustavs Brille am Gitter, Schlüssel zu Zimmer 18 | 3.–4.10. | fest (2.9, 7.4) | Zimmer 18 |
+| M7 | **Erster Abstieg** (K2): Gustavs Brille an der Leviathanmauer, Schlüssel zu Zimmer 18 | 3.–4.10. | fest (2.9, 7.4) | Zimmer 18 |
 | M7a | **Die Brille für Doris:** Abschied an der Gedenktafel, Gustavs Blechdose für die Kinder, Doris als Ohrenzeugin | bis 4.10., 20 Uhr | fest (2.9) | Kinder, Gerede über den Leviathan |
-| M7b | *sonst:* **Doris geht allein** – Brief in 033, Blutflecken vor dem Gitter, ihr Tod ist sicher | 4.10., 20 Uhr | fest (2.9) | Schuld im Tagebuch |
-| M8 | Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel | 4.–6.10. | fest (7.4) | drei Aufgaben im Notizbuch |
+| M7b | *sonst:* **Doris geht allein** – Brief in 033, Blutflecken vor der Leviathanmauer, ihr Tod ist sicher | 4.10., 20 Uhr | fest (2.9) | Schuld im Tagebuch |
+| M8 | Zimmer 18 (Gast von 2003, versiegelt): Notizbuch des Hausmeisters mit seinen Notizen, Schaltschlüssel, UV-Aufsatz | 4.–6.10. | fest (7.4) | drei Aufgaben im Notizbuch |
 
 ### Akt III – Der Aufzug (8.–14. Oktober) · **Anker 2**
 
@@ -60,18 +60,18 @@ keiner von ihnen wird je darüber sprechen.
 |----|-------------|----------------|--------|---------------------------|
 | M9 | Ersatzsicherung von einem Gast – **Bruno** (K3) | 2. Woche | fest (7.4), wer: Kandidat | Sicherungskasten im UG |
 | M10 | Bremse lösen im Maschinenraum (laut, neben dem schlafenden Monster) | 2. Woche | fest (7.4) | Aufzug fährt |
-| M11 | **Erste Fahrt:** Die Anzeige springt allein auf „T“ – Tiefkeller, Lager, Fundsachen-Koffer | bis 14.10. | fest (7.4), Inhalt: Kandidat (K5) | Namen der Warnungszettel als Koffer; Edna (K5) |
+| M11 | **Erste Fahrt:** Die Kabine fährt ohne Knopf allein nach U2 – Lager, Fundsachen-Koffer; danach baut Hugo den Knopf für U2 ein und erzählt davon | bis 14.10. | fest (7.4), Inhalt: Kandidat (K5) | Namen der Warnungszettel als Koffer; Edna (K5) |
 
 ### Akt IV – Der Heizer (15.–22. Oktober) · **Anker 3**
 
 | Nr | Meilenstein | Wann (optimal) | Status | Zeigt auf / schaltet frei |
 |----|-------------|----------------|--------|---------------------------|
-| M12 | **Kesselbuch** im Heizkeller: Josef Ahrend, Halloween 1987 (K4) | ab dem ersten Abstieg (M7) | fest (2.3, 7.4), Inhalt: Kandidat | Name Ahrend |
+| M12 | **Kesselbuch** im Spind des Heizers (Heizraum): Josef Ahrend, Halloween 1987 (K4) | ab dem ersten Abstieg (M7) | fest (2.3, 7.4), Inhalt: Kandidat | Name Ahrend |
 | M13 | **Marion entlarven** – Register „geb. Ahrend“ + Kesselbuch, Beweis und Beziehung (K4) | so früh wie möglich | fest (2.8) | **Marions Auftrag:** ihren Vater erlösen |
-| M14 | Gitter passierbar: Schlüssel zum Dachboden → Kopf des Kürbismanns, Erlösung – im Auftrag von Liesel Brück, die ihn 1987 köpfte (K7) | ab Tag 15 | fest (4.21, 2.7) | Nebenstrang mit Auftraggeberin |
+| M14 | Leviathanmauer bleibt nach Angriffen offen: Schlüssel zum Dachboden → Kopf des Kürbismanns, Erlösung – im Auftrag von Liesel Brück, die ihn 1987 köpfte (K7) | ab Tag 15 | fest (4.21, 2.7) | Nebenstrang mit Auftraggeberin |
 | M15 | **Das Monster will die Mitwisser:** Edna wird gezielt bedroht (K5) | um den 20.10. | Kandidat | Edna überlebt immer (Kernfigur, Spielkonzept 6.17) → sie erzählt |
 | M15a | **Seine Sachen** aus dem Lager: Karton „Personal 1987“, Taschenuhr (K4) | nach M11 und M13 | fest (2.8), Inhalt: Vorschlag | Ritual |
-| M15b | **Büro der Direktion** mit dem Schlüsselbund aus der Jeansjacke des Kürbismanns: Vertrag und Werkstattschlüssel (K4) | nach M14 | fest (2.8: Vertrag), Weg: Vorschlag | Ritual |
+| M15b | **Büro der Direktion** mit dem Schlüsselbund aus der Jeansjacke des Kürbismanns: Vertrag (K4) | nach M14 | fest (2.8: Vertrag), Weg: Vorschlag | Ritual |
 
 ### Akt V – Die letzte Woche (23.–30. Oktober)
 
@@ -79,7 +79,7 @@ keiner von ihnen wird je darüber sprechen.
 |----|-------------|----------------|--------|---------------------------|
 | M16 | Großes Schmücken täglich, Kostüme ab dem 25. | 24.–30.10. | fest (2.4, 5.9) | Laken im Flur: Gast oder Geist? |
 | M16a | **Marion offenbart sich selbst**, wenn man sie bis dahin nicht entlarvt hat – nur noch eine Woche | 24.10. abends | fest (2.8), Datum: Vorschlag | Marions Auftrag, mit weniger Zeit |
-| M17 | Das Gitter steht offen – der Tiefkeller gehört dem Monster | ~25.10. | fest (7.4) | Lager und Werkstatt werden gefährlich |
+| M17 | Die Leviathanmauer bleibt offen – U2 gehört dem Monster | ~25.10. | fest (7.4) | Lager und alter Heizkeller werden gefährlich |
 | M18 | **Den Schlüssel holen** – mit Hilfe der Gäste (K6) | 28.–31.10. | Kandidat | Haupteingang |
 
 ### Akt VI – Halloween (31. Oktober) · **Anker 4**
@@ -87,11 +87,11 @@ keiner von ihnen wird je darüber sprechen.
 | Nr | Meilenstein | Wann (optimal) | Status | Zeigt auf / schaltet frei |
 |----|-------------|----------------|--------|---------------------------|
 | M19 | Fest am Abend, Gruppenfoto mit leeren Plätzen | 31.10. abends | vorgemerkt (5.9) | – |
-| M19a | **Das Ritual:** mit Marion in den Tiefkeller, Werkstatt öffnen, Vertrag ins Feuer von 1987, Marion ruft ihn mit seinen Sachen – er geht ins Feuer, es erlischt | Halloween-Nacht | fest (2.8), Ablauf: Vorschlag | kein letzter Angriff |
+| M19a | **Das Ritual:** mit Marion nach U2 in den alten Heizkeller, Vertrag ins Feuer von 1987, Marion ruft ihn mit seinen Sachen – er geht ins Feuer, es erlischt | Halloween-Nacht | fest (2.8), Ablauf: Vorschlag | kein letzter Angriff |
 | M20 | Letztes Urteil der Puppe und letzter Angriff – nur wenn er nicht erlöst ist (Erlösung ist Kür) | 31.10. | fest (2.8) | – |
 | M21 | **Ende mit Schlüssel:** Versammlung am Tor, Schlüssel ins Schloss, draußen das erste Morgengrauen; die Bedrohungen laufen zur Tür, die vor ihnen zufällt, der Vampir zerfällt im Licht; alle gehen hinaus, Gruppenfoto vor dem Hotel, das Bild wird dunkel | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
 | M21a | **Ende ohne Schlüssel, nicht erlöst:** alle drängen panisch ans Tor, der Leviathan holt sie in der Lobby einzeln, zuletzt den Spieler | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
-| M21b | **Ende ohne Schlüssel, erlöst:** das Hotel nimmt den Spieler als neuen Heizer – Licht aus, der Kessel springt an, er sieht mit den Augen des Leviathan und frisst die Gäste Stück für Stück; das Bild wird dunkel | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
+| M21b | **Ende ohne Schlüssel, erlöst:** das Hotel nimmt den Spieler als neuen Heizer – Licht aus, das Feuer von 1987 flammt wieder auf, er sieht mit den Augen des Leviathan und frisst die Gäste Stück für Stück; das Bild wird dunkel | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
 
 ### Abhängigkeiten
 
@@ -107,7 +107,7 @@ flowchart TD
   M7 --> M8[M8 Zimmer 18: Hausmeister]
   M8 --> M9[M9 Sicherung von Bruno]
   M8 --> M10[M10 Bremse]
-  M9 --> M11[M11 Tiefkeller, Koffer]
+  M9 --> M11[M11 U2, Koffer]
   M10 --> M11
   M6 --> M13[M13 Marion entlarven]
   M7 --> M12[M12 Kesselbuch]
@@ -115,7 +115,7 @@ flowchart TD
   M13 -.->|sonst 24.10.| M16a[M16a Marion offenbart sich]
   M11 --> M15[M15 Edna]
   M11 --> M15a[M15a Seine Sachen]
-  M14[M14 Kürbismann erlösen] --> M15b[M15b Büro: Vertrag, Werkstattschlüssel]
+  M14[M14 Kürbismann erlösen] --> M15b[M15b Büro: Vertrag]
   M13 --> M19a[M19a Ritual]
   M16a --> M19a
   M15a --> M19a
@@ -148,9 +148,11 @@ flowchart TD
 - ~~Nach Gustav ist das Monster **satt** (4.10) – das ist das sichere Zeitfenster.~~ Seit 4.33 senkt Sättigung nur die
   Dreistigkeit. **Das Fenster ist der Suchtrupp** (K8): Solange er an der Kellertür wartet, patrouilliert der Leviathan
   nicht. Die Schleifspur aus 020 zeigt in Richtung Treppenhaus Ost, Gäste reden vom Keller („Da unten soll es schlafen.“).
-- Am Gitter liegt **Gustavs Brille** – der Grund, hinunterzugehen (K8).
-- Im Heizkeller liegt der **Schlüssel zu Zimmer 18** (7.4, fest). Man sieht den Kessel und das Gitter zum ersten Mal,
-  hört dahinter etwas atmen.
+- Bis zum ersten Angriff hängen Vorhängeschlösser an den Kellerzugängen; das Monster hat in der Nacht der
+  Siegerehrung das östliche aufgebrochen (7.4). Der Weg führt also über das Treppenhaus Ost.
+- An der **Leviathanmauer** im Heizraum liegt **Gustavs Brille** – der Grund, hinunterzugehen (K8).
+- Daneben liegt der **Schlüssel zu Zimmer 18** (7.4, fest), verloren 2003 vom Gast aus 018. Man sieht den Heizraum
+  und die Mauer zum ersten Mal und hört dahinter etwas atmen.
 - **Warum stark:** Story und Mechanik fallen zusammen – das Fenster des Suchtrupps belohnt den Mutigen, und es schließt
   sich.
 
@@ -159,7 +161,7 @@ flowchart TD
   den Spieler, ihn zu finden – auch wenn sie ihn nicht leiden kann. Frist: 4. Oktober, 20 Uhr, im Notizbuch.
 - Die Direktion behauptet am Brett, er sei abgereist; sein Koffer steht noch in 020. Der Suchtrupp (Doris, Theo, Paula)
   bleibt an der Kellertür stehen.
-- Unten am Gitter liegt **seine Brille** – die einzige Spur. **Bringt man sie Doris**, nimmt sie Abschied, gibt Gustavs
+- Unten an der Leviathanmauer liegt **seine Brille** – die einzige Spur. **Bringt man sie Doris**, nimmt sie Abschied, gibt Gustavs
   Blechdose mit dem, was er den Kindern abgenommen hat, und wird zur Ohrenzeugin. **Sonst geht sie selbst** und stirbt
   sicher; ihr Brief liegt in 033.
 - **Warum stark:** gibt dem ersten Abstieg einen Grund statt nur Gerüchte, macht aus der Pflicht eine Frist mit Folgen
@@ -169,29 +171,28 @@ flowchart TD
 - 7.4 sagt: Ein Gast hat die Ersatzsicherung, er hat sie dem Hausmeister „abgekauft“. **Bruno Kaminski** (Kernfigur,
   mürrischer Händler, mutig, gierig) passt: teuer, handelt, klaut, wenn er einen nicht mag.
 - Wege: Freundschaft, Handel, Mäxchen-Einsatz, Klauen (6.2). Gerüchte nennen erst den Falschen.
-- **Kernfrage nebenbei:** Bruno ahnt, wofür man sie braucht, und will mit in den Tiefkeller – oder seinen Anteil am
+- **Kernfrage nebenbei:** Bruno ahnt, wofür man sie braucht, und will mit nach U2 – oder seinen Anteil am
   Lager. Teilen oder nicht (7.4)?
 - **Warum stark:** gibt einer Kernfigur ihre Rolle im Geheimnis (6.0, „Zu klären“) und macht Anker 2 sozial statt nur
   mutig.
 
 ### K4 – Marions Auftrag: den Heizer erlösen (Akt II–VI) · fest (2.8)
-- **Das Kesselbuch** im Heizkeller endet am 31.10.1987. Letzte Einträge (Entwurf der Richtung): Kohle, Druck,
+- **Das Kesselbuch** im Spind des Heizers (Heizraum) endet am 31.10.1987. Letzte Einträge (Entwurf der Richtung): Kohle, Druck,
   „Die Direktion will heute Nacht keine Störung“, und ein Satz an seine Tochter: „Marion soll heute nicht runterkommen.“
 - **Marion entlarven:** Mit Kesselbuch und Register („geb. Ahrend“) spricht man sie an – Beweis und Beziehung (2.3).
   Hat man es bis zum **24. Oktober** nicht geschafft, klopft sie selbst an Zimmer 13. Wer früh dran ist, hat Wochen,
-  wer wartet, eine Woche, in der der Tiefkeller schon dem Monster gehört.
-- **Ihr Auftrag** (2.8): seine Sachen aus dem Lager (Taschenuhr), der Vertrag aus dem Büro der Direktion, der
-  Schlüssel zur Werkstatt im Tiefkeller – die Tür, hinter der man ihn 1987 einschloss. Schlüsselbund aus der Jeansjacke
-  des Kürbismanns (Vorschlag): Liesels Auftrag führt in Marions.
-- **Das Ritual in der Halloween-Nacht:** Werkstatt öffnen, Vertrag ins Feuer von 1987, Marion ruft ihn mit seinen
-  Sachen – er geht durch die Tür ins Feuer, und es erlischt. Kein letzter Angriff.
+  wer wartet, eine Woche, in der U2 schon dem Monster gehört.
+- **Ihr Auftrag** (2.8): seine Sachen aus dem Lager (Taschenuhr), der Vertrag aus dem Büro der Direktion (Schlüsselbund aus der
+  Jeansjacke des Kürbismanns, Vorschlag: Liesels Auftrag führt in Marions). Die Werkstatt entfällt (2026-10-27).
+- **Das Ritual in der Halloween-Nacht:** im alten Heizkeller (U2) den Vertrag ins Feuer von 1987, Marion ruft ihn mit
+  seinen Sachen – er geht ins Feuer, und es erlischt. Kein letzter Angriff.
 - **Marion bleibt** (fest, 2.8): Sie kommt so oder so nicht hinaus – am letzten Tag bleibt sie freiwillig bei ihrem
   Vater. Wie man ihr hilft, entscheidet nur, ob er erlöst ist, nicht, ob sie lebt. Erlöst: Sie geht mit ihm ins
   Feuer und lässt die Taschenuhr zurück. Nicht erlöst: Sie bleibt in der Lobby sitzen – „Ich warte auf ihn.“
 - **Scheitern:** nicht erlöst → letztes Urteil und letzter Angriff; Vertrag verbrannt, aber nicht erlöst → frei und
   ohne Warnung; ~~Marion tot → keine Erlösung, nur ihr Brief~~ (entfällt 2026-10-25: Kernfiguren sterben nicht).
 - **Warum stark:** Der Wendepunkt der Ermittlung wird zum großen Auftrag der zweiten Monatshälfte, verbindet drei
-  Anker (Heizkeller, Aufzug/Lager, Halloween) und den Kürbismann-Strang – und belohnt, wer früh ermittelt.
+  Anker (Heizraum, Aufzug/Lager, Halloween) und den Kürbismann-Strang – und belohnt, wer früh ermittelt.
 
 ### K5 – Edna, die 1987 hinauskam (Akt III–V)
 - **Fest (2.7):** Edna Wiegand war 1987 als Erwachsene im Hotel und gehört zu denen, die damals hinauskamen – und
@@ -216,7 +217,7 @@ flowchart TD
 - **Fest (2.7):** Mit dem Schlüssel öffnet sich der Haupteingang, und alle, die bis zum 31. überlebt haben, kommen
   hinaus. Danach spricht keiner darüber.
 - **Der Schlüssel** muss verdient werden, auf einem von mehreren Wegen (2.3) – Kandidaten:
-  - im **Fundsachen-Koffer im Tiefkeller** (7.4) – „ES lag daneben“ (Warnungszettel 2011), spät im Monat im Revier des
+  - im **Fundsachen-Koffer in U2** (7.4) – „ES lag daneben“ (Warnungszettel 2011), spät im Monat im Revier des
     Monsters; „Du brauchst die anderen“: einer lenkt ab, einer hält Wache (2.1);
   - ~~in der Tasche der Jeansjacke des Kürbismanns~~ – dort steckt jetzt der Schlüsselbund fürs Büro der Direktion (K4);
   - von **Edna**, die weiß, wie es 1987 ging (K5).
@@ -235,7 +236,7 @@ flowchart TD
 - **Fest (2.7): Liesel Brück** (H26, Zimmer 025, ängstlich), 1987 ein Teenager, heute um die 55, Generation alt –
   „betet abends laut, schläft mit Licht“, seit 1987.
   - Sie feiert nie (Spaß ruft ihn, 4.19); wenn die Kinder das Lied vom Kürbiskopf singen (4.20), erstarrt sie.
-  - Hinauf kommt sie nicht (steile Treppe, Türen nur geduckt, Schlüssel hinter dem Gitter). Darum braucht sie den
+  - Hinauf kommt sie nicht (steile Treppe, Türen nur geduckt, Schlüssel hinter der Leviathanmauer). Darum braucht sie den
     Spieler: Hat er ihr Vertrauen, erzählt sie, was 1987 geschah, verrät die Kammer im Südwesten und bittet ihn um das
     Ritual (4.21). Erst dann weiß man, wonach man auf dem Dachboden sucht.
   - Sie kennt den Abzählreim der Kinder von 1987 (4.21) – ein Hinweis, bevor sie spricht.
