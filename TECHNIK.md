@@ -2141,7 +2141,10 @@ selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Ra
   statische Caches, asynchrone Navigation, Rückkehr zum Titel; Threads aus GDScript gibt es nur in der Schach-KI (wartet
   in `cancel`), Server-RIDs legt das Spiel nicht von Hand an. So selten ohne Debug-Symbole von Godot nicht einzugrenzen
   – nach dem nächsten Refactoring neu zählen. Nebenbei harmlos: 24 `Node3D` bleiben beim Beenden übrig („leaked“).
-- **Tests** (`tests/`, nicht im Export). Neue Klassen kennt Godot erst nach einem Import (`--headless --import`).
+- **Tests** (`tests/`, nicht im Export). Neue Klassen kennt Godot erst nach einem Import (`--headless --import`) – der
+  Rauchtest prüft vorweg den Klassen-Cache (`.godot/global_script_class_cache.cfg`) und importiert selbst, wenn eine
+  `class_name` fehlt oder woandershin zeigt (nach einem Merge mit neuer Klasse, im frischen Worktree), sonst hagelt es
+  Folgefehler („Identifier … not declared“).
   - **Rauchtest** `bash tests/smoke.sh [stufe]` (`JOBS` Läufe nebeneinander, Protokolle in `temp/smoke/`), drei Stufen:
     **`schnell`** nach jeder Änderung (~½ min: Szenarien mit Stichwort „schnell“ und die Spielstand-Regeln), **ein
     Stichwort** nach Arbeit an einem System (`schlaf`, `monster`, `gaeste` …; trifft auch Wörter in den Parametern;
@@ -2153,7 +2156,20 @@ selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Ra
     Zeitüberschreitung, Savetest ohne „alles gleich“, unerreichbare Orte im Navcheck; danach die Tests unten und den
     Titelbildschirm. Absturz oder Hängen nach der Endmarke `[Ende]` (`Game._exit_tree`, nur headless) ist das offene
     Problem oben und zählt nicht. Neue Mechanik mit Debug-Parameter → Zeile mit Stichworten; „schnell“ nur
-    ausnahmsweise (die Stufe soll unter einer Minute bleiben).
+    ausnahmsweise (die Stufe soll unter einer Minute bleiben). Am Ende fasst es Laufzeit-`WARNING`s von Godot
+    zusammen (zählen nicht als Fehler).
+  - **Selbstprüfungen** `tests/checks.py` (Python, ohne Godot, wenige Sekunden): laufen bei jeder Stufe vor den
+    Godot-Läufen mit (Protokoll `temp/smoke/00-pruefen.log`; Fehler brechen nicht ab, zählen aber im Fazit), einzeln
+    `bash tests/smoke.sh pruefen`. Jede Meldung mit Datei:Zeile, Fehler und Behebung. Prüft: `class_name` doppelt im
+    res://-Baum, wie Godot ihn scannt (ohne Ordner mit `.gdignore` und versteckte wie `.claude/` – eine vergessene
+    Sicherungskopie in `temp/` gibt sonst rätselhafte Parse-Fehler woanders), `class_name` gleich einem Autoload,
+    doppelte `.uid`-Dateien, Skripte außerhalb von `scripts/`, `shaders/`, `tests/`, `tools/`, `addons/` (Warnung);
+    Verweise `Spielkonzept 4.13`, `SK 5.12`, nackt `(2.5)` im Kommentar, `TECHNIK.md 10`, `TECHNIK.md 1 „Grafik“`
+    auf vorhandene Kapitel (Unterpunkte wie „6.19 (7)“ nicht); Debug-Parameter: was `main.gd` auswertet, steht im
+    Kopfkommentar und in der README-Tabelle und umgekehrt; die Rauchtest-Liste (jede Zeile mit Stichwort, höchstens
+    8× „schnell“ – sonst Warnung, Stichwörter in der Doku gibt es); `preload`/`load` mit festem `res://`-Pfad.
+    Veralteter Klassen-Cache nur als Warnung (`--cache` allein: Exit 1 = veraltet). `Item.Kind` prüft `save_rules` (unten). `temp/` bekommt bewusst kein `.gdignore`: Godot importiert dort
+    Modelle zur Ansicht im Editor und `--static-eg` legt dort seine Szene ab.
   - **Spielstand-Regeln und Rechentests** über die Szene `res://tests/run.tscn` (`tests/run.gd`; Klassen des Spiels
     brauchen die Autoloads, die Godot mit `-s` nicht lädt): `Godot --headless --path . res://tests/run.tscn
     [-- name …]`, jeder Test ein Node mit `run() -> bool`, neue in `run.gd` `TESTS` eintragen.

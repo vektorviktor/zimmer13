@@ -7,6 +7,9 @@
 #   bash tests/smoke.sh            vor größeren Commits (~13 min): alles, danach die Tests in tests/ (Spielstand-Regeln,
 #                                  Rechentests, Schach) und der Titelbildschirm
 #   bash tests/smoke.sh stichworte die Stichworte mit Zahl der Szenarien
+#   bash tests/smoke.sh pruefen    nur die Selbstprüfungen (tests/checks.py, wenige Sekunden: doppelte class_name,
+#                                  tote Kapitelverweise, Debug-Parameter, diese Liste, load-Pfade) – laufen sonst
+#                                  bei jeder Stufe vorweg mit; Fehler dort brechen nicht ab, zählen aber im Fazit
 # Protokolle in temp/smoke/. GODOT = Pfad zu Godot (Standard wie im README), JOBS = Läufe nebeneinander (Standard 6).
 # Liste unten: Frames|Stichworte|Parameter. Neue Szenarien bekommen ein oder mehrere Stichworte; „schnell“ nur für
 # wenige, die viel auf einmal berühren (die schnelle Stufe soll unter einer Minute bleiben).
@@ -24,10 +27,48 @@ if [ "$FILTER" = "stichworte" ]; then
 	exit 0
 fi
 
+# Selbstprüfungen (tests/checks.py) – ein Python, das wirklich läuft (nicht der Store-Platzhalter von Windows)
+checks() {
+	local py
+	for py in python3 python py; do
+		if "$py" -c "" > /dev/null 2>&1; then
+			"$py" tests/checks.py "$@"
+			return
+		fi
+	done
+	echo "FEHLER   kein Python gefunden – Selbstprüfungen (tests/checks.py) nicht gelaufen"
+	return 1
+}
+if [ "$FILTER" = "pruefen" ]; then
+	checks
+	exit
+fi
+
 STUCK_MAX=10   # „kommt nicht weiter“ je Lauf – einzelne Gedränge sind normal, Dutzende nicht
 LOGS=temp/smoke
 mkdir -p "$LOGS"
 rm -f "$LOGS"/*.log "$LOGS"/*.res
+# Klassen-Cache veraltet (Merge mit neuer class_name, frischer Worktree ohne .godot/) → sonst hunderte Folgefehler
+# („Identifier … not declared“) in jedem Lauf: vorweg einmal importieren
+if ! checks --cache > "$LOGS/00-import.log"; then
+	cat "$LOGS/00-import.log"
+	echo "[import] Klassen-Cache veraltet – Godot --import läuft (Protokoll $LOGS/00-import.log) …"
+	timeout 900 "$GODOT" --headless --path . --import >> "$LOGS/00-import.log" 2>&1
+	if checks --cache > /dev/null; then
+		echo "[import] fertig, Klassen-Cache aktuell"
+	else
+		printf 'fail\tFEHLER  Import: Klassen-Cache nach --import immer noch veraltet   (%s)\n' "$LOGS/00-import.log" \
+			> "$LOGS/00-import.res"
+	fi
+fi
+checks | tee "$LOGS/00-pruefen.log"
+if [ "${PIPESTATUS[0]}" = 0 ]; then
+	printf 'ok\tok      Selbstprüfungen\n' > "$LOGS/00-pruefen.res"
+else
+	printf 'fail\tFEHLER  Selbstprüfungen: %s   (%s)\n' "$(tail -1 "$LOGS/00-pruefen.log" | sed 's/^\[pruefen\] //')" \
+		"$LOGS/00-pruefen.log" > "$LOGS/00-pruefen.res"
+fi
+echo
 
 # judge <name> <log> <exit> → eine Zeile „ok|known|fail<TAB>Text“
 judge() {
@@ -313,6 +354,13 @@ if [ "$count" = 0 ]; then
 fi
 
 cut -f2- "$LOGS"/*.res
+# Laufzeit-Warnungen von Godot nur zusammengefasst (zählen nicht als Fehler)
+warnings=$(grep -h "^WARNING:" "$LOGS"/[0-9][0-9].log 2>/dev/null | sort | uniq -c | sort -rn)
+if [ -n "$warnings" ]; then
+	echo
+	echo "Laufzeit-Warnungen ($(echo "$warnings" | wc -l) verschiedene, häufigste zuerst):"
+	echo "$warnings" | head -5
+fi
 failed=$(cut -f1 "$LOGS"/*.res | grep -c "^fail")
 known=$(cut -f1 "$LOGS"/*.res | grep -c "^known")
 echo

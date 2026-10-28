@@ -12,7 +12,7 @@ Projekt im Godot-Editor öffnen (`project.godot`) und mit **F5** starten (Titelb
 
 Tests (Details in TECHNIK.md, Abschnitt 10): Rauchtest in drei Stufen – schnell nach jeder Änderung (~½ min), je System
 mit einem Stichwort (`bash tests/smoke.sh schlaf`, alle Stichworte: `bash tests/smoke.sh stichworte`), alles vor größeren
-Commits (~13 min) – bzw. nur Spielstand-Regeln und Rechentests (Sekunden):
+Commits (~13 min), vorweg jeweils die Selbstprüfungen (einzeln `bash tests/smoke.sh pruefen`) – bzw. nur Spielstand-Regeln und Rechentests (Sekunden):
 
 ```bash
 bash tests/smoke.sh schnell

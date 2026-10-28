@@ -37,6 +37,7 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
 - Rauchtest in drei Stufen (TECHNIK.md 10): nach jeder Änderung `bash tests/smoke.sh schnell` (~½ min), nach Arbeit an
   einem System dessen Stichwort (`bash tests/smoke.sh schlaf`, Liste: `… stichworte`), vor größeren Commits
   `bash tests/smoke.sh` (alles, ~13 min). Neue Szenarien bekommen Stichworte, „schnell“ nur ausnahmsweise.
+  Vorweg laufen immer die Selbstprüfungen (`bash tests/smoke.sh pruefen`, Sekunden) – ihre Meldungen gleich beheben.
 - Spielzeit läuft über `delta` bzw. `MonsterDirector.elapsed` – nie über Systemzeit (Pause!). Was mit `delta` über
   Minuten bis Stunden zählt, braucht `skip_time(dt)` in Gruppe `time_skip` (Zeitsprung im Schlaf, TECHNIK.md 3).
 
