@@ -570,6 +570,7 @@ func apply(data: Dictionary) -> void:
 	Game.social.tidying.reset()
 	Game.social.candles.reset()
 	Game.social.bath.reset()
+	Game.social.break_in.reset()
 	if Game.kitchen:
 		Game.kitchen.reset()
 	if Game.coffee:

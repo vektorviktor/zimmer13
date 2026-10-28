@@ -4142,14 +4142,16 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 
 ### 6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht
-> durchkommen (zu lange jemand im Weg); das Einbrechen sehr wütender Gäste bei Zimmer 13 (1), Schlüssel stehlen und
-> Zweitschlüssel (4) fehlen noch; das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal je Tür und Tag
-> gilt). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank (Ostwand der Lobby) stehen im Plan.
+> durchkommen (zu lange jemand im Weg); das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal
+> je Tür und Tag gilt; die Zahlen sind in 6.18 zu klären). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank (Ostwand der Lobby) stehen im Plan.
 > **Badtüren (2026-10-28):** Gäste gehen ab und zu in ihr Bad und schließen die Tür hinter sich; ein Schloss gibt es nicht.
 > **Schlüssel stehlen (2026-10-28)** wie in (4): am Bett des Schlafenden, Folgen bei Zeugen wie beim Deko-Diebstahl; das
 > Schloss ist ab 6 Uhr am Morgen danach getauscht. **Zweitschlüssel (2026-10-28):** Ein erwachsener guter Freund gibt ihn
 > dir bei der nächsten Begegnung (einmal je Haushalt); damit gilt man dort nicht als Eindringling. Ob er ihn
-> zurückverlangt, wenn die Freundschaft zerbricht, ist offen (er bleibt am Bund).
+> zurückverlangt, wenn die Freundschaft zerbricht, ist offen (er bleibt am Bund). **Einbruch bei 13 (2026-10-28)** als
+> Racheakt wie in (1): ohne Werkzeug zu holen, je Erzfeind höchstens einmal am Tag; ohne Zurückzunehmendes und ohne
+> Deko nimmt er 5 €. Das Tagebuch liest er, ohne dass es Folgen hat (was er dort erfährt, kommt mit 8.9). Was Zeugen
+> unter den Gästen vom Einbrecher halten, ist offen – sie rufen nur.
 >
 > Verallgemeinert Zuflucht und Abschließen aus 6.18 (4): Freundschaft öffnet Türen – im
 > wörtlichen Sinn. Zimmer werden sozialer Raum; Verstecke, Diebstahl (6.2) und Birnen (7.3) brauchen erst einen Weg

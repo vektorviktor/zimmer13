@@ -1114,6 +1114,15 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   (`IDLE`/`WALK`), in `SPARE_RANGE` und mit Blick auf dich, gibt ihn – einmal je Haushalt (`spares`, gespeichert), nicht
   in Gefahr oder im Gespräch. Mit ihm kein Hausfriedensbruch (`_watch_trespass`), `_swap_locks` übergeht das Zimmer.
   Sinkt die Freundschaft später, bleibt er am Bund.
+- **Einbruch bei 13** (`guests/break_in.gd`, `BreakIn` als `Social.break_in`): Racheakt eines stark verfeindeten
+  Erwachsenen (`Social.Tier.STRONG_ENEMY`), frei, je Gast einmal am Tag, für alle zusammen höchstens alle `GAP`; nur,
+  wenn der Spieler nicht in Zimmer 13 ist (`_player_inside`, auch vor dem Aufbrechen geprüft), nicht in Nachtruhe oder
+  solange das Monster unterwegs ist. Ablauf über den Besuchsablauf in `job["phase"]`: `go` (vor die Tür) → `force`
+  (`FORCE_TIME`, Rütteln; dann wie `Door._forced`: `broken`, offen, Lärm `door_force`, Tat „revenge“) → `take`
+  (Meta `taken_from`, gesetzt in `Social.on_player_took`, sonst Deko des Spielers über `Social.on_guest_stole`, sonst
+  `MONEY`) → `read` (vor den Schreibtisch, `READ_TIME`) → heim (Deko vor seine Tür, anderes in den Koffer). Bricht ab,
+  sobald er aus dem Ablauf fällt. Zeugen: Spieler (`player_can_see`) erfährt den Namen, Gäste rufen; sonst Hinweis beim
+  nächsten Betreten (`_notice`). Die Tür repariert nur der Spieler (Zimmer 13 hat keinen Haushalt). Nicht gespeichert.
 - **Bad** (`guests/bath_use.gd`, `BathUse` als `Social.bath`): `LevelBuilder._room_baths` legt je Zimmer `baths`
   an ({door, id, spot `BATH_SPOT_DEPTH` hinter der Badtür}). Wer zu Hause herumsteht (`IDLE`, `_is_home`), geht mit
   `CHANCE` je Blick (alle `SCAN` s, höchstens alle `GAP`) über den Besuchsablauf hinein, wenn niemand drin oder auf dem
@@ -1121,7 +1130,7 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   er mit dem nächsten Vorhaben (`_open_doors` öffnet sie, sie bleibt offen). Kein Schloss; wer aufmacht, hört
   „Besetzt!“. Nicht in Nachtruhe, Feier, solange das Monster unterwegs ist. Nicht gespeichert.
 - Debug: `--klopfen[=zimmer[,weg]]`, `--tuer=zimmer`, `--werkzeug=brecheisen|kasten|schluessel`, `--bad=id`,
-  `--schluesseldieb[=zimmer[,tausch]]`, `--zweitschluessel=id`.
+  `--schluesseldieb[=zimmer[,tausch]]`, `--zweitschluessel=id`, `--einbruch=id[,eigen]`.
 
 ### Kinder (Spielkonzept 6.13)
 - `Guest.is_child()`, `parent_guest()`, `is_orphan()`; Profil mit `child`, `age`, Archetyp „Kind“, Sätze aus
