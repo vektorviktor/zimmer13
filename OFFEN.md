@@ -154,7 +154,7 @@ Plan nur der Nutzer (`map*.aseprite`).
 
 ## 5. Technik und Pflege
 
-- **Segfault beim Beenden** headless (etwa jeder dritte Lauf, Exit 139), Ursache unbekannt – TE (Bekannt, offen).
+- **Segfault beim Beenden** headless (Exit 139), inzwischen selten (28.10.: 1 von 234 Läufen), Ursache unbekannt; nach dem Refactoring neu zählen – TE (Bekannt, offen).
 - Balancing insgesamt – SK 11 (13).
 
 ## 6. Ideen (unentschieden, früher IDEEN.md)
