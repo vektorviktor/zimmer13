@@ -92,7 +92,7 @@ Stand: 2026-10-26.
 | Taschenlampe | `FLASHLIGHT` | gebaut | – | Licht, mit Aufsatz UV | 4.16 |
 | Batterie | `BATTERY` | gebaut | – | Taschenlampe | 4.16 |
 | UV-Aufsatz | `UV_FILTER` | gebaut | – (zeigt UV-Hinweise, vertreibt das Monster) | auf die Taschenlampe; liegt auf dem Tisch in Zimmer 18 (fehlte seit dem Gebäudeplan, wieder da seit 28.10.) | 4.16, 7.4 |
-| Glühbirne (heil/kaputt) | `BULB` | gebaut | – | Lampen ein- und ausdrehen · Herzensbitte der Bastler (6.14) | 7.3 |
+| Glühbirne (heil/kaputt) | `BULB` | gebaut | – | Lampen ein- und ausdrehen · Herzensbitte der Bastler (6.14) · Gäste holen Ersatz aus dem Lager (noch nicht im Plan) oder klauen ihn | 7.3 |
 | Streichholzschachtel | `MATCHBOX` | gebaut | – | Kerzen anzünden; Zimmer 022 | 5.12 |
 | Messer | `KNIFE` | gebaut | – | schnitzen | 5.4 |
 | Brecheisen | `CROWBAR` | gebaut | – | Zimmertüren aufbrechen; Heizraum | 6.19 |

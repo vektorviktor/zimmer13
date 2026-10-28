@@ -81,6 +81,9 @@ func _ready() -> void:
 func get_prompt(player: Player) -> String:
 	if seat and player.seat == seat:
 		return ""
+	var sleeper := _sleeper()
+	if sleeper:
+		return "%s wecken [E]" % sleeper.display_name
 	if can_sleep(player):
 		if occupant != null:
 			return "Besetzt"
@@ -109,7 +112,10 @@ func get_icon(player: Player) -> String:
 func interact(player: Player) -> void:
 	if seat and player.seat == seat:
 		return
-	if can_sleep(player):
+	var sleeper := _sleeper()
+	if sleeper and Game.social:
+		Game.social.wake_guest(sleeper)   # Spielkonzept 3.6
+	elif can_sleep(player):
 		if Game.shower_scare and Game.shower_scare.blocks_sleep():
 			Game.say("Ich kann nicht schlafen, solange da Wasser läuft.", 3.0)   # Spielkonzept 4.24
 		elif occupant == null:
@@ -118,6 +124,15 @@ func interact(player: Player) -> void:
 		seat.interact(player)
 	elif occupant == null:
 		player.enter_hide(self)
+
+
+## Ein Gast, der hier schläft (nicht verletzt im Krankenbett) – den kann man wecken (Spielkonzept 3.6).
+func _sleeper() -> Guest:
+	for node in [occupant, partner]:
+		var g := node as Guest
+		if g and not g.dead and g.is_asleep() and not g.in_sickbed():
+			return g
+	return null
 
 
 ## Im eigenen Bett (Zimmer 13) schläft man, wann man will (Spielkonzept 3.6), im fremden, sobald man mit dem Mausrad

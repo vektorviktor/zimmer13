@@ -1032,15 +1032,15 @@ static func _layer_of(kind: int) -> String:
 	return "wall" if kind in WALL_KINDS else "floor"
 
 
-## Weg über das NavMesh ohne verschlossene Tür (Gäste schließen nicht auf).
-func _reachable(from: Vector3, to: Vector3) -> bool:
+## Weg über das NavMesh ohne verschlossene Tür (Gäste schließen nicht auf) – außer `own`, der eigenen Zimmertür.
+func _reachable(from: Vector3, to: Vector3, own: Door = null) -> bool:
 	var map := get_world_3d().navigation_map
 	var path := NavigationServer3D.map_get_path(map, from, to, true)
 	if path.is_empty() or path[path.size() - 1].distance_to(NavigationServer3D.map_get_closest_point(map, to)) > 1.0:
 		return false
 	for node in get_tree().get_nodes_in_group("doors"):
 		var door := node as Door
-		if not door.locked:
+		if not door.locked or door == own:
 			continue
 		var c := door.center()
 		for i in path.size() - 1:

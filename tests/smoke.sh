@@ -227,6 +227,11 @@ done <<'LIST'
 400|spuren,monster|--wallblood
 1200|licht,gaeste,streiche|--bulb-thief=bruno
 1200|licht,gaeste|--lichtgang=bruno --trace
+1200|licht,gaeste,schreck|--lichtgang=bruno,versteckt --trace
+2400|licht,birne,gaeste|--birnenersatz=bruno,lager --trace
+2400|licht,birne,gaeste|--birnenersatz=bruno,klauen --trace
+1500|licht,birne,gaeste,nacht|--birnenersatz=edna,meiden --trace
+2400|licht,birne,gaeste,nacht|--pals=edna,bruno --birnenersatz=edna,meiden --trace
 800|gaeste,tod,ui|--wound=edna,axe,hin --talk=edna
 1200|gaeste,tod|--shock=mila,corpse --trace
 600|gaeste,tod|--shock=bruno,lache --trace
@@ -239,6 +244,10 @@ done <<'LIST'
 2400|schlaf,fremdbett,gaeste|--fremdbett=bruno,-70 --trace
 2400|schlaf,fremdbett,gaeste|--fremdbett=edna,90 --trace
 1800|schlaf,fremdbett|--fremdbett=frei,3 --trace
+900|schlaf,wecken,gaeste|--wecken=edna --trace
+900|schlaf,wecken,gaeste|--wecken=bruno,gefahr --trace
+900|schlaf,wecken,gaeste|--wecken=edna,halluzination --trace
+900|schlaf,wecken,gaeste|--wecken=bruno,klopfen --trace
 1800|schlaf,tag|--sleep=tag,4 --trace
 600|schlaf,speichern|--awake=30 --savetest
 600|kuerbis|--pos=45,0.1,-37 --fall=5,giant --trace

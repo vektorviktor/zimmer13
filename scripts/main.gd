@@ -220,7 +220,14 @@ extends Node3D
 ##                               lebenden Gast; kill/wound ohne Kinder (kinder: mit), hin wird ignoriert
 ##   --despawn[=monster|geist|kuerbis]   die Bedrohung (ohne Angabe alle) ist sofort fort, auch Vorwarnung/Ankündigung
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
-##   --lichtgang=id              Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3)
+##   --lichtgang=id[,versteckt]  Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3) · versteckt: du
+##                               sitzt in seinem Schrank (sonst unterm Bett) – er macht beim Gehen trotzdem aus
+##   --wecken=id[,gefahr|halluzination|klopfen]   Nachtruhe, alle im Bett, du stehst an seinem Bett und weckst ihn nach
+##                               2 s (3.6) · gefahr: dazu eine echte Flackerwelle · halluzination: eine falsche (falscher
+##                               Alarm) · klopfen: du stehst vor seiner Tür und klopfst
+##   --birnenersatz=id[,lager|klauen|meiden]   im Zimmer des Gastes (Haushaltsvorstand) fehlen alle Birnen, er steht
+##                               darin (7.3) · lager (Standard): ein Ersatzbirnen-Lager in der Lobby · klauen: mutig, holt
+##                               eine aus einem leeren Raum oder Flur · meiden: ängstlich, nach 20 s beginnt die Nachtruhe
 ##   --kerzenpflege=id[,ohne]    Kerzen vor der Tür des Gastes gehen aus (ohne: in Kürbis und Totenkopf abgebrannt), er
 ##                               steht ein paar Meter davor und kümmert sich darum (5.12)
 ##   --abbrennen[=rest]          alle Kerzen (auch feste, in Kürbis und Totenkopf) haben nur noch rest übrig (Standard
@@ -1389,6 +1396,10 @@ func run_debug(arg: String) -> bool:
 					Game.player.start_sleep(spot))
 	elif arg.begins_with("--fremdbett="):
 		_debug_foreign_bed(arg.substr(12).split(","))
+	elif arg.begins_with("--wecken="):
+		_debug_wake(arg.substr(9).split(","))
+	elif arg.begins_with("--birnenersatz="):
+		_debug_bulb_refill(arg.substr(15).split(","))
 	elif arg.begins_with("--ghost="):
 		Game.ghost.debug_summon(arg.substr(8).to_int())
 	elif arg == "--warn":
@@ -1568,13 +1579,22 @@ func run_debug(arg: String) -> bool:
 			thief._walk_to(Vector3(lamp.global_position.x, 0, lamp.global_position.z) + thief._toward_room(lamp), Guest.State.STEAL)
 	elif arg.begins_with("--lichtgang="):
 		# Gast steht vor seiner Tür, drinnen ist das Licht aus: Er geht hinein und zum Schalter (7.3), nach 30 s
-		# wieder hinaus in die Lobby und macht als Letzter aus (außer er vergisst es)
-		var walker := _guest(arg.substr(12))
+		# wieder hinaus in die Lobby und macht als Letzter aus (außer er vergisst es) – auch wenn du dich drin versteckst
+		var light_args := arg.substr(12).split(",")
+		var walker := _guest(light_args[0])
 		var sw := LightSwitch.find(get_tree(), String(walker.home["no"])) if walker else null
 		if sw:
 			sw.set_on(false, true)
 			walker.global_position = walker.home["door_front"]
 			walker._walk_to(walker._room_point(), Guest.State.WALK)
+			if light_args.size() > 1 and light_args[1] == "versteckt":
+				var hide: HideSpot = null
+				for spot: HideSpot in walker.home["spots"]:
+					if hide == null or (spot.type == HideSpot.Type.WARDROBE and hide.type != HideSpot.Type.WARDROBE):
+						hide = spot
+				if hide:
+					Game.player.global_position = hide.exit_point.global_position
+					Game.player.enter_hide(hide)
 			get_tree().create_timer(30.0, false).timeout.connect(func() -> void:
 				if not walker.dead:
 					walker._walk_to(Game.social.builder.lobby_seats.pick_random(), Guest.State.WALK))
@@ -2287,6 +2307,67 @@ func _debug_foreign_bed(args: PackedStringArray) -> void:
 			Game.social.debug_sleep())   # Nachtruhe: Er geht ins Bett und findet dich
 	if Game.tracing:
 		print("[Fremdes Bett] Debug: Zimmer %s%s" % [bed.room_no, ", %s (Beziehung %.0f)" % [guest.display_name, guest.relation] if guest else ""])
+
+
+## --wecken=id[,gefahr|halluzination|klopfen] (Spielkonzept 3.6): Nachtruhe, alle liegen im Bett; nach 2 s weckst du
+## den Gast an seinem Bett bzw. klopfst an seine Tür – mit echter oder falscher Flackerwelle.
+func _debug_wake(args: PackedStringArray) -> void:
+	var guest := Game.social.find_guest(args[0])
+	if guest == null:
+		push_warning("--wecken: kein Gast „%s“" % args[0])
+		return
+	var mode := args[1] if args.size() > 1 else ""
+	Game.social.debug_sleep(true)
+	var bed := guest.hiding as HideSpot
+	var door: Door = guest.home["door"]
+	if mode == "klopfen":
+		Game.player.global_position = guest.home["door_front"]
+	elif bed:
+		Game.player.global_position = bed.exit_point.global_position
+	else:
+		push_warning("--wecken: %s liegt nicht im Bett" % guest.display_name)
+		return
+	get_tree().create_timer(2.0, false).timeout.connect(func() -> void:
+		var director := Game.director
+		if mode == "gefahr":
+			director._start_wave(director.spawn_points[0], 1)
+		elif mode == "halluzination":
+			director._hallucination = 8.0
+			director._start_wave(director.spawn_points[0], 2, true)
+		if mode == "klopfen":
+			Game.social.access.knock(door)
+		elif bed:
+			bed.interact(Game.player))
+
+
+## --birnenersatz=id[,lager|klauen|meiden] (Spielkonzept 7.3): Im Zimmer des Haushaltsvorstands fehlen alle Birnen, er
+## steht darin und überlegt gleich, was er tut.
+func _debug_bulb_refill(args: PackedStringArray) -> void:
+	var guest := Game.social.find_guest(args[0])
+	if guest:
+		guest = Game.social.household_lead(String(guest.home["no"]))
+	if guest == null:
+		push_warning("--birnenersatz: kein Gast „%s“" % args[0])
+		return
+	var mode := args[1] if args.size() > 1 else "lager"
+	for lamp in guest._home_lamps():
+		var bulb := lamp.take_bulb()
+		if bulb:
+			bulb.free()
+	guest.stock[Item.Kind.BULB] = 0
+	guest.clear_stance("bulb_tried")
+	guest.profile["brave"] = 0.8 if mode == "klauen" else 0.2
+	guest.global_position = guest.home["center"]
+	guest._set_idle(1.0)
+	if mode == "lager":
+		var seat: Vector3 = Game.social.builder.lobby_seats[0]
+		var spot := ResourceSpot.new().setup(Item.Kind.BULB, "Ersatzbirne aus dem Lager", 2, 300.0)
+		spot.position = seat + Vector3(0, 0.02, 0)
+		guest.get_parent().add_child(spot)
+	elif mode == "meiden":
+		get_tree().create_timer(20.0, false).timeout.connect(func() -> void: Game.social.debug_sleep())
+	if Game.tracing:
+		print("[Birne] Debug: %s (Zimmer %s), %s" % [guest.display_name, guest.home["no"], mode])
 
 
 ## --salz[=fenster|tür|monster|zimmer,nr|gast,id]: Salz (Spielkonzept 5.13) – eine Packung in der Hand; fenster: dazu
