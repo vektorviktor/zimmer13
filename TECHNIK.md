@@ -2013,9 +2013,14 @@ selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Ra
 - Nach Änderungen am Speichern (nicht an der Welt): `--savetest` (`alles gleich` erwartet).
 - Headless gibt es kein Bild: Autosave ohne Vorschau (in `user://saves_headless/`), Shader werden nicht kompiliert
   (Shader-Änderungen mit Fenster und `--bg --shot=…` prüfen).
-- **Bekannt, offen:** Headless-Läufe enden nach dem Hotel in etwa jedem dritten Fall beim Beenden mit Segfault
-  (Exit 139), selten hängen sie; der Titelbildschirm allein nie. Ausgeschlossen: Abbau der Szene, statische Caches,
-  asynchrone Navigation, Rückkehr zum Titel. Ohne Debug-Symbole von Godot nicht weiter zu finden.
+- **Bekannt, offen:** Headless-Läufe stürzen nach dem Hotel selten beim Beenden mit Segfault ab (Exit 139) oder hängen;
+  der Titelbildschirm allein nie. Am 22.10. noch etwa jeder dritte Lauf, am 28.10. nur 1 von 234 (kurze Szenarien aus
+  dem Rauchtest, 6 nebeneinander, dazu 78 mit `--verbose`; beide bekannten Fälle waren `--shock=bruno,lache`, das für
+  sich aber auch nur 1 von 50). Der Absturz liegt nach der Endmarke `[Ende]` und vor der ObjectDB-Bilanz („… instances
+  were leaked“), also im Abbau der Engine (Skriptsprachen, Server), nicht im Spiel. Ausgeschlossen: Abbau der Szene,
+  statische Caches, asynchrone Navigation, Rückkehr zum Titel; Threads aus GDScript gibt es nur in der Schach-KI (wartet
+  in `cancel`), Server-RIDs legt das Spiel nicht von Hand an. So selten ohne Debug-Symbole von Godot nicht einzugrenzen
+  – nach dem nächsten Refactoring neu zählen. Nebenbei harmlos: 24 `Node3D` bleiben beim Beenden übrig („leaked“).
 - **Tests** (`tests/`, nicht im Export). Neue Klassen kennt Godot erst nach einem Import (`--headless --import`).
   - **Rauchtest** `bash tests/smoke.sh [stufe]` (`JOBS` Läufe nebeneinander, Protokolle in `temp/smoke/`), drei Stufen:
     **`schnell`** nach jeder Änderung (~½ min: Szenarien mit Stichwort „schnell“ und die Spielstand-Regeln), **ein
