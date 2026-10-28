@@ -1110,6 +1110,10 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   den Bund, `stolen[zimmer]` = nächster Morgen `LOCK_SWAP_HOUR`; feindselige Tat, Tagebuch „first_theft“, Zeugen wie
   `Social.on_player_took` (`KEY_THEFT_*`). `_swap_locks`: Lebt der Haushalt noch, wird der Schlüssel am Bund zu
   `OLD_KEY` + ID (`Item.key_label`: „passt nicht mehr“). Gespeichert als `social.access` (`save_state`).
+- **Zweitschlüssel** (`_offer_spares`, `give_spare`): Ein erwachsener guter Freund (`Social.Tier.GOOD_FRIEND`), frei
+  (`IDLE`/`WALK`), in `SPARE_RANGE` und mit Blick auf dich, gibt ihn – einmal je Haushalt (`spares`, gespeichert), nicht
+  in Gefahr oder im Gespräch. Mit ihm kein Hausfriedensbruch (`_watch_trespass`), `_swap_locks` übergeht das Zimmer.
+  Sinkt die Freundschaft später, bleibt er am Bund.
 - **Bad** (`guests/bath_use.gd`, `BathUse` als `Social.bath`): `LevelBuilder._room_baths` legt je Zimmer `baths`
   an ({door, id, spot `BATH_SPOT_DEPTH` hinter der Badtür}). Wer zu Hause herumsteht (`IDLE`, `_is_home`), geht mit
   `CHANCE` je Blick (alle `SCAN` s, höchstens alle `GAP`) über den Besuchsablauf hinein, wenn niemand drin oder auf dem
@@ -1117,7 +1121,7 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   er mit dem nächsten Vorhaben (`_open_doors` öffnet sie, sie bleibt offen). Kein Schloss; wer aufmacht, hört
   „Besetzt!“. Nicht in Nachtruhe, Feier, solange das Monster unterwegs ist. Nicht gespeichert.
 - Debug: `--klopfen[=zimmer[,weg]]`, `--tuer=zimmer`, `--werkzeug=brecheisen|kasten|schluessel`, `--bad=id`,
-  `--schluesseldieb[=zimmer[,tausch]]`.
+  `--schluesseldieb[=zimmer[,tausch]]`, `--zweitschluessel=id`.
 
 ### Kinder (Spielkonzept 6.13)
 - `Guest.is_child()`, `parent_guest()`, `is_orphan()`; Profil mit `child`, `age`, Archetyp „Kind“, Sätze aus

@@ -9,7 +9,10 @@ extends Node
 ## Schlüssel stehlen (4): Einem schlafenden Gast im eigenen Bett nimmt man den Zimmerschlüssel vom Nachttisch (am Bett,
 ## HideSpot fragt can_steal_key) – an den Schlüsselbund, mit den Zeugenregeln des Diebstahls. Am nächsten Morgen merkt
 ## der Gast es und lässt das Schloss tauschen (_swap_locks): Der Schlüssel am Bund wird zum alten („alt_…“), der nicht
-## mehr passt; wer es war, bleibt unbekannt. Gespeichert: stolen.
+## mehr passt; wer es war, bleibt unbekannt.
+## Zweitschlüssel (4): Ein guter Freund (6.3, Erwachsener) gibt dir, sobald ihr euch das nächste Mal nah begegnet, einen
+## Zweitschlüssel seines Zimmers – an den Bund, einmal je Haushalt (_offer_spares). Wer ihn hat, ist dort willkommen
+## (kein Hausfriedensbruch). Gespeichert: stolen, spares.
 
 ## Einlass je Stufe in Prozent (6.3); ab „wütend“ nie
 const BASE_CHANCE := {
@@ -69,6 +72,8 @@ const KEY_THEFT_GOSSIP := -8.0
 const LOCK_SWAP_HOUR := 6.0
 ## Vorsatz am Schlüsselbund: ein gestohlener Schlüssel, dessen Schloss getauscht ist
 const OLD_KEY := "alt_"
+## Zweitschlüssel: so nah (m) muss der gute Freund dir begegnen
+const SPARE_RANGE := 3.0
 
 var visit := {}       ## laufender Besuch: {room, host, door, start, until, promise, panic, warned}
 var _pending := {}    ## Geklopft, jemand kommt an die Tür: {door, guest, time, woken}
@@ -79,6 +84,7 @@ var _repaired := {}   ## Tür → Tag der letzten Reparatur mit Dank
 var _lent_day := -1
 var _morning_day := -1
 var stolen := {}      ## Zimmer → Spielzeit (Game.director.elapsed), ab der der Besitzer den Diebstahl merkt
+var spares := {}      ## Zimmer → true: Zweitschlüssel eines guten Freundes am Bund (bleibt beim Schlosstausch)
 
 
 func _now() -> float:
@@ -146,6 +152,7 @@ func _process(delta: float) -> void:
 		_watch_trespass()
 		_morning_repairs()
 		_swap_locks()
+		_offer_spares()
 
 
 ## Jemand kommt an die Tür: angekommen (oder nach ANSWER_TIMEOUT) öffnet er einen Spalt, und das Gespräch beginnt.
@@ -327,8 +334,8 @@ func _watch_trespass() -> void:
 	var no := social.builder.room_at(Game.player.global_position)
 	if no == "" or no == LevelBuilder.PLAYER_ROOM or not social.builder.households.has(no):
 		return
-	if not visit.is_empty() and visit["room"] == no:
-		return
+	if (not visit.is_empty() and visit["room"] == no) or spares.has(no):
+		return   # eingeladen bzw. mit dem Zweitschlüssel eines Freundes willkommen
 	if _now() - float(_caught.get(no, -INF)) < TRESPASS_COOLDOWN:
 		return
 	for g in residents_home(no):
@@ -526,6 +533,8 @@ func _swap_locks() -> void:
 		if _now() < float(stolen[no]):
 			continue
 		stolen.erase(no)
+		if spares.has(no):
+			continue   # inzwischen hat ein Freund dir einen Zweitschlüssel gegeben
 		var lead := _social().household_lead(no)
 		var id := _key_of(no)
 		if lead == null or not id in Game.player.keyring:
@@ -538,7 +547,7 @@ func _swap_locks() -> void:
 
 
 func save_state() -> Dictionary:
-	return {"stolen": stolen.duplicate()}
+	return {"stolen": stolen.duplicate(), "spares": spares.keys()}
 
 
 func load_state(d: Dictionary) -> void:
@@ -546,14 +555,52 @@ func load_state(d: Dictionary) -> void:
 	var saved: Dictionary = d.get("stolen", {})
 	for no in saved:
 		stolen[String(no)] = float(saved[no])
+	spares = {}
+	for no in d.get("spares", []):
+		spares[String(no)] = true
+
+
+# --- Zweitschlüssel (4) ---------------------------------------------------------------------------------------------
+
+## Ein guter Freund in der Nähe, der dich sieht und gerade frei ist, gibt dir einen Zweitschlüssel – einmal je Haushalt,
+## nicht in Gefahr, nicht mitten in einem Gespräch.
+func _offer_spares() -> void:
+	var p := Game.player
+	if p == null or p.dead or p.sleeping or p.hiding or (Game.dialog and Game.dialog.visible) or _danger():
+		return
+	var social := _social()
+	for g in social.living_guests():
+		var friend: Guest = g
+		var no := String(friend.home["no"])
+		if friend.is_child() or spares.has(no) or Social.tier(friend) != Social.Tier.GOOD_FRIEND \
+				or not social.builder.households.has(no) or _key_of(no) == "":
+			continue
+		if not friend.state in [Guest.State.IDLE, Guest.State.WALK] or friend.fear >= 60.0 \
+				or friend.global_position.distance_to(p.global_position) > SPARE_RANGE \
+				or not friend.can_see_actor(p) or not p.recognized_by(friend):
+			continue
+		give_spare(friend)
+		return
+
+
+func give_spare(friend: Guest) -> void:
+	var no := String(friend.home["no"])
+	var id := _key_of(no)
+	spares[no] = true
+	stolen.erase(no)
+	Game.player.keyring.erase(OLD_KEY + id)
+	Game.player.add_key(id)
+	var family := _social().living_guests().filter(func(g: Guest) -> bool: return g.home["no"] == no).size() > 1
+	friend.say("Hier, ein Zweitschlüssel für %s Zimmer. Komm vorbei, wann immer du willst." % ("unser" if family else "mein"))
+	Game.say("%s gibt dir einen Zweitschlüssel für Zimmer %s." % [friend.display_name, friend.home["sign"]], 4.0)
+	if Game.tracing:
+		print("[Zimmer] %s gibt dir den Zweitschlüssel für Zimmer %s" % [friend.display_name, no])
 
 
 ## --schluesseldieb[=zimmer[,tausch]]: Der Haushaltsvorstand des Zimmers liegt schlafend im Bett, du stehst daneben und
-## nimmst nach 1 s den Schlüssel; tausch: das Schloss wird schon 10 s danach getauscht. Nur nachts schläft er weiter
-## (etwa --day=3 --uhr=2:00).
+## nimmst gleich den Schlüssel; tausch: das Schloss wird schon 10 s danach getauscht. Tagsüber wacht er danach gleich
+## wieder auf, nachts (etwa --day=3 --uhr=2:00) schläft er weiter.
 func debug_steal(no: String, swap: bool) -> bool:
-	if not _social().night_due():
-		print("[Zimmer] Debug: tagsüber wacht er gleich wieder auf – mit --day=3 --uhr=2:00 starten")
 	var owner := _social().household_lead(no)
 	if owner == null:
 		print("[Zimmer] Debug: in Zimmer %s wohnt niemand" % no)
@@ -565,10 +612,9 @@ func debug_steal(no: String, swap: bool) -> bool:
 		return false
 	var at := bed.exit_point.global_position
 	TeleportUI.place_player(at, bed.global_position - at)
-	get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
-		if Game.tracing:
-			print("[Zimmer] Am Bett von %s: %s" % [owner.display_name, bed.get_prompt(Game.player)])
-		bed.interact(Game.player)
-		if swap and stolen.has(no):
-			stolen[no] = _now() + 10.0)
+	if Game.tracing:
+		print("[Zimmer] Am Bett von %s: %s" % [owner.display_name, bed.get_prompt(Game.player)])
+	bed.interact(Game.player)
+	if swap and stolen.has(no):
+		stolen[no] = _now() + 10.0
 	return true

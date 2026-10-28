@@ -90,8 +90,8 @@ extends Node3D
 ##                               Antwort im Türgespräch gleich selbst – mit --trace Chance und Ausgang
 ##   --schluesseldieb[=zimmer[,tausch]]   der Haushaltsvorstand des Zimmers (ohne Angabe 003) liegt schlafend im Bett,
 ##                               du stehst daneben und nimmst nach 1 s seinen Zimmerschlüssel (6.19); tausch: das Schloss
-##                               wird schon 10 s danach getauscht – nachts starten (--day=3 --uhr=2:00), mit --trace
-##                               Hinweis am Bett und Ablauf
+##                               wird schon 10 s danach getauscht – tagsüber wacht er danach auf, nachts (--day=3
+##                               --uhr=2:00) schläft er weiter; mit --trace Hinweis am Bett und Ablauf
 ##   --attic-door                Kniestocktür zum Ansehen (4.21): du stehst im Dachboden vor ihrer Bandseite (ohne Dachgeschoss
 ##                               im Plan wird beim Aufbau die erste 0,8 m breite Tür im OG1 zur Dachbodentür)
 ##   --dachboden[=kopf|fenster|treppe|blitz]  ins Dachgeschoss (4.21): hinter die Kniestocktür, Blick in die Kammer · kopf: vor
@@ -200,6 +200,8 @@ extends Node3D
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
 ##   --enemy=id                  mit einem Gast verfeindet starten
 ##   --relation=id,wert          Beziehung setzen (−100 … 100); ab ±80 werden die nötigen Taten mit eingetragen (6.3)
+##   --zweitschluessel=id        mit dem Gast gut befreundet (mit den Taten, 6.3), er steht vor dir und gibt dir gleich
+##                               den Zweitschlüssel seines Zimmers (6.19)
 ##   --follow=id · --visit=id    Gast kommt mit (steht hinter dir) · Gast geht zu Zimmer 13 und klopft an
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
@@ -1108,6 +1110,13 @@ func run_debug(arg: String) -> bool:
 				g.deeds.merge({"games": Social.BOND_GAMES, "gifts_to": Social.BOND_GIFTS_TO, "gifts_from": Social.BOND_GIFTS_FROM}, true)
 			elif g.relation <= -80.0:
 				g.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
+	elif arg.begins_with("--zweitschluessel="):
+		var friend := _guest(arg.substr(18))
+		if friend:
+			friend.relation = 90.0   # guter Freund (6.3), mit den nötigen Taten
+			friend.deeds.merge({"games": Social.BOND_GAMES, "gifts_to": Social.BOND_GIFTS_TO, "gifts_from": Social.BOND_GIFTS_FROM}, true)
+			_put_in_front(friend, 1.5)
+			friend._set_idle(10.0)
 	elif arg.begins_with("--follow="):
 		var follower := _guest(arg.substr(9))
 		if follower:

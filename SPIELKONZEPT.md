@@ -4147,7 +4147,9 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 > gilt). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank (Ostwand der Lobby) stehen im Plan.
 > **Badtüren (2026-10-28):** Gäste gehen ab und zu in ihr Bad und schließen die Tür hinter sich; ein Schloss gibt es nicht.
 > **Schlüssel stehlen (2026-10-28)** wie in (4): am Bett des Schlafenden, Folgen bei Zeugen wie beim Deko-Diebstahl; das
-> Schloss ist ab 6 Uhr am Morgen danach getauscht.
+> Schloss ist ab 6 Uhr am Morgen danach getauscht. **Zweitschlüssel (2026-10-28):** Ein erwachsener guter Freund gibt ihn
+> dir bei der nächsten Begegnung (einmal je Haushalt); damit gilt man dort nicht als Eindringling. Ob er ihn
+> zurückverlangt, wenn die Freundschaft zerbricht, ist offen (er bleibt am Bund).
 >
 > Verallgemeinert Zuflucht und Abschließen aus 6.18 (4): Freundschaft öffnet Türen – im
 > wörtlichen Sinn. Zimmer werden sozialer Raum; Verstecke, Diebstahl (6.2) und Birnen (7.3) brauchen erst einen Weg

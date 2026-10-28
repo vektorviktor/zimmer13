@@ -19,6 +19,7 @@ Stand: 2026-10-26.
 |---|---|---|---|---|---|
 | Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | an der Leviathanmauer im Heizraum (2003 vom Gast aus 018 verloren); öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
 | Generalschlüssel | Schlüsselbund | gebaut | – | Schlüsselschrank in der Lobby, Scheibe einschlagen; öffnet jede Zimmertür | 6.19 |
+| Zweitschlüssel | Schlüsselbund „zimmer_…“ | gebaut | – | ein guter Freund gibt ihn dir bei der nächsten Begegnung; öffnet sein Zimmer, dort bist du willkommen, bleibt beim Schlosstausch | 6.19, 6.3 |
 | Gestohlener Zimmerschlüssel | Schlüsselbund „zimmer_…“ (getauscht: „alt_zimmer_…“) | gebaut | – | einem schlafenden Gast vom Nachttisch genommen; öffnet sein Zimmer bis zum Morgen danach, dann ist das Schloss getauscht | 6.19 |
 | Dachbodenschlüssel | `KEY` „dachboden“ | **teilweise** – Tür gebaut, Schlüssel fehlt | Nebenstrang (Kürbismann) | hinter der Leviathanmauer, ab etwa Tag 15 | 4.21, M14 |
 | Schlüssel zum Haupteingang | `KEY` „ausgang“ | **teilweise** – Tür gebaut, Schlüssel fehlt (nur in der Hand, nicht am Bund) | **Hauptgeschichte** (Ende) | an Halloween; Fundort offen (K6) | 2.1, 2.7, M18 |

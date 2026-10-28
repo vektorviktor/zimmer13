@@ -113,8 +113,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     weiter, ihre Nächte ohne Schlaf werden zu je 24 Stunden wach
 ## 57: Kerzen brennen ab (Spielkonzept 5.12): übriges Wachs im Zusatz („w=…“ bei Kerze, Kürbis, Totenkopf) und bei den
 ##     festen Kerzen („wax“), Kerzenvorrat mit „refill_day“ – ältere Stände laden weiter, alle Kerzen dann neu
-## 59: Schlüssel stehlen (Spielkonzept 6.19): social.access.stolen (Zimmer → wann das Schloss getauscht wird), alte
-##     Schlüssel am Bund („alt_…“) – ältere Stände laden weiter, ohne gestohlene Schlüssel
+## 59: Schlüssel stehlen und Zweitschlüssel (Spielkonzept 6.19): social.access.stolen (Zimmer → wann das Schloss
+##     getauscht wird), social.access.spares, alte Schlüssel am Bund („alt_…“) – ältere Stände laden weiter, ohne
+##     gestohlene und Zweitschlüssel
 const VERSION := 59
 const MIN_VERSION := 55
 const SLOTS := 3

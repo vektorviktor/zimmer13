@@ -153,8 +153,9 @@ done <<'LIST'
 2400|kerzen,abbrennen,gaeste|--kerzenpflege=bruno --trace
 2400|kerzen,abbrennen,gaeste|--kerzenpflege=edna,ohne --trace
 1200|zimmerzugang,gaeste|--bad=edna --trace
-700|zimmerzugang,speichern|--day=3 --uhr=2:00 --schluesseldieb=003 --savetest --trace
+600|zimmerzugang,speichern|--schluesseldieb=003 --savetest --trace
 600|zimmerzugang|--day=3 --uhr=2:00 --schluesseldieb=021,tausch --trace
+400|zimmerzugang,speichern|--zweitschluessel=edna --savetest --trace
 600|kerzen,abbrennen,speichern|--abbrennen=0.5 --savetest
 600|streiche,kuerbis|--prank=pumpkin,111 --trace
 600|werfen,kuerbis,speichern|--pos=-6,0,-21,180,-25 --wurf --savetest --trace
