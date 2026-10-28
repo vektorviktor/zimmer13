@@ -2183,7 +2183,8 @@ in `Social.TRACE_TEXT`.
 `assets/source/`, Platzhalter im Code behalten, Lizenz ins README; Meshy-Texturen unkomprimiert (1 „Modelle“).
 
 **Neuer Debug-Parameter:** Zweig in `main.run_debug()` (gilt damit auch für die Debug-Konsole; `true` = erkannt),
-Kopfkommentar in `main.gd`, Eintrag in `DebugConsole.COMMANDS` (Hilfe, Tab) – bei Gast-ID als erstem Wert auch
+dort mit `_is_arg(arg, "--name")` erkennen und den Wert mit `_arg_value`/`_arg_parts` holen statt mit `substr(N)` –
+das Literal `"--name"` muss im Code stehen (Selbstprüfung `check_params`). Kopfkommentar in `main.gd`, Eintrag in `DebugConsole.COMMANDS` (Hilfe, Tab) – bei Gast-ID als erstem Wert auch
 `GUEST_FIRST`, weiter hinten `GUEST_ANY` (Gast in `main.gd` mit `Social.find_guest` suchen), wirkt er nur beim Start stattdessen `START_ONLY` – plus Tabelle im README. Im F6-Menü erscheint er von
 selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Rauchtest eine Zeile mit Stichworten in
 `tests/smoke.sh`. **Keine Debug-Taste auf F8** – das stoppt im Editor das laufende Spiel.

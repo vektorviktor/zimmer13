@@ -816,6 +816,23 @@ func _parse_debug_args() -> void:
 			run_debug(arg)
 
 
+## Ist arg der Debug-Befehl name, allein oder mit Wert („--name“ bzw. „--name=…“)?
+static func _is_arg(arg: String, name: String) -> bool:
+	return arg == name or arg.begins_with(name + "=")
+
+
+## Wert eines Debug-Befehls: alles hinter „--name=“ – ohne Wert (auch bei „--name=“ ohne etwas dahinter) default.
+## Ob arg überhaupt der Befehl name ist, prüft der Zweig in run_debug.
+static func _arg_value(arg: String, name: String, default := "") -> String:
+	var value := arg.substr(name.length() + 1) if arg.begins_with(name + "=") else ""
+	return value if value != "" else default
+
+
+## Wert eines Debug-Befehls, an den Kommas geteilt (ohne Wert: default bzw. ein leeres Stück).
+static func _arg_parts(arg: String, name: String, default := "") -> PackedStringArray:
+	return _arg_value(arg, name, default).split(",")
+
+
 ## Einen Debug-Befehl ausführen – beim Start für jeden Parameter, im Spiel aus der Debug-Konsole
 ## (DebugConsole, dort ohne „--“ getippt). false = unbekannt. Neuer Befehl: hier ein Zweig, eine Zeile
 ## im Kopfkommentar, in DebugConsole.COMMANDS und in der README.
@@ -824,7 +841,7 @@ func run_debug(arg: String) -> bool:
 		return true
 	if arg.begins_with("--mode="):
 		# ein Modus des Leviathan (4.33) in s Sekunden – nach 1 s, damit Gäste und NavMesh stehen
-		var parts := arg.substr(7).split(",")
+		var parts := _arg_parts(arg, "--mode")
 		var m := ["", "urteil", "snack", "raubzug", "anforderung", "keller", "harmlos"].find(parts[0])
 		if m <= 0:
 			return false
@@ -841,25 +858,26 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--no-psx" or arg == "--psx":
 		Settings.psx_look = arg == "--psx"
 		Settings.apply()
-	elif arg == "--static-eg" or arg.begins_with("--static-eg="):
-		_export_static(arg.substr(12) if arg.length() > 12 else StaticExport.PATH, arg in OS.get_cmdline_user_args())
+	elif _is_arg(arg, "--static-eg"):
+		_export_static(_arg_value(arg, "--static-eg", StaticExport.PATH), arg in OS.get_cmdline_user_args())
 	elif arg == "--fps":
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg == "--nohud":
 		Game.hud.visible = not Game.hud.visible
 	elif arg.begins_with("--tp="):
-		return _debug_teleport(arg.substr(5))
-	elif arg == "--aufzug" or arg.begins_with("--aufzug="):
+		return _debug_teleport(_arg_value(arg, "--tp"))
+	elif _is_arg(arg, "--aufzug"):
 		var lifts := Game.social.builder.elevators
 		if lifts.is_empty():
 			return false
-		var at := lifts[0].spot(arg.ends_with("=innen") or arg.ends_with("=fahrt") or arg.ends_with("=urteil"))
+		var how := _arg_value(arg, "--aufzug")
+		var at := lifts[0].spot(how in ["innen", "fahrt", "urteil"])
 		TeleportUI.place_player(at[0], at[1])
-		if arg.ends_with("=offen"):
+		if how == "offen":
 			lifts[0].open_doors()
-		elif arg.ends_with("=fahrt"):
+		elif how == "fahrt":
 			lifts[0].ride_to_top()
-		elif arg.ends_with("=urteil"):
+		elif how == "urteil":
 			_debug_judgment_on_13()
 			var shuttle := Timer.new()
 			shuttle.wait_time = 10.0
@@ -868,8 +886,8 @@ func run_debug(arg: String) -> bool:
 					lifts[0].ride_to_top())
 			add_child(shuttle)
 			shuttle.start()
-	elif arg == "--sitzen" or arg.begins_with("--sitzen="):
-		var want := arg.substr(9) if arg.begins_with("--sitzen=") else "sofa"
+	elif _is_arg(arg, "--sitzen"):
+		var want := _arg_value(arg, "--sitzen", "sofa")
 		var here := Game.player.global_position
 		var best: Seat = null
 		for node in get_tree().get_nodes_in_group("seats"):
@@ -881,18 +899,18 @@ func run_debug(arg: String) -> bool:
 		Game.player.sit_down(best, best.spots[0])
 	elif arg.begins_with("--tuer="):
 		var builder := Game.social.builder
-		var no := arg.substr(7).pad_zeros(3)
+		var no := _arg_value(arg, "--tuer").pad_zeros(3)
 		if not builder.rooms.has(no):
 			return false
 		TeleportUI.place_player(builder.rooms[no]["door_front"], builder.rooms[no]["into"])
 		set_meta("debug_door", builder.rooms[no]["door"])
-	elif arg == "--schluesseldieb" or arg.begins_with("--schluesseldieb="):
-		var parts := arg.substr(17).split(",") if arg.begins_with("--schluesseldieb=") else PackedStringArray()
+	elif _is_arg(arg, "--schluesseldieb"):
+		var parts := _arg_parts(arg, "--schluesseldieb")
 		var no := parts[0].pad_zeros(3) if parts.size() > 0 and parts[0] != "" else "003"
 		var swap := parts.size() > 1 and parts[1] == "tausch"
 		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.access.debug_steal(no, swap))
 	elif arg.begins_with("--werkzeug="):
-		var what := arg.substr(11)
+		var what := _arg_value(arg, "--werkzeug")
 		if what == "schluessel":
 			Game.player.add_key(KeyCabinet.KEY_ID)
 		else:
@@ -904,8 +922,8 @@ func run_debug(arg: String) -> bool:
 				if Game.tracing:
 					print("[Zimmer] Tür %s: %s" % [door.room_no, door.get_prompt(Game.player)])
 				door.interact(Game.player))
-	elif arg == "--klopfen" or arg.begins_with("--klopfen="):
-		var parts := arg.substr(10).split(",") if arg.begins_with("--klopfen=") else PackedStringArray()
+	elif _is_arg(arg, "--klopfen"):
+		var parts := _arg_parts(arg, "--klopfen")
 		var builder := Game.social.builder
 		var no := parts[0].pad_zeros(3) if parts.size() > 0 and parts[0] != "" else ""
 		if no == "":
@@ -938,9 +956,10 @@ func run_debug(arg: String) -> bool:
 		var front := door.global_transform.basis.z   # Aufgehseite: Bänder und Kastenschloss
 		TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + front * 2.2, -front)
 		Game.player.head.rotation.x = deg_to_rad(-12.0)   # die Tür ist niedrig
-	elif arg == "--dachboden" or arg.begins_with("--dachboden="):
+	elif _is_arg(arg, "--dachboden"):
 		var builder := Game.social.builder
-		match arg.get_slice("=", 1) if "=" in arg else "":
+		var where := _arg_value(arg, "--dachboden")
+		match where:
 			"kopf":
 				if builder.pumpkin_head_spot == Vector3.INF:
 					return false
@@ -967,71 +986,72 @@ func run_debug(arg: String) -> bool:
 				var door: Door = builder.attic_doors[0]
 				var into := door.global_transform.basis.z   # Aufgehseite = in den Dachboden
 				TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + into * 1.6, into)
-				if arg == "--dachboden=urteil":
+				if where == "urteil":
 					_debug_judgment_on_13()
 					Game.director.debug_reach = 5.0
-				if arg == "--dachboden=blitz" and builder.attic_spook:
+				if where == "blitz" and builder.attic_spook:
 					builder.attic_spook.forced = true
 					if Game.weather.kind != Weather.Kind.STORM:
 						Game.weather.set_weather(Weather.Kind.STORM, true)
 					get_tree().create_timer(3.0).timeout.connect(Game.weather.lightning)
 	elif arg.begins_with("--time="):
 		# Spieltage vor- oder zurückspulen (+1, -2 …)
-		Game.director.elapsed = maxf(0.0, Game.director.elapsed + arg.substr(7).to_float() * Calendar.DAY_SECONDS)
+		Game.director.elapsed = maxf(0.0, Game.director.elapsed + _arg_value(arg, "--time").to_float() * Calendar.DAY_SECONDS)
 		Game.say(Calendar.date_text(Game.director.elapsed), 2.0)
-	elif arg.begins_with("--console"):
+	elif _is_arg(arg, "--console"):
 		# Konsole nach 1 s öffnen, optional Befehle (mit ; getrennt) eintippen
 		var console := get_node_or_null("DebugConsole") as DebugConsole
 		if console == null:
 			return false
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
 			console.open()
-			for line in arg.substr(10).split(";", false):
+			for line in _arg_value(arg, "--console").split(";", false):
 				console.submit(line))
 	elif arg.begins_with("--load-slot="):
-		SaveManager.load_slot(arg.substr(12).to_int())
+		SaveManager.load_slot(_arg_value(arg, "--load-slot").to_int())
 	elif arg.begins_with("--pos="):
-		var v := arg.substr(6).split(",")
+		var v := _arg_parts(arg, "--pos")
 		Game.player.global_position = Vector3(v[0].to_float(), v[1].to_float(), v[2].to_float())
 		if v.size() > 3:
 			Game.player.rotation.y = deg_to_rad(v[3].to_float())
 		if v.size() > 4:
 			Game.player.head.rotation.x = deg_to_rad(v[4].to_float())
 	elif arg.begins_with("--monster="):
-		var m := arg.substr(10).split(",")
+		var m := _arg_parts(arg, "--monster")
 		var pos := Vector3(m[0].to_float(), m[1].to_float(), m[2].to_float())
 		Game.monster.spawn_at(pos)
 		Game.director.phase = MonsterDirector.Phase.ACTIVE
 	elif arg.begins_with("--splash="):
-		var at := arg.substr(9).split(",")
+		var at := _arg_parts(arg, "--splash")
 		get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
 			var water := get_tree().get_first_node_in_group("pool_water") as PoolWater
 			if water:
 				water.splash(Vector2(at[0].to_float(), at[1].to_float()), 1.0))
 	elif arg == "--lure":
 		get_tree().create_timer(1.0, false).timeout.connect(Game.director.debug_lure)
-	elif arg == "--despawn" or arg.begins_with("--despawn="):
-		_debug_despawn(arg.substr(10))
+	elif _is_arg(arg, "--despawn"):
+		_debug_despawn(_arg_value(arg, "--despawn"))
 	elif arg.begins_with("--pool="):
 		var water := get_tree().get_first_node_in_group("pool_water") as PoolWater
+		var stage := _arg_value(arg, "--pool")
 		if water:
-			water.debug_stage = "" if arg == "--pool=off" else arg.substr(7)
+			water.debug_stage = "" if stage == "off" else stage
 	elif arg == "--pocket":
 		Game.player.give_compass()
 		for page in HotelMap.PAGES:
 			Game.player.add_map_page(page["id"])
 		Game.player.add_key("zimmer_18")
-	elif arg.begins_with("--bag-menu"):
+	elif _is_arg(arg, "--bag-menu"):
 		# erst nach den übrigen Parametern (--bag, --flashlight) öffnen
-		Game.player.debug_open_bag.call_deferred(arg.substr(11).to_int() - 1 if arg.begins_with("--bag-menu=") else -1)
-	elif arg.begins_with("--bag"):
+		Game.player.debug_open_bag.call_deferred(_arg_value(arg, "--bag-menu", "0").to_int() - 1)
+	elif _is_arg(arg, "--bag"):
 		var kinds := {"süßes": Item.Kind.SWEETS, "suesses": Item.Kind.SWEETS, "cola": Item.Kind.SODA_CAN, "limo": Item.Kind.SODA_CAN,
 			"zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE,
 			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
 			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP,
 			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS, "salz": Item.Kind.SALT,
 			"kerne": Item.Kind.PUMPKIN_SEEDS, "brot": Item.Kind.PUMPKIN_SEEDS, "ei": Item.Kind.EGG}
-		var names := (arg.substr(6) if arg.begins_with("--bag=") else "süßes,cola,zierkürbis,batterie").split(",", false)
+		var names := _arg_value(arg, "--bag", "süßes,cola,zierkürbis,batterie").split(",", false)
 		for what in names:
 			if not kinds.has(what):
 				Game.say("Tasche: " + ", ".join(kinds.keys()), 3.0)
@@ -1041,8 +1061,8 @@ func run_debug(arg: String) -> bool:
 				Game.player.bag_add(item)
 			else:
 				item.free()
-	elif arg.begins_with("--flashlight"):
-		var uv := arg == "--flashlight=uv"
+	elif _is_arg(arg, "--flashlight"):
+		var uv := _arg_value(arg, "--flashlight") == "uv"
 		var lamp := Item.create(Item.Kind.FLASHLIGHT, "c=1;on" + (";uv;m=uv" if uv else ""))
 		Game.player.drop_held()
 		Game.player.receive_item(lamp)
@@ -1051,7 +1071,7 @@ func run_debug(arg: String) -> bool:
 			"laub": Item.Kind.LEAVES, "zierkürbis": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN,
 			"fledermaus": Item.Kind.BAT_GARLAND, "spinne": Item.Kind.SPIDER, "totenkopf": Item.Kind.SKULL, "besen": Item.Kind.BROOM,
 			"kerze": Item.Kind.CANDLE}
-		var what := arg.substr(7).trim_suffix(",g")
+		var what := _arg_value(arg, "--deco").trim_suffix(",g")
 		if not kinds.has(what):
 			Game.say("Deko: gespenst, lichter, netz, laub, zierkürbis, fledermaus, spinne, totenkopf, besen oder kerze", 3.0)
 			return true
@@ -1059,10 +1079,10 @@ func run_debug(arg: String) -> bool:
 		Game.player.receive_item(Item.create(kinds[what], "lit" if what == "kerze" else ""))
 		if arg.ends_with(",g"):
 			get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.player.drop_held())
-	elif arg == "--fall" or arg.begins_with("--fall="):
+	elif _is_arg(arg, "--fall"):
 		# Kürbis fällt 1,5 m vor dir aus h m Höhe (Standard 4) – ab 3 m zerplatzt er (5.8); dahinter Sorte oder „mini“,
 		# „kerze“ (zerbricht ab 2 m) oder „birne“ (platzt ab 1,5 m)
-		var parts := arg.substr(7).split(",") if arg.length() > 7 else PackedStringArray()
+		var parts := _arg_parts(arg, "--fall")
 		var height := parts[0].to_float() if parts.size() > 0 and parts[0] != "" else 4.0
 		var sort := parts[1] if parts.size() > 1 else ""
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
@@ -1073,10 +1093,10 @@ func run_debug(arg: String) -> bool:
 			pumpkin.global_position = Game.player.global_position + Vector3(front.x, 0, front.z).normalized() * 1.5 + Vector3.UP * height
 			if Game.tracing:
 				print("[Fall] %s fällt aus %.1f m bei %s" % [pumpkin.display_name, height, pumpkin.global_position]))
-	elif arg == "--wurf" or arg.begins_with("--wurf="):
+	elif _is_arg(arg, "--wurf"):
 		# Werfen (3.13): nach 1 s einen Gegenstand in die Hand und mit Kraft k (0 … 1, Standard 1) in Blickrichtung werfen –
 		# Standard ein Kürbis; Sorte aus PumpkinKinds, mini, kerze (brennend), birne, kaffee, tee, dose, messer, taschenlampe
-		var parts := arg.substr(7).split(",") if arg.length() > 7 else PackedStringArray()
+		var parts := _arg_parts(arg, "--wurf")
 		var power := clampf(parts[0].to_float(), 0.0, 1.0) if parts.size() > 0 and parts[0] != "" else 1.0
 		var what := parts[1] if parts.size() > 1 else ""
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
@@ -1088,9 +1108,10 @@ func run_debug(arg: String) -> bool:
 			Game.player.drop_held()
 			Game.player.receive_item(item)
 			get_tree().create_timer(0.3).timeout.connect(func() -> void: Game.player.throw_held(power)))
-	elif arg == "--kuerbis" or arg.begins_with("--kuerbis="):
+	elif _is_arg(arg, "--kuerbis"):
 		# Kürbismodelle (PumpkinModel, 5.8): glatt und alle Fratzen mit Kerze in einer Reihe vor dir – bzw. nur Fratze n
-		var only := clampi(arg.substr(10).to_int(), 1, PumpkinModel.FACES) if arg.begins_with("--kuerbis=") else 0
+		var face := _arg_value(arg, "--kuerbis")
+		var only := clampi(face.to_int(), 1, PumpkinModel.FACES) if face != "" else 0
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
 			var faces: Array = [only] if only > 0 else range(PumpkinModel.FACES + 1)
 			var front := -Game.player.global_basis.z
@@ -1135,21 +1156,21 @@ func run_debug(arg: String) -> bool:
 				CandleModel.flame(holder, Vector3(0, wick, 0))
 			Game.player.head.rotation.x = -0.75)   # Blick hinunter auf die Reihe
 	elif arg.begins_with("--show="):
-		Game.player.debug_show = arg.substr(7)
+		Game.player.debug_show = _arg_value(arg, "--show")
 	elif arg == "--winded":
 		Game.player.stamina = 0.0
 		Game.player.winded = true
 	elif arg == "--sprint":
 		Game.player.debug_sprint = true
 	elif arg.begins_with("--bold="):
-		Game.director.boldness = arg.substr(7).to_float()
+		Game.director.boldness = _arg_value(arg, "--bold").to_float()
 	elif arg.begins_with("--friend="):
-		var friend := _guest(arg.substr(9))
+		var friend := _guest(_arg_value(arg, "--friend"))
 		if friend:
 			friend.relation = 65.0   # befreundet (6.3)
 	elif arg.begins_with("--relation="):
 		# Beziehung setzen; für die Extreme werden die nötigen Taten gleich mit eingetragen (6.3)
-		var rel := arg.substr(11).split(",")
+		var rel := _arg_parts(arg, "--relation")
 		var g := _guest(rel[0])
 		if g and rel.size() > 1:
 			g.relation = clampf(rel[1].to_float(), -100.0, 100.0)
