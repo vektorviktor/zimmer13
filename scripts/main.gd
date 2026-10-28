@@ -73,6 +73,10 @@ extends Node3D
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
 ##   --time=+n|-n                Spieltage vor- oder zurückspulen
 ##   --rot[=welk|eingefallen]    alle Kürbisse 10 s vor welk (5.10) – bzw. gleich welk oder eingefallen
+##   --schmuckplan=angst|freund|tod|klau[,gast]   Gäste schmücken mit Plan (5.10, Stufe 3) – du stehst vor der Tür, um
+##                               die es geht: angst: ein Gast (oder dieser) hat Angst und schmückt seine Tür · freund: er
+##                               ist mit dir befreundet und schmückt Zimmer 13 · tod: er stirbt, seine Nachbarn schmücken
+##                               gleich nach · klau: Kisten leer, er klaut von einer fremden Tür (mit --trace „[Schmuckplan]“)
 ##   --abweisung[=dunkel]        Schutzkreis = Lichtschein (5.10): brennende Deko vor Zimmer 13, du im Schein daneben, das
 ##                               Monster kommt den Flur herauf und wird abgewiesen – die Flammen ducken sich (dunkel: Deko
 ##                               ohne Licht zählt nur halb und nur an der Tür, es holt dich; mit --trace „[Abweisung]“)
@@ -1570,6 +1574,10 @@ func run_debug(arg: String) -> bool:
 			for node in get_tree().get_nodes_in_group("fixed_candles"):
 				(node as FixedCandle).renew(rest, (node as FixedCandle).lit)
 			print("[Kerzen] Debug: alle Kerzen auf %.0f %%" % (rest * 100.0)))
+	elif arg.begins_with("--schmuckplan="):
+		var parts := arg.substr(14).split(",")
+		var who := _guest(parts[1]) if parts.size() > 1 else null
+		get_tree().create_timer(1.0, false).timeout.connect(_debug_deco_plan.bind(parts[0], who))
 	elif arg == "--abweisung" or arg == "--abweisung=dunkel":
 		get_tree().create_timer(1.0, false).timeout.connect(_debug_repel.bind(arg.ends_with("dunkel")))
 	elif arg.begins_with("--diary="):
@@ -1768,6 +1776,25 @@ func _debug_repel(dark: bool) -> void:
 			Game.director.deco_strength_at(you), Game.director.deterrence_at(you)])
 		Game.monster.spawn_at(from)
 		Game.monster.investigate(front))
+
+
+## --schmuckplan=angst|freund|tod|klau[,gast]: Gäste schmücken mit Plan bzw. klauen (Spielkonzept 5.10, Stufe 3) – du
+## stehst vor der Tür, um die es geht (DecoPlan.debug). tod: der Gast stirbt, seine Nachbarn schmücken nach.
+func _debug_deco_plan(what: String, who: Guest) -> void:
+	var plan := Game.social.decorating.plan
+	var no := plan.debug(what, who)
+	if no == "":
+		print("[Schmuckplan] Debug: nichts gestartet")
+		return
+	var room: Dictionary = Game.director.rooms[no]
+	var into: Vector3 = room["into"]
+	TeleportUI.place_player(room["door_front"] - into * 0.8, into)
+	Game.player.head.rotation.x = -0.3   # Tür und Boden davor im Bild
+	if what == "tod":
+		for g in Game.social.living_guests():
+			if String((g as Guest).home["no"]) == no:
+				_debug_kill(g, "", false, false)
+				break
 
 
 ## --navcheck=tueren: Erreicht das Monster vom Keller aus (MonsterDirector.reachable, wie bei der Wahl der Puppentür)

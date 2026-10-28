@@ -1178,6 +1178,21 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `ResourceSpot` mit Tageslimit), **groß** (`start_big`, mehrere Stellen), vom Spieler aufgerufen (`call_here`).
   Abbruch bei Feier, Nachtruhe oder Unruhe; `_update_sleep` schiebt die Nachtruhe auf, solange eine Aktion läuft.
   Nichts gespeichert – die Deko sind normale Gegenstände (`hung`). Debug `--decorate[=…]`, `--trace` `[Schmücken]`.
+- **Schmücken mit Plan, Klauen bei Knappheit** (`guests/deco_plan.gd`, `DecoPlan`, Kind von `Decorating` als `plan`,
+  Spielkonzept 5.10 Stufe 3): Alle paar Minuten (`GAP_EARLY` … `GAP_LATE`, höchstens `PLAN_MAX` zugleich, je Gast
+  `DAILY` am Tag) schickt es einen freien Gast (`_free` – wie `_available`, aber auch mit Angst bis `PANIC`) als
+  Allein-Schmücken an eine Tür (`Decorating.start_solo_door`: aus dem Koffer, ohne Starkes darin aus einer Kiste, sonst
+  Gebasteltes): mit Angst ab `AFRAID` an die eigene, solange sie nicht sicher hält (`weak`: Abschreckung unter Druck ×
+  `SAFE_MARGIN`), sonst mit `FRIEND_CHANCE` an die schwächste Tür eines Freundes (`friend_door`, `pals_of`; Zimmer 13
+  ab `Social.Tier.FRIEND`). Nach einem Tod (`Social.on_guest_died` → `on_guest_died`) schmücken die `MOURNERS`
+  nächsten Nachbarn bis `MOURN_RANGE` nach `MOURN_DELAY` ihre Türen nach (vor allen anderen). **Klauen:**
+  `Guest._try_steal` fragt `steal_when_scarce`, wenn er weder feindlich noch verzweifelt ist – bei Knappheit (`scarce`:
+  die Kisten ohne Nachschub haben höchstens `SCARCE_SHARE` ihres Vorrats), Angst ab `THEFT_FEAR`, ohne Starkes im
+  Koffer und mit schwacher eigener Tür, einmal am Spieltag mit `THEFT_CHANCE` × (0,5 + Gier): das beste starke Stück
+  (kein Füllmaterial) bis `LOOT_REACH` vor einer fremden Tür, die hält (`_strangers`: ohne Freunde, Familie,
+  Mitbewohner, Zimmer 13; nicht vom Spieler, nicht in `THEFT_UNSEEN` um ihn, Weg im Flur über `_hall`) – dann wie jeder
+  Dieb `STEAL` → `PLACE_DECO` vor die eigene Tür. Erfolglos sucht er erst nach `THEFT_RETRY` wieder. Nichts
+  gespeichert. Debug `--schmuckplan=angst|freund|tod|klau[,gast]`, `--trace` `[Schmuckplan]`.
 - **Deko-Suche** (`guests/deco_search.gd`, Spielkonzept 5.9): ein freier Gast (nur tagsüber) geht zu einer
   erreichbaren `ResourceSpot` (`Decorating._reachable`, `guest_can_take()`), Mutige zu Spinnweben und Keller, manchmal
   zu zweit; bietet dem Spieler an mitzukommen (`has_offer`, `ask`). Zustand `SEARCH`. Nicht gespeichert. Debug

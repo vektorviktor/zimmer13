@@ -211,6 +211,10 @@ done <<'LIST'
 600|deko,licht|--deco=lichter,g --pos=55,0.1,-7.9,180,14
 600|deko,abschreckung,monster|--abweisung --trace
 600|deko,abschreckung,monster|--abweisung=dunkel --trace
+2000|knappheit,deko,gaeste|--schmuckplan=angst --trace
+2000|knappheit,deko,gaeste|--schmuckplan=freund --trace
+2400|knappheit,deko,gaeste|--schmuckplan=tod --trace
+2400|knappheit,deko,gaeste|--schmuckplan=klau --trace
 600|welt,wetter|--weather=blitz
 600|wetter|--day=31 --uhr=23 --pos=45,0.1,-37,180 --weather=gestalt --trace
 600|wetter|--day=25 --pos=45,0.1,-37,180 --weather=blut --savetest --trace

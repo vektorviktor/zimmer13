@@ -953,6 +953,8 @@ func on_guest_died(guest: Guest, cause: String = "monster", quiet: bool = false)
 		Game.notebook.on_guest_died(guest)
 	if requests:   # seine Bitte fällt weg, im Notizbuch bleibt sie offen (6.14)
 		requests.on_guest_died(guest)
+	if decorating and decorating.plan:   # die Nachbarn schmücken nach (5.10, Stufe 3)
+		decorating.plan.on_guest_died(guest)
 	if Game.diary and cause != "unseen":   # Gustav: erst, wenn man Zimmer 020 findet (Grinch)
 		Game.diary.note("first_death", "%s aus Zimmer %s ist tot. Bis heute dachte ich, es tut niemandem etwas." % [
 			guest.display_name, String(guest.home["sign"])])

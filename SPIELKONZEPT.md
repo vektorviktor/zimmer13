@@ -2986,7 +2986,7 @@ ihm.
   Verschwundenen. Es landet im Tagebuch bzw. im Abspann. Wer zum Vampir geworden ist, **fehlt auf dem Bild** (4.22,
   vorgemerkt 2026-10-23).
 
-### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23, Stufe 2 2026-10-28)
+### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23, Stufen 2 und 3 2026-10-28)
 > Macht den Pitch (1) wahr – „Die Deko ist knapp“. In drei Stufen: **1** Anspruch, Kisten, Kürbisse und Verfall · **2** Schutzkreis = Lichtschein, sichtbare
 > Abweisung (Teil 3 unten) · **3** Gäste schmücken mit Plan und klauen bei Knappheit (Teil 5).
 >
@@ -3016,6 +3016,18 @@ ihm.
 > zählt sie im Schein ×1,6 (der alte Licht-Faktor). Deko ohne Licht zählt ×0,5 und nur vor einer Zimmertür, an der sie
 > selbst steht oder hängt (bis 1,5 m). Weist Deko das Monster ab, ducken sich die Flammen gut eine Sekunde lang (flacher,
 > schwächeres Licht, der Kürbis glüht matter), hängende Deko schwingt; stehende Kürbisse wackeln nicht.
+>
+> **Stufe 3 umgesetzt (2026-10-28):** Gäste schmücken zusätzlich zum bisherigen Schmücken mit Plan – alle paar Minuten
+> (am Monatsanfang 2½–5, an Halloween ¾–1½), höchstens zwei zugleich, jeder höchstens zweimal am Tag. Eine Tür „hält“
+> für sie erst, wenn ihre Abschreckung den Druck dort um die Hälfte übertrifft. **Angst** (ab 35, in Panik ab 80 nicht
+> mehr): an die eigene Tür, solange sie nicht hält. **Tod:** Die vier nächsten Nachbarn (bis 14 m, dasselbe Stockwerk)
+> schmücken nach 1–4 Minuten ihre Türen nach. **Freunde:** sonst geht jeder Zweite an die schwächste Tür eines Freundes,
+> an Zimmer 13, wenn er mit dir mindestens befreundet ist. Gebracht wird aus dem Koffer, ohne Starkes darin aus einer
+> Kiste, sonst Gebasteltes. **Diebstahl:** Haben die Kisten ohne Nachschub höchstens noch ein Viertel ihres Vorrats, klaut
+> ein Gast mit Angst (ab 25), schwacher eigener Tür und ohne Starkes im Koffer höchstens einmal am Tag (Chance 35 % ×
+> 0,5 + Gier) ein starkes Stück von einer fremden Tür, die hält, und stellt es vor seine – nie bei Freunden, Familie
+> oder Mitbewohnern, nie vom Spieler und nicht vor dessen Augen. Was der Diebstahl für Freundschaften bedeutet, bleibt
+> mit „Streit unter Gästen“ (6.16) offen; die Bestohlenen merken nur wie bisher, dass Deko fehlt.
 
 **Warum**
 - **Knapp statt nachwachsend:** Wächst jede Quelle nach und schmückt sich das Hotel selbst (5.9), wartet man einfach –
@@ -4030,7 +4042,8 @@ Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gute
 - Gast-Freundschaften stehen im Spielstand (Zähler je Paar); Familie und Nachbarn ergeben sich aus dem Hotel.
 - **Freunde schmücken die Türen ihrer Freunde mit** (5.10, entschieden 2026-10-21), auch Zimmer 13.
 - **Offen:** Streit unter Gästen (Freundschaften, die zerbrechen – ein Anfang ist Diebstahl unter Gästen bei
-  Knappheit, 5.10). Gutes und Schlechtes über dich laufen über dasselbe Netz (6.18, 1).
+  Knappheit, 5.10; der Diebstahl selbst ist seit 2026-10-28 gebaut, ohne Folgen für Freundschaften). Gutes und
+  Schlechtes über dich laufen über dasselbe Netz (6.18, 1).
 - **Feindschaften (2026-10-22):** Ein erster Anfang sind die Streiche der Kinder (6.13): Wer verpetzt bekommt, wessen
   Kind ihm einen Kürbis vor die Tür geworfen hat, ist mit dessen Eltern **verfeindet** – Verfeindete sind keine
   Freunde mehr, auch nicht als Zimmernachbarn.
@@ -5168,8 +5181,8 @@ Müdigkeit bis auf das Wecken, Lichtschalter, Aufträge der Gäste, Erfolge, Mas
    Leviathanmauer (ab etwa Tag 15), Ritual, Schädel/Axt/Jeansjacke als Deko (4.21)
 6. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
    Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18) · Gäste wecken (3.6)
-7. Deko knapp machen, Stufen 2 und 3: Schutzkreis = Lichtschein, sichtbare Abweisung, Gäste schmücken nach Angst und
-   Freundschaft und klauen bei Knappheit (5.10)
+7. ~~Deko knapp machen, Stufen 2 und 3: Schutzkreis = Lichtschein, sichtbare Abweisung, Gäste schmücken nach Angst und
+   Freundschaft und klauen bei Knappheit (5.10)~~ gebaut 2026-10-28
 8. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
    Rest des Maskenballs (5.19) mit den Masken-Erfolgen (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
 9. Eier-Streich der Kinder (6.13) · Tiere als Klang (7.8)
