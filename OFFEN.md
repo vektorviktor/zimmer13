@@ -156,6 +156,11 @@ Plan nur der Nutzer (`map*.aseprite`).
 
 - **Segfault beim Beenden** headless (etwa jeder dritte Lauf, Exit 139), Ursache unbekannt – TE (Bekannt, offen).
 - Balancing insgesamt – SK 11 (13).
+- **Sicherungskopien von Skripten** nicht in `temp/` (Godot lädt sie, kein `.gdignore` wegen Modellvorschau und
+  `--static-eg`) – die Selbstprüfungen melden sie (TECHNIK.md 10). Unterpunkte wie „6.19 (7)“ prüfen sie nicht.
+- **Gebäudeplan lässt sich nicht umsetzen** (28.10., gefunden über die Warnungs-Zusammenfassung des Rauchtests):
+  `tools/build_map.py` bricht ab mit „OG1: Türanschlag bei Pixel 649,630: zweiter Anschlag an derselben Tür“ – das
+  Spiel nimmt dann die alten Karten. Im Plan (`map_a.aseprite`, nur der Nutzer) prüfen.
 
 ## 6. Ideen (unentschieden, früher IDEEN.md)
 
