@@ -1323,7 +1323,9 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
 - **Prüfen:** `--savetest` sammelt → wendet an → sammelt erneut und meldet Unterschiede – nur nötig, wenn sich am
   Speichern etwas ändert. Bekanntes Rauschen gleicht `main._settle` an und meldet es als „(kein Fehler)“: Türen mit
   einem Gast im Türrahmen, Dinge in der Hand, Drehung liegender Gegenstände (Euler-Mehrdeutigkeit, Nachrollen),
-  Katzen, deren Zeitgeber zwischen den Messungen ablief. Selten bleibt ein Gegenstand, den ein Gast dazwischen anstößt.
+  Katzen, deren Zeitgeber zwischen den Messungen ablief, und schwache heiße Stellen (bis `SAVETEST_NOISE_HEAT`) aus
+  Lärm gleich nach dem Laden – Krähen und Fledermäuse sitzen dann wieder (Flug wird nicht gespeichert) und fliegen vor
+  einer nahen Bedrohung (Lakengeist, Monster) erneut auf. Selten bleibt ein Gegenstand, den ein Gast dazwischen anstößt.
   Der Savetest stellt vorher eine andere Spielerfigur ein und setzt sie danach zurück.
 
 ## 8. Weitere Systeme

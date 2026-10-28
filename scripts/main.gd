@@ -2088,11 +2088,15 @@ func _save_test() -> void:
 		"alles gleich" if problems == 0 else "%d Unterschiede" % problems])
 
 
+## Savetest: so viel Neugier bringt ein einzelner Lärm bis 12 m Hörweite (MonsterDirector.NOISE_CURIOSITY × 12)
+const SAVETEST_NOISE_HEAT := 3.0
+
+
 ## Bekanntes Rauschen zwischen den beiden Sammelzeitpunkten angleichen, damit nur echte Lade-Lücken zählen:
 ## Lage von Gegenständen in der Hand (folgt der Hand, apply setzt sie nicht), Türen, die ein Gast im Türrahmen
 ## gleich nach dem Laden öffnet (sein Zustand – Klopfen, Schlafen … – wird nicht gespeichert, er steht danach
-## untätig da), Drehung liegender Gegenstände bis ~15° und Katzen-Zeitgeber, die genau dazwischen abliefen.
-## Gibt Hinweise dazu zurück.
+## untätig da), Drehung liegender Gegenstände bis ~15°, Katzen-Zeitgeber, die genau dazwischen abliefen, und heiße
+## Stellen aus Lärm gleich nach dem Laden (wieder aufgeschreckte Krähen und Fledermäuse). Gibt Hinweise dazu zurück.
 func _settle(before: Dictionary, after: Dictionary) -> Array[String]:
 	var notes: Array[String] = []
 	for data: Dictionary in [before, after]:
@@ -2132,6 +2136,24 @@ func _settle(before: Dictionary, after: Dictionary) -> Array[String]:
 			if float(cats_was[i].get("timer", 1.0)) <= 0.05 and not _same(cats_was[i], cats_now[i]):
 				cats_now[i] = cats_was[i]   # neuer Zeitgeber, neue Richtung – sie hat gerade etwas Neues angefangen
 				notes.append("cats[%d]: Zeitgeber lief zwischen den Messungen ab" % i)
+	# Krähen und Fledermäuse: Ob sie gerade fliegen, wird nicht gespeichert – nach dem Laden sitzen sie wieder und
+	# fliegen vor einer Bedrohung in der Nähe (Lakengeist, Monster …) gleich noch einmal auf. Ihr Lärm macht eine neue,
+	# schwache heiße Stelle (4.9) oder eine vorhandene etwas heißer – höchstens so viel wie ein einzelner Lärm.
+	var hot_was: Array = before["director"]["state"].get("hot_spots", [])
+	var hot_now: Array = after["director"]["state"].get("hot_spots", [])
+	for i in range(hot_now.size() - 1, -1, -1):
+		var b: Array = hot_now[i]
+		var match_was: Array = []
+		for a: Array in hot_was:
+			if Vector3(a[0], a[1], a[2]).distance_to(Vector3(b[0], b[1], b[2])) < 0.01:
+				match_was = a
+		if match_was.is_empty() and float(b[3]) <= SAVETEST_NOISE_HEAT:
+			hot_now.remove_at(i)
+			notes.append("director.hot_spots: neue schwache Stelle bei (%.0f, %.0f, %.0f) – Lärm gleich nach dem Laden" % [b[0], b[1], b[2]])
+		elif not match_was.is_empty() and float(b[3]) > float(match_was[3]) \
+				and float(b[3]) - float(match_was[3]) <= SAVETEST_NOISE_HEAT:
+			b[3] = match_was[3]
+			notes.append("director.hot_spots: Stelle bei (%.0f, %.0f, %.0f) durch Lärm gleich nach dem Laden heißer" % [b[0], b[1], b[2]])
 	# Wer auf dem Weg ins Versteck war (Zustand wird nicht gespeichert), sieht sich nach dem Laden gleich wieder um und
 	# erschrickt vor Blut, an dem er gerade vorbeigerannt ist (Guest._scan_for_shock)
 	var guests_was: Dictionary = before.get("guests", {})
