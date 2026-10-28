@@ -1179,7 +1179,7 @@ func run_debug(arg: String) -> bool:
 			elif g.relation <= -80.0:
 				g.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
 	elif arg.begins_with("--einbruch="):
-		var parts := arg.substr(11).split(",")
+		var parts := _arg_parts(arg, "--einbruch")
 		var foe := _guest(parts[0])
 		if foe:
 			foe.relation = -90.0   # stark verfeindet (6.3), mit den nötigen Taten
@@ -1187,24 +1187,24 @@ func run_debug(arg: String) -> bool:
 			get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
 				Game.social.break_in.debug(foe, parts.size() > 1 and parts[1] == "eigen"))
 	elif arg.begins_with("--zweitschluessel="):
-		var friend := _guest(arg.substr(18))
+		var friend := _guest(_arg_value(arg, "--zweitschluessel"))
 		if friend:
 			friend.relation = 90.0   # guter Freund (6.3), mit den nötigen Taten
 			friend.deeds.merge({"games": Social.BOND_GAMES, "gifts_to": Social.BOND_GIFTS_TO, "gifts_from": Social.BOND_GIFTS_FROM}, true)
 			_put_in_front(friend, 1.5)
 			friend._set_idle(10.0)
 	elif arg.begins_with("--follow="):
-		var follower := _guest(arg.substr(9))
+		var follower := _guest(_arg_value(arg, "--follow"))
 		if follower:
 			_put_in_front(follower, -2.0, false)   # hinter dir
 			follower.start_follow()
 	elif arg.begins_with("--visit="):
-		var visitor := _guest(arg.substr(8))
+		var visitor := _guest(_arg_value(arg, "--visit"))
 		if visitor:
 			Game.social.start_visit(visitor)
 	elif arg.begins_with("--punch="):
 		# Gast vor den Spieler stellen und zweimal zuschlagen (Nachfrage + Schlag)
-		var target := _guest(arg.substr(8))
+		var target := _guest(_arg_value(arg, "--punch"))
 		if target:
 			_put_in_front(target, 1.0)
 			target._set_idle(5.0)
@@ -1212,12 +1212,12 @@ func run_debug(arg: String) -> bool:
 				Game.player.debug_punch(target)
 				Game.player.debug_punch(target))
 	elif arg.begins_with("--attack="):
-		var attacker := _guest(arg.substr(9))
+		var attacker := _guest(_arg_value(arg, "--attack"))
 		if attacker:
 			_put_in_front(attacker, 4.0, false)
 			get_tree().create_timer(1.0).timeout.connect(attacker.start_attack)
 	elif arg.begins_with("--kill="):
-		var kill_parts := arg.substr(7).split(",")
+		var kill_parts := _arg_parts(arg, "--kill")
 		var victim := _guest(kill_parts[0])
 		if victim == null:
 			return true
@@ -1242,7 +1242,7 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--wound="):
 		# Überlebender (Spielkonzept 6.17): gast,scratch|axe|choke[,hin] – verletzt wie nach dem Angriff; hin: er liegt
 		# bzw. steht vor dir (mit --talk=gast erzählt er als Zeuge)
-		var parts := arg.substr(8).split(",")
+		var parts := _arg_parts(arg, "--wound")
 		var hurt := Game.social.find_guest(parts[0])
 		if hurt == null or parts.size() < 2 or not Wounds.KINDS.has(parts[1]):
 			Game.say("--wound=gast,scratch|axe|choke[,hin]", 3.0)
@@ -1260,30 +1260,31 @@ func run_debug(arg: String) -> bool:
 				Game.player.try_pick_up(node)
 				break
 	elif arg.begins_with("--enemy="):
-		var enemy := _guest(arg.substr(8))
+		var enemy := _guest(_arg_value(arg, "--enemy"))
 		if enemy:
 			enemy.relation = -65.0   # verfeindet (6.3)
 	elif arg.begins_with("--player-deco="):
-		var xz := arg.substr(14).split(",")
+		var xz := _arg_parts(arg, "--player-deco")
 		var deco := Item.create(Item.Kind.CARVED_PUMPKIN)
 		deco.owner_id = "player"
 		deco.position = Vector3(xz[0].to_float(), 0.02, xz[1].to_float())
 		add_child(deco)
 	elif arg.begins_with("--dice="):
-		var opponent := _guest(arg.substr(7))
+		var opponent := _guest(_arg_value(arg, "--dice"))
 		if opponent == null:
 			return true
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:
 			Game.dice.start(opponent, {"money": 3, "item": false}))
 	elif arg.begins_with("--chess="):
-		var chess_opponent := _guest(arg.substr(8))
+		var chess_opponent := _guest(_arg_value(arg, "--chess"))
 		if chess_opponent == null:
 			return true
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:
 			Game.chess.start(chess_opponent, {"money": 3, "item": false}))
-	elif arg == "--darts" or arg.begins_with("--darts="):
-		var dart_opponent := _guest(arg.substr(8)) if arg.begins_with("--darts=") else null
-		if arg.begins_with("--darts=") and dart_opponent == null:
+	elif _is_arg(arg, "--darts"):
+		var dart_id := _arg_value(arg, "--darts")
+		var dart_opponent := _guest(dart_id) if dart_id != "" else null
+		if dart_id != "" and dart_opponent == null:
 			return true
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:
 			Game.player.global_position = Game.darts.board.throw_spot(false)
@@ -1293,15 +1294,16 @@ func run_debug(arg: String) -> bool:
 			else:
 				Game.darts.practice())
 	elif arg.begins_with("--challenge="):
-		var challenger := _guest(arg.substr(12).split(",")[0])
+		var parts := _arg_parts(arg, "--challenge")
+		var challenger := _guest(parts[0])
 		if challenger:
-			var game := arg.get_slice(",", 1) if "," in arg else "dice"
+			var game := parts[1] if parts.size() > 1 else "dice"
 			Game.social.challenge(challenger, game if game in ["chess", "darts"] else "dice")
 	elif arg == "--autoplay":
 		_autoplay = true
 	elif arg.begins_with("--cat="):
 		# Katze vor den Spieler setzen (sitzt, zum Streicheln) – mit ",tragen" gleich auf den Arm
-		var parts := arg.substr(6).split(",")
+		var parts := _arg_parts(arg, "--cat")
 		for cat in get_tree().get_nodes_in_group("cats"):
 			if cat.id == parts[0]:
 				cat.place_in_front_of(Game.player)
@@ -1318,9 +1320,9 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--pumpkin=garten":
 		get_tree().create_timer(0.5, false).timeout.connect(Game.pumpkin.debug_garden)   # NavMesh muss erst stehen
 	elif arg.begins_with("--pumpkin=jagd"):
-		_debug_pumpkin_hunt(arg.substr(14).trim_prefix(","))
-	elif arg.begins_with("--pumpkin"):
-		PumpkinMan.spawn_in_front_of(Game.player, arg.substr(10) if arg.begins_with("--pumpkin=") else "walk")
+		_debug_pumpkin_hunt(_arg_value(arg, "--pumpkin").trim_prefix("jagd").trim_prefix(","))
+	elif _is_arg(arg, "--pumpkin"):
+		PumpkinMan.spawn_in_front_of(Game.player, _arg_value(arg, "--pumpkin", "walk"))
 	elif arg == "--wallblood" or arg == "--wallblood=smear":
 		var kind := "wall_smear" if arg.ends_with("smear") else "wall_splatter"
 		# Ein Stück vor der Wand im Blick ansetzen – dann ist sie die nächste
@@ -1332,14 +1334,14 @@ func run_debug(arg: String) -> bool:
 		near.y = Game.player.global_position.y   # Boden unter dem Spieler – die Spur sitzt in Höhe über dem Boden
 		if hit.is_empty() or Game.traces.add_wall_blood(near, kind) == null:
 			Game.say("Keine Wand im Blick.", 2.5)
-	elif arg == "--costumes" or arg.begins_with("--costumes="):
-		Costume.force = arg.substr(11) if arg.begins_with("--costumes=") else "all"
+	elif _is_arg(arg, "--costumes"):
+		Costume.force = _arg_value(arg, "--costumes", "all")
 	elif arg == "--disguise":
 		Game.player.set_disguised(true)
-	elif arg == "--maske" or arg.begins_with("--maske="):
-		_debug_masks(arg.substr(8) if arg.begins_with("--maske=") else "")
+	elif _is_arg(arg, "--maske"):
+		_debug_masks(_arg_value(arg, "--maske"))
 	elif arg.begins_with("--drunk="):
-		var parts := arg.substr(8).split(",")
+		var parts := _arg_parts(arg, "--drunk")
 		var glasses := parts[0].to_int()
 		var who: Guest = _guest(parts[1]) if parts.size() > 1 else null
 		if parts.size() > 1 and who == null:
@@ -1351,7 +1353,8 @@ func run_debug(arg: String) -> bool:
 				Game.player.drink(i < glasses - 1)
 	elif arg.begins_with("--weather="):
 		# Wetter sofort (7.8): klar, regen, gewitter (gleich in voller Stärke) oder blitz (ein Blitz, ggf. mit Gewitter)
-		match arg.substr(10):
+		var what := _arg_value(arg, "--weather")
+		match what:
 			"klar":
 				Game.weather.set_weather(Weather.Kind.CLEAR, true)
 			"regen":
@@ -1363,26 +1366,26 @@ func run_debug(arg: String) -> bool:
 			"blitz", "gestalt":
 				if Game.weather.kind != Weather.Kind.STORM:
 					Game.weather.set_weather(Weather.Kind.STORM, true)
-				var figure := arg == "--weather=gestalt"   # Gestalt im Blitz neben dem Baum, der am ehesten im Blick liegt
+				var figure := what == "gestalt"   # Gestalt im Blitz neben dem Baum, der am ehesten im Blick liegt
 				get_tree().create_timer(3.0).timeout.connect(Game.weather.lightning.bind(figure))   # erst, wenn es regnet
 			_:
 				Game.say("Wetter: klar, regen, gewitter, blitz, gestalt oder blut", 3.0)
-	elif arg == "--party" or arg.begins_with("--party="):
-		var host := arg.substr(8) if arg.begins_with("--party=") else "player"
+	elif _is_arg(arg, "--party"):
+		var host := _arg_value(arg, "--party", "player")
 		if host == "player" or _guest(host):
 			Game.social.start_party(host)
 	elif arg.begins_with("--look="):
-		var parts := arg.substr(7).split(",")
+		var parts := _arg_parts(arg, "--look")
 		var guest := _guest(parts[0])
 		if guest:
 			_debug_look(guest, parts[1] if parts.size() > 1 else "")
 	elif arg.begins_with("--shock="):
-		var parts := arg.substr(8).split(",")
+		var parts := _arg_parts(arg, "--shock")
 		var shocked := _guest(parts[0])
 		if shocked:
 			_debug_shock(shocked, parts[1] if parts.size() > 1 else "blood")
 	elif arg.begins_with("--talk="):
-		var partner := _guest(arg.substr(7))
+		var partner := _guest(_arg_value(arg, "--talk"))
 		if partner == null:
 			return true
 		var after_shock := Array(OS.get_cmdline_user_args()).any(func(a: String) -> bool: return a.begins_with("--shock="))
@@ -1396,17 +1399,17 @@ func run_debug(arg: String) -> bool:
 			_face_toward(partner.global_position)
 			Game.dialog.open(partner))
 	elif arg.begins_with("--bitte="):
-		var parts := arg.substr(8).split(",")
+		var parts := _arg_parts(arg, "--bitte")
 		get_tree().create_timer(0.5).timeout.connect(Game.social.requests.debug.bind(parts))
 	elif arg.begins_with("--gespraech="):
-		var parts := arg.substr(12).split(",")
+		var parts := _arg_parts(arg, "--gespraech")
 		get_tree().create_timer(0.5).timeout.connect(Game.social.talk.debug.bind(parts))
 	elif arg == "--ghost=flur":
 		Game.ghost.debug_summon_hall()
-	elif arg == "--spinne" or arg.begins_with("--spinne="):
-		Game.spiders.debug(arg.substr(9) if arg.length() > 9 else "")
-	elif arg == "--fledermaus" or arg.begins_with("--fledermaus="):
-		Game.bats.debug_show(arg.substr(13) if arg.length() > 13 else "")
+	elif _is_arg(arg, "--spinne"):
+		Game.spiders.debug(_arg_value(arg, "--spinne"))
+	elif _is_arg(arg, "--fledermaus"):
+		Game.bats.debug_show(_arg_value(arg, "--fledermaus"))
 	elif arg == "--ghost=stunde" or arg.begins_with("--ghost=stunde,"):
 		Game.ghost.debug_ghost_hour(maxi(1, arg.get_slice(",", 1).to_int()) if "," in arg else 1)
 	elif arg == "--ghost=tür" or arg == "--ghost=tuer":
@@ -1428,15 +1431,15 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--dusche=nacht":
 		# erst nach 3 s – mit --sleep=bett schläfst du dann schon und wachst vom Wasser auf
 		get_tree().create_timer(3.0).timeout.connect(Game.shower_scare.debug_night)
-	elif arg == "--dusche" or arg.begins_with("--dusche="):
-		Game.shower_scare.debug(arg.substr(9) if arg.length() > 9 else "")
-	elif arg == "--salz" or arg.begins_with("--salz="):
-		_debug_salt((arg.substr(7) if arg.length() > 7 else "").split(","))
+	elif _is_arg(arg, "--dusche"):
+		Game.shower_scare.debug(_arg_value(arg, "--dusche"))
+	elif _is_arg(arg, "--salz"):
+		_debug_salt(_arg_parts(arg, "--salz"))
 	elif arg.begins_with("--awake="):
 		# so viele Stunden wach (Spielkonzept 3.6), mit ",sicher": ab dann sicher im Flur; der erste Angriff gilt als
 		# geschehen, sonst spukt der Lakengeist noch nicht
 		Game.director.first_attack_done = true
-		Game.player.awake_time = arg.substr(8).get_slice(",", 0).to_float() * Calendar.HOUR
+		Game.player.awake_time = _arg_value(arg, "--awake").get_slice(",", 0).to_float() * Calendar.HOUR
 		if arg.ends_with(",sicher"):
 			Game.player.sure_awake = maxf(Game.player.awake_time, Player.TIRED_FROM + Calendar.HOUR)
 	elif arg == "--sleep":
@@ -1462,26 +1465,26 @@ func run_debug(arg: String) -> bool:
 				if (spot as HideSpot).own_bed:
 					Game.player.start_sleep(spot))
 	elif arg.begins_with("--fremdbett="):
-		_debug_foreign_bed(arg.substr(12).split(","))
+		_debug_foreign_bed(_arg_parts(arg, "--fremdbett"))
 	elif arg.begins_with("--wecken="):
-		_debug_wake(arg.substr(9).split(","))
+		_debug_wake(_arg_parts(arg, "--wecken"))
 	elif arg.begins_with("--birnenersatz="):
-		_debug_bulb_refill(arg.substr(15).split(","))
+		_debug_bulb_refill(_arg_parts(arg, "--birnenersatz"))
 	elif arg.begins_with("--ghost="):
-		Game.ghost.debug_summon(arg.substr(8).to_int())
+		Game.ghost.debug_summon(_arg_value(arg, "--ghost").to_int())
 	elif arg == "--warn":
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.director.start_warning())
 	elif arg.begins_with("--eier="):
-		_debug_eggs(arg.substr(7).split(","))
+		_debug_eggs(_arg_parts(arg, "--eier"))
 	elif arg.begins_with("--prank="):
-		var prank := arg.substr(8).split(",")
+		var prank := _arg_parts(arg, "--prank")
 		var prank_room := Game.director.room_by_label(prank[1]) if prank.size() > 1 else LevelBuilder.PLAYER_ROOM
 		get_tree().create_timer(1.5).timeout.connect(func() -> void: Game.social.pranks.debug(prank[0], prank_room))
 	elif arg == "--doll=kind":
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.doll.debug_fetch())
-	elif arg == "--doll" or arg.begins_with("--doll="):
+	elif _is_arg(arg, "--doll"):
 		# Angriff mit Puppe in s Sekunden – nach 1 s, damit Gäste und NavMesh stehen
-		var parts := arg.substr(7).split(",") if arg.length() > 7 else PackedStringArray()
+		var parts := _arg_parts(arg, "--doll")
 		var seconds := parts[0].to_float() if parts.size() > 0 and parts[0] != "" else 20.0
 		Game.director.debug_doom = Game.director.room_by_label(parts[1]) if parts.size() > 1 else ""
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
@@ -1489,7 +1492,7 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--attacks="):
 		# so viele Raubzüge gab es schon (ab HARMLESS_RAIDS ist der nächste nicht mehr harmlos, 4.33)
 		Game.director.first_attack_done = true
-		Game.director.raids = arg.substr(10).to_int()
+		Game.director.raids = _arg_value(arg, "--attacks").to_int()
 	elif arg == "--siegerehrung" or arg == "--siegerehrung=ohne":
 		# Siegerehrung (2.5) – nach 1 s, damit NavMesh und Gäste stehen
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.contest.debug_ceremony(arg.ends_with("ohne")))
@@ -1497,18 +1500,19 @@ func run_debug(arg: String) -> bool:
 		# nach 1 s, damit NavMesh und Gäste stehen
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.social.grinch.debug(arg.ends_with("tot")))
 	elif arg == "--brett" or arg == "--brett=nachher":
-		Game.contest.debug_board(arg.substr(8))
+		Game.contest.debug_board(_arg_value(arg, "--brett"))
 	elif arg == "--brett=abgereist":
 		# nach 1 s, damit die Gäste stehen (Gustav wird geholt)
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.contest.debug_board("abgereist"))
-	elif arg == "--register" or arg.begins_with("--register="):
+	elif _is_arg(arg, "--register"):
 		# nach 1 s, damit die Gäste stehen (tot: Gustav wird geholt)
-		var opts := arg.substr(11).split(",")
+		var opts := _arg_parts(arg, "--register")
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.register.debug("tot" in opts, "offen" in opts, "anfang" in opts))
-	elif arg == "--zimmer18" or arg.begins_with("--zimmer18="):
+	elif _is_arg(arg, "--zimmer18"):
+		var page := _arg_value(arg, "--zimmer18")
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:   # nach dem Aufbau des Spielers
 			for book in get_tree().get_nodes_in_group("caretaker_books"):
-				(book as CaretakerBook).debug(arg.substr(11)))
+				(book as CaretakerBook).debug(page))
 	elif arg == "--brief":
 		Game.contest.debug_letter()
 	elif arg == "--zettel":
@@ -1519,8 +1523,8 @@ func run_debug(arg: String) -> bool:
 		Game.notebook.give(true)
 		for id in IconArt.THREAT_ORDER:
 			Game.notebook.note_seen(id)
-	elif arg == "--tot" or arg.begins_with("--tot="):
-		var by: String = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(arg.substr(6), "monster")
+	elif _is_arg(arg, "--tot"):
+		var by: String = {"geist": "ghost", "kuerbis": "pumpkin", "kürbis": "pumpkin"}.get(_arg_value(arg, "--tot"), "monster")
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
 			if Game.game_over:
 				return
@@ -1532,38 +1536,40 @@ func run_debug(arg: String) -> bool:
 			Game.player_died.emit())
 	elif arg == "--trick=13" or arg.begins_with("--trick=13,"):
 		# Ein Kind steht vor Zimmer 13 (Tür auf) – mit „,n“ gibst du ihm n Süßigkeiten, eine je 1,5 s
-		var give := arg.substr(11).to_int() if arg.begins_with("--trick=13,") else 0
+		var trick := _arg_parts(arg, "--trick")
+		var give := trick[1].to_int() if trick.size() > 1 else 0
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.social.debug_trick_at_13(give))
-	elif arg == "--trick" or arg.begins_with("--trick="):
-		var kid: Guest = Game.social.find_guest(arg.substr(8)) if arg.begins_with("--trick=") else null
+	elif _is_arg(arg, "--trick"):
+		var kid_id := _arg_value(arg, "--trick")
+		var kid: Guest = Game.social.find_guest(kid_id) if kid_id != "" else null
 		if kid == null:
 			var kids := Game.social.living_guests().filter(func(g: Guest) -> bool: return g.is_child())
 			kid = kids.pick_random() if not kids.is_empty() else null
 		if kid == null or not kid.is_child() or not Game.social.start_round(kid):
 			Game.say("Süßes oder Saures: kein Kind oder keine Gästetür in der Nähe", 3.0)
-	elif arg == "--decorate" or arg.begins_with("--decorate="):
+	elif _is_arg(arg, "--decorate"):
 		# Schmück-Aktion sofort (Spielkonzept 5.9); „lobby“: in der Lobby; „allein“: ein Gast trägt allein ein Stück
 		# Deko in sein Zimmer (mit „lobby“ in die Lobby); „hin“: Spieler vor die Stelle, Blick zur Wand
-		var parts := arg.substr(11).split(",") if arg.begins_with("--decorate=") else PackedStringArray()
+		var parts := _arg_parts(arg, "--decorate")
 		if "allein" in parts:   # der Weg zur Kiste braucht das fertige NavMesh
 			get_tree().create_timer(1.5).timeout.connect(func() -> void: _debug_decorate(parts))
 		else:
 			_debug_decorate(parts)
-	elif arg == "--search" or arg.begins_with("--search="):
+	elif _is_arg(arg, "--search"):
 		# Deko-Suche (Spielkonzept 5.9) – der Weg zum Fundort braucht das fertige NavMesh
-		var parts := arg.substr(9).split(",") if arg.begins_with("--search=") else PackedStringArray()
+		var parts := _arg_parts(arg, "--search")
 		get_tree().create_timer(1.5).timeout.connect(func() -> void: _debug_search(parts))
 	elif arg.begins_with("--cook="):
-		_debug_cook(arg.substr(7).split(","))
+		_debug_cook(_arg_parts(arg, "--cook"))
 	elif arg.begins_with("--kaffee="):
-		_debug_coffee(arg.substr(9).split(","))
+		_debug_coffee(_arg_parts(arg, "--kaffee"))
 	elif arg.begins_with("--tee="):
-		_debug_coffee(arg.substr(6).split(","), true)
+		_debug_coffee(_arg_parts(arg, "--tee"), true)
 	elif arg == "--mess" or arg == "--mess=wachs":
 		get_tree().create_timer(1.5, false).timeout.connect(func() -> void: Game.social.tidying.debug(arg.ends_with("wachs")))
 	elif arg.begins_with("--rival="):
 		# Freund meines Feindes (6.16): gast1 und gast2 sind verfeindet, du wirst gleich mit gast1 befreundet
-		var ids := arg.substr(8).split(",")
+		var ids := _arg_parts(arg, "--rival")
 		var a := Game.social.find_guest(ids[0])
 		var b := Game.social.find_guest(ids[1]) if ids.size() > 1 else null
 		if a and b:
@@ -1572,7 +1578,7 @@ func run_debug(arg: String) -> bool:
 			b._set_idle(90.0)
 			Game.social.change_relation(a, 80.0)
 	elif arg.begins_with("--pals="):
-		_debug_pals(arg.substr(7).split(","))
+		_debug_pals(_arg_parts(arg, "--pals"))
 	elif arg == "--knock":
 		# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
 		Game.director.first_attack_done = true
@@ -1585,16 +1591,17 @@ func run_debug(arg: String) -> bool:
 			get_tree().create_timer(4.0).timeout.connect(func() -> void:
 				(Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]["door"] as Door).set_open(true))
 	elif arg.begins_with("--gastanruf="):
-		get_tree().create_timer(1.0).timeout.connect(Game.phones.debug_guest_call.bind(arg.substr(12).split(",")))
+		get_tree().create_timer(1.0).timeout.connect(Game.phones.debug_guest_call.bind(_arg_parts(arg, "--gastanruf")))
 	elif arg.begins_with("--call=") or arg.begins_with("--dial="):
 		# Telefon: Spieler steht in Zimmer 13 vor dem Schreibtisch und sieht auf den Apparat
 		var phone_pos := Game.phones.home_phone.global_position
 		Game.player.global_position = Vector3(phone_pos.x, 0.05, phone_pos.z + 0.9)
 		Game.player.rotation.y = 0.0
 		Game.player.head.rotation.x = -0.75
-		var value := arg.substr(7)
+		var is_call := arg.begins_with("--call=")
+		var value := _arg_value(arg, "--call" if is_call else "--dial")
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
-			if arg.begins_with("--call="):
+			if is_call:
 				Game.phones.debug_call(value)
 				if "--answer" in OS.get_cmdline_user_args():
 					get_tree().create_timer(4.0).timeout.connect(func() -> void:
@@ -1607,7 +1614,7 @@ func run_debug(arg: String) -> bool:
 		Game.message_posted.connect(func(text: String, _d: float, _icon: String) -> void: print("  » " + text.replace("
 ", " ")))
 	elif arg.begins_with("--noise="):
-		var kind := arg.substr(8)
+		var kind := _arg_value(arg, "--noise")
 		var timer := Timer.new()
 		timer.wait_time = 6.0
 		timer.autostart = true
@@ -1619,10 +1626,10 @@ func run_debug(arg: String) -> bool:
 		Game.hud.debug_enabled = true
 	elif arg.begins_with("--day="):
 		# zu einem Tag im Oktober springen (1–31), dort 15 Uhr
-		Game.director.elapsed = Calendar.at(clampi(arg.substr(6).to_int(), 1, Calendar.HALLOWEEN), Calendar.START_HOUR)
-	elif arg == "--rot" or arg.begins_with("--rot="):
+		Game.director.elapsed = Calendar.at(clampi(_arg_value(arg, "--day").to_int(), 1, Calendar.HALLOWEEN), Calendar.START_HOUR)
+	elif _is_arg(arg, "--rot"):
 		# alle Kürbisse kurz vor welk bzw. gleich in dieser Stufe (Spielkonzept 5.10)
-		var target: float = {"welk": Item.ROT_WILT + 0.01, "eingefallen": Item.ROT_SAG + 0.01}.get(arg.substr(6), Item.ROT_WILT)
+		var target: float = {"welk": Item.ROT_WILT + 0.01, "eingefallen": Item.ROT_SAG + 0.01}.get(_arg_value(arg, "--rot"), Item.ROT_WILT)
 		var count := 0
 		for node in get_tree().get_nodes_in_group("items"):
 			var item := node as Item
@@ -1638,12 +1645,12 @@ func run_debug(arg: String) -> bool:
 		Game.weather.set_weather(Weather.Kind.RAIN, true)
 	elif arg.begins_with("--uhr="):
 		# Uhrzeit am aktuellen Tag (hh oder hh:mm); vor der Anreise am 1. Oktober geht es nicht
-		var hm := arg.substr(6).split(":")
+		var hm := _arg_value(arg, "--uhr").split(":")
 		var hour := hm[0].to_float() + (hm[1].to_float() / 60.0 if hm.size() > 1 else 0.0)
 		Game.director.elapsed = maxf(0.0, Calendar.at(Calendar.day_of(Game.director.elapsed), hour))
 	elif arg.begins_with("--bulb-thief="):
 		# Gast klaut sofort eine Glühbirne aus Zimmer 13
-		var thief := _guest(arg.substr(13))
+		var thief := _guest(_arg_value(arg, "--bulb-thief"))
 		var lamp: Lamp = thief._bulb_to_steal(true) if thief else null
 		if lamp:
 			thief._steal_lamp = lamp
@@ -1651,7 +1658,7 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--lichtgang="):
 		# Gast steht vor seiner Tür, drinnen ist das Licht aus: Er geht hinein und zum Schalter (7.3), nach 30 s
 		# wieder hinaus in die Lobby und macht als Letzter aus (außer er vergisst es) – auch wenn du dich drin versteckst
-		var light_args := arg.substr(12).split(",")
+		var light_args := _arg_parts(arg, "--lichtgang")
 		var walker := _guest(light_args[0])
 		var sw := LightSwitch.find(get_tree(), String(walker.home["no"])) if walker else null
 		if sw:
@@ -1671,19 +1678,19 @@ func run_debug(arg: String) -> bool:
 					walker._walk_to(Game.social.builder.lobby_seats.pick_random(), Guest.State.WALK))
 	elif arg.begins_with("--bad="):
 		# Gast geht ins Bad (6.19) – nach 1 s, wenn alle stehen
-		var bather := _guest(arg.substr(6))
+		var bather := _guest(_arg_value(arg, "--bad"))
 		if bather:
 			get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.bath.debug(bather))
 	elif arg.begins_with("--kerzenpflege="):
 		# Gast kümmert sich um die dunklen Kerzen vor seiner Tür (5.12) – nach 1 s, wenn die Startdeko steht
-		var parts := arg.substr(15).split(",")
+		var parts := _arg_parts(arg, "--kerzenpflege")
 		var carer := _guest(parts[0])
 		if carer:
 			get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
 				Game.social.candles.debug(carer, parts.size() > 1 and parts[1] == "ohne"))
-	elif arg == "--abbrennen" or arg.begins_with("--abbrennen="):
+	elif _is_arg(arg, "--abbrennen"):
 		# Alle Kerzen fast heruntergebrannt (5.12) – nach 1 s, wenn die Startdeko steht
-		var rest := arg.substr(12).to_float() if arg.begins_with("--abbrennen=") else 0.02
+		var rest := _arg_value(arg, "--abbrennen", "0.02").to_float()
 		get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
 			for node in get_tree().get_nodes_in_group("items"):
 				var item := node as Item
@@ -1693,14 +1700,14 @@ func run_debug(arg: String) -> bool:
 				(node as FixedCandle).renew(rest, (node as FixedCandle).lit)
 			print("[Kerzen] Debug: alle Kerzen auf %.0f %%" % (rest * 100.0)))
 	elif arg.begins_with("--schmuckplan="):
-		var parts := arg.substr(14).split(",")
+		var parts := _arg_parts(arg, "--schmuckplan")
 		var who := _guest(parts[1]) if parts.size() > 1 else null
 		get_tree().create_timer(1.0, false).timeout.connect(_debug_deco_plan.bind(parts[0], who))
 	elif arg == "--abweisung" or arg == "--abweisung=dunkel":
 		get_tree().create_timer(1.0, false).timeout.connect(_debug_repel.bind(arg.ends_with("dunkel")))
 	elif arg.begins_with("--diary="):
 		# wie am Tagebuch speichern (nach 2 s)
-		var slot := arg.substr(8).to_int()
+		var slot := _arg_value(arg, "--diary").to_int()
 		get_tree().create_timer(2.0).timeout.connect(func() -> void:
 			var ok := SaveManager.save_to(slot, SaveManager.diary_sentence(), get_viewport().get_texture().get_image())
 			print("[diary] Slot %d gespeichert: %s – „%s“" % [slot, ok, SaveManager.diary_sentence()]))
@@ -1719,12 +1726,13 @@ func run_debug(arg: String) -> bool:
 			SaveManager.load_slot(SaveManager.SUSPEND)
 			print("[Zwischenstand] geladen, Datei %s" % ("noch da – FEHLER" if SaveManager.slot_exists(SaveManager.SUSPEND)
 				else "gelöscht")))
-	elif arg == "--fortschritt" or arg.begins_with("--fortschritt="):
-		get_tree().create_timer(2.0).timeout.connect(SaveManager.on_progress.bind(
-			arg.substr(14) if arg.length() > 14 else "Debug"))
+	elif _is_arg(arg, "--fortschritt"):
+		get_tree().create_timer(2.0).timeout.connect(SaveManager.on_progress.bind(_arg_value(arg, "--fortschritt", "Debug")))
 	elif arg.begins_with("--menu="):
 		# Menü für Screenshots öffnen: pause, diary, diary_pages, settings, load, help, achievements (controls: alter Name der Hilfe)
-		var which := "help" if arg.substr(7) == "controls" else arg.substr(7)
+		var which := _arg_value(arg, "--menu")
+		if which == "controls":
+			which = "help"
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:
 			if which in ["diary", "diary_pages"]:
 				Game.menus.open_diary()
@@ -1736,10 +1744,10 @@ func run_debug(arg: String) -> bool:
 					Game.menus.call("_show_" + which))
 	elif arg.begins_with("--taste="):
 		# Tastenbelegung (8.4) nur für die Sitzung: --taste=aktion,taste[,platz] – Taste wie „f“, „space“ oder „maus2“
-		var parts := arg.substr(8).split(",")
+		var parts := _arg_parts(arg, "--taste")
 		var event: InputEvent = null
 		if parts.size() >= 2 and parts[1].begins_with("maus"):
-			event = Keys.decode("mouse:" + parts[1].substr(4))
+			event = Keys.decode("mouse:" + parts[1].trim_prefix("maus"))
 		elif parts.size() >= 2:
 			event = Keys.decode("key:%d" % OS.find_keycode_from_string(parts[1].capitalize()))
 		if event == null or not InputMap.has_action(parts[0]):
@@ -2028,7 +2036,7 @@ func _debug_all(arg: String) -> bool:
 	var cmd := arg.substr(2, eq - 2) if eq > 0 else ""
 	if not DebugConsole.GUEST_ALL.has(cmd):
 		return false
-	var parts := arg.substr(eq + 1).split(",")
+	var parts := _arg_parts(arg, "--" + cmd)
 	var slot: int = DebugConsole.GUEST_ALL[cmd]
 	if parts.size() <= slot or parts[slot] != "alle":
 		return false
@@ -2045,8 +2053,11 @@ func _debug_all(arg: String) -> bool:
 		get_tree().create_timer(Social.BELL_DELAY, false).timeout.connect(Game.play_sound.bind("bell"))
 		return true
 	for word in ["kinder", "hin"]:   # hin: alle vor dich – ergibt keinen Sinn
-		if word in parts:
-			parts.remove_at(parts.find(word))
+		var at := parts.find(word)
+		if at >= 0:
+			parts.remove_at(at)
+			if at < slot:   # „alle“ rückt mit nach vorn
+				slot -= 1
 	for g: Guest in targets:
 		parts[slot] = g.id
 		run_debug("--%s=%s" % [cmd, ",".join(parts)])
@@ -2134,7 +2145,7 @@ func _debug_shock(guest: Guest, what: String) -> void:
 		Game.player.global_position = center - into * 1.6 + along * 1.4 + Vector3(0, 0.05, 0)
 		_face_toward(center + into * 2.5)
 		Game.player.head.rotation.x = -0.2
-		Game.ghost.debug_summon_guest(guest, maxi(1, what.substr(5).to_int()))
+		Game.ghost.debug_summon_guest(guest, maxi(1, what.trim_prefix("ghost").to_int()))
 		return
 	var front: Vector3 = home["door_front"]
 	# in die Flurrichtung, in der 6 m frei sind
