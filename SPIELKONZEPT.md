@@ -3903,6 +3903,12 @@ mit Trauerfeier am Grab.
   der Spieler in der Nähe stand, auf ihn. Am Fenster verdeckt das Eigelb ein Stück der Sicht, und nachts sieht der
   verschmierte Fleck aus wie die Handabdrücke des Lakengeists: Ei oder Geist? Eier gibt es in der Küche (neuer
   Gegenstand) – auch der Spieler kann werfen, etwa an die Tür eines Feindes (Zeugen, 6.3; wie, steht in 3.13).
+  *(Gebaut 2026-10-28: Eierkarton auf der Küchenzeile, morgens wieder 10 Eier; Kinder holen sie dort oder aus dem
+  Koffer, werfen an die Tür oder – gut jedes dritte Mal, wenn erreichbar – vom Garten ans Zimmerfenster. Der Fleck
+  klebt an Tür, Scheibe (von beiden Seiten zu sehen), Wand oder Boden und lässt sich überall wegwischen; ordentliche
+  Gäste putzen ihn an Türen. Sauer sind die Bewohner und Getroffene; vom Kind geworfen auf dich, wenn du höchstens
+  6 m entfernt standest. Eigene Würfe kosten nur, wenn ein Zeuge dich sieht. Noch nicht: der Fleck, der nachts wie die
+  Handabdrücke des Lakengeists aussieht, und die Bitte „Besorg uns Eier“ (6.14).)*
   **Streiche (entschieden und umgesetzt 2026-10-22):** Für Saures sucht sich das Kind einen Streich aus:
   - **Laub** vor die Tür streuen,
   - einen **Kürbis holen und vor die Tür werfen** – er zerplatzt beim Aufprall, egal aus welcher Höhe (Kürbismatsch,
@@ -5272,7 +5278,7 @@ Müdigkeit, Lichtschalter, Aufträge der Gäste, Erfolge, Masken teils).
    Freundschaft und klauen bei Knappheit (5.10)~~ gebaut 2026-10-28
 8. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
    Rest des Maskenballs (5.19) mit den Masken-Erfolgen (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
-9. Eier-Streich der Kinder (6.13)
+9. ~~Eier-Streich der Kinder (6.13) · Tiere als Klang (7.8)~~ gebaut 2026-10-28
 10. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
 11. Echte Modelle und Sounds für die übrigen Platzhalter
 12. Balancing

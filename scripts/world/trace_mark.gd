@@ -75,7 +75,14 @@ const NAMES := {"scratch": "Kratzspuren", "blood": "Blutspuren", "handprint": "E
 	"coffee": "Ein Kaffeefleck", "tea": "Ein Teefleck",
 	"bloody_hand": "Blutige Handabdrücke", "wall_splatter": "Blutspritzer", "wall_smear": "Eine blutige Schmierspur",
 	"splash_mush": "Kürbismatsch an der Wand", "splash_wax": "Wachs an der Wand", "splash_coffee": "Kaffee an der Wand",
-	"splash_tea": "Tee an der Wand", "drag": "Eine Schleifspur aus Blut", "drag_end": "Eine Schleifspur aus Blut"}
+	"splash_tea": "Tee an der Wand", "drag": "Eine Schleifspur aus Blut", "drag_end": "Eine Schleifspur aus Blut",
+	"egg": "Ein Eierfleck"}
+## Eierfleck (Spielkonzept 6.13): so groß (m), Grafik so viele Pixel (im Code gemalt, egg_material): Eiweiß glänzend und
+## durchscheinend, das zerlaufene Eigelb satt und gewölbt, dazu ein paar Schalenstücke
+const EGG_SIZE := Vector2(0.3, 0.38)
+const EGG_TEX := 128
+const EGG_WHITE := Color(0.95, 0.92, 0.8)
+const EGG_YOLK := Color(0.98, 0.6, 0.08)
 ## Schleifspur (Spielkonzept 2.6): ein Stück ist so lang (m, längs der lokalen Z), seine Flecken so groß (quer, längs);
 ## am Ende („drag_end“) dünner und lückenhaft
 const DRAG_LENGTH := 0.6
@@ -90,6 +97,7 @@ static var _coffee_mat: ShaderMaterial
 static var _tea_mat: ShaderMaterial
 static var _wall_plane: PlaneMesh
 static var _mush_mats := {}   ## an der Wand: Kürbismatsch je Sorte, dazu „coffee“ und „tea“ (_wall_material)
+static var _egg_mat: ShaderMaterial
 ## Auf Türen nicht anklickbar (sonst ließe sich die Tür nicht mehr öffnen) – bleibt dort.
 var solid := true
 ## Gerade entstanden (Traces.add_blood, add_guest_drop): Blut und Wachs breiten sich aus (SPREAD); aus dem Spielstand
@@ -105,6 +113,10 @@ func setup(p_kind: String) -> TraceMark:
 
 
 func _ready() -> void:
+	if kind == "egg":   # auf Türen anklickbar (klein – die Tür geht daneben auf), auf Scheiben über das Fenster
+		solid = not get_parent() is HotelWindow
+		if not solid:
+			(get_parent() as HotelWindow).on_egg()
 	collision_layer = 4 if solid else 0
 	collision_mask = 0
 	if solid:
@@ -214,6 +226,27 @@ func _ready() -> void:
 			# Schleifspur (2.6): längliche Flecken in einer Bahn, sobald die Spur steht (_spread_drag)
 			Geo.add_box_shape(self, Vector3(0.4, 0.05, DRAG_LENGTH), Vector3(0, 0.025, 0))
 			_spread_drag.call_deferred()
+		"egg":
+			# Zerplatztes Ei (6.13): Fleck in der Fläche (lokal XY, +Z zum Betrachter), Schalenstücke darauf
+			var plane := PlaneMesh.new()
+			plane.orientation = PlaneMesh.FACE_Z
+			plane.size = Vector2.ONE
+			var size := rng.randf_range(EGG_SIZE.x, EGG_SIZE.y)
+			var splat := Geo.mesh(self, plane, egg_material(), Vector3(0, 0, 0.002))
+			splat.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			splat.basis = Basis(Vector3.BACK, rng.randf() * TAU) * Basis.from_scale(Vector3(size, size * rng.randf_range(0.8, 1.0), 1.0))
+			if not solid:   # auf der Scheibe von beiden Seiten zu sehen – von innen gespiegelt, verdeckt ein Stück Sicht
+				var back := Geo.mesh(self, plane, egg_material(), Vector3(0, 0, -0.001))
+				back.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				back.basis = Basis(Vector3.UP, PI) * splat.basis
+			var shell := Mat.psx(Item.EGG_COLOR)
+			var inner := Mat.psx(Color(0.96, 0.94, 0.9))
+			for i in rng.randi_range(2, 4):
+				var a := rng.randf() * TAU
+				var piece := Geo.mesh(self, Geo.box(Vector3(rng.randf_range(0.01, 0.02), rng.randf_range(0.008, 0.016), 0.0015)),
+					shell if i % 2 == 0 else inner, Vector3(cos(a), sin(a), 0.0) * rng.randf_range(0.02, 0.09) + Vector3(0, 0, 0.004))
+				piece.rotation.z = rng.randf() * TAU
+			Geo.add_box_shape(self, Vector3(0.26, 0.26, 0.04), Vector3.ZERO)
 		"drops":
 			# Spur eines verletzten Gastes: einzelne Blutstropfen
 			var red := Mat.psx(Color(0.3, 0.02, 0.02))
@@ -665,6 +698,82 @@ static func coffee_material(tea: bool = false) -> ShaderMaterial:
 	return mat
 
 
+## Eierfleck (Spielkonzept 6.13): Grafik, Detail- und Normal Map im Code gemalt (einmal je Spiel) – Eiweiß mit welligem
+## Rand und Spritzern, dünn, durchscheinend und nass glänzend; das Eigelb versetzt, zerlaufen, satt und gewölbt.
+static func egg_material() -> ShaderMaterial:
+	if _egg_mat:
+		return _egg_mat
+	var n := EGG_TEX
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 6013
+	var albedo := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	var detail := Image.create(n, n, false, Image.FORMAT_RGB8)
+	var height := PackedFloat32Array()
+	height.resize(n * n)
+	var waves: Array[Vector3] = []   # Rand des Eiweißes: Frequenz, Stärke, Phase
+	for f in [3.0, 5.0, 8.0, 13.0]:
+		waves.append(Vector3(f, rng.randf_range(0.04, 0.12) * 3.0 / f, rng.randf() * TAU))
+	var drops: Array[Vector3] = []   # Spritzer: Mitte (UV), Radius
+	for i in 9:
+		var a := rng.randf() * TAU
+		var d := rng.randf_range(0.36, 0.46)
+		drops.append(Vector3(0.5 + cos(a) * d, 0.5 + sin(a) * d, rng.randf_range(0.012, 0.035)))
+	var yolk_c := Vector2(0.5 + rng.randf_range(-0.06, 0.06), 0.5 + rng.randf_range(-0.06, 0.06))
+	var smear := Vector2.from_angle(rng.randf() * TAU)   # das Eigelb ist in diese Richtung zerlaufen
+	for y in n:
+		for x in n:
+			var p := Vector2((x + 0.5) / n, (y + 0.5) / n)
+			var v := p - Vector2(0.5, 0.5)
+			var a := v.angle()
+			var edge := 0.3
+			for w in waves:
+				edge += w.y * sin(w.x * a + w.z) * 0.3
+			var white := clampf((edge - v.length()) / 0.02, 0.0, 1.0)
+			for dr in drops:
+				white = maxf(white, clampf((dr.z - p.distance_to(Vector2(dr.x, dr.y))) / 0.008, 0.0, 1.0))
+			var q := p - yolk_c
+			var along := q.dot(smear)
+			var across := q.dot(smear.orthogonal())
+			var yolk_r := 0.11 + 0.012 * sin(5.0 * q.angle() + 1.3)
+			var yd := Vector2(along / (1.6 if along > 0.0 else 1.0), across).length() / yolk_r
+			var yolk := clampf((1.0 - yd) / 0.08, 0.0, 1.0)
+			var h := 0.0
+			var color := Color(0, 0, 0, 0)
+			var rough := 1.0
+			var thick := 0.0
+			if white > 0.0 or yolk > 0.0:
+				color = EGG_WHITE.lerp(EGG_YOLK, yolk)
+				color.a = 1.0
+				thick = lerpf(0.05, 1.0, yolk)
+				rough = lerpf(0.06, 0.18, yolk)
+				h = 0.08 * white + yolk * sqrt(maxf(0.0, 1.0 - yd * yd)) * 0.9
+			albedo.set_pixel(x, y, color)
+			detail.set_pixel(x, y, Color(rough, thick, rng.randf()))
+			height[y * n + x] = h
+	var normal := Image.create(n, n, false, Image.FORMAT_RGB8)
+	for y in n:
+		for x in n:
+			var dx := height[y * n + mini(x + 1, n - 1)] - height[y * n + maxi(x - 1, 0)]
+			var dy := height[mini(y + 1, n - 1) * n + x] - height[maxi(y - 1, 0) * n + x]
+			var nv := Vector3(-dx * 6.0, dy * 6.0, 1.0).normalized()   # OpenGL: Y nach oben, Bild-Y nach unten
+			normal.set_pixel(x, y, Color(nv.x * 0.5 + 0.5, nv.y * 0.5 + 0.5, nv.z * 0.5 + 0.5))
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/psx_decal.gdshader")
+	mat.set_shader_parameter("albedo_tex", ImageTexture.create_from_image(albedo))
+	mat.set_shader_parameter("detail_tex", ImageTexture.create_from_image(detail))
+	mat.set_shader_parameter("use_detail", true)
+	mat.set_shader_parameter("normal_tex", ImageTexture.create_from_image(normal))
+	mat.set_shader_parameter("use_normal", true)
+	mat.set_shader_parameter("normal_strength", 0.8)
+	mat.set_shader_parameter("specular", 0.65)
+	mat.set_shader_parameter("edge_alpha", 0.22)
+	mat.set_shader_parameter("thick_shade", 0.9)
+	mat.set_shader_parameter("grain", 0.03)
+	mat.set_shader_parameter("layer_pull", SPLAT_PULL)
+	_egg_mat = mat
+	return mat
+
+
 ## Zug zur Kamera (SPLAT_PULL) und Look der Grafik (SPLAT_LOOK) für ein psx_decal-Material.
 static func splat_look(mat: ShaderMaterial, path: String) -> void:
 	mat.set_shader_parameter("layer_pull", SPLAT_PULL)
@@ -779,6 +888,8 @@ func wash_by(amount: float) -> void:
 
 
 func can_wipe() -> bool:
+	if kind == "egg":
+		return true   # ein Eierfleck lässt sich überall wegwischen (6.13)
 	return Game.director != null and global_position.distance_to(Game.director.player_door_front) < WIPE_RANGE \
 		or (Game.director != null and Game.director.zone_name_at(global_position) == "Zimmer 13")
 

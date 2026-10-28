@@ -118,7 +118,8 @@ func _drop_oldest_footprint() -> void:
 
 
 ## Wachsfleck oder Blutstropfen eines Gastes auf dem Boden – auch der große Wachsfleck einer geworfenen Kerze
-## („wax_splash“, 6.13), Ruß verbrannter Deko („soot“, 5.11) und der Fleck einer zerbrochenen Kaffeetasse („coffee“, 3.11).
+## („wax_splash“, 6.13), Ruß verbrannter Deko („soot“, 5.11), der Fleck einer zerbrochenen Kaffeetasse („coffee“, 3.11)
+## und ein zerplatztes Ei („egg“, 6.13).
 func add_guest_drop(kind: String, pos: Vector3) -> TraceMark:
 	if _guest_marks.size() >= MAX_GUEST_MARKS:
 		# Weggewischt (TraceMark.wipe) oder vom Regen verwaschen (wash_by): schon fort, zählt nicht mehr mit
@@ -137,8 +138,8 @@ func add_guest_drop(kind: String, pos: Vector3) -> TraceMark:
 
 
 ## Geworfenes Flüssiges an der Wand (Spielkonzept 3.13): „splash_mush:<sorte>“, „splash_wax“, „splash_coffee“,
-## „splash_tea“ – ein Fleck am Treffpunkt, der bis zum Boden herunterläuft (TraceMark._spread_wall). Zählt zu den
-## Spuren der Gäste (MAX_GUEST_MARKS).
+## „splash_tea“ – ein Fleck am Treffpunkt, der bis zum Boden herunterläuft (TraceMark._spread_wall); „egg“ klebt nur
+## (6.13). Zählt zu den Spuren der Gäste (MAX_GUEST_MARKS).
 func add_wall_splash(kind: String, pos: Vector3, normal: Vector3) -> TraceMark:
 	if _guest_marks.size() >= MAX_GUEST_MARKS:
 		_guest_marks = _guest_marks.filter(func(m: Variant) -> bool: return is_instance_valid(m))
@@ -151,6 +152,33 @@ func add_wall_splash(kind: String, pos: Vector3, normal: Vector3) -> TraceMark:
 	mark.global_position = pos + flat * 0.012
 	mark.look_at(mark.global_position - flat, Vector3.UP)
 	_guest_marks.append(mark)
+	return mark
+
+
+## Eierfleck auf einer Tür (Spielkonzept 6.13): klebt am Türblatt, wo das Ei traf, auf der Seite, von der es kam
+## (from) – anklickbar zum Wegwischen, die Tür lässt sich daneben weiter öffnen.
+func add_door_egg(door: Door, at: Vector3, from: Vector3) -> TraceMark:
+	var local := door.global_transform.affine_inverse() * from
+	var body: Node3D = door._bodies[0]
+	var on := body.global_transform.affine_inverse() * at
+	var leaf_width := door.width / 2.0 if door.double else door.width
+	var mark := TraceMark.new().setup("egg")
+	door.attach_mark(mark, 1.0 if local.z >= 0.0 else -1.0,
+		Vector2(clampf(on.x / (door._dirs[0] * leaf_width), 0.15, 0.85), clampf(on.y, 0.4, 1.9)))
+	return mark
+
+
+## Eierfleck auf einer Fensterscheibe (6.13): auf der Seite, von der das Ei kam – das Eigelb verdeckt ein Stück Sicht.
+## Weggewischt wird über das Fenster (HotelWindow.get_prompt).
+func add_window_egg(window: HotelWindow, at: Vector3, from: Vector3) -> TraceMark:
+	var side := 1.0 if (window.global_transform.affine_inverse() * from).z >= 0.0 else -1.0
+	var on := window.global_transform.affine_inverse() * at
+	var mark := TraceMark.new().setup("egg")
+	mark.solid = false
+	window.add_child(mark)
+	mark.position = Vector3(clampf(on.x, -window.width / 2.0 + 0.15, window.width / 2.0 - 0.15),
+		clampf(on.y, -window.height / 2.0 + 0.15, window.height / 2.0 - 0.15), side * 0.012)
+	mark.rotation = Vector3(0, 0.0 if side > 0.0 else PI, randf() * TAU)
 	return mark
 
 
@@ -429,7 +457,8 @@ func load_state(list: Array) -> void:
 		else:
 			mark.free()   # Tür oder Fenster gibt es nicht mehr – die Spur fällt weg
 			continue
-		if mark.kind in ["wax", "drops", "wax_splash", "soot", "coffee", "tea"] or mark.kind.begins_with("splash_"):
+		if (mark.kind in ["wax", "drops", "wax_splash", "soot", "coffee", "tea", "egg"] or mark.kind.begins_with("splash_")) \
+				and mark.get_parent() == self:
 			_guest_marks.append(mark)
 
 

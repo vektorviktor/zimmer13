@@ -66,6 +66,18 @@ const TREAT_LINES := ["Danke!", "Noch eins? Juhu!", "Drei! Danke, danke, danke!"
 ## zerplatzt oder zerbricht) stärker
 const THROWN_AT := -6.0
 const THROWN_AT_MESSY := -12.0
+## Eier (Spielkonzept 6.13): Wer ein Ei an Tür oder Fenster abbekommt (Bewohner, wach, höchstens EGG_NOTICE_RANGE m
+## entfernt) oder selbst getroffen wird, ist sauer – vom Kind geworfen auf die Kinder, oder auf dich (EGG_BLAME), wenn du
+## höchstens EGG_BLAME_RANGE m vom Kind oder vom Fleck standest; von dir geworfen und von einem Zeugen gesehen (6.3)
+## EGG_PLAYER, und es spricht sich herum
+const EGG_NOTICE_RANGE := 20.0
+const EGG_BLAME_RANGE := 6.0
+const EGG_BLAME := -6.0
+const EGG_PLAYER := -10.0
+const EGG_KID_LINES := ["Eier?! Diese Gören!", "Na wartet, ihr kleinen Biester!", "Wer schmeißt hier mit Eiern?!"]
+const EGG_BLAME_LINES := ["Hast du die Kinder etwa angestiftet?!", "Du standest doch daneben – das war deine Idee, oder?",
+	"Und du schaust einfach zu, wie sie mit Eiern werfen?"]
+const EGG_SEEN_LINES := ["Ich hab genau gesehen, wer das war!", "He! Ich hab dich gesehen!"]
 ## Lärm vor der Tür (Spielkonzept 4.15, 6.2): Lautes ab NOISE_ANNOY_MIN m Hörweite, das der Spieler höchstens
 ## NOISE_ANNOY_REACH m vor einer Zimmertür macht, ärgert alle, die drin sind – schlafend doppelt. Je Gast nur alle
 ## NOISE_ANNOY_QUIET s, sonst kostet einmal Vorbeirennen mehrfach. Klopfen, Tür auf/zu und Schlüssel sind höflich
@@ -2612,6 +2624,52 @@ func on_player_threw_at(guest: Guest, item: Item, velocity: Vector3) -> void:
 	if Game.tracing:
 		print("[Wurf] %s getroffen (%s)%s" % [guest.display_name, item.display_name,
 			" – %d Zeugen" % witnesses.size() if not witnesses.is_empty() else ""])
+
+
+## Ein Ei zerplatzt (Item._splat_egg, Spielkonzept 6.13) an Tür oder Fenster von Zimmer no ("" = Wand, Boden) oder
+## an einem Gast (hit). Wer es abbekommt, ist sauer (EGG_* oben); einen von dir getroffenen Gast regelt schon
+## on_player_threw_at.
+func on_egg_splat(thrower: Node, at: Vector3, no: String, hit: Guest) -> void:
+	var victims: Array[Guest] = []
+	if hit and not hit.dead:
+		victims.append(hit)
+	if no != "":
+		for g: Guest in living_guests():
+			if String(g.home["no"]) == no and not g.is_child() and not g.is_asleep() and not g in victims \
+					and g.global_position.distance_to(at) < EGG_NOTICE_RANGE:
+				victims.append(g)
+	var p := Game.player
+	if p and thrower == p:
+		var witnesses := _witnesses_of_player(null)
+		if witnesses.is_empty() or no == "":
+			return
+		var told: Array = []
+		for g in victims:
+			if g != hit:
+				change_relation(g, EGG_PLAYER)
+				add_deed(g, "hostile")
+				told.append(g)
+		witnesses[0].say(EGG_SEEN_LINES.pick_random())
+		told.append_array(witnesses)
+		_spread_gossip(-2.0, told)
+		if Game.tracing:
+			print("[Eier] Du hast Zimmer %s beworfen – %d Zeugen" % [no, witnesses.size()])
+		return
+	var kid := thrower as Guest
+	if kid == null:
+		return
+	var blame := p != null and not p.dead and (p.global_position.distance_to(at) < EGG_BLAME_RANGE
+		or p.global_position.distance_to(kid.global_position) < EGG_BLAME_RANGE)
+	for g in victims:
+		if g == kid or g.home["no"] == kid.home["no"] or kid.parent_guest() == g:
+			continue   # die eigene Familie schimpft nicht
+		if blame:
+			change_relation(g, EGG_BLAME)
+			g.say(EGG_BLAME_LINES.pick_random())
+		else:
+			g.say(EGG_KID_LINES.pick_random())
+		if Game.tracing:
+			print("[Eier] %s ist sauer auf %s" % [g.display_name, "dich" if blame else kid.display_name])
 
 
 ## Ein wütender Gast rempelt dich an – seine Rache.

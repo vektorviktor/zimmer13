@@ -16,10 +16,11 @@ const SEE_RANGE := 8.0
 const TIDY_SHARE := 0.4
 const TIDY_RANGE := 14.0
 const TIDY_GAP := 15.0
-const MESS_TRACES := ["wax_splash", "soot", "coffee", "tea"]
+const MESS_TRACES := ["wax_splash", "soot", "coffee", "tea", "egg"]
 const COMPLAIN_MUSH := ["Wer schmeißt hier mit Kürbissen?!", "Igitt – Kürbismatsch vor meiner Tür.", "Das war bestimmt wieder eins von den Kindern …"]
 const COMPLAIN_COFFEE := ["Wer hat hier seinen Kaffee verschüttet?", "Kaffee vor meiner Tür – und keiner wischt es weg.", "Scherben und Kaffee … na toll."]
 const COMPLAIN_TEA := ["Wer hat hier seinen Tee verschüttet?", "Tee und Scherben vor meiner Tür … wer war das?"]
+const COMPLAIN_EGG := ["Eier an meiner Tür?! Wer war das?", "Igitt, überall Eigelb …", "Das waren bestimmt wieder die Kinder."]
 const COMPLAIN_WAX := ["Überall Wachs vor meiner Tür … wer war das?", "Was ist das denn für eine Sauerei?", "Hat hier jemand gezündelt?!"]
 const CLEAN_LINES := ["Das mach ich mal weg.", "So kann das nicht bleiben.", "Na, dann putz ich das eben."]
 const KITCHEN_LINES := ["Daraus wird noch eine Suppe.", "Ab in die Küche damit."]
@@ -77,7 +78,7 @@ func _messes() -> Array[Node3D]:
 			result.append(item)
 	for node in get_tree().get_nodes_in_group("trace_marks"):
 		var mark := node as TraceMark
-		if mark.kind in MESS_TRACES:
+		if mark.kind in MESS_TRACES and not mark.get_parent() is HotelWindow:   # Eier an Scheiben putzt keiner
 			result.append(mark)
 	return result
 
@@ -96,7 +97,7 @@ func _complaints(mess: Node3D) -> void:
 			continue
 		mess.set_meta("complained", true)
 		var mark_kind := (mess as TraceMark).kind if mess is TraceMark else ""
-		var lines: Array = COMPLAIN_MUSH if mess is Item else {"coffee": COMPLAIN_COFFEE, "tea": COMPLAIN_TEA}.get(mark_kind, COMPLAIN_WAX)
+		var lines: Array = COMPLAIN_MUSH if mess is Item else {"coffee": COMPLAIN_COFFEE, "tea": COMPLAIN_TEA, "egg": COMPLAIN_EGG}.get(mark_kind, COMPLAIN_WAX)
 		g.say(lines.pick_random())
 		if Game.tracing:
 			print("[Flecken] %s beschwert sich über %s vor der Tür" % [g.display_name, "Kürbismatsch" if mess is Item else "Wachs/Ruß/Kaffee"])
@@ -123,10 +124,22 @@ func _send_cleaner(mess: Node3D) -> bool:
 	mess.set_meta("cleaning", true)
 	_jobs[best.id] = {"guest": best, "target": mess, "phase": "go"}
 	best.say(CLEAN_LINES.pick_random())
-	best.start_visit(mess.global_position)
+	best.start_visit(_stand_point(mess))
 	if Game.tracing:
 		print("[Flecken] %s geht putzen (%.0f m)" % [best.display_name, best_d])
 	return true
+
+
+## Wo man zum Putzen steht: am Fleck – bei einem Eierfleck an Tür oder Wand davor am Boden (lokale +Z zeigt von der
+## Fläche weg).
+func _stand_point(mess: Node3D) -> Vector3:
+	if mess is TraceMark and (mess as TraceMark).kind == "egg":
+		var out := mess.global_basis.z
+		if absf(out.y) < 0.5:
+			var at := mess.global_position + Vector3(out.x, 0.0, out.z).normalized() * 0.6
+			var under := mess.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(at, at + Vector3.DOWN * 2.5, 1))
+			return under["position"] if not under.is_empty() else at
+	return mess.global_position
 
 
 ## Angekommen (Social.on_visit_arrived): true = gehört zum Putzen.

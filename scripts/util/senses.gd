@@ -28,6 +28,7 @@ const NOISE := {
 	"drop_heavy": {"range": 4.0,  "sound": "thud",   "volume": 0.5, "caption": "[Etwas Schweres plumpst]"},    ## Kürbis oder großer Gegenstand
 	"pumpkin_splat": {"range": 8.0, "sound": "thud", "volume": 0.8, "caption": "[Ein Kürbis zerplatzt]"},    ## Kürbis zerplatzt nach tiefem Fall (5.8)
 	"wax_splat":  {"range": 5.0,  "sound": "thud",   "volume": 0.5, "caption": "[Eine Kerze zerbricht]"},    ## geworfene Kerze zerbricht (Streich, 6.13)
+	"egg_splat":  {"range": 6.0,  "sound": "thud",   "volume": 0.45, "caption": "[Ein Ei klatscht]"},    ## Ei zerplatzt (Streich, Wurf, 6.13)
 	"throw_land": {"range": 6.0,  "sound": "thud",   "volume": 0.5, "caption": "[Etwas fällt polternd]"},    ## Geworfenes landet (3.13) – lockt das Monster hin
 	"throw_land_heavy": {"range": 9.0, "sound": "thud", "volume": 0.7, "caption": "[Etwas Schweres kracht zu Boden]"},  ## … ab Item.THROW_HEAVY kg
 	"fire":       {"range": 5.0,  "sound": "rustle", "volume": 0.6, "caption": "[Feuer knistert]"},    ## Deko brennt, alle 2 s (5.11)

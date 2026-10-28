@@ -36,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -66,11 +66,12 @@ const PRICES := {
 	Kind.APPLE: 1,
 	Kind.MASK: 0,
 	Kind.PUMPKIN_SEEDS: 1,
+	Kind.EGG: 1,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
 	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS, Kind.SALT, Kind.MUSIC_BOX, Kind.APPLE,
-	Kind.PUMPKIN_SEEDS]
+	Kind.PUMPKIN_SEEDS, Kind.EGG]
 ## Getränkedose: die Sorten und ihre Farbe
 const SODA_COLORS := {"limo": Color(0.95, 0.55, 0.1), "cola": Color(0.7, 0.07, 0.07)}
 ## Was man an die Wand hängen kann (Spielkonzept 5.6, 5.7) – der Besen lehnt nur daran
@@ -91,10 +92,15 @@ const LEAF_COLORS: Array[Color] = [Color(0.75, 0.35, 0.08), Color(0.6, 0.15, 0.0
 const JOLT_UNREST := 0.8        ## ab dieser Unruhe kann der Zierkürbis aus den Händen fallen
 ## Zerplatzen (Spielkonzept 5.8): diese Arten, ab so viel Fallhöhe (m); als Aufprall zählt, wenn ein Gegenstand mit
 ## mindestens IMPACT_SPEED (m/s) fällt und auf einen Schlag mehr als die Hälfte davon verliert
-const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.BULB, Kind.COFFEE, Kind.TEA]
+const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.BULB, Kind.COFFEE, Kind.TEA,
+	Kind.EGG]
 const BURST_HEIGHT := 3.0
-## Kerzen, Glühbirnen und Tassen (Kaffee, Tee) zerbrechen schon aus geringerer Höhe (m; Spielkonzept 5.11, 7.3, 3.11)
-const BREAK_HEIGHT := {Kind.CANDLE: 2.0, Kind.BULB: 1.5, Kind.COFFEE: 1.0, Kind.TEA: 1.0}
+## Kerzen, Glühbirnen, Tassen (Kaffee, Tee) und Eier zerbrechen schon aus geringerer Höhe (m; Spielkonzept 5.11, 7.3,
+## 3.11, 6.13)
+const BREAK_HEIGHT := {Kind.CANDLE: 2.0, Kind.BULB: 1.5, Kind.COFFEE: 1.0, Kind.TEA: 1.0, Kind.EGG: 0.6}
+## Ei (Spielkonzept 6.13): Schale (braun, leicht gesprenkelt), Halbachsen (m)
+const EGG_COLOR := Color(0.8, 0.62, 0.46)
+const EGG_RADII := Vector3(0.021, 0.028, 0.021)
 ## Kaffeetasse (Spielkonzept 3.11): Porzellan und Kaffee
 const CUP_COLOR := Color(0.93, 0.92, 0.88)
 const COFFEE_COLOR := Color(0.18, 0.09, 0.04)
@@ -1539,6 +1545,12 @@ func _build(extra: String) -> void:
 			Geo.mesh(self, Geo.cylinder(0.003, 0.02, 4), Mat.psx(Color(0.3, 0.2, 0.1)), Vector3(0.002, 0.075, 0))
 			var leaf := Geo.mesh(self, Geo.box(Vector3(0.022, 0.002, 0.011)), Mat.psx(Color(0.25, 0.5, 0.15)), Vector3(0.012, 0.078, 0))
 			leaf.rotation.z = 0.4
+		Kind.EGG:
+			# Ei aus der Küche (Spielkonzept 6.13): liegt auf der Seite, zerplatzt beim Wurf oder Fall (_splat_egg)
+			display_name = "Ei"
+			mass = 0.06
+			size = Vector3(EGG_RADII.y * 2.0, EGG_RADII.x * 2.0, EGG_RADII.z * 2.0)
+			build_egg(self, Vector3(0, EGG_RADII.x, 0), Vector3(0, 0, PI / 2.0))
 		Kind.PUMPKIN_SEEDS:
 			# Krähenfutter (Spielkonzept 4.25): Kürbiskerne fallen beim Schnitzen ab (5.4); mit Zusatz „brot“ Brotkrumen aus
 			# der Küche – eine Art für beides, damit Item.Kind nicht wächst
@@ -1715,6 +1727,8 @@ func _break() -> void:
 			_shatter_bulb()
 		Kind.COFFEE, Kind.TEA:
 			_spill_coffee()
+		Kind.EGG:
+			_splat_egg(global_position, Vector3.UP, null)
 		_:
 			burst()
 
@@ -1749,6 +1763,12 @@ func _throw_hit(hit: Dictionary) -> void:
 		Game.social.on_player_threw_at(guest, self, velocity)
 	elif guest and is_instance_valid(thrower) and Grinch.is_grinch(thrower as Guest) and Game.social:
 		Game.social.grinch.on_thrown_hit(thrower, guest, self, velocity)   # Gustav wirft (2.6)
+	if kind == Kind.EGG:   # klebt auch an Türen und Scheiben (6.13)
+		if Game.tracing:
+			print("[Wurf] Ei trifft %s bei %s (%.1f m/s)" % [guest.display_name if guest else String((target as Node).name) if target is Node else "etwas",
+				at, velocity.length()])
+		_splat_egg(at, normal, target)
+		return
 	var wall := guest == null and absf(normal.y) < 0.5 and not _is_door(target) 		and not (target is CollisionObject3D and (target as CollisionObject3D).collision_layer & (64 | 256))   # kein Glas
 	if Game.tracing:
 		print("[Wurf] %s trifft %s bei %s (%.1f m/s)" % [display_name,
@@ -1821,6 +1841,57 @@ func _splash_wall(at: Vector3, normal: Vector3) -> void:
 			what = "splash_tea"
 	if what != "":
 		Game.traces.add_wall_splash(what, at, normal)
+
+
+## Ein Ei zerplatzt (Spielkonzept 6.13 – geworfen oder tiefer als BREAK_HEIGHT gefallen): An einer Tür oder Scheibe
+## klebt der Fleck daran (Traces.add_door_egg, add_window_egg – am Fenster verdeckt das Eigelb ein Stück Sicht), an der
+## Wand klebt er auch, sonst liegt er am Boden (alles TraceMark „egg“, auch unter einem getroffenen Gast).
+## Das Klatschen ist Lärm; Social.on_egg_splat entscheidet, wer auf wen sauer ist.
+func _splat_egg(at: Vector3, normal: Vector3, target: Object) -> void:
+	var guest := target as Guest
+	var door := _door_of(target)
+	var window: HotelWindow = null
+	if target is Node and (target as Node).get_parent() is HotelWindow:
+		window = (target as Node).get_parent()
+	var from := at - linear_velocity.normalized() * 0.5 if linear_velocity.length() > 0.1 else at + normal * 0.5
+	var no := ""
+	if Game.traces:
+		if door:
+			Game.traces.add_door_egg(door, at, from)
+			no = door.room_no
+		elif window:
+			Game.traces.add_window_egg(window, at, from)
+			no = window.room_id
+		elif guest == null and absf(normal.y) < 0.5:
+			Game.traces.add_wall_splash("egg", at, normal)
+		else:
+			var hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(at + Vector3.UP * 0.3, at + Vector3.DOWN * 2.5, 1))
+			Game.traces.add_guest_drop("egg", hit["position"] if not hit.is_empty() else at)
+	Game.noise("egg_splat", at, self)
+	if Game.tracing:
+		print("[Eier] Fleck %s" % ("an der Tür von Zimmer %s" % no if door else ("am Fenster von Zimmer %s" % no if window
+			else ("an %s" % guest.display_name if guest else ("an der Wand" if absf(normal.y) < 0.5 else "am Boden")))))
+	if Game.social:
+		Game.social.on_egg_splat(thrower, at, no, guest)
+	queue_free()
+
+
+## Die Tür, zu der ein getroffener Körper gehört (null = keine).
+static func _door_of(body: Object) -> Door:
+	var node := body as Node
+	while node:
+		if node is Door:
+			return node
+		node = node.get_parent()
+	return null
+
+
+## Ein Ei aus Schale (Spielkonzept 6.13): ein gestrecktes Rund (EGG_RADII), die Spitze oben; pos/rot im Elternteil.
+static func build_egg(parent: Node3D, pos: Vector3, rot: Vector3 = Vector3.ZERO) -> MeshInstance3D:
+	var egg := Geo.mesh(parent, Geo.sphere(EGG_RADII.x, EGG_RADII.x * 2.0, 12, 8), Mat.psx(EGG_COLOR), pos)
+	egg.scale = Vector3(1.0, EGG_RADII.y / EGG_RADII.x, 1.0)
+	egg.rotation = rot
+	return egg
 
 
 ## Eine Kerze zerbricht (geworfen oder tiefer als BREAK_HEIGHT gefallen): ein großer weißer Wachsfleck; brannte sie,

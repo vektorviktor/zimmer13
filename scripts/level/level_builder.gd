@@ -131,6 +131,8 @@ const BAR_TEA_GAP := 0.42
 const SALT_BOXES := 3
 const FEED_TABLE_RANGE := 12.0   ## Futtertisch der Krähen (4.25): so weit höchstens von einer Gartentür von Zimmer 13
 const BREAD_OFFSET := 0.8   ## Brotkrumen (4.25): so weit links der Mitte der Küchenzeile
+## Eierkarton in der Küche (Spielkonzept 6.13): so viele Eier, morgens wieder aufgefüllt
+const EGG_BOX := 10
 const H := 3.5
 const T := 0.2
 ## Häute (Fliesen, Fassade, Beton): 2 cm stark, ihre Vorderseite so weit vor der Wandfläche (_wall_piece_at)
@@ -3423,6 +3425,12 @@ func _common_rooms() -> void:
 				salt.position = root.global_transform * Vector3(sp.x, float(counter_info["top"]) + 0.005, sp.y)
 				salt.rotation.y = machine.rotation.y + randf_range(-0.2, 0.2)
 				world.add_child(salt)
+		# Eier (6.13): ein Karton neben dem Salz, morgens wieder EGG_BOX Stück
+		var ep := kr.get_center() - left * (reach - SALT_BOXES * 0.09 - 0.2) - kf * 0.12
+		var eggs := ResourceSpot.new().setup(Item.Kind.EGG, "Ei aus dem Karton", EGG_BOX, 150.0).refill_mornings(EGG_BOX)
+		eggs.position = Vector3(ep.x, float(counter_info["top"]), ep.y)
+		eggs.rotation.y = machine.rotation.y
+		root.add_child(eggs)
 
 
 ## Tanzplätze im Sechseckraster (DANCE_SPACING) über den ganzen Partyraum, die Mitte der Tanzfläche zuerst:

@@ -104,7 +104,8 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - Telefon: Telefonzentrale – SK 4.14 (dort „Zu klären“; Gäste rufen sich an und Panikanrufe gebaut 28.10.).
 - Aufträge, Reste: zentrale Gäste, Verstecken/Apfeltauchen als „Spielen“, Kuscheltier, Bitten am Telefon/als Zettel –
   SK 6.14. Antworten mit Tonlage – SK 6.9.
-- Kinder: Funde in engen Ecken (am Geheimnis), Eier-Streich – SK 6.13.
+- Kinder: Funde in engen Ecken (am Geheimnis), Eier-Reste: Fleck nachts wie Handabdrücke des Lakengeists („Ei oder
+  Geist?“), Bitte „Besorg uns Eier“ (6.14) – SK 6.13 (Eier-Streich gebaut 28.10., Werte nur headless geprüft).
 - Gäste gehen mit Grund ins UG („Leg Kohle nach“, „Hol die Wäsche“) – SK 7.9, 7.10.
 
 **Spieler**

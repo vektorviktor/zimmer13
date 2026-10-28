@@ -1108,6 +1108,8 @@ func _kind_name(kind: int) -> String:
 			return "Werkzeugkasten"
 		Item.Kind.PUMPKIN_SEEDS:
 			return "Kürbiskerne"
+		Item.Kind.EGG:
+			return "Ei"
 	return "Etwas"
 
 

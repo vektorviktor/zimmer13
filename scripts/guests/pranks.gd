@@ -4,12 +4,20 @@ extends Node
 ## aus – Laub vor die Tür streuen, Deko vor der Tür umwerfen oder einen Kürbis bzw. eine Kerze aus dem Koffer der
 ## Familie holen und vor die Tür werfen (zerplatzt bzw. zerbricht beim Aufprall, Item.throw_from; eine brennende Kerze
 ## kann leichte Deko anzünden, 5.11). Danach rennt es lachend davon.
+## Eier (6.13): aus dem Koffer der Familie oder dem Eierkarton in der Küche – geworfen an die Tür oder (EGG_WINDOW) von
+## draußen aus dem Garten an ein Zimmerfenster (Item._splat_egg: Fleck, Lärm, Social.on_egg_splat).
 ## Zeugen: Erwachsene, die es sehen, verpetzen es sehr wahrscheinlich – nur die eigenen Eltern nicht. Erzählt wird es dem
 ## Bewohner der getroffenen Tür; der ist danach mit den Eltern verfeindet (GuestPals.add_feud, 6.16).
 ## Kind von Social, erreichbar über Game.social.pranks. Laufende Streiche werden nicht gespeichert.
 
 ## Streiche und ihr Gewicht (geht einer nicht, fällt er weg; Laub geht immer)
-const WEIGHTS := {"leaves": 0.25, "topple": 0.25, "pumpkin": 0.3, "candle": 0.2}
+const WEIGHTS := {"leaves": 0.25, "topple": 0.25, "pumpkin": 0.3, "candle": 0.2, "egg": 0.35}
+## Eier: so oft ans Zimmerfenster statt an die Tür (wenn eins vom Garten aus erreichbar ist) – von so weit vor dem
+## Fenster (m), höchstens so hoch darüber; Flugzeit je m Abstand (von, bis)
+const EGG_WINDOW := 0.4
+const EGG_WINDOW_DIST := [3.5, 5.0]
+const EGG_WINDOW_HEIGHT := 8.0
+const EGG_THROW_TIME := Vector2(0.55, 1.1)
 ## Umwerfen: Deko so nah an der Tür
 const TOPPLE_RANGE := 2.0
 ## Wurf: von hier (so weit vor der Tür im Flur) auf diesen Punkt (so weit vor der Tür), Flugzeit
@@ -47,6 +55,9 @@ func play(kid: Guest, no: String, forced: String = "") -> bool:
 		"pumpkin", "candle":
 			_fetch(kid, no, kind)
 			return true
+		"egg":
+			_fetch_egg(kid, no)
+			return true
 	Game.social._leaves_at(no, kid)
 	_witnesses(kid, no)
 	return false
@@ -61,6 +72,8 @@ func _choose(kid: Guest, no: String) -> String:
 		options["pumpkin"] = WEIGHTS["pumpkin"]
 	if _family_has(kid, [Item.Kind.CANDLE]) != -1 or _family_flame(kid) != null:
 		options["candle"] = WEIGHTS["candle"]
+	if _family_has(kid, [Item.Kind.EGG]) != -1 or _egg_spot(kid) != null:
+		options["egg"] = WEIGHTS["egg"]
 	var total := 0.0
 	for k in options:
 		total += float(options[k])
@@ -122,13 +135,55 @@ func _fetch(kid: Guest, no: String, kind: String) -> void:
 	kid.start_visit(home.home["door_inside"])
 
 
+## Eier holen: aus dem Koffer der Familie, sonst aus dem Eierkarton in der Küche.
+func _fetch_egg(kid: Guest, no: String) -> void:
+	if _family_has(kid, [Item.Kind.EGG]) != -1:
+		_fetch(kid, no, "egg")
+		return
+	var spot := _egg_spot(kid)
+	_jobs[kid.id] = {"kid": kid, "no": no, "kind": "egg", "phase": "fetch", "spot": spot}
+	var map := kid.get_world_3d().navigation_map
+	kid.start_visit(NavigationServer3D.map_get_closest_point(map, spot.global_position + Vector3.DOWN * 0.8))
+
+
+## Ein Eierkarton, aus dem das Kind nehmen darf (null = keiner).
+func _egg_spot(kid: Guest) -> ResourceSpot:
+	for node in get_tree().get_nodes_in_group("resource_spots"):
+		var spot := node as ResourceSpot
+		if spot.kind == Item.Kind.EGG and spot.guest_can_take():
+			return spot
+	return null
+
+
+## Ein Zimmerfenster von außen (6.13): klares Glas nach draußen und ein Platz im Garten davor (EGG_WINDOW_DIST), den
+## das Kind erreicht, höchstens EGG_WINDOW_HEIGHT unter dem Fenster – {window, stand} oder {}.
+func _window_target(no: String, kid: Guest) -> Dictionary:
+	var world := kid.get_world_3d()
+	for node in get_tree().get_nodes_in_group("windows"):
+		var w := node as HotelWindow
+		if w.room_id != no or not w.exterior or w.frosted or w.sealed:
+			continue
+		var out := -w.global_basis.z
+		out = Vector3(out.x, 0.0, out.z).normalized()
+		for d: float in EGG_WINDOW_DIST:
+			var p := w.global_position + out * d
+			var hit := world.direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(p, p + Vector3.DOWN * (EGG_WINDOW_HEIGHT + 1.0), 1))
+			if hit.is_empty() or w.global_position.y - (hit["position"] as Vector3).y < 0.5 or not RainVeil.is_outdoor(hit["position"]):
+				continue
+			var ground: Vector3 = hit["position"]
+			var stand := NavigationServer3D.map_get_closest_point(world.navigation_map, ground)
+			if Vector2(stand.x - ground.x, stand.z - ground.z).length() < 1.0 and absf(stand.y - ground.y) < 0.6:
+				return {"window": w, "stand": stand}
+	return {}
+
+
 ## Angekommen (Social.on_visit_arrived): true = gehört zu einem Streich.
 func on_arrived(kid: Guest) -> bool:
 	if not _jobs.has(kid.id):
 		return false
 	var job: Dictionary = _jobs[kid.id]
 	if String(job["phase"]) == "fetch":
-		var item := _take_from_family(kid, String(job["kind"]))
+		var item := _take_from_family(kid, String(job["kind"]), job.get("spot"))
 		if item == null:
 			_jobs.erase(kid.id)
 			kid._set_idle(randf_range(2.0, 4.0))
@@ -140,22 +195,31 @@ func on_arrived(kid: Guest) -> bool:
 	return true
 
 
-## Mit dem Geholten in der Hand zurück: in den Flur vor die Tür, von dort wirft es.
-func _go_throw(kid: Guest, no: String, item: Item) -> void:
+## Mit dem Geholten in der Hand zurück: in den Flur vor die Tür, von dort wirft es – ein Ei manchmal von draußen ans
+## Zimmerfenster (EGG_WINDOW; window: 1 = ja, 0 = nein, −1 = Zufall).
+func _go_throw(kid: Guest, no: String, item: Item, window: int = -1) -> void:
 	kid._take_into_hand(item)
 	_jobs[kid.id] = {"kid": kid, "no": no, "phase": "throw"}
+	if item.kind == Item.Kind.EGG and (window == 1 or (window == -1 and randf() < EGG_WINDOW)):
+		var target := _window_target(no, kid)
+		if not target.is_empty():
+			_jobs[kid.id]["window"] = target["window"]
+			kid.start_visit(target["stand"])
+			return
 	var room: Dictionary = Game.social.builder.rooms[no]
 	kid.start_visit((room["door_front"] as Vector3) - (room["into"] as Vector3) * (THROW_FROM - 0.9))
 
 
 ## Kürbis (lieber der große) bzw. Kerze. Anzünden können Gäste nicht (Spielkonzept 5.12): Brennt noch eine Kerze der
 ## Familie (vor ihrer Tür), nimmt das Kind die mit – sonst eine kalte aus dem Koffer.
-func _take_from_family(kid: Guest, kind: String) -> Item:
+func _take_from_family(kid: Guest, kind: String, spot: ResourceSpot = null) -> Item:
+	if spot:   # Eierkarton in der Küche
+		return kid.stock_item(Item.Kind.EGG) if is_instance_valid(spot) and spot.guest_consume() else null
 	if kind == "candle":
 		var flame := _family_flame(kid, FLAME_REACH)
 		if flame:
 			return flame
-	var kinds: Array = [Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN] if kind == "pumpkin" else [Item.Kind.CANDLE]
+	var kinds: Array = [Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN] if kind == "pumpkin" else ([Item.Kind.EGG] if kind == "egg" else [Item.Kind.CANDLE])
 	for g: Guest in _family(kid):
 		for k in kinds:
 			if int(g.stock.get(k, 0)) > 0:
@@ -183,12 +247,19 @@ func _throw(kid: Guest, job: Dictionary) -> void:
 		return
 	var room: Dictionary = Game.social.builder.rooms[job["no"]]
 	var target: Vector3 = (room["door_front"] as Vector3) + (room["into"] as Vector3) * (0.9 - THROW_AT) + Vector3.UP * 0.05
+	var time := THROW_TIME
+	if job.has("window") and is_instance_valid(job["window"]):
+		target = (job["window"] as HotelWindow).global_position   # Ei ans Zimmerfenster (6.13)
+	elif item.kind == Item.Kind.EGG:
+		target = (room["door"] as Door).center() + Vector3.UP * 0.25   # Ei an die Tür
+	if item.kind == Item.Kind.EGG:
+		time = clampf(item.global_position.distance_to(target) / 7.0, EGG_THROW_TIME.x, EGG_THROW_TIME.y)
 	kid._face(target, 1.0)
 	kid.held = null
 	var start := item.global_position
 	item.reparent(Game.social._world, true)
 	var gravity := Vector3(0, -float(ProjectSettings.get_setting("physics/3d/default_gravity")), 0)
-	var velocity := (target - start) / THROW_TIME - gravity * THROW_TIME * 0.5
+	var velocity := (target - start) / time - gravity * time * 0.5
 	item.throw_from(start, velocity, kid)   # das Kind selbst trifft der Wurf nicht
 	_witnesses(kid, String(job["no"]))
 	_run_off(kid)
@@ -257,13 +328,22 @@ func reset() -> void:
 
 
 ## Debug (--prank=art[,zimmer]): Das erste freie Kind steht vor der Tür (Standard Zimmer 13) und spielt diesen
-## Streich (leaves, topple, pumpkin, candle, fire = brennende Kerze neben Laub und Lakengespenst); Wurfgeschosse hat es
+## Streich (leaves, topple, pumpkin, candle, fire = brennende Kerze neben Laub und Lakengespenst, egg = Ei an die Tür,
+## eggwindow = Ei von draußen ans Fenster – ohne Zimmer das erste mit erreichbarem Fenster); Wurfgeschosse hat es
 ## gleich in der Hand (ohne den Weg zum Koffer), zum Umwerfen steht ein Kürbis vor der Tür. false = kein Kind.
 func debug(kind: String, no: String) -> bool:
 	var kids := Game.social.living_guests().filter(func(g: Guest) -> bool: return g.is_child() and g.parent_guest() != null)
 	if kids.is_empty() or not Game.social.builder.rooms.has(no):
 		return false
 	var kid: Guest = kids[0]
+	if kind == "eggwindow" and _window_target(no, kid).is_empty():
+		for room_no in Game.social.builder.rooms:
+			if Game.social.builder.rooms[room_no].has("door_front") and room_no != String(kid.home["no"]) \
+					and not _window_target(room_no, kid).is_empty():
+				no = room_no
+				break
+		if Game.tracing:
+			print("[Streich] Debug: Fenster von Zimmer %s" % no)
 	var room: Dictionary = Game.social.builder.rooms[no]
 	var front: Vector3 = room["door_front"]
 	kid.global_position = front + Vector3.UP * 0.05
@@ -284,6 +364,10 @@ func debug(kind: String, no: String) -> bool:
 			var deco := Item.create(k)
 			Game.social._world.add_child(deco)
 			deco.global_position = front + (room["into"] as Vector3) * 0.4 + (room["along"] as Vector3) * (0.3 if k == Item.Kind.LEAVES else -0.4) + Vector3.UP * 0.05
+	if kind in ["egg", "eggwindow"]:   # gleich mit einem Ei in der Hand, ohne den Weg in die Küche
+		kid.global_position = front - (room["into"] as Vector3) * 2.0 + Vector3.UP * 0.05
+		_go_throw(kid, no, kid.stock_item(Item.Kind.EGG), 1 if kind == "eggwindow" else 0)
+		return true
 	if kind in ["pumpkin", "candle", "fire"]:   # gleich mit dem Wurfgeschoss in der Hand, ohne den Weg zum Koffer
 		var item := kid.stock_item(Item.Kind.PUMPKIN if kind == "pumpkin" else Item.Kind.CANDLE)
 		if kind == "fire":

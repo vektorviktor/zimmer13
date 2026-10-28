@@ -9,7 +9,7 @@ nicht gebaut · **eingefroren** = bewusst zurückgestellt.
 **Handlung:** **Hauptgeschichte** = ohne ihn kein Fortschritt in der Hauptgeschichte (HANDLUNG.md) · **Nebenstrang** =
 trägt einen Auftrag (Kürbismann, Marion) · **–** = Spielmechanik, nicht handlungsrelevant.
 
-Stand: 2026-10-26.
+Stand: 2026-10-28.
 
 ---
 
@@ -117,6 +117,7 @@ Stand: 2026-10-26.
 | Apfel | `APPLE` | gebaut | – | beim Apfeltauchen erbeutet, essbar | 6.21 |
 | Brotkrumen | `PUMPKIN_SEEDS` „brot“ | gebaut | – | Krähenfutter für den Tisch im Gärtchen von Zimmer 13 (Tisch fehlt noch im Plan); Vorrat auf der Küchenzeile, wächst nach (Tasche) | 4.25 |
 | Kürbiskerne | `PUMPKIN_SEEDS` | gebaut | – | fallen beim Schnitzen ab (Tasche); Krähenfutter für den Tisch im Gärtchen von Zimmer 13 | 4.25, 5.4 |
+| Ei | `EGG` | gebaut | – | Eierkarton in der Küche (morgens wieder 10, Tasche); zerplatzt beim Wurf oder Fall – Fleck an Tür, Scheibe, Wand oder Boden, wegwischen; Kinder werfen sie bei Saures, du auch (Zeugen) | 6.13, 3.13 |
 
 ## 7. Spiele und Sonstiges
 

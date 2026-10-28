@@ -25,6 +25,8 @@ var guest_day := 0
 ## Stück, wie Zimmer bewohnt sind (MonsterDirector.inhabited_rooms). refill_day = Spieltag der letzten Füllung (gespeichert).
 var morning_refill := false
 var refill_day := 0
+## Füllt sich morgens auf genau so viele Stück auf (0 = nach bewohnten Zimmern) – Eierkarton (6.13)
+var morning_count := 0
 
 var _timer := 0.0
 var _visual: Node3D
@@ -39,9 +41,10 @@ func setup(p_kind: Item.Kind, p_label: String, p_max_uses: int, p_regen_time: fl
 	return self
 
 
-## Füllt sich morgens auf statt laufend (Kerzenvorrat, 5.12).
-func refill_mornings() -> ResourceSpot:
+## Füllt sich morgens auf statt laufend (Kerzenvorrat, 5.12); count > 0: immer auf so viele Stück (Eier, 6.13).
+func refill_mornings(count: int = 0) -> ResourceSpot:
 	morning_refill = true
+	morning_count = count
 	return self
 
 
@@ -132,6 +135,13 @@ func _ready() -> void:
 				Geo.mesh(_visual, Geo.cylinder(0.033, 0.11, 8), Mat.psx(Item.SODA_COLORS[flavors[i % flavors.size()]]), at + Vector3(0, 0.065, 0))
 				Geo.mesh(_visual, Geo.cylinder(0.028, 0.012, 8), Mat.psx(Color(0.75, 0.76, 0.78)), at + Vector3(0, 0.126, 0))
 			Geo.add_box_shape(self, Vector3(0.4, 0.14, 0.27) if price == 0 else Vector3(0.3, 0.14, 0.12), Vector3(0, 0.07, 0))
+		Item.Kind.EGG:
+			# Eierkarton aus grauer Pappe (6.13): zwei Reihen Mulden, so viele Eier darin, wie noch da sind (_update_visual)
+			var pulp := Mat.psx(Color(0.62, 0.6, 0.55))
+			Geo.mesh(self, Geo.box(Vector3(0.3, 0.035, 0.11)), pulp, Vector3(0, 0.0175, 0))
+			for i in maxi(max_uses, morning_count):
+				Item.build_egg(_visual, Vector3(-0.12 + (i % 5) * 0.06, 0.045, -0.027 + floori(i / 5.0) * 0.054))
+			Geo.add_box_shape(self, Vector3(0.3, 0.08, 0.11), Vector3(0, 0.04, 0))
 		Item.Kind.COFFEE, Item.Kind.TEA:
 			# Tablett mit drei dampfenden Tassen auf der Bartheke (3.11, Tee 3.12)
 			Geo.mesh(self, Geo.box(Vector3(0.32, 0.01, 0.13)), Mat.psx(Color(0.55, 0.5, 0.45)), Vector3(0, 0.005, 0))
@@ -196,7 +206,9 @@ func _refill() -> void:
 		return
 	refill_day = today
 	var target := max_uses
-	if Game.director:
+	if morning_count > 0:
+		target = morning_count
+	elif Game.director:
 		target = ceili(Game.director.inhabited_rooms().size() / 2.0)
 	max_uses = maxi(target, 1)
 	if uses < target:
@@ -270,5 +282,8 @@ func interact(player: Player) -> void:
 
 func _update_visual() -> void:
 	_visual.visible = uses > 0
+	if kind == Item.Kind.EGG:
+		for i in _visual.get_child_count():
+			(_visual.get_child(i) as Node3D).visible = i < uses
 	if kind == Item.Kind.LEAVES:
 		_visual.scale = Vector3.ONE * lerpf(0.5, 1.0, float(uses) / max_uses)

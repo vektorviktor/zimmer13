@@ -27,6 +27,7 @@ var closed := false
 ## Fenster eines noch gesperrten Zimmers (Bauphase, Spielkonzept 7.5): Vorhang immer zu, nicht bedienbar
 var sealed := false
 
+var _pane: StaticBody3D
 var _left: Node3D
 var _right: Node3D
 var _block: StaticBody3D
@@ -45,6 +46,7 @@ func setup(p_width: float, p_height: float, p_frosted: bool, p_exterior: bool, p
 func _ready() -> void:
 	add_to_group("windows")
 	var pane := StaticBody3D.new()
+	_pane = pane
 	pane.collision_layer = LAYER_FROSTED if frosted else LAYER_GLASS
 	pane.collision_mask = 0
 	add_child(pane)
@@ -117,11 +119,36 @@ func inside_point() -> Vector3:
 
 
 func get_prompt(_player: Player) -> String:
+	if not _eggs().is_empty():
+		return "Eigelb von der Scheibe wischen [E]"   # Spielkonzept 6.13
+	if not has_curtains() or sealed:
+		return ""
 	return "Vorhang aufziehen [E]" if closed else "Vorhang zuziehen [E]"
 
 
 func interact(_player: Player) -> void:
-	set_closed(not closed)
+	var eggs := _eggs()
+	if not eggs.is_empty():
+		for mark in eggs:
+			mark.wipe(Game.player)
+		Game.say("Du wischst das Eigelb von der Scheibe.", 2.0)
+		return
+	if has_curtains() and not sealed:
+		set_closed(not closed)
+
+
+## Ein Eierfleck klebt an der Scheibe (TraceMark „egg“, Spielkonzept 6.13): Jetzt lässt sie sich anklicken (wischen).
+func on_egg() -> void:
+	if _pane:
+		_pane.set_meta("interactable", self)
+
+
+func _eggs() -> Array[TraceMark]:
+	var list: Array[TraceMark] = []
+	for child in get_children():
+		if child is TraceMark and (child as TraceMark).kind == "egg" and child.is_in_group("trace_marks"):
+			list.append(child)
+	return list
 
 
 func set_closed(value: bool, instant: bool = false) -> void:

@@ -131,7 +131,7 @@ extends Node3D
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --bag[=a,b,…]               Kleines in die Tasche (3.2): süßes, cola, limo, zierkürbis, kerze, messer, batterie, birne,
 ##                               uv, würfel, becher, streichhölzer (5.12), dartpfeile, salz, kerne (Kürbiskerne, 5.4),
-##                               brot (Brotkrumen, 4.25) – ohne Angabe Süßigkeiten, Cola, Zierkürbis und Batterie
+##                               brot (Brotkrumen, 4.25), ei (6.13) – ohne Angabe Süßigkeiten, Cola, Zierkürbis und Batterie
 ##   --bag-menu[=n]              Tasche offen halten wie mit gehaltenem [Q], Fach n (1–6) gewählt – für Screenshots
 ##   --deco=art[,g]              Deko in die Hand (5.6, 5.7): gespenst, lichter, netz, laub, zierkürbis, fledermaus,
 ##                               spinne, totenkopf, besen, kerze (brennend, 5.12) – an eine Wand sehen
@@ -212,6 +212,9 @@ extends Node3D
 ##   --fremdbett=id[,beziehung]  du schläfst ab 1,5 s im Bett dieses Gastes (Beziehung gesetzt), er steht in seinem Zimmer,
 ##                               zugleich beginnt die Nachtruhe und er findet dich (3.6) · frei[,h]: h Stunden (Standard 4)
 ##                               im Bett eines Zimmers ohne lebende Bewohner (sonst irgendeinem fremden), am Tag
+##   --eier=spieler[,id]|fenster  Eier (6.13): du wirfst nach 1,5 s ein Ei an die Tür des Gastes (Standard Edna), er sieht
+##                               es aus dem Flur · fenster: im ersten Zimmer mit Außenfenster klebt Eigelb daran;
+##                               Kinder: --prank=egg|eggwindow[,zimmer]; mit --trace „[Wurf]“, „[Eier]“
 ##   --mode=urteil|snack|raubzug|harmlos|anforderung|keller[,s]  dieser Modus des Leviathan (4.33) in s Sekunden
 ##                               (Standard 0) · urteil wie --doll · raubzug nicht harmlos, harmlos wie der erste ·
 ##                               keller: Runde im Keller; mit --trace „[Aufbruch]“
@@ -1027,7 +1030,7 @@ func run_debug(arg: String) -> bool:
 			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
 			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP,
 			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS, "salz": Item.Kind.SALT,
-			"kerne": Item.Kind.PUMPKIN_SEEDS, "brot": Item.Kind.PUMPKIN_SEEDS}
+			"kerne": Item.Kind.PUMPKIN_SEEDS, "brot": Item.Kind.PUMPKIN_SEEDS, "ei": Item.Kind.EGG}
 		var names := (arg.substr(6) if arg.begins_with("--bag=") else "süßes,cola,zierkürbis,batterie").split(",", false)
 		for what in names:
 			if not kinds.has(what):
@@ -1447,6 +1450,8 @@ func run_debug(arg: String) -> bool:
 		Game.ghost.debug_summon(arg.substr(8).to_int())
 	elif arg == "--warn":
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.director.start_warning())
+	elif arg.begins_with("--eier="):
+		_debug_eggs(arg.substr(7).split(","))
 	elif arg.begins_with("--prank="):
 		var prank := arg.substr(8).split(",")
 		var prank_room := Game.director.room_by_label(prank[1]) if prank.size() > 1 else LevelBuilder.PLAYER_ROOM
@@ -2434,6 +2439,42 @@ func _debug_foreign_bed(args: PackedStringArray) -> void:
 			Game.social.debug_sleep())   # Nachtruhe: Er geht ins Bett und findet dich
 	if Game.tracing:
 		print("[Fremdes Bett] Debug: Zimmer %s%s" % [bed.room_no, ", %s (Beziehung %.0f)" % [guest.display_name, guest.relation] if guest else ""])
+
+
+## --eier=spieler|fenster[,zimmer] (Spielkonzept 6.13): spieler – du stehst 3 m vor der Tür von Zimmer (Standard Ednas),
+## ein Ei in der Hand, der Bewohner sieht vom Flur aus zu, nach 1,5 s wirfst du; fenster – du stehst im ersten Zimmer
+## mit Außenfenster davor und hast ein Ei, außen klebt schon eins (zum Ansehen und Wegwischen).
+func _debug_eggs(args: PackedStringArray) -> void:
+	var p := Game.player
+	if args[0] == "fenster":
+		for node in get_tree().get_nodes_in_group("windows"):
+			var w := node as HotelWindow
+			if w.exterior and not w.frosted and not w.sealed and w.room_id != "":
+				p.global_position = w.global_transform * Vector3(0, 0, 1.6)
+				p.global_position.y = w.global_position.y - 1.1
+				_face_toward(w.global_position)
+				Game.traces.add_window_egg(w, w.global_transform * Vector3(0.15, 0.1, 0), w.global_transform * Vector3(0, 0, -2))
+				break
+		p.receive_item(Item.create(Item.Kind.EGG))
+		return
+	var guest := Game.social.find_guest(args[1] if args.size() > 1 else "edna")
+	if guest == null:
+		push_warning("--eier: kein Gast")
+		return
+	var no := String(guest.home["no"])
+	var room: Dictionary = Game.social.builder.rooms[no]
+	var front: Vector3 = room["door_front"]
+	p.global_position = front - (room["into"] as Vector3) * 2.2 + Vector3.UP * 0.05
+	guest.global_position = front + (room["along"] as Vector3) * 3.0 + Vector3.UP * 0.05
+	guest.look_at(Vector3(p.global_position.x, guest.global_position.y, p.global_position.z), Vector3.UP)
+	guest._set_idle(20.0)
+	p.receive_item(Item.create(Item.Kind.EGG))
+	var door: Door = room["door"]
+	_face_toward(door.center())
+	p.head.rotation.x = 0.05
+	get_tree().create_timer(1.5).timeout.connect(func() -> void:
+		_face_toward(door.center())
+		p.throw_held(0.6))
 
 
 ## --wecken=id[,gefahr|halluzination|klopfen] (Spielkonzept 3.6): Nachtruhe, alle liegen im Bett; nach 2 s weckst du

@@ -202,6 +202,10 @@ done <<'LIST'
 2000|kinder,streiche|--trick --trace
 600|streiche|--prank=fire --trace
 600|streiche,kerzen|--prank=candle --trace
+600|streiche,eier|--prank=egg,021 --trace
+2400|streiche,eier|--prank=eggwindow --trace
+600|eier,werfen|--eier=spieler --trace
+600|eier,speichern|--eier=fenster --savetest --trace
 500|kerzen,spieler,licht|--deco=kerze --sprint --bag=streichhoelzer --trace
 2400|kerzen,abbrennen,gaeste|--abbrennen --trace
 2400|kerzen,abbrennen,gaeste|--kerzenpflege=bruno --trace

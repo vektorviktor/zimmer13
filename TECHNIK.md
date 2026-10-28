@@ -1217,7 +1217,11 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 - **Streiche** (`guests/pranks.gd`): `play(kind, zimmer)` wählt nach `WEIGHTS`: `leaves`, `topple`
   (`Item.knock_over`), `pumpkin`/`candle` werfen (aus dem Koffer der Familie holen, `_go_throw`, `_throw` →
   `Item.throw_from`). **Zeugen** (`_witnesses`) erzählen es dem Bewohner → `pals.add_feud`. Debug
-  `--prank=art[,zimmer]`.
+  `--prank=art[,zimmer]`. **Eier** (`egg`, 6.13): aus dem Koffer der Familie (`stock`) oder dem Eierkarton in der Küche
+  (`ResourceSpot` Art `EGG`, `refill_mornings(EGG_BOX)` – morgens wieder 10, Gäste je eins am Tag) – `_fetch_egg`;
+  geworfen an die Tür (`Door.center` + 0,25 m) oder mit `EGG_WINDOW` von draußen ans Zimmerfenster (`_window_target`:
+  klares Außenfenster des Zimmers, Platz im Garten `EGG_WINDOW_DIST` davor, draußen, auf dem NavMesh, höchstens
+  `EGG_WINDOW_HEIGHT` tiefer); Flugzeit nach Abstand (`EGG_THROW_TIME`). Debug `--prank=egg|eggwindow[,zimmer]`.
 - **Schmück-Aktionen** (`guests/decorating.gd`, Spielkonzept 5.9; zählen als Spaß für den Kürbismann – `is_crew`,
   `player_joins`): Jede Stelle ist eine `Decorating.Action` (`site`, `host`, `crew`, `group` …); eine `group` umfasst
   alle Stellen eines großen Schmückens (Belohnung und Konfetti, wenn die letzte endet). Ablauf je Mitmacher im Zustand
@@ -1492,7 +1496,15 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   fegt `_physics_process` je Schritt eine Kugel (0,45 × größte Kante der Kollisionskiste) vom letzten Ort bis einen
   Schritt voraus (`cast_motion` + `get_rest_info`, `THROW_MASK` = `MASK` | Gäste, ohne Werfer) – ein Strahl aus der
   Mitte kam zu spät, die Physik hatte den Körper schon gebremst; dazu als Rückfall der harte Aufprall (`THROW_IMPACT`).
-  **Treffer** (`_throw_hit`): Gast → `Social.on_player_threw_at` (nur vom Spieler). `BURST_KINDS` zerplatzen bzw.
+  **Treffer** (`_throw_hit`): Gast → `Social.on_player_threw_at` (nur vom Spieler). **Ei** (`EGG`, 6.13) → `_splat_egg`:
+  klebt als `TraceMark` „egg“ an Tür (`Traces.add_door_egg` → `Door.attach_mark`, aber anklickbar: klein, die Tür geht
+  daneben auf), Scheibe (`add_window_egg`, Kind der `HotelWindow`, zweiseitig – verdeckt ein Stück Sicht; gewischt über
+  `HotelWindow.get_prompt`/`on_egg`), Wand (`add_wall_splash`) oder Boden (`add_guest_drop`); Lärm `egg_splat`, dann
+  `Social.on_egg_splat` (Bewohner/Getroffene sauer: auf das Kind, auf dich ab `EGG_BLAME_RANGE`, eigene Würfe nur mit
+  Zeugen `EGG_PLAYER`). Grafik im Code gemalt (`TraceMark.egg_material`: Eiweiß dünn und glänzend, Eigelb gewölbt,
+  Normal- und Detailkarte). Eierflecken lassen sich überall wischen (`can_wipe`), ordentliche Gäste putzen sie an
+  Türen und Wänden (`Tidying`, `_stand_point`), nicht an Scheiben. Gespeichert wie die übrigen Spuren (Tür/Fenster/Welt).
+  Debug `--eier`. `BURST_KINDS` zerplatzen bzw.
   zerbrechen (`_break`): an einer Wand (Normale flach, keine Tür `_is_door`, kein Glas) zuerst `_splash_wall` →
   `Traces.add_wall_splash`, der Kürbismatsch fällt davor herunter; am Boden merkt sich `_impact_velocity` das Tempo, und
   `burst` schreibt ab `STREAK_MIN` m/s „s=richtung:länge“ (`STREAK_PER_SPEED` je m/s, höchstens `STREAK_MAX`) in den
