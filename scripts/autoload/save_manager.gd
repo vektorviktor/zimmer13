@@ -113,7 +113,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     weiter, ihre Nächte ohne Schlaf werden zu je 24 Stunden wach
 ## 57: Kerzen brennen ab (Spielkonzept 5.12): übriges Wachs im Zusatz („w=…“ bei Kerze, Kürbis, Totenkopf) und bei den
 ##     festen Kerzen („wax“), Kerzenvorrat mit „refill_day“ – ältere Stände laden weiter, alle Kerzen dann neu
-const VERSION := 58
+## 59: Schlüssel stehlen (Spielkonzept 6.19): social.access.stolen (Zimmer → wann das Schloss getauscht wird), alte
+##     Schlüssel am Bund („alt_…“) – ältere Stände laden weiter, ohne gestohlene Schlüssel
+const VERSION := 59
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -477,6 +479,7 @@ func collect() -> Dictionary:
 		"pals": social.pals.save_state(),
 		"talk": social.talk.save_state(),
 		"requests": social.requests.save_state(),
+		"access": social.access.save_state(),
 	}
 	var director := Game.director
 	data["director"] = {
@@ -766,6 +769,7 @@ func apply(data: Dictionary) -> void:
 	social.pals.load_state(sd.get("pals", {}))
 	social.talk.load_state(sd.get("talk", {}))
 	social.requests.load_state(sd.get("requests", {}))
+	social.access.load_state(sd.get("access", {}))
 	if Game.doll:
 		Game.doll.load_state(data.get("doll", {}))
 	if Game.pumpkin:

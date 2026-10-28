@@ -81,6 +81,8 @@ func _ready() -> void:
 func get_prompt(player: Player) -> String:
 	if seat and player.seat == seat:
 		return ""
+	if _key_here(player):
+		return "Zimmerschlüssel vom Nachttisch nehmen [E]"   # ein Gast schläft hier (Spielkonzept 6.19)
 	if can_sleep(player):
 		if occupant != null:
 			return "Besetzt"
@@ -109,6 +111,9 @@ func get_icon(player: Player) -> String:
 func interact(player: Player) -> void:
 	if seat and player.seat == seat:
 		return
+	if _key_here(player):
+		Game.social.access.steal_key(self)
+		return
 	if can_sleep(player):
 		if Game.shower_scare and Game.shower_scare.blocks_sleep():
 			Game.say("Ich kann nicht schlafen, solange da Wasser läuft.", 3.0)   # Spielkonzept 4.24
@@ -118,6 +123,12 @@ func interact(player: Player) -> void:
 		seat.interact(player)
 	elif occupant == null:
 		player.enter_hide(self)
+
+
+## Schläft hier ein Gast in seinem Zimmer, dessen Schlüssel man nehmen kann (RoomAccess, Spielkonzept 6.19)?
+func _key_here(player: Player) -> bool:
+	return type == Type.BED and Game.social != null and Game.social.access != null \
+		and Game.social.access.can_steal_key(self, player)
 
 
 ## Im eigenen Bett (Zimmer 13) schläft man, wann man will (Spielkonzept 3.6), im fremden, sobald man mit dem Mausrad

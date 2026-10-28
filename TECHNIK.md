@@ -1104,13 +1104,20 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   **Schlüsselschrank** (`world/key_cabinet.gd`, Gruppe `key_cabinets` im Spielstand). `Door.monster_open` macht eine
   abgeschlossene Zimmertür ebenfalls kaputt. **Reparieren** mit Werkzeugkasten (`on_repaired`); am Morgen
   (`_morning_repairs`) repariert jeder Haushalt seine Tür selbst; `LENDER_HOUSEHOLD` leiht seinen Werkzeugkasten.
+- **Schlüssel stehlen** (`RoomAccess.steal_key`): Am Bett, in dem ein Gast in seinem Zimmer schläft (`key_sleeper`,
+  auch der Zweite im Doppelbett), fragt `HideSpot._key_here` → `can_steal_key` (stehend, Schlüssel noch nicht am Bund)
+  und ersetzt Schlafen/Hinsetzen durch „Zimmerschlüssel vom Nachttisch nehmen“. Der Schlüssel (`Door.key_id`) kommt an
+  den Bund, `stolen[zimmer]` = nächster Morgen `LOCK_SWAP_HOUR`; feindselige Tat, Tagebuch „first_theft“, Zeugen wie
+  `Social.on_player_took` (`KEY_THEFT_*`). `_swap_locks`: Lebt der Haushalt noch, wird der Schlüssel am Bund zu
+  `OLD_KEY` + ID (`Item.key_label`: „passt nicht mehr“). Gespeichert als `social.access` (`save_state`).
 - **Bad** (`guests/bath_use.gd`, `BathUse` als `Social.bath`): `LevelBuilder._room_baths` legt je Zimmer `baths`
   an ({door, id, spot `BATH_SPOT_DEPTH` hinter der Badtür}). Wer zu Hause herumsteht (`IDLE`, `_is_home`), geht mit
   `CHANCE` je Blick (alle `SCAN` s, höchstens alle `GAP`) über den Besuchsablauf hinein, wenn niemand drin oder auf dem
   Weg ist (`occupied`), schließt die Tür leise (`_someone_in_swing`, bis `CLOSE_TRIES`) und steht `STAY` s; hinaus geht
   er mit dem nächsten Vorhaben (`_open_doors` öffnet sie, sie bleibt offen). Kein Schloss; wer aufmacht, hört
   „Besetzt!“. Nicht in Nachtruhe, Feier, solange das Monster unterwegs ist. Nicht gespeichert.
-- Debug: `--klopfen[=zimmer[,weg]]`, `--tuer=zimmer`, `--werkzeug=brecheisen|kasten|schluessel`, `--bad=id`.
+- Debug: `--klopfen[=zimmer[,weg]]`, `--tuer=zimmer`, `--werkzeug=brecheisen|kasten|schluessel`, `--bad=id`,
+  `--schluesseldieb[=zimmer[,tausch]]`.
 
 ### Kinder (Spielkonzept 6.13)
 - `Guest.is_child()`, `parent_guest()`, `is_orphan()`; Profil mit `child`, `age`, Archetyp „Kind“, Sätze aus

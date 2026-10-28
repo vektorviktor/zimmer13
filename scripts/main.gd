@@ -88,6 +88,10 @@ extends Node3D
 ##   --klopfen[=zimmer[,weg]]    vor die Tür eines Gästezimmers (Nummer wie am Schild, ohne Angabe das nächste bewohnte)
 ##                               und nach 1 s klopfen (6.19); weg = ehrlich|lampe|geschenk|panik|geld wählt die
 ##                               Antwort im Türgespräch gleich selbst – mit --trace Chance und Ausgang
+##   --schluesseldieb[=zimmer[,tausch]]   der Haushaltsvorstand des Zimmers (ohne Angabe 003) liegt schlafend im Bett,
+##                               du stehst daneben und nimmst nach 1 s seinen Zimmerschlüssel (6.19); tausch: das Schloss
+##                               wird schon 10 s danach getauscht – nachts starten (--day=3 --uhr=2:00), mit --trace
+##                               Hinweis am Bett und Ablauf
 ##   --attic-door                Kniestocktür zum Ansehen (4.21): du stehst im Dachboden vor ihrer Bandseite (ohne Dachgeschoss
 ##                               im Plan wird beim Aufbau die erste 0,8 m breite Tür im OG1 zur Dachbodentür)
 ##   --dachboden[=kopf|fenster|treppe|blitz]  ins Dachgeschoss (4.21): hinter die Kniestocktür, Blick in die Kammer · kopf: vor
@@ -833,6 +837,11 @@ func run_debug(arg: String) -> bool:
 			return false
 		TeleportUI.place_player(builder.rooms[no]["door_front"], builder.rooms[no]["into"])
 		set_meta("debug_door", builder.rooms[no]["door"])
+	elif arg == "--schluesseldieb" or arg.begins_with("--schluesseldieb="):
+		var parts := arg.substr(17).split(",") if arg.begins_with("--schluesseldieb=") else PackedStringArray()
+		var no := parts[0].pad_zeros(3) if parts.size() > 0 and parts[0] != "" else "003"
+		var swap := parts.size() > 1 and parts[1] == "tausch"
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.access.debug_steal(no, swap))
 	elif arg.begins_with("--werkzeug="):
 		var what := arg.substr(11)
 		if what == "schluessel":

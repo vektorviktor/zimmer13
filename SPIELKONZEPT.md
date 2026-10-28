@@ -4146,6 +4146,8 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 > Zweitschlüssel (4) fehlen noch; das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal je Tür und Tag
 > gilt). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank (Ostwand der Lobby) stehen im Plan.
 > **Badtüren (2026-10-28):** Gäste gehen ab und zu in ihr Bad und schließen die Tür hinter sich; ein Schloss gibt es nicht.
+> **Schlüssel stehlen (2026-10-28)** wie in (4): am Bett des Schlafenden, Folgen bei Zeugen wie beim Deko-Diebstahl; das
+> Schloss ist ab 6 Uhr am Morgen danach getauscht.
 >
 > Verallgemeinert Zuflucht und Abschließen aus 6.18 (4): Freundschaft öffnet Türen – im
 > wörtlichen Sinn. Zimmer werden sozialer Raum; Verstecke, Diebstahl (6.2) und Birnen (7.3) brauchen erst einen Weg

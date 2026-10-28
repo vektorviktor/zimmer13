@@ -359,6 +359,8 @@ func skip_time(dt: float) -> void:
 static func key_label(id: String) -> String:
 	if id == KeyCabinet.KEY_ID:
 		return "Generalschlüssel"
+	if id.begins_with(RoomAccess.OLD_KEY):   # gestohlen, das Schloss ist getauscht (6.19)
+		return "%s (passt nicht mehr)" % key_label(id.substr(RoomAccess.OLD_KEY.length()))
 	return "Schlüssel" if id == "" else "Schlüssel %s" % id.replace("zimmer_", "Zimmer ")
 
 

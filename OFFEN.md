@@ -95,7 +95,7 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 **Gäste und Sozialsystem**
 - **Sozialsystem verknüpft** (Gerüchte als Kanal, Tod mit Ursache, Wünsche, Wache, Tagesbudgets, Geschenke, Vergebung,
   Neid) – SK 6.18 (großteils offen). Daran hängen: Schock+Trauer als ein Wert – SK 6.8; Gerüchte im Notizbuch – SK 3.10.
-- Zimmerzugang, Reste: Einbruch sehr wütender Gäste bei 13, Schlüssel stehlen, Zweitschlüssel, Reparatur-Tagesbudget
+- Zimmerzugang, Reste: Einbruch sehr wütender Gäste bei 13, Zweitschlüssel, Reparatur-Tagesbudget
   – SK 6.19.
 - Lichtschalter, Reste: bei fehlender Birne Ersatz holen oder den Raum meiden, Schreckmoment „Gast macht aus, während
   der Spieler sich drin versteckt“ – SK 7.3.
