@@ -231,6 +231,8 @@ var pranks: Pranks                      ## Streiche der Kinder (Spielkonzept 6.1
 var access: RoomAccess                  ## Zimmerzugang: Klopfen, Einlass, Hausfriedensbruch (Spielkonzept 6.19)
 var tidying: Tidying                    ## Flecken: Beschweren und Putzen (Spielkonzept 6.13)
 var candles: CandleCare                 ## Kerzen anzünden und ersetzen (Spielkonzept 5.12)
+var bath: BathUse                       ## Gäste benutzen ihr Bad und schließen die Badtür (6.19)
+var break_in: BreakIn                   ## Racheakt: Erzfeind bricht in Zimmer 13 ein (6.19)
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
 var talk: Talk                           ## Erzählen, Lügen, Fragen, Gedächtnis der Gäste (Spielkonzept 6.9)
 var requests: GuestRequests              ## Bitten der Gäste (Spielkonzept 6.14)
@@ -384,6 +386,12 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	candles = CandleCare.new()   # Kerzen anzünden und ersetzen (5.12)
 	candles.name = "CandleCare"
 	add_child(candles)
+	bath = BathUse.new()   # ins Bad, Badtür zu (6.19)
+	bath.name = "BathUse"
+	add_child(bath)
+	break_in = BreakIn.new()   # Erzfeind bricht in Zimmer 13 ein (6.19)
+	break_in.name = "BreakIn"
+	add_child(break_in)
 	talk = Talk.new()   # Erzählen, Lügen, Fragen, Gedächtnis (6.9)
 	talk.name = "Talk"
 	add_child(talk)
@@ -783,6 +791,7 @@ func on_player_took(item: Item) -> void:
 		return
 	_thefts[owner_guest.id] = _time
 	add_deed(owner_guest, "hostile")
+	item.set_meta("taken_from", owner_guest.id)   # das holt er sich beim Einbruch zurück (BreakIn, 6.19)
 	if Game.diary:   # eine dunkle Tat – Meilenstein im Tagebuch (3.10), Gäste können es dort lesen (8.9)
 		Game.diary.note("first_theft", "Ich habe %s etwas weggenommen. Ich brauche es dringender, rede ich mir ein." % owner_guest.display_name)
 	var witnesses: Array[Guest] = []
@@ -2120,6 +2129,10 @@ func on_visit_arrived(guest: Guest) -> void:
 	if tidying.on_arrived(guest):   # putzt einen Fleck weg bzw. bringt Kürbismatsch in die Küche
 		return
 	if candles.on_arrived(guest):   # zündet eine Kerze an, holt eine neue oder bringt seine zur Flamme (5.12)
+		return
+	if bath.on_arrived(guest):   # im Bad: Tür zu (6.19)
+		return
+	if break_in.on_arrived(guest):   # an der Tür von Zimmer 13 aufbrechen, drinnen nehmen und lesen (6.19)
 		return
 	if _rounds.has(guest.id):
 		_round_arrived(guest)

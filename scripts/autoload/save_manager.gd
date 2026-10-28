@@ -118,7 +118,10 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 59: Krähen-Erweiterung (Spielkonzept 4.25): omens.crows mit Ruf („favor“ statt „grudge“), Nest, Fütterungen und
 ##     Futterzeit; Krähenfutter mit Zusatz „brot“ (Brotkrumen) – ältere Stände laden weiter, Groll wird zum Ruf, das Nest
 ##     ist wie am Anfang
-const VERSION := 59
+## 60: Schlüssel stehlen und Zweitschlüssel (Spielkonzept 6.19): social.access.stolen (Zimmer → wann das Schloss
+##     getauscht wird), social.access.spares, alte Schlüssel am Bund („alt_…“) – ältere Stände laden weiter, ohne
+##     gestohlene und Zweitschlüssel
+const VERSION := 60
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -629,6 +632,7 @@ func collect() -> Dictionary:
 		"pals": social.pals.save_state(),
 		"talk": social.talk.save_state(),
 		"requests": social.requests.save_state(),
+		"access": social.access.save_state(),
 	}
 	var director := Game.director
 	data["director"] = {
@@ -718,6 +722,8 @@ func apply(data: Dictionary) -> void:
 	Game.social.pranks.reset()
 	Game.social.tidying.reset()
 	Game.social.candles.reset()
+	Game.social.bath.reset()
+	Game.social.break_in.reset()
 	if Game.kitchen:
 		Game.kitchen.reset()
 	if Game.coffee:
@@ -918,6 +924,7 @@ func apply(data: Dictionary) -> void:
 	social.pals.load_state(sd.get("pals", {}))
 	social.talk.load_state(sd.get("talk", {}))
 	social.requests.load_state(sd.get("requests", {}))
+	social.access.load_state(sd.get("access", {}))
 	if Game.doll:
 		Game.doll.load_state(data.get("doll", {}))
 	if Game.pumpkin:

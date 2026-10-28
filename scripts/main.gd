@@ -100,6 +100,10 @@ extends Node3D
 ##   --klopfen[=zimmer[,weg]]    vor die Tür eines Gästezimmers (Nummer wie am Schild, ohne Angabe das nächste bewohnte)
 ##                               und nach 1 s klopfen (6.19); weg = ehrlich|lampe|geschenk|panik|geld wählt die
 ##                               Antwort im Türgespräch gleich selbst – mit --trace Chance und Ausgang
+##   --schluesseldieb[=zimmer[,tausch]]   der Haushaltsvorstand des Zimmers (ohne Angabe 003) liegt schlafend im Bett,
+##                               du stehst daneben und nimmst nach 1 s seinen Zimmerschlüssel (6.19); tausch: das Schloss
+##                               wird schon 10 s danach getauscht – tagsüber wacht er danach auf, nachts (--day=3
+##                               --uhr=2:00) schläft er weiter; mit --trace Hinweis am Bett und Ablauf
 ##   --attic-door                Kniestocktür zum Ansehen (4.21): du stehst im Dachboden vor ihrer Bandseite (ohne Dachgeschoss
 ##                               im Plan wird beim Aufbau die erste 0,8 m breite Tür im OG1 zur Dachbodentür)
 ##   --dachboden[=kopf|fenster|treppe|blitz]  ins Dachgeschoss (4.21): hinter die Kniestocktür, Blick in die Kammer · kopf: vor
@@ -207,6 +211,10 @@ extends Node3D
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
 ##   --enemy=id                  mit einem Gast verfeindet starten
 ##   --relation=id,wert          Beziehung setzen (−100 … 100); ab ±80 werden die nötigen Taten mit eingetragen (6.3)
+##   --einbruch=id[,eigen]       Gast ist stark verfeindet und bricht gleich in Zimmer 13 ein (6.19), du stehst im Flur
+##                               mit Blick auf die Tür · eigen: in Zimmer 13 liegt etwas, das du ihm genommen hast
+##   --zweitschluessel=id        mit dem Gast gut befreundet (mit den Taten, 6.3), er steht vor dir und gibt dir gleich
+##                               den Zweitschlüssel seines Zimmers (6.19)
 ##   --follow=id · --visit=id    Gast kommt mit (steht hinter dir) · Gast geht zu Zimmer 13 und klopft an
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
@@ -227,6 +235,7 @@ extends Node3D
 ##   --birnenersatz=id[,lager|klauen|meiden]   im Zimmer des Gastes (Haushaltsvorstand) fehlen alle Birnen, er steht
 ##                               darin (7.3) · lager (Standard): ein Ersatzbirnen-Lager in der Lobby · klauen: mutig, holt
 ##                               eine aus einem leeren Raum oder Flur · meiden: ängstlich, nach 20 s beginnt die Nachtruhe
+##   --bad=id                    Gast geht gleich in sein Bad und schließt die Tür (6.19), du stehst im Zimmer davor
 ##   --kerzenpflege=id[,ohne]    Kerzen vor der Tür des Gastes gehen aus (ohne: in Kürbis und Totenkopf abgebrannt), er
 ##                               steht ein paar Meter davor und kümmert sich darum (5.12)
 ##   --abbrennen[=rest]          alle Kerzen (auch feste, in Kürbis und Totenkopf) haben nur noch rest übrig (Standard
@@ -865,6 +874,11 @@ func run_debug(arg: String) -> bool:
 			return false
 		TeleportUI.place_player(builder.rooms[no]["door_front"], builder.rooms[no]["into"])
 		set_meta("debug_door", builder.rooms[no]["door"])
+	elif arg == "--schluesseldieb" or arg.begins_with("--schluesseldieb="):
+		var parts := arg.substr(17).split(",") if arg.begins_with("--schluesseldieb=") else PackedStringArray()
+		var no := parts[0].pad_zeros(3) if parts.size() > 0 and parts[0] != "" else "003"
+		var swap := parts.size() > 1 and parts[1] == "tausch"
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.access.debug_steal(no, swap))
 	elif arg.begins_with("--werkzeug="):
 		var what := arg.substr(11)
 		if what == "schluessel":
@@ -1131,6 +1145,21 @@ func run_debug(arg: String) -> bool:
 				g.deeds.merge({"games": Social.BOND_GAMES, "gifts_to": Social.BOND_GIFTS_TO, "gifts_from": Social.BOND_GIFTS_FROM}, true)
 			elif g.relation <= -80.0:
 				g.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
+	elif arg.begins_with("--einbruch="):
+		var parts := arg.substr(11).split(",")
+		var foe := _guest(parts[0])
+		if foe:
+			foe.relation = -90.0   # stark verfeindet (6.3), mit den nötigen Taten
+			foe.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
+			get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+				Game.social.break_in.debug(foe, parts.size() > 1 and parts[1] == "eigen"))
+	elif arg.begins_with("--zweitschluessel="):
+		var friend := _guest(arg.substr(18))
+		if friend:
+			friend.relation = 90.0   # guter Freund (6.3), mit den nötigen Taten
+			friend.deeds.merge({"games": Social.BOND_GAMES, "gifts_to": Social.BOND_GIFTS_TO, "gifts_from": Social.BOND_GIFTS_FROM}, true)
+			_put_in_front(friend, 1.5)
+			friend._set_idle(10.0)
 	elif arg.begins_with("--follow="):
 		var follower := _guest(arg.substr(9))
 		if follower:
@@ -1603,6 +1632,11 @@ func run_debug(arg: String) -> bool:
 			get_tree().create_timer(30.0, false).timeout.connect(func() -> void:
 				if not walker.dead:
 					walker._walk_to(Game.social.builder.lobby_seats.pick_random(), Guest.State.WALK))
+	elif arg.begins_with("--bad="):
+		# Gast geht ins Bad (6.19) – nach 1 s, wenn alle stehen
+		var bather := _guest(arg.substr(6))
+		if bather:
+			get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.bath.debug(bather))
 	elif arg.begins_with("--kerzenpflege="):
 		# Gast kümmert sich um die dunklen Kerzen vor seiner Tür (5.12) – nach 1 s, wenn die Startdeko steht
 		var parts := arg.substr(15).split(",")
