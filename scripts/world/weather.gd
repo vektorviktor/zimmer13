@@ -12,7 +12,8 @@ extends Node3D
 ## Wind (`wind`, Grundbrise, im Regen und Gewitter stärker, in Böen) – Gras, Blätter, fallendes Laub, Regen, Klang;
 ## Nebel draußen (ground_fog.gdshader), mit jedem Tag dichter, der Himmel wolkiger; der Mond nimmt ab und zu – Neumond
 ## Mitte Oktober, Vollmond an Halloween – und so hell scheint er (auch für die Sicht des Monsters, moonlight()).
-## Bei manchem Blitz steht kurz eine Gestalt zwischen den Bäumen (LightningFigure).
+## Bei manchem Blitz steht kurz eine Gestalt zwischen den Bäumen (LightningFigure). Eule, Krähen und Hunde rufen in der
+## Ferne, je nach Uhrzeit und Wetter (DistantAnimals).
 ## Blutregen (Seltenwetter): einmal je Spiel fällt ein Schauer rot – ab dem 20. Oktober, nur wenn der Spieler wach ist
 ## und ihn sieht (draußen oder am Außenfenster), spätestens ab dem 28. sicher beim nächsten solchen Schauer. Gäste in der
 ## Nähe fürchten sich, der mutigste erklärt ihn nüchtern (Saharastaub) – Omen oder Natur bleibt offen. Danach bleiben
@@ -120,6 +121,7 @@ const PUDDLE_COLOR := Color(0.32, 0.05, 0.035)
 const PUDDLE_SEED := 2610
 
 var _howl_timer := 0.0           ## bis zum nächsten Heulen (4.25)
+var animals: DistantAnimals       ## Eule, Krähen und Hunde in der Ferne (7.8)
 var kind := Kind.CLEAR
 var intensity := 0.0              ## 0 … 1, folgt dem Wetter weich
 
@@ -195,6 +197,9 @@ func setup(builder: LevelBuilder, moon: DirectionalLight3D, sky: ShaderMaterial)
 	_figure = LightningFigure.new()
 	_figure.builder = builder
 	add_child(_figure)
+	animals = DistantAnimals.new()
+	animals.builder = builder
+	add_child(animals)
 	_bell = AudioStreamPlayer.new()
 	_bell.stream = load(BELL)
 	_bell.pitch_scale = BELL_PITCH
@@ -328,6 +333,7 @@ func _thunder(loud: float) -> void:
 	Game.play_sound("thunder", loud * (0.7 if inside else 1.0))
 	Game.caption("[Donner]")
 	_mask = MASK_TIME * loud
+	animals.on_thunder(loud)   # Hunde schlagen an, Krähen fliegen auf
 
 
 ## Donner übertönt gerade alles: Hörweite × diesen Wert (MonsterDirector.on_noise).

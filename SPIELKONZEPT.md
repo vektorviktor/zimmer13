@@ -4766,6 +4766,18 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
 > den Scheiben und rötliche Pfützen draußen, bis normaler Regen sie abwäscht (etwa anderthalb Minuten voller Regen).
 > Das zählt nicht als Blutspur (4.13), echte Spuren bleiben eindeutig. Gespeichert wird, ob er schon fiel und wie viel
 > Rot noch zu sehen ist.
+>
+> **Umgesetzt (2026-10-28): Tiere als Klang und Regen auf den Dachfenstern.**
+> - **Tiere in der Ferne** (nur Klang, kein Lärm; draußen lauter, drinnen gedämpft, im Schlaf nicht): Ein **Waldkauz**
+>   ruft nachts (19–6 Uhr) aus dem Wald – ein langes „Huuu“, dann ein bebendes „hu-hu-huuu“, manchmal antwortet das
+>   Weibchen mit „ke-wick“. **Krähen** krächzen fern hinter der Waldkante, morgens und bis 20 Uhr am meisten, tagsüber
+>   seltener, nachts kaum. **Hunde** bellen in der Ferne, oft antwortet ein zweiter, nachts seltener. Im Regen schweigt
+>   der Kauz und die anderen rufen seltener, im Gewitter krächzen keine Krähen; nach lautem Donner schlagen manchmal die
+>   Hunde an und Krähen fliegen krächzend auf. Der heulende Hund (4.25) bleibt, wie er ist.
+> - **Dachfenster:** Auch die Fenster in den Dachschrägen bekommen Tropfen, werden gleich nass, trocknen gleich und
+>   tragen nach dem Blutregen dieselben Flecken. Weil sie schräg liegen, laufen die Rinnsale die Schräge hinab, seltener
+>   und langsamer als an den Wänden, und es bleiben mehr stehende, rundere und größere Tropfen.
+> - Offen bleibt **Wind an den Kerzen** (wie er auf Kerzen wirkt, ist nicht entschieden).
 
 ### 7.9 Untergeschoss (entschieden und umgesetzt 2026-10-20)
 > Ausbau entschieden 2026-10-21 (7.10): Heizraum, Maschinenraum, Wäscherei und Müllraum; darunter kommt
@@ -5206,7 +5218,7 @@ Müdigkeit bis auf das Wecken, Lichtschalter, Aufträge der Gäste, Erfolge, Mas
    Freundschaft und klauen bei Knappheit (5.10)
 8. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
    Rest des Maskenballs (5.19) mit den Masken-Erfolgen (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
-9. Eier-Streich der Kinder (6.13) · Tiere als Klang (7.8)
+9. Eier-Streich der Kinder (6.13)
 10. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
 11. Echte Modelle und Sounds für die übrigen Platzhalter
 12. Balancing
