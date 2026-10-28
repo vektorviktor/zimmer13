@@ -126,8 +126,9 @@ const AUTOSAVE_MONSTER_DISTANCE := 25.0
 ## Aufwachen in Zimmer 13 (8.10): so viele Spielsekunden muss der Schlaf in der Nachtruhe gelegen haben
 ## (= Player.SLEEP_MIN, zwei Stunden) – wer nur kurz nachts die Augen zumacht, hat keine Nacht geschlafen
 const NIGHT_SLEEP := 120.0
-## Schlüssel, deren Fund Fortschritt ist (8.10): Zimmer 18 (Sperrbereich 2.3, Aufzug 7.4) und Dachboden (4.21)
-const PROGRESS_KEYS := ["zimmer_18", "dachboden"]
+## Schlüssel, deren Fund Fortschritt ist (8.10): Zimmer 18 (Sperrbereich 2.3, Aufzug 7.4), Dachboden (4.21) und der
+## Schaltschlüssel des Aufzugs aus Zimmer 18 (7.4)
+const PROGRESS_KEYS := ["zimmer_18", "dachboden", "aufzug"]
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",

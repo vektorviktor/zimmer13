@@ -1278,7 +1278,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   aufgeschlossene Türen:
   - **Fortschritt:** `SaveManager.on_progress(grund)` – der Aufruf für alle Systeme, die einen großen Schritt erkennen
     (Aufzug repariert, Kürbismann erlöst, Fluchtweg …); einmal je Ereignis rufen. Heute hängt daran nur
-    `Player.add_key` → `on_key(id)`: Schlüssel aus `PROGRESS_KEYS` (`zimmer_18`, `dachboden`). Debug `--fortschritt`.
+    `Player.add_key` → `on_key(id)`: Schlüssel aus `PROGRESS_KEYS` (`zimmer_18`, `dachboden`, Schaltschlüssel `aufzug`). Debug `--fortschritt`.
   - **Neuer Bereich:** `NEW_AREAS` (Dachboden, U2, Sperrbereiche – bisher Zimmer 018), erster Besuch je Spiel in
     `visited` (gespeichert). `_area_at` nimmt den Zonennamen, im Dachgeschoss „Dachboden“ (dessen Flurzonen heißen wie
     im OG; Bodenhöhe aus `LevelBuilder.attic_beams`).
