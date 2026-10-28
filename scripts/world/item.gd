@@ -221,7 +221,7 @@ var _light_full := Vector2.ZERO
 var broken := false
 ## Kleidungsstück: wem es gehörte (Gast-ID) – Spur von Verschwundenen
 var clothing_of := ""
-## Getränkedose: „limo“ oder „cola“ (SODA_COLORS)
+## Getränkedose: „limo“ oder „cola“ (SODA_COLORS) · Krähenfutter: „brot“ = Brotkrumen, leer = Kürbiskerne
 var flavor := ""
 ## Salzpackung (Spielkonzept 5.13): reicht noch für so viele Linien (im Zusatzfeld)
 var salt_left := 0
@@ -361,6 +361,8 @@ static func key_label(id: String) -> String:
 		return "Generalschlüssel"
 	if id == CaretakerBook.KEY_ID:   # Schaltschlüssel des Aufzugs aus Zimmer 18 (7.4)
 		return "Schaltschlüssel"
+	if id == Crows.OLD_KEY:   # aus dem Krähennest (4.25, 6.19 (7))
+		return "Alter Messingschlüssel, Anhänger 042"
 	return "Schlüssel" if id == "" else "Schlüssel %s" % id.replace("zimmer_", "Zimmer ")
 
 
@@ -482,7 +484,7 @@ func create_extra() -> String:
 			return "pumpkin" if holds_pumpkin else ""
 		Kind.LIGHT_STRING:
 			return ("%.2f" % string_length) if hung else ""
-		Kind.SODA_CAN:
+		Kind.SODA_CAN, Kind.PUMPKIN_SEEDS:
 			return flavor
 		Kind.SALT:
 			return str(salt_left)
@@ -1171,9 +1173,23 @@ func _build(extra: String) -> void:
 			display_name = key_label(extra)
 			mass = 0.1
 			size = Vector3(0.14, 0.03, 0.05)
-			var gold := Mat.psx(Color(0.72, 0.73, 0.76) if extra == CaretakerBook.KEY_ID else Color(0.85, 0.68, 0.25))   # Schaltschlüssel: Stahl
-			Geo.mesh(self, Geo.box(Vector3(0.09, 0.015, 0.02)), gold, Vector3(0.02, 0.01, 0))
-			Geo.mesh(self, Geo.box(Vector3(0.04, 0.02, 0.045)), gold, Vector3(-0.045, 0.01, 0))
+			var gold := Mat.psx(Color(0.72, 0.73, 0.76) if key_id == CaretakerBook.KEY_ID else Color(0.85, 0.68, 0.25))   # Schaltschlüssel: Stahl
+			if key_id == Crows.OLD_KEY:
+				# Schlüssel von 1987 (4.25): Bartschlüssel aus angelaufenem Messing mit ovalem Zimmeranhänger am Ring
+				size = Vector3(0.2, 0.03, 0.06)
+				var brass := Mat.metal(Color(0.62, 0.48, 0.24))
+				var shaft := Geo.mesh(self, Geo.cylinder(0.006, 0.08, 6), brass, Vector3(0.0, 0.008, 0))
+				shaft.rotation.z = PI / 2.0
+				var bow := Geo.mesh(self, Geo.cylinder(0.018, 0.006, 10), brass, Vector3(-0.05, 0.008, 0))
+				bow.scale = Vector3(1.0, 1.0, 0.8)
+				Geo.mesh(self, Geo.box(Vector3(0.016, 0.006, 0.022)), brass, Vector3(0.034, 0.008, 0.012))
+				var tag := Geo.mesh(self, Geo.cylinder(0.028, 0.005, 12), brass, Vector3(-0.11, 0.004, 0.0))
+				tag.scale = Vector3(1.5, 1.0, 0.9)
+				var number := Geo.mesh(self, Geo.cylinder(0.018, 0.0012, 12), Mat.psx(Color(0.25, 0.18, 0.08)), Vector3(-0.11, 0.0072, 0.0))
+				number.scale = Vector3(1.6, 1.0, 0.7)   # eingeschlagene Nummer, dunkel angelaufen
+			else:
+				Geo.mesh(self, Geo.box(Vector3(0.09, 0.015, 0.02)), gold, Vector3(0.02, 0.01, 0))
+				Geo.mesh(self, Geo.box(Vector3(0.04, 0.02, 0.045)), gold, Vector3(-0.045, 0.01, 0))
 		Kind.COBWEB:
 			display_name = "Spinnenweben"
 			deco_strength = 12.0
@@ -1483,18 +1499,25 @@ func _build(extra: String) -> void:
 			var leaf := Geo.mesh(self, Geo.box(Vector3(0.022, 0.002, 0.011)), Mat.psx(Color(0.25, 0.5, 0.15)), Vector3(0.012, 0.078, 0))
 			leaf.rotation.z = 0.4
 		Kind.PUMPKIN_SEEDS:
-			# Kürbiskerne (Spielkonzept 5.4, 4.25): eine Handvoll, fällt beim Schnitzen ab – später Krähenfutter
-			display_name = "Kürbiskerne"
+			# Krähenfutter (Spielkonzept 4.25): Kürbiskerne fallen beim Schnitzen ab (5.4); mit Zusatz „brot“ Brotkrumen aus
+			# der Küche – eine Art für beides, damit Item.Kind nicht wächst
+			flavor = "brot" if extra == "brot" else ""
+			display_name = "Brotkrumen" if flavor == "brot" else "Kürbiskerne"
 			mass = 0.05
 			size = Vector3(0.09, 0.025, 0.07)
-			var seed_mat := Mat.psx(Color(0.9, 0.85, 0.66))
+			var seed_mat := Mat.psx(Color(0.62, 0.42, 0.22) if flavor == "brot" else Color(0.9, 0.85, 0.66))
+			var crumb_mat := Mat.psx(Color(0.88, 0.8, 0.62))
 			var rng := RandomNumberGenerator.new()
 			rng.seed = 513
 			for i in 16:   # flacher Haufen, die oberen schräg auf den unteren
 				var r := sqrt(rng.randf()) * 0.035
 				var a := rng.randf() * TAU
-				var kernel := Geo.mesh(self, Geo.sphere(0.008, 0.016, 6, 3), seed_mat,
-					Vector3(cos(a) * r, 0.004 + (0.035 - r) * 0.25, sin(a) * r * 0.8))
+				var at := Vector3(cos(a) * r, 0.004 + (0.035 - r) * 0.25, sin(a) * r * 0.8)
+				if flavor == "brot":   # Krumen: kleine Brocken, Kruste und Krume
+					var crumb := Geo.mesh(self, Geo.box(Vector3.ONE * rng.randf_range(0.007, 0.014)), seed_mat if i % 3 == 0 else crumb_mat, at)
+					crumb.rotation = Vector3(rng.randf() * TAU, rng.randf() * TAU, rng.randf() * TAU)
+					continue
+				var kernel := Geo.mesh(self, Geo.sphere(0.008, 0.016, 6, 3), seed_mat, at)
 				kernel.scale = Vector3(1.0, 0.3, 0.62)
 				kernel.rotation = Vector3(rng.randf_range(-0.3, 0.3), rng.randf() * TAU, rng.randf_range(-0.3, 0.3))
 		Kind.PUMPKIN_HEAD:

@@ -115,7 +115,10 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     weiter, ihre Nächte ohne Schlaf werden zu je 24 Stunden wach
 ## 57: Kerzen brennen ab (Spielkonzept 5.12): übriges Wachs im Zusatz („w=…“ bei Kerze, Kürbis, Totenkopf) und bei den
 ##     festen Kerzen („wax“), Kerzenvorrat mit „refill_day“ – ältere Stände laden weiter, alle Kerzen dann neu
-const VERSION := 58
+## 59: Krähen-Erweiterung (Spielkonzept 4.25): omens.crows mit Ruf („favor“ statt „grudge“), Nest, Fütterungen und
+##     Futterzeit; Krähenfutter mit Zusatz „brot“ (Brotkrumen) – ältere Stände laden weiter, Groll wird zum Ruf, das Nest
+##     ist wie am Anfang
+const VERSION := 59
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0

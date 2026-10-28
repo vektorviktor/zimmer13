@@ -129,6 +129,8 @@ const KETTLE_GAP := 0.38
 const BAR_TEA_GAP := 0.42
 ## Salzpackungen (Spielkonzept 5.13) in der Küche, bis sie im Plan stehen – ohne Nachschub
 const SALT_BOXES := 3
+const FEED_TABLE_RANGE := 12.0   ## Futtertisch der Krähen (4.25): so weit höchstens von einer Gartentür von Zimmer 13
+const BREAD_OFFSET := 0.8   ## Brotkrumen (4.25): so weit links der Mitte der Küchenzeile
 const H := 3.5
 const T := 0.2
 ## Häute (Fliesen, Fassade, Beton): 2 cm stark, ihre Vorderseite so weit vor der Wandfläche (_wall_piece_at)
@@ -516,6 +518,12 @@ var diary: Diary
 ## Zimmer → Mitte der Platte seines ersten Tischs (global) – dort liegt etwa Gustavs Tagebuch (Spielkonzept 2.6)
 var room_tables := {}
 var room_table_axes := {}   ## Zimmernummer → halbe Länge des Tischs entlang seiner langen Seite (global)
+## Futtertisch der Krähen (Spielkonzept 4.25): der Tisch im Gärtchen von Zimmer 13, den der Nutzer in den Plan setzt –
+## {pos: Mitte der Platte (global), size: Grundfläche (x, z)}; {} = (noch) keiner im Plan
+var feed_table := {}
+## Gartentüren der Zimmer im Erdgeschoss: Nummer → Array von {pos (global), out (nach draußen)} – das Krähennest sitzt im
+## Baum gegenüber der von Zimmer 042 (Crows, 4.25)
+var garden_doors := {}
 ## Mitte der Platte des Lobby-Couchtischs (global) – dort legt Hugo Dorés Druck hin (Spielkonzept 4.32)
 var lobby_table := Vector3.INF
 ## Aushangbrett in der Lobby (Spielkonzept 2.5) und Innenmaß der Lobby (x, z)
@@ -738,6 +746,7 @@ func _build_plan_floor() -> void:
 	_items()
 	_drawer_content(first_furnishing)
 	_note_room_tables(first_furnishing)
+	_note_gardens(first_furnishing)
 	_lights()
 	_auto_switches()
 
@@ -2540,6 +2549,33 @@ func _note_room_tables(first: int) -> void:
 			room_table_axes[id] = _parent.global_basis * long
 
 
+## Gartentüren (garden_doors, nur Erdgeschoss) und Futtertisch der Krähen (4.25): der Tisch draußen, der einer Gartentür
+## von Zimmer 13 am nächsten steht (höchstens FEED_TABLE_RANGE). Nur Möbel ab first (dieses Stockwerk); ohne Tisch
+## bleibt feed_table leer.
+func _note_gardens(first: int) -> void:
+	if _level != 0:
+		return
+	var doors: Array[Vector2] = []
+	for info: Dictionary in _map["rooms"]:
+		for o: Dictionary in info.get("garden_doors", []):
+			var n: Array = o["normal"]
+			(garden_doors.get_or_add(String(info["no"]), []) as Array).append(
+				{"pos": _global(_v3(o["pos"])), "out": Vector3(float(n[0]), 0, float(n[1]))})
+			if String(info["no"]) == PLAYER_ROOM:
+				doors.append(_v2(o["pos"]))
+	var best := FEED_TABLE_RANGE
+	for f: Dictionary in _furnishings.slice(first):
+		if not f["kind"] in ["table", "room_table", "coffee_table", "dining_table"]:
+			continue
+		var r: Rect2 = f["rect"]
+		if _kind_at(r.get_center()) != "outside":
+			continue
+		for d in doors:
+			if d.distance_to(r.get_center()) < best:
+				best = d.distance_to(r.get_center())
+				feed_table = {"pos": _global(Vector3(r.get_center().x, float(f["top"]), r.get_center().y)), "size": r.size}
+
+
 ## Fester Fund in einer Schublade (CONTENT „drawer“, Spielkonzept 5.12): in die oberste Schublade der ersten Kommode
 ## im Raum. Steht dort (noch) keine, liegt er auf einem Tisch des Raums. Nur Möbel ab first (dieses Stockwerk).
 func _drawer_content(first: int) -> void:
@@ -3356,6 +3392,11 @@ func _common_rooms() -> void:
 		kettle.rotation.y = machine.rotation.y
 		kettle.front = machine.front
 		root.add_child(kettle)
+		# Brotkrumen für die Krähen (4.25): Brett mit Brot links der Mitte der Küchenzeile
+		var bp := kr.get_center() + left * BREAD_OFFSET - kf * 0.08
+		var bread := ResourceSpot.new().setup(Item.Kind.PUMPKIN_SEEDS, "Brotkrumen", 4, 300.0).with_extra("brot")
+		bread.rotation.y = machine.rotation.y
+		_supply(bread, Vector3(bp.x, float(counter_info["top"]), bp.y))
 		# Salz (5.13): solange keins im Plan steht, SALT_BOXES Packungen am rechten Ende der Küchenzeile
 		if not (_map["items"] as Array).any(func(i: Dictionary) -> bool: return i["kind"] == "SALT"):
 			for i in SALT_BOXES:

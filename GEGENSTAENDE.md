@@ -24,7 +24,7 @@ Stand: 2026-10-26.
 | Schaltschlüssel (Aufzug) | `KEY` „aufzug“ | **teilweise** – gebaut 28.10., liegt in Zimmer 18 und kommt an den Bund; im Aufzug noch ohne Wirkung (Reparatur offen) | **Hauptgeschichte** (Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
 | Schlüsselbund des Rezeptionisten | – | geplant (Vorschlag) | Nebenstrang (Marion) | in der Jeansjacke des erlösten Kürbismanns; öffnet das Büro der Direktion | 2.8, M15b |
 | ~~Werkstattschlüssel~~ | – | gestrichen 2026-10-27 (Werkstatt entfällt zugunsten des alten Heizkellers) | – | – | 2.8, 7.4 |
-| Schlüssel von 1987 (Messinganhänger) | – | geplant | – (optional; Edna, K5) | im Krähennest im großen Baum; öffnet das versiegelte Zimmer 042 des Mannes, der 1987 nicht hinauskam | 4.25, 6.19 (7) |
+| Schlüssel von 1987 (Messinganhänger) | `KEY` „zimmer_042“ | gebaut (Zimmer 042 selbst noch nicht versiegelt) | – (optional; Edna, K5) | im Krähennest im großen Baum gegenüber 042; kommt als Geschenk der Krähen bei hoher Gunst nach Fütterungen an drei Tagen oder fällt beim Wurf ins Nest heraus; schließt Zimmer 042 auf (der Mann, der 1987 nicht hinauskam) | 4.25, 6.19 (7) |
 | Schlüssel der übrigen versiegelten Zimmer | – | geplant | – (optional) | je Zimmer ein eigener Weg (Krähen, Freund, Dokument, Wagnis) | 6.19 (7) |
 
 ## 2. Auftrags- und Fundstücke
@@ -113,8 +113,8 @@ Stand: 2026-10-26.
 | Gebratener Kürbis | `ROAST_PUMPKIN` | gebaut | – | Essen | 3.8 |
 | Kürbismatsch | `PUMPKIN_MUSH` | gebaut | – | Rest eines zerplatzten Kürbisses | 5.8, 3.13 |
 | Apfel | `APPLE` | gebaut | – | beim Apfeltauchen erbeutet, essbar | 6.21 |
-| Brotkrumen | – | geplant | – | Krähenfutter für den Tisch im Gärtchen von Zimmer 13; Vorrat in der Küche | 4.25 |
-| Kürbiskerne | `PUMPKIN_SEEDS` | gebaut | – | fallen beim Schnitzen ab (Tasche); Krähenfutter geplant | 4.25, 5.4 |
+| Brotkrumen | `PUMPKIN_SEEDS` „brot“ | gebaut | – | Krähenfutter für den Tisch im Gärtchen von Zimmer 13 (Tisch fehlt noch im Plan); Vorrat auf der Küchenzeile, wächst nach (Tasche) | 4.25 |
+| Kürbiskerne | `PUMPKIN_SEEDS` | gebaut | – | fallen beim Schnitzen ab (Tasche); Krähenfutter für den Tisch im Gärtchen von Zimmer 13 | 4.25, 5.4 |
 
 ## 7. Spiele und Sonstiges
 
@@ -125,7 +125,7 @@ Stand: 2026-10-26.
 | Schachbrett | `CHESS_BOARD` | gebaut | – | Schach mit Gästen | 6.10 |
 | Dartpfeile | `DARTS` | gebaut | – | Darts | 6.10 |
 | Marions Spieluhr | `MUSIC_BOX` | gebaut | Josef Ahrend, Marion (2.3); später fürs Ritual (2.8) | Aufziehen lockt das Monster, nah horcht es; im Heizraum auf dem alten Regal | 5.17 |
-| Münzen | `COINS` | gebaut | – | werden zu Geld; draußen holen sie die Krähen | 3.2, 4.25 |
+| Münzen | `COINS` | gebaut | – | werden zu Geld; draußen holen sie die Krähen ins Nest; Geschenk der Krähen | 3.2, 4.25 |
 | Kleidungsstück | `CLOTHING` | gebaut | – (Spur eines Geholten) | bleibt nach einem Todesfall liegen | 6.7, 4.13 |
 
 ---

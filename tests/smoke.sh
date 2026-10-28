@@ -172,8 +172,12 @@ done <<'LIST'
 4000|spiele|--dice=bruno --autoplay
 3000|spiele,darts|--darts=bruno --autoplay --trace
 1200|darts|--darts --autoplay --trace
-600|halloween,tiere|--kraehen=groll --trace
+600|halloween,tiere,kraehen|--kraehen=groll --trace
 600|halloween,tiere,speichern|--kraehen --savetest
+900|tiere,kraehen|--kraehen=stehlen --trace
+600|tiere,kraehen|--kraehen=werfen --trace
+600|tiere,kraehen|--kraehen=schluessel --trace
+600|tiere,kraehen,speichern|--kraehen=nest --savetest
 600|halloween,tiere|--tp=keller --ratten=welle --trace
 400|halloween,tiere|--hund --trace
 400|tiere,wetter|--tiere --pos=45,0.1,-37,180 --trace

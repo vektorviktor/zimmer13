@@ -2383,9 +2383,8 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
 - **Krähen im Garten:** hüpfen und picken auf dem Rasen, auch nachts, und flattern krächzend in die Kronen, wenn man
   ihnen zu nah kommt (mit Licht oder rennend schon von weiter weg) oder eine Bedrohung naht – ein aufgescheuchter
   Trupp ist **Lärm** (4.15). **Sie merken sich Gesichter:** Wer nach ihnen wirft (3.13) oder in sie hineinrennt, den
-  krächzen sie danach an, sobald er draußen in ihre Nähe kommt – auch das ist Lärm. Der Groll klingt über Tage ab
-  (gespeichert). Glänzendes nehmen sie mit: Münzen, die draußen liegen, holt eine Krähe, wenn niemand hinsieht.
-  Gebaut verschwindet die Münze in der Krone – das ersetzt die Erweiterung unten (Nest).
+  krächzen sie danach an, sobald er draußen in ihre Nähe kommt – auch das ist Lärm. Seit der Erweiterung ist der
+  Groll eine Seite des Rufs (unten). Glänzendes nehmen sie mit – es landet im Nest (unten).
 - **Ratten im Untergeschoss:** huschen an den Wänden, schnuppern, fliehen vor Füßen; neue tauchen auf, wo man nicht
   hinsieht (wie die Spinnen, 4.23). **Frühwarnung unten:** Bricht das Monster aus dem Heizkeller auf oder kommt es
   nah, rennen alle Ratten quiekend in dieselbe Richtung davon – unten gibt es selten Katzen (6.11), die Ratten sind
@@ -2395,9 +2394,9 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
   lauter, drinnen gedämpft, im Schlaf nicht (kein Zeichen nach der Totenglocke, Entscheidung 2026-10-25).
 - Debug: `--kraehen`, `--ratten`, `--hund`.
 
-**Erweiterung: Ruf, Futtertisch und zwei Nester (entschieden 2026-10-25, noch nicht gebaut)**
-> Gebaut holen die Krähen nur Münzen, und die fliegen fast nie draußen herum (nur aus der Tasche eines Gastes in
-> Panik); was sie holen, wird gelöscht. Unnachvollziehbar – darum: Was verschwindet, liegt sichtbar irgendwo und kann
+**Erweiterung: Ruf, Futtertisch und zwei Nester (entschieden 2026-10-25, gebaut 2026-10-28 bis auf das Dachnest)**
+> Vorher holten die Krähen nur Münzen, und die flogen fast nie draußen herum (nur aus der Tasche eines Gastes in
+> Panik); was sie holten, wurde gelöscht. Unnachvollziehbar – darum: Was verschwindet, liegt sichtbar irgendwo und kann
 > zurückkommen.
 
 - **Ruf beim Trupp:** **ein Wert für alle Krähen zusammen**, eine Achse von **Groll** bis **Gunst** – keine einzelne
@@ -2409,17 +2408,23 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
 - **Futtertisch im Gärtchen von Zimmer 13** (Innenhofblock Ost; den Tisch setzt der Nutzer als „Möbel: Tisch“ in den
   Plan): Man legt **Brotkrumen** (Vorrat in der Küche) oder **Kürbiskerne** (fallen beim Schnitzen ab, 5.4) hin.
   Nach ein paar Spielstunden ist das Futter weg – nur, wenn gerade niemand hinsieht; der Zeitsprung im Schlaf zählt
-  mit. Jede Fütterung hebt den Ruf.
+  mit. Jede Fütterung hebt den Ruf. *Gebaut 28.10.: drei Spielstunden; die erste Fütterung eines Tages hebt den Ruf
+  deutlich, weitere am selben Tag wenig. Der Tisch steht noch nicht im Plan – bis dahin gibt es kein Füttern.*
 - **Geschenke:** Ist die Gunst hoch genug, liegt statt des Futters etwas auf dem Tisch – Münzen oder etwas aus dem
   Nest. **Was sie gestohlen haben, kommt so zurück.** Der **Schlüssel von 1987** (versiegeltes Zimmer, 6.19 (7)) kommt
-  erst bei hoher Gunst, also nach mehreren Fütterungen über Tage.
+  erst bei hoher Gunst, also nach mehreren Fütterungen über Tage. *Gebaut als Tuning, bis „ab welchem Ruf“ geklärt ist
+  (unten): Geschenk ab Gunst 0,4 (auf −1 … +1), Schlüssel ab 0,6 und nach Fütterungen an drei Tagen; zuerst
+  Gestohlenes, sonst Münzen.*
 - **Nest im großen Baum im Garten:** der große Baum mitten im Garten zwischen Lobby und Nordflügel, gegenüber der
   Terrassentür von Zimmer 042 (6.19 (7)); das Nest in der Krone sichtbar, im Licht glitzert es. Darin das
   Gestohlene und seit 1987 der Messingschlüssel mit Zimmeranhänger (HANDLUNG.md K5). **Zwei Wege an den Inhalt:**
   - **Gewalt:** ins Nest werfen (3.13) – ein Stück fällt herunter, sofort. Laut (aufgescheuchter Trupp, 4.15), und der
     Ruf fällt stark Richtung Groll.
   - **Geduld:** füttern und warten, bis sie es als Geschenk bringen – leise, aber Tage.
-- **Nest am Dach:** direkt vor einem **Dachfenster** im Dachgeschoss, mit ausgestrecktem Arm zu erreichen – kein
+- *Gebaut 28.10.:* gestohlen werden Münzen, Schlüssel, Messer und Kompass; ein Wurf ins Nest kostet 0,6 Ruf. Der
+  Schlüssel heißt im Spiel „Alter Messingschlüssel, Anhänger 042“ und schließt die Tür von 042 auf (das Versiegeln,
+  6.19 (7), ist noch nicht gebaut). Debug: `--kraehen=gunst|stehlen|nest|werfen|futter|schluessel`.
+- **Nest am Dach (nicht gebaut):** direkt vor einem **Dachfenster** im Dachgeschoss, mit ausgestrecktem Arm zu erreichen – kein
   Klettern auf dem Dach. Darin liegt der **Ring** eines Gastes: Er hat ihn draußen auf einem Tisch liegen lassen, eine
   Krähe hat ihn geholt. Wessen Ring und welcher Auftrag: offen (OFFEN.md I6).
 
