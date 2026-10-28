@@ -1713,9 +1713,22 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
 `guests/extra_child.gd`. Fast alles setzt erst nach dem ersten Angriff ein und ist reine Stimmung ohne eigene Bedrohung.
 - **Tiere** `Crows`, `Rats` (+ `RatKing` im Glas, `RatKing.place`), `Moths`: je ein MultiMesh mit
   `shaders/psx_bird.gdshader` (matt), Flug/Hüpfen/Flügelschlag im Skript, in der Pause steht alles. Krähen: Scheu über
-  `Senses.conspicuity`, Groll (`grudge`) nach Würfen/Rammen, Krächzen ist Lärm; holen Münzen, wenn niemand hinsieht
-  (`_carry` je Krähe – vor dem Zugriff `is_instance_valid` prüfen, die Münze kann inzwischen gelöscht sein). Ratten:
-  Welle weg vom Monster (`WAVE_RANGE`), nur Klang.
+  `Senses.conspicuity`, Krächzen ist Lärm. **Ruf** `favor` (−1 Groll … +1 Gunst, `grudge()` = Groll-Anteil) sinkt bei
+  Würfen/Rammen/Wurf ins Nest, steigt beim Füttern, klingt mit `FAVOR_DECAY` je Spieltag zur Mitte (auch `skip_time`).
+  **Glänzendes** (`SHINY`: Münzen, Schlüssel, Messer, Kompass) draußen holen sie unbeobachtet (`_carry` je Krähe – vor dem
+  Zugriff `is_instance_valid` prüfen; im Schnabel unsichtbar und eingefroren, `_drop` bei Schreck im Flug lässt es an
+  der Krähe fallen). Weite Flüge (`FAR_FLIGHT`) gehen über `CRUISE_Y`. **Nest** (`_build_nest`) im Baum, der am
+  geradesten vor der Gartentür von `NEST_ROOM` 042 steht (`LevelBuilder.garden_doors`), in der Stammgabel knapp unter
+  dem Laub (`NEST_BELOW_CROWN`, `NEST_OUT` zur Tür hin – höher oder weiter außen verdeckt es das herabhängende Laub):
+  Zweige, Messing obenauf, Aufblitzen (Billboard, additiv), `StaticBody3D` auf Ebene 1 fängt Würfe – `on_noise` erkennt
+  den Aufschlag eines Spielerwurfs bis `NEST_HIT` am Nest (`_nest_hit`: ein Stück fällt, Trupp fliegt auf, Ruf −0,6).
+  Inhalt `nest` als `{kind, extra}` (wie `Item.create`), von Anfang an `OLD_KEY` `zimmer_042` – passt ins Schloss der
+  Tür von 042 (das Versiegeln, 6.19 (7), ist nicht gebaut). **Futtertisch** `LevelBuilder.feed_table` (`_note_gardens`:
+  Tisch draußen bis `FEED_TABLE_RANGE` an einer Gartentür von Zimmer 13; ohne Tisch im Plan leer, dann gibt es kein
+  Füttern). Futter = `PUMPKIN_SEEDS` (Zusatz „brot“ = Brotkrumen) auf dem Tisch; `food_time` zählt alle `LOOK_EVERY` s
+  bzw. im Zeitsprung, nach `FOOD_HOURS` unbeobachtet weg (`_eat`): erste Mahlzeit des Tages +0,35, weitere +0,1; ab
+  `GIFT_FAVOR` ein Geschenk (`_gift`): Schlüssel ab `KEY_FAVOR` und `KEY_DAYS` Fütterungstagen, sonst Gestohlenes, sonst
+  Münzen. Gespeichert unter „omens“ „crows“ (Speicherformat 59). Ratten: Welle weg vom Monster (`WAVE_RANGE`), nur Klang.
 - **Hund:** `Weather.howl(delay)`, zufällig alle `HOWL_EVERY` s Spielzeit (`_howl_timer`, im Schlaf nur weitergezählt).
 - **`BoilerCat`** (Modell `cat.glb` fast schwarz, leuchtende Augen) führt zu Kessel bzw. UV-Schrift, einmal je Nacht.
 - **`MirrorOmens`:** verhängte Spiegel aus den Toten abgeleitet (`Mirror.active`), Spiegel in 13 selbst verhängbar;
@@ -1733,7 +1746,8 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   s, nahes Monster horcht über `Monster.listen_to`, einmal je Aktivphase) und `APPLE` aus **`AppleTub`**
   (`Player.stand_at`, `BITE_TIME`, `BREATH`, Lärm „apple_tub“).
 - `PUMPKIN_SEEDS` (Kürbiskerne, 5.4): Schnitzt der Spieler (`Item.interact` → `carve`), legt `_drop_seeds` eine Handvoll
-  neben den Kürbis, auf seine Seite – Gäste schnitzen ohne Kerne. Tasche; Krähenfutter (4.25) noch nicht.
+  neben den Kürbis, auf seine Seite – Gäste schnitzen ohne Kerne. Tasche; Krähenfutter (4.25). Mit Zusatz „brot“
+  (`flavor`) sind es Brotkrumen – Vorrat `ResourceSpot` mit `with_extra("brot")` auf der Küchenzeile (`BREAD_OFFSET`).
 - **Ausstattung im Plan fehlt noch** für Rattenkönig, Fotowand, Puppenhaus, Apfelbottich – bis dahin
   feste Ausweichplätze (`FALLBACK`/`WALL`/`SPOT`) im jeweiligen Skript.
 - **Gespeichert** (Speicherstand 49) unter `omens`: `crows`, `mirrors`, `power`, `nightmare`, `extra_child`

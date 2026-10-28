@@ -63,7 +63,8 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 - **Kürbismann aufhalten:** wie lang „sehr kurz“, Zeige-Entfernung, welche Kürbisse zählen – SK 4.21.
 - **Vampir:** Biss, Verwandlung, „schwach“, hereinbitten – fast alles Vorschlag – SK 4.22.
 - **Versiegelte Zimmer:** welche drei neben 042, Schlüssel, Gegenstände – SK 6.19 (7).
-- **Krähen:** welches Dachfenster fürs Dachnest (hängt am Dach) – SK 4.25.
+- **Krähen:** welches Dachfenster fürs Dachnest (hängt am Dach) – SK 4.25. Geschenke: was außer Münzen und
+  Gestohlenem, ab welchem Ruf (gebaut als Tuning: ab Gunst 0,4, Schlüssel ab 0,6 nach drei Fütterungstagen) – SK 4.25.
 - **Salz:** zwei Gäste mit „kreisenden Händen“ – welche, wann, fest oder zufällig; streuen ältere Gäste selbst? – SK 5.13.
 - **Aufträge:** wie viele gleichzeitig, Ablehnen ohne Beziehungsverlust – SK 6.14. Streit unter Gästen – SK 6.16.
 - **Handel:** woher kommt Geld – SK 6.4.
@@ -88,8 +89,9 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   (Erreichbarkeit, Ziel festnageln, Aufzug-Haltestelle, Dachboden-Szene, `--navcheck=tueren`).
 - **Drei Bedrohungen** je Ebene, gleiche Sicht für den Kürbismann – SK 4.20.
 - Vampir als vierte Bedrohung (Fledermäuse ohne Biss gebaut, draußen und auf dem Dachboden) – SK 4.22.
-- Krähen-Erweiterung: Ruf, Futtertisch, zwei Nester, Ring – SK 4.25 · GE (Brotkrumen; Kürbiskerne fallen seit 27.10.
-  beim Schnitzen ab).
+- Krähen-Erweiterung: Dachnest mit dem Ring – SK 4.25, OFFEN I6. **Futtertisch im Gärtchen von Zimmer 13** fehlt im
+  Plan (Nutzer setzt „Möbel: Tisch“) – bis dahin kein Füttern, Debug `--kraehen=futter` stellt einen Ersatztisch. Ruf,
+  Stehlen ins Nest, Nest gegenüber 042, Füttern und Geschenke gebaut 28.10.; Werte nur headless geprüft.
 - Kesselkatze: Marion erkennt sie, beim Ritual – SK 4.26.
 
 **Gäste und Sozialsystem**

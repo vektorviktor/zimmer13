@@ -105,9 +105,8 @@ extends Node3D
 ##   --pocket                    Kompass, alle Kartenblätter und Schlüssel 18 einstecken
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --bag[=a,b,…]               Kleines in die Tasche (3.2): süßes, cola, limo, zierkürbis, kerze, messer, batterie, birne,
-##                               uv, würfel, becher, streichhölzer (5.12), dartpfeile, salz, kerne (Kürbiskerne, 5.4) – ohne
-##                               Angabe Süßigkeiten, Cola, Zierkürbis und
-##                               Batterie
+##                               uv, würfel, becher, streichhölzer (5.12), dartpfeile, salz, kerne (Kürbiskerne, 5.4),
+##                               brot (Brotkrumen, 4.25) – ohne Angabe Süßigkeiten, Cola, Zierkürbis und Batterie
 ##   --bag-menu[=n]              Tasche offen halten wie mit gehaltenem [Q], Fach n (1–6) gewählt – für Screenshots
 ##   --deco=art[,g]              Deko in die Hand (5.6, 5.7): gespenst, lichter, netz, laub, zierkürbis, fledermaus,
 ##                               spinne, totenkopf, besen, kerze (brennend, 5.12) – an eine Wand sehen
@@ -266,6 +265,12 @@ extends Node3D
 ##   --navcheck=tueren           Wege vom Keller (Versteck des Monsters) zu jeder bewohnten Zimmertür (4.33, Punkt 5)
 ## Vorzeichen und Spuk (4.25–4.31, 5.14–5.18, 6.21):
 ##   --kraehen[=groll]           im Garten 7 m vor den Krähen · groll: sie haben sich dich gemerkt und krächzen dich an
+##   --kraehen=gunst|stehlen     volle Gunst · Münze und Messer liegen vor ihnen, du siehst weg – eine Krähe holt sie ins Nest
+##   --kraehen=nest|werfen       2,5 m vor dem Krähennest gegenüber von Zimmer 042, Blick hinauf (darin dazu Münzen und Kompass)
+##                               · werfen: nach 1 s fliegt eine Münze hinein, ein Stück fällt heraus
+##   --kraehen=futter|schluessel vor dem Futtertisch im Gärtchen von 13 (ohne Tisch im Plan ein Ersatztisch), Brotkrumen
+##                               darauf, die Zeit fast um, nach 3 s siehst du weg · schluessel: hohe Gunst nach drei Tagen –
+##                               statt des Futters liegt der Schlüssel von 1987 da
 ##   --ratten[=welle]            fünf Ratten um dich im Keller (sonst im Heizkeller) · welle: nach 2 s rennen sie davon, als käme
 ##                               das Monster aus dem Heizkeller
 ##   --hund                      nach 1 s heult hinter der Waldkante ein Hund (sonst zufällig alle paar Spielminuten)
@@ -971,13 +976,13 @@ func run_debug(arg: String) -> bool:
 			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
 			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP,
 			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS, "salz": Item.Kind.SALT,
-			"kerne": Item.Kind.PUMPKIN_SEEDS}
+			"kerne": Item.Kind.PUMPKIN_SEEDS, "brot": Item.Kind.PUMPKIN_SEEDS}
 		var names := (arg.substr(6) if arg.begins_with("--bag=") else "süßes,cola,zierkürbis,batterie").split(",", false)
 		for what in names:
 			if not kinds.has(what):
 				Game.say("Tasche: " + ", ".join(kinds.keys()), 3.0)
 				return true
-			var item := Item.create(kinds[what], what if what in ["cola", "limo"] else "")
+			var item := Item.create(kinds[what], what if what in ["cola", "limo", "brot"] else "")
 			if Game.player.bag.size() < Player.BAG_SLOTS:
 				Game.player.bag_add(item)
 			else:

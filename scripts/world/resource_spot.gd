@@ -6,6 +6,7 @@ extends StaticBody3D
 ## auf der Bartheke (3.2), ebenso Tassen Kaffee und Tee (3.11, 3.12). Begrenzter Vorrat, wächst langsam nach – außer in den Kisten mit starker Deko
 ## (regen_time 0, Spielkonzept 5.10): Die leeren sich, und Gäste nehmen aus jeder höchstens ein Stück am Spieltag.
 ## Mit `pool` gibt es abwechselnd verschiedene Dinge (Dekokiste, alte Deko); `kind` bestimmt nur das Aussehen.
+## Brotkrumen für die Krähen (4.25): Kürbiskerne mit Zusatz „brot“ (`extra`), dazu Brett und Brotlaib.
 ## Spinnweben: lokale +Z zeigt von der Wand weg.
 
 var kind: Item.Kind = Item.Kind.LEAVES
@@ -14,6 +15,8 @@ var uses := 3
 var max_uses := 3
 var regen_time := 90.0
 var pool: Array = []
+## Zusatz für Item.create (Brotkrumen: „brot“)
+var extra := ""
 ## Kostet so viel Geld je Stück (0 = umsonst)
 var price := 0
 ## Kiste ohne Nachschub: Spieltag, an dem zuletzt ein Gast etwas genommen hat (gespeichert)
@@ -45,6 +48,12 @@ func refill_mornings() -> ResourceSpot:
 ## Zum Kaufen: jedes Stück kostet `p_price` Geld.
 func for_sale(p_price: int) -> ResourceSpot:
 	price = p_price
+	return self
+
+
+## Mit Zusatz für Item.create (Brotkrumen: „brot“).
+func with_extra(p_extra: String) -> ResourceSpot:
+	extra = p_extra
 	return self
 
 
@@ -129,6 +138,21 @@ func _ready() -> void:
 			for i in 3:
 				Item.build_cup(_visual, kind == Item.Kind.TEA, Vector3(-0.1 + i * 0.1, 0.01, 0.0), [-1.3, -1.75, -1.5][i])   # Henkel quer, zu den Gästen
 			Geo.add_box_shape(self, Vector3(0.32, 0.1, 0.13), Vector3(0, 0.05, 0))
+		Item.Kind.PUMPKIN_SEEDS:
+			# Brotkrumen (4.25): Brett mit dem Rest eines Brotlaibs, Krumen daneben
+			Geo.mesh(self, Geo.box(Vector3(0.34, 0.02, 0.2)), Mat.psx(Color(0.55, 0.38, 0.22)), Vector3(0, 0.01, 0))
+			var crust := Mat.psx(Color(0.5, 0.3, 0.13))
+			var loaf := Geo.mesh(_visual, Geo.sphere(0.07, 0.1, 10, 5), crust, Vector3(-0.05, 0.055, 0))
+			loaf.scale = Vector3(1.4, 0.75, 1.0)
+			var cut := Geo.mesh(_visual, Geo.cylinder(0.062, 0.006, 10), Mat.psx(Color(0.9, 0.82, 0.62)), Vector3(0.048, 0.055, 0))
+			cut.rotation.z = PI / 2.0   # Anschnitt
+			var rng := RandomNumberGenerator.new()
+			rng.seed = 77
+			for i in 10:
+				var crumb := Geo.mesh(_visual, Geo.box(Vector3.ONE * rng.randf_range(0.008, 0.015)), crust if i % 3 == 0 else Mat.psx(Color(0.88, 0.8, 0.62)),
+					Vector3(rng.randf_range(0.07, 0.15), 0.026, rng.randf_range(-0.07, 0.07)))
+				crumb.rotation.y = rng.randf() * TAU
+			Geo.add_box_shape(self, Vector3(0.34, 0.12, 0.2), Vector3(0, 0.06, 0))
 	_update_visual()
 
 
@@ -219,7 +243,7 @@ func take() -> Item:
 		return null
 	uses -= 1
 	_update_visual()
-	return Item.create(pool.pick_random() if not pool.is_empty() else kind)
+	return Item.create(pool.pick_random() if not pool.is_empty() else kind, extra)
 
 
 func get_prompt(player: Player) -> String:
