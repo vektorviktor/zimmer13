@@ -2008,7 +2008,7 @@ func _try_steal() -> bool:
 	var hostile := Social.tier(self) <= Social.Tier.ANGRY and randf() < float(profile["greed"])
 	var desperate := fear >= 60.0 and own_deco_near_door().is_empty()
 	if not hostile and not desperate:
-		return false
+		return Game.social.decorating.plan.steal_when_scarce(self)   # Knappheit (Spielkonzept 5.10, Stufe 3)
 	var best: Item = null
 	var best_dist := INF
 	for node in get_tree().get_nodes_in_group("items"):

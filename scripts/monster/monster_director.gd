@@ -55,7 +55,13 @@ const DEMAND_MAX := 3.0
 ## (mehr Leute bringen mehr Deko, sind aber auch mehr Beute) – gilt bis DOOR_DEMAND_RANGE vor der Tür
 const HOUSEHOLD_DEMAND := 0.35
 const DOOR_DEMAND_RANGE := 1.6
-const DECO_RADIUS := 3.0
+## Schutzkreis = Lichtschein (Spielkonzept 5.10, Stufe 2): Deko mit Licht (Item.glow_reach) zählt, so weit ihr Schein
+## sichtbar hinfällt (Sichtlinie vom Licht), ×GLOW_DECO – darin geht der Licht-Faktor der Abschreckung (4.9) auf. Deko
+## ohne Licht zählt nur ×DARK_DECO und nur an einer Zimmertür (bis DOOR_DEMAND_RANGE vor ihr), wenn sie selbst
+## höchstens DARK_DECO_RADIUS von der Tür entfernt steht oder hängt.
+const GLOW_DECO := 1.6
+const DARK_DECO := 0.5
+const DARK_DECO_RADIUS := 1.5
 ## Füllmaterial (Item.is_filler: Laub, Spinnweben, Kerzen, Zierkürbisse, kleine Sorten) zählt an einer Stelle
 ## zusammen höchstens so viel – ein Grundschutz, der ab Monatsmitte nie allein reicht (5.10)
 const FILLER_CAP := 20.0
@@ -341,7 +347,7 @@ func deterrence_at(p: Vector3) -> float:
 	if _builder and _builder.is_safe(p):
 		return INF   # Katzenraum (Spielkonzept 7.7): dort hinein kommt es nie, wer drinsteht, ist geschützt
 	var light := light_at(p + Vector3.UP)
-	return deco_strength_at(p) * (0.6 + light) / (demand() * _household_factor(p)) \
+	return deco_strength_at(p) / (demand() * _household_factor(p)) \
 		+ light * LIGHT_DETERRENCE * maxf(0.0, 1.0 - effective_boldness() / 120.0)
 
 
@@ -391,15 +397,60 @@ func _deco_items() -> Array[Item]:
 func _deco_strength(p: Vector3, decos: Array[Item]) -> float:
 	var total := 0.0
 	var filler := 0.0
+	var door := _door_front_at(p)
 	for item in decos:
-		var d := Vector2(item.global_position.x - p.x, item.global_position.z - p.z).length()
-		if d < DECO_RADIUS and absf(item.global_position.y - p.y) < 2.5:   # nur auf demselben Stockwerk
-			var value := item.deco_value() * (1.0 - 0.5 * d / DECO_RADIUS)
-			if item.is_filler():
-				filler += value
-			else:
-				total += value
+		var value := _deco_share(item, p, door)
+		if item.is_filler():
+			filler += value
+		else:
+			total += value
 	return total + minf(filler, FILLER_CAP)
+
+
+## Was item an p zur Abschreckung beiträgt (5.10, Stufe 2): mit Licht im Schein (zum Rand hin halb so viel), ohne Licht
+## halb und nur an der Tür door (_door_front_at, INF = keine).
+func _deco_share(item: Item, p: Vector3, door: Vector3) -> float:
+	if absf(item.global_position.y - p.y) >= 2.5:   # nur auf demselben Stockwerk
+		return 0.0
+	var reach := item.glow_reach()
+	if reach > 0.0:
+		var d := Vector2(item.global_position.x - p.x, item.global_position.z - p.z).length()
+		if d >= reach or not _glow_reaches(item, p):
+			return 0.0
+		return item.deco_value() * GLOW_DECO * (1.0 - 0.5 * d / reach)
+	if door == Vector3.INF or Vector2(item.global_position.x - door.x, item.global_position.z - door.z).length() >= DARK_DECO_RADIUS:
+		return 0.0
+	return item.deco_value() * DARK_DECO
+
+
+## Fällt der Schein von item bis p (Brusthöhe)? Wände und geschlossene Türen halten ihn auf.
+func _glow_reaches(item: Item, p: Vector3) -> bool:
+	var query := PhysicsRayQueryParameters3D.create(item.light.global_position, p + Vector3.UP, 1 | 2, [item.get_rid()])
+	return _monster.get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+
+
+## Vorderseite der Zimmertür, vor der p steht (bis DOOR_DEMAND_RANGE, dasselbe Stockwerk) – sonst Vector3.INF.
+func _door_front_at(p: Vector3) -> Vector3:
+	for no in rooms:
+		var front: Vector3 = rooms[no]["door_front"]
+		if absf(front.y - p.y) < 1.5 and Vector2(front.x - p.x, front.z - p.z).length() < DOOR_DEMAND_RANGE:
+			return front
+	return Vector3.INF
+
+
+## Deko hat das Monster bei p abgewiesen (5.10, Stufe 2): Was dort schützt, zeigt es – die Flammen ducken sich, hängende
+## Deko schwingt (Item.flinch).
+func show_repel(p: Vector3) -> void:
+	var door := _door_front_at(p)
+	var count := 0
+	for item in _deco_items():
+		if _deco_share(item, p, door) > 0.0:
+			item.flinch(_monster.global_position)
+			count += 1
+	if count > 0:
+		Game.shot_event("repel", 8)
+		if Game.tracing:
+			print("[Abweisung] %d Stück Deko bei (%.1f, %.1f) ducken sich" % [count, p.x, p.z])
 
 
 ## Helligkeit 0..1 an einem Punkt – alle Lichtquellen mit freier Sichtlinie.

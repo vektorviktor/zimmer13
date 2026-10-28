@@ -137,6 +137,8 @@ var _solo_need := 0.0         ## bis zum nächsten Versuch, wenn gerade zu wenig
 var _called := {}             ## Gast-ID → Spieltag, an dem der Spieler mit ihm geschmückt hat (einmal am Tag)
 var _big_player_day := 0      ## Spieltag, an dem der Spieler zuletzt groß ausgerufen hat
 var _invited: Dictionary = {} ## Gruppe, zu der der Spieler zuletzt eingeladen wurde (Anruf → on_accepted)
+## Gäste schmücken mit Plan und klauen bei Knappheit (Spielkonzept 5.10, Stufe 3)
+var plan: DecoPlan
 
 
 ## Beim Laden eines Spielstands (SaveManager.apply): laufende Aktionen vergessen – sie werden nicht gespeichert, und die
@@ -146,10 +148,14 @@ func reset() -> void:
 	_member.clear()
 	_solo.clear()
 	_invited = {}
+	if plan:
+		plan.reset()
 
 
 func setup(builder: LevelBuilder) -> void:
 	_builder = builder
+	plan = DecoPlan.new(self)
+	add_child(plan)
 	_cooldown = randf_range(FIRST_GAP.x, FIRST_GAP.y)
 	_big_cooldown = randf_range(BIG_FIRST_GAP.x, BIG_FIRST_GAP.y)
 
@@ -951,6 +957,26 @@ func start_solo(g: Guest, to_lobby: bool, anywhere: bool = false) -> bool:
 	if Game.tracing:
 		var source: ResourceSpot = entry["source"]
 		print("[Schmücken] %s holt allein Deko für %s (%s)" % [g.display_name, at["name"],
+			source.label if source else "aus dem Koffer"])
+	return true
+
+
+## Mit Plan (Spielkonzept 5.10, Stufe 3, DecoPlan): ein Stück an die Tür von Zimmer no – aus dem Koffer; ist darin nichts
+## Starkes mehr, aus einer Kiste, sonst etwas Gebasteltes (HOMEMADE). why steht nur in --trace. false = kein freier Platz.
+func start_solo_door(g: Guest, no: String, why: String) -> bool:
+	if g == null or g.dead or _solo.has(g.id) or _member.has(g.id) or not _builder.rooms.has(no):
+		return false
+	var at := _door_site(no)
+	if _score(at) == -INF or _free_slot_count(at) == 0 or _solo.values().any(func(e: Dictionary) -> bool:
+			return (e["site"]["pos"] as Vector3).distance_to(at["pos"]) < 1.0):
+		return false
+	var source: ResourceSpot = null if DecoPlan.has_strong_stock(g) else _source_for(g, at)
+	var goal := g._room_point() if source == null \
+		else NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, source.global_position)
+	_solo[g.id] = {"guest": g, "site": at, "phase": "fetch", "slot": {}, "item": null, "time": 0.0, "wait": 0.0, "source": source}
+	_walk(g, goal)
+	if Game.tracing:
+		print("[Schmuckplan] %s schmückt %s (%s, %s)" % [g.display_name, at["name"], why,
 			source.label if source else "aus dem Koffer"])
 	return true
 

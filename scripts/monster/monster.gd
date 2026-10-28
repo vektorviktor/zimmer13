@@ -758,6 +758,7 @@ func _check_deterrence(delta: float) -> void:
 		return   # den Verurteilten hält keine Deko (4.33)
 	if not _scratched and Game.traces:
 		_scratched = Game.traces.scratch_wall_ahead(self)
+	Game.director.show_repel(ahead)   # die Flammen ducken sich (Spielkonzept 5.10)
 	if state == State.CHASE:
 		Game.play_sound("growl", 0.7)
 		_set_state(State.REPELLED)

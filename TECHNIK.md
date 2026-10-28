@@ -738,10 +738,18 @@ natürlichen Erscheinen: `_update_schedule` (Auftritt um 10 s verschoben), die S
   macht eine Stelle heiß oder verschmilzt mit einer unter `HOT_MERGE`; `curiosity_at(p)` = `CURIOSITY_BASE` + Hitze der
   Stellen auf demselben Stockwerk (voll bis `HOT_CORE`, auslaufend bis `HOT_RADIUS`). `_cool_down(dt)` lässt Hitze
   (`HOT_HALF_LIFE`) und Boni abklingen, je Frame und im Zeitsprung. Gespeichert in `save_state` (Speicherformat 53).
-- `pressure_at(p)` aus Dreistigkeit und Neugier, `deterrence_at(p)` aus Deko × Licht / `demand()` plus Licht allein,
+- `pressure_at(p)` aus Dreistigkeit und Neugier, `deterrence_at(p)` aus Deko / `demand()` plus Licht allein,
   im Katzenraum unendlich (`LevelBuilder.is_safe`). Deko zählt nur auf demselben Stockwerk, mit `Item.deco_value()`;
   Füllmaterial (`Item.is_filler()`) zusammen höchstens `FILLER_CAP` je Stelle (`_deco_strength`, auch für die Puppe).
   `is_blocked` / `is_protected`.
+- **Schutzkreis = Lichtschein** (5.10, Stufe 2, `_deco_share`): Deko mit Licht zählt bis `Item.glow_reach()`
+  (`GLOW_REACH` × Lichtreichweite; 0, wenn aus, ohne Kerze oder im Stromausfall) und nur, wenn ihr Schein p erreicht
+  (`_glow_reaches`, Strahl vom Licht wie in `light_at`), ×`GLOW_DECO`, zum Rand hin halb – darin ist der frühere
+  Licht-Faktor aufgegangen. Deko ohne Licht zählt ×`DARK_DECO` und nur vor einer Zimmertür (`_door_front_at`, bis
+  `DOOR_DEMAND_RANGE`), wenn sie höchstens `DARK_DECO_RADIUS` von ihr steht oder hängt. **Sichtbare Abweisung:**
+  `show_repel(p)` (aus `Monster._check_deterrence`) ruft `Item.flinch` an allem, was bei p schützt – Flamme
+  (`CandleFlame.duck`) und Licht (`FlickerLight.duck`) ducken sich `FLINCH_TIME` s, der Kürbis glüht schwächer,
+  hängende Deko schwingt mit `FLINCH_UNREST`. Debug `--abweisung[=dunkel]`, `--trace` `[Abweisung]`, `--shot-on=repel`.
 - `light_at(p)`: Summe aller `light_source` mit freier Sichtlinie (Raycast) + Mondlicht durch Außenfenster mit offenem
   Vorhang. Teuer → sparsam aufrufen. Die Lichter kommen aus einem Raster (`_lights_near`, `LIGHT_CELL`, neu einsortiert
   alle `LIGHT_GRID_FRAMES`, Spielraum `LIGHT_GRID_SLACK` für getragene Lichter); An/Aus prüft `light_at` selbst.
@@ -867,7 +875,7 @@ Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `st
 - **Abschreckung** (`_check_deterrence`): Deko + Licht blockieren nur, wenn das Ziel (`_goal()`) selbst im Schutz
   liegt – vorbeigehen darf es (die Deko vor den Türen deckte sonst den ganzen Flur ab). Beim Jagen gilt
   `is_protected(Gejagter)`. Zurückgeschreckt ohne UV → anderes Ziel (`_next_roam`), der Gejagte kommt für
-  `REBUFF_TIME` in `_rebuffed`.
+  `REBUFF_TIME` in `_rebuffed`. Was abgewiesen hat, zeigt es (`MonsterDirector.show_repel`).
 - **Rückzug (`RETREAT`) nur:** Ende des Auftritts (`go_home`), nach einem Opfer (`after_feeding`), UV, harmloser
   Raubzug (`_abort`). Nach einem Schreck `after_scare(opfer)` → `SLINK` (nicht auf dem Rückweg); das Opfer steht bis
   zum nächsten Auftritt in `_spared`. Von außen außerdem `track(pos)` (Peilen), `replan()` (neues Ziel vom Director),
@@ -1221,6 +1229,21 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `ResourceSpot` mit Tageslimit), **groß** (`start_big`, mehrere Stellen), vom Spieler aufgerufen (`call_here`).
   Abbruch bei Feier, Nachtruhe oder Unruhe; `_update_sleep` schiebt die Nachtruhe auf, solange eine Aktion läuft.
   Nichts gespeichert – die Deko sind normale Gegenstände (`hung`). Debug `--decorate[=…]`, `--trace` `[Schmücken]`.
+- **Schmücken mit Plan, Klauen bei Knappheit** (`guests/deco_plan.gd`, `DecoPlan`, Kind von `Decorating` als `plan`,
+  Spielkonzept 5.10 Stufe 3): Alle paar Minuten (`GAP_EARLY` … `GAP_LATE`, höchstens `PLAN_MAX` zugleich, je Gast
+  `DAILY` am Tag) schickt es einen freien Gast (`_free` – wie `_available`, aber auch mit Angst bis `PANIC`) als
+  Allein-Schmücken an eine Tür (`Decorating.start_solo_door`: aus dem Koffer, ohne Starkes darin aus einer Kiste, sonst
+  Gebasteltes): mit Angst ab `AFRAID` an die eigene, solange sie nicht sicher hält (`weak`: Abschreckung unter Druck ×
+  `SAFE_MARGIN`), sonst mit `FRIEND_CHANCE` an die schwächste Tür eines Freundes (`friend_door`, `pals_of`; Zimmer 13
+  ab `Social.Tier.FRIEND`). Nach einem Tod (`Social.on_guest_died` → `on_guest_died`) schmücken die `MOURNERS`
+  nächsten Nachbarn bis `MOURN_RANGE` nach `MOURN_DELAY` ihre Türen nach (vor allen anderen). **Klauen:**
+  `Guest._try_steal` fragt `steal_when_scarce`, wenn er weder feindlich noch verzweifelt ist – bei Knappheit (`scarce`:
+  die Kisten ohne Nachschub haben höchstens `SCARCE_SHARE` ihres Vorrats), Angst ab `THEFT_FEAR`, ohne Starkes im
+  Koffer und mit schwacher eigener Tür, einmal am Spieltag mit `THEFT_CHANCE` × (0,5 + Gier): das beste starke Stück
+  (kein Füllmaterial) bis `LOOT_REACH` vor einer fremden Tür, die hält (`_strangers`: ohne Freunde, Familie,
+  Mitbewohner, Zimmer 13; nicht vom Spieler, nicht in `THEFT_UNSEEN` um ihn, Weg im Flur über `_hall`) – dann wie jeder
+  Dieb `STEAL` → `PLACE_DECO` vor die eigene Tür. Erfolglos sucht er erst nach `THEFT_RETRY` wieder. Nichts
+  gespeichert. Debug `--schmuckplan=angst|freund|tod|klau[,gast]`, `--trace` `[Schmuckplan]`.
 - **Deko-Suche** (`guests/deco_search.gd`, Spielkonzept 5.9): ein freier Gast (nur tagsüber) geht zu einer
   erreichbaren `ResourceSpot` (`Decorating._reachable`, `guest_can_take()`), Mutige zu Spinnweben und Keller, manchmal
   zu zweit; bietet dem Spieler an mitzukommen (`has_offer`, `ask`). Zustand `SEARCH`. Nicht gespeichert. Debug

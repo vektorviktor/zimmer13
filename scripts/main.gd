@@ -85,6 +85,13 @@ extends Node3D
 ##   --tp=ort|zimmer|gast        hinspringen: Ort der F6-Liste (lobby, partyraum, keller, obergeschoss, katzenraum …), jedes Zimmer (Nummer oder Türschild, auch oben und verschlossene), vor einen Gast
 ##   --time=+n|-n                Spieltage vor- oder zurückspulen
 ##   --rot[=welk|eingefallen]    alle Kürbisse 10 s vor welk (5.10) – bzw. gleich welk oder eingefallen
+##   --schmuckplan=angst|freund|tod|klau[,gast]   Gäste schmücken mit Plan (5.10, Stufe 3) – du stehst vor der Tür, um
+##                               die es geht: angst: ein Gast (oder dieser) hat Angst und schmückt seine Tür · freund: er
+##                               ist mit dir befreundet und schmückt Zimmer 13 · tod: er stirbt, seine Nachbarn schmücken
+##                               gleich nach · klau: Kisten leer, er klaut von einer fremden Tür (mit --trace „[Schmuckplan]“)
+##   --abweisung[=dunkel]        Schutzkreis = Lichtschein (5.10): brennende Deko vor Zimmer 13, du im Schein daneben, das
+##                               Monster kommt den Flur herauf und wird abgewiesen – die Flammen ducken sich (dunkel: Deko
+##                               ohne Licht zählt nur halb und nur an der Tür, es holt dich; mit --trace „[Abweisung]“)
 ##   --verwaschen[=schleier]     es regnet sofort, Blut, Wachs und Kürbismatsch draußen verlaufen zehnmal so schnell (4.13,
 ##                               RainVeil) – schleier: sofort ganz; z. B. mit
 ##                               --pos=45,0.1,-37 --fall=5,giant --verwaschen --trace
@@ -286,7 +293,7 @@ extends Node3D
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
 ##   --shot-size=BxH             Fenster für den Screenshot in dieser Größe (rahmenlos, auch über den Bildschirm hinaus)
-##   --shot-on=jumpscare|strangle|shock|pumpkin|lightning  Screenshot kurz nach einem Ereignis statt nach n Frames
+##   --shot-on=jumpscare|strangle|shock|pumpkin|lightning|repel  Screenshot kurz nach einem Ereignis statt nach n Frames
 ##                               (Kürbismann auch pumpkin_roof|pumpkin_edge|pumpkin_leap|pumpkin_land|pumpkin_lobby)
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
 ##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)
@@ -1655,6 +1662,12 @@ func run_debug(arg: String) -> bool:
 			for node in get_tree().get_nodes_in_group("fixed_candles"):
 				(node as FixedCandle).renew(rest, (node as FixedCandle).lit)
 			print("[Kerzen] Debug: alle Kerzen auf %.0f %%" % (rest * 100.0)))
+	elif arg.begins_with("--schmuckplan="):
+		var parts := arg.substr(14).split(",")
+		var who := _guest(parts[1]) if parts.size() > 1 else null
+		get_tree().create_timer(1.0, false).timeout.connect(_debug_deco_plan.bind(parts[0], who))
+	elif arg == "--abweisung" or arg == "--abweisung=dunkel":
+		get_tree().create_timer(1.0, false).timeout.connect(_debug_repel.bind(arg.ends_with("dunkel")))
 	elif arg.begins_with("--diary="):
 		# wie am Tagebuch speichern (nach 2 s)
 		var slot := arg.substr(8).to_int()
@@ -1855,6 +1868,55 @@ func _nav_check() -> void:
 		bad += 0 if reached else 1
 	print("[navcheck] alles erreichbar" if bad == 0 else "[navcheck] %d Orte unerreichbar" % bad)
 	get_tree().quit()
+
+
+## --abweisung[=dunkel]: Schutzkreis = Lichtschein (Spielkonzept 5.10, Stufe 2). Vor der Tür von Zimmer 13 stehen ein
+## geschnitzter Kürbis, ein Totenkopf und eine Kerze, alle brennend (dunkel: Kürbis ohne Kerze und Laub), du stehst
+## 1,2 m daneben im Schein, Blick den Flur hinunter; nach 1 s kommt von dort das Monster. Mit Licht weist es ab, die Flammen
+## ducken sich – ohne Licht zählt die Deko nur halb (und nur direkt an der Tür), es holt dich.
+func _debug_repel(dark: bool) -> void:
+	var info: Dictionary = Game.director.rooms[LevelBuilder.PLAYER_ROOM]
+	var front: Vector3 = info["door_front"]
+	var into: Vector3 = info["into"]
+	into = Vector3(into.x, 0.0, into.z).normalized()
+	var side := into.cross(Vector3.UP)
+	var kinds := [[Item.Kind.CARVED_PUMPKIN, "unlit"], [Item.Kind.LEAVES, ""]] if dark \
+		else [[Item.Kind.CARVED_PUMPKIN, ""], [Item.Kind.SKULL, "lit"], [Item.Kind.CANDLE, "lit"]]
+	for i in kinds.size():
+		var item := Item.create(kinds[i][0], kinds[i][1])
+		Game.player.get_parent().add_child(item)
+		item.global_position = front + into * 0.35 + side * (i - (kinds.size() - 1) / 2.0) * 0.45 + Vector3.UP * 0.05
+		item.rotation.y = atan2(-into.x, -into.z)   # Gesicht zum Flur
+	TeleportUI.place_player(front + side * 1.2, (-side + into * 0.5).normalized())
+	Game.player.head.rotation.x = -0.3   # die Deko unten im Bild, der Flur dahinter
+	get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+		var from := NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, front - side * 9.0)
+		print("[Abweisung] Debug: %s, Monster kommt von (%.1f, %.1f)" % ["ohne Licht" if dark else "mit Licht", from.x, from.z])
+		var you := Game.player.global_position
+		print("[Abweisung] an der Tür: Deko %.0f, Abschreckung %.0f, Druck %.0f · bei dir: Deko %.0f, Abschreckung %.0f" % [
+			Game.director.deco_strength_at(front), Game.director.deterrence_at(front), Game.director.pressure_at(front, true),
+			Game.director.deco_strength_at(you), Game.director.deterrence_at(you)])
+		Game.monster.spawn_at(from)
+		Game.monster.investigate(front))
+
+
+## --schmuckplan=angst|freund|tod|klau[,gast]: Gäste schmücken mit Plan bzw. klauen (Spielkonzept 5.10, Stufe 3) – du
+## stehst vor der Tür, um die es geht (DecoPlan.debug). tod: der Gast stirbt, seine Nachbarn schmücken nach.
+func _debug_deco_plan(what: String, who: Guest) -> void:
+	var plan := Game.social.decorating.plan
+	var no := plan.debug(what, who)
+	if no == "":
+		print("[Schmuckplan] Debug: nichts gestartet")
+		return
+	var room: Dictionary = Game.director.rooms[no]
+	var into: Vector3 = room["into"]
+	TeleportUI.place_player(room["door_front"] - into * 0.8, into)
+	Game.player.head.rotation.x = -0.3   # Tür und Boden davor im Bild
+	if what == "tod":
+		for g in Game.social.living_guests():
+			if String((g as Guest).home["no"]) == no:
+				_debug_kill(g, "", false, false)
+				break
 
 
 ## --navcheck=tueren: Erreicht das Monster vom Keller aus (MonsterDirector.reachable, wie bei der Wahl der Puppentür)

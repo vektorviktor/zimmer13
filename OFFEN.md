@@ -118,7 +118,10 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
 **Deko und Halloween**
 - Kerzen brennen ab (gebaut 27.10.), Reste: Werte (Brenndauer, Stummel, Anteil mit Feuer, Pflege-Wahrscheinlichkeit)
   nur headless geprüft – im Spiel tunen; „Feuer?“ ist nur ein Satz, keine Bitte im Notizbuch – SK 5.12.
-- Knappheit Stufe 2 (Schutzkreis = Lichtschein, sichtbare Abweisung) und 3 (Gäste schmücken mit Plan, klauen) – SK 5.10.
+- Knappheit Stufen 2 und 3 gebaut 28.10.: Werte (×1,6 im Schein, ×0,5 ohne Licht, Reichweite 80 %; Takt der Gänge mit
+  Plan, Angst-Schwellen, Diebstahl-Chance) nur headless geprüft – im Spiel tunen. Offen: Inhalt und Größe der Kisten,
+  größere Startdeko der Kernfiguren (beides „Zu klären“), Folgen eines Diebstahls für Freundschaften (Streit, 6.16) –
+  SK 5.10.
 - Puppe: die „vorgemerkten“ Punkte, u. a. Jury beim Großen Schmücken – SK 5.5.
 - **Maskenball**, Reste: sechs Masken, Verstecke und Zettel, der Ball, Verleihen, Rückkehr an den Haken, Trophäen;
   eigene Maske (Ruth Behrens) – SK 5.19 · GE. Dazu die Masken-Erfolge – SK 8.11.

@@ -130,6 +130,12 @@ const STUB := 0.25
 const STUB_LIGHT := 0.6
 const STUB_WIND := 1.5
 const BURN_STEP := 1.0
+## Schutzkreis = Lichtschein (5.10, Stufe 2): So weit (Anteil der Lichtreichweite) fällt der Schein einer Deko sichtbar
+## hin. Weist sie das Monster ab, ducken sich die Flammen FLINCH_TIME Sekunden lang, hängende Deko schwingt mit
+## FLINCH_UNREST (unter JOLT_UNREST – nichts fällt dabei herunter).
+const GLOW_REACH := 0.8
+const FLINCH_TIME := 1.6
+const FLINCH_UNREST := 0.75
 ## Scherben einer platzten Glühbirne: so viele (von, bis), Glas und Gewinde
 const BULB_SHARDS := Vector2i(5, 8)
 const BULB_GLASS := Color(0.9, 0.93, 0.97)
@@ -286,6 +292,7 @@ var _sway_seed := 0.0
 var _unrest := 0.0
 var _unrest_timer := 0.0
 var _lean := 0.0          ## seitlich weg von der Quelle der Unruhe (−1..1, lokale X)
+var _flinch := 0.0        ## 1 … 0: hat gerade das Monster abgewiesen, die Flamme duckt sich (flinch)
 var _fall_top := -INF     ## Zerplatzen: höchster Punkt des laufenden Falls
 var _last_vy := 0.0
 var _last_speed := 0.0   ## Wurf: Tempo im letzten Physikschritt
@@ -344,6 +351,8 @@ func _process(delta: float) -> void:
 		if _burn_acc >= BURN_STEP:
 			burn(_burn_acc)
 			_burn_acc = 0.0
+	if _flinch > 0.0:
+		_update_flinch(delta)
 
 
 ## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Kerzen brennen weiter ab (5.12), Fäulnis hängt an der Uhr
@@ -794,6 +803,36 @@ func _extinguish() -> void:
 		Kind.SKULL:
 			deco_strength = 16.0
 			display_name = "Totenkopf" + _unlit_suffix()
+
+
+## Schutzkreis = Lichtschein (5.10, Stufe 2): so weit fällt ihr Schein sichtbar hin (m) – 0 ohne Licht (aus, ohne Kerze,
+## Lichterkette im Stromausfall). Wie weit er wirklich reicht (Wände), prüft MonsterDirector._glow_reaches.
+func glow_reach() -> float:
+	if light == null or light.burn_out or light.switched_off or (FlickerLight.power_off and not light.soft) \
+			or not light.is_visible_in_tree():
+		return 0.0
+	return light.omni_range * GLOW_REACH
+
+
+## Hat gerade das Monster abgewiesen (5.10, Stufe 2): Die Flammen ducken sich, das Licht wird kurz schwächer, hängende
+## Deko schwingt (vom Monster weg, _sway).
+func flinch(_from: Vector3) -> void:
+	if _flinch > 0.5:
+		return   # duckt sich schon
+	_flinch = 1.0
+	if hung:
+		_unrest = maxf(_unrest, FLINCH_UNREST)
+
+
+func _update_flinch(delta: float) -> void:
+	_flinch = maxf(0.0, _flinch - delta / FLINCH_TIME)
+	var d := smoothstep(0.0, 0.6, _flinch)   # sofort ganz geduckt, dann langsam wieder auf
+	if light:
+		light.duck = d
+	if _flame is CandleFlame:
+		(_flame as CandleFlame).duck = d
+	if _glow_material and lit:
+		_glow_material.set_shader_parameter("emission_energy", 3.0 * (1.0 - 0.6 * d))
 
 
 # --- Abbrennen (Spielkonzept 5.12) -------------------------------------------------------
