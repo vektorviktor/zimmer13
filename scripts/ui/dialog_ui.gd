@@ -10,7 +10,7 @@ extends CanvasLayer
 const CHAT_COOLDOWN := 40.0
 const GIFT_COOLDOWN := 150.0
 ## Nicht zu verschenken: Schlüssel und was dem Hotel gehört (Schachbrett, Würfelbecher – Wunsch 2026-10-21)
-const NO_GIFT := [Item.Kind.KEY, Item.Kind.CHESS_BOARD, Item.Kind.DICE_CUP, Item.Kind.DARTS]
+const NO_GIFT := [Item.Kind.KEY, Item.Kind.CHESS_BOARD, Item.Kind.DICE_CUP, Item.Kind.DARTS, Item.Kind.BAR_GAME]
 ## Gebratener Kürbis als Geschenk (Spielkonzept 3.8): so viel weniger Angst
 const ROAST_CALM := 20.0
 ## Plaudern zählt am Tag nur so oft voll (6.3), danach kaum noch
@@ -27,7 +27,7 @@ var _name: Label
 var _text: Label
 var _options: GridContainer
 var _buttons: Array[Button] = []
-var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dice", "chess" oder "darts")
+var _game := "dice"     ## Spiel, um dessen Einsatz gerade verhandelt wird ("dice", "chess", "darts" oder ein Barspiel)
 var _door: Door = null  ## Gespräch an der Tür (Spielkonzept 6.19): die Zimmertür, durch deren Spalt geredet wird
 var _woken := false
 var _scroll: ScrollContainer
@@ -298,6 +298,8 @@ func _show_main() -> void:
 		_option("Schach in der Lobby spielen", _show_stakes.bind("chess"))
 	if Game.darts and Game.darts.board and Game.darts.board.has_darts(player) and not Game.darts.board.busy 			and not guest.is_child():
 		_option("Darts in der Bar spielen", _show_stakes.bind("darts"))
+	if not Game.bar_games.is_empty() and Game.social.builder.in_area(player.global_position, "bar"):
+		_option("Ein Barspiel spielen …", _show_bar_games)   # Spielkonzept 6.10, 28.10.
 	if Game.director.first_attack_done:
 		_option("Über das Monster reden", _talk_monster)
 	else:
@@ -697,7 +699,19 @@ func _bag_items(gift: bool) -> Array[Item]:
 	return items
 
 
-## Einsatz aushandeln (Spielkonzept 6.10). game: "dice" (Mäxchen), "chess" (Schach) oder "darts"
+## Barspiele am Würfeltisch (Spielkonzept 6.10, 28.10.): alle aufzählen – ob es geht, sagt dann why_not.
+func _show_bar_games() -> void:
+	_clear()
+	_say("Was spielen wir?")
+	for id in BarMatch.GAMES:
+		var bar_game: BarMatch = Game.bar_games[id]
+		if bar_game.adults_only and guest.is_child():
+			continue
+		_option(String(BarMatch.GAMES[id]), _show_stakes.bind(id))
+	_option("Doch nicht", _show_main)
+
+
+## Einsatz aushandeln (Spielkonzept 6.10). game: "dice" (Mäxchen), "chess" (Schach), "darts" oder ein Barspiel
 func _show_stakes(game: String) -> void:
 	_game = game
 	var match_ui: Node = _match_of(game)
@@ -713,7 +727,7 @@ func _show_stakes(game: String) -> void:
 	elif game == "darts" and Game.social.has_watched_darts(guest):
 		_name.text = "%s – %s (du hast zugesehen)" % [guest.display_name, DartMatch.strength_text(guest)]
 	_option("Nur zum Spaß", _play.bind(0, false))
-	if guest.is_child():   # Kinder spielen nie um Einsätze (6.13)
+	if guest.is_child() or game == "wahrheit":   # Kinder spielen nie um Einsätze (6.13), Wahrheit oder Pflicht ohnehin nicht
 		_option("Doch nicht", _show_main)
 		return
 	for amount in [3, 8]:
@@ -724,6 +738,8 @@ func _show_stakes(game: String) -> void:
 
 
 func _match_of(game: String) -> Node:
+	if Game.bar_games.has(game):
+		return Game.bar_games[game]
 	return {"chess": Game.chess, "darts": Game.darts}.get(game, Game.dice)
 
 
@@ -731,12 +747,13 @@ func _match_of(game: String) -> Node:
 func _game_line(game: String, key: String) -> String:
 	if game == "darts":
 		return DartMatch.line_of(guest, "darts_" + key)
+	if Game.bar_games.has(game):
+		return BarMatch.line_of(guest, game, key)
 	return guest.line(("chess_" if game == "chess" else "dice_") + key)
 
 
 func _play(money: int, with_item: bool) -> void:
-	var profile: Dictionary = {"chess": ChessMatch.chess_profile(guest), "darts": DartMatch.darts_profile(guest)}.get(_game,
-		guest.profile["dice"])
+	var profile: Dictionary = BarMatch.profile_of(guest, _game) if Game.bar_games.has(_game) else 		{"chess": ChessMatch.chess_profile(guest), "darts": DartMatch.darts_profile(guest)}.get(_game, guest.profile["dice"])
 	var likes := bool(profile["likes"])
 	var challenged := guest.challenge_time > 0.0 and guest.challenge_game == _game
 	if Social.tier(guest) <= Social.Tier.ANGRY and not challenged:
@@ -1110,6 +1127,8 @@ func _kind_name(kind: int) -> String:
 			return "Kürbiskerne"
 		Item.Kind.EGG:
 			return "Ei"
+		Item.Kind.BAR_GAME:
+			return "Spiel aus dem Spieleschrank"
 	return "Etwas"
 
 

@@ -5,6 +5,7 @@
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_schlick_ggx;
 #include "res://shaders/psx_snap.gdshaderinc"
+#include "res://shaders/wet_ground.gdshaderinc"
 
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, filter_nearest, repeat_enable, hint_default_white;
@@ -104,7 +105,10 @@ void fragment() {
 		vec3 wn = normalize(normalize(world_normal) * t.z + (u_axis * t.x + up_axis * t.y) * normal_strength);
 		NORMAL = normalize((VIEW_MATRIX * vec4(wn, 0.0)).xyz);
 	}
-	ROUGHNESS = (use_roughness ? texture(roughness_tex, uv).r : roughness) * roughness_scale;
-	METALLIC = metallic * reflections;
-	SPECULAR = specular;
+	Wet w = wet_surface(ALBEDO, (use_roughness ? texture(roughness_tex, uv).r : roughness) * roughness_scale,
+			metallic * reflections, specular, reflections);
+	ALBEDO = w.albedo;
+	ROUGHNESS = w.roughness;
+	METALLIC = w.metallic;
+	SPECULAR = w.specular;
 }

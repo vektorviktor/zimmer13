@@ -69,7 +69,7 @@ func _ready() -> void:
 	rim.ring_segments = 6
 	Geo.mesh(self, rim, wood, Vector3(0, TUB_H, 0))
 	for y in [0.1, TUB_H - 0.08]:   # Eisenreifen, offene Ringe
-		var hoop := Geo.cylinder(RADIUS * (0.93 if y < 0.3 else 1.0) + 0.006, 0.035, 20)
+		var hoop := Geo.cylinder(RADIUS * (0.93 if y < 0.3 else 1.0) + 0.006, 0.035, 20).duplicate() as CylinderMesh   # geteilt (Geo-Cache)
 		hoop.cap_top = false
 		hoop.cap_bottom = false
 		Geo.mesh(self, hoop, Mat.metal(Color(0.3, 0.3, 0.32)), Vector3(0, y, 0))

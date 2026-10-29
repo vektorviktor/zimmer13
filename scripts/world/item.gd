@@ -36,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG, BAR_GAME }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -67,11 +67,15 @@ const PRICES := {
 	Kind.MASK: 0,
 	Kind.PUMPKIN_SEEDS: 1,
 	Kind.EGG: 1,
+	Kind.BAR_GAME: 2,
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
 	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS, Kind.SALT, Kind.MUSIC_BOX, Kind.APPLE,
-	Kind.PUMPKIN_SEEDS, Kind.EGG]
+	Kind.PUMPKIN_SEEDS, Kind.EGG, Kind.BAR_GAME]
+## Spiele aus dem Spieleschrank in der Bar (Spielkonzept 6.10): eine Art, die Sorte steht im Zusatz (flavor) – damit
+## Item.Kind nicht für jedes Spiel wächst. Die Flasche passt nicht in die Tasche.
+const BAR_GAMES := {"karten": "Kartenspiel", "deckel": "Bierdeckel", "quiz": "Quizkarten", "flasche": "Leere Flasche"}
 ## Getränkedose: die Sorten und ihre Farbe
 const SODA_COLORS := {"limo": Color(0.95, 0.55, 0.1), "cola": Color(0.7, 0.07, 0.07)}
 ## Was man an die Wand hängen kann (Spielkonzept 5.6, 5.7) – der Besen lehnt nur daran
@@ -235,6 +239,7 @@ var broken := false
 var clothing_of := ""
 ## Getränkedose: „limo“ oder „cola“ (SODA_COLORS) · Krähenfutter: „brot“ = Brotkrumen, leer = Kürbiskerne
 var flavor := ""
+var dice_loaded := false   ## Würfelbecher: gezinkte Würfel darin (Mäxchen, Schocken – Spielkonzept 6.10)
 ## Salzpackung (Spielkonzept 5.13): reicht noch für so viele Linien (im Zusatzfeld)
 var salt_left := 0
 
@@ -399,7 +404,7 @@ func make_pocketed() -> void:
 
 ## Passt in die Tasche für Kleines (Spielkonzept 3.2)? Brennendes nicht.
 func fits_pocket() -> bool:
-	return kind in POCKET_KINDS and not lit
+	return kind in POCKET_KINDS and not lit and not (kind == Kind.BAR_GAME and flavor == "flasche")
 
 
 ## In die Tasche des Spielers: unsichtbar, eingefroren, aus Gruppe und Interaktion heraus. Wird mit dem Spieler
@@ -501,8 +506,10 @@ func create_extra() -> String:
 			return "pumpkin" if holds_pumpkin else ""
 		Kind.LIGHT_STRING:
 			return ("%.2f" % string_length) if hung else ""
-		Kind.SODA_CAN, Kind.PUMPKIN_SEEDS:
+		Kind.SODA_CAN, Kind.PUMPKIN_SEEDS, Kind.BAR_GAME:
 			return flavor
+		Kind.DICE_CUP:
+			return "loaded" if dice_loaded else ""
 		Kind.SALT:
 			return str(salt_left)
 		Kind.MASK:
@@ -517,6 +524,8 @@ func get_prompt(player: Player) -> String:
 	if lighting != "":
 		return lighting
 	var held := player.held_kind()
+	if kind == Kind.DICE_CUP and held == Kind.LOADED_DICE:
+		return "Im Becher sind schon gezinkte Würfel" if dice_loaded else "Gezinkte Würfel in den Becher schmuggeln [E]"
 	if _carving(held):
 		return "%s schnitzen [E]" % display_name if can_carve() else "%s – zu hart zum Schnitzen" % display_name
 	if _takes_candle(held):
@@ -555,6 +564,9 @@ func interact(player: Player) -> void:
 	if Item.light_by(self, player):
 		return
 	var held := player.held_kind()
+	if kind == Kind.DICE_CUP and held == Kind.LOADED_DICE:
+		load_dice(player)
+		return
 	if _carving(held):
 		if can_carve():
 			_drop_seeds(carve())
@@ -1283,6 +1295,7 @@ func _build(extra: String) -> void:
 			Geo.mesh(self, Geo.box(Vector3(0.16, 0.006, 0.026)), Mat.psx(Color(0.75, 0.78, 0.8)), Vector3(0.05, 0.012, 0))
 			Geo.mesh(self, Geo.box(Vector3(0.1, 0.022, 0.03)), Mat.psx(Color(0.15, 0.08, 0.05)), Vector3(-0.08, 0.012, 0))
 		Kind.DICE_CUP:
+			dice_loaded = extra == "loaded"
 			display_name = "Würfelbecher"
 			mass = 0.2
 			size = Vector3(0.11, 0.12, 0.11)
@@ -1573,6 +1586,8 @@ func _build(extra: String) -> void:
 				var kernel := Geo.mesh(self, Geo.sphere(0.008, 0.016, 6, 3), seed_mat, at)
 				kernel.scale = Vector3(1.0, 0.3, 0.62)
 				kernel.rotation = Vector3(rng.randf_range(-0.3, 0.3), rng.randf() * TAU, rng.randf_range(-0.3, 0.3))
+		Kind.BAR_GAME:
+			size = _bar_game(extra)
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)
@@ -1679,6 +1694,55 @@ func _build(extra: String) -> void:
 ## Zerplatzen (Spielkonzept 5.8): merkt sich den höchsten Punkt des Falls; beim Aufprall (siehe IMPACT_SPEED) aus mehr
 ## als BURST_HEIGHT zerplatzt der Kürbis, Kerzen und Glühbirnen zerbrechen schon ab BREAK_HEIGHT (_break). Nur für
 ## BURST_KINDS, nicht in der Hand oder an der Wand. Geworfenes (throw_from) prüft dazu seinen Flug (_throw_hit).
+## Gezinkte Würfel aus der Hand in diesen Würfelbecher tauschen (Spielkonzept 6.10) – nicht, während an seinem Tisch
+## gespielt wird. Der Becher merkt es sich, auch wenn man ihn wegträgt (dice_loaded, gespeichert im Zusatz).
+func load_dice(player: Player) -> void:
+	if dice_loaded:
+		Game.say("Im Becher sind schon gezinkte Würfel.")
+		return
+	for table: GameTable in get_tree().get_nodes_in_group("game_tables"):
+		if table.busy and table.top_center().distance_to(global_position) < 0.8:
+			Game.say("Nicht jetzt – es wird gerade gespielt.")
+			return
+	player.consume_held()
+	dice_loaded = true
+	Game.say("Du tauschst die Würfel aus. Niemand hat es gesehen … hoffentlich.")
+
+
+## Spiel aus dem Spieleschrank (Spielkonzept 6.10): Kartenspiel, Bierdeckel-Stapel, Quizkarten oder leere Flasche.
+## Gibt die Größe zurück (für die Kollisionsform in _build).
+func _bar_game(extra: String) -> Vector3:
+	flavor = extra if BAR_GAMES.has(extra) else "karten"
+	display_name = BAR_GAMES[flavor]
+	var size := Vector3(0.1, 0.03, 0.1)
+	match flavor:
+		"karten":   # Schachtel mit Skatblatt, rot mit weißem Band
+			mass = 0.1
+			size = Vector3(0.065, 0.022, 0.095)
+			Geo.mesh(self, Geo.box(size), Mat.psx(Color(0.62, 0.08, 0.08)), Vector3(0, size.y / 2.0, 0))
+			Geo.mesh(self, Geo.box(Vector3(size.x + 0.002, size.y + 0.002, 0.02)), Mat.psx(Color(0.92, 0.9, 0.84)), Vector3(0, size.y / 2.0, 0.02))
+		"deckel":   # Stapel runder Bierdeckel, weiß mit rotem Rand
+			mass = 0.15
+			size = Vector3(0.107, 0.03, 0.107)
+			Geo.mesh(self, Geo.cylinder(0.053, 0.028, 14), Mat.psx(Color(0.9, 0.87, 0.78)), Vector3(0, 0.014, 0))
+			Geo.mesh(self, Geo.cylinder(0.054, 0.004, 14), Mat.psx(Color(0.7, 0.12, 0.1)), Vector3(0, 0.029, 0))
+			Geo.mesh(self, Geo.cylinder(0.04, 0.005, 14), Mat.psx(Color(0.9, 0.87, 0.78)), Vector3(0, 0.03, 0))
+		"quiz":   # Karteikasten, dunkelblau mit gelbem Fragezeichen-Band
+			mass = 0.3
+			size = Vector3(0.12, 0.06, 0.085)
+			Geo.mesh(self, Geo.box(size), Mat.psx(Color(0.1, 0.14, 0.38)), Vector3(0, size.y / 2.0, 0))
+			Geo.mesh(self, Geo.box(Vector3(0.03, size.y + 0.002, size.z + 0.002)), Mat.psx(Color(0.95, 0.78, 0.15)), Vector3(0, size.y / 2.0, 0))
+		"flasche":   # leere grüne Flasche, liegt auf der Seite (Wahrheit oder Pflicht)
+			mass = 0.4
+			size = Vector3(0.27, 0.07, 0.07)
+			var green := Mat.psx(Color(0.12, 0.3, 0.14))
+			var body := Geo.mesh(self, Geo.cylinder(0.034, 0.19, 10), green, Vector3(-0.035, 0.034, 0))
+			body.rotation.z = PI / 2.0
+			var neck := Geo.mesh(self, Geo.cylinder(0.013, 0.08, 8), green, Vector3(0.1, 0.034, 0))
+			neck.rotation.z = PI / 2.0
+	return size
+
+
 func _physics_process(delta: float) -> void:
 	if is_held or freeze or pocketed:
 		_fall_top = -INF

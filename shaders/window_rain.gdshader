@@ -1,7 +1,7 @@
 // Regen an den Scheiben (Spielkonzept 7.8): Tropfen auf der Außenseite der Fenster (HotelWindow, Weather). Eine Fläche
-// knapp vor dem Glas; das Muster liegt in Metern auf der Scheibe (VERTEX des Quads), je Fenster verschoben. Zwei Lagen
-// stehender Tropfen, die kommen und gehen, dazu Rinnsale: ein großer Tropfen rutscht ruckweise hinab und zieht eine
-// Spur kleiner Tropfen hinter sich her. Jeder Tropfen bricht das Bild dahinter (auf dem Kopf, wie eine Linse) und
+// knapp vor dem Glas; das Muster liegt in Metern auf der Scheibe (VERTEX des Quads), je Fenster verschoben. Vor allem
+// Rinnsale: große Tropfen rutschen ruckweise hinab, ziehen einen Wasserfaden hinter sich, der in Perlen zerfällt, und
+// wischen dabei die (wenigen) stehenden Tropfen weg. Jeder Tropfen bricht das Bild dahinter (auf dem Kopf, wie eine Linse) und
 // glänzt im Licht der Lampen. Wie nass die Scheiben sind, gibt die globale rain_wet (0 … 1, trocknet nach dem Regen
 // langsam ab), die Zeit weather_time – beide aus Weather, Spielzeit (steht in der Pause). Blutregen (rain_blood): die
 // Tropfen färben das Bild rot; danach bleiben eingetrocknete rote Flecken mit dunklerem Rand (pane_stain), bis normaler
@@ -22,9 +22,11 @@ uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap;
 uniform float refraction = 0.008;     // so weit (Bildanteil) bricht ein Tropfen das Bild dahinter
 uniform float gather = 1.35;          // ein Tropfen sammelt Licht aus einem weiten Winkel: heller als das Bild dahinter
 uniform vec3 catchlight : source_color = vec3(0.07, 0.075, 0.09);   // Glanzpunkt oben am Tropfen (Himmel)
-uniform float run_width = 0.1;        // Breite einer Rinnsal-Spalte (m)
-uniform float run_height = 1.2;       // nach so viel Höhe (m) wiederholt sich eine Spalte
-uniform float trail = 0.45;           // so lang (m) ist die Spur über einem Rinnsal
+uniform float run_width = 0.07;       // Breite einer Rinnsal-Spalte (m)
+uniform float run_share = 0.8;        // so viele Spalten (Anteil bei voller Nässe) haben ein Rinnsal
+uniform float run_height = 2.0;       // nach so viel Höhe (m) wiederholt sich eine Spalte
+uniform float film_life = 2.5;        // so lange (s) bleibt die Spur ein durchgehender Wasserfaden
+uniform float trail_life = 14.0;      // so lange (s) bleiben Perlen der Spur stehen
 uniform vec3 blood_tint : source_color = vec3(0.85, 0.12, 0.08);   // so färbt Blutregen das Bild im Tropfen
 uniform vec3 stain_color : source_color = vec3(0.22, 0.045, 0.03);  // eingetrocknete Flecken
 
@@ -54,40 +56,58 @@ vec3 static_drops(vec2 p, float cell, float wet, float seed, float stretch) {
 	return vec3(d / r * m, m);
 }
 
-// Rinnsale: in jeder Spalte (run_width) mit Nässe über ihrer Schwelle rutscht ein Tropfen ruckweise hinab und lässt
-// darüber eine Spur kleiner Tropfen zurück. Je flacher die Scheibe, desto seltener und langsamer; liegend keine.
-vec3 running_drops(vec2 p, float wet, float steepness) {
+// Rinnsale: in jeder Spalte (run_width) mit Nässe über ihrer Schwelle läuft ein Tropfen hinab – ruckweise, je Spalte
+// verschieden schnell – und zieht eine nasse Spur hinter sich: frisch ein durchgehender schmaler Wasserfaden, älter
+// zerfällt er in kleine Perlen, die nach und nach verschwinden. Wo die Spur ist, hat der Tropfen die stehenden Tropfen
+// mitgenommen (Rückgabe w = so viel weggewischt). Je flacher die Scheibe, desto seltener und langsamer; liegend keine.
+vec4 running_drops(vec2 p, float wet, float steepness) {
 	float col = floor(p.x / run_width);
 	float h = hash(vec2(col, 17.0));
-	if (h > wet * 0.55 * smoothstep(0.15, 0.7, steepness)) {
-		return vec3(0.0);
+	if (h > wet * run_share * smoothstep(0.15, 0.7, steepness)) {
+		return vec4(0.0);
 	}
-	float tile = floor(p.y / run_height);
+	// je Spalte versetzt, sonst lägen die Nahtstellen aller Spalten auf derselben Höhe
+	float py = p.y + hash(vec2(col, 5.0)) * run_height;
+	float tile = floor(py / run_height);
 	float hh = hash(vec2(col, tile + 3.0));
-	float y = p.y - tile * run_height;
-	// Ruckweise: drei Rutscher je Durchgang, dazwischen hängt er
-	float u = weather_time * mix(0.25, 0.6, hh) * mix(0.35, 1.0, steepness) + hh * 7.0;
-	float jumps = 3.0;
-	float pos = (floor(u * jumps) + smoothstep(0.55, 1.0, fract(u * jumps))) / jumps;
-	float head = run_height * (1.0 - fract(pos)) * 0.9 + run_height * 0.05;
-	float wiggle = sin(y * 17.0 + hh * 40.0) * 0.009 + sin(y * 43.0 + hh * 9.0) * 0.003;
+	float y = py - tile * run_height;
+	// Durchgänge je Sekunde; ruckweise: mehrere Rutscher je Durchgang, dazwischen hängt er kurz
+	float speed = mix(0.07, 0.22, hh) * mix(0.35, 1.0, steepness);
+	float u = weather_time * speed + hh * 7.0;
+	float jumps = 5.0;
+	float phase = fract(u);
+	float pos = (floor(phase * jumps) + smoothstep(0.35, 1.0, fract(phase * jumps))) / jumps;
+	float head = run_height * (1.0 - pos);
+	float wiggle = sin(y * 17.0 + hh * 40.0) * 0.008 + sin(y * 43.0 + hh * 9.0) * 0.003;
 	float x = p.x - (col + 0.5) * run_width - wiggle - (hh - 0.5) * run_width * 0.4;
-	// Kopf: großer, unten runder Tropfen
-	vec2 d = vec2(x, y - head) / vec2(0.011, 0.014);
-	float m_head = smoothstep(1.0, 0.75, length(d));
-	vec3 res = vec3(d * m_head, m_head);
-	// Spur: kleine Tropfen in einem schmalen Streifen über dem Kopf, nach oben hin weniger
+	// Kopf: großer Tropfen, unten rund, nach oben in die Spur gezogen
+	float rw = mix(0.009, 0.016, hash(vec2(col, tile + 11.0)));
 	float above = y - head;
-	if (above > 0.0 && above < trail) {
-		float cell = 0.018;
+	vec2 d = vec2(x / rw, above / (rw * (above > 0.0 ? 1.7 : 1.1)));
+	float m_head = smoothstep(1.0, 0.75, length(d));
+	vec4 res = vec4(d * m_head, m_head, 0.0);
+	// Spur: so lange (s) ist es her, dass der Kopf hier vorbeikam (über das Ende des Durchgangs hinaus: die alte Spur
+	// steht noch, während oben der nächste Tropfen losläuft)
+	float age = fract(pos - (1.0 - y / run_height)) / speed;
+	if (age < trail_life) {
+		float fresh = 1.0 - smoothstep(0.0, film_life, age);   // 1 = gerade erst, durchgehender Faden
+		float fade = 1.0 - age / trail_life;
+		res.w = max(res.w, smoothstep(rw * 1.6, rw * 0.6, abs(x)) * fade);
+		// Faden: schmal, zylindrisch gewölbt – bricht das Bild weniger als ein Tropfen
+		float fw = rw * mix(0.25, 0.5, fresh);
+		float mf = smoothstep(1.0, 0.6, abs(x) / fw) * fresh * 0.75;
+		if (mf > res.z) {
+			res.xyz = vec3(x / fw * 0.6, 0.45, 1.0) * mf;
+		}
+		// Perlen: was vom Faden liegen bleibt, kleiner und weniger, je älter
+		float cell = 0.014;
 		float id = floor(y / cell);
-		float hs = hash(vec2(col * 3.1, id));
-		float keep = step(hs, 0.75 * (1.0 - above / trail));
-		float r = mix(0.003, 0.006, hash(vec2(id, col)));
-		vec2 c = vec2(x - (hash(vec2(id, col + 9.0)) - 0.5) * 0.003, y - (id + 0.5) * cell) / r;
-		float m = smoothstep(1.0, 0.7, length(c)) * keep;
-		if (m > res.z) {
-			res = vec3(c * m, m);
+		float keep = step(hash(vec2(col * 3.1, id + tile * 31.0)), 0.8 * fade);
+		float r = mix(0.0025, 0.0055, hash(vec2(id, col))) * mix(0.6, 1.0, fade);
+		vec2 c = vec2(x - (hash(vec2(id, col + 9.0)) - 0.5) * 0.004, y - (id + 0.5) * cell) / r;
+		float mb = smoothstep(1.0, 0.7, length(c)) * keep * (1.0 - fresh * 0.7);
+		if (mb > res.z) {
+			res.xyz = vec3(c * mb, mb);
 		}
 	}
 	return res;
@@ -121,12 +141,14 @@ void fragment() {
 	}
 	float lying = 1.0 - steep;
 	float stretch = mix(1.0, 1.1, steep);
-	vec3 a = static_drops(p, 0.026, wet * mix(0.85, 1.0, lying), 0.0, stretch);
-	vec3 b = static_drops(p + 0.3, 0.06, wet * mix(0.5, 0.8, lying), 11.0, stretch);
-	vec3 c = running_drops(p, wet, steep);
+	// senkrecht wenige stehende Tropfen – das Bild machen die Rinnsale; wo eines lief, sind sie weggewischt
+	vec4 c = running_drops(p, wet, steep);
+	float wiped = 1.0 - c.w;
+	vec3 a = static_drops(p, 0.026, wet * mix(0.2, 1.0, lying), 0.0, stretch) * wiped;
+	vec3 b = static_drops(p + 0.3, 0.06, wet * mix(0.15, 0.8, lying), 11.0, stretch) * wiped;
 	vec3 d = a;
 	if (b.z > d.z) { d = b; }
-	if (c.z > d.z) { d = c; }
+	if (c.z > d.z) { d = c.xyz; }
 	if (lying > 0.05) {
 		// schräges oder liegendes Glas: dazu große, flache Tropfen, die stehen bleiben statt abzulaufen
 		vec3 e = static_drops(p + 0.7, 0.075, wet * 0.4 * lying, 23.0, 1.0);

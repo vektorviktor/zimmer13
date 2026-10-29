@@ -83,6 +83,8 @@ FILLS = {
 	"Dachboden": ("attic", False),
 	# Friedhof (25.10., Spielkonzept 5.15): Torbogen aus Hecke – eine Lücke in der Terrassenkante
 	"Heckenbogen": ("hedge_arch", True),
+	# Bar neu (28.10., Spielkonzept 6.10): Bowlingbahn aus hellem Holz, die Foullinie quer darüber
+	"Bowlingbahn": ("bowling_lane", False), "Foullinie": ("foul_line", False),
 }
 ## Palettenname → Öffnungsart (Strich auf der Wandlinie)
 OPENINGS = {
@@ -91,6 +93,8 @@ OPENINGS = {
 	"Kniestocktür": "attic_door",
 	"Dachfenster": "roof_window",   # 24.10.: auf der Außenwand des Dachbodens – das Fenster sitzt in der Dachschräge
 }
+## Flächen, die schmal sein dürfen (sonst gelten Flecken unter 30 Pixeln als Reste von Schrift)
+THIN_FILLS = ("foul_line",)
 ## Flächen, die wie unbemalt zählen (kein Boden, nichts gebaut)
 EMPTY_FILLS = ("Kellerraum zu",)
 WALL_NAME, GLASS_NAME = "Wand", "Glaswand"
@@ -112,6 +116,8 @@ FURNITURE = {
 	"Möbel: Wannenablage": "tub_shelf",   # 24.10.: gefliestes Stück neben der Badewanne, ohne Vorderseite
 	# Friedhof (25.10., Spielkonzept 5.15): Grabplatz 2 × 1 m (Vorderseite = Fußende), Gedenkstätte mit Tafel
 	"Möbel: Grab": "grave", "Möbel: Gedenkstätte": "memorial",
+	# Bar neu (28.10., Spielkonzept 6.10): ohne Vorderseite – sie stehen mit dem Rücken an der nächsten Wand
+	"Möbel: Videoautomat": "arcade", "Möbel: Spieleschrank": "game_cabinet",
 }
 FRONT_NAME = "Möbel: Vorderseite"   ## Strich am Rand, gilt für jedes Möbel
 ## Hellere Zeile am Rand, gilt nur für ihr Möbel: „Möbel: Dusche Vorderseite“ → facing. Beim Doppelbett ist sie das
@@ -624,7 +630,7 @@ def build_floor(floor, COL, open_above, eg=None):
 	counter = {}
 	for kind, cs in kinds.items():
 		for comp in components(lambda c, cs=cs: c in cs):
-			if len(comp) < 30:
+			if len(comp) < 30 and kind not in THIN_FILLS:
 				continue   # Reste von Schrift
 			counter[kind] = counter.get(kind, 0) + 1
 			region = {"id": "%s_%d" % (kind, counter[kind]), "kind": kind, "outdoor": FILL_OF[cs[0]][1],
@@ -1246,7 +1252,7 @@ def preview(layout, path):
 	colors = {"room": "#ffb08a", "corridor": "#dde8f2", "garden": "#c8f5bd", "terrace": "#d5e8cf", "service": "#f4f4f4",
 		"storage": "#cfcfcf", "bar": "#b5c47a", "party": "#ddb0e0", "toilet": "#7fd6ff", "pool_water": "#3aa6ff",
 		"pool_deck": "#c3d2de", "elevator": "#a9dccb", "cellar": "#999", "boiler_room": "#821b1b", "plant_room": "#7c6bff",
-		"laundry_room": "#6bb6ff", "cellar_room": "#7b7b7b"}
+		"laundry_room": "#6bb6ff", "cellar_room": "#7b7b7b", "bowling_lane": "#b8b392", "foul_line": "#ba3838"}
 	op_colors = {"door": "#2e9e00", "garden_door": "#00d000", "window": "#2a7fd0", "glass_double_door": "#e0c000",
 		"service_door": "#999", "elevator_door": "#00c090", "main_entrance": "#e00000", "attic_door": "#8a5a2a", "roof_window": "#c9e7ff"}
 	out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -118 160 128" width="100%" style="background:#fff">']

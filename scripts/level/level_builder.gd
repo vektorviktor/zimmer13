@@ -45,6 +45,8 @@ const GRAVEL_TEX := "res://assets/textures/StoneWall_01/StoneWall_01_basecolor.j
 const GRAVEL_NORMAL := "res://assets/textures/StoneWall_01/StoneWall_01_normalOGL.jpg"
 const GRAVEL_METERS := 0.5
 const GRAVEL_NORMAL_STRENGTH := 2.0
+## So glatt werden Rasen, Stein (Terrasse, Balkon) und Kies, wenn sie ganz nass sind (Weather, 1 = Wasserfilm)
+const WET_GLOSS := Vector3(0.45, 1.0, 0.8)
 ## Außenwände des Hotels: Bruchsteinplatten mit Fugen (StoneFloor_02, Farbbild mit eingebackener AO + verstärkte
 ## Normal Map), Platten 20–40 cm
 const FACADE_TEX := "res://assets/textures/StoneFloor_02/StoneFloor_02_basecolor.jpg"
@@ -69,6 +71,13 @@ const WOOD_FLOOR_NORMAL := "res://assets/textures/WoodenFloor_03/WoodenFloor_03_
 const WOOD_FLOOR_ROUGHNESS := "res://assets/textures/WoodenFloor_03/WoodenFloor_03_roughness.jpg"
 const WOOD_FLOOR_METERS := 2.0
 const WOOD_FLOOR_SPECULAR := 0.5
+## Bowlingbahn (Spielkonzept 6.10, 28.10.): versiegeltes Parkett aus schmalen Riemen (Mat.lane_boards), hell wie
+## Ahorn, glatt lackiert – spiegelt ein wenig (SSR wie der Lobbymarmor)
+const LANE_TINT := Color(1.15, 1.05, 0.88)
+const LANE_SPECULAR := 0.9
+const LANE_ROUGHNESS := 0.18
+const LANE_MIRROR := 0.15
+const FOUL_LINE_COLOR := Color(0.42, 0.06, 0.05)
 const LOBBY_FLOOR_TEX :="res://assets/textures/TilesMarble_01/T_TilesMarble_01_basecolor.jpg"
 const LOBBY_FLOOR_NORMAL := "res://assets/textures/TilesMarble_01/T_TilesMarble_01_normalogl.jpg"
 const LOBBY_FLOOR_ROUGHNESS := "res://assets/textures/TilesMarble_01/T_TilesMarble_01_roughness.jpg"
@@ -287,8 +296,16 @@ const GRID := 0.25
 ## HAUSHALTE.md (HOUSEHOLDS_PATH, je Zimmer über seine Stelle im Plan); alle übrigen sind unbewohnt.
 ## Arten: player, guest, vacant (unbewohnt, Licht aus, vom Hotel abgeschlossen), abandoned, derelict, locked.
 const PLAYER_ROOM := "013"
-## Dartscheibe (Spielkonzept 6.10), solange sie nicht im Plan steht: Mitte der Südwand der Bar, Blick nach Norden
-const DART_FALLBACK := {"kind": "dartboard", "pos": [-19.0, -10.25], "wall": "south"}
+## Dartscheibe (Spielkonzept 6.10), solange sie nicht im Plan steht: hinten in der Nische an der Südwand der Bar
+## neben der Bowlingbahn (28.10.) – wer danebenwirft, trifft niemanden. Blick nach Norden.
+const DART_FALLBACK := {"kind": "dartboard", "pos": [-16.4, -10.25], "wall": "south"}
+## Spieleschrank (Spielkonzept 6.10, 28.10.), solange er nicht im Plan steht (Möbel „Spieleschrank“): an der Ostwand
+## der Bar (zur Lobby) südlich der Glastür
+const CABINET_FALLBACK := {"kind": "game_cabinet", "pos": [-7.7, -13.2], "wall": "east"}
+## Jackpot-Automat (einarmiger Bandit): Ecke oben rechts in der Bar, an der Nordwand nördlich der Glastür (28.10.)
+const SLOT_FALLBACK := {"kind": "slot_machine", "pos": [-8.0, -18.75], "wall": "north"}
+## Videoautomaten (Spielkonzept 6.10, 28.10.) aus dem Plan der Reihe nach: welches Spiel darauf läuft
+const ARCADE_GAMES: Array[String] = ["deadra", "ghost_hotel"]
 const COMPASS_ROOM := "026"
 ## Maskensammlung (Spielkonzept 5.19), solange sie nicht im Plan steht: so weit bleiben die Haken von Ecken und
 ## Öffnungen weg, und so viel freie Wand (m) muss es in Zimmer 13 mindestens geben
@@ -462,7 +479,7 @@ const CHANGING_ROOMS := ["vorraum", "dusche_west", "dusche_ost", "umkleide_west"
 const KIND_NAMES := {"cat_room": "Katzenraum", "library": "Bibliothek", "bath": "Bad", "balcony": "Balkon",
 	"terrace": "Terrasse", "toilet": "Toilette", "storage": "Lager", "cellar": "Keller", "boiler_room": "Heizkeller",
 	"plant_room": "Technikraum", "laundry_room": "Wäscherei", "cellar_room": "Kellerraum", "trash_room": "Müllraum",
-	"gravel": "Kiesweg"}
+	"gravel": "Kiesweg", "bowling_lane": "Bowlingbahn", "foul_line": "Bowlingbahn"}
 ## Kratzbaum (Spielkonzept 7.7): Höhe der oberen Liegefläche
 const CAT_TREE_TOP := 1.45
 ## Aushangbrett (Spielkonzept 2.5): an der Westwand der Lobby zwischen Glastür zur Bar und Wandleuchte – man sieht es,
@@ -517,6 +534,11 @@ const ARCH_RISE := 0.55     ## so hoch wölbt sich der Bogen darüber
 const ARCH_INSET := 0.25    ## Pfosten mittig auf dem Heckenende (keine Fuge, 1,3 m Durchgang)
 var memorial_spot: Dictionary = {}
 var dart_board: DartBoard                ## Darts in der Bar (Spielkonzept 6.10) – aus dem Plan oder DART_FALLBACK
+var bar_table: GameTable                 ## zweiter Würfeltisch im Plan: Barspiele (6.10); ohne ihn der erste
+var game_cabinet: GameCabinet            ## Spieleschrank in der Bar (Spielkonzept 6.10) – CABINET_FALLBACK
+var slot_machine: SlotMachine            ## Spielautomat in der Bar (Spielkonzept 6.10) – SLOT_FALLBACK
+var arcades: Array[ArcadeMachine] = []   ## Videoautomaten in der Bar (Spielkonzept 6.10) – Möbel „Videoautomat“
+var bowling: BowlingLane                ## Bowlingbahn in der Bar (Spielkonzept 6.10) – Flächen „Bowlingbahn“/„Foullinie“
 var bar_spots: Array[Vector3] = []
 var diary: Diary
 ## Zimmer → Mitte der Platte seines ersten Tischs (global) – dort liegt etwa Gustavs Tagebuch (Spielkonzept 2.6)
@@ -611,6 +633,8 @@ var _room_ceiling: Material
 var _hedge: Material
 var _carpet: Material
 var _wood_floor: Material
+var _lane_floor: Material       ## Bowlingbahn (28.10.): helles, glänzend versiegeltes Holz
+var _foul_line: Material
 var _floor_tiles: Material
 var _lobby_floor: Material
 var _pool_tiles: Material
@@ -715,6 +739,8 @@ func build() -> void:
 		_gallery()
 	_common_rooms()
 	_dart_fallback()
+	_bar_games_fallback()
+	_bowling_lane()
 	_pool()
 	_gardens()
 	_stairwells()
@@ -923,6 +949,12 @@ func _materials() -> void:
 	_carpet = Mat.psx(Color(1, 1, 1), "carpet", 1.0)
 	_wood_floor = Mat.photo(WOOD_FLOOR_TEX, WOOD_FLOOR_METERS, WOOD_FLOOR_NORMAL, WOOD_FLOOR_ROUGHNESS, WOOD_FLOOR_SPECULAR)
 	_floor_tiles = Mat.psx(Color(1, 1, 1), "tiles", 0.5)
+	_lane_floor = Mat.lane_boards(LANE_TINT)
+	_lane_floor.set_meta("floor", "wood")
+	_lane_floor.set_shader_parameter("specular", LANE_SPECULAR)
+	_lane_floor.set_shader_parameter("roughness", LANE_ROUGHNESS)
+	_lane_floor.set_shader_parameter("metallic", LANE_MIRROR)
+	_foul_line = Mat.psx(FOUL_LINE_COLOR)
 	_lobby_floor = Mat.photo(LOBBY_FLOOR_TEX, LOBBY_FLOOR_METERS, LOBBY_FLOOR_NORMAL, LOBBY_FLOOR_ROUGHNESS, LOBBY_FLOOR_SPECULAR)
 	_lobby_floor.set_meta("floor", "tiles")   # Schritte klingen wie auf den übrigen Fliesen (Footsteps)
 	_lobby_floor.set_shader_parameter("metallic", LOBBY_FLOOR_MIRROR)
@@ -936,10 +968,14 @@ func _materials() -> void:
 	_pool_floor = Mat.photo(POOL_FLOOR_TEX, POOL_FLOOR_METERS, POOL_FLOOR_NORMAL, POOL_FLOOR_ROUGHNESS, POOL_FLOOR_SPECULAR)
 	_pool_floor.set_meta("floor", "tiles")
 	_pillar_stone = Mat.photo(PILLAR_TEX, PILLAR_METERS, "", PILLAR_ROUGHNESS, PILLAR_SPECULAR)
-	_grass = Mat.psx(Color(1, 1, 1), "grass", 1.0)
-	_stone = Mat.psx(Color(0.62, 0.57, 0.5), "concrete", 1.0)
-	_gravel = Mat.photo(GRAVEL_TEX, GRAVEL_METERS, GRAVEL_NORMAL)
+	# Böden draußen werden im Regen nass (Weather, wet_ground.gdshaderinc) – eigene Materialien, nicht geteilt
+	_grass = Mat.psx(Color(1, 1, 1), "grass", 1.0, Color.BLACK, 0.0, false)
+	_stone = Mat.psx(Color(0.62, 0.57, 0.5), "concrete", 1.0, Color.BLACK, 0.0, false)
+	_gravel = Mat.photo(GRAVEL_TEX, GRAVEL_METERS, GRAVEL_NORMAL).duplicate()
 	(_gravel as ShaderMaterial).set_shader_parameter("normal_strength", GRAVEL_NORMAL_STRENGTH)
+	Mat.wettable(_grass, WET_GLOSS.x)
+	Mat.wettable(_stone, WET_GLOSS.y)
+	Mat.wettable(_gravel, WET_GLOSS.z)
 	_ceramic = Mat.psx(Color(0.88, 0.88, 0.86))
 	_doormat = Mat.psx(Color(0.4, 0.3, 0.18))
 	# Untergeschoss (Spielkonzept 7.9): Wände aus Brettschalungsbeton, Boden und Decke einfach grau
@@ -1497,7 +1533,7 @@ func _wall_material(kind: String) -> Material:
 			return _room_wallpaper
 		"lobby", "cat_room":
 			return _lobby_wallpaper   # rote Rauten
-		"corridor", "bar", "party", "service", "stairs", "elevator":
+		"corridor", "bar", "bowling_lane", "foul_line", "party", "service", "stairs", "elevator":
 			return _wallpaper
 	return null
 
@@ -1900,6 +1936,10 @@ func _floor_material(kind: String) -> Material:
 			return _pool_floor
 		"bath":
 			return _bath_tiles
+		"bowling_lane":
+			return _lane_floor
+		"foul_line":
+			return _foul_line
 	return _floor_tiles
 
 
@@ -2115,9 +2155,30 @@ func _furniture() -> void:
 				chess_table = ChessTable.new()
 				node = chess_table
 				top = 0.76
-			"game_table":
-				game_table = GameTable.new()
-				node = game_table
+			"game_cabinet":
+				if game_cabinet != null:
+					push_warning("Gebäudeplan: zweiter Spieleschrank bei %s – es gibt nur einen" % c)
+					continue
+				front = _back_to_wall(rect, front)
+				yaw = atan2(front.x, front.y)
+				node = _game_cabinet(c - front * (_depth_of(rect, front) - GameCabinet.SIZE.z) / 2.0, yaw)
+				top = GameCabinet.SIZE.y
+			"arcade":
+				front = _back_to_wall(rect, front)
+				yaw = atan2(front.x, front.y)
+				var arcade := ArcadeMachine.new().setup(ARCADE_GAMES[arcades.size() % ARCADE_GAMES.size()])
+				arcades.append(arcade)
+				node = arcade
+				var back := c - front * (_depth_of(rect, front) - ArcadeMachine.SIZE.z) / 2.0
+				pos = Vector3(back.x, 0, back.y)
+				top = ArcadeMachine.SIZE.y
+			"game_table":   # der erste mit dem Würfelbecher für Mäxchen, der zweite für die Barspiele (6.10)
+				var table := GameTable.new()
+				if game_table == null:
+					game_table = table
+				elif bar_table == null:
+					bar_table = table
+				node = table
 				top = 0.76
 			"couch":
 				node = _couch(pos, yaw - PI / 2.0)   # das Modell sitzt nach +X
@@ -2624,6 +2685,75 @@ func _dartboard(o: Dictionary) -> void:
 func _dart_fallback() -> void:
 	if dart_board == null and _named.has("bar"):
 		_dartboard(DART_FALLBACK)
+
+
+## Spieleschrank an seinem Platz (Mitte am Boden, Blickrichtung) mit Inhalt: die Spiele aus Item.BAR_GAMES und ein
+## Würfelbecher (GameCabinet.CONTENTS; Gegenstände liegen in der Hauptszene wie bei _item), die Türen sind zu.
+func _game_cabinet(at: Vector2, yaw: float) -> GameCabinet:
+	game_cabinet = GameCabinet.new()
+	game_cabinet.position = Vector3(at.x, 0, at.y)
+	game_cabinet.rotation.y = yaw
+	root.add_child(game_cabinet)
+	for c in GameCabinet.CONTENTS:
+		var item := Item.create(Item.Kind.DICE_CUP) if c[0] == "becher" else Item.create(Item.Kind.BAR_GAME, String(c[0]))
+		item.position = game_cabinet.spot(int(c[1]), float(c[2]))
+		item.rotation.y = game_cabinet.rotation.y
+		world.add_child(item)
+	return game_cabinet
+
+
+## Möbel ohne Vorderseite im Plan, die an einer Wand stehen (Spieleschrank, Videoautomat): Rücken an die nächste Wand,
+## Vorderseite davon weg. Der Rücken liegt an einer langen Seite (in einer Ecke sonst die falsche Wand – der Schrank
+## stünde quer und halb in der Wand). Steht keine Wand nah genug, bleibt die Vorderseite aus _facing.
+func _back_to_wall(rect: Rect2, front: Vector2) -> Vector2:
+	var best := INF
+	for side: String in ["north", "south", "west", "east"]:
+		var d := _dir(side)
+		if _depth_of(rect, d) > _depth_of(rect, Vector2(d.y, d.x)) + 0.01:
+			continue   # kurze Seite
+		var edge := rect.get_center() + d * _depth_of(rect, d) / 2.0
+		var face := _on_wall(edge, side, 0.3)
+		if not face.is_empty() and edge.distance_to(face["pos"]) < best:
+			best = edge.distance_to(face["pos"])
+			front = -d
+	return front
+
+
+## Bowlingbahn (Spielkonzept 6.10, 28.10.): Kegel und Kugelständer auf die Fläche „Bowlingbahn“ im Plan (alle Stücke
+## zusammen), die Foullinie trennt den Anlauf ab – ohne sie gilt das südliche Viertel als Anlauf.
+func _bowling_lane() -> void:
+	var lane := Rect2()
+	var foul := INF
+	for r in _map["regions"]:
+		for rc in r["rects"]:
+			if r["kind"] == "bowling_lane":
+				lane = _rect(rc) if not lane.has_area() else lane.merge(_rect(rc))
+			elif r["kind"] == "foul_line":
+				foul = _rect(rc).get_center().y
+	if not lane.has_area():
+		return
+	if foul == INF:
+		foul = lane.end.y - lane.size.y / 4.0
+	bowling = BowlingLane.new().setup(lane, foul)
+	root.add_child(bowling)
+
+
+## Spieleschrank, solange er nicht im Plan steht (CABINET_FALLBACK), und der Jackpot-Automat (SLOT_FALLBACK) in der Bar.
+func _bar_games_fallback() -> void:
+	if not _named.has("bar"):
+		return
+	for o in [CABINET_FALLBACK, SLOT_FALLBACK]:
+		if (o == SLOT_FALLBACK or game_cabinet == null) and not (_named["bar"] as Rect2).has_point(_v2(o["pos"])):
+			push_warning("Gebäudeplan: %s-Platz %s liegt nicht mehr in der Bar – bitte in den Plan zeichnen" % [o["kind"], o["pos"]])
+	if game_cabinet == null:
+		var at := _wall_spot(CABINET_FALLBACK, GameCabinet.SIZE.z / 2.0 + 0.01)
+		var spot := at.at(0.0)
+		_game_cabinet(Vector2(spot.x, spot.z), at.yaw())
+	var slot_at := _wall_spot(SLOT_FALLBACK, SlotMachine.SIZE.z / 2.0 + 0.01)
+	slot_machine = SlotMachine.new()
+	slot_machine.position = slot_at.at(0.0)
+	slot_machine.rotation.y = slot_at.yaw()
+	root.add_child(slot_machine)
 
 
 func _supply(spot: ResourceSpot, pos: Vector3) -> void:

@@ -6,33 +6,50 @@ class_name Geo
 ## Bildschirm-Rasterpunkt – bei riesigen Flächen (80-m-Flurboden) schwimmt sonst die ganze Fläche.
 const MAX_FACE := 1.0
 
+## Mesh-Cache: gleiche Maße (auf 0,1 mm) → dasselbe Mesh. Jedes eigene Mesh legt auf der Grafikkarte eigene
+## Puffer an; zehntausende davon bringen manche Vulkan-Treiber (Onboard-Grafik) mit „VkResult error -10“ zum
+## Abbruch (TECHNIK.md 1 „Grafik“). Gilt für box, cylinder, sphere, wall_mesh, grain_box, rounded_box und
+## runner_mesh – deren Meshes darum nie verändern; wer das will, nimmt .duplicate(). Zählen: Debug --meshes.
+static var _cache := {}
+
+
+static func _cached(key: String, make: Callable) -> Mesh:
+	var m: Mesh = _cache.get(key)
+	if m == null:
+		m = make.call()
+		_cache[key] = m
+	return m
+
 
 static func box(size: Vector3) -> BoxMesh:
-	var m := BoxMesh.new()
-	m.size = size
-	m.subdivide_width = maxi(0, ceili(size.x / MAX_FACE) - 1)
-	m.subdivide_height = maxi(0, ceili(size.y / MAX_FACE) - 1)
-	m.subdivide_depth = maxi(0, ceili(size.z / MAX_FACE) - 1)
-	return m
+	return _cached("b%.4f,%.4f,%.4f" % [size.x, size.y, size.z], func() -> BoxMesh:
+		var m := BoxMesh.new()
+		m.size = size
+		m.subdivide_width = maxi(0, ceili(size.x / MAX_FACE) - 1)
+		m.subdivide_height = maxi(0, ceili(size.y / MAX_FACE) - 1)
+		m.subdivide_depth = maxi(0, ceili(size.z / MAX_FACE) - 1)
+		return m)
 
 
 static func cylinder(radius: float, height: float, segments: int = 8) -> CylinderMesh:
-	var m := CylinderMesh.new()
-	m.top_radius = radius
-	m.bottom_radius = radius
-	m.height = height
-	m.radial_segments = segments
-	m.rings = 1
-	return m
+	return _cached("c%.4f,%.4f,%d" % [radius, height, segments], func() -> CylinderMesh:
+		var m := CylinderMesh.new()
+		m.top_radius = radius
+		m.bottom_radius = radius
+		m.height = height
+		m.radial_segments = segments
+		m.rings = 1
+		return m)
 
 
 static func sphere(radius: float, height: float, segments: int = 8, rings: int = 4) -> SphereMesh:
-	var m := SphereMesh.new()
-	m.radius = radius
-	m.height = height
-	m.radial_segments = segments
-	m.rings = rings
-	return m
+	return _cached("s%.4f,%.4f,%d,%d" % [radius, height, segments, rings], func() -> SphereMesh:
+		var m := SphereMesh.new()
+		m.radius = radius
+		m.height = height
+		m.radial_segments = segments
+		m.rings = rings
+		return m)
 
 
 static func mesh(parent: Node, m: Mesh, mat: Material, pos: Vector3) -> MeshInstance3D:
@@ -114,6 +131,11 @@ static func collider(parent: Node, size: Vector3, pos: Vector3, layer: int = 1) 
 ## symmetrisch. cap und tile = Länge von Abschluss und Kachel in Metern. Jedes Feld hat eigene Ecken (die UVs
 ## springen an den Nähten), Felder höchstens MAX_FACE groß.
 static func runner_mesh(length: float, width: float, cap: float, tile: float, cap_v: float) -> ArrayMesh:
+	return _cached("r%.4f,%.4f,%.4f,%.4f,%.4f" % [length, width, cap, tile, cap_v],
+		_runner_mesh.bind(length, width, cap, tile, cap_v))
+
+
+static func _runner_mesh(length: float, width: float, cap: float, tile: float, cap_v: float) -> ArrayMesh:
 	cap = minf(cap, length / 3.0)
 	var body := length - 2.0 * cap
 	var n := maxi(1, roundi(body / tile))
@@ -149,6 +171,14 @@ static func runner_mesh(length: float, width: float, cap: float, tile: float, ca
 ## ihren Ecken mitten auf die Kante des Nachbarn – beim Vertex-Snapping klafften dort Fugen, und die
 ## Tapete war gegeneinander versetzt.
 static func wall_mesh(x0: float, x1: float, height: float, thick: float, openings: Array) -> ArrayMesh:
+	var key := "w%.4f,%.4f,%.4f,%.4f" % [x0, x1, height, thick]
+	for o in openings:   # Wände übereinander (Stockwerke gleichen Grundrisses) teilen sich das Mesh
+		var op: Vector4 = o
+		key += "|%.4f,%.4f,%.4f,%.4f" % [op.x, op.y, op.z, op.w]
+	return _cached(key, _wall_mesh.bind(x0, x1, height, thick, openings))
+
+
+static func _wall_mesh(x0: float, x1: float, height: float, thick: float, openings: Array) -> ArrayMesh:
 	var xs := [x0, x1]
 	var ys := [0.0, height]
 	for o in openings:
@@ -208,6 +238,11 @@ static func wall_mesh(x0: float, x1: float, height: float, thick: float, opening
 ## (end_meters je Kachel). Fläche 0 = Längsholz, Fläche 1 = Hirnholz (Mat.wood). offset verschiebt die Maserung, damit
 ## nicht jeder Balken gleich aussieht. Flächen höchstens MAX_FACE lang.
 static func grain_box(size: Vector3, grain: int, tex: Vector2, end_meters: float, offset := Vector2.ZERO) -> ArrayMesh:
+	return _cached("g%.4f,%.4f,%.4f,%d,%.4f,%.4f,%.4f,%.4f,%.4f" % [size.x, size.y, size.z, grain, tex.x, tex.y,
+		end_meters, offset.x, offset.y], _grain_box.bind(size, grain, tex, end_meters, offset))
+
+
+static func _grain_box(size: Vector3, grain: int, tex: Vector2, end_meters: float, offset: Vector2) -> ArrayMesh:
 	var h := size / 2.0
 	var parts := [[[], [], [], []], [[], [], [], []]]   # Längsholz, Hirnholz: [Ecken, Normalen, UVs, Indizes]
 	for a in 3:
@@ -245,6 +280,11 @@ static func grain_box(size: Vector3, grain: int, tex: Vector2, end_meters: float
 ## schattiert – Matratze, Kissen, Bettdecke. puff > 0 bläht ihn zur Mitte hin auf (Kissen): Die Höhe wächst dort um
 ## diesen Anteil, an den Rändern nicht. Ein gewürfelter Kasten, dessen Ecken auf den gerundeten Kern gezogen werden.
 static func rounded_box(size: Vector3, radius: float, segments: int = 2, puff: float = 0.0) -> ArrayMesh:
+	return _cached("o%.4f,%.4f,%.4f,%.4f,%d,%.4f" % [size.x, size.y, size.z, radius, segments, puff],
+		_rounded_box.bind(size, radius, segments, puff))
+
+
+static func _rounded_box(size: Vector3, radius: float, segments: int, puff: float) -> ArrayMesh:
 	var h := size / 2.0
 	radius = minf(radius, minf(h.x, minf(h.y, h.z)))
 	var core := h - Vector3.ONE * radius

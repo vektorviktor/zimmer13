@@ -35,6 +35,13 @@ Konstanten im Code, hier nur deren Namen.
   „Optik“), wird aber nicht bevorzugt – kein Verzicht auf Details, nur weil er sie nicht zeigt. Ein darauf
   optimierter Modus kommt am Ende. Ältere Stellen, die vom PS1-Look her gedacht sind (kleine Texturen, `Closest`),
   sind kein Vorbild.
+- **Wenige verschiedene Meshes:** Jedes eigene Mesh legt je Fläche Puffer auf der Grafikkarte an; manche
+  Vulkan-Treiber (Onboard-Grafik) brechen bei zu vielen mit `VkResult error -10` (`VK_ERROR_TOO_MANY_OBJECTS`) ab –
+  das Fenster geht beim Bau des Hotels einfach zu. Darum teilen `Geo.box`, `cylinder`, `sphere`, `wall_mesh`,
+  `grain_box`, `rounded_box` und `runner_mesh` gleiche Meshes über einen Cache (Schlüssel auf 0,1 mm gerundet), ebenso
+  `Bathtub` je Blockgröße: **diese Meshes nie verändern**, sonst ändern sich alle gleichen mit – wer das will, nimmt
+  `.duplicate()`. Neue Formen, die oft vorkommen, ebenso teilen. Zählen mit Debug `--meshes` (29.10.: ohne Cache
+  15 289 Meshes mit 16 600 Flächen, mit 3 252 bzw. 3 867).
 
 ### Modelle (`assets/models/`)
 
@@ -1751,6 +1758,16 @@ Spielkonzept 2.5)
   **Scheiben:** `wet` folgt `intensity` (`WET_RATE`, trocknet in `DRY_TIME`); jedes klare Außenfenster hat vor dem Glas
   eine Fläche mit `shaders/window_rain.gdshader` (Gruppe `rain_panes`, nur sichtbar, solange nass; `render_priority` 1
   wegen des Glases). Muster in Metern auf der Scheibe, je Fenster verschoben; Brechung über `hint_screen_texture`.
+  Senkrecht prägen die Rinnsale das Bild (`running_drops`, Anteil `run_share` der Spalten `run_width`): Kopf ruckweise,
+  dahinter die Spur nach ihrem Alter (`fract(pos − Höhe)/speed`) – bis `film_life` ein durchgehender Faden, danach
+  Perlen bis `trail_life`; wo sie ist, sind die stehenden Tropfen weggewischt (Rückgabe `w`). Spalten in der Höhe
+  versetzt, sonst lägen alle Nahtstellen (`run_height`) gleich hoch.
+  **Nasser Boden:** Rasen, Kies und Stein draußen (`LevelBuilder`: `_grass`, `_gravel`, `_stone`, eigene Materialien)
+  meldet `Mat.wettable(mat, glanz)` an (`WET_GLOSS`; bei `psx_surface` eine Abwandlung mit `specular_schlick_ggx`,
+  sonst rechnet er keinen Glanz). `shaders/wet_ground.gdshaderinc` (in `psx_surface` und `psx_photo`) liest `rain_wet`
+  und `rain_blood`: dunkler, ohne PS1-Look glatt mit etwas Metallic (sonst sähe SSR nichts); beim Blutregen ein Hauch roter
+  Film (#880808, höchstens ~8 %), auf glattem Stein Glanz in #ff2222 (Metallic mit Glanzfarbe als Albedo, so bleibt die Grundfarbe
+  etwa der Film). Gras (`grass.gdshader`) wird mit nass und rot.
   Die Fläche baut `HotelWindow.rain_drops(parent, quad, offset)` – auch für die Dachfenster (`LevelBuilder._roof_window`,
   knapp über dem Glas). Der Shader liest die Neigung aus der Modellmatrix (`steep`: lokal +Y = bergauf, senkrecht 1):
   Rinnsale laufen entlang lokal −Y, auf schrägem Glas seltener und langsamer (flach keine), dafür mehr, rundere und
@@ -1772,10 +1789,12 @@ Spielkonzept 2.5)
   erst nach `GONE`. `_update_flash` zeigt sie in der ersten Zuckung, danach weg. Schock `SHOCK`. Gestalt aus
   Grundkörpern. `--shot-on=figure`.
   **Blutregen** (Seltenwetter): `set_weather(kind, instant, blood)`; der Zeitplan fragt `_blood_due()` (einmal je Spiel,
-  `BLOOD_FROM`…`BLOOD_SURE`, nur wenn `_player_sees_rain()`). `_blood` gilt bis zum nächsten Schauer: globale
-  `rain_blood` (Tropfen färben das Bild), Regenfarbe (`_tint_rain`, auch nach `_set_drops`). `stain` (0 … 1) steigt mit
+  `BLOOD_FROM`…`BLOOD_SURE`, nur wenn `_player_sees_rain()`). `_blood` gilt bis zum nächsten Schauer; `_blood_amount`
+  folgt ihm weich (`BLOOD_FADE`) → globale `rain_blood` (Tropfen färben das Bild, Boden rot), Himmel `blood`
+  (× `intensity`: Wolken #dd7733, Horizont glimmt, Blitz #ff1111 – auch das Blitzlicht `BLOOD_FLASH`), Regenfarbe
+  (`_tint_rain`, auch nach `_set_drops`). `stain` (0 … 1) steigt mit
   `wet`, normaler Regen wäscht es ab (`BLOOD_WASH`): globale `pane_stain` (eingetrocknete Flecken im Scheiben-Shader,
-  die Scheiben bleiben dafür sichtbar, `panes_wet`) und rötliche Pfützen (`Decal`, `PUDDLES` feste Stellen aus der
+  die Scheiben bleiben dafür sichtbar, `panes_wet`) und rötliche Pfützen (#a80808, `Decal`, `PUDDLES` feste Stellen aus der
   Dach-Höhenkarte, nur ebener Boden draußen, erst bei Bedarf gebaut). Gäste: `_blood_reactions` (Angst, Sätze, der
   Mutigste erklärt). Gespeichert bei den Omen (`SaveManager._collect_omens`, Schlüssel „weather“: `blood_done`, `stain`).
 - **Gras** (`world/grass.gd`, `shaders/grass.gdshader`): nur ohne PS1-Look (`visible = not Settings.psx_look`). Nach
@@ -2022,7 +2041,7 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   fliegt per Tween, steckt (Scheibe, Ring) oder fällt von der Wand, Lärm `dart`/`dart_wall`; `guest_throw` mit
   `Guest.throw_dart_pose` und Loslassen nach `RELEASE`; `clear_darts` nach jeder Aufnahme. `DartModel` = Pfeil aus
   Grundkörpern (Spitze am Ursprung, entlang +Z). **Ort:** Ausstattung „Dartscheibe“ im Plan (Wandseite), sonst
-  `LevelBuilder.DART_FALLBACK` (Südwand der Bar); ohne „Gegenstand: Dartpfeile“ im Plan liegen sie auf dem Stehtisch.
+  `LevelBuilder.DART_FALLBACK` (hinten in der Nische an der Südwand der Bar neben der Bowlingbahn); ohne „Gegenstand: Dartpfeile“ im Plan liegen sie auf dem Stehtisch.
   **`DartMatch`:** Spieler mit `Player.stand_at` (setzt `in_dialog` und `at_oche`; `_aim_input` dreht nur den Blick,
   feiner je enger, `fov_zoom` verengt ihn), Maus bleibt gefangen, Knöpfe über die Zahlentasten. Zielen in `_aim`:
   Schwanken als Summe von Sinuswellen (`SWAY` × Schwäche × Rausch, beim Halten bis `STEADY_MIN`, ab `TIRE_AFTER`
@@ -2034,6 +2053,35 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   Vorwarnung ab). Sätze `darts_*` aus dem Profil, sonst `DartMatch.LINES`; Kinder spielen nicht. Gäste untereinander:
   `Social._update_dart_game` (`_seat_pair(…, stand = true)`, `Guest.stand_for_game`), Zuschauen → `darts_watched`
   (gespeichert). Debug `--darts[=gast]`, Test `darts_checks`, Rauchtest `darts`.
+- **Barspiele** (Spielkonzept 6.10, 28.10.): `BarMatch` erbt von `TableMatch` – Fenster wie Mäxchen mit Platz für ein
+  Spielbild (`_view_box`), `why_not` (Spielgerät, Kinder bei `adults_only`, Angst/Lärm), `start`, `_finish(result,
+  close)` (Beziehung, Einsätze, `add_deed`, `requests.on_game_played`), `_caught_cheating`. Lust/Können/Stolz:
+  `profile_of` nimmt `profile[id]`, sonst fest aus `hash(guest.id + ":" + id)` (keine neuen Zufallsaufrufe in
+  `GuestGenerator.make()`; Armdrücken mischt `profile.build` ein). Sätze `<id>_yes/no/win/lose` aus dem Profil, sonst
+  `BarMatch.LINES`. `player_shake`/`guest_shake` = Zittern aus Schwäche, Kaffee, Angst, Rausch. Spiele (alle am
+  **zweiten Würfeltisch im Plan**, `LevelBuilder.bar_table`, ohne ihn am ersten – der erste mit dem Becher bleibt
+  Mäxchen): `SchockenMatch` (Regeln `Schocken`: `score` = Klasse × 1000 + Feinwert, `deckel`, `beats` mit Wurfzahl;
+  Würfelbecher, `DiceView` zeichnet jetzt beliebig viele Würfel), `ArmWrestleMatch` (Taste 1 drückt, Gast mit
+  `GUEST_FORCE` je s), `CoasterTowerMatch` und `DrinkDuelMatch` (Wackelnadel `BarGauge`; Trinkduell ruft echte
+  `Player.drink`/`Guest.drink`), `SeventeenFourMatch` (Skatblatt, `hand_value`), `PubQuizMatch` (`TRIVIA` + Fragen aus
+  den lebenden Gästen: Zimmer, `likes`, Anzahl), `TruthDareMatch` (ohne Einsatz, `report_line`, Lärm `singing`).
+  `Game.bar_games` (id → Spiel), in `table_game_active`. Dialog: „Ein Barspiel spielen …“ nur in der Fläche `bar`.
+  Noch nicht: Gäste untereinander, Herausforderungen, Zuschauen. **Spielgerät:** `Item.Kind.BAR_GAME` mit Sorte in
+  `flavor` (`Item.BAR_GAMES`: karten, deckel, quiz, flasche – die Flasche passt nicht in die Tasche). **Spieleschrank**
+  `GameCabinet` (Gruppe `chests`, gespeichert wie eine Truhe; `holds` für `Social.is_in_closed_chest`) mit den vier
+  Spielen und einem zweiten Würfelbecher (`CONTENTS`). **Spielautomat** `SlotMachine` (Walzen als `Label3D`, Gewichte
+  in `SYMBOLS`, `payout`; Erwartungswert ≈ 0,69 je Geld; läuft alle 4–10 min von selbst an, wenn niemand davorsteht –
+  Gruppe `time_skip`; Lärm `slot`/`slot_win`). Spieleschrank aus dem Plan (Möbel „Spieleschrank“,
+  ohne Vorderseite: `_back_to_wall` stellt ihn mit dem Rücken an die nächste Wand), sonst `CABINET_FALLBACK`; der
+  Jackpot-Automat steht an `SLOT_FALLBACK` (Ecke oben rechts in der Bar). **Videoautomaten** `ArcadeMachine` (Möbel
+  „Videoautomat“, der Reihe nach `ARCADE_GAMES`: Deadra, Ghost Hotel – eigene Entwürfe statt Tetris und Pac-Man):
+  Gehäuse aus Grundkörpern, Leuchtschild als `Label3D`, Bildschirm = kleines `Image` (`SCREEN_PX`) auf einem
+  unbeleuchteten Quad, alle `TICK` s neu gemalt, nur in `AWAKE_RANGE` um den Spieler. Bisher nur die Vorführung
+  (Fünferformen fallen ins Feld 12 × 18; das Männchen läuft die äußere Flurrunde, Gespenster hinterher, rot nach
+  einer Laterne); spielbar noch nicht. **Bowlingbahn:** Flächen „Bowlingbahn“/„Foullinie“ im Grundriss
+  (`bowling_lane`/`foul_line`, die Linie darf schmal sein – `THIN_FILLS` in `build_map.py`), Boden `_lane_floor`
+  (Dielenfoto heller und glatter, `LANE_*`); Kugeln und Pins fehlen noch. Debug `--bargame=spiel[,gast]`, `--spieleschrank`, Test `bar_games_checks`,
+  Rauchtest `barspiele`.
 
 ### UI
 (`ui/`) `UiKit` = Meldezettel-Optik und schlichte Bausteine (`dark_panel`, `option_grid`, `flat_option`,

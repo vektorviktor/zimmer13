@@ -8,7 +8,8 @@ extends Node3D
 ## niemanden, übertönt aber kurz alles, das Monster hört schlechter (masking, MonsterDirector.on_noise).
 ## Um Mitternacht schlägt hinter der Waldkante eine Kirchturmglocke zwölfmal, tief und fern, drinnen leiser – kein
 ## Lärm. Danach beginnt die Geisterstunde (SheetGhost, Spielkonzept 4.18).
-## Dazu (alles 7.8): Regen an den Scheiben (rain_wet, window_rain.gdshader – nass im Regen, trocknet danach langsam);
+## Dazu (alles 7.8): Regen an den Scheiben (rain_wet, window_rain.gdshader – nass im Regen, trocknet danach langsam),
+## ebenso nass und glänzend die Böden draußen (Rasen, Kies, Terrassen; wet_ground.gdshaderinc, Mat.wettable);
 ## Wind (`wind`, Grundbrise, im Regen und Gewitter stärker, in Böen) – Gras, Blätter, fallendes Laub, Regen, Klang;
 ## Nebel draußen (ground_fog.gdshader), mit jedem Tag dichter, der Himmel wolkiger; der Mond nimmt ab und zu – Neumond
 ## Mitte Oktober, Vollmond an Halloween – und so hell scheint er (auch für die Sicht des Monsters, moonlight()).
@@ -16,8 +17,10 @@ extends Node3D
 ## Ferne, je nach Uhrzeit und Wetter (DistantAnimals).
 ## Blutregen (Seltenwetter): einmal je Spiel fällt ein Schauer rot – ab dem 20. Oktober, nur wenn der Spieler wach ist
 ## und ihn sieht (draußen oder am Außenfenster), spätestens ab dem 28. sicher beim nächsten solchen Schauer. Gäste in der
-## Nähe fürchten sich, der mutigste erklärt ihn nüchtern (Saharastaub) – Omen oder Natur bleibt offen. Danach bleiben
-## rote Flecken auf den Scheiben und rötliche Pfützen draußen, bis normaler Regen sie abwäscht; kein Blut für die Spuren.
+## Nähe fürchten sich, der mutigste erklärt ihn nüchtern (Saharastaub) – Omen oder Natur bleibt offen. Solange er
+## fällt, ist der Himmel rotbraun, Blitze leuchten rot und der nasse Boden glänzt rot; er trocknet wie sonst ab. Danach
+## bleiben rote Flecken auf den Scheiben und rötliche Pfützen draußen, bis normaler Regen sie abwäscht; kein Blut für
+## die Spuren.
 ## Nicht gespeichert: Nach dem Laden ist es klar; Mond und Nebel folgen dem Kalender. Gespeichert (bei den Omen): ob es
 ## schon Blut geregnet hat und wie viel davon noch zu sehen ist.
 
@@ -106,6 +109,9 @@ const BLOOD_WINDOW := 8.0
 const BLOOD_WASH := 90.0
 const BLOOD_DROP := Color(0.45, 0.05, 0.04, 0.3)
 const BLOOD_STREAK := Color(0.62, 0.1, 0.08, 0.38)
+## so lange (s) blendet Blutregen in Himmel, Boden und Tropfen ein bzw. aus; Farbe des Blitzlichts dabei
+const BLOOD_FADE := 20.0
+const BLOOD_FLASH := Color("ff1111")
 ## Gäste: so nah (m) am Spieler reagieren sie, so viel Angst (× 1,2 − Mut), so viele sagen etwas (dazu der Mutigste)
 const BLOOD_GUESTS := 25.0
 const BLOOD_FEAR := 25.0
@@ -117,7 +123,7 @@ const BLOOD_CALM := "Saharastaub. Der Wind trägt ihn bis zu uns herauf, das kom
 ## Rötliche Pfützen: so viele, so groß (m), Farbe, fester Zufall für die Stellen
 const PUDDLES := 90
 const PUDDLE_SIZE := Vector2(0.7, 2.2)
-const PUDDLE_COLOR := Color(0.32, 0.05, 0.035)
+const PUDDLE_COLOR := Color("a80808")
 const PUDDLE_SEED := 2610
 
 var _howl_timer := 0.0           ## bis zum nächsten Heulen (4.25)
@@ -166,6 +172,7 @@ var stain := 0.0                  ## 0 … 1: so viel Rot ist noch auf Scheiben 
 var _blood := false               ## der laufende (oder letzte) Schauer ist Blutregen
 var _blood_reacted := false
 var _blood_tinted := false        ## Regentropfen gerade rot gefärbt
+var _blood_amount := 0.0          ## 0 … 1: Blutregen weich ein- und ausgeblendet (rain_blood, Himmel)
 var _roof_img: Image              ## Dach-Höhenkarte (für die Pfützen)
 var _puddles: Array[Decal] = []
 
@@ -294,6 +301,7 @@ func set_weather(new_kind: Kind, instant: bool = false, blood: bool = false) -> 
 			blood_done = true
 			if instant:
 				stain = 1.0
+				_blood_amount = 1.0
 			if Game.tracing:
 				print("[Wetter] Blutregen")
 	if kind == Kind.CLEAR:
@@ -364,9 +372,11 @@ func _update_flash(delta: float) -> void:
 		_moon.light_energy = _moon_energy * _moon_light + _flash * FLASH_ENERGY
 		# im Nebel nur schwach aufleuchten – sonst wird er im Blitz eine weiße Wand
 		_moon.light_volumetric_fog_energy = (_moon_energy * _moon_light + _flash * FLASH_FOG) / _moon.light_energy
-		_moon.light_color = Color(0.55, 0.65, 1.0).lerp(Color(0.85, 0.9, 1.0), clampf(_flash, 0.0, 1.0))
+		var flash_color := Color(0.85, 0.9, 1.0).lerp(BLOOD_FLASH, _blood_amount * intensity)
+		_moon.light_color = Color(0.55, 0.65, 1.0).lerp(flash_color, clampf(_flash, 0.0, 1.0))
 	if _sky:
 		_sky.set_shader_parameter("flash", _flash)
+		_sky.set_shader_parameter("blood", _blood_amount * intensity)
 		var clear_sky := lerpf(_clouds, CLOUDS_LATE, _season())   # bis Halloween wolkiger
 		_sky.set_shader_parameter("cloud_cover", lerpf(clear_sky, CLOUDS_RAIN, overcast))
 
@@ -519,7 +529,8 @@ func _update_blood(delta: float) -> void:
 		stain = maxf(stain, wet)
 	elif kind != Kind.CLEAR and intensity > 0.05:
 		stain = move_toward(stain, 0.0, delta * intensity / BLOOD_WASH)   # normaler Regen wäscht es ab
-	RenderingServer.global_shader_parameter_set("rain_blood", 1.0 if _blood else 0.0)
+	_blood_amount = move_toward(_blood_amount, 1.0 if _blood else 0.0, delta / BLOOD_FADE)
+	RenderingServer.global_shader_parameter_set("rain_blood", _blood_amount)
 	RenderingServer.global_shader_parameter_set("pane_stain", stain)
 	if _blood != _blood_tinted:
 		_tint_rain(_blood)

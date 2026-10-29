@@ -1066,6 +1066,10 @@ func release_hide_spot(spot: HideSpot, guest: Guest) -> void:
 
 func is_in_closed_chest(item: Item) -> bool:
 	for node in get_tree().get_nodes_in_group("chests"):
+		if node is GameCabinet:   # Spieleschrank in der Bar (6.10): hoch, mit Fächern
+			if not node.is_open and (node as GameCabinet).holds(item):
+				return true
+			continue
 		var chest := node as Chest
 		if not chest.is_open and chest.global_position.distance_to(item.global_position) < 0.6:
 			return true

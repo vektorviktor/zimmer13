@@ -128,6 +128,11 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   eigene Maske (Ruth Behrens) – SK 5.19 · GE. Dazu die Masken-Erfolge – SK 8.11.
 - Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche, Durchsagen, **Gruppenfoto** mit leeren Plätzen – SK 5.9 · HA M19.
 - Minispiele: Kürbis-Schnitz-Duell; Schach-Dame als Suche, Mühle, Turnier; Darts-Kreidetafel – SK 6.10.
+- Barspiele (28.10. gebaut: Schocken, Spielautomat, Armdrücken, Bierdeckel-Turm, Trinkduell, 17 und 4, Kneipenquiz,
+  Wahrheit oder Pflicht, Spieleschrank). Offen: **Billard, Kicker** (Nutzer zeichnet sie in die Karte); **Bowling**
+  (Bahn steht seit 28.10. im Plan, Kugeln/Pins/Spiel fehlen); **Videoautomaten** Deadra und Ghost Hotel stehen, zeigen
+  aber nur die Vorführung – spielbar machen, wenn Geld, Bestenliste und Lautstärke entschieden sind; Gäste spielen die neuen Spiele
+  untereinander, fordern dich heraus, Zuschauen; Werte nur headless geprüft – SK 6.10.
 
 **Welt**
 - Wetter, Rest: Wind an den Kerzen (Flamme geht im Garten bisher nach Regen aus; wie der Wind wirken soll, ist nicht
@@ -167,6 +172,19 @@ Plan nur der Nutzer (`map*.aseprite`).
 - **Gebäudeplan lässt sich nicht umsetzen** (28.10., gefunden über die Warnungs-Zusammenfassung des Rauchtests):
   `tools/build_map.py` bricht ab mit „OG1: Türanschlag bei Pixel 649,630: zweiter Anschlag an derselben Tür“ – das
   Spiel nimmt dann die alten Karten. Im Plan (`map_a.aseprite`, nur der Nutzer) prüfen.
+- **Leistung auf schwacher Hardware** (29.10.): Auf einem Rechner mit Onboard-Grafik ging das Fenster beim neuen
+  Spiel zu (`VkResult error -10`, zu viele Puffer) – Mesh-Cache gebaut (TECHNIK.md 1 „Grafik“), dort noch nicht
+  nachgetestet. Reihenfolge, je nach Messung mit `--perf` auf dem schwachen Rechner:
+  1. **Grafikstufen** Niedrig/Mittel/Hoch, bald in schlichter Fassung (volumetrischer Nebel, Schatten, SSR, interne
+     Auflösung mit FSR; Onboard-Grafik startet auf Niedrig, nach Absturz eine Stufe herunter anbieten). Nachteil:
+     jeder neue Effekt braucht eine Antwort für Niedrig, mehr zu testen; Niedrig muss noch gruselig wirken. Nicht
+     dasselbe wie der PS1-optimierte Modus am Ende (SK 9.2).
+  2. **Occlusion Culling**, wenn zu viel gezeichnet wird: Verdecker beim Bauen aus denselben Daten wie
+     `Geo.wall_mesh` (mit Öffnungen), ohne Backen. Nachteil: Dinge können am Rand kurz zu spät auftauchen; ein
+     Verdecker ohne die Öffnung seiner Wand macht Räume unsichtbar. Erst, wenn der Wandbau steht (Vertäfelung).
+  3. **Feste Bauteile je Raum und Material zusammenfassen**, nur wenn die CPU an den Zeichenaufrufen hängt, zuletzt:
+     nur Unveränderliches (`structure_parts`, Leisten, Vertäfelung), Teile mit `instance uniform` bleiben draußen,
+     `--static-eg` und Tests nachziehen; schwerer zu debuggen.
 
 ## 6. Ideen (unentschieden, früher IDEEN.md)
 

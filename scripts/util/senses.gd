@@ -65,6 +65,14 @@ const NOISE := {
 	"dice":       {"range": 10.0, "sound": "thud",   "volume": 0.4, "caption": "[Würfel klappern]"},    ## Würfeln, Spiel am Tisch
 	"dart":       {"range": 6.0,  "sound": "dart",   "volume": 0.5, "caption": "[Ein Pfeil trifft die Scheibe]"},    ## Pfeil steckt in der Scheibe (6.10)
 	"dart_wall":  {"range": 9.0,  "sound": "thud",   "volume": 0.5, "caption": "[Ein Pfeil prallt ab]"},    ## … prallt an der Wand ab und fällt
+	## Barspiele (6.10, 28.10.): Faust auf dem Tisch, einstürzender Bierdeckel-Turm, Spielautomat
+	"arm_slam":   {"range": 8.0,  "sound": "thud",   "volume": 0.6, "caption": "[Eine Faust knallt auf den Tisch]"},
+	"coasters":   {"range": 4.0,  "sound": "rustle", "volume": 0.5, "caption": "[Bierdeckel prasseln auf den Tisch]"},
+	"slot":       {"range": 9.0,  "sound": "motor",  "volume": 0.35, "caption": "[Ein Spielautomat rattert]"},
+	"slot_win":   {"range": 12.0, "sound": "jingle", "volume": 0.7, "caption": "[Münzen klimpern in die Schale]"},
+	"bowling_roll": {"range": 10.0, "sound": "motor", "volume": 0.3, "caption": "[Eine Kugel rollt über die Bahn]"},    ## Bowling (6.10)
+	"bowling_pins": {"range": 16.0, "sound": "bang",  "volume": 0.6, "caption": "[Kegel poltern]"},    ## … und trifft
+	"singing":    {"range": 14.0, "sound": "",       "volume": 0.0, "caption": "[Jemand singt laut und schief]"},
 	"party":      {"range": 25.0, "sound": "",       "volume": 0.0},    ## Feier mit Musik, alle 8 s
 	"punch":      {"range": 9.0,  "sound": "thud",   "volume": 0.8, "caption": "[Ein Schlag]"},    ## Schlag (Spieler oder Gast, 6.3)
 	"scream":     {"range": 20.0, "sound": "scream", "volume": 1.0, "alarm": true},   ## Schreck – Stimme des Gastes (SynthAudio.VOICES)

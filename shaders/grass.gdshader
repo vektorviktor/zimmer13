@@ -20,6 +20,10 @@ uniform float push_strength = 0.3;
 uniform float push_down = 0.6;
 // Helligkeit am Grund (Anteil der Spitze)
 uniform float base_shade = 0.4;
+// Regen (Weather, Spielkonzept 7.8): nasse Halme dunkler, beim Blutregen rot benetzt – wie der Boden (wet_ground)
+global uniform float rain_wet;
+global uniform float rain_blood;
+uniform vec3 wet_blood : source_color = vec3(0.533, 0.031, 0.031);   // #880808
 
 varying float tip;
 varying vec3 tint;
@@ -51,6 +55,9 @@ void vertex() {
 void fragment() {
 	vec4 tex = texture(albedo_tex, UV);
 	ALBEDO = tex.rgb * tint * mix(base_shade, 1.0, tip);
+	float luma = dot(ALBEDO, vec3(0.3, 0.59, 0.11));
+	ALBEDO *= mix(1.0, 0.7, rain_wet);
+	ALBEDO = mix(ALBEDO, wet_blood * (0.5 + 1.2 * luma), rain_wet * rain_blood * 0.075);
 	ALPHA = tex.a;
 	ALPHA_SCISSOR_THRESHOLD = alpha_cut;
 	NORMAL = normalize((VIEW_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);

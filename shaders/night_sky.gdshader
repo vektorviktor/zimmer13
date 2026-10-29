@@ -38,6 +38,11 @@ uniform float sky_time = 0.0;
 uniform float star_energy = 0.5;
 // Blitz (Wetter, Spielkonzept 7.8): 0 … 1, hellt Wolken und Himmel auf – der Wald steht schwarz davor
 uniform float flash = 0.0;
+// Blutregen (Weather, Spielkonzept 7.8): 0 … 1 – der Himmel rotbraun wie bei Saharastaub (Wolken von unten, Horizont
+// glimmt), Blitze rot
+uniform float blood = 0.0;
+uniform vec3 blood_clouds : source_color = vec3(0.867, 0.467, 0.2);   // #dd7733
+uniform vec3 blood_flash : source_color = vec3(1.0, 0.067, 0.067);    // #ff1111
 // Texel pro Wolkenebenen-Einheit mit PS1-Look
 uniform float psx_texels = 48.0;
 // Einstellungen → PS1-Look aus (1 = weich und fein)
@@ -143,12 +148,15 @@ void sky() {
 	vec3 dir = EYEDIR;
 	if (AT_CUBEMAP_PASS) {
 		// Strahlung wird nicht genutzt (Umgebungslicht als Farbe, Spiegelung aus) – billig halten
-		COLOR = dir.y > 0.0 ? mix(horizon_color, zenith_color, sqrt(dir.y)) : treeline_color;
+		vec3 horizon = mix(horizon_color, blood_clouds * 0.09, blood);
+		vec3 zenith = mix(zenith_color, blood_clouds * 0.02, blood);
+		COLOR = dir.y > 0.0 ? mix(horizon, zenith, sqrt(dir.y)) : treeline_color;
 	} else {
 		bool smooth_look = psx_smooth > 0.5;
 		vec3 moon_dir = LIGHT0_ENABLED ? LIGHT0_DIRECTION : normalize(vec3(0.3, 0.6, -0.7));
 		float up = dir.y;
-		vec3 col = mix(horizon_color, zenith_color, sqrt(clamp(up, 0.0, 1.0)));
+		vec3 col = mix(mix(horizon_color, blood_clouds * 0.09, blood), mix(zenith_color, blood_clouds * 0.02, blood),
+				sqrt(clamp(up, 0.0, 1.0)));
 
 		// Mond: Scheibe mit Flecken, Hof drumherum
 		float ang = acos(clamp(dot(dir, moon_dir), -1.0, 1.0));
@@ -184,13 +192,17 @@ void sky() {
 		float edge = clamp((d - d_moon) * 3.0 + (1.0 - d) * 0.6, 0.0, 1.0);
 		float near_moon = exp(-ang / (moon_radius * 7.0)) * lit_part;
 		float lit = clamp(edge * (0.12 + near_moon * 1.4), 0.0, 1.0);
-		vec3 cloud = mix(cloud_dark, cloud_lit, lit) + moon_color * near_moon * 0.08;
+		// Blutregen: der Staub färbt die Wolken, unten (zum Horizont) glimmen sie heller
+		vec3 dark = mix(cloud_dark, blood_clouds * mix(0.07, 0.03, smoothstep(0.05, 0.6, up)), blood);
+		vec3 cloud = mix(dark, mix(cloud_lit, blood_clouds, blood), lit) + moon_color * near_moon * 0.08;
 
 		// Hinter den Wolken: Sterne und Mond, durch dünne Wolke schimmert der Mond als Fleck
 		float star = stars(dir, smooth_look) * star_energy * smoothstep(0.05, 0.3, up);
 		vec3 behind = col + vec3(star) * (1.0 - disc) + moon_color * (disc * maria * limb * phase_light * moon_energy + halo * halo_energy);
 		col = mix(behind, cloud, d) + moon_color * disc * moon_energy * 0.25 * d * (1.0 - d) * lit_part;
-		col += flash * mix(vec3(0.25, 0.27, 0.35), vec3(0.75, 0.78, 0.9), d) * smoothstep(-0.02, 0.2, up);
+		vec3 flash_col = mix(vec3(0.25, 0.27, 0.35), vec3(0.75, 0.78, 0.9), d);
+		flash_col = mix(flash_col, blood_flash * mix(0.35, 0.9, d), blood);
+		col += flash * flash_col * smoothstep(-0.02, 0.2, up);
 		// Wald und Hügel davor (auch unter dem Horizont, über den Rand des Grundstücks hinaus)
 		float line = treeline(dir, smooth_look);
 		float forest = smooth_look ? smoothstep(line + 0.0006, line - 0.0006, up) : step(up, line);

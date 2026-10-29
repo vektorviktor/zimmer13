@@ -47,9 +47,16 @@ const PLANK_METERS := 2.0
 const PLANK_ROWS := 8
 const PLANK_GAP := 4
 const PLANK_DARKEN := 0.45
+## Bowlingbahn (Mat.lane_boards): eine Kachel über so viele Meter, so viele schmale Riemen quer darin (≈ 2,5 cm wie
+## auf echten Bahnen), Abdunklung je Riemen, Fuge in Texeln
+const LANE_METERS := 0.8
+const LANE_BOARDS := 32
+const LANE_DARKEN := 0.18
+const LANE_GAP := 1
 
 static var _shader: Shader
 static var _shader_two_sided: Shader
+static var _shader_wet: Shader
 static var _wall_shader: Shader
 static var _particle_shader: Shader
 static var _leaves_shader: Shader
@@ -85,6 +92,18 @@ static func psx(color: Color, tex_id: String = "", tex_scale: float = 1.0, emiss
 	if shared:
 		_cache[key] = m
 	return m
+
+
+## Boden draußen, der im Regen nass wird (Weather, shaders/wet_ground.gdshaderinc): gloss = so glatt, wenn ganz nass.
+## psx_surface rechnet sonst keinen Glanz – solche Flächen bekommen eine Abwandlung mit Glanz.
+static func wettable(m: ShaderMaterial, gloss: float) -> void:
+	if m.shader == _shader:
+		if _shader_wet == null:
+			_shader_wet = Shader.new()
+			_shader_wet.code = _shader.code.replace("specular_disabled", "specular_schlick_ggx")
+		m.shader = _shader_wet
+	m.set_shader_parameter("wettable", true)
+	m.set_shader_parameter("wet_gloss", gloss)
 
 
 ## PSX-Material mit der Farbtextur aus einer importierten GLB – eins pro Textur der Modelldatei
@@ -404,6 +423,39 @@ static func planks(tint: Color) -> ShaderMaterial:
 		normal.fill_rect(Rect2i(mini(j.x, size - PLANK_GAP), j.y, PLANK_GAP, row), flat)
 	img.convert(Image.FORMAT_RGB8)
 	_cache[key] = _photo_from(img, normal, "", PLANK_METERS, 0.0, tint, false, false)
+	return _cache[key]
+
+
+## Versiegeltes Parkett der Bowlingbahn (Spielkonzept 6.10, 28.10.): schmale Riemen aus dem Längsholz von Wood_02, um
+## 90° gedreht – die Faser läuft senkrecht im Bild, auf dem Boden also entlang z (die Bahn läuft von Süden nach Norden).
+## Je Riemen ein anderer Ausschnitt, eine andere Abdunklung (bis LANE_DARKEN) und ein Stoß an zufälliger Stelle;
+## feine Fugen (LANE_GAP). Ohne Normal Map: der Lack macht die Oberfläche glatt, den Glanz setzt der Aufrufer.
+static func lane_boards(tint: Color) -> ShaderMaterial:
+	var key := "lane|%s" % tint.to_html()
+	if _cache.has(key):
+		return _cache[key]
+	var src := _photo_image(WOOD_TEX)
+	src.rotate_90(CLOCKWISE)
+	src.convert(Image.FORMAT_RGBA8)
+	var size := src.get_width()
+	var board := size / LANE_BOARDS
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var shade := Image.create(board, size, false, Image.FORMAT_RGBA8)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 6100
+	var gap := Color(0.12, 0.08, 0.05)
+	for i in LANE_BOARDS:
+		var x := i * board
+		var from := Vector2i(rng.randi_range(0, size - board), rng.randi_range(0, size - 1))
+		img.blit_rect(src, Rect2i(from.x, from.y, board, size - from.y), Vector2i(x, 0))   # senkrecht gekachelt
+		if from.y > 0:
+			img.blit_rect(src, Rect2i(from.x, 0, board, from.y), Vector2i(x, size - from.y))
+		shade.fill(Color(0.1, 0.07, 0.04, rng.randf_range(0.0, LANE_DARKEN)))
+		img.blend_rect(shade, Rect2i(0, 0, board, size), Vector2i(x, 0))
+		img.fill_rect(Rect2i(x, 0, LANE_GAP, size), gap)
+		img.fill_rect(Rect2i(x, rng.randi_range(0, size - 1), board, LANE_GAP), gap)   # Stoß
+	img.convert(Image.FORMAT_RGB8)
+	_cache[key] = _photo_from(img, null, "", LANE_METERS, 0.0, tint, false, false)
 	return _cache[key]
 
 

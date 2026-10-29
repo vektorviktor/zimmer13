@@ -54,6 +54,9 @@ var size := Vector3(2.8, 0.6, 0.9)
 ## Fliesen des Bads (LevelBuilder._bath_tiles, in Weltkoordinaten – die Fugen laufen von Boden und Wand durch)
 var tiles: Material
 
+## Fertige Meshes (Fliesen, Keramik, Messing) je Blockgröße – gleich große Wannen teilen sie (Mesh-Cache, Geo)
+static var _meshes := {}
+
 
 func _ready() -> void:
 	collision_layer = 1
@@ -140,9 +143,13 @@ func _ready() -> void:
 	var wall_x := lerpf(drop[0].x, knee.y, (drop_y - over_y) / (drop_y - FLOOR_Y))
 	_tube(brass, Vector3(wall_x - 0.008, over_y, 0), Vector3(wall_x + 0.03, over_y, 0), 0.035)
 	_mixer(brass, h + MIXER_RISE, -size.z / 2.0)
-	Geo.mesh(self, tiled.commit(), tiles if tiles else Mat.psx(Color(0.82, 0.88, 0.9), "tiles", 4.0), Vector3.ZERO)
-	Geo.mesh(self, ceramic.commit(), Mat.psx(CERAMIC), Vector3.ZERO)
-	Geo.mesh(self, brass.commit(), Mat.metal(GrandStair.BRASS), Vector3.ZERO)
+	var key := "%.4f,%.4f,%.4f" % [size.x, size.y, size.z]
+	if not _meshes.has(key):
+		_meshes[key] = [tiled.commit(), ceramic.commit(), brass.commit()]
+	var m: Array = _meshes[key]
+	Geo.mesh(self, m[0], tiles if tiles else Mat.psx(Color(0.82, 0.88, 0.9), "tiles", 4.0), Vector3.ZERO)
+	Geo.mesh(self, m[1], Mat.psx(CERAMIC), Vector3.ZERO)
+	Geo.mesh(self, m[2], Mat.metal(GrandStair.BRASS), Vector3.ZERO)
 
 
 ## Wandarmatur (Skizze 23.10.), Wand bei z = wall, Rohrachse in Höhe y: zwei Anschlüsse mit Rosetten, waagerechtes

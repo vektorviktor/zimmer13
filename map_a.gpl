@@ -151,3 +151,8 @@ Columns: 0
  69 123 154	Möbel: Gedenkstätte
  83 139 170	Möbel: Gedenkstätte Vorderseite
 157  96 123	Heckenbogen
+# Bar neu (28.10., Spielkonzept 6.10): Bowlingbahn mit Foullinie im Grundriss, Videoautomaten und Spieleschrank
+184 179 146	Bowlingbahn
+186  56  56	Foullinie
+ 51  31 215	Möbel: Videoautomat
+196 157  62	Möbel: Spieleschrank
