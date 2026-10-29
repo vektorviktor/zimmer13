@@ -163,6 +163,8 @@ extends Node3D
 ##   --perf[=s]                  Frame-Zeiten nach temp/perf.csv schreiben, nach s Sekunden (Standard 20) beenden (PerfLog)
 ##   --static-eg[=pfad]          Erdgeschoss als statische Szene speichern (StaticExport, Standard res://temp/eg_static.scn):
 ##                               Wände mit Öffnungen, Böden, Decken, Lampen, zum Durchlaufen – als Startparameter danach beenden
+##   --meshes                    verschiedene Meshes und Flächen in der Szene zählen (Puffer auf der Grafikkarte) und
+##                               ausgeben – als Startparameter danach beenden
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
@@ -821,6 +823,42 @@ func _export_static(path: String, quit: bool) -> void:
 		get_tree().quit()
 
 
+## --meshes: zwei Bilder warten, dann zählen, wie viele verschiedene Meshes (und Flächen – je Fläche legt die
+## Grafikkarte eigene Puffer an) in der Szene stecken. Manche Vulkan-Treiber (Onboard-Grafik) brechen bei zu
+## vielen Puffern mit „VkResult error -10“ ab (TECHNIK.md 1 „Grafik“). Als Startparameter danach beenden.
+func _count_meshes(quit: bool) -> void:
+	for i in 2:
+		await get_tree().process_frame
+	var meshes := {}   # Instanz-ID → Mesh
+	var instances := 0
+	var stack: Array[Node] = [get_tree().root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		stack.append_array(node.get_children())
+		var m: Mesh = null
+		if node is MeshInstance3D:
+			m = (node as MeshInstance3D).mesh
+		elif node is CPUParticles3D:
+			m = (node as CPUParticles3D).mesh
+		elif node is MultiMeshInstance3D and (node as MultiMeshInstance3D).multimesh:
+			m = (node as MultiMeshInstance3D).multimesh.mesh
+		if m:
+			instances += 1
+			meshes[m.get_instance_id()] = m
+	var surfaces := 0
+	var by_class := {}
+	for m: Mesh in meshes.values():
+		surfaces += m.get_surface_count()
+		var kind := m.get_class() + (" (Datei)" if m.resource_path != "" else "")   # importierte Modelle teilen sich ohnehin
+		by_class[kind] = by_class.get(kind, 0) + 1
+	var text := "[Meshes] %d Instanzen, %d verschiedene Meshes, %d Flächen – %s" % [instances, meshes.size(), surfaces, by_class]
+	print(text)
+	if quit:
+		get_tree().quit()
+	else:
+		Game.say(text, 6.0)
+
+
 func _on_player_died() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	add_child(DeathScreen.new())
@@ -880,6 +918,8 @@ func run_debug(arg: String) -> bool:
 		Settings.apply()
 	elif _is_arg(arg, "--static-eg"):
 		_export_static(_arg_value(arg, "--static-eg", StaticExport.PATH), arg in OS.get_cmdline_user_args())
+	elif arg == "--meshes":
+		_count_meshes(arg in OS.get_cmdline_user_args())
 	elif arg == "--fps":
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg == "--nohud":

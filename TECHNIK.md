@@ -35,6 +35,13 @@ Konstanten im Code, hier nur deren Namen.
   „Optik“), wird aber nicht bevorzugt – kein Verzicht auf Details, nur weil er sie nicht zeigt. Ein darauf
   optimierter Modus kommt am Ende. Ältere Stellen, die vom PS1-Look her gedacht sind (kleine Texturen, `Closest`),
   sind kein Vorbild.
+- **Wenige verschiedene Meshes:** Jedes eigene Mesh legt je Fläche Puffer auf der Grafikkarte an; manche
+  Vulkan-Treiber (Onboard-Grafik) brechen bei zu vielen mit `VkResult error -10` (`VK_ERROR_TOO_MANY_OBJECTS`) ab –
+  das Fenster geht beim Bau des Hotels einfach zu. Darum teilen `Geo.box`, `cylinder`, `sphere`, `wall_mesh`,
+  `grain_box`, `rounded_box` und `runner_mesh` gleiche Meshes über einen Cache (Schlüssel auf 0,1 mm gerundet), ebenso
+  `Bathtub` je Blockgröße: **diese Meshes nie verändern**, sonst ändern sich alle gleichen mit – wer das will, nimmt
+  `.duplicate()`. Neue Formen, die oft vorkommen, ebenso teilen. Zählen mit Debug `--meshes` (29.10.: ohne Cache
+  15 289 Meshes mit 16 600 Flächen, mit 3 252 bzw. 3 867).
 
 ### Modelle (`assets/models/`)
 
