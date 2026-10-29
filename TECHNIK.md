@@ -90,7 +90,8 @@ Gemeinsame Regeln:
 | `monster.glb` | `Monster` | `build_monster.py`, Meshy | siehe 5, „Aussehen & Animation“ |
 | `pool_handrail.glb` | `HANDRAIL_MODEL` | `build_handrail.py` | Tiefe und Lauf der Treppe sind eingebacken und müssen zu `_pool` passen |
 | `lantern.glb` | Gartenlaterne, `LANTERN_MODEL` | `build_lantern.py`, nach Skizze des Nutzers | Licht in der Glasmitte (`LANTERN_LIGHT_Y`), Kopf und Glas werfen keinen Schatten |
-| `door_hotel.glb`, `door_attic.glb` | `Door.Look` | `build_doors.py` aus den Pixelbildern `assets/source/door_*.png` | Blattgröße `Door.HOTEL_LEAF`/`ATTIC_LEAF` muss zu `size` im Skript passen; Scharnierkante x = 0, Aufgehseite +Z |
+| `door_room.glb` | `Door.Look.HOTEL` (Zimmer-, Bad- und übrige Holztüren) | `build_room_door.py`, kein Ausgangsmodell | Blatt (vier erhabene Kassetten, Ringe aus Profilschleifen) und Beschläge `hinge`, `handle`, `peephole`, `plaque`; Holzfoto Wood067 mit Faser je Fries, in Cycles gebacken: Farbe × AO 2048² (AO in die Farbe, wirkt so auch im Lampenlicht), Normalen und Rauheit 1024², Messing 512²; im Spiel die glTF-Materialien selbst (kein PS1-Shader), eingebettet unkomprimiert. `Door.HOTEL_LEAF` = `LEAF` im Skript; Bänder (`HINGE_AT`) auf der Aufgehseite +Z; `Door.add_room_plate` setzt an Zimmertüren Spion und Plakette auf die Flurseite (Seite aus `door_front`, notfalls `scale.z` gespiegelt) und die Nummer als `Label3D` (Cinzel, graviert dunkel, `shaded`) |
+| `door_attic.glb` (`door_hotel.glb` ungenutzt) | `Door.Look.ATTIC` | `build_doors.py` aus den Pixelbildern `assets/source/door_*.png` | Blattgröße `Door.ATTIC_LEAF` muss zu `size` im Skript passen; Scharnierkante x = 0, Aufgehseite +Z; die gemalte Zimmertür bleibt als Vorlage für einen späteren PS1-Modus |
 | `frames.glb` | `OpeningFrame` | `build_frames.py` | siehe unten „Rahmen“ |
 | `boiler.glb`, `pipes.glb` | `Boiler`, `PipeKit` | `build_boiler.py` | siehe 4, „Untergeschoss“ |
 

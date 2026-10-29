@@ -1882,6 +1882,7 @@ func _room(plan: Dictionary) -> void:
 	}
 	if not plan.get("suite", false):   # Suiten betritt man durchs Nachbarzimmer: kein Schild an der Verbindungstür
 		_sign(label, Vector3(0, 2.45, -0.11), 180.0, SIGN_EM_ROOM)
+		door.add_room_plate(label, info["door_front"])   # Spion und Plakette mit der Nummer auf der Flurseite
 	if households.has(no):
 		info["household"] = households[no]
 		door.resident_name = door_name(households[no])   # erscheint beim Hinsehen an der Tür (6.20)

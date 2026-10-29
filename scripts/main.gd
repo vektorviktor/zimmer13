@@ -102,7 +102,8 @@ extends Node3D
 ##                               Kabine, sie fährt gleich ins oberste Stockwerk · urteil: in der Kabine, nach 3 s ein Urteil
 ##                               über Zimmer 13 (4.33), die Kabine pendelt alle 10 s – das Monster wartet an der Haltestelle)
 ##   --sitzen[=sofa|bank|stuhl|bett|klo]   aufs nächste Sitzmöbel dieser Art setzen (3.1), erster Platz – ohne Angabe Sofa
-##   --tuer=zimmer               vor die Tür dieses Zimmers stellen (Nummer wie am Schild), Blick auf die Tür (6.19)
+##   --tuer=zimmer[,innen]       vor die Tür dieses Zimmers stellen (Nummer wie am Schild), Blick auf die Tür (6.19);
+##                               innen: von drinnen auf ihre Bandseite
 ##   --werkzeug=brecheisen|kasten|schluessel   Brecheisen bzw. Werkzeugkasten in die Hand, schluessel: Generalschlüssel
 ##                               an den Bund (6.19) – mit --tuer davor: nach 1 s [E] an der Tür (aufbrechen, reparieren,
 ##                               aufschließen)
@@ -899,10 +900,14 @@ func run_debug(arg: String) -> bool:
 		Game.player.sit_down(best, best.spots[0])
 	elif arg.begins_with("--tuer="):
 		var builder := Game.social.builder
-		var no := _arg_value(arg, "--tuer").pad_zeros(3)
+		var parts := _arg_parts(arg, "--tuer")
+		var no := parts[0].pad_zeros(3)
 		if not builder.rooms.has(no):
 			return false
-		TeleportUI.place_player(builder.rooms[no]["door_front"], builder.rooms[no]["into"])
+		if parts.size() > 1 and parts[1] == "innen":   # von drinnen: Bandseite der Zimmertür
+			TeleportUI.place_player(builder.rooms[no]["door_inside"], -builder.rooms[no]["into"])
+		else:
+			TeleportUI.place_player(builder.rooms[no]["door_front"], builder.rooms[no]["into"])
 		set_meta("debug_door", builder.rooms[no]["door"])
 	elif _is_arg(arg, "--schluesseldieb"):
 		var parts := _arg_parts(arg, "--schluesseldieb")
