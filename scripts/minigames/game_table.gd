@@ -2,12 +2,21 @@ class_name GameTable
 extends StaticBody3D
 ## Würfeltisch in der Hotelbar. Gespielt wird nur, wenn der Würfelbecher auf dem
 ## Tisch liegt (oder du ihn mitbringst) – der Becher ist ein normaler Gegenstand
-## und kann weggetragen oder geklaut werden. Lokale −Z = Platz des Spielers.
+## und kann weggetragen oder geklaut werden. Gezinkte Würfel stecken im Becher selbst
+## (Item.dice_loaded), loaded fragt den Becher am Tisch. Lokale −Z = Platz des Spielers.
 
 const TOP_HEIGHT := 0.76
 
 var busy := false        ## gerade läuft eine Partie
-var loaded := false      ## gezinkte Würfel im Becher
+## Gezinkte Würfel im Becher auf dem Tisch bzw. in der Hand des Spielers (setzen: nur, wenn ein Becher da ist)
+var loaded: bool:
+	get:
+		var cup := cup_here()
+		return cup != null and cup.dice_loaded
+	set(value):
+		var cup := cup_here()
+		if cup != null:
+			cup.dice_loaded = value
 
 var player_seat: Marker3D
 var guest_seat: Marker3D
@@ -41,6 +50,18 @@ func has_cup(player: Player) -> bool:
 	return _has_gear(Item.Kind.DICE_CUP, player)
 
 
+## Der Würfelbecher auf dem Tisch, sonst der in der Hand des Spielers (null = keiner).
+func cup_here() -> Item:
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.kind == Item.Kind.DICE_CUP and not item.is_held and item.global_position.distance_to(top_center()) < 0.8:
+			return item
+	var player := Game.player
+	if player != null and player.held_kind() == Item.Kind.DICE_CUP:
+		return player.held
+	return null
+
+
 ## Liegt das Spielgerät (Würfelbecher, Schachbrett) auf dem Tisch oder in der Hand des Spielers?
 ## player darf null sein: nur der Tisch.
 func _has_gear(kind: Item.Kind, player: Player) -> bool:
@@ -54,7 +75,7 @@ func _has_gear(kind: Item.Kind, player: Player) -> bool:
 
 
 func get_prompt(player: Player) -> String:
-	if player.held_kind() == Item.Kind.LOADED_DICE and not loaded:
+	if player.held_kind() == Item.Kind.LOADED_DICE and cup_here() != null and not loaded:
 		return "Gezinkte Würfel in den Becher schmuggeln [E]"
 	if busy:
 		return "Hier wird gerade gewürfelt …"
@@ -64,13 +85,8 @@ func get_prompt(player: Player) -> String:
 
 
 func interact(player: Player) -> void:
-	if player.held_kind() == Item.Kind.LOADED_DICE and not loaded:
-		if busy:
-			Game.say("Nicht jetzt – es wird gerade gespielt.")
-			return
-		player.consume_held()
-		loaded = true
-		Game.say("Du tauschst die Würfel aus. Niemand hat es gesehen … hoffentlich.")
+	if player.held_kind() == Item.Kind.LOADED_DICE and cup_here() != null:
+		cup_here().load_dice(player)
 
 
 func _seat(z: float) -> Marker3D:

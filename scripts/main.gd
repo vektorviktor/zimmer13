@@ -131,7 +131,8 @@ extends Node3D
 ##   --flashlight[=uv]           eingeschaltete Taschenlampe mit voller Batterie in die Hand (uv: mit UV-Aufsatz, im UV-Modus)
 ##   --bag[=a,b,…]               Kleines in die Tasche (3.2): süßes, cola, limo, zierkürbis, kerze, messer, batterie, birne,
 ##                               uv, würfel, becher, streichhölzer (5.12), dartpfeile, salz, kerne (Kürbiskerne, 5.4),
-##                               brot (Brotkrumen, 4.25), ei (6.13) – ohne Angabe Süßigkeiten, Cola, Zierkürbis und Batterie
+##                               brot (Brotkrumen, 4.25), ei (6.13), karten, deckel, quiz (Barspiele, 6.10) – ohne Angabe
+##                               Süßigkeiten, Cola, Zierkürbis und Batterie
 ##   --bag-menu[=n]              Tasche offen halten wie mit gehaltenem [Q], Fach n (1–6) gewählt – für Screenshots
 ##   --deco=art[,g]              Deko in die Hand (5.6, 5.7): gespenst, lichter, netz, laub, zierkürbis, fledermaus,
 ##                               spinne, totenkopf, besen, kerze (brennend, 5.12) – an eine Wand sehen
@@ -293,6 +294,12 @@ extends Node3D
 ##   --chess=id                  sofort Schach mit dem Gast in der Lobby (Einsatz 3 Geld; mit --autoplay zieht der Spieler selbst)
 ##   --darts[=id]                sofort Darts in der Bar: allein üben, mit id gegen den Gast (Einsatz 3 Geld; mit
 ##                               --autoplay wirft der Spieler selbst)
+##   --spieleschrank             den Spieleschrank in der Bar öffnen (Spielkonzept 6.10)
+##   --bowling                   in den Anlauf der Bowlingbahn und eine Kugel rollen (Spielkonzept 6.10)
+##   --zinken[=bar]              gezinkte Würfel in den Becher am Mäxchen- bzw. Barspieltisch tauschen (wie mit [E])
+##   --bargame=spiel[,id]        sofort ein Barspiel am Würfeltisch gegen den Gast (Standard bruno, Einsatz 3 Geld):
+##                               schocken, armdruecken, bierdeckel, trinkduell, siebzehn, quiz, wahrheit – das Spiel
+##                               aus dem Schrank liegt dann gleich auf dem Tisch (Spielkonzept 6.10)
 ##   --challenge=id[,chess|darts]  Gast fordert dich heraus (Mäxchen, Schach bzw. Darts)
 ##   --autoplay                  Mäxchen-Antworten, Schachzüge bzw. Dartwürfe automatisch wählen
 ##   --shot=pfad.png             Screenshot speichern und beenden
@@ -501,6 +508,13 @@ func _ready() -> void:
 	add_child(darts)
 	Game.darts = darts
 
+	# Barspiele am Würfeltisch (Spielkonzept 6.10, 28.10.) – Reihenfolge wie im Dialog (BarMatch.GAMES)
+	for bar_game: BarMatch in [SchockenMatch.new(), ArmWrestleMatch.new(), CoasterTowerMatch.new(), DrinkDuelMatch.new(),
+			SeventeenFourMatch.new(), PubQuizMatch.new(), TruthDareMatch.new()]:
+		bar_game.table = builder.bar_table if builder.bar_table else builder.game_table
+		add_child(bar_game)
+		Game.bar_games[bar_game.id] = bar_game
+
 	var hud := Hud.new()
 	hud.name = "Hud"
 	add_child(hud)
@@ -685,6 +699,12 @@ func _process(delta: float) -> void:
 		var step := Game.chess.debug_step()
 		if step != "":
 			print("[Schach] " + step)
+	if _autoplay and Engine.get_process_frames() % 60 == 0:
+		for bar_game: BarMatch in Game.bar_games.values():
+			if bar_game.active:
+				var step := bar_game.debug_press_random()
+				if step != "":
+					print("[%s] %s" % [bar_game.title, step])
 	if _autoplay and Engine.get_process_frames() % 40 == 0 and Game.darts.active:
 		var throw := Game.darts.debug_step()
 		if throw != "":
@@ -1050,13 +1070,14 @@ func run_debug(arg: String) -> bool:
 			"messer": Item.Kind.KNIFE, "batterie": Item.Kind.BATTERY, "birne": Item.Kind.BULB, "uv": Item.Kind.UV_FILTER,
 			"würfel": Item.Kind.LOADED_DICE, "wuerfel": Item.Kind.LOADED_DICE, "becher": Item.Kind.DICE_CUP,
 			"streichhölzer": Item.Kind.MATCHBOX, "streichhoelzer": Item.Kind.MATCHBOX, "dartpfeile": Item.Kind.DARTS, "salz": Item.Kind.SALT,
-			"kerne": Item.Kind.PUMPKIN_SEEDS, "brot": Item.Kind.PUMPKIN_SEEDS, "ei": Item.Kind.EGG}
+			"kerne": Item.Kind.PUMPKIN_SEEDS, "brot": Item.Kind.PUMPKIN_SEEDS, "ei": Item.Kind.EGG,
+			"karten": Item.Kind.BAR_GAME, "deckel": Item.Kind.BAR_GAME, "quiz": Item.Kind.BAR_GAME}
 		var names := _arg_value(arg, "--bag", "süßes,cola,zierkürbis,batterie").split(",", false)
 		for what in names:
 			if not kinds.has(what):
 				Game.say("Tasche: " + ", ".join(kinds.keys()), 3.0)
 				return true
-			var item := Item.create(kinds[what], what if what in ["cola", "limo", "brot"] else "")
+			var item := Item.create(kinds[what], what if what in ["cola", "limo", "brot", "karten", "deckel", "quiz"] else "")
 			if Game.player.bag.size() < Player.BAG_SLOTS:
 				Game.player.bag_add(item)
 			else:
@@ -1293,6 +1314,68 @@ func run_debug(arg: String) -> bool:
 				Game.darts.start(dart_opponent, {"money": 3, "item": false})
 			else:
 				Game.darts.practice())
+	elif arg == "--bowling":
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			var lane := Game.social.builder.bowling
+			if lane == null:
+				push_warning("--bowling: keine Bowlingbahn im Plan")
+				return
+			Game.player.global_position = Vector3(lane.lane.get_center().x, 0.05, lane.foul_z + 1.0)
+			Game.player.rotation.y = 0.0
+			lane.interact(Game.player))
+	elif arg == "--spieleschrank":
+		# vor den Spieleschrank stellen und ihn öffnen (Spielkonzept 6.10)
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			var cabinet := Game.social.builder.game_cabinet
+			if cabinet == null:
+				push_warning("--spieleschrank: kein Spieleschrank")
+				return
+			var front := cabinet.global_basis.z.normalized()
+			TeleportUI.place_player(cabinet.global_position + front * 1.3, -front)
+			cabinet.set_open(true))
+	elif _is_arg(arg, "--zinken"):
+		# gezinkte Würfel in die Hand und wie der Spieler in den Becher am Tisch tauschen (Mäxchen bzw. Barspiele)
+		var bar := _arg_value(arg, "--zinken") == "bar"
+		get_tree().create_timer(0.3).timeout.connect(func() -> void:
+			var table: GameTable = (Game.bar_games["schocken"] as BarMatch).table if bar else Game.dice.table
+			var cup := table.cup_here()
+			if cup == null:
+				cup = Item.create(Item.Kind.DICE_CUP)
+				add_child(cup)
+				cup.global_position = table.top_center() + Vector3(-0.15, 0.02, 0.0)
+			Game.player.drop_held()
+			Game.player.receive_item(Item.create(Item.Kind.LOADED_DICE))
+			cup.interact(Game.player)
+			print("[Zinken] Becher %s gezinkt, Hand: %s" % ["ist" if table.loaded else "ist NICHT",
+				Game.player.held.display_name if Game.player.held else "-"]))
+
+		var cabinet := get_tree().get_first_node_in_group("chests")
+		for node in get_tree().get_nodes_in_group("chests"):
+			if node is GameCabinet:
+				cabinet = node
+		if cabinet is GameCabinet:
+			cabinet.set_open(true, true)
+	elif arg.begins_with("--bargame="):
+		var bar_parts := _arg_parts(arg, "--bargame")
+		var bar_game: BarMatch = Game.bar_games.get(bar_parts[0])
+		if bar_game == null:
+			Game.say("Barspiele: " + ", ".join(Game.bar_games.keys()), 3.0)
+			return true
+		var bar_opponent := _guest(bar_parts[1] if bar_parts.size() > 1 else "bruno")
+		if bar_opponent == null:
+			return true
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			var table := bar_game.table
+			bar_opponent.global_position = table.guest_seat.global_position + Vector3(0.5, 0.05, 0.8)
+			if not bar_game.has_gear(null):   # Spiel bzw. Becher aus dem Schrank gleich auf den Tisch
+				var gear := Item.create(Item.Kind.DICE_CUP) if bar_game.gear_flavor == "wuerfel" 					else Item.create(Item.Kind.BAR_GAME, bar_game.gear_flavor)
+				add_child(gear)
+				gear.global_position = table.top_center() + Vector3(-0.15, 0.02, 0.0)
+			var reason := bar_game.why_not(bar_opponent)
+			if reason != "":
+				print("[Barspiel] %s geht nicht: %s" % [bar_game.title, reason])
+				return
+			bar_game.start(bar_opponent, {"money": 0 if bar_game.id == "wahrheit" else 3, "item": false}))
 	elif arg.begins_with("--challenge="):
 		var parts := _arg_parts(arg, "--challenge")
 		var challenger := _guest(parts[0])

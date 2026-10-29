@@ -127,6 +127,7 @@ Stand: 2026-10-28.
 | Gezinkte Würfel | `LOADED_DICE` | gebaut | – | beim Mäxchen schummeln | 6.10 |
 | Schachbrett | `CHESS_BOARD` | gebaut | – | Schach mit Gästen | 6.10 |
 | Dartpfeile | `DARTS` | gebaut | – | Darts | 6.10 |
+| Kartenspiel, Bierdeckel, Quizkarten, Leere Flasche | `BAR_GAME` (Sorte im Zusatz) | gebaut | – | Barspiele aus dem Spieleschrank: 17 und 4, Bierdeckel-Turm, Kneipenquiz, Wahrheit oder Pflicht | 6.10 |
 | Marions Spieluhr | `MUSIC_BOX` | gebaut | Josef Ahrend, Marion (2.3); später fürs Ritual (2.8) | Aufziehen lockt das Monster, nah horcht es; im Heizraum auf dem alten Regal | 5.17 |
 | Münzen | `COINS` | gebaut | – | werden zu Geld; draußen holen sie die Krähen ins Nest; Geschenk der Krähen | 3.2, 4.25 |
 | Kleidungsstück | `CLOTHING` | gebaut | – (Spur eines Geholten) | bleibt nach einem Todesfall liegen | 6.7, 4.13 |

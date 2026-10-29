@@ -121,7 +121,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 60: Schlüssel stehlen und Zweitschlüssel (Spielkonzept 6.19): social.access.stolen (Zimmer → wann das Schloss
 ##     getauscht wird), social.access.spares, alte Schlüssel am Bund („alt_…“) – ältere Stände laden weiter, ohne
 ##     gestohlene und Zweitschlüssel
-const VERSION := 60
+## 61: Gezinkte Würfel stecken im Würfelbecher (Zusatz „loaded“, Spielkonzept 6.10) statt am Würfeltisch
+##     (table_loaded) – ältere Stände laden weiter, die Würfel kommen in den Becher auf dem Mäxchen-Tisch
+const VERSION := 61
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -679,7 +681,6 @@ func collect() -> Dictionary:
 	data["dressers"] = _collect_group("dressers", func(n: Node) -> Dictionary: return n.save_state())
 	data["cats"] = _collect_group("cats", func(n: Node) -> Dictionary: return n.save_state())
 	data["elevators"] = _collect_group("elevators", func(n: Node) -> Dictionary: return n.save_state())
-	data["table_loaded"] = Game.dice.table.loaded if Game.dice and Game.dice.table else false
 	return data
 
 
@@ -786,8 +787,6 @@ func apply(data: Dictionary) -> void:
 		Game.cemetery.load_state(data.get("cemetery", {}))
 	if Game.leviathan_name:
 		Game.leviathan_name.load_state(data.get("leviathan", {}))
-	if Game.dice and Game.dice.table:
-		Game.dice.table.loaded = bool(data.get("table_loaded", false))
 
 	# Monster-Werte
 	var director := Game.director
@@ -853,6 +852,8 @@ func apply(data: Dictionary) -> void:
 		item.global_rotation = _vec(entry["rot"])
 		if bool(entry.get("hung", false)):
 			item.restore_hung()
+	if bool(data.get("table_loaded", false)) and Game.dice and Game.dice.table:   # vor 61: am Tisch statt im Becher
+		Game.dice.table.loaded = true
 	for guest in Game.social.guests:
 		var g: Guest = guest
 		var held = gd.get(g.id, {}).get("held")

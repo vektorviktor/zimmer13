@@ -225,6 +225,15 @@ done <<'LIST'
 4000|spiele|--dice=bruno --autoplay
 3000|spiele,darts|--darts=bruno --autoplay --trace
 1200|darts|--darts --autoplay --trace
+3000|spiele,barspiele|--bargame=schocken --autoplay --trace
+1500|spiele,barspiele,speichern|--zinken=bar --bargame=schocken --autoplay --savetest --trace
+1500|barspiele|--bargame=armdruecken --autoplay --trace
+2000|barspiele|--bargame=bierdeckel --autoplay --trace
+1500|barspiele|--bargame=trinkduell --autoplay --trace
+2000|barspiele|--bargame=siebzehn --autoplay --trace
+2000|barspiele|--bargame=quiz,edna --autoplay --trace
+2500|barspiele|--bargame=wahrheit --autoplay --trace
+900|barspiele,bowling|--bowling --trace
 600|halloween,tiere,kraehen|--kraehen=groll --trace
 600|halloween,tiere,speichern|--kraehen --savetest
 900|tiere,kraehen|--kraehen=stehlen --trace

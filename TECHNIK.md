@@ -2013,7 +2013,7 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   fliegt per Tween, steckt (Scheibe, Ring) oder fällt von der Wand, Lärm `dart`/`dart_wall`; `guest_throw` mit
   `Guest.throw_dart_pose` und Loslassen nach `RELEASE`; `clear_darts` nach jeder Aufnahme. `DartModel` = Pfeil aus
   Grundkörpern (Spitze am Ursprung, entlang +Z). **Ort:** Ausstattung „Dartscheibe“ im Plan (Wandseite), sonst
-  `LevelBuilder.DART_FALLBACK` (Südwand der Bar); ohne „Gegenstand: Dartpfeile“ im Plan liegen sie auf dem Stehtisch.
+  `LevelBuilder.DART_FALLBACK` (hinten in der Nische an der Südwand der Bar neben der Bowlingbahn); ohne „Gegenstand: Dartpfeile“ im Plan liegen sie auf dem Stehtisch.
   **`DartMatch`:** Spieler mit `Player.stand_at` (setzt `in_dialog` und `at_oche`; `_aim_input` dreht nur den Blick,
   feiner je enger, `fov_zoom` verengt ihn), Maus bleibt gefangen, Knöpfe über die Zahlentasten. Zielen in `_aim`:
   Schwanken als Summe von Sinuswellen (`SWAY` × Schwäche × Rausch, beim Halten bis `STEADY_MIN`, ab `TIRE_AFTER`
@@ -2025,6 +2025,35 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   Vorwarnung ab). Sätze `darts_*` aus dem Profil, sonst `DartMatch.LINES`; Kinder spielen nicht. Gäste untereinander:
   `Social._update_dart_game` (`_seat_pair(…, stand = true)`, `Guest.stand_for_game`), Zuschauen → `darts_watched`
   (gespeichert). Debug `--darts[=gast]`, Test `darts_checks`, Rauchtest `darts`.
+- **Barspiele** (Spielkonzept 6.10, 28.10.): `BarMatch` erbt von `TableMatch` – Fenster wie Mäxchen mit Platz für ein
+  Spielbild (`_view_box`), `why_not` (Spielgerät, Kinder bei `adults_only`, Angst/Lärm), `start`, `_finish(result,
+  close)` (Beziehung, Einsätze, `add_deed`, `requests.on_game_played`), `_caught_cheating`. Lust/Können/Stolz:
+  `profile_of` nimmt `profile[id]`, sonst fest aus `hash(guest.id + ":" + id)` (keine neuen Zufallsaufrufe in
+  `GuestGenerator.make()`; Armdrücken mischt `profile.build` ein). Sätze `<id>_yes/no/win/lose` aus dem Profil, sonst
+  `BarMatch.LINES`. `player_shake`/`guest_shake` = Zittern aus Schwäche, Kaffee, Angst, Rausch. Spiele (alle am
+  **zweiten Würfeltisch im Plan**, `LevelBuilder.bar_table`, ohne ihn am ersten – der erste mit dem Becher bleibt
+  Mäxchen): `SchockenMatch` (Regeln `Schocken`: `score` = Klasse × 1000 + Feinwert, `deckel`, `beats` mit Wurfzahl;
+  Würfelbecher, `DiceView` zeichnet jetzt beliebig viele Würfel), `ArmWrestleMatch` (Taste 1 drückt, Gast mit
+  `GUEST_FORCE` je s), `CoasterTowerMatch` und `DrinkDuelMatch` (Wackelnadel `BarGauge`; Trinkduell ruft echte
+  `Player.drink`/`Guest.drink`), `SeventeenFourMatch` (Skatblatt, `hand_value`), `PubQuizMatch` (`TRIVIA` + Fragen aus
+  den lebenden Gästen: Zimmer, `likes`, Anzahl), `TruthDareMatch` (ohne Einsatz, `report_line`, Lärm `singing`).
+  `Game.bar_games` (id → Spiel), in `table_game_active`. Dialog: „Ein Barspiel spielen …“ nur in der Fläche `bar`.
+  Noch nicht: Gäste untereinander, Herausforderungen, Zuschauen. **Spielgerät:** `Item.Kind.BAR_GAME` mit Sorte in
+  `flavor` (`Item.BAR_GAMES`: karten, deckel, quiz, flasche – die Flasche passt nicht in die Tasche). **Spieleschrank**
+  `GameCabinet` (Gruppe `chests`, gespeichert wie eine Truhe; `holds` für `Social.is_in_closed_chest`) mit den vier
+  Spielen und einem zweiten Würfelbecher (`CONTENTS`). **Spielautomat** `SlotMachine` (Walzen als `Label3D`, Gewichte
+  in `SYMBOLS`, `payout`; Erwartungswert ≈ 0,69 je Geld; läuft alle 4–10 min von selbst an, wenn niemand davorsteht –
+  Gruppe `time_skip`; Lärm `slot`/`slot_win`). Spieleschrank aus dem Plan (Möbel „Spieleschrank“,
+  ohne Vorderseite: `_back_to_wall` stellt ihn mit dem Rücken an die nächste Wand), sonst `CABINET_FALLBACK`; der
+  Jackpot-Automat steht an `SLOT_FALLBACK` (Ecke oben rechts in der Bar). **Videoautomaten** `ArcadeMachine` (Möbel
+  „Videoautomat“, der Reihe nach `ARCADE_GAMES`: Deadra, Ghost Hotel – eigene Entwürfe statt Tetris und Pac-Man):
+  Gehäuse aus Grundkörpern, Leuchtschild als `Label3D`, Bildschirm = kleines `Image` (`SCREEN_PX`) auf einem
+  unbeleuchteten Quad, alle `TICK` s neu gemalt, nur in `AWAKE_RANGE` um den Spieler. Bisher nur die Vorführung
+  (Fünferformen fallen ins Feld 12 × 18; das Männchen läuft die äußere Flurrunde, Gespenster hinterher, rot nach
+  einer Laterne); spielbar noch nicht. **Bowlingbahn:** Flächen „Bowlingbahn“/„Foullinie“ im Grundriss
+  (`bowling_lane`/`foul_line`, die Linie darf schmal sein – `THIN_FILLS` in `build_map.py`), Boden `_lane_floor`
+  (Dielenfoto heller und glatter, `LANE_*`); Kugeln und Pins fehlen noch. Debug `--bargame=spiel[,gast]`, `--spieleschrank`, Test `bar_games_checks`,
+  Rauchtest `barspiele`.
 
 ### UI
 (`ui/`) `UiKit` = Meldezettel-Optik und schlichte Bausteine (`dark_panel`, `option_grid`, `flat_option`,

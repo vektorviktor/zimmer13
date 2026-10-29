@@ -128,6 +128,11 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   eigene Maske (Ruth Behrens) – SK 5.19 · GE. Dazu die Masken-Erfolge – SK 8.11.
 - Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche, Durchsagen, **Gruppenfoto** mit leeren Plätzen – SK 5.9 · HA M19.
 - Minispiele: Kürbis-Schnitz-Duell; Schach-Dame als Suche, Mühle, Turnier; Darts-Kreidetafel – SK 6.10.
+- Barspiele (28.10. gebaut: Schocken, Spielautomat, Armdrücken, Bierdeckel-Turm, Trinkduell, 17 und 4, Kneipenquiz,
+  Wahrheit oder Pflicht, Spieleschrank). Offen: **Billard, Kicker** (Nutzer zeichnet sie in die Karte); **Bowling**
+  (Bahn steht seit 28.10. im Plan, Kugeln/Pins/Spiel fehlen); **Videoautomaten** Deadra und Ghost Hotel stehen, zeigen
+  aber nur die Vorführung – spielbar machen, wenn Geld, Bestenliste und Lautstärke entschieden sind; Gäste spielen die neuen Spiele
+  untereinander, fordern dich heraus, Zuschauen; Werte nur headless geprüft – SK 6.10.
 
 **Welt**
 - Wetter, Rest: Wind an den Kerzen (Flamme geht im Garten bisher nach Regen aus; wie der Wind wirken soll, ist nicht

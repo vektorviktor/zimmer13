@@ -32,6 +32,7 @@ var dialog: DialogUI
 var dice: DiceMatch
 var chess: ChessMatch
 var darts: DartMatch               ## Darts an der Bar (Spielkonzept 6.10)
+var bar_games := {}                ## Barspiele am Würfeltisch: id → BarMatch (Spielkonzept 6.10, 28.10.)
 var menus: Menus
 var traces: Traces
 var phones: PhoneCalls
@@ -170,6 +171,7 @@ func reset() -> void:
 	dice = null
 	chess = null
 	darts = null
+	bar_games = {}
 	menus = null
 	traces = null
 	phones = null
@@ -203,9 +205,14 @@ func reset() -> void:
 	Senses.clear_cache()
 
 
-## Läuft gerade ein Spiel mit dem Spieler – Mäxchen, Schach oder Darts (auch allein)?
+## Läuft gerade ein Spiel mit dem Spieler – Mäxchen, Schach, Darts (auch allein) oder ein Barspiel?
 func table_game_active() -> bool:
-	return (dice != null and dice.active) or (chess != null and chess.active) or (darts != null and darts.active)
+	if (dice != null and dice.active) or (chess != null and chess.active) or (darts != null and darts.active):
+		return true
+	for game: BarMatch in bar_games.values():
+		if game.active:
+			return true
+	return false
 
 
 ## Meldung oben im Bild; icon: Symbol darüber (IconArt-Name, z. B. „dead“).

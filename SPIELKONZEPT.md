@@ -3669,6 +3669,31 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 > **Umfang (entschieden 2026-10-21):** Neben Mäxchen und Schach sind **Darts** (seit 25.10. umgesetzt, unten) und das
 > **Kürbis-Schnitz-Duell** als Nächstes vorgemerkt. Alles andere in dieser Tabelle und in den Ideen darunter (Möbel als Einsatz, Wettschulden,
 > Turniere …) ist **eingefroren** – eine Ideensammlung, nicht geplant.
+>
+> **Mehr Barspiele (entschieden 2026-10-28, Einzelheiten noch zu besprechen):** Aufgenommen werden **Kniffel,
+> Spielautomat, Armdrücken, Bierdeckel-Turm, Trinkduell, Wahrheit oder Pflicht, Kneipenquiz, Billard, Karten, Kicker
+> und Bowling**. Damit ist das Einfrieren für diese Spiele aufgehoben; Schnitz-Duell bleibt vorgemerkt.
+> **Abgelehnt:** Fünf-Finger-Filet (Messerspiel) – zu makaber, würde die Altersfreigabe hochtreiben.
+> **Kniffel → Schocken** (echte Schocken-Regeln: drei Würfel, Bierdeckel aus der Mitte; kein Markenname).
+> **Spieleschrank in der Bar:** Die kleinen Spiele (Karten, Bierdeckel, Quizkarten, Flasche …) liegen als normale
+> Gegenstände in einem Spieleschrank und werden dort herausgeholt – bis er im Plan steht, steht er wie die Dartscheibe
+> an einer festen Stelle in der Bar. **Billard, Kicker und Bowling** zeichnet der Nutzer später in die Karte ein; sie
+> werden erst danach gebaut.
+>
+> **Bar neu gezeichnet, Videoautomaten (entschieden 2026-10-28):** Im Plan stehen jetzt die **Bowlingbahn** (lange
+> blassbraune Strecke links, rote Linie = Foullinie, dahinter der Anlauf), der **Spieleschrank** (Ecke unten rechts)
+> und darüber blau mehrere **Videospielautomaten**. Darauf laufen zwei eigene Spiele – keine Markennamen, kein
+> Original-Aussehen (Tetris und Pac-Man sind geschützt: Name, Figuren, Feld, Labyrinth, Klänge; frei sind nur die Regeln):
+> - **Deadra** (Fallende-Teile-Spiel): **Fünferformen** statt Viererformen, aus Gespenstern, Kürbissen und
+>   Totenschädeln zusammengesetzt; Feld **12 breit, 18 hoch**. Volle Reihen verschwinden.
+> - **Ghost Hotel** (Labyrinth): Man ist ein kleines Männchen in einem Labyrinth aus **Hotelfluren** und sammelt
+>   **Kürbisse** statt Punkte. **Lakengespenster** jagen einen; wer eine **Laterne** aufsammelt, vertreibt sie – sie
+>   **blinken rot** und lassen sich verbannen, ihre Augen wandern zurück in den Startraum. Name auf dem Gerät
+>   englisch, Anzeigen deutsch. Nicht übernommen: Original-Labyrinth, Klänge, Geisternamen, Bonusfrüchte.
+>
+> Die beiden Videoautomaten stehen **zusätzlich** zum Jackpot-Automaten (einarmiger Bandit), der in die Ecke oben
+> rechts kommt; die Dartscheibe hängt in der **Nische neben der Bowlingbahn**, damit niemand Pfeile abbekommt.
+> Noch offen: ob eine Runde **Geld** kostet; **Bestenliste** mit Gästen; wie **laut** die Videoautomaten sind.
 
 | Spiel | Ort / Gegenstand | Besonderheit | Lärm |
 |-------|------------------|--------------|------|
@@ -3683,6 +3708,15 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 | **Gruselgeschichten-Runde** | Kamin in der Lobby | Reihum erzählen, beste Geschichte gewinnt. Starker Beziehungs-Bonus – aber **Gerede über Monster** lockt es an (4.7) | mittel |
 | **Ouija-Brett / Séance** | Dachboden, verschlossener Schrank | Hochriskant: liefert **echte Hinweise** (Ausgang, Monster, Story) – aber Dreistigkeit ↑↑. Halluzinationen möglich | leise, aber … |
 | **Mutprobe** | – (Dialog) | „Wer holt eine Spinnwebe aus dem Keller?“ Gewinner bekommt Einsatz + Respekt; beide Spieler sind in Gefahr | – |
+| **Kniffel** | Würfelbecher an der Bar | Fünf Würfel, Wertungsblock; mehrere Spieler an einem Tisch | laut |
+| **Spielautomat** | Bar | Allein, kostet Geld, Gewinne klimpern | laut |
+| **Armdrücken** | Würfeltisch / Stehtisch | Kraft gegen Schwäche (4.18); stolze Gäste wollen Revanche | mittel |
+| **Bierdeckel-Turm** | Theke | Ruhige Hand – Zittern (Kaffee, Schock, Rausch) macht es schwer; Einsturz = Lärm | leise → laut |
+| **Trinkduell** | Theke | Wer zuerst schwankt, verliert; hängt am Rausch (3.7) | mittel |
+| **Wahrheit oder Pflicht** | Flasche an der Bar | Wahrheit verrät Geheimnisse (6.9), Pflicht = Mutproben | mittel |
+| **Kneipenquiz** | Bar | Fragen zu Hotel und Gästen – Erkunden zahlt sich aus | mittel |
+| **Kicker** | Bar / Partyraum | Zwei gegen zwei möglich | laut |
+| **Bowling** | Bahn (Ort offen) | Kugel und Pins; langer Raum nötig | laut |
 | **Versteckspiel** | ganzes Stockwerk | Mit Gästen spielerisch Verstecke ausprobieren – bis man merkt, dass einer der Suchenden kein Gast ist | leise |
 
 **Spielerische Nebenwirkungen (Ideen)**
@@ -3722,6 +3756,23 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Monster:** Schach ist **leise** (kein Lärm), aber man sitzt konzentriert (Flackern/Rauschen schwächer sichtbar).
   Bei langem Flackern springt der Gast auf, die Einsätze bleiben liegen.
 - Noch offen: die fehlende Dame als Suche (Idee oben), Dame/Mühle auf der Rückseite, Schachturnier bei Feiern.
+
+**Umsetzungsstand (umgesetzt 2026-10-28): Barspiele und Spieleschrank** – „wie Mäxchen“
+- **Spieleschrank** an der Ostwand der Bar (bis er im Plan steht): Kartenspiel, Bierdeckel, Quizkarten, leere Flasche
+  und ein zweiter Würfelbecher liegen darin. Gespielt wird am **zweiten Würfeltisch** – ohne das Spiel am Tisch kein
+  Spiel. Gast einladen: „Ein Barspiel spielen …“ (nur in der Bar).
+- **Schocken** (drei Würfel, bis zu drei Würfe, eine Hälfte mit 13 Deckeln, Schock aus beendet sie; gezinkte Würfel
+  wie beim Mäxchen), **Armdrücken** (Taste 1 hämmern, Schwäche 4.18 drückt mit; Ellbogen heben = schummeln),
+  **Bierdeckel-Turm** (Wackelnadel, ruhige Hand; Zittern durch Rausch, Kaffee, Schock, Müdigkeit), **Trinkduell**
+  (echter Rausch 3.7, nach jedem Glas gerade stehen; nichts für Kinder), **17 und 4** (Skatblatt, Feuer; Karte aus
+  dem Ärmel), **Kneipenquiz** (halb Halloween-Wissen, halb Hotel: Zimmer, Vorlieben, Gästezahl – über sich weiß der
+  Gast alles), **Wahrheit oder Pflicht** (ohne Einsatz; Gäste erzählen, was sie gesehen haben; Pflichten: singen –
+  laut –, trinken, Münze, Witz; lügen kann auffliegen).
+- **Lust und Können** je Gast und Spiel fest aus dem Gast gewürfelt; Einsätze, Beziehung, absichtlich verlieren wie
+  bei Mäxchen. Abbruch bei Vorwarnung wie überall.
+- **Spielautomat** neben dem Schrank: 1 Geld, drei Gleiche zahlen (Siebenen 20), zwei Gleiche geben den Einsatz
+  zurück, drei Augen starren nur – im Mittel kommen 0,69 je Geld zurück. Laut; läuft nachts ab und zu von selbst an.
+- Noch offen: Gäste spielen die neuen Spiele untereinander, Herausforderungen, Zuschauen; Billard, Kicker, Bowling.
 
 **Umsetzungsstand (entschieden und umgesetzt 2026-10-25): Darts in der Bar** – „wie Mäxchen und Schach“
 - **Ort:** Sisalscheibe nach Turniermaß an einer Wand der Bar (Bull 1,73 m hoch), schwarzer Ring drumherum,

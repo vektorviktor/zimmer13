@@ -1,6 +1,6 @@
 class_name DiceView
 extends Control
-## Zeichnet zwei Würfel (oder einen geschlossenen Becher).
+## Zeichnet zwei oder mehr Würfel (oder einen geschlossenen Becher) – Mäxchen zwei, Schocken drei.
 
 var dice: Array[int] = []
 var covered := true
@@ -22,11 +22,11 @@ func _draw() -> void:
 	var gap := 6.0
 	if covered or dice.size() < 2:
 		# Umgedrehter Becher
-		var cup := Rect2(Vector2(0, 0), Vector2(size_px * 2 + gap, size_px))
+		var cup := Rect2(Vector2(0, 0), Vector2(size_px * maxi(dice.size(), 2) + gap * (maxi(dice.size(), 2) - 1), size_px))
 		draw_rect(cup, Color(0.35, 0.18, 0.1))
 		draw_rect(Rect2(cup.position, Vector2(cup.size.x, 3)), Color(0.55, 0.32, 0.15))
 		return
-	for i in 2:
+	for i in dice.size():
 		var origin := Vector2(i * (size_px + gap), 0)
 		draw_rect(Rect2(origin, Vector2(size_px, size_px)), Color(0.92, 0.9, 0.84))
 		for pip in _pips(dice[i]):
