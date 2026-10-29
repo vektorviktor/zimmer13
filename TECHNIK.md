@@ -163,9 +163,12 @@ Schritte `step_carpet`/`step_tiles` (`Footsteps`), `door_open`, Totenglocke `chu
 **Vertäfelung** Wood067 (ambientCG, CC0, dunkle Nuss) in `assets/textures/Wood067/` (Farbe, Normal Map, Rauheit),
 Verschattung `assets/textures/wainscot_ao.png`, siehe 4 „Vertäfelung“.
 
-**Tapeten** `assets/textures/wallpaper_<variante>.png` (Kachel 3,5 × 0,875 m) + gemeinsame Höhenkarte
-`wallpaper_bump.png`, **Holz** (Leiste und Vertäfelung) `wainscot_<variante>.png` + `wainscot_bump.png`, siehe 8,
-„Optik“.
+**Tapeten** (`Mat.WALLPAPERS`): hochaufgelöste, nahtlose Kacheln – Farbe `assets/textures/wallpaper_<variante>.png`,
+Normal Map (OpenGL) und Rauheit je Muster `wallpaper_<muster>_normal.png` / `_rough.png`. Kachelbreite = Bahnbreite
+0,53 m, damit Muster und Bahnen zusammenpassen; empfohlen 1024 px auf 0,53 m (≈ 2000 px/m – aus 30 cm noch scharf),
+Höhe ein Rapport des Musters. Die Rautentapeten (Satin/Velours mit Fugen, 2 × 2 Rapporte) zeichnet
+`tools/build_wallpaper.py` (Blender wegen numpy). **Holz** (Leiste und gemalte Vertäfelung) `wainscot_<variante>.png`
++ `wainscot_bump.png`. Siehe 8, „Optik“.
 
 **Dorés „Die Zerstörung des Leviathan“** (`assets/textures/dore_leviathan.jpg`, Spielkonzept 4.32): Holzstich von
 1865, gemeinfrei (Wikimedia Commons, `File:Destruction_of_Leviathan.png`), auf 800 px Breite in Graustufen verkleinert.
@@ -2170,17 +2173,22 @@ Glocke, dafür eine Sammelmeldung.
 - **Tapete** = `Mat.wallpaper(wandhöhe, stockwerk, variante, holz)` mit `shaders/psx_wall.gdshader`: drei Bänder ab
   Stockwerksboden – Vertäfelung und Leiste unter `wandhöhe` aus dem Holzbild (`WALLPAPER_BASE`/`_FRIEZE`), dazwischen
   die Tapetenkachel; die gemalte Vertäfelung sieht man nur noch, wo keine modellierte davorsteht (Treppenhäuser,
-  Aufzüge); `Mat.wallpaper_split(a, b, normale)` für Wände zwischen zwei Räumen (Tapete und Holz je Seite).
-  Aus den Höhenkarten entstehen Oberflächentexturen: Normale aus dem Sprung zum Nachbar-Texel, Glanz je Graustufe
-  (`WALLPAPER_GLOSS`, für beide Bilder). Liest per `texelFetch` und filtert über `psx_smooth` von Hand.
+  Aufzüge); `Mat.wallpaper_split(a, b, normale)` für Wände zwischen zwei Räumen (Tapete, Kachel und Holz je Seite).
+  **Ohne PS1-Look** tastet der Shader die Tapetenkachel (`paper_tex`, `paper_normal`, `paper_rough`, `paper_tile` in
+  Metern) normal mit Mipmaps ab – `textureGrad` mit den Ableitungen ohne Bahnversatz, sonst flimmerte die Naht;
+  Glanz aus der Rauheit (`rough_matte`/`rough_gloss`). **Im PS1-Look** liest er Texel für Texel (`texelFetch`) aus
+  verkleinerten Kopien in der Dichte des Holzes (`Mat._paper`: `small`, `surface` mit Glanz aus der Rauheit); das Holz
+  ohne PS1-Look per Hand bilinear. Holzoberfläche aus der Höhenkarte: Normale aus dem Sprung zum Nachbar-Texel, Glanz
+  je Graustufe (`WALLPAPER_GLOSS`).
   **Bahnen** (gegen die Eintönigkeit langer Flure): die Tapete klebt in Bahnen von `strip_width` 0,53 m in Weltkoordinaten,
   jede mit fester Zufallszahl aus Bahn, Wandlage (`wall_key`, flach aus dem Vertex) und Stockwerk – Helligkeit
-  ±`strip_shade`, selten ausgeblichen (`strip_faded`) oder um 1–3 Texel versetzt angesetzt (`strip_shifted`). Ohne
+  ±`strip_shade`, selten ausgeblichen (`strip_faded`) oder um 1–4 cm versetzt angesetzt (`strip_shifted`). Ohne
   PS1-Look Nähte (unter einem Pixel nur anteilig dunkler, `fwidth`), ein Teil (`seam_loose`) gelöst: oben unter der
   Leiste oder über der Vertäfelung (`paper_bottom` 0,9 m) zum Ende hin offen, die Kante daneben gewölbt (Normale) mit heller Rückseite. Keine
   Speicherfelder, gleich nach jedem Laden.
-  Neue Farbvariante: Kachel als `wallpaper_<name>.png`, neues Holz als `wainscot_<name>.png` (gleicher Aufbau); neue
-  Höhenstufe → `WALLPAPER_GLOSS`. Flecken auf der Tapete sind offen (Spielkonzept 7.2).
+  Neue Tapete: Farbe als `wallpaper_<name>.png`, Normal Map und Rauheit als `wallpaper_<muster>_normal.png` /
+  `_rough.png` und eine Zeile in `Mat.WALLPAPERS` (Muster, Kachel in Metern); neues Holz als `wainscot_<name>.png`
+  (gleicher Aufbau), neue Höhenstufe → `WALLPAPER_GLOSS`. Flecken auf der Tapete sind offen (Spielkonzept 7.2).
 - **Geometrie** (`util/geo.gd`): `Geo.solid` (Kollisionskasten mit Mesh), `Geo.mesh` (nur Optik), `Geo.collider`
   (Kasten ohne Mesh), `Geo.box_part` (Mesh + Form an vorhandenem Körper), `Geo.add_surface` (eigene Flächen),
   `Geo.wall_mesh` (siehe 4 „Wände“), `Geo.grain_box`, `Geo.rounded_box`, `Geo.runner_mesh`.
