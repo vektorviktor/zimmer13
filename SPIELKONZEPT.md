@@ -4827,6 +4827,17 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
 > Das zählt nicht als Blutspur (4.13), echte Spuren bleiben eindeutig. Gespeichert wird, ob er schon fiel und wie viel
 > Rot noch zu sehen ist.
 >
+> **Umgesetzt (2026-10-28): Blutregen färbt die Welt, Böden werden nass, Rinnsale an den Scheiben.**
+> - Solange Blutregen fällt, ist der **Himmel rotbraun** wie bei Saharastaub (Wolken #dd7733, der Horizont glimmt), und
+>   **Blitze leuchten rot** (#ff1111) – am Himmel und im Licht. Das stützt die nüchterne Erklärung, ohne das Omen zu
+>   nehmen.
+> - **Jeder Regen macht den Boden draußen nass:** Rasen, Kies und Terrassen werden dunkler und glänzen (Stein am
+>   meisten, Rasen am wenigsten), danach trocknen sie wie die Scheiben ab. Beim Blutregen liegt ein **roter Film**
+>   darauf (#880808), auf Stein mit **rotem Glanz** (#ff2222), auch das Gras ist rot benetzt. Er trocknet mit ab –
+>   übrig bleiben nur die Pfützen (jetzt #a80808), damit echte Blutspuren draußen eindeutig bleiben.
+> - **Scheiben:** Statt vieler Punkte laufen vor allem Tropfen ruckweise hinab und ziehen einen Wasserfaden hinter
+>   sich, der in Perlen zerfällt; wo einer lief, sind die stehenden Tropfen weggewischt.
+>
 > **Umgesetzt (2026-10-28): Tiere als Klang und Regen auf den Dachfenstern.**
 > - **Tiere in der Ferne** (nur Klang, kein Lärm; draußen lauter, drinnen gedämpft, im Schlaf nicht): Ein **Waldkauz**
 >   ruft nachts (19–6 Uhr) aus dem Wald – ein langes „Huuu“, dann ein bebendes „hu-hu-huuu“, manchmal antwortet das

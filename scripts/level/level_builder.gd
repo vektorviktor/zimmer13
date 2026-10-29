@@ -45,6 +45,8 @@ const GRAVEL_TEX := "res://assets/textures/StoneWall_01/StoneWall_01_basecolor.j
 const GRAVEL_NORMAL := "res://assets/textures/StoneWall_01/StoneWall_01_normalOGL.jpg"
 const GRAVEL_METERS := 0.5
 const GRAVEL_NORMAL_STRENGTH := 2.0
+## So glatt werden Rasen, Stein (Terrasse, Balkon) und Kies, wenn sie ganz nass sind (Weather, 1 = Wasserfilm)
+const WET_GLOSS := Vector3(0.45, 1.0, 0.8)
 ## Außenwände des Hotels: Bruchsteinplatten mit Fugen (StoneFloor_02, Farbbild mit eingebackener AO + verstärkte
 ## Normal Map), Platten 20–40 cm
 const FACADE_TEX := "res://assets/textures/StoneFloor_02/StoneFloor_02_basecolor.jpg"
@@ -931,10 +933,14 @@ func _materials() -> void:
 	_pool_floor = Mat.photo(POOL_FLOOR_TEX, POOL_FLOOR_METERS, POOL_FLOOR_NORMAL, POOL_FLOOR_ROUGHNESS, POOL_FLOOR_SPECULAR)
 	_pool_floor.set_meta("floor", "tiles")
 	_pillar_stone = Mat.photo(PILLAR_TEX, PILLAR_METERS, "", PILLAR_ROUGHNESS, PILLAR_SPECULAR)
-	_grass = Mat.psx(Color(1, 1, 1), "grass", 1.0)
-	_stone = Mat.psx(Color(0.62, 0.57, 0.5), "concrete", 1.0)
-	_gravel = Mat.photo(GRAVEL_TEX, GRAVEL_METERS, GRAVEL_NORMAL)
+	# Böden draußen werden im Regen nass (Weather, wet_ground.gdshaderinc) – eigene Materialien, nicht geteilt
+	_grass = Mat.psx(Color(1, 1, 1), "grass", 1.0, Color.BLACK, 0.0, false)
+	_stone = Mat.psx(Color(0.62, 0.57, 0.5), "concrete", 1.0, Color.BLACK, 0.0, false)
+	_gravel = Mat.photo(GRAVEL_TEX, GRAVEL_METERS, GRAVEL_NORMAL).duplicate()
 	(_gravel as ShaderMaterial).set_shader_parameter("normal_strength", GRAVEL_NORMAL_STRENGTH)
+	Mat.wettable(_grass, WET_GLOSS.x)
+	Mat.wettable(_stone, WET_GLOSS.y)
+	Mat.wettable(_gravel, WET_GLOSS.z)
 	_ceramic = Mat.psx(Color(0.88, 0.88, 0.86))
 	_doormat = Mat.psx(Color(0.4, 0.3, 0.18))
 	# Untergeschoss (Spielkonzept 7.9): Wände aus Brettschalungsbeton, Boden und Decke einfach grau

@@ -1,8 +1,10 @@
 // PS1-Look für 3D-Oberflächen: Vertex-Snapping (wackelnde Polygone),
-// Nearest-Filter, kein Glanz. Optional Textur in Weltkoordinaten (für Wände/Böden).
+// Nearest-Filter, kein Glanz. Optional Textur in Weltkoordinaten (für Wände/Böden). Böden draußen werden im Regen
+// nass und glänzen (wet_ground.gdshaderinc) – mit Glanz rechnet nur ihre Abwandlung (Mat.wettable), sonst ohne.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_disabled;
 #include "res://shaders/psx_snap.gdshaderinc"
+#include "res://shaders/wet_ground.gdshaderinc"
 
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform sampler2D albedo_tex : source_color, filter_nearest, repeat_enable, hint_default_white;
@@ -16,6 +18,8 @@ uniform float emission_energy = 0.0;
 uniform float layer_pull = 0.0;
 // Helligkeit aus den Eckfarben des Meshs (z. B. Hecken: unten im Schatten dunkler)
 uniform bool use_vertex_color = false;
+// Einstellungen → Bild → Spiegelungen (1 = an)
+global uniform float reflections;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -48,7 +52,10 @@ void fragment() {
 	if (use_vertex_color) {
 		ALBEDO *= COLOR.rgb;
 	}
-	ROUGHNESS = 1.0;
-	SPECULAR = 0.0;
+	Wet w = wet_surface(ALBEDO, 1.0, 0.0, 0.0, reflections);
+	ALBEDO = w.albedo;
+	ROUGHNESS = w.roughness;
+	METALLIC = w.metallic;
+	SPECULAR = w.specular;
 	EMISSION = emission * emission_energy;
 }

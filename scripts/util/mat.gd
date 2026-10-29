@@ -39,6 +39,7 @@ const PLANK_DARKEN := 0.45
 
 static var _shader: Shader
 static var _shader_two_sided: Shader
+static var _shader_wet: Shader
 static var _wall_shader: Shader
 static var _particle_shader: Shader
 static var _leaves_shader: Shader
@@ -73,6 +74,18 @@ static func psx(color: Color, tex_id: String = "", tex_scale: float = 1.0, emiss
 	if shared:
 		_cache[key] = m
 	return m
+
+
+## Boden draußen, der im Regen nass wird (Weather, shaders/wet_ground.gdshaderinc): gloss = so glatt, wenn ganz nass.
+## psx_surface rechnet sonst keinen Glanz – solche Flächen bekommen eine Abwandlung mit Glanz.
+static func wettable(m: ShaderMaterial, gloss: float) -> void:
+	if m.shader == _shader:
+		if _shader_wet == null:
+			_shader_wet = Shader.new()
+			_shader_wet.code = _shader.code.replace("specular_disabled", "specular_schlick_ggx")
+		m.shader = _shader_wet
+	m.set_shader_parameter("wettable", true)
+	m.set_shader_parameter("wet_gloss", gloss)
 
 
 ## PSX-Material mit der Farbtextur aus einer importierten GLB – eins pro Textur der Modelldatei

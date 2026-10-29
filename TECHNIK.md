@@ -1730,6 +1730,16 @@ Spielkonzept 2.5)
   **Scheiben:** `wet` folgt `intensity` (`WET_RATE`, trocknet in `DRY_TIME`); jedes klare Außenfenster hat vor dem Glas
   eine Fläche mit `shaders/window_rain.gdshader` (Gruppe `rain_panes`, nur sichtbar, solange nass; `render_priority` 1
   wegen des Glases). Muster in Metern auf der Scheibe, je Fenster verschoben; Brechung über `hint_screen_texture`.
+  Senkrecht prägen die Rinnsale das Bild (`running_drops`, Anteil `run_share` der Spalten `run_width`): Kopf ruckweise,
+  dahinter die Spur nach ihrem Alter (`fract(pos − Höhe)/speed`) – bis `film_life` ein durchgehender Faden, danach
+  Perlen bis `trail_life`; wo sie ist, sind die stehenden Tropfen weggewischt (Rückgabe `w`). Spalten in der Höhe
+  versetzt, sonst lägen alle Nahtstellen (`run_height`) gleich hoch.
+  **Nasser Boden:** Rasen, Kies und Stein draußen (`LevelBuilder`: `_grass`, `_gravel`, `_stone`, eigene Materialien)
+  meldet `Mat.wettable(mat, glanz)` an (`WET_GLOSS`; bei `psx_surface` eine Abwandlung mit `specular_schlick_ggx`,
+  sonst rechnet er keinen Glanz). `shaders/wet_ground.gdshaderinc` (in `psx_surface` und `psx_photo`) liest `rain_wet`
+  und `rain_blood`: dunkler, ohne PS1-Look glatt mit etwas Metallic (sonst sähe SSR nichts); beim Blutregen ein Hauch roter
+  Film (#880808, höchstens ~8 %), auf glattem Stein Glanz in #ff2222 (Metallic mit Glanzfarbe als Albedo, so bleibt die Grundfarbe
+  etwa der Film). Gras (`grass.gdshader`) wird mit nass und rot.
   Die Fläche baut `HotelWindow.rain_drops(parent, quad, offset)` – auch für die Dachfenster (`LevelBuilder._roof_window`,
   knapp über dem Glas). Der Shader liest die Neigung aus der Modellmatrix (`steep`: lokal +Y = bergauf, senkrecht 1):
   Rinnsale laufen entlang lokal −Y, auf schrägem Glas seltener und langsamer (flach keine), dafür mehr, rundere und
@@ -1751,10 +1761,12 @@ Spielkonzept 2.5)
   erst nach `GONE`. `_update_flash` zeigt sie in der ersten Zuckung, danach weg. Schock `SHOCK`. Gestalt aus
   Grundkörpern. `--shot-on=figure`.
   **Blutregen** (Seltenwetter): `set_weather(kind, instant, blood)`; der Zeitplan fragt `_blood_due()` (einmal je Spiel,
-  `BLOOD_FROM`…`BLOOD_SURE`, nur wenn `_player_sees_rain()`). `_blood` gilt bis zum nächsten Schauer: globale
-  `rain_blood` (Tropfen färben das Bild), Regenfarbe (`_tint_rain`, auch nach `_set_drops`). `stain` (0 … 1) steigt mit
+  `BLOOD_FROM`…`BLOOD_SURE`, nur wenn `_player_sees_rain()`). `_blood` gilt bis zum nächsten Schauer; `_blood_amount`
+  folgt ihm weich (`BLOOD_FADE`) → globale `rain_blood` (Tropfen färben das Bild, Boden rot), Himmel `blood`
+  (× `intensity`: Wolken #dd7733, Horizont glimmt, Blitz #ff1111 – auch das Blitzlicht `BLOOD_FLASH`), Regenfarbe
+  (`_tint_rain`, auch nach `_set_drops`). `stain` (0 … 1) steigt mit
   `wet`, normaler Regen wäscht es ab (`BLOOD_WASH`): globale `pane_stain` (eingetrocknete Flecken im Scheiben-Shader,
-  die Scheiben bleiben dafür sichtbar, `panes_wet`) und rötliche Pfützen (`Decal`, `PUDDLES` feste Stellen aus der
+  die Scheiben bleiben dafür sichtbar, `panes_wet`) und rötliche Pfützen (#a80808, `Decal`, `PUDDLES` feste Stellen aus der
   Dach-Höhenkarte, nur ebener Boden draußen, erst bei Bedarf gebaut). Gäste: `_blood_reactions` (Angst, Sätze, der
   Mutigste erklärt). Gespeichert bei den Omen (`SaveManager._collect_omens`, Schlüssel „weather“: `blood_done`, `stain`).
 - **Gras** (`world/grass.gd`, `shaders/grass.gdshader`): nur ohne PS1-Look (`visible = not Settings.psx_look`). Nach
