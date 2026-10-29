@@ -76,6 +76,7 @@ Gemeinsame Regeln:
 | `crowbar.glb` | Item `CROWBAR` | `build_crowbar.py`, Sketchfab (SketchyBot, Standard-Lizenz) | hängt unter `_swing`, damit `_apply_held_pose` es aufrichtet |
 | `matchbox.glb` | Item `MATCHBOX` | `build_matchbox.py`, Sketchfab (Freepoly.org, CC-BY) | liegt flach |
 | `bulb.glb` | `Lamp.build_bulb`, Item `BULB` | `build_bulb.py`, Sketchfab (Mirai, CC-BY) | `glass` bekommt Lampenmaterial bzw. Glasfarbe; an der Decke kopfüber, `BULB_SCREWED_IN` in der Fassung |
+| `wainscot.glb` + `textures/wainscot_ao.png` | Vertäfelung, `Wainscot` (`LevelBuilder._wainscot`) | `build_wainscot.py`, kein Ausgangsmodell | drei 0,8-m-Module `panel`/`plain`/`low`; Atlas der gebackenen Verschattung über UV2 (Stirnseiten auf eine weiße Ecke); nach Änderungen an Maßen `Wainscot.MODULE`/`HEIGHT` nachziehen; siehe 4 „Vertäfelung“ |
 | `wall_lamp.glb` | `Lamp._build_wall` | Blender-Modell ohne Bauskript | `WALL_SCALE`; Kugel leuchtet mit dem Material der Birne, die Birne ist ein leerer Knoten (herausdrehen geht wie sonst); Licht `WALL_LIGHT` vor der Wand – sonst zeichnet die Leuchte einen Schattenkeil an die Wand |
 | `mug.glb` | `Item.build_cup` (Kaffee, Tee, Tabletts) | `build_mug.py`, Sketchfab (Ole Gunnar Isager, CC-BY) | Oberflächen `coffee`/`tea`, `build_cup` entfernt die ungenutzte; Tassen auf dem Tablett quer, Henkel zu den Gästen |
 | `candle.glb`, `candle_flame.glb` | `CandleModel` (Item `CANDLE`, `FixedCandle`, Vorrat in `ResourceSpot`) | `build_candle.py` aus drei Sketchfab-Modellen (Kerze, Teller CC-BY; Flamme **CC-BY-SA**) | Flamme: 100 Formschlüssel → `CandleModel._load` macht 100 Netze, `CandleFlame` tauscht mit `FPS` das Netz (keine Blend-Shapes, kein AnimationPlayer je Kerze), steht immer senkrecht (auch an gekippter oder liegender Kerze), `FLAME_WIDEN` breiter als das Netz. Farbe aus `shaders/candle_flame.gdshader`, auf das Bild ohne PS1-Look ausgelegt (Vorbild Kerzenfoto): additiv in HDR – Kern `core_energy` wird unter Filmic weiß, Hülle gelb → orange zu Spitze und Rand, Fuß schwach blau mit violettem Übergang, innen dunkel; Lichthof-Billboard (`halo`, `HALO_SIZE`) in zwei Stufen, `halo_pull` zur Kamera gezogen (steckt nicht in der Kerze) und weich vor Flächen dahinter (Tiefentextur, `halo_soft`). **Wachs:** eigener Shader `shaders/candle_wax.gdshader` (in `PSX_SHADERS`) – Licht greift herum (`wrap`), schimmert durch (`scatter`), matter Glanz; `instance uniform glow` lässt das Wachs unter der Flamme glühen (`glow_depth`), `CandleFlame` setzt es bei jeder Sichtbarkeitsänderung (Wachs als Meta „candle_wax“ am Elternknoten aus `build`). Nahaufnahme: `--kerzen=nah`. `candle_red` noch ungenutzt |
@@ -152,7 +153,11 @@ Schritte `step_carpet`/`step_tiles` (`Footsteps`), `door_open`, Totenglocke `chu
 (`PumpkinMan.HIT_SOUND`), Vorspann `splash_wave` (`SlideShow`), Schreie in `screams/` (`SynthAudio.VOICES`, siehe 2).
 
 ### Texturen
-**Tapeten** `assets/textures/wallpaper_<variante>.png` + gemeinsame Höhenkarte `wallpaper_bump.png`, siehe 8,
+**Vertäfelung** Wood067 (ambientCG, CC0, dunkle Nuss) in `assets/textures/Wood067/` (Farbe, Normal Map, Rauheit),
+Verschattung `assets/textures/wainscot_ao.png`, siehe 4 „Vertäfelung“.
+
+**Tapeten** `assets/textures/wallpaper_<variante>.png` (Kachel 3,5 × 0,875 m) + gemeinsame Höhenkarte
+`wallpaper_bump.png`, **Holz** (Leiste und Vertäfelung) `wainscot_<variante>.png` + `wainscot_bump.png`, siehe 8,
 „Optik“.
 
 **Dorés „Die Zerstörung des Leviathan“** (`assets/textures/dore_leviathan.jpg`, Spielkonzept 4.32): Holzstich von
@@ -170,6 +175,9 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
   Shader-Global `reflections`, das `metallic` mit ausschaltet – sonst wäre der Boden ohne SSR nur dunkler): spiegelt
   nur, was im Bild ist, und rechnet für Nichtmetalle fest mit 4 % – `specular` ändert daran nichts. Sichtbarer wird
   sie über `metallic` und `roughness_scale`. Das Environment spiegelt nichts (kein Himmel in Tapete und Fliesen).
+- **Gebackene Verschattung** (`ao_tex`, `use_ao`): multipliziert die Grundfarbe über UV2 – wirkt auch im Lampenlicht.
+  Bisher nur die Vertäfelung (`Mat.wainscot`, dort auch `instance_shift`: INSTANCE_CUSTOM verschiebt und streckt die
+  Holz-UVs je MultiMesh-Instanz).
 - **Nicht genutzt:** AO-Karten (wirken in Godot nur aufs Umgebungslicht, das im Hotel fast null ist), Metallic-Karten,
   Height/Parallax.
 - **Böden mit Fototextur** nennen `Footsteps.floor_under` ihre Bodenart per `set_meta("floor", …)` (Lobby
@@ -507,6 +515,18 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   blitzte ihre Tapete durch. Wechselt die Tapete an einer anstoßenden Wand, liegt der Schnitt in deren Mitte
   (`_joints_on`). **Holzpfeiler** (`_corner_posts`, reine Optik) fassen jeden freien Wandkopf ein, an dem zwei Tapeten
   zusammenkommen – kein Eintrag im Plan nötig.
+- **Vertäfelung** (`level/wainscot.gd`, Spielkonzept 7.2, entschieden 29.10.): Sockelleiste, Brett mit Rahmenfeldern und
+  Brüstungsleiste bis 0,9 m (`Wainscot.HEIGHT`), modelliert als Bausatz (`tools/build_wainscot.py`). `_build_wall` merkt
+  jede Wandseite mit Tapete (`_note_wainscot`; nicht Treppenhaus, Aufzug, verschlossene Zimmer, Lufträume über dem EG),
+  `_wainscot` zieht nach den Holzpfeilern ab, was sie unterbricht – anstoßende und durchlaufende Wände
+  (`_wainscot_blocks`), Türen bis 1 cm unter die Außenkante der Bekleidung, Holzpfeiler (`_post_spans`) –, unter
+  Fenstern (Brüstung 0,9 m) kommt `low` ohne Leiste (dort sitzen Bank und Schürze). Je freies Stück **festes Raster**:
+  so viele 0,8-m-Felder wie passen, mittig, der Rest als gestrecktes Passstück `plain` an beiden Enden (bis 3 cm je Ende
+  strecken stattdessen die Felder). Alles als MultiMesh je 16-m-Zelle, ohne Schatten; Holz Wood067 über die Mesh-UVs,
+  je Instanz ein anderer Ausschnitt, gestreckte Teile mit unverzerrter Faser (INSTANCE_CUSTOM). Ein dünner
+  Kollisionskasten je Stück (bis 12 mm vor der Wand, ein Körper je Stockwerk mit Meta „wainscot“): Flecken, Eier und
+  Deko landen auf dem Brett; das Rinnsal eines Wandflecks läuft darunter vor der Brüstungsleiste (`RAIL_FRONT`,
+  `TraceMark._spread_wall`). Achtung `Vector4` rechnet in 32 Bit – die Brüstung 0,9 kommt als 0,8999… an.
 - **Böden** (`_floor`): ein `Geo.solid` je Planrechteck, Textur in Weltkoordinaten (das Muster läuft über die Stöße).
   Ein Flurrechteck, das in die Lobby ragt, wird an deren Rand geteilt. Verschlossene Zimmer haben einen Boden auf der
   Ebene der Decken (5) – nicht im NavMesh, sonst planten Gäste und Monster Wege durch gesperrte Türen. Unter jeder
@@ -2099,12 +2119,20 @@ Glocke, dafür eine Sammelmeldung.
   `sky_time` (steht in der Pause, `TIME` liefe weiter); Hash ohne Sinus, damit lange Laufzeiten nicht flimmern. Der
   Himmel leuchtet nichts aus: `reflected_light_source` aus (sonst spiegelte er sich in Tapete und Fliesen),
   `fog_sky_affect` 0.
-- **Tapete** = `Mat.wallpaper(wandhöhe, stockwerk, variante)` mit `shaders/psx_wall.gdshader`: Bild in drei Bändern
-  ab Stockwerksboden (Vertäfelung, Rauten, Leiste unter `wandhöhe`); `Mat.wallpaper_split(a, b, normale)` für Wände
-  zwischen zwei Räumen. Aus der Höhenkarte entsteht eine Oberflächentextur: Normale aus dem Sprung zum Nachbar-Texel,
-  Glanz je Graustufe (`WALLPAPER_GLOSS`). Die Tapete liest per `texelFetch` und filtert über `psx_smooth` von Hand.
-  Neue Farbvariante: Bild mit gleichem Aufbau als `wallpaper_<name>.png`; neue Höhenstufe → `WALLPAPER_GLOSS`. Flecken
-  auf der Tapete sind offen (Spielkonzept 7.2).
+- **Tapete** = `Mat.wallpaper(wandhöhe, stockwerk, variante, holz)` mit `shaders/psx_wall.gdshader`: drei Bänder ab
+  Stockwerksboden – Vertäfelung und Leiste unter `wandhöhe` aus dem Holzbild (`WALLPAPER_BASE`/`_FRIEZE`), dazwischen
+  die Tapetenkachel; die gemalte Vertäfelung sieht man nur noch, wo keine modellierte davorsteht (Treppenhäuser,
+  Aufzüge); `Mat.wallpaper_split(a, b, normale)` für Wände zwischen zwei Räumen (Tapete und Holz je Seite).
+  Aus den Höhenkarten entstehen Oberflächentexturen: Normale aus dem Sprung zum Nachbar-Texel, Glanz je Graustufe
+  (`WALLPAPER_GLOSS`, für beide Bilder). Liest per `texelFetch` und filtert über `psx_smooth` von Hand.
+  **Bahnen** (gegen die Eintönigkeit langer Flure): die Tapete klebt in Bahnen von `strip_width` 0,53 m in Weltkoordinaten,
+  jede mit fester Zufallszahl aus Bahn, Wandlage (`wall_key`, flach aus dem Vertex) und Stockwerk – Helligkeit
+  ±`strip_shade`, selten ausgeblichen (`strip_faded`) oder um 1–3 Texel versetzt angesetzt (`strip_shifted`). Ohne
+  PS1-Look Nähte (unter einem Pixel nur anteilig dunkler, `fwidth`), ein Teil (`seam_loose`) gelöst: oben unter der
+  Leiste oder über der Vertäfelung (`paper_bottom` 0,9 m) zum Ende hin offen, die Kante daneben gewölbt (Normale) mit heller Rückseite. Keine
+  Speicherfelder, gleich nach jedem Laden.
+  Neue Farbvariante: Kachel als `wallpaper_<name>.png`, neues Holz als `wainscot_<name>.png` (gleicher Aufbau); neue
+  Höhenstufe → `WALLPAPER_GLOSS`. Flecken auf der Tapete sind offen (Spielkonzept 7.2).
 - **Geometrie** (`util/geo.gd`): `Geo.solid` (Kollisionskasten mit Mesh), `Geo.mesh` (nur Optik), `Geo.collider`
   (Kasten ohne Mesh), `Geo.box_part` (Mesh + Form an vorhandenem Körper), `Geo.add_surface` (eigene Flächen),
   `Geo.wall_mesh` (siehe 4 „Wände“), `Geo.grain_box`, `Geo.rounded_box`, `Geo.runner_mesh`.

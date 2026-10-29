@@ -2,18 +2,20 @@ class_name Mat
 ## Materialien im PS1-Stil (Vertex-Snapping, Nearest-Filter, kein Glanz – außer auf der Tapete).
 
 # --- Tuning
-## Tapete: Farbbild je Variante (%s = teal, red …) und eine gemeinsame Höhenkarte (gleich groß,
-## pixelgenau übereinander), im Spiel auf diese Kantenlänge verkleinert (PS1-Look) und über so
-## viele Meter Wand gespannt
+## Tapete: Farbbild je Variante (%s = teal, red …) als Kachel, die sich in beide Richtungen wiederholt, und eine
+## gemeinsame Höhenkarte (gleich groß, pixelgenau übereinander). Das Holz (Leiste unter der Decke, Vertäfelung) ist ein
+## eigenes Bild je Variante (oak …) mit eigener Höhenkarte, gleich breit. Alle im Spiel auf diese Breite verkleinert
+## (PS1-Look, Höhe im selben Verhältnis) und über so viele Meter Wand gespannt
 const WALLPAPER_PATH := "res://assets/textures/wallpaper_%s.png"
 const WALLPAPER_BUMP_PATH := "res://assets/textures/wallpaper_bump.png"
+const WAINSCOT_PATH := "res://assets/textures/wainscot_%s.png"
+const WAINSCOT_BUMP_PATH := "res://assets/textures/wainscot_bump.png"
 const WALLPAPER_SRC_SIZE := 512
 const WALLPAPER_SIZE := 256
 const WALLPAPER_METERS := 3.5
-## Bänder im Quellbild als Pixelzeilen [von, bis): Leiste, eine Wiederholung der Rauten, Vertäfelung
+## Bänder im Holzbild als Pixelzeilen [von, bis): Leiste, Vertäfelung
 const WALLPAPER_FRIEZE := Vector2(0, 12)
-const WALLPAPER_FIELD := Vector2(20, 148)
-const WALLPAPER_BASE := Vector2(404, 512)
+const WALLPAPER_BASE := Vector2(20, 128)
 ## Glanz je Graustufe der Höhenkarte (0 = stumpf, 1 = Lack); fremde Stufen nehmen die nächste
 const WALLPAPER_GLOSS := {
 	0: 0.0,      # Fugen zwischen den Rauten
@@ -31,6 +33,15 @@ const PHOTO_SIZE_SMOOTH := 1024
 ## Holz für Mat.wood (Balkenbett): helle Eiche, AO × 0,6 eingebacken
 const WOOD_TEX := "res://assets/textures/Wood_02/Wood02_basecolor.jpg"
 const WOOD_NORMAL := "res://assets/textures/Wood_02/Wood02_normalOgl.jpg"
+## Vertäfelung (Spielkonzept 7.2): Wood067 (ambientCG, CC0, dunkle Nuss, Faser waagerecht) über die Mesh-UVs, so viele
+## Meter je Kachel, aufgehellt, seidenmatt; dazu die gebackene Verschattung aus tools/build_wainscot.py
+const WAINSCOT_TEX := "res://assets/textures/Wood067/Wood067_2K-JPG_Color.jpg"
+const WAINSCOT_NORMAL := "res://assets/textures/Wood067/Wood067_2K-JPG_NormalGL.jpg"
+const WAINSCOT_ROUGH := "res://assets/textures/Wood067/Wood067_2K-JPG_Roughness.jpg"
+const WAINSCOT_AO := "res://assets/textures/wainscot_ao.png"
+const WAINSCOT_METERS := 0.6
+const WAINSCOT_TINT := Color(1.3, 1.25, 1.2)
+const WAINSCOT_GLOSS := 0.5
 ## Bohlen (Mat.planks): eine Kachel über so viele Meter, so viele Bretter darin, Fugenbreite in Texeln, Abdunklung
 const PLANK_METERS := 2.0
 const PLANK_ROWS := 8
@@ -45,6 +56,7 @@ static var _leaves_shader: Shader
 static var _decal_shader: Shader
 static var _wall_albedo := {}
 static var _wall_surface: ImageTexture
+static var _wood_surface: ImageTexture
 static var _cache := {}
 static var _photos: Array[ShaderMaterial] = []
 static var _photo_shader: Shader
@@ -246,24 +258,28 @@ static func particle(tex: Texture2D = null, glow: float = 0.0, frames: int = 1) 
 
 
 ## Hoteltapete mit Vertäfelung und Glanz (Spielkonzept 7.2). wall_top = Wandhöhe (Leiste darunter),
-## storey = Stockwerkshöhe, ab deren Vielfachen die Vertäfelung neu beginnt; variant = Farbbild.
-static func wallpaper(wall_top: float, storey: float, variant: String = "teal") -> ShaderMaterial:
-	var key := "wallpaper|%s|%.2f|%.2f" % [variant, wall_top, storey]
+## storey = Stockwerkshöhe, ab deren Vielfachen die Vertäfelung neu beginnt; variant = Tapete, wood = Holz.
+static func wallpaper(wall_top: float, storey: float, variant: String = "teal", wood: String = "oak") -> ShaderMaterial:
+	var key := "wallpaper|%s|%s|%.2f|%.2f" % [variant, wood, wall_top, storey]
 	if _cache.has(key):
 		return _cache[key]
 	if _wall_shader == null:
 		_wall_shader = load("res://shaders/psx_wall.gdshader")
-		_build_wall_surface()
+		_wall_surface = _wall_surface_from(WALLPAPER_BUMP_PATH)
+		_wood_surface = _wall_surface_from(WAINSCOT_BUMP_PATH)
 	if not _wall_albedo.has(variant):
-		_wall_albedo[variant] = _load_wall_albedo(variant)
+		_wall_albedo[variant] = _load_wall_albedo(WALLPAPER_PATH % variant)
+	if not _wall_albedo.has("wood:" + wood):
+		_wall_albedo["wood:" + wood] = _load_wall_albedo(WAINSCOT_PATH % wood)
 	var m := ShaderMaterial.new()
 	m.shader = _wall_shader
 	m.set_shader_parameter("albedo_tex", _wall_albedo[variant])
 	m.set_shader_parameter("surface_tex", _wall_surface)
+	m.set_shader_parameter("wood_tex", _wall_albedo["wood:" + wood])
+	m.set_shader_parameter("wood_surface_tex", _wood_surface)
 	m.set_shader_parameter("texels_per_m", WALLPAPER_SIZE / WALLPAPER_METERS)
 	var s := WALLPAPER_SIZE / float(WALLPAPER_SRC_SIZE)
 	m.set_shader_parameter("frieze_rows", WALLPAPER_FRIEZE * s)
-	m.set_shader_parameter("field_rows", WALLPAPER_FIELD * s)
 	m.set_shader_parameter("base_rows", WALLPAPER_BASE * s)
 	m.set_shader_parameter("wall_top", wall_top)
 	m.set_shader_parameter("storey", storey)
@@ -278,33 +294,36 @@ static func wallpaper_split(a: ShaderMaterial, b: ShaderMaterial, b_normal: Vect
 		var m := a.duplicate() as ShaderMaterial
 		m.set_shader_parameter("side_b_normal", b_normal)
 		m.set_shader_parameter("albedo_tex_b", b.get_shader_parameter("albedo_tex"))
+		m.set_shader_parameter("wood_tex_b", b.get_shader_parameter("wood_tex"))
 		m.set_shader_parameter("wall_top_b", b.get_shader_parameter("wall_top"))
 		m.set_shader_parameter("storey_b", b.get_shader_parameter("storey"))
 		_cache[key] = m
 	return _cache[key]
 
 
-## Farbbild der Variante, verkleinert.
-static func _load_wall_albedo(variant: String) -> ImageTexture:
-	var img := (load(WALLPAPER_PATH % variant) as Texture2D).get_image()
+## Farbbild (Tapete oder Holz), verkleinert.
+static func _load_wall_albedo(path: String) -> ImageTexture:
+	var img := (load(path) as Texture2D).get_image()
 	img.decompress()
 	img.convert(Image.FORMAT_RGB8)
-	img.resize(WALLPAPER_SIZE, WALLPAPER_SIZE, Image.INTERPOLATE_BILINEAR)
+	var s := WALLPAPER_SIZE / float(WALLPAPER_SRC_SIZE)
+	img.resize(WALLPAPER_SIZE, roundi(img.get_height() * s), Image.INTERPOLATE_BILINEAR)
 	return ImageTexture.create_from_image(img)
 
 
-## Oberfläche aus der Höhenkarte: R = Höhe, G = Glanz der Stufe.
-static func _build_wall_surface() -> void:
-	var bump := (load(WALLPAPER_BUMP_PATH) as Texture2D).get_image()
+## Oberfläche aus einer Höhenkarte: R = Höhe, G = Glanz der Stufe.
+static func _wall_surface_from(path: String) -> ImageTexture:
+	var bump := (load(path) as Texture2D).get_image()
 	bump.decompress()
 	bump.convert(Image.FORMAT_L8)
-	bump.resize(WALLPAPER_SIZE, WALLPAPER_SIZE, Image.INTERPOLATE_NEAREST)
-	var surf := Image.create(WALLPAPER_SIZE, WALLPAPER_SIZE, false, Image.FORMAT_RG8)
-	for y in WALLPAPER_SIZE:
-		for x in WALLPAPER_SIZE:
+	var s := WALLPAPER_SIZE / float(WALLPAPER_SRC_SIZE)
+	bump.resize(WALLPAPER_SIZE, roundi(bump.get_height() * s), Image.INTERPOLATE_NEAREST)
+	var surf := Image.create(bump.get_width(), bump.get_height(), false, Image.FORMAT_RG8)
+	for y in bump.get_height():
+		for x in bump.get_width():
 			var level := bump.get_pixel(x, y).r8
 			surf.set_pixel(x, y, Color(level / 255.0, _gloss_for(level), 0.0))
-	_wall_surface = ImageTexture.create_from_image(surf)
+	return ImageTexture.create_from_image(surf)
 
 
 ## Glanz der nächstgelegenen Stufe aus WALLPAPER_GLOSS.
@@ -328,6 +347,19 @@ static func wood(end: bool, tint: Color = Color(1, 1, 1)) -> ShaderMaterial:
 		m.set_shader_parameter("albedo_tex", TexGen.get_tex("wood_end"))
 		_cache[key] = m
 	return _cache[key]
+
+
+## Holz der Vertäfelung (LevelBuilder._wainscot): Wood067 über die UVs des Bausatzes, gebackene Verschattung über UV2.
+static func wainscot() -> ShaderMaterial:
+	if not _cache.has("wainscot"):
+		var m := photo(WAINSCOT_TEX, WAINSCOT_METERS, WAINSCOT_NORMAL, WAINSCOT_ROUGH, WAINSCOT_GLOSS, WAINSCOT_TINT,
+			false, true).duplicate() as ShaderMaterial
+		m.set_shader_parameter("ao_tex", load(WAINSCOT_AO))
+		m.set_shader_parameter("use_ao", true)
+		m.set_shader_parameter("instance_shift", true)
+		_photos.append(m)
+		_cache["wainscot"] = m
+	return _cache["wainscot"]
 
 
 ## Grobe Bohlen (Dachboden, Spielkonzept 4.21): aus dem Längsholz von Wood_02 zusammengesetzt, eine Kachel über

@@ -418,12 +418,19 @@ func _spread_wall() -> void:
 		var w := rng.randf_range(widths.x, widths.y) * sqrt(k)
 		var top := -size * 0.2
 		var x := rng.randf_range(-0.15, 0.15) * size
+		# Vertäfelung darunter (Wainscot): unterhalb ihrer Oberkante läuft der Strom vor der Brüstungsleiste her
+		var panel_z := 0.0
+		var probe := global_position + Vector3.UP * (Wainscot.HEIGHT / 2.0 - drop) + global_basis.x * x
+		var panel := space.intersect_ray(PhysicsRayQueryParameters3D.create(probe + out * 0.1, probe - out * 0.1, 1))
+		if not panel.is_empty() and (panel["collider"] as Object).has_meta("wainscot"):
+			panel_z = ((panel["position"] as Vector3) - global_position).dot(out) + Wainscot.RAIL_FRONT - Wainscot.FRONT
 		var i := 0
 		while top > -drop and i < 200:
 			var side := minf(w * rng.randf_range(0.9, 1.1), top + drop)   # das letzte Stück endet am Boden
 			var piece := Geo.mesh(self, _runner_plane, mat, Vector3.ZERO)
 			piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			piece.transform = Transform3D(Basis.from_scale(Vector3(side, side, 1.0)), Vector3(x, top, 0.0015 + i * 0.00002))
+			var z := panel_z if panel_z > 0.0 and top + drop < Wainscot.HEIGHT + 0.005 else 0.0015
+			piece.transform = Transform3D(Basis.from_scale(Vector3(side, side, 1.0)), Vector3(x, top, z + i * 0.00002))
 			plan.append({"node": piece, "at": 0.1 + (-size * 0.2 - top) / speed, "time": STREAM_GROW, "down": true})
 			x += rng.randf_range(-0.004, 0.004)
 			top -= w * STREAM_SPACING

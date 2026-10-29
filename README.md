@@ -256,7 +256,7 @@ Der Kohlekessel im Heizkeller (`assets/models/boiler.glb`, Feuerklappe als eigen
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_boiler.py -- assets/source assets/models
 ```
 
-Die Fototexturen (PBR-Sets) sind von Julio Sillet ([JulioVII auf itch.io](https://juliovii.itch.io), CC-BY): `Concrete_WoodPattern_01` (Kellerwände), `TilesMarble_01` (Lobbyboden), `pool/Tiles_06` (Poolbecken; beige umgefärbt mit `tools/tint_tiles.gd` in den Bädern), `Stone_EngraveWall_01` (Wände der Poolhalle) `TilesBasic_01` (Umgang der Poolhalle), `TerrazzoDark_01` (Säulen der Lobby), `StoneWall_01` (Wege im Garten), `StoneFloor_02` (Außenwände) `Wood_Panels_01` (Holzdecken), `WoodenFloor_03` (Holzböden), `Wood_02` (Balkenbetten, helle Eiche) und `Fabric_Pattern_08` (Bettwäsche) – jeweils nur die genutzten Karten, verkleinert mit `tools/photo_set.gd` (TECHNIK.md, „Fototexturen“).
+Die Fototexturen (PBR-Sets) sind von Julio Sillet ([JulioVII auf itch.io](https://juliovii.itch.io), CC-BY): `Concrete_WoodPattern_01` (Kellerwände), `TilesMarble_01` (Lobbyboden), `pool/Tiles_06` (Poolbecken; beige umgefärbt mit `tools/tint_tiles.gd` in den Bädern), `Stone_EngraveWall_01` (Wände der Poolhalle) `TilesBasic_01` (Umgang der Poolhalle), `TerrazzoDark_01` (Säulen der Lobby), `StoneWall_01` (Wege im Garten), `StoneFloor_02` (Außenwände) `Wood_Panels_01` (Holzdecken), `WoodenFloor_03` (Holzböden), `Wood_02` (Balkenbetten, helle Eiche) und `Fabric_Pattern_08` (Bettwäsche) – jeweils nur die genutzten Karten, verkleinert mit `tools/photo_set.gd` (TECHNIK.md, „Fototexturen“). Das Holz der Wandvertäfelung ist `Wood067` von [ambientCG](https://ambientcg.com/view?id=Wood067) (CC0).
 
 Der Pflanzkübel (`assets/models/planter.glb`) kommt von Meshy:
 

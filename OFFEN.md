@@ -136,7 +136,7 @@ Reihenfolge wie im Durchlauf (HA 2, GE „Was die Hauptgeschichte braucht“). A
   muss dem modernen Attrappenkessel weichen; Kesselkatze (Ziel: heiße Rohre), Leviathan-Sichtung (an der Mauer statt
   hinter dem Kessel), Monster-Versteck (`spawn_points[0]`, `cellar_center()` → U2) und die Aufzugsanzeige („T“ → „U2“)
   ziehen nach – SK 7.4, 4.26, 4.32.
-- Flecken auf den Tapeten – SK 7.2.
+- Flecken auf den Tapeten – SK 7.2. Dazu (29.10.): Wand-Details als Decals (Nagellöcher, hellere Stellen alter Bilder, Wasserränder), Kabel als dünne Geometrie, weitere Tapetenmuster je Stockwerk; Türrahmen noch einfarbig neben der Nuss-Vertäfelung.
 
 **Menüs und Speichern**
 - **Speicherregel 8.10** gebaut (2026-10-28). Offen: zentrale Gäste für den Tagebuchsatz besetzen

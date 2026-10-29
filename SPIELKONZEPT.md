@@ -4460,6 +4460,14 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
   > **Offen (2026-10-20): Die Tapeten sollen wieder Flecken bekommen.** Die Flecken aus Rauschen im Wand-Shader
   > (Wasserränder, matter und etwas dunkler) gefielen nicht und sind vorerst raus; der abgegriffene Sockel bleibt.
   > Vermutlich braucht es eine manuelle Lösung (z. B. von Hand gemalte Flecken).
+  > **Entschieden (2026-10-29): Abwechslung an den Wänden.** Die Tapete klebt in Bahnen (0,53 m), jede weicht etwas
+  > ab – Helligkeit, selten ausgeblichen oder versetzt angesetzt, ohne PS1-Look sichtbare und teils gelöste Nähte;
+  > fest nach dem Platz, nicht zufällig je Spiel. Die **Vertäfelung ist modelliert**: Sockelleiste, Brüstungsleiste
+  > auf 0,9 m, dazwischen Rahmenleisten auf einem Brett, dunkle Nuss (Wood067), Ecken gebacken abgedunkelt; überall
+  > wo Tapete ist (außer Treppenhäusern und Aufzügen), im festen Raster von 0,8 m je Wandstück, mittig, mit
+  > Passstücken an den Enden; unter Fenstern ohne Brüstungsleiste. Als Nächstes vorgesehen: kleine Details als
+  > Decals (Flecken, Nagellöcher, hellere Stellen alter Bilder), Kabel als dünne Geometrie, weitere Tapetenmuster je
+  > Stockwerk.
 - **Eingeschlossen:** Ausgänge verriegelt – das Hotel ist ab dem 1. Oktober verschlossen (2.3); harmlos erklärt durch
   die Hausordnung (2.5).
 
