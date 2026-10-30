@@ -2,11 +2,9 @@
 // schlagen die Flügel um die Schulter (|x| = shoulder) wie bei den Fledermäusen (psx_bat). INSTANCE_CUSTOM.x = Phase des
 // Flügelschlags (rechnet das Skript, steht in der Pause), .y = angelegt (0 fliegt, 1 sitzt mit angelegten Flügeln),
 // .z = Kopf nicken (Picken, −1 … 1). Eckfarbe r = Anteil Kopf (nickt um den Hals, z = neck_z), g = Glanz.
-// Ausgelegt auf das Bild ohne PS1-Look: Gefieder schwarz mit bläulichem Glanz, Falter matt. PS1-Wackeln wie
-// psx_surface, beidseitig.
+// Gefieder schwarz mit bläulichem Glanz, Falter matt, beidseitig.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_lambert;
-#include "res://shaders/psx_snap.gdshaderinc"
 
 uniform vec4 albedo : source_color = vec4(0.03, 0.03, 0.035, 1.0);
 uniform vec4 sheen : source_color = vec4(0.25, 0.3, 0.45, 1.0);
@@ -43,7 +41,7 @@ void vertex() {
 		VERTEX.z = p.y + neck_z;
 	}
 	v_gloss = COLOR.g;
-	POSITION = psx_snap_clip(PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)));
+	POSITION = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
 }
 
 void fragment() {

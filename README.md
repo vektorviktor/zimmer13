@@ -494,7 +494,6 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--sleep=tag[,h]` | am Tag h Stunden (1–8, Standard 1) im Bett von Zimmer 13 schlafen – die Zeit springt auch am Tag, danach stehen die Gäste woanders (`--trace`: `[Zeitsprung] am Tag …`) |
 | `--wecken=id` · `--wecken=id,gefahr` / `halluzination` / `klopfen` | Gäste wecken (3.6): Nachtruhe, alle im Bett, du stehst an seinem Bett und weckst ihn nach 2 s · gefahr: dazu eine echte Flackerwelle (dankbar) · halluzination: eine falsche (falscher Alarm) · klopfen: du stehst vor seiner Tür und klopfst; `--trace`: `[Wecken] …` |
 | `--fremdbett=id[,beziehung]` · `--fremdbett=frei[,h]` | Fremdes Bett (Spielkonzept 3.6): Du schläfst ab 1,5 s im Bett dieses Gastes (Beziehung gesetzt, z. B. `0`, `-70`, `90`), er steht in seinem Zimmer, zugleich beginnt die Nachtruhe und er findet dich · h Stunden (Standard 4) am Tag im Bett eines Zimmers ohne lebende Bewohner (zu Beginn gibt es keins – dann irgendein fremdes); `--trace`: `[Fremdes Bett] …` |
-| `--no-psx` · `--psx` | ohne bzw. mit altem Retro-Look starten (Altlast, wird entfernt) |
 | `--fps` | Bilder pro Sekunde einblenden (wie F10) |
 | `--nohud` | HUD ausblenden (Geld, Hinweise, Fadenkreuz) – für Screenshots |
 | `--nointro` · `--debug` · `--trace-nav` | ohne den Gedanken an den Brief beim Start · Debug-Werte · mit `--trace` auch die Wegfindung der Gäste |

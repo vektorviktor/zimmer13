@@ -1,22 +1,21 @@
-// Fototexturen (Mat.photo): wie psx_surface mit Textur in Weltkoordinaten (Vertex-Snapping), dazu ohne PS1-Look
+// Fototexturen (Mat.photo): wie psx_surface mit Textur in Weltkoordinaten, dazu
 // eine Normal Map und auf Wunsch Glanz (specular > 0, Rauheit aus einer Karte – polierte Fliesen). Matt
 // (specular 0) sieht es aus wie psx_surface: Godot rechnet mit F0 = 0 keinen Glanz, auch nicht am Rand. Die Projektion folgt der Hauptachse der Flächennormale; die Achse, in
 // die u bzw. das Bild-„oben“ zeigt, ist dort fest – daraus entsteht die Normale ohne Tangenten im Mesh.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_schlick_ggx;
-#include "res://shaders/psx_snap.gdshaderinc"
 #include "res://shaders/wet_ground.gdshaderinc"
 
 uniform vec4 albedo : source_color = vec4(1.0);
-uniform sampler2D albedo_tex : source_color, filter_nearest, repeat_enable, hint_default_white;
+uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, repeat_enable, hint_default_white;
 // Normal Map im OpenGL-Format (Y nach oben; DirectX-Karten dreht tools/photo_set.gd mit --dx)
-uniform sampler2D normal_tex : hint_normal, filter_nearest, repeat_enable;
+uniform sampler2D normal_tex : hint_normal, filter_linear_mipmap, repeat_enable;
 uniform bool use_normal = false;
 uniform float normal_strength = 1.0;
 // Glanz: Stärke (0 = matt, 0,5 = übliches Nichtmetall) und Rauheit – fest oder aus dem Rotkanal der Karte
 uniform float specular = 0.0;
 uniform float roughness = 1.0;
-uniform sampler2D roughness_tex : filter_nearest, repeat_enable, hint_default_white;
+uniform sampler2D roughness_tex : filter_linear_mipmap, repeat_enable, hint_default_white;
 uniform bool use_roughness = false;
 uniform float roughness_scale = 1.0;
 // Spiegelanteil: Godots Bildschirmspiegelung (SSR) nimmt für Nichtmetalle fest 4 % Reflexion an – Metallic hebt
@@ -56,7 +55,6 @@ void vertex() {
 	tex_normal = object_uv ? NORMAL : world_normal;
 	uv_shift = instance_shift ? INSTANCE_CUSTOM : vec4(0.0, 0.0, 1.0, 0.0);
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

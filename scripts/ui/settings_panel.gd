@@ -1,6 +1,6 @@
 class_name SettingsPanel
 extends VBoxContainer
-## Einstellungen (Spielkonzept 8.4): Bild, PS1-Look, Ton, Steuerung samt Tastenbelegung, Barrierefreiheit.
+## Einstellungen (Spielkonzept 8.4): Bild, Ton, Steuerung samt Tastenbelegung, Barrierefreiheit.
 ## Jede Änderung wirkt sofort und wird gespeichert (Autoload „Settings“).
 
 signal closed
@@ -34,20 +34,6 @@ func _ready() -> void:
 	_slider(list, "Sichtfeld (FOV)", "fov", 60.0, 120.0, 1.0)
 	_check(list, "Spiegelungen", "reflections")
 	list.add_child(UiKit.wrap_label("Marmor, Wasser und Lack spiegeln, was zu sehen ist. Aus, wenn das Spiel ruckelt.", 8))
-
-	_section(list, "PS1-Look")
-	var look := _check(list, "PS1-Look", "psx_look")
-	var res := _option(list, "Interne Auflösung", "resolution")
-	for r in Settings.RESOLUTIONS:
-		res.add_item("%d × %d" % [r.x, r.y])
-	res.select(Settings.resolution)
-	# Ohne PS1-Look gelten die Einzelschalter nicht – sie bleiben gespeichert, sind aber gesperrt
-	var parts: Array[BaseButton] = [res, _check(list, "Vertex-Wackeln", "vertex_wobble"), _check(list, "Dithering", "dithering")]
-	var lock := func(on: bool) -> void:
-		for part in parts:
-			part.disabled = not on
-	lock.call(Settings.psx_look)
-	look.toggled.connect(lock)
 
 	_section(list, "Ton")
 	_slider(list, "Gesamt", "master_volume", 0.0, 1.0, 0.05)
@@ -181,15 +167,6 @@ func _check(list: VBoxContainer, text: String, key: String) -> CheckBox:
 	box.toggled.connect(func(on: bool) -> void: Settings.set_value(key, on))
 	list.add_child(box)
 	return box
-
-
-func _option(list: VBoxContainer, text: String, key: String) -> OptionButton:
-	var row := _row(list, text)
-	var option := OptionButton.new()
-	option.add_theme_font_size_override("font_size", 9)
-	option.item_selected.connect(func(index: int) -> void: Settings.set_value(key, index))
-	row.add_child(option)
-	return option
 
 
 ## Kalibrierbild: dunkle Kürbis-Silhouette vor schwarzem Grund (Spielkonzept 8.4).

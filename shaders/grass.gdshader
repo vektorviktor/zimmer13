@@ -1,5 +1,4 @@
-// Grasbüschel im Garten (Grass), nur ohne PS1-Look: gekreuzte Halmkarten, ausgestanzt nach dem Alpha, beidseitig,
-// ohne Snapping und mit Mipmaps. Beleuchtet wie der Boden darunter (Normale nach oben), zum Grund hin dunkler. Die
+// Grasbüschel im Garten (Grass): gekreuzte Halmkarten, ausgestanzt nach dem Alpha, beidseitig, mit Mipmaps. Beleuchtet wie der Boden darunter (Normale nach oben), zum Grund hin dunkler. Die
 // Spitzen wiegen sich im Wind (wind_time zählt Grass aus der Spielzeit hoch – steht in der Pause) und weichen
 // Füßen und Gegenständen aus (pushers: Mitte xyz, w = Radius; sie drücken die Halme weg und nieder).
 shader_type spatial;

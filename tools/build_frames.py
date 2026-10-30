@@ -28,8 +28,8 @@ PROFILES = {
 	"board": [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)],
 }
 
-# Alle Profile (außer „board“) reichen so weit hinter v = 0 in die Wand: Beim Vertex-Snapping rastet
-# jedes Teil für sich ein – ohne Überlappung blitzt die Tapete durch die Fugen.
+# Alle Profile (außer „board“) reichen so weit hinter v = 0 in die Wand – ohne Überlappung blitzt die Tapete
+# durch die Fugen.
 BACK = 0.015
 for _name in PROFILES:
 	if _name != "board":

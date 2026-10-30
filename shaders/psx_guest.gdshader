@@ -1,13 +1,12 @@
-// PS1-Look für die Gastmodelle (Spielkonzept 6.0, „Gastmodelle“): wie psx_surface, dazu Einfärben
+// Gastmodelle (Spielkonzept 6.0, „Gastmodelle“): wie psx_surface, dazu Einfärben
 // über die Maske aus tools/build_guest.py. Punktfarbe R/G/B = Oberteil/Hose/Haare (je Fläche 0 oder 1),
 // nur graue Texel werden gefärbt (Haut, Schuhe, Augen bleiben). Gefärbt = Gastfarbe × Helligkeit /
 // mittlere Helligkeit des Bereichs – Falten und Maschen bleiben, im Mittel kommt genau die Gastfarbe heraus.
 // Haut (außerhalb der gefärbten Texel) wird mit tint_skin multipliziert – GuestBody rechnet den Faktor je Grundkörper aus.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_disabled;
-#include "res://shaders/psx_snap.gdshaderinc"
 
-uniform sampler2D albedo_tex : source_color, filter_nearest, hint_default_white;
+uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, hint_default_white;
 // Mittlere Helligkeit (linear) von Oberteil, Hose, Haaren in der Textur – aus GuestBody.BODIES
 uniform vec3 ref_lum = vec3(0.5);
 // Sättigung (linear, max − min), ab der ein Texel nicht mehr als grau gilt
@@ -27,7 +26,6 @@ varying vec3 mask;
 void vertex() {
 	mask = COLOR.rgb;
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

@@ -2,8 +2,7 @@ class_name Geo
 ## Helfer für Platzhalter-Geometrie (wird später durch Blender-Modelle ersetzt).
 
 
-## Größte Kantenlänge eines Dreiecks. Das Vertex-Snapping verschiebt jede Ecke um bis zu einen
-## Bildschirm-Rasterpunkt – bei riesigen Flächen (80-m-Flurboden) schwimmt sonst die ganze Fläche.
+## Größte Kantenlänge eines Dreiecks: große Flächen (80-m-Flurboden) werden unterteilt.
 const MAX_FACE := 1.0
 
 ## Mesh-Cache: gleiche Maße (auf 0,1 mm) → dasselbe Mesh. Jedes eigene Mesh legt auf der Grafikkarte eigene
@@ -168,7 +167,7 @@ static func _runner_mesh(length: float, width: float, cap: float, tile: float, c
 ## Fläche 0 = Wand, Fläche 1 = Laibungen der Öffnungen (eigenes Material möglich, z. B. Rahmenholz).
 ## Öffnungen als Vector4(Mitte x, Breite, Oberkante, Unterkante). Alle Flächen teilen sich ein Raster aus
 ## Wandenden, Öffnungskanten und ≤ MAX_FACE-Schritten. Einzelne Kästen (links, Sturz, rechts) stießen mit
-## ihren Ecken mitten auf die Kante des Nachbarn – beim Vertex-Snapping klafften dort Fugen, und die
+## ihren Ecken mitten auf die Kante des Nachbarn – dort klafften Fugen, und die
 ## Tapete war gegeneinander versetzt.
 static func wall_mesh(x0: float, x1: float, height: float, thick: float, openings: Array) -> ArrayMesh:
 	var key := "w%.4f,%.4f,%.4f,%.4f" % [x0, x1, height, thick]

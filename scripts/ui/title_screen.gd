@@ -21,7 +21,7 @@ void fragment() {
 }
 """
 ## Hintergrund (2026-10-25): Screenshot aus dem Spiel in 4K, neu erzeugen mit
-## `--path . -- --bg --shot-size=3840x2160 --no-psx --nointro --nohud --pos=0,0.1,-1.0,0,0 --shot=temp/lobby.png --frames=240`,
+## `--path . -- --bg --shot-size=3840x2160 --nointro --nohud --pos=0,0.1,-1.0,0,0 --shot=temp/lobby.png --frames=240`,
 ## dann als JPG (Qualität 92) hierher. Import mit Mipmaps – verkleinert sonst flimmernd.
 const LOBBY_IMAGE := "res://assets/textures/title_lobby.jpg"
 ## Helligkeit des Bilds hinter dem Menü (Schrift bleibt lesbar)

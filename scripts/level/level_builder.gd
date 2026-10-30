@@ -350,7 +350,7 @@ const MIRROR_WIDTH := 0.6
 const MIRROR_BOTTOM := 1.1
 const MIRROR_TOP := 1.95
 const MIRROR_RANGE := 6.0
-const MIRROR_GAP := 0.03   ## vor der Wand (näher verschwindet er im Vertex-Snapping des PS1-Looks hinter ihr)
+const MIRROR_GAP := 0.03   ## vor der Wand
 ## Bad und Bar aus den Modellen des Nutzers (tools/build_fixtures.py, Maße von dort). Die Flächen „tiles“ bekommen
 ## die Fliesen des Raums in Weltkoordinaten: Waschtisch und Duschsockel messen Vielfache einer Fliese (5 cm) und
 ## stehen auf dem Fugenraster, die Fugen laufen von Boden und Wand her durch. Fehlt eine Datei, bleiben die Kästen.
@@ -441,7 +441,7 @@ const COBWEB_Y := 2.4
 ## Schilder (Zimmernummern, AUSGANG, BAR …): Messingbuchstaben in Cinzel Bold (OFL, assets/fonts/OFL.txt;
 ## ohne überlappende Konturen aus tools/build_font.py) auf einer Holzplatte mit Messingrand.
 ## Schriftgröße (Geviert) in Metern – Wegweiser, Zimmernummern –, Versalhöhe ~0,7 davon; CURVE_STEP in
-## Schriftpixeln – grob, damit die Rundungen kantig bleiben (PS1-Look)
+## Schriftpixeln
 const SIGN_FONT := "res://assets/fonts/cinzel_bold.ttf"
 const SIGN_EM := 0.22
 const SIGN_EM_ROOM := 0.17
@@ -1211,7 +1211,7 @@ func _build_wall(w: Dictionary) -> void:
 	_smooth(minus)
 	_smooth(plus)
 	# Wechselt die Seite an einer anstoßenden Wand, liegt der Schnitt in deren Mitte: Ihr Körper deckt dann die
-	# Stoßkante der beiden Stücke ab (sonst blitzt dort beim Vertex-Snapping der Boden dahinter durch)
+	# Stoßkante der beiden Stücke ab (sonst blitzt dort der Boden dahinter durch)
 	var joints: Array[float] = []
 	if horizontal:
 		joints = _joints_on(fixed, float(w.get("thickness", T)) / 2.0)
@@ -1231,7 +1231,7 @@ func _build_wall(w: Dictionary) -> void:
 	cuts.append(s1)
 
 	# Senkrechte Wände enden laut Plan bündig an waagerechten – das Mesh steckt bis zu deren Mitte darin,
-	# sonst klafft beim Vertex-Snapping in der Ecke eine Fuge, durch die der Boden dahinter blitzt. Endet
+	# sonst klafft in der Ecke eine Fuge, durch die der Boden dahinter blitzt. Endet
 	# umgekehrt eine waagerechte Wand an der Fläche einer durchgehenden senkrechten (T-Stoß), weicht ihr Kopf bis
 	# zu deren Mitte zurück: Sonst läge er in einer Ebene mit der Fläche davor und blitzte mit seiner Tapete durch.
 	var ext0 := -_head_inset(a, -1.0) if horizontal else _joint_depth(a, -1.0)
@@ -3262,8 +3262,7 @@ func _gallery() -> void:
 	_wall_x(z0, x0 - T / 2.0, x1 + T / 2.0, [], _lobby_wallpaper, top - H)
 	_wall_x(z1, x0 - T / 2.0, x1 + T / 2.0, [], _lobby_wallpaper, top - H)
 	_parent = root
-	# Holzleiste über der Fuge zwischen Lobbywand und Obergeschosswand (beide rasten beim Vertex-Snapping
-	# für sich ein, dazwischen blitzte ein gezackter Spalt)
+	# Holzleiste über der Fuge zwischen Lobbywand und Obergeschosswand (dazwischen blitzte ein Spalt)
 	var trim := OpeningFrame.trim_material()
 	var c := hall.get_center()
 	for z: float in [hall.position.y + 0.015, hall.end.y - 0.015]:
@@ -5019,7 +5018,7 @@ func _wall_z(x: float, z0: float, z1: float, openings: Array, mat: Material, hei
 
 ## Wand im lokalen Rahmen von holder (entlang X von a0 bis a1): Kollision als Kästen wie gehabt
 ## (links, unter und über jeder Öffnung, rechts), die Optik als ein Mesh mit gemeinsamen Ecken (Geo.wall_mesh).
-## Laibungen in Rahmenholz: Rutscht die Zarge beim Vertex-Snapping weg, blitzt Holz statt Tapete durch
+## Laibungen in Rahmenholz: Rutscht die Zarge weg, blitzt Holz statt Tapete durch
 ## (nur der Beton im Keller hat keinen Rahmen).
 func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material, height: float) -> void:
 	var cursor := a0
@@ -5086,7 +5085,7 @@ func _cap_top(m: ArrayMesh) -> ArrayMesh:
 
 
 ## Schild an der Wand (pos = 1 cm vor der Wandfläche, Schrift zeigt nach +Z): Buchstaben als echte Geometrie
-## (TextMesh) im PS1-Material, damit Lampen und Taschenlampe sie treffen wie alles andere (Spielkonzept 7.3).
+## (TextMesh) im Material der Wände, damit Lampen und Taschenlampe sie treffen wie alles andere (Spielkonzept 7.3).
 ## Wie schief es hängt und wie angelaufen das Messing ist, folgt fest aus dem Text, nicht aus dem Zufall.
 ## Gibt die Oberkante der Platte zurück (Höhe wie pos).
 func _sign(text: String, pos: Vector3, yaw: float, em: float = SIGN_EM) -> float:
@@ -5110,7 +5109,7 @@ func _sign(text: String, pos: Vector3, yaw: float, em: float = SIGN_EM) -> float
 	var rim := Vector3(plate.x + SIGN_RIM * 2.0, plate.y + SIGN_RIM * 2.0, SIGN_PLATE * 0.6)
 	Geo.mesh(holder, Geo.box(rim), brass, Vector3(0, 0, rim.z / 2.0))
 	Geo.mesh(holder, Geo.box(Vector3(plate.x, plate.y, SIGN_PLATE)), _dark_wood, Vector3(0, 0, SIGN_PLATE / 2.0))
-	# Hinterkante der Buchstaben 2 mm in der Platte, sonst flimmert beim Vertex-Snapping ein Spalt
+	# Hinterkante der Buchstaben 2 mm in der Platte, sonst flimmert ein Spalt
 	Geo.mesh(holder, letters, brass, Vector3(-center.x, -center.y, SIGN_PLATE - 0.002 - box.position.z))
 	return pos.y + rim.y / 2.0
 

@@ -1,12 +1,11 @@
-// Partikel im PS1-Look (Noten am Plattenspieler, Flocken am Lakengeist, Asche hinter dem Monster):
-// Billboard mit Vertex-Snapping und Nearest-Filter, Ausblenden über das 4×4-Raster wie psx_ghost.
+// Partikel (Noten am Plattenspieler, Flocken am Lakengeist, Asche hinter dem Monster): Billboard, Ausblenden über
+// das 4×4-Raster wie psx_ghost.
 // Für CPUParticles3D: Farbe und Deckkraft aus COLOR (color × color_ramp), INSTANCE_CUSTOM.x = Startwinkel
 // (angle_min/max 0…360 → Zufallswert je Partikel), INSTANCE_CUSTOM.y = Anteil der Lebenszeit 0…1.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_lambert, specular_disabled, skip_vertex_transform;
-#include "res://shaders/psx_snap.gdshaderinc"
 
-uniform sampler2D albedo_tex : source_color, filter_nearest, hint_default_white;
+uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, hint_default_white;
 // Bilder nebeneinander in albedo_tex – jeder Partikel nimmt per Zufall eins
 uniform int frames = 1;
 // Farbton der Textur ersetzen (Regenbogen): Startton per Zufall, wandert über die Lebenszeit um hue_drift
@@ -56,7 +55,6 @@ void vertex() {
 		NORMAL = vec3(0.0, 0.0, 1.0);
 	}
 	vec4 clip = PROJECTION_MATRIX * vec4(VERTEX, 1.0);
-	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

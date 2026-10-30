@@ -1,5 +1,5 @@
 // Sicht unter dem übergeworfenen Bettlaken (Spielkonzept 5.9): heller Stoff ringsum, der Blick nur durch zwei
-// ausgeschnittene Augenlöcher. Die Ränder sind etwas ausgefranst, im PS1-Look kantig über die Farbreduktion.
+// ausgeschnittene Augenlöcher. Die Ränder sind etwas ausgefranst.
 shader_type canvas_item;
 
 uniform float aspect = 1.7778;   // Breite / Höhe des Bildschirms

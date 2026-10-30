@@ -83,7 +83,7 @@ bsdf = [n for n in nodes if n.type == 'BSDF_PRINCIPLED'][0]
 base = [l.from_node for l in bsdf.inputs["Base Color"].links][0]
 for n in list(nodes):
 	if n.type in ('TEX_IMAGE', 'NORMAL_MAP', 'SEPARATE_COLOR', 'SEPRGB') and n != base:
-		nodes.remove(n)   # Normalen-, Rauheits- und Metallkarte braucht der PS1-Look nicht
+		nodes.remove(n)   # Normalen-, Rauheits- und Metallkarte nutzt das Spiel nicht
 bsdf.inputs["Metallic"].default_value = 0.0
 bsdf.inputs["Roughness"].default_value = 1.0
 meshy_tex.shrink(base.image, TEX_SIZE)

@@ -5,7 +5,6 @@
 // matt. Normal Map: jedes Plättchen eine eigene, flache Ausrichtung (tools/build_disco_ball.py).
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back;
-#include "res://shaders/psx_snap.gdshaderinc"
 
 // Linear gefiltert: Bei 480×270 ist die Kugel oft nur 20–40 Pixel groß, mit Nearest flimmerten die Fugen
 uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, hint_default_white;
@@ -24,7 +23,6 @@ varying float mirror;
 
 void vertex() {
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

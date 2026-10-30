@@ -2,7 +2,7 @@ class_name ChessBoardView
 extends Control
 ## Schachbrett von oben (Spielkonzept 6.10), Weiß unten. Klick auf eine eigene Figur zeigt ihre Züge,
 ## Klick auf ein Zielfeld zieht (Bauern werden zur Dame). Figuren als Scheiben mit deutschem Buchstaben
-## (K, D, T, L, S – Bauern ohne), damit sie in der kleinen PS1-Auflösung lesbar bleiben.
+## (K, D, T, L, S – Bauern ohne), damit sie auch klein lesbar bleiben.
 
 signal move_chosen(m: int)
 

@@ -11,7 +11,7 @@ import numpy as np
 argv = sys.argv[sys.argv.index("--") + 1:]
 SRC, DST = os.path.abspath(argv[0]), os.path.abspath(argv[1])
 
-SIZE = 1024       # = Mat.PHOTO_SIZE_SMOOTH
+SIZE = 1024       # = Mat.PHOTO_SIZE
 SIGMA = 16.0
 STRENGTH = 0.9
 

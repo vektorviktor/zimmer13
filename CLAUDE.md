@@ -52,8 +52,7 @@ Spielkonzept, das Ticket verweist darauf (`SK 5.13`). Ist YouTrack nicht erreich
   nur laufen lassen, wenn sich am Speichern selbst etwas ändert (Felder in `collect`/`apply`, neue Gruppe →
   auch in `WORLD_GROUPS`).
 - **Grafik realistisch:** Neue Materialien, Shader und Modelle in voller Auflösung mit Mipmaps, Normal- und
-  Rauheitskarten (Spielkonzept 9.2, TECHNIK.md 1 „Grafik“). Den alten Retro-Umschalter im Code (`Settings.psx_look`,
-  `PSX_SHADERS`, Snapping) nicht pflegen, nicht prüfen, nicht damit starten (Entscheidung 30.10.).
+  Rauheitskarten (Spielkonzept 9.2, TECHNIK.md 1 „Grafik“).
 - `Item.Kind` und die Zufallsaufrufe in `GuestGenerator.make()` nur am Ende erweitern (Spielstände) – prüft
   `tests/run.tscn` (`save_rules`).
 - Rauchtest in drei Stufen (TECHNIK.md 10): nach jeder Änderung `bash tests/smoke.sh schnell` (~½ min), nach Arbeit an

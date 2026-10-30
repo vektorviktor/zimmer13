@@ -1,4 +1,4 @@
-// Vollbild-Effekt: Farbreduktion + Dithering (PS1), dazu Rauschen, Bild-Flackern
+// Vollbild-Effekt: Gamma, Rauschen, Bild-Flackern
 // und Zeilenversatz, die der MonsterDirector bei Erscheinen des Monsters hochregelt.
 // Müde oder im Rausch verschwimmt die Sicht (blur, warp – setzt main._process aus Player.sight_blur/sight_warp).
 shader_type canvas_item;
@@ -6,8 +6,6 @@ shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_nearest;
 // dasselbe Bild mit Mipmaps für die Unschärfe (weich, wenige Abtastungen)
 uniform sampler2D blur_tex : hint_screen_texture, filter_linear_mipmap;
-uniform float color_levels = 28.0;
-uniform float dither = 1.0;
 uniform float noise_amount = 0.0;
 uniform float flicker = 0.0;
 uniform float vignette = 0.6;
@@ -25,15 +23,6 @@ const float GOLDEN_ANGLE = 2.39996;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-float bayer2(vec2 a) {
-	a = floor(a);
-	return fract(a.x / 2.0 + a.y * a.y * 0.75);
-}
-
-float bayer4(vec2 a) {
-	return bayer2(0.5 * a) * 0.25 + bayer2(a);
 }
 
 void fragment() {
@@ -73,7 +62,7 @@ void fragment() {
 	col += roll * n2 * 0.15;
 	// Bild-Flackern
 	col *= 1.0 - flicker;
-	// Helligkeit (vor Vignette und Farbreduktion)
+	// Helligkeit (vor der Vignette)
 	col = pow(max(col, vec3(0.0)), vec3(1.0 / gamma));
 	// Albtraum: entsättigt wie ein altes Foto, warm getönt, Rand dunkler und unruhig
 	if (dream > 0.001) {
@@ -86,8 +75,5 @@ void fragment() {
 	vec2 d = uv - 0.5;
 	col *= clamp(1.0 - dot(d, d) * (vignette + min(dream, 1.0) * (1.6 + 0.3 * sin(TIME * 2.3))) * 2.0, 0.0, 1.0);
 	col.r += red_tint;
-	// Dithering + Farbreduktion
-	col += (bayer4(FRAGCOORD.xy) - 0.5) * dither / color_levels;
-	col = floor(col * color_levels + 0.5) / color_levels;
 	COLOR = vec4(col, 1.0);
 }

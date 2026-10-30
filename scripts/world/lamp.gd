@@ -16,7 +16,7 @@ enum Style { CEILING, WALL, HALOGEN, POOL, FLUSH }
 
 ## Kupferleuchte (FLUSH): Profil von der Decke abwärts als [Radius, Höhe, Rille?] – Rillen sind schmale, etwas
 ## schmalere Ringe in dunklem Kupfer; darunter das Glas (Radius, Dicke, so weit steht es unter dem untersten Ring vor –
-## die Ringe sind volle Zylinder, deren Boden es sonst verdeckte; knapper flimmerte er beim Vertex-Snapping durch) in
+## die Ringe sind volle Zylinder, deren Boden es sonst verdeckte; knapper flimmerte er durch) in
 ## Opalweiß.
 ## Das Licht sitzt FLUSH_LIGHT_BELOW unter dem Glas – näher strahlte es das Kupfer von unten grell orange an
 const FLUSH_PROFILE := [[0.24, 0.03, false], [0.232, 0.006, true], [0.235, 0.024, false], [0.225, 0.006, true],

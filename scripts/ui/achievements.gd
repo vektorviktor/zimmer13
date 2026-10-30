@@ -50,7 +50,7 @@ const LIST := {
 
 const PATH := "user://achievements.cfg"
 ## Startparameter, die keinen Debug-Start machen (Laden, Titelbildschirm, Darstellung)
-const HARMLESS_ARGS := ["--load=", "--new=", "--title", "--splash", "--no-psx", "--psx", "--fps", "--bg"]
+const HARMLESS_ARGS := ["--load=", "--new=", "--title", "--splash", "--fps", "--bg"]
 const CHECK_EVERY := 1.0
 const SHOW_TIME := 5.0
 const SLIDE_TIME := 0.45
