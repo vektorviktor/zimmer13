@@ -87,6 +87,7 @@ static func save(builder: LevelBuilder, main: Node, path: String = PATH) -> Erro
 		cam.transform = Transform3D(Basis.looking_at(dir), Vector3(p[1].x, BENCH_EYE, p[1].y))
 		points.add_child(cam)
 		point_list.append({"name": cam.name, "pos": _vec(cam.position), "dir": _vec(dir), "fov": cam.fov})
+	_drop_hidden(scene)   # sonst verlangt das glTF KHR_node_visibility, das Unreal nicht kennt
 	var glb := path.get_basename() + ".glb"
 	var gltf_err := _export_gltf(scene, glb)
 	var json := FileAccess.open(path.get_basename() + "_lampen.json", FileAccess.WRITE)
@@ -128,6 +129,14 @@ static func _export_gltf(scene: Node3D, path: String) -> Error:
 	if err == OK:
 		err = doc.write_to_filesystem(state, path)
 	return err
+
+
+## Unsichtbare Knoten entfernen – sie werden ohnehin nicht gezeichnet.
+static func _drop_hidden(root: Node) -> void:
+	for node: Node3D in root.find_children("*", "Node3D", true, false):
+		if is_instance_valid(node) and not node.visible:
+			node.get_parent().remove_child(node)
+			node.free()
 
 
 static func _vec(v: Vector3) -> Array:

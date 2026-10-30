@@ -1458,7 +1458,9 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   (`StaticExport.BENCH_POINTS`, Kameras unter „Messpunkte“) und für den Engine-Vergleich (ZIM-121) derselbe Bau mit
   Lampen und Messpunkten als `eg_static.glb` (ShaderMaterials gehen verloren) samt `eg_static_lampen.json` (Godot-Werte
   der Lampen, Messpunkte). Messlauf: Szene direkt starten mit `-- --bench[=pfad] --bg` – je Punkt 2 s einschwingen,
-  6 s messen ohne VSync, Bildzeiten nach `temp/bench_godot.csv`, Übersicht in die Konsole, dann beenden.
+  6 s messen ohne VSync, Bildzeiten nach `temp/bench_godot.csv`, Übersicht in die Konsole, dann beenden; je Punkt ein
+  Bild nach `temp/bench_shots/` (mitten im Einschwingen). Unsichtbare Knoten fliegen vor dem Export raus (sonst verlangt
+  das glTF `KHR_node_visibility`, das Unreal ablehnt). MultiMeshes (z. B. Vertäfelung) fehlen im glTF.
 
 ### Fenster, Türen, Verstecke, Kommoden
 - **Fenster** (`hotel_window.gd`): klares Glas / Vorhang (Ebene 10 nur für Sicht & Mond); Milchglas kann die Klasse,

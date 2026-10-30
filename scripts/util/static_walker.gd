@@ -3,8 +3,8 @@ extends CharacterBody3D
 ## Laufen durch die statische Erdgeschoss-Szene (StaticExport): WASD, Maus, Umschalt rennt, Leertaste springt, Esc gibt
 ## die Maus frei, ein Klick fängt sie wieder. Eigene Tasten (physisch), nichts vom Spiel.
 ## Messlauf (ZIM-122, Startparameter --bench[=pfad] nach --): die Messpunkte der Szene der Reihe nach, je Punkt erst
-## einschwingen, dann jedes Bild Zeiten nach pfad (Standard res://temp/bench_godot.csv), am Ende je Punkt eine Zeile
-## Übersicht in die Konsole und beenden. Ohne VSync – Auflösung über Godots --resolution, GPU über --gpu-index.
+## einschwingen (dabei ein Bild nach bench_shots/ neben pfad), dann jedes Bild Zeiten nach pfad (Standard
+## res://temp/bench_godot.csv), am Ende je Punkt eine Zeile Übersicht in die Konsole und beenden. Ohne VSync – Auflösung über Godots --resolution, GPU über --gpu-index.
 
 const SPEED := 3.0
 const RUN := 6.0
@@ -101,10 +101,21 @@ func _report_point() -> void:
 		_bench[_bench_index].name, avg, roundi(1000.0 / maxf(avg, 0.001)), p99, gpu, sorted.size()])
 
 
+## Bild des Messpunkts für den Vergleich nebeneinander – mitten im Einschwingen, damit es die Messung nicht stört.
+func _bench_shot() -> void:
+	var dir := _bench_file.get_path().get_base_dir().path_join("bench_shots")
+	DirAccess.make_dir_recursive_absolute(dir)
+	var file := "%s_%s.png" % [_bench_file.get_path().get_file().get_basename(), _bench[_bench_index].name]
+	get_viewport().get_texture().get_image().save_png(dir.path_join(file))
+
+
 func _process(delta: float) -> void:
 	if _bench_index < 0 or _bench_index >= _bench.size():
 		return
+	var before := _bench_time
 	_bench_time += delta
+	if before < BENCH_WARMUP / 2.0 and _bench_time >= BENCH_WARMUP / 2.0:
+		_bench_shot()
 	if _bench_time < BENCH_WARMUP:
 		return
 	var gpu := RenderingServer.viewport_get_measured_render_time_gpu(_vp)
