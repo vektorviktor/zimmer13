@@ -26,15 +26,12 @@ Konstanten im Code, hier nur deren Namen.
   über `MonsterDirector._day_lerp()`.
 - **Node-Klassen** werden mit `XYZ.new().setup(...)` erzeugt (`setup` gibt `self` zurück), danach
   `position`/`rotation` setzen und `add_child`. Gegenstände über die Fabrik `Item.create(kind, extra)`.
-- **Engine:** Godot 4.7 (Forward+), GDScript mit Typangaben. 3D in Fensterauflösung, mit PS1-Look intern
-  480×270, hochskaliert; die Bedienoberfläche ist immer auf 480×270 ausgelegt.
-- **Grafik: Maßstab ist der realistische Look** (Spielkonzept 9.2). Neue Materialien, Shader und Modelle werden für
-  das Bild *ohne* PS1-Look gebaut und geprüft (`--no-psx`): Texturen in voller Größe mit Mipmaps und linearem Filter,
-  Normal-/Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf. Der PS1-Look (`Settings.psx_look`, Standard aus)
-  bleibt als Umschalter und darf nicht brechen (Snapping-Include, Eintrag in `Settings.PSX_SHADERS`, siehe 8
-  „Optik“), wird aber nicht bevorzugt – kein Verzicht auf Details, nur weil er sie nicht zeigt. Ein darauf
-  optimierter Modus kommt am Ende. Ältere Stellen, die vom PS1-Look her gedacht sind (kleine Texturen, `Closest`),
-  sind kein Vorbild.
+- **Engine:** Godot 4.7 (Forward+), GDScript mit Typangaben. 3D in Fensterauflösung; die Bedienoberfläche ist
+  immer auf 480×270 ausgelegt.
+- **Grafik: Maßstab ist der realistische Look** (Spielkonzept 9.2). Neue Materialien, Shader und Modelle: Texturen in
+  voller Größe mit Mipmaps und linearem Filter, Normal-/Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf.
+  Ältere Stellen mit kleinen Texturen oder `Closest`-Filter sind kein Vorbild; die Namen `psx_*` und `Mat.psx` sind
+  nur historisch.
 - **Wenige verschiedene Meshes:** Jedes eigene Mesh legt je Fläche Puffer auf der Grafikkarte an; manche
   Vulkan-Treiber (Onboard-Grafik) brechen bei zu vielen mit `VkResult error -10` (`VK_ERROR_TOO_MANY_OBJECTS`) ab –
   das Fenster geht beim Bau des Hotels einfach zu. Darum teilen `Geo.box`, `cylinder`, `sphere`, `wall_mesh`,
@@ -83,21 +80,23 @@ Gemeinsame Regeln:
 | `crowbar.glb` | Item `CROWBAR` | `build_crowbar.py`, Sketchfab (SketchyBot, Standard-Lizenz) | hängt unter `_swing`, damit `_apply_held_pose` es aufrichtet |
 | `matchbox.glb` | Item `MATCHBOX` | `build_matchbox.py`, Sketchfab (Freepoly.org, CC-BY) | liegt flach |
 | `bulb.glb` | `Lamp.build_bulb`, Item `BULB` | `build_bulb.py`, Sketchfab (Mirai, CC-BY) | `glass` bekommt Lampenmaterial bzw. Glasfarbe; an der Decke kopfüber, `BULB_SCREWED_IN` in der Fassung |
+| `wainscot.glb` + `textures/wainscot_ao.png` | Vertäfelung, `Wainscot` (`LevelBuilder._wainscot`) | `build_wainscot.py`, kein Ausgangsmodell | 0,8-m-Module `panel`/`plain`/`low` und das Halbfeld `half` (0,4 m); die Füllung im Rahmenfeld ist ein eigenes Brett (UVMap v + 50, Faser waagerecht wie die Leisten); Atlas der gebackenen Verschattung über UV2 (Stirnseiten auf eine weiße Ecke); nach Änderungen an Maßen `Wainscot.MODULE`/`HEIGHT` nachziehen; siehe 4 „Vertäfelung“ |
 | `wall_lamp.glb` | `Lamp._build_wall` | Blender-Modell ohne Bauskript | `WALL_SCALE`; Kugel leuchtet mit dem Material der Birne, die Birne ist ein leerer Knoten (herausdrehen geht wie sonst); Licht `WALL_LIGHT` vor der Wand – sonst zeichnet die Leuchte einen Schattenkeil an die Wand |
 | `mug.glb` | `Item.build_cup` (Kaffee, Tee, Tabletts) | `build_mug.py`, Sketchfab (Ole Gunnar Isager, CC-BY) | Oberflächen `coffee`/`tea`, `build_cup` entfernt die ungenutzte; Tassen auf dem Tablett quer, Henkel zu den Gästen |
-| `candle.glb`, `candle_flame.glb` | `CandleModel` (Item `CANDLE`, `FixedCandle`, Vorrat in `ResourceSpot`) | `build_candle.py` aus drei Sketchfab-Modellen (Kerze, Teller CC-BY; Flamme **CC-BY-SA**) | Flamme: 100 Formschlüssel → `CandleModel._load` macht 100 Netze, `CandleFlame` tauscht mit `FPS` das Netz (keine Blend-Shapes, kein AnimationPlayer je Kerze), steht immer senkrecht (auch an gekippter oder liegender Kerze), `FLAME_WIDEN` breiter als das Netz. Farbe aus `shaders/candle_flame.gdshader`, auf das Bild ohne PS1-Look ausgelegt (Vorbild Kerzenfoto): additiv in HDR – Kern `core_energy` wird unter Filmic weiß, Hülle gelb → orange zu Spitze und Rand, Fuß schwach blau mit violettem Übergang, innen dunkel; Lichthof-Billboard (`halo`, `HALO_SIZE`) in zwei Stufen, `halo_pull` zur Kamera gezogen (steckt nicht in der Kerze) und weich vor Flächen dahinter (Tiefentextur, `halo_soft`). **Wachs:** eigener Shader `shaders/candle_wax.gdshader` (in `PSX_SHADERS`) – Licht greift herum (`wrap`), schimmert durch (`scatter`), matter Glanz; `instance uniform glow` lässt das Wachs unter der Flamme glühen (`glow_depth`), `CandleFlame` setzt es bei jeder Sichtbarkeitsänderung (Wachs als Meta „candle_wax“ am Elternknoten aus `build`). Nahaufnahme: `--kerzen=nah`. `candle_red` noch ungenutzt |
+| `candle.glb`, `candle_flame.glb` | `CandleModel` (Item `CANDLE`, `FixedCandle`, Vorrat in `ResourceSpot`) | `build_candle.py` aus drei Sketchfab-Modellen (Kerze, Teller CC-BY; Flamme **CC-BY-SA**) | Flamme: 100 Formschlüssel → `CandleModel._load` macht 100 Netze, `CandleFlame` tauscht mit `FPS` das Netz (keine Blend-Shapes, kein AnimationPlayer je Kerze), steht immer senkrecht (auch an gekippter oder liegender Kerze), `FLAME_WIDEN` breiter als das Netz. Farbe aus `shaders/candle_flame.gdshader`, Vorbild Kerzenfoto: additiv in HDR – Kern `core_energy` wird unter Filmic weiß, Hülle gelb → orange zu Spitze und Rand, Fuß schwach blau mit violettem Übergang, innen dunkel; Lichthof-Billboard (`halo`, `HALO_SIZE`) in zwei Stufen, `halo_pull` zur Kamera gezogen (steckt nicht in der Kerze) und weich vor Flächen dahinter (Tiefentextur, `halo_soft`). **Wachs:** eigener Shader `shaders/candle_wax.gdshader` – Licht greift herum (`wrap`), schimmert durch (`scatter`), matter Glanz; `instance uniform glow` lässt das Wachs unter der Flamme glühen (`glow_depth`), `CandleFlame` setzt es bei jeder Sichtbarkeitsänderung (Wachs als Meta „candle_wax“ am Elternknoten aus `build`). Nahaufnahme: `--kerzen=nah`. `candle_red` noch ungenutzt |
 | `disco_ball.glb` | `DiscoBall` | `build_disco_ball.py`, Sketchfab (araghon007, CC-BY) | glatte Kugel mit gebackener Normal Map, exakte Plättchennormalen (Rauschen ließe Spiegelbilder zittern); unkomprimiert, `DiscoBall` erzeugt Mipmaps selbst (sonst flimmern die Fugen) |
 | `cat.glb` | `HotelCat` | `build_cat.py`, Meshy (Rig-Preset „Hund“) | Größe und Blickrichtung nur am Wurzelknoten der Armatur – angewendet würden Translations-Schlüssel nicht mitskaliert |
 | `ghost.glb` | `SheetGhost` | `build_ghost.py`, Meshy ohne Rig | eigenes Skelett mit Fingern; lokal X der Finger beugt zur Handfläche |
 | `guest_<name>.glb` | `GuestBody` | `build_guest.py`, Meshy (Mixamo-Vorlage) | siehe unten „Gastkörper“ |
 | `doll.glb` | `JuryDoll` | `doll_weights.py`, dann `build_doll.py` | siehe unten „Puppe“ |
 | `pumpkin_man.glb` | `PumpkinMan` | `build_pumpkin.py`, Meshy (Figur + Axt) | siehe unten „Kürbismann“ |
-| `pumpkins.glb` | `PumpkinModel` | `build_pumpkins.py`, Meshy-Kürbisgruppe, Textur prozedural gebacken | `psx_model.gdshader` (in `PSX_SHADERS`); `PumpkinModel.material` je Kürbis ein eigenes Material, reife Früchte an der Pflanze teilen `shared_material()` |
+| `pumpkins.glb` | `PumpkinModel` | `build_pumpkins.py`, Meshy-Kürbisgruppe, Textur prozedural gebacken | `psx_model.gdshader`; `PumpkinModel.material` je Kürbis ein eigenes Material, reife Früchte an der Pflanze teilen `shared_material()` |
 | `masks.glb` | `MaskModel` (Item `MASK`, `MaskHook`) | `build_masks.py`, Meshy (je Maske ein Bild-zu-3D-Modell) | Netz „mask_<id>“, Ursprung mittig hinten, Gesicht +Z, echte Größe (`HEIGHT` im Skript → `MaskModel.SIZES`); alles, was ganz hinter dem Gesicht liegt, fällt weg (Meshys Rückschale beim Kürbismann); Farbe, Normal Map und Rauheit 1024², `psx_model.gdshader` |
 | `monster.glb` | `Monster` | `build_monster.py`, Meshy | siehe 5, „Aussehen & Animation“ |
 | `pool_handrail.glb` | `HANDRAIL_MODEL` | `build_handrail.py` | Tiefe und Lauf der Treppe sind eingebacken und müssen zu `_pool` passen |
 | `lantern.glb` | Gartenlaterne, `LANTERN_MODEL` | `build_lantern.py`, nach Skizze des Nutzers | Licht in der Glasmitte (`LANTERN_LIGHT_Y`), Kopf und Glas werfen keinen Schatten |
-| `door_hotel.glb`, `door_attic.glb` | `Door.Look` | `build_doors.py` aus den Pixelbildern `assets/source/door_*.png` | Blattgröße `Door.HOTEL_LEAF`/`ATTIC_LEAF` muss zu `size` im Skript passen; Scharnierkante x = 0, Aufgehseite +Z |
+| `door_room.glb` + `textures/door_room_ao.png` | `Door.Look.HOTEL` (Zimmer-, Bad- und übrige Holztüren) | `build_room_door.py`, kein Ausgangsmodell | Blatt (vier Kassetten, je eine 45°-Fase hinab zur flachen Füllung) und Beschläge `hinge` (schlichter Zylinder), `handle`, `peephole` (2,5 × echte Größe), `plaque`; das Blatt ohne Material mit zwei UV-Sätzen – UVMap in Metern (Faser je Fries) für `Mat.hotel_wood`, dem Holz der Vertäfelung, und UV2 auf den Atlas der in Cycles gebackenen Verschattung (`door_room_ao.png`, 1024²); Messing mit gebackener Farbe × AO 512², glTF-Material, eingebettet unkomprimiert. `Door.HOTEL_LEAF` = `LEAF` im Skript; Bänder (`HINGE_AT`) auf der Aufgehseite +Z; geht höchstens `HOTEL_MAX_ANGLE` (95°) auf; Rahmen statt `OpeningFrame` ist `DoorCasing` (im Code aus einem Profil: Zarge mit Anschlag auf −Z außerhalb des Schwenkkreises, gestufte Bekleidung beidseits mit Gehrung, `Mat.hotel_wood`, Mesh je Türgröße geteilt; liegt vor der Wand eine Haut – Fliesen, Fassade, Beton –, setzt `LevelBuilder` `Door.casing_lift` und Zarge und Bekleidung rücken um `SKIN_FRONT` davor); `Door.add_room_plate` setzt an Zimmertüren Spion und Plakette auf die Flurseite (Seite aus `door_front`, notfalls `scale.z` gespiegelt) und die Nummer als `Label3D` (Cinzel, graviert dunkel, `shaded`) |
+| `door_attic.glb` (`door_hotel.glb` ungenutzt) | `Door.Look.ATTIC` | `build_doors.py` aus den Pixelbildern `assets/source/door_*.png` | Blattgröße `Door.ATTIC_LEAF` muss zu `size` im Skript passen; Scharnierkante x = 0, Aufgehseite +Z |
 | `frames.glb` | `OpeningFrame` | `build_frames.py` | siehe unten „Rahmen“ |
 | `boiler.glb`, `pipes.glb` | `Boiler`, `PipeKit` | `build_boiler.py` | siehe 4, „Untergeschoss“ |
 
@@ -145,8 +144,8 @@ sich ausblenden, abnehmen, werfen. Ohne Fingerknochen biegt das Skript die Finge
 
 **Rahmen** (`frames.glb`, `OpeningFrame`, Spielkonzept 7.2): 1 m lange Profilteile (`casing`, `fillet`, `frieze`,
 `cap`, `stool`, `board`), im Spiel nur in der Länge gestreckt und je Öffnung zu einem Mesh gefügt (gleiche Öffnungen
-teilen es). Die Teile stecken in der Wand und **überlappen sich** (`OpeningFrame.TUCK`): Beim Vertex-Snapping rastet
-jedes Teil für sich ein, bloß aneinanderstoßende öffnen Fugen. Das Rahmenmaterial (`trim_material()` = `Mat.layer`)
+teilen es). Die Teile stecken in der Wand und **überlappen sich** (`OpeningFrame.TUCK`): So entstehen
+an den Stößen keine Fugen. Das Rahmenmaterial (`trim_material()` = `Mat.layer`)
 zieht leicht zur Kamera, die Laibungen tragen dasselbe Holz (rutscht die Zarge weg, sieht man Holz statt Tapete). Für
 `Door` und `HotelWindow`; Durchgänge ohne Tür haben nur die Laibungen (`Geo.wall_mesh`, Fläche 1). Reine Optik, keine
 Kollision, nicht im Spielstand.
@@ -158,8 +157,18 @@ Schritte `step_carpet`/`step_tiles` (`Footsteps`), `door_open`, Totenglocke `chu
 (`PumpkinMan.HIT_SOUND`), Vorspann `splash_wave` (`SlideShow`), Schreie in `screams/` (`SynthAudio.VOICES`, siehe 2).
 
 ### Texturen
-**Tapeten** `assets/textures/wallpaper_<variante>.png` + gemeinsame Höhenkarte `wallpaper_bump.png`, siehe 8,
-„Optik“.
+**Vertäfelung** Wood067 (ambientCG, CC0, dunkle Nuss) in `assets/textures/Wood067/` (Farbe, Normal Map, Rauheit);
+das Farbbild ohne die großen hellen und dunklen Wolken als `assets/textures/wainscot_wood.png` (`tools/wainscot_wood.py`,
+Blender wegen numpy: Helligkeit durch ihren weichgezeichneten Verlauf geteilt, mit Umlauf – bleibt kachelbar), Verschattung
+`assets/textures/wainscot_ao.png`, siehe 4 „Vertäfelung“. Dasselbe Holz tragen Zimmertüren und ihre Rahmen
+(`Mat.hotel_wood`: eine Tönung und ein Glanz für alle, dunkel wie der Türrahmen – Wunsch des Nutzers 30.10.).
+
+**Tapeten** (`Mat.WALLPAPERS`): hochaufgelöste, nahtlose Kacheln – Farbe `assets/textures/wallpaper_<variante>.png`,
+Normal Map (OpenGL) und Rauheit je Muster `wallpaper_<muster>_normal.png` / `_rough.png`. Kachelbreite = Bahnbreite
+0,53 m, damit Muster und Bahnen zusammenpassen; empfohlen 1024 px auf 0,53 m (≈ 2000 px/m – aus 30 cm noch scharf),
+Höhe ein Rapport des Musters. Die Rautentapeten (Satin/Velours mit Fugen, 2 × 2 Rapporte) zeichnet
+`tools/build_wallpaper.py` (Blender wegen numpy). **Holz** (Leiste und gemalte Vertäfelung) `wainscot_<variante>.png`
++ `wainscot_bump.png`. Siehe 8, „Optik“.
 
 **Dorés „Die Zerstörung des Leviathan“** (`assets/textures/dore_leviathan.jpg`, Spielkonzept 4.32): Holzstich von
 1865, gemeinfrei (Wikimedia Commons, `File:Destruction_of_Leviathan.png`), auf 800 px Breite in Graustufen verkleinert.
@@ -168,14 +177,17 @@ Schritte `step_carpet`/`step_tiles` (`Footsteps`), `door_open`, Totenglocke `chu
 rauheit_pfad, glanz)` mit `shaders/psx_photo.gdshader`, Projektion in Weltkoordinaten; `object_uv` in
 Modellkoordinaten (für Bewegtes wie die Aufzugskabine – in Weltkoordinaten wanderte die Textur), `mesh_uv` über die
 UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
-- Zwei Detailstufen (`PHOTO_SIZE_PSX`/`_SMOOTH`); die Normal Map (OpenGL-Format) wirkt nur ohne PS1-Look.
-  `Settings.apply` → `Mat.set_photo_detail` schaltet alle Fotomaterialien um. Tangente aus der Hauptachse der Fläche.
+- Normal Map im OpenGL-Format; Tangente aus der Hauptachse der Fläche.
 - **Glanz** nur bei glatten Oberflächen (polierte Fliesen, Lack, Metall): `glanz` > 0 (`specular`), Rauheit aus dem
   Rotkanal. `specular` 0 bleibt matt (Godot rechnet mit F0 = 0 auch am Rand keinen Glanz).
 - **Bildschirmspiegelung** (SSR, `main._setup_environment`; `Settings.reflections` → `env.ssr_enabled` und
   Shader-Global `reflections`, das `metallic` mit ausschaltet – sonst wäre der Boden ohne SSR nur dunkler): spiegelt
   nur, was im Bild ist, und rechnet für Nichtmetalle fest mit 4 % – `specular` ändert daran nichts. Sichtbarer wird
   sie über `metallic` und `roughness_scale`. Das Environment spiegelt nichts (kein Himmel in Tapete und Fliesen).
+- **Gebackene Verschattung** (`ao_tex`, `use_ao`): multipliziert die Grundfarbe über UV2 – wirkt auch im Lampenlicht.
+  Vertäfelung und Türblatt der Zimmertür (`Mat.hotel_wood(ao)`; `Mat.wainscot` dazu mit `instance_shift`: INSTANCE_CUSTOM legt die Holz-UVs je
+  MultiMesh-Instanz an die Wand – x Lage, y Versatz je Wandstück, z Streckung mit Vorzeichen, w eigener Ausschnitt der
+  Füllung, erkannt an v > 25).
 - **Nicht genutzt:** AO-Karten (wirken in Godot nur aufs Umgebungslicht, das im Hotel fast null ist), Metallic-Karten,
   Height/Parallax.
 - **Böden mit Fototextur** nennen `Footsteps.floor_under` ihre Bodenart per `set_meta("floor", …)` (Lobby
@@ -441,7 +453,7 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
   `godot --headless --path . -s tools/splat_maps.gd -- assets/textures/blood_pool.png edge=10 rough=0.06,0.4 bump=1.6 noise=0.1 grain=8 seed=1`,
   `… wax_splash.png edge=14 rough=0.3,0.55 bump=4 noise=0.35 grain=6 seed=2`,
   `… pumpkin_splash.png edge=8 rough=0.5,0.75 bump=3 noise=0.4 grain=5 seed=3` – feineres Rauschen oder mehr
-  `bump` glitzert ohne PS1-Look wie Zucker.
+  `bump` glitzert wie Zucker.
 - **Runterlaufen und Ausbreiten:** Auf einer Treppe bleiben nur die großen Flecken; vom ersten, der längs auf einer
   Stufe liegt, läuft ein **Strom** hinunter (`TraceMark.lay_stream`: Kette unverzerrter Quadrate, auf jeder
   Trittfläche liegend, an jeder Stirnseite senkrecht, unten eine Pfütze). Die Vorderkante sucht `_edge_ahead`; auf der
@@ -504,7 +516,7 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   ohne Tapete (draußen = Fassade, Bad/Toilette/Pool = Fliesen, Lager = Beton) bekommen eine Haut knapp vor der Wand
   (`_skin_material`). Glaswände als Scheibe auf Ebene 7. Kollision als Kästen um jede Öffnung, die Optik als **ein**
   Mesh pro Wand (`Geo.wall_mesh`, Fläche 0 = Wand, 1 = Laibungen in Rahmenholz) mit gemeinsamen Ecken auf einem Raster
-  – getrennte Kästen stießen mit Ecken mitten auf Nachbarkanten, beim Snapping klafften Fugen.
+  – getrennte Kästen stießen mit Ecken mitten auf Nachbarkanten, dort klafften Fugen.
 - **Hallen über zwei Stockwerke** (Lufträume): Seiten über `_wall_side_kind` abgetastet, oben heißt die Seite
   `hall:<Art im EG>` (`_halls`); Tapete des EG mit `wall_top` = `HALL_WALL_TOP` – die Rauten laufen nahtlos bis unter
   die Decke. `_subtract` verwirft Reste unter 1 mm (sonst stak eine Deckenplatte ohne Tiefe in der Wand).
@@ -513,6 +525,23 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   blitzte ihre Tapete durch. Wechselt die Tapete an einer anstoßenden Wand, liegt der Schnitt in deren Mitte
   (`_joints_on`). **Holzpfeiler** (`_corner_posts`, reine Optik) fassen jeden freien Wandkopf ein, an dem zwei Tapeten
   zusammenkommen – kein Eintrag im Plan nötig.
+- **Vertäfelung** (`level/wainscot.gd`, Spielkonzept 7.2, entschieden 29.10.): Sockelleiste, Brett mit Rahmenfeldern und
+  Brüstungsleiste bis 0,9 m (`Wainscot.HEIGHT`), modelliert als Bausatz (`tools/build_wainscot.py`). `_build_wall` merkt
+  jede Wandseite mit Tapete (`_note_wainscot`; nicht Treppenhaus, Aufzug, verschlossene Zimmer, Lufträume über dem EG),
+  `_wainscot` zieht nach den Holzpfeilern ab, was sie unterbricht – anstoßende und durchlaufende Wände
+  (`_wainscot_blocks`), Türen bis 1 cm unter die Außenkante der Bekleidung, Holzpfeiler (`_post_spans`) –, unter
+  Fenstern (Brüstung 0,9 m) kommt `low` ohne Leiste (dort sitzen Bank und Schürze). Je freies Stück **festes Raster**
+  im halben Feld: so viele 0,8-m-Felder wie passen, mittig; steht das Stück um ein halbes Feld über, kommt ein Halbfeld
+  `half` (0,4 m) an das Ende zur Tür bzw. zum Fenster (sonst an den Anfang), der Rest als gestrecktes Passstück
+  `plain` an beiden Enden (bis 3 cm je Ende strecken oder stauchen stattdessen die Felder; geprüft in
+  `tests/math_checks.gd`). Plant man eine Tür nah an eine Ecke, passt ein Abstand von 0,4 oder 1,2 m genau. Alles als
+  MultiMesh je 16-m-Zelle, ohne Schatten; Holz `wainscot_wood.png` über die Mesh-UVs (0,7 m je Kachel – nicht im
+  Verhältnis zum Feld, sonst glichen sich die Felder): Sockelleiste, Brett und Brüstungsleiste laufen über das ganze
+  Stück durch (keine Sprünge an den Modulgrenzen), nur die Füllungen sind eigene Bretter (Faser ebenfalls waagerecht) mit
+  eigenem Ausschnitt; gestreckte Teile mit unverzerrter Faser (INSTANCE_CUSTOM, siehe 1 „Fototexturen“). Ein dünner
+  Kollisionskasten je Stück (bis 12 mm vor der Wand, ein Körper je Stockwerk mit Meta „wainscot“): Flecken, Eier und
+  Deko landen auf dem Brett; das Rinnsal eines Wandflecks läuft darunter vor der Brüstungsleiste (`RAIL_FRONT`,
+  `TraceMark._spread_wall`). Achtung `Vector4` rechnet in 32 Bit – die Brüstung 0,9 kommt als 0,8999… an.
 - **Böden** (`_floor`): ein `Geo.solid` je Planrechteck, Textur in Weltkoordinaten (das Muster läuft über die Stöße).
   Ein Flurrechteck, das in die Lobby ragt, wird an deren Rand geteilt. Verschlossene Zimmer haben einen Boden auf der
   Ebene der Decken (5) – nicht im NavMesh, sonst planten Gäste und Monster Wege durch gesperrte Türen. Unter jeder
@@ -538,7 +567,7 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   in `OPEN_WINGS`/`OPEN_WINGS_UPPER` sind bewohnbar (`_wing_open`); Zimmer anderer Flügel werden versiegelt (`_seal`,
   auch für das Monster, Vorhänge `HotelWindow.sealed`, kein Inneres).
 - **Einrichtung aus dem Plan**, in dieser Reihenfolge (bestimmt die Gruppen-Reihenfolge im Spielstand):
-  - `_furniture`: Rezeption (Modell, siehe 1), dann `furniture`. Bett/Schrank → `HideSpot`; Kommode, Truhe, Schach- und
+  - `_furniture`: Rezeption (Modell, siehe 1), dann `furniture`. Bett/Schrank → `HideSpot`; Kommode, Nachttisch, Truhe, Schach- und
     Spieltisch, Sofa, Bank, Zimmertisch als eigene Bauteile mit Blick nach `facing`; sonst ein Kasten in Plangröße mit
     Höhe aus `BOX_HEIGHTS`. **Betten** = Balkenbetten (`BedModel`, 8) in Plangröße (`bed_size`); das Doppelbett hat das
     Kopfteil zur Seite `head`, heraus geht es zur Längsseite mit mehr Platz (`_free_run`), ab `HideSpot.DOUBLE_WIDTH`
@@ -570,7 +599,7 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   nach einem Rauschen ihrer **Weltlage** – gleiche Ecken zweier Stücke wandern gleich, an Gehrungen bleibt keine Fuge.
   Blattkarten (`_cards`, `psx_leaves`) brechen den Umriss auf; Normale der Fläche darunter, damit die Blätter wie die
   Hecke beleuchtet werden. Eigener Zufall je Linie (Spielstände unberührt).
-- **Schilder** (`_sign`): Buchstaben als `TextMesh` aus Messing auf Holzplatte – bekommen Licht, Schatten und Snapping
+- **Schilder** (`_sign`): Buchstaben als `TextMesh` aus Messing auf Holzplatte – bekommen Licht und Schatten
   wie alles andere. Schiefe und Messingart aus dem Hash des Texts. Schrift Cinzel Bold (SIL OFL 1.1,
   `assets/fonts/OFL.txt`), gebaut von `tools/build_font.py`: TextMesh verträgt keine überlappenden Konturen, deshalb
   eine feste Instanz mit verschmolzenen Konturen ohne doppelte Eckpunkte. Bei „Triangulation/Convex decomposing failed“
@@ -1443,7 +1472,13 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
 - **Kommoden** (`world/dresser.gd`): Drei Schubladen als eigene Körper, interagierbar je ein `Dresser.Handle`. Hohler
   Korpus, damit die Physik Gegenstände nicht aus geschlossenen Schubladen drückt. Fund nur beim **ersten** Öffnen
   (`searched`, `LOOT`); feste Inhalte aus `CONTENT[…]["drawer"]` (`fixed`). Beim Schieben werden die darin liegenden
-  Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“).
+  Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“). Unterarten bauen sich in
+  `_build()` selbst und legen Schubladen mit `add_drawer(y)` an (setzen `size`, `tray`, `slide`).
+- **Nachttische** (`world/nightstand.gd`, 30.10.): `Nightstand extends Dresser`, Plan „Möbel: Nachttisch“ (5 × 5 px,
+  Vorderseite als hellere Zeile). 0,5 × 0,5 m, Höhe `BedModel.POST_TOP` (0,51 m, bündig mit den Bettpfosten). Bretter
+  aus heller Eiche über `BedModel.beam` mit eigener Kollisionsform: Deckplatte, Seiten bis zum Boden, Rückwand, Fachboden.
+  Oben eine Schublade ohne Griff, darunter ein offenes Fach ohne Bodenbrett. Gruppe `dressers`, also gespeichert,
+  mit Fund und Spinnen wie die Kommode.
 - **Süßigkeiten-Truhen, Automaten** (`world/chest.gd`, `world/vending_machine.gd`): nur aus dem Plan. Truhe in einem
   Hotelzimmer = Süßigkeiten-Truhe (Meta `sweets_room`, Gruppe `sweet_chests` und `chests`); Automaten mit leuchtender
   Front (`light_source`), nicht gespeichert.
@@ -1728,8 +1763,8 @@ Spielkonzept 2.5)
 ### Wetter, Natur
 - **Wetter** (`world/weather.gd`, Spielkonzept 7.8): `Game.weather`, `kind` CLEAR/RAIN/STORM nach Zeitplan,
   `intensity` blendet. **Regen:** `GPUParticles3D` um den Spieler; jeder Tropfen fällt bis zur obersten Fläche darunter
-  – aus einer Dach-Höhenkarte (`_build_roof_rows`, auf die ersten Bilder verteilt); vorher regnet es nicht. Ohne
-  PS1-Look Striche (`shaders/rain_streak.gdshader`, nie schmaler als `STREAK_PIXELS`, sonst blasser). **Gewitter:**
+  – aus einer Dach-Höhenkarte (`_build_roof_rows`, auf die ersten Bilder verteilt); vorher regnet es nicht. Tropfen
+  als Striche (`shaders/rain_streak.gdshader`, nie schmaler als `STREAK_PIXELS`, sonst blasser). **Gewitter:**
   Blitze über Mondlicht und Himmel `flash`, Donner, danach `masking()` – `MonsterDirector.on_noise` multipliziert die
   Lautstärke damit. **Kirchturmglocke** um Mitternacht (`_update_bell`, kein Lärm). Nicht gespeichert (außer Blutregen). Debug
   `--weather=klar|regen|gewitter|blitz|gestalt|blut`.
@@ -1744,7 +1779,7 @@ Spielkonzept 2.5)
   **Nasser Boden:** Rasen, Kies und Stein draußen (`LevelBuilder`: `_grass`, `_gravel`, `_stone`, eigene Materialien)
   meldet `Mat.wettable(mat, glanz)` an (`WET_GLOSS`; bei `psx_surface` eine Abwandlung mit `specular_schlick_ggx`,
   sonst rechnet er keinen Glanz). `shaders/wet_ground.gdshaderinc` (in `psx_surface` und `psx_photo`) liest `rain_wet`
-  und `rain_blood`: dunkler, ohne PS1-Look glatt mit etwas Metallic (sonst sähe SSR nichts); beim Blutregen ein Hauch roter
+  und `rain_blood`: dunkler, glatt mit etwas Metallic (sonst sähe SSR nichts); beim Blutregen ein Hauch roter
   Film (#880808, höchstens ~8 %), auf glattem Stein Glanz in #ff2222 (Metallic mit Glanzfarbe als Albedo, so bleibt die Grundfarbe
   etwa der Film). Gras (`grass.gdshader`) wird mit nass und rot.
   Die Fläche baut `HotelWindow.rain_drops(parent, quad, offset)` – auch für die Dachfenster (`LevelBuilder._roof_window`,
@@ -1776,7 +1811,7 @@ Spielkonzept 2.5)
   die Scheiben bleiben dafür sichtbar, `panes_wet`) und rötliche Pfützen (#a80808, `Decal`, `PUDDLES` feste Stellen aus der
   Dach-Höhenkarte, nur ebener Boden draußen, erst bei Bedarf gebaut). Gäste: `_blood_reactions` (Angst, Sätze, der
   Mutigste erklärt). Gespeichert bei den Omen (`SaveManager._collect_omens`, Schlüssel „weather“: `blood_done`, `stain`).
-- **Gras** (`world/grass.gd`, `shaders/grass.gdshader`): nur ohne PS1-Look (`visible = not Settings.psx_look`). Nach
+- **Gras** (`world/grass.gd`, `shaders/grass.gdshader`): Nach
   dem NavMesh erzeugt (nicht darin, keine Kollision, nicht gespeichert), fester Zufall (`SEED`), nur wo `is_lawn` und
   frei von Bäumen, Beeten, Gegenständen. `MultiMeshInstance3D` je Kachel mit `visibility_range_end`. Wind über
   `wind_time` (steht in der Pause); `pushers` (Figuren, Gegenstände) drücken das Gras weg.
@@ -2120,18 +2155,12 @@ Glocke, dafür eine Sammelmeldung.
 (`util/mat.gd`, `util/geo.gd`, `shaders/`) Ausgelegt auf den realistischen Look (siehe 1, „Grafik“).
 - **Materialien** über die Fabriken in `Mat` (`Mat.psx(...)` heißt nur noch so; für Neues mit Karten eher
   `Mat.photo`/`Mat.model` oder ein eigener Shader mit voller Auflösung).
-- **PS1-Umschalter:** Vertex-Snapping über das Shader-Global `psx_snap`; alle `psx_*`-Shader holen es per
-  `#include "res://shaders/psx_snap.gdshaderinc"` und `clip = psx_snap_clip(clip)` – **neuer Shader: ebenso**. Filter
-  lassen sich nicht per Uniform schalten, darum schreibt `Settings._apply_texture_filter` den Code der Shader in
-  `PSX_SHADERS` von `filter_nearest` auf `filter_linear_mipmap` um – **neuer Shader mit Textur → dort eintragen**. Ohne
-  PS1-Look: 3D in Fensterauflösung (`CONTENT_SCALE_MODE_CANVAS_ITEMS`), kein Snapping/Dithering, Shader-Global
-  `psx_smooth` für Detailstufen. Debug `--no-psx`/`--psx`; eine gespeicherte `settings.cfg` behält ihren Wert.
-- **Gegen Flimmern beim Snapping:** flache Auflagen (Teppich, Türkassetten, Rahmen) über `Mat.layer(...)` (zieht zur
+- **Gegen Flimmern:** flache Auflagen (Teppich, Türkassetten, Rahmen) über `Mat.layer(...)` (zieht zur
   Kamera); `Geo.box` unterteilt Flächen in ≤ 1-m-Stücke, damit große Böden nicht schwimmen. Glasscheiben sind einzelne
   Flächen (`QuadMesh`), keine Boxen.
 - **Poliertes Metall** = `Mat.metal(farbe)` (`psx_metal.gdshader`): spiegelt einen gedachten Raum nur so hell, wie jede
   Lampe ihn beleuchtet, plus Glanzpunkt – das Environment spiegelt nichts, SSR taugt für dünne Rohre nicht.
-- **Post-FX** (`shaders/psx_post.gdshader`, `CanvasLayer` 5 unter der Bedienoberfläche): Gamma, Dithering, Rauschen,
+- **Post-FX** (`shaders/psx_post.gdshader`, `CanvasLayer` 5 unter der Bedienoberfläche): Gamma, Rauschen,
   Flackern, dazu **verschwommene Sicht** (Spielkonzept 3.6/3.7): `Player._update_sight` setzt `sight_blur` (Müdigkeit
   über `tiredness()`, Rausch, Kater) und `sight_warp`; `main._process` reicht sie mit `blur_time` (steht in der Pause)
   an den Shader – Scheibe aus Abtastungen über eine Mip-Stufe der Screen-Textur.
@@ -2146,12 +2175,23 @@ Glocke, dafür eine Sammelmeldung.
   `sky_time` (steht in der Pause, `TIME` liefe weiter); Hash ohne Sinus, damit lange Laufzeiten nicht flimmern. Der
   Himmel leuchtet nichts aus: `reflected_light_source` aus (sonst spiegelte er sich in Tapete und Fliesen),
   `fog_sky_affect` 0.
-- **Tapete** = `Mat.wallpaper(wandhöhe, stockwerk, variante)` mit `shaders/psx_wall.gdshader`: Bild in drei Bändern
-  ab Stockwerksboden (Vertäfelung, Rauten, Leiste unter `wandhöhe`); `Mat.wallpaper_split(a, b, normale)` für Wände
-  zwischen zwei Räumen. Aus der Höhenkarte entsteht eine Oberflächentextur: Normale aus dem Sprung zum Nachbar-Texel,
-  Glanz je Graustufe (`WALLPAPER_GLOSS`). Die Tapete liest per `texelFetch` und filtert über `psx_smooth` von Hand.
-  Neue Farbvariante: Bild mit gleichem Aufbau als `wallpaper_<name>.png`; neue Höhenstufe → `WALLPAPER_GLOSS`. Flecken
-  auf der Tapete sind offen (Spielkonzept 7.2).
+- **Tapete** = `Mat.wallpaper(wandhöhe, stockwerk, variante, holz)` mit `shaders/psx_wall.gdshader`: drei Bänder ab
+  Stockwerksboden – Vertäfelung und Leiste unter `wandhöhe` aus dem Holzbild (`WALLPAPER_BASE`/`_FRIEZE`), dazwischen
+  die Tapetenkachel; die gemalte Vertäfelung sieht man nur noch, wo keine modellierte davorsteht (Treppenhäuser,
+  Aufzüge); `Mat.wallpaper_split(a, b, normale)` für Wände zwischen zwei Räumen (Tapete, Kachel und Holz je Seite).
+  Der Shader tastet die Tapetenkachel (`paper_tex`, `paper_normal`, `paper_rough`, `paper_tile` in
+  Metern) normal mit Mipmaps ab – `textureGrad` mit den Ableitungen ohne Bahnversatz, sonst flimmerte die Naht;
+  Glanz aus der Rauheit (`rough_matte`/`rough_gloss`); das Holz per Hand bilinear. Holzoberfläche aus der Höhenkarte: Normale aus dem Sprung zum Nachbar-Texel, Glanz
+  je Graustufe (`WALLPAPER_GLOSS`).
+  **Bahnen** (gegen die Eintönigkeit langer Flure): die Tapete klebt in Bahnen von `strip_width` 0,53 m in Weltkoordinaten,
+  jede mit fester Zufallszahl aus Bahn, Wandlage (`wall_key`, flach aus dem Vertex) und Stockwerk – Helligkeit
+  ±`strip_shade`, selten ausgeblichen (`strip_faded`) oder um 1–4 cm versetzt angesetzt (`strip_shifted`).
+  Nähte (unter einem Pixel nur anteilig dunkler, `fwidth`), ein Teil (`seam_loose`) gelöst: oben unter der
+  Leiste oder über der Vertäfelung (`paper_bottom` 0,9 m) zum Ende hin offen, die Kante daneben gewölbt (Normale) mit heller Rückseite. Keine
+  Speicherfelder, gleich nach jedem Laden.
+  Neue Tapete: Farbe als `wallpaper_<name>.png`, Normal Map und Rauheit als `wallpaper_<muster>_normal.png` /
+  `_rough.png` und eine Zeile in `Mat.WALLPAPERS` (Muster, Kachel in Metern); neues Holz als `wainscot_<name>.png`
+  (gleicher Aufbau), neue Höhenstufe → `WALLPAPER_GLOSS`. Flecken auf der Tapete sind offen (Spielkonzept 7.2).
 - **Geometrie** (`util/geo.gd`): `Geo.solid` (Kollisionskasten mit Mesh), `Geo.mesh` (nur Optik), `Geo.collider`
   (Kasten ohne Mesh), `Geo.box_part` (Mesh + Form an vorhandenem Körper), `Geo.add_surface` (eigene Flächen),
   `Geo.wall_mesh` (siehe 4 „Wände“), `Geo.grain_box`, `Geo.rounded_box`, `Geo.runner_mesh`.
@@ -2247,7 +2287,7 @@ selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Ra
   nimmt das Fenster keinen Fokus und liegt außerhalb des Bildschirms – nicht minimiert, sonst zeichnet Godot nicht und
   der Screenshot bleibt leer. Der Fokus würde schon beim Erstellen des Fensters geklaut, deshalb startet jeder Lauf mit
   dem Editor-Binary ohne Fokus (`window/size/no_focus.editor_runtime` in `project.godot`); ohne `--bg` holt
-  `Game._ready` ihn sofort nach. Grafik ohne PS1-Look prüfen (`--no-psx`, 1 „Grafik“).
+  `Game._ready` ihn sofort nach.
 - Nach Änderungen am Speichern (nicht an der Welt): `--savetest` (`alles gleich` erwartet).
 - Headless gibt es kein Bild: Autosave ohne Vorschau (in `user://saves_headless/`), Shader werden nicht kompiliert
   (Shader-Änderungen mit Fenster und `--bg --shot=…` prüfen).

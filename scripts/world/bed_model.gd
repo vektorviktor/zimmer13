@@ -13,6 +13,9 @@ class_name BedModel
 const POST := 0.19
 const BEAM := 0.17
 const FREE := 0.33
+## Oberkante der Pfosten: die Balken sitzen mittig, die Pfosten stehen oben um den halben Unterschied vor (0,51 m –
+## so hoch ist auch der Nachttisch)
+const POST_TOP := FREE + BEAM + (POST - BEAM) / 2.0
 ## Matratze: Unterkante (Lattenrost), Oberkante, Rundung; Spalt zum Rahmen je Seite
 const MATTRESS_BOTTOM := 0.42
 const TOP := 0.6
@@ -58,17 +61,17 @@ static func build(parent: Node3D, size: Vector2, head_x: float) -> Node3D:
 	var hx := size.x / 2.0 - POST / 2.0   # Mitte der Pfosten, Längs- und Querbalken
 	var hz := size.y / 2.0 - POST / 2.0
 	var frame_top := FREE + BEAM
-	var post_top := frame_top + (POST - BEAM) / 2.0
+	var post_top := POST_TOP
 	var n := 0
 	for x in [-1.0, 1.0]:
 		for z in [-1.0, 1.0]:
-			_beam(parent, Vector3(POST, post_top, POST), Vector3(x * hx, post_top / 2.0, z * hz), 1, n)
+			beam(parent, Vector3(POST, post_top, POST), Vector3(x * hx, post_top / 2.0, z * hz), 1, n)
 			n += 1
 	for z in [-1.0, 1.0]:
-		_beam(parent, Vector3(size.x - 2.0 * POST, BEAM, BEAM), Vector3(0, FREE + BEAM / 2.0, z * hz), 0, n)
+		beam(parent, Vector3(size.x - 2.0 * POST, BEAM, BEAM), Vector3(0, FREE + BEAM / 2.0, z * hz), 0, n)
 		n += 1
 	for x in [-1.0, 1.0]:
-		_beam(parent, Vector3(BEAM, BEAM, size.y - 2.0 * POST), Vector3(x * hx, FREE + BEAM / 2.0, 0), 2, n)
+		beam(parent, Vector3(BEAM, BEAM, size.y - 2.0 * POST), Vector3(x * hx, FREE + BEAM / 2.0, 0), 2, n)
 		n += 1
 	_headboard(parent, size, head_x, Vector3(head_x * hx, frame_top, 0), n)
 	var room := inner(size)
@@ -108,16 +111,17 @@ static func _headboard(parent: Node3D, size: Vector2, head_x: float, pivot: Vect
 	parent.add_child(tilt)
 	var front := -head_x * (HOLDER.y + BOARD) / 2.0
 	for b in BOARDS:
-		_beam(tilt, Vector3(BOARD, b.y, size.y - BOARD_INSET), Vector3(front, b.x + b.y / 2.0, 0), 2, n)
+		beam(tilt, Vector3(BOARD, b.y, size.y - BOARD_INSET), Vector3(front, b.x + b.y / 2.0, 0), 2, n)
 		n += 1
 	var top: float = BOARDS[-1].x + BOARDS[-1].y + HOLDER_OVER
 	for z in [-1.0, 1.0]:
-		_beam(tilt, Vector3(HOLDER.y, top + HOLDER_SUNK, HOLDER.x), Vector3(0, (top - HOLDER_SUNK) / 2.0, z * size.y * HOLDER_SPREAD), 1, n)
+		beam(tilt, Vector3(HOLDER.y, top + HOLDER_SUNK, HOLDER.x), Vector3(0, (top - HOLDER_SUNK) / 2.0, z * size.y * HOLDER_SPREAD), 1, n)
 		n += 1
 
 
-## Ein Balken (Faser entlang Achse grain), Meshes je Maß und Nummer n geteilt – n verschiebt die Maserung.
-static func _beam(parent: Node3D, size: Vector3, pos: Vector3, grain: int, n: int) -> void:
+## Ein Balken (Faser entlang Achse grain), Meshes je Maß und Nummer n geteilt – n verschiebt die Maserung. Auch die
+## Bretter des Nachttischs (Nightstand).
+static func beam(parent: Node3D, size: Vector3, pos: Vector3, grain: int, n: int) -> void:
 	var key := "beam|%s|%d|%d" % [size, grain, n]
 	if not _meshes.has(key):
 		var offset := Vector2(fposmod(n * 0.37, 1.0), fposmod(n * 0.61, 1.0))

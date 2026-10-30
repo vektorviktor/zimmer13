@@ -15,9 +15,31 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
 - **Was das Spiel sein soll:** [SPIELKONZEPT.md](SPIELKONZEPT.md) (Entscheidungen mit Datum)
 - **Hauptgeschichte, Meilensteine eines optimalen Durchlaufs:** [HANDLUNG.md](HANDLUNG.md)
 - **Alle Gegenstände mit Stand und Handlungsbezug:** [GEGENSTAENDE.md](GEGENSTAENDE.md) – bei neuen Gegenständen pflegen
-- **Offene Punkte, Lücken, nicht Gebautes, Ideen:** [OFFEN.md](OFFEN.md) – neue Ideen dort in 6
+- **Offene Punkte, Lücken, nicht Gebautes, Ideen:** YouTrack, Projekt `ZIM` (siehe unten). [OFFEN.md](OFFEN.md)
+  ist seit 29.10. nur noch ein Verweis – nichts mehr hineinschreiben.
 - **Wie es gebaut ist:** [TECHNIK.md](TECHNIK.md)
 - **Starten, Steuerung, Debug-Parameter:** [README.md](README.md)
+
+## Aufgaben in YouTrack (Projekt ZIM, Entscheidung 29.10.)
+YouTrack ist die einzige Aufgabenliste – unabhängig vom Branch. Entscheidungen mit Datum bleiben im
+Spielkonzept, das Ticket verweist darauf (`SK 5.13`). Ist YouTrack nicht erreichbar: sagen, nicht blind weiterarbeiten.
+- **Ticket nur für Größeres:** braucht eine Entscheidung oder ist eine Idee; mehr als ein Commit
+  oder eine Sitzung oder eigener Branch; berührt Querschnitt (Speicherformat, `Item.Kind`/`GuestGenerator`, mehrere
+  Subsysteme); Bug aus dem Spiel, der nicht gleich behoben wird. Kleine Fixes, Werte, Doku: kein Ticket.
+- **State:** `Submitted` Idee · `To be discussed` Entscheidung fehlt · `Open` entschieden, baubar · `In Progress` ·
+  `Fixed` committet, Rauchtest grün · `Verified` **setzt nur der Nutzer** nach Prüfung im Spiel (sonst `Reopened`) ·
+  `Won't fix`/`Obsolete` gestrichen (bleibt stehen, damit es nicht neu vorgeschlagen wird). `Fixed` zählt als
+  erledigt (fehlt in `#Unresolved`); ein Epic wird automatisch erledigt, sobald alle Unteraufgaben es sind.
+  Gebautes mit Werten nur headless geprüft → Unteraufgabe der Prüfliste ZIM-59 auf `Fixed`.
+- **Type:** `Feature`, `Bug`, `Task`, `Cosmetics` (Grafikfeinschliff), `Epic` (große Bögen, Meilensteine).
+  **Subsystem** immer setzen. **Tags** für Querschnitt: `speicherformat`, `item-kind`, `hauptgeschichte`;
+  `ruht` = nicht von sich aus vorschlagen.
+- **Start:** Ticket auf `In Progress`, Kommentar mit Branch und berührten Dateien/Systemen. Dann **Überschneidungen
+  prüfen**: `project: ZIM State: {In Progress}` und `project: ZIM #Unresolved` im selben Subsystem bzw. mit
+  denselben Tags; Treffer in zwei, drei Zeilen melden und mit `relates to`/`depends on` verknüpfen.
+- **Abschluss:** Commit-Nachricht beginnt mit der Nummer (`ZIM-23: …`). Kommentar mit Commit-Hash, Branch,
+  gelaufener Rauchtest-Stufe und was nicht geprüft ist, dann `Fixed`. Nach dem Merge in master kurzer Vermerk.
+- Keine Secrets, Zugangsdaten oder Personaldaten in Tickets.
 
 ## Wichtigste Regeln
 - Kommentare, Doc-Kommentare (`##`) und Spieltexte auf Deutsch, Bezeichner auf Englisch. Doc-Kommentare
@@ -29,9 +51,9 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
   kompatibilität kommt erst spät (Entscheidung 19.10.). `VERSION`/`MIN_VERSION` nur erhöhen und `--savetest`
   nur laufen lassen, wenn sich am Speichern selbst etwas ändert (Felder in `collect`/`apply`, neue Gruppe →
   auch in `WORLD_GROUPS`).
-- **Grafik realistisch, nicht PS1:** Neue Materialien, Shader und Modelle auf das Bild *ohne* PS1-Look auslegen
-  und so prüfen (`--no-psx`). Der PS1-Umschalter bleibt und darf nicht brechen, wird aber nicht bevorzugt; ein
-  darauf optimierter Modus kommt erst am Ende (Spielkonzept 9.2, Entscheidung 25.10., TECHNIK.md 1 „Grafik“).
+- **Grafik realistisch:** Neue Materialien, Shader und Modelle in voller Auflösung mit Mipmaps, Normal- und
+  Rauheitskarten (Spielkonzept 9.2, TECHNIK.md 1 „Grafik“). Den alten Retro-Umschalter im Code (`Settings.psx_look`,
+  `PSX_SHADERS`, Snapping) nicht pflegen, nicht prüfen, nicht damit starten (Entscheidung 30.10.).
 - `Item.Kind` und die Zufallsaufrufe in `GuestGenerator.make()` nur am Ende erweitern (Spielstände) – prüft
   `tests/run.tscn` (`save_rules`).
 - Rauchtest in drei Stufen (TECHNIK.md 10): nach jeder Änderung `bash tests/smoke.sh schnell` (~½ min), nach Arbeit an

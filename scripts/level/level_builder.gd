@@ -598,6 +598,8 @@ var _hall_wallpapers := {}            ## Tapete im EG → dieselbe ohne Leiste, 
 var _named := {}                    ## Flächen-ID → Rect2 (Umriss)
 ## Wandstücke des Plans, an die Wandsachen gehängt werden: {horizontal, at (Mittellinie), from, to, half (halbe Dicke)}
 var _wall_index: Array[Dictionary] = []
+var _wainscot_runs: Array[Dictionary] = []   ## Wandseiten mit Vertäfelung (_note_wainscot), je Stockwerk
+var _post_spans: Array[Dictionary] = []      ## Holzpfeiler an waagerechten Wänden: z, Bereich in x (_corner_posts)
 ## Wandstöße für _joint_depth/_joints_on (siehe _index_joints)
 var _faces := {}
 var _ends := {}
@@ -766,6 +768,7 @@ func _build_plan_floor() -> void:
 	for w in _map["walls"]:
 		_build_wall(w)
 	_corner_posts()
+	_wainscot()
 	_floors_and_ceilings()
 	for info in _map["rooms"]:
 		_room(info)
@@ -845,6 +848,8 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 	_places = []
 	_named = {}
 	_wall_index = []
+	_wainscot_runs = []
+	_post_spans = []
 	_faces = {}
 	_ends = {}
 	_furnishings = []
@@ -1251,6 +1256,9 @@ func _build_wall(w: Dictionary) -> void:
 			_glass_wall(horizontal, fixed, p0, p1)
 		else:
 			_wall_piece(horizontal, fixed, m0, m1, mine, minus[i], plus[i])
+			var half := float(w.get("thickness", T)) / 2.0
+			_note_wainscot(horizontal, fixed, half, -1.0, p0, p1, mine, minus[i])
+			_note_wainscot(horizontal, fixed, half, 1.0, p0, p1, mine, plus[i])
 		_wall_index.append({"horizontal": horizontal, "at": fixed, "from": p0, "to": p1,
 			"half": float(w.get("thickness", T)) / 2.0})
 	for o in openings:
@@ -1336,8 +1344,106 @@ func _corner_posts() -> void:
 			var width := 2.0 * half + 0.06
 			var pos := Vector2(end.x + ex * (0.05 - depth / 2.0), end.y)
 			Geo.mesh(root, Geo.box(Vector3(depth, H, width)), wood, Vector3(pos.x, H / 2.0, pos.y))
+			_post_spans.append({"z": end.y, "span": Vector2(pos.x - depth / 2.0 - 0.015, pos.x + depth / 2.0 + 0.015)})
 			Geo.mesh(root, Geo.box(Vector3(depth + 0.03, 0.18, width + 0.03)), wood, Vector3(pos.x + ex * 0.015, 0.09, pos.y))
 			Geo.mesh(root, Geo.box(Vector3(depth + 0.03, 0.1, width + 0.03)), wood, Vector3(pos.x + ex * 0.015, H - 0.05, pos.y))
+
+
+## Wandseite für die Vertäfelung merken (Spielkonzept 7.2): Seite side (−1 = Nord- bzw. Westseite) der Wand bei fixed
+## von p0 bis p1 mit den Öffnungen openings (Vector4 wie _opening_vec), Raumart kind. Vertäfelt sind alle Seiten mit
+## Tapete außer Treppenhäusern, Aufzügen, verschlossenen Zimmern und Lufträumen über dem EG.
+func _note_wainscot(horizontal: bool, fixed: float, half: float, side: float, p0: float, p1: float, openings: Array,
+		kind: String) -> void:
+	if _level < 0 or _attic:
+		return
+	if kind.begins_with("hall:"):
+		if _level > 0:
+			return
+		kind = kind.trim_prefix("hall:")
+	if kind in ["stairs", "elevator", "sealed"] or _wall_material(kind) == null:
+		return
+	_wainscot_runs.append({"horizontal": horizontal, "fixed": fixed, "half": half, "side": side, "from": p0,
+		"to": p1, "openings": openings})
+
+
+## Vertäfelung der gemerkten Wandseiten (Wainscot): freie Stücke zwischen anstoßenden Wänden, Türen (bis unter die
+## Bekleidung) und Holzpfeilern im Raster, unter Fenstern das Teil ohne Leiste. Ein Halbfeld kommt an das Ende an
+## einer Tür oder einem Fenster.
+func _wainscot() -> void:
+	if _wainscot_runs.is_empty():
+		return
+	var kit := Wainscot.new()
+	# Außenkante der Bekleidung neben der Öffnung (OpeningFrame; DoorCasing reicht 9,6 cm), 1 cm darunter geschoben
+	var reach := 0.086 - 0.01
+	for run in _wainscot_runs:
+		var horizontal: bool = run["horizontal"]
+		var side: float = run["side"]
+		var face: float = float(run["fixed"]) + side * float(run["half"])
+		var free: Array[Vector2] = [Vector2(run["from"], run["to"])]
+		var windows: Array[Vector2] = []
+		var edges: Array[float] = []   # Enden an Türen und Fenstern
+		for op: Vector4 in run["openings"]:
+			if op.w < Wainscot.HEIGHT - 0.01:   # Vector4 rechnet in 32 Bit: die Fensterbank 0,9 käme knapp darunter an
+				var door := Vector2(op.x - op.y / 2.0 - reach, op.x + op.y / 2.0 + reach)
+				free = _cut_span(free, door)
+				edges.append_array([door.x, door.y])
+			elif op.w < Wainscot.HEIGHT + 0.2:
+				windows.append(Vector2(op.x - op.y / 2.0 - reach - 0.01, op.x + op.y / 2.0 + reach + 0.01))
+				edges.append_array([windows[-1].x, windows[-1].y])
+		for blk in _wainscot_blocks(horizontal, face, side, float(run["fixed"])):
+			free = _cut_span(free, blk)
+		var under: Array[Vector2] = []
+		for win in windows:
+			for f in free:
+				if win.x < f.y and win.y > f.x:
+					under.append(Vector2(maxf(win.x, f.x), minf(win.y, f.y)))
+			free = _cut_span(free, win)
+		var origin := Vector3(0, 0, face) if horizontal else Vector3(face, 0, 0)
+		var along := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
+		var out := Vector3(0, 0, side) if horizontal else Vector3(side, 0, 0)
+		var at_edge := func(t: float) -> bool: return edges.any(func(e: float) -> bool: return absf(e - t) < 0.001)
+		for f in free:
+			kit.add_run(origin, along, out, f.x, f.y, false, at_edge.call(f.y) and not at_edge.call(f.x))
+		for u in under:
+			kit.add_run(origin, along, out, u.x, u.y, true)
+	kit.finish(root)
+
+
+## Was die Vertäfelung auf der Fläche face (Seite side der Wand bei fixed) unterbricht, als Bereiche entlang der Wand:
+## senkrecht anstoßende oder durchlaufende Wände und Holzpfeiler.
+func _wainscot_blocks(horizontal: bool, face: float, side: float, fixed: float) -> Array[Vector2]:
+	var blocks: Array[Vector2] = []
+	for w in _map["walls"]:
+		var a := _v2(w["a"])
+		var b := _v2(w["b"])
+		if is_equal_approx(a.y, b.y) == horizontal:
+			continue
+		var at := a.x if horizontal else a.y
+		var r0 := minf(a.y, b.y) if horizontal else minf(a.x, b.x)
+		var r1 := maxf(a.y, b.y) if horizontal else maxf(a.x, b.x)
+		var reaches := (r0 <= face + 0.02 and r1 >= face + 0.02) if side > 0.0 else (r1 >= face - 0.02 and r0 <= face - 0.02)
+		if reaches:
+			var h := float(w.get("thickness", T)) / 2.0
+			blocks.append(Vector2(at - h, at + h))
+	if horizontal:
+		for post in _post_spans:
+			if absf(float(post["z"]) - fixed) < 0.01:
+				blocks.append(post["span"])
+	return blocks
+
+
+## Bereiche spans ohne cut (Reste unter 1 mm fallen weg).
+func _cut_span(spans: Array[Vector2], cut: Vector2) -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	for s in spans:
+		if cut.y <= s.x or cut.x >= s.y:
+			result.append(s)
+			continue
+		if cut.x - s.x > 0.001:
+			result.append(Vector2(s.x, cut.x))
+		if s.y - cut.y > 0.001:
+			result.append(Vector2(cut.y, s.y))
+	return result
 
 
 ## Läuft die waagerechte Wand am Ende end in Richtung ex mit einer anderen weiter?
@@ -1653,6 +1759,10 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			door.look = Door.Look.ATTIC
 	door.position = center - right * width / 2.0
 	door.rotation.y = yaw
+	# Wandhaut (Fliesen, Fassade, Beton) vor der Wand: der Rahmen der Zimmertür sitzt davor (+Z = Seite „innen“)
+	var outside_kind := k_minus if inner > 0 else k_plus
+	door.casing_lift = Vector2(SKIN_FRONT if _skin_material(outside_kind) else 0.0,
+		SKIN_FRONT if _skin_material(inside_kind) else 0.0)
 	root.add_child(door)
 	_doors.append({"pos": center, "door": door, "kind": kind, "into": into3, "hinge": hinge})
 	light_rooms.door(c, side, door)
@@ -1922,6 +2032,7 @@ func _room(plan: Dictionary) -> void:
 	}
 	if not plan.get("suite", false):   # Suiten betritt man durchs Nachbarzimmer: kein Schild an der Verbindungstür
 		_sign(label, Vector3(0, 2.45, -0.11), 180.0, SIGN_EM_ROOM)
+		door.add_room_plate(label, info["door_front"])   # Spion und Plakette mit der Nummer auf der Flurseite
 	if households.has(no):
 		info["household"] = households[no]
 		door.resident_name = door_name(households[no])   # erscheint beim Hinsehen an der Tür (6.20)
@@ -2024,6 +2135,9 @@ func _furniture() -> void:
 			"dresser":
 				node = Dresser.new()   # Schubladen (Spielkonzept 3.5)
 				top = Dresser.SIZE.y
+			"nightstand":
+				node = Nightstand.new()   # neben dem Bett, eine Schublade (30.10.)
+				top = Nightstand.OUTER.y
 			"chest":
 				var chest := Chest.new()
 				if rooms.has(_room_id_at(c)):

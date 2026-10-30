@@ -139,7 +139,7 @@ geteilt (steht dann als a/b/c da). Zeilennummern gelten für `17de137` und versc
   `_build_strand`, `build_cup`, `_build_compass`, `_build_map`, `build_egg` (Z. 2245–2470, 1890) als statische
   Funktionen `ItemModels.x(item)` in eine eigene Datei. Felder wie `_swing`, `_coil` bleiben am Item.
 - **Warum:** `item.gd` mischt Regeln (Tasche, Flammen, Faulen, Werfen) mit Geometrie.
-- **Risiko:** niedrig (reine Optik; mit `--no-psx` kurz ansehen). **Stichwort:** `schnell`, `deko`, `kerzen`, `eier`.
+- **Risiko:** niedrig (reine Optik; kurz ansehen). **Stichwort:** `schnell`, `deko`, `kerzen`, `eier`.
 - **Größe:** L – **11a** Inline-Zweige → `_build_<art>`, **11b** Umzug in `item_models.gd`.
 
 ### 12. Item: Zerbrechen, Brei und Spritzer auslagern
@@ -305,5 +305,4 @@ geteilt (steht dann als a/b/c da). Zeilennummern gelten für `17de137` und versc
   `tests/checks.py` (Selbstprüfung „Debug-Parameter“) an.
 - **`tests/smoke.sh`:** schlank (386 Zeilen, Liste als Heredoc). Der Filter trifft absichtlich auch Teilstrings der Argumente
   (`*"$FILTER"*`). Kein eigener Happen nötig.
-- **PS1-Umschalter (`Mat.psx` in den Modellen):** beim Umziehen von Modellcode (Happen 11) unverändert mitnehmen.
 - **`guest_body.gd`/`jury_doll.gd` `_turn`:** rechnen bewusst anders (Rest-Pose bzw. ohne Elternkette) – nicht in Happen 23b ziehen.

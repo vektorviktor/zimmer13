@@ -3,7 +3,7 @@
 Der rote Faden eines **optimalen Durchlaufs**: welche Meilensteine die Hauptgeschichte trägt, wann man sie frühestens
 bzw. idealerweise erreicht und was jeder freischaltet. Entschieden wird weiter im [Spielkonzept](SPIELKONZEPT.md)
 (mit Datum); hier steht der Ablauf, der die Entscheidungen verbindet. Lose Ideen ohne Platz im Ablauf gehören nach
-[OFFEN.md](OFFEN.md) (6).
+YouTrack (Projekt ZIM, Zustand „Submitted“).
 
 **Status je Meilenstein:** **fest** = im Spielkonzept entschieden · **Anker** = als Eckpunkt gesetzt, Ausgestaltung
 offen · **Kandidat** = Vorschlag, noch nicht entschieden.
@@ -23,7 +23,7 @@ keiner von ihnen wird je darüber sprechen.
 
 **Was der Spieler nacheinander begreift** (Schichten aus 2.3: Gerücht → Indiz → Beweis → Wahrheit):
 1. Es ist real, und Deko schützt (Akt I).
-2. Das Hotel macht das jedes Jahr, und es führt Buch darüber (Akt II).
+2. Das Hotel macht das alle drei Jahre – die „Ernte“ (2.10) –, und es führt Buch darüber (Akt II).
 3. Frühere Gäste sind nie gegangen – ihre Sachen sind noch hier (Akt III).
 4. Das Monster war ein Mensch: der Heizer Josef Ahrend (Akt IV).
 5. Jeder, den man bis Halloween am Leben hält, kommt mit hinaus (Akt V–VI).
@@ -52,7 +52,7 @@ keiner von ihnen wird je darüber sprechen.
 | M7 | **Erster Abstieg** (K2): Gustavs Brille an der Leviathanmauer, Schlüssel zu Zimmer 18 | 3.–4.10. | fest (2.9, 7.4) | Zimmer 18 |
 | M7a | **Die Brille für Doris:** Abschied an der Gedenktafel, Gustavs Blechdose für die Kinder, Doris als Ohrenzeugin | bis 4.10., 20 Uhr | fest (2.9) | Kinder, Gerede über den Leviathan |
 | M7b | *sonst:* **Doris geht allein** – Brief in 033, Blutflecken vor der Leviathanmauer, ihr Tod ist sicher | 4.10., 20 Uhr | fest (2.9) | Schuld im Tagebuch |
-| M8 | Zimmer 18 (Gast von 2003, versiegelt): Notizbuch des Hausmeisters mit seinen Notizen, Schaltschlüssel, UV-Aufsatz | 4.–6.10. | fest (7.4) | drei Aufgaben im Notizbuch |
+| M8 | Zimmer 18 (Gast von 2005, versiegelt): Notizbuch des Hausmeisters mit seinen Notizen, Schaltschlüssel, UV-Aufsatz | 4.–6.10. | fest (7.4) | drei Aufgaben im Notizbuch |
 
 ### Akt III – Der Aufzug (8.–14. Oktober) · **Anker 2**
 
@@ -137,7 +137,8 @@ flowchart TD
 - Man kommt hin über Gustavs letzten Satz („Morgen früh gehe ich als Erstes zur Direktion und …“, 2.6, 2.9).
 - Am Morgen nach der Siegerehrung steht im **Hotelregister** an der Rezeption ein frisches Kreuz neben „Gustav Peters“.
   Niemand hat es gemacht – Personal sieht man nie (2.5).
-- Wer zurückblättert, findet **Kreuze seit 1987**, jedes Jahr im Oktober: Das Hotel macht das jedes Jahr. Dazu
+- Wer zurückblättert, findet **Kreuze seit 1987**, jeden dritten Oktober, meist die ganze Seite: Das Hotel macht das
+  alle drei Jahre (2.10). Dazu
   „Marion Teske, geb. Ahrend“ (2.3) – ohne den Namen Ahrend zu kennen, fällt es noch nicht auf; nach dem Kesselbuch
   (M12) schon.
 - **Warum stark:** kostet wenig (ein Dokument, das sich ändert), ist die Indiz-Stufe direkt nach dem Bruch und hält
@@ -151,7 +152,7 @@ flowchart TD
 - Bis zum ersten Angriff hängen Vorhängeschlösser an den Kellerzugängen; das Monster hat in der Nacht der
   Siegerehrung das östliche aufgebrochen (7.4). Der Weg führt also über das Treppenhaus Ost.
 - An der **Leviathanmauer** im Heizraum liegt **Gustavs Brille** – der Grund, hinunterzugehen (K8).
-- Daneben liegt der **Schlüssel zu Zimmer 18** (7.4, fest), verloren 2003 vom Gast aus 018. Man sieht den Heizraum
+- Daneben liegt der **Schlüssel zu Zimmer 18** (7.4, fest), verloren 2005 vom Gast aus 018. Man sieht den Heizraum
   und die Mauer zum ersten Mal und hört dahinter etwas atmen.
 - **Warum stark:** Story und Mechanik fallen zusammen – das Fenster des Suchtrupps belohnt den Mutigen, und es schließt
   sich.

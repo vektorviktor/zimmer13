@@ -18,6 +18,7 @@
   - [2.7 Das Ende an Halloween: Alle Überlebenden kommen hinaus (entschieden 2026-10-25)](#27-das-ende-an-halloween-alle-überlebenden-kommen-hinaus-entschieden-2026-10-25)
   - [2.8 Den Heizer erlösen – Marions Auftrag (entschieden 2026-10-25)](#28-den-heizer-erlösen--marions-auftrag-entschieden-2026-10-25)
   - [2.9 Wo ist Herr Peters? – Doris' Suche (entschieden 2026-10-26)](#29-wo-ist-herr-peters--doris-suche-entschieden-2026-10-26)
+  - [2.10 Die Ernte: alle drei Jahre (entschieden 2026-10-30)](#210-die-ernte-alle-drei-jahre-entschieden-2026-10-30)
 - [3. Core Gameplay Loop](#3-core-gameplay-loop)
   - [3.1 Spieler-Aktionen (Grundumfang)](#31-spieler-aktionen-grundumfang)
   - [3.2 Kein verstecktes Inventar – Hände und Tasche](#32-kein-verstecktes-inventar--hände-und-tasche)
@@ -145,7 +146,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 
 **Kernfrage für den Spieler:** *Vertraue ich den anderen Gästen – oder nehme ich mir, was ich zum Überleben brauche?*
 
-**Spielziel:** Dem Horrorhotel **entkommen**. Die Zeit läuft **durchgängig** (keine Level), gezählt in **Ingame-Tagen vom 1. Oktober bis Halloween** – draußen ist immer Nacht (siehe 2.1). Grafik: **realistischer Look** – der PS1-Look bleibt als Umschalter und wird am Ende als eigener Modus nachoptimiert (9.2, Entscheidung 2026-10-25).
+**Spielziel:** Dem Horrorhotel **entkommen**. Die Zeit läuft **durchgängig** (keine Level), gezählt in **Ingame-Tagen vom 1. Oktober bis Halloween** – draußen ist immer Nacht (siehe 2.1). Grafik: **realistischer Look** (9.2, Entscheidung 2026-10-25).
 
 ---
 
@@ -229,7 +230,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Kandidaten für Sperrbereiche:** Zimmer 18 · Personaltrakt bzw. Büro der Direktion · U2 (7.4) · Dachboden oder Turm.
 
 **Das Geheimnis: Das Abkommen und der Heizer (entschieden 2026-10-11)**
-- **Das Abkommen:** Die Gründerfamilie des Hotels hat **1987** einen Handel mit dem geschlossen, was unter dem Hotel lebt. Jedes Jahr gibt es eine **Halloween-Woche mit Gästen**, und es darf sich nehmen, wen es will. Dafür besteht das Hotel weiter, und die Familie lebt. Die Gäste werden eingeladen, ohne es zu wissen. Das Hotel ist ab dem 1. Oktober verschlossen.
+- **Das Abkommen:** Die Gründerfamilie des Hotels hat **1987** einen Handel mit dem geschlossen, was unter dem Hotel lebt. ~~Jedes Jahr~~ **Alle drei Jahre** (2026-10-30, 2.10) gibt es eine **Halloween-Woche mit Gästen** – die „Ernte“ –, und es darf sich nehmen, wen es will. Dafür besteht das Hotel weiter, und die Familie lebt. Die Gäste werden eingeladen, ohne es zu wissen. Das Hotel ist ab dem 1. Oktober verschlossen.
 - **Der Heizer – das erste Opfer:** Halloween 1987 kam es im **alten Heizkeller** (heute U2, 7.4) zum Unglück (Kesselbrand). Der Heizer blieb beim Feuer, um andere hinauszubringen. Das Personal schloss die Tür hinter ihm ab – so wurde das Abkommen besiegelt. **Er ist zu dem geworden, was es jetzt verlangt.** Das Personal hält ihn seitdem mit Gästen ruhig und hinter der **Leviathanmauer** (7.4); das Hotel lässt ihn nur für ein paar Minuten hinaus und zwingt ihn immer wieder in den alten Heizkeller zurück. Bevor er starb, schrieb er die **UV-Schrift von 1987 im Heizraum** (7.9, mit „J. A.“ gezeichnet – geändert 2026-10-25: der älteste Warnungszettel eines Gastes stammt von Edna, 2.7); sein **Kesselbuch** liegt in seinem Spind im Heizraum (7.4). **Er hieß Josef Ahrend** (entschieden 2026-10-24) – derselbe Name in Kesselbuch und Personalakte, die Initialen unter der UV-Schrift.
 - **Was das erklärt:**
   - **Deko schützt**, weil sie einmal Teil des Rituals war: Wer schmückt, gilt als *Gastgeber*, nicht als *Gabe*. Und weil sie ihn an das Fest erinnert, das er retten wollte – in geschmückten Bereichen zögert er.
@@ -239,10 +240,10 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
   - **Kerzen gehen aus**, wenn er vorbeikommt: das Feuer, das ihn getötet hat.
   - **Das Hotel behält jeden, der dort stirbt** (entschieden 2026-10-21, 4.20): der Heizer als das Monster, der
     Rezeptionist von 1987 als Kürbismann (4.19), die Verschwundenen als Lakengeist (4.18).
-  - **Die Leviathanmauer schließt immer später** (7.4, 4.8): Das Abkommen hält jedes Jahr schlechter.
-  - **Der Schlüssel an Halloween** (2.1) öffnet den Haupteingang für **alle, die bis zum 31. überlebt haben** (2.7, entschieden 2026-10-25; vorher „für genau einen“). Wen man im Lauf des Monats verliert oder opfert (4.11), der fehlt beim Hinausgehen.
+  - **Die Leviathanmauer schließt immer später** (7.4, 4.8): Das Abkommen hält ~~jedes Jahr~~ mit jeder Ernte (2.10) schlechter.
+  - **Der Schlüssel an Halloween** (2.1) öffnet den Haupteingang für **alle, die bis zum 31. überlebt haben** (2.7, entschieden 2026-10-25; vorher „für genau einen“). Wen man im Lauf des Monats verliert oder opfert (4.11), der fehlt beim Hinausgehen. **Fundort (2026-10-30, 2.10):** der Koffer des Schlüsselträgers von 2005 bei den Fundsachen in U2.
 - **Zwei Arten von Mitwissern:**
-  - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält; der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht.
+  - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): ~~der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält~~ (ersetzt 2026-10-30: der alte Herr auf den Fotos ist der Gründer, nur auf den Fotos zu sehen, 2.10); der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht.
   - **Angehörige, die suchen:** die **Tochter des Heizers**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel. **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer die Personalakte des Heizers kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
 - **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 (umgesetzt 2026-10-28: aufgeschlagen auf der Rezeption, 2.9) · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** des Heizers mit Foto (die Statur passt) · **Kesselbuch** im Spind des Heizers · der **alte Heizkeller** in U2 · die Koffer früherer Gäste im Lager (7.4).
 - **Enden (Vorschlag):**
@@ -443,6 +444,7 @@ UV-Licht (4.16).
 > *Die Direktion*
 
 „Wie jedes Jahr“ klingt harmlos und passt später zu den Zetteln früherer Gäste; „Verehrter Gast“ passt zu jeder Figur.
+Seit 2026-10-30 (2.10) ist der Satz eine Lüge – den Wettbewerb gibt es nur alle drei Jahre; Walter merkt es.
 
 *Erster Tagebucheintrag* (nach dem Lesen des Briefs):
 > Angekommen. Zimmer 13 ist hübsch, wenn auch etwas altmodisch. Morgen Abend kürt eine Jury die schönste Tür – ich
@@ -595,7 +597,8 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 - **Reaktionen nach Charakter:** Die Kinder fühlen sich schuldig („Wir haben ihm doch Kürbisse hingelegt …“) und
   schmücken wie verrückt · Magda Seidel: „Ketchup. Ein Trick der Direktion.“ · Doris Lange (Lärm) war seine einzige
   Freundin (6.16) und trauert – entschieden als eigener Bogen (2.9) · Hugo Stein will das Tagebuch kaufen (Dokumente, 2.3) · Paula Jansen will es lesen ·
-  Walter Ruprecht sagt nur: „Jedes Jahr einer.“
+  Walter Ruprecht sagt nur: ~~„Jedes Jahr einer.“~~ (entfällt 2026-10-30, 2.10 – Vorschlag: „Die Direktion? Hab ich
+  nie gesehen. Läuft trotzdem wie ein Uhrwerk.“)
 - **Weitererzählen hat einen Preis:** Wer vom Tagebuch erzählt, bringt die Gäste auf „Deko schützt“ – sie schmücken
   mehr, und man wird eher selbst der Schwächste (Kernfrage, 1).
 - **Kleidungsstück** (6.7) am Ende der Spur, etwa ein Hausschuh.
@@ -646,7 +649,8 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 **Entschieden**
 - **Besorgt der Spieler den Schlüssel, öffnet er an Halloween den Haupteingang – und alle, die bis zum 31. Oktober
   überlebt haben, kommen hinaus:** er selbst und jeder Gast, der noch lebt.
-- **Danach spricht keiner mehr darüber.** Alle sind schwer traumatisiert.
+- **Danach spricht keiner mehr darüber.** Alle sind schwer traumatisiert. **Ergänzt 2026-10-30 (2.10):** Solange das
+  Abkommen hält, vergessen die Überlebenden, was geschah; erst im Hotel kommt die Erinnerung zurück.
 - **Kein Einsammeln:** Öffnet der Spieler die Tür, kommen alle lebenden Gäste in die Lobby (Fest am Abend, 5.9) und
   gehen gemeinsam hinaus. **Schlussbild:** Draußen ist zum ersten Mal keine Nacht mehr (2.1) – die Überlebenden gehen
   schweigend ins Morgengrauen.
@@ -654,7 +658,7 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
   alle her; das lässt sich nicht verhindern. **Es gibt keine Zeitschleife** (2.2 verworfen). Ältere Spielstände bleiben
   ladbar wie sonst (8.10).
 
-**Die drei Enden (entschieden 2026-10-26, noch nicht umgesetzt)** – je eine Zwischensequenz, ausgelöst von der
+**Die drei Enden (entschieden 2026-10-26, noch nicht umgesetzt)** – je eine Zwischensequenz (seit 2026-10-30 Standbilder mit Text, 2.10), ausgelöst von der
 **Mitternachtsglocke** (7.8, zwölf Schläge) in der Nacht zum 1. November. Damit ist der Zeitpunkt der Öffnung
 entschieden. Marion und Liesel sind in keinem der drei am Tor: Sie bleiben freiwillig (2.8, oben) – ihre Plätze
 bleiben leer.
@@ -664,12 +668,13 @@ bleiben leer.
    zur Tür; sie fällt vor ihnen zu, und sie bleiben drinnen. Ist der Leviathan erlöst (2.8), ist er nicht dabei, ebenso
    ein erlöster Kürbismann (4.21). Den Vampir (4.22, falls gebaut) erwischt im Hintergrund das erste Morgenlicht, und er
    zerfällt zu Staub. Alle gehen schweigend hinaus, vor dem Hotel wird das **Gruppenfoto** gemacht (5.9) – mit den
-   Lücken für die Toten –, und das Bild wird langsam dunkel.
+   Lücken für die Toten –, und das Bild wird langsam dunkel. **Geteilt 2026-10-30 (2.10):** Ist der Leviathan nicht
+   erlöst, hält das Abkommen – alle vergessen, auch der Spieler. Ist er erlöst, vergisst niemand.
 2. **Ohne Schlüssel, der Leviathan nicht erlöst – er holt alle.** Das Tor bleibt zu. Alle drängen sich panisch davor,
    rütteln, schlagen dagegen; im Hintergrund holt der Leviathan in der Lobby einen nach dem anderen. Zuletzt steht er
    vor dem Spieler – und holt auch ihn.
 3. **Ohne Schlüssel, der Leviathan erlöst – der Spieler wird der neue Heizer.** Das Abkommen von 1987 (2.3) braucht ein
-   Monster; seit 1988 ist es der Heizer, den man an Halloween einschloss (2.8). Ist Josef Ahrend erlöst und der Schlüssel
+   Monster; seit ~~1988~~ 1990 (der ersten Ernte, 2.10) ist es der Heizer, den man an Halloween einschloss (2.8). Ist Josef Ahrend erlöst und der Schlüssel
    fehlt, nimmt das Hotel den Spieler an seine Stelle: Das Tor bleibt zu, kein Angriff, Stille. Die Lampen in der Lobby
    gehen eine nach der anderen aus, unten flammt das Feuer von 1987 wieder auf, das seit dem Ritual erloschen war, die Rohre werden heiß. Der Blick
    wechselt: Der Spieler sieht jetzt mit den Augen des Monsters (verzerrt, flackernd) – er **ist** der Leviathan – und
@@ -679,15 +684,16 @@ bleiben leer.
      ein Monster gibt.
 
 **Zu den Enden noch offen**
-- Ein **Epilog im nächsten Jahr** (vorgeschlagen, nicht entschieden): Am 1. Oktober kommen neue Gäste an, an der
-  Fotowand (5.14) hängt das Gruppenfoto 2026 mit lauter verwischten Gesichtern, in Zimmer 13 liegt ein Warnungszettel
-  in der Schrift des Spielers. Für Ende 2 und 3?
+- Ein **Epilog ~~im nächsten Jahr~~ zur nächsten Ernte 2029** (vorgeschlagen, nicht entschieden): Am 1. Oktober kommen
+  neue Gäste an, an der Fotowand (5.14) hängt das Gruppenfoto 2026 mit lauter verwischten Gesichtern – nur der alte
+  Herr ist scharf (2.10) –, in Zimmer 13 liegt ein Warnungszettel in der Schrift des Spielers. Für Ende 2 und 3?
 - **Wer selbst zum Vampir geworden ist** (4.22), kann bei Ende 1 nicht ins Licht – braucht ein eigenes Ende.
-- **Lässt sich die Sequenz steuern** (den Schlüssel selbst drehen, in Ende 3 selbst zugreifen) oder läuft sie ganz
-  von allein ab?
+- ~~**Lässt sich die Sequenz steuern** (den Schlüssel selbst drehen, in Ende 3 selbst zugreifen) oder läuft sie ganz
+  von allein ab?~~ → läuft von allein, Standbilder mit Text (2.10, 2026-10-30).
 - Wie wird das Fressen in Ende 3 gezeigt, ohne die Altersempfehlung (ab 16) zu sprengen – Schnitte, Schatten, Ton?
 - **Edna Wiegand war 1987 als Erwachsene im Hotel und kam hinaus.** Sie schrieb den Warnungszettel von Oktober
-  1987 („E. K., Zimmer 017“), im Register steht sie mit Geburtsnamen „geb. K…“. Sie bleibt alt.
+  1987 („E. K., Zimmer 017“), im Register steht sie mit Geburtsnamen „geb. K…“. Sie bleibt alt. Dass sie und Liesel
+  sich erinnern, liegt daran, dass das Abkommen 1987 noch nicht galt (2.10).
 - **Den Rezeptionisten hat Liesel Brück geköpft** (H26, Zimmer 025, ängstlich) – 1987 ein Teenager, heute um die
   55, Generation alt. Sie kam hinaus und ist als Gast zurückgekommen, um ihm seinen Kopf wiederzugeben, den sie
   damals auf dem Dachboden versteckt hat: die **Auftraggeberin fürs Erlösen** (4.21). **Das zweite Kind kam nicht
@@ -710,6 +716,8 @@ bleiben leer.
 - **Das Schweigen erklärt das Hotel:** Darum wirkt die Einladung jedes Jahr („Wie jedes Jahr“, 2.5), darum warnt draußen
   niemand, darum musste Marion selbst kommen, um zu erfahren, was 1987 geschah (2.3). Gäste wie Oskar Pohl, der meint,
   schon einmal hier gewesen zu sein, und sich an nichts erinnert (H39), können Überlebende früherer Jahre sein.
+  **Entschieden 2026-10-30 (2.10):** Oskar hat 2005 überlebt und fängt an, sich zu erinnern – darum hat ihn das Hotel
+  wieder eingeladen.
 - **Die Warnungszettel** stammen von denen, die es nicht hinausgeschafft haben (4.13) – und von Überlebenden wie Edna,
   solange sie noch drin waren.
 - **In Jahren ohne Schlüssel** kam niemand hinaus. Ihre Koffer stehen im Lager (7.4).
@@ -833,7 +841,8 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   aufgeschlagenes Buch auf der Rezeption, [E] liest es. Oktober 2026 nennt je Haushalt Zimmer und Namen wie an der Tür
   (6.20), dazu „geb. Ahrend“ und „geb. K…“; jeder Tote bekommt sein Kreuz **am Morgen danach ab 6 Uhr** (wie die
   Mitteilung), Gustav also am 3. Oktober. Zurückblättern zeigt jeden Oktober seit 1987 mit ein paar Zeilen und so vielen
-  Kreuzen, wie auf dem Gruppenfoto des Jahres Gesichter verwischt sind (5.14); Edna steht 1987 als „Edna K…“ in
+  Kreuzen, wie auf dem Gruppenfoto des Jahres Gesichter verwischt sind (5.14) – **geändert 2026-10-30 (2.10):** Kreuze
+  nur in Erntejahren, ohne Schlüssel die ganze Seite, dazu die Überlebenden von 2005 und ihre Rückkehr; Edna steht 1987 als „Edna K…“ in
   Zimmer 017. Die Namen früherer Jahre sind erfunden (Vorschlag). Gelesen: ein neues Kreuz und die alten Jahre je als
   Notiz im Notizbuch (3.10).
 - **Am Brett hängt eine neue Mitteilung** (dieselbe Schrift wie der Aushang, 2.5; umgesetzt 2026-10-27 – ab 6 Uhr am
@@ -907,6 +916,135 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   von 020 (im Plan prüfen)?
 - Was, wenn Doris vorher stirbt (sie ist keine Kernfigur)? Vorschlag: In der harmlosen Phase kann sie es nicht – die
   ersten Angriffe holen niemanden (2.1).
+
+### 2.10 Die Ernte: alle drei Jahre (entschieden 2026-10-30)
+> Noch nicht umgesetzt. Ändert 2.3 („jedes Jahr“, der Erbe), 2.6 (Walter), 2.7 (Vergessen, Ende 1), 5.14 (Fotowand)
+> und 7.4 (Zimmer 18: 2003 → 2005, Fundsachen). Anlass: Die Fotowand hängt 14 Rahmen mit Lücken, das Konzept sagte
+> „jedes Jahr seit 1987“ – und nach 2.7 sterben ohne Schlüssel alle, nicht ein paar je Jahr. **Am selben Tag
+> ergänzt:** Ankunftsfoto statt Foto beim Fest, Rudolf Hain, das Sekretariat, Standbilder mit Text für erzählte Szenen.
+
+**Der Rhythmus**
+- Die Halloween-Woche mit geladenen Gästen – die **„Ernte“** – gibt es **alle drei Jahre**: 1987, 1990, 1993 … 2023,
+  **2026**. 1987 + 13 × 3 = 2026: **14 Ernten**, genau die 14 Rahmen der Fotowand (13 Fotos und der leere Rahmen 2026).
+- **Dazwischen läuft das Hotel normal:** gewöhnliche Gäste, keine Halloween-Woche, kein Fest, kein Gruppenfoto, keine
+  Toten. Im Gästebuch haben auch diese Oktober ihre Zeilen, nur ohne Kreuze.
+- **Warum drei Jahre: Der Gründer hat es ausgehandelt.** Im Vertrag (Büro der Direktion) ist „alljährlich“
+  durchgestrichen, daneben von Hand „alle drei Jahre“, gegengezeichnet. Eine verschwundene Belegung jedes Jahr wäre
+  aufgefallen. Der Vertrag ist damit selbst ein Beweis (2.3, Schicht 3).
+
+**Wie eine Ernte ausgeht** (folgt aus 2.7)
+- **Ohne Schlüssel stirbt jeder:** Im Gästebuch ist die **ganze Seite gekreuzt**. So endeten alle Ernten außer 1987 und
+  2005.
+- **Mit Schlüssel** Kreuze nur für die Toten des Monats, die anderen kamen hinaus.
+- **1987 war das Abkommen noch nicht besiegelt** – das geschah erst in der Nacht zu Allerheiligen, als man den Heizer
+  einschloss (2.3). Das Hotel war nicht verschlossen; wer Halloween überlebte, ging am Morgen hinaus: Edna, Liesel,
+  Marion. Das Ding unter dem Hotel war schon da und nahm sich Leute, ein Gefängnis war das Hotel noch nicht.
+- **2005** kamen Gäste mit dem Schlüssel hinaus (unten).
+
+**Das Jahresfoto: das Ankunftsfoto**
+- ~~entsteht drinnen beim Fest am Abend des 31.~~ (verworfen am selben Tag: Wer im Lauf des Monats stirbt, wäre beim
+  Fest schon nicht mehr da und könnte nicht verwischt sein.) Es entsteht **bei der Ankunft am 1. Oktober vor dem
+  Haupteingang**, solange alle noch leben – danach gehen sie hinein, und das Tor ist zu.
+- Wer in jener Ernte geholt wird, **verwischt** nach und nach. In Ernten ohne Schlüssel ist am Ende **jedes Gesicht
+  verwischt** außer dem des alten Herrn (unten); 1987 und 2005 sind die Überlebenden scharf.
+- **2026 läuft es mit:** Am Morgen des 2. Oktober hängt das Ankunftsfoto im bis dahin leeren Rahmen – das Hotel hängt es
+  auf wie es die Kreuze ins Gästebuch setzt. Stirbt jemand, ist sein Gesicht **am Morgen danach ab 6 Uhr** verwischt,
+  zugleich mit dem Kreuz (2.9). Die Fotowand zeigt dem Spieler, wen er verloren hat.
+- **Verwischt bleibt verwischt** – in jedem Ende, auch wenn das Abkommen bricht.
+- **Das Foto von 2005 fehlt an der Wand:** Wo es hing, ist nur ein hellerer **Fleck auf der Tapete** mit leerem Nagel.
+  Die Direktion hat es abgenommen, weil darauf Überlebende scharf zu sehen sind. Es liegt im **Sekretariat**, leicht zu
+  finden: in einer nicht abgeschlossenen Schreibtischschublade, das Glas im Rahmen gesprungen. Das Sekretariat ist das
+  Vorzimmer des Büros der Direktion, aber **kein Sperrbereich** – im Plan fehlt es noch (malt der Nutzer).
+- Das Gruppenfoto beim Fest (5.9) und das Foto draußen vor dem Hotel in Ende 1 (2.7) sind eigene Bilder.
+
+**Das Vergessen**
+- **Wen das Hotel behält, den vergisst die Welt draußen.** Das Verwischen auf den Fotos ist dieses Vergessen. Niemand
+  sucht, keine Polizei kommt – nur Gästebuch und Fotowand erinnern sich. Darum fällt nicht auf, dass alle drei Jahre
+  eine ganze Belegung verschwindet.
+- **Auch die Überlebenden vergessen**, was geschah. Im Hotel kommt die Erinnerung zurück.
+- Das Vergessen gehört zum Abkommen, und **1987 galt es noch nicht**: Darum erinnern sich Edna und Liesel (2.7), darum
+  weiß Marion, dass ihr Vater hier starb.
+- **Das Hotel lädt wieder ein,** wer sich zu erinnern anfängt oder wer noch etwas vom Hotel hat.
+
+**2005 – Zimmer 13, Zimmer 18 und der Schlüssel** (ersetzt „um 2003“ in 7.4)
+- Die Gäste aus **Zimmer 13 und 018** ermittelten und fanden den Schlüssel (2.1). Sie ahnten, dass es sie trifft, und
+  **gaben ihn einem Verbündeten** – dem **Schlüsselträger Rudolf Hain**, 2005 und 2008 in **Zimmer 014** (heute
+  Walters Zimmer). Beide wurden geholt und sind auf dem Foto 2005 verwischt.
+- Der Schlüsselträger schloss an Halloween das Tor auf, die Überlebenden kamen hinaus. Den Schlüssel **nahm er bewusst
+  mit**: Das Hotel sollte ihn nicht wieder verstecken, und er wollte zurückkommen und die Nächsten hinausholen. Draußen
+  vergaß er alles; geblieben ist nur, dass er den Schlüssel nicht hergeben darf.
+- **2008** lud ihn das Hotel wieder ein, **weil es den Schlüssel zurückwollte**. Er kam ohne Erinnerung, den Schlüssel
+  im Gepäck, und starb in dieser Ernte. Sein **Koffer** liegt seitdem bei den **Fundsachen in U2** (7.4), darin der
+  Schlüssel – damit ist der **Fundort des Schlüssels entschieden** (2.1). Hinter der Leviathanmauer hat ihn 2011–2023
+  niemand gefunden.
+- **Die übrigen Überlebenden von 2005** sind draußen anderweitig gestorben oder wurden zu einer späteren Ernte wieder
+  eingeladen: Namen von 2005 ohne Kreuz tauchen 2008, 2011 … wieder auf, dann mit Kreuz (Fährten im Gästebuch).
+- **Oskar Pohl** (H39, 045) ist einer von ihnen. Er fängt an, sich zu erinnern, und das duldet das Hotel nicht – darum ist
+  er 2026 wieder eingeladen. Im Hotel kommt es bruchstückhaft zurück („Einer hat das Tor aufgemacht. Er hatte einen
+  Schlüssel.“ – Vorschlag).
+- **Die Fährte zum Schlüssel** (Texte Vorschlag): die Bleistiftnotiz in Zimmer 18 nennt ihn („Falls uns etwas passiert –
+  R. hat ihn.“) – zuerst denkt man an Walter **R**uprecht in 014; das Gästebuch klärt es: 2005 und 2008 stand in 014
+  „Rudolf Hain“, 2005 ohne Kreuz, 2008 mit · Fotos: 2005 scharf neben zwei verwischten Gesichtern (im Sekretariat,
+  oben), 2008 verwischt · Oskars Erinnerung · sein Koffer mit Namensschild in U2, darin der Schlüssel und ein Zettel
+  von 2008: „Ich weiß nicht mehr, woher ich ihn habe. Aber ich darf ihn nicht hergeben.“
+
+**Der alte Herr auf den Fotos** (ersetzt den Erben aus 2.3)
+- Er ist der **Gründer**, der 1987 den Handel schloss. Auf dem Foto von 1987 steht er leibhaftig, schon damals alt; bald
+  danach starb er, und das Hotel behält ihn (2.3). Seitdem steht er unverändert hinten rechts auf jedem Foto – **bei
+  der Ankunft steht dort niemand**, er erscheint erst auf dem Bild. Er ist das Abkommen, sichtbar gemacht.
+- **Den Erben als uralten Dauergast gibt es nicht.** Die Nachkommen leben draußen, weit weg, und kommen nie her („die
+  Familie lebt“, 2.3). Die Hotelleitung ist das Abkommen selbst (2.5). Unter den Tätern, die schweigen, bleibt der Page
+  von 1987.
+- **Spuren** (Vorschlag): Edna und Liesel erkennen ihn auf dem Foto als den alten Herrn Direktor von 1987 · im Büro der
+  Direktion sein Porträt und seine Unterschrift unter dem Vertrag.
+- **Das Ankunftsfoto 2026:** Der Vorspann zeigt, wie es entsteht – hinten rechts steht niemand. Am 2. Oktober hängt es an
+  der Wand, und dort steht er. Der Spieler steht selbst mit auf dem Bild. Auf dem Foto draußen in Ende 1 fehlt er –
+  außerhalb des Hotels gibt es ihn nicht.
+
+**Die Enden** (ergänzt 2.7)
+- **Ende 1 teilt sich** am erlösten Leviathan (2.8, der Vertrag verbrannt):
+  - **Schlüssel, Leviathan nicht erlöst:** Alle kommen hinaus, das Abkommen hält – **sie vergessen**, wie 2005, auch der
+    Spieler. Die nächste Ernte ist 2029.
+  - **Schlüssel und Leviathan erlöst:** Das Abkommen ist gebrochen, **niemand vergisst**. Die Fotowand bleibt, wie sie ist.
+- **Wie Ende 1a das Vergessen zeigt:** Nach dem Gang ins Morgengrauen zeigen die letzten Standbilder das **Notizbuch** des
+  Spielers. Die Einträge verblassen Zeile für Zeile, bis eine einzige in seiner Schrift übrig bleibt – wie bei Rudolf
+  Hain. Letztes Bild: ein Umschlag mit dem Hotelwappen, „Oktober 2029“. Die übrige Zeile kann der Warnungszettel des
+  Epilogs sein (2.7); welche Zeile, offen.
+- Ende 2 und 3 unverändert.
+
+**Erzählte Szenen: Standbilder mit Text**
+- Alles, was das Spiel erzählt statt spielen lässt, ist eine **Folge von Standbildern mit Text**: der **Vorspann**
+  (Anreise, Ankunftsfoto), die **Enden** 1a, 1b, 2 und 3 und der **Epilog**. Sie laufen von allein, der Spieler blättert
+  nur weiter – damit ist „Lässt sich die Sequenz steuern?“ (2.7) beantwortet: nein.
+- **Die Bilder entstehen im Spiel selbst:** gestellte Szenen, aufgenommen wie das Lobbybild im Titelbildschirm
+  (`--shot-size`), dann getönt, gekörnt und mit Text unterlegt. Passt zum realistischen Look und zum Sterbebildschirm
+  als Standbild (4.6).
+- **Spielbare Szenen bleiben spielbar:** der Albtraum von 1987 (4.29), Hugos Szene (4.32) u. a.
+
+**Walter Ruprecht** (H23, ändert 2.6 und HAUSHALTE.md)
+- Kein Dauergast seit Jahrzehnten: Er war erst **nach der Ernte 2023** ein paar Mal hier, in gewöhnlichen Jahren. Er
+  hält es für ein gewöhnliches, etwas altmodisches Haus und lässt den Spieler das glauben – eine **falsche Fährte**.
+  Merkwürdig findet er nur Kleinigkeiten (die Direktion hat er nie gesehen …). Auf keinem alten Foto ist er zu sehen:
+  Die Fotowand entlastet ihn.
+- Sein Satz in 2.6 „Jedes Jahr einer.“ entfällt; Vorschlag: „Die Direktion? Hab ich nie gesehen. Läuft trotzdem wie ein
+  Uhrwerk.“
+- **Der erste Riss:** Der Aushang „Wie jedes Jahr“ (2.5) bleibt – eine Lüge des Hotels. Walter war 2024 und 2025 hier
+  und sagt beim Wettbewerb: „Wie jedes Jahr? Letztes Jahr gab's keinen. Und das Jahr davor auch nicht.“
+- Er wohnt in **014**, dem Zimmer von Rudolf Hain – „R. hat ihn“ zeigt zuerst auf ihn (oben).
+
+**Was sich an Jahreszahlen ändert** (beim Bau)
+- **Fotowand:** 1988, 2003, 2007, 2015, 2019, 2025 fallen weg; neu sind 2002, 2005, 2008, 2014, 2017, 2020. Statt
+  2005 Fleck und Nagel, das Foto selbst als Fundstück im Sekretariat. Motiv: vor dem Haupteingang. Das Foto 2026 ab dem
+  2. Oktober im Rahmen, Gesichter verwischen mit dem Kreuz im Gästebuch.
+- **Warnungszettel** 1994, 2003 und 2019 auf Erntejahre (2003 → 2005); 1987, 1999 und 2011 passen.
+- **Gästebuch:** jeder Oktober seit 1987, Kreuze nur in Erntejahren, ganze Seiten ohne Schlüssel; feste Namen für die
+  Überlebenden von 2005 und ihre Rückkehr.
+- „seit 1988 ist es der Heizer“ → seit 1990 (2.7); Fundsachen-Koffer bis 2023 statt 2019 (7.4).
+
+**Zu klären**
+- Lage des Sekretariats im Plan (neben dem Büro der Direktion, ZIM-6).
+- Welche Zeile im Notizbuch bleibt in Ende 1a?
+- Bildfolgen im Einzelnen: wie viele Bilder je Szene, Texte, Tönung.
 
 ---
 
@@ -2121,7 +2259,7 @@ viel.
 - **Monster:** der **Heizer** von 1987 (2.3).
 - **Kürbismann:** der **Rezeptionist**, ebenfalls Halloween 1987. Er gehörte zum Personal, das das Abkommen am Laufen
   hielt – er führte die Gästeliste. Die Geschichte mit den Kindern (4.19) bleibt: So hat das Hotel ihn sich genommen.
-- **Lakengeist:** die **Verschwundenen** – Laken aus der Wäscherei, die jedes Jahr ein Gesicht mehr bekommen. Mit jedem
+- **Lakengeist:** die **Verschwundenen** – Laken aus der Wäscherei, die ~~jedes Jahr~~ mit jeder Ernte (2.10) ein Gesicht mehr bekommen. Mit jedem
   geholten Gast wird er häufiger.
 - Wer im Hotel stirbt, bleibt dort – hinaus kommen an Halloween nur die Lebenden (2.7).
 - **Ton:** Den Kürbismann sieht man meist als **leuchtendes Kürbisgesicht im Dunkeln**, nicht als ausgeleuchteten
@@ -2427,10 +2565,10 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
   6.19 (7), ist noch nicht gebaut). Debug: `--kraehen=gunst|stehlen|nest|werfen|futter|schluessel`.
 - **Nest am Dach (nicht gebaut):** direkt vor einem **Dachfenster** im Dachgeschoss, mit ausgestrecktem Arm zu erreichen – kein
   Klettern auf dem Dach. Darin liegt der **Ring** eines Gastes: Er hat ihn draußen auf einem Tisch liegen lassen, eine
-  Krähe hat ihn geholt. Wessen Ring und welcher Auftrag: offen (OFFEN.md I6).
+  Krähe hat ihn geholt. Wessen Ring und welcher Auftrag: offen (ZIM-50).
 
 **Zu klären**
-- **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (OFFEN.md I3).
+- **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (ZIM-100).
 - **Dachnest:** welches Dachfenster – hängt an der noch offenen Form des Dachs.
 - **Geschenke:** was außer Münzen und Gestohlenem auf dem Tisch liegen kann, und ab welchem Ruf.
 - **Kerzen der Ratten:** Wohin schleppen sie sie? Dieselbe Frage wie bei den Krähen – ein sichtbares Lager wäre die
@@ -2455,7 +2593,7 @@ Katze?“).
 - Debug: `--kesselkatze`.
 
 **Zu klären**
-- **Als Mechanik später besprechen** (Nutzer, 2026-10-25): Geisterkatze, Augen im Dunkeln (OFFEN.md I2).
+- **Als Mechanik später besprechen** (Nutzer, 2026-10-25): Geisterkatze, Augen im Dunkeln (ZIM-99).
 
 ### 4.27 Spiegel: verhängt und mit Gestalt (entschieden und umgesetzt 2026-10-25)
 - **Verhängte Spiegel:** Stirbt ein Gast, verhängt seine Familie die Spiegel im Zimmer mit einem dunklen Tuch – ein
@@ -2557,7 +2695,7 @@ Ermangelung eines echten.
 > Boni aus Gerede, Lärm und Licht aus je höchstens einmal je Spielstunde. Dazu gegen Fehlverhalten (1., 2., 3a., 5.):
 > Puppe nur vor Türen, die das Monster vom Keller aus erreicht; der Verurteilte geht ab dem Aufbruch nicht mehr an
 > unerreichbare Orte; fährt er Aufzug, wartet es an der Haltestelle; die Dachboden-Szene (Kniestocktür, Schritte,
-> Staub, geduckt durch eine Kammertür); Rauchtest `--navcheck=tueren`. Noch offen (OFFEN.md 3): Balltage, Suchtrupp,
+> Staub, geduckt durch eine Kammertür); Rauchtest `--navcheck=tueren`. Noch offen (ZIM-47, ZIM-27): Balltage, Suchtrupp,
 > längere Frist beim Raubzug (3a., offen); das Tuning ist nur headless geprüft.
 > **Ersetzt** die drei Absichten aus 4.17 (Umsehen, einen holen, Raubzug mit n Opfern) und die
 > „fünf Türen unterwegs“ aus 5.5. Das Flackersignal aus 4.17 bleibt, bekommt aber je Modus eine neue Bedeutung. Mit
@@ -3006,7 +3144,7 @@ ihm.
   die es nicht geben dürfte: der Name eines Verschwundenen, „Zimmer 13 wird erwartet“. Wer spricht da (2.3)? Alle
   Durchsagen notiert die Figur mit Uhrzeit im Notizbuch (3.10) – die falschen genauso nüchtern wie die echten.
 - **Gruppenfoto an Halloween:** Beim Fest am 31. ein Gruppenbild aller Überlebenden – mit leeren Plätzen für die
-  Verschwundenen. Es landet im Tagebuch bzw. im Abspann. Wer zum Vampir geworden ist, **fehlt auf dem Bild** (4.22,
+  Verschwundenen. Es ist nicht das Jahresfoto der Fotowand – das entsteht bei der Ankunft (5.14, 2.10). Es landet im Tagebuch bzw. im Abspann. Wer zum Vampir geworden ist, **fehlt auf dem Bild** (4.22,
   vorgemerkt 2026-10-23).
 
 ### 5.10 Knappheit, Wert & Verfall (entschieden 2026-10-21, Stufe 1 umgesetzt 2026-10-23, Stufen 2 und 3 2026-10-28)
@@ -3230,12 +3368,19 @@ Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gest
 - Kennen ältere Gäste den Brauch und streuen selbst (Edna, 1987 im Hotel, 2.7)?
 
 ### 5.14 Die Fotowand in der Lobby (entschieden und umgesetzt 2026-10-25)
-Jedes Jahr seit 1987 ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, in Holzrahmen nebeneinander – alte
-vergilbt, neue farbig; daneben ein leerer Rahmen „Halloween 2026“.
+> **Geändert 2026-10-30 (2.10), noch nicht umgesetzt:** ein Foto je **Ernte**, alle drei Jahre – 1987, 1990 … 2023 und
+> der leere Rahmen 2026, also genau die 14 Rahmen. Aufgenommen bei der Ankunft am 1. Oktober vor dem Haupteingang;
+> 2026 hängt es ab dem 2. Oktober im Rahmen und verwischt mit jedem Toten. Ohne Schlüssel ist jedes Gesicht
+> verwischt außer dem des alten Herrn; scharf sind 1987 und 2005 die Überlebenden. **Das Foto von 2005 fehlt** (Fleck
+> auf der Tapete) und muss erst gefunden werden. Der alte Herr ist der Gründer, nicht
+> der Erbe. Im Code stehen noch die alten Jahre (1988, 2003, 2007, 2015, 2019, 2025) und 1–3 Verwischte je Foto.
+
+~~Jedes Jahr seit 1987~~ Jede Ernte (2.10) ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, bei der Ankunft, in
+Holzrahmen nebeneinander – alte vergilbt, neue farbig; daneben ein leerer Rahmen „Halloween 2026“.
 
 - Wer in jenem Oktober geholt wurde, ist **verwischt**, als hätte er sich bewegt.
-- Ein Gesicht ist auf jedem Foto und **altert nie**: hinten rechts der weißhaarige alte Herr mit Gehstock – der Erbe
-  der Familie (2.3). Wer genug Fotos ansieht, merkt es (Notizbuch).
+- Ein Gesicht ist auf jedem Foto und **altert nie**: hinten rechts der weißhaarige alte Herr mit Gehstock – ~~der Erbe
+  der Familie (2.3)~~ der Gründer, nur auf den Fotos zu sehen (2.10). Wer genug Fotos ansieht, merkt es (Notizbuch).
 - Auf 1987 außerdem Marion als Mädchen mit Zöpfen, der Heizer im Kittel, Edna jung und Liesel – die Indiz-Stufe für
   Marion, Edna und Liesel (2.3, 2.7).
 - Ort: Ausstattung „Fotowand“ im Plan, bis dahin Westwand der Lobby. Debug: `--fotos`.
@@ -3381,7 +3526,7 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 
 **Die verbotenen Masken**
 - **„Verboten“ ist keine Hausregel.** Sie sind durch eine **geheimnisvolle Regel** verboten, die erst einmal keiner
-  kennt. Was dahintersteckt, ist offen ([OFFEN.md](OFFEN.md) I5).
+  kennt. Was dahintersteckt, ist offen (ZIM-102).
 - **Masken täuschen nie:** Keine Bedrohung lässt sich von einer Maske täuschen, auch nicht von ihrer eigenen.
 - **Jede Maske ruft ihre eigene Bedrohung** – und **verärgert** sie. Wer sie trägt, ob Spieler oder Gast, wird zum
   Ziel.
@@ -3409,7 +3554,7 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 - **Sie finden von selbst zurück:** Am Morgen nach dem Ball hängt jede ausgeliehene Maske wieder an ihrem Haken in
   Zimmer 13 – niemand hat sie gebracht. Sie springt nur, wenn man weder Haken noch Träger sieht (wie die Puppe, 5.5),
   auch wenn der Leiher gestorben ist. Das passt zur unbekannten Regel, und man muss nach einem Ball nichts einsammeln.
-- **Wie die Masken zum Spieler und zu den Gästen kommen**, außer über die Verstecke, ist offen ([OFFEN.md](OFFEN.md) I5).
+- **Wie die Masken zum Spieler und zu den Gästen kommen**, außer über die Verstecke, ist offen (ZIM-102).
 
 ## 6. Die anderen Gäste (NPCs)
 
@@ -4511,6 +4656,14 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
   > **Offen (2026-10-20): Die Tapeten sollen wieder Flecken bekommen.** Die Flecken aus Rauschen im Wand-Shader
   > (Wasserränder, matter und etwas dunkler) gefielen nicht und sind vorerst raus; der abgegriffene Sockel bleibt.
   > Vermutlich braucht es eine manuelle Lösung (z. B. von Hand gemalte Flecken).
+  > **Entschieden (2026-10-29): Abwechslung an den Wänden.** Die Tapete klebt in Bahnen (0,53 m), jede weicht etwas
+  > ab – Helligkeit, selten ausgeblichen oder versetzt angesetzt, sichtbare und teils gelöste Nähte;
+  > fest nach dem Platz, nicht zufällig je Spiel. Die **Vertäfelung ist modelliert**: Sockelleiste, Brüstungsleiste
+  > auf 0,9 m, dazwischen Rahmenleisten auf einem Brett, dunkle Nuss (Wood067), Ecken gebacken abgedunkelt; überall
+  > wo Tapete ist (außer Treppenhäusern und Aufzügen), im festen Raster von 0,8 m je Wandstück, mittig, mit
+  > Passstücken an den Enden; unter Fenstern ohne Brüstungsleiste. Als Nächstes vorgesehen: kleine Details als
+  > Decals (Flecken, Nagellöcher, hellere Stellen alter Bilder), Kabel als dünne Geometrie, weitere Tapetenmuster je
+  > Stockwerk.
 - **Eingeschlossen:** Ausgänge verriegelt – das Hotel ist ab dem 1. Oktober verschlossen (2.3); harmlos erklärt durch
   die Hausordnung (2.5).
 
@@ -4653,7 +4806,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   - Der **Schlüssel zum westlichen Schloss** liegt irgendwo **im Keller** (Ort offen). Wer ihn findet, hat eine
     Abkürzung in den Westteil des Kellers.
 - **Treppen nach U2 zugemauert:** Beide Treppenhäuser führen eigentlich tiefer, sind unterhalb von U1 aber zugemauert –
-  sichtbar jünger als der Rest. Die **Direktion** ließ sie **nach 2003** schließen, weil die Gäste aus 13 und 018 zu
+  sichtbar jünger als der Rest. Die **Direktion** ließ sie **nach ~~2003~~ 2005** (2.10) schließen, weil die Gäste aus 13 und 018 zu
   nah dran waren (Zimmer 18, unten). Sieht man sich die Mauern an, sagt die Spielfigur etwas dazu (Text offen).
 - **Der Heizraum in U1 ist eine Attrappe:** ein neuer Raum, gebaut **auf** dem alten Heizkeller, mit einem **modernen
   Heizkessel**, der **nicht angeschlossen** ist. Er soll nur erklären, warum aus dem Raum immer noch Hitze kommt.
@@ -4679,7 +4832,8 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - **Wege nach U2:** mit dem reparierten Aufzug (oben) oder durch die Leviathanmauer (ab etwa Tag 15).
 
 **Zimmer 18 (entschieden 2026-10-27)**
-- Hier wohnte um **2003** ein Gast, befreundet mit dem Gast aus **Zimmer 13** jenes Jahres. Die beiden ermittelten;
+- Hier wohnte ~~um **2003**~~ **2005** (2026-10-30, 2.10) ein Gast, befreundet mit dem Gast aus **Zimmer 13** jenes
+  Jahres. Die beiden ermittelten, fanden den Schlüssel und gaben ihn dem Schlüsselträger (2.10);
   ihn holte das Monster – an der Leviathanmauer verlor er dabei seinen **Zimmerschlüssel**. Danach ließ die Direktion
   das Zimmer **versiegeln** (wie 6.19 (7)) und die Treppen nach U2 zumauern.
 - Darum liegen hier entscheidende Dinge: das **Notizbuch des Hausmeisters** mit den drei Mängeln, das er an sich
@@ -4688,7 +4842,9 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   Monster aufmerksam wird, wenn man über es redet (4.7), und dass es UV-Licht nicht erträgt (4.16). Und sie ahnten,
   dass sie es vielleicht nicht schaffen – die Zeichen sollten spätere Jahre warnen. Texte und Orte offen (Zimmer 18
   hat schon UV-Schrift, 4.16).
-- **Jahresfoto 2003** an der Fotowand (5.14): Beide sind verwischt; das Foto gibt Hinweise auf die beiden (welche, offen).
+- **Jahresfoto ~~2003~~ 2005** an der Fotowand (5.14): Beide sind verwischt, der Schlüsselträger und die anderen
+  Überlebenden scharf (2.10); das Foto gibt Hinweise auf die beiden (welche, offen). Es hängt nicht an der Wand
+  (Fleck auf der Tapete) und liegt im Sekretariat in einer offenen Schublade (2.10).
 - *Umgesetzt (2026-10-28):* Auf dem Tisch in Zimmer 18 liegen das **Notizbuch des Hausmeisters** (festes Buch, [E]
   liest es, vier Seiten), der **Schaltschlüssel** (an den Bund, im Aufzug noch ohne Wirkung) und der **UV-Aufsatz**. Hat
   man das Notizbuch gelesen, stehen die drei Mängel als drei Zeilen unter „Aufgaben“ (3.10): *„Aufzug: Schaltschlüssel
@@ -4705,7 +4861,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   > nach oben. Nicht meine Sache, sagt die Direktion. – Im Oktober keine Arbeiten im Keller. Anweisung. – Die schwarze
   > Katze war wieder im Heizraum. Ich weiß nicht, wem sie gehört.
   >
-  > *(Bleistift)* Oktober 2003. Das Buch habe ich an mich genommen, den Schaltschlüssel auch. Hier steht mehr über
+  > *(Bleistift)* Oktober ~~2003~~ 2005. Das Buch habe ich an mich genommen, den Schaltschlüssel auch. Hier steht mehr über
   > dieses Haus als in jedem Prospekt. – Nicht darüber reden. Es hört zu. 13 hat es zuerst gemerkt. – Das violette
   > Licht erträgt es nicht. Nicht lange, aber es geht. – Falls wir es nicht schaffen: Wir hinterlassen Zeichen, die man
   > nur in diesem Licht sieht. Wer das liest – such sie.
@@ -4715,7 +4871,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - **Inhalt (endlich, wird nicht nachgefüllt):**
   - Kisten mit **Ersatzglühbirnen** und **Kerzen** (7.3).
   - **Alte Halloween-Deko früherer Jahre:** Girlanden, Hexenbesen, ein Totenkopf, Laternen – seltene, starke Deko (5.3). Der größte Schatz im Hotel.
-  - **Fundsachen-Regal:** Koffer früherer Gäste mit Namensschildern von 1987 bis 2019 – dieselben Namen wie auf den Warnungszetteln. Kleidung, Fotos, Briefe. Ein möglicher Ort für den **Halloween-Schlüssel** (2.1).
+  - **Fundsachen-Regal:** Koffer früherer Gäste mit Namensschildern von 1987 bis ~~2019~~ 2023 – dieselben Namen wie auf den Warnungszetteln. Kleidung, Fotos, Briefe. ~~Ein möglicher Ort für den~~ **Hier liegt der Halloween-Schlüssel** (2.1, entschieden 2026-10-30): im Koffer des Schlüsselträgers von 2005, der 2008 starb (2.10).
 - **Die soziale Entscheidung:**
   - **Geheim halten:** Man hat alles für sich. Aber Gäste bemerken plötzlich viel Deko vor Zimmer 13 – *„Woher hat sie/er das?“* → Gerüchte, Neid, Diebstahl (6.2).
   - **Teilen:** Ruf ↑ bei allen, vielleicht eine Feier zum Fund. Aber die Vorräte sind schneller weg, und Gäste fahren dann selbst nach U2 – manche kommen nicht zurück.
@@ -4949,9 +5105,8 @@ Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
 > (modular, noch nirgends eingebaut). **Fensterunterkanten** liegen überall im Hotel auf **90 cm** (2026-10-23).
 > **Kieswege** im Garten (Kieseltextur folgt), **Müllraum** im Keller, nicht gebaute
 > Kellerräume bleiben zu. **Bäume** im Plan sind nur Standortmarken, jeder Baum hat dieselbe Größe. **Grasbüschel**
-> (entschieden und umgesetzt 2026-10-22) nur **ohne PS1-Look**: verwildert, bis 30 cm, wiegen sich im Wind und neigen
-> sich unter Schritten und Gegenständen zur Seite – niedrig genug, dass nichts darin verschwindet (beide Looks spielen
-> sich gleich); Wege, Beete, Kübel, Baumwurzeln und Gegenstände des Plans bleiben frei. **Zimmer 13**
+> (entschieden und umgesetzt 2026-10-22): verwildert, bis 30 cm, wiegen sich im Wind und neigen
+> sich unter Schritten und Gegenständen zur Seite – niedrig genug, dass nichts darin verschwindet; Wege, Beete, Kübel, Baumwurzeln und Gegenstände des Plans bleiben frei. **Zimmer 13**
 > liegt, wo der Plan es beschriftet (Innenhofblock Ost, Tür zum Südflur); Haushalte und Sonderzimmer stehen in
 > HAUSHALTE.md (6.20).
 
@@ -5081,7 +5236,6 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 | Bereich | Optionen (Vorschlag) |
 |---------|----------------------|
 | **Bild** | **Helligkeit/Gamma mit Kalibrierbild** („Der Kürbis soll gerade noch erkennbar sein“) – wichtig, weil Dunkelheit Spielmechanik ist (4.4) · Vollbild/Fenster (Start immer im Fenster, 11.10.2026) · VSync · Sichtfeld (FOV, Standard 90°, 60–120° – 27.10.2026) · Spiegelungen an/aus (glatte Flächen spiegeln, kostet Leistung – 21.10.2026) |
-| **PS1-Look** | Hauptschalter an/aus · Interne Auflösung · Vertex-Wackeln an/aus · Dithering an/aus |
 | **Ton** | Gesamt · Musik · Effekte · Stimmen |
 | **Steuerung** | Mausempfindlichkeit · Y-Achse invertieren · Ducken halten/umschalten · **Tastenbelegung** (umgesetzt 2026-10-28): je Aktion Haupt- und Zweittaste, Taste oder Maustaste; Doppelbelegung wird getauscht, verliert eine Aktion dabei ihre letzte Taste, warnt das Menü deutlich; „Standard wiederherstellen“; fest bleiben Esc, Taschenfächer 1–6, Mausrad und Debug-Tasten, F8 nie; Hinweise im Spiel nennen die eigene Belegung |
 | **Barrierefreiheit** | **Flacker- und Rausch-Intensität reduzieren** (Fotosensibilität – Warnhinweis beim ersten Start) · Untertitel für wichtige Geräusche („Schritte hinter der Wand“) · **Spinnen als Kugeln** (Arachnophobie, 4.23, umgesetzt 2026-10-23) · **Blickzug** des Lakengeists abschwächen (Hypnose, Kamerafang in der Dusche – 4.18, 4.24, umgesetzt 2026-10-25) |
@@ -5267,11 +5421,8 @@ Wie es im Einzelnen gebaut ist, steht in [TECHNIK.md](TECHNIK.md). Hier nur die 
   Bauskripten in `tools/`. Wände, Böden und Rahmen baut der Code.
 - Export: **glTF 2.0 (.glb)** → direkter Import in Godot
 - Godot kann `.blend`-Dateien auch direkt importieren, wenn Blender lokal installiert und im Editor konfiguriert ist
-- **Stil: realistischer Look (entschieden 2026-10-25).** Alle neuen Materialien, Shader und Modelle werden auf das Bild
-  **ohne** PS1-Look ausgelegt: Texturen in voller Auflösung mit Mipmaps und linearem Filter, Normal- und
-  Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf. Der PS1-Look bleibt als Umschalter in den Einstellungen
-  (8.4) und darf nicht kaputtgehen, wird aber nicht mehr bevorzugt. Am Ende kommt ein eigens darauf optimierter
-  Zusatzmodus (eigene Texturgrößen, Filter, ggf. eigene Materialvarianten).
+- **Stil: realistischer Look (entschieden 2026-10-25).** Alle neuen Materialien, Shader und Modelle: Texturen in voller
+  Auflösung mit Mipmaps und linearem Filter, Normal- und Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf.
 - **Aufgabenteilung Modell ↔ Code:**
   - **Das Modell liefert das Aussehen:** einzelne Assets als `.glb` – **keine** große Blender-Szene des ganzen Hotels.
   - **Der Code liefert das Verhalten:** Das Skript des Objekts lädt das Modell und ergänzt Kollision, Licht und
@@ -5323,7 +5474,7 @@ Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den K
 ## 11. Nächste Schritte
 
 Grobe Reihenfolge der großen Brocken. Was im Einzelnen offen ist (auch Kleinigkeiten und Lücken), steht in
-[OFFEN.md](OFFEN.md); Gebautes fliegt hier raus (aufgeräumt 2026-10-27: Monsterwerte und Modi des Leviathan, Schlaf &
+YouTrack (Projekt ZIM, seit 2026-10-29); Gebautes fliegt hier raus (aufgeräumt 2026-10-27: Monsterwerte und Modi des Leviathan, Schlaf &
 Müdigkeit, Lichtschalter, Aufträge der Gäste, Erfolge, Masken teils).
 
 1. Minispiele mit Gästen (6.10): **Kürbis-Schnitz-Duell** (Darts umgesetzt 25.10., der Rest eingefroren)
@@ -5346,4 +5497,3 @@ Müdigkeit, Lichtschalter, Aufträge der Gäste, Erfolge, Masken teils).
 12. Balancing
 13. Zerbrechende Fenster (7.3, für später vorgemerkt)
 14. Flecken auf den Tapeten, vermutlich von Hand (7.2)
-16. Eigener, optimierter PS1-Modus (9.2, am Ende)

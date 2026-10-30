@@ -43,7 +43,7 @@ Stand: 2026-10-28.
 | Blutige Axt | – | geplant | – (Belohnung) | nach der Erlösung; an der Tür klaut keiner | 4.21 |
 | Jeansjacke | – | geplant | Nebenstrang (Marion, Schlüsselbund) | nach der Erlösung; Deko | 4.21, 2.8 |
 | Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Lager, K5) | Lager in U2; Namen der Warnungszettel | 7.4, M11 |
-| Ring eines Gastes | – | geplant | – (Gastauftrag, offen) | im Krähennest vor einem Dachfenster | 4.25, OFFEN.md I6 |
+| Ring eines Gastes | – | geplant | – (Gastauftrag, offen) | im Krähennest vor einem Dachfenster | 4.25, ZIM-50 |
 | ~~Kohle~~ | – | gestrichen 2026-10-27 (Kessel ist Attrappe) | – | – | 7.4 |
 | Bolzenschneider | – | eingefroren | – | Lager aufbrechen | 7.4 |
 

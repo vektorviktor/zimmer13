@@ -7,19 +7,29 @@ extends Node3D
 ## Kollisionstiefe des Türblatts (= Wandstärke, siehe LevelBuilder.T)
 const COLLISION_DEPTH := 0.2
 
-## Aussehen des Blatts: im Code gebaut (Betriebs- und Glastüren) oder eines der gemalten Modelle aus
-## tools/build_doors.py – Zimmertür bzw. Kniestocktür zum Dachboden (Spielkonzept 4.21)
+## Aussehen des Blatts: im Code gebaut (Betriebs- und Glastüren) oder ein Modell – die Zimmertür aus
+## tools/build_room_door.py (Nussbaum mit vier Kassetten, Messingbeschläge, Texturen gebacken, Materialien wie im
+## glTF) bzw. die gemalte Kniestocktür zum Dachboden aus tools/build_doors.py (Spielkonzept 4.21)
 enum Look { PLAIN, HOTEL, ATTIC }
-const HOTEL_MODEL := "res://assets/models/door_hotel.glb"
+const HOTEL_MODEL := "res://assets/models/door_room.glb"
 const ATTIC_MODEL := "res://assets/models/door_attic.glb"
-## Blattgröße der Modelle (Meter, wie im Skript) – gestreckt auf die Tür, Klinke und Bänder bleiben, wie sie sind
+## Blattgröße der Modelle (Meter, wie im Skript) – gestreckt auf die Tür, Beschläge bleiben, wie sie sind
 const HOTEL_LEAF := Vector2(1.18, 2.08)
 const ATTIC_LEAF := Vector2(0.78, 1.55)
 ## Klinke: Abstand der Drückerachse von der Schlosskante und Höhe über dem Boden
 const HANDLE_INSET := 0.1
 const HANDLE_HEIGHT := 1.04
-## Bänder der Zimmertür als Anteil der Blatthöhe (wie gemalt)
-const HINGE_AT: Array[float] = [0.12, 0.62, 0.88]
+## Bänder der Zimmertür als Anteil der Blatthöhe
+const HINGE_AT: Array[float] = [0.12, 0.88]
+## Zimmertür: so weit geht sie höchstens auf
+const HOTEL_MAX_ANGLE := deg_to_rad(95.0)
+## Zimmertür zum Flur (add_room_plate): Höhe von Spion und Plakette über dem Boden, Schrift der Nummer (gravierte
+## Ziffern, Höhe des Gevierts in Metern) und so weit steht die Schrift vor der Blattmitte (Plakette 5 mm stark)
+const PEEPHOLE_Y := 1.5
+const PLAQUE_Y := 1.66
+const PLAQUE_EM := 0.044
+const PLAQUE_FACE := 0.0356
+const PLAQUE_INK := Color(0.07, 0.05, 0.03)
 
 var width := 1.2
 var height := 2.1
@@ -32,6 +42,9 @@ var monster_can_open := true
 var glass := false          ## Glastür: man sieht hindurch (Ebene 7 statt 2)
 var look := Look.PLAIN      ## vor dem Einhängen setzen (nicht bei Glastüren)
 var hinge_end := false      ## einfache Tür: Scharnier bei x = width statt im Ursprung (Türanschlag im Plan)
+## Zimmertür (DoorCasing): so weit steht die Wandhaut (Fliesen, Beton …) auf −Z bzw. +Z vor der Wand – die
+## Bekleidung sitzt davor (LevelBuilder, vor dem Einhängen)
+var casing_lift := Vector2.ZERO
 ## Fenstertür nach draußen (Terrasse, Garten, Balkon; Gruppe „french_doors“): Raum dahinter und Richtung nach
 ## draußen – dort erscheint auch der Lakengeist (Spielkonzept 4.18)
 var room_id := ""
@@ -60,6 +73,7 @@ var _pivots: Array[Node3D] = []
 var _bodies: Array[Node3D] = []
 var _dirs: Array[float] = []   ## je Flügel: +1 = Blatt nach +X vom Scharnier, −1 = nach −X
 var _tween: Tween
+var _plate := []   ## add_room_plate vor dem Einhängen: [Nummer, Flurpunkt]
 
 ## Türen nach Feldern im Grundriss (Kantenlänge CELL), für Gäste, die laufend die Türen in ihrer Nähe
 ## abfragen (near). Türen bewegen sich nicht; das Raster entsteht beim ersten Abfragen nach dem Bau neu.
@@ -84,7 +98,12 @@ func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: b
 
 func _ready() -> void:
 	add_to_group("doors")
-	add_child(OpeningFrame.new().setup(0.0, 0.0, width, height, COLLISION_DEPTH))   # Zarge und Bekleidung
+	# Zarge und Bekleidung: zur Zimmertür ihr eigener Rahmen im Holz des Blatts, sonst der Craftsman-Rahmen
+	if look == Look.HOTEL:
+		add_child(DoorCasing.new().setup(width, height, COLLISION_DEPTH, casing_lift))
+		open_angle = signf(open_angle) * minf(absf(open_angle), HOTEL_MAX_ANGLE)
+	else:
+		add_child(OpeningFrame.new().setup(0.0, 0.0, width, height, COLLISION_DEPTH))
 	if double:
 		_pivots.append(_make_leaf(Vector3.ZERO, width / 2.0, 1.0))
 		_pivots.append(_make_leaf(Vector3(width, 0, 0), width / 2.0, -1.0))
@@ -92,6 +111,8 @@ func _ready() -> void:
 		_pivots.append(_make_leaf(Vector3(width, 0, 0), width, -1.0))
 	else:
 		_pivots.append(_make_leaf(Vector3.ZERO, width, 1.0))
+	if not _plate.is_empty():
+		add_room_plate(_plate[0], _plate[1])
 	ShadowBudget.structure(self)   # Zarge und Blatt halten das Licht aller Lampen auf
 	_all.append(self)
 	_dirty = true
@@ -377,8 +398,9 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 	return pivot
 
 
-## Gemaltes Blatt (Look.HOTEL/ATTIC): auf die Blattgröße gestreckt, bei dir = −1 gespiegelt (Scharnier rechts).
-## Klinke und Bänder der Zimmertür ungestreckt – sie sehen an schmalen Badtüren aus wie an breiten Zimmertüren.
+## Blatt aus einem Modell (Look.HOTEL/ATTIC): auf die Blattgröße gestreckt, bei dir = −1 gespiegelt (Scharnier
+## rechts). Drücker und Bänder der Zimmertür ungestreckt – sie sehen an schmalen Badtüren aus wie an breiten
+## Zimmertüren. Die Bänder sitzen auf der Seite, zu der die Tür aufgeht (+Z).
 func _add_model_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
 	var hotel := look == Look.HOTEL
 	var parts := _model_parts(HOTEL_MODEL if hotel else ATTIC_MODEL)
@@ -391,8 +413,41 @@ func _add_model_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
 		Vector3(dir * (leaf_size.x + 0.01 - HANDLE_INSET), HANDLE_HEIGHT, 0))
 	handle.scale.x = dir   # Drücker zeigt zum Scharnier
 	for at in HINGE_AT:
-		var hinge := Geo.mesh(body, parts["hinge"][0], parts["hinge"][1], Vector3(dir * 0.008, 0.01 + at * leaf_size.y, 0))
+		var hinge := Geo.mesh(body, parts["hinge"][0], parts["hinge"][1], Vector3(dir * 0.01, 0.01 + at * leaf_size.y, 0))
 		hinge.scale.x = dir
+
+
+## Zimmertür zum Flur (LevelBuilder._room, Spielkonzept 6.19): Spion und Messingplakette mit der Zimmernummer
+## (label, gravierte Ziffern) mittig auf dem Blatt, Plakette und Linse auf der Seite zum Punkt corridor (global).
+## Nur einflüglige Zimmertüren (Look.HOTEL).
+func add_room_plate(label: String, corridor: Vector3) -> void:
+	if not is_inside_tree():   # Blatt entsteht erst in _ready
+		_plate = [label, corridor]
+		return
+	if look != Look.HOTEL or double or _bodies.is_empty():
+		return
+	var parts := _model_parts(HOTEL_MODEL)
+	var body := _bodies[0]
+	var dir := _dirs[0]
+	var side := -1.0 if to_local(corridor).z < 0.0 else 1.0   # Flur bei −Z: Modell, wie es ist
+	var cx := dir * (0.01 + (width - 0.02) / 2.0)
+	for part: String in ["peephole", "plaque"]:
+		var m := Geo.mesh(body, parts[part][0], parts[part][1], Vector3(cx, PEEPHOLE_Y if part == "peephole" else PLAQUE_Y, 0))
+		m.scale = Vector3(dir, 1.0, -side)
+	var text := Label3D.new()
+	text.text = label
+	text.font = load(LevelBuilder.SIGN_FONT)
+	text.font_size = 64
+	text.pixel_size = PLAQUE_EM / 64.0
+	text.outline_size = 0
+	text.modulate = PLAQUE_INK
+	text.shaded = true
+	text.double_sided = false
+	text.alpha_cut = Label3D.ALPHA_CUT_DISCARD
+	text.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	text.position = Vector3(cx, PLAQUE_Y - PLAQUE_EM * 0.04, side * PLAQUE_FACE)
+	text.rotation.y = 0.0 if side > 0.0 else PI   # Label3D liest man von +Z
+	body.add_child(text)
 
 
 static func _model_parts(path: String) -> Dictionary:
@@ -400,7 +455,16 @@ static func _model_parts(path: String) -> Dictionary:
 		var parts := {}
 		var scene: Node = (load(path) as PackedScene).instantiate()
 		for mi: MeshInstance3D in scene.find_children("*", "MeshInstance3D", true, false):
-			parts[String(mi.name)] = [mi.mesh, Mat.model(path, mi)]
+			# Zimmertür: Blatt im Holz der Vertäfelung mit eigener gebackener Verschattung, Messing wie im glTF;
+			# Kniestocktür gemalt
+			var mat: Material
+			if path != HOTEL_MODEL:
+				mat = Mat.model(path, mi)
+			elif mi.name == "leaf":
+				mat = Mat.hotel_wood(Mat.DOOR_AO)
+			else:
+				mat = mi.get_active_material(0)
+			parts[String(mi.name)] = [mi.mesh, mat]
 		scene.free()
 		_models[path] = parts
 	return _models[path]

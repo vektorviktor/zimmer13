@@ -1,5 +1,6 @@
 extends Node
-## Rechentests ohne Spielwelt: Rampe der Lobbytreppe (Spielkonzept 7.5), Kompassnadel, Türraster (Door.near).
+## Rechentests ohne Spielwelt: Rampe der Lobbytreppe (Spielkonzept 7.5), Kompassnadel, Türraster (Door.near),
+## Raster der Vertäfelung (Wainscot, 7.2).
 ## Läuft über tests/run.tscn (braucht die Autoloads).
 
 var _ok := true
@@ -9,6 +10,7 @@ func run() -> bool:
 	_stair_ramp()
 	_compass_needle()
 	_door_grid()
+	_wainscot_grid()
 	print("Rechentests: alles richtig" if _ok else "Rechentests: FEHLER")
 	return _ok
 
@@ -96,3 +98,32 @@ func _door_grid() -> void:
 	_check(not Door.near(spot).any(func(d: Variant) -> bool: return not is_instance_valid(d)),
 		"Türraster vergisst freigegebene Türen")
 	world.free()
+
+
+## Wainscot.add_run: ganze Felder, Halbfeld an das gewünschte Ende, Passstücke, Stauchen; die Holz-u muss über alle
+## Teile eines Stücks durchlaufen – auch bei rückwärts gesetzten Teilen (Fläche nach −Z).
+func _wainscot_grid() -> void:
+	var cases := [[1.2, false, "half 0.40, panel 0.80"], [1.2, true, "panel 0.80, half 0.40"], [0.4, false, "half 0.40"],
+		[0.36, false, "half 0.36"], [1.0, false, "plain 0.10, panel 0.80, plain 0.10"], [2.0, false, "half 0.40, panel 0.80, panel 0.80"],
+		[1.6, false, "panel 0.80, panel 0.80"], [0.2, false, "plain 0.20"], [1.38, true, "plain 0.09, panel 0.80, half 0.40, plain 0.09"]]
+	for c: Array in cases:
+		for side in [1.0, -1.0]:
+			var kit := Wainscot.new()
+			kit.add_run(Vector3(0, 0, 3.0), Vector3(1, 0, 0), Vector3(0, 0, side), 5.0, 5.0 + float(c[0]), false, c[1])
+			var pieces: Array = []
+			var runs := {}
+			for key: Vector3i in kit._instances:
+				for inst: Array in kit._instances[key]:
+					var xf: Transform3D = inst[0]
+					var data: Color = inst[1]
+					var part: String = Wainscot.PARTS[key.z]
+					var w := xf.basis.x.length() * (Wainscot.HALF if part == "half" else Wainscot.MODULE)
+					var lo := minf(xf.origin.x, xf.origin.x + xf.basis.x.x * (Wainscot.HALF if part == "half" else Wainscot.MODULE))
+					pieces.append([lo, "%s %.2f" % [part, w]])
+					runs[snappedf(data.r - xf.origin.x, 0.001)] = true
+					if (data.b < 0.0) != (side < 0.0):
+						runs["Vorzeichen"] = true
+			pieces.sort_custom(func(p: Array, q: Array) -> bool: return p[0] < q[0])
+			var got := ", ".join(pieces.map(func(p: Array) -> String: return p[1]))
+			_check(got == c[2] and runs.size() == 1, "Vertäfelung %.2f m%s (Fläche %+d): %s – Holz durchgehend %s" % [
+				c[0], " Halbfeld an b" if c[1] else "", side, got, runs.size() == 1])

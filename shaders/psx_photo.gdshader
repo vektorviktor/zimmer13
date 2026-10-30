@@ -32,17 +32,29 @@ uniform bool object_uv = false;
 // Textur über die UVs des Meshs (in Metern, × tex_scale) statt projiziert – für Holz mit Faserrichtung
 // (Geo.grain_box): Tangente und Bild-„oben“ der Normal Map kommen aus den Ableitungen auf dem Bildschirm
 uniform bool mesh_uv = false;
+// Gebackene Verschattung über den zweiten UV-Satz (Vertäfelung, tools/build_wainscot.py): multipliziert die
+// Grundfarbe, wirkt also auch im Lampenlicht (Godots AO wirkt nur aufs Umgebungslicht, das im Hotel fast null ist)
+uniform sampler2D ao_tex : hint_default_white, filter_linear, repeat_disable;
+uniform bool use_ao = false;
+// Je Instanz eines MultiMesh (mesh_uv, Vertäfelung, Wainscot._put): Leisten und Brett laufen über das Wandstück
+// durch – u = UV.x × INSTANCE_CUSTOM.z (Streckung, negativ bei rückwärts gesetzten Teilen) + x (Lage des Modulanfangs
+// an der Wand), v + y (Versatz je Wandstück), alles in Metern; die Füllung (UV.y > FILL_V / 2, tools/build_wainscot.py)
+// bekommt aus w je Feld einen eigenen Ausschnitt
+uniform bool instance_shift = false;
+const float FILL_V = 50.0;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
 varying vec3 tex_pos;
 varying vec3 tex_normal;
+varying vec4 uv_shift;
 
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	tex_pos = object_uv ? VERTEX : world_pos;
 	tex_normal = object_uv ? NORMAL : world_normal;
+	uv_shift = instance_shift ? INSTANCE_CUSTOM : vec4(0.0, 0.0, 1.0, 0.0);
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
 	clip = psx_snap_clip(clip);
 	POSITION = clip;
@@ -70,7 +82,11 @@ void fragment() {
 	}
 	uv = vec2(uv.x, -uv.y) * tex_scale;
 	if (mesh_uv) {
-		uv = UV * tex_scale;
+		// ohne Verzweigung – die Ableitungen unten brauchen gleichmäßigen Kontrollfluss
+		float fill = instance_shift ? step(FILL_V / 2.0, UV.y) : 0.0;
+		vec2 run = vec2(UV.x * uv_shift.z + uv_shift.x, UV.y + uv_shift.y);
+		vec2 own = vec2(UV.x, UV.y - FILL_V) + vec2(uv_shift.w, fract(uv_shift.w * 7.13) * 7.0);
+		uv = mix(run, own, fill) * tex_scale;
 		vec3 n_w = normalize(world_normal);
 		vec3 dp1 = dFdx(world_pos);
 		vec3 dp2 = dFdy(world_pos);
@@ -88,6 +104,9 @@ void fragment() {
 		up_axis = normalize((MODEL_MATRIX * vec4(up_axis, 0.0)).xyz);
 	}
 	ALBEDO = albedo.rgb * texture(albedo_tex, uv).rgb;
+	if (use_ao) {
+		ALBEDO *= texture(ao_tex, UV2).r;
+	}
 	if (use_normal) {
 		vec3 t = texture(normal_tex, uv).rgb * 2.0 - 1.0;
 		vec3 wn = normalize(normalize(world_normal) * t.z + (u_axis * t.x + up_axis * t.y) * normal_strength);

@@ -565,8 +565,8 @@ func debug(what: String) -> void:
 			player.rotation.y = atan2(-to.x, -to.z)
 			player.head.rotation.x = -0.5
 			get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
-				if is_instance_valid(best) and not best.is_open[best.DRAWERS - 1]:
-					best.use_drawer(best.DRAWERS - 1, player))
+				if is_instance_valid(best) and not best.is_open[-1]:
+					best.use_drawer(best.is_open.size() - 1, player))
 		_:
 			var fwd := -player.global_transform.basis.z
 			for n in 8:
