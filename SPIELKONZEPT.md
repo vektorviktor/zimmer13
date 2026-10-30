@@ -16,9 +16,10 @@
   - [2.5 Der Anfang: Türschmuck-Wettbewerb (entschieden und umgesetzt 2026-10-23)](#25-der-anfang-türschmuck-wettbewerb-entschieden-und-umgesetzt-2026-10-23)
   - [2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)](#26-das-erste-opfer-gustav-peters-entschieden-2026-10-25)
   - [2.7 Das Ende an Halloween: Alle Überlebenden kommen hinaus (entschieden 2026-10-25)](#27-das-ende-an-halloween-alle-überlebenden-kommen-hinaus-entschieden-2026-10-25)
-  - [2.8 Den Heizer erlösen – Marions Auftrag (entschieden 2026-10-25)](#28-den-heizer-erlösen--marions-auftrag-entschieden-2026-10-25)
+  - [2.8 Josef erlösen – Marions Auftrag (entschieden 2026-10-25)](#28-josef-erlösen--marions-auftrag-entschieden-2026-10-25)
   - [2.9 Wo ist Herr Peters? – Doris' Suche (entschieden 2026-10-26)](#29-wo-ist-herr-peters--doris-suche-entschieden-2026-10-26)
   - [2.10 Die Ernte: alle drei Jahre (entschieden 2026-10-30)](#210-die-ernte-alle-drei-jahre-entschieden-2026-10-30)
+  - [2.11 Das Personal von 1987 und der Hausmeister (entschieden 2026-10-30)](#211-das-personal-von-1987-und-der-hausmeister-entschieden-2026-10-30)
 - [3. Core Gameplay Loop](#3-core-gameplay-loop)
   - [3.1 Spieler-Aktionen (Grundumfang)](#31-spieler-aktionen-grundumfang)
   - [3.2 Kein verstecktes Inventar – Hände und Tasche](#32-kein-verstecktes-inventar--hände-und-tasche)
@@ -229,23 +230,23 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Erstes Beispiel steht schon:** Die Fahrstuhl-Reparatur (7.4) verlangt alle drei – Wagnis (Keller, Zimmer 18), Vertrauen (Hauptsicherung beim Gast), Lärm (Bremse).
 - **Kandidaten für Sperrbereiche:** Zimmer 18 · Personaltrakt bzw. Büro der Direktion · U2 (7.4) · Dachboden oder Turm.
 
-**Das Geheimnis: Das Abkommen und der Heizer (entschieden 2026-10-11)**
-- **Das Abkommen:** Die Gründerfamilie des Hotels hat **1987** einen Handel mit dem geschlossen, was unter dem Hotel lebt. ~~Jedes Jahr~~ **Alle drei Jahre** (2026-10-30, 2.10) gibt es eine **Halloween-Woche mit Gästen** – die „Ernte“ –, und es darf sich nehmen, wen es will. Dafür besteht das Hotel weiter, und die Familie lebt. Die Gäste werden eingeladen, ohne es zu wissen. Das Hotel ist ab dem 1. Oktober verschlossen.
-- **Der Heizer – das erste Opfer:** Halloween 1987 kam es im **alten Heizkeller** (heute U2, 7.4) zum Unglück (Kesselbrand). Der Heizer blieb beim Feuer, um andere hinauszubringen. Das Personal schloss die Tür hinter ihm ab – so wurde das Abkommen besiegelt. **Er ist zu dem geworden, was es jetzt verlangt.** Das Personal hält ihn seitdem mit Gästen ruhig und hinter der **Leviathanmauer** (7.4); das Hotel lässt ihn nur für ein paar Minuten hinaus und zwingt ihn immer wieder in den alten Heizkeller zurück. Bevor er starb, schrieb er die **UV-Schrift von 1987 im Heizraum** (7.9, mit „J. A.“ gezeichnet – geändert 2026-10-25: der älteste Warnungszettel eines Gastes stammt von Edna, 2.7); sein **Kesselbuch** liegt in seinem Spind im Heizraum (7.4). **Er hieß Josef Ahrend** (entschieden 2026-10-24) – derselbe Name in Kesselbuch und Personalakte, die Initialen unter der UV-Schrift.
+**Das Geheimnis: Das Abkommen und Josef, der Hausmeister (entschieden 2026-10-11; bis 2026-10-30 „der Heizer“, 2.11)**
+- **Das Abkommen:** Der **alte Herr** – Gründer und Direktor des Hotels (2.10) – hat **1987** für sich und seine Familie einen Handel mit dem geschlossen, was unter dem Hotel lebt. ~~Jedes Jahr~~ **Alle drei Jahre** (2026-10-30, 2.10) gibt es eine **Halloween-Woche mit Gästen** – die „Ernte“ –, und es darf sich nehmen, wen es will. Dafür besteht das Hotel weiter, und die Familie lebt. Die Gäste werden eingeladen, ohne es zu wissen. Das Hotel ist ab dem 1. Oktober verschlossen.
+- **Josef, der Hausmeister – das erste Opfer:** Halloween 1987 kam es im **alten Heizkeller** (heute U2, 7.4) zum Unglück (Kesselbrand). Der Hausmeister, der auch den Kessel befeuerte, blieb beim Feuer, um andere hinauszubringen. Das Personal schloss die Tür hinter ihm ab – den Schlüssel drehte der Page (2.11) –, so wurde das Abkommen besiegelt. **Er ist zu dem geworden, was es jetzt verlangt.** Das Personal hält ihn seitdem mit Gästen ruhig und hinter der **Leviathanmauer** (7.4); das Hotel lässt ihn nur für ein paar Minuten hinaus und zwingt ihn immer wieder in den alten Heizkeller zurück. Bevor er starb, schrieb er die **UV-Schrift von 1987 im Heizraum** (7.9, mit „J. A.“ gezeichnet – geändert 2026-10-25: der älteste Warnungszettel eines Gastes stammt von Edna, 2.7); sein **Kesselbuch** liegt in seinem Spind im Heizraum (7.4). **Er hieß Josef Ahrend** (entschieden 2026-10-24) – derselbe Name in Kesselbuch und Personalakte, die Initialen unter der UV-Schrift.
 - **Was das erklärt:**
   - **Deko schützt**, weil sie einmal Teil des Rituals war: Wer schmückt, gilt als *Gastgeber*, nicht als *Gabe*. Und weil sie ihn an das Fest erinnert, das er retten wollte – in geschmückten Bereichen zögert er.
   - **Die Puppe** (5.5) ist die Jury des Abkommens: Sie bestimmt vor jedem Angriff, wer am wenigsten schmückt und
     damit „angeboten“ wird – vor dessen Tür liegt sie, und dort stirbt jemand. **Herkunft (2026-10-27):** Sie war das
-    Geschenk des Heizers an Marion, ist 1987 mit verbrannt und seitdem an ihn gebunden (5.5).
+    Geschenk Josefs an Marion, ist 1987 mit verbrannt und seitdem an ihn gebunden (5.5).
   - **Kerzen gehen aus**, wenn er vorbeikommt: das Feuer, das ihn getötet hat.
-  - **Das Hotel behält jeden, der dort stirbt** (entschieden 2026-10-21, 4.20): der Heizer als das Monster, der
+  - **Das Hotel behält jeden, der dort stirbt** (entschieden 2026-10-21, 4.20): Josef als das Monster, der
     Rezeptionist von 1987 als Kürbismann (4.19), die Verschwundenen als Lakengeist (4.18).
   - **Die Leviathanmauer schließt immer später** (7.4, 4.8): Das Abkommen hält ~~jedes Jahr~~ mit jeder Ernte (2.10) schlechter.
   - **Der Schlüssel an Halloween** (2.1) öffnet den Haupteingang für **alle, die bis zum 31. überlebt haben** (2.7, entschieden 2026-10-25; vorher „für genau einen“). Wen man im Lauf des Monats verliert oder opfert (4.11), der fehlt beim Hinausgehen. **Fundort (2026-10-30, 2.10):** der Koffer des Schlüsselträgers von 2005 bei den Fundsachen in U2.
 - **Zwei Arten von Mitwissern:**
-  - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): ~~der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält~~ (ersetzt 2026-10-30: der alte Herr auf den Fotos ist der Gründer, nur auf den Fotos zu sehen, 2.10); der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht.
-  - **Angehörige, die suchen:** die **Tochter des Heizers**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel. **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer die Personalakte des Heizers kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
-- **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 (umgesetzt 2026-10-28: aufgeschlagen auf der Rezeption, 2.9) · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** des Heizers mit Foto (die Statur passt) · **Kesselbuch** im Spind des Heizers · der **alte Heizkeller** in U2 · die Koffer früherer Gäste im Lager (7.4).
+  - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): ~~der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält~~ (ersetzt 2026-10-30: der **alte Herr**, Gründer und Direktor, nur auf den Fotos zu sehen, 2.10); der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht. **Seit 2026-10-30:** Er ist heute der **Hausmeister** – der einzige Lebende der Besetzung von 1987, nie zu sehen (2.11).
+  - **Angehörige, die suchen:** die **Tochter des früheren Hausmeisters**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel. **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer Josefs Personalakte kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
+- **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 (umgesetzt 2026-10-28: aufgeschlagen auf der Rezeption, 2.9) · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** Josefs mit Foto (die Statur passt) · **Kesselbuch** in Josefs Spind · der **alte Heizkeller** in U2 · die Koffer früherer Gäste im Lager (7.4).
 - **Enden (Vorschlag):**
   - **Flucht:** mit dem Schlüssel hinaus – mit allen Überlebenden (2.7).
   - **Das Abkommen brechen:** den Vertrag im Feuer von 1987 verbrennen (alter Heizkeller, 7.4). Er ist nicht mehr gebunden – ob das gut ist, bleibt offen. **Seit 2026-10-25 Teil von Marions Auftrag (2.8).**
@@ -261,13 +262,13 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 **Mitwisser**
 - **Wenige Gäste wissen mehr**, als sie sagen. Sie schweigen aus Angst, Schuld oder Eigennutz.
 - **Zum Reden bringt man sie mit Beziehung *und* Beweis**, nicht mit Beziehung allein.
-- **Sie können lügen.** ~~Und sterben~~ – seit 2026-10-25 überleben **Kernfiguren jeden Angriff** verletzt (6.17).
+- **Sie können lügen.** ~~Und sterben~~ – seit 2026-10-25 überleben **Kernfiguren jeden Angriff** verletzt (6.17) – seit 2026-10-30 nur, bis ihre Rolle erfüllt ist.
   Holt das Monster einen anderen Mitwisser, ist sein Wissen weg – oder es liegt nur noch als Notiz in seinem Zimmer. Gäste zu schützen (oder zu opfern, 4.11) bekommt dadurch Gewicht.
 - Idee: Das Monster **will gerade die Mitwisser**. Wen man beschützt, entscheidet dann auch, was man erfahren kann.
 
 **Dokumente (Lore)**
 - **Jedes Dokument zeigt auf etwas** – einen Ort, eine Person, einen Code. Lore, die nur Sammelgut ist, liest niemand.
-- **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch des Heizers (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Lager (7.4).
+- **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch Josefs (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Lager (7.4).
 - **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Was ein Dokument verrät, notiert der Spieler-Charakter als eine Zeile mit Quelle im **Notizbuch** (Lesezeichen „Notizen“, 3.10), ebenso Gerüchte – mit dem, von dem sie stammen, ohne zu sagen, ob sie stimmen. Wendepunkte der Ermittlung (ein Mitwisser bricht sein Schweigen) schreibt er ins **Tagebuch** (3.10, 8.5).
 - ~~**Zeitschleife (2.2):** Die Welt setzt sich zurück, Wissen kann bleiben – über die eigenen Zettel. Codes, Namen und wer lügt, gibt man sich selbst weiter. So wird jeder Durchgang schneller und tiefer, auch wenn man scheitert.~~ (verworfen, 2.7)
 
@@ -385,7 +386,7 @@ wirkt wie eine Sandbox.
 
 **Der Wettbewerb**
 - **Das Hotel ruft ihn aus:** im Willkommensbrief, auf dem Aushangbrett und mit Durchsagen (5.9). Personal sieht man
-  nie – die unsichtbare Hotelleitung ist das Abkommen (2.3), das jedes Jahr dasselbe veranstaltet.
+  nie (Betriebsferien, nur der Hausmeister bleibt – 2.11) – die unsichtbare Hotelleitung ist das Abkommen (2.3), das jedes Jahr dasselbe veranstaltet.
 - **Die Jury ist die Puppe** (5.5). Sie sitzt bis zur Siegerehrung auf dem Lobby-Sofa, mit einem kleinen Schild „Jury“.
   Kinder nehmen sie vorher **nicht** mit.
 - **Bis dahin** (1. Oktober 15 Uhr bis 2. Oktober 20 Uhr, knapp 30 Minuten): Deko besorgen und an die Tür bringen –
@@ -586,7 +587,7 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 - **Sättigung erklärt die harmlose Phase:** Das Monster hat gefressen (4.10) – darum holen die nächsten Aufbrüche
   noch keinen Gast (2.1), die Lernzeit der Puppe (2.5) bleibt.
 - **Ruß in den Fingerabdrücken:** Blut mit Ruß bzw. Asche (das Monster hinterlässt schon Asche) – eine stille erste
-  Spur zum Heizer und zum Kesselbrand (2.3). Marion Teske fällt es vielleicht auf.
+  Spur zu Josef und zum Kesselbrand (2.3). Marion Teske fällt es vielleicht auf.
 - **Wohin die Deko ging:** Er schreibt, wohin er sie geschafft hat, etwa in den Müllschlucker (7.10) – dann liegt die
   Deko der Kinder im Müllraum im Keller: Deko genau dann, wenn sie knapp wird, und ein zweiter Zug in den Keller (2.3:
   jedes Dokument zeigt auf etwas). Die Kinder wollen ihre Sachen zurück (Auftrag, 6.14).
@@ -673,8 +674,8 @@ bleiben leer.
 2. **Ohne Schlüssel, der Leviathan nicht erlöst – er holt alle.** Das Tor bleibt zu. Alle drängen sich panisch davor,
    rütteln, schlagen dagegen; im Hintergrund holt der Leviathan in der Lobby einen nach dem anderen. Zuletzt steht er
    vor dem Spieler – und holt auch ihn.
-3. **Ohne Schlüssel, der Leviathan erlöst – der Spieler wird der neue Heizer.** Das Abkommen von 1987 (2.3) braucht ein
-   Monster; seit ~~1988~~ 1990 (der ersten Ernte, 2.10) ist es der Heizer, den man an Halloween einschloss (2.8). Ist Josef Ahrend erlöst und der Schlüssel
+3. **Ohne Schlüssel, der Leviathan erlöst – der Spieler wird der neue Hausmeister.** Das Abkommen von 1987 (2.3) braucht ein
+   Monster; seit ~~1988~~ 1990 (der ersten Ernte, 2.10) ist es Josef, den man an Halloween einschloss (2.8). Ist Josef Ahrend erlöst und der Schlüssel
    fehlt, nimmt das Hotel den Spieler an seine Stelle: Das Tor bleibt zu, kein Angriff, Stille. Die Lampen in der Lobby
    gehen eine nach der anderen aus, unten flammt das Feuer von 1987 wieder auf, das seit dem Ritual erloschen war, die Rohre werden heiß. Der Blick
    wechselt: Der Spieler sieht jetzt mit den Augen des Monsters (verzerrt, flackernd) – er **ist** der Leviathan – und
@@ -730,7 +731,7 @@ bleiben leer.
 - ~~**Die anderen Enden aus 2.3** (Abkommen brechen)~~ – in Marions Auftrag aufgegangen (2.8).
 - **Vampir (4.22):** Wer zum Vampir geworden ist, kann nicht ins Morgengrauen – passt zu seinem eigenen, dunklen Ende.
 
-### 2.8 Den Heizer erlösen – Marions Auftrag (entschieden 2026-10-25)
+### 2.8 Josef erlösen – Marions Auftrag (entschieden 2026-10-25)
 > Noch nicht umgesetzt. Fasst die Enden „Ihn erlösen“ und „Das Abkommen brechen“ aus 2.3 zu einem Auftrag zusammen.
 > Ablauf im Durchlauf: [HANDLUNG.md](HANDLUNG.md).
 
@@ -758,16 +759,16 @@ größer, mitten in seinem Revier.
 
 **Marions Identität**
 - **Selbst herausfinden:** Im Hotelregister steht „Marion Teske, geb. Ahrend“ (2.3, 6.20); den Namen Ahrend kennt man
-  aus dem Kesselbuch im Spind des Heizers (Heizraum, 7.4) oder der Personalakte. Mit beidem kann man sie ansprechen („Sie sind Josef Ahrends
+  aus dem Kesselbuch in Josefs Spind (Heizraum, 7.4) oder der Personalakte. Mit beidem kann man sie ansprechen („Sie sind Josef Ahrends
   Tochter.“) – **Beweis und Beziehung** (2.3): Mag sie einen noch nicht genug, streitet sie es ab, und man kann es später
   noch einmal versuchen.
 - **Sie offenbart sich selbst** (Vorschlag: am **Abend des 24. Oktober**, bevor die letzte Woche mit täglichem Großen
   Schmücken beginnt, 2.4): Sie klopft an Zimmer 13 und erzählt es. Wer es früher herausfindet, hat Wochen; wer wartet,
   hat eine Woche – und um den 25. bleibt die Leviathanmauer offen, U2 gehört dann dem Monster (7.4).
 - **Was sie erzählt:** Sie war 1987 zwölf und im Hotel. Sie hat gesehen, wie das Personal die Tür hinter ihrem Vater
-  abschloss, und sie weiß, dass es einen Vertrag gibt. Sie sagt, was zu tun ist – aber nicht, wo alles liegt.
+  abschloss – den Schlüssel drehte ein Junge in Livree, der Page (2.11) –, und sie weiß, dass es einen Vertrag gibt. Sie sagt, was zu tun ist – aber nicht, wo alles liegt.
 - **Ältester Zettel** (entschieden 2026-10-25): Ednas Zettel „E. K.“ von Oktober 1987 ist der älteste eines Gastes (2.7);
-  vom Heizer stammt die UV-Schrift von 1987 im Heizkeller (7.9), mit „J. A.“ gezeichnet – ein Hinweis auf den Namen.
+  von Josef stammt die UV-Schrift von 1987 im Heizkeller (7.9), mit „J. A.“ gezeichnet – ein Hinweis auf den Namen.
 - **Danach will das Monster sie** (2.3: „Das Monster will gerade die Mitwisser“). Sie zu schützen wird Teil der Aufgabe.
 
 **Die Teile im Einzelnen**
@@ -802,7 +803,7 @@ größer, mitten in seinem Revier.
 - **Vertrag verbrannt, aber nicht erlöst** (Sachen fehlen): Er ist **frei, aber nicht erlöst** – der
   letzte Angriff kommt ohne Puppe und ohne Warnung. Die dunkle Seite von „Abkommen brechen“ (2.3).
 - ~~**Marion stirbt vorher:** Ohne ihre Stimme keine Erlösung, nur ihr Brief in Zimmer 001.~~ Entfällt (2026-10-25):
-  Kernfiguren sterben nicht (6.17). Der Brief ist gestrichen (2026-10-27).
+  Marion ist bis Halloween geschützt (6.17). Der Brief ist gestrichen (2026-10-27).
 
 **Zu klären**
 - **Wo liegt das Büro der Direktion** (Personaltrakt hinter der Rezeption?), und gibt es einen zweiten Weg hinein, falls
@@ -928,7 +929,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   **2026**. 1987 + 13 × 3 = 2026: **14 Ernten**, genau die 14 Rahmen der Fotowand (13 Fotos und der leere Rahmen 2026).
 - **Dazwischen läuft das Hotel normal:** gewöhnliche Gäste, keine Halloween-Woche, kein Fest, kein Gruppenfoto, keine
   Toten. Im Gästebuch haben auch diese Oktober ihre Zeilen, nur ohne Kreuze.
-- **Warum drei Jahre: Der Gründer hat es ausgehandelt.** Im Vertrag (Büro der Direktion) ist „alljährlich“
+- **Warum drei Jahre: Der alte Herr hat es ausgehandelt.** Im Vertrag (Büro der Direktion) ist „alljährlich“
   durchgestrichen, daneben von Hand „alle drei Jahre“, gegengezeichnet. Eine verschwundene Belegung jedes Jahr wäre
   aufgefallen. Der Vertrag ist damit selbst ein Beweis (2.3, Schicht 3).
 
@@ -936,7 +937,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - **Ohne Schlüssel stirbt jeder:** Im Gästebuch ist die **ganze Seite gekreuzt**. So endeten alle Ernten außer 1987 und
   2005.
 - **Mit Schlüssel** Kreuze nur für die Toten des Monats, die anderen kamen hinaus.
-- **1987 war das Abkommen noch nicht besiegelt** – das geschah erst in der Nacht zu Allerheiligen, als man den Heizer
+- **1987 war das Abkommen noch nicht besiegelt** – das geschah erst in der Nacht zu Allerheiligen, als man Josef
   einschloss (2.3). Das Hotel war nicht verschlossen; wer Halloween überlebte, ging am Morgen hinaus: Edna, Liesel,
   Marion. Das Ding unter dem Hotel war schon da und nahm sich Leute, ein Gefängnis war das Hotel noch nicht.
 - **2005** kamen Gäste mit dem Schlüssel hinaus (unten).
@@ -989,12 +990,13 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   von 2008: „Ich weiß nicht mehr, woher ich ihn habe. Aber ich darf ihn nicht hergeben.“
 
 **Der alte Herr auf den Fotos** (ersetzt den Erben aus 2.3)
-- Er ist der **Gründer**, der 1987 den Handel schloss. Auf dem Foto von 1987 steht er leibhaftig, schon damals alt; bald
+- Er ist **Gründer und Direktor** des Hotels und schloss 1987 den Handel. **Er heißt überall nur „der alte Herr“**
+  (2026-10-30) – in der Doku, in Texten und bei den Gästen, nie „der Gründer“ oder mit Namen. Auf dem Foto von 1987 steht er leibhaftig, schon damals alt; bald
   danach starb er, und das Hotel behält ihn (2.3). Seitdem steht er unverändert hinten rechts auf jedem Foto – **bei
   der Ankunft steht dort niemand**, er erscheint erst auf dem Bild. Er ist das Abkommen, sichtbar gemacht.
 - **Den Erben als uralten Dauergast gibt es nicht.** Die Nachkommen leben draußen, weit weg, und kommen nie her („die
   Familie lebt“, 2.3). Die Hotelleitung ist das Abkommen selbst (2.5). Unter den Tätern, die schweigen, bleibt der Page
-  von 1987.
+  von 1987 – heute der Hausmeister (2.11).
 - **Spuren** (Vorschlag): Edna und Liesel erkennen ihn auf dem Foto als den alten Herrn Direktor von 1987 · im Büro der
   Direktion sein Porträt und seine Unterschrift unter dem Vertrag.
 - **Das Ankunftsfoto 2026:** Der Vorspann zeigt, wie es entsteht – hinten rechts steht niemand. Am 2. Oktober hängt es an
@@ -1045,6 +1047,61 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - Lage des Sekretariats im Plan (neben dem Büro der Direktion, ZIM-6).
 - Welche Zeile im Notizbuch bleibt in Ende 1a?
 - Bildfolgen im Einzelnen: wie viele Bilder je Szene, Texte, Tönung.
+
+### 2.11 Das Personal von 1987 und der Hausmeister (entschieden 2026-10-30)
+
+> **Josef war Hausmeister, kein Heizer.** Einen eigenen Heizer hatte das Haus nicht; der Hausmeister befeuerte auch den
+> alten Kessel. In Doku und Spieltexten heißt er **„Josef“** oder **„der frühere Hausmeister“** – nie „der alte
+> Hausmeister“, das beißt sich mit dem alten Herrn (2.10). Heizraum, Heizkeller, Kesselbuch, Kesselkatze und das Feuer
+> von 1987 bleiben; Ruß und schwarze Hände auch – geheizt hat er ja. Ein Hausmeister kennt jeden Gang und jeden Schacht:
+> Darum kennt sich der Leviathan im ganzen Haus aus. Ticket ZIM-119.
+
+**Die Direktion von 1987: Kopf, Stimme, Gedächtnis, Hände**
+
+| Wer | Rolle im Abkommen | heute |
+|-----|-------------------|-------|
+| **der alte Herr** | Gründer und Direktor, schloss den Handel (2.3, 2.10) | tot, auf jedem Foto (5.14) – der **Kopf** |
+| **die Chefsekretärin** | saß im Sekretariat (Vorzimmer der Direktion), tippte den Vertrag und die Einladungen | tot; das Hotel behielt ihre Stimme: Durchsagen (5.9) und Mitteilungen der Direktion – die **Stimme** |
+| **der Rezeptionist** | führte die Gästeliste | Kürbismann (4.19) – das **Gedächtnis** |
+| **der Page** | drehte an Halloween 1987 den Schlüssel am Heizkeller | der **Hausmeister**, einziger Lebende – die **Hände** |
+| **Josef Ahrend** | Hausmeister – das Opfer | der Leviathan (2.3) |
+
+- **Die Ahnungslosen** (Vorschlag): Koch, Zimmermädchen bzw. Wäscherin, vielleicht ein Liftboy. Sie stehen auf dem
+  Ankunftsfoto 1987 in Uniform am Rand (wie Josef im Kittel, 5.14), sonst nur auf Papier – etwa die Wäscheliste von
+  1987, in der Laken fehlen (Spur zum Lakengeist, 4.18).
+- **Dienstplan vom 31.10.1987** (Vorschlag): wer in der Nacht wo war, beim Pagen „22 Uhr Heizkeller“. Im Karton
+  „Personal 1987“ (2.8) oder bei den Personalakten im Sekretariat.
+
+**Die springende Type** (Vorschlag)
+- Die Schreibmaschine der Chefsekretärin steht im Sekretariat, vielleicht mit eingespanntem Blatt. Ein Typenhebel ist
+  verbogen: Das „e“ sitzt in jedem Text ein wenig zu hoch – der Fingerabdruck der Maschine. Willkommensbrief 2026,
+  die Aushänge der Direktion und der Vertrag von 1987 haben dasselbe „e“.
+- Hat man zwei davon gesehen, notiert die Figur: *„Das ‚e‘ springt. Im Willkommensbrief auch.“* – Die Briefe von heute
+  kommen von ihrer Maschine, obwohl sie seit Jahrzehnten tot ist. Allein wäre das zu fein; es trägt nur mit der Notiz.
+
+**Der Hausmeister – der Page von 1987**
+- Nach 1987 bekam der Page **Josefs Stelle** – Lohn und Kette zugleich, vom alten Herrn. Er ist der **einzige Lebende**
+  der Besetzung: Das Hotel erledigt das Unheimliche (Kreuze im Register, Fotos, Stimme), er die Handarbeit – den Aufzug
+  stilllegen (7.4), Zimmer 18 versiegeln, 2005 die Treppen nach U2 zumauern.
+- **Man sieht ihn nie**, nur Spuren (Vorschlag): eine warme Tasse im Hausmeisterraum, ein nasser Mantel am Haken,
+  frisch Repariertes. Der Satz im Albtraum (4.29) – „Die Direktion will heute Nacht keine Störung.“ – ist seine Stimme,
+  damals die eines Jungen.
+- **Zwei Spinde:** Josefs Spind steht seit 1987 unberührt im Heizraum (Kesselbuch, 7.4). Der Page hat ihn nie geöffnet
+  und sich einen eigenen in den **Hausmeisterraum** gestellt – erklärt wird das nicht; wer beide sieht, merkt es.
+- **Der Hausmeisterraum** liegt im EG, die Küche ist dafür halbiert (Plan: Fläche `#c4d35b`, Spind `#747567`; der
+  Nutzer malt ihn). Im Spind liegt jede Ernte die Hauptsicherung des Aufzugs – bis Bruno ihn aufbricht (7.4).
+- **Sein Notizbuch** (7.4) gab er 2005 den Gästen aus 13 und 018, dazu den Schaltschlüssel – sein erster Bruch. Beide
+  wurden geholt, danach traute er sich nicht mehr. 2026 ist seine zweite Chance („der wahrscheinlichste, der bricht“,
+  2.3). Wie er bricht, ist offen – Kandidat: der zweite Weg ins Büro der Direktion (2.8, ZIM-6).
+- **Betriebsferien:** Zwischen den Ernten läuft das Hotel mit Personal (2.10). Im Ernte-Oktober hängt im Personaltrakt
+  (Wortlaut Vorschlag) *„Oktober: Betriebsferien. Das Haus bleibt besetzt: Hausmeister.“* – darum sieht man kein
+  Personal (2.5).
+
+**Zu klären**
+- Namen – oder nur Rollen wie beim alten Herrn („das Fräulein“ für die Sekretärin?); Dienstplan und Wäscheliste im
+  Wortlaut.
+- Zeitungsausschnitt „Brand im Grandhotel – ein Toter“ (2.3): In derselben Nacht starb auch der Rezeptionist (4.19) –
+  vertuscht, oder die Überschrift ändern?
 
 ---
 
@@ -1869,8 +1926,8 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 **UV zeigt Verborgenes**
 - **Fußspuren des Monsters** leuchten unter UV noch lange, nachdem sie für das Auge verblasst sind (15 Spielstunden, 2.4).
-- **Schrift an Wänden**, nur unter UV: ~~in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2)~~, in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, der Heizer), in Zimmer 18 (~~„Nur einer kommt hinaus“~~ – seit 2.7 neu zu fassen, etwa „Nur wer lebt, kommt hinaus“).
-- **Jeder Warnungszettel** hat eine unsichtbare zweite Zeile, die man nur mit eingeschaltetem UV-Licht liest – Hinweise auf das Abkommen und den Heizer (2.3).
+- **Schrift an Wänden**, nur unter UV: ~~in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2)~~, in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, Josef), in Zimmer 18 (~~„Nur einer kommt hinaus“~~ – seit 2.7 neu zu fassen, etwa „Nur wer lebt, kommt hinaus“).
+- **Jeder Warnungszettel** hat eine unsichtbare zweite Zeile, die man nur mit eingeschaltetem UV-Licht liest – Hinweise auf das Abkommen und Josef (2.3).
 - **Warum UV?** Bewusst offen. Gäste und Zettel deuten an, dass es „dieses Licht hasst“ – eine Erklärung im Geheimnis (2.3) ist möglich, aber nicht nötig.
 
 **Zu klären**
@@ -2256,7 +2313,7 @@ etwa 12 m). Licht und Ducken wirken bei ihm wie beim Monster – im hellen Party
 viel.
 
 **4. Eine Geschichte: Das Hotel behält jeden, der dort stirbt** (ergänzt 2.3)
-- **Monster:** der **Heizer** von 1987 (2.3).
+- **Monster:** **Josef**, der Hausmeister von 1987 (2.3).
 - **Kürbismann:** der **Rezeptionist**, ebenfalls Halloween 1987. Er gehörte zum Personal, das das Abkommen am Laufen
   hielt – er führte die Gästeliste. Die Geschichte mit den Kindern (4.19) bleibt: So hat das Hotel ihn sich genommen.
 - **Lakengeist:** die **Verschwundenen** – Laken aus der Wäscherei, die ~~jedes Jahr~~ mit jeder Ernte (2.10) ein Gesicht mehr bekommen. Mit jedem
@@ -2316,7 +2373,7 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
   Helfer werden Freunde.
 - **Das Monster nimmt es als Verlust** – „es hat einen der Seinen verloren“ (4.20, „Das Hotel behält jeden“): Für den
   Rest des Monats liegt die Angriffschance (4.17) eine Stufe höher.
-- **Vorbild fürs Ende:** Dasselbe Muster – Fluch, Fundstück, Ritual – gilt für den Heizer (Marions Auftrag, 2.8).
+- **Vorbild fürs Ende:** Dasselbe Muster – Fluch, Fundstück, Ritual – gilt für Josef (Marions Auftrag, 2.8).
   Der Kürbismann ist die kleinere Probe davor.
 
 **4. Der Dachboden**
@@ -2580,7 +2637,7 @@ Dunkeln, wo man gerade nicht hinsieht, und sieht einen mit hellen Augen an. Gäs
 Katze?“).
 
 - Sieht man sie an, steht sie auf und **geht voraus**: zum Kessel im Heizkeller, ist man schon dort, zur UV-Schrift
-  des Heizers. Unterwegs wartet sie, bis man nachkommt; am Ziel sieht sie einen noch einmal an – und wenn man wegsieht,
+  Josefs. Unterwegs wartet sie, bis man nachkommt; am Ziel sieht sie einen noch einmal an – und wenn man wegsieht,
   ist sie fort. Streicheln geht nicht: Die Hand greift ins Leere. Einmal je Nacht.
 - Sie ist **Josef Ahrends Katze von 1987** (2.3): Darum tut das Monster Katzen nichts (6.11). Kommt es nah, flieht sie
   nicht – sie setzt sich und sieht ruhig zu ihm hin.
@@ -2618,7 +2675,7 @@ noch (das Kesselfeuer im Heizraum entfällt mit 7.4, 2026-10-27).
 ### 4.29 Der Albtraum von 1987 (entschieden und umgesetzt 2026-10-25)
 Einmal im Spiel, nicht in den ersten Tagen, schläft man nachts im eigenen Bett ein – und steht im **Heizkeller,
 Halloween 1987**. Das Bild ist alt und warm getönt, der Kessel faucht, Rauch quillt und wird dichter. Draußen dreht
-sich ein Schlüssel: „Die Direktion will heute Nacht keine Störung.“ Man ist der Heizer: schwarze Hände, eine fremde
+sich ein Schlüssel: „Die Direktion will heute Nacht keine Störung.“ (die Stimme des Pagen, 2.11) Man ist der Hausmeister: schwarze Hände, eine fremde
 Stimme, die „Macht auf!“ schreit. Zuletzt ruft von fern ein Mädchen „Papa?“ – dann wird es weiß, und man schreckt im
 Bett hoch. Wer vorher aus dem Heizkeller läuft, wacht früher auf.
 
@@ -2653,7 +2710,7 @@ von früher. Das echte Kind bemerkt es nicht.
 > Noch nicht: Liesels Abendgebet und Marion – beide gibt es im Spiel noch nicht. Mit „Vorschlag“ markierte Punkte
 > sind aus der Durchsprache noch nicht bestätigt.
 
-**Grundidee:** Niemand im Hotel kennt den echten Namen des Monsters – dass es Josef Ahrend war, der Heizer (2.3),
+**Grundidee:** Niemand im Hotel kennt den echten Namen des Monsters – dass es Josef Ahrend war, der frühere Hausmeister (2.3),
 erfährt man erst spät. Also geben ihm die Gäste einen: Nach der ersten bestätigten Sichtung fällt einem von ihnen die
 Ähnlichkeit mit einem mythischen Ungeheuer auf, und von da an heißt es **der Leviathan** – ein Spitzname in
 Ermangelung eines echten.
@@ -2716,8 +2773,8 @@ ganzen Hotels.
 **Für alle Modi**
 - **Überleben:** Wen der Leviathan, der Kürbismann oder der Lakengeist packt, der überlebt mit **20 %** verletzt
   (6.17; bisher 40 %). **Für den Spieler gibt es das nicht:** Erwischt es ihn, ist er tot (8.7).
-- **Kinder** sind nie Opfer (6.13). **Kernfiguren** (6.0) können Opfer werden, überleben aber **immer** verletzt –
-  bei jedem Angriff jeder Bedrohung (6.17).
+- **Kinder** sind nie Opfer (6.13). **Kernfiguren** (6.0) können Opfer werden, überleben aber verletzt, solange ihr
+  Schutz gilt – bei jedem Angriff jeder Bedrohung (6.17).
 - **Balltage** (5.19): An ihnen kommt **kein Modus** des Leviathan.
 - **Kein Modus 0:** Ein bloßes Umsehen ohne Ziel gibt es nicht mehr – das sind mit allen vier Modi schon genug
   Auftritte (24–33 im Spiel).
@@ -2742,7 +2799,7 @@ ganzen Hotels.
 - **Die Puppe:** Nach jedem Urteil sitzt sie wieder in der Lobby (Kinder dürfen sie von dort mitnehmen, 5.5).
   **2–5 Spielstunden** vor dem Angriff sitzt sie vor der schwächsten bewohnten Tür, auch vor **Zimmer 13**.
   Das **Nachbessern** bleibt: Wer bis zum Aufbruch nicht mehr der Schwächste ist, den verlässt sie (5.5).
-- **Wen es trifft:** alle Gäste **außer Kindern und Kernfiguren** (6.0). Wohnen mehrere Erwachsene im Zimmer, ist es
+- **Wen es trifft:** alle Gäste **außer Kindern und geschützten Kernfiguren** (6.0, 6.17). Wohnen mehrere Erwachsene im Zimmer, ist es
   der mit der höchsten **Schwäche** (4.18), bei Gleichstand ein zufälliger. Liegt sie vor Zimmer 13, ist es der Spieler.
 - **Der Angriff:** Die Puppentür **bricht immer auf**, auch abgeschlossen und gut geschmückt. Ist der Verurteilte
   nicht im Zimmer oder versteckt, **holt das Monster ihn trotzdem**, wo er auch ist. Er überlebt mit 20 % verletzt;
@@ -2826,7 +2883,7 @@ ganzen Hotels.
   - **Das Rauschen beginnt etwa eine Spielstunde vorher.** In dieser Zeit kann man **nachbessern** – jede Tür, die
     man über den Anspruch hebt, fällt nicht – und Gäste aus schwachen Zimmern holen. Die Gäste selbst gehen wie
     immer heim und schließen die Tür: In einem schwachen Zimmer ist das die Falle.
-  - Kinder sind nie Opfer; Kernfiguren können getroffen werden, überleben aber immer verletzt.
+  - Kinder sind nie Opfer; Kernfiguren können getroffen werden, überleben aber verletzt, solange ihr Schutz gilt (6.17).
 
 **Grobe Bilanz** (Schätzung, beim Ausprobieren prüfen): Von 54 Erwachsenen holt der Leviathan etwa 15–20 (Urteile
 um 8, Snacks um 2, Raubzüge je nach Spieler 0–8, Anforderungen um 3–4). Dazu kommen Gustav, Kürbismann, Lakengeist
@@ -2897,7 +2954,7 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 >
 > **Neu gefasst (2026-10-25, 4.33 „Das Urteil“):** 8–12 Urteile etwa alle drei Tage, die Puppe sitzt **2–5
 > Spielstunden** vorher vor der Tür und danach wieder in der Lobby. Das Monster holt **einen** Erwachsenen des
-> Zimmers (nie Kinder oder Kernfiguren), auch aus jedem Versteck außerhalb; er überlebt mit 20 %. Nachbessern bleibt
+> Zimmers (nie Kinder oder geschützte Kernfiguren), auch aus jedem Versteck außerhalb; er überlebt mit 20 %. Nachbessern bleibt
 > der einzige Ausweg. Die Türen unterwegs gehören jetzt zur Anforderung.
 
 **Grundidee:** Die Puppe ist keine Figur, die herumläuft, sondern das **sichtbare Urteil** des Abkommens (2.3): Kurz vor
@@ -2960,11 +3017,11 @@ vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „
   schönsten Stelle – Ruf für die Mitmacher. Kein Muss.
 - **Das letzte Urteil an Halloween:** ~~„Das Hotel behält immer einen“ – am 31. sitzt sie ein letztes Mal vor
   einer Tür: bei dem, den das Hotel behält.~~ Seit 2.7 (2026-10-25) kommen alle Überlebenden hinaus. **Entschieden
-  2026-10-25 (2.8):** Ist der Heizer bis dahin nicht erlöst, urteilt sie am 31. ein letztes Mal, und das Monster greift
+  2026-10-25 (2.8):** Ist Josef bis dahin nicht erlöst, urteilt sie am 31. ein letztes Mal, und das Monster greift
   vor der Öffnung noch einmal an.
 
 **Herkunft (entschieden 2026-10-27, nicht gebaut)**
-- Die Puppe war das **Geschenk des Heizers an Marion** (2.3, 2.8). Sie ist 1987 **mit verbrannt** und seitdem an ihn
+- Die Puppe war das **Geschenk Josefs an Marion** (2.3, 2.8). Sie ist 1987 **mit verbrannt** und seitdem an ihn
   gebunden – darum ist sie die Jury des Abkommens.
 - Heute sieht sie makellos aus. **Unter UV-Licht** (4.16) zeigen sich die **Brandspuren**.
 - **Marion erkennt sie:** Vor dem ersten Urteil steht sie komplett schockiert vor der Puppe auf dem Lobby-Sofa und ist
@@ -3372,16 +3429,16 @@ Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gest
 > der leere Rahmen 2026, also genau die 14 Rahmen. Aufgenommen bei der Ankunft am 1. Oktober vor dem Haupteingang;
 > 2026 hängt es ab dem 2. Oktober im Rahmen und verwischt mit jedem Toten. Ohne Schlüssel ist jedes Gesicht
 > verwischt außer dem des alten Herrn; scharf sind 1987 und 2005 die Überlebenden. **Das Foto von 2005 fehlt** (Fleck
-> auf der Tapete) und muss erst gefunden werden. Der alte Herr ist der Gründer, nicht
-> der Erbe. Im Code stehen noch die alten Jahre (1988, 2003, 2007, 2015, 2019, 2025) und 1–3 Verwischte je Foto.
+> auf der Tapete) und muss erst gefunden werden. Der alte Herr (Gründer und Direktor),
+> nicht der Erbe. Im Code stehen noch die alten Jahre (1988, 2003, 2007, 2015, 2019, 2025) und 1–3 Verwischte je Foto.
 
 ~~Jedes Jahr seit 1987~~ Jede Ernte (2.10) ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, bei der Ankunft, in
 Holzrahmen nebeneinander – alte vergilbt, neue farbig; daneben ein leerer Rahmen „Halloween 2026“.
 
 - Wer in jenem Oktober geholt wurde, ist **verwischt**, als hätte er sich bewegt.
 - Ein Gesicht ist auf jedem Foto und **altert nie**: hinten rechts der weißhaarige alte Herr mit Gehstock – ~~der Erbe
-  der Familie (2.3)~~ der Gründer, nur auf den Fotos zu sehen (2.10). Wer genug Fotos ansieht, merkt es (Notizbuch).
-- Auf 1987 außerdem Marion als Mädchen mit Zöpfen, der Heizer im Kittel, Edna jung und Liesel – die Indiz-Stufe für
+  der Familie (2.3)~~ der alte Herr, Gründer und Direktor, nur auf den Fotos zu sehen (2.10). Wer genug Fotos ansieht, merkt es (Notizbuch).
+- Auf 1987 außerdem Marion als Mädchen mit Zöpfen, Josef im Hausmeisterkittel, Edna jung und Liesel – die Indiz-Stufe für
   Marion, Edna und Liesel (2.3, 2.7).
 - Ort: Ausstattung „Fotowand“ im Plan, bis dahin Westwand der Lobby. Debug: `--fotos`.
 
@@ -3564,7 +3621,7 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 | **Edna Wiegand** | 003 | freundlich, sehr ängstlich | Kerzen, versteckt sich beim ersten Flackern |
 | **Bruno Kaminski** | 102 | mürrischer Händler, mutig, gierig | teure Preise, erntet Kürbisse, klaut schnell, wenn er dich nicht mag |
 | **Mila Hellwig** | 021 | junge Künstlerin, gesprächig | erntet und schnitzt Kürbisse, verbreitet Gerüchte am stärksten |
-| **Marion Teske** | 001 | Tochter des Heizers (2.3) | sucht, was 1987 geschah; im Hotelregister „geb. Ahrend“ |
+| **Marion Teske** | 001 | Tochter des früheren Hausmeisters (2.3) | sucht, was 1987 geschah; im Hotelregister „geb. Ahrend“ |
 | **übrige Gäste** | 6.20 | einer von sechs Charakteren | siehe unten |
 
 **Die übrigen Gäste (umgesetzt 2026-10-11, feste Haushalte seit 2026-10-24):** Zusammen mit den Kernfiguren sind **67** Gäste im Hotel, davon **13 Kinder**, in **39 festen Haushalten** (6.20). Jeder hat einen Namen, einen Charakter (**ängstlich, geschäftstüchtig, Plaudertasche, Skeptiker, Bastler, Griesgram**) mit passenden Werten (Mut, Gier, Tratsch, Preise, Zuverlässigkeit), eigene Sätze (gemischt mit einem gemeinsamen Grundstock), Vorrat und Start-Deko, Würfelstil mit verräterischer Geste, Kleidungsstück, Farben und Größe. Wer jemand ist, legt die Liste fest; den Rest würfelt der Generator aus einem festen Seed je Person – aus dem Seed entsteht immer derselbe Gast (6.20, `scripts/guests/guest_generator.gd`).
@@ -3575,7 +3632,7 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 
 | Ebene | Anzahl | Wer | Was sie bekommen |
 |-------|--------|-----|------------------|
-| **Kernfiguren** | 4 | Edna, Bruno, Mila und die **Tochter des Heizers** Marion Teske (2.3, entschieden 2026-10-21) | Klare Priorität: eigene Geschichte, Mitwisser des Geheimnisses (2.3), eigene Aufträge (6.14), die meisten eigenen Sätze |
+| **Kernfiguren** | 4 | Edna, Bruno, Mila und die **Tochter des früheren Hausmeisters** Marion Teske (2.3, entschieden 2026-10-21) | Klare Priorität: eigene Geschichte, Mitwisser des Geheimnisses (2.3), eigene Aufträge (6.14), die meisten eigenen Sätze |
 | **Zentrale Gäste** | ca. 10–12 | noch zu besetzen | Fester Name und Zimmer, ein eigener Faden (Wunsch, Sorge, Beziehung zu anderen), tragen die Beziehungsnetze (6.16) |
 | **Übrige Gäste** | der Rest (ca. 50, mit den Kindern) | erzeugt (`GuestGenerator`) | Füllen das Hotel: schmücken, feiern, tratschen, reagieren – und sind Monsterfutter. Kein eigener Inhalt über Charakter und Grundstock hinaus |
 
@@ -3586,7 +3643,7 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 **Zu klären**
 - Welche Rolle Edna, Bruno und Mila im Geheimnis spielen.
 - ~~**Können Kernfiguren sterben?**~~ – beantwortet 2026-10-25: nein. Sie können Opfer werden, überleben aber jeden
-  Angriff verletzt (6.17).
+  Angriff verletzt (6.17). Seit 2026-10-30 nur, bis ihre Rolle erfüllt ist (6.17).
 - **Balance ohne Nachschub:** Das Monster darf das Hotel nicht vor Halloween leeren. Angriffschance (4.17), Opferzahl,
   Überlebende (6.17), Lakengeist und Kürbismann müssen gegen 54 Erwachsene ausbalanciert werden. Der Kürbismann regelt
   sich selbst (er kommt nur, wenn genug Gäste Spaß haben – Spaßwert, 4.19).
@@ -4280,9 +4337,20 @@ Nicht jeder Angriff endet tödlich: **Etwa zwei von zehn Gästen überleben** (2
 Leviathan, Kürbismann und Lakengeist, umgesetzt am selben Tag; bisher vier von zehn) – ohne Lebenspunkte, es wird beim Angriff
 entschieden. Wer überlebt, ist verletzt, erzählt viel und lässt sich in dieser Zeit schneller gewinnen – oder verlieren.
 Das gilt nur für Gäste (der Spieler stirbt, 8.7); Kinder sind ohnehin nie Opfer (6.13). **Kernfiguren** (6.0)
-überleben **immer** – bei jedem Angriff jeder Bedrohung (entschieden und umgesetzt 2026-10-25). Wer überlebt, zählt
+überleben ~~**immer**~~ **bis ihre Rolle erfüllt ist** (geändert 2026-10-30, unten) – bei jedem Angriff jeder Bedrohung (entschieden und umgesetzt 2026-10-25). Wer überlebt, zählt
 nicht als Opfer – das Monster bleibt hungrig (4.10). Ausnahme ist das **Urteil**: Überlebt der Verurteilte, ist es
 vorbei (4.33).
+
+**Schutz auf Zeit (entschieden 2026-10-30, ZIM-120, noch nicht umgesetzt):** Der Schutz endet nach Fortschritt, nicht
+nach Datum – wer langsam spielt, verliert eine Figur nicht, bevor sie ihre Rolle hatte. Er bleibt unsichtbar: Geschützte
+werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe wie für alle Gäste.
+- **Bruno:** bis der Spieler die Hauptsicherung hat, gleich wie (7.4). Dann ist er Mitwisser – und die will das Monster (2.3).
+- **Edna:** bis zur gezielten Bedrohung um den 20. (HANDLUNG M15, K5) – dort ist sie rettbar; überlebt sie, erzählt sie,
+  wie sich 1987 der Haupteingang öffnete (2.7), stirbt sie, liegt ihr Wissen als Notiz in Zimmer 003.
+- **Marion:** bis Halloween – das Ritual braucht ihre Stimme (2.8).
+- **Mila:** bis ihre Rolle im Geheimnis steht (6.0).
+- **Weitere Figuren:** Schutz nur, wenn es ohne die Figur keinen Weg weiter gibt; sonst ein Ersatzweg (Hugo → Liesel,
+  4.32; Edna → ihr Wissen als Notiz in Zimmer 003). Offen: Ersatzwege für Liesel und Oskar.
 
 | Angreifer | Was er überlebt | Verletzung | Folgen |
 |-----------|-----------------|------------|--------|
@@ -4581,7 +4649,7 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
     nicht (nie Opfer). Mehr Leute bringen mehr Deko, sind aber auch mehr Beute.
   - **Kisten** (5.10): „höchstens ein Stück am Spieltag“ gilt schon je Kiste für alle Gäste zusammen – bleibt so.
   - **Angriff** (5.5: bis zu fünf Türen, Opferzahl) und **Wettbewerb** (2.5) bleiben; nachstellen im Probespiel.
-- **Nachnamen der Kernfiguren:** **Edna Wiegand**, **Bruno Kaminski**, **Mila Hellwig**; die Tochter des Heizers heißt
+- **Nachnamen der Kernfiguren:** **Edna Wiegand**, **Bruno Kaminski**, **Mila Hellwig**; die Tochter des früheren Hausmeisters heißt
   **Marion Teske, geb. Ahrend** (2.3) – an der Tür „Marion Teske“, im Hotelregister mit „geb. Ahrend“.
 
 ### 6.21 Apfeltauchen im Partyraum (entschieden und umgesetzt 2026-10-25)
@@ -4772,7 +4840,24 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 | Schritt | Wo | Gefahr / Mechanik |
 |---------|----|-------------------|
 | **1. Notizbuch & Schaltschlüssel** | **Zimmer 18** (versiegelt; der Schlüssel liegt an der Leviathanmauer im Heizraum) | Ausflug ins Monster-Versteck – am besten während einer Ruhephase, wenn es woanders schläft, oder in der Sättigung (4.10). Im Zimmer: Notizbuch mit den drei Mängeln und der **Schaltschlüssel** für die Kabine. |
-| **2. Hauptsicherung** | Ein **Gast** hat die Ersatzsicherung (er hat sie dem Hausmeister „abgekauft“) | **Sozial:** Freundschaft, Handel, Mäxchen-Einsatz – oder Klauen mit allen Folgen (6.2). Gerüchte verraten, wer sie hat; nicht immer der Richtige. Eingesetzt wird sie am Sicherungskasten **im Untergeschoss** – noch ein Ausflug dorthin. |
+| **2. Hauptsicherung** | Im **Spind des Hausmeisters** (Hausmeisterraum, EG) – bis **Bruno** ihn in der fünften Nacht aufbricht (unten, „Der Einbruch“) | **Ermitteln, dann sozial:** Der Spind ist erst zu, dann aufgebrochen und leer; Aushang und Gerüchte führen zu Bruno, nicht gleich. Freundschaft, Handel, Mäxchen-Einsatz – oder Klauen mit allen Folgen (6.2). Eingesetzt wird sie am Sicherungskasten **im Untergeschoss** – noch ein Ausflug dorthin. |
+
+**Der Einbruch (entschieden 2026-10-30, ZIM-4; ersetzt den Gast, der die Sicherung „abgekauft“ hat)**
+- **Jede Ernte** legt der Hausmeister – der Page von 1987 (2.11) – auf Anweisung der Direktion den Aufzug still: Er nimmt
+  die Hauptsicherung heraus und schließt sie in seinen **Spind** im **Hausmeisterraum** (EG, neben der Küche). Ein
+  Vorhängeschloss hängt davor. Das Notizbuch nennt den Spind – der Hinweis führt zu einem Ort, nicht zu einer Person.
+- **In der fünften Nacht** (5./6. Oktober) bricht **Bruno** den Spind auf – Händler, gierig, mutig, er durchsucht das
+  Haus nach Verwertbarem. Er nimmt einen Karton Messingkram mit, darin die Sicherung: ein schwerer Keramikkörper mit
+  Messingkappen, am Schild „AUFZUG“.
+- **Am 6. Oktober morgens** hängt am Brett (Wortlaut Vorschlag): *„Aus den Räumen des Hauses wurde Eigentum entwendet.
+  Die Direktion bittet um umgehende Rückgabe.“* – mit der springenden Type (2.11). Bruno begreift: Was das Hotel
+  zurückhaben will, ist etwas wert. Er behält die Sicherung als Faustpfand und verlangt viel.
+- **Der Weg des Spielers:** Notizbuch → Spind (wer früh kommt, findet ihn zu, später aufgebrochen – die Veränderung
+  bleibt hängen) → Aushang und Gerüchte, zuerst falsch: **Magda** schleicht nachts herum, um den „Trick der Direktion“
+  zu beweisen (6.20) → Bruno. Einem Dieb etwas zu stehlen passt zu „Wer bestiehlt, wird bestohlen“ (6.2).
+- **Bruno ist bis dahin geschützt** (6.17): Hat der Spieler die Sicherung, ist Bruno Mitwisser und verwundbar.
+- *Vorschläge:* Wer vor der fünften Nacht mit dem **Brecheisen** (6.19) kommt, bricht den Spind selbst auf – laut;
+  dann findet Bruno nichts mehr, und der Aushang gilt dem Spieler. Fehlt Bruno, bricht ein anderer gieriger Gast ein.
 | **3. Bremse lösen** | **Maschinenraum** im Untergeschoss, nahe dem Heizraum (7.10) | **Lärm:** Die Bremse wird mit einer Kurbel gelöst – E gedrückt halten, ca. 20 Sekunden, laut und quietschend (Neugier ↑ im Untergeschoss – dort, wo das Monster ruht). Loslassen unterbricht, der Fortschritt bleibt. Man steht dabei mit dem Rücken zur Tür. |
 
 - **Tempo:** Realistisch in der zweiten Oktoberwoche, wenn das Monster schon gefährlich ist. Wer früh mutig ist, schafft es eher.
@@ -4811,9 +4896,9 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - **Der Heizraum in U1 ist eine Attrappe:** ein neuer Raum, gebaut **auf** dem alten Heizkeller, mit einem **modernen
   Heizkessel**, der **nicht angeschlossen** ist. Er soll nur erklären, warum aus dem Raum immer noch Hitze kommt.
   Untersucht man ihn näher, merkt man es: **Die Rohre führen nach unten und sind heiß.** Geheizt wird wie 1987 aus dem
-  alten Heizkeller darunter – vom Heizer, dem Leviathan. Kein Feuerschein, **kein Schutzplatz** (der rote Schein am
+  alten Heizkeller darunter – von Josef, dem Leviathan. Kein Feuerschein, **kein Schutzplatz** (der rote Schein am
   Kessel entfällt, 2026-10-27).
-  - Im Heizraum: der **Spind des Heizers** mit dem **Kesselbuch** (2.3), die **UV-Schrift von 1987** (bleibt hier),
+  - Im Heizraum: **Josefs Spind** mit dem **Kesselbuch** (2.3; seit 1987 unberührt – der Hausmeister hat einen eigenen, 2.11), die **UV-Schrift von 1987** (bleibt hier),
     das alte Regal mit der Spieluhr (5.17), Kisten, das Brecheisen (6.19) und die Leviathanmauer.
 - **Die Leviathanmauer** (ersetzt das Gitter): eine **bewegliche Ziegelmauer** im Heizraum, hinter der es hinunter in
   den alten Heizkeller geht. **Das Hotel öffnet sie für das Monster**, wenn es aufbricht, und **schließt sie hinter
@@ -4825,7 +4910,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   - Im Plan: Farbe **#9c5a5a** (bisher fürs Gitter). Mauer, Schlösser, zugemauerte Treppen und U2 malt der Nutzer.
 - **Das Hotel lässt ihn nicht hinaus:** Es zwingt ihn immer wieder in den alten Heizkeller zurück – **länger als ein
   paar Minuten** am Stück ist er nie draußen. Aus dem Hotel kommt er nie.
-- **Der alte Heizkeller (U2):** der Kesselraum, in dem 1987 der Brand ausbrach und der Heizer verbrannte (2.3). Das
+- **Der alte Heizkeller (U2):** der Kesselraum, in dem 1987 der Brand ausbrach und Josef verbrannte (2.3). Das
   **Feuer von 1987 brennt dort noch** – er heizt immer noch. Hier ruht das Monster, hier endet das Ritual (2.8). Die
   Werkstatt (früher 2.8) entfällt zu seinen Gunsten.
   - Das Monster **dekoriert** U2 mit **Knochen** und **verfaulten Kürbissen** – ein Ort für Deko (Einzelheiten offen).
@@ -4836,8 +4921,8 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   Jahres. Die beiden ermittelten, fanden den Schlüssel und gaben ihn dem Schlüsselträger (2.10);
   ihn holte das Monster – an der Leviathanmauer verlor er dabei seinen **Zimmerschlüssel**. Danach ließ die Direktion
   das Zimmer **versiegeln** (wie 6.19 (7)) und die Treppen nach U2 zumauern.
-- Darum liegen hier entscheidende Dinge: das **Notizbuch des Hausmeisters** mit den drei Mängeln, das er an sich
-  genommen und mit **eigenen Notizen** ergänzt hat, der **Schaltschlüssel** und der **UV-Aufsatz** – seine Lampe.
+- Darum liegen hier entscheidende Dinge: das **Notizbuch des Hausmeisters** mit den drei Mängeln, das ihm der
+  Hausmeister überließ (2.11) und das er mit **eigenen Notizen** ergänzt hat, der **Schaltschlüssel** und der **UV-Aufsatz** – seine Lampe.
 - **UV-Hinweise:** 13 und 018 hinterließen einander Hinweise in **UV-Farbe**. Sie hatten herausgefunden, dass das
   Monster aufmerksam wird, wenn man über es redet (4.7), und dass es UV-Licht nicht erträgt (4.16). Und sie ahnten,
   dass sie es vielleicht nicht schaffen – die Zeichen sollten spätere Jahre warnen. Texte und Orte offen (Zimmer 18
@@ -4848,20 +4933,20 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - *Umgesetzt (2026-10-28):* Auf dem Tisch in Zimmer 18 liegen das **Notizbuch des Hausmeisters** (festes Buch, [E]
   liest es, vier Seiten), der **Schaltschlüssel** (an den Bund, im Aufzug noch ohne Wirkung) und der **UV-Aufsatz**. Hat
   man das Notizbuch gelesen, stehen die drei Mängel als drei Zeilen unter „Aufgaben“ (3.10): *„Aufzug: Schaltschlüssel
-  ins Bedienfeld der Kabine“*, *„Aufzug: Ersatzsicherung in den Sicherungskasten im Untergeschoss – ein Gast hat sie“*,
+  ins Bedienfeld der Kabine“*, *„Aufzug: Hauptsicherung aus dem Spind des Hausmeisters in den Sicherungskasten im Untergeschoss“*,
   *„Aufzug: Bremse im Maschinenraum mit der Kurbel lösen (laut)“*. Durchgestrichen wird, sobald die Reparatur gebaut ist.
   **Texte: Vorschlag** – drei Seiten Hausmeister, eine in Bleistift vom Gast aus 018:
   > AUFZUG 1 – steht. Die Direktion sagt: nicht im Oktober. Drei Sachen, dann fährt er wieder: 1. Schaltschlüssel.
-  > Ohne den rührt sich das Bedienfeld in der Kabine nicht. Bleibt bei mir. 2. Hauptsicherung durch. Sicherungskasten
-  > im Untergeschoss. Die Ersatzsicherung hat mir ein Gast abgekauft. Hat gut bezahlt. Hätte ich nicht tun sollen.
+  > Ohne den rührt sich das Bedienfeld in der Kabine nicht. Bleibt bei mir. 2. Hauptsicherung raus – Anweisung der
+  > Direktion, wie jedes Mal. Liegt bei mir im Spind. Ohne die fährt nichts. Sicherungskasten im Untergeschoss.
   > 3. Bremse festgefressen. Maschinenraum im Untergeschoss, neben dem Heizraum. Mit der Kurbel lösen – dauert, und
   > quietscht durch den ganzen Keller. Nicht nachts.
   >
   > Heizraum: Der neue Kessel ist nicht angeschlossen. Trotzdem ist es da unten heiß. Die Rohre gehen nach unten, nicht
   > nach oben. Nicht meine Sache, sagt die Direktion. – Im Oktober keine Arbeiten im Keller. Anweisung. – Die schwarze
-  > Katze war wieder im Heizraum. Ich weiß nicht, wem sie gehört.
+  > Katze war wieder im Heizraum. Sieht aus wie seine. Kann nicht sein.
   >
-  > *(Bleistift)* Oktober ~~2003~~ 2005. Das Buch habe ich an mich genommen, den Schaltschlüssel auch. Hier steht mehr über
+  > *(Bleistift)* Oktober ~~2003~~ 2005. Das Buch hat mir der Hausmeister gegeben, den Schaltschlüssel auch. Gesagt hat er nichts. Hier steht mehr über
   > dieses Haus als in jedem Prospekt. – Nicht darüber reden. Es hört zu. 13 hat es zuerst gemerkt. – Das violette
   > Licht erträgt es nicht. Nicht lange, aber es geht. – Falls wir es nicht schaffen: Wir hinterlassen Zeichen, die man
   > nur in diesem Licht sieht. Wer das liest – such sie.
@@ -5070,7 +5155,7 @@ Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
   **Halogenleuchten**: 80 cm lange Röhren unter der Decke, kaltweiß, ohne Schalter. Jede **flackert von selbst**
   alle 10–30 Sekunden ein- bis dreimal kurz – unabhängig vom Monster (dessen Flackern kommt dazu).
 - **Neu gefasst 2026-10-27 (7.4, noch nicht gebaut):** Der Heizraum ist eine Attrappe über dem alten Heizkeller in U2,
-  mit modernem Kessel, Spind des Heizers und Leviathanmauer; das Monster ruht unten. Gebaut ist noch der alte Stand:
+  mit modernem Kessel, Josefs Spind und Leviathanmauer; das Monster ruht unten. Gebaut ist noch der alte Stand:
 - **Heizkeller** (dunkelrot im Plan): das **Versteck des Monsters**. Dort liegen Kisten, das alte Regal, der Schlüssel zu Zimmer 18, Münzen, eine Batterie, der Warnungszettel von 2011, die
   UV-Schrift von 1987, Spinnweben und die Kiste mit alter Deko (5.7), dazu die kaputte Kellerleuchte mit Schalter.
   Der Eingang ist ein schmaler Gang zwischen zwei verschlossenen Kellerräumen.
@@ -5113,7 +5198,7 @@ Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
 **Warum:** Ein kompaktes Hotel kennt man nach ein, zwei Tagen – Ortskenntnis (wo steht der nächste
 Schrank?) ist im Horror die halbe Spannung, und es bleiben weniger Zimmer leer. Dasselbe Monster auf kleiner Fläche ist dichter: Rauschen, Flackern und
 Spuren treffen öfter dort, wo der Spieler ist. Statt in die Breite wächst das Hotel **in die Höhe und Tiefe** – und
-das Geheimnis (2.3: Heizer, Kessel, Abkommen) liegt ohnehin unten.
+das Geheimnis (2.3: Josef, Kessel, Abkommen) liegt ohnehin unten.
 
 **Grundriss**
 - **151 × 60 m**, 81 Zimmer (7.5).
@@ -5145,8 +5230,8 @@ Wer wohin darf und wo keiner erscheint (Dachgeschoss), regelt 4.20: eine Bedrohu
 voneinander; U2 gehört allein dem Monster.
 
 **Räume im Untergeschoss**
-- **Heizraum:** über dem alten Heizkeller, moderner Kessel als Attrappe, Leviathanmauer, Spind mit dem Kesselbuch des
-  Heizers (7.4, 2.3).
+- **Heizraum:** über dem alten Heizkeller, moderner Kessel als Attrappe, Leviathanmauer, Josefs Spind mit dem
+  Kesselbuch (7.4, 2.3).
 - **Maschinenraum:** Antrieb des Aufzugs. Hier wird die Bremse gelöst (7.4) – die laute Kurbel direkt neben dem
   schlafenden Monster.
 - **Wäscherei:** Waschmaschinen (7.9), Wäschekisten mit den alten Lakengespenstern (5.6) – Laken als Brücke zum
@@ -5464,7 +5549,7 @@ Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den K
 1. **Flucht:** Ziel ist, dem Horrorhotel zu entkommen. Wie genau? (Schlüssel an Halloween 2.1, Rätsel, Hilfe der Gäste?)
 3a. **„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren (4.5)?
 3h. **Truhen:** Abschließbar? Gibt es eine eigene Truhe im Spielerzimmer (3.3)?
-4. **Story:** Das Abkommen und der Heizer (2.3). Offen: was das Ding unter dem Hotel vor 1987 war.
+4. **Story:** Das Abkommen und Josef (2.3). Offen: was das Ding unter dem Hotel vor 1987 war.
 8. **Umfang:** Kleines Halloween-Projekt (Jam-Größe) oder größeres Spiel?
 9. **Single-Player** – oder später Koop denkbar?
 10. **Sprache:** Deutsch, Englisch, beides?

@@ -3,8 +3,8 @@ extends Node3D
 ## Die schwarze Kesselkatze (Spielkonzept 4.26): eine vierte Katze, die es nicht gibt. Nur nachts, erst nach dem ersten
 ## Angriff und nur im Untergeschoss sitzt sie irgendwo im Dunkeln, wo der Spieler gerade nicht hinsieht, und sieht ihn
 ## mit hellen Augen an. Gäste kennen sie nicht („Welche schwarze Katze?“) – sie kommen auch nicht hinunter.
-## Sieht man sie an, steht sie auf und geht voraus: zum Kessel im Heizkeller, ist man schon dort, zur UV-Schrift des
-## Heizers. Unterwegs setzt sie sich und wartet, bis man nachkommt. Am Ziel sieht sie einen noch einmal an – und wenn
+## Sieht man sie an, steht sie auf und geht voraus: zum Kessel im Heizkeller, ist man schon dort, zur UV-Schrift
+## Josefs. Unterwegs setzt sie sich und wartet, bis man nachkommt. Am Ziel sieht sie einen noch einmal an – und wenn
 ## man wegsieht, ist sie fort. Streicheln geht nicht: Die Hand greift ins Leere.
 ## Das ist Josef Ahrends Katze von 1987 (2.3): Darum tut das Monster Katzen nichts (6.11). Kommt es nah, flieht sie nicht
 ## und weint nicht wie die anderen – sie setzt sich und sieht ruhig zu ihm hin. Später (2.8) sitzt sie beim Ritual an
@@ -186,7 +186,7 @@ func _below(p: Vector3) -> bool:
 	return p.y < LevelBuilder.CELLAR_Y + 2.0
 
 
-## Ziel: der Kessel im Heizkeller – steht man schon darin, die UV-Schrift des Heizers dort (wenn es sie gibt).
+## Ziel: der Kessel im Heizkeller – steht man schon darin, die UV-Schrift Josefs dort (wenn es sie gibt).
 func _pick_goal(player: Player) -> void:
 	var cellar := _builder.cellar_center()
 	_goal = cellar

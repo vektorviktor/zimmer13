@@ -18,16 +18,16 @@ Drei Sachen, dann fährt er wieder:
 
 1. Schaltschlüssel. Ohne den rührt sich das Bedienfeld in der Kabine nicht. Bleibt bei mir.
 
-2. Hauptsicherung durch. Sicherungskasten im Untergeschoss. Die Ersatzsicherung hat mir ein Gast abgekauft. Hat gut bezahlt. Hätte ich nicht tun sollen.",
+2. Hauptsicherung raus – Anweisung der Direktion, wie jedes Mal. Liegt bei mir im Spind. Ohne die fährt nichts. Sicherungskasten im Untergeschoss.",
 	"3. Bremse festgefressen. Maschinenraum im Untergeschoss, neben dem Heizraum. Mit der Kurbel lösen – dauert, und quietscht durch den ganzen Keller. Nicht nachts.
 
 Heizraum: Der neue Kessel ist nicht angeschlossen. Trotzdem ist es da unten heiß. Die Rohre gehen nach unten, nicht nach oben. Nicht meine Sache, sagt die Direktion.",
 	"Im Oktober keine Arbeiten im Keller. Anweisung.
 
-Die schwarze Katze war wieder im Heizraum. Ich weiß nicht, wem sie gehört.",
+Die schwarze Katze war wieder im Heizraum. Sieht aus wie seine. Kann nicht sein.",
 	"(Darunter in einer anderen Schrift, mit Bleistift:)
 
-Oktober 2003. Das Buch habe ich an mich genommen, den Schaltschlüssel auch. Hier steht mehr über dieses Haus als in jedem Prospekt.
+Oktober 2003. Das Buch hat mir der Hausmeister gegeben, den Schaltschlüssel auch. Gesagt hat er nichts. Hier steht mehr über dieses Haus als in jedem Prospekt.
 
 Nicht darüber reden. Es hört zu. 13 hat es zuerst gemerkt.
 
@@ -38,7 +38,7 @@ Falls wir es nicht schaffen: Wir hinterlassen Zeichen, die man nur in diesem Lic
 ## Aufgaben im Notizbuch (3.10) je Mangel: ID und Zeile
 const TASKS := {
 	"key": ["lift_key", "Aufzug: Schaltschlüssel ins Bedienfeld der Kabine"],
-	"fuse": ["lift_fuse", "Aufzug: Ersatzsicherung in den Sicherungskasten im Untergeschoss – ein Gast hat sie"],
+	"fuse": ["lift_fuse", "Aufzug: Hauptsicherung aus dem Spind des Hausmeisters in den Sicherungskasten im Untergeschoss"],
 	"brake": ["lift_brake", "Aufzug: Bremse im Maschinenraum mit der Kurbel lösen (laut)"],
 }
 const TASK_ORDER := ["key", "fuse", "brake"]

@@ -36,7 +36,8 @@ Stand: 2026-10-28.
 | Gustavs Brille | – | geplant | **Hauptgeschichte** (Grund für den ersten Abstieg; Doris' Aufgabe) | an der Leviathanmauer im Heizraum; Doris geben bis 4.10., 20 Uhr, dann verschwindet sie – sonst gewöhnlicher Gegenstand, Gäste stehlen sie nicht | 2.9, M7, M7a |
 | Gustavs Blechdose | – | geplant (eigener Gegenstand oder nur der Inhalt: offen) | – (Doris' Dank; Faden der Kinder) | Doris gibt sie nach der Brille; darin Süßes, Pappgespenst, Zierkürbis für die Kinder | 2.9, M7a |
 | Kopf des Kürbismanns | `PUMPKIN_HEAD` | **teilweise** – Platzhaltermodell auf dem Dachboden, Ritual fehlt | Nebenstrang (Liesel) | Kürbismann erlösen | 4.21, 2.7, M14 |
-| Ersatzsicherung | – | geplant | **Hauptgeschichte** (Aufzug) | ein Gast hat sie (Kandidat: Bruno); Sicherungskasten im UG | 7.4, M9 |
+| Hauptsicherung des Aufzugs | – | geplant | **Hauptgeschichte** (Aufzug) | jede Ernte im Spind des Hausmeisters (Hausmeisterraum, EG); Bruno bricht ihn in Nacht 5 auf und behält sie als Faustpfand; Sicherungskasten im UG | 7.4, M9, K3 |
+| Spind des Hausmeisters | – | geplant (Plan: `#747567`) | **Hauptgeschichte** (Aufzug) | Hausmeisterraum (`#c4d35b`); Vorhängeschloss, ab Nacht 5 aufgebrochen; Brecheisen öffnet ihn vorher (laut) | 2.11, 7.4 |
 | Seine Sachen: Taschenuhr, Mütze, Foto von Marion | – | geplant (Inhalt: Vorschlag) | Nebenstrang (Marion) | Karton „Personal 1987“ im Lager in U2 | 2.8, M15a |
 | Vertrag (das Abkommen) | – | geplant | Nebenstrang (Marion) | Büro der Direktion; im Feuer von 1987 verbrennen | 2.3, 2.8, M15b |
 | Schädel des Kürbismanns | – | geplant | – (Belohnung) | nach der Erlösung; stärkste Deko | 4.21 |
@@ -57,14 +58,17 @@ Stand: 2026-10-28.
 | Aushangbrett (Wettbewerb, Hausordnung) | `NoticeBoard` | gebaut | **Hauptgeschichte** (Regel der Puppe) | Lobby | 2.5, M5 |
 | Warnungszettel 1987–2019 | `WarningNote` | gebaut (sechs Zettel) | Hauptgeschichte (Hinweise; 1987 = Edna) | verteilt; je eine UV-Zeile | 4.13, 2.5, 2.7 |
 | Kartenblätter (EG, OG, Keller) | `MAP` | gebaut | – (Orientierung; Keller: „hier unten schläft es“) | Keller-Skizze in Zimmer 017 | 3.2, 7.9 |
-| UV-Schrift an Wänden (Heizer 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18 (dazu Hinweise von 13 und 018 aus 2003, Texte offen) | 4.16, 2.3, 7.4 |
+| UV-Schrift an Wänden (Josef 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18 (dazu Hinweise von 13 und 018 aus 2003, Texte offen) | 4.16, 2.3, 7.4 |
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
 | Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | gebaut | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
 | Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“) | Rezeption | 2.3, K1, M6, M13 |
-| Notizbuch des Hausmeisters | – (festes Buch, `CaretakerBook`) | gebaut 28.10. – vier Seiten, gelesen: drei Aufgaben im Notizbuch; Texte Vorschlag | **Hauptgeschichte** (drei Mängel am Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
-| Kesselbuch des Heizers | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Spind des Heizers im Heizraum | 2.3, 7.4, M12 |
-| Personalakte des Heizers | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
+| Notizbuch des Hausmeisters | – (festes Buch, `CaretakerBook`) | gebaut 28.10. – vier Seiten, gelesen: drei Aufgaben im Notizbuch; Texte Vorschlag (Sicherung im Spind seit 30.10.) | **Hauptgeschichte** (drei Mängel am Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
+| Kesselbuch Josefs | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Josefs Spind im Heizraum | 2.3, 7.4, M12 |
+| Personalakte Josefs | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
+| Dienstplan vom 31.10.1987 | – | Vorschlag | Hauptgeschichte (der Page am Heizkeller) | Karton „Personal 1987“ oder Sekretariat | 2.11 |
+| Schreibmaschine der Chefsekretärin | – | Vorschlag | Hauptgeschichte (springende Type: Briefe von heute = Vertrag 1987) | Sekretariat | 2.11 |
+| Aushang „Eigentum entwendet“ | `NoticeBoard` | geplant | Hauptgeschichte (Sicherung) | Aushangbrett, 6.10. morgens | 7.4, K3 |
 | Zeitungsausschnitt „Brand im Grandhotel“ | – | geplant | Hauptgeschichte (Indiz) | offen | 2.3 |
 | Dorés „Die Zerstörung des Leviathan“ | – (fester Druck, `LeviathanName.PrintSheet`) | **gebaut** – echter Holzstich (gemeinfrei), [E] ansehen | – (gibt dem Monster seinen Namen) | Hugo Steins Koffer → Couchtisch der Lobby → Westwand der Lobby neben dem Aushangbrett | 4.32 |
 
@@ -138,7 +142,7 @@ Stand: 2026-10-28.
 
 Was die Hauptgeschichte braucht und noch fehlt, in der Reihenfolge des Durchlaufs (HANDLUNG.md):
 1. Gustavs Tagebuch (M4) · Hotelregister (M6) · Gustavs Brille (M7)
-2. Notizbuch des Hausmeisters und Schaltschlüssel (M8) · Ersatzsicherung (M9)
+2. Notizbuch des Hausmeisters und Schaltschlüssel (M8) · Hauptsicherung aus dem Spind (M9)
 3. Kesselbuch (M12) · Dachbodenschlüssel (M14)
 4. Seine Sachen, Vertrag, Schlüsselbund (M15a, M15b) – nur für die Erlösung (Kür, 2.8)
 5. Schlüssel zum Haupteingang (M18) – Fundort noch offen

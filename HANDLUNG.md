@@ -25,7 +25,7 @@ keiner von ihnen wird je darüber sprechen.
 1. Es ist real, und Deko schützt (Akt I).
 2. Das Hotel macht das alle drei Jahre – die „Ernte“ (2.10) –, und es führt Buch darüber (Akt II).
 3. Frühere Gäste sind nie gegangen – ihre Sachen sind noch hier (Akt III).
-4. Das Monster war ein Mensch: der Heizer Josef Ahrend (Akt IV).
+4. Das Monster war ein Mensch: der frühere Hausmeister Josef Ahrend (Akt IV).
 5. Jeder, den man bis Halloween am Leben hält, kommt mit hinaus (Akt V–VI).
 
 ---
@@ -52,24 +52,24 @@ keiner von ihnen wird je darüber sprechen.
 | M7 | **Erster Abstieg** (K2): Gustavs Brille an der Leviathanmauer, Schlüssel zu Zimmer 18 | 3.–4.10. | fest (2.9, 7.4) | Zimmer 18 |
 | M7a | **Die Brille für Doris:** Abschied an der Gedenktafel, Gustavs Blechdose für die Kinder, Doris als Ohrenzeugin | bis 4.10., 20 Uhr | fest (2.9) | Kinder, Gerede über den Leviathan |
 | M7b | *sonst:* **Doris geht allein** – Brief in 033, Blutflecken vor der Leviathanmauer, ihr Tod ist sicher | 4.10., 20 Uhr | fest (2.9) | Schuld im Tagebuch |
-| M8 | Zimmer 18 (Gast von 2005, versiegelt): Notizbuch des Hausmeisters mit seinen Notizen, Schaltschlüssel, UV-Aufsatz | 4.–6.10. | fest (7.4) | drei Aufgaben im Notizbuch |
+| M8 | Zimmer 18 (Gast von 2005, versiegelt): Notizbuch des Hausmeisters (des Pagen von 1987, Spielkonzept 2.11) mit den Notizen des Gastes, Schaltschlüssel, UV-Aufsatz | 4.–6.10. | fest (7.4) | drei Aufgaben im Notizbuch |
 
 ### Akt III – Der Aufzug (8.–14. Oktober) · **Anker 2**
 
 | Nr | Meilenstein | Wann (optimal) | Status | Zeigt auf / schaltet frei |
 |----|-------------|----------------|--------|---------------------------|
-| M9 | Ersatzsicherung von einem Gast – **Bruno** (K3) | 2. Woche | fest (7.4), wer: Kandidat | Sicherungskasten im UG |
+| M9 | **Hauptsicherung:** Spind des Hausmeisters aufgebrochen (Nacht 5), Aushang der Direktion, Gerüchte → **Bruno** (K3) | ab 6.10., 2. Woche | fest (7.4, 2026-10-30) | Sicherungskasten im UG |
 | M10 | Bremse lösen im Maschinenraum (laut, neben dem schlafenden Monster) | 2. Woche | fest (7.4) | Aufzug fährt |
 | M11 | **Erste Fahrt:** Die Kabine fährt ohne Knopf allein nach U2 – Lager, Fundsachen-Koffer; danach baut Hugo den Knopf für U2 ein und erzählt davon | bis 14.10. | fest (7.4), Inhalt: Kandidat (K5) | Namen der Warnungszettel als Koffer; Edna (K5) |
 
-### Akt IV – Der Heizer (15.–22. Oktober) · **Anker 3**
+### Akt IV – Der Hausmeister (15.–22. Oktober) · **Anker 3**
 
 | Nr | Meilenstein | Wann (optimal) | Status | Zeigt auf / schaltet frei |
 |----|-------------|----------------|--------|---------------------------|
-| M12 | **Kesselbuch** im Spind des Heizers (Heizraum): Josef Ahrend, Halloween 1987 (K4) | ab dem ersten Abstieg (M7) | fest (2.3, 7.4), Inhalt: Kandidat | Name Ahrend |
+| M12 | **Kesselbuch** in Josefs Spind (Heizraum): Josef Ahrend, Halloween 1987 (K4) | ab dem ersten Abstieg (M7) | fest (2.3, 7.4), Inhalt: Kandidat | Name Ahrend |
 | M13 | **Marion entlarven** – Register „geb. Ahrend“ + Kesselbuch, Beweis und Beziehung (K4) | so früh wie möglich | fest (2.8) | **Marions Auftrag:** ihren Vater erlösen |
 | M14 | Leviathanmauer bleibt nach Angriffen offen: Schlüssel zum Dachboden → Kopf des Kürbismanns, Erlösung – im Auftrag von Liesel Brück, die ihn 1987 köpfte (K7) | ab Tag 15 | fest (4.21, 2.7) | Nebenstrang mit Auftraggeberin |
-| M15 | **Das Monster will die Mitwisser:** Edna wird gezielt bedroht (K5) | um den 20.10. | Kandidat | Edna überlebt immer (Kernfigur, Spielkonzept 6.17) → sie erzählt |
+| M15 | **Das Monster will die Mitwisser:** Edna wird gezielt bedroht (K5) | um den 20.10. | Kandidat | Edna ist bis hierher geschützt (Spielkonzept 6.17), hier rettbar → überlebt sie, erzählt sie; sonst Notiz in 003 |
 | M15a | **Seine Sachen** aus dem Lager: Karton „Personal 1987“, Taschenuhr (K4) | nach M11 und M13 | fest (2.8), Inhalt: Vorschlag | Ritual |
 | M15b | **Büro der Direktion** mit dem Schlüsselbund aus der Jeansjacke des Kürbismanns: Vertrag (K4) | nach M14 | fest (2.8: Vertrag), Weg: Vorschlag | Ritual |
 
@@ -91,7 +91,7 @@ keiner von ihnen wird je darüber sprechen.
 | M20 | Letztes Urteil der Puppe und letzter Angriff – nur wenn er nicht erlöst ist (Erlösung ist Kür) | 31.10. | fest (2.8) | – |
 | M21 | **Ende mit Schlüssel:** Versammlung am Tor, Schlüssel ins Schloss, draußen das erste Morgengrauen; die Bedrohungen laufen zur Tür, die vor ihnen zufällt, der Vampir zerfällt im Licht; alle gehen hinaus, Gruppenfoto vor dem Hotel, das Bild wird dunkel | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
 | M21a | **Ende ohne Schlüssel, nicht erlöst:** alle drängen panisch ans Tor, der Leviathan holt sie in der Lobby einzeln, zuletzt den Spieler | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
-| M21b | **Ende ohne Schlüssel, erlöst:** das Hotel nimmt den Spieler als neuen Heizer – Licht aus, das Feuer von 1987 flammt wieder auf, er sieht mit den Augen des Leviathan und frisst die Gäste Stück für Stück; das Bild wird dunkel | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
+| M21b | **Ende ohne Schlüssel, erlöst:** das Hotel nimmt den Spieler als neuen Hausmeister – Licht aus, das Feuer von 1987 flammt wieder auf, er sieht mit den Augen des Leviathan und frisst die Gäste Stück für Stück; das Bild wird dunkel | 31.10., Mitternachtsglocke | fest (2.7, 2026-10-26) | Ende |
 
 ### Abhängigkeiten
 
@@ -126,7 +126,7 @@ flowchart TD
   M19a --> M21
   M20 --> M21
   M20 -.->|kein Schlüssel| M21a[M21a Er holt alle]
-  M19a -.->|kein Schlüssel| M21b[M21b Spieler wird Heizer]
+  M19a -.->|kein Schlüssel| M21b[M21b Spieler wird Hausmeister]
 ```
 
 ---
@@ -169,16 +169,19 @@ flowchart TD
   und zeigt früh, dass der Spieler Tode verantworten kann – zwischen Gustav (fest) und Edna (rettbar, K5).
 
 ### K3 – Bruno hat die Sicherung (Akt III)
-- 7.4 sagt: Ein Gast hat die Ersatzsicherung, er hat sie dem Hausmeister „abgekauft“. **Bruno Kaminski** (Kernfigur,
-  mürrischer Händler, mutig, gierig) passt: teuer, handelt, klaut, wenn er einen nicht mag.
-- Wege: Freundschaft, Handel, Mäxchen-Einsatz, Klauen (6.2). Gerüchte nennen erst den Falschen.
+- **Fest (2026-10-30, Spielkonzept 7.4 „Der Einbruch“):** Jede Ernte schließt der Hausmeister – der Page von 1987
+  (2.11) – die Hauptsicherung in seinen Spind im Hausmeisterraum. In der **fünften Nacht** bricht **Bruno Kaminski**
+  (Kernfigur, mürrischer Händler, mutig, gierig) ihn auf. Am 6.10. bittet die Direktion per Aushang um Rückgabe – Bruno
+  merkt, dass sie etwas wert ist, und behält sie als Faustpfand. Ersetzt den Gast, der sie „abgekauft“ hatte.
+- Wege: Freundschaft, Handel, Mäxchen-Einsatz, Klauen (6.2). Gerüchte nennen erst die Falsche (Magda).
+- Bruno ist bis dahin geschützt (6.17); hat der Spieler die Sicherung, ist Bruno Mitwisser und verwundbar.
 - **Kernfrage nebenbei:** Bruno ahnt, wofür man sie braucht, und will mit nach U2 – oder seinen Anteil am
   Lager. Teilen oder nicht (7.4)?
 - **Warum stark:** gibt einer Kernfigur ihre Rolle im Geheimnis (6.0, „Zu klären“) und macht Anker 2 sozial statt nur
   mutig.
 
-### K4 – Marions Auftrag: den Heizer erlösen (Akt II–VI) · fest (2.8)
-- **Das Kesselbuch** im Spind des Heizers (Heizraum) endet am 31.10.1987. Letzte Einträge (Entwurf der Richtung): Kohle, Druck,
+### K4 – Marions Auftrag: Josef erlösen (Akt II–VI) · fest (2.8)
+- **Das Kesselbuch** in Josefs Spind (Heizraum) endet am 31.10.1987. Letzte Einträge (Entwurf der Richtung): Kohle, Druck,
   „Die Direktion will heute Nacht keine Störung“, und ein Satz an seine Tochter: „Marion soll heute nicht runterkommen.“
 - **Marion entlarven:** Mit Kesselbuch und Register („geb. Ahrend“) spricht man sie an – Beweis und Beziehung (2.3).
   Hat man es bis zum **24. Oktober** nicht geschafft, klopft sie selbst an Zimmer 13. Wer früh dran ist, hat Wochen,
@@ -209,7 +212,7 @@ flowchart TD
   **Tagebuch**, in dem Edna vorkommt – ein Weg zu ihr, bevor sie spricht. Optional, kein Meilenstein; sein Name ist
   offen.
 - **Kandidat – um den 20.** will das Monster sie (2.3: „Das Monster will gerade die Mitwisser“) – die Puppe sitzt vor
-  ihrer Tür. Anders als bei Gustav **kann man sie retten** (Deko, Wache, sie woanders unterbringen). Überlebt sie,
+  ihrer Tür. Anders als bei Gustav **kann man sie retten** (Deko, Wache, sie woanders unterbringen) – bis hierher ist sie geschützt (Spielkonzept 6.17). Überlebt sie,
   erzählt sie, wie sich der Haupteingang 1987 geöffnet hat (K6). Stirbt sie, liegt ihr Wissen als Notiz in Zimmer 003.
 - **Warum stark:** gibt einer Kernfigur ihre Rolle, spiegelt Gustav (fest gegen rettbar) und zeigt das Schweigen der
   Überlebenden an einer Figur, die man kennt.
@@ -226,9 +229,9 @@ flowchart TD
   Morgengrauen. Ohne Schlüssel stirbt jeder, der noch drin ist, auch der Spieler; keine Zeitschleife.
 - **Fest (2.7, 2026-10-26):** Die Mitternachtsglocke löst eins von drei Enden aus (M21, M21a, M21b), das Gruppenfoto
   wird danach draußen gemacht.
-- **Den Heizer erlösen** (Marions Auftrag, K4, 2.8) entscheidet, ob die letzte Nacht einen letzten Angriff hat; hinaus
+- **Josef erlösen** (Marions Auftrag, K4, 2.8) entscheidet, ob die letzte Nacht einen letzten Angriff hat; hinaus
   kommt man mit dem Schlüssel allein. Ohne Schlüssel entscheidet es, wer die Gäste holt: der Leviathan (M21a) oder
-  der Spieler als neuer Heizer (M21b).
+  der Spieler als neuer Hausmeister (M21b).
 
 ### K7 – Liesel Brück, die den Rezeptionisten köpfte (Akt IV, Auftraggeberin)
 - **Fest (2.7):** Eines der beiden Kinder, die den Rezeptionisten an Halloween 1987 köpften (4.19), kam hinaus und ist
@@ -257,5 +260,5 @@ flowchart TD
 - **Mila Hellwig** hat noch keine Rolle im Geheimnis. Vorschlag: Sie zeichnet die Gäste und die Lobby – ihre Skizzen
   zeigen, was andere übersehen (das Kreuz im Register, eine Gestalt im Aufzugsfenster). Gerücht-Stufe (2.3).
 - **Lore:** Der Warnungszettel von **Oktober 1987** beschreibt das Monster schon vor dem Kesselbrand an Halloween 1987.
-  Lesart: 1987 war das erste Jahr des Abkommens, noch mit dem Ding von unten; seit 1988 ist der Heizer das Monster. Passt
+  Lesart: 1987 war das erste Jahr des Abkommens, noch mit dem Ding von unten; seit 1988 ist Josef das Monster. Passt
   das?

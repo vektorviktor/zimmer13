@@ -8,7 +8,7 @@ extends StaticBody3D
 const NOTES := {
 	"1987": {"title": "Zettel, Oktober 1987",
 		"text": "Wer das liest: Lass das Licht an. Immer. Es kommt nur, wo es dunkel ist.\nIch habe die Birne in meinem Zimmer verloren. Jetzt höre ich es jede Nacht vor der Tür.\n– E. K., Zimmer 017",
-		"uv": "Der Heizer war noch unten, als sie die Tür abgeschlossen haben. Ich habe den Schlüssel klirren hören.",
+		"uv": "Der Hausmeister war noch unten, als sie die Tür abgeschlossen haben. Ich habe den Schlüssel klirren hören.",
 		"by": "E. K., Zi. 017, 1987", "jot": "Licht anlassen, immer – es kommt nur, wo es dunkel ist."},
 	"1994": {"title": "Zerknitterte Seite, 1994",
 		"text": "Redet nicht über ES. Es hört zu. Jedes Mal, wenn wir in der Lobby darüber geflüstert haben, kam es näher.\nUnd wenn das Rauschen anfängt – nicht rennen. Verstecken. Aber nur, wenn es dich nicht sieht.

@@ -44,7 +44,7 @@ var shower_scare: ShowerScare      ## Lakengeist in der Dusche von Zimmer 13 (Sp
 var crows: Crows                   ## Krähen im Garten, merken sich Gesichter (Spielkonzept 4.25)
 var rats: Rats                     ## Ratten im Untergeschoss, rennen vor dem Monster (Spielkonzept 4.25)
 var moths: Moths                   ## Motten an den Lampen (Spielkonzept 4.25)
-var boiler_cat: BoilerCat          ## die schwarze Kesselkatze des Heizers (Spielkonzept 4.26)
+var boiler_cat: BoilerCat          ## die schwarze Kesselkatze Josefs, des früheren Hausmeisters (Spielkonzept 4.26)
 var mirror_omens: MirrorOmens      ## Gestalt im Spiegel, verhängte Spiegel (Spielkonzept 4.27)
 var power_cut: PowerCut            ## Stromausfall im Gewitter (Spielkonzept 4.28)
 var nightmare: Nightmare           ## der Albtraum von 1987 (Spielkonzept 4.29)

@@ -5,7 +5,7 @@ extends Node3D
 ## Zeichnung im Code (Image, je Jahr fester Zufall): Fassade, zwei Reihen Gäste; wer in jenem Oktober geholt wurde, ist
 ## verwischt, als hätte er sich bewegt. Ein Gesicht ist auf jedem Foto und altert nie: hinten rechts der weißhaarige alte
 ## Herr mit Gehstock – der Erbe der Familie, als uralter Dauergast getarnt (2.3). Wer genug Fotos ansieht, merkt es
-## (Notizbuch). Auf 1987 außerdem ein Mädchen mit Zöpfen (Marion), ein Mann im Kittel (der Heizer), eine junge Frau
+## (Notizbuch). Auf 1987 außerdem ein Mädchen mit Zöpfen (Marion), ein Mann im Kittel (Josef, der Hausmeister), eine junge Frau
 ## (Edna) und ein großes Mädchen (Liesel) – die Indiz-Stufe für Marion, Edna und Liesel (2.3, 2.7).
 ## Ort: Ausstattung „Fotowand“ im Plan, bis dahin WALL (Westwand der Lobby, nördlich der Wandlampe).
 ## Nicht gespeichert; was man gesehen hat, steht im Notizbuch.
@@ -90,7 +90,7 @@ static func draw_photo(year: int) -> Image:
 	var front := rng.randi_range(5, 7)
 	for i in front:
 		people.append(_person(rng, 18.0 + i * (W - 36.0) / front, 66.0, 1.05))
-	if year == 1987:   # Marion, Liesel, Edna vorn; der Heizer am linken Rand
+	if year == 1987:   # Marion, Liesel, Edna vorn; Josef am linken Rand
 		people[back + 1] = _person(rng, people[back + 1]["x"], 74.0, 0.78, Color(0.5, 0.2, 0.2), Color(0.35, 0.22, 0.12), "braids")
 		people[back + 2] = _person(rng, people[back + 2]["x"], 68.0, 0.95, Color(0.2, 0.3, 0.45), Color(0.55, 0.4, 0.2), "fringe")
 		people[back + 3] = _person(rng, people[back + 3]["x"], 66.0, 1.02, Color(0.45, 0.4, 0.35), Color(0.1, 0.08, 0.06))

@@ -3,7 +3,7 @@ extends Node
 ## Der Albtraum von 1987 (Spielkonzept 4.29): einmal im Spiel, frühestens ab FROM_DAY, schläft man nachts im eigenen Bett
 ## ein – und steht im Heizkeller, Halloween 1987. Das Bild ist alt und warm getönt (Post-Shader `dream`), der Kessel
 ## faucht, Rauch quillt aus der Klappe und wird dichter (die Sicht verschwimmt). Draußen dreht sich ein Schlüssel im
-## Schloss: „Die Direktion will heute Nacht keine Störung.“ Die Tür bleibt zu. Man ist der Heizer: schwarze Hände, eine
+## Schloss: „Die Direktion will heute Nacht keine Störung.“ Die Tür bleibt zu. Man ist der Hausmeister: schwarze Hände, eine
 ## fremde Stimme, die „Macht auf!“ schreit. Zuletzt ruft von fern ein Mädchen „Papa?“ (Marion, 2.3) – dann wird es weiß,
 ## und man schreckt im Bett hoch. Wer vorher aus dem Heizkeller läuft, wacht früher auf.
 ## Was man erfährt: Der Vorname Josef, dass jemand von außen abschloss, und dass er eine Tochter hatte – die Indiz-Stufe
@@ -33,7 +33,7 @@ const SCRIPT := [
 ]
 const DOOR_TEXT := "Abgeschlossen. Von außen."
 const WAKE_TEXT := "Du schreckst aus dem Schlaf hoch. Kohlengeruch hängt in deinen Kleidern."
-const NOTE := "Ich habe geträumt, ich sei der Heizer. Halloween 1987. Jemand schloss den Heizkeller von außen ab, es brannte, und ein Mädchen rief „Papa“. Er hieß Josef – so rief ihn einer im Traum."
+const NOTE := "Ich habe geträumt, ich sei der Hausmeister. Halloween 1987. Jemand schloss den Heizkeller von außen ab, es brannte, und ein Mädchen rief „Papa“. Er hieß Josef – so rief ihn einer im Traum."
 const DIARY := "Ein Traum, so wirklich wie nichts in diesen Wochen: der Heizkeller, Feuer, eine verschlossene Tür. Jemand rief „Papa“."
 
 var stage := Stage.WAITING
