@@ -21,6 +21,8 @@ const HANDLE_INSET := 0.1
 const HANDLE_HEIGHT := 1.04
 ## Bänder der Zimmertür als Anteil der Blatthöhe
 const HINGE_AT: Array[float] = [0.12, 0.88]
+## Zimmertür: so weit geht sie höchstens auf
+const HOTEL_MAX_ANGLE := deg_to_rad(95.0)
 ## Zimmertür zum Flur (add_room_plate): Höhe von Spion und Plakette über dem Boden, Schrift der Nummer (gravierte
 ## Ziffern, Höhe des Gevierts in Metern) und so weit steht die Schrift vor der Blattmitte (Plakette 5 mm stark)
 const PEEPHOLE_Y := 1.5
@@ -40,6 +42,9 @@ var monster_can_open := true
 var glass := false          ## Glastür: man sieht hindurch (Ebene 7 statt 2)
 var look := Look.PLAIN      ## vor dem Einhängen setzen (nicht bei Glastüren)
 var hinge_end := false      ## einfache Tür: Scharnier bei x = width statt im Ursprung (Türanschlag im Plan)
+## Zimmertür (DoorCasing): so weit steht die Wandhaut (Fliesen, Beton …) auf −Z bzw. +Z vor der Wand – die
+## Bekleidung sitzt davor (LevelBuilder, vor dem Einhängen)
+var casing_lift := Vector2.ZERO
 ## Fenstertür nach draußen (Terrasse, Garten, Balkon; Gruppe „french_doors“): Raum dahinter und Richtung nach
 ## draußen – dort erscheint auch der Lakengeist (Spielkonzept 4.18)
 var room_id := ""
@@ -93,7 +98,12 @@ func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: b
 
 func _ready() -> void:
 	add_to_group("doors")
-	add_child(OpeningFrame.new().setup(0.0, 0.0, width, height, COLLISION_DEPTH))   # Zarge und Bekleidung
+	# Zarge und Bekleidung: zur Zimmertür ihr eigener Rahmen im Holz des Blatts, sonst der Craftsman-Rahmen
+	if look == Look.HOTEL:
+		add_child(DoorCasing.new().setup(width, height, COLLISION_DEPTH, casing_lift))
+		open_angle = signf(open_angle) * minf(absf(open_angle), HOTEL_MAX_ANGLE)
+	else:
+		add_child(OpeningFrame.new().setup(0.0, 0.0, width, height, COLLISION_DEPTH))
 	if double:
 		_pivots.append(_make_leaf(Vector3.ZERO, width / 2.0, 1.0))
 		_pivots.append(_make_leaf(Vector3(width, 0, 0), width / 2.0, -1.0))
@@ -445,8 +455,15 @@ static func _model_parts(path: String) -> Dictionary:
 		var parts := {}
 		var scene: Node = (load(path) as PackedScene).instantiate()
 		for mi: MeshInstance3D in scene.find_children("*", "MeshInstance3D", true, false):
-			# Zimmertür: Materialien wie im glTF (gebackene Farbe, Normalen, Rauheit, Messing); Kniestocktür gemalt
-			var mat: Material = mi.get_active_material(0) if path == HOTEL_MODEL else Mat.model(path, mi)
+			# Zimmertür: Blatt im Holz der Vertäfelung mit eigener gebackener Verschattung, Messing wie im glTF;
+			# Kniestocktür gemalt
+			var mat: Material
+			if path != HOTEL_MODEL:
+				mat = Mat.model(path, mi)
+			elif mi.name == "leaf":
+				mat = Mat.hotel_wood(Mat.DOOR_AO)
+			else:
+				mat = mi.get_active_material(0)
 			parts[String(mi.name)] = [mi.mesh, mat]
 		scene.free()
 		_models[path] = parts

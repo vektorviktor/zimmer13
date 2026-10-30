@@ -2,7 +2,8 @@ class_name Dresser
 extends StaticBody3D
 ## Kommode im Flur mit drei Schubladen (Spielkonzept 3.5). Wer eine Schublade zum ersten Mal
 ## aufzieht, findet manchmal Münzen oder einen Gegenstand darin – oder nur Staub.
-## Was in einer Schublade liegt, fährt mit ihr auf und zu. Lokale +Z = Vorderseite.
+## Was in einer Schublade liegt, fährt mit ihr auf und zu. Lokale +Z = Vorderseite. Der Nachttisch (Nightstand) baut
+## sich in _build() anders und setzt size, tray und slide selbst.
 
 const SIZE := Vector3(0.9, 0.85, 0.45)
 const DRAWERS := 3
@@ -22,6 +23,10 @@ const EMPTY_LINES := ["Nur Staub.", "Ein alter Knopf, sonst nichts.", "Leer – 
 ## Fester Fund je Schublade (Index → Item.Kind), statt gewürfelt – aus LevelBuilder.CONTENT „drawer“ (die
 ## Streichholzschachtel in Zimmer 022, Spielkonzept 5.12); 0 = oberste
 var fixed := {}
+## Außenmaß, Innenmaß einer Schublade, Auszug – die Kommode nimmt SIZE, TRAY und SLIDE
+var size := SIZE
+var tray := TRAY
+var slide := SLIDE
 var is_open: Array[bool] = []
 var searched: Array[bool] = []
 
@@ -51,6 +56,11 @@ func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 0
 	add_to_group("dressers")
+	_build()
+
+
+## Korpus und Schubladen (add_drawer) bauen.
+func _build() -> void:
 	var wood := Mat.psx(Color(0.3, 0.17, 0.09))
 	var front := Mat.psx(Color(0.38, 0.22, 0.12))
 	var brass := Mat.psx(Color(0.62, 0.48, 0.22))
@@ -61,12 +71,7 @@ func _ready() -> void:
 	for side in [-1.0, 1.0]:
 		Geo.box_part(self, Vector3(0.03, SIZE.y, SIZE.z), Vector3(side * (SIZE.x / 2.0 - 0.015), SIZE.y / 2.0, 0), wood)
 	for i in DRAWERS:
-		var drawer := StaticBody3D.new()
-		drawer.collision_layer = 1
-		drawer.collision_mask = 0
-		drawer.position = Vector3(0, PLINTH + PITCH * i + 0.01, 0)
-		drawer.set_meta("interactable", Handle.new(self, i))
-		add_child(drawer)
+		var drawer := add_drawer(PLINTH + PITCH * i + 0.01)
 		var z_front := SIZE.z / 2.0 - 0.0125
 		Geo.box_part(drawer, Vector3(SIZE.x - 0.08, PITCH - 0.02, 0.025), Vector3(0, (PITCH - 0.02) / 2.0, z_front), front)
 		Geo.mesh(drawer, Geo.box(Vector3(0.1, 0.025, 0.03)), brass, Vector3(0, (PITCH - 0.02) / 2.0, z_front + 0.02))
@@ -75,9 +80,21 @@ func _ready() -> void:
 		Geo.box_part(drawer, Vector3(TRAY.x, TRAY.y, 0.015), Vector3(0, TRAY.y / 2.0, tray_z - TRAY.z / 2.0), wood)
 		for side in [-1.0, 1.0]:
 			Geo.box_part(drawer, Vector3(0.015, TRAY.y, TRAY.z), Vector3(side * TRAY.x / 2.0, TRAY.y / 2.0, tray_z), wood)
-		_drawers.append(drawer)
-		is_open.append(false)
-		searched.append(false)
+
+
+## Neue Schublade, Unterkante auf Höhe y (von unten nach oben anlegen): ein leerer Körper mit Griff, die Teile setzt
+## der Aufrufer. Die Front liegt bündig mit der Vorderseite, 0,025 m stark, der Kasten (tray) dahinter.
+func add_drawer(y: float) -> StaticBody3D:
+	var drawer := StaticBody3D.new()
+	drawer.collision_layer = 1
+	drawer.collision_mask = 0
+	drawer.position = Vector3(0, y, 0)
+	drawer.set_meta("interactable", Handle.new(self, _drawers.size()))
+	add_child(drawer)
+	_drawers.append(drawer)
+	is_open.append(false)
+	searched.append(false)
+	return drawer
 
 
 func drawer_prompt(i: int, player: Player) -> String:
@@ -107,7 +124,7 @@ func set_open(i: int, open: bool, instant: bool = false) -> void:
 		return
 	is_open[i] = open
 	var drawer := _drawers[i]
-	var delta := SLIDE if open else -SLIDE
+	var delta := slide if open else -slide
 	var target := drawer.position.z + delta
 	if instant:
 		drawer.position.z = target
@@ -135,14 +152,14 @@ func save_state() -> Dictionary:
 func load_state(d: Dictionary) -> void:
 	var open: Array = d.get("open", [])
 	var done: Array = d.get("searched", [])
-	for i in mini(DRAWERS, open.size()):
+	for i in mini(_drawers.size(), open.size()):
 		set_open(i, bool(open[i]), true)
-	for i in mini(DRAWERS, done.size()):
+	for i in mini(_drawers.size(), done.size()):
 		searched[i] = bool(done[i])
 
 
 func _roll_loot(i: int) -> void:
-	var drawer_index := DRAWERS - 1 - i   # gezählt von oben
+	var drawer_index := _drawers.size() - 1 - i   # gezählt von oben
 	if fixed.has(drawer_index):
 		_drop_in(i, Item.create(fixed[drawer_index] as Item.Kind))
 		return
@@ -163,7 +180,7 @@ func _drop_in(i: int, item: Item) -> void:
 	Game.social.builder.world.add_child(item)
 	# Mitte der aufgezogenen Schublade, knapp über dem Boden – fällt hinein
 	var drawer := _drawers[i]
-	var tray_center := Vector3(0, 0.03, SIZE.z / 2.0 - 0.025 - TRAY.z / 2.0 + SLIDE)
+	var tray_center := Vector3(0, 0.03, size.z / 2.0 - 0.025 - tray.z / 2.0 + slide)
 	item.global_position = global_transform * (Vector3(0, drawer.position.y, 0) + tray_center)
 	item.rotation.y = rotation.y + randf_range(-0.6, 0.6)
 
@@ -175,7 +192,7 @@ func _items_in(drawer: StaticBody3D) -> Array[Item]:
 		if item.is_held:
 			continue
 		var p := drawer.global_transform.affine_inverse() * item.global_position
-		if absf(p.x) < TRAY.x / 2.0 and p.y > -0.02 and p.y < TRAY.y + 0.1 \
-				and p.z < SIZE.z / 2.0 and p.z > SIZE.z / 2.0 - 0.025 - TRAY.z:
+		if absf(p.x) < tray.x / 2.0 and p.y > -0.02 and p.y < tray.y + 0.1 \
+				and p.z < size.z / 2.0 and p.z > size.z / 2.0 - 0.025 - tray.z:
 			found.append(item)
 	return found

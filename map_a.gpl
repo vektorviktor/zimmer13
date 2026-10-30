@@ -156,3 +156,6 @@ Columns: 0
 186  56  56	Foullinie
  51  31 215	Möbel: Videoautomat
 196 157  62	Möbel: Spieleschrank
+# Nachttisch (30.10.): 5 × 5 px neben dem Bett, Vorderseite als hellere Zeile
+110  57 169	Möbel: Nachttisch
+119  69 174	Möbel: Nachttisch Vorderseite

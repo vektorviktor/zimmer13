@@ -45,15 +45,19 @@ const PHOTO_SIZE_SMOOTH := 1024
 ## Holz für Mat.wood (Balkenbett): helle Eiche, AO × 0,6 eingebacken
 const WOOD_TEX := "res://assets/textures/Wood_02/Wood02_basecolor.jpg"
 const WOOD_NORMAL := "res://assets/textures/Wood_02/Wood02_normalOgl.jpg"
-## Vertäfelung (Spielkonzept 7.2): Wood067 (ambientCG, CC0, dunkle Nuss, Faser waagerecht) über die Mesh-UVs, so viele
-## Meter je Kachel, aufgehellt, seidenmatt; dazu die gebackene Verschattung aus tools/build_wainscot.py
-const WAINSCOT_TEX := "res://assets/textures/Wood067/Wood067_2K-JPG_Color.jpg"
+## Holz der Vertäfelung (Spielkonzept 7.2), der Zimmertüren und ihrer Rahmen (Mat.hotel_wood – überall dieselbe Optik,
+## Wunsch des Nutzers 30.10.): Wood067 (ambientCG, CC0, dunkle Nuss, Faser waagerecht) über die Mesh-UVs, so viele
+## Meter je Kachel (nicht im Verhältnis zu Wainscot.MODULE, sonst glichen sich die Felder), dunkel getönt wie der
+## Türrahmen, der dem Nutzer am besten gefiel, seidenmatt; das Farbbild ohne die großen Wolken
+## (tools/wainscot_wood.py), dazu je Teil eine gebackene Verschattung (tools/build_wainscot.py, build_room_door.py)
+const WAINSCOT_TEX := "res://assets/textures/wainscot_wood.png"
 const WAINSCOT_NORMAL := "res://assets/textures/Wood067/Wood067_2K-JPG_NormalGL.jpg"
 const WAINSCOT_ROUGH := "res://assets/textures/Wood067/Wood067_2K-JPG_Roughness.jpg"
 const WAINSCOT_AO := "res://assets/textures/wainscot_ao.png"
-const WAINSCOT_METERS := 0.6
-const WAINSCOT_TINT := Color(1.3, 1.25, 1.2)
-const WAINSCOT_GLOSS := 0.5
+const DOOR_AO := "res://assets/textures/door_room_ao.png"
+const WAINSCOT_METERS := 0.7
+const WAINSCOT_TINT := Color(0.74, 0.72, 0.71)
+const WAINSCOT_GLOSS := 0.35
 ## Bohlen (Mat.planks): eine Kachel über so viele Meter, so viele Bretter darin, Fugenbreite in Texeln, Abdunklung
 const PLANK_METERS := 2.0
 const PLANK_ROWS := 8
@@ -416,14 +420,27 @@ static func wood(end: bool, tint: Color = Color(1, 1, 1)) -> ShaderMaterial:
 ## Holz der Vertäfelung (LevelBuilder._wainscot): Wood067 über die UVs des Bausatzes, gebackene Verschattung über UV2.
 static func wainscot() -> ShaderMaterial:
 	if not _cache.has("wainscot"):
-		var m := photo(WAINSCOT_TEX, WAINSCOT_METERS, WAINSCOT_NORMAL, WAINSCOT_ROUGH, WAINSCOT_GLOSS, WAINSCOT_TINT,
-			false, true).duplicate() as ShaderMaterial
-		m.set_shader_parameter("ao_tex", load(WAINSCOT_AO))
-		m.set_shader_parameter("use_ao", true)
+		var m := hotel_wood(WAINSCOT_AO).duplicate() as ShaderMaterial
 		m.set_shader_parameter("instance_shift", true)
 		_photos.append(m)
 		_cache["wainscot"] = m
 	return _cache["wainscot"]
+
+
+## Holz der Vertäfelung, Zimmertüren und Türrahmen (WAINSCOT_*): ohne Verschattung (DoorCasing) bzw. mit einer
+## gebackenen über UV2 (ao_path: Vertäfelung, Türblatt aus tools/build_room_door.py)
+static func hotel_wood(ao_path: String = "") -> ShaderMaterial:
+	var key := "hotel_wood|" + ao_path
+	if not _cache.has(key):
+		var m := photo(WAINSCOT_TEX, WAINSCOT_METERS, WAINSCOT_NORMAL, WAINSCOT_ROUGH, WAINSCOT_GLOSS, WAINSCOT_TINT,
+			false, true)
+		if ao_path != "":
+			m = m.duplicate() as ShaderMaterial
+			m.set_shader_parameter("ao_tex", load(ao_path))
+			m.set_shader_parameter("use_ao", true)
+			_photos.append(m)
+		_cache[key] = m
+	return _cache[key]
 
 
 ## Grobe Bohlen (Dachboden, Spielkonzept 4.21): aus dem Längsholz von Wood_02 zusammengesetzt, eine Kachel über

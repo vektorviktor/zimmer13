@@ -1,13 +1,17 @@
-# Baut den Bausatz der Wandvertäfelung (Spielkonzept 7.2, Entscheidung 29.10.): zwei Module von MODULE_W Breite,
-# die LevelBuilder._wainscot je Wandstück im festen Raster setzt –
+# Baut den Bausatz der Wandvertäfelung (Spielkonzept 7.2, Entscheidung 29.10.): Module von MODULE_W Breite (das
+# Halbfeld halb so breit), die Wainscot je Wandstück im festen Raster setzt –
 #   „panel“  Sockelleiste, Brett, Brüstungsleiste (Oberkante TOP) und ein Rahmenfeld aus Profilleisten
+#   „half“   dasselbe halb so breit – Halbfeld, wo ein Wandstück um ein halbes Raster übersteht
 #   „plain“  dasselbe ohne Rahmenfeld – Passstück an den Enden eines Wandstücks, wird in der Länge gestreckt
 #   „low“    wie „plain“ ohne Brüstungsleiste – unter Fenstern, deren Bank und Schürze an ihrer Stelle sitzen
 # Kein Ausgangsmodell: Leisten sind 2D-Profile, entlang X ausgezogen, das Rahmenfeld ein Ring aus Profilschleifen
 # (Gehrung von selbst).
 #
 # Zwei UV-Sätze: UVMap in Metern mit der Faser entlang u (das Foto Wood067 hat die Faser waagerecht; senkrechte
-# Rahmenleisten mit senkrechter Faser) für psx_photo mit mesh_uv; „AO“ ein Atlas für die in Cycles gebackene
+# Rahmenleisten mit senkrechter Faser) für psx_photo mit mesh_uv. Die Füllung im Rahmenfeld ist ein eigenes Brett
+# (das Brett ist dafür unter der Profilleiste geschnitten): Faser waagerecht (senkrecht wirkte wie ein Fehler, 30.10.),
+# v um FILL_V versetzt – daran erkennt der Shader sie und gibt ihr je Feld einen eigenen Ausschnitt, während Leisten
+# und Brett über das ganze Wandstück durchlaufen. „AO“ ein Atlas für die in Cycles gebackene
 # Verschattung (Wand dahinter, Boden darunter, Nachbarmodule links und rechts), gespeichert als eigenes Bild – im
 # Spiel multipliziert mit der Grundfarbe, damit sie auch im Lampenlicht wirkt (Godots AO wirkt nur aufs
 # Umgebungslicht). Stirnseiten (Enden der Leisten) zeigen im Atlas auf eine weiße Ecke: Beim Backen lägen sie
@@ -37,10 +41,16 @@ SKIRTING = [(0.0, -BACK), (0.0, 0.016), (0.096, 0.016), (0.104, 0.0145), (0.111,
 BOARD = [(0.11, -BACK), (0.11, BOARD_Z), (0.86, BOARD_Z), (0.86, -BACK)]
 RAIL = [(0.845, -BACK), (0.845, 0.010), (0.849, 0.015), (0.856, 0.019), (0.866, 0.021), (0.878, 0.022),
 	(0.889, 0.021), (0.896, 0.017), (TOP, 0.011), (TOP, -BACK)]
-# Rahmenfeld: Außenkante (x0, y0, x1, y1), Profil als (Abstand von der Außenkante nach innen, Höhe über dem Brett)
-FRAME = (0.09, 0.195, MODULE_W - 0.09, 0.77)
+# Rahmenfeld: Außenkante als Abstand von den Modulrändern (links/rechts) und Höhe (y0, y1), Profil als (Abstand von der Außenkante nach innen, Höhe über dem Brett)
+FRAME_SIDE = 0.09
+FRAME_Y = (0.195, 0.77)
 MOULDING = [(0.0, -0.002), (0.0, 0.004), (0.003, 0.008), (0.008, 0.011), (0.014, 0.012), (0.02, 0.0105),
 	(0.025, 0.007), (0.028, 0.003), (0.03, 0.0), (0.03, -0.002)]
+
+# Schnitt der Füllung so weit innerhalb der Außenkante des Rahmenfelds (unter der Profilleiste verborgen); ihr
+# v-Versatz in der UVMap (= Wainscot-Shader psx_photo, Füllung ab v > FILL_V / 2)
+FILL_INSET = 0.01
+FILL_V = 50.0
 
 AO_DISTANCE = 0.08
 AO_SIZE = 1024
@@ -103,14 +113,38 @@ def ring(bm, rect, profile):
 	return out
 
 
-def build(name, with_frame, with_rail=True):
+## Schneidet das Brett (Flächen board) an der Füllung rect auf und liefert deren Vorderflächen.
+def cut_fill(bm, board, rect):
+	x0, y0, x1, y1 = rect
+	geom = list(board) + list({e for f in board for e in f.edges}) + list({v for f in board for v in f.verts})
+	for co, no in (((x0, 0, 0), (1, 0, 0)), ((x1, 0, 0), (1, 0, 0)), ((0, 0, y0), (0, 0, 1)), ((0, 0, y1), (0, 0, 1))):
+		geom = bmesh.ops.bisect_plane(bm, geom=geom, dist=1e-6, plane_co=co, plane_no=no)["geom"]
+	fill = set()
+	for f in geom:
+		if not isinstance(f, bmesh.types.BMFace):
+			continue
+		f.normal_update()
+		c = G(f.calc_center_median())
+		if G(f.normal).z > 0.99 and x0 < c.x < x1 and y0 < c.y < y1:
+			fill.add(f)
+	return fill
+
+
+def build(name, with_frame, with_rail=True, width=MODULE_W):
 	me = bpy.data.meshes.new(name)
 	bm = bmesh.new()
 	caps = []
-	strips = []
+	board = []
 	for prof in (SKIRTING, BOARD, RAIL) if with_rail else (SKIRTING, BOARD):
-		strips += extrude(bm, prof, 0.0, MODULE_W, caps)
-	frame = ring(bm, FRAME, MOULDING) if with_frame else []
+		faces = extrude(bm, prof, 0.0, width, caps)
+		if prof is BOARD:
+			board = faces
+	frame = []
+	fill = set()
+	if with_frame:
+		rect = (FRAME_SIDE, FRAME_Y[0], width - FRAME_SIDE, FRAME_Y[1])
+		frame = ring(bm, rect, MOULDING)
+		fill = cut_fill(bm, board, (rect[0] + FILL_INSET, rect[1] + FILL_INSET, rect[2] - FILL_INSET, rect[3] - FILL_INSET))
 	bm.normal_update()
 	# Kanten über SHARP scharf, sonst glatt (runde Profile)
 	for f in bm.faces:
@@ -128,6 +162,8 @@ def build(name, with_frame, with_rail=True):
 			p = G(loop.vert.co)
 			if f in cap_set:
 				loop[uv].uv = (p.z, p.y)
+			elif f in fill:
+				loop[uv].uv = (p.x, p.y + FILL_V)   # Füllung: Faser waagerecht wie die Leisten, eigener Ausschnitt
 			elif f in vertical:
 				loop[uv].uv = (p.y, p.x + p.z)   # Faser senkrecht
 			elif abs(n.y) > max(abs(n.z), abs(n.x)):
@@ -142,8 +178,10 @@ def build(name, with_frame, with_rail=True):
 
 
 panel = build("panel", True)
+half = build("half", True, width=MODULE_W / 2)
 plain = build("plain", False)
 low = build("low", False, False)
+PARTS = ((panel, MODULE_W), (half, MODULE_W / 2), (plain, MODULE_W), (low, MODULE_W))
 
 
 ## Stirnseiten erkennen: Normale entlang ±X
@@ -173,9 +211,10 @@ def layout_ao(ob, v0, v1):
 	ob.data.uv_layers.active = ob.data.uv_layers["UVMap"]
 
 
-layout_ao(panel, 0.0, 0.48)
-layout_ao(plain, 0.5, 0.73)
-layout_ao(low, 0.75, CAP_CORNER - 0.01)
+layout_ao(panel, 0.0, 0.40)
+layout_ao(half, 0.42, 0.60)
+layout_ao(plain, 0.62, 0.79)
+layout_ao(low, 0.81, CAP_CORNER - 0.01)
 
 # --- Backen: jedes Teil vor eigener Wand und eigenem Boden, mit Nachbarn links und rechts ---------------
 img = bpy.data.images.new("wainscot_ao", AO_SIZE, AO_SIZE, alpha=False, float_buffer=False)
@@ -185,7 +224,7 @@ mat.use_nodes = True
 node = mat.node_tree.nodes.new("ShaderNodeTexImage")
 node.image = img
 mat.node_tree.nodes.active = node
-for ob in (panel, plain, low):
+for ob, _w in PARTS:
 	ob.data.materials.append(mat)
 
 
@@ -202,15 +241,16 @@ def plane(name, center, size, rot):
 
 
 helpers = []
-for ob, ox in ((panel, 0.0), (plain, 20.0), (low, 40.0)):
+for i, (ob, w) in enumerate(PARTS):
+	ox = i * 20.0
 	ob.location = (ox, 0, 0)
-	for dx in (-MODULE_W, MODULE_W):
+	for dx in (-w, w):
 		c = ob.copy()
 		c.location = (ox + dx, 0, 0)
 		bpy.context.scene.collection.objects.link(c)
 		helpers.append(c)
-	helpers.append(plane("wall", B(ox + MODULE_W / 2, 1.0, 0.0), 3.0, (math.pi / 2, 0, 0)))   # Wand bei Godot z = 0
-	helpers.append(plane("floor", B(ox + MODULE_W / 2, 0.0, 1.0), 3.0, (0, 0, 0)))            # Boden bei y = 0
+	helpers.append(plane("wall", B(ox + w / 2, 1.0, 0.0), 3.0, (math.pi / 2, 0, 0)))   # Wand bei Godot z = 0
+	helpers.append(plane("floor", B(ox + w / 2, 0.0, 1.0), 3.0, (0, 0, 0)))            # Boden bei y = 0
 
 sc = bpy.context.scene
 sc.render.engine = 'CYCLES'
@@ -221,12 +261,12 @@ sc.world.light_settings.distance = AO_DISTANCE
 sc.render.bake.margin = 6
 sc.render.bake.use_clear = True
 bpy.ops.object.select_all(action='DESELECT')
-for ob in (panel, plain, low):
+for ob, _w in PARTS:
 	ob.select_set(True)
 	ob.data.uv_layers.active = ob.data.uv_layers["AO"]   # gebacken wird in den aktiven UV-Satz
 bpy.context.view_layer.objects.active = panel
 bpy.ops.object.bake(type='AO')
-for ob in (panel, plain, low):
+for ob, _w in PARTS:
 	ob.data.uv_layers.active = ob.data.uv_layers["UVMap"]
 
 px = np.array(img.pixels[:]).reshape(AO_SIZE, AO_SIZE, 4)
@@ -240,13 +280,13 @@ print("AO: Mittel %.3f, dunkelster Wert %.3f" % (px[:c, :c, 0].mean(), px[:c, :c
 
 for h in helpers:
 	bpy.data.objects.remove(h, do_unlink=True)
-for ob in (panel, plain, low):
+for ob, _w in PARTS:
 	ob.location = (0, 0, 0)
 	ob.data.materials.clear()
 	print("%-6s %4d Flächen, %4d Ecken" % (ob.name, len(ob.data.polygons), len(ob.data.vertices)))
 
 bpy.ops.object.select_all(action='DESELECT')
-for ob in (panel, plain, low):
+for ob, _w in PARTS:
 	ob.select_set(True)
 bpy.ops.export_scene.gltf(
 	filepath=DST, export_format='GLB', export_yup=True, export_apply=False, export_materials='NONE', use_selection=True,

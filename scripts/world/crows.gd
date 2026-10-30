@@ -49,7 +49,7 @@ const FAVOR_DECAY := 0.2                   ## so viel näher zur Mitte je Spielt
 ## Füttern: die erste Mahlzeit eines Tages hebt den Ruf so viel, jede weitere am selben Tag so viel
 const FAVOR_FEED := 0.35
 const FAVOR_FEED_MORE := 0.1
-## Geschenke (Tuning – „ab welchem Ruf“ ist noch zu klären, OFFEN.md 3): ab dieser Gunst liegt statt des Futters ein
+## Geschenke (Tuning – „ab welchem Ruf“ ist noch zu klären, ZIM-31): ab dieser Gunst liegt statt des Futters ein
 ## Geschenk da; der Schlüssel von 1987 erst ab KEY_FAVOR und nach Fütterungen an KEY_DAYS verschiedenen Tagen
 const GIFT_FAVOR := 0.4
 const KEY_FAVOR := 0.6
@@ -60,7 +60,7 @@ const WATCH_RANGE := 22.0
 const CAW_EVERY := 6.0
 const SHINY_RANGE := 7.0                   ## so nah muss Glänzendes bei einer Krähe am Boden liegen
 const LOOK_EVERY := 5.0                    ## so oft sehen sie nach Glänzendem und Futter
-## Was sie stehlen (draußen, unbeobachtet) – der Ring eines Gastes gehört zum Dachnest (OFFEN.md I6)
+## Was sie stehlen (draußen, unbeobachtet) – der Ring eines Gastes gehört zum Dachnest (ZIM-50)
 const SHINY := [Item.Kind.COINS, Item.Kind.KEY, Item.Kind.KNIFE, Item.Kind.COMPASS]
 ## Das Nest sitzt im großen Baum gegenüber der Terrassentür dieses Zimmers (6.19 (7)) – darin von Anfang an sein Schlüssel
 const NEST_ROOM := "042"

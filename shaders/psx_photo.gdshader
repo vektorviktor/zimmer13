@@ -36,22 +36,25 @@ uniform bool mesh_uv = false;
 // Grundfarbe, wirkt also auch im Lampenlicht (Godots AO wirkt nur aufs Umgebungslicht, das im Hotel fast null ist)
 uniform sampler2D ao_tex : hint_default_white, filter_linear, repeat_disable;
 uniform bool use_ao = false;
-// Je Instanz eines MultiMesh (mesh_uv, Vertäfelung): INSTANCE_CUSTOM.xy verschiebt die Holztextur (jedes Feld ein
-// anderer Ausschnitt), z = Streckung der Instanz in x – u wird mitgestreckt, damit die Faser unverzerrt bleibt
+// Je Instanz eines MultiMesh (mesh_uv, Vertäfelung, Wainscot._put): Leisten und Brett laufen über das Wandstück
+// durch – u = UV.x × INSTANCE_CUSTOM.z (Streckung, negativ bei rückwärts gesetzten Teilen) + x (Lage des Modulanfangs
+// an der Wand), v + y (Versatz je Wandstück), alles in Metern; die Füllung (UV.y > FILL_V / 2, tools/build_wainscot.py)
+// bekommt aus w je Feld einen eigenen Ausschnitt
 uniform bool instance_shift = false;
+const float FILL_V = 50.0;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
 varying vec3 tex_pos;
 varying vec3 tex_normal;
-varying vec3 uv_shift;
+varying vec4 uv_shift;
 
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	tex_pos = object_uv ? VERTEX : world_pos;
 	tex_normal = object_uv ? NORMAL : world_normal;
-	uv_shift = instance_shift ? INSTANCE_CUSTOM.xyz : vec3(0.0, 0.0, 1.0);
+	uv_shift = instance_shift ? INSTANCE_CUSTOM : vec4(0.0, 0.0, 1.0, 0.0);
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
 	clip = psx_snap_clip(clip);
 	POSITION = clip;
@@ -79,7 +82,11 @@ void fragment() {
 	}
 	uv = vec2(uv.x, -uv.y) * tex_scale;
 	if (mesh_uv) {
-		uv = vec2(UV.x * uv_shift.z, UV.y) * tex_scale + uv_shift.xy;
+		// ohne Verzweigung – die Ableitungen unten brauchen gleichmäßigen Kontrollfluss
+		float fill = instance_shift ? step(FILL_V / 2.0, UV.y) : 0.0;
+		vec2 run = vec2(UV.x * uv_shift.z + uv_shift.x, UV.y + uv_shift.y);
+		vec2 own = vec2(UV.x, UV.y - FILL_V) + vec2(uv_shift.w, fract(uv_shift.w * 7.13) * 7.0);
+		uv = mix(run, own, fill) * tex_scale;
 		vec3 n_w = normalize(world_normal);
 		vec3 dp1 = dFdx(world_pos);
 		vec3 dp2 = dFdy(world_pos);

@@ -1367,23 +1367,29 @@ func _note_wainscot(horizontal: bool, fixed: float, half: float, side: float, p0
 
 
 ## Vertäfelung der gemerkten Wandseiten (Wainscot): freie Stücke zwischen anstoßenden Wänden, Türen (bis unter die
-## Bekleidung) und Holzpfeilern im Raster, unter Fenstern das Teil ohne Leiste.
+## Bekleidung) und Holzpfeilern im Raster, unter Fenstern das Teil ohne Leiste. Ein Halbfeld kommt an das Ende an
+## einer Tür oder einem Fenster.
 func _wainscot() -> void:
 	if _wainscot_runs.is_empty():
 		return
 	var kit := Wainscot.new()
-	var reach := 0.086 - 0.01   # Außenkante der Bekleidung neben der Öffnung (OpeningFrame), 1 cm darunter geschoben
+	# Außenkante der Bekleidung neben der Öffnung (OpeningFrame; DoorCasing reicht 9,6 cm), 1 cm darunter geschoben
+	var reach := 0.086 - 0.01
 	for run in _wainscot_runs:
 		var horizontal: bool = run["horizontal"]
 		var side: float = run["side"]
 		var face: float = float(run["fixed"]) + side * float(run["half"])
 		var free: Array[Vector2] = [Vector2(run["from"], run["to"])]
 		var windows: Array[Vector2] = []
+		var edges: Array[float] = []   # Enden an Türen und Fenstern
 		for op: Vector4 in run["openings"]:
 			if op.w < Wainscot.HEIGHT - 0.01:   # Vector4 rechnet in 32 Bit: die Fensterbank 0,9 käme knapp darunter an
-				free = _cut_span(free, Vector2(op.x - op.y / 2.0 - reach, op.x + op.y / 2.0 + reach))
+				var door := Vector2(op.x - op.y / 2.0 - reach, op.x + op.y / 2.0 + reach)
+				free = _cut_span(free, door)
+				edges.append_array([door.x, door.y])
 			elif op.w < Wainscot.HEIGHT + 0.2:
 				windows.append(Vector2(op.x - op.y / 2.0 - reach - 0.01, op.x + op.y / 2.0 + reach + 0.01))
+				edges.append_array([windows[-1].x, windows[-1].y])
 		for blk in _wainscot_blocks(horizontal, face, side, float(run["fixed"])):
 			free = _cut_span(free, blk)
 		var under: Array[Vector2] = []
@@ -1395,8 +1401,9 @@ func _wainscot() -> void:
 		var origin := Vector3(0, 0, face) if horizontal else Vector3(face, 0, 0)
 		var along := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
 		var out := Vector3(0, 0, side) if horizontal else Vector3(side, 0, 0)
+		var at_edge := func(t: float) -> bool: return edges.any(func(e: float) -> bool: return absf(e - t) < 0.001)
 		for f in free:
-			kit.add_run(origin, along, out, f.x, f.y, false)
+			kit.add_run(origin, along, out, f.x, f.y, false, at_edge.call(f.y) and not at_edge.call(f.x))
 		for u in under:
 			kit.add_run(origin, along, out, u.x, u.y, true)
 	kit.finish(root)
@@ -1752,6 +1759,10 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			door.look = Door.Look.ATTIC
 	door.position = center - right * width / 2.0
 	door.rotation.y = yaw
+	# Wandhaut (Fliesen, Fassade, Beton) vor der Wand: der Rahmen der Zimmertür sitzt davor (+Z = Seite „innen“)
+	var outside_kind := k_minus if inner > 0 else k_plus
+	door.casing_lift = Vector2(SKIN_FRONT if _skin_material(outside_kind) else 0.0,
+		SKIN_FRONT if _skin_material(inside_kind) else 0.0)
 	root.add_child(door)
 	_doors.append({"pos": center, "door": door, "kind": kind, "into": into3, "hinge": hinge})
 	light_rooms.door(c, side, door)
@@ -2124,6 +2135,9 @@ func _furniture() -> void:
 			"dresser":
 				node = Dresser.new()   # Schubladen (Spielkonzept 3.5)
 				top = Dresser.SIZE.y
+			"nightstand":
+				node = Nightstand.new()   # neben dem Bett, eine Schublade (30.10.)
+				top = Nightstand.OUTER.y
 			"chest":
 				var chest := Chest.new()
 				if rooms.has(_room_id_at(c)):
