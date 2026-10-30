@@ -162,7 +162,9 @@ extends Node3D
 ##                               schnell: gleich der Bogen vor dem Spiegel (ohne --figur: Standardfigur)
 ##   --perf[=s]                  Frame-Zeiten nach temp/perf.csv schreiben, nach s Sekunden (Standard 20) beenden (PerfLog)
 ##   --static-eg[=pfad]          Erdgeschoss als statische Szene speichern (StaticExport, Standard res://temp/eg_static.scn):
-##                               Wände mit Öffnungen, Böden, Decken, Lampen, zum Durchlaufen – als Startparameter danach beenden
+##                               Wände mit Öffnungen, Böden, Decken, Lampen, zum Durchlaufen – als Startparameter danach beenden;
+##                               daneben .glb und _lampen.json für den Engine-Vergleich. Messlauf in der Szene: --bench
+##                               (StaticWalker, Szene direkt starten)
 ##   --meshes                    verschiedene Meshes und Flächen in der Szene zählen (Puffer auf der Grafikkarte) und
 ##                               ausgeben – als Startparameter danach beenden
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben

@@ -1454,7 +1454,11 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
 - **Feste Kerzen** (`FixedCandle`, aus `_candle` auf Möbeln) siehe „Kerzen“.
 - **Statische Testszene** (`util/static_export.gd`, `util/static_walker.gd`, Debug `--static-eg[=pfad]`): kopiert das
   Erdgeschoss (Bauteile aus `structure_parts`, eingeschaltete Lampen als schlichte `OmniLight3D` mit Schatten) in
-  `res://temp/eg_static.scn` mit eigenem Läufer – zum Messen der Renderkosten ohne Spiellogik.
+  `res://temp/eg_static.scn` mit eigenem Läufer – zum Messen der Renderkosten ohne Spiellogik. Dazu feste Messpunkte
+  (`StaticExport.BENCH_POINTS`, Kameras unter „Messpunkte“) und für den Engine-Vergleich (ZIM-121) derselbe Bau mit
+  Lampen und Messpunkten als `eg_static.glb` (ShaderMaterials gehen verloren) samt `eg_static_lampen.json` (Godot-Werte
+  der Lampen, Messpunkte). Messlauf: Szene direkt starten mit `-- --bench[=pfad] --bg` – je Punkt 2 s einschwingen,
+  6 s messen ohne VSync, Bildzeiten nach `temp/bench_godot.csv`, Übersicht in die Konsole, dann beenden.
 
 ### Fenster, Türen, Verstecke, Kommoden
 - **Fenster** (`hotel_window.gd`): klares Glas / Vorhang (Ebene 10 nur für Sicht & Mond); Milchglas kann die Klasse,
