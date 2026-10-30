@@ -14,7 +14,6 @@ render_mode blend_mix, depth_draw_never, cull_disabled, shadows_disabled, specul
 
 global uniform float rain_wet;
 global uniform float weather_time;
-global uniform float psx_smooth;
 global uniform float rain_blood;
 global uniform float pane_stain;
 
@@ -136,9 +135,6 @@ void fragment() {
 		discard;
 	}
 	vec2 p = pane + NODE_POSITION_WORLD.xz * 1.37 + vec2(NODE_POSITION_WORLD.y * 0.71, 0.0);
-	if (psx_smooth < 0.5) {
-		p = floor(p * 120.0) / 120.0;   // PS1-Look: grobe Texel
-	}
 	float lying = 1.0 - steep;
 	float stretch = mix(1.0, 1.1, steep);
 	// senkrecht wenige stehende Tropfen – das Bild machen die Rinnsale; wo eines lief, sind sie weggewischt
@@ -165,12 +161,9 @@ void fragment() {
 		ALBEDO = stain_color;
 		ROUGHNESS = 0.9;
 		SPECULAR = 0.1;
-		ALPHA = psx_smooth < 0.5 ? step(0.25, stain) * 0.5 : stain * 0.6;
+		ALPHA = stain * 0.6;
 	} else {
 		vec2 n = d.xy / max(m, 0.001);   // Neigung −1 … 1
-		if (psx_smooth < 0.5) {
-			m = step(0.5, m);
-		}
 		// Bild dahinter, durch die Linse auf den Kopf gestellt; zum Rand dunkler (Brechung schickt dort weniger Licht)
 		vec3 behind = textureLod(screen_tex, SCREEN_UV - n * refraction, 2.5).rgb * gather;
 		behind *= mix(1.0, 0.35, smoothstep(0.55, 1.0, length(n)));

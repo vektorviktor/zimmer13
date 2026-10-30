@@ -1277,7 +1277,7 @@ func _build(extra: String) -> void:
 			for i in 22:
 				var r := sqrt(rng.randf()) * 0.45
 				var a := rng.randf() * TAU
-				# Mat.layer: leicht zur Kamera gezogen, sonst flimmert der Boden beim Vertex-Snapping durch
+				# Mat.layer: leicht zur Kamera gezogen, sonst flimmert der Boden durch
 				var leaf := Geo.mesh(_spread, Geo.box(Vector3(0.09, 0.008, 0.06)), Mat.layer(LEAF_COLORS[i % LEAF_COLORS.size()], "", 1.0, 0.004),
 					Vector3(cos(a) * r, 0.005 + (i % 3) * 0.003, sin(a) * r))
 				leaf.rotation = Vector3(rng.randf_range(-0.1, 0.1), rng.randf() * TAU, 0.0)

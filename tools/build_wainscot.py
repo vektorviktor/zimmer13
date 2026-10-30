@@ -18,7 +18,7 @@
 # am Nachbarmodul und würden schwarz.
 #
 # Lage (Godot-Achsen): Wandfläche bei z = 0, Vertäfelung nach +Z, Boden bei y = 0, Modul von x = 0 bis MODULE_W.
-# Alle Teile stecken BACK tief in der Wand (Vertex-Snapping, wie bei build_frames.py).
+# Alle Teile stecken BACK tief in der Wand (keine Fugen, wie bei build_frames.py).
 #
 # Aufruf aus dem Projektordner (Blender 4.3):
 #   blender -b --python tools/build_wainscot.py -- assets/models/wainscot.glb assets/textures/wainscot_ao.png

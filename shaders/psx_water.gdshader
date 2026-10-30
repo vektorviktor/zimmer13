@@ -1,14 +1,13 @@
-// Poolwasser im PS1-Look: halbtransparent, rein optische Wellen (ohne Physik).
+// Poolwasser: halbtransparent, rein optische Wellen (ohne Physik).
 // Grundwellen über wave_time (Spielzeit von PoolWater, steht in der Pause); dazu Wellenringe, die
 // PoolWater (scripts/world/pool_water.gd) dort einträgt, wo jemand durchs Wasser geht oder hineinfällt.
 // Die Wände werfen die Ringe zurück (Spiegelquellen hinter jeder Wand und Ecke, je Abprall wall_reflect),
 // alles addiert sich. Hohe Kämme und Wellen am Beckenrand brechen zu Schaum.
 // Monster in der Nähe (von PoolWater gesetzt): base_scale 0 = spiegelglatt, tremor = feine zitternde
 // Ringe von seiner Seite, slosh = das Becken schwappt wie eine Badewanne.
-// Vertex-Snapping wie psx_surface, Licht je Ecke aus den Wellennormalen.
+// Licht je Ecke aus den Wellennormalen.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_disabled, diffuse_lambert, specular_schlick_ggx;
-#include "res://shaders/psx_snap.gdshaderinc"
 
 // Muss zu PoolWater.MAX_RIPPLES passen
 const int MAX_RIPPLES = 32;
@@ -107,7 +106,6 @@ void vertex() {
 	NORMAL = normalize(vec3(-(hx - h) / e, 1.0, -(hz - h) / e));
 	v_height = h;
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
-	clip = psx_snap_clip(clip);
 	POSITION = clip;
 }
 

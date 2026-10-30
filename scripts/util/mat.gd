@@ -1,10 +1,10 @@
 class_name Mat
-## Materialien im PS1-Stil (Vertex-Snapping, Nearest-Filter, kein Glanz – außer auf der Tapete).
+## Materialien (Spielkonzept 9.2, realistischer Look). Mat.psx heißt nur noch so.
 
 # --- Tuning
 ## Tapeten (Spielkonzept 7.2): Farbvariante → [Muster, Kachelgröße in Metern]. Farbe wallpaper_<variante>.png, Normal
-## Map (OpenGL) und Rauheit je Muster wallpaper_<muster>_normal.png / _rough.png – nahtlose, hochaufgelöste Kacheln,
-## ohne PS1-Look mit Mipmaps. Breite der Kachel = Bahnbreite (psx_wall strip_width 0,53 m), damit Muster und Bahnen
+## Map (OpenGL) und Rauheit je Muster wallpaper_<muster>_normal.png / _rough.png – nahtlose, hochaufgelöste Kacheln
+## mit Mipmaps. Breite der Kachel = Bahnbreite (psx_wall strip_width 0,53 m), damit Muster und Bahnen
 ## zusammenpassen. Die Rautentapeten zeichnet tools/build_wallpaper.py; eigene Tapeten im selben Format hier eintragen.
 const WALLPAPERS := {
 	"teal": ["harlequin", Vector2(0.53, 0.53)],
@@ -15,11 +15,8 @@ const WALLPAPERS := {
 const WALLPAPER_PATH := "res://assets/textures/wallpaper_%s.png"
 const WALLPAPER_NORMAL_PATH := "res://assets/textures/wallpaper_%s_normal.png"
 const WALLPAPER_ROUGH_PATH := "res://assets/textures/wallpaper_%s_rough.png"
-## Rauheit → Glanz der Tapete im PS1-Look: so rau ist stumpf (0) bzw. Lack (1), wie rough_matte/rough_gloss in psx_wall
-const WALLPAPER_ROUGH_RANGE := Vector2(0.95, 0.3)
 ## Holz (Leiste unter der Decke, gemalte Vertäfelung): Bild je Variante (oak …) mit eigener Höhenkarte, im Spiel auf
-## diese Breite verkleinert (PS1-Look, Höhe im selben Verhältnis) und über so viele Meter Wand gespannt; die Tapete im
-## PS1-Look bekommt dieselbe Dichte
+## diese Breite verkleinert (Höhe im selben Verhältnis) und über so viele Meter Wand gespannt
 const WAINSCOT_PATH := "res://assets/textures/wainscot_%s.png"
 const WAINSCOT_BUMP_PATH := "res://assets/textures/wainscot_bump.png"
 const WALLPAPER_SRC_SIZE := 512
@@ -38,10 +35,9 @@ const WALLPAPER_GLOSS := {
 	149: 0.7,    # Vertäfelung, Grund
 	196: 0.9,    # Handlauf, Kassettenfüllung, Deckenleiste – Lack
 }
-## Fototexturen (PBR-Sets in assets/textures/<set>/): Kantenlänge des Farbbilds mit PS1-Look (Texel für Texel,
-## grob wie die Tapete) und ohne (weich gefiltert, mit Mipmaps – aus der Nähe scharf, in der Ferne ruhig)
-const PHOTO_SIZE_PSX := 256
-const PHOTO_SIZE_SMOOTH := 1024
+## Fototexturen (PBR-Sets in assets/textures/<set>/): höchste Kantenlänge des Farbbilds (weich gefiltert, mit
+## Mipmaps – aus der Nähe scharf, in der Ferne ruhig)
+const PHOTO_SIZE := 1024
 ## Holz für Mat.wood (Balkenbett): helle Eiche, AO × 0,6 eingebacken
 const WOOD_TEX := "res://assets/textures/Wood_02/Wood02_basecolor.jpg"
 const WOOD_NORMAL := "res://assets/textures/Wood_02/Wood02_normalOgl.jpg"
@@ -81,7 +77,6 @@ static var _wall_albedo := {}
 static var _papers := {}   # Tapete → Texturen (_paper)
 static var _wood_surface: ImageTexture
 static var _cache := {}
-static var _photos: Array[ShaderMaterial] = []
 static var _photo_shader: Shader
 static var _cobweb: StandardMaterial3D
 static var _glass: StandardMaterial3D
@@ -148,10 +143,8 @@ static func model(path: String, src: MeshInstance3D, surface: int = 0, two_sided
 
 
 ## Material aus einem Foto (PBR-Set, z. B. Beton) mit shaders/psx_photo.gdshader, in Weltkoordinaten über meters
-## Meter gespannt. Das Farbbild liegt in zwei Stufen vor (PHOTO_SIZE_PSX ohne, PHOTO_SIZE_SMOOTH mit Mipmaps), die
-## Normal Map (normal_path, OpenGL-Format) nur in der großen und nur ohne PS1-Look – Settings.apply schaltet über
-## set_photo_detail um. Glanz (specular > 0, z. B. 0,5) mit der Rauheit aus roughness_path wirkt in beiden Looks
-## (wie die Tapete). Die übrigen Karten des Sets löscht tools/photo_set.gd, siehe TECHNIK.md. object_uv: Textur in
+## Meter gespannt, Normal Map (normal_path) im OpenGL-Format. Glanz (specular > 0, z. B. 0,5) mit der Rauheit aus
+## roughness_path wie die Tapete. Die übrigen Karten des Sets löscht tools/photo_set.gd, siehe TECHNIK.md. object_uv: Textur in
 ## Modellkoordinaten statt in Weltkoordinaten (Bewegtes wie die Aufzugskabine). mesh_uv: über die UVs des Meshs (in
 ## Metern) – Holz mit Faserrichtung (Geo.grain_box).
 static func photo(path: String, meters: float, normal_path: String = "", roughness_path: String = "",
@@ -163,14 +156,12 @@ static func photo(path: String, meters: float, normal_path: String = "", roughne
 	return _cache[key]
 
 
-## Fotomaterial aus fertigen Bildern (Farbe RGB8 in PHOTO_SIZE_SMOOTH, Normal Map oder null) – für Mat.photo und
+## Fotomaterial aus fertigen Bildern (Farbe RGB8 höchstens PHOTO_SIZE, Normal Map oder null) – für Mat.photo und
 ## zusammengesetzte Bilder wie die Bohlen (Mat.planks).
 static func _photo_from(img: Image, normal: Image, roughness_path: String, meters: float, specular: float, color: Color,
 		object_uv: bool, mesh_uv: bool) -> ShaderMaterial:
 	if _photo_shader == null:
 		_photo_shader = load("res://shaders/psx_photo.gdshader")
-	var small := img.duplicate() as Image
-	small.resize(PHOTO_SIZE_PSX, PHOTO_SIZE_PSX, Image.INTERPOLATE_LANCZOS)
 	img.generate_mipmaps()
 	var m := ShaderMaterial.new()
 	m.shader = _photo_shader
@@ -179,40 +170,27 @@ static func _photo_from(img: Image, normal: Image, roughness_path: String, meter
 	m.set_shader_parameter("specular", specular)
 	m.set_shader_parameter("object_uv", object_uv)
 	m.set_shader_parameter("mesh_uv", mesh_uv)
-	m.set_meta("photo_psx", ImageTexture.create_from_image(small))
-	m.set_meta("photo_smooth", ImageTexture.create_from_image(img))
+	m.set_shader_parameter("albedo_tex", ImageTexture.create_from_image(img))
 	if normal:
 		normal.generate_mipmaps(true)   # gemittelte Normalen wieder auf Länge 1
 		m.set_shader_parameter("normal_tex", ImageTexture.create_from_image(normal))
+		m.set_shader_parameter("use_normal", true)
 	if roughness_path != "":
 		var rough := _photo_image(roughness_path)
 		rough.generate_mipmaps()
 		m.set_shader_parameter("roughness_tex", ImageTexture.create_from_image(rough))
 		m.set_shader_parameter("use_roughness", true)
-	_photos.append(m)
-	_set_photo_detail(m, Settings.psx_look)
 	return m
 
 
-## Alle Fotomaterialien auf die Stufe für den PS1-Look (psx = true) bzw. ohne ihn umstellen.
-static func set_photo_detail(psx: bool) -> void:
-	for m in _photos:
-		_set_photo_detail(m, psx)
-
-
-static func _set_photo_detail(m: ShaderMaterial, psx: bool) -> void:
-	m.set_shader_parameter("albedo_tex", m.get_meta("photo_psx" if psx else "photo_smooth"))
-	m.set_shader_parameter("use_normal", not psx and m.get_shader_parameter("normal_tex") != null)
-
-
-## Bild einer Fototextur als RGB8, höchstens PHOTO_SIZE_SMOOTH (tools/photo_set.gd schneidet es schon zu;
+## Bild einer Fototextur als RGB8, höchstens PHOTO_SIZE (tools/photo_set.gd schneidet es schon zu;
 ## kleinere Karten wie die Rauheit bleiben, wie sie sind).
 static func _photo_image(path: String) -> Image:
 	var img := (load(path) as Texture2D).get_image()
 	img.decompress()
 	img.convert(Image.FORMAT_RGB8)
-	if img.get_width() > PHOTO_SIZE_SMOOTH or img.get_height() > PHOTO_SIZE_SMOOTH:
-		img.resize(PHOTO_SIZE_SMOOTH, PHOTO_SIZE_SMOOTH, Image.INTERPOLATE_LANCZOS)
+	if img.get_width() > PHOTO_SIZE or img.get_height() > PHOTO_SIZE:
+		img.resize(PHOTO_SIZE, PHOTO_SIZE, Image.INTERPOLATE_LANCZOS)
 	return img
 
 
@@ -250,7 +228,7 @@ static func decal(path: String) -> ShaderMaterial:
 
 
 ## Für flache Auflagen auf einer anderen Fläche (Teppich auf Fliesen, Kassetten auf dem Türblatt):
-## wird leicht zur Kamera gezogen, damit die Unterlage beim Vertex-Snapping nicht durchflimmert.
+## wird leicht zur Kamera gezogen, damit die Unterlage nicht durchflimmert.
 ## pull = Anteil der Kameraentfernung (Rahmen nehmen weniger, sonst überdecken sie Vorhänge und Türblätter).
 static func layer(color: Color, tex_id: String = "", tex_scale: float = 1.0, pull: float = 0.01) -> ShaderMaterial:
 	var key := "layer|%s|%s|%.3f|%.4f" % [color.to_html(), tex_id, tex_scale, pull]
@@ -306,8 +284,6 @@ static func wallpaper(wall_top: float, storey: float, variant: String = "teal", 
 	var paper := _paper(variant)
 	var m := ShaderMaterial.new()
 	m.shader = _wall_shader
-	m.set_shader_parameter("albedo_tex", paper["small"])
-	m.set_shader_parameter("surface_tex", paper["surface"])
 	m.set_shader_parameter("paper_tex", paper["color"])
 	m.set_shader_parameter("paper_normal", paper["normal"])
 	m.set_shader_parameter("paper_rough", paper["rough"])
@@ -330,7 +306,7 @@ static func wallpaper_split(a: ShaderMaterial, b: ShaderMaterial, b_normal: Vect
 	if not _cache.has(key):
 		var m := a.duplicate() as ShaderMaterial
 		m.set_shader_parameter("side_b_normal", b_normal)
-		for param in ["albedo_tex", "surface_tex", "paper_tex", "paper_normal", "paper_rough", "paper_tile", "wood_tex"]:
+		for param in ["paper_tex", "paper_normal", "paper_rough", "paper_tile", "wood_tex"]:
 			m.set_shader_parameter(param + "_b", b.get_shader_parameter(param))
 		m.set_shader_parameter("wall_top_b", b.get_shader_parameter("wall_top"))
 		m.set_shader_parameter("storey_b", b.get_shader_parameter("storey"))
@@ -338,9 +314,8 @@ static func wallpaper_split(a: ShaderMaterial, b: ShaderMaterial, b_normal: Vect
 	return _cache[key]
 
 
-## Texturen einer Tapete aus WALLPAPERS: ohne PS1-Look Farbe, Normal Map und Rauheit in voller Größe mit Mipmaps
-## (color, normal, rough), im PS1-Look Farbe und Oberfläche (R Höhe – eben –, G Glanz aus der Rauheit) in der Dichte
-## des Holzes (small, surface); tile = Kachel in Metern.
+## Texturen einer Tapete aus WALLPAPERS: Farbe, Normal Map und Rauheit in voller Größe mit Mipmaps (color, normal,
+## rough); tile = Kachel in Metern.
 static func _paper(variant: String) -> Dictionary:
 	if not _papers.has(variant):
 		var pattern: String = WALLPAPERS[variant][0]
@@ -348,24 +323,11 @@ static func _paper(variant: String) -> Dictionary:
 		var color := _photo_image(WALLPAPER_PATH % variant)
 		var normal := _photo_image(WALLPAPER_NORMAL_PATH % pattern)
 		var rough := _photo_image(WALLPAPER_ROUGH_PATH % pattern)
-		var per_m := WALLPAPER_SIZE / WALLPAPER_METERS
-		var w := maxi(1, roundi(tile.x * per_m))
-		var h := maxi(1, roundi(tile.y * per_m))
-		var small := color.duplicate() as Image
-		small.resize(w, h, Image.INTERPOLATE_LANCZOS)
-		var gloss := rough.duplicate() as Image
-		gloss.resize(w, h, Image.INTERPOLATE_LANCZOS)
-		var surf := Image.create(w, h, false, Image.FORMAT_RG8)
-		var r := WALLPAPER_ROUGH_RANGE
-		for y in h:
-			for x in w:
-				surf.set_pixel(x, y, Color(0.5, clampf((r.x - gloss.get_pixel(x, y).r) / (r.x - r.y), 0.0, 1.0), 0.0))
 		color.generate_mipmaps()
 		normal.generate_mipmaps(true)   # gemittelte Normalen wieder auf Länge 1
 		rough.generate_mipmaps()
 		_papers[variant] = {"tile": tile, "color": ImageTexture.create_from_image(color),
-			"normal": ImageTexture.create_from_image(normal), "rough": ImageTexture.create_from_image(rough),
-			"small": ImageTexture.create_from_image(small), "surface": ImageTexture.create_from_image(surf)}
+			"normal": ImageTexture.create_from_image(normal), "rough": ImageTexture.create_from_image(rough)}
 	return _papers[variant]
 
 
@@ -422,7 +384,6 @@ static func wainscot() -> ShaderMaterial:
 	if not _cache.has("wainscot"):
 		var m := hotel_wood(WAINSCOT_AO).duplicate() as ShaderMaterial
 		m.set_shader_parameter("instance_shift", true)
-		_photos.append(m)
 		_cache["wainscot"] = m
 	return _cache["wainscot"]
 
@@ -438,7 +399,6 @@ static func hotel_wood(ao_path: String = "") -> ShaderMaterial:
 			m = m.duplicate() as ShaderMaterial
 			m.set_shader_parameter("ao_tex", load(ao_path))
 			m.set_shader_parameter("use_ao", true)
-			_photos.append(m)
 		_cache[key] = m
 	return _cache[key]
 

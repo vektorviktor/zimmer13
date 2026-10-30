@@ -36,13 +36,10 @@ const FADE := 20.0                ## so lange setzt Regen ein bzw. hört auf (s)
 const LIGHTNING_GAP := Vector2(10.0, 30.0)
 const THUNDER_DELAY := Vector2(0.4, 3.5)   ## nah: gleich, fern: später und leiser
 ## Regen: so viele Tropfen bei voller Stärke im Kasten (± HALF_EXTENT um den Spieler), so hoch beginnen sie
-const DROPS := 9000
+const DROPS := 24000
 const HALF_EXTENT := 20.0
 const TOP := 16.0
-const DROP_SIZE := Vector3(0.008, 0.4, 0.008)
-const DROP_COLOR := Color(0.6, 0.66, 0.78, 0.2)
-## Ohne PS1-Look: so viele Tropfen, Striche so lang und breit (m), nie schmaler als so viele Bildpunkte (dafür blasser)
-const DROPS_FINE := 24000
+## Tropfen als Striche: so lang und breit (m), nie schmaler als so viele Bildpunkte (dafür blasser)
 const STREAK := Vector2(0.5, 0.0015)
 const STREAK_PIXELS := 1.5
 const STREAK_COLOR := Color(0.72, 0.77, 0.88, 0.3)
@@ -105,9 +102,8 @@ const BLOOD_FROM := 20
 const BLOOD_SURE := 28
 const BLOOD_CHANCE := 0.25
 const BLOOD_WINDOW := 8.0
-## so lange wäscht normaler Regen voller Stärke die roten Reste ab (s); Farbe der Tropfen (PS1-Klötzchen, Striche)
+## so lange wäscht normaler Regen voller Stärke die roten Reste ab (s); Farbe der Tropfen
 const BLOOD_WASH := 90.0
-const BLOOD_DROP := Color(0.45, 0.05, 0.04, 0.3)
 const BLOOD_STREAK := Color(0.62, 0.1, 0.08, 0.38)
 ## so lange (s) blendet Blutregen in Himmel, Boden und Tropfen ein bzw. aus; Farbe des Blitzlichts dabei
 const BLOOD_FADE := 20.0
@@ -143,7 +139,6 @@ var _sky: ShaderMaterial
 var _clouds := 0.4
 var _rain: GPUParticles3D
 var _rain_mat: ShaderMaterial
-var _rain_psx := true             ## Aussehen der Tropfen, wie es gerade gebaut ist (Settings.psx_look)
 var _roofs: Image
 var _origin := Vector2.ZERO
 var _rows_done := 0
@@ -439,7 +434,7 @@ func _update_wind(delta: float) -> void:
 	if _rain_mat:   # Regen fällt im Wind schräger
 		var slant := Vector2(FALL.x, FALL.z) * (0.4 + 1.2 * wind)
 		_rain_mat.set_shader_parameter("wind", slant)
-		if not _rain_psx and _rain.draw_pass_1:
+		if _rain.draw_pass_1:
 			(_rain.draw_pass_1.surface_get_material(0) as ShaderMaterial).set_shader_parameter("fall", Vector3(slant.x, FALL.y, slant.y))
 	var p := Game.player
 	if Game.audio:
@@ -544,9 +539,7 @@ func _update_blood(delta: float) -> void:
 func _tint_rain(blood: bool) -> void:
 	_blood_tinted = blood
 	var mat := _rain.draw_pass_1.surface_get_material(0) if _rain.draw_pass_1 else null
-	if mat is StandardMaterial3D:
-		(mat as StandardMaterial3D).albedo_color = BLOOD_DROP if blood else DROP_COLOR
-	elif mat is ShaderMaterial:
+	if mat is ShaderMaterial:
 		(mat as ShaderMaterial).set_shader_parameter("color", BLOOD_STREAK if blood else STREAK_COLOR)
 
 
@@ -651,8 +644,6 @@ func _puddle_image() -> Image:
 func _update_rain() -> void:
 	var p := Game.player
 	var on := intensity > 0.01 and p != null and _roofs == null and _rows_done > 0   # erst mit fertiger Dachkarte
-	if Settings.psx_look != _rain_psx:
-		_set_drops(Settings.psx_look)
 	_rain.emitting = on
 	_rain.visible = on
 	if on:
@@ -681,38 +672,25 @@ func _build_rain() -> void:
 	_rain.process_material = _rain_mat
 	_rain.visibility_aabb = AABB(Vector3(-HALF_EXTENT - 2.0, -2.0, -HALF_EXTENT - 2.0), Vector3(HALF_EXTENT * 2.0 + 4.0, TOP + 4.0, HALF_EXTENT * 2.0 + 4.0))
 	_rain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_set_drops(Settings.psx_look)
+	_set_drops()
 	_rain.emitting = false
 	_rain.visible = false
 	add_child(_rain)
 
 
-## Tropfen im PS1-Look (Klötzchen) oder fein (Striche, mehr davon). Neue Anzahl startet die Partikel neu.
-func _set_drops(psx: bool) -> void:
-	_rain_psx = psx
-	if psx:
-		var mesh := BoxMesh.new()
-		mesh.size = DROP_SIZE
-		var mat := StandardMaterial3D.new()
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.albedo_color = DROP_COLOR
-		mat.disable_fog = false
-		mesh.material = mat
-		_rain.amount = DROPS
-		_rain.draw_pass_1 = mesh
-	else:
-		var mat := ShaderMaterial.new()
-		mat.shader = load("res://shaders/rain_streak.gdshader")
-		mat.set_shader_parameter("color", STREAK_COLOR)
-		mat.set_shader_parameter("fall", FALL)
-		mat.set_shader_parameter("streak_length", STREAK.x)
-		mat.set_shader_parameter("streak_width", STREAK.y)
-		mat.set_shader_parameter("min_pixels", STREAK_PIXELS)
-		var quad := QuadMesh.new()   # 1 × 1, der Shader streckt ihn
-		quad.material = mat
-		_rain.amount = DROPS_FINE
-		_rain.draw_pass_1 = quad
+## Tropfen als feine Striche (shaders/rain_streak.gdshader).
+func _set_drops() -> void:
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/rain_streak.gdshader")
+	mat.set_shader_parameter("color", STREAK_COLOR)
+	mat.set_shader_parameter("fall", FALL)
+	mat.set_shader_parameter("streak_length", STREAK.x)
+	mat.set_shader_parameter("streak_width", STREAK.y)
+	mat.set_shader_parameter("min_pixels", STREAK_PIXELS)
+	var quad := QuadMesh.new()   # 1 × 1, der Shader streckt ihn
+	quad.material = mat
+	_rain.amount = DROPS
+	_rain.draw_pass_1 = quad
 	if _blood_tinted:
 		_tint_rain(true)
 

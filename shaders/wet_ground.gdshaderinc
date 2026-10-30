@@ -1,10 +1,9 @@
 // Nasser Boden draußen im Regen (Weather, Spielkonzept 7.8) – für psx_surface und psx_photo, nur mit wettable:
-// dunkler und glänzend (ohne PS1-Look; Glanz über Metallic, sonst sähe die Bildschirmspiegelung nichts), beim
+// dunkler und glänzend (Glanz über Metallic, sonst sähe die Bildschirmspiegelung nichts), beim
 // Blutregen ein roter Film mit rotem Glanz. Nass wie die Scheiben (rain_wet), rot, solange der letzte Schauer
 // Blutregen war (rain_blood, blendet weich) – trocknet mit ab; was bleibt, sind die Pfützen (Weather).
 global uniform float rain_wet;
 global uniform float rain_blood;
-global uniform float psx_smooth;
 uniform bool wettable = false;
 // so glatt wird die Fläche ganz nass (1 = Pflaster mit Wasserfilm, Rasen weniger)
 uniform float wet_gloss = 1.0;
@@ -32,19 +31,15 @@ Wet wet_surface(vec3 albedo, float roughness, float metallic, float specular, fl
 	w.albedo = albedo * mix(1.0, 0.55, wet);
 	// roter Film: die Struktur darunter schimmert durch
 	vec3 film = wet_blood * (0.35 + luma);
-	if (psx_smooth > 0.5) {
-		float gloss = wet * wet_gloss;
-		w.roughness = mix(roughness, 0.1, gloss);
-		w.specular = mix(specular, 0.5, gloss);
-		float shine = gloss * 0.3 * reflections;
-		w.metallic = mix(metallic, 1.0, shine);
-		// rot: Glanz in Glanzfarbe, die Grundfarbe bleibt dabei (bei Metallic) etwa der Film
-		float red_shine = 0.7 * wet_gloss * reflections;
-		vec3 red = mix(film, wet_sheen * (0.35 + luma), red_shine);
-		w.albedo = mix(w.albedo, red, blood);
-		w.metallic = mix(w.metallic, red_shine, blood);
-	} else {
-		w.albedo = mix(w.albedo, film, blood);
-	}
+	float gloss = wet * wet_gloss;
+	w.roughness = mix(roughness, 0.1, gloss);
+	w.specular = mix(specular, 0.5, gloss);
+	float shine = gloss * 0.3 * reflections;
+	w.metallic = mix(metallic, 1.0, shine);
+	// rot: Glanz in Glanzfarbe, die Grundfarbe bleibt dabei (bei Metallic) etwa der Film
+	float red_shine = 0.7 * wet_gloss * reflections;
+	vec3 red = mix(film, wet_sheen * (0.35 + luma), red_shine);
+	w.albedo = mix(w.albedo, red, blood);
+	w.metallic = mix(w.metallic, red_shine, blood);
 	return w;
 }

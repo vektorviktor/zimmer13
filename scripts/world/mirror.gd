@@ -9,7 +9,7 @@ extends MeshInstance3D
 ## Die Fläche liegt auf LAYER, den die Spiegelkamera nicht sieht; die Spielerfigur (PlayerBody.LAYER) sieht nur sie.
 
 const LAYER := 1 << 19   ## Sichtebene der Spiegelfläche – die Spiegelkamera sieht sie nicht
-const PX := 320          ## Breite des Spiegelbilds in Pixeln (PS1-grob)
+const PX := 320          ## Breite des Spiegelbilds in Pixeln
 const TINT := Color(0.86, 0.9, 0.88)
 const DULL := Color(0.62, 0.7, 0.74)
 const FLOOR_SPAN := 2.5  ## höchstens so weit über oder unter der Kamera (sonst anderes Stockwerk)

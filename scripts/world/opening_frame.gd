@@ -19,7 +19,7 @@ const JAMB_IN := 0.01
 ## Schattenfuge: die Bekleidung sitzt so weit hinter der Innenkante der Zarge
 const REVEAL := 0.004
 ## Überlappung: so weit stecken Teile im Nachbarteil (Zarge in der Bekleidung, Bekleidung in der Leiste …).
-## Beim Vertex-Snapping rastet jedes Teil für sich ein – Teile, die nur aneinanderstoßen, öffnen Fugen.
+## Teile, die nur aneinanderstoßen, öffnen Fugen.
 const TUCK := 0.012
 ## Seitlicher Überstand über die Außenkante der Bekleidung
 const FILLET_OVERHANG := 0.012
@@ -29,9 +29,9 @@ const STOOL_OVERHANG := 0.03
 const SASH_W := 0.045
 const SASH_D := 0.05
 ## Rahmen werden um diesen Anteil der Kameraentfernung nach vorn gezogen (Mat.layer), damit die Wand
-## beim Vertex-Snapping nicht durch die Bekleidung sticht
+## nicht durch die Bekleidung sticht
 const PULL := 0.005
-## Längste Teilstrecke eines Teils – lange Flächen schwimmen beim Vertex-Snapping (siehe Geo.MAX_FACE)
+## Längste Teilstrecke eines Teils (siehe Geo.MAX_FACE)
 const MAX_SEGMENT := 1.0
 
 static var _parts := {}      # Name → Mesh-Arrays des Teils

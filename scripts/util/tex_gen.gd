@@ -1,5 +1,5 @@
 class_name TexGen
-## Erzeugt kleine prozedurale Texturen im PS1-Stil.
+## Erzeugt kleine prozedurale Texturen.
 ## Platzhalter, bis echte Texturen aus Blender kommen.
 
 static var _cache := {}

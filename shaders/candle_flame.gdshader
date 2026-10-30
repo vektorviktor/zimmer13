@@ -1,4 +1,4 @@
-// Kerzenflamme (CandleModel, Spielkonzept 7.3), ausgelegt auf das Bild ohne PS1-Look (Vorbild: Foto einer
+// Kerzenflamme (CandleModel, Spielkonzept 7.3, Vorbild: Foto einer
 // Kerzenflamme). Leuchtet additiv und in HDR – Filmic macht den Kern weiß. Farbe nach der Höhe h im Netz (0 = Fuß,
 // 1 = Spitze) und nach dem Blickwinkel auf die Fläche (facing: 1 = Mitte der Flamme, 0 = Rand):
 // – Kern: fast weiß, vom Fuß bis gut über die Mitte, nach außen gelb
@@ -10,7 +10,6 @@
 // damit dort kein harter Schnitt entsteht.
 shader_type spatial;
 render_mode blend_add, unshaded, depth_draw_never, cull_back, shadows_disabled, fog_disabled, skip_vertex_transform;
-#include "res://shaders/psx_snap.gdshaderinc"
 
 // Höhe der Flamme im Netz (m, Ursprung am Fuß)
 uniform float height = 0.044;
@@ -47,7 +46,7 @@ void vertex() {
 		VERTEX = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
 		NORMAL = normalize((MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	}
-	POSITION = psx_snap_clip(PROJECTION_MATRIX * vec4(VERTEX, 1.0));
+	POSITION = PROJECTION_MATRIX * vec4(VERTEX, 1.0);
 }
 
 void fragment() {

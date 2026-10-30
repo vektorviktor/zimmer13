@@ -154,7 +154,6 @@ extends Node3D
 ##                               gesehen: das Notizbuch bei diesem Lesezeichen (3.10)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
 ##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
-##   --no-psx · --psx            ohne bzw. mit PS1-Look (wie der Schalter in den Einstellungen, wird nicht gespeichert)
 ##   --fps                       Bilder pro Sekunde einblenden (wie F10)
 ##   --nohud                     HUD ausblenden (Geld, Hinweise, Fadenkreuz) – für Screenshots
 ##   --debug                     Debug-Werte einblenden
@@ -477,7 +476,7 @@ func _ready() -> void:
 	Game.shower_scare = shower_scare
 	_setup_omens(builder)
 
-	var grass := Grass.new()   # Grasbüschel, nur ohne PS1-Look – nach dem NavMesh
+	var grass := Grass.new()   # Grasbüschel – nach dem NavMesh
 	grass.name = "Grass"
 	add_child(grass)
 	grass.setup(builder)
@@ -685,8 +684,6 @@ func _apply_settings() -> void:
 	_env.ssr_enabled = Settings.reflections
 	if _post:
 		_post.set_shader_parameter("gamma", Settings.gamma)
-		_post.set_shader_parameter("dither", 1.0 if Settings.dither_on() else 0.0)
-		_post.set_shader_parameter("color_levels", 28.0 if Settings.psx_look else 255.0)
 
 
 func _process(delta: float) -> void:
@@ -866,13 +863,8 @@ func _on_player_died() -> void:
 
 
 func _parse_debug_args() -> void:
-	var args := OS.get_cmdline_user_args()
-	for arg in args:   # vor allem anderen (Grafik)
-		if arg in ["--no-psx", "--psx"]:
-			run_debug(arg)
-	for arg in args:
-		if not arg in ["--no-psx", "--psx"]:
-			run_debug(arg)
+	for arg in OS.get_cmdline_user_args():
+		run_debug(arg)
 
 
 ## Ist arg der Debug-Befehl name, allein oder mit Wert („--name“ bzw. „--name=…“)?
@@ -914,9 +906,6 @@ func run_debug(arg: String) -> bool:
 	elif arg == "--plan":
 		Game.director.first_attack_done = true
 		Game.director._make_plan()
-	elif arg == "--no-psx" or arg == "--psx":
-		Settings.psx_look = arg == "--psx"
-		Settings.apply()
 	elif _is_arg(arg, "--static-eg"):
 		_export_static(_arg_value(arg, "--static-eg", StaticExport.PATH), arg in OS.get_cmdline_user_args())
 	elif arg == "--meshes":

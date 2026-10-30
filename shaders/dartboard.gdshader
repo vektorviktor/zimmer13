@@ -3,7 +3,6 @@
 // sind höchstens so schmal wie ein Bildpunkt, nur blasser – sonst flimmern sie in der kleinen Auflösung.
 shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back;
-#include "res://shaders/psx_snap.gdshaderinc"
 
 uniform float size = 0.451;   // Kantenlänge des Quads in m (= Durchmesser der Scheibe)
 uniform vec3 black : source_color = vec3(0.04, 0.038, 0.035);
@@ -26,7 +25,7 @@ float hash(vec2 p) {
 }
 
 void vertex() {
-	POSITION = psx_snap_clip(PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)));
+	POSITION = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
 }
 
 void fragment() {

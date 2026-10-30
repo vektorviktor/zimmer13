@@ -65,7 +65,7 @@ const RAIL_END := 0.35
 const RAIL_BAY := 1.3
 const RAIL_SIDES := 10
 const RAIL_BEND := 5            ## Abschnitte je Viertelbogen am Rohrende
-## Spiegel: Unterkante, lichte Höhe, Rand zu den Seitenwänden, Messingrahmen; Bildbreite in Pixeln (PS1-grob)
+## Spiegel: Unterkante, lichte Höhe, Rand zu den Seitenwänden, Messingrahmen; Bildbreite in Pixeln
 const MIRROR_Y := 1.0
 const MIRROR_H := 1.3
 const MIRROR_MARGIN := 0.25

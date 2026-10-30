@@ -1,7 +1,6 @@
 class_name Grass
 extends Node3D
-## Grasbüschel auf den Rasenflächen des Gartens und der Innenhöfe – nur ohne PS1-Look (Settings.psx_look, schaltet
-## im laufenden Spiel um wie der Regen), entschieden 2026-10-22. Je Büschel drei gekreuzte Halmkarten
+## Grasbüschel auf den Rasenflächen des Gartens und der Innenhöfe, entschieden 2026-10-22. Je Büschel drei gekreuzte Halmkarten
 ## (shaders/grass.gdshader), eher verwildert und bis 30 cm hoch – so niedrig, dass nichts darin verschwindet.
 ## Verteilt in Kacheln (je ein MultiMesh), die nur bis VISIBLE m um die Kamera gezeichnet werden. Frei bleiben Wege,
 ## Terrassen, Kürbisbeete, Kübel, Baumwurzeln und die Gegenstände, Pflanzen und Laternen des Plans; Füße (Spieler,
@@ -85,14 +84,12 @@ func setup(builder: LevelBuilder) -> void:
 		mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 		add_child(mi)
 		count += list.size()
-	visible = not Settings.psx_look
 	if Game.tracing:
 		print("[Gras] %d Büschel in %d Kacheln" % [count, chunks.size()])
 
 
 func _process(delta: float) -> void:
-	visible = not Settings.psx_look
-	if not visible or Game.player == null:
+	if Game.player == null:
 		return
 	var wind := Game.weather.wind if Game.weather else 0.25
 	_time += delta * lerpf(WIND_PACE.x, WIND_PACE.y, wind)

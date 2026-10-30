@@ -11,10 +11,9 @@ extends SceneTree
 ##       und löscht alle übrigen Bilder samt .import
 ##   … basecolor normalogl --ao[=stärke]
 ##       backt vorher die Ambient-Occlusion-Karte ins Farbbild (Farbe × mix(1, AO, stärke), Standard 1) – für Sets,
-##       deren Muster (Fugen, Relief) fast nur in AO/Normal/Height steckt: psx_photo hat keinen AO-Eingang, und im
-##       PS1-Look fehlt auch die Normal Map
+##       deren Muster (Fugen, Relief) fast nur in AO/Normal/Height steckt: psx_photo hat keinen AO-Eingang
 
-## = Mat.PHOTO_SIZE_SMOOTH (die große Stufe; die kleine rechnet Mat.photo beim Laden daraus)
+## = Mat.PHOTO_SIZE
 const SIZE := 1024
 const JPG_QUALITY := 0.92
 const IMAGE_EXT := ["jpg", "jpeg", "png", "webp", "tga", "exr"]

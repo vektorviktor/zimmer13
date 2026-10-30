@@ -1,4 +1,4 @@
-// Regen ohne PS1-Look (Spielkonzept 7.8): feine Striche statt Klötzchen. Ein Quad je Tropfen (shaders/rain.gdshader
+// Regen (Spielkonzept 7.8): feine Striche. Ein Quad je Tropfen (shaders/rain.gdshader
 // bewegt sie), hier längs der Fallrichtung gestreckt und quer zum Blick gedreht. Schmaler als min_pixels Bildpunkte
 // wird ein Strich nie – wäre er dünner (weiter weg), wird er stattdessen blasser (gedämpft: Wurzel, sonst verschwindet
 // ferner Regen ganz); so flimmern feine Linien nicht.

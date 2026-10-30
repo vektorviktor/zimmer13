@@ -118,7 +118,7 @@ assert bones["LeftToeBase"].head_local.y > bones["LeftFoot"].head_local.y, "Blic
 
 
 def color_only(obj, size):
-	"""Normalen-, Rauheits- und Metallkarte raus (braucht der PS1-Look nicht), Farbtextur auf size."""
+	"""Normalen-, Rauheits- und Metallkarte raus (nutzt das Spiel nicht), Farbtextur auf size."""
 	mat = obj.data.materials[0]
 	nodes = mat.node_tree.nodes
 	bsdf = [n for n in nodes if n.type == 'BSDF_PRINCIPLED'][0]

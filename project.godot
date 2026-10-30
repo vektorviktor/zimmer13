@@ -50,14 +50,6 @@ textures/light_projectors/filter=1
 
 [shader_globals]
 
-psx_snap={
-"type": "float",
-"value": 1.0
-}
-psx_smooth={
-"type": "float",
-"value": 0.0
-}
 reflections={
 "type": "float",
 "value": 1.0
