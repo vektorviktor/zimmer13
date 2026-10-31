@@ -2303,7 +2303,7 @@ func _save_test() -> void:
 	(get_tree().get_nodes_in_group("windows").filter(func(w: Node) -> bool: return w.has_curtains())[0] as HotelWindow).set_closed(true)
 	(get_tree().get_nodes_in_group("light_switches")[0] as LightSwitch).set_on(false)
 	# eine Zimmerlampe (Raum-ID = Zimmernummer), sonst irgendeine – unabhängig davon, wie der Plan eingerichtet ist
-	var fixtures := get_tree().get_nodes_in_group("lamp_fixtures").filter(func(l: Node) -> bool: return (l as Lamp).has_bulb)
+	var fixtures := get_tree().get_nodes_in_group("lamp_fixtures").filter(func(l: Node) -> bool: return (l as Lamp).has_bulb and (l as Lamp).has_socket())
 	var in_rooms := fixtures.filter(func(l: Node) -> bool: return String(l.room_id).is_valid_int())
 	var lamp: Lamp = (in_rooms if not in_rooms.is_empty() else fixtures)[0]
 	if Game.player.held == null:

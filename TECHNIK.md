@@ -590,6 +590,9 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     Kupferleuchte: Opalglas mit dem Material der Birne (leuchtet, flackert, erlischt mit ihr), die Birne steckt unsichtbar
     dahinter; Licht `FLUSH_LIGHT_BELOW` unter dem Glas – näher strahlte es das Kupfer grell an. Lampen und Schalter
     gehören zur Raum-ID der Fläche davor (`_light_room_at`); Schalter in unbewohnten Zimmern starten aus.
+    Über jedem Badspiegel (`_washbasin` mit Raum-ID, nicht in den Toiletten) eine Spiegelleuchte `Lamp.Style.MIRROR`:
+    Edelstahlbalken (`Mat.metal()` wie die Armatur) mit Lichtband aus dem Material der Birne, keine Birne zum
+    Herausdrehen (`has_socket` falsch), brennt nicht durch; Werte `MIRROR_LAMP_*`.
     **Podestregel im Treppenhaus:** Eine Wandleuchte gegenüber der Treppenhaustür hängt eine halbe Etage höher.
   - Nicht im Plan, im Code: Ersatzleuchten im Treppenhaus, Inhalt des Heizkellers, Waschmaschinen, Flaschen, Hocker,
     Tanzfläche, Beete, Treffpunkte der Gäste (`_common_rooms`, `_lobby_hall`, `_garden_beds`).
@@ -1944,6 +1947,7 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   Debug `--tiere[=eule|kraehen|hunde]`.
 - **`BoilerCat`** (Modell `cat.glb` fast schwarz, leuchtende Augen) führt zu Kessel bzw. UV-Schrift, einmal je Nacht.
 - **`MirrorOmens`:** verhängte Spiegel aus den Toten abgeleitet (`Mirror.active`), Spiegel in 13 selbst verhängbar;
+  Zimmer eines Spiegels über `_home_of` (1 m unter der Mitte abgefragt – `LevelBuilder._level_of` kennt nur 1,5 m);
   Gestalt im Spiegel auf `PlayerBody.LAYER` (nur im Spiegel sichtbar), `FIGURE_TIME`.
 - **`PowerCut`:** `FlickerLight.brownout` → `FlickerLight.power_off`, Sicherungskasten `FuseBox` im Untergeschoss,
   sonst nach `RESTORE` Stunden. Höchstens einmal je Spieltag, nur mit Gewitter.

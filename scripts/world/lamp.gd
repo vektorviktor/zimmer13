@@ -11,8 +11,10 @@ extends StaticBody3D
 ## FLUSH: runde Deckenleuchte aus Kupfer bündig an der Decke – breiter Rand mit zwei Rillen, abgesetzter Korpus mit
 ## einer Rille, unten Opalglas, das statt der Birne leuchtet (die Birne steckt dahinter und lässt sich wie sonst
 ## herausdrehen). CEILING bleibt die Pendelleuchte über den Lufträumen.
+## MIRROR: Spiegelleuchte über dem Badspiegel – flacher Balken aus gebürstetem Edelstahl wie die Armatur, unten ein
+## warmweißes Lichtband aus Opalglas; LED ohne Glühbirne: nichts herauszudrehen, brennt nicht durch.
 
-enum Style { CEILING, WALL, HALOGEN, POOL, FLUSH }
+enum Style { CEILING, WALL, HALOGEN, POOL, FLUSH, MIRROR }
 
 ## Kupferleuchte (FLUSH): Profil von der Decke abwärts als [Radius, Höhe, Rille?] – Rillen sind schmale, etwas
 ## schmalere Ringe in dunklem Kupfer; darunter das Glas (Radius, Dicke, so weit steht es unter dem untersten Ring vor –
@@ -52,11 +54,17 @@ const WALL_SCALE := 1.5
 const WALL_BALL := Vector3(0, 0, 0.053)
 ## Das Licht sitzt wie bei der Messingleuchte 30 cm vor der Wand – die Helligkeit der Räume bleibt gleich
 const WALL_LIGHT := Vector3(0, 0.04, 0.3)
+## Spiegelleuchte: Balken (Länge entlang lokal X wie length, Höhe, Tiefe ab der Wand), darunter das Lichtband (so weit
+## vom Rand eingerückt, Stärke). Das Licht sitzt MIRROR_LIGHT vor dem Balken – an der Wand gäbe es einen grellen Fleck
+const MIRROR_BAR := Vector2(0.04, 0.065)
+const MIRROR_STRIP := Vector2(0.008, 0.004)
+const MIRROR_LIGHT := Vector3(0, -0.12, 0.28)
+const MIRROR_GLOW := Color(1.0, 0.88, 0.7)
 ## Unterwasserlampe: Sekunden für einmal durch den Regenbogen (je Lampe zufällig dazwischen)
 const POOL_CYCLE := Vector2(18.0, 26.0)
 
 var style := Style.CEILING
-var length := 0.8   ## Halogenröhre: Länge entlang lokal X
+var length := 0.8   ## Halogenröhre und Spiegelleuchte: Länge entlang lokal X
 var room_id := ""
 var energy := 1.0
 var light_range := 6.0
@@ -94,6 +102,9 @@ func _ready() -> void:
 		return
 	if style == Style.POOL:
 		_build_pool()
+		return
+	if style == Style.MIRROR:
+		_build_mirror()
 		return
 	set_meta("interactable", self)
 	_bulb_material = Mat.psx(Color(1, 0.95, 0.8), "", 1.0, Color(1.0, 0.85, 0.6), 2.5, false)
@@ -210,6 +221,22 @@ func _build_halogen() -> void:
 	Geo.add_box_shape(self, Vector3(length + 0.06, 0.1, 0.15), Vector3(0, -0.02, 0))
 	_add_light(Vector3(0, -0.15, 0), Color(0.85, 0.93, 1.0))
 	light.stutter = true
+	apply_state()
+
+
+## Spiegelleuchte: Edelstahlbalken an der Wand (lokale +Z zeigt in den Raum, Ursprung an der Wand auf halber Höhe des
+## Balkens), unten das Lichtband (statt der Birne), warmweißes Licht davor.
+func _build_mirror() -> void:
+	set_process(false)   # keine Birne, die durchbrennt
+	_bulb_material = Mat.psx(Color(1, 0.97, 0.9), "", 1.0, MIRROR_GLOW, 2.5, false)
+	var depth := MIRROR_BAR.y
+	Geo.mesh(self, Geo.box(Vector3(length, MIRROR_BAR.x, depth)), Mat.metal(), Vector3(0, 0, depth / 2.0))
+	var inset := MIRROR_STRIP.x
+	_bulb = Geo.mesh(self, Geo.box(Vector3(length - inset * 2.0, MIRROR_STRIP.y, depth - inset * 2.0)), _bulb_material,
+		Vector3(0, -MIRROR_BAR.x / 2.0 - MIRROR_STRIP.y / 2.0 + 0.001, depth / 2.0))
+	_no_shadows()
+	Geo.add_box_shape(self, Vector3(length, MIRROR_BAR.x, depth), Vector3(0, 0, depth / 2.0))
+	_add_light(MIRROR_LIGHT, Color(1.0, 0.85, 0.65))
 	apply_state()
 
 

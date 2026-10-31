@@ -50,8 +50,7 @@ func _ready() -> void:
 
 func _add_switches() -> void:
 	for m in _mirrors():
-		if _builder.home_room_at(m.global_position - m.global_transform.basis.z * 0.0 + m.global_transform.basis.z * 0.4) \
-				!= LevelBuilder.PLAYER_ROOM:
+		if _home_of(m) != LevelBuilder.PLAYER_ROOM:
 			continue
 		var body := StaticBody3D.new()
 		body.collision_layer = 4
@@ -65,6 +64,12 @@ func _add_switches() -> void:
 	if Game.tracing:
 		print("[Spiegel] %d von %d Spiegeln in Zimmer 13" % [_switch.size(), _mirrors().size()])
 	_apply_13()
+
+
+## Zimmer, zu dem der Spiegel gehört: 40 cm davor und 1 m tiefer – die Stockwerksabfrage (LevelBuilder._level_of)
+## kennt nur bis 1,5 m über dem Boden, die Spiegelmitte hängt höher.
+func _home_of(m: Mirror) -> String:
+	return _builder.home_room_at(m.global_position + m.global_transform.basis.z * 0.4 + Vector3.DOWN)
 
 
 func save_state() -> Dictionary:
@@ -132,7 +137,7 @@ func _cover_mourning() -> void:
 		if now - float(_died_at[no]) < COVER_DELAY:
 			continue
 		for m in _mirrors():
-			if not _covers.has(m) and _builder.home_room_at(m.global_position + m.global_transform.basis.z * 0.4) == no:
+			if not _covers.has(m) and _home_of(m) == no:
 				_set_cover(m, true)
 
 

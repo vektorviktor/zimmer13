@@ -374,6 +374,12 @@ const WASH_PLACE := 0.8
 const MIRROR_FRAME_BOTTOM := 1.07
 const MIRROR_GLASS := Vector2(0.54, 0.94)
 const MIRROR_GLASS_MID := 0.5
+## Spiegelleuchte im Bad (Lamp.Style.MIRROR): so breit wie der Spiegelrahmen, Mitte des Balkens über dem Boden (der
+## Rahmen endet bei 2,07 m), Helligkeit und Reichweite
+const MIRROR_LAMP_WIDTH := 0.6
+const MIRROR_LAMP_Y := 2.12
+const MIRROR_LAMP_ENERGY := 0.35
+const MIRROR_LAMP_RANGE := 3.5
 ## Duschecke in Plangröße: Sockel 10 cm (2 Fliesenreihen), Wanne darauf bis SHOWER_TRAY, Glas bis SHOWER_GLASS_H,
 ## Glaswand (lokal +X) und Tür (+Z) SHOWER_GLASS_INSET innerhalb der Kante. Kollision über der Wanne bis
 ## SHOWER_BLOCK – zu hoch zum Hinaufsteigen, damit das NavMesh niemanden durchs Glas hineinschickt.
@@ -2221,7 +2227,8 @@ func _furniture() -> void:
 				# Waschplatz an der Rückwand; im Bad ein Becken, in den Toiletten über die ganze Breite des Plans
 				var back := c - front * _depth_of(rect, front) / 2.0
 				var width := WASH_TABLE.x if kind == "sink" else _depth_of(rect, Vector2(front.y, front.x))
-				node = _washbasin(back, front, width, _bath_tiles if kind == "sink" else _wall_tiles, kind == "sink")
+				node = _washbasin(back, front, width, _bath_tiles if kind == "sink" else _wall_tiles,
+					_light_room_at(c) if kind == "sink" else "")
 				rect = _local_rect(back, front, Rect2(-width / 2.0, 0, width, WASH_TABLE.z))   # Tischfläche
 				top = WASH_TABLE_TOP
 			"shower" when ResourceLoader.exists(SHOWER_MODEL):
@@ -2488,9 +2495,10 @@ func _fixture_materials(model: Node3D, path: String, tiles: Material) -> void:
 
 
 ## Waschplatz an der Wand (back = Wandmitte, Blick nach front): gefliester Waschtisch so breit wie width, darauf je
-## WASH_PLACE ein Aufsatzbecken mit Wandarmatur, darüber je ein Spiegel mit Spiegelbild (Mirror). bath: Waschbecken
-## im Bad – dessen Spiegel gehört zu `sink_mirrors` (Charaktererstellung, Spielkonzept 3.9).
-func _washbasin(back: Vector2, front: Vector2, width: float, tiles: Material, bath: bool) -> StaticBody3D:
+## WASH_PLACE ein Aufsatzbecken mit Wandarmatur, darüber je ein Spiegel mit Spiegelbild (Mirror). bath_room: Raum-ID
+## des Bads (leer in den Toiletten) – dessen Spiegel gehört zu `sink_mirrors` (Charaktererstellung, Spielkonzept 3.9)
+## und hat darüber eine Spiegelleuchte, die mit dem Zimmer schaltet.
+func _washbasin(back: Vector2, front: Vector2, width: float, tiles: Material, bath_room: String) -> StaticBody3D:
 	var body := _fixture_body(WASHBASIN_MODEL, back, front, tiles)
 	var first := body.get_node("model") as Node3D
 	var table := first.find_child("table") as Node3D
@@ -2510,8 +2518,12 @@ func _washbasin(back: Vector2, front: Vector2, width: float, tiles: Material, ba
 		model.find_child("mirror_frame").position = Vector3(x, MIRROR_FRAME_BOTTOM, 0)
 		var mirror := Mirror.make(body, MIRROR_GLASS, Vector3(x, MIRROR_FRAME_BOTTOM + MIRROR_GLASS_MID, MIRROR_GAP),
 			Vector3.BACK, MIRROR_RANGE)
-		if bath:
+		if not bath_room.is_empty():
 			mirror.add_to_group("sink_mirrors")
+			var lamp := Lamp.new().setup(Lamp.Style.MIRROR, bath_room, MIRROR_LAMP_ENERGY, MIRROR_LAMP_RANGE, false)
+			lamp.length = MIRROR_LAMP_WIDTH
+			lamp.position = Vector3(x, MIRROR_LAMP_Y, 0)
+			body.add_child(lamp)
 	return body
 
 
