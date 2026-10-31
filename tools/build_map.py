@@ -120,6 +120,8 @@ FURNITURE = {
 	# Bar neu (28.10., Spielkonzept 6.10): ohne Vorderseite – sie stehen mit dem Rücken an der nächsten Wand
 	"Möbel: Videoautomat": "arcade", "Möbel: Spieleschrank": "game_cabinet",
 	"Möbel: Nachttisch": "nightstand",   # 30.10.: neben dem Bett, Vorderseite als hellere Zeile
+	# Gartenmöbel (31.10., ZIM-51): Tisch ohne Vorderseite, Stuhl mit hellerer Zeile; beide leicht gedreht
+	"Möbel: Gartentisch": "garden_table", "Möbel: Gartenstuhl": "garden_chair",
 }
 FRONT_NAME = "Möbel: Vorderseite"   ## Strich am Rand, gilt für jedes Möbel
 ## Hellere Zeile am Rand, gilt nur für ihr Möbel: „Möbel: Dusche Vorderseite“ → facing. Beim Doppelbett ist sie das

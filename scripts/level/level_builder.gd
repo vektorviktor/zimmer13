@@ -46,7 +46,13 @@ const GRAVEL_TEX := "res://assets/textures/StoneWall_01/StoneWall_01_basecolor.j
 const GRAVEL_NORMAL := "res://assets/textures/StoneWall_01/StoneWall_01_normalOGL.jpg"
 const GRAVEL_METERS := 0.5
 const GRAVEL_NORMAL_STRENGTH := 2.0
-## So glatt werden Rasen, Stein (Terrasse, Balkon) und Kies, wenn sie ganz nass sind (Weather, 1 = Wasserfilm)
+## Holzdeck auf Terrassen und Balkonen (Deck, ZIM-127): so tief liegt die dunkle Platte unter der Oberkante der Bretter,
+## Fuge zur Hauswand und zur Hecke bzw. zum Geländer
+const DECK_DROP := 0.04
+const DECK_WALL_GAP := 0.02
+const DECK_EDGE_GAP := 0.04
+## So glatt werden Rasen, Stein (Kantenstreifen an Terrasse und Balkon, Kübel) und Kies, wenn sie ganz nass sind
+## (Weather, 1 = Wasserfilm)
 const WET_GLOSS := Vector3(0.45, 1.0, 0.8)
 ## Außenwände des Hotels: Bruchsteinplatten mit Fugen (StoneFloor_02, Farbbild mit eingebackener AO + verstärkte
 ## Normal Map), Platten 20–40 cm
@@ -368,6 +374,11 @@ const BOX_HEIGHTS := {
 const CHAIR_BACK := 0.45
 ## Sitzmöbel (Seat): Aufstehen so weit vor der Sitzkante (Spielerradius und etwas Luft)
 const SEAT_CLEAR := 0.33
+## Gartenmöbel (ZIM-51): so weit höchstens dreht sich ein Gartentisch (Grad); ein Gartenstuhl dreht sich zwischen x und y
+## Grad nach links oder rechts und rückt bis GARDEN_CHAIR_SHIFT Meter von seinem Platz im Plan – fest je Möbel (_jitter)
+const GARDEN_TABLE_TURN := 1.5
+const GARDEN_CHAIR_TURN := Vector2(3.0, 8.0)
+const GARDEN_CHAIR_SHIFT := 0.05
 ## Spiegel über dem Waschbecken-Kasten (Mirror, ohne Modell): Breite höchstens, Unter- und Oberkante über dem Boden,
 ## so nah rechnet er
 const MIRROR_WIDTH := 0.6
@@ -667,6 +678,7 @@ var _pillar_stone: Material
 var _pillar_porous: ShaderMaterial
 var _grass: Material
 var _stone: Material
+var _deck_under: Material   ## dunkel unter den Brettern des Holzdecks (_deck_base)
 var _gravel: Material
 var _ceramic: Material
 var _doormat: Material
@@ -1001,6 +1013,8 @@ func _materials() -> void:
 	(_gravel as ShaderMaterial).set_shader_parameter("normal_strength", GRAVEL_NORMAL_STRENGTH)
 	Mat.wettable(_grass, WET_GLOSS.x)
 	Mat.wettable(_stone, WET_GLOSS.y)
+	_deck_under = Mat.psx(Color(0.07, 0.06, 0.05), "concrete", 1.0, Color.BLACK, 0.0, false)
+	_deck_under.set_meta("floor", "wood")
 	Mat.wettable(_gravel, WET_GLOSS.z)
 	_ceramic = Mat.psx(Color(0.88, 0.88, 0.86))
 	_doormat = Mat.psx(Color(0.4, 0.3, 0.18))
@@ -1972,6 +1986,8 @@ func _floors_and_ceilings() -> void:
 		# nicht im NavMesh, sonst planten Gäste und Monster Wege durch abgesperrte Türen
 		var layer := LAYER_CEILING if (kind == "room" and not _room_open(String(r["id"]))) or kind == "cellar_room" else 1
 		var ceiling: Material = _cellar_ceiling if _level < 0 else {"room": _room_ceiling, "bath": _bath_paint}.get(kind, _ceiling)
+		if kind in ["terrace", "balcony"]:
+			_deck(r)
 		for rc in r["rects"]:
 			if kind != "pool_water":   # das Becken baut _pool, die Decke darüber ist die Holzdecke der Halle
 				_floor(kind, rc, layer)
@@ -2016,9 +2032,63 @@ func _floor_rect(rc: Array, mat: Material, layer: int = 1) -> void:
 		(float(rc[1]) + float(rc[3])) / 2.0), mat, layer))
 
 
+## Unter dem Holzdeck (Terrasse, Balkon – ZIM-127): Kollision wie ein Boden (Oberkante y = 0, dort stehen die
+## Bretter), sichtbar ist die Platte aber DECK_DROP tiefer und dunkel – das sieht man durch die Fugen. Schritte
+## klingen nach Holz (Meta „floor“ am Material).
+func _deck_base(rc: Array, layer: int) -> void:
+	var thick := 0.2 if _level <= 0 else UP_Y - H - 0.2
+	var size := Vector3(float(rc[2]) - float(rc[0]), thick, float(rc[3]) - float(rc[1]))
+	var body := Geo.collider(root, size, Vector3((float(rc[0]) + float(rc[2])) / 2.0, -thick / 2.0,
+		(float(rc[1]) + float(rc[3])) / 2.0), layer)
+	Geo.mesh(body, Geo.box(size), _deck_under, Vector3(0, -DECK_DROP, 0))
+	structure_parts.append(body)
+
+
+## Holzdeck einer Terrasse oder eines Balkons (Deck, ZIM-127). Die Bretter laufen von der Hauswand weg: quer zu der
+## Seite, hinter der auf der längsten Strecke das Haus liegt (ohne Hauswand entlang der langen Seite). Zur Wand
+## bleibt DECK_WALL_GAP, zur Hecke bzw. zum Geländer (Kantenstreifen im Plan) DECK_EDGE_GAP, zu Rasen und Kies nichts.
+func _deck(region: Dictionary) -> void:
+	var rects: Array[Rect2] = []
+	for rc in region["rects"]:
+		rects.append(_rect(rc))
+	var edges: Array[Rect2] = []
+	for rs in _map["terrace_edges"] + _map.get("balcony_edges", []):
+		for rc in rs:
+			edges.append(_rect(rc))
+	var in_region := func(p: Vector2) -> bool: return rects.any(func(r: Rect2) -> bool: return r.has_point(p))
+	# Hauswand je Seite (0 = x, 1 = z): wie lang die Kante ist, hinter deren Wand drinnen ist
+	var house := [0.0, 0.0]
+	for r in rects:
+		for side in 4:
+			var out := [Vector2(-1, 0), Vector2(1, 0), Vector2(0, -1), Vector2(0, 1)][side] as Vector2
+			var along := Vector2(absf(out.y), absf(out.x))
+			var start := r.position if side % 2 == 0 else r.end - along * (r.size.x if out.y != 0.0 else r.size.y)
+			var length := r.size.x if out.y != 0.0 else r.size.y
+			var t := 0.1
+			while t < length:
+				var p := start + along * t
+				if not in_region.call(p + out * 0.05) and _kind_at(p + out * 0.4) != "outside":
+					house[0 if out.x != 0.0 else 1] += 0.2
+				t += 0.2
+	var bounds := rects[0]
+	for r in rects:
+		bounds = bounds.merge(r)
+	# Hauswand quer zu x (Seite links/rechts) → Bretter laufen entlang x
+	var along_x: bool = house[0] > house[1] if house[0] != house[1] else bounds.size.x >= bounds.size.y
+	var gap_at := func(p: Vector2, out: Vector2) -> float:
+		var q := p + out * 0.1
+		if edges.any(func(e: Rect2) -> bool: return e.has_point(q)):
+			return DECK_EDGE_GAP
+		return DECK_WALL_GAP if _place_at(q).is_empty() else 0.0
+	Deck.build(root, rects, along_x, gap_at, hash([_level, String(region.get("id", ""))]))
+
+
 ## Boden eines Plan-Rechtecks. Flure tragen Teppich, nur in der Lobby Fliesen: Ragt ein Flurrechteck in die
 ## Lobby (der Südflur läuft als ein Stück quer hindurch), wird es an deren Rand geteilt.
 func _floor(kind: String, rc: Array, layer: int = 1) -> void:
+	if kind in ["terrace", "balcony"]:
+		_deck_base(rc, layer)
+		return
 	if kind != "corridor":
 		_floor_rect(rc, _floor_material(kind), layer)
 		return
@@ -2345,6 +2415,21 @@ func _furniture() -> void:
 				node = _back_bar(back, front)
 				rect = _local_rect(back, front, Rect2(-BACK_BAR_BODY.x / 2.0, 0, BACK_BAR_BODY.x, BACK_BAR_DEPTH))
 				top = BAR_TOP
+			"garden_table":
+				# leicht gedreht, bei jedem Start gleich (_jitter); quadratisch, die Vorderseite ist egal
+				yaw = deg_to_rad(_jitter(rect).randf_range(-GARDEN_TABLE_TURN, GARDEN_TABLE_TURN))
+				node = GardenFurniture.table()
+				top = GardenFurniture.TABLE_H
+			"garden_chair":
+				# Blick zur Vorderseite im Plan, dazu fest je Stuhl ein wenig gedreht und verrückt (_jitter)
+				var rng := _jitter(rect)
+				yaw += deg_to_rad(rng.randf_range(GARDEN_CHAIR_TURN.x, GARDEN_CHAIR_TURN.y)) * (1.0 if rng.randf() < 0.5 else -1.0)
+				var shift := Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(0.0, GARDEN_CHAIR_SHIFT)
+				c += shift
+				rect.position += shift
+				pos = Vector3(c.x, 0, c.y)
+				node = GardenFurniture.chair()
+				top = GardenFurniture.SEAT_FRONT
 			"trash_can":
 				# fest 50 × 50 cm (TrashCan), mittig auf dem Platz im Plan, aber nicht in der Wand
 				c = _clear_of_walls(c, TrashCan.SIZE / 2.0 + TrashCan.WALL_GAP)
@@ -2950,7 +3035,7 @@ func _note_gardens(first: int) -> void:
 				doors.append(_v2(o["pos"]))
 	var best := FEED_TABLE_RANGE
 	for f: Dictionary in _furnishings.slice(first):
-		if not f["kind"] in ["table", "room_table", "coffee_table", "dining_table"]:
+		if not f["kind"] in ["table", "room_table", "coffee_table", "dining_table", "garden_table"]:
 			continue
 		var r: Rect2 = f["rect"]
 		if _kind_at(r.get_center()) != "outside":
@@ -3242,6 +3327,14 @@ func _facing(side: String, p: Vector2) -> Vector2:
 	if absf(to.x) > absf(to.y):
 		return Vector2(signf(to.x), 0)
 	return Vector2(0, -1 if to.y < 0 else 1)
+
+
+## Fester Zufall je Möbel (leichte Drehung, Versatz – ZIM-51): Startwert aus Stockwerk und Lage im Plan, also bei jedem
+## Start und nach dem Laden gleich, ohne Spielstand. Wird das Möbel im Plan verschoben, fällt es neu.
+func _jitter(rect: Rect2) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash([_level, roundi(rect.position.x * 100.0), roundi(rect.position.y * 100.0)])
+	return rng
 
 
 ## Blickrichtung für Telefon, Zettel und Tagebuch: in Zimmern vom Flur weg, sonst zur Mitte der Fläche.

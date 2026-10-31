@@ -2601,8 +2601,9 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
 - **Glänzendes stehlen:** Nicht nur Münzen – alles Glänzende, das draußen liegt: Schlüssel, Messer, Kompass, ein Ring.
   Eine Krähe holt es, wenn niemand hinsieht, und trägt es **ins Nest im großen Baum**. Erschreckt man sie im Flug,
   fällt es herunter (wie bisher). Wer Wichtiges draußen ablegt, riskiert es.
-- **Futtertisch im Gärtchen von Zimmer 13** (Innenhofblock Ost; den Tisch setzt der Nutzer als „Möbel: Tisch“ in den
-  Plan): Man legt **Brotkrumen** (Vorrat in der Küche) oder **Kürbiskerne** (fallen beim Schnitzen ab, 5.4) hin.
+- **Futtertisch im Gärtchen von Zimmer 13** (Innenhofblock Ost; den Tisch setzt der Nutzer in den Plan – seit 31.10.
+  ein **Gartentisch** aus Aluminium und Holzlatten, 80 × 80 cm, mit zwei Gartenstühlen, leicht gedreht wie hingestellt;
+  Terrassen und Balkone tragen seitdem ein Holzdeck aus Lärchenbrettern, ZIM-51/ZIM-127): Man legt **Brotkrumen** (Vorrat in der Küche) oder **Kürbiskerne** (fallen beim Schnitzen ab, 5.4) hin.
   Nach ein paar Spielstunden ist das Futter weg – nur, wenn gerade niemand hinsieht; der Zeitsprung im Schlaf zählt
   mit. Jede Fütterung hebt den Ruf. *Gebaut 28.10.: drei Spielstunden; die erste Fütterung eines Tages hebt den Ruf
   deutlich, weitere am selben Tag wenig. Der Tisch steht noch nicht im Plan – bis dahin gibt es kein Füttern.*

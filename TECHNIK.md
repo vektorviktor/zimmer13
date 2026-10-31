@@ -221,6 +221,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `Wood_02` | Balkenbett, Stützbalken (`Mat.wood`, UVs von `Geo.grain_box`); grobe Bohlen des Dachgeschosses (`Mat.planks`: Bild aus Brettern mit Stößen, Fugen und Abdunklung, `PLANK_*`, `Mat._photo_from`) | Hirnholz aus TexGen `wood_end` |
 | `Fabric_Pattern_08` | Laken und Kissen (`BedModel.FABRIC_METERS`, Modellkoordinaten) | |
 | `TerrazzoDark_01` | Säulen der Lobby (`_pillar`), Platte des Couchtischs (`_coffee_table`) | Säulen mit Poren: eigene Normal Map aus `tools/pore_map.gd` (etwa eine je 2 cm², fester Startwert), feiner gekachelt über psx_photo `normal_tiling`; `cavity` macht die Porenwände dunkler und rauer (`PILLAR_PORES_*`) |
+| `garden_coat*.png`, `garden_fabric*.png` (eigene Sets) | Gartenmöbel (`GardenFurniture`) | Aus `tools/garden_furniture.gd` (fester Startwert), nahtlos. Pulverlack anthrazit, seidenmatt (Rauheit 0,58), Orangenhaut und feines Korn als Normal Map, in Weltkoordinaten, Kachel 0,25 m. Textilgewebe grau in Leinwandbindung (64 Fäden je 10 cm), jeder Faden etwas heller oder dunkler, kleine dunkle Löcher dazwischen, über die UVs in Metern, Kachel 0,1 m |
 | `trash_brass*.png`, `trash_coat*.png` (eigene Sets) | Mülleimer (`TrashCan`) | Aus `tools/trash_can.gd` (fester Startwert), nahtlos, über die UVs in Metern, Kachel 0,25 m: Messing gebürstet entlang u in den Farben der Plaketten – Riefen in mehreren Breiten, entlang lang gezogen, und einzelne tiefere; Farbe und Rauheit folgen den Riefen, keine Flecken; `METALLIC` wie die Plaketten (`BRASS_METALLIC`). Lack fast schwarz, seidenmatt (Rauheit 0,38), Orangenhaut als Normal Map – das Innere im Lack, dunkler |
 | `room_plate*.png` (eigenes Set) | Zimmerplaketten (`RoomPlate`, `Door.add_room_number`) | Ziffernsatz 1024²: Zellen für Schraube links/rechts, Füller, Ziffern 0–9 (Cinzel, Tinte aus den Dreiecken eines `TextMesh` gerastert) den Abdruck der abgefallenen Null (013 → „13“: blanker Schatten, Kleberand, zwei Stiftlöcher) und ein Band mit der Kordel (2,6 mm, gedreht wie am Lichtschalter), je Zelle 4 mm Rand gegen Mipmap-Übersprechen. Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/room_plate.gd`: Platte gebürstet wie die Lichtschalter, Ziffern erhaben (Fuß 0,3 mm, Rundung 1,1 mm) und poliert, Schmutz am Fuß. Die Vorderseite der Platte (140 × 74 mm, 3 mm, 45°-Fase) ist ein Streifen aus Zellen-Vierecken – Schraube, Füller, Ziffern, Füller, Schraube –, die Füller werden gestreckt; drumherum ein Rahmen aus vier Trapezen auf Gehrung, unverzerrt aus dem Kordelband geschnitten; Bürstung und Anlauf hängen nur von der Höhe in der Zelle ab, damit die Stöße unsichtbar bleiben. `METALLIC` `Door.PLATE_METALLIC`. Lage der Zellen rechnen Werkzeug und Spiel gleich aus (`RoomPlate.layout()`) – nach Änderungen an Maßen oder Schrift das Werkzeug neu laufen lassen |
 | `switch_plate*.png` (eigenes Set) | Lichtschalter (`LightSwitch`): Platte, Kanten und Wippe | Altmessing mit Kordelrand, Rille, Schlitzschrauben, Bürstung und Patina – Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/switch_plate.gd` (fester Startwert); über die UVs gespannt (`mesh_uv`, Platte `_plate()` mit eigener Vorderseite, Kanten und Wippe aus `PLAIN_UV`), `METALLIC`. Plastisch sind nur Platte, schwarzer Rahmen und die eckige Wippe |
@@ -594,6 +595,15 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     Oberkante und scharfkantiger Öffnung mit dunklem Schacht – Ringe mit runden Ecken durch ein Profil gezogen (`_sweep`),
     Meshes geteilt. UVs in Metern, u ringsum (Bürstrichtung), auf waagerechten Flächen je Seite auf 45°-Gehrung
     (`_mitre_uv`) wie bei einem Bilderrahmen.
+    **Gartentisch, Gartenstuhl** = `GardenFurniture` (`world/garden_furniture.gd`, ZIM-51, Fotos 31.10.): Tisch 80 × 80 ×
+    75 cm, Stuhl 50 × 60 cm mit Sitzplatz (`Seat`), Gestell aus Vierkantrohr (`Geo.rounded_box`, je Rohr beliebig
+    gedreht), Latten und Armauflagen aus Wood_02 wie Teak getönt (`Geo.grain_box`), Sitz und gerade geneigte Lehne aus
+    Gewebe, das zwischen den Rohren durchhängt (`Parts.sheet`, beidseitig). Je Möbel ein Mesh mit den Flächen Lack,
+    Längsholz, Hirnholz, Gewebe, von allen Tischen bzw. Stühlen geteilt. **Leichte Drehung:** `_jitter(rect)` zieht aus
+    Stockwerk und Lage im Plan einen festen Zufall – der Tisch dreht sich bis `GARDEN_TABLE_TURN`, der Stuhl
+    `GARDEN_CHAIR_TURN` Grad nach links oder rechts zu seiner Vorderseite und rückt bis `GARDEN_CHAIR_SHIFT`. Bei jedem
+    Start und nach dem Laden gleich, ohne Spielstand; wird das Möbel im Plan verschoben, fällt der Zufall neu. Der
+    Gartentisch nächst einer Gartentür von 13 ist der Futtertisch der Krähen (`feed_table`).
     Eine Truhe in einem Hotelzimmer ist dessen Süßigkeiten-Truhe (`_sweets_chest`); Snack- und Getränkeautomat sind
     `VendingMachine`. Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert die Höhe, auf der
     Kerzen, Telefone, Zettel und Gegenstände stehen.
@@ -617,6 +627,16 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   - Nicht im Plan, im Code: Ersatzleuchten im Treppenhaus, Inhalt des Heizkellers, Waschmaschinen, Flaschen, Hocker,
     Tanzfläche, Beete, Treffpunkte der Gäste (`_common_rooms`, `_lobby_hall`, `_garden_beds`).
 - **Kratzbaum** (`_cat_tree`): Liegeplatz in `cat_perches`.
+- **Holzdeck** auf Terrassen und Balkonen (`scripts/level/deck.gd`, `Deck.build` aus `_deck`, ZIM-127): Bretter als
+  Geometrie (Oberseite auf y = 0, gefaste Längskanten, Seiten, Hirnholz; unten offen), 14,5 cm breit, 8 mm Fuge, 2,8 cm
+  stark, Wood_02 hell getönt über die UVs (je Brett ein anderer Ausschnitt), nass glänzend. Reihen über die ganze
+  Fläche: `_row_pieces` teilt eine Reihe an den Kanten der Plan-Rechtecke in Streifen und legt je Abschnitt ein Brett
+  über die Streifen, die dort Fläche sind – über Nahtstellen von L-Formen durchgehend, am Rand schmaler aufgetrennt.
+  Läufe über `MAX_BOARD` bekommen versetzte Stöße (`_cuts`). Laufrichtung quer zu der Seite, hinter der auf der
+  längsten Strecke das Haus liegt (eine Richtung je Fläche, auch bei L-Formen). Fuge `DECK_WALL_GAP` zur Wand,
+  `DECK_EDGE_GAP` zu Hecke bzw. Geländer (Kantenstreifen im Plan), sonst keine. Darunter `_deck_base`: Kollision wie ein
+  Boden mit Oberkante 0, die sichtbare Platte `DECK_DROP` tiefer und dunkel (durch die Fugen zu sehen); Schritte über
+  die Meta „floor“ = wood. Kantenstreifen und Kübel bleiben Stein.
 - **Hecken** (`scripts/level/hedge.gd`, `Hedge.build` aus `_gardens`): Terrassenkanten im EG werden Formschnitthecken.
   `_lines` fasst Stücke einer Mittellinie zusammen, Abschlüsse (`_end`) mit Gehrung oder verdeckt. Die Ecken wandern
   nach einem Rauschen ihrer **Weltlage** – gleiche Ecken zweier Stücke wandern gleich, an Gehrungen bleibt keine Fuge.

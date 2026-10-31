@@ -169,6 +169,8 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #aa4f41 | Spieleschrank | | ohne Vorderseite – mit dem Rücken an die nächste Wand |
 | #5a2b5a | Nachttisch | #833f83 | 5 × 5 px neben dem Bett |
 | #6c7d89 | Spind | | des Hausmeisters (Spielkonzept 2.11, 7.4); noch nicht gebaut (ZIM-4) |
+| #2e7d5b | Gartentisch | | 8 × 8 px, Aluminium und Holzlatten, ohne Vorderseite; leicht gedreht – der Tisch nächst der Gartentür von 13 ist der Futtertisch der Krähen |
+| #4f7a3a | Gartenstuhl | #6aa34e | 5 × 6 px, Aluminium und Textilgewebe, einzeln gesetzt; leicht gedreht und versetzt |
 
 ## Teppiche
 
@@ -321,6 +323,8 @@ Entstehen aus Flächen und Öffnungen – kein eigener Eintrag nötig.
   Waschbecken, Sitzplätze an Bank, Stuhl, Sofa, Bett und WC, 6 Süßigkeiten je Truhe im Hotelzimmer, Lakengeist in
   jeder Wäschekiste, Liegeplätze für Katzen auf Sofa und Kratzbaum, Spieleschrank/Videoautomat mit dem Rücken zur Wand.
 - **Bowlingbahn:** Kegel und Kugelständer aus Bahn und Foullinie. **Tanzplätze** im Partyraum.
+- **Gartenmöbel:** leicht gedreht (Stuhl auch etwas verrückt), fest je Platz im Plan.
+- **Holzdeck** auf Terrassen und Balkonen, Laufrichtung von der Hauswand weg, Fuge zu Wand, Hecke und Geländer.
 - **Geländer** an Lufträumen, Balkonen und Terrassen; **Hecken** aus den Terrassenkanten; **Gras** auf Rasen;
   **Kürbisbeete** unter den Kürbispflanzen; Bäume reihum aus den Modellen.
 - **Dachboden:** Stützbalken im 6-m-Raster, Dachfenster in der Schräge.
