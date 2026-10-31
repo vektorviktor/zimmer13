@@ -270,9 +270,11 @@ const TREE_MODELS: Array[Dictionary] = [
 	{"path": "res://assets/models/tree_3.glb", "radius": 5.4, "height": 10.7, "crown": Vector2(0.34, 1.00), "trunk": 0.56},
 ]
 ## Wanduhr über dem Haupteingang (WallClock): Durchmesser und Abstand der Rückseite zur Wandfläche; die Mitte hängt
-## auf halber Höhe zwischen der Oberkante des AUSGANG-Schilds und der Hallendecke
+## auf halber Höhe zwischen CLOCK_ABOVE_DOOR über dem Haupteingang (früher Oberkante des AUSGANG-Schilds) und der
+## Hallendecke
 const CLOCK_DIAMETER := 3.0
 const CLOCK_GAP := 0.02
+const CLOCK_ABOVE_DOOR := 0.47
 ## Höhe der Stammkollision; Kronenradius und Krone (Anteile der Höhe) des Platzhalters
 const TREE_TRUNK_H := 3.0
 const TREE_RADIUS := 5.0
@@ -462,24 +464,15 @@ const SWITCH_Y := 1.3
 const CALENDAR_Y := 1.7
 const UV_Y := 1.5
 const COBWEB_Y := 2.4
-## Schilder (Zimmernummern, AUSGANG, BAR …): Messingbuchstaben in Cinzel Bold (OFL, assets/fonts/OFL.txt;
-## ohne überlappende Konturen aus tools/build_font.py) auf einer Holzplatte mit Messingrand.
-## Schriftgröße (Geviert) in Metern – Wegweiser, Zimmernummern –, Versalhöhe ~0,7 davon; CURVE_STEP in
-## Schriftpixeln
+## Schrift im Haus (Zimmernummern an den Türen, Aufzug): Cinzel Bold (OFL, assets/fonts/OFL.txt; ohne überlappende
+## Konturen aus tools/build_font.py) als echte Geometrie (TextMesh). Schilder über den Türen gibt es keine mehr
+## (Entscheidung 31.10.): beschriftet sind nur die Gästezimmer, mit einer Messingplakette (RoomPlate).
+## Schriftgröße und CURVE_STEP in Schriftpixeln
 const SIGN_FONT := "res://assets/fonts/cinzel_bold.ttf"
-const SIGN_EM := 0.22
-const SIGN_EM_ROOM := 0.17
 ## Schlüsselschrank (6.19): Höhe seiner Mitte über dem Boden
 const KEY_CABINET_Y := 1.5
 const SIGN_FONT_SIZE := 16
 const SIGN_CURVE_STEP := 2.0
-## Wie weit die Buchstaben vor der Platte stehen, Stärke der Platte, Rand um den Text, Messingrand
-const SIGN_DEPTH := 0.01
-const SIGN_PLATE := 0.016
-const SIGN_MARGIN := Vector2(0.05, 0.035)
-const SIGN_RIM := 0.008
-## Messing je Schild: blank, matt, angelaufen
-const SIGN_BRASS: Array[Color] = [Color(0.8, 0.64, 0.28), Color(0.68, 0.54, 0.25), Color(0.52, 0.45, 0.27)]
 ## Ersatzbirnen liegen im Lagerregal, nicht obendrauf
 const BULB_SUPPLY_Y := 1.4
 ## Kisten mit starker Deko ohne Nachschub (Spielkonzept 5.10): so viele Stücke je Dekokiste, Wäschekiste und alte Deko
@@ -617,7 +610,6 @@ var _places: Array[Dictionary] = []   ## {id, kind, region}
 var _lobby := Rect2()                 ## Innenmaß der Lobby (x, z)
 ## Hallen über zwei Stockwerke (Lufträume des EG): {rect, kind (Art im EG)} – für ihre Wände (_wall_side_kind)
 var _halls: Array[Dictionary] = []
-var _exit_sign_top := 0.0             ## Oberkante des AUSGANG-Schilds über dem Haupteingang (für _clock)
 var _hall_wallpapers := {}            ## Tapete im EG → dieselbe ohne Leiste, Höhe ab dem EG-Boden
 var _named := {}                    ## Flächen-ID → Rect2 (Umriss)
 ## Wandstücke des Plans, an die Wandsachen gehängt werden: {horizontal, at (Mittellinie), from, to, half (halbe Dicke)}
@@ -676,7 +668,6 @@ var _doormat: Material
 var _cellar_wall: Material
 var _cellar_floor: Material
 var _cellar_ceiling: Material
-var _sign_font: Font
 var _attic_planks: Material
 var _attic_roof: Material
 
@@ -1011,7 +1002,6 @@ func _materials() -> void:
 	_cellar_wall = Mat.photo(CELLAR_WALL_TEX, CELLAR_WALL_METERS, CELLAR_WALL_NORMAL)
 	_cellar_floor = Mat.psx(Color(0.45, 0.45, 0.45), "concrete", 1.0)
 	_cellar_ceiling = Mat.psx(Color(0.5, 0.5, 0.5), "concrete", 0.5)
-	_sign_font = load(SIGN_FONT)
 	_attic_planks = Mat.planks(ATTIC_PLANK_TINT)
 	_attic_planks.set_meta("floor", "wood")
 	_attic_roof = Mat.psx(ATTIC_ROOF_COLOR, "concrete", 1.0)
@@ -1803,7 +1793,6 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			door.key_id = "ausgang"
 			door.monster_can_open = false
 			door.locked_text = "Der Ausgang ist verriegelt. Es muss einen anderen Weg hinaus geben …"
-			_exit_sign_top = _sign("AUSGANG", center + Vector3(0, ENTRANCE_H + 0.35, 0) + into3 * 0.11, rad_to_deg(yaw))
 		"attic_door":   # Schlüssel im Heizraum hinter dem Gitter (4.21) – das Monster bricht sie nicht auf
 			door.locked = true
 			door.key_id = "dachboden"
@@ -2059,9 +2048,8 @@ func _room(plan: Dictionary) -> void:
 		"spots": [],
 		"baths": _room_baths(plan, holder),
 	}
-	if not plan.get("suite", false):   # Suiten betritt man durchs Nachbarzimmer: kein Schild an der Verbindungstür
-		_sign(label, Vector3(0, 2.45, -0.11), 180.0, SIGN_EM_ROOM)
-		door.add_room_plate(label, info["door_front"])   # Spion und Plakette mit der Nummer auf der Flurseite
+	if not plan.get("suite", false):   # Suiten betritt man durchs Nachbarzimmer: keine Plakette an der Verbindungstür
+		door.add_room_number(no, label, info["door_front"])   # Spion und Plakette mit der Nummer auf der Flurseite
 	if households.has(no):
 		info["household"] = households[no]
 		door.resident_name = door_name(households[no])   # erscheint beim Hinsehen an der Tür (6.20)
@@ -3249,10 +3237,6 @@ func _lobby_hall() -> void:
 			lobby_seats.append(Vector3(seat.x, 0, seat.y))
 			cat_perches.append({"floor": Vector3(seat.x, 0, seat.y), "top": Vector3(top.x, 0.46, top.y)})
 	_clock()
-	_sign("BAR", Vector3(west + 0.11, 2.75, -13.0), 90.0)
-	_sign("PARTY", Vector3(east - 0.11, 2.75, -13.0), -90.0)
-	_sign("GARTEN", Vector3(-5.5, 2.75, _lobby.position.y + 0.11), 0.0)
-	_sign("POOL", Vector3(5.5, 2.75, _lobby.position.y + 0.11), 0.0)
 	notice_board = NoticeBoard.new()
 	notice_board.position = Vector3(west + WALL_GAP, NOTICE_BOARD_Y, NOTICE_BOARD_Z)
 	notice_board.rotation.y = PI / 2.0   # +Z in die Lobby
@@ -3276,7 +3260,7 @@ func _clock() -> void:
 				into = -into
 			var back := center + into * (float(w.get("thickness", T)) / 2.0 + CLOCK_GAP)
 			var ceiling := UP_Y + H if _has_upper else H   # Halle über zwei Stockwerke (Luftraum)
-			clock.position = Vector3(back.x, (_exit_sign_top + ceiling) / 2.0, back.y)
+			clock.position = Vector3(back.x, (ENTRANCE_H + CLOCK_ABOVE_DOOR + ceiling) / 2.0, back.y)
 			clock.rotation.y = atan2(into.x, into.y)   # +Z der Uhr zeigt in die Lobby
 			root.add_child(clock)
 			return
@@ -4616,7 +4600,6 @@ func _stairwells() -> void:
 			og.rotation.y = PI
 			frame.add_child(og)
 			_seal(og, "Abgesperrt. Das Obergeschoss ist noch nicht zugänglich.")
-		_sign("TREPPENHAUS", Vector3(mid, 2.9, zs + T / 2.0 + 0.11), 0.0)
 		# Leuchten: die Pläne setzen sie (Podestseite = eine halbe Etage höher, _lights); das Podest zum Untergeschoss
 		# steht in keinem Plan, und wo ein Plan nichts setzt, hängt eine Ersatzleuchte
 		_wall_lamp(Vector3(mid, bottom / 2.0 + 1.9, zn + WALL_GAP), 0.0, WALL_LAMP_ENERGY, 6.0, "treppenhaus")
@@ -5142,36 +5125,6 @@ func _cap_top(m: ArrayMesh) -> ArrayMesh:
 		arrays[Mesh.ARRAY_VERTEX] = verts
 		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return out
-
-
-## Schild an der Wand (pos = 1 cm vor der Wandfläche, Schrift zeigt nach +Z): Buchstaben als echte Geometrie
-## (TextMesh) im Material der Wände, damit Lampen und Taschenlampe sie treffen wie alles andere (Spielkonzept 7.3).
-## Wie schief es hängt und wie angelaufen das Messing ist, folgt fest aus dem Text, nicht aus dem Zufall.
-## Gibt die Oberkante der Platte zurück (Höhe wie pos).
-func _sign(text: String, pos: Vector3, yaw: float, em: float = SIGN_EM) -> float:
-	var holder := Node3D.new()
-	holder.rotation = Vector3(0, deg_to_rad(yaw), 0)
-	holder.position = pos - holder.basis.z * WALL_GAP
-	var h := text.hash()
-	holder.rotate_object_local(Vector3.BACK, deg_to_rad(float(posmod(h, 7) - 3) * 0.5))   # bis 1,5° schief
-	_parent.add_child(holder)
-	var letters := TextMesh.new()
-	letters.text = text
-	letters.font = _sign_font
-	letters.font_size = SIGN_FONT_SIZE
-	letters.pixel_size = em / SIGN_FONT_SIZE
-	letters.curve_step = SIGN_CURVE_STEP
-	letters.depth = SIGN_DEPTH
-	var box := letters.get_aabb()
-	var center := box.get_center()
-	var plate := Vector2(box.size.x, box.size.y) + SIGN_MARGIN * 2.0
-	var brass := Mat.psx(SIGN_BRASS[posmod(h >> 3, SIGN_BRASS.size())])
-	var rim := Vector3(plate.x + SIGN_RIM * 2.0, plate.y + SIGN_RIM * 2.0, SIGN_PLATE * 0.6)
-	Geo.mesh(holder, Geo.box(rim), brass, Vector3(0, 0, rim.z / 2.0))
-	Geo.mesh(holder, Geo.box(Vector3(plate.x, plate.y, SIGN_PLATE)), _dark_wood, Vector3(0, 0, SIGN_PLATE / 2.0))
-	# Hinterkante der Buchstaben 2 mm in der Platte, sonst flimmert ein Spalt
-	Geo.mesh(holder, letters, brass, Vector3(-center.x, -center.y, SIGN_PLATE - 0.002 - box.position.z))
-	return pos.y + rim.y / 2.0
 
 
 ## Feste Kerze als Deko-Licht (kein Gegenstand, FixedCandle): brennt, bis jemand sie ausbläst, flackert leicht und in

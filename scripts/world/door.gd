@@ -23,13 +23,13 @@ const HANDLE_HEIGHT := 1.04
 const HINGE_AT: Array[float] = [0.12, 0.88]
 ## Zimmertür: so weit geht sie höchstens auf
 const HOTEL_MAX_ANGLE := deg_to_rad(95.0)
-## Zimmertür zum Flur (add_room_plate): Höhe von Spion und Plakette über dem Boden, Schrift der Nummer (gravierte
-## Ziffern, Höhe des Gevierts in Metern) und so weit steht die Schrift vor der Blattmitte (Plakette 5 mm stark)
+## Zimmertür zum Flur (add_room_number): Höhe von Spion und Plakettenmitte über dem Boden, Blattfläche vor der
+## Blattmitte, Glanz des Messings (RoomPlate) und bis zu welcher Entfernung man die Plakette sieht
 const PEEPHOLE_Y := 1.5
-const PLAQUE_Y := 1.66
-const PLAQUE_EM := 0.044
-const PLAQUE_FACE := 0.0356
-const PLAQUE_INK := Color(0.07, 0.05, 0.03)
+const PLATE_Y := 1.68
+const PLATE_FACE := 0.03
+const PLATE_METALLIC := 0.55
+const PLATE_RANGE := 16.0
 
 var width := 1.2
 var height := 2.1
@@ -73,7 +73,7 @@ var _pivots: Array[Node3D] = []
 var _bodies: Array[Node3D] = []
 var _dirs: Array[float] = []   ## je Flügel: +1 = Blatt nach +X vom Scharnier, −1 = nach −X
 var _tween: Tween
-var _plate := []   ## add_room_plate vor dem Einhängen: [Nummer, Flurpunkt]
+var _plate := []   ## add_room_number vor dem Einhängen: [Zimmer, Aufschrift, Flurpunkt]
 
 ## Türen nach Feldern im Grundriss (Kantenlänge CELL), für Gäste, die laufend die Türen in ihrer Nähe
 ## abfragen (near). Türen bewegen sich nicht; das Raster entsteht beim ersten Abfragen nach dem Bau neu.
@@ -112,7 +112,7 @@ func _ready() -> void:
 	else:
 		_pivots.append(_make_leaf(Vector3.ZERO, width, 1.0))
 	if not _plate.is_empty():
-		add_room_plate(_plate[0], _plate[1])
+		add_room_number(_plate[0], _plate[1], _plate[2])
 	ShadowBudget.structure(self)   # Zarge und Blatt halten das Licht aller Lampen auf
 	_all.append(self)
 	_dirty = true
@@ -417,12 +417,13 @@ func _add_model_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
 		hinge.scale.x = dir
 
 
-## Zimmertür zum Flur (LevelBuilder._room, Spielkonzept 6.19): Spion und Messingplakette mit der Zimmernummer
-## (label, gravierte Ziffern) mittig auf dem Blatt, Plakette und Linse auf der Seite zum Punkt corridor (global).
-## Nur einflüglige Zimmertüren (Look.HOTEL).
-func add_room_plate(label: String, corridor: Vector3) -> void:
+## Zimmertür zum Flur (LevelBuilder._room, Spielkonzept 6.19 und 7.5): Spion und darüber die verschraubte
+## Messingplakette mit der Nummer (RoomPlate: Zimmer no, Aufschrift label) mittig auf dem Mittelfries, beides auf der
+## Seite zum Punkt corridor (global). Nur einflüglige Zimmertüren (Look.HOTEL). Sparsam (Wunsch des Nutzers 31.10.):
+## ein Mesh mit 38 Dreiecken je Tür, ein gemeinsames Material, ohne Schatten (3 mm stark), nur aus der Nähe gezeichnet.
+func add_room_number(no: String, label: String, corridor: Vector3) -> void:
 	if not is_inside_tree():   # Blatt entsteht erst in _ready
-		_plate = [label, corridor]
+		_plate = [no, label, corridor]
 		return
 	if look != Look.HOTEL or double or _bodies.is_empty():
 		return
@@ -431,23 +432,22 @@ func add_room_plate(label: String, corridor: Vector3) -> void:
 	var dir := _dirs[0]
 	var side := -1.0 if to_local(corridor).z < 0.0 else 1.0   # Flur bei −Z: Modell, wie es ist
 	var cx := dir * (0.01 + (width - 0.02) / 2.0)
-	for part: String in ["peephole", "plaque"]:
-		var m := Geo.mesh(body, parts[part][0], parts[part][1], Vector3(cx, PEEPHOLE_Y if part == "peephole" else PLAQUE_Y, 0))
-		m.scale = Vector3(dir, 1.0, -side)
-	var text := Label3D.new()
-	text.text = label
-	text.font = load(LevelBuilder.SIGN_FONT)
-	text.font_size = 64
-	text.pixel_size = PLAQUE_EM / 64.0
-	text.outline_size = 0
-	text.modulate = PLAQUE_INK
-	text.shaded = true
-	text.double_sided = false
-	text.alpha_cut = Label3D.ALPHA_CUT_DISCARD
-	text.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	text.position = Vector3(cx, PLAQUE_Y - PLAQUE_EM * 0.04, side * PLAQUE_FACE)
-	text.rotation.y = 0.0 if side > 0.0 else PI   # Label3D liest man von +Z
-	body.add_child(text)
+	var peep := Geo.mesh(body, parts["peephole"][0], parts["peephole"][1], Vector3(cx, PEEPHOLE_Y, 0))
+	peep.scale = Vector3(dir, 1.0, -side)
+	var holder := Node3D.new()
+	holder.position = Vector3(cx, PLATE_Y, side * PLATE_FACE)
+	holder.rotation.y = 0.0 if side > 0.0 else PI   # Vorderseite der Plakette ist +Z
+	body.add_child(holder)
+	var m := Geo.mesh(holder, RoomPlate.mesh(no, label), _plate_material(), Vector3.ZERO)
+	m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	m.visibility_range_end = PLATE_RANGE
+
+
+## Messing aller Plaketten (Spielkonzept 9.2): Satz aus tools/room_plate.gd über die UVs gespannt
+static func _plate_material() -> ShaderMaterial:
+	var m := Mat.photo(RoomPlate.ALBEDO, 1.0, RoomPlate.NORMAL, RoomPlate.ROUGH, 0.5, Color(1, 1, 1), false, true)
+	m.set_shader_parameter("metallic", PLATE_METALLIC)
+	return m
 
 
 static func _model_parts(path: String) -> Dictionary:

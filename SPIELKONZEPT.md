@@ -4990,6 +4990,10 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - **Zimmernummern:** dreistellig, Stockwerk · zwei Ziffern (Erdgeschoss 0, erstes Obergeschoss 1). Zimmer darüber
   tragen dieselbe Nummer mit 1 vorne (über 002 liegt 102). Die Nummern sind noch **Platzhalter** – Zuordnungen hängen
   an der Stelle im Plan (6.20).
+- **Beschriftung (Entscheidung 31.10.):** Die Zimmernummer steht auf einer **verschraubten Messingplakette** über dem
+  Spion: Platte gebürstet mit dünner Kordel am Rand, Ziffern erhaben und poliert. An 013 fehlt die Null, man sieht
+  nur ihren Abdruck. Beschriftet sind nur Gästezimmer – keine Schilder über den Türen, auch nicht an Bar, Partyraum,
+  Garten, Pool, Treppenhaus oder Ausgang.
 - **Spielerzimmer ist 013:** An der Tür ist die führende Null abgefallen, zu lesen ist nur **„13“** – anders als
   bei 012, 014 … nebenan. Gäste sprechen von „Zimmer 13“. Es liegt im Innenhofblock Ost (7.10), ein Doppelzimmer
   mit Bad (Waschbecken für das Erwachen, 3.9).
