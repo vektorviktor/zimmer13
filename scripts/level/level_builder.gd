@@ -119,8 +119,8 @@ const POOL_FLOOR_ROUGHNESS := "res://assets/textures/TilesBasic_01/T_TilesBasic_
 const POOL_FLOOR_METERS := 1.0
 const POOL_FLOOR_SPECULAR := 0.5
 ## Säulen der Lobby unter der Galerie: polierter dunkler Terrazzo (Farbbild, Rauheit; die Normal Map des Sets ist
-## flach, dafür Poren, PILLAR_PORES), eine Kachel = 1 m, Steinchen 5–8 mm. Toskanisch, mittig im Plan: quadratische Plinthe, Wulst, Schaft
-## Schaft (unteres Drittel gerade, dann verjüngt), Halsring, Echinus, quadratische Deckplatte mit Stufe darunter.
+## flach, dafür Poren, PILLAR_PORES), eine Kachel = 1 m, Steinchen 5–8 mm. Toskanisch, mittig im Plan: quadratische Plinthe, Wulst,
+## gerader Schaft, Halsring, flacher Echinus, quadratische Deckplatte mit Stufe darunter.
 ## Low Poly: Drehkörper mit PILLAR_SIDES Seiten, zusammen unter 1000 Dreiecken je Säule.
 const PILLAR_TEX := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_basecolor.jpg"
 const PILLAR_ROUGHNESS := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_roughness.jpg"
@@ -133,16 +133,16 @@ const PILLAR_PORES_METERS := 0.25
 const PILLAR_PORES_STRENGTH := 0.8
 const PILLAR_PORES_CAVITY := 1.0
 const PILLAR_SIDES := 18
-const PILLAR_PLINTH := Vector3(0.81, 0.24, 0.81)
-const PILLAR_ABACUS := Vector3(0.87, 0.105, 0.87)
-const PILLAR_ABACUS_STEP := Vector3(0.78, 0.045, 0.78)
+const PILLAR_PLINTH := Vector3(0.81, 0.16, 0.81)
+const PILLAR_ABACUS := Vector3(0.76, 0.07, 0.76)
+const PILLAR_ABACUS_STEP := Vector3(0.68, 0.03, 0.68)
 ## Profil (Radius, Höhe): Fuß über dem Boden (Wulst, Plättchen, Anlauf), Kopf unter der Deckplattenstufe (Ring,
-## Hals, Halsring, Echinus); der Schaft dazwischen verjüngt sich von PILLAR_SHAFT_RADIUS auf den ersten Kopfradius.
-const PILLAR_FOOT := [Vector2(0.3, 0.24), Vector2(0.3225, 0.2775), Vector2(0.33, 0.315), Vector2(0.318, 0.3525),
-	Vector2(0.285, 0.3825), Vector2(0.255, 0.39), Vector2(0.255, 0.4275), Vector2(0.237, 0.45), Vector2(0.225, 0.495)]
-const PILLAR_HEAD := [Vector2(0.195, -0.525), Vector2(0.213, -0.5025), Vector2(0.213, -0.4725), Vector2(0.192, -0.45),
-	Vector2(0.192, -0.3), Vector2(0.21, -0.285), Vector2(0.21, -0.255), Vector2(0.2025, -0.24), Vector2(0.285, -0.195),
-	Vector2(0.3525, -0.12), Vector2(0.3825, -0.03), Vector2(0.387, 0.0)]
+## Hals, Halsring, flacher Echinus); dazwischen der gerade Schaft mit PILLAR_SHAFT_RADIUS.
+const PILLAR_FOOT := [Vector2(0.3, 0.16), Vector2(0.3225, 0.185), Vector2(0.33, 0.21), Vector2(0.318, 0.235),
+	Vector2(0.285, 0.255), Vector2(0.255, 0.26), Vector2(0.255, 0.285), Vector2(0.237, 0.3), Vector2(0.225, 0.33)]
+const PILLAR_HEAD := [Vector2(0.225, -0.35), Vector2(0.245, -0.335), Vector2(0.245, -0.315), Vector2(0.222, -0.3),
+	Vector2(0.222, -0.2), Vector2(0.24, -0.19), Vector2(0.24, -0.17), Vector2(0.232, -0.16), Vector2(0.262, -0.12),
+	Vector2(0.292, -0.07), Vector2(0.312, -0.03), Vector2(0.316, 0.0)]
 const PILLAR_SHAFT_RADIUS := 0.225
 ## Couchtisch der Lobby: quadratisch (kurze Seite des Plan-Rechtecks), Platte aus dem Terrazzo der Säulen, so stark,
 ## wie sie über den Unterbau steht und wie ihre Ecken gerundet sind; Beine und Zarge aus dunklem Holz, gleich stark
@@ -3458,9 +3458,8 @@ func _pillar(rect: Rect2) -> StaticBody3D:
 	var profile: Array = PILLAR_FOOT.duplicate()
 	var foot_y: float = PILLAR_FOOT[-1].y
 	var head_y: float = step_y + PILLAR_HEAD[0].y
-	var head_r: float = PILLAR_HEAD[0].x
-	profile.append(Vector2(PILLAR_SHAFT_RADIUS, lerpf(foot_y, head_y, 1.0 / 3.0)))
-	profile.append(Vector2(lerpf(PILLAR_SHAFT_RADIUS, head_r, 0.4), lerpf(foot_y, head_y, 2.0 / 3.0)))
+	for k in [1, 2]:   # Schaft in Stücken ≤ Geo.MAX_FACE
+		profile.append(Vector2(PILLAR_SHAFT_RADIUS, lerpf(foot_y, head_y, k / 3.0)))
 	for p: Vector2 in PILLAR_HEAD:
 		profile.append(p + Vector2(0, step_y))
 	Geo.mesh(body, Geo.lathe(profile, PILLAR_SIDES), _pillar_porous, Vector3.ZERO)
