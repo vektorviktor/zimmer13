@@ -355,7 +355,7 @@ const BOX_HEIGHTS := {
 	"table": 0.75, "coffee_table": 0.4, "dining_table": 0.78, "bench": 0.45, "bar_counter": 1.1, "shelf": 2.0,
 	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5,
 	# Plan map_a (PLANFARBEN.md), Platzhalter bis zu den Modellen
-	"bathtub": 0.6, "sink": 0.85, "shower": 0.06, "toilet": 0.42, "trash_can": 0.55, "room_table": 0.75, "chair": 0.45,
+	"bathtub": 0.6, "sink": 0.85, "shower": 0.06, "toilet": 0.42, "room_table": 0.75, "chair": 0.45,
 }
 ## Platzhalter-Möbel: Stuhllehne über dem Sitz, Spiegel über dem Waschbecken (Breite, Höhe; Mitte über dem Boden),
 ## Fußmatte
@@ -2274,6 +2274,13 @@ func _furniture() -> void:
 				node = _back_bar(back, front)
 				rect = _local_rect(back, front, Rect2(-BACK_BAR_BODY.x / 2.0, 0, BACK_BAR_BODY.x, BACK_BAR_DEPTH))
 				top = BAR_TOP
+			"trash_can":
+				# fest 50 × 50 cm (TrashCan), mittig auf dem Platz im Plan, aber nicht in der Wand
+				c = _clear_of_walls(c, TrashCan.SIZE / 2.0 + TrashCan.WALL_GAP)
+				pos = Vector3(c.x, 0, c.y)
+				rect = Rect2(c - Vector2.ONE * TrashCan.SIZE / 2.0, Vector2.ONE * TrashCan.SIZE)
+				node = TrashCan.new()
+				top = TrashCan.HEIGHT
 			"pillar":
 				node = _pillar(rect)
 				top = H
@@ -2402,8 +2409,6 @@ func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) ->
 			mat = _dark_wood
 		"sink", "toilet", "shower":
 			mat = _ceramic
-		"trash_can":
-			mat = Mat.psx(Color(0.3, 0.3, 0.32))
 		"kitchen_counter":
 			mat = Mat.psx(Color(0.55, 0.5, 0.42))
 		"stove":
@@ -2474,6 +2479,16 @@ func _local_rect(origin: Vector2, front: Vector2, local: Rect2) -> Rect2:
 func _wall_beside(c: Vector2, dir: Vector2, reach: float) -> bool:
 	var side := ("east" if dir.x > 0 else "west") if absf(dir.x) > 0.5 else ("south" if dir.y > 0 else "north")
 	return not _on_wall(c, side, reach).is_empty()
+
+
+## Stelle c so weit von den Wänden weggerückt, dass ringsum mindestens clear bis zur Wandfläche bleibt (Möbel, das
+## größer ist als sein Platz im Plan).
+func _clear_of_walls(c: Vector2, clear: float) -> Vector2:
+	for side: String in ["north", "south", "west", "east"]:
+		var face := _on_wall(c, side, clear)
+		if not face.is_empty():
+			c -= _dir(side) * (clear - ((face["pos"] as Vector2) - c).dot(_dir(side)))
+	return c
 
 
 ## Körper an der Stelle origin (Boden), lokal +Z nach front, mit dem Modell darin (Flächen nach _fixture_materials).

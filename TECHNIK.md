@@ -220,6 +220,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `Wood_02` | Balkenbett, Stützbalken (`Mat.wood`, UVs von `Geo.grain_box`); grobe Bohlen des Dachgeschosses (`Mat.planks`: Bild aus Brettern mit Stößen, Fugen und Abdunklung, `PLANK_*`, `Mat._photo_from`) | Hirnholz aus TexGen `wood_end` |
 | `Fabric_Pattern_08` | Laken und Kissen (`BedModel.FABRIC_METERS`, Modellkoordinaten) | |
 | `TerrazzoDark_01` | Säulen der Lobby (`_pillar`), Platte des Couchtischs (`_coffee_table`) | Säulen mit Poren: eigene Normal Map aus `tools/pore_map.gd` (etwa eine je 2 cm², fester Startwert), feiner gekachelt über psx_photo `normal_tiling`; `cavity` macht die Porenwände dunkler und rauer (`PILLAR_PORES_*`) |
+| `trash_brass*.png`, `trash_coat*.png` (eigene Sets) | Mülleimer (`TrashCan`) | Aus `tools/trash_can.gd` (fester Startwert), nahtlos, über die UVs in Metern, Kachel 0,25 m: Messing gebürstet entlang u in den Farben der Plaketten – Riefen in mehreren Breiten, entlang lang gezogen, und einzelne tiefere; Farbe und Rauheit folgen den Riefen, keine Flecken; `METALLIC` wie die Plaketten (`BRASS_METALLIC`). Lack fast schwarz, seidenmatt (Rauheit 0,38), Orangenhaut als Normal Map – das Innere im Lack, dunkler |
 
 ## 2. Aufbau zur Laufzeit
 
@@ -576,6 +577,11 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     für zwei Schläfer. **Badewanne** = `Bathtub` (`world/bathtub.gd`): gefliester Block in Plangröße mit hohlem
     Keramikbecken; der Fliesenausschnitt ist `CUT` größer als die Öffnung (sonst flimmert er in der Beckenwand); man kann
     hineinsteigen. **Wannenablage** (`tub_shelf`): gefliester Block zum Ansetzen. Waschbecken, Dusche, WC, Bar siehe 1.
+    **Mülleimer** = `TrashCan` (`world/trash_can.gd`, Skizze 31.10.): fest 50 × 50 × 95 cm, mittig auf dem Platz im Plan,
+    von Wänden um `WALL_GAP` weggerückt (`_clear_of_walls`); Korpus Lack, Deckel Messing mit 5 mm Überstand, gerundeter
+    Oberkante und scharfkantiger Öffnung mit dunklem Schacht – Ringe mit runden Ecken durch ein Profil gezogen (`_sweep`),
+    Meshes geteilt. UVs in Metern, u ringsum (Bürstrichtung), auf waagerechten Flächen je Seite auf 45°-Gehrung
+    (`_mitre_uv`) wie bei einem Bilderrahmen.
     Eine Truhe in einem Hotelzimmer ist dessen Süßigkeiten-Truhe (`_sweets_chest`); Snack- und Getränkeautomat sind
     `VendingMachine`. Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert die Höhe, auf der
     Kerzen, Telefone, Zettel und Gegenstände stehen.

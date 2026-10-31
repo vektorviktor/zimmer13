@@ -77,7 +77,7 @@ Standardbelegung – umbelegen in den Einstellungen unter „Steuerung“ (fest 
   und Kerzen, nicht beim Blick nach unten · Größe ändert Augenhöhe und Kapsel, sonst nur das Aussehen
 - **Hotel (Graybox) nach dem Gebäudeplan `map_a.aseprite`** (neuer, kleinerer Plan – Zimmer und Gärten werden gerade neu
   eingerichtet, die folgende Beschreibung ist teils noch die des alten Plans): Erdgeschoss ca. 150 × 60 m · Möbel nach
-  der Planlegende `PLANFARBEN.md` als Platzhalter (Doppelbett – man kriecht darunter wie unters Bett, Badewanne, Fußmatte, Tisch und Stühle, Mülleimer) ·
+  der Planlegende `PLANFARBEN.md` als Platzhalter (Doppelbett – man kriecht darunter wie unters Bett, Badewanne, Fußmatte, Tisch und Stühle) · Mülleimer: Säule aus fast schwarzem Lack mit gebürstetem Messingdeckel ·
   **Bäder:** gefliester Waschtisch mit Aufsatzbecken, Wandarmatur und Spiegel mit Spiegelbild, darüber eine
   Spiegelleuchte (Edelstahl wie die Armatur, warmweißes Lichtband, schaltet mit dem Zimmer), Duschecke mit Glastür und
   Duschsäule auf gefliestem Sockel, Wand-WC mit Drückerplatte und Papierhalter (darauf setzen wie bisher) – die Fliesen
