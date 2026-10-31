@@ -246,6 +246,7 @@ done <<'LIST'
 900|halloween,tiere|--kesselkatze --trace
 400|spinde|--spinde=offen --trace
 400|spinde,speichern|--spinde=offen --savetest
+400|duschen|--duschen --trace
 600|halloween,spuk|--spiegel --trace
 600|halloween,spuk,speichern|--spiegel=tuch --savetest
 900|halloween,spuk,licht|--strom --trace

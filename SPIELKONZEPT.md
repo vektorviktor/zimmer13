@@ -5289,6 +5289,17 @@ Dachform (4.21).
 - Licht und Umrisse gehen durch, der Blick nicht: Für Gäste und Monster ist sie wie eine Holztür (keine Sicht, keine
   Jagd durchs Glas, 7.3); Handabdrücke des Monsters bleiben darauf.
 
+### 7.13 Duschplätze am Pool (entschieden und umgesetzt 2026-11-01, ZIM-144)
+
+- **Vier Duschplätze**, der Nutzer malt sie im Plan (Planfarbe „Duschplatz“, Punkt innen an der Wand).
+- Je Platz nach Fotos des Nutzers, alles **gebürsteter Edelstahl** wie die Badarmaturen:
+  - **Drücker** auf ca. 1 m: nur der runde Knopf mit Wandmanschette (Ø 14 cm), schaut 8 cm aus der Wand – ohne den
+    Metallbalken aus dem Foto.
+  - **Ablage** rechts daneben, 24 cm breit, ohne die Halterung darunter.
+  - **Duschkopf** am Wandarm, Mitte 40 cm vor der Wand, Düsen als Textur wie in der Zimmerdusche.
+- Nur Ausstattung: Der Drücker tut noch nichts. *Offen:* Wasser auf Knopfdruck, Abfluss, Trennwände, Fliesen bis zur
+  Decke (ZIM-144).
+
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9

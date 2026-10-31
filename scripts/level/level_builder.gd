@@ -478,6 +478,7 @@ const RUG_PIXEL := 0.08
 const WALL_GAP := 0.01
 const SWITCH_Y := 1.3
 const CALENDAR_Y := 1.7
+const POOL_SHOWER_GAP := 0.002   ## Manschetten liegen auf den Fliesen auf
 const UV_Y := 1.5
 const COBWEB_Y := 2.4
 ## Schrift im Haus (Zimmernummern an den Türen, Aufzug): Cinzel Bold (OFL, assets/fonts/OFL.txt; ohne überlappende
@@ -2891,6 +2892,13 @@ func _fittings() -> void:
 				calendar.position = at.at(CALENDAR_Y)
 				calendar.rotation.y = at.yaw()
 				root.add_child(calendar)
+			"pool_shower":   # Duschplatz am Pool: Drücker, Ablage, Duschkopf (Spielkonzept 7.13, ZIM-144)
+				var at := _wall_spot(o, POOL_SHOWER_GAP)
+				var shower := PoolShower.new()
+				shower.position = at.at(0.0)
+				shower.rotation.y = at.yaw()
+				shower.add_to_group("pool_showers")
+				root.add_child(shower)
 			"phone":
 				var phone := HotelPhone.new().setup(_room_id_at(p))   # Wählscheibentelefon (Spielkonzept 4.14)
 				phone.position = Vector3(p.x, top, p.y)

@@ -142,6 +142,7 @@ FITTINGS = {
 	"Ausstattung: Kalender": "calendar", "Ausstattung: Tagebuch": "diary", "Ausstattung: Dekokiste": "deco_box",
 	"Ausstattung: Schlüsselschrank": "key_cabinet",   # 24.10.: verglast, mit dem Generalschlüssel (6.19)
 	"Ausstattung: Dartscheibe": "dartboard",   # 25.10.: an der Wand, Linie und Stehtisch davor (6.10)
+	"Ausstattung: Duschplatz": "pool_shower",   # 1.11.: Drücker, Ablage und Duschkopf an der Wand (ZIM-144)
 }
 ## Teppiche → Art (LevelBuilder.RUG_TEXTURES)
 RUGS = {"Teppich: Läufer": "runner"}

@@ -630,6 +630,13 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   - `_fittings`: Wandsachen (Schalter, Bild, Spinnwebe, UV-Schrift, Kalender) über `_wall_spot` an die Wandfläche
     (`_on_wall`), Höhen als Konstanten (`SWITCH_Y` …). Telefon, Zettel, Tagebuch und Vorräte auf dem Möbel darunter,
     Kürbispflanzen mit der Sorte aus der Palettenfarbe (`pumpkin_plant:<sorte>`).
+    **Duschplatz** am Pool = `PoolShower` (`world/pool_shower.gd`, ZIM-144, Fotos 1.11.): Ursprung am Boden auf der
+    Wandfläche (`POOL_SHOWER_GAP` 2 mm davor), alles Code-Geometrie in `Mat.metal()` wie die Badarmaturen. Drücker als
+    Drehkörper (`Geo.lathe`, Achse aus der Wand): Manschette Ø 14 cm, Knopf 8 cm tief auf 1 m, dunkler Dichtring.
+    Ablage 24 × 11 cm rechts daneben (von vorn), Mitte auf Drückerhöhe, aus gerundeten Kästen (Rückenplatte, Boden,
+    Rand), ohne Halterung. Duschkopf Ø 25 cm, Mitte 40 cm vor der Wand, Unterkante 2,10 m: Wandarm als Rohr mit Bogen
+    (`_tube`), Rosette, Kugelgelenk, Düsenplatte mit `shower_shower_nozzles.png` der Zimmerdusche. Ohne Kollision
+    (zu hoch bzw. weniger tief als der Spielerradius), ohne Zustand; Gruppe `pool_showers`, Debug `--duschen`.
   - `_rugs`: Teppiche als flache Auflage (`Mat.layer_uv`). Ein Läufer läuft entlang der langen Seite
     (`Geo.runner_mesh`: Abschluss an beiden Enden, ganze Zahl Musterkacheln); Art → Textur in `RUG_TEXTURES`. Im
     Katzenraum lose Teppiche aus `CAT_ROOM_RUGS` (`TexGen.rug`), jeder etwas höher als der vorige (Überlappen ohne
