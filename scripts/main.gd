@@ -306,13 +306,14 @@ extends Node3D
 ##   --darts[=id]                sofort Darts in der Bar: allein üben, mit id gegen den Gast (Einsatz 3 Geld; mit
 ##                               --autoplay wirft der Spieler selbst)
 ##   --spieleschrank             den Spieleschrank in der Bar öffnen (Spielkonzept 6.10)
-##   --bowling                   in den Anlauf der Bowlingbahn und eine Kugel rollen (Spielkonzept 6.10)
+##   --bowling                   Bowling an der Bahn in der Bar beginnen (Spielkonzept 6.10; mit --autoplay rollt
+##                               der Spieler selbst in die Tasche und spielt Frame um Frame)
 ##   --zinken[=bar]              gezinkte Würfel in den Becher am Mäxchen- bzw. Barspieltisch tauschen (wie mit [E])
 ##   --bargame=spiel[,id]        sofort ein Barspiel am Würfeltisch gegen den Gast (Standard bruno, Einsatz 3 Geld):
 ##                               schocken, armdruecken, bierdeckel, trinkduell, siebzehn, quiz, wahrheit – das Spiel
 ##                               aus dem Schrank liegt dann gleich auf dem Tisch (Spielkonzept 6.10)
 ##   --challenge=id[,chess|darts]  Gast fordert dich heraus (Mäxchen, Schach bzw. Darts)
-##   --autoplay                  Mäxchen-Antworten, Schachzüge bzw. Dartwürfe automatisch wählen
+##   --autoplay                  Mäxchen-Antworten, Schachzüge, Dart- bzw. Bowlingwürfe automatisch wählen
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
 ##   --shot-size=BxH             Fenster für den Screenshot in dieser Größe (rahmenlos, auch über den Bildschirm hinaus)
@@ -519,6 +520,11 @@ func _ready() -> void:
 	add_child(darts)
 	Game.darts = darts
 
+	var bowling := BowlingMatch.new()
+	bowling.name = "BowlingMatch"
+	add_child(bowling)
+	Game.bowling = bowling
+
 	# Barspiele am Würfeltisch (Spielkonzept 6.10, 28.10.) – Reihenfolge wie im Dialog (BarMatch.GAMES)
 	for bar_game: BarMatch in [SchockenMatch.new(), ArmWrestleMatch.new(), CoasterTowerMatch.new(), DrinkDuelMatch.new(),
 			SeventeenFourMatch.new(), PubQuizMatch.new(), TruthDareMatch.new()]:
@@ -718,6 +724,10 @@ func _process(delta: float) -> void:
 		var throw := Game.darts.debug_step()
 		if throw != "":
 			print("[Darts] " + throw)
+	if _autoplay and Engine.get_process_frames() % 40 == 0 and Game.bowling.active:
+		var roll := Game.bowling.debug_step()
+		if roll != "":
+			print("[Bowling] " + roll)
 	if _trace:
 		_trace_frames += 1
 		if _trace_frames % 120 == 0:
@@ -1382,8 +1392,7 @@ func run_debug(arg: String) -> bool:
 			if lane == null:
 				push_warning("--bowling: keine Bowlingbahn im Plan")
 				return
-			Game.player.global_position = Vector3(lane.lane.get_center().x, 0.05, lane.foul_z + 1.0)
-			Game.player.rotation.y = 0.0
+			Game.player.global_position = lane.stand_spot() + Vector3(0, 0.05, 0)
 			lane.interact(Game.player))
 	elif arg == "--spieleschrank":
 		# vor den Spieleschrank stellen und ihn öffnen (Spielkonzept 6.10)

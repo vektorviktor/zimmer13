@@ -3975,7 +3975,21 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
   bei Mäxchen. Abbruch bei Vorwarnung wie überall.
 - **Spielautomat** neben dem Schrank: 1 Geld, drei Gleiche zahlen (Siebenen 20), zwei Gleiche geben den Einsatz
   zurück, drei Augen starren nur – im Mittel kommen 0,69 je Geld zurück. Laut; läuft nachts ab und zu von selbst an.
-- Noch offen: Gäste spielen die neuen Spiele untereinander, Herausforderungen, Zuschauen; Billard, Kicker, Bowling.
+- Noch offen: Gäste spielen die neuen Spiele untereinander, Herausforderungen, Zuschauen; Billard, Kicker; Bowling
+  gegen Gäste (unten).
+
+> **Bowling allein (entschieden und umgesetzt 2026-11-01, ZIM-71):** [E] am Kugelständer startet das Spiel – man
+> steht **mittig im Anlauf**, eine Kugel aus dem Ständer in der Hand. Eine Kugel **mitnehmen geht nicht**: Die Kugeln
+> gehören zur Bahn, beim Aufhören stellt man sie zurück (Gedanke: die anderen Gäste wären sauer, wenn eine fehlt).
+> **Zielen wie beim Darts:** A/D tritt zur Seite, die Maus gibt die Richtung, eine Marke auf der Bahn (4,6 m hinter
+> der Foullinie, wo echte Bahnen ihre Pfeile haben) zeigt, wohin die Kugel läuft; der Blick schwankt. Linksklick
+> halten macht ruhiger, zu lange zittert der Arm, Loslassen rollt – mit Streuung; Rausch, Kaffee, Schock und
+> Müdigkeit machen es schwerer. **Stärke fest mit leichtem Zufall, kein Effet** (vorerst). Beim Rollen **löst sich
+> die Kamera** und fährt der Kugel nach, bis **5 m vor dem Ende der Bahn**, und schaut dort auf die Kegel; [E] oder
+> Linksklick springt zurück, eine Vorwarnung bricht ab. **Ein Frame** (zwei Würfe, Strike beendet ihn), danach
+> „Weiter?“. Die Kegel fallen jetzt wirklich (Kollision in Kegelform statt als breiter Zylinder): ein gerader Wurf in
+> die Tasche wirft meist 6–9, ab und zu alle zehn.
+> Noch offen: ganzes Spiel mit zehn Frames und Zählung, gegen Gäste, Einsatz, Effet.
 
 **Umsetzungsstand (entschieden und umgesetzt 2026-10-25): Darts in der Bar** – „wie Mäxchen und Schach“
 - **Ort:** Sisalscheibe nach Turniermaß an einer Wand der Bar (Bull 1,73 m hoch), schwarzer Ring drumherum,

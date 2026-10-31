@@ -233,7 +233,7 @@ done <<'LIST'
 2000|barspiele|--bargame=siebzehn --autoplay --trace
 2000|barspiele|--bargame=quiz,edna --autoplay --trace
 2500|barspiele|--bargame=wahrheit --autoplay --trace
-900|barspiele,bowling|--bowling --trace
+1200|barspiele,bowling|--bowling --autoplay --trace
 600|halloween,tiere,kraehen|--kraehen=groll --trace
 600|halloween,tiere,speichern|--kraehen --savetest
 900|tiere,kraehen|--kraehen=stehlen --trace

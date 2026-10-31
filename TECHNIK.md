@@ -2144,7 +2144,7 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   Mut < `PANIC_BRAVE`) ruft zuerst und auch in der Nachtruhe, Pause `PANIC_COOLDOWN`, zur Not den nächsten Nachbarn,
   der abnimmt; Angst steckt an (`PANIC_FEAR`), der Anrufer wird ruhiger. Eingehend für Zimmer 13 Art `"panic"`
   (beruhigen: Angst −25, `Talk.friendly` 1,5). Debug `--gastanruf`, `--call=id,panik`. Telefonzentrale fehlt (4.14).
-- **Spieltische** (`minigames/`): `TableMatch` (CanvasLayer 15) = Basis von `DiceMatch`, `ChessMatch` und `DartMatch`
+- **Spieltische** (`minigames/`): `TableMatch` (CanvasLayer 15) = Basis von `DiceMatch`, `ChessMatch`, `DartMatch` und `BowlingMatch`
   (Hooks `_table`, `_gear`, `_on_seated`, `_update_game`, `_stop`, `_take_places`/`_leave_places` – Standard: hinsetzen,
   Maus frei); Einsätze über `TableStakes`. Ob gerade eins läuft: `Game.table_game_active()` (Autosave, Herausforderungen,
   Kürbismann). **Mäxchen:** `Maexchen` = Regeln, `DiceMatch` = Partie & Gast-KI, `GameTable` = Tisch. **Schach:**
@@ -2198,7 +2198,18 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   (Fünferformen fallen ins Feld 12 × 18; das Männchen läuft die äußere Flurrunde, Gespenster hinterher, rot nach
   einer Laterne); spielbar noch nicht. **Bowlingbahn:** Flächen „Bowlingbahn“/„Foullinie“ im Grundriss
   (`bowling_lane`/`foul_line`, die Linie darf schmal sein – `THIN_FILLS` in `build_map.py`), Boden `_lane_floor`
-  (Dielenfoto heller und glatter, `LANE_*`); Kugeln und Pins fehlen noch. Debug `--bargame=spiel[,gast]`, `--spieleschrank`, Test `bar_games_checks`,
+  (Dielenfoto heller und glatter, `LANE_*`). `BowlingLane` (Weltkoordinaten, Bahn nach −z): zehn `RigidBody3D`-Kegel
+  (Drehkörper aus `PROFILE`, Kollision = konvexe Hülle desselben Umrisses, `_pin_hull` – als Zylinder in Bauchbreite
+  standen sie doppelt so breit und fielen kaum; `continuous_cd`), eingefroren, bis eine Kugel rollt (`roll`);
+  `settled` meldet, wenn Kugel durch und alles `QUIET_TIME` ruhig ist (spätestens `MAX_ROLL`), `down` zählt
+  Umgefallene/Verrutschte, `sweep` räumt sie nach dem ersten Wurf weg (unsichtbar, ohne Kollision), `reset` stellt
+  alle auf. Ständer mit `BALL_COLORS`-Kugeln ist das Interactable. `BowlingMatch` (`TableMatch` ohne Tisch und Gast,
+  `Game.bowling`, eigenes `_end`): `Player.stand_at` mittig in den Anlauf (`STAND` hinter der Foullinie), Kugel aus
+  dem Ständer vor der Kamera; Zielen wie `DartMatch` (Schwanken, Halten, Streuung) auf die Gierung, A/D versetzt um
+  `SIDESTEP`, Marke auf der Bahn bei `ARROWS`; Stärke `SPEED` ± `SPEED_JITTER`, kein Effet. Beim Rollen eigene
+  `Camera3D` (Werte der Spielerkamera) hinter der Kugel (`FOLLOW`), bleibt `FOLLOW_STOP` vor dem Bahnende stehen;
+  [E]/Linksklick oder Vorwarnung → `Player.camera.make_current()`. Ein Frame, dann „Weiter“/„Aufhören“; beim ersten
+  Aufhören `STEAL_LINE`. Debug `--bowling` (mit `--autoplay` in die Tasche, Frame um Frame), Rauchtest `bowling`. Debug `--bargame=spiel[,gast]`, `--spieleschrank`, Test `bar_games_checks`,
   Rauchtest `barspiele`.
 
 ### UI

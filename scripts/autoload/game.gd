@@ -32,6 +32,7 @@ var dialog: DialogUI
 var dice: DiceMatch
 var chess: ChessMatch
 var darts: DartMatch               ## Darts an der Bar (Spielkonzept 6.10)
+var bowling: BowlingMatch           ## Bowling allein an der Bahn in der Bar (Spielkonzept 6.10)
 var bar_games := {}                ## Barspiele am Würfeltisch: id → BarMatch (Spielkonzept 6.10, 28.10.)
 var menus: Menus
 var traces: Traces
@@ -205,9 +206,10 @@ func reset() -> void:
 	Senses.clear_cache()
 
 
-## Läuft gerade ein Spiel mit dem Spieler – Mäxchen, Schach, Darts (auch allein) oder ein Barspiel?
+## Läuft gerade ein Spiel mit dem Spieler – Mäxchen, Schach, Darts (auch allein), Bowling oder ein Barspiel?
 func table_game_active() -> bool:
-	if (dice != null and dice.active) or (chess != null and chess.active) or (darts != null and darts.active):
+	if (dice != null and dice.active) or (chess != null and chess.active) or (darts != null and darts.active) \
+			or (bowling != null and bowling.active):
 		return true
 	for game: BarMatch in bar_games.values():
 		if game.active:
