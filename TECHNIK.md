@@ -636,7 +636,15 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     Ablage 24 × 11 cm rechts daneben (von vorn), Mitte auf Drückerhöhe, aus gerundeten Kästen (Rückenplatte, Boden,
     Rand), ohne Halterung. Duschkopf Ø 25 cm, Mitte 40 cm vor der Wand, Unterkante 2,10 m: Wandarm als Rohr mit Bogen
     (`_tube`), Rosette, Kugelgelenk, Düsenplatte mit `shower_shower_nozzles.png` der Zimmerdusche. Ohne Kollision
-    (zu hoch bzw. weniger tief als der Spielerradius), ohne Zustand; Gruppe `pool_showers`, Debug `--duschen`.
+    (zu hoch bzw. weniger tief als der Spielerradius) bis auf einen Körper um den Drücker (Ebene 4, `interactable`):
+    Druck → `RUN_TIME` 25 s Wasser (nicht gespeichert), Knopf geht 6 mm hinein. Strahl = `CPUParticles3D` aus Punkten
+    über der Düsenplatte mit `shaders/rain_streak.gdshader` (Lebenszeit = Fallzeit bis zum Boden), Dampf weiche
+    Ballen wie in `ShowerScare`, deren Deckkraft in `STEAM_WARMUP` wächst. Rauschen über `SynthAudio.pool_shower`
+    (lautester Platz aus `_sounds`, dumpf außerhalb des Raums), mischt sich mit `shower` der Zimmerdusche; Lärm
+    `shower_button` beim Drücken und `shower` alle 3 s. Gruppe `pool_showers`, Debug `--duschen[=an]`.
+    **Bodenablauf** (`floor_drain`) = `PoolShower.drain`: Edelstahlplatte 15 × 15 × 0,3 cm, darüber eine Fläche mit den
+    8 × 8 Löchern als Textur (zur Laufzeit erzeugt, durchsichtig außer den Löchern, mit Mipmaps). Im Becken auf dessen
+    Boden (`POOL_DEPTH`).
   - `_rugs`: Teppiche als flache Auflage (`Mat.layer_uv`). Ein Läufer läuft entlang der langen Seite
     (`Geo.runner_mesh`: Abschluss an beiden Enden, ganze Zahl Musterkacheln); Art → Textur in `RUG_TEXTURES`. Im
     Katzenraum lose Teppiche aus `CAT_ROOM_RUGS` (`TexGen.rug`), jeder etwas höher als der vorige (Überlappen ohne

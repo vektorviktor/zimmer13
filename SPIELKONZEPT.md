@@ -5298,8 +5298,12 @@ Dachform (4.21).
     Metallbalken aus dem Foto.
   - **Ablage** rechts daneben, 24 cm breit, ohne die Halterung darunter.
   - **Duschkopf** am Wandarm, Mitte 40 cm vor der Wand, Düsen als Textur wie in der Zimmerdusche.
-- Nur Ausstattung: Der Drücker tut noch nichts. *Offen:* Wasser auf Knopfdruck, Abfluss, Trennwände, Fliesen bis zur
-  Decke (ZIM-144).
+- **Wasser auf Knopfdruck:** Ein Druck lässt die Dusche 25 s laufen (Selbstschluss, nochmal drücken verlängert) –
+  Strahl aus der Düsenplatte, nach ein paar Sekunden ein dünner Dampfschleier, Rauschen wie die Zimmerdusche. Das
+  Wasser ist **Lärm** (Hörweite 7 m): Das Monster hört es, man kann es damit auch ablenken.
+- **Bodenablauf** (Foto 1.11.): Edelstahlrost 15 × 15 cm, Löcher als Textur; eigene Planfarbe, einer je Duschraum in
+  der Mitte. Ein Punkt im Becken liegt auf dessen Boden.
+- **Entschieden 1.11.:** Fliesen bleiben bei 2 m wie in den Bädern (nicht bis zur Decke), **keine Trennwände**.
 
 ## 8. Menüs, Speichern & Laden
 

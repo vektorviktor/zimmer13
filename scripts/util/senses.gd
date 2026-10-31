@@ -36,6 +36,8 @@ const NOISE := {
 	"chest":      {"range": 4.0,  "sound": "creak",  "volume": 0.4, "caption": "[Ein Truhendeckel knarrt]"},
 	"drawer":     {"range": 3.0,  "sound": "creak",  "volume": 0.3, "caption": "[Eine Schublade schabt]"},    ## Schublade einer Kommode
 	"locker":     {"range": 4.0,  "sound": "thud",   "volume": 0.35, "caption": "[Eine Spindtür klappt]"},    ## Spindtür in den Umkleiden (ZIM-145)
+	"shower_button": {"range": 1.5, "sound": "blip", "volume": 0.4, "caption": "[Klick – ein Duschknopf]"},    ## Duschplatz am Pool (7.13)
+	"shower":     {"range": 7.0,  "sound": "",       "volume": 0.0},    ## … das Wasser läuft, alle 3 s – zu hören über SynthAudio
 	## Hotelkatzen (Spielkonzept 6.11) – das Monster überhört sie, es mag die Katzen
 	"cat_meow":   {"range": 8.0,  "sound": "meow",   "volume": 0.45},   ## miaut (vor einer Tür, Geschenk)
 	"cat_purr":   {"range": 1.5,  "sound": "purr",   "volume": 0.6, "caption": "[Schnurren]"},    ## schnurrt beim Streicheln

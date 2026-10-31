@@ -479,6 +479,7 @@ const WALL_GAP := 0.01
 const SWITCH_Y := 1.3
 const CALENDAR_Y := 1.7
 const POOL_SHOWER_GAP := 0.002   ## Manschetten liegen auf den Fliesen auf
+const POOL_DEPTH := 1.4          ## Hallenbad: Beckenboden so tief unter dem Umgang
 const UV_Y := 1.5
 const COBWEB_Y := 2.4
 ## Schrift im Haus (Zimmernummern an den Türen, Aufzug): Cinzel Bold (OFL, assets/fonts/OFL.txt; ohne überlappende
@@ -2894,11 +2895,13 @@ func _fittings() -> void:
 				root.add_child(calendar)
 			"pool_shower":   # Duschplatz am Pool: Drücker, Ablage, Duschkopf (Spielkonzept 7.13, ZIM-144)
 				var at := _wall_spot(o, POOL_SHOWER_GAP)
-				var shower := PoolShower.new()
+				var shower := PoolShower.new().setup(self)
 				shower.position = at.at(0.0)
 				shower.rotation.y = at.yaw()
-				shower.add_to_group("pool_showers")
 				root.add_child(shower)
+			"floor_drain":   # Bodenablauf in der Dusche am Pool (Spielkonzept 7.13), im Becken auf dessen Boden
+				var floor_y := -POOL_DEPTH if _place_at(p).get("kind", "") == "pool_water" else 0.0
+				root.add_child(PoolShower.drain(Vector3(p.x, floor_y, p.y)))
 			"phone":
 				var phone := HotelPhone.new().setup(_room_id_at(p))   # Wählscheibentelefon (Spielkonzept 4.14)
 				phone.position = Vector3(p.x, top, p.y)
@@ -3998,7 +4001,7 @@ func _region_name(id: String) -> String:
 ## mit Handlauf hinaus – hochspringen reicht nicht (Sprung ≈ 0,7 m).
 func _pool() -> void:
 	var w: Rect2 = _named["becken"]
-	var depth := 1.4
+	var depth := POOL_DEPTH
 	Geo.solid(root, Vector3(w.size.x, 0.2, w.size.y), Vector3(w.get_center().x, -depth - 0.1, w.get_center().y), _pool_tiles)
 	# Beckenränder innerhalb der Wasserfläche (der Umgang endet an ihrer Kante); ihre Oberseite ist der geflieste Rand
 	for s: float in [-1.0, 1.0]:

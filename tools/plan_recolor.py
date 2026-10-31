@@ -91,6 +91,7 @@ DESIGN = {
 	 "Ausstattung: Spinnweben": (300, 12, 84),
 	"Ausstattung: Dekokiste": (325, 45, 46), "Ausstattung: Kerzenvorrat": (340, 90, 72),
 	"Ausstattung: Ersatzbirnen": (305, 80, 72), "Ausstattung: Duschplatz": (300, 60, 80),
+	"Ausstattung: Bodenablauf": (295, 70, 35),
 	# Ausstattung · Garten (gelbgrün)
 	"Ausstattung: Kürbispflanze": (88, 85, 40), "Ausstattung: Kürbispflanze Hokkaido": (72, 85, 46),
 	"Ausstattung: Kürbispflanze Weiß": (80, 45, 72), "Ausstattung: Kürbispflanze Butternut": (66, 65, 56),

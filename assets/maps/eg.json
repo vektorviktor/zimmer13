@@ -13719,6 +13719,27 @@
 			]
 		},
 		{
+			"kind": "floor_drain",
+			"pos": [
+				25.3,
+				-63.0
+			]
+		},
+		{
+			"kind": "floor_drain",
+			"pos": [
+				33.5,
+				-62.0
+			]
+		},
+		{
+			"kind": "floor_drain",
+			"pos": [
+				39.5,
+				-62.0
+			]
+		},
+		{
 			"kind": "phone",
 			"pos": [
 				-20.25,
