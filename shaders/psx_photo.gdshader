@@ -12,6 +12,10 @@ uniform sampler2D albedo_tex : source_color, filter_linear_mipmap, repeat_enable
 uniform sampler2D normal_tex : hint_normal, filter_linear_mipmap, repeat_enable;
 uniform bool use_normal = false;
 uniform float normal_strength = 1.0;
+// Normal Map so oft je Farbkachel (feine Poren, tools/pore_map.gd); cavity > 0: wo die Normale kippt (Porenwand),
+// dunkler und rauer – Schmutz in den Vertiefungen
+uniform float normal_tiling = 1.0;
+uniform float cavity = 0.0;
 // Glanz: Stärke (0 = matt, 0,5 = übliches Nichtmetall) und Rauheit – fest oder aus dem Rotkanal der Karte
 uniform float specular = 0.0;
 uniform float roughness = 1.0;
@@ -105,12 +109,15 @@ void fragment() {
 	if (use_ao) {
 		ALBEDO *= texture(ao_tex, UV2).r;
 	}
+	float pit = 0.0;
 	if (use_normal) {
-		vec3 t = texture(normal_tex, uv).rgb * 2.0 - 1.0;
+		vec3 t = texture(normal_tex, uv * normal_tiling).rgb * 2.0 - 1.0;
 		vec3 wn = normalize(normalize(world_normal) * t.z + (u_axis * t.x + up_axis * t.y) * normal_strength);
 		NORMAL = normalize((VIEW_MATRIX * vec4(wn, 0.0)).xyz);
+		pit = cavity * clamp((1.0 - t.z) * 5.0, 0.0, 1.0);
 	}
-	Wet w = wet_surface(ALBEDO, (use_roughness ? texture(roughness_tex, uv).r : roughness) * roughness_scale,
+	ALBEDO *= 1.0 - 0.35 * pit;
+	Wet w = wet_surface(ALBEDO, mix((use_roughness ? texture(roughness_tex, uv).r : roughness) * roughness_scale, 1.0, pit),
 			metallic * reflections, specular, reflections);
 	ALBEDO = w.albedo;
 	ROUGHNESS = w.roughness;

@@ -119,14 +119,31 @@ const POOL_FLOOR_ROUGHNESS := "res://assets/textures/TilesBasic_01/T_TilesBasic_
 const POOL_FLOOR_METERS := 1.0
 const POOL_FLOOR_SPECULAR := 0.5
 ## Säulen der Lobby unter der Galerie: polierter dunkler Terrazzo (Farbbild, Rauheit; die Normal Map des Sets ist
-## flach), eine Kachel = 1 m, Steinchen 5–8 mm. Runder Schaft zwischen zwei quadratischen Sockeln, mittig im Plan
+## flach, dafür Poren, PILLAR_PORES), eine Kachel = 1 m, Steinchen 5–8 mm. Toskanisch, mittig im Plan: quadratische Plinthe, Wulst, schlanker
+## Schaft (unteres Drittel gerade, dann verjüngt), Halsring, Echinus, quadratische Deckplatte mit Stufe darunter.
+## Low Poly: Drehkörper mit PILLAR_SIDES Seiten, zusammen unter 1000 Dreiecken je Säule.
 const PILLAR_TEX := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_basecolor.jpg"
 const PILLAR_ROUGHNESS := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_roughness.jpg"
 const PILLAR_METERS := 1.0
 const PILLAR_SPECULAR := 0.5
-const PILLAR_SHAFT_RADIUS := 0.3
-const PILLAR_SHAFT_SEGMENTS := 24
-const PILLAR_PLINTH := Vector3(0.8, 0.3, 0.8)
+## Poren der Säulen (nur dort, Couchtisch und Rezeption bleiben glatt): eigene Normal Map aus tools/pore_map.gd,
+## eine Kachel = PILLAR_PORES_METERS, etwa eine Pore je 2 cm²; Stärke und Schmutz in den Poren (psx_photo „cavity“)
+const PILLAR_PORES := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_pores_normal.png"
+const PILLAR_PORES_METERS := 0.25
+const PILLAR_PORES_STRENGTH := 0.8
+const PILLAR_PORES_CAVITY := 1.0
+const PILLAR_SIDES := 18
+const PILLAR_PLINTH := Vector3(0.54, 0.16, 0.54)
+const PILLAR_ABACUS := Vector3(0.58, 0.07, 0.58)
+const PILLAR_ABACUS_STEP := Vector3(0.52, 0.03, 0.52)
+## Profil (Radius, Höhe): Fuß über dem Boden (Wulst, Plättchen, Anlauf), Kopf unter der Deckplattenstufe (Ring,
+## Hals, Halsring, Echinus); der Schaft dazwischen verjüngt sich von PILLAR_SHAFT_RADIUS auf den ersten Kopfradius.
+const PILLAR_FOOT := [Vector2(0.2, 0.16), Vector2(0.215, 0.185), Vector2(0.22, 0.21), Vector2(0.212, 0.235),
+	Vector2(0.19, 0.255), Vector2(0.17, 0.26), Vector2(0.17, 0.285), Vector2(0.158, 0.3), Vector2(0.15, 0.33)]
+const PILLAR_HEAD := [Vector2(0.13, -0.35), Vector2(0.142, -0.335), Vector2(0.142, -0.315), Vector2(0.128, -0.3),
+	Vector2(0.128, -0.2), Vector2(0.14, -0.19), Vector2(0.14, -0.17), Vector2(0.135, -0.16), Vector2(0.19, -0.13),
+	Vector2(0.235, -0.08), Vector2(0.255, -0.02), Vector2(0.258, 0.0)]
+const PILLAR_SHAFT_RADIUS := 0.15
 ## Couchtisch der Lobby: quadratisch (kurze Seite des Plan-Rechtecks), Platte aus dem Terrazzo der Säulen, so stark,
 ## wie sie über den Unterbau steht und wie ihre Ecken gerundet sind; Beine und Zarge aus dunklem Holz, gleich stark
 const COFFEE_TABLE_SLAB := 0.03
@@ -650,6 +667,7 @@ var _bath_paint: Material
 var _pool_wall: Material
 var _pool_floor: Material
 var _pillar_stone: Material
+var _pillar_porous: ShaderMaterial
 var _grass: Material
 var _stone: Material
 var _gravel: Material
@@ -975,6 +993,10 @@ func _materials() -> void:
 	_pool_floor = Mat.photo(POOL_FLOOR_TEX, POOL_FLOOR_METERS, POOL_FLOOR_NORMAL, POOL_FLOOR_ROUGHNESS, POOL_FLOOR_SPECULAR)
 	_pool_floor.set_meta("floor", "tiles")
 	_pillar_stone = Mat.photo(PILLAR_TEX, PILLAR_METERS, "", PILLAR_ROUGHNESS, PILLAR_SPECULAR)
+	_pillar_porous = Mat.photo(PILLAR_TEX, PILLAR_METERS, PILLAR_PORES, PILLAR_ROUGHNESS, PILLAR_SPECULAR).duplicate()
+	_pillar_porous.set_shader_parameter("normal_tiling", PILLAR_METERS / PILLAR_PORES_METERS)
+	_pillar_porous.set_shader_parameter("normal_strength", PILLAR_PORES_STRENGTH)
+	_pillar_porous.set_shader_parameter("cavity", PILLAR_PORES_CAVITY)
 	# Böden draußen werden im Regen nass (Weather, wet_ground.gdshaderinc) – eigene Materialien, nicht geteilt
 	_grass = Mat.psx(Color(1, 1, 1), "grass", 1.0, Color.BLACK, 0.0, false)
 	_stone = Mat.psx(Color(0.62, 0.57, 0.5), "concrete", 1.0, Color.BLACK, 0.0, false)
@@ -3424,24 +3446,35 @@ func _auto_switches() -> void:
 			break
 
 
-## Säule bis unter die Galerie: quadratischer Sockel unten und oben, dazwischen ein runder Schaft (Terrazzo).
+## Säule bis unter die Galerie (Terrazzo): Plinthe und Deckplatte als Quader, dazwischen ein Drehkörper aus
+## PILLAR_FOOT, dem Schaft und PILLAR_HEAD. Kollision: die Quader und ein Zylinder in Schaftstärke.
 func _pillar(rect: Rect2) -> StaticBody3D:
 	var c := rect.get_center()
 	var body := StaticBody3D.new()
 	body.collision_mask = 0
 	body.position = Vector3(c.x, 0, c.y)
 	root.add_child(body)
-	var shaft_h := H - 2.0 * PILLAR_PLINTH.y
-	for y: float in [PILLAR_PLINTH.y / 2.0, H - PILLAR_PLINTH.y / 2.0]:
-		Geo.mesh(body, Geo.box(PILLAR_PLINTH), _pillar_stone, Vector3(0, y, 0))
-		Geo.add_box_shape(body, PILLAR_PLINTH, Vector3(0, y, 0))
-	Geo.mesh(body, Geo.cylinder(PILLAR_SHAFT_RADIUS, shaft_h, PILLAR_SHAFT_SEGMENTS), _pillar_stone, Vector3(0, H / 2.0, 0))
+	var step_y := H - PILLAR_ABACUS.y - PILLAR_ABACUS_STEP.y   # Unterkante der Deckplattenstufe
+	var profile: Array = PILLAR_FOOT.duplicate()
+	var foot_y: float = PILLAR_FOOT[-1].y
+	var head_y: float = step_y + PILLAR_HEAD[0].y
+	var head_r: float = PILLAR_HEAD[0].x
+	profile.append(Vector2(PILLAR_SHAFT_RADIUS, lerpf(foot_y, head_y, 1.0 / 3.0)))
+	profile.append(Vector2(lerpf(PILLAR_SHAFT_RADIUS, head_r, 0.4), lerpf(foot_y, head_y, 2.0 / 3.0)))
+	for p: Vector2 in PILLAR_HEAD:
+		profile.append(p + Vector2(0, step_y))
+	Geo.mesh(body, Geo.lathe(profile, PILLAR_SIDES), _pillar_porous, Vector3.ZERO)
+	for part: Array in [[PILLAR_PLINTH, PILLAR_PLINTH.y / 2.0], [PILLAR_ABACUS_STEP, step_y + PILLAR_ABACUS_STEP.y / 2.0],
+			[PILLAR_ABACUS, H - PILLAR_ABACUS.y / 2.0]]:
+		Geo.mesh(body, Geo.box(part[0]), _pillar_porous, Vector3(0, part[1], 0))
+		Geo.add_box_shape(body, part[0], Vector3(0, part[1], 0))
+	var shaft_h := step_y - PILLAR_PLINTH.y
 	var cs := CollisionShape3D.new()
 	var shape := CylinderShape3D.new()
 	shape.radius = PILLAR_SHAFT_RADIUS
 	shape.height = shaft_h
 	cs.shape = shape
-	cs.position = Vector3(0, H / 2.0, 0)
+	cs.position = Vector3(0, PILLAR_PLINTH.y + shaft_h / 2.0, 0)
 	body.add_child(cs)
 	return body
 

@@ -330,6 +330,42 @@ static func _rounded_box(size: Vector3, radius: float, segments: int, puff: floa
 	return add_surface(ArrayMesh.new(), PackedVector3Array(verts), PackedVector3Array(normals), PackedInt32Array(indices))
 
 
+## Drehkörper um die senkrechte Achse (Säulen): profile = (Radius, Höhe) von unten nach oben, ohne Deckel. Ringsum
+## weich, entlang des Profils weich, wo zwei Abschnitte um weniger als crease Grad knicken, sonst kantig.
+## 2 · sides Dreiecke je Profilabschnitt.
+static func lathe(profile: Array, sides: int, crease: float = 35.0) -> ArrayMesh:
+	return _cached("l%s,%d,%.1f" % [str(profile), sides, crease], _lathe.bind(profile, sides, crease))
+
+
+static func _lathe(profile: Array, sides: int, crease: float) -> ArrayMesh:
+	var seg_n: Array[Vector2] = []   # Normale je Abschnitt in (Radius, Höhe), nach außen
+	for i in profile.size() - 1:
+		var t: Vector2 = profile[i + 1] - profile[i]
+		seg_n.append(Vector2(t.y, -t.x).normalized())
+	var limit := cos(deg_to_rad(crease))
+	var verts := []
+	var normals := []
+	var indices := []
+	for i in seg_n.size():
+		var first := verts.size()
+		for e in [[profile[i], i - 1], [profile[i + 1], i + 1]]:
+			var p: Vector2 = e[0]
+			var k: int = e[1]
+			var n := seg_n[i]
+			if k >= 0 and k < seg_n.size() and seg_n[k].dot(n) > limit:
+				n = (n + seg_n[k]).normalized()
+			for j in sides + 1:
+				var d := Vector3(cos(TAU * j / sides), 0, sin(TAU * j / sides))
+				verts.append(d * p.x + Vector3.UP * p.y)
+				normals.append(d * n.x + Vector3.UP * n.y)
+		for j in sides:
+			var q := first + j
+			var phi := TAU * (j + 0.5) / sides
+			var face := Vector3(cos(phi) * seg_n[i].x, seg_n[i].y, sin(phi) * seg_n[i].x)
+			_quad(indices, verts, [q, q + 1, q + sides + 2, q + sides + 1], face)
+	return add_surface(ArrayMesh.new(), PackedVector3Array(verts), PackedVector3Array(normals), PackedInt32Array(indices))
+
+
 ## Viereck c (Indizes in verts) als zwei Dreiecke an indices, im Uhrzeigersinn von der Seite normal aus gesehen.
 static func _quad(indices: Array, verts: Array, c: Array, normal: Vector3) -> void:
 	var e1: Vector3 = verts[c[1]] - verts[c[0]]

@@ -35,7 +35,7 @@ Konstanten im Code, hier nur deren Namen.
 - **Wenige verschiedene Meshes:** Jedes eigene Mesh legt je Fläche Puffer auf der Grafikkarte an; manche
   Vulkan-Treiber (Onboard-Grafik) brechen bei zu vielen mit `VkResult error -10` (`VK_ERROR_TOO_MANY_OBJECTS`) ab –
   das Fenster geht beim Bau des Hotels einfach zu. Darum teilen `Geo.box`, `cylinder`, `sphere`, `wall_mesh`,
-  `grain_box`, `rounded_box` und `runner_mesh` gleiche Meshes über einen Cache (Schlüssel auf 0,1 mm gerundet), ebenso
+  `grain_box`, `rounded_box`, `lathe` und `runner_mesh` gleiche Meshes über einen Cache (Schlüssel auf 0,1 mm gerundet), ebenso
   `Bathtub` je Blockgröße: **diese Meshes nie verändern**, sonst ändern sich alle gleichen mit – wer das will, nimmt
   `.duplicate()`. Neue Formen, die oft vorkommen, ebenso teilen. Zählen mit Debug `--meshes` (29.10.: ohne Cache
   15 289 Meshes mit 16 600 Flächen, mit 3 252 bzw. 3 867).
@@ -217,7 +217,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `WoodenFloor_03` | alle Holzböden (`_wood_floor`) | |
 | `Wood_02` | Balkenbett, Stützbalken (`Mat.wood`, UVs von `Geo.grain_box`); grobe Bohlen des Dachgeschosses (`Mat.planks`: Bild aus Brettern mit Stößen, Fugen und Abdunklung, `PLANK_*`, `Mat._photo_from`) | Hirnholz aus TexGen `wood_end` |
 | `Fabric_Pattern_08` | Laken und Kissen (`BedModel.FABRIC_METERS`, Modellkoordinaten) | |
-| `TerrazzoDark_01` | Säulen der Lobby (`_pillar`), Platte des Couchtischs (`_coffee_table`) | |
+| `TerrazzoDark_01` | Säulen der Lobby (`_pillar`), Platte des Couchtischs (`_coffee_table`) | Säulen mit Poren: eigene Normal Map aus `tools/pore_map.gd` (etwa eine je 2 cm², fester Startwert), feiner gekachelt über psx_photo `normal_tiling`; `cavity` macht die Porenwände dunkler und rauer (`PILLAR_PORES_*`) |
 
 ## 2. Aufbau zur Laufzeit
 
@@ -2213,7 +2213,8 @@ Glocke, dafür eine Sammelmeldung.
   (gleicher Aufbau), neue Höhenstufe → `WALLPAPER_GLOSS`. Flecken auf der Tapete sind offen (Spielkonzept 7.2).
 - **Geometrie** (`util/geo.gd`): `Geo.solid` (Kollisionskasten mit Mesh), `Geo.mesh` (nur Optik), `Geo.collider`
   (Kasten ohne Mesh), `Geo.box_part` (Mesh + Form an vorhandenem Körper), `Geo.add_surface` (eigene Flächen),
-  `Geo.wall_mesh` (siehe 4 „Wände“), `Geo.grain_box`, `Geo.rounded_box`, `Geo.runner_mesh`.
+  `Geo.wall_mesh` (siehe 4 „Wände“), `Geo.grain_box`, `Geo.rounded_box`, `Geo.runner_mesh`, `Geo.lathe` (Drehkörper
+  aus einem Profil, entlang weich bis auf Knicke – Lobbysäulen, unter 1000 Dreiecken je Säule).
 
 ## 8a. Lärm & Sichtbarkeit (`scripts/util/senses.gd`, Spielkonzept 4.15)
 
