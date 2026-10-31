@@ -45,10 +45,10 @@ const STREAK_PIXELS := 1.5
 const STREAK_COLOR := Color(0.72, 0.77, 0.88, 0.3)
 ## Fallgeschwindigkeit samt Wind (m/s)
 const FALL := Vector3(0.8, -11.0, 0.3)
-## Dach-Höhenkarte: Zellgröße, Rand um den Plan, so viele Zeilen je Physikbild (Aufbau verteilt)
+## Dach-Höhenkarte: Zellgröße, Rand um den Plan (Aufbau über die ersten Bilder verteilt)
 const CELL := 0.5
 const MARGIN := 12.0
-const ROWS_PER_FRAME := 24
+const ROOF_BUDGET_USEC := 1500   ## Strahltests je Bild höchstens so lange (µs), mindestens eine Zeile (ZIM-124)
 ## Klang: Regenrauschen draußen und drinnen; Donner übertönt so lange (s) und so stark (Hörweite × 1 − MASK)
 const RAIN_OUT := 0.45
 const RAIN_IN := 0.16
@@ -696,7 +696,8 @@ func _set_drops() -> void:
 
 
 ## Dach-Höhenkarte über dem ganzen Plan (+ Rand): je Zelle die Höhe der obersten Fläche (Strahl von oben, Ebenen 1 und
-## Decke). Gebaut zeilenweise in den ersten Bildern (_build_roof_rows) – erst danach regnet es.
+## Decke). Gebaut zeilenweise in den ersten Bildern (_build_roof_rows, je Bild nur ROOF_BUDGET_USEC, sonst ruckelt
+## der Start) – erst danach regnet es und liegt Nebel.
 func _prepare_roofs() -> void:
 	var lo := Vector2(INF, INF)
 	var hi := Vector2(-INF, -INF)
@@ -720,15 +721,19 @@ func _build_roof_rows() -> void:
 		_rows_done += 1
 		return
 	var space := get_world_3d().direct_space_state
-	var last := mini(_rows_done + ROWS_PER_FRAME, _roofs.get_height())
-	for y in range(_rows_done, last):
+	var start := Time.get_ticks_usec()
+	var first := _rows_done
+	while _rows_done < _roofs.get_height():
+		if _rows_done > first and Time.get_ticks_usec() - start > ROOF_BUDGET_USEC:
+			break
+		var y := _rows_done
+		_rows_done += 1
 		for x in _roofs.get_width():
 			var p := _origin + (Vector2(x, y) + Vector2.ONE * 0.5) * CELL
 			var query := PhysicsRayQueryParameters3D.create(Vector3(p.x, TOP + 4.0, p.y), Vector3(p.x, -2.0, p.y),
 				1 | LevelBuilder.LAYER_CEILING)
 			var hit := space.intersect_ray(query)
 			_roofs.set_pixel(x, y, Color((hit["position"] as Vector3).y if not hit.is_empty() else -2.0, 0, 0))
-	_rows_done = last
 	if _rows_done >= _roofs.get_height():
 		_roof_img = _roofs
 		var tex := ImageTexture.create_from_image(_roofs)

@@ -1801,7 +1801,8 @@ Spielkonzept 2.5)
 ### Wetter, Natur
 - **Wetter** (`world/weather.gd`, Spielkonzept 7.8): `Game.weather`, `kind` CLEAR/RAIN/STORM nach Zeitplan,
   `intensity` blendet. **Regen:** `GPUParticles3D` um den Spieler; jeder Tropfen fällt bis zur obersten Fläche darunter
-  – aus einer Dach-Höhenkarte (`_build_roof_rows`, auf die ersten Bilder verteilt); vorher regnet es nicht. Tropfen
+  – aus einer Dach-Höhenkarte (`_build_roof_rows`, auf die ersten Bilder verteilt, je Bild höchstens
+  `ROOF_BUDGET_USEC` = 1,5 ms – feste Zeilenzahl kostete über dem Gebäude bis 50 ms je Bild); vorher regnet es nicht. Tropfen
   als Striche (`shaders/rain_streak.gdshader`, nie schmaler als `STREAK_PIXELS`, sonst blasser). **Gewitter:**
   Blitze über Mondlicht und Himmel `flash`, Donner, danach `masking()` – `MonsterDirector.on_noise` multipliziert die
   Lautstärke damit. **Kirchturmglocke** um Mitternacht (`_update_bell`, kein Lärm). Nicht gespeichert (außer Blutregen). Debug
