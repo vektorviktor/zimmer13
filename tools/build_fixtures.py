@@ -11,7 +11,7 @@
 #   bar_counter.glb, back_bar.glb, bar_stool.glb – Theke (L-Form, Rückschenkel bei −X), Barregal, Hocker; nur
 #                    umbenannt, Texturen verkleinert.
 # Fliesen: Die Flächen „tiles“ (Waschtisch, Duschsockel) bekommen im Spiel die Badfliesen in Weltkoordinaten
-# (LevelBuilder._bath_tiles, 5-cm-Fliesen) – alle ihre Maße sind Vielfache von 5 cm, die Fugen laufen durch.
+# (LevelBuilder._bath_tiles) – alle ihre Maße sind Vielfache von 5 cm (Raster der früheren Badfliesen).
 # Flächen: tiles, ceramic, steel, chrome, glass, brass, wood, wood_top, cushion, nozzles, paper, holder.
 #
 # Aufruf (Blender 4.3):

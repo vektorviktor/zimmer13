@@ -104,8 +104,8 @@ Gemeinsame Regeln:
 
 **Bad und Bar** (`build_fixtures.py`): Flächen `tiles` = Fliesen des Raums (`_bath_tiles`, in Toiletten
 `_wall_tiles`, Weltkoordinaten), `ceramic`, `steel`/`chrome`/`brass` = `Mat.metal`, `glass`, `cushion`. **Fliesenmaß:**
-Waschtisch und Duschsockel messen Vielfache einer Fliese und stehen auf dem Fugenraster, damit die Fugen über sie
-hinweglaufen. Die Fliesenhaut liegt `SKIN_FRONT` vor der Wandfläche des Plans – Wandsachen (Becken, Rosetten) sitzen
+Waschtisch und Duschsockel messen Vielfache von 5 cm (Raster der früheren Badfliesen); seit Tiles045 (gemischte
+Formate) treffen die Fugen ihre Kanten nicht mehr. Die Fliesenhaut liegt `SKIN_FRONT` vor der Wandfläche des Plans – Wandsachen (Becken, Rosetten) sitzen
 deshalb um `SKIN_FRONT` vorgerückt, flache (Drückerplatte) setzt das Skript davor (`PLATE_GAP`). Spiegelglas des
 Rohmodells fällt weg, an seiner Stelle ein `Mirror` (8). Dusche: wird gespiegelt, wenn die Wand rechts steht
 (`_wall_beside`); Kollisionsblock bis `SHOWER_BLOCK` – **zu hoch fürs NavMesh**, sonst schickte es Gäste durchs Glas
@@ -212,8 +212,8 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `pool` (Tiles_06) | Poolbecken, Rand, Einstiegstreppen (`_pool_tiles`) | Fugen treffen die Beckenkanten (`POOL_TILES_METERS`) |
 | `TilesBasic_01` | Pool-Umgang (`pool_deck`) | |
 | `Stone_EngraveWall_01` | Poolhalle, Wände (Haut der Seite `pool`) | AO eingebacken – ohne fast musterlos |
-| Tiles_06 beige | Bäder bis `BATH_TILE_HEIGHT`, Boden, Wannensockel (`_bath_tiles`) | Farbbild mit `tools/tint_tiles.gd` umgefärbt; Weltkoordinaten, die Fugen laufen durch |
-| `Scifi_PaintedWall_01` | Bad darüber und Decke (`_bath_paint`) | |
+| `Tiles045` (ambientCG, CC0) | Bäder bis `BATH_TILE_HEIGHT`, Boden, Wannensockel, Waschtisch, Duschsockel (`_bath_tiles`); Boden der Umkleiden und Duschen am Pool (`TILED_CHANGING_ROOMS` in `_floors_and_ceilings`) | dunkler Schiefer, gemischte Formate, `BATH_TILES_METERS` 1,8 m, Weltkoordinaten; Displacement verworfen (Relief steckt in der Normal Map) |
+| `Scifi_PaintedWall_01` | Bad darüber und Decke, Decke der Umkleiden und Duschen (`_bath_paint`) | |
 | `StoneWall_01` | Kieswege (`gravel`) | `GRAVEL_NORMAL_STRENGTH` – ohne wirkten sie flach |
 | `StoneFloor_02` | Außenwände (Haut der Seite `outside`, `_facade`) | |
 | `Wood_Panels_01` | alle Holzdecken (`_ceiling`, `_room_ceiling`), Aufzugskabine | aufgehellt `CEILING_SHADE`/`ROOM_CEILING_SHADE` |

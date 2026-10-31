@@ -101,11 +101,14 @@ const POOL_TILES_NORMAL := "res://assets/textures/pool/Tiles_06_normalOgl.jpg"
 const POOL_TILES_ROUGHNESS := "res://assets/textures/pool/Tiles_06_roughness.jpg"
 const POOL_TILES_METERS := 0.6
 const POOL_TILES_SPECULAR := 0.5
-## Bäder (23.10.): Wände bis BATH_TILE_HEIGHT, Boden und Wannensockel mit der beigen Variante der Poolfliesen
-## (tools/tint_tiles.gd, Normal Map und Rauheit von Tiles_06), eine Kachel = 6 × 6 Fliesen à 5 cm – in Weltkoordinaten,
-## die Fugen laufen so von der Wand über den Boden auf die Wanne durch; darüber und an der Decke gestrichene Wand
-const BATH_TILES_TEX := "res://assets/textures/pool/Tiles_06_beige_basecolor.jpg"
-const BATH_TILES_METERS := 0.3
+## Bäder, Umkleiden und Duschen am Pool (31.10.): Wände bis BATH_TILE_HEIGHT, Boden, Wannensockel, Waschtisch und
+## Duschsockel mit dunklen Schieferfliesen in gemischten Formaten (Tiles045, ambientCG), eine Kachel =
+## BATH_TILES_METERS (größte Fliesen etwa 45 cm) – in Weltkoordinaten, die Fugen laufen so von der Wand über den
+## Boden auf die Wanne durch; darüber und an der Decke gestrichene Wand
+const BATH_TILES_TEX := "res://assets/textures/Tiles045/Tiles045_basecolor.jpg"
+const BATH_TILES_NORMAL := "res://assets/textures/Tiles045/Tiles045_normalogl.jpg"
+const BATH_TILES_ROUGHNESS := "res://assets/textures/Tiles045/Tiles045_roughness.jpg"
+const BATH_TILES_METERS := 1.8
 const BATH_TILE_HEIGHT := 2.0
 const BATH_PAINT_TEX := "res://assets/textures/Scifi_PaintedWall_01/Scifi_PaintedWall_01_basecolor.jpg"
 const BATH_PAINT_NORMAL := "res://assets/textures/Scifi_PaintedWall_01/Scifi_PaintedWall_01_normalogl.jpg"
@@ -507,6 +510,8 @@ const PAINTING_COLORS: Array[Color] = [Color(0.22, 0.14, 0.12), Color(0.16, 0.2,
 	Color(0.2, 0.18, 0.1), Color(0.18, 0.1, 0.12), Color(0.1, 0.14, 0.18), Color(0.25, 0.1, 0.1)]
 ## Umkleiden und Duschen am Pool teilen sich einen Lichtschalter
 const CHANGING_ROOMS := ["vorraum", "dusche_west", "dusche_ost", "umkleide_west", "umkleide_ost"]
+## davon mit Fliesenboden und gestrichener Decke wie im Bad (_floors_and_ceilings, 31.10.)
+const TILED_CHANGING_ROOMS := ["umkleide_west", "umkleide_ost", "dusche_west", "dusche_ost"]
 ## Flächenarten ohne Namen im Plan → Name (Schalter, Zonen)
 const KIND_NAMES := {"cat_room": "Katzenraum", "library": "Bibliothek", "bath": "Bad", "balcony": "Balkon",
 	"terrace": "Terrasse", "toilet": "Toilette", "storage": "Lager", "cellar": "Keller", "boiler_room": "Heizkeller",
@@ -995,7 +1000,7 @@ func _materials() -> void:
 	_lobby_floor.set_shader_parameter("roughness_scale", LOBBY_FLOOR_ROUGHNESS_SCALE)
 	_pool_tiles = Mat.photo(POOL_TILES_TEX, POOL_TILES_METERS, POOL_TILES_NORMAL, POOL_TILES_ROUGHNESS, POOL_TILES_SPECULAR)
 	_pool_tiles.set_meta("floor", "tiles")
-	_bath_tiles = Mat.photo(BATH_TILES_TEX, BATH_TILES_METERS, POOL_TILES_NORMAL, POOL_TILES_ROUGHNESS, POOL_TILES_SPECULAR)
+	_bath_tiles = Mat.photo(BATH_TILES_TEX, BATH_TILES_METERS, BATH_TILES_NORMAL, BATH_TILES_ROUGHNESS, POOL_TILES_SPECULAR)
 	_bath_tiles.set_meta("floor", "tiles")
 	_bath_paint = Mat.photo(BATH_PAINT_TEX, BATH_PAINT_METERS, BATH_PAINT_NORMAL, BATH_PAINT_ROUGHNESS, BATH_PAINT_SPECULAR)
 	_pool_wall = Mat.photo(POOL_WALL_TEX, POOL_WALL_METERS, POOL_WALL_NORMAL)
@@ -1985,12 +1990,13 @@ func _floors_and_ceilings() -> void:
 		# Verschlossene Zimmer und Kellerräume: Boden nur zum Draufstehen (Debug-Teleport), auf der Ebene der Decken –
 		# nicht im NavMesh, sonst planten Gäste und Monster Wege durch abgesperrte Türen
 		var layer := LAYER_CEILING if (kind == "room" and not _room_open(String(r["id"]))) or kind == "cellar_room" else 1
-		var ceiling: Material = _cellar_ceiling if _level < 0 else {"room": _room_ceiling, "bath": _bath_paint}.get(kind, _ceiling)
+		var look := "bath" if kind == "service" and String(r.get("id", "")) in TILED_CHANGING_ROOMS else kind
+		var ceiling: Material = _cellar_ceiling if _level < 0 else {"room": _room_ceiling, "bath": _bath_paint}.get(look, _ceiling)
 		if kind in ["terrace", "balcony"]:
 			_deck(r)
 		for rc in r["rects"]:
 			if kind != "pool_water":   # das Becken baut _pool, die Decke darüber ist die Holzdecke der Halle
-				_floor(kind, rc, layer)
+				_floor(look, rc, layer)
 			if not bool(r["outdoor"]):
 				for piece in _subtract(_rect(rc), holes):
 					_ceiling_slab(piece, ceiling)
