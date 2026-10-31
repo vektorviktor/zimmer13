@@ -5,14 +5,32 @@ extends StaticBody3D
 ## Was in einer Schublade liegt, fährt mit ihr auf und zu. Lokale +Z = Vorderseite. Der Nachttisch (Nightstand) baut
 ## sich in _build() anders und setzt size, tray und slide selbst.
 
-const SIZE := Vector3(0.9, 0.85, 0.45)
+## Modell aus tools/build_dresser.py (Look des Kleiderschranks, ZIM-130; seit 31.10. 1,00 m hoch): Korpus, eine
+## Schublade (Front und Kasten) und ihre Knöpfe, dazu gebackene Verschattung und Normale. Maße = Bauskript.
+const MODEL := "res://assets/models/dresser.glb"
+const AO := "res://assets/textures/dresser_ao.png"
+const NORMAL := "res://assets/textures/dresser_normal.png"
+## Korpus ohne Sockel und Deckplatte; Höhe = Oberkante der Deckplatte
+const SIZE := Vector3(0.9, 1.0, 0.45)
 const DRAWERS := 3
-const PLINTH := 0.08
-const TOP := 0.03
-const PITCH := (SIZE.y - PLINTH - TOP) / DRAWERS
+## Fächer zwischen Sockel und Rundstab (OPEN im Bauskript)
+const PLINTH := 0.10
+const OPEN_TOP := 0.86
+const PITCH := (OPEN_TOP - PLINTH) / DRAWERS
+## Halbe Breite der Fächer (zwischen den Eckpfosten), Breite der Pfosten
+const OPEN_X := 0.36
+const POST := SIZE.x / 2.0 - OPEN_X
 const SLIDE := 0.3
-## Innenmaß einer Schublade (Boden bis Oberkante der Seitenwände)
-const TRAY := Vector3(SIZE.x - 0.12, 0.15, SIZE.z - 0.07)
+## Innenmaß einer Schublade (Boden bis Oberkante der Seitenwände) – TRAY im Bauskript ohne die 12-mm-Wände
+const TRAY := Vector3(0.636, 0.148, 0.368)
+## Front der Schublade: Vorderfläche (z), Stärke; Kasten außen und Lage seines Bodens (wie im Bauskript)
+const FRONT_Z := SIZE.z / 2.0 - 0.008
+const FRONT_T := 0.02
+const TRAY_OUT := Vector3(0.66, 0.16, 0.38)
+const TRAY_LIFT := 0.012
+const WALL := 0.012
+
+static var _parts := {}   # Teile des Modells (_model)
 ## Fund beim ersten Öffnen: Wahrscheinlichkeit für leer / Münzen, sonst ein Gegenstand
 const EMPTY_CHANCE := 0.4
 const COINS_CHANCE := 0.3
@@ -59,27 +77,54 @@ func _ready() -> void:
 	_build()
 
 
-## Korpus und Schubladen (add_drawer) bauen.
+## Korpus und Schubladen (add_drawer) bauen: Meshes aus MODEL, Kollision als Kästen. Hohler Korpus – sonst drückt die
+## Physik die Gegenstände aus geschlossenen Schubladen heraus; seitlich in Breite der Pfosten (die Kästen laufen
+## innen daran vorbei).
 func _build() -> void:
-	var wood := Mat.psx(Color(0.3, 0.17, 0.09))
-	var front := Mat.psx(Color(0.38, 0.22, 0.12))
-	var brass := Mat.psx(Color(0.62, 0.48, 0.22))
-	# Hohler Korpus – sonst drückt die Physik die Gegenstände aus geschlossenen Schubladen heraus
-	Geo.box_part(self, Vector3(SIZE.x, PLINTH, SIZE.z), Vector3(0, PLINTH / 2.0, 0), wood)
-	Geo.box_part(self, Vector3(SIZE.x + 0.04, TOP, SIZE.z + 0.03), Vector3(0, SIZE.y - TOP / 2.0, 0.005), wood)
-	Geo.box_part(self, Vector3(SIZE.x, SIZE.y, 0.02), Vector3(0, SIZE.y / 2.0, -SIZE.z / 2.0 + 0.01), wood)
+	var parts := _model()
+	var wood := Mat.hotel_wood(AO, NORMAL)
+	_part(self, parts["carcass"], wood)
+	var open_h := OPEN_TOP - PLINTH
+	Geo.add_box_shape(self, Vector3(SIZE.x + 0.04, PLINTH, SIZE.z + 0.02), Vector3(0, PLINTH / 2.0, 0.01))
+	Geo.add_box_shape(self, Vector3(SIZE.x + 0.076, SIZE.y - OPEN_TOP, SIZE.z + 0.038),
+		Vector3(0, (SIZE.y + OPEN_TOP) / 2.0, 0.019))
+	Geo.add_box_shape(self, Vector3(SIZE.x, open_h, WALL), Vector3(0, PLINTH + open_h / 2.0, -SIZE.z / 2.0 + WALL / 2.0))
 	for side in [-1.0, 1.0]:
-		Geo.box_part(self, Vector3(0.03, SIZE.y, SIZE.z), Vector3(side * (SIZE.x / 2.0 - 0.015), SIZE.y / 2.0, 0), wood)
+		Geo.add_box_shape(self, Vector3(POST, open_h, SIZE.z), Vector3(side * (SIZE.x - POST) / 2.0, PLINTH + open_h / 2.0, 0))
+	var back := FRONT_Z - FRONT_T   # Rückseite der Front = Vorderkante des Kastens
 	for i in DRAWERS:
-		var drawer := add_drawer(PLINTH + PITCH * i + 0.01)
-		var z_front := SIZE.z / 2.0 - 0.0125
-		Geo.box_part(drawer, Vector3(SIZE.x - 0.08, PITCH - 0.02, 0.025), Vector3(0, (PITCH - 0.02) / 2.0, z_front), front)
-		Geo.mesh(drawer, Geo.box(Vector3(0.1, 0.025, 0.03)), brass, Vector3(0, (PITCH - 0.02) / 2.0, z_front + 0.02))
-		var tray_z := z_front - 0.0125 - TRAY.z / 2.0
-		Geo.box_part(drawer, Vector3(TRAY.x, 0.015, TRAY.z), Vector3(0, 0.0075, tray_z), wood)
-		Geo.box_part(drawer, Vector3(TRAY.x, TRAY.y, 0.015), Vector3(0, TRAY.y / 2.0, tray_z - TRAY.z / 2.0), wood)
+		var drawer := add_drawer(PLINTH + PITCH * i)
+		_part(drawer, parts["drawer"], wood)
+		_part(drawer, parts["pulls"], null)
+		Geo.add_box_shape(drawer, Vector3(2.0 * OPEN_X - 0.003, PITCH - 0.003, FRONT_T),
+			Vector3(0, PITCH / 2.0, FRONT_Z - FRONT_T / 2.0))
+		var zm := back - TRAY_OUT.z / 2.0
+		Geo.add_box_shape(drawer, Vector3(TRAY_OUT.x, WALL, TRAY_OUT.z), Vector3(0, TRAY_LIFT + WALL / 2.0, zm))
+		Geo.add_box_shape(drawer, Vector3(TRAY_OUT.x, TRAY_OUT.y, WALL),
+			Vector3(0, TRAY_LIFT + TRAY_OUT.y / 2.0, back - TRAY_OUT.z + WALL / 2.0))
 		for side in [-1.0, 1.0]:
-			Geo.box_part(drawer, Vector3(0.015, TRAY.y, TRAY.z), Vector3(side * TRAY.x / 2.0, TRAY.y / 2.0, tray_z), wood)
+			Geo.add_box_shape(drawer, Vector3(WALL, TRAY_OUT.y, TRAY_OUT.z),
+				Vector3(side * (TRAY_OUT.x - WALL) / 2.0, TRAY_LIFT + TRAY_OUT.y / 2.0, zm))
+
+
+
+## Teile des Modells: Name → Mesh
+static func _model() -> Dictionary:
+	if _parts.is_empty():
+		var scene: Node = (load(MODEL) as PackedScene).instantiate()
+		for mi: MeshInstance3D in scene.find_children("*", "MeshInstance3D", true, false):
+			_parts[String(mi.name)] = mi.mesh
+		scene.free()
+	return _parts
+
+
+## Teil unter parent im Ursprung (die Schublade liegt schon relativ zu ihrem Fach), mat = null → Material des Meshs
+static func _part(parent: Node3D, mesh: Mesh, mat: Material) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = mat
+	parent.add_child(mi)
+	return mi
 
 
 ## Neue Schublade, Unterkante auf Höhe y (von unten nach oben anlegen): ein leerer Körper mit Griff, die Teile setzt

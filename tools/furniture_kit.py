@@ -174,7 +174,8 @@ def atlas_uv(obs, margin, scales=None):
 	bpy.context.scene.tool_settings.use_uv_select_sync = True
 	bpy.ops.object.mode_set(mode='EDIT')
 	bpy.ops.mesh.select_all(action='SELECT')
-	bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+	# nur um 90° drehen – schräg im Pixelraster würden Furchen und Mulden unscharf
+	bpy.ops.uv.pack_islands(rotate=True, rotate_method='CARDINAL', margin=margin)
 	bpy.ops.object.mode_set(mode='OBJECT')
 	for ob in obs:
 		ob.data.uv_layers["atlas"].active_render = True
@@ -318,3 +319,172 @@ def paint_details(obs, nrm, ao, painters, expand=2.0):
 				nrm[rows, cols] = mix / np.linalg.norm(mix, axis=1, keepdims=True).clip(1e-6)
 			if shade is not None:
 				ao[rows, cols] *= 1.0 - mask * (1.0 - shade)
+
+
+# --- Korpus ------------------------------------------------------------------------------------------------------
+class Body:
+	"""Maße eines Korpus (Godot, Boden y = 0, Mitte x = 0, Vorderseite +Z): Breite und Tiefe ohne Sockel und Kranz,
+	Breite der Eckpfosten vorn, Öffnung (Unter- und Oberkante; seitlich zwischen den Pfosten), Profil ringsum als
+	(Vorsprung, Höhe) von unten nach oben – an der Unterkante der Öffnung muss es bei Vorsprung 0 ankommen, an ihrer
+	Oberkante dort wieder anfangen –, Fries (Höhe von, bis: glatt, Vorsprung 0, bekommt die Mulden). Fronten (Türen,
+	Schubladen) sitzen front_inset hinter den Pfosten und sind front_t stark; dahinter enden die Pfosten innen."""
+
+	def __init__(self, width, depth, post, opening, profile, frieze, side_wall=0.018, back_wall=0.012,
+			front_inset=0.008, front_t=0.022):
+		self.hw = width / 2.0
+		self.zf = depth / 2.0
+		self.zb = -depth / 2.0
+		self.post = post
+		self.xo = self.hw - post
+		self.opening = opening
+		self.profile = [(round(o, 6), round(y, 6)) for o, y in profile]
+		self.frieze = frieze
+		self.side_wall = side_wall
+		self.back_wall = back_wall
+		self.front_z = self.zf - front_inset
+		self.front_t = front_t
+		self.top = self.profile[-1][1]
+
+	def kind(self, y0, y1):
+		if y1 <= self.opening[0] + 1e-6:
+			return "plinth"
+		if y0 >= self.opening[0] - 1e-6 and y1 <= self.opening[1] + 1e-6:
+			return "body"
+		if y0 >= self.frieze[0] - 1e-6 and y1 <= self.frieze[1] + 1e-6:
+			return "frieze"
+		return "bead" if y1 <= self.frieze[0] + 1e-6 else "cornice"
+
+
+## Korpus außen (Profil ringsum, Deckel, Rückwand in Gruppe 9) und innen (Rückwand, Seiten, Boden und Decke bis vor
+## in die Öffnung, Rückseiten der Pfosten, Laibungen). Pfosten vorn Gruppe 1 (Furchen), Fries Gruppe 4 (Mulden).
+def carcass(b, name="carcass"):
+	c = Part(name)
+	hw, zf, zb, xo = b.hw, b.zf, b.zb, b.xo
+	for (oa, ya), (ob, yb) in zip(b.profile, b.profile[1:]):
+		kind = b.kind(ya, yb)
+		t = (ob - oa, yb - ya)
+		ln = math.hypot(*t)
+		no, ny = t[1] / ln, -t[0] / ln   # Normale nach außen in (Vorsprung, Höhe)
+		body = kind == "body"
+		niche = 4 if kind == "frieze" else 0
+		# vorn: links Pfosten, Mitte (im Korpus offen – dort ist die Öffnung), rechts Pfosten
+		xa, xb = hw + oa, hw + ob
+		za, zb2 = zf + oa, zf + ob
+		for x0a, x0b, x1a, x1b, seg in ((-xa, -xb, -xo, -xo, "l"), (-xo, -xo, xo, xo, "m"), (xo, xo, xa, xb, "r")):
+			if body and seg == "m":
+				continue
+			c.face([(x0a, ya, za), (x1a, ya, za), (x1b, yb, zb2), (x0b, yb, zb2)], (0, ny, no),
+				("post", seg) if body else (kind, "front"), "y" if body else "x", 1 if body else niche)
+		for s in (-1, 1):
+			c.face([(s * xa, ya, za), (s * xa, ya, zb), (s * xb, yb, zb), (s * xb, yb, zb2)], (s * no, ny, 0),
+				("side", s) if body else (kind, s), "y" if body else "z", niche)
+		if abs(yb - ya) > 1e-6:
+			c.face([(-xa, ya, zb), (xa, ya, zb), (xb, yb, zb), (-xb, yb, zb)], (0, 0, -1), ("back",), "y", 9)
+	o, top = b.profile[-1]
+	c.face([(-hw - o, top, zf + o), (hw + o, top, zf + o), (hw + o, top, zb), (-hw - o, top, zb)], (0, 1, 0),
+		("top",), "x")
+	xi = hw - b.side_wall
+	zi = zb + b.back_wall
+	zp = b.front_z - b.front_t
+	y0, y1 = b.opening
+	c.face([(-xi, y0, zi), (xi, y0, zi), (xi, y1, zi), (-xi, y1, zi)], (0, 0, 1), ("in", "back"), "y")
+	for s in (-1, 1):
+		c.face([(s * xi, y0, zi), (s * xi, y0, zp), (s * xi, y1, zp), (s * xi, y1, zi)], (-s, 0, 0), ("in", s), "y")
+		c.face([(s * xo, y0, zp), (s * xi, y0, zp), (s * xi, y1, zp), (s * xo, y1, zp)], (0, 0, -1), ("in", "post", s), "y")
+		c.face([(s * xo, y0, zp), (s * xo, y0, zf), (s * xo, y1, zf), (s * xo, y1, zp)], (-s, 0, 0), ("reveal", s), "y")
+	for y, ny in ((y0, 1), (y1, -1)):
+		for xa, xb, z1 in ((-xi, -xo, zp), (-xo, xo, zf), (xo, xi, zp)):
+			c.face([(xa, y, zi), (xb, y, zi), (xb, y, z1), (xa, y, z1)], (0, ny, 0), ("in", y), "x")
+	return c
+
+
+# --- Gemalte Formen ----------------------------------------------------------------------------------------------
+## Stehende Kapseln (unten und oben rund) mit elliptischem Querschnitt in einer Fläche: s = Lage quer (Meter), y = Höhe,
+## centers = Mitten in s, y0/y1 = Mitten der runden Enden, r = halbe Breite. Gibt die Steigung der Höhe nach s und y
+## (h = −depth · √(1 − q²) steigt nach außen – die Normale kippt zur Mitte der Mulde hin), Verschattung (im Grund
+## dunkler) und Maske (Kante über ein Pixel geglättet).
+def capsules(s, y, centers, y0, y1, r, depth, px):
+	best = np.full(len(s), 1e9)
+	ds = np.zeros(len(s))
+	dy = np.zeros(len(s))
+	qy = np.clip(y, y0, y1)
+	for cx in centers:
+		ex, ey = s - cx, y - qy
+		dist = np.hypot(ex, ey)
+		take = dist < best
+		best = np.where(take, dist, best)
+		ds = np.where(take, ex, ds)
+		dy = np.where(take, ey, dy)
+	q = np.clip(best / r, 0, 1)
+	root = np.sqrt(np.clip(1 - q * q, 0.04, 1))
+	slope = depth / r * q / root
+	far = np.maximum(best, 1e-9)
+	gs = np.where(best > 1e-9, slope * ds / far, 0)
+	gy = np.where(best > 1e-9, slope * dy / far, 0)
+	mask = np.clip((r - best) / px + 0.5, 0, 1)
+	return gs, gy, 0.58 + 0.2 * q, mask
+
+
+## Furchen in den Pfosten (Gruppe 1): count Kapseln der Breite w im Abstand gap, mittig im Pfosten, end über der
+## Öffnung unten und unter ihr oben
+def flutes(b, count, w, gap, depth, end):
+	r = w / 2.0
+	margin = (b.post - count * w - (count - 1) * gap) / 2.0
+	centers = [margin + r + k * (w + gap) for k in range(count)]
+
+	def paint(pts, n, px):
+		s = np.abs(pts[:, 0]) - b.xo      # 0 an der Öffnung, post außen
+		gs, gy, shade, mask = capsules(s, pts[:, 1], centers, b.opening[0] + end + r, b.opening[1] - end - r, r,
+			depth, px)
+		normals = np.stack([-gs * np.sign(pts[:, 0]), -gy, np.ones(len(pts))], axis=1)
+		normals /= np.linalg.norm(normals, axis=1, keepdims=True)
+		return normals, shade, mask
+
+	return paint
+
+
+## Mulden im Fries (Gruppe 4): Kapseln w breit, h hoch, mittig im Fries; vorn im festen Raster um die Mitte, das eine
+## Lücke über x = ±xo legt (dort ist die Vorderseite geteilt), an den Seiten von der vorderen Ecke im selben Abstand
+## nach hinten; die äußerste mindestens corner von der Ecke.
+def niches(b, w, h, depth, steps, corner):
+	r = w / 2.0
+	pitch = b.xo / (steps + 0.5)
+	mid = (b.frieze[0] + b.frieze[1]) / 2.0
+	y0, y1 = mid - h / 2.0 + r, mid + h / 2.0 - r
+	k = int((b.hw - corner) / pitch)
+
+	def paint(pts, n, px):
+		if abs(n[2]) > 0.5:   # vorn
+			axis = np.array([1.0, 0, 0])
+			centers = [i * pitch for i in range(-k, k + 1)]
+		else:
+			axis = np.array([0, 0, 1.0])
+			first = b.zf - (b.hw - k * pitch)
+			centers = []
+			while first > b.zb + corner:
+				centers.append(first)
+				first -= pitch
+		gs, gy, shade, mask = capsules(pts @ axis, pts[:, 1], centers, y0, y1, r, depth, px)
+		normals = n[None, :] - gs[:, None] * axis[None, :] - gy[:, None] * np.array([0, 1.0, 0])[None, :]
+		normals /= np.linalg.norm(normals, axis=1, keepdims=True)
+		return normals, shade, mask
+
+	return paint
+
+
+## Kasten (Brett) als sechs Flächen eines Parts: Mitte c, Größe s, Faser entlang axis
+def board(part, c, s, piece, axis):
+	h = [v / 2.0 for v in s]
+	for a in range(3):
+		for sign in (-1, 1):
+			n = [0, 0, 0]
+			n[a] = sign
+			u, v = [i for i in range(3) if i != a]
+			pts = []
+			for du, dv in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+				p = list(c)
+				p[a] += sign * h[a]
+				p[u] += du * h[u]
+				p[v] += dv * h[v]
+				pts.append(tuple(p))
+			part.face(pts, tuple(n), piece, axis)

@@ -26,7 +26,8 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from furniture_kit import B, G, arc, Part, lathe, finish_plain, atlas_uv, setup_cycles, new_image, bake_material, \
-	brass_material, bake, godot_normals, save_image, paint_details
+	brass_material, bake, godot_normals, save_image, paint_details, Body, flutes, niches
+from furniture_kit import carcass as carcass_of
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 DST = os.path.abspath(argv[0])
@@ -68,7 +69,7 @@ FRIEZE = (OPEN[1] + 0.026, 2.10)
 NICHE_W = 0.012
 NICHE_H = 0.07
 NICHE_DEPTH = 0.004
-NICHE_PITCH = XO / 14.5
+NICHE_STEPS = 14          # Raster: XO = (NICHE_STEPS + ½) Abstände
 NICHE_CORNER = 0.05       # Mitte der äußersten Mulde mindestens so weit von der Ecke
 # Messing
 HINGE_Y = (0.33, 1.71)
@@ -93,65 +94,10 @@ PROFILE = [(0.02, 0.0), (0.02, 0.072), (0.017, 0.075), (0.010, 0.075), (0.010, 0
 	+ [(0.0, OPEN[1])] + arc(0.0, OPEN[1] + 0.013, 0.013, -90, 90, 8) \
 	+ [(0.0, 2.10)] + arc(0.04, 2.10, 0.04, 180, 90, 6) + [(0.046, 2.14)] \
 	+ arc(0.046, 2.152, 0.012, -90, 0, 3) + [(0.058, 2.168)] + arc(0.046, 2.168, 0.012, 0, 90, 3)
-PROFILE = [(round(o, 6), round(y, 6)) for o, y in PROFILE]
 assert abs(PROFILE[-1][1] - TOP) < 1e-6
 
 
-def part_of(y0, y1):
-	if y1 <= OPEN[0] + 1e-6:
-		return "plinth"
-	if y0 >= OPEN[0] - 1e-6 and y1 <= OPEN[1] + 1e-6:
-		return "body"
-	if y1 <= OPEN[1] + 0.026 + 1e-6:
-		return "bead"
-	if y1 <= 2.10 + 1e-6:
-		return "frieze"
-	return "cornice"
-
-
-# --- Korpus ------------------------------------------------------------------------------------------------------
-def build_carcass():
-	c = Part("carcass")
-	for (oa, ya), (ob, yb) in zip(PROFILE, PROFILE[1:]):
-		kind = part_of(ya, yb)
-		t = (ob - oa, yb - ya)
-		ln = math.hypot(*t)
-		no, ny = t[1] / ln, -t[0] / ln   # Normale nach außen in (Vorsprung, Höhe)
-		body = kind == "body"
-		niche = 4 if kind == "frieze" else 0   # Fries mit gemalten Mulden
-		# vorn: links Pfosten, Mitte (nicht im Korpus – dort ist die Öffnung), rechts Pfosten
-		xa, xb = HW + oa, HW + ob
-		za, zb = ZF + oa, ZF + ob
-		for x0a, x0b, x1a, x1b, seg in ((-xa, -xb, -XO, -XO, "l"), (-XO, -XO, XO, XO, "m"), (XO, XO, xa, xb, "r")):
-			if body and seg == "m":
-				continue
-			c.face([(x0a, ya, za), (x1a, ya, za), (x1b, yb, zb), (x0b, yb, zb)], (0, ny, no),
-				("post", seg) if body else (kind, "front"), "y" if body else "x", 1 if body else niche)
-		# Seiten
-		for s in (-1, 1):
-			c.face([(s * xa, ya, za), (s * xa, ya, ZB), (s * xb, yb, ZB), (s * xb, yb, zb)], (s * no, ny, 0),
-				("side", s) if body else (kind, s), "y" if body else "z", niche)
-		# hinten (in der Ebene der Rückwand)
-		if abs(yb - ya) > 1e-6:
-			c.face([(-xa, ya, ZB), (xa, ya, ZB), (xb, yb, ZB), (-xb, yb, ZB)], (0, 0, -1), ("back",), "y", 9)
-	# Deckel
-	o = PROFILE[-1][0]
-	c.face([(-HW - o, TOP, ZF + o), (HW + o, TOP, ZF + o), (HW + o, TOP, ZB), (-HW - o, TOP, ZB)], (0, 1, 0),
-		("top",), "x")
-	# Innen: Rückwand, Seiten, Boden und Decke (bis vor in die Öffnung), Rückseiten der Pfosten, Laibungen
-	xi = HW - SIDE_WALL
-	zi = ZB + BACK_WALL
-	zp = DOOR_Z - DOOR_T     # Rückseite der Pfosten = Rückseite der Türen
-	y0, y1 = OPEN
-	c.face([(-xi, y0, zi), (xi, y0, zi), (xi, y1, zi), (-xi, y1, zi)], (0, 0, 1), ("in", "back"), "y")
-	for s in (-1, 1):
-		c.face([(s * xi, y0, zi), (s * xi, y0, zp), (s * xi, y1, zp), (s * xi, y1, zi)], (-s, 0, 0), ("in", s), "y")
-		c.face([(s * XO, y0, zp), (s * xi, y0, zp), (s * xi, y1, zp), (s * XO, y1, zp)], (0, 0, -1), ("in", "post", s), "y")
-		c.face([(s * XO, y0, zp), (s * XO, y0, ZF), (s * XO, y1, ZF), (s * XO, y1, zp)], (-s, 0, 0), ("reveal", s), "y")
-	for y, ny in ((y0, 1), (y1, -1)):
-		for xa, xb, z1 in ((-xi, -XO, zp), (-XO, XO, ZF), (XO, xi, zp)):
-			c.face([(xa, y, zi), (xb, y, zi), (xb, y, z1), (xa, y, z1)], (0, ny, 0), ("in", y), "x")
-	return c.finish()
+BODY = Body(WIDTH, DEPTH, POST, OPEN, PROFILE, FRIEZE, SIDE_WALL, BACK_WALL, ZF - DOOR_Z, DOOR_T)
 
 
 # --- Türen -------------------------------------------------------------------------------------------------------
@@ -252,7 +198,7 @@ def build_knob(side):
 	return finish_plain(bm, "knob_" + ("l" if side < 0 else "r"), (side * XO, 0.0, DOOR_Z))
 
 
-carcass = build_carcass()
+carcass = carcass_of(BODY).finish()
 door_l, louvre_l, slats_l, ix, iy = build_door(-1)
 door_r, louvre_r, slats_r, _, _ = build_door(1)
 brass = build_brass()
@@ -267,68 +213,6 @@ atlas_uv(metal, 0.01)
 
 
 # --- Muster ------------------------------------------------------------------------------------------------------
-## Stehende Kapseln (unten und oben rund) mit elliptischem Querschnitt in einer Fläche: s = Lage quer (Meter), y = Höhe,
-## centers = Mitten in s, y0/y1 = Mitten der runden Enden, r = halbe Breite. Gibt die Steigung der Höhe nach s und y
-## (h = −depth · √(1 − q²) steigt nach außen – die Normale kippt zur Mitte der Mulde hin), Verschattung (im Grund
-## dunkler) und Maske (Kante über ein Pixel geglättet).
-def capsules(s, y, centers, y0, y1, r, depth, px):
-	best = np.full(len(s), 1e9)
-	ds = np.zeros(len(s))
-	dy = np.zeros(len(s))
-	qy = np.clip(y, y0, y1)
-	for cx in centers:
-		ex, ey = s - cx, y - qy
-		dist = np.hypot(ex, ey)
-		take = dist < best
-		best = np.where(take, dist, best)
-		ds = np.where(take, ex, ds)
-		dy = np.where(take, ey, dy)
-	q = np.clip(best / r, 0, 1)
-	root = np.sqrt(np.clip(1 - q * q, 0.04, 1))
-	slope = depth / r * q / root
-	far = np.maximum(best, 1e-9)
-	gs = np.where(best > 1e-9, slope * ds / far, 0)
-	gy = np.where(best > 1e-9, slope * dy / far, 0)
-	mask = np.clip((r - best) / px + 0.5, 0, 1)
-	return gs, gy, 0.58 + 0.2 * q, mask
-
-
-## Furchen im Pfosten: FLUTES Kapseln von FLUTE_END über dem Sockel bis FLUTE_END unter dem Rundstab
-def flutes(pts, n, px):
-	r = FLUTE_W / 2.0
-	margin = (POST - FLUTES * FLUTE_W - (FLUTES - 1) * FLUTE_GAP) / 2.0
-	centers = [margin + r + k * (FLUTE_W + FLUTE_GAP) for k in range(FLUTES)]
-	s = np.abs(pts[:, 0]) - XO      # 0 an der Öffnung, POST außen
-	gs, gy, shade, mask = capsules(s, pts[:, 1], centers, OPEN[0] + FLUTE_END + r, OPEN[1] - FLUTE_END - r, r,
-		FLUTE_DEPTH, px)
-	normals = np.stack([-gs * np.sign(pts[:, 0]), -gy, np.ones(len(pts))], axis=1)
-	normals /= np.linalg.norm(normals, axis=1, keepdims=True)
-	return normals, shade, mask
-
-
-## Mulden im Fries: vorn in festem Raster um die Mitte (Lücke über x = ±XO), an den Seiten von der vorderen Ecke im
-## selben Abstand nach hinten – so stehen sie an der Ecke gleich weit von ihr weg
-def niches(pts, n, px):
-	r = NICHE_W / 2.0
-	mid = (FRIEZE[0] + FRIEZE[1]) / 2.0
-	y0, y1 = mid - NICHE_H / 2.0 + r, mid + NICHE_H / 2.0 - r
-	k = int((HW - NICHE_CORNER) / NICHE_PITCH)
-	if abs(n[2]) > 0.5:   # vorn
-		axis = np.array([1.0, 0, 0])
-		centers = [i * NICHE_PITCH for i in range(-k, k + 1)]
-	else:
-		axis = np.array([0, 0, 1.0])
-		first = ZF - (HW - k * NICHE_PITCH)
-		centers = []
-		while first > ZB + NICHE_CORNER:
-			centers.append(first)
-			first -= NICHE_PITCH
-	gs, gy, shade, mask = capsules(pts @ axis, pts[:, 1], centers, y0, y1, r, NICHE_DEPTH, px)
-	normals = n[None, :] - gs[:, None] * axis[None, :] - gy[:, None] * np.array([0, 1.0, 0])[None, :]
-	normals /= np.linalg.norm(normals, axis=1, keepdims=True)
-	return normals, shade, mask
-
-
 ## Lamellen in der Füllung, vorn (Gruppe 2): von unten je Lamelle die Vorderkante, die nach hinten steigende
 ## Oberseite (oben von der nächsten Lamelle verschattet), dann der dunkle Schlitz. Hinten (Gruppe 3): Unterseite,
 ## Hinterkante, Schlitz.
@@ -381,7 +265,8 @@ ao = bake(wood, 'AO', new_image("wardrobe_ao", ATLAS, False, True), AO_SAMPLES)[
 print("AO: Mittel %.3f, dunkelster Wert %.3f" % (ao.mean(), ao.min()))
 ao = 1.0 - AO_STRENGTH * (1.0 - np.clip(ao, 0, 1))
 nrm = godot_normals(bake(wood, 'NORMAL', new_image("wardrobe_nrm", ATLAS, False, True), 1, normal_space='OBJECT'))
-paint_details(wood, nrm, ao, {1: flutes, 2: louvres(True), 3: louvres(False), 4: niches})
+paint_details(wood, nrm, ao, {1: flutes(BODY, FLUTES, FLUTE_W, FLUTE_GAP, FLUTE_DEPTH, FLUTE_END),
+	2: louvres(True), 3: louvres(False), 4: niches(BODY, NICHE_W, NICHE_H, NICHE_DEPTH, NICHE_STEPS, NICHE_CORNER)})
 save_image("wardrobe_ao_out", ao, TEX + "_ao.png")
 save_image("wardrobe_normal_out", nrm * 0.5 + 0.5, TEX + "_normal.png")
 
