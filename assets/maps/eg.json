@@ -13941,6 +13941,54 @@
 			"wall": "west"
 		},
 		{
+			"kind": "pool_shower",
+			"pos": [
+				32.5,
+				-63.8
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "pool_shower",
+			"pos": [
+				33.5,
+				-63.8
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "pool_shower",
+			"pos": [
+				34.5,
+				-63.8
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "pool_shower",
+			"pos": [
+				38.5,
+				-63.8
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "pool_shower",
+			"pos": [
+				39.5,
+				-63.8
+			],
+			"wall": "north"
+		},
+		{
+			"kind": "pool_shower",
+			"pos": [
+				40.5,
+				-63.8
+			],
+			"wall": "north"
+		},
+		{
 			"kind": "pumpkin_plant",
 			"pos": [
 				-22.95,

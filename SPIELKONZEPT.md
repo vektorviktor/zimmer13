@@ -5291,7 +5291,8 @@ Dachform (4.21).
 
 ### 7.13 Duschplätze am Pool (entschieden und umgesetzt 2026-11-01, ZIM-144)
 
-- **Vier Duschplätze**, der Nutzer malt sie im Plan (Planfarbe „Duschplatz“, Punkt innen an der Wand).
+- **Drei Duschplätze je Duschraum** (West und Ost) im Abstand von 1 m an der Nordwand, vom Nutzer im Plan gemalt
+  (Planfarbe „Duschplatz“, Punkt innen an der Wand).
 - Je Platz nach Fotos des Nutzers, alles **gebürsteter Edelstahl** wie die Badarmaturen:
   - **Drücker** auf ca. 1 m: nur der runde Knopf mit Wandmanschette (Ø 14 cm), schaut 8 cm aus der Wand – ohne den
     Metallbalken aus dem Foto.

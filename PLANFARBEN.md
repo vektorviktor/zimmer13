@@ -206,7 +206,7 @@ Ebene `Ausstattung`, 3×3-Punkt, Wandsachen innen an der Wand.
 | #39c723 | Kürbispflanze Türkenturban | |
 | #6b9f04 | Kürbispflanze Riese | |
 | #e85e7a | Kalender | |
-| #ebadeb | Duschplatz | Pool: Punkt innen an der Wand = Mitte des Platzes – Drücker auf 1 m, Ablage rechts daneben, Duschkopf 40 cm vor der Wand (ZIM-144) |
+| #ebadeb | Duschplatz | Pool: Punkt innen an der Wand = Mitte des Platzes – Drücker auf 1 m, Ablage rechts daneben, Duschkopf 40 cm vor der Wand (ZIM-144); je Duschraum drei im 1-m-Abstand |
 | #7e2552 | Tagebuch | |
 | #aa417e | Dekokiste | |
 | #94387d | Schlüsselschrank | an der Wand, verglast – Generalschlüssel; entfällt (ZIM-136) |
