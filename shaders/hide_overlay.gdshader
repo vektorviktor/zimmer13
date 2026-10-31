@@ -1,4 +1,5 @@
-// Sicht aus dem Versteck: 1 = Schrank (Spalt + Lamellen), 2 = unter dem Bett, 3 = schlafen (Augen zu).
+// Sicht aus dem Versteck: 1 = Schrank (nur dunkle Ränder – die Lamellen sind echt, HideSpot.show_inside),
+// 2 = unter dem Bett, 3 = schlafen (Augen zu).
 // „stress“ steigt, je länger man drin bleibt.
 shader_type canvas_item;
 
@@ -9,13 +10,7 @@ void fragment() {
 	vec2 uv = UV;
 	float a = 0.0;
 	if (mode == 1) {
-		float dx = abs(uv.x - 0.5);
-		a = 0.94;
-		if (dx < 0.035) {
-			a = 0.0;
-		} else if (dx > 0.12 && dx < 0.4 && uv.y > 0.25 && uv.y < 0.7 && fract(uv.y * 22.0) < 0.35) {
-			a = 0.3;
-		}
+		a = 0.85 * smoothstep(0.35, 0.75, length((uv - 0.5) * vec2(1.6, 1.0)));
 	} else if (mode == 2) {
 		a = 1.0 - smoothstep(0.38, 0.46, uv.y);
 		a = max(a, smoothstep(0.88, 1.0, uv.y) * 0.8);

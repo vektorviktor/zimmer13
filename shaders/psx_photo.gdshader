@@ -39,6 +39,10 @@ uniform bool mesh_uv = false;
 // Grundfarbe, wirkt also auch im Lampenlicht (Godots AO wirkt nur aufs Umgebungslicht, das im Hotel fast null ist)
 uniform sampler2D ao_tex : hint_default_white, filter_linear, repeat_disable;
 uniform bool use_ao = false;
+// Gebackene Normale über UV2 im Objektraum (Möbel, tools/furniture_kit.py): ersetzt die Normale des Meshs, darin
+// gemalt sind Formen, die nicht modelliert sind (Furchen, Lamellen). Die Holz-Normal-Map wirkt darauf weiter.
+uniform sampler2D detail_tex : filter_linear_mipmap, repeat_disable;
+uniform bool use_detail = false;
 // Je Instanz eines MultiMesh (mesh_uv, Vertäfelung, Wainscot._put): Leisten und Brett laufen über das Wandstück
 // durch – u = UV.x × INSTANCE_CUSTOM.z (Streckung, negativ bei rückwärts gesetzten Teilen) + x (Lage des Modulanfangs
 // an der Wand), v + y (Versatz je Wandstück), alles in Metern; die Füllung (UV.y > FILL_V / 2, tools/build_wainscot.py)
@@ -83,13 +87,18 @@ void fragment() {
 		up_axis = vec3(0.0, 1.0, 0.0);
 	}
 	uv = vec2(uv.x, -uv.y) * tex_scale;
+	vec3 base_n = normalize(world_normal);
+	if (use_detail) {
+		base_n = normalize((MODEL_MATRIX * vec4(texture(detail_tex, UV2).rgb * 2.0 - 1.0, 0.0)).xyz);
+		NORMAL = normalize((VIEW_MATRIX * vec4(base_n, 0.0)).xyz);
+	}
 	if (mesh_uv) {
 		// ohne Verzweigung – die Ableitungen unten brauchen gleichmäßigen Kontrollfluss
 		float fill = instance_shift ? step(FILL_V / 2.0, UV.y) : 0.0;
 		vec2 run = vec2(UV.x * uv_shift.z + uv_shift.x, UV.y + uv_shift.y);
 		vec2 own = vec2(UV.x, UV.y - FILL_V) + vec2(uv_shift.w, fract(uv_shift.w * 7.13) * 7.0);
 		uv = mix(run, own, fill) * tex_scale;
-		vec3 n_w = normalize(world_normal);
+		vec3 n_w = base_n;
 		vec3 dp1 = dFdx(world_pos);
 		vec3 dp2 = dFdy(world_pos);
 		vec2 duv1 = dFdx(uv);
@@ -112,7 +121,7 @@ void fragment() {
 	float pit = 0.0;
 	if (use_normal) {
 		vec3 t = texture(normal_tex, uv * normal_tiling).rgb * 2.0 - 1.0;
-		vec3 wn = normalize(normalize(world_normal) * t.z + (u_axis * t.x + up_axis * t.y) * normal_strength);
+		vec3 wn = normalize(base_n * t.z + (u_axis * t.x + up_axis * t.y) * normal_strength);
 		NORMAL = normalize((VIEW_MATRIX * vec4(wn, 0.0)).xyz);
 		pit = cavity * clamp((1.0 - t.z) * 5.0, 0.0, 1.0);
 	}

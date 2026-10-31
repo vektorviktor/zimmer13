@@ -7,6 +7,12 @@ extends StaticBody3D
 enum Type { WARDROBE, BED }
 ## Ab dieser Breite (m) ist ein Bett ein Doppelbett für zwei (Haushalte, 6.20) – im Plan 1,50 m Einzel-, 2,20 m Doppelbett
 const DOUBLE_WIDTH := 1.8
+## Kleiderschrank (tools/build_wardrobe.py): Modell, gebackene Verschattung und Normale, Höhe (= TOP im Bauskript)
+const WARDROBE_MODEL := "res://assets/models/wardrobe.glb"
+const WARDROBE_AO := "res://assets/textures/wardrobe_ao.png"
+const WARDROBE_NORMAL := "res://assets/textures/wardrobe_normal.png"
+const WARDROBE_TOP := 2.18
+static var _wardrobe := {}
 
 var type := Type.WARDROBE
 var occupant: Node = null
@@ -32,6 +38,8 @@ var seat: Seat
 
 var _visual: Node3D
 var _leaves: Array[Node3D] = []
+var _louvres: Array[MeshInstance3D] = []   # gemalte Lamellenfüllung je Tür
+var _slats: Array[MeshInstance3D] = []     # echte Lamellen je Tür (Innensicht, show_inside)
 var _blanket: Node3D
 var _blanket_rest: Vector3
 
@@ -243,27 +251,57 @@ func _marker() -> Marker3D:
 	return m
 
 
+## Kleiderschrank aus tools/build_wardrobe.py (ZIM-130): Korpus und Türen im Holz der Vertäfelung mit gebackener
+## Verschattung und Normale (Furchen der Pfosten, Lamellen gemalt), Knöpfe, Bänder und Kleiderstange aus Messing wie
+## im glTF. Je Tür ein Drehpunkt (Lage aus dem Modell) mit Rahmen, gemalter Füllung, echten Lamellen (Innensicht) und
+## Knopf.
 func _build_wardrobe() -> void:
-	var wood := Mat.psx(Color(0.32, 0.2, 0.12))
-	var door_wood := Mat.psx(Color(0.36, 0.23, 0.13))
-	var dark := Mat.psx(Color(0.06, 0.04, 0.03))
-	var brass := Mat.psx(Color(0.8, 0.65, 0.25))
-	Geo.mesh(_visual, Geo.box(Vector3(1.1, 2.1, 0.56)), wood, Vector3(0, 1.05, -0.02))
-	Geo.mesh(_visual, Geo.box(Vector3(1.18, 0.08, 0.64)), wood, Vector3(0, 2.14, 0))
-	for side in [-1.0, 1.0]:
+	var parts := _wardrobe_parts()
+	var wood := Mat.hotel_wood(WARDROBE_AO, WARDROBE_NORMAL)
+	_wardrobe_part(_visual, parts["carcass"], wood)
+	_wardrobe_part(_visual, parts["brass"], null)
+	for s in ["l", "r"]:
 		var pivot := Node3D.new()
-		pivot.position = Vector3(side * 0.55, 0.05, 0.28)
+		pivot.position = (parts["door_" + s][1] as Vector3)
 		_visual.add_child(pivot)
-		var x: float = -side * 0.26
-		Geo.mesh(pivot, Geo.box(Vector3(0.52, 2.0, 0.03)), door_wood, Vector3(x, 1.0, 0))
-		for i in 7:
-			Geo.mesh(pivot, Geo.box(Vector3(0.36, 0.022, 0.036)), dark, Vector3(x, 1.25 + i * 0.075, 0.003))
-		Geo.mesh(pivot, Geo.box(Vector3(0.025, 0.12, 0.05)), brass, Vector3(-side * 0.48, 1.05, 0.02))
+		_wardrobe_part(pivot, parts["door_" + s], wood)
+		_wardrobe_part(pivot, parts["knob_" + s], null)
+		_louvres.append(_wardrobe_part(pivot, parts["louvre_" + s], wood))
+		var slats := _wardrobe_part(pivot, parts["slats_" + s], Mat.hotel_wood())
+		slats.visible = false
+		_slats.append(slats)
 		_leaves.append(pivot)
-	Geo.add_box_shape(self, Vector3(1.1, 2.1, 0.6), Vector3(0, 1.05, 0))
+	Geo.add_box_shape(self, Vector3(1.12, WARDROBE_TOP, 0.6), Vector3(0, WARDROBE_TOP / 2.0, 0.01))
 	view_point.position = Vector3(0, 1.6, 0.05)
 	exit_point.position = Vector3(0, 0, 0.85)
 	check_point.position = Vector3(0, 0, 1.05)
+
+
+## Innensicht: Steckt der Spieler im Schrank, zeigen die Türen echte Lamellen statt der gemalten Füllung – durch die
+## Schlitze sieht man hinaus (ZIM-130).
+func show_inside(on: bool) -> void:
+	for i in _louvres.size():
+		_louvres[i].visible = not on
+		_slats[i].visible = on
+
+
+## Teile des Schrankmodells: Name → [Mesh, Lage des Knotens] (Material wie im glTF für die Messingteile)
+static func _wardrobe_parts() -> Dictionary:
+	if _wardrobe.is_empty():
+		var scene: Node = (load(WARDROBE_MODEL) as PackedScene).instantiate()
+		for mi: MeshInstance3D in scene.find_children("*", "MeshInstance3D", true, false):
+			_wardrobe[String(mi.name)] = [mi.mesh, mi.position]
+		scene.free()
+	return _wardrobe
+
+
+## Teil unter parent: Mesh im Ursprung (Türteile liegen schon relativ zum Drehpunkt), mat = null → Material des Meshs
+func _wardrobe_part(parent: Node3D, part: Array, mat: Material) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = part[0]
+	mi.material_override = mat
+	parent.add_child(mi)
+	return mi
 
 
 func _build_bed() -> void:

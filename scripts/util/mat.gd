@@ -389,16 +389,21 @@ static func wainscot() -> ShaderMaterial:
 
 
 ## Holz der Vertäfelung, Zimmertüren und Türrahmen (WAINSCOT_*): ohne Verschattung (DoorCasing) bzw. mit einer
-## gebackenen über UV2 (ao_path: Vertäfelung, Türblatt aus tools/build_room_door.py)
-static func hotel_wood(ao_path: String = "") -> ShaderMaterial:
-	var key := "hotel_wood|" + ao_path
+## gebackenen über UV2 (ao_path: Vertäfelung, Türblatt aus tools/build_room_door.py); Möbel (tools/furniture_kit.py)
+## dazu mit gebackener Normale über UV2 (normal_path, Objektraum – Furchen und Lamellen des Schranks)
+static func hotel_wood(ao_path: String = "", normal_path: String = "") -> ShaderMaterial:
+	var key := "hotel_wood|" + ao_path + "|" + normal_path
 	if not _cache.has(key):
 		var m := photo(WAINSCOT_TEX, WAINSCOT_METERS, WAINSCOT_NORMAL, WAINSCOT_ROUGH, WAINSCOT_GLOSS, WAINSCOT_TINT,
 			false, true)
-		if ao_path != "":
+		if ao_path != "" or normal_path != "":
 			m = m.duplicate() as ShaderMaterial
+		if ao_path != "":
 			m.set_shader_parameter("ao_tex", load(ao_path))
 			m.set_shader_parameter("use_ao", true)
+		if normal_path != "":
+			m.set_shader_parameter("detail_tex", load(normal_path))
+			m.set_shader_parameter("use_detail", true)
 		_cache[key] = m
 	return _cache[key]
 

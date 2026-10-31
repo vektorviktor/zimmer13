@@ -2018,6 +2018,7 @@ func enter_hide(spot: HideSpot) -> void:
 	_hide_pitch = 0.0
 	head.position.y = eye_height
 	spot.on_enter(self)
+	spot.show_inside(true)
 	_apply_hide_view()
 	if Game.hud:
 		Game.hud.set_hide_mode(1 if spot.type == HideSpot.Type.WARDROBE else 2)
@@ -2034,6 +2035,7 @@ func exit_hide() -> void:
 	hiding = null
 	spot.occupant = null
 	spot.on_exit()
+	spot.show_inside(false)
 	global_position = spot.exit_point.global_position
 	rotation = Vector3(0, spot.exit_point.global_rotation.y, 0)
 	head.rotation.x = 0.0
