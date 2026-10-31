@@ -92,6 +92,7 @@ OPENINGS = {
 	"Tür Flur": "door", "Tür Terrasse": "garden_door", "Fenster": "window", "Doppel-Glastür": "glass_double_door",
 	"Betriebstür": "service_door", "Aufzugtür": "elevator_door", "Haupteingang": "main_entrance",
 	"Kniestocktür": "attic_door",
+	"Milchglastür": "frosted_door",   # 31.10. (ZIM-143): Pool, Duschen, Umkleiden – Holzrahmen mit Milchglas
 	"Dachfenster": "roof_window",   # 24.10.: auf der Außenwand des Dachbodens – das Fenster sitzt in der Dachschräge
 }
 ## Flächen, die schmal sein dürfen (sonst gelten Flecken unter 30 Pixeln als Reste von Schrift)
@@ -122,6 +123,8 @@ FURNITURE = {
 	"Möbel: Nachttisch": "nightstand",   # 30.10.: neben dem Bett, Vorderseite als hellere Zeile
 	# Gartenmöbel (31.10., ZIM-51): Tisch ohne Vorderseite, Stuhl mit hellerer Zeile; beide leicht gedreht
 	"Möbel: Gartentisch": "garden_table", "Möbel: Gartenstuhl": "garden_chair",
+	# Pool-Umkleiden (31.10., ZIM-145): Spindblock 36 × 9 px mit hellerer Zeile, Bank in der Mitte ohne Vorderseite
+	"Möbel: Spindblock": "locker_bank", "Möbel: Umkleidebank": "changing_bench",
 }
 FRONT_NAME = "Möbel: Vorderseite"   ## Strich am Rand, gilt für jedes Möbel
 ## Hellere Zeile am Rand, gilt nur für ihr Möbel: „Möbel: Dusche Vorderseite“ → facing. Beim Doppelbett ist sie das
@@ -1281,7 +1284,7 @@ def preview(layout, path):
 		"pool_deck": "#c3d2de", "elevator": "#a9dccb", "cellar": "#999", "boiler_room": "#821b1b", "plant_room": "#7c6bff",
 		"laundry_room": "#6bb6ff", "cellar_room": "#7b7b7b", "bowling_lane": "#b8b392", "foul_line": "#ba3838"}
 	op_colors = {"door": "#2e9e00", "garden_door": "#00d000", "window": "#2a7fd0", "glass_double_door": "#e0c000",
-		"service_door": "#999", "elevator_door": "#00c090", "main_entrance": "#e00000", "attic_door": "#8a5a2a", "roof_window": "#c9e7ff"}
+		"service_door": "#999", "frosted_door": "#b8c8c8", "elevator_door": "#00c090", "main_entrance": "#e00000", "attic_door": "#8a5a2a", "roof_window": "#c9e7ff"}
 	out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -118 160 128" width="100%" style="background:#fff">']
 	box = '<rect x="%s" y="%s" width="%s" height="%s" %s/>'
 	for r in layout["regions"]:

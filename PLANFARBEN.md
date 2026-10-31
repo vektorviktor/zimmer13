@@ -117,6 +117,7 @@ Striche auf der Wandlinie.
 | #3994ef | Fenster | |
 | #11d4a4 | Doppel-Glastür | |
 | #a6af79 | Betriebstür | |
+| #5ae287 | Milchglastür | Pool, Duschen, Umkleiden: Holzrahmen mit Milchglas, hält den Blick auf wie eine Holztür |
 | #2d7633 | Aufzugtür | |
 | #ff0000 | Haupteingang | auch: verschlossene Tür; als Kreuz mitten auf einer Fläche eine Markierung |
 | #f300ff | Türanschlag | 1 px am Ende des Türstrichs, Seite des Scharniers |
@@ -171,6 +172,8 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #6c7d89 | Spind | | des Hausmeisters (Spielkonzept 2.11, 7.4); noch nicht gebaut (ZIM-4) |
 | #2e7d5b | Gartentisch | | 8 × 8 px, Aluminium und Holzlatten, ohne Vorderseite; leicht gedreht – der Tisch nächst der Gartentür von 13 ist der Futtertisch der Krähen |
 | #4f7a3a | Gartenstuhl | #6aa34e | 5 × 6 px, Aluminium und Textilgewebe, einzeln gesetzt; leicht gedreht und versetzt |
+| #734c45 | Spindblock | #99655c | 36 × 9 px in den Pool-Umkleiden: Sockel mit Sitzfläche vorn, 12 Spinde (6 × 2) und rechts ein Regal 3 × 2; Rücken zur Wand. Nummern fortlaufend, Blöcke von West nach Ost, im Raum „links unten“ zuerst (ZIM-145) |
+| #d1921f | Umkleidebank | | 30 × 6 px (3 m, vier Fußrahmen), Länge entlang der langen Seite, ohne Vorderseite; Gestell anthrazit, Holzlatten, Sitzen von beiden Seiten |
 
 ## Teppiche
 

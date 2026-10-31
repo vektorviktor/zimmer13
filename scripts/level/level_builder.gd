@@ -175,8 +175,6 @@ const T := 0.2
 const POST_BASE := 0.25
 const POST_CAP := 0.22
 const POST_PLINTH := 0.025
-## Häute (Fliesen, Fassade, Beton): 2 cm stark, ihre Vorderseite so weit vor der Wandfläche (_wall_piece_at)
-const SKIN_FRONT := 0.022
 ## Höhe des Obergeschosses (Oberkante Boden)
 const UP_Y := 4.0
 ## Wandhöhe der Tapete in Hallen über zwei Stockwerke (Lufträume): so hoch, dass keine Leiste und kein neues
@@ -400,7 +398,7 @@ const BACK_BAR_MODEL := "res://assets/models/back_bar.glb"
 const BAR_STOOL_MODEL := "res://assets/models/bar_stool.glb"
 ## Waschtisch (Breite, Stärke, Tiefe; 20 × 3 × 10 Fliesen) und seine Oberkante – das Aufsatzbecken steht 12,6 cm
 ## darauf, die Armatur reicht bis 28 cm darüber. Am langen Waschtisch der Toiletten je WASH_PLACE ein Becken. Der
-## Tisch steht an der Wandfläche (Fugenraster), das Becken SKIN_FRONT davor: Sein Rand stößt an die Fliesen, die
+## Tisch steht an der Wandfläche (Fugenraster), das Becken auch: Sein Rand stößt an die Fliesen auf der Wand, die
 ## Rosetten der Armatur liegen bündig auf ihnen.
 const WASH_TABLE := Vector3(1.0, 0.15, 0.5)
 const WASH_TABLE_TOP := 0.75
@@ -508,10 +506,14 @@ const PIPE_LOW := 0.45
 const PLANT_STAGES := [0, 3, 2, 3, 1, 3]
 const PAINTING_COLORS: Array[Color] = [Color(0.22, 0.14, 0.12), Color(0.16, 0.2, 0.15), Color(0.12, 0.13, 0.2),
 	Color(0.2, 0.18, 0.1), Color(0.18, 0.1, 0.12), Color(0.1, 0.14, 0.18), Color(0.25, 0.1, 0.1)]
-## Umkleiden und Duschen am Pool teilen sich einen Lichtschalter
+## Umkleiden und Duschen am Pool sind eine Lichtgruppe (ohne Schalter, ALWAYS_LIT)
 const CHANGING_ROOMS := ["vorraum", "dusche_west", "dusche_ost", "umkleide_west", "umkleide_ost"]
-## davon mit Fliesenboden und gestrichener Decke wie im Bad (_floors_and_ceilings, 31.10.)
+## davon wie ein Bad: Fliesen bis BATH_TILE_HEIGHT, darüber gestrichen, Fliesenboden, gestrichene Decke
+## (Wände über _skin_kind, Boden und Decke in _floors_and_ceilings; ZIM-145, Duschen seit 31.10.)
 const TILED_CHANGING_ROOMS := ["umkleide_west", "umkleide_ost", "dusche_west", "dusche_ost"]
+## Lichtgruppen (_light_room_at) ohne Schalter: Das Licht brennt immer, die Leuchtmittel sind fest verbaut
+## (Lamp.fixed, ZIM-145) – Schalter im Plan entfallen dort
+const ALWAYS_LIT := ["umkleiden"]
 ## Flächenarten ohne Namen im Plan → Name (Schalter, Zonen)
 const KIND_NAMES := {"cat_room": "Katzenraum", "library": "Bibliothek", "bath": "Bad", "balcony": "Balkon",
 	"terrace": "Terrasse", "toilet": "Toilette", "storage": "Lager", "cellar": "Keller", "boiler_room": "Heizkeller",
@@ -1622,7 +1624,7 @@ func _opening_vec(o: Dictionary, s0: float) -> Vector4:
 			return Vector4(center, width, WINDOW_TOP, WINDOW_SILL)
 		"main_entrance":   # im Untergeschoss: Türen der verschlossenen Räume
 			return Vector4(center, width, ENTRANCE_H if _level >= 0 else DOOR_H, 0.0)
-		"door", "service_door":
+		"door", "service_door", "frosted_door":
 			return Vector4(center, width, DOOR_H if width < 1.5 else WIDE_DOOR_H, 0.0)
 		"attic_door", "attic_inner_door":
 			return Vector4(center, width, float(o.get("height", ATTIC_DOOR_H)), 0.0)
@@ -1636,7 +1638,13 @@ func _wall_side_kind(p: Vector2) -> String:
 		for hall in _halls:
 			if (hall["rect"] as Rect2).has_point(p):
 				return "hall:" + String(hall["kind"])
-	return _kind_at(p)
+	return _skin_kind(p, _kind_at(p))
+
+
+## Umkleiden und Duschen am Pool: Fliesen bis BATH_TILE_HEIGHT wie im Bad (ZIM-145) – nur für die Wandflächen, sonst
+## bleiben sie Betriebsräume (Türrichtung, Lampen, Namen)
+func _skin_kind(p: Vector2, kind: String) -> String:
+	return "bath" if kind == "service" and _room_id_at(p) in TILED_CHANGING_ROOMS else kind
 
 
 func _wall_material(kind: String) -> Material:
@@ -1730,35 +1738,32 @@ func _wall_piece_at(horizontal: bool, fixed: float, p0: float, p1: float, openin
 		mat = Mat.wallpaper_split(m_minus, m_plus, normal_plus)
 	else:
 		mat = m_minus if m_minus else (m_plus if m_plus else _wallpaper)
-	if horizontal:
-		_wall_x(fixed, p0, p1, openings, mat, height)
-	else:
-		_wall_z(fixed, p0, p1, openings, mat, height)
-	# Häute für Seiten ohne Tapete, knapp vor der Wandfläche
+	# Häute (Fliesen, Fassade, Beton) liegen auf der Wandfläche selbst: je Seite eigene Flächen (Geo.wall_mesh mit
+	# sides), im Bad Fliesen bis BATH_TILE_HEIGHT über dem Boden (über dem EG beginnt die Wand height − H darunter),
+	# darüber gestrichen. Lokal +Z ist bei waagerechten Wänden die Plus-Seite, bei senkrechten die Minus-Seite.
+	var faces := {}
+	var split := 0.0
 	for s: float in [-1.0, 1.0]:
 		var kind := minus if s < 0 else plus
+		var own: Material = m_minus if s < 0 else m_plus
 		var skin := _skin_material(kind)
-		if skin == null:
-			continue
-		var offset := s * (T / 2.0 + SKIN_FRONT - 0.01)
-		var holder := Node3D.new()
-		if horizontal:
-			holder.position = Vector3(0, 0, fixed + offset)
-		else:
-			holder.position = Vector3(fixed + offset, 0, 0)
-			holder.rotation.y = -PI / 2.0
-		_parent.add_child(holder)
-		if kind == "bath":
-			# Fliesen bis BATH_TILE_HEIGHT über dem Boden (über dem EG beginnt die Wand height − H darunter),
-			# darüber gestrichen
-			var split := BATH_TILE_HEIGHT + height - H
-			var upper: Array = []
-			for op: Vector4 in openings:
-				upper.append(Vector4(op.x, op.y, op.z - split, op.w - split))
-			Geo.mesh(holder, Geo.wall_mesh(p0, p1, split, 0.02, openings), skin, Vector3.ZERO)
-			Geo.mesh(holder, Geo.wall_mesh(p0, p1, height - split, 0.02, upper), _bath_paint, Vector3(0, split, 0))
-			continue
-		Geo.mesh(holder, _cap_top(Geo.wall_mesh(p0, p1, height, 0.02, openings + _top_breaks(p0, p1, height))), skin, Vector3.ZERO)
+		var name := "plus" if (s > 0) == horizontal else "minus"
+		var low: Material = skin if skin else (own if own else _wallpaper)
+		var top := low
+		if skin and kind == "bath":
+			split = BATH_TILE_HEIGHT + height - H
+			top = _bath_paint
+		faces[name] = low
+		faces[name + "_top"] = top
+		if skin:   # freie Stirnseiten (eingezogene Wände) wie die geflieste Seite, nicht in der Tapete des Rests
+			faces["ends"] = low
+			faces["ends_top"] = top
+	if _skin_material(minus) == null and _skin_material(plus) == null:
+		faces = {}
+	if horizontal:
+		_wall_x(fixed, p0, p1, openings, mat, height, faces, split)
+	else:
+		_wall_z(fixed, p0, p1, openings, mat, height, faces, split)
 
 
 ## Aufzüge (Spielkonzept 7.4, 7.10): die Aufzugtüren aller Stockwerke nach Schacht gesammelt, je Schacht ein
@@ -1878,12 +1883,10 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			door.look = Door.Look.HOTEL
 		"attic_door", "attic_inner_door":
 			door.look = Door.Look.ATTIC
+		"frosted_door":   # Pool, Duschen, Umkleiden (ZIM-143)
+			door.look = Door.Look.FROSTED
 	door.position = center - right * width / 2.0
 	door.rotation.y = yaw
-	# Wandhaut (Fliesen, Fassade, Beton) vor der Wand: der Rahmen der Zimmertür sitzt davor (+Z = Seite „innen“)
-	var outside_kind := k_minus if inner > 0 else k_plus
-	door.casing_lift = Vector2(SKIN_FRONT if _skin_material(outside_kind) else 0.0,
-		SKIN_FRONT if _skin_material(inside_kind) else 0.0)
 	root.add_child(door)
 	_doors.append({"pos": center, "door": door, "kind": kind, "into": into3, "hinge": hinge})
 	light_rooms.door(c, side, door)
@@ -2273,6 +2276,7 @@ func _furniture() -> void:
 	for r in rects:
 		var desk: Node3D = model if model else Geo.solid(root, Vector3(r.size.x, RECEPTION_H, r.size.y), Vector3(r.get_center().x, RECEPTION_H / 2.0, r.get_center().y), _dark_wood)
 		_furnishings.append({"kind": "reception", "rect": r, "top": RECEPTION_H, "front": Vector2.ZERO, "node": desk})
+	var lockers: Array[Dictionary] = []
 	for f in _map["furniture"]:
 		var rc: Array = f["rect"]
 		var rect := _rect(rc)
@@ -2436,6 +2440,13 @@ func _furniture() -> void:
 				pos = Vector3(c.x, 0, c.y)
 				node = GardenFurniture.chair()
 				top = GardenFurniture.SEAT_FRONT
+			"locker_bank":   # erst nach allen Möbeln: die Nummern laufen über alle Blöcke (_locker_banks)
+				lockers.append({"rect": rect, "front": front})
+				continue
+			"changing_bench":   # Länge entlang der langen Seite des Rechtecks, ohne Vorderseite
+				yaw = 0.0 if rect.size.x >= rect.size.y else PI / 2.0
+				node = ChangingBench.make(maxf(rect.size.x, rect.size.y))
+				top = ChangingBench.HEIGHT
 			"trash_can":
 				# fest 50 × 50 cm (TrashCan), mittig auf dem Platz im Plan, aber nicht in der Wand
 				c = _clear_of_walls(c, TrashCan.SIZE / 2.0 + TrashCan.WALL_GAP)
@@ -2475,6 +2486,41 @@ func _furniture() -> void:
 			node.rotation.y = yaw
 			root.add_child(node)
 		_furnishings.append({"kind": kind, "rect": rect, "top": top, "front": front, "node": node})
+	_locker_banks(lockers)
+
+
+## Spindblöcke der Umkleiden (LockerBank, ZIM-145): Rücken an der Hinterkante des Rechtecks im Plan, WALL_CLEAR davor
+## (die Fliesenhaut steht vor der Wand), quer mittig. Nummern
+## fortlaufend je Stockwerk, je Block LockerBank.PER_BANK: zuerst nach Raum von West nach Ost, im Raum der Block
+## „links unten im Plan“ zuerst (kleinstes x − z) – so beginnt jeder Block von vorn gesehen links oben.
+func _locker_banks(list: Array[Dictionary]) -> void:
+	var room_x := func(c: Vector2) -> float:
+		var id := _room_id_at(c)
+		return (_named[id] as Rect2).get_center().x if _named.has(id) else c.x
+	list.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var ca := (a["rect"] as Rect2).get_center()
+		var cb := (b["rect"] as Rect2).get_center()
+		var ra: float = room_x.call(ca)
+		var rb: float = room_x.call(cb)
+		if not is_equal_approx(ra, rb):
+			return ra < rb
+		return ca.x - ca.y < cb.x - cb.y)
+	for i in list.size():
+		var rect: Rect2 = list[i]["rect"]
+		var front: Vector2 = list[i]["front"]
+		var c := rect.get_center()
+		var deep := _depth_of(rect, front)
+		if absf(deep - LockerBank.DEPTH) > 0.15 or absf(rect.size.x + rect.size.y - deep - LockerBank.LENGTH) > 0.15:
+			push_warning("Gebäudeplan: Spindblock bei %s ist %.1f × %.1f m, gebaut wird er %.1f × %.1f m" %
+				[c, rect.size.x + rect.size.y - deep, deep, LockerBank.LENGTH, LockerBank.DEPTH])
+		var at := c + front * (LockerBank.WALL_CLEAR + LockerBank.DEPTH / 2.0 - deep / 2.0)
+		var bank := LockerBank.new()
+		bank.first_number = 1 + i * LockerBank.PER_BANK
+		bank.position = Vector3(at.x, 0, at.y)
+		bank.rotation.y = atan2(front.x, front.y)
+		root.add_child(bank)
+		# Gegenstände des Plans landen auf der Sitzfläche (_top_at)
+		_furnishings.append({"kind": "locker_bank", "rect": rect, "top": LockerBank.SEAT_H, "front": front, "node": bank})
 
 
 ## Teppiche aus dem Plan (Ebene „Teppiche“, Spielkonzept 7.5): flache Auflage ohne Kollision (Schritte hört man
@@ -2713,7 +2759,7 @@ func _washbasin(back: Vector2, front: Vector2, width: float, tiles: Material, ba
 			model.find_child("table").free()   # ein Tisch für alle
 			body.add_child(model)
 			_fixture_materials(model, WASHBASIN_MODEL, tiles)
-		model.find_child("basin").position = Vector3(x, WASH_TABLE_TOP, SKIN_FRONT)
+		model.find_child("basin").position = Vector3(x, WASH_TABLE_TOP, 0)
 		model.find_child("mirror_frame").position = Vector3(x, MIRROR_FRAME_BOTTOM, 0)
 		var mirror := Mirror.make(body, MIRROR_GLASS, Vector3(x, MIRROR_FRAME_BOTTOM + MIRROR_GLASS_MID, MIRROR_GAP),
 			Vector3.BACK, MIRROR_RANGE)
@@ -2808,6 +2854,9 @@ func _fittings() -> void:
 			"switch":
 				var at := _wall_spot(o, WALL_GAP)
 				var id := _light_room_at(at.inside)
+				if id in ALWAYS_LIT:
+					push_warning("Gebäudeplan: Lichtschalter (%s) bei Pixel %s – dort brennt das Licht immer, der Schalter entfällt (aus dem Plan nehmen)" % [_switch_label(id), _plan_pixel(p)])
+					continue
 				var sw := _switch(id, _switch_label(id), at.at(SWITCH_Y), at.yaw())
 				_switched[id] = true
 				if _behind_door(sw.position):
@@ -5225,27 +5274,32 @@ func is_safe(p: Vector3) -> bool:
 # --- Bausteine ------------------------------------------------------------------------------------
 
 ## Wand entlang X bei z. Öffnungen als Vector4(Mitte x, Breite, Oberkante, Unterkante).
-func _wall_x(z: float, x0: float, x1: float, openings: Array, mat: Material, height: float = H) -> void:
+func _wall_x(z: float, x0: float, x1: float, openings: Array, mat: Material, height: float = H, faces := {},
+		split := 0.0) -> void:
 	var holder := Node3D.new()
 	holder.position = Vector3(0, 0, z)
 	_parent.add_child(holder)
-	_wall(holder, x0, x1, openings, mat, height)
+	_wall(holder, x0, x1, openings, mat, height, faces, split)
 
 
 ## Wand entlang Z bei x. Öffnungen als Vector4(Mitte z, Breite, Oberkante, Unterkante).
-func _wall_z(x: float, z0: float, z1: float, openings: Array, mat: Material, height: float = H) -> void:
+func _wall_z(x: float, z0: float, z1: float, openings: Array, mat: Material, height: float = H, faces := {},
+		split := 0.0) -> void:
 	var holder := Node3D.new()
 	holder.position = Vector3(x, 0, 0)
-	holder.rotation.y = -PI / 2.0   # lokale +X zeigt entlang +Z
+	holder.rotation.y = -PI / 2.0   # lokale +X zeigt entlang +Z, lokale +Z nach Westen
 	_parent.add_child(holder)
-	_wall(holder, z0, z1, openings, mat, height)
+	_wall(holder, z0, z1, openings, mat, height, faces, split)
 
 
 ## Wand im lokalen Rahmen von holder (entlang X von a0 bis a1): Kollision als Kästen wie gehabt
 ## (links, unter und über jeder Öffnung, rechts), die Optik als ein Mesh mit gemeinsamen Ecken (Geo.wall_mesh).
 ## Laibungen in Rahmenholz: Rutscht die Zarge weg, blitzt Holz statt Tapete durch
-## (nur der Beton im Keller hat keinen Rahmen).
-func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material, height: float) -> void:
+## (nur der Beton im Keller hat keinen Rahmen). faces: eigene Materialien der Wandflächen nach Flächenname
+## (Geo.wall_mesh mit sides, lokal „plus“ = +Z) – Fliesen, Fassade, Beton auf der Wand selbst; mat gilt dann nur
+## für Oberkante und Stirnseiten.
+func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material, height: float, faces := {},
+		split := 0.0) -> void:
 	var cursor := a0
 	for o in openings:
 		var op: Vector4 = o
@@ -5259,11 +5313,20 @@ func _wall(holder: Node3D, a0: float, a1: float, openings: Array, mat: Material,
 		cursor = op.x + op.y / 2.0
 	if a1 > cursor:
 		_wall_box(holder, cursor, a1, 0.0, height)
+	var trim := mat if mat == _concrete else OpeningFrame.trim_material()
+	if not faces.is_empty():
+		var sided := _cap_top(Geo.wall_mesh(a0, a1, height, T, openings + _top_breaks(a0, a1, height), true, split))
+		var parts := Geo.mesh(holder, sided, null, Vector3.ZERO)
+		for i in sided.get_surface_count():
+			var name := sided.surface_get_name(i)
+			parts.set_surface_override_material(i, faces.get(name, trim if name == "reveals" else mat))
+		structure_parts.append(parts)
+		return
 	var wall := Geo.mesh(holder, _cap_top(Geo.wall_mesh(a0, a1, height, T, openings + _top_breaks(a0, a1, height))), null, Vector3.ZERO)
 	wall.set_surface_override_material(0, mat)
 	structure_parts.append(wall)   # hält das Licht aller Lampen auf (ShadowBudget.merge)
 	if wall.mesh.get_surface_count() > 1:
-		wall.set_surface_override_material(1, mat if mat == _concrete else OpeningFrame.trim_material())
+		wall.set_surface_override_material(1, trim)
 
 
 ## Kollisionskasten eines Wandstücks von a bis b (entlang der Wand) und y0 bis y1 – im Dachgeschoss nur so hoch, wie die
@@ -5306,6 +5369,7 @@ func _cap_top(m: ArrayMesh) -> ArrayMesh:
 			verts[k].y = minf(verts[k].y, _wall_top.call(verts[k].x))
 		arrays[Mesh.ARRAY_VERTEX] = verts
 		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		out.surface_set_name(i, m.surface_get_name(i))
 	return out
 
 
@@ -5321,6 +5385,7 @@ func _candle(pos: Vector3) -> void:
 ## Wandleuchte; yaw dreht die lokale +Z-Achse (von der Wand weg) in den Raum.
 func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, room_id: String, broken: bool = false) -> void:
 	var lamp := Lamp.new().setup(Lamp.Style.WALL, room_id, energy, light_range, broken)
+	lamp.fixed = room_id in ALWAYS_LIT
 	lamp.position = pos
 	lamp.rotation.y = yaw
 	_parent.add_child(lamp)
@@ -5338,6 +5403,7 @@ func _ceiling_lamp(p: Vector2, room_id: String, broken: bool) -> void:
 			style = Lamp.Style.CEILING
 			Geo.mesh(_parent, Geo.cylinder(0.01, top - y, 4), Mat.psx(Color(0.2, 0.18, 0.16)), Vector3(p.x, (top + y) / 2.0, p.y))
 	var lamp := Lamp.new().setup(style, room_id, CEILING_LAMP_ENERGY, CEILING_LAMP_RANGE, broken)
+	lamp.fixed = room_id in ALWAYS_LIT
 	lamp.position = Vector3(p.x, y, p.y)
 	_parent.add_child(lamp)
 

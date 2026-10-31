@@ -123,7 +123,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     gestohlene und Zweitschlüssel
 ## 61: Gezinkte Würfel stecken im Würfelbecher (Zusatz „loaded“, Spielkonzept 6.10) statt am Würfeltisch
 ##     (table_loaded) – ältere Stände laden weiter, die Würfel kommen in den Becher auf dem Mäxchen-Tisch
-const VERSION := 61
+## 62: Spinde der Pool-Umkleiden (Gruppe locker_banks, ZIM-145): je Block offen, aufgeschlossen, durchsucht –
+##     ohne Eintrag sind alle Spinde zu und unberührt
+const VERSION := 62
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -140,7 +142,7 @@ const PROGRESS_KEYS := ["zimmer_18", "dachboden", "aufzug"]
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
-	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "key_cabinets", "fixed_candles"]
+	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "key_cabinets", "fixed_candles", "locker_banks"]
 const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
 var WORLD_FILE := DIR + "world.txt"
@@ -679,6 +681,7 @@ func collect() -> Dictionary:
 	data["windows"] = _collect_group("windows", func(n: Node) -> Dictionary: return n.save_state())
 	data["phones"] = _collect_group("phones", func(n: Node) -> Dictionary: return n.save_state())
 	data["dressers"] = _collect_group("dressers", func(n: Node) -> Dictionary: return n.save_state())
+	data["locker_banks"] = _collect_group("locker_banks", func(n: Node) -> Dictionary: return n.save_state())
 	data["cats"] = _collect_group("cats", func(n: Node) -> Dictionary: return n.save_state())
 	data["elevators"] = _collect_group("elevators", func(n: Node) -> Dictionary: return n.save_state())
 	return data
@@ -768,6 +771,8 @@ func apply(data: Dictionary) -> void:
 			hook.set_hanging(bool(hooks[hook.mask_id]))
 	_apply_group("phones", data.get("phones", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("dressers", data.get("dressers", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	if data.has("locker_banks"):   # ältere Stände: alle Spinde zu
+		_apply_group("locker_banks", data["locker_banks"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("elevators", data.get("elevators", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if Game.traces:
 		Game.traces.load_state(data.get("traces", []))

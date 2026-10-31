@@ -244,6 +244,8 @@ done <<'LIST'
 400|halloween,tiere|--hund --trace
 400|tiere,wetter|--tiere --pos=45,0.1,-37,180 --trace
 900|halloween,tiere|--kesselkatze --trace
+400|spinde|--spinde=offen --trace
+400|spinde,speichern|--spinde=offen --savetest
 600|halloween,spuk|--spiegel --trace
 600|halloween,spuk,speichern|--spiegel=tuch --savetest
 900|halloween,spuk,licht|--strom --trace

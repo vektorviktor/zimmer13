@@ -73,6 +73,9 @@ var bulb_broken := false
 ## Wackelkontakt einer von Anfang an defekten Birne: blitzt ab und zu auf.
 var sparking := false
 var switched_on := true
+## Leuchtmittel fest verbaut (Pool-Umkleiden und Duschen, ZIM-145): kein Schalter, brennt immer – nichts
+## herauszudrehen, brennt nicht durch; Stromausfall, Flackern und Monster wirken wie überall (FlickerLight)
+var fixed := false
 
 var light: FlickerLight
 var _bulb: Node3D
@@ -106,7 +109,10 @@ func _ready() -> void:
 	if style == Style.MIRROR:
 		_build_mirror()
 		return
-	set_meta("interactable", self)
+	if fixed:
+		set_process(false)   # keine Birne, die durchbrennt
+	else:
+		set_meta("interactable", self)
 	_bulb_material = Mat.psx(Color(1, 0.95, 0.8), "", 1.0, Color(1.0, 0.85, 0.6), 2.5, false)
 	var bulb_pos := Vector3(0, -0.12, 0)
 	var socket := Vector3(0, -0.09 + BULB_SCREWED_IN, 0)   # Gewindeende der Birne
@@ -177,13 +183,13 @@ func _add_light(pos: Vector3, color: Color) -> void:
 	light.omni_range = light_range
 	light.light_color = color
 	light.shadow_enabled = true
+	light.shadow_bias = ShadowBudget.BIAS
 	# Viele Zimmer → weit entfernte Lampen und ihre Schatten ausblenden (spart Leistung)
 	light.distance_fade_enabled = true
 	light.distance_fade_begin = 26.0
 	light.distance_fade_length = 6.0
 	light.distance_fade_shadow = light.distance_fade_begin + light.distance_fade_length   # Schatten bis zum Schluss: ohne ihn schiene es durch Wände
 	light.lamp_material = _bulb_material
-	light.shadow_bias = ShadowBudget.BIAS
 	light.add_to_group("lamps")
 	add_child(light)
 
@@ -266,7 +272,7 @@ func _set_hue() -> void:
 
 ## Steckt eine Glühbirne darin, die man herausdrehen kann (nicht bei Halogen- und Unterwasserlampen)?
 func has_socket() -> bool:
-	return style == Style.CEILING or style == Style.WALL or style == Style.FLUSH
+	return not fixed and (style == Style.CEILING or style == Style.WALL or style == Style.FLUSH)
 
 
 ## Glühbirne als Modell unter parent (Ursprung am Gewindeende, Glas nach +Y), der Kolben mit glass –
@@ -320,7 +326,7 @@ func _process(delta: float) -> void:
 ## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): je Sekunde dieselbe Chance
 ## durchzubrennen wie sonst (ohne Monster in der Nähe – es war nicht wirklich da).
 func skip_time(dt: float) -> void:
-	if light == null or not is_lit():
+	if light == null or not is_lit() or fixed:
 		return
 	var chance := BREAK_PER_FLICKER * light.flicker * light.flicker
 	if chance > 0.0 and randf() < 1.0 - pow(1.0 - chance, dt):

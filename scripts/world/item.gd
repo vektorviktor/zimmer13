@@ -383,6 +383,8 @@ static func key_label(id: String) -> String:
 		return "Schaltschlüssel"
 	if id == Crows.OLD_KEY:   # aus dem Krähennest (4.25, 6.19 (7))
 		return "Alter Messingschlüssel, Anhänger 042"
+	if id.begins_with(LockerBank.KEY_PREFIX):   # Spind in den Pool-Umkleiden (ZIM-145)
+		return LockerBank.key_label(id)
 	if id.begins_with(RoomAccess.OLD_KEY):   # gestohlen, das Schloss ist getauscht (6.19)
 		return "%s (passt nicht mehr)" % key_label(id.substr(RoomAccess.OLD_KEY.length()))
 	return "Schlüssel" if id == "" else "Schlüssel %s" % id.replace("zimmer_", "Zimmer ")

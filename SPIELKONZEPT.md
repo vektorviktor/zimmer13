@@ -5259,6 +5259,36 @@ Plans **einzeln entschieden** (2026-10-21) – je Raum, ob er eine Funktion beko
 **Zu klären:** Plan für U2 · ob der Aufzug im Dachgeschoss hält (4.21) · die
 Dachform (4.21).
 
+### 7.11 Pool-Umkleiden: Spinde und Bänke (entschieden und umgesetzt 2026-10-31, ZIM-145)
+
+- **Wände** gefliest wie die Bäder bis 2 m, darüber Farbe. Seit 31.10. statt beige dunkle Schieferfliesen (Tiles045,
+  ambientCG) an Wand und Boden – in Bädern, Umkleiden und Duschen; Umkleiden und Duschen tragen die gestrichene Decke
+  der Bäder. Fliesen liegen seitdem überall auf der Wandfläche
+  selbst (vorher als Schicht 2,2 cm davor – das Raster ging in den Ecken nicht auf).
+- **Spindblöcke** nach Foto des Nutzers: je Umkleide zwei, einander gegenüber, je 2,40 m Spinde (6 Spalten à 40 cm,
+  zwei Fächer à 90 cm übereinander, 50 cm tief, Türen mit Holzdekor und 8 mm Luft ringsum) und rechts ein Regal
+  1,20 m mit 3 × 2 Fächern, alles auf einem Sockel mit 40 cm Sitzfläche, 50 cm hoch. Ohne das Abschlussbrett links.
+- **48 Spinde** (am 31.10. von 64 gekürzt), intern durchnummeriert: links im Plan unten beginnt Spind 1 – von vorn gesehen links oben, je
+  Block spaltenweise. **Keine Plakette** am Spind, die Nummer steht nur im Hinweis beim Ansehen.
+- **Die meisten bleiben zu.** Einige gehen frei auf, einige nur mit Schlüssel; **keine modellierten Schlüssel**
+  (sie kommen als gewöhnlicher Schlüssel an den Bund). Beim ersten Öffnen liegt manchmal etwas darin wie in der
+  Kommode. *Vorschlag (Code, `LockerBank.OPENABLE`):* frei 3, 10, 17, 22, 29, 34, 41, 46 · mit Schlüssel 7, 20, 32, 44.
+  **Offen:** wo die Spindschlüssel liegen und ob ein Spind etwas Bestimmtes enthält (Hinweis, Handlung).
+- **Licht (31.10.):** Umkleiden und Duschen haben **keine Lichtschalter**, das Licht brennt immer. Was Licht sonst
+  beeinflusst, gilt auch hier (Stromausfall 4.28, Flackern, Monster); die Leuchtmittel sind fest verbaut – nichts
+  herauszudrehen, nichts brennt durch.
+- **Bank in der Mitte** jeder Umkleide, einfacher als im Foto (ohne Bodenkappen und Fußstreben): Gestell dunkles
+  Metall, Latten aus Holz wie beim Gartentisch, 60 cm breit, 50 cm hoch, 3 m lang (Länge aus dem Plan), Beine an
+  den Enden und an jedem Meter (3 m → vier).
+
+### 7.12 Milchglastüren am Pool (entschieden und umgesetzt 2026-10-31, ZIM-143)
+
+- Türen zum Pool, zu den Duschen und zu den Umkleiden aus **Milchglas** statt Vollholz. Eine **eigene Planfarbe**
+  „Milchglastür“ – der Plan bleibt die Quelle, der Nutzer malt die Türen selbst (nicht der Code nach Räumen).
+- **Rahmen im Hotelholz** wie die Zimmertüren (Friese, Zarge, Messingdrücker und Bänder), dazwischen satiniertes Glas.
+- Licht und Umrisse gehen durch, der Blick nicht: Für Gäste und Monster ist sie wie eine Holztür (keine Sicht, keine
+  Jagd durchs Glas, 7.3); Handabdrücke des Monsters bleiben darauf.
+
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9

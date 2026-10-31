@@ -169,17 +169,27 @@ static func _runner_mesh(length: float, width: float, cap: float, tile: float, c
 ## Wandenden, Öffnungskanten und ≤ MAX_FACE-Schritten. Einzelne Kästen (links, Sturz, rechts) stießen mit
 ## ihren Ecken mitten auf die Kante des Nachbarn – dort klafften Fugen, und die
 ## Tapete war gegeneinander versetzt.
-static func wall_mesh(x0: float, x1: float, height: float, thick: float, openings: Array) -> ArrayMesh:
+## sides = true: die beiden Wandflächen als eigene Flächen mit Namen (je Seite ein Material, z. B. Fliesen auf der
+## Wand selbst, ZIM-145) – „plus“ (+Z) und „minus“ (−Z) unter split, „plus_top“ und „minus_top“ darüber (split ≤ 0:
+## alles unten), ebenso die Stirnseiten „ends“ und „ends_top“, dazu „rest“ (Oberkante) und „reveals“. Leere Flächen
+## fehlen (Name über surface_get_name).
+static func wall_mesh(x0: float, x1: float, height: float, thick: float, openings: Array, sides := false,
+		split := 0.0) -> ArrayMesh:
 	var key := "w%.4f,%.4f,%.4f,%.4f" % [x0, x1, height, thick]
+	if sides:
+		key += "s%.4f" % split
 	for o in openings:   # Wände übereinander (Stockwerke gleichen Grundrisses) teilen sich das Mesh
 		var op: Vector4 = o
 		key += "|%.4f,%.4f,%.4f,%.4f" % [op.x, op.y, op.z, op.w]
-	return _cached(key, _wall_mesh.bind(x0, x1, height, thick, openings))
+	return _cached(key, _wall_mesh.bind(x0, x1, height, thick, openings, sides, split))
 
 
-static func _wall_mesh(x0: float, x1: float, height: float, thick: float, openings: Array) -> ArrayMesh:
+static func _wall_mesh(x0: float, x1: float, height: float, thick: float, openings: Array, sides := false,
+		split := 0.0) -> ArrayMesh:
 	var xs := [x0, x1]
 	var ys := [0.0, height]
+	if sides and split > 0.0 and split < height:
+		ys.append(split)
 	for o in openings:
 		var op: Vector4 = o
 		xs.append(clampf(op.x - op.y / 2.0, x0, x1))
@@ -201,15 +211,32 @@ static func _wall_mesh(x0: float, x1: float, height: float, thick: float, openin
 	var always := func(_u: float, _v: float) -> bool: return true
 	var out := [[], [], []]
 	var reveals := [[], [], []]
-	# Vorder- und Rückseite, Oberkante, Stirnseiten
-	_grid(out, xs, ys, func(u, v): return Vector3(u, v, thick / 2.0), Vector3.BACK, solid)
-	_grid(out, xs, ys, func(u, v): return Vector3(u, v, -thick / 2.0), Vector3.FORWARD, solid)
+	var faces := {"plus": out, "minus": out}   # ohne sides alles in einer Fläche
+	if sides:
+		faces = {"plus": [[], [], []], "plus_top": [[], [], []], "minus": [[], [], []], "minus_top": [[], [], []],
+			"ends": [[], [], []], "ends_top": [[], [], []]}
+	# Vorder- und Rückseite (mit sides je unter und über split), Oberkante, Stirnseiten
+	for side: String in ["plus", "minus"]:
+		var z := thick / 2.0 if side == "plus" else -thick / 2.0
+		var n := Vector3.BACK if side == "plus" else Vector3.FORWARD
+		var at := func(u, v): return Vector3(u, v, z)
+		if sides and split > 0.0:
+			_grid(faces[side], xs, ys, at, n, func(u, v): return v < split and solid.call(u, v))
+			_grid(faces[side + "_top"], xs, ys, at, n, func(u, v): return v > split and solid.call(u, v))
+		else:
+			_grid(faces[side], xs, ys, at, n, solid)
 	_grid(out, xs, zs, func(u, v): return Vector3(u, height, v), Vector3.UP,
 		func(u, _v): return not inside.call(u, height - 0.001))
-	_grid(out, zs, ys, func(u, v): return Vector3(x0, v, u), Vector3.LEFT,
-		func(_u, v): return not inside.call(x0 + 0.001, v))
-	_grid(out, zs, ys, func(u, v): return Vector3(x1, v, u), Vector3.RIGHT,
-		func(_u, v): return not inside.call(x1 - 0.001, v))
+	for end: float in [x0, x1]:
+		var probe := end + (0.001 if end == x0 else -0.001)
+		var at := func(u, v): return Vector3(end, v, u)
+		var n := Vector3.LEFT if end == x0 else Vector3.RIGHT
+		if not sides:
+			_grid(out, zs, ys, at, n, func(_u, v): return not inside.call(probe, v))
+			continue
+		_grid(faces["ends"], zs, ys, at, n, func(_u, v): return (split <= 0.0 or v < split) and not inside.call(probe, v))
+		if split > 0.0:
+			_grid(faces["ends_top"], zs, ys, at, n, func(_u, v): return v > split and not inside.call(probe, v))
 	# Laibungen der Öffnungen – auf denselben Rasterlinien wie die Wandflächen
 	for o in openings:
 		var op: Vector4 = o
@@ -226,9 +253,18 @@ static func _wall_mesh(x0: float, x1: float, height: float, thick: float, openin
 		if op.w > 0.0:
 			_grid(reveals, span_xs, zs, func(u, v): return Vector3(u, op.w, v), Vector3.UP, always)
 	var m := ArrayMesh.new()
-	for part in [out, reveals]:
+	if not sides:
+		for part in [out, reveals]:
+			if not part[0].is_empty():
+				add_surface(m, PackedVector3Array(part[0]), PackedVector3Array(part[1]), PackedInt32Array(part[2]))
+		return m
+	faces["rest"] = out
+	faces["reveals"] = reveals
+	for name: String in faces:
+		var part: Array = faces[name]
 		if not part[0].is_empty():
 			add_surface(m, PackedVector3Array(part[0]), PackedVector3Array(part[1]), PackedInt32Array(part[2]))
+			m.surface_set_name(m.get_surface_count() - 1, name)
 	return m
 
 

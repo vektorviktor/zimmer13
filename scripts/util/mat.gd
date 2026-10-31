@@ -65,6 +65,12 @@ const LANE_METERS := 0.8
 const LANE_BOARDS := 32
 const LANE_DARKEN := 0.18
 const LANE_GAP := 1
+## Milchglas (Mat.frosted_glass, ZIM-143): satinierte Oberfläche aus tools/frosted_glass.gd (Normal Map, Rauheit),
+## eine Kachel über so viele Meter; Farbe mit Deckkraft, Licht von hinten (die Seite gegenüber leuchtet durch)
+const FROSTED_TEX := "res://assets/textures/frosted_glass"
+const FROSTED_METERS := 0.12
+const FROSTED_COLOR := Color(0.8, 0.83, 0.81, 0.8)
+const FROSTED_BACKLIGHT := Color(0.35, 0.35, 0.33)
 
 static var _shader: Shader
 static var _shader_two_sided: Shader
@@ -537,14 +543,27 @@ static func glass() -> StandardMaterial3D:
 	return _glass
 
 
-## Milchglas: lässt Licht und Umrisse durch, aber keinen klaren Blick.
+## Milchglas: lässt Licht und Umrisse durch, aber keinen klaren Blick. Satiniert (Normal Map und Rauheit in voller
+## Größe mit Mipmaps), dreiseitig in Modellkoordinaten projiziert – die Körnung bleibt beim Öffnen auf der Scheibe.
 static func frosted_glass() -> StandardMaterial3D:
 	if _frosted == null:
 		_frosted = StandardMaterial3D.new()
-		_frosted.albedo_color = Color(0.82, 0.84, 0.8, 0.86)
+		_frosted.albedo_color = FROSTED_COLOR
 		_frosted.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		_frosted.roughness = 1.0
 		_frosted.cull_mode = BaseMaterial3D.CULL_DISABLED
+		var normal := _photo_image(FROSTED_TEX + "_normal.png")
+		normal.generate_mipmaps(true)   # gemittelte Normalen wieder auf Länge 1
+		var rough := _photo_image(FROSTED_TEX + "_rough.png")
+		rough.generate_mipmaps()
+		_frosted.normal_enabled = true
+		_frosted.normal_texture = ImageTexture.create_from_image(normal)
+		_frosted.roughness = 1.0
+		_frosted.roughness_texture = ImageTexture.create_from_image(rough)
+		_frosted.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+		_frosted.uv1_triplanar = true
+		_frosted.uv1_scale = Vector3.ONE / FROSTED_METERS
+		_frosted.backlight_enabled = true
+		_frosted.backlight = FROSTED_BACKLIGHT
 		_frosted.emission_enabled = true
 		_frosted.emission = Color(0.05, 0.05, 0.045)
 	return _frosted

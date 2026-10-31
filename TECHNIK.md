@@ -95,7 +95,7 @@ Gemeinsame Regeln:
 | `monster.glb` | `Monster` | `build_monster.py`, Meshy | siehe 5, „Aussehen & Animation“ |
 | `pool_handrail.glb` | `HANDRAIL_MODEL` | `build_handrail.py` | Tiefe und Lauf der Treppe sind eingebacken und müssen zu `_pool` passen |
 | `lantern.glb` | Gartenlaterne, `LANTERN_MODEL` | `build_lantern.py`, nach Skizze des Nutzers | Licht in der Glasmitte (`LANTERN_LIGHT_Y`), Kopf und Glas werfen keinen Schatten |
-| `door_room.glb` + `textures/door_room_ao.png` | `Door.Look.HOTEL` (Zimmer-, Bad- und übrige Holztüren) | `build_room_door.py`, kein Ausgangsmodell | Blatt (vier Kassetten, je eine 45°-Fase hinab zur flachen Füllung) und Beschläge `hinge` (schlichter Zylinder), `handle`, `peephole` (2,5 × echte Größe), `plaque`; das Blatt ohne Material mit zwei UV-Sätzen – UVMap in Metern (Faser je Fries) für `Mat.hotel_wood`, dem Holz der Vertäfelung, und UV2 auf den Atlas der in Cycles gebackenen Verschattung (`door_room_ao.png`, 1024²); Messing mit gebackener Farbe × AO 512², glTF-Material, eingebettet unkomprimiert. `Door.HOTEL_LEAF` = `LEAF` im Skript; Bänder (`HINGE_AT`) auf der Aufgehseite +Z; geht höchstens `HOTEL_MAX_ANGLE` (95°) auf; Rahmen statt `OpeningFrame` ist `DoorCasing` (im Code aus einem Profil: Zarge mit Anschlag auf −Z außerhalb des Schwenkkreises, gestufte Bekleidung beidseits mit Gehrung, `Mat.hotel_wood`, Mesh je Türgröße geteilt; liegt vor der Wand eine Haut – Fliesen, Fassade, Beton –, setzt `LevelBuilder` `Door.casing_lift` und Zarge und Bekleidung rücken um `SKIN_FRONT` davor); `Door.add_room_number` setzt an Zimmertüren den Spion auf die Flurseite (Seite aus `door_front`, notfalls `scale.z` gespiegelt) und darüber die Plakette aus `RoomPlate` (siehe `room_plate*.png`) – ein Mesh mit 38 Dreiecken je Tür, ein gemeinsames Material, kein Schattenwurf, `visibility_range_end` `PLATE_RANGE`. `plaque` im Modell bleibt ungenutzt |
+| `door_room.glb` + `textures/door_room_ao.png` | `Door.Look.HOTEL` (Zimmer-, Bad- und übrige Holztüren) | `build_room_door.py`, kein Ausgangsmodell | Blatt (vier Kassetten, je eine 45°-Fase hinab zur flachen Füllung) und Beschläge `hinge` (schlichter Zylinder), `handle`, `peephole` (2,5 × echte Größe), `plaque`; das Blatt ohne Material mit zwei UV-Sätzen – UVMap in Metern (Faser je Fries) für `Mat.hotel_wood`, dem Holz der Vertäfelung, und UV2 auf den Atlas der in Cycles gebackenen Verschattung (`door_room_ao.png`, 1024²); Messing mit gebackener Farbe × AO 512², glTF-Material, eingebettet unkomprimiert. `Door.HOTEL_LEAF` = `LEAF` im Skript; Bänder (`HINGE_AT`) auf der Aufgehseite +Z; geht höchstens `HOTEL_MAX_ANGLE` (95°) auf; Rahmen statt `OpeningFrame` ist `DoorCasing` (im Code aus einem Profil: Zarge mit Anschlag auf −Z außerhalb des Schwenkkreises, gestufte Bekleidung beidseits mit Gehrung, `Mat.hotel_wood`, Mesh je Türgröße geteilt; Fliesen, Fassade und Beton liegen auf der Wandfläche, Zarge und Bekleidung sitzen also immer direkt auf der Wand); `Door.add_room_number` setzt an Zimmertüren den Spion auf die Flurseite (Seite aus `door_front`, notfalls `scale.z` gespiegelt) und darüber die Plakette aus `RoomPlate` (siehe `room_plate*.png`) – ein Mesh mit 38 Dreiecken je Tür, ein gemeinsames Material, kein Schattenwurf, `visibility_range_end` `PLATE_RANGE`. `plaque` im Modell bleibt ungenutzt |
 | `wardrobe.glb` + `textures/wardrobe_ao.png`, `wardrobe_normal.png` | `HideSpot` (Kleiderschrank, ZIM-130) | `build_wardrobe.py` mit dem Möbelbausatz `furniture_kit.py`, kein Ausgangsmodell | Korpus (Sockel mit Fase und Viertelstab, Eckpfosten, Rundstab, Fries, Kranz aus Hohlkehle und Deckplatte, innen hohl mit Kleiderstange), zwei Lamellentüren (`door_l/r`, Ursprung auf der Drehachse; `louvre_l/r` die Füllung, `slats_l/r` echte Lamellen, `knob_l/r`), `brass` (Bänder, Stange). Holz `Mat.hotel_wood(ao, normal)`: UVMap in Metern, UV2 auf einen Atlas (2048²) mit gebackener Verschattung **und** Normale (Objektraum, Godot-Achsen) – darin gemalt, nicht modelliert: vier Furchen je Pfosten, eine Reihe stehender Mulden im Fries (vorn und an den Seiten) und die Lamellen (`paint_details`: Normale und Verschattung je Pixel aus einer Formel, dieselben Maße wie `slats_l/r`). **Innensicht:** `Player.enter_hide` → `HideSpot.show_inside(true)` blendet die gemalte Füllung aus und die echten Lamellen ein – man sieht durch die Schlitze hinaus; `hide_overlay` (Modus 1) dunkelt nur noch die Ränder ab. Messing wie bei der Zimmertür (Farbe × AO 512², glTF-Material). Höhe `HideSpot.WARDROBE_TOP` = `TOP` im Skript |
 | `dresser.glb` + `textures/dresser_ao.png`, `dresser_normal.png` | `Dresser` (Kommode, ZIM-130) | `build_dresser.py` mit `furniture_kit.py` | Look des Kleiderschranks, 1,00 m hoch (31.10.: 15 cm höher): `carcass` (Sockel, Eckpfosten mit vier Furchen, Rundstab, Fries mit Mulden, Hohlkehle und Deckplatte, innen hohl), `drawer` (eine Schublade: Front mit Fase zur vertieften Füllung und Kasten, Ursprung auf der Unterkante ihres Fachs – `Dresser` setzt sie dreimal), `pulls` (zwei Messingknöpfe). Holz `Mat.hotel_wood(ao, normal)`, Atlas 1024², gebacken mit der Schublade im mittleren Fach (die anderen als Schattenwerfer). Korpus und Muster (`Body`, `carcass`, `flutes`, `niches`) teilen sich Schrank und Kommode im Bausatz; Maße in `Dresser` = Bauskript (`SIZE`, `PLINTH`, `OPEN_TOP`, `OPEN_X`, `TRAY_OUT`) |
 | `door_attic.glb` (`door_hotel.glb` ungenutzt) | `Door.Look.ATTIC` | `build_doors.py` aus den Pixelbildern `assets/source/door_*.png` | Blattgröße `Door.ATTIC_LEAF` muss zu `size` im Skript passen; Scharnierkante x = 0, Aufgehseite +Z |
@@ -105,8 +105,8 @@ Gemeinsame Regeln:
 **Bad und Bar** (`build_fixtures.py`): Flächen `tiles` = Fliesen des Raums (`_bath_tiles`, in Toiletten
 `_wall_tiles`, Weltkoordinaten), `ceramic`, `steel`/`chrome`/`brass` = `Mat.metal`, `glass`, `cushion`. **Fliesenmaß:**
 Waschtisch und Duschsockel messen Vielfache von 5 cm (Raster der früheren Badfliesen); seit Tiles045 (gemischte
-Formate) treffen die Fugen ihre Kanten nicht mehr. Die Fliesenhaut liegt `SKIN_FRONT` vor der Wandfläche des Plans – Wandsachen (Becken, Rosetten) sitzen
-deshalb um `SKIN_FRONT` vorgerückt, flache (Drückerplatte) setzt das Skript davor (`PLATE_GAP`). Spiegelglas des
+Formate) treffen die Fugen ihre Kanten nicht mehr. Die Fliesen liegen auf der Wandfläche des Plans – Becken und Rosetten sitzen an der Wand, die
+Drückerplatte setzt das Skript 4 mm davor (`PLATE_GAP`). Spiegelglas des
 Rohmodells fällt weg, an seiner Stelle ein `Mirror` (8). Dusche: wird gespiegelt, wenn die Wand rechts steht
 (`_wall_beside`); Kollisionsblock bis `SHOWER_BLOCK` – **zu hoch fürs NavMesh**, sonst schickte es Gäste durchs Glas
 auf die Wanne; Glasseiten auf Ebene 7. WC: Sitzplatz `Seat` „klo“. Bar: Das Barregal steht mit der Rückseite an der
@@ -212,8 +212,8 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `pool` (Tiles_06) | Poolbecken, Rand, Einstiegstreppen (`_pool_tiles`) | Fugen treffen die Beckenkanten (`POOL_TILES_METERS`) |
 | `TilesBasic_01` | Pool-Umgang (`pool_deck`) | |
 | `Stone_EngraveWall_01` | Poolhalle, Wände (Haut der Seite `pool`) | AO eingebacken – ohne fast musterlos |
-| `Tiles045` (ambientCG, CC0) | Bäder bis `BATH_TILE_HEIGHT`, Boden, Wannensockel, Waschtisch, Duschsockel (`_bath_tiles`); Boden der Umkleiden und Duschen am Pool (`TILED_CHANGING_ROOMS` in `_floors_and_ceilings`) | dunkler Schiefer, gemischte Formate, `BATH_TILES_METERS` 1,8 m, Weltkoordinaten; Displacement verworfen (Relief steckt in der Normal Map) |
-| `Scifi_PaintedWall_01` | Bad darüber und Decke, Decke der Umkleiden und Duschen (`_bath_paint`) | |
+| `Tiles045` (ambientCG, CC0) | Bäder, Umkleiden und Duschen am Pool: Wände bis `BATH_TILE_HEIGHT`, Boden, Wannensockel, Waschtisch, Duschsockel (`_bath_tiles`; Pool-Räume über `TILED_CHANGING_ROOMS` – Wände per `_skin_kind`, Boden und Badecke in `_floors_and_ceilings`, sonst Betriebsraum) | dunkler Schiefer, gemischte Formate, `BATH_TILES_METERS` 1,8 m, Weltkoordinaten; Displacement verworfen (Relief steckt in der Normal Map) |
+| `Scifi_PaintedWall_01` | Bad, Umkleiden und Duschen darüber und Decke (`_bath_paint`) | |
 | `StoneWall_01` | Kieswege (`gravel`) | `GRAVEL_NORMAL_STRENGTH` – ohne wirkten sie flach |
 | `StoneFloor_02` | Außenwände (Haut der Seite `outside`, `_facade`) | |
 | `Wood_Panels_01` | alle Holzdecken (`_ceiling`, `_room_ceiling`), Aufzugskabine | aufgehellt `CEILING_SHADE`/`ROOM_CEILING_SHADE` |
@@ -222,8 +222,10 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `Fabric_Pattern_08` | Laken und Kissen (`BedModel.FABRIC_METERS`, Modellkoordinaten) | |
 | `TerrazzoDark_01` | Säulen der Lobby (`_pillar`), Platte des Couchtischs (`_coffee_table`) | Säulen mit Poren: eigene Normal Map aus `tools/pore_map.gd` (etwa eine je 2 cm², fester Startwert), feiner gekachelt über psx_photo `normal_tiling`; `cavity` macht die Porenwände dunkler und rauer (`PILLAR_PORES_*`) |
 | `garden_coat*.png`, `garden_fabric*.png` (eigene Sets) | Gartenmöbel (`GardenFurniture`) | Aus `tools/garden_furniture.gd` (fester Startwert), nahtlos. Pulverlack anthrazit, seidenmatt (Rauheit 0,58), Orangenhaut und feines Korn als Normal Map, in Weltkoordinaten, Kachel 0,25 m. Textilgewebe grau in Leinwandbindung (64 Fäden je 10 cm), jeder Faden etwas heller oder dunkler, kleine dunkle Löcher dazwischen, über die UVs in Metern, Kachel 0,1 m |
+| `locker_melamine*.png` (eigenes Set) | Spindblöcke (`LockerBank`) | Aus `tools/locker_melamine.gd` (fester Startwert), nahtlos. Melamin neutral grau mit feiner Perlstruktur und leichten Wolken, Rauheit 0,55, in Weltkoordinaten, Kachel 0,2 m; `LockerBank` tönt es fast schwarz (Korpus, Schloss), anthrazit (Regal, Sockel) und weiß (innen) |
 | `trash_brass*.png`, `trash_coat*.png` (eigene Sets) | Mülleimer (`TrashCan`) | Aus `tools/trash_can.gd` (fester Startwert), nahtlos, über die UVs in Metern, Kachel 0,25 m: Messing gebürstet entlang u in den Farben der Plaketten – Riefen in mehreren Breiten, entlang lang gezogen, und einzelne tiefere; Farbe und Rauheit folgen den Riefen, keine Flecken; `METALLIC` wie die Plaketten (`BRASS_METALLIC`). Lack fast schwarz, seidenmatt (Rauheit 0,38), Orangenhaut als Normal Map – das Innere im Lack, dunkler |
 | `room_plate*.png` (eigenes Set) | Zimmerplaketten (`RoomPlate`, `Door.add_room_number`) | Ziffernsatz 1024²: Zellen für Schraube links/rechts, Füller, Ziffern 0–9 (Cinzel, Tinte aus den Dreiecken eines `TextMesh` gerastert) den Abdruck der abgefallenen Null (013 → „13“: blanker Schatten, Kleberand, zwei Stiftlöcher) und ein Band mit der Kordel (2,6 mm, gedreht wie am Lichtschalter), je Zelle 4 mm Rand gegen Mipmap-Übersprechen. Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/room_plate.gd`: Platte gebürstet wie die Lichtschalter, Ziffern erhaben (Fuß 0,3 mm, Rundung 1,1 mm) und poliert, Schmutz am Fuß. Die Vorderseite der Platte (140 × 74 mm, 3 mm, 45°-Fase) ist ein Streifen aus Zellen-Vierecken – Schraube, Füller, Ziffern, Füller, Schraube –, die Füller werden gestreckt; drumherum ein Rahmen aus vier Trapezen auf Gehrung, unverzerrt aus dem Kordelband geschnitten; Bürstung und Anlauf hängen nur von der Höhe in der Zelle ab, damit die Stöße unsichtbar bleiben. `METALLIC` `Door.PLATE_METALLIC`. Lage der Zellen rechnen Werkzeug und Spiel gleich aus (`RoomPlate.layout()`) – nach Änderungen an Maßen oder Schrift das Werkzeug neu laufen lassen |
+| `frosted_glass_normal.png`, `frosted_glass_rough.png` (eigenes Set) | Milchglas (`Mat.frosted_glass`: Milchglastüren) | Aus `tools/frosted_glass.gd` (fester Startwert), nahtlos: satiniertes Glas – feine Ätzkörnung (0,35 mm) und flache Walzwellen als Normal Map, Rauheit um 0,42 mit geätzten Flecken; Farbe mit Deckkraft 0,8 und Gegenlicht (`backlight`) im Material, dreiseitig in Modellkoordinaten, Kachel 0,12 m |
 | `switch_plate*.png` (eigenes Set) | Lichtschalter (`LightSwitch`): Platte, Kanten und Wippe | Altmessing mit Kordelrand, Rille, Schlitzschrauben, Bürstung und Patina – Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/switch_plate.gd` (fester Startwert); über die UVs gespannt (`mesh_uv`, Platte `_plate()` mit eigener Vorderseite, Kanten und Wippe aus `PLAIN_UV`), `METALLIC`. Plastisch sind nur Platte, schwarzer Rahmen und die eckige Wippe |
 
 ## 2. Aufbau zur Laufzeit
@@ -318,7 +320,7 @@ Main (Node3D, main.gd)
 | 6 | 32 | Monster | |
 | 7 | 64 | klares Glas (Fenster, Glastür, Duschglas) | Sicht geht durch |
 | 8 | 128 | Gäste | |
-| 9 | 256 | Milchglas (`HotelWindow` mit `frosted`, derzeit nicht verbaut) | blockiert Sicht |
+| 9 | 256 | Milchglas (`HotelWindow` mit `frosted`, derzeit nicht verbaut; Milchglastüren liegen auf 2) | blockiert Sicht |
 | 10 | 512 | zugezogene Vorhänge (`HotelWindow.LAYER_BLOCK`) | nur Sicht-/Licht-Raycasts, nicht Bewegung |
 | 11 | 1024 | Hotelkatzen (`HotelCat.LAYER`) | blockiert niemanden; nur der Spieler-Strahl trifft sie (Streicheln) |
 | 12 | 2048 | Trittflächen der Treppenstufen (`LevelBuilder.LAYER_TREAD`) | blockiert niemanden; nur für Spuren (`Traces.surface_below`) |
@@ -520,10 +522,14 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
 ### Wände, Böden, Stöße
 - **Wände:** Eine Planwand wird dort geteilt, wo sich die Räume an einer Seite ändern (abgetastet, kurze Läufe
   geglättet). Tapete je Seite über `Mat.wallpaper_split` (Zimmer beige, Lobby und Katzenraum rot, sonst teal); Seiten
-  ohne Tapete (draußen = Fassade, Bad/Toilette/Pool = Fliesen, Lager = Beton) bekommen eine Haut knapp vor der Wand
-  (`_skin_material`). Glaswände als Scheibe auf Ebene 7. Kollision als Kästen um jede Öffnung, die Optik als **ein**
-  Mesh pro Wand (`Geo.wall_mesh`, Fläche 0 = Wand, 1 = Laibungen in Rahmenholz) mit gemeinsamen Ecken auf einem Raster
-  – getrennte Kästen stießen mit Ecken mitten auf Nachbarkanten, dort klafften Fugen.
+  ohne Tapete (draußen = Fassade, Bad/Toilette/Pool und Pool-Umkleiden = Fliesen, Lager = Beton) tragen ihr Material
+  (`_skin_material`) **auf der Wandfläche selbst** (31.10., ZIM-145; vorher eine 2 cm starke Haut 2,2 cm davor – das
+  Fliesenraster ging in den Ecken nicht auf, Schalter steckten dahinter): `Geo.wall_mesh` mit `sides` liefert dann je
+  Seite eigene, benannte Flächen (`plus`/`minus`, im Bad bei `BATH_TILE_HEIGHT` geteilt in `…_top` = Farbe), freie
+  Stirnseiten (`ends`, `ends_top`) nehmen das Material der gefliesten Seite. Glaswände als Scheibe auf Ebene 7.
+  Kollision als Kästen um jede Öffnung, die Optik als **ein** Mesh pro Wand (`Geo.wall_mesh`, Fläche 0 = Wand, 1 =
+  Laibungen in Rahmenholz) mit gemeinsamen Ecken auf einem Raster – getrennte Kästen stießen mit Ecken mitten auf
+  Nachbarkanten, dort klafften Fugen.
 - **Hallen über zwei Stockwerke** (Lufträume): Seiten über `_wall_side_kind` abgetastet, oben heißt die Seite
   `hall:<Art im EG>` (`_halls`); Tapete des EG mit `wall_top` = `HALL_WALL_TOP` – die Rauten laufen nahtlos bis unter
   die Decke. `_subtract` verwirft Reste unter 1 mm (sonst stak eine Deckenplatte ohne Tiefe in der Wand).
@@ -570,9 +576,9 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   breiten Öffnungen Doppeltür. Liegt ein Lichtschalter hinter der offenen Tür (`_behind_door`), warnt der Build mit
   Pixelposition. **Aussehen** (`Door.look`): `door` = gemaltes Zimmertür-Modell, `attic_door` = Kniestocktür
   (verschlossen mit Schlüssel `dachboden`, das Monster bricht sie nicht auf), `attic_inner_door` = übrige Türen im
-  Dachgeschoss; Betriebstüren behalten das gebaute Blatt. Terrassen- und Glastüren sind gläserne Doppeltüren; Fenstertüren
-  nach draußen kommen in die Gruppe `french_doors` (Lakengeist). Der Haupteingang ist verriegelt. Fenster: `room_id` =
-  Fläche dahinter (`_room_id_at`).
+  Dachgeschoss, `frosted_door` = Milchglastür (`Look.FROSTED`, ZIM-143); Betriebstüren behalten das gebaute Blatt.
+  Terrassen- und Glastüren sind gläserne Doppeltüren; Fenstertüren nach draußen kommen in die Gruppe `french_doors`
+  (Lakengeist). Der Haupteingang ist verriegelt. Fenster: `room_id` = Fläche dahinter (`_room_id_at`).
 - **Zimmer** (`_room`): Rahmen am Türmittelpunkt (+X an der Flurwand entlang, +Z ins Zimmer); das Innere kommt aus dem
   Plan, `_room` legt nur die Zimmerart fest: `player`, `guest`, `vacant`, `abandoned`, `derelict`, `locked`.
   **Belegung aus HAUSHALTE.md** (Spielkonzept 6.19, 6.20): `_index_households` liest `assets/data/households.json` und
@@ -604,6 +610,20 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     `GARDEN_CHAIR_TURN` Grad nach links oder rechts zu seiner Vorderseite und rückt bis `GARDEN_CHAIR_SHIFT`. Bei jedem
     Start und nach dem Laden gleich, ohne Spielstand; wird das Möbel im Plan verschoben, fällt der Zufall neu. Der
     Gartentisch nächst einer Gartentür von 13 ist der Futtertisch der Krähen (`feed_table`).
+    **Spindblock** = `LockerBank` (`world/locker_bank.gd`, ZIM-145, Foto 31.10.): 3,60 × 0,90 m (Plan 36 × 9 px),
+    Rücken `WALL_CLEAR` (5 mm) vor der Hinterkante des Rechtecks. Sockel mit Sitzplatte 50 cm
+    (eigener Körper mit `Seat`), hinten darauf 6 × 2 Spinde 40 × 90 × 50 cm und rechts (von vorn) ein Regal 1,20 m mit
+    3 × 2 Fächern. Platten als Kästen mit gleicher Kollision (Fächer hohl), innen je Fach eine weiße Auskleidung; Türen
+    mit schwarzem Kern und Holzdekor (Wood_02, `Geo.grain_box` mit senkrechter Faser), 8 mm Luft ringsum, Schloss oben
+    rechts. Ein Mesh je Block mit allen festen Türen; die, die aufgehen, sind eigene Körper mit Scharnier links (95°).
+    Gebaut erst nach allen Möbeln (`_locker_banks`): die Nummern laufen je Stockwerk über alle Blöcke, nach Raum von West
+    nach Ost, im Raum „links unten im Plan“ zuerst (kleinstes x − z), im Block spaltenweise von links oben. Welche
+    aufgehen, steht in `LockerBank.OPENABLE` (frei oder mit `KEY` „spind_NN“, Bund-Beschriftung „Spindschlüssel N“);
+    die übrigen rütteln nur. Beim ersten Öffnen ein Fund wie in der Kommode (Schlüsselspinde nie leer), Spinne wie bei
+    der Schublade. Gruppe `locker_banks` (offen, aufgeschlossen, durchsucht). Hinweis „Spind N · …“, Lärm `locker`.
+    **Umkleidebank** = `ChangingBench` (`world/changing_bench.gd`): so lang wie im Plan (3 m), 60 cm breit, 50 cm
+    hoch, Fußrahmen an den Enden und an jedem Meter (3 m → vier), Längsrohre, fünf Latten – Rohr und Holz aus `GardenFurniture.Parts`, ein
+    `Seat` mit Plätzen auf beiden Seiten, ein Mesh je Länge.
     Eine Truhe in einem Hotelzimmer ist dessen Süßigkeiten-Truhe (`_sweets_chest`); Snack- und Getränkeautomat sind
     `VendingMachine`. Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert die Höhe, auf der
     Kerzen, Telefone, Zettel und Gegenstände stehen.
@@ -620,6 +640,9 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     Kupferleuchte: Opalglas mit dem Material der Birne (leuchtet, flackert, erlischt mit ihr), die Birne steckt unsichtbar
     dahinter; Licht `FLUSH_LIGHT_BELOW` unter dem Glas – näher strahlte es das Kupfer grell an. Lampen und Schalter
     gehören zur Raum-ID der Fläche davor (`_light_room_at`); Schalter in unbewohnten Zimmern starten aus.
+    **Immer an** (`ALWAYS_LIT`, ZIM-145: die Lichtgruppe „umkleiden“ = Vorraum, Duschen, Umkleiden am Pool): Schalter
+    im Plan entfallen dort mit Warnung, die Lampen sind `Lamp.fixed` – kein Hinweis, nichts herauszudrehen
+    (`has_socket` falsch), brennen nicht durch; Stromausfall und Flackern wirken über `FlickerLight` wie überall.
     Über jedem Badspiegel (`_washbasin` mit Raum-ID, nicht in den Toiletten) eine Spiegelleuchte `Lamp.Style.MIRROR`:
     Edelstahlbalken (`Mat.metal()` wie die Armatur) mit Lichtband aus dem Material der Birne, keine Birne zum
     Herausdrehen (`has_socket` falsch), brennt nicht durch; Werte `MIRROR_LAMP_*`.
@@ -1421,7 +1444,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   Gast-IDs bezieht. Dann Welt → Director-Werte → Gäste → Gegenstände → Spieler (`look` zuerst über `Player.set_look`,
   dann Hand, Tasche `bag` über `Player.set_bag`) → Soziales → Monster zuletzt.
 - Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp, HotelPhone,
-  LightSwitch, HotelWindow, Dresser, Elevator, FixedCandle, KeyCabinet …) oder werden in `collect()` direkt ausgelesen
+  LightSwitch, HotelWindow, Dresser, LockerBank, Elevator, FixedCandle, KeyCabinet …) oder werden in `collect()` direkt ausgelesen
   (Door, Chest, Plant, Resource). Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()` + `WORLD_GROUPS`.
 - Beim Laden `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
 - **Nicht gespeichert**, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating`, `DecoSearch`, `Stove`,
@@ -1485,6 +1508,9 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   (`SHADOWS_ONLY`, Knoten „Schattenbau“); Türen liegen selbst auf der Ebene (sie bewegen sich). Die `FULL` nächsten
   Lampen nehmen alles außer den Kacheln (Möbel, Figuren, echte Wände). Der Schatten blendet erst mit dem Licht aus
   (`distance_fade_shadow` = Anfang + Länge der Licht-Ausblendung) – sonst schien es dazwischen durch Wände.
+  Bias der Lampen `ShadowBudget.BIAS` (0,03) statt Godots 0,1: mit 0,1 löste sich der Schatten von Möbeln an der
+  Wand, und an Fugen dünner Bretter (Regalfächer) lief Licht als helle Linie durch; 0 gibt Flecken (Spiegel in 13).
+  Normal Bias, Atlasgröße und Filter änderten daran kaum etwas (verglichen 31.10.). Abgleichen: `--schatten-bias`.
 - **Geprüft und verworfen:** Paraboloid-Schatten (verbiegen große Wandflächen, lassen Licht in Flecken durch), größerer
   Schattenatlas 8192 (deutlich teurer). Godot 4.7 rendert Punktlicht-Schatten jedes Bild neu, auch ohne Bewegung; die
   CPU-Zeit hängt an der Zahl der Schattenlampen, nicht der Meshes. Der Atlas hat 88 Plätze.
@@ -1508,9 +1534,6 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   Erdgeschoss (Bauteile aus `structure_parts`, eingeschaltete Lampen als schlichte `OmniLight3D` mit Schatten) in
   `res://temp/eg_static.scn` mit eigenem Läufer – zum Messen der Renderkosten ohne Spiellogik. Dazu feste Messpunkte
   (`StaticExport.BENCH_POINTS`, Kameras unter „Messpunkte“) und für den Engine-Vergleich (ZIM-121) derselbe Bau mit
-  Bias der Lampen `ShadowBudget.BIAS` (0,03) statt Godots 0,1: mit 0,1 löste sich der Schatten von Möbeln an der
-  Wand, und an Fugen dünner Bretter (Regalfächer) lief Licht als helle Linie durch; 0 gibt Flecken (Spiegel in 13).
-  Normal Bias, Atlasgröße und Filter änderten daran kaum etwas (verglichen 31.10.). Abgleichen: `--schatten-bias`.
   Lampen und Messpunkten als `eg_static.glb` (ShaderMaterials gehen verloren) samt `eg_static_lampen.json` (Godot-Werte
   der Lampen, Messpunkte). Messlauf: Szene direkt starten mit `-- --bench[=pfad] --bg` – je Punkt 2 s einschwingen,
   6 s messen ohne VSync, Bildzeiten nach `temp/bench_godot.csv`, Übersicht in die Konsole, dann beenden; je Punkt ein
@@ -1522,7 +1545,10 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   ist aber nicht verbaut.
 - **Türen** (`door.gd`): Blatt auf Ebene 2 (Glastür 7); Rahmen über `OpeningFrame`. Blatt gebaut (`Look.PLAIN`,
   Glastüren) oder Modell (`HOTEL`, `ATTIC`): `leaf` auf die Blattgröße gestreckt, bei `dir` = −1 gespiegelt; Klinke und
-  Bänder ungestreckt. Spuren über `attach_mark(mark, seite, at)`. Zustände `locked`, `broken`, angelehnt
+  Bänder ungestreckt. **Milchglastür** (`Look.FROSTED`, Planfarbe „Milchglastür“): Seiten-, Ober- und Unterholz aus
+  `Geo.grain_box` im Holz der Zimmertür (`FROSTED_STILE`/`_TOP`/`_BOTTOM` wie deren Friese), Scheibe `Mat.frosted_glass`
+  ohne Schattenwurf in Glashalteleisten, Drücker und Bänder der Zimmertür (`_add_fittings`), Rahmen `DoorCasing`; Ebene 2
+  wie eine Holztür (Sicht zu, Handabdrücke ja). Spuren über `attach_mark(mark, seite, at)`. Zustände `locked`, `broken`, angelehnt
   (`set_ajar`), Zimmerzugang siehe 6.
 - **Verstecke** (`hide_spot.gd`): `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur;
   `own_bed` = Bett in Zimmer 13, `room_no` = Zimmer jedes Betts (fremde Betten, 3.6); `rattle()`/`burst_open()` für den Lakengeist; Betten mit `bed_size`, `head_x`,

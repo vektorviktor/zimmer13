@@ -143,14 +143,14 @@
 			"thickness": 0.2,
 			"openings": [
 				{
-					"kind": "service_door",
+					"kind": "frosted_door",
 					"at": 4.5,
 					"width": 1.2,
 					"hinge": "end",
 					"opens": -1
 				},
 				{
-					"kind": "service_door",
+					"kind": "frosted_door",
 					"at": 10.5,
 					"width": 1.2,
 					"hinge": "end",
@@ -286,14 +286,14 @@
 			"thickness": 0.2,
 			"openings": [
 				{
-					"kind": "service_door",
+					"kind": "frosted_door",
 					"at": 0.5,
 					"width": 1.2,
 					"hinge": "start",
 					"opens": -1
 				},
 				{
-					"kind": "service_door",
+					"kind": "frosted_door",
 					"at": 6.5,
 					"width": 1.2,
 					"hinge": "start",
@@ -589,7 +589,7 @@
 			],
 			"b": [
 				37.5,
-				-54.1
+				-56.1
 			],
 			"thickness": 0.2
 		},
@@ -600,7 +600,7 @@
 			],
 			"b": [
 				43.5,
-				-54.1
+				-56.1
 			],
 			"thickness": 0.2
 		},
@@ -654,6 +654,50 @@
 					"width": 2.2
 				}
 			]
+		},
+		{
+			"a": [
+				35.0,
+				-56.0
+			],
+			"b": [
+				37.6,
+				-56.0
+			],
+			"thickness": 0.2
+		},
+		{
+			"a": [
+				41.0,
+				-56.0
+			],
+			"b": [
+				43.6,
+				-56.0
+			],
+			"thickness": 0.2
+		},
+		{
+			"a": [
+				37.5,
+				-55.9
+			],
+			"b": [
+				37.5,
+				-54.1
+			],
+			"thickness": 0.2
+		},
+		{
+			"a": [
+				43.5,
+				-55.9
+			],
+			"b": [
+				43.5,
+				-54.1
+			],
+			"thickness": 0.2
 		},
 		{
 			"a": [
@@ -713,21 +757,21 @@
 			"thickness": 0.2,
 			"openings": [
 				{
-					"kind": "service_door",
+					"kind": "frosted_door",
 					"at": 24.5,
 					"width": 1.2,
 					"hinge": "end",
 					"opens": -1
 				},
 				{
-					"kind": "service_door",
+					"kind": "frosted_door",
 					"at": 30.5,
 					"width": 1.2,
 					"hinge": "end",
 					"opens": -1
 				},
 				{
-					"kind": "service_door",
+					"kind": "frosted_door",
 					"at": 36.5,
 					"width": 1.2,
 					"hinge": "end",
@@ -6827,6 +6871,18 @@
 					31.6,
 					-59.9,
 					37.4,
+					-56.1
+				],
+				[
+					31.6,
+					-56.1,
+					35.0,
+					-55.9
+				],
+				[
+					31.6,
+					-55.9,
+					37.4,
 					-54.1
 				]
 			],
@@ -6840,6 +6896,18 @@
 				[
 					37.6,
 					-59.9,
+					43.4,
+					-56.1
+				],
+				[
+					37.6,
+					-56.1,
+					41.0,
+					-55.9
+				],
+				[
+					37.6,
+					-55.9,
 					43.4,
 					-54.1
 				]
@@ -11641,16 +11709,6 @@
 		{
 			"kind": "chair",
 			"rect": [
-				38.8,
-				-15.4,
-				39.2,
-				-15.0
-			],
-			"facing": "south"
-		},
-		{
-			"kind": "chair",
-			"rect": [
 				38.1,
 				-14.7,
 				38.5,
@@ -11667,6 +11725,24 @@
 				-14.3
 			],
 			"facing": "west"
+		},
+		{
+			"kind": "changing_bench",
+			"rect": [
+				34.2,
+				-58.2,
+				37.2,
+				-57.6
+			]
+		},
+		{
+			"kind": "changing_bench",
+			"rect": [
+				40.2,
+				-58.2,
+				43.2,
+				-57.6
+			]
 		},
 		{
 			"kind": "chess_table",
@@ -12628,6 +12704,46 @@
 				-49.3
 			],
 			"facing": "south"
+		},
+		{
+			"kind": "locker_bank",
+			"rect": [
+				33.8,
+				-59.9,
+				37.4,
+				-59.0
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "locker_bank",
+			"rect": [
+				39.8,
+				-59.9,
+				43.4,
+				-59.0
+			],
+			"facing": "south"
+		},
+		{
+			"kind": "locker_bank",
+			"rect": [
+				31.6,
+				-57.7,
+				32.5,
+				-54.1
+			],
+			"facing": "east"
+		},
+		{
+			"kind": "locker_bank",
+			"rect": [
+				37.6,
+				-57.7,
+				38.5,
+				-54.1
+			],
+			"facing": "east"
 		},
 		{
 			"kind": "memorial",
@@ -14606,6 +14722,20 @@
 		{
 			"kind": "ceiling_lamp",
 			"pos": [
+				33.5,
+				-62.0
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				39.5,
+				-62.0
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
 				-61.5,
 				-57.0
 			]
@@ -14642,6 +14772,20 @@
 			"kind": "ceiling_lamp",
 			"pos": [
 				-18.5,
+				-57.0
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				34.5,
+				-57.0
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
+				40.5,
 				-57.0
 			]
 		},

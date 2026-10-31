@@ -4,7 +4,8 @@ extends MeshInstance3D
 ## der Laibung mit Anschlag auf der Seite gegenüber der Aufgehseite (−Z), auf beiden Wandseiten eine gestufte
 ## Bekleidung, oben auf Gehrung. Statt OpeningFrame (Craftsman-Rahmen der übrigen Öffnungen). Im Code aus einem Profil
 ## gebaut, damit er auf jede Türgröße passt; Holz wie Türblatt und Vertäfelung (Mat.hotel_wood, Faser entlang der
-## Teile). Wo vor der Wand eine Haut liegt (Fliesen, Beton …), sitzt die Bekleidung davor (lift).
+## Teile). Fliesen und Beton liegen auf der Wandfläche selbst (LevelBuilder._wall_piece_at), die Bekleidung sitzt
+## also immer direkt auf der Wand. Auch an den Milchglastüren (Look.FROSTED).
 ## Reine Optik: keine Kollision, nicht im Spielstand.
 ##
 ## Lokale Lage wie Door: Öffnung von x = 0 bis width, Boden y = 0, Wandmitte z = 0, Wandstärke depth.
@@ -27,24 +28,22 @@ static var _cache := {}   # gleiche Türen teilen sich ein Mesh
 var width := 1.2
 var height := 2.1
 var depth := 0.2
-var lift := Vector2.ZERO   ## Wandhaut auf −Z bzw. +Z (Door.casing_lift)
 var _v := PackedVector3Array()
 var _n := PackedVector3Array()
 var _uv := PackedVector2Array()
 var _i := PackedInt32Array()
 
 
-func setup(p_width: float, p_height: float, p_depth: float, p_lift := Vector2.ZERO) -> DoorCasing:
+func setup(p_width: float, p_height: float, p_depth: float) -> DoorCasing:
 	width = p_width
 	height = p_height
 	depth = p_depth
-	lift = p_lift
 	return self
 
 
 func _ready() -> void:
 	material_override = Mat.hotel_wood()
-	var key := "%.3f|%.3f|%.3f|%.3f|%.3f" % [width, height, depth, lift.x, lift.y]
+	var key := "%.3f|%.3f|%.3f" % [width, height, depth]
 	if not _cache.has(key):
 		_build()
 		_cache[key] = Geo.add_surface(ArrayMesh.new(), _v, _n, _i, _uv)
@@ -56,9 +55,8 @@ func _ready() -> void:
 
 
 func _build() -> void:
-	# Zarge bis vor die Wandhaut (sonst sähe man deren Schnittkante in der Laibung)
-	var d0 := -depth / 2.0 - lift.x
-	var d1 := depth / 2.0 + lift.y
+	var d0 := -depth / 2.0
+	var d1 := depth / 2.0
 	var top := height - JAMB
 	# Zarge: Innenflächen der drei Bretter, Faser entlang
 	_quad(Vector3(JAMB, 0, d0), Vector3(JAMB, top, d0), Vector3(JAMB, top, d1), Vector3(JAMB, 0, d1), Vector3.RIGHT, true)
@@ -101,7 +99,7 @@ func _stop(top: float) -> void:
 ## Bekleidung auf der Wandseite s (±Z): jede Profilstufe als Band links hoch, oben quer, rechts hinab – die Ecken
 ## treffen sich auf der Diagonale (Gehrung von selbst)
 func _casing(s: float) -> void:
-	var face := s * (depth / 2.0 + (lift.x if s < 0.0 else lift.y))
+	var face := s * depth / 2.0
 	var xl := JAMB - REVEAL
 	var xr := width - JAMB + REVEAL
 	var yh := height - JAMB + REVEAL

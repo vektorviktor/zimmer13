@@ -35,6 +35,7 @@ const NOISE := {
 	"shock_drop": {"range": 6.0,  "sound": "thud",   "volume": 0.6, "caption": "[Etwas fällt zu Boden]"},    ## vor Schreck fallen gelassen (6.8)
 	"chest":      {"range": 4.0,  "sound": "creak",  "volume": 0.4, "caption": "[Ein Truhendeckel knarrt]"},
 	"drawer":     {"range": 3.0,  "sound": "creak",  "volume": 0.3, "caption": "[Eine Schublade schabt]"},    ## Schublade einer Kommode
+	"locker":     {"range": 4.0,  "sound": "thud",   "volume": 0.35, "caption": "[Eine Spindtür klappt]"},    ## Spindtür in den Umkleiden (ZIM-145)
 	## Hotelkatzen (Spielkonzept 6.11) – das Monster überhört sie, es mag die Katzen
 	"cat_meow":   {"range": 8.0,  "sound": "meow",   "volume": 0.45},   ## miaut (vor einer Tür, Geschenk)
 	"cat_purr":   {"range": 1.5,  "sound": "purr",   "volume": 0.6, "caption": "[Schnurren]"},    ## schnurrt beim Streicheln

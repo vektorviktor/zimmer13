@@ -31,6 +31,8 @@ extends Node3D
 ##                               UV-Aufsatz (7.4) – offen: nach 1 s aufgeschlagen · gelesen: die drei Mängel stehen im
 ##                               Notizbuch (mit --show=aufgaben gleich aufgeschlagen)
 ##   --brief                     an den Schreibtisch in Zimmer 13, Blick auf den Willkommensbrief (2.5)
+##   --spinde[=offen]            vor den ersten Spindblock der Pool-Umkleiden (ZIM-145) – offen: alle Spinde, die
+##                               aufgehen, sind offen (auch die mit Schlüssel)
 ##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
 ##                               über drei Tage) und ein paar Einträge im Tagebuch zum Nachlesen (3.10)
 ##   --gesehen                   Notizbuch einstecken, alle drei Bedrohungen gelten als gesehen (Lesezeichen „Gesehen“, 3.10) –
@@ -169,10 +171,10 @@ extends Node3D
 ##                               ausgeben – als Startparameter danach beenden
 ##   --nur-stockwerk             nur das Stockwerk der Kamera zeichnen, die übrigen ausblenden (im Freien alle) – zum
 ##                               Messen mit --perf, was das Ausblenden brächte (ShadowBudget.floors_only); erneut: aus
-##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
-##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --schatten-bias=b[,n]       Bias (und Normal Bias) aller Lampen setzen – zum Abgleichen im Spiel; ohne Wert der
 ##                               Standard ShadowBudget.BIAS
+##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
+##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort ein Raubzug (4.33, nicht harmlos) – wie --mode=raubzug
 ##   --pumpkin=ankündigung[,s]   Kürbismann kündigt sich an (4.19): Lampen rot, schrille Melodie, Kinder singen – in s
@@ -920,14 +922,14 @@ func run_debug(arg: String) -> bool:
 		var shadows := $ShadowBudget as ShadowBudget
 		shadows.floors_only = not shadows.floors_only
 		Game.say("Nur das eigene Stockwerk: %s" % ("an" if shadows.floors_only else "aus"), 2.0)
-	elif arg == "--fps":
-		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif _is_arg(arg, "--schatten-bias"):
 		var parts := _arg_parts(arg, "--schatten-bias", str(ShadowBudget.BIAS))
 		if not parts[0].is_valid_float() or (parts.size() > 1 and not parts[1].is_valid_float()):
 			return false
 		ShadowBudget.set_bias(get_tree(), parts[0].to_float(), parts[1].to_float() if parts.size() > 1 else -1.0)
 		Game.say("Schatten: Bias %s%s" % [parts[0], (", Normal Bias " + parts[1]) if parts.size() > 1 else ""], 2.0)
+	elif arg == "--fps":
+		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg == "--nohud":
 		Game.hud.visible = not Game.hud.visible
 	elif arg.begins_with("--tp="):
@@ -1655,6 +1657,9 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:   # nach dem Aufbau des Spielers
 			for book in get_tree().get_nodes_in_group("caretaker_books"):
 				(book as CaretakerBook).debug(page))
+	elif _is_arg(arg, "--spinde"):
+		var open := _arg_value(arg, "--spinde") == "offen"
+		get_tree().create_timer(0.5).timeout.connect(func() -> void: LockerBank.debug_show(get_tree(), open))
 	elif arg == "--brief":
 		Game.contest.debug_letter()
 	elif arg == "--zettel":

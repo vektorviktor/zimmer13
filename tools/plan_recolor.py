@@ -57,7 +57,7 @@ DESIGN = {
 	"Dachboden": (30, 18, 52), "Hausmeisterraum": (200, 12, 70),
 	# Öffnungen · Türen grün, Fenster blau, Haupteingang rot, Türanschlag magenta
 	"Tür Flur": (110, 90, 52), "Tür Terrasse": (140, 90, 42), "Doppel-Glastür": (165, 85, 45),
-	"Betriebstür": (70, 25, 58), "Aufzugtür": (125, 45, 32), "Haupteingang": "ff0000", "Türanschlag": "f300ff",
+	"Betriebstür": (70, 25, 58), "Milchglastür": (140, 70, 62), "Aufzugtür": (125, 45, 32), "Haupteingang": "ff0000", "Türanschlag": "f300ff",
 	"Gittertür": (95, 45, 40), "Fenster": (210, 85, 58), "Dachfenster": (200, 90, 74),
 	# Möbel · Markierung
 	"Möbel: Vorderseite": "ff00ff",

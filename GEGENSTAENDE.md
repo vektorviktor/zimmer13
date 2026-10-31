@@ -27,6 +27,7 @@ Stand: 2026-10-28.
 | Schlüsselbund des Rezeptionisten | – | geplant (Vorschlag) | Nebenstrang (Marion) | in der Jeansjacke des erlösten Kürbismanns; öffnet das Büro der Direktion | 2.8, M15b |
 | ~~Werkstattschlüssel~~ | – | gestrichen 2026-10-27 (Werkstatt entfällt zugunsten des alten Heizkellers) | – | – | 2.8, 7.4 |
 | Schlüssel von 1987 (Messinganhänger) | `KEY` „zimmer_042“ | gebaut (Zimmer 042 selbst noch nicht versiegelt) | – (optional; Edna, K5) | im Krähennest im großen Baum gegenüber 042; kommt als Geschenk der Krähen bei hoher Gunst nach Fütterungen an drei Tagen oder fällt beim Wurf ins Nest heraus; schließt Zimmer 042 auf (der Mann, der 1987 nicht hinauskam) | 4.25, 6.19 (7) |
+| Spindschlüssel (Pool-Umkleiden) | `KEY` „spind_NN“ (Bund: „Spindschlüssel N“) | **teilweise** – Spinde 7, 20, 32, 44 schließen damit auf (ZIM-145, `LockerBank.OPENABLE`), Schlüssel liegen noch nirgends | – | Fundorte offen; ohne Modell (Nutzer 31.10.) | – |
 | Schlüssel der übrigen versiegelten Zimmer | – | geplant | – (optional) | je Zimmer ein eigener Weg (Krähen, Freund, Dokument, Wagnis) | 6.19 (7) |
 
 ## 2. Auftrags- und Fundstücke

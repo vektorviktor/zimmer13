@@ -9,8 +9,10 @@ const COLLISION_DEPTH := 0.2
 
 ## Aussehen des Blatts: im Code gebaut (Betriebs- und Glastüren) oder ein Modell – die Zimmertür aus
 ## tools/build_room_door.py (Nussbaum mit vier Kassetten, Messingbeschläge, Texturen gebacken, Materialien wie im
-## glTF) bzw. die gemalte Kniestocktür zum Dachboden aus tools/build_doors.py (Spielkonzept 4.21)
-enum Look { PLAIN, HOTEL, ATTIC }
+## glTF) bzw. die gemalte Kniestocktür zum Dachboden aus tools/build_doors.py (Spielkonzept 4.21). FROSTED: Milchglastür
+## (Pool, Duschen, Umkleiden; Planfarbe „Milchglastür“, ZIM-143) – Rahmen im Holz der Zimmertür, Zarge und Beschläge
+## wie dort, dazwischen satiniertes Glas (Mat.frosted_glass). Sie hält den Blick auf wie eine Holztür (Ebene 2).
+enum Look { PLAIN, HOTEL, ATTIC, FROSTED }
 const HOTEL_MODEL := "res://assets/models/door_room.glb"
 const ATTIC_MODEL := "res://assets/models/door_attic.glb"
 ## Blattgröße der Modelle (Meter, wie im Skript) – gestreckt auf die Tür, Beschläge bleiben, wie sie sind
@@ -23,6 +25,14 @@ const HANDLE_HEIGHT := 1.04
 const HINGE_AT: Array[float] = [0.12, 0.88]
 ## Zimmertür: so weit geht sie höchstens auf
 const HOTEL_MAX_ANGLE := deg_to_rad(95.0)
+## Milchglastür: Breite der Seitenhölzer, Höhe von Ober- und Unterholz (wie die Friese der Zimmertür), Glasdicke,
+## Glashalteleiste (Breite, Höhe) und wie weit das Glas in den Falz reicht
+const FROSTED_STILE := 0.15
+const FROSTED_TOP := 0.15
+const FROSTED_BOTTOM := 0.24
+const FROSTED_PANE := 0.008
+const FROSTED_BEAD := Vector2(0.018, 0.014)
+const FROSTED_REBATE := 0.01
 ## Zimmertür zum Flur (add_room_number): Höhe von Spion und Plakettenmitte über dem Boden, Blattfläche vor der
 ## Blattmitte, Glanz des Messings (RoomPlate) und bis zu welcher Entfernung man die Plakette sieht
 const PEEPHOLE_Y := 1.5
@@ -42,9 +52,6 @@ var monster_can_open := true
 var glass := false          ## Glastür: man sieht hindurch (Ebene 7 statt 2)
 var look := Look.PLAIN      ## vor dem Einhängen setzen (nicht bei Glastüren)
 var hinge_end := false      ## einfache Tür: Scharnier bei x = width statt im Ursprung (Türanschlag im Plan)
-## Zimmertür (DoorCasing): so weit steht die Wandhaut (Fliesen, Beton …) auf −Z bzw. +Z vor der Wand – die
-## Bekleidung sitzt davor (LevelBuilder, vor dem Einhängen)
-var casing_lift := Vector2.ZERO
 ## Fenstertür nach draußen (Terrasse, Garten, Balkon; Gruppe „french_doors“): Raum dahinter und Richtung nach
 ## draußen – dort erscheint auch der Lakengeist (Spielkonzept 4.18)
 var room_id := ""
@@ -99,8 +106,8 @@ func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: b
 func _ready() -> void:
 	add_to_group("doors")
 	# Zarge und Bekleidung: zur Zimmertür ihr eigener Rahmen im Holz des Blatts, sonst der Craftsman-Rahmen
-	if look == Look.HOTEL:
-		add_child(DoorCasing.new().setup(width, height, COLLISION_DEPTH, casing_lift))
+	if look in [Look.HOTEL, Look.FROSTED]:
+		add_child(DoorCasing.new().setup(width, height, COLLISION_DEPTH))
 		open_angle = signf(open_angle) * minf(absf(open_angle), HOTEL_MAX_ANGLE)
 	else:
 		add_child(OpeningFrame.new().setup(0.0, 0.0, width, height, COLLISION_DEPTH))
@@ -386,6 +393,8 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 		var panel := Mat.layer(Color(0.24, 0.13, 0.08))
 		for y in [0.6, 1.5]:
 			Geo.mesh(body, Geo.box(Vector3(leaf_width * 0.6, 0.55, 0.075)), panel, Vector3(cx, y * height / 2.1, 0))
+	elif look == Look.FROSTED:
+		_add_frosted_leaf(body, leaf_size, dir)
 	else:
 		_add_model_leaf(body, leaf_size, dir)
 	# Kollision so tief wie die Wand: Ein dünnes Türblatt bildet eine Nische, in der die
@@ -407,8 +416,45 @@ func _add_model_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
 	var ref := HOTEL_LEAF if hotel else ATTIC_LEAF
 	var leaf := Geo.mesh(body, parts["leaf"][0], parts["leaf"][1], Vector3(dir * 0.01, 0.01, 0))
 	leaf.scale = Vector3(dir * leaf_size.x / ref.x, leaf_size.y / ref.y, 1.0)
-	if not hotel:
-		return
+	if hotel:
+		_add_fittings(body, leaf_size, dir)
+
+
+## Milchglastür (Look.FROSTED): Seiten-, Ober- und Unterholz in voller Blattdicke mit der Faser entlang, dazwischen die
+## Scheibe, auf beiden Seiten von Glashalteleisten gehalten; Drücker und Bänder der Zimmertür. Die Scheibe wirft
+## keinen Schatten – Licht geht hindurch, der Blick nicht.
+func _add_frosted_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
+	var wood := Mat.hotel_wood()
+	var t := leaf_size.z
+	var w := leaf_size.x
+	var h := leaf_size.y
+	var at := func(u: float, v: float, z := 0.0) -> Vector3:   # u, v ab der Blattecke am Scharnier unten
+		return Vector3(dir * (0.01 + u), 0.01 + v, z)
+	var inner := Vector2(w - 2.0 * FROSTED_STILE, h - FROSTED_TOP - FROSTED_BOTTOM)
+	var mid := Vector2(w / 2.0, FROSTED_BOTTOM + inner.y / 2.0)
+	for s in 2:   # Seitenhölzer über die ganze Höhe, Faser senkrecht
+		Geo.mesh(body, Geo.grain_box(Vector3(FROSTED_STILE, h, t), 1, Vector2.ONE, 1.0, Vector2(0.37 * s, 0.11)), wood,
+			at.call(FROSTED_STILE / 2.0 + s * (w - FROSTED_STILE), h / 2.0))
+	for r: Vector2 in [Vector2(FROSTED_BOTTOM / 2.0, FROSTED_BOTTOM), Vector2(h - FROSTED_TOP / 2.0, FROSTED_TOP)]:
+		Geo.mesh(body, Geo.grain_box(Vector3(inner.x, r.y, t), 0, Vector2.ONE, 1.0, Vector2(r.x, 0.29)), wood,
+			at.call(w / 2.0, r.x))
+	var pane := Geo.mesh(body, Geo.box(Vector3(inner.x + 2.0 * FROSTED_REBATE, inner.y + 2.0 * FROSTED_REBATE,
+		FROSTED_PANE)), Mat.frosted_glass(), at.call(mid.x, mid.y))
+	pane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var bz := FROSTED_PANE / 2.0 + FROSTED_BEAD.y / 2.0
+	var b := FROSTED_BEAD.x
+	for z: float in [-bz, bz]:   # Leisten: senkrechte durchgehend, waagerechte dazwischen
+		for s: float in [-1.0, 1.0]:
+			Geo.mesh(body, Geo.grain_box(Vector3(b, inner.y, FROSTED_BEAD.y), 1, Vector2.ONE, 1.0), wood,
+				at.call(mid.x + s * (inner.x - b) / 2.0, mid.y, z))
+			Geo.mesh(body, Geo.grain_box(Vector3(inner.x - 2.0 * b, b, FROSTED_BEAD.y), 0, Vector2.ONE, 1.0), wood,
+				at.call(mid.x, mid.y + s * (inner.y - b) / 2.0, z))
+	_add_fittings(body, leaf_size, dir)
+
+
+## Drücker und Bänder der Zimmertür (aus HOTEL_MODEL, ungestreckt)
+func _add_fittings(body: Node3D, leaf_size: Vector3, dir: float) -> void:
+	var parts := _model_parts(HOTEL_MODEL)
 	var handle := Geo.mesh(body, parts["handle"][0], parts["handle"][1],
 		Vector3(dir * (leaf_size.x + 0.01 - HANDLE_INSET), HANDLE_HEIGHT, 0))
 	handle.scale.x = dir   # Drücker zeigt zum Scharnier
