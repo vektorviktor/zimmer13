@@ -26,6 +26,21 @@ const INTERVAL := 0.25
 const ALL := 0xFFFFFFFF & ~LAYER
 ## Lichter, die sich weiter bewegt haben (m), bekommen ihren Bereich neu
 const MOVE := 0.25
+## Bias der Lampen (Godot: 0,1) – bei 0,1 löste sich der Schatten sichtbar von Möbeln an der Wand, und in Fächern
+## und an Fugen dünner Bretter lief Licht als helle Linie durch. 0: Flecken auf Flächen. Der Normal Bias (1,0) ändert
+## daran kaum etwas und bleibt (Debug --schatten-bias)
+const BIAS := 0.03
+
+
+## Debug (--schatten-bias): Bias und wahlweise Normal Bias aller Lampen setzen (normal < 0: unverändert)
+static func set_bias(tree: SceneTree, bias: float, normal := -1.0) -> void:
+	for node in tree.get_nodes_in_group("lamps"):
+		var light := node as Light3D
+		if light == null:
+			continue
+		light.shadow_bias = bias
+		if normal >= 0.0:
+			light.shadow_normal_bias = normal
 
 ## Bereiche fürs Licht (LevelBuilder.light_rooms) – ohne sie gelten alle Lichter als erreichbar
 var rooms: LightRooms

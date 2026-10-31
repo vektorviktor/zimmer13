@@ -1508,6 +1508,9 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   Erdgeschoss (Bauteile aus `structure_parts`, eingeschaltete Lampen als schlichte `OmniLight3D` mit Schatten) in
   `res://temp/eg_static.scn` mit eigenem Läufer – zum Messen der Renderkosten ohne Spiellogik. Dazu feste Messpunkte
   (`StaticExport.BENCH_POINTS`, Kameras unter „Messpunkte“) und für den Engine-Vergleich (ZIM-121) derselbe Bau mit
+  Bias der Lampen `ShadowBudget.BIAS` (0,03) statt Godots 0,1: mit 0,1 löste sich der Schatten von Möbeln an der
+  Wand, und an Fugen dünner Bretter (Regalfächer) lief Licht als helle Linie durch; 0 gibt Flecken (Spiegel in 13).
+  Normal Bias, Atlasgröße und Filter änderten daran kaum etwas (verglichen 31.10.). Abgleichen: `--schatten-bias`.
   Lampen und Messpunkten als `eg_static.glb` (ShaderMaterials gehen verloren) samt `eg_static_lampen.json` (Godot-Werte
   der Lampen, Messpunkte). Messlauf: Szene direkt starten mit `-- --bench[=pfad] --bg` – je Punkt 2 s einschwingen,
   6 s messen ohne VSync, Bildzeiten nach `temp/bench_godot.csv`, Übersicht in die Konsole, dann beenden; je Punkt ein
