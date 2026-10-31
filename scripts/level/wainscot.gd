@@ -5,7 +5,8 @@ class_name Wainscot
 ## viele ganze Felder wie passen, mittig, im halben Raster: Steht ein Stück um ein halbes Feld über, kommt ein Halbfeld
 ## („half“) dazu, an das Ende zur Tür bzw. zum Fenster (Entscheidung 29.10.). Der Rest als gestrecktes Passstück
 ## („plain“) an beiden Enden – kleine Reste (bis STRETCH_MAX je Ende) strecken oder stauchen stattdessen die Felder.
-## Unter Fenstern „low“ ohne Leiste (dort sitzen Bank und Schürze des Rahmens). Alle Teile als MultiMesh je Zelle von
+## Unter Fenstern „low“ ohne Leiste (dort sitzen Bank und Schürze des Rahmens). An Außenecken ohne Holzpfeiler ein
+## Eckstück mit Gehrung (add_corner), das um den Wandkopf läuft. Alle Teile als MultiMesh je Zelle von
 ## CELL Metern (Sichtprüfung je Zelle). Holz (psx_photo mit instance_shift, INSTANCE_CUSTOM): Leisten und Brett laufen
 ## über das ganze Stück durch, x = Lage an der Wand, y = Versatz je Stück, z = Streckung (die Faser bleibt
 ## unverzerrt); nur die Füllungen sind eigene Bretter mit eigenem Ausschnitt (w).
@@ -31,11 +32,20 @@ const BACK := 0.015
 const LOW_HEIGHT := 0.86
 ## Vor der Brüstungsleiste (22 mm) – so weit vor der Wand läuft ein Rinnsal über die Vertäfelung
 const RAIL_FRONT := 0.0235
+## Eckstück an Außenecken ohne Holzpfeiler (add_corner): so weit läuft es an der Wandseite entlang
+const CORNER := 0.1
+## Umriss ohne Rahmenfeld als (Abstand vor der Wand, Höhe): Sockelleiste, Brett, Brüstungsleiste wie in
+## tools/build_wainscot.py (SKIRTING, BOARD, RAIL) – für die Eckstücke
+const OUTLINE: Array[Vector2] = [Vector2(0.016, 0.0), Vector2(0.016, 0.096), Vector2(0.0145, 0.104),
+	Vector2(0.011, 0.111), Vector2(0.008, 0.115), Vector2(0.008, 0.845), Vector2(0.010, 0.845), Vector2(0.015, 0.849),
+	Vector2(0.019, 0.856), Vector2(0.021, 0.866), Vector2(0.022, 0.878), Vector2(0.021, 0.889), Vector2(0.017, 0.896),
+	Vector2(0.011, HEIGHT), Vector2(0.0, HEIGHT)]
 
 static var _meshes := {}   # Teil → Mesh
 
 var _instances := {}   # Vector3i(Zelle x, Zelle z, Teil) → Array: [Transform3D, Color]
 var _boxes: Array = []   # [Mitte, Größe] der Kollisionskästen
+var _corners: Array = []   # [Ecke, Normale A, Normale B, Länge A, Länge B]
 
 
 ## Stück auf einer Wandfläche: Punkt der Fläche bei Länge 0 (origin, auf Bodenhöhe), Richtung der Wand along, Normale
@@ -84,9 +94,32 @@ func add_run(origin: Vector3, along: Vector3, out: Vector3, a: float, b: float, 
 		t += w
 
 
-## Baut die MultiMeshes und den Kollisionskörper unter parent.
+## Eckstück mit Gehrung um die Außenecke corner (auf Bodenhöhe): Fläche A mit Normale na läuft la weit von der Ecke
+## weg, Fläche B mit Normale nb lb weit; die Stücke daneben enden dort. Kein Modul aus dem Bausatz (dessen Enden sind
+## gerade), sondern der Umriss OUTLINE im Holz der Pfeiler (Mat.hotel_wood).
+func add_corner(corner: Vector3, na: Vector3, nb: Vector3, la: float, lb: float) -> void:
+	if nb.cross(Vector3.UP).dot(na) < 0.0:   # Geo.mitre_profile hat B rechts von A: sonst tauschen
+		_corners.append([corner, nb, na, lb, la])
+	else:
+		_corners.append([corner, na, nb, la, lb])
+	for side in [[na, nb, la], [nb, na, lb]]:
+		var n: Vector3 = side[0]
+		var length: float = side[2]
+		var center: Vector3 = corner - side[1] * length / 2.0 + n * (FRONT - BACK) / 2.0 + Vector3.UP * HEIGHT / 2.0
+		var depth := FRONT + BACK
+		_boxes.append([center, Vector3(depth, HEIGHT, length) if absf(n.x) > 0.5 else Vector3(length, HEIGHT, depth)])
+
+
+## Baut die MultiMeshes, die Eckstücke und den Kollisionskörper unter parent.
 func finish(parent: Node3D) -> void:
 	_load_kit()
+	var wood := Mat.hotel_wood()
+	for c: Array in _corners:
+		var mi := Geo.mesh(parent, Geo.mitre_profile(OUTLINE, c[3], c[4]), wood, c[0])
+		mi.name = "Vertaefelung"
+		mi.basis = Basis(c[2], Vector3.UP, c[1])
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_corners.clear()
 	if not _boxes.is_empty():
 		var body := StaticBody3D.new()
 		body.name = "Vertaefelung"

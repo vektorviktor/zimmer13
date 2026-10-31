@@ -366,6 +366,98 @@ static func _lathe(profile: Array, sides: int, crease: float) -> ArrayMesh:
 	return add_surface(ArrayMesh.new(), PackedVector3Array(verts), PackedVector3Array(normals), PackedInt32Array(indices))
 
 
+## Gezogener Körper mit quadratischem Querschnitt und Gehrung an den Ecken (Holzpfeiler, Leisten ringsum): profile =
+## (halbe Breite, Höhe) von unten nach oben, ohne Deckel, Mitte auf der senkrechten Achse. Entlang des Profils weich
+## wie lathe. UVs in Metern für Holz (Mat.hotel_wood): die Faser (u) läuft ringsum, mit grain_up senkrecht entlang
+## des Profils; offset verschiebt die Maserung, jede Seite zusätzlich ein Stück. notch = (sx, sz, ax, az) schneidet eine
+## Ecke aus (Pfeiler an einer Innenecke): Was zugleich weiter als ax in Richtung sx und weiter als az in Richtung sz
+## liegt, fällt weg – die beiden Seiten dorthin enden an der Schnittkante, offen (sie liegen in den Wänden).
+static func square_profile(profile: Array, grain_up: bool = false, offset := Vector2.ZERO, crease: float = 35.0,
+		notch := Vector4.ZERO) -> ArrayMesh:
+	return _cached("q%s,%s,%.3f,%.3f,%.1f,%s" % [str(profile), grain_up, offset.x, offset.y, crease, notch],
+		_square_profile.bind(profile, grain_up, offset, crease, notch))
+
+
+static func _square_profile(profile: Array, grain_up: bool, offset: Vector2, crease: float, notch: Vector4) -> ArrayMesh:
+	var seg_n: Array[Vector2] = []   # Normale je Abschnitt in (halbe Breite, Höhe), nach außen
+	var arc: Array[float] = [0.0]    # Länge entlang des Profils
+	for i in profile.size() - 1:
+		var t: Vector2 = profile[i + 1] - profile[i]
+		seg_n.append(Vector2(t.y, -t.x).normalized())
+		arc.append(arc[-1] + t.length())
+	var limit := cos(deg_to_rad(crease))
+	var verts := []
+	var normals := []
+	var uvs := []
+	var indices := []
+	for f in 4:
+		var out := Vector3(cos(PI / 2.0 * f), 0, sin(PI / 2.0 * f)).round()
+		var along := Vector3(-out.z, 0, out.x)
+		var shift := offset + Vector2(0.37, 0.23) * f
+		for i in seg_n.size():
+			var first := verts.size()
+			for e in [[i, i - 1], [i + 1, i + 1]]:
+				var p: Vector2 = profile[e[0]]
+				var k: int = e[1]
+				var n := seg_n[i]
+				if k >= 0 and k < seg_n.size() and seg_n[k].dot(n) > limit:
+					n = (n + seg_n[k]).normalized()
+				for s in [-1.0, 1.0]:
+					var t: float = s * p.x   # Lage entlang der Seite
+					var q := notch.x * notch.y
+					if q != 0.0 and out.x == notch.x and p.x > notch.z:   # Seite in Richtung sx: z begrenzt
+						t = q * minf(q * t, notch.w)
+					elif q != 0.0 and out.z == notch.y and p.x > notch.w:   # Seite in Richtung sz: x begrenzt
+						t = -q * minf(-q * t, notch.z)
+					verts.append(out * p.x + along * t + Vector3.UP * p.y)
+					normals.append(out * n.x + Vector3.UP * n.y)
+					var uv := Vector2(arc[e[0]], t) if grain_up else Vector2(t, arc[e[0]])
+					uvs.append(uv + shift)
+			_quad(indices, verts, [first, first + 1, first + 3, first + 2], out * seg_n[i].x + Vector3.UP * seg_n[i].y)
+	return add_surface(ArrayMesh.new(), PackedVector3Array(verts), PackedVector3Array(normals), PackedInt32Array(indices),
+		PackedVector2Array(uvs))
+
+
+## Eckstück mit Gehrung um eine Außenecke (Vertäfelung um einen Wandkopf): profile = (Abstand vor der Wand, Höhe) von
+## unten nach oben, die Ecke im Ursprung; Fläche A (Normale +Z) läuft la weit nach −X, Fläche B (Normale +X) lb weit
+## nach −Z, die Enden offen (dort stößt die Vertäfelung an). Glättung und UVs (Meter, Faser waagerecht) wie square_profile.
+static func mitre_profile(profile: Array, la: float, lb: float, crease: float = 35.0) -> ArrayMesh:
+	return _cached("m%s,%.3f,%.3f,%.1f" % [str(profile), la, lb, crease], _mitre_profile.bind(profile, la, lb, crease))
+
+
+static func _mitre_profile(profile: Array, la: float, lb: float, crease: float) -> ArrayMesh:
+	var seg_n: Array[Vector2] = []
+	var arc: Array[float] = [0.0]
+	for i in profile.size() - 1:
+		var t: Vector2 = profile[i + 1] - profile[i]
+		seg_n.append(Vector2(t.y, -t.x).normalized())
+		arc.append(arc[-1] + t.length())
+	var limit := cos(deg_to_rad(crease))
+	var verts := []
+	var normals := []
+	var uvs := []
+	var indices := []
+	for face in 2:
+		var out := Vector3(0, 0, 1) if face == 0 else Vector3(1, 0, 0)
+		var toward := Vector3(1, 0, 0) if face == 0 else Vector3(0, 0, 1)   # zur Ecke hin
+		var length := la if face == 0 else lb
+		for i in seg_n.size():
+			var first := verts.size()
+			for e in [[i, i - 1], [i + 1, i + 1]]:
+				var p: Vector2 = profile[e[0]]
+				var k: int = e[1]
+				var n := seg_n[i]
+				if k >= 0 and k < seg_n.size() and seg_n[k].dot(n) > limit:
+					n = (n + seg_n[k]).normalized()
+				for t: float in [-length, p.x]:   # offenes Ende, Gehrung
+					verts.append(out * p.x + toward * t + Vector3.UP * p.y)
+					normals.append(out * n.x + Vector3.UP * n.y)
+					uvs.append(Vector2(t, arc[e[0]]))
+			_quad(indices, verts, [first, first + 1, first + 3, first + 2], out * seg_n[i].x + Vector3.UP * seg_n[i].y)
+	return add_surface(ArrayMesh.new(), PackedVector3Array(verts), PackedVector3Array(normals), PackedInt32Array(indices),
+		PackedVector2Array(uvs))
+
+
 ## Viereck c (Indizes in verts) als zwei Dreiecke an indices, im Uhrzeigersinn von der Seite normal aus gesehen.
 static func _quad(indices: Array, verts: Array, c: Array, normal: Vector3) -> void:
 	var e1: Vector3 = verts[c[1]] - verts[c[0]]

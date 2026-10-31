@@ -104,6 +104,7 @@ const COMMANDS := {
 	"erfolge-zurueck": ["", "alle Erfolge im Profil löschen (8.11)"],
 	"noise": ["art", "alle 6 s Lärm am Spieler"],
 	"fps": ["", "Bilder pro Sekunde ein/aus (wie F10)"],
+	"nur-stockwerk": ["", "nur das Stockwerk der Kamera zeichnen, die übrigen ausblenden – ein/aus (zum Messen)"],
 	"nohud": ["", "HUD aus/ein (für Screenshots)"],
 	"static-eg": ["[=pfad]", "Erdgeschoss als statische Szene speichern (Wände, Böden, Decken, Lampen – Standard res://temp/eg_static.scn)"],
 	"debug": ["", "Debug-Werte einblenden"],

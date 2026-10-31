@@ -223,6 +223,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `TerrazzoDark_01` | Säulen der Lobby (`_pillar`), Platte des Couchtischs (`_coffee_table`) | Säulen mit Poren: eigene Normal Map aus `tools/pore_map.gd` (etwa eine je 2 cm², fester Startwert), feiner gekachelt über psx_photo `normal_tiling`; `cavity` macht die Porenwände dunkler und rauer (`PILLAR_PORES_*`) |
 | `trash_brass*.png`, `trash_coat*.png` (eigene Sets) | Mülleimer (`TrashCan`) | Aus `tools/trash_can.gd` (fester Startwert), nahtlos, über die UVs in Metern, Kachel 0,25 m: Messing gebürstet entlang u in den Farben der Plaketten – Riefen in mehreren Breiten, entlang lang gezogen, und einzelne tiefere; Farbe und Rauheit folgen den Riefen, keine Flecken; `METALLIC` wie die Plaketten (`BRASS_METALLIC`). Lack fast schwarz, seidenmatt (Rauheit 0,38), Orangenhaut als Normal Map – das Innere im Lack, dunkler |
 | `room_plate*.png` (eigenes Set) | Zimmerplaketten (`RoomPlate`, `Door.add_room_number`) | Ziffernsatz 1024²: Zellen für Schraube links/rechts, Füller, Ziffern 0–9 (Cinzel, Tinte aus den Dreiecken eines `TextMesh` gerastert) den Abdruck der abgefallenen Null (013 → „13“: blanker Schatten, Kleberand, zwei Stiftlöcher) und ein Band mit der Kordel (2,6 mm, gedreht wie am Lichtschalter), je Zelle 4 mm Rand gegen Mipmap-Übersprechen. Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/room_plate.gd`: Platte gebürstet wie die Lichtschalter, Ziffern erhaben (Fuß 0,3 mm, Rundung 1,1 mm) und poliert, Schmutz am Fuß. Die Vorderseite der Platte (140 × 74 mm, 3 mm, 45°-Fase) ist ein Streifen aus Zellen-Vierecken – Schraube, Füller, Ziffern, Füller, Schraube –, die Füller werden gestreckt; drumherum ein Rahmen aus vier Trapezen auf Gehrung, unverzerrt aus dem Kordelband geschnitten; Bürstung und Anlauf hängen nur von der Höhe in der Zelle ab, damit die Stöße unsichtbar bleiben. `METALLIC` `Door.PLATE_METALLIC`. Lage der Zellen rechnen Werkzeug und Spiel gleich aus (`RoomPlate.layout()`) – nach Änderungen an Maßen oder Schrift das Werkzeug neu laufen lassen |
+| `switch_plate*.png` (eigenes Set) | Lichtschalter (`LightSwitch`): Platte, Kanten und Wippe | Altmessing mit Kordelrand, Rille, Schlitzschrauben, Bürstung und Patina – Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/switch_plate.gd` (fester Startwert); über die UVs gespannt (`mesh_uv`, Platte `_plate()` mit eigener Vorderseite, Kanten und Wippe aus `PLAIN_UV`), `METALLIC`. Plastisch sind nur Platte, schwarzer Rahmen und die eckige Wippe |
 
 ## 2. Aufbau zur Laufzeit
 
@@ -529,17 +530,26 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   waagerechte durch eine senkrechte (T-Stoß), weicht ihr Kopf bis zu deren Mitte zurück (`_head_inset`) – sonst
   blitzte ihre Tapete durch. Wechselt die Tapete an einer anstoßenden Wand, liegt der Schnitt in deren Mitte
   (`_joints_on`). **Holzpfeiler** (`_corner_posts`, reine Optik) fassen jeden freien Wandkopf ein, an dem zwei Tapeten
-  zusammenkommen – kein Eintrag im Plan nötig.
+  zusammenkommen – kein Eintrag im Plan nötig. Quadratisch (Wanddicke + 6 cm), im Holz der Türen und der Vertäfelung
+  (`Mat.hotel_wood`), Sockel und Kapitell profiliert: `Geo.square_profile` zieht ein Profil mit Gehrung um die vier
+  Seiten, UVs in Metern (Schaft mit senkrechter Faser, Leisten waagerecht). An der Innenecke (dort stößt eine senkrechte
+  Wand bündig mit dem Kopf an, also an jedem Pfeiler des Zimmerblocks) schneidet `notch` den Pfeiler an den
+  Wandflächen des Raums ab – sonst ragten Schaft, Sockel und Kapitell in dessen Ecke.
 - **Vertäfelung** (`level/wainscot.gd`, Spielkonzept 7.2, entschieden 29.10.): Sockelleiste, Brett mit Rahmenfeldern und
   Brüstungsleiste bis 0,9 m (`Wainscot.HEIGHT`), modelliert als Bausatz (`tools/build_wainscot.py`). `_build_wall` merkt
   jede Wandseite mit Tapete (`_note_wainscot`; nicht Treppenhaus, Aufzug, verschlossene Zimmer, Lufträume über dem EG),
   `_wainscot` zieht nach den Holzpfeilern ab, was sie unterbricht – anstoßende und durchlaufende Wände
-  (`_wainscot_blocks`), Türen bis 1 cm unter die Außenkante der Bekleidung, Holzpfeiler (`_post_spans`) –, unter
+  (`_wainscot_blocks`), Türen bis 1 cm unter die Außenkante der Bekleidung, Holzpfeiler (`_post_spans`, 2 mm in den
+  Schaft, unten deckt der Sockel) –, unter
   Fenstern (Brüstung 0,9 m) kommt `low` ohne Leiste (dort sitzen Bank und Schürze). Je freies Stück **festes Raster**
   im halben Feld: so viele 0,8-m-Felder wie passen, mittig; steht das Stück um ein halbes Feld über, kommt ein Halbfeld
   `half` (0,4 m) an das Ende zur Tür bzw. zum Fenster (sonst an den Anfang), der Rest als gestrecktes Passstück
   `plain` an beiden Enden (bis 3 cm je Ende strecken oder stauchen stattdessen die Felder; geprüft in
-  `tests/math_checks.gd`). Plant man eine Tür nah an eine Ecke, passt ein Abstand von 0,4 oder 1,2 m genau. Alles als
+  `tests/math_checks.gd`). Plant man eine Tür nah an eine Ecke, passt ein Abstand von 0,4 oder 1,2 m genau. An
+  Außenecken ohne Holzpfeiler läuft ein **Eckstück** mit Gehrung um den Wandkopf (`_wainscot_corner`,
+  `Wainscot.add_corner`, `Geo.mitre_profile`): Umriss `Wainscot.OUTLINE` ohne Rahmenfeld im Holz der Pfeiler, 10 cm an
+  der Wandseite entlang und über den Kopf bis zur anstoßenden Wand bzw. bis zur Mitte; sonst endeten beide Stücke
+  offen und zeigten ihre hellen Stirnseiten. Alles als
   MultiMesh je 16-m-Zelle, ohne Schatten; Holz `wainscot_wood.png` über die Mesh-UVs (0,7 m je Kachel – nicht im
   Verhältnis zum Feld, sonst glichen sich die Felder): Sockelleiste, Brett und Brüstungsleiste laufen über das ganze
   Stück durch (keine Sprünge an den Modulgrenzen), nur die Füllungen sind eigene Bretter (Faser ebenfalls waagerecht) mit

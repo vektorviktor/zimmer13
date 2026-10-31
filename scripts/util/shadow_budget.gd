@@ -32,7 +32,17 @@ var rooms: LightRooms
 ## Eine Tür geht auf oder zu (Door.set_open): im nächsten Bild neu bestimmen, nicht erst nach INTERVAL – sonst käme
 ## das Licht durch den Spalt sichtbar zu spät
 static var wake := false
+## Debug (--nur-stockwerk): nur das Stockwerk der Kamera zeichnen, die übrigen ausblenden (im Freien alle) – um zu
+## messen, was das Ausblenden ganzer Stockwerke brächte. Gäste, Gegenstände und Aufzüge (unter Main) bleiben.
+var floors_only := false:
+	set(value):
+		floors_only = value
+		wake = true
+		if not value:
+			_show_floors(-1)
 var _timer := 0.0
+var _shown_floor := -1
+var _floor_hidden: Array[Node3D] = []
 
 
 ## Alle Meshes in node (mit node selbst) werfen Schatten auch für Lampen, die nur den Bau nehmen – für Bewegliches
@@ -107,6 +117,8 @@ func _process(delta: float) -> void:
 	if cam == null:
 		return
 	var origin := cam.global_position
+	if floors_only and rooms:
+		_show_floors(rooms.camera_floor(origin))
 	var reach := rooms.reach(origin) if rooms else PackedByteArray()
 	var candidates: Array = []
 	for node in get_tree().get_nodes_in_group("lamps"):
@@ -137,6 +149,34 @@ func _process(delta: float) -> void:
 		var mask := ALL if i < FULL else LAYER
 		if light.shadow_caster_mask != mask:
 			light.shadow_caster_mask = mask
+
+
+## floors_only: alle Stockwerke außer keep ausblenden (−1 = alle zeigen). Das Erdgeschoss ist kein eigener Knoten –
+## dort die Kinder von Level außer den übrigen Stockwerken und den Treppenhäusern (sie gehen durch alle).
+func _show_floors(keep: int) -> void:
+	if keep == _shown_floor and (keep >= 0 or _floor_hidden.is_empty()):
+		return
+	_shown_floor = keep
+	for node in _floor_hidden:
+		if is_instance_valid(node):
+			node.visible = true
+	_floor_hidden.clear()
+	if keep < 0 or rooms == null:
+		return
+	var roots := rooms.floor_roots()
+	for i in roots.size():
+		if i == keep:
+			continue
+		var parts: Array[Node3D] = [roots[i]]
+		if roots[i] is NavigationRegion3D:   # Level: das Erdgeschoss
+			parts.clear()
+			for child in roots[i].get_children():
+				if child is Node3D and not child in roots and not String(child.name).begins_with("Treppenhaus"):
+					parts.append(child)
+		for node in parts:
+			if node.visible:
+				node.visible = false
+				_floor_hidden.append(node)
 
 
 ## Licht sichtbar lassen, wenn sein Bereich in reach liegt (leer = alle), sonst für die Darstellung abschalten:

@@ -320,6 +320,24 @@ func _region_near(fi: int, p: Vector2) -> int:
 	return _run_region[run] if run >= 0 else -1
 
 
+## Stockwerk (Index) der Kamera bei pos – −1, wenn sie im Freien steht (dann sieht sie mehrere Stockwerke). Für das
+## Ausblenden ganzer Stockwerke (ShadowBudget.floors_only).
+func camera_floor(pos: Vector3) -> int:
+	var fi := _floor_at(pos, null)
+	if fi < 0 or _outdoor(fi, Vector2(pos.x, pos.z)):
+		return -1
+	return fi
+
+
+## Wurzelknoten der Stockwerke, Index wie bei camera_floor.
+func floor_roots() -> Array[Node3D]:
+	var roots: Array[Node3D] = []
+	roots.resize(_floors.size())
+	for root: Node3D in _roots:
+		roots[_roots[root]] = root
+	return roots
+
+
 func _floor_at(pos: Vector3, node: Node) -> int:
 	var n := node
 	while n != null:

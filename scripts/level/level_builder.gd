@@ -162,6 +162,10 @@ const BREAD_OFFSET := 0.8   ## Brotkrumen (4.25): so weit links der Mitte der K�
 const EGG_BOX := 10
 const H := 3.5
 const T := 0.2
+## Holzpfeiler (_corner_posts): Höhe von Sockel und Kapitell, so weit steht der Sockel vor dem Schaft
+const POST_BASE := 0.25
+const POST_CAP := 0.22
+const POST_PLINTH := 0.025
 ## Häute (Fliesen, Fassade, Beton): 2 cm stark, ihre Vorderseite so weit vor der Wandfläche (_wall_piece_at)
 const SKIN_FRONT := 0.022
 ## Höhe des Obergeschosses (Oberkante Boden)
@@ -615,7 +619,8 @@ var _named := {}                    ## Flächen-ID → Rect2 (Umriss)
 ## Wandstücke des Plans, an die Wandsachen gehängt werden: {horizontal, at (Mittellinie), from, to, half (halbe Dicke)}
 var _wall_index: Array[Dictionary] = []
 var _wainscot_runs: Array[Dictionary] = []   ## Wandseiten mit Vertäfelung (_note_wainscot), je Stockwerk
-var _post_spans: Array[Dictionary] = []      ## Holzpfeiler an waagerechten Wänden: z, Bereich in x (_corner_posts)
+var _post_spans: Array[Dictionary] = []      ## Holzpfeiler und Eckstücke an waagerechten Wänden: z, Bereich in x (_corner_posts)
+var _wainscot_corners: Array = []   ## Eckstücke der Vertäfelung (_wainscot_corner): Ecke, Normalen A und B, Längen
 ## Wandstöße für _joint_depth/_joints_on (siehe _index_joints)
 var _faces := {}
 var _ends := {}
@@ -866,6 +871,7 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 	_wall_index = []
 	_wainscot_runs = []
 	_post_spans = []
+	_wainscot_corners = []
 	_faces = {}
 	_ends = {}
 	_furnishings = []
@@ -1329,9 +1335,11 @@ func _head_inset(end: Vector2, ex: float) -> float:
 
 ## Holzpfeiler um freie Wandköpfe, an deren Außenecken zwei verschiedene Tapeten zusammenstoßen (Zimmerblock
 ## und Flur, rote Lobby und Flur): Der Pfeiler fasst den Übergang ein. Außenecken gibt es nur an freien Enden waagerechter
-## Wände – senkrechte stoßen immer an eine waagerechte. Reine Optik wie die Türrahmen.
+## Wände – senkrechte stoßen immer an eine waagerechte. Reine Optik wie die Türrahmen. Quadratisch, 3 cm vor beiden
+## Wandflächen und 5 cm vor der Stirnseite, im Holz der Türen und der Vertäfelung (Mat.hotel_wood): Sockel mit
+## Fase, Stufe und Karnies, Schaft mit senkrechter Faser, Kapitell mit Rundstab, Hohlkehle und Deckplatte.
 func _corner_posts() -> void:
-	var wood := OpeningFrame.trim_material()
+	var wood := Mat.hotel_wood()
 	for w in _map["walls"]:
 		var a := _v2(w["a"])
 		var b := _v2(w["b"])
@@ -1346,43 +1354,116 @@ func _corner_posts() -> void:
 			# Außenecke, der Raum vor dem Kopf
 			var kinds: Array[String] = []
 			var convex := false
+			var inner := 0.0   # Seite mit Innenecke (dort stößt eine senkrechte Wand bündig mit dem Kopf an)
 			for s: float in [-1.0, 1.0]:
 				kinds.append(_kind_at(Vector2(end.x - ex * 0.3, end.y + s * 0.3)))
 				if not _vertical_at(end.x - ex * half, end.y + s * half):   # sonst Innenecke
 					convex = true
 					kinds.append(_kind_at(Vector2(end.x + ex * 0.3, end.y - s * 0.3)))
+				else:
+					inner = s
 			if not convex or "outside" in kinds:
+				_wainscot_corner(end, ex, half)
 				continue
 			var mats := {}
 			for k in kinds:
 				var m := _wall_material(k)
 				mats[m if m else _skin_material(k)] = true
 			if mats.size() < 2:
+				_wainscot_corner(end, ex, half)
 				continue
-			var depth := 0.17   # 12 cm in der Wand, 5 cm vor der Stirnseite
-			var width := 2.0 * half + 0.06
-			var pos := Vector2(end.x + ex * (0.05 - depth / 2.0), end.y)
-			Geo.mesh(root, Geo.box(Vector3(depth, H, width)), wood, Vector3(pos.x, H / 2.0, pos.y))
-			_post_spans.append({"z": end.y, "span": Vector2(pos.x - depth / 2.0 - 0.015, pos.x + depth / 2.0 + 0.015)})
-			Geo.mesh(root, Geo.box(Vector3(depth + 0.03, 0.18, width + 0.03)), wood, Vector3(pos.x + ex * 0.015, 0.09, pos.y))
-			Geo.mesh(root, Geo.box(Vector3(depth + 0.03, 0.1, width + 0.03)), wood, Vector3(pos.x + ex * 0.015, H - 0.05, pos.y))
+			var s := half + 0.03   # halbe Breite des Schafts
+			var pos := Vector2(end.x + ex * (0.05 - s), end.y)
+			var at := Vector3(pos.x, 0, pos.y)
+			var variant := posmod(int(round(pos.x * 7.0 + pos.y * 13.0)), 4)   # andere Maserung je Pfeiler
+			var shift := Vector2(0.53, 0.29) * variant
+			# An der Innenecke endet der Pfeiler an den Wandflächen des Raums (2 mm darin), sonst ragten Schaft, Sockel
+			# und Kapitell in seine Ecke; die anstoßende Wand ist so stark wie diese.
+			var notch := Vector4(-ex, inner, 2.0 * half + 0.05 - s - 0.002, half - 0.002) if inner != 0.0 else Vector4.ZERO
+			Geo.mesh(root, Geo.square_profile(_post_base(s), false, shift, 35.0, notch), wood, at)
+			Geo.mesh(root, Geo.square_profile([Vector2(s, POST_BASE), Vector2(s, H - POST_CAP)], true, shift, 35.0,
+				notch), wood, at)
+			Geo.mesh(root, Geo.square_profile(_post_cap(s), false, shift, 35.0, notch), wood, at)
+			# Die Vertäfelung läuft 2 mm in den Schaft (sie ist flacher als sein Vorsprung), unten deckt der Sockel sie
+			var reach := s - 0.002
+			_post_spans.append({"z": end.y, "span": Vector2(pos.x - reach, pos.x + reach)})
+
+
+## Außenecken eines Wandkopfs ohne Holzpfeiler, an denen die Vertäfelung auf beiden Flächen läuft: Eckstück mit Gehrung
+## (Wainscot.add_corner), sonst endeten beide Stücke offen an der Ecke und der Kopf bliebe kahl. Es läuft
+## Wainscot.CORNER weit an der Wandseite entlang (dort endet die Vertäfelung, _post_spans) und über den Kopf – bis zur
+## anstoßenden Wand bzw. bis zur Mitte, wenn auch die andere Seite eine Außenecke ist.
+func _wainscot_corner(end: Vector2, ex: float, half: float) -> void:
+	for s: float in [-1.0, 1.0]:
+		if _vertical_at(end.x - ex * half, end.y + s * half):   # Innenecke
+			continue
+		if not (_wainscoted(_wall_side_kind(Vector2(end.x - ex * 0.3, end.y + s * 0.3)))
+				and _wainscoted(_wall_side_kind(Vector2(end.x + ex * 0.3, end.y + s * 0.3)))):
+			continue
+		var across := 2.0 * half if _vertical_at(end.x - ex * half, end.y - s * half) else half
+		_wainscot_corners.append([Vector3(end.x, 0, end.y + s * half), Vector3(0, 0, s), Vector3(ex, 0, 0),
+			Wainscot.CORNER, across])
+		var cut := Vector2(end.x - ex * Wainscot.CORNER, end.x)
+		_post_spans.append({"z": end.y, "span": Vector2(minf(cut.x, cut.y), maxf(cut.x, cut.y))})
+
+
+## Profil des Pfeilersockels um den Schaft der halben Breite s: Block, Fase, Stufe, Karnies (oben hohl, unten voll)
+## hinauf zum Schaft.
+func _post_base(s: float) -> Array:
+	var o := POST_PLINTH
+	var p := [Vector2(s + o, 0.0), Vector2(s + o, 0.185), Vector2(s + o - 0.007, 0.192), Vector2(s + 0.017, 0.192),
+		Vector2(s + 0.017, 0.2)]
+	for i in range(1, 9):   # Karnies von (s + 0,017 | 0,2) nach (s | POST_BASE)
+		var t := float(i) / 8.0
+		var x := s + 0.017 * (1.0 - (3.0 * t * t - 2.0 * t * t * t))
+		p.append(Vector2(x, lerpf(0.2, POST_BASE - 0.006, t)))
+	p.append(Vector2(s, POST_BASE))
+	return p
+
+
+## Profil des Kapitells über dem Schaft der halben Breite s bis zur Decke: Rundstab, Plättchen, Hohlkehle, Plättchen,
+## Deckplatte mit Wulst darunter.
+func _post_cap(s: float) -> Array:
+	var y := H - POST_CAP
+	var p := [Vector2(s, y)]
+	for i in range(1, 8):   # Rundstab, 1,6 cm hoch
+		var a := PI * float(i) / 8.0
+		p.append(Vector2(s + 0.008 * sin(a), y + 0.008 - 0.008 * cos(a)))
+	y += 0.016
+	p.append_array([Vector2(s, y), Vector2(s + 0.004, y + 0.003), Vector2(s + 0.004, y + 0.012)])
+	y += 0.012
+	for i in range(1, 9):   # Hohlkehle 4,4 cm hinaus, 5 cm hoch
+		var a := PI / 2.0 * float(i) / 8.0
+		p.append(Vector2(s + 0.048 - 0.044 * cos(a), y + 0.05 * sin(a)))
+	y += 0.05
+	p.append_array([Vector2(s + 0.054, y), Vector2(s + 0.054, y + 0.008)])
+	y += 0.008
+	for i in range(1, 7):   # Wulst unter der Deckplatte, 1,8 cm hoch
+		var a := PI / 2.0 * float(i) / 6.0
+		p.append(Vector2(s + 0.054 + 0.012 * sin(a), y + 0.018 * (1.0 - cos(a))))
+	p.append_array([Vector2(s + 0.066, H - 0.06), Vector2(s + 0.07, H - 0.056), Vector2(s + 0.07, H)])
+	return p
 
 
 ## Wandseite für die Vertäfelung merken (Spielkonzept 7.2): Seite side (−1 = Nord- bzw. Westseite) der Wand bei fixed
-## von p0 bis p1 mit den Öffnungen openings (Vector4 wie _opening_vec), Raumart kind. Vertäfelt sind alle Seiten mit
-## Tapete außer Treppenhäusern, Aufzügen, verschlossenen Zimmern und Lufträumen über dem EG.
+## von p0 bis p1 mit den Öffnungen openings (Vector4 wie _opening_vec), Raumart kind (_wainscoted).
 func _note_wainscot(horizontal: bool, fixed: float, half: float, side: float, p0: float, p1: float, openings: Array,
 		kind: String) -> void:
+	if _wainscoted(kind):
+		_wainscot_runs.append({"horizontal": horizontal, "fixed": fixed, "half": half, "side": side, "from": p0,
+			"to": p1, "openings": openings})
+
+
+## Trägt die Wandseite der Raumart kind Vertäfelung? Alle mit Tapete außer Treppenhäusern, Aufzügen, verschlossenen
+## Zimmern und Lufträumen über dem EG.
+func _wainscoted(kind: String) -> bool:
 	if _level < 0 or _attic:
-		return
+		return false
 	if kind.begins_with("hall:"):
 		if _level > 0:
-			return
+			return false
 		kind = kind.trim_prefix("hall:")
-	if kind in ["stairs", "elevator", "sealed"] or _wall_material(kind) == null:
-		return
-	_wainscot_runs.append({"horizontal": horizontal, "fixed": fixed, "half": half, "side": side, "from": p0,
-		"to": p1, "openings": openings})
+	return kind not in ["stairs", "elevator", "sealed"] and _wall_material(kind) != null
 
 
 ## Vertäfelung der gemerkten Wandseiten (Wainscot): freie Stücke zwischen anstoßenden Wänden, Türen (bis unter die
@@ -1425,6 +1506,8 @@ func _wainscot() -> void:
 			kit.add_run(origin, along, out, f.x, f.y, false, at_edge.call(f.y) and not at_edge.call(f.x))
 		for u in under:
 			kit.add_run(origin, along, out, u.x, u.y, true)
+	for c: Array in _wainscot_corners:
+		kit.add_corner(c[0], c[1], c[2], c[3], c[4])
 	kit.finish(root)
 
 

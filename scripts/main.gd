@@ -167,6 +167,8 @@ extends Node3D
 ##                               (StaticWalker, Szene direkt starten)
 ##   --meshes                    verschiedene Meshes und Flächen in der Szene zählen (Puffer auf der Grafikkarte) und
 ##                               ausgeben – als Startparameter danach beenden
+##   --nur-stockwerk             nur das Stockwerk der Kamera zeichnen, die übrigen ausblenden (im Freien alle) – zum
+##                               Messen mit --perf, was das Ausblenden brächte (ShadowBudget.floors_only); erneut: aus
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
@@ -912,6 +914,10 @@ func run_debug(arg: String) -> bool:
 		_export_static(_arg_value(arg, "--static-eg", StaticExport.PATH), arg in OS.get_cmdline_user_args())
 	elif arg == "--meshes":
 		_count_meshes(arg in OS.get_cmdline_user_args())
+	elif arg == "--nur-stockwerk":
+		var shadows := $ShadowBudget as ShadowBudget
+		shadows.floors_only = not shadows.floors_only
+		Game.say("Nur das eigene Stockwerk: %s" % ("an" if shadows.floors_only else "aus"), 2.0)
 	elif arg == "--fps":
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg == "--nohud":
