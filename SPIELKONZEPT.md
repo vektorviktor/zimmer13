@@ -912,7 +912,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 **Zu klären**
 - ~~**Was hinter dem Gitter liegt**~~ – geklärt 2026-10-27: Das Gitter wird zur **Leviathanmauer**, hinter der es
   hinunter in den alten Heizkeller (U2) geht (7.4). Wo sie im Heizraum sitzt, malt der Nutzer neu; beim Bau Eintrag
-  für #9c5a5a in `map_a.gpl`, `build_map.py` liest sie aus `Ausstattung` als Strich auf der Wand.
+  für #9c5a5a in `PLANFARBEN.md` (steht dort seit 31.10.), `build_map.py` liest sie aus `Ausstattung` als Strich auf der Wand.
 - Uhrzeiten des Suchtrupps; Inhalt der Blechdose (eigener Gegenstand oder nur ihr Inhalt?); liegt 033 wirklich gegenüber
   von 020 (im Plan prüfen)?
 - Was, wenn Doris vorher stirbt (sie ist keine Kernfigur)? Vorschlag: In der harmlosen Phase kann sie es nicht – die
@@ -4974,7 +4974,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - **Vorlage für alle Stockwerke:** je Stockwerk eine Ebenengruppe (`EG`, `OG1` …, `Keller`) mit den Ebenen
   „Grundriss“ und „Beschriftung“ (frei, wird nicht gelesen); in `OG1` liegt das EG als Referenzebene zum
   Abzeichnen. Die **Legende steht als Farbnamen in `map_a.gpl`** neben der Plandatei (Aseprite speichert keine
-  Palettennamen, 19.10.). Raumnamen, Bereiche, Treppen (mit Richtung)
+  Palettennamen, 19.10.; seit 31.10. gemeinsam gepflegt in `PLANFARBEN.md`, die `.gpl` wird daraus erzeugt). Raumnamen, Bereiche, Treppen (mit Richtung)
   und künftig einzelne Objekte (mit Vorderseite) werden als **benannte Slices** eingetragen, z. B.
   „Raum: Küche“, „Treppe: Lobby“, „Objekt: Sofa“, im Obergeschoss mit Vorsatz: „OG1 Raum: Bibliothek“.
   Der Luftraum über der Lobby ist im OG1 als eigene Farbe „Luftraum“ eingezeichnet.

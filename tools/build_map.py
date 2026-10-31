@@ -12,9 +12,10 @@
 #     „Beschriftung“, „Skizze“, „Notiz“ oder „temp“ beginnt (eine ausgeblendete Abdunkel-Ebene „temp“ hätte sonst den
 #     ganzen Grundriss überdeckt). Ältere Pläne (map.aseprite) mit einer Ebenengruppe je
 #     Stockwerk („EG“, „OG1“ …, „Keller“) gehen weiterhin.
-#   - Die Bedeutung jeder Farbe steht als Name in der **Legende <plan>.gpl** neben der Plandatei (GIMP-Palette,
-#     „R G B<Tab>Name“ je Zeile, FILLS/OPENINGS unten). Aseprite 1.3.18 speichert keine Palettennamen; ohne
-#     .gpl gelten die Namen aus dem Paletten-Chunk (ältere Dateien). Farben ohne Namen werden gemeldet und
+#   - Die Bedeutung jeder Farbe steht als Name in der **Legende PLANFARBEN.md** neben der Plandatei (seit 31.10.,
+#     gemeinsame Arbeitsgrundlage, gelesen über tools/plan_legend.py; FILLS/OPENINGS unten). Ältere Pläne nehmen
+#     <plan>.gpl (GIMP-Palette, „R G B<Tab>Name“ je Zeile). Aseprite 1.3.18 speichert keine Palettennamen; ohne
+#     Legende gelten die Namen aus dem Paletten-Chunk (ältere Dateien). Farben ohne Namen werden gemeldet und
 #     übergangen.
 #   - Öffnungen sind Farbstriche auf der Wandlinie, Flächen sind Füllfarben.
 #   - Türanschlag: ein Pixel „Türanschlag“ statt eines Türpixels an einem Ende des Strichs, in der Wandhälfte
@@ -265,9 +266,16 @@ FLAT = not any(l["level"] == 0 and l["type"] == 1 for l in LAYERS)
 if FLAT:
 	FLAT_FLOORS = ALL_FLAT_FLOORS[-max(1, min(len(ALL_FLAT_FLOORS), round(H / BAND))):]
 	H = BAND
-LEGEND = os.path.splitext(SRC)[0] + ".gpl"
-if os.path.exists(LEGEND):
-	PALETTE = read_legend(LEGEND)
+## Legende: PLANFARBEN.md neben dem Plan (gemeinsame Arbeitsgrundlage, tools/plan_legend.py), sonst <plan>.gpl
+LEGEND = os.path.join(os.path.dirname(os.path.abspath(SRC)), "PLANFARBEN.md")
+if os.path.basename(SRC) == "map_a.aseprite" and os.path.exists(LEGEND):
+	sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+	import plan_legend
+	PALETTE = plan_legend.pairs(LEGEND)
+else:
+	LEGEND = os.path.splitext(SRC)[0] + ".gpl"
+	if os.path.exists(LEGEND):
+		PALETTE = read_legend(LEGEND)
 assert any(n for n, _ in PALETTE), "Keine Farbnamen – Legende %s fehlt (siehe Kopf dieses Skripts)" % LEGEND
 BY_NAME = {n: c for n, c in PALETTE if n}
 WALL = BY_NAME[WALL_NAME]
@@ -506,7 +514,12 @@ def build_floor(floor, COL, open_above, eg=None):
 			unknown.setdefault(c, i)
 	front = BY_NAME.get(FRONT_NAME)
 	for c, i in unknown.items():
-		hint = " (gehört auf die Ebene „Möbel“ – für Türen gibt es „%s“)" % HINGE_NAME if c == front else ""
+		named = next((n for n, h in BY_NAME.items() if h == c), "")
+		if named and ":" not in named:   # Grundriss-Eintrag der Legende, aber (noch) kein Bauteil im Code
+			print("  Hinweis: Grundriss – „%s“ wird noch nicht gebaut (z. B. Pixel %d,%d)" % (named, i % W, i // W))
+			continue
+		hint = " (gehört auf die Ebene „Möbel“ – für Türen gibt es „%s“)" % HINGE_NAME if c == front else \
+			" („%s“ gehört nicht in den Grundriss)" % named if named else ""
 		print("  Warnung: Farbe #%s (z. B. bei Pixel %d,%d) steht nicht in der Palette – übergangen%s" % (c, i % W, i // W, hint))
 
 	# --- Wände ---
@@ -697,12 +710,17 @@ def build_floor(floor, COL, open_above, eg=None):
 		return m(s["x"], s["y"]) + m(s["x"] + s["w"], s["y"] + s["h"])
 
 	areas, objects, stairs = [], [], []
+	room_slice = {}   # id(Fläche) → Name des Raum-Slices, der sie benennt
 	for kind, label, s in slices_of(floor):
 		if kind == "Raum":
 			r = region_for(s, [k for k, _ in FILLS.values() if k not in FIXTURES])
 			if r is None:
 				print("  Warnung: Slice „Raum: %s“ liegt auf keiner Fläche" % label)
 				continue
+			if id(r) in room_slice:   # zwei Namen für eine Fläche (z. B. Wand dazwischen entfernt) – der spätere gewinnt
+				print("  Warnung: Slices „Raum: %s“ und „Raum: %s“ liegen auf derselben Fläche – sie heißt jetzt „%s“"
+					% (room_slice[id(r)], label, label))
+			room_slice[id(r)] = label
 			r["id"], r["name"] = slug(label), label
 		elif kind == "Bereich":
 			# auf die überdeckte Fläche zusammenziehen (Slices dürfen großzügig gezogen sein)
@@ -1154,7 +1172,13 @@ def read_objects(floor, COL):
 			xs, ys = [j % W for j in pts], [j // W for j in pts]
 			x0, y0, x1, y1 = min(xs), min(ys), max(xs) + 1, max(ys) + 1
 			if c not in by_color:
-				print("  Warnung: %s/%s – Farbe #%s ohne Eintrag in der Objektlegende bei Pixel %d,%d" % (floor, layer, c, x0, y0))
+				named = next((n for n, h in BY_NAME.items() if h == c), "")
+				if named and ":" in named:   # Objekt in der Legende, aber (noch) kein Bauteil im Code
+					print("  Hinweis: %s/%s – „%s“ wird noch nicht gebaut (Pixel %d,%d)" % (floor, layer, named, x0, y0))
+				elif named:
+					print("  Warnung: %s/%s – „%s“ (#%s) gehört nicht in diese Ebene, Pixel %d,%d" % (floor, layer, named, c, x0, y0))
+				else:
+					print("  Warnung: %s/%s – Farbe #%s ohne Eintrag in der Objektlegende bei Pixel %d,%d" % (floor, layer, c, x0, y0))
 				continue
 			if key == "rugs":
 				if len(pts) != (x1 - x0) * (y1 - y0):

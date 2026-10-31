@@ -17,6 +17,8 @@ First-Person-Horror im Hotel, Godot 4.7, GDScript. Alles wird im Code gebaut (ke
 - **Alle Gegenstände mit Stand und Handlungsbezug:** [GEGENSTAENDE.md](GEGENSTAENDE.md) – bei neuen Gegenständen pflegen
 - **Offene Punkte, Lücken, nicht Gebautes, Ideen:** YouTrack, Projekt `ZIM` (siehe unten). [OFFEN.md](OFFEN.md)
   ist seit 29.10. nur noch ein Verweis – nichts mehr hineinschreiben.
+- **Planfarben, Planregeln, was der Code selbst setzt:** [PLANFARBEN.md](PLANFARBEN.md) – einzige Legende des Plans;
+  neue Farbe dort eintragen, dann `python tools/build_colors.py`
 - **Wie es gebaut ist:** [TECHNIK.md](TECHNIK.md)
 - **Starten, Steuerung, Debug-Parameter:** [README.md](README.md)
 

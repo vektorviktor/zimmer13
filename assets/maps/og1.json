@@ -9927,6 +9927,13 @@
 		{
 			"kind": "ceiling_lamp",
 			"pos": [
+				-18.5,
+				-35.0
+			]
+		},
+		{
+			"kind": "ceiling_lamp",
+			"pos": [
 				18.5,
 				-35.0
 			]

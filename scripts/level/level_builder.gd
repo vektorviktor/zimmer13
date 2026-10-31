@@ -29,8 +29,9 @@ const MAP_PATH := "res://assets/maps/eg.json"
 const UPPER_MAP_PATHS := ["res://assets/maps/og1.json", "res://assets/maps/dg.json"]
 ## Untergeschoss (Spielkonzept 7.9) – die Treppenhäuser enden dort
 const LOWER_MAP_PATH := "res://assets/maps/ug.json"
-## Plan, Legende und Umsetzer: Ist eins davon neuer als die Karten, liest refresh_maps() den Plan neu ein
-const PLAN_SOURCES := ["res://map_a.aseprite", "res://map_a.gpl", "res://tools/build_map.py"]
+## Plan, Legende (PLANFARBEN.md) und Umsetzer: Ist eins davon neuer als die Karten, liest refresh_maps() den Plan neu ein
+const PLAN_SOURCES := ["res://map_a.aseprite", "res://PLANFARBEN.md", "res://tools/build_map.py",
+	"res://tools/plan_legend.py"]
 ## Haushalte (Spielkonzept 6.20): wer mit wem in welchem Zimmer wohnt – aus HAUSHALTE.md (tools/build_households.py)
 const HOUSEHOLDS_PATH := "res://assets/data/households.json"
 const HOUSEHOLD_SOURCES := ["res://HAUSHALTE.md", "res://tools/build_households.py"]
@@ -336,7 +337,7 @@ const CONTENT := {
 const BOX_HEIGHTS := {
 	"table": 0.75, "coffee_table": 0.4, "dining_table": 0.78, "bench": 0.45, "bar_counter": 1.1, "shelf": 2.0,
 	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5,
-	# Plan map_a (map_legend.png), Platzhalter bis zu den Modellen
+	# Plan map_a (PLANFARBEN.md), Platzhalter bis zu den Modellen
 	"bathtub": 0.6, "sink": 0.85, "shower": 0.06, "toilet": 0.42, "trash_can": 0.55, "room_table": 0.75, "chair": 0.45,
 }
 ## Platzhalter-Möbel: Stuhllehne über dem Sitz, Spiegel über dem Waschbecken (Breite, Höhe; Mitte über dem Boden),
@@ -2322,7 +2323,7 @@ func _cat_room_rugs(b: Rect2) -> void:
 		mi.rotation.y = deg_to_rad(r["yaw"])
 
 
-## Doppelbett aus dem Plan (map_legend.png): Versteck wie das Bett (unters Bett kriechen), so groß wie seine
+## Doppelbett aus dem Plan (PLANFARBEN.md): Versteck wie das Bett (unters Bett kriechen), so groß wie seine
 ## Grundfläche, das Kopfende an der helleren Kante. Heraus (lokal +Z) geht es zu der Längsseite mit mehr Platz.
 func _double_bed(rect: Rect2, head_side: String) -> HideSpot:
 	var c := rect.get_center()

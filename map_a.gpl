@@ -1,161 +1,161 @@
 GIMP Palette
 Name: Zimmer 13 – Gebäudeplan (map_a.aseprite)
 Columns: 0
-# Legende des Gebäudeplans (Spielkonzept 7.5): eine Zeile je Palettenfarbe, in der Reihenfolge der Palette.
-# Aseprite 1.3.18 speichert keine Farbnamen – sie stehen deshalb nur hier. Neue Farbe →
-# hier eine Zeile „R G B<Tab>Name“ ergänzen. Gelesen von tools/build_map.py (nach Farbwert);
-# tools/build_colors.py zeichnet daraus map_colors.png (Vorlage zum Zeichnen).
+# Erzeugt von tools/build_colors.py aus PLANFARBEN.md – nicht von Hand ändern, die Legende steht dort.
   0   0   0	Wand
-255 136  85	Zimmer
-199 153 134	Zimmer leer
-212 228 241	Flur
-190 246 176	Garten
-191 223 183	Terrasse
- 37 100  21	Terrassenkante
- 36 158   7	Baum
-109 169  93	Pflanzkübel
-255 255 255	Betriebsraum
-197 197 197	Lagerraum
-153 176  84	Bar
-206 145 211	Partyraum
-  0 175 255	Toilette
-  0 141 255	Pool Wasser
-178 198 213	Pool Umgang
-145 211 190	Aufzug
-216 216 216	Treppe
-132 132 132	Treppenstufe
-223 113  38	Rezeption
- 63  63 116	Luftraum
-153 229  80	Tür Flur
- 53 255   0	Tür Terrasse
- 80 163 229	Fenster
-251 242  54	Doppel-Glastür
-223 223 223	Betriebstür
-  0 255 175	Aufzugtür
+194 232 244	Glaswand
+ 46  34  57	Gitter
+ 89  34  41	Leviathanmauer
+242 180 136	Zimmer
+201 175 156	Zimmer leer
+216 212 237	Flur
+194 239 179	Garten
+190 207 170	Terrasse
+ 30 103  30	Terrassenkante
+ 26 147  56	Baum
+110 179  97	Pflanzkübel
+245 245 245	Betriebsraum
+193 189 185	Lagerraum
+224 163 178	Bar
+224 174 209	Partyraum
+108 185 218	Toilette
+ 37 157 244	Pool Wasser
+182 202 216	Pool Umgang
+181 145 202	Aufzug
+194 181 217	Treppe
+133 112 169	Treppenstufe
+218 143  78	Rezeption
+ 52  43 100	Luftraum
+234 201 184	Katzenraum
+189 135 117	Bibliothek
+166 181 155	Balkon
+ 99 117  87	Balkongeländer
+140 207 217	Bad
+168 168 168	Kellerboden
+150  76  64	Heizkeller
+135 153 171	Technikraum
+148 174 219	Wäscherei
+140 140 140	Kellerraum
+182 175 145	Kiesweg
+140 117  84	Müllraum
+102 102 102	Kellerraum zu
+155 133 111	Dachboden
+ 67 157 112	Heckenbogen
+190 147 168	Bowlingbahn
+195  34  75	Foullinie
+169 182 188	Hausmeisterraum
+223 185  73	Büro der Direktion
+236 221 121	Sekretariat
+ 59 243  22	Tür Flur
+ 11 203  75	Tür Terrasse
+ 57 148 239	Fenster
+ 17 212 164	Doppel-Glastür
+166 175 121	Betriebstür
+ 45 118  51	Aufzugtür
 255   0   0	Haupteingang
-221 240 255	Glaswand
-255   0 255	Möbel: Vorderseite
-122  59 143	Möbel: Bett
- 91  58  30	Möbel: Schrank
-160 102  45	Möbel: Kommode
-200 161 101	Möbel: Tisch
-217 185 138	Möbel: Couchtisch
-229 196 147	Möbel: Couchtisch Vorderseite
-176 136  80	Möbel: Tafel
-110  31  31	Möbel: Sofa
-143 122  90	Möbel: Bank
-163 139 101	Möbel: Bank Vorderseite
-125  90   0	Möbel: Truhe
- 47  47  47	Möbel: Schachtisch
- 31  95  63	Möbel: Spieltisch
- 74  44  23	Möbel: Theke
- 61 110 143	Möbel: Regal
-143 163 168	Möbel: Küchenzeile
- 64  72  80	Möbel: Herd
-224 224 216	Möbel: Waschtisch
-184 200 216	Möbel: Waschmaschine
-168 156 128	Möbel: Wäschekiste
-112 112 112	Möbel: Säule
-  0 229 229	Ausstattung: Lichtschalter
-229   0  90	Ausstattung: Telefon
-155  89 208	Ausstattung: Bild
-240 240 160	Ausstattung: Zettel
-123   0 255	Ausstattung: UV-Schrift
-192 192 208	Ausstattung: Spinnweben
-255 176 112	Ausstattung: Kerzenvorrat
-255 224 128	Ausstattung: Ersatzbirnen
-192  96  32	Ausstattung: Laubhaufen
- 96 160   0	Ausstattung: Kürbispflanze
- 64 128 255	Ausstattung: Kalender
-128  32  64	Ausstattung: Tagebuch
-255 112   0	Gegenstand: Kürbis
-255  64   0	Gegenstand: Geschnitzter Kürbis
-255 240 192	Gegenstand: Kerze
-232 192  64	Gegenstand: Schlüssel
-224 224 240	Gegenstand: Spinnweben
-176  80  16	Gegenstand: Laub
-212 175  55	Gegenstand: Münzen
-160 160 168	Gegenstand: Messer
-107  62  38	Gegenstand: Würfelbecher
-240 240 240	Gegenstand: Gezinkte Würfel
-255 251 208	Gegenstand: Glühbirne
- 80 112 160	Gegenstand: Kleidung
- 48 160 160	Gegenstand: Kompass
-232 220 176	Gegenstand: Karte
- 48  48  96	Gegenstand: Taschenlampe
- 64 192  64	Gegenstand: Batterie
-144   0 255	Gegenstand: UV-Filter
- 32  32  32	Gegenstand: Schachbrett
-255 216   0	Licht: Wandleuchte
-128 108   0	Licht: Wandleuchte defekt
-255 140  26	Licht: Kerze
-255 243 160	Licht: Laterne
-140 132  90	Licht: Laterne defekt
-255 248 200	Licht: Deckenleuchte
- 92  20  32	Teppich: Läufer
 243   0 255	Türanschlag
-186  92  44	Ausstattung: Dekokiste
-149  71 183	Katzenraum
-188 127  74	Bibliothek
-143 152 141	Balkon
-102 112 100	Balkongeländer
- 48  96 224	Bad
-240 200 140	Möbel: Kratzbaum
-200  80  20	Ausstattung: Kürbispflanze Hokkaido
-230 230 200	Ausstattung: Kürbispflanze Weiß
-220 190 120	Ausstattung: Kürbispflanze Butternut
- 90 110  50	Ausstattung: Kürbispflanze Muskat
-180  60  60	Ausstattung: Kürbispflanze Türkenturban
-255 160   0	Ausstattung: Kürbispflanze Riese
-153 153 153	Kellerboden
-130  27  27	Heizkeller
-124 107 255	Technikraum
-107 182 255	Wäscherei
-123 123 123	Kellerraum
-146 239 226	Licht: Halogenleuchte
-# Plan map_a (22.10.): Kieswege, Müllraum, nicht gebaute Kellerräume; Möbel nach map_legend.png mit
-# hellerer Zeile als Vorderseite (beim Doppelbett das Kopfende)
- 20  76   6	Kiesweg
-121  79  31	Müllraum
- 93  93  93	Kellerraum zu
-151  82 174	Möbel: Doppelbett
-178 107 201	Möbel: Doppelbett Kopfende
- 56 203 223	Möbel: Badewanne
- 67 217 236	Möbel: Badewanne Vorderseite
- 44 184 204	Möbel: Wannenablage
- 67 236 214	Möbel: Waschbecken
- 74 248 225	Möbel: Waschbecken Vorderseite
- 87  66 169	Möbel: Fußmatte
- 74 134 128	Möbel: Dusche
- 92 158 151	Möbel: Dusche Vorderseite
- 20 114 103	Möbel: WC
- 29 128 116	Möbel: WC Vorderseite
-107 107 107	Möbel: Mülleimer
-150 147 147	Möbel: Mülleimer Vorderseite
- 32  41  93	Möbel: Snackautomat
- 42  54 123	Möbel: Snackautomat Vorderseite
- 90 134  62	Möbel: Getränkeautomat
-104 151  74	Möbel: Getränkeautomat Vorderseite
- 78 169  66	Möbel: Zimmertisch
- 99 183  87	Möbel: Zimmertisch Vorderseite
- 87 153 183	Möbel: Stuhl
-109 169 197	Möbel: Stuhl Vorderseite
-176  32  48	Gegenstand: Brecheisen
-214  64  28	Gegenstand: Werkzeugkasten
-150 118  62	Ausstattung: Schlüsselschrank
- 64  66  98	Dachboden
-201 231 255	Dachfenster
-# Friedhof (25.10., Spielkonzept 5.15): Grabplätze und Gedenkstätte mit hellerer Vorderseite, Torbogen in der Hecke
- 32  99 137	Möbel: Grab
- 46 125 170	Möbel: Grab Vorderseite
- 69 123 154	Möbel: Gedenkstätte
- 83 139 170	Möbel: Gedenkstätte Vorderseite
-157  96 123	Heckenbogen
-# Bar neu (28.10., Spielkonzept 6.10): Bowlingbahn mit Foullinie im Grundriss, Videoautomaten und Spieleschrank
-184 179 146	Bowlingbahn
-186  56  56	Foullinie
- 51  31 215	Möbel: Videoautomat
-196 157  62	Möbel: Spieleschrank
-# Nachttisch (30.10.): 5 × 5 px neben dem Bett, Vorderseite als hellere Zeile
-110  57 169	Möbel: Nachttisch
-119  69 174	Möbel: Nachttisch Vorderseite
+ 94 148  56	Gittertür
+129 209 248	Dachfenster
+255   0 255	Möbel: Vorderseite
+116  61 143	Möbel: Bett
+ 76  56  36	Möbel: Schrank
+145  94  48	Möbel: Kommode
+191 153  64	Möbel: Tisch
+199 174 107	Möbel: Couchtisch
+216 199 151	Möbel: Couchtisch Vorderseite
+155 117  59	Möbel: Tafel
+138  69  46	Möbel: Sofa
+119 119  64	Möbel: Bank
+159 159  86	Möbel: Bank Vorderseite
+126  93  27	Möbel: Truhe
+ 69  33  36	Möbel: Schachtisch
+138  46  54	Möbel: Spieltisch
+ 93  50  61	Möbel: Theke
+151  96  73	Möbel: Regal
+120 143 165	Möbel: Küchenzeile
+ 54  68  89	Möbel: Herd
+134 182 178	Möbel: Waschtisch
+134 174 203	Möbel: Waschmaschine
+180 153 116	Möbel: Wäschekiste
+128 128 128	Möbel: Säule
+216 156 121	Möbel: Kratzbaum
+147  70 185	Möbel: Doppelbett
+173 114 202	Möbel: Doppelbett Kopfende
+ 35 186 199	Möbel: Badewanne
+ 73 210 223	Möbel: Badewanne Vorderseite
+ 46  86  86	Möbel: Wannenablage
+ 53 212 180	Möbel: Waschbecken
+104 223 199	Möbel: Waschbecken Vorderseite
+ 84  74  69	Möbel: Fußmatte
+ 50 108 133	Möbel: Dusche
+ 67 144 177	Möbel: Dusche Vorderseite
+ 20 113  69	Möbel: WC
+ 29 165 101	Möbel: WC Vorderseite
+ 82  99 122	Möbel: Mülleimer
+108 129 157	Möbel: Mülleimer Vorderseite
+ 39  58 134	Möbel: Snackautomat
+ 53  79 182	Möbel: Snackautomat Vorderseite
+ 37 110 147	Möbel: Getränkeautomat
+ 49 147 196	Möbel: Getränkeautomat Vorderseite
+155 132  39	Möbel: Zimmertisch
+204 173  51	Möbel: Zimmertisch Vorderseite
+153 150  51	Möbel: Stuhl
+194 190  71	Möbel: Stuhl Vorderseite
+ 68 102  61	Möbel: Grab
+ 94 140  84	Möbel: Grab Vorderseite
+133 175  90	Möbel: Gedenkstätte
+163 195 131	Möbel: Gedenkstätte Vorderseite
+191  34  99	Möbel: Videoautomat
+170  79  65	Möbel: Spieleschrank
+ 90  43  90	Möbel: Nachttisch
+131  63 131	Möbel: Nachttisch Vorderseite
+108 125 137	Möbel: Spind
+114  29  29	Teppich: Läufer
+244  37 175	Ausstattung: Lichtschalter
+226  18  95	Ausstattung: Telefon
+209  97 194	Ausstattung: Bild
+248 191 215	Ausstattung: Zettel
+213  31 249	Ausstattung: UV-Schrift
+219 209 219	Ausstattung: Spinnweben
+248 119 162	Ausstattung: Kerzenvorrat
+241 126 231	Ausstattung: Ersatzbirnen
+143  82  20	Ausstattung: Laubhaufen
+108 189  15	Ausstattung: Kürbispflanze
+177 217  18	Ausstattung: Kürbispflanze Hokkaido
+194 216 151	Ausstattung: Kürbispflanze Weiß
+201 216  70	Ausstattung: Kürbispflanze Butternut
+ 57 114  29	Ausstattung: Kürbispflanze Muskat
+ 57 199  35	Ausstattung: Kürbispflanze Türkenturban
+107 159   4	Ausstattung: Kürbispflanze Riese
+232  94 122	Ausstattung: Kalender
+126  37  82	Ausstattung: Tagebuch
+170  65 126	Ausstattung: Dekokiste
+148  56 125	Ausstattung: Schlüsselschrank
+178  77 178	Ausstattung: Fotowand
+255 110   0	Gegenstand: Kürbis
+255  60   0	Gegenstand: Geschnitzter Kürbis
+255 224 163	Gegenstand: Kerze
+243 187  32	Gegenstand: Schlüssel
+209 199 178	Gegenstand: Spinnweben
+156  68  17	Gegenstand: Laub
+182 147  32	Gegenstand: Münzen
+165 153 141	Gegenstand: Messer
+107  57  36	Gegenstand: Würfelbecher
+241 232 218	Gegenstand: Gezinkte Würfel
+255 243 194	Gegenstand: Glühbirne
+216 119 100	Gegenstand: Kleidung
+165 106  29	Gegenstand: Kompass
+228 195 129	Gegenstand: Karte
+ 83  46   9	Gegenstand: Taschenlampe
+237 159 130	Gegenstand: Batterie
+189  27  15	Gegenstand: UV-Filter
+128 102  77	Gegenstand: Schachbrett
+136  24   7	Gegenstand: Brecheisen
+231  35  35	Gegenstand: Werkzeugkasten
+255 221   0	Licht: Wandleuchte
+122 106   0	Licht: Wandleuchte defekt
+255 187  51	Licht: Kerze
+255 250 102	Licht: Laterne
+107 107  46	Licht: Laterne defekt
+255 248 173	Licht: Deckenleuchte
+218 223  73	Licht: Halogenleuchte

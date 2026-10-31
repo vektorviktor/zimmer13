@@ -710,12 +710,20 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
   **egal ob sichtbar**; nicht gezählt Referenzebenen und Ebenen, deren Name mit `Beschriftung`, `Skizze`, `Notiz` oder
   `temp` beginnt (`IGNORED_LAYERS`). Ältere Pläne mit Ebenengruppen je Stockwerk gehen weiterhin. Ursprung = Mitte des
   Haupteingangs im EG (`entrance_origin`), `WING_SPLIT_X` dessen x.
-- **Legende = `<plan>.gpl`** (`map_a.gpl`, GIMP-Palette „R G B<Tab>Name“): Bedeutung jeder Farbe als Name; `FILLS`,
-  `OPENINGS`, `Wand`, `Glaswand` oben im Skript. **Nicht in der Plandatei**: Aseprite behält keine Palettennamen. Neue
-  Farbe → Zeile in der `.gpl`, dann `python tools/build_colors.py` (zeichnet `map_colors.png` – die Vorlage beim
-  Zeichnen, mit exakten Farben für die Pipette; Bedeutung neuer Möbel erklärt der Zeichner in `map_legend.png`). Farben
-  ohne Legendeneintrag meldet das Skript mit Pixelposition. Slices liest es nach Namen sortiert (Aseprite ändert ihre
-  Reihenfolge beim Speichern – sonst wechselte der Fingerabdruck der Welt).
+- **Legende = `PLANFARBEN.md`** (seit 31.10., gemeinsame Arbeitsgrundlage von Zeichner und Code): je Gruppe eine
+  Markdown-Tabelle (Farbe, Name, Vorderseite, Hinweis), die Überschrift gibt den Vorsatz („## Möbel“ → `Möbel: …`);
+  „–“ statt Farbe = im Code vorgesehen, noch ohne Farbe. Gelesen über `tools/plan_legend.py` (prüft doppelte Farben
+  und Namen); dort stehen auch die Regeln des Plans und der **Bestand**, was der Code selbst setzt (Ersatzplätze,
+  feste Orte, Regeln). Die Zuordnung Name → Bauteil bleibt in `FILLS`, `OPENINGS`, `FURNITURE` … oben in
+  `build_map.py`. **Nicht in der Plandatei**: Aseprite behält keine Palettennamen. Neue Farbe → Zeile in
+  `PLANFARBEN.md`, dann `python tools/build_colors.py`: zeichnet `map_colors.png` (Vorlage mit exakten Farben für die
+  Pipette, rot = noch nicht gebaut), schreibt `map_a.gpl` (Palette für Aseprite, nicht von Hand ändern) und meldet
+  Namen ohne Bauteil bzw. Bauteile ohne Farbe. **Farbleitsystem** (Farbbereich je Gruppe, Vorderseite heller) in
+  `tools/plan_recolor.py` (`DESIGN`): `vorschlag` prüft Abstände und zeichnet Vorschauen nach `temp/umfaerben/`,
+  `anwenden` färbt den Plan verlustfrei um (nur Ebenen, die nach Farben gelesen werden; Sicherung, Probe an einer
+  Kopie – build_map muss dieselben Karten ergeben, sonst Abbruch) und schreibt `PLANFARBEN.md` um. Ältere Pläne (`map.aseprite`) lesen weiter `<plan>.gpl`. Farben ohne
+  Legendeneintrag meldet `build_map.py` mit Pixelposition, Legendenfarben in der falschen Ebene ebenfalls. Slices liest
+  es nach Namen sortiert (Aseprite ändert ihre Reihenfolge beim Speichern – sonst wechselte der Fingerabdruck der Welt).
 - **Grundriss:** 1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie (**Türanschlag**: ein Pixel
   `Türanschlag` statt eines Türpixels an einem Ende, in der Wandhälfte, in die die Tür aufgeht; falsch gesetzt bricht
   das Skript mit Position ab), Flächen als Füllfarben, `Luftraum` = hier kein Boden (darunter `open_above`). Schrift in
@@ -733,7 +741,8 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
 - **Türarten:** Zimmertüren sind Striche in `Tür Flur`; das Skript liest beiderseits, wohin sie führen: Bad →
   `bath_doors`, beiderseits Zimmer → `connecting_doors`, sonst Flurtür (weitere Flurtüren `side_doors`; ohne Flurtür
   über dem EG eine Suite). Ein Zimmer ganz ohne Tür bleibt geschlossen (Hinweis beim Bauen).
-- **Slices:** `Raum: <Name>` benennt eine Fläche, `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen
+- **Slices:** `Raum: <Name>` benennt eine Fläche (die ganze zusammenhängende; zwei Raum-Slices auf einer Fläche →
+  Warnung, der alphabetisch spätere gewinnt), `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen
   Kante**) und `Treppenhaus: <Name>` → `stairs`, `Objekt: <Name>` (Pivot an der Vorderseite) → `objects`. Treppenhäuser
   über dem EG brauchen keine eigenen Slices (gleiche ID wie der Schacht im EG). Das Skript baut zuerst das EG, damit die
   Treppenflächen darüber und darunter dem Schacht zugeordnet werden.
@@ -2250,7 +2259,7 @@ prüft das), Preis in `PRICES`, Aussehen/`deco_strength` in `_build()`, ggf. `cr
 
 **Neues interagierbares Objekt:** Körper auf passender Ebene (meist 3 = Bit 4), `set_meta("interactable", self)`,
 `get_prompt`/`interact` (optional `get_icon`), Gruppe. Platzieren über den Plan: Farbe mit Namen in die Legende
-(`map_a.gpl`, Vorsatz `Ausstattung: …`/`Möbel: …`), Eintrag in `FITTINGS`/`FURNITURE` von `tools/build_map.py`, Fall in
+(`PLANFARBEN.md`, Tabelle `Ausstattung: …`/`Möbel: …`), Eintrag in `FITTINGS`/`FURNITURE` von `tools/build_map.py`, Fall in
 `LevelBuilder._fittings`/`_furniture`. Hat es Zustand → `save_state`/`load_state` + SaveManager (Gruppe auch in
 `WORLD_GROUPS`) + `VERSION` erhöhen.
 
