@@ -1,0 +1,2 @@
+"old_leather_armchair" (https://skfb.ly/6Tq9y) by VoGAn is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+Texturen (2048 px) nicht im Repo – aus dem Sketchfab-Download (textures/); tools/build_armchair.py färbt das Leder rot und schreibt assets/textures/armchair_*.png. Das OBJ stammt aus source/Textures.rar des Downloads.

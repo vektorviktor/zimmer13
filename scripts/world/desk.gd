@@ -4,6 +4,7 @@ extends StaticBody3D
 ## von tools/build_desk.py – Korpus mit zwei Seitenschränken voller Schubladen, darüber drei Schubladen unter der
 ## Platte als eigene Teile (drawer_l/m/r, zum späteren Herausziehen entlang +Z). Material aus dem vollen PBR-Set
 ## (Mat.pbr_model). Ursprung mittig auf dem Boden, Vorderseite (Griffe) nach +Z; Größe fest wie im Original.
+## Davor steht der rote Ledersessel (Armchair) mit Blick auf den Tisch.
 
 const MODEL := "res://assets/models/desk.glb"
 const TEX := "res://assets/textures/desk"
@@ -13,6 +14,8 @@ const PEDESTAL_W := 0.4
 const KNEE_H := 0.66
 ## Messinggriffe: wie die Messingteile im Haus nur teils metallisch
 const BRASS_METALLIC := 0.55
+## Abstand Vorderkante Tisch – Vorderkante Sessel: die Armlehnen passen nicht unter die Platte
+const CHAIR_GAP := 0.12
 
 
 func _ready() -> void:
@@ -27,3 +30,7 @@ func _ready() -> void:
 		Geo.add_box_shape(self, Vector3(PEDESTAL_W, KNEE_H, SIZE.z),
 			Vector3(side * (SIZE.x - PEDESTAL_W) / 2.0, KNEE_H / 2.0, 0))
 	Geo.add_box_shape(self, Vector3(SIZE.x, SIZE.y - KNEE_H, SIZE.z), Vector3(0, (SIZE.y + KNEE_H) / 2.0, 0))
+	var chair := Armchair.new()
+	chair.position = Vector3(0, 0, SIZE.z / 2.0 + CHAIR_GAP + Armchair.SEAT_FRONT_Z)
+	chair.rotation.y = PI
+	add_child(chair)

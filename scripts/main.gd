@@ -106,7 +106,7 @@ extends Node3D
 ##                               in der Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt: in der
 ##                               Kabine, sie fährt gleich ins oberste Stockwerk · urteil: in der Kabine, nach 3 s ein Urteil
 ##                               über Zimmer 13 (4.33), die Kabine pendelt alle 10 s – das Monster wartet an der Haltestelle)
-##   --sitzen[=sofa|bank|stuhl|bett|klo]   aufs nächste Sitzmöbel dieser Art setzen (3.1), erster Platz – ohne Angabe Sofa
+##   --sitzen[=sofa|bank|stuhl|sessel|bett|klo]   aufs nächste Sitzmöbel dieser Art setzen (3.1), erster Platz – ohne Angabe Sofa
 ##   --tuer=zimmer[,innen|bad]   vor die Tür dieses Zimmers stellen (Nummer wie am Schild), Blick auf die Tür (6.19);
 ##                               innen: von drinnen auf ihre Bandseite, bad: im Bad auf die Badtür
 ##   --werkzeug=brecheisen|kasten|schluessel   Brecheisen bzw. Werkzeugkasten in die Hand, schluessel: Generalschlüssel
@@ -1062,7 +1062,9 @@ func run_debug(arg: String) -> bool:
 			desk = Desk.new()
 			add_child(desk)
 			desk.global_position = office[0]["center"]
-		TeleportUI.place_player(desk.global_position + desk.global_basis.z * 1.8, -desk.global_basis.z)
+		# schräg von vorn, damit der Sessel vor dem Tisch nicht im Weg steht
+		var at := desk.global_position + desk.global_basis.z * 1.3 + desk.global_basis.x * 1.7
+		TeleportUI.place_player(at, desk.global_position + desk.global_basis.z * 0.6 - at)
 		Game.player.head.rotation.x = deg_to_rad(-20.0)
 	elif _is_arg(arg, "--dachboden"):
 		var builder := Game.social.builder

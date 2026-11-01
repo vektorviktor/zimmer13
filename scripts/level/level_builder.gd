@@ -2451,6 +2451,10 @@ func _furniture() -> void:
 				rect = _local_rect(back, front, Rect2(-Desk.SIZE.x / 2.0, 0, Desk.SIZE.x, Desk.SIZE.z))   # Platte
 				node = Desk.new()
 				top = Desk.SIZE.y
+				var chair_at := Desk.SIZE.z + Desk.CHAIR_GAP   # Sessel davor (Desk), Gegenstände landen auf dem Polster
+				_furnishings.append({"kind": "armchair", "rect": _local_rect(back, front,
+					Rect2(-Armchair.SIZE.x / 2.0, chair_at, Armchair.SIZE.x, Armchair.SIZE.z)), "top": Armchair.SEAT_H,
+					"front": -front, "node": node})
 			"changing_bench":   # Länge entlang der langen Seite des Rechtecks, ohne Vorderseite
 				yaw = 0.0 if rect.size.x >= rect.size.y else PI / 2.0
 				node = ChangingBench.make(maxf(rect.size.x, rect.size.y))

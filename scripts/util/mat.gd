@@ -569,8 +569,8 @@ static func frosted_glass() -> StandardMaterial3D:
 	return _frosted
 
 
-## Modell mit glTF-PBR-Set als Dateien neben der GLB (base + „_albedo.png“, „_normal.png“ OpenGL, „_orm.png“: Grün
-## Rauheit, Blau Metall), jede Karte in voller Größe mit Mipmaps. metallic dämpft das Metall der Karte – voll
+## Modell mit glTF-PBR-Set als Dateien neben der GLB (base + „_albedo.png“, „_normal.png“ OpenGL, „_orm.png“: Rot
+## Verdeckung, Grün Rauheit, Blau Metall), jede Karte in voller Größe mit Mipmaps. metallic dämpft das Metall der Karte – voll
 ## metallisch spiegelt Messing fast nur die dunkle Umgebung (wie beim Mülleimer). Erstes Modell: Desk (ZIM-150).
 static func pbr_model(base: String, metallic: float = 1.0) -> StandardMaterial3D:
 	var key := "pbr|%s|%.2f" % [base, metallic]
@@ -587,6 +587,9 @@ static func pbr_model(base: String, metallic: float = 1.0) -> StandardMaterial3D
 		m.metallic = metallic
 		m.metallic_texture = orm
 		m.metallic_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_BLUE
+		m.ao_enabled = true   # ohne gebackene Verdeckung steht Rot auf 1
+		m.ao_texture = orm
+		m.ao_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
 		_cache[key] = m
 	return _cache[key]
 
