@@ -2940,7 +2940,7 @@ func _fittings() -> void:
 			"painting":
 				var at := _wall_spot(o, WALL_GAP)
 				var area := _kind_at(at.inside)
-				var y := 2.2 if area == "lobby" else (1.9 if area == "bar" else 1.75)   # im Flur über den Kommoden
+				var y: float = {"lobby": 2.2, "office": 2.0, "bar": 1.9}.get(area, 1.75)   # im Flur über den Kommoden
 				var group := Painting.group_for(area)
 				var work := Painting.pick(group, paintings.get(group, 0))
 				paintings[group] = paintings.get(group, 0) + 1

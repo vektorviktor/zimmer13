@@ -181,9 +181,9 @@ Höhe ein Rapport des Musters. Die Rautentapeten (Satin/Velours mit Fugen, 2 × 
 
 **Gemälde** (`Painting`, `scripts/world/painting.gd`, ZIM-151): Planfarbe „Ausstattung: Bild“ → `LevelBuilder._fittings`
 hängt je Bild ein Werk aus `Painting.WORKS`, die Gruppe kommt aus der Flächenart an der Wand (`GROUPS`: lobby, bar
-+ party, corridor, study = Bibliothek/Büro/Sekretariat, room; sonst corridor), innerhalb der Gruppe reihum je
-Stockwerk. Höhe der Bildmitte wie bisher (Lobby 2,2 m, Bar 1,9 m, sonst 1,75 m). **Ölbilder**: lange Seite 1,5 m
-(Lobby), 1 m (Bar), sonst 0,75 m; Leinwand als StandardMaterial3D, Bild auf UV, Leinwandstruktur
++ party, corridor, study = Bibliothek/Sekretariat, director = Büro der Direktion, room; sonst corridor), innerhalb
+der Gruppe reihum je Stockwerk. Höhe der Bildmitte Lobby 2,2 m, Büro 2,0 m, Bar 1,9 m, sonst 1,75 m. **Ölbilder**:
+lange Seite 1,7 m (Büro), 1,5 m (Lobby), 1 m (Bar), sonst 0,75 m; Leinwand als StandardMaterial3D, Bild auf UV, Leinwandstruktur
 (`canvas_normal.png`, Kachel 5 cm) als Detail-Normal-Map auf UV2; Goldrahmen aus drei nach innen abfallenden
 Stufen, Rauheit und Riefen aus `NoiseTexture2D` (mit Mipmaps). **Drucke** (`print`): 0,48 m, Passepartout,
 Holzrahmen (`Mat.hotel_wood`), Glas davor. Bilder mit Mipmaps, ohne VRAM-Kompression (wie `Mat.pbr_model`).
@@ -205,6 +205,7 @@ aufbereitet mit `tools/build_paintings.gd` (≤ 2048 px, Rahmenkanten der Scans 
 | `fuessli_nachtmahr` | `Johann Heinrich Füssli - The Nightmare 55.5.A-d1-2019-04-15.jpg` |
 | `friedrich_mond` | `Caspar David Friedrich - Two Men Contemplating the Moon - Google Art Project.jpg` |
 | `grimshaw_roundhay` | `John Atkinson Grimshaw - Moonlight on the Lake, Roundhay Park, Leeds.jpg` |
+| `portraet_alter_herr` | keine – eigens erstelltes Porträt des alten Herrn (Spielkonzept 2.10), 765 × 1024 px; einziges Werk im Büro, hinter dem Schreibtisch |
 
 Nicht frei und deshalb nicht dabei: Kubin (frei erst 2030), Beksiński, Giger. Debug `--bilder[=gruppe]`.
 

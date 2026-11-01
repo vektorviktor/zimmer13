@@ -999,7 +999,8 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   Familie lebt“, 2.3). Die Hotelleitung ist das Abkommen selbst (2.5). Unter den Tätern, die schweigen, bleibt der Page
   von 1987 – heute der Hausmeister (2.11).
 - **Spuren** (Vorschlag): Edna und Liesel erkennen ihn auf dem Foto als den alten Herrn Direktor von 1987 · im Büro der
-  Direktion sein Porträt und seine Unterschrift unter dem Vertrag.
+  Direktion sein Porträt und seine Unterschrift unter dem Vertrag. Porträt gebaut 2026-11-01 (ZIM-151): Öl, im roten
+  Ledersessel des Büros, Stock mit silbernem Schlangenkopf, Vertrag mit Siegel; hängt, wo der Plan im Büro ein Bild zeigt.
 - **Das Ankunftsfoto 2026:** Der Vorspann zeigt, wie es entsteht – hinten rechts steht niemand. Am 2. Oktober hängt es an
   der Wand, und dort steht er. Der Spieler steht selbst mit auf dem Bild. Auf dem Foto draußen in Ende 1 fehlt er –
   außerhalb des Hotels gibt es ihn nicht.

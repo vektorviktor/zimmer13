@@ -11,7 +11,7 @@ const CANVAS := DIR + "canvas_normal.png"
 ## Meter je Kachel der Leinwandstruktur (32 Fäden → 1,6 mm je Faden)
 const CANVAS_TILE := 0.05
 ## lange Seite der Bildfläche je Flächenart (Meter); Drucke immer PRINT_LONG
-const LONG_SIDE := {"lobby": 1.5, "bar": 1.0, "party": 1.0}
+const LONG_SIDE := {"lobby": 1.5, "bar": 1.0, "party": 1.0, "office": 1.7}
 const LONG_DEFAULT := 0.75
 const PRINT_LONG := 0.48
 ## Passepartout um den Druck (unten etwas breiter, wie üblich)
@@ -19,10 +19,11 @@ const MAT_SIDE := 0.07
 const MAT_BOTTOM := 0.085
 const PRINT_FRAME := 0.03
 const PRINT_DEPTH := 0.03
-## Flächenart → Gruppe in WORKS; alles andere hängt wie im Flur
+## Flächenart → Gruppe in WORKS; alles andere hängt wie im Flur. Im Büro der Direktion nur sein Porträt.
 const GROUPS := {"lobby": "lobby", "bar": "bar", "party": "bar", "corridor": "corridor", "library": "study",
-	"office": "study", "secretariat": "study", "room": "room"}
-## Gemeinfrei (Urheber > 70 Jahre tot), Quelle Wikimedia Commons – Dateinamen in TECHNIK.md („Gemälde“)
+	"office": "director", "secretariat": "study", "room": "room"}
+## Gemeinfrei (Urheber > 70 Jahre tot), Quelle Wikimedia Commons – Dateinamen in TECHNIK.md („Gemälde“); nur das
+## Porträt des alten Herrn ist eigens erstellt (ohne Maler: artist leer)
 const WORKS := {
 	"boecklin_toteninsel": {"group": "lobby", "artist": "Arnold Böcklin", "title": "Die Toteninsel", "year": "1880",
 		"text": "Öl auf Leinwand. Ein Ruderboot gleitet über schwarzes Wasser auf eine Felseninsel zu, in deren Mitte Zypressen stehen. Vorn im Boot eine verhüllte weiße Gestalt, daneben ein Sarg. Niemand im Hotel weiß, wer das Bild hier aufgehängt hat."},
@@ -51,6 +52,8 @@ const WORKS := {
 		"year": "um 1675", "text": "Öl auf Leinwand. Eine Dame in heller Seide vor rotem Vorhang, eine Blume in der Hand. Ihr Blick folgt einem, wohin man auch geht – das sagt man von vielen alten Bildern."},
 	"portraet_mann": {"group": "study", "artist": "Unbekannter Maler", "title": "Bildnis eines Herrn", "year": "um 1600",
 		"text": "Öl auf Leinwand. Ein Herr in Schwarz mit weißem Kragen. Wer er war, weiß niemand mehr, auch nicht, wie er ins Hotel kam."},
+	"portraet_alter_herr": {"group": "director", "artist": "", "title": "Der alte Herr", "year": "unsigniert, um 1985",
+		"text": "Öl auf Leinwand. Ein alter Herr thront im roten Ledersessel – demselben, der unten vor dem Schreibtisch steht. Die Hände ruhen auf einem Stock mit silbernem Schlangenkopf, neben ihm liegt ein Vertrag mit rotem Siegel. Er lächelt, als wüsste er etwas über einen. Das Gesicht kommt einem bekannt vor."},
 	"fuessli_nachtmahr": {"group": "room", "artist": "Johann Heinrich Füssli", "title": "Der Nachtmahr", "year": "1781",
 		"text": "Öl auf Leinwand. Eine Schlafende liegt hingestreckt auf dem Bett, auf ihrer Brust hockt ein Dämon, aus dem Vorhang schiebt sich der Kopf eines Pferdes. Ausgerechnet über einem Hotelbett."},
 	"friedrich_mond": {"group": "room", "artist": "Caspar David Friedrich", "title": "Zwei Männer in Betrachtung des Mondes",
@@ -230,7 +233,7 @@ func _quad(size: Vector2, uv2_tiles: Vector2) -> ArrayMesh:
 
 
 ## --bilder[=gruppe]: vor das erste Bild aus dem Plan; hängt keins (oder mit Gruppe lobby, bar, corridor, study,
-## room bzw. alle), kommen die Werke als Reihe frei in die Lobby, du stehst davor.
+## room, director bzw. alle), kommen die Werke als Reihe frei in die Lobby, du stehst davor.
 static func debug_show(tree: SceneTree, group: String) -> void:
 	var hung := tree.get_nodes_in_group("paintings")
 	if group == "" and not hung.is_empty():
@@ -243,7 +246,7 @@ static func debug_show(tree: SceneTree, group: String) -> void:
 	if works.is_empty():
 		push_warning("--bilder: keine Werke in Gruppe „%s“" % group)
 		return
-	var area := "lobby" if group == "lobby" else ("bar" if group == "bar" else "")
+	var area: String = {"lobby": "lobby", "bar": "bar", "director": "office"}.get(group, "")
 	var row: Array[Painting] = []
 	var width := 0.0
 	for k in works:
@@ -275,4 +278,5 @@ func get_prompt(_player: Player) -> String:
 func interact(_player: Player) -> void:
 	var w: Dictionary = WORKS[key]
 	if Game.menus:
-		Game.menus.open_photo("%s: %s" % [w["artist"], w["title"]], texture(key), "%s, %s" % [w["year"], w["text"]])
+		var title: String = w["title"] if w["artist"] == "" else "%s: %s" % [w["artist"], w["title"]]
+		Game.menus.open_photo(title, texture(key), "%s, %s" % [w["year"], w["text"]])
