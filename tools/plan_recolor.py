@@ -87,7 +87,7 @@ DESIGN = {
 	"Ausstattung: Lichtschalter": (320, 90, 55), "Ausstattung: Telefon": (338, 85, 48),
 	"Ausstattung: Bild": (308, 55, 60), "Ausstattung: Zettel": (335, 80, 86), "Ausstattung: UV-Schrift": (290, 95, 55),
 	"Ausstattung: Kalender": (348, 75, 64), "Ausstattung: Tagebuch": (330, 55, 32),
-	"Ausstattung: Schlüsselschrank": (315, 45, 40), "Ausstattung: Fotowand": (300, 40, 50),
+	"Ausstattung: Fotowand": (300, 40, 50),
 	 "Ausstattung: Spinnweben": (300, 12, 84),
 	"Ausstattung: Dekokiste": (325, 45, 46), "Ausstattung: Kerzenvorrat": (340, 90, 72),
 	"Ausstattung: Ersatzbirnen": (305, 80, 72), "Ausstattung: Duschplatz": (300, 60, 80),

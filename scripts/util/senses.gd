@@ -21,7 +21,6 @@ const NOISE := {
 	"door_burst": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true, "caption": "[Eine Tür kracht auf]"},
 	"door_force": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true, "caption": "[Eine Tür wird aufgebrochen]"},   ## Zimmertür aufgebrochen (6.19)
 	"repair":     {"range": 6.0,  "sound": "thud",   "volume": 0.5, "caption": "[Hämmern an einer Tür]"},    ## Tür reparieren (6.19)
-	"glass":      {"range": 16.0, "sound": "bang",   "volume": 0.7, "alarm": true, "caption": "[Glas splittert]"},   ## Scheibe des Schlüsselschranks  ## Tür vom Monster aufgerissen
 	"hide":       {"range": 4.0,  "sound": "creak",  "volume": 0.35, "caption": "[Eine Schranktür knarrt]"},   ## in ein Versteck gehen
 	"hide_burst": {"range": 20.0, "sound": "bang",   "volume": 1.0, "alarm": true, "caption": "[Eine Schranktür kracht auf]"},  ## Versteck vom Monster aufgerissen
 	"drop":       {"range": 2.0,  "sound": "thud",   "volume": 0.4, "caption": "[Etwas wird abgestellt]"},    ## Gegenstand ablegen

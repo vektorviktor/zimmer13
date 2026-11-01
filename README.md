@@ -114,8 +114,8 @@ Standardbelegung – umbelegen in den Einstellungen unter „Steuerung“ (fest 
   Feinde nie, Kinder nur Bekannte · drinnen bittet der Gastgeber irgendwann zu gehen; wer uneingeladen erwischt wird,
   fliegt raus · **Brecheisen** (Heizkeller) bricht Zimmertüren auf – laut, und wer es sieht, erzählt es weiter; die Tür
   bleibt offen, bis sie repariert ist (auch nach einem Angriff des Monsters) · **Werkzeugkasten** (Technikraum, oder
-  Konrad leiht dir seinen) repariert sie – Dank, außer man hat sie selbst aufgebrochen · **Schlüsselschrank** an der
-  Ostwand der Lobby: Scheibe einschlagen, der **Generalschlüssel** öffnet jede Zimmertür, außer jemand ist drin ·
+  Konrad leiht dir seinen) repariert sie – Dank, außer man hat sie selbst aufgebrochen · der **Generalschlüssel**
+  öffnet jede Zimmertür, außer jemand ist drin – sein Ort ist noch offen, bis dahin nur über `--werkzeug=schluessel` ·
   einem schlafenden Gast den **Zimmerschlüssel** vom Nachttisch nehmen (geduckt am Bett, stehend weckt man ihn) – Zeugen wie beim Diebstahl, am
   Morgen danach lässt er das Schloss tauschen, und der Schlüssel passt nicht mehr · ein **guter Freund** gibt dir bei
   der nächsten Begegnung einen **Zweitschlüssel** – dann bist du in seinem Zimmer willkommen · ein **Erzfeind** bricht

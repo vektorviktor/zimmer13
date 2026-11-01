@@ -1004,7 +1004,7 @@ func run_debug(arg: String) -> bool:
 	elif arg.begins_with("--werkzeug="):
 		var what := _arg_value(arg, "--werkzeug")
 		if what == "schluessel":
-			Game.player.add_key(KeyCabinet.KEY_ID)
+			Game.player.add_key(RoomAccess.GENERAL_KEY)
 		else:
 			Game.player.drop_held()
 			Game.player.receive_item(Item.create(Item.Kind.CROWBAR if what == "brecheisen" else Item.Kind.TOOLBOX))

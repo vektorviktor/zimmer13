@@ -146,7 +146,7 @@ func _forcible() -> bool:
 
 ## Der Generalschlüssel passt – außer, jemand aus dem Zimmer ist drin und hat den Riegel vorgeschoben (6.19).
 func _general_fits(player: Player) -> bool:
-	if not _forcible() or not player.has_key(KeyCabinet.KEY_ID):
+	if not _forcible() or not player.has_key(RoomAccess.GENERAL_KEY):
 		return false
 	return Game.social == null or Game.social.access.residents_home(room_no).is_empty()
 

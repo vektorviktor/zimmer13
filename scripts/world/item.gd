@@ -377,7 +377,7 @@ func skip_time(dt: float) -> void:
 
 ## Beschriftung eines Schlüssels am Bund
 static func key_label(id: String) -> String:
-	if id == KeyCabinet.KEY_ID:
+	if id == RoomAccess.GENERAL_KEY:
 		return "Generalschlüssel"
 	if id == CaretakerBook.KEY_ID:   # Schaltschlüssel des Aufzugs aus Zimmer 18 (7.4)
 		return "Schaltschlüssel"

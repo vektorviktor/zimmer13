@@ -1259,8 +1259,9 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 - **Besuch** (`visit`), **von innen** geht jede abgeschlossene Zimmertür auf (`Door._inside`, niemand wird
   eingesperrt), **Hausfriedensbruch** (`_watch_trespass`).
 - **Aufbrechen** (Brecheisen, `Door._forcible`, `Door._work`): Tür danach `broken` (offen, `set_open(false)` greift
-  nicht) → `RoomAccess.on_forced` (Zeugen, Gerede, `suspects`). Leise mit dem **Generalschlüssel** aus dem
-  **Schlüsselschrank** (`world/key_cabinet.gd`, Gruppe `key_cabinets` im Spielstand). `Door.monster_open` macht eine
+  nicht) → `RoomAccess.on_forced` (Zeugen, Gerede, `suspects`). Leise mit dem **Generalschlüssel**
+  (`RoomAccess.GENERAL_KEY` am Bund, `Door._general_fits`); der Schlüsselschrank in der Lobby ist weg (ZIM-136), der
+  neue Ort offen (ZIM-6) – bis dahin nur über `--werkzeug=schluessel`. `Door.monster_open` macht eine
   abgeschlossene Zimmertür ebenfalls kaputt. **Reparieren** mit Werkzeugkasten (`on_repaired`); am Morgen
   (`_morning_repairs`) repariert jeder Haushalt seine Tür selbst; `LENDER_HOUSEHOLD` leiht seinen Werkzeugkasten.
 - **Schlüssel stehlen** (`RoomAccess.steal_key`): Am Bett, in dem ein Gast in seinem Zimmer schläft (`key_sleeper`,
@@ -1459,7 +1460,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   Gast-IDs bezieht. Dann Welt → Director-Werte → Gäste → Gegenstände → Spieler (`look` zuerst über `Player.set_look`,
   dann Hand, Tasche `bag` über `Player.set_bag`) → Soziales → Monster zuletzt.
 - Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp, HotelPhone,
-  LightSwitch, HotelWindow, Dresser, LockerBank, Elevator, FixedCandle, KeyCabinet …) oder werden in `collect()` direkt ausgelesen
+  LightSwitch, HotelWindow, Dresser, LockerBank, Elevator, FixedCandle …) oder werden in `collect()` direkt ausgelesen
   (Door, Chest, Plant, Resource). Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()` + `WORLD_GROUPS`.
 - Beim Laden `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
 - **Nicht gespeichert**, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating`, `DecoSearch`, `Stove`,

@@ -52,11 +52,9 @@ const ANSWER_DELAY := 2.0
 const ANSWER_TIMEOUT := 10.0
 const WALK_AWAY := 4.0
 
-## Aufgebrochen bzw. mit dem Generalschlüssel in ein fremdes Zimmer: Besitzer, wenn er es mitbekommt; Zeugen; Scheibe
-## des Schlüsselschranks (Hoteleigentum)
+## Aufgebrochen bzw. mit dem Generalschlüssel in ein fremdes Zimmer: Besitzer, wenn er es mitbekommt; Zeugen
 const FORCED_OWNER := -35.0
 const FORCED_WITNESS := -10.0
-const SMASH_WITNESS := -5.0
 ## Reparieren: so viel Dank je Erwachsenem des Haushalts, höchstens einmal je Tür und Tag – nie für eine selbst
 ## aufgebrochene (das Spiel weiß es, auch wenn kein Gast es weiß)
 const REPAIR_THANKS := 8.0
@@ -71,6 +69,9 @@ const KEY_THEFT_GOSSIP := -8.0
 const LOCK_SWAP_HOUR := 6.0
 ## Vorsatz am Schlüsselbund: ein gestohlener Schlüssel, dessen Schloss getauscht ist
 const OLD_KEY := "alt_"
+## Generalschlüssel am Bund: passt in jede Zimmertür, außer jemand hat von innen den Riegel vorgeschoben (Door). Sein
+## Ort ist offen – Büro der Direktion, ZIM-6; bis dahin nur über --werkzeug=schluessel (Spielkonzept 6.19)
+const GENERAL_KEY := "general"
 ## Zweitschlüssel: so nah (m) muss der gute Freund dir begegnen
 const SPARE_RANGE := 3.0
 
@@ -405,17 +406,6 @@ func on_repaired(door: Door, own: bool) -> void:
 			social.change_relation(owner, REPAIR_THANKS)
 			if owner.global_position.distance_to(door.center()) < 8.0:
 				owner.say("Du hast unsere Tür repariert? Danke!")
-
-
-## Scheibe des Schlüsselschranks eingeschlagen: Zeugen mögen es nicht und erzählen es weiter.
-func on_smashed(_cabinet: KeyCabinet) -> void:
-	var witnesses := _witnesses()
-	if witnesses.is_empty():
-		return
-	for w in witnesses:
-		_social().change_relation(w, SMASH_WITNESS)
-	witnesses[0].say("Was machst du da an der Rezeption?!")
-	_social()._spread_gossip(-4.0, witnesses)
 
 
 ## Am Morgen repariert jeder Haushalt seine aufgebrochene Tür selbst (frühestens am Tag danach); ist keiner mehr am

@@ -140,7 +140,6 @@ FITTINGS = {
 	"Ausstattung: Kürbispflanze Butternut": "pumpkin_plant:butternut", "Ausstattung: Kürbispflanze Muskat": "pumpkin_plant:muskat",
 	"Ausstattung: Kürbispflanze Türkenturban": "pumpkin_plant:turban", "Ausstattung: Kürbispflanze Riese": "pumpkin_plant:giant",
 	"Ausstattung: Kalender": "calendar", "Ausstattung: Tagebuch": "diary", "Ausstattung: Dekokiste": "deco_box",
-	"Ausstattung: Schlüsselschrank": "key_cabinet",   # 24.10.: verglast, mit dem Generalschlüssel (6.19)
 	"Ausstattung: Dartscheibe": "dartboard",   # 25.10.: an der Wand, Linie und Stehtisch davor (6.10)
 	"Ausstattung: Duschplatz": "pool_shower",   # 1.11.: Drücker, Ablage und Duschkopf an der Wand (ZIM-144)
 	"Ausstattung: Bodenablauf": "floor_drain",   # 1.11.: Edelstahlrost im Boden der Duschen am Pool (ZIM-144)

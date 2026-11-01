@@ -4471,7 +4471,10 @@ ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 ### 6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht
 > durchkommen (zu lange jemand im Weg); das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal
-> je Tür und Tag gilt; die Zahlen sind in 6.18 zu klären). Brecheisen (Heizkeller), Werkzeugkasten (Technikraum) und Schlüsselschrank (Ostwand der Lobby) stehen im Plan.
+> je Tür und Tag gilt; die Zahlen sind in 6.18 zu klären). Brecheisen (Heizkeller) und Werkzeugkasten (Technikraum) stehen im Plan.
+> **Schlüsselschrank entfallen (2026-10-31, gebaut 2026-11-01, ZIM-136):** An seiner Stelle kommt die Fotowand (ZIM-133).
+> Der Generalschlüssel hat bis zur Entscheidung über das Büro der Direktion (ZIM-6) keinen Ort im Spiel – Zimmer nur über
+> Einlass, Schlüssel oder Brecheisen; zum Probieren `--werkzeug=schluessel`.
 > **Badtüren (2026-10-28):** Gäste gehen ab und zu in ihr Bad und schließen die Tür hinter sich; ein Schloss gibt es nicht.
 > **Schlüssel stehlen (2026-10-28)** wie in (4): geduckt am Bett des Schlafenden (stehend weckt [E] ihn, 3.6), Folgen bei Zeugen wie beim Deko-Diebstahl; das
 > Schloss ist ab 6 Uhr am Morgen danach getauscht. **Zweitschlüssel (2026-10-28):** Ein erwachsener guter Freund gibt ihn
@@ -4593,9 +4596,8 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
   eigenes Werkzeug und leiht es Freunden.
 - **Generalschlüssel:** *wird neu gefasst (2026-10-26):* Der Schrank darf nicht offen in der Lobby hängen, und eine
   Scheibe einzuschlagen ist zu billig. Der Schlüssel soll an einem schwer zugänglichen Ort liegen und Mühe kosten –
-  erster Kandidat ist das **Büro der Direktion**, in das man erst hineinkommen muss. Bis dahin gilt der gebaute Stand:
-  im **verglasten Schlüsselschrank an der Ostwand der Lobby**. Die Scheibe einschlagen ist laut,
-  mitten in der Lobby – besser nachts. Er öffnet jede Zimmertür, außer der Bewohner ist drin und hat den **Riegel**
+  erster Kandidat ist das **Büro der Direktion**, in das man erst hineinkommen muss (ZIM-6). Der verglaste
+  Schlüsselschrank in der Lobby ist gestrichen (2026-10-31, ZIM-136). Der Schlüssel öffnet jede Zimmertür, außer der Bewohner ist drin und hat den **Riegel**
   vorgeschoben, und außer den versiegelten Zimmern (7). Wer gesehen wird, wie er damit eine fremde Tür aufschließt, gilt als Einbrecher (5), nur ohne Lärm.
 - **Erste Zahlen** (zum Probespielen):
   - **Einlass je Stufe** (6.3): guter Freund 95 % · befreundet 80 % · freundlich 60 % · nett 40 % · neutral 20 % ·

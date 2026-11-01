@@ -125,7 +125,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     (table_loaded) – ältere Stände laden weiter, die Würfel kommen in den Becher auf dem Mäxchen-Tisch
 ## 62: Spinde der Pool-Umkleiden (Gruppe locker_banks, ZIM-145): je Block offen, aufgeschlossen, durchsucht –
 ##     ohne Eintrag sind alle Spinde zu und unberührt
-const VERSION := 62
+## 63: Schlüsselschrank entfällt (ZIM-136): Gruppe key_cabinets nicht mehr gespeichert – ein alter Eintrag wird
+##     übergangen
+const VERSION := 63
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -142,7 +144,7 @@ const PROGRESS_KEYS := ["zimmer_18", "dachboden", "aufzug"]
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
-	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "key_cabinets", "fixed_candles", "locker_banks"]
+	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "fixed_candles", "locker_banks"]
 const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
 var WORLD_FILE := DIR + "world.txt"
@@ -663,7 +665,6 @@ func collect() -> Dictionary:
 	data["doors"] = _collect_group("doors", func(n: Node) -> Dictionary:
 		return {"open": n.is_open, "locked": n.locked, "broken": n.broken, "by_player": n.broken_by_player,
 			"broken_day": n.broken_day})
-	data["key_cabinets"] = _collect_group("key_cabinets", func(n: Node) -> Dictionary: return n.save_state())
 	# Maskenhaken in Zimmer 13 (5.19): je Maske, ob sie hängt – nach der Maske, nicht nach der Reihenfolge
 	var hooks := {}
 	for hook: MaskHook in get_tree().get_nodes_in_group("mask_hooks"):
@@ -746,7 +747,6 @@ func apply(data: Dictionary) -> void:
 		n.broken = bool(d.get("broken", false))
 		n.broken_by_player = bool(d.get("by_player", false))
 		n.broken_day = int(d.get("broken_day", 0)))
-	_apply_group("key_cabinets", data.get("key_cabinets", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("chests", data.get("chests", []), func(n: Node, d: Dictionary) -> void:
 		n.set_open(bool(d["open"]), true))
 	_apply_group("pumpkin_plants", data.get("plants", []), func(n: Node, d: Dictionary) -> void:

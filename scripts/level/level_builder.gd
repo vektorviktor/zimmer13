@@ -487,8 +487,6 @@ const COBWEB_Y := 2.4
 ## (Entscheidung 31.10.): beschriftet sind nur die Gästezimmer, mit einer Messingplakette (RoomPlate).
 ## Schriftgröße und CURVE_STEP in Schriftpixeln
 const SIGN_FONT := "res://assets/fonts/cinzel_bold.ttf"
-## Schlüsselschrank (6.19): Höhe seiner Mitte über dem Boden
-const KEY_CABINET_Y := 1.5
 const SIGN_FONT_SIZE := 16
 const SIGN_CURVE_STEP := 2.0
 ## Ersatzbirnen liegen im Lagerregal, nicht obendrauf
@@ -2926,12 +2924,6 @@ func _fittings() -> void:
 				_supply(ResourceSpot.new().setup(Item.Kind.LEAVES, "Herbstlaub", 4, 60.0), Vector3(p.x, top, p.y))
 			"dartboard":   # Darts (Spielkonzept 6.10): Scheibe an der Wand, Linie und Stehtisch davor, Pfeile darauf
 				_dartboard(o)
-			"key_cabinet":   # verglast, mit dem Generalschlüssel (Spielkonzept 6.19)
-				var at := _wall_spot(o, 0.0)
-				var cabinet := KeyCabinet.new()
-				cabinet.position = at.at(KEY_CABINET_Y)
-				cabinet.rotation.y = at.yaw()
-				root.add_child(cabinet)
 			"deco_box" when _attic:
 				# Kiste mit wertvollerer alter Deko auf dem Dachboden (Spielkonzept 4.21, 5.7): wenige starke Stücke, kein
 				# Nachschub – wie die alte Deko im Heizkeller

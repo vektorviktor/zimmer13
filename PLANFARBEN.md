@@ -210,7 +210,6 @@ Ebene `Ausstattung`, 3×3-Punkt, Wandsachen innen an der Wand.
 | #8d1b98 | Bodenablauf | Duschen am Pool: Punkt = Mitte des Rosts (15 × 15 cm Edelstahl), am besten in der Raummitte (ZIM-144) |
 | #7e2552 | Tagebuch | |
 | #aa417e | Dekokiste | |
-| #94387d | Schlüsselschrank | an der Wand, verglast – Generalschlüssel; entfällt (ZIM-136) |
 | #b24db2 | Fotowand | je Punkt eine Position mit 2 Rahmen übereinander (Oberkanten 1,40 m und 1,90 m), Punkte im 1-m-Abstand; noch nicht gebaut (ZIM-133) |
 | – | Dartscheibe | im Code vorgesehen; ohne Planeintrag hängt sie hinten in der Nische der Bar |
 
