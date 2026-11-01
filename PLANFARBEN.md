@@ -103,8 +103,8 @@ Füllfarben im Grundriss. „draußen“ = ohne Decke.
 | #be93a8 | Bowlingbahn | helles Holz |
 | #c3224b | Foullinie | quer über die Bowlingbahn, darf schmal sein |
 | #a9b6bc | Hausmeisterraum | Raum des heutigen Hausmeisters (Spielkonzept 2.11); noch nicht gebaut (ZIM-119) |
-| #dfb949 | Büro der Direktion | OG; noch nicht gebaut (ZIM-6) |
-| #ecdd79 | Sekretariat | der Direktion, OG; noch nicht gebaut (ZIM-117) |
+| #dfb949 | Büro der Direktion | OG; Innenraum mit Holzboden wie die Bibliothek (ZIM-150) – Zugang noch offen (ZIM-6) |
+| #ecdd79 | Sekretariat | der Direktion, OG; Innenraum wie das Büro (ZIM-150), Fundstücke bei ZIM-117 |
 
 ## Öffnungen
 
@@ -139,6 +139,7 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #c7ae6b | Couchtisch | #d8c797 | |
 | #9b753b | Tafel | | |
 | #8a452e | Sofa | | |
+| #57480f | Schreibtisch | #8b7418 | Büro der Direktion: Modell fest 1,61 × 0,66 m, mittig im Rechteck, Rücken an dessen Hinterkante (ZIM-150) |
 | #777740 | Bank | #9f9f56 | auch Parkbank |
 | #7e5d1b | Truhe | | im Hotelzimmer die Süßigkeiten-Truhe, so groß wie im Plan |
 | #452124 | Schachtisch | | |

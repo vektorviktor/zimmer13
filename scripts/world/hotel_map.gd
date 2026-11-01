@@ -202,7 +202,7 @@ func _draw_floor(plan: Dictionary, top: float, font: Font) -> void:
 			draw_line(Vector2(well.position.x, sy), Vector2(well.end.x, sy), FADED, LINE)
 	for r in plan["regions"]:
 		var kind := String(r["kind"])
-		if (r.has("name") and not kind in ["elevator", "corridor", "pool_water"]) or kind in ["cat_room", "library"]:
+		if (r.has("name") and not kind in ["elevator", "corridor", "pool_water"]) or kind in ["cat_room", "library", "office", "secretariat"]:
 			var box := _rect(_world_rect(_outer(r["rects"])), top)
 			var label := String(r.get("name", LevelBuilder.KIND_NAMES.get(kind, "")))
 			for font_size in [16, 11]:   # Name nur, wenn er in den Raum passt

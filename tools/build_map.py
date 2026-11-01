@@ -86,6 +86,8 @@ FILLS = {
 	"Heckenbogen": ("hedge_arch", True),
 	# Bar neu (28.10., Spielkonzept 6.10): Bowlingbahn aus hellem Holz, die Foullinie quer darüber
 	"Bowlingbahn": ("bowling_lane", False), "Foullinie": ("foul_line", False),
+	# Verwaltung im OG (1.11., ZIM-150): Innenräume wie die Bibliothek – Zugang offen (ZIM-6)
+	"Büro der Direktion": ("office", False), "Sekretariat": ("secretariat", False),
 }
 ## Palettenname → Öffnungsart (Strich auf der Wandlinie)
 OPENINGS = {
@@ -115,6 +117,7 @@ FURNITURE = {
 	"Möbel: Fußmatte": "doormat", "Möbel: Dusche": "shower", "Möbel: WC": "toilet", "Möbel: Mülleimer": "trash_can",
 	"Möbel: Snackautomat": "snack_machine", "Möbel: Getränkeautomat": "drink_machine",
 	"Möbel: Zimmertisch": "room_table", "Möbel: Stuhl": "chair",
+	"Möbel: Schreibtisch": "desk",   # 1.11.: Büro der Direktion, Modell fester Größe (ZIM-150)
 	"Möbel: Wannenablage": "tub_shelf",   # 24.10.: gefliestes Stück neben der Badewanne, ohne Vorderseite
 	# Friedhof (25.10., Spielkonzept 5.15): Grabplatz 2 × 1 m (Vorderseite = Fußende), Gedenkstätte mit Tafel
 	"Möbel: Grab": "grave", "Möbel: Gedenkstätte": "memorial",

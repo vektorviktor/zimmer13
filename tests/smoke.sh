@@ -129,6 +129,7 @@ done <<'LIST'
 600|speichern|--savetest --day=20
 400|speichern,autosave|--pocket --fortschritt --trace
 600|speichern,autosave,dachboden|--dachboden --trace
+600|buero,navmesh|--buero --trace
 1100|speichern,autosave,schlaf|--day=3 --uhr=1:10 --hoerer --sleep=bett,8 --trace
 400|speichern,autosave|--unterbrechen=laden --trace
 600|speichern,autosave,tod|--kill=emilhartung,weg,blut --fortschritt --trace

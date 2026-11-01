@@ -5725,6 +5725,32 @@
 					-0.1
 				]
 			]
+		},
+		{
+			"id": "office_1",
+			"kind": "office",
+			"outdoor": false,
+			"rects": [
+				[
+					-21.4,
+					-27.9,
+					-14.6,
+					-19.1
+				]
+			]
+		},
+		{
+			"id": "secretariat_1",
+			"kind": "secretariat",
+			"outdoor": false,
+			"rects": [
+				[
+					-14.4,
+					-27.9,
+					-7.6,
+					-19.1
+				]
+			]
 		}
 	],
 	"rooms": [
@@ -8779,6 +8805,16 @@
 				-17.4,
 				-7.6,
 				-15.0
+			],
+			"facing": "west"
+		},
+		{
+			"kind": "desk",
+			"rect": [
+				-19.1,
+				-24.3,
+				-18.4,
+				-22.7
 			],
 			"facing": "west"
 		},

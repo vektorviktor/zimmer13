@@ -516,6 +516,7 @@ const TILED_CHANGING_ROOMS := ["umkleide_west", "umkleide_ost", "dusche_west", "
 const ALWAYS_LIT := ["umkleiden"]
 ## Flächenarten ohne Namen im Plan → Name (Schalter, Zonen)
 const KIND_NAMES := {"cat_room": "Katzenraum", "library": "Bibliothek", "bath": "Bad", "balcony": "Balkon",
+	"office": "Büro der Direktion", "secretariat": "Sekretariat",
 	"terrace": "Terrasse", "toilet": "Toilette", "storage": "Lager", "cellar": "Keller", "boiler_room": "Heizkeller",
 	"plant_room": "Technikraum", "laundry_room": "Wäscherei", "cellar_room": "Kellerraum", "trash_room": "Müllraum",
 	"gravel": "Kiesweg", "bowling_lane": "Bowlingbahn", "foul_line": "Bowlingbahn"}
@@ -1665,7 +1666,7 @@ func _wall_material(kind: String) -> Material:
 			_hall_wallpapers[below] = m
 		return _hall_wallpapers[below]
 	match kind:
-		"room", "sealed", "library":
+		"room", "sealed", "library", "office", "secretariat":
 			return _room_wallpaper
 		"lobby", "cat_room":
 			return _lobby_wallpaper   # rote Rauten
@@ -2113,7 +2114,7 @@ func _floor_material(kind: String) -> Material:
 	if _level < 0:
 		return _cellar_floor
 	match kind:
-		"room", "bar", "party", "cat_room", "library":
+		"room", "bar", "party", "cat_room", "library", "office", "secretariat":
 			return _wood_floor
 		"garden":
 			return _grass
@@ -2443,6 +2444,13 @@ func _furniture() -> void:
 			"locker_bank":   # erst nach allen Möbeln: die Nummern laufen über alle Blöcke (_locker_banks)
 				lockers.append({"rect": rect, "front": front})
 				continue
+			"desk":   # Büro der Direktion (ZIM-150): feste Größe, mittig, mit dem Rücken an die Hinterkante des Rechtecks
+				var back := c - front * _depth_of(rect, front) / 2.0
+				var mid := back + front * Desk.SIZE.z / 2.0
+				pos = Vector3(mid.x, 0, mid.y)
+				rect = _local_rect(back, front, Rect2(-Desk.SIZE.x / 2.0, 0, Desk.SIZE.x, Desk.SIZE.z))   # Platte
+				node = Desk.new()
+				top = Desk.SIZE.y
 			"changing_bench":   # Länge entlang der langen Seite des Rechtecks, ohne Vorderseite
 				yaw = 0.0 if rect.size.x >= rect.size.y else PI / 2.0
 				node = ChangingBench.make(maxf(rect.size.x, rect.size.y))
@@ -3174,7 +3182,7 @@ func _lamp_style(area: String, id: String, side: String) -> Dictionary:
 			return {"y": 2.1, "energy": WALL_LAMP_ENERGY, "range": 5.0}
 		"stairs":   # an der Podestseite eine halbe Etage höher (_lights)
 			return {"y": 1.9, "energy": WALL_LAMP_ENERGY, "range": 6.0}
-		"cat_room", "library":
+		"cat_room", "library", "office", "secretariat":
 			return {"y": 2.2, "energy": ROOM_LAMP_ENERGY, "range": 7.0}
 		"bath":
 			return {"y": 2.0, "energy": ROOM_LAMP_ENERGY, "range": 4.5}
@@ -5065,11 +5073,11 @@ func _zones() -> void:
 	]
 
 
-## Zonen eines oberen Stockwerks (Plan geladen): Katzenraum, Bibliothek und die Flure.
+## Zonen eines oberen Stockwerks (Plan geladen): Katzenraum, Bibliothek, Büro der Direktion, Sekretariat und die Flure.
 func _upper_zones() -> void:
 	for r in _map["regions"]:
 		var kind := String(r["kind"])
-		if kind in ["cat_room", "library"]:
+		if kind in ["cat_room", "library", "office", "secretariat"]:
 			var b := _bounds(r["rects"])
 			zones.append({"name": KIND_NAMES[kind], "center": Vector3(b.get_center().x, _base_y, b.get_center().y),
 				"radius": minf(b.size.x, b.size.y) / 2.0 + 0.5})

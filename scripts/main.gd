@@ -127,6 +127,8 @@ extends Node3D
 ##                               ein Blitz, der dich sicher um 90° dreht (Spuk, --shot-on=attic_turn) · urteil: in die Kammer,
 ##                               nach 3 s ein Urteil über Zimmer 13, Notausgang 5 s nach dem Aufbruch der Tür – die
 ##                               Dachboden-Szene (4.33, 3a: Kniestocktür, Schritte, Staub, es stößt eine Kammertür auf)
+##   --buero                     ins Büro der Direktion (OG, ZIM-150) vor den Schreibtisch – steht keiner im Plan, kommt
+##                               einer zum Ansehen in die Mitte des Büros
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -1050,6 +1052,18 @@ func run_debug(arg: String) -> bool:
 		var front := door.global_transform.basis.z   # Aufgehseite: Bänder und Kastenschloss
 		TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + front * 2.2, -front)
 		Game.player.head.rotation.x = deg_to_rad(-12.0)   # die Tür ist niedrig
+	elif _is_arg(arg, "--buero"):
+		var office := Game.social.builder.zones.filter(func(z: Dictionary) -> bool: return z["name"] == "Büro der Direktion")
+		if office.is_empty():
+			return false
+		var desks := get_tree().get_nodes_in_group("desks")
+		var desk: Desk = desks[0] if not desks.is_empty() else null
+		if desk == null:
+			desk = Desk.new()
+			add_child(desk)
+			desk.global_position = office[0]["center"]
+		TeleportUI.place_player(desk.global_position + desk.global_basis.z * 1.8, -desk.global_basis.z)
+		Game.player.head.rotation.x = deg_to_rad(-20.0)
 	elif _is_arg(arg, "--dachboden"):
 		var builder := Game.social.builder
 		var where := _arg_value(arg, "--dachboden")

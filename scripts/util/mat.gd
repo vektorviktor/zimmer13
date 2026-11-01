@@ -567,3 +567,33 @@ static func frosted_glass() -> StandardMaterial3D:
 		_frosted.emission_enabled = true
 		_frosted.emission = Color(0.05, 0.05, 0.045)
 	return _frosted
+
+
+## Modell mit glTF-PBR-Set als Dateien neben der GLB (base + „_albedo.png“, „_normal.png“ OpenGL, „_orm.png“: Grün
+## Rauheit, Blau Metall), jede Karte in voller Größe mit Mipmaps. metallic dämpft das Metall der Karte – voll
+## metallisch spiegelt Messing fast nur die dunkle Umgebung (wie beim Mülleimer). Erstes Modell: Desk (ZIM-150).
+static func pbr_model(base: String, metallic: float = 1.0) -> StandardMaterial3D:
+	var key := "pbr|%s|%.2f" % [base, metallic]
+	if not _cache.has(key):
+		var m := StandardMaterial3D.new()
+		m.diffuse_mode = BaseMaterial3D.DIFFUSE_LAMBERT
+		m.albedo_texture = _mipmapped(base + "_albedo.png", false)
+		m.normal_enabled = true
+		m.normal_texture = _mipmapped(base + "_normal.png", true)
+		var orm := _mipmapped(base + "_orm.png", false)
+		m.roughness = 1.0
+		m.roughness_texture = orm
+		m.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_GREEN
+		m.metallic = metallic
+		m.metallic_texture = orm
+		m.metallic_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_BLUE
+		_cache[key] = m
+	return _cache[key]
+
+
+## Textur mit Mipmaps (normal: gemittelte Normalen wieder auf Länge 1)
+static func _mipmapped(path: String, normal: bool) -> ImageTexture:
+	var img := (load(path) as Texture2D).get_image()
+	img.decompress()
+	img.generate_mipmaps(normal)
+	return ImageTexture.create_from_image(img)

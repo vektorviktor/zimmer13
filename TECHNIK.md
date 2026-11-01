@@ -74,6 +74,7 @@ Gemeinsame Regeln:
 | `planter.glb` | Pflanzkübel, `_planter` | `build_planter.py`, Meshy | Kollision bis Beckenkante `PLANTER_H`; Blätter `two_sided` |
 | `tree_1…3.glb` | Gartenbäume, `_tree` | `build_trees.py`, „Realistic Trees Collection“ (Jungle Jim, CC-BY) | Zeile für `TREE_MODELS`; Blätter `cutout` (`psx_leaves`); Kollision nur Stamm bis `TREE_TRUNK_H` – unter der Krone kann man durch; der Plan zeigt nur den Standort |
 | `bench.glb` | Parkbänke draußen, `_bench` | `build_bench.py`, Sketchfab (Decoratopia, CC-BY) | Kollision aus `BENCH_SEAT` und Lehne; drinnen bleibt der Holzkasten |
+| `desk.glb` | Schreibtisch im Büro der Direktion, `Desk` | `build_desk.py`, Sketchfab (Matthew Collings, CC-BY) | volles PBR-Set (`desk_albedo/normal/orm.png`, `Mat.pbr_model`, Metall der Griffe gedämpft); Schubladen unter der Platte eigene Teile `drawer_l/m/r`; Kollision zwei Seitenschränke und Platte |
 | `room_table.glb` | Tischgruppen in Zimmern, `_room_table` | `build_room_table.py`, Sketchfab (MaX3Dd, CC-BY) | immer zwei Stühle gegenüber; Plan-Stühle im Umkreis `ROOM_CHAIR_REACH` fallen weg |
 | `washbasin`, `shower`, `toilet`, `bar_counter`, `back_bar`, `bar_stool` | Bad und Bar | `build_fixtures.py`, Rohmodelle des Nutzers | Flächen nach Namen (`_fixture_materials`); siehe unten „Bad und Bar“ |
 | `flashlight.glb` | `Flashlight` | `build_flashlight.py`, Sketchfab (Onur, CC-BY) | Glas `lens` bekommt das Lampenmaterial; Kegel an `Flashlight.LENS` |
@@ -522,7 +523,8 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
 
 ### Wände, Böden, Stöße
 - **Wände:** Eine Planwand wird dort geteilt, wo sich die Räume an einer Seite ändern (abgetastet, kurze Läufe
-  geglättet). Tapete je Seite über `Mat.wallpaper_split` (Zimmer beige, Lobby und Katzenraum rot, sonst teal); Seiten
+  geglättet). Tapete je Seite über `Mat.wallpaper_split` (Zimmer, Bibliothek, Büro der Direktion und Sekretariat –
+  `office`/`secretariat`, ZIM-150 – beige, Lobby und Katzenraum rot, sonst teal); Seiten
   ohne Tapete (draußen = Fassade, Bad/Toilette/Pool und Pool-Umkleiden = Fliesen, Lager = Beton) tragen ihr Material
   (`_skin_material`) **auf der Wandfläche selbst** (31.10., ZIM-145; vorher eine 2 cm starke Haut 2,2 cm davor – das
   Fliesenraster ging in den Ecken nicht auf, Schalter steckten dahinter): `Geo.wall_mesh` mit `sides` liefert dann je

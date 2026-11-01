@@ -806,8 +806,9 @@ größer, mitten in seinem Revier.
   Marion ist bis Halloween geschützt (6.17). Der Brief ist gestrichen (2026-10-27).
 
 **Zu klären**
-- **Wo liegt das Büro der Direktion** (Personaltrakt hinter der Rezeption?), und gibt es einen zweiten Weg hinein, falls
-  der Kürbismann nicht erlöst wird?
+- ~~Wo liegt das Büro der Direktion~~ *(Lage 2026-11-01: im Obergeschoss, im Plan gemalt, nur durchs Sekretariat zu
+  erreichen – als Innenraum gebaut, ZIM-150)*. Offen: Gibt es einen zweiten Weg hinein, falls der Kürbismann nicht
+  erlöst wird, und wie ist es verschlossen (ZIM-6)?
 - **Wie das Lager aufgeht** (7.4 offen) – auch mit dem Schlüsselbund?
 - **Lakengeist:** Bleibt er nach der Erlösung, oder werden die Verschwundenen mit frei?
 
@@ -1044,7 +1045,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - „seit 1988 ist es der Heizer“ → seit 1990 (2.7); Fundsachen-Koffer bis 2023 statt 2019 (7.4).
 
 **Zu klären**
-- Lage des Sekretariats im Plan (neben dem Büro der Direktion, ZIM-6).
+- ~~Lage des Sekretariats im Plan~~ *(2026-11-01: im OG vor dem Büro der Direktion, gemalt und gebaut, ZIM-150)*.
 - Welche Zeile im Notizbuch bleibt in Ende 1a?
 - Bildfolgen im Einzelnen: wie viele Bilder je Szene, Texte, Tönung.
 
