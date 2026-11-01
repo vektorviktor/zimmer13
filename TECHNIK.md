@@ -1898,7 +1898,7 @@ Spielkonzept 2.5)
   `GuestBody`. Netze auf Sichtebene 19 (fehlt in der Kamera), je eine `duplicate()` mit `SHADOWS_ONLY` auf Ebene 18 –
   **Godot rechnet Schatten nur für Netze, die die Kamera sieht**. Lichter des gehaltenen Gegenstands lassen Ebene 18
   aus (sonst stünde der Kopf vor der Taschenlampe). `Player.set_look`: Kapsel, Augenhöhe und Hocken = Standard ×
-  Größe / 1,8 (`HEIGHT` usw. bleiben die Werte für 1,80 m).
+  Größe / 1,8 (`HEIGHT` usw. bleiben die Werte für 1,80 m; `EYE_HEIGHT` 1,62 = 90 % der Größe, Spielkonzept 3.1).
 - **Spiegel** (`world/mirror.gd`, `shaders/mirror_view.gdshader`): `Mirror.make(eltern, größe, mitte, normale,
   reichweite)` – matt (`DULL`), solange nicht zu sehen (`_visible_to`). SubViewport und Kamera entstehen beim ersten
   Hinsehen: Spiegelpunkt der Spielerkamera, schiefes Frustum genau durch die Fläche (`set_frustum`), eigene Umgebung

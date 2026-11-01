@@ -15,8 +15,9 @@ const HEIGHT := 1.8
 const EAT_CALM := 0.2
 const RADIUS := 0.225
 const CROUCH_HEIGHT := 1.15
-const EYE_HEIGHT := 1.68
-const CROUCH_EYE_HEIGHT := 1.02
+## Augenhöhe 90 % der Größe statt der echten 93 % – am Bildschirm wirkt die echte zu groß (Spielkonzept 3.1)
+const EYE_HEIGHT := 1.62
+const CROUCH_EYE_HEIGHT := 0.98
 const WALK_SPEED := 2.6
 const RUN_SPEED := 4.8
 const CROUCH_SPEED := 1.3

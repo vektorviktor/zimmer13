@@ -1139,7 +1139,9 @@ Erkunden ──► Gäste treffen / reden / handeln ──► Deko erhalten (ode
 | **Mit Gästen spielen** | An einem Spieltisch (Schachbrett, Kartentisch …) eine Partie starten, evtl. um einen Einsatz (siehe 6.10) |
 | **Hinsetzen** | Auf Sofas, Bänke, Stühle, Bettkanten und Toiletten (siehe unten) |
 
-**Spieler-Hitbox:** Kapsel, **1,80 m hoch, 45 cm breit** (Radius 0,225 m). Kamera auf Augenhöhe ca. 1,65–1,70 m.
+**Spieler-Hitbox:** Kapsel, **1,80 m hoch, 45 cm breit** (Radius 0,225 m). Kamera auf **90 % der Größe** (1,62 m bei 1,80 m, hockend 0,98 m) statt der
+echten 93 % – am Bildschirm, ohne Körpergefühl und ohne Blick auf die eigenen Füße, wirkte die echte Augenhöhe gut
+10 cm zu groß (Entscheidung 01.11.2026, vorläufig – im Spiel nachprüfen).
 
 **Ausdauer (entschieden und umgesetzt 2026-10-19):** Rennen verbraucht Ausdauer – etwa **15** Sekunden am Stück
 (Abzüge wie der Kater gelten anteilig), dann ist man **außer Atem**. Es gibt **keine Anzeige**: Man merkt es nur am Körper. Geht die Ausdauer zur Neige, hört man schon
