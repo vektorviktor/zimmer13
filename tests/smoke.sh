@@ -247,6 +247,7 @@ done <<'LIST'
 400|spinde|--spinde=offen --trace
 400|spinde,speichern|--spinde=offen --savetest
 400|duschen|--duschen=an --trace
+400|automaten|--automaten=seite --trace
 600|halloween,spuk|--spiegel --trace
 600|halloween,spuk,speichern|--spiegel=tuch --savetest
 900|halloween,spuk,licht|--strom --trace

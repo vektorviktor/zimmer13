@@ -1,26 +1,39 @@
 class_name ArcadeMachine
 extends StaticBody3D
 ## Videospielautomat in der Bar (Spielkonzept 6.10, Entscheidung 28.10.): ein aufrechtes Spielgerät mit Leuchtschild,
-## schrägem Bildschirm, Joystick und zwei Knöpfen. Zwei Spiele, beide eigene Entwürfe statt Tetris und Pac-Man:
+## gewölbter Bildröhre, Joystick und zwei Knöpfen. Zwei Spiele, beide eigene Entwürfe statt Tetris und Pac-Man:
 ## - „deadra“: Fünferformen aus Gespenstern, Kürbissen und Totenschädeln fallen in ein Feld 12 × 18.
 ## - „ghost_hotel“: ein Männchen sammelt Kürbisse in Hotelfluren, Lakengespenster jagen es; mit einer Laterne
 ##   blinken sie rot und fliehen.
 ## Bisher läuft nur die Vorführung (Attract-Modus) auf dem Bildschirm – spielbar sind sie noch nicht (Geld,
 ## Bestenliste und Lautstärke sind offen). Der Bildschirm ist ein kleines Pixelbild (SCREEN_PX), das nur neu gemalt
 ## wird, wenn der Spieler in der Nähe ist. Kein gespeicherter Zustand. Ursprung am Boden, lokale +Z = Front.
+## Modell: assets/models/arcade_machine.glb (tools/build_arcade.py, Sketchfab „Arcade Machine“ von Tomas_Tew, CC-BY);
+## Gehäusebilder je Spiel aus tools/arcade_art.py (Farbe je Spiel, Normal Map und Rauheit gemeinsam).
 
-const SIZE := Vector3(0.7, 1.82, 0.8)
+const SIZE := Vector3(0.73, 1.82, 0.93)     ## Rumpf des Modells (tools/build_arcade.py)
+const MODEL := "res://assets/models/arcade_machine.glb"
+const TEX := "res://assets/textures/arcade_%s.png"          ## Farbe je Spiel, %s = game
+const STICK_TEX := "res://assets/textures/arcade_%s_stick.png"
+const NORMAL := "res://assets/textures/arcade_normal.png"
+const ROUGH := "res://assets/textures/arcade_rough.png"       ## Rot = Leuchtmaske des Schilds, Grün = Rauheit
 const SCREEN_PX := Vector2i(120, 160)      ## Hochformat wie bei alten Automaten
-const SCREEN_SIZE := Vector2(0.39, 0.52)
-const SCREEN_AT := Vector3(0.0, 1.3, 0.07)     ## Mitte, z vor der Front des Rumpfs
-const SCREEN_TILT := -0.18                 ## nach hinten gekippt
+## Mittellinie der Bildröhre (unten, oben) aus tools/build_arcade.py – dort sitzt „Münze einwerfen“
+const SCREEN_BOTTOM := Vector3(0.0, 1.058, -0.003)
+const SCREEN_TOP := Vector3(0.0, 1.465, -0.094)
+## Lage des Pixelbilds in den UVs der Röhre (links, unten, rechts, oben): volle Höhe, Seitenverhältnis 3 : 4 –
+## die Röhre ist zu den Seiten stark gewölbt, in der Mitte sind 0,1 u etwa 8,6 cm breit
+const PICTURE_RECT := Vector4(0.32, 0.222, 0.68, 0.799)
+const MARQUEE_GLOW := 1.4                  ## so hell leuchtet das Schild in seinen eigenen Farben
 const TICK := 0.18                         ## Sekunden je Bild der Vorführung
 const AWAKE_RANGE := 14.0                  ## weiter weg steht das Bild still
-## Je Spiel: Titel auf dem Leuchtschild, Farbe des Gehäuses, Farbe des Schilds und des Scheins
+## Je Spiel: Farbe des Scheins vor dem Bildschirm und der beiden Knöpfe (Gehäuse und Schild stecken in der Textur)
 const LOOKS := {
-	"deadra": {"title": "DEADRA", "body": Color(0.13, 0.05, 0.16), "glow": Color(0.75, 0.95, 0.55)},
-	"ghost_hotel": {"title": "GHOST HOTEL", "body": Color(0.05, 0.07, 0.2), "glow": Color(1.0, 0.6, 0.2)},
+	"deadra": {"glow": Color(0.75, 0.95, 0.55), "buttons": [Color(0.45, 0.95, 0.25), Color(0.55, 0.15, 0.7)]},
+	"ghost_hotel": {"glow": Color(1.0, 0.6, 0.2), "buttons": [Color(1.0, 0.5, 0.1), Color(0.92, 0.93, 0.97)]},
 }
+
+static var _textures := {}
 
 ## Deadra: Feld, Kästchengröße in Pixeln, die zwölf Fünferformen (Spielkonzept 6.10)
 const FIELD := Vector2i(12, 18)
@@ -107,53 +120,51 @@ func setup(which: String) -> ArcadeMachine:
 func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 0
+	add_to_group("arcades")
 	_rng.seed = hash(game)
 	var look: Dictionary = LOOKS[game]
-	var body := Mat.psx(look["body"])
-	var black := Mat.psx(Color(0.03, 0.03, 0.035))
-	var panel := Mat.psx(Color(0.08, 0.08, 0.09))
-	var back_depth := 0.55
-	var back_z := -SIZE.z / 2.0 + back_depth / 2.0
-	Geo.box_part(self, Vector3(SIZE.x, SIZE.y, back_depth), Vector3(0, SIZE.y / 2.0, back_z), body)   # Rumpf
-	var front_depth := SIZE.z - back_depth
-	Geo.box_part(self, Vector3(SIZE.x, 0.88, front_depth), Vector3(0, 0.44, SIZE.z / 2.0 - front_depth / 2.0), body)   # Unterbau
-	var face_z := back_z + back_depth / 2.0
-	# Bedienfeld: schräg nach vorn, Joystick links, zwei Knöpfe rechts
-	var desk := Node3D.new()
-	desk.position = Vector3(0, 0.92, face_z + 0.12)
-	desk.rotation.x = 0.22
-	add_child(desk)
-	Geo.mesh(desk, Geo.box(Vector3(SIZE.x + 0.02, 0.05, 0.3)), panel, Vector3.ZERO)
-	var stick := Geo.mesh(desk, Geo.cylinder(0.008, 0.09, 6), Mat.metal(), Vector3(-0.15, 0.07, 0.02))
-	Geo.mesh(stick, Geo.sphere(0.022, 0.044, 8, 4), Mat.psx(Color(0.75, 0.08, 0.06)), Vector3(0, 0.05, 0))
+	# Kollision: hinten der hohe Rumpf, vorn der Unterbau bis unter das Bedienfeld
+	Geo.add_box_shape(self, Vector3(SIZE.x, SIZE.y, 0.566), Vector3(0, SIZE.y / 2.0, -0.183))
+	Geo.add_box_shape(self, Vector3(SIZE.x, 0.96, 0.366), Vector3(0, 0.48, 0.283))
+	var model := (load(MODEL) as PackedScene).instantiate()
+	add_child(model)
+	var cabinet := ShaderMaterial.new()
+	cabinet.shader = load("res://shaders/psx_model.gdshader")
+	cabinet.set_shader_parameter("albedo_tex", _tex(TEX % game))
+	cabinet.set_shader_parameter("normal_tex", _tex(NORMAL, true))
+	cabinet.set_shader_parameter("use_normal", true)
+	cabinet.set_shader_parameter("roughness_tex", _tex(ROUGH))
+	cabinet.set_shader_parameter("glow_tex", _tex(ROUGH))
+	cabinet.set_shader_parameter("emission", Color.WHITE)
+	cabinet.set_shader_parameter("emission_energy", MARQUEE_GLOW)
+	cabinet.set_shader_parameter("glow_albedo", true)
+	(model.find_child("cabinet") as MeshInstance3D).material_override = cabinet
+	var ball := StandardMaterial3D.new()
+	ball.albedo_texture = _tex(STICK_TEX % game)
+	ball.roughness = 0.25
+	var ring := StandardMaterial3D.new()
+	ring.albedo_color = Color(0.05, 0.05, 0.055)
+	ring.roughness = 0.6
+	var stick := model.find_child("stick") as MeshInstance3D
+	stick.set_surface_override_material(0, ball)
+	stick.set_surface_override_material(1, ring)
 	for i in 2:
-		Geo.mesh(desk, Geo.cylinder(0.02, 0.02, 10), Mat.psx(Color(0.9, 0.8, 0.2) if i == 0 else Color(0.2, 0.5, 0.9)),
-			Vector3(0.08 + i * 0.08, 0.03, 0.02))
-	# Münztür am Unterbau
-	var coin_z := SIZE.z / 2.0 + 0.004
-	Geo.mesh(self, Geo.box(Vector3(0.26, 0.3, 0.008)), black, Vector3(0, 0.5, coin_z))
-	for i in 2:
-		Geo.mesh(self, Geo.box(Vector3(0.025, 0.05, 0.01)), Mat.psx(Color(0.2, 0.08, 0.02), "", 1.0, Color(1.0, 0.45, 0.1), 1.2),
-			Vector3(-0.05 + i * 0.1, 0.56, coin_z + 0.004))
-	# Bildschirm in schwarzem Rahmen, nach hinten gekippt
-	var screen := Node3D.new()
-	screen.position = SCREEN_AT + Vector3(0, 0, face_z)
-	screen.rotation.x = SCREEN_TILT
-	add_child(screen)
-	Geo.mesh(screen, Geo.box(Vector3(SIZE.x - 0.06, SCREEN_SIZE.y + 0.08, 0.02)), black, Vector3(0, 0, -0.012))
+		var button := StandardMaterial3D.new()
+		button.albedo_color = look["buttons"][i]
+		button.roughness = 0.3
+		(model.find_child("button_" + "ab"[i]) as MeshInstance3D).material_override = button
+	# Bildröhre: das Pixelbild über shaders/arcade_screen.gdshader
 	_image = Image.create(SCREEN_PX.x, SCREEN_PX.y, false, Image.FORMAT_RGBA8)
 	_texture = ImageTexture.create_from_image(_image)
-	var glass := StandardMaterial3D.new()
-	glass.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	glass.albedo_texture = _texture
-	glass.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	var quad := QuadMesh.new()
-	quad.size = SCREEN_SIZE
-	var shown := MeshInstance3D.new()
-	shown.mesh = quad
-	shown.material_override = glass
-	shown.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	screen.add_child(shown)
+	var glass := ShaderMaterial.new()
+	glass.shader = load("res://shaders/arcade_screen.gdshader")
+	glass.set_shader_parameter("picture", _texture)
+	glass.set_shader_parameter("picture_rect", PICTURE_RECT)
+	glass.set_shader_parameter("picture_px", Vector2(SCREEN_PX))
+	var tube := model.find_child("screen") as MeshInstance3D
+	tube.material_override = glass
+	tube.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var up := (SCREEN_TOP - SCREEN_BOTTOM).normalized()
 	_coin_label = Label3D.new()
 	_coin_label.text = "MÜNZE EINWERFEN"
 	_coin_label.font_size = 32
@@ -161,26 +172,15 @@ func _ready() -> void:
 	_coin_label.outline_size = 8
 	_coin_label.outline_modulate = Color(0, 0, 0)
 	_coin_label.modulate = Color(1.0, 0.95, 0.6)
-	_coin_label.position = Vector3(0, -SCREEN_SIZE.y / 2.0 + 0.03, 0.01)
-	screen.add_child(_coin_label)
-	# Leuchtschild oben
-	var sign_z := face_z + 0.02
-	Geo.mesh(self, Geo.box(Vector3(SIZE.x, 0.2, 0.04)), Mat.psx(Color(0.1, 0.1, 0.1), "", 1.0, look["glow"], 0.35),
-		Vector3(0, SIZE.y - 0.11, sign_z))
-	var title := Label3D.new()
-	title.text = look["title"]
-	title.font_size = 48
-	title.pixel_size = 0.0021 if game == "deadra" else 0.0016
-	title.modulate = (look["glow"] as Color).lightened(0.3)
-	title.outline_size = 10
-	title.outline_modulate = Color(0.02, 0.02, 0.02)
-	title.position = Vector3(0, SIZE.y - 0.11, sign_z + 0.022)
-	add_child(title)
+	_coin_label.position = SCREEN_BOTTOM + up * 0.045 + Vector3(0, -up.z, up.y) * 0.004
+	_coin_label.rotation.x = atan2(up.z, up.y)
+	add_child(_coin_label)
 	var light := OmniLight3D.new()
 	light.light_color = look["glow"]
 	light.light_energy = 0.25
+	light.light_specular = 0.0                 # Schein der Röhre – kein Glanzpunkt auf ihrem eigenen Glas
 	light.omni_range = 2.0
-	light.position = Vector3(0, 1.3, face_z + 0.45)
+	light.position = Vector3(0, 1.3, 0.45)
 	light.add_to_group("light_source")
 	add_child(light)
 	if game == "deadra":
@@ -188,6 +188,34 @@ func _ready() -> void:
 	else:
 		_hotel_start()
 	_draw()
+
+
+## Debug --automaten: vor die Automaten der Bar, Blick auf beide (bzw. alle) zugleich; side: schräg von der
+## Seite (Seitenbilder).
+static func debug_show(tree: SceneTree, side := false) -> void:
+	var all := tree.get_nodes_in_group("arcades")
+	if all.is_empty():
+		push_warning("--automaten: kein Videoautomat im Plan")
+		return
+	var mid := Vector3.ZERO
+	for a: ArcadeMachine in all:
+		mid += a.global_position
+	mid /= all.size()
+	var out := (all[0] as ArcadeMachine).global_basis.z
+	var at := mid + out * 1.9
+	if side:
+		at = mid + out * 1.3 + (all[0] as ArcadeMachine).global_basis.x * 1.8
+	TeleportUI.place_player(at, Vector3(mid.x - at.x, 0, mid.z - at.z).normalized())
+
+
+## Textur mit Mipmaps (normal: gemittelte Normalen wieder auf Länge 1), einmal geladen für alle Automaten
+static func _tex(path: String, normal := false) -> ImageTexture:
+	if not _textures.has(path):
+		var img := (load(path) as Texture2D).get_image()
+		img.decompress()
+		img.generate_mipmaps(normal)
+		_textures[path] = ImageTexture.create_from_image(img)
+	return _textures[path]
 
 
 func _process(delta: float) -> void:

@@ -15,6 +15,8 @@ uniform float specular = 0.5;
 uniform sampler2D glow_tex : source_color, filter_linear_mipmap, hint_default_black;
 uniform vec3 emission : source_color = vec3(0.0);
 uniform float emission_energy = 0.0;
+// Leuchten in der Farbe der Textur statt einfarbig (hinterleuchtetes Schild der Spielautomaten)
+uniform bool glow_albedo = false;
 
 void vertex() {
 	vec4 clip = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
@@ -28,5 +30,5 @@ void fragment() {
 	}
 	ROUGHNESS = texture(roughness_tex, UV).g;
 	SPECULAR = specular;
-	EMISSION = emission * emission_energy * texture(glow_tex, UV).r;
+	EMISSION = emission * emission_energy * texture(glow_tex, UV).r * (glow_albedo ? ALBEDO : vec3(1.0));
 }

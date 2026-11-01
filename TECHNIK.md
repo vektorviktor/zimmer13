@@ -91,6 +91,7 @@ Gemeinsame Regeln:
 | `doll.glb` | `JuryDoll` | `doll_weights.py`, dann `build_doll.py` | siehe unten „Puppe“ |
 | `pumpkin_man.glb` | `PumpkinMan` | `build_pumpkin.py`, Meshy (Figur + Axt) | siehe unten „Kürbismann“ |
 | `pumpkins.glb` | `PumpkinModel` | `build_pumpkins.py`, Meshy-Kürbisgruppe, Textur prozedural gebacken | `psx_model.gdshader`; `PumpkinModel.material` je Kürbis ein eigenes Material, reife Früchte an der Pflanze teilen `shared_material()` |
+| `arcade_machine.glb` + `textures/arcade_*.png` | `ArcadeMachine` (Videoautomaten der Bar) | `build_arcade.py`, Sketchfab (Tomas_Tew, CC-BY), Bilder `arcade_art.py` | nur das Netz – die Pac-Man-Bilder des Originals kommen nicht ins Repo; `cabinet` (Rumpf), `screen` (Röhre, UVs wie im Original), `stick` (Flächen `stick_ball`/`stick_ring`), `button_a/b`. `arcade_art.py` gibt jeder Rumpffläche eine Rolle (Seite, Kante, Schild, Rahmen, Bedienfeld, Lack) und malt die Motive in Metern, je Pixel baryzentrisch auf den Ort am Modell abgebildet: Farbe je Spiel (`arcade_deadra.png`, `arcade_ghost_hotel.png`, 2048²), Normal Map und Rauheit gemeinsam (`arcade_normal.png`, `arcade_rough.png`, Rot = Leuchtmaske des Schilds → `psx_model` mit `glow_albedo`), Joystick umgefärbt (`arcade_<spiel>_stick.png`, Textur aus dem FBX-Paket, dort gegenüber dem glTF gespiegelt). Mipmaps erzeugt `ArcadeMachine._tex`; Maße (`SIZE`, `SCREEN_BOTTOM/TOP`) = Ausgabe des Bauskripts |
 | `masks.glb` | `MaskModel` (Item `MASK`, `MaskHook`) | `build_masks.py`, Meshy (je Maske ein Bild-zu-3D-Modell) | Netz „mask_<id>“, Ursprung mittig hinten, Gesicht +Z, echte Größe (`HEIGHT` im Skript → `MaskModel.SIZES`); alles, was ganz hinter dem Gesicht liegt, fällt weg (Meshys Rückschale beim Kürbismann); Farbe, Normal Map und Rauheit 1024², `psx_model.gdshader` |
 | `monster.glb` | `Monster` | `build_monster.py`, Meshy | siehe 5, „Aussehen & Animation“ |
 | `pool_handrail.glb` | `HANDRAIL_MODEL` | `build_handrail.py` | Tiefe und Lauf der Treppe sind eingebacken und müssen zu `_pool` passen |
@@ -2194,8 +2195,9 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   ohne Vorderseite: `_back_to_wall` stellt ihn mit dem Rücken an die nächste Wand), sonst `CABINET_FALLBACK`; der
   Jackpot-Automat steht an `SLOT_FALLBACK` (Ecke oben rechts in der Bar). **Videoautomaten** `ArcadeMachine` (Möbel
   „Videoautomat“, der Reihe nach `ARCADE_GAMES`: Deadra, Ghost Hotel – eigene Entwürfe statt Tetris und Pac-Man):
-  Gehäuse aus Grundkörpern, Leuchtschild als `Label3D`, Bildschirm = kleines `Image` (`SCREEN_PX`) auf einem
-  unbeleuchteten Quad, alle `TICK` s neu gemalt, nur in `AWAKE_RANGE` um den Spieler. Bisher nur die Vorführung
+  Gehäuse = `arcade_machine.glb` (Tabelle in 1), Bildschirm = kleines `Image` (`SCREEN_PX`) auf der gewölbten
+  Röhre des Modells (`shaders/arcade_screen.gdshader`: Bild in `PICTURE_RECT` der UVs, Zeilen, außen schwarzes Glas),
+  alle `TICK` s neu gemalt, nur in `AWAKE_RANGE` um den Spieler. Debug `--automaten[=seite]`. Bisher nur die Vorführung
   (Fünferformen fallen ins Feld 12 × 18; das Männchen läuft die äußere Flurrunde, Gespenster hinterher, rot nach
   einer Laterne); spielbar noch nicht. **Bowlingbahn:** Flächen „Bowlingbahn“/„Foullinie“ im Grundriss
   (`bowling_lane`/`foul_line`, die Linie darf schmal sein – `THIN_FILLS` in `build_map.py`), Boden `_lane_floor`

@@ -34,6 +34,8 @@ extends Node3D
 ##   --spinde[=offen]            vor den ersten Spindblock der Pool-Umkleiden (ZIM-145) – offen: alle Spinde, die
 ##                               aufgehen, sind offen (auch die mit Schlüssel)
 ##   --duschen[=an]              vor den ersten Duschplatz am Pool (Drücker, Ablage, Duschkopf; ZIM-144) – an: Wasser läuft
+##   --automaten[=seite]         vor die beiden Videoautomaten der Bar (Deadra, Ghost Hotel; 6.10) – seite: schräg
+##                               von der Seite (Seitenbilder)
 ##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
 ##                               über drei Tage) und ein paar Einträge im Tagebuch zum Nachlesen (3.10)
 ##   --gesehen                   Notizbuch einstecken, alle drei Bedrohungen gelten als gesehen (Lesezeichen „Gesehen“, 3.10) –
@@ -1673,6 +1675,9 @@ func run_debug(arg: String) -> bool:
 	elif _is_arg(arg, "--duschen"):
 		var water := _arg_value(arg, "--duschen") == "an"
 		get_tree().create_timer(0.5).timeout.connect(PoolShower.debug_show.bind(get_tree(), water))
+	elif _is_arg(arg, "--automaten"):
+		var side := _arg_value(arg, "--automaten") == "seite"
+		get_tree().create_timer(0.5).timeout.connect(ArcadeMachine.debug_show.bind(get_tree(), side))
 	elif arg == "--brief":
 		Game.contest.debug_letter()
 	elif arg == "--zettel":

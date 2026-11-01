@@ -3897,6 +3897,13 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 > Die beiden Videoautomaten stehen **zusätzlich** zum Jackpot-Automaten (einarmiger Bandit), der in die Ecke oben
 > rechts kommt; die Dartscheibe hängt in der **Nische neben der Bowlingbahn**, damit niemand Pfeile abbekommt.
 > Noch offen: ob eine Runde **Geld** kostet; **Bestenliste** mit Gästen; wie **laut** die Videoautomaten sind.
+>
+> **Gehäuse (2026-11-01):** Beide Videoautomaten sind ein echtes Automatenmodell (Sketchfab, CC-BY) mit gewölbter
+> Bildröhre; die Bilder des Originals (Pac-Man) sind ersetzt. **Deadra:** Aubergine, giftgrüne Kantenleiste, auf den
+> Seiten ein schräger Strom fallender Fünferformen und ein Haufen unten, Titel in Blockschrift. **Ghost Hotel:**
+> Nachtblau, orange Kante, auf den Seiten das Hotel bei Nacht mit Mond, davor das Männchen mit Laterne, drei
+> Lakengespenster hinterher. Schild hinterleuchtet, Rahmen und Bedienfeld mit Figuren der Spiele; Joystick und Knöpfe
+> in den Spielfarben.
 
 | Spiel | Ort / Gegenstand | Besonderheit | Lärm |
 |-------|------------------|--------------|------|
