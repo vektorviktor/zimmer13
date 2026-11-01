@@ -504,8 +504,6 @@ const PIPE_RING := 0.4
 const PIPE_LOW := 0.45
 ## Reifegrade der Kürbispflanzen in Planreihenfolge (von Norden nach Süden, je Beet von Westen nach Osten)
 const PLANT_STAGES := [0, 3, 2, 3, 1, 3]
-const PAINTING_COLORS: Array[Color] = [Color(0.22, 0.14, 0.12), Color(0.16, 0.2, 0.15), Color(0.12, 0.13, 0.2),
-	Color(0.2, 0.18, 0.1), Color(0.18, 0.1, 0.12), Color(0.1, 0.14, 0.18), Color(0.25, 0.1, 0.1)]
 ## Umkleiden und Duschen am Pool sind eine Lichtgruppe (ohne Schalter, ALWAYS_LIT)
 const CHANGING_ROOMS := ["vorraum", "dusche_west", "dusche_ost", "umkleide_west", "umkleide_ost"]
 ## davon wie ein Bad: Fliesen bis BATH_TILE_HEIGHT, darüber gestrichen, Fliesenboden, gestrichene Decke
@@ -2845,7 +2843,7 @@ func _bar_counter(origin: Vector2, front: Vector2) -> StaticBody3D:
 ## Ausstattung (Ebene „Ausstattung“). Wandsachen hängen an der Wandseite aus dem Plan; Telefone, Zettel, Tagebuch
 ## und Vorräte stehen auf dem Möbel darunter. Zettel-Nummern und UV-Texte kommen aus CONTENT.
 func _fittings() -> void:
-	var paintings := 0
+	var paintings := {}   # Gruppe (Painting.GROUPS) → schon gehängt
 	var plants := 0
 	for o in _map["fittings"]:
 		var p := _v2(o["pos"])
@@ -2880,8 +2878,15 @@ func _fittings() -> void:
 				var at := _wall_spot(o, WALL_GAP)
 				var area := _kind_at(at.inside)
 				var y := 2.2 if area == "lobby" else (1.9 if area == "bar" else 1.75)   # im Flur über den Kommoden
-				_painting(at.at(y), at.yaw(), PAINTING_COLORS[paintings % PAINTING_COLORS.size()])
-				paintings += 1
+				var group := Painting.group_for(area)
+				var work := Painting.pick(group, paintings.get(group, 0))
+				paintings[group] = paintings.get(group, 0) + 1
+				if work == "":
+					continue
+				var pic := Painting.new().setup(work, area)
+				pic.position = at.at(y)
+				pic.rotation.y = at.yaw()
+				_parent.add_child(pic)
 			"cobweb":
 				# In einer Ecke (zweite Wand quer dazu nah) hängt die Spinnwebe schräg über Eck
 				var at := _wall_spot(o, 0.02)
@@ -5467,15 +5472,6 @@ func _hide_spot(type: HideSpot.Type, pos: Vector3, yaw: float, bed_size := Vecto
 	spot.rotation.y = yaw
 	_parent.add_child(spot)
 	return spot
-
-
-func _painting(pos: Vector3, yaw: float, color: Color) -> void:
-	var holder := Node3D.new()
-	holder.position = pos
-	holder.rotation.y = yaw
-	_parent.add_child(holder)
-	Geo.mesh(holder, Geo.box(Vector3(0.8, 0.6, 0.04)), _dark_wood, Vector3(0, 0, 0.02))
-	Geo.mesh(holder, Geo.box(Vector3(0.66, 0.46, 0.045)), Mat.psx(color), Vector3(0, 0, 0.025))
 
 
 ## Rezeption aus `RECEPTION_MODEL` über die Rechtecke des Plans (U aus Front und zwei Armen): mittig in ihrer

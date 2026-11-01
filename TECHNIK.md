@@ -178,6 +178,35 @@ Höhe ein Rapport des Musters. Die Rautentapeten (Satin/Velours mit Fugen, 2 × 
 **Dorés „Die Zerstörung des Leviathan“** (`assets/textures/dore_leviathan.jpg`, Spielkonzept 4.32): Holzstich von
 1865, gemeinfrei (Wikimedia Commons, `File:Destruction_of_Leviathan.png`), auf 800 px Breite in Graustufen verkleinert.
 
+**Gemälde** (`Painting`, `scripts/world/painting.gd`, ZIM-151): Planfarbe „Ausstattung: Bild“ → `LevelBuilder._fittings`
+hängt je Bild ein Werk aus `Painting.WORKS`, die Gruppe kommt aus der Flächenart an der Wand (`GROUPS`: lobby, bar
++ party, corridor, study = Bibliothek/Büro/Sekretariat, room; sonst corridor), innerhalb der Gruppe reihum je
+Stockwerk. Höhe der Bildmitte wie bisher (Lobby 2,2 m, Bar 1,9 m, sonst 1,75 m). **Ölbilder**: lange Seite 1,5 m
+(Lobby), 1 m (Bar), sonst 0,75 m; Leinwand als StandardMaterial3D, Bild auf UV, Leinwandstruktur
+(`canvas_normal.png`, Kachel 5 cm) als Detail-Normal-Map auf UV2; Goldrahmen aus drei nach innen abfallenden
+Stufen, Rauheit und Riefen aus `NoiseTexture2D` (mit Mipmaps). **Drucke** (`print`): 0,48 m, Passepartout,
+Holzrahmen (`Mat.hotel_wood`), Glas davor. Bilder mit Mipmaps, ohne VRAM-Kompression (wie `Mat.pbr_model`).
+[E] → `Menus.open_photo`. Werke ohne Datei werden übersprungen. Quellen (Wikimedia Commons, gemeinfrei bzw. CC0),
+aufbereitet mit `tools/build_paintings.gd` (≤ 2048 px, Rahmenkanten der Scans per `CROP` weg):
+
+| Datei (`assets/textures/paintings/`) | Commons |
+|---|---|
+| `boecklin_toteninsel` | `Island of the Dead MET DP-14201-003.jpg` (CC0) |
+| `aivazovsky_neunte_woge` | `Hovhannes Aivazovsky - The Ninth Wave - Google Art Project.jpg` |
+| `maclise_snap_apple` | `Snap-Apple Night globalphilosophy.PNG` (nur 800 px vorhanden) |
+| `hokusai_geistergeschichten` | `One Hundred Ghost Stories in a Haunted House.jpg` |
+| `friedrich_abtei` | `Caspar David Friedrich - Abtei im Eichwald - Google Art Project.jpg` |
+| `dore_rabe` | `Dore raven shadow2.jpg` |
+| `haeckel_discomedusae` / `haeckel_siphonophorae` | `Haeckel Discomedusae 8.jpg` / `Haeckel Siphonophorae 7.jpg` |
+| `blake_leviathan` | `Behemoth and Leviathan, from Illustrations of the Book of Job MET DP816554.jpg` (CC0) |
+| `ruisdael_friedhof` | `Jacob Isaackszoon van Ruisdael - The Jewish Cemetery (1654 or 1655).jpg` |
+| `portraet_frau` / `portraet_mann` | `Portrait of a Woman Rijksmuseum SK-A-2866.jpg` / `Portrait of a Man Rijksmuseum Amsterdam SK-A-2867.jpg` |
+| `fuessli_nachtmahr` | `Johann Heinrich Füssli - The Nightmare 55.5.A-d1-2019-04-15.jpg` |
+| `friedrich_mond` | `Caspar David Friedrich - Two Men Contemplating the Moon - Google Art Project.jpg` |
+| `grimshaw_roundhay` | `John Atkinson Grimshaw - Moonlight on the Lake, Roundhay Park, Leeds.jpg` |
+
+Nicht frei und deshalb nicht dabei: Kubin (frei erst 2030), Beksiński, Giger. Debug `--bilder[=gruppe]`.
+
 **Fototexturen** (PBR-Sets, je ein Ordner `assets/textures/<set>/`): `Mat.photo(pfad, meter, normal_pfad,
 rauheit_pfad, glanz)` mit `shaders/psx_photo.gdshader`, Projektion in Weltkoordinaten; `object_uv` in
 Modellkoordinaten (für Bewegtes wie die Aufzugskabine – in Weltkoordinaten wanderte die Textur), `mesh_uv` über die

@@ -36,6 +36,8 @@ extends Node3D
 ##   --duschen[=an]              vor den ersten Duschplatz am Pool (Drücker, Ablage, Duschkopf; ZIM-144) – an: Wasser läuft
 ##   --automaten[=seite]         vor die beiden Videoautomaten der Bar (Deadra, Ghost Hotel; 6.10) – seite: schräg
 ##                               von der Seite (Seitenbilder)
+##   --bilder[=gruppe]           vor das erste Gemälde aus dem Plan (ZIM-151); hängt keins oder mit gruppe (lobby, bar,
+##                               corridor, study, room, alle): die Werke als Reihe in der Lobby
 ##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
 ##                               über drei Tage) und ein paar Einträge im Tagebuch zum Nachlesen (3.10)
 ##   --gesehen                   Notizbuch einstecken, alle drei Bedrohungen gelten als gesehen (Lesezeichen „Gesehen“, 3.10) –
@@ -1694,6 +1696,9 @@ func run_debug(arg: String) -> bool:
 	elif _is_arg(arg, "--automaten"):
 		var side := _arg_value(arg, "--automaten") == "seite"
 		get_tree().create_timer(0.5).timeout.connect(ArcadeMachine.debug_show.bind(get_tree(), side))
+	elif _is_arg(arg, "--bilder"):
+		var group := _arg_value(arg, "--bilder")
+		get_tree().create_timer(0.5).timeout.connect(Painting.debug_show.bind(get_tree(), group))
 	elif arg == "--brief":
 		Game.contest.debug_letter()
 	elif arg == "--zettel":
