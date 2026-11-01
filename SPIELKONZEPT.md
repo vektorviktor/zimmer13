@@ -1227,6 +1227,11 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - Eine offene Schublade verrät, dass hier schon jemand gesucht hat. Aufziehen macht leisen Lärm (3 m, 4.15).
 - **Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
   Nachschub (z. B. der Hausmeister füllt nach)?
+- **Schreibtische (entschieden und umgesetzt 2026-11-01, ZIM-154):** Im Büro der Direktion ein großer Schreibtisch
+  (2,10 m, zwei Unterschränke, Mittelschublade, grüne Lederauflage mit Goldprägung), im Sekretariat ein schlichterer
+  (1,40 m, ein Unterschrank) – beide selbst gebaut im Look der Kommode. Die Schubladen gehen auf wie die der Kommoden,
+  enthalten aber **nur Festes** aus der Handlung (z. B. das Foto von 2005 im Sekretariat, 2.10), sonst sind sie leer.
+  Die Schlüsselschilder sind vorerst Zier; **abschließbare Schubladen** und ihre Schlüssel kommen mit ZIM-6.
 
 ### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24, Wachzeit, fremde Betten, Sprung am Tag und Gäste wecken umgesetzt 2026-10-27)
 Müdigkeit fließt in die **Schwäche** ein, nach der sich der Lakengeist seine Opfer sucht (4.18). Die feste Nachtruhe

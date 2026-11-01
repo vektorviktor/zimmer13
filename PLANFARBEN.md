@@ -139,7 +139,8 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #c7ae6b | Couchtisch | #d8c797 | |
 | #9b753b | Tafel | | |
 | #8a452e | Sofa | | |
-| #57480f | Schreibtisch | #8b7418 | Büro der Direktion: Modell fest 1,61 × 0,66 m, mittig im Rechteck, Rücken an dessen Hinterkante (ZIM-150) |
+| #57480f | Schreibtisch | #8b7418 | Büro der Direktion: fest 2,10 × 1,05 m (21 × 11 px), zwei Unterschränke, Lederauflage, Sessel davor; mittig im Rechteck, Rücken an dessen Hinterkante (ZIM-154) |
+| #655015 | Sekretariatsschreibtisch | #977820 | Sekretariat: fest 1,40 × 0,75 m (14 × 8 px), ein Unterschrank rechts, ohne Stuhl; mittig im Rechteck, Rücken an dessen Hinterkante (ZIM-154) |
 | #777740 | Bank | #9f9f56 | auch Parkbank |
 | #7e5d1b | Truhe | | im Hotelzimmer die Süßigkeiten-Truhe, so groß wie im Plan |
 | #452124 | Schachtisch | | |

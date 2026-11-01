@@ -192,8 +192,8 @@ def setup_cycles():
 	return sc
 
 
-def new_image(name, size, color_data, float_buffer=False):
-	img = bpy.data.images.new(name, size, size, alpha=False, float_buffer=float_buffer)
+def new_image(name, size, color_data, float_buffer=False, height=None):
+	img = bpy.data.images.new(name, size, height or size, alpha=False, float_buffer=float_buffer)
 	img.colorspace_settings.name = 'sRGB' if color_data else 'Non-Color'
 	return img
 
@@ -259,7 +259,7 @@ def godot_normals(px):
 
 def save_image(name, data, path, color_data=False):
 	h, w = data.shape[:2]
-	img = new_image(name, w, color_data)
+	img = new_image(name, w, color_data, height=h)
 	out = np.ones((h, w, 4), dtype=np.float32)
 	out[..., :3] = data if data.ndim == 3 else data[..., None]
 	img.pixels[:] = np.clip(out, 0, 1).ravel()

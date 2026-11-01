@@ -129,8 +129,10 @@ extends Node3D
 ##                               ein Blitz, der dich sicher um 90° dreht (Spuk, --shot-on=attic_turn) · urteil: in die Kammer,
 ##                               nach 3 s ein Urteil über Zimmer 13, Notausgang 5 s nach dem Aufbruch der Tür – die
 ##                               Dachboden-Szene (4.33, 3a: Kniestocktür, Schritte, Staub, es stößt eine Kammertür auf)
-##   --buero                     ins Büro der Direktion (OG, ZIM-150) vor den Schreibtisch – steht keiner im Plan, kommt
-##                               einer zum Ansehen in die Mitte des Büros
+##   --buero[=sekretariat,auf]   ins Büro der Direktion (OG, ZIM-150) vor den Schreibtisch, mit sekretariat ins Sekretariat
+##                               vor dessen Schreibtisch (ZIM-154) – steht keiner im Plan, kommt einer zum Ansehen in die
+##                               Mitte des Raums; auf: alle Schubladen aufgezogen, in die erste ein Gegenstand; Blick
+##                               hinten (Besucherseite), links (linker Unterschrank) oder nah (Platte von oben)
 ##   --regale                    in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
 ##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen)
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
@@ -1057,19 +1059,44 @@ func run_debug(arg: String) -> bool:
 		TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + front * 2.2, -front)
 		Game.player.head.rotation.x = deg_to_rad(-12.0)   # die Tür ist niedrig
 	elif _is_arg(arg, "--buero"):
-		var office := Game.social.builder.zones.filter(func(z: Dictionary) -> bool: return z["name"] == "Büro der Direktion")
+		var opts := _arg_parts(arg, "--buero")
+		var variant := "sekretariat" if opts.has("sekretariat") else "direktion"
+		var room := "Sekretariat" if variant == "sekretariat" else "Büro der Direktion"
+		var office := Game.social.builder.zones.filter(func(z: Dictionary) -> bool: return z["name"] == room)
 		if office.is_empty():
 			return false
-		var desks := get_tree().get_nodes_in_group("desks")
-		var desk: Desk = desks[0] if not desks.is_empty() else null
+		var desk: Desk = null
+		for node in get_tree().get_nodes_in_group("desks"):
+			if (node as Desk).variant == variant:
+				desk = node
 		if desk == null:
-			desk = Desk.new()
+			desk = Desk.new(variant)
 			add_child(desk)
 			desk.global_position = office[0]["center"]
-		# schräg von vorn, damit der Sessel vor dem Tisch nicht im Weg steht
-		var at := desk.global_position + desk.global_basis.z * 1.3 + desk.global_basis.x * 1.7
-		TeleportUI.place_player(at, desk.global_position + desk.global_basis.z * 0.6 - at)
-		Game.player.head.rotation.x = deg_to_rad(-20.0)
+		if opts.has("auf"):
+			for i in range(1, desk.is_open.size()):
+				desk.set_open(i, true, true)
+			desk.fixed[0] = Item.Kind.MATCHBOX   # die Mittelschublade wie im Spiel: aufziehen, Fund fällt hinein
+			desk.use_drawer(0, Game.player)
+		# schräg von vorn, damit der Sessel vor dem Tisch nicht im Weg steht; hinten: von der Besucherseite; links: vor den
+		# linken Unterschrank; nah: über der Platte
+		var side := 1.7 if variant == "direktion" else 0.6
+		var at := desk.global_position + desk.global_basis.z * (1.3 if variant == "direktion" else 1.5) + desk.global_basis.x * side
+		var look := desk.global_position + desk.global_basis.z * 0.6
+		var pitch := -20.0
+		if opts.has("hinten"):
+			at = desk.global_position - desk.global_basis.z * 1.9 - desk.global_basis.x * 0.9
+			look = desk.global_position
+		elif opts.has("links"):   # schräg vor den linken Unterschrank (Beschläge, Füllungen, Furchen)
+			at = desk.global_position + desk.global_basis.z * 1.0 - desk.global_basis.x * 1.6
+			look = desk.global_position + desk.global_basis.z * 0.5 - desk.global_basis.x * 0.6
+			pitch = -35.0
+		elif opts.has("nah"):
+			at = desk.global_position - desk.global_basis.z * 0.9 + desk.global_basis.x * 0.3
+			look = desk.global_position
+			pitch = -50.0
+		TeleportUI.place_player(at, look - at)
+		Game.player.head.rotation.x = deg_to_rad(pitch)
 	elif _is_arg(arg, "--regale"):
 		var library := Game.social.builder.zones.filter(func(z: Dictionary) -> bool: return z["name"] == "Bibliothek")
 		if library.is_empty():

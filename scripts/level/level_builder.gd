@@ -2450,17 +2450,20 @@ func _furniture() -> void:
 					front = Vector2(0, -1 if to.y < 0 else 1) if rect.size.x >= rect.size.y else Vector2(-1 if to.x < 0 else 1, 0)
 				shelves.append({"rect": rect, "front": front, "levels": int(spec[1]), "pitch": int(spec[2])})
 				continue
-			"desk":   # Büro der Direktion (ZIM-150): feste Größe, mittig, mit dem Rücken an die Hinterkante des Rechtecks
+			"desk", "secretary_desk":   # Büro der Direktion, Sekretariat (ZIM-154): feste Größe, mittig, Rücken an die Hinterkante des Rechtecks
+				var variant := "direktion" if kind == "desk" else "sekretariat"
+				var dims := Desk.dims(variant)
 				var back := c - front * _depth_of(rect, front) / 2.0
-				var mid := back + front * Desk.SIZE.z / 2.0
+				var mid := back + front * dims.z / 2.0
 				pos = Vector3(mid.x, 0, mid.y)
-				rect = _local_rect(back, front, Rect2(-Desk.SIZE.x / 2.0, 0, Desk.SIZE.x, Desk.SIZE.z))   # Platte
-				node = Desk.new()
-				top = Desk.SIZE.y
-				var chair_at := Desk.SIZE.z + Desk.CHAIR_GAP   # Sessel davor (Desk), Gegenstände landen auf dem Polster
-				_furnishings.append({"kind": "armchair", "rect": _local_rect(back, front,
-					Rect2(-Armchair.SIZE.x / 2.0, chair_at, Armchair.SIZE.x, Armchair.SIZE.z)), "top": Armchair.SEAT_H,
-					"front": -front, "node": node})
+				rect = _local_rect(back, front, Rect2(-dims.x / 2.0, 0, dims.x, dims.z))   # Platte
+				node = Desk.new(variant)
+				top = dims.y
+				if kind == "desk":
+					var chair_at := dims.z + Desk.CHAIR_GAP   # Sessel davor (Desk), Gegenstände landen auf dem Polster
+					_furnishings.append({"kind": "armchair", "rect": _local_rect(back, front,
+						Rect2(-Armchair.SIZE.x / 2.0, chair_at, Armchair.SIZE.x, Armchair.SIZE.z)), "top": Armchair.SEAT_H,
+						"front": -front, "node": node})
 			"changing_bench":   # Länge entlang der langen Seite des Rechtecks, ohne Vorderseite
 				yaw = 0.0 if rect.size.x >= rect.size.y else PI / 2.0
 				node = ChangingBench.make(maxf(rect.size.x, rect.size.y))

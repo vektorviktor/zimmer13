@@ -70,7 +70,8 @@ DESIGN = {
 	"Möbel: Bücherregal 5 Ebenen 1 m": (12, 70, 44), "Möbel: Bücherregal 5 Ebenen 2 m": (10, 30, 54),
 	# Möbel · Tische und Sitzen (ocker)
 	"Möbel: Tisch": (42, 50, 50), "Möbel: Couchtisch": (44, 45, 60), "Möbel: Tafel": (36, 45, 42),
-	"Möbel: Zimmertisch": (48, 60, 38), "Möbel: Schreibtisch": (48, 70, 20), "Möbel: Stuhl": (58, 50, 40), "Möbel: Bank": (60, 30, 36),
+	"Möbel: Zimmertisch": (48, 60, 38), "Möbel: Schreibtisch": (48, 70, 20), "Möbel: Sekretariatsschreibtisch": (44, 65, 24),
+	"Möbel: Stuhl": (58, 50, 40), "Möbel: Bank": (60, 30, 36),
 	"Möbel: Sofa": (15, 50, 36), "Möbel: Fußmatte": (20, 10, 30),
 	# Möbel · Bad (türkis)
 	"Möbel: Badewanne": (185, 70, 46), "Möbel: Wannenablage": (180, 30, 26), "Möbel: Waschbecken": (168, 65, 52),

@@ -117,7 +117,8 @@ FURNITURE = {
 	"Möbel: Fußmatte": "doormat", "Möbel: Dusche": "shower", "Möbel: WC": "toilet", "Möbel: Mülleimer": "trash_can",
 	"Möbel: Snackautomat": "snack_machine", "Möbel: Getränkeautomat": "drink_machine",
 	"Möbel: Zimmertisch": "room_table", "Möbel: Stuhl": "chair",
-	"Möbel: Schreibtisch": "desk",   # 1.11.: Büro der Direktion, Modell fester Größe (ZIM-150)
+	"Möbel: Schreibtisch": "desk",   # 1.11.: Büro der Direktion, feste Größe (ZIM-150, selbst gebaut ZIM-154)
+	"Möbel: Sekretariatsschreibtisch": "secretary_desk",   # 1.11.: Sekretariat, feste Größe (ZIM-154)
 	# 1.11.: Bibliothek (ZIM-152), Höhe und Teilung je Farbe, Länge frei, Innenecken über Eck
 	"Möbel: Bücherregal 4 Ebenen 1 m": "bookshelf_4_1", "Möbel: Bücherregal 4 Ebenen 2 m": "bookshelf_4_2",
 	"Möbel: Bücherregal 5 Ebenen 1 m": "bookshelf_5_1", "Möbel: Bücherregal 5 Ebenen 2 m": "bookshelf_5_2",
