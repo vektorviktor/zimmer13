@@ -66,6 +66,8 @@ DESIGN = {
 	# Möbel · Aufbewahren (braun)
 	"Möbel: Schrank": (30, 35, 22), "Möbel: Kommode": (28, 50, 38), "Möbel: Truhe": (40, 65, 30),
 	"Möbel: Regal": (18, 35, 44), "Möbel: Wäschekiste": (35, 30, 58), "Möbel: Kratzbaum": (22, 55, 66),
+	"Möbel: Bücherregal 4 Ebenen 1 m": (22, 70, 44), "Möbel: Bücherregal 4 Ebenen 2 m": (36, 70, 54),
+	"Möbel: Bücherregal 5 Ebenen 1 m": (12, 70, 44), "Möbel: Bücherregal 5 Ebenen 2 m": (10, 30, 54),
 	# Möbel · Tische und Sitzen (ocker)
 	"Möbel: Tisch": (42, 50, 50), "Möbel: Couchtisch": (44, 45, 60), "Möbel: Tafel": (36, 45, 42),
 	"Möbel: Zimmertisch": (48, 60, 38), "Möbel: Schreibtisch": (48, 70, 20), "Möbel: Stuhl": (58, 50, 40), "Möbel: Bank": (60, 30, 36),

@@ -5077,6 +5077,10 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   kommen nicht hinein. *Der Kürbismann kommt doch hinein, und Ausharren dort ist die stärkste Strategie – vertagt
   (4.20).*
 - **Bibliothek** im Westflügel (ca. 40 × 18 m) über dem Küchenblock.
+  **Bücherregale (entschieden und gebaut 2026-11-01, ZIM-152):** im Look der Kommode im Flur, offene Fächer mit 4 oder
+  5 Ebenen (2,10 bzw. 2,56 m hoch, Fächer 46 cm – Wunsch des Nutzers: 4 Ebenen = 2,10 m), Zwischenwände etwa alle 1 oder 2 m – je Kombination eine Planfarbe, Länge frei; geht
+  die Länge nicht auf, werden alle Fächer gleich gestreckt. Wo zwei gleich hohe Regale über Eck zusammenstoßen, entsteht
+  von selbst eine Innenecke mit Gehrung. Vorerst leer, Bücher sind eine eigene Aufgabe.
 - **Partyraum über zwei Stockwerke:** wie die Lobby mit einer **Galerie** im OG1 rund um den Luftraum, von der man
   auf die Tanzfläche hinunterschaut.
 - **Ideen (Vorschlag):**

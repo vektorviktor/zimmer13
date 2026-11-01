@@ -131,6 +131,8 @@ extends Node3D
 ##                               Dachboden-Szene (4.33, 3a: Kniestocktür, Schritte, Staub, es stößt eine Kammertür auf)
 ##   --buero                     ins Büro der Direktion (OG, ZIM-150) vor den Schreibtisch – steht keiner im Plan, kommt
 ##                               einer zum Ansehen in die Mitte des Büros
+##   --regale                    in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
+##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen)
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -1068,6 +1070,17 @@ func run_debug(arg: String) -> bool:
 		var at := desk.global_position + desk.global_basis.z * 1.3 + desk.global_basis.x * 1.7
 		TeleportUI.place_player(at, desk.global_position + desk.global_basis.z * 0.6 - at)
 		Game.player.head.rotation.x = deg_to_rad(-20.0)
+	elif _is_arg(arg, "--regale"):
+		var library := Game.social.builder.zones.filter(func(z: Dictionary) -> bool: return z["name"] == "Bibliothek")
+		if library.is_empty():
+			return false
+		var shelves := get_tree().get_nodes_in_group("bookshelves")
+		var shelf: Bookshelf = shelves[0] if not shelves.is_empty() else _bookshelf_demo(library[0]["center"] + Vector3(5, 0, 0))
+		# schräg von vorn auf das linke Ende – an einer Innenecke die Gehrung
+		var end := shelf.global_transform * Vector3(-shelf.length / 2.0, 1.1, 0)
+		var at := shelf.global_transform * Vector3(-shelf.length / 2.0 + 3.2, 0, 4.2)
+		TeleportUI.place_player(at, end - at)
+		Game.player.head.rotation.x = deg_to_rad(-6.0)
 	elif _is_arg(arg, "--dachboden"):
 		var builder := Game.social.builder
 		var where := _arg_value(arg, "--dachboden")
@@ -2901,3 +2914,21 @@ func _debug_decorate(parts: PackedStringArray) -> void:
 	elif "--answer" in OS.get_cmdline_user_args():
 		# in Zimmer 13 kommt die Einladung per Anruf – nach 4 s abnehmen
 		get_tree().create_timer(4.0).timeout.connect(func() -> void: Game.phones.answer(Game.phones.home_phone))
+
+
+## Bücherregale zum Ansehen (--regale), solange im Plan keins steht: eine Innenecke aus zwei Zeilen mit 5 Ebenen
+## (Teilung 1 m und 2 m) und rechts daneben eine freie Zeile mit 4 Ebenen. Gibt die Zeile mit der Ecke links zurück.
+func _bookshelf_demo(at: Vector3) -> Bookshelf:
+	var a := Bookshelf.make(5, 1, 3.3, true, false)
+	var b := Bookshelf.make(5, 2, 4.2, false, true)
+	var c := Bookshelf.make(4, 1, 2.6)
+	var d := Bookshelf.DEPTH
+	var spots := [[a, at, 0.0], [b, at + Vector3(-a.length / 2.0 - d / 2.0, 0, d / 2.0 + b.length / 2.0), PI / 2.0],
+		[c, at + Vector3(a.length / 2.0 + 1.2 + c.length / 2.0, 0, 0), 0.0]]
+	for i in spots.size():
+		var shelf: Bookshelf = spots[i][0]
+		shelf.grain = Vector2(1.7 * i, 2.3 * i)
+		shelf.position = spots[i][1]
+		shelf.rotation.y = spots[i][2]
+		add_child(shelf)
+	return a

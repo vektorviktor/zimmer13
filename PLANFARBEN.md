@@ -146,6 +146,10 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #8a2e36 | Spieltisch | | |
 | #5d323d | Theke | | |
 | #976049 | Regal | | |
+| #bf5b22 | Bücherregal 4 Ebenen 1 m | #dd7a40 | 2,10 m hoch, Zwischenwand etwa alle 1 m. Länge frei, 4 px tief (Korpus 30 cm, Profil bis 37 cm), Rücken an der Hinterkante (ohne Vorderseite: quer zur langen Seite, zur Raummitte); die Fächer werden gleichmäßig gestreckt, bis die Länge aufgeht. Zwei gleich hohe über Eck aneinander = Innenecke mit Gehrung (ZIM-152) |
+| #dc9a38 | Bücherregal 4 Ebenen 2 m | #e5b46c | 2,10 m hoch, Zwischenwand etwa alle 2 m. Länge frei, 4 px tief (Korpus 30 cm, Profil bis 37 cm), Rücken an der Hinterkante (ohne Vorderseite: quer zur langen Seite, zur Raummitte); die Fächer werden gleichmäßig gestreckt, bis die Länge aufgeht. Zwei gleich hohe über Eck aneinander = Innenecke mit Gehrung (ZIM-152) |
+| #bf4122 | Bücherregal 5 Ebenen 1 m | #dd6040 | 2,56 m hoch, Zwischenwand etwa alle 1 m. Länge frei, 4 px tief (Korpus 30 cm, Profil bis 37 cm), Rücken an der Hinterkante (ohne Vorderseite: quer zur langen Seite, zur Raummitte); die Fächer werden gleichmäßig gestreckt, bis die Länge aufgeht. Zwei gleich hohe über Eck aneinander = Innenecke mit Gehrung (ZIM-152) |
+| #ad7267 | Bücherregal 5 Ebenen 2 m | #c2978e | 2,56 m hoch, Zwischenwand etwa alle 2 m. Länge frei, 4 px tief (Korpus 30 cm, Profil bis 37 cm), Rücken an der Hinterkante (ohne Vorderseite: quer zur langen Seite, zur Raummitte); die Fächer werden gleichmäßig gestreckt, bis die Länge aufgeht. Zwei gleich hohe über Eck aneinander = Innenecke mit Gehrung (ZIM-152) |
 | #788fa5 | Küchenzeile | | |
 | #364459 | Herd | | |
 | #86b6b2 | Waschtisch | | |

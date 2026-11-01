@@ -2276,6 +2276,7 @@ func _furniture() -> void:
 		var desk: Node3D = model if model else Geo.solid(root, Vector3(r.size.x, RECEPTION_H, r.size.y), Vector3(r.get_center().x, RECEPTION_H / 2.0, r.get_center().y), _dark_wood)
 		_furnishings.append({"kind": "reception", "rect": r, "top": RECEPTION_H, "front": Vector2.ZERO, "node": desk})
 	var lockers: Array[Dictionary] = []
+	var shelves: Array[Dictionary] = []
 	for f in _map["furniture"]:
 		var rc: Array = f["rect"]
 		var rect := _rect(rc)
@@ -2442,6 +2443,13 @@ func _furniture() -> void:
 			"locker_bank":   # erst nach allen Möbeln: die Nummern laufen über alle Blöcke (_locker_banks)
 				lockers.append({"rect": rect, "front": front})
 				continue
+			"bookshelf_4_1", "bookshelf_4_2", "bookshelf_5_1", "bookshelf_5_2":   # erst nach allen: Innenecken (_bookshelves)
+				var spec := kind.split("_")
+				if String(f.get("facing", "")) == "":   # ohne Vorderseite: quer zur langen Seite, zur Mitte der Fläche
+					var to := _area_center(c) - c
+					front = Vector2(0, -1 if to.y < 0 else 1) if rect.size.x >= rect.size.y else Vector2(-1 if to.x < 0 else 1, 0)
+				shelves.append({"rect": rect, "front": front, "levels": int(spec[1]), "pitch": int(spec[2])})
+				continue
 			"desk":   # Büro der Direktion (ZIM-150): feste Größe, mittig, mit dem Rücken an die Hinterkante des Rechtecks
 				var back := c - front * _depth_of(rect, front) / 2.0
 				var mid := back + front * Desk.SIZE.z / 2.0
@@ -2497,6 +2505,61 @@ func _furniture() -> void:
 			root.add_child(node)
 		_furnishings.append({"kind": kind, "rect": rect, "top": top, "front": front, "node": node})
 	_locker_banks(lockers)
+	_bookshelves(shelves)
+
+
+## Bücherregale der Bibliothek (Bookshelf, ZIM-152): Rücken Bookshelf.BACK_GAP vor der Hinterkante des Rechtecks
+## (Vertäfelung), die Zeile entlang der langen Seite, das Profil bleibt im Rechteck. Stoßen zwei gleich hohe Regale über
+## Eck aneinander (Innenecke: das andere steht quer am Ende und blickt zurück zur Zeile), enden beide auf einer Gehrung –
+## die Kante des Korpus liegt dann auf der Vorderseite des anderen. Ob das eine bis an die Wand reicht oder vor dem
+## anderen endet, ist egal.
+func _bookshelves(list: Array[Dictionary]) -> void:
+	for a in list:
+		var rect: Rect2 = a["rect"]
+		var front: Vector2 = a["front"]
+		var right := Vector2(front.y, -front.x)   # lokal +X
+		var c := rect.get_center()
+		var deep := _depth_of(rect, front)
+		var half := (rect.size.x + rect.size.y - deep) / 2.0
+		var back := c - front * deep / 2.0
+		var ends: Array[float] = [-half + Bookshelf.OVERHANG, half - Bookshelf.OVERHANG]
+		var corner: Array[bool] = [false, false]
+		for b in list:
+			if b == a:
+				continue
+			var b_rect: Rect2 = b["rect"]
+			var b_front: Vector2 = b["front"]
+			var b_deep := _depth_of(b_rect, b_front)
+			# wo b vor a beginnt (entlang front, ab a's Hinterkante)
+			var near := minf((b_rect.position - back).dot(front), (b_rect.end - back).dot(front))
+			if near < -0.25 or near > deep + 0.25:
+				continue
+			for i in 2:
+				var e := -1.0 if i == 0 else 1.0
+				if b_front.dot(right * -e) < 0.9:
+					continue
+				var b_back := (b_rect.get_center() - b_front * b_deep / 2.0 - back).dot(right)
+				if e * b_back < half - 0.25 or e * b_back > half + b_deep + 0.25:
+					continue
+				if b["levels"] != a["levels"]:
+					push_warning("Gebäudeplan: Bücherregale bei %s und %s sind verschieden hoch – keine Ecke" %
+						[c, b_rect.get_center()])
+					continue
+				ends[i] = b_back - e * (Bookshelf.BACK_GAP + Bookshelf.DEPTH)
+				corner[i] = true
+		var length := ends[1] - ends[0]
+		if length < Bookshelf.min_length():
+			push_warning("Gebäudeplan: Bücherregal bei %s ist zu kurz (%.2f m)" % [c, length])
+			continue
+		var shelf := Bookshelf.make(a["levels"], a["pitch"], length, corner[0], corner[1])
+		var rng := _jitter(rect)
+		shelf.grain = Vector2(rng.randf() * 7.0, rng.randf() * 7.0)
+		var at := back + front * (Bookshelf.BACK_GAP + Bookshelf.DEPTH / 2.0) + right * (ends[0] + ends[1]) / 2.0
+		shelf.position = Vector3(at.x, 0, at.y)
+		shelf.rotation.y = atan2(front.x, front.y)
+		root.add_child(shelf)
+		_furnishings.append({"kind": "bookshelf", "rect": rect, "top": Bookshelf.height(a["levels"]), "front": front,
+			"node": shelf})
 
 
 ## Spindblöcke der Umkleiden (LockerBank, ZIM-145): Rücken an der Hinterkante des Rechtecks im Plan, WALL_CLEAR davor

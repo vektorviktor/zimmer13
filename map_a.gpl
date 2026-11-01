@@ -75,6 +75,14 @@ Columns: 0
 138  46  54	Möbel: Spieltisch
  93  50  61	Möbel: Theke
 151  96  73	Möbel: Regal
+191  91  34	Möbel: Bücherregal 4 Ebenen 1 m
+221 122  64	Möbel: Bücherregal 4 Ebenen 1 m Vorderseite
+220 154  56	Möbel: Bücherregal 4 Ebenen 2 m
+229 180 108	Möbel: Bücherregal 4 Ebenen 2 m Vorderseite
+191  65  34	Möbel: Bücherregal 5 Ebenen 1 m
+221  96  64	Möbel: Bücherregal 5 Ebenen 1 m Vorderseite
+173 114 103	Möbel: Bücherregal 5 Ebenen 2 m
+194 151 142	Möbel: Bücherregal 5 Ebenen 2 m Vorderseite
 120 143 165	Möbel: Küchenzeile
  54  68  89	Möbel: Herd
 134 182 178	Möbel: Waschtisch

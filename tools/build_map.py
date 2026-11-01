@@ -118,6 +118,9 @@ FURNITURE = {
 	"Möbel: Snackautomat": "snack_machine", "Möbel: Getränkeautomat": "drink_machine",
 	"Möbel: Zimmertisch": "room_table", "Möbel: Stuhl": "chair",
 	"Möbel: Schreibtisch": "desk",   # 1.11.: Büro der Direktion, Modell fester Größe (ZIM-150)
+	# 1.11.: Bibliothek (ZIM-152), Höhe und Teilung je Farbe, Länge frei, Innenecken über Eck
+	"Möbel: Bücherregal 4 Ebenen 1 m": "bookshelf_4_1", "Möbel: Bücherregal 4 Ebenen 2 m": "bookshelf_4_2",
+	"Möbel: Bücherregal 5 Ebenen 1 m": "bookshelf_5_1", "Möbel: Bücherregal 5 Ebenen 2 m": "bookshelf_5_2",
 	"Möbel: Wannenablage": "tub_shelf",   # 24.10.: gefliestes Stück neben der Badewanne, ohne Vorderseite
 	# Friedhof (25.10., Spielkonzept 5.15): Grabplatz 2 × 1 m (Vorderseite = Fußende), Gedenkstätte mit Tafel
 	"Möbel: Grab": "grave", "Möbel: Gedenkstätte": "memorial",
