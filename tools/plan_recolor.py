@@ -122,6 +122,7 @@ DESIGN = {
 	"Licht: Laterne": (58, 100, 70), "Licht: Laterne defekt": (60, 40, 30), "Licht: Deckenleuchte": (55, 100, 84),
 	"Licht: Halogenleuchte": (62, 70, 58),
 	"Licht: Discokugel": (55, 90, 72), "Licht: Unterwasserlampe": (60, 70, 45),
+	"Licht: Schreibtischlampe": (45, 90, 36),
 }
 
 

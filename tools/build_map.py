@@ -180,6 +180,7 @@ LIGHTS = {
 	"Licht: Deckenleuchte": ("ceiling_lamp", False), "Licht: Halogenleuchte": ("halogen", False),
 	# 2.11. (ZIM-158): ohne Eintrag Discokugel mitten im Partyraum, Unterwasserlampen gleichmäßig verteilt
 	"Licht: Discokugel": ("disco_ball", False), "Licht: Unterwasserlampe": ("pool_lamp", False),
+	"Licht: Schreibtischlampe": ("desk_lamp", False),   # 2.11.: steht auf dem Möbel darunter, Schirm zu dessen Vorderseite
 }
 ## Einbauten, die keine eigenen Bodenflächen sind
 FIXTURES = ("tree", "planter", "reception", "terrace_edge", "balcony_edge", "stairs", "void", "hedge_arch")

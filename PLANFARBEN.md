@@ -274,6 +274,7 @@ Ebene `Lichter`, 3×3-Punkt, Wandleuchten innen an der Wand. Defekt = gleiche Le
 | #dadf49 | Halogenleuchte | Strich in ihrer Länge, 8×2 px |
 | #f8ed77 | Discokugel | Partyraum, nur eine: die Tanzfläche (6 × 6 m) liegt darunter; ohne Eintrag in der Raummitte (ZIM-158) |
 | #c3c322 | Unterwasserlampe | auf den Rand des Beckens: sitzt in der nächsten Beckenwand. Steht eine im Plan, setzt der Code keine eigenen (sonst 2 je Längswand, ZIM-158) |
+| #ae8509 | Schreibtischlampe | grüne Bankerlampe auf das Möbel darunter (Schreibtisch, Kommode, Tisch …), Schirm zu dessen Vorderseite; ohne Vorderseite wie das Telefon (im Zimmer vom Flur weg, sonst zur Raummitte). Schaltet mit dem Raum, Birne herausdrehbar |
 
 ## Im Plan, aber ohne Bedeutung
 

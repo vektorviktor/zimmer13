@@ -13,8 +13,10 @@ extends StaticBody3D
 ## herausdrehen). CEILING bleibt die Pendelleuchte über den Lufträumen.
 ## MIRROR: Spiegelleuchte über dem Badspiegel – flacher Balken aus gebürstetem Edelstahl wie die Armatur, unten ein
 ## warmweißes Lichtband aus Opalglas; LED ohne Glühbirne: nichts herauszudrehen, brennt nicht durch.
+## DESK: Schreibtischlampe – grüne Bankerlampe aus Messing auf einem Möbel (Planfarbe „Licht: Schreibtischlampe“), die
+## Birne liegt waagerecht unter dem Schirm und lässt sich wie sonst herausdrehen; geschaltet wird mit dem Raum.
 
-enum Style { CEILING, WALL, HALOGEN, POOL, FLUSH, MIRROR }
+enum Style { CEILING, WALL, HALOGEN, POOL, FLUSH, MIRROR, DESK }
 
 ## Kupferleuchte (FLUSH): Profil von der Decke abwärts als [Radius, Höhe, Rille?] – Rillen sind schmale, etwas
 ## schmalere Ringe in dunklem Kupfer; darunter das Glas (Radius, Dicke, so weit steht es unter dem untersten Ring vor –
@@ -70,6 +72,18 @@ const MIRROR_LIGHT := Vector3(0, -0.12, 0.28)
 const MIRROR_GLOW := Color(1.0, 0.88, 0.7)
 ## Unterwasserlampe: Sekunden für einmal durch den Regenbogen (je Lampe zufällig dazwischen)
 const POOL_CYCLE := Vector2(18.0, 26.0)
+## Schreibtischlampe aus tools/build_desk_lamp.py („Desk Lamp Antique 01“, CGTrader) ohne Röhre und Zugkette, ein Netz
+## „body“ mit PBR-Set (Mat.pbr_model). Ursprung mittig unter dem Fuß, offener Schirm nach +Z, 0,62 m hoch.
+const DESK_MODEL := "res://assets/models/desk_lamp.glb"
+const DESK_TEX := "res://assets/textures/desk_lamp"
+## Gewindeende der Birne dort, wo die Röhre des Originals begann; der Kolben zeigt nach −X in den Schirm
+const DESK_SOCKET := Vector3(0.0, 0.522, 0.117)
+## Licht in der Mitte unter dem Schirm. Das Modell wirft Schatten (anders als die übrigen Leuchten): Der Schirm hält
+## das Licht nach oben und hinten ab, nur unter ihm fällt es auf den Tisch
+const DESK_LIGHT := Vector3(-0.05, 0.5, 0.12)
+## Kollision (Hand, Blick): Kasten um Schirm und Fuß
+const DESK_BOX := Vector3(0.5, 0.62, 0.36)
+const DESK_BOX_AT := Vector3(0, 0.31, 0.04)
 
 var style := Style.CEILING
 var length := 0.8   ## Halogenröhre und Spiegelleuchte: Länge entlang lokal X
@@ -130,6 +144,10 @@ func _ready() -> void:
 	elif style == Style.FLUSH:
 		bulb_pos = _build_flush()
 		socket = Vector3(0, -0.03, 0)
+	elif style == Style.DESK:
+		_build_desk()
+		socket = DESK_SOCKET
+		bulb_pos = DESK_LIGHT
 	elif ResourceLoader.exists(WALL_MODEL):
 		_build_wall()
 		bulb_pos = WALL_BALL
@@ -149,6 +167,8 @@ func _ready() -> void:
 			_bulb.position = socket
 			if style == Style.CEILING or style == Style.FLUSH:
 				_bulb.rotation.x = PI   # hängt mit dem Kolben nach unten
+			elif style == Style.DESK:
+				_bulb.rotation.z = PI / 2.0   # liegt mit dem Kolben nach −X unter dem Schirm
 		else:
 			_bulb = Geo.mesh(self, Geo.sphere(0.045, 0.1, 6, 3), _bulb_material, bulb_pos)
 	# Die Leuchte selbst wirft keinen Schatten: Das Licht sitzt vor dem Schirm, sonst zeichnet er einen langen
@@ -156,6 +176,10 @@ func _ready() -> void:
 	_no_shadows()
 	if style == Style.FLUSH:
 		Geo.add_box_shape(self, Vector3(0.48, bulb_pos.y * -1.0, 0.48), bulb_pos * 0.5)
+	elif style == Style.DESK:
+		for m: MeshInstance3D in find_children("body", "MeshInstance3D", true, false):
+			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		Geo.add_box_shape(self, DESK_BOX, DESK_BOX_AT)
 	else:
 		Geo.add_box_shape(self, Vector3(0.35, 0.3, 0.35), bulb_pos * 0.5)
 	var light_pos := bulb_pos + Vector3(0, 0, 0.12)
@@ -166,6 +190,8 @@ func _ready() -> void:
 			light_pos = bulb_pos + Vector3(0, -FLUSH_LIGHT_BELOW, 0)
 		Style.WALL:
 			light_pos = WALL_BALL if ResourceLoader.exists(WALL_MODEL) else WALL_LIGHT
+		Style.DESK:
+			light_pos = DESK_LIGHT
 	_add_light(light_pos, Color(1.0, 0.8, 0.55))
 	if style == Style.WALL and light_pos == WALL_BALL:
 		_wall_fan()
@@ -182,6 +208,15 @@ func _build_wall() -> void:
 		m.material_override = _bulb_material if m.name == "WallLamp_Ball" else Mat.metal(WALL_BODY_COLOR)
 	_bulb = Node3D.new()
 	add_child(_bulb)
+
+
+## Schreibtischlampe aus DESK_MODEL mit dem vollen PBR-Set; Messing und grünes Glas unterscheidet die Metallkarte.
+func _build_desk() -> void:
+	var model: Node3D = (load(DESK_MODEL) as PackedScene).instantiate()
+	add_child(model)
+	var mat := Mat.pbr_model(DESK_TEX)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		m.material_override = mat
 
 
 ## Das Licht der Leuchte (Gruppe „lamps“, flackert mit der Birne bzw. Röhre oder Scheibe).
@@ -299,7 +334,7 @@ func _set_hue() -> void:
 
 ## Steckt eine Glühbirne darin, die man herausdrehen kann (nicht bei Halogen- und Unterwasserlampen)?
 func has_socket() -> bool:
-	return not fixed and (style == Style.CEILING or style == Style.WALL or style == Style.FLUSH)
+	return not fixed and (style == Style.CEILING or style == Style.WALL or style == Style.FLUSH or style == Style.DESK)
 
 
 ## Glühbirne als Modell unter parent (Ursprung am Gewindeende, Glas nach +Y), der Kolben mit glass –

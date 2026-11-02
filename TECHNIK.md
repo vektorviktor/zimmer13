@@ -706,6 +706,12 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   - `_items`: `Item.Kind`-Name aus dem Plan, auf dem Möbel darunter.
   - `_lights`: Wandleuchten je Flächenart (`_lamp_style`), Deckenleuchten (`_ceiling_lamp`: `Lamp.Style.FLUSH` =
     Kupferleuchte, über `open_above` Pendel `CEILING`), Kerzen auf dem Möbel, Laternen; `broken` aus dem Plan.
+    **Schreibtischlampe** (`_desk_lamp`, `Lamp.Style.DESK`, „Licht: Schreibtischlampe“): grüne Bankerlampe aus
+    `tools/build_desk_lamp.py` (CGTrader-Modell ohne Röhre und Zugkette, PBR-Set 2048 px, `Mat.pbr_model`) auf dem Möbel
+    darunter (`_top_at`), Schirm zu dessen Vorderseite, ohne Möbel wie das Telefon (`_upright_yaw`); Raum-ID wie die
+    übrigen Lampen, `DESK_LAMP_ENERGY`/`_RANGE`. Die gewöhnliche Birne liegt waagerecht unter dem Schirm
+    (`DESK_SOCKET`, herausdrehbar). Anders als die übrigen Leuchten wirft das Modell Schatten – so hält der Schirm das
+    Licht nach oben und hinten ab, ohne Projektor.
     Kupferleuchte: Opalglas mit dem Material der Birne (leuchtet, flackert, erlischt mit ihr), die Birne steckt unsichtbar
     dahinter; Licht `FLUSH_LIGHT_BELOW` unter dem Glas – näher strahlte es das Kupfer grell an. Lampen und Schalter
     gehören zur Raum-ID der Fläche davor (`_light_room_at`); Schalter in unbewohnten Zimmern starten aus.
@@ -1591,7 +1597,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
 
 ### Licht
 (`lamp.gd`, `light_switch.gd`, `flicker_light.gd`, `world/fixed_candle.gd`, `util/shadow_budget.gd`,
-`level/light_rooms.gd`, `LevelBuilder._wall_lamp`/`_candle`/`_halogen`)
+`level/light_rooms.gd`, `LevelBuilder._wall_lamp`/`_desk_lamp`/`_candle`/`_halogen`)
 - Lampe = Fassung + Birne (Item `BULB`; Halogenröhren und Unterwasserlampen ohne Birne – `has_socket()` falsch).
   `flicker` (Nähe des Monsters, kann Birnen durchbrennen), `wave` (Flackerwelle), `red`/`hot_spot` (Kürbismann) setzt
   der Director bzw. der Kürbismann. Licht aus → `on_lights_off`. `FlickerLight.hold` (≥ 0) legt die Helligkeit fest,

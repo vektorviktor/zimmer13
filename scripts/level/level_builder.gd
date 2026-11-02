@@ -210,6 +210,9 @@ const ROOM_LAMP_ENERGY := 0.65
 const CEILING_LAMP_ENERGY := 0.65
 const CEILING_LAMP_RANGE := 9.0
 const PENDANT_Y := 4.8
+## Schreibtischlampe (Lamp.Style.DESK, Planfarbe „Licht: Schreibtischlampe“): schwächer, leuchtet nur den Platz darunter aus
+const DESK_LAMP_ENERGY := 0.45
+const DESK_LAMP_RANGE := 4.0
 ## Mitte der Discokugel über der Tanzfläche (Partyraum, Luftraum) – vom Boden wie von der Galerie aus zu sehen
 const DISCO_Y := 5.4
 const DOOR_W := 1.2
@@ -3310,7 +3313,8 @@ func _drawer_content(first: int) -> void:
 
 
 ## Lichter (Ebene „Lichter“): Wandleuchten an der Wand (Höhe und Helligkeit je Fläche, _lamp_style),
-## Deckenleuchten an der Decke darüber, Kerzen auf dem Möbel darunter, Laternen im Garten. Defekt laut Plan.
+## Deckenleuchten an der Decke darüber, Kerzen und Schreibtischlampen auf dem Möbel darunter, Laternen im Garten.
+## Defekt laut Plan.
 func _lights() -> void:
 	for o in _map["lights"]:
 		var p := _v2(o["pos"])
@@ -3328,6 +3332,8 @@ func _lights() -> void:
 				_wall_lamp(at.at(y), at.yaw(), style["energy"], style["range"], id, broken)
 			"ceiling_lamp":
 				_ceiling_lamp(p, _light_room_at(p), broken)
+			"desk_lamp":
+				_desk_lamp(p, _light_room_at(p), broken)
 			"halogen":
 				_halogen(p, String(o.get("axis", "x")), float(o.get("length", 0.8)), _light_room_at(p), broken)
 			"candle":
@@ -5686,6 +5692,22 @@ func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, roo
 	lamp.fixed = room_id in ALWAYS_LIT
 	lamp.position = pos
 	lamp.rotation.y = yaw
+	_parent.add_child(lamp)
+
+
+## Schreibtischlampe bei p auf dem Möbel darunter, der Schirm zu dessen Vorderseite (dort sitzt man); hat das Möbel
+## keine, steht sie wie das Telefon (_upright_yaw).
+func _desk_lamp(p: Vector2, room_id: String, broken: bool) -> void:
+	var lamp := Lamp.new().setup(Lamp.Style.DESK, room_id, DESK_LAMP_ENERGY, DESK_LAMP_RANGE, broken)
+	lamp.fixed = room_id in ALWAYS_LIT
+	lamp.position = Vector3(p.x, _top_at(p), p.y)
+	lamp.rotation.y = _upright_yaw(p)
+	var top := -1.0
+	for f in _furnishings:
+		var front: Vector2 = f["front"]
+		if float(f["top"]) > top and front != Vector2.ZERO and (f["rect"] as Rect2).grow(0.05).has_point(p):
+			top = float(f["top"])
+			lamp.rotation.y = atan2(front.x, front.y)
 	_parent.add_child(lamp)
 
 
