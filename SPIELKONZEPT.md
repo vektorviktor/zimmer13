@@ -1228,7 +1228,7 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - **Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
   Nachschub (z. B. der Hausmeister füllt nach)?
 - **Schreibtische (entschieden und umgesetzt 2026-11-01, ZIM-154):** Im Büro der Direktion ein großer Schreibtisch
-  (2,10 m, zwei Unterschränke, Mittelschublade, grüne Lederauflage mit Goldprägung), im Sekretariat ein schlichterer
+  (2,10 m, zwei Unterschränke, Mittelschublade, grüne Lederauflage in DIN A1 mit Goldprägung), im Sekretariat ein schlichterer
   (1,40 m, ein Unterschrank) – beide selbst gebaut im Look der Kommode. Die Schubladen gehen auf wie die der Kommoden,
   enthalten aber **nur Festes** aus der Handlung (z. B. das Foto von 2005 im Sekretariat, 2.10), sonst sind sie leer.
   Die Schlüsselschilder sind vorerst Zier; **abschließbare Schubladen** und ihre Schlüssel kommen mit ZIM-6.

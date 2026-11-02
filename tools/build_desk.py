@@ -2,10 +2,11 @@
 # Vertäfelung, Sockel mit Fase und Viertelstab, Eckpfosten mit drei Furchen, Rundstab, Fries mit stehenden Mulden,
 # Platte über einer kleinen Hohlkehle mit gerundeter Nase. Zwei Fassungen (VARIANTS):
 #   direktion    2,10 × 1,05 m, zwei Unterschränke mit je drei Schubladen (unten tief für Akten), dazwischen der
-#                Knieraum mit flacher Mittelschublade im Fries; grüne Lederauflage mit Goldprägung in der Platte
+#                Knieraum mit flacher Mittelschublade im Fries; grüne Lederauflage (DIN A1) mit Goldprägung in der
+#                Holzplatte, vorn mittig
 #   sekretariat  1,40 × 0,75 m, rechts ein Unterschrank, links eine Wange, Mittelschublade, Platte ganz aus Holz
-# Beide 0,78 m hoch. Rückseite (Besucherseite) und Außenseiten mit gefelderten Füllungen, im Knieraum hinten eine
-# gefelderte Rückwand. Schubladen der Unterschränke mit gefaster, vertiefter Füllung wie die Kommode, je zwei
+# Beide 0,78 m hoch. Außenseiten mit gefelderten Füllungen; die Rückseite (Besucherseite) über die ganze Breite mit
+# durchgehendem Sockel, Rundstab und Querleisten und drei gleichen Feldern (Wunsch des Nutzers 2.11.). Schubladen der Unterschränke mit gefaster, vertiefter Füllung wie die Kommode, je zwei
 # Messingknöpfe und ein Schlüsselschild (nur Zier – Abschließen ist ZIM-6); die Mittelschublade mit glatter Front.
 #
 # Lage (Godot-Achsen): Boden y = 0, Mitte x = 0, Vorderseite (Schubladen) nach +Z.
@@ -66,6 +67,7 @@ GAP = 0.0015              # Fuge je Kante
 BAND = 0.032              # Rahmen der Front bis zur Fase
 CHAMFER = 0.006
 PANEL_BAND = 0.07         # Rahmen der Füllungen an Rück- und Außenseiten
+BACK_FIELDS = 3           # gleiche Felder auf der Rückseite
 SIDE_WALL = 0.018
 BACK_WALL = 0.02          # Rückwand der Unterschränke und des Knieraums
 TRAY_WALL = 0.012
@@ -83,7 +85,8 @@ NICHE_H = 0.03
 NICHE_DEPTH = 0.003
 NICHE_PITCH = 0.04
 NICHE_CORNER = 0.04
-LEATHER_INSET = 0.075     # Holzrand der Platte um das Leder
+LEATHER = (0.841, 0.594)  # Lederauflage DIN A1 quer, mittig …
+LEATHER_FRONT = 0.12      # … mit so viel Holz davor (hinten bleibt Platz für Lampe und Telefon)
 LEATHER_DROP = 0.0008     # Leder so viel tiefer als das Holz
 GRAIN_TILE = 0.10         # eine Kachel der Narbung (Meter)
 
@@ -92,6 +95,11 @@ AO_DISTANCE = 0.06
 AO_STRENGTH = 0.9
 AO_SAMPLES = 128
 BRASS_SIZE = 512
+## Abstand der Inseln im Atlas (Anteil, 0,006 = 12 px) und Bake-Rand (px): Die gebackene Normale ersetzt im Spiel die
+## des Meshs – liegen die Inseln zu dicht, mischt eine kleinere Mipmap-Stufe (flacher Blick auf Kanten) die Normale der
+## Nachbarinsel herein, und Ecken und Leistenenden leuchten hell auf
+ISLAND_MARGIN = 0.006
+BAKE_MARGIN = 16
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 random.seed(54)
@@ -137,22 +145,49 @@ def framed(part, side, d, u0, u1, y0, y1, band_u, band_y, tag):
 			stile = i != 1
 			part.face([p(U[i], Y[j], 0), p(U[i + 1], Y[j], 0), p(U[i + 1], Y[j + 1], 0), p(U[i], Y[j + 1], 0)], n,
 				(tag, "stile", i) if stile else (tag, "rail", j), "y" if stile else hor)
+	sunk(part, p, n, hor, U[1], U[2], Y[1], Y[2], (tag, "rail", 0), (tag, "rail", 2), (tag, "stile", 0),
+		(tag, "stile", 2), (tag, "panel"))
+
+
+## Gerahmte Reihe von count gleichen Feldern (Rückseite): die Querleisten laufen über die ganze Breite durch, die
+## Höhenstücke stehen dazwischen
+def framed_row(part, side, d, u0, u1, y0, y1, stile, rail, count, tag):
+	p, n, hor = plane(side, d)
+	field = (u1 - u0 - (count + 1) * stile) / count
+	xs = [u0]
+	for k in range(count):
+		xs += [xs[-1] + stile, xs[-1] + stile + field]
+	xs.append(u1)
+	Y = [y0, y0 + rail, y1 - rail, y1]
+	for j in (0, 2):   # an den Stößen geteilt (keine T-Kreuzungen), ein Stück für die Maserung
+		for a, b in zip(xs, xs[1:]):
+			part.face([p(a, Y[j], 0), p(b, Y[j], 0), p(b, Y[j + 1], 0), p(a, Y[j + 1], 0)], n, (tag, "rail", j), hor)
+	for k in range(count + 1):
+		a, b = xs[2 * k], xs[2 * k + 1]
+		part.face([p(a, Y[1], 0), p(b, Y[1], 0), p(b, Y[2], 0), p(a, Y[2], 0)], n, (tag, "stile", k), "y")
+	for k in range(count):
+		sunk(part, p, n, hor, xs[2 * k + 1], xs[2 * k + 2], Y[1], Y[2], (tag, "rail", 0), (tag, "rail", 2),
+			(tag, "stile", k), (tag, "stile", k + 1), (tag, "panel", k))
+
+
+## Fase rings um das Feld [u0, u1] × [y0, y1] hinab zur vertieften Füllung; die Fasen gehören zu den Stücken des Rahmens
+def sunk(part, p, n, hor, u0, u1, y0, y1, bottom, top, left, right, panel):
 	c = CHAMFER
-	iu = [U[1] + c, U[2] - c]
-	iy = [Y[1] + c, Y[2] - c]
-	cp = p((U[1] + U[2]) / 2.0, (Y[1] + Y[2]) / 2.0, c)
+	iu = [u0 + c, u1 - c]
+	iy = [y0 + c, y1 - c]
+	cp = p((u0 + u1) / 2.0, (y0 + y1) / 2.0, c)
 	for (a0, a1), (b0, b1), piece, axis in [
-			(((U[1], Y[1]), (U[2], Y[1])), ((iu[0], iy[0]), (iu[1], iy[0])), (tag, "rail", 0), hor),
-			(((U[1], Y[2]), (U[2], Y[2])), ((iu[0], iy[1]), (iu[1], iy[1])), (tag, "rail", 2), hor),
-			(((U[1], Y[1]), (U[1], Y[2])), ((iu[0], iy[0]), (iu[0], iy[1])), (tag, "stile", 0), "y"),
-			(((U[2], Y[1]), (U[2], Y[2])), ((iu[1], iy[0]), (iu[1], iy[1])), (tag, "stile", 2), "y")]:
+			(((u0, y0), (u1, y0)), ((iu[0], iy[0]), (iu[1], iy[0])), bottom, hor),
+			(((u0, y1), (u1, y1)), ((iu[0], iy[1]), (iu[1], iy[1])), top, hor),
+			(((u0, y0), (u0, y1)), ((iu[0], iy[0]), (iu[0], iy[1])), left, "y"),
+			(((u1, y0), (u1, y1)), ((iu[1], iy[0]), (iu[1], iy[1])), right, "y")]:
 		pts = [p(a0[0], a0[1], 0), p(a1[0], a1[1], 0), p(b1[0], b1[1], c), p(b0[0], b0[1], c)]
 		# Normale der Fase (nur für die Richtung): nach außen und zur Mitte der Füllung
 		mid = [sum(q[i] for q in pts) / 4.0 for i in range(3)]
 		to_mid = [cp[i] - mid[i] for i in range(3)]
 		ln = math.sqrt(sum(v * v for v in to_mid)) or 1.0
 		part.face(pts, tuple(n[i] + to_mid[i] / ln for i in range(3)), piece, axis)
-	part.face([p(iu[0], iy[0], c), p(iu[1], iy[0], c), p(iu[1], iy[1], c), p(iu[0], iy[1], c)], n, (tag, "panel"), hor)
+	part.face([p(iu[0], iy[0], c), p(iu[1], iy[0], c), p(iu[1], iy[1], c), p(iu[0], iy[1], c)], n, panel, hor)
 
 
 ## Profil ringsum um das Rechteck [x0, x1] × [z0, z1] (Ecken auf Gehrung); sides: Auswahl aus „fbrl“
@@ -180,8 +215,8 @@ def build_carcass():
 	c = Part("carcass")
 	for si, (kind, a, b) in enumerate(SUPPORTS):
 		tag = "sup%d" % si
-		sweep(c, a, b, -HZ, HZ, LOW, tag + "plinth")
-		sweep(c, a, b, -HZ, HZ, BEAD, tag + "bead")
+		sweep(c, a, b, -HZ, HZ, LOW, tag + "plinth", "frl")
+		sweep(c, a, b, -HZ, HZ, BEAD, tag + "bead", "frl")
 		outer_l, outer_r = abs(a + HX) < 1e-6, abs(b - HX) < 1e-6
 		for side, d, outer in (("l", a, outer_l), ("r", b, outer_r)):
 			if outer:
@@ -190,12 +225,10 @@ def build_carcass():
 				quad(c, side, d, -HZ, HZ, PLINTH, BODY_TOP, (tag, side), "y")
 		if kind == "panel":
 			quad(c, "f", HZ, a, b, PLINTH, BODY_TOP, (tag, "front"), "y", 1)
-			quad(c, "b", -HZ, a, b, PLINTH, BODY_TOP, (tag, "back"), "y")
 			continue
 		# Unterschrank: Pfosten vorn, Füllung hinten, innen hohl (wie der Korpus der Kommode)
 		quad(c, "f", HZ, a, a + POST, PLINTH, BODY_TOP, (tag, "post", 0), "y", 1)
 		quad(c, "f", HZ, b - POST, b, PLINTH, BODY_TOP, (tag, "post", 1), "y", 1)
-		framed(c, "b", -HZ, a, b, PLINTH, BODY_TOP, POST, PANEL_BAND, (tag, "back"))
 		xo0, xo1 = a + POST, b - POST
 		xi0, xi1 = a + SIDE_WALL, b - SIDE_WALL
 		zi = -HZ + BACK_WALL
@@ -211,12 +244,10 @@ def build_carcass():
 				c.face([(u0, y, zi), (u1, y, zi), (u1, y, z1), (u0, y, z1)], (0, ny, 0), (tag, "in", y), "x")
 	for ki, (a, b) in enumerate(KNEES):
 		tag = "knee%d" % ki
-		framed(c, "b", -HZ, a, b, 0.0, KNEE_TOP, PANEL_BAND, PANEL_BAND, (tag, "back"))
 		quad(c, "f", -HZ + BACK_WALL, a, b, 0.0, KNEE_TOP, (tag, "inner"), "y")
 		c.face([(a, KNEE_TOP, -HZ + BACK_WALL), (b, KNEE_TOP, -HZ + BACK_WALL), (b, KNEE_TOP, HZ), (a, KNEE_TOP, HZ)],
 			(0, -1, 0), (tag, "ceiling"), "x")
 		quad(c, "f", HZ, a, b, KNEE_TOP, F0, (tag, "rail"), "x")
-		quad(c, "b", -HZ, a, b, KNEE_TOP, F0, (tag, "rail_b"), "x")
 		# Gehäuse der Mittelschublade
 		hb = housing_back()
 		c.face([(a, F0, hb), (b, F0, hb), (b, F0, HZ), (a, F0, HZ)], (0, 1, 0), (tag, "h", "floor"), "x")
@@ -224,6 +255,11 @@ def build_carcass():
 		c.face([(a, F0, hb), (a, F0, HZ), (a, F1, HZ), (a, F1, hb)], (1, 0, 0), (tag, "h", "l"), "z")
 		c.face([(b, F0, hb), (b, F0, HZ), (b, F1, HZ), (b, F1, hb)], (-1, 0, 0), (tag, "h", "r"), "z")
 		c.face([(a, F0, hb), (b, F0, hb), (b, F1, hb), (a, F1, hb)], (0, 0, 1), (tag, "h", "back"), "x")
+	# Rückseite (Besucherseite) über die ganze Breite: Sockel und Rundstab durchgehend, dazwischen BACK_FIELDS gleiche
+	# Felder mit durchlaufenden Querleisten
+	sweep(c, -HX, HX, -HZ, HZ, LOW, "back_plinth", "b")
+	sweep(c, -HX, HX, -HZ, HZ, BEAD, "back_bead", "b")
+	framed_row(c, "b", -HZ, -HX, HX, PLINTH, BODY_TOP, POST, PANEL_BAND, BACK_FIELDS, "back")
 	# Fries: vorn über den Stützen, hinten und an den Seiten durchgehend (Gruppe 4: Mulden)
 	for si, (kind, a, b) in enumerate(SUPPORTS):
 		quad(c, "f", HZ, a, b, F0, F1, ("frieze", "f", si), "x", 4)
@@ -231,19 +267,17 @@ def build_carcass():
 	quad(c, "l", -HX, -HZ, HZ, F0, F1, ("frieze", "l"), "z", 4)
 	quad(c, "r", HX, -HZ, HZ, F0, F1, ("frieze", "r"), "z", 4)
 	sweep(c, -HX, HX, -HZ, HZ, UPPER, "upper")
-	# Platte: mit Leder ein Rahmen auf Gehrung um die Vertiefung, sonst ganz Holz
+	# Platte: durchgehend Holz (ein Stück, Faser entlang x), beim Leder um dessen 0,8 mm tiefere Vertiefung herum
 	ox, oz = HX + OVER, HZ + OVER
 	if V["leather"]:
-		lx, lz = leather_half()
+		x0, x1, z0, z1 = leather_rect()
 		yl = TOP - LEATHER_DROP
-		c.face([(-ox, TOP, oz), (ox, TOP, oz), (lx, TOP, lz), (-lx, TOP, lz)], (0, 1, 0), ("top", "f"), "x")
-		c.face([(-ox, TOP, -oz), (ox, TOP, -oz), (lx, TOP, -lz), (-lx, TOP, -lz)], (0, 1, 0), ("top", "b"), "x")
-		c.face([(ox, TOP, -oz), (ox, TOP, oz), (lx, TOP, lz), (lx, TOP, -lz)], (0, 1, 0), ("top", "r"), "z")
-		c.face([(-ox, TOP, -oz), (-ox, TOP, oz), (-lx, TOP, lz), (-lx, TOP, -lz)], (0, 1, 0), ("top", "l"), "z")
-		c.face([(-lx, yl, lz), (lx, yl, lz), (lx, TOP, lz), (-lx, TOP, lz)], (0, 0, -1), ("top", "f"), "x")
-		c.face([(-lx, yl, -lz), (lx, yl, -lz), (lx, TOP, -lz), (-lx, TOP, -lz)], (0, 0, 1), ("top", "b"), "x")
-		c.face([(lx, yl, -lz), (lx, yl, lz), (lx, TOP, lz), (lx, TOP, -lz)], (-1, 0, 0), ("top", "r"), "z")
-		c.face([(-lx, yl, -lz), (-lx, yl, lz), (-lx, TOP, lz), (-lx, TOP, -lz)], (1, 0, 0), ("top", "l"), "z")
+		for a, b, za, zb in ((-ox, ox, z1, oz), (-ox, ox, -oz, z0), (-ox, x0, z0, z1), (x1, ox, z0, z1)):
+			c.face([(a, TOP, za), (b, TOP, za), (b, TOP, zb), (a, TOP, zb)], (0, 1, 0), ("top",), "x")
+		c.face([(x0, yl, z1), (x1, yl, z1), (x1, TOP, z1), (x0, TOP, z1)], (0, 0, -1), ("top",), "x")
+		c.face([(x0, yl, z0), (x1, yl, z0), (x1, TOP, z0), (x0, TOP, z0)], (0, 0, 1), ("top",), "x")
+		c.face([(x1, yl, z0), (x1, yl, z1), (x1, TOP, z1), (x1, TOP, z0)], (-1, 0, 0), ("top",), "x")
+		c.face([(x0, yl, z0), (x0, yl, z1), (x0, TOP, z1), (x0, TOP, z0)], (1, 0, 0), ("top",), "x")
 	else:
 		c.face([(-ox, TOP, -oz), (ox, TOP, -oz), (ox, TOP, oz), (-ox, TOP, oz)], (0, 1, 0), ("top",), "x")
 	return c.finish()
@@ -253,8 +287,10 @@ def housing_back():
 	return FRONT_Z - FRONT_T - V["center_d"] - 0.02
 
 
-def leather_half():
-	return HX + OVER - LEATHER_INSET, HZ + OVER - LEATHER_INSET
+## Lederauflage in der Platte: x0, x1, z0 (hinten), z1 (vorn)
+def leather_rect():
+	z1 = HZ + OVER - LEATHER_FRONT
+	return -LEATHER[0] / 2.0, LEATHER[0] / 2.0, z1 - LEATHER[1], z1
 
 
 # --- Schubladen --------------------------------------------------------------------------------------------------
@@ -340,19 +376,19 @@ def build_pulls(name, cx, y0, h, knob_x, zs):
 
 # --- Leder -------------------------------------------------------------------------------------------------------
 def build_leather():
-	lx, lz = leather_half()
+	x0, x1, z0, z1 = leather_rect()
 	bm = bmesh.new()
 	uv = bm.loops.layers.uv.new("UVMap")
 	grain = bm.loops.layers.uv.new("grain")
 	y = TOP - LEATHER_DROP
-	f = bm.faces.new([bm.verts.new(B(*p)) for p in ((-lx, y, lz), (lx, y, lz), (lx, y, -lz), (-lx, y, -lz))])
+	f = bm.faces.new([bm.verts.new(B(*p)) for p in ((x0, y, z1), (x1, y, z1), (x1, y, z0), (x0, y, z0))])
 	f.normal_update()
 	if f.normal.dot(B(0, 1, 0)) < 0:
 		f.normal_flip()
 	for loop in f.loops:
 		gx, gz = loop.vert.co.x, -loop.vert.co.y   # Blender → Godot x, z
 		# Bildzeile 0 = hinten: Blender-v 1 oben, glTF dreht v beim Export
-		loop[uv].uv = ((gx + lx) / (2 * lx), 1.0 - (gz + lz) / (2 * lz))
+		loop[uv].uv = ((gx - x0) / (x1 - x0), 1.0 - (gz - z0) / (z1 - z0))
 		loop[grain].uv = (gx / GRAIN_TILE, -gz / GRAIN_TILE)
 	return finish_plain(bm, "leather")
 
@@ -404,7 +440,7 @@ def save_rows(name, data, path, color_data=False):
 
 def leather_textures():
 	rng = np.random.default_rng(13)
-	lx, lz = [2 * v for v in leather_half()]
+	lx, lz = LEATHER
 	W = 2048
 	H = int(round(W * lz / lx))
 	px = lx / W
@@ -413,10 +449,10 @@ def leather_textures():
 	mottle = fbm(H, W, 0.25, (lx, lz), rng)
 	fine = fbm(H, W, 0.02, (lx, lz), rng, 2)
 	# abgegriffen vorn in der Mitte, wo der Direktor schreibt; Ränder dunkler
-	e = ((xm - lx / 2) / 0.42) ** 2 + ((zm - lz * 0.80) / 0.2) ** 2
+	e = ((xm - lx / 2) / 0.28) ** 2 + ((zm - lz * 0.72) / 0.18) ** 2
 	wear = np.clip(1 - e, 0, 1) ** 0.7 * (0.6 + 0.4 * fbm(H, W, 0.06, (lx, lz), rng))
 	edge = np.minimum(np.minimum(xm, lx - xm), np.minimum(zm, lz - zm))
-	dark = np.clip(1 - edge / 0.05, 0, 1) ** 2 * 0.3
+	dark = np.clip(1 - edge / 0.04, 0, 1) ** 2 * 0.3
 	green = np.array([0.085, 0.170, 0.115])
 	worn = np.array([0.20, 0.26, 0.18])
 	col = green[None, None, :] * (0.82 + 0.36 * mottle[..., None]) * (0.94 + 0.12 * fine[..., None])
@@ -424,11 +460,11 @@ def leather_textures():
 	col *= 1 - dark[..., None]
 	rough = 0.72 + 0.08 * (mottle - 0.5) - 0.2 * wear
 	# Goldprägung: breite und feine Linie, Raute in den inneren Ecken; eine blinde Linie ohne Gold weiter innen
-	gold = np.maximum(rect_line(xm, zm, lx, lz, 0.016, 0.0045, px), rect_line(xm, zm, lx, lz, 0.026, 0.0012, px))
-	for cxm in (0.044, lx - 0.044):
-		for czm in (0.044, lz - 0.044):
+	gold = np.maximum(rect_line(xm, zm, lx, lz, 0.013, 0.004, px), rect_line(xm, zm, lx, lz, 0.021, 0.0011, px))
+	for cxm in (0.036, lx - 0.036):
+		for czm in (0.036, lz - 0.036):
 			gold = np.maximum(gold, np.clip((0.0055 - (np.abs(xm - cxm) + np.abs(zm - czm))) / px + 0.5, 0, 1))
-	groove = np.maximum(gold, rect_line(xm, zm, lx, lz, 0.034, 0.001, px))
+	groove = np.maximum(gold, rect_line(xm, zm, lx, lz, 0.028, 0.001, px))
 	gilt = gold * np.clip(0.8 + 0.9 * (fbm(H, W, 0.01, (lx, lz), rng, 2) - 0.5) - 0.6 * wear, 0, 1)
 	gold_col = np.array([0.80, 0.63, 0.32])[None, None, :] * (0.85 + 0.3 * fine[..., None])
 	col = col * (1 - gilt[..., None]) + gold_col * gilt[..., None]
@@ -488,7 +524,7 @@ for size, cx, y0, half, h, depth, slide in specs:
 leather = build_leather() if V["leather"] else None
 wood = [carcass] + list(drawers.values())
 brass = list(pulls.values())
-atlas_uv(wood, 0.002, {1: 3.0, 4: 2.5})
+atlas_uv(wood, ISLAND_MARGIN, {1: 3.0, 4: 2.5})
 atlas_uv(brass, 0.01)
 
 
@@ -544,6 +580,7 @@ def niches_paint():
 
 # --- Backen ------------------------------------------------------------------------------------------------------
 sc = setup_cycles()
+sc.render.bake.margin = BAKE_MARGIN
 for ob in wood:
 	ob.data.materials.append(bake_material("wood_src"))
 brass_src = brass_material()
