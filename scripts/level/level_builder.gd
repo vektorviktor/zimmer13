@@ -3903,42 +3903,33 @@ func _balconies() -> void:
 				_railing(Vector3(r.get_center().x, 0, r.position.y), Vector3(r.get_center().x, 0, r.end.y))
 
 
-## Zimmer und Bäder ohne Lichtschalter im Plan: einer innen neben der Tür (Zimmertür bzw. Badtür, ZIM-149); unbewohnte
-## Zimmer bleiben dunkel.
+## Zimmer ohne Lichtschalter im Plan (Obergeschoss): einer innen neben der Tür, auf der Griffseite (gegenüber dem
+## Scharnier); unbewohnte Zimmer bleiben dunkel.
 func _auto_switches() -> void:
 	for info in _map["rooms"]:
 		var no := String(info["no"])
-		if not _room_open(no) or not rooms.has(no):
+		if _switched.has(no) or not _room_open(no) or not rooms.has(no):
 			continue
-		if not _switched.has(no):
-			var sw := _door_switch(rooms[no]["door"], no, (rooms[no]["into"] as Vector3).normalized())
-			if sw and rooms[no]["kind"] == "vacant":
+		var entry := {}
+		for d in _doors:
+			if d["door"] == rooms[no]["door"]:
+				entry = d
+		if entry.is_empty():
+			continue
+		var door: Door = entry["door"]
+		var center: Vector3 = entry["pos"]
+		var into := (rooms[no]["into"] as Vector3).normalized()
+		var handle := (center - (entry["hinge"] as Vector3)).normalized()
+		for side: float in [1.0, -1.0]:   # Griffseite, sonst neben dem Scharnier hinter dem Türblatt hervor
+			var reach := door.width / 2.0 + (0.25 if side > 0 else door.width + 0.3)
+			var p := center + handle * side * reach + into * (T / 2.0 + WALL_GAP)
+			if _room_id_at(Vector2(p.x, p.z) + Vector2(into.x, into.z) * 0.3) != no:
+				continue
+			var sw := _switch(no, _switch_label(no), Vector3(p.x, SWITCH_Y, p.z), atan2(into.x, into.z))
+			_switched[no] = true
+			if rooms[no]["kind"] == "vacant":
 				sw.set_on.call_deferred(false, true)
-		for d in info.get("bath_doors", []):
-			var bath := _light_room_at(_v2(d["pos"]) + _v2(d["normal"]) * 0.4)
-			if _bath_owner.has(bath) and not _switched.has(bath):
-				_door_switch(_door_near(_v3(d["pos"])), bath, _v3(d["normal"]))
-
-
-## Schalter der Lichtgruppe id innen neben door (into: in den Raum) auf der Griffseite (gegenüber dem Scharnier),
-## sonst neben dem Scharnier hinter dem Türblatt hervor. null, wenn dort kein Platz in diesem Raum ist.
-func _door_switch(door: Door, id: String, into: Vector3) -> LightSwitch:
-	var entry := {}
-	for d in _doors:
-		if d["door"] == door:
-			entry = d
-	if door == null or entry.is_empty():
-		return null
-	var center: Vector3 = entry["pos"]
-	var handle := (center - (entry["hinge"] as Vector3)).normalized()
-	for side: float in [1.0, -1.0]:
-		var reach := door.width / 2.0 + (0.25 if side > 0 else door.width + 0.3)
-		var p := center + handle * side * reach + into * (T / 2.0 + WALL_GAP)
-		if _light_room_at(Vector2(p.x, p.z) + Vector2(into.x, into.z) * 0.3) != id:
-			continue
-		_switched[id] = true
-		return _switch(id, _switch_label(id), Vector3(p.x, SWITCH_Y, p.z), atan2(into.x, into.z))
-	return null
+			break
 
 
 ## Säule bis unter die Galerie (Terrazzo): Plinthe und Deckplatte als Quader, dazwischen ein Drehkörper aus

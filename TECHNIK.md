@@ -413,8 +413,8 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
   `"keller"` (Heizkeller), `"og1_flure"`, `"ug_cellar_1"` …). Lampen und Schalter gehören über `room_id` zu einem Raum;
   `LightSwitch.find(tree, room_id)` schaltet alle Lampen des Raums. Ein Bad hat seine eigene Raum-ID (`bath_7`,
   `og1_bath_5`) und eigene Schalter (ZIM-149); `LevelBuilder.home_of(id)` bzw. `Lamp.home_id()` führen es auf das
-  Zimmer davor zurück (Besitz, Birnenklau, Ersatzbirnen). Fehlt im Plan ein Schalter, setzt `_auto_switches` ihn
-  innen neben die Zimmer- bzw. Badtür (`_door_switch`, Griffseite); Badschalter starten aus. Mehrere Schalter in einem Raum sind eine
+  Zimmer davor zurück (Besitz, Birnenklau, Ersatzbirnen). Badschalter kommen nur aus dem Plan (`_auto_switches`
+  ergänzt nur Zimmerschalter) und starten aus; ohne Schalter brennt das Badlicht immer. Mehrere Schalter in einem Raum sind eine
   Wechselschaltung: `set_on` stellt alle mit derselben `room_id` um (Lärm und `on_lights_off` nur vom betätigten),
   `find()` darf also irgendeinen liefern.
 - **Zonen** (`LevelBuilder.zones`, Kreise mit `name`, `center`, `radius`) sind etwas anderes: Sie tragen nur den
