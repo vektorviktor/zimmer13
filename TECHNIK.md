@@ -1580,6 +1580,13 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   `BELOW`), gehört sie dorthin (ins Becken gefallen) – nicht, wenn bis `NEAR` eine Fläche ihres Stockwerks liegt oder
   sie über einem `voids`-Luftraum steht (sonst kippte sie im Sprung an Wänden und an der Galerie über der Lobby ins
   Dachgeschoss). **Im Code gebaute Wände ohne Plan-Eintrag trennen keine Bereiche.**
+- **Andere Stockwerke:** Über Treppen und offene Türen hängt fast das ganze Haus an einem Bereich – ging im Speisesaal
+  eine Tür auf, zählten auch die Halogenröhren im UG darunter und die Lampen im OG darüber (103 statt 45 im Umkreis,
+  über den 88 Plätzen: Licht durch Boden und Decke, das mit jeder Tür sprang). Darum zählt ein Licht auf einem anderen
+  Stockwerk als die Kamera nur, wenn seine Reichweite eine Treppe oder einen Luftraum zu ihr hin erreicht
+  (`LightRooms.passages_near`, Bits hinauf/hinab, gemerkt in der Meta `light_passages`). Steht die Kamera bis
+  `ShadowBudget.STAIR_NEAR` an einer, zählt das ganze Nachbarstockwerk in diese Richtung (Treppe, unter der Galerie);
+  im Freien gilt die Regel nicht.
 - Jeder Raum hat mindestens eine Wandleuchte, sonst schaltet sein Schalter nichts. **Helligkeit nachjustieren:**
   `Lamp.BRIGHTNESS`/`REACH` für alle gemeinsam, sonst `WALL_LAMP_ENERGY`, `ROOM_LAMP_ENERGY`, `CANDLE_ENERGY`, die
   Deckenfarben (`CEILING_SHADE` …), Umgebungslicht und Mond (`main._setup_environment`).

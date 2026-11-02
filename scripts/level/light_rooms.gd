@@ -4,7 +4,9 @@ extends RefCounted
 ## LevelBuilder.GRID). Türen verbinden zwei Bereiche, solange sie Licht durchlassen (Door.lets_light), Fenster,
 ## Glastüren und Aufzugtüren nur einen Schritt weit; Treppen, Lufträume und freier Himmel verbinden Stockwerke
 ## dauerhaft. reach() sagt, welche Bereiche die Kamera erreichen kann – Lichter anderswo schaltet ShadowBudget für die
-## Darstellung ab (ohne Platz im Schattenatlas schienen sie durch Wände). An/Aus, Energie und
+## Darstellung ab (ohne Platz im Schattenatlas schienen sie durch Wände). Bereiche gehen über Treppen durchs ganze
+## Haus – Lichter auf anderen Stockwerken zählen darum nur, wenn ihr Schein eine Treppe oder einen Luftraum zur Kamera
+## hin erreicht (passages_near). An/Aus, Energie und
 ## MonsterDirector.light_at bleiben unberührt. Nichts wird von Hand gepflegt: LevelBuilder meldet beim Bau jede Wand,
 ## Tür, Fenster und Öffnung des Plans (begin_floor … finish).
 
@@ -45,6 +47,7 @@ var _links_b := PackedInt32Array()
 var _links_kind := PackedInt32Array()
 var _links_door: Array[Door] = []
 var _adjacent: Array = []                ## je Bereich die Indizes seiner Verbindungen
+var _passages: Array = []                ## Treppen und Lufträume (nach finish): [unteres Stockwerk, oberes, Rect2]
 
 
 ## Neues Stockwerk (LevelBuilder._begin_floor): Raster und Flächen wie dessen Nachschlagetabelle.
@@ -106,6 +109,7 @@ func finish() -> void:
 			var other := _floor_of_level(int(_floors[fi]["level"]) + step)
 			if other < 0 or not (o[2] if step > 0 else o[3]):
 				continue
+			_passages.append([fi, other, r] if step > 0 else [other, fi, r])
 			for p in _samples(r):
 				var a := _run_near(fi, p)
 				var b := _run_near(other, p)
@@ -327,6 +331,29 @@ func camera_floor(pos: Vector3) -> int:
 	if fi < 0 or _outdoor(fi, Vector2(pos.x, pos.z)):
 		return -1
 	return fi
+
+
+## Stockwerk (Index) eines Lichts im Baum (nach seinem Wurzelknoten) bzw. eines Punkts (nach der Höhe).
+func floor_of(pos: Vector3, node: Node = null) -> int:
+	return _floor_at(pos, node)
+
+
+## Ebene des Stockwerks mit Index fi (0 = EG, negativ darunter).
+func level_of(fi: int) -> int:
+	return int(_floors[fi]["level"])
+
+
+## Treppen und Lufträume, die Stockwerk fi mit einem anderen verbinden und bis margin an p heranreichen:
+## Bit 1 hinauf, Bit 2 hinab. Licht auf anderen Stockwerken als die Kamera fällt nur durch diese (ShadowBudget).
+func passages_near(fi: int, p: Vector2, margin: float) -> int:
+	var bits := 0
+	for ps: Array in _passages:
+		if (ps[2] as Rect2).grow(margin).has_point(p):
+			if ps[0] == fi:
+				bits |= 1
+			elif ps[1] == fi:
+				bits |= 2
+	return bits
 
 
 ## Wurzelknoten der Stockwerke, Index wie bei camera_floor.

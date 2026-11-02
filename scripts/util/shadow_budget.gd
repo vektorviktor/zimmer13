@@ -13,6 +13,12 @@ extends Node
 ## Stockwerken – LightRooms), schaltet es für die Darstellung ab: Sie konkurrierten sonst um die 88 Plätze im
 ## Schattenatlas, und wer keinen bekommt, scheint durch alle Wände. Weil alle erreichbaren Lampen Wand-Schatten
 ## werfen, sieht man das Abschalten nicht. An/Aus, Energie und MonsterDirector.light_at bleiben unberührt.
+## Die Bereiche hängen über Treppen und offene Türen durchs ganze Haus zusammen: Ging im Speisesaal eine Tür auf,
+## zählten auch die Halogenröhren im UG darunter und die Lampen im OG darüber (über 88), ein Teil schien durch Boden
+## und Decke und sprang mit jeder Tür. Darum zählt ein Licht auf einem anderen Stockwerk als die Kamera nur, wenn
+## sein Schein (Reichweite) eine Treppe oder einen Luftraum zu ihr hin erreicht. Steht die Kamera selbst bis
+## STAIR_NEAR an einer (auf der Treppe, unter der Galerie), zählen alle Lichter des Stockwerks, in das sie führt; im
+## Freien gilt die Regel nicht.
 
 ## Sichtebene der Schatten vom Bau (Ebene 15)
 const LAYER := 1 << 14
@@ -26,6 +32,8 @@ const INTERVAL := 0.25
 const ALL := 0xFFFFFFFF & ~LAYER
 ## Lichter, die sich weiter bewegt haben (m), bekommen ihren Bereich neu
 const MOVE := 0.25
+## So nah an einer Treppe oder einem Luftraum (m) zählen alle erreichbaren Lichter des Stockwerks, in das sie führt
+const STAIR_NEAR := 3.0
 ## Bias der Lampen (Godot: 0,1) – bei 0,1 löste sich der Schatten sichtbar von Möbeln an der Wand, und in Fächern
 ## und an Fugen dünner Bretter lief Licht als helle Linie durch. 0: Flecken auf Flächen. Der Normal Bias (1,0) ändert
 ## daran kaum etwas und bleibt (Debug --schatten-bias)
@@ -56,6 +64,11 @@ var floors_only := false:
 		if not value:
 			_show_floors(-1)
 var _timer := 0.0
+## Stockwerk der Kamera für die Lichter anderer Stockwerke (−1: keine Einschränkung), seine Ebene und die Treppen
+## und Lufträume bis STAIR_NEAR an ihr (Bits wie LightRooms.passages_near)
+var _cam_floor := -1
+var _cam_level := 0
+var _cam_passages := 0
 var _shown_floor := -1
 var _floor_hidden: Array[Node3D] = []
 
@@ -135,6 +148,12 @@ func _process(delta: float) -> void:
 	if floors_only and rooms:
 		_show_floors(rooms.camera_floor(origin))
 	var reach := rooms.reach(origin) if rooms else PackedByteArray()
+	_cam_floor = -1
+	if not reach.is_empty():
+		_cam_floor = rooms.camera_floor(origin)
+		if _cam_floor >= 0:
+			_cam_level = rooms.level_of(_cam_floor)
+			_cam_passages = rooms.passages_near(_cam_floor, Vector2(origin.x, origin.z), STAIR_NEAR)
 	var candidates: Array = []
 	for node in get_tree().get_nodes_in_group("lamps"):
 		var light := node as OmniLight3D
@@ -202,10 +221,25 @@ func _show(light: Light3D, reach: PackedByteArray) -> bool:
 	if not reach.is_empty():
 		var p := light.global_position
 		if not light.has_meta("light_room") or (light.get_meta("light_room_at") as Vector3).distance_squared_to(p) > MOVE * MOVE:
+			var lf := rooms.floor_of(p, light)
+			var light_range := 0.0
+			if light is OmniLight3D:
+				light_range = (light as OmniLight3D).omni_range
+			elif light is SpotLight3D:
+				light_range = (light as SpotLight3D).spot_range
 			light.set_meta("light_room", rooms.region_at(p, light))
 			light.set_meta("light_room_at", p)
+			light.set_meta("light_floor", lf)
+			light.set_meta("light_passages", rooms.passages_near(lf, Vector2(p.x, p.z), light_range) if lf >= 0 else 3)
 		var region: int = light.get_meta("light_room")
 		shown = region < 0 or reach[region] != 0
+		var fi: int = light.get_meta("light_floor")
+		if shown and _cam_floor >= 0 and fi >= 0 and fi != _cam_floor:
+			# anderes Stockwerk: nur durch eine Treppe oder einen Luftraum zur Kamera hin
+			var level := rooms.level_of(fi)
+			var toward := 2 if level > _cam_level else 1
+			var beside := absi(level - _cam_level) == 1 and (_cam_passages & (1 if level > _cam_level else 2)) != 0
+			shown = beside or (int(light.get_meta("light_passages")) & toward) != 0
 	if shown:
 		if light.has_meta("hidden_mask"):
 			light.light_cull_mask = light.get_meta("hidden_mask")
