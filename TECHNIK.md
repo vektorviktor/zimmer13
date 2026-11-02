@@ -252,7 +252,10 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `TilesBasic_01` | Pool-Umgang (`pool_deck`) | |
 | `Stone_EngraveWall_01` | Poolhalle, Wände (Haut der Seite `pool`) | AO eingebacken – ohne fast musterlos |
 | `Tiles045` (ambientCG, CC0) | Bäder, Umkleiden und Duschen am Pool: Wände bis `BATH_TILE_HEIGHT`, Boden, Wannensockel, Waschtisch, Duschsockel (`_bath_tiles`; Pool-Räume über `TILED_CHANGING_ROOMS` – Wände per `_skin_kind`, Boden und Badecke in `_floors_and_ceilings`, sonst Betriebsraum) | dunkler Schiefer, gemischte Formate, `BATH_TILES_METERS` 1,8 m, Weltkoordinaten; Displacement verworfen (Relief steckt in der Normal Map) |
-| `Scifi_PaintedWall_01` | Bad, Umkleiden und Duschen darüber und Decke (`_bath_paint`) | |
+| `Scifi_PaintedWall_01` | Bad, Umkleiden und Duschen darüber und Decke, Decke der Küche (`_bath_paint`) | |
+| `Tiles136B` (ambientCG, CC0) | Küchenboden (`_kitchen_floor`; Küche `KITCHEN_ROOM` über `_look` als „kitchen“) | helle 15-cm-Fliesen im Halbverband, `KITCHEN_TILES_METERS` 1,8 m, AO eingebacken |
+| `Tiles133B` (ambientCG, CC0) | Küchenwände bis unter die Decke (Haut der Seite `kitchen`, `_kitchen_tiles`; ohne Vertäfelung) | hellblaue 15-cm-Fliesen, 1,8 m, AO eingebacken |
+| `WoodFloor014` (ambientCG, CC0) | Speisesaal, Boden (`_dining_floor`, `DINING_ROOM`; Wände bleiben tapeziert) | Fischgrätparkett, Stäbe 7,5 × 30 cm, `DINING_FLOOR_METERS` 1,2 m; AO-Karte einfarbig, verworfen |
 | `StoneWall_01` | Kieswege (`gravel`) | `GRAVEL_NORMAL_STRENGTH` – ohne wirkten sie flach |
 | `StoneFloor_02` | Außenwände (Haut der Seite `outside`, `_facade`) | |
 | `Wood_Panels_01` | alle Holzdecken (`_ceiling`, `_room_ceiling`), Aufzugskabine | aufgehellt `CEILING_SHADE`/`ROOM_CEILING_SHADE` |

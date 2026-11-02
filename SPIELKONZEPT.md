@@ -5372,6 +5372,13 @@ Dachform (4.21).
 - **Läufer** aus rotem Damast (Muster aus der Vorlage des Nutzers) entlang der Länge, 40 cm breit, hängt an beiden
   Enden 30 cm herab. Muster und Grund unterscheiden sich in der Bindung: das Muster glänzt etwas.
 
+### 7.16 Böden und Wände von Küche und Speisesaal (entschieden und umgesetzt 2026-11-02)
+
+- **Speisesaal:** dunkles Fischgrätparkett (`WoodFloor014`, ambientCG), Stäbe 7,5 × 30 cm. Wände bleiben tapeziert
+  mit Vertäfelung.
+- **Küche:** Boden aus hellen 15-cm-Fliesen im Halbverband (`Tiles136B`), Wände bis unter die Decke mit hellblauen
+  15-cm-Fliesen (`Tiles133B`, keine Vertäfelung), Decke gestrichen wie in den Bädern. Texturen vom Nutzer gewählt.
+
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9

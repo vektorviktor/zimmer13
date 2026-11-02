@@ -115,6 +115,22 @@ const BATH_PAINT_NORMAL := "res://assets/textures/Scifi_PaintedWall_01/Scifi_Pai
 const BATH_PAINT_ROUGHNESS := "res://assets/textures/Scifi_PaintedWall_01/Scifi_PaintedWall_01_roughness.jpg"
 const BATH_PAINT_METERS := 2.5
 const BATH_PAINT_SPECULAR := 0.3
+## Küche (2.11.): Boden aus hellen 15-cm-Fliesen im Halbverband (Tiles136B, ambientCG), Wände bis unter die Decke mit
+## hellblauen 15-cm-Fliesen (Tiles133B), je Bild 12 Kacheln; Decke gestrichen wie im Bad
+const KITCHEN_FLOOR_TEX := "res://assets/textures/Tiles136B/Tiles136B_basecolor.jpg"
+const KITCHEN_FLOOR_NORMAL := "res://assets/textures/Tiles136B/Tiles136B_normalogl.jpg"
+const KITCHEN_FLOOR_ROUGHNESS := "res://assets/textures/Tiles136B/Tiles136B_roughness.jpg"
+const KITCHEN_WALL_TEX := "res://assets/textures/Tiles133B/Tiles133B_basecolor.jpg"
+const KITCHEN_WALL_NORMAL := "res://assets/textures/Tiles133B/Tiles133B_normalogl.jpg"
+const KITCHEN_WALL_ROUGHNESS := "res://assets/textures/Tiles133B/Tiles133B_roughness.jpg"
+const KITCHEN_TILES_METERS := 1.8
+const KITCHEN_ROOM := "kueche"
+## Speisesaal (2.11.): dunkles Fischgrätparkett (WoodFloor014, ambientCG), Stäbe 7,5 × 30 cm, 16 Stabbreiten je Bild
+const DINING_FLOOR_TEX := "res://assets/textures/WoodFloor014/WoodFloor014_basecolor.jpg"
+const DINING_FLOOR_NORMAL := "res://assets/textures/WoodFloor014/WoodFloor014_normalogl.jpg"
+const DINING_FLOOR_ROUGHNESS := "res://assets/textures/WoodFloor014/WoodFloor014_roughness.jpg"
+const DINING_FLOOR_METERS := 1.2
+const DINING_ROOM := "speisesaal"
 ## Wände der Poolhalle: Riemchen aus Naturstein (Farbbild mit eingebackener AO – das Muster steckt im Set fast nur in
 ## AO und Normal Map –, Normal Map), eine Kachel = 6 Spalten × ~22 Reihen, also Steine à ~50 × 14 cm
 const POOL_WALL_TEX := "res://assets/textures/Stone_EngraveWall_01/Stone_EngraveWall_01_basecolor.jpg"
@@ -680,6 +696,9 @@ var _lobby_floor: Material
 var _pool_tiles: Material
 var _bath_tiles: Material
 var _bath_paint: Material
+var _kitchen_floor: Material
+var _kitchen_tiles: Material
+var _dining_floor: Material
 var _pool_wall: Material
 var _pool_floor: Material
 var _pillar_stone: Material
@@ -1006,6 +1025,14 @@ func _materials() -> void:
 	_bath_tiles = Mat.photo(BATH_TILES_TEX, BATH_TILES_METERS, BATH_TILES_NORMAL, BATH_TILES_ROUGHNESS, POOL_TILES_SPECULAR)
 	_bath_tiles.set_meta("floor", "tiles")
 	_bath_paint = Mat.photo(BATH_PAINT_TEX, BATH_PAINT_METERS, BATH_PAINT_NORMAL, BATH_PAINT_ROUGHNESS, BATH_PAINT_SPECULAR)
+	_kitchen_floor = Mat.photo(KITCHEN_FLOOR_TEX, KITCHEN_TILES_METERS, KITCHEN_FLOOR_NORMAL, KITCHEN_FLOOR_ROUGHNESS,
+		POOL_TILES_SPECULAR)
+	_kitchen_floor.set_meta("floor", "tiles")
+	_kitchen_tiles = Mat.photo(KITCHEN_WALL_TEX, KITCHEN_TILES_METERS, KITCHEN_WALL_NORMAL, KITCHEN_WALL_ROUGHNESS,
+		POOL_TILES_SPECULAR)
+	_dining_floor = Mat.photo(DINING_FLOOR_TEX, DINING_FLOOR_METERS, DINING_FLOOR_NORMAL, DINING_FLOOR_ROUGHNESS,
+		WOOD_FLOOR_SPECULAR)
+	_dining_floor.set_meta("floor", "wood")
 	_pool_wall = Mat.photo(POOL_WALL_TEX, POOL_WALL_METERS, POOL_WALL_NORMAL)
 	_pool_floor = Mat.photo(POOL_FLOOR_TEX, POOL_FLOOR_METERS, POOL_FLOOR_NORMAL, POOL_FLOOR_ROUGHNESS, POOL_FLOOR_SPECULAR)
 	_pool_floor.set_meta("floor", "tiles")
@@ -1642,10 +1669,21 @@ func _wall_side_kind(p: Vector2) -> String:
 	return _skin_kind(p, _kind_at(p))
 
 
-## Umkleiden und Duschen am Pool: Fliesen bis BATH_TILE_HEIGHT wie im Bad (ZIM-145) – nur für die Wandflächen, sonst
-## bleiben sie Betriebsräume (Türrichtung, Lampen, Namen)
+## Umkleiden und Duschen am Pool: Fliesen bis BATH_TILE_HEIGHT wie im Bad (ZIM-145), Küche bis unter die Decke
+## gefliest – nur für die Wandflächen, sonst bleiben sie Betriebsräume (Türrichtung, Lampen, Namen)
 func _skin_kind(p: Vector2, kind: String) -> String:
-	return "bath" if kind == "service" and _room_id_at(p) in TILED_CHANGING_ROOMS else kind
+	var look := _look(kind, _room_id_at(p)) if kind == "service" else kind
+	return kind if look == "dining" else look   # im Speisesaal nur der Boden eigen, die Wände tapeziert
+
+
+## Aussehen eines Betriebsraums mit eigenen Böden, Wänden oder Decken: „bath“ (gefliest wie das Bad), „kitchen“,
+## „dining“; sonst die Art selbst
+func _look(kind: String, id: String) -> String:
+	if kind != "service":
+		return kind
+	if id in TILED_CHANGING_ROOMS:
+		return "bath"
+	return {KITCHEN_ROOM: "kitchen", DINING_ROOM: "dining"}.get(id, kind)
 
 
 func _wall_material(kind: String) -> Material:
@@ -1685,6 +1723,8 @@ func _skin_material(kind: String) -> Material:
 			return _wall_tiles
 		"bath":
 			return _bath_tiles   # nur bis BATH_TILE_HEIGHT, darüber _bath_paint (_wall_piece_at)
+		"kitchen":
+			return _kitchen_tiles
 		"pool":
 			return _pool_wall
 		"storage":
@@ -1994,8 +2034,9 @@ func _floors_and_ceilings() -> void:
 		# Verschlossene Zimmer und Kellerräume: Boden nur zum Draufstehen (Debug-Teleport), auf der Ebene der Decken –
 		# nicht im NavMesh, sonst planten Gäste und Monster Wege durch abgesperrte Türen
 		var layer := LAYER_CEILING if (kind == "room" and not _room_open(String(r["id"]))) or kind == "cellar_room" else 1
-		var look := "bath" if kind == "service" and String(r.get("id", "")) in TILED_CHANGING_ROOMS else kind
-		var ceiling: Material = _cellar_ceiling if _level < 0 else {"room": _room_ceiling, "bath": _bath_paint}.get(look, _ceiling)
+		var look := _look(kind, String(r.get("id", "")))
+		var ceilings := {"room": _room_ceiling, "bath": _bath_paint, "kitchen": _bath_paint}
+		var ceiling: Material = _cellar_ceiling if _level < 0 else ceilings.get(look, _ceiling)
 		if kind in ["terrace", "balcony"]:
 			_deck(r)
 		for rc in r["rects"]:
@@ -2128,6 +2169,10 @@ func _floor_material(kind: String) -> Material:
 			return _pool_floor
 		"bath":
 			return _bath_tiles
+		"kitchen":
+			return _kitchen_floor
+		"dining":
+			return _dining_floor
 		"bowling_lane":
 			return _lane_floor
 		"foul_line":
