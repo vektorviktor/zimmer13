@@ -413,8 +413,8 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
   `"keller"` (Heizkeller), `"og1_flure"`, `"ug_cellar_1"` …). Lampen und Schalter gehören über `room_id` zu einem Raum;
   `LightSwitch.find(tree, room_id)` schaltet alle Lampen des Raums. Ein Bad hat seine eigene Raum-ID (`bath_7`,
   `og1_bath_5`) und eigene Schalter (ZIM-149); `LevelBuilder.home_of(id)` bzw. `Lamp.home_id()` führen es auf das
-  Zimmer davor zurück (Besitz, Birnenklau, Ersatzbirnen). Badschalter kommen nur aus dem Plan (`_auto_switches`
-  ergänzt nur Zimmerschalter) und starten aus; ohne Schalter brennt das Badlicht immer. Mehrere Schalter in einem Raum sind eine
+  Zimmer davor zurück (Besitz, Birnenklau, Ersatzbirnen). Lichtschalter kommen nur aus dem Plan, der Bau
+  ergänzt keine (ZIM-149): Ohne Schalter brennt das Licht des Raums immer. Badschalter starten aus. Mehrere Schalter in einem Raum sind eine
   Wechselschaltung: `set_on` stellt alle mit derselben `room_id` um (Lärm und `on_lights_off` nur vom betätigten),
   `find()` darf also irgendeinen liefern.
 - **Zonen** (`LevelBuilder.zones`, Kreise mit `name`, `center`, `radius`) sind etwas anderes: Sie tragen nur den
@@ -551,7 +551,7 @@ steht in `CONTENT` je Raum-ID; Höhen und Helligkeiten in `BOX_HEIGHTS`, `_lamp_
 ### Ablauf von `build()`
 EG laden (`_begin_floor`: Flächen-Raster `_index_places`, Wandstöße, Haushalte), Treppenschächte (`_index_shafts`) →
 `_build_plan_floor()`: Wände (`_build_wall`) → Böden und Decken → Zimmer → Einrichtung (`_furniture`, `_fittings`,
-`_rugs`, `_items`, `_lights`) → Schalter für Zimmer ohne Plan-Schalter (`_auto_switches`) → Lobby und Lobbytreppe
+`_rugs`, `_items`, `_lights`) → Lobby und Lobbytreppe
 (`_lobby_flight`), Bar/Partyraum/Küche (`_common_rooms`), Pool, Gärten → Treppenhäuser → obere Stockwerke
 (`_upper_floor`, Dachgeschoss `_attic_floor`) → Untergeschoss (`_lower_floor`) → Aufzüge → Lichtbereiche
 (`light_rooms.finish()`) → Schatten vom Bau (`ShadowBudget.merge(structure_parts)`) → Zonen, Wegpunkte.

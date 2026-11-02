@@ -643,8 +643,6 @@ var _base_y := 0.0
 var _shafts := {}
 ## Bad → Zimmernummer (Licht und Verschluss gehören zum Zimmer)
 var _bath_owner := {}
-## Räume, für die der Plan einen Lichtschalter hat
-var _switched := {}
 var _cellar_center := Vector3.ZERO
 ## Jedes Zimmer des Plans, auch verschlossene: Nummer → {pos (Mitte am Boden), look (zur Tür)}
 var _room_spots := {}
@@ -859,7 +857,6 @@ func _build_plan_floor() -> void:
 	_note_room_tables(first_furnishing)
 	_note_gardens(first_furnishing)
 	_lights()
-	_auto_switches()
 
 
 ## Obergeschoss (Spielkonzept 7.7): derselbe Bau wie im Erdgeschoss, nur unter einem um UP_Y angehobenen
@@ -3027,7 +3024,6 @@ func _fittings() -> void:
 					push_warning("Gebäudeplan: Lichtschalter (%s) bei Pixel %s – dort brennt das Licht immer, der Schalter entfällt (aus dem Plan nehmen)" % [_switch_label(id), _plan_pixel(p)])
 					continue
 				var sw := _switch(id, _switch_label(id), at.at(SWITCH_Y), at.yaw())
-				_switched[id] = true
 				if _behind_door(sw.position):
 					var why := "liegt hinter der offenen Tür – auf die Griffseite setzen oder den Türanschlag ans andere Ende"
 					push_warning("Gebäudeplan: Lichtschalter (%s) bei Pixel %s %s" % [_switch_label(id), _plan_pixel(p), why])
@@ -3907,35 +3903,6 @@ func _balconies() -> void:
 				_railing(Vector3(r.position.x, 0, r.get_center().y), Vector3(r.end.x, 0, r.get_center().y))
 			else:
 				_railing(Vector3(r.get_center().x, 0, r.position.y), Vector3(r.get_center().x, 0, r.end.y))
-
-
-## Zimmer ohne Lichtschalter im Plan (Obergeschoss): einer innen neben der Tür, auf der Griffseite (gegenüber dem
-## Scharnier); unbewohnte Zimmer bleiben dunkel.
-func _auto_switches() -> void:
-	for info in _map["rooms"]:
-		var no := String(info["no"])
-		if _switched.has(no) or not _room_open(no) or not rooms.has(no):
-			continue
-		var entry := {}
-		for d in _doors:
-			if d["door"] == rooms[no]["door"]:
-				entry = d
-		if entry.is_empty():
-			continue
-		var door: Door = entry["door"]
-		var center: Vector3 = entry["pos"]
-		var into := (rooms[no]["into"] as Vector3).normalized()
-		var handle := (center - (entry["hinge"] as Vector3)).normalized()
-		for side: float in [1.0, -1.0]:   # Griffseite, sonst neben dem Scharnier hinter dem Türblatt hervor
-			var reach := door.width / 2.0 + (0.25 if side > 0 else door.width + 0.3)
-			var p := center + handle * side * reach + into * (T / 2.0 + WALL_GAP)
-			if _room_id_at(Vector2(p.x, p.z) + Vector2(into.x, into.z) * 0.3) != no:
-				continue
-			var sw := _switch(no, _switch_label(no), Vector3(p.x, SWITCH_Y, p.z), atan2(into.x, into.z))
-			_switched[no] = true
-			if rooms[no]["kind"] == "vacant":
-				sw.set_on.call_deferred(false, true)
-			break
 
 
 ## Säule bis unter die Galerie (Terrazzo): Plinthe und Deckplatte als Quader, dazwischen ein Drehkörper aus

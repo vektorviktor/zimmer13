@@ -346,8 +346,8 @@ Entstehen aus Flächen und Öffnungen – kein eigener Eintrag nötig.
   Dachbodentreppe** aus Treppenflächen und Slices.
 - **Türen, Fenster, Rahmen, Aufzüge** aus den Öffnungen; **Zimmerschilder** über jeder Zimmertür (nicht bei Suiten),
   Schloss nach Haushalt (HAUSHALTE.md).
-- **Lichtschalter:** aus dem Plan; ein Zimmer ohne Schalter bekommt einen neben der Tür. Ein Bad schaltet für sich und
-  bekommt keinen – ohne Schalter im Plan brennt sein Licht immer (ZIM-149). **Deckenleuchten** nur aus
+- **Lichtschalter:** nur aus dem Plan, auch in Zimmern und Bädern (das Bad schaltet für sich). Der Bau ergänzt keine –
+  ohne Schalter im Plan brennt das Licht des Raums immer (ZIM-149). **Deckenleuchten** nur aus
   dem Plan. Wandleuchten: Höhe und Helligkeit nach Raumart.
 - **Am Möbel:** 2 Stühle je Zimmertisch (Achse aus einem Stuhlpaar im Plan, sonst Ost–West), Spiegel über dem
   Waschbecken, Sitzplätze an Bank, Stuhl, Sofa, Bett und WC, 6 Süßigkeiten je Truhe im Hotelzimmer, Lakengeist in
