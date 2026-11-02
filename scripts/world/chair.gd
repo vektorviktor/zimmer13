@@ -1,11 +1,12 @@
 class_name Chair
 extends StaticBody3D
-## Stuhl des Speisesaals (ZIM-156, Skizze des Nutzers 2.11.), Planfarbe „Möbel: Stuhl“: einfach, im Holz der
-## Vertäfelung wie Kommode und Schreibtisch. Vier gerade Beine, Zarge mit flachem Bogen, die Lehne aus den hinteren
-## Beinen hochgeführt und oben leicht nach hinten gebogen, Kopfbrett und Querleiste in der Mitte nach hinten gewölbt;
-## darauf ein Sitzkissen, oben gerundet, unten flach. Modell und Verschattung aus tools/build_chair.py, Holz mit
-## Mat.hotel_wood, Stoff Fabric_Pattern_08 getönt (wie die Bettwäsche, BedModel). Ursprung mittig auf dem Boden,
-## Sitzseite nach +Z. Ein Sitzplatz (Seat, Art „stuhl“, Spielkonzept 3.1). Maße = Bauskript.
+## Stuhl des Speisesaals (ZIM-156, Skizze des Nutzers 2.11.), Planfarbe „Möbel: Stuhl“: so schlicht wie möglich
+## (286 Dreiecke), im Holz der Vertäfelung wie Kommode und Tafel, alle Hölzer kantig. Vier gerade Beine, eine gerade
+## Zarge, die hinteren Beine laufen über dem Sitz gerade schräg nach hinten weiter; Kopfbrett mit gerader Oberkante und
+## Querleiste, beide in der Mitte nach hinten gewölbt. Darauf ein rechteckiges Sitzkissen bis vor die Lehne, oben zu
+## den Kanten gerundet, unten flach. Modell und Verschattung aus tools/build_chair.py, Holz mit Mat.hotel_wood, Stoff
+## Fabric_Pattern_08 getönt (wie die Bettwäsche, BedModel). Ursprung mittig auf dem Boden, Sitzseite nach +Z. Ein
+## Sitzplatz (Seat, Art „stuhl“, Spielkonzept 3.1). Maße = Bauskript.
 
 const MODEL := "res://assets/models/chair.glb"
 const AO := "res://assets/textures/chair_ao.png"
@@ -19,9 +20,9 @@ const SIZE := Vector3(0.46, 0.95, 0.47)
 ## Oberkante des Kissens; Unterseite des Kissens (Zarge)
 const SEAT_H := 0.46
 const FRAME := 0.42
-## Lehne: Vorderseite der Pfosten am Sitz, oben so weit nach hinten (Bogen und Wölbung der Querstücke)
+## Lehne: Vorderseite der Pfosten am Sitz, oben so weit nach hinten (Schräge und Wölbung der Querstücke)
 const BACK_FRONT_Z := -0.195
-const BACK_REAR_Z := -0.316
+const BACK_REAR_Z := -0.314
 
 static var _meshes := {}
 static var _materials := {}

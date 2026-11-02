@@ -135,9 +135,9 @@ extends Node3D
 ##                               hinten (Besucherseite), links (linker Unterschrank) oder nah (Platte von oben)
 ##   --regale                    in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
 ##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen)
-##   --stuhl[=hinten|seite|nah]  in den Speisesaal (EG, ZIM-156) schräg vor den ersten Stuhl – steht keiner im Plan,
+##   --stuhl[=hinten|seite|nah]  in den Speisesaal (EG, ZIM-156) schräg hinter den ersten Stuhl – steht keiner im Plan,
 ##                               kommen zwei an die mittlere Tafel und einer frei davor; hinten: von hinten (Wölbung der
-##                               Lehne), seite: im Profil (Bogen der Pfosten), nah: aufs Kissen
+##                               Lehne), seite: im Profil (Schräge der Pfosten), nah: über die Lehne aufs Kissen
 ##   --tafel[=nah|ende]          in den Speisesaal (EG, ZIM-157) schräg vor eine Ecke der ersten Tafel – steht keine im
 ##                               Plan, kommt eine zum Ansehen in die Mitte; nah: vor das Eckbein, ende: aufs Ende des Läufers
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
@@ -1127,14 +1127,15 @@ func run_debug(arg: String) -> bool:
 		if chair == null:
 			chair = _chair_demo(hall)
 		var opts := _arg_parts(arg, "--stuhl")
-		# schräg von vorn; hinten: schräg von hinten auf die Wölbung der Lehne; seite: im Profil (Bogen der Pfosten)
-		var local := Vector3(0.7, 0, 1.3)
+		# von der Gangseite (die Sitzseite zeigt zur Tafel): schräg von hinten; hinten: gerade von hinten auf die
+		# Wölbung der Lehne; seite: im Profil (Schräge der Pfosten); nah: über die Lehne aufs Kissen
+		var local := Vector3(0.9, 0, -1.0)
 		if opts.has("hinten"):
-			local = Vector3(0.6, 0, -1.1)
+			local = Vector3(0.15, 0, -1.3)
 		elif opts.has("seite"):
 			local = Vector3(1.4, 0, 0.1)
 		elif opts.has("nah"):
-			local = Vector3(0.3, 0, 0.75)
+			local = Vector3(0.35, 0, -0.75)
 		var aim := chair.global_transform * Vector3(0, 0.55, 0)
 		var at := chair.global_transform * local
 		TeleportUI.place_player(at, aim - at)

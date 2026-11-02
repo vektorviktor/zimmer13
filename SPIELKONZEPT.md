@@ -5346,14 +5346,14 @@ Dachform (4.21).
 
 ### 7.14 Stühle im Speisesaal (entschieden und umgesetzt 2026-11-02, ZIM-156)
 
-- **Nach Skizze des Nutzers:** ein wirklich einfacher Stuhl, der trotzdem etwas hermacht – im Holz der Kommoden und
-  Schreibtische. Vier gerade Beine (innen leicht verjüngt), Zarge unter dem Sitz mit flachem Bogen, die hinteren Beine
-  laufen als Lehne hoch; oben ein breites Kopfbrett mit Bogen, darunter eine Querleiste. 46 × 47 cm, Sitz 46 cm,
-  Lehne 95 cm.
-- **Lehne entgegen der Skizze leicht gewölbt:** Die Pfosten biegen sich nach oben 7 cm nach hinten, Kopfbrett und
-  Querleiste sind in der Mitte 2 cm nach hinten gewölbt.
-- **Sitzkissen** in altem Weinrot: oben zu den Kanten abgerundet und zur Mitte leicht gewölbt, unten flach und eckig,
-  hinten um die Pfosten ausgespart.
+- **Nach Skizze des Nutzers, so schlicht wie möglich** (Nachbesserung 2.11.: deutlich unter 600 Dreiecke, es sind
+  286): im Holz der Kommoden und Tafeln, alle Hölzer kantig, **ohne Fasen und ohne Verjüngung**. Vier gerade Beine,
+  eine gerade Zarge, die hinteren Beine laufen als Lehne hoch; oben ein Kopfbrett mit **gerader Oberkante**, darunter
+  eine Querleiste. 46 × 47 cm, Sitz 46 cm, Lehne 95 cm.
+- **Lehne geneigt, nicht gebogen:** Die Pfosten stehen über dem Sitz gerade schräg, oben 7 cm hinter den Beinen.
+  Kopfbrett und Querleiste sind in der Mitte 2 cm nach hinten gewölbt (gewollt).
+- **Sitzkissen** in altem Weinrot, **rechteckig und nur bis vor die Lehne** (keine Aussparung um die Pfosten): oben zu
+  den Kanten abgerundet und zur Mitte leicht gewölbt, unten flach und eckig.
 - Planfarbe „Möbel: Stuhl“ (bisher ein Kasten mit Brett), überall gleich; ein Sitzplatz wie bisher. Die Stühle an
   den Tafeln malt der Nutzer in den Plan. Die Stühle der Tischgruppen in den Zimmern bleiben, wie sie sind.
 
