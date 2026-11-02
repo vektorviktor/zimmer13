@@ -85,6 +85,9 @@ DESIGN = {
 	"Möbel: Puppenhaus": (0, 65, 54), "Möbel: Barhocker": (35, 55, 46),
 	# Möbel · draußen und Friedhof (grün), Bau (grau)
 	"Möbel: Grab": (110, 25, 32), "Möbel: Gedenkstätte": (90, 35, 52), "Möbel: Säule": (0, 0, 50), "Möbel: Spind": (205, 12, 48),
+	"Möbel: Gartentisch": (154, 46, 33.5), "Möbel: Gartenstuhl": (100, 35.5, 35.25),   # krumme Werte: genau die Farben im Plan
+	# Pool-Umkleiden (ZIM-145): Aufbewahren braun bzw. Sitzen ocker
+	"Möbel: Spindblock": (9, 25, 36), "Möbel: Umkleidebank": (39, 74, 47),
 	# Teppiche
 	"Teppich: Läufer": (0, 60, 28), "Teppich: Teppich": (1, 75, 15),
 	# Ausstattung · an der Wand und im Raum (rosa)
