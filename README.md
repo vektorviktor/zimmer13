@@ -395,6 +395,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | Parameter | Wirkung |
 |-----------|---------|
 | `--trace` | Monster, Gäste und Meldungen alle 2 s in die Konsole, dazu jedes Lärmereignis (wer es hört und wie er reagiert) |
+| `--gedraenge` | Alle 10 s „[Gedränge]“ in die Konsole: wie viele stehende Gäste einander näher als 0,6 m sind und wie viele Plätze an Bar, Lobby, Küche und Garten belegt sind (ZIM-155) |
 | `--noise=door` | alle 6 s Lärm dieser Art am Spieler (`door`, `hide`, `run`, `scream` … – Tabelle in `scripts/util/senses.gd`) |
 | `--warn` | sofort ein Raubzug (nicht harmlos) |
 | `--pumpkin=ankündigung` · `--pumpkin=ankündigung,60` | Kürbismann kündigt sich an: Lampen rot, schrille Melodie, Kinder singen – in 20 (60) Sekunden kommt er übers Lobbydach |

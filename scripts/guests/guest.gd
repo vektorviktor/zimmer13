@@ -36,6 +36,17 @@ const SAFE_DISTANCE := 22.0
 ## (sonst rennt er auf dem Weg ins Versteck endlos auf der Stelle – mit Lärm, der das Monster lockt)
 const STALL_TIME := 10.0
 const STALL_RANGE := 1.5
+## Gedränge (ZIM-155): Gäste gehen durcheinander durch. Einen Platz wählt er deshalb nur, wo im Umkreis SPOT_GAP
+## noch keiner steht oder hinwill; im Stehen tritt er beiseite, wenn ihm einer näher als PERSONAL_SPACE kommt
+## (geprüft alle SPACE_CHECK Sekunden). Als belegt (für die Belegung eines Orts) gilt ein Platz, an dem einer näher als
+## SPOT_TAKEN steht – Barplätze liegen nur 0,76 m, Sofaplätze 1 m auseinander, einer soll nicht zwei belegen.
+const SPOT_GAP := 0.7
+const SPOT_TAKEN := 0.5
+const PERSONAL_SPACE := 0.6
+const SPACE_CHECK := 0.5
+## Die Belegung eines Orts zählen alle Gäste gemeinsam höchstens so oft (Sekunden Spielzeit) – Plätze × Gäste je
+## Wahl wäre zu teuer (ZIM-124)
+const OCCUPANCY_TTL := 2.0
 ## Schlafen im Bett (Nachtruhe): Füße so weit vom Bettmittelpunkt zum Fußende, so hoch liegt die Matratze
 const BED_FEET := 0.9
 ## Türen (Spielkonzept 6.19): so weit voraus schaut er auf seinem Weg, ob er durch eine Tür muss; so weit hinter der
@@ -269,6 +280,9 @@ var _last_pos := Vector3.ZERO
 var _stall_pos := Vector3.ZERO   ## Festgefahren: hier stand er, als er zuletzt vorankam …
 var _stall_since := 0.0          ## … seit dieser Spielzeit (Director.elapsed)
 var _stall_seen := -10.0         ## letzter Schritt in _move_to (Spielzeit) – wer zwischendurch stand, fängt neu an
+var _space_check := randf() * SPACE_CHECK   ## bis zur nächsten Prüfung, ob ihm im Stehen einer zu nah ist (_keep_space)
+var _make_room := Vector3.ZERO   ## so weit tritt er noch beiseite
+static var _occupancy_seen := {}   ## Aktivität → [Spielzeit, Belegung] (OCCUPANCY_TTL)
 var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var _door_timer := 0.0
 ## Zimmertür, durch die er zuletzt gegangen ist – er schließt sie hinter sich (Spielkonzept 6.19)
@@ -1067,7 +1081,8 @@ func _physics_process(delta: float) -> void:
 		_switch = null   # etwas anderes kam dazwischen
 	match state:
 		State.IDLE:
-			_stop(delta)
+			if not _keep_space(delta):
+				_stop(delta)
 			_timer -= delta
 			_steal_timer -= delta
 			if _steal_timer <= 0.0:
@@ -1374,7 +1389,7 @@ func _go_to_bed() -> void:
 		_bed_host = _dark_refuge()
 		if _bed_host == null:
 			_to_bed = false
-			_walk_to(Game.social.builder.lobby_seats.pick_random() + _jitter(0.4), State.WALK)
+			_walk_to(_free_spot(Game.social.builder.lobby_seats, 0.4), State.WALK)
 			if Game.tracing:
 				print("[Birne] %s bleibt in der Lobby – das eigene Zimmer ist dunkel" % display_name)
 			return
@@ -1517,18 +1532,14 @@ func _next_activity() -> void:
 	match choice:
 		"room":
 			_walk_to(_room_point(), State.WALK)
-		"lobby":
-			_walk_to(Game.social.builder.lobby_seats.pick_random() + _jitter(0.3), State.WALK)
-		"kitchen":
-			_walk_to(Game.social.builder.kitchen_spot + _jitter(1.2), State.WALK)
-		"bar":
-			_walk_to(Game.social.builder.bar_spots.pick_random() + _jitter(0.3), State.WALK)
+		"lobby", "kitchen", "bar":
+			_walk_to(_free_spot(_activity_spots(choice), 0.3), State.WALK)
 		"garden":
 			_plant = _ripe_plant() if profile["harvester"] else null
 			if _plant:
 				_walk_to(_plant.global_position + Vector3(0, 0, 0.7), State.HARVEST)
 			else:
-				_walk_to(Game.social.builder.garden_spots.pick_random() + _jitter(1.5), State.WALK)
+				_walk_to(_free_spot(_activity_spots(choice), 1.5), State.WALK)
 		_:
 			_walk_to(_wander_point(), State.WALK)
 
@@ -2626,8 +2637,7 @@ func _drop_held() -> void:
 # --- Hilfen ------------------------------------------------------------------------
 
 func _room_point() -> Vector3:
-	var c: Vector3 = home["center"]
-	return c + _jitter(1.0)
+	return _free_spot([home["center"]], 1.0)   # Mitbewohner nicht ineinander (ZIM-155)
 
 
 func _is_home() -> bool:
@@ -2717,16 +2727,118 @@ func _floor_below(p: Vector3) -> Vector3:
 
 ## Ein zufälliger Punkt auf den Fluren (Herumschlendern).
 func _wander_point() -> Vector3:
-	return Game.social.builder.wander_points.pick_random() + _jitter(0.5)
+	return _free_spot(Game.social.builder.wander_points, 0.5)
 
 
 func _jitter(r: float) -> Vector3:
 	return Vector3(randf_range(-r, r), 0, randf_range(-r, r))
 
 
-## Vorlieben des Gasts, gewichtet nach der Phase des Tages (PHASE_ACTIVITIES).
+# --- Gedränge (ZIM-155) -----------------------------------------------------------------------
+
+## Plätze, an denen Gäste bei einer Aktivität stehen; leer = keine festen Plätze (Zimmer, Flure).
+func _activity_spots(key: String) -> Array:
+	var b := Game.social.builder
+	match key:
+		"lobby": return b.lobby_seats
+		"kitchen": return b.kitchen_spots
+		"bar": return b.bar_spots
+		"garden": return b.garden_spots
+	return []
+
+
+## Ein Platz aus spots (je um jitter gestreut), an dem im Umkreis SPOT_GAP keiner steht oder hinwill; sind alle belegt,
+## der mit dem meisten Abstand. Kleine Listen werden mehrmals mit neuer Streuung versucht, große nur zum Teil.
+func _free_spot(spots: Array, jitter: float) -> Vector3:
+	if spots.is_empty():
+		return global_position
+	var order := range(spots.size())
+	order.shuffle()
+	var map := get_world_3d().navigation_map
+	var snap := NavigationServer3D.map_get_iteration_id(map) > 0
+	var best := Vector3.ZERO
+	var best_gap := -1.0
+	for n in clampi(spots.size(), 8, 16):
+		var p: Vector3 = spots[order[n % order.size()]] + _jitter(jitter)
+		if snap:   # aufs NavMesh, sonst stünden zwei, deren Punkte im selben Möbel liegen, am selben Rand
+			p = NavigationServer3D.map_get_closest_point(map, p)
+		var gap := _crowding(p)
+		if gap >= SPOT_GAP:
+			return p
+		if gap > best_gap:
+			best_gap = gap
+			best = p
+	return best
+
+
+## Abstand von p zum nächsten anderen Gast – dort, wo er steht, und an seinem Ziel. Schlafende und
+## Versteckte zählen nicht, andere Stockwerke auch nicht.
+func _crowding(p: Vector3) -> float:
+	var gap := INF
+	for other in Game.social.guests:
+		if other == self or other.dead or other.state == State.SLEEP or other.state == State.HIDING:
+			continue
+		gap = minf(gap, _floor_gap(p, other.global_position))
+		# wohin er geht – oder der Platz, an dem er steht (_move_to hält bis 0,6 m davor an)
+		if other.state != State.IDLE or other.global_position.distance_to(other._target) < 1.0:
+			gap = minf(gap, _floor_gap(p, other._target))
+	return gap
+
+
+func _floor_gap(a: Vector3, b: Vector3) -> float:
+	return INF if absf(a.y - b.y) > 1.5 else Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## Anteil der Plätze, an denen schon einer steht oder hinwill.
+func _occupancy(spots: Array) -> float:
+	var taken := 0
+	for p: Vector3 in spots:
+		if _crowding(p) < SPOT_TAKEN:
+			taken += 1
+	return float(taken) / maxf(1.0, spots.size())
+
+
+## Im Stehen Abstand halten: Ist ihm ein anderer Gast näher als PERSONAL_SPACE, tritt er ein Stück beiseite (Wände
+## halten ihn auf). false = er steht still.
+func _keep_space(delta: float) -> bool:
+	_space_check -= delta
+	if _space_check <= 0.0:
+		_space_check = SPACE_CHECK
+		var away := Vector3.ZERO
+		for other in Game.social.guests:
+			if other == self or other.dead or other.state == State.SLEEP or other.state == State.HIDING \
+					or absf(other.global_position.y - global_position.y) > 1.5:
+				continue
+			var d := Vector3(global_position.x - other.global_position.x, 0, global_position.z - other.global_position.z)
+			if d.length() < PERSONAL_SPACE:
+				var dir := d.normalized() if d.length() > 0.01 else Vector3.FORWARD.rotated(Vector3.UP, randf() * TAU)
+				away += dir * (PERSONAL_SPACE + 0.2 - d.length())
+		_make_room = away.limit_length(0.8)
+	if _make_room.length() < 0.02:
+		return false
+	var step := _make_room.normalized() * minf(WALK_SPEED * 0.5, _make_room.length() / maxf(delta, 0.001))
+	velocity = Vector3(step.x, 0.0 if is_on_floor() else velocity.y - _gravity * delta, step.z)
+	move_and_slide()
+	_make_room -= step * delta
+	return true
+
+
+## Vorlieben des Gasts, gewichtet nach der Phase des Tages (PHASE_ACTIVITIES). Volle Orte locken weniger:
+## Gesellige stört das Gedränge kaum, Stille meiden es (ZIM-155).
 func _phase_activities() -> Dictionary:
-	return activity_weights(Calendar.phase())
+	var weights := activity_weights(Calendar.phase())
+	var tolerance := 0.5 + float(profile.get("gossip", 0.5))
+	var now := Game.director.elapsed if Game.director else 0.0
+	for key in weights:
+		var spots := _activity_spots(key)
+		if spots.is_empty():
+			continue
+		var seen: Array = _occupancy_seen.get(key, [-INF, 0.0])
+		if now - float(seen[0]) > OCCUPANCY_TTL or now < float(seen[0]):   # rückwärts: neues Spiel
+			seen = [now, _occupancy(spots)]
+			_occupancy_seen[key] = seen
+		weights[key] *= clampf(1.0 - float(seen[1]) / tolerance, 0.05, 1.0)
+	return weights
 
 
 ## Vorlieben in einer Phase – mit den Haltungen aus Gesprächen (6.9): vorsichtig bzw. sorglos.

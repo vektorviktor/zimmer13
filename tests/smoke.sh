@@ -147,6 +147,7 @@ done <<'LIST'
 3000|wettbewerb,puppe,monster|--day=12 --siegerehrung --trace
 2400|wettbewerb,puppe|--siegerehrung=ohne --trace
 2400|grinch,gaeste|--grinch --trace
+3600|gaeste,gedraenge|--day=3 --uhr=19 --gedraenge --trace
 1200|grinch,wettbewerb,speichern|--grinch=tot --savetest --trace
 900|wettbewerb,grinch,speichern|--brett=abgereist --savetest --trace
 900|register,wettbewerb,speichern|--register=tot --kill=doris,weg,hin --savetest --trace

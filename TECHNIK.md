@@ -1159,6 +1159,15 @@ den Skripten. Hier der Aufbau.
   (Spielkonzept 2.4) und Haltungen (`activity_weights`). `_arrive()` verarbeitet das Ankommen je Zustand; Systeme mit
   eigenem Ablauf (Schmücken, Suche, Herd, Kaffeemaschine, Streiche, Putzen) bekommen es über ihr `on_arrived` – den
   Zustand `EAT` teilen sich Herd und Kaffeemaschine (`CoffeeMachine.expects(gast)` zuerst).
+- **Gedränge** (ZIM-155): Gäste kollidieren nicht miteinander (Schicht 128, Maske `1 | 16`) und weichen sich beim
+  Gehen nicht aus (kein RVO – Rechenzeit, große Schritte der fernen Gäste). Stattdessen: `_free_spot(spots, jitter)`
+  nimmt für Lobby, Küche (`kitchen_spots`, Raster `KITCHEN_SPOT_STEP`), Bar, Garten, Flure und das eigene Zimmer einen
+  Platz (aufs NavMesh gezogen), an dem im Umkreis `SPOT_GAP` keiner steht oder hingeht (`_crowding`: Stand und `_target`
+  der anderen, ohne Schlafende/Versteckte), sonst den mit dem meisten Abstand. `_phase_activities` senkt das Gewicht
+  einer Aktivität mit der Belegung ihrer Plätze (`_occupancy`, belegt = einer näher als `SPOT_TAKEN`; für alle Gäste gemeinsam höchstens alle `OCCUPANCY_TTL` s
+  gezählt, statisch `_occupancy_seen`), geteilt durch `0,5 + gossip` – Gesprächige stört volles
+  Haus kaum. Talk fragt `activity_weights` ohne Belegung (Pläne für später). In `IDLE` tritt `_keep_space` alle
+  `SPACE_CHECK` s beiseite, wenn ihm einer näher als `PERSONAL_SPACE` steht. Debug `--gedraenge` zählt das alle 10 s.
 - Gäste melden sich mit `Game.social.on_*` (Diebstahl, fehlende Deko/Birne, Monster gesehen …).
 - **Lichtschalter** (Spielkonzept 7.3): `_track_light_room` schaut alle `LIGHT_CHECK` s nach dem Raum unter ihm
   (`LevelBuilder.light_room_at` – Schalter-ID, Bad gehört zum Zimmer). Beim Wechsel: verlässt er als Letzter ein

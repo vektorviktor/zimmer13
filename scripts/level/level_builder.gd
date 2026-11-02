@@ -178,6 +178,8 @@ const COFFEE_TABLE_CORNER_SEGMENTS := 4
 const COFFEE_MACHINE_INSET := 0.3
 ## Wasserkocher (3.12): so weit rechts neben der Kaffeemaschine (Mitte zu Mitte); Tee-Tablett so weit neben dem Kaffee
 const KETTLE_GAP := 0.38
+## Stehplätze der Gäste in der Küche (ZIM-155): höchstens so weit auseinander, 0,8 m von der Wand
+const KITCHEN_SPOT_STEP := 1.2
 const BAR_TEA_GAP := 0.42
 ## Salzpackungen (Spielkonzept 5.13) in der Küche, bis sie im Plan stehen – ohne Nachschub
 const SALT_BOXES := 3
@@ -564,6 +566,7 @@ var lobby_seats: Array[Vector3] = []
 ## Liegeplätze der Hotelkatzen auf Möbeln (6.11): {"floor": davor auf dem Boden, "top": obendrauf}
 var cat_perches: Array[Dictionary] = []
 var kitchen_spot := Vector3.ZERO
+var kitchen_spots: Array[Vector3] = []   ## Stehplätze der Gäste in der Küche, Raster KITCHEN_SPOT_STEP (ZIM-155)
 var garden_spots: Array[Vector3] = []
 var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kein Gras (Grass)
 ## Bäume: {pos (Stammachse am Boden), radius (Krone), height, crown (Höhenbereich der Krone als Anteile)} – für die
@@ -4044,6 +4047,13 @@ func _common_rooms() -> void:
 	root.add_child(Confetti.new())
 	var k: Rect2 = _named["kueche"]
 	kitchen_spot = Vector3(k.get_center().x, 0, k.get_center().y)
+	var inner := k.grow(-0.8)
+	var nx := maxi(1, floori(inner.size.x / KITCHEN_SPOT_STEP) + 1)
+	var nz := maxi(1, floori(inner.size.y / KITCHEN_SPOT_STEP) + 1)
+	for ix in nx:
+		for iz in nz:
+			kitchen_spots.append(Vector3(inner.position.x + inner.size.x * (ix + 0.5) / nx, 0,
+				inner.position.y + inner.size.y * (iz + 0.5) / nz))
 	# Herd zum Kochen (Spielkonzept 3.8)
 	var stove_info := _furnishing("stove", "kueche")
 	if not stove_info.is_empty():

@@ -111,6 +111,7 @@ const COMMANDS := {
 	"debug": ["", "Debug-Werte einblenden"],
 	"figur": ["[=schnell]", "Erwachen am Waschbecken und Charaktererstellung (schnell: gleich der Bogen)"],
 	"trace": ["", "Monster und Lärm in die Konsole schreiben"],
+	"gedraenge": ["", "alle 10 s: zu dicht stehende Gäste und belegte Plätze in die Konsole (ZIM-155)"],
 	"navcheck": ["", "NavMesh-Wege zu allen wichtigen Orten prüfen (beendet das Spiel)"],
 	"guests": ["", "alle Gäste: Ort, Zustand, Angst, Beziehung"],
 	"help": ["[befehl]", "diese Liste"],

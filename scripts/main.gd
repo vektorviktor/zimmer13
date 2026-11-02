@@ -195,6 +195,8 @@ extends Node3D
 ##                               Standard ShadowBudget.BIAS
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
+##   --gedraenge                 alle 10 s „[Gedränge]“: wie viele stehende Gäste einander näher als 0,6 m sind und wie
+##                               viele Plätze an Bar, Lobby, Küche und Garten belegt sind (ZIM-155)
 ##   --noise=art                 alle 6 s Lärm dieser Art am Spieler (door, hide, run, scream … – Senses.NOISE)
 ##   --warn                      sofort ein Raubzug (4.33, nicht harmlos) – wie --mode=raubzug
 ##   --pumpkin=ankündigung[,s]   Kürbismann kündigt sich an (4.19): Lampen rot, schrille Melodie, Kinder singen – in s
@@ -920,6 +922,25 @@ static func _arg_value(arg: String, name: String, default := "") -> String:
 ## Wert eines Debug-Befehls, an den Kommas geteilt (ohne Wert: default bzw. ein leeres Stück).
 static func _arg_parts(arg: String, name: String, default := "") -> PackedStringArray:
 	return _arg_value(arg, name, default).split(",")
+
+
+## --gedraenge (ZIM-155): Paare stehender Gäste enger als Guest.PERSONAL_SPACE und Belegung der festen Plätze.
+func _report_crowding() -> void:
+	var standing := Game.social.living_guests().filter(func(g: Guest) -> bool: return g.state == Guest.State.IDLE)
+	var close := 0
+	for i in standing.size():
+		for j in range(i + 1, standing.size()):
+			var a: Vector3 = standing[i].global_position
+			var b: Vector3 = standing[j].global_position
+			if absf(a.y - b.y) < 1.5 and Vector2(a.x - b.x, a.z - b.z).length() < Guest.PERSONAL_SPACE:
+				close += 1
+	var fill := ""
+	if not standing.is_empty():
+		var probe: Guest = standing[0]
+		for key in ["bar", "lobby", "kitchen", "garden"]:
+			var spots := probe._activity_spots(key)
+			fill += " · %s %d/%d" % [key, roundi(probe._occupancy(spots) * spots.size()), spots.size()]
+	print("[Gedränge] %d stehen, %d Paare enger als %.1f m%s" % [standing.size(), close, Guest.PERSONAL_SPACE, fill])
 
 
 ## Einen Debug-Befehl ausführen – beim Start für jeden Parameter, im Spiel aus der Debug-Konsole
@@ -1930,6 +1951,12 @@ func run_debug(arg: String) -> bool:
 						Game.phones.answer(Game.phones.home_phone))
 			else:
 				Game.phones.debug_dial(value))
+	elif arg == "--gedraenge":
+		var timer := Timer.new()
+		timer.wait_time = 10.0
+		timer.autostart = true
+		add_child(timer)
+		timer.timeout.connect(_report_crowding)
 	elif arg == "--trace":
 		_trace = true
 		Game.tracing = true
