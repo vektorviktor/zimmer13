@@ -2,8 +2,8 @@ class_name DiningTable
 extends StaticBody3D
 ## Tafel im Speisesaal (ZIM-157, Skizze des Nutzers 2.11.), Planfarbe „Möbel: Tafel“, im Look der Bücherregale:
 ## Beine LEG im Quadrat mit je drei Furchen auf jeder Seite, Zargen APRON_SET hinter der Außenfläche der Beine mit
-## stehenden Mulden wie im Fries der Regale, die Platte steht ringsum OVERHANG über. So groß wie im Plan; lange Tafeln
-## bekommen Zwischenbeine (höchstens MAX_BAY von Bein zu Bein). Darauf ein Läufer aus Damast entlang der Länge, der an
+## stehenden Mulden wie im Fries der Regale, die Platte steht ringsum OVERHANG über. So groß wie im Plan, auch lange
+## Tafeln nur mit vier Eckbeinen (Wunsch des Nutzers 2.11.). Darauf ein Läufer aus Damast entlang der Länge, der an
 ## beiden Enden RUNNER_DROP herabhängt (Spielkonzept 7.15). Ursprung mittig auf dem Boden, lokal x = Länge.
 ##
 ## Beine und Zargen aus tools/build_dining_table.py (gebackene Verschattung und Normale), gesetzt als MultiMesh je Teil;
@@ -30,8 +30,6 @@ const APRON_SET := 0.01
 const APRON_T := 0.025
 const APRON_H := 0.10
 const PITCH := 0.031
-## weitester Abstand von Bein zu Bein (Mitte zu Mitte) an der langen Seite
-const MAX_BAY := 2.4
 ## Kante der Platte: oben gerundet (EDGE_R), senkrecht, unten eine Fase (EDGE_CHAMFER)
 const EDGE_R := 0.008
 const EDGE_CHAMFER := 0.008
@@ -72,10 +70,7 @@ func _ready() -> void:
 	add_to_group("dining_tables")
 	var hx := size.x / 2.0 - OVERHANG - LEG / 2.0   # Mitte der Beine
 	var hz := size.y / 2.0 - OVERHANG - LEG / 2.0
-	var bays := maxi(1, ceili(2.0 * hx / MAX_BAY))
-	var xs: Array[float] = []
-	for i in bays + 1:
-		xs.append(-hx + 2.0 * hx * i / bays)
+	var xs: Array[float] = [-hx, hx]
 	var put := {}   # Teil → [[Transform3D, Streckung, Versatz], …]
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash([grain, size])
@@ -83,10 +78,6 @@ func _ready() -> void:
 	for corner in [[-1, 1, 0.0], [1, 1, PI / 2.0], [1, -1, PI], [-1, -1, -PI / 2.0]]:
 		_add(put, "leg_corner", Transform3D(Basis(Vector3.UP, corner[2]), Vector3(corner[0] * hx, 0, corner[1] * hz)),
 			1.0, Vector2(rng.randf() * 5.0, rng.randf() * 5.0))
-	for i in range(1, bays):
-		for s in [-1.0, 1.0]:
-			_add(put, "leg_mid", Transform3D(Basis(Vector3.UP, 0.0 if s > 0 else PI), Vector3(xs[i], 0, s * hz)), 1.0,
-				Vector2(rng.randf() * 5.0, rng.randf() * 5.0))
 	# Zargen je Seite: Außenfläche nach o, Stücke laufen nach d = up × o, zwischen den Beinen dieser Seite
 	var zs: Array[float] = [-hz, hz]
 	for o: Vector3 in [Vector3.BACK, Vector3.FORWARD, Vector3.LEFT, Vector3.RIGHT]:

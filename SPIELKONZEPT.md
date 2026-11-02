@@ -5360,8 +5360,8 @@ Dachform (4.21).
   senkrechten Furchen auf jeder Seite, Zargen (die waagerechten Balken unter der Platte) 1 cm hinter der Außenfläche
   der Beine, darin stehende Mulden wie im Fries der Regale. Die Platte steht ringsum 4 cm über die Beine, oben leicht
   gerundet, Tischhöhe 85 cm.
-- **So groß wie im Plan** (Planfarbe „Möbel: Tafel“), Länge entlang der langen Seite. Lange Tafeln bekommen an beiden
-  Längsseiten Zwischenbeine, höchstens 2,4 m von Bein zu Bein (Vorschlag, die 9-m-Tafeln haben so je fünf Beine).
+- **So groß wie im Plan** (Planfarbe „Möbel: Tafel“), Länge entlang der langen Seite. Auch lange Tafeln (9 m)
+  stehen nur auf vier Eckbeinen – Zwischenbeine waren vorgeschlagen, der Nutzer will sie nicht (2026-11-02).
 - **Läufer** aus rotem Damast (Muster aus der Vorlage des Nutzers) entlang der Länge, 40 cm breit, hängt an beiden
   Enden 30 cm herab. Muster und Grund unterscheiden sich in der Bindung: das Muster glänzt etwas.
 

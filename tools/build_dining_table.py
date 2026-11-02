@@ -8,8 +8,8 @@
 # läuft über INSTANCE_CUSTOM (psx_photo, instance_shift) durch.
 #
 # Lage (Godot-Achsen), Boden y = 0:
-#   „leg_corner“, „leg_mid“  Bein mittig um x = z = 0, bis unter die Platte (LEG_TOP); gebacken an einer Ecke (Zargen
-#                            nach +x und −z) bzw. in der Mitte einer langen Seite (Zargen nach −x und +x)
+#   „leg_corner“             Bein mittig um x = z = 0, bis unter die Platte (LEG_TOP); gebacken an einer Ecke (Zargen
+#                            nach +x und −z) – nur Eckbeine, auch an langen Tafeln (Wunsch des Nutzers 2.11.)
 #   „apron“, „apron_l“,      ein Stück Zarge von x = 0 bis PITCH, Außenfläche bei z = 0 (nach +Z), Mulde in der Mitte;
 #   „apron_r“                apron_l stößt bei x = 0 an ein Bein, apron_r bei x = PITCH (eigene Verschattung)
 #
@@ -144,12 +144,12 @@ def paint_pill(pts, n, px):
 	return normals, shade, mask
 
 
-PAINTERS = {"leg_corner": {1: paint_flutes}, "leg_mid": {1: paint_flutes},
+PAINTERS = {"leg_corner": {1: paint_flutes},
 	"apron": {4: paint_pill}, "apron_l": {4: paint_pill}, "apron_r": {4: paint_pill}}
 
 
 # --- Bauen und zum Backen aufstellen -----------------------------------------------------------------------------
-parts = {"leg_corner": build_leg("leg_corner"), "leg_mid": build_leg("leg_mid"),
+parts = {"leg_corner": build_leg("leg_corner"),
 	"apron": build_apron("apron"), "apron_l": build_apron("apron_l"), "apron_r": build_apron("apron_r")}
 wood = list(parts.values())
 atlas_uv(wood, 0.006, {4: 1.0, 1: 1.0})
@@ -193,15 +193,16 @@ for i in range(1, 10):
 for i in range(10):   # gedreht läuft das Stück nach +z
 	others.append(caster(parts["apron"], -ZO, -H - (i + 1) * PITCH, YAW[(-1, 0)]))
 others.append(slab("top_a", -H - 0.04, H + 0.4, -H - 0.4, H + 0.04, LEG_TOP, HEIGHT))
-# Mitte einer langen Seite bei x = 2: Zargen links (apron_r endet am Bein) und rechts
+# rechte Ecke bei x = 2 (Gegenstück des Eckbeins als Schattenwerfer): apron_r endet vorn am Bein, rechts die
+# Zarge der Schmalseite (Außenfläche nach +x, läuft gedreht nach −z)
 XM = 2.0
-place(parts["leg_mid"], XM, 0.0)
+others.append(caster(parts["leg_corner"], XM, 0.0, math.pi / 2.0))
 place(parts["apron_r"], XM - H - PITCH, ZO)
 for i in range(1, 10):
 	others.append(caster(parts["apron"], XM - H - (i + 1) * PITCH, ZO))
 for i in range(10):
-	others.append(caster(parts["apron"], XM + H + i * PITCH, ZO))
-others.append(slab("top_b", XM - 0.5, XM + 0.5, -0.4, H + 0.04, LEG_TOP, HEIGHT))
+	others.append(caster(parts["apron"], XM + ZO, -H - i * PITCH, YAW[(1, 0)]))
+others.append(slab("top_b", XM - 0.5, XM + H + 0.04, -0.4, H + 0.04, LEG_TOP, HEIGHT))
 # freies Stück bei x = 4, Nachbarn links und rechts
 XF = 4.0
 place(parts["apron"], XF, ZO)
