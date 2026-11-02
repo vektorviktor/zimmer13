@@ -305,6 +305,12 @@ Die Schreibtischlampe (`assets/models/desk_lamp.glb`, Texturen `assets/textures/
 "/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_desk_lamp.py -- "$PWD/assets/source/desk_lamp/SM_DeskLamp_Antique_01.fbx" <download>/_Textures "$PWD/assets/models/desk_lamp.glb" "$PWD/assets/textures/desk_lamp"
 ```
 
+Das Zimmertelefon (`assets/models/phone.glb`, Texturen `assets/textures/phone_*.png`) ist „Old Phone Blue 2“ von [Peter Gatchev](https://sketchfab.com/petar.gachev) ([Sketchfab](https://sketchfab.com/3d-models/old-phone-blue-2-f010badd4b564f79ac5f293922baf5c6), Sketchfab Standard) – ohne Klebezettel, Klebeband und Plakette, schwarz glänzend mit Wählscheibe aus gebürstetem Messing; alle Karten sind neu, nur die Ziffern stammen aus dem Original. Pfade absolut, der letzte (Ordner für Abnahmebilder) ist optional:
+
+```bash
+"/c/Program Files/Blender Foundation/Blender 4.3/blender.exe" -b --python tools/build_old_phone.py -- "$PWD/assets/source/old_phone_blue_2.glb" "$PWD/assets/models/phone.glb" "$PWD/assets/textures/phone" [<renderordner>]
+```
+
 Die Tischgruppen in den Zimmern (`assets/models/room_table.glb`, Tisch quadratisch gemacht, ein Stuhl) sind „Old wooden table and chair“ von [MaX3Dd](https://sketchfab.com/MaX3Dd) ([Sketchfab](https://sketchfab.com/3d-models/old-wooden-table-and-chair-da18a40480ec42d6920a2a828d10018c), CC-BY 4.0):
 
 ```bash

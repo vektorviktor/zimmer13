@@ -2287,7 +2287,11 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
 
 ### Telefone, Spieltische
 - **Telefone** (`world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd`): `HotelPhone` auf jedem Zimmertisch
-  + Haupttelefon an der Rezeption (`"0"`); gespeichert nur `off_hook`. `PhoneCalls` (`Game.phones`): eingehend nur für
+  + Haupttelefon an der Rezeption (`"0"`); gespeichert nur `off_hook`. Modell aus `tools/build_old_phone.py` (Sketchfab,
+  schwarz mit Messing-Wählscheibe, `Mat.pbr_model`): Teile `body`, `handset`, `cable` (Schnur in Schlaufen) und die
+  Leerknoten `cable_body`/`cable_handset` an den Tüllen. Liegt der Hörer daneben, ist die Modellschnur aus und
+  `_cord_mesh` legt eine Bézier-Schnur zwischen die Tüllen (UV ein Gummi-Texel der Modellschnur); die Rundung des groben
+  Hörers steckt in der Normal Map. `PhoneCalls` (`Game.phones`): eingehend nur für
   Zimmer 13, ausgehend per Wählseite. Jedes Klingeln = `Game.noise("phone", …)`. Telefonsätze in `PhoneCalls.LINES`,
   eigene als `"phone_<key>"` nur in den festen Profilen – **nicht** in `GuestGenerator.COMMON` (verschiebt die
   Zufallsfolge). Laufende Anrufe nicht gespeichert.
