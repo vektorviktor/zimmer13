@@ -75,6 +75,7 @@ Gemeinsame Regeln:
 | `tree_1…3.glb` | Gartenbäume, `_tree` | `build_trees.py`, „Realistic Trees Collection“ (Jungle Jim, CC-BY) | Zeile für `TREE_MODELS`; Blätter `cutout` (`psx_leaves`); Kollision nur Stamm bis `TREE_TRUNK_H` – unter der Krone kann man durch; der Plan zeigt nur den Standort |
 | `bench.glb` | Parkbänke draußen, `_bench` | `build_bench.py`, Sketchfab (Decoratopia, CC-BY) | Kollision aus `BENCH_SEAT` und Lehne; drinnen bleibt der Holzkasten |
 | `armchair.glb` | Ledersessel am Schreibtisch, `Armchair` | `build_armchair.py`, Sketchfab (VoGAn, CC-BY) | volles PBR-Set mit Verdeckung im Rot von `armchair_orm.png`; Leder beim Bauen rot gefärbt (Helligkeit bleibt, Beine per UV-Maske und helle Nieten ausgespart); Kollision Unterbau, Lehne, Armlehnen; ein Sitzplatz „sessel“; in `_furnishings` als `armchair` |
+| `chair.glb` | Stuhl (Planfarbe „Stuhl“), `Chair` | `build_chair.py` (Blender, Möbelbausatz, ohne Vorlage) | zwei Teile `frame` (Holz, `Mat.hotel_wood`) und `cushion` (Stoff `Fabric_Pattern_08` getönt, `mesh_uv`); beide mit `chair_ao.png` über UV2, Normale aus dem Mesh; Maße gibt das Skript aus (`Chair.SIZE`, `SEAT_H`, Lehne `BACK_*_Z`) |
 | `room_table.glb` | Tischgruppen in Zimmern, `_room_table` | `build_room_table.py`, Sketchfab (MaX3Dd, CC-BY) | immer zwei Stühle gegenüber; Plan-Stühle im Umkreis `ROOM_CHAIR_REACH` fallen weg |
 | `washbasin`, `shower`, `toilet`, `bar_counter`, `back_bar`, `bar_stool` | Bad und Bar | `build_fixtures.py`, Rohmodelle des Nutzers | Flächen nach Namen (`_fixture_materials`); siehe unten „Bad und Bar“ |
 | `flashlight.glb` | `Flashlight` | `build_flashlight.py`, Sketchfab (Onur, CC-BY) | Glas `lens` bekommt das Lampenmaterial; Kegel an `Flashlight.LENS` |
@@ -1643,6 +1644,15 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   daher keine Spiegelung (eigene Teile links und rechts). Kollision: Sockel und Kranz durchgehend (an der Ecke bis an die
   Wand), Rückwand, Seiten, Zwischenwände, Fachböden – die Fächer bleiben hohl. Nicht im Spielstand. `_furnishings`
   mit Oberkante `Bookshelf.height(levels)`. Bücher fehlen noch.
+- **Stühle** (`world/chair.gd`, ZIM-156, Spielkonzept 7.14): Plan „Möbel: Stuhl“ → `chair`, fest 46 × 47 cm mittig im
+  Rechteck, Sitzseite zur Vorderseite (Stühle im Umkreis eines Zimmertischs setzt weiter `_room_table`).
+  `tools/build_chair.py` baut alle Hölzer als Stränge (`sweep`: gerundetes Rechteck als Querschnitt, je Ecke drei
+  Abschnitte – unter `SHARP`, schattiert weich): Beine innen verjüngt, Zarge mit Bogen (`APRON_ARCH`), Pfosten über
+  dem Sitz im Bogen `RAKE` nach hinten (`post_z`), Kopfbrett und Querleiste in der Ebene des Pfostens geneigt und um
+  `BOW` gewölbt. Das Kissen ist ein Raster, dicht an den Rändern (`EDGE_STEPS`); Höhe aus dem Abstand zum Umriss
+  (p-Norm über alle Kanten, so werden auch die Ecken rund), Boden per `holes_fill` eine Fläche. Mesh und Material
+  teilen alle Stühle. Kollision Sitzblock und Lehne (bis `BACK_REAR_Z`), ein Sitzplatz „stuhl“. Gruppe `chairs`,
+  nicht im Spielstand.
 - **Süßigkeiten-Truhen, Automaten** (`world/chest.gd`, `world/vending_machine.gd`): nur aus dem Plan. Truhe in einem
   Hotelzimmer = Süßigkeiten-Truhe (Meta `sweets_room`, Gruppe `sweet_chests` und `chests`); Automaten mit leuchtender
   Front (`light_source`), nicht gespeichert.

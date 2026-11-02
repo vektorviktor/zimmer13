@@ -368,11 +368,9 @@ const BOX_HEIGHTS := {
 	"table": 0.75, "coffee_table": 0.4, "dining_table": 0.78, "bench": 0.45, "bar_counter": 1.1, "shelf": 2.0,
 	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5,
 	# Plan map_a (PLANFARBEN.md), Platzhalter bis zu den Modellen
-	"bathtub": 0.6, "sink": 0.85, "shower": 0.06, "toilet": 0.42, "room_table": 0.75, "chair": 0.45,
+	"bathtub": 0.6, "sink": 0.85, "shower": 0.06, "toilet": 0.42, "room_table": 0.75,
 }
-## Platzhalter-Möbel: Stuhllehne über dem Sitz, Spiegel über dem Waschbecken (Breite, Höhe; Mitte über dem Boden),
-## Fußmatte
-const CHAIR_BACK := 0.45
+## Platzhalter-Möbel: Spiegel über dem Waschbecken (Breite, Höhe; Mitte über dem Boden), Fußmatte
 ## Sitzmöbel (Seat): Aufstehen so weit vor der Sitzkante (Spielerradius und etwas Luft)
 const SEAT_CLEAR := 0.33
 ## Gartenmöbel (ZIM-51): so weit höchstens dreht sich ein Gartentisch (Grad); ein Gartenstuhl dreht sich zwischen x und y
@@ -2464,6 +2462,10 @@ func _furniture() -> void:
 					_furnishings.append({"kind": "armchair", "rect": _local_rect(back, front,
 						Rect2(-Armchair.SIZE.x / 2.0, chair_at, Armchair.SIZE.x, Armchair.SIZE.z)), "top": Armchair.SEAT_H,
 						"front": -front, "node": node})
+			"chair":   # Stuhl (ZIM-156): feste Größe, mittig im Rechteck, Sitzseite zur Vorderseite
+				node = Chair.new()
+				rect = _local_rect(c, front, Rect2(-Chair.SIZE.x / 2.0, -Chair.SIZE.z / 2.0, Chair.SIZE.x, Chair.SIZE.z))
+				top = Chair.SEAT_H
 			"changing_bench":   # Länge entlang der langen Seite des Rechtecks, ohne Vorderseite
 				yaw = 0.0 if rect.size.x >= rect.size.y else PI / 2.0
 				node = ChangingBench.make(maxf(rect.size.x, rect.size.y))
@@ -2684,8 +2686,8 @@ func _sweets_chest(chest: Chest, rect: Rect2, front: Vector2, pos: Vector3) -> v
 		_item(Item.Kind.SWEETS, pos + basis * Vector3((i % 3 - 1) * chest.size.x * 0.28, 0.08 + 0.03 * row, (row - 0.5) * chest.size.z * 0.4))
 
 
-## Möbel als Kasten in der Grundfläche des Plans; Theke mit Platte, Waschmaschine mit Bullauge vorn, Stuhl mit
-## Lehne hinten, Waschbecken mit Spiegel an der Wand dahinter.
+## Möbel als Kasten in der Grundfläche des Plans; Theke mit Platte, Waschmaschine mit Bullauge vorn, Waschbecken mit
+## Spiegel an der Wand dahinter.
 func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) -> StaticBody3D:
 	var mat := _wood
 	match kind:
@@ -2716,14 +2718,6 @@ func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) ->
 				porthole.rotation.z = PI / 2.0
 			else:
 				porthole.rotation.x = PI / 2.0
-		"chair":
-			# Lehne an der Rückseite, quer zur Vorderseite
-			var across := absf(front.y) > 0.5
-			var back := Vector3(-front.x * (rect.size.x / 2.0 - 0.025), 0, -front.y * (rect.size.y / 2.0 - 0.025))
-			var width := rect.size.x if across else rect.size.y
-			var size := Vector3(width, CHAIR_BACK, 0.05)
-			Geo.mesh(body, Geo.box(size if across else Vector3(size.z, size.y, size.x)), mat,
-				back + Vector3(0, height / 2.0 + CHAIR_BACK / 2.0, 0))
 		"sink":
 			# Spiegel mit Spiegelbild (Mirror) an der Wand hinter dem Becken – Unterkante MIRROR_BOTTOM, Oberkante
 			# MIRROR_TOP: Figuren von 1,45 bis 2,00 m sehen darin Scheitel und Bauch (Spielkonzept 3.9)
@@ -2733,12 +2727,12 @@ func _box_furniture(kind: String, rect: Rect2, height: float, front: Vector2) ->
 			var mid := (MIRROR_BOTTOM + MIRROR_TOP) / 2.0 - height / 2.0
 			Mirror.make(body, Vector2(width, MIRROR_TOP - MIRROR_BOTTOM), back + Vector3(0, mid, 0),
 				Vector3(front.x, 0, front.y), MIRROR_RANGE).add_to_group("sink_mirrors")
-	if kind in ["bench", "chair", "toilet"]:
-		# Sitzplätze (Seat): Bank je SPOT_WIDTH einer, Stuhl und Toilette einer – Blick zur Vorderseite
+	if kind in ["bench", "toilet"]:
+		# Sitzplätze (Seat): Bank je SPOT_WIDTH einer, Toilette einer – Blick zur Vorderseite
 		var across := absf(front.y) > 0.5
 		var width := rect.size.x if across else rect.size.y
 		var depth := rect.size.y if across else rect.size.x
-		var title: String = {"bench": "bank", "chair": "stuhl", "toilet": "klo"}[kind]
+		var title: String = {"bench": "bank", "toilet": "klo"}[kind]
 		Seat.attach(body, title, height, Vector3(0, -height / 2.0, 0), Vector3(front.x, 0, front.y),
 			width if kind == "bench" else minf(width, Seat.SPOT_WIDTH), depth / 2.0 + SEAT_CLEAR)
 	return body

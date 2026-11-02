@@ -135,6 +135,9 @@ extends Node3D
 ##                               hinten (Besucherseite), links (linker Unterschrank) oder nah (Platte von oben)
 ##   --regale                    in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
 ##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen)
+##   --stuhl[=hinten|seite|nah]  in den Speisesaal (EG, ZIM-156) schräg vor den ersten Stuhl – steht keiner im Plan,
+##                               kommen zwei an die mittlere Tafel und einer frei davor; hinten: von hinten (Wölbung der
+##                               Lehne), seite: im Profil (Bogen der Pfosten), nah: aufs Kissen
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -1108,6 +1111,32 @@ func run_debug(arg: String) -> bool:
 		var at := shelf.global_transform * Vector3(-shelf.length / 2.0 + 3.2, 0, 4.2)
 		TeleportUI.place_player(at, end - at)
 		Game.player.head.rotation.x = deg_to_rad(-6.0)
+	elif _is_arg(arg, "--stuhl"):
+		var builder := Game.social.builder
+		if not builder._named.has("speisesaal"):
+			return false
+		var hall: Rect2 = builder._named["speisesaal"]
+		var chair: Chair = null
+		for node in get_tree().get_nodes_in_group("chairs"):
+			var ch := node as Chair
+			if hall.has_point(Vector2(ch.global_position.x, ch.global_position.z)):
+				chair = ch
+				break
+		if chair == null:
+			chair = _chair_demo(hall)
+		var opts := _arg_parts(arg, "--stuhl")
+		# schräg von vorn; hinten: schräg von hinten auf die Wölbung der Lehne; seite: im Profil (Bogen der Pfosten)
+		var local := Vector3(0.7, 0, 1.3)
+		if opts.has("hinten"):
+			local = Vector3(0.6, 0, -1.1)
+		elif opts.has("seite"):
+			local = Vector3(1.4, 0, 0.1)
+		elif opts.has("nah"):
+			local = Vector3(0.3, 0, 0.75)
+		var aim := chair.global_transform * Vector3(0, 0.55, 0)
+		var at := chair.global_transform * local
+		TeleportUI.place_player(at, aim - at)
+		Game.player.head.rotation.x = deg_to_rad(-40.0 if opts.has("nah") else -28.0)
 	elif _is_arg(arg, "--dachboden"):
 		var builder := Game.social.builder
 		var where := _arg_value(arg, "--dachboden")
@@ -2941,6 +2970,30 @@ func _debug_decorate(parts: PackedStringArray) -> void:
 	elif "--answer" in OS.get_cmdline_user_args():
 		# in Zimmer 13 kommt die Einladung per Anruf – nach 4 s abnehmen
 		get_tree().create_timer(4.0).timeout.connect(func() -> void: Game.phones.answer(Game.phones.home_phone))
+
+
+## Stühle zum Ansehen (--stuhl), solange im Speisesaal keiner im Plan steht: zwei an der Tafel, die der Mitte des Saals
+## am nächsten ist, zu ihr gewandt, und einer frei im Gang davor, von ihr abgewandt und etwas gedreht – den gibt sie zurück.
+func _chair_demo(hall: Rect2) -> Chair:
+	var table := Rect2(hall.get_center() - Vector2(1.5, 0.5), Vector2(3.0, 1.0))
+	var best := INF
+	for f: Dictionary in Game.social.builder._furnishings:
+		var r: Rect2 = f["rect"]
+		if f["kind"] == "dining_table" and hall.encloses(r) and r.get_center().distance_to(hall.get_center()) < best:
+			best = r.get_center().distance_to(hall.get_center())
+			table = r
+	var free: Chair = null
+	for i in 3:
+		var ch := Chair.new()
+		if i < 2:
+			ch.position = Vector3(table.get_center().x + (i - 0.5) * 0.65, 0, table.end.y + 0.15)
+			ch.rotation.y = PI   # Sitzseite (+Z) zur Tafel
+		else:
+			ch.position = Vector3(table.get_center().x + 1.2, 0, table.end.y + 1.5)
+			ch.rotation.y = deg_to_rad(25.0)
+			free = ch
+		add_child(ch)
+	return free
 
 
 ## Bücherregale zum Ansehen (--regale), solange im Plan keins steht: eine Innenecke aus zwei Zeilen mit 5 Ebenen

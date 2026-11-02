@@ -5341,6 +5341,19 @@ Dachform (4.21).
   der Mitte. Ein Punkt im Becken liegt auf dessen Boden.
 - **Entschieden 1.11.:** Fliesen bleiben bei 2 m wie in den Bädern (nicht bis zur Decke), **keine Trennwände**.
 
+### 7.14 Stühle im Speisesaal (entschieden und umgesetzt 2026-11-02, ZIM-156)
+
+- **Nach Skizze des Nutzers:** ein wirklich einfacher Stuhl, der trotzdem etwas hermacht – im Holz der Kommoden und
+  Schreibtische. Vier gerade Beine (innen leicht verjüngt), Zarge unter dem Sitz mit flachem Bogen, die hinteren Beine
+  laufen als Lehne hoch; oben ein breites Kopfbrett mit Bogen, darunter eine Querleiste. 46 × 47 cm, Sitz 46 cm,
+  Lehne 95 cm.
+- **Lehne entgegen der Skizze leicht gewölbt:** Die Pfosten biegen sich nach oben 7 cm nach hinten, Kopfbrett und
+  Querleiste sind in der Mitte 2 cm nach hinten gewölbt.
+- **Sitzkissen** in altem Weinrot: oben zu den Kanten abgerundet und zur Mitte leicht gewölbt, unten flach und eckig,
+  hinten um die Pfosten ausgespart.
+- Planfarbe „Möbel: Stuhl“ (bisher ein Kasten mit Brett), überall gleich; ein Sitzplatz wie bisher. Die Stühle an
+  den Tafeln malt der Nutzer in den Plan. Die Stühle der Tischgruppen in den Zimmern bleiben, wie sie sind.
+
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9

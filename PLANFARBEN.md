@@ -169,7 +169,7 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #273a86 | Snackautomat | #354fb6 | |
 | #256e93 | Getränkeautomat | #3193c4 | |
 | #9b8427 | Zimmertisch | #ccad33 | Tisch so groß wie im Plan, zwei Stühle einander gegenüber |
-| #999633 | Stuhl | #c2be47 | |
+| #999633 | Stuhl | #c2be47 | fest 46 × 47 cm (5 × 5 px), mittig im Rechteck, Sitzseite zur Vorderseite – für die Tafeln im Speisesaal (ZIM-156); an einem Zimmertisch setzt die Tischgruppe ihre eigenen |
 | #44663d | Grab | #5e8c54 | Grabplatz 2 × 1 m, Vorderseite = Fußende |
 | #85af5a | Gedenkstätte | #a3c383 | |
 | #bf2263 | Videoautomat | | ohne Vorderseite – mit dem Rücken an die nächste Wand |
