@@ -37,7 +37,9 @@ extends Node3D
 ##                               aufgehen, sind offen (auch die mit Schlüssel)
 ##   --duschen[=an]              vor den ersten Duschplatz am Pool (Drücker, Ablage, Duschkopf; ZIM-144) – an: Wasser läuft
 ##   --automaten[=seite]         vor die beiden Videoautomaten der Bar (Deadra, Ghost Hotel; 6.10) – seite: schräg
-##                               von der Seite (Seitenbilder)
+##                               von der Seite (Seitenbilder); deadra|hotel: Münze einwerfen und spielen (mit
+##                               --autoplay spielt er selbst); gast[,id]: der Gast (Standard ein Kind) spielt Ghost
+##                               Hotel, du siehst zu
 ##   --bilder[=gruppe]           vor das erste Gemälde aus dem Plan (ZIM-151); hängt keins oder mit gruppe (lobby, bar,
 ##                               corridor, study, director, room, alle): die Werke als Reihe in der Lobby
 ##   --notizbuch                 Notizbuch mit Beispielen (Aufgaben: offen, erledigt, zu spät, Auftraggeber tot; Notizen
@@ -1857,8 +1859,13 @@ func run_debug(arg: String) -> bool:
 		var water := _arg_value(arg, "--duschen") == "an"
 		get_tree().create_timer(0.5).timeout.connect(PoolShower.debug_show.bind(get_tree(), water))
 	elif _is_arg(arg, "--automaten"):
-		var side := _arg_value(arg, "--automaten") == "seite"
-		get_tree().create_timer(0.5).timeout.connect(ArcadeMachine.debug_show.bind(get_tree(), side))
+		var which := _arg_value(arg, "--automaten").split(",")
+		if which[0] in ["deadra", "hotel", "gast"]:
+			get_tree().create_timer(1.0).timeout.connect(func() -> void:
+				ArcadeMachine.autoplay = _autoplay
+				ArcadeMachine.debug_play(get_tree(), which[0], which[1] if which.size() > 1 else ""))
+		else:
+			get_tree().create_timer(0.5).timeout.connect(ArcadeMachine.debug_show.bind(get_tree(), which[0] == "seite"))
 	elif _is_arg(arg, "--bilder"):
 		var group := _arg_value(arg, "--bilder")
 		get_tree().create_timer(0.5).timeout.connect(Painting.debug_show.bind(get_tree(), group))

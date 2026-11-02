@@ -74,6 +74,9 @@ const NOISE := {
 	"coasters":   {"range": 4.0,  "sound": "rustle", "volume": 0.5, "caption": "[Bierdeckel prasseln auf den Tisch]"},
 	"slot":       {"range": 9.0,  "sound": "motor",  "volume": 0.35, "caption": "[Ein Spielautomat rattert]"},
 	"slot_win":   {"range": 12.0, "sound": "jingle", "volume": 0.7, "caption": "[Münzen klimpern in die Schale]"},
+	"arcade_coin": {"range": 3.0, "sound": "jingle", "volume": 0.4, "caption": "[Eine Münze fällt in einen Automaten]"},
+	"arcade":     {"range": 7.0,  "sound": "arcade", "volume": 0.3, "caption": "[Ein Videoautomat dudelt]"},    ## Videoautomat beim Spielen (6.10, mittel)
+	"arcade_over": {"range": 10.0, "sound": "arcade_over", "volume": 0.45, "caption": "[Ein Videoautomat jault – Spiel vorbei]"},
 	"bowling_roll": {"range": 10.0, "sound": "motor", "volume": 0.3, "caption": "[Eine Kugel rollt über die Bahn]"},    ## Bowling (6.10)
 	"bowling_pins": {"range": 16.0, "sound": "bang",  "volume": 0.6, "caption": "[Kegel poltern]"},    ## … und trifft
 	"singing":    {"range": 14.0, "sound": "",       "volume": 0.0, "caption": "[Jemand singt laut und schief]"},

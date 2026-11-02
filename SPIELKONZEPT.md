@@ -3911,7 +3911,24 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 >
 > Die beiden Videoautomaten stehen **zusätzlich** zum Jackpot-Automaten (einarmiger Bandit), der in die Ecke oben
 > rechts kommt; die Dartscheibe hängt in der **Nische neben der Bowlingbahn**, damit niemand Pfeile abbekommt.
-> Noch offen: ob eine Runde **Geld** kostet; **Bestenliste** mit Gästen; wie **laut** die Videoautomaten sind.
+> ~~Noch offen: ob eine Runde **Geld** kostet; **Bestenliste** mit Gästen; wie **laut** die Videoautomaten sind.~~
+>
+> **Videoautomaten spielbar (entschieden und gebaut 2026-11-02, ZIM-72):**
+> - **Geld:** Eine Runde kostet **1 Geld**, zu gewinnen gibt es nichts (wie beim Jackpot-Automaten ein Geldfresser).
+> - **Steuerung:** [E] wirft die Münze ein, man steht davor und **schaut auf die Röhre**; die Bewegungstasten steuern,
+>   bei Deadra drehen [W] oder [Leertaste], [S] lässt schneller fallen; [Esc] hört auf. Die Maus schaut sich weiter
+>   um – man sieht, was hinter einem passiert. Konzentriert wie am Spieltisch: Vorwarnungen fallen weniger auf;
+>   kommt etwas in die Nähe, lässt man den Joystick los (wie beim Darts allein).
+> - **Bestenliste mit Gästen:** Jedes Gerät hat seine eigene Liste (8 Plätze, gespeichert), anfangs nur Kürzel von
+>   früher. Du stehst als „DU“ darin, Gäste mit den ersten drei Buchstaben ihres Namens. **Gäste spielen selbst:**
+>   Kinder immer gern, von den Erwachsenen etwa jeder dritte, jeder mit festem Geschick; tagsüber geht ab und zu einer
+>   allein an ein Gerät. Überholst du einen Gast, der in der Nähe steht, ist ein **stolzer** gekränkt, ein anderer
+>   freut sich mit (Beziehung ±3).
+> - **Lautstärke mittel:** Beim Spielen dudelt der Automat etwa **7 m** weit (Jackpot 9 m, Würfel 10 m), das Spielende
+>   jault etwa 10 m weit.
+> - **Ghost Hotel** im Einzelnen: drei Leben, Kürbis 10, Laterne 50, verbannte Gespenster 200/400/800/1600; ist alles
+>   eingesammelt, geht es schneller weiter. **Deadra:** Reihen 100/300/500/800/1200 × Stufe, alle 8 Reihen eine Stufe
+>   schneller.
 >
 > **Gehäuse (2026-11-01):** Beide Videoautomaten sind ein echtes Automatenmodell (Sketchfab, CC-BY) mit gewölbter
 > Bildröhre; die Bilder des Originals (Pac-Man) sind ersetzt. **Deadra:** Aubergine, giftgrüne Kantenleiste, auf den

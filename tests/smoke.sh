@@ -257,6 +257,10 @@ done <<'LIST'
 400|spinde,speichern|--spinde=offen --savetest
 400|duschen|--duschen=an --trace
 400|automaten|--automaten=seite --trace
+2000|automaten,spiele|--automaten=deadra --autoplay --trace
+2500|automaten,spiele|--automaten=hotel --autoplay --trace
+900|automaten,gaeste|--automaten=gast --trace
+900|automaten,speichern|--automaten=gast --savetest
 400|bilder|--bilder=alle --trace
 600|halloween,spuk|--spiegel --trace
 600|halloween,spuk,speichern|--spiegel=tuch --savetest

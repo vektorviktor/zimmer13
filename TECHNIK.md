@@ -2350,9 +2350,24 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   „Videoautomat“, der Reihe nach `ARCADE_GAMES`: Deadra, Ghost Hotel – eigene Entwürfe statt Tetris und Pac-Man):
   Gehäuse = `arcade_machine.glb` (Tabelle in 1), Bildschirm = kleines `Image` (`SCREEN_PX`) auf der gewölbten
   Röhre des Modells (`shaders/arcade_screen.gdshader`: Bild in `PICTURE_RECT` der UVs, Zeilen, außen schwarzes Glas),
-  alle `TICK` s neu gemalt, nur in `AWAKE_RANGE` um den Spieler. Debug `--automaten[=seite]`. Bisher nur die Vorführung
+  alle `TICK` s neu gemalt, nur in `AWAKE_RANGE` um den Spieler. Drei Modi (`Mode`): `ATTRACT` – Vorführung
   (Fünferformen fallen ins Feld 12 × 18; das Männchen läuft die äußere Flurrunde, Gespenster hinterher, rot nach
-  einer Laterne); spielbar noch nicht. **Bowlingbahn:** Flächen „Bowlingbahn“/„Foullinie“ im Grundriss
+  einer Laterne) im Wechsel mit der Bestenliste (`_list_draw`, Schrift 3 × 5 `FONT`); `PLAY` – für `PRICE` Geld
+  (Spielkonzept 6.10, ZIM-72) steht der Spieler davor (`Player.stand_at`, also `at_oche` und `focused`: Maus schaut,
+  Vorwarnungen halb), `_process` liest die Bewegungstasten selbst (`_press` mit Wiederholung), `_input` fängt [Esc] vor
+  dem Pausenmenü ab; Bild nur bei Änderung neu (`_dirty`). Deadra: gedrehte Kästchen in `_cells` (`_turned`, seitlich
+  ausweichen beim Drehen), `_deadra_lock` zählt Reihen, Stufe alle `LINES_PER_LEVEL`. Ghost Hotel: Männchen Feld für
+  Feld (`MAN_STEP`), drei Gespenster mit eigener Uhr (`_ghost_move`: an Kreuzungen neu wählen, nie umkehren; jagen
+  direkt, vier Felder voraus, irrt öfter; rot = zufällig fliehen; Augen heim nach `HOME`), Treffer in `_hotel_caught`.
+  Spielende (auch [Esc], Vorwarnung `_danger`, Spieler weg) → `_game_over`: Bestenliste, Lärm `arcade_over`,
+  `leave_oche`. `GUEST` – ein freier Gast (`likes`: Kinder, sonst fest aus der ID jeder dritte; IDLE, Angst < 40, nicht
+  eingeladen) stellt sich davor (`Guest.stand_for_game`, State `MINIGAME`), alle `GUEST_CHECK` s mit `GUEST_CHANCE`,
+  wenn es ruhig ist; nach `GUEST_LENGTH` trägt er sich mit Punkten nach `skill_of` (fest aus der ID, kein
+  Zufallsaufruf im `GuestGenerator`) ein. `_overtaken`: stolze Zuschauer (`profile.dice.pride` > 0,6) −3, andere +3.
+  Lärm `arcade` alle `NOISE_EVERY` s (7 m), `arcade_coin`, `arcade_over` (10 m), Klänge in `SynthAudio` („arcade“,
+  „arcade_over“). Gespeichert: Gruppe `arcades` (`save_state`: Einträge [Kürzel, Punkte, wer]). Debug
+  `--automaten[=seite|deadra|hotel|gast[,id]]`, mit `--autoplay` spielt er selbst (Deadra sucht Drehung und Spalte,
+  `_bot_best`), Rauchtest-Stichwort `automaten`. **Bowlingbahn:** Flächen „Bowlingbahn“/„Foullinie“ im Grundriss
   (`bowling_lane`/`foul_line`, die Linie darf schmal sein – `THIN_FILLS` in `build_map.py`), Boden `_lane_floor`
   (Dielenfoto heller und glatter, `LANE_*`). `BowlingLane` (Weltkoordinaten, Bahn nach −z): zehn `RigidBody3D`-Kegel
   (Drehkörper aus `PROFILE`, Kollision = konvexe Hülle desselben Umrisses, `_pin_hull` – als Zylinder in Bauchbreite

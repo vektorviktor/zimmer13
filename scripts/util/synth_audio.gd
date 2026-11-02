@@ -83,7 +83,7 @@ const DURATIONS := {
 	"giggle": 0.8, "dart": 0.12,
 	"squeak": 0.16, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
 	"owl": 4.6, "owl_kewick": 0.55, "bark": 1.3, "bark_deep": 1.6,
-	"bite": 0.3, "power_down": 1.6, "trophy": 1.6, "desk_bell": 2.4,
+	"bite": 0.3, "power_down": 1.6, "trophy": 1.6, "desk_bell": 2.4, "arcade": 0.88, "arcade_over": 1.3,
 }
 ## Spieluhr (Spielkonzept 5.17): Marions Wiegenlied, eigene Melodie in e-Moll, je Ton MUSIC_BOX_BEAT Sekunden – gegen
 ## Ende läuft das Werk aus und wird langsamer
@@ -514,6 +514,17 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 					var f: float = [659.3, 830.6, 987.8][i]
 					bell += (sin(TAU * f * bt) + sin(TAU * f * 2.76 * bt) * 0.15) * minf(1.0, bt * 120.0) * exp(-bt * 3.2)
 			return bell * 0.12
+		"arcade":
+			# Videoautomat (6.10): acht kurze Rechtecktöne, Achtbit-Gedudel
+			var tune: Array[float] = [523.3, 659.3, 784.0, 659.3, 587.3, 698.5, 880.0, 698.5]
+			var note := tune[mini(int(t / 0.11), tune.size() - 1)]
+			return (0.06 if fmod(t * note, 1.0) < 0.5 else -0.06) * minf(1.0, fmod(t, 0.11) * 200.0)
+		"arcade_over":
+			# … Spiel vorbei: ein Rechteckton rutscht jaulend hinab
+			var fall := lerpf(660.0, 110.0, k) * (1.0 + 0.03 * sin(TAU * 9.0 * t))
+			var ph3: float = shot["phase"] + fall * dt
+			shot["phase"] = ph3
+			return (0.08 if fmod(ph3, 1.0) < 0.5 else -0.08) * env
 		"poof":
 			# Puppe löst sich in Rauch auf (2.5): weiches Fauchen, das schnell anschwillt und verweht
 			return (_lp_fast * 1.6 + white * 0.15) * minf(1.0, t * 25.0) * exp(-t * 3.5) * 0.7
