@@ -142,6 +142,8 @@ extends Node3D
 ##                               Lehne), seite: im Profil (Schräge der Pfosten), nah: über die Lehne aufs Kissen
 ##   --tafel[=nah|ende]          in den Speisesaal (EG, ZIM-157) schräg vor eine Ecke der ersten Tafel – steht keine im
 ##                               Plan, kommt eine zum Ansehen in die Mitte; nah: vor das Eckbein, ende: aufs Ende des Läufers
+##   --wandleuchte[=nah,quer]    schräg vor die Wandleuchte, die dem Startpunkt am nächsten ist, Blick darauf (Lichtfächer,
+##                               7.3) · nah: auf 1,5 m · quer: die nächste an einer Wand nach Osten oder Westen
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -1197,6 +1199,26 @@ func run_debug(arg: String) -> bool:
 				TeleportUI.place_player(spot.origin, -spot.basis.z)
 				Game.player.head.rotation.x = deg_to_rad(-8.0)
 			"treppe":
+	elif _is_arg(arg, "--wandleuchte"):
+		# die Wandleuchte, die dem Startpunkt am nächsten ist; schräg davor, Blick auf die Leuchte
+		var opts := _arg_parts(arg, "--wandleuchte")
+		var lamp: Lamp = null
+		var best := INF
+		for node in get_tree().get_nodes_in_group("lamp_fixtures"):
+			var l := node as Lamp
+			var d := l.global_position.distance_to(Game.player.global_position)
+			var across := absf(l.global_basis.z.x) > 0.7   # quer: Wand nach Osten oder Westen
+			if l.style == Lamp.Style.WALL and d < best and across == opts.has("quer"):
+				best = d
+				lamp = l
+		if lamp == null:
+			return false
+		var dist := 1.5 if opts.has("nah") else 2.6
+		var at := lamp.global_transform * Vector3(dist * 0.15, 0, dist)
+		at.y = Game.player.global_position.y   # die nächste Leuchte hängt auf dem Stockwerk des Startpunkts
+		TeleportUI.place_player(at, lamp.global_position - at)
+		var target := lamp.global_position - (at + Vector3(0, Game.player.eye_height, 0))
+		Game.player.head.rotation.x = atan2(target.y, Vector2(target.x, target.z).length())
 				var foot := builder.attic_stair_foot
 				TeleportUI.place_player(foot.origin, -foot.basis.z)
 				Game.player.head.rotation.x = deg_to_rad(20.0)

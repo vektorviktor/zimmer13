@@ -43,16 +43,24 @@ const REACH := 1.3
 const BULB_MODEL := "res://assets/models/bulb.glb"
 ## So weit steckt das Gewinde (3 cm) in der Fassung
 const BULB_SCREWED_IN := 0.02
-## Wandleuchte aus Blender: runde Wandplatte in Anthrazit („WallLamp_Body“, 11 cm) mit Band um die Glaskugel
-## („WallLamp_Ball“, 9 cm), Ursprung an der Wand, Kugel nach +Z. Die Kugel leuchtet statt der Birne (die steckt
-## unsichtbar dahinter und lässt sich wie sonst herausdrehen). Fehlt die Datei, bleibt die Messingleuchte.
+## Wandleuchte aus tools/build_wall_lamp.py: runde Wandplatte in Anthrazit (17 cm), 5 cm Zylinder als Abstand, daran
+## ein geschlossener Ring waagerecht um die Glaskugel (13 cm), alles „WallLamp_Body“; die Kugel „WallLamp_Ball“.
+## Ursprung an der Wand, Kugel nach +Z. Die Kugel leuchtet statt der Birne (die steckt unsichtbar dahinter und lässt
+## sich wie sonst herausdrehen). Fehlt die Datei, bleibt die Messingleuchte.
 const WALL_MODEL := "res://assets/models/wall_lamp.glb"
 const WALL_BODY_COLOR := Color(0.22, 0.22, 0.23)
-## Im Spiel 1,5-mal so groß (Platte 17 cm, Kugel 13 cm) – in Originalgröße wirkte sie an der Wand verloren
-const WALL_SCALE := 1.5
-## Mitte der Kugel in Modellmaßen (vor dem Skalieren)
-const WALL_BALL := Vector3(0, 0, 0.053)
-## Das Licht sitzt wie bei der Messingleuchte 30 cm vor der Wand – die Helligkeit der Räume bleibt gleich
+## Mitte der Kugel (Ausgabe des Bauskripts); dort sitzt auch das Licht
+const WALL_BALL := Vector3(0, 0, 0.145)
+## Lichtfächer: Der Ring hält das Licht zur Seite ab, nur nach oben und unten fällt es als schmaler Kegel (halber
+## Öffnungswinkel um die Senkrechte, weich über FAN_SOFT) und zeichnet an der Wand einen zweigeteilten Fächer
+## (Projektor auf dem Punktlicht, _wall_fan). Außerhalb bleibt FAN_REST (das Glas streut).
+const FAN_CONE := 50.0
+const FAN_SOFT := 6.0
+const FAN_REST := 0.2
+## Ausgleich für das abgehaltene Licht, damit die Räume ungefähr so hell bleiben wie vorher
+const FAN_BOOST := 1.1
+static var _fan_texture: ImageTexture
+## Messingleuchte (ohne Modell): Das Licht sitzt 30 cm vor der Wand, sonst zeichnet der Schirm einen Keil an die Wand
 const WALL_LIGHT := Vector3(0, 0.04, 0.3)
 ## Spiegelleuchte: Balken (Länge entlang lokal X wie length, Höhe, Tiefe ab der Wand), darunter das Lichtband (so weit
 ## vom Rand eingerückt, Stärke). Das Licht sitzt MIRROR_LIGHT vor dem Balken – an der Wand gäbe es einen grellen Fleck
@@ -124,7 +132,7 @@ func _ready() -> void:
 		socket = Vector3(0, -0.03, 0)
 	elif ResourceLoader.exists(WALL_MODEL):
 		_build_wall()
-		bulb_pos = WALL_BALL * WALL_SCALE
+		bulb_pos = WALL_BALL
 	else:
 		# Wandleuchte ohne Modell: Messinghalter an der Wand (lokale +Z zeigt in den Raum), Fassung am Ende, die
 		# Birne steht darauf und reicht mit dem Kolben in den Schirm
@@ -157,8 +165,10 @@ func _ready() -> void:
 		Style.FLUSH:
 			light_pos = bulb_pos + Vector3(0, -FLUSH_LIGHT_BELOW, 0)
 		Style.WALL:
-			light_pos = WALL_LIGHT
+			light_pos = WALL_BALL if ResourceLoader.exists(WALL_MODEL) else WALL_LIGHT
 	_add_light(light_pos, Color(1.0, 0.8, 0.55))
+	if style == Style.WALL and light_pos == WALL_BALL:
+		_wall_fan()
 	_break_timer = randf()
 	apply_state()
 
@@ -167,7 +177,6 @@ func _ready() -> void:
 ## erlischt mit ihr). Die Birne selbst ist nur ein leerer Knoten – zu sehen ist sie hinter dem Glas nicht.
 func _build_wall() -> void:
 	var model: Node3D = (load(WALL_MODEL) as PackedScene).instantiate()
-	model.scale = Vector3.ONE * WALL_SCALE
 	add_child(model)
 	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 		m.material_override = _bulb_material if m.name == "WallLamp_Ball" else Mat.metal(WALL_BODY_COLOR)
@@ -192,6 +201,24 @@ func _add_light(pos: Vector3, color: Color) -> void:
 	light.lamp_material = _bulb_material
 	light.add_to_group("lamps")
 	add_child(light)
+
+
+## Lichtfächer der Wandleuchte (FAN_*): Projektor auf dem Punktlicht. Godot erwartet dafür ein Panorama
+## (equirektangular, Bildzeile = Höhe von oben nach unten, Spalte = Himmelsrichtung) und rechnet es beim Kopieren in den
+## Atlas selbst ins Paraboloid um – das Muster hängt darum nur an der Zeile und gilt für jede Wand. Godot liest die
+## Textur als sRGB. Eine Textur für alle Leuchten; den Schatten, ohne den der Projektor nicht geht, hat das Licht ohnehin.
+func _wall_fan() -> void:
+	light.base_energy = energy * FAN_BOOST
+	if _fan_texture == null:
+		# quadratisch: In diesem Platz im Atlas liegt hinterher das Paraboloid (beide Hälften)
+		const SIZE := 512
+		var img := Image.create(SIZE, SIZE, false, Image.FORMAT_L8)
+		for y in SIZE:
+			var off_vertical := 180.0 * minf(y + 0.5, SIZE - y - 0.5) / SIZE   # 0 oben und unten, 90 waagerecht
+			var t := 1.0 - smoothstep(FAN_CONE - FAN_SOFT, FAN_CONE + FAN_SOFT, off_vertical)
+			img.fill_rect(Rect2i(0, y, SIZE, 1), Color.from_hsv(0, 0, lerpf(FAN_REST, 1.0, t)).linear_to_srgb())
+		_fan_texture = ImageTexture.create_from_image(img)
+	light.light_projector = _fan_texture
 
 
 ## Gehäuse, Birne und Scheibe werfen keinen Schatten.
