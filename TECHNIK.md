@@ -708,7 +708,9 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     Kupferleuchte, über `open_above` Pendel `CEILING`), Kerzen auf dem Möbel, Laternen; `broken` aus dem Plan.
     **Schreibtischlampe** (`_desk_lamp`, `Lamp.Style.DESK`, „Licht: Schreibtischlampe“): grüne Bankerlampe aus
     `tools/build_desk_lamp.py` (CGTrader-Modell ohne Röhre und Zugkette, PBR-Set 2048 px, `Mat.pbr_model`) auf dem Möbel
-    darunter (`_top_at`), Schirm zu dessen Vorderseite, ohne Möbel wie das Telefon (`_upright_yaw`); Raum-ID wie die
+    darunter (`_top_at`), Schirm zum Sitzplatz (`_seat_yaw`: `SEAT_REACH` vor der Mitte der Vorderkante, höchstens
+    `DESK_LAMP_MAX_TURN` neben der Vorderseite – an der Ecke schräg, mittig gerade), dazu ±`DESK_LAMP_JITTER` fest aus
+    der Lage (`_jitter`); ohne Möbel mit Vorderseite wie das Telefon (`_upright_yaw`); Raum-ID wie die
     übrigen Lampen, `DESK_LAMP_ENERGY`/`_RANGE`. Die gewöhnliche Birne liegt waagerecht unter dem Schirm
     (`DESK_SOCKET`, herausdrehbar). Anders als die übrigen Leuchten wirft das Modell Schatten – so hält der Schirm das
     Licht nach oben und hinten ab, ohne Projektor.

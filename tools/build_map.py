@@ -1204,6 +1204,10 @@ def read_objects(floor, COL):
 				else:
 					print("  Warnung: %s/%s – Farbe #%s ohne Eintrag in der Objektlegende bei Pixel %d,%d" % (floor, layer, c, x0, y0))
 				continue
+			if isinstance(by_color[c], tuple) != (key == "lights"):   # Licht außerhalb der Ebene „Lichter“ oder umgekehrt
+				print("  Warnung: %s/%s – „%s“ gehört nicht in diese Ebene, Pixel %d,%d"
+					% (floor, layer, next((n for n, h in BY_NAME.items() if h == c), c), x0, y0))
+				continue
 			if key == "rugs":
 				if len(pts) != (x1 - x0) * (y1 - y0):
 					print("  Warnung: %s/%s – Teppich bei Pixel %d,%d ist kein volles Rechteck" % (floor, layer, x0, y0))

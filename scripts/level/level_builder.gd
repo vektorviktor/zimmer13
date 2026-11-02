@@ -213,6 +213,10 @@ const PENDANT_Y := 4.8
 ## Schreibtischlampe (Lamp.Style.DESK, Planfarbe „Licht: Schreibtischlampe“): schwächer, leuchtet nur den Platz darunter aus
 const DESK_LAMP_ENERGY := 0.45
 const DESK_LAMP_RANGE := 4.0
+const DESK_LAMP_MAX_TURN := deg_to_rad(55.0)   # weiter dreht niemand eine Lampe vom Platz weg
+const DESK_LAMP_JITTER := deg_to_rad(6.0)
+## Sitzplatz vor einem Möbel: so weit vor der Mitte der Vorderkante sitzt man (Brust, Hände auf der Platte)
+const SEAT_REACH := 0.45
 ## Mitte der Discokugel über der Tanzfläche (Partyraum, Luftraum) – vom Boden wie von der Galerie aus zu sehen
 const DISCO_Y := 5.4
 const DOOR_W := 1.2
@@ -5662,20 +5666,35 @@ func _wall_lamp(pos: Vector3, yaw: float, energy: float, light_range: float, roo
 	_parent.add_child(lamp)
 
 
-## Schreibtischlampe bei p auf dem Möbel darunter, der Schirm zu dessen Vorderseite (dort sitzt man); hat das Möbel
-## keine, steht sie wie das Telefon (_upright_yaw).
+## Schreibtischlampe bei p auf dem Möbel darunter, der Schirm zum Sitzplatz davor (_seat_yaw): an der Ecke schräg
+## zur Mitte, mittig gerade nach vorn; hat das Möbel keine Vorderseite, steht sie wie das Telefon (_upright_yaw).
+## Dazu ein paar Grad fester Versatz aus der Lage (_jitter), damit sie hingestellt wirkt.
 func _desk_lamp(p: Vector2, room_id: String, broken: bool) -> void:
 	var lamp := Lamp.new().setup(Lamp.Style.DESK, room_id, DESK_LAMP_ENERGY, DESK_LAMP_RANGE, broken)
 	lamp.fixed = room_id in ALWAYS_LIT
 	lamp.position = Vector3(p.x, _top_at(p), p.y)
-	lamp.rotation.y = _upright_yaw(p)
-	var top := -1.0
-	for f in _furnishings:
-		var front: Vector2 = f["front"]
-		if float(f["top"]) > top and front != Vector2.ZERO and (f["rect"] as Rect2).grow(0.05).has_point(p):
-			top = float(f["top"])
-			lamp.rotation.y = atan2(front.x, front.y)
+	var yaw := _seat_yaw(p, DESK_LAMP_MAX_TURN)
+	lamp.rotation.y = (_upright_yaw(p) if is_nan(yaw) else yaw) \
+		+ _jitter(Rect2(p, Vector2.ZERO)).randf_range(-DESK_LAMP_JITTER, DESK_LAMP_JITTER)
 	_parent.add_child(lamp)
+
+
+## Blickrichtung für etwas bei p auf dem obersten Möbel darunter: zum Sitzplatz SEAT_REACH vor der Mitte seiner
+## Vorderkante, höchstens max_turn neben der Vorderseite. NAN, wenn dort kein Möbel mit Vorderseite steht.
+func _seat_yaw(p: Vector2, max_turn: float) -> float:
+	var best := {}
+	for f in _furnishings:
+		if (f["front"] as Vector2) != Vector2.ZERO and (f["rect"] as Rect2).grow(0.05).has_point(p) \
+				and (best.is_empty() or float(f["top"]) > float(best["top"])):
+			best = f
+	if best.is_empty():
+		return NAN
+	var rect: Rect2 = best["rect"]
+	var front: Vector2 = best["front"]
+	var seat := rect.get_center() + front * (absf(front.dot(rect.size)) / 2.0 + SEAT_REACH)
+	var turn := clampf(front.angle_to(seat - p), -max_turn, max_turn)
+	var dir := front.rotated(turn)
+	return atan2(dir.x, dir.y)
 
 
 ## Deckenleuchte bei p (Spielkonzept 7.3): runde Kupferleuchte bündig an der Decke (Lamp.Style.FLUSH), über dem
