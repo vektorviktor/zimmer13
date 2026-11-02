@@ -330,6 +330,9 @@ done <<'LIST'
 2400|schlaf,fremdbett,gaeste|--fremdbett=bruno,-70 --trace
 2400|schlaf,fremdbett,gaeste|--fremdbett=edna,90 --trace
 1800|schlaf,fremdbett|--fremdbett=frei,3 --trace
+1500|schlaf,wache,gaeste|--wache --sleep=bett,2 --trace
+1500|schlaf,wache,monster,puppe|--wache --day=10 --uhr=1:10 --awake=40 --doll=5,13 --hoerer --sleep=bett,8 --trace
+1200|schlaf,wache|--wache --sleep=tag,1 --trace
 900|schlaf,wecken,gaeste|--wecken=edna --trace
 900|schlaf,wecken,gaeste|--wecken=bruno,gefahr --trace
 900|schlaf,wecken,gaeste|--wecken=edna,halluzination --trace

@@ -20,6 +20,9 @@ const APOLOGY_PRICE := {Social.Tier.ENEMY: 5, Social.Tier.STRONG_ENEMY: 15}
 ## Anlässe (6.9): höchstens so viele oben im Menü; „Was hältst du von …?“ für Gäste bis so weit weg
 const MAX_OCCASIONS := 2
 const NEIGHBOR_RANGE := 4.0
+## Wache in Zimmer 13 (6.18): ab so viel Angst traut er sich nicht; danach so lange Spielzeit Pause
+const GUARD_FEAR := 40.0
+const GUARD_REST := 16.0 * Calendar.HOUR
 
 var guest: Guest
 
@@ -563,7 +566,35 @@ func _show_please() -> void:
 		_option("… mitkommen?", _follow)
 	if Game.director.first_attack_done and not guest.is_child():
 		_option("… heute in deinem Zimmer bleiben?", _stay_in)
+	if tier == Social.Tier.GOOD_FRIEND and not guest.is_child() and not guest.guarding:
+		_option("… Wache halten, während ich schlafe?", _guard)
 	_option("Zurück", _show_main)
+
+
+## Bitte (6.18, ZIM-62): Ein guter Freund kommt mit nach Zimmer 13 und hält Wache, während du schläfst – einmal je
+## GUARD_REST Spielzeit; zu verängstigt, verletzt oder wenn schon ein anderer wacht, nicht.
+func _guard() -> void:
+	var last := float(guest.get_meta("guarded_at", -INF))
+	var other: Guest = null
+	for g: Guest in Game.social.living_guests():
+		if g.guarding:
+			other = g
+	if other:
+		_say("%s passt doch schon auf dich auf." % other.display_name)
+	elif guest.wound != "":
+		_say("So, wie ich gerade beisammen bin? Ich wär dir keine Hilfe.")
+	elif guest.fear >= GUARD_FEAR:
+		_say("In Zimmer 13? Die ganze Nacht? Das schaff ich gerade nicht.")
+	elif Game.director.elapsed - last < GUARD_REST:
+		_say("Ich hab doch eben erst für dich gewacht. Ich brauch selbst mal Schlaf.")
+	else:
+		_say("Klar. Ich komm mit und pass auf dich auf.")
+		guest.set_meta("guarded_at", Game.director.elapsed)
+		var friend := guest   # close() setzt guest auf null
+		close()
+		friend.start_guard()
+		return
+	_show_please()
 
 
 ## Bitte (6.9): Er bleibt einen halben Tag vorsichtig und geht gleich heim – Skeptiker nur, wenn sie dich mögen.

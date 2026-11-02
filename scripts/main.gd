@@ -245,6 +245,8 @@ extends Node3D
 ##   --fremdbett=id[,beziehung]  du schläfst ab 1,5 s im Bett dieses Gastes (Beziehung gesetzt), er steht in seinem Zimmer,
 ##                               zugleich beginnt die Nachtruhe und er findet dich (3.6) · frei[,h]: h Stunden (Standard 4)
 ##                               im Bett eines Zimmers ohne lebende Bewohner (sonst irgendeinem fremden), am Tag
+##   --wache[=id]                Wache (6.18): der Gast (Standard Edna) ist guter Freund, steht in Zimmer 13 und hält
+##                               Wache, sobald du dich ins Bett legst (mit --sleep=bett); mit --trace „[Wache]“
 ##   --eier=spieler[,id]|fenster  Eier (6.13): du wirfst nach 1,5 s ein Ei an die Tür des Gastes (Standard Edna), er sieht
 ##                               es aus dem Flur · fenster: im ersten Zimmer mit Außenfenster klebt Eigelb daran;
 ##                               Kinder: --prank=egg|eggwindow[,zimmer]; mit --trace „[Wurf]“, „[Eier]“
@@ -1793,6 +1795,8 @@ func run_debug(arg: String) -> bool:
 					Game.player.start_sleep(spot))
 	elif arg.begins_with("--fremdbett="):
 		_debug_foreign_bed(_arg_parts(arg, "--fremdbett"))
+	elif arg == "--wache" or arg.begins_with("--wache="):
+		_debug_guard(arg.get_slice("=", 1) if arg.contains("=") else "edna")
 	elif arg.begins_with("--wecken="):
 		_debug_wake(_arg_parts(arg, "--wecken"))
 	elif arg.begins_with("--birnenersatz="):
@@ -2822,6 +2826,19 @@ func _debug_foreign_bed(args: PackedStringArray) -> void:
 			Game.social.debug_sleep())   # Nachtruhe: Er geht ins Bett und findet dich
 	if Game.tracing:
 		print("[Fremdes Bett] Debug: Zimmer %s%s" % [bed.room_no, ", %s (Beziehung %.0f)" % [guest.display_name, guest.relation] if guest else ""])
+
+
+## --wache[=id] (Spielkonzept 6.18, ZIM-62): Der Gast ist guter Freund, steht in Zimmer 13 und kommt auf deine Bitte
+## mit – legst du dich hin (--sleep=bett), hält er Wache. Schläft er schon (--sleep=bett davor), steht er wieder auf.
+func _debug_guard(id: String) -> void:
+	var guest := Game.social.find_guest(id)
+	if guest == null:
+		push_warning("--wache: kein Gast „%s“" % id)
+		return
+	guest.relation = 90.0
+	guest.wake_up()
+	guest.global_position = Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]["center"]
+	guest.start_guard()
 
 
 ## --eier=spieler|fenster[,zimmer] (Spielkonzept 6.13): spieler – du stehst 3 m vor der Tür von Zimmer (Standard Ednas),

@@ -1248,6 +1248,15 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   gute Freunde halten mit `BED_GUARD_CHANCE` Wache (`wait_awake`, Meta `guards_player` – zählt für `guarded()`),
   neutrale bis genervte und Kinder wecken (`BED_ANNOY`, Gerede, Meta `woke_player` → beim nächsten Mal hinauswerfen,
   `BED_EVICT`), Verfeindete klauen `BED_ROB` Münzen (`Player.robbed`, gemeldet beim Aufwachen) oder schlagen wach.
+  **Wache in Zimmer 13** (6.18, ZIM-62): Bitte `DialogUI._guard` (guter Freund, Erwachsener; Absage ab `GUARD_FEAR`,
+  verletzt, schon eine Wache, Meta `guarded_at` jünger als `GUARD_REST`) → `Guest.start_guard`: `guarding`, Mitkommen
+  (`start_follow(GUARD_WAIT)`). `_follow_step` sieht vor dem Versteck-Fall `player_in_own_bed()` (Bett mit `own_bed`,
+  wach oder schlafend) → `_begin_watch`: `State.WATCH`, Platz `GUARD_SPREAD` um die Zimmermitte, Blick zum Bett;
+  `_watch_step` endet mit `end_guard`, sobald du nicht mehr liegst. `bedtime` lässt ihn in Ruhe, `_next_activity`
+  bringt ihn nach einem Schreck zurück (sonst `guarding` aus), `_react_to_flicker` weckt dich statt `take_cover`.
+  `SleepSkip.guard()` liefert den wachen Erwachsenen im Zimmer (`guarded()` → `lead()` mal `GUARD_LEAD`), bei `_end`
+  mit Grund rüttelt er dich wach. Zeuge gegen den Lakengeist über `_witness_guests`, und `Social.all_asleep` ist
+  falsch. Nicht gespeichert. Debug `--wache[=id]`, Rauchtest-Stichwort `wache`.
   **Gäste wecken:** Am Bett (`HideSpot._sleeper` → „… wecken [E]“, auch am im Stehen Schlafenden, `Guest.get_prompt`)
   oder durch Klopfen (`RoomAccess.knock`, `residents_home(no, true)` zählt Schlafende im Bett mit) ruft
   `Social.wake_guest`. Grund aus `wake_reason`: „danger“ (Monster aktiv im selben Geschoss oder näher als

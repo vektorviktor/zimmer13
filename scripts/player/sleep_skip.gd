@@ -73,18 +73,22 @@ func lead() -> float:
 	return LEAD * (GUARD_LEAD if guarded() else 1.0)
 
 
-## Hält jemand Wache (Spielkonzept 6.18)? Ein wacher Erwachsener im Zimmer, in dem man schläft (Zimmer 13 oder ein
-## fremdes Bett – dort wacht vielleicht ein guter Freund, 3.6). Die Wache in Zimmer 13 gibt es noch nicht, dies ist die
-## Stelle, an der sie andockt.
+## Hält jemand Wache (Spielkonzept 6.18)? Ein wacher Erwachsener im Zimmer, in dem man schläft (Zimmer 13 – dort ein
+## guter Freund auf Bitte, Guest.start_guard – oder ein fremdes Bett, dort wacht vielleicht einer, 3.6).
 func guarded() -> bool:
+	return guard() != null
+
+
+## Der wache Erwachsene im selben Zimmer (guarded) – null, wenn keiner da ist.
+func guard() -> Guest:
 	if Game.social == null or Game.player == null:
-		return false
+		return null
 	var room := Game.social.builder.room_at(Game.player.global_position)
 	for guest in Game.social.living_guests():
 		var g: Guest = guest
 		if not g.is_child() and not g.is_asleep() and Game.social.builder.room_at(g.global_position) == room:
-			return true
-	return false
+			return g
+	return null
 
 
 func _process(delta: float) -> void:
@@ -136,6 +140,10 @@ func _end(wake: String) -> void:
 	if player == null or not player.sleeping:
 		return
 	if wake != "":
+		var g := guard()
+		if g:   # die Wache rüttelt dich wach (6.18)
+			g.say("Wach auf! Da kommt was!")
+			wake = "%s rüttelt dich wach. %s" % [g.display_name, wake]
 		player.wake_up(wake)
 	else:
 		Engine.time_scale = Player.SLEEP_SPEED

@@ -1329,8 +1329,8 @@ lang – Gäste sprängen 1,4 m (ferne über 4 m) je Schritt, das Monster stünd
 - **Was weckt:** die Mitternachtsglocke (7.8, auch im Zeitraffer) und das Telefon in Zimmer 13 (nachts die unheimlichen
   Anrufe) – wer durchschlafen will, legt den Hörer daneben (4.14). Durchsagen gibt es nachts keine, die Siegerehrung
   liegt am Abend.
-- **Wache (6.18):** Ein wacher Erwachsener in Zimmer 13 zählt als Wache. Geplant: Ein guter Freund senkt die Chancen
-  und weckt einen früher (Vorschlag: doppelter Vorlauf).
+- **Wache (6.18):** Ein wacher Erwachsener in Zimmer 13 zählt als Wache: doppelter Vorlauf, er rüttelt dich wach.
+  Ein guter Freund hält sie auf Bitte (gebaut 2026-11-02, ZIM-62, Einzelheiten in 6.18 Punkt 4).
 - **Spannung der Nacht (2.4):** Die Nacht bleibt die gefährliche Zeit nur, wenn der Sprung so gefährlich ist, dass
   Wachbleiben und Schlafen beide ihren Preis haben – Tuning im Spiel.
 
@@ -4413,7 +4413,8 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   lassen sich nicht verschenken (entschieden 2026-10-21).
 
 ### 6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)
-> Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19; Wache halten,
+> 2026-11-02, ZIM-62). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
@@ -4460,7 +4461,14 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   Kam wirklich etwas, steigt die Beziehung deutlich (die „Hilfe bei Monster-Ereignissen“ aus 6.2); ein falscher Alarm
   (z. B. aus einer Halluzination) kostet Vertrauen (wie 3.6).
 - **Wache halten:** Gute Freunde bleiben auf Bitte in Zimmer 13, während du schläfst – ein wacher Zeuge vertreibt den
-  Lakengeist (4.18, 3.6).
+  Lakengeist (4.18, 3.6). *Gebaut 2026-11-02 (ZIM-62):* Bitte „Könntest du … Wache halten, während ich schlafe?“ nur
+  bei „guter Freund“, Erwachsenen; Absage bei Angst ab 40, Verletzung, wenn schon ein anderer wacht oder er in den
+  letzten 16 Spielstunden schon gewacht hat. Er kommt mit (höchstens 5 Minuten), legst du dich ins eigene Bett, steht
+  er wach im Zimmer und sieht zum Bett; kein Schlafen in der Nachtruhe, solange du liegst. Wirkung: Zeuge gegen den
+  Lakengeist, solange er wach ist, kommt der auch nicht in den Flur (nicht alle schlafen); im Zeitsprung doppelter
+  Vorlauf (3.6), und er rüttelt dich wach („Da kommt was!“); bei einer Flackerwelle weckt er dich statt sich zu
+  verstecken. Stehst du auf, geht er (in der Nachtruhe ins Bett). Ein Schreck unterbricht die Wache, danach kehrt er
+  zurück, solange du liegst. Nicht gespeichert: Nach dem Laden ist keine Wache da.
 - **Feinde:** schließen ihre Tür ab, wenn sie dich kommen sehen (6.5). Sieht ein **stark Verfeindeter** dich ins
   Versteck gehen, ruft er es laut aus („Da drin ist er!“) – Lärm (4.15).
 

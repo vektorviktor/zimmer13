@@ -13,7 +13,7 @@ extends CharacterBody3D
 ## wenn er wütend ist, stolpert, wenn du ihn rammst, und schlägt zurück oder flieht, wenn du zuschlägst.
 
 enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING, PARTY, TALKING, MINIGAME, DEAD, KNOCK, SHELTER, SLEEP, SHOCKED, GHOSTED,
-	FOLLOW, VISIT, ATTACK, STAGGER, DECORATE, SEARCH, EAT }
+	FOLLOW, VISIT, ATTACK, STAGGER, DECORATE, SEARCH, EAT, WATCH }
 
 const WALK_SPEED := 1.4
 const DART_THROW_TIME := 0.55   ## Wurfbewegung beim Darts (throw_dart_pose)
@@ -117,6 +117,10 @@ const MAX_EXPERIENCES := 5
 ## nach einem Schlag (langsamer), so stark trifft er dich
 const FOLLOW_GAP := 1.8
 const PUNCH_REACH := 1.1
+## Wache in Zimmer 13 (Spielkonzept 6.18, ZIM-62): so lange kommt er mit, bis du dich hinlegst; so weit um die
+## Zimmermitte sucht er sich seinen Platz
+const GUARD_WAIT := 300.0
+const GUARD_SPREAD := 0.8
 const HURT_TIME := 90.0
 const HURT_SLOW := 0.7
 const PUNCH_INJURY := 0.35
@@ -308,6 +312,7 @@ var _bump_cooldown := 0.0
 var _push := Vector3.ZERO  ## Rückstoß beim Stolpern
 var _hit_back := false     ## nach dem Stolpern: zurückschlagen statt fliehen
 var _resume_follow := 0.0  ## Begleiter im Gespräch: so lange kommt er danach noch mit
+var guarding := false      ## hält auf deine Bitte Wache in Zimmer 13 (Spielkonzept 6.18) – geht mit, dann State.WATCH
 var _romp := false         ## Kind rennt aus Spaß (oder zu Mama und Papa) – Lärm wie beim Rennen
 var _laugh := 0.0
 var _awake_left := 0.0     ## schlafloses Kind: so lange bleibt es noch wach
@@ -1143,6 +1148,8 @@ func _physics_process(delta: float) -> void:
 				_after_shock()
 		State.FOLLOW:
 			_follow_step(delta)
+		State.WATCH:
+			_watch_step(delta)
 		State.ATTACK:
 			_attack_step(delta)
 		_:
@@ -1177,6 +1184,7 @@ func start_follow(duration: float = 120.0) -> void:
 func stop_follow(text: String = "") -> void:
 	if not is_following():
 		return
+	guarding = false
 	_resume_follow = 0.0
 	if text != "":
 		say(text)
@@ -1189,6 +1197,9 @@ func _follow_step(delta: float) -> void:
 	_timer -= delta
 	if p == null or p.dead or _timer <= 0.0:
 		stop_follow("Ich geh dann mal wieder.")
+		return
+	if guarding and player_in_own_bed():
+		_begin_watch()
 		return
 	if p.hiding:
 		stop_follow("Ich such mir selbst ein Versteck …")
@@ -1206,6 +1217,58 @@ func _follow_step(delta: float) -> void:
 	else:
 		_stop(delta)
 		_face(p.global_position, delta)
+
+
+# --- Wache in Zimmer 13 (Spielkonzept 6.18, ZIM-62) -------------------------------------------------
+
+## Auf deine Bitte: Er kommt mit (höchstens GUARD_WAIT s), legst du dich in Zimmer 13 ins Bett, bleibt er wach im
+## Zimmer stehen (State.WATCH) – Zeuge gegen den Lakengeist (4.18), längerer Vorlauf im Zeitsprung
+## (SleepSkip.guarded), beim Flackern weckt er dich. Bist du wieder auf, geht er (ins Bett, wenn Nachtruhe ist).
+func start_guard() -> void:
+	if dead or hiding:
+		return
+	guarding = true
+	start_follow(GUARD_WAIT)
+	if Game.tracing:
+		print("[Wache] %s kommt mit nach Zimmer 13" % display_name)
+
+
+## Liegst du in deinem Bett in Zimmer 13 (wach oder schlafend)?
+static func player_in_own_bed() -> bool:
+	var p := Game.player
+	return p != null and not p.dead and p.hiding != null and p.hiding.type == HideSpot.Type.BED and p.hiding.own_bed
+
+
+func _begin_watch(greet: bool = true) -> void:
+	_resume_follow = 0.0
+	var room: Dictionary = Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]
+	_target = (room["center"] as Vector3) + _jitter(GUARD_SPREAD)
+	state = State.WATCH
+	if greet:
+		say("Schlaf nur. Ich pass auf dich auf.")
+	if Game.tracing:
+		print("[Wache] %s hält Wache in Zimmer 13" % display_name)
+
+
+func end_guard(text: String = "") -> void:
+	if not guarding:
+		return
+	guarding = false
+	if text != "":
+		say(text)
+	if state == State.WATCH:
+		_set_idle(randf_range(2.0, 4.0))
+	if Game.tracing:
+		print("[Wache] %s hört auf, Wache zu halten" % display_name)
+
+
+## Im Zimmer stehen, zum Bett sehen – bis du aufstehst.
+func _watch_step(delta: float) -> void:
+	if not player_in_own_bed():
+		end_guard("Na, ausgeschlafen? Es blieb ruhig." if not Game.social.sleep_active else "Du bist wach? Dann leg ich mich jetzt hin.")
+		return
+	if _move_to(_target, WALK_SPEED, delta):
+		_face(Game.player.global_position, delta)
 
 
 ## Besuch in Zimmer 13: hingehen, dann klopft er (Social.on_visit_arrived).
@@ -1362,6 +1425,8 @@ func _check_bump() -> void:
 ## sich versteckt, geht später (über _next_activity).
 ## instant (Debug): sofort im eigenen Bett.
 func bedtime(instant: bool = false) -> void:
+	if guarding:
+		return   # hält Wache in Zimmer 13 (6.18) – legt sich erst danach hin
 	# Manches Kind kann nicht schlafen (6.13) – es bleibt eine Weile wach (_night_activity)
 	sleepless = is_child() and not instant and randf() < SLEEPLESS_CHANCE
 	set_meta("visit", "")   # ein angefangener Besuch an Zimmer 13 fällt aus
@@ -1488,6 +1553,11 @@ func _set_idle(duration: float) -> void:
 func _next_activity() -> void:
 	_to_bed = false   # ein abgebrochener Weg ins Bett gilt nicht mehr (in der Nachtruhe geht er gleich wieder)
 	_flee_home = false
+	if guarding:   # Wache unterbrochen (Schreck, Versteck …): Liegst du noch, kehrt er zurück (6.18)
+		if player_in_own_bed():
+			_begin_watch(false)
+			return
+		guarding = false
 	if _resting:
 		_resting = false
 		_set_room_light(true)
@@ -2495,6 +2565,12 @@ func on_flicker_signal(level: int, delay: float) -> void:
 ## Das Monster bricht auf (Flackerwelle, 2026-10-22): Alle bringen sich in Sicherheit – auch Feiernde –, je länger es
 ## flackert, desto mehr Angst. Wer im Gespräch oder am Spieltisch ist, bleibt (das Langflackern bricht Partien ab).
 func _react_to_flicker(level: int) -> void:
+	if state == State.WATCH and Game.player.sleeping:   # die Wache weckt dich (6.18) und bleibt bei dir
+		say("Wach auf! Das Licht flackert!")
+		Game.player.wake_up("%s rüttelt dich wach – das Licht flackert." % display_name)
+		if Game.tracing:
+			print("[Wache] %s weckt dich (Flackern)" % display_name)
+		return
 	if dead or hiding != null or state in [State.HIDE_GO, State.TALKING, State.MINIGAME, State.DEAD, State.GHOSTED, State.SLEEP]:
 		return
 	if has_stance("careless") and level < 2 and randf() < 0.6:   # „da war nichts“ (6.9)
