@@ -160,7 +160,10 @@ Kollision, nicht im Spielstand.
 
 ### Klänge (`assets/sound/`)
 Einzelne Aufnahmen statt `SynthAudio`: Lakengeist-Atmosphäre (`ghost_ambience.mp3`, `SheetGhost._ambience`),
-Schritte `step_carpet`/`step_tiles` (`Footsteps`), `door_open`, Totenglocke `church_bell` (`SynthAudio.SAMPLES`), Atem
+Schritte `step_carpet`/`step_tiles`/`step_wood_1–8` (`Footsteps`), Türen `door_open_1–4`/`door_close_1–4`, Schublade
+`drawer_open_1–3`, zerspringendes Glas `glass_break_1–4`, Donner `thunder_close/short/far_1–4`, Totenglocke
+`church_bell`, Klopfen `door_knock_1–4`,
+Krähen `crow_caw_1–3` (je zwei Krächzer), auffliegende Vögel `bird_flap_1–4` (`SynthAudio.SAMPLES`), Atem
 `breath` (`SynthAudio.BREATH`), Feiermusik `party_1/2` (`RecordPlayer.TRACKS`), Axttreffer `axe_hit`
 (`PumpkinMan.HIT_SOUND`), Vorspann `splash_wave` (`SlideShow`), Schreie in `screams/` (`SynthAudio.VOICES`, siehe 2).
 
@@ -291,7 +294,14 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 - **Klangarten:** synthetisch in `SynthAudio.play_shot`; Aufnahmen in `SynthAudio.SAMPLES` (Datei mono, Spitze
   −6 dB, Pegel in dB), reihum über `SAMPLE_VOICES` Player. Lange Klänge mit `"solo"` bekommen eine eigene Stimme, die
   niemand abbricht (`_solo_voices`): `bell` (Totenglocke – `Social.on_guest_died` nach `BELL_DELAY`, nicht beim Laden,
-  nicht beim Tod des Spielers), `shriek` (Spielertod). `cry` = Hotelkatze auf der Flucht.
+  nicht beim Tod des Spielers), `shriek` (Spielertod). `cry` = Hotelkatze auf der Flucht. Mit `"files"` statt `"file"`
+  spielt jedes Mal eine zufällige Aufnahme, nie zweimal hintereinander dieselbe (`_sample_file`): `door`/`door_close`
+  (Lärm `door` beim Öffnen, `door_close` beim Schließen, `Door.set_open`), `drawer` (Kommode), `glass_break` (Lärm
+  `cup_break`, `bulb_burst`), `thunder_close`/`thunder_short`/`thunder_far` (`Weather._thunder` nach Lautstärke, Grenzen
+  `THUNDER_CLOSE`/`THUNDER_MID`; die Aufnahmen sind kurz, rund 1 s), `knock` (Klopfen an
+  Türen), `caw` (Krähen, auch fern in `DistantAnimals`: 1–2 Aufnahmen je Ruf), `wings` (Flügelschlagen, wenn ein
+  Krähentrupp auffliegt, `Crows._caw`). Neue Aufnahme wie die Schreie umwandeln (mono 44,1 kHz, Stille vorn weg, Spitze
+  −6 dB). Der Fledermausschwarm (`flutter`) bleibt synthetisch.
 - **Menschliche Laute (Schreie):** `SynthAudio.VOICES` – Klang → Aufnahmen je Stimme (`m`, `f`, `child`), Pegel,
   Tonhöhe, Abbruch. Gespielt, wenn `Game.play_sound` Ort und Quelle bekommt und die Quelle `voice()` hat
   (`Guest.voice()`): Jeder Gast klingt immer gleich (Aufnahme und Grundtonhöhe nach `hash(id)`, `VOICE_AGE`), Angst
@@ -1695,7 +1705,8 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   ist ein `AudioStreamPlayer3D` an den Füßen; `step(boden, rennt, kind)` spielt aus `SOUNDS[boden]`.
   `Footsteps.floor_under(körper)`: Textur-Id des Bodens aus `FLOOR_TEXTURES` bzw. Meta `floor` (Fototexturen), `"air"`
   ohne Treffer – auch der Spieler entscheidet damit, ob Gehen Lärm macht (`Player.SOFT_FLOORS`). Neuer Klang = Eintrag in
-  `SOUNDS`.
+  `SOUNDS`; je Schritt ein zufälliger aus der Liste, nie zweimal derselbe. `wood` (knarrende alte Dielen) gilt für alle
+  Böden mit Meta `floor` = `wood` (Speisesaal, Kegelbahn, Holzdeck, Dachboden).
 
 ### Gegenstände
 - **Aufgehängte Deko** (Spielkonzept 5.6, `item.gd` `HANGABLE`, `hang`, `_sway`; `player.gd` `_hang_spot`):

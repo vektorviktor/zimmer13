@@ -1,14 +1,18 @@
 class_name Footsteps
 extends AudioStreamPlayer3D
-## Schritte zum Hören, an den Füßen von Spieler und Gästen. Bisher auf Teppich (Flure) und Fliesen (Lobby, Küche) –
-## Holz und Rasen bleiben stumm, bis es Klänge dafür gibt. Reiner Ton: Lärm für Monster und Gäste macht weiter
+## Schritte zum Hören, an den Füßen von Spieler und Gästen. Bisher auf Teppich (Flure), Fliesen (Lobby, Küche) und
+## altem, knarrendem Holz – Rasen bleibt stumm, bis es einen Klang dafür gibt. Reiner Ton: Lärm für Monster und Gäste macht weiter
 ## `Game.noise("step", …)` (Spielkonzept 4.15, Teppich schluckt dort Schritte).
 
-## Bodenart (Textur-Id aus TexGen) → Klänge, abwechselnd linker und rechter Fuß
+## Bodenart (Textur-Id aus TexGen) → Klänge, je Schritt ein zufälliger (nie zweimal hintereinander derselbe)
 const SOUNDS := {
 	"carpet": ["res://assets/sound/step_carpet.wav"],   ## Teppichflure
 	"tiles": ["res://assets/sound/step_tiles.wav"],     ## Lobby, Küche
-## (ein Klang je Boden reicht – die Tonhöhe streut, mehrere wechseln sich ab)
+	## Böden mit Meta "floor" = "wood": Speisesaal, Kegelbahn, Holzdeck, Dachboden – jeder Schritt knarrt
+	"wood": ["res://assets/sound/step_wood_1.wav", "res://assets/sound/step_wood_2.wav",
+		"res://assets/sound/step_wood_3.wav", "res://assets/sound/step_wood_4.wav", "res://assets/sound/step_wood_5.wav",
+		"res://assets/sound/step_wood_6.wav", "res://assets/sound/step_wood_7.wav", "res://assets/sound/step_wood_8.wav"],
+## (ein Klang je Boden reicht – die Tonhöhe streut)
 }
 ## Texturen, die `floor_under` erkennt
 const FLOOR_TEXTURES := ["carpet", "grass", "tiles"]
@@ -22,7 +26,7 @@ const RANGE := 12.0               ## ab hier stumm
 
 static var _streams := {}
 
-var _foot := 0
+var _foot := -1   ## zuletzt gespielter Klang aus der Liste des Bodens
 
 
 func _ready() -> void:
@@ -36,10 +40,13 @@ func step(floor_id: String, running := false, child := false) -> void:
 	if not SOUNDS.has(floor_id) or Settings.effects_volume <= 0.0:
 		return
 	var list: Array = SOUNDS[floor_id]
-	_foot = (_foot + 1) % list.size()
-	if not _streams.has(list[_foot]):
-		_streams[list[_foot]] = load(list[_foot])
-	stream = _streams[list[_foot]]
+	var foot := randi() % list.size()
+	if list.size() > 1 and foot == _foot:
+		foot = (foot + 1 + randi() % (list.size() - 1)) % list.size()
+	_foot = foot
+	if not _streams.has(list[foot]):
+		_streams[list[foot]] = load(list[foot])
+	stream = _streams[list[foot]]
 	volume_db = VOLUME_DB + (RUN_DB if running else 0.0) + (CHILD_DB if child else 0.0) \
 		+ linear_to_db(Settings.effects_volume)
 	pitch_scale = (CHILD_PITCH if child else 1.0) * randf_range(1.0 - PITCH_JITTER, 1.0 + PITCH_JITTER)

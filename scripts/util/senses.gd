@@ -15,7 +15,8 @@ const NOISE := {
 	"run":        {"range": 10.0, "sound": "",       "volume": 0.0},    ## alle 0,6 s
 	"land":       {"range": 4.0,  "sound": "thud",   "volume": 0.2, "caption": "[Ein dumpfer Aufprall]"},    ## nach einem Sprung
 	"stumble":    {"range": 5.0,  "sound": "thud",   "volume": 0.35, "caption": "[Stolpern]"},   ## im Rausch gestolpert (3.7)
-	"door":       {"range": 5.0,  "sound": "door",   "volume": 0.5, "caption": "[Eine Tür knarrt]"},    ## Tür öffnen/schließen (echter Klang)
+	"door":       {"range": 5.0,  "sound": "door",   "volume": 0.5, "caption": "[Eine Tür knarrt]"},    ## Tür öffnen
+	"door_close": {"range": 5.0, "sound": "door_close", "volume": 0.5, "caption": "[Eine Tür fällt ins Schloss]"},    ## Tür schließen
 	"rattle":     {"range": 6.0,  "sound": "thud",   "volume": 0.6, "caption": "[Rütteln an einer Tür]"},    ## abgeschlossene Tür rütteln
 	"unlock":     {"range": 3.0,  "sound": "jingle", "volume": 0.6, "caption": "[Schlüssel klirren im Schloss]"},    ## Schlüssel klirren
 	"door_burst": {"range": 20.0, "sound": "bang",   "volume": 0.8, "alarm": true, "caption": "[Eine Tür kracht auf]"},
@@ -33,7 +34,7 @@ const NOISE := {
 	"fire":       {"range": 5.0,  "sound": "rustle", "volume": 0.6, "caption": "[Feuer knistert]"},    ## Deko brennt, alle 2 s (5.11)
 	"shock_drop": {"range": 6.0,  "sound": "thud",   "volume": 0.6, "caption": "[Etwas fällt zu Boden]"},    ## vor Schreck fallen gelassen (6.8)
 	"chest":      {"range": 4.0,  "sound": "creak",  "volume": 0.4, "caption": "[Ein Truhendeckel knarrt]"},
-	"drawer":     {"range": 3.0,  "sound": "creak",  "volume": 0.3, "caption": "[Eine Schublade schabt]"},    ## Schublade einer Kommode
+	"drawer":     {"range": 3.0,  "sound": "drawer",  "volume": 0.3, "caption": "[Eine Schublade schabt]"},    ## Schublade einer Kommode
 	"locker":     {"range": 4.0,  "sound": "thud",   "volume": 0.35, "caption": "[Eine Spindtür klappt]"},    ## Spindtür in den Umkleiden (ZIM-145)
 	"shower_button": {"range": 1.5, "sound": "blip", "volume": 0.4, "caption": "[Klick – ein Duschknopf]"},    ## Duschplatz am Pool (7.13)
 	"shower":     {"range": 7.0,  "sound": "",       "volume": 0.0},    ## … das Wasser läuft, alle 3 s – zu hören über SynthAudio
@@ -45,7 +46,7 @@ const NOISE := {
 	"bats":       {"range": 8.0,  "sound": "flutter", "volume": 0.7},   ## aufgeschreckter Fledermausschwarm (4.22)
 	"curtain":    {"range": 2.0,  "sound": "creak",  "volume": 0.15, "caption": "[Ein Vorhang raschelt]"},
 	"bulb":       {"range": 2.0,  "sound": "creak",  "volume": 0.2, "caption": "[Eine Glühbirne quietscht im Gewinde]"},    ## Glühbirne heraus-/eindrehen
-	"bulb_burst": {"range": 8.0,  "sound": "bang",   "volume": 0.35, "alarm": true, "caption": "[Eine Glühbirne platzt]"},
+	"bulb_burst": {"range": 8.0,  "sound": "glass_break",   "volume": 0.35, "alarm": true, "caption": "[Eine Glühbirne platzt]"},
 	"switch":     {"range": 1.0,  "sound": "blip",   "volume": 0.5, "caption": "[Klick – ein Lichtschalter]"},    ## Licht aus zusätzlich nach 4.4
 	"harvest":    {"range": 3.0,  "sound": "thud",   "volume": 0.5, "caption": "[Ein Kürbisstiel reißt]"},
 	"carve":      {"range": 3.0,  "sound": "creak",  "volume": 0.6, "caption": "[Ein Messer schabt im Kürbis]"},
@@ -55,7 +56,7 @@ const NOISE := {
 	"bag":        {"range": 1.0,  "sound": "rustle", "volume": 0.3, "caption": "[Rascheln in einer Tasche]"},    ## Kleines in die Tasche / heraus (3.2)
 	"can":        {"range": 3.0,  "sound": "hiss",   "volume": 0.5, "caption": "[Zischen – eine Dose]"},    ## Getränkedose aufreißen
 	"coffee":     {"range": 6.0,  "sound": "hiss",   "volume": 0.35, "caption": "[Die Kaffeemaschine gurgelt]"},   ## Kaffeemaschine mahlt und gurgelt, alle 5 s (3.11)
-	"cup_break":  {"range": 5.0,  "sound": "bang",   "volume": 0.3, "caption": "[Eine Tasse zerbricht]"},    ## Tasse zerbricht (3.11, 3.12)
+	"cup_break":  {"range": 5.0,  "sound": "glass_break",   "volume": 0.3, "caption": "[Eine Tasse zerbricht]"},    ## Tasse zerbricht (3.11, 3.12)
 	"kettle":     {"range": 4.0,  "sound": "hiss",   "volume": 0.25, "caption": "[Ein Wasserkocher rauscht]"},   ## Wasserkocher rauscht, alle 5 s (3.12)
 	"kettle_whistle": {"range": 8.0, "sound": "hiss", "volume": 0.5, "caption": "[Ein Wasserkocher pfeift]"},   ## Wasserkocher pfeift leise, wenn er fertig ist
 	"keys":       {"range": 3.0,  "sound": "jingle", "volume": 0.6, "caption": "[Schlüssel klirren]"},    ## Schlüssel an den Bund

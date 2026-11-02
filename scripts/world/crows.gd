@@ -442,7 +442,7 @@ func _flush(i: int, by_player: bool) -> void:
 	_caw(center, by_player)
 
 
-## Krächzen des Trupps: Lärm höchstens alle NOISE_PAUSE Sekunden.
+## Krächzen und Flügelschlagen des auffliegenden Trupps: Lärm höchstens alle NOISE_PAUSE Sekunden.
 func _caw(at: Vector3, by_player: bool) -> void:
 	var now := Game.director.elapsed if Game.director else 0.0
 	if now - _last_noise < NOISE_PAUSE:
@@ -451,6 +451,7 @@ func _caw(at: Vector3, by_player: bool) -> void:
 	if Game.tracing:
 		print("[Krähen] fliegen auf (%s)" % ("Spieler" if by_player else "Bedrohung"))
 	Game.noise("crows", at + Vector3.UP * 0.5, self)
+	Game.sound_at("wings", at, Senses.NOISE["crows"]["range"], self, 0.7)
 
 
 ## Erschreckt im Flug: Was sie im Schnabel trägt, fällt herunter.

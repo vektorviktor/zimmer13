@@ -323,7 +323,7 @@ func set_open(open: bool, fast: bool = false, quiet: bool = false, source: Node 
 		var target := open_angle * _dirs[i] if open else 0.0
 		_tween.tween_property(_pivots[i], "rotation:y", target, 0.25 if fast else 0.6).set_trans(Tween.TRANS_SINE)
 	if not quiet:
-		Game.noise("door", center(), source)
+		Game.noise("door" if open else "door_close", center(), source)
 
 
 ## Das Monster reißt die Tür auf (auch abgeschlossene – außer der Lobbytür). smash: es bricht sie auf (Puppentür,

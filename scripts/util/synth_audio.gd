@@ -5,9 +5,36 @@ extends AudioStreamPlayer
 ## `SAMPLES` und laufen über eigene Player statt über den Generator.
 
 ## Art → Klangdatei (mono, Spitze −6 dB) und Pegel in dB, abgespielt statt der synthetischen Fassung.
+## "files" statt "file": mehrere Aufnahmen, jedes Mal eine zufällige (nie zweimal hintereinander dieselbe).
 ## "solo": eigene Stimme, die kein anderer Klang abbricht (lange Klänge).
 const SAMPLES := {
-	"door": {"file": "res://assets/sound/door_open.wav", "db": 0.0},   ## Hoteltüren (`Door.set_open`)
+	## Hoteltüren auf und zu (`Door.set_open`)
+	"door": {"files": ["res://assets/sound/door_open_1.wav", "res://assets/sound/door_open_2.wav",
+		"res://assets/sound/door_open_3.wav", "res://assets/sound/door_open_4.wav"], "db": 0.0},
+	"door_close": {"files": ["res://assets/sound/door_close_1.wav", "res://assets/sound/door_close_2.wav",
+		"res://assets/sound/door_close_3.wav", "res://assets/sound/door_close_4.wav"], "db": 0.0},
+	## Schublade einer Kommode auf- oder zuschieben (`Dresser.set_open`)
+	"drawer": {"files": ["res://assets/sound/drawer_open_1.wav", "res://assets/sound/drawer_open_2.wav",
+		"res://assets/sound/drawer_open_3.wav"], "db": -3.0},
+	## Kleines Glas zerspringt: Tasse, Glühbirne
+	"glass_break": {"files": ["res://assets/sound/glass_break_1.wav", "res://assets/sound/glass_break_2.wav",
+		"res://assets/sound/glass_break_3.wav", "res://assets/sound/glass_break_4.wav"], "db": 0.0},
+	## Donner (7.8) nach Entfernung des Blitzes (`Weather._thunder`): nah, mittel, fern
+	"thunder_close": {"files": ["res://assets/sound/thunder_close_1.wav", "res://assets/sound/thunder_close_2.wav",
+		"res://assets/sound/thunder_close_3.wav", "res://assets/sound/thunder_close_4.wav"], "db": 0.0},
+	"thunder_short": {"files": ["res://assets/sound/thunder_short_1.wav", "res://assets/sound/thunder_short_2.wav",
+		"res://assets/sound/thunder_short_3.wav", "res://assets/sound/thunder_short_4.wav"], "db": 0.0},
+	"thunder_far": {"files": ["res://assets/sound/thunder_far_1.wav", "res://assets/sound/thunder_far_2.wav",
+		"res://assets/sound/thunder_far_3.wav", "res://assets/sound/thunder_far_4.wav"], "db": 0.0},
+	## Klopfen an Türen: Gäste an Zimmer 13, der Spieler an Gästezimmern, Albtraum
+	"knock": {"files": ["res://assets/sound/door_knock_1.wav", "res://assets/sound/door_knock_2.wav",
+		"res://assets/sound/door_knock_3.wav", "res://assets/sound/door_knock_4.wav"], "db": -3.0},
+	## Krähe (4.25), je Aufnahme zwei Krächzer: aufgescheuchter Trupp, Groll, fern hinter der Waldkante
+	"caw": {"files": ["res://assets/sound/crow_caw_1.wav", "res://assets/sound/crow_caw_2.wav",
+		"res://assets/sound/crow_caw_3.wav"], "db": -4.0},
+	## Vögel fliegen flatternd auf (aufgescheuchter Krähentrupp, `Crows._caw`)
+	"wings": {"files": ["res://assets/sound/bird_flap_1.wav", "res://assets/sound/bird_flap_2.wav",
+		"res://assets/sound/bird_flap_3.wav", "res://assets/sound/bird_flap_4.wav"], "db": 0.0},
 	"bell": {"file": "res://assets/sound/church_bell.wav", "db": 0.0, "solo": true},   ## Totenglocke (`Social.on_guest_died`)
 	"shriek": {"file": "res://assets/sound/screams/monster.wav", "db": 0.0, "solo": true},   ## Spielertod (Jumpscare)
 	"cry": {"file": "res://assets/sound/screams/cat.wav", "db": -2.0},   ## Hotelkatze auf der Flucht (`cat_cry`)
@@ -50,11 +77,11 @@ const CREEPY_TUNE := [440.0, 523.3, 659.3, 587.3, 523.3, 493.9, 440.0, 329.6, 44
 	523.3, 493.9, 440.0, 415.3, 440.0, 493.9, 523.3, 659.3, 587.3, 523.3, 493.9, 415.3, 440.0, 440.0, 329.6, 440.0]
 const DURATIONS := {
 	"scream": 1.6, "sting": 1.6, "growl": 1.8, "gasp": 0.5,
-	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "knock": 0.6, "ring": 1.0,
-	"rustle": 0.3, "flutter": 1.4, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "thunder": 5.0, "hiss": 0.5,
+	"bang": 0.4, "blip": 0.08, "creak": 0.6, "thud": 0.25, "ring": 1.0,
+	"rustle": 0.3, "flutter": 1.4, "jingle": 0.45, "meow": 0.55, "purr": 1.4, "hiss": 0.5,
 	"ding": 1.8, "motor": 3.6, "slide": 1.8, "alarm": 2.6, "tap": 2.8, "splash": 1.1, "chime": 2.2, "poof": 1.2,
 	"giggle": 0.8, "dart": 0.12,
-	"caw": 0.5, "squeak": 0.16, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
+	"squeak": 0.16, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
 	"owl": 4.6, "owl_kewick": 0.55, "bark": 1.3, "bark_deep": 1.6,
 	"bite": 0.3, "power_down": 1.6, "trophy": 1.6, "desk_bell": 2.4,
 }
@@ -106,6 +133,7 @@ var _voices: Array[AudioStreamPlayer] = []
 var _next_voice := 0
 var _sample_streams := {}
 var _solo_voices := {}   ## Klangdatei → eigene Stimme ("solo" in `SAMPLES`)
+var _last_files := {}    ## erste Datei von "files" → zuletzt gespielte (`_sample_file`)
 var _speakers: Array[AudioStreamPlayer3D] = []   ## menschliche Laute (`VOICES`), im Raum
 var _next_speaker := 0
 
@@ -214,7 +242,7 @@ func _play_sample(sample: Dictionary, volume: float) -> void:
 	var gain := volume * Settings.effects_volume * _damp
 	if gain <= 0.0:
 		return
-	var file: String = sample["file"]
+	var file := _sample_file(sample)
 	if not _sample_streams.has(file):
 		_sample_streams[file] = load(file)
 	var voice: AudioStreamPlayer
@@ -230,6 +258,19 @@ func _play_sample(sample: Dictionary, volume: float) -> void:
 	voice.volume_db = float(sample["db"]) + linear_to_db(gain)
 	voice.pitch_scale = randf_range(1.0 - SAMPLE_PITCH_JITTER, 1.0 + SAMPLE_PITCH_JITTER)
 	voice.play()
+
+
+## Die Klangdatei eines `SAMPLES`-Eintrags; bei "files" eine zufällige, nie zweimal hintereinander dieselbe.
+func _sample_file(sample: Dictionary) -> String:
+	if sample.has("file"):
+		return sample["file"]
+	var files: Array = sample["files"]
+	var last: String = _last_files.get(files[0], "")
+	var file: String = files.pick_random()
+	while files.size() > 1 and file == last:
+		file = files.pick_random()
+	_last_files[files[0]] = file
+	return file
 
 
 func _process(delta: float) -> void:
@@ -375,12 +416,6 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 			# Pfeil in Sisal: kurzes, trockenes „Tock“ – Rauschen mit hellem Holzton, der Schaft surrt kurz nach
 			return (white * exp(-t * 90.0) * 0.7 + sin(TAU * 420.0 * t) * exp(-t * 55.0) * 0.5
 				+ sin(TAU * 1650.0 * t) * exp(-t * 40.0) * 0.08)
-		"knock":
-			# drei kurze, dumpfe Schläge gegen Holz
-			var kt := fmod(t, 0.2)
-			if t > 0.58:
-				return 0.0
-			return (sin(TAU * 140.0 * kt) * 0.7 + white * 0.4) * exp(-kt * 38.0)
 		"ring":
 			# alte Telefonglocke: zwei kurze Schnarr-Stöße, der Klöppel schlägt 25-mal pro Sekunde
 			if fmod(t, 0.5) > 0.4:
@@ -482,19 +517,6 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 		"poof":
 			# Puppe löst sich in Rauch auf (2.5): weiches Fauchen, das schnell anschwillt und verweht
 			return (_lp_fast * 1.6 + white * 0.15) * minf(1.0, t * 25.0) * exp(-t * 3.5) * 0.7
-		"thunder":
-			# Donner (Wetter, 7.8): kurzes Krachen, dann langes, schwankendes Grollen
-			var crack := white * exp(-t * 14.0) * 0.5
-			var roll := _lp_slow * 9.0 * (0.6 + 0.4 * sin(TAU * 1.7 * t + 2.0 * sin(TAU * 0.4 * t)))
-			return (crack + roll) * minf(1.0, t * 30.0) * exp(-t * 0.75)
-		"caw":
-			# Krähe (4.25): heiseres „Kraah“ – rauer Sägezahn, Tonhöhe fällt, dazu Rauschen und schnelles Schnarren
-			var cf := lerpf(760.0, 520.0, k)
-			var cph: float = shot["phase"] + cf * dt
-			shot["phase"] = cph
-			var rasp := 0.6 + 0.4 * sin(TAU * 38.0 * t)
-			var raw := (fmod(cph, 1.0) * 2.0 - 1.0) * 0.5 + sin(TAU * cph * 2.0) * 0.25 + white * 0.35
-			return raw * rasp * minf(1.0, t * 40.0) * pow(1.0 - k, 0.6) * 0.3
 		"squeak":
 			# Ratte (4.25): kurzes, sehr hohes Fiepen, das ansteigt
 			var sf := 3000.0 + 1400.0 * k

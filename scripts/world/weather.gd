@@ -35,6 +35,9 @@ const STORM_CHANCE := Vector2(0.3, 0.75)
 const FADE := 20.0                ## so lange setzt Regen ein bzw. hört auf (s)
 const LIGHTNING_GAP := Vector2(10.0, 30.0)
 const THUNDER_DELAY := Vector2(0.4, 3.5)   ## nah: gleich, fern: später und leiser
+## Donnerlautstärke (0,4–1,0) ab der die Aufnahme „nah“ bzw. „mittel“ spielt, darunter „fern“
+const THUNDER_CLOSE := 0.8
+const THUNDER_MID := 0.55
 ## Regen: so viele Tropfen bei voller Stärke im Kasten (± HALF_EXTENT um den Spieler), so hoch beginnen sie
 const DROPS := 24000
 const HALF_EXTENT := 20.0
@@ -333,7 +336,8 @@ func lightning(figure: bool = false) -> void:
 func _thunder(loud: float) -> void:
 	var p := Game.player
 	var inside := p != null and not _builder.is_outdoor(p.global_position)
-	Game.play_sound("thunder", loud * (0.7 if inside else 1.0))
+	var kind := "thunder_close" if loud >= THUNDER_CLOSE else ("thunder_short" if loud >= THUNDER_MID else "thunder_far")
+	Game.play_sound(kind, loud * (0.7 if inside else 1.0))
 	Game.caption("[Donner]")
 	_mask = MASK_TIME * loud
 	animals.on_thunder(loud)   # Hunde schlagen an, Krähen fliegen auf

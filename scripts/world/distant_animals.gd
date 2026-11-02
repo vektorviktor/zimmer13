@@ -19,9 +19,10 @@ const CAPTION_FROM := 0.25
 ## Waldkauz: ruft von OWL_HOURS.x bis OWL_HOURS.y Uhr (über Mitternacht); so oft antwortet das Weibchen
 const OWL_HOURS := Vector2(19.0, 6.0)
 const OWL_ANSWER := 0.4
-## Krähen: so wahrscheinlich ist ein Ruf morgens (6–11), tagsüber, abends (bis 20 Uhr) und nachts; 2–4 Krächzer je Ruf
+## Krähen: so wahrscheinlich ist ein Ruf morgens (6–11), tagsüber, abends (bis 20 Uhr) und nachts; 1–2 Aufnahmen
+## („caw“, je zwei Krächzer) je Ruf
 const CROW_ACTIVITY := {"morning": 1.0, "day": 0.5, "evening": 1.0, "night": 0.08}
-const CROW_CAWS := Vector2i(2, 4)
+const CROW_CAWS := Vector2i(1, 2)
 ## Hunde: so oft antwortet ein zweiter, so wahrscheinlich bellt einer nachts (sonst immer)
 const BARK_ANSWER := 0.5
 const BARK_NIGHT := 0.5
@@ -101,11 +102,11 @@ func owl(delay: float) -> void:
 
 ## Krähen krächzen fern nach `delay` s, 2–4-mal; startled: aufgescheucht vom Donner, mehr und schneller.
 func crows(delay: float, startled: bool = false) -> void:
-	var caws := randi_range(CROW_CAWS.x, CROW_CAWS.y) + (2 if startled else 0)
+	var caws := randi_range(CROW_CAWS.x, CROW_CAWS.y) + (1 if startled else 0)
 	var at := delay
 	for i in caws:
 		_later(at, _call.bind("caw", CROW_VOLUME, "[Krähen in der Ferne]" if i == 0 else ""))
-		at += randf_range(0.25, 0.5) if startled else randf_range(0.45, 1.0)
+		at += randf_range(0.3, 0.7) if startled else randf_range(1.2, 2.4)   # eine Aufnahme dauert rund 1 s
 	_trace(delay, "Krähen krächzen in der Ferne")
 
 

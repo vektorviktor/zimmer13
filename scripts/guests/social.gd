@@ -87,7 +87,7 @@ const NOISE_ANNOY_REACH := 4.0
 const NOISE_ANNOY := -3.0
 const NOISE_ANNOY_ASLEEP := -6.0
 const NOISE_ANNOY_QUIET := 30.0
-const NOISE_POLITE := ["knock", "door", "unlock", "keys", "door_force", "punch"]
+const NOISE_POLITE := ["knock", "door", "door_close", "unlock", "keys", "door_force", "punch"]
 ## Was sie durch die Tür rufen – nicht in GuestGenerator.COMMON (verschöbe die Zufallsfolge); feste Gäste können
 ## eigene unter demselben Schlüssel in ihren lines haben
 const NOISE_LINES := {
