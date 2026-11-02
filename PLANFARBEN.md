@@ -180,6 +180,9 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #4f7a3a | Gartenstuhl | #6aa34e | 5 × 6 px, Aluminium und Textilgewebe, einzeln gesetzt; leicht gedreht und versetzt |
 | #734c45 | Spindblock | #99655c | 36 × 9 px in den Pool-Umkleiden: Sockel mit Sitzfläche vorn, 12 Spinde (6 × 2) und rechts ein Regal 3 × 2; Rücken zur Wand. Nummern fortlaufend, Blöcke von West nach Ost, im Raum „links unten“ zuerst (ZIM-145) |
 | #d1921f | Umkleidebank | | 30 × 6 px (3 m, vier Fußrahmen), Länge entlang der langen Seite, ohne Vorderseite; Gestell anthrazit, Holzlatten, Sitzen von beiden Seiten |
+| #a00d28 | Spielautomat | | Jackpot-Automat der Bar, nur einer; ohne Vorderseite – mit dem Rücken an die nächste Wand. Ohne Eintrag an der Bar-Nordwand (ZIM-158) |
+| #d63d3d | Puppenhaus | | Modell des Hotels auf einem Tisch (5.16), nur eins, Mitte des Rechtecks; Pläne mit Norden oben, ist das Rechteck in z länger, quer gedreht. Ohne Eintrag mitten in der Bibliothek im OG (ZIM-158) |
+| #b68035 | Barhocker | | je Rechteck ein Hocker, Sitz zur Vorderseite; Gäste stehen hinter je zwei benachbarten. Stehen welche in der Bar, setzt der Code keine 6 mehr vor die Theke (ZIM-158) |
 
 ## Teppiche
 
@@ -188,6 +191,7 @@ Ebene `Teppiche`, Rechteck (eigene Ebene, damit sie unter Möbeln liegen können
 | Farbe | Name | Vorderseite | Hinweis |
 |---|---|---|---|
 | #721d1d | Läufer | | läuft entlang der langen Seite |
+| #430b0a | Teppich | | dunkelrot, so groß wie im Plan. Liegt einer in der Lobby, entfällt der feste vor der Rezeption (6 × 8 m, ZIM-158) |
 
 ## Ausstattung
 
@@ -216,8 +220,15 @@ Ebene `Ausstattung`, 3×3-Punkt, Wandsachen innen an der Wand.
 | #8d1b98 | Bodenablauf | Duschen am Pool: Punkt = Mitte des Rosts (15 × 15 cm Edelstahl), am besten in der Raummitte (ZIM-144) |
 | #7e2552 | Tagebuch | |
 | #aa417e | Dekokiste | |
+| #6f2a6f | Maskenboard | Zimmer 13: Mitte der acht Maskenhaken (5.19), an der Wand; ohne Eintrag an der längsten freien Wand (ZIM-158) |
+| #d3697b | Apfelbottich | Partyraum (6.21), nur einer; ohne Eintrag in der Südostecke (ZIM-158) |
+| #a286b6 | Sicherungskasten | Untergeschoss (4.28), an der Wand, Mitte 1,45 m; ohne Eintrag an der Nordwand des Maschinenraums (ZIM-158) |
+| #bf69a2 | Aushangbrett | Lobby (2.5), an der Wand, Mitte 1,55 m; ohne Eintrag an der Westwand (ZIM-158) |
+| #cdacc5 | Wanduhr | 3 m Durchmesser, für die Halle gedacht; Mitte zwischen 3,27 m und der Decke (unter dem Luftraum die der Halle). Ohne Eintrag über dem Haupteingang (ZIM-158) |
+| #462a3a | Krähennest | auf einen Baum: das Nest sitzt im nächsten Baum (4.25); ohne Eintrag im Baum gegenüber der Gartentür von 042 (ZIM-158) |
+| #9712d9 | Leviathan-Druck | Dorés Druck, den Hugo aufhängt (4.32), an der Wand, Mitte 1,72 m; ohne Eintrag an der Lobby-Westwand südlich der Fotowand (ZIM-158) |
 | #b24db2 | Fotowand | je Punkt eine Position mit 2 Rahmen übereinander (Oberkanten 1,40 m und 1,90 m), Punkte im 1-m-Abstand; noch nicht gebaut (ZIM-133) |
-| – | Dartscheibe | im Code vorgesehen; ohne Planeintrag hängt sie hinten in der Nische der Bar |
+| #962c58 | Dartscheibe | an der Wand, Abwurflinie und Stehtisch davor; nur eine im Haus – ohne Planeintrag hängt sie hinten in der Nische der Bar |
 
 ## Gegenstände
 
@@ -245,7 +256,8 @@ Ebene `Gegenstände`, 3×3-Punkt.
 | #80664d | Schachbrett | |
 | #881807 | Brecheisen | |
 | #e72323 | Werkzeugkasten | |
-| – | Dartpfeile | im Code vorgesehen; ohne Planeintrag liegen sie auf dem Stehtisch an der Scheibe |
+| #ee652b | Dartpfeile | ohne Planeintrag liegen sie auf dem Stehtisch an der Scheibe |
+| #fb8e6a | Salz | eine Packung je Punkt (5.13); ohne Eintrag drei am rechten Ende der Küchenzeile |
 
 ## Lichter
 
@@ -260,6 +272,8 @@ Ebene `Lichter`, 3×3-Punkt, Wandleuchten innen an der Wand. Defekt = gleiche Le
 | #6b6b2e | Laterne defekt | |
 | #fff8ad | Deckenleuchte | |
 | #dadf49 | Halogenleuchte | Strich in ihrer Länge, 8×2 px |
+| #f8ed77 | Discokugel | Partyraum, nur eine: die Tanzfläche (6 × 6 m) liegt darunter; ohne Eintrag in der Raummitte (ZIM-158) |
+| #c3c322 | Unterwasserlampe | auf den Rand des Beckens: sitzt in der nächsten Beckenwand. Steht eine im Plan, setzt der Code keine eigenen (sonst 2 je Längswand, ZIM-158) |
 
 ## Im Plan, aber ohne Bedeutung
 
@@ -267,53 +281,57 @@ Farben, die `build_map.py` im Plan findet, aber nicht kennt – es meldet sie mi
 
 ## Im Code gesetzt, nicht im Plan
 
-Stand 31.10. Ziel: Was einen Platz hat, setzt der Zeichner in den Plan; der Code baut nur noch, was dort steht.
+Stand 2.11. Ziel: Was einen Platz hat, setzt der Zeichner in den Plan; der Code baut nur noch, was dort steht.
 Koordinaten in Metern (x Ost, z Süd, Ursprung Mitte Haupteingang).
 
 ### Ersatzplätze – sollen in den Plan
 
-Der Code setzt sie an einen festen Platz, bis es einen Planeintrag gibt.
+Die Farbe gibt es, der Code liest sie (seit 2.11. auch die aus ZIM-158). Solange nichts gemalt ist, setzt er das Ding an
+den alten festen Platz – gemalt, wandert es dorthin.
 
-| Objekt | Jetzt | Planeintrag | Stand |
+| Objekt | Ohne Planeintrag | Planeintrag | Stand |
 |---|---|---|---|
-| Fotowand | Lobby-Westwand (`photo_wall.gd` WALL) | Ausstattung: Fotowand #b24db2 | im Plan gemalt, Bau offen (ZIM-133) |
-| Dartscheibe mit Linie und Stehtisch | Nische an der Südwand der Bar (`DART_FALLBACK`) | Ausstattung: Dartscheibe | ohne Farbe – **Ersatzplatz aktiv** |
-| Dartpfeile | auf dem Stehtisch an der Scheibe | Gegenstand: Dartpfeile | ohne Farbe – Ersatzplatz aktiv |
-| Jackpot-Automat | Bar-Nordwand nördlich der Glastür (`SLOT_FALLBACK`) | fehlt (Möbel: Spielautomat?) | immer aus dem Code |
+| Fotowand | Lobby-Westwand (`photo_wall.gd` WALL) | Ausstattung: Fotowand | im Plan gemalt, Bau offen (ZIM-133) |
+| Dartscheibe mit Linie und Stehtisch | Nische an der Südwand der Bar (`DART_FALLBACK`) | Ausstattung: Dartscheibe | **Ersatzplatz aktiv** |
+| Dartpfeile | auf dem Stehtisch an der Scheibe | Gegenstand: Dartpfeile | Ersatzplatz aktiv |
+| Jackpot-Automat | Bar-Nordwand nördlich der Glastür (`SLOT_FALLBACK`) | Möbel: Spielautomat | Ersatzplatz aktiv |
 | Spieleschrank | Bar-Ostwand (`CABINET_FALLBACK`) | Möbel: Spieleschrank | steht im Plan – Ersatz greift nicht |
-| Maskensammlung (Haken, künftig Board 4 × 2) | längste freie Wand in Zimmer 13 | fehlt | ZIM-128 |
-| Apfelbottich | Südostecke Partyraum (`apple_tub.gd` SPOT) | fehlt (Ausstattung: Apfelbottich) | ZIM-84 |
-| Puppenhaus | Mitte der Bibliothek im OG (`doll_house.gd` SPOT) | fehlt (Möbel: Puppenhaus) | ZIM-84 |
-| Rattenkönig | Wandbord Nordwand Müllraum UG (`rat_king.gd`) | fehlt (Ausstattung: Rattenkönig) | ZIM-84, ruht |
-| Sicherungskasten | Nordwand Maschinenraum UG (`power_cut.gd`) | fehlt (Ausstattung: Sicherungskasten) | |
-| Salz (3 Packungen) | rechtes Ende der Küchenzeile | fehlt (Gegenstand: Salz) | |
+| Maskensammlung (8 Haken) | längste freie Wand in Zimmer 13 | Ausstattung: Maskenboard | Ersatzplatz aktiv; Board 4 × 2 in ZIM-128 |
+| Apfelbottich | Südostecke Partyraum (`apple_tub.gd` SPOT) | Ausstattung: Apfelbottich | Ersatzplatz aktiv |
+| Puppenhaus | Mitte der Bibliothek im OG (`doll_house.gd` SPOT) | Möbel: Puppenhaus | Ersatzplatz aktiv |
+| Rattenkönig | Wandbord Nordwand Müllraum UG (`rat_king.gd`) | fehlt | ZIM-84, ruht |
+| Sicherungskasten | Nordwand Maschinenraum UG (`power_cut.gd` FUSE_FALLBACK) | Ausstattung: Sicherungskasten | Ersatzplatz aktiv |
+| Salz (3 Packungen) | rechtes Ende der Küchenzeile | Gegenstand: Salz | Ersatzplatz aktiv |
+| Teppich vor der Rezeption | fest 6 × 8 m bei (0, −5) | Teppich: Teppich (in der Lobby) | Ersatzplatz aktiv |
+| Aushangbrett | Lobby-Westwand, z −16,6 | Ausstattung: Aushangbrett | Ersatzplatz aktiv |
+| Leviathan-Druck (Doré) | Lobby-Westwand südlich der Fotowand (`leviathan_name.gd` PRINT_AT) | Ausstattung: Leviathan-Druck | Ersatzplatz aktiv – neben die Fotowand malen |
+| Wanduhr | über dem Haupteingang | Ausstattung: Wanduhr | Ersatzplatz aktiv |
+| Krähennest | im Baum gegenüber der Gartentür von Zimmer 042 | Ausstattung: Krähennest | Ersatzplatz aktiv |
+| Barhocker | 6 vor der Theke | Möbel: Barhocker | Ersatzplatz aktiv |
+| Discokugel und Tanzfläche | Mitte des Partyraums | Licht: Discokugel | Ersatzplatz aktiv |
+| Unterwasserlampen | 2 je Längswand, gleichmäßig verteilt | Licht: Unterwasserlampe | Ersatzplatz aktiv |
+| Waschmaschinen der Wäscherei | 12 je Längswand | Möbel: Waschmaschine | Ersatzplatz aktiv |
 | Futtertisch der Krähen | der Tisch draußen nächst der Gartentür von 13 (bis 12 m); Ersatz nur im Debug | Möbel: Tisch im Gärtchen | ZIM-51 |
 | Leuchten im Treppenhaus Ost | Podeste EG/OG, wenn der Plan dort keine Wandleuchte hat; UG-Podest immer | Licht: Wandleuchte | |
 | Fester Schubladenfund (Zimmer 022) | erste Kommode, sonst erster Tisch | Möbel: Kommode im Zimmer | |
 | Notizbuch des Hausmeisters (Zimmer 18), Gustavs Tagebuch | auf dem Zimmertisch, ohne Tisch am Boden in der Mitte | Möbel: Zimmertisch | |
 
-### Fest im Code – Kandidaten für den Plan
+### Bleibt im Code
 
-Feste Koordinaten oder Regeln ohne Planeintrag. Was hier einen eigenen Ort hat, könnte eine Farbe bekommen.
+Feste Koordinaten oder Regeln ohne Planeintrag – bewusst (2.11., ZIM-158): Sie hängen an der Geschichte, wandern
+oder richten sich nach Fläche und Möbeln.
 
 | Objekt | Jetzt |
 |---|---|
-| Teppich vor der Rezeption | fest 6 × 8 m bei (0, −5) – Teppich-Ebene kennt bisher nur den Läufer |
-| Wegweiser BAR, PARTY, GARTEN, POOL | Lobbywände, feste Höhe und Lage |
-| Aushangbrett | Lobby-Westwand, z −16,6 |
-| Leviathan-Druck (Doré) | Lobby-Westwand südlich der Fotowand (`leviathan_name.gd` PRINT_AT) – muss mit der Fotowand mitwandern |
 | Vogelscheuche | wandert je Spieltag von hinten im Garten (−3, −73) bis vor die Gartentür der Lobby (−5,5, −30,4) |
-| Waschmaschinen der Wäscherei | 12 je Längswand – obwohl „Möbel: Waschmaschine“ in der Legende steht |
 | Heizkeller-Einrichtung | alles relativ zur Fläche: Kessel Mitte Ostwand, 3 Kisten Südwand, Regal Westwand, Schlüssel 18, Münzen, Batterie, Spieluhr, Zettel 2011, UV-Schrift 1987, Spinnweben, Deko, kaputte Leuchte, Schalter, Rohre |
-| Hotelregister | auf der Rezeption, Mitte der Kundenseite |
-| Wanduhr, Schild AUSGANG | über dem Haupteingang |
-| Barausstattung | Flaschen im Regal, 6 Barhocker, Zapfstelle, Dosen, Kaffee/Tee auf der Theke, Getränkekisten vor dem Regal in Kühlraum und Lager |
-| Partyraum | Tanzfläche 6 × 6 m und Discokugel in der Mitte, Partylampen, dunkle Ecke im Nordwesten, Plattenspieler auf dem ersten Tisch |
+| Hotelregister, Tischklingel | auf der Rezeption, an der Kundenseite |
+| Barausstattung | Flaschen im Regal, Zapfstelle, Dosen, Kaffee/Tee auf der Theke, Getränkekisten vor dem Regal in Kühlraum und Lager |
+| Partyraum | Partylampen, dunkle Ecke im Nordwesten, Plattenspieler auf dem ersten Tisch |
 | Küchenzeile | Kaffeemaschine, Wasserkocher, Brotkrumen, Eierkarton |
-| Pool | Einstiegstreppen West/Ost, 4 Unterwasserlampen je Seite |
+| Pool | Einstiegstreppen West/Ost |
 | Zimmer 13 | Laken auf dem Bett, Warnzettel 1999 hinter der Tür, Spielerstart in der Mitte |
 | Zimmer 18 | Notizbuch, Schaltschlüssel, UV-Aufsatz auf dem Tisch |
-| Krähennest | im Baum gegenüber der Gartentür von Zimmer 042 |
 | Monster-Startpunkte | Heizkeller, Zimmer 017, Garten |
 
 Ohne festen Ort (wandern oder erscheinen zufällig): Gäste, Hotelkatzen, Kind zu viel, Kürbismann, Ratten, Spinnen,

@@ -767,7 +767,7 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     Haltestelle, s. u.); die Reparatur (Spielkonzept 7.4) fehlt.
 - **Pool** (`_pool`): Becken mit Fototextur-Fliesen, Einstiegstreppen (`_flight(…, step_h)` – Stufen auf dem
   Fliesenraster), Handlauf `HANDRAIL_MODEL`. Darüber die Holzdecke (dicht auch gegen Regen). **Unterwasserlampen**
-  (`Lamp.Style.POOL`, nicht im Plan, ohne Birne – `has_socket()` falsch, Gäste klauen nichts) laufen durch den
+  (`Lamp.Style.POOL`, „Licht: Unterwasserlampe“ in der nächsten Beckenwand, sonst `POOL_LAMPS_PER_SIDE` je Längswand; ohne Birne – `has_socket()` falsch, Gäste klauen nichts) laufen durch den
   Regenbogen. **Wasser** = `PoolWater` (`world/pool_water.gd`, `shaders/psx_water.gdshader`): Wellen rein optisch im
   Vertex-Shader; Wellenringe im Array `ripples` (`MAX_RIPPLES` – **Shader-Konstante gleich halten**), Abprall als
   Spiegelquellen hinter den Wänden; `_track()` erzeugt Ringe für Spieler und Monster, `splash()` beim Eintauchen;
@@ -846,7 +846,13 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
   Markdown-Tabelle (Farbe, Name, Vorderseite, Hinweis), die Überschrift gibt den Vorsatz („## Möbel“ → `Möbel: …`);
   „–“ statt Farbe = im Code vorgesehen, noch ohne Farbe. Gelesen über `tools/plan_legend.py` (prüft doppelte Farben
   und Namen); dort stehen auch die Regeln des Plans und der **Bestand**, was der Code selbst setzt (Ersatzplätze,
-  feste Orte, Regeln). Die Zuordnung Name → Bauteil bleibt in `FILLS`, `OPENINGS`, `FURNITURE` … oben in
+  feste Orte, Regeln). **Planplätze statt fester Orte** (ZIM-158): Was der Code sonst an eine feste Stelle setzt,
+  merkt sich der LevelBuilder beim Bau aus dem Plan in `planned` (Art → `{level, pos, out, rect, at}`; `_plan`,
+  `_plan_wall` für Wandsachen, `PLANNED_ONCE` = nur der erste Punkt gilt). Im Builder fragt `_planned_here(kind, area)`,
+  von außen `planned_at(kind, fallback, y, gap)` (Transform, +Z in den Raum) – ohne Planeintrag gilt der alte feste
+  Platz. So: Spielautomat, Puppenhaus, Barhocker, Maskenboard, Apfelbottich, Sicherungskasten, Aushangbrett, Wanduhr,
+  Krähennest, Leviathan-Druck, Teppich, Discokugel (Tanzfläche darunter), Unterwasserlampen, Waschmaschinen.
+  Die Zuordnung Name → Bauteil bleibt in `FILLS`, `OPENINGS`, `FURNITURE` … oben in
   `build_map.py`. **Nicht in der Plandatei**: Aseprite behält keine Palettennamen. Neue Farbe → Zeile in
   `PLANFARBEN.md`, dann `python tools/build_colors.py`: zeichnet `map_colors.png` (Vorlage mit exakten Farben für die
   Pipette, rot = noch nicht gebaut), schreibt `map_a.gpl` (Palette für Aseprite, nicht von Hand ändern) und meldet
@@ -2178,8 +2184,9 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
 - `PUMPKIN_SEEDS` (Kürbiskerne, 5.4): Schnitzt der Spieler (`Item.interact` → `carve`), legt `_drop_seeds` eine Handvoll
   neben den Kürbis, auf seine Seite – Gäste schnitzen ohne Kerne. Tasche; Krähenfutter (4.25). Mit Zusatz „brot“
   (`flavor`) sind es Brotkrumen – Vorrat `ResourceSpot` mit `with_extra("brot")` auf der Küchenzeile (`BREAD_OFFSET`).
-- **Ausstattung im Plan fehlt noch** für Rattenkönig, Fotowand, Puppenhaus, Apfelbottich – bis dahin
-  feste Ausweichplätze (`FALLBACK`/`WALL`/`SPOT`) im jeweiligen Skript.
+- **Ort aus dem Plan** (ZIM-158): Puppenhaus, Apfelbottich, Sicherungskasten, Krähennest über
+  `LevelBuilder.planned_at`, sonst feste Ausweichplätze (`FALLBACK`/`SPOT`) im jeweiligen Skript. Ohne Planfarbe
+  noch Rattenkönig (ruht) und Fotowand (`WALL`, ZIM-133).
 - **Gespeichert** (Speicherstand 49) unter `omens`: `crows`, `mirrors`, `power`, `nightmare`, `extra_child`
   (`SaveManager._collect_omens`/`_apply_omens`); alles andere wird aus Toten, Kalender oder Gegenständen abgeleitet.
 - Debug: `--kraehen`, `--ratten`, `--hund`, `--kesselkatze`, `--spiegel`, `--strom`, `--albtraum`,
@@ -2320,7 +2327,7 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   in `SYMBOLS`, `payout`; Erwartungswert ≈ 0,69 je Geld; läuft alle 4–10 min von selbst an, wenn niemand davorsteht –
   Gruppe `time_skip`; Lärm `slot`/`slot_win`). Spieleschrank aus dem Plan (Möbel „Spieleschrank“,
   ohne Vorderseite: `_back_to_wall` stellt ihn mit dem Rücken an die nächste Wand), sonst `CABINET_FALLBACK`; der
-  Jackpot-Automat steht an `SLOT_FALLBACK` (Ecke oben rechts in der Bar). **Videoautomaten** `ArcadeMachine` (Möbel
+  Jackpot-Automat ebenso aus „Spielautomat“, sonst an `SLOT_FALLBACK` (Ecke oben rechts in der Bar). **Videoautomaten** `ArcadeMachine` (Möbel
   „Videoautomat“, der Reihe nach `ARCADE_GAMES`: Deadra, Ghost Hotel – eigene Entwürfe statt Tetris und Pac-Man):
   Gehäuse = `arcade_machine.glb` (Tabelle in 1), Bildschirm = kleines `Image` (`SCREEN_PX`) auf der gewölbten
   Röhre des Modells (`shaders/arcade_screen.gdshader`: Bild in `PICTURE_RECT` der UVs, Zeilen, außen schwarzes Glas),

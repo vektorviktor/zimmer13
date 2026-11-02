@@ -132,6 +132,8 @@ FURNITURE = {
 	"Möbel: Gartentisch": "garden_table", "Möbel: Gartenstuhl": "garden_chair",
 	# Pool-Umkleiden (31.10., ZIM-145): Spindblock 36 × 9 px mit hellerer Zeile, Bank in der Mitte ohne Vorderseite
 	"Möbel: Spindblock": "locker_bank", "Möbel: Umkleidebank": "changing_bench",
+	# 2.11.: bisher feste Plätze im Code (ZIM-158) – ohne Planeintrag bleibt der alte Platz
+	"Möbel: Spielautomat": "slot_machine", "Möbel: Puppenhaus": "doll_house", "Möbel: Barhocker": "bar_stool",
 }
 FRONT_NAME = "Möbel: Vorderseite"   ## Strich am Rand, gilt für jedes Möbel
 ## Hellere Zeile am Rand, gilt nur für ihr Möbel: „Möbel: Dusche Vorderseite“ → facing. Beim Doppelbett ist sie das
@@ -150,9 +152,14 @@ FITTINGS = {
 	"Ausstattung: Dartscheibe": "dartboard",   # 25.10.: an der Wand, Linie und Stehtisch davor (6.10)
 	"Ausstattung: Duschplatz": "pool_shower",   # 1.11.: Drücker, Ablage und Duschkopf an der Wand (ZIM-144)
 	"Ausstattung: Bodenablauf": "floor_drain",   # 1.11.: Edelstahlrost im Boden der Duschen am Pool (ZIM-144)
+	# 2.11.: bisher feste Plätze im Code (ZIM-158) – ohne Planeintrag bleibt der alte Platz
+	"Ausstattung: Maskenboard": "mask_board", "Ausstattung: Apfelbottich": "apple_tub",
+	"Ausstattung: Sicherungskasten": "fuse_box", "Ausstattung: Aushangbrett": "notice_board",
+	"Ausstattung: Wanduhr": "wall_clock", "Ausstattung: Krähennest": "crow_nest",
+	"Ausstattung: Leviathan-Druck": "leviathan_print",
 }
 ## Teppiche → Art (LevelBuilder.RUG_TEXTURES)
-RUGS = {"Teppich: Läufer": "runner"}
+RUGS = {"Teppich: Läufer": "runner", "Teppich: Teppich": "rug"}   # Teppich: 2.11. (ZIM-158)
 ## Gegenstände → Item.Kind
 ITEMS = {
 	"Gegenstand: Kürbis": "PUMPKIN", "Gegenstand: Geschnitzter Kürbis": "CARVED_PUMPKIN", "Gegenstand: Kerze": "CANDLE",
@@ -164,12 +171,15 @@ ITEMS = {
 	# 24.10. (Spielkonzept 6.19): Zimmertüren aufbrechen und reparieren
 	"Gegenstand: Brecheisen": "CROWBAR", "Gegenstand: Werkzeugkasten": "TOOLBOX",
 	"Gegenstand: Dartpfeile": "DARTS",   # 25.10. (6.10) – ohne Eintrag liegen sie auf dem Stehtisch an der Scheibe
+	"Gegenstand: Salz": "SALT",   # 2.11. (5.13, ZIM-158) – ohne Eintrag 3 Packungen am Ende der Küchenzeile
 }
 ## Lichter → (Art, defekt)
 LIGHTS = {
 	"Licht: Wandleuchte": ("wall_lamp", False), "Licht: Wandleuchte defekt": ("wall_lamp", True),
 	"Licht: Kerze": ("candle", False), "Licht: Laterne": ("lantern", False), "Licht: Laterne defekt": ("lantern", True),
 	"Licht: Deckenleuchte": ("ceiling_lamp", False), "Licht: Halogenleuchte": ("halogen", False),
+	# 2.11. (ZIM-158): ohne Eintrag Discokugel mitten im Partyraum, Unterwasserlampen gleichmäßig verteilt
+	"Licht: Discokugel": ("disco_ball", False), "Licht: Unterwasserlampe": ("pool_lamp", False),
 }
 ## Einbauten, die keine eigenen Bodenflächen sind
 FIXTURES = ("tree", "planter", "reception", "terrace_edge", "balcony_edge", "stairs", "void", "hedge_arch")

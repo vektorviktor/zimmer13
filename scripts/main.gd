@@ -664,6 +664,7 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	var doll_house := DollHouse.new()   # Puppenhaus in der Bibliothek (5.16)
 	doll_house.name = "Puppenhaus"
 	add_child(doll_house)
+	doll_house.spot = builder.planned_at("doll_house", doll_house.spot)
 	Game.doll_house = doll_house
 	var faces := PumpkinFaces.new()   # Kürbisgesichter, die sich verändern (5.18)
 	faces.name = "PumpkinFaces"
@@ -672,6 +673,7 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	var tub := AppleTub.new()   # Apfeltauchen im Partyraum (6.21)
 	tub.name = "Apfelbottich"
 	add_child(tub)
+	tub.spot = builder.planned_at("apple_tub", Transform3D(Basis(), tub.spot)).origin
 	Game.apple_tub = tub
 
 

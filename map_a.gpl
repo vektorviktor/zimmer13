@@ -129,7 +129,11 @@ Columns: 0
 115  76  69	Möbel: Spindblock
 153 101  92	Möbel: Spindblock Vorderseite
 209 146  31	Möbel: Umkleidebank
+160  13  40	Möbel: Spielautomat
+214  61  61	Möbel: Puppenhaus
+182 128  53	Möbel: Barhocker
 114  29  29	Teppich: Läufer
+ 67  11  10	Teppich: Teppich
 244  37 175	Ausstattung: Lichtschalter
 226  18  95	Ausstattung: Telefon
 209  97 194	Ausstattung: Bild
@@ -151,7 +155,15 @@ Columns: 0
 141  27 152	Ausstattung: Bodenablauf
 126  37  82	Ausstattung: Tagebuch
 170  65 126	Ausstattung: Dekokiste
+111  42 111	Ausstattung: Maskenboard
+211 105 123	Ausstattung: Apfelbottich
+162 134 182	Ausstattung: Sicherungskasten
+191 105 162	Ausstattung: Aushangbrett
+205 172 197	Ausstattung: Wanduhr
+ 70  42  58	Ausstattung: Krähennest
+151  18 217	Ausstattung: Leviathan-Druck
 178  77 178	Ausstattung: Fotowand
+150  44  88	Ausstattung: Dartscheibe
 255 110   0	Gegenstand: Kürbis
 255  60   0	Gegenstand: Geschnitzter Kürbis
 255 224 163	Gegenstand: Kerze
@@ -172,6 +184,8 @@ Columns: 0
 128 102  77	Gegenstand: Schachbrett
 136  24   7	Gegenstand: Brecheisen
 231  35  35	Gegenstand: Werkzeugkasten
+238 101  43	Gegenstand: Dartpfeile
+251 142 106	Gegenstand: Salz
 255 221   0	Licht: Wandleuchte
 122 106   0	Licht: Wandleuchte defekt
 255 187  51	Licht: Kerze
@@ -179,3 +193,5 @@ Columns: 0
 107 107  46	Licht: Laterne defekt
 255 248 173	Licht: Deckenleuchte
 218 223  73	Licht: Halogenleuchte
+248 237 119	Licht: Discokugel
+195 195  34	Licht: Unterwasserlampe

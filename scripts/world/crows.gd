@@ -551,12 +551,20 @@ func _seen(p: Vector3) -> bool:
 
 # --- Nest -------------------------------------------------------------------------------------------
 
-## Der große Baum gegenüber der Terrassentür von NEST_ROOM: der Baum, der am geradesten vor der Tür steht. Ohne die Tür
-## der Baum in der Mitte aller Bäume.
+## Der Baum am Punkt „Krähennest“ im Plan (ZIM-158, der nächste dazu). Ohne ihn der große Baum gegenüber der
+## Terrassentür von NEST_ROOM: der Baum, der am geradesten vor der Tür steht; ohne die Tür der in der Mitte aller Bäume.
 func _nest_tree() -> Dictionary:
 	var doors: Array = _builder.garden_doors.get(NEST_ROOM, [])
 	var best := {}
 	var score := INF
+	if _builder.planned.has("crow_nest"):
+		var mark: Vector3 = _builder.planned["crow_nest"][0]["at"]
+		for t: Dictionary in _trees:
+			var d := Vector2((t["pos"] as Vector3).x - mark.x, (t["pos"] as Vector3).z - mark.z).length()
+			if d < score:
+				score = d
+				best = t
+		return best
 	for t: Dictionary in _trees:
 		var p: Vector3 = t["pos"]
 		if doors.is_empty():

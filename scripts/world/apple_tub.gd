@@ -8,12 +8,14 @@ extends StaticBody3D
 ## einer Feier schafft, wird von den Umstehenden gefeiert.
 ## **Das Gesicht im Wasser:** Nach dem ersten Angriff, nachts, spiegelt sich beim Hochkommen manchmal ein bleiches Gesicht
 ## hinter dem eigenen im Wasser – wer sich umdreht, sieht niemanden. Einmal je Feier höchstens.
-## Ort: Ausstattung „Apfelbottich“ im Plan, bis dahin SPOT (Südostecke des Partyraums). Die Äpfel wachsen nach
+## Ort: Ausstattung „Apfelbottich“ im Plan (ZIM-158), sonst SPOT (Südostecke des Partyraums). Die Äpfel wachsen nach
 ## (APPLES, je Spieltag wieder voll). Nicht gespeichert.
 
 const SPOT := Vector3(20.5, 0.0, -11.0)
 const RADIUS := 0.42
 const TUB_H := 0.62
+
+var spot := SPOT   ## Platz (global), setzt main aus dem Plan
 const WATER_Y := 0.54
 const APPLES := 5
 const BITE_TIME := 1.1
@@ -47,7 +49,7 @@ func _ready() -> void:
 	collision_layer = 1 | 4
 	collision_mask = 0
 	set_meta("interactable", self)
-	position = SPOT
+	position = spot
 	var wood := Mat.wood(false, Color(0.6, 0.45, 0.32))
 	var staves := CylinderMesh.new()
 	staves.top_radius = RADIUS

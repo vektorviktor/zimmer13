@@ -7,7 +7,8 @@ extends StaticBody3D
 ## niemand hinsieht. Vorwarnung um Minuten, nicht um Stunden; das Urteil bleibt bei der Puppe (5.5).
 ## Die Figuren bewegen sich nur, wenn niemand hinsieht. Und das Modell lügt: unter Schock oder in einer Halluzination
 ## stehen sie falsch, und die kleine Puppe steht vor Zimmer 13.
-## Ort: Möbel „Puppenhaus“ im Plan, bis dahin SPOT (Mitte der Bibliothek im Obergeschoss). Nicht gespeichert.
+## Ort: Möbel „Puppenhaus“ im Plan (ZIM-158, Mitte des Rechtecks; ist es länger in z, quer gedreht), sonst SPOT (Mitte
+## der Bibliothek im Obergeschoss). Nicht gespeichert.
 
 const SPOT := Vector3(-45.5, LevelBuilder.UP_Y, -41.0)
 const SCALE := 0.01                       ## 1:100
@@ -19,6 +20,7 @@ const UPDATE_EVERY := 1.5
 const LIE_SHOCK := 0.5
 const NOTE := "In der Bibliothek steht ein Modell des Hotels mit kleinen Holzfiguren. Sie stehen, wo die Gäste sind – und vor einer Tür steht eine winzige Puppe."
 
+var spot := Transform3D(Basis(), SPOT)   ## Platz (global), setzt main aus dem Plan
 var _pegs := {}                           ## Gast-ID → Node3D
 var _mini_doll: Node3D
 var _plates: Array[Node3D] = []           ## [EG, OG]
@@ -30,7 +32,7 @@ func _ready() -> void:
 	collision_layer = 1 | 4
 	collision_mask = 0
 	set_meta("interactable", self)
-	position = SPOT
+	transform = spot
 	var size := Vector3(PLATE.x * 2.0 + GAP + 0.16, TABLE_H, PLATE.y + 0.16)
 	var wood := Mat.wood(false, Color(0.55, 0.38, 0.26))
 	Geo.mesh(self, Geo.box(Vector3(size.x, 0.05, size.z)), wood, Vector3(0, TABLE_H - 0.025, 0))

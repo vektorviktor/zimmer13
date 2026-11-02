@@ -351,8 +351,12 @@ const DART_FALLBACK := {"kind": "dartboard", "pos": [-16.4, -10.25], "wall": "so
 ## Spieleschrank (Spielkonzept 6.10, 28.10.), solange er nicht im Plan steht (Möbel „Spieleschrank“): an der Ostwand
 ## der Bar (zur Lobby) südlich der Glastür
 const CABINET_FALLBACK := {"kind": "game_cabinet", "pos": [-7.7, -13.2], "wall": "east"}
-## Jackpot-Automat (einarmiger Bandit): Ecke oben rechts in der Bar, an der Nordwand nördlich der Glastür (28.10.)
+## Jackpot-Automat (einarmiger Bandit), solange er nicht im Plan steht (Möbel „Spielautomat“): Ecke oben rechts in der
+## Bar, an der Nordwand nördlich der Glastür (28.10.)
 const SLOT_FALLBACK := {"kind": "slot_machine", "pos": [-8.0, -18.75], "wall": "north"}
+## Plätze aus dem Plan (planned, ZIM-158), die es nur einmal gibt – ein zweiter Punkt gilt nicht
+const PLANNED_ONCE: Array[String] = ["doll_house", "apple_tub", "fuse_box", "notice_board", "wall_clock", "crow_nest",
+	"leviathan_print", "mask_board", "disco_ball"]
 ## Videoautomaten (Spielkonzept 6.10, 28.10.) aus dem Plan der Reihe nach: welches Spiel darauf läuft
 const ARCADE_GAMES: Array[String] = ["deadra", "ghost_hotel"]
 const COMPASS_ROOM := "026"
@@ -482,6 +486,10 @@ const RECEPTION_MODEL := "res://assets/models/reception.glb"
 ## Teppiche aus dem Plan: Art → Textur (TexGen); Oberseite knapp über dem Boden
 const RUG_TEXTURES := {"runner": "runner"}
 const RUG_Y := 0.01
+## Teppich (Planfarbe „Teppich: Teppich“, ZIM-158) und ohne ihn der feste vor der Rezeption: Farbe, Maß, Mitte
+const LOBBY_RUG := Color(0.32, 0.07, 0.08)
+const LOBBY_RUG_SIZE := Vector2(6.0, 8.0)
+const LOBBY_RUG_AT := Vector2(0.0, -5.0)
 ## Teppiche im Katzenraum auf dem Holzboden (nicht im Plan): Mitte als Anteil der Raumgrenzen, Größe quer × längs
 ## in Metern (längs = +Z vor der Drehung), Drehung in Grad, Farbe (TexGen.RUG_COLORS). Ein Texturpixel ≈ RUG_PIXEL.
 const CAT_ROOM_RUGS := [
@@ -605,6 +613,10 @@ var room_table_axes := {}   ## Zimmernummer → halbe Länge des Tischs entlang 
 ## Futtertisch der Krähen (Spielkonzept 4.25): der Tisch im Gärtchen von Zimmer 13, den der Nutzer in den Plan setzt –
 ## {pos: Mitte der Platte (global), size: Grundfläche (x, z)}; {} = (noch) keiner im Plan
 var feed_table := {}
+## Plätze aus dem Plan für Dinge, die ohne Planeintrag an festen Stellen im Code stehen (ZIM-158): Art → Array von
+## {level, pos (lokal: Mitte bzw. Punkt auf der Wandfläche), out (Blick in den Raum bzw. zur Vorderseite), rect (lokal,
+## nur Möbel), at (global, auf dem Boden)}. Abfrage: planned_at, im Builder _planned_here.
+var planned := {}
 ## Gartentüren der Zimmer im Erdgeschoss: Nummer → Array von {pos (global), out (nach draußen)} – das Krähennest sitzt im
 ## Baum gegenüber der von Zimmer 042 (Crows, 4.25)
 var garden_doors := {}
@@ -2407,6 +2419,25 @@ func _furniture() -> void:
 				yaw = atan2(front.x, front.y)
 				node = _game_cabinet(c - front * (_depth_of(rect, front) - GameCabinet.SIZE.z) / 2.0, yaw)
 				top = GameCabinet.SIZE.y
+			"slot_machine":   # Jackpot-Automat (6.10): wie die Videoautomaten mit dem Rücken an die nächste Wand
+				if slot_machine != null:
+					push_warning("Gebäudeplan: zweiter Spielautomat bei %s – es gibt nur einen" % c)
+					continue
+				front = _back_to_wall(rect, front)
+				yaw = atan2(front.x, front.y)
+				slot_machine = SlotMachine.new()
+				node = slot_machine
+				var back := c - front * (_depth_of(rect, front) - SlotMachine.SIZE.z) / 2.0
+				pos = Vector3(back.x, 0, back.y)
+				top = SlotMachine.SIZE.y
+			"doll_house":   # baut DollHouse (5.16) – hier nur der Platz; Pläne mit Norden oben, gedreht nur bei langem z
+				_plan(kind, c, Vector2(0, 1) if rect.size.x >= rect.size.y else Vector2(1, 0), rect)
+				continue
+			"bar_stool" when ResourceLoader.exists(BAR_STOOL_MODEL):   # einzeln gesetzt (ZIM-158), Sitz zur Vorderseite
+				node = _fixture_body(BAR_STOOL_MODEL, c, front)
+				node.rotation.y += _jitter(rect).randf_range(-0.6, 0.6)   # nicht alle gleich ausgerichtet
+				Geo.add_box_shape(node, Vector3(0.4, BAR_STOOL_SEAT, 0.4), Vector3(0, BAR_STOOL_SEAT / 2.0, 0))
+				top = BAR_STOOL_SEAT
 			"arcade":
 				front = _back_to_wall(rect, front)
 				yaw = atan2(front.x, front.y)
@@ -2672,6 +2703,10 @@ func _rugs() -> void:
 		var c := rect.get_center()
 		var kind := String(r["kind"])
 		if _kind_at(c) == "sealed":
+			continue
+		if kind == "rug":   # Teppich in Planmaßen (ZIM-158), wie bisher der vor der Rezeption
+			_plan(kind, c, Vector2(0, 1), rect)
+			Geo.mesh(root, Geo.box(Vector3(rect.size.x, 0.02, rect.size.y)), Mat.layer(LOBBY_RUG), Vector3(c.x, 0.01, c.y))
 			continue
 		if not RUG_TEXTURES.has(kind):
 			push_warning("Gebäudeplan: unbekannte Teppichart „%s“ bei %s" % [kind, c])
@@ -3062,6 +3097,11 @@ func _fittings() -> void:
 				_supply(ResourceSpot.new().setup(Item.Kind.LEAVES, "Herbstlaub", 4, 60.0), Vector3(p.x, top, p.y))
 			"dartboard":   # Darts (Spielkonzept 6.10): Scheibe an der Wand, Linie und Stehtisch davor, Pfeile darauf
 				_dartboard(o)
+			# Nur merken (planned, ZIM-158) – gebaut wird später an ihrer Stelle, ohne Planeintrag am alten Platz
+			"mask_board", "fuse_box", "notice_board", "wall_clock", "leviathan_print":
+				_plan_wall(o)
+			"apple_tub", "crow_nest":
+				_plan(kind, p, Vector2(0, 1))
 			"deco_box" when _attic:
 				# Kiste mit wertvollerer alter Deko auf dem Dachboden (Spielkonzept 4.21, 5.7): wenige starke Stücke, kein
 				# Nachschub – wie die alte Deko im Heizkeller
@@ -3154,17 +3194,20 @@ func _bowling_lane() -> void:
 	root.add_child(bowling)
 
 
-## Spieleschrank, solange er nicht im Plan steht (CABINET_FALLBACK), und der Jackpot-Automat (SLOT_FALLBACK) in der Bar.
+## Spieleschrank (CABINET_FALLBACK) und Jackpot-Automat (SLOT_FALLBACK) in der Bar, solange sie nicht im Plan stehen.
 func _bar_games_fallback() -> void:
 	if not _named.has("bar"):
 		return
 	for o in [CABINET_FALLBACK, SLOT_FALLBACK]:
-		if (o == SLOT_FALLBACK or game_cabinet == null) and not (_named["bar"] as Rect2).has_point(_v2(o["pos"])):
+		var missing := slot_machine == null if o == SLOT_FALLBACK else game_cabinet == null
+		if missing and not (_named["bar"] as Rect2).has_point(_v2(o["pos"])):
 			push_warning("Gebäudeplan: %s-Platz %s liegt nicht mehr in der Bar – bitte in den Plan zeichnen" % [o["kind"], o["pos"]])
 	if game_cabinet == null:
 		var at := _wall_spot(CABINET_FALLBACK, GameCabinet.SIZE.z / 2.0 + 0.01)
 		var spot := at.at(0.0)
 		_game_cabinet(Vector2(spot.x, spot.z), at.yaw())
+	if slot_machine != null:
+		return
 	var slot_at := _wall_spot(SLOT_FALLBACK, SlotMachine.SIZE.z / 2.0 + 0.01)
 	slot_machine = SlotMachine.new()
 	slot_machine.position = slot_at.at(0.0)
@@ -3291,6 +3334,8 @@ func _lights() -> void:
 				_candle(Vector3(p.x, _top_at(p), p.y))
 			"lantern":
 				_lantern(Vector3(p.x, 0, p.y), broken, 1.0 if absf(p.x) < 15.0 else 0.8)   # in den Innenhöfen schwächer
+			"disco_ball", "pool_lamp":   # nur merken (ZIM-158): baut _common_rooms bzw. _pool
+				_plan(String(o["kind"]), p, Vector2(0, 1))
 			_:
 				push_warning("Gebäudeplan: unbekanntes Licht „%s“ bei %s" % [o["kind"], p])
 
@@ -3386,10 +3431,54 @@ func _wall_spot(o: Dictionary, gap: float) -> WallSpot:
 	return spot
 
 
-## Maskensammlung (Spielkonzept 5.19): acht Haken (MaskHook) nebeneinander an der längsten freien Wand von Zimmer 13 –
-## frei heißt ohne Tür und Fenster, ohne Möbel davor und ohne Wandsache (Schalter, Telefon, Lampe). Ein Platz im Plan
-## dafür fehlt noch; soll die Sammlung woanders hängen, reicht es, dort die längste Wand frei zu lassen.
+## Platz aus dem Plan merken (planned, ZIM-158). Von den Arten in PLANNED_ONCE gilt nur der erste.
+func _plan(kind: String, pos: Vector2, out: Vector2, rect := Rect2()) -> void:
+	var list: Array = planned.get_or_add(kind, [])
+	if kind in PLANNED_ONCE and not list.is_empty():
+		push_warning("Gebäudeplan: %s bei Pixel %s doppelt – es gibt nur einen, der erste gilt" % [kind, _plan_pixel(pos)])
+		return
+	list.append({"level": _level, "pos": pos, "out": out, "rect": rect, "at": _global(Vector3(pos.x, 0, pos.y))})
+
+
+## Wandsache aus dem Plan nur merken (_plan): Punkt auf der Wandfläche, Blick in den Raum.
+func _plan_wall(o: Dictionary) -> void:
+	var at := _wall_spot(o, 0.0)
+	_plan(String(o["kind"]), at.pos, at.out)
+
+
+## Platz für kind aus dem Plan (der erste), y über dem Boden und gap vor der Wand, +Z in den Raum bzw. zur
+## Vorderseite. Ohne Planeintrag fallback (global). Erst nach build() vollständig.
+func planned_at(kind: String, fallback: Transform3D, y := 0.0, gap := 0.0) -> Transform3D:
+	var list: Array = planned.get(kind, [])
+	if list.is_empty():
+		return fallback
+	var out: Vector2 = list[0]["out"]
+	var at: Vector3 = (list[0]["at"] as Vector3) + Vector3(out.x, 0, out.y) * gap + Vector3.UP * y
+	return Transform3D(Basis(Vector3.UP, atan2(out.x, out.y)), at)
+
+
+## Plätze der Art kind aus dem Plan auf dem geladenen Stockwerk, wahlweise nur in area.
+func _planned_here(kind: String, area := Rect2()) -> Array:
+	return (planned.get(kind, []) as Array).filter(func(p: Dictionary) -> bool:
+		return int(p["level"]) == _level and (not area.has_area() or area.has_point(p["pos"])))
+
+
+## Maskensammlung (Spielkonzept 5.19): acht Haken (MaskHook) nebeneinander, die Mitte am Punkt „Maskenboard“ im Plan
+## (ZIM-158). Ohne ihn an der längsten freien Wand von Zimmer 13 – frei heißt ohne Tür und Fenster, ohne Möbel davor
+## und ohne Wandsache (Schalter, Telefon, Lampe).
 func _mask_hooks() -> void:
+	var board := _planned_here("mask_board")
+	if not board.is_empty():
+		var out: Vector2 = board[0]["out"]
+		var right := Vector2(out.y, -out.x)   # von vorn gesehen von links nach rechts
+		var count := MaskModel.ORDER.size()
+		for i in count:
+			var face: Vector2 = (board[0]["pos"] as Vector2) + right * (i - (count - 1) / 2.0) * MaskHook.SPACING
+			var hook := MaskHook.new().setup(MaskModel.ORDER[i])
+			hook.position = Vector3(face.x, MaskHook.HEIGHT, face.y) + Vector3(out.x, 0, out.y) * 0.035
+			hook.rotation.y = atan2(out.x, out.y)
+			root.add_child(hook)
+		return
 	var info := {}
 	for r in _map["rooms"]:
 		if String(r["no"]) == PLAYER_ROOM:
@@ -3581,7 +3670,9 @@ func _lobby_hall() -> void:
 	lobby_rect = _lobby
 	var west := _lobby.position.x
 	var east := _lobby.end.x
-	Geo.mesh(root, Geo.box(Vector3(6.0, 0.02, 8.0)), Mat.layer(Color(0.32, 0.07, 0.08)), Vector3(0, 0.01, -5.0))
+	if _planned_here("rug", _lobby).is_empty():   # ohne Teppich im Plan der feste vor der Rezeption
+		Geo.mesh(root, Geo.box(Vector3(LOBBY_RUG_SIZE.x, 0.02, LOBBY_RUG_SIZE.y)), Mat.layer(LOBBY_RUG),
+			Vector3(LOBBY_RUG_AT.x, 0.01, LOBBY_RUG_AT.y))
 	var front: Array = _map["reception"][0]
 	for rc in _map["reception"]:
 		if float(rc[2]) - float(rc[0]) > float(front[2]) - float(front[0]):
@@ -3615,14 +3706,31 @@ func _lobby_hall() -> void:
 			lobby_seats.append(Vector3(seat.x, 0, seat.y))
 			cat_perches.append({"floor": Vector3(seat.x, 0, seat.y), "top": Vector3(top.x, 0.46, top.y)})
 	_clock()
-	notice_board = NoticeBoard.new()
-	notice_board.position = Vector3(west + WALL_GAP, NOTICE_BOARD_Y, NOTICE_BOARD_Z)
-	notice_board.rotation.y = PI / 2.0   # +Z in die Lobby
+	notice_board = NoticeBoard.new()   # +Z in die Lobby
+	notice_board.transform = planned_at("notice_board",
+		Transform3D(Basis(Vector3.UP, PI / 2.0), Vector3(west + WALL_GAP, NOTICE_BOARD_Y, NOTICE_BOARD_Z)), NOTICE_BOARD_Y, WALL_GAP)
 	_parent.add_child(notice_board)
 
 
-## Wanduhr über dem Haupteingang (WallClock): Mitte über der Tür, Zifferblatt in die Lobby, ohne Kollision.
+## Wanduhr (WallClock) an ihrem Platz im Plan, sonst über dem Haupteingang: Zifferblatt in den Raum, ohne Kollision.
+## Die Mitte hängt auf halber Höhe zwischen CLOCK_ABOVE_DOOR über Türhöhe des Haupteingangs und der Decke.
 func _clock() -> void:
+	var spot: Array = _planned_here("wall_clock")
+	if not spot.is_empty():
+		var clock := WallClock.create(CLOCK_DIAMETER)
+		if clock == null:
+			return
+		var p: Vector2 = spot[0]["pos"]
+		var out: Vector2 = spot[0]["out"]
+		var ceiling := H
+		for rc in _map["open_above"]:   # unter einem Luftraum hängt sie in der Halle über zwei Stockwerke
+			if _rect(rc).has_point(p + out * 0.5):
+				ceiling = UP_Y + H
+		var back := p + out * CLOCK_GAP
+		clock.position = Vector3(back.x, (ENTRANCE_H + CLOCK_ABOVE_DOOR + ceiling) / 2.0, back.y)
+		clock.rotation.y = atan2(out.x, out.y)
+		root.add_child(clock)
+		return
 	for w in _map["walls"]:
 		for o in w.get("openings", []):
 			if o["kind"] != "main_entrance":
@@ -3973,7 +4081,19 @@ func _common_rooms() -> void:
 		var out: Vector2 = counter["front"]
 		var along := Vector2(1, 0) if r.size.x >= r.size.y else Vector2(0, 1)
 		var span := maxf(r.size.x, r.size.y) - 2.2
-		if ResourceLoader.exists(BAR_STOOL_MODEL):
+		var stools := _furnishings.filter(func(f: Dictionary) -> bool:
+			return f["kind"] == "bar_stool" and (_named["bar"] as Rect2).has_point((f["rect"] as Rect2).get_center()))
+		if not stools.is_empty():
+			# Barhocker aus dem Plan (ZIM-158): Gäste stehen hinter je zwei benachbarten Hockern
+			var at := func(f: Dictionary) -> float: return (f["rect"] as Rect2).get_center().dot(along)
+			stools.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return at.call(a) < at.call(b))
+			for i in range(1, stools.size()):
+				var s := ((stools[i - 1]["rect"] as Rect2).get_center() + (stools[i]["rect"] as Rect2).get_center()) / 2.0 + out * 0.55
+				bar_spots.append(Vector3(s.x, 0, s.y))
+			if stools.size() == 1:
+				var s := (stools[0]["rect"] as Rect2).get_center() + along * 0.5 + out * 0.55
+				bar_spots.append(Vector3(s.x, 0, s.y))
+		elif ResourceLoader.exists(BAR_STOOL_MODEL):
 			# Barhocker vor der Platte (Kollision wie ein Stuhl); Gäste stehen dahinter zwischen zwei Hockern
 			var edge := minf(r.size.x, r.size.y) / 2.0
 			for i in BAR_STOOLS:
@@ -4027,6 +4147,9 @@ func _common_rooms() -> void:
 	# Discokugel darüber
 	var r: Rect2 = _named["partyraum"]
 	var c := r.get_center()
+	var disco := _planned_here("disco_ball", r)
+	if not disco.is_empty():   # Discokugel aus dem Plan (ZIM-158): die Tanzfläche liegt darunter
+		c = disco[0]["pos"]
 	var table := _furnishing("table", "partyraum")
 	if not table.is_empty():
 		var t: Vector2 = (table["rect"] as Rect2).get_center()
@@ -4174,11 +4297,28 @@ func _pool() -> void:
 		_rod(top, bend, chrome)
 		_rod(bend, low, chrome)
 		_rod(low, Vector3(low.x, -depth, low.z), chrome)
-	# Unterwasserlampen: gleichmäßig verteilt in beiden Längswänden, am Schalter der Halle
+	# Unterwasserlampen: aus dem Plan (ZIM-158) in der nächsten Beckenwand, sonst gleichmäßig verteilt in beiden
+	# Längswänden; am Schalter der Halle
 	var long_x := w.size.x >= w.size.y
 	var length := w.size.x if long_x else w.size.y
 	var room_id := _light_room_at((_named["pool"] as Rect2).position + Vector2(0.5, 0.5))   # Umgang, nicht das Becken
-	for s: float in [-1.0, 1.0]:
+	var lamps := _planned_here("pool_lamp", w.grow(0.5))
+	for spot: Dictionary in lamps:
+		var p: Vector2 = spot["pos"]
+		var into := Vector2(0, 1)   # ins Becken, von der nächsten Wand weg
+		var best := INF
+		for d: Vector2 in [Vector2(0, 1), Vector2(0, -1), Vector2(1, 0), Vector2(-1, 0)]:
+			var wall_at := w.get_center() - d * (_depth_of(w, d) / 2.0)
+			var dist := absf((p - wall_at).dot(d))
+			if dist < best:
+				best = dist
+				into = d
+		var on := p - into * (p - (w.get_center() - into * (_depth_of(w, into) / 2.0 - 0.2))).dot(into)
+		var lamp := Lamp.new().setup(Lamp.Style.POOL, room_id, POOL_LAMP_ENERGY, POOL_LAMP_RANGE, false)
+		lamp.position = Vector3(on.x, POOL_LAMP_Y, on.y)
+		lamp.rotation.y = atan2(into.x, into.y)   # lokale +Z zeigt ins Becken
+		root.add_child(lamp)
+	for s: float in ([] if not lamps.is_empty() else [-1.0, 1.0]):
 		for i in POOL_LAMPS_PER_SIDE:
 			var along := (i + 1.0) / (POOL_LAMPS_PER_SIDE + 1.0) * length - length / 2.0
 			var across := s * ((w.size.y if long_x else w.size.x) / 2.0 - 0.2)
@@ -5150,11 +5290,14 @@ func _north_pipe_x(hall: Rect2) -> float:
 	return best
 
 
-## Wäscherei im Untergeschoss (Spielkonzept 7.9): an beiden Längswänden eine Reihe Waschmaschinen (nicht im Plan),
-## das Bullauge zur Raummitte.
+## Wäscherei im Untergeschoss (Spielkonzept 7.9): Stehen keine Waschmaschinen im Plan („Möbel: Waschmaschine“,
+## ZIM-158), an beiden Längswänden eine Reihe, das Bullauge zur Raummitte.
 func _laundry_room() -> void:
 	var room := _largest_rect("laundry_room")
 	if not room.has_area():
+		return
+	if _furnishings.any(func(f: Dictionary) -> bool:
+			return f["kind"] == "washing_machine" and room.has_point((f["rect"] as Rect2).get_center())):
 		return
 	var along_z := room.size.y >= room.size.x
 	var size := 0.6

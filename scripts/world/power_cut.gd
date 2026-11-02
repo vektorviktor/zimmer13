@@ -16,7 +16,10 @@ const RESTORE := Vector2(2.0, 3.5)    ## Spielstunden bis der Strom von selbst w
 const GUEST_FEAR := 20.0
 const LINES := ["Der Strom! Hat jemand Kerzen?", "Nicht bewegen … wo ist der Lichtschalter?", "Das war der Blitz. Ganz ruhig.",
 	"Ich sehe nichts mehr!", "Kerzen! Wir brauchen Kerzen!"]
-const FUSE_FALLBACK := Vector3(36.0, LevelBuilder.CELLAR_Y + 1.45, -49.78)   ## Nordwand des Maschinenraums, Blick nach +Z
+## Sicherungskasten: Ausstattung „Sicherungskasten“ im Plan (ZIM-158), Mitte so hoch über dem Boden – sonst FUSE_FALLBACK
+## an der Nordwand des Maschinenraums, Blick nach +Z
+const FUSE_Y := 1.45
+const FUSE_FALLBACK := Vector3(36.0, LevelBuilder.CELLAR_Y + FUSE_Y, -49.78)
 
 var off := false
 var _until := 0.0                     ## Spielzeit, zu der der Strom von selbst wiederkommt
@@ -35,7 +38,9 @@ func _ready() -> void:
 	FlickerLight.power_off = false
 	FlickerLight.brownout = 0.0
 	fuse_box = FuseBox.new()
-	fuse_box.position = FUSE_FALLBACK
+	fuse_box.transform = Transform3D(Basis(), FUSE_FALLBACK)
+	if _builder:
+		fuse_box.transform = _builder.planned_at("fuse_box", fuse_box.transform, FUSE_Y)
 	add_child(fuse_box)
 
 

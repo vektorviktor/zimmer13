@@ -44,7 +44,8 @@ const TELL_CHANCE := 0.45
 const ALL_KNOW_AFTER := 1.5 * Calendar.DAY_SECONDS
 ## So oft ersetzt ein eigener Leviathan-Satz einen Satz über das Monster
 const OWN_LINE_CHANCE := 0.3
-## Der Druck an der Wand: Westwand der Lobby zwischen Aushangbrett und Wandlampe, südlich der Fotowand; Bildmaß
+## Der Druck an der Wand: Ausstattung „Leviathan-Druck“ im Plan (ZIM-158, Mitte so hoch wie PRINT_AT), sonst PRINT_AT
+## an der Westwand der Lobby zwischen Aushangbrett und Wandlampe, südlich der Fotowand; Bildmaß
 const PRINT_PATH := "res://assets/textures/dore_leviathan.jpg"
 const PRINT_AT := Vector3(-7.38, 1.72, -18.3)
 const PRINT_SIZE := Vector2(0.36, 0.455)
@@ -151,6 +152,7 @@ var knowers := {}           ## Gast-ID → true
 var player_knows := false
 
 var _builder: LevelBuilder
+var print_at := Transform3D(Basis(Vector3.UP, PI / 2.0), PRINT_AT)   ## Druck an der Wand (global), +Z in den Raum
 var _pending := {}          ## Gast-ID → Zeitpunkt der Sichtung (noch nicht bestätigt)
 var _gather_since := 0.0
 var _in_lobby := 0.0
@@ -167,6 +169,7 @@ var _debug_now := false     ## Debug: Hugo wartet nicht auf den Abend
 
 func setup(builder: LevelBuilder) -> LeviathanName:
 	_builder = builder
+	print_at = builder.planned_at("leviathan_print", print_at, PRINT_AT.y, 0.02)
 	return self
 
 
@@ -399,7 +402,7 @@ func _finish() -> void:
 	var lead: Guest = _cast["lead"]
 	knowers[lead.id] = true
 	if namer == HUGO and _sheet:
-		_sheet.hang()   # an die Fotowand
+		_sheet.hang(print_at)   # an die Wand neben der Fotowand
 	elif _sheet:
 		_sheet.queue_free()
 		_sheet = null
@@ -542,7 +545,7 @@ func load_state(d: Dictionary) -> void:
 	player_knows = bool(d.get("player_knows", false))
 	if stage == Stage.NAMED and namer == HUGO:
 		_sheet = _place_on_table()
-		_sheet.hang()
+		_sheet.hang(print_at)
 
 
 ## --leviathan[=benannt|liesel] (Spielkonzept 4.32): Ein Gast hat es eben gesehen und überlebt, es ist Abend, du stehst
@@ -565,8 +568,9 @@ func debug(value: String) -> void:
 		knowers[g.id] = true
 		if namer == HUGO:
 			_sheet = _place_on_table()
-			_sheet.hang()
-		TeleportUI.place_player(PRINT_AT + Vector3(1.4, -1.7, 0), Vector3(-1, 0.2, 0))
+			_sheet.hang(print_at)
+		var out := print_at.basis.z
+		TeleportUI.place_player(print_at.origin + out * 1.4 + Vector3.DOWN * 1.7, -out + Vector3.UP * 0.2)
 		return
 	var t := _builder.lobby_table
 	TeleportUI.place_player(Vector3(t.x + 2.5, t.y - 0.4, t.z + 2.5), Vector3(-1, -0.2, -1))
@@ -613,13 +617,12 @@ class PrintSheet extends StaticBody3D:
 		global_position = top + Vector3.UP * 0.004
 		rotation.y = PI + 0.12
 
-	## In einen schlichten Rahmen an die Wand neben der Fotowand.
-	func hang() -> void:
+	## In einen schlichten Rahmen an die Wand (at: global, +Z in den Raum).
+	func hang(at: Transform3D) -> void:
 		_hung = true
 		for c in get_children():
 			c.queue_free()
-		rotation = Vector3(0, PI / 2.0, 0)   # +Z in die Lobby, wie PhotoWall
-		global_position = LeviathanName.PRINT_AT
+		global_transform = at
 		var size := LeviathanName.PRINT_SIZE
 		var frame := PhotoWall.FRAME
 		var outer := size + Vector2.ONE * frame * 2.0

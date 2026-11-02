@@ -81,11 +81,12 @@ DESIGN = {
 	"Möbel: Snackautomat": (228, 55, 34), "Möbel: Getränkeautomat": (200, 60, 36), "Möbel: Mülleimer": (215, 20, 40),
 	# Möbel · Spiel und Bar (rot)
 	"Möbel: Theke": (345, 30, 28), "Möbel: Schachtisch": (355, 35, 20), "Möbel: Spieltisch": (355, 50, 36),
-	"Möbel: Videoautomat": (335, 70, 44), "Möbel: Spieleschrank": (8, 45, 46),
+	"Möbel: Videoautomat": (335, 70, 44), "Möbel: Spieleschrank": (8, 45, 46), "Möbel: Spielautomat": (349, 85, 34),
+	"Möbel: Puppenhaus": (0, 65, 54), "Möbel: Barhocker": (35, 55, 46),
 	# Möbel · draußen und Friedhof (grün), Bau (grau)
 	"Möbel: Grab": (110, 25, 32), "Möbel: Gedenkstätte": (90, 35, 52), "Möbel: Säule": (0, 0, 50), "Möbel: Spind": (205, 12, 48),
 	# Teppiche
-	"Teppich: Läufer": (0, 60, 28),
+	"Teppich: Läufer": (0, 60, 28), "Teppich: Teppich": (1, 75, 15),
 	# Ausstattung · an der Wand und im Raum (rosa)
 	"Ausstattung: Lichtschalter": (320, 90, 55), "Ausstattung: Telefon": (338, 85, 48),
 	"Ausstattung: Bild": (308, 55, 60), "Ausstattung: Zettel": (335, 80, 86), "Ausstattung: UV-Schrift": (290, 95, 55),
@@ -94,7 +95,11 @@ DESIGN = {
 	 "Ausstattung: Spinnweben": (300, 12, 84),
 	"Ausstattung: Dekokiste": (325, 45, 46), "Ausstattung: Kerzenvorrat": (340, 90, 72),
 	"Ausstattung: Ersatzbirnen": (305, 80, 72), "Ausstattung: Duschplatz": (300, 60, 80),
-	"Ausstattung: Bodenablauf": (295, 70, 35),
+	"Ausstattung: Bodenablauf": (295, 70, 35), "Ausstattung: Dartscheibe": (335, 55, 38),
+	"Ausstattung: Maskenboard": (300, 45, 30), "Ausstattung: Apfelbottich": (350, 55, 62),
+	"Ausstattung: Sicherungskasten": (275, 25, 62), "Ausstattung: Aushangbrett": (320, 40, 58),
+	"Ausstattung: Wanduhr": (315, 25, 74), "Ausstattung: Krähennest": (325, 25, 22),
+	"Ausstattung: Leviathan-Druck": (280, 85, 46),
 	# Ausstattung · Garten (gelbgrün)
 	"Ausstattung: Kürbispflanze": (88, 85, 40), "Ausstattung: Kürbispflanze Hokkaido": (72, 85, 46),
 	"Ausstattung: Kürbispflanze Weiß": (80, 45, 72), "Ausstattung: Kürbispflanze Butternut": (66, 65, 56),
@@ -108,11 +113,12 @@ DESIGN = {
 	"Gegenstand: Glühbirne": (48, 100, 88), "Gegenstand: Kleidung": (10, 60, 62), "Gegenstand: Kompass": (34, 70, 38),
 	"Gegenstand: Karte": (40, 65, 70), "Gegenstand: Taschenlampe": (30, 80, 18), "Gegenstand: Batterie": (16, 75, 72),
 	"Gegenstand: UV-Filter": (4, 85, 40), "Gegenstand: Schachbrett": (30, 25, 40), "Gegenstand: Brecheisen": (8, 90, 28),
-	"Gegenstand: Werkzeugkasten": (0, 80, 52),
+	"Gegenstand: Werkzeugkasten": (0, 80, 52), "Gegenstand: Dartpfeile": (18, 85, 55), "Gegenstand: Salz": (15, 95, 70),
 	# Lichter (gelb, defekt = dunkler)
 	"Licht: Wandleuchte": (52, 100, 50), "Licht: Wandleuchte defekt": (52, 100, 24), "Licht: Kerze": (40, 100, 60),
 	"Licht: Laterne": (58, 100, 70), "Licht: Laterne defekt": (60, 40, 30), "Licht: Deckenleuchte": (55, 100, 84),
 	"Licht: Halogenleuchte": (62, 70, 58),
+	"Licht: Discokugel": (55, 90, 72), "Licht: Unterwasserlampe": (60, 70, 45),
 }
 
 
