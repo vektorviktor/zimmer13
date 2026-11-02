@@ -64,6 +64,7 @@ const NOISE := {
 	"pant":       {"range": 4.0,  "sound": "",       "volume": 0.0},    ## Keuchen außer Atem, alle 1,5 s (3.1) – zu hören über SynthAudio
 	"knock":      {"range": 8.0,  "sound": "knock",  "volume": 0.7, "caption": "[Es klopft]"},
 	"phone":      {"range": 18.0, "sound": "ring",   "volume": 0.6, "caption": "[Ein Telefon klingelt]"},    ## je Klingeln (4.14)
+	"desk_bell":  {"range": 10.0, "sound": "desk_bell", "volume": 0.7, "caption": "[Ding – die Klingel an der Rezeption]"},    ## Tischklingel anschlagen (ZIM-146)
 	"dice":       {"range": 10.0, "sound": "thud",   "volume": 0.4, "caption": "[Würfel klappern]"},    ## Würfeln, Spiel am Tisch
 	"dart":       {"range": 6.0,  "sound": "dart",   "volume": 0.5, "caption": "[Ein Pfeil trifft die Scheibe]"},    ## Pfeil steckt in der Scheibe (6.10)
 	"dart_wall":  {"range": 9.0,  "sound": "thud",   "volume": 0.5, "caption": "[Ein Pfeil prallt ab]"},    ## … prallt an der Wand ab und fällt

@@ -454,6 +454,9 @@ const SWEETS_CHEST_COUNT := 6
 const RECEPTION_H := 1.1
 ## Hotelregister so weit neben der Mitte der Rezeptionsfront (zwischen Kerze und Kartenblatt, 2.3)
 const REGISTER_SHIFT := 0.35
+## Tischklingel (ZIM-146): so weit auf der anderen Seite der Mitte (zwischen Kerze und Register), so weit zur Kundenseite
+const BELL_SHIFT := 0.3
+const BELL_OUT := 0.06
 ## Rezeption als U mit runden vorderen Ecken (tools/build_reception.py): Holzkorpus, Platte im Terrazzo der Säulen,
 ## zwei Messingrohre; Kundenseite nach +Z, Ursprung mittig im Grundriss am Boden, Grundriss 5 × 1,5 m wie im Plan.
 ## Fehlt die Datei, bleiben die Kästen aus dem Plan.
@@ -646,6 +649,7 @@ var attic_doors: Array[Door] = []     ## Kniestocktüren aller Ebenen
 var attic_haze: AtticHaze             ## Staubnebel im Dachgeschoss (null ohne Plan „DG“)
 var attic_spook: AtticSpook           ## Blitz-Dreh in den Kammern des Dachbodens (null ohne Plan „DG“)
 var register_spot := Transform3D()    ## Hotelregister auf der Rezeption (2.3): auf der Platte, +Z zu den Gästen
+var desk_bell: DeskBell               ## Tischklingel auf der Rezeption (ZIM-146)
 var pumpkin_head_spot := Vector3.INF  ## wo der Kopf des Kürbismanns liegt (rotes Kreuz im Plan „DG“)
 var attic_stair_foot := Transform3D() ## Fuß der Dachbodentreppe im Obergeschoss, Blick hinauf (Debug --dachboden=treppe)
 var attic_window_spots: Array[Transform3D] = []   ## unter jedem Dachfenster, Blick zu ihm (Debug --dachboden=fenster)
@@ -3545,6 +3549,12 @@ func _lobby_hall() -> void:
 	var book := fc + Vector2(guest_side.y, -guest_side.x) * REGISTER_SHIFT
 	register_spot = Transform3D(Basis(Vector3.UP, atan2(guest_side.x, guest_side.y)),
 		_global(Vector3(book.x, _top_at(book), book.y)))
+	# Tischklingel (ZIM-146): auf der anderen Seite der Mitte, etwas zu den Gästen
+	var bell := fc - Vector2(guest_side.y, -guest_side.x) * BELL_SHIFT + guest_side * BELL_OUT
+	desk_bell = DeskBell.new()
+	desk_bell.position = Vector3(bell.x, _top_at(bell), bell.y)
+	desk_bell.rotation.y = atan2(guest_side.x, guest_side.y)
+	_parent.add_child(desk_bell)
 	# Vor jedem Sofa zwei Sitzplätze für Gäste, obendrauf zwei Liegeplätze für die Katzen
 	for f in _furnishings:
 		var c: Vector2 = (f["rect"] as Rect2).get_center()

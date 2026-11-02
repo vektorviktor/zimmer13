@@ -847,6 +847,8 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   nur in Erntejahren, ohne Schlüssel die ganze Seite, dazu die Überlebenden von 2005 und ihre Rückkehr; Edna steht 1987 als „Edna K…“ in
   Zimmer 017. Die Namen früherer Jahre sind erfunden (Vorschlag). Gelesen: ein neues Kreuz und die alten Jahre je als
   Notiz im Notizbuch (3.10).
+  *Klingel umgesetzt 2026-11-02 (ZIM-146):* Tischklingel aus Messing auf schwarzem Fuß neben dem Register, [E]
+  schlägt sie an – heller Ton, Lärm 10 m (das Monster wird neugierig), niemand kommt (ein Gedanke).
 - **Am Brett hängt eine neue Mitteilung** (dieselbe Schrift wie der Aushang, 2.5; umgesetzt 2026-10-27 – ab 6 Uhr am
   Morgen nach der Siegerehrung, solange Gustav tot ist; Gäste am Brett reden auch darüber):
   > Verehrte Gäste,
@@ -1877,6 +1879,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Keuchen außer Atem (3.1) | 4 m alle 1,5 s | im Versteck zudem ×1,8 Chance, entdeckt zu werden |
 | Klopfen an eine Tür | 8 m | |
 | Telefon klingelt | 18 m | 4.14 |
+| Tischklingel an der Rezeption | 10 m | 2.9, ZIM-146 |
 | Hörer abnehmen, auflegen, daneben legen | 2 m | |
 | Würfeln, Spiel am Tisch | 10 m | |
 | Feier mit Musik | 25 m | |

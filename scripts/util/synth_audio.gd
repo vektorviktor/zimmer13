@@ -56,7 +56,7 @@ const DURATIONS := {
 	"giggle": 0.8, "dart": 0.12,
 	"caw": 0.5, "squeak": 0.16, "howl": 4.2, "music_box": 17.0, "fuse": 0.7, "bubble": 0.9,
 	"owl": 4.6, "owl_kewick": 0.55, "bark": 1.3, "bark_deep": 1.6,
-	"bite": 0.3, "power_down": 1.6, "trophy": 1.6,
+	"bite": 0.3, "power_down": 1.6, "trophy": 1.6, "desk_bell": 2.4,
 }
 ## Spieluhr (Spielkonzept 5.17): Marions Wiegenlied, eigene Melodie in e-Moll, je Ton MUSIC_BOX_BEAT Sekunden – gegen
 ## Ende läuft das Werk aus und wird langsamer
@@ -430,6 +430,13 @@ func _shot_sample(shot: Dictionary, t: float, dt: float, white: float) -> float:
 		"ding":
 			# Aufzugsglocke (7.4): heller Gong mit Obertönen, klingt lang aus
 			return (sin(TAU * 1318.0 * t) + sin(TAU * 2637.0 * t) * 0.35 + sin(TAU * 3950.0 * t) * 0.12) * exp(-t * 2.6) * 0.25
+		"desk_bell":
+			# Tischklingel (ZIM-146): heller, kurzer Anschlag auf die Messingglocke – Grundton mit leichter Schwebung,
+			# unharmonische Teiltöne, die schneller verklingen als er
+			var hit := minf(1.0, t * 400.0)
+			return ((sin(TAU * 2350.0 * t) + sin(TAU * 2356.0 * t)) * 0.5 * exp(-t * 1.9)
+				+ sin(TAU * 5640.0 * t) * 0.3 * exp(-t * 4.5) + sin(TAU * 8930.0 * t) * 0.12 * exp(-t * 9.0)
+				+ white * 0.25 * exp(-t * 120.0)) * hit * 0.22
 		"motor":
 			# Aufzugsmotor: tiefes Brummen mit Netzbrumm-Oberton, schwillt an und ab
 			var mwin := minf(1.0, t * 2.0) * minf(1.0, (float(shot["dur"]) - t) * 2.0)

@@ -27,6 +27,8 @@ extends Node3D
 ##   --register[=tot][,offen|anfang]   vor die Rezeption, Blick aufs Hotelregister (2.3) – tot: Gustav ist geholt,
 ##                               3. Oktober 7 Uhr, sein Kreuz steht da (mit --kill=id weitere Tote) · offen: nach 1 s
 ##                               aufgeschlagen beim laufenden Oktober · anfang: bei Oktober 1987
+##   --klingel[=nah|an]          vor die Rezeption, Blick auf die Tischklingel (ZIM-146) – nah: dicht heran, von oben ·
+##                               an: nach 1 s anschlagen (mit --trace Lärm im Protokoll)
 ##   --zimmer18[=offen|gelesen]  in Zimmer 18 vor den Tisch mit dem Notizbuch des Hausmeisters, Schaltschlüssel und
 ##                               UV-Aufsatz (7.4) – offen: nach 1 s aufgeschlagen · gelesen: die drei Mängel stehen im
 ##                               Notizbuch (mit --show=aufgaben gleich aufgeschlagen)
@@ -1788,6 +1790,12 @@ func run_debug(arg: String) -> bool:
 		# nach 1 s, damit die Gäste stehen (tot: Gustav wird geholt)
 		var opts := _arg_parts(arg, "--register")
 		get_tree().create_timer(1.0).timeout.connect(func() -> void: Game.register.debug("tot" in opts, "offen" in opts, "anfang" in opts))
+	elif _is_arg(arg, "--klingel"):
+		var opts := _arg_parts(arg, "--klingel")
+		var bell: DeskBell = Game.social.builder.desk_bell
+		if bell == null:
+			return false
+		bell.debug("nah" in opts, "an" in opts)
 	elif _is_arg(arg, "--zimmer18"):
 		var page := _arg_value(arg, "--zimmer18")
 		get_tree().create_timer(0.5).timeout.connect(func() -> void:   # nach dem Aufbau des Spielers

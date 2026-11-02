@@ -1872,6 +1872,15 @@ Spielkonzept 3.2)
   Die Todeszeit kommt über `Social.on_guest_died` → `on_guest_died` und lebt nur in der Sitzung (`_died_at`); ohne sie
   (nach dem Laden) steht das Kreuz sofort, Gustav immer ab dem 3. Oktober, 6 Uhr – **nichts davon wird gespeichert**.
   `on_pages_read` schreibt Notizen (`register_old`, `register_<Gast>`). Debug `--register[=tot][,offen|anfang]`.
+- **Tischklingel** (`world/desk_bell.gd` `DeskBell`, ZIM-146, Spielkonzept 2.9): `LevelBuilder.desk_bell`, in
+  `_lobby_hall` `BELL_SHIFT` auf der anderen Seite der Rezeptionsmitte (zwischen Kerze und Register), `BELL_OUT` zu den
+  Gästen. Low Poly, ganz im Code gedreht (`_lathe`: Profil (Radius, Höhe) in einer Laufrichtung, Normalen weich unter
+  `CREASE`, UVs in Metern, u ringsum): Fuß im Lack, Glocke als halbes Ellipsoid, innen hohl, mit Lochwand, Stift
+  darunter, Drücker als eigener Knoten. Unterteilungen `SIDES`, `SMALL_SIDES`, `DOME_STEPS`, `ROUND_STEPS`,
+  `KNOB_STEPS` frei änderbar; drei Meshes für alle Klingeln (`_meshes`). Texturen des Mülleimers (`TrashCan.BRASS_TEX`,
+  `COAT_TEX`, `mesh_uv`), die Bürstung ringsum wirkt wie Drehriefen. [E] → Drücker per Tween `PRESS` hinunter, Lärm
+  `desk_bell` (10 m, synthetischer Klang `desk_bell` in `SynthAudio`), ein Gedanke aus `THOUGHTS` nach
+  `THOUGHT_PAUSE` s Spielzeit Ruhe. Nicht im Spielstand. Debug `--klingel[=nah|an]`, Rauchtest-Stichwort `klingel`.
 - **Zimmer 18** (`world/caretaker_book.gd` `CaretakerBook`; Spielkonzept 7.4, HANDLUNG M8): `furnish(builder)` aus
   `main` legt die Kladde, den Schaltschlüssel (`Item.Kind.KEY` „aufzug“ = `KEY_ID`, `Item.key_label` „Schaltschlüssel“,
   Stahl statt Messing) und den UV-Aufsatz auf den ersten Tisch des Zimmers (`room_tables`, entlang

@@ -152,6 +152,7 @@ done <<'LIST'
 900|register,wettbewerb,speichern|--register=tot --kill=doris,weg,hin --savetest --trace
 300|register|--register=tot,offen --trace
 300|register|--register=anfang
+300|klingel|--klingel=an --trace
 600|zimmer18,notizbuch,speichern|--zimmer18=gelesen --show=aufgaben --savetest --trace
 300|zimmer18|--zimmer18=offen
 2400|schnell,monster,gaeste,modi|--warn --day=10 --trace
