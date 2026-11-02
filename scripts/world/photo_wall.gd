@@ -15,7 +15,7 @@ const WALL := {"x": -7.4, "z0": -27.3, "z1": -21.3}
 const YEARS := [1987, 1988, 1990, 1993, 1996, 1999, 2003, 2007, 2011, 2015, 2019, 2023, 2025, 2026]
 const ROWS_Y := [2.02, 1.48]
 const PHOTO := Vector2(0.4, 0.3)
-const FRAME := 0.035
+const FRAME := 0.04               ## Breite der Leiste (= PhotoFrame.PROFILE außen)
 const W := 160
 const H := 120
 ## So viele waren in jenem Oktober verschwunden (verwischt auf dem Bild)
@@ -26,7 +26,7 @@ const TEXTS := {
 	1987: "Halloween 1987. Vorn ein Mädchen mit Zöpfen, vielleicht zwölf, daneben ein großes Mädchen mit Pony und eine junge Frau mit dunklem Haar. Ganz links, halb abgeschnitten, ein Mann im grauen Arbeitskittel, Ruß im Gesicht. Hinten rechts ein alter Herr mit weißem Haar und Gehstock. Drei Gesichter sind verwischt.",
 	1988: "Halloween 1988. Weniger Gäste als im Jahr davor, niemand lächelt. Hinten rechts der alte Herr mit dem Gehstock.",
 	2025: "Halloween 2025, farbig und scharf. Zwei Gesichter sind trotzdem verwischt. Hinten rechts, mit Gehstock und weißem Haar: der alte Herr – genau wie 1987.",
-	2026: "„Halloween 2026“ steht auf dem Messingschild. Der Rahmen ist leer.",
+	2026: "Auf der goldenen Plakette steht schon „2026“. Der Rahmen ist leer.",
 }
 const NOTE_1987 := "Auf dem Gruppenfoto von 1987 in der Lobby: ein Mädchen mit Zöpfen, ein großes Mädchen, eine junge Frau – und ganz links ein Mann im Kittel mit Ruß im Gesicht."
 const NOTE_HEIR := "Auf jedem Gruppenfoto seit 1987 steht hinten rechts derselbe weißhaarige Herr mit Gehstock. Er ist auf keinem älter geworden."
@@ -50,7 +50,9 @@ func _ready() -> void:
 		frame.rotation.z = sin(year * 1.7) * 0.025   # nie ganz gerade
 		add_child(frame)
 		if year != 2026:
-			_pictures[year] = ImageTexture.create_from_image(draw_photo(year))
+			var img := draw_photo(year)
+			img.generate_mipmaps()
+			_pictures[year] = ImageTexture.create_from_image(img)
 		frame.build(_pictures.get(year))
 
 
@@ -230,36 +232,204 @@ static func _put(img: Image, x: int, y: int, color: Color) -> void:
 		img.set_pixel(x, y, color)
 
 
-## Ein Rahmen mit Foto (oder leer) und Messingschild, [E] sieht es aus der Nähe an.
+## Ein Rahmen mit Foto (oder leer), [E] sieht es aus der Nähe an (ZIM-134): profilierte Holzleiste ringsum auf Gehrung
+## (Wulst am Falz, Kehle, flache Bahn, gerundete Außenkante) im Holz der Vertäfelung, die Faser läuft längs jeder
+## Leiste. Hinter Glas mit Staub und Schlieren (cracked: mit Sprung, für das Foto von 2005, ZIM-117), auf der flachen
+## Bahn der unteren Leiste die goldene Plakette mit der Jahreszahl (YearPlaque). Ursprung Mitte Wand, Bild nach +Z.
 class PhotoFrame extends StaticBody3D:
+	## Profil der Leiste von der Bildkante nach außen: (u quer zur Leiste, z aus der Wand) in Metern
+	const PROFILE: Array[Vector2] = [Vector2(0.0, 0.004), Vector2(0.0, 0.011), Vector2(0.0015, 0.0135),
+		Vector2(0.004, 0.0145), Vector2(0.0065, 0.0135), Vector2(0.008, 0.012), Vector2(0.010, 0.0118),
+		Vector2(0.0125, 0.0128), Vector2(0.0148, 0.015), Vector2(0.016, 0.018), Vector2(0.0165, 0.020),
+		Vector2(0.034, 0.020), Vector2(0.0365, 0.0193), Vector2(0.0385, 0.0172), Vector2(0.040, 0.014),
+		Vector2(0.040, 0.0)]
+	## Knicke ab diesem Winkel bleiben hart, flachere werden rund schattiert
+	const CREASE_DEG := 40.0
+	## Plakette: Mitte der flachen Bahn (u), Höhe der Bahn
+	const PLAQUE_U := 0.02525
+	const PLAQUE_Z := 0.020
+	const PLAQUE_RANGE := 12.0
+	## Ebenen hinter dem Falz: Rückwand, Foto, Glas (z)
+	const BACK_Z := 0.001
+	const PHOTO_Z := 0.003
+	const GLASS_Z := 0.0045
+
+	static var _frame_mesh: ArrayMesh
+	static var _glass := {}
+	static var _plaque_mat: ShaderMaterial
+
 	var year := 0
 	var wall: PhotoWall
 
-	func build(picture: Texture2D) -> void:
+	func build(picture: Texture2D, cracked := false) -> void:
 		collision_layer = 4
 		collision_mask = 0
 		set_meta("interactable", self)
-		var wood := Mat.psx(Color(0.22, 0.13, 0.07))
-		var outer := PhotoWall.PHOTO + Vector2.ONE * PhotoWall.FRAME * 2.0
 		var photo := PhotoWall.PHOTO
-		var frame := PhotoWall.FRAME
-		for side in [-1.0, 1.0]:   # Leisten
-			Geo.mesh(self, Geo.box(Vector3(outer.x, frame, 0.025)), wood, Vector3(0, side * (photo.y + frame) / 2.0, 0.012))
-			Geo.mesh(self, Geo.box(Vector3(frame, photo.y, 0.025)), wood, Vector3(side * (photo.x + frame) / 2.0, 0, 0.012))
-		var quad := QuadMesh.new()
-		quad.size = photo
-		var mat: Material
+		var outer := photo + Vector2.ONE * PhotoWall.FRAME * 2.0
+		Geo.mesh(self, frame_mesh(), Mat.hotel_wood(), Vector3.ZERO)
+		var back := StandardMaterial3D.new()
+		back.albedo_color = Color(0.12, 0.1, 0.09)
+		back.roughness = 0.9
+		Geo.mesh(self, _quad(photo + Vector2.ONE * 0.006), back, Vector3(0, 0, BACK_Z))
 		if picture:
-			var m := ShaderMaterial.new()
-			m.shader = load("res://shaders/psx_surface.gdshader")
-			m.set_shader_parameter("albedo", Color(1, 1, 1))
-			m.set_shader_parameter("albedo_tex", picture)
-			mat = m
-		else:
-			mat = Mat.psx(Color(0.12, 0.1, 0.09))   # leerer Rahmen: dunkle Rückwand
-		Geo.mesh(self, quad, mat, Vector3(0, 0, 0.004))
-		Geo.mesh(self, Geo.box(Vector3(0.12, 0.025, 0.004)), Mat.metal(Color(0.8, 0.65, 0.35)), Vector3(0, -outer.y / 2.0 - 0.03, 0.004))
-		Geo.add_box_shape(self, Vector3(outer.x, outer.y + 0.06, 0.04), Vector3(0, -0.02, 0.02))
+			var m := StandardMaterial3D.new()
+			m.albedo_texture = picture
+			m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+			m.roughness = 0.55   # Fotopapier, seidenmatt
+			Geo.mesh(self, _quad(photo + Vector2.ONE * 0.004), m, Vector3(0, 0, PHOTO_Z))
+		var glass := Geo.mesh(self, _quad(photo + Vector2.ONE * 0.006), glass_material(cracked), Vector3(0, 0, GLASS_Z))
+		glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var plaque := Geo.mesh(self, YearPlaque.mesh(str(year)), plaque_material(),
+			Vector3(0, -(photo.y / 2.0 + PLAQUE_U), PLAQUE_Z))
+		plaque.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		plaque.visibility_range_end = PLAQUE_RANGE
+		Geo.add_box_shape(self, Vector3(outer.x, outer.y, 0.022), Vector3(0, 0, 0.011))
+
+	## Die vier Leisten, je Profilpunkt eine Linie von Gehrung zu Gehrung; UVs in Metern (u längs der Leiste, v über das
+	## Profil, je Leiste versetzt), für Mat.hotel_wood (mesh_uv)
+	static func frame_mesh() -> ArrayMesh:
+		if _frame_mesh:
+			return _frame_mesh
+		var h := PhotoWall.PHOTO / 2.0
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		# Leiste: Richtung nach außen, Richtung längs (XY), Versatz der Maserung
+		var rails := [[Vector2(0, 1), Vector2(1, 0), 0.0], [Vector2(0, -1), Vector2(-1, 0), 0.31],
+			[Vector2(1, 0), Vector2(0, -1), 0.67], [Vector2(-1, 0), Vector2(0, 1), 1.13]]
+		var n := PROFILE.size()
+		var seg_n: Array[Vector2] = []
+		var arc: Array[float] = [0.0]
+		for i in n - 1:
+			var d := PROFILE[i + 1] - PROFILE[i]
+			seg_n.append(Vector2(-d.y, d.x).normalized())
+			arc.append(arc[i] + d.length())
+		for rail: Array in rails:
+			var out: Vector2 = rail[0]
+			var along: Vector2 = rail[1]
+			var shift: float = rail[2]
+			var half: float = absf(out.dot(h))         # Abstand der Bildkante von der Mitte quer zur Leiste
+			var half_len: float = absf(along.dot(h))   # halbe Länge der Bildkante
+			for i in n - 1:
+				var verts: Array[Vector3] = []
+				var norms: Array[Vector3] = []
+				var uvs: Array[Vector2] = []
+				for k in 2:
+					var j := i + k
+					var p := PROFILE[j]
+					var pn := seg_n[i]
+					var other := i - 1 if k == 0 else i + 1
+					if other >= 0 and other < seg_n.size() and absf(rad_to_deg(seg_n[i].angle_to(seg_n[other]))) < CREASE_DEG:
+						pn = (seg_n[i] + seg_n[other]).normalized()
+					var nrm := Vector3(out.x * pn.x, out.y * pn.x, pn.y).normalized()
+					for e in [-1.0, 1.0]:   # Gehrung: die Linie reicht bis zur Ecke des Rechtecks mit Abstand u
+						var xy: Vector2 = out * (half + p.x) + along * e * (half_len + p.x)
+						verts.append(Vector3(xy.x, xy.y, p.y))
+						norms.append(nrm)
+						uvs.append(Vector2(e * (half_len + p.x) + shift * 3.0, arc[j] + shift))
+				# verts: i links, i rechts, i+1 links, i+1 rechts
+				var face := (verts[2] - verts[0]).cross(verts[1] - verts[0])
+				var order := [0, 1, 3, 0, 3, 2] if face.dot(norms[0] + norms[2]) >= 0.0 else [0, 3, 1, 0, 2, 3]
+				for q: int in order:
+					st.set_normal(norms[q])
+					st.set_uv(uvs[q])
+					st.add_vertex(verts[q])
+		st.generate_tangents()
+		_frame_mesh = st.commit()
+		return _frame_mesh
+
+	## Glas: fast klar, Staub und Schlieren als Alpha und Rauheit, unten und in den Ecken mehr Staub; cracked mit
+	## Sprung (Einschlag rechts oben, Risse strahlenförmig, zwei Bögen)
+	static func glass_material(cracked: bool) -> StandardMaterial3D:
+		if _glass.has(cracked):
+			return _glass[cracked]
+		var size := 512 if cracked else 256
+		var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+		var rough := Image.create(size, size, false, Image.FORMAT_L8)
+		var wipe := FastNoiseLite.new()
+		wipe.seed = 1987
+		wipe.frequency = 0.02 * 256.0 / size
+		wipe.fractal_octaves = 3
+		var grain := FastNoiseLite.new()
+		grain.seed = 2026
+		grain.frequency = 0.4 * 256.0 / size
+		for y in size:
+			for x in size:
+				var uv := Vector2(x, y) / size
+				var edge := minf(minf(uv.x, 1.0 - uv.x), minf(uv.y, 1.0 - uv.y))
+				var dust := 0.3 * smoothstep(0.08, 0.0, edge) + 0.2 * smoothstep(0.7, 1.0, uv.y)
+				dust += 0.3 * clampf(grain.get_noise_2d(x, y), 0.0, 1.0)
+				# Wischspuren: gestreckt schräg über die Scheibe
+				var smear := clampf(wipe.get_noise_2d(x * 0.35 + y * 0.9, y * 0.35 - x * 0.2) * 0.5 + 0.5, 0.0, 1.0)
+				smear = smoothstep(0.55, 0.85, smear)
+				img.set_pixel(x, y, Color(0.82, 0.8, 0.76, clampf(0.01 + 0.06 * dust + 0.015 * smear, 0.0, 1.0)))
+				var r := 0.04 + 0.3 * smear + 0.35 * dust
+				rough.set_pixel(x, y, Color(r, r, r))
+		if cracked:
+			_draw_cracks(img, rough, size)
+		img.generate_mipmaps()
+		rough.generate_mipmaps()
+		var m := StandardMaterial3D.new()
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.albedo_texture = ImageTexture.create_from_image(img)
+		m.roughness_texture = ImageTexture.create_from_image(rough)
+		m.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+		m.roughness = 1.0
+		m.metallic_specular = 0.6
+		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+		_glass[cracked] = m
+		return m
+
+	static func _draw_cracks(img: Image, rough: Image, size: int) -> void:
+		var rng := RandomNumberGenerator.new()
+		rng.seed = 2005
+		var hit := Vector2(0.72, 0.3) * size
+		for k in 9:
+			var dir := Vector2.RIGHT.rotated(TAU * (k + rng.randf_range(-0.3, 0.3)) / 9.0)
+			var p := hit
+			var length := rng.randf_range(0.25, 0.8) * size
+			var walked := 0.0
+			while walked < length:
+				dir = dir.rotated(rng.randf_range(-0.25, 0.25))
+				var step := rng.randf_range(4.0, 10.0)
+				_crack_line(img, rough, p, p + dir * step, 1.0 - walked / length)
+				p += dir * step
+				walked += step
+		for ring in [0.06, 0.13]:   # Bögen um den Einschlag
+			var r: float = ring * size
+			var a0 := rng.randf_range(0.0, TAU)
+			var a1 := a0 + rng.randf_range(2.0, 4.5)
+			var a := a0
+			while a < a1:
+				var b := a + 0.12
+				_crack_line(img, rough, hit + Vector2.RIGHT.rotated(a) * r,
+					hit + Vector2.RIGHT.rotated(b) * r * rng.randf_range(0.95, 1.05), 0.8)
+				a = b
+
+	## Riss von a nach b (Pixel), Stärke 0 … 1: heller Strich, dort rau
+	static func _crack_line(img: Image, rough: Image, a: Vector2, b: Vector2, strength: float) -> void:
+		var steps := ceili(a.distance_to(b) * 2.0)
+		for s in steps + 1:
+			var p := a.lerp(b, float(s) / maxf(steps, 1))
+			var x := int(p.x)
+			var y := int(p.y)
+			if x < 0 or y < 0 or x >= img.get_width() or y >= img.get_height():
+				continue
+			img.set_pixel(x, y, Color(0.92, 0.92, 0.9, maxf(img.get_pixel(x, y).a, 0.25 + 0.45 * strength)))
+			rough.set_pixel(x, y, Color(0.6, 0.6, 0.6))
+
+	## Gold aller Plaketten (Spielkonzept 9.2): Satz aus tools/year_plaque.gd über die UVs gespannt
+	static func plaque_material() -> ShaderMaterial:
+		if _plaque_mat == null:
+			_plaque_mat = Mat.photo(YearPlaque.ALBEDO, 1.0, YearPlaque.NORMAL, YearPlaque.ROUGH, 0.5, Color(1, 1, 1),
+				false, true).duplicate()
+			_plaque_mat.set_shader_parameter("metallic", YearPlaque.METALLIC)
+		return _plaque_mat
+
+	static func _quad(size: Vector2) -> QuadMesh:
+		var q := QuadMesh.new()
+		q.size = size
+		return q
 
 	func get_prompt(_player: Player) -> String:
 		return "Foto ansehen [E] – Halloween %d" % year

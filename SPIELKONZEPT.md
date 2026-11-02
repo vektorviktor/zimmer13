@@ -3451,6 +3451,9 @@ Holzrahmen nebeneinander – alte vergilbt, neue farbig; daneben ein leerer Rahm
 - Auf 1987 außerdem Marion als Mädchen mit Zöpfen, Josef im Hausmeisterkittel, Edna jung und Liesel – die Indiz-Stufe für
   Marion, Edna und Liesel (2.3, 2.7).
 - Ort: Ausstattung „Fotowand“ im Plan, bis dahin Westwand der Lobby. Debug: `--fotos`.
+- **Rahmen (gebaut 2026-11-02, ZIM-134):** Fotos 40 × 30 cm in profilierter Holzleiste (Holz der Vertäfelung) hinter
+  Glas mit Staub und Schlieren; auf der unteren Leiste eine goldene Plakette mit eingraviertem Jahr, das Messingschild
+  unter dem Bild entfällt. Für das Foto von 2005 (2.10) gibt es das Glas mit Sprung.
 
 ### 5.15 Friedhof und Grablichter (entschieden und umgesetzt 2026-10-25)
 > **Umgesetzt (2026-10-25)** wie unten (Cemetery), mit diesen Abweichungen: Die Trauernden stehen zu beiden Seiten des
