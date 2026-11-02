@@ -411,7 +411,10 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
 ### Räume & IDs
 - **Raum-ID** = Zimmernummer (dreistellig: `"013"`, `"113"`) oder Bereichs-ID (`"lobby"`, `"treppenhaus"`,
   `"keller"` (Heizkeller), `"og1_flure"`, `"ug_cellar_1"` …). Lampen und Schalter gehören über `room_id` zu einem Raum;
-  `LightSwitch.find(tree, room_id)` schaltet alle Lampen des Raums. Mehrere Schalter in einem Raum sind eine
+  `LightSwitch.find(tree, room_id)` schaltet alle Lampen des Raums. Ein Bad hat seine eigene Raum-ID (`bath_7`,
+  `og1_bath_5`) und eigene Schalter (ZIM-149); `LevelBuilder.home_of(id)` bzw. `Lamp.home_id()` führen es auf das
+  Zimmer davor zurück (Besitz, Birnenklau, Ersatzbirnen). Fehlt im Plan ein Schalter, setzt `_auto_switches` ihn
+  innen neben die Zimmer- bzw. Badtür (`_door_switch`, Griffseite); Badschalter starten aus. Mehrere Schalter in einem Raum sind eine
   Wechselschaltung: `set_on` stellt alle mit derselben `room_id` um (Lärm und `on_lights_off` nur vom betätigten),
   `find()` darf also irgendeinen liefern.
 - **Zonen** (`LevelBuilder.zones`, Kreise mit `name`, `center`, `radius`) sind etwas anderes: Sie tragen nur den
@@ -1176,15 +1179,16 @@ den Skripten. Hier der Aufbau.
   `SPACE_CHECK` s beiseite, wenn ihm einer näher als `PERSONAL_SPACE` steht. Debug `--gedraenge` zählt das alle 10 s.
 - Gäste melden sich mit `Game.social.on_*` (Diebstahl, fehlende Deko/Birne, Monster gesehen …).
 - **Lichtschalter** (Spielkonzept 7.3): `_track_light_room` schaut alle `LIGHT_CHECK` s nach dem Raum unter ihm
-  (`LevelBuilder.light_room_at` – Schalter-ID, Bad gehört zum Zimmer). Beim Wechsel: verlässt er als Letzter ein
-  Hotelzimmer (nicht 13; auch der Spieler zählt, nur nicht im Versteck – Schreckmoment: Licht aus, während man im
+  (`LevelBuilder.light_room_at` – Schalter-ID, das Bad hat eine eigene). Beim Wechsel: verlässt er als Letzter ein
+  Hotelzimmer oder dessen Bad (nicht 13; auch der Spieler zählt, nur nicht im Versteck – Schreckmoment: Licht aus, während man im
   Schrank oder unterm Bett sitzt), geht er zurück und macht aus – außer er vergisst es
   (`_forget_light`, fest je Gast aus der ID, betrunken öfter, ab Angst 60 immer); betritt er einen dunklen Raum, macht er
   an (Chance nach `brave` und Angst), nicht wenn dort jemand schläft oder ruht bzw. im Hotelzimmer schon jemand im
   Dunkeln sitzt. Brennt keine Lampe des Raums (Birne fehlt/kaputt), beschwert er sich (`_complain_dark`). Der Gang
   (`_switch`, `_switch_step`) ist kein eigener Zustand: Er läuft nur in `SWITCH_STATES` und ohne Rennen, danach geht der
   alte Zustand mit seinem Ziel weiter; was dazwischenkommt, bricht ihn ab. Höchstens `SWITCH_REACH` m weit, aufgeben
-  nach `SWITCH_GIVE_UP` s. Schlafen, Ausruhen, Aufwachen im eigenen Zimmer schalten weiter direkt (`_set_room_light`).
+  nach `SWITCH_GIVE_UP` s. Schlafen, Ausruhen, Aufwachen im eigenen Zimmer schalten weiter direkt (`_set_room_light`, beim Ausschalten
+  auch das Bad).
   Nichts davon wird gespeichert (`"?"` = nach Laden/Erscheinen erst merken, nicht schalten). Debug `--lichtgang=id`
   (`,versteckt`: du sitzt in seinem Schrank).
 - **Ersatzbirne** (Spielkonzept 7.3): Brennt daheim keine Lampe (`home_dark`, Wackelkontakt zählt als Licht) und hat der

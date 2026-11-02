@@ -1723,8 +1723,14 @@ func _at_home() -> void:
 				return
 
 
+## Lampen des eigenen Zimmers samt Bad (das schaltet für sich, gehört aber dazu – ZIM-149).
 func _home_lamps() -> Array[Lamp]:
-	return _room_lamps(home["no"])
+	var result: Array[Lamp] = []
+	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
+		var lamp := node as Lamp
+		if lamp.home_id() == home["no"]:
+			result.append(lamp)
+	return result
 
 
 func _room_lamps(room: String) -> Array[Lamp]:
@@ -1749,9 +1755,13 @@ func _home_curtains() -> Array[HotelWindow]:
 func _set_room_light(on: bool) -> void:
 	if not on and _housemate_awake():   # wer schlafen geht, lässt den Wachen das Licht (6.20)
 		return
-	var sw := LightSwitch.find(get_tree(), home["no"])
-	if sw:
-		sw.set_on(on)
+	var builder := Game.social.builder
+	for node in get_tree().get_nodes_in_group("light_switches"):
+		var sw := node as LightSwitch
+		if sw.room_id == home["no"]:
+			sw.set_on(on)
+		elif not on and builder.home_of(sw.room_id) == home["no"]:
+			sw.set_on(false)   # wer schlafen geht, macht auch im Bad das Licht aus (ZIM-149)
 
 
 func _check_lights() -> void:
@@ -1805,9 +1815,10 @@ func _track_light_room(delta: float) -> void:
 		_enter_light(now)
 
 
-## Als Letzter aus einem Hotelzimmer (mit Bad): Licht aus – außer er vergisst es. Zimmer 13 gehört dem Spieler.
+## Als Letzter aus einem Hotelzimmer oder seinem Bad: Licht aus – außer er vergisst es. Zimmer 13 gehört dem Spieler.
 func _leave_light(room: String) -> bool:
-	if not Game.social.builder.rooms.has(room) or room == LevelBuilder.PLAYER_ROOM:
+	var no := Game.social.builder.home_of(room)
+	if not Game.social.builder.rooms.has(no) or no == LevelBuilder.PLAYER_ROOM:
 		return false
 	var sw := _nearest_switch(room)
 	if sw == null or not sw.on or fear >= 60.0 or randf() < _forget_light():
@@ -1827,7 +1838,7 @@ func _enter_light(room: String) -> bool:
 	if sw == null:
 		return false
 	if not lamps.any(func(l: Lamp) -> bool: return l.has_bulb and not l.bulb_broken):
-		if room != home["no"]:   # im eigenen Zimmer kümmert sich _check_lights darum
+		if Game.social.builder.home_of(room) != home["no"]:   # im eigenen Zimmer kümmert sich _check_lights darum
 			_complain_dark(lamps)
 		return false
 	if sw.on or _others_in_light_room(room, true):
@@ -1846,7 +1857,7 @@ func _others_in_light_room(room: String, entering: bool) -> bool:
 	var p := Game.player
 	if not entering and p and not p.dead and p.hiding == null and builder.light_room_at(p.global_position) == room:
 		return true
-	var hotel_room := builder.rooms.has(room)
+	var hotel_room := builder.rooms.has(builder.home_of(room))   # samt Bad
 	for guest in Game.social.guests:
 		var g: Guest = guest
 		if g == self or g.dead or builder.light_room_at(g.global_position) != room:
@@ -2011,9 +2022,9 @@ func _bulb_for_home(hostile: bool) -> Lamp:
 		var lamp := node as Lamp
 		if not lamp.has_bulb or lamp.bulb_broken or not lamp.has_socket() or lamp.room_id in ["lobby", "aufzug"]:
 			continue
-		if occupied.has(lamp.room_id) or Game.social.behind_lock(lamp.room_id, self):
+		if occupied.has(lamp.room_id) or occupied.has(lamp.home_id()) or Game.social.behind_lock(lamp.home_id(), self):
 			continue
-		if lamp.room_id == LevelBuilder.PLAYER_ROOM and not hostile:
+		if lamp.home_id() == LevelBuilder.PLAYER_ROOM and not hostile:
 			continue
 		if Game.player and Game.player.global_position.distance_to(lamp.global_position) < 8.0:
 			continue
@@ -2128,13 +2139,13 @@ func _bulb_to_steal(hostile: bool) -> Lamp:
 	var best_dist := INF
 	for node in get_tree().get_nodes_in_group("lamp_fixtures"):
 		var lamp := node as Lamp
-		if not lamp.has_bulb or lamp.bulb_broken or lamp.room_id == home["no"] or not lamp.has_socket():
+		if not lamp.has_bulb or lamp.bulb_broken or lamp.home_id() == home["no"] or not lamp.has_socket():
 			continue
-		if Game.social.behind_lock(lamp.room_id, self):
+		if Game.social.behind_lock(lamp.home_id(), self):
 			continue   # fremdes Zimmer, abgeschlossen (6.19)
 		if lamp.room_id in ["lobby", "aufzug"]:
 			continue   # Lobbydecke – zu hoch; Aufzugskabine – Gäste fahren (noch) nicht mit (7.4)
-		if hostile and lamp.room_id != LevelBuilder.PLAYER_ROOM:
+		if hostile and lamp.home_id() != LevelBuilder.PLAYER_ROOM:
 			continue
 		if Game.player and Game.player.global_position.distance_to(lamp.global_position) < 8.0:
 			continue
@@ -2160,7 +2171,7 @@ func _finish_steal() -> void:
 		if not is_instance_valid(lamp) or not lamp.has_bulb or held:
 			_set_idle(randf_range(3.0, 6.0))
 			return
-		var victim := lamp.room_id
+		var victim := lamp.home_id()
 		var bulb := lamp.take_bulb()
 		_take_into_hand(bulb)
 		Game.social.on_guest_stole_bulb(self, lamp, victim)

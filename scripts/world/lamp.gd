@@ -404,11 +404,12 @@ func insert_bulb(item: Item) -> void:
 func owner_guest() -> Guest:
 	if Game.social == null:
 		return null
-	var lead := Game.social.household_lead(room_id)
+	var home := home_id()
+	var lead := Game.social.household_lead(home)
 	if lead:
 		return lead
 	for guest in Game.social.guests:
-		if guest.home["no"] == room_id and not guest.dead:
+		if guest.home["no"] == home and not guest.dead:
 			return guest
 	return null
 
@@ -435,6 +436,11 @@ func interact(player: Player) -> void:
 		var item := take_bulb()
 		if guest:
 			item.owner_id = guest.id
+## Das Zimmer, zu dem die Lampe gehört: eine Badlampe zum Zimmer vor dem Bad (ZIM-149), sonst ihr Raum.
+func home_id() -> String:
+	return Game.social.builder.home_of(room_id) if Game.social and Game.social.builder else room_id
+
+
 		player.receive_item(item)
 		if is_lit_room_dark():
 			Game.say("Hier ist es jetzt dunkel …", 2.0)
