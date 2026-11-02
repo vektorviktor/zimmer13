@@ -77,6 +77,44 @@ def _check(entries, path):
 			seen_hex[hx], seen_name[name] = name, hx
 
 
+## Größenangaben, die sizes() erkennt (ZIM-141) – nur Pixelangaben, Meter („2 × 1 m“) beschreiben das Modell
+SIZE = re.compile(r"(\d+)\s*×\s*(\d+)\s*(?:px\b|-Punkt)")
+DEPTH = re.compile(r"(\d+)\s*px\s+tief\b")
+PIXELS = re.compile(r"^(\d+)\s*px\b")
+LINE_WIDTH = re.compile(r"Linien\b[^.|]*?(\d+)\s*px\b")
+
+
+def sizes(path=DEFAULT):
+	"""Größenregeln aus der Legende, für build_map.py (ZIM-141): {Name: Regel}. Gelesen werden nur Pixelangaben im
+	Hinweis eines Eintrags oder im Satz unter der Überschrift (gilt dann für jeden Eintrag der Gruppe ohne eigene):
+	„a × b px“ / „a×b-Punkt“ → ("size", a, b) Rechteck in beliebiger Lage · „d px tief“ → ("depth", d) kurze Seite
+	(Länge frei) · Hinweis beginnt mit „n px“ → ("pixels", n) · „Linien …, n px“ → ("width", n) Strichbreite.
+	Einträge ohne Angabe fehlen – für sie gibt es keine Regel."""
+	intro = {}   # Gruppe → Satz unter der Überschrift
+	group = None
+	for line in open(path, encoding="utf-8"):
+		if line.startswith("#"):
+			group = GROUPS.get(line.lstrip("#").strip(), (None,))[0]
+		elif group and line.strip() and not line.lstrip().startswith("|"):
+			intro[group] = intro.get(group, "") + " " + line.strip()
+		elif line.lstrip().startswith("|"):
+			group = None   # nur der Text vor der Tabelle
+
+	def rule(text, start=False):
+		for regex, kind in ((SIZE, "size"), (DEPTH, "depth"), (LINE_WIDTH, "width")) + ((PIXELS, "pixels"),) * start:
+			hit = regex.search(text)
+			if hit:
+				return (kind,) + tuple(int(g) for g in hit.groups())
+		return None
+
+	out = {}
+	for e in read(path):
+		r = rule(e["note"], True) or rule(intro.get(e["group"], ""))
+		if r:
+			out[e["name"]] = r
+	return out
+
+
 def pairs(path=DEFAULT):
 	"""[(Name, Hex)] wie die GIMP-Palette: jede Farbe, Vorderseiten direkt nach ihrem Möbel."""
 	out = []

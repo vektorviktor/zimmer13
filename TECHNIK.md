@@ -915,6 +915,13 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
   Kopie – build_map muss dieselben Karten ergeben, sonst Abbruch) und schreibt `PLANFARBEN.md` um. Ältere Pläne (`map.aseprite`) lesen weiter `<plan>.gpl`. Farben ohne
   Legendeneintrag meldet `build_map.py` mit Pixelposition, Legendenfarben in der falschen Ebene ebenfalls. Slices liest
   es nach Namen sortiert (Aseprite ändert ihre Reihenfolge beim Speichern – sonst wechselte der Fingerabdruck der Welt).
+  **Größenregeln** (ZIM-141): `plan_legend.sizes()` liest nur Pixelangaben aus der Legende – im Hinweis eines Eintrags
+  („21 × 11 px“, „4 px tief“, Türanschlag „1 px“) oder im Satz unter der Überschrift für die ganze Gruppe („3×3-Punkt“,
+  Wände „Linien …, 2 px“); Meterangaben beschreiben das Modell und zählen nicht. `build_map.py` prüft dagegen:
+  `check_size` je Objekt (Lage egal, Möbel ± 1 px, Punkte und Striche genau; Punkte auch auf volles Rechteck),
+  `check_wall_width` die Wandnetze samt Öffnungen (ein Quadrat Wandbreite + 1 ganz in der Wand = zu dick, ein Pixel in
+  keinem Quadrat der Wandbreite = zu dünn), die Türanschläge auf ihre Pixelzahl. Nur Warnungen, je Stockwerk, Ebene,
+  Farbe und gemalter Größe eine Zeile mit allen Pixelpositionen (`report_sizes`); die Karten bleiben gleich.
 - **Grundriss:** 1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie (**Türanschlag**: ein Pixel
   `Türanschlag` statt eines Türpixels an einem Ende, in der Wandhälfte, in die die Tür aufgeht; falsch gesetzt bricht
   das Skript mit Position ab), Flächen als Füllfarben, `Luftraum` = hier kein Boden (darunter `open_above`). Schrift in

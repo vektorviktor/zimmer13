@@ -35,6 +35,9 @@
 #     „Lichter“ (je ein 3×3-Punkt, Wandsachen innen an der Wand; Halogenleuchten als Strich in ihrer Länge, 8×2 px),
 #     dazu „Teppiche“ (Rechtecke; eigene Ebene, damit sie unter Möbeln liegen können – ein Läufer läuft entlang
 #     der langen Seite). Sie zählen nicht zum Grundriss.
+#   - Größenregeln (ZIM-141): Wo PLANFARBEN.md eine Größe in Pixeln nennt (Wandbreite 2 px, 3×3-Punkte, „21 × 11 px“,
+#     „4 px tief“, Türanschlag 1 px), prüft das Skript die gemalten Flächen dagegen und warnt mit Stockwerk, Ebene,
+#     Farbe und Pixelposition – es bricht nie ab. Möbel dürfen 1 px (10 cm) abweichen, Punkte und Striche nicht.
 #   - Bäume (Fläche „Baum“) markieren nur den Standort, die Größe kommt aus dem Modell.
 #   - Slices (Aseprite-Werkzeug „Slice“) tragen Namen: „Raum: Küche“, „Bereich: Lobby“, „Treppe: Lobby“
 #     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite). Sie gelten im Stockwerk,
@@ -303,6 +306,11 @@ else:
 		PALETTE = read_legend(LEGEND)
 assert any(n for n, _ in PALETTE), "Keine Farbnamen – Legende %s fehlt (siehe Kopf dieses Skripts)" % LEGEND
 BY_NAME = {n: c for n, c in PALETTE if n}
+NAME_OF = {c: n for n, c in BY_NAME.items()}
+## Größenregeln der Legende (ZIM-141, plan_legend.sizes); ältere Pläne mit .gpl haben keine
+SIZES = plan_legend.sizes(LEGEND) if LEGEND.endswith(".md") else {}
+SIZE_TOLERANCE = {"furniture": 1}   ## Möbel dürfen 1 px (10 cm) abweichen, Punkte und Striche nicht
+SIZE_WARNINGS = {}   # (Stockwerk, Ebene, Farbe, gemalt, Regel) → [(x, y)], ausgegeben von report_sizes()
 WALL = BY_NAME[WALL_NAME]
 GLASS = BY_NAME.get(GLASS_NAME, "-")
 FILL_OF = {BY_NAME[n]: k for n, k in FILLS.items() if n in BY_NAME}          # Farbe → (Art, draußen)
@@ -501,6 +509,12 @@ def build_floor(floor, COL, open_above, eg=None):
 		return sorted(out, key=lambda r: (r[1], r[0]))
 
 	# Türanschläge merken; das Pixel zählt danach als Teil seiner Tür
+	if SIZES.get(HINGE_NAME, ("",))[0] == "pixels":   # laut PLANFARBEN 1 px (ZIM-141)
+		for comp in components(lambda c: c == HINGE):
+			if len(comp) != SIZES[HINGE_NAME][1]:
+				x0, y0, _, _ = bbox(comp)
+				print("  Warnung: %s/Grundriss – „%s“ (#%s) bei Pixel %d,%d hat %d Pixel, laut PLANFARBEN %d"
+					% (floor, HINGE_NAME, HINGE, x0, y0, len(comp), SIZES[HINGE_NAME][1]))
 	hinges = {}
 	for i, c in enumerate(COL):
 		if c == HINGE:
@@ -556,6 +570,7 @@ def build_floor(floor, COL, open_above, eg=None):
 				WALLMASK[j] = 1
 	if not any(WALLMASK):
 		return None
+	check_wall_width(floor, WALLMASK)
 
 	def bands(mask, horizontal):
 		"""Wandbänder: Läufe ≥ MIN_WALL_RUN in Zeilen (waagerecht) bzw. Spalten, benachbarte zusammengefasst."""
@@ -1230,11 +1245,15 @@ def read_objects(floor, COL):
 					facing = min(d, key=d.get)
 					if fc != front:
 						side_key = own_fronts[fc][1]
+				check_size(floor, layer, c, x0, y0, x1, y1, SIZE_TOLERANCE.get(key, 0))
 				entry = {"kind": by_color[c], "rect": m(x0, y0) + m(x1, y1)}
 				if facing:
 					entry[side_key] = facing
 				out[key].append(entry)
 				continue
+			if check_size(floor, layer, c, x0, y0, x1, y1) and len(pts) != (x1 - x0) * (y1 - y0):
+				print("  Warnung: %s/%s – „%s“ (#%s) bei Pixel %d,%d ist kein volles Rechteck (%d von %d Pixeln)"
+					% (floor, layer, NAME_OF[c], c, x0, y0, len(pts), (x1 - x0) * (y1 - y0)))
 			cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
 			entry = {"kind": by_color[c], "pos": m(cx, cy)}
 			if key == "lights":
@@ -1263,9 +1282,79 @@ def read_objects(floor, COL):
 			if best:
 				entry["wall"] = best[2]
 			out[key].append(entry)
+	report_sizes()
 	for key in out:
 		out[key].sort(key=lambda e: (e["kind"], e.get("pos", e.get("rect"))[1], e.get("pos", e.get("rect"))[0]))
 	return out
+
+
+def check_size(floor, layer, c, x0, y0, x1, y1, tol=0):
+	"""Größenregel aus PLANFARBEN (ZIM-141) für ein Objekt der Farbe c mit Rechteck x0..x1, y0..y1 (Pixel): warnt bei
+	Abweichung über tol Pixel, Lage egal. True, wenn es eine Regel gibt und sie eingehalten ist."""
+	rule = SIZES.get(NAME_OF.get(c))
+	if not rule or rule[0] not in ("size", "depth"):
+		return False
+	w, h = x1 - x0, y1 - y0
+	if rule[0] == "size":
+		a, b = rule[1:]
+		if any(abs(w - p) <= tol and abs(h - q) <= tol for p, q in ((a, b), (b, a))):
+			return True
+		want = "%d × %d px" % (a, b)
+	else:
+		if abs(min(w, h) - rule[1]) <= tol:
+			return True
+		want = "%d px tief" % rule[1]
+	SIZE_WARNINGS.setdefault((floor, layer, c, "%d × %d px" % (w, h), want + (" (± %d)" % tol if tol else "")),
+		[]).append((x0, y0))
+	return False
+
+
+def report_sizes():
+	"""Gesammelte Verstöße gegen die Größenregeln: eine Zeile je Stockwerk, Ebene, Farbe und gemalter Größe, mit
+	allen Pixelpositionen (linke obere Ecke)."""
+	for (floor, layer, c, got, want), at in SIZE_WARNINGS.items():
+		print("  Warnung: %s/%s – „%s“ (#%s) ist %s statt %s laut PLANFARBEN, %d×: Pixel %s"
+			% (floor, layer, NAME_OF[c], c, got, want, len(at), "; ".join("%d,%d" % p for p in at)))
+	SIZE_WARNINGS.clear()
+
+
+def check_wall_width(floor, mask):
+	"""Wandbreite aus PLANFARBEN (2 px, ZIM-141): warnt bei Stellen, an denen ein Quadrat von Wandbreite + 1 ganz in
+	der Wand liegt (zu dick), und bei Wandpixeln, die in keinem Quadrat der Wandbreite liegen (zu dünn). mask = die
+	Wandnetze mit Öffnungen."""
+	rule = SIZES.get(WALL_NAME)
+	if not rule or rule[0] != "width":
+		return
+	n = rule[1]
+
+	def square(x, y, s):
+		return [(y + dy) * W + x + dx for dy in range(s) for dx in range(s)] if x + s <= W and y + s <= H else []
+
+	thick, covered = set(), bytearray(W * H)
+	for i, v in enumerate(mask):
+		if not v:
+			continue
+		sq = square(i % W, i // W, n)
+		if sq and all(mask[j] for j in sq):
+			for j in sq:
+				covered[j] = 1
+			big = square(i % W, i // W, n + 1)
+			if big and all(mask[j] for j in big):
+				thick.update(big)
+	thin = {i for i, v in enumerate(mask) if v and not covered[i]}
+	for what, pts in (("dicker", thick), ("dünner", thin)):
+		while pts:
+			q, group = deque([pts.pop()]), []
+			while q:
+				j = q.popleft()
+				group.append(j)
+				for k in (j + 1, j - 1, j + W, j - W, j + W + 1, j + W - 1, j - W + 1, j - W - 1):
+					if k in pts and abs(k % W - j % W) <= 1:
+						pts.discard(k)
+						q.append(k)
+			x0, y0 = min(j % W for j in group), min(j // W for j in group)
+			print("  Warnung: %s/Grundriss – Wand bei Pixel %d,%d ist %s als %d px (%d Pixel betroffen)"
+				% (floor, x0, y0, what, n, len(group)))
 
 
 def voids_of(COL):

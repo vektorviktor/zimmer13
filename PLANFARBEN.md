@@ -25,6 +25,9 @@ Legende.** Beide lesen und schreiben hier. Aus ihr entstehen automatisch:
   Spalte „Vorderseite“ (beim Doppelbett das Kopfende) – oder, für jedes Möbel, ein Strich `Vorderseite`.
 - **Ausstattung, Gegenstände, Lichter** sind 3×3-Punkte. Wandsachen liegen innen an der Wand (daraus die Wandseite).
   Gleichfarbige Punkte dürfen sich nicht berühren. Ausnahme: Halogenleuchten sind Striche in ihrer Länge (8×2 px).
+- **Größen prüft `build_map.py`** (ZIM-141): Wo diese Legende eine Größe in Pixeln nennt – Wandbreite, 3×3-Punkte,
+  „21 × 11 px“, „4 px tief“, Türanschlag 1 px –, warnt es bei Abweichung mit Stockwerk, Ebene, Farbe und Pixelposition
+  (Möbel dürfen 1 px abweichen). Es bricht nicht ab. Angaben in Metern werden nicht geprüft.
 - **Slices** (Aseprite-Werkzeug): `Raum: <Name>`, `Bereich: <Name>`, `Treppe: <Name>` (Pivot oben), `Treppenhaus: <Name>`,
   `Objekt: <Name>` (Pivot an der Vorderseite). Ein `Raum`-Slice benennt die ganze zusammenhängende Fläche gleicher
   Farbe, auf der er liegt – **je Fläche nur ein Raum-Slice** (fällt eine Wand weg, verschmelzen zwei Räume; der
