@@ -138,6 +138,8 @@ extends Node3D
 ##   --stuhl[=hinten|seite|nah]  in den Speisesaal (EG, ZIM-156) schräg vor den ersten Stuhl – steht keiner im Plan,
 ##                               kommen zwei an die mittlere Tafel und einer frei davor; hinten: von hinten (Wölbung der
 ##                               Lehne), seite: im Profil (Bogen der Pfosten), nah: aufs Kissen
+##   --tafel[=nah|ende]          in den Speisesaal (EG, ZIM-157) schräg vor eine Ecke der ersten Tafel – steht keine im
+##                               Plan, kommt eine zum Ansehen in die Mitte; nah: vor das Eckbein, ende: aufs Ende des Läufers
 ##   --load-slot=n               Spielstand n laden, auch mitten im Spiel (Konsole: load n; save n = --diary=n)
 ##   --console[=befehl;befehl]   Debug-Konsole nach 1 s öffnen und Befehle eintippen (für Screenshots)
 ##   --monster=x,y,z             Monster sofort an dieser Stelle zeigen
@@ -1137,6 +1139,40 @@ func run_debug(arg: String) -> bool:
 		var at := chair.global_transform * local
 		TeleportUI.place_player(at, aim - at)
 		Game.player.head.rotation.x = deg_to_rad(-40.0 if opts.has("nah") else -28.0)
+	elif _is_arg(arg, "--tafel"):
+		var builder := Game.social.builder
+		if not builder._named.has("speisesaal"):
+			return false
+		var hall: Rect2 = builder._named["speisesaal"]
+		var table: DiningTable = null
+		for node in get_tree().get_nodes_in_group("dining_tables"):
+			var t := node as DiningTable
+			if hall.has_point(Vector2(t.global_position.x, t.global_position.z)):
+				table = t
+				break
+		if table == null:   # zum Ansehen in die Mitte des Saals
+			table = DiningTable.make(Vector2(3.0, 1.1))
+			table.position = Vector3(hall.get_center().x, 0, hall.get_center().y)
+			add_child(table)
+		var opts := _arg_parts(arg, "--tafel")
+		# schräg auf eine Ecke; nah: vor das Eckbein (Furchen, Mulden der Zarge); ende: auf das herabhängende Ende des Läufers
+		var ex := table.size.x / 2.0
+		var ez := table.size.y / 2.0
+		var local := Vector3(ex + 1.1, 0, ez + 1.5)
+		var aim := Vector3(ex - 0.3, 0.55, ez - 0.2)
+		var pitch := -22.0
+		if opts.has("nah"):
+			local = Vector3(ex + 0.45, 0, ez + 0.75)
+			aim = Vector3(ex - 0.1, 0.55, ez - 0.1)
+			pitch = -30.0
+		elif opts.has("ende"):
+			local = Vector3(ex + 1.2, 0, 0.5)
+			aim = Vector3(ex, 0.7, 0)
+			pitch = -18.0
+		var at := table.global_transform * local
+		var look := table.global_transform * aim
+		TeleportUI.place_player(at, look - at)
+		Game.player.head.rotation.x = deg_to_rad(pitch)
 	elif _is_arg(arg, "--dachboden"):
 		var builder := Game.social.builder
 		var where := _arg_value(arg, "--dachboden")

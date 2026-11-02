@@ -5354,6 +5354,17 @@ Dachform (4.21).
 - Planfarbe „Möbel: Stuhl“ (bisher ein Kasten mit Brett), überall gleich; ein Sitzplatz wie bisher. Die Stühle an
   den Tafeln malt der Nutzer in den Plan. Die Stühle der Tischgruppen in den Zimmern bleiben, wie sie sind.
 
+### 7.15 Tafeln im Speisesaal (entschieden und umgesetzt 2026-11-02, ZIM-157)
+
+- **Nach Skizze des Nutzers, passend zu den Bücherregalen (7.7):** im Holz der Kommoden. Beine 15 × 15 cm mit je drei
+  senkrechten Furchen auf jeder Seite, Zargen (die waagerechten Balken unter der Platte) 1 cm hinter der Außenfläche
+  der Beine, darin stehende Mulden wie im Fries der Regale. Die Platte steht ringsum 4 cm über die Beine, oben leicht
+  gerundet, Tischhöhe 85 cm.
+- **So groß wie im Plan** (Planfarbe „Möbel: Tafel“), Länge entlang der langen Seite. Lange Tafeln bekommen an beiden
+  Längsseiten Zwischenbeine, höchstens 2,4 m von Bein zu Bein (Vorschlag, die 9-m-Tafeln haben so je fünf Beine).
+- **Läufer** aus rotem Damast (Muster aus der Vorlage des Nutzers) entlang der Länge, 40 cm breit, hängt an beiden
+  Enden 30 cm herab. Muster und Grund unterscheiden sich in der Bindung: das Muster glänzt etwas.
+
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9

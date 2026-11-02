@@ -135,6 +135,7 @@ done <<'LIST'
 400|regale|--regale --trace
 400|stuhl|--stuhl --trace
 400|stuhl,spieler|--stuhl --sitzen=stuhl --trace
+400|tafel|--tafel --trace
 1100|speichern,autosave,schlaf|--day=3 --uhr=1:10 --hoerer --sleep=bett,8 --trace
 400|speichern,autosave|--unterbrechen=laden --trace
 600|speichern,autosave,tod|--kill=emilhartung,weg,blut --fortschritt --trace

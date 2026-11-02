@@ -365,7 +365,7 @@ const CONTENT := {
 }
 ## Möbel ohne eigenes Bauteil (Kästen in der Grundfläche aus dem Plan): Art → Höhe
 const BOX_HEIGHTS := {
-	"table": 0.75, "coffee_table": 0.4, "dining_table": 0.78, "bench": 0.45, "bar_counter": 1.1, "shelf": 2.0,
+	"table": 0.75, "coffee_table": 0.4, "dining_table": 0.85, "bench": 0.45, "bar_counter": 1.1, "shelf": 2.0,
 	"kitchen_counter": 0.9, "stove": 0.95, "washbasin": 0.85, "washing_machine": 0.85, "laundry_box": 0.5,
 	# Plan map_a (PLANFARBEN.md), Platzhalter bis zu den Modellen
 	"bathtub": 0.6, "sink": 0.85, "shower": 0.06, "toilet": 0.42, "room_table": 0.75,
@@ -2462,6 +2462,15 @@ func _furniture() -> void:
 					_furnishings.append({"kind": "armchair", "rect": _local_rect(back, front,
 						Rect2(-Armchair.SIZE.x / 2.0, chair_at, Armchair.SIZE.x, Armchair.SIZE.z)), "top": Armchair.SEAT_H,
 						"front": -front, "node": node})
+			"dining_table" when ResourceLoader.exists(DiningTable.MODEL) and DiningTable.fits(rect.size):
+				# Tafel (ZIM-157): so groß wie im Plan, Länge entlang der langen Seite, die Vorderseite ist egal
+				var long_x := rect.size.x >= rect.size.y
+				yaw = 0.0 if long_x else PI / 2.0
+				var table := DiningTable.make(Vector2(maxf(rect.size.x, rect.size.y), minf(rect.size.x, rect.size.y)))
+				var rng := _jitter(rect)
+				table.grain = Vector2(rng.randf() * 7.0, rng.randf() * 7.0)
+				node = table
+				top = DiningTable.HEIGHT
 			"chair":   # Stuhl (ZIM-156): feste Größe, mittig im Rechteck, Sitzseite zur Vorderseite
 				node = Chair.new()
 				rect = _local_rect(c, front, Rect2(-Chair.SIZE.x / 2.0, -Chair.SIZE.z / 2.0, Chair.SIZE.x, Chair.SIZE.z))

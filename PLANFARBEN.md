@@ -137,7 +137,7 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #915e30 | Kommode | | |
 | #bf9940 | Tisch | | |
 | #c7ae6b | Couchtisch | #d8c797 | |
-| #9b753b | Tafel | | |
+| #9b753b | Tafel | | so groß wie im Plan, Länge entlang der langen Seite, ohne Vorderseite; 85 cm hoch, Läufer darauf, Zwischenbeine höchstens 2,4 m von Bein zu Bein (ZIM-157) |
 | #8a452e | Sofa | | |
 | #57480f | Schreibtisch | #8b7418 | Büro der Direktion: fest 2,10 × 1,05 m (21 × 11 px), zwei Unterschränke, Lederauflage, Sessel davor; mittig im Rechteck, Rücken an dessen Hinterkante (ZIM-154) |
 | #655015 | Sekretariatsschreibtisch | #977820 | Sekretariat: fest 1,40 × 0,75 m (14 × 8 px), ein Unterschrank rechts, ohne Stuhl; mittig im Rechteck, Rücken an dessen Hinterkante (ZIM-154) |
