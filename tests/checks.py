@@ -8,7 +8,8 @@ Prüft:
      class_name gleich einem Autoload, doppelte .uid-Dateien (kopierte Sicherung); Warnung bei Skripten außerhalb von
      scripts/, shaders/, tests/, tools/, addons/ (Sicherungskopien in temp/ – Godot lädt sie mit)
   2. Verweise wie „(Spielkonzept 4.13)“, „SK 5.12“, nackt „(2.5)“ im Kommentar, „TECHNIK.md 10“,
-     „TECHNIK.md 1 „Grafik““ zeigen auf vorhandene Kapitel und Abschnitte (Unterpunkte wie „6.19 (7)“ nicht)
+     „TECHNIK.md 1 „Grafik““ zeigen auf vorhandene Kapitel und Abschnitte; Unterpunkte wie „6.19 (7)“ oder
+     „4.33, Punkt 5“ auf einen nummerierten Listenpunkt des Kapitels (auch eingerückt)
   3. Debug-Parameter: was scripts/main.gd auswertet, steht im Kopfkommentar und in der README-Tabelle – und umgekehrt
   4. Rauchtest-Liste in tests/smoke.sh: jede Zeile Frames|Stichworte|Parameter mit Stichwort, höchstens SCHNELL_MAX
      mit „schnell“ (sonst Warnung), jedes in der Doku genannte Stichwort gibt es
@@ -138,11 +139,30 @@ def headings(path: str) -> tuple[set[str], list[str]]:
 	return numbers, titles
 
 
+def list_items(path: str) -> dict[str, set[int]]:
+	"""Nummern der Listenpunkte je Kapitel („6.19“ → {1, …, 7}): „1. **…**“, „**1. …**“, „1) …“, auch eingerückt
+	oder im Zitat – „4.33, Punkt 5“ meint den 5. Schritt unter „1. Das Urteil“."""
+	items: dict[str, set[int]] = {}
+	chapter = None
+	for line in read(path).splitlines():
+		m = re.match(r"(#{2,4})\s+(\d+[a-z]?(?:\.\d+)?)?", line)
+		if m:
+			if m.group(2) or len(m.group(1)) < 4:   # „#### Ablauf“ ohne Nummer bleibt im Kapitel
+				chapter = m.group(2)
+			continue
+		m = re.match(r"[>\s]*(?:\*\*)?(\d{1,2})[.)]\s", line)
+		if m and chapter:
+			items.setdefault(chapter, set()).add(int(m.group(1)))
+	return items
+
+
 # erste Nummer nach dem Namen, weitere durch , – + / ; „und“ getrennt (ein Datum wie „24.10.“ beendet die Liste)
 NUM = r"\d+(?:\.\d+)?"
 SK_REF = re.compile(r"\b(?:Spielkonzept|SK)\s+(" + NUM + r")((?:\s*(?:,|–|-|\+|/|;|und)\s*" + NUM + r"(?![.\d]|-\d))*)")
 # nackt im Kommentar: „(2.5)“, „(4.33, …“ – nur Hauptkapitel 1–11, Werte wie „(0.5)“ fallen so heraus
 BARE_REF = re.compile(r"\(((?:[1-9]|1[01])\.\d{1,2})(?=[),;])")
+# Unterpunkt: „6.19 (7)“, „4.33, Punkt 5“ – ein Datum wie „2.7 (2026-10-25)“ fällt heraus
+SUB_REF = re.compile(r"(?<![\d.])((?:[1-9]|1[01])\.\d{1,2})(?:\s*\((\d{1,2})\)|,?\s+Punkt\s+(\d{1,2})\b)")
 TECH_REF = re.compile(r"\bTECHNIK(?:\.md)?(?:\s+(\d+a?)(?![.\d])|,)?\s*„([^“]+)“|\bTECHNIK(?:\.md)?\s+(\d+a?)(?![.\d])")
 
 
@@ -164,6 +184,7 @@ def comment(path: str, line: str) -> str:
 
 def check_refs(files: list[str]) -> None:
 	sk_numbers, _ = headings(os.path.join(ROOT, "SPIELKONZEPT.md"))
+	sk_items = list_items(os.path.join(ROOT, "SPIELKONZEPT.md"))
 	tech_numbers, tech_titles = headings(os.path.join(ROOT, "TECHNIK.md"))
 	sources = [f for f in code_files(files)] + [os.path.join(ROOT, d) for d in DOCS]
 	for path in sources:
@@ -179,6 +200,12 @@ def check_refs(files: list[str]) -> None:
 				if m.group(1) not in sk_numbers:
 					error(f"{rel(path)}:{n}", f"„({m.group(1)}“ im Kommentar – Kapitel {m.group(1)} gibt es in "
 						"SPIELKONZEPT.md nicht", "Nummer an die Überschriften (### …) in SPIELKONZEPT.md anpassen")
+			for m in SUB_REF.finditer(line if path.endswith(".md") else comment(path, line)):
+				num, item = m.group(1), int(m.group(2) or m.group(3))
+				if num in sk_numbers and item not in sk_items.get(num, ()):
+					found = ", ".join(str(i) for i in sorted(sk_items.get(num, ()))) or "keine"
+					error(f"{rel(path)}:{n}", f"„{m.group(0)}“ – Kapitel {num} hat keinen Unterpunkt {item} "
+						f"(nummeriert: {found})", "auf den passenden nummerierten Punkt in SPIELKONZEPT.md verweisen")
 			for m in TECH_REF.finditer(line):
 				num = m.group(1) or m.group(3)
 				if num and num not in tech_numbers:

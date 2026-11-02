@@ -2616,7 +2616,8 @@ selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Ra
     Sicherungskopie in `temp/` gibt sonst rätselhafte Parse-Fehler woanders), `class_name` gleich einem Autoload,
     doppelte `.uid`-Dateien, Skripte außerhalb von `scripts/`, `shaders/`, `tests/`, `tools/`, `addons/` (Warnung);
     Verweise `Spielkonzept 4.13`, `SK 5.12`, nackt `(2.5)` im Kommentar, `TECHNIK.md 10`, `TECHNIK.md 1 „Grafik“`
-    auf vorhandene Kapitel (Unterpunkte wie „6.19 (7)“ nicht); Debug-Parameter: was `main.gd` auswertet, steht im
+    auf vorhandene Kapitel, Unterpunkte wie „6.19 (7)“ oder „4.33, Punkt 5“ auf einen nummerierten Listenpunkt des
+    Kapitels (`1. **…**`, `**1. …**`, auch eingerückt – `list_items`); Debug-Parameter: was `main.gd` auswertet, steht im
     Kopfkommentar und in der README-Tabelle und umgekehrt; die Rauchtest-Liste (jede Zeile mit Stichwort, höchstens
     8× „schnell“ – sonst Warnung, Stichwörter in der Doku gibt es); `preload`/`load` mit festem `res://`-Pfad.
     Veralteter Klassen-Cache nur als Warnung (`--cache` allein: Exit 1 = veraltet). `Item.Kind` prüft `save_rules` (unten). `temp/` bekommt bewusst kein `.gdignore`: Godot importiert dort

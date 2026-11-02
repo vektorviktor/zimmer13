@@ -1247,8 +1247,8 @@ gilt nur für die Gäste (2.4) – der Spieler bleibt wach, so lange er will, un
 > Beziehung um 5 (bei Freunden um 2), er ist **2 Spielstunden gereizt** (spricht nicht, nimmt nichts an, „gereizt“ im
 > Hinweis) und legt sich nach 20–40 s wieder hin. **Falscher Alarm** – es läuft nur eine Halluzination (Rauschen,
 > falsche Flackerwelle) – kostet 8 und **Vertrauen**: 6 Spielstunden lang glaubt er einem Wecken nicht, auch wenn es
-> dann echt ist (kein Dank). Feuer zählt noch nicht als Grund (es gibt kein Feuer im Haus). Debug:
-> `--wecken=id[,gefahr|halluzination|klopfen]`.
+> dann echt ist (kein Dank). **Feuer ist bewusst kein Grund** (entschieden 2026-11-03): brennende Deko (5.11) lodert
+> nur Sekunden. Debug: `--wecken=id[,gefahr|halluzination|klopfen]`.
 
 > **Umgesetzt (2026-10-27): Wachzeit, Stufen, fremde Betten, Sprung am Tag.** Die Nächte ohne Schlaf sind ersetzt: Es
 > zählt die **Wachzeit in Spielstunden, von Anfang an** (Ankunft ausgeschlafen). Schlaf senkt sie anteilig – sechs
@@ -3389,8 +3389,8 @@ Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick 
   holen sie eine neue (Koffer, Kerzenvorrat, Schublade) und zünden sie an. Ängstliche zuerst, Nachlässige und
   Betrunkene vergessen es öfter (wie das Licht, 7.3).
   - **Feuer haben nur manche:** Einige Gäste haben Streichhölzer oder ein Feuerzeug (je Gast nach Charakter gewürfelt).
-    Die anderen tragen ihre Kerze zu einer brennenden Flamme in der Nähe oder bitten den Spieler darum (kleine Bitte,
-    6.14) – dann ist Anzünden weiter ein Gefallen.
+    Die anderen tragen ihre Kerze zu einer brennenden Flamme in der Nähe oder fragen den Spieler nach Feuer – nur mit
+    ihrem Spruch, **ohne Eintrag im Notizbuch** (keine kleine Bitte nach 6.14, entschieden 2026-11-03).
   - **Nachts nicht:** In der Nachtruhe schlafen die Gäste; was das Monster ausbläst, bleibt bis zum Morgen dunkel. Die
     Spur dunkler Türen gibt es also weiter, nur nicht mehr dauerhaft.
 - **Nachschub:** Der Kerzenvorrat in der Küche füllt sich **morgens** wieder auf statt laufend: auf **halb so viele
