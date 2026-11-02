@@ -178,8 +178,6 @@ const COFFEE_TABLE_CORNER_SEGMENTS := 4
 const COFFEE_MACHINE_INSET := 0.3
 ## Wasserkocher (3.12): so weit rechts neben der Kaffeemaschine (Mitte zu Mitte); Tee-Tablett so weit neben dem Kaffee
 const KETTLE_GAP := 0.38
-## Stehplätze der Gäste in der Küche (ZIM-155): höchstens so weit auseinander, 0,8 m von der Wand
-const KITCHEN_SPOT_STEP := 1.2
 const BAR_TEA_GAP := 0.42
 ## Salzpackungen (Spielkonzept 5.13) in der Küche, bis sie im Plan stehen – ohne Nachschub
 const SALT_BOXES := 3
@@ -196,6 +194,8 @@ const POST_PLINTH := 0.025
 ## Höhe des Obergeschosses (Oberkante Boden)
 const UP_Y := 4.0
 ## Wandhöhe der Tapete in Hallen über zwei Stockwerke (Lufträume): so hoch, dass keine Leiste und kein neues
+## Stehplätze der Gäste in der Küche (ZIM-155): höchstens so weit auseinander, 0,8 m von der Wand
+const KITCHEN_SPOT_STEP := 1.2
 ## Stockwerk kommt
 const HALL_WALL_TOP := 100.0
 ## Gedimmtes Licht (Spielkonzept 7.3): keine Deckenlampen, Wandleuchten schwächer als Kerzen
@@ -566,7 +566,6 @@ var lobby_seats: Array[Vector3] = []
 ## Liegeplätze der Hotelkatzen auf Möbeln (6.11): {"floor": davor auf dem Boden, "top": obendrauf}
 var cat_perches: Array[Dictionary] = []
 var kitchen_spot := Vector3.ZERO
-var kitchen_spots: Array[Vector3] = []   ## Stehplätze der Gäste in der Küche, Raster KITCHEN_SPOT_STEP (ZIM-155)
 var garden_spots: Array[Vector3] = []
 var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kein Gras (Grass)
 ## Bäume: {pos (Stammachse am Boden), radius (Krone), height, crown (Höhenbereich der Krone als Anteile)} – für die
@@ -583,6 +582,7 @@ var record_player_pos := Vector3.ZERO
 ## Dunkle Ecke des Partyraums (dort bleibt die Tanzfläche frei)
 var party_corner := Vector3.ZERO
 var game_table: GameTable
+var kitchen_spots: Array[Vector3] = []   ## Stehplätze der Gäste in der Küche, Raster KITCHEN_SPOT_STEP (ZIM-155)
 var chess_table: ChessTable
 ## Friedhof (Spielkonzept 5.15) aus dem Plan: Grabplätze {pos, head} (head = Richtung zum Kopfende mit dem Kreuz) und
 ## die Gedenkstätte {pos, front, size}
@@ -4047,13 +4047,6 @@ func _common_rooms() -> void:
 	root.add_child(Confetti.new())
 	var k: Rect2 = _named["kueche"]
 	kitchen_spot = Vector3(k.get_center().x, 0, k.get_center().y)
-	var inner := k.grow(-0.8)
-	var nx := maxi(1, floori(inner.size.x / KITCHEN_SPOT_STEP) + 1)
-	var nz := maxi(1, floori(inner.size.y / KITCHEN_SPOT_STEP) + 1)
-	for ix in nx:
-		for iz in nz:
-			kitchen_spots.append(Vector3(inner.position.x + inner.size.x * (ix + 0.5) / nx, 0,
-				inner.position.y + inner.size.y * (iz + 0.5) / nz))
 	# Herd zum Kochen (Spielkonzept 3.8)
 	var stove_info := _furnishing("stove", "kueche")
 	if not stove_info.is_empty():
@@ -4099,6 +4092,13 @@ func _common_rooms() -> void:
 				world.add_child(salt)
 		# Eier (6.13): ein Karton neben dem Salz, morgens wieder EGG_BOX Stück
 		var ep := kr.get_center() - left * (reach - SALT_BOXES * 0.09 - 0.2) - kf * 0.12
+	var inner := k.grow(-0.8)
+	var nx := maxi(1, floori(inner.size.x / KITCHEN_SPOT_STEP) + 1)
+	var nz := maxi(1, floori(inner.size.y / KITCHEN_SPOT_STEP) + 1)
+	for ix in nx:
+		for iz in nz:
+			kitchen_spots.append(Vector3(inner.position.x + inner.size.x * (ix + 0.5) / nx, 0,
+				inner.position.y + inner.size.y * (iz + 0.5) / nz))
 		var eggs := ResourceSpot.new().setup(Item.Kind.EGG, "Ei aus dem Karton", EGG_BOX, 150.0).refill_mornings(EGG_BOX)
 		eggs.position = Vector3(ep.x, float(counter_info["top"]), ep.y)
 		eggs.rotation.y = machine.rotation.y
