@@ -666,18 +666,18 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	add_child(naming)
 	Game.leviathan_name = naming
 	var doll_house := DollHouse.new()   # Puppenhaus in der Bibliothek (5.16)
+	doll_house.spot = builder.planned_at("doll_house", doll_house.spot)
 	doll_house.name = "Puppenhaus"
 	add_child(doll_house)
-	doll_house.spot = builder.planned_at("doll_house", doll_house.spot)
 	Game.doll_house = doll_house
 	var faces := PumpkinFaces.new()   # Kürbisgesichter, die sich verändern (5.18)
 	faces.name = "PumpkinFaces"
 	add_child(faces)
 	Game.pumpkin_faces = faces
 	var tub := AppleTub.new()   # Apfeltauchen im Partyraum (6.21)
+	tub.spot = builder.planned_at("apple_tub", Transform3D(Basis(), tub.spot)).origin
 	tub.name = "Apfelbottich"
 	add_child(tub)
-	tub.spot = builder.planned_at("apple_tub", Transform3D(Basis(), tub.spot)).origin
 	Game.apple_tub = tub
 
 
@@ -1205,6 +1205,26 @@ func run_debug(arg: String) -> bool:
 		var look := table.global_transform * aim
 		TeleportUI.place_player(at, look - at)
 		Game.player.head.rotation.x = deg_to_rad(pitch)
+	elif _is_arg(arg, "--wandleuchte"):
+		# die Wandleuchte, die dem Startpunkt am nächsten ist; schräg davor, Blick auf die Leuchte
+		var opts := _arg_parts(arg, "--wandleuchte")
+		var lamp: Lamp = null
+		var best := INF
+		for node in get_tree().get_nodes_in_group("lamp_fixtures"):
+			var l := node as Lamp
+			var d := l.global_position.distance_to(Game.player.global_position)
+			var across := absf(l.global_basis.z.x) > 0.7   # quer: Wand nach Osten oder Westen
+			if l.style == Lamp.Style.WALL and d < best and across == opts.has("quer"):
+				best = d
+				lamp = l
+		if lamp == null:
+			return false
+		var dist := 1.5 if opts.has("nah") else 2.6
+		var at := lamp.global_transform * Vector3(dist * 0.15, 0, dist)
+		at.y = Game.player.global_position.y   # die nächste Leuchte hängt auf dem Stockwerk des Startpunkts
+		TeleportUI.place_player(at, lamp.global_position - at)
+		var target := lamp.global_position - (at + Vector3(0, Game.player.eye_height, 0))
+		Game.player.head.rotation.x = atan2(target.y, Vector2(target.x, target.z).length())
 	elif _is_arg(arg, "--dachboden"):
 		var builder := Game.social.builder
 		var where := _arg_value(arg, "--dachboden")
@@ -1226,26 +1246,6 @@ func run_debug(arg: String) -> bool:
 				TeleportUI.place_player(spot.origin, -spot.basis.z)
 				Game.player.head.rotation.x = deg_to_rad(-8.0)
 			"treppe":
-	elif _is_arg(arg, "--wandleuchte"):
-		# die Wandleuchte, die dem Startpunkt am nächsten ist; schräg davor, Blick auf die Leuchte
-		var opts := _arg_parts(arg, "--wandleuchte")
-		var lamp: Lamp = null
-		var best := INF
-		for node in get_tree().get_nodes_in_group("lamp_fixtures"):
-			var l := node as Lamp
-			var d := l.global_position.distance_to(Game.player.global_position)
-			var across := absf(l.global_basis.z.x) > 0.7   # quer: Wand nach Osten oder Westen
-			if l.style == Lamp.Style.WALL and d < best and across == opts.has("quer"):
-				best = d
-				lamp = l
-		if lamp == null:
-			return false
-		var dist := 1.5 if opts.has("nah") else 2.6
-		var at := lamp.global_transform * Vector3(dist * 0.15, 0, dist)
-		at.y = Game.player.global_position.y   # die nächste Leuchte hängt auf dem Stockwerk des Startpunkts
-		TeleportUI.place_player(at, lamp.global_position - at)
-		var target := lamp.global_position - (at + Vector3(0, Game.player.eye_height, 0))
-		Game.player.head.rotation.x = atan2(target.y, Vector2(target.x, target.z).length())
 				var foot := builder.attic_stair_foot
 				TeleportUI.place_player(foot.origin, -foot.basis.z)
 				Game.player.head.rotation.x = deg_to_rad(20.0)

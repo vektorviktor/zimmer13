@@ -435,6 +435,11 @@ func insert_bulb(item: Item) -> void:
 	Game.noise("bulb", global_position)
 
 
+## Das Zimmer, zu dem die Lampe gehört: eine Badlampe zum Zimmer vor dem Bad (ZIM-149), sonst ihr Raum.
+func home_id() -> String:
+	return Game.social.builder.home_of(room_id) if Game.social and Game.social.builder else room_id
+
+
 ## Wem die Lampe gehört: der erste Erwachsene des Zimmers (Haushalt, Spielkonzept 6.20), sonst wer dort wohnt.
 func owner_guest() -> Guest:
 	if Game.social == null:
@@ -471,11 +476,6 @@ func interact(player: Player) -> void:
 		var item := take_bulb()
 		if guest:
 			item.owner_id = guest.id
-## Das Zimmer, zu dem die Lampe gehört: eine Badlampe zum Zimmer vor dem Bad (ZIM-149), sonst ihr Raum.
-func home_id() -> String:
-	return Game.social.builder.home_of(room_id) if Game.social and Game.social.builder else room_id
-
-
 		player.receive_item(item)
 		if is_lit_room_dark():
 			Game.say("Hier ist es jetzt dunkel …", 2.0)

@@ -5742,11 +5742,14 @@ func _note(id: String, pos: Vector3) -> WarningNote:
 	return note
 
 
+## Lichtschalter für die Lichtgruppe room_id (_light_room_at). Bäder sind anfangs dunkel – niemand ist darin.
 func _switch(room_id: String, label: String, pos: Vector3, yaw: float) -> LightSwitch:
 	var sw := LightSwitch.new().setup(room_id, label)
 	sw.position = pos
 	sw.rotation.y = yaw
 	_parent.add_child(sw)
+	if _bath_owner.has(room_id):
+		sw.set_on.call_deferred(false, true)
 	return sw
 
 
@@ -5764,14 +5767,11 @@ func _hide_spot(type: HideSpot.Type, pos: Vector3, yaw: float, bed_size := Vecto
 ## Hülle, die Kundenseite zur Front hin gedreht. Platte = Säulenstein, Rohre = Messing der Treppe, Holz und Sockel
 ## mit den Texturen des Modells. Kollision (auch fürs NavMesh) aus dem Netz selbst, damit die runden Ecken stimmen.
 ## null, wenn das Modell fehlt oder der Plan keine Rezeption hat.
-## Lichtschalter für die Lichtgruppe room_id (_light_room_at). Bäder sind anfangs dunkel – niemand ist darin.
 func _reception(rects: Array[Rect2]) -> StaticBody3D:
 	if rects.is_empty() or not ResourceLoader.exists(RECEPTION_MODEL):
 		return null
 	var hull := rects[0]
 	var front := rects[0]
-	if _bath_owner.has(room_id):
-		sw.set_on.call_deferred(false, true)
 	for r in rects:
 		hull = hull.merge(r)
 		if r.size.x * r.size.y > front.size.x * front.size.y:
