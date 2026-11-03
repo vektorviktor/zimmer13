@@ -1624,7 +1624,9 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 Herd auf der Plan-Ausstattung „stove“. `phase`: `empty` → `raw` (`dish_for`) → Messer → `cooking` (Spielzeit über
 `delta`) → Teller `ROAST_PUMPKIN` bzw. Suppe mit Portionen, die kalt wird. `_call_eaters` holt Gäste in den Zustand
 `EAT`; `_end_soup` → `pals.note_group`. **Gäste kochen** selbst (`_update_guest_cook`, `start_guest_cook`). Essen ist
-Spaß (`is_eating`, `player_eats`). Herd und Essende nicht gespeichert, der Teller schon. Debug
+Spaß (`is_eating`, `player_eats`). Lärm (4.15): Schneiden „carve“, beim Kochen alle `NOISE_EVERY` s „simmer“ (Topf)
+bzw. „sizzle“ (Pfanne), 4 m – Quelle der kochende Gast oder der Herd, nie der Spieler (wie die Kaffeemaschine).
+Herd und Essende nicht gespeichert, der Teller schon. Debug
 `--cook=suppe|braten[,fertig]`, `--cook=gast[,id]`.
 
 ### `HotelCat` (`guests/hotel_cat.gd`, Spielkonzept 6.11)

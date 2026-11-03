@@ -52,6 +52,8 @@ const NOISE := {
 	"switch":     {"range": 1.0,  "sound": "blip",   "volume": 0.5, "caption": "[Klick – ein Lichtschalter]"},    ## Licht aus zusätzlich nach 4.4
 	"harvest":    {"range": 3.0,  "sound": "thud",   "volume": 0.5, "caption": "[Ein Kürbisstiel reißt]"},
 	"carve":      {"range": 3.0,  "sound": "creak",  "volume": 0.6, "caption": "[Ein Messer schabt im Kürbis]"},
+	"simmer":     {"range": 4.0,  "sound": "bubble", "volume": 0.3, "caption": "[Ein Topf blubbert]"},    ## Suppe kocht, alle 4 s (3.8)
+	"sizzle":     {"range": 4.0,  "sound": "hiss",   "volume": 0.25, "caption": "[Etwas brutzelt in der Pfanne]"},   ## Kürbis brät, alle 4 s (3.8)
 	"salt":       {"range": 1.5,  "sound": "rustle", "volume": 0.3, "caption": "[Salz rieselt]"},    ## Salzlinie streuen (5.13)
 	"wipe":       {"range": 2.0,  "sound": "creak",  "volume": 0.15, "caption": "[Wischen]"},   ## Spur wegwischen
 	"map":        {"range": 1.0,  "sound": "rustle", "volume": 0.5, "caption": "[Papier raschelt]"},    ## Kartenblatt blättern

@@ -308,6 +308,7 @@ done <<'LIST'
 4000|spiele|--chess=mila --autoplay --trace
 1500|kueche|--cook=suppe,fertig
 2200|kueche,gaeste|--cook=gast --trace
+700|kueche,laerm|--cook=braten --trace
 1200|kaffee,kueche|--kaffee=maschine --trace
 2400|kaffee,kueche,gaeste|--kaffee=gast --trace
 4800|kaffee|--awake=40 --kaffee=3 --trace

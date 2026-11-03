@@ -1399,7 +1399,10 @@ Kürbis** für sich.
 - **Gebratener Kürbis – für dich:** Er kommt als Teller in die Hand. Mit [Linksklick] isst man ihn (**Schock −0,2**),
   oder man **verschenkt** ihn im Gespräch: wie ein Geschenk (6.3), in der **Lieblingssorte** des Gastes noch mehr
   (5.8), dazu sinkt seine Angst. Der Teller bleibt im Spielstand; was gerade auf dem Herd steht, nicht.
-- **Offen:** Ob Kochen Lärm macht; Zutaten aus dem Kühlraum (Eier, 6.13).
+- **Lärm (entschieden und umgesetzt 2026-11-03):** Den Kürbis am Herd klein schneiden ist so laut wie Schnitzen
+  (3 m). Danach blubbert der Topf bzw. brutzelt die Pfanne leise – **4 m**, solange es kocht (4.15). Der Ruf „Es gibt
+  Kürbissuppe in der Küche!“ bleibt eine Meldung ohne Lärm.
+- **Offen:** Zutaten aus dem Kühlraum (Eier, 6.13).
 
 ### 3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)
 Der Spieler hat einen **Körper**: Er sieht sich im Spiegel – und später sehen ihn Mitspieler, falls es einmal Koop
@@ -1872,6 +1875,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Glühbirne platzt | 8 m | |
 | Lichtschalter | 1 m | Licht aus zusätzlich nach 4.4 |
 | Kürbis ernten · schnitzen | 3 m | |
+| Kochen: Topf blubbert · Pfanne brutzelt | 4 m, alle 4 s, solange es kocht | Kürbis klein schneiden am Herd 3 m wie Schnitzen; „Es gibt Kürbissuppe!“ ist kein Lärm (3.8) |
 | Spur wegwischen | 2 m | |
 | Kartenblatt blättern | 1 m | |
 | Gespräch mit einem Gast | 3 m | Lauschen nach 4.7 bleibt |

@@ -10,6 +10,7 @@ extends StaticBody3D
 ## einem Kürbis im Koffer ihn mit in die Küche, gibt ihn in den Topf, schneidet ihn mit dem eigenen Messer und wartet am
 ## Herd, bis die Suppe fertig ist – dann kommen die Esser wie sonst. Die Beziehung zum Spieler steigt dabei nicht (das
 ## gibt es nur für seine Suppe), aber die Esser werden mit dem Koch vertrauter (6.16).
+## Lärm (4.15, Entscheidung 3.11.): Schneiden „carve“ (3 m), danach blubbert bzw. brutzelt es leise, solange es kocht.
 
 const SOUP_TIME := 40.0
 const ROAST_TIME := 25.0
@@ -34,6 +35,9 @@ const LATE_LINES := ["Schon alle? Schade.", "Oh – nichts mehr übrig."]
 const COOK_GAP := Vector2(90.0, 200.0)
 const COOK_RANGE := 90.0
 const COOK_LINES := ["Ich mach uns eine Kürbissuppe.", "Wer hat Hunger? Gleich gibt's Suppe!", "So, ab in den Topf mit dir."]
+## Solange es kocht, blubbert der Topf bzw. brutzelt die Pfanne – leiser Lärm „simmer“/„sizzle“ (4 m, Spielkonzept 3.8,
+## 4.15, Entscheidung 3.11.) so oft. Der Ruf „Es gibt Kürbissuppe!“ ist nur eine Meldung, kein Lärm.
+const NOISE_EVERY := 4.0
 
 ## empty · raw (Kürbis im Topf bzw. in der Pfanne, noch nicht geschnitten) · cooking · soup (fertig, Schalen übrig)
 var phase := "empty"
@@ -44,6 +48,7 @@ var portions := 0
 var front := Vector3(0, 0, 1)
 
 var _timer := 0.0
+var _noise_timer := 0.0
 var _player_ate := false
 var _cook: Guest              ## Gast, der gerade kocht (auf dem Weg oder am Herd); null = keiner bzw. der Spieler
 var _guest_cooked := false    ## die Suppe im Topf hat ein Gast gekocht
@@ -194,6 +199,7 @@ func interact(player: Player) -> void:
 				_timer = SOUP_TIME if dish == "soup" else ROAST_TIME
 				_show()
 				Game.say("Du schneidest den Kürbis klein. Jetzt heißt es warten.", 3.0)
+				Game.noise("carve", global_position, player)
 			elif player.held == null:
 				var item := Item.create(Item.Kind.MINI_PUMPKIN) if variety == PumpkinKinds.DEFAULT and dish == "roast" \
 					else Item.create(Item.Kind.PUMPKIN, variety)
@@ -222,6 +228,12 @@ func _process(delta: float) -> void:
 			_timer -= delta
 			_soup.position.y = 0.18 + sin(_bob * 9.0) * 0.004   # blubbert
 			_slices.position.y = sin(_bob * 14.0) * 0.003       # brutzelt
+			_noise_timer -= delta
+			if _noise_timer <= 0.0:
+				_noise_timer = NOISE_EVERY
+				# Quelle wie bei der Kaffeemaschine: der kochende Gast, sonst der Herd selbst (nicht der Spieler)
+				Game.noise("simmer" if dish == "soup" else "sizzle", global_position,
+					_cook if _guest_cooked and _cook and not _cook.dead else self)
 			if _timer <= 0.0:
 				_done()
 		"soup":
