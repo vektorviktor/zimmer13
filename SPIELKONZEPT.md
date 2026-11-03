@@ -3526,8 +3526,8 @@ Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick 
   **Linksklick / R** eine erloschene Kerze (Kürbis, Totenkopf) **in der Hand** direkt an. Für eine Kerze, die irgendwo
   steht, muss man die **Schachtel in der Hand** halten ([E] „anzünden“).
   - **Fundort:** die oberste Schublade einer Kommode in **Zimmer 022** – direkt neben Zimmer 13, unbewohnt und vom Hotel
-    abgeschlossen (6.19): mit dem Generalschlüssel oder dem Brecheisen. Die Kommode setzt der Nutzer in den Plan; bis dahin
-    liegt die Schachtel dort auf dem Tisch.
+    abgeschlossen (6.19): mit dem Generalschlüssel oder dem Brecheisen. Die Kommode steht seit 2026-11-03 im Plan (an der
+    Ostwand, ZIM-85); fehlt sie, liegt die Schachtel auf dem Tisch.
 - **Kürbis und Totenkopf:** Eine Kerze stellt man nur **brennend** hinein; eine erloschene Kerze geht nicht („erst
   anzünden“). Ist die Kerze darin ausgegangen, zündet man sie wie eine einzelne Kerze wieder an.
 - **Neue Kerzen brennen nicht:** aus dem Kerzenvorrat in der Küche, aus Schubladen, als Geschenk und aus dem Koffer der

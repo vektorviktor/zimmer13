@@ -318,7 +318,6 @@ den alten festen Platz – gemalt, wandert es dorthin.
 | Waschmaschinen der Wäscherei | 12 je Längswand | Möbel: Waschmaschine | Ersatzplatz aktiv |
 | Futtertisch der Krähen | der Tisch draußen nächst der Gartentür von 13 (bis 12 m); Ersatz nur im Debug | Möbel: Tisch im Gärtchen | ZIM-51 |
 | Leuchten im Treppenhaus Ost | Podeste EG/OG, wenn der Plan dort keine Wandleuchte hat; UG-Podest immer | Licht: Wandleuchte | |
-| Fester Schubladenfund (Zimmer 022) | erste Kommode, sonst erster Tisch | Möbel: Kommode im Zimmer | |
 | Notizbuch des Hausmeisters (Zimmer 18), Gustavs Tagebuch | auf dem Zimmertisch, ohne Tisch am Boden in der Mitte | Möbel: Zimmertisch | |
 
 ### Bleibt im Code
@@ -337,6 +336,7 @@ oder richten sich nach Fläche und Möbeln.
 | Pool | Einstiegstreppen West/Ost |
 | Zimmer 13 | Laken auf dem Bett, Warnzettel 1999 hinter der Tür, Spielerstart in der Mitte |
 | Zimmer 18 | Notizbuch, Schaltschlüssel, UV-Aufsatz auf dem Tisch |
+| Zimmer 022 | Streichholzschachtel in der obersten Schublade der ersten Kommode im Plan (`CONTENT["022"]`, ZIM-85), ohne Kommode auf dem Tisch |
 | Monster-Startpunkte | Heizkeller, Zimmer 017, Garten |
 
 Ohne festen Ort (wandern oder erscheinen zufällig): Gäste, Hotelkatzen, Kind zu viel, Kürbismann, Ratten, Spinnen,
