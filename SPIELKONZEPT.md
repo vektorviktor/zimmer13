@@ -5224,7 +5224,15 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   **Bücherregale (entschieden und gebaut 2026-11-01, ZIM-152):** im Look der Kommode im Flur, offene Fächer mit 4 oder
   5 Ebenen (2,10 bzw. 2,56 m hoch, Fächer 46 cm – Wunsch des Nutzers: 4 Ebenen = 2,10 m), Zwischenwände etwa alle 1 oder 2 m – je Kombination eine Planfarbe, Länge frei; geht
   die Länge nicht auf, werden alle Fächer gleich gestreckt. Wo zwei gleich hohe Regale über Eck zusammenstoßen, entsteht
-  von selbst eine Innenecke mit Gehrung. Vorerst leer, Bücher sind eine eigene Aufgabe.
+  von selbst eine Innenecke mit Gehrung.
+  **Bücher (entschieden 2026-11-03, gebaut 2026-11-03, ZIM-153):** nur Ausstattung – man kann nichts mit ihnen tun
+  (herausziehbare Hinweisbücher später eigenes Ticket). Alte Leinen- und Lederbände in gedeckten Farben: Ganzleder mit
+  erhabenen Bünden, Halbleder (Lederrücken, Leinendeckel mit Lederecken) und Ganzleinen, alle mit rundem Rücken und
+  Deckelüberstand; Prägung nur als Linien (Gold oder blind: Doppellinien, Rahmen, Rauten, ein dunkleres Rückenschild),
+  keine Schrift. Zehn Formen vom Duodez (17 cm) bis zum Folio (33 cm). Die Fächer sind dicht gefüllt (etwa 85 %):
+  mehrbändige Reihen in gleicher Form und Farbe, einzelne Bände, Lücken, schräg angelehnte Bücher und liegende Stapel
+  am Rand breiter Fächer, hin und wieder ein Buch tiefer hineingeschoben. Jedes Regal sieht anders aus, bleibt aber bei
+  jedem Start gleich.
 - **Partyraum über zwei Stockwerke:** wie die Lobby mit einer **Galerie** im OG1 rund um den Luftraum, von der man
   auf die Tanzfläche hinunterschaut.
 - **Ideen (Vorschlag):**

@@ -2615,6 +2615,7 @@ func _furniture() -> void:
 ## die Kante des Korpus liegt dann auf der Vorderseite des anderen. Ob das eine bis an die Wand reicht oder vor dem
 ## anderen endet, ist egal.
 func _bookshelves(list: Array[Dictionary]) -> void:
+	var shelves: Array[Bookshelf] = []
 	for a in list:
 		var rect: Rect2 = a["rect"]
 		var front: Vector2 = a["front"]
@@ -2659,8 +2660,10 @@ func _bookshelves(list: Array[Dictionary]) -> void:
 		shelf.position = Vector3(at.x, 0, at.y)
 		shelf.rotation.y = atan2(front.x, front.y)
 		root.add_child(shelf)
+		shelves.append(shelf)
 		_furnishings.append({"kind": "bookshelf", "rect": rect, "top": Bookshelf.height(a["levels"]), "front": front,
 			"node": shelf})
+	Books.fill(shelves)   # Bücher in alle Fächer (ZIM-153)
 
 
 ## Spindblöcke der Umkleiden (LockerBank, ZIM-145): Rücken an der Hinterkante des Rechtecks im Plan, WALL_CLEAR davor

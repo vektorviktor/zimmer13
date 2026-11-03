@@ -133,6 +133,7 @@ done <<'LIST'
 400|buero,spieler|--sitzen=sessel --trace
 400|buero|--buero=sekretariat,auf --trace
 400|regale|--regale --trace
+400|regale,buecher|--regale=nah --trace
 400|stuhl|--stuhl --trace
 400|stuhl,spieler|--stuhl --sitzen=stuhl --trace
 400|tafel|--tafel --trace

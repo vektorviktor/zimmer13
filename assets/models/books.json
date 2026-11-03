@@ -1,0 +1,104 @@
+{
+ "variants": [
+  {
+   "name": "oktav",
+   "kind": "leder",
+   "size": [
+    0.038,
+    0.215,
+    0.14
+   ],
+   "tris": 156
+  },
+  {
+   "name": "oktav_duenn",
+   "kind": "leinen",
+   "size": [
+    0.022,
+    0.205,
+    0.135
+   ],
+   "tris": 156
+  },
+  {
+   "name": "oktav_dick",
+   "kind": "halb",
+   "size": [
+    0.055,
+    0.225,
+    0.15
+   ],
+   "tris": 156
+  },
+  {
+   "name": "duodez",
+   "kind": "leder",
+   "size": [
+    0.028,
+    0.17,
+    0.11
+   ],
+   "tris": 156
+  },
+  {
+   "name": "quart",
+   "kind": "leder",
+   "size": [
+    0.05,
+    0.285,
+    0.215
+   ],
+   "tris": 156
+  },
+  {
+   "name": "quart_leinen",
+   "kind": "leinen",
+   "size": [
+    0.034,
+    0.27,
+    0.2
+   ],
+   "tris": 156
+  },
+  {
+   "name": "grossoktav",
+   "kind": "halb",
+   "size": [
+    0.042,
+    0.245,
+    0.165
+   ],
+   "tris": 156
+  },
+  {
+   "name": "folio",
+   "kind": "leder",
+   "size": [
+    0.066,
+    0.33,
+    0.245
+   ],
+   "tris": 156
+  },
+  {
+   "name": "lexikon",
+   "kind": "halb",
+   "size": [
+    0.06,
+    0.255,
+    0.18
+   ],
+   "tris": 156
+  },
+  {
+   "name": "schmal",
+   "kind": "leinen",
+   "size": [
+    0.018,
+    0.24,
+    0.16
+   ],
+   "tris": 156
+  }
+ ]
+}

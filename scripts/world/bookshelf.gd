@@ -74,9 +74,8 @@ func _ready() -> void:
 	add_to_group("bookshelves")
 	var x0 := -length / 2.0
 	var x1 := length / 2.0
-	var inner := length - 2.0 * POST
-	var n := maxi(1, roundi((inner + DIVIDER) / pitch))
-	var span := (inner - (n - 1) * DIVIDER) / n
+	var n := _span_count()
+	var span := _span_width(n)
 	var stretch := span / (pitch - DIVIDER)
 	var put := {}   # Teil → [[x, Streckung], …]
 	_add(put, "miter_l" if corner_left else "end_l", x0, 1.0)
@@ -110,6 +109,29 @@ func _ready() -> void:
 		mmi.material_override = mat
 		add_child(mmi)
 	_collision(x0, x1, spans, span)
+
+
+## Zahl der Fächer nebeneinander und ihre lichte Breite
+func _span_count() -> int:
+	return maxi(1, roundi((length - 2.0 * POST + DIVIDER) / pitch))
+
+
+func _span_width(n: int) -> float:
+	return (length - 2.0 * POST - (n - 1) * DIVIDER) / n
+
+
+## Fächer für die Bücher (Books, ZIM-153), lokal: je Fach [linke Kante x, lichte Breite, Boden y, lichte Höhe]. Vorn
+## enden die Fachböden SHELF_SET hinter der Vorderseite, hinten steht die Rückwand.
+func compartments() -> Array:
+	var n := _span_count()
+	var span := _span_width(n)
+	var out := []
+	for i in n:
+		var x := -length / 2.0 + POST + i * (span + DIVIDER)
+		for k in levels:
+			var clear := PITCH - (SHELF_T if k < levels - 1 else 0.0)
+			out.append([x, span, PLINTH + k * PITCH, clear])
+	return out
 
 
 func _add(put: Dictionary, part: String, x: float, stretch: float) -> void:

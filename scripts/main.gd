@@ -155,8 +155,9 @@ extends Node3D
 ##                               vor dessen Schreibtisch (ZIM-154) – steht keiner im Plan, kommt einer zum Ansehen in die
 ##                               Mitte des Raums; auf: alle Schubladen aufgezogen, in die erste ein Gegenstand; Blick
 ##                               hinten (Besucherseite), links (linker Unterschrank) oder nah (Platte von oben)
-##   --regale                    in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
-##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen)
+##   --regale[=nah]              in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
+##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen);
+##                               nah: dicht vor die Bücher (ZIM-153); meldet „[Bücher] …“ (Zahl der Bücher und MultiMeshes)
 ##   --stuhl[=hinten|seite|nah]  in den Speisesaal (EG, ZIM-156) schräg hinter den ersten Stuhl – steht keiner im Plan,
 ##                               kommen zwei an die mittlere Tafel und einer frei davor; hinten: von hinten (Wölbung der
 ##                               Lehne), seite: im Profil (Schräge der Pfosten), nah: über die Lehne aufs Kissen
@@ -764,6 +765,7 @@ func _apply_settings() -> void:
 	_env.fog_depth_end = g["view"]
 	(get_node("Moon") as DirectionalLight3D).directional_shadow_max_distance = g["moon_distance"]
 	ShadowBudget.full = g["full"]
+	Books.apply_graphics(get_tree())
 	if _post:
 		_post.set_shader_parameter("gamma", Settings.gamma)
 
@@ -1250,11 +1252,20 @@ func run_debug(arg: String) -> bool:
 			return false
 		var shelves := get_tree().get_nodes_in_group("bookshelves")
 		var shelf: Bookshelf = shelves[0] if not shelves.is_empty() else _bookshelf_demo(library[0]["center"] + Vector3(5, 0, 0))
-		# schräg von vorn auf das linke Ende – an einer Innenecke die Gehrung
+		# schräg von vorn auf das linke Ende – an einer Innenecke die Gehrung; nah: dicht vor die Bücher in der Mitte
 		var end := shelf.global_transform * Vector3(-shelf.length / 2.0, 1.1, 0)
 		var at := shelf.global_transform * Vector3(-shelf.length / 2.0 + 3.2, 0, 4.2)
+		if _arg_parts(arg, "--regale").has("nah"):
+			end = shelf.global_transform * Vector3(0.3, 0.9, 0)
+			at = shelf.global_transform * Vector3(-0.2, 0, 1.1)
 		TeleportUI.place_player(at, end - at)
 		Game.player.head.rotation.x = deg_to_rad(-6.0)
+		var books := 0
+		var calls := 0
+		for mmi: MultiMeshInstance3D in get_tree().get_nodes_in_group("books"):
+			books += mmi.multimesh.instance_count
+			calls += 1
+		print("[Bücher] %d Bücher in %d MultiMeshes, %d Regale" % [books, calls, get_tree().get_nodes_in_group("bookshelves").size()])
 	elif _is_arg(arg, "--stuhl"):
 		var builder := Game.social.builder
 		if not builder._named.has("speisesaal"):
@@ -3572,4 +3583,5 @@ func _bookshelf_demo(at: Vector3) -> Bookshelf:
 		shelf.position = spots[i][1]
 		shelf.rotation.y = spots[i][2]
 		add_child(shelf)
+	Books.fill(spots.map(func(e: Array) -> Bookshelf: return e[0]))
 	return a
