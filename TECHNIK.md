@@ -916,14 +916,14 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
   Legendeneintrag meldet `build_map.py` mit Pixelposition, Legendenfarben in der falschen Ebene ebenfalls. Slices liest
   es nach Namen sortiert (Aseprite ändert ihre Reihenfolge beim Speichern – sonst wechselte der Fingerabdruck der Welt).
   **Größenregeln** (ZIM-141): `plan_legend.sizes()` liest nur Pixelangaben aus der Legende – im Hinweis eines Eintrags
-  („21 × 11 px“, „4 px tief“, Türanschlag „1 px“) oder im Satz unter der Überschrift für die ganze Gruppe („3×3-Punkt“,
+  („21 × 11 px“, „4 px tief“, Türanschlag „1 px“) oder im Satz unter der Überschrift für die ganze Gruppe („2×2- oder 3×3-Punkt“,
   Wände „Linien …, 2 px“); Meterangaben beschreiben das Modell und zählen nicht. `build_map.py` prüft dagegen:
   `check_size` je Objekt (Lage egal, Möbel ± 1 px, Punkte und Striche genau; Punkte auch auf volles Rechteck),
   `check_wall_width` die Wandnetze samt Öffnungen (ein Quadrat Wandbreite + 1 ganz in der Wand = zu dick, ein Pixel in
   keinem Quadrat der Wandbreite = zu dünn), die Türanschläge auf ihre Pixelzahl. Nur Warnungen, je Stockwerk, Ebene,
   Farbe und gemalter Größe eine Zeile mit allen Pixelpositionen (`report_sizes`); die Karten bleiben gleich.
-  **Seit 3.11. abgeschaltet** (`CHECK_SIZES = False` → `SIZES` leer), bis entschieden ist, ob Punkte 2×2 (so im Plan)
-  oder 3×3 (so in der Legende) sind; zum Einschalten nur den Schalter umlegen.
+  **Punkte dürfen 2×2 oder 3×3 sein** (entschieden 3.11., beides kommt im Plan vor; Regel mit zwei Größen). `CHECK_SIZES = False` lässt `SIZES` leer
+  und schaltet die Prüfung ab.
 - **Grundriss:** 1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie (**Türanschlag**: ein Pixel
   `Türanschlag` statt eines Türpixels an einem Ende, in der Wandhälfte, in die die Tür aufgeht; falsch gesetzt bricht
   das Skript mit Position ab), Flächen als Füllfarben, `Luftraum` = hier kein Boden (darunter `open_above`). Schrift in
@@ -936,7 +936,7 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
 - **Objektebenen** je Stockwerk: `Möbel`, `Ausstattung`, `Gegenstände`, `Lichter`, `Teppiche` (eigene Legende mit
   Vorsatz `Möbel:` … → `FURNITURE`, `FITTINGS`, `ITEMS`, `LIGHTS`, `RUGS`). Möbel sind Rechtecke, `Möbel: Vorderseite`
   bzw. `<Möbel> Vorderseite` (`FRONT_SUFFIXES`; Doppelbett `Kopfende` → `head`) zeigt die Vorderseite. Alles andere ist
-  ein 3×3-Punkt; Wandsachen liegen innen an der Wand (daraus die Wandseite); Halogenleuchten sind Striche in ihrer
+  ein Punkt (2×2 oder 3×3); Wandsachen liegen innen an der Wand (daraus die Wandseite); Halogenleuchten sind Striche in ihrer
   Länge. Gleichfarbige Punkte dürfen sich nicht berühren.
 - **Türarten:** Zimmertüren sind Striche in `Tür Flur`; das Skript liest beiderseits, wohin sie führen: Bad →
   `bath_doors`, beiderseits Zimmer → `connecting_doors`, sonst Flurtür (weitere Flurtüren `side_doors`; ohne Flurtür

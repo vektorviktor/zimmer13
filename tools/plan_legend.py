@@ -79,6 +79,8 @@ def _check(entries, path):
 
 ## Größenangaben, die sizes() erkennt (ZIM-141) – nur Pixelangaben, Meter („2 × 1 m“) beschreiben das Modell
 SIZE = re.compile(r"(\d+)\s*×\s*(\d+)\s*(?:px\b|-Punkt)")
+## „a×b- oder c×d-Punkt“: zwei erlaubte Größen (Punkte 2×2 oder 3×3, entschieden 3.11.)
+EITHER = re.compile(r"(\d+)\s*×\s*(\d+)-\s+oder\s+(\d+)\s*×\s*(\d+)-Punkt")
 DEPTH = re.compile(r"(\d+)\s*px\s+tief\b")
 PIXELS = re.compile(r"^(\d+)\s*px\b")
 LINE_WIDTH = re.compile(r"Linien\b[^.|]*?(\d+)\s*px\b")
@@ -87,7 +89,7 @@ LINE_WIDTH = re.compile(r"Linien\b[^.|]*?(\d+)\s*px\b")
 def sizes(path=DEFAULT):
 	"""Größenregeln aus der Legende, für build_map.py (ZIM-141): {Name: Regel}. Gelesen werden nur Pixelangaben im
 	Hinweis eines Eintrags oder im Satz unter der Überschrift (gilt dann für jeden Eintrag der Gruppe ohne eigene):
-	„a × b px“ / „a×b-Punkt“ → ("size", a, b) Rechteck in beliebiger Lage · „d px tief“ → ("depth", d) kurze Seite
+	„a × b px“ / „a×b-Punkt“ → ("size", a, b) Rechteck in beliebiger Lage, „a×b- oder c×d-Punkt“ → ("size", a, b, c, d) · „d px tief“ → ("depth", d) kurze Seite
 	(Länge frei) · Hinweis beginnt mit „n px“ → ("pixels", n) · „Linien …, n px“ → ("width", n) Strichbreite.
 	Einträge ohne Angabe fehlen – für sie gibt es keine Regel."""
 	intro = {}   # Gruppe → Satz unter der Überschrift
@@ -101,7 +103,7 @@ def sizes(path=DEFAULT):
 			group = None   # nur der Text vor der Tabelle
 
 	def rule(text, start=False):
-		for regex, kind in ((SIZE, "size"), (DEPTH, "depth"), (LINE_WIDTH, "width")) + ((PIXELS, "pixels"),) * start:
+		for regex, kind in ((EITHER, "size"), (SIZE, "size"), (DEPTH, "depth"), (LINE_WIDTH, "width")) + ((PIXELS, "pixels"),) * start:
 			hit = regex.search(text)
 			if hit:
 				return (kind,) + tuple(int(g) for g in hit.groups())

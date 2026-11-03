@@ -32,13 +32,13 @@
 #   - Objektebenen (eigene Legende, Palettennamen mit Vorsatz): „Möbel“ (Grundfläche als Rechteck; die
 #     Vorderseite zeigt ein Strich „Möbel: Vorderseite“ am Rand oder – bei den neueren Möbeln – eine Zeile in
 #     der helleren Farbe „<Möbel> Vorderseite“, beim Doppelbett „… Kopfende“), „Ausstattung“, „Gegenstände“ und
-#     „Lichter“ (je ein 3×3-Punkt, Wandsachen innen an der Wand; Halogenleuchten als Strich in ihrer Länge, 8×2 px),
+#     „Lichter“ (je ein Punkt, 2×2 oder 3×3, Wandsachen innen an der Wand; Halogenleuchten als Strich in ihrer Länge, 8×2 px),
 #     dazu „Teppiche“ (Rechtecke; eigene Ebene, damit sie unter Möbeln liegen können – ein Läufer läuft entlang
 #     der langen Seite). Sie zählen nicht zum Grundriss.
-#   - Größenregeln (ZIM-141): Wo PLANFARBEN.md eine Größe in Pixeln nennt (Wandbreite 2 px, 3×3-Punkte, „21 × 11 px“,
+#   - Größenregeln (ZIM-141): Wo PLANFARBEN.md eine Größe in Pixeln nennt (Wandbreite 2 px, Punkte 2×2 oder 3×3, „21 × 11 px“,
 #     „4 px tief“, Türanschlag 1 px), prüft das Skript die gemalten Flächen dagegen und warnt mit Stockwerk, Ebene,
 #     Farbe und Pixelposition – es bricht nie ab. Möbel dürfen 1 px (10 cm) abweichen, Punkte und Striche nicht.
-#     Seit 3.11. abgeschaltet (CHECK_SIZES), bis entschieden ist, ob Punkte 2×2 oder 3×3 sind.
+#     Punkte dürfen 2×2 oder 3×3 sein (entschieden 3.11.); CHECK_SIZES schaltet die Prüfung ab.
 #   - Bäume (Fläche „Baum“) markieren nur den Standort, die Größe kommt aus dem Modell.
 #   - Slices (Aseprite-Werkzeug „Slice“) tragen Namen: „Raum: Küche“, „Bereich: Lobby“, „Treppe: Lobby“
 #     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite). Sie gelten im Stockwerk,
@@ -108,7 +108,7 @@ EMPTY_FILLS = ("Kellerraum zu",)
 WALL_NAME, GLASS_NAME = "Wand", "Glaswand"
 VACANT_NAME = "Zimmer leer"   ## Zimmerfläche eines unbewohnten Zimmers (Spielkonzept 6.19, 6.20)
 HINGE_NAME = "Türanschlag"   ## ein Pixel auf dem Türstrich: Scharnierende und Aufgehseite
-## Objektlegende (Palettenname → Art). Möbel und Teppiche sind Rechtecke, alles andere 3×3-Punkte.
+## Objektlegende (Palettenname → Art). Möbel und Teppiche sind Rechtecke, alles andere Punkte (2×2 oder 3×3).
 FURNITURE = {
 	"Möbel: Bett": "bed", "Möbel: Schrank": "wardrobe", "Möbel: Kommode": "dresser", "Möbel: Tisch": "table",
 	"Möbel: Couchtisch": "coffee_table", "Möbel: Tafel": "dining_table", "Möbel: Sofa": "couch", "Möbel: Bank": "bench",
@@ -309,7 +309,7 @@ assert any(n for n, _ in PALETTE), "Keine Farbnamen – Legende %s fehlt (siehe 
 BY_NAME = {n: c for n, c in PALETTE if n}
 NAME_OF = {c: n for n, c in BY_NAME.items()}
 ## Größenregeln der Legende (ZIM-141, plan_legend.sizes); ältere Pläne mit .gpl haben keine
-CHECK_SIZES = False   ## 3.11.: vorerst aus – der Plan malt Punkte fast überall 2×2, die Legende sagt 3×3
+CHECK_SIZES = True    ## 3.11.: Punkte 2×2 oder 3×3 (beides im Plan)
 SIZES = plan_legend.sizes(LEGEND) if CHECK_SIZES and LEGEND.endswith(".md") else {}
 SIZE_TOLERANCE = {"furniture": 1}   ## Möbel dürfen 1 px (10 cm) abweichen, Punkte und Striche nicht
 SIZE_WARNINGS = {}   # (Stockwerk, Ebene, Farbe, gemalt, Regel) → [(x, y)], ausgegeben von report_sizes()
@@ -1298,10 +1298,10 @@ def check_size(floor, layer, c, x0, y0, x1, y1, tol=0):
 		return False
 	w, h = x1 - x0, y1 - y0
 	if rule[0] == "size":
-		a, b = rule[1:]
-		if any(abs(w - p) <= tol and abs(h - q) <= tol for p, q in ((a, b), (b, a))):
+		allowed = list(zip(rule[1::2], rule[2::2]))   # eine Größe oder mehrere („2×2- oder 3×3-Punkt“)
+		if any(abs(w - p) <= tol and abs(h - q) <= tol for a, b in allowed for p, q in ((a, b), (b, a))):
 			return True
-		want = "%d × %d px" % (a, b)
+		want = " oder ".join("%d × %d px" % s for s in allowed)
 	else:
 		if abs(min(w, h) - rule[1]) <= tol:
 			return True

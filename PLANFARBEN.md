@@ -23,12 +23,12 @@ Legende.** Beide lesen und schreiben hier. Aus ihr entstehen automatisch:
   Ende des Strichs, in der Wandhälfte, in die die Tür aufgeht.
 - **Möbel und Teppiche** sind Rechtecke. Die **Vorderseite** zeigt eine Randzeile in der helleren Farbe aus der
   Spalte „Vorderseite“ (beim Doppelbett das Kopfende) – oder, für jedes Möbel, ein Strich `Vorderseite`.
-- **Ausstattung, Gegenstände, Lichter** sind 3×3-Punkte. Wandsachen liegen innen an der Wand (daraus die Wandseite).
+- **Ausstattung, Gegenstände, Lichter** sind Punkte, 2×2 oder 3×3 px. Wandsachen liegen innen an der Wand (daraus die Wandseite).
   Gleichfarbige Punkte dürfen sich nicht berühren. Ausnahme: Halogenleuchten sind Striche in ihrer Länge (8×2 px).
-- **Größen prüft `build_map.py`** (ZIM-141): Wo diese Legende eine Größe in Pixeln nennt – Wandbreite, 3×3-Punkte,
+- **Größen prüft `build_map.py`** (ZIM-141): Wo diese Legende eine Größe in Pixeln nennt – Wandbreite, 2×2- oder 3×3-Punkte,
   „21 × 11 px“, „4 px tief“, Türanschlag 1 px –, warnt es bei Abweichung mit Stockwerk, Ebene, Farbe und Pixelposition
-  (Möbel dürfen 1 px abweichen). Es bricht nicht ab. Angaben in Metern werden nicht geprüft. **Seit 3.11. vorerst
-  abgeschaltet** (`CHECK_SIZES` in `build_map.py`): die Punkte im Plan sind fast alle 2×2 gemalt, offen ist, ob 2×2 oder 3×3 gilt.
+  (Möbel dürfen 1 px abweichen). Es bricht nicht ab. Angaben in Metern werden nicht geprüft. **Punkte dürfen 2×2 oder 3×3**
+  sein, beides kommt im Plan vor (entschieden 3.11.); abschalten lässt sich die Prüfung mit `CHECK_SIZES` in `build_map.py`.
 - **Slices** (Aseprite-Werkzeug): `Raum: <Name>`, `Bereich: <Name>`, `Treppe: <Name>` (Pivot oben), `Treppenhaus: <Name>`,
   `Objekt: <Name>` (Pivot an der Vorderseite). Ein `Raum`-Slice benennt die ganze zusammenhängende Fläche gleicher
   Farbe, auf der er liegt – **je Fläche nur ein Raum-Slice** (fällt eine Wand weg, verschmelzen zwei Räume; der
@@ -199,7 +199,7 @@ Ebene `Teppiche`, Rechteck (eigene Ebene, damit sie unter Möbeln liegen können
 
 ## Ausstattung
 
-Ebene `Ausstattung`, 3×3-Punkt, Wandsachen innen an der Wand.
+Ebene `Ausstattung`, 2×2- oder 3×3-Punkt, Wandsachen innen an der Wand.
 
 | Farbe | Name | Hinweis |
 |---|---|---|
@@ -236,7 +236,7 @@ Ebene `Ausstattung`, 3×3-Punkt, Wandsachen innen an der Wand.
 
 ## Gegenstände
 
-Ebene `Gegenstände`, 3×3-Punkt.
+Ebene `Gegenstände`, 2×2- oder 3×3-Punkt.
 
 | Farbe | Name | Hinweis |
 |---|---|---|
@@ -265,7 +265,7 @@ Ebene `Gegenstände`, 3×3-Punkt.
 
 ## Lichter
 
-Ebene `Lichter`, 3×3-Punkt, Wandleuchten innen an der Wand. Defekt = gleiche Leuchte, dunkler.
+Ebene `Lichter`, 2×2- oder 3×3-Punkt, Wandleuchten innen an der Wand. Defekt = gleiche Leuchte, dunkler.
 
 | Farbe | Name | Hinweis |
 |---|---|---|

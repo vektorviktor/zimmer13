@@ -36,9 +36,9 @@ COLUMNS = [
 		("Öffnungen", "Striche auf der Wandlinie", "opening")],
 	[("Möbel", "Ebene Möbel · Rechteck in Grundfläche, hellere Randzeile = Vorderseite", "furniture"),
 		("Teppiche", "Ebene Teppiche · Rechteck", "rug")],
-	[("Ausstattung", "Ebene Ausstattung · 3×3-Punkt, Wandsachen innen an der Wand", "fitting"),
-		("Gegenstände", "Ebene Gegenstände · 3×3-Punkt", "item"),
-		("Lichter", "Ebene Lichter · 3×3-Punkt, Wandleuchten innen an der Wand", "light")],
+	[("Ausstattung", "Ebene Ausstattung · 2×2- oder 3×3-Punkt, Wandsachen innen an der Wand", "fitting"),
+		("Gegenstände", "Ebene Gegenstände · 2×2- oder 3×3-Punkt", "item"),
+		("Lichter", "Ebene Lichter · 2×2- oder 3×3-Punkt, Wandleuchten innen an der Wand", "light")],
 ]
 ## Namen, die build_map.py als Konstante statt in einem Wörterbuch kennt
 BUILT_CONSTANTS = ("WALL_NAME", "GLASS_NAME", "HINGE_NAME", "FRONT_NAME", "VACANT_NAME")
