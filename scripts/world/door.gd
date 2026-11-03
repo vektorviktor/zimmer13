@@ -12,12 +12,19 @@ const COLLISION_DEPTH := 0.2
 ## glTF) bzw. die gemalte Kniestocktür zum Dachboden aus tools/build_doors.py (Spielkonzept 4.21). FROSTED: Milchglastür
 ## (Pool, Duschen, Umkleiden; Planfarbe „Milchglastür“, ZIM-143) – Rahmen im Holz der Zimmertür, Zarge und Beschläge
 ## wie dort, dazwischen satiniertes Glas (Mat.frosted_glass). Sie hält den Blick auf wie eine Holztür (Ebene 2).
-enum Look { PLAIN, HOTEL, ATTIC, FROSTED }
+## GARDEN/ENTRANCE: Fenstertür nach draußen aus tools/build_french_door.py (ZIM-126) – Garten-, Terrassen- und
+## Balkontüren mit 2 × 5 Glasfeldern, der Haupteingang mit Kassette unten und 3 × 4 Glasfeldern; Holz, Zarge und
+## Beschläge wie an der Zimmertür, Glas wie an den Fenstern (Mat.glass). Ob man hindurchsieht, regelt weiter glass.
+enum Look { PLAIN, HOTEL, ATTIC, FROSTED, GARDEN, ENTRANCE }
 const HOTEL_MODEL := "res://assets/models/door_room.glb"
 const ATTIC_MODEL := "res://assets/models/door_attic.glb"
+const FRENCH_MODEL := "res://assets/models/door_french.glb"
+const FRENCH_AO := "res://assets/textures/door_french_ao.png"
 ## Blattgröße der Modelle (Meter, wie im Skript) – gestreckt auf die Tür, Beschläge bleiben, wie sie sind
 const HOTEL_LEAF := Vector2(1.18, 2.08)
 const ATTIC_LEAF := Vector2(0.78, 1.55)
+const GARDEN_LEAF := Vector2(1.08, 2.38)
+const ENTRANCE_LEAF := Vector2(1.48, 2.78)
 ## Klinke: Abstand der Drückerachse von der Schlosskante und Höhe über dem Boden
 const HANDLE_INSET := 0.1
 const HANDLE_HEIGHT := 1.04
@@ -59,7 +66,7 @@ var key_id := ""
 var locked_text := "Abgeschlossen."
 var monster_can_open := true
 var glass := false          ## Glastür: man sieht hindurch (Ebene 7 statt 2)
-var look := Look.PLAIN      ## vor dem Einhängen setzen (nicht bei Glastüren)
+var look := Look.PLAIN      ## vor dem Einhängen setzen (Glastüren: PLAIN oder GARDEN)
 var hinge_end := false      ## einfache Tür: Scharnier bei x = width statt im Ursprung (Türanschlag im Plan)
 ## Fenstertür nach draußen (Terrasse, Garten, Balkon; Gruppe „french_doors“): Raum dahinter und Richtung nach
 ## draußen – dort erscheint auch der Lakengeist (Spielkonzept 4.18)
@@ -119,7 +126,7 @@ func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: b
 func _ready() -> void:
 	add_to_group("doors")
 	# Zarge und Bekleidung: zur Zimmertür ihr eigener Rahmen im Holz des Blatts, sonst der Craftsman-Rahmen
-	if look in [Look.HOTEL, Look.FROSTED]:
+	if look in [Look.HOTEL, Look.FROSTED, Look.GARDEN, Look.ENTRANCE]:
 		add_child(DoorCasing.new().setup(width, height, COLLISION_DEPTH))
 		open_angle = signf(open_angle) * minf(absf(open_angle), HOTEL_MAX_ANGLE)
 	else:
@@ -399,7 +406,10 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 	_dirs.append(dir)
 	var leaf_size := Vector3(leaf_width - 0.02, height - 0.02, 0.06)
 	var cx := dir * leaf_width / 2.0
-	if glass:
+	var french := look in [Look.GARDEN, Look.ENTRANCE]
+	if french:
+		_add_french_leaf(body, leaf_size, dir)
+	elif glass:
 		var frame := Mat.psx(Color(0.85, 0.85, 0.8))
 		Geo.mesh(body, Geo.box(Vector3(leaf_width - 0.2, height - 0.2, 0.02)), Mat.glass(), Vector3(cx, height / 2.0, 0))
 		Geo.mesh(body, Geo.box(Vector3(leaf_width - 0.02, 0.1, 0.06)), frame, Vector3(cx, 0.05, 0))
@@ -420,7 +430,7 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 	# Kollision so tief wie die Wand: Ein dünnes Türblatt bildet eine Nische, in der die
 	# Spielerkapsel beim schrägen Entlanglaufen an der Wand hängenbleibt.
 	Geo.add_box_shape(body, Vector3(leaf_size.x, leaf_size.y, COLLISION_DEPTH), Vector3(cx, height / 2.0, 0))
-	if glass or look == Look.PLAIN:
+	if (glass or look == Look.PLAIN) and not french:
 		var brass := Mat.psx(Color(0.8, 0.65, 0.25))
 		for z in [0.05, -0.05]:
 			Geo.mesh(body, Geo.sphere(0.035, 0.07, 6, 3), brass, Vector3(dir * (leaf_width - 0.1), 1.0, z))
@@ -469,6 +479,20 @@ func _add_frosted_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
 				at.call(mid.x + s * (inner.x - b) / 2.0, mid.y, z))
 			Geo.mesh(body, Geo.grain_box(Vector3(inner.x - 2.0 * b, b, FROSTED_BEAD.y), 0, Vector2.ONE, 1.0), wood,
 				at.call(mid.x, mid.y + s * (inner.y - b) / 2.0, z))
+	_add_fittings(body, leaf_size, dir)
+
+
+## Fenstertür (Look.GARDEN/ENTRANCE): Blatt und Scheiben aus FRENCH_MODEL auf die Blattgröße gestreckt, bei dir = −1
+## gespiegelt; Drücker und Bänder der Zimmertür. Die Scheiben werfen keinen Schatten (wie an den Fenstern).
+func _add_french_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
+	var parts := _model_parts(FRENCH_MODEL)
+	var v := "garden" if look == Look.GARDEN else "entrance"
+	var ref := GARDEN_LEAF if look == Look.GARDEN else ENTRANCE_LEAF
+	for part in ["leaf_", "glass_"]:
+		var mi := Geo.mesh(body, parts[part + v][0], parts[part + v][1], Vector3(dir * 0.01, 0.01, 0))
+		mi.scale = Vector3(dir * leaf_size.x / ref.x, leaf_size.y / ref.y, 1.0)
+		if part == "glass_":
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_add_fittings(body, leaf_size, dir)
 
 
@@ -589,9 +613,11 @@ static func _model_parts(path: String) -> Dictionary:
 		var scene: Node = (load(path) as PackedScene).instantiate()
 		for mi: MeshInstance3D in scene.find_children("*", "MeshInstance3D", true, false):
 			# Zimmertür: Blatt im Holz der Vertäfelung mit eigener gebackener Verschattung, Messing wie im glTF;
-			# Kniestocktür gemalt
+			# Kniestocktür gemalt; Fenstertür Holz mit ihrer Verschattung, Scheiben wie die Fenster
 			var mat: Material
-			if path != HOTEL_MODEL:
+			if path == FRENCH_MODEL:
+				mat = Mat.glass() if String(mi.name).begins_with("glass_") else Mat.hotel_wood(FRENCH_AO)
+			elif path != HOTEL_MODEL:
 				mat = Mat.model(path, mi)
 			elif mi.name == "leaf":
 				mat = Mat.hotel_wood(Mat.DOOR_AO)

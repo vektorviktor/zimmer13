@@ -258,6 +258,7 @@ done <<'LIST'
 300|spion,monster|--spion=auge --trace
 300|schwelle,level|--schwelle --trace
 300|zierleiste,level,grafik|--zierleiste --trace
+300|fenstertuer,lakengeist,level,grafik|--fenstertuer --trace
 300|zierleiste|--zierleiste=speisesaal
 300|grafik|--grafik=niedrig --menu=settings
 300|grafik|--grafik=mittel --trace

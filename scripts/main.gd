@@ -55,6 +55,8 @@ extends Node3D
 ##                               und beugt sich an die Linse
 ##   --schwelle[=flur|zimmer|nah]   Tür von Zimmer 13 offen, du siehst auf die Messingschiene darunter (ZIM-132);
 ##                               mit --trace: unter wie vielen Türen kein Boden liegt
+##   --fenstertuer[=innen|aussen|eingang]   vor die Gartentür von Zimmer 13 (von innen bzw. außen) oder den Haupteingang
+##                               (aus der Lobby), Blick auf die Fenstertür (ZIM-126); mit --trace: Prüfung aller Außentüren
 ##   --zierleiste[=flur|zimmer|lobby|speisesaal]   Blick schräg hinauf in eine Ecke mit Zierleiste (ZIM-131);
 ##                               mit --trace: Stücke und Dreiecke je Stockwerk, Leisten in Keller/Dachgeschoss als Fehler
 ##   --prank=art[,zimmer]        Streich (6.13): das erste Kind mit Eltern steht vor der Tür (Standard Zimmer 13) und
@@ -1056,6 +1058,47 @@ func _debug_threshold(where: String) -> void:
 						print("[Schwelle] kein Boden bei %s (%s)" % [at_side.snapped(Vector3.ONE * 0.01),
 							d.room_no if d.room_no != "" else d.room_id])
 			print("[Schwelle] %d Türen, %d Hälften ohne Boden darunter" % [doors.size(), missing]))
+
+
+## --fenstertuer[=innen|aussen|eingang] (ZIM-126): Spieler 2,6 m vor der Gartentür von Zimmer 13 (sonst der ersten
+## Fenstertür) im Zimmer bzw. draußen, oder 4 m vor dem Haupteingang in der Lobby, Blick auf die Tür. Mit --trace: jede
+## Fenstertür (french_doors) muss Look.GARDEN mit Glas sein, der Haupteingang Look.ENTRANCE – sonst
+## „[Fenstertuer] FEHLER“.
+func _debug_french_door(where: String) -> void:
+	var door: Door
+	for node in get_tree().get_nodes_in_group("doors"):
+		var d := node as Door
+		if where == "eingang" and d.key_id == "ausgang":
+			door = d
+		elif where != "eingang" and d.is_in_group("french_doors") and (door == null or d.room_id == LevelBuilder.PLAYER_ROOM):
+			door = d
+	if door == null:
+		push_error("--fenstertuer: keine passende Tür im Plan")
+		return
+	# Seite: draußen = outward; der Haupteingang geht nach innen auf (+Z)
+	var out := door.outward if door.outward != Vector3.ZERO else -door.global_transform.basis.z
+	var side := out if where == "aussen" else -out
+	var at := door.center()
+	var p := Game.player
+	p.global_position = Vector3(at.x, door.global_position.y, at.z) + side * (4.0 if where == "eingang" else 2.6) 		+ Vector3(0, 0.05, 0)
+	p.rotation.y = atan2(side.x, side.z)
+	p.head.rotation.x = deg_to_rad(-2.0)
+	if Game.tracing:
+		var counts := {"garden": 0, "entrance": 0, "errors": 0}
+		for node in get_tree().get_nodes_in_group("doors"):
+			var d := node as Door
+			var bad := ""
+			if d.is_in_group("french_doors") and (d.look != Door.Look.GARDEN or not d.glass):
+				bad = "Fenstertür ohne Glas-Modell"
+			elif d.key_id == "ausgang" and d.look != Door.Look.ENTRANCE:
+				bad = "Haupteingang ohne Modell"
+			if bad != "":
+				counts["errors"] += 1
+				print("[Fenstertuer] FEHLER %s bei %s" % [bad, d.global_position.snapped(Vector3.ONE * 0.01)])
+			counts["garden"] += int(d.look == Door.Look.GARDEN)
+			counts["entrance"] += int(d.look == Door.Look.ENTRANCE)
+		print("[Fenstertuer] %d Gartentüren, %d Haupteingang, %d Fehler" % [counts["garden"], counts["entrance"],
+			counts["errors"]])
 
 
 ## --zierleiste[=flur|zimmer|lobby|speisesaal] (ZIM-131): Blick schräg hinauf in eine Ecke mit Zierleiste – vor
@@ -2277,6 +2320,8 @@ func run_debug(arg: String) -> bool:
 		_debug_peephole(_arg_value(arg, "--spion", "leer"))
 	elif _is_arg(arg, "--schwelle"):
 		_debug_threshold(_arg_value(arg, "--schwelle", "flur"))
+	elif _is_arg(arg, "--fenstertuer"):
+		_debug_french_door(_arg_value(arg, "--fenstertuer", "innen"))
 	elif _is_arg(arg, "--zierleiste"):
 		_debug_cornice(_arg_value(arg, "--zierleiste", "flur"))
 	elif arg.begins_with("--gastanruf="):

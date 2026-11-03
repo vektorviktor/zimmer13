@@ -2016,13 +2016,17 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 		hinge = center + Vector3(along.x, 0, along.y) * width / 2.0 * (1.0 if o["hinge"] == "end" else -1.0)
 	var hinge_end := not wide and (hinge - center).dot(right) > 0.0
 	var door := Door.new().setup(width, height, -90.0 if wide else -100.0, wide, glass, hinge_end)
-	match kind:   # gemalte Modelle (tools/build_doors.py): Zimmertüren und die Türen im Dachgeschoss
+	match kind:   # Modelle (Door.Look): Zimmertüren, Türen im Dachgeschoss, Milchglas- und Fenstertüren
 		"door":
 			door.look = Door.Look.HOTEL
 		"attic_door", "attic_inner_door":
 			door.look = Door.Look.ATTIC
 		"frosted_door":   # Pool, Duschen, Umkleiden (ZIM-143)
 			door.look = Door.Look.FROSTED
+		"garden_door":   # Garten-, Terrassen- und Balkontüren (ZIM-126)
+			door.look = Door.Look.GARDEN
+		"main_entrance" when _level >= 0:   # im Untergeschoss stehen in dieser Farbe verschlossene Türen
+			door.look = Door.Look.ENTRANCE
 	door.position = center - right * width / 2.0
 	door.rotation.y = yaw
 	root.add_child(door)
