@@ -262,6 +262,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `Tiles133B` (ambientCG, CC0) | Küchenwände bis unter die Decke (Haut der Seite `kitchen`, `_kitchen_tiles`; ohne Vertäfelung) | hellblaue 15-cm-Fliesen, 1,8 m, AO eingebacken |
 | `WoodFloor014` (ambientCG, CC0) | Speisesaal, Boden (`_dining_floor`, `DINING_ROOM`; Wände bleiben tapeziert) | Fischgrätparkett, Stäbe 7,5 × 30 cm, `DINING_FLOOR_METERS` 1,2 m; AO-Karte einfarbig, verworfen |
 | `Gravel022` (ambientCG, CC0) | Kieswege (`gravel`) | grauer Kies, `GRAVEL_METERS` 1,5 m, AO eingebacken, `GRAVEL_NORMAL_STRENGTH` 1,5; Rauheit verworfen (glänzte trocken) |
+| `Ground048` (ambientCG, CC0) | Erdwälle der Kürbisbeete (`GardenBed`, `_garden_beds`) | dunkle krümelige Gartenerde, `SOIL_METERS` 1,4 m, AO eingebacken, `SOIL_NORMAL_STRENGTH` 1,3, warm getönt (`SOIL_TINT`, sonst im kühlen Außenlicht grauviolett); Rauheit weggelassen (matt), Schritte über Meta „floor“ = grass, nass glänzend |
 | `Granite002B` (ambientCG, CC0) | Randsteine (`Curbs`, `_curb`) | grau-weiß gesprenkelt, rau; `CURB_METERS` 0,4 m, kühl abgedunkelt (`CURB_TINT`, sonst im Abendlicht beige), `CURB_NORMAL_STRENGTH` 1,5; kein AO im Set, Rauheit weggelassen (stumpf) |
 | `StoneFloor_02` | Außenwände (Haut der Seite `outside`, `_facade`) | |
 | `Wood_Panels_01` | alle Holzdecken (`_ceiling`, `_room_ceiling`), Aufzugskabine | aufgehellt `CEILING_SHADE`/`ROOM_CEILING_SHADE` |
@@ -784,6 +785,13 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   nach einem Rauschen ihrer **Weltlage** – gleiche Ecken zweier Stücke wandern gleich, an Gehrungen bleibt keine Fuge.
   Blattkarten (`_cards`, `psx_leaves`) brechen den Umriss auf; Normale der Fläche darunter, damit die Blätter wie die
   Hecke beleuchtet werden. Eigener Zufall je Linie (Spielstände unberührt).
+- **Kürbisbeete** (`scripts/level/garden_bed.gd`, `GardenBed` aus `_garden_beds`): je Pflanzenreihe (z auf 0,5 m) ein
+  Erdwall über `BED_OVERHANG` hinaus, `BED_DEPTH` tief. `height(p)`: quer `(1 − t²)^1,4` (oben breit, zum Rand steiler),
+  an den Enden über `ROUND` auslaufend, Wall `RIDGE` + Hügel `HILL` (Kosinus über `HILL_RADIUS`) an jeder Pflanze,
+  Klumpen aus Rauschen (`CLODS`, zum Rand weniger); der Rand liegt `SINK` unter dem Boden (keine Fuge zum Rasen).
+  Netz im Raster `STEP` mit weichen Normalen aus der Höhe, eigene `ConcavePolygonShape3D` (Füße, Gegenstände,
+  NavMesh). `_fittings` läuft vor `_gardens` – die Pflanzen setzt `_garden_beds` danach auf `_bed_height`.
+  `garden_beds` (Rechtecke) bleibt für Rasen und Gras.
 - **Rasenwellen** (`scripts/level/lawn.gd`, `Lawn` aus `_gardens`, ZIM-173): Raster `CELL` über allen Rasenflächen
   (`Lawn.rects`), Rasen = `is_lawn` ohne Beete, Kübel, Bäume, Ausstattung, Laternen; Abstand zum Rand in zwei
   Durchläufen (Schachbrettmaß). `height(p)` = `LIFT` + Rauschen (`FastNoiseLite`, `WAVE`, nur nach oben bis

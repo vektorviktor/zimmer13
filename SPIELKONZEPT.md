@@ -5719,7 +5719,8 @@ Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
 > **Kieswege** im Garten (Kies Gravel022 seit 2026-11-03, ZIM-89) mit **Randsteinen** (entschieden und umgesetzt
 > 2026-11-03, ZIM-173): wo Kies an Rasen stößt, einzelne Granitsteine auf der Rasenseite, leicht verkippt, einzelne
 > abgesackt; das Gras wächst stellenweise bis an den Stein und hängt über die Kante, der **Rasen** wellt sich leicht
-> (bis 8 cm, zum Rand hin flach) – die geraden Wege des Plans wirken angelegt statt gezeichnet. **Müllraum** im Keller, nicht gebaute
+> (bis 8 cm, zum Rand hin flach) – die geraden Wege des Plans wirken angelegt statt gezeichnet. Die **Kürbisbeete** sind Erdwälle aus dunkler, krümeliger Gartenerde
+> (Ground048, 2026-11-03), gut 15 cm hoch mit einem Hügel um jede Pflanze. **Müllraum** im Keller, nicht gebaute
 > Kellerräume bleiben zu. **Bäume** im Plan sind nur Standortmarken, jeder Baum hat dieselbe Größe. **Grasbüschel**
 > (entschieden und umgesetzt 2026-10-22): verwildert, bis 30 cm, wiegen sich im Wind und neigen
 > sich unter Schritten und Gegenständen zur Seite – niedrig genug, dass nichts darin verschwindet; Wege, Beete, Kübel, Baumwurzeln und Gegenstände des Plans bleiben frei. **Zimmer 13**

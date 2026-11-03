@@ -46,6 +46,17 @@ const GRAVEL_TEX := "res://assets/textures/Gravel022/Gravel022_basecolor.jpg"
 const GRAVEL_NORMAL := "res://assets/textures/Gravel022/Gravel022_normalogl.jpg"
 const GRAVEL_METERS := 1.5
 const GRAVEL_NORMAL_STRENGTH := 1.5
+## Erde der Kürbisbeete (GardenBed): Ground048 (ambientCG, CC0, dunkle krümelige Gartenerde; Farbbild mit eingebackener
+## AO + Normal Map, je 1024², ohne Rauheit – Erde ist matt), 1,4 m je Kachel wie im Set
+const SOIL_TEX := "res://assets/textures/Ground048/Ground048_basecolor.jpg"
+const SOIL_NORMAL := "res://assets/textures/Ground048/Ground048_normalogl.jpg"
+const SOIL_METERS := 1.4
+const SOIL_TINT := Color(0.92, 0.8, 0.68)   ## wärmer – im kühlen Licht draußen wirkte sie grauviolett
+const SOIL_NORMAL_STRENGTH := 1.3
+const SOIL_WET_GLOSS := 0.6
+## Grundfläche eines Kürbisbeets: so weit über die äußeren Pflanzen hinaus, Tiefe quer zur Reihe
+const BED_OVERHANG := 0.8
+const BED_DEPTH := 1.3
 ## Randsteine an den Kieswegen (Curbs, ZIM-173): Granite002B (ambientCG, CC0, grau-weiß gesprenkelt, rau), Farbbild
 ## und Normal Map je 1024², CURB_METERS je Kachel, leicht vergraut (draußen verwittert), stumpf – nass glänzt er
 const CURB_TEX := "res://assets/textures/Granite002B/Granite002B_2K-JPG_Color.jpg"
@@ -637,6 +648,7 @@ var kitchen_spot := Vector3.ZERO
 var kitchen_spots: Array[Vector3] = []   ## Stehplätze der Gäste in der Küche, Raster KITCHEN_SPOT_STEP (ZIM-155)
 var garden_spots: Array[Vector3] = []
 var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kein Gras (Grass)
+var _bed_mounds: Array[GardenBed] = []   ## dieselben Beete als Erdwall (Höhe für die Pflanzen)
 var lawn: Lawn                        ## Rasenwellen im EG (Höhe für Grasbüschel)
 ## Bäume: {pos (Stammachse am Boden), radius (Krone), height, crown (Höhenbereich der Krone als Anteile)} – für die
 ## Fledermäuse (Bats)
@@ -3204,7 +3216,7 @@ func _fittings() -> void:
 			# Kürbispflanze, Sorte nach Palettenfarbe („pumpkin_plant:hokkaido“, Spielkonzept 5.8)
 			var variety := kind.get_slice(":", 1) if ":" in kind else PumpkinKinds.DEFAULT
 			var plant := PumpkinPlant.new().setup(PLANT_STAGES[plants % PLANT_STAGES.size()], variety)
-			plant.position = Vector3(p.x, 0.05, p.y)   # auf dem Beet (_garden_beds)
+			plant.position = Vector3(p.x, 0.0, p.y)   # Höhe setzt _garden_beds (Erdwall)
 			root.add_child(plant)
 			plants += 1
 			continue
@@ -4609,13 +4621,19 @@ func _garden_beds() -> void:
 			(rows[z] as Array).append(float(o["pos"][0]))
 	var order := rows.keys()
 	order.sort_custom(func(a: float, b: float) -> bool: return absf(a - _lobby.position.y) < absf(b - _lobby.position.y))
-	var dirt := Mat.psx(Color(0.22, 0.14, 0.08))
+	var soil := Mat.photo(SOIL_TEX, SOIL_METERS, SOIL_NORMAL, "", 0.0, SOIL_TINT).duplicate() as ShaderMaterial
+	soil.set_shader_parameter("normal_strength", SOIL_NORMAL_STRENGTH)
+	soil.set_meta("floor", "grass")   # weicher Schritt wie auf dem Rasen (Footsteps)
+	Mat.wettable(soil, SOIL_WET_GLOSS)
 	for z: float in order:
 		var xs: Array = rows[z]
 		var x0: float = xs.min()
 		var x1: float = xs.max()
-		Geo.mesh(root, Geo.box(Vector3(x1 - x0 + 1.6, 0.06, 1.3)), dirt, Vector3((x0 + x1) / 2.0, 0.03, z))
-		garden_beds.append(Rect2(x0 - 0.8, z - 0.65, x1 - x0 + 1.6, 1.3))
+		var rect := Rect2(x0 - BED_OVERHANG, z - BED_DEPTH / 2.0, x1 - x0 + 2.0 * BED_OVERHANG, BED_DEPTH)
+		var bed := GardenBed.new(rect, xs)
+		bed.build(root, soil)
+		_bed_mounds.append(bed)
+		garden_beds.append(rect)
 		garden_spots.append(Vector3((x0 + x1) / 2.0, 0, z + 1.0))
 
 
@@ -4649,6 +4667,19 @@ func _tree(pos: Vector3, index: int) -> void:
 	var colors: Array[Color] = [Color(0.6, 0.25, 0.05), Color(0.7, 0.4, 0.08), Color(0.45, 0.12, 0.05)]
 	var offsets: Array[Vector3] = [Vector3(0, height / 2.0, 0), Vector3(radius * 0.35, height / 2.0 - 0.6, radius * 0.2), Vector3(-radius * 0.3, height / 2.0 - 0.4, -radius * 0.25)]
 	for i in 3:
+		if Game.tracing:
+			print("[Beete] Erdwall %s mit %d Pflanzen" % [rect, xs.size()])
+	for plant in root.get_children():   # schon von _fittings gesetzt
+		if plant is PumpkinPlant:
+			plant.position.y = _bed_height(Vector2(plant.position.x, plant.position.z)) - 0.01
+
+
+## Höhe der Erde an p (x, z) auf einem Kürbisbeet, sonst 0.
+func _bed_height(p: Vector2) -> float:
+	for bed in _bed_mounds:
+		if bed.rect.has_point(p):
+			return bed.height(p)
+	return 0.0
 		Geo.mesh(trunk, Geo.sphere(radius * (0.7 - i * 0.12), radius * (0.9 - i * 0.12), 8, 4), Mat.psx(colors[i]), offsets[i])
 
 
