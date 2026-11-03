@@ -44,16 +44,16 @@ Stand: 2026-11-04.
 | Kopf des Kürbismanns | `PUMPKIN_HEAD` | **teilweise** – Platzhaltermodell auf dem Dachboden, Ritual fehlt | Nebenstrang (Liesel) | Kürbismann erlösen | 4.21, 2.7, M14 |
 | Hauptsicherung des Aufzugs | `FUSE` | **teilweise** – Gegenstand und Fach „AUFZUG“ am Sicherungskasten gebaut 3.11. (ZIM-14); Spind, Einbruch und Bruno fehlen (ZIM-4), im Spiel bisher nicht zu finden | **Hauptgeschichte** (Aufzug) | jede Ernte im Spind des Hausmeisters (Hausmeisterraum, EG); Bruno bricht ihn in Nacht 5 auf und behält sie als Faustpfand; Sicherungskasten im UG | 7.4, M9, K3 |
 | Spind des Hausmeisters | – (`SteelLocker`) | **teilweise** – Stahlspind gebaut 3.11. (ZIM-174, Plan `#6c7d89`, mit Schloss `#4f5d68`); mit Slice „Spind: Hausmeister“ geht er für den Spieler nicht auf; im Plan steht er noch ohne Schloss, ohne Slice und 6 × 6 px, Inhalt und Einbruch fehlen (ZIM-4) | **Hauptgeschichte** (Aufzug) | Hausmeisterraum (`#c4d35b`); Zahlenschloss, für den Spieler zu, ab Nacht 5 aufgebrochen; kein Brecheisen (3.11.) | 2.11, 7.4, 7.18 |
-| Seine Sachen: Taschenuhr, Mütze, Foto von Marion | – | geplant (Inhalt: Vorschlag) | Nebenstrang (Marion) | Karton „Personal 1987“ im Lager in U2 | 2.8, M15a |
+| Seine Sachen: Taschenuhr, Mütze, Foto von Marion | – | geplant (Inhalt: Vorschlag) | Nebenstrang (Marion) | Karton „Personal 1987“ im Fundsachenlager in U2 | 2.8, M15a |
 | Vertrag (das Abkommen) | – | geplant | Nebenstrang (Marion) | Büro der Direktion; im Feuer von 1987 verbrennen | 2.3, 2.8, M15b |
 | Schädel des Kürbismanns | – | geplant | – (Belohnung) | nach der Erlösung; stärkste Deko | 4.21 |
 | Blutige Axt | – | geplant | – (Belohnung) | nach der Erlösung; an der Tür klaut keiner | 4.21 |
 | Jeansjacke | – | geplant | Nebenstrang (Marion, Schlüsselbund) | nach der Erlösung; Deko | 4.21, 2.8 |
-| Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Lager, K5) | Lager in U2; Namen der Warnungszettel, fest auch im Register (u. a. Heinrich Brehm 1987, Rudolf Hain 2008) | 7.4, M11 |
+| Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Fundsachenlager, K5) | Fundsachenlager in U2; Namen der Warnungszettel, fest auch im Register (u. a. Heinrich Brehm 1987, Rudolf Hain 2008) | 7.4, M11 |
 | Silberstock des alten Herrn | – | geplant (2026-11-03, ZIM-8) | – (Brunos Herzensbitte statt Lieblingskürbis) | lehnt im Büro der Direktion am roten Sessel wie auf dem Porträt; Schlangenkopf aus Silber, unter dem Knauf „31.10.1987“; Bruno kennt ihn von der Fotowand | 6.14, 2.10 |
 | Goldener Ehering („O. & G. 1976“) | `RING` | gebaut 2026-11-03 | – (seltene Bitte „Wiederfinden“) | Gerda Wagners (H10, Zimmer 007); im Krähennest vor dem Dachfenster nahe dem Futtertisch, durchs aufgeklappte Fenster zu greifen; ihr schenken → Freundschaft und ein kleines Geschenk (Kerze, sonst Bonbons); sie steckt ihn gleich an; draußen abgelegt stehlen ihn die Krähen wieder | 4.25, 6.14, ZIM-50 |
 | ~~Kohle~~ | – | gestrichen 2026-10-27 (Kessel ist Attrappe) | – | – | 7.4 |
-| Bolzenschneider | – | eingefroren | – | Lager aufbrechen | 7.4 |
+| Bolzenschneider | – | eingefroren | – | Fundsachenlager aufbrechen | 7.4 |
 
 ## 3. Dokumente und Lesbares
 

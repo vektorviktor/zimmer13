@@ -62,7 +62,7 @@ keiner von ihnen wird je darüber sprechen.
 | M9 | **Hauptsicherung:** Spind des Hausmeisters aufgebrochen (Nacht 5), Aushang der Direktion, Gerüchte → **Bruno** (K3) | ab 6.10., 2. Woche | fest (7.4, 2026-10-30) | Sicherungskasten im UG |
 | M9a | **Sekretariat:** das **Foto 2005** in der offenen Schreibtischschublade (Glas gesprungen); in der zweiten Schublade mit Zahlenschloss der **Generalschlüssel** – Code 1990, die erste Ernte, aus dem Gästebuch, eine Ziffer aus Milas Nachtpartie (6.14) | 6.–10.10. (Brunos Schlüssel, K3) | fest (2.10, ZIM-6), Code: Vorschlag | Foto 2005 → Fährte zum Schlüssel (M11b); Generalschlüssel öffnet jede Zimmertür (6.19) |
 | M10 | Bremse lösen im Maschinenraum (laut, neben dem schlafenden Monster) | 2. Woche | fest (7.4) | Aufzug fährt |
-| M11 | **Erste Fahrt:** Die Kabine fährt ohne Knopf allein nach U2 – Lager, Fundsachen-Koffer; danach baut Hugo den Knopf für U2 ein und erzählt davon | bis 14.10. | fest (7.4), Inhalt: Kandidat (K5) | Namen der Warnungszettel als Koffer; Edna (K5) |
+| M11 | **Erste Fahrt:** Die Kabine fährt ohne Knopf allein nach U2 – Fundsachenlager mit den Koffern; danach baut Hugo den Knopf für U2 ein und erzählt davon | bis 14.10. | fest (7.4), Inhalt: Kandidat (K5) | Namen der Warnungszettel als Koffer; Edna (K5) |
 | M11b | **Fährte zum Schlüssel** (K6): Bleistiftnotiz in Zimmer 18 „R. hat ihn.“ – zuerst denkt man an Walter **R**uprecht in 014, eine falsche Fährte (erst seit 2023 hier, auf keinem alten Foto); das Gästebuch zeigt 2005 und 2008 „Rudolf Hain“ in 014, 2005 ohne Kreuz, 2008 mit; das Foto 2005 aus dem Sekretariat (M9a) zeigt ihn scharf neben zwei verwischten Gesichtern, 2008 an der Fotowand verwischt; Oskars Erinnerung („Einer hat das Tor aufgemacht.“) | ab M8, vor M18 | fest (2.10), Texte: Vorschlag | Rudolf Hains Koffer bei den Fundsachen in U2 (M18) |
 
 ### Akt IV – Der Hausmeister (15.–22. Oktober) · **Anker 3**
@@ -73,7 +73,7 @@ keiner von ihnen wird je darüber sprechen.
 | M13 | **Marion entlarven** – Register „geb. Ahrend“ + Kesselbuch, Beweis und Beziehung (K4) | so früh wie möglich | fest (2.8) | **Marions Auftrag:** ihren Vater erlösen |
 | M14 | Leviathanmauer bleibt nach Angriffen offen: Schlüssel zum Dachboden → Kopf des Kürbismanns, Erlösung – im Auftrag von Liesel Brück, die ihn 1987 köpfte (K7) | ab Tag 15 | fest (4.21, 2.7) | Nebenstrang mit Auftraggeberin |
 | M15 | **Das Monster will die Mitwisser:** Edna wird gezielt bedroht (K5) | um den 20.10. | fest (2026-11-03, ZIM-5) | Edna ist bis hierher geschützt (Spielkonzept 6.17), hier rettbar → überlebt sie, erzählt sie; sonst Notiz in 003 |
-| M15a | **Seine Sachen** aus dem Lager: Karton „Personal 1987“, Taschenuhr (K4) | nach M11 und M13 | fest (2.8), Inhalt: Vorschlag | Ritual |
+| M15a | **Seine Sachen** aus dem Fundsachenlager: Karton „Personal 1987“, Taschenuhr (K4) | nach M11 und M13 | fest (2.8), Inhalt: Vorschlag | Ritual |
 | M15b | **Büro der Direktion** mit dem Schlüsselbund aus der Jeansjacke des Kürbismanns – oder mit Josefs Bund vom alten Kessel in U2 (2.8, 2026-11-03): Vertrag (K4) | nach M14 bzw. M11 | fest (2.8: Vertrag), Weg Kürbismann: Vorschlag | Ritual |
 | M15c | **Milas Skizze:** Sie zeigt dem Spieler den alten Mann, den sie nachts hinten rechts in der Lobby gezeichnet hat – „Keiner außer mir hat ihn gesehen.“ Danach ist sie Mitwisserin (Spielkonzept 2.10, 6.17) | um den 18.10. | fest (2026-11-03, ZIM-8) | der alte Herr; Nachtpartie (6.14) |
 
@@ -83,7 +83,7 @@ keiner von ihnen wird je darüber sprechen.
 |----|-------------|----------------|--------|---------------------------|
 | M16 | Großes Schmücken täglich, Kostüme ab dem 25. | 24.–30.10. | fest (2.4, 5.9) | Laken im Flur: Gast oder Geist? |
 | M16a | **Marion offenbart sich selbst**, wenn man sie bis dahin nicht entlarvt hat – nur noch eine Woche | 24.10. abends | fest (2.8), Datum: Vorschlag | Marions Auftrag, mit weniger Zeit |
-| M17 | Die Leviathanmauer bleibt offen – U2 gehört dem Monster | ~25.10. | fest (7.4) | Lager und alter Heizkeller werden gefährlich |
+| M17 | Die Leviathanmauer bleibt offen – U2 gehört dem Monster | ~25.10. | fest (7.4) | Fundsachenlager und alter Heizkeller werden gefährlich |
 | M18 | **Den Schlüssel holen** – aus Rudolf Hains Koffer bei den Fundsachen in U2 (K6) | offen (ZIM-22) | Fundort fest (2.10), Zeitpunkt und Weg offen | Haupteingang |
 
 ### Akt VI – Halloween (31. Oktober) · **Anker 4**
@@ -188,7 +188,7 @@ flowchart TD
 - **Fest (2026-11-03, ZIM-6):** Im Spind hing neben der Sicherung auch der **Sekretariatsschlüssel** – Bruno behält
   beides. Über ihn öffnet sich um den 6.–10. das Sekretariat (Spielkonzept 2.10).
 - **Kernfrage nebenbei:** Bruno ahnt, wofür man sie braucht, und will mit nach U2 – oder seinen Anteil am
-  Lager. Teilen oder nicht (7.4)?
+  Fundsachenlager. Teilen oder nicht (7.4)?
 - **Warum stark:** gibt einer Kernfigur ihre Rolle im Geheimnis (6.0, „Zu klären“) und macht Anker 2 sozial statt nur
   mutig.
 
@@ -198,7 +198,7 @@ flowchart TD
 - **Marion entlarven:** Mit Kesselbuch und Register („geb. Ahrend“) spricht man sie an – Beweis und Beziehung (2.3).
   Hat man es bis zum **24. Oktober** nicht geschafft, klopft sie selbst an Zimmer 13. Wer früh dran ist, hat Wochen,
   wer wartet, eine Woche, in der U2 schon dem Monster gehört.
-- **Ihr Auftrag** (2.8): seine Sachen aus dem Lager (Taschenuhr), der Vertrag aus dem Büro der Direktion (Schlüsselbund aus der
+- **Ihr Auftrag** (2.8): seine Sachen aus dem Fundsachenlager (Taschenuhr), der Vertrag aus dem Büro der Direktion (Schlüsselbund aus der
   Jeansjacke des Kürbismanns, Vorschlag: Liesels Auftrag führt in Marions – oder Josefs Bund vom alten Kessel, 2.8).
 - **Das Ritual in der Halloween-Nacht:** im alten Heizkeller (U2) den Vertrag ins Feuer von 1987, Marion ruft ihn mit
   seinen Sachen – er geht ins Feuer, und es erlischt. Kein letzter Angriff.
@@ -208,14 +208,14 @@ flowchart TD
 - **Scheitern:** nicht erlöst → letztes Urteil und letzter Angriff; Vertrag verbrannt, aber nicht erlöst → frei und
   ohne Warnung. Marion stirbt nicht vorher (Kernfigur, 6.17).
 - **Warum stark:** Der Wendepunkt der Ermittlung wird zum großen Auftrag der zweiten Monatshälfte, verbindet drei
-  Anker (Heizraum, Aufzug/Lager, Halloween) und den Kürbismann-Strang – und belohnt, wer früh ermittelt.
+  Anker (Heizraum, Aufzug/Fundsachenlager, Halloween) und den Kürbismann-Strang – und belohnt, wer früh ermittelt.
 
 ### K5 – Edna, die 1987 hinauskam (Akt III–V)
 - **Fest (2.7):** Edna Wiegand war 1987 als Erwachsene im Hotel und gehört zu denen, die damals hinauskamen – und
   geschwiegen haben. Sie schrieb den ältesten Warnungszettel („E. K., Zimmer 017“); im Register steht sie mit
   Geburtsnamen „geb. Kessler“ (dasselbe Muster wie bei Marion). Deshalb ihre Kerzen, deshalb versteckt sie sich beim ersten
   Flackern (6.0).
-- **Fest (2026-11-03, ZIM-5/7):** Sie hieß **Edna Kessler**. Im Lager (M11) steht der Koffer ihres **Verlobten Heinrich
+- **Fest (2026-11-03, ZIM-5/7):** Sie hieß **Edna Kessler**. Im Fundsachenlager (M11) steht der Koffer ihres **Verlobten Heinrich
   Brehm** von 1987 – der, der damals nicht mit hinauskam. Sie ist zurückgekommen, weil sie das Schweigen nicht mehr
   aushält. Ihre Kerze fürs Fenster (Herzensbitte) steht zum Garten hin, wo er verschwand (Spielkonzept 6.14).
 - **Kandidat (2026-10-25) – sein Zimmer 042:** Der Mann floh in jener Nacht durch seine Terrassentür noch bis in den
@@ -237,7 +237,7 @@ flowchart TD
   Namensschild und seinem Zettel von 2008 („Ich weiß nicht mehr, woher ich ihn habe. Aber ich darf ihn nicht
   hergeben.“). Rudolf Hain trug ihn 2005 hinaus, brachte ihn 2008 ohne Erinnerung zurück und starb in jener Ernte. Die
   Fährte dorthin: M11b.
-- **Offen (ZIM-22):** ab wann der Schlüssel greifbar ist und wie man ihn holt (Lagerzugang, Revier des Monsters, Hilfe
+- **Offen (ZIM-22):** ab wann der Schlüssel greifbar ist und wie man ihn holt (Zugang zum Fundsachenlager, Revier des Monsters, Hilfe
   der Gäste) – nicht entschieden.
 - **Fest (2.7):** Kein Einsammeln – alle Lebenden kommen in die Lobby und gehen gemeinsam schweigend ins erste
   Morgengrauen. Ohne Schlüssel stirbt jeder, der noch drin ist, auch der Spieler; keine Zeitschleife.

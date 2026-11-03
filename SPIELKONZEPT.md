@@ -115,7 +115,7 @@
   - [7.1 Die Lobby – Gemeinschaftsraum](#71-die-lobby--gemeinschaftsraum)
   - [7.2 Maße & Architektur](#72-maße--architektur)
   - [7.3 Fenster, Vorhänge & Wandlampen](#73-fenster-vorhänge--wandlampen)
-  - [7.4 Fahrstuhl & U2 (vorgemerkt 2026-10-11)](#74-fahrstuhl--u2-vorgemerkt-2026-10-11)
+  - [7.4 Fahrstuhl & U2 (entschieden 2026-10-11)](#74-fahrstuhl--u2-entschieden-2026-10-11)
   - [7.5 Neuer Grundriss aus dem Gebäudeplan (entschieden 2026-10-18)](#75-neuer-grundriss-aus-dem-gebäudeplan-entschieden-2026-10-18)
   - [7.6 Partikeleffekte (entschieden und umgesetzt 2026-10-20)](#76-partikeleffekte-entschieden-und-umgesetzt-2026-10-20)
   - [7.7 Obergeschoss: Zimmer, Balkone, Katzenraum, Bibliothek (vorgemerkt und umgesetzt 2026-10-20)](#77-obergeschoss-zimmer-balkone-katzenraum-bibliothek-vorgemerkt-und-umgesetzt-2026-10-20)
@@ -186,7 +186,7 @@ jeder). Verweise auf 2.2 gelten nicht mehr.
 ### 2.3 Fortschritt & Geheimnis (entschieden 2026-10-11)
 > Stand: entschieden 2026-10-11 · gebaut: Hotelregister und Notizbuch des Hausmeisters (2026-10-28), Büro der Direktion
 > mit Porträt (2026-11-01, ZIM-150/151), Sekretariat mit Generalschlüssel (2026-11-03, ZIM-6) · offen: Vertrag,
-> Kesselbuch, Personalakte, Zeitungsausschnitt, U2 mit Lager und altem Heizkeller (7.4).
+> Kesselbuch, Personalakte, Zeitungsausschnitt, U2 mit Fundsachenlager und altem Heizkeller (7.4).
 > Gibt dem Spiel eine Richtung, weil man sonst nur überlebt und nirgendwohin kommt. Verbindet Story, Warnungszettel
 > (4.13), Fahrstuhl & U2 (7.4) und die Gäste (6).
 
@@ -222,7 +222,7 @@ jeder). Verweise auf 2.2 gelten nicht mehr.
 - **Zwei Arten von Mitwissern:**
   - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): der **alte Herr**, Gründer und Direktor, nur auf den Fotos zu sehen (2.10, 2026-10-30); der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht. Er ist heute der **Hausmeister** – der einzige Lebende der Besetzung von 1987, nie zu sehen (2.11, 2026-10-30).
   - **Angehörige, die suchen:** die **Tochter des früheren Hausmeisters**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht die Wahrheit über ihren Vater – eine **Verbündete, die nicht mit hinaus will** (2.8). **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer Josefs Personalakte kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
-- **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 (umgesetzt 2026-10-28: aufgeschlagen auf der Rezeption, 2.9) · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** Josefs mit Foto (die Statur passt) · **Kesselbuch** in Josefs Spind · der **alte Heizkeller** in U2 · die Koffer früherer Gäste im Lager (7.4).
+- **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 (umgesetzt 2026-10-28: aufgeschlagen auf der Rezeption, 2.9) · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** Josefs mit Foto (die Statur passt) · **Kesselbuch** in Josefs Spind · der **alte Heizkeller** in U2 · die Koffer früherer Gäste im Fundsachenlager (7.4).
 - **Enden (Vorschlag):**
   - **Flucht:** mit dem Schlüssel hinaus – mit allen Überlebenden (2.7).
   - **Das Abkommen brechen:** den Vertrag im Feuer von 1987 verbrennen (alter Heizkeller, 7.4). Er ist nicht mehr gebunden – ob das gut ist, bleibt offen. **Seit 2026-10-25 Teil von Marions Auftrag (2.8).**
@@ -243,7 +243,7 @@ jeder). Verweise auf 2.2 gelten nicht mehr.
 
 **Dokumente (Lore)**
 - **Jedes Dokument zeigt auf etwas** – einen Ort, eine Person, einen Code. Lore, die nur Sammelgut ist, liest niemand.
-- **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch Josefs (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Lager (7.4).
+- **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch Josefs (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Fundsachenlager (7.4).
 - **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Was ein Dokument verrät, notiert der Spieler-Charakter als eine Zeile mit Quelle im **Notizbuch** (Lesezeichen „Notizen“, 3.10), ebenso Gerüchte – mit dem, von dem sie stammen, ohne zu sagen, ob sie stimmen. Wendepunkte der Ermittlung (ein Mitwisser bricht sein Schweigen) schreibt er ins **Tagebuch** (3.10, 8.5).
 
 **Das Ding unter dem Hotel** (entschieden 2026-11-03, ZIM-9): **Es war formlos.** 1987 hatte es keine Gestalt – Hitze,
@@ -698,7 +698,7 @@ bleiben leer.
   wieder eingeladen.
 - **Die Warnungszettel** stammen von denen, die es nicht hinausgeschafft haben (4.13) – und von Überlebenden wie Edna,
   solange sie noch drin waren.
-- **In Ernten ohne Schlüssel** kam niemand hinaus. Ihre Koffer stehen im Lager (7.4).
+- **In Ernten ohne Schlüssel** kam niemand hinaus. Ihre Koffer stehen im Fundsachenlager (7.4).
 - **Ob das Monster erlöst wird,** entscheidet Marions Auftrag (2.8); davon hängt das **letzte Urteil der Puppe** (5.5) ab.
 
 ### 2.8 Josef erlösen – Marions Auftrag (entschieden 2026-10-25)
@@ -716,7 +716,7 @@ größer, mitten in seinem Revier.
   Dann hat man **weniger Zeit** für die Aufgabe.
 - **Drei Teile** (aus den Optionen vom 2026-10-25; der vierte, die Werkstatt, entfällt 2026-10-27):
   1. **Marion ruft ihn** – ihre Stimme ist der Kern; ohne sie geht es nicht.
-  2. **Seine Sachen** aus den Fundsachen im Lager (U2, 7.4) zu ihm bringen.
+  2. **Seine Sachen** aus dem Fundsachenlager (U2, 7.4) zu ihm bringen.
   3. **Das Abkommen brechen:** den Vertrag aus dem Büro der Direktion (2.3) in seinem Feuer verbrennen.
   - Verworfen: die Werkstatt im Tiefkeller als vierter Teil (2026-10-27, weil sein Feuer im alten Heizkeller brennt
     und das Ritual dort endet, 7.4).
@@ -730,7 +730,8 @@ größer, mitten in seinem Revier.
 
 **Marions Identität**
 - **Selbst herausfinden:** Im Hotelregister steht „Marion Teske, geb. Ahrend“ (2.3, 6.20); den Namen Ahrend kennt man
-  aus dem Kesselbuch in Josefs Spind (Heizraum, 7.4) oder der Personalakte. Mit beidem kann man sie ansprechen („Sie sind Josef Ahrends
+  aus dem Kesselbuch in Josefs Spind (Heizraum, 7.4; Zahlenschloss **2803**, Marions Geburtstag – sie verrät ihn erst
+  nach dem ersten Abstieg, 7.18) oder der Personalakte. Mit beidem kann man sie ansprechen („Sie sind Josef Ahrends
   Tochter.“) – **Beweis und Beziehung** (2.3): Mag sie einen noch nicht genug, streitet sie es ab, und man kann es später
   noch einmal versuchen.
 - **Sie offenbart sich selbst** (Vorschlag: am **Abend des 24. Oktober**, bevor die letzte Woche mit täglichem Großen
@@ -739,11 +740,11 @@ größer, mitten in seinem Revier.
 - **Was sie erzählt:** Sie war 1987 zwölf und im Hotel. Sie hat gesehen, wie das Personal die Tür hinter ihrem Vater
   abschloss – den Schlüssel drehte ein Junge in Livree, der Page (2.11) –, und sie weiß, dass es einen Vertrag gibt. Sie sagt, was zu tun ist – aber nicht, wo alles liegt.
 - **Ältester Zettel** (entschieden 2026-10-25): Ednas Zettel „E. K.“ von Oktober 1987 ist der älteste eines Gastes (2.7);
-  von Josef stammt die UV-Schrift von 1987 im Heizkeller (7.9), mit „J. A.“ gezeichnet – ein Hinweis auf den Namen.
+  von Josef stammt die UV-Schrift von 1987 im Heizraum (7.4, 7.9), mit „J. A.“ gezeichnet – ein Hinweis auf den Namen.
 - **Danach will das Monster sie** (2.3: „Das Monster will gerade die Mitwisser“). Sie zu schützen wird Teil der Aufgabe.
 
 **Die Teile im Einzelnen**
-- **Seine Sachen:** Unter den Fundsachen im Lager liegt ein Karton „Personal 1987“ mit seinen Sachen. Marion sagt, wonach
+- **Seine Sachen:** Im Fundsachenlager liegt ein Karton „Personal 1987“ mit seinen Sachen. Marion sagt, wonach
   man suchen soll (Vorschlag: seine **Taschenuhr** – „Er hat sie mir immer ans Ohr gehalten“ –, dazu Mütze und ein Foto
   von ihr). Erreichbar erst mit dem reparierten Aufzug (Anker 2, 7.4).
 - **Der Vertrag:** liegt im **Büro der Direktion** (Sperrbereich, 2.3). Ihn allein zu verbrennen ist gefährlich (unten).
@@ -759,7 +760,7 @@ größer, mitten in seinem Revier.
   Leviathanmauer (ab etwa Tag 15, 7.4). Den Hinweis geben Marion (*„Vater hatte das ganze Haus am Gürtel.“* – Text
   Vorschlag) oder das Kesselbuch.
   **Gebaut 2026-11-03 (ZIM-6), mit Zwischenort:** Der Bund öffnet Sekretariat und Büro. Solange es U2 nicht gibt, hängt
-  er ab dem 14. seitlich am Kessel im Heizkeller (UG). Marion sagt ab dem 14. einmal im Gespräch: *„Vater hatte das
+  er ab dem 14. seitlich am Kessel im Heizraum (UG), der bis dahin den alten Heizkeller vertritt (7.4, Zwischenorte). Marion sagt ab dem 14. einmal im Gespräch: *„Vater hatte das
   ganze Haus am Gürtel. Jeden Schlüssel. Man hat ihn nie gefunden – den Bund auch nicht.“* (Vorschlag), die Figur
   notiert es. Das Kesselbuch und der Bund des Rezeptionisten (4.21) fehlen noch.
 - **Das Büro (2026-11-01, ZIM-150):** im OG, nur durchs Sekretariat zu erreichen, die Tür verschlossen (Schlüsselbund
@@ -789,7 +790,7 @@ größer, mitten in seinem Revier.
 - **Marion stirbt nicht vorher:** Sie ist bis Halloween geschützt (6.17, 2026-10-25).
 
 **Zu klären**
-- **Wie das Lager aufgeht** (7.4 offen) – auch mit dem Schlüsselbund?
+- **Wie das Fundsachenlager aufgeht** (7.4 offen) – auch mit dem Schlüsselbund?
 - **Lakengeist:** Bleibt er nach der Erlösung, oder werden die Verschwundenen mit frei?
 
 ### 2.9 Wo ist Herr Peters? – Doris' Suche (entschieden 2026-10-26)
@@ -2667,7 +2668,7 @@ wo sie auftaucht und wohin sie führt, regelt die Führerin unten. Streicheln ge
   nicht – sie setzt sich und sieht ruhig zu ihm hin.
 - **Marion erkennt sie** (entschieden 2026-10-25, noch nicht umgesetzt – Marion gibt es im Spiel noch nicht):
   Spricht man sie auf die schwarze Katze an, ist sie **die Einzige**, die sie kennt – sie kannte sie schon als Kind,
-  bei ihrem Vater im Heizkeller (2.8). Ein Hinweis für alle, die Marion entlarven wollen (M13).
+  bei ihrem Vater im alten Heizkeller (2.8). Ein Hinweis für alle, die Marion entlarven wollen (M13).
 - Später (2.8) sitzt sie beim Ritual im alten Heizkeller (7.4) und geht mit ihm ins Feuer – das Ritual fehlt noch.
 
 **Führerin zu den Story-Punkten (entschieden 2026-11-03, ZIM-99, gebaut 2026-11-03):**
@@ -3351,7 +3352,7 @@ ihm.
   ein Grundschutz.
 - **Starke Deko ist endlich:**
   - Lichterketten, Totenköpfe, Lakengespenster, Fledermäuse, Besen und die alte Deko kommen aus **Kisten, die sich
-    leeren** (Dekokiste, Wäschekisten, alte Deko im Keller, zuletzt das Lager in U2 als Schatz, 7.4).
+    leeren** (Dekokiste, Wäschekisten, alte Deko im Keller, zuletzt das Fundsachenlager in U2 als Schatz, 7.4).
   - **Große Kürbisse** (Halloween-Kürbis, Weißer, Muskat, Riese) tragen je Beet höchstens **einmal am Tag** (Wachstum in
     Spielstunden, 2.4).
   - Die **Startdeko der Gäste** ist ihr eigener Vorrat. Was ein Gast verschenkt (6.3), fehlt ihm an seiner Tür – ein
@@ -4222,11 +4223,11 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 > nach einer Weile (länger, je vertrauter) windet sie sich von selbst heraus. Beim Verstecken, Schlafen oder wenn
 > der Lakengeist zupackt, springt sie herunter. Naht das Monster, faucht sie, kratzt (ein kleiner Schreck) und
 > flieht – auch auf dem Arm ist sie eine Frühwarnung.
-> **Noch nicht:** Heizkeller als Liegeplatz.
+> **Noch nicht:** Heizraum als Liegeplatz.
 - **Sieben Katzen gehören zum Hotel:** die drei oben – eine alte, eine scheue, eine neugierige – und vier im
   Katzenraum im Obergeschoss (Luna, Fussel, Tiger, Mausi, 7.7).
 - **Sie laufen frei durchs Hotel:** NavMesh wie die Gäste, eigene Lieblingsplätze (Rezeption, Sofa in der
-  Lobby, warm in der Küche, Fensterbank, Heizkeller), schlafen viel, schlüpfen durch offene Türen.
+  Lobby, warm in der Küche, Fensterbank, Heizraum), schlafen viel, schlüpfen durch offene Türen.
 - **Streicheln:** Spieler und Gäste können sie streicheln („Streicheln [E]“). Wer gestreichelt wird,
   schnurrt (Geräusch) – das senkt beim Spieler den Schock, bei Gästen die Angst (6.5).
 - **Mit Menschen:** Katzen suchen sich Lieblingsgäste, folgen ihnen ein Stück, legen sich in ihr Zimmer.
@@ -4790,7 +4791,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 ### 6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht
 > durchkommen (zu lange jemand im Weg); der Reparaturdank bleibt einmal je Tür und Tag (+8 je Erwachsenem), ohne
-> Tagesbudget (entschieden 2026-11-03, ZIM-54). Brecheisen (Heizkeller) und Werkzeugkasten (Technikraum) stehen im Plan.
+> Tagesbudget (entschieden 2026-11-03, ZIM-54). Brecheisen (Heizraum) und Werkzeugkasten (Technikraum) stehen im Plan.
 > **Schlüsselschrank entfallen (2026-10-31, gebaut 2026-11-01, ZIM-136):** An seiner Stelle kommt die Fotowand (ZIM-133).
 > Der Generalschlüssel liegt seit 2026-11-03 (gebaut, ZIM-6) im Sekretariat in der Schublade mit Zahlenschloss (2.10);
 > zum Probieren `--werkzeug=schluessel`.
@@ -4943,7 +4944,7 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
   sich nicht (entschieden 2026-10-26).
 - **Leise schließen:** Gäste schließen Zimmertüren leise; nur wer in Panik oder wütend ist, **knallt** sie (Lärm,
   4.15). Das Öffnen knarrt weiter.
-- **Werkzeug:** **ein Brecheisen** im **Heizkeller** (UG) – im Revier des Monsters. Ein **Werkzeugkasten** zum
+- **Werkzeug:** **ein Brecheisen** im **Heizraum** (UG) – im Revier des Monsters. Ein **Werkzeugkasten** zum
   Reparieren im **Technikraum** (UG), leichter zu erreichen. **Konrad Lorenz** (Bastler, HAUSHALTE.md H11) hat
   eigenes Werkzeug und leiht es Freunden.
 - **Generalschlüssel:** *wird neu gefasst (2026-10-26):* Der Schrank darf nicht offen in der Lobby hängen, und eine
@@ -5027,20 +5028,55 @@ gehaltenem **Linksklick** das Gesicht ins Wasser – die Sicht verschwimmt, es b
 
 ## 7. Spielwelt: Das Hotel
 
-- **Bereiche:** Lobby mit Galerie und Rezeption, Bar, Partyraum, Küche und Speisesaal, Schwimmbad, Gärten mit
-  Kürbisfeldern, Zimmerflure in Erd- und Obergeschoss, Katzenraum und Bibliothek (7.7), Untergeschoss mit Heizkeller
-  und Wäscherei (7.9), Dachboden (4.21); geplant ist U2 (7.4, 7.10).
+- **Im Prototyp:** Das Hotel entsteht aus dem Gebäudeplan `map_a.aseprite` (7.5, 7.10): Untergeschoss (U1),
+  Erdgeschoss, Obergeschoss und Dachgeschoss auf 151 × 60 m, **81 Zimmer** (EG 48, OG1 33); U2 ist noch nicht
+  gezeichnet (ZIM-82). Wer wo wohnt, steht in [HAUSHALTE.md](HAUSHALTE.md) (6.20). Unbewohnte Zimmer sind
+  eingerichtet, Licht aus, vom Hotel abgeschlossen (6.19), hier und da eine Kerze oder Münzen.
 - **Spinnenweben-Zonen:** verlassene Zimmer, Keller, Dachboden – dunkel und gefährlich.
-- **Im Prototyp:** Das Hotel entsteht aus dem Gebäudeplan `map_a.aseprite` (7.5, 7.10): Untergeschoss, Erdgeschoss,
-  Obergeschoss und Dachgeschoss auf 151 × 60 m, **81 Zimmer** (EG 48, OG1 33). Wer wo wohnt, steht in
-  [HAUSHALTE.md](HAUSHALTE.md) (6.20). **Sonderzimmer:** 013 Spieler, 017 verlassen und dunkel (Kellerskizze), 018
-  abgeschlossen (Schlüssel im Heizkeller, UV-Aufsatz), 022 unbewohnt mit der Streichholzschachtel (5.12), zwei
-  verfallene (Tür offen, Spinnweben). Den Kompass findet man in Zimmer 026. Unbewohnte Zimmer sind eingerichtet, Licht
-  aus, vom Hotel abgeschlossen (6.19), hier und da eine Kerze oder Münzen.
+- **Begriffe:** **Heizraum** ist der Raum in U1 (Attrappenkessel, Leviathanmauer), **alter Heizkeller** der
+  Kesselraum von 1987 in U2. **Fundsachenlager** ist der Verschlag in U2, **Lager** der Betriebsraum im EG West.
+
+**Raumverzeichnis** (Stand 2026-11-04; Meilensteine aus [HANDLUNG.md](HANDLUNG.md); *offen* = noch nicht festgelegt)
+
+| Raum | Ebene | Zugang / Schlüssel | Zweck / Mechanik | Meilenstein | Abschnitt |
+|---|---|---|---|---|---|
+| **Fundsachenlager** | U2 | Aufzug nach der Reparatur, ab etwa Tag 15 auch durch die Leviathanmauer; Verschlag mit Vorhängeschloss – wie man hineinkommt: *offen* (ZIM-15) | Fundsachen-Koffer (darin der Halloween-Schlüssel), Karton „Personal 1987“, alte Deko; nicht gebaut | M11, M15a, M18 (Zeitpunkt *offen*, ZIM-22) | 7.4 |
+| **Alter Heizkeller** | U2 | wie Fundsachenlager | Kessel mit dem Feuer von 1987, Ruheplatz des Monsters, Josefs Bund, Ritual; nicht gebaut – bis dahin vertritt ihn der Heizraum (7.9) | M15b, M17, M19a | 7.4 |
+| Kellergänge | U1 | Treppenhäuser Ost und West, Aufzug 1; bis zum ersten Angriff mit Vorhängeschlössern zu (Ost bricht das Monster auf, West: Schlüssel im Technikraum) | Halogenleuchten, die von selbst flackern | M4, M6a | 7.4, 7.9 |
+| **Heizraum** | U1 | Kellergänge | Attrappenkessel, Leviathanmauer, Josefs Spind (Kesselbuch), UV-Schrift von 1987, Spieluhr, Brecheisen; Schlüssel zu Zimmer 18 nach der Siegerehrung | M7, M12 | 7.4, 7.9 |
+| Maschinenraum | U1 | Kellergänge | Sicherungskasten (Hauptsicherung), Aufzugsantrieb mit Kurbel | M9, M10 | 7.4 |
+| Technikraum | U1 | zugänglich | Werkzeugkasten mit dem Schlüssel zum westlichen Kellerschloss | – | 7.4, 7.9 |
+| Wäscherei | U1 | zugänglich | Waschmaschinen, Wäschekisten mit alten Lakengespenstern | – | 7.9, 7.10 |
+| Müllraum | U1 | *offen* | Müllschlucker von den oberen Stockwerken (nicht gebaut) | – | 7.10 |
+| Übrige Kellerräume | U1 | verschlossen | leer | – | 7.9 |
+| Lobby mit Rezeption | EG | frei | Treffpunkt, Aushangbrett, Hotelregister, Fotowand, Schachtisch; Haupteingang verschlossen | M1, M5, M6, M21 | 7.1, 7.5 |
+| Partyraum | EG | frei | Feiern, Tanzfläche, Galerie im OG1 | M19 | 7.1, 7.6 |
+| Bar | EG | frei | Mäxchen, Darts, Barspiele, Automaten | – | 6.10 |
+| Küche, Speisesaal | EG | frei | Kochen mit Kürbissen; der Speisesaal ist nur Ausstattung | – | 7.14–7.16 |
+| Kühlraum | EG | *offen* | Getränkekisten | – | 3.2 |
+| Hausmeisterraum | EG, neben der Küche | *offen* | Spind des Hausmeisters mit der Hauptsicherung, bis Bruno ihn in der fünften Nacht aufbricht | M9 | 2.11, 7.4, 7.18 |
+| **Lager** | EG West | zugänglich | Ersatzbirnen im Regal, Getränkekisten, Stahlspinde | – | 7.3, 7.18 |
+| Schwimmbad mit Umkleiden und Duschen | EG | frei | Wasser als Frühwarnung, Spinde, Duschen | – | 7.10–7.13 |
+| Garten mit Kürbisbeeten und Friedhof | EG (draußen) | frei | Ernte, Beerdigungen | – | 5.15, 7.10 |
+| Zimmer 13 | EG | eigener Schlüssel | Spielerzimmer, einziger Speicherort (Tagebuch) | M1 | 7.5, 8.5 |
+| Zimmer 18 (018) | EG | versiegelt; Schlüssel an der Leviathanmauer, nach der Siegerehrung | Notizbuch des Hausmeisters, Schaltschlüssel, UV-Aufsatz, UV-Schrift | M7, M8, M11b | 7.4 |
+| Weitere Sonderzimmer | EG, OG1 | – | 017 verlassen und dunkel (Kartenblatt „Keller“), 020 Gustav, 022 unbewohnt mit der Streichholzschachtel (5.12), Kompass in 026, zwei verfallene (Tür offen, Spinnweben) | M4 (020) | HAUSHALTE.md |
+| Versiegelte Zimmer 042, 132, 038 | EG, OG1 | je ein eigener Weg zum Schlüssel | ein nützlicher Gegenstand und ein Stück 1987 | – | 6.19 (7) |
+| Gästezimmer | EG, OG1 | Gäste lassen herein oder nicht; Generalschlüssel, Brecheisen | Unterschlupf, fremde Betten, Klauen | – | 6.19, 6.20 |
+| Katzenraum | OG1 | frei | Katzen und Kratzbäume, kein Schutzraum | – | 7.7 |
+| Bibliothek | OG1 | frei | Bücherregale, nur Ausstattung | – | 7.7 |
+| Balkone | OG1 | Terrassentür des Zimmers | Übersteigen zum Nachbarbalkon, Sprung in den Garten | – | 7.7 |
+| Sekretariat | OG1 | abgeschlossen: Schlüssel aus dem Spind des Hausmeisters (Bruno) oder Josefs Bund | Foto 2005, Generalschlüssel in der Schublade mit Zahlenschloss | M9a | 2.10 |
+| Büro der Direktion | OG1 | nur durchs Sekretariat; Bund des Rezeptionisten (Jeansjacke des Kürbismanns) oder Josefs Bund | Vertrag; Sperrbereich | M15b | 2.8 |
+| Dachboden | DG | Treppe West bis zur Kniestocktür, Schlüssel hinter der Leviathanmauer (ab etwa Tag 15); Aufzug-Halt „D“ nach dem Freischalten | Kopf des Kürbismanns, Kammern, Dekokisten | M14 | 4.21, 7.10 |
+| Aufzüge | alle Ebenen | Aufzug 1 nach der Reparatur, Aufzug 2 tot | Abkürzung, einziger Weg nach U2 vor Tag 15 | M8–M11 | 7.4, 7.10 |
 
 ### 7.1 Die Lobby – Gemeinschaftsraum
 - Großer, zentraler Raum; von hier aus gehen Flure, die Lobbytreppe und die Aufzüge ab (7.5). Hinter der monumentalen Doppeltür (2,50 × 2,50 m) liegt der verschlossene Ausgang.
 - Treffpunkt der Gäste: Handeln, Reden, Gerüchte austauschen.
+- Die Lobby ist hell und gut dekoriert → relativ sicher, solange die Lichter brennen.
+
+**Partyraum**
 - **Feiern** (im Partyraum neben der Lobby, 7.5): Gäste treffen sich und feiern zusammen (Musik, Kerzen, Snacks, viel Deko).
   - Positiv: Beziehungen ↑, Panik ↓, Trauer ↓, gute Handelsgelegenheiten.
   - Risiko: **Lärm** → Neugier des Monsters ↑ dort; während alle feiern, sind die **Zimmer leer** → Zeit zum Klauen (für einen selbst – und für andere).
@@ -5059,11 +5095,10 @@ gehaltenem **Linksklick** das Gesicht ins Wasser – die Sicht verschwimmt, es b
     > Gäste mit Modell tanzen echte Tanzanimationen (Mixamo): Chicken Dance, Macarena, Hip-Hop – ein Download gilt
     > für alle Grundkörper; ohne Modell bleiben die Code-Tänze. Jeder Tänzer hat seinen eigenen Platz mit mindestens
     > 1,5–2 m² Freiraum (Raster mit 1,4 m Abstand, von der Tanzfläche aus nach außen).
-  - Vorbereitung physisch in den Händen: Musik (Radio/Plattenspieler), Kerzen, Snacks aus der Küche, Deko in die Lobby tragen. Evtl. Geld für Extras.
+  - Vorbereitung physisch in den Händen: Musik (Radio/Plattenspieler), Kerzen, Snacks aus der Küche, Deko in den Partyraum tragen. Evtl. Geld für Extras.
   - Gelungene Feier → Beziehungen ↑ bei allen Gästen, Ruf ↑, Trauer/Schock ↓.
-  - **Taktischer Einsatz:** Feier als Ablenkung, um in leere Zimmer zu schleichen – oder bewusst Lärm machen, um das Monster in die Lobby statt zum eigenen Zimmer zu locken (riskant für alle Anwesenden!).
+  - **Taktischer Einsatz:** Feier als Ablenkung, um in leere Zimmer zu schleichen – oder bewusst Lärm machen, um das Monster in den Partyraum statt zum eigenen Zimmer zu locken (riskant für alle Anwesenden!).
   - Kaum Gäste erscheinen (schlechter Ruf) → peinlich, leer, und das Monster hört trotzdem die Musik.
-- Die Lobby ist hell und gut dekoriert → relativ sicher, solange die Lichter brennen.
 
 ### 7.2 Maße & Architektur
 Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich klein fühlen.
@@ -5135,7 +5170,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
   - **Monster lenken durch Birnen-Klau:** Wer einem Gast die Birnen aus Zimmer oder Flurabschnitt klaut, macht dessen Bereich dunkel und lenkt das Monster auf ihn (4.11). Gleichzeitig wird das eigene Zimmer mit der Beute heller → doppelter Vorteil, doppeltes Risiko.
   - **Entdeckung:** Gäste bemerken fehlende Birnen. Wird man beim Herausdrehen gesehen, gilt es als Diebstahl (6.2, Gerüchte). Eine Birne in der Hand vor fremder Tür ist verdächtig.
   - **Gäste klauen auch Birnen**, z. B. in Panik für ihr eigenes Zimmer – oder als Racheklau beim Spieler.
-  - Birnen sind **Handelsware** (Ersatzbirnen evtl. im Hausmeisterraum/Keller).
+  - Birnen sind **Handelsware** (Ersatzbirnen im Lager im EG West, unten).
   - **Birnen brennen durch** (entschieden): Mit **geringer Wahrscheinlichkeit** geht eine eingeschraubte Birne kaputt, wenn
     - das Licht **stark flackert** (Flackerwelle, 4.17) – je stärker das Flackern, desto höher die Chance,
     - das **Monster in der Nähe** ist (je näher, desto wahrscheinlicher).
@@ -5184,23 +5219,24 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 **Zu klären**
 - Brauchen Glühbirnen eine heiße Lampe / Verbrennungsgefahr beim Herausdrehen bei eingeschaltetem Licht? (Vorschlag: erst ausschalten, sonst kurz „Autsch“ und Birne fällt evtl.) – im Prototyp noch ohne.
 
-### 7.4 Fahrstuhl & U2 (vorgemerkt 2026-10-11)
-> **Aufzug gebaut (2026-10-23):** ein Hotelaufzug mit **Teleskoptüren**, die
-> beidseitig zur Mitte schließen, in einem Holzportal; darüber die **Lampenanzeige** „U“, „0“, „1“ (runde Lampen, 8 cm),
-> daneben ein Rufknopf. Die Kabine **fährt wirklich** zwischen Untergeschoss, Erdgeschoss und Obergeschoss: drei goldene
-> Handläufe wie an der Rezeption, gegenüber der Tür ein **Spiegel** (echtes Spiegelbild mit der Spielerfigur, 3.9),
-> eine Deckenleuchte, links ein **Bedienfeld** aus Messing (drei Etagenknöpfe untereinander, darunter Tür auf / Tür zu,
-> darunter Alarm). Motor und Glocke an Abfahrt und Ziel machen das Monster neugierig, der **Alarm** ist laut und
-> erschreckt Gäste. **Aufzug 1 fährt schon jetzt** – die Reparatur unten kommt später als Sperre davor. **Aufzug 2 ist
-> tot** (7.10), sieht aber gleich aus; seine Anzeige wandert ab und zu ohne Kabine. Noch offen: Notruftelefon, Halt in
-> U2. Gäste und Monster fahren nicht mit, das Dachgeschoss wird als Abkürzung freigeschaltet (entschieden 2026-11-03,
-> 7.10; Logik gebaut 2026-11-03, der Halt oben fehlt noch im Plan).
+### 7.4 Fahrstuhl & U2 (entschieden 2026-10-11)
+> Stand: entschieden 2026-10-11, Keller und U2 neu gefasst 2026-10-27 · gebaut: Aufzug 2026-10-23, Zimmer 18
+> 2026-10-28, Reparatur 2026-11-03 (ZIM-14) · offen: U2 (Plan ZIM-82, Bau ZIM-15, Inventar unten), Sperre bis zur
+> Hauptsicherung über Bruno (ZIM-4), Keller-Ordnung mit Leviathanmauer und Heizraum-Attrappe (ZIM-16, ZIM-76), Hugos
+> Szene, Nothalt, Notruftelefon.
 >
-> **Noch nicht gebaut:** die Reparatur und **U2** (bisher „Tiefkeller“, umbenannt 2026-10-27; Plan steht aus).
-> **Heizraum** (7.9) und **Maschinenraum** liegen im Untergeschoss (U1). Die Ordnung von Keller und U2 – Schlösser,
-> Leviathanmauer, alter Heizkeller, Zimmer 18 – steht unten (entschieden 2026-10-27).
+> **Aufzug (gebaut 2026-10-23):** ein Hotelaufzug mit **Teleskoptüren**, die beidseitig zur Mitte schließen, in einem
+> Holzportal; darüber die **Lampenanzeige** „U“, „0“, „1“, „D“ (runde Lampen, 8 cm), daneben ein Rufknopf. Die Kabine
+> **fährt wirklich** zwischen Untergeschoss, Erdgeschoss, Obergeschoss und – freigeschaltet – Dachgeschoss (7.10): drei
+> goldene Handläufe wie an der Rezeption, gegenüber der Tür ein **Spiegel** (echtes Spiegelbild mit der Spielerfigur,
+> 3.9), eine Deckenleuchte, links ein **Bedienfeld** aus Messing (Etagenknöpfe untereinander, darunter Tür auf / Tür
+> zu, darunter Alarm, unten der Schlüsselschalter). Motor und Glocke an Abfahrt und Ziel machen das Monster neugierig,
+> der **Alarm** ist laut und erschreckt Gäste. **Aufzug 2 ist tot** (7.10), sieht aber gleich aus; seine Anzeige wandert
+> ab und zu ohne Kabine. Gäste und Monster fahren nicht mit (7.10).
+> **Beschriftung U2 (entschieden 2026-10-27):** Der unterste Halt heißt auf Anzeige und Bedienfeld **„U2“**. Bis U2
+> gebaut ist, ist das Untergeschoss („U“) der unterste Halt.
 
-**Grundidee:** Der Aufzug neben der Rezeption ist anfangs **außer Betrieb**. Man kann ihn im Lauf des Oktobers **reparieren** und damit **U2** mit dem **Lager** freischalten. Die Reparatur ist die erste größere Aufgabe des Spiels: Sie führt einmal durch das ganze Hotel und verlangt jedes Mal eine andere Art von Mut.
+**Grundidee:** Der Aufzug neben der Rezeption ist anfangs **außer Betrieb**. Man kann ihn im Lauf des Oktobers **reparieren** und damit **U2** mit dem **Fundsachenlager** freischalten. Die Reparatur ist die erste größere Aufgabe des Spiels: Sie führt einmal durch das ganze Hotel und verlangt jedes Mal eine andere Art von Mut.
 
 **Vor der Reparatur – Atmosphäre**
 - Die **Stockwerksanzeige** über der Tür bewegt sich trotzdem manchmal. Niemand weiß, warum. Der Spieler lernt: Wenn die Anzeige wandert, ist etwas unterwegs.
@@ -5211,10 +5247,11 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 
 | Schritt | Wo | Gefahr / Mechanik |
 |---------|----|-------------------|
-| **1. Notizbuch & Schaltschlüssel** | **Zimmer 18** (versiegelt; der Schlüssel liegt an der Leviathanmauer im Heizraum) | Ausflug ins Monster-Versteck – am besten zwischen zwei Kellerrunden, wenn der Keller ruhig ist (4.33). Im Zimmer: Notizbuch mit den drei Mängeln und der **Schaltschlüssel** für die Kabine. |
+| **1. Notizbuch & Schaltschlüssel** | **Zimmer 18** (versiegelt; der Schlüssel liegt nach der Siegerehrung an der Leviathanmauer im Heizraum) | Ausflug ins Monster-Versteck – am besten zwischen zwei Kellerrunden, wenn der Keller ruhig ist (4.33). Im Zimmer: Notizbuch mit den drei Mängeln und der **Schaltschlüssel** für die Kabine. |
 | **2. Hauptsicherung** | Im **Spind des Hausmeisters** (Hausmeisterraum, EG) – bis **Bruno** ihn in der fünften Nacht aufbricht (unten, „Der Einbruch“) | **Ermitteln, dann sozial:** Der Spind ist erst zu, dann aufgebrochen und leer; Aushang und Gerüchte führen zu Bruno, nicht gleich. Freundschaft, Handel, Mäxchen-Einsatz – oder Klauen mit allen Folgen (6.2). Eingesetzt wird sie am Sicherungskasten **im Untergeschoss** – noch ein Ausflug dorthin. |
+| **3. Bremse lösen** | **Maschinenraum** im Untergeschoss, nahe dem Heizraum (7.10) | **Lärm:** Die Bremse wird mit einer Kurbel gelöst – E gedrückt halten, ca. 20 Sekunden, laut und quietschend (Neugier ↑ im Untergeschoss – dort, wo das Monster ruht). Loslassen unterbricht, der Fortschritt bleibt. Man steht dabei mit dem Rücken zur Tür. |
 
-**Der Einbruch (entschieden 2026-10-30, ZIM-4; ersetzt den Gast, der die Sicherung „abgekauft“ hat)**
+**Der Einbruch (entschieden 2026-10-30, ZIM-4)**
 - **Jede Ernte** legt der Hausmeister – der Page von 1987 (2.11) – auf Anweisung der Direktion den Aufzug still: Er nimmt
   die Hauptsicherung heraus und schließt sie in seinen **Spind** im **Hausmeisterraum** (EG, neben der Küche). Ein
   Vorhängeschloss hängt davor. Das Notizbuch nennt den Spind – der Hinweis führt zu einem Ort, nicht zu einer Person.
@@ -5233,7 +5270,6 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
   Keller ist offen, der Schlüssel zu Zimmer 18 liegt dort), und Brunos Bogen liefe ins Leere. Die Sicherung gibt es nur
   über Bruno.
 - *Vorschlag:* Fehlt Bruno, bricht ein anderer gieriger Gast ein.
-| **3. Bremse lösen** | **Maschinenraum** im Untergeschoss, nahe dem Heizraum (7.10) | **Lärm:** Die Bremse wird mit einer Kurbel gelöst – E gedrückt halten, ca. 20 Sekunden, laut und quietschend (Neugier ↑ im Untergeschoss – dort, wo das Monster ruht). Loslassen unterbricht, der Fortschritt bleibt. Man steht dabei mit dem Rücken zur Tür. |
 
 - **Tempo:** Realistisch in der zweiten Oktoberwoche, wenn das Monster schon gefährlich ist. Wer früh mutig ist, schafft es eher.
 - **Der Knopf für U2 fehlt:** Er ist aus dem Bedienfeld ausgebaut, die Beschriftung darunter zerkratzt (2026-10-27).
@@ -5257,51 +5293,52 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 **Den Fahrstuhl benutzen**
 - **Halte:** U2 · Untergeschoss · Erdgeschoss (Lobby) · Obergeschoss · Dachgeschoss (7.10). U2 ist sonst nur durch die Leviathanmauer erreichbar (ab etwa Tag 15, unten); für die anderen Ebenen ist er eine Abkürzung, ohne durch die Treppenhäuser zu müssen.
 - **Lärm:** Motor und Glocke sind an **Abfahrt und Ziel** zu hören → Neugier ↑ an beiden Orten.
-- **Falle:** Die Kabine ist eng, es gibt kein Versteck. Steht das Monster an der Zielhalte, öffnet sich die Tür trotzdem. Das Rauschen hört man schon während der Fahrt – mit dem **Nothalt** bleibt man zwischen zwei Etagen stehen. Sicher? Bis es oben auf dem Kabinendach kratzt.
+- **Falle:** Die Kabine ist eng, es gibt kein Versteck. Steht das Monster an der Zielhalte, öffnet sich die Tür trotzdem. Das Rauschen hört man schon während der Fahrt.
+  - *Offen, nicht gebaut:* ein **Nothalt** im Bedienfeld – man bleibt zwischen zwei Etagen stehen. Sicher? Bis es oben auf dem Kabinendach kratzt.
 - **Die Anzeige verrät, wo die Kabine ist.** Fährt sie ohne einen selbst, benutzt sie jemand: ein Gast (nach der Reparatur nutzen auch Gäste den Fahrstuhl) – oder niemand.
-- **Notruftelefon** in der Kabine (4.14): Man kann die Rezeption anrufen. Manchmal klingelt es, wenn niemand darin ist.
+- *Offen, nicht gebaut:* ein **Notruftelefon** in der Kabine (4.14): Man kann die Rezeption anrufen. Manchmal klingelt es, wenn niemand darin ist.
 
-> **Umfang (entschieden 2026-10-21, neu gefasst 2026-10-27):** Es bleibt der **Kern** – **Lager** mit den
-> **Fundsachen-Koffern**, die **Leviathanmauer** (früher Gitter) und das **Kesselbuch**. **Gestrichen** (2026-10-27):
+> **Umfang (entschieden 2026-10-21, neu gefasst 2026-10-27):** Es bleibt der **Kern** – **Fundsachenlager** mit den
+> **Fundsachen-Koffern**, die **Leviathanmauer** und das **Kesselbuch**. **Gestrichen** (2026-10-27):
 > Kessel **anheizen** (Kohle, Wärme, Rohre) und die **Ofenklappe** – der Kessel oben ist eine Attrappe. **Eingefroren**
-> bleibt der **Bolzenschneider** fürs Lager.
+> bleibt der **Bolzenschneider** fürs Fundsachenlager.
 
 **Keller und U2 (entschieden 2026-10-27)**
-Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und Tiefkeller.
 - **Ebenen:** **U1** ist das Untergeschoss (7.9) mit Heizraum, Maschinenraum, Wäscherei und Müllraum. Darunter liegt
-  **U2** (bisher „Tiefkeller“): Lager, Fundsachen-Koffer und der **alte Heizkeller** von 1987 – das Reich des Monsters.
+  **U2**: das **Fundsachenlager** mit den Koffern und der **alte Heizkeller** von 1987 – das Reich des Monsters.
 - **Gesperrt bis zum ersten Angriff:** An den beiden nördlichen Kellerzugängen, im Osten und im Westen, hängt je ein
   **Vorhängeschloss**. Vor dem 2.10., 20 Uhr kommt niemand in den Keller.
   - Bei seinem **ersten Aufbruch** (Siegerehrung, 2.5, 2.6) **bricht das Monster das östliche Schloss auf**. Darum
     führen Gustavs Spur, der Suchtrupp und Doris' Weg (2.9) über das Treppenhaus Ost.
-  - Der **Schlüssel zum westlichen Schloss** liegt ~~irgendwo **im Keller** (Ort offen)~~ im **Werkzeugkasten im
-    Technikraum** (UG, entschieden 2026-11-03, ZIM-12) – früh zu finden. Wer ihn hat, hat eine Abkürzung in den
+  - Der **Schlüssel zum westlichen Schloss** liegt im **Werkzeugkasten im Technikraum** (UG, entschieden 2026-11-03,
+    ZIM-12) – früh zu finden. Wer ihn hat, hat eine Abkürzung in den
     Westteil des Kellers.
 - **Treppen nach U2 zugemauert:** Beide Treppenhäuser führen eigentlich tiefer, sind unterhalb von U1 aber zugemauert –
-  sichtbar jünger als der Rest. Die **Direktion** ließ sie **nach ~~2003~~ 2005** (2.10) schließen, weil die Gäste aus 13 und 018 zu
+  sichtbar jünger als der Rest. Die **Direktion** ließ sie **nach 2005** (2.10) schließen, weil die Gäste aus 13 und 018 zu
   nah dran waren (Zimmer 18, unten). Sieht man sich die Mauern an, sagt die Spielfigur etwas dazu (Text offen).
   **Entwurf (2026-11-03, ZIM-12, Vorschlag):** erste Mauer *„Die Ziegel sind neuer als alles andere hier. Jemand wollte
   nicht, dass man weiter runterkommt.“* · zweite Mauer *„Hier auch. Gleich alt wie drüben.“*
 - **Der Heizraum in U1 ist eine Attrappe:** ein neuer Raum, gebaut **auf** dem alten Heizkeller, mit einem **modernen
   Heizkessel**, der **nicht angeschlossen** ist. Er soll nur erklären, warum aus dem Raum immer noch Hitze kommt.
   Untersucht man ihn näher, merkt man es: **Die Rohre führen nach unten und sind heiß.** Geheizt wird wie 1987 aus dem
-  alten Heizkeller darunter – von Josef, dem Leviathan. Kein Feuerschein, **kein Schutzplatz** (der rote Schein am
-  Kessel entfällt, 2026-10-27).
-  - Im Heizraum: **Josefs Spind** mit dem **Kesselbuch** (2.3; seit 1987 unberührt – der Hausmeister hat einen eigenen, 2.11), die **UV-Schrift von 1987** (bleibt hier),
-    das alte Regal mit der Spieluhr (5.17), Kisten, das Brecheisen (6.19) und die Leviathanmauer.
-- **Die Leviathanmauer** (ersetzt das Gitter): eine **bewegliche Ziegelmauer** im Heizraum, hinter der es hinunter in
-  den alten Heizkeller geht. **Das Hotel öffnet sie für das Monster**, wenn es aufbricht, und **schließt sie hinter
-  ihm** wieder. Man hört es dahinter atmen, wenn es ruht. Davor liegen nach Gustavs Tod seine Brille (2.9) und der
-  Schlüssel zu Zimmer 18; dort stirbt Doris, wenn man ihr die Brille nicht bringt.
+  alten Heizkeller darunter – von Josef, dem Leviathan. Kein Feuerschein, **kein Schutzplatz** (2026-10-27). Im Code
+  schützt der Schein des alten Kessels noch, bis der Heizraum umgebaut ist (7.9, ZIM-76).
+  - Im Heizraum: **Josefs Spind** mit dem **Kesselbuch** (2.3; seit 1987 unberührt – der Hausmeister hat einen eigenen,
+    2.11; Zahlenschloss 2803, 7.18), die **UV-Schrift von 1987** (bleibt hier), das alte Regal mit der Spieluhr (5.17),
+    Kisten, das Brecheisen (6.19) und die Leviathanmauer.
+- **Die Leviathanmauer:** eine **bewegliche Ziegelmauer** im Heizraum, hinter der es hinunter in den alten Heizkeller
+  geht. **Das Hotel öffnet sie für das Monster**, wenn es aufbricht, und **schließt sie hinter ihm** wieder. Man hört
+  es dahinter atmen, wenn es ruht. Davor liegen nach Gustavs Tod (Siegerehrung) seine Brille (2.9) und der Schlüssel zu
+  Zimmer 18; dort stirbt Doris, wenn man ihr die Brille nicht bringt. Bis die Mauer gebaut ist (ZIM-16), liegt der
+  Schlüssel ab der Siegerehrung auf der Kiste im Heizraum (7.9).
   - **Das Abkommen wird schwächer** (2.3, 4.8): Die Mauer schließt jeden Tag später. **Ab etwa Tag 15** bleibt sie nach
     einem Angriff eine Weile offen – man kann gefährlich hindurchschlüpfen; dahinter liegt der Schlüssel zur
     Kniestocktür des Dachbodens (4.21). **Ab dem 25.** bleibt sie offen, U2 gehört dann ganz ihm.
-  - Im Plan: Farbe **#9c5a5a** (bisher fürs Gitter). Mauer, Schlösser, zugemauerte Treppen und U2 malt der Nutzer.
+  - Im Plan: Farbe **#9c5a5a**. Mauer, Schlösser, zugemauerte Treppen und U2 malt der Nutzer.
 - **Das Hotel lässt ihn nicht hinaus:** Es zwingt ihn immer wieder in den alten Heizkeller zurück – **länger als ein
   paar Minuten** am Stück ist er nie draußen. Aus dem Hotel kommt er nie.
 - **Der alte Heizkeller (U2):** der Kesselraum, in dem 1987 der Brand ausbrach und Josef verbrannte (2.3). Das
-  **Feuer von 1987 brennt dort noch** – er heizt immer noch. Hier ruht das Monster, hier endet das Ritual (2.8). Die
-  Werkstatt (früher 2.8) entfällt zu seinen Gunsten.
+  **Feuer von 1987 brennt dort noch** – er heizt immer noch. Hier ruht das Monster, hier endet das Ritual (2.8).
   - Das Monster **dekoriert** U2 mit **Knochen** und **verfaulten Kürbissen** – ein Ort für Deko (Einzelheiten offen).
     **Entwurf (2026-11-03, ZIM-12, Vorschlag):** Die Kürbisse stehen in Reihen vor dem alten Kessel, aufgestellt **wie
     zum Ankunftsfoto** (2.10), die eingefallenen Gesichter alle zum Feuer; hinten rechts ein Platz frei. Knochen nur
@@ -5309,7 +5346,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - **Wege nach U2:** mit dem reparierten Aufzug (oben) oder durch die Leviathanmauer (ab etwa Tag 15).
 
 **Zimmer 18 (entschieden 2026-10-27)**
-- Hier wohnte ~~um **2003**~~ **2005** (2026-10-30, 2.10) ein Gast, befreundet mit dem Gast aus **Zimmer 13** jenes
+- Hier wohnte **2005** (2026-10-30, 2.10) ein Gast, befreundet mit dem Gast aus **Zimmer 13** jenes
   Jahres. Die beiden ermittelten, fanden den Schlüssel und gaben ihn dem Schlüsselträger (2.10);
   ihn holte das Monster – an der Leviathanmauer verlor er dabei seinen **Zimmerschlüssel**. Danach ließ die Direktion
   das Zimmer **versiegeln** (wie 6.19 (7)) und die Treppen nach U2 zumauern.
@@ -5325,17 +5362,17 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
     man redet. Schreib es auf, sag es nicht. C.“*
   - **Lobby, unter dem Fleck des Fotos 2005** (2.10): *„Wir waren hier. Oktober 2005. C. V. · M. E.“*
   - **Heizraum, an der Leviathanmauer:** *„Licht hält es auf. Nicht lange. Lauf, solange es blinzelt.“*
-- **Jahresfoto ~~2003~~ 2005** an der Fotowand (5.14): Beide sind verwischt, der Schlüsselträger und die anderen
+- **Jahresfoto 2005** an der Fotowand (5.14): Beide sind verwischt, der Schlüsselträger und die anderen
   Überlebenden scharf (2.10); das Foto gibt Hinweise auf die beiden (welche, offen). Es hängt nicht an der Wand
   (Fleck auf der Tapete) und liegt im Sekretariat in einer offenen Schublade (2.10). **Entwurf Hinweise (2026-11-03,
   ZIM-12, Vorschlag):** Clara hält einen Zimmerschlüssel mit dem Anhänger „13“, Martin trägt eine Taschenlampe mit
   violettem Aufsatz am Gürtel (der UV-Aufsatz aus Zimmer 18); zwischen ihnen scharf Rudolf Hain mit dem Koffer, dessen
   Namensschild man in U2 wiedererkennt. Auf der Rückseite in Bleistift: *„Vogt · Ebert · Hain – 1. Oktober 2005“*.
 - *Umgesetzt (2026-10-28):* Auf dem Tisch in Zimmer 18 liegen das **Notizbuch des Hausmeisters** (festes Buch, [E]
-  liest es, vier Seiten), der **Schaltschlüssel** (an den Bund, im Aufzug noch ohne Wirkung) und der **UV-Aufsatz**. Hat
+  liest es, vier Seiten), der **Schaltschlüssel** (an den Bund; wirkt seit 2026-11-03 im Schlüsselschalter der Kabine) und der **UV-Aufsatz**. Hat
   man das Notizbuch gelesen, stehen die drei Mängel als drei Zeilen unter „Aufgaben“ (3.10): *„Aufzug: Schaltschlüssel
   ins Bedienfeld der Kabine“*, *„Aufzug: Hauptsicherung aus dem Spind des Hausmeisters in den Sicherungskasten im Untergeschoss“*,
-  *„Aufzug: Bremse im Maschinenraum mit der Kurbel lösen (laut)“*. Durchgestrichen wird, sobald die Reparatur gebaut ist.
+  *„Aufzug: Bremse im Maschinenraum mit der Kurbel lösen (laut)“*. Jede Zeile wird gestrichen, sobald ihr Teil behoben ist (gebaut 2026-11-03, ZIM-14).
   **Texte: Vorschlag** – drei Seiten Hausmeister, eine in Bleistift vom Gast aus 018:
   > AUFZUG 1 – steht. Die Direktion sagt: nicht im Oktober. Drei Sachen, dann fährt er wieder: 1. Schaltschlüssel.
   > Ohne den rührt sich das Bedienfeld in der Kabine nicht. Bleibt bei mir. 2. Hauptsicherung raus – Anweisung der
@@ -5347,22 +5384,56 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   > nach oben. Nicht meine Sache, sagt die Direktion. – Im Oktober keine Arbeiten im Keller. Anweisung. – Die schwarze
   > Katze war wieder im Heizraum. Sieht aus wie seine. Kann nicht sein.
   >
-  > *(Bleistift)* Oktober ~~2003~~ 2005. Das Buch hat mir der Hausmeister gegeben, den Schaltschlüssel auch. Gesagt hat er nichts. Hier steht mehr über
+  > *(Bleistift)* Oktober 2005. Das Buch hat mir der Hausmeister gegeben, den Schaltschlüssel auch. Gesagt hat er nichts. Hier steht mehr über
   > dieses Haus als in jedem Prospekt. – Nicht darüber reden. Es hört zu. 13 hat es zuerst gemerkt. – Das violette
   > Licht erträgt es nicht. Nicht lange, aber es geht. – Falls wir es nicht schaffen: Wir hinterlassen Zeichen, die man
   > nur in diesem Licht sieht. Wer das liest – such sie.
   *Umgesetzt 2026-11-03 (ZIM-17):* Bleistift Oktober 2005, ganz unten in Eile: *„Falls uns etwas passiert – R. hat ihn.“* (2.10).
 
-**Lager**
+**Fundsachenlager** (U2; nicht zu verwechseln mit dem Lager im EG West, 7.3)
 - Ein Verschlag aus Maschendraht mit Vorhängeschloss – wie man hineinkommt, ist offen (der Bolzenschneider von der Werkzeugwand ist eingefroren, 2026-10-21).
 - **Inhalt (endlich, wird nicht nachgefüllt):**
-  - Kisten mit **Ersatzglühbirnen** und **Kerzen** (7.3).
+  - Kisten mit **Ersatzglühbirnen** und **Kerzen** – eine zweite, späte Quelle neben dem Lager im EG West (7.3).
   - **Alte Halloween-Deko früherer Jahre:** Girlanden, Hexenbesen, ein Totenkopf, Laternen – seltene, starke Deko (5.3). Der größte Schatz im Hotel.
-  - **Fundsachen-Regal:** Koffer früherer Gäste mit Namensschildern von 1987 bis ~~2019~~ 2023 – dieselben Namen wie auf den Warnungszetteln. Kleidung, Fotos, Briefe. ~~Ein möglicher Ort für den~~ **Hier liegt der Halloween-Schlüssel** (2.1, entschieden 2026-10-30): im Koffer des Schlüsselträgers von 2005, der 2008 starb (2.10).
+  - **Fundsachen-Regal:** Koffer früherer Gäste mit Namensschildern von 1987 bis 2023 – dieselben Namen wie auf den Warnungszetteln. Kleidung, Fotos, Briefe. **Hier liegt der Halloween-Schlüssel** (2.1, entschieden 2026-10-30): im Koffer des Schlüsselträgers von 2005, der 2008 starb (2.10).
 - **Die soziale Entscheidung:**
   - **Geheim halten:** Man hat alles für sich. Aber Gäste bemerken plötzlich viel Deko vor Zimmer 13 – *„Woher hat sie/er das?“* → Gerüchte, Neid, Diebstahl (6.2).
   - **Teilen:** Ruf ↑ bei allen, vielleicht eine Feier zum Fund. Aber die Vorräte sind schneller weg, und Gäste fahren dann selbst nach U2 – manche kommen nicht zurück.
-  - Gäste können den Schaltschlüssel klauen und das Lager auf eigene Faust plündern.
+  - Gäste können den Schaltschlüssel klauen und das Fundsachenlager auf eigene Faust plündern.
+
+**Inventar U2 – Vorlage für den Plan (zusammengetragen 2026-11-04, ZIM-82, ZIM-15)**
+Nur, was im Spielkonzept und in HANDLUNG.md schon steht; Lage im Raum und Planfarben legt der Nutzer fest.
+
+| Raum | Was | Woher |
+|---|---|---|
+| Fundsachenlager | Verschlag aus Maschendraht mit Vorhängeschloss (Öffnungsweg offen) | oben |
+| Fundsachenlager | Fundsachen-Regal: Koffer früherer Gäste, Namensschilder 1987–2023 wie auf den Warnungszetteln (4.13) und im Register (2.9); Kleidung, Fotos, Briefe | oben, M11 |
+| Fundsachenlager | Koffer **Rudolf Hain** (2005, † 2008) mit dem **Halloween-Schlüssel**, Namensschild wie auf dem Foto 2005 | 2.10, M18 |
+| Fundsachenlager | Koffer **Heinrich Brehm** (1987, Ednas Verlobter) | 2.7, K5 |
+| Fundsachenlager | Karton **„Personal 1987“** mit Josefs Sachen: Taschenuhr, Mütze, Foto von Marion (Inhalt Vorschlag); darin oder im Sekretariat der Dienstplan vom 31.10.1987 | 2.8, 2.11, M15a |
+| Fundsachenlager | Kisten mit alter Halloween-Deko (Girlanden, Hexenbesen, Totenkopf, Laternen) | oben, 5.3 |
+| Fundsachenlager | Kisten mit Ersatzglühbirnen und Kerzen | oben |
+| Alter Heizkeller | der **alte Kessel** mit dem **Feuer von 1987**; Rohre hinauf in den Heizraum | oben, 2.3 |
+| Alter Heizkeller | die Tür, die das Personal 1987 hinter Josef abschloss – durch sie geht Marion beim Ritual mit ihm ins Feuer | 2.3, 2.8 |
+| Alter Heizkeller | **Josefs Schlüsselbund** am bzw. über dem alten Kessel | 2.8, M15b |
+| Alter Heizkeller | die **fehlende Seite des Kesselbuchs** (verbotene Masken) beim alten Heizkessel | 5.19, ZIM-102 |
+| Alter Heizkeller | Ruheplatz des Monsters; verfaulte Kürbisse in Reihen vor dem Kessel wie zum Ankunftsfoto, Gesichter zum Feuer, hinten rechts ein Platz frei; Knochen verstreut, nichts Blutiges (Entwurf) | oben, ZIM-12 |
+| Alter Heizkeller | Ort des Rituals: Vertrag ins Feuer | 2.8, M19a |
+| U2 allgemein | Halt von Aufzug 1, beschriftet „U2“; der Weg hinauf hinter der Leviathanmauer in den Heizraum | oben |
+
+**Zwischenorte, die beim Bau von U2 umziehen** (Stand Code 2026-11-04). Bis dahin vertritt der Raum, den der Code
+„Heizkeller“ nennt (U1, 7.9), den alten Heizkeller.
+
+| Was | Heute im Code | Nach dem Bau |
+|---|---|---|
+| Ruheplatz des Monsters, Ziel beim Zurückzwingen | UG-Raum „Heizkeller“ (`LevelBuilder._boiler_room`, `cellar_center`) | alter Heizkeller (U2) |
+| Kohlekessel mit Feuer und Schein, der als Licht zählt | UG-Raum (`Boiler`, Schein als `FlickerLight` in `lamps`) | alter Kessel in U2; im Heizraum der Attrappenkessel ohne Schein (ZIM-76) |
+| Josefs Schlüsselbund, ab dem 14. | seitlich am Kessel im UG (`DirectorOffice.JOSEF_SPOT`) | am alten Kessel in U2 |
+| Schlüssel zu Zimmer 18, ab der Siegerehrung | auf der Kiste im UG-Raum (`LevelBuilder.room18_key_at`, `DirectorOffice.place_due`) | an der Leviathanmauer im Heizraum (ZIM-16) |
+| Unterster Halt des Aufzugs, erste Fahrt ohne Knopf | Untergeschoss („U“) | U2 |
+
+Im UG-Raum bleiben (sie gehören nach 7.4 in den Heizraum): UV-Schrift von 1987, altes Regal mit der Spieluhr, Kisten,
+Warnungszettel von 2011, die Kiste mit alter Deko (5.7).
 
 **Zu klären**
 - Lässt sich der Fahrstuhl nach der Reparatur wieder sabotieren (Sicherung herausdrehen, wie Glühbirnen), etwa von Gästen oder dem Spieler selbst?
@@ -5457,8 +5528,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   nehmen die Treppe, und die Verfolgung bricht ab wie an einer Treppe (4.20: der Balkon gehört zum Obergeschoss, der
   Garten zum Erdgeschoss). Fehlt im Plan ein Balkon, kann man dort auch nicht hinüber.
 - **Katzenraum** über der Bar: mit **Kratzbäumen** und **mehr Katzen** als nur den dreien von 6.11. **Kein
-  Schutzraum** (entschieden 2026-11-03, ZIM-38, 4.20): Alle Bedrohungen kommen hinein. ~~Er ist der einzige Raum, in
-  dem man wirklich vor allem sicher ist – Monster und Lakengeist kommen nicht hinein.~~
+  Schutzraum** (entschieden 2026-11-03, ZIM-38, 4.20): Alle Bedrohungen kommen hinein.
 - **Bibliothek** im Westflügel (ca. 40 × 18 m) über dem Küchenblock.
   **Bücherregale (entschieden und gebaut 2026-11-01, ZIM-152):** im Look der Kommode im Flur, offene Fächer mit 4 oder
   5 Ebenen (2,10 bzw. 2,56 m hoch, Fächer 46 cm – Wunsch des Nutzers: 4 Ebenen = 2,10 m), Zwischenwände etwa alle 1 oder 2 m – je Kombination eine Planfarbe, Länge frei; geht
@@ -5482,20 +5552,14 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
     laufendes Wasser ist Lärm und übertönt zugleich. Wer oben mit Bad wohnt, ist wohlhabender – Gerede und Neid (6.2).
   - **Mehrbettzimmer** (6.20): Paare sind wach füreinander Zeugen (der Lakengeist bleibt weg), schlafend nicht.
     Verschwindet einer, bleibt der andere als Zeuge und Trauernder zurück (4.18).
-  - ~~**Katzenraum:** Verängstigte Gäste flüchten dorthin; wer sich dort versteckt, verliert nur Zeit (Speichern
-    weiter nur in Zimmer 13, die Woche läuft weiter).~~ Entfällt mit dem Schutz (2026-11-03).
 > **Umgesetzt (2026-10-20):** Das Obergeschoss steht im Spiel: Zimmer mit Bädern, Balkonen mit Geländern, Suiten über
 > Verbindungstüren; Galerien mit Geländer um die Lufträume von Lobby und Partyraum; Bibliothek offen. Zimmer ohne
 > Schalter im Plan bekommen einen neben der Tür. **Katzenraum:** acht Kratzbäume, vier eigene Katzen (Luna, Fussel,
-> Tiger, Mausi), ~~Monster und Lakengeist kommen nicht hinein bzw. zu niemandem, der drin ist~~ (entfernt 2026-11-03, ZIM-38). Das Kartenblatt
+> Tiger, Mausi). Das Kartenblatt
 > „Obergeschoss“ zeigt das ganze Stockwerk und liegt an der Rezeption.
 > **Treppenhäuser (entschieden 2026-10-20):** Was auf der Ebene eines Stockwerks an der Wand gegenüber der
 > Treppenhaustür hängt, sitzt über dem Wendepodest – eine halbe Etage höher. Gilt für jedes Treppenhaus in jeder
 > Ausrichtung; das Podest zum Keller setzt der Code.
-
-- **Offen:**
-  - Kann man das **Balkongeländer übersteigen** (langsam, laut) – ein geheimer Weg von Zimmer zu Zimmer?
-  - **Hinunterspringen** in den Garten (4 m) als Notausgang mit Preis (laut, eine Weile humpeln) – oder gar nicht?
 
 ### 7.8 Wetter & Geräusche von draußen (vorgemerkt 2026-10-20)
 Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, Wolken, Waldkante) steht schon.
@@ -5572,39 +5636,46 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
 >   **Drinnen weht kein Wind** – auch nicht durch offene Fenster.
 
 ### 7.9 Untergeschoss (entschieden und umgesetzt 2026-10-20)
+> Stand: entschieden 2026-10-20, Ausbau 2026-10-21 (7.10), Keller-Ordnung 2026-10-27 (7.4) · gebaut 2026-10-20 ·
+> offen: Heizraum als Attrappe mit Leviathanmauer (ZIM-16, ZIM-76), U2 (7.4).
+>
 > Ausbau entschieden 2026-10-21 (7.10): Heizraum, Maschinenraum, Wäscherei und Müllraum; darunter kommt
-> U2. ~~Gäste sollen mit Grund hinuntergehen.~~ **Entschieden 2026-11-03 (ZIM-58):** Gäste gehen **weder von sich aus
+> U2. **Gäste (entschieden 2026-11-03, ZIM-58):** Gäste gehen **weder von sich aus
 > noch auf Bitte des Spielers** ins UG. Ausnahmen bleiben ausdrücklich offen (z. B. Ednas Auftrag, spätere Mechaniken)
 > und werden dort jeweils einzeln entschieden. Der Gang mutiger Gäste zur alten Deko im Keller (Deko-Suche, 5.9) ist
 > deshalb entfallen – die Kellerdeko bleibt dem Spieler.
 
 Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
 - **Treppenhäuser:** Die Treppenhäuser führen eigentlich bis U2, sind unterhalb des Untergeschosses aber zugemauert
-  (nach 2003, 7.4); ihre Türen führen in die Kellergänge. Bis zum ersten Angriff sind die Kellerzugänge mit
+  (nach 2005, 7.4); ihre Türen führen in die Kellergänge. Bis zum ersten Angriff sind die Kellerzugänge mit
   Vorhängeschlössern zu (7.4).
 - **Kellergänge:** grauer Boden, Wände aus **Brettschalungsbeton** (Abdruck der Schalbretter, Ankerlöcher).
   Licht geben nur
   **Halogenleuchten**: 80 cm lange Röhren unter der Decke, kaltweiß, ohne Schalter. Jede **flackert von selbst**
   alle 10–30 Sekunden ein- bis dreimal kurz – unabhängig vom Monster (dessen Flackern kommt dazu).
-- **Neu gefasst 2026-10-27 (7.4, noch nicht gebaut):** Der Heizraum ist eine Attrappe über dem alten Heizkeller in U2,
-  mit modernem Kessel, Josefs Spind und Leviathanmauer; das Monster ruht unten. Gebaut ist noch der alte Stand:
-- **Heizkeller** (dunkelrot im Plan): das **Versteck des Monsters**. Dort liegen Kisten, das alte Regal, der Schlüssel zu Zimmer 18 (erst ab der Siegerehrung, wie in 7.4 – gebaut 2026-11-03), Münzen, eine Batterie, der Warnungszettel von 2011, die
-  UV-Schrift von 1987, Spinnweben und die Kiste mit alter Deko (5.7), dazu die kaputte Kellerleuchte mit Schalter.
-  Der Eingang ist ein schmaler Gang zwischen zwei verschlossenen Kellerräumen.
-- **Technikraum:** zugänglich, aber leer. **Wäscherei:** zugänglich, an beiden Längswänden Waschmaschinen.
+- **Heizraum** (dunkelrot im Plan; im Code und auf dem Lichtschalter noch „Heizkeller“): Nach 7.4 eine Attrappe über
+  dem alten Heizkeller in U2, mit modernem Kessel, Josefs Spind und Leviathanmauer; das Monster ruht unten. **Gebaut
+  ist der Raum als Zwischenort für den alten Heizkeller:** Hier ist das **Versteck des Monsters**, und hier liegen
+  Kisten, das alte Regal mit der Spieluhr, der Schlüssel zu Zimmer 18 (erst ab der Siegerehrung, auf der Kiste – gebaut
+  2026-11-03), Münzen, eine Batterie, der Warnungszettel von 2011, die UV-Schrift von 1987, Spinnweben und die Kiste
+  mit alter Deko (5.7), dazu die kaputte Kellerleuchte mit Schalter. Was beim Bau von U2 umzieht, steht in 7.4
+  („Zwischenorte“). Der Eingang ist ein schmaler Gang zwischen zwei verschlossenen Kellerräumen.
+- **Technikraum:** zugänglich, darin der Werkzeugkasten (6.19, 7.4). **Wäscherei:** zugänglich, an beiden Längswänden Waschmaschinen.
 - **Alle anderen Räume** sind verschlossen (rote Türen wie der Haupteingang) und leer; Servicetüren wie oben.
 - **Aufzüge:** auch unten zwei Schachttüren; Aufzug 1 hält hier (7.4).
 - **Gäste** gehen nicht hinunter (Entscheidung 2026-11-03, oben); das Monster streift auch durch die Kellergänge.
 - **Kartenblatt „Keller“** (Zimmer 017): die handgezeichnete Skizze zeigt jetzt das ganze Untergeschoss, der
-  Heizkeller ist rot eingekreist („hier unten schläft es“).
-- **Kessel und Rohre (2026-10-24):** Mittig an der Ostwand des Heizkellers steht ein alter **Kohlekessel**. Seine
-  Feuerklappe steht offen, im Feuerraum lodern Flammen über der Glut und knistern; die Glut wirft einen orangeroten
-  Lichtkegel aus der Klappe auf den Boden. Das Feuer **brennt vorerst immer** – Anheizen, Kohle, Nachlegen und Ausgehen
-  (7.4) bleiben eingefroren. Wie in 7.4 macht der Schein den Platz am Kessel etwas sicherer: Licht schreckt das
-  Monster ab, macht einen aber auch sichtbarer. Vom Kessel steigt ein Rohr auf und mündet in eine **Ringleitung**, die
+  Heizraum ist rot eingekreist („hier unten schläft es“).
+- **Kessel und Rohre (2026-10-24):** Mittig an der Ostwand des Heizraums steht ein alter **Kohlekessel** – er vertritt
+  den alten Kessel in U2. Seine Feuerklappe steht offen, im Feuerraum lodern Flammen über der Glut und knistern; die
+  Glut wirft einen orangeroten Lichtkegel aus der Klappe auf den Boden. Das Feuer **brennt immer** – Anheizen, Kohle,
+  Nachlegen und Ausgehen sind gestrichen (7.4). **Der Schein schützt im Code noch:** Er zählt als Licht
+  (`FlickerLight` in `lamps`, `MonsterDirector.light_at`, `scripts/world/boiler.gd`) und macht den Platz am Kessel
+  etwas sicherer – Licht schreckt das Monster ab, macht einen aber auch sichtbarer. Nach 7.4 gibt es diesen
+  Schutzplatz nicht; beim Umbau des Heizraums kommt der Schein aus `lamps` (ZIM-76). Vom Kessel steigt ein Rohr auf und mündet in eine **Ringleitung**, die
   unter der Decke an allen vier Wänden entlangläuft, mit Abzweigen hinab (Rücklauf über dem Boden, Blindkappe, ein
   offenes Rohrende, eines durch die Decke) – nur Atmosphäre.
-- **Offen:** übrige Technik sowie U2 und Lager aus 7.4.
+- **Offen:** übrige Technik; U2 mit Fundsachenlager und altem Heizkeller (7.4).
 
 ### 7.10 Kleineres Hotel, mehr Ebenen (entschieden 2026-10-21)
 > Teilweise umgesetzt: Der Plan `map_a.aseprite` (UG, EG, OG1, seit 2026-10-24 auch das Dachgeschoss; 151 × 60 m) ist
@@ -5645,10 +5716,10 @@ das Geheimnis (2.3: Josef, Kessel, Abkommen) liegt ohnehin unten.
 
 | Ebene | Erreichbar | Inhalt |
 |-------|------------|--------|
-| **U2** | Aufzug (7.4), ab etwa Tag 15 durch die Leviathanmauer | Lager, Fundsachen-Koffer früherer Gäste, alter Heizkeller (7.4), Kandidat für den Halloween-Schlüssel (2.1) – Plan steht aus |
-| **Untergeschoss** | Treppenhäuser, Aufzug | Heizraum, Maschinenraum, Wäscherei, Müllraum (unten) |
-| **Erdgeschoss** | | Lobby, Bar, Partyraum, Küche, Garten, Schwimmbad, Zimmer |
-| **1. Obergeschoss** | | Zimmer, Balkone, Katzenraum (7.7) |
+| **U2** | Aufzug (7.4), ab etwa Tag 15 durch die Leviathanmauer | Fundsachenlager mit den Koffern früherer Gäste (darin der Halloween-Schlüssel, 2.10), alter Heizkeller (7.4) – Plan steht aus (ZIM-82) |
+| **Untergeschoss** | Treppenhäuser, Aufzug | Heizraum, Maschinenraum, Technikraum, Wäscherei, Müllraum (unten) |
+| **Erdgeschoss** | Haupteingang verschlossen; Treppenhäuser, Lobbytreppe, Aufzug | Lobby, Bar, Partyraum, Küche, Speisesaal, Lager, Hausmeisterraum, Garten, Schwimmbad, Zimmer |
+| **1. Obergeschoss** | Lobbytreppe, Treppenhäuser, Aufzug | Zimmer, Balkone, Katzenraum, Bibliothek (7.7), Sekretariat und Büro der Direktion (2.8, 2.10) |
 | **Dachgeschoss** (gebaut 2026-10-24) | steile Treppe im Treppenhaus West bis zur verschlossenen Kniestocktür; der Aufzug hält oben erst als freigeschaltete Abkürzung (7.10) | ganz **Dachboden** (4.21): im Westflügel ein Gewirr aus Kammern, Mitte und Osten offene Böden; dort der Kopf des Kürbismanns. Weitere Kandidaten: Spinnweben-Zone (5.4), Séance (6.10) |
 
 **Jede Ebene hat einen Hausherrn.** Weil jede Bedrohung ihr eigenes Lockmittel hat – das Monster die Dunkelheit,
@@ -5672,17 +5743,17 @@ Ebene sein); U2 gehört allein dem Monster.
   schlafenden Monster.
 - **Wäscherei:** Waschmaschinen (7.9), Wäschekisten mit den alten Lakengespenstern (5.6) – Laken als Brücke zum
   Lakengeist.
-- **Müllraum:** Ein **Müllschlucker** führt von den oberen Stockwerken hinunter.
+- **Müllraum:** Ein **Müllschlucker** führt von den oberen Stockwerken hinunter (nicht gebaut).
   - Er ist ein **Klangkanal**: Was hineinfällt, poltert durchs ganze Haus (Lärm, 4.15).
   - Er ist ein **Kletterweg des Monsters** wie der tote Aufzugsschacht: Kratzen hinter den Klappen auf jeder Etage.
-- **Gäste gehen hinunter** – nicht von selbst, aber mit Grund: Aufträge (6.14), Bitten des Spielers (4.11:
-  „Hol die Wäsche“). Noch nicht gebaut (7.9).
+- **Gäste** gehen nicht ins Untergeschoss (7.9, ZIM-58).
 
 **Aufzug** (Einzelheiten 7.4)
 - Von den **zwei Schächten** wird nur **einer repariert**. Der andere bleibt tot und ist der Weg des Monsters: Kratzen
   im Schacht, Handabdrücke an den Schachttüren, die Stockwerksanzeige wandert ohne Kabine.
-- Er hält auf allen Ebenen; **U2** ist der Halt, den nur der Aufzug erreicht – erst dadurch hat die
-  Reparatur einen echten Lohn. Mittelziel der zweiten Oktoberwoche.
+- Er hält auf allen Ebenen. **U2** erreicht man vor etwa Tag 15 nur mit dem Aufzug, danach auch durch die
+  Leviathanmauer (7.4) – darum lohnt die Reparatur vor allem in der ersten Monatshälfte. Mittelziel der zweiten
+  Oktoberwoche.
 
 **Leere Räume** (Speisesaal, Toiletten, Technikraum, Kühlräume, Bibliothek, Balkone …): werden beim Neuzeichnen des
 Plans **einzeln entschieden** (2026-10-21) – je Raum, ob er eine Funktion bekommt, als Atmosphäre bleibt oder entfällt.
@@ -5721,7 +5792,7 @@ Plans **einzeln entschieden** (2026-10-21) – je Raum, ob er eine Funktion beko
   einem Dachfenster mit ausgestrecktem Arm erreichbar; der Kürbismann läuft übers Lobbydach wie bisher (das Gesims
   liegt nicht auf seiner Laufebene).
 
-**Zu klären:** Plan für U2.
+**Zu klären:** Plan für U2 (ZIM-82; Inventar und Zwischenorte in 7.4).
 
 ### 7.11 Pool-Umkleiden: Spinde und Bänke (entschieden und umgesetzt 2026-10-31, ZIM-145)
 
@@ -5843,8 +5914,8 @@ Zimmer 13 (4.13): echter Gast oder falsche Stimme, ohne gleich aufzumachen.
   danach geht die Tür frei. Ohne Schloss gehen die Spinde einfach auf.
 - **Wo die Codes stehen (entschieden 2026-11-03):** Kein Brecheisen, kein Erraten über abgegriffene Ziffern.
   - **Spind des Hausmeisters:** geht für den Spieler nicht auf, bis Bruno ihn in der fünften Nacht aufbricht (7.4);
-    kein Hinweis auf einen Code. (Zuerst war 3110 mit Hinweis im Notizbuch vorgesehen – verworfen am selben Tag, weil
-    man die Hauptsicherung dann am ersten Tag hätte.)
+    kein Hinweis auf einen Code. Verworfen: Code 3110 mit Hinweis im Notizbuch (2026-11-03, man hätte die
+    Hauptsicherung am ersten Tag).
   - **Josefs Spind: 2803** – der Geburtstag seiner Tochter Marion (28. März). Marion erzählt es einmal, aber erst nach
     dem ersten Abstieg (M7, der Spieler hat den Schlüssel zu Zimmer 18) – sonst wäre das Kesselbuch zu früh zu haben.
     Sie sagt nur „Vater“, nicht Josef: Wessen Tochter sie ist, findet man selbst heraus (2.3).
@@ -5962,18 +6033,11 @@ Werden **getrennt vom Spielstand** gespeichert (gelten für alle Slots).
 - Gibt es noch keinen Spielstand → „Neu beginnen“ (Start in Zimmer 13).
 
 ### 8.8 Was gespeichert wird
-Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegenstand muss mit Ort und Zustand gespeichert werden (die Tasche für Kleines mit dem Spieler).
-
-| Bereich | Inhalt |
-|---------|--------|
-| **Spieler** | Position, Blickrichtung, geduckt, Gegenstand in der Hand, Geld, Schock/Trauer/Schuld (6.8) |
-| **Gegenstände** | Typ (inkl. Glühbirnen), Position/Rotation, Zustand (geschnitzt, Kerze drin, brennt oder aus, Verfall), Ort (Boden, Truhe, Hand eines Gastes) |
-| **Welt** | Türen (offen/zu/abgeschlossen), Truhen-Inhalte, Lampen (intakt/kaputt, Birne drin/fehlt), Lichtschalter je Raum (an/aus), Vorhänge (offen/zu), Kürbisbeete (Stufe, Wachstum), Laub-/Spinnweben-Vorräte, Plattenspieler, Kommoden (Schubladen offen/zu, schon durchsucht) |
-| **Gäste** | lebt/tot, Position, aktuelle Tätigkeit im Tagesablauf, Beziehung, Panik, Wissen/Gerüchte, Diebstahl-Erinnerungen, Wettschulden, getragener Gegenstand |
-| **Monster** | Position, Phase und Absicht (4.17), Dreistigkeit, Neugier je Zone, Sättigung, Deko-Anspruch und -Gewöhnung (4.8–4.10) |
-| **Puppe** | Position, beurteilte Tür, wer sie trägt (5.5) |
-| **Ablauf** | Spielzeit, laufende Feier, Fortschritt Fluchtweg, Story-Flags, Tagebuchtexte |
-| **Nicht** | Einstellungen (eigene Datei), laufende Minispiel-Partien von Gästen (starten nach dem Laden neu) |
+Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*: Jeder Gegenstand muss mit Ort und
+Zustand gespeichert werden (die Tasche für Kleines mit dem Spieler), dazu der Zustand von Welt, Gästen, Bedrohungen und
+Ablauf. Nicht gespeichert werden die Einstellungen (eigene Datei, 8.4); was nach dem Laden ohnehin neu entsteht (etwa
+laufende Minispiel-Partien von Gästen), beginnt neu. Was im Einzelnen im Spielstand steht, regeln `SaveManager.collect`
+und `apply` – Beschreibung in [TECHNIK.md](TECHNIK.md) Kap. 7 „Speichern & Laden“.
 
 ### 8.9 Ausbau-Ideen (später)
 - **Gäste lesen das Tagebuch:** Kommt ein Gast in Zimmer 13 (offene Tür, Schlüssel, Feier), kann er das Tagebuch lesen und so erfahren, wen man bestohlen oder dem Monster „geopfert“ hat (4.11, 6.2) → Abschließen lohnt sich doppelt. Das Tagebuch bleibt dabei fest im Zimmer. Drin steht es erst, wenn man seitdem gespeichert hat (3.10); das Notizbuch am Körper liest niemand.
@@ -6154,44 +6218,20 @@ statt Koordinatenlisten im LevelBuilder).
 
 ## 10. Offene Fragen für die Detaildiskussion
 
-Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den Kapiteln.
+Offene Fragen stehen in **YouTrack (Projekt ZIM)**; fehlt eine Entscheidung, steht das Ticket auf „To be discussed“
+(„Zu besprechen“). Beantwortete Fragen stehen in den Kapiteln. Die alten Nummern bleiben nur, weil noch auf sie
+verwiesen wird: 1 Flucht (2.1, 2.7, 7.4; wann man den Schlüssel holen kann: ZIM-22) · 3a „Bemerkt“-Auslöser (4.5) ·
+3h Truhen (3.3) · 9 nur Single-Player (3.9).
 
-1. **Flucht:** Ziel ist, dem Horrorhotel zu entkommen. Wie genau? (Schlüssel an Halloween 2.1, Rätsel, Hilfe der Gäste?)
-3a. ~~**„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren?~~ **Entschieden 2026-11-03:**
-   Hinschauen reicht, etwa 0,8 s (`monster.gd`, `_update_noticed`), wie gebaut. Anleuchten ist kein Sonderfall (4.5).
-3h. ~~**Truhen:** Abschließbar? Eigene Truhe im Spielerzimmer?~~ **Entschieden 2026-11-03:** Truhen lassen sich nicht
-   abschließen – die abschließbare Zimmertür schützt schon (6.19), und Zimmer 13 hat seine Truhe (3.3).
 4. **Story:** Das Abkommen und Josef (2.3). Offen: was das Ding unter dem Hotel vor 1987 war.
-8. ~~**Umfang:** Kleines Halloween-Projekt (Jam-Größe) oder größeres Spiel?~~ **Entschieden 2026-11-03:** größeres Spiel.
-9. ~~**Single-Player** – oder später Koop denkbar?~~ **Entschieden 2026-11-03:** nur Single-Player, kein Koop (3.9).
-10. ~~**Sprache:** Deutsch, Englisch, beides?~~ **Entschieden 2026-11-03:** Deutsch zuerst, Englisch später. Die Texte
-    werden nach und nach an einer Stelle gesammelt (statt verstreut im Code), damit die Übersetzung später möglich ist.
+8. **Umfang (entschieden 2026-11-03):** größeres Spiel, kein Halloween-Projekt in Jam-Größe.
+10. **Sprache (entschieden 2026-11-03):** Deutsch zuerst, Englisch später. Die Texte werden nach und nach an einer
+    Stelle gesammelt (statt verstreut im Code), damit die Übersetzung später möglich ist.
 
 ---
 
 ## 11. Nächste Schritte
 
-Grobe Reihenfolge der großen Brocken. Was im Einzelnen offen ist (auch Kleinigkeiten und Lücken), steht in
-YouTrack (Projekt ZIM, seit 2026-10-29); Gebautes fliegt hier raus (aufgeräumt 2026-10-27: Monsterwerte und Modi des Leviathan, Schlaf &
-Müdigkeit, Lichtschalter, Aufträge der Gäste, Erfolge, Masken teils).
-
-1. Minispiele mit Gästen (6.10): **Kürbis-Schnitz-Duell** (Darts umgesetzt 25.10., der Rest eingefroren)
-2. Fluchtweg aus dem Hotel: Schlüssel, Haupteingang, Ende mit allen Überlebenden (2.7, Ablauf in HANDLUNG.md) ·
-   Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
-3. U2 planen und bauen, Fahrstuhl reparieren (ein Schacht), Lager (7.4, 7.10) · Maschinen- und Müllraum im
-   Untergeschoss · Gäste gehen mit Grund hinunter (7.10)
-4. Drei Bedrohungen: mehrere zugleich, Erscheinen nach Ebenen, gleiche Sicht für den Kürbismann (4.20, ZIM-48) · Katzenraum kein Schutzraum mehr (ZIM-38)
-5. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter der
-   Leviathanmauer (ab etwa Tag 15), Ritual, Schädel/Axt/Jeansjacke als Deko (4.21)
-6. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
-   Wache, Tagesbudgets, Geschenke nach Wert, Vergebung, Neid (6.18)
-7. ~~Deko knapp machen, Stufen 2 und 3: Schutzkreis = Lichtschein, sichtbare Abweisung, Gäste schmücken nach Angst und
-   Freundschaft und klauen bei Knappheit (5.10)~~ gebaut 2026-10-28
-8. Halloween im Hotel: Gruselgeschichten-Abend, alte Bräuche als Schutz, unheimliche Durchsagen, Gruppenfoto (5.9) ·
-   Rest des Maskenballs (5.19) mit den Masken-Erfolgen (8.11) · Puppe als Jury beim Großen Schmücken (5.5)
-9. ~~Eier-Streich der Kinder (6.13) · Tiere als Klang (7.8)~~ gebaut 2026-10-28
-10. Fledermausbiss und der Vampir als vierte Bedrohung, Twist: selbst Vampir werden (4.22)
-11. Echte Modelle und Sounds für die übrigen Platzhalter
-12. Balancing
-13. Zerbrechende Fenster (7.3, für später vorgemerkt)
-14. Flecken auf den Tapeten, vermutlich von Hand (7.2)
+Was als Nächstes gebaut wird, steht in **YouTrack (Projekt ZIM)** – die großen Bögen als Epics (z. B. ZIM-2
+Hauptgeschichte, ZIM-116 Balancing), alles Einzelne als Ticket; fehlt eine Entscheidung, steht es auf „To be
+discussed“ („Zu besprechen“). Entscheidungen mit Datum bleiben in diesem Spielkonzept, das Ticket verweist darauf.
