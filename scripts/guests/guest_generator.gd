@@ -88,7 +88,7 @@ const COMMON := {
 		"Es kommt aus dem Keller. Ganz unten im Treppenhaus, wo die Treppe aufhört … da gehe ich nicht hin.",
 		"Die Lampen flackern dort, wo es gerade ist. Achte darauf.",
 		"Je mehr wir darüber reden, desto dreister wird es. Also … leise.",
-		"In den Flügeln ist es am dunkelsten. Da streift es am liebsten herum.",
+		"Meistens bleibt es unten im Keller. Erst wenn oben die Lampen zucken, ist es auf dem Weg.",
 	],
 	"odd": ["Die Fenster gehen alle nicht auf. Ich hab's bei jedem versucht.", "Manchmal höre ich nachts jemanden in den leeren Zimmern umräumen.", "Ich freue mich auf Halloween. Glaube ich."],
 	"knock": ["Mach auf! Bitte!", "Lass mich rein, schnell!", "Es ist hinter mir! Mach auf!"],

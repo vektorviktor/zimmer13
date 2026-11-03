@@ -475,10 +475,11 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
     der Uhr hängt (Fäulnis, Termine), holt von selbst auf. **Neues System, das mit `delta` über Minuten bis
     Stunden zählt → in die Gruppe `time_skip`.** Bewusst nicht: kurze Pausen der Tagesgäste – nachts schlafen alle, am Tag stellt `after_day_skip` sie neu auf.
   - **Das Monster im Sprung** (`MonsterDirector.skip`; `skipping` hält `_update_schedule`/`_update_haunting` an):
-    Werte und Spuk wie sonst. Ein Aufbruch (`_skip_activity`) würfelt die Absicht wie sonst; mit Puppe geht
-    `_skip_raid` den Weg aus `_plan_route` Tür für Tür (im Zimmer alle Verstecke auf, jeder Erwachsene →
-    `kill_guest`), ohne Puppe nimmt sich `_skip_roam` Ziele aus `next_roam_target` vor (`_skip_search` würfelt
-    Verstecke wie `Monster._check_hide_step`). `kill_guest`/`_scare_guest` rufen im Sprung nichts am Monster auf.
+    Werte, Spuk und der Plan der Modi (4.33) wie sonst, die Kellerrunde vergeht unten. Ein fälliger Auftritt geht
+    über `_skip_mode`: Der Snack holt niemanden (wer schläft, liegt hinter seiner Tür), der Raubzug bricht nur ein,
+    wenn `_plan_break_in` ein Zimmer findet; Raubzug, Urteil und Anforderung gehen mit `_skip_raid` ihren Weg
+    (`_route`) Tür für Tür (im Zimmer alle Verstecke auf, jeder Erwachsene → `kill_guest`), den Verurteilten holt das
+    Urteil auch anderswo. `kill_guest`/`_scare_guest` rufen im Sprung nichts am Monster auf.
   - **Übergabe:** Ist das Ziel Zimmer 13 oder das Zimmer des fremden Betts, in dem der Spieler schläft
     (`MonsterDirector.foreign_sleep_room()`, das auch beim Einbruch nach dem Raubzug mitwürfelt – `_plan_break_in`), mit
     Wache – `SleepSkip.guarded()`: ein wacher Erwachsener in diesem Zimmer – zu `SKIP_GUARD` nicht, oder hört der
@@ -1883,7 +1884,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   `awake_time`/`sure_awake`/`rested`, `drunk`/`hangover`, `coffee`/`caffeine`/`tea`, `injury`, `disguised`, Kompass, Kartenblätter,
   Schlüssel), `guests` (je Gast Lage, Werte, Vorrat, Erlebnisse, `seen`, `corpse`, Wunden, `claims`, `stances`),
   `social` (Beziehungen, `pals` = `{counts, feuds}`, `talk`, `sleep_active`, `night_seed`, `cat_blame`), `director`
-  (Werte, Phase, Absicht, Puppenfrist und Weg), `doll`, `ghost` (`visits`, `catch_up_day`, `hour_meetings`,
+  (Werte, Phase, Plan der Modi und laufender Auftritt, Puppenfrist und Weg), `doll`, `ghost` (`visits`, `catch_up_day`, `hour_meetings`,
   `first_seen`), `shower` (Dusche in Zimmer 13: `stage`), `pumpkin`
   (Spaßwert, Besuche, Garantie), `contest`, `notebook` (mit `seen`), `diary`, `traces` (mit Schleiern), `elevators`,
   `resources` (mit `guest_day`) und die Welt-Gruppen.

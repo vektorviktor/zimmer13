@@ -296,7 +296,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 >   Tag auf. Die **Angriffschance je Aufbruch ist deshalb klein** (4.17), damit es nicht zu oft angreift; die übrigen
 >   Aufbrüche sind Umsehen. Ebenso eskaliert Gerede nur selten (3 %). Harmlos ist es neun Aufbrüche lang (etwa
 >   anderthalb Tage).
-> - **Dreistigkeit** +12 je Spieltag; der **Deko-Anspruch** steigt in Spieltagen (5.10). Die Vereinfachung aus 4.9 kommt
+> - **Dreistigkeit** steigt in Spieltagen (Werte 4.9); der **Deko-Anspruch** steigt in Spieltagen (5.10). Die Vereinfachung aus 4.9 kommt
 >   eigens.
 > - **Bleiben in Sekunden:** Batterie 5 Minuten Licht (etwa ein Abend, sonst wären Batterien kaum noch knapp), Rausch
 >   5 und Kater 4 Spielstunden, Kürbiswachstum (3c, entscheidet sich mit 5.10), UV-Spuren 15 Spielstunden.
@@ -1699,14 +1699,14 @@ diesen Dokumenten von jetzt an. „Monster“ meint weiter dasselbe; die Bezeich
 
 ### 4.2 Ankündigung („Manifestation“)
 Es gibt **keine globale Vorwarnung**. Das Monster verrät sich über drei Signale:
-- **Flackerwelle beim Aufbruch** – wie schlimm: ihre Dauer verrät die Absicht (4.17).
+- **Flackerwelle beim Aufbruch** – was kommt: ihre Dauer verrät den Modus (4.17, 4.33); das Urteil kündigt die Puppe an (5.5).
 - **Lokales Flackern** der Lampen in seiner Nähe – wo es ist (4.13).
 - **Rauschen** im Bild und als Ton, lauter je näher es kommt, dazu ein Brummen – wie nah (4.13).
 
 ### 4.3 Verhalten
-- **Umherstreifen statt fester Route:** Aktivphasen im ganzen Hotel im Wechsel mit Ruhephasen im Keller (4.13). Beim
-  Aufbruch wählt es eine Absicht (4.17); vor einem echten Angriff geht es zur Puppentür (5.5).
-- **An jeder Zimmertür** entscheidet es, ob es abbiegt (Neugier des Zimmers × Dreistigkeit). Im Zimmer prüft es Bett und Schrank. Deko vor der Tür hält es schon im Flur auf → es überspringt die Tür.
+- **Nur in einem der vier Modi im Hotel** (4.33, 2026-10-25): Jeder Auftritt hat ein Ziel – Urteil (Puppentür, 5.5),
+  Snack, Raubzug, Anforderung. Dazwischen dreht es seine Runden im Keller und ist oben nur zu hören (4.13).
+- **Im Auftritt:** Beim Raubzug spürt es den Spieler und prüft Verstecke; beim Snack läuft es nur auf ihn zu (4.33).
 - **Abweichungen:** Geräusch (nachsehen), bemerkt (Suche ums Spielerzimmer, 4.5), Sichtung (Jagd, 4.12).
 - **Deko wirkt abschreckend:** Liegt sein Ziel im Schutz von Deko und Licht, sucht es sich ein anderes; vorbeigehen darf es (4.13).
 
@@ -1745,58 +1745,60 @@ Es gibt **keine globale Vorwarnung**. Das Monster verrät sich über drei Signal
 - Evtl. auch **Gewöhnung an konkrete Deko**: Immer derselbe Kürbis an derselben Stelle wirkt schwächer; Abwechslung wirkt besser.
 
 ### 4.9 Versteckte Werte: Dreistigkeit & Neugier
-Das Verhalten des Monsters wird aus **für den Spieler unsichtbaren Werten** berechnet. Der Spieler soll sie nur indirekt spüren (häufigere Vorwarnungen, Geräusche näher am Zimmer, …).
+> **Stand:** entschieden 2026-10-21 (Dreistigkeit in Spieltagen, heiße Stellen), Rolle unter den Modi 2026-10-25
+> (4.33) · gebaut 2026-10-27 · offen: Bonus für Gäste in Panik (entschieden, nicht gebaut). Werte oben im
+> `MonsterDirector`.
 
-> **Vereinfacht (entschieden 2026-10-21, umgesetzt 2026-10-27; Boni klingen mit 6 Spielstunden Halbwertszeit ab,
-> heiße Stellen mit 40 s, Grundneugier überall 40 – Dunkelheit und Deko wirken nur noch über die Abschreckung):**
-> - **Dreistigkeit** steigt wie der Anspruch (4.8) **in Spieltagen** statt je Sekunde – mit der Tagesuhr (2.4) wäre
->   sie sonst nach gut einem Tag bei 100, und danach wirkte kein Ereignis mehr. Ereignisse (belauscht, bemerkt, UV)
->   geben **abklingende Boni** obendrauf. Die „Delle“ nach einer Abweisung entfällt.
-> - **Neugier je Zone** (über 300 Zonen, fast ohne Wirkung) wird durch eine **kurze Liste heißer Stellen** ersetzt –
->   Ort, Stärke, Abklingen (Lärm, Licht aus, Sichtung, „Angst riecht“). Das Urteil der Puppe (5.5) wirkt ohnehin direkt.
+Das Verhalten des Monsters wird aus **für den Spieler unsichtbaren Werten** berechnet. Der Spieler soll sie nur
+indirekt spüren. Unter den vier Modi (4.33) bestimmt die **Dreistigkeit**, wann die nächste Anforderung kommt, die
+**heißen Stellen**, wo der nächste Snack oder Raubzug beginnt; die **Abschreckung** jeder Tür entscheidet, welche
+Türen eine Anforderung aufbricht. Dunkelheit und Deko wirken nur über die Abschreckung.
 
-**Dreistigkeit (global, ab 0, seit 2026-10-25 ohne Obergrenze – Schwellen der Anforderung bei 55, 80, 105, 4.33)** – *wie viel traut es sich?*
-- ↑ mit der Zeit (langsam, stetig, in Spieltagen)
-- ↑ wenn es Gespräche über sich belauscht (4.7)
-- ↑ wenn es bemerkt wurde / Sichtungen (4.5)
-- ↑ wenn Gäste in Panik sind (6.5)
-- ↓↓ **stark, wenn es einen Gast geholt hat → Sättigung** (siehe 4.10)
+**Dreistigkeit (global, ohne Obergrenze seit 2026-10-25 – Schwellen der Anforderung bei 55, 80, 105, 4.33)** – *wie
+viel traut es sich?*
+- **Start 25**, ab dem ersten Angriff **+2,7 je Spieltag** – in Spieltagen, nicht je Sekunde, weil sie mit der
+  Tagesuhr (2.4) sonst nach gut einem Tag oben wäre und kein Ereignis mehr wirkte. So liegt die erste Schwelle (55)
+  ohne Boni etwa an Tag 14.
+- **Boni** aus Ereignissen kommen obendrauf und klingen mit **6 Spielstunden** Halbwertszeit ab:
 
-**Neugier (pro Ort/Zone, 0–100; soll zur Liste heißer Stellen werden, siehe oben)** – *wohin zieht es?*
-- ↑ Dunkelheit in der Zone
-- ↑ wenig/schwache Deko (im Verhältnis zum aktuellen Anspruch, 4.8)
-- ↑ Sichtung in der Nähe / Spielerzimmer im Suchmodus (4.5)
-- *Die Puppe (5.5) wirkt nicht über die Neugier, sondern direkt: Vor ihrer Tür endet jeder Angriff, und wer dort
-  ist, stirbt.*
-- ↑ Lärm
-- ↓ langsamer Abbau über Zeit
+  | Ereignis | Bonus | Grenze |
+  |---|---|---|
+  | bemerkt (4.5) | +8 | – |
+  | vom UV vertrieben (4.16) | +6 | – |
+  | Gerede über das Monster, belauscht (4.7) | +1 | höchstens einmal je Spielstunde (`LURE_EVERY`, 60 s) |
+  | lauter Lärm, während es ruht (4.15), Licht aus (4.4) | +0,3 | höchstens einmal je Spielstunde, erst nach dem ersten Angriff |
+  | Gäste in Panik (6.5) | – | entschieden, nicht gebaut |
+
+  Die Grenze je Spielstunde, weil sonst eine Feier oder ein Grollen die Dreistigkeit in Minuten über die Schwellen
+  triebe.
+- **Abzüge:** Jedes Opfer zieht dauerhaft **1,5** ab, dazu die kurze Sättigung (4.10).
+
+**Heiße Stellen** (statt Neugier je Zone, 2026-10-21, weil über 300 Zonen fast ohne Wirkung blieben) – *wo zieht es
+hin?*
+- Überall gilt eine **Grundneugier von 40**. Eine heiße Stelle (Lärm, Licht aus, Gerede, Sichtung bzw. bemerkt rund
+  ums Spielerzimmer 4.5, UV, „Angst riecht“ beim Schock des Spielers) wirkt auf ihrem Stockwerk voll bis 3 m und
+  auslaufend bis 10 m, klingt mit **40 s** Halbwertszeit ab; höchstens 24 Stellen.
+- **Die stärkste Lockung** merkt es sich länger (6 Spielstunden Halbwertszeit): Dort beginnt der nächste Snack oder
+  Raubzug (4.33). So behalten Spuren, Lauschen und „Licht aus lockt“ ihren Sinn.
+- *Die Puppe (5.5) wirkt nicht über die Neugier, sondern direkt.*
 
 **Abschreckung (pro Zone)**
 ```
 Abschreckung = (Summe Deko-Stärke × Licht-Faktor) / Anspruch(Zeit)
 ```
 Jede Deko zählt in ihrem **Lichtschein**; Deko ohne Licht nur halb und nur direkt an der Tür (5.10). Der Anspruch ist
-an den Tag gebunden und gedeckelt (4.8).
+an den Tag gebunden und gedeckelt (4.8). Die Anforderung bricht die bewohnten Türen unter dem Anspruch auf (4.33).
 
-**Entscheidung (Vorschlag)**
-```
-Druck(Zone) = Dreistigkeit × Neugier(Zone)
-Druck > Abschreckung  → Monster wählt diese Zone als Ziel / kann eindringen
-sonst                 → Monster hält sich fern, bleibt diffus im Hintergrund
-```
-- Die Zone mit dem höchsten Druck wird bevorzugt angesteuert (mit etwas Zufall, damit es nicht vorhersehbar wird).
-- Die Wahrscheinlichkeit einer **Manifestation** (Flackern/Rauschen → Erscheinen) wächst mit dem höchsten Druck-Wert.
 - Alle Gewichtungen sind Tuning-Parameter, zentral oben im `MonsterDirector`.
 - **Debug-Overlay** (nur in Entwicklung): zeigt alle Werte live an.
 
 ### 4.10 Sättigung
-> **Neu gefasst (2026-10-25, 4.33):** Die Sättigung wirkt nur noch als **Abzug auf die Dreistigkeit** – jedes Opfer
-> schiebt die nächste Anforderung hinaus. Wann das Monster kommt, bestimmen die vier Modi.
-- Hat das Monster einen Gast geholt, ist es **eine Zeit lang gesättigt**:
-  - Dreistigkeit fällt stark ab, Manifestationen werden seltener, es zieht sich in den Hintergrund zurück.
-  - Die Sättigung klingt mit der Zeit ab – danach steigt die Dreistigkeit wieder (evtl. schneller als vorher: „Es hat Geschmack gefunden“).
-- Für den Spieler entsteht ein **Zeitfenster**: sicherer in dunkle Bereiche, Spinnweben holen, nachts in den Garten …
-- Dem Spieler wird die Sättigung nicht angezeigt, aber spürbar gemacht (Stille, Lichter flackern nicht mehr, Gäste wirken erleichtert/geschockt).
+> **Stand:** neu gefasst 2026-10-25 (4.33) · gebaut 2026-10-27.
+
+- **Jedes Opfer schiebt die nächste Anforderung hinaus:** Die Dreistigkeit (4.9) sinkt dauerhaft um **1,5**, dazu kommt
+  ein kurzer Abzug von **10**, der in 100 Echtsekunden (knapp 1¾ Spielstunden) abklingt.
+- Wann das Monster kommt, bestimmt der Plan der Modi (4.33), nicht der Hunger – ein sicheres Zeitfenster schafft die
+  Sättigung nicht. Ruhige Fenster für den Keller sind die Lücken zwischen den Kellerrunden (4.33).
 
 ### 4.11 Die Aufmerksamkeit des Monsters lenken
 Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf andere Gäste lenken**. Ideen:
@@ -1838,13 +1840,17 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - **Kinder und Katzen** sieht es nicht als Beute – es jagt sie nicht (6.11, 6.13).
 
 ### 4.13 Ständige Präsenz (entschieden 2026-10-10)
-> **Im Prototyp umgesetzt (2026-10-11):** Umherstreifen im ganzen Hotel im Wechsel mit Ruhephasen im Keller (anfangs lang, mit jedem Tag kürzer), weicht dem Blick des Spielers aus, Rauschen ab 20 m (am stärksten bei 4 m), Lampen flackern nur in seiner Nähe, Halluzinationen nach einem Todesfall, alle Spuren aus der Tabelle (Fußspuren verblassen, Kratzspuren bleiben, Spuren an Zimmer 13 lassen sich wegwischen), Klopfen in beiden Varianten, Warnungszettel ab dem ersten Angriff, kleine Veränderungen im Hotel, Gäste berichten (nicht immer zuverlässig) von Spuren, Brummen mit dem Rauschen. Spielstände sichern Monster, Spuren und geprüfte Verstecke.
+> **Im Prototyp umgesetzt (2026-10-11):** Weicht dem Blick des Spielers aus, Rauschen ab 20 m (am stärksten bei 4 m), Lampen flackern nur in seiner Nähe, Halluzinationen nach einem Todesfall, alle Spuren aus der Tabelle (Fußspuren verblassen, Kratzspuren bleiben, Spuren an Zimmer 13 lassen sich wegwischen), Klopfen in beiden Varianten, Warnungszettel ab dem ersten Angriff, kleine Veränderungen im Hotel, Gäste berichten (nicht immer zuverlässig) von Spuren, Brummen mit dem Rauschen. Spielstände sichern Monster, Spuren und geprüfte Verstecke.
 > **Engerer Blick unter Stress umgesetzt (2026-10-27):** Monster nah, Jagd, Versteck oder Schock → der Bildrand wird
 > dunkel und der Blickwinkel kleiner; schnell eng, langsam wieder weit.
 
 **Entschieden**
-- **Das Monster patrouilliert im ganzen Hotel** (Flure, Zimmer, Lobby, Küche, Bar, Garten, Keller) und **bleibt dabei oft verborgen**: bewegt sich bevorzugt außerhalb des Blickfelds und im Dunkeln.
-- **Langsamer Einstieg:** In den **ersten Minuten bzw. ersten Phasen kommt es nicht**. Anfangs **zieht es sich regelmäßig in den Keller zurück**; die Ruhephasen werden mit der Zeit kürzer (passt zu 4.8).
+- **Präsenz zwischen den Modi (2026-10-25, 4.33):** Im Hotel ist es nur während eines Modus unterwegs, sonst dreht es
+  seine Runden im Keller. Oben hört man es dann – Geräusche hinter Wänden, etwa alle 90–240 s, 7–14 m vom Spieler –,
+  sieht es aber nicht. Unterwegs **bleibt es oft verborgen**: bewegt sich bevorzugt außerhalb des Blickfelds und im
+  Dunkeln.
+- **Langsamer Einstieg:** Vor dem ersten Angriff bei der Siegerehrung (2.5) kommt es nicht; danach folgt es dem Plan
+  der Modi (4.33).
 - **Rauschen nach Entfernung:** Das Rauschen beginnt, wenn das Monster eine bestimmte Distanz zum Spieler unterschreitet, und **wird langsam lauter**, je näher es kommt (ab ca. 20 m, am stärksten bei ca. 4 m) – auch durch Wände.
 - **Halluzination:** Ist ein Gast gestorben (Schock/Trauer, 6.8), kommt das Rauschen **manchmal auch ohne Monster**.
 - **Der friedliche Anfang** und die **ersten harmlosen Angriffe**: siehe 2.1.
@@ -1867,7 +1873,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
   - **Meistens der echte Gast:** Er klopft panisch und schreit „Mach auf!“, weil das Monster hinter ihm ist. Öffnet man nicht, hört man einen Schrei – danach ist es still.
   - **Manchmal nicht:** Es klopft, man hört eine bekannte Stimme. Öffnet man, ist niemand da – nur ein Kleidungsstück auf dem Boden.
 - **Warnungszettel** stammen von **früheren Gästen**, die es nicht hinausgeschafft haben. Sie liegen in verlassenen Zimmern, im Keller, unter Matratzen, geben Tipps zum Monster und deuten den Schlüssel an Halloween an – zugleich der Story-Faden (offene Frage 4).
-- **Lampen flackern lokal** in der Nähe des Monsters: Flackern zeigt, *wo* es ist; Rauschen zeigt, *wie nah*. Dazu die Flackerwelle vom Keller aus beim Aufbruch, ihre Dauer verrät die Absicht (4.17).
+- **Lampen flackern lokal** in der Nähe des Monsters: Flackern zeigt, *wo* es ist; Rauschen zeigt, *wie nah*. Dazu die Flackerwelle vom Keller aus beim Aufbruch, ihre Dauer verrät den Modus (4.17).
 - **Das Poolwasser spürt es (entschieden und umgesetzt 2026-10-19):** gemessen vom Monster zum Wasser, nicht zum
   Spieler. Ab ~30 m legen sich die Wellen, bei 20 m ist das Becken **spiegelglatt**. Ab 20 m (wo das Rauschen
   beginnt) laufen **feine zitternde Ringe** von seiner Seite her übers Wasser, Stoß um Stoß, am stärksten bei 4 m –
@@ -1889,17 +1895,15 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
   verlaufener Kürbismatsch lässt sich nicht mehr aufsammeln (5.8). Drinnen und unter Dach ändert sich nichts.
 - **Technische Atmosphäre:** mehr Nebel, Lichtkegel statt gleichmäßigen Lichts, Brummen mit dem Rauschen, engerer Blick unter Stress.
 
-**Regeln für Aktivphasen** (aus Beobachtungen im Prototyp, umgesetzt 2026-10-11 bis 2026-10-17)
+**Regeln für Auftritte** (aus Beobachtungen im Prototyp, umgesetzt 2026-10-11 bis 2026-10-17)
 - Deko und Licht **drängen es ab, statt es nach Hause zu schicken.** Die Deko der Gäste säumt die Flure – würde jede
   Deko es vertreiben, käme es kaum aus dem Keller. Vorbeigehen darf es; abgeschreckt wird es nur, wenn sein **Ziel**
   im Schutz liegt (beim Jagen, wenn der Gejagte im Schutz steht). Zurückgeschreckt sucht es sich ein anderes Ziel und
   lässt den Geschützten ~15 s in Ruhe.
 - Nach einem **harmlosen Schreck** an einem Gast schleicht es aus dem Blick und streift weiter, ohne ihn erneut zu
-  jagen; den Erschreckten verschont es bis zur nächsten Aktivphase. Gäste meiden Verstecke in der Nähe des Monsters
+  jagen; den Erschreckten verschont es bis zum nächsten Auftritt. Gäste meiden Verstecke in der Nähe des Monsters
   (8 m); denselben Panik-Satz sagt ein Gast höchstens alle 45 s.
-- In den Keller geht es nur am Ende der Aktivphase, satt oder vom UV-Licht vertrieben.
-- *(Ersetzt durch die drei harmlosen Raubzüge, 4.33.)* Die **ersten neun Aufbrüche** (etwa anderthalb Tage) bleiben für Gäste harmlos (2.1) – auch mit F5 gerufen. Danach
-  holt es nur jemanden, wenn es das beim Aufbruch will – mit einer Chance, die von Tag zu Tag steigt (4.17).
+- In den Keller geht es am Ende eines Modus (4.33) oder vom UV-Licht vertrieben.
 
 **Offen**
 - Was steht konkret auf den Warnungszetteln (Story)? (Im Prototyp gibt es fünf erste Zettel aus den Jahren 1987–2019, siehe `scripts/world/warning_note.gd`.)
@@ -2015,7 +2019,6 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Gäste reagieren auf erschreckenden Lärm mit Gerüchten **und** gehen nachsehen (die mutigen) – sie können dabei selbst in Gefahr geraten.
 
 **Zu klären**
-- Ob der Spieler sieht, wie laut er gerade ist (kein HUD – vielleicht nur über Untertitel wie „[Die Tür knarrt]“).
 - Die Dämpfung im Spiel nachhören: Reicht ×0,4 je Wand, oder hört man Zimmer nebenan zu gut bzw. zu schlecht?
 
 ### 4.16 Taschenlampe & UV-Licht (entschieden 2026-10-11)
@@ -2033,7 +2036,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 **UV gegen das Monster**
 - Steht es nah genug (≤ 6 m) etwa **1 Sekunde** mitten im UV-Kegel, zuckt es zurück, kreischt und **flieht in den Keller**. Im Kegel wird es langsamer. Auf der Flucht jagt es niemanden.
-- **Der Preis:** Es **weiß, wer es war** – Dreistigkeit +6, Neugier rund um Zimmer 13 +40 (wie „bemerkt“, 4.5). Es **ruht danach nur kurz** (Ruhephase ×0,4). Und es **gewöhnt sich daran** (4.8): Jedes weitere Mal muss es 0,5 s länger im Kegel stehen (höchstens 3,5 s) – irgendwann reicht eine Batterie nicht mehr.
+- **Der Preis:** Es **weiß, wer es war** – Dreistigkeit +6 (abklingender Bonus, 4.9; bemerkt gibt +8), Neugier rund um Zimmer 13 +40 (wie bei „bemerkt“, 4.5). Und es **gewöhnt sich daran** (4.8): Jedes weitere Mal muss es 0,5 s länger im Kegel stehen (höchstens 3,5 s) – irgendwann reicht eine Batterie nicht mehr.
 - Nicht, wenn es schon zupackt (Jumpscare) oder sich ohnehin zurückzieht.
 
 **UV zeigt Verborgenes**
@@ -2047,106 +2050,60 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - ~~Zeigt UV später auch weggewischte Spuren an Zimmer 13?~~ **Entschieden und umgesetzt 2026-11-03 (ZIM-37):** UV zeigt in Zimmer 13 die Botschaft von Clara Vogt (13, 2005) an Martin Ebert (018), Text und Ort in 7.4.
 
 ### 4.17 Angriffsabsicht & Flacker-Signal (entschieden 2026-10-17)
-> **Neu gefasst (2026-10-25, 4.33):** Die drei Absichten, die Opferzahl je Aufbruch und „vom UV vertrieben → mindestens
-> zwei“ gelten nicht mehr – an ihre Stelle treten die vier Modi des Leviathan. Das Flackersignal bleibt mit neuer
-> Bedeutung: **kurzes Zucken = Snack, mittleres Flackern = Raubzug, langes Flackern = Anforderung**; das Urteil
-> kündigt die Puppe an. Die Kurve der Angriffschance gilt weiter für den Raubzug, skaliert auf 10–13 im Spiel.
-> Ergänzt 4.13, ersetzt sie nicht: Das lokale Flackern bleibt.
-> **Im Prototyp umgesetzt (2026-10-17):** drei Absichten mit Flackerwelle vom Keller aus (über das
-> Treppenhaus ins Obergeschoss), Täuschung, Opferzahl nach 1/n² (Spieler zählt mit), Flackern 1 + 2 × n Sekunden, Umsehen wird
-> bei Sichtung oder Gerede zum Angriff, Gäste verstecken sich bei langem Flackern, Halluzination mit
-> langem Flackern, Tagebuch gesperrt, Würfelpartie bricht ab, Sirren im Stromnetz und Untertitel,
-> Hinweise bei Edna, Mila und auf dem Zettel von 1994. Werte oben im `MonsterDirector`.
+> **Stand:** entschieden 2026-10-17, Bedeutung je Modus 2026-10-25 (4.33) · gebaut 2026-10-17, Stufen je Modus
+> 2026-10-27 · offen: Täuschung (unten). Werte oben im `MonsterDirector` (`SIGNAL_TIME`, `WAVE_SPEED`). Ergänzt 4.13,
+> ersetzt sie nicht: Das lokale Flackern bleibt.
 
-**Grundidee:** Bricht das Monster aus dem Keller auf, **läuft eine Flackerwelle durchs Haus**. Wie lange die
-Lichter flackern, verrät, **was es vorhat**. Kurzes Zucken: Es will sich umsehen, höchstens einen holen. Langes Flackern: Es hat
-Hunger und wird mehrere holen.
+**Grundidee:** Bricht der Leviathan zu einem Snack, Raubzug oder einer Anforderung aus dem Keller auf, **läuft eine
+Flackerwelle durchs Haus**. Wie lange die Lichter flackern, verrät, **welcher Modus kommt** (4.33) – und damit, was
+man tun muss.
+
+| Stufe | Dauer | Modus (4.33) |
+|---|---|---|
+| kurzes Zucken | 1 s, schwach | Snack |
+| Flackern | 3 s | Raubzug |
+| langes Flackern | 8 s, am stärksten | Anforderung (nach dem langen Rauschen) |
+| keine Welle | – | Urteil – es kündigt die Puppe mit dem Grollen an (5.5) |
 
 **Warum das gut passt**
-- Ohne Signal käme jede Aktivphase gleich: lautlos aus dem Keller, erst das Rauschen verrät es. So wird aus dem
+- Ohne Signal käme jeder Auftritt gleich: lautlos aus dem Keller, erst das Rauschen verrät es. So wird aus dem
   Flackern eine **Information, auf die man reagieren kann**: weitermachen oder sofort in Sicherheit. Das ist genau
   der Kern-Loop „Ankündigung erkennen, rechtzeitig in Sicherheit gehen“ (3).
-- Die drei Signale ergänzen sich: **Flackerwelle = wie schlimm**, lokales Flackern = **wo**, Rauschen =
+- Die drei Signale ergänzen sich: **Flackerwelle = was kommt**, lokales Flackern = **wo**, Rauschen =
   **wie nah** (4.13).
-- Die versteckten Werte (4.9) werden spürbar, ohne dass man sie anzeigt.
 
-**Drei Absichten** (gewählt beim Aufbruch)
-
-| Absicht | Was es will | Flackern beim Aufbruch |
-|---------|-------------|------------------------|
-| **Umsehen** | streift umher, hinterlässt Spuren, spukt (Türen, Betten …), holt niemanden | ein kurzes Zucken (1 s) |
-| **Einen holen** | holt einen (Gast oder Spieler), danach satt (4.10) | 3 s |
-| **Raubzug** | holt **n Opfer** (ab zwei); nach jedem Opfer gleich weiter, erst das letzte macht satt, bleibt länger draußen | 1 + 2 × n Sekunden (zwei: 5 s, drei: 7 s, vier: 9 s …), heftig, einzelne Lampen fallen kurz ganz aus |
-
-- **Wie viele Opfer** (entschieden 2026-10-17): Greift es an, will es
-  **n Opfer mit Wahrscheinlichkeit ∝ 1/n²**, normiert. Etwa **61 % eins, 15 % zwei, 7 % drei, 4 % vier** …;
-  höchstens so viele, wie Gäste leben, plus den Spieler. Kein fester Deckel – sehr große Raubzüge sind selten,
-  aber möglich.
-- **Flackerdauer** (entschieden 2026-10-17): **Sekunden = 1 + 2 × n** (n = angezeigte Opfer, Umsehen n = 0).
-
-- **Was die Absicht bestimmt:** Satt → nur umsehen. Sonst greift es mit einer **Chance an, die von Tag zu Tag
-  steigt** (entschieden 2026-10-17), gleitend zwischen diesen Punkten, beim Angriff die Opferzahl wie oben:
-
-  | Tag | bis 4 | 7 | 10 | 20 | ab 30 |
-  |-----|-------|---|----|----|-------|
-  | will beim Aufbruch mindestens einen holen | 4 % | 10 % | 16 % | 19 % | 20 % |
-
-  Bei etwa sechs Aufbrüchen am Tag (2.4) heißt das: anfangs etwa jeden vierten Tag ein Angriff, ab Tag 10 etwa einer
-  am Tag. Gedeckelt, damit ein kurzes Zucken auch an Halloween meist die Wahrheit sagt. Vor der Siegerehrung (2.5)
-  kommt es nicht, danach bleiben neun Aufbrüche für Gäste harmlos (2.1) – die Kurve gilt danach. **Vom UV-Licht vertrieben** (4.16) → beim nächsten Aufbruch mindestens zwei:
-  Es kommt wütend zurück. Bei den harmlosen Angriffen (2.1) wird gewürfelt und geflackert, geholt wird niemand.
-- **Unscharf, nicht ablesbar:** Die Dauer schwankt etwas. Wer genau hinsieht, unterscheidet kurz und lang, aber
-  „3 Opfer“ lässt sich nicht abzählen.
-- **Es täuscht manchmal** (entschieden): Selten zuckt das Licht nur kurz, obwohl es einen holen will oder auf
-  Raubzug geht. Je dreister es ist, desto öfter (Vorschlag: höchstens jedes fünfte Mal, nie bei den harmlosen
-  Angriffen). Umgekehrt flackert es nach einem Todesfall manchmal lang, ohne dass etwas kommt (Halluzination,
-  siehe unten). Auf ein kurzes Zucken ist also nie ganz Verlass.
-- **Als Welle vom Keller nach oben** (entschieden): Zuerst flackern die Kellerlampen, dann das Erdgeschoss vom
-  Kellerabgang aus, zuletzt das Obergeschoss über das Treppenhaus (Vorschlag: etwa 15 m pro Sekunde, jede Lampe
-  flackert die volle Dauer). Man sieht, dass es *jetzt* aufbricht, und wer weit weg wohnt, hat ein paar Sekunden
-  mehr.
-- **Die Absicht kann sich ändern:** Lärm, Sichtungen und Gespräche über das Monster (4.7) können aus „Umsehen“
-  einen Angriff machen. Die Lichter flackern dann noch einmal.
-- **Die Absicht gilt auch für den Spieler** (entschieden): Der Spieler zählt wie ein Gast.
-  - **Umsehen:** Es jagt dich trotzdem (4.12). **Erwischt es dich, stirbst du – immer**, auch bei den ersten, für
-    Gäste harmlosen Angriffen (entschieden 2026-10-22).
-  - **Einen holen:** Du kannst der eine sein.
-  - **Raubzug:** Du bist eines der n Opfer.
-  - Weil es manchmal täuscht, ist ein kurzes Zucken trotzdem keine Garantie.
+**Die Welle**
+- **Vom Keller nach oben** (entschieden): Zuerst flackern die Kellerlampen, dann das Erdgeschoss vom Kellerabgang aus,
+  zuletzt das Obergeschoss über das Treppenhaus – etwa 15 m pro Sekunde, jede Lampe flackert die volle Dauer. Man
+  sieht, dass es *jetzt* aufbricht, und wer weit weg wohnt, hat ein paar Sekunden mehr.
+- **Unscharf, nicht ablesbar:** Die Dauer schwankt um etwa 15 %. Kurz und lang unterscheidet man, Sekunden zählt man
+  nicht.
+- **Täuschung** (entschieden 2026-10-17, nicht gebaut): Selten zuckt das Licht nur kurz, obwohl mehr kommt – je
+  dreister es ist, desto öfter (Vorschlag: höchstens jedes fünfte Mal, nie bei den harmlosen Raubzügen). Ob das unter
+  den Modi gilt, ist offen – 4.33 nennt sie nicht.
+- **Für den Spieler** gilt jedes Signal: Erwischt es ihn, stirbt er – immer, auch bei den harmlosen Raubzügen
+  (entschieden 2026-10-22).
 
 **Drumherum**
-- **Gäste reagieren:** Bei langem Flackern verstecken sich die Ängstlichen sofort (Edna), Mutige ignorieren das
-  kurze Zucken. Ein Raubzug trifft also vor allem die Unvorsichtigen (entschieden 2026-10-19: Es sucht nicht
-  gezielt nach Opfern – wer sich beim Flackern versteckt, bleibt geschützt; etwa jede zweite Aktivphase mit
-  Absicht endet deshalb ohne Opfer). Gäste sprechen darüber („Wenn es lange
-  flackert, geh nicht raus.“), ebenso ein Warnungszettel. So lernt der Spieler das Signal.
-- **Die ersten harmlosen Angriffe** (2.1) zeigen das Signal schon. Man lernt es kennen, bevor es ernst wird.
-  Der erste Angriff bei der Siegerehrung (2.5) behält seinen eigenen Auftakt (Licht aus, Stille).
-- **Halluzinationen** (4.13, 6.8): Nach einem Todesfall flackert es manchmal lang, ohne dass etwas kommt.
+- **Gäste reagieren** (entschieden und umgesetzt 2026-10-22, 5.5): Sobald die Welle sie erreicht, bringen sich alle in
+  Sicherheit – auch Feiernde –, heim oder ins nächste Versteck; je länger es flackert, desto mehr Angst. Sorglose
+  tun ein Zucken oder Flackern oft ab („da war nichts“, 6.9). Wer im Gespräch oder am Spieltisch ist, bleibt. Gäste
+  sprechen darüber („Wenn es lange flackert, geh nicht raus.“), ebenso ein Warnungszettel und die Hinweise bei Edna,
+  Mila und auf dem Zettel von 1994. So lernt der Spieler das Signal.
+- **Die ersten drei Raubzüge sind harmlos** (4.33) und zeigen das Flackern schon – man lernt es kennen, bevor es ernst
+  wird. Der erste Angriff bei der Siegerehrung (2.5) behält seinen eigenen Auftakt (Licht aus, Stille).
+- **Halluzinationen** (4.13, 6.8): Nach einem Todesfall kommt mit dem Rauschen manchmal (etwa jedes dritte Mal) eine
+  lange Welle, ohne dass etwas kommt; Gäste reagieren darauf nicht.
 - **Konzentration** (6.10): Beim Würfeln sieht man das Flackern nur halb so stark. Langes Flackern bricht die
   Partie ab, wie die Vorwarnung.
 - **Tagebuch** (8.5): Während des Flackerns gesperrt.
 - **Barrierefreiheit** (8.4): Wer das Flackern abschwächt, braucht ein zweites Signal mit derselben Dauer: Die
-  Glühbirnen sirren und das Stromnetz knistert. Dazu kommt ein Untertitel („Die Lichter flackern lange.“).
-- **Satt:** Nach einem Opfer flackert beim nächsten Aufbruch nichts oder fast nichts (4.10: „Lichter flackern
-  nicht mehr“).
+  Glühbirnen sirren und das Stromnetz knistert. Dazu kommt ein Untertitel je Stufe („[Die Lichter zucken kurz]“,
+  „[Die Lichter flackern]“, „[Die Lichter flackern lange]“).
 
-**Technik (Skizze):** `MonsterDirector._start_activity` wählt die Absicht und startet die Flackerwelle für
-die passende Dauer (alle `lamps`, verzögert nach Abstand zum Kellerabgang, dazu Bild-Flackern). Wie viele Gäste es in dieser Phase schon geholt hat, zählt
-`kill_guest` bzw. `kill_player` mit. Die Sättigung je Opfer hängt von der Absicht ab. Absicht und Zähler kommen in den Spielstand
-des Directors. Die Zuordnung fester Weltobjekte ändert sich nicht.
-
-**Entschieden (2026-10-17):** Absicht gilt auch für den Spieler · das Signal täuscht manchmal · Opferzahl nach 1/n²
-ohne festen Deckel · Flackern 1 + 2 × n Sekunden als Welle vom Keller nach oben.
-
-**Mit der Puppe (2026-10-22, 5.5):** Vor jedem echten Angriff (einen holen, Raubzug) liegt 1–2 Minuten vorher die Puppe
-vor der schwächsten bewohnten Tür, und ein Grollen schwillt im ganzen Hotel an. Beim Aufbruch läuft die Flackerwelle
-wie oben. Das Monster geht dann nicht mehr ziellos umher, sondern zur Puppentür und greift unterwegs bis zu fünf
-schwache bewohnte Türen an, solange es noch hungrig ist. Die Opferzahl gilt für diese Türen unterwegs; das
-Puppenzimmer kommt immer dazu. Beim Umsehen bleibt alles wie oben.
-
-**Noch offen:** genaue Tuning-Werte (Täuschungsrate, Angriffschance je Tag, ob die Opferzahl doch einen Deckel
-braucht), beim Ausprobieren festlegen.
+**Technik (Skizze):** `MonsterDirector._start_wave` startet die Welle in der Stufe des Modus (`_mode_level`), jede
+Lampe verzögert nach `wave_delay` (vom Heizkeller über das Treppenhaus), dazu Bild-Flackern; Gäste reagieren über
+`on_flicker_signal`.
 
 ### 4.18 Der Lakengeist am Fenster (entschieden 2026-10-17)
 > **Garantien (entschieden und umgesetzt 2026-10-22):** War er bis **Tag 10** noch nie beim Spieler, kommt er ab dann
@@ -2195,7 +2152,8 @@ Würgen im Zimmer.
 
 **Wann er kommt**
 - Man betritt einen Raum mit Außenfenster (oder ist darin), **das Licht ist aus und der Vorhang offen** → er kommt
-  **sehr wahrscheinlich**. Ist eins davon nicht erfüllt, kommt er nicht.
+  **sehr wahrscheinlich**. Ist eins davon nicht erfüllt, kommt er nicht – **bis zum 3. Mal**; ab dem 4. Mal hält ihn
+  der zugezogene Vorhang nicht mehr auf (Tabelle).
 - Er taucht weit draußen im Dunkeln auf und schwebt auf **Fensterhöhe** heran – im Obergeschoss also frei über
   dem Garten.
 - Milchglas (falls es wieder Milchglasfenster gibt): nur ein Umriss, keine Hypnose (wie 4.12).
@@ -2218,7 +2176,7 @@ Der Blickzug hat eine Einstellung zum Abschwächen (wie das Flackern, 8.4).
 - **Befreien:** Nur wer sich **wild hin und her bewegt**, reißt sich los – und hat dafür **3 Sekunden**, gegen
   einen Griff, der ständig zurückzieht. Schafft man es nicht,
   **stirbt man** (Sterbebildschirm wie beim Monster, 4.6).
-- **Er verschwindet, wenn mindestens ein bis zwei weitere Gäste zu sehen sind** – Zeugen vertreiben ihn.
+- **Er verschwindet, sobald ein wacher Gast ihn sieht** (2026-10-17) – Zeugen vertreiben ihn.
   Allein im dunklen Zimmer ist man ihm ausgeliefert; in Gesellschaft ist man sicher. Das stärkt die Gäste
   (Kapitel 6): Wer Freunde hat, die mit ins Zimmer kommen, hat weniger zu fürchten.
 - **Verschwinden:** Er wird in **0,5 Sekunden durchsichtig** und ist weg – immer so, ob vertrieben oder am Ende
@@ -2264,7 +2222,7 @@ Von **0 bis 1 Uhr** (2.4) zieht er durch die **Flure**, jede Nacht – wie alles
 
 **Passt zu den bestehenden Systemen**
 - **Licht aus** lockt schon das Monster an (4.4) – jetzt auch den Geist. Licht an schützt vor beidem.
-- **Vorhang zu** hält den Geist draußen, macht den Raum aber dunkler (weniger Mondlicht).
+- **Vorhang zu** hält den Geist bis zum 3. Mal draußen, macht den Raum aber dunkler (weniger Mondlicht).
 - **Handabdrücke** gibt es schon an Türen (`Traces`); neu ist die Scheibe als Untergrund.
 
 **Er sucht die Schwachen (entschieden 2026-10-19)**
@@ -2285,8 +2243,6 @@ Der Geist achtet darauf, wer **schwach und ängstlich** ist. Spieler und Gäste 
 
 **Zu klären**
 - Hilft UV-Licht beim Befreien?
-- **Wie viele Zeugen genau:** einer oder zwei? Reicht es, dass sie im Raum sind, oder müssen sie ihn sehen?
-- **Zähler:** gilt er für das ganze Hotel oder pro Zimmer? Wird er zurückgesetzt?
 
 ### 4.19 Der Kürbismann (entschieden und umgesetzt 2026-10-20)
 > **Im Prototyp umgesetzt (2026-10-20):** Auslöser, Jagd, Schlag mit dem Beil in der rechten Hand (Mixamo „Standing
@@ -2360,7 +2316,8 @@ Aufhalten und erlösen: 4.21.
 richtigen Kopf vom Dachboden erlöst man ihn (4.21).
 
 **Zu klären**
-- **Vorgeschichte im Spiel:** Wie erfährt man sie – Zeitungsausschnitt, Personalakte an der Rezeption, Gerüchte?
+- **Vorgeschichte im Spiel:** über Liesel Brück (2.7, HANDLUNG M14); weitere Fundstücke (Zeitungsausschnitt,
+  Personalakte an der Rezeption, Gerüchte) offen.
 
 ### 4.20 Drei Bedrohungen, ein Hotel (entschieden 2026-10-21)
 > Umgesetzt sind die Ankündigung des Kürbismanns (2., 2026-10-22) und der friedliche Anfang (5., 2026-10-27: der
@@ -2385,13 +2342,13 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
   (Vorschlag etwa 30 m); Ebenen wechseln nur, solange auf der Ziel-Ebene keine andere Bedrohung ist.~~
 - **Wo wer erscheint und wohin wer darf:**
 
-  | Ebene | Monster | Lakengeist | Kürbismann |
-  |-------|---------|------------|------------|
-  | **Dachgeschoss** | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden (4.21); **Ausnahme:** beim Urteil gegen den Spieler und beim Raubzug erscheint es dort 1–2 Kammern neben ihm (Notausgang, 4.33) | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden | erscheint nicht, verfolgt einen hinauf, aber **nie in den Dachboden** (4.21) |
-  | **Obergeschoss** | ja | **ja** (zu Hause) | ja |
-  | **Erdgeschoss** | ja | **ja** (auch neben einer anderen Bedrohung, 2026-11-03) | **ja** (zu Hause, kommt übers Lobbydach) |
-  | **Untergeschoss** | **ja** (zu Hause) | erscheint nicht, verfolgt einen aber durchs Treppenhaus hinunter | ja |
-  | **U2** | **nur das Monster** | nie | nie |
+  | Ebene | Monster | Lakengeist | Kürbismann | Vampir (vorgemerkt, 4.22) |
+  |-------|---------|------------|------------|---------------------------|
+  | **Dachgeschoss** | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden (4.21); **Ausnahme:** beim Urteil gegen den Spieler und beim Raubzug erscheint es dort 1–2 Kammern neben ihm (Notausgang, 4.33) | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden | erscheint nicht, verfolgt einen hinauf, aber **nie in den Dachboden** (4.21) | erscheint **ganz selten** auf dem Dachboden (4.21) |
+  | **Obergeschoss** | ja | **ja** (zu Hause) | ja | auf den Balkonen (sie zählen zum Obergeschoss) |
+  | **Erdgeschoss** | ja | **ja** (auch neben einer anderen Bedrohung, 2026-11-03) | **ja** (zu Hause, kommt übers Lobbydach) | draußen (zählt zum Erdgeschoss), wo eine Fledermaus gebissen hat |
+  | **Untergeschoss** | **ja** (zu Hause) | erscheint nicht, verfolgt einen aber durchs Treppenhaus hinunter | ja | offen |
+  | **U2** | **nur das Monster** | nie | nie | nie |
 
 - „ja“ heißt: darf dort unterwegs sein. **Erscheinen** tut das Monster im Untergeschoss
   (Ruhephase im Heizraum), der Lakengeist an Fenstern und in Fluren von Obergeschoss und Erdgeschoss (4.18), der
@@ -2491,7 +2448,8 @@ zwischen den Bedrohungen und Verfolgung auf eine belegte Ebene entfallen mit dem
 - **Er hinterlässt drei starke Deko-Stücke** (einmalig, 5.10):
   - seinen **Schädel** – nach fast 40 Jahren kein Kopf mehr; die stärkste Deko im Spiel, wie der Totenkopf (5.7);
   - die **blutige Axt** – an einer Tür trauen sich wütende Gäste nicht mehr zu klauen;
-  - seine **Jeansjacke** – er trägt Freizeitkleidung, keine Uniform.
+  - seine **Jeansjacke** – er trägt Freizeitkleidung, keine Uniform. In ihr steckt der **Schlüsselbund fürs Büro
+    der Direktion** (HANDLUNG M15b, dort als Vorschlag; der andere Weg ist Josefs Bund aus U2, 2.8).
 - **Ruf:** Es spricht sich über das Freundesnetz herum („Der aus Zimmer 13 hat den Kürbismann erlöst“, 6.18); alle
   Helfer werden Freunde.
 - **Das Monster nimmt es als Verlust** – „es hat einen der Seinen verloren“ (4.20, „Das Hotel behält jeden“): Für den
@@ -2500,33 +2458,34 @@ zwischen den Bedrohungen und Verfolgung auf eine belegte Ebene entfallen mit dem
   Der Kürbismann ist die kleinere Probe davor.
 
 **4. Der Dachboden**
-> **Gebaut 2026-10-24 nach dem Plan des Zeichners** (Fläche „Dachboden“ #404262): Das ganze Dachgeschoss ist Dachboden.
+> **Stand:** gebaut 2026-10-24 nach dem Plan des Zeichners, Mansarddach innen gebaut 2026-11-03 (ZIM-170).
+> Im Plan die Fläche „Dachboden“ (#404262): Das ganze Dachgeschoss ist Dachboden.
 > Statt einer Kette in fester Reihenfolge ist der Westflügel ein **Gewirr aus Kammern** (je 6 × 6 m, viele Türen, keine
 > Nummern), Mitte und Ostflügel sind große offene Böden. Hinauf führt eine **steile Treppe im Treppenhaus West** vom
 > Obergeschoss zur verschlossenen Kniestocktür; der Aufzug hält erst oben, wenn man ihn einmal von dort bedient hat
 > (Abkürzung, 7.10, ZIM-42). Der Kopf liegt auf dem roten Kreuz
-> des Plans (Kammer im Südwesten). Aussehen: grobe Bohlen an Boden, Wänden und Decke (2,2 m), **alle Türen 2,1 m** wie
-> im übrigen Hotel (bis 27.10. 1,65 m, nur geduckt), in jeder Kammer ein **Stützbalken** mit Balkenkreuz auf knapp 2 m und Kopfbändern unter 45°, an den
-> Außenwänden ein Kniestock (1,3 m) mit **Dachschräge** und **Fenstern mit Holzkreuz**, durch die kaltes Licht fällt,
-> **blaugrauer Staubnebel**, der leicht flimmert. **Kisten mit wertvollerer alter Deko** (Totenkopf, Hexenbesen,
-> Lichterkette; wenige Stücke, kein Nachschub) setzt der Zeichner als „Ausstattung: Dekokiste“ in den Plan. Die
-> Fensterfarbe des Zeichners: #c9e7ff („Dachfenster“, auf der Außenwand). Die Dachform darüber bleibt offen.
+> des Plans (Kammer im Südwesten). Aussehen: grobe Bohlen an Boden, Wänden und Decke (2,4 m), **alle Türen 2,1 m** wie
+> im übrigen Hotel, in jeder Kammer ein **Stützbalken** mit Balkenkreuz auf knapp 2 m und Kopfbändern unter 45°. Darüber
+> das **Mansarddach** (entschieden 2026-11-03, 7.10): An den Außenwänden ein niedriger Kniestock (0,5 m, Höhe des
+> Gesimses), darüber steigt die Schräge mit 65° bis zur Decke, darunter sichtbares Gebälk; die **Dachfenster mit
+> Holzkreuz** stehen fast senkrecht in der Schräge (keine Gauben) – man sieht den Horizont und über den Hof das Dach
+> der Gegenseite, kaltes Licht fällt herein. **Blaugrauer Staubnebel**, der leicht flimmert. **Kisten mit wertvollerer
+> alter Deko** (Totenkopf, Hexenbesen, Lichterkette; wenige Stücke, kein Nachschub) setzt der Zeichner als
+> „Ausstattung: Dekokiste“ in den Plan. Die Fensterfarbe des Zeichners: #c9e7ff („Dachfenster“, auf der Außenwand).
 - **Der Schlüssel** zur Kniestocktür liegt **hinter der Leviathanmauer** im Heizraum (7.4), die mit jedem Tag später schließt –
   ab etwa Tag 15 bleibt sie nach einem Angriff eine Weile offen, und man kann hindurchschlüpfen. Ein Wagnis im Revier des Monsters (2.3), wie der Schlüssel zu 0118.
-- **Türen so hoch wie im übrigen Hotel** (entschieden 2026-10-27): 2,1 m statt 1,65 m, weil das ständige Ducken lästig
-  war. Nur zwei Kammertüren dicht unter der Dachschräge bleiben niedrig (1,65 m). Damit fällt die frühere Regel „nur
-  geduckt, ein großer Kürbis kommt nicht mit hinein“ weg. Die Decke bleibt 2,2 m; ein Arm eines Balkenkreuzes, der
-  neben einer Tür auf die Wand träfe, entfällt.
+- **Türen so hoch wie im übrigen Hotel** (entschieden 2026-10-27): 2,1 m, weil das ständige Ducken lästig war. Nur
+  zwei Kammertüren dicht unter der Dachschräge bleiben niedrig (1,65 m). Ein Arm eines Balkenkreuzes, der neben einer
+  Tür auf die Wand träfe, entfällt.
 - **Warum der Kopf dort liegt:** Die Kinder von 1987 haben ihn auf dem Dachboden versteckt – Kinder kommen überall hin
   (6.13). Liesel Brück, eines der beiden, ist heute Gast und schickt den Spieler hinauf (2.7). Heutige Kinder erzählen davon, und keiner glaubt ihnen: eine Spur.
 - **Nicht wirklich tödlich, aber selten eine kleine Gefahr:** Spinnen in den Schubladen (4.23)
   und ganz selten ein Vampir (4.22) – nur er kann dort sehr stark beißen, sodass man stirbt, oder einen selbst zum
   Vampir machen. Das ist das Schlimmstmögliche auf dem Dachboden.
-- **Still und dunkel, kein eigenes Monster.** Auf dem Dachboden erscheint keine Bedrohung (4.20). **Monster und
+- **Still und dunkel, kein eigenes Monster.** Auf dem Dachboden erscheint keine Bedrohung (4.20) – **außer** dem
+  Monster beim Notausgang (Urteil gegen den Spieler und Raubzug, 4.33) und ganz selten dem Vampir (4.22). **Monster und
   Lakengeist verfolgen einen auch hinein, der Kürbismann nicht** – aus mystischen Gründen (Vorschlag: Er kommt seinem
   eigenen Kopf nicht nahe).
-- **Kurz halten:** Das Dachgeschoss bekommt einen **kleineren Grundriss** und wenige, gezielte Aufgaben – man ist dort
-  nicht lange, Bedrohungen tauchen dort selten auf.
 - **Blitz-Dreh (entschieden und umgesetzt 2026-10-24):** Blitzt es, während man in einer der Kammern steht, dreht einen
   der Spuk im grellen Blitzbild um genau 90° nach links oder rechts – die Kinder von 1987 spielen einem einen Streich, kurz
   danach kichert es leise. Höchstens einmal je Gewitter, nicht bei jedem Blitz, nie während einen etwas verfolgt, nicht
@@ -2535,13 +2494,9 @@ zwischen den Bedrohungen und Verfolgung auf eine belegte Ebene entfallen mit dem
 - **Unheimlich ohne Gefahr** (Vorschläge): gedämpfte Musik von unten, Regen und Wind auf dem Dach (7.8), man braucht
   die Taschenlampe (4.16); **Möbel unter Laken**, die aussehen wie der Lakengeist – hier ist es nie einer (wie die
   Kostüme, 5.9); Kreidezeichen, ein Kinderschuh, ein Abzählreim der Kinder von 1987.
-- **Dachform entschieden (2026-11-03, 7.10):** Mansarddach. Innen wird der Kniestock niedrig (Höhe des Gesimses),
-  die Schräge steigt mit 65° bis zur Decke auf 2,4 m (statt 1,3 m Kniestock, rund 24° und 2,2 m), darunter sichtbares
-  Gebälk. Die Dachfenster stehen fast senkrecht: Man sieht den Horizont und über den Hof das Dach der Gegenseite.
-  Keine Gauben.
 
 ### 4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)
-> Noch nicht umgesetzt. Eine vierte Bedrohung – für sie gilt dieselbe Ebenenregel wie für die anderen drei (4.20).
+> Noch nicht umgesetzt. Eine vierte Bedrohung – wo sie erscheint, steht in der Tabelle von 4.20.
 > Mit „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
 > **Fledermäuse umgesetzt (2026-10-23), ohne Biss:** draußen in den Bäumen des Gartens – tagsüber hängen sie schlafend am unteren Rand der Krone, abends und nachts kreisen sie zackig um die Kronen. **Dachboden (2026-10-27):** tagsüber kleine Kolonien unter den Balkenkreuzen der Stützbalken; aufgeschreckt flattern sie in der Kammer um den Pfosten und hängen sich wieder hin, nachts sind sie draußen.
 > Scheu, Frühwarnung (sie fliehen vor Monster, Kürbismann und Lakengeist) und der Schwarm als Lärm wie unten
@@ -2568,7 +2523,8 @@ zwischen den Bedrohungen und Verfolgung auf eine belegte Ebene entfallen mit dem
   - **Echt oder Papier?** Verwechslung mit der Fledermausgirlande (5.7).
   - **Die gefährliche kündigt sich an:** Sie fliegt nicht weg, sondern bleibt sitzen und starrt. Die Chance hängt an der
     Schwäche (4.18), die Taschenlampe vertreibt sie.
-  - **Im Dachgeschoss kein Biss** – dort bleibt es still und ohne eigene Bedrohung (4.20, 4.21); gebissen wird draußen.
+  - **Im Dachgeschoss kein Fledermausbiss** – dort bleibt es still, nur der Vampir erscheint ganz selten (4.20, 4.21);
+    gebissen wird draußen.
 
 **Der Biss**
 - Wer gebissen wird, wird **schwach** – Schwäche **+0,5** (4.18), die Wunde heilt in zwei bis drei
@@ -2583,8 +2539,8 @@ zwischen den Bedrohungen und Verfolgung auf eine belegte Ebene entfallen mit dem
 
 **Der Vampir**
 - Die **Fledermaus, die gebissen hat, verwandelt sich selbst** in einen Vampir.
-- **Ebenenregel** (4.20): Draußen ist Erdgeschoss, die Balkone gehören zum Obergeschoss. Ist die Ebene schon belegt,
-  verwandelt sie sich nicht – es bleibt beim Biss, sie flattert davon.
+- **Ebenen** (4.20): Draußen ist Erdgeschoss, die Balkone gehören zum Obergeschoss. Andere Bedrohungen auf derselben
+  Ebene halten sie nicht auf (kein Ausschluss seit 2026-11-03, ZIM-48).
 - **Nicht nur einmal, aber selten.** Vorschlag: nach jedem Vampir einige Spieltage Pause, in der keine Fledermaus beißt;
   etwa **3–5 im Monat**, gegen Halloween etwas häufiger.
 - **Vertreiben mit Knoblauch oder Kreuz:** Er erschrickt, und sein **Körper zerfällt in 20–30 Fledermäuse**, die alle
@@ -2765,52 +2721,46 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
   *Gebaut 3.11. (ZIM-50):* Es ist **Gerda Wagner** (H10, Zimmer 007, seit fünfzig Jahren mit Otto verheiratet – Gravur
   „O. & G. 1976“). Sie bittet ab dem 3. Spieltag, ab „neutral“, einmal im Spiel, ohne Frist („Otto darf das nicht
   erfahren“). Das Nest sitzt außen auf dem unteren Rahmen des Dachfensters, das dem Futtertisch am nächsten ist (kleinste
-  Lösung, solange die Form des Dachs offen ist), und ist durchs Glas zu sehen; [E] am Fenster klappt es auf, man greift
+  Lösung, Wahl offen), und ist durchs Glas zu sehen; [E] am Fenster klappt es auf, man greift
   hinaus und hat den Ring in der Hand – leise, ohne Ruf-Folgen. Findet man ihn, bevor sie fragt, dankt sie beim
   Schenken genauso. Lohn: Beziehung mindestens „befreundet“, Lob bei ihren Freunden, dazu eine Kerze aus ihrem Vorrat
   (sonst Bonbons); sie steckt den Ring gleich an. Draußen abgelegt holen ihn die Krähen wieder (dann ins Baumnest).
 
 **Zu klären**
 - **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (ZIM-100).
-- **Dachnest:** welches Dachfenster – hängt an der noch offenen Form des Dachs (vorerst das nächste zum Futtertisch).
+- **Dachnest:** welches Dachfenster (vorerst das nächste zum Futtertisch) – die Dachform ist seit 2026-11-03
+  entschieden (Mansarddach, 7.10), die Wahl des Fensters noch nicht.
 - **Kerzen der Ratten:** Wohin schleppen sie sie? Dieselbe Frage wie bei den Krähen – ein sichtbares Lager wäre die
   Antwort aus derselben Richtung.
 
 ### 4.26 Die schwarze Kesselkatze (entschieden und umgesetzt 2026-10-25)
-Eine vierte Katze, die es nicht gibt. Nur nachts, erst nach dem ersten Angriff und nur im Untergeschoss sitzt sie im
-Dunkeln, wo man gerade nicht hinsieht, und sieht einen mit hellen Augen an. Gäste kennen sie nicht („Welche schwarze
-Katze?“).
+Eine vierte Katze, die es nicht gibt, mit hellen Augen. Gäste kennen sie nicht („Welche schwarze Katze?“). Wann und
+wo sie auftaucht und wohin sie führt, regelt die Führerin unten. Streicheln geht nicht: Die Hand greift ins Leere.
 
-- Sieht man sie an, steht sie auf und **geht voraus**: zum Kessel im Heizkeller, ist man schon dort, zur UV-Schrift
-  Josefs. Unterwegs wartet sie, bis man nachkommt; am Ziel sieht sie einen noch einmal an – und wenn man wegsieht,
-  ist sie fort. Streicheln geht nicht: Die Hand greift ins Leere. Einmal je Nacht.
 - Sie ist **Josef Ahrends Katze von 1987** (2.3): Darum tut das Monster Katzen nichts (6.11). Kommt es nah, flieht sie
   nicht – sie setzt sich und sieht ruhig zu ihm hin.
 - **Marion erkennt sie** (entschieden 2026-10-25, noch nicht umgesetzt – Marion gibt es im Spiel noch nicht):
   Spricht man sie auf die schwarze Katze an, ist sie **die Einzige**, die sie kennt – sie kannte sie schon als Kind,
   bei ihrem Vater im Heizkeller (2.8). Ein Hinweis für alle, die Marion entlarven wollen (M13).
 - Später (2.8) sitzt sie beim Ritual im alten Heizkeller (7.4) und geht mit ihm ins Feuer – das Ritual fehlt noch.
-- Seit 2026-10-27 ist der Kessel im Heizraum eine Attrappe (7.4): Ihr Ziel werden die **heißen Rohre**, die nach unten
-  führen (seit 2026-11-03 aufgegangen in der Führerin zu den Story-Punkten, unten).
 
-**Führerin zu den Story-Punkten (entschieden 2026-11-03, ZIM-99, gebaut 2026-11-03)** – ersetzt das Führen oben:
+**Führerin zu den Story-Punkten (entschieden 2026-11-03, ZIM-99, gebaut 2026-11-03):**
 - **Nicht ständig:** Mit einer gewissen Wahrscheinlichkeit taucht sie auf, wenn ein **noch nicht gefundener
   Story-Punkt** in der Nähe ist – UV-Schriften, Gegenstände und Dokumente mit wichtigem Bezug zur Geschichte.
 - **Auftauchen:** in der Nähe des Spielers und in seiner Blickrichtung, aber nicht direkt vor ihm. Sie **verharrt eine
   Weile** an der Stelle und **macht auf sich aufmerksam**, dann geht sie **in Richtung des Story-Punkts**.
 - **Höchstens eine Minute:** Danach **löst sie sich in Rauchschlieren auf** – auch wenn das Ziel noch nicht erreicht ist.
-- *Vorschläge, beim Bau zu bestätigen:* nachts nach dem ersten Angriff wie bisher, aber im ganzen Haus; höchstens einmal
-  je Nacht; aufmerksam machen mit hellen Augen und einem leisen Maunzen; Story-Punkte als eigene Gruppe, ein gefundener
-  Punkt fällt heraus. Das bisherige Führen zu den heißen Rohren und zur UV-Schrift geht darin auf.
-- *Beim Bau festgelegt (2026-11-03):* Die Vorschläge gelten. **Story-Punkte** sind vorerst die gebauten Fundstellen
+- **Wann:** nachts nach dem ersten Angriff, im ganzen Haus, höchstens einmal je Nacht; sie macht mit hellen Augen und
+  einem leisen Maunzen auf sich aufmerksam. Story-Punkte sind eine eigene Gruppe, ein gefundener Punkt fällt heraus.
+- *Beim Bau festgelegt (2026-11-03):* **Story-Punkte** sind vorerst die gebauten Fundstellen
   der Hauptgeschichte: UV-Schriften, Warnungszettel, Hotelregister, Notizbuch des Hausmeisters, Gustavs Tagebuch, der
   Schlüssel zu Zimmer 18 an der Leviathanmauer und der Schaltschlüssel in Zimmer 18 – im Heizraum führt sie also zu
-  Josefs UV-Schrift und zum Schlüssel an der Mauer statt zu den heißen Rohren; Kesselbuch, Tagebuch in 042 und Co. kommen dazu, sobald sie gebaut sind. **Gefunden** heißt
+  Josefs UV-Schrift und zum Schlüssel an der Mauer; Kesselbuch, Tagebuch in 042 und Co. kommen dazu, sobald sie gebaut sind. **Gefunden** heißt
   gelesen (Notiz oder Aufgabe im Notizbuch), am Schlüsselbund oder bei UV-Schriften einmal hell im UV-Licht gesehen.
   **In der Nähe:** auf derselben Ebene, höchstens etwa 18 m Luftlinie und 30 m Weg, nicht schon davor (unter 4 m);
   alle paar Sekunden eine Chance von etwa einem Fünftel, nicht im Versteck und nicht mit dem Monster in der Nähe.
   **Auftauchen** 3,5–7 m vor einem, 14–30° neben der Blickrichtung, auf der Seite des Ziels, aus einer Rauchschliere;
-  sie **verharrt** 2,5–8 s und geht, sobald man sie kurz angesehen hat. Unterwegs wartet sie wie bisher, bis man
+  sie **verharrt** 2,5–8 s und geht, sobald man sie kurz angesehen hat. Unterwegs wartet sie, bis man
   nachkommt; vor einer **geschlossenen Tür** setzt sie sich davor (das ist dann ihr Ziel). Am Ziel sieht sie einen noch
   einen Moment an, dann Rauch; ebenso, wenn man weit zurückbleibt oder den Punkt selbst findet. Hat man sie gesehen,
   steht eine Notiz im Notizbuch. Gespeichert: gefundene UV-Schriften und die Nacht ihres letzten Auftauchens.
@@ -2926,9 +2876,8 @@ Ermangelung eines echten.
 > unerreichbare Orte; fährt er Aufzug, wartet es an der Haltestelle; die Dachboden-Szene (Kniestocktür, Schritte,
 > Staub, geduckt durch eine Kammertür); Rauchtest `--navcheck=tueren`. Noch offen (ZIM-47): Balltage, Suchtrupp; das Tuning ist
 > nur headless geprüft. **Umgesetzt (2026-11-03, ZIM-27):** Notausgang auch beim Raubzug (3.).
-> **Ersetzt** die drei Absichten aus 4.17 (Umsehen, einen holen, Raubzug mit n Opfern) und die
-> „fünf Türen unterwegs“ aus 5.5. Das Flackersignal aus 4.17 bleibt, bekommt aber je Modus eine neue Bedeutung. Mit
-> „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
+> Das Flackersignal aus 4.17 hat je Modus eine eigene Bedeutung. Mit „Vorschlag“ markierte Punkte sind aus der
+> Durchsprache noch nicht bestätigt.
 
 **Grundidee:** Jeder Auftritt des Leviathan folgt einem von **vier Modi** mit eigener Regel, eigenem Signal und
 eigener Häufigkeit. So weiß man nach dem Signal, was kommt, und jeder Modus fordert etwas anderes: das **Urteil**
@@ -2944,12 +2893,12 @@ ganzen Hotels.
 
 **Für alle Modi**
 - **Überleben:** Wen der Leviathan, der Kürbismann oder der Lakengeist packt, der überlebt mit **20 %** verletzt
-  (6.17; bisher 40 %). **Für den Spieler gibt es das nicht:** Erwischt es ihn, ist er tot (8.7).
+  (6.17). **Für den Spieler gibt es das nicht:** Erwischt es ihn, ist er tot (8.7).
 - **Kinder** sind nie Opfer (6.13). **Kernfiguren** (6.0) können Opfer werden, überleben aber verletzt, solange ihr
   Schutz gilt – bei jedem Angriff jeder Bedrohung (6.17).
 - **Balltage** (5.19): An ihnen kommt **kein Modus** des Leviathan.
-- **Kein Modus 0:** Ein bloßes Umsehen ohne Ziel gibt es nicht mehr – das sind mit allen vier Modi schon genug
-  Auftritte (24–33 im Spiel).
+- **Kein Modus 0:** Ein bloßes Umsehen ohne Ziel gibt es nicht, weil die vier Modi schon genug Auftritte bringen
+  (24–33 im Spiel).
 - **Zwischen den Modi ohne Körper präsent:** Man hört ihn – Geräusche hinter Wänden, Kratzen, Rauschen ohne Monster
   (Halluzination, 4.13) –, sieht ihn aber nicht. **Lärm, Licht aus und Gerede** (4.15, 4.4, 4.7) erhöhen die
   **Dreistigkeit** (und bringen damit die Anforderung näher) und bestimmen, **wo der nächste Snack oder Raubzug
@@ -2961,8 +2910,8 @@ ganzen Hotels.
   grundsätzlich nicht in den Keller**, außer ein eigens besprochenes Ereignis oder ein Auftrag verlangt es. Erste
   Ausnahmen (2.9, 2026-10-26): Der Suchtrupp nach Gustav geht bis an die Kellertür, nicht hinein – solange er läuft,
   patrouilliert der Leviathan nicht; Doris Lange geht allein bis an die Leviathanmauer, wenn man ihr die Brille nicht bringt.
-- **Sättigung** (4.10) wirkt nur noch als **Abzug auf die Dreistigkeit**: Jedes Opfer schiebt die nächste
-  Anforderung hinaus.
+- **Sättigung** (4.10) wirkt nur als **Abzug auf die Dreistigkeit**: Jedes Opfer schiebt die nächste Anforderung
+  hinaus.
 - **Danach** kehrt der Leviathan jedes Mal in den Keller zurück.
 
 **1. Das Urteil**
@@ -3001,7 +2950,7 @@ ganzen Hotels.
      - **Kurze Warnung, kein Entkommen:** etwa 3–5 s zwischen dem ersten Geräusch und dem Angriff (Knarren, Schritte,
        Staub in der Türöffnung) – nur fürs Drama, damit der Tod nicht wie ein Fehler des Spiels wirkt. Retten kann man
        sich beim Urteil nur vorher: nachbessern, bis man nicht mehr der Schwächste ist.
-     - **Höhe:** Unter die Decke des Dachbodens (2,2 m, ab dem Mansarddach 2,4 m, 7.10) passt es aufrecht – ducken muss
+     - **Höhe:** Unter die Decke des Dachbodens (2,4 m, 4.21) passt es aufrecht – ducken muss
        es sich nur an den Türen.
      - **Beim Raubzug** (entschieden 2026-11-03) gilt dasselbe mit längerer Frist und langer Warnung, siehe 3.
   4. **Stirbt das Ziel vorher anders** (Kürbismann, Lakengeist), springt die Puppe zur nächstschwächsten Tür; das
@@ -3010,15 +2959,18 @@ ganzen Hotels.
 
 **2. Der Snack**
 - **4–5 Mal** im Spiel, zufällig an Tagen ohne Urteil und Ball.
-- Der Leviathan steigt aus dem Keller auf die **Etage des Spielers**. Erst dort beginnen die **30 Sekunden**: In den
-  ersten **5–10 Sekunden** läuft er auf den Spieler zu – der Snack ist eine Bedrohung für ihn, und er ist das
-  bevorzugte Opfer. Danach nimmt er, wen er zuerst erwischt, Gast oder Spieler.
+- Der Leviathan **erscheint ungesehen auf der Etage des Spielers** (so gebaut 2026-10-27): an einem Ort, den der
+  Spieler gerade nicht sieht, **12–25 m** von ihm, möglichst nah an der stärksten Lockung (4.9). Dort beginnen die
+  **30 Sekunden**: In den ersten **5–10 Sekunden** läuft er auf den Spieler zu – der Snack ist eine Bedrohung für ihn,
+  und er ist das bevorzugte Opfer. Danach nimmt er, wen er zuerst erwischt, Gast oder Spieler.
+- **Fair ohne Weg aus dem Keller:** Das kurze Zucken (4.17) sagt, was kommt; er erscheint nie in Sicht und nie
+  näher als 12 m; und die 5–10 Sekunden Anlauf lassen Zeit, eine Zimmertür hinter sich zu schließen.
 - **Geschlossene Zimmer bleiben zu:** Er bricht nichts auf. Wer drinnen ist, ist sicher.
 - Findet er in den 30 Sekunden niemanden, geht er zurück in den Keller.
 
 **3. Der Raubzug**
-- **10–13 Mal** im Spiel. Er folgt dem bisherigen Muster – die Chance steigt von Tag zu Tag (4.17) –, die Kurve
-  wird aber so skaliert, dass im Schnitt 10–13 Raubzüge herauskommen. Der spielerisch wichtigste Modus: eine echte
+- **10–13 Mal** im Spiel, höchstens einer am Tag. Die Tage werden so verteilt, dass Raubzüge von Tag zu Tag
+  wahrscheinlicher werden (Gewicht je Tag: Tag 3 0,2 · Tag 7 0,5 · Tag 10 0,8 · Tag 20 0,95 · ab Tag 30 1). Der spielerisch wichtigste Modus: eine echte
   Begegnung, in der Geschick, Kenntnis des Hotels und die Entscheidung zählen, ob man Gäste schützt.
 - **Ziel ist der Spieler.** Der Leviathan **spürt** ihn, wo er ist – bewusst wie ein Peilsender. Sonst ließe sich
   ein Raubzug nicht von einem Snack unterscheiden, und Gäste verschwänden irgendwo im Hotel, ohne dass man es erlebt.
@@ -3038,26 +2990,25 @@ ganzen Hotels.
 - **Verhindern:** Man kann es **ablenken** (Geräusche, Werfen, 3.13) oder mit **UV vertreiben** (4.16). Gelingt das,
   stirbt niemand. Ob überhaupt jemand stirbt, liegt also allein am Geschick und an den Entscheidungen des Spielers.
 - **Die ersten drei Raubzüge** (sie zählen zu den 10–13) sind **harmlos**: Kurz vor dem Zugriff bricht es ab und
-  verschwindet wieder. Der Spieler wird Zeuge, andere Gäste vielleicht auch (sie reden darüber). Das ersetzt die
-  „neun harmlosen Aufbrüche“ aus 2.1.
-- ~~Vom UV vertrieben → beim nächsten Aufbruch mindestens zwei Opfer (4.17)~~ – entfällt mit den Modi; Vorschlag:
-  UV gibt stattdessen einen Bonus auf die **Dreistigkeit** (4.9) und bringt so die Anforderung näher.
+  verschwindet wieder. Der Spieler wird Zeuge, andere Gäste vielleicht auch (sie reden darüber).
+- **Vom UV vertrieben** (4.16): Beim Raubzug stirbt dann niemand, dafür gibt es +6 auf die **Dreistigkeit** (4.9) und
+  bringt so die Anforderung näher (gebaut 2026-10-27).
 
 **4. Die Anforderung**
-- **2–3 Mal** im Spiel, gebunden an die **Dreistigkeit** (4.9): Je dreister der Leviathan, desto höher sein
-  **Anspruch** an die Deko. Er bricht **alle bewohnten Türen auf, deren Abschreckung unter dem Anspruch liegt**
-  (4.9: Deko im Lichtschein), die schwächsten zuerst – **mindestens eine, höchstens fünf**.
-- **Opfer insgesamt 1–7**, kleine Zahlen wahrscheinlicher (gewürfelt wie bisher nach 1/n², 4.17: etwa 61 % eins, 15 %
-  zwei, 7 % drei …). Ist die Grenze erreicht, geht er zurück, auch wenn noch Türen übrig sind. Jedes Opfer überlebt
+- **2–3 Mal** im Spiel. **Die Dreistigkeit bestimmt, wann; der Tagesanspruch (4.8), welche Türen.** Er bricht
+  **alle bewohnten Türen auf, deren Abschreckung unter dem Anspruch liegt** (4.9: Deko im Lichtschein), die
+  schwächsten zuerst – **mindestens eine, höchstens fünf**.
+- **Opfer insgesamt 1–7**, kleine Zahlen wahrscheinlicher (gewürfelt nach 1/n²: etwa 61 % eins, 15 % zwei, 7 %
+  drei …). Ist die Grenze erreicht, geht er zurück, auch wenn noch Türen übrig sind. Jedes Opfer überlebt
   mit 20 %, der Spieler nicht.
 - **Ankündigung:** ein **langes, aggressives, wildes Rauschen** im ganzen Hotel, dann beim Aufbruch das **lange
   Flackern** (4.17).
 - **Wann sie kommt:**
-  - Ab **55** liegt **alle 25 Punkte** eine Schwelle: **55, 80, 105**. Dafür hat die Dreistigkeit **keine Obergrenze
-    100 mehr** (4.9). Überschreitet sie eine Schwelle, ist **eine** Anforderung fällig – höchstens drei im Spiel, die
+  - Ab **55** liegt **alle 25 Punkte** eine Schwelle: **55, 80, 105**. Dafür hat die Dreistigkeit **keine Obergrenze**
+    (4.9). Überschreitet sie eine Schwelle, ist **eine** Anforderung fällig – höchstens drei im Spiel, die
     dritte nur bei viel Dreistigkeit. Sie kommt am nächsten Abend ohne Urteil und Ball.
-  - Die Dreistigkeit steigt in Spieltagen, dazu kommen abklingende Boni (belauscht, bemerkt, UV, Panik, Lärm, Licht
-    aus, 4.9) und Abzüge durch Sättigung. Wer viel Lärm macht, über das Monster redet oder es mit UV vertreibt, holt
+  - Die Dreistigkeit startet bei 25 und steigt um 2,7 je Spieltag, dazu kommen abklingende Boni (belauscht, bemerkt,
+    UV, Lärm, Licht aus, 4.9) und Abzüge durch Opfer und Sättigung. Wer viel Lärm macht, über das Monster redet oder es mit UV vertreibt, holt
     sie früher. Ziel beim Tuning: bei normalem Spiel etwa **Tag 14 und 21**, die dritte selten.
   - **Garantie:** Ist bis Tag 28 erst eine gekommen, kommt die zweite trotzdem (wie die Garantie des Kürbismanns, 4.19).
   - **Das Rauschen beginnt etwa eine Spielstunde vorher.** In dieser Zeit kann man **nachbessern** – jede Tür, die
@@ -3156,13 +3107,14 @@ ein Warnungszettel (2.5).
   sieht: eben war der Flur leer, jetzt sitzt sie da, mit dem Gesicht zur Tür. Einzige Ausnahme ist die Siegerehrung
   (2.5), bei der sie aufsteigt und sich in Rauch auflöst.
 - **Grollen:** Solange sie vor der Tür liegt, hört man **im ganzen Hotel** ein tiefes Grollen, das immer lauter wird –
-  dann bricht das Monster auf, und die Flackerwelle (4.17) verrät, wie viele es holen will.
+  dann bricht das Monster auf. Eine Flackerwelle gibt es beim Urteil nicht – es kündigt allein die Puppe mit dem
+  Grollen an (4.17).
 - **Das Grollen wirkt (entschieden und umgesetzt 2026-10-22):** Die Gäste bekommen Angst (Mutige weniger) und reden
   darüber („Hört ihr das? Dieses Grollen …“, „Wo ist die Puppe?“) – das Monster hört mit (4.7). Wer genug Angst hat, rennt
   heim und schließt die Tür, Kinder laufen zu Mama oder Papa, ab halber Lautstärke **löst sich jede Feier auf**. Später
   erzählen sie davon („Jedes Mal, bevor es kommt, grollt das ganze Hotel.“).
 - **Beim Aufbruch bringen sich alle in Sicherheit (entschieden und umgesetzt 2026-10-22):** Sobald die Flackerwelle sie
-  erreicht, rennen alle Gäste – auch Feiernde – **heim und machen die Tür zu** oder, wenn ihr Zimmer zu weit weg ist, **ins
+  erreicht (bei Snack, Raubzug und Anforderung, 4.17; beim Urteil wirkt nur das Grollen), rennen alle Gäste – auch Feiernde – **heim und machen die Tür zu** oder, wenn ihr Zimmer zu weit weg ist, **ins
   nächste Versteck**, und bleiben drinnen, solange das Monster unterwegs ist.
 - **Nachbessern hilft:** Wer bis zum Aufbruch Deko nachlegt und nicht mehr der Schwächste ist, den verlässt sie beim
   nächsten unbeobachteten Moment, und sie liegt vor der neuen schwächsten Tür. Mit dem Aufbruch steht das Urteil fest.
@@ -5324,7 +5276,7 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 
 | Schritt | Wo | Gefahr / Mechanik |
 |---------|----|-------------------|
-| **1. Notizbuch & Schaltschlüssel** | **Zimmer 18** (versiegelt; der Schlüssel liegt an der Leviathanmauer im Heizraum) | Ausflug ins Monster-Versteck – am besten während einer Ruhephase, wenn es woanders schläft, oder in der Sättigung (4.10). Im Zimmer: Notizbuch mit den drei Mängeln und der **Schaltschlüssel** für die Kabine. |
+| **1. Notizbuch & Schaltschlüssel** | **Zimmer 18** (versiegelt; der Schlüssel liegt an der Leviathanmauer im Heizraum) | Ausflug ins Monster-Versteck – am besten zwischen zwei Kellerrunden, wenn der Keller ruhig ist (4.33). Im Zimmer: Notizbuch mit den drei Mängeln und der **Schaltschlüssel** für die Kabine. |
 | **2. Hauptsicherung** | Im **Spind des Hausmeisters** (Hausmeisterraum, EG) – bis **Bruno** ihn in der fünften Nacht aufbricht (unten, „Der Einbruch“) | **Ermitteln, dann sozial:** Der Spind ist erst zu, dann aufgebrochen und leer; Aushang und Gerüchte führen zu Bruno, nicht gleich. Freundschaft, Handel, Mäxchen-Einsatz – oder Klauen mit allen Folgen (6.2). Eingesetzt wird sie am Sicherungskasten **im Untergeschoss** – noch ein Ausflug dorthin. |
 
 **Der Einbruch (entschieden 2026-10-30, ZIM-4; ersetzt den Gast, der die Sicherung „abgekauft“ hat)**

@@ -68,4 +68,8 @@ Spielkonzept, das Ticket verweist darauf (`SK 5.13`). Ist YouTrack nicht erreich
 - Ändert sich ein System oder kommt eines hinzu: **TECHNIK.md im selben Commit anpassen.**
 - Neue Mechanik für Spieler sichtbar → README („Was drin ist“); neuer Debug-Parameter → README-Tabelle
   und Kopfkommentar in `scripts/main.gd`.
+- **Überholtes löschen, das Warum behalten** (Entscheidung 4.11.): Das Spielkonzept beschreibt nur den geltenden
+  Stand. Abgelöste Beschreibungen, beantwortete „Zu klären“ und Zwischenstände ganz streichen (der alte Wortlaut
+  steht im Git-Verlauf), keine Archivdatei. Die geltende Entscheidung behält Datum und, wo nicht offensichtlich, ihren
+  Grund. Ernsthaft erwogene Alternativen als eine Zeile „Verworfen: X (Datum, Grund)“.
 - Commit-Nachrichten auf Deutsch, kurz, im Stil der bisherigen.
