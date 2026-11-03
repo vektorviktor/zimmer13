@@ -670,7 +670,10 @@ func greeting(g: Guest) -> String:
 		var bund := Game.director_office.marion_hint(g)   # Marion: Josefs Schlüsselbund (2.8, ZIM-6)
 		if bund != "":
 			return bund
-	return SteelLocker.marion_hint(g)   # Marion: Josefs Zahlenschloss nach dem ersten Abstieg (7.18, ZIM-174)
+	var code := SteelLocker.marion_hint(g)   # Marion: Josefs Zahlenschloss nach dem ersten Abstieg (7.18, ZIM-174)
+	if code != "":
+		return code
+	return HarvestTalk.greeting(g)   # Walter und Oskar über die Ernte (2.6, 2.10, ZIM-117)
 
 
 # --- Sag mal … ---------------------------------------------------------------------------------

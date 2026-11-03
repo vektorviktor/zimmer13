@@ -117,14 +117,17 @@ judge() {
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
 		problems+=" kein Lichtbericht"
 	fi
-	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\)\] .*FEHLER" "$log"; then
-		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\)\] .*FEHLER' "$log" | head -1))"
+	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\)\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\)\] .*FEHLER' "$log" | head -1))"
 	fi
 	if [[ "$name" == *--stahlspinde=pruefen* ]] && ! grep -q "^\[Stahlspind\] Prüfung fertig" "$log"; then
 		problems+=" Stahlspind-Prüfung nicht fertig"
 	fi
 	if [[ "$name" == *--fotomodus=pruefen* ]] && ! grep -q "^\[Fotomodus\] Prüfung fertig" "$log"; then
 		problems+=" Fotomodus-Prüfung nicht fertig"
+	fi
+	if [[ "$name" == *--fotos=pruefen* ]] && ! grep -q "^\[Fotowand\] Prüfung fertig" "$log"; then
+		problems+=" Fotowand-Prüfung nicht fertig"
 	fi
 	if [[ "$name" == *--buero=pruefen* ]] && ! grep -q "^\[Büro\] Prüfung fertig" "$log"; then
 		problems+=" Büro-Prüfung nicht fertig"
@@ -371,6 +374,7 @@ done <<'LIST'
 900|halloween,spuk,kinder|--kind-zu-viel --trace
 500|halloween,erinnerung,fotowand|--fotos=1987 --trace
 300|fotowand|--fotos=2005 --trace
+600|fotowand,ernte,register|--fotos=pruefen --trace
 2400|monster,gaeste,leviathan|--leviathan --trace
 3600|monster,gaeste,leviathan|--leviathan=liesel --trace
 600|monster,leviathan,speichern|--leviathan=benannt --savetest

@@ -63,14 +63,15 @@ Stand: 2026-11-04.
 | Notizbuch des Spielers | `Notebook` | gebaut | **Hauptgeschichte** (Aufgaben, Notizen) | immer dabei | 3.10 |
 | Tagebuch in Zimmer 13 | `Diary` | gebaut | – (Speichern, Wendepunkte) | Zimmer 13 | 3.10, 8.5 |
 | Aushangbrett (Wettbewerb, Hausordnung) | `NoticeBoard` | gebaut | **Hauptgeschichte** (Regel der Puppe) | Lobby | 2.5, M5 |
-| Warnungszettel 1987–2019 | `WarningNote` | gebaut (sechs Zettel) | Hauptgeschichte (Hinweise; 1987 = Edna) | verteilt; je eine UV-Zeile | 4.13, 2.5, 2.7 |
+| Warnungszettel 1987–2020 | `WarningNote` | gebaut (sechs Zettel; seit 3.11. nur aus Erntejahren: 1987, 1993, 1999, 2005, 2011, 2020, ZIM-117) | Hauptgeschichte (Hinweise; 1987 = Edna) | verteilt; je eine UV-Zeile | 4.13, 2.5, 2.7 |
 | Kartenblätter (EG, OG, Keller) | `MAP` | gebaut | – (Orientierung; Keller: „hier unten schläft es“) | Keller-Skizze in Zimmer 017 | 3.2, 7.9 |
 | UV-Schrift an Wänden (Josef 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18, Zimmer 13 (Claras Botschaft an Martin, 2005, ZIM-37; weitere Hinweise von 13 und 018: Entwürfe in 7.4 – Fleck an der Fotowand, Leviathanmauer) | 4.16, 2.3, 7.4 |
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
 | Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | gebaut | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
-| Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. Kessler“, feste Namen 1987/2005/2008, ZIM-7) | Rezeption | 2.3, K1, M6, M13 |
-| Notizbuch des Hausmeisters | – (festes Buch, `CaretakerBook`) | gebaut 28.10. – vier Seiten, gelesen: drei Aufgaben im Notizbuch; Texte Vorschlag (Sicherung im Spind seit 30.10.) | **Hauptgeschichte** (drei Mängel am Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
+| Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. Kessler“, feste Namen 1987/2005/2008, ZIM-7; seit 3.11. Kreuze nur in Erntejahren, Überlebende von 2005 und ihre Rückkehr, ZIM-117) | Rezeption | 2.3, K1, M6, M13 |
+| Notizbuch des Hausmeisters | – (festes Buch, `CaretakerBook`) | gebaut 28.10. – vier Seiten, gelesen: drei Aufgaben im Notizbuch; Texte Vorschlag (Sicherung im Spind seit 30.10.; Bleistift Oktober 2005 mit „R. hat ihn.“ seit 3.11., ZIM-17) | **Hauptgeschichte** (drei Mängel am Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
+| Foto von 2005 | – (fester Rahmen, `PhotoWall.found_photo`) | gebaut 3.11. (ZIM-117) – gesprungenes Glas, [E] sieht es an, Notiz | **Hauptgeschichte** (Fährte zum Schlüsselträger: Hain scharf, Vogt und Ebert verwischt, Namen auf der Rückseite) | Mittelschublade des Sekretariatsschreibtischs; an der Fotowand nur der Fleck | 2.10, 5.14, 7.4 |
 | Kesselbuch Josefs | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Josefs Spind im Heizraum (Stahlspind mit Zahlenschloss 2803 = Marions Geburtstag, Slice „Spind: Josef“; Marion nennt ihn nach M7 – im Plan fehlt der Spind noch) | 2.3, 7.4, 7.18, M12 |
 | Personalakte Josefs | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
 | Dienstplan vom 31.10.1987 | – | Vorschlag | Hauptgeschichte (der Page am Heizkeller) | Karton „Personal 1987“ oder Sekretariat | 2.11 |

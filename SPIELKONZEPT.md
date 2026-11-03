@@ -908,8 +908,13 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   Urteil kann sie schon vor dem 4.10. treffen.
 
 ### 2.10 Die Ernte: alle drei Jahre (entschieden 2026-10-30)
-> Stand: entschieden 2026-10-30 · gebaut: Fotowand mit den 14 Erntejahren und dem Fleck von 2005 (2026-11-03,
-> ZIM-133), Sekretariat mit Generalschlüssel (2026-11-03, ZIM-6) · offen: Motive und alles Übrige (ZIM-117). Ändert 2.3 („jedes Jahr“, der Erbe), 2.6 (Walter), 2.7 (Vergessen, Ende 1), 5.14 (Fotowand)
+> Stand: entschieden 2026-10-30 · gebaut 2026-11-03 (ZIM-133, ZIM-6, ZIM-117, ZIM-17): Fotowand mit den 14 Erntejahren und
+> Ankunftsfotos (ohne Schlüssel alle verwischt außer dem alten Herrn, 1987/2005 mit Überlebenden), Foto 2026 ab dem 2. im
+> Rahmen und mit den Kreuzen verwischt, Foto 2005 in der Mittelschublade im Sekretariat, Sekretariat mit Generalschlüssel,
+> Gästebuch (Kreuze nur in Erntejahren, Überlebende von 2005 und ihre Rückkehr – Namen außer Hain und Pohl Vorschlag),
+> Warnungszettel 1993/2005/2020, Bleistiftnotiz in Zimmer 18, Walter und Oskar (Texte Vorschlag) · offen: Hains Koffer in
+> U2 (ZIM-15), Vertrag (ZIM-21), Standbild-Folgen und Enden (ZIM-24, ZIM-10). Ändert 2.3 („jedes Jahr“, der Erbe), 2.6
+> (Walter), 2.7 (Vergessen, Ende 1), 5.14 (Fotowand)
 > und 7.4 (Zimmer 18: 2003 → 2005, Fundsachen). Anlass: Die Fotowand hängt 14 Rahmen mit Lücken, das Konzept sagte
 > „jedes Jahr seit 1987“ – und nach 2.7 sterben ohne Schlüssel alle, nicht ein paar je Jahr. **Am selben Tag
 > ergänzt:** Ankunftsfoto statt Foto beim Fest, Rudolf Hain, das Sekretariat, Standbilder mit Text für erzählte Szenen.
@@ -3514,9 +3519,9 @@ Zimmer fern – nie ganz sicher.
 
 ### 5.14 Die Fotowand in der Lobby (entschieden 2026-10-25, je Ernte ein Foto 2026-10-30)
 > Stand: entschieden 2026-10-25, je Ernte ein Foto 2026-10-30 (2.10) · gebaut 2026-10-25, Rahmen 2026-11-02 (ZIM-134),
-> die 14 Erntejahre mit dem Fleck von 2005 2026-11-03 (ZIM-133) · offen (ZIM-117): alle Gesichter verwischt außer dem
-> alten Herrn und den Überlebenden, das Ankunftsfoto 2026 im Rahmen, das Foto von 2005 im Sekretariat; die Fotos bleiben
-> Platzhalter bis zu echten Bildern (ZIM-135).
+> die 14 Erntejahre mit dem Fleck von 2005 2026-11-03 (ZIM-133), alle Gesichter verwischt außer dem alten Herrn und den
+> Überlebenden, das Ankunftsfoto 2026 im Rahmen, das Foto von 2005 im Sekretariat 2026-11-03 (ZIM-117) · offen: die Fotos
+> bleiben Platzhalter bis zu echten Bildern (ZIM-135).
 
 Jede Ernte (2.10), also alle drei Jahre, ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, aufgenommen bei der
 Ankunft am 1. Oktober: 1987, 1990 … 2023 in Holzrahmen – alte vergilbt, neue farbig –, dazu der Rahmen „Halloween 2026“,
@@ -5334,6 +5339,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   > dieses Haus als in jedem Prospekt. – Nicht darüber reden. Es hört zu. 13 hat es zuerst gemerkt. – Das violette
   > Licht erträgt es nicht. Nicht lange, aber es geht. – Falls wir es nicht schaffen: Wir hinterlassen Zeichen, die man
   > nur in diesem Licht sieht. Wer das liest – such sie.
+  *Umgesetzt 2026-11-03 (ZIM-17):* Bleistift Oktober 2005, ganz unten in Eile: *„Falls uns etwas passiert – R. hat ihn.“* (2.10).
 
 **Lager**
 - Ein Verschlag aus Maschendraht mit Vorhängeschloss – wie man hineinkommt, ist offen (der Bolzenschneider von der Werkzeugwand ist eingefroren, 2026-10-21).

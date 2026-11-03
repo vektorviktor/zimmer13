@@ -1,16 +1,25 @@
 class_name PhotoWall
 extends Node3D
-## Die Gruppenfotos an der Lobbywand (Spielkonzept 5.14): Jede Ernte seit 1987, alle drei Jahre (2.10), ein Halloween-Foto
-## der Gäste vor dem Haupteingang in Holzrahmen – alte vergilbt, neue farbig, zuletzt ein leerer Rahmen „Halloween 2026“.
-## Wo das Foto von 2005 hing, ist nur ein hellerer Fleck auf der Tapete mit leerem Nagel (BarePatch).
-## Zeichnung im Code (Image, je Jahr fester Zufall): Fassade, zwei Reihen Gäste; wer in jenem Oktober geholt wurde, ist
-## verwischt, als hätte er sich bewegt. Ein Gesicht ist auf jedem Foto und altert nie: hinten rechts der weißhaarige alte
-## Herr mit Gehstock – der Erbe der Familie, als uralter Dauergast getarnt (2.3). Wer genug Fotos ansieht, merkt es
-## (Notizbuch). Auf 1987 außerdem ein Mädchen mit Zöpfen (Marion), ein Mann im Kittel (Josef, der Hausmeister), eine junge Frau
-## (Edna) und ein großes Mädchen (Liesel) – die Indiz-Stufe für Marion, Edna und Liesel (2.3, 2.7).
+## Die Fotos an der Lobbywand (Spielkonzept 5.14, 2.10): je Ernte, alle drei Jahre seit 1987, das Ankunftsfoto der Gäste
+## vom 1. Oktober vor dem Haupteingang in Holzrahmen – alte vergilbt, neue farbig, zuletzt der Rahmen „Halloween 2026“.
+## Zeichnung im Code (Image, je Jahr fester Zufall), Platzhalter bis zu echten Bildern (ZIM-135): Fassade am Tag, die
+## Gäste in Reihen, Koffer vorn. Wer in jener Ernte geholt wurde, ist verwischt, als hätte er sich bewegt – in Ernten
+## ohne Schlüssel jedes Gesicht; Überlebende gab es nur 1987 und 2005 (TAKEN). Ein Gesicht ist auf jedem Foto scharf
+## und altert nie: hinten rechts der weißhaarige alte Herr mit Gehstock, Gründer und Direktor, nur auf den Fotos zu sehen
+## (2.10). Wer genug Fotos ansieht, merkt es (Notizbuch). Auf 1987 außerdem ein Mädchen mit Zöpfen (Marion), ein Mann im
+## Kittel (Josef, der Hausmeister), eine junge Frau (Edna) und ein großes Mädchen (Liesel) – die Indiz-Stufe für Marion,
+## Edna und Liesel (2.3, 2.7).
+##   · 2005 hängt nicht: Wo es hing, ist ein hellerer Fleck mit leerem Nagel (BarePatch). Das Foto liegt mit gesprungenem
+##     Glas in der Mittelschublade des Sekretariatsschreibtischs (found_photo, Desk, DirectorOffice.PHOTO_DRAWER): scharf
+##     Rudolf Hain mit Koffer, links und rechts verwischt Clara Vogt (13) und Martin Ebert (018), auf der Rückseite die
+##     Namen (7.4, Hinweise Vorschlag aus ZIM-12).
+##   · 2026: Ab dem Morgen des 2. Oktober (ARRIVAL_DAY, HotelRegister.CROSS_HOUR) hängt das Ankunftsfoto im leeren
+##     Rahmen – alle Gäste und die Spielfigur, hinten rechts der alte Herr, der bei der Ankunft nicht dort stand. Wessen
+##     Kreuz im Hotelregister steht (HotelRegister.is_crossed, ab 6 Uhr am Morgen nach dem Tod), der ist verwischt;
+##     _process sieht alle CHECK_EVERY s nach und zeichnet bei Änderung neu.
 ## Ort (ZIM-133): Ausstattung „Fotowand“ im Plan, je Punkt eine Position mit zwei Rahmen übereinander; die Jahre
 ## spaltenweise von links nach rechts, oben jeweils das ältere. Ohne Planeintrag an WALL.
-## Nicht gespeichert; was man gesehen hat, steht im Notizbuch.
+## Nicht gespeichert – das Foto 2026 folgt aus Uhrzeit und Register; was man gesehen hat, steht im Notizbuch.
 
 ## Ohne Planeintrag: Westwand der Lobby, Positionen von z0 bis z1, Bilder nach +X
 const WALL := {"x": -7.4, "z0": -27.3, "z1": -21.3}
@@ -18,6 +27,7 @@ const WALL := {"x": -7.4, "z0": -27.3, "z1": -21.3}
 const YEARS := [1987, 1990, 1993, 1996, 1999, 2002, 2005, 2008, 2011, 2014, 2017, 2020, 2023, 2026]
 ## Hängt nicht an der Wand – das Foto liegt im Sekretariat (2.10, ZIM-117)
 const MISSING := 2005
+const CURRENT := 2026
 ## Oberkanten der Rahmen über dem Boden: obere und untere Reihe einer Position (ZIM-133)
 const TOPS := [1.90, 1.40]
 const GAP := 0.005                ## Abstand der Rahmenrückseite von der Wand
@@ -25,23 +35,40 @@ const PHOTO := Vector2(0.4, 0.3)
 const FRAME := 0.04               ## Breite der Leiste (= PhotoFrame.PROFILE außen)
 const W := 160
 const H := 120
-## So viele waren in jenem Oktober verschwunden (verwischt auf dem Bild)
-## Platzhalter bis zu den Motiven nach 2.10 (ZIM-117)
-const TAKEN := {1987: 3, 1990: 2, 1993: 3, 1996: 1, 1999: 2, 2002: 2, 2005: 2, 2008: 3, 2011: 2, 2014: 1, 2017: 3, 2020: 2,
-	2023: 2}
-const HEIR_SEEN := 4              ## so viele Fotos angesehen (mit 1987 und einem neuen) – dann fällt er auf
+## Ernten mit Überlebenden: so viele wurden geholt (verwischt, Kreuze im Register). In allen anderen ist jedes Gesicht
+## verwischt außer dem des alten Herrn (2.10). 2005: Clara Vogt und Martin Ebert.
+const TAKEN := {1987: 3, 2005: 2}
+## Ab diesem Tag (um HotelRegister.CROSS_HOUR) hängt das Ankunftsfoto 2026 im Rahmen
+const ARRIVAL_DAY := 2
+const CHECK_EVERY := 5.0
+## Kopf des alten Herrn (Pixel) – bleibt beim Verwischen scharf
+const OLD_MAN := Vector2(W - 14.0, 45.0)
+const OLD_MAN_SEEN := 4           ## so viele Fotos angesehen (mit 1987 und einem neuen) – dann fällt er auf
 const TEXTS := {
-	1987: "Halloween 1987. Vorn ein Mädchen mit Zöpfen, vielleicht zwölf, daneben ein großes Mädchen mit Pony und eine junge Frau mit dunklem Haar. Ganz links, halb abgeschnitten, ein Mann im grauen Arbeitskittel, Ruß im Gesicht. Hinten rechts ein alter Herr mit weißem Haar und Gehstock. Drei Gesichter sind verwischt.",
-	1990: "Halloween 1990. Weniger Gäste als 1987, niemand lächelt. Hinten rechts der alte Herr mit dem Gehstock.",
-	2023: "Halloween 2023, farbig und scharf. Zwei Gesichter sind trotzdem verwischt. Hinten rechts, mit Gehstock und weißem Haar: der alte Herr – genau wie 1987.",
+	1987: "Halloween 1987. Ankunft vor dem Haupteingang. Vorn ein Mädchen mit Zöpfen, vielleicht zwölf, daneben ein großes Mädchen mit Pony und eine junge Frau mit dunklem Haar. Ganz links, halb abgeschnitten, ein Mann im grauen Arbeitskittel, Ruß im Gesicht. Hinten rechts ein alter Herr mit weißem Haar und Gehstock. Drei Gesichter sind verwischt.",
+	1990: "Halloween 1990. Wieder vor dem Haupteingang, wieder die Koffer vorn. Kein Gesicht ist zu erkennen – alle verwischt, als hätten sie sich bewegt. Bis auf eines: hinten rechts der alte Herr mit dem Gehstock. Er sieht aus wie 1987.",
+	2023: "Halloween 2023, farbig und scharf gedruckt – und doch ist jedes Gesicht verwischt. Nur hinten rechts, mit Gehstock und weißem Haar: der alte Herr, genau wie 1987.",
 	2026: "Auf der goldenen Plakette steht schon „2026“. Der Rahmen ist leer.",
 }
+## Ernte ohne Schlüssel, ohne eigenen Text
+const ALL_TAKEN_TEXT := "Halloween %d. Ankunft vor dem Haupteingang, die Gäste in zwei Reihen, Koffer zu ihren Füßen. Kein Gesicht ist zu erkennen – alle verwischt, als hätten sie sich bewegt. Nur einer ist scharf: hinten rechts der alte Herr mit dem Gehstock."
+const FOUND_TEXT := "Halloween 2005. Das Glas ist gesprungen. Die Gäste vor dem Haupteingang, und anders als an der Wand sind die meisten Gesichter scharf. Vorn in der Mitte ein Mann mit einem Koffer. Links und rechts von ihm zwei verwischte Gestalten: Die eine hält einen Zimmerschlüssel mit großem Anhänger – „13“ –, die andere trägt eine Taschenlampe mit violettem Aufsatz am Gürtel. Hinten rechts der alte Herr mit dem Gehstock.\n\nAuf der Rückseite, in Bleistift: „Vogt · Ebert · Hain – 1. Oktober 2005“"
+const ARRIVAL_TEXT := "Halloween 2026. Das Ankunftsfoto vom 1. Oktober, über Nacht gerahmt. Du stehst selbst vorn in der Mitte. Hinten rechts, wo bei der Ankunft niemand stand: der alte Herr mit dem Gehstock."
 const NOTE_1987 := "Auf dem Gruppenfoto von 1987 in der Lobby: ein Mädchen mit Zöpfen, ein großes Mädchen, eine junge Frau – und ganz links ein Mann im Kittel mit Ruß im Gesicht."
-const NOTE_HEIR := "Auf jedem Gruppenfoto seit 1987 steht hinten rechts derselbe weißhaarige Herr mit Gehstock. Er ist auf keinem älter geworden."
+const NOTE_OLD_MAN := "Auf jedem Gruppenfoto seit 1987 steht hinten rechts derselbe weißhaarige Herr mit Gehstock. Er ist auf keinem älter geworden."
+const NOTE_2005 := "Das Foto von 2005 lag im Sekretariat. Fast alle Gesichter sind scharf, verwischt nur zwei – „Vogt“ und „Ebert“, sagt die Rückseite. Scharf zwischen ihnen „Hain“, mit Koffer."
+const NOTE_2026 := "Unser Ankunftsfoto hängt an der Fotowand. Hinten rechts steht der alte Herr – bei der Ankunft stand dort niemand."
 
 var _pictures := {}               ## Jahr → ImageTexture
 var _seen := {}                   ## Jahr → angesehen
 var _spots: Array[Transform3D] = []   ## Positionen von links nach rechts: Wandfläche am Boden, +Z in den Raum
+var _frame_now: PhotoFrame        ## Rahmen 2026
+var _hung := false                ## das Ankunftsfoto 2026 hängt
+var _blurred_key := ""            ## wer auf dem Foto 2026 verwischt ist (zuletzt gezeichnet)
+var _blurred_now := 0
+var _check := 0.0
+
+static var _found_tex: ImageTexture
 
 
 ## Positionen aus dem Plan (LevelBuilder.planned, ZIM-133), von links nach rechts gesehen; ohne Planeintrag WALL.
@@ -76,77 +103,201 @@ func _ready() -> void:
 		frame.transform = t
 		frame.rotation.z = sin(year * 1.7) * 0.025   # nie ganz gerade
 		add_child(frame)
-		if year != 2026:
+		if year == CURRENT:   # leer, bis das Ankunftsfoto hängt (_update_current)
+			_pictures[year] = ImageTexture.create_from_image(Image.create(W, H, true, Image.FORMAT_RGB8))
+			_frame_now = frame
+		else:
 			var img := draw_photo(year)
 			img.generate_mipmaps()
 			_pictures[year] = ImageTexture.create_from_image(img)
 		frame.build(_pictures.get(year))
+		if year == CURRENT:
+			frame.photo_mesh.visible = false
+
+
+func _process(delta: float) -> void:
+	_check -= delta
+	if _check > 0.0:
+		return
+	_check = CHECK_EVERY
+	if Game.director and Game.social:
+		_update_current(Game.director.elapsed)
+
+
+## Das Foto 2026 zum Zeitpunkt now: ab dem Morgen des 2. Oktober im Rahmen, verwischt, wessen Kreuz steht.
+func _update_current(now: float) -> void:
+	if _frame_now == null:
+		return
+	var hang := now >= Calendar.at(ARRIVAL_DAY, HotelRegister.CROSS_HOUR)
+	_frame_now.photo_mesh.visible = hang
+	if not hang:
+		_hung = false
+		return
+	var crowd := _crowd()
+	var blurred := crowd.filter(func(p: Dictionary) -> bool: return p.get("blurred", false))
+	var key := ",".join(PackedStringArray(blurred.map(func(p: Dictionary) -> String: return str(p["seed"]))))
+	if _hung and key == _blurred_key:
+		return
+	_hung = true
+	_blurred_key = key
+	_blurred_now = blurred.size()
+	var img := draw_photo(CURRENT, crowd)
+	img.generate_mipmaps()
+	(_pictures[CURRENT] as ImageTexture).update(img)
+
+
+## Wer 2026 auf dem Foto steht: alle Gäste (fest nach ID) und zuletzt die Spielfigur.
+func _crowd() -> Array:
+	var out: Array = []
+	for g: Guest in Game.social.guests:
+		out.append({"seed": hash(g.id), "child": g.is_child(), "blurred": Game.register != null and Game.register.is_crossed(g)})
+	out.append({"seed": 13, "player": true})
+	return out
 
 
 func picture(year: int) -> Texture2D:
-	return _pictures.get(year)
+	return _found_tex if year == MISSING else _pictures.get(year)
 
 
 ## Ein Foto angesehen: Text, ins Notizbuch, was auffällt.
 func look_at_photo(year: int) -> void:
 	_seen[year] = true
-	var text := String(TEXTS.get(year, ""))
-	if text == "":
-		var blurred: int = TAKEN.get(year, 0)
-		text = "Halloween %d. Die Gäste in zwei Reihen vor dem Haupteingang. %s Hinten rechts der alte Herr mit dem Gehstock." % [
-			year, "Ein Gesicht ist verwischt." if blurred == 1 else "%d Gesichter sind verwischt." % blurred]
+	var text := String(TEXTS.get(year, ALL_TAKEN_TEXT % year))
+	if year == MISSING:
+		text = FOUND_TEXT
+	elif year == CURRENT and _hung:
+		text = ARRIVAL_TEXT
+		if _blurred_now > 0:
+			text += " Ein Gesicht ist verwischt." if _blurred_now == 1 else " %d Gesichter sind verwischt." % _blurred_now
 	if Game.menus:
-		Game.menus.open_photo("Halloween %d" % year, _pictures.get(year), text)
+		Game.menus.open_photo("Halloween %d" % year, picture(year), text)
 	if Game.notebook:
 		if year == 1987:
 			Game.notebook.add_note("photo_1987", NOTE_1987, "Fotowand")
-		if _seen.size() >= HEIR_SEEN and _seen.has(1987) and _seen.keys().any(func(y: int) -> bool: return y >= 2015 and y != 2026):
-			Game.notebook.add_note("photo_heir", NOTE_HEIR, "Fotowand")
+		elif year == MISSING:
+			Game.notebook.add_note("photo_2005", NOTE_2005, "Foto im Sekretariat")
+		elif year == CURRENT and _hung:
+			Game.notebook.add_note("photo_2026", NOTE_2026, "Fotowand")
+		# ID von früher („heir“), damit die Notiz in alten Spielständen nicht doppelt kommt
+		if _seen.size() >= OLD_MAN_SEEN and _seen.has(1987) and _seen.keys().any(func(y: int) -> bool: return y >= 2015 and y != CURRENT):
+			Game.notebook.add_note("photo_heir", NOTE_OLD_MAN, "Fotowand")
+
+
+## Das Foto von 2005 als Fundstück (Sekretariat, Desk): Rahmen mit gesprungenem Glas, Ursprung Mitte der Rückseite,
+## Bild nach +Z.
+static func found_photo() -> PhotoFrame:
+	if _found_tex == null:
+		var img := draw_photo(MISSING)
+		img.generate_mipmaps()
+		_found_tex = ImageTexture.create_from_image(img)
+	var frame := PhotoFrame.new()
+	frame.year = MISSING
+	frame.found = true
+	frame.build(_found_tex, true)
+	return frame
 
 
 # --- Zeichnen ---------------------------------------------------------------------------------------
 
-## Das Foto eines Jahres: fest aus dem Jahr gewürfelt, nur die Sonderfiguren sind gesetzt.
-static func draw_photo(year: int) -> Image:
+## Das Foto einer Ernte: fest aus dem Jahr gewürfelt, nur die Sonderfiguren sind gesetzt; crowd nur 2026 (_crowd).
+static func draw_photo(year: int, crowd: Array = []) -> Image:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = year * 7919
 	var img := Image.create(W, H, false, Image.FORMAT_RGB8)
 	_facade(img, rng)
-	var people: Array[Dictionary] = []
-	var back := rng.randi_range(6, 8)
-	for i in back:
-		people.append(_person(rng, 14.0 + i * (W - 50.0) / back, 52.0, 0.85))
-	var front := rng.randi_range(5, 7)
-	for i in front:
-		people.append(_person(rng, 18.0 + i * (W - 36.0) / front, 66.0, 1.05))
-	if year == 1987:   # Marion, Liesel, Edna vorn; Josef am linken Rand
-		people[back + 1] = _person(rng, people[back + 1]["x"], 74.0, 0.78, Color(0.5, 0.2, 0.2), Color(0.35, 0.22, 0.12), "braids")
-		people[back + 2] = _person(rng, people[back + 2]["x"], 68.0, 0.95, Color(0.2, 0.3, 0.45), Color(0.55, 0.4, 0.2), "fringe")
-		people[back + 3] = _person(rng, people[back + 3]["x"], 66.0, 1.02, Color(0.45, 0.4, 0.35), Color(0.1, 0.08, 0.06))
-		people.append(_person(rng, 3.0, 58.0, 1.05, Color(0.42, 0.42, 0.4), Color(0.12, 0.1, 0.08), "soot"))
-	var taken: int = TAKEN.get(year, 0)
-	var candidates := range(people.size())
-	candidates.sort_custom(func(a: int, b: int) -> bool: return hash(year * 31 + a) < hash(year * 31 + b))
-	for i in people.size():
-		if i < back:   # hintere Reihe zuerst, der alte Herr ganz rechts dahinter
-			_draw_person(img, people[i])
-	_draw_heir(img)
-	for i in range(back, people.size()):
-		_draw_person(img, people[i])
-	for k in taken:
-		var who: Dictionary = people[candidates[k]]
-		if who.get("style", "") == "":
-			_smear(img, who)
+	var rows := photo_rows(year, rng, crowd)
+	for i in rows.size():   # hintere Reihe zuerst, der alte Herr ganz rechts dahinter
+		for p: Dictionary in rows[i]:
+			_draw_person(img, p)
+		if i == 0:
+			_draw_old_man(img)
+	var taken: Array = []
+	for row: Array in rows:
+		taken.append_array(row.filter(func(p: Dictionary) -> bool: return p.get("taken", false)))
+	_smear(img, taken)
+	_suitcases(img, rng, rows[-1])
 	_age(img, year, rng)
 	return img
 
 
+## Die Leute auf dem Foto in Reihen von hinten nach vorn, je {x, y, s, coat, hair, skin, style, taken}. Ohne rng: fest
+## aus dem Jahr (für Prüfungen).
+static func photo_rows(year: int, rng: RandomNumberGenerator = null, crowd: Array = []) -> Array:
+	if rng == null:
+		rng = RandomNumberGenerator.new()
+		rng.seed = year * 7919
+		_facade(Image.create(W, H, false, Image.FORMAT_RGB8), rng)   # gleiche Würfe wie draw_photo
+	if year == CURRENT:
+		return _crowd_rows(crowd)
+	var back: Array = []
+	var front: Array = []
+	var n_back := rng.randi_range(6, 8)
+	for i in n_back:
+		back.append(_person(rng, 14.0 + i * (W - 50.0) / n_back, 52.0, 0.85))
+	var n_front := rng.randi_range(5, 7)
+	for i in n_front:
+		front.append(_person(rng, 18.0 + i * (W - 36.0) / n_front, 66.0, 1.05))
+	if year == 1987:   # Marion, Liesel, Edna vorn; Josef am linken Rand
+		front[1] = _person(rng, front[1]["x"], 74.0, 0.78, Color(0.5, 0.2, 0.2), Color(0.35, 0.22, 0.12), "braids")
+		front[2] = _person(rng, front[2]["x"], 68.0, 0.95, Color(0.2, 0.3, 0.45), Color(0.55, 0.4, 0.2), "fringe")
+		front[3] = _person(rng, front[3]["x"], 66.0, 1.02, Color(0.45, 0.4, 0.35), Color(0.1, 0.08, 0.06), "edna")
+		front.append(_person(rng, 3.0, 58.0, 1.05, Color(0.42, 0.42, 0.4), Color(0.12, 0.1, 0.08), "soot"))
+	var people := back + front
+	if year == MISSING:   # Hain vorn in der Mitte mit Koffer, links Clara, rechts Martin – geholt
+		var mid := n_front / 2
+		front[mid]["style"] = "suitcase"
+		front[mid - 1]["taken"] = true
+		front[mid + 1]["taken"] = true
+	elif TAKEN.has(year):
+		var candidates := range(people.size()).filter(func(i: int) -> bool: return people[i]["style"] == "")
+		candidates.sort_custom(func(a: int, b: int) -> bool: return hash(year * 31 + a) < hash(year * 31 + b))
+		for k in mini(int(TAKEN[year]), candidates.size()):
+			people[candidates[k]]["taken"] = true
+	else:
+		for p: Dictionary in people:
+			p["taken"] = true
+	return [back, front]
+
+
+## 2026: alle Gäste in vier Reihen, Kinder und die Spielfigur (Mitte) vorn, hinten rechts Platz für den alten Herrn.
+static func _crowd_rows(crowd: Array) -> Array:
+	var ordered := crowd.filter(func(p: Dictionary) -> bool: return p.get("child", false) and not p.get("player", false))
+	ordered.append_array(crowd.filter(func(p: Dictionary) -> bool: return not p.get("child", false) and not p.get("player", false)))
+	var rows_n := 4
+	var per := maxi(1, ceili((ordered.size() + 1) / float(rows_n)))
+	var me := crowd.filter(func(p: Dictionary) -> bool: return p.get("player", false))
+	if not me.is_empty():
+		ordered.insert(mini(per / 2, ordered.size()), me[0])
+	var heads := [80.0, 66.0, 54.0, 43.0]   # von vorn nach hinten
+	var sizes := [0.95, 0.82, 0.7, 0.6]
+	var rows: Array = []
+	for r in rows_n:
+		var chunk := ordered.slice(r * per, (r + 1) * per)
+		var x0 := 8.0
+		var x1 := W - (30.0 if r == rows_n - 1 else 8.0)
+		var row: Array = []
+		for i in chunk.size():
+			var who: Dictionary = chunk[i]
+			var rng := RandomNumberGenerator.new()
+			rng.seed = int(who["seed"])
+			var x := x0 + (i + 0.5) * (x1 - x0) / chunk.size()
+			var s: float = sizes[r] * (0.8 if who.get("child", false) else 1.0)
+			var p := _person(rng, x, heads[r] + (4.0 if who.get("child", false) else 0.0), s)
+			if who.get("player", false):
+				p["coat"] = Color(0.16, 0.2, 0.26)
+			p["taken"] = who.get("blurred", false)
+			row.append(p)
+		rows.push_front(row)
+	return rows
+
+
+## Fassade am Nachmittag des 1. Oktober: grauer Herbsthimmel, dunkle Fenster, der Haupteingang, Stufen mit Kürbissen.
 static func _facade(img: Image, rng: RandomNumberGenerator) -> void:
 	img.fill(Color(0.42, 0.36, 0.3))
-	img.fill_rect(Rect2i(0, 0, W, 16), Color(0.16, 0.15, 0.18))   # Nachthimmel über dem Dach
+	img.fill_rect(Rect2i(0, 0, W, 16), Color(0.62, 0.64, 0.66))   # Herbsthimmel über dem Dach
 	for x in range(6, W, 22):   # Fenster
 		for y in [22, 42]:
-			img.fill_rect(Rect2i(x, y, 10, 12), Color(0.85, 0.7, 0.35) if rng.randf() < 0.6 else Color(0.12, 0.1, 0.1))
+			img.fill_rect(Rect2i(x, y, 10, 12), Color(0.22, 0.24, 0.26) if rng.randf() < 0.6 else Color(0.12, 0.1, 0.1))
 	img.fill_rect(Rect2i(W / 2 - 14, 34, 28, 40), Color(0.2, 0.13, 0.08))   # Haupteingang
 	img.fill_rect(Rect2i(W / 2 - 16, 30, 32, 4), Color(0.6, 0.5, 0.3))
 	img.fill_rect(Rect2i(0, 86, W, H - 86), Color(0.3, 0.27, 0.24))   # Treppe, Boden
@@ -161,10 +312,10 @@ static func _person(rng: RandomNumberGenerator, x: float, head_y: float, s: floa
 	if coat.r < 0.0:
 		coat = Color.from_hsv(rng.randf(), rng.randf_range(0.2, 0.6), rng.randf_range(0.25, 0.7))
 	if hair.r < 0.0:
-		hair = [Color(0.1, 0.08, 0.06), Color(0.35, 0.22, 0.1), Color(0.7, 0.6, 0.4), Color(0.6, 0.6, 0.6)].pick_random()
+		hair = [Color(0.1, 0.08, 0.06), Color(0.35, 0.22, 0.1), Color(0.7, 0.6, 0.4), Color(0.6, 0.6, 0.6)][rng.randi_range(0, 3)]
 	var skin := Color(0.88, 0.7, 0.58).lerp(Color(0.45, 0.3, 0.2), rng.randf() * 0.6)
 	return {"x": x + rng.randf_range(-2, 2), "y": head_y + rng.randf_range(-2, 2), "s": s, "coat": coat, "hair": hair, "skin": skin,
-		"style": style}
+		"style": style, "taken": false}
 
 
 static func _draw_person(img: Image, p: Dictionary) -> void:
@@ -199,8 +350,8 @@ static func _draw_person(img: Image, p: Dictionary) -> void:
 
 
 ## Der alte Herr hinten rechts: groß, dunkler Anzug, weißes Haar, Gehstock – auf jedem Foto Pixel für Pixel gleich.
-static func _draw_heir(img: Image) -> void:
-	var p := {"x": W - 14.0, "y": 45.0, "s": 0.92, "coat": Color(0.08, 0.08, 0.09), "hair": Color(0.92, 0.92, 0.9),
+static func _draw_old_man(img: Image) -> void:
+	var p := {"x": OLD_MAN.x, "y": OLD_MAN.y, "s": 0.92, "coat": Color(0.08, 0.08, 0.09), "hair": Color(0.92, 0.92, 0.9),
 		"skin": Color(0.82, 0.72, 0.65), "style": ""}
 	_draw_person(img, p)
 	for row in range(58, 96):
@@ -208,22 +359,52 @@ static func _draw_heir(img: Image) -> void:
 	_put(img, W - 5, 58, Color(0.6, 0.5, 0.2))
 
 
-## Verwischt, als hätte er sich bewegt: waagerecht verschmiert und blass.
-static func _smear(img: Image, p: Dictionary) -> void:
-	var x := int(p["x"])
-	var y := int(p["y"])
-	var s: float = p["s"]
-	var rect := Rect2i(x - int(12 * s), y - int(7 * s), int(24 * s), H - y + int(7 * s))
+## Verwischt, als hätte er sich bewegt: waagerecht verschmiert und blass – alle auf einmal über eine Maske, der Kopf
+## und der Stock des alten Herrn bleiben scharf.
+static func _smear(img: Image, people: Array) -> void:
+	if people.is_empty():
+		return
+	var mask := PackedByteArray()
+	mask.resize(W * H)
+	for p: Dictionary in people:
+		var x := int(p["x"])
+		var y := int(p["y"])
+		var s: float = p["s"]
+		for row in range(maxi(0, y - int(7 * s)), H):
+			for col in range(maxi(0, x - int(12 * s)), mini(W, x + int(12 * s))):
+				mask[row * W + col] = 1
 	var copy := img.duplicate() as Image
-	for row in range(rect.position.y, mini(H, rect.end.y)):
-		for col in range(maxi(0, rect.position.x), mini(W, rect.end.x)):
-			var sum := Color(0, 0, 0)
-			var n := 0
-			for k in range(-6, 7, 2):
-				var c := clampi(col + k, 0, W - 1)
-				sum += copy.get_pixel(c, row)
-				n += 1
-			img.set_pixel(col, row, (sum / n).lerp(Color(0.7, 0.68, 0.64), 0.25))
+	var sums := PackedColorArray()   # Summen je Zeile: Mittel über 13 Pixel waagerecht
+	sums.resize(W + 1)
+	for row in H:
+		if mask.slice(row * W, (row + 1) * W).count(1) == 0:
+			continue
+		for col in W:
+			sums[col + 1] = sums[col] + copy.get_pixel(col, row)
+		for col in W:
+			if mask[row * W + col] == 0 or col >= W - 6 or Vector2(col, row).distance_to(OLD_MAN) < 6.5:
+				continue
+			var a := maxi(0, col - 6)
+			var b := mini(W, col + 7)
+			img.set_pixel(col, row, ((sums[b] - sums[a]) / float(b - a)).lerp(Color(0.7, 0.68, 0.64), 0.25))
+
+
+## Koffer vorn auf den Stufen (Ankunft), scharf auch vor Verwischten; neben dem mit style „suitcase“ (Hain 2005) einer
+## mit hellem Namensschild.
+static func _suitcases(img: Image, rng: RandomNumberGenerator, front: Array) -> void:
+	for k in rng.randi_range(3, 5):
+		_suitcase(img, rng.randi_range(6, W - 18), rng.randi_range(102, 110), false)
+	for p: Dictionary in front:
+		if p["style"] == "suitcase":
+			_suitcase(img, int(p["x"]) + 5, 100, true)
+
+
+static func _suitcase(img: Image, x: int, y: int, tag: bool) -> void:
+	img.fill_rect(Rect2i(x, y, 12, 8), Color(0.32, 0.2, 0.12))
+	img.fill_rect(Rect2i(x, y + 3, 12, 1), Color(0.22, 0.14, 0.08))
+	img.fill_rect(Rect2i(x + 4, y - 2, 4, 1), Color(0.15, 0.1, 0.06))   # Griff
+	if tag:
+		img.fill_rect(Rect2i(x + 8, y + 1, 3, 2), Color(0.9, 0.86, 0.75))
 
 
 ## Alter: vergilbt und flau (je älter, desto mehr), Körnung, Rand, bei alten Kratzer.
@@ -263,6 +444,7 @@ static func _put(img: Image, x: int, y: int, color: Color) -> void:
 ## (Wulst am Falz, Kehle, flache Bahn, gerundete Außenkante) im Holz der Vertäfelung, die Faser läuft längs jeder
 ## Leiste. Hinter Glas mit Staub und Schlieren (cracked: mit Sprung, für das Foto von 2005, ZIM-117), auf der flachen
 ## Bahn der unteren Leiste die goldene Plakette mit der Jahreszahl (YearPlaque). Ursprung Mitte Wand, Bild nach +Z.
+## found: das Foto von 2005 in der Schublade im Sekretariat (PhotoWall.found_photo) – ohne wall, liest über Game.photo_wall.
 class PhotoFrame extends StaticBody3D:
 	## Profil der Leiste von der Bildkante nach außen: (u quer zur Leiste, z aus der Wand) in Metern
 	const PROFILE: Array[Vector2] = [Vector2(0.0, 0.004), Vector2(0.0, 0.011), Vector2(0.0015, 0.0135),
@@ -287,6 +469,8 @@ class PhotoFrame extends StaticBody3D:
 
 	var year := 0
 	var wall: PhotoWall
+	var found := false
+	var photo_mesh: MeshInstance3D   ## das Bild hinter dem Glas (2026 versteckt, bis das Ankunftsfoto hängt)
 
 	func build(picture: Texture2D, cracked := false) -> void:
 		collision_layer = 4
@@ -304,7 +488,7 @@ class PhotoFrame extends StaticBody3D:
 			m.albedo_texture = picture
 			m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 			m.roughness = 0.55   # Fotopapier, seidenmatt
-			Geo.mesh(self, _quad(photo + Vector2.ONE * 0.004), m, Vector3(0, 0, PHOTO_Z))
+			photo_mesh = Geo.mesh(self, _quad(photo + Vector2.ONE * 0.004), m, Vector3(0, 0, PHOTO_Z))
 		var glass := Geo.mesh(self, _quad(photo + Vector2.ONE * 0.006), glass_material(cracked), Vector3(0, 0, GLASS_Z))
 		glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var plaque := Geo.mesh(self, YearPlaque.mesh(str(year)), plaque_material(),
@@ -459,10 +643,14 @@ class PhotoFrame extends StaticBody3D:
 		return q
 
 	func get_prompt(_player: Player) -> String:
+		if found:
+			return "Gerahmtes Foto ansehen [E] – das Glas ist gesprungen"
 		return "Foto ansehen [E] – Halloween %d" % year
 
 	func interact(_player: Player) -> void:
-		wall.look_at_photo(year)
+		var w := wall if wall else Game.photo_wall
+		if w:
+			w.look_at_photo(year)
 
 
 ## Wo das Foto von 2005 hing (Spielkonzept 2.10): die Tapete darunter ist heller geblieben (Decal, weicher Rand),
@@ -530,11 +718,103 @@ class BarePatch extends StaticBody3D:
 		return _nail_mat
 
 
-## Debug (--fotos[=jahr]): du stehst vor der Fotowand · jahr: das Foto ist gleich aufgeschlagen.
+## Debug (--fotos[=jahr|pruefen]): du stehst vor der Fotowand · jahr: das Foto ist gleich aufgeschlagen (2005: das Foto
+## aus dem Sekretariat) · pruefen: _check.
 func debug_show(year: String) -> void:
 	var a := _spots[0].origin
 	var b := _spots[-1].origin
 	var out := _spots[0].basis.z
 	TeleportUI.place_player((a + b) / 2.0 + out * 2.4 + Vector3.UP * 0.05, -out + Vector3.UP * 0.25)
-	if year.is_valid_int() and YEARS.has(year.to_int()) and year.to_int() != MISSING:
+	if year == "pruefen":
+		_check_harvest()
+	elif year.is_valid_int() and YEARS.has(year.to_int()):
 		get_tree().create_timer(0.5).timeout.connect(look_at_photo.bind(year.to_int()))
+
+
+## Prüfung der Ernte alle drei Jahre (Spielkonzept 2.10, ZIM-117/ZIM-17): Rahmen und Fleck, wer auf den Fotos verwischt
+## ist, das Foto 2005 in der Schublade im Sekretariat, Kreuze im Register nur in Erntejahren, Zettel und Bleistiftseite,
+## Walter und Oskar, das Ankunftsfoto 2026 ab dem 2. und mit Gustavs Kreuz verwischt. Meldet „[Fotowand] … ok“ bzw.
+## „FEHLER“, zuletzt „[Fotowand] Prüfung fertig“.
+func _check_harvest() -> void:
+	var check := func(text: String, ok: bool) -> void:
+		print("[Fotowand] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	var taken := func(year: int) -> Vector2i:   # verwischt, alle
+		var n := Vector2i.ZERO
+		for row: Array in photo_rows(year):
+			for p: Dictionary in row:
+				n += Vector2i(1 if p["taken"] else 0, 1)
+		return n
+	var crosses := func(rows: Array) -> Vector2i:   # Zeilen mit Kreuz, alle
+		var n := Vector2i.ZERO
+		for row: Dictionary in rows:
+			n += Vector2i(1 if not (row["crosses"] as Array).is_empty() else 0, 1)
+		return n
+	var frames := get_children().filter(func(n: Node) -> bool: return n is PhotoFrame)
+	var patches := get_children().filter(func(n: Node) -> bool: return n is BarePatch)
+	check.call("13 Rahmen und der Fleck von 2005", frames.size() == YEARS.size() - 1 and patches.size() == 1)
+	check.call("1987: drei verwischt", taken.call(1987).x == 3)
+	var t2005: Vector2i = taken.call(2005)
+	check.call("2005: zwei verwischt", t2005.x == 2 and t2005.y > 6)
+	var all_taken := true
+	for year: int in YEARS:
+		if year != CURRENT and not TAKEN.has(year):
+			var t: Vector2i = taken.call(year)
+			all_taken = all_taken and t.x == t.y and t.y > 0
+	check.call("ohne Schlüssel alle verwischt", all_taken)
+	var desk: Desk = null
+	for node in get_tree().get_nodes_in_group("desks"):
+		if (node as Desk).variant == "sekretariat":
+			desk = node
+	var found: PhotoFrame = null
+	if desk:
+		for node in desk._drawers[DirectorOffice.PHOTO_DRAWER].get_children():
+			if node is PhotoFrame:
+				found = node
+	check.call("Foto 2005 in der Schublade im Sekretariat", found != null and found.found and found.year == MISSING
+		and DirectorOffice.PHOTO_DRAWER != DirectorOffice.CODE_DRAWER and not desk.code_locked(DirectorOffice.PHOTO_DRAWER))
+	var reg := Game.register
+	if reg:
+		var c1990: Vector2i = crosses.call(reg._old_rows(1990))
+		var c1991: Vector2i = crosses.call(reg._old_rows(1991))
+		var rows2005: Array = reg._old_rows(2005)
+		var c2005: Vector2i = crosses.call(rows2005)
+		var hain := func(rows: Array) -> int:   # 0 fehlt, 1 ohne, 2 mit Kreuz
+			for row: Dictionary in rows:
+				if String(row["t"]).begins_with("Rudolf Hain"):
+					return 2 if not (row["crosses"] as Array).is_empty() else 1
+			return 0
+		check.call("Register 1990 ganz gekreuzt", c1990.x == c1990.y and c1990.y > 0)
+		check.call("Register 1991 ohne Kreuz", c1991.x == 0 and c1991.y > 0)
+		check.call("Register 2005: zwei Kreuze, Hain ohne", c2005.x == 2 and hain.call(rows2005) == 1)
+		check.call("Register 2008: Hain mit Kreuz", hain.call(reg._old_rows(2008)) == 2)
+	else:
+		print("[Fotowand] FEHLER: kein Hotelregister")
+	check.call("Zettel nur aus Erntejahren", WarningNote.NOTES.keys().all(func(k: String) -> bool: return YEARS.has(k.to_int())))
+	var pencil := String(CaretakerBook.PAGES[-1])
+	check.call("Zimmer 18: Bleistift Oktober 2005, „R. hat ihn.“", pencil.contains("Oktober 2005") and pencil.contains("R. hat ihn."))
+	var walter: Guest = null
+	var oskar: Guest = null
+	for g: Guest in Game.social.living_guests():
+		match String(g.profile.get("household", "")):
+			HarvestTalk.WALTER: walter = g
+			HarvestTalk.OSKAR: oskar = g
+	if walter and oskar:
+		check.call("Walter beim Wettbewerb", HarvestTalk.greeting(walter, 1) == HarvestTalk.WALTER_CONTEST[1]
+			and HarvestTalk.greeting(walter, 1) == "")
+		check.call("Oskar vor dem 3. still", HarvestTalk.greeting(oskar, 2) == "")
+		check.call("Oskar erinnert sich, eins je Morgen", HarvestTalk.greeting(oskar, 20) == HarvestTalk.OSKAR_MEMORIES[0][2]
+			and HarvestTalk.greeting(oskar, 20) == "")
+	else:
+		print("[Fotowand] FEHLER: Walter oder Oskar fehlt")
+	_update_current(Calendar.at(1, 12.0))
+	check.call("1. Oktober: Rahmen 2026 leer", not _hung and not _frame_now.photo_mesh.visible)
+	Game.contest.debug_board("abgereist")   # Gustav ist geholt, 3. Oktober 7 Uhr
+	TeleportUI.place_player((_spots[0].origin + _spots[-1].origin) / 2.0 + _spots[0].basis.z * 2.4 + Vector3.UP * 0.05,
+		-_spots[0].basis.z + Vector3.UP * 0.25)
+	get_tree().create_timer(1.0).timeout.connect(func() -> void:
+		var gustav := Game.social.grinch.gustav if Game.social.grinch else null
+		_update_current(Game.director.elapsed)
+		check.call("Ankunftsfoto 2026 hängt", _hung and _frame_now.photo_mesh.visible)
+		check.call("Gustav verwischt", gustav != null and Game.register.is_crossed(gustav) and _blurred_now >= 1)
+		look_at_photo(CURRENT)
+		print("[Fotowand] Prüfung fertig"))

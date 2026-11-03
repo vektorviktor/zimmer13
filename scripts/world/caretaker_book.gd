@@ -2,7 +2,8 @@ class_name CaretakerBook
 extends StaticBody3D
 ## Das Notizbuch des Hausmeisters in Zimmer 18 (Spielkonzept 7.4, HANDLUNG M8): eine Kladde auf dem Tisch, fest, nicht
 ## tragbar. [E] liest sie vor Ort (Menus.open_pages): die drei Mängel am Aufzug, Notizen des Hausmeisters und dahinter
-## in Bleistift die des Gastes von 2003, der das Buch an sich genommen hat. Gelesen: Die Figur schreibt die drei Mängel
+## in Bleistift die des Gastes von 2005 (Martin Ebert, 018), der das Buch an sich genommen hat – ganz unten nennt er den
+## Schlüsselträger nur mit „R.“ (Spielkonzept 2.10, ZIM-17). Gelesen: Die Figur schreibt die drei Mängel
 ## als drei Zeilen unter „Aufgaben“ ins eigene Notizbuch (3.10) – gespeichert ist das nur dort, ein zweites Lesen
 ## schreibt nichts doppelt. Durchgestrichen wird je Mangel mit fixed(), sobald er behoben ist (Elevator.fix, ZIM-14).
 ## furnish() legt das Buch, den Schaltschlüssel (Item.Kind.KEY „aufzug“) und den UV-Aufsatz (4.16) auf den Tisch des
@@ -27,13 +28,15 @@ Heizraum: Der neue Kessel ist nicht angeschlossen. Trotzdem ist es da unten hei�
 Die schwarze Katze war wieder im Heizraum. Sieht aus wie seine. Kann nicht sein.",
 	"(Darunter in einer anderen Schrift, mit Bleistift:)
 
-Oktober 2003. Das Buch hat mir der Hausmeister gegeben, den Schaltschlüssel auch. Gesagt hat er nichts. Hier steht mehr über dieses Haus als in jedem Prospekt.
+Oktober 2005. Das Buch hat mir der Hausmeister gegeben, den Schaltschlüssel auch. Gesagt hat er nichts. Hier steht mehr über dieses Haus als in jedem Prospekt.
 
 Nicht darüber reden. Es hört zu. 13 hat es zuerst gemerkt.
 
 Das violette Licht erträgt es nicht. Nicht lange, aber es geht.
 
-Falls wir es nicht schaffen: Wir hinterlassen Zeichen, die man nur in diesem Licht sieht. Wer das liest – such sie.",
+Falls wir es nicht schaffen: Wir hinterlassen Zeichen, die man nur in diesem Licht sieht. Wer das liest – such sie.
+
+(Ganz unten, hastig:) Falls uns etwas passiert – R. hat ihn.",
 ]
 ## Aufgaben im Notizbuch (3.10) je Mangel: ID und Zeile
 const TASKS := {

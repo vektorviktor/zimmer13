@@ -10,7 +10,8 @@ extends Dresser
 ## je Unterschrank von oben nach unten, links zuerst. Schlüsselschilder sind nur Zier. Im Sekretariat hat die zweite
 ## Schublade (DirectorOffice.CODE_DRAWER) ein Zahlenschloss mit vier Rädern unter dem Schild: zu, bis der Code stimmt
 ## (DirectorOffice.open_lock), darin der Generalschlüssel (Spielkonzept 2.10, 6.19; ZIM-6). Aufgegangen ist sie, sobald
-## sie einmal aufgezogen wurde (searched) – kein eigenes Feld im Spielstand.
+## sie einmal aufgezogen wurde (searched) – kein eigenes Feld im Spielstand. In der Mittelschublade
+## (DirectorOffice.PHOTO_DRAWER) liegt fest das Foto von 2005 mit gesprungenem Glas (PhotoWall.found_photo, 2.10, ZIM-117).
 ## Lage der Schubladen und Kollision kommen aus <Modell>.json (Bauskript). Ursprung mittig auf dem Boden, +Z = vorn.
 
 const DESK_MODEL := "res://assets/models/desk_%s.glb"
@@ -92,6 +93,7 @@ func _build() -> void:
 		code_drawer = DirectorOffice.CODE_DRAWER
 		var d: Dictionary = lay["drawers"][code_drawer]
 		_code_lock(_drawers[code_drawer], Vector3(0, float(d["h"]) / 2.0 - LOCK_DROP, front_z))
+		_found_photo(_drawers[DirectorOffice.PHOTO_DRAWER], lay["drawers"][DirectorOffice.PHOTO_DRAWER], back, lift + wall)
 	if variant == "direktion":
 		var chair := Armchair.new()
 		chair.position = Vector3(0, 0, size.z / 2.0 + CHAIR_GAP + Armchair.SEAT_FRONT_Z)
@@ -115,6 +117,16 @@ func _code_lock(drawer: Node3D, at: Vector3) -> void:
 		var wheel := Geo.mesh(drawer, Geo.cylinder(LOCK_WHEEL.x, LOCK_WHEEL.y, 12), wheel_mat,
 			at + Vector3(x, 0, LOCK_PLATE.z))
 		wheel.rotation.z = PI / 2.0   # Achse quer zur Schublade, man dreht von oben
+
+
+## Das Foto von 2005 flach in die Schublade (Sekretariat): Bild nach oben, Oberkante nach hinten, auf dem Boden des
+## Kastens (floor) mittig vor der Rückwand – es fährt als Kind der Schublade mit.
+func _found_photo(drawer: Node3D, d: Dictionary, back: float, floor_y: float) -> void:
+	var frame := PhotoWall.found_photo()
+	var out := _vec(d["tray_out"])
+	frame.position = Vector3(0.04, floor_y + 0.001, back - out.z / 2.0)
+	frame.rotation = Vector3(-PI / 2.0, 0.0, 0.015)   # leicht schief, mehr lässt die Tiefe nicht zu
+	drawer.add_child(frame)
 
 
 ## Ist die Schublade i noch mit dem Zahlenschloss zu?
@@ -142,6 +154,13 @@ func use_drawer(i: int, player: Player) -> void:
 		Game.say("Mit vollen Händen geht das nicht.")
 	elif Game.director_office:
 		Game.director_office.open_lock(self, i, player)
+
+
+## Das Foto liegt schon darin – kein „Leer.“ beim ersten Aufziehen.
+func _roll_loot(i: int) -> void:
+	if variant == "sekretariat" and i == DirectorOffice.PHOTO_DRAWER:
+		return
+	super._roll_loot(i)
 
 
 ## Fund: In der Schublade mit Zahlenschloss liegt der Generalschlüssel (6.19), sonst wie die Kommode (nur Festes).

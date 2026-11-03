@@ -486,6 +486,9 @@ extends Node3D
 ##   --vogelscheuche[=tag]       sie steht, wo sie an Halloween (bzw. an diesem Tag) stünde, du in der Lobby vor der Gartentür
 ##   --kind-zu-viel              der 28. abends, ein Kind vor deiner offenen Tür – und eins zu viel dahinter
 ##   --fotos[=jahr]              vor die Fotowand in der Lobby · jahr: dieses Foto gleich aufgeschlagen (1987, 1990 … 2026)
+##                               (2005: das Foto aus dem Sekretariat) · pruefen: die Ernte alle drei Jahre (2.10, ZIM-117) –
+##                               Fotos, Fundstück 2005, Register, Zettel, Zimmer 18, Walter/Oskar, Ankunftsfoto 2026 mit
+##                               Gustavs Kreuz; „[Fotowand] … ok/FEHLER“, zuletzt „[Fotowand] Prüfung fertig“
 ##   --leviathan[=benannt|liesel] erste bestätigte Sichtung: Hugo holt Dorés Druck, du am Couchtisch der Lobby (4.32) ·
 ##                               benannt: schon geschehen, du vor dem Druck an der Wand · liesel: Hugo ist tot
 ##   --beerdigen[=gast]          ein erwürgter Gast liegt vor der Gedenkstätte auf dem Friedhof – [E] beerdigt ihn

@@ -448,13 +448,13 @@ const CONTENT := {
 	# Clara Vogt an Martin Ebert in 018, 2005 (Spielkonzept 7.4, ZIM-37) – schmal und kleiner, links steht die Badtür
 	"013": {"coins": "3", "map": "eg", "uv_size": 0.003,
 		"uv": "M. –\nES HÖRT ZU,\nWENN MAN REDET.\nSCHREIB ES AUF,\nSAG ES NICHT. C."},
-	"014": {"note": "2003"},
+	"014": {"note": "2005"},
 	"017": {"coins": "2", "map": "keller", "note": "1987",
 		"uv": "ICH HABE ES GEBLENDET.\nJETZT KENNT ES MEINE TÜR.\n– E. K."},
 	"018": {"coins": "5", "uv": "NUR EINER\nKOMMT HINAUS"},
 	"022": {"drawer": "MATCHBOX"},   # Streichholzschachtel neben Zimmer 13 (Spielkonzept 5.12)
-	"ug_laundry_room_1": {"note": "1994"},   # Wäscherei im Keller (seit 23.10. ohne Zimmernummer)
-	"lobby": {"note": "2019", "map": "og"},   # Kartenblatt Obergeschoss an der Rezeption (Spielkonzept 3.2)
+	"ug_laundry_room_1": {"note": "1993"},   # Wäscherei im Keller (seit 23.10. ohne Zimmernummer)
+	"lobby": {"note": "2020", "map": "og"},   # Kartenblatt Obergeschoss an der Rezeption (Spielkonzept 3.2)
 }
 ## Möbel ohne eigenes Bauteil (Kästen in der Grundfläche aus dem Plan): Art → Höhe
 const BOX_HEIGHTS := {

@@ -2474,9 +2474,11 @@ Spielkonzept 3.2)
   2.9, HANDLUNG K1): festes Buch auf `LevelBuilder.register_spot` (in `_lobby_hall`: Front der Rezeption,
   `REGISTER_SHIFT` neben der Mitte, +Z zu den Gästen), `Game.register`. [E] → `Menus.open_register` (Doppelseite,
   blättern baut den Bogen neu wie das Tagebuch). `pages()`: die Jahre 1987–2025 einmal gesetzt (`_old_rows`: fester
-  Seed je Jahr, Kreuze = `PhotoWall.TAKEN`, Zimmer aus `rooms` ohne 13/18, Vornamen nach `ERA_YEAR`, keine Nachnamen der
-  heutigen Haushalte, `FIXED` = Warnungszettel und Fundsachen-Koffer: Edna und Heinrich Brehm 1987, Clara Vogt,
-  Martin Ebert und Rudolf Hain 2005, Hain 2008 – ihre Kreuze zählen zu `TAKEN`), dann Oktober 2026 frisch aus `builder.households` und
+  Seed je Jahr; Kreuze nur in Erntejahren (`PhotoWall.YEARS`, ZIM-117) – ohne Schlüssel alle Zeilen, 1987/2005
+  `PhotoWall.TAKEN`; Zeilen `HARVEST_ROWS` bzw. `ORDINARY_ROWS`; Zimmer aus `rooms` ohne 13/18, Vornamen nach `ERA_YEAR`,
+  keine Nachnamen der heutigen Haushalte, `FIXED` = Warnungszettel, Fundsachen-Koffer und die Überlebenden von 2005:
+  Edna und Heinrich Brehm 1987, Clara Vogt, Martin Ebert, Rudolf Hain, Oskar Pohl und vier weitere 2005, deren Rückkehr
+  2008–2020 mit Kreuz – ihre Kreuze zählen zu `TAKEN`), dann Oktober 2026 frisch aus `builder.households` und
   `Game.social.guests` (Mitglied über `profile["member"]`, Name `LevelBuilder.door_name`, `BIRTH_NAMES`). Der laufende
   Oktober beginnt auf einer linken Seite. `RegisterView.paginate` verteilt Jahresblöcke auf `ROWS` Zeilen (ein Jahr
   bricht nur, wenn es allein nicht passt); Kreuze zeichnet `_draw_page` wie `NotebookPage` (Zeile `crosses` = Zeichen
@@ -2499,8 +2501,14 @@ Spielkonzept 3.2)
   `LevelBuilder.room_table_axes` – halbe Länge der langen Tischseite; das Telefon steht in der Mitte). Schlüssel und
   Aufsatz sind gewöhnliche Gegenstände (gespeichert in „items“). [E] → `Menus.open_pages` (`PAGES`, eine Seite je
   Bogen), `read()` trägt `TASKS` mit `TASK_BY` ein – `Notebook.add_task` übergeht vorhandene IDs, gespeichert ist es
-  nur im Notizbuch. `fixed(part)` streicht einen Mangel durch – aufrufen, sobald die Reparatur gebaut ist. Debug
+  nur im Notizbuch. `fixed(part)` streicht einen Mangel durch – aufrufen, sobald die Reparatur gebaut ist. Die
+  Bleistiftseite ist von Martin Ebert, Oktober 2005, ganz unten „R. hat ihn.“ (ZIM-17). Debug
   `--zimmer18[=offen|gelesen]`.
+- **Die Ernte im Gespräch** (`guests/harvest_talk.gd` `HarvestTalk`, Spielkonzept 2.6, 2.10; ZIM-117): `greeting(g, day)`
+  am Ende von `Talk.greeting` (nach Marions Hinweis). Walter (H23) bis `DoorContest.CEREMONY_DAY` `WALTER_CONTEST`, nach
+  Gustavs Tod `WALTER_DIRECTION`; Oskar (H39) `OSKAR_MEMORIES` je ab einem Tag, höchstens eins bis zum nächsten Morgen
+  (Haltung „remembered“ bis `HotelRegister.next_morning`). Gesagt = Haltung „said:<id>“ mit `SAID` (gespeichert mit den
+  Haltungen, kein neues Feld), dazu eine Notiz gleicher ID. Texte Vorschlag.
 
 ### Symbole & Porträts
 (`ui/icon_art.gd`, `assets/textures/icons/Icon_<name>.png`, Quelle `Icon_themonster.aseprite`)
@@ -2787,7 +2795,19 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   `MonsterDirector.other_threat_active`, kein Zeitsprung, `SaveManager.can_save` gesperrt.
 - **`Scarecrow`:** Lage aus dem Kalender (`FAR` → Lobby-Gartentür), springt nur ungesehen. Grundkörper.
 - **`ExtraChild`:** beim Süßes oder Saures an 13, höchstens einmal je Spieltag, `MAX_VISITS`.
-- **`PhotoWall`** (Fotos als `Image` im Code, je Jahr fester Zufall, mit Mipmaps). Ort (ZIM-133): `setup(builder)` holt
+- **`PhotoWall`** (Fotos als `Image` im Code, je Jahr fester Zufall, mit Mipmaps; Ernte alle drei Jahre ZIM-117, 2.10).
+  Motiv: Ankunft vor dem Haupteingang am Tag, Koffer vorn (`_suitcases`, scharf auch vor Verwischten). `photo_rows(year)`
+  legt die Leute fest (je `taken`): ohne Schlüssel alle, 1987 `TAKEN` ohne die Sonderfiguren, 2005 Hain (`style`
+  „suitcase“, Koffer mit Schild) scharf zwischen zwei Verwischten; `_smear` verwischt alle auf einmal über eine Maske
+  (Zeilensummen, 13 px waagerecht), Kopf (`OLD_MAN`) und Stock des alten Herrn bleiben scharf. **2026:** Rahmen mit
+  leerem `ImageTexture`, `photo_mesh` versteckt; `_process` ruft alle `CHECK_EVERY` s `_update_current(elapsed)`: ab
+  `ARRIVAL_DAY` um `HotelRegister.CROSS_HOUR` sichtbar, `_crowd()` = alle Gäste (Seed aus der ID, Kinder kleiner) und die
+  Spielfigur vorn in der Mitte, in vier Reihen (`_crowd_rows`), verwischt wer `HotelRegister.is_crossed`; neu
+  gezeichnet (`ImageTexture.update`) nur, wenn sich die Verwischten ändern. Nicht gespeichert. **Foto 2005:**
+  `found_photo()` (statische Textur) liegt als Kind der Mittelschublade (`DirectorOffice.PHOTO_DRAWER`) im
+  Sekretariatsschreibtisch (`Desk._found_photo`, `_roll_loot` ohne „Leer.“), `PhotoFrame.found`, gesprungenes Glas,
+  [E] über `Game.photo_wall.look_at_photo(2005)` (`FOUND_TEXT`, Notiz `photo_2005`). Notiz zum alten Herrn behält die
+  ID `photo_heir`. Prüfung `--fotos=pruefen` („[Fotowand] … ok/FEHLER“, Stichwort `ernte`). Ort (ZIM-133): `setup(builder)` holt
   die Punkte „Fotowand“ aus `LevelBuilder.planned` (je Punkt eine Position, Wandfläche und Blick aus `_plan_wall`),
   sortiert sie von links nach rechts (Blick zur Wand) und hängt `YEARS` spaltenweise, oben das ältere Jahr; Oberkanten
   `TOPS`, Rahmen `GAP` vor der Wand. Ohne Planeintrag 7 Positionen an `WALL`, bei anderer Zahl eine Warnung. `MISSING`

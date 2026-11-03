@@ -7,11 +7,14 @@ extends StaticBody3D
 ##     Spielfigur hat keinen Namen (Entscheidung 3.11.). Wer tot ist,
 ##     bekommt ein Kreuz hinter dem Namen – erst am Morgen danach ab CROSS_HOUR, wie die Mitteilung am Brett: Gustav am
 ##     Morgen nach der Siegerehrung, jeder weitere Tod seins. Niemand hat es eingetragen – Personal sieht man nie (2.5).
-##   · Davor jeder Oktober seit 1987 mit ein paar Zeilen und Kreuzen: so viele, wie auf dem Gruppenfoto des Jahres
-##     verwischt sind (PhotoWall.TAKEN), sonst gewürfelt. Fest (FIXED), wer einen Warnungszettel oder Koffer hat: Edna
-##     1987 mit ihrem Geburtsnamen in Zimmer 017 (Warnungszettel „E. K.“), ihr Verlobter Heinrich Brehm in 042 mit Kreuz;
-##     2005 Clara Vogt in 13 und Martin Ebert in 018 mit Kreuz, Rudolf Hain in 014 – 2008 mit Kreuz (2.10, 7.4). Die
-##     übrigen Namen und Zimmer aus festem Seed je Jahr; 13 und 18 würfelt kein Jahr.
+##   · Davor jeder Oktober seit 1987, Kreuze aber nur in den Erntejahren (PhotoWall.YEARS, Spielkonzept 2.10): in Ernten
+##     ohne Schlüssel die ganze Seite, 1987 und 2005 so viele, wie auf dem Foto verwischt sind (PhotoWall.TAKEN). In den
+##     Jahren dazwischen lief das Hotel normal – ein paar Zeilen ohne Kreuz. Fest (FIXED), wer einen Warnungszettel oder
+##     Koffer hat oder 2005 überlebte: Edna 1987 mit ihrem Geburtsnamen in Zimmer 017 (Warnungszettel „E. K.“), ihr
+##     Verlobter Heinrich Brehm in 042 mit Kreuz; 2005 Clara Vogt in 13 und Martin Ebert in 018 mit Kreuz, ohne Kreuz der
+##     Schlüsselträger Rudolf Hain in 014, Oskar Pohl und vier weitere, die zu späteren Ernten wiederkamen – dann mit
+##     Kreuz (Hain 2008 wieder in 014, 2.10, 7.4). Die übrigen Namen und Zimmer aus festem Seed je Jahr; 13 und 18 würfelt
+##     kein Jahr.
 ## Nichts davon wird gespeichert: Wer tot ist, steht im Spielstand. Den Todeszeitpunkt merkt sich das Register nur in
 ## der laufenden Sitzung (on_guest_died) – nach dem Laden gilt jeder Tote als eingetragen. Gustav steht immer ab dem
 ## Morgen nach der Siegerehrung drin (dann ist er gestorben, das braucht keinen Zeitpunkt). Gelesen: neue Kreuze und die alten Jahre als Notiz ins Notizbuch (3.10). Erreichbar über Game.register.
@@ -23,17 +26,24 @@ const YEAR := 2026
 ## Geburtsnamen im Register hinter dem Namen an der Tür (2.3, 2.7, 6.20)
 const BIRTH_NAMES := {"Marion Teske": "Ahrend", "Edna Wiegand": "Kessler"}
 ## Feste Zeilen früherer Jahre (Zimmer wie am Schild, Name, Kreuz): wer einen Warnungszettel (4.13) oder einen Koffer
-## bei den Fundsachen (7.4) hat (2.3, Entscheidung 3.11.). Deren Zimmer würfelt das Jahr nicht noch einmal, ihre Kreuze
-## zählen zu denen vom Foto des Jahres.
+## bei den Fundsachen (7.4) hat (2.3, Entscheidung 3.11.), dazu die Überlebenden von 2005 und ihre Rückkehr (2.10;
+## Namen außer Hain und Pohl Vorschlag). Deren Zimmer würfelt das Jahr nicht noch einmal, ihre Kreuze zählen zu denen
+## vom Foto des Jahres.
 const FIXED := {
 	1987: [["017", "Edna Kessler", false], ["042", "Heinrich Brehm", true]],
-	2005: [["13", "Clara Vogt", true], ["018", "Martin Ebert", true], ["014", "Rudolf Hain", false]],
-	2008: [["014", "Rudolf Hain", true]],
+	2005: [["13", "Clara Vogt", true], ["018", "Martin Ebert", true], ["014", "Rudolf Hain", false],
+		["033", "Oskar Pohl", false], ["023", "Ilse Kroll", false], ["006", "Peter Wendt", false],
+		["102", "Renate Kluge", false], ["111", "Jürgen Sasse", false]],
+	2008: [["014", "Rudolf Hain", true], ["104", "Ilse Kroll", true]],
+	2011: [["009", "Peter Wendt", true]],
+	2014: [["117", "Renate Kluge", true]],
+	2020: [["035", "Jürgen Sasse", true]],
 }
 ## Zimmer, die ein Jahr nicht würfelt (Warnungszettel „M. B., Zi. 021, 1999“)
 const SKIP_ROOMS := {1999: ["021"]}
-## Zeilen je früherem Jahr ohne Kreuz
-const PLAIN := Vector2i(2, 4)
+## Zeilen je früherem Jahr: in einer Ernte, in einem gewöhnlichen Oktober
+const HARVEST_ROWS := Vector2i(8, 12)
+const ORDINARY_ROWS := Vector2i(2, 5)
 ## Anteil der Zeilen, die ein Haushalt mit mehreren Personen sind (nur der Nachname)
 const FAMILY_SHARE := 0.35
 ## Vornamen früherer Gäste: bis ERA_YEAR nur die älteren, danach beide Listen
@@ -54,7 +64,7 @@ const OLD_SURNAMES := [
 	"Seidel", "Timm", "Voss", "Wolff", "Ziegler", "Born", "Dahl", "Eggers", "Fink", "Hesse", "Korte", "Lenz", "Marx",
 ]
 ## Notizen beim Lesen (3.10)
-const OLD_JOT := "Kreuze neben Namen, in jedem Oktober, zurück bis 1987 – so weit das Buch reicht."
+const OLD_JOT := "Kreuze neben Namen, zurück bis 1987 – aber nur alle drei Jahre: 1987, 1990, 1993 … Manche Seiten sind ganz gekreuzt."
 const CROSS_JOT := "Kreuz neben „%s“ (Zi. %s)."
 
 var _builder: LevelBuilder
@@ -209,23 +219,29 @@ func _cross(row: Dictionary, g: Guest, name: String) -> void:
 	row["guests"].append([g.id, name, row["room"]])
 
 
-## Ein früheres Jahr: feste Zeilen, dann gewürfelte – so viele Kreuze, wie auf dem Foto des Jahres fehlen.
+## Ein früheres Jahr: feste Zeilen, dann gewürfelte. Kreuze nur in Erntejahren – ohne Schlüssel alle, sonst so viele,
+## wie auf dem Foto des Jahres verwischt sind.
 func _old_rows(year: int) -> Array:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = year * 7919
-	var crosses := int(PhotoWall.TAKEN.get(year, rng.randi_range(1, 3)))
-	var count := crosses + rng.randi_range(PLAIN.x, PLAIN.y)
+	var harvest := PhotoWall.YEARS.has(year)
+	var all_dead := harvest and not PhotoWall.TAKEN.has(year)
+	var crosses := int(PhotoWall.TAKEN.get(year, 0))
+	var rows := HARVEST_ROWS if harvest else ORDINARY_ROWS
+	var fixed: Array = FIXED.get(year, [])
+	var count := maxi(rng.randi_range(rows.x, rows.y), fixed.size())
 	var free := _old_rooms()
 	var picked: Array = []
-	for fixed: Array in FIXED.get(year, []):
-		var row := RegisterView.row(String(fixed[0]), String(fixed[1]))
-		if fixed[2]:
+	var mark := func(row: Dictionary) -> void:
+		row["crosses"].append(String(row["t"]).length())
+		row["t"] += "   "
+	for line: Array in fixed:
+		var row := RegisterView.row(String(line[0]), String(line[1]))
+		if all_dead or line[2]:
 			crosses -= 1
-			count -= 1
-			row["crosses"].append(String(row["t"]).length())
-			row["t"] += "   "
+			mark.call(row)
 		picked.append(row)
-		free.erase(String(fixed[0]))
+		free.erase(String(line[0]))
 	for skip: String in SKIP_ROOMS.get(year, []):
 		free.erase(skip)
 	var surnames := OLD_SURNAMES.duplicate()
@@ -233,12 +249,12 @@ func _old_rows(year: int) -> Array:
 	for no: String in _builder.households:   # keine Namen der Gäste von heute
 		taken_names[String(_builder.households[no]["surname"])] = true
 	surnames = surnames.filter(func(s: String) -> bool: return not taken_names.has(s))
-	while picked.size() < count + FIXED.get(year, []).size() and not free.is_empty() and not surnames.is_empty():
+	while picked.size() < count and not free.is_empty() and not surnames.is_empty():
 		var room: String = free.pop_at(rng.randi_range(0, free.size() - 1))
 		var surname: String = surnames.pop_at(rng.randi_range(0, surnames.size() - 1))
 		var names: Array = FIRST_EARLY if year < ERA_YEAR else FIRST_EARLY + FIRST_LATE
 		var first: String = names[rng.randi_range(0, names.size() - 1)]
-		var dead := crosses > 0
+		var dead := all_dead or crosses > 0
 		var row: Dictionary
 		if rng.randf() < FAMILY_SHARE:
 			row = RegisterView.row(room, surname + (" · " + first if dead else ""))
@@ -246,8 +262,7 @@ func _old_rows(year: int) -> Array:
 			row = RegisterView.row(room, "%s %s" % [first, surname])
 		if dead:
 			crosses -= 1
-			row["crosses"].append(String(row["t"]).length())
-			row["t"] += "   "
+			mark.call(row)
 		picked.append(row)
 	picked.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return String(a["room"]).naturalnocasecmp_to(String(b["room"])) < 0)

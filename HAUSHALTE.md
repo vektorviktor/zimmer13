@@ -64,7 +64,7 @@ geändert werden.
 | H20 | Bruno Kaminski (Kernfigur) | 102 · 68 m² | Bruno (mittel, eigenes Profil) | 1 | 6.0 |
 | H21 | Mila Hellwig (Kernfigur) | 021 · 68 m² | Mila (jung, eigenes Profil) | 1 | 6.0 |
 | H22 | Marion Teske (Kernfigur) | 001 · 68 m² | Marion (mittel, eigenes Profil) | 1 | Tochter des früheren Hausmeisters Josef Ahrend (2.3) – im Register „geb. Ahrend“; sucht, was 1987 geschah, und will ihren Vater erlösen (Auftraggeberin, 2.8); bleibt am 31. freiwillig im Hotel |
-| H23 ★ | Walter Ruprecht | 014 · 34 m² | Walter (alt, Griesgram) | 1 | Dauergast, kennt jeden Winkel – und schweigt |
+| H23 ★ | Walter Ruprecht | 014 · 34 m² | Walter (alt, Griesgram) | 1 | Seit 2024 ein paar Mal hier, in gewöhnlichen Jahren; hält das Haus für gewöhnlich – falsche Fährte, wohnt im Zimmer von Rudolf Hain („R. hat ihn“, 2.10) |
 | H24 ★ | Agnes Möller | 029 · 34 m² | Agnes (alt, Plaudertasche) | 1 | Witwe, weiß über jeden etwas |
 | H25 ★ | Gustav Peters | 020 · 34 m² | Gustav (alt, Skeptiker) | 1 | Pensionierter Lehrer, hasst Halloween, die Kinder nennen ihn „Halloween-Grinch“; schmückt nicht – das erste Opfer bei der Siegerehrung (2.6) |
 | H26 ★ | Liesel Brück | 025 · 34 m² | Liesel (alt, ängstlich) | 1 | Betet abends laut, schläft mit Licht – köpfte 1987 als Teenager den Rezeptionisten, will ihm den Kopf wiedergeben (2.7, 4.21); bleibt am 31. freiwillig im Hotel |
@@ -80,7 +80,7 @@ geändert werden.
 | H36 | Magda Seidel | 006 · 34 m² | Magda (alt, Skeptiker) | 1 | Hält das Monster für einen Trick der Direktion |
 | H37 | Sami Haddad | 039 · 68 m² | Sami (mittel, Bastler) | 1 | Koch von Beruf, hilft in der Küche (3.8) |
 | H38 | Zita Fuchs | 043 · 34 m² | Zita (alt, geschäftstüchtig) | 1 | Verleiht Geld gegen Pfand |
-| H39 | Oskar Pohl | 045 · 68 m² | Oskar (alt, ängstlich) | 1 | Meint, er sei schon einmal hier gewesen – erinnert sich an nichts (2.2) |
+| H39 | Oskar Pohl | 045 · 68 m² | Oskar (alt, ängstlich) | 1 | Hat 2005 überlebt und vergessen; erinnert sich im Hotel bruchstückhaft – darum wieder eingeladen (2.10) |
 
 ## Zusammen
 

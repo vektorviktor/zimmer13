@@ -15,6 +15,8 @@ extends Node
 ##   · Außerdem legt place_due den Schlüssel zu Zimmer 18 erst nach der Siegerehrung (Gustavs Tod) auf die Kiste im
 ##     Heizkeller (LevelBuilder.room18_key_at; 7.4: „nach Gustavs Tod“, sein Ort an der Leviathanmauer kommt mit ZIM-16)
 ##     – sonst ließe sich die Hauptgeschichte am ersten Tag abkürzen (befunde/BEFUNDE.md Q-02).
+##   · Das Foto von 2005 (2.10, ZIM-117): mit gesprungenem Glas in der Mittelschublade (PHOTO_DRAWER), nicht abgeschlossen
+##     (PhotoWall.found_photo, Desk).
 ## Nicht gespeichert: Ob ein Schlüssel schon hängt, steht in den Gegenständen bzw. am Bund (place_due sieht nach).
 ## Erreichbar über Game.director_office.
 
@@ -28,6 +30,8 @@ const JOSEF_OPENS := [SECRETARIAT_KEY, OFFICE_KEY]
 ## (0 Mittelschublade, 1 die obere im Unterschrank – die zweite)
 const CODE := "1990"
 const CODE_DRAWER := 1
+## Darin liegt das Foto von 2005 (die Mittelschublade, ohne Schloss)
+const PHOTO_DRAWER := 0
 ## Ab diesem Tag hängen die Schlüssel an ihren Zwischenorten (Sekretariat um den 6.–10., Josefs Bund ab der Mitte)
 const SECRETARIAT_DAY := 6
 const JOSEF_DAY := 14
