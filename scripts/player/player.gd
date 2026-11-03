@@ -449,6 +449,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		drink_coffee()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.TEA and not hiding:
 		drink_tea()
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.GLASS and not hiding:
+		drink_glass()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.SALT and not hiding:
 		strew_salt()
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.MUSIC_BOX and not hiding:
@@ -1161,10 +1163,11 @@ func recognized_by(guest: Node3D) -> bool:
 
 # --- Rausch & Schwäche (Spielkonzept 3.7, 4.18) ---------------------------------------
 
-## Ein Glas an der Bar: nimmt Schock, macht betrunken. quiet: ohne Gedanken (im Gespräch, Runde ausgeben).
-func drink(quiet: bool = false) -> void:
-	drunk = minf(1.0, drunk + BarTap.DRINK)
-	shock = maxf(0.0, shock - BarTap.CALM)
+## Ein Glas an der Bar: nimmt Schock, macht betrunken – je nach Sorte (BarTap.SORTS, „“ = ohne Sorte). quiet: ohne
+## Gedanken (im Gespräch, Runde ausgeben).
+func drink(quiet: bool = false, sort: String = "") -> void:
+	drunk = minf(1.0, drunk + BarTap.strength(sort))
+	shock = maxf(0.0, shock - BarTap.calm(sort))
 	if not quiet:
 		if drunk >= BarTap.DRUNK:
 			Game.say("Noch eins … Warum dreht sich die Bar?", 3.0)
@@ -1173,7 +1176,17 @@ func drink(quiet: bool = false) -> void:
 		else:
 			Game.say("Das wärmt.", 2.5)
 	if Game.tracing:
-		print("[Bar] Glas getrunken – Rausch %.2f, Schwäche %.2f" % [drunk, weakness()])
+		print("[Bar] Glas %s getrunken – Rausch %.2f, Schwäche %.2f" % [sort if sort != "" else "ohne Sorte", drunk, weakness()])
+
+
+## Das Glas in der Hand austrinken (3.7, ZIM-35) – betrunken genug, bleibt es stehen.
+func drink_glass() -> void:
+	if drunk >= BarTap.ENOUGH:
+		Game.say("Noch eins, und ich falle um.", 2.5)
+		return
+	var sort := held.flavor
+	consume_held()
+	drink(false, sort)
 
 
 ## Wie angreifbar der Spieler gerade ist (0..1) – danach sucht sich der Lakengeist seine Opfer (4.18):

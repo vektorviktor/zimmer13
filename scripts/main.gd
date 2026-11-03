@@ -91,6 +91,10 @@ extends Node3D
 ##                               Beziehungsbudget, Geschenke nach Wert, Beruhigen und Vergebung durch (--trace „[Budget]“)
 ##   --handel=id                 Verkaufspreise (6.4, ZIM-34): Hoteleigentum und Kaputtes kauft keiner, Füllmaterial bringt
 ##                               die Hälfte (--trace „[Handel]“)
+##   --glas[=halten]             Bar (3.7, ZIM-35): Bier, Rotwein, Schnaps – drei Flaschen auf der Theke, Rausch je Sorte, ein
+##                               Glas kaufen und austrinken, Rotwein einem Weinfreund schenken (er trinkt es), ein Kind lehnt
+##                               ab, die Bitte „ein Glas von der Bar“. Meldet „[Glas] … ok“ bzw. „FEHLER“. halten: nur ein
+##                               Glas Rotwein in die Hand (für --savetest)
 ##   --neid[=id]                 Neid der Türnachbarn (6.18, 5): Kisten leer, vier Kürbisse vor Zimmer 13 – ein Morgen läuft,
 ##                               dann Untergrenze, Freund, spitzer Satz beim Vorbeigehen und im Gespräch (--trace „[Neid]“)
 ##   --kisten                    Knappheit (5.10): rechnet je Kiste ohne Nachschub den Monat durch (ohne Spieler leer um den 15.,
@@ -1520,15 +1524,16 @@ func run_debug(arg: String) -> bool:
 				print("[Fall] %s fällt aus %.1f m bei %s" % [pumpkin.display_name, height, pumpkin.global_position]))
 	elif _is_arg(arg, "--wurf"):
 		# Werfen (3.13): nach 1 s einen Gegenstand in die Hand und mit Kraft k (0 … 1, Standard 1) in Blickrichtung werfen –
-		# Standard ein Kürbis; Sorte aus PumpkinKinds, mini, kerze (brennend), birne, kaffee, tee, dose, messer, taschenlampe
+		# Standard ein Kürbis; Sorte aus PumpkinKinds, mini, kerze (brennend), birne, kaffee, tee, dose, messer, taschenlampe,
+		# glas (Rotwein, ZIM-35)
 		var parts := _arg_parts(arg, "--wurf")
 		var power := clampf(parts[0].to_float(), 0.0, 1.0) if parts.size() > 0 and parts[0] != "" else 1.0
 		var what := parts[1] if parts.size() > 1 else ""
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
 			var kinds := {"mini": Item.Kind.MINI_PUMPKIN, "zierkuerbis": Item.Kind.MINI_PUMPKIN, "kerze": Item.Kind.CANDLE,
 				"birne": Item.Kind.BULB, "kaffee": Item.Kind.COFFEE, "tee": Item.Kind.TEA, "dose": Item.Kind.SODA_CAN,
-				"messer": Item.Kind.KNIFE, "taschenlampe": Item.Kind.FLASHLIGHT}
-			var item := Item.create(kinds[what], "lit" if what == "kerze" else "") if kinds.has(what) \
+				"messer": Item.Kind.KNIFE, "taschenlampe": Item.Kind.FLASHLIGHT, "glas": Item.Kind.GLASS}
+			var item := Item.create(kinds[what], {"kerze": "lit", "glas": "wein"}.get(what, "")) if kinds.has(what) \
 				else Item.create(Item.Kind.PUMPKIN, "" if what in ["", "kuerbis", "kürbis"] else what)
 			Game.player.drop_held()
 			Game.player.receive_item(item)
@@ -2127,6 +2132,8 @@ func run_debug(arg: String) -> bool:
 		_debug_budget(_arg_parts(arg, "--budget"))
 	elif arg.begins_with("--handel="):
 		_debug_trade(_arg_parts(arg, "--handel"))
+	elif _is_arg(arg, "--glas"):
+		_debug_glass(_arg_value(arg, "--glas"))
 	elif arg == "--kisten":
 		get_tree().create_timer(1.0, false).timeout.connect(_debug_boxes)
 	elif arg.begins_with("--streit="):
@@ -3354,6 +3361,90 @@ func _debug_trade(parts: PackedStringArray) -> void:
 		var lamp: int = price.call(Item.Kind.FLASHLIGHT, "")
 		check.call("Taschenlampe %d" % lamp, lamp >= 3)
 		ui.close())
+
+
+## --glas[=halten]: Getränke der Bar (Spielkonzept 3.7, ZIM-35) – nach 2 s meldet jede Regel „[Glas] … ok“ bzw.
+## „FEHLER“; ein Weinfreund und ein Kind stehen dafür vor dir. halten: nur ein Glas Rotwein in die Hand (--savetest).
+func _debug_glass(what: String) -> void:
+	var p := Game.player
+	if what == "halten":
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+			p.drop_held()
+			p.receive_item(Item.create(Item.Kind.GLASS, "wein")))
+		return
+	var adults := Game.social.living_guests().filter(func(g: Guest) -> bool: return not g.is_child())
+	var fans := adults.filter(func(g: Guest) -> bool: return BarTap.likes_wine(g))
+	var kids := Game.social.living_guests().filter(func(g: Guest) -> bool: return g.is_child())
+	var check := func(what_: String, ok: bool) -> void:
+		print("[Glas] %s: %s" % [what_, "ok" if ok else "FEHLER"])
+	if fans.is_empty() or kids.is_empty():
+		check.call("Weinfreund und Kind im Hotel", false)
+		return
+	var fan: Guest = fans[0]
+	var kid: Guest = kids[0]
+	for g: Guest in [fan, kid]:
+		g.global_position = p.global_position - p.global_transform.basis.z * (1.5 if g == fan else 2.2)
+		g._set_idle(60.0)
+	get_tree().create_timer(2.0, false).timeout.connect(func() -> void:
+		var taps := get_tree().get_nodes_in_group("bar_taps")
+		check.call("%d Flaschen auf der Theke" % taps.size(), taps.size() == BarTap.ORDER.size()
+			and taps.all(func(t: BarTap) -> bool: return t.sort in BarTap.ORDER))
+		# Rausch je Sorte: Bier < Rotwein < Schnaps, zwei Schnäpse machen betrunken
+		var levels := []
+		for sort: String in BarTap.ORDER:
+			p.drunk = 0.0
+			p.drink(true, sort)
+			levels.append(p.drunk)
+		check.call("Rausch Bier %.2f < Rotwein %.2f < Schnaps %.2f" % levels, levels[0] < levels[1] and levels[1] < levels[2]
+			and levels[2] * 2.0 >= BarTap.DRUNK and levels[0] * 2.0 >= BarTap.TIPSY)
+		# Kaufen: mit freien Händen ins Glas in die Hand, Linksklick trinkt es aus
+		p.drunk = 0.0
+		p.drop_held()
+		Game.money = 10
+		var wine_tap: BarTap = taps.filter(func(t: BarTap) -> bool: return t.sort == "wein")[0]
+		wine_tap.interact(p)
+		check.call("Glas Rotwein gekauft (%s, %d Geld übrig)" % [p.held.display_name if p.held else "nichts", Game.money],
+			p.held != null and p.held.kind == Item.Kind.GLASS and p.held.flavor == "wein" and Game.money == 8)
+		p.drink_glass()
+		check.call("ausgetrunken (Rausch %.2f)" % p.drunk, p.held == null and is_equal_approx(p.drunk, BarTap.strength("wein")))
+		# Mit vollen Händen trinkt man gleich an der Theke
+		p.receive_item(Item.create(Item.Kind.CANDLE))
+		var beer_tap: BarTap = taps.filter(func(t: BarTap) -> bool: return t.sort == "bier")[0]
+		beer_tap.interact(p)
+		check.call("Bier an der Theke getrunken (Rausch %.2f)" % p.drunk,
+			is_equal_approx(p.drunk, BarTap.strength("wein") + BarTap.strength("bier")) and Game.money == 7)
+		p.drop_held()
+		# Rotwein für einen Weinfreund: Lieblingsgeschenk, er trinkt es aus
+		var ui := Game.dialog
+		ui.open(fan)
+		var glass := Item.create(Item.Kind.GLASS, "wein")
+		p.receive_item(glass)
+		var before := fan.relation
+		var drunk_before := fan.drunk
+		ui._gift(glass)
+		check.call("%s freut sich über Rotwein (%+.1f): %s" % [fan.display_name, fan.relation - before, ui._text.text],
+			fan.relation > before and "Rotwein!" in ui._text.text)
+		ui.close()
+		# Ein Kind nimmt keinen Alkohol – und kauft ihn auch nicht
+		ui.open(kid)
+		var offer := Item.create(Item.Kind.GLASS, "bier")
+		p.receive_item(offer)
+		ui._gift(offer)
+		check.call("%s lehnt ab: %s" % [kid.display_name, ui._text.text], p.held == offer and "Alkohol" in ui._text.text)
+		check.call("Kind kauft kein Glas", ui._buy_price(offer) == 0)
+		ui.close()
+		p.drop_held()
+		# Bitte „ein Glas von der Bar“ in seiner Sorte
+		var req: Dictionary = Game.social.requests._small_of(fan, "glass")
+		var right := Item.create(Item.Kind.GLASS, "wein")
+		var wrong := Item.create(Item.Kind.GLASS, "schnaps")
+		check.call("Bitte: %s" % req.get("task", "?"), int(req.get("item", -1)) == Item.Kind.GLASS and req["variety"] == "wein"
+			and Game.social.requests._fits(req, right) and not Game.social.requests._fits(req, wrong))
+		right.free()
+		wrong.free()
+		get_tree().create_timer(15.0, false).timeout.connect(func() -> void:   # er hält es 8–14 s (Guest.receive_gift)
+			check.call("%s hat das Glas getrunken (Rausch %.2f → %.2f)" % [fan.display_name, drunk_before, fan.drunk],
+				fan.drunk > drunk_before and not (is_instance_valid(glass) and glass.is_inside_tree()))))
 
 
 ## --budget=id: Beziehung nicht erschleichen (Spielkonzept 6.18, 5) – der Gast steht vor dir, nach 2 s laufen die Regeln

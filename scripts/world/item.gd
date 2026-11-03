@@ -36,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG, BAR_GAME }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG, BAR_GAME, GLASS }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -68,6 +68,7 @@ const PRICES := {
 	Kind.PUMPKIN_SEEDS: 1,
 	Kind.EGG: 1,
 	Kind.BAR_GAME: 2,
+	Kind.GLASS: 1,   # je Sorte: BarTap.SORTS (price)
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
@@ -97,11 +98,11 @@ const JOLT_UNREST := 0.8        ## ab dieser Unruhe kann der Zierkürbis aus den
 ## Zerplatzen (Spielkonzept 5.8): diese Arten, ab so viel Fallhöhe (m); als Aufprall zählt, wenn ein Gegenstand mit
 ## mindestens IMPACT_SPEED (m/s) fällt und auf einen Schlag mehr als die Hälfte davon verliert
 const BURST_KINDS := [Kind.PUMPKIN, Kind.CARVED_PUMPKIN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.BULB, Kind.COFFEE, Kind.TEA,
-	Kind.EGG]
+	Kind.EGG, Kind.GLASS]
 const BURST_HEIGHT := 3.0
-## Kerzen, Glühbirnen, Tassen (Kaffee, Tee) und Eier zerbrechen schon aus geringerer Höhe (m; Spielkonzept 5.11, 7.3,
-## 3.11, 6.13)
-const BREAK_HEIGHT := {Kind.CANDLE: 2.0, Kind.BULB: 1.5, Kind.COFFEE: 1.0, Kind.TEA: 1.0, Kind.EGG: 0.6}
+## Kerzen, Glühbirnen, Tassen (Kaffee, Tee), Eier und Gläser von der Bar zerbrechen schon aus geringerer Höhe (m;
+## Spielkonzept 5.11, 7.3, 3.11, 6.13, 3.7)
+const BREAK_HEIGHT := {Kind.CANDLE: 2.0, Kind.BULB: 1.5, Kind.COFFEE: 1.0, Kind.TEA: 1.0, Kind.EGG: 0.6, Kind.GLASS: 1.0}
 ## Ei (Spielkonzept 6.13): Schale (braun, leicht gesprenkelt), Halbachsen (m)
 const EGG_COLOR := Color(0.8, 0.62, 0.46)
 const EGG_RADII := Vector3(0.021, 0.028, 0.021)
@@ -448,6 +449,8 @@ func price() -> int:
 			return int(PumpkinKinds.data(variety)["price"])
 		Kind.CARVED_PUMPKIN:
 			return int(PumpkinKinds.data(variety)["price"]) + 6
+		Kind.GLASS:
+			return BarTap.price_of(flavor)
 	return int(PRICES.get(kind, 1))
 
 
@@ -519,7 +522,7 @@ func create_extra() -> String:
 			return "pumpkin" if holds_pumpkin else ""
 		Kind.LIGHT_STRING:
 			return ("%.2f" % string_length) if hung else ""
-		Kind.SODA_CAN, Kind.PUMPKIN_SEEDS, Kind.BAR_GAME:
+		Kind.SODA_CAN, Kind.PUMPKIN_SEEDS, Kind.BAR_GAME, Kind.GLASS:
 			return flavor
 		Kind.DICE_CUP:
 			return "loaded" if dice_loaded else ""
@@ -1535,6 +1538,14 @@ func _build(extra: String) -> void:
 			mass = 0.3
 			size = Vector3(0.11, 0.09, 0.085)
 			build_cup(self, tea)
+		Kind.GLASS:
+			# Glas von der Bar (Spielkonzept 3.7, ZIM-35): Bier, Rotwein oder Schnaps – trinken (Linksklick) oder
+			# verschenken. Nur in der Hand, zerbricht leicht
+			flavor = extra if BarTap.SORTS.has(extra) else "wein"
+			display_name = String(BarTap.SORTS[flavor]["glass"])
+			mass = 0.3 if flavor != "schnaps" else 0.1
+			size = BarDrinks.glass_size(flavor)
+			BarDrinks.glass(self, flavor)
 		Kind.MATCHBOX:
 			# Streichholzschachtel (Spielkonzept 5.12): unbegrenzt – in der Tasche zündet sie die Kerze in der Hand an,
 			# in der Hand eine, die irgendwo steht
@@ -1829,6 +1840,8 @@ func _break() -> void:
 			_shatter_bulb()
 		Kind.COFFEE, Kind.TEA:
 			_spill_coffee()
+		Kind.GLASS:
+			_shatter_glass()
 		Kind.EGG:
 			_splat_egg(global_position, Vector3.UP, null)
 		_:
@@ -2027,6 +2040,20 @@ func _spill_coffee() -> void:
 	Game.noise("cup_break", at, self)
 	if Game.tracing:
 		print("[%s] Tasse zerbricht bei %s" % ["Tee" if kind == Kind.TEA else "Kaffee", at])
+	queue_free()
+
+
+## Ein Glas von der Bar zerbricht (3.7, tiefer als BREAK_HEIGHT gefallen oder geworfen): Klirren (Lärm „glass_break“,
+## 5 m), Scherben springen davon und verschwinden nach einer Weile; der Inhalt ist verschüttet (ohne Fleck).
+func _shatter_glass() -> void:
+	var at := global_position
+	var glass := BarDrinks.shard_material()
+	_spray(at, Geo.box(Vector3(0.012, 0.004, 0.01)), glass, 18, Vector2(1.2, 3.0), 80.0)
+	_fling_pieces(at, [glass], randi_range(3, 5), Vector3(0.015, 0.004, 0.012), Vector3(0.035, 0.008, 0.03),
+		Vector2(0.6, 1.8), Vector2(0.6, 1.6), 0.03, 0.04)
+	Game.noise("glass_break", at, self)
+	if Game.tracing:
+		print("[Bar] %s zerbricht bei %s" % [display_name, at])
 	queue_free()
 
 

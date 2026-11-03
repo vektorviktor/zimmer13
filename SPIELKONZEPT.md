@@ -1358,7 +1358,12 @@ nach der sich der Lakengeist seine Opfer sucht (4.18).
 - **Gäste trinken auch:** Sie werden betrunken, gesprächiger (erzählen mehr, auch Gerüchte) und für den Geist
   schwächer. **Kinder** trinken nie (6.13).
 - **Alkoholfrei:** für Erwachsene Kaffee und Tee, auch an der Bar (3.11, 3.12), für Kinder Kakao und Limo (6.13).
-  **Offen:** welche Getränke es an der Bar sonst gibt.
+- **Sorten (entschieden 2026-11-03, umgesetzt 2026-11-03, ZIM-35):** An der Bar gibt es **Bier, Rotwein und Schnaps**
+  als Varianten des Glases – drei Flaschen nebeneinander auf der Theke. Der Rausch wirkt wie beim bisherigen Glas, nur
+  die Stärke hängt an der Sorte; Schnaps ist am stärksten. **Ein Glas ist ein Gegenstand:** tragbar und verschenkbar
+  (wie Kaffee und Tee nur in der Hand, zerbricht beim Fallen). **Rotwein** ist für manche Gäste ein
+  **Lieblingsgeschenk**; damit gibt es auch die Bitte „ein Glas von der Bar“ (6.14). Kinder trinken weiter nie – sie
+  lehnen ein Glas ab, an der Bar gibt es für sie Kakao.
 - **Getränkedosen (umgesetzt 2026-10-22, 3.2):** Limo und Cola – Kisten in Kühlraum und Lager, auf der Bartheke für 1 Geld. Eine Dose (Linksklick) bringt einen sofort wieder zu Atem (Ausdauer voll, 3.1) und nimmt etwas Schock; das Zischen beim Öffnen ist leiser Lärm (3 m). Gäste trinken geschenkte Dosen, Kinder freuen sich darüber wie über etwas, das sie mögen.
 - **Automaten (entschieden und umgesetzt 2026-10-22):** **Snackautomaten** (Süßigkeiten) und **Getränkeautomaten**
   (Cola) für je 1 Geld, ohne Ende. Ihre beleuchtete Front ist ein schwaches Licht im Flur. Sie stehen, wo der Plan
@@ -1374,6 +1379,18 @@ nach der sich der Lakengeist seine Opfer sucht (4.18).
 > etwas schwächer). Gäste trinken an der Bar meist ein Glas, schwanken, sagen „*hicks*“ und erzählen mehr; „Eine
 > Runde ausgeben“ (2 Geld) hebt die Beziehung. Beim Mäxchen zittert die Hand beim Bluffen, betrunkene Gäste
 > verraten ihre Bluffs. Debug: `--drunk=n[,gast]`.
+>
+> **Umgesetzt (2026-11-03, ZIM-35): Sorten und Glas als Gegenstand.** Drei Flaschen mit Glas auf der Theke, Etikett zu
+> den Gästen: **Bier 1 Geld** (Rausch 0,2 – angetrunken ab dem 2., betrunken ab dem 4.), **Rotwein 2 Geld** (0,3 wie
+> bisher – 2./3.), **Schnaps 2 Geld** (0,45 – angetrunken schon nach einem, betrunken nach dem 2., dann ist Schluss);
+> je stärker, desto mehr Schock nimmt es (0,1 / 0,15 / 0,2). Mit freien Händen kommt das Glas in die Hand –
+> Linksklick trinkt es aus, im Gespräch verschenkt man es, fällt es tiefer als 1 m, zerbricht es (Klirren, Lärm 5 m,
+> ohne Fleck). Mit vollen Händen trinkt man es gleich an der Theke. Gäste trinken an der Bar ihre Sorte und trinken
+> geschenkte Gläser aus. **Weinfreunde:** jeder dritte Erwachsene, fest aus der Gast-ID (keine Zufallsaufrufe im
+> Generator) – Rotwein freut sie wie der Lieblingskürbis. Kinder nehmen kein Glas und kaufen keins. Verkaufen bringt
+> keinen Gewinn (Gäste zahlen höchstens den Barpreis). Runde ausgeben, Trinkduell und Wahrheit oder Pflicht bleiben beim
+> Glas ohne Sorte (1 Geld, Rausch wie Rotwein). Modelle im Code gedreht, Etiketten mit PBR-Karten (9.2).
+> Debug: `--glas[=halten]`.
 >
 > **Ergänzt (2026-10-20): verschwommene Sicht.** Im Rausch wird die Sicht unscharf, angetrunken leicht, betrunken
 > deutlich. Die Unschärfe pulsiert langsam, das Bild wabert, und man sieht einen blassen, schwankenden zweiten
@@ -1402,7 +1419,8 @@ Kürbis** für sich.
 - **Lärm (entschieden und umgesetzt 2026-11-03):** Den Kürbis am Herd klein schneiden ist so laut wie Schnitzen
   (3 m). Danach blubbert der Topf bzw. brutzelt die Pfanne leise – **4 m**, solange es kocht (4.15). Der Ruf „Es gibt
   Kürbissuppe in der Küche!“ bleibt eine Meldung ohne Lärm.
-- **Offen:** Zutaten aus dem Kühlraum (Eier, 6.13).
+- **Zutaten aus dem Kühlraum: gestrichen (2026-11-03, ZIM-35).** Gekocht wird weiter nur mit Kürbissen; die Eier
+  bleiben im Eierkarton in der Küche (6.13), ohne Rezept.
 
 ### 3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)
 Der Spieler hat einen **Körper**: Er sieht sich im Spiegel – und später sehen ihn Mitspieler, falls es einmal Koop
@@ -4405,7 +4423,10 @@ Full-body 3D character of a 7-year-old girl, child proportions with a slightly l
 > - **Lieblingskürbis als Wunsch** (5.8): *„Ich hätte so gern einen Casper vor meiner Tür – geschnitzt.“* Geschnitzt nur
 >   bei den schnitzbaren Sorten (Halloween-Kürbis, Casper), sonst immer ungeschnitzt. Der Gast stellt ihn vor seine
 >   Tür – er zählt dort als seine Deko. In der Knappheit (5.10): eigene Tür oder seine?
-> - **Lieblingsgegenstände** genauso: *„Bring mir eine Fledermaus“*, *„ein Glas Rotwein“*.
+> - **Lieblingsgegenstände** genauso: *„Bring mir eine Fledermaus“*, *„ein Glas Rotwein“*. **Glas von der Bar
+>   (umgesetzt 2026-11-03, ZIM-35, 3.7):** abends bittet jeder zweite Erwachsene (nach Gast-ID und Tag) statt um eine
+>   Kerze um ein Glas in seiner Sorte – Weinfreunde Rotwein, sonst meist Bier, manche Schnaps; nur diese Sorte erfüllt
+>   die Bitte.
 > - **Neue Art „Spielen“** (Tabelle): eine Runde Minispiel (6.10), Apfeltauchen (6.21), mit Kindern Verstecken – auch
 >   wenn es flackert.
 > - **Kein eigenes Questmenü:** Alle Aufgaben stehen im Notizbuch unter „Aufgaben“ (3.10) – so bleibt es.

@@ -117,6 +117,7 @@ Stand: 2026-10-28.
 | Getränkedose (Cola, Limo) | `SODA_CAN` | gebaut | – | zu Atem kommen, beruhigt | 3.2 |
 | Kaffee | `COFFEE` | gebaut | – | wach halten · kleine Bitte am Morgen (6.14) | 3.11 |
 | Tee | `TEA` | gebaut | – | beruhigt · Herzensbitte der Griesgrame (6.14) | 3.12 |
+| Glas von der Bar (Bier, Rotwein, Schnaps) | `GLASS` (Sorte im Zusatz) | gebaut | – | Rausch und weniger Schock, verschenkbar – Rotwein ist manchen Gästen Lieblingsgeschenk · kleine Bitte am Abend (6.14) · Kinder nie | 3.7 |
 | Gebratener Kürbis | `ROAST_PUMPKIN` | gebaut | – | Essen | 3.8 |
 | Kürbismatsch | `PUMPKIN_MUSH` | gebaut | – | Rest eines zerplatzten Kürbisses | 5.8, 3.13 |
 | Apfel | `APPLE` | gebaut | – | beim Apfeltauchen erbeutet, essbar | 6.21 |

@@ -282,6 +282,8 @@ const ROOM_CHAIR_GAP := 0.66
 const ROOM_CHAIR_REACH := 0.5
 ## 28 einzelne Flaschen „bottle_NN“ in Metern, Ursprung mittig unten (tools/build_bottles.py)
 const BOTTLES_MODEL := "res://assets/models/bottles.glb"
+## Flaschen zum Trinken auf der Theke (BarTap, ZIM-35): Abstand von Mitte zu Mitte (m)
+const BAR_TAP_GAP := 0.26
 ## Pflanzkübel samt Bepflanzung in Metern, Ursprung mittig unten, Grundfläche 2 × 2 m wie im Plan
 ## (tools/build_planter.py aus Meshys Modell). Fehlt die Datei, baut `_gardens()` den Platzhalter aus
 ## Steinquader und Heckenkugel.
@@ -4115,26 +4117,30 @@ func _common_rooms() -> void:
 				var stool := Geo.mesh(root, Geo.cylinder(0.18, 0.05, 8), Mat.psx(Color(0.4, 0.1, 0.1)), Vector3(p.x + out.x * 0.8, 0.7, p.y + out.y * 0.8))
 				Geo.mesh(stool, Geo.cylinder(0.04, 0.7, 5), _dark_wood, Vector3(0, -0.35, 0))
 				bar_spots.append(Vector3(p.x + out.x * 1.2, 0, p.y + out.y * 1.2))
-		# Flasche und Glas zum Trinken (3.7): mitten auf der Theke, zur Gästeseite hin
-		var tap := BarTap.new()
+		# Flasche und Glas zum Trinken (3.7): mitten auf der Theke, zur Gästeseite hin – je Sorte eine (ZIM-35)
 		var at := r.get_center() + out * (minf(r.size.x, r.size.y) / 2.0 - 0.18)
-		tap.position = Vector3(at.x, float(counter["top"]), at.y)
-		tap.rotation.y = atan2(-along.y, along.x)   # Flasche und Glas nebeneinander entlang der Theke
-		root.add_child(tap)
+		var counter_yaw := atan2(-along.y, along.x)   # Dosen, Tassen: nebeneinander entlang der Theke
+		for i in BarTap.ORDER.size():
+			var tap := BarTap.new()
+			tap.sort = BarTap.ORDER[i]
+			var tap_at := at + along * (i - (BarTap.ORDER.size() - 1) / 2.0) * BAR_TAP_GAP
+			tap.position = Vector3(tap_at.x, float(counter["top"]), tap_at.y)
+			tap.rotation.y = atan2(out.x, out.y)   # Flasche und Glas nebeneinander entlang der Theke, Etikett zu den Gästen
+			root.add_child(tap)
 		# Dosen zum Kaufen am Ende der Theke, gegenüber der Kerze
 		var cans := ResourceSpot.new().setup(Item.Kind.SODA_CAN, "Getränkedose", 6, 240.0).for_sale(1)
 		var can_at := at - along * (span / 2.0 + 0.2)
-		cans.rotation.y = tap.rotation.y
+		cans.rotation.y = counter_yaw
 		_supply(cans, Vector3(can_at.x, float(counter["top"]), can_at.y))
 		# Kaffee für Geld (3.11) zwischen Flasche und Stühlen auf der anderen Seite
 		var cups := ResourceSpot.new().setup(Item.Kind.COFFEE, "Tasse Kaffee", 6, 240.0).for_sale(1)
 		var cup_at := at + along * (span / 4.0)
-		cups.rotation.y = tap.rotation.y
+		cups.rotation.y = counter_yaw
 		_supply(cups, Vector3(cup_at.x, float(counter["top"]), cup_at.y))
 		# Tee daneben (3.12)
 		var teas := ResourceSpot.new().setup(Item.Kind.TEA, "Tasse Tee", 6, 240.0).for_sale(1)
 		var tea_at := cup_at + along * BAR_TEA_GAP
-		teas.rotation.y = tap.rotation.y
+		teas.rotation.y = counter_yaw
 		_supply(teas, Vector3(tea_at.x, float(counter["top"]), tea_at.y))
 	# Getränkekisten auf dem Boden vor dem Regal in Kühlraum und Lager (im Lager weg von den Ersatzbirnen)
 	for room: String in ["kuehlraum", "lager"]:

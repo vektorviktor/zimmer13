@@ -5,7 +5,8 @@ extends Node
 ##     Kernfiguren mit eigener (CORE). Ohne Frist, außerhalb des Beziehungsbudgets (6.18, 5), weil es sie nur einmal gibt.
 ##   · Kleine Bitten: selten (SMALL_PER_DAY im ganzen Hotel), höchstens MAX_SMALL zugleich, nach Lage – kahle Tür →
 ##     Lieblingskürbis (5.8, geschnitzt nur bei schnitzbaren Sorten; er stellt ihn vor seine Tür), abends eine Kerze,
-##     morgens Kaffee, Kinder Süßes, sonst etwas, das er mag. Frist: bis zum Ende des Spieltags, zählen zum Budget.
+##     morgens Kaffee, Kinder Süßes, abends manchmal ein Glas von der Bar in seiner Sorte (Rotwein für Weinfreunde,
+##     BarTap.favorite_of; ZIM-35), sonst etwas, das er mag. Frist: bis zum Ende des Spieltags, zählen zum Budget.
 ## Arten: item (bringen – erfüllt beim Schenken, DialogUI._gift), escort (zur Bar begleiten), message (einem Freund
 ## etwas ausrichten – Anlass im Gespräch mit ihm), game (eine Partie – erfüllt am Ende eines Spiels), reconcile (Streit
 ## unter Gästen, 6.16: die Entschuldigung an den anderen überbringen – wie message, aber vom Spieler angestoßen, ohne Frist
@@ -96,6 +97,9 @@ const SMALL := {
 	"coffee": {"item": Item.Kind.COFFEE, "money": 1, "task": "Einen Kaffee bringen",
 		"ask": "Ich krieg die Augen kaum auf. Bringst du mir einen Kaffee mit, wenn du an der Maschine vorbeikommst?",
 		"thanks": "Kaffee! Du rettest mir den Morgen. Hier, für den Becher."},
+	"glass": {"item": Item.Kind.GLASS, "task": "{name} ein {drink} von der Bar bringen",
+		"ask": "Weißt du, worauf ich jetzt Lust hätte? Auf ein {drink}. Bringst du mir eins von der Bar mit?",
+		"thanks": "Ah, ein {drink}! Genau richtig. Prost – und danke!"},
 	"sweets": {"item": Item.Kind.SWEETS, "task": "Süßigkeiten für {name}",
 		"ask": "Hast du Süßigkeiten? Mama sagt, ich darf nur eins. Eins!",
 		"thanks": "Jaaa! Danke!"},
@@ -359,7 +363,7 @@ func _complete(g: Guest, req: Dictionary) -> String:
 func _fits(req: Dictionary, item: Item) -> bool:
 	if item.kind != int(req["item"]):
 		return false
-	return req["variety"] == "" or item.variety == req["variety"]
+	return req["variety"] == "" or (item.flavor if item.kind == Item.Kind.GLASS else item.variety) == req["variety"]
 
 
 # --- Tagesende, Tod -----------------------------------------------------------------------------
@@ -565,6 +569,8 @@ func _make_small(g: Guest) -> Dictionary:
 		key = "sweets"
 	elif g.is_household_lead() and g.own_deco_near_door().size() < 2:
 		key = "pumpkin"
+	elif phase == Calendar.Phase.EVENING and absi(hash(g.id + str(Calendar.today()))) % 2 == 0:
+		key = "glass"   # Feierabend: ein Glas von der Bar (ZIM-35)
 	elif phase == Calendar.Phase.EVENING or phase == Calendar.Phase.NIGHT:
 		key = "candle"
 	elif phase == Calendar.Phase.MORNING:
@@ -584,6 +590,8 @@ func _small_of(g: Guest, key: String) -> Dictionary:
 		req["item"] = Item.Kind.CARVED_PUMPKIN if carve else Item.Kind.PUMPKIN
 		req["variety"] = fav
 		req["carved"] = carve
+	elif key == "glass":
+		req["variety"] = BarTap.favorite_of(g)   # Sorte des Glases (Item.flavor)
 	elif key == "likes":
 		var likes: Array = (g.profile.get("likes", []) as Array).filter(func(k: int) -> bool: return THINGS.has(k))
 		if likes.is_empty():
@@ -602,14 +610,15 @@ func _base(g: Guest, src: Dictionary, heart: bool) -> Dictionary:
 
 
 ## Platzhalter: {name} (Auftraggeber), {target}, {giver}, {fav}/{fav_nom} (Sorte im Akkusativ/Nominativ),
-## {carved}/{carved_ask}, {thing}
+## {carved}/{carved_ask}, {thing}, {drink} (Glas von der Bar in seiner Sorte)
 func _fill_texts(g: Guest, req: Dictionary) -> void:
 	var target := Game.social.guest_by_id(String(req["target"])) if req["target"] != "" else null
 	var fav := String(PumpkinKinds.data(req["variety"] if req["variety"] != "" else g.favorite_pumpkin())["name"])
 	# „Weißer Kürbis“ ist schon gebeugt: „einen weißen Kürbis“, „ein weißer Kürbis“
 	var extra := {"{fav_nom}": fav.replace("Weißer", "weißer"), "{fav}": fav.replace("Weißer Kürbis", "weißen Kürbis"),"{carved}": " (geschnitzt)" if req["carved"] else "",
 		"{carved_ask}": ", geschnitzt" if req["carved"] else (", ganz, nicht angeschnitten" if req["item"] == Item.Kind.PUMPKIN else ""),
-		"{thing}": String(THINGS.get(int(req["item"]), "Etwas"))}
+		"{thing}": String(THINGS.get(int(req["item"]), "Etwas")),
+		"{drink}": String(BarTap.SORTS.get(String(req["variety"]), BarTap.SORTS["wein"])["glass"])}
 	for key in ["task", "ask", "thanks", "say", "reply"]:
 		var text := _fill(String(req[key]), g, target)
 		for k in extra:
@@ -712,7 +721,8 @@ func debug(parts: PackedStringArray) -> void:
 
 
 func _forced_request(g: Guest, what: String) -> Dictionary:
-	var key: String = {"kuerbis": "pumpkin", "kerze": "candle", "kaffee": "coffee", "suess": "sweets", "mag": "likes"}.get(what, "")
+	var key: String = {"kuerbis": "pumpkin", "kerze": "candle", "kaffee": "coffee", "suess": "sweets", "mag": "likes",
+		"glas": "glass"}.get(what, "")
 	return make_heart(g) if key == "" else _small_of(g, key)
 
 

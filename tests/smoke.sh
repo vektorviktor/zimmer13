@@ -395,6 +395,11 @@ done <<'LIST'
 600|netz,gaeste|--netz=mila,edna,bruno,lob --trace
 400|budget,gaeste,beziehungen|--budget=edna --trace
 400|handel,gaeste|--handel=edna --trace
+500|bar,gaeste,kinder|--glas --trace
+300|bar,werfen|--pos=-6,0,-18,90,0 --wurf=1,glas --trace
+600|bar,speichern|--glas=halten --savetest --trace
+400|bar,bitten|--bitte=bruno,glas,erfuellen --trace
+600|bar,bitten,speichern|--bitte=bruno,glas,annehmen --savetest --trace
 300|neid,gaeste,beziehungen|--day=5 --neid --trace
 600|streit,gaeste,beziehungen|--streit=bruno,edna,gesehen --trace
 400|streit,gaeste|--streit=bruno,edna,freund --trace

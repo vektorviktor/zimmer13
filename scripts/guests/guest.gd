@@ -143,7 +143,7 @@ const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.SKULL, Item.Kind.SHEET_
 	Item.Kind.BAT_GARLAND, Item.Kind.CANDLE, Item.Kind.COBWEB, Item.Kind.SPIDER, Item.Kind.LEAVES, Item.Kind.PUMPKIN, Item.Kind.MINI_PUMPKIN]
 ## Essbare Geschenke (6.17), auch Getränkedosen und Kaffee (3.11, auch an der Kaffeemaschine): isst bzw. trinkt er nach
 ## ein paar Sekunden, statt sie heimzutragen
-const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN, Item.Kind.SODA_CAN, Item.Kind.COFFEE, Item.Kind.TEA]
+const FOOD_GIFTS := [Item.Kind.SWEETS, Item.Kind.ROAST_PUMPKIN, Item.Kind.SODA_CAN, Item.Kind.COFFEE, Item.Kind.TEA, Item.Kind.GLASS]
 ## Eine Tasse Kräutertee (3.12) nimmt so viel Angst – geschenkt oder am Wasserkocher
 const TEA_CALM := 15.0
 ## Kinder (Spielkonzept 6.13): Grundwert an Schwäche für den Lakengeist; so viel Angst bekommen die Eltern,
@@ -604,7 +604,11 @@ func _gift_step(delta: float) -> void:
 		item.queue_free()   # aufgegessen
 		if item.kind == Item.Kind.TEA:
 			fear = maxf(0.0, fear - TEA_CALM)   # Kräutertee beruhigt (3.12)
-		if randf() < 0.5:
+		elif item.kind == Item.Kind.GLASS:
+			drink(item.flavor)   # ein Glas von der Bar (3.7, ZIM-35)
+		if item.kind == Item.Kind.GLASS:
+			say("Prost!" if drunk < BarTap.DRUNK else "Auf dich … *hicks*")
+		elif randf() < 0.5:
 			say({Item.Kind.SWEETS: "Mmh.", Item.Kind.SODA_CAN: "Ahh, schön kalt.", Item.Kind.COFFEE: "Jetzt bin ich wach.",
 				Item.Kind.TEA: "Ah, das tut gut."}.get(item.kind, "Das war lecker."))
 	elif state in [State.IDLE, State.WALK]:
@@ -1396,12 +1400,13 @@ func _after_stagger() -> void:
 		_set_idle(randf_range(1.0, 3.0))
 
 
-## Ein Glas (Bar oder Runde vom Spieler, Spielkonzept 3.7): nimmt Angst, macht betrunken.
-func drink() -> void:
+## Ein Glas (Bar oder Runde vom Spieler, Spielkonzept 3.7): nimmt Angst, macht betrunken – je nach Sorte
+## (BarTap.SORTS, ZIM-35; „“ = ohne Sorte).
+func drink(sort: String = "") -> void:
 	if is_child():
 		return   # Kinder trinken nie (6.13)
-	drunk = minf(1.0, drunk + BarTap.DRINK)
-	fear = maxf(0.0, fear - BarTap.CALM * 100.0)
+	drunk = minf(1.0, drunk + BarTap.strength(sort))
+	fear = maxf(0.0, fear - BarTap.calm(sort) * 100.0)
 
 
 ## An der Bar: wer gerade daneben steht, trinkt mit – einer davon zählt als gemeinsame Tat (Spielkonzept 6.16).
@@ -1697,7 +1702,7 @@ func _arrive() -> void:
 			_set_idle(randf_range(15.0, 40.0))
 			# An der Bar wird meist etwas getrunken (3.7)
 			if drunk < BarTap.ENOUGH and not is_child() and randf() < BAR_DRINK and Game.social.builder.in_area(global_position, "bar"):
-				drink()
+				drink(BarTap.favorite_of(self))   # seine Sorte (ZIM-35)
 				_drink_with_someone()
 				if randf() < 0.4:
 					say("Prost!" if drunk < BarTap.DRUNK else "Noch eins … *hicks*")

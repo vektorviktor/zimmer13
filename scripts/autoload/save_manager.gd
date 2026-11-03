@@ -153,7 +153,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     social.requests.granted (erfüllte Wünsche je Gast und Zustand), an Gegenständen „cat_took“ (von einer Katze
 ##     verschleppt – wem es gehört); die Zustände selbst stehen in den Haltungen (after_ghost, doll_door, cat_took) –
 ##     ältere Stände laden weiter, ohne Wünsche aus schweren Momenten
-const VERSION := 73
+## 74: Gläser von der Bar (Spielkonzept 3.7; ZIM-35): neue Art Item.Kind.GLASS, die Sorte (bier, wein, schnaps) im
+##     Zusatz wie bei den Dosen – ältere Stände laden weiter, ohne Gläser
+const VERSION := 74
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0

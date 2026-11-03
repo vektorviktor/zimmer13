@@ -2095,10 +2095,23 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   verrät); `_sleep_credit(dt)` rechnet Schlaf mit Kaffee schwächer, mit Tee stärker an. Tasse zerbricht → Fleck
   „coffee“/„tea“ (gebaut wie Wachs). Gespeichert unter `player`: `coffee`, `coffee_low`, `caffeine`, `tea`. Debug
   `--kaffee=…`, `--tee=…`.
-- **Bar & Rausch** (`world/bar_tap.gd`, Spielkonzept 3.7): `BarTap` mitten auf der Theke; Rausch `drunk`, Stufen
+- **Bar & Rausch** (`world/bar_tap.gd`, Spielkonzept 3.7): drei `BarTap` mitten auf der Theke (`BarTap.ORDER`,
+  Abstand `LevelBuilder.BAR_TAP_GAP`, Etikett zur Gästeseite), je eine Sorte aus `BarTap.SORTS` (ZIM-35: Bier, Rotwein,
+  Schnaps – Preis, Rausch `drink`, Schock `calm`). [E] mit freien Händen → `Item.Kind.GLASS` mit der Sorte im Zusatz
+  (`flavor`, wie die Dosen; `Player.drink_glass` per Linksklick, zerbricht ab 1 m, `_shatter_glass`, Lärm
+  `glass_break`), mit vollen Händen gleich `Player.drink(quiet, sort)`. Ohne Sorte (Runde ausgeben, Trinkduell, Wahrheit
+  oder Pflicht) wie bisher `DRINK`/`CALM`/`PRICE`. Gäste: `Guest.drink(sort)` – an der Bar `BarTap.favorite_of`
+  (Weinfreunde Rotwein, sonst aus der ID meist Bier), geschenkte Gläser trinken sie aus (`FOOD_GIFTS`).
+  **Lieblingsgeschenk** `BarTap.likes_wine(guest)`: jeder `WINE_SHARE`-te Erwachsene aus `hash(id)`, ohne Zufall im
+  Generator, Kinder nie (lehnen in `DialogUI._gift` ab, kaufen nicht – `_buy_price` 0). **Bitte** „glass“ (6.14,
+  `GuestRequests.SMALL`): abends bei jedem zweiten Gast statt der Kerze, Sorte in `variety`, `_fits` vergleicht
+  `flavor`. **Modelle** `world/bar_drinks.gd` (`BarDrinks`): Flaschen und Gläser aus Profilen gedreht (`Geo.lathe`,
+  Meshes und Materialien geteilt), Glas `StandardMaterial3D` durchsichtig mit Fresnel-Rand, Inhalt mit
+  `render_priority` −1 davor, Etiketten mit UVs und Tangenten in den Atlas `textures/bar_labels_*` (`Mat.pbr_model`,
+  erzeugt von `tools/bar_labels.gd`: Papier, Schrift in Cinzel, geprägte Goldfolie). Rausch `drunk`, Stufen
   `TIPSY`/`DRUNK`, `BarTap.sway(drunk)`. Spieler: Kopf rollt, Maus folgt verzögert (`_look_lag`), Stolpern; betrunken
-  halluziniert man. Gäste trinken an der Bar. Gespeichert: `player.drunk`/`hangover`, Gast `drunk`. Debug
-  `--drunk=n[,gast]`.
+  halluziniert man. Gespeichert: `player.drunk`/`hangover`, Gast `drunk`, Gläser als Gegenstände (Speicherstand 74).
+  Debug `--drunk=n[,gast]`, `--glas[=halten]`, `--wurf=1,glas`, `--bitte=gast,glas`; Rauchtest `bar`.
 - **Taschenlampe** (`world/flashlight.gd`, `world/uv_mark.gd`): `Flashlight` hängt als Kind am Item, Zustand in
   `create_extra()` (`"c=0.42;uv;m=uv;on"`). Bewusst **ein `SpotLight3D` außerhalb von `light_source`** – zählt nicht
   für Helligkeit/Abschreckung und nicht als `item.lit` (sonst bläst das Monster sie aus …). Auffälligkeit über

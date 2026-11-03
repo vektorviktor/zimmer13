@@ -61,6 +61,7 @@ const NOISE := {
 	"can":        {"range": 3.0,  "sound": "hiss",   "volume": 0.5, "caption": "[Zischen – eine Dose]"},    ## Getränkedose aufreißen
 	"coffee":     {"range": 6.0,  "sound": "hiss",   "volume": 0.35, "caption": "[Die Kaffeemaschine gurgelt]"},   ## Kaffeemaschine mahlt und gurgelt, alle 5 s (3.11)
 	"cup_break":  {"range": 5.0,  "sound": "glass_break",   "volume": 0.3, "caption": "[Eine Tasse zerbricht]"},    ## Tasse zerbricht (3.11, 3.12)
+	"glass_break": {"range": 5.0, "sound": "glass_break",   "volume": 0.3, "caption": "[Ein Glas zerbricht]"},     ## Glas von der Bar (3.7, ZIM-35)
 	"kettle":     {"range": 4.0,  "sound": "hiss",   "volume": 0.25, "caption": "[Ein Wasserkocher rauscht]"},   ## Wasserkocher rauscht, alle 5 s (3.12)
 	"kettle_whistle": {"range": 8.0, "sound": "hiss", "volume": 0.5, "caption": "[Ein Wasserkocher pfeift]"},   ## Wasserkocher pfeift leise, wenn er fertig ist
 	"keys":       {"range": 3.0,  "sound": "jingle", "volume": 0.6, "caption": "[Schlüssel klirren]"},    ## Schlüssel an den Bund

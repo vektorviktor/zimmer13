@@ -925,6 +925,10 @@ func _gift(item: Item) -> void:
 		_say("Kaffee? Den darf ich nicht trinken.")   # Kinder trinken nie Kaffee (6.13, 3.11)
 		_show_main()
 		return
+	if guest.is_child() and item.kind == Item.Kind.GLASS:
+		_say("Das ist doch Alkohol! Den darf ich nicht.")   # Kinder trinken nie (6.13, 3.7)
+		_show_main()
+		return
 	if item.got_from == guest.id:
 		_say("Das hast du doch von mir. Behalt es ruhig.")
 		_show_main()
@@ -935,6 +939,9 @@ func _gift(item: Item) -> void:
 	# Kürbis in seiner Lieblingssorte (Spielkonzept 5.8): freut ihn wie etwas, das er mag, und noch ein bisschen mehr
 	var is_pumpkin := kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN, Item.Kind.ROAST_PUMPKIN]
 	var favorite := is_pumpkin and item.variety == guest.favorite_pumpkin()
+	# Rotwein ist manchen ein Lieblingsgeschenk (3.7, ZIM-35) – freut sie wie etwas, das sie mögen, und noch mehr
+	var wine := kind == Item.Kind.GLASS and item.flavor == "wein" and BarTap.likes_wine(guest)
+	favorite = favorite or wine
 	# Limo und Tee freuen jedes Kind (6.13, 3.12)
 	var liked := kind in (guest.profile["likes"] as Array) or favorite or (guest.is_child() and kind in [Item.Kind.SODA_CAN, Item.Kind.TEA])
 	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + (8.0 if favorite else 0.0) + 3.0
@@ -962,6 +969,8 @@ func _gift(item: Item) -> void:
 	if not guest.receive_gift(Game.player.give_away(item)):
 		if item.deco_strength > 0.0:
 			guest.stock[kind] = int(guest.stock.get(kind, 0)) + 1
+		elif kind == Item.Kind.GLASS:
+			guest.drink(item.flavor)   # gleich ausgetrunken (3.7)
 		item.queue_free()
 	var fav_name := String(PumpkinKinds.data(guest.favorite_pumpkin())["name"])
 	if kind == Item.Kind.ROAST_PUMPKIN:
@@ -972,6 +981,8 @@ func _gift(item: Item) -> void:
 	elif fitting:
 		_say("Genau das hab ich jetzt gebraucht. Danke – wirklich." if kind != Item.Kind.CANDLE
 			else "Eine Kerze … dann ist es heute Nacht nicht ganz dunkel. Danke.")
+	elif wine:
+		_say("Rotwein! Woher weißt du, dass ich den so gern trinke? Auf dich.")
 	elif favorite:
 		_say("Ein %s! Mein Lieblingskürbis – woher wusstest du das?" % fav_name)
 	elif filler:
@@ -1182,7 +1193,7 @@ func _sell_price(kind: int) -> int:
 ## Was der Gast dir zahlt (6.4, Abstimmung 3.11., ZIM-34): kein Mindestpreis mehr – Wertloses (Preis 0, kaputt) und
 ## Hoteleigentum (NO_GIFT) kauft keiner, Füllmaterial bringt FILLER_SELL. 0 = kauft er nicht.
 func _buy_price(item: Item) -> int:
-	if item.kind in NO_GIFT:
+	if item.kind in NO_GIFT or (item.kind == Item.Kind.GLASS and guest.is_child()):   # Kinder kaufen keinen Alkohol
 		return 0
 	var bonus := _tier_factor(1.0, 1.0, 1.05, 1.15, 1.25)
 	var share := FILLER_SELL if item.is_filler() else 1.0
@@ -1254,6 +1265,8 @@ func _kind_name(kind: int) -> String:
 			return "Ei"
 		Item.Kind.BAR_GAME:
 			return "Spiel aus dem Spieleschrank"
+		Item.Kind.GLASS:
+			return "Glas von der Bar"
 	return "Etwas"
 
 
