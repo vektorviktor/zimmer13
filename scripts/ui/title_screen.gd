@@ -100,6 +100,7 @@ func _ready() -> void:
 	_menu = Control.new()
 	add_child(_menu)
 	_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	get_viewport().size_changed.connect(_reposition)   # Fenstergröße oder Schrift & Menüs geändert
 	if not Settings.warning_shown or not Settings.age_notice_shown:
 		_show_warning()
 	else:
@@ -159,10 +160,11 @@ func _show_main() -> void:
 func _reposition() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
+	var h := get_viewport().get_visible_rect().size.y   # 270, bei kleinerer Schrift (Settings.ui_scale) mehr
 	for child in _menu.get_children():
 		var panel := child as Control
 		panel.reset_size()
-		panel.position = Vector2(20.0, clampf(160.0 - panel.size.y / 2.0, 66.0, 265.0 - panel.size.y))
+		panel.position = Vector2(20.0, clampf(h * 0.59 - panel.size.y / 2.0, 66.0, h - 5.0 - panel.size.y))
 
 
 func _show_new_game() -> void:
@@ -276,6 +278,7 @@ func _draw_corridor() -> void:
 	var s := _scene
 	var w := 480.0
 	var h := 270.0
+	s.draw_set_transform(Vector2.ZERO, 0.0, s.size / Vector2(w, h))   # gezeichnet für 480 × 270, gestreckt aufs Bild
 	s.draw_rect(Rect2(0, 0, w, h), Color.BLACK)
 	var far := Rect2(VP.x - 14, VP.y - 22, 28, 40)   # Flurende
 	# Decke, Wände, Boden als Trapeze zum Flurende

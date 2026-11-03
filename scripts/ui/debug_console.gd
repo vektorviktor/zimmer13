@@ -106,6 +106,7 @@ const COMMANDS := {
 	"fps": ["", "Bilder pro Sekunde ein/aus (wie F10)"],
 	"nur-stockwerk": ["", "nur das Stockwerk der Kamera zeichnen, die übrigen ausblenden – ein/aus (zum Messen)"],
 	"grafik": ["niedrig|mittel|hoch", "Grafikstufe (8.4) nur für diese Sitzung, samt Spiegelungen der Stufe"],
+	"schrift": ["n", "Schrift & Menüs (8.4) auf n % (60 … 100) nur für diese Sitzung"],
 	"schatten-bias": ["[b[,n]]", "Bias (und Normal Bias) aller Lampen – Godot 0,1 bzw. 1,0; ohne Wert der Standard"],
 	"lichtdiagnose": ["[position|licht|aus]", "Lichtdiagnose (wie F2): Position, dazu Lampen, Schattenatlas und Leck-Zeiger – ohne Wert weiterschalten"],
 	"atlas": ["[a,b,c,d]", "Plätze je Quadrant des Schattenatlas (1, 4, 16, 64, 256; Godot 4,4,16,64) – ohne Wert die nächste Aufteilung (wie F11)"],

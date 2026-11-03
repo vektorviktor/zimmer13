@@ -5,7 +5,8 @@ extends VBoxContainer
 
 signal closed
 
-## Höhe der scrollbaren Liste – im Startmenü kleiner, dort ist unter dem Titel weniger Platz
+## Höhe der scrollbaren Liste bei Schrift und Menüs 100 % – im Startmenü kleiner, dort ist unter dem Titel weniger
+## Platz. Bei kleineren Stufen (Settings.ui_scale) wächst sie mit, damit die Liste gleich viel vom Bild einnimmt.
 var list_height := 175.0
 
 var _calibration: Array[ColorRect] = []
@@ -15,12 +16,14 @@ var _capture := []
 var _key_note: Label
 ## Haken der Spiegelungen – die Grafikstufe setzt ihn mit
 var _reflections: CheckBox
+var _scroll: ScrollContainer
 
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 3)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(320, list_height)
+	_scroll = scroll
+	_fit_height()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)
 	var list := VBoxContainer.new()
@@ -34,6 +37,7 @@ func _ready() -> void:
 	_check(list, "Vollbild", "fullscreen")
 	_check(list, "VSync", "vsync")
 	_slider(list, "Sichtfeld (FOV)", "fov", 60.0, 120.0, 1.0)
+	_ui_scale_row(list)
 	_graphics_row(list)
 	list.add_child(UiKit.wrap_label("Niedrig für Onboard-Grafik: geringere Auflösung, weniger Schatten, keine Spiegelungen, kürzere Sicht.", 8))
 	_reflections = _check(list, "Spiegelungen", "reflections")
@@ -163,6 +167,30 @@ func _slider(list: VBoxContainer, text: String, key: String, min_value: float, m
 		Settings.set_value(key, v)
 		if key == "gamma":
 			_update_calibration())
+
+
+## Schrift und Menüs (Settings.UI_SCALES): wirkt sofort, die Liste wächst mit.
+func _ui_scale_row(list: VBoxContainer) -> void:
+	var row := _row(list, "Schrift & Menüs")
+	var pick := OptionButton.new()
+	pick.add_theme_font_size_override("font_size", 9)
+	pick.get_popup().add_theme_font_size_override("font_size", 9)
+	var current := 0
+	for i in Settings.UI_SCALES.size():
+		var f: float = Settings.UI_SCALES[i]
+		pick.add_item("%d %%%s" % [roundi(f * 100.0), " (größte)" if i == 0 else ""])
+		if absf(f - float(Settings.ui_scale)) < absf(float(Settings.UI_SCALES[current]) - float(Settings.ui_scale)):
+			current = i
+	pick.select(current)
+	pick.custom_minimum_size = Vector2(120, 0)
+	pick.item_selected.connect(func(i: int) -> void:
+		Settings.set_value("ui_scale", Settings.UI_SCALES[i])
+		_fit_height())
+	row.add_child(pick)
+
+
+func _fit_height() -> void:
+	_scroll.custom_minimum_size = Vector2(320, roundf(list_height / clampf(float(Settings.ui_scale), 0.5, 1.0)))
 
 
 ## Grafikstufe (Settings.GRAPHICS): wirkt sofort und stellt die Spiegelungen auf den Wert der Stufe.

@@ -27,7 +27,10 @@ Konstanten im Code, hier nur deren Namen.
 - **Node-Klassen** werden mit `XYZ.new().setup(...)` erzeugt (`setup` gibt `self` zurück), danach
   `position`/`rotation` setzen und `add_child`. Gegenstände über die Fabrik `Item.create(kind, extra)`.
 - **Engine:** Godot 4.7 (Forward+), GDScript mit Typangaben. 3D in Fensterauflösung (auf den Grafikstufen Mittel und
-  Niedrig darunter, siehe 8 „Grafikstufen“); die Bedienoberfläche ist immer auf 480×270 ausgelegt.
+  Niedrig darunter, siehe 8 „Grafikstufen“); die Bedienoberfläche ist auf 480×270 ausgelegt und wird aufs Fenster
+  hochskaliert (`canvas_items`), mal `Settings.ui_scale` („Schrift & Menüs“, `UI_SCALES` 1,0 … 0,6, Standard 0,8 –
+  `content_scale_factor`). Unter 1 ist die Fläche entsprechend größer (bei 0,6 etwa 800×450): Bögen sitzen über Anker
+  in der Mitte, nichts darf feste Koordinaten am rechten oder unteren Rand annehmen (`get_visible_rect()` nehmen).
 - **Grafik: Maßstab ist der realistische Look** (Spielkonzept 9.2). Neue Materialien, Shader und Modelle: Texturen in
   voller Größe mit Mipmaps und linearem Filter, Normal-/Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf.
   Ältere Stellen mit kleinen Texturen oder `Closest`-Filter sind kein Vorbild; die Namen `psx_*` und `Mat.psx` sind
@@ -286,7 +289,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 ### Autoloads (`project.godot`)
 | Name | Datei | Aufgabe |
 |------|-------|---------|
-| `Settings` | `scripts/autoload/settings.gd` | Einstellungen, `user://settings.cfg`, Signal `changed`; Grafikstufen `GRAPHICS` (8 „Grafikstufen“); Vollbild steht nicht in `KEYS` (Start immer im Fenster); `key_bindings` = Abweichungen der Tastenbelegung (`Keys`) |
+| `Settings` | `scripts/autoload/settings.gd` | Einstellungen, `user://settings.cfg`, Signal `changed`; Grafikstufen `GRAPHICS` (8 „Grafikstufen“); Schrift & Menüs `ui_scale`/`UI_SCALES` (1 „Engine“); Vollbild steht nicht in `KEYS` (Start immer im Fenster); `key_bindings` = Abweichungen der Tastenbelegung (`Keys`) |
 | `Game` | `scripts/autoload/game.gd` | Referenzen auf alle Systeme, Geld, Meldungen, Tastenbelegung, Szenenwechsel, Screenshot-Debug |
 | `SaveManager` | `scripts/autoload/save_manager.gd` | Speichern/Laden, Autosave, Tagebuchsatz |
 

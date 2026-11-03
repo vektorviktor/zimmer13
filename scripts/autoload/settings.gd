@@ -7,6 +7,9 @@ signal changed
 const PATH := "user://settings.cfg"
 ## Auf diese Größe ist die Bedienoberfläche ausgelegt (hochskaliert); 3D in Fensterauflösung
 const UI_SIZE := Vector2i(480, 270)
+## Stufen für Schrift und Menüs (ui_scale, Spielkonzept 8.4): Anteil der vollen Hochskalierung auf UI_SIZE.
+## 1,0 ist die größte Stufe – darunter hat die Oberfläche mehr Platz und alles wirkt kleiner.
+const UI_SCALES := [1.0, 0.9, 0.8, 0.7, 0.6]
 
 # Bild
 var gamma := 1.0                 ## Helligkeit (0,6 … 1,8)
@@ -15,6 +18,7 @@ var vsync := true
 var fov := 90.0                  ## Sichtfeld senkrecht in Grad (60 … 120)
 var reflections := true          ## Spiegelungen auf glatten Flächen (SSR: Lobbymarmor, Pool, Tapetenlack) – kostet Leistung
 var graphics := 2                ## Grafikstufe: Index in GRAPHICS (0 Niedrig, 1 Mittel, 2 Hoch) – set_graphics
+var ui_scale := 0.8              ## Schrift und Menüs: eine der UI_SCALES (Window.content_scale_factor)
 # Ton
 var master_volume := 1.0
 var music_volume := 1.0
@@ -33,7 +37,7 @@ var spider_blobs := false        ## Arachnophobie: Spinnen als schlichte Kugeln 
 var warning_shown := false       ## Hinweis zur Lichtempfindlichkeit schon gezeigt
 var age_notice_shown := false    ## Hinweis mit Altersempfehlung schon gezeigt
 
-const KEYS := ["gamma", "vsync", "fov", "reflections", "graphics",
+const KEYS := ["gamma", "vsync", "fov", "reflections", "graphics", "ui_scale",
 	"master_volume", "music_volume", "effects_volume", "mouse_sensitivity", "invert_y",
 	"crouch_toggle", "key_bindings", "flicker_intensity", "look_pull", "bite_pulse", "subtitles", "spider_blobs", "warning_shown", "age_notice_shown"]
 
@@ -65,6 +69,8 @@ var _applied_graphics := {}
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	load_settings()
+	for arg in OS.get_cmdline_user_args():   # schon für den Titelbildschirm
+		set_ui_scale_arg(arg)
 	apply()
 
 
@@ -100,7 +106,7 @@ func apply() -> void:
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync else DisplayServer.VSYNC_DISABLED)
 	window.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	window.content_scale_size = UI_SIZE
-	window.content_scale_factor = 1.0
+	window.content_scale_factor = clampf(float(ui_scale), UI_SCALES[-1], UI_SCALES[0])
 	RenderingServer.global_shader_parameter_set("reflections", 1.0 if reflections else 0.0)   # Spiegelanteil (psx_photo)
 	var g := graphics_level()
 	if g != _applied_graphics:   # nur beim Wechsel – apply() läuft bei jedem Reglerzug
@@ -129,6 +135,14 @@ func set_graphics(level: int, store := true) -> void:
 	apply()
 	if store:
 		save_settings()
+
+
+## Debug --schrift=n: Schrift & Menüs auf n % (60 … 100) nur für die Sitzung. false, wenn arg nicht passt.
+func set_ui_scale_arg(arg: String) -> bool:
+	if not arg.begins_with("--schrift=") or not arg.substr(10).is_valid_float():
+		return false
+	ui_scale = clampf(arg.substr(10).to_float() / 100.0, UI_SCALES[-1], UI_SCALES[0])
+	return true
 
 
 ## Geänderte Tastenbelegung (InputMap) ins Profil übernehmen und speichern.

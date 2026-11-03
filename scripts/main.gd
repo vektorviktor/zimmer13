@@ -275,6 +275,7 @@ extends Node3D
 ##   --bericht[=s]               Lichtbericht nach s Sekunden (Standard 1): Bild und Text nach user://berichte/ (wie F4)
 ##   --grafik=niedrig|mittel|hoch  Grafikstufe (8.4) nur für die Sitzung setzen, samt Spiegelungen der Stufe – nichts wird
 ##                               gespeichert
+##   --schrift=n                 Schrift & Menüs (8.4) auf n % (60 … 100) nur für die Sitzung, auch im Titelbildschirm
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --gedraenge                 alle 10 s „[Gedränge]“: wie viele stehende Gäste einander näher als 0,6 m sind und wie
@@ -1334,6 +1335,11 @@ func run_debug(arg: String) -> bool:
 			return false
 		ShadowBudget.set_bias(get_tree(), parts[0].to_float(), parts[1].to_float() if parts.size() > 1 else -1.0)
 		Game.say("Schatten: Bias %s%s" % [parts[0], (", Normal Bias " + parts[1]) if parts.size() > 1 else ""], 2.0)
+	elif arg.begins_with("--schrift="):
+		if not Settings.set_ui_scale_arg(arg):
+			return false
+		Settings.apply()
+		Game.say("Schrift & Menüs: %d %%" % roundi(Settings.ui_scale * 100.0), 2.0)
 	elif arg.begins_with("--grafik="):
 		var level := ["niedrig", "mittel", "hoch"].find(_arg_value(arg, "--grafik"))
 		if level < 0:
