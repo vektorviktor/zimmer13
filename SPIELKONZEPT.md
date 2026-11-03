@@ -1205,7 +1205,8 @@ und ein freier Platz in der Nähe ist: mit **50 % Chance für 1–3 Spielminuten
 ### 3.3 Truhen
 - Truhen sind **physische Behälter** in der Welt (kein Inventar-Ersatz im Menü): Deckel auf → man sieht die Gegenstände darin liegen → einzeln herausnehmen / hineinlegen.
 - Stehen in Zimmern, Fluren, Keller, Lobby.
-- Ideen: **abschließbar** (Schlüssel nötig), begrenzte Plätze, eigene Truhe im Zimmer als sicheres Lager.
+- **Nicht abschließbar (entschieden 2026-11-03, 10 Frage 3h):** Die abschließbare Zimmertür schützt schon (6.19), und
+  Zimmer 13 hat seine eigene Truhe als sicheres Lager. Begrenzte Plätze bleiben eine bloße Idee.
 - Auch Gäste nutzen Truhen – und können aus fremden Truhen klauen.
 
 ### 3.4 Verstecken (inspiriert von Roblox *Doors*)
@@ -1436,7 +1437,7 @@ Kürbis** für sich.
 
 ### 3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)
 Der Spieler hat einen **Körper**: Er sieht sich im Spiegel – und später sehen ihn Mitspieler, falls es einmal Koop
-gibt (10, Frage 9). In der Ich-Perspektive sieht man ihn (vorerst) nicht, nur **im Spiegel** und als **Schatten**
+gäbe (nein: nur Single-Player, 10 Frage 9). In der Ich-Perspektive sieht man ihn (vorerst) nicht, nur **im Spiegel** und als **Schatten**
 an Lampen und Kerzen.
 - **Erwachen am Waschbecken (neues Spiel):** Das Bild ist schwarz, Wasser läuft, ein Klatsch ins Gesicht. Dann
   blendet das Bad von Zimmer 13 langsam ein, erst verschwommen, dann klar, und der Blick hebt sich vom Becken zum
@@ -1655,9 +1656,9 @@ Es gibt **keine globale Vorwarnung**. Das Monster verrät sich über drei Signal
 
 ### 4.5 Wahrnehmung: „Es weiß, dass du es gesehen hast“
 - Das Monster registriert, wenn der Spieler es **bemerkt** hat.
-- Mögliche Auslöser (zu entscheiden):
-  - Spieler schaut es länger als ~1 Sekunde direkt an (Monster im Sichtkegel der Kamera, Sichtlinie frei)
-  - Spieler reagiert sichtbar (rennt weg, leuchtet es an)
+- **Auslöser (entschieden 2026-11-03, 10 Frage 3a):** Hinschauen reicht – etwa 0,8 s direkt anschauen (Monster im
+  Sichtkegel der Kamera, Sichtlinie frei), so gebaut (`monster.gd`, `_update_noticed`). Sichtbares Reagieren
+  (wegrennen, anleuchten) ist kein eigener Auslöser; Anleuchten ist kein Sonderfall.
 - Folge: Das Monster wechselt in einen **Suchmodus** und durchsucht gezielt die **Umgebung des Spielerzimmers** – Flur, Nachbartüren, dunkle Ecken.
 - Dadurch entsteht Spannung: Der eigene sichere Ort wird zum Ziel. Gut platzierte Deko vor der Tür wird jetzt wirklich auf die Probe gestellt.
 
@@ -5984,12 +5985,15 @@ statt Koordinatenlisten im LevelBuilder).
 Die Nummern bleiben, auf sie wird verwiesen; beantwortete Fragen stehen in den Kapiteln.
 
 1. **Flucht:** Ziel ist, dem Horrorhotel zu entkommen. Wie genau? (Schlüssel an Halloween 2.1, Rätsel, Hilfe der Gäste?)
-3a. **„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren (4.5)?
-3h. **Truhen:** Abschließbar? Gibt es eine eigene Truhe im Spielerzimmer (3.3)?
+3a. ~~**„Bemerkt“-Auslöser:** Reicht Hinschauen, oder muss der Spieler sichtbar reagieren?~~ **Entschieden 2026-11-03:**
+   Hinschauen reicht, etwa 0,8 s (`monster.gd`, `_update_noticed`), wie gebaut. Anleuchten ist kein Sonderfall (4.5).
+3h. ~~**Truhen:** Abschließbar? Eigene Truhe im Spielerzimmer?~~ **Entschieden 2026-11-03:** Truhen lassen sich nicht
+   abschließen – die abschließbare Zimmertür schützt schon (6.19), und Zimmer 13 hat seine Truhe (3.3).
 4. **Story:** Das Abkommen und Josef (2.3). Offen: was das Ding unter dem Hotel vor 1987 war.
-8. **Umfang:** Kleines Halloween-Projekt (Jam-Größe) oder größeres Spiel?
-9. **Single-Player** – oder später Koop denkbar?
-10. **Sprache:** Deutsch, Englisch, beides?
+8. ~~**Umfang:** Kleines Halloween-Projekt (Jam-Größe) oder größeres Spiel?~~ **Entschieden 2026-11-03:** größeres Spiel.
+9. ~~**Single-Player** – oder später Koop denkbar?~~ **Entschieden 2026-11-03:** nur Single-Player, kein Koop (3.9).
+10. ~~**Sprache:** Deutsch, Englisch, beides?~~ **Entschieden 2026-11-03:** Deutsch zuerst, Englisch später. Die Texte
+    werden nach und nach an einer Stelle gesammelt (statt verstreut im Code), damit die Übersetzung später möglich ist.
 
 ---
 
