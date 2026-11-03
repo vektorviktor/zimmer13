@@ -5005,6 +5005,10 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
 > Zarge in der Laibung, glatte Seitenbekleidung, darüber Leiste, Friesbrett und Abdeckung mit Kehle;
 > Fenster mit Fensterbank, Schürze und Rahmen um die Scheibe. Profil-Kit per Blender-Skript (9.2).
 
+> **Unter den Türen (2026-11-03, ZIM-132, gebaut):** keine Holzschwelle mehr. Der Boden beider Räume läuft bis zur
+> Ebene des Türblatts, dort liegt eine schmale Übergangsschiene aus gebürstetem Messing (Material wie die
+> Lichtschalter), bündig bzw. höchstens 5 mm hoch. NavMesh und Salzlinie (5.13) bleiben, wie sie sind.
+
 - **Blender:** Maßeinheit Meter, 1 Blender-Einheit = 1 m = 1 Godot-Einheit. Modulares Kit z. B. im 1-m- oder 2-m-Raster, Wandhöhe 3,5 m als Standard.
 - **Eigenes Zimmer:** sicherer Rückzugsort, Lager für Deko, **einziger Speicherpunkt** (Tagebuch auf dem Schreibtisch, siehe 8.5).
 - **Atmosphäre:** lange Flure (ideal für Silhouetten am Ende), schwaches Licht, alte Tapeten, knarrende Böden.

@@ -53,6 +53,8 @@ extends Node3D
 ##   --spion[=leer|echt|falsch|auge]   vor der Tür von Zimmer 13 durch den Spion sehen (7.17), nach 6 s wieder [E] –
 ##                               echt/falsch: dabei klopft es (Gast bzw. falsche Stimme), auge: der Leviathan steht davor
 ##                               und beugt sich an die Linse
+##   --schwelle[=flur|zimmer|nah]   Tür von Zimmer 13 offen, du siehst auf die Messingschiene darunter (ZIM-132);
+##                               mit --trace: unter wie vielen Türen kein Boden liegt
 ##   --prank=art[,zimmer]        Streich (6.13): das erste Kind mit Eltern steht vor der Tür (Standard Zimmer 13) und
 ##                               spielt ihn – leaves, topple (Kürbis steht daneben), pumpkin, candle (steht damit in der Hand
 ##                               2 m davor und wirft), fire (brennende Kerze, daneben Laub und Lakengespenst, 5.11)
@@ -1009,6 +1011,41 @@ static func _arg_parts(arg: String, name: String, default := "") -> PackedString
 ## --spion[=leer|echt|falsch|auge] (7.17): Spieler steht in Zimmer 13 vor der Tür und zielt auf den Spion, nach 1 s [E].
 ## echt/falsch: dabei klopft es (wie --knock), auge: der Leviathan steht seitlich im Flur und beugt sich an die Linse.
 ## Ohne auge drückt er nach 6 s noch einmal [E] (Hinsehen endet).
+## --schwelle[=flur|zimmer|nah] (ZIM-132): Tür von Zimmer 13 offen, du stehst davor (im Flur bzw. im Zimmer) und siehst
+## schräg hinab auf die Messingschiene, nah: dicht darüber. Mit --trace: unter wie vielen Türen kein Boden liegt.
+func _debug_threshold(where: String) -> void:
+	var info: Dictionary = Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]
+	var door: Door = info["door"]
+	var out := door.corridor_dir()
+	var at := door.global_position + door.global_transform.basis.x * door.width / 2.0
+	var side := -out if where == "zimmer" else out
+	var p := Game.player
+	p.global_position = at + side * (0.35 if where == "nah" else 1.1) + Vector3(0, 0.05, 0)
+	p.rotation.y = atan2(side.x, side.z)
+	p.head.rotation.x = deg_to_rad(-76.0 if where == "nah" else -38.0)
+	door.set_open(true, true, true)
+	if Game.tracing:
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			var space := p.get_world_3d().direct_space_state
+			var missing := 0
+			var doors := get_tree().get_nodes_in_group("doors")
+			for node in doors:
+				var d := node as Door
+				var mid := d.global_position + d.global_transform.basis.x * d.width / 2.0
+				# beide Hälften (genau auf der Fuge trifft der Strahl keins der Stücke), von oben bis unter den Boden;
+				# was niemand öffnet, darf seinen Boden auch auf der Ebene der Decken haben
+				for shift: float in [-0.05, 0.05]:
+					var at_side: Vector3 = mid + d.global_transform.basis.z * shift
+					var q := PhysicsRayQueryParameters3D.create(at_side + Vector3(0, 0.5, 0), at_side - Vector3(0, 0.3, 0),
+						1 if d.monster_can_open else 1 | LevelBuilder.LAYER_CEILING)
+					var hit := space.intersect_ray(q)
+					if hit.is_empty() or absf((hit["position"] as Vector3).y - d.global_position.y) > 0.01:
+						missing += 1
+						print("[Schwelle] kein Boden bei %s (%s)" % [at_side.snapped(Vector3.ONE * 0.01),
+							d.room_no if d.room_no != "" else d.room_id])
+			print("[Schwelle] %d Türen, %d Hälften ohne Boden darunter" % [doors.size(), missing]))
+
+
 func _debug_peephole(what: String) -> void:
 	var info: Dictionary = Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]
 	var door: Door = info["door"]
@@ -2166,6 +2203,8 @@ func run_debug(arg: String) -> bool:
 				(Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]["door"] as Door).set_open(true))
 	elif _is_arg(arg, "--spion"):
 		_debug_peephole(_arg_value(arg, "--spion", "leer"))
+	elif _is_arg(arg, "--schwelle"):
+		_debug_threshold(_arg_value(arg, "--schwelle", "flur"))
 	elif arg.begins_with("--gastanruf="):
 		get_tree().create_timer(1.0).timeout.connect(Game.phones.debug_guest_call.bind(_arg_parts(arg, "--gastanruf")))
 	elif arg.begins_with("--call=") or arg.begins_with("--dial="):

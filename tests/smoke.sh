@@ -89,6 +89,9 @@ judge() {
 	if grep -q "navcheck\] [0-9]* Orte unerreichbar" "$log"; then
 		problems+=" $(grep -o '[0-9]* Orte unerreichbar' "$log")"
 	fi
+	if grep -q "^\[Schwelle\] [0-9]* Türen, [1-9][0-9]* Hälften ohne Boden" "$log"; then
+		problems+=" $(grep -o '[0-9]* Hälften ohne Boden' "$log") unter Türen"
+	fi
 	if [ -n "$problems" ]; then
 		printf 'fail\tFEHLER  %s:%s   (%s)\n' "$name" "$problems" "$log"
 	elif [ "$code" != 0 ]; then
@@ -245,6 +248,7 @@ done <<'LIST'
 300|spion,gaeste|--spion=echt --trace
 300|spion|--spion=falsch --trace
 300|spion,monster|--spion=auge --trace
+300|schwelle,level|--schwelle --trace
 300|grafik|--grafik=niedrig --menu=settings
 300|grafik|--grafik=mittel --trace
 300|grafik,ui|--grafik=hoch --menu=settings

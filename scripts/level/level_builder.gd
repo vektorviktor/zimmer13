@@ -2080,13 +2080,48 @@ func _floors_and_ceilings() -> void:
 	# Über einem Luftraum (Lobby, Partyraum) schließt die Decke dieses Stockwerks die Halle nach oben ab
 	for rc in _map["voids"]:
 		_ceiling_slab(_rect(rc), _ceiling)
-	# Schwellen: unter jeder Tür liegt die Wand – ohne Boden dort risse das NavMesh ab
+	_door_floors()
+
+
+## Unter jeder Tür (ZIM-132, Entscheidung 3.11.): Statt einer Schwelle läuft der Boden beider Räume durch die Wand bis
+## zur Ebene des Türblatts (Wandmitte), je Seite ein Stück T / 2 tief im Material des Raums – ohne Boden dort risse
+## das NavMesh ab. Auf der Fuge liegt die Messingschiene (DoorStrip). Türen, die niemand öffnen kann (auch das
+## Monster nicht), bekommen ihren Boden auf der Ebene der Decken – sonst planten Gäste Wege hindurch.
+## Die Räume enden an der Wandfläche, die Stücke stoßen also nur an – keine doppelte Fläche, kein Flimmern.
+func _door_floors() -> void:
 	for d in _doors:
 		var door: Door = d["door"]
-		if door.monster_can_open:
-			var into: Vector3 = d["into"]
-			var size := Vector3(door.width, 0.2, T) if absf(into.z) > 0.5 else Vector3(T, 0.2, door.width)
-			Geo.solid(root, size, (d["pos"] as Vector3) + Vector3(0, -0.1, 0), _wood)
+		var into: Vector3 = d["into"]
+		var pos: Vector3 = d["pos"]
+		var c := Vector2(pos.x, pos.z)
+		var n := Vector2(into.x, into.z)
+		var along := Vector2(-n.y, n.x) * door.width / 2.0
+		var layer := 1 if door.monster_can_open else LAYER_CEILING
+		for side: float in [-1.0, 1.0]:
+			var a := c + along
+			var b := c - along + n * side * T / 2.0
+			_floor_rect([minf(a.x, b.x), minf(a.y, b.y), maxf(a.x, b.x), maxf(a.y, b.y)],
+				_floor_material_at(c + n * side * (T / 2.0 + 0.1)), layer)
+		DoorStrip.add(root, door.width - 2.0 * DoorStrip.END_GAP, pos, atan2(into.x, into.z),
+			hash(c.snapped(Vector2(0.1, 0.1))))
+
+
+## Boden, der an der Stelle p liegt (wie _floor): Flächen des Plans zuerst, sonst der Raum; draußen Stein.
+func _floor_material_at(p: Vector2) -> Material:
+	var kind := ""
+	for patch in _map["floor_patches"]:
+		for rc in patch["rects"]:
+			if _rect(rc).has_point(p):
+				kind = String(patch["kind"])
+	var place := _place_at(p)
+	if kind == "" and not place.is_empty():
+		kind = _look(String(place["kind"]), String(place.get("id", "")))
+	match kind:
+		"corridor":
+			return _lobby_floor if _level == 0 and _lobby.has_point(p) else _carpet
+		"", "garden", "gravel", "terrace", "balcony", "pool_water":
+			return _stone if _level >= 0 else _cellar_floor
+	return _floor_material(kind)
 
 
 ## Deckenplatte über r (H … H + 0,2) auf der Ebene der Decken.

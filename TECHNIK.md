@@ -272,6 +272,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `year_plaque*.png` (eigenes Set) | Jahres-Plaketten der Fotorahmen (`YearPlaque`, `PhotoWall.PhotoFrame`, ZIM-134) | Ziffernsatz 1024² wie bei `room_plate*.png`, aber nur Füller und Ziffern 0–9 (Cinzel, 6,5 mm hoch, 16 px/mm, 2 mm Rand je Zelle). Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/year_plaque.gd` (nutzt Rastern, Abstand und Weichzeichnen aus `tools/room_plate.gd`): Gold poliert mit feinen Riefen, Anlauf zu den Kanten, Ziffern als V-Gravur (0,12 mm tief), dunkel ausgelegt. Blech 40 × 12 mm, 0,8 mm, Fase 0,35 mm; Vorderseite aus Zellen-Vierecken (Füller, Ziffern, Füller), die Füller gestreckt. `METALLIC` `YearPlaque.METALLIC`. Lage der Zellen aus `YearPlaque.layout()` – nach Änderungen an Maßen oder Schrift das Werkzeug neu laufen lassen |
 | `frosted_glass_normal.png`, `frosted_glass_rough.png` (eigenes Set) | Milchglas (`Mat.frosted_glass`: Milchglastüren) | Aus `tools/frosted_glass.gd` (fester Startwert), nahtlos: satiniertes Glas – feine Ätzkörnung (0,35 mm) und flache Walzwellen als Normal Map, Rauheit um 0,42 mit geätzten Flecken; Farbe mit Deckkraft 0,8 und Gegenlicht (`backlight`) im Material, dreiseitig in Modellkoordinaten, Kachel 0,12 m |
 | `switch_plate*.png` (eigenes Set) | Lichtschalter (`LightSwitch`): Platte, Kanten und Wippe | Altmessing mit Kordelrand, Rille, Schlitzschrauben, Bürstung und Patina – Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/switch_plate.gd` (fester Startwert); über die UVs gespannt (`mesh_uv`, Platte `_plate()` mit eigener Vorderseite, Kanten und Wippe aus `PLAIN_UV`), `METALLIC`. Plastisch sind nur Platte, schwarzer Rahmen und die eckige Wippe |
+| `door_strip*.png` (eigenes Set) | Übergangsschiene unter den Türen (`DoorStrip`, ZIM-132) | Dasselbe Altmessing wie `switch_plate*.png` (Farben, Bürstriefen, Patina aus `tools/door_strip.gd`, fester Startwert), aber 128 × 1024 für 40 × 320 mm (3,2 px/mm): quer das abgewickelte Profil – Mitte blank gelaufen, Patina zu den Kanten, Schmutz in der Fuge –, längs die Bürstriefen und feine Kratzer quer von den Schuhen. Längs nahtlos (alles Rauschen auf einem Zylinder gelesen), über die UVs gespannt (`mesh_uv`), `METALLIC` wie die Schalter |
 
 ## 2. Aufbau zur Laufzeit
 
@@ -624,8 +625,17 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   `TraceMark._spread_wall`). Achtung `Vector4` rechnet in 32 Bit – die Brüstung 0,9 kommt als 0,8999… an.
 - **Böden** (`_floor`): ein `Geo.solid` je Planrechteck, Textur in Weltkoordinaten (das Muster läuft über die Stöße).
   Ein Flurrechteck, das in die Lobby ragt, wird an deren Rand geteilt. Verschlossene Zimmer haben einen Boden auf der
-  Ebene der Decken (5) – nicht im NavMesh, sonst planten Gäste und Monster Wege durch gesperrte Türen. Unter jeder
-  benutzbaren Tür liegt eine Schwelle – ohne Boden in der Wandlücke risse das NavMesh ab.
+  Ebene der Decken (5) – nicht im NavMesh, sonst planten Gäste und Monster Wege durch gesperrte Türen.
+- **Unter den Türen** (`_door_floors`, ZIM-132, Entscheidung 3.11.): keine Schwelle mehr. Die Räume enden an der
+  Wandfläche; in der Wandlücke liegt je Seite ein Bodenstück `T / 2` tief bis zur Ebene des Türblatts (Wandmitte), im
+  Boden des Raums dahinter (`_floor_material_at`: Fläche des Plans, sonst Raum wie `_floor`, draußen Stein) – ohne
+  Boden dort risse das NavMesh ab. Die Stücke stoßen nur an (keine doppelte Fläche). Türen, die niemand öffnet (auch
+  das Monster nicht), haben ihn auf der Ebene der Decken. Auf der Fuge die Übergangsschiene `DoorStrip`
+  (`scripts/world/door_strip.gd`): gewölbtes Profil 36 mm breit, Mitte 4 mm, Kante 0,8 mm über dem Boden, eine Lippe
+  2 mm in die Fuge (man sieht nirgends hindurch, keine Fläche liegt auf der des Bodens), Enden 8 mm vor der Zarge,
+  ohne Kollision (Schritte, NavMesh, Salzlinie unberührt). Mesh je Länge und Versatz der Karten (`VARIANTS`), Material
+  wie die Schalter. Im Dachgeschoss laufen weiter die Bohlen durch (`_attic_surfaces`), ohne Schiene. Debug
+  `--schwelle[=flur|zimmer|nah]`, mit `--trace` prüft es unter allen Türen beide Hälften auf Boden.
 - **Tapete, Fototexturen, Optik** siehe 1 „Texturen“ und 8 „Optik“.
 
 ### Öffnungen, Zimmer, Einrichtung
@@ -2925,9 +2935,9 @@ selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Ra
     Schrittweite (`--fixed-fps 60 --time-scale 3`: jedes Bild genau 0,05 s Spielzeit – ohne holt Godot bei langsamen
     Bildern Physikschritte nach und die Läufe ziehen sich in einer Abwärtsspirale; Kosten ≈ simulierte Spielzeit, darum
     je Szenario nur so lange wie nötig) und meldet Skriptfehler, NaN, festhängende Gäste („kommt nicht weiter“),
-    Zeitüberschreitung, Savetest ohne „alles gleich“, unerreichbare Orte im Navcheck; danach die Tests unten und den
-    Titelbildschirm. Absturz oder Hängen nach der Endmarke `[Ende]` (`Game._exit_tree`, nur headless) ist das offene
-    Problem oben und zählt nicht. Neue Mechanik mit Debug-Parameter → Zeile mit Stichworten; „schnell“ nur
+    Zeitüberschreitung, Savetest ohne „alles gleich“, unerreichbare Orte im Navcheck, Türen ohne Boden (`--schwelle`);
+    danach die Tests unten und den Titelbildschirm. Absturz oder Hängen nach der Endmarke `[Ende]` (`Game._exit_tree`,
+    nur headless) ist das offene Problem oben und zählt nicht. Neue Mechanik mit Debug-Parameter → Zeile mit Stichworten; „schnell“ nur
     ausnahmsweise (die Stufe soll unter einer Minute bleiben). Am Ende fasst es Laufzeit-`WARNING`s von Godot
     zusammen (zählen nicht als Fehler).
   - **Selbstprüfungen** `tests/checks.py` (Python, ohne Godot, wenige Sekunden): laufen bei jeder Stufe vor den
