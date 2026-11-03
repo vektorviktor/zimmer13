@@ -155,7 +155,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     ältere Stände laden weiter, ohne Wünsche aus schweren Momenten
 ## 74: Gläser von der Bar (Spielkonzept 3.7; ZIM-35): neue Art Item.Kind.GLASS, die Sorte (bier, wein, schnaps) im
 ##     Zusatz wie bei den Dosen – ältere Stände laden weiter, ohne Gläser
-const VERSION := 74
+## 75: Puppenmaske entschärft (Spielkonzept 5.19; ZIM-102): director.doll_mask entfällt – ältere Stände laden weiter,
+##     das alte Feld wird übergangen
+const VERSION := 75
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0

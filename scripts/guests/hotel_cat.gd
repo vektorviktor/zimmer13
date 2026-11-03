@@ -8,6 +8,8 @@ extends CharacterBody3D
 ## Tragen (Spielkonzept 6.11): Erst streicheln, dann nimmt [E] sie auf den Arm (scheue erst, wenn sie dich
 ## kennen). Auf dem Arm schnurrt sie und beruhigt; [G] setzt sie ab, nach einer Weile windet sie sich heraus.
 ## Naht das Monster, faucht sie, kratzt und springt weg.
+## Kesselkatzen-Maske (Spielkonzept 5.19, leichte Wirkung): Trägt der Spieler sie in der Nähe, läuft sie ihm nach und
+## schnurrt – nur Stimmung (_mask_lure).
 ## Modell: tools/build_cat.py (Laufen als Animation, Stehen/Sitzen/Liegen per Code wie beim Monster).
 
 enum State { IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED }
@@ -33,6 +35,9 @@ const CARRY_TIME := Vector2(15.0, 40.0)
 const CARRY_CALM := 0.02
 ## Scheue Katzen lassen sich erst ab so oft Streicheln hochnehmen
 const CARRY_TRUST := 3
+## Kesselkatzen-Maske: so nah (gleiches Stockwerk) lockt sie, so lange läuft die Katze danach noch mit
+const MASK_LURE := 10.0
+const MASK_FOLLOW := 12.0
 ## Zimmer-Arten ohne Liegeplätze für Katzen
 const UNINHABITABLE := ["laundry", "abandoned", "derelict", "locked"]
 ## Persönlichkeit: schläfrig (Nickerchen), scheu (weicht beim Streicheln aus), neugierig (streift,
@@ -671,7 +676,29 @@ func _favourite_guest() -> Guest:
 	return g if g != null and not g.dead and g.hiding == null else null
 
 
+## Kesselkatzen-Maske (5.19): Spieler trägt sie, lebt und ist nah auf demselben Stockwerk.
+func _mask_lure() -> bool:
+	var p := Game.player
+	if p == null or p.dead or p.hiding != null or p.mask != "cat":
+		return false
+	var to := p.global_position - global_position
+	return absf(to.y) < 2.0 and to.length() < MASK_LURE
+
+
 func _follow_step(delta: float) -> void:
+	if _mask_lure():
+		_timer = MASK_FOLLOW
+		_purr_timer -= delta
+		if _purr_timer <= 0.0:
+			_purr_timer = randf_range(4.0, 8.0)
+			Game.noise("cat_purr", global_position, self)
+		var p := Game.player
+		if global_position.distance_to(p.global_position) < 1.2:
+			_stop(delta)
+			_face(p.global_position, delta)
+		else:
+			_move_to(p.global_position, WALK_SPEED * 1.6, delta)
+		return
 	var g := _favourite_guest()
 	_timer -= delta
 	if g == null or _timer <= 0.0:
@@ -784,6 +811,10 @@ func _wait_at_door(delta: float) -> void:
 # --- Umgebung: Gäste streicheln, Deko umwerfen ----------------------------------------------
 
 func _check_surroundings() -> void:
+	if _perch < 0 and state in [State.IDLE, State.WALK] and _mask_lure():
+		_perch_goal = -1
+		state = State.FOLLOW   # Kesselkatzen-Maske: nachlaufen (_follow_step)
+		_timer = MASK_FOLLOW
 	if state in [State.IDLE, State.SLEEP, State.FOLLOW] and _guest_pet <= 0.0 and Game.social:
 		for g in Game.social.living_guests():
 			if g.state == Guest.State.IDLE and g.fear < 50.0 and g.hiding == null \

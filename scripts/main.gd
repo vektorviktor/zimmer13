@@ -378,8 +378,11 @@ extends Node3D
 ##   --costumes[=art]            alle Gäste sofort verkleidet (sonst ab dem 25.): jeder sein Kostüm, art = sheet|witch|
 ##                               pumpkin|cape für alle gleich (5.9)
 ##   --disguise                  Bettlaken übergeworfen (5.9): Sicht durch Augenlöcher, Gäste erkennen dich nur aus der Nähe
-##   --maske[=id]                verbotene Masken (5.19): vor dem Maskenboard in Zimmer 13 stehen · id (pumpkin|doll): diese
-##                               Maske gleich aufgesetzt (Kürbismann: Spaßschwelle tief, Puppe: nächstes Urteil auf 13)
+##   --maske[=id[,pruefen]]      verbotene Masken (5.19): vor dem Maskenboard in Zimmer 13 stehen · id (pumpkin|doll|
+##                               scarecrow|crow|cat): diese Maske gleich aufgesetzt (Kürbismann: Spaßschwelle tief; die drei
+##                               ohne Gegenstand nur im Debug ohne Stift) · pruefen: leichte Wirkung prüfen – doll: ein Kind
+##                               in der Lobby flüstert und hält Abstand, scarecrow: Krähen lassen Münze und Messer liegen,
+##                               crow: Fütterung zählt doppelt, cat: eine Hotelkatze läuft nach („[Maske] … ok“/„FEHLER“)
 ##   --drunk=n[,gast]            n Gläser getrunken (du, mit Gast: er) – ab 2 angetrunken, ab 3 betrunken (3.7)
 ##   --weather=klar|regen|gewitter|boe|blitz|gestalt|blut   Wetter sofort in voller Stärke (7.8) · boe: Gewitter und gleich
 ##                       eine heftige Böe · blitz: gleich ein Blitz
@@ -3344,9 +3347,15 @@ func _debug_cook(parts: PackedStringArray) -> void:
 	Game.player.head.rotation.x = deg_to_rad(-25.0)
 
 
-## --maske[=id]: Vor das Maskenboard in Zimmer 13 (Spielkonzept 5.19), Blick darauf; mit id die Maske vom Stift
-## gleich aufgesetzt.
-func _debug_masks(id: String) -> void:
+## --maske[=id[,pruefen]]: Vor das Maskenboard in Zimmer 13 (Spielkonzept 5.19), Blick darauf; mit id die Maske vom
+## Stift gleich aufgesetzt – die Masken ohne Gegenstand direkt (nur Debug). pruefen: _debug_mask_effect.
+func _debug_masks(value: String) -> void:
+	var parts := value.split(",")
+	var id := parts[0]
+	if parts.size() > 1 and parts[1] == "pruefen":
+		_debug_masks(id)
+		_debug_mask_effect(id)
+		return
 	var hooks := get_tree().get_nodes_in_group("mask_hooks")
 	if hooks.is_empty():
 		Game.say("Kein Maskenboard in Zimmer 13.", 3.0)
@@ -3366,7 +3375,64 @@ func _debug_masks(id: String) -> void:
 			hook.interact(Game.player)
 			Game.player.put_on_mask()
 			return
+	if id in ["scarecrow", "crow", "cat"]:
+		Game.player.set_mask(id)   # die Maske gibt es noch nicht als Gegenstand (5.19: Versteck fehlt)
+		return
 	Game.say("Keine Maske „%s“ am Haken." % id, 3.0)
+
+
+## Leichte Wirkung der Masken prüfen (5.19, 2026-11-03), Meldung „[Maske] … ok“ bzw. „FEHLER“.
+func _debug_mask_effect(id: String) -> void:
+	var p := Game.player
+	var report := func(what: String, ok: bool) -> void:
+		print("[Maske] %s: %s" % [what, "ok" if ok else "FEHLER"])
+	match id:
+		"doll":
+			var kid: Guest = null
+			for g: Guest in Game.social.living_guests():
+				if g.is_child() and g.hiding == null and g.state != Guest.State.SLEEP:
+					kid = g
+					break
+			if kid == null:
+				report.call("Puppe: kein Kind wach", false)
+				return
+			p.global_position = Game.social.builder.lobby_center + Vector3.UP * 0.1
+			kid.global_position = p.global_position - p.global_transform.basis.z * 2.0
+			kid._set_idle(30.0)
+			await get_tree().create_timer(8.0).timeout
+			var d := kid.global_position.distance_to(p.global_position)
+			print("[Maske] Puppe: %s %.1f m vom Träger" % [kid.display_name, d])
+			report.call("Puppe: Kind still und flüstert", kid.doll_hushed() or d >= Guest.DOLL_HUSH)
+			report.call("Puppe: Kind hält Abstand", d >= Guest.DOLL_KEEP - 0.5)
+		"scarecrow":
+			var nest := Game.crows.nest.size()
+			Game.crows.debug_show("stehlen")
+			await get_tree().create_timer(15.0).timeout
+			report.call("Vogelscheuche: Krähen stehlen nicht", Game.crows.nest.size() == nest
+				and Game.crows._carry.all(func(c) -> bool: return c == null))
+		"crow":
+			Game.crows.debug_show("futter")
+			var before := Game.crows.favor
+			await get_tree().create_timer(12.0).timeout
+			var gain := Game.crows.favor - before
+			print("[Maske] Krähe: Ruf %+.2f nach der Fütterung" % gain)
+			report.call("Krähe: Fütterung zählt doppelt", gain > Crows.FAVOR_FEED * 1.5)
+		"cat":
+			var cats := get_tree().get_nodes_in_group("cats")
+			if cats.is_empty():
+				report.call("Kesselkatze: keine Hotelkatze", false)
+				return
+			var cat: HotelCat = cats[0]
+			p.global_position = Game.social.builder.lobby_center + Vector3.UP * 0.1
+			cat.place_in_front_of(p)
+			cat.global_position = p.global_position - p.global_transform.basis.z * 5.0 + Vector3.UP * 0.05
+			p.rotation.y += PI   # weggehen: die Katze soll nachkommen
+			await get_tree().create_timer(2.0).timeout
+			p.global_position += -p.global_transform.basis.z * 2.0
+			await get_tree().create_timer(10.0).timeout
+			var d := cat.global_position.distance_to(p.global_position)
+			print("[Maske] Kesselkatze: %s %.1f m hinter dir, Zustand %s" % [cat.display_name, d, HotelCat.State.keys()[cat.state]])
+			report.call("Kesselkatze: Katze läuft nach", cat.state == HotelCat.State.FOLLOW and d < 3.0)
 
 
 ## --fremdbett=id[,beziehung] | frei[,h] (Spielkonzept 3.6): im Bett eines Gastes, der gleich schlafen geht – oder in

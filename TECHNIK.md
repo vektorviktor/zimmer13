@@ -1109,8 +1109,7 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
   `_reappear` beim nächsten Urteil. `DoorContest.on_doll_placed` schreibt das erste Urteil ins Tagebuch.
 - Gespeichert unter `doll` (Lage, Drehung, `verdict`, `at_room`, `pending`, `gone`).
 - **Frist und Urteil** (`MonsterDirector`): Ist das nächste Urteil im Plan näher als sein `lead` (`DOLL_LEAD`),
-  `_place_doll()`: `_judge(_weakest_door())`, Grollen. `_weakest_door()`: zuerst `doll_mask` (Puppenmaske getragen,
-  5.19), sonst unter `judgeable_rooms()` (Zimmer 13 und Zimmer mit einem Erwachsenen, der keine Kernfigur ist) die mit
+  `_place_doll()`: `_judge(_weakest_door())`, Grollen. `_weakest_door()`: unter `judgeable_rooms()` (Zimmer 13 und Zimmer mit einem Erwachsenen, der keine Kernfigur ist) die mit
   der wenigsten Deko (Gleichstand `DOLL_DECO_TIE`, die bisherige Tür bleibt), dann die dunkelste (`DOLL_LIGHT_TIE`),
   dann Zufall; alle `DOLL_RECHECK` neu (Nachbessern). Beim Aufbruch `_condemned_in(zimmer)`: der Spieler bzw. der
   Bewohner mit der höchsten `Guest.weakness()`. **Grollen:** `SynthAudio.rumble` steigt bis zum Ende der Frist.
@@ -2263,10 +2262,16 @@ anderes versetzt (Bett, Versteck), bleibt er dort. **Nicht gespeichert:** `SaveM
   **Tragen:** Linksklick mit der Maske in der Hand, [G] mit leeren Händen nimmt sie ab (nicht zusammen mit dem Laken);
   Overlay `shaders/mask_overlay.gdshader` (`Hud.MASK_VIEWS`: Innenfarbe, Stern- oder Mandelaugen); `recognized_by`
   wie unter dem Laken. **Wirkung:** Kürbismann `PumpkinMan.threshold()` = `MASK_THRESHOLD` statt `FUN_THRESHOLD`, in
-  `_pick` ist der Träger sein erstes Ziel; Puppe `MonsterDirector.mark_doll_mask(zimmer)` → `doll_mask`, das
-  `_weakest_door()` vor allen anderen nimmt, bis `_end_raid` das Urteil dort vollstreckt hat. Gespeichert:
-  `player.mask`, `mask_hooks` (je Masken-ID, ob sie hängt – nicht nach Reihenfolge), `director.doll_mask`. Debug
-  `--maske[=id]`, Rauchtest `masken`.
+  `_pick` ist der Träger sein erstes Ziel. **Leichte Wirkungen** (ZIM-102, je eine Abfrage auf `player.mask`, nur
+  solange getragen): Puppe `Guest.doll_hushed()` – Kinder bis `DOLL_HUSH` lachen und toben nicht, schenken nichts,
+  `say` setzt „*flüstert*“ davor, `_keep_from_doll` geht unter `DOLL_KEEP` ein Stück weg (nur IDLE/WALK);
+  Vogelscheuche `Crows.scarecrow_masked()` – kein `_look_for_shiny`, kein Ankrächzen; Krähe – steht der Träger bei
+  liegendem Futter näher als `Crows.MASK_TABLE` am Tisch, zählt `_eat` den Ruf doppelt (`_crow_food`, nicht
+  gespeichert); Kesselkatze `HotelCat._mask_lure()` – bis `MASK_LURE` auf demselben Stockwerk wechselt sie in
+  FOLLOW, läuft dem Spieler nach und schnurrt. Die frühere Puppenwirkung (`doll_mask`, nächstes Urteil auf den
+  Träger) ist entfallen (Version 75). Gespeichert: `player.mask`, `mask_hooks` (je Masken-ID, ob sie hängt – nicht
+  nach Reihenfolge). Debug `--maske[=id[,pruefen]]` (die drei Masken ohne Gegenstand setzt nur der Debug auf),
+  Rauchtest `masken`.
 
 ### Geld (Spielkonzept 6.4, ZIM-34)
 - `Game.money` (Start 5), Gäste `Guest.money` (aus dem Profil, kein Nachschub). Münzen (`Item.Kind.COINS`, Wert im

@@ -3685,6 +3685,12 @@ Kürbisse ohne Modell bleiben, wie sie sind. Debug: `--fratzen`.
 > erkennen einen nur aus der Nähe), mit [G] abnehmen, zurückhängen – und ihre Wirkung auf den Spieler. Bis es die Verstecke gibt, hängen die beiden
 > **von Anfang an** an ihren Haken. Es fehlen: die übrigen sechs Masken, Verstecke und Zettel, der Ball, Verleihen,
 > Rückkehr an den Haken, Trophäen.
+> **Leichte Wirkungen gebaut (2026-11-03, ZIM-102):** Puppe, Vogelscheuche, Krähe und Kesselkatze wie in der Tabelle,
+> jeweils nur solange man die Maske trägt; die alte Puppenwirkung (Urteil auf den Träger) ist entfernt. Kleinste
+> Lösungen: Kinder „in der Nähe“ = 8 m, Abstand 4 m; „hacken“ gibt es bei den Krähen nicht, die Vogelscheuche nimmt
+> darum das Stehlen und das Ankrächzen weg; doppelt zählt eine Fütterung, wenn man mit der Krähenmaske am Tisch stand,
+> solange das Futter dort lag; Hotelkatzen bis 10 m auf demselben Stockwerk. Vogelscheuche, Krähe und Kesselkatze gibt
+> es noch nicht als Gegenstand (Verstecke fehlen) – nur im Debug. Offen: Kesselbuch mit fehlender Seite (U2, ZIM-15).
 
 **Grundidee:** Dreimal im Monat lädt das Hotel zum **Maskenball** in den Partyraum. Alle wollen dort die schönste
 Maske tragen, denn es gibt einen Preis – und die prächtigsten Masken im Haus sind die **verbotenen**: acht Masken der

@@ -231,8 +231,6 @@ var debug_doom := ""             ## --doll=s,zimmer: die Puppe urteilt immer üb
 var doom_room := ""
 var condemned = null
 var raid_room := ""
-## Puppenmaske (5.19): Zimmer ihres Trägers – vor dessen Tür liegt beim nächsten Urteil die Puppe ("" = keins)
-var doll_mask := ""
 var _route: Array[String] = []
 var _raid_kills := 0
 var _raiding := false            ## unterwegs zu Türen, die es aufbricht (bis die letzte durchsucht ist)
@@ -1504,12 +1502,6 @@ func _place_doll(left: float) -> void:
 		print("[Puppe] Urteil in %.0f s – Zimmer %s" % [left, doom_room])
 
 
-## Puppenmaske aufgesetzt (Player.put_on_mask, Spielkonzept 5.19): Das nächste Urteil trifft dieses Zimmer; läuft
-## schon eine Frist, wechselt die Puppe beim nächsten Nachbessern (DOLL_RECHECK) dorthin.
-func mark_doll_mask(no: String) -> void:
-	doll_mask = no
-
-
 func _judge(no: String) -> void:
 	if no == "" or no == doom_room:
 		return
@@ -1611,8 +1603,6 @@ func forecast_room() -> String:
 func _weakest_door() -> String:
 	if rooms.has(debug_doom):
 		return debug_doom
-	if rooms.has(doll_mask):
-		return doll_mask   # wer die Puppenmaske trug, wird geurteilt – egal wie gut seine Tür geschmückt ist (5.19)
 	var decos := _deco_items()
 	var entries: Array[Dictionary] = []
 	for no in judgeable_rooms():
@@ -1719,8 +1709,6 @@ func _end_raid(release_doll: bool) -> void:
 	if release_doll:
 		if doom_room != "" and Game.doll:
 			Game.doll.release()
-		if doom_room == doll_mask:
-			doll_mask = ""   # das Urteil ist vollstreckt
 		doom_room = ""
 		_rumble_total = 0.0
 	raid_room = ""
@@ -2410,7 +2398,6 @@ func save_state() -> Dictionary:
 		# Puppe (5.5): Frist, Urteil und Türen
 		"rumble_total": _rumble_total, "doom_room": doom_room, "raiding": _raiding,
 		"route": ([raid_room] if raid_room != "" else []) + _route, "raid_kills": _raid_kills,
-		"doll_mask": doll_mask,
 		# versteckte Werte (4.9): abklingende Boni, heiße Stellen, stärkste Lockung
 		"boldness_bonus": boldness_bonus,
 		"hot_spots": hot_spots.map(func(h: Dictionary) -> Array:
@@ -2460,7 +2447,6 @@ func load_state(d: Dictionary) -> void:
 	_no_break_in = bool(d.get("no_break_in", false))
 	_rumble_total = float(d.get("rumble_total", 0.0))
 	doom_room = String(d.get("doom_room", ""))
-	doll_mask = String(d.get("doll_mask", ""))
 	boldness_bonus = float(d.get("boldness_bonus", 0.0))
 	hot_spots.clear()
 	for h in d.get("hot_spots", []):

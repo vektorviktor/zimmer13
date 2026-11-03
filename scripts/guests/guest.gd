@@ -162,6 +162,8 @@ const CHILD_WEAKNESS := 0.5
 const CHILD_SCARE_FEAR := 40.0
 const CHILD_ROMP := 0.35
 const CHILD_LAUGH := Vector2(6.0, 14.0)
+const DOLL_HUSH := 8.0      ## so nah wirkt die Puppenmaske auf Kinder (Spielkonzept 5.19) …
+const DOLL_KEEP := 4.0      ## … so viel Abstand halten sie zum Träger
 const SLEEPLESS_CHANCE := 0.3
 const SLEEPLESS_TIME := Vector2(120.0, 240.0)
 const CHILD_GIFT := 0.2
@@ -344,6 +346,7 @@ var _resume_follow := 0.0  ## Begleiter im Gespräch: so lange kommt er danach n
 var guarding := false      ## hält auf deine Bitte Wache in Zimmer 13 (Spielkonzept 6.18) – geht mit, dann State.WATCH
 var _romp := false         ## Kind rennt aus Spaß (oder zu Mama und Papa) – Lärm wie beim Rennen
 var _laugh := 0.0
+var _doll_check := 0.0     ## Kind unter der Puppenmaske: bis zum nächsten Abstandnehmen
 var _awake_left := 0.0     ## schlafloses Kind: so lange bleibt es noch wach
 var _reach := 0.0          ## Schmücken (5.9): so lange noch die Arme hoch zur Wand
 
@@ -712,6 +715,8 @@ func end_talk() -> void:
 func say(text: String) -> void:
 	if is_hoarse():
 		text = "*heiser* " + text   # Würgemale (6.17)
+	if doll_hushed():
+		text = "*flüstert* " + text   # Puppenmaske (5.19)
 	if Game.player and Game.player.global_position.distance_to(global_position) < 14.0:
 		Game.say("%s: „%s“" % [display_name, text], 4.0)
 
@@ -2634,6 +2639,13 @@ func untold_experience() -> Dictionary:
 func _child_step(delta: float) -> void:
 	if sleepless:
 		_awake_left -= delta
+	if doll_hushed():
+		_romp = false
+		_doll_check -= delta
+		if _doll_check <= 0.0:
+			_doll_check = 1.0
+			_keep_from_doll()
+		return
 	if not ((_romp and fear < 30.0) or state == State.PARTY):
 		return
 	_laugh -= delta
@@ -2656,6 +2668,25 @@ func _tell_grown_ups(pos: Vector3) -> void:
 			g.remember("child_saw", pos, display_name)
 
 
+## Puppenmaske (Spielkonzept 5.19, 2026-11-03): Trägt der Spieler sie in der Nähe, wird ein Kind still – kein Lachen,
+## kein Toben, keine Geschenke, es flüstert nur und hält Abstand. Keine eigene Mechanik, nur diese Abfrage.
+func doll_hushed() -> bool:
+	var p := Game.player
+	return is_child() and not dead and p != null and not p.dead and p.mask == "doll" \
+		and p.global_position.distance_to(global_position) < DOLL_HUSH
+
+
+## Zu nah am Träger der Puppenmaske: ein paar Schritte von ihm weg – nur beim Herumstehen und Gehen.
+func _keep_from_doll() -> void:
+	var away := global_position - Game.player.global_position
+	away.y = 0.0
+	if away.length() >= DOLL_KEEP or not state in [State.IDLE, State.WALK] or hiding or is_following():
+		return
+	if away.length() < 0.1:
+		away = Vector3.FORWARD
+	_walk_to(global_position + away.normalized() * (DOLL_KEEP + 1.5 - away.length()) + _jitter(0.5), State.WALK)
+
+
 ## Nach einem Schreck (oder umgerannt): rennend zu Mama oder Papa, sonst ins eigene Zimmer.
 func _run_to_parent() -> void:
 	var parent := parent_guest()
@@ -2670,9 +2701,9 @@ func _run_to_parent() -> void:
 ## 2026-10-25). true = beschäftigt.
 func _child_approach() -> bool:
 	var p := Game.player
-	if p == null or p.dead or p.hiding != null or p.in_dialog or not can_see_actor(p) or not p.recognized_by(self):
+	if p == null or p.dead or p.hiding != null or p.in_dialog or doll_hushed() or not can_see_actor(p) or not p.recognized_by(self):
 		return false
-	var d := p.global_position.distance_to(global_position)
+	var d :=p.global_position.distance_to(global_position)
 	if d < 4.0 and p.held == null and gift_cooldown <= 0.0 and Social.tier(self) >= Social.Tier.NICE and randf() < CHILD_GIFT:
 		for kind in [Item.Kind.LEAVES, Item.Kind.CANDLE]:
 			if int(stock.get(kind, 0)) > 0:

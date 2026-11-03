@@ -1109,7 +1109,8 @@ func take_off_sheet() -> void:
 
 ## Verbotene Maske aus der Hand aufsetzen (Spielkonzept 5.19): Sicht durch ihre Augenlöcher, Gäste erkennen einen
 ## nur aus der Nähe wie unter dem Laken – aber keine Bedrohung lässt sich täuschen, die eigene ruft man herbei
-## (MaskModel, Kürbismann: PumpkinMan.threshold und _pick, Puppe: MonsterDirector.doll_mask).
+## (MaskModel, Kürbismann: PumpkinMan.threshold und _pick). Die übrigen vier wirken nur leicht, solange man sie trägt
+## (2026-11-03): Puppe Guest.doll_hushed, Vogelscheuche und Krähe Crows, Kesselkatze HotelCat._mask_lure.
 func put_on_mask() -> void:
 	if disguised:
 		Game.say("Unter dem Laken passt keine Maske.", 3.0)
@@ -1118,8 +1119,6 @@ func put_on_mask() -> void:
 	consume_held()
 	set_mask(id)
 	Game.say("Du setzt dir die %s auf. ([G] mit leeren Händen: abnehmen)" % MaskModel.display_name(id), 4.0)
-	if id == "doll" and Game.director:
-		Game.director.mark_doll_mask(LevelBuilder.PLAYER_ROOM)
 
 
 ## Abnehmen: Die Maske kommt zurück in die Hand.

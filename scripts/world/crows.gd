@@ -12,6 +12,8 @@ extends Node3D
 ## der Messingschlüssel von 1987 (OLD_KEY, 6.19 (7)). Zwei Wege an den Inhalt: hineinwerfen (ein Stück fällt, laut, der
 ## Ruf fällt stark) oder füttern – Futter (Kürbiskerne, Brotkrumen) auf dem Futtertisch im Gärtchen von Zimmer 13
 ## (LevelBuilder.feed_table) ist nach FOOD_HOURS unbeobachtet weg, bei Gunst liegt dann ein Geschenk da.
+## Verbotene Masken (5.19, leichte Wirkung): unter der Vogelscheuchen-Maske stehlen sie nicht und krächzen niemanden
+## an (scarecrow_masked); wer das Futter mit der Krähenmaske hinlegt oder dabei am Tisch steht, dem zählt es doppelt.
 ## Ein MultiMesh (shaders/psx_bird.gdshader), Flug, Hüpfen und Flügelschlag rechnet das Skript – in der Pause steht alles.
 ## Gespeichert unter „omens“: Ruf, Nest, Fütterungen, wie lange das Futter schon liegt. Die Vögel selbst nicht: Nach dem
 ## Laden sitzen sie wieder auf dem Rasen.
@@ -74,6 +76,7 @@ const NEST_HIT := 0.9                      ## ein Wurf, der so nah am Nest aufsc
 const CRUISE_Y := 14.0                     ## weite Flüge (zum Nest und zurück) über die Dächer in dieser Höhe
 const FAR_FLIGHT := 15.0                   ## ab so viel Abstand (waagerecht) ist ein Flug weit
 const FOOD_HOURS := 3.0                    ## so lange liegt Futter auf dem Tisch, bis es (unbeobachtet) weg ist
+const MASK_TABLE := 6.0                    ## so nah am Tisch zählt die Krähenmaske beim Futter (5.19)
 const GLINT_EVERY := Vector2(0.8, 4.0)     ## so oft blitzt im Nest etwas auf …
 const GLINT_TIME := 0.2                    ## … so lange
 
@@ -115,6 +118,7 @@ var _glint: MeshInstance3D
 var _glint_timer := 0.0
 var _feed_table := {}                      ## LevelBuilder.feed_table bzw. der Ersatztisch aus dem Debug
 var _debug_useful := false                 ## Debug „geschenk“: das nächste Geschenk ist sicher Kleinzeug
+var _crow_food := false                    ## das Futter auf dem Tisch kam unter der Krähenmaske (nicht gespeichert)
 
 
 func setup(builder: LevelBuilder) -> void:
@@ -503,7 +507,7 @@ func on_noise(pos: Vector3, loudness: float, source: Node) -> void:
 func _update_cawing(delta: float) -> void:
 	_caw_timer -= delta
 	var g := grudge()
-	if g < GRUDGE_MIN or _caw_timer > 0.0:
+	if g < GRUDGE_MIN or _caw_timer > 0.0 or scarecrow_masked():
 		return
 	var player := Game.player
 	if player == null or player.dead or player.hiding or not _outdoor(player.global_position):
@@ -530,6 +534,8 @@ func _update_cawing(delta: float) -> void:
 ## Glänzendes, das draußen liegt: Die nächste Krähe am Boden holt es, wenn niemand hinsieht. Was auf dem Futtertisch
 ## liegt (ihre Geschenke), lassen sie liegen.
 func _look_for_shiny() -> void:
+	if scarecrow_masked():
+		return
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
 		if not item.kind in SHINY or item.is_held or not item.visible or item.hung or item.freeze \
@@ -551,6 +557,12 @@ func _look_for_shiny() -> void:
 
 func _seen(p: Vector3) -> bool:
 	return Game.director != null and Game.player != null and Game.director.player_can_see(p)
+
+
+## Vogelscheuchen-Maske (Spielkonzept 5.19, 2026-11-03): Solange der Spieler sie trägt, stehlen die Krähen nichts und
+## krächzen ihn nicht an – egal wo er ist (ein Wert für den ganzen Trupp wie der Ruf).
+func scarecrow_masked() -> bool:
+	return Game.player != null and not Game.player.dead and Game.player.mask == "scarecrow"
 
 
 # --- Nest -------------------------------------------------------------------------------------------
@@ -757,7 +769,11 @@ func _check_food(dt: float) -> void:
 	var food := _table_food()
 	if food.is_empty():
 		food_time = 0.0
+		_crow_food = false
 		return
+	var p := Game.player
+	if p != null and p.mask == "crow" and p.global_position.distance_to(_feed_table["pos"]) < MASK_TABLE:
+		_crow_food = true
 	food_time += dt
 	if food_time >= FOOD_HOURS * Calendar.HOUR and not _seen(_feed_table["pos"]):
 		_eat(food)
@@ -769,13 +785,16 @@ func _eat(food: Array[Item]) -> void:
 	for item in food:
 		item.queue_free()
 	food_time = 0.0
+	var k := 2.0 if _crow_food else 1.0
+	var why := " (Krähenmaske)" if _crow_food else ""
+	_crow_food = false
 	var today := Calendar.today()
 	if today != last_fed_day:
 		last_fed_day = today
 		fed_days += 1
-		_change_favor(FAVOR_FEED, "gefüttert, %d. Tag" % fed_days)
+		_change_favor(FAVOR_FEED * k, "gefüttert, %d. Tag%s" % [fed_days, why])
 	else:
-		_change_favor(FAVOR_FEED_MORE, "noch einmal gefüttert")
+		_change_favor(FAVOR_FEED_MORE * k, "noch einmal gefüttert" + why)
 	if favor < GIFT_FAVOR:
 		return
 	var gift := _gift()
