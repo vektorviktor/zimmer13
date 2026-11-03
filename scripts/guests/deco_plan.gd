@@ -10,6 +10,8 @@ extends Node
 ##   holt er sich ein starkes Stück von einer gut geschmückten fremden Tür (steal_when_scarce, aus Guest._try_steal) –
 ##   nie von Freunden, Familie oder Mitbewohnern, nie vom Spieler. Sieht es der Bestohlene oder ein Freund, gibt es
 ##   Streit (6.16, GuestQuarrels über Social.on_guest_stole).
+## - **Verstecken:** Sind die Kisten fast leer, versteckt ein ängstlicher Gast sein stärkstes Stück aus dem Koffer in einer
+##   Kommode (hide_when_scarce, Gang über DecoSearch.hide; Spielkonzept 3.5, Entscheidung 2026-11-03, ZIM-39).
 ## Nichts davon wird gespeichert – nach dem Laden zählen nur Angst, Deko und Kisten.
 
 ## Pause zwischen zwei geplanten Gängen am Monatsanfang bzw. an Halloween (s), so viele zugleich, je Gast am Spieltag
@@ -40,6 +42,9 @@ const THEFT_UNSEEN := 8.0
 const LOOT_REACH := 2.5
 ## Findet er nichts zu klauen, sucht er frühestens nach so vielen Sekunden wieder (die Suche prüft jede fremde Tür)
 const THEFT_RETRY := 600.0
+## Verstecken: so oft wird geprüft (s), mit dieser Chance je passendem Gast, einmal am Spieltag (Angst ab THEFT_FEAR)
+const HIDE_CHECK := 30.0
+const HIDE_CHANCE := 0.15
 
 var _deco: Decorating
 var _cooldown := 60.0
@@ -47,6 +52,8 @@ var _tick := 0.0
 var _trips := {}         ## Gast-ID → [Spieltag, Gänge an dem Tag]
 var _theft_day := {}     ## Gast-ID → Spieltag des letzten Diebstahls
 var _theft_retry := {}   ## Gast-ID → MonsterDirector.elapsed, ab dem er nach erfolgloser Suche wieder sucht
+var _hide_day := {}      ## Gast-ID → Spieltag, an dem er zuletzt verstecken wollte
+var _hide_wait := HIDE_CHECK
 var _mourners: Array[Dictionary] = []   ## {id, at (MonsterDirector.elapsed), dead (Name)}
 var _mine: Array[String] = []           ## Gäste, die gerade mit Plan unterwegs sind
 ## Debug (--schmuckplan): Nachbarn eines Toten machen sich nach wenigen Sekunden auf
@@ -74,6 +81,10 @@ func _process(delta: float) -> void:
 	_mine = _mine.filter(func(id: String) -> bool:
 		var g := _guest(id)
 		return g != null and not _deco.solo_site(g).is_empty())
+	_hide_wait -= 5.0
+	if _hide_wait <= 0.0 and _calm():
+		_hide_wait = HIDE_CHECK
+		_start_hiding()
 	if not _calm() or _mine.size() >= PLAN_MAX:
 		return
 	if _start_mourning():
@@ -247,6 +258,65 @@ func steal_when_scarce(g: Guest, forced: bool = false) -> bool:
 		print("[Schmuckplan] Knappheit: %s klaut %s von der Tür von Zimmer %s" % [g.display_name, item.display_name,
 			String(Game.director.rooms[loot["no"]]["sign"])])
 	return true
+
+
+# --- Verstecken bei Knappheit (ZIM-39) -------------------------------------------------------
+
+## Ein freier ängstlicher Erwachsener mit etwas Starkem im Koffer versteckt es vielleicht (HIDE_CHANCE).
+func _start_hiding() -> void:
+	if not scarce():
+		return
+	for g: Guest in Game.social.living_guests():
+		if _free(g) and not g.is_child() and g.fear >= THEFT_FEAR and int(_hide_day.get(g.id, -1)) != Calendar.today() \
+				and has_strong_stock(g) and randf() < HIDE_CHANCE:
+			hide_when_scarce(g)
+			return
+
+
+## g bringt sein stärkstes Stück (kein Füllmaterial) aus dem Koffer in die nächste erreichbare Kommode, die er
+## durchsuchen dürfte – nicht, wenn dort schon eins von ihm liegt. false = nichts, keine Kommode oder schon versteckt.
+func hide_when_scarce(g: Guest) -> bool:
+	_hide_day[g.id] = Calendar.today()
+	var dressers := get_tree().get_nodes_in_group("dressers").filter(func(d: Dresser) -> bool:
+		return d.guests_search() and d.global_position.y > -0.5 and DecoSearch.may_enter(g, d.global_position))
+	if dressers.is_empty() or _has_hidden(g, dressers):
+		return false
+	var kind := _strongest_stock(g)
+	if kind < 0:
+		return false
+	dressers.sort_custom(func(a: Dresser, b: Dresser) -> bool:
+		return a.global_position.distance_to(g.global_position) < b.global_position.distance_to(g.global_position))
+	var search := Game.social.search
+	for d: Dresser in dressers.slice(0, 4):
+		if _deco._reachable(g.global_position, search._goal(d)):
+			return search.hide(g, d, kind)
+	return false
+
+
+## Liegt schon ein Stück von g in einer dieser Kommoden?
+func _has_hidden(g: Guest, dressers: Array) -> bool:
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.owner_id == g.id and not item.is_held:
+			for d: Dresser in dressers:
+				if d.holds_point(item.global_position):
+					return true
+	return false
+
+
+## Die stärkste Art im Koffer ohne Füllmaterial – -1 = keine.
+static func _strongest_stock(g: Guest) -> int:
+	var best := -1
+	var best_value := 0.0
+	for kind in g.stock:
+		if int(g.stock[kind]) <= 0 or kind in Item.FILLER_KINDS:
+			continue
+		var probe := g.stock_item(kind)
+		if not probe.is_filler() and probe.deco_value() > best_value:
+			best = kind
+			best_value = probe.deco_value()
+		probe.free()
+	return best
 
 
 ## Das beste starke Stück an einer fremden Tür, die hält (nicht von Freunden, Familie, Mitbewohnern, nicht vom Spieler,

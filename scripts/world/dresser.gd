@@ -221,20 +221,100 @@ func _top_index(i: int) -> int:
 
 
 func _roll_loot(i: int) -> void:
-	var drawer_index := _top_index(i)
-	if fixed.has(drawer_index):
-		_drop_in(i, Item.create(fixed[drawer_index] as Item.Kind))
-		return
-	var roll := randf()
-	if not loot or roll < EMPTY_CHANCE:
+	var item := _roll(i)
+	if item == null:
 		Game.say(empty_lines[randi() % empty_lines.size()], 2.0)
 		return
-	var item: Item
-	if roll < EMPTY_CHANCE + COINS_CHANCE:
-		item = Item.create(Item.Kind.COINS, str(randi_range(1, 4)))
-	else:
-		item = Item.create(LOOT[randi() % LOOT.size()] as Item.Kind)
 	_drop_in(i, item)
+
+
+## Fund beim ersten Öffnen der Schublade i (fest oder gewürfelt) – null = leer.
+func _roll(i: int) -> Item:
+	var drawer_index := _top_index(i)
+	if fixed.has(drawer_index):
+		return Item.create(fixed[drawer_index] as Item.Kind)
+	var roll := randf()
+	if not loot or roll < EMPTY_CHANCE:
+		return null
+	if roll < EMPTY_CHANCE + COINS_CHANCE:
+		return Item.create(Item.Kind.COINS, str(randi_range(1, 4)))
+	return Item.create(LOOT[randi() % LOOT.size()] as Item.Kind)
+
+
+# --- Gäste (Spielkonzept 3.5, Entscheidung 2026-11-03, ZIM-39) ----------------------------
+
+## Durchsuchen Gäste diese Kommode? Nur Kommoden mit Zufallsfund – nicht die mit festem Fund (Streichhölzer in
+## Zimmer 022), keine Nachttische und Schreibtische.
+func guests_search() -> bool:
+	return loot and fixed.is_empty() and not self is Nightstand
+
+
+## Was ein Gast aus einer Schublade mitnimmt: Deko und Münzen – nie, was dem Spieler gehört (sein Versteck, 3.2), und
+## nicht, was er selbst darin versteckt hat (stash).
+static func guest_takes(item: Item, g: Guest) -> bool:
+	return not item.is_held and item.owner_id != "player" and item.owner_id != g.id and not item.has_meta("memorial") \
+		and (item.deco_strength > 0.0 or item.kind == Item.Kind.COINS)
+
+
+## Liegt p (Welt) in einem Schubladenfach? Grob über den Korpus, ohne _items_in (für die Suche der Gäste).
+func holds_point(p: Vector3) -> bool:
+	var l := to_local(p)
+	return absf(l.x) < size.x / 2.0 and l.y > PLINTH * 0.5 and l.y < OPEN_TOP and absf(l.z) < size.z / 2.0 + slide
+
+
+## Ein Gast durchsucht alle Schubladen: zieht sie auf (Lärm wie beim Spieler) und lässt sie offen – eine offene
+## Schublade verrät, dass jemand gesucht hat. Zurück kommt, was er mitnimmt (guest_takes), schon aus der Welt genommen:
+## was darin lag und der Fund einer noch nie geöffneten Schublade. Was er nicht will (Batterie, Messer …), legt er
+## zurück. Es gibt keinen Nachschub (5.10) – die Kommode leert sich.
+func search_by_guest(g: Guest) -> Array[Item]:
+	var taken: Array[Item] = []
+	var back: Array = []   # [Schublade, Gegenstand] – kommt hinein, sobald sie offen ist
+	for i in _drawers.size():
+		for item in _items_in(_drawers[i]):
+			if guest_takes(item, g):
+				item.get_parent().remove_child(item)   # vor dem Aufziehen, sonst fährt er mit
+				taken.append(item)
+		if not searched[i]:
+			searched[i] = true
+			var found := _roll(i)
+			if found and guest_takes(found, g):
+				taken.append(found)
+			elif found:
+				back.append([i, found])
+		set_open(i, true)
+	_after_open(back)
+	return taken
+
+
+## Ein ängstlicher Gast versteckt ein Stück aus seinem Koffer (item, nicht im Baum): in die Schublade, in der am
+## wenigsten liegt – aufziehen, hineinlegen, zuschieben. War sie noch nie offen, liegt ihr Fund mit darin.
+func stash(item: Item) -> void:
+	var best := 0
+	var fewest := 1 << 30
+	for i in _drawers.size():
+		var n := _items_in(_drawers[i]).size()
+		if n < fewest:
+			best = i
+			fewest = n
+	var put: Array = [[best, item]]
+	if not searched[best]:
+		searched[best] = true
+		var found := _roll(best)
+		if found:
+			put.append([best, found])
+	set_open(best, true)
+	_after_open(put)
+	get_tree().create_timer(1.2, false).timeout.connect(func() -> void: set_open(best, false))
+
+
+## Gegenstände ([Schublade, Gegenstand]) hineinlegen, wenn die Schubladen ganz aufgezogen sind (wie use_drawer).
+func _after_open(put: Array) -> void:
+	if put.is_empty():
+		return
+	get_tree().create_timer(0.35, false).timeout.connect(func() -> void:
+		for pair: Array in put:
+			set_open(int(pair[0]), true, true)   # hat sie jemand gleich wieder zugeschoben: wieder auf, nichts geht verloren
+			_drop_in(int(pair[0]), pair[1]))
 
 
 ## Gegenstand in die aufgezogene Schublade i legen.

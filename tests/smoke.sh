@@ -352,6 +352,8 @@ done <<'LIST'
 2400|knappheit,deko,gaeste|--schmuckplan=klau --trace
 200|knappheit,kisten,deko|--kisten
 600|kisten,speichern|--kisten --savetest
+800|kommode,deko,gaeste|--kommode=suchen --trace
+1400|kommode,knappheit,deko,gaeste|--kommode=verstecken --trace
 600|welt,wetter|--weather=blitz
 600|wetter|--day=31 --uhr=23 --pos=45,0.1,-37,180 --weather=gestalt --trace
 600|wetter|--day=25 --pos=45,0.1,-37,180 --weather=blut --savetest --trace

@@ -7,8 +7,12 @@ extends Node
 ## zurückfällt, und teilt am Fundort: ein Stück für ihn, eins für den Spieler. Dafür mag er den Spieler mehr
 ## und erzählt es seinen Freunden (6.16). Manchmal suchen zwei Gäste zusammen und werden dabei Freunde.
 ## Beide Stücke kommen aus dem Vorrat des Fundorts – aus Kisten ohne Nachschub nimmt ein Gast höchstens eins am Tag
-## (ResourceSpot.guest_consume, Spielkonzept 5.10); ist nichts mehr da, gibt es nichts zu teilen. Nichts davon wird
-## gespeichert.
+## (ResourceSpot.guest_consume, Spielkonzept 5.10); ist nichts mehr da, gibt es nichts zu teilen.
+## Kommoden (3.5, Entscheidung 2026-11-03, ZIM-39): Auch eine Kommode im Flur (oder im eigenen Zimmer) ist ein Fundort –
+## der Gast zieht alle Schubladen auf, nimmt Deko und Münzen mit (Dresser.search_by_guest) und lässt sie offen; die
+## Kommoden leeren sich, Nachschub gibt es keinen. Ängstliche Gäste verstecken bei Knappheit ein starkes Stück aus dem
+## Koffer in einer Kommode (hide, ausgelöst von DecoPlan.hide_when_scarce) – dort kann man es klauen, und wer suchend
+## darauf stößt, nimmt es mit. Nichts davon wird gespeichert (das Versteckte liegt als Gegenstand in der Welt).
 ## Kind von Social, erreichbar über Game.social.search.
 
 ## Pause bis zur nächsten Suche am 1. … am 31. (von selbst nur tagsüber, 11–18 Uhr); so viele gleichzeitig; so oft zu zweit
@@ -39,9 +43,13 @@ const START_LINES := ["Na dann los – mir nach!", "Super! Komm, hier lang.", "P
 const WAIT_LINES := ["Kommst du?", "Hier lang!", "Nicht trödeln!"]
 const SHARE_LINES := ["Hier – eins für dich, eins für mich.", "Schau, gleich zwei! Nimm du das.", "Für dich. Danke fürs Mitkommen!"]
 const LOST_LINES := ["Na gut, dann such ich eben allein.", "Wo bist du denn hin? Dann eben ohne dich."]
+const EMPTY_DRESSER_LINES := ["Leer. Da war schon jemand.", "Nichts mehr drin – alles ausgeräumt.", "Nur Staub. Schade."]
+const HIDE_LINES := ["Hier findet's keiner.", "So. Da ist es sicher.", "Das bleibt hier, bis es gebraucht wird."]
+## Vor der Kommode: so weit vor ihrer Front steht der Gast
+const DRESSER_FRONT := 0.75
 
-## Gast-ID → {guest, source, phase (go/wait), partner ("player", Gast oder null), leader (bei zu zweit: der Führende),
-## lost, time, goal}
+## Gast-ID → {guest, source (ResourceSpot oder Dresser), phase (go/wait), partner ("player", Gast oder null), leader (bei
+## zu zweit: der Führende), lost, time, goal; hide: true = er versteckt, was er in der Hand trägt}
 var _trips := {}
 ## Gast-ID → Zeit, bis zu der seine Frage „Kommst du mit?“ gilt
 var _offers := {}
@@ -99,11 +107,12 @@ func has_offer(g: Guest) -> bool:
 	return _offers.has(g.id) and _trips.has(g.id) and _trips[g.id]["partner"] == null
 
 
-## Ein Gast zieht los (auch Debug --search). with_player: der Spieler kommt gleich mit. false = kein Fundort.
-func start(g: Guest, with_player: bool = false) -> bool:
+## Ein Gast zieht los (auch Debug --search). with_player: der Spieler kommt gleich mit; forced_source: dieser Fundort
+## (Debug --kommode). false = kein Fundort.
+func start(g: Guest, with_player: bool = false, forced_source: Node3D = null) -> bool:
 	if g == null or g.dead or _trips.has(g.id):
 		return false
-	var source := _source_for(g)
+	var source: Node3D = forced_source if forced_source else _source_for(g)
 	if source == null:
 		return false
 	var entry := {"guest": g, "source": source, "phase": "go", "partner": null, "leader": null, "lost": 0.0, "time": 0.0}
@@ -123,7 +132,7 @@ func start(g: Guest, with_player: bool = false) -> bool:
 	_walk(g, _goal(source))
 	if Game.tracing:
 		var with := "mit dir" if with_player else (("mit " + (entry["partner"] as Guest).display_name) if entry["partner"] else "allein")
-		print("[Deko-Suche] %s sucht bei %s (%s)%s" % [g.display_name, source.label, with,
+		print("[Deko-Suche] %s sucht bei %s (%s)%s" % [g.display_name, _label(source), with,
 			" – im UG: FEHLER" if source.global_position.y < -0.5 else ""])   # nie ins UG (7.9)
 	return true
 
@@ -152,31 +161,78 @@ func lead_off(g: Guest) -> void:
 		_walk(g, _trips[g.id]["goal"])
 
 
-## Ein Fundort: der nächste erreichbare von ein paar in der Nähe – Mutige auch Spinnweben, nie im UG (7.9).
-func _source_for(g: Guest) -> ResourceSpot:
+## Ein Fundort: der nächste erreichbare von ein paar in der Nähe – Mutige auch Spinnweben, nie im UG (7.9); sonst
+## auch Kommoden, in denen noch etwas sein kann (_dressers_for).
+func _source_for(g: Guest) -> Node3D:
 	var danger := float(g.profile["brave"]) >= BRAVE and not g.is_child() and randf() < DANGER_CHANCE
 	var spots: Array = []
 	for node in get_tree().get_nodes_in_group("resource_spots"):
 		var spot := node as ResourceSpot
 		if spot.global_position.y > -0.5 and _risky(spot) == danger and not spot.kind in [Item.Kind.SODA_CAN, Item.Kind.BULB] and spot.guest_can_take():   # Dosen und Birnen sind keine Deko
 			spots.append(spot)
-	spots.sort_custom(func(a: ResourceSpot, b: ResourceSpot) -> bool:
+	if not danger:
+		spots.append_array(_dressers_for(g))
+	spots.sort_custom(func(a: Node3D, b: Node3D) -> bool:
 		return a.global_position.distance_to(g.global_position) < b.global_position.distance_to(g.global_position))
 	var near := spots.slice(0, 5)
 	near.shuffle()
-	for spot: ResourceSpot in near:
-		if Game.social.decorating._reachable(g.global_position, spot.global_position):
+	for spot: Node3D in near:
+		if Game.social.decorating._reachable(g.global_position, _goal(spot)):
 			return spot
 	return null
 
 
+## Kommoden, die g durchsuchen darf (Dresser.guests_search, nicht im UG, nicht in einem fremden Zimmer) und in denen
+## noch etwas sein kann: eine nie geöffnete Schublade oder etwas, das er mitnähme (Dresser.guest_takes). Ein Gang über
+## alle Gegenstände – nur beim Aufbruch, nie je Bild (ZIM-124).
+func _dressers_for(g: Guest) -> Array:
+	var found: Array = []
+	var rest: Array = []
+	for node in get_tree().get_nodes_in_group("dressers"):
+		var d := node as Dresser
+		if not d.guests_search() or d.global_position.y < -0.5 or not may_enter(g, d.global_position):
+			continue
+		if d.searched.has(false):
+			found.append(d)
+		else:
+			rest.append(d)
+	if rest.is_empty():
+		return found
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if not Dresser.guest_takes(item, g):
+			continue
+		for d: Dresser in rest:
+			if d.holds_point(item.global_position):
+				found.append(d)
+				rest.erase(d)
+				break
+		if rest.is_empty():
+			break
+	return found
+
+
+## Darf g an diese Stelle? Nicht in ein fremdes Hotelzimmer (seins, Flure und Gemeinschaftsräume schon).
+static func may_enter(g: Guest, p: Vector3) -> bool:
+	var room := Game.social.builder.room_at(p)
+	return room == String(g.home["no"]) or not Game.director.rooms.has(room)
+
+
 ## Gefährlicher Fundort: Spinnweben-Ecke.
-static func _risky(spot: ResourceSpot) -> bool:
-	return spot.kind == Item.Kind.COBWEB
+static func _risky(source: Node3D) -> bool:
+	return source is ResourceSpot and (source as ResourceSpot).kind == Item.Kind.COBWEB
 
 
-func _goal(source: ResourceSpot) -> Vector3:
-	return NavigationServer3D.map_get_closest_point(source.get_world_3d().navigation_map, source.global_position)
+static func _label(source: Node3D) -> String:
+	return (source as ResourceSpot).label if source is ResourceSpot else "der Kommode"
+
+
+## Wohin er geht: bei der Kommode vor ihre Front, sonst an den Fundort (jeweils der nächste Punkt im NavMesh).
+func _goal(source: Node3D) -> Vector3:
+	var at := source.global_position
+	if source is Dresser:
+		at += source.global_transform.basis.z * DRESSER_FRONT
+	return NavigationServer3D.map_get_closest_point(source.get_world_3d().navigation_map, at)
 
 
 func _walk(g: Guest, point: Vector3) -> void:
@@ -234,8 +290,14 @@ func on_arrived(g: Guest) -> void:
 		g._set_idle(randf_range(2.0, 5.0))
 		return
 	var entry: Dictionary = _trips[g.id]
+	if not is_instance_valid(entry["source"]):
+		_finish(g)
+		return
+	if entry["source"] is Dresser:
+		_at_dresser(g, entry)
+		return
 	var source: ResourceSpot = entry["source"]
-	if not is_instance_valid(source) or not source.guest_consume():
+	if not source.guest_consume():
 		_finish(g)   # leer oder heute schon jemand da gewesen
 		return
 	var kinds: Array = source.pool if not source.pool.is_empty() else [source.kind]
@@ -262,11 +324,84 @@ func on_arrived(g: Guest) -> void:
 	g._walk_to(g._room_point(), Guest.State.CARRY_HOME)
 
 
+## An der Kommode (ZIM-39): verstecken (hide) oder alle Schubladen durchsuchen – Deko nimmt er mit, die erste in die
+## Hand, den Rest in den Koffer, Münzen in die Tasche; mit dem Spieler teilt er, wenn es zwei Stück Deko sind.
+func _at_dresser(g: Guest, entry: Dictionary) -> void:
+	var dresser: Dresser = entry["source"]
+	var to := dresser.global_position - g.global_position
+	g.rotation.y = atan2(-to.x, -to.z)
+	_trips.erase(g.id)
+	_offers.erase(g.id)
+	if entry.get("hide", false):
+		var item := g.held
+		g.held = null
+		if item:
+			item.get_parent().remove_child(item)
+			item.set_held(false)
+			dresser.stash(item)
+			g.say(HIDE_LINES.pick_random())
+			if Game.tracing:
+				print("[Kommode] %s versteckt %s in der Kommode" % [g.display_name, item.display_name])
+		g._set_idle(randf_range(2.0, 5.0))
+		return
+	var taken := dresser.search_by_guest(g)
+	var deco: Array[Item] = []
+	var coins := 0
+	for item in taken:
+		if item.kind == Item.Kind.COINS:
+			coins += item.coin_value
+			item.free()
+		else:
+			deco.append(item)
+	g.money += coins
+	var p := Game.player
+	if entry["partner"] is String and deco.size() >= 2 and p and not p.dead \
+			and p.global_position.distance_to(g.global_position) < LAG_RANGE * 1.5:
+		var theirs: Item = deco.pop_back()
+		theirs.owner_id = "player"
+		p.receive_item(theirs)
+		g.say(SHARE_LINES.pick_random())
+		Game.social.change_relation(g, RELATION)
+		Game.social.add_deed(g, "gifts_from")
+		Game.social.pals.praise(g, PRAISE)
+	if Game.tracing:
+		print("[Kommode] %s durchsucht die Kommode: %s, %d Münzen" % [g.display_name,
+			", ".join(deco.map(func(i: Item) -> String: return i.display_name)) if not deco.is_empty() else "keine Deko", coins])
+	if deco.is_empty():
+		if coins == 0:
+			g.say(EMPTY_DRESSER_LINES.pick_random())
+		g._set_idle(randf_range(2.0, 5.0))
+		return
+	g.stow_held()
+	for item in deco.slice(1):
+		g.stock[item.kind] = int(g.stock.get(item.kind, 0)) + 1
+		item.free()
+	g._take_into_hand(deco[0])
+	g._walk_to(g._room_point(), Guest.State.CARRY_HOME)
+
+
+## Aus DecoPlan.hide_when_scarce: g trägt ein Stück aus seinem Koffer zu dieser Kommode und versteckt es darin
+## (_at_dresser). Er fragt niemanden mit. false = schon unterwegs.
+func hide(g: Guest, dresser: Dresser, kind: int) -> bool:
+	if g == null or g.dead or _trips.has(g.id) or g.held:
+		return false
+	g.stock[kind] = int(g.stock.get(kind, 0)) - 1
+	g._take_into_hand(g.stock_item(kind))
+	_trips[g.id] = {"guest": g, "source": dresser, "phase": "go", "partner": null, "leader": null, "lost": 0.0,
+		"time": 0.0, "hide": true, "asked": true}
+	_walk(g, _goal(dresser))
+	if Game.tracing:
+		print("[Kommode] %s will %s in einer Kommode verstecken" % [g.display_name, g.held.display_name])
+	return true
+
+
 ## Suche abbrechen (der Gast bleibt, wie er ist; wer gerade dorthin ging, macht etwas anderes).
 func _finish(g: Guest) -> void:
 	var entry: Dictionary = _trips.get(g.id, {})
 	_trips.erase(g.id)
 	_offers.erase(g.id)
+	if entry.get("hide", false) and not g.dead:
+		g.stow_held()   # zurück in den Koffer
 	if not g.dead and g.state in [Guest.State.SEARCH, Guest.State.IDLE]:
 		g._set_idle(randf_range(2.0, 5.0))
 	var partner = entry.get("partner")

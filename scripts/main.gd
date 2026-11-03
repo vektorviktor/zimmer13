@@ -74,6 +74,9 @@ extends Node3D
 ##   --decorate=hier[,gast]      wie „Lass uns hier schmücken!“ im Gespräch: geschmückt wird, wo du stehst (mit --tp/--pos)
 ##   --search[=gast][,mit]       Deko-Suche (5.9): ein Gast (oder dieser) zieht los · mit: du gehst mit (er führt, du
 ##                               folgst ihm von selbst, er teilt am Fundort) – mit --trace: Fundort, Teilen, Beziehung
+##   --kommode[=suchen|verstecken][,gast]  Gäste und Kommoden (3.5, ZIM-39): suchen – ein Gast durchsucht die Kommode
+##                               vor dir (Girlande eines Gastes und Spinne des Spielers liegen darin) · verstecken – Kisten
+##                               leer, er hat Angst, versteckt ein Stück aus dem Koffer, ein zweiter findet es · Prüfungen
 ##   --cook=gast[,id]            ein Gast (oder dieser) kocht gleich Kürbissuppe (er steht 4 m vor dem Herd, du daneben)
 ##   --cook=suppe|braten[,fertig]  Kochen (3.8): Kürbis liegt geschnitten im Topf bzw. in der Pfanne, du stehst am Herd ·
 ##                               fertig: gleich fertig (Suppe: Gäste kommen zum Essen)
@@ -2201,6 +2204,9 @@ func run_debug(arg: String) -> bool:
 		# Deko-Suche (Spielkonzept 5.9) – der Weg zum Fundort braucht das fertige NavMesh
 		var parts := _arg_parts(arg, "--search")
 		get_tree().create_timer(1.5).timeout.connect(func() -> void: _debug_search(parts))
+	elif _is_arg(arg, "--kommode"):
+		var parts := _arg_parts(arg, "--kommode", "suchen")
+		get_tree().create_timer(1.5, false).timeout.connect(func() -> void: _debug_dresser(parts))
 	elif arg.begins_with("--cook="):
 		_debug_cook(_arg_parts(arg, "--cook"))
 	elif arg.begins_with("--kaffee="):
@@ -3097,6 +3103,96 @@ func _debug_search(parts: PackedStringArray) -> void:
 				follow.start()
 			return
 	Game.say("Deko-Suche: kein Gast frei oder kein Fundort erreichbar", 3.0)
+
+
+## --kommode[=suchen|verstecken][,gast] (Spielkonzept 3.5, ZIM-39): die Kommode im Flur, die dem Spieler am nächsten
+## ist und die Gäste durchsuchen; er steht seitlich davor, ein freier Erwachsener (oder dieser) 3 m vor ihr.
+## suchen: In der untersten Schublade liegt eine Plastikspinne des Spielers, in der zweiten eine Fledermausgirlande eines
+## anderen Gastes (beide offen); der Gast durchsucht die Kommode. Prüft: alle Schubladen offen und durchsucht, Girlande
+## in seiner Hand, Spinne liegt noch. verstecken: Kisten leer, er hat Angst und einen Totenkopf im Koffer und versteckt
+## sein stärkstes Stück (DecoPlan.hide_when_scarce); danach durchsucht ein zweiter Gast die Kommode und nimmt es mit.
+func _debug_dresser(parts: PackedStringArray) -> void:
+	var check := func(what: String, ok: bool) -> void:
+		print("[Kommode] %s: %s" % [what, "ok" if ok else "FEHLER"])
+	var search := Game.social.search
+	var p := Game.player
+	var dressers := get_tree().get_nodes_in_group("dressers").filter(func(d: Dresser) -> bool:
+		return d.guests_search() and d.global_position.y > -0.5 and not Game.director.rooms.has(Game.social.builder.room_at(d.global_position)))
+	if dressers.is_empty():
+		check.call("keine Kommode, die Gäste durchsuchen", false)
+		return
+	dressers.sort_custom(func(a: Dresser, b: Dresser) -> bool:
+		return a.global_position.distance_to(p.global_position) < b.global_position.distance_to(p.global_position))
+	var d: Dresser = dressers[0]
+	var front := d.global_transform.basis.z
+	var side := front.cross(Vector3.UP)
+	p.global_position = d.global_position + front * 1.6 + side * 1.4 + Vector3.UP * 0.05
+	_face_toward(d.global_position + Vector3.UP * 0.5)
+	var free := Game.social.living_guests().filter(func(g: Guest) -> bool:
+		return not g.is_child() and search._available(g) and not Grinch.is_grinch(g))
+	var who: Guest = Game.social.find_guest(parts[1]) if parts.size() > 1 else null
+	if who:
+		free.erase(who)
+		free.push_front(who)
+	if free.size() < 2:
+		check.call("zu wenige freie Gäste", false)
+		return
+	var walk_up := func(g: Guest) -> void:
+		g._set_idle(5.0)
+		g.global_position = NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, d.global_position + front * 3.0)
+	var g: Guest = free[0]
+	walk_up.call(g)
+	if parts[0] == "verstecken":
+		for node in get_tree().get_nodes_in_group("resource_spots"):
+			if (node as ResourceSpot).runs_out():
+				(node as ResourceSpot).uses = 0
+		g.fear = 60.0
+		g.stock[Item.Kind.SKULL] = int(g.stock.get(Item.Kind.SKULL, 0)) + 1
+		var plan := Game.social.decorating.plan
+		check.call("Knappheit", plan.scarce())
+		check.call("%s will verstecken" % g.display_name, plan.hide_when_scarce(g))
+		await _until(func() -> bool: return not search.is_busy(g), 40.0)
+		await get_tree().create_timer(2.0, false).timeout
+		var hidden: Item = null
+		for node in get_tree().get_nodes_in_group("items"):
+			if (node as Item).owner_id == g.id and not (node as Item).is_held and d.holds_point((node as Item).global_position):
+				hidden = node
+		check.call("versteckt in der Kommode: %s" % (hidden.display_name if hidden else "nichts"), hidden != null)
+		check.call("Schublade wieder zu", not d.is_open.has(true))
+		check.call("zweites Mal versteckt er nicht", not plan.hide_when_scarce(g))
+		if hidden == null:
+			return
+		var g2: Guest = free[1]
+		walk_up.call(g2)
+		check.call("%s sucht" % g2.display_name, search.start(g2, false, d))
+		await _until(func() -> bool: return not search.is_busy(g2), 40.0)
+		check.call("%s nimmt das Versteckte mit" % g2.display_name, is_instance_valid(hidden) and g2.held == hidden)
+		return
+	var mine := Item.create(Item.Kind.SPIDER)
+	mine.owner_id = "player"
+	var theirs := Item.create(Item.Kind.BAT_GARLAND)
+	theirs.owner_id = (free[1] as Guest).id
+	d.set_open(0, true, true)
+	d.set_open(1, true, true)
+	d._drop_in(0, mine)
+	d._drop_in(1, theirs)
+	await get_tree().create_timer(1.0, false).timeout
+	check.call("%s sucht" % g.display_name, search.start(g, false, d))
+	await _until(func() -> bool: return not search.is_busy(g), 40.0)
+	await get_tree().create_timer(1.0, false).timeout
+	check.call("alle Schubladen offen", not d.is_open.has(false))
+	check.call("alle durchsucht", not d.searched.has(false))
+	check.call("Girlande in seiner Hand", is_instance_valid(theirs) and g.held == theirs)
+	check.call("Spinne des Spielers liegt noch", is_instance_valid(mine) and not mine.is_held and d.holds_point(mine.global_position))
+	check.call("Kommode ist leer für Gäste", not search._dressers_for(free[1]).has(d))
+
+
+## Wartet, bis done() wahr ist, höchstens limit Sekunden Spielzeit.
+func _until(done: Callable, limit: float) -> void:
+	var waited := 0.0
+	while not done.call() and waited < limit:
+		await get_tree().create_timer(0.25, false).timeout
+		waited += 0.25
 
 
 ## --cook=suppe|braten[,fertig]: Kochen (Spielkonzept 3.8) – Spieler vor den Herd, Kürbis schon geschnitten.

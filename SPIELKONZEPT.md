@@ -1241,8 +1241,21 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
 - Wie Truhen sind Schubladen **physische Behälter**: Was man hineinlegt, bleibt darin und fährt mit auf
   und zu – ein Versteck für Dinge im Flur (3.2).
 - Eine offene Schublade verrät, dass hier schon jemand gesucht hat. Aufziehen macht leisen Lärm (3 m, 4.15).
-- **Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
-  Nachschub (z. B. der Hausmeister füllt nach)?
+- ~~**Später (offen):** Gäste durchsuchen Kommoden auch / legen Dinge hinein; Kommoden auch in Zimmern;
+  Nachschub (z. B. der Hausmeister füllt nach)?~~
+- **Gäste und Kommoden (entschieden und umgesetzt 2026-11-03, ZIM-39):**
+  - Bei der **Deko-Suche** (5.9) ist eine Kommode ein Fundort wie die Kisten: Der Gast zieht **alle Schubladen** auf,
+    nimmt **Deko und Münzen** mit (die erste Deko trägt er heim, der Rest kommt in den Koffer) und **lässt sie offen** –
+    man sieht, dass jemand gesucht hat. Anderes (Batterie, Messer, Würfel …) legt er zurück. Was **der Spieler**
+    hineingelegt hat, rührt er nicht an (sein Versteck, 3.2; kleinste Lösung, vermerkt 2026-11-03). Ist der Spieler mit
+    dabei und findet er zwei Stück Deko, bekommt der Spieler eins. **Kein Nachschub** (5.10): Die Kommoden leeren sich.
+  - **Verstecken:** Sind die Kisten fast leer (Knappheit, 5.10), bringt ein **ängstlicher** Erwachsener sein stärkstes
+    Stück aus dem Koffer in die nächste Kommode und schiebt die Schublade zu („Hier findet's keiner.“) – höchstens
+    eins zugleich, einmal am Spieltag. Dort kann der Spieler es **klauen** (gilt als Diebstahl wie an der Tür, 6.16), und
+    ein anderer Gast, der die Kommode durchsucht, nimmt es mit. Zurückholen tut er es (noch) nicht.
+  - Gäste durchsuchen nur Kommoden im Flur, in Gemeinschaftsräumen und im eigenen Zimmer – nie in fremden Zimmern, nie
+    im UG (7.9), keine Nachttische, Schreibtische und Kommoden mit festem Fund (Streichhölzer in Zimmer 022).
+  - **Kommoden in Zimmern** setzt der Nutzer in den Plan; der Code ergänzt keine.
 - **Schreibtische (entschieden und umgesetzt 2026-11-01, ZIM-154):** Im Büro der Direktion ein großer Schreibtisch
   (2,10 m, zwei Unterschränke, Mittelschublade, grüne Lederauflage in DIN A1 mit Goldprägung), im Sekretariat ein schlichterer
   (1,40 m, ein Unterschrank) – beide selbst gebaut im Look der Kommode. Die Schubladen gehen auf wie die der Kommoden,

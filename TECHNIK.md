@@ -1557,7 +1557,13 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   gespeichert. Debug `--schmuckplan=angst|freund|tod|klau[,gast]`, `--trace` `[Schmuckplan]`.
 - **Deko-Suche** (`guests/deco_search.gd`, Spielkonzept 5.9): ein freier Gast (nur tagsüber) geht zu einer
   erreichbaren `ResourceSpot` (`Decorating._reachable`, `guest_can_take()`), Mutige auch zu Spinnweben, nie ins UG
-  (`y > -0,5`, wie `Decorating._source_for`; Spielkonzept 7.9, 2026-11-03), manchmal zu zweit; bietet dem Spieler an mitzukommen (`has_offer`, `ask`). Zustand `SEARCH`. Nicht gespeichert. Debug
+  (`y > -0,5`, wie `Decorating._source_for`; Spielkonzept 7.9, 2026-11-03), ohne Gefahr auch zu Kommoden
+  (`_dressers_for`: `Dresser.guests_search`, `may_enter` – kein fremdes Hotelzimmer –, nie geöffnete Schublade oder ein
+  Gegenstand nach `guest_takes` darin; ein Gang über alle Gegenstände nur beim Aufbruch, ZIM-124), manchmal zu zweit;
+  an der Kommode `_at_dresser` (erste Deko in die Hand, Rest in `stock`, Münzen in `money`, teilt ab zwei Stück mit
+  dem Spieler); `hide(g, dresser, kind)` für das Verstecken (`DecoPlan.hide_when_scarce`: Knappheit `scarce()`, Angst
+  ab `THEFT_FEAR`, keine Kinder, `HIDE_CHECK`/`HIDE_CHANCE`, einmal am Spieltag, nur eins zugleich (`_has_hidden`),
+  stärkstes Stück `_strongest_stock`); bietet dem Spieler an mitzukommen (`has_offer`, `ask`). Zustand `SEARCH`. Nicht gespeichert. Debug
   `--search[=gast][,mit]`.
 - **Freundschaften unter Gästen** (`guests/pals.gd`, `GuestPals`, Spielkonzept 6.16): `counts` (`"id_a|id_b"` →
   gemeinsame Taten; `note`, `note_group`), `are_pals` (Familie, genug Taten oder Zimmernachbarn – nie bei `feuds`, nicht
@@ -1904,7 +1910,15 @@ neuere Onboard-Grafik mit 30 FPS. Die Werte sind Vorschläge, im Spiel nicht gem
   Gegenstände kurz kinematisch eingefroren und mitbewegt (Ausnahme von „nie `freeze` direkt“). Unterarten bauen sich in
   `_build()` selbst und legen Schubladen mit `add_drawer(y)` an (setzen `size`, `tray`, `slide`); `add_drawer` nimmt je
   Schublade auch Mitte `x`, Innenmaß, Auszug und Vorderkante des Kastens (Schreibtisch). `loot = false`: nur feste
-  Funde (`fixed`, Index von oben über `_top_index`), sonst ein Spruch aus `empty_lines`.
+  Funde (`fixed`, Index von oben über `_top_index`), sonst ein Spruch aus `empty_lines`; der Fund selbst kommt aus
+  `_roll(i)` (null = leer).
+  - **Gäste** (Spielkonzept 3.5, ZIM-39): `guests_search()` – nur Kommoden mit Zufallsfund (`loot`, kein `fixed`), keine
+    Nachttische (und Schreibtische). `search_by_guest(g)` zieht alle Schubladen auf (bleiben offen) und gibt zurück, was
+    er mitnimmt (`guest_takes`: Deko und Münzen, nie `owner_id` „player“ oder er selbst, kein `memorial`), schon aus dem
+    Baum genommen; der Fund nie geöffneter Schubladen wird gewürfelt, Ungewolltes kommt nach 0,35 s hinein
+    (`_after_open`). `stash(item)`: in die Schublade mit den wenigsten Gegenständen, nach 1,2 s wieder zu.
+    `holds_point(p)`: grobe Lage im Korpus ohne `_items_in`. Nichts davon ist neu gespeichert – `searched`/`open` wie
+    bisher, das Versteckte liegt als Gegenstand mit `owner_id` des Gastes in der Welt.
 - **Schreibtische** (`world/desk.gd`, ZIM-154): `Desk extends Dresser`, zwei Fassungen aus `tools/build_desk.py` mit dem
   Möbelbausatz – `direktion` (Plan „Möbel: Schreibtisch“, 2,10 × 1,05 × 0,78 m, zwei Unterschränke, sieben Schubladen,
   Lederauflage DIN A1, stellt den Sessel `Armchair` davor, `CHAIR_GAP`) und `sekretariat` („Möbel: Sekretariatsschreibtisch“,
