@@ -15,6 +15,8 @@ const NO_GIFT := [Item.Kind.KEY, Item.Kind.CHESS_BOARD, Item.Kind.DICE_CUP, Item
 const ROAST_CALM := 20.0
 ## Füllmaterial an Erwachsene (6.18, 5): so viel Beziehung, nur einmal am Tag je Gast
 const FILLER_GIFT := 1.0
+## Verkaufen (6.4, Abstimmung 3.11., ZIM-34): nachwachsendes Füllmaterial (5.10) bringt nur diesen Anteil
+const FILLER_SELL := 0.5
 ## Entschuldigen kostet je nach Stufe (verfeindet / stark verfeindet)
 const APOLOGY_PRICE := {Social.Tier.ENEMY: 5, Social.Tier.STRONG_ENEMY: 15}
 ## Anlässe (6.9): höchstens so viele oben im Menü; „Was hältst du von …?“ für Gäste bis so weit weg
@@ -752,7 +754,7 @@ func _show_trade() -> void:
 		var label := "%s kaufen – %d Geld (%d da)" % [_kind_name(kind), price, count]
 		_option(label, _buy.bind(kind), Game.money < price or not player.can_take(kind))
 	if player.held and player.held.kind != Item.Kind.KEY:
-		_option("%s verkaufen – %d Geld" % [player.held.display_name, _buy_price(player.held)], _sell.bind(player.held))
+		_sell_option(player.held)
 	if not _bag_items(false).is_empty():
 		_option("Aus der Tasche verkaufen …", _show_bag.bind(false))
 	_option("Zurück", _show_main)
@@ -766,7 +768,7 @@ func _show_bag(gift: bool) -> void:
 		if gift:
 			_option("%s schenken" % item.display_name, _gift.bind(item))
 		else:
-			_option("%s verkaufen – %d Geld" % [item.display_name, _buy_price(item)], _sell.bind(item))
+			_sell_option(item)
 	_option("Zurück", _show_main if gift else _show_trade)
 
 
@@ -1141,9 +1143,20 @@ func _buy(kind: int) -> void:
 	_show_trade()
 
 
+## Verkaufen-Zeile: was nichts bringt, steht ausgegraut da
+func _sell_option(item: Item) -> void:
+	var price := _buy_price(item)
+	if price <= 0:
+		_option("%s – kauft keiner" % item.display_name, _sell.bind(item), true)
+	else:
+		_option("%s verkaufen – %d Geld" % [item.display_name, price], _sell.bind(item))
+
+
 ## Verkaufen aus der Hand oder aus der Tasche
 func _sell(item: Item) -> void:
 	var price := _buy_price(item)
+	if price <= 0:
+		return
 	if guest.money < price:
 		_say("So viel Geld hab ich gerade nicht.")
 		_show_trade()
@@ -1166,9 +1179,14 @@ func _sell_price(kind: int) -> int:
 	return maxi(1, roundi(base * float(guest.profile["sell"]) * discount))
 
 
+## Was der Gast dir zahlt (6.4, Abstimmung 3.11., ZIM-34): kein Mindestpreis mehr – Wertloses (Preis 0, kaputt) und
+## Hoteleigentum (NO_GIFT) kauft keiner, Füllmaterial bringt FILLER_SELL. 0 = kauft er nicht.
 func _buy_price(item: Item) -> int:
+	if item.kind in NO_GIFT:
+		return 0
 	var bonus := _tier_factor(1.0, 1.0, 1.05, 1.15, 1.25)
-	return maxi(1, roundi(item.price() * float(guest.profile["buy"]) * bonus))
+	var share := FILLER_SELL if item.is_filler() else 1.0
+	return roundi(item.price() * float(guest.profile["buy"]) * bonus * share)
 
 
 ## Preisfaktor je Stufe: bis neutral, nett, freundlich, befreundet, guter Freund

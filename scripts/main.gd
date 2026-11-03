@@ -89,6 +89,8 @@ extends Node3D
 ##                               Stationen weit, je Station halb so stark (--trace „[Netz]“)
 ##   --budget=id                 Beziehung nicht erschleichen (6.18, 5): spielt mit dem Gast Gesprächsbereitschaft, Abbruch,
 ##                               Beziehungsbudget, Geschenke nach Wert, Beruhigen und Vergebung durch (--trace „[Budget]“)
+##   --handel=id                 Verkaufspreise (6.4, ZIM-34): Hoteleigentum und Kaputtes kauft keiner, Füllmaterial bringt
+##                               die Hälfte (--trace „[Handel]“)
 ##   --neid[=id]                 Neid der Türnachbarn (6.18, 5): Kisten leer, vier Kürbisse vor Zimmer 13 – ein Morgen läuft,
 ##                               dann Untergrenze, Freund, spitzer Satz beim Vorbeigehen und im Gespräch (--trace „[Neid]“)
 ##   --kisten                    Knappheit (5.10): rechnet je Kiste ohne Nachschub den Monat durch (ohne Spieler leer um den 15.,
@@ -2123,6 +2125,8 @@ func run_debug(arg: String) -> bool:
 		_debug_net(_arg_parts(arg, "--netz"))
 	elif arg.begins_with("--budget="):
 		_debug_budget(_arg_parts(arg, "--budget"))
+	elif arg.begins_with("--handel="):
+		_debug_trade(_arg_parts(arg, "--handel"))
 	elif arg == "--kisten":
 		get_tree().create_timer(1.0, false).timeout.connect(_debug_boxes)
 	elif arg.begins_with("--streit="):
@@ -3320,6 +3324,36 @@ func _debug_net(parts: PackedStringArray) -> void:
 	get_tree().create_timer(20.0, false).timeout.connect(func() -> void:
 		if Game.tracing:
 			print("[Netz] warten noch auf ein Treffen: %d" % pals.net_pending()))
+
+
+## --handel=id: Verkaufspreise nach der Abstimmung (Spielkonzept 6.4, ZIM-34) – der Gast steht vor dir, nach 2 s meldet
+## jede Regel „[Handel] … ok“ bzw. „FEHLER“.
+func _debug_trade(parts: PackedStringArray) -> void:
+	var g := Game.social.find_guest(parts[0]) if not parts.is_empty() else null
+	if g == null or g.is_child():
+		Game.say("--handel: einen erwachsenen Gast angeben, z. B. --handel=edna", 3.0)
+		return
+	var p := Game.player
+	g.global_position = p.global_position - p.global_transform.basis.z * 1.5
+	g._set_idle(60.0)
+	get_tree().create_timer(2.0, false).timeout.connect(func() -> void:
+		var ui := Game.dialog
+		ui.open(g)
+		var price := func(kind: Item.Kind, extra: String) -> int:
+			var item := Item.create(kind, extra)
+			var value: int = ui._buy_price(item)
+			item.free()
+			return value
+		var check := func(what: String, ok: bool) -> void:
+			print("[Handel] %s: %s" % [what, "ok" if ok else "FEHLER"])
+		check.call("Schachbrett gehört dem Hotel", price.call(Item.Kind.CHESS_BOARD, "") == 0)
+		check.call("kaputte Birne kauft keiner", price.call(Item.Kind.BULB, "broken") == 0)
+		check.call("Laub höchstens 1", price.call(Item.Kind.LEAVES, "") <= 1)
+		var candle: int = price.call(Item.Kind.CANDLE, "")
+		check.call("Kerze (Füllmaterial) %d, die Hälfte" % candle, candle <= 2)
+		var lamp: int = price.call(Item.Kind.FLASHLIGHT, "")
+		check.call("Taschenlampe %d" % lamp, lamp >= 3)
+		ui.close())
 
 
 ## --budget=id: Beziehung nicht erschleichen (Spielkonzept 6.18, 5) – der Gast steht vor dir, nach 2 s laufen die Regeln

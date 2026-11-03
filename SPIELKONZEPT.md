@@ -3765,7 +3765,29 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 - Handel ist physisch: Der Spieler muss den Gegenstand in der Hand zum Gast bringen bzw. bekommt ihn in die Hand gedrückt.
 - Was man von einem Gast gekauft (oder erbeten) hat, nimmt er als Geschenk nicht zurück – Schenken und Zurückkaufen
   bringt keine Beziehung (6.18, 5; 2026-11-03).
-- Offen: Woher kommt Geld? (Startgeld, Fundstücke, Verkauf von Kürbissen, Aufträge für Gäste?)
+- **Woher kommt Geld** (entschieden 2026-11-03, ZIM-34): Die vorhandenen Quellen reichen – Startgeld, Münzen in
+  Kommoden, Spinden und vom Krähentisch, Verkauf, Lohn aus Bitten, Einsätze, Barspiele, Automat. Nur die Mengen sind
+  abgestimmt; **keine** steigenden Preise, **kein** Preisgeld, **keine** Hausjobs. Abgestimmt am 3.11.: kein
+  Mindestpreis mehr beim Verkaufen – Wertloses (Preis 0, Kaputtes) und Hoteleigentum (Schachbrett, Würfelbecher,
+  Dartpfeile, Barspiele) kauft keiner, nachwachsendes Füllmaterial (5.10: Laub, Spinnweben, Kerzen, kleine Kürbisse)
+  bringt nur die Hälfte; Kaffee- und Teebitten zahlen den Becher (1). Übersicht (Ein Spieltag = 24 min):
+
+  | Quelle | Betrag | ungefähr |
+  |---|---|---|
+  | Startgeld | 5 | einmal |
+  | Kommoden (~53 Schubladen, 30 % Münzen) | 1–4 | einmal ≈ 40, meist Tag 1–3 |
+  | Spinde (25 % Münzen) | 1–5 | einmal ≈ 10 |
+  | Krähen (Geschenk ab Gunst 0,4, 4.25) | 1–3 (65 %), sonst Kleinzeug | 1–4 je Tag, wenn man füttert |
+  | Spielautomat läuft nachts von selbst | im Mittel 0,7 | ≈ 2 je Tag |
+  | Gäste verlieren in Panik Münzen | 1–4 | 0–2 je Tag |
+  | Verkauf an Gäste | Grundpreis × 0,4–1,0 (Gast) × 1–1,25 (Beziehung) | nach Belieben, bis das Gästegeld (zusammen ~700–1000) alle ist |
+  | Lohn aus Bitten | Totenkopf 15, Kaffee/Tee 1 | selten |
+  | Einsätze (Mäxchen, Schach, Darts, Barspiele) | +3 / +8 je Sieg | 2–6 Partien je Tag |
+  | Wahrheit oder Pflicht | +1 | selten |
+
+  Ausgaben: Kaufen bei Gästen (Grundpreis × 0,9–1,7 × 0,7–1), Bar, Kaffee, Tee, Dosen, Automaten je 1, eine Runde 2,
+  Bestechen 3, Entschuldigen 5 / 15, verlorene Einsätze; der Spielautomat gibt im Mittel 0,69 je Geld zurück. Gefundenes
+  Geld trägt also die ersten Tage (≈ 55), danach kommen ≈ 3–8 je Tag von selbst – mehr nur über Handel und Spiele.
 - Gäste haben Bedürfnisse/Wünsche (z. B. „Ich brauche Batterien“, „Bring mir etwas aus der Küche“).
 
 ### 6.5 Panik

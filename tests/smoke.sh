@@ -394,6 +394,7 @@ done <<'LIST'
 600|netz,gaeste,beziehungen|--netz=mila,edna,bruno --trace
 600|netz,gaeste|--netz=mila,edna,bruno,lob --trace
 400|budget,gaeste,beziehungen|--budget=edna --trace
+400|handel,gaeste|--handel=edna --trace
 300|neid,gaeste,beziehungen|--day=5 --neid --trace
 600|streit,gaeste,beziehungen|--streit=bruno,edna,gesehen --trace
 400|streit,gaeste|--streit=bruno,edna,freund --trace

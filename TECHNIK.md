@@ -2137,6 +2137,16 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   `player.mask`, `mask_hooks` (je Masken-ID, ob sie hängt – nicht nach Reihenfolge), `director.doll_mask`. Debug
   `--maske[=id]`, Rauchtest `masken`.
 
+### Geld (Spielkonzept 6.4, ZIM-34)
+- `Game.money` (Start 5), Gäste `Guest.money` (aus dem Profil, kein Nachschub). Münzen (`Item.Kind.COINS`, Wert im
+  Zusatz) werden beim Aufheben zu Geld (`Player`). Quellen und Mengen als Tabelle in SK 6.4; die Zahlen stehen bei
+  `Dresser` (`COINS_CHANCE`), `LockerBank`, `Crows.COIN_GIFT`, `SlotMachine` (`PAYOUT`, `GHOST_EVERY`),
+  `Guest` (Panik-Münzen), `GuestRequests` (`money` je Bitte: Totenkopf 15, Kaffee/Tee 1), `TableStakes` (3 / 8).
+- **Verkaufen** (`DialogUI._buy_price`): Grundpreis `Item.price()` × `profile.buy` × Stufenbonus, bei Füllmaterial
+  (`Item.is_filler`) × `FILLER_SELL` 0,5, gerundet, **ohne Mindestpreis**; `NO_GIFT` (Schlüssel, Hoteleigentum) und
+  Preis 0 ergeben 0 – dann steht „kauft keiner“ ausgegraut da (`_sell_option`). **Kaufen** (`_sell_price`) unverändert
+  mit Mindestpreis 1. Debug `--handel=id`.
+
 ### Am Körper
 (`player.gd` `_pocket`, `_update_hand`, `set_pockets`; `player/pocket_map.gd`)
 `Item.goes_to_pocket()` (Kompass, Kartenblatt, Schlüssel außer `HAND_ONLY_KEYS`): `try_pick_up` löscht den
