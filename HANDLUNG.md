@@ -69,9 +69,10 @@ keiner von ihnen wird je darüber sprechen.
 | M12 | **Kesselbuch** in Josefs Spind (Heizraum): Josef Ahrend, Halloween 1987 (K4) | ab dem ersten Abstieg (M7) | fest (2.3, 7.4), Inhalt: Kandidat | Name Ahrend |
 | M13 | **Marion entlarven** – Register „geb. Ahrend“ + Kesselbuch, Beweis und Beziehung (K4) | so früh wie möglich | fest (2.8) | **Marions Auftrag:** ihren Vater erlösen |
 | M14 | Leviathanmauer bleibt nach Angriffen offen: Schlüssel zum Dachboden → Kopf des Kürbismanns, Erlösung – im Auftrag von Liesel Brück, die ihn 1987 köpfte (K7) | ab Tag 15 | fest (4.21, 2.7) | Nebenstrang mit Auftraggeberin |
-| M15 | **Das Monster will die Mitwisser:** Edna wird gezielt bedroht (K5) | um den 20.10. | Kandidat | Edna ist bis hierher geschützt (Spielkonzept 6.17), hier rettbar → überlebt sie, erzählt sie; sonst Notiz in 003 |
+| M15 | **Das Monster will die Mitwisser:** Edna wird gezielt bedroht (K5) | um den 20.10. | fest (2026-11-03, ZIM-5) | Edna ist bis hierher geschützt (Spielkonzept 6.17), hier rettbar → überlebt sie, erzählt sie; sonst Notiz in 003 |
 | M15a | **Seine Sachen** aus dem Lager: Karton „Personal 1987“, Taschenuhr (K4) | nach M11 und M13 | fest (2.8), Inhalt: Vorschlag | Ritual |
-| M15b | **Büro der Direktion** mit dem Schlüsselbund aus der Jeansjacke des Kürbismanns: Vertrag (K4) | nach M14 | fest (2.8: Vertrag), Weg: Vorschlag | Ritual |
+| M15b | **Büro der Direktion** mit dem Schlüsselbund aus der Jeansjacke des Kürbismanns – oder mit Josefs Bund vom alten Kessel in U2 (2.8, 2026-11-03): Vertrag (K4) | nach M14 bzw. M11 | fest (2.8: Vertrag), Weg Kürbismann: Vorschlag | Ritual |
+| M15c | **Milas Skizze:** Sie zeigt dem Spieler den alten Mann, den sie nachts hinten rechts in der Lobby gezeichnet hat – „Keiner außer mir hat ihn gesehen.“ Danach ist sie Mitwisserin (Spielkonzept 2.10, 6.17) | um den 18.10. | fest (2026-11-03, ZIM-8) | der alte Herr; Nachtpartie (6.14) |
 
 ### Akt V – Die letzte Woche (23.–30. Oktober)
 
@@ -116,6 +117,8 @@ flowchart TD
   M11 --> M15[M15 Edna]
   M11 --> M15a[M15a Seine Sachen]
   M14[M14 Kürbismann erlösen] --> M15b[M15b Büro: Vertrag]
+  M11 -.->|Josefs Bund| M15b
+  M11 --> M15c[M15c Milas Skizze]
   M13 --> M19a[M19a Ritual]
   M16a --> M19a
   M15a --> M19a
@@ -175,6 +178,8 @@ flowchart TD
   merkt, dass sie etwas wert ist, und behält sie als Faustpfand. Ersetzt den Gast, der sie „abgekauft“ hatte.
 - Wege: Freundschaft, Handel, Mäxchen-Einsatz, Klauen (6.2). Gerüchte nennen erst die Falsche (Magda).
 - Bruno ist bis dahin geschützt (6.17); hat der Spieler die Sicherung, ist Bruno Mitwisser und verwundbar.
+- **Fest (2026-11-03, ZIM-6):** Im Spind hing neben der Sicherung auch der **Sekretariatsschlüssel** – Bruno behält
+  beides. Über ihn öffnet sich um den 6.–10. das Sekretariat (Spielkonzept 2.10).
 - **Kernfrage nebenbei:** Bruno ahnt, wofür man sie braucht, und will mit nach U2 – oder seinen Anteil am
   Lager. Teilen oder nicht (7.4)?
 - **Warum stark:** gibt einer Kernfigur ihre Rolle im Geheimnis (6.0, „Zu klären“) und macht Anker 2 sozial statt nur
@@ -201,17 +206,18 @@ flowchart TD
 ### K5 – Edna, die 1987 hinauskam (Akt III–V)
 - **Fest (2.7):** Edna Wiegand war 1987 als Erwachsene im Hotel und gehört zu denen, die damals hinauskamen – und
   geschwiegen haben. Sie schrieb den ältesten Warnungszettel („E. K., Zimmer 017“); im Register steht sie mit
-  Geburtsnamen „geb. K…“ (dasselbe Muster wie bei Marion). Deshalb ihre Kerzen, deshalb versteckt sie sich beim ersten
+  Geburtsnamen „geb. Kessler“ (dasselbe Muster wie bei Marion; bisher Platzhalter „geb. K…“). Deshalb ihre Kerzen, deshalb versteckt sie sich beim ersten
   Flackern (6.0).
-- **Kandidat:** Im Lager (M11) steht ein Koffer von 1987 mit einem Männernamen – der, der damals nicht mit hinauskam.
-  Sie ist zurückgekommen, weil sie das Schweigen nicht mehr aushält.
+- **Fest (2026-11-03, ZIM-5/7):** Sie hieß **Edna Kessler**. Im Lager (M11) steht der Koffer ihres **Verlobten Heinrich
+  Brehm** von 1987 – der, der damals nicht mit hinauskam. Sie ist zurückgekommen, weil sie das Schweigen nicht mehr
+  aushält. Ihre Kerze fürs Fenster (Herzensbitte) steht zum Garten hin, wo er verschwand (Spielkonzept 6.14).
 - **Kandidat (2026-10-25) – sein Zimmer 042:** Der Mann floh in jener Nacht durch seine Terrassentür noch bis in den
   Garten. Sein Zimmer ist seitdem **versiegelt** (SPIELKONZEPT 6.19 (7)), sein Zimmerschlüssel mit Messinganhänger liegt
   im **Krähennest im großen Baum** gegenüber – von Krähengeneration zu Krähengeneration weitergegeben (4.25). Man holt ihn mit Geduld (füttern, er
   kommt bei hoher Gunst als Geschenk) oder mit Gewalt (ins Nest werfen). Drinnen: ein nützlicher Gegenstand und sein
-  **Tagebuch**, in dem Edna vorkommt – ein Weg zu ihr, bevor sie spricht. Optional, kein Meilenstein; sein Name ist
-  offen.
-- **Kandidat – um den 20.** will das Monster sie (2.3: „Das Monster will gerade die Mitwisser“) – die Puppe sitzt vor
+  **Tagebuch**, in dem Edna vorkommt – ein Weg zu ihr, bevor sie spricht. Optional, kein Meilenstein; er heißt
+  **Heinrich Brehm** (2026-11-03).
+- **Fest (2026-11-03, ZIM-5) – um den 20.** will das Monster sie (2.3: „Das Monster will gerade die Mitwisser“) – die Puppe sitzt vor
   ihrer Tür. Anders als bei Gustav **kann man sie retten** (Deko, Wache, sie woanders unterbringen) – bis hierher ist sie geschützt (Spielkonzept 6.17). Überlebt sie,
   erzählt sie, wie sich der Haupteingang 1987 geöffnet hat (K6). Stirbt sie, liegt ihr Wissen als Notiz in Zimmer 003.
 - **Warum stark:** gibt einer Kernfigur ihre Rolle, spiegelt Gustav (fest gegen rettbar) und zeigt das Schweigen der
@@ -255,10 +261,14 @@ flowchart TD
 
 ## 4. Offene Fragen
 
-- **Büro der Direktion:** Wo liegt es, und gibt es einen zweiten Weg hinein, falls der Kürbismann nicht erlöst wird (2.8)?
-- **Lücke 16.–22. Oktober:** Reicht Ednas Bedrohung (K5) als Anker, oder braucht es dort einen zweiten festen Moment?
-- **Mila Hellwig** hat noch keine Rolle im Geheimnis. Vorschlag: Sie zeichnet die Gäste und die Lobby – ihre Skizzen
-  zeigen, was andere übersehen (das Kreuz im Register, eine Gestalt im Aufzugsfenster). Gerücht-Stufe (2.3).
-- **Lore:** Der Warnungszettel von **Oktober 1987** beschreibt das Monster schon vor dem Kesselbrand an Halloween 1987.
-  Lesart: 1987 war das erste Jahr des Abkommens, noch mit dem Ding von unten; seit 1988 ist Josef das Monster. Passt
-  das?
+- ~~**Büro der Direktion:** Wo liegt es, und gibt es einen zweiten Weg hinein, falls der Kürbismann nicht erlöst wird (2.8)?~~
+  → im OG hinter dem Sekretariat (ZIM-150); zweiter Weg: Josefs Schlüsselbund am alten Kessel in U2 (2.8, 2026-11-03).
+  Das Sekretariat öffnet Brunos Schlüssel (K3), den Generalschlüssel darin eine Schublade mit Zahlenschloss (2.10).
+- ~~**Lücke 16.–22. Oktober:** Reicht Ednas Bedrohung (K5) als Anker, oder braucht es dort einen zweiten festen Moment?~~
+  → Ednas Bedrohung (M15) ist fest, dazu Milas Skizze (M15c) als zweiter Moment (2026-11-03).
+- ~~**Mila Hellwig** hat noch keine Rolle im Geheimnis.~~ → Sie sieht und zeichnet den alten Herrn (M15c); ihre
+  Herzensbitte ist die Nachtpartie, die er jede Nacht auf dem Schachbrett weiterspielt (Spielkonzept 6.14, 2026-11-03).
+- ~~**Lore:** Der Warnungszettel von **Oktober 1987** beschreibt das Monster schon vor dem Kesselbrand an Halloween 1987.~~
+  → Es war 1987 formlos – Hitze, Atem in den Rohren, Gäste, die fehlten; so beschreibt es Ednas Zettel. Erst Josef gab
+  ihm Gestalt, seit der ersten Ernte 1990 holt es als Leviathan (Spielkonzept 2.3, 2.10, 2026-11-03). Woher es kommt,
+  bleibt offen.

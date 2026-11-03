@@ -9,7 +9,7 @@ nicht gebaut · **eingefroren** = bewusst zurückgestellt.
 **Handlung:** **Hauptgeschichte** = ohne ihn kein Fortschritt in der Hauptgeschichte (HANDLUNG.md) · **Nebenstrang** =
 trägt einen Auftrag (Kürbismann, Marion) · **–** = Spielmechanik, nicht handlungsrelevant.
 
-Stand: 2026-10-28.
+Stand: 2026-11-03.
 
 ---
 
@@ -17,16 +17,19 @@ Stand: 2026-10-28.
 
 | Gegenstand | Code | Stand | Handlung | Wozu / wo | Konzept |
 |---|---|---|---|---|---|
-| Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | an der Leviathanmauer im Heizraum (2003 vom Gast aus 018 verloren); öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
-| Generalschlüssel | Schlüsselbund | gebaut, ohne Fundort | – | Schlüsselschrank in der Lobby entfallen (ZIM-136), neuer Ort offen (Büro der Direktion, ZIM-6) – bis dahin nur `--werkzeug=schluessel`; öffnet jede Zimmertür | 6.19 |
+| Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | an der Leviathanmauer im Heizraum (2005 von Martin Ebert aus 018 verloren); öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
+| Generalschlüssel | Schlüsselbund | gebaut, ohne Fundort | – | Schlüsselschrank in der Lobby entfallen (ZIM-136); **Fundort entschieden 2026-11-03 (ZIM-6), nicht gebaut:** Schublade mit Zahlenschloss im Sekretariat (Code ein Jahr des Abkommens, Vorschlag 1990; eine Ziffer aus Milas Nachtpartie) – bis dahin nur `--werkzeug=schluessel`; öffnet jede Zimmertür | 6.19, 2.10 |
 | Zweitschlüssel | Schlüsselbund „zimmer_…“ | gebaut | – | ein guter Freund gibt ihn dir bei der nächsten Begegnung; öffnet sein Zimmer, dort bist du willkommen, bleibt beim Schlosstausch | 6.19, 6.3 |
 | Gestohlener Zimmerschlüssel | Schlüsselbund „zimmer_…“ (getauscht: „alt_zimmer_…“) | gebaut | – | einem schlafenden Gast vom Nachttisch genommen; öffnet sein Zimmer bis zum Morgen danach, dann ist das Schloss getauscht | 6.19 |
 | Dachbodenschlüssel | `KEY` „dachboden“ | **teilweise** – Tür gebaut, Schlüssel fehlt | Nebenstrang (Kürbismann) | hinter der Leviathanmauer, ab etwa Tag 15 | 4.21, M14 |
 | Schlüssel zum Haupteingang | `KEY` „ausgang“ | **teilweise** – Tür gebaut, Schlüssel fehlt (nur in der Hand, nicht am Bund) | **Hauptgeschichte** (Ende) | an Halloween; Fundort offen (K6) | 2.1, 2.7, M18 |
 | Schaltschlüssel (Aufzug) | `KEY` „aufzug“ | **teilweise** – gebaut 28.10., liegt in Zimmer 18 und kommt an den Bund; im Aufzug noch ohne Wirkung (Reparatur offen) | **Hauptgeschichte** (Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
 | Schlüsselbund des Rezeptionisten | – | geplant (Vorschlag) | Nebenstrang (Marion) | in der Jeansjacke des erlösten Kürbismanns; öffnet das Büro der Direktion | 2.8, M15b |
+| Josefs Schlüsselbund | – | geplant (2026-11-03, ZIM-6) | Nebenstrang (Marion) | am alten Kessel im alten Heizkeller (U2), ab Aufzug oder Leviathanmauer; zweiter Weg ins Büro der Direktion, wenn der Kürbismann nicht erlöst ist; Hinweis von Marion oder im Kesselbuch | 2.8, M15b |
+| Sekretariatsschlüssel | – | geplant (2026-11-03, ZIM-6) | Nebenstrang (Marion; Generalschlüssel, Foto 2005) | hing neben der Hauptsicherung im Spind des Hausmeisters; Bruno behält ihn ab Nacht 5, zu bekommen über Freundschaft, Handel, Mäxchen, Klauen | 2.10, K3 |
+| Schlüssel zum westlichen Kellerschloss | – | geplant (Ort 2026-11-03, ZIM-12) | – (Abkürzung in den Westteil des Kellers) | Werkzeugkasten im Technikraum (UG) | 7.4 |
 | ~~Werkstattschlüssel~~ | – | gestrichen 2026-10-27 (Werkstatt entfällt zugunsten des alten Heizkellers) | – | – | 2.8, 7.4 |
-| Schlüssel von 1987 (Messinganhänger) | `KEY` „zimmer_042“ | gebaut (Zimmer 042 selbst noch nicht versiegelt) | – (optional; Edna, K5) | im Krähennest im großen Baum gegenüber 042; kommt als Geschenk der Krähen bei hoher Gunst nach Fütterungen an drei Tagen oder fällt beim Wurf ins Nest heraus; schließt Zimmer 042 auf (der Mann, der 1987 nicht hinauskam) | 4.25, 6.19 (7) |
+| Schlüssel von 1987 (Messinganhänger) | `KEY` „zimmer_042“ | gebaut (Zimmer 042 selbst noch nicht versiegelt) | – (optional; Edna, K5 – Zimmer ihres Verlobten Heinrich Brehm) | im Krähennest im großen Baum gegenüber 042; kommt als Geschenk der Krähen bei hoher Gunst nach Fütterungen an drei Tagen oder fällt beim Wurf ins Nest heraus; schließt Zimmer 042 auf (der Mann, der 1987 nicht hinauskam) | 4.25, 6.19 (7) |
 | Spindschlüssel (Pool-Umkleiden) | `KEY` „spind_NN“ (Bund: „Spindschlüssel N“) | **teilweise** – Spinde 7, 20, 32, 44 schließen damit auf (ZIM-145, `LockerBank.OPENABLE`), Schlüssel liegen noch nirgends | – | Fundorte offen; ohne Modell (Nutzer 31.10.) | – |
 | Schlüssel der übrigen versiegelten Zimmer | – | geplant | – (optional) | 132 von Liesel (Freund), 038 über einen Brief des Gastes von 1987 (Versteck offen), 018 an der Leviathanmauer | 6.19 (7), ZIM-30 |
 | Familienfoto der Brücks (1987) | – | geplant | – (optional; Liesel) | im versiegelten Zimmer 132; Liesel bringen = Abschluss für sie | 6.19 (7), ZIM-30 |
@@ -46,7 +49,8 @@ Stand: 2026-10-28.
 | Schädel des Kürbismanns | – | geplant | – (Belohnung) | nach der Erlösung; stärkste Deko | 4.21 |
 | Blutige Axt | – | geplant | – (Belohnung) | nach der Erlösung; an der Tür klaut keiner | 4.21 |
 | Jeansjacke | – | geplant | Nebenstrang (Marion, Schlüsselbund) | nach der Erlösung; Deko | 4.21, 2.8 |
-| Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Lager, K5) | Lager in U2; Namen der Warnungszettel | 7.4, M11 |
+| Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Lager, K5) | Lager in U2; Namen der Warnungszettel, fest auch im Register (u. a. Heinrich Brehm 1987, Rudolf Hain 2008) | 7.4, M11 |
+| Silberstock des alten Herrn | – | geplant (2026-11-03, ZIM-8) | – (Brunos Herzensbitte statt Lieblingskürbis) | lehnt im Büro der Direktion am roten Sessel wie auf dem Porträt; Schlangenkopf aus Silber, unter dem Knauf „31.10.1987“; Bruno kennt ihn von der Fotowand | 6.14, 2.10 |
 | Goldener Ehering („O. & G. 1976“) | `RING` | gebaut 2026-11-03 | – (seltene Bitte „Wiederfinden“) | Gerda Wagners (H10, Zimmer 007); im Krähennest vor dem Dachfenster nahe dem Futtertisch, durchs aufgeklappte Fenster zu greifen; ihr schenken → Freundschaft und ein kleines Geschenk (Kerze, sonst Bonbons); sie steckt ihn gleich an; draußen abgelegt stehlen ihn die Krähen wieder | 4.25, 6.14, ZIM-50 |
 | ~~Kohle~~ | – | gestrichen 2026-10-27 (Kessel ist Attrappe) | – | – | 7.4 |
 | Bolzenschneider | – | eingefroren | – | Lager aufbrechen | 7.4 |
@@ -61,11 +65,11 @@ Stand: 2026-10-28.
 | Aushangbrett (Wettbewerb, Hausordnung) | `NoticeBoard` | gebaut | **Hauptgeschichte** (Regel der Puppe) | Lobby | 2.5, M5 |
 | Warnungszettel 1987–2019 | `WarningNote` | gebaut (sechs Zettel) | Hauptgeschichte (Hinweise; 1987 = Edna) | verteilt; je eine UV-Zeile | 4.13, 2.5, 2.7 |
 | Kartenblätter (EG, OG, Keller) | `MAP` | gebaut | – (Orientierung; Keller: „hier unten schläft es“) | Keller-Skizze in Zimmer 017 | 3.2, 7.9 |
-| UV-Schrift an Wänden (Josef 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18 (dazu Hinweise von 13 und 018 aus 2003, Texte offen) | 4.16, 2.3, 7.4 |
+| UV-Schrift an Wänden (Josef 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18 (dazu Hinweise von 13 und 018 aus 2005: Entwürfe in 7.4 – Zimmer 13, Fleck an der Fotowand, Leviathanmauer) | 4.16, 2.3, 7.4 |
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
 | Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | gebaut | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
-| Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“) | Rezeption | 2.3, K1, M6, M13 |
+| Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“ – wird „geb. Kessler“, ZIM-7) | Rezeption | 2.3, K1, M6, M13 |
 | Notizbuch des Hausmeisters | – (festes Buch, `CaretakerBook`) | gebaut 28.10. – vier Seiten, gelesen: drei Aufgaben im Notizbuch; Texte Vorschlag (Sicherung im Spind seit 30.10.) | **Hauptgeschichte** (drei Mängel am Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
 | Kesselbuch Josefs | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Josefs Spind im Heizraum | 2.3, 7.4, M12 |
 | Personalakte Josefs | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |

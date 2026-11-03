@@ -273,7 +273,10 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - ~~**Zeitschleife (2.2):** Die Welt setzt sich zurück, Wissen kann bleiben – über die eigenen Zettel. Codes, Namen und wer lügt, gibt man sich selbst weiter. So wird jeder Durchgang schneller und tiefer, auch wenn man scheitert.~~ (verworfen, 2.7)
 
 **Zu klären**
-- **Was ist das Ding unter dem Hotel** vor dem Abkommen gewesen – bleibt das bewusst offen?
+- ~~**Was ist das Ding unter dem Hotel** vor dem Abkommen gewesen – bleibt das bewusst offen?~~ – entschieden
+  2026-11-03 (ZIM-9): **Es war formlos.** 1987 hatte es keine Gestalt – Hitze, Atem in den Rohren, Gäste, die fehlten.
+  Genau das beschreibt Ednas Zettel von Oktober 1987 (2.7), kein Wesen. Erst Josef gab ihm in der Nacht zu
+  Allerheiligen Gestalt (seit der ersten Ernte 1990 holt es als Leviathan, 2.10). Woher es kommt, bleibt bewusst offen.
 - Wie viel erfährt man **vor dem ersten Angriff** (2.1)? Vorschlag: nichts, was den friedlichen Anfang verrät – höchstens das Gästebuch.
 - **Wie viele Sperrbereiche** für den Anfang? Vorschlag: drei bis vier (siehe Kandidaten oben).
 - Wie hängt das Geheimnis mit dem **Schlüssel an Halloween** (2.1) zusammen – ist die Wahrheit Voraussetzung für die Flucht, oder ein eigenes, besseres Ende?
@@ -685,16 +688,27 @@ bleiben leer.
      ein Monster gibt.
 
 **Zu den Enden noch offen**
-- Ein **Epilog ~~im nächsten Jahr~~ zur nächsten Ernte 2029** (vorgeschlagen, nicht entschieden): Am 1. Oktober kommen
-  neue Gäste an, an der Fotowand (5.14) hängt das Gruppenfoto 2026 mit lauter verwischten Gesichtern – nur der alte
-  Herr ist scharf (2.10) –, in Zimmer 13 liegt ein Warnungszettel in der Schrift des Spielers. Für Ende 2 und 3?
-- **Wer selbst zum Vampir geworden ist** (4.22), kann bei Ende 1 nicht ins Licht – braucht ein eigenes Ende.
+- Ein **Epilog ~~im nächsten Jahr~~ zur nächsten Ernte 2029** – **entschieden 2026-11-03 (ZIM-10): nach jedem Ende,
+  je eigene Variante**, Standbilder mit Text (2.10). Am 1. Oktober 2029 kommen neue Gäste an:
+  - **1a** (Schlüssel, vergessen): an der Fotowand (5.14) das Foto 2026 mit den Überlebenden scharf; in Zimmer 13 liegt
+    ein Warnungszettel in der Schrift des Spielers – die eine Zeile, die im Notizbuch übrig blieb (2.10).
+  - **1b** (Schlüssel, Abkommen gebrochen): keine Einladungen, keine Ernte – das Hotel steht leer.
+  - **2** (er holt alle): das Foto 2026 mit lauter verwischten Gesichtern, nur der alte Herr ist scharf (2.10).
+  - **3** (der Spieler wird der Leviathan): neue Gäste, und unten brennt das Feuer von 1987.
+  - **Vampir** (unten): er wartet auf dem Dachboden.
+- ~~**Wer selbst zum Vampir geworden ist** (4.22), kann bei Ende 1 nicht ins Licht – braucht ein eigenes Ende.~~ –
+  entschieden 2026-11-03 (ZIM-10): Er **bleibt drinnen** – das Tor fällt zwischen ihm und den anderen zu, er bleibt bei
+  den Bedrohungen. Im **Epilog 2029** ist er die Bedrohung auf dem Dachboden (4.22).
 - ~~**Lässt sich die Sequenz steuern** (den Schlüssel selbst drehen, in Ende 3 selbst zugreifen) oder läuft sie ganz
   von allein ab?~~ → läuft von allein, Standbilder mit Text (2.10, 2026-10-30).
-- Wie wird das Fressen in Ende 3 gezeigt, ohne die Altersempfehlung (ab 16) zu sprengen – Schnitte, Schatten, Ton?
+- ~~Wie wird das Fressen in Ende 3 gezeigt, ohne die Altersempfehlung (ab 16) zu sprengen – Schnitte, Schatten, Ton?~~ –
+  entschieden 2026-11-03 (ZIM-10): **nur Text** – schwarze Bilder mit wenigen Sätzen, kein Bild vom Fressen.
 - **Edna Wiegand war 1987 als Erwachsene im Hotel und kam hinaus.** Sie schrieb den Warnungszettel von Oktober
   1987 („E. K., Zimmer 017“), im Register steht sie mit Geburtsnamen „geb. K…“. Sie bleibt alt. Dass sie und Liesel
   sich erinnern, liegt daran, dass das Abkommen 1987 noch nicht galt (2.10).
+  **Entschieden 2026-11-03 (ZIM-5, ZIM-7):** Sie hieß **Edna Kessler**. Der Mann aus **042**, der 1987 durch seine
+  Terrassentür floh und nicht hinauskam, war ihr **Verlobter Heinrich Brehm** (HANDLUNG K5); sein Koffer steht bei den
+  Fundsachen in U2 (7.4). Ihre Bedrohung um den 20. ist fest (HANDLUNG M15).
 - **Den Rezeptionisten hat Liesel Brück geköpft** (H26, Zimmer 025, ängstlich) – 1987 ein Teenager, heute um die
   55, Generation alt. Sie kam hinaus und ist als Gast zurückgekommen, um ihm seinen Kopf wiederzugeben, den sie
   damals auf dem Dachboden versteckt hat: die **Auftraggeberin fürs Erlösen** (4.21). **Das zweite Kind kam nicht
@@ -781,6 +795,14 @@ größer, mitten in seinem Revier.
 - **Schlüssel** (Vorschlag): Der Rezeptionist hatte die Schlüssel des Hauses. Sein **Schlüsselbund steckt in der
   Jeansjacke des Kürbismanns** (4.21) – wer ihn erlöst, kommt ins Büro der Direktion und damit an den Vertrag. So führt
   Liesels Auftrag (2.7) in Marions. (Der Werkstattschlüssel entfällt mit der Werkstatt, 2026-10-27.)
+- **Zweiter Weg ins Büro (entschieden 2026-11-03, ZIM-6):** für den, der den Kürbismann nicht erlöst – schwer und erst
+  ab der Mitte der Geschichte. **Josefs Schlüsselbund:** Als Hausmeister hatte Josef 1987 alle Schlüssel des Hauses am
+  Gürtel, auch den zum Büro, und das Hotel hat seitdem kein Schloss getauscht. Der Bund **hängt am alten Kessel im
+  alten Heizkeller (U2)**, im Revier des Monsters – erreichbar mit dem Aufzug (ab etwa dem 14.) oder durch die
+  Leviathanmauer (ab etwa Tag 15, 7.4). Den Hinweis geben Marion (*„Vater hatte das ganze Haus am Gürtel.“* – Text
+  Vorschlag) oder das Kesselbuch.
+- **Das Büro (2026-11-01, ZIM-150):** im OG, nur durchs Sekretariat zu erreichen, die Tür verschlossen (Schlüsselbund
+  des Rezeptionisten oder Josefs Bund). Es ist ein **Sperrbereich** (2.3), das Sekretariat nicht (2.10).
 
 **Das Ritual – in der Halloween-Nacht**
 - **Nur in der letzten Nacht** (Vorschlag: vom Fest am Abend bis zur Öffnung des Haupteingangs, 2.7). Vorher sammelt
@@ -845,7 +867,12 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   Mitteilung), Gustav also am 3. Oktober. Zurückblättern zeigt jeden Oktober seit 1987 mit ein paar Zeilen und so vielen
   Kreuzen, wie auf dem Gruppenfoto des Jahres Gesichter verwischt sind (5.14) – **geändert 2026-10-30 (2.10):** Kreuze
   nur in Erntejahren, ohne Schlüssel die ganze Seite, dazu die Überlebenden von 2005 und ihre Rückkehr; Edna steht 1987 als „Edna K…“ in
-  Zimmer 017. Die Namen früherer Jahre sind erfunden (Vorschlag). Gelesen: ein neues Kreuz und die alten Jahre je als
+  Zimmer 017. ~~Die Namen früherer Jahre sind erfunden (Vorschlag).~~ **Entschieden 2026-11-03 (ZIM-7):** Wer einen Koffer
+  bei den Fundsachen (7.4) oder einen Warnungszettel (4.13) hat, bekommt einen **festen Namen** im Register, mit Kreuz,
+  wenn er starb – z. B. 1987 Heinrich Brehm in 042, 2005 Clara Vogt in 13 und Martin Ebert in 018 (2.10); die übrigen
+  bleiben gewürfelt. Ednas Geburtsname ist **Kessler** – statt des Platzhalters „geb. K…“ steht 2026 „geb. Kessler“,
+  1987 „Edna Kessler“ in 017 (wie „geb. Ahrend“ bei Marion). **Zimmer 13 steht 2026
+  nicht im Register** – die Spielfigur hat keinen Namen. Gelesen: ein neues Kreuz und die alten Jahre je als
   Notiz im Notizbuch (3.10).
   *Klingel umgesetzt 2026-11-02 (ZIM-146):* Tischklingel aus Messing auf schwarzem Fuß neben dem Register, [E]
   schlägt sie an – heller Ton, Lärm 10 m (das Monster wird neugierig), niemand kommt (ein Gedanke).
@@ -960,6 +987,15 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   Die Direktion hat es abgenommen, weil darauf Überlebende scharf zu sehen sind. Es liegt im **Sekretariat**, leicht zu
   finden: in einer nicht abgeschlossenen Schreibtischschublade, das Glas im Rahmen gesprungen. Das Sekretariat ist das
   Vorzimmer des Büros der Direktion, aber **kein Sperrbereich** – im Plan fehlt es noch (malt der Nutzer).
+- **Zugang zum Sekretariat (entschieden 2026-11-03, ZIM-6):** Die Tür ist verschlossen und öffnet sich **um den 6. bis
+  10. Tag** über Brunos Strang (HANDLUNG K3): Im Spind des Hausmeisters, den Bruno in der fünften Nacht aufbricht, hing
+  neben der Hauptsicherung auch der **Sekretariatsschlüssel**, und Bruno behält beides. Ab dem 6.10. geht das Gerücht
+  *„Bruno hat mehr mitgenommen“* (Text Vorschlag); den Schlüssel bekommt man auf seinen Wegen (Freundschaft, Handel,
+  Mäxchen, Klauen, 6.2).
+- **Der Generalschlüssel liegt im Sekretariat** (entschieden 2026-11-03, ZIM-6; ersetzt „erster Kandidat Büro“ in
+  6.19): in einer **zweiten, verschlossenen Schublade** mit **Zahlenschloss** – ein eigener Weg neben der Tür. Der Code
+  ist ein Jahr des Abkommens, das man aus Dokumenten zusammensetzt (Vorschlag: **1990**, die erste Ernte, aus dem
+  Gästebuch); eine Ziffer gibt Milas Nachtpartie (6.14). Ermitteln statt Holen.
 - Das Gruppenfoto beim Fest (5.9) und das Foto draußen vor dem Hotel in Ende 1 (2.7) sind eigene Bilder.
 
 **Das Vergessen**
@@ -3814,7 +3850,9 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
   viel eigener Inhalt dazukommt.
 
 **Zu klären**
-- Welche Rolle Edna, Bruno und Mila im Geheimnis spielen.
+- ~~Welche Rolle Edna, Bruno und Mila im Geheimnis spielen.~~ – beantwortet 2026-11-03 (ZIM-5, ZIM-8): Edna kam 1987
+  hinaus und wird um den 20. bedroht (HANDLUNG K5, M15), Bruno hat Hauptsicherung und Sekretariatsschlüssel (K3, 2.10),
+  Mila sieht und zeichnet den alten Herrn (HANDLUNG M15c, 2.10). Ihre Herzensbitten hängen daran (6.14).
 - ~~**Können Kernfiguren sterben?**~~ – beantwortet 2026-10-25: nein. Sie können Opfer werden, überleben aber jeden
   Angriff verletzt (6.17). Seit 2026-10-30 nur, bis ihre Rolle erfüllt ist (6.17).
 - **Balance ohne Nachschub:** Das Monster darf das Hotel nicht vor Halloween leeren. Angriffschance (4.17), Opferzahl,
@@ -4535,8 +4573,18 @@ Full-body 3D character of a 7-year-old girl, child proportions with a slightly l
 > - **Gebaut:** Bastler – Glühbirne, ängstlich – zur Bar begleiten, geschäftstüchtig – Totenkopf gegen 15 Geld,
 >   Plaudertasche – einem Freund ausrichten, Skeptiker – Spinnweben aus dem Keller, Griesgram – Tee, Kinder – eine
 >   Partie; Edna – eine Kerze fürs Fenster, Bruno – ein geschnitzter Lieblingskürbis, Mila – eine Partie Schach.
-> - **Noch offen:** der Bezug der Kernfiguren-Bitten zum Geheimnis (ihre Rolle darin ist noch nicht geklärt, 6.0),
->   zentrale Gäste (noch nicht besetzt), Verstecken mit Kindern und Apfeltauchen als „Spielen“, Kuscheltier
+> - **Herzensbitten der Kernfiguren am Geheimnis (entschieden 2026-11-03, ZIM-8, nicht gebaut):** alle drei hängen an
+>   der Rolle der Figur (6.0).
+>   - **Edna** – die Kerze bleibt, wie gebaut; sie steht im **Fenster zum Garten**, wo ihr Verlobter Heinrich Brehm 1987
+>     verschwand (2.7, HANDLUNG K5). Wer die Bitte erfüllt, bekommt eine Andeutung (Text offen).
+>   - **Bruno** – statt des Lieblingskürbisses (zu albern für den gierigen Händler) **der Silberstock des alten
+>     Herrn** mit dem silbernen Schlangenkopf (2.10). Bruno kennt ihn von der Fotowand – auf jedem Foto steht der alte
+>     Herr damit hinten rechts: *„Echtes Silber.“* Der Stock **lehnt im Büro der Direktion am roten Sessel** wie auf dem
+>     Porträt, ist also erst spät zu haben (2.8). Unter dem Knauf eingraviert: **„31.10.1987“**, das Datum des Abkommens.
+>   - **Mila** – **die Nachtpartie:** Jeden Morgen steht auf dem Schachbrett eine neue Stellung, obwohl keiner gespielt
+>     hat – der alte Herr spielt nachts (HANDLUNG M15c). Mila: *„Spiel die Partie mit mir zu Ende.“* Wer gewinnt, findet
+>     unter dem König eine **Ziffer** für das Zahlenschloss im Sekretariat (2.10).
+> - **Noch offen:** zentrale Gäste (noch nicht besetzt), Verstecken mit Kindern und Apfeltauchen als „Spielen“, Kuscheltier
 >   wiederfinden, Bitten am Telefon und als Zettel an Zimmer 13.
 > - **Seltene Bitten (gebaut 2026-11-03, ZIM-50):** einmal im Spiel, ohne Frist, außerhalb der kleinen Bitten. Die
 >   erste ist „Wiederfinden“: Gerda Wagners Ehering aus dem Dachnest (4.25).
@@ -4618,10 +4666,11 @@ vorbei (4.33).
 nach Datum – wer langsam spielt, verliert eine Figur nicht, bevor sie ihre Rolle hatte. Er bleibt unsichtbar: Geschützte
 werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe wie für alle Gäste.
 - **Bruno:** bis der Spieler die Hauptsicherung hat, gleich wie (7.4). Dann ist er Mitwisser – und die will das Monster (2.3).
-- **Edna:** bis zur gezielten Bedrohung um den 20. (HANDLUNG M15, K5) – dort ist sie rettbar; überlebt sie, erzählt sie,
-  wie sich 1987 der Haupteingang öffnete (2.7), stirbt sie, liegt ihr Wissen als Notiz in Zimmer 003.
+- **Edna:** bis zur gezielten Bedrohung um den 20. (HANDLUNG M15, K5, fest seit 2026-11-03) – dort ist sie rettbar;
+  überlebt sie, erzählt sie, wie sich 1987 der Haupteingang öffnete (2.7), stirbt sie, liegt ihr Wissen als Notiz in
+  Zimmer 003.
 - **Marion:** bis Halloween – das Ritual braucht ihre Stimme (2.8).
-- **Mila:** bis ihre Rolle im Geheimnis steht (6.0).
+- **Mila:** bis sie dem Spieler ihre Skizze des alten Herrn gezeigt hat (um den 18., HANDLUNG M15c, 2026-11-03).
 - **Weitere Figuren:** Schutz nur, wenn es ohne die Figur keinen Weg weiter gibt; sonst ein Ersatzweg (Hugo → Liesel,
   4.32; Edna → ihr Wissen als Notiz in Zimmer 003). Offen: Ersatzwege für Liesel und Oskar.
 
@@ -4823,7 +4872,8 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 > durchkommen (zu lange jemand im Weg); der Reparaturdank bleibt einmal je Tür und Tag (+8 je Erwachsenem), ohne
 > Tagesbudget (entschieden 2026-11-03, ZIM-54). Brecheisen (Heizkeller) und Werkzeugkasten (Technikraum) stehen im Plan.
 > **Schlüsselschrank entfallen (2026-10-31, gebaut 2026-11-01, ZIM-136):** An seiner Stelle kommt die Fotowand (ZIM-133).
-> Der Generalschlüssel hat bis zur Entscheidung über das Büro der Direktion (ZIM-6) keinen Ort im Spiel – Zimmer nur über
+> Der Generalschlüssel hat bis zum Bau des Sekretariats-Strangs (ZIM-6, entschieden 2026-11-03: Schublade mit
+> Zahlenschloss im Sekretariat, 2.10) keinen Ort im Spiel – Zimmer nur über
 > Einlass, Schlüssel oder Brecheisen; zum Probieren `--werkzeug=schluessel`.
 > **Badtüren (2026-10-28):** Gäste gehen ab und zu in ihr Bad und schließen die Tür hinter sich; ein Schloss gibt es nicht.
 > **Schlüssel stehlen (2026-10-28)** wie in (4): geduckt am Bett des Schlafenden (stehend weckt [E] ihn, 3.6), Folgen bei Zeugen wie beim Deko-Diebstahl; das
@@ -4963,7 +5013,9 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
   eigenes Werkzeug und leiht es Freunden.
 - **Generalschlüssel:** *wird neu gefasst (2026-10-26):* Der Schrank darf nicht offen in der Lobby hängen, und eine
   Scheibe einzuschlagen ist zu billig. Der Schlüssel soll an einem schwer zugänglichen Ort liegen und Mühe kosten –
-  erster Kandidat ist das **Büro der Direktion**, in das man erst hineinkommen muss (ZIM-6). Der verglaste
+  erster Kandidat ist das **Büro der Direktion**, in das man erst hineinkommen muss (ZIM-6). **Entschieden 2026-11-03
+  (ZIM-6):** Er liegt im **Sekretariat** in einer Schublade mit Zahlenschloss; Tür und Schublade haben getrennte Wege
+  (2.10). Der verglaste
   Schlüsselschrank in der Lobby ist gestrichen (2026-10-31, ZIM-136). Der Schlüssel öffnet jede Zimmertür, außer der Bewohner ist drin und hat den **Riegel**
   vorgeschoben, und außer den versiegelten Zimmern (7). Wer gesehen wird, wie er damit eine fremde Tür aufschließt, gilt als Einbrecher (5), nur ohne Lärm.
 - **Erste Zahlen** (zum Probespielen):
@@ -5261,7 +5313,9 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
 - **Belohnung beim ersten Start:** Das Licht in der Kabine geht an, ein „Ding“ – und **die erste Fahrt geht ohne Zutun
   nach U2**, obwohl es keinen Knopf dafür gibt.
 - **Danach repariert Hugo Stein den Aufzug** (2026-10-27): Der Knopf für U2 ist wieder da. Hugo kommt nach der
-  Reparatur selbst auf den Spieler zu und erzählt davon (Text offen).
+  Reparatur selbst auf den Spieler zu und erzählt davon (Text offen). **Entwurf (2026-11-03, ZIM-12, Vorschlag):**
+  > Der Knopf für ganz unten – hab ihn wieder eingesetzt. Lag hinten im Bedienfeld, rausgedreht, und die Schrift
+  > darunter zerkratzt. Gründlich. So was macht keiner aus Versehen. … Wenn Sie da runterfahren: nicht allein.
 
 **Den Fahrstuhl benutzen**
 - **Halte:** U2 · Untergeschoss · Erdgeschoss (Lobby) · Obergeschoss · Dachgeschoss (7.10). U2 ist sonst nur durch die Leviathanmauer erreichbar (ab etwa Tag 15, unten); für die anderen Ebenen ist er eine Abkürzung, ohne durch die Treppenhäuser zu müssen.
@@ -5283,11 +5337,14 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   **Vorhängeschloss**. Vor dem 2.10., 20 Uhr kommt niemand in den Keller.
   - Bei seinem **ersten Aufbruch** (Siegerehrung, 2.5, 2.6) **bricht das Monster das östliche Schloss auf**. Darum
     führen Gustavs Spur, der Suchtrupp und Doris' Weg (2.9) über das Treppenhaus Ost.
-  - Der **Schlüssel zum westlichen Schloss** liegt irgendwo **im Keller** (Ort offen). Wer ihn findet, hat eine
-    Abkürzung in den Westteil des Kellers.
+  - Der **Schlüssel zum westlichen Schloss** liegt ~~irgendwo **im Keller** (Ort offen)~~ im **Werkzeugkasten im
+    Technikraum** (UG, entschieden 2026-11-03, ZIM-12) – früh zu finden. Wer ihn hat, hat eine Abkürzung in den
+    Westteil des Kellers.
 - **Treppen nach U2 zugemauert:** Beide Treppenhäuser führen eigentlich tiefer, sind unterhalb von U1 aber zugemauert –
   sichtbar jünger als der Rest. Die **Direktion** ließ sie **nach ~~2003~~ 2005** (2.10) schließen, weil die Gäste aus 13 und 018 zu
   nah dran waren (Zimmer 18, unten). Sieht man sich die Mauern an, sagt die Spielfigur etwas dazu (Text offen).
+  **Entwurf (2026-11-03, ZIM-12, Vorschlag):** erste Mauer *„Die Ziegel sind neuer als alles andere hier. Jemand wollte
+  nicht, dass man weiter runterkommt.“* · zweite Mauer *„Hier auch. Gleich alt wie drüben.“*
 - **Der Heizraum in U1 ist eine Attrappe:** ein neuer Raum, gebaut **auf** dem alten Heizkeller, mit einem **modernen
   Heizkessel**, der **nicht angeschlossen** ist. Er soll nur erklären, warum aus dem Raum immer noch Hitze kommt.
   Untersucht man ihn näher, merkt man es: **Die Rohre führen nach unten und sind heiß.** Geheizt wird wie 1987 aus dem
@@ -5309,6 +5366,9 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   **Feuer von 1987 brennt dort noch** – er heizt immer noch. Hier ruht das Monster, hier endet das Ritual (2.8). Die
   Werkstatt (früher 2.8) entfällt zu seinen Gunsten.
   - Das Monster **dekoriert** U2 mit **Knochen** und **verfaulten Kürbissen** – ein Ort für Deko (Einzelheiten offen).
+    **Entwurf (2026-11-03, ZIM-12, Vorschlag):** Die Kürbisse stehen in Reihen vor dem alten Kessel, aufgestellt **wie
+    zum Ankunftsfoto** (2.10), die eingefallenen Gesichter alle zum Feuer; hinten rechts ein Platz frei. Knochen nur
+    verstreut dazwischen, nichts Blutiges (Altersfreigabe). Über dem Kessel hängt Josefs Schlüsselbund (2.8).
 - **Wege nach U2:** mit dem reparierten Aufzug (oben) oder durch die Leviathanmauer (ab etwa Tag 15).
 
 **Zimmer 18 (entschieden 2026-10-27)**
@@ -5321,10 +5381,18 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - **UV-Hinweise:** 13 und 018 hinterließen einander Hinweise in **UV-Farbe**. Sie hatten herausgefunden, dass das
   Monster aufmerksam wird, wenn man über es redet (4.7), und dass es UV-Licht nicht erträgt (4.16). Und sie ahnten,
   dass sie es vielleicht nicht schaffen – die Zeichen sollten spätere Jahre warnen. Texte und Orte offen (Zimmer 18
-  hat schon UV-Schrift, 4.16).
+  hat schon UV-Schrift, 4.16). **Namen (entschieden 2026-11-03, ZIM-7):** in 13 wohnte **Clara Vogt**, in 018 **Martin
+  Ebert**. **Entwurf Texte und Orte (ZIM-12, Vorschlag):**
+  - **Zimmer 13**, innen an der Badezimmertür – der Spieler schläft also seit dem 1. neben ihr: *„M. – es hört zu, wenn
+    man redet. Schreib es auf, sag es nicht. C.“*
+  - **Lobby, unter dem Fleck des Fotos 2005** (2.10): *„Wir waren hier. Oktober 2005. C. V. · M. E.“*
+  - **Heizraum, an der Leviathanmauer:** *„Licht hält es auf. Nicht lange. Lauf, solange es blinzelt.“*
 - **Jahresfoto ~~2003~~ 2005** an der Fotowand (5.14): Beide sind verwischt, der Schlüsselträger und die anderen
   Überlebenden scharf (2.10); das Foto gibt Hinweise auf die beiden (welche, offen). Es hängt nicht an der Wand
-  (Fleck auf der Tapete) und liegt im Sekretariat in einer offenen Schublade (2.10).
+  (Fleck auf der Tapete) und liegt im Sekretariat in einer offenen Schublade (2.10). **Entwurf Hinweise (2026-11-03,
+  ZIM-12, Vorschlag):** Clara hält einen Zimmerschlüssel mit dem Anhänger „13“, Martin trägt eine Taschenlampe mit
+  violettem Aufsatz am Gürtel (der UV-Aufsatz aus Zimmer 18); zwischen ihnen scharf Rudolf Hain mit dem Koffer, dessen
+  Namensschild man in U2 wiedererkennt. Auf der Rückseite in Bleistift: *„Vogt · Ebert · Hain – 1. Oktober 2005“*.
 - *Umgesetzt (2026-10-28):* Auf dem Tisch in Zimmer 18 liegen das **Notizbuch des Hausmeisters** (festes Buch, [E]
   liest es, vier Seiten), der **Schaltschlüssel** (an den Bund, im Aufzug noch ohne Wirkung) und der **UV-Aufsatz**. Hat
   man das Notizbuch gelesen, stehen die drei Mängel als drei Zeilen unter „Aufgaben“ (3.10): *„Aufzug: Schaltschlüssel
