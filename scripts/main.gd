@@ -410,6 +410,7 @@ extends Node3D
 ##   --kraehen=futter|schluessel vor dem Futtertisch im Gärtchen von 13 (ohne Tisch im Plan ein Ersatztisch), Brotkrumen
 ##                               darauf, die Zeit fast um, nach 3 s siehst du weg · schluessel: hohe Gunst nach drei Tagen –
 ##                               statt des Futters liegt der Schlüssel von 1987 da
+##   --kraehen=geschenk          wie futter, Gunst knapp über der Schwelle – es kommt Kleinzeug (Batterie, Streichhölzer, Kerze)
 ##   --ratten[=welle]            fünf Ratten um dich im Keller (sonst im Heizkeller) · welle: nach 2 s rennen sie davon, als käme
 ##                               das Monster aus dem Heizkeller
 ##   --hund                      nach 1 s heult hinter der Waldkante ein Hund (sonst zufällig alle paar Spielminuten)

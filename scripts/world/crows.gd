@@ -49,12 +49,15 @@ const FAVOR_DECAY := 0.2                   ## so viel näher zur Mitte je Spielt
 ## Füttern: die erste Mahlzeit eines Tages hebt den Ruf so viel, jede weitere am selben Tag so viel
 const FAVOR_FEED := 0.35
 const FAVOR_FEED_MORE := 0.1
-## Geschenke (Tuning – „ab welchem Ruf“ ist noch zu klären, ZIM-31): ab dieser Gunst liegt statt des Futters ein
-## Geschenk da; der Schlüssel von 1987 erst ab KEY_FAVOR und nach Fütterungen an KEY_DAYS verschiedenen Tagen
+## Geschenke (Spielkonzept 4.25, Entscheidung 3.11.): ab dieser Gunst liegt statt des Futters ein Geschenk da; der
+## Schlüssel von 1987 erst ab KEY_FAVOR und nach Fütterungen an KEY_DAYS verschiedenen Tagen
 const GIFT_FAVOR := 0.4
 const KEY_FAVOR := 0.6
 const KEY_DAYS := 3
 const COIN_GIFT := Vector2i(1, 3)          ## Münzen als Geschenk: so viel Geld
+## Statt Münzen mit dieser Chance nützliches Kleinzeug aus dem Hotel (kein eigener Gegenstand, ZIM-31)
+const USEFUL_CHANCE := 0.35
+const USEFUL := [Item.Kind.BATTERY, Item.Kind.MATCHBOX, Item.Kind.CANDLE]
 ## Mit Groll: so weit sehen sie ihn (draußen), so oft krächzt eine (bei vollem Groll; weniger Groll seltener)
 const WATCH_RANGE := 22.0
 const CAW_EVERY := 6.0
@@ -111,6 +114,7 @@ var _nest_bits: Node3D                     ## Glänzendes oben im Nest – sicht
 var _glint: MeshInstance3D
 var _glint_timer := 0.0
 var _feed_table := {}                      ## LevelBuilder.feed_table bzw. der Ersatztisch aus dem Debug
+var _debug_useful := false                 ## Debug „geschenk“: das nächste Geschenk ist sicher Kleinzeug
 
 
 func setup(builder: LevelBuilder) -> void:
@@ -785,11 +789,11 @@ func _eat(food: Array[Item]) -> void:
 		if gift.kind == Item.Kind.KEY and gift.key_id == OLD_KEY:
 			Game.notebook.add_note("crows_key", "Die Krähen haben mir einen alten Messingschlüssel auf den Tisch gelegt. Am Anhänger steht 042 – das Zimmer gegenüber ihrem Nest.", "Garten")
 		else:
-			Game.notebook.add_note("crows_gift", "Statt des Futters lag etwas Glänzendes auf dem Tisch im Gärtchen. Die Krähen bringen Geschenke.", "Garten")
+			Game.notebook.add_note("crows_gift", "Statt des Futters lag etwas anderes auf dem Tisch im Gärtchen. Die Krähen bringen Geschenke.", "Garten")
 
 
 ## Was sie bringen: den Schlüssel von 1987 erst bei hoher Gunst nach Fütterungen über Tage, sonst Gestohlenes aus dem
-## Nest, sonst Münzen.
+## Nest, sonst gelegentlich Kleinzeug (Batterie, Streichhölzer, Kerze), meist Münzen.
 func _gift() -> Item:
 	var key_at := -1
 	var stolen: Array[int] = []
@@ -802,6 +806,9 @@ func _gift() -> Item:
 		return _from_nest(key_at)
 	if not stolen.is_empty():
 		return _from_nest(stolen.pick_random())
+	if _debug_useful or randf() < USEFUL_CHANCE:
+		_debug_useful = false
+		return Item.create(USEFUL.pick_random() as Item.Kind)
 	return Item.create(Item.Kind.COINS, str(randi_range(COIN_GIFT.x, COIN_GIFT.y)))
 
 
@@ -812,8 +819,9 @@ func _gift() -> Item:
 ## gunst: volle Gunst · stehlen: eine Münze und ein Messer liegen 2 m vor den Krähen, du siehst weg · nest: 2,5 m vor dem
 ## Nest, Blick hinauf, darin dazu Münzen und ein Kompass · werfen: wie nest, nach 1 s wirfst du eine Münze hinein ·
 ## futter: vor dem Futtertisch, Brotkrumen darauf, die Zeit ist fast um – sieh weg · schluessel: wie futter, mit hoher
-## Gunst nach drei Tagen, es kommt der Schlüssel von 1987. Ohne Tisch im Plan steht für futter und schluessel ein
-## Ersatztisch vor Zimmer 13 (nur im Debug).
+## Gunst nach drei Tagen, es kommt der Schlüssel von 1987 · geschenk: wie futter, mit Gunst knapp über der Schwelle,
+## es kommt Kleinzeug (ZIM-31). Ohne Tisch im Plan steht für futter, schluessel und geschenk ein Ersatztisch vor
+## Zimmer 13 (nur im Debug).
 func debug_show(what: String) -> void:
 	if _mm == null:
 		Game.say("Krähen: Draußen steht kein Baum.", 2.5)
@@ -836,12 +844,15 @@ func debug_show(what: String) -> void:
 			if what == "werfen":
 				get_tree().create_timer(1.0).timeout.connect(_debug_throw)
 			return
-		"futter", "schluessel":
+		"futter", "schluessel", "geschenk":
 			if _feed_table.is_empty():
 				_debug_table()
 			if what == "schluessel":
 				favor = KEY_FAVOR
 				fed_days = KEY_DAYS
+			elif what == "geschenk":
+				favor = GIFT_FAVOR
+				_debug_useful = true
 			var top: Vector3 = _feed_table["pos"]
 			var food := Item.create(Item.Kind.PUMPKIN_SEEDS, "brot")
 			_builder.world.add_child(food)

@@ -2440,7 +2440,8 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   Füttern). Futter = `PUMPKIN_SEEDS` (Zusatz „brot“ = Brotkrumen) auf dem Tisch; `food_time` zählt alle `LOOK_EVERY` s
   bzw. im Zeitsprung, nach `FOOD_HOURS` unbeobachtet weg (`_eat`): erste Mahlzeit des Tages +0,35, weitere +0,1; ab
   `GIFT_FAVOR` ein Geschenk (`_gift`): Schlüssel ab `KEY_FAVOR` und `KEY_DAYS` Fütterungstagen, sonst Gestohlenes, sonst
-  Münzen. Gespeichert unter „omens“ „crows“ (Speicherformat 59). Ratten: Welle weg vom Monster (`WAVE_RANGE`), nur Klang.
+  mit `USEFUL_CHANCE` Kleinzeug aus `USEFUL` (Batterie, Streichhölzer, Kerze – kein eigener `Item.Kind`), sonst
+  `COIN_GIFT` Münzen; Debug `--kraehen=geschenk` erzwingt Kleinzeug. Gespeichert unter „omens“ „crows“ (Speicherformat 59). Ratten: Welle weg vom Monster (`WAVE_RANGE`), nur Klang.
 - **Hund:** `Weather.howl(delay)`, zufällig alle `HOWL_EVERY` s Spielzeit (`_howl_timer`, im Schlaf nur weitergezählt).
 - **Tiere in der Ferne** (7.8): `DistantAnimals` unter `Weather` (`Weather.animals`), nur Klang (`SynthAudio`: `owl`,
   `owl_kewick`, `caw`, `bark`, `bark_deep`), draußen `*_VOLUME`, drinnen × `Weather.BELL_INSIDE`, im Schlaf nichts.

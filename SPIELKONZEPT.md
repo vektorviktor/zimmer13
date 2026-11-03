@@ -2640,12 +2640,14 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
   Terrassen und Balkone tragen seitdem ein Holzdeck aus Lärchenbrettern, ZIM-51/ZIM-127): Man legt **Brotkrumen** (Vorrat in der Küche) oder **Kürbiskerne** (fallen beim Schnitzen ab, 5.4) hin.
   Nach ein paar Spielstunden ist das Futter weg – nur, wenn gerade niemand hinsieht; der Zeitsprung im Schlaf zählt
   mit. Jede Fütterung hebt den Ruf. *Gebaut 28.10.: drei Spielstunden; die erste Fütterung eines Tages hebt den Ruf
-  deutlich, weitere am selben Tag wenig. Der Tisch steht noch nicht im Plan – bis dahin gibt es kein Füttern.*
+  deutlich, weitere am selben Tag wenig. Der Tisch steht seit 31.10. im Plan.*
 - **Geschenke:** Ist die Gunst hoch genug, liegt statt des Futters etwas auf dem Tisch – Münzen oder etwas aus dem
   Nest. **Was sie gestohlen haben, kommt so zurück.** Der **Schlüssel von 1987** (versiegeltes Zimmer, 6.19 (7)) kommt
-  erst bei hoher Gunst, also nach mehreren Fütterungen über Tage. *Gebaut als Tuning, bis „ab welchem Ruf“ geklärt ist
-  (unten): Geschenk ab Gunst 0,4 (auf −1 … +1), Schlüssel ab 0,6 und nach Fütterungen an drei Tagen; zuerst
-  Gestohlenes, sonst Münzen.*
+  erst bei hoher Gunst, also nach mehreren Fütterungen über Tage. **Gelegentlich bringen sie nützliches Kleinzeug** aus
+  vorhandenen Gegenstandsarten – Batterie, Streichholzschachtel, Kerze –, keinen eigenen Gegenstand (entschieden
+  2026-11-03, ZIM-31). Schwellen wie gebaut bestätigt: **Geschenk ab Gunst 0,4** (auf −1 … +1), **Schlüssel ab 0,6** und
+  nach Fütterungen an drei Tagen. *Gebaut 3.11.: zuerst der Schlüssel (wenn fällig), dann Gestohlenes, sonst zu 35 %
+  Kleinzeug (gleich verteilt), sonst 1–3 Münzen.*
 - **Nest im großen Baum im Garten:** der große Baum mitten im Garten zwischen Lobby und Nordflügel, gegenüber der
   Terrassentür von Zimmer 042 (6.19 (7)); das Nest in der Krone sichtbar, im Licht glitzert es. Darin das
   Gestohlene und seit 1987 der Messingschlüssel mit Zimmeranhänger (HANDLUNG.md K5). **Zwei Wege an den Inhalt:**
@@ -2662,7 +2664,6 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
 **Zu klären**
 - **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (ZIM-100).
 - **Dachnest:** welches Dachfenster – hängt an der noch offenen Form des Dachs.
-- **Geschenke:** was außer Münzen und Gestohlenem auf dem Tisch liegen kann, und ab welchem Ruf.
 - **Kerzen der Ratten:** Wohin schleppen sie sie? Dieselbe Frage wie bei den Krähen – ein sichtbares Lager wäre die
   Antwort aus derselben Richtung.
 

@@ -273,6 +273,7 @@ done <<'LIST'
 900|tiere,kraehen|--kraehen=stehlen --trace
 600|tiere,kraehen|--kraehen=werfen --trace
 600|tiere,kraehen|--kraehen=schluessel --trace
+600|tiere,kraehen|--kraehen=geschenk --trace
 600|tiere,kraehen,speichern|--kraehen=nest --savetest
 600|halloween,tiere|--tp=keller --ratten=welle --trace
 400|halloween,tiere|--hund --trace
