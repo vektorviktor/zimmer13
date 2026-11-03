@@ -14,6 +14,8 @@ const NOISE := {
 	"step":       {"range": 2.0,  "sound": "",       "volume": 0.0},    ## Gehen auf Holz/Fliesen (Teppich, geduckt: still)
 	"run":        {"range": 10.0, "sound": "",       "volume": 0.0},    ## alle 0,6 s
 	"land":       {"range": 4.0,  "sound": "thud",   "volume": 0.2, "caption": "[Ein dumpfer Aufprall]"},    ## nach einem Sprung
+	"fall":       {"range": 4.0,  "sound": "thud",   "volume": 0.6, "caption": "[Ein schwerer Aufprall]"},    ## vom Balkon in den Garten gesprungen (7.7)
+	"railing":    {"range": 8.0,  "sound": "creak",  "volume": 0.6, "caption": "[Ein Geländer knarrt]"},    ## übers Balkongeländer steigen (7.7)
 	"stumble":    {"range": 5.0,  "sound": "thud",   "volume": 0.35, "caption": "[Stolpern]"},   ## im Rausch gestolpert (3.7)
 	"door":       {"range": 5.0,  "sound": "door",   "volume": 0.5, "caption": "[Eine Tür knarrt]"},    ## Tür öffnen
 	"door_close": {"range": 5.0, "sound": "door_close", "volume": 0.5, "caption": "[Eine Tür fällt ins Schloss]"},    ## Tür schließen

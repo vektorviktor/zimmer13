@@ -3894,15 +3894,44 @@ func _stair_edge(p: Vector2, along: Vector2, stairs: Array[Rect2]) -> Vector2:
 	return p
 
 
-## Balkone und Terrassen über dem EG (Spielkonzept 7.7): Geländer auf den Kanten aus dem Plan.
+## Balkone und Terrassen über dem EG (Spielkonzept 7.7): Geländer auf den Kanten aus dem Plan. Über jedes kann man
+## steigen (BalconyRailing, 7.7, ZIM-36) – wohin, steht je Stück RailingSides daneben.
 func _balconies() -> void:
 	for rs in _map["terrace_edges"] + _map.get("balcony_edges", []):
 		for rc in rs:
 			var r := _rect(rc)
+			var a: Vector3
+			var b: Vector3
 			if r.size.x >= r.size.y:
-				_railing(Vector3(r.position.x, 0, r.get_center().y), Vector3(r.end.x, 0, r.get_center().y))
+				a = Vector3(r.position.x, 0, r.get_center().y)
+				b = Vector3(r.end.x, 0, r.get_center().y)
 			else:
-				_railing(Vector3(r.get_center().x, 0, r.position.y), Vector3(r.get_center().x, 0, r.end.y))
+				a = Vector3(r.get_center().x, 0, r.position.y)
+				b = Vector3(r.get_center().x, 0, r.end.y)
+			_railing(a, b, _railing_sides(a, b, minf(r.size.x, r.size.y)))
+
+
+## Was neben einem Balkongeländer von a nach b liegt, alle BalconyRailing.STEP Meter: je Stück zwei Bytes (links, rechts
+## der Laufrichtung) – BalconyRailing.DECK Balkon oder Terrasse, AIR nichts auf diesem Stockwerk (darunter der Garten),
+## NONE sonst (Wand, Zimmer). thick = Breite des Geländerstrichs im Plan.
+func _railing_sides(a: Vector3, b: Vector3, thick: float) -> PackedByteArray:
+	var sides := PackedByteArray()
+	var along := Vector2(b.x - a.x, b.z - a.z)
+	var length := along.length()
+	if length < 0.1:
+		return sides
+	along /= length
+	var normal := Vector2(-along.y, along.x)   # lokales +Z des Geländers (_railing)
+	var n := maxi(1, ceili(length / BalconyRailing.STEP))
+	for i in n:
+		var p := Vector2(a.x, a.z) + along * (length * (i + 0.5) / n)
+		for s: float in [1.0, -1.0]:
+			var place := _place_at(p + normal * s * (thick / 2.0 + BalconyRailing.PROBE))
+			var side := BalconyRailing.AIR
+			if not place.is_empty():
+				side = BalconyRailing.DECK if String(place["kind"]) in ["balcony", "terrace"] else BalconyRailing.NONE
+			sides.append(side)
+	return sides
 
 
 ## Säule bis unter die Galerie (Terrazzo): Plinthe und Deckplatte als Quader, dazwischen ein Drehkörper aus
@@ -4004,15 +4033,17 @@ func _cat_tree(rect: Rect2) -> StaticBody3D:
 
 
 ## Geländer von a nach b (Kollision 1 m hoch, Handlauf und Stäbe).
-func _railing(a: Vector3, b: Vector3) -> void:
+func _railing(a: Vector3, b: Vector3, sides := PackedByteArray()) -> void:
 	var length := a.distance_to(b)
 	if length < 0.1:
 		return
-	var holder := Node3D.new()
+	var holder := Node3D.new() if sides.is_empty() else BalconyRailing.new(length, sides)
 	holder.position = (a + b) / 2.0
 	holder.rotation.y = atan2(b.x - a.x, b.z - a.z) - PI / 2.0
 	root.add_child(holder)
-	Geo.collider(holder, Vector3(length, 1.0, 0.1), Vector3(0, 0.5, 0))
+	var rail := Geo.collider(holder, Vector3(length, 1.0, 0.1), Vector3(0, 0.5, 0))
+	if not sides.is_empty():
+		rail.set_meta("interactable", holder)
 	Geo.mesh(holder, Geo.box(Vector3(length, 0.06, 0.1)), _dark_wood, Vector3(0, 1.0, 0))
 	var n := maxi(2, roundi(length / 0.5))
 	for i in n + 1:

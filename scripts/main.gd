@@ -242,6 +242,10 @@ extends Node3D
 ##   --spinne[=gesicht|schublade] Spinnen (4.23): acht krabbeln sofort vor dir · gesicht: eine springt
 ##                               dir ins Gesicht – Maus schnell hin und her schüttelt sie ab, sonst beißt sie (wie ein Glas) ·
 ##                               schublade: die nächste Schublade hat eine – beide: der erste Angriff gilt als geschehen
+##   --balkon[=nachbar|humpeln]  Balkongeländer (7.7, ZIM-36): du stehst auf einem Balkon vor der Außenkante und kletterst
+##                               nach 1 s hinüber und springst in den Garten (laut, danach humpelst du) · nachbar: vor einem
+##                               Trenngeländer, du steigst zum Nachbarbalkon · humpeln: nach der Landung 2 Spielstunden
+##                               Zeitsprung – das Humpeln ist dann vorbei
 ##   --fledermaus[=tag|schwarm|dachboden|biss]  Fledermäuse (4.22): du stehst im Garten vor einem Baum und siehst hinauf –
 ##                               21 Uhr, sie kreisen · tag: 12 Uhr, sie hängen in der Krone · schwarm: wie tag, nach 3 s
 ##                               fliegen sie auf · dachboden: 12 Uhr auf dem Dachboden neben einem Pfosten, sie hängen
@@ -1881,6 +1885,9 @@ func run_debug(arg: String) -> bool:
 		Game.spiders.debug(_arg_value(arg, "--spinne"))
 	elif _is_arg(arg, "--fledermaus"):
 		Game.bats.debug_show(_arg_value(arg, "--fledermaus"))
+	elif _is_arg(arg, "--balkon"):
+		var mode := _arg_value(arg, "--balkon")
+		get_tree().create_timer(0.5).timeout.connect(func() -> void: BalconyRailing.debug(mode))
 	elif arg == "--ghost=stunde" or arg.begins_with("--ghost=stunde,"):
 		Game.ghost.debug_ghost_hour(maxi(1, arg.get_slice(",", 1).to_int()) if "," in arg else 1)
 	elif arg == "--ghost=tür" or arg == "--ghost=tuer":

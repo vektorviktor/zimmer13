@@ -572,7 +572,8 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   (`_level_of`, `_on_floor`). Raum-IDs ohne Zimmernummer tragen einen Vorsatz (`og1_`, `dg_`, `ug_`; `_prefix`), damit
   oben und unten nicht dieselben Schalter schalten; Treppenhäuser bleiben ein Raum über alle Stockwerke, die Galerie
   über der Lobby gehört zur Lobby. Oben reichen die Wände bis in die Decke darunter (Fassade ohne Fuge), über Lufträumen
-  (`voids`) schließt eine Decke die Halle; Geländer mit Blende an Lufträumen (`_void_edges`), Balkone (`_balconies`).
+  (`voids`) schließt eine Decke die Halle; Geländer mit Blende an Lufträumen (`_void_edges`), Balkone (`_balconies`:
+  jedes Balkon- und Terrassengeländer oben ist ein `BalconyRailing`, siehe 8 „Balkongeländer“).
   Bäder gehören zum Zimmer hinter ihrer Tür (`_bath_owner`: Licht, Verschluss); Suiten (`suite`) haben kein Türschild.
 
 ### Wände, Böden, Stöße
@@ -1904,6 +1905,26 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   ohne Treffer – auch der Spieler entscheidet damit, ob Gehen Lärm macht (`Player.SOFT_FLOORS`). Neuer Klang = Eintrag in
   `SOUNDS`; je Schritt ein zufälliger aus der Liste, nie zweimal derselbe. `wood` (knarrende alte Dielen) gilt für alle
   Böden mit Meta `floor` = `wood` (Speisesaal, Kegelbahn, Holzdeck, Dachboden).
+
+### Balkongeländer (`world/balcony_railing.gd`, `BalconyRailing`, Spielkonzept 7.7, ZIM-36)
+- **Bau:** `LevelBuilder._balconies` legt auf den Stockwerken über dem EG jedes Geländer aus `balcony_edges`/`terrace_edges`
+  als `BalconyRailing` an (Gruppe `balcony_railings`, lokal X entlang, ±Z die Seiten; der Kollider trägt `interactable`).
+  `_railing_sides` sieht alle `STEP` m `PROBE` m neben dem Planstrich nach: `DECK` (Balkon, Terrasse), `AIR` (nichts auf
+  diesem Stockwerk – darunter der Garten), `NONE`. Fehlt im Plan ein Balkon, gibt es dort auch nichts zu übersteigen.
+- **`crossing(player)`:** an der Stichprobe vor dem Spieler – eigene Seite `DECK`, drüben `DECK` → Nachbarbalkon (Platz
+  drüben per `Player.can_stand_at`), drüben `AIR` → Sprung, wenn ein Strahl nach unten zwischen `MIN_DROP` und
+  `MAX_DROP` auf Boden im Freien trifft (`RainVeil.is_outdoor`). Mit vollen Händen (großer Gegenstand, Katze) nur ein Hinweis.
+- **Spieler** (`climb_railing`, `_update_climb`): Kollision aus, die Füße laufen auf einer quadratischen Bézierkurve über
+  den Handlauf (`CLIMB_TIME` 2 s zum Nachbarn, `CLIMB_DROP_TIME` 1,2 s bis zum Loslassen), Lärm `railing` (8 m) am Anfang und
+  beim Übersteigen noch einmal auf halbem Weg. Danach fällt man frei (`_dropping`); beim Aufkommen `_land_from_balcony`:
+  Lärm `fall` (4 m, statt `land`), Ruck, `limp` = `LIMP_TIME` (3 Spielstunden). `limp_share()` macht `LIMP_SLOW`
+  langsamer und lässt in den letzten `LIMP_FADE` s nach, Rennen geht erst ohne `limp`, der Kopf sackt jeden zweiten
+  Schritt ab. `limp` zählt in `_update_injury` und `skip_time` herunter und wird gespeichert (Speicherformat 70).
+  `climbing()` (auch im Fall) sperrt Speichern und Autosave.
+- **Bedrohungen** springen nicht: Im NavMesh gibt es keine Verbindung über die Kante, sie laufen zu `_last_seen` über die
+  Treppe; aus dem Blick bricht die Jagd ab wie sonst auch (`Monster._chase_step`, 3,5 s, dann Suche). Der Notausgang beim
+  Raubzug (`player_exposed`, ZIM-27) gilt auf dem Balkon wie im Garten unverändert.
+- Debug `--balkon[=nachbar|humpeln]` (`BalconyRailing.debug`), Stichwort `balkon`.
 
 ### Gegenstände
 - **Aufgehängte Deko** (Spielkonzept 5.6, `item.gd` `HANGABLE`, `hang`, `_sway`; `player.gd` `_hang_spot`):

@@ -5224,6 +5224,13 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 - **Balkone:** im Plan „Balkon“ (blassgrün-grau), erreichbar über die Terrassentür des Zimmers, je Zimmer durch
   ein **Balkongeländer** abgetrennt. Sie stehen **gewollt etwa 3 m über** – darunter liegt im Erdgeschoss ein
   überdachter, dunkler Streifen der Terrassen. Zum Mittelgarten hin sind die Balkone vorerst in Terrassenfarbe.
+  **Übersteigen und Springen (entschieden und gebaut 2026-11-03, ZIM-36):** Über das Trenngeländer steigt man nur zum
+  **direkt angrenzenden Nachbarbalkon** – langsam (etwa 2 s) und laut (das Geländer knarrt, 8 m); danach gilt die offene
+  Fenstertür aus 6.19 (4). Vordächer gibt es nicht. Über die Außenkante klettert man und **springt in den Garten**: Das
+  Aufkommen ist laut wie ein Sprung (4 m), danach **humpelt** man drei Spielstunden – langsamer, kein Rennen, in der
+  letzten Minute lässt es nach; keine Verletzung als Wert, kein Blut. Die Bedrohungen springen nicht hinterher, sie
+  nehmen die Treppe, und die Verfolgung bricht ab wie an einer Treppe (4.20: der Balkon gehört zum Obergeschoss, der
+  Garten zum Erdgeschoss). Fehlt im Plan ein Balkon, kann man dort auch nicht hinüber.
 - **Katzenraum** über der Bar: mit **Kratzbäumen** und **mehr Katzen** als nur den dreien von 6.11. Er ist der
   **einzige Raum, in dem man wirklich vor allem sicher ist** – Katzen waren immer lieb: Monster und Lakengeist
   kommen nicht hinein. *Der Kürbismann kommt doch hinein, und Ausharren dort ist die stärkste Strategie – vertagt

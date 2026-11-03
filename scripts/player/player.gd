@@ -162,6 +162,16 @@ const BITE_BLUR := 0.45
 const BITE_FRESH := 90.0
 const BITE_SIGHT_POW := 2.0
 const BITE_SHOCK := 0.25
+## Balkongeländer (Spielkonzept 7.7, Entscheidung 3.11., ZIM-36): zum Nachbarbalkon steigen dauert CLIMB_TIME s, über die
+## Außenkante bis zum Loslassen CLIMB_DROP_TIME s – beides knarrt laut (Lärm „railing“). Nach dem Sprung in den Garten
+## (Lärm „fall“) humpelt man LIMP_TIME Spielsekunden: kein Rennen, LIMP_SLOW langsamer, in den letzten LIMP_FADE s
+## lässt es nach; der Kopf sackt bei jedem zweiten Schritt um LIMP_DIP ab. Keine Verletzung, kein Blut.
+const CLIMB_TIME := 2.0
+const CLIMB_DROP_TIME := 1.2
+const LIMP_TIME := 3.0 * Calendar.HOUR
+const LIMP_SLOW := 0.4
+const LIMP_FADE := 60.0
+const LIMP_DIP := 0.06
 ## Im Sitzen (Spielkonzept 3.1): so weit dreht sich der Blick höchstens zur Seite – 180° nach vorn
 const SIT_TURN := PI / 2.0
 
@@ -237,6 +247,9 @@ var sight_warp := 0.0   ## Wabern und Doppelbild im Rausch (0..1) – Post-Shade
 var sight_dark := 0.0   ## Abdunkeln nach dem Fledermausbiss (0..1), pulsiert – Post-Shader `dark` (4.22)
 var bite := 0.0         ## Bisswunde einer Fledermaus: so viele Spielsekunden heilt sie noch (4.22)
 var bite_heal := 0.0    ## so lange heilt diese Wunde insgesamt – bite / bite_heal ist, wie offen sie noch ist
+var limp := 0.0         ## so viele Spielsekunden humpelt man noch nach dem Sprung vom Balkon (7.7)
+var _climb := {}        ## übers Balkongeländer: from, over, to, drop, time, total (BalconyRailing.crossing)
+var _dropping := false  ## losgelassen, fällt in den Garten – beim Aufkommen humpeln
 var seat: Seat          ## sitzt auf diesem Möbel (3.1) – Platz in _seat_spot
 ## Größe der Figur (Spielkonzept 3.9) – Kapsel, Augenhöhe und Hocken im Verhältnis zu HEIGHT
 var body_height := HEIGHT
@@ -521,6 +534,10 @@ func _physics_process(delta: float) -> void:
 		running = false
 		_update_seated()
 		return
+	if not _climb.is_empty():
+		running = false
+		_update_climb(delta)
+		return
 	_update_crouch()
 	if not is_on_floor():
 		velocity.y -= _gravity * delta
@@ -536,8 +553,10 @@ func _physics_process(delta: float) -> void:
 		running = false
 		return
 	var dir := (transform.basis * Vector3(input.x, 0, input.y)).normalized()
-	running = (Input.is_action_pressed("run") or debug_sprint) and not crouching and not winded and input.length() > 0.1
+	running = (Input.is_action_pressed("run") or debug_sprint) and not crouching and not winded and limp <= 0.0 \
+		and input.length() > 0.1
 	var speed := CROUCH_SPEED if crouching else (RUN_SPEED if running else WALK_SPEED)
+	speed *= 1.0 - LIMP_SLOW * limp_share()
 	if held:
 		speed *= held.carry_speed()   # Großes 0,8, Riesenkürbis langsamer (Item.carry_speed)
 	if inspecting:
@@ -549,7 +568,9 @@ func _physics_process(delta: float) -> void:
 	_shove = _shove.move_toward(Vector3.ZERO, 9.0 * delta)
 	var fall_speed := -velocity.y
 	move_and_slide()
-	if is_on_floor() and not _was_on_floor and fall_speed > LAND_SPEED and Game.director:
+	if is_on_floor() and _dropping:
+		_land_from_balcony()
+	elif is_on_floor() and not _was_on_floor and fall_speed > LAND_SPEED and Game.director:
 		Game.noise("land", global_position, self)
 	_was_on_floor = is_on_floor()
 	_push_items(dir, speed)
@@ -563,6 +584,8 @@ func _physics_process(delta: float) -> void:
 	_drunk_walk(moving, delta)
 	var eye := crouch_eye if crouching else eye_height
 	var bob := sin(_bob) * 0.03 if moving else 0.0
+	if moving and limp > 0.0:   # Humpeln: bei jedem zweiten Schritt sackt man ab
+		bob -= LIMP_DIP * limp_share() * maxf(0.0, sin(_bob * 0.5))
 	head.position.y = lerpf(head.position.y, eye + bob, minf(1.0, 12.0 * delta))
 
 	# Rennen macht Lärm, Gehen nur auf Holz und Fliesen, geduckt ist man still (4.15)
@@ -1377,6 +1400,7 @@ func _update_injury(delta: float) -> void:
 	_confirm_time -= delta
 	injury = maxf(0.0, injury - delta / INJURY_HEAL_TIME)
 	bite = maxf(0.0, bite - delta)
+	limp = maxf(0.0, limp - delta)
 	_kick = move_toward(_kick, 0.0, delta * 0.25)
 	head.rotation.z = sin(_drunk_time * 30.0) * _kick + _drunk_roll()   # Spielzeit, nicht Systemzeit
 	# Blutstropfen beim Gehen – eine Spur, der man folgen kann (4.13)
@@ -1386,6 +1410,75 @@ func _update_injury(delta: float) -> void:
 		if _blood_dist > 1.2:
 			_blood_dist = 0.0
 			Game.traces.add_guest_drop("drops", global_position + Vector3(randf_range(-0.15, 0.15), 0, randf_range(-0.15, 0.15)))
+
+
+# --- Balkongeländer (Spielkonzept 7.7, ZIM-36) ---------------------------------------
+
+## Steigt gerade übers Geländer oder fällt danach in den Garten (BalconyRailing) – dann nichts anderes, kein Speichern.
+func climbing() -> bool:
+	return not _climb.is_empty() or _dropping
+
+
+## Übers Geländer, wie BalconyRailing.crossing es sagt: langsam und laut zum Nachbarbalkon – oder hinüber und loslassen.
+## Die Füße gehen auf einer Kurve über den Handlauf; Kollision ist so lange aus.
+func climb_railing(c: Dictionary) -> void:
+	if hiding or seat or dead or climbing():
+		return
+	set_crouching(false)
+	_climb = c.duplicate()
+	_climb["from"] = global_position
+	_climb["time"] = 0.0
+	_climb["total"] = CLIMB_DROP_TIME if c["drop"] else CLIMB_TIME
+	_climb["creaks"] = 0
+	_collider.disabled = true
+	velocity = Vector3.ZERO
+	_shove = Vector3.ZERO
+	if Game.hud:
+		Game.hud.set_prompt("")
+
+
+func _update_climb(delta: float) -> void:
+	_climb["time"] = float(_climb["time"]) + delta
+	var t := clampf(float(_climb["time"]) / float(_climb["total"]), 0.0, 1.0)
+	var drop: bool = _climb["drop"]
+	var creaks := 1 if drop or t < 0.5 else 2   # knarrt am Anfang, beim langen Übersteigen noch einmal auf halbem Weg
+	if int(_climb["creaks"]) < creaks:
+		_climb["creaks"] = creaks
+		if Game.director:
+			Game.noise("railing", global_position, self)
+	var from: Vector3 = _climb["from"]
+	var to: Vector3 = _climb["to"]
+	var peak: Vector3 = _climb["over"] + Vector3.UP * 0.15   # die Füße knapp über dem Handlauf
+	var ctrl := 2.0 * peak - 0.5 * (from + to)   # quadratische Bézierkurve, in der Mitte genau über dem Geländer
+	var s := smoothstep(0.0, 1.0, t)
+	global_position = (1.0 - s) * (1.0 - s) * from + 2.0 * (1.0 - s) * s * ctrl + s * s * to
+	head.position.y = lerpf(head.position.y, crouch_eye if t < 0.8 else eye_height, minf(1.0, 8.0 * delta))
+	if t < 1.0:
+		return
+	_climb = {}
+	_collider.disabled = false
+	_was_on_floor = false
+	velocity = Vector3.ZERO
+	if drop:   # losgelassen – ein kleiner Stoß weg vom Haus
+		_dropping = true
+		var away := Vector3(to.x - from.x, 0.0, to.z - from.z)
+		velocity = away.normalized() * 0.8 if away.length() > 0.01 else Vector3.ZERO
+
+
+## Im Garten aufgekommen: laut wie ein Sprung, man knickt ein und humpelt eine Weile (keine Verletzung, kein Blut).
+func _land_from_balcony() -> void:
+	_dropping = false
+	limp = LIMP_TIME
+	_kick = maxf(_kick, 0.08)
+	head.position.y = crouch_eye
+	if Game.director:
+		Game.noise("fall", global_position, self)
+	Game.say("Hart aufgekommen – du humpelst.", 3.0)
+
+
+## Wie stark man noch humpelt (0..1): voll, bis die letzten LIMP_FADE s anbrechen.
+func limp_share() -> float:
+	return clampf(limp / LIMP_FADE, 0.0, 1.0)
 
 
 # --- Ausdauer (Spielkonzept 3.1) ---------------------------------------------------
@@ -2057,6 +2150,11 @@ func _set_crouch(value: bool) -> void:
 	_collider.position.y = _shape.height / 2.0
 
 
+## Hätte man bei at (Füße) aufrecht Platz? Für andere Systeme (BalconyRailing).
+func can_stand_at(at: Vector3) -> bool:
+	return _can_stand(at)
+
+
 func _can_stand(at: Vector3 = global_position) -> bool:
 	var probe := CapsuleShape3D.new()
 	probe.radius = RADIUS - 0.02
@@ -2206,6 +2304,7 @@ func skip_time(dt: float) -> void:
 	hangover = maxf(0.0, hangover - dt)
 	injury = maxf(0.0, injury - dt / INJURY_HEAL_TIME)
 	bite = maxf(0.0, bite - dt)
+	limp = maxf(0.0, limp - dt)
 	stamina = minf(1.0, stamina + dt / STAMINA_REST_TIME)
 	if sleeping:
 		var credit := _sleep_credit(dt)

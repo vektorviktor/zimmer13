@@ -140,7 +140,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     haben Gäste genommen) – ältere Stände laden weiter und zählen alles Fehlende als von Gästen genommen
 ## 69: Fledermausbiss (Spielkonzept 4.22; ZIM-29): player.bite und bite_heal (Bisswunde, Spielsekunden) – ältere Stände
 ##     laden weiter, ungebissen
-const VERSION := 69
+## 70: Humpeln nach dem Sprung vom Balkon (Spielkonzept 7.7, ZIM-36): player.limp (Spielsekunden) – ältere Stände laden
+##     weiter, ohne Humpeln
+const VERSION := 70
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -285,6 +287,8 @@ func has_any_save() -> bool:
 func can_save() -> bool:
 	if Game.director == null or Game.game_over or Game.player == null or Game.director.is_signalling():
 		return false
+	if Game.player.climbing():   # übers Balkongeländer (7.7) – sonst lädt man mitten darauf oder im Fall
+		return false
 	if (Game.pumpkin and (Game.pumpkin.in_house() or Game.pumpkin.announcing())) or (Game.ghost and Game.ghost.with_player()):
 		return false
 	if Game.shower_scare and Game.shower_scare.busy():   # die Dusche hat den Blick gefangen (4.24)
@@ -353,7 +357,7 @@ func is_safe_for_autosave() -> bool:
 	var p := Game.player
 	if p == null or p.dead or p.hiding != null or p.in_dialog or Game.game_over:
 		return false
-	if not p.is_on_floor():   # nicht im Sprung oder Fall – sonst lädt man womöglich mitten in der Luft oder im Leeren
+	if not p.is_on_floor() or p.climbing():   # nicht im Sprung oder Fall – sonst lädt man womöglich mitten in der Luft oder im Leeren
 		return false
 	if Game.table_game_active():
 		return false
@@ -589,6 +593,7 @@ func collect() -> Dictionary:
 		"player": {
 			"pos": _v(stand if stand != Vector3.INF else p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
 			"crouch": p.crouching, "shock": p.shock, "injury": p.injury, "bite": p.bite, "bite_heal": p.bite_heal,
+			"limp": p.limp,
 			"awake_time": p.awake_time, "sure_awake": p.sure_awake, "rested": p.rested,
 			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised, "mask": p.mask,
 			"coffee": p.coffee, "coffee_low": p.coffee_low, "caffeine": p.caffeine, "tea": p.tea,
@@ -911,6 +916,7 @@ func apply(data: Dictionary) -> void:
 	p.injury = float(pd.get("injury", 0.0))
 	p.bite = float(pd.get("bite", 0.0))
 	p.bite_heal = float(pd.get("bite_heal", 0.0))
+	p.limp = float(pd.get("limp", 0.0))
 	p.drunk = float(pd.get("drunk", 0.0))
 	p.hangover = float(pd.get("hangover", 0.0))
 	p.coffee = float(pd.get("coffee", 0.0))

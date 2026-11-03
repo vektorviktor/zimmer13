@@ -203,6 +203,10 @@ done <<'LIST'
 600|tiere|--fledermaus=schwarm --trace
 600|tiere,dachboden|--fledermaus=dachboden --flashlight --trace
 600|tiere,biss,speichern|--fledermaus=biss --savetest --trace
+400|balkon|--balkon --trace
+400|balkon|--balkon=nachbar --trace
+400|balkon,speichern|--balkon=humpeln --savetest --trace
+900|balkon,monster|--balkon --lure --trace
 600|tiere|--tp=keller --spinne --trace
 600|tiere|--spinne=schublade --trace
 1500|monster|--lure --trace
