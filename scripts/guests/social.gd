@@ -270,6 +270,7 @@ var requests: GuestRequests              ## Bitten der Gäste (Spielkonzept 6.14
 var quarrels: GuestQuarrels              ## Streit unter Gästen nach einem Diebstahl (Spielkonzept 6.16)
 var deaths: GuestDeaths                  ## Jeder Tod hat eine Ursache: Schuld, Schock, Gedenken (Spielkonzept 6.18, 2)
 var mourning: GuestMourning              ## Trauer der Gäste um Freunde: Gedenkort, Kerzen (Spielkonzept 6.12)
+var hauntings: Hauntings                 ## Gäste mit „kreisenden Händen“, Ednas Salz (Spielkonzept 5.13)
 var grinch: Grinch                       ## Gustav Peters, der „Halloween-Grinch“, und sein Ende (Spielkonzept 2.6)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
@@ -460,6 +461,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	mourning = GuestMourning.new()   # Trauer um Freunde: Gedenkort, Kerzen (6.12)
 	mourning.name = "Mourning"
 	add_child(mourning)
+	hauntings = Hauntings.new()   # Gäste mit „kreisenden Händen“, Ednas Salz (5.13)
+	hauntings.name = "Hauntings"
+	add_child(hauntings)
 	grinch = Grinch.new()   # Gustav Peters (2.6)
 	grinch.name = "Grinch"
 	add_child(grinch)
@@ -2168,6 +2172,8 @@ func experience_line(guest: Guest, experience: Dictionary, again: bool = false) 
 	var keys := {"zone": zone, "who": experience["who"]}
 	if guest.is_child():
 		keys["eltern"] = "Mama" if GuestProfiles.get_profile(String(guest.profile.get("parent", ""))).get("sex", "m") == "f" else "Papa"
+	if kind in Hauntings.KINDS:   # kreisende Hände, Salz (5.13)
+		return hauntings.line(guest, kind, again)
 	if kind.begins_with("survivor_"):   # ein Überlebender hat es ihm erzählt (6.17)
 		return String(Wounds.HEARD.get(kind.trim_prefix("survivor_"), "")).format(keys)
 	if again:

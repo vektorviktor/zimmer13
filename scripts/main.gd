@@ -297,6 +297,11 @@ extends Node3D
 ##                               herein – es zögert an der Linie und verwischt sie · streuen: du stehst in deinem Zimmer
 ##                               vor der Tür, siehst hin und streust nach 0,5 s selbst · zimmer,nr / gast,id: auf den Fenstern von Zimmer nr bzw. des Gastes
 ##                               (mit --shock=id,ghost3 würgt er ihn nicht)
+##   --kreisen[=liste|zeichen|tod|salz|schlaf|nacht|edna|halten][,id]  Gäste mit „kreisenden Händen“ (5.13, ZIM-32): liste –
+##                               die beiden Gäste und ihre Nächte · zeichen: er kommt jetzt zum ersten (bzw. id) ans Fenster ·
+##                               tod: Zeichen, dann holt er ihn · salz: dazu Salz vor seiner Tür – er lebt und dankt · schlaf:
+##                               beides abstrakt im Schlaf, einer mit Salz · nacht: Zeichen-Nacht in 5 s, alle im Bett ·
+##                               edna: ein Gast stirbt, Edna streut abends Salz · halten: für --savetest. „[Kreisen] … ok“/„FEHLER“
 ##   --hoerer                    der Hörer in Zimmer 13 liegt daneben (keine Anrufe, die einen wecken; 4.14)
 ##   --awake=h[,sicher]          so viele Stunden wach (3.6): ab 16 müde, ab 24 übermüdet, ab 36 Sekundenschlaf, ab 48–72 (je
 ##                               Spiel gewürfelt) sicher im Flur (4.18) – mit ,sicher ab genau dieser Wachzeit; der erste
@@ -2055,6 +2060,9 @@ func run_debug(arg: String) -> bool:
 		Game.shower_scare.debug(_arg_value(arg, "--dusche"))
 	elif _is_arg(arg, "--salz"):
 		_debug_salt(_arg_parts(arg, "--salz"))
+	elif _is_arg(arg, "--kreisen"):
+		var haunt_parts := _arg_parts(arg, "--kreisen")
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.hauntings.debug(haunt_parts))
 	elif arg.begins_with("--awake="):
 		# so viele Stunden wach (Spielkonzept 3.6), mit ",sicher": ab dann sicher im Flur; der erste Angriff gilt als
 		# geschehen, sonst spukt der Lakengeist noch nicht

@@ -2148,6 +2148,23 @@ anderes versetzt (Bett, Versteck), bleibt er dort. **Nicht gespeichert:** `SaveM
   Gäste und Monster im Band (`SMUDGE_DEPTH`). Körner als MultiMesh aus `grain_seed`, neu gebaut bei jeder Änderung.
   Gespeichert unter `salt` (Speicherstand 48), Packungen auf der Küchenzeile (`LevelBuilder.SALT_BOXES`, solange kein
   `SALT` im Plan steht). Debug `--salz[=…]`, Rauchtest `salz`.
+- **Gäste mit „kreisenden Händen“, Ednas Salz** (Spielkonzept 5.13, 2026-11-03; `guests/hauntings.gd` `Hauntings`, Kind
+  von Social, `Game.social.hauntings`): `chosen()` = IDs der zwei Gäste – erwachsene Hausbewohner ohne Kernrolle und ohne
+  Kernfigur im Zimmer, nicht Gustav, mit Fenster (Vorhang) oder Fenstertür (`window_of`), sortiert nach
+  `hash([gen_seed, "kreisen"])` (in jedem Spiel dieselben, kein Zufall im Generator). `sign_day(i)` würfelt aus
+  `Social.night_seed` den Tag S in `DAYS[i]` (erste bzw. zweite Monatshälfte), `visit_window(i, tag)` die Uhrzeit
+  (`HOUR`, bis `LAST_HOUR`) der Nacht danach. Alle `SCAN` s (`_check`, erst nach dem ersten Angriff): in der Nacht nach S
+  `visit(g, false)` – Gast zu Hause und in `FREE_STATES`, Geist frei → `_wake` (aus dem Bett, Licht bleibt aus), Vorhang
+  auf, `SheetGhost.haunt(g, fenster, false)`; Haltung `haunted` bis zum Ende der Nacht S + 1, Erlebnis `ghost_circle`. In
+  der Nacht S + 1 mit Haltung: `visit(g, true)` → `haunt(…, true)`, Haltung weg (ein Versuch). **SheetGhost** `_haunt`
+  (`"sign"`/`"kill"`, zurück in `_hide`): `_start_visit` setzt die Stufe auf `HYPNOSIS_FROM` bzw. mindestens
+  `THROUGH_CURTAIN_FROM`, `_grab` ohne Losreißen, `_guest_sees_me` mit `ghost_circle`, `_salt_repels` → Erlebnis
+  `ghost_salt`. Während `SleepSkip.active` abstrakt (`_resolve_asleep`): Handabdrücke bzw. `SaltLine.guarding` →
+  `repel()`, sonst `guest_slain(g, "ghost")`. Sätze in `line()` über `Social.experience_line` (`KINDS`).
+  **Edna** (`_edna_salt`): ab dem ersten Toten, ab `EDNA_FROM` bis zum Morgen, zu Hause und wach, ohne heile Linie für ihr
+  Zimmer und wo der Spieler nicht hinsieht → `SaltLine.lay` auf ihre Fensterbank (`_edna_spot`, sonst innen vor die
+  Tür); eigene Packung als Haltung `salt_pack` (`left`, Start `Item.SALT_LINES`), beim ersten Mal Erlebnis `edna_salt`.
+  Speicherformat unberührt (Haltungen und Erlebnisse sind schon gespeichert). Debug `--kreisen[=…]`, Rauchtest `kreisen`.
 - **Getränkedosen** (`Kind.SODA_CAN`, `drink_can`), **Kaffee** (`world/coffee_machine.gd`, Spielkonzept 3.11),
   **Tee** (`world/tea_kettle.gd`, `TeaKettle` erbt von `CoffeeMachine`, Spielkonzept 3.12): `CoffeeMachine` hat Felder
   statt fester Werte (`drink_kind`, `brew_time`, `noise_kind`, `guest_phase`, `children`, `lines`, `cup_spot`) und Haken
@@ -2473,6 +2490,8 @@ Spielkonzept 2.5)
 - `first_seen`: Spielzeit der ersten Begegnung mit dem Spieler (`_start_visit`, also auch Warnung und Geisterstunde;
   `NEVER_SEEN` = noch nie, `met()`), gespeichert unter `ghost` – danach richtet sich die Dusche.
 - Debug (F6, `--ghost=…`, Konsole `ghost`): `debug_summon(n)`, `debug_summon_hall()`, `--ghost=tür`,
+- **Geplanter Besuch** (`haunt(gast, fenster, kill)`, Hauntings, Spielkonzept 5.13): Zeichen am Glas bzw. Würgen ohne
+  Losreißen bei den zwei Gästen mit „kreisenden Händen“ – siehe Salz.
   `--ghost=stunde[,n]`, `--shock=id,tür`; `--trace` „[Lakengeist] …“.
 
 ### Lakengeist in der Dusche

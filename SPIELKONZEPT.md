@@ -3526,11 +3526,28 @@ Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gest
 - **Gespeichert:** die Linien (Lage, Zimmer, Abweisungen, Lücke) und was in der Packung übrig ist. Debug:
   `--salz[=fenster|tür|monster|zimmer,nr|gast,id]`.
 
-**Zu klären**
-- **Zwei Gäste, die der Lakengeist heimsucht (Vorschlag des Nutzers, 2026-10-25):** Sie erzählen, dass sie etwas mit
-  kreisenden Händen vor dem Fenster gesehen haben – hilft man ihnen nicht mit Salz, sind sie am nächsten Tag erwürgt.
-  Noch offen: welche Gäste, an welchen Tagen, ob es fest geplant ist oder sich aus den Besuchen ergibt.
-- Kennen ältere Gäste den Brauch und streuen selbst (Edna, 1987 im Hotel, 2.7)?
+**Gäste mit „kreisenden Händen“ (Vorschlag des Nutzers 2026-10-25, entschieden 2026-11-03, umgesetzt 2026-11-03):**
+- **Welche:** zwei erwachsene Gäste ohne Kernrolle, **fest aus ihrer Identität** gezogen (in jedem Spiel dieselben,
+  wie die Haushalte, 6.20) – nur Gäste mit Außenfenster oder Fenstertür im Zimmer, nicht Gustav (2.6) und nicht im Zimmer
+  einer Kernfigur (sonst schützte Ednas Salz sie gleich mit – kleinste Lösung, 2026-11-03).
+- **Wann:** der erste in der **ersten Monatshälfte** (er führt das Salz ein), der zweite in der **zweiten**; die Nacht
+  ist je Spiel gewürfelt, immer nach dem ersten Angriff (4.20) und nach der Geisterstunde (zwischen 1:30 und 4 Uhr).
+- **Das Zeichen:** In der Nacht weckt es ihn, er zieht den Vorhang auf – der Lakengeist steht am Glas und kreist mit den
+  Händen (wie beim 2. Mal, 4.18: Handabdrücke, Hypnose), dann ist er fort. Am Tag erzählt der Gast davon; der erste
+  erinnert sich, dass seine Großmutter Salz vor die Tür gestreut hat.
+- **Ohne Hilfe** kommt er in der **folgenden Nacht** wieder, durch den Vorhang, und würgt ihn – **Losreißen gibt es
+  nicht**. Keine Gore-Darstellung: Er bleibt liegen wie jedes Opfer des Lakengeists. Eine heile Salzlinie (Tür im Flur
+  reicht) weist ihn ab, dann dankt der Gast beim nächsten Gespräch; ein Zeuge im Zimmer vertreibt ihn wie sonst. Danach
+  ist es vorbei. Das Salz muss nach dem Zubettgehen noch heil sein – wer abends über die Schwelle geht, verwischt es.
+- Er kommt nur, wenn der Gast in seinem Zimmer ist und keine andere Bedrohung umgeht (4.20); kam das Zeichen nicht
+  zustande, bleibt auch die zweite Nacht ruhig. Schläft der Spieler (Zeitsprung, 3.6), geschieht beides, ohne dass man
+  aufwacht – morgens findet man Handabdrücke bzw. den Toten.
+- **Selbst streut nur Edna** (1987 im Hotel, 2.7): ab dem **ersten Toten**, abends, **nur bei sich** – auf ihre
+  Fensterbank (ohne Fenster vor ihre Tür), mit **eigener Packung** (vier Linien); die drei Packungen des Spielers
+  bleiben knapp. Sie streut nach, wenn ihr Salz grau oder verwischt ist, und nur, wo man ihr nicht zusieht. Beim ersten
+  Mal erzählt sie davon – ohne 1987 zu verraten.
+- **Nicht gebaut:** Die Gäste erzählen das Zeichen nur dem Spieler, nicht einander; keine eigene Bitte „Salz vor meine
+  Tür“ (die Erzählung ist der Hinweis). Debug `--kreisen[=…]`.
 
 ### 5.14 Die Fotowand in der Lobby (entschieden und umgesetzt 2026-10-25)
 > **Geändert 2026-10-30 (2.10), noch nicht umgesetzt:** ein Foto je **Ernte**, alle drei Jahre – 1987, 1990 … 2023 und

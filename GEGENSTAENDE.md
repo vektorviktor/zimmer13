@@ -107,7 +107,7 @@ Stand: 2026-10-28.
 | Kompass | `COMPASS` | gebaut | – | Orientierung | 3.2 |
 | Bettlaken | `BED_SHEET` | gebaut | – | selbst verkleiden; Zimmer 13 | 5.9 |
 | Sturmlaterne | – | geplant (Vorschlag) | – (optional) | Licht, das draußen nicht ausgeht; im versiegelten Zimmer 042 | 6.19 (7), 5.12 |
-| Salzpackung | `SALT` | gebaut | – | Salzlinien an Tür und Fenster halten den Lakengeist aus dem Zimmer; drei auf der Küchenzeile | 5.13 |
+| Salzpackung | `SALT` | gebaut | – | Salzlinien an Tür und Fenster halten den Lakengeist aus dem Zimmer; drei auf der Küchenzeile; rettet die zwei Gäste mit „kreisenden Händen“ (Edna streut aus eigener Packung, kein Gegenstand) | 5.13 |
 
 ## 6. Essen und Trinken
 

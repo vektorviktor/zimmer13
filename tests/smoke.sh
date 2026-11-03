@@ -205,6 +205,11 @@ done <<'LIST'
 900|salz,lakengeist,gaeste|--trace --salz=gast,edna --shock=edna,ghost3
 500|salz,monster|--trace --salz=monster
 600|salz,speichern|--salz=tür --savetest
+900|salz,lakengeist,kreisen|--kreisen=tod --trace
+900|salz,lakengeist,kreisen|--kreisen=salz --trace
+800|salz,lakengeist,kreisen,nacht|--kreisen=nacht --trace
+300|salz,kreisen,schlaf|--kreisen=schlaf --trace
+300|salz,kreisen,speichern|--kreisen=halten --savetest
 600|tiere|--fledermaus --trace
 600|tiere|--fledermaus=schwarm --trace
 600|tiere,dachboden|--fledermaus=dachboden --flashlight --trace

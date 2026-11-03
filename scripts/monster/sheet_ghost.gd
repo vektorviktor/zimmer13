@@ -31,6 +31,8 @@ extends Node3D
 ## In der Dusche (Spielkonzept 4.24, ShowerScare): einmal taucht er im Nebel der Duschecke von Zimmer 13 auf und würgt –
 ## eigene Inszenierung (shower_visit): zählt nicht für die Stufe, kein Zeuge vertreibt ihn. Der Blickzug folgt der
 ## Einstellung Settings.look_pull.
+## Zwei Gäste mit „kreisenden Händen“ (Spielkonzept 5.13, Hauntings) besucht er geplant (haunt): erst nur ans Glas,
+## in der Nacht darauf holt er sie – ohne Losreißen; nur Salz oder ein Zeuge hält ihn auf.
 
 enum State { IDLE, APPROACH, HOVER, ENTER, STRANGLE, FADE, LURK, FLY_IN, DOOR, PATROL }
 
@@ -204,6 +206,7 @@ var _path_i := 0
 var _patrol_check := 0.0
 var _debug_hour_near := false     ## Debug (--ghost=stunde): taucht im Flur des Spielers auf
 var _scripted := false            ## der Auftritt in der Dusche (4.24): keine Zeugen, nicht gezählt
+var _haunt := ""                  ## geplanter Besuch (Hauntings, 5.13): "sign" nur ans Glas, "kill" packt zu, kein Losreißen
 
 
 ## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Pausen laufen ab (zu Schlafenden kommt er nicht – das Bett
@@ -761,6 +764,11 @@ func _start_visit(victim: Node3D, window: Node3D) -> void:
 		var guest := victim as Guest
 		guest.ghost_visits += 1
 		_stage = guest.ghost_visits
+		if _haunt == "sign":
+			_stage = HYPNOSIS_FROM   # das Zeichen: ans Glas, Hände kreisen – gleich, wie oft er schon da war
+		elif _haunt == "kill":
+			_stage = maxi(_stage, THROUGH_CURTAIN_FROM)
+			guest.ghost_visits = _stage
 	else:
 		visits += 1
 		_stage = visits
@@ -813,6 +821,8 @@ func _salt_repels() -> bool:
 	line.repel()
 	if _victim is Player:
 		Game.caption("[Er kommt nicht über das Salz]")
+	elif _haunt == "kill":
+		(_victim as Guest).remember("ghost_salt", global_position)   # er dankt beim nächsten Gespräch (Hauntings)
 	if Game.tracing:
 		print("[Lakengeist] %d. Mal – das Salz hält ihn aus %s fern (bei %s)" % [_stage, room,
 			(_victim as Guest).display_name if _victim is Guest else "dir"])
@@ -1013,7 +1023,8 @@ func _grab() -> void:
 		# Mutige reißen sich eher los (ein Gast zappelt nicht nach Anleitung)
 		var guest := _victim as Guest
 		guest.ghost_grab(global_position + Vector3.UP * HANDS_Y)
-		_escape_at = ESCAPE_TIME * randf_range(0.3, 0.9) if guest.is_core() or randf() < GUEST_ESCAPE.x + GUEST_ESCAPE.y * float(guest.profile["brave"]) else -1.0
+		_escape_at = ESCAPE_TIME * randf_range(0.3, 0.9) if _haunt != "kill" and (guest.is_core() \
+				or randf() < GUEST_ESCAPE.x + GUEST_ESCAPE.y * float(guest.profile["brave"])) else -1.0
 		if Game.player.global_position.distance_to(guest.global_position) < 12.0:
 			Game.play_sound("gasp", 0.6)
 		Game.shot_event("strangle", 20)
@@ -1130,6 +1141,7 @@ func _vanish() -> void:
 func _hide() -> void:
 	state = State.IDLE
 	_scripted = false
+	_haunt = ""
 	visible = false
 	_fade = 0.0
 	_window = null
@@ -1179,7 +1191,7 @@ func _guest_sees_me(guest: Guest) -> void:
 			or not Senses.clear_line(get_world_3d(), eye, head, guest, Senses.SIGHT_MASK & ~HotelWindow.LAYER_BLOCK):
 		return
 	_victim_saw = true
-	guest.shock("ghost", head, "", _stage >= HYPNOSIS_FROM)
+	guest.shock("ghost_circle" if _haunt == "sign" else "ghost", head, "", _stage >= HYPNOSIS_FROM)
 
 
 ## Opfer versteckt (Gast: auch im Bett) oder tot – dann verschwindet er.
@@ -1630,6 +1642,17 @@ func debug_summon_guest(guest: Guest, stage: int) -> void:
 		found = found or ((node as Door).room_id == guest.home["no"] and not (node as Door).locked)
 	if not found:
 		print("[Lakengeist] Zimmer %s hat kein Außenfenster und keine Fenstertür – er kann nicht zu %s kommen" % [guest.home["no"], guest.display_name])
+
+
+## Geplanter Besuch bei einem Gast mit „kreisenden Händen“ (Hauntings, Spielkonzept 5.13): kill false – das Zeichen
+## (Stufe HYPNOSIS_FROM: ans Glas, Hände kreisen, wieder weg); kill true – ab THROUGH_CURTAIN_FROM, durch den Vorhang,
+## kein Losreißen. Salz und Zeugen wirken wie sonst. false: er ist anderswo, oder eine andere Bedrohung geht um.
+func haunt(guest: Guest, window: Node3D, kill: bool) -> bool:
+	if state != State.IDLE or Game.director == null or Game.director.other_threat_active(self):
+		return false
+	_haunt = "kill" if kill else "sign"
+	_appear(window, guest)
+	return true
 
 
 func save_state() -> Dictionary:
