@@ -9,7 +9,9 @@ extends Node
 ## Arten: item (bringen – erfüllt beim Schenken, DialogUI._gift), escort (zur Bar begleiten), message (einem Freund
 ## etwas ausrichten – Anlass im Gespräch mit ihm), game (eine Partie – erfüllt am Ende eines Spiels), reconcile (Streit
 ## unter Gästen, 6.16: die Entschuldigung an den anderen überbringen – wie message, aber vom Spieler angestoßen, ohne Frist
-## und außerhalb der kleinen Bitten; GuestQuarrels).
+## und außerhalb der kleinen Bitten; GuestQuarrels), memorial (Trauerwunsch, 6.12, 6.18 Punkt 3: eine Kerze für den Toten
+## vor seine Tür – solange er trauert, außerhalb der kleinen Bitten; erfüllt durch GuestDeaths.honor, Dank beim nächsten
+## Gespräch; endet die Trauer vorher, verfällt der Wunsch still und wird im Notizbuch gestrichen).
 ## Der Gast fragt von sich aus (offer_for, Chance OFFER_CHANCE) oder auf „Kann ich dir irgendwie helfen?“. Angenommen →
 ## Notizbuch (3.10); abgelehnt kostet nichts, bei Freunden ein wenig. Kind von Social, erreichbar über
 ## Game.social.requests. Gespeichert unter social.requests.
@@ -24,11 +26,13 @@ const MAX_SMALL := 3
 const SMALL_TIER := Social.Tier.NEUTRAL
 const SMALL_REWARD := 6.0
 const SMALL_PRAISE := 1.5
+## Bitten außerhalb der kleinen (ohne Frist, nicht in SMALL_PER_DAY/MAX_SMALL)
+const OUTSIDE_SMALL := ["reconcile", "memorial"]
 ## Verpasst (Ende des Spieltags) bzw. abgelehnt als Freund
 const MISSED := -2.0
 const DECLINED_FRIEND := -1.0
 ## So oft fragt er von sich aus zu Beginn eines Gesprächs (Herzensbitte, kleine Bitte)
-const OFFER_CHANCE := {"heart": 0.6, "small": 0.35}
+const OFFER_CHANCE := {"heart": 0.6, "small": 0.35, "memorial": 0.7}
 ## Ein Begleiter für die Bitte „zur Bar“ kommt so lange mit (s)
 const ESCORT_TIME := 300.0
 
@@ -101,6 +105,12 @@ const RECONCILE := {"kind": "reconcile", "task": "{target} ausrichten: {name} wi
 	"say": "{giver} lässt ausrichten: Lass uns den Streit begraben.",
 	"reply": "Das sagt {giver}? … Na gut. Schwamm drüber.",
 	"thanks": "Ihr habt das geklärt? Danke. Der Streit lag mir schwer im Magen."}
+## Trauerwunsch (6.12, GuestMourning): {target} ist der Tote
+const MEMORIAL := {"kind": "memorial", "task": "Eine Kerze für {target} vor seine Tür stellen ({name} trauert)",
+	"ask": "Ich krieg das nicht hin … Würdest du eine Kerze für {target} vor die Tür stellen? Nur ein kleines Licht.",
+	"thanks": "Du hast ein Licht für {target} aufgestellt. Danke … das bedeutet mir viel."}
+## Kinder trauern auch – ihr Wunsch
+const MEMORIAL_CHILD_ASK := "Stellst du eine Kerze für {target} hin? Damit es nicht so dunkel ist."
 const REMIND := ["Denkst du noch an meine Bitte?", "Und – hast du an mich gedacht? Kein Stress.",
 	"Du weißt noch, worum ich dich gebeten hab?"]
 
@@ -129,6 +139,8 @@ func _process(_delta: float) -> void:
 	for req in active.duplicate():
 		if req["kind"] == "escort":
 			_check_escort(req)
+		elif req["kind"] == "memorial" and not req["told"]:
+			_check_memorial(req)
 
 
 # --- Fragen, Annehmen, Ablehnen ----------------------------------------------------------------
@@ -143,7 +155,10 @@ func offer_for(g: Guest, asked: bool = false) -> Dictionary:
 		req = _forced_request(g, _forced)
 		_forced = ""
 		return req
-	if _heart_open_to(g) and (asked or randf() < float(OFFER_CHANCE["heart"])):
+	var dead := _memorial_for(g)
+	if dead and (asked or randf() < float(OFFER_CHANCE["memorial"])):   # Trauer geht vor (6.18, 3)
+		req = make_memorial(g, dead)
+	elif _heart_open_to(g) and (asked or randf() < float(OFFER_CHANCE["heart"])):
 		req = make_heart(g)
 	elif _small_allowed(g) and (asked or randf() < float(OFFER_CHANCE["small"])):
 		req = _make_small(g)
@@ -160,13 +175,13 @@ func accept(g: Guest, req: Dictionary) -> String:
 	active.append(req)
 	if req["heart"]:
 		hearts[g.id] = "open"
-	elif req["kind"] != "reconcile":
+	elif not req["kind"] in OUTSIDE_SMALL:
 		if _small_day != Calendar.today():
 			_small_day = Calendar.today()
 			_small_today = 0
 		_small_today += 1
 	if Game.notebook:
-		Game.notebook.add_task(req["id"], req["task"], "", g, "" if req["heart"] or req["kind"] == "reconcile" else "heute")
+		Game.notebook.add_task(req["id"], req["task"], "", g, "" if req["heart"] or req["kind"] in OUTSIDE_SMALL else "heute")
 	if Game.tracing:
 		print("[Bitte] %s: %s angenommen (%s)" % [g.display_name, req["task"], req["kind"]])
 	if req["kind"] == "escort":
@@ -305,7 +320,7 @@ func _fits(req: Dictionary, item: Item) -> bool:
 ## Kleine Bitten gelten nur bis zum Ende des Spieltags: „zu spät“, er ist ein wenig enttäuscht.
 func _end_of_day() -> void:
 	for req in active.duplicate():
-		if req["heart"] or req["told"] or req["kind"] == "reconcile":
+		if req["heart"] or req["told"] or req["kind"] in OUTSIDE_SMALL:
 			continue
 		active.erase(req)
 		if Game.notebook:
@@ -333,7 +348,7 @@ func _small_allowed(g: Guest) -> bool:
 		return false
 	var today_count := _small_today if _small_day == Calendar.today() else 0
 	return today_count < SMALL_PER_DAY and active.filter(func(r: Dictionary) -> bool:
-		return not r["heart"] and r["kind"] != "reconcile").size() < MAX_SMALL
+		return not r["heart"] and not r["kind"] in OUTSIDE_SMALL).size() < MAX_SMALL
 
 
 ## Seine Herzensbitte: Kernfigur eigene, sonst nach Charakter. Kein Zufall – aus Charakter und ID (Spielstände).
@@ -360,6 +375,42 @@ func make_reconcile(g: Guest, other: Guest) -> Dictionary:
 	req["target"] = other.id
 	_fill_texts(g, req)
 	return req
+
+
+## Trauerwunsch (6.12): eine Kerze für den Toten vor seine Tür.
+func make_memorial(g: Guest, dead: Guest) -> Dictionary:
+	var req := _base(g, MEMORIAL, false)
+	if g.is_child():
+		req["ask"] = MEMORIAL_CHILD_ASK
+	req["target"] = dead.id
+	_fill_texts(g, req)
+	return req
+
+
+## Um wen trauert er, für den noch kein Licht des Spielers brannte? null = keinen.
+func _memorial_for(g: Guest) -> Guest:
+	var id := GuestMourning.mourns(g)
+	if id == "" or Game.social.deaths.honored(id):
+		return null
+	return Game.social.guest_by_id(id)
+
+
+## Ein Licht des Spielers vor der Tür des Toten (GuestDeaths.honor): Wer es sich gewünscht hat, dankt beim nächsten
+## Gespräch (wie beim Ausrichten).
+func on_memorial(dead: Guest) -> void:
+	for req in active:
+		if req["kind"] == "memorial" and req["target"] == dead.id:
+			req["told"] = true
+
+
+## Trauer vorbei, ohne dass ein Licht brannte: Der Wunsch verfällt still (im Notizbuch gestrichen, ohne Malus).
+func _check_memorial(req: Dictionary) -> void:
+	var g := Game.social.guest_by_id(String(req["guest"]))
+	if g and not g.dead and GuestMourning.mourns(g) == String(req["target"]):
+		return
+	active.erase(req)
+	if Game.notebook:
+		Game.notebook.miss_task(String(req["id"]))
 
 
 ## Kleine Bitte nach Lage ({} = gerade keine)

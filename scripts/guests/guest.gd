@@ -169,6 +169,8 @@ const COVER_HOME_RANGE := 80.0
 ## Haltungen aus Gesprächen (Spielkonzept 6.9, Talk): vorsichtig → mehr im Zimmer, sorglos → mehr unterwegs
 const WARY_ACTIVITIES := {"room": 3.0, "wander": 0.3, "garden": 0.4, "bar": 0.6}
 const CARELESS_ACTIVITIES := {"room": 0.5, "wander": 1.8, "garden": 1.3}
+## Trauer um einen Freund (Spielkonzept 6.12, GuestMourning): ruht mehr im Zimmer
+const GRIEVING_ACTIVITIES := {"room": 2.5, "wander": 0.4, "garden": 0.5, "bar": 0.5, "lobby": 0.6}
 const CARELESS_LINES := ["Ach, das ist nur der Strom.", "Wieder die alten Leitungen.", "Da war doch nichts, hieß es."]
 
 var id := ""
@@ -2151,7 +2153,7 @@ func _try_steal() -> bool:
 	var best_dist := INF
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
-		if item.is_held or item.deco_strength <= 0.0 or item.owner_id == id or _housemate_item(item):
+		if item.is_held or item.deco_strength <= 0.0 or item.owner_id == id or _housemate_item(item) or item.has_meta("memorial"):
 			continue
 		if hostile and item.owner_id != "player":
 			continue
@@ -2974,10 +2976,11 @@ func _phase_activities() -> Dictionary:
 	return weights
 
 
-## Vorlieben in einer Phase – mit den Haltungen aus Gesprächen (6.9): vorsichtig bzw. sorglos.
+## Vorlieben in einer Phase – mit den Haltungen aus Gesprächen (6.9): vorsichtig, trauernd (6.12) bzw. sorglos.
 func activity_weights(phase: Calendar.Phase) -> Dictionary:
 	var factors: Dictionary = PHASE_ACTIVITIES.get(phase, {})
-	var mood: Dictionary = WARY_ACTIVITIES if has_stance("wary") else (CARELESS_ACTIVITIES if has_stance("careless") else {})
+	var mood: Dictionary = WARY_ACTIVITIES if has_stance("wary") else (GRIEVING_ACTIVITIES if has_stance("grieving")
+		else (CARELESS_ACTIVITIES if has_stance("careless") else {}))
 	var weights := {}
 	for key in profile["activities"]:
 		weights[key] = float(profile["activities"][key]) * float(factors.get(key, 1.0)) * float(mood.get(key, 1.0))

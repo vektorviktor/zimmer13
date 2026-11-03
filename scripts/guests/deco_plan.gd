@@ -98,7 +98,8 @@ func _free(g: Guest) -> bool:
 	return not g.dead and g.hiding == null and g.held == null and g.state in [Guest.State.IDLE, Guest.State.WALK] \
 		and not Grinch.is_grinch(g) and g.fear < PANIC and g.drunk < BarTap.DRUNK and not g.is_following() \
 		and not Game.social.has_fun(g) and not _deco.is_crew(g) and _deco.solo_site(g).is_empty() \
-		and not Game.social.search.is_busy(g) and g.wound == "" and _trips_today(g) < DAILY
+		and not Game.social.search.is_busy(g) and g.wound == "" and _trips_today(g) < DAILY \
+		and not g.has_stance("grieving")   # wer trauert, schmückt nicht (6.12)
 
 
 func _trips_today(g: Guest) -> int:
@@ -257,6 +258,7 @@ func _loot_for(g: Guest, unseen: bool = true) -> Dictionary:
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
 		if item.is_held or item.deco_strength <= 0.0 or item.is_filler() or item.is_toppled() or item.owner_id == "player" \
+				or item.has_meta("memorial") \
 				or item.owner_id == g.id:
 			continue
 		if unseen and Game.player and Game.player.global_position.distance_to(item.global_position) < THEFT_UNSEEN:

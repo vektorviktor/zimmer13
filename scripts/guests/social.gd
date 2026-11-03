@@ -269,6 +269,7 @@ var talk: Talk                           ## Erzählen, Lügen, Fragen, Gedächtn
 var requests: GuestRequests              ## Bitten der Gäste (Spielkonzept 6.14)
 var quarrels: GuestQuarrels              ## Streit unter Gästen nach einem Diebstahl (Spielkonzept 6.16)
 var deaths: GuestDeaths                  ## Jeder Tod hat eine Ursache: Schuld, Schock, Gedenken (Spielkonzept 6.18, 2)
+var mourning: GuestMourning              ## Trauer der Gäste um Freunde: Gedenkort, Kerzen (Spielkonzept 6.12)
 var grinch: Grinch                       ## Gustav Peters, der „Halloween-Grinch“, und sein Ende (Spielkonzept 2.6)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
@@ -439,6 +440,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	deaths = GuestDeaths.new()   # Ursache jedes Todes, Schuld, Gedenken (6.18, 2)
 	deaths.name = "Deaths"
 	add_child(deaths)
+	mourning = GuestMourning.new()   # Trauer um Freunde: Gedenkort, Kerzen (6.12)
+	mourning.name = "Mourning"
+	add_child(mourning)
 	grinch = Grinch.new()   # Gustav Peters (2.6)
 	grinch.name = "Grinch"
 	add_child(grinch)
@@ -2265,6 +2269,8 @@ func on_visit_arrived(guest: Guest) -> void:
 	if tidying.on_arrived(guest):   # putzt einen Fleck weg bzw. bringt Kürbismatsch in die Küche
 		return
 	if candles.on_arrived(guest):   # zündet eine Kerze an, holt eine neue oder bringt seine zur Flamme (5.12)
+		return
+	if mourning.on_arrived(guest):   # am Gedenkort eines Freundes, stellt vielleicht eine Kerze auf (6.12)
 		return
 	if bath.on_arrived(guest):   # im Bad: Tür zu (6.19)
 		return

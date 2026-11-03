@@ -406,6 +406,10 @@ done <<'LIST'
 300|schuld,tod|--schuld=edna,sorglos --trace
 300|schuld,tod,friedhof|--schuld=edna,gedenken --trace
 600|schuld,speichern|--schuld=edna,halten --savetest
+1000|trauer,gaeste,kerzen|--trauer=edna,feuer --trace
+1000|trauer,gaeste|--trauer=bruno,ohne --trace
+300|trauer,bitten|--trauer=edna,wunsch --trace
+600|trauer,speichern|--trauer=edna,halten --savetest
 600|budget,speichern|--budget=edna --savetest
 2000|spieler|--sprint --trace
 600|gespraech,gaeste|--gespraech=frage,night,bruno,2 --trace

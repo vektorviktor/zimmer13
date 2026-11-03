@@ -102,6 +102,11 @@ extends Node3D
 ##                               an (Standard licht), er stirbt – prüft Ursache, Schuld, Schock, Halluzinationsname, Zeuge;
 ##                               keine/abgelaufen/zurueck ohne Schuld, gedenken mit Kerze vor seiner Tür, halten für
 ##                               --savetest. Meldet „[Schuld] … ok“ bzw. „FEHLER“
+##   --trauer=id[,feuer|ohne|wunsch|halten]  Trauer der Gäste (6.12): ein Freund des Gastes (Standard edna) stirbt – prüft Haltung,
+##                               kein Schmücken, mehr Ruhe; dann geht er zur Tür des Toten · feuer: stellt eine brennende
+##                               Kerze aus seinem Vorrat hin · ohne: ohne Feuer keine Kerze · wunsch: Trauerwunsch, du
+##                               stellst ein Licht auf, er dankt · halten:
+##                               gleich mit Kerze vor der Tür (für --savetest). Meldet „[Trauer] … ok“ bzw. „FEHLER“
 ##   --call=id[,panik]|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast – mit ,panik ein Panikanruf –,
 ##                               Atmen, Verschwundener, vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --gastanruf=id[,panik]      Gäste telefonieren (4.14): der Gast steht daheim, kennt eine frische Geschichte und ruft
@@ -2095,6 +2100,9 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(1.0, false).timeout.connect(_debug_boxes)
 	elif arg.begins_with("--streit="):
 		Game.social.quarrels.debug(_arg_parts(arg, "--streit"))
+	elif _is_arg(arg, "--trauer"):
+		var grief_parts := _arg_parts(arg, "--trauer")
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.mourning.debug(grief_parts))
 	elif _is_arg(arg, "--schuld"):
 		var guilt_parts := _arg_parts(arg, "--schuld")
 		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.deaths.debug(guilt_parts))

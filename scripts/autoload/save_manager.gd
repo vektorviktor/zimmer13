@@ -146,7 +146,10 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     die Toten mit Ursache, Schuld und Gedenken (records); an Gegenständen „taken“ (wem der Spieler sie genommen hat,
 ##     Meta taken_from); director.grief entfällt (Schock und Trauer sind ein Wert) – ältere Stände laden weiter, ohne
 ##     Ursachen und Schuld
-const VERSION := 71
+## 72: Trauer der Gäste (Spielkonzept 6.12; ZIM-41): an Gegenständen „memorial“ (Gedenkkerze eines Freundes für diesen
+##     Toten – niemand klaut sie); die Trauer selbst steht in der Haltung „grieving“ (id, visits, next, lit) – ältere
+##     Stände laden weiter, ihre Trauernden gehen nicht zum Gedenkort (ohne ID des Toten)
+const VERSION := 72
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -732,6 +735,8 @@ func _item_data(item: Item) -> Dictionary:
 		d["got"] = item.got_from
 	if item.has_meta("taken_from"):   # solange die Deko fehlt, zählt der Diebstahl als Ursache (6.18, 2)
 		d["taken"] = String(item.get_meta("taken_from"))
+	if item.has_meta("memorial"):   # Gedenkkerze eines Freundes (6.12)
+		d["memorial"] = String(item.get_meta("memorial"))
 	return d
 
 
@@ -1006,6 +1011,8 @@ func _make_item(entry: Dictionary) -> Item:
 	item.got_from = String(entry.get("got", ""))
 	if entry.has("taken"):
 		item.set_meta("taken_from", String(entry["taken"]))
+	if entry.has("memorial"):
+		item.set_meta("memorial", String(entry["memorial"]))
 	if item.has_wick():   # brennt oder nicht (Spielkonzept 5.12); in Kürbis und Totenkopf sagt der Zusatz, ob eine Kerze steckt
 		if bool(entry.get("lit", false)) and not item.lit:
 			item.light_up(false)

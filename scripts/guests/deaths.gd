@@ -183,6 +183,14 @@ func last_dead() -> Guest:
 	return null
 
 
+## Brannte schon ein Licht des Spielers vor seiner Tür?
+func honored(id: String) -> bool:
+	for r in records:
+		if r["id"] == id:
+			return bool(r["honored"])
+	return false
+
+
 ## Offene Schuld: ein Toter mit Schuld, für den noch kein Licht brannte, jünger als GUILT_DAYS Spieltage.
 func open_guilt() -> bool:
 	var today := Calendar.today()
@@ -220,6 +228,7 @@ func honor(r: Dictionary, dead: Guest) -> void:
 	for other in social.living_guests():
 		if social.pals.are_pals(dead, other):
 			social.change_relation(other, HONOR_RELATION)
+	social.requests.on_memorial(dead)   # Trauerwunsch erfüllt (6.12)
 	Game.say("Ein Licht für %s." % String(r["name"]), 3.0)
 	if Game.tracing:
 		print("[Gedenken] Licht vor der Tür von %s%s" % [r["name"], " – Schuld gesühnt" if r["guilt"] else ""])

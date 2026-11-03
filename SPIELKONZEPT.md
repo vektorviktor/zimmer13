@@ -3795,7 +3795,7 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 ### 6.8 Schock & Trauer (großteils umgesetzt)
 > **Umgesetzt:** Schock nach Beziehung, Zittern, Fallenlassen, kürzeres Verstecken, „Angst riecht“, Halluzinationen,
 > Anrufe Toter, Gedenkkerze, Feier. **Entschieden 2026-10-21, gebaut 2026-11-03 (ZIM-160):** Schock und Trauer sind
-> ein Wert, Schuld folgt aus der Ursache jedes Todes – siehe 6.18 (2). Die Trauer der Freunde des Toten: 6.12/ZIM-41.
+> ein Wert, Schuld folgt aus der Ursache jedes Todes – siehe 6.18 (2). Die Trauer der Freunde des Toten: 6.12.
 
 Stirbt ein Gast, mit dem man **gut befreundet** war, erleidet der Spieler einen **Schock** mit einem Malus. Stärke abhängig vom Beziehungswert.
 
@@ -4202,7 +4202,18 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
 **Leichen werden beerdigt** (entschieden 2026-10-25, 5.15): vom Spieler selbst oder von den Gästen am Vormittag danach,
 mit Trauerfeier am Grab.
 
-**Noch offen:** Trauer der Gäste um Freunde (6.8)?
+**Trauer der Gäste um Freunde** (entschieden und gebaut 2026-11-03, ZIM-41; 6.8, 6.18 Punkt 2 und 3):
+- Stirbt ein Gast, **trauern seine Freunde** (Familie, Freunde, Zimmernachbarn) **einen Spieltag lang**: Sie schmücken
+  nicht, ruhen mehr im Zimmer, und im Gespräch kann man sie trösten („Er fehlt mir auch.“, 6.9).
+- **Gedenkort:** Höchstens zweimal (frühestens alle vier Spielstunden) geht ein trauernder Erwachsener zur Tür des
+  Toten – liegt er schon im Grab, zum Grab (5.15) – und steht dort eine Weile still.
+- **Kerzen der Freunde:** Beim ersten Gang zur Tür stellt er eine brennende Kerze aus seinem Vorrat hin – mit eigenem
+  Feuer (5.12) oder angezündet an einer Kerze, die dort schon brennt; sonst bleibt sie im Koffer. Diese Kerzen klaut
+  niemand. So entsteht vor der Tür ein sichtbarer Gedenkort, der wächst, je mehr Freunde der Tote hatte.
+- **Trauerwunsch** (6.18 Punkt 3): „Würdest du eine Kerze für X vor die Tür stellen?“ – eine Bitte außerhalb der
+  kleinen Bitten (6.14), ohne Frist, solange er trauert; brennt ein Licht von dir dort, dankt er beim nächsten Gespräch
+  (wie eine kleine Bitte). Endet die Trauer vorher, verfällt der Wunsch still und wird im Notizbuch gestrichen.
+- Kinder trauern mit (kein Schmücken, mehr Ruhe, eigener Wunsch), gehen aber nicht allein zum Gedenkort.
 
 ### 6.13 Kinder (entschieden und umgesetzt 2026-10-19)
 > **Im Prototyp umgesetzt (2026-10-19):** dreizehn Kinder (6–11 Jahre) im Zimmer ihrer Eltern (6.20), eigene Namen und
@@ -4492,8 +4503,8 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 ### 6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)
 > Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19; Wache halten,
 > 2026-11-02, ZIM-62; das Freundesnetz als Kanal (1), 2026-11-03, ZIM-159; die Beziehung nicht erschleichen (5) ohne Neid,
-> 2026-11-03, ZIM-163; Neid, 2026-11-03, ZIM-164; jeder Tod hat eine Ursache (2) ohne die Kerzen der Gäste,
-> 2026-11-03, ZIM-160). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> 2026-11-03, ZIM-163; Neid, 2026-11-03, ZIM-164; jeder Tod hat eine Ursache (2), 2026-11-03, ZIM-160, mit den Kerzen
+> der Gäste und dem Wunsch „eine Kerze für den Toten“ aus (3), 2026-11-03, ZIM-41, 6.12). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
@@ -4545,7 +4556,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
     (−10 × Tratsch), den Freunden des Toten direkt (−25).
   - **Gedenken:** Ein Licht von dir vor seiner Tür (Kerze, Kürbis mit Kerze) ehrt ihn einmal: Schock −0,25, Schuld
     gesühnt, seine Freunde +10. Wie bisher heilt jedes Licht dort den Schock dreimal so schnell. Die Kerzen der Gäste
-    am Gedenkort kommen mit ZIM-41.
+    am Gedenkort: 6.12 (ZIM-41).
 
 **3. Schwere Momente: empfindlicher Zustand und Wünsche** (verallgemeinert 6.17, erste Form von 6.14)
 - **Zustände:** verletzt (6.17) · trauernd (ein Freund ist gestorben) · verwaist (6.13) · nach einem Angriff des

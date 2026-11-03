@@ -974,8 +974,8 @@ func on_guest_died(dead: Guest) -> void:
 				dead.id)
 		if Game.tracing:
 			print("[Gespräch] %s ist sorglos gestorben – Schuld" % dead.display_name)
-	for pal in Game.social.pals.pals_of(dead):
-		pal.set_stance("grieving", STANCE_TIME, {"who": dead.display_name})
+	for pal in Game.social.pals.pals_of(dead):   # einen Spieltag Trauer: Gedenkort, Kerze, Ruhe (GuestMourning, 6.12)
+		pal.set_stance("grieving", STANCE_TIME, {"who": dead.display_name, "id": dead.id})
 	for node in Game.social.living_guests():
 		var g: Guest = node
 		for c: Dictionary in g.claims:

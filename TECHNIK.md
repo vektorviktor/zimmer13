@@ -1578,6 +1578,22 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   Schock in zwei Teilen verfliegen (`SHOCK_TAU`, `SHOCK_FADE`, geschlossene Form). Gespeichert unter `social.deaths`
   (offene Ursachen und die Toten) und an Gegenständen „taken“ (Version 71). Debug `--schuld=id[,ursache]`, Stichwort „schuld“,
   `--trace` „[Ursache]“, „[Gedenken]“.
+- **Trauer der Gäste** (`guests/mourning.gd`, `GuestMourning`, Spielkonzept 6.12; 2026-11-03, ZIM-41): Kind von Social,
+  `Game.social.mourning`. `Talk.on_guest_died` gibt den Freunden des Toten die Haltung „grieving“ (`STANCE_TIME`, mit
+  `who`, `id`); `mourns(g)` liefert die ID. Wirkung: `Decorating._available` und `DecoPlan._free` nehmen Trauernde nicht,
+  `Guest.activity_weights` nimmt `GRIEVING_ACTIVITIES` (nach „vorsichtig“, vor „sorglos“). `_process` (alle `SCAN`, nicht
+  in der Nachtruhe oder solange das Monster unterwegs ist) schickt je Durchgang höchstens einen freien trauernden
+  Erwachsenen (`VISIT_CHANCE`, höchstens `VISITS`, Abstand `VISIT_GAP` – Zähler `visits`/`next` in der Haltung) per
+  `Guest.start_visit` an `memorial_of(Toter)`: Grab (`Cemetery._slot_of`, Fußende) oder Tür (`door_front`). Beim ersten
+  Gang zur Tür nimmt er eine Kerze aus `stock` mit; `on_arrived` (aus `Social.on_visit_arrived`) stellt sie mit
+  `CandleCare.has_fire` oder an einer Flamme dort (`flame_near`) brennend hin (`owner_id` = er, Meta `memorial` = Toter,
+  Haltung `lit`), sonst zurück in den Koffer; dann `Guest.hold_argument` mit Blick zur Tür bzw. zum Grab (`STAY`).
+  Gedenkkerzen nimmt kein Gast (`DecoPlan`, `Guest._try_steal`). Trauerwunsch: `GuestRequests.make_memorial` (Art
+  „memorial“, `target` = Toter, `OUTSIDE_SMALL` wie „reconcile“), angeboten vor der Herzensbitte, solange
+  `GuestDeaths.honored` nein ist; `GuestDeaths.honor` → `on_memorial` setzt `told` (Dank über `thanks_on_greet`);
+  `_check_memorial` streicht ihn still, wenn die Trauer endet. Gespeichert: Haltung am Gast, Meta „memorial“ an
+  Gegenständen (Version 72); ein laufender Gang nicht. Debug `--trauer=id[,feuer|ohne|wunsch|halten]`, Stichwort „trauer“,
+  `--trace` „[Trauer]“.
 - **Gespräche** (`guests/talk.gd`, `Talk`, Spielkonzept 6.9): Die Knöpfe baut `DialogUI` (`_show_main`, Optionen in
   einem `ScrollContainer`), die Logik liegt in `Talk`: Anlässe (`_occasions()`), Erlebnisse des Spielers (`log`,
   `_scan_sights`), Gedächtnis je Gast (`Guest.claims`, höchstens `MAX_CLAIMS`), Erzählen/Lügen (`tell`, `_believes`,
