@@ -2029,7 +2029,13 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   `player.gd` `_use_flame`, `_snuff_target`, `_update_flame_wind`). Neue Kerzen brennen nicht, nur
   mit Zusatz `lit`; Kürbis/Totenkopf: `unlit` = ohne Kerze, `out` = Kerze erloschen. Anzünden mit Flamme oder
   `MATCHBOX` (Fundort `CONTENT["022"]["drawer"]`), auspusten, ausdrücken; in Bewegung kann der Wind sie ausblasen
-  (`FLAME_OUT_*`, draußen und bei Wetter mehr, in Kürbis/Totenkopf geschützt, Stummel mal `STUB_WIND`). `FixedCandle`
+  (`FLAME_OUT_*`, draußen und bei Wetter mehr, in Kürbis/Totenkopf geschützt, Stummel mal `STUB_WIND`).
+  **Wind** (7.8, 2026-11-03): `Weather.gust()` (Böenanteil, 0 … 1); in der Hand draußen mal (1 + `FLAME_WIND` × Böe).
+  Stehende offene Kerzen (`Kind.CANDLE`, nicht in der Hand) und `FixedCandle` würfeln alle `BURN_STEP` s
+  `Item.gust_out_chance` (ab Böe `FLAME_GUST`, bis `FLAME_GUST_OUT` je s, nur `RainVeil.is_outdoor`) → `Item.gust_out`
+  (Untertitel, `[Kerze] Böe bläst …`); Kürbis/Totenkopf/Grablicht nie. `CandleFlame` neigt sich draußen um
+  `_wind_axis` (quer zu `Weather.FALL`): `wind` × `LEAN_MAX` plus Flattern `gust()` × `LEAN_FLUTTER`, draußen-Prüfung alle
+  `OUTDOOR_CHECK` s; drinnen senkrecht. Nichts gespeichert. Debug `--kerzen=wind`, `--weather=boe`. `FixedCandle`
   (feste Kerze auf Möbeln): Licht in `lamps`, das Monster bläst sie aus, gespeichert in `fixed_candles` (`lit`, `wax`).
   **Abbrennen** (2026-10-27): `Item.wax` (1 = neu) sinkt, solange sie brennt, um dt / `BURN_TIME` (ein Spieltag) –
   in `_process` alle `BURN_STEP` s und in `skip_time` (Zeitsprung); gespeichert im Zusatz `w=…` (Kerze, Kürbis,
@@ -2247,7 +2253,8 @@ Spielkonzept 2.5)
   als Striche (`shaders/rain_streak.gdshader`, nie schmaler als `STREAK_PIXELS`, sonst blasser). **Gewitter:**
   Blitze über Mondlicht und Himmel `flash`, Donner, danach `masking()` – `MonsterDirector.on_noise` multipliziert die
   Lautstärke damit. **Kirchturmglocke** um Mitternacht (`_update_bell`, kein Lärm). Nicht gespeichert (außer Blutregen). Debug
-  `--weather=klar|regen|gewitter|blitz|gestalt|blut`.
+  `--weather=klar|regen|gewitter|boe|blitz|gestalt|blut`. **Böen:** `_update_wind`, `gust()` für die Kerzen (5.12),
+  `force_gust()` (Debug `boe`).
   Globale Shader-Werte (project.godot) aus Weather: `weather_time` (Spielzeit), `rain_wet`, `wind_strength`.
   **Scheiben:** `wet` folgt `intensity` (`WET_RATE`, trocknet in `DRY_TIME`); jedes klare Außenfenster hat vor dem Glas
   eine Fläche mit `shaders/window_rain.gdshader` (Gruppe `rain_panes`, nur sichtbar, solange nass; `render_priority` 1

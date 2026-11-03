@@ -3390,6 +3390,7 @@ Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick 
 - **Ausgehen in der Bewegung:** Mit einer brennenden Kerze in der Hand würfelt jede Sekunde, ob sie ausgeht: **Gehen im
   Haus nie**, **Rennen im Haus 8 %**, **Gehen draußen 3 %**, **Rennen draußen 15 %**; Regen und Wind verdoppeln draußen bis
   zum Dreifachen. Im Kürbis oder Totenkopf ist die Flamme geschützt (ein Drittel davon). Stillstehen löscht nichts.
+  Böen kommen draußen noch obendrauf, und stehende offene Kerzen bläst eine starke Böe aus (7.8, 2026-11-03).
 - **Anzünden an einer Flamme:** Erloschene Kerze in der Hand + brennende Kerze, Kürbislaterne, Totenkopf oder feste Kerze
   in der Welt → **[E] „Kerze anzünden“** – und umgekehrt: Mit einer brennenden Kerze in der Hand zündet [E] eine erloschene
   in der Welt an. Ohne Streichhölzer, so oft man will.
@@ -5374,7 +5375,12 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
 > - **Dachfenster:** Auch die Fenster in den Dachschrägen bekommen Tropfen, werden gleich nass, trocknen gleich und
 >   tragen nach dem Blutregen dieselben Flecken. Weil sie schräg liegen, laufen die Rinnsale die Schräge hinab, seltener
 >   und langsamer als an den Wänden, und es bleiben mehr stehende, rundere und größere Tropfen.
-> - Offen bleibt **Wind an den Kerzen** (wie er auf Kerzen wirkt, ist nicht entschieden).
+> - **Wind an den Kerzen (entschieden und umgesetzt 2026-11-03):** Draußen neigt sich jede Kerzenflamme mit dem Wind –
+>   bis etwa 40° bei vollem Wind, in Böen flattert sie hin und her. **Starke Böen blasen offene Kerzen draußen aus**
+>   (stehende Kerzen und feste Kerzen; Stummel leichter), mit Untertitel „[Der Wind bläst eine Kerze aus]“. Im
+>   **Kürbis, Totenkopf oder Grablicht** ist die Flamme **geschützt** und geht vom Wind nicht aus. Bei Kerzen **in der
+>   Hand** erhöht eine Böe die Chance aus 5.12 draußen noch einmal (bis zum Dreifachen, im Kürbis ein Drittel davon).
+>   **Drinnen weht kein Wind** – auch nicht durch offene Fenster.
 
 ### 7.9 Untergeschoss (entschieden und umgesetzt 2026-10-20)
 > Ausbau entschieden 2026-10-21 (7.10): Heizraum, Maschinenraum, Wäscherei und Müllraum; darunter kommt

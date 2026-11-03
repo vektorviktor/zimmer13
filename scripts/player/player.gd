@@ -697,7 +697,7 @@ func _snuff_target() -> Object:
 
 
 ## Brennendes in der Hand geht in der Bewegung manchmal aus (Spielkonzept 5.12): je Sekunde gewürfelt, beim Rennen im
-## Haus und draußen; Regen draußen macht es wahrscheinlicher, Kürbis und Totenkopf schützen die Flamme.
+## Haus und draußen; Regen und Böen draußen (7.8) machen es wahrscheinlicher, Kürbis und Totenkopf schützen die Flamme.
 func _update_flame_wind(delta: float, moving: bool) -> void:
 	if held == null or not held.lit or not moving:
 		return
@@ -710,7 +710,7 @@ func _update_flame_wind(delta: float, moving: bool) -> void:
 	if outside:
 		chance = Item.FLAME_OUT_OUTSIDE_RUN if running else Item.FLAME_OUT_OUTSIDE
 		if Game.weather:
-			chance *= 1.0 + Item.FLAME_WEATHER * Game.weather.intensity
+			chance *= (1.0 + Item.FLAME_WEATHER * Game.weather.intensity) * (1.0 + Item.FLAME_WIND * Game.weather.gust())
 	elif running:
 		chance = Item.FLAME_OUT_RUN
 	if held.kind in Item.CANDLE_HOLDERS:

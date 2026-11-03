@@ -57,6 +57,8 @@ func _process(delta: float) -> void:
 	_burn_acc += delta
 	if _burn_acc >= Item.BURN_STEP:
 		burn(_burn_acc)
+		if lit and randf() < Item.gust_out_chance(global_position, is_stub()) * _burn_acc:
+			Item.gust_out(self)   # draußen bläst eine Böe sie aus (7.8)
 		_burn_acc = 0.0
 
 

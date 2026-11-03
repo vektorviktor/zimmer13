@@ -425,6 +425,18 @@ func _update_wet(delta: float) -> void:
 		get_tree().set_group("rain_panes", "visible", _drops_on)
 
 
+## Wie stark die Böe gerade ist (0 … 1): der Böenanteil am Wind, bei Regen und Sturm stärker. Starke Böen blasen
+## offene Kerzen draußen aus (Item.gust_out_chance, Entscheidung 3.11.).
+func gust() -> float:
+	return clampf(_gust * (0.5 + intensity), 0.0, 1.0)
+
+
+## Debug (--weather=boe): gleich eine heftige Böe, ein paar Sekunden lang.
+func force_gust() -> void:
+	_gust_target = 1.0
+	_gust_timer = GUST_TIME.y
+
+
 func _update_wind(delta: float) -> void:
 	_gust_timer -= delta
 	if _gust_timer <= 0.0:

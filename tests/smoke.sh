@@ -249,6 +249,7 @@ done <<'LIST'
 300|grafik|--grafik=mittel --trace
 300|grafik,ui|--grafik=hoch --menu=settings
 600|kerzen,abbrennen,speichern|--abbrennen=0.5 --savetest
+1000|kerzen,wetter,wind|--pos=45,0.1,-37,180 --kerzen=wind --weather=boe --trace
 600|streiche,kuerbis|--prank=pumpkin,111 --trace
 600|werfen,kuerbis,speichern|--pos=-6,0,-21,180,-25 --wurf --savetest --trace
 600|werfen,speichern|--pos=-6,0,-18,90,0 --wurf=1,kaffee --savetest --trace

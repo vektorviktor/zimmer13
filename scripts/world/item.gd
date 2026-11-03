@@ -132,6 +132,13 @@ const FLAME_OUT_OUTSIDE := 0.03
 const FLAME_OUT_OUTSIDE_RUN := 0.15
 const FLAME_WEATHER := 2.0
 const FLAME_SHELTER := 1.0 / 3.0
+## Wind an den Kerzen (7.8, Entscheidung 3.11.): In der Hand draußen zusätzlich mal (1 + FLAME_WIND × Böe). Offene
+## Kerzen, die draußen stehen, bläst eine Böe ab FLAME_GUST aus – je Sekunde mit bis zu FLAME_GUST_OUT (bei voller
+## Böe), Stummel STUB_WIND-mal so leicht; in Kürbis und Totenkopf (wie die Grablichter) sind sie geschützt. Drinnen
+## kein Wind, auch nicht durch offene Fenster.
+const FLAME_WIND := 2.0
+const FLAME_GUST := 0.35
+const FLAME_GUST_OUT := 0.3
 ## Abbrennen (5.12): Eine neue Kerze brennt einen Spieltag lang (Sekunden Spielzeit). Im letzten Viertel (STUB) ist sie
 ## ein Stummel – das Licht hat STUB_LIGHT der Kraft, in der Bewegung geht sie STUB_WIND-mal so leicht aus. Nachgerechnet
 ## wird alle BURN_STEP Sekunden.
@@ -363,6 +370,8 @@ func _process(delta: float) -> void:
 		_burn_acc += delta
 		if _burn_acc >= BURN_STEP:
 			burn(_burn_acc)
+			if lit and kind == Kind.CANDLE and not is_held and randf() < gust_out_chance(global_position, is_stub()) * _burn_acc:
+				gust_out(self)
 			_burn_acc = 0.0
 	if _flinch > 0.0:
 		_update_flinch(delta)
@@ -797,6 +806,31 @@ func blow_out() -> void:
 	_extinguish()
 	if Game.player and Game.player.global_position.distance_to(global_position) < 6.0:
 		Game.caption("[Eine Kerze erlischt]")
+
+
+## Wind (7.8, Entscheidung 3.11.): Chance je Sekunde, dass eine Böe eine offen stehende Kerze bei `pos` ausbläst – 0
+## drinnen, ohne Wetter und bei schwächerer Böe als FLAME_GUST. Gilt auch für feste Kerzen (FixedCandle).
+static func gust_out_chance(pos: Vector3, stub: bool) -> float:
+	if Game.weather == null:
+		return 0.0
+	var g := Game.weather.gust()
+	if g < FLAME_GUST or not RainVeil.is_outdoor(pos):
+		return 0.0
+	return FLAME_GUST_OUT * (g - FLAME_GUST) / (1.0 - FLAME_GUST) * (STUB_WIND if stub else 1.0)
+
+
+## Eine Böe bläst die Kerze aus (Item oder FixedCandle); in der Nähe ein Untertitel.
+static func gust_out(candle: Node3D) -> void:
+	if candle is Item:
+		(candle as Item)._extinguish()
+	elif candle is FixedCandle:
+		(candle as FixedCandle).lit = false
+		(candle as FixedCandle)._show()
+	if Game.tracing:
+		print("[Kerze] Böe bläst %s aus bei %s (Böe %.2f)" % ["eine feste Kerze" if candle is FixedCandle else "eine Kerze",
+			candle.global_position.snapped(Vector3.ONE * 0.1), Game.weather.gust()])
+	if Game.player and Game.player.global_position.distance_to(candle.global_position) < 8.0:
+		Game.caption("[Der Wind bläst eine Kerze aus]")
 
 
 ## Der Spieler pustet die Flamme aus ([R] bzw. Linksklick, Spielkonzept 5.12).

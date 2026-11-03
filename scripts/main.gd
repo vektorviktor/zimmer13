@@ -200,9 +200,10 @@ extends Node3D
 ##                               kaffee, tee, dose, messer, taschenlampe; z. B. --pos=…,blick,neigung --wurf=0.6,kerze
 ##   --kuerbis[=n]               Kürbismodelle (5.8) 1,5 m vor dir, Gesicht zu dir, Blick hinunter: der glatte und die fünf
 ##                               Fratzen mit Kerze in einer Reihe – bzw. nur Fratze n (1–5)
-##   --kerzen[=nah]              Kerzenmodelle 0,8 m vor dir, Blick hinunter: Kerze brennend und aus (Gegenstand), rot und weiß
+##   --kerzen[=nah|wind]         Kerzenmodelle 0,8 m vor dir, Blick hinunter: Kerze brennend und aus (Gegenstand), rot und weiß
 ##                               brennend auf dem Teller · nah: weiß auf dem Teller 30 cm vor dem Auge, Flamme auf Augenhöhe,
-##                               rot daneben (für Nahaufnahmen der Flamme)
+##                               rot daneben (für Nahaufnahmen der Flamme) · wind: sechs brennende Kerzen und ein Kürbis
+##                               1,5 m vor dir – draußen neigen sich die Flammen, Böen blasen sie aus (7.8, mit --weather=boe)
 ##   --show=map|keys|compass     Karte (bzw. Schlüsselblatt) oder Kompass hervorholen (wie Tab/F halten); aufgaben|notizen|
 ##                               gesehen: das Notizbuch bei diesem Lesezeichen (3.10)
 ##   --sprint · --winded         vorwärts rennen, bis die Ausdauer leer ist · gleich außer Atem starten (3.1) –
@@ -344,7 +345,8 @@ extends Node3D
 ##   --maske[=id]                verbotene Masken (5.19): vor dem Maskenboard in Zimmer 13 stehen · id (pumpkin|doll): diese
 ##                               Maske gleich aufgesetzt (Kürbismann: Spaßschwelle tief, Puppe: nächstes Urteil auf 13)
 ##   --drunk=n[,gast]            n Gläser getrunken (du, mit Gast: er) – ab 2 angetrunken, ab 3 betrunken (3.7)
-##   --weather=klar|regen|gewitter|blitz|gestalt|blut   Wetter sofort in voller Stärke (7.8) · blitz: gleich ein Blitz
+##   --weather=klar|regen|gewitter|boe|blitz|gestalt|blut   Wetter sofort in voller Stärke (7.8) · boe: Gewitter und gleich
+##                       eine heftige Böe · blitz: gleich ein Blitz
 ##                       (mit Gewitter) · gestalt: dazu eine Gestalt zwischen den Bäumen, der Spieler wird hingedreht ·
 ##                       blut: Blutregen (Seltenwetter)
 ##   --party[=gast]              sofort eine Feier im Partyraum starten (mit Gast: er lädt ein, ~3/4 kommen;
@@ -1537,13 +1539,27 @@ func run_debug(arg: String) -> bool:
 				pumpkin.global_position = Game.player.global_position + front * 1.5 + side * (i - (faces.size() - 1) / 2.0) * 0.5 					+ Vector3.UP * 0.05
 				pumpkin.rotation.y = atan2(-front.x, -front.z)
 			Game.player.head.rotation.x = -0.6)   # Blick hinunter auf die Reihe
-	elif arg == "--kerzen" or arg == "--kerzen=nah":
+	elif arg == "--kerzen" or arg == "--kerzen=nah" or arg == "--kerzen=wind":
 		# Kerzenmodelle (CandleModel): Gegenstand brennend und aus, rot und weiß auf dem Teller (brennend) in einer Reihe –
-		# nah: weiß auf dem Teller 30 cm vor dem Auge, die Flamme auf Augenhöhe, daneben rot ohne Teller
+		# nah: weiß auf dem Teller 30 cm vor dem Auge, die Flamme auf Augenhöhe, daneben rot ohne Teller · wind (7.8): sechs
+		# brennende Kerzen und ein geschnitzter Kürbis 1,5 m vor dir (draußen bläst eine Böe sie aus, der Kürbis bleibt an)
 		get_tree().create_timer(1.0).timeout.connect(func() -> void:   # nach --pos/--tp
 			var front := -Game.player.global_basis.z
 			front = Vector3(front.x, 0, front.z).normalized()
 			var side := front.cross(Vector3.UP)
+			if arg == "--kerzen=wind":
+				for i in 7:
+					var thing := Item.create(Item.Kind.CANDLE, "lit") if i < 6 else Item.create(Item.Kind.CARVED_PUMPKIN, "lit")
+					Game.player.get_parent().add_child(thing)
+					thing.global_position = Game.player.global_position + front * 1.5 + side * (i - 3) * 0.3 + Vector3.UP * 0.02
+					if not thing.lit:
+						thing.light_up(false)
+				Game.player.head.rotation.x = -0.5
+				get_tree().create_timer(40.0).timeout.connect(func() -> void:
+					var burning := get_tree().get_nodes_in_group("items").filter(func(it: Item) -> bool:
+						return it.lit and it.global_position.distance_to(Game.player.global_position) < 4.0)
+					print("[Kerze] nach 40 s brennen noch %d von 7 (Wind %.2f)" % [burning.size(), Game.weather.wind]))
+				return
 			if arg == "--kerzen=nah":
 				Game.player.head.rotation.x = 0.0
 				var eye := Game.player.camera.global_position
@@ -1846,6 +1862,9 @@ func run_debug(arg: String) -> bool:
 				Game.weather.set_weather(Weather.Kind.RAIN, true)
 			"gewitter":
 				Game.weather.set_weather(Weather.Kind.STORM, true)
+			"boe":   # Gewitter und gleich eine heftige Böe (Kerzen draußen, 7.8)
+				Game.weather.set_weather(Weather.Kind.STORM, true)
+				Game.weather.force_gust()
 			"blut":
 				Game.weather.set_weather(Weather.Kind.RAIN, true, true)
 			"blitz", "gestalt":
@@ -1854,7 +1873,7 @@ func run_debug(arg: String) -> bool:
 				var figure := what == "gestalt"   # Gestalt im Blitz neben dem Baum, der am ehesten im Blick liegt
 				get_tree().create_timer(3.0).timeout.connect(Game.weather.lightning.bind(figure))   # erst, wenn es regnet
 			_:
-				Game.say("Wetter: klar, regen, gewitter, blitz, gestalt oder blut", 3.0)
+				Game.say("Wetter: klar, regen, gewitter, boe, blitz, gestalt oder blut", 3.0)
 	elif _is_arg(arg, "--party"):
 		var host := _arg_value(arg, "--party", "player")
 		if host == "player" or _guest(host):
