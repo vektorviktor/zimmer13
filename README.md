@@ -627,7 +627,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--erfolge-zurueck` | alle Erfolge im Profil löschen |
 | `--bulb-thief=bruno` | Gast klaut sofort eine Glühbirne aus Zimmer 13 |
 | `--lichtgang=bruno[,versteckt]` | Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3) · versteckt: du sitzt in seinem Schrank (sonst unterm Bett) – er macht beim Gehen trotzdem aus |
-| `--birnenersatz=id` · `--birnenersatz=id,lager` / `klauen` / `meiden` | Im Zimmer des Gastes (Haushaltsvorstand) fehlen alle Birnen, er steht darin (7.3) · lager (Standard): ein Ersatzbirnen-Lager in der Lobby · klauen: mutig, holt eine aus einem leeren Raum oder Flur · meiden: ängstlich, nach 20 s beginnt die Nachtruhe (mit `--pals=id,freund`: schläft beim Freund); `--trace`: `[Birne] …` |
+| `--birnenersatz=id` · `--birnenersatz=id,lager` / `klauen` / `meiden` | Im Zimmer des Gastes (Haushaltsvorstand) fehlen alle Birnen, er steht darin (7.3) · lager (Standard): er holt Ersatz aus dem Lager im Plan (Lager EG West) · klauen: mutig, ohne Lager, holt eine aus einem leeren Raum oder Flur · meiden: ängstlich, ohne Lager, nach 20 s beginnt die Nachtruhe (mit `--pals=id,freund`: schläft beim Freund); `--trace`: `[Birne] …` |
 | `--bad=edna` | Gast geht gleich in sein Bad und schließt die Tür (6.19), du stehst im Zimmer davor |
 | `--kerzenpflege=bruno[,ohne]` | Kerzen vor der Tür des Gastes gehen aus (ohne: in Kürbis und Totenkopf abgebrannt), er kümmert sich darum (5.12) |
 | `--abbrennen[=rest]` | alle Kerzen fast heruntergebrannt (Standard 0,02 ≈ eine halbe Minute), 5.12 |

@@ -5244,7 +5244,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 >
 > **Umgesetzt (2026-10-27): Ersatz holen oder meiden, Schreckmoment.** Brennt daheim keine Lampe und hat der Haushalt
 > keine Birne im Vorrat, holt der Vorstand tagsüber Ersatz (höchstens einmal je Spielstunde): aus dem
-> **Ersatzbirnen-Lager** („Ausstattung: Ersatzbirnen“ im Plan, z. B. im Lager im EG – noch nicht gemalt), ist keins
+> **Ersatzbirnen-Lager** („Ausstattung: Ersatzbirnen“ im Plan, seit 3.11. im Lager im EG West, im Regal), ist keins
 > da oder leer, dreht er – **mutig oder dem Spieler feind** – eine aus einem **leeren Raum oder Flur** heraus (keine
 > Bewohner, niemand drin, nicht Lobby oder Aufzug, nie, wenn der Spieler nah ist; feindselig auch aus Zimmer 13) und
 > schraubt sie daheim ein. **Ängstliche meiden das dunkle Zimmer:** Tagsüber bleibt der ganze Haushalt weg, nachts

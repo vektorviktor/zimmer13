@@ -369,8 +369,9 @@ extends Node3D
 ##                               2 s (3.6) · gefahr: dazu eine echte Flackerwelle · halluzination: eine falsche (falscher
 ##                               Alarm) · klopfen: du stehst vor seiner Tür und klopfst
 ##   --birnenersatz=id[,lager|klauen|meiden]   im Zimmer des Gastes (Haushaltsvorstand) fehlen alle Birnen, er steht
-##                               darin (7.3) · lager (Standard): ein Ersatzbirnen-Lager in der Lobby · klauen: mutig, holt
-##                               eine aus einem leeren Raum oder Flur · meiden: ängstlich, nach 20 s beginnt die Nachtruhe
+##                               darin (7.3) · lager (Standard): er holt Ersatz aus dem Lager im Plan · klauen: mutig, ohne
+##                               Lager, holt eine aus einem leeren Raum oder Flur · meiden: ängstlich, ohne Lager, nach
+##                               20 s beginnt die Nachtruhe
 ##   --bad=id                    Gast geht gleich in sein Bad und schließt die Tür (6.19), du stehst im Zimmer davor
 ##   --kerzenpflege=id[,ohne]    Kerzen vor der Tür des Gastes gehen aus (ohne: in Kürbis und Totenkopf abgebrannt), er
 ##                               steht ein paar Meter davor und kümmert sich darum (5.12)
@@ -3645,12 +3646,13 @@ func _debug_bulb_refill(args: PackedStringArray) -> void:
 	guest.profile["brave"] = 0.8 if mode == "klauen" else 0.2
 	guest.global_position = guest.home["center"]
 	guest._set_idle(1.0)
-	if mode == "lager":
-		var seat: Vector3 = Game.social.builder.lobby_seats[0]
-		var spot := ResourceSpot.new().setup(Item.Kind.BULB, "Ersatzbirne aus dem Lager", 2, 300.0)
-		spot.position = seat + Vector3(0, 0.02, 0)
-		guest.get_parent().add_child(spot)
-	elif mode == "meiden":
+	if mode != "lager":
+		# Ohne Lager: klauen bzw. meiden statt Ersatz aus dem Plan-Lager holen
+		for node in get_tree().get_nodes_in_group("resource_spots"):
+			if (node as ResourceSpot).kind == Item.Kind.BULB:
+				node.remove_from_group("resource_spots")
+				node.queue_free()
+	if mode == "meiden":
 		get_tree().create_timer(20.0, false).timeout.connect(func() -> void: Game.social.debug_sleep())
 	if Game.tracing:
 		print("[Birne] Debug: %s (Zimmer %s), %s" % [guest.display_name, guest.home["no"], mode])

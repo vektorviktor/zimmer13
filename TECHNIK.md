@@ -1312,13 +1312,13 @@ den Skripten. Hier der Aufbau.
   Haushaltsvorstand keine Birne im Vorrat, geht er tagsüber in `_next_activity` los (`_seek_bulb`, höchstens alle
   `BULB_RETRY` s, Haltung `bulb_tried`): zum nächsten erreichbaren `ResourceSpot` mit `Item.Kind.BULB`
   (`_bulb_supply`, Gang als `State.STEAL` mit `_bulb_spot` → `_take_supply_bulb`, `guest_consume`) – im Plan
-  „Ausstattung: Ersatzbirnen“ –, sonst ab `BULB_BRAVE` Mut oder feindselig zu einer Lampe in einem leeren Raum oder
+  „Ausstattung: Ersatzbirnen“, Lager EG West, auf `BULB_SUPPLY_Y` im Regal –, sonst ab `BULB_BRAVE` Mut oder feindselig zu einer Lampe in einem leeren Raum oder
   Flur (`_bulb_for_home`: keine Bewohner, niemand drin, nicht Lobby/Aufzug, 13 nur feindselig, nicht unter den Augen des
   Spielers, `_finish_steal`). Die Birne geht in `stock`, `_check_lights` schraubt sie daheim ein. Wer sich nicht traut,
   meidet das Zimmer (`avoids_home`, gilt für den ganzen Haushalt): `activity_weights` setzt „room“ auf 0, in der
   Nachtruhe schläft er bei einem Freund (`pals_of`) mit freiem Bett in einem hellen, offenen Zimmer (`_dark_refuge`,
   `_bed_host`, `_bed_home` für Weg und Bett, dort nur Einzelplätze, Licht des Gastgebers bleibt) oder sitzt in der Lobby.
-  Nicht gespeichert (nach dem Laden entscheidet `_go_to_bed` neu). Debug `--birnenersatz=id[,lager|klauen|meiden]`.
+  Nicht gespeichert (nach dem Laden entscheidet `_go_to_bed` neu). Debug `--birnenersatz=id[,lager|klauen|meiden]` (klauen/meiden entfernen die Lager).
 - **Detailstufe** (Leistung bei vielen Gästen): außerhalb des Blickfelds und weiter als `Guest.LOD_RANGE` bzw.
   weiter als `LOD_FAR` rechnen Gäste nur jedes `LOD_STEP`-te Physikbild – mit der aufgesammelten Zeit, `_move_to` macht
   entsprechend längere Schritte (`_lod_scale`). Im Gespräch, Spiel, gewürgt, taumelnd oder angreifend immer voll.
