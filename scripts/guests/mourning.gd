@@ -1,8 +1,8 @@
 class_name GuestMourning
 extends Node
 ## Trauer der Gäste um Freunde (Spielkonzept 6.12, 6.18 Punkt 2 und 3; entschieden 2026-11-03, ZIM-41).
-## - **Wer trauert:** Stirbt ein Gast, bekommen seine Freunde (Familie, Freunde, Zimmernachbarn – GuestPals) einen
-##   Spieltag lang die Haltung „grieving“ (Talk.on_guest_died, mit Name und ID des Toten). Solange schmücken sie nicht
+## - **Wer trauert:** Stirbt ein Gast, bekommen seine Freunde (Familie, Freunde, Zimmernachbarn – GuestPals) 1–2
+##   Spieltage lang (Tender.grief_time, ZIM-161) die Haltung „grieving“ (Talk.on_guest_died, mit Name und ID des Toten). Solange schmücken sie nicht
 ##   (Decorating._available, DecoPlan._free) und ruhen mehr im Zimmer (Guest.GRIEVING_ACTIVITIES).
 ## - **Gedenkort:** Höchstens VISITS-mal (frühestens alle VISIT_GAP) geht ein trauernder Erwachsener zur Tür des Toten –
 ##   liegt er schon im Grab, zum Grab (Cemetery) – und steht dort STAY Sekunden mit Blick hin (Guest.hold_argument).

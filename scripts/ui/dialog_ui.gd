@@ -91,12 +91,14 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 	var experience := guest.untold_experience()
 	var greeting_only := false   # nur ein Gruß des Verletzten – danach passt „X hat mir von dir erzählt“ noch
 	var witness := _wound_visit()
+	Tender.on_visit(guest)   # ein Besuch im schweren Moment (6.18 Punkt 3)
 	# Was er sich über dich gemerkt hat (6.9) – aufgeflogene Lüge, Versprechen –, sonst vielleicht eine Frage
 	var talk := Game.social.talk
 	var requests := Game.social.requests
 	var remembered := ""
 	var thanks := ""   # Dank für eine ausgerichtete Nachricht (6.14)
 	var offer := {}    # eine Bitte, die er von sich aus stellt (6.14)
+	var tender_greet := Tender.greet(guest)
 	if experience.is_empty() and guest.wound == "" and guest.wound_note == "" and guest.fear < 60.0:
 		remembered = talk.greeting(guest)
 		if remembered == "":
@@ -110,7 +112,8 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 		Game.social.on_monster_talk(guest)
 		experience = {"told": true}
 	elif guest.wound_note != "":
-		_say(Wounds.NEGLECT_LINE if guest.wound_note == "neglect" else Wounds.HEALED_LINE)
+		var note := Tender.note_line(guest.wound_note)   # nach der Trauer (6.18 Punkt 3), sonst nach der Heilung
+		_say(note if note != "" else (Wounds.NEGLECT_LINE if guest.wound_note == "neglect" else Wounds.HEALED_LINE))
 		guest.wound_note = ""
 		experience = {"told": true}
 	elif guest.wound != "":
@@ -135,6 +138,8 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 		_say("Du traust dich was. Sprich schnell – bevor ich es mir anders überlege.")
 	elif Social.tier(guest) <= Social.Tier.ENEMY:
 		_say(guest.line("greet_enemy"))
+	elif tender_greet != "":
+		_say(tender_greet)   # im schweren Moment eigene Sätze (6.18 Punkt 3)
 	elif Social.tier(guest) >= Social.Tier.FRIEND:
 		_say(guest.line("greet_friend"))
 	else:
@@ -928,11 +933,14 @@ func _gift(item: Item) -> void:
 	var liked := kind in (guest.profile["likes"] as Array) or favorite or (guest.is_child() and kind in [Item.Kind.SODA_CAN, Item.Kind.TEA])
 	var bonus := item.price() * 2.0 + (10.0 if liked else 0.0) + (8.0 if favorite else 0.0) + 3.0
 	var fitting := false
-	if guest.wound != "":
-		# Verletzt (Spielkonzept 6.17): Geschenke dreifach (×2 in change_relation), passende noch mehr, zählen doppelt
-		fitting = Wounds.fitting(guest.wound, item, guest.in_sickbed())
+	var tender := Tender.is_tender(guest)
+	if tender:
+		# Schwerer Moment (Spielkonzept 6.17, 6.18 Punkt 3): Geschenke dreifach (×2 in change_relation), passende noch
+		# mehr, zählen doppelt
+		fitting = Tender.fitting(guest, item)
 		bonus = bonus * Wounds.GIFT_FACTOR + (Wounds.FITTING if fitting else 0.0)
-		guest.speed_healing(Wounds.GIFT_HEAL)
+		if guest.wound != "":
+			guest.speed_healing(Wounds.GIFT_HEAL)
 	# Füllmaterial (Laub liegt gratis herum): Erwachsenen nur einmal am Tag ein bisschen – Passendes für Verletzte bleibt
 	var filler := item.is_filler() and not guest.is_child() and not fitting
 	if filler:
@@ -940,7 +948,7 @@ func _gift(item: Item) -> void:
 		guest.filler_day = Calendar.today()
 	Game.social.change_relation(guest, bonus)
 	if Social.bond_gift(item):
-		Game.social.add_deed(guest, "gifts_to", Wounds.GIFT_DEEDS if guest.wound != "" else 1)
+		Game.social.add_deed(guest, "gifts_to", Wounds.GIFT_DEEDS if tender else 1)
 	if Game.tracing:
 		print("[Budget] Geschenk %s an %s: +%.1f%s" % [item.display_name, guest.display_name, bonus,
 			", zählt für guter Freund" if Social.bond_gift(item) else ""])

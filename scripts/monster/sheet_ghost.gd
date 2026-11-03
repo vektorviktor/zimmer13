@@ -1036,6 +1036,7 @@ func _struggle(delta: float) -> void:
 			if Game.tracing:
 				print("[Lakengeist] %s hat sich losgerissen" % (_victim as Guest).display_name)
 			(_victim as Guest).wound_by("choke")   # Würgemale: heiser, atmet schwer (6.17)
+			Tender.after_ghost(_victim as Guest)   # bis zum Morgen empfindlich (6.18 Punkt 3)
 			_vanish()
 		elif _timer <= 0.0:
 			_kill_guest(_victim as Guest)
@@ -1092,6 +1093,7 @@ func _frighten_child(child: Guest) -> void:
 	if Game.tracing:
 		print("[Lakengeist] %s erschreckt" % child.display_name)
 	child.shock("ghost_attack", global_position + Vector3.UP * HANDS_Y)
+	Tender.after_ghost(child)   # bis zum Morgen empfindlich (6.18 Punkt 3)
 	_vanish()
 
 

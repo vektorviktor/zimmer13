@@ -3011,6 +3011,8 @@ func clear_stance(key: String) -> void:
 func prune_stances() -> void:
 	for key in stances.keys():
 		if key != "promise" and not has_stance(key):
+			if key == "grieving":
+				Tender.on_grief_ended(self, stances[key])   # Besuche in der Trauer (6.18 Punkt 3)
 			stances.erase(key)
 
 

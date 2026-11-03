@@ -771,8 +771,8 @@ func guest_name(id: String) -> String:
 ## (Weitererzählen unter Freunden, 6.16).
 func change_relation(guest: Guest, amount: float, cap: float = 100.0) -> void:
 	var before := guest.relation
-	if guest.wound != "":
-		amount *= Wounds.RELATION_FACTOR   # verletzt zählt alles doppelt (6.17)
+	if Tender.is_tender(guest):
+		amount *= Wounds.RELATION_FACTOR   # im schweren Moment zählt alles doppelt (6.17, 6.18 Punkt 3)
 	if amount > 0.0:
 		amount *= 1.0 - clampf(before, 0.0, 100.0) / 110.0
 	var value := clampf(before + amount, -100.0, 100.0)

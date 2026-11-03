@@ -1593,7 +1593,18 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `GuestDeaths.honored` nein ist; `GuestDeaths.honor` → `on_memorial` setzt `told` (Dank über `thanks_on_greet`);
   `_check_memorial` streicht ihn still, wenn die Trauer endet. Gespeichert: Haltung am Gast, Meta „memorial“ an
   Gegenständen (Version 72); ein laufender Gang nicht. Debug `--trauer=id[,feuer|ohne|wunsch|halten]`, Stichwort „trauer“,
-  `--trace` „[Trauer]“.
+  `--trace` „[Trauer]“. Dauer der Haltung seit ZIM-161 `Tender.grief_time` (1–2 Spieltage).
+- **Schwere Momente** (`guests/tender.gd`, `Tender` – nur Daten, Sätze und Regeln, Spielkonzept 6.18 Punkt 3; 2026-11-03,
+  ZIM-161): `is_tender(g)` = verletzt (`wound`), trauernd (Haltung `grieving`), verwaist (`is_orphan`), nach dem
+  Lakengeist (Haltung `after_ghost`, `after_ghost()` aus `SheetGhost._struggle` beim Losreißen und `_frighten_child`) oder
+  Puppe vor der Tür (Haltung `doll_door`, `doll_door()` aus `JuryDoll._notice_residents`); beide bis `until_morning()`
+  (6 Uhr, mindestens `MORNING_MIN`). Trauerdauer `grief_time` (Familie/Haushalt `GRIEF_DAYS.y`, sonst nach
+  `GuestPals.counts`). Wirkung: `Social.change_relation` × `Wounds.RELATION_FACTOR` für alle Zustände; `DialogUI._gift`
+  × `Wounds.GIFT_FACTOR` + `Wounds.FITTING` für `fitting(g, item)` (Licht bei Trauer und nach dem Geist, Deko nach der
+  Puppe, `ORPHAN_GIFTS`, sonst `Wounds.fitting`), `GIFT_DEEDS`; eigene Begrüßung `greet` (vor dem Standardgruß).
+  Besuche: `on_visit` (aus `DialogUI.open`) setzt `visited` in der Trauer-Haltung; `Guest.prune_stances` ruft beim Ende
+  der Trauer `on_grief_ended` – nie besucht und befreundet: `NEGLECT`, Notiz `grief_neglect`, sonst `grief_visited`
+  (in `Guest.wound_note`, Satz `note_line`). Die Haltungen stehen mit dem Gast im Spielstand.
 - **Gespräche** (`guests/talk.gd`, `Talk`, Spielkonzept 6.9): Die Knöpfe baut `DialogUI` (`_show_main`, Optionen in
   einem `ScrollContainer`), die Logik liegt in `Talk`: Anlässe (`_occasions()`), Erlebnisse des Spielers (`log`,
   `_scan_sights`), Gedächtnis je Gast (`Guest.claims`, höchstens `MAX_CLAIMS`), Erzählen/Lügen (`tell`, `_believes`,

@@ -4509,7 +4509,8 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 > Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19; Wache halten,
 > 2026-11-02, ZIM-62; das Freundesnetz als Kanal (1), 2026-11-03, ZIM-159; die Beziehung nicht erschleichen (5) ohne Neid,
 > 2026-11-03, ZIM-163; Neid, 2026-11-03, ZIM-164; jeder Tod hat eine Ursache (2), 2026-11-03, ZIM-160, mit den Kerzen
-> der Gäste und dem Wunsch „eine Kerze für den Toten“ aus (3), 2026-11-03, ZIM-41, 6.12). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> der Gäste und dem Wunsch „eine Kerze für den Toten“ aus (3), 2026-11-03, ZIM-41, 6.12;
+> schwere Momente (3), 2026-11-03, ZIM-161). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
@@ -4572,6 +4573,14 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   die Tür, Suppe ans Bett, eine Katze zum Trösten, die Deko zurück, die die Katze verschleppt hat. Der Gast nennt ihn
   im Gespräch, das Notizbuch notiert ihn (6.14, 3.10). Erfüllt: Beziehung ↑, und er erzählt es weiter (1).
 - **Nach Ebenen** (6.0): Kernfiguren und zentrale Gäste haben eigene Wünsche, die übrigen allgemeine.
+- *Entschieden 2026-11-03, gebaut 2026-11-03 (ZIM-161):*
+  - **Dauer:** verletzt bis zur Heilung (6.17) · trauernd 1–2 Spieltage – Familie und Haushalt zwei, Freunde je nach
+    gemeinsamen Taten, Nachbarn einer · verwaist bis Halloween · nach dem Lakengeist (losgerissen, oder als Kind
+    erschreckt) und Puppe vor der eigenen Tür bis zum nächsten Morgen (6 Uhr, mindestens zwei Spielstunden).
+  - **Regeln:** In jedem dieser Zustände zählt alles doppelt, Geschenke dreifach; passend sind Licht für Trauernde und
+    nach dem Geist (Angst im Dunkeln), Deko nach der Puppe, Süßes oder Limo für Waisen, für Verletzte wie in 6.17. Eigene
+    Begrüßung je Zustand. Besuche: Wer als Freund in der Trauer nie vorbeikam, kränkt ihn (−6, wie nach der Heilung);
+    wer da war, dem dankt er danach.
 
 **4. Freundschaft schützt** (dazu: Freunde schmücken deine Tür mit, 5.10)
 - **Zuflucht:** Wirst du gejagt und klopfst bei einem **befreundeten** Gast, macht er auf – das Gegenstück zum Klopfen

@@ -234,6 +234,7 @@ func _notice_residents() -> void:
 		_noticed[g.id] = true
 		g.fear = minf(100.0, g.fear + NOTICE_FEAR)
 		g.say(NOTICE_LINES.pick_random())
+		Tender.doll_door(g)   # bis zum Morgen empfindlich, wünscht sich Deko für die Tür (6.18 Punkt 3)
 		if Game.tracing:
 			print("[Puppe] %s findet sie vor der eigenen Tür" % g.display_name)
 
