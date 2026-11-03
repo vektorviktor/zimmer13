@@ -1118,10 +1118,10 @@ func _debug_threshold(where: String) -> void:
 ## „[Fenstertuer] FEHLER“.
 func _debug_french_door(where: String) -> void:
 	var door: Door
-	for node in get_tree().get_nodes_in_group("doors"):
 	var bar: Rect2 = Game.social.builder._named.get("bar", Rect2())
 	var near_bar := func(d: Door) -> float:
 		return Vector2(d.center().x, d.center().z).distance_to(bar.get_center())
+	for node in get_tree().get_nodes_in_group("doors"):
 		var d := node as Door
 		if where == "eingang" and d.key_id == "ausgang":
 			door = d
@@ -1136,10 +1136,10 @@ func _debug_french_door(where: String) -> void:
 	# Seite: draußen = outward; der Haupteingang geht nach innen auf (+Z)
 	var out := door.outward if door.outward != Vector3.ZERO else -door.global_transform.basis.z
 	var side := out if where == "aussen" else -out
-	var at := door.center()
 	if where == "glastuer":   # von der Seite, die von der Bar abgewandt ist
 		var c := door.center()
 		side = out if Vector2(out.x, out.z).dot(Vector2(c.x, c.z) - bar.get_center()) > 0.0 else -out
+	var at := door.center()
 	var p := Game.player
 	p.global_position = Vector3(at.x, door.global_position.y, at.z) + side * (4.0 if where == "eingang" else 2.6) 		+ Vector3(0, 0.05, 0)
 	p.rotation.y = atan2(side.x, side.z)
@@ -1153,9 +1153,9 @@ func _debug_french_door(where: String) -> void:
 				bad = "Fenstertür ohne Glas-Modell"
 			elif d.key_id == "ausgang" and d.look != Door.Look.ENTRANCE:
 				bad = "Haupteingang ohne Modell"
-			if bad != "":
 			elif d.glass and not d.look in [Door.Look.GARDEN, Door.Look.ENTRANCE, Door.Look.GLAZED]:
 				bad = "Glastür ohne Modell"
+			if bad != "":
 				counts["errors"] += 1
 				print("[Fenstertuer] FEHLER %s bei %s" % [bad, d.global_position.snapped(Vector3.ONE * 0.01)])
 			counts["garden"] += int(d.look == Door.Look.GARDEN)

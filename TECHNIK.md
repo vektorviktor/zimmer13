@@ -672,10 +672,10 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   Pixelposition. **Aussehen** (`Door.look`): `door` = gemaltes Zimmertür-Modell, `attic_door` = Kniestocktür
   (verschlossen mit Schlüssel `dachboden`, das Monster bricht sie nicht auf), `attic_inner_door` = übrige Türen im
   Dachgeschoss, `frosted_door` = Milchglastür (`Look.FROSTED`, ZIM-143), `garden_door` = Fenstertür (`Look.GARDEN`),
+  `glass_double_door` = Doppel-Glastür im Haus (`Look.GLAZED`),
   `main_entrance` ab dem EG = Haupteingang (`Look.ENTRANCE`, ZIM-126; im Untergeschoss sind es verschlossene Türen, die
   das gebaute Blatt behalten); Betriebstüren behalten das gebaute Blatt. Terrassen- und Glastüren sind gläserne
   Doppeltüren (`glass`: Ebene 7, der Haupteingang bleibt trotz Scheiben auf 2); Fenstertüren nach draußen kommen in die
-  `glass_double_door` = Doppel-Glastür im Haus (`Look.GLAZED`),
   Gruppe `french_doors` (Lakengeist). Der Haupteingang ist verriegelt. Fenster: `room_id` = Fläche dahinter (`_room_id_at`).
 - **Zimmer** (`_room`): Rahmen am Türmittelpunkt (+X an der Flurwand entlang, +Z ins Zimmer); das Innere kommt aus dem
   Plan, `_room` legt nur die Zimmerart fest: `player`, `guest`, `vacant`, `abandoned`, `derelict`, `locked`.

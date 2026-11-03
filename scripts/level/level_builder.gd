@@ -2097,6 +2097,8 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			door.look = Door.Look.FROSTED
 		"garden_door":   # Garten-, Terrassen- und Balkontüren (ZIM-126)
 			door.look = Door.Look.GARDEN
+		"glass_double_door":   # im Haus: Lobby, Bar … – die Gartentür ohne Wetterschenkel
+			door.look = Door.Look.GLAZED
 		"main_entrance" when _level >= 0:   # im Untergeschoss stehen in dieser Farbe verschlossene Türen
 			door.look = Door.Look.ENTRANCE
 	door.position = center - right * width / 2.0
@@ -2105,8 +2107,6 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 	_doors.append({"pos": center, "door": door, "kind": kind, "into": into3, "hinge": hinge})
 	light_rooms.door(c, side, door)
 	match kind:
-		"glass_double_door":   # im Haus: Lobby, Bar … – die Gartentür ohne Wetterschenkel
-			door.look = Door.Look.GLAZED
 		"main_entrance" when _level < 0:   # Untergeschoss: verschlossene Räume in der Farbe des Haupteingangs
 			_seal(door, "Abgeschlossen.")
 		"main_entrance":
