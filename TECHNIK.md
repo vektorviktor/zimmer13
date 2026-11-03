@@ -958,11 +958,16 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
 Zwei Teile: **`MonsterDirector`** entscheidet *ob/wann/wohin* (versteckte Werte, Dramaturgie,
 Effekte), **`Monster`** führt aus (Zustandsautomat, Bewegung, Sicht, Spuren).
 
-**Nur eine Bedrohung im Haus** (Spielkonzept 4.20): `MonsterDirector.other_threat_active(wer)` – Monster aktiv,
-`SheetGhost.is_active()`, `PumpkinMan.in_house()` oder seine Ankündigung, außer dem Fragenden selbst. Gefragt wird beim
-natürlichen Erscheinen: `_update_schedule` (Auftritt um 10 s verschoben), die Siegerehrung (`DoorContest`),
-`SheetGhost._check_spawn`, `PumpkinMan._check_spawn` (vor dem Wurf), der Zeitsprung. Debug-Aufrufe (F5/F7/F9,
-`--warn`, `--ghost`, `--pumpkin=…`) fragen nicht. Die Runde im Keller (`Mode.PATROL`) zählt nicht als Bedrohung.
+**Mehrere Bedrohungen zugleich** (Spielkonzept 4.1, 4.20, ZIM-48): Monster, Lakengeist und Kürbismann warten nicht
+aufeinander – auch nicht auf die Ankündigung des Kürbismanns oder ein nahes Monster –, dürfen auf derselben Ebene und in
+Hörweite sein, ihre Signale überlagern sich. Wo wer erscheint, regelt jede Bedrohung selbst. Beim natürlichen Erscheinen
+(`_update_schedule` und Zeitsprung, `SheetGhost._check_spawn`/`haunt`, `Hauntings`, `PumpkinMan._check_spawn`) gilt nur
+`MonsterDirector.threats_paused()`: im Albtraum von 1987 (4.29) wartet alles (Auftritt um 10 s verschoben).
+`other_threat_active(wer)` – Monster aktiv, `SheetGhost.is_active()`, `PumpkinMan.in_house()` oder seine Ankündigung,
+außer dem Fragenden selbst, und der Albtraum – fragen nur noch Szenen und Ruhe, die bei Gefahr warten: Zeitsprung
+(`SleepSkip`), Dusche, Siegerehrung (`DoorContest`), Name Leviathan, Beginn des Albtraums. Die Runde im Keller
+(`Mode.PATROL`) zählt nicht als Bedrohung. Debug `--zugleich` (alle drei nacheinander auf ihrem eigenen Weg, Prüfung
+`[Zugleich] … ok`, Stichwort „zugleich“).
 
 ### Versteckte Werte (Director)
 - `boldness` (Dreistigkeit, steigt nach dem ersten Angriff um `BOLDNESS_PER_DAY` je Spieltag, **ohne Obergrenze**,
@@ -1150,7 +1155,7 @@ Dritte Bedrohung, eigener Akteur (`CharacterBody3D`, Kollisionsbit 32 wie das Mo
 - **Auslöser: Spaßwert** (`_check_spawn`): `fun` steigt je Gast nach `FUN_GAIN[Social.fun_kind(g)]`, fällt mit
   `FUN_DECAY`; `on_deco_placed()` (aus `Player.drop_held`) gibt kurz `_fun_deco` dazu; `fun_value()` = Summe. Ab
   `threshold()` (`FUN_THRESHOLD`, mit der Kürbismann-Maske `MASK_THRESHOLD`, 5.19) regelmäßig ein Wurf → Ankündigung. **Garantie** `_guarantee_due()` ab `GUARANTEE_DAY`, wenn er
-  selten kam (`visits`, `guarantee_at`). Erst nach `first_attack_done`, nie neben einer anderen Bedrohung, erst mit
+  selten kam (`visits`, `guarantee_at`). Erst nach `first_attack_done`, auch neben anderen Bedrohungen (nicht im Albtraum), erst mit
   fertigem NavMesh (`map_get_iteration_id`). Gespeichert unter `pumpkin` (`fun`, `visits`, `guarantee_at`,
   `guarantee_checked`; er selbst nicht). F3 zeigt den Wert.
 - **Ankündigung** (`_begin_announce`, `announcing()`): Kinder singen (`Guest.singing`: stehen, sehen zur Lobby, [E] gibt
@@ -2493,7 +2498,8 @@ Spielkonzept 2.5)
 (`monster/sheet_ghost.gd`, `shaders/psx_ghost.gdshader`, Spielkonzept 4.18)
 - `Game.ghost`, eigener Knoten, **kein NavMesh und keine Kollision** (schwebt durch Glas und Vorhang). Erscheint an
   dunklen Außenfenstern mit offenem Vorhang (`_window_near()`) und an Fenstertüren (Gruppe `french_doors`, `Door.room_id`,
-  `Door.outward`), nicht in Gesellschaft, nicht im Katzenraum, erst nach dem ersten Angriff (4.20). `visits`
+  `Door.outward`), nicht in Gesellschaft, nicht im Katzenraum, erst nach dem ersten Angriff (4.20); im Erdgeschoss nur mit `GROUND_SHARE`
+  (⅓) der Chancen (`_floor_share`, Aufholen bleibt sicher; Flur-Regeln dort noch voll). `visits`
   = Stufe (gespeichert unter `ghost`; laufende Auftritte nicht).
 - Zustände `APPROACH → HOVER → ENTER → STRANGLE`, dazu `LURK → FLY_IN` am Schrank, `DOOR` vor der Tür, `PATROL` in der
   Geisterstunde; Ende immer über `FADE` (Raster-Ausblenden im Shader statt Transparenz). Knochen werden pro Frame aus
@@ -2508,7 +2514,7 @@ Spielkonzept 2.5)
   er wartet lautlos, zieht den Blick des Spielers durch die Wand bzw. lässt einen Gast öffnen (`door_trance`).
 - **Garantien** (`_check_guarantee_hall`, `catching_up()`) und **Geisterstunde** (`ghost_hour()` nach der
   Mitternachtsglocke: geht im Obergeschoss um, `_patrol`, `_meet_in_hour`, die ersten Begegnungen nur Warnung). Solange
-  er umgeht, ist er aktiv – das Monster wartet.
+  er umgeht, ist er aktiv; das Monster wartet nicht (ZIM-48), und ein nahes Monster hält ihn nicht mehr auf.
 - **Klang:** `_ambience` spielt `ghost_ambience.mp3`, solange er sichtbar ist (an zufälliger Stelle, pausiert mit dem
   Baum). Weiße Flocken vom Saum (`_flakes`, siehe Partikel).
 - **Blickzug** (Hypnose, Würgen, vor der Tür) × `Settings.look_pull` (Einstellung „Blickzug“, 0,2 … 1).

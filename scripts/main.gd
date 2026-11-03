@@ -354,6 +354,8 @@ extends Node3D
 ##   alle statt Gast             bei --relation, --friend, --enemy, --drunk=n,alle, --wound, --kill (nur sofort): für jeden
 ##                               lebenden Gast; kill/wound ohne Kinder (kinder: mit), hin wird ignoriert
 ##   --despawn[=monster|geist|kuerbis]   die Bedrohung (ohne Angabe alle) ist sofort fort, auch Vorwarnung/Ankündigung
+##   --zugleich                  drei Bedrohungen zugleich (4.20, ZIM-48), jede auf ihrem eigenen Weg: Geisterstunde um
+##                               Mitternacht, dann die Garantie des Kürbismanns, dann ein Snack – „[Zugleich] … ok“
 ##   --bulb-thief=id             Gast klaut sofort eine Glühbirne aus Zimmer 13
 ##   --lichtgang=id[,versteckt]  Gast geht ins dunkle Zimmer zum Schalter, nach 30 s wieder hinaus (7.3) · versteckt: du
 ##                               sitzt in seinem Schrank (sonst unterm Bett) – er macht beim Gehen trotzdem aus
@@ -1642,6 +1644,8 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(1.0, false).timeout.connect(Game.director.debug_lure)
 	elif _is_arg(arg, "--despawn"):
 		_debug_despawn(_arg_value(arg, "--despawn"))
+	elif arg == "--zugleich":
+		get_tree().create_timer(1.0, false).timeout.connect(_debug_together)
 	elif arg.begins_with("--pool="):
 		var water := get_tree().get_first_node_in_group("pool_water") as PoolWater
 		var stage := _arg_value(arg, "--pool")
@@ -2755,7 +2759,7 @@ func _nav_check_doors() -> void:
 ## Debug (--dachboden=urteil, --aufzug=urteil): nach 1 s ein Urteil über Zimmer 13 in 2 s (4.33).
 func _debug_judgment_on_13() -> void:
 	Game.director.debug_doom = LevelBuilder.PLAYER_ROOM
-	Game.ghost.debug_rest(600.0)   # der Lakengeist hielte den Aufbruch auf (nur eine Bedrohung im Haus)
+	Game.ghost.debug_rest(600.0)   # der Lakengeist käme sonst dazwischen
 	get_tree().create_timer(1.0).timeout.connect(func() -> void:
 		Game.director.debug_start(MonsterDirector.Mode.JUDGMENT, 2.0))
 
@@ -2774,6 +2778,34 @@ func _debug_despawn(which: String) -> void:
 	if which in ["", "alle", "kuerbis", "kürbis"] and Game.pumpkin and Game.pumpkin.debug_despawn():
 		gone.append("Kürbismann")
 	Game.say("Fort: %s" % ", ".join(gone) if not gone.is_empty() else "Keine Bedrohung unterwegs", 3.0)
+
+
+## --zugleich: drei Bedrohungen zugleich (Spielkonzept 4.1, 4.20, ZIM-48). Jede kommt auf ihrem natürlichen Weg, während
+## die anderen schon unterwegs sind: Die Uhr springt kurz vor Mitternacht – der Lakengeist geht in der Geisterstunde um;
+## dann fällt die Garantie des Kürbismanns (Ankündigung, rote Lampen); dann wird ein Snack fällig – das Monster bricht
+## auf. Meldet „[Zugleich] … ok“ bzw. „FEHLER“ (zählt im Rauchtest).
+func _debug_together() -> void:
+	var director := Game.director
+	var check := func(text: String, ok: bool) -> void:
+		print("[Zugleich] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	director.first_attack_done = true
+	director.elapsed = Calendar.at(Calendar.day_of(director.elapsed), 24.0 - 3.0 / Calendar.HOUR)
+	director.hold(60.0)   # das Monster erst als Letztes
+	for i in 60:   # vorher kommt er manchmal noch zu einem Gast ans Fenster
+		await get_tree().create_timer(0.5, false).timeout
+		if Game.ghost.state == SheetGhost.State.PATROL:
+			break
+	check.call("Lakengeist geht in der Geisterstunde um", Game.ghost.state == SheetGhost.State.PATROL)
+	Game.pumpkin.guarantee_checked = true
+	Game.pumpkin.guarantee_at = [director.elapsed]
+	await get_tree().create_timer(3.0, false).timeout
+	check.call("Kürbismann kündigt sich an, Lakengeist unterwegs", Game.pumpkin.announcing() and Game.ghost.is_active())
+	director.debug_start(MonsterDirector.Mode.SNACK, 1.0)
+	await get_tree().create_timer(4.0, false).timeout
+	check.call("Monster bricht auf", Game.monster.is_active())
+	check.call("drei Bedrohungen zugleich", Game.monster.is_active() and Game.ghost.is_active() \
+		and (Game.pumpkin.announcing() or Game.pumpkin.in_house()))
+	check.call("Szenen warten weiter", director.other_threat_active(null) and not director.threats_paused())
 
 
 ## --kill: Gast sofort tot, ohne dass das Monster kommt. corpse: er liegt da (wie nach Lakengeist und Kürbismann), sonst

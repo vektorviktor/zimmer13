@@ -1641,9 +1641,9 @@ diesen Dokumenten von jetzt an. „Monster“ meint weiter dasselbe; die Bezeich
   > Im Prototyp umgesetzt (2026-10-11): Meshy-Modell mit Skelett, Bewegung im Stop-Motion-Stil, Hocke beim Wegschleichen, Lauern und Prüfen von Verstecken.
 - **Mehrere Bedrohungen zugleich** (geändert 2026-11-03, 4.20, ZIM-48): Monster, Lakengeist (4.18) und Kürbismann
   (4.19) dürfen gleichzeitig unterwegs sein, auch auf derselben Ebene; wo sie erscheinen, regelt 4.20. ~~Eine
-  Bedrohung je Ebene, außer Hörweite (2026-10-21).~~ **Im Prototyp gilt noch „nur eine im Haus“** (umgesetzt
-  2026-10-20, fällt weg): Ist einer da, warten die anderen, bis er wieder weg ist – das Monster verschiebt seinen
-  Aufbruch, der Lakengeist erscheint nicht, der Kürbismann würfelt erst danach.
+  Bedrohung je Ebene, außer Hörweite (2026-10-21).~~ **Umgesetzt 2026-11-03:** Keiner wartet mehr auf den anderen
+  (auch nicht neben einem nahen Monster), nur im Albtraum von 1987 (4.29) wartet alles. ~~„Nur eine im Haus“
+  (umgesetzt 2026-10-20): Ist einer da, warten die anderen, bis er wieder weg ist.~~
 
 ### 4.2 Ankündigung („Manifestation“)
 Es gibt **keine globale Vorwarnung**. Das Monster verrät sich über drei Signale:
@@ -2104,8 +2104,8 @@ braucht), beim Ausprobieren festlegen.
 > Tag 20 den ganzen Tag). Alle diese Besuche zählen für seine Stufen.
 > **Im Prototyp umgesetzt (2026-10-17):** Erscheinen bei Licht aus und offenem Vorhang, Stufen 1–4 inklusive
 > Handabdrücken auf der Scheibe, Hypnose (langsamer, Blickzug), Hereinkommen (ab dem 4. Mal durch den Vorhang), Würgen
-> mit Losreißen oder Tod, Zeugen (ein wacher Gast mit Sicht) vertreiben ihn, Ausblenden in 0,5 s. Nicht während das
-> Monster nah ist. Debug: F6 und `--ghost=n`. **Nachtruhe** 23–6 Uhr ± ½ h (2.4): alle Gäste im eigenen Bett, Licht
+> mit Losreißen oder Tod, Zeugen (ein wacher Gast mit Sicht) vertreiben ihn, Ausblenden in 0,5 s. ~~Nicht während das
+> Monster nah ist.~~ (seit 2026-11-03 auch dann, 4.20, ZIM-48) Debug: F6 und `--ghost=n`. **Nachtruhe** 23–6 Uhr ± ½ h (2.4): alle Gäste im eigenen Bett, Licht
 > aus; schlafende Gäste sind keine Zeugen und bemerken nichts. Der Geist kommt **im Flur** ab dem 6. Mal, wenn alle
 > schlafen. Die Zimmerfenster sind 1,9 m breit und reichen von 0,75 bis 3,05 m.
 > **Umgesetzt (2026-10-27):** Er spukt erst nach dem ersten Angriff (4.20), nicht mehr schon ab Tag 2.
@@ -2206,9 +2206,9 @@ Von **0 bis 1 Uhr** (2.4) zieht er durch die **Flure**, jede Nacht – wie alles
   angetrunkene Gäste auf dem Heimweg sind schwach und mitten in der Geisterstunde unterwegs. Ab dem 25. stehen
   Bettlaken-Kostüme im Flur (5.9).
 - **Ebenen** (4.20): Er nimmt das Obergeschoss, ~~ist dort schon eine andere Bedrohung, das Erdgeschoss~~ (seit
-  2026-11-03 auch neben einer anderen Bedrohung; das Erdgeschoss mit einem Drittel der Chance). Solange im Code
-  noch „nur eine Bedrohung im Haus“ gilt (4.1): Ist das Monster um 0 Uhr unterwegs, beginnt die Geisterstunde erst, wenn
-  es wieder ruht (oder fällt aus); läuft sie, verschiebt das Monster seinen Aufbruch.
+  2026-11-03 auch neben einer anderen Bedrohung; das Erdgeschoss mit einem Drittel der Chance). Seit 2026-11-03
+  (ZIM-48) beginnt die Geisterstunde auch, wenn das Monster unterwegs ist, und das Monster bricht auch während der
+  Geisterstunde auf. ~~Vorher verschob die eine die andere.~~
 
 **Passt zu den bestehenden Systemen**
 - **Licht aus** lockt schon das Monster an (4.4) – jetzt auch den Geist. Licht an schützt vor beidem.
@@ -2312,8 +2312,8 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
 
 ### 4.20 Drei Bedrohungen, ein Hotel (entschieden 2026-10-21)
 > Umgesetzt sind die Ankündigung des Kürbismanns (2., 2026-10-22) und der friedliche Anfang (5., 2026-10-27: der
-> Lakengeist spukt erst nach dem ersten Angriff). Im Prototyp gilt noch „nur eine Bedrohung im Haus“ (4.1; fällt mit
-> 1. weg, 2026-11-03, ZIM-48), und der Kürbismann sieht nach eigenen Regeln (18 m rundum, Licht und Ducken egal).
+> Lakengeist spukt erst nach dem ersten Angriff) und 1. (2026-11-03, ZIM-48: kein Ausschluss mehr, „nur eine Bedrohung
+> im Haus“ ist weg). Der Kürbismann sieht noch nach eigenen Regeln (18 m rundum, Licht und Ducken egal).
 
 **Warum**
 - **„Nur eine im Haus“ verträgt die Steigerung nicht:** Das Monster ist gegen Monatsende den größten Teil der Zeit
@@ -2348,7 +2348,8 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
   auch im Dachgeschoss (Notausgang für den Spieler, 4.33).
 - **Der Lakengeist bevorzugt das Obergeschoss:** Dort kommt er mit der vollen Chance (4.18); im Erdgeschoss mit etwa
   **einem Drittel** davon und **nur an Außenfenstern**. Lakengespenster an einer Tür (5.6) ziehen ihn auf beiden
-  Ebenen an.
+  Ebenen an. **Umgesetzt 2026-11-03** (ZIM-48) an Fenstern und Fenstertüren (Aufholen ab Tag 20 bleibt sicher); seine
+  Flur-Regeln (Garantie, ab dem 6. Mal, Schwäche) gelten im Erdgeschoss noch voll – kleinste Lösung, offen.
 - Die Hausherren aus 7.10 bleiben, wo jeder **zu Hause** ist; unterwegs sein dürfen sie nach der Tabelle.
 
 **2. Der Kürbismann kündigt sich an** – in Stufen wie das Monster mit seiner Flackerwelle (4.17)

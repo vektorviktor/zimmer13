@@ -12,7 +12,7 @@ extends Node
 ##     Schützt eine heile Salzlinie das Zimmer, weist sie ihn ab, und der Gast dankt beim nächsten Gespräch
 ##     („ghost_salt“). Ein Zeuge – der Spieler im Zimmer – vertreibt ihn wie sonst. Ein Versuch, danach ist es vorbei.
 ##   · Schläft der Spieler (SleepSkip), läuft beides abstrakt: Handabdrücke und Erlebnis, dann Salz oder Tod im Zimmer.
-##   · Er kommt nur, wenn der Gast in seinem Zimmer ist (wach oder im Bett) und keine andere Bedrohung umgeht – bis
+##   · Er kommt nur, wenn der Gast in seinem Zimmer ist (wach oder im Bett) und der Lakengeist frei ist – bis
 ##     LAST_HOUR versucht er es weiter. Kam das Zeichen nicht zustande, bleibt auch die zweite Nacht ruhig.
 ## Edna (1987 im Hotel, 2.7) kennt den Brauch: Ab dem ersten Toten streut sie abends Salz auf ihre Fensterbank (ohne
 ## Fenster vor ihre Tür) – nur bei sich, aus eigener Packung (Item.SALT_LINES Linien, Haltung „salt_pack“), nie aus den
@@ -172,7 +172,7 @@ func visit(g: Guest, kill: bool, haunted_for: float = Calendar.DAY_SECONDS) -> b
 	var asleep := Game.sleep_skip != null and Game.sleep_skip.active
 	if not asleep:
 		var ghost := Game.ghost
-		if ghost == null or ghost.state != SheetGhost.State.IDLE or Game.director.other_threat_active(ghost):
+		if ghost == null or ghost.state != SheetGhost.State.IDLE or Game.director.threats_paused():
 			return false
 		_wake(g)
 		if not kill and window is HotelWindow:

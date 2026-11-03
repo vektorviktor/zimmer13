@@ -328,8 +328,8 @@ func _check_spawn() -> void:
 			or NavigationServer3D.map_get_iteration_id(get_world_3d().navigation_map) == 0:
 		return   # ohne fertiges NavMesh findet er keinen Platz zum Erscheinen
 	_update_fun(CHECK_EVERY)
-	if not Game.director.first_attack_done or Game.director.other_threat_active(self):
-		return   # nur eine Bedrohung im Haus – der Wurf wartet, bis die andere weg ist
+	if not Game.director.first_attack_done or Game.director.threats_paused():
+		return   # Albtraum von 1987 – Monster und Lakengeist halten ihn nicht auf (4.20)
 	if _guarantee_due():
 		if Game.tracing:
 			print("[Kürbismann] Garantie an Tag %d (erst %d Mal da)" % [Calendar.today(), visits])

@@ -612,17 +612,25 @@ func is_quiet(pos: Vector3, radius: float = 25.0) -> bool:
 	return not _monster.is_active() or _monster.global_position.distance_to(pos) > radius
 
 
-## Immer nur eine Bedrohung im Haus (entschieden 2026-10-20): Ist das Monster, der Lakengeist oder der Kürbismann
-## unterwegs, warten die anderen, bis er weg ist. who: wer fragt – er selbst zählt nicht. Debug-Aufrufe fragen nicht.
+## Ist das Monster, der Lakengeist oder der Kürbismann (auch angekündigt) unterwegs? who: wer fragt – er selbst zählt
+## nicht. Fragen Szenen und Ruhe, die dann warten (Zeitsprung, Dusche, Siegerehrung, Name Leviathan, Albtraum) – die
+## Bedrohungen selbst warten nicht mehr aufeinander (threats_paused, Spielkonzept 4.1, 4.20, geändert 2026-11-03).
 ## Die Runde im Keller (4.33) zählt nicht – sie ist kein Auftritt im Haus.
 func other_threat_active(who: Node) -> bool:
-	if Game.nightmare and Game.nightmare.active():   # im Albtraum von 1987 wartet alles (4.29)
+	if threats_paused():   # im Albtraum von 1987 wartet alles (4.29)
 		return true
 	if who != _monster and _monster.is_active() and mode != Mode.PATROL:
 		return true
 	if who != Game.ghost and Game.ghost and Game.ghost.is_active():
 		return true
 	return who != Game.pumpkin and Game.pumpkin != null and (Game.pumpkin.in_house() or Game.pumpkin.announcing())
+
+
+## Warten alle Bedrohungen mit dem Erscheinen? Nur im Albtraum von 1987 (4.29). Sonst dürfen Monster, Lakengeist und
+## Kürbismann gleichzeitig unterwegs sein, auch auf derselben Ebene und in Hörweite (Spielkonzept 4.1, 4.20,
+## ZIM-48); wo wer erscheint, regelt jede Bedrohung selbst.
+func threats_paused() -> bool:
+	return Game.nightmare != null and Game.nightmare.active()
 
 
 ## Der erste Angriff (Spielkonzept 2.5, 2.6): Während alle zur Puppe schauen, holt es ungesehen Gustav Peters aus
@@ -778,11 +786,11 @@ func _update_schedule(delta: float) -> void:
 				_update_mode(delta)
 		_:
 			var due := _update_calm(delta)
-			if due == Mode.PATROL and other_threat_active(_monster):
+			if due == Mode.PATROL and threats_paused():
 				_next_patrol = elapsed + 60.0
 			elif due != Mode.NONE:
-				if other_threat_active(_monster):
-					plan[0]["at"] = elapsed + 10.0   # Lakengeist oder Kürbismann ist im Haus – es wartet
+				if threats_paused():
+					plan[0]["at"] = elapsed + 10.0   # Albtraum von 1987 – es wartet
 				else:
 					if due != Mode.PATROL:
 						plan.pop_front()
@@ -1995,7 +2003,7 @@ func skip(dt: float) -> String:
 	var due := _update_calm(dt)
 	if due == Mode.NONE or due == Mode.PATROL:
 		return ""   # die Kellerrunde: unten, während man schläft
-	if other_threat_active(_monster):
+	if threats_paused():
 		plan[0]["at"] = elapsed + 10.0
 		return ""
 	plan.pop_front()

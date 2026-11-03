@@ -45,6 +45,7 @@ const STAY_CHANCE := 0.25             ## … und alle STAY_EVERY Sekunden, solan
 const STAY_EVERY := 6.0
 const FRENCH_DOOR_CHANCE := 0.9       ## an einer Fenstertür statt SPAWN_CHANCE …
 const FRENCH_DOOR_STAY := 0.4         ## … und STAY_CHANCE
+const GROUND_SHARE := 1.0 / 3.0       ## im Erdgeschoss nur dieser Anteil der Chancen – er ist oben zu Hause (4.20)
 const COOLDOWN := 45.0                ## frühestens wieder nach so vielen Sekunden
 const CHECK_EVERY := 0.5
 const WINDOW_RANGE := 7.0             ## so nah am Fenster (und mit freier Sicht darauf) muss man sein
@@ -389,17 +390,17 @@ func _physics_process(delta: float) -> void:
 func _check_spawn() -> void:
 	var player := Game.player
 	var director := Game.director
-	if director == null or Game.game_over or director.other_threat_active(self):
-		return   # nur eine Bedrohung im Haus
+	if director == null or Game.game_over or director.threats_paused():
+		return   # Albtraum von 1987 – andere Bedrohungen halten ihn nicht auf (4.20)
 	_refresh_windows()
 	var hour := ghost_hour()
-	if not hour and _haunting() and _cooldown <= 0.0 and director.player_threat <= 0.0 and _check_doors():
+	if not hour and _haunting() and _cooldown <= 0.0 and _check_doors():
 		return
 	if _player_free(player) and _haunting():
 		if _check_guarantee_hall(player) or _check_hall(player) or _check_player_window(player):
 			return
 	if hour:   # Geisterstunde: er geht um – zu Türen und Gästen an Fenstern kommt er solange nicht
-		if _hour_pause <= 0.0 and director.player_threat <= 0.0:
+		if _hour_pause <= 0.0:
 			_start_patrol()
 		return
 	if _haunting() or _force_guest != null:
@@ -434,9 +435,10 @@ func _check_player_window(player: Player) -> bool:
 		_stay -= CHECK_EVERY
 		if _stay <= 0.0:
 			_stay = STAY_EVERY
-			chance = 1.0 if catching_up() else minf(1.0, (FRENCH_DOOR_STAY if window is Door else STAY_CHANCE) + WEAK_CHANCE * player.weakness())
+			chance = 1.0 if catching_up() else minf(1.0, (FRENCH_DOOR_STAY if window is Door else STAY_CHANCE) + WEAK_CHANCE * player.weakness()) \
+				* _floor_share(window)
 	# in Gesellschaft kommt er nicht
-	if window != null and _cooldown <= 0.0 and Game.director.player_threat <= 0.0 \
+	if window != null and _cooldown <= 0.0 \
 			and _witness_guests(eye, player).size() < WITNESSES and randf() < chance:
 		_appear(window, player)
 		return true
@@ -469,7 +471,7 @@ func _check_guests() -> void:
 		if window == null:
 			continue
 		var forced := _force_guest == g
-		if not forced and (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
+		if not forced and (_cooldown > 0.0 \
 				or _witness_guests(eye, g).size() + _player_witness(eye) >= WITNESSES or randf() >= _spawn_chance(g, window)):
 			continue
 		_force_guest = null
@@ -496,11 +498,10 @@ func _hall_rule(player: Player) -> bool:
 	if Game.social == null or not _in_hall(player.global_position):
 		return false
 	if weak >= WEAK_SURE:
-		return not (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
-				or _witness_guests(player.camera.global_position, player).size() >= WITNESSES)
+		return not (_cooldown > 0.0 or _witness_guests(player.camera.global_position, player).size() >= WITNESSES)
 	if (visits + 1 < HALL_FROM and weak < WEAK_HALL) or not Game.social.all_asleep():
 		return false
-	return not (_cooldown > 0.0 or Game.director.player_threat > 0.0 \
+	return not (_cooldown > 0.0 \
 			or randf() >= HALL_CHANCE * (1.0 + WEAK_FASTER * weak) * CHECK_EVERY)
 
 
@@ -534,7 +535,7 @@ func _check_guarantee_hall(player: Player) -> bool:
 
 func _guarantee_rule(player: Player) -> bool:
 	return not (visits > 0 or Calendar.today() < GUARANTEE_DAY or Game.social == null or not _in_hall(player.global_position) \
-			or _cooldown > 0.0 or Game.director.player_threat > 0.0 \
+			or _cooldown > 0.0 \
 			or _witness_guests(player.camera.global_position, player).size() >= WITNESSES)
 
 
@@ -1297,11 +1298,18 @@ func _grip_spot() -> Vector3:
 
 
 ## Erscheinen bei Spieler oder Gast – je schwächer das Opfer, desto wahrscheinlicher, an einer Fenstertür
-## noch wahrscheinlicher (4.18).
+## noch wahrscheinlicher (4.18), im Erdgeschoss nur mit GROUND_SHARE davon (4.20). Holt er auf, kommt er sicher.
 func _spawn_chance(victim: Node3D, window: Node3D) -> float:
 	if victim is Player and catching_up():
 		return 1.0
-	return minf(1.0, (FRENCH_DOOR_CHANCE if window is Door else SPAWN_CHANCE) + WEAK_CHANCE * _weakness(victim))
+	return minf(1.0, (FRENCH_DOOR_CHANCE if window is Door else SPAWN_CHANCE) + WEAK_CHANCE * _weakness(victim)) \
+		* _floor_share(window)
+
+
+## Anteil der Chance an diesem Fenster bzw. dieser Fenstertür: im Obergeschoss die volle, im Erdgeschoss GROUND_SHARE
+## (Spielkonzept 4.20) – auch neben einer anderen Bedrohung.
+func _floor_share(window: Node3D) -> float:
+	return GROUND_SHARE if window.global_position.y < LevelBuilder.UP_Y - 1.0 else 1.0
 
 
 ## Schwäche von Spieler oder Gast (0..1).
@@ -1462,8 +1470,8 @@ func shower_visit(spot: Vector3) -> void:
 ## Debug (F6, --ghost=n): Er kommt sofort zum `stage`. Mal ans nächste Außenfenster bzw. an die nächste
 ## Fenstertür des Raums, in dem der Spieler steht – Licht dort aus, Vorhänge auf (ab dem 4. Mal zu), Blick
 ## dorthin. Ohne beides nur eine Meldung (false).
-## Debug (--dachboden=urteil, --aufzug=urteil): so lange kommt er nicht – sonst hielte er als andere Bedrohung den
-## Aufbruch des Monsters auf.
+## Debug (--dachboden=urteil, --aufzug=urteil): so lange kommt er nicht – sonst käme er dem Urteil bzw. Raubzug des
+## Monsters dazwischen.
 func debug_rest(seconds: float) -> void:
 	_cooldown = maxf(_cooldown, seconds)
 
@@ -1580,7 +1588,7 @@ func debug_ghost_hour(meeting: int) -> void:
 	director.first_attack_done = true
 	hour_meetings = maxi(0, meeting - 1)
 	director.elapsed = Calendar.at(Calendar.day_of(director.elapsed), 24.0 - 3.0 / Calendar.HOUR)
-	director.hold(DEBUG_CALM)   # das Monster bleibt im Keller, sonst wartete die Geisterstunde
+	director.hold(DEBUG_CALM)   # das Monster bleibt im Keller – eine ruhige Geisterstunde
 	_debug_hour_near = true
 
 
@@ -1646,9 +1654,9 @@ func debug_summon_guest(guest: Guest, stage: int) -> void:
 
 ## Geplanter Besuch bei einem Gast mit „kreisenden Händen“ (Hauntings, Spielkonzept 5.13): kill false – das Zeichen
 ## (Stufe HYPNOSIS_FROM: ans Glas, Hände kreisen, wieder weg); kill true – ab THROUGH_CURTAIN_FROM, durch den Vorhang,
-## kein Losreißen. Salz und Zeugen wirken wie sonst. false: er ist anderswo, oder eine andere Bedrohung geht um.
+## kein Losreißen. Salz und Zeugen wirken wie sonst. false: er ist anderswo, oder es ist Albtraum.
 func haunt(guest: Guest, window: Node3D, kill: bool) -> bool:
-	if state != State.IDLE or Game.director == null or Game.director.other_threat_active(self):
+	if state != State.IDLE or Game.director == null or Game.director.threats_paused():
 		return false
 	_haunt = "kill" if kill else "sign"
 	_appear(window, guest)

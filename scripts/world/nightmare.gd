@@ -8,7 +8,7 @@ extends Node
 ## und man schreckt im Bett hoch. Wer vorher aus dem Heizkeller läuft, wacht früher auf.
 ## Was man erfährt: Der Vorname Josef, dass jemand von außen abschloss, und dass er eine Tochter hatte – die Indiz-Stufe
 ## vor dem Kesselbuch (2.3, HANDLUNG.md M12). Füllt die Lücke 16.–22. Oktober.
-## Während des Traums wartet jede Bedrohung (MonsterDirector.other_threat_active), es gibt keinen Zeitsprung und kein
+## Während des Traums wartet jede Bedrohung (MonsterDirector.threats_paused), es gibt keinen Zeitsprung und kein
 ## Speichern. Gespeichert unter „omens“: ob er schon war.
 
 enum Stage { WAITING, DREAMING, DONE }

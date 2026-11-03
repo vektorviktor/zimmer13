@@ -92,6 +92,9 @@ judge() {
 	if grep -q "^\[Schwelle\] [0-9]* Türen, [1-9][0-9]* Hälften ohne Boden" "$log"; then
 		problems+=" $(grep -o '[0-9]* Hälften ohne Boden' "$log") unter Türen"
 	fi
+	if grep -q "^\[Zugleich\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[Zugleich\] .*FEHLER' "$log")× Bedrohungen zugleich falsch"
+	fi
 	if grep -q "^\[Zierleiste\] FEHLER" "$log"; then
 		problems+=" $(grep -c '^\[Zierleiste\] FEHLER' "$log")× Zierleiste falsch"
 	fi
@@ -191,6 +194,7 @@ done <<'LIST'
 900|gaeste,tod,friedhof|--console=relation=alle,90;drunk=2,alle;kill=alle,leiche --trace
 1200|monster,kuerbismann,despawn|--warn --pumpkin=ankündigung --console=despawn --trace
 900|lakengeist,despawn|--ghost=3 --console=despawn --trace
+1100|monster,lakengeist,kuerbismann,zugleich|--zugleich --trace
 3000|kuerbismann|--pumpkin=jagd --trace
 600|kuerbismann,zeigen|--pumpkin=zeigen,kerze --trace
 600|kuerbismann,zeigen|--pumpkin=zeigen,zwei --trace
