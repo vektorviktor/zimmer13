@@ -782,6 +782,19 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   nach einem Rauschen ihrer **Weltlage** – gleiche Ecken zweier Stücke wandern gleich, an Gehrungen bleibt keine Fuge.
   Blattkarten (`_cards`, `psx_leaves`) brechen den Umriss auf; Normale der Fläche darunter, damit die Blätter wie die
   Hecke beleuchtet werden. Eigener Zufall je Linie (Spielstände unberührt).
+- **Rasenwellen** (`scripts/level/lawn.gd`, `Lawn` aus `_gardens`, ZIM-173): Raster `CELL` über allen Rasenflächen
+  (`Lawn.rects`), Rasen = `is_lawn` ohne Beete, Kübel, Bäume, Ausstattung, Laternen; Abstand zum Rand in zwei
+  Durchläufen (Schachbrettmaß). `height(p)` = `LIFT` + Rauschen (`FastNoiseLite`, `WAVE`, nur nach oben bis
+  `AMPLITUDE`) × `smoothstep` über `FALLOFF` – am Rand flach. Netz im Weltraster `STEP` je Rasenrechteck, je Kachel
+  `CHUNK` ein Mesh ohne Schatten und eine `ConcavePolygonShape3D` (Gegenstände, Füße, NavMesh liegen auf den Wellen);
+  der flache Boden aus `_floor_rect` bleibt `LIFT` darunter (verdeckt T-Fugen). Grasbüschel und Krähen nehmen
+  `height`. Mit `--trace`: `[Rasen]` mit höchstem Punkt und Bauzeit.
+- **Randsteine** (`scripts/level/curbs.gd`, `Curbs.build`, ZIM-173): Kanten der Kiesrechtecke (`Lawn.gravel`) in
+  `SAMPLE`-Schritten abgetastet, Läufe wo daneben Rasen ist; Steine auf der Rasenseite (Weg bleibt so breit wie im
+  Plan). Außenecken: Lauf entlang x über die Ecke verlängert; Innenecken/Kreuzungen: Läufe entlang z an denen
+  entlang x gekürzt. Je Lauf Steine `LENGTH` mit Fuge, Höhe/Neigung/Drehung gestreut, `SUNK_CHANCE` abgesackt
+  (fester Zufall). `SurfaceTool` je Kachel, keine Kollision, nicht im NavMesh. Material `_curb`: vorerst
+  `TerrazzoDark_01` aufgehellt mit den Poren der Säulen (`CURB_*`), nass glänzend wie Stein.
 - **Schrift im Haus:** Schilder über den Türen (Zimmernummern, BAR, PARTY, GARTEN, POOL, TREPPENHAUS, AUSGANG) sind
   seit 31.10. weg; beschriftet sind nur die Gästezimmertüren (Messingplakette, `RoomPlate`) und der Aufzug. Buchstaben als `TextMesh` bekommen Licht wie alles andere. Schrift Cinzel Bold (SIL OFL 1.1,
   `assets/fonts/OFL.txt`), gebaut von `tools/build_font.py`: TextMesh verträgt keine überlappenden Konturen, deshalb
@@ -2517,7 +2530,8 @@ Spielkonzept 2.5)
   Mutigste erklärt). Gespeichert bei den Omen (`SaveManager._collect_omens`, Schlüssel „weather“: `blood_done`, `stain`).
 - **Gras** (`world/grass.gd`, `shaders/grass.gdshader`): Nach
   dem NavMesh erzeugt (nicht darin, keine Kollision, nicht gespeichert), fester Zufall (`SEED`), nur wo `is_lawn` und
-  frei von Bäumen, Beeten, Gegenständen. `MultiMeshInstance3D` je Kachel mit `visibility_range_end`. Wind über
+  frei von Bäumen, Beeten, Gegenständen; Abstand `EDGE` zu Terrassen und Wänden, zum Kies nur `Lawn.edge_reach`
+  (Rauschen, bis an den Randstein). Fuß auf `Lawn.height`. `MultiMeshInstance3D` je Kachel mit `visibility_range_end`. Wind über
   `wind_time` (steht in der Pause); `pushers` (Figuren, Gegenstände) drücken das Gras weg.
 - **Fledermäuse** (`world/bats.gd`, `shaders/psx_bat.gdshader`, Spielkonzept 4.22 ohne Vampir): ein
   `MultiMeshInstance3D`, Daten in Arrays; Flügelschlag im Shader über `INSTANCE_CUSTOM` (vom Skript – steht in der

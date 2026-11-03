@@ -211,7 +211,7 @@ func _spawn(i: int) -> void:
 		if _builder.is_lawn(Vector2(p.x, p.z)):
 			home = p
 			break
-	home.y = base.y
+	home.y = base.y + _lift(home)
 	var a2 := randf() * TAU
 	var h: float = tree["height"]
 	var r: float = tree["radius"]
@@ -399,6 +399,11 @@ func _arrive(i: int) -> void:
 	_timer[i] = randf_range(HOP_EVERY.x, HOP_EVERY.y)
 
 
+## Höhe der Rasenwellen an p (Lawn, ZIM-173) – darauf stehen die Krähen.
+func _lift(p: Vector3) -> float:
+	return _builder.lawn.height(Vector2(p.x, p.z)) if _builder.lawn else 0.0
+
+
 ## Ein Hüpfer in eine neue Richtung, nicht weiter als WANDER vom Futterplatz.
 func _hop(i: int) -> void:
 	var a := _yaw[i] + randf_range(-1.4, 1.4)
@@ -407,7 +412,7 @@ func _hop(i: int) -> void:
 		var back := _home[i] - _pos[i]
 		a = atan2(-back.x, -back.z)
 		to = _pos[i] + Vector3(-sin(a), 0, -cos(a)) * HOP_LENGTH.y
-	to.y = _home[i].y
+	to.y = _home[i].y - _lift(_home[i]) + _lift(to)
 	_yaw[i] = a
 	_hop_from[i] = _pos[i]
 	_hop_to[i] = to

@@ -3,7 +3,9 @@ extends Node3D
 ## Grasbüschel auf den Rasenflächen des Gartens und der Innenhöfe, entschieden 2026-10-22. Je Büschel drei gekreuzte Halmkarten
 ## (shaders/grass.gdshader), eher verwildert und bis 30 cm hoch – so niedrig, dass nichts darin verschwindet.
 ## Verteilt in Kacheln (je ein MultiMesh), die nur bis VISIBLE m um die Kamera gezeichnet werden. Frei bleiben Wege,
-## Terrassen, Kürbisbeete, Kübel, Baumwurzeln und die Gegenstände, Pflanzen und Laternen des Plans; Füße (Spieler,
+## Terrassen, Kürbisbeete, Kübel, Baumwurzeln und die Gegenstände, Pflanzen und Laternen des Plans; an den Kieswegen
+## wächst es je nach Stelle bis an den Randstein und hängt über die Kante (Lawn.edge_reach, ZIM-173). Die Büschel
+## stehen auf den Wellen des Rasens (Lawn.height). Füße (Spieler,
 ## Gäste, Monster, Kürbismann) und Gegenstände am Boden drücken die Halme beiseite. Kein Schatten, keine Kollision,
 ## nicht im NavMesh (aus main.gd nach dem Backen), nicht gespeichert; immer gleich verteilt (fester Zufall).
 
@@ -14,7 +16,7 @@ const CARD_WIDTH := 0.4                  ## Breite einer Halmkarte (m)
 const CHUNK := 8.0                       ## Kantenlänge einer Kachel (m)
 const VISIBLE := 28.0                    ## so weit wird gezeichnet (Nebel und Nacht schlucken den Rest)
 const VISIBLE_FADE := 4.0
-const EDGE := 0.25                       ## Abstand zu Flächen, die kein Rasen sind (Wege, Terrassen, Wände)
+const EDGE := 0.25                       ## Abstand zu Flächen, die kein Rasen sind (Terrassen, Wände; Kies: Lawn)
 const CLEAR_TREE := 0.6                  ## um Baumstämme (bis gut 0,5 m dick, ohne Wurzeln)
 const CLEAR_ITEM := 0.6                  ## um Gegenstände und Ausstattung des Plans
 const CLEAR_LIGHT := 0.45                ## um Laternen
@@ -52,7 +54,7 @@ func setup(builder: LevelBuilder) -> void:
 	rng.seed = SEED
 	var holes := _holes(builder)
 	var chunks := {}   # Vector2i → Array[Transform3D]
-	for r in _lawn_rects(builder):
+	for r in Lawn.rects(builder):
 		for i in int(r.get_area() * DENSITY):
 			var p := Vector2(rng.randf_range(r.position.x, r.end.x), rng.randf_range(r.position.y, r.end.y))
 			var h := rng.randf_range(HEIGHT.x, HEIGHT.y)
@@ -64,7 +66,7 @@ func setup(builder: LevelBuilder) -> void:
 			var key := Vector2i(floori(p.x / CHUNK), floori(p.y / CHUNK))
 			if not chunks.has(key):
 				chunks[key] = []
-			(chunks[key] as Array).append([Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3(w, h, w)), Vector3(p.x, 0, p.y)), color])
+			(chunks[key] as Array).append([Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3(w, h, w)), Vector3(p.x, builder.lawn.height(p), p.y)), color])
 	for key: Vector2i in chunks:
 		var list: Array = chunks[key]
 		var mm := MultiMesh.new()
@@ -136,20 +138,6 @@ func _scan_items() -> void:
 			_items.append(_pusher(p, PUSH_ITEM))
 
 
-## Rechtecke der Rasenflächen im EG (Fläche „Garten“ und der Boden unter den Bäumen).
-static func _lawn_rects(builder: LevelBuilder) -> Array[Rect2]:
-	var out: Array[Rect2] = []
-	for r in builder._map["regions"]:
-		if r["kind"] == "garden":
-			for rc in r["rects"]:
-				out.append(builder._rect(rc))
-	for p in builder._map["floor_patches"]:
-		if p["kind"] == "garden":
-			for rc in p["rects"]:
-				out.append(builder._rect(rc))
-	return out
-
-
 ## Kreise (x, z, Radius) und Rechtecke, in denen nichts wächst.
 static func _holes(builder: LevelBuilder) -> Dictionary:
 	var circles: Array[Vector3] = []
@@ -170,9 +158,18 @@ static func _holes(builder: LevelBuilder) -> Dictionary:
 
 
 static func _free(builder: LevelBuilder, p: Vector2, holes: Dictionary) -> bool:
-	for d: Vector2 in [Vector2.ZERO, Vector2(EDGE, 0), Vector2(-EDGE, 0), Vector2(0, EDGE), Vector2(0, -EDGE)]:
-		if not builder.is_lawn(p + d):
+	if not builder.is_lawn(p):
+		return false
+	var at_gravel := false
+	for d: Vector2 in [Vector2(EDGE, 0), Vector2(-EDGE, 0), Vector2(0, EDGE), Vector2(0, -EDGE)]:
+		if builder.is_lawn(p + d):
+			continue
+		var place := builder._place_at(p + d)
+		if place.is_empty() or place["kind"] != "gravel":
 			return false
+		at_gravel = true
+	if at_gravel and builder.lawn.gravel_distance(p) < builder.lawn.edge_reach(p):
+		return false
 	for c: Vector3 in holes["circles"]:
 		if p.distance_squared_to(Vector2(c.x, c.y)) < c.z * c.z:
 			return false

@@ -46,6 +46,12 @@ const GRAVEL_TEX := "res://assets/textures/Gravel022/Gravel022_basecolor.jpg"
 const GRAVEL_NORMAL := "res://assets/textures/Gravel022/Gravel022_normalogl.jpg"
 const GRAVEL_METERS := 1.5
 const GRAVEL_NORMAL_STRENGTH := 1.5
+## Randsteine an den Kieswegen (Curbs, ZIM-173): vorerst der Terrazzo der Säulen, aufgehellt und stumpf, mit
+## deren Poren – ein Granit-Set fehlt noch
+const CURB_TEX := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_basecolor.jpg"
+const CURB_METERS := 0.6
+const CURB_TINT := Color(2.3, 2.5, 2.75)
+const CURB_PORES_STRENGTH := 1.0
 ## Holzdeck auf Terrassen und Balkonen (Deck, ZIM-127): so tief liegt die dunkle Platte unter der Oberkante der Bretter,
 ## Fuge zur Hauswand und zur Hecke bzw. zum Geländer
 const DECK_DROP := 0.04
@@ -627,6 +633,7 @@ var kitchen_spot := Vector3.ZERO
 var kitchen_spots: Array[Vector3] = []   ## Stehplätze der Gäste in der Küche, Raster KITCHEN_SPOT_STEP (ZIM-155)
 var garden_spots: Array[Vector3] = []
 var garden_beds: Array[Rect2] = []   ## Kürbisbeete (Erde) – dort wächst kein Gras (Grass)
+var lawn: Lawn                        ## Rasenwellen im EG (Höhe für Grasbüschel)
 ## Bäume: {pos (Stammachse am Boden), radius (Krone), height, crown (Höhenbereich der Krone als Anteile)} – für die
 ## Fledermäuse (Bats)
 var tree_spots: Array[Dictionary] = []
@@ -773,6 +780,7 @@ var _grass: Material
 var _stone: Material
 var _deck_under: Material   ## dunkel unter den Brettern des Holzdecks (_deck_base)
 var _gravel: Material
+var _curb: ShaderMaterial
 var _ceramic: Material
 var _doormat: Material
 var _cellar_wall: Material
@@ -1124,6 +1132,11 @@ func _materials() -> void:
 	_deck_under = Mat.psx(Color(0.07, 0.06, 0.05), "concrete", 1.0, Color.BLACK, 0.0, false)
 	_deck_under.set_meta("floor", "wood")
 	Mat.wettable(_gravel, WET_GLOSS.z)
+	_curb = Mat.photo(CURB_TEX, CURB_METERS, PILLAR_PORES, "", 0.0, CURB_TINT).duplicate()
+	_curb.set_shader_parameter("normal_tiling", CURB_METERS / PILLAR_PORES_METERS)
+	_curb.set_shader_parameter("normal_strength", CURB_PORES_STRENGTH)
+	_curb.set_shader_parameter("cavity", PILLAR_PORES_CAVITY)
+	Mat.wettable(_curb, WET_GLOSS.y)
 	_ceramic = Mat.psx(Color(0.88, 0.88, 0.86))
 	_doormat = Mat.psx(Color(0.4, 0.3, 0.18))
 	# Untergeschoss (Spielkonzept 7.9): Wände aus Brettschalungsbeton, Boden und Decke einfach grau
@@ -4515,6 +4528,12 @@ func _rod(a: Vector3, b: Vector3, mat: Material) -> void:
 
 func _gardens() -> void:
 	_garden_beds()
+	var started := Time.get_ticks_msec()
+	lawn = Lawn.new(self)   # nach den Beeten – dort bleibt der Rasen flach
+	lawn.build(root, _grass, Lawn.rects(self))
+	Curbs.build(self, root, lawn.gravel, _curb)
+	if Game.tracing:
+		print("[Rasen] Wellen bis %.1f cm, mit Randsteinen in %d ms" % [lawn.peak * 100.0, Time.get_ticks_msec() - started])
 	var trees: Array = _map["trees"]
 	for i in trees.size():
 		_tree(_v3(trees[i]["center"]), i)   # der Plan zeigt nur den Standort
