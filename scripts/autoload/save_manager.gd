@@ -161,7 +161,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     Dachnests), social.requests.rare (erfüllte seltene Bitten) – ältere Stände laden weiter, der Ring liegt im Nest
 ## 77: Halt des Aufzugs im Dachgeschoss freigeschaltet (Spielkonzept 7.10; ZIM-42: elevators.unlocked) – ältere Stände
 ##     laden weiter, der Halt ist dann noch gesperrt
-const VERSION := 77
+## 78: Kesselkatze als Führerin (Spielkonzept 4.26; ZIM-99): „boiler_cat“ (found: gefundene Story-Punkte ohne eigenen
+##     Zustand, night: Nacht ihres letzten Auftauchens) – ältere Stände laden weiter, UV-Schriften gelten als ungefunden
+const VERSION := 78
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -696,6 +698,8 @@ func collect() -> Dictionary:
 		data["cemetery"] = Game.cemetery.save_state()
 	if Game.leviathan_name:
 		data["leviathan"] = Game.leviathan_name.save_state()
+	if Game.boiler_cat:
+		data["boiler_cat"] = Game.boiler_cat.save_state()
 	data["doll"] = Game.doll.save_state() if Game.doll else {}
 	data["contest"] = Game.contest.save_state() if Game.contest else {}
 	data["notebook"] = Game.notebook.save_state() if Game.notebook else {}
@@ -847,6 +851,8 @@ func apply(data: Dictionary) -> void:
 		Game.cemetery.load_state(data.get("cemetery", {}))
 	if Game.leviathan_name:
 		Game.leviathan_name.load_state(data.get("leviathan", {}))
+	if Game.boiler_cat:
+		Game.boiler_cat.load_state(data.get("boiler_cat", {}))
 
 	# Monster-Werte
 	var director := Game.director

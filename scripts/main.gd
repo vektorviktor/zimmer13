@@ -437,7 +437,8 @@ extends Node3D
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
 ##   --shot-size=BxH             Fenster für den Screenshot in dieser Größe (rahmenlos, auch über den Bildschirm hinaus)
 ##   --shot-on=jumpscare|strangle|shock|pumpkin|lightning|repel  Screenshot kurz nach einem Ereignis statt nach n Frames
-##                               (Kürbismann auch pumpkin_roof|pumpkin_edge|pumpkin_leap|pumpkin_land|pumpkin_lobby)
+##                               (Kürbismann auch pumpkin_roof|pumpkin_edge|pumpkin_leap|pumpkin_land|pumpkin_lobby;
+##                               Kesselkatze kesselkatze beim Auftauchen, kesselkatze_rauch beim Auflösen)
 ##   --bg                        Fenster im Hintergrund: kein Fokus, außerhalb des Bildschirms (Game._to_background)
 ##   --navcheck                  Bau- und NavMesh-Zeit, Wege von Zimmer 13 zu allen wichtigen Orten (Spielkonzept 7.5)
 ##   --navcheck=tueren           Wege vom Keller (Versteck des Monsters) zu jeder bewohnten Zimmertür (4.33, Punkt 5)
@@ -456,7 +457,10 @@ extends Node3D
 ##   --hund                      nach 1 s heult hinter der Waldkante ein Hund (sonst zufällig alle paar Spielminuten)
 ##   --tiere[=eule|kraehen|hunde]  Tiere in der Ferne (7.8): nach 1 s ruft die Eule, krächzen Krähen, bellen Hunde –
 ##                               ohne Wert alle nacheinander (sonst je nach Uhrzeit und Wetter)
-##   --kesselkatze               Nacht, Kellergang: die schwarze Kesselkatze sitzt 5 m vor dir – sieh hin, sie geht voraus
+##   --kesselkatze[=pruefen|rauch]  Nacht, UG, 10 m vor einem ungefundenen Story-Punkt: die schwarze Kesselkatze taucht
+##                               seitlich im Blickfeld auf – sieh hin, sie geht voraus · pruefen: bleib stehen, prüft
+##                               Auftauchen, Richtung, Rauch nach ≤ 60 s, gefundener Punkt fällt heraus (~75 s) ·
+##                               rauch: nach 3 s löst sie sich im Blickfeld in Rauch auf
 ##   --spiegel[=tuch]            vor dem Spiegel in Zimmer 13, nach 2 s steht die Gestalt hinter dir · tuch: er ist verhängt
 ##   --strom[=kasten]            Gewitter, gleich fliegt die Sicherung · kasten: Strom aus, du vor dem Sicherungskasten im UG
 ##   --strom=telefon             Strom aus, ein Anruf und der Hörer bleiben tot; nach 4 s Sicherung rein, jetzt klingelt es
@@ -2579,7 +2583,7 @@ func _debug_omens(arg: String) -> bool:
 		"--tiere":
 			Game.weather.animals.debug(value)
 		"--kesselkatze":
-			get_tree().create_timer(1.0).timeout.connect(Game.boiler_cat.debug_show)
+			get_tree().create_timer(1.0).timeout.connect(Game.boiler_cat.debug_show.bind(value))
 		"--spiegel":
 			get_tree().create_timer(0.5).timeout.connect(Game.mirror_omens.debug.bind(value))
 		"--strom":

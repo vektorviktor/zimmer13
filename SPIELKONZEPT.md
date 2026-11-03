@@ -2775,10 +2775,9 @@ Katze?“).
   bei ihrem Vater im Heizkeller (2.8). Ein Hinweis für alle, die Marion entlarven wollen (M13).
 - Später (2.8) sitzt sie beim Ritual im alten Heizkeller (7.4) und geht mit ihm ins Feuer – das Ritual fehlt noch.
 - Seit 2026-10-27 ist der Kessel im Heizraum eine Attrappe (7.4): Ihr Ziel werden die **heißen Rohre**, die nach unten
-  führen (Anpassung im Code offen).
-- Debug: `--kesselkatze`.
+  führen (seit 2026-11-03 aufgegangen in der Führerin zu den Story-Punkten, unten).
 
-**Führerin zu den Story-Punkten (entschieden 2026-11-03, ZIM-99, noch nicht gebaut)** – erweitert das Führen oben:
+**Führerin zu den Story-Punkten (entschieden 2026-11-03, ZIM-99, gebaut 2026-11-03)** – ersetzt das Führen oben:
 - **Nicht ständig:** Mit einer gewissen Wahrscheinlichkeit taucht sie auf, wenn ein **noch nicht gefundener
   Story-Punkt** in der Nähe ist – UV-Schriften, Gegenstände und Dokumente mit wichtigem Bezug zur Geschichte.
 - **Auftauchen:** in der Nähe des Spielers und in seiner Blickrichtung, aber nicht direkt vor ihm. Sie **verharrt eine
@@ -2787,6 +2786,19 @@ Katze?“).
 - *Vorschläge, beim Bau zu bestätigen:* nachts nach dem ersten Angriff wie bisher, aber im ganzen Haus; höchstens einmal
   je Nacht; aufmerksam machen mit hellen Augen und einem leisen Maunzen; Story-Punkte als eigene Gruppe, ein gefundener
   Punkt fällt heraus. Das bisherige Führen zu den heißen Rohren und zur UV-Schrift geht darin auf.
+- *Beim Bau festgelegt (2026-11-03):* Die Vorschläge gelten. **Story-Punkte** sind vorerst die gebauten Fundstellen
+  der Hauptgeschichte: UV-Schriften, Warnungszettel, Hotelregister, Notizbuch des Hausmeisters, Gustavs Tagebuch, der
+  Schlüssel zu Zimmer 18 an der Leviathanmauer und der Schaltschlüssel in Zimmer 18 – im Heizraum führt sie also zu
+  Josefs UV-Schrift und zum Schlüssel an der Mauer statt zu den heißen Rohren; Kesselbuch, Tagebuch in 042 und Co. kommen dazu, sobald sie gebaut sind. **Gefunden** heißt
+  gelesen (Notiz oder Aufgabe im Notizbuch), am Schlüsselbund oder bei UV-Schriften einmal hell im UV-Licht gesehen.
+  **In der Nähe:** auf derselben Ebene, höchstens etwa 18 m Luftlinie und 30 m Weg, nicht schon davor (unter 4 m);
+  alle paar Sekunden eine Chance von etwa einem Fünftel, nicht im Versteck und nicht mit dem Monster in der Nähe.
+  **Auftauchen** 3,5–7 m vor einem, 14–30° neben der Blickrichtung, auf der Seite des Ziels, aus einer Rauchschliere;
+  sie **verharrt** 2,5–8 s und geht, sobald man sie kurz angesehen hat. Unterwegs wartet sie wie bisher, bis man
+  nachkommt; vor einer **geschlossenen Tür** setzt sie sich davor (das ist dann ihr Ziel). Am Ziel sieht sie einen noch
+  einen Moment an, dann Rauch; ebenso, wenn man weit zurückbleibt oder den Punkt selbst findet. Hat man sie gesehen,
+  steht eine Notiz im Notizbuch. Gespeichert: gefundene UV-Schriften und die Nacht ihres letzten Auftauchens.
+- Debug: `--kesselkatze[=pruefen]`.
 
 ### 4.27 Spiegel: verhängt und mit Gestalt (entschieden und umgesetzt 2026-10-25)
 - **Verhängte Spiegel:** Stirbt ein Gast, verhängt seine Familie die Spiegel im Zimmer mit einem dunklen Tuch – ein

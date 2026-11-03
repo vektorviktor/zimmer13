@@ -101,6 +101,11 @@ judge() {
 	if grep -q "^\[Zierleiste\] FEHLER" "$log"; then
 		problems+=" $(grep -c '^\[Zierleiste\] FEHLER' "$log")× Zierleiste falsch"
 	fi
+	if grep -q "^\[Kesselkatze\] FEHLER" "$log"; then
+		problems+=" Kesselkatze: $(grep '^\[Kesselkatze\] FEHLER' "$log" | head -1 | sed 's/^\[Kesselkatze\] FEHLER //')"
+	elif [[ "$name" == *--kesselkatze=pruefen* ]] && ! grep -q "^\[Kesselkatze\] Prüfung fertig" "$log"; then
+		problems+=" Kesselkatze: Prüfung nicht fertig"
+	fi
 	if grep -q "^\[Lichtdiagnose\] FEHLER" "$log"; then
 		problems+=" $(grep '^\[Lichtdiagnose\] FEHLER' "$log" | head -1 | sed 's/^\[Lichtdiagnose\] FEHLER //')"
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
@@ -317,7 +322,7 @@ done <<'LIST'
 600|halloween,tiere|--tp=keller --ratten=welle --trace
 400|halloween,tiere|--hund --trace
 400|tiere,wetter|--tiere --pos=45,0.1,-37,180 --trace
-900|halloween,tiere|--kesselkatze --trace
+1700|halloween,tiere,kesselkatze|--kesselkatze=pruefen --trace
 400|spinde|--spinde=offen --trace
 400|spinde,speichern|--spinde=offen --savetest
 400|duschen|--duschen=an --trace

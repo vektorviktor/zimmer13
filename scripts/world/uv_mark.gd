@@ -4,7 +4,8 @@ extends Node3D
 ## der Nachglanz einer Fußspur des Monsters. Die Taschenlampe ruft `shine()` auf, solange der
 ## UV-Kegel darauf fällt; danach verblasst es in Sekundenbruchteilen. Lokale +Z zeigt zum
 ## Betrachter (wie bei TraceMark). Nicht gespeichert – Schriften baut der LevelBuilder,
-## Fußspuren gehören zu Traces.
+## Fußspuren gehören zu Traces. Eine einmal ganz leuchtende Schrift gilt als gefunden (Story-Punkt, 4.26:
+## BoilerCat merkt es sich und speichert es).
 
 const FADE_IN := 4.0
 const FADE_OUT := 2.5
@@ -13,6 +14,7 @@ const COLOR := Color(0.78, 0.62, 1.0)
 
 var _glow := 0.0
 var _hold := 0.0
+var _read := false              ## Schrift schon einmal ganz zu sehen gewesen (an BoilerCat gemeldet)
 var _label: Label3D
 var _meshes: Array[MeshInstance3D] = []
 var _mat: StandardMaterial3D
@@ -63,8 +65,17 @@ func _process(delta: float) -> void:
 	_hold -= delta
 	_glow = move_toward(_glow, 1.0 if _hold > 0.0 else 0.0, delta * (FADE_IN if _hold > 0.0 else FADE_OUT))
 	_apply()
+	if _label and not _read and _glow > 0.9:
+		_read = true
+		if Game.boiler_cat:
+			Game.boiler_cat.mark_found(BoilerCat.uv_id(self))
 	if _glow <= 0.0 and _hold <= 0.0:
 		set_process(false)
+
+
+## Schrift (nicht Nachglanz einer Fußspur)?
+func is_text() -> bool:
+	return _label != null
 
 
 func _apply() -> void:

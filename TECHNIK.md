@@ -2634,7 +2634,25 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   (Kauz `OWL_HOURS`, Krähen `CROW_ACTIVITY` je Tagesphase, Hunde nachts `BARK_NIGHT`) und Wetter (`RAIN_QUIET`,
   `RAIN_DAMP`), ob gerufen wird. `on_thunder(loud)` aus `Weather._thunder`: Hunde schlagen an, Krähen fliegen auf.
   Debug `--tiere[=eule|kraehen|hunde]`.
-- **`BoilerCat`** (Modell `cat.glb` fast schwarz, leuchtende Augen) führt zu Kessel bzw. UV-Schrift, einmal je Nacht.
+- **`BoilerCat`** (Modell `cat.glb` fast schwarz, leuchtende Augen; ZIM-99) führt zu **Story-Punkten**: Gruppe
+  `BoilerCat.STORY_GROUP` („story_points“), Kennung in Meta „story_id“. `_tag_story_points` sammelt sie bei jeder Suche
+  aus vorhandenen Gruppen – UV-Schriften (`UvMark.is_text`, Kennung `uv_id` = Ort auf den Dezimeter), Warnungszettel,
+  Hotelregister, Notizbuch des Hausmeisters, Gustavs Tagebuch (`Game.social.grinch.diary`), Schlüssel aus
+  `STORY_KEYS` (liegend); neue Fundstellen dort eintragen. `is_story_found` fragt vorhandene Zustände (Notizen
+  `note_…`, `register_old`, `gustav_diary`, Aufgabe des Hausmeisterbuchs, Schlüssel am Bund) und merkt Treffer in
+  `found`; UV-Schriften meldet `UvMark` selbst (`mark_found`, sobald einmal über 0,9 hell). Ablauf: alle
+  `CHECK_EVERY` s nachts nach dem ersten Angriff, einmal je Nacht (`_night_id`), mit `APPEAR_CHANCE`, nicht im Versteck
+  und nicht mit Monster unter 15 m – `nearest_story_point` (Luftlinie `NEAR`, Weg `NEAR_PATH`, Höhe `FLOOR_SPAN`, nicht
+  unter `NEAR_MIN`), `_appear_spot` (`APPEAR_RANGE`, `APPEAR_ANGLE` zur Blickrichtung, zuerst auf der Seite des Ziels,
+  `player_can_see`). Zustände `WAIT` (verharrt `HOLD`, bis `HOLD_SEEN` angesehen; Maunzen `MEOWS` über
+  `Game.sound_at`, kein Lärm) → `LEAD`/`SIT` (Stücke von `LEAD_AHEAD`, wartet bis `FOLLOW_RANGE`; vor geschlossener Tür
+  sitzt sie, `_door_ahead` wie `HotelCat`) → `ARRIVED` (`LINGER`) → `SMOKE`. Rauch nach `LIFETIME` (60 s Spielzeit),
+  über `LOSE_RANGE` oder wenn das Ziel gefunden ist. Rauchschlieren: `CPUParticles3D` (`Geo.particles`,
+  `Mat.particle` mit 4 Bildern, Drehen/Schaukeln), Bild beim ersten `_ready` aus `FastNoiseLite` gerechnet (4 × 128²,
+  quer gestauchtes Rauschen, weicher Rand, Mipmaps; Normal-/Rauheitskarte entfällt – der Partikel-Shader hat keine);
+  beim Auftauchen schwächer, Körper nach `SMOKE_HIDE` fort. Gespeichert (Speicherstand 78) unter „boiler_cat“:
+  `found`, Nacht des letzten Auftauchens. Debug `--kesselkatze[=pruefen|rauch]`, `--shot-on=kesselkatze|kesselkatze_rauch`,
+  Rauchtest-Stichwort `kesselkatze`.
 - **`MirrorOmens`:** verhängte Spiegel aus den Toten abgeleitet (`Mirror.active`), Spiegel in 13 selbst verhängbar;
   Zimmer eines Spiegels über `_home_of` (1 m unter der Mitte abgefragt – `LevelBuilder._level_of` kennt nur 1,5 m);
   Gestalt im Spiegel auf `PlayerBody.LAYER` (nur im Spiegel sichtbar), `FIGURE_TIME`.
@@ -2669,7 +2687,7 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   noch Rattenkönig (ruht). Die Fotowand liest alle ihre Punkte (`PhotoWall.setup`, ZIM-133).
 - **Gespeichert** (Speicherstand 49) unter `omens`: `crows`, `mirrors`, `power`, `nightmare`, `extra_child`
   (`SaveManager._collect_omens`/`_apply_omens`); alles andere wird aus Toten, Kalender oder Gegenständen abgeleitet.
-- Debug: `--kraehen`, `--ratten`, `--hund`, `--kesselkatze`, `--spiegel`, `--strom`, `--albtraum`,
+- Debug: `--kraehen`, `--ratten`, `--hund`, `--kesselkatze[=pruefen]`, `--spiegel`, `--strom`, `--albtraum`,
   `--vogelscheuche`, `--kind-zu-viel`, `--fotos`, `--gedenken`, `--puppenhaus`, `--fratzen`, `--apfel`, `--spieluhr`;
   Rauchtest-Stichwort `halloween`.
 
