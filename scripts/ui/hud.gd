@@ -536,7 +536,7 @@ func _on_money_changed(amount: int) -> void:
 ## Türen (Strahl auf Ebene 1 | 16, Gäste und Spieler zählen nicht)
 func _update_names() -> void:
 	var camera := get_viewport().get_camera_3d()
-	for guest: Guest in _names.keys():
+	for guest in _names.keys():   # ungetypt: ein freigegebener Gast ließe sich keiner Guest-Variablen zuweisen
 		if not is_instance_valid(guest):
 			_names[guest].queue_free()
 			_names.erase(guest)
