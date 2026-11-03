@@ -1830,6 +1830,14 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   Tagebuch (`can_save`). Im Versteck oder Bett speichert `collect` die Lage vor dem Versteck (`exit_point`). `load_slot`
   löscht ihn bei jedem Laden (`drop_suspend` – der Stand steckt dann in `pending_load`), ebenso `Game.start_new_game`.
   `newest_slot` (Fortsetzen) und `SlotList` im Modus LOAD kennen ihn. Debug `--unterbrechen[=laden]`.
+- **Albtraum-Modus (8.9, ZIM-80):** Häkchen unter der Slot-Wahl im Titelbildschirm → `Game.start_new_game(slot, true)`
+  setzt `Game.nightmare_mode` (nur mit Slot). Der Modus steht im Spielstand (`nightmare_mode`, VERSION 79), `apply` setzt
+  ihn. Ein einziger Slot = `Game.current_slot`: Das Tagebuch bietet nur ihn an (`Menus._show_diary`), `autosave_slot`
+  leitet den Autosave dorthin statt in Slot 0, der Zwischenstand bleibt wie gehabt (einmal ladbar). „Laden“ im
+  Spielmenü ist gesperrt. `SaveManager.on_death` – aus `MonsterDirector.kill_player`/`player_slain` (und `--tot`),
+  also noch vor dem Jumpscare – löscht Slot und Zwischenstand; der Sterbebildschirm bietet dann nur das Hauptmenü.
+  `slot_info` liefert „nightmare“, `SlotList` hängt „· Albtraum“ an. Erfolge (8.11) stehen im Profil und bleiben.
+  Debug `--albtraummodus[=n|pruefen]` (nicht `--albtraum`, das ist der Traum von 1987).
 - **Tagebuchsatz** (`diary_sentence`, 8.5, 8.10): Zeile der Puppe, dann je Gruppe ein Teil (`_guest_lines`: Tote,
   Feinde, Freunde) – mit Namen nur `_named_in_diary` (Kernfiguren; zentrale Gäste docken dort an), der Rest gezählt
   („Edna ist fort. Neun andere auch.“, Zahlwörter bis zwölf), dann Kürbisse vor der Tür, Zittern; höchstens drei Teile.

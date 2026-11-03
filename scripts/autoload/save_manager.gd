@@ -3,6 +3,7 @@ extends Node
 ##   Slot 1–3: manuell am Tagebuch in Zimmer 13 · Slot 0: Autosave bei Fortschritt (on_progress), beim ersten Betreten
 ##   eines neuen Bereichs (NEW_AREAS) und beim Aufwachen in Zimmer 13 nach einer Nacht Schlaf (8.10) ·
 ##   Zwischenstand (SUSPEND): „Unterbrechen und beenden“ im Spielmenü, beim nächsten Laden gelöscht (8.10).
+##   Albtraum-Modus (8.9, Game.nightmare_mode): Tagebuch und Autosave nur in den Slot des Spiels, der Tod löscht ihn.
 ## Weil es kein Inventar gibt, ist die Welt der Spielstand: jeder Gegenstand mit Ort und
 ## Zustand, alle Gäste, die versteckten Werte des Monsters, Lampen, Türen, Vorhänge …
 ## Dateien: user://saves/slot_N.json (+ .png Vorschaubild), sicher geschrieben über .tmp.
@@ -163,7 +164,8 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     laden weiter, der Halt ist dann noch gesperrt
 ## 78: Kesselkatze als Führerin (Spielkonzept 4.26; ZIM-99): „boiler_cat“ (found: gefundene Story-Punkte ohne eigenen
 ##     Zustand, night: Nacht ihres letzten Auftauchens) – ältere Stände laden weiter, UV-Schriften gelten als ungefunden
-const VERSION := 78
+## 79: Albtraum-Modus (Spielkonzept 8.9; ZIM-80): „nightmare_mode“ – ältere Stände laden weiter, als normales Spiel
+const VERSION := 79
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -244,6 +246,7 @@ func slot_info(slot: int) -> Dictionary:
 	return {
 		"text": data.get("text", ""), "saved_at": data.get("saved_at", 0),
 		"playtime": data.get("playtime", 0.0), "alive": data.get("alive", []), "fits": fits(data),
+		"nightmare": bool(data.get("nightmare_mode", false)),
 	}
 
 
@@ -393,11 +396,16 @@ func is_safe_for_autosave() -> bool:
 	return true
 
 
+## Wohin der Autosave schreibt: sonst Slot 0, im Albtraum-Modus (8.9) der eine Slot des Spiels.
+func autosave_slot() -> int:
+	return Game.current_slot if Game.nightmare_mode else AUTOSAVE
+
+
 func autosave(reason: String) -> void:
 	# Headless (Testläufe) gibt es kein Bild – dann ohne Vorschau
 	var thumb: Image = null if DisplayServer.get_name() == "headless" else get_viewport().get_texture().get_image()
 	var text := diary_sentence()
-	if save_to(AUTOSAVE, text, thumb):
+	if save_to(autosave_slot(), text, thumb):
 		autosaved.emit()
 		if Game.tracing:
 			print("[Autosave] gespeichert (%s): „%s“" % [reason, text])
@@ -461,9 +469,26 @@ func suspend(thumb: Image) -> bool:
 ## Den Zwischenstand gibt es nur einmal: Beim nächsten Laden – egal welchen Standes – und bei einem neuen Spiel
 ## vom Titelbildschirm ist er weg.
 func drop_suspend() -> void:
+	_drop(SUSPEND)
+
+
+func _drop(slot: int) -> void:
 	for ext in ["json", "png"]:
-		if FileAccess.file_exists(slot_path(SUSPEND, ext)):
-			DirAccess.remove_absolute(slot_path(SUSPEND, ext))
+		if FileAccess.file_exists(slot_path(slot, ext)):
+			DirAccess.remove_absolute(slot_path(slot, ext))
+
+
+## Der Spieler ist gestorben (MonsterDirector.kill_player/player_slain): Im Albtraum-Modus (8.9) ist sein Slot sofort
+## fort – noch vor dem Jumpscare, damit kein Beenden ihn rettet. Ein Zwischenstand dieses Spiels kann nicht mehr da
+## sein (beim Laden gelöscht), fällt aber sicherheitshalber mit. Normale Spiele bleiben unberührt.
+func on_death() -> void:
+	_pending_autosave = ""
+	if not Game.nightmare_mode:
+		return
+	_drop(Game.current_slot)
+	drop_suspend()
+	if Game.tracing:
+		print("[Albtraum] Slot %d gelöscht" % Game.current_slot)
 
 
 # --- Laden -------------------------------------------------------------------------
@@ -610,6 +635,7 @@ func collect() -> Dictionary:
 		"playtime": Game.director.elapsed,
 		"money": Game.money,
 		"current_slot": Game.current_slot,
+		"nightmare_mode": Game.nightmare_mode,
 		"visited": visited.duplicate(),
 		"player": {
 			"pos": _v(stand if stand != Vector3.INF else p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
@@ -776,6 +802,7 @@ func apply(data: Dictionary) -> void:
 	reset_pending()
 	Game.money = int(data.get("money", 5))
 	Game.current_slot = int(data.get("current_slot", Game.current_slot))
+	Game.nightmare_mode = bool(data.get("nightmare_mode", false))
 	# Laufendes Schmücken, Deko-Suche, Suppenessen und Kaffeekochen werden nicht gespeichert – und die Gäste gleich neu gebaut
 	Game.social.decorating.reset()
 	Game.social.search.reset()

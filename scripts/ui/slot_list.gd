@@ -3,7 +3,7 @@ extends VBoxContainer
 ## Slot-Übersicht (Spielkonzept 8.5): Vorschaubild, Tagebuchsatz, Spielzeit, Datum,
 ## lebende Gäste. Modus LOAD zeigt zusätzlich den Autosave und, falls es ihn gibt, den Zwischenstand von
 ## „Unterbrechen und beenden“ (8.10, nur einmal ladbar); leere und nicht mehr passende Slots
-## (SaveManager.fits) sind dann gesperrt.
+## (SaveManager.fits) sind dann gesperrt. Stände im Albtraum-Modus (8.9) tragen „Albtraum“ im Namen.
 
 signal picked(slot: int)
 
@@ -71,6 +71,8 @@ func _row(slot: int) -> Control:
 	var slot_name := "Autosave" if slot == SaveManager.AUTOSAVE else "Slot %d" % slot
 	if slot == SaveManager.SUSPEND:
 		slot_name = "Zwischenstand (nur einmal ladbar)"
+	if info.get("nightmare", false):   # Albtraum-Modus (8.9): ein Slot, der Tod löscht ihn
+		slot_name += " · Albtraum"
 	if slot == highlight:
 		slot_name += "  (aktuell)"
 	var head := UiKit.label(slot_name, 10, UiKit.ACCENT if slot == highlight else UiKit.INK)

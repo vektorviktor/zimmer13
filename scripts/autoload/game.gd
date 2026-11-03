@@ -80,8 +80,12 @@ var pending_load: Dictionary = {}
 var new_game_slot := 0
 ## Wechsel in die Hauptszene läuft (enter_game) – „Lädt …“ steht, weitere Klicks zählen nicht
 var entering := false
-## Bevorzugter Slot für das Tagebuch (1–3)
+## Bevorzugter Slot für das Tagebuch (1–3); im Albtraum-Modus der einzige Slot des Spiels
 var current_slot := 1
+## Albtraum-Modus (Spielkonzept 8.9): beim neuen Spiel gewählt, steht im Spielstand. Ein einziger Slot (current_slot) –
+## Tagebuch und Autosave schreiben nur dorthin, der Tod löscht ihn (SaveManager.on_death). Nicht zu verwechseln mit
+## `nightmare`, dem Albtraum von 1987 (4.29).
+var nightmare_mode := false
 ## Geld ist der einzige abstrakte Besitz – alles andere wird in den Händen getragen.
 var money := 0:
 	set(value):
@@ -316,12 +320,14 @@ func caption(text: String) -> void:
 		caption_posted.emit(text)
 
 
-## Neues Spiel starten; slot > 0 → Startzustand gleich dorthin speichern.
-func start_new_game(slot: int) -> void:
+## Neues Spiel starten; slot > 0 → Startzustand gleich dorthin speichern. nightmare_run: Albtraum-Modus (8.9), nur
+## mit Slot.
+func start_new_game(slot: int, nightmare_run: bool = false) -> void:
 	if entering:
 		return
 	pending_load = {}
 	new_game_slot = slot
+	nightmare_mode = nightmare_run and slot > 0
 	if slot > 0:
 		current_slot = slot
 	SaveManager.drop_suspend()   # ein neues Spiel verwirft den Zwischenstand (8.10)

@@ -1,7 +1,8 @@
 class_name DeathScreen
 extends CanvasLayer
 ## Sterbebildschirm nach dem Jumpscare: verrauschtes Standbild. Danach den letzten
-## Spielstand laden, einen anderen wählen oder zurück ins Hauptmenü (Spielkonzept 8.7).
+## Spielstand laden, einen anderen wählen oder zurück ins Hauptmenü (Spielkonzept 8.7). Im Albtraum-Modus (8.9) nur
+## noch das Hauptmenü – der Slot ist mit dem Tod gelöscht.
 ## Oben das Porträt dessen, der einen geholt hat (Player.killed_by, IconArt.THREATS – sonst der Totenkopf), neben
 ## der Überschrift je ein kleiner Totenkopf.
 
@@ -73,7 +74,9 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 10)
 	box.add_child(spacer)
-	if SaveManager.has_any_save():
+	if Game.nightmare_mode:   # Albtraum-Modus (8.9): der Slot ist schon fort, kein Zurückladen
+		box.add_child(_label("Der Albtraum ist vorbei. Dein Spielstand ist fort.", 10, Color(0.7, 0.65, 0.6)))
+	elif SaveManager.has_any_save():
 		box.add_child(_button("Letzten Spielstand laden", _on_load_newest))
 		box.add_child(_button("Spielstand wählen", _on_choose))
 	else:

@@ -6024,7 +6024,15 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 ### 8.9 Ausbau-Ideen (später)
 - **Gäste lesen das Tagebuch:** Kommt ein Gast in Zimmer 13 (offene Tür, Schlüssel, Feier), kann er das Tagebuch lesen und so erfahren, wen man bestohlen oder dem Monster „geopfert“ hat (4.11, 6.2) → Abschließen lohnt sich doppelt. Das Tagebuch bleibt dabei fest im Zimmer. Drin steht es erst, wenn man seitdem gespeichert hat (3.10); das Notizbuch am Körper liest niemand.
   *Gebaut 2026-11-03 für den Einbrecher (6.19, ZIM-54):* erster Diebstahl und sorgloser Tod, weitererzählt übers Freundesnetz. **Andere Leser (offene Tür, Schlüssel, Feier) gestrichen** (2026-11-03, ZIM-80) – es bleibt beim Einbrecher.
-- **„Albtraum-Modus“** (entschieden 2026-11-03, ZIM-80, noch nicht gebaut): beim neuen Spiel wählbar; ein einziger Slot, der Tod löscht ihn.
+- **„Albtraum-Modus“** (entschieden 2026-11-03, ZIM-80): beim neuen Spiel wählbar; ein einziger Slot, der Tod löscht ihn.
+  *Gebaut 2026-11-03 (ZIM-80), kleinste Lösung im Sinne von 8.10:* Häkchen „Albtraum-Modus“ unter der Slot-Wahl beim
+  neuen Spiel; der gewählte Slot (1–3) ist der einzige des Spiels. Gespeichert wird nach den gewohnten Regeln –
+  Tagebuch in Zimmer 13 (ohne Slot-Wahl), Autosave bei Fortschritt, neuen Bereichen und dem Aufwachen –, aber nur in
+  diesen Slot, nicht in den Autosave-Slot. Der Zwischenstand (8.10) bleibt wie gehabt einmal ladbar. „Laden“ im
+  Spielmenü ist gesperrt (sonst lädt man sich vor dem Tod zurück). Der Tod löscht den Slot sofort, noch vor dem
+  Jumpscare; der Sterbebildschirm führt nur zurück ins Hauptmenü. In der Slot-Übersicht steht „· Albtraum“. Normale
+  Spiele bleiben unberührt, Erfolge (8.11) stehen im Profil und bleiben. *Offen:* Wer vor dem Tod über „Zum
+  Hauptmenü“ oder Beenden aussteigt, behält den letzten Stand – wie in jedem Spiel mit einem Slot.
 
 ### 8.10 Speicherregel geschärft (entschieden 2026-10-21, umgesetzt 2026-10-28)
 > **Umgesetzt (2026-10-28)** wie unten (die Sperre während Kürbismann und Lakengeist schon seit 2026-10-21), mit diesen

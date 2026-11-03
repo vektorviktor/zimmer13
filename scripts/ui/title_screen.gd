@@ -44,6 +44,8 @@ var _flicker := 1.0
 var _flicker_timer := 0.0
 var _figure := false
 var _figure_timer := 4.0
+## Neues Spiel im Albtraum-Modus (Spielkonzept 8.9) – Häkchen unter der Slot-Wahl
+var _nightmare := false
 
 
 func _ready() -> void:
@@ -170,8 +172,17 @@ func _show_new_game() -> void:
 		if SaveManager.slot_exists(slot):
 			_confirm_overwrite(slot)
 		else:
-			Game.start_new_game(slot))
+			Game.start_new_game(slot, _nightmare))
 	box.add_child(list)
+	# Albtraum-Modus (8.9): ein einziger Slot, der Tod löscht ihn
+	var nightmare := CheckBox.new()
+	nightmare.text = "Albtraum-Modus"
+	nightmare.button_pressed = _nightmare
+	nightmare.add_theme_font_size_override("font_size", 9)
+	nightmare.toggled.connect(func(on: bool) -> void: _nightmare = on)
+	box.add_child(nightmare)
+	box.add_child(UiKit.wrap_label("Nur dieser eine Slot – Tagebuch und Autosave schreiben hierher. Stirbst du, ist " +
+		"der Spielstand fort. Kein Zurückladen.", 8, UiKit.INK_FAINT))
 	box.add_child(UiKit.button("Zurück", _show_main))
 	_reposition.call_deferred()
 
@@ -182,7 +193,7 @@ func _confirm_overwrite(slot: int) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
 	box.add_child(row)
-	row.add_child(UiKit.button("Überschreiben", func() -> void: Game.start_new_game(slot)))
+	row.add_child(UiKit.button("Überschreiben", func() -> void: Game.start_new_game(slot, _nightmare)))
 	var no := UiKit.button("Abbrechen", _show_new_game)
 	row.add_child(no)
 	no.grab_focus.call_deferred()

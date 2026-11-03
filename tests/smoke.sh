@@ -111,8 +111,11 @@ judge() {
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
 		problems+=" kein Lichtbericht"
 	fi
-	if grep -q "^\[\(Maske\|Ring\)\] .*FEHLER" "$log"; then
-		problems+=" $(grep -c '^\[\(Maske\|Ring\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\)\] .*FEHLER' "$log" | head -1))"
+	if grep -q "^\[\(Maske\|Ring\|Albtraum\)\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\)\] .*FEHLER' "$log" | head -1))"
+	fi
+	if [[ "$name" == *--albtraummodus=pruefen* ]] && ! grep -q "^\[Albtraum\] Prüfung fertig" "$log"; then
+		problems+=" Albtraum-Prüfung nicht fertig"
 	fi
 	if [ -n "$problems" ]; then
 		printf 'fail\tFEHLER  %s:%s   (%s)\n' "$name" "$problems" "$log"
@@ -164,6 +167,8 @@ done <<'LIST'
 400|tafel|--tafel --trace
 1100|speichern,autosave,schlaf|--day=3 --uhr=1:10 --hoerer --sleep=bett,8 --trace
 400|speichern,autosave|--unterbrechen=laden --trace
+400|speichern,autosave,tod,albtraummodus,menue|--albtraummodus=pruefen --trace
+600|speichern,albtraummodus|--albtraummodus --savetest
 600|speichern,autosave,tod|--kill=emilhartung,weg,blut --fortschritt --trace
 600|speichern,spieler|--bag --flashlight --savetest
 600|speichern,kuerbis|--day=12 --rot=eingefallen --savetest --trace

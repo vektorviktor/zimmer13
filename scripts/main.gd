@@ -13,6 +13,9 @@ extends Node3D
 ##                               beenden · laden: statt zu beenden gleich wieder laden – danach ist er gelöscht (Load 4)
 ##   --fortschritt[=grund]       nach 2 s Fortschritt melden (SaveManager.on_progress, 8.10) – Autosave im nächsten
 ##                               sicheren Moment; mit --trace „[Autosave]“
+##   --albtraummodus[=n|pruefen] dieses Spiel im Albtraum-Modus (8.9) mit Slot n (Standard 3): Tagebuch und Autosave nur
+##                               dorthin, der Tod löscht ihn · pruefen: nach 2 s normal speichern und „sterben“, dann
+##                               Albtraum speichern, Autosave, Laden, Tod – „[Albtraum] … ok/FEHLER“, „Prüfung fertig“
 ##   --day=n                     zu Tag n im Oktober springen (15 Uhr)
 ##   --uhr=hh[:mm]               Uhrzeit am aktuellen Tag stellen (2.4; am 1. Oktober frühestens 15 Uhr) – nach --day
 ##   --attacks=n                 so viele Raubzüge gab es schon (ab 3 ist der nächste nicht mehr harmlos, 4.33)
@@ -2282,6 +2285,7 @@ func run_debug(arg: String) -> bool:
 			Game.game_over = true
 			Game.player.dead = true
 			Game.player.killed_by = by
+			SaveManager.on_death()
 			if Game.hud:
 				Game.hud.visible = false
 			Game.player_died.emit())
@@ -2523,6 +2527,12 @@ func run_debug(arg: String) -> bool:
 				else "gelöscht")))
 	elif _is_arg(arg, "--fortschritt"):
 		get_tree().create_timer(2.0).timeout.connect(SaveManager.on_progress.bind(_arg_value(arg, "--fortschritt", "Debug")))
+	elif _is_arg(arg, "--albtraummodus"):
+		if _arg_value(arg, "--albtraummodus") == "pruefen":
+			get_tree().create_timer(2.0, false).timeout.connect(_debug_nightmare_check)
+		else:
+			Game.nightmare_mode = true
+			Game.current_slot = clampi(_arg_value(arg, "--albtraummodus", "3").to_int(), 1, SaveManager.SLOTS)
 	elif arg.begins_with("--menu="):
 		# Menü für Screenshots öffnen: pause, diary, diary_pages, settings, load, help, achievements (controls: alter Name der Hilfe)
 		var which := _arg_value(arg, "--menu")
@@ -3011,6 +3021,36 @@ func _debug_shock(guest: Guest, what: String) -> void:
 	Game.player.global_position = front + along * 4.2 + Vector3(0, 0.05, 0)
 	_face_toward(front)
 	Game.player.head.rotation.x = -0.25
+
+
+## --albtraummodus=pruefen (Spielkonzept 8.9): normales Spiel in Slot 2 speichern, sterben – der Slot bleibt; dann Albtraum in
+## Slot 3: Tagebuch und Autosave landen dort, der Modus kommt aus dem Stand zurück, der Tod löscht den Slot, Slot 2
+## bleibt. Meldet je Schritt „[Albtraum] … ok“ bzw. „FEHLER“, am Ende „[Albtraum] Prüfung fertig“.
+func _debug_nightmare_check() -> void:
+	var check := func(what: String, good: bool) -> void: print("[Albtraum] %s: %s" % [what, "ok" if good else "FEHLER"])
+	Game.nightmare_mode = false
+	Game.current_slot = 2
+	SaveManager.save_to(2, SaveManager.diary_sentence(), null)
+	SaveManager.on_death()   # wie beim Sterben – im normalen Spiel ohne Folgen
+	var normal := SaveManager.slot_info(2)
+	check.call("normales Spiel bleibt nach dem Tod ladbar", not normal.is_empty() and normal["fits"] and not normal["nightmare"])
+	Game.nightmare_mode = true
+	Game.current_slot = 3
+	SaveManager.save_to(3, "vorher", null)
+	var diary := SaveManager.slot_info(3)
+	check.call("Tagebuch in Slot 3, als Albtraum erkennbar", not diary.is_empty() and diary["fits"] and diary["nightmare"])
+	check.call("Autosave geht in den Albtraum-Slot", SaveManager.autosave_slot() == 3)
+	SaveManager.autosave("Prüfung")
+	check.call("Autosave geschrieben", String(SaveManager.slot_info(3).get("text", "vorher")) != "vorher")
+	var data: Dictionary = JSON.parse_string(JSON.stringify(SaveManager.collect()))
+	Game.nightmare_mode = false
+	SaveManager.apply(data)
+	await get_tree().physics_frame
+	check.call("Modus kommt aus dem Spielstand zurück", Game.nightmare_mode and Game.current_slot == 3)
+	Game.director.player_slain("ghost")
+	check.call("der Tod löscht den Albtraum-Slot", not SaveManager.slot_exists(3))
+	check.call("das normale Spiel in Slot 2 bleibt", SaveManager.slot_exists(2))
+	print("[Albtraum] Prüfung fertig")
 
 
 ## --savetest: Speichern und Laden ohne Datei durchspielen und Unterschiede ausgeben.

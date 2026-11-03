@@ -1926,6 +1926,7 @@ func kill_player(spot: HideSpot) -> void:
 	var player := Game.player
 	player.dead = true
 	player.killed_by = "monster"
+	SaveManager.on_death()   # Albtraum-Modus: der Slot ist fort (8.9)
 	if Game.hud:
 		Game.hud.set_prompt("")
 	if spot != null:
@@ -1951,6 +1952,7 @@ func player_slain(by: String) -> void:
 	Game.game_over = true
 	Game.player.dead = true
 	Game.player.killed_by = by
+	SaveManager.on_death()   # Albtraum-Modus: der Slot ist fort (8.9)
 	if Game.hud:
 		Game.hud.set_prompt("")
 		Game.hud.visible = false

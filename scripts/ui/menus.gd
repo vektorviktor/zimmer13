@@ -203,7 +203,7 @@ func _show_pause() -> void:
 		UiKit.INK_FAINT))
 	var first := UiKit.button("Fortsetzen", close)
 	box.add_child(first)
-	box.add_child(UiKit.button("Laden", _show_load))
+	box.add_child(UiKit.button("Laden", _show_load, Game.nightmare_mode))   # Albtraum (8.9): kein Zurückladen
 	box.add_child(UiKit.button("Einstellungen", _show_settings))
 	box.add_child(UiKit.button("Erfolge", _show_achievements))
 	box.add_child(UiKit.button("Hilfe", _show_help))
@@ -415,10 +415,14 @@ func _show_diary() -> void:
 		var n := Game.diary.pending.size()
 		box.add_child(UiKit.wrap_label("Seit dem letzten Eintrag ist %s geschehen, das ich aufschreiben will." % (
 			"etwas" if n == 1 else "einiges"), 8, UiKit.INK_FAINT))
-	box.add_child(UiKit.label("In welche Seite schreiben?", 9, UiKit.INK_FAINT))
-	var list := SlotList.new().setup(SlotList.Mode.SAVE, Game.current_slot)
-	list.picked.connect(_write_diary)
-	box.add_child(list)
+	if Game.nightmare_mode:   # Albtraum-Modus (8.9): nur der eine Slot dieses Spiels
+		box.add_child(UiKit.button("Hineinschreiben (Albtraum – Slot %d)" % Game.current_slot,
+			_write_diary.bind(Game.current_slot)))
+	else:
+		box.add_child(UiKit.label("In welche Seite schreiben?", 9, UiKit.INK_FAINT))
+		var list := SlotList.new().setup(SlotList.Mode.SAVE, Game.current_slot)
+		list.picked.connect(_write_diary)
+		box.add_child(list)
 	if Game.diary and not Game.diary.entries.is_empty():
 		box.add_child(UiKit.button("Im Tagebuch blättern", _show_diary_pages.bind(-1)))
 	box.add_child(UiKit.button("Tagebuch weglegen", close))
