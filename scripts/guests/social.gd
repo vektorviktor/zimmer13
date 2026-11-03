@@ -67,6 +67,9 @@ const CHILDREN := 13
 ## Eine Tür je Haushalt (Spielkonzept 6.20): so viel Startdeko hängt höchstens an ihr; so weit stehen Mitbewohner
 ## beim Einzug auseinander
 const HOUSEHOLD_START_DECO := 3
+## … bei einer Kernfigur (6.0): mehr Startdeko mit einem starken Licht-Stück – sie wird spät zum Diebstahlziel (5.10,
+## Entscheidung 2026-11-03; die Stücke stehen fest in GuestProfiles.ALL)
+const CORE_START_DECO := 5
 var _spot_rooms := {}   ## Versteck → Zimmernummer (spot_room)
 const SPAWN_SPACING := 0.6
 const CHILD_DRIFT := 4.0
@@ -528,8 +531,8 @@ func _add_member(no: String, i: int, id: String = "", restoring: bool = false) -
 	return guest
 
 
-## Eine Tür je Haushalt (6.20): die Startdeko der Erwachsenen zusammen, höchstens HOUSEHOLD_START_DECO Stück, alle im
-## Besitz des ersten Erwachsenen (household_lead) – er hält sie auch später in Schuss.
+## Eine Tür je Haushalt (6.20): die Startdeko der Erwachsenen zusammen, höchstens HOUSEHOLD_START_DECO Stück (bei einer
+## Kernfigur CORE_START_DECO), alle im Besitz des ersten Erwachsenen (household_lead) – er hält sie auch später in Schuss.
 func _household_deco(no: String) -> void:
 	var lead := household_lead(no)
 	if lead == null:
@@ -540,7 +543,7 @@ func _household_deco(no: String) -> void:
 	for g in guests:
 		if g.home["no"] == no and not g.is_child():
 			kinds.append_array(g.profile["start_deco"])
-	_place_start_deco(lead, kinds.slice(0, HOUSEHOLD_START_DECO))
+	_place_start_deco(lead, kinds.slice(0, CORE_START_DECO if lead.is_core() else HOUSEHOLD_START_DECO))
 
 
 ## Erster lebender Erwachsener eines Zimmers (Haushalt, 6.20): schmückt die Tür, kümmert sich um Lampen und Birnen –

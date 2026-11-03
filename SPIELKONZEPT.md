@@ -3248,7 +3248,14 @@ ihm.
 > - **Kisten ohne Nachschub:** Dekokiste je 15 (Lichterketten, Fledermäuse, Spinnen), Wäschekiste 8 Lakengespenster,
 >   alte Deko im Heizkeller 10 (Totenköpfe, Besen, Fledermäuse). Gäste nehmen aus jeder Kiste **höchstens ein Stück am
 >   Spieltag** – so leeren sie sich gegen die Monatsmitte, mit dem Spieler schneller. Dekokisten setzt der Zeichner
->   als „Ausstattung: Dekokiste“ in den Plan; noch steht keine darin.
+>   als „Ausstattung: Dekokiste“ in den Plan; noch steht keine darin (geprüft 2026-11-03, ebenso keine Wäschekiste –
+>   bis dahin leert sich nur die alte Deko im Heizkeller).
+> - **Mengen und Startdeko (entschieden und umgesetzt 2026-11-03, ZIM-81):** Die Mengen 15/8/10 bleiben. **Ohne Zutun
+>   des Spielers sind die Kisten um die Monatsmitte leer:** Die Gäste verteilen ihre Entnahme über den Monat – bis zum
+>   Tag d zusammen höchstens Menge × d / 15 Stück (abgerundet, dazu weiter eins am Tag), am 15. ist die Kiste leer. Was
+>   der Spieler nimmt, kommt obendrauf: Er leert sie schneller (alte Deko: nimmt er am 1. drei, ist sie am 11. leer).
+>   **Kernfiguren** (6.0) starten mit **4–5 Stück** Deko vor der Tür, darunter **ein starkes Licht** – Edna eine
+>   Lichterkette, Bruno und Mila einen brennenden geschnitzten Kürbis; spät im Monat werden sie damit zum Diebstahlziel.
 > - **Nichts Starkes mehr aus dem Nichts:** Mit leerem Koffer bringen Gäste beim Schmücken nur noch Füllmaterial
 >   (Laub, Spinnweben, Zierkürbisse); Lichterketten oben nur aus dem Koffer. Allein-Schmücken und Deko-Suche
 >   verbrauchen den Vorrat der Fundorte (mit dem Tageslimit der Kisten). Katzen bringen weiter einmal am Tag etwas.
@@ -3340,8 +3347,8 @@ ihm.
 - **Diebstahl unter Gästen:** Wird es knapp, klauen Gäste auch einander (füllt „Streit unter Gästen“, 6.16). Weil die
   Puppe relativ urteilt, macht jeder Diebstahl jemanden zum Schwächsten.
 
-**Zu klären:** Inhalt und Größe der Kisten (wann genau sie leer sind) · ob die Gäste-Startdeko für die Kernfiguren
-(6.0) größer ist.
+**Geklärt (2026-11-03, ZIM-81):** Inhalt und Größe der Kisten, wann sie leer sind, Startdeko der Kernfiguren – siehe
+oben „Mengen und Startdeko“.
 
 ### 5.11 Feuer: Deko kann brennen (entschieden 2026-10-22)
 > **Umgesetzt (2026-10-22).**

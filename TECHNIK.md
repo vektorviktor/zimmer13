@@ -1366,7 +1366,9 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 - `Social._add_households()`: je Zimmer erst Erwachsene, dann Kinder (`_add_member`); Kernfiguren als Kopie aus
   `GuestProfiles.ALL` (`placed`), die übrigen über `GuestGenerator.make_member` bzw. `make_child`, Seed fest je Person
   (`"H05/Luis".hash()`). Profil: `surname`, `household`, `member`. Ohne Datei die alte Verteilung (`_add_families`).
-- **Eine Tür je Haushalt:** Startdeko gebündelt beim `household_lead(no)`; nur er füllt die Tür auf, prüft Lampen und
+- **Eine Tür je Haushalt:** Startdeko gebündelt beim `household_lead(no)` (höchstens `HOUSEHOLD_START_DECO`, bei einer
+  Kernfigur `CORE_START_DECO` – ihre 4–5 Stück mit einem starken Licht stehen fest in `GuestProfiles.ALL`, 5.10); nur er
+  füllt die Tür auf, prüft Lampen und
   beschwert sich (`Guest.is_household_lead`). Mitbewohner klauen einander nichts. `MonsterDirector._household_factor`:
   der Deko-Anspruch wächst je weiterem Erwachsenen (`HOUSEHOLD_DEMAND`). `Guest.housemate_of` zählt als Familie.
 - **Spielstand:** Roster-Einträge mit `household` und `member`; `restore_roster` baut sie über `_add_member` neu und
@@ -1892,7 +1894,11 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   dem Beet und bremst beim Tragen (`Item.carry_speed`, `hold_offset`). Modell für Halloween- und Riesenkürbis
   (`PumpkinModel.VARIETIES`), Weißer und Hokkaido noch Grundkörper. Debug `--kuerbis[=n]`.
 - **Knappheit & Verfall** (Spielkonzept 5.10): Kisten mit starker Deko leeren sich (`runs_out`), Gäste nehmen je Kiste
-  höchstens ein Stück am Spieltag (`guest_day`, gespeichert). **Kürbisse faulen** (`ROT_KINDS`, `rot_at` im Zusatzfeld
+  höchstens ein Stück am Spieltag (`guest_day`) und bis Tag d zusammen höchstens `guest_allowance(d)` =
+  ⌊`max_uses` × d / `EMPTY_DAY`⌋ (`guest_taken`, beides gespeichert; `guest_may_take(day)`) – ohne Spieler leer um den 15.,
+  was der Spieler nimmt, kommt obendrauf (2026-11-03, ZIM-81). Debug `--kisten` rechnet je Kiste den Monat durch und zählt
+  die Startdeko der Kernfiguren. Im Plan stehen derzeit weder Dekokiste noch Wäschekiste – nur die alte Deko im
+  Heizkeller leert sich. **Kürbisse faulen** (`ROT_KINDS`, `rot_at` im Zusatzfeld
   `r=`): welk, eingefallen, weg (`_decay`). Füllmaterial zählt begrenzt (`FILLER_CAP`). Debug `--rot[=…]`.
 - **Zerplatzen, Kürbismatsch** (`item.gd` `BURST_KINDS`, `burst`, `_break`): Nur `BURST_KINDS` haben
   `_physics_process` (andere nur im Flug, siehe Werfen); ein Aufprall aus mehr als `BURST_HEIGHT` (Kerze, Birne, Tasse: `BREAK_HEIGHT`) zerbricht sie

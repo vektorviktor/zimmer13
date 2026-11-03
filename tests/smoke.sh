@@ -329,6 +329,8 @@ done <<'LIST'
 2000|knappheit,deko,gaeste|--schmuckplan=freund --trace
 2400|knappheit,deko,gaeste|--schmuckplan=tod --trace
 2400|knappheit,deko,gaeste|--schmuckplan=klau --trace
+200|knappheit,kisten,deko|--kisten
+600|kisten,speichern|--kisten --savetest
 600|welt,wetter|--weather=blitz
 600|wetter|--day=31 --uhr=23 --pos=45,0.1,-37,180 --weather=gestalt --trace
 600|wetter|--day=25 --pos=45,0.1,-37,180 --weather=blut --savetest --trace

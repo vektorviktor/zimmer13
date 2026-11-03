@@ -136,7 +136,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     dunklen Tat geht) – ältere Stände laden weiter, ihre Einträge nennen niemanden (ein Einbrecher erfährt nichts)
 ## 67: Streit unter Gästen (Spielkonzept 6.16, ZIM-33): social.quarrels – je Paar Dieb, Bestohlener, Spieltag,
 ##     Wortwechsel gewesen, schon vorher verfeindet; ältere Stände laden weiter, ohne Streit
-const VERSION := 67
+## 68: Kisten ohne Nachschub über den Monat verteilt (Spielkonzept 5.10, ZIM-81): resources.guest_taken (so viele Stück
+##     haben Gäste genommen) – ältere Stände laden weiter und zählen alles Fehlende als von Gästen genommen
+const VERSION := 68
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -686,7 +688,8 @@ func collect() -> Dictionary:
 	data["plants"] = _collect_group("pumpkin_plants", func(n: Node) -> Dictionary:
 		return {"stage": n.stage, "timer": n._timer})
 	data["resources"] = _collect_group("resource_spots", func(n: Node) -> Dictionary:
-		return {"uses": n.uses, "timer": n._timer, "guest_day": n.guest_day, "refill_day": n.refill_day})
+		return {"uses": n.uses, "timer": n._timer, "guest_day": n.guest_day, "guest_taken": n.guest_taken,
+			"refill_day": n.refill_day})
 	data["lamps"] = _collect_group("lamp_fixtures", func(n: Node) -> Dictionary: return n.save_state())
 	data["fixed_candles"] = _collect_group("fixed_candles", func(n: Node) -> Dictionary: return n.save_state())
 	data["switches"] = _collect_group("light_switches", func(n: Node) -> Dictionary: return n.save_state())
@@ -772,6 +775,7 @@ func apply(data: Dictionary) -> void:
 		n.uses = int(d["uses"])
 		n._timer = float(d["timer"])
 		n.guest_day = int(d.get("guest_day", 0))
+		n.guest_taken = int(d.get("guest_taken", maxi(0, n.max_uses - n.uses)))   # vor 68: alles Fehlende
 		n.refill_day = int(d.get("refill_day", 0))
 		n._update_visual())
 	_apply_group("light_switches", data.get("switches", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))

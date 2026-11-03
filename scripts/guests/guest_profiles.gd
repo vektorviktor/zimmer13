@@ -22,7 +22,7 @@ const ALL := {
 		"harvester": false, "carver": false,
 		"likes": [Item.Kind.CANDLE, Item.Kind.LEAVES],
 		"stock": {Item.Kind.CANDLE: 4, Item.Kind.COBWEB: 1, Item.Kind.SWEETS: 2, Item.Kind.MINI_PUMPKIN: 1},   # Süßigkeiten für die Kinder (6.13)
-		"start_deco": [Item.Kind.CANDLE, Item.Kind.LEAVES],
+		"start_deco": [Item.Kind.LIGHT_STRING, Item.Kind.CANDLE, Item.Kind.SHEET_GHOST, Item.Kind.LEAVES],   # Kernfigur: 4–5 Stück, ein starkes Licht (5.10)
 		"activities": {"room": 3.0, "lobby": 4.0, "kitchen": 2.0, "garden": 0.5, "wander": 0.5, "bar": 0.7},
 		"money": 12,
 		"reliable": 0.5, "clothing": "Ednas Strickschal", "shock": "flee",
@@ -79,7 +79,7 @@ const ALL := {
 		"harvester": true, "carver": false,
 		"likes": [Item.Kind.CARVED_PUMPKIN, Item.Kind.KNIFE],
 		"stock": {Item.Kind.PUMPKIN: 2, Item.Kind.CARVED_PUMPKIN: 1, Item.Kind.LEAVES: 3, Item.Kind.SWEETS: 3, Item.Kind.LIGHT_STRING: 2, Item.Kind.SKULL: 1},
-		"start_deco": [Item.Kind.CARVED_PUMPKIN],
+		"start_deco": [Item.Kind.CARVED_PUMPKIN, Item.Kind.BROOM, Item.Kind.BAT_GARLAND, Item.Kind.CANDLE, Item.Kind.LEAVES],
 		"activities": {"room": 3.0, "lobby": 2.0, "kitchen": 1.0, "garden": 2.0, "wander": 1.0, "bar": 3.0},
 		"money": 30,
 		"reliable": 0.9, "clothing": "Brunos Hut", "shock": "freeze",
@@ -136,7 +136,7 @@ const ALL := {
 		"harvester": true, "carver": true,
 		"likes": [Item.Kind.PUMPKIN, Item.Kind.COBWEB],
 		"stock": {Item.Kind.CARVED_PUMPKIN: 2, Item.Kind.PUMPKIN: 1, Item.Kind.SHEET_GHOST: 1, Item.Kind.MINI_PUMPKIN: 2, Item.Kind.BAT_GARLAND: 1},
-		"start_deco": [Item.Kind.CARVED_PUMPKIN, Item.Kind.SHEET_GHOST],
+		"start_deco": [Item.Kind.CARVED_PUMPKIN, Item.Kind.SHEET_GHOST, Item.Kind.BAT_GARLAND, Item.Kind.MINI_PUMPKIN],
 		"activities": {"room": 2.0, "lobby": 3.0, "kitchen": 1.0, "garden": 3.0, "wander": 1.0, "bar": 1.5},
 		"money": 8,
 		"reliable": 0.65, "clothing": "Milas Halstuch", "shock": "cry",

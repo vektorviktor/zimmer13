@@ -4,10 +4,15 @@ extends StaticBody3D
 ## dunklen Ecken, Kerzenvorrat in der Küche, Lakengespenster in der Wäschekiste, Lichterketten
 ## in der Dekokiste (Spielkonzept 5.6), alte Deko im Keller (5.7), Getränkedosen in Kühlraum und Lager und – für Geld –
 ## auf der Bartheke (3.2), ebenso Tassen Kaffee und Tee (3.11, 3.12). Begrenzter Vorrat, wächst langsam nach – außer in den Kisten mit starker Deko
-## (regen_time 0, Spielkonzept 5.10): Die leeren sich, und Gäste nehmen aus jeder höchstens ein Stück am Spieltag.
+## (regen_time 0, Spielkonzept 5.10): Die leeren sich, und Gäste nehmen aus jeder höchstens ein Stück am Spieltag –
+## über den Monat verteilt, sodass sie ohne den Spieler um die Monatsmitte (EMPTY_DAY) leer sind; was er nimmt, kommt
+## obendrauf (Entscheidung 2026-11-03).
 ## Mit `pool` gibt es abwechselnd verschiedene Dinge (Dekokiste, alte Deko); `kind` bestimmt nur das Aussehen.
 ## Brotkrumen für die Krähen (4.25): Kürbiskerne mit Zusatz „brot“ (`extra`), dazu Brett und Brotlaib.
 ## Spinnweben: lokale +Z zeigt von der Wand weg.
+
+## Kisten ohne Nachschub: an diesem Spieltag sind sie ohne den Spieler leer (Monatsmitte, Spielkonzept 5.10)
+const EMPTY_DAY := 15
 
 var kind: Item.Kind = Item.Kind.LEAVES
 var label := ""
@@ -19,8 +24,10 @@ var pool: Array = []
 var extra := ""
 ## Kostet so viel Geld je Stück (0 = umsonst)
 var price := 0
-## Kiste ohne Nachschub: Spieltag, an dem zuletzt ein Gast etwas genommen hat (gespeichert)
+## Kiste ohne Nachschub: Spieltag, an dem zuletzt ein Gast etwas genommen hat, und wie viele Stück Gäste insgesamt
+## genommen haben (beides gespeichert)
 var guest_day := 0
+var guest_taken := 0
 ## Kerzenvorrat (Spielkonzept 5.12): wächst nicht laufend nach, sondern füllt sich morgens auf – auf halb so viele
 ## Stück, wie Zimmer bewohnt sind (MonsterDirector.inhabited_rooms). refill_day = Spieltag der letzten Füllung (gespeichert).
 var morning_refill := false
@@ -223,9 +230,24 @@ func runs_out() -> bool:
 	return regen_time <= 0.0
 
 
-## Darf ein Gast jetzt etwas nehmen? Aus einer Kiste ohne Nachschub nur ein Stück am Spieltag.
+## Kisten ohne Nachschub (5.10): Bis einschließlich Spieltag `day` dürfen Gäste zusammen höchstens so viele Stück
+## genommen haben – gleichmäßig verteilt bis EMPTY_DAY, abgerundet (kleine Kisten geben am 1. noch nichts her).
+func guest_allowance(day: int) -> int:
+	var span := float(EMPTY_DAY - Calendar.FIRST_DAY + 1)
+	return mini(max_uses, floori(float(max_uses) * float(day - Calendar.FIRST_DAY + 1) / span))
+
+
+## Darf ein Gast jetzt etwas nehmen? Aus einer Kiste ohne Nachschub nur ein Stück am Spieltag und nicht mehr, als bis
+## heute für die Gäste vorgesehen ist (guest_allowance).
 func guest_can_take() -> bool:
-	return uses > 0 and (not runs_out() or guest_day != Calendar.today())
+	return guest_may_take(Calendar.today())
+
+
+## Wie guest_can_take an Spieltag `day` (Debug --kisten rechnet damit den Monat durch).
+func guest_may_take(day: int) -> bool:
+	if uses <= 0:
+		return false
+	return not runs_out() or (guest_day != day and guest_taken < guest_allowance(day))
 
 
 ## Ein Stück für den Spieler, ohne Gegenstand (er bekommt ihn geteilt, DecoSearch). false = leer.
@@ -244,6 +266,7 @@ func guest_consume() -> bool:
 		return false
 	if runs_out():
 		guest_day = Calendar.today()
+		guest_taken += 1
 	uses -= 1
 	_update_visual()
 	return true

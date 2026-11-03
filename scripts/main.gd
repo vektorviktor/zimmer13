@@ -91,6 +91,8 @@ extends Node3D
 ##                               Beziehungsbudget, Geschenke nach Wert, Beruhigen und Vergebung durch (--trace „[Budget]“)
 ##   --neid[=id]                 Neid der Türnachbarn (6.18, 5): Kisten leer, vier Kürbisse vor Zimmer 13 – ein Morgen läuft,
 ##                               dann Untergrenze, Freund, spitzer Satz beim Vorbeigehen und im Gespräch (--trace „[Neid]“)
+##   --kisten                    Knappheit (5.10): rechnet je Kiste ohne Nachschub den Monat durch (ohne Spieler leer um den 15.,
+##                               mit dem Spieler früher) und zählt die Startdeko der Kernfiguren – „[Kisten] … ok“ bzw. „FEHLER“
 ##   --streit=dieb,opfer[,gesehen|freund|versoehnen|verblassen|halten]  Streit unter Gästen nach einem Diebstahl (6.16):
 ##                               beide stehen vor dir; gesehen – Opfer sieht es, Wortwechsel, danach meiden; freund – ein
 ##                               Freund erzählt es ihm; versoehnen – du vermittelst; verblassen – nach 3 Tagen; halten – nur
@@ -2064,6 +2066,8 @@ func run_debug(arg: String) -> bool:
 		_debug_net(_arg_parts(arg, "--netz"))
 	elif arg.begins_with("--budget="):
 		_debug_budget(_arg_parts(arg, "--budget"))
+	elif arg == "--kisten":
+		get_tree().create_timer(1.0, false).timeout.connect(_debug_boxes)
 	elif arg.begins_with("--streit="):
 		Game.social.quarrels.debug(_arg_parts(arg, "--streit"))
 	elif arg == "--neid" or arg.begins_with("--neid="):
@@ -3353,6 +3357,47 @@ func _debug_budget(parts: PackedStringArray) -> void:
 		Game.social._update_forgiveness()
 		check.call("frische Tat: keine Vergebung", Game.social.deed(g, "hostile") == Social.FEUD_HOSTILE - 1)
 		g.relation = 0.0)
+
+
+## --kisten: Kisten ohne Nachschub und Startdeko der Kernfiguren (Spielkonzept 5.10, Entscheidung 2026-11-03). Je Kiste
+## wird der Monat mit einer frischen Kiste gleicher Größe durchgerechnet: Gäste nehmen, wann immer sie dürfen – leer
+## zwischen ResourceSpot.EMPTY_DAY − 1 und + 1; nimmt der Spieler am 1. drei Stück, früher. Dann je Kernfigur 4–5 Stück
+## eigene Deko vor der Tür, darunter ein starkes Licht (brennender Kürbis, Totenkopf mit Kerze, Lichterkette).
+func _debug_boxes() -> void:
+	var check := func(what: String, ok: bool) -> void:
+		print("[Kisten] %s: %s" % [what, "ok" if ok else "FEHLER"])
+	var sizes := {}
+	for node in get_tree().get_nodes_in_group("resource_spots"):
+		var spot := node as ResourceSpot
+		if spot.runs_out():
+			sizes[spot.label + " (%d)" % spot.max_uses] = spot.max_uses
+	if sizes.is_empty():
+		print("[Kisten] keine Kiste ohne Nachschub im Hotel")
+	for label: String in sizes:
+		var empty := [0, 0]
+		for player_takes in [0, 3]:
+			var box := ResourceSpot.new().setup(Item.Kind.BROOM, label, int(sizes[label]), 0.0)
+			box.uses -= player_takes
+			for day in range(Calendar.FIRST_DAY, Calendar.HALLOWEEN + 1):
+				if box.guest_may_take(day):   # wie guest_consume, nur ohne die Uhr
+					box.guest_day = day
+					box.guest_taken += 1
+					box.uses -= 1
+				if box.uses <= 0:
+					empty[1 if player_takes > 0 else 0] = day
+					break
+			box.free()
+		check.call("%s ohne Spieler leer am %d." % [label, empty[0]], absi(empty[0] - ResourceSpot.EMPTY_DAY) <= 1)
+		check.call("%s mit 3 Stück vom Spieler leer am %d." % [label, empty[1]], empty[1] > 0 and empty[1] < empty[0])
+	for id in GuestProfiles.ALL:
+		var g := Game.social.find_guest(id)
+		if g == null:
+			continue
+		var mine := g.own_deco_near_door()
+		var strong := mine.filter(func(i: Item) -> bool:
+			return i.lit and i.kind in [Item.Kind.CARVED_PUMPKIN, Item.Kind.SKULL] or i.kind == Item.Kind.LIGHT_STRING)
+		check.call("%s: %d Stück Startdeko, starkes Licht %d (%s)" % [g.display_name, mine.size(), strong.size(),
+			", ".join(mine.map(func(i: Item) -> String: return i.display_name))], mine.size() >= 4 and mine.size() <= 5 and not strong.is_empty())
 
 
 ## --neid[=id]: Neid der Türnachbarn (Spielkonzept 6.18, 5) – Kisten leer, vier erloschene Kürbisse vor Zimmer 13, die Deko vor der Tür
