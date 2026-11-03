@@ -2454,7 +2454,8 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   Zimmer eines Spiegels über `_home_of` (1 m unter der Mitte abgefragt – `LevelBuilder._level_of` kennt nur 1,5 m);
   Gestalt im Spiegel auf `PlayerBody.LAYER` (nur im Spiegel sichtbar), `FIGURE_TIME`.
 - **`PowerCut`:** `FlickerLight.brownout` → `FlickerLight.power_off`, Sicherungskasten `FuseBox` im Untergeschoss,
-  sonst nach `RESTORE` Stunden. Höchstens einmal je Spieltag, nur mit Gewitter.
+  sonst nach `RESTORE` Stunden. Höchstens einmal je Spieltag, nur mit Gewitter. Telefone hängen daran über
+  `PhoneCalls.is_dead()` (siehe Telefone).
 - **`Nightmare`:** einmal ab `FROM_DAY` im eigenen Bett; Post-Shader-Modus `dream`, während des Traums
   `MonsterDirector.other_threat_active`, kein Zeitsprung, `SaveManager.can_save` gesperrt.
 - **`Scarecrow`:** Lage aus dem Kalender (`FAR` → Lobby-Gartentür), springt nur ungesehen. Grundkörper.
@@ -2578,7 +2579,9 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   Mut < `PANIC_BRAVE`) ruft zuerst und auch in der Nachtruhe, Pause `PANIC_COOLDOWN`, zur Not den nächsten Nachbarn,
   der abnimmt; Angst steckt an (`PANIC_FEAR`), der Anrufer wird ruhiger. Eingehend für Zimmer 13 Art `"panic"`
   (beruhigen: Angst −25, `Talk.friendly` 1,5, nicht nach selbst geschürter Angst; Plaudern am Telefon ebenfalls über
-  `Talk.friendly`, Gespräche zählen zur Gesprächsbereitschaft, 6.18, 5). Debug `--gastanruf`, `--call=id,panik`. Telefonzentrale fehlt (4.14).
+  `Talk.friendly`, Gespräche zählen zur Gesprächsbereitschaft, 6.18, 5). Debug `--gastanruf`, `--call=id,panik`. Keine Zentrale (4.14): `PhoneCalls.is_dead()` = `PowerCut.off` – dann läuft
+  `_process` nicht weiter, `_line_dies` beendet Klingeln, Gäste-Anrufe und Gespräche („Die Leitung ist tot“),
+  `open_dial` gibt kein Freizeichen, `kid_prank`/`decorate_call` lehnen ab. Debug `--strom=telefon`.
 - **Spieltische** (`minigames/`): `TableMatch` (CanvasLayer 15) = Basis von `DiceMatch`, `ChessMatch`, `DartMatch` und `BowlingMatch`
   (Hooks `_table`, `_gear`, `_on_seated`, `_update_game`, `_stop`, `_take_places`/`_leave_places` – Standard: hinsetzen,
   Maus frei); Einsätze über `TableStakes`. Ob gerade eins läuft: `Game.table_game_active()` (Autosave, Herausforderungen,

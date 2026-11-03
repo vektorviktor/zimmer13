@@ -419,6 +419,7 @@ extends Node3D
 ##   --kesselkatze               Nacht, Kellergang: die schwarze Kesselkatze sitzt 5 m vor dir – sieh hin, sie geht voraus
 ##   --spiegel[=tuch]            vor dem Spiegel in Zimmer 13, nach 2 s steht die Gestalt hinter dir · tuch: er ist verhängt
 ##   --strom[=kasten]            Gewitter, gleich fliegt die Sicherung · kasten: Strom aus, du vor dem Sicherungskasten im UG
+##   --strom=telefon             Strom aus, ein Anruf und der Hörer bleiben tot; nach 4 s Sicherung rein, jetzt klingelt es
 ##   --albtraum                  Nacht am 16., du schläfst in Zimmer 13 ein – nach 3 s der Traum vom Heizkeller 1987
 ##   --vogelscheuche[=tag]       sie steht, wo sie an Halloween (bzw. an diesem Tag) stünde, du in der Lobby vor der Gartentür
 ##   --kind-zu-viel              der 28. abends, ein Kind vor deiner offenen Tür – und eins zu viel dahinter

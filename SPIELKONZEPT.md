@@ -1810,7 +1810,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 ### 4.14 Zimmertelefone (vorgemerkt 2026-10-11)
 > **Im Prototyp umgesetzt (2026-10-11):** Telefon in jedem Zimmer (außer Wäscherei), Haupttelefon mit Gästeverzeichnis an der Rezeption (Nummer 0). Anrufe für Zimmer 13: Freunde warnen (nicht immer richtig), Feinde lügen, Bekannte plaudern oder laden zur Feier ein, unheimliche Anrufe (Atmen aus einem leeren Zimmer oder Zimmer 18, Stimme eines Verschwundenen, es steht vor der Tür) – danach liegt dort ein Hörer daneben. Selbst anrufen: plaudern (halbe Beziehung), nach dem Monster fragen, einladen; Klingeln ist Lärm im Zielzimmer; Telefonstreiche sprechen sich herum; in leeren Zimmern nimmt manchmal doch jemand ab. Hörer daneben legen. Ferne Telefone klingeln als Atmosphäre (und Lärm).
 > **Umgesetzt (2026-10-28):** Gäste rufen sich gegenseitig an – Freunde erzählen sich Geschichten über jede Entfernung (Gerüchte verbreiten sich schneller), jedes Klingeln ist Lärm im Zielzimmer. Ängstliche Gäste rufen in großer Angst in Panik herum, auch nachts und auch bei dir (beruhigen oder auflegen), und stecken den Angerufenen mit ihrer Angst an.
-> **Noch nicht:** Telefonzentrale (siehe „Zu klären“).
+> **Entschieden und umgesetzt (2026-11-03, ZIM-55):** Keine eigene Telefonzentrale – die Telefone gehen von Anfang an. Der Stromausfall (4.28) legt sie still, bis die Sicherung wieder drin ist: kein Freizeichen, kein Klingeln (auch keine Anrufe der Gäste untereinander), laufende Gespräche brechen mit einem Knacken ab. Kein Mithören.
 
 **Grundidee:** In jedem Zimmer steht ein altes **Wählscheibentelefon**, an der Rezeption der Hauptapparat mit der Zimmerliste. Das Telefon verbindet das Klopfen (4.13), das Ablenken (4.11) und die Beziehungen zu den Gästen (6.2) – mit wenig neuer Technik.
 
@@ -1835,9 +1835,6 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 - Der **reparierte Fahrstuhl** hat ein Notruftelefon in der Kabine (7.4), das manchmal klingelt, wenn niemand darin ist.
 
 - Telefonate nutzen das bestehende Dialogsystem mit eigenen Sätzen, kein Freitext.
-
-**Zu klären**
-- Funktionieren die Telefone von Anfang an, oder muss erst die Telefonzentrale an der Rezeption eingeschaltet werden?
 
 ### 4.15 Lärm & Sichtbarkeit – ein gemeinsames System (entschieden 2026-10-11)
 > **Im Prototyp umgesetzt (2026-10-11):** Alle Werte stehen in `scripts/util/senses.gd`. Jedes Geräusch in der Welt läuft über einen Einstieg (`Game.noise`) und ist zugleich Lärm nach der Tabelle unten. Gedämpft wird über Sichtlinien-Strahlen: Wände ×0,4, geschlossene Türen (und klares Glas) ×0,6, je Geschossdecke ×0,3. Das Monster geht in Hörweite nachsehen, bis zur doppelten Hörweite wird es neugierig (0,25 Neugier je Meter Hörweite), ruhend zählt nur Lautes ab 8 m. Gäste hören erschreckende Geräusche (Schrei, aufgerissene Tür oder Schrank, platzende Birne) mit halber Reichweite: Angst steigt, ängstliche verstecken sich in Panik, mutige gehen nachsehen, die anderen erzählen davon („Hast du das gehört?“, nicht immer mit dem richtigen Ort). Gäste in Panik machen beim Rennen Lärm. Sehen: eine Rechnung für Jagd, „beim Verstecken gesehen“ und Zeugen beim Klauen, mit eigenem Licht in der Hand.
@@ -2706,7 +2703,9 @@ noch (das Kesselfeuer im Heizraum entfällt mit 7.4, 2026-10-27).
   mit Gewitter. Gäste erschrecken und rufen nach Kerzen.
 - **Wieder Strom:** am **Sicherungskasten im Untergeschoss** die Sicherung einlegen ([E], Lärm) – mitten durchs dunkle
   Haus hinunter. Sonst kommt er nach ein paar Stunden von selbst wieder; wer das tut, weiß niemand (2.5).
-- Gespeichert: ob der Strom aus ist, bis wann, und der Tag des letzten Ausfalls. Debug: `--strom`.
+- **Auch die Telefone sind tot** (4.14, entschieden 2026-11-03, ZIM-55): kein Freizeichen, kein Klingeln, laufende
+  Gespräche brechen ab – bis der Strom wieder da ist. Keine Warnung von Freunden, aber auch kein Klingeln im Versteck.
+- Gespeichert: ob der Strom aus ist, bis wann, und der Tag des letzten Ausfalls. Debug: `--strom`, `--strom=telefon`.
 
 ### 4.29 Der Albtraum von 1987 (entschieden und umgesetzt 2026-10-25)
 Einmal im Spiel, nicht in den ersten Tagen, schläft man nachts im eigenen Bett ein – und steht im **Heizkeller,

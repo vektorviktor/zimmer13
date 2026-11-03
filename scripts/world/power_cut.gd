@@ -136,11 +136,30 @@ func _set_off(value: bool, announce: bool) -> void:
 		get_tree().create_timer(1.2, false).timeout.connect(func() -> void: FlickerLight.brownout = 0.0)
 
 
-## Debug (--strom[=kasten]): es gewittert, der erste Angriff gilt als geschehen, gleich fliegt die Sicherung · kasten: du
-## stehst vor dem Sicherungskasten im Untergeschoss, der Strom ist schon aus.
+## Debug (--strom[=kasten|telefon]): es gewittert, der erste Angriff gilt als geschehen, gleich fliegt die Sicherung ·
+## kasten: du stehst vor dem Sicherungskasten im Untergeschoss, der Strom ist schon aus · telefon: Strom aus, Edna ruft
+## an und du nimmst den Hörer ab – beides muss tot sein; nach 4 s Sicherung rein, Edna ruft noch einmal an – jetzt
+## klingelt es (ZIM-55). Jede Prüfung meldet „[Telefon] … ok“ bzw. „FEHLER“.
 func debug(what: String) -> void:
 	Game.director.first_attack_done = true
 	_last_day = 0
+	if what == "telefon":
+		_until = Game.director.elapsed + RESTORE.y * Calendar.HOUR
+		_set_off(true, false)
+		var phones := Game.phones
+		var check := func(text: String, ok: bool) -> void:
+			print("[Telefon] %s: %s" % [text, "ok" if ok else "FEHLER"])
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: phones.debug_call("edna"))
+		get_tree().create_timer(2.5, false).timeout.connect(func() -> void:
+			check.call("ohne Strom klingelt nichts", not phones.home_phone.ringing)
+			phones.open_dial(phones.home_phone)
+			check.call("ohne Strom kein Freizeichen", not phones.is_busy()))
+		get_tree().create_timer(4.0, false).timeout.connect(func() -> void:
+			restore(true)
+			phones.debug_call("edna"))
+		get_tree().create_timer(5.0, false).timeout.connect(func() -> void:
+			check.call("mit Strom klingelt es wieder", phones.home_phone.ringing))
+		return
 	if what == "kasten":
 		_until = Game.director.elapsed + RESTORE.y * Calendar.HOUR
 		_set_off(true, false)

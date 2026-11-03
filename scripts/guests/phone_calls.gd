@@ -10,6 +10,8 @@ extends Node
 ##     aber dann erreicht einen auch keine Warnung.
 ##   · Gäste rufen sich gegenseitig an: Freunde erzählen sich Geschichten über jede Entfernung (Gerüchte
 ##     verbreiten sich schneller), ängstliche Gäste rufen in Panik herum – auch dich. Jedes Klingeln ist Lärm.
+##   · Keine Zentrale: Die Telefone gehen von Anfang an. Der Stromausfall (4.28, PowerCut) legt sie still, bis die
+##     Sicherung wieder drin ist – kein Freizeichen, kein Klingeln, laufende Gespräche brechen ab (ZIM-55).
 
 # --- Tuning -------------------------------------------------------------------
 const RING_INTERVAL := 3.0
@@ -99,9 +101,32 @@ func _process(delta: float) -> void:
 	_time += delta
 	if Game.game_over:
 		return
+	if is_dead():
+		if not (_incoming.is_empty() and _outgoing.is_empty() and _ambient.is_empty() and _talk.is_empty()):
+			_line_dies()
+		return
 	_update_incoming(delta)
 	_update_outgoing(delta)
 	_update_ambient(delta)
+
+
+## Ohne Strom sind alle Leitungen tot (Stromausfall, 4.28).
+func is_dead() -> bool:
+	return Game.power_cut != null and Game.power_cut.off
+
+
+## Der Strom fällt mitten im Klingeln oder Gespräch aus: alles verstummt, wer den Hörer in der Hand hat, hört es knacken.
+func _line_dies() -> void:
+	_end_incoming()
+	if not _ambient.is_empty():
+		(_ambient["phone"] as HotelPhone).ringing = false
+		_ambient = {}
+	var talking := is_busy() and (not _outgoing.is_empty() or not _talk.is_empty())
+	_end_call()
+	if talking:
+		ui.show_page(ui.title(), "Ein Knacken – die Leitung ist tot.", [["Auflegen", hang_up]])
+	if Game.tracing:
+		print("[Telefon] Stromausfall: die Leitung ist tot")
 
 
 # --- Klingeln ---------------------------------------------------------------------------
@@ -395,6 +420,12 @@ func _leave_receiver(room: String) -> void:
 
 func open_dial(phone: HotelPhone) -> void:
 	if is_busy():
+		return
+	if is_dead():
+		Game.noise("handset", phone.global_position, Game.player)
+		Game.say("Du nimmst den Hörer ab – kein Freizeichen. Ohne Strom ist die Leitung tot.", 3.0)
+		if Game.tracing:
+			print("[Telefon] kein Freizeichen (Stromausfall)")
 		return
 	_take_line(phone)
 	_show_dial(phone)
@@ -796,7 +827,7 @@ func _after(id: int, seconds: float, fn: Callable) -> void:
 ## Klingelstreich eines Kindes (Süßes oder Saures, Spielkonzept 6.13): Zimmer 13 klingelt, am anderen Ende
 ## kichert es nur. false, wenn das Telefon gerade nicht klingeln kann.
 func kid_prank(guest: Guest) -> bool:
-	if home_phone == null or home_phone.off_hook or is_busy():
+	if home_phone == null or home_phone.off_hook or is_busy() or is_dead():
 		return false
 	start_incoming({"kind": "kid_prank", "guest": guest, "room": guest.home["no"]})
 	return true
@@ -805,7 +836,7 @@ func kid_prank(guest: Guest) -> bool:
 ## Einladung zur Schmück-Aktion (Spielkonzept 5.9): where wie „den Südflur (Ostflügel)“. false, wenn das Telefon
 ## gerade nicht klingeln kann – dann kommt die Einladung als Meldung.
 func decorate_call(guest: Guest, where: String) -> bool:
-	if home_phone == null or home_phone.off_hook or is_busy() or not _incoming.is_empty():
+	if home_phone == null or home_phone.off_hook or is_busy() or is_dead() or not _incoming.is_empty():
 		return false
 	start_incoming({"kind": "decorate", "guest": guest, "room": guest.home["no"], "where": where})
 	return true

@@ -290,8 +290,9 @@ done <<'LIST'
 400|bilder|--bilder=alle --trace
 600|halloween,spuk|--spiegel --trace
 600|halloween,spuk,speichern|--spiegel=tuch --savetest
-900|halloween,spuk,licht|--strom --trace
-600|halloween,spuk,licht,speichern|--strom=kasten --savetest
+900|halloween,spuk,licht,strom|--strom --trace
+600|halloween,spuk,licht,speichern,strom|--strom=kasten --savetest
+600|telefon,strom|--strom=telefon --trace
 1500|halloween,spuk,schlaf|--albtraum --trace
 600|halloween,spuk|--vogelscheuche --trace
 900|halloween,spuk,kinder|--kind-zu-viel --trace
