@@ -77,15 +77,15 @@ func _process(delta: float) -> void:
 
 # --- Die beiden Gäste --------------------------------------------------------------------------
 
-## IDs der beiden Gäste: erwachsene Hausbewohner (6.20) ohne Kernrolle, nicht Gustav, mit Außenfenster oder Fenstertür
-## im Zimmer und ohne Kernfigur im selben Zimmer (Ednas Salz schützte sie sonst gleich mit) – geordnet nach einem Wert
+## IDs der beiden Gäste: erwachsene Hausbewohner (6.20) ohne Kernrolle und ohne Schutz (CoreRoles, 6.17), nicht Gustav,
+## mit Außenfenster oder Fenstertür im Zimmer und ohne Kernfigur im selben Zimmer (Ednas Salz schützte sie sonst gleich mit) – geordnet nach einem Wert
 ## aus ihrer festen Identität (gen_seed), kein Zufall.
 func chosen() -> Array[String]:
 	if _ids.is_empty():
 		var list: Array[Guest] = []
 		for guest in Game.social.guests:
 			var g: Guest = guest
-			if g.gen_seed >= 0 and g.profile.has("household") and not g.is_child() and not g.is_core() \
+			if g.gen_seed >= 0 and g.profile.has("household") and not g.is_child() and CoreRoles.role_of(g) == "" \
 					and not Grinch.is_grinch(g) and window_of(g) != null and not _with_core(g):
 				list.append(g)
 		list.sort_custom(func(a: Guest, b: Guest) -> bool:
@@ -221,6 +221,9 @@ func _resolve_asleep(g: Guest, window: Node3D, kill: bool) -> void:
 			print("[Kreisen] das Salz hält ihn von %s fern" % g.display_name)
 		return
 	_wake(g)
+	if g.is_protected():   # geschützte Kernfigur (6.17): reißt sich los, Würgemale
+		g.wound_by("choke")
+		return
 	Game.director.guest_slain(g, "ghost")
 
 
@@ -312,7 +315,7 @@ func debug(parts: PackedStringArray) -> void:
 		var s := sign_day(i)
 		print("[Kreisen] %d. %s (%s, Zimmer %s): Zeichen in der Nacht nach dem %d. – %s, Würgen %s" % [i + 1, g.display_name,
 			g.id, g.home["no"], s, Calendar.time_text(visit_window(i, s).x), Calendar.date_text(visit_window(i, s + 1).x)])
-		check.call("%s erwachsen, keine Kernrolle, mit Fenster" % g.display_name, not g.is_child() and not g.is_core() and window_of(g) != null)
+		check.call("%s erwachsen, keine Kernrolle, mit Fenster" % g.display_name, not g.is_child() and CoreRoles.role_of(g) == "" and window_of(g) != null)
 		check.call("%d. in der %s Monatshälfte" % [i + 1, "ersten" if i == 0 else "zweiten"],
 			(s + 1 <= 15) if i == 0 else (s >= 16 and s + 1 < Calendar.HALLOWEEN))
 	if what == "liste" or ids.size() < COUNT:

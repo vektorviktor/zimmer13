@@ -1558,7 +1558,7 @@ func inhabited_rooms() -> Array[String]:
 	return result
 
 
-## Türen, vor die die Puppe sich setzt (4.33): Zimmer 13 und Zimmer mit einem Erwachsenen, der keine Kernfigur ist –
+## Türen, vor die die Puppe sich setzt (4.33): Zimmer 13 und Zimmer mit einem Erwachsenen, der keine geschützte Kernfigur ist –
 ## nur, wenn das Monster ihre Tür vom Keller aus erreicht.
 func judgeable_rooms() -> Array[String]:
 	var result: Array[String] = []
@@ -1569,7 +1569,7 @@ func judgeable_rooms() -> Array[String]:
 
 
 ## Wen das Urteil über dieses Zimmer trifft (4.33): in Zimmer 13 den Spieler, sonst den erwachsenen Bewohner mit der
-## höchsten Schwäche (4.18), bei Gleichstand einen zufälligen – nie Kinder oder Kernfiguren. null = niemand.
+## höchsten Schwäche (4.18), bei Gleichstand einen zufälligen – nie Kinder oder geschützte Kernfiguren (6.17). null = niemand.
 func _condemned_in(no: String):
 	if no == "":
 		return null
@@ -1581,7 +1581,7 @@ func _condemned_in(no: String):
 	var most := -INF
 	for guest in Game.social.living_guests():
 		var g: Guest = guest
-		if String(g.home["no"]) != no or g.is_child() or g.is_core():
+		if String(g.home["no"]) != no or g.is_child() or g.is_protected():
 			continue
 		var w := g.weakness()
 		if w > most + 0.001:
@@ -1868,7 +1868,7 @@ func kill_guest(guest, spot: HideSpot) -> void:
 		_raid_kills += 1
 	if mode == Mode.JUDGMENT:
 		_judged = true
-	if Wounds.survives(guest):   # Kernfiguren immer
+	if Wounds.survives(guest):   # geschützte Kernfiguren immer (6.17)
 		# Er reißt sich los, als es ihn wegschleppen will (Spielkonzept 6.17): verletzt, aber am Leben
 		if Game.tracing:
 			print("[Losgerissen] %s (%s) · noch %d Opfer" % [guest.display_name, MODE_NAMES[mode], victims_left])

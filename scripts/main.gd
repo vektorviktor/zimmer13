@@ -201,6 +201,9 @@ extends Node3D
 ##   --buero=pruefen             Schlösser und Wege ins Sekretariat und Büro (ZIM-6): Türen, Sekretariatsschlüssel am
 ##                               Sicherungskasten, Zahlenschloss mit Generalschlüssel, Marions Hinweis, Josefs Bund am
 ##                               Kessel – „[Büro] … ok/FEHLER“, zuletzt „[Büro] Prüfung fertig“
+##   --kernschutz                Schutz der Kernfiguren, bis ihre Rolle erfüllt ist (6.17, ZIM-120): wer geschützt ist,
+##                               Überleben bei Leviathan und Lakengeist, kein Urteil, Ende über die Marken –
+##                               „[Kernschutz] … ok/FEHLER“, zuletzt „[Kernschutz] Prüfung fertig“
 ##   --regale[=nah]              in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
 ##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen);
 ##                               nah: dicht vor die Bücher (ZIM-153); meldet „[Bücher] …“ (Zahl der Bücher und MultiMeshes)
@@ -361,7 +364,7 @@ extends Node3D
 ##   --follow=id · --visit=id    Gast kommt mit (steht hinter dir) · Gast geht zu Zimmer 13 und klopft an
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
-##   --kill=id[,geist|kuerbis]   Gast nach 3 s vom Monster holen lassen (überlebt mit 20 %, Kernfiguren immer: Kratzer, 6.17) · geist/kuerbis:
+##   --kill=id[,geist|kuerbis]   Gast nach 3 s vom Monster holen lassen (überlebt mit 20 %, geschützte Kernfiguren immer: Kratzer, 6.17) · geist/kuerbis:
 ##                               nach 1,5 s vor dir erwürgt bzw. erschlagen, die Leiche bleibt liegen (Totenkopf)
 ##   --kill=id,leiche|weg[,blut][,hin]   sofort tot, ohne Monster: liegt da bzw. ist verschwunden (Kratzer, Schuh) · blut:
 ##                               Lache und Wandspritzer (ohneblut: auch beim Kürbismann keins) · hin: 1,3 m vor dir
@@ -1470,6 +1473,8 @@ func run_debug(arg: String) -> bool:
 		var front := door.global_transform.basis.z   # Aufgehseite: Bänder und Kastenschloss
 		TeleportUI.place_player(door.global_transform * Vector3(door.width / 2.0, 0, 0) + front * 2.2, -front)
 		Game.player.head.rotation.x = deg_to_rad(-12.0)   # die Tür ist niedrig
+	elif arg == "--kernschutz":
+		return _debug_core_protection()
 	elif _is_arg(arg, "--buero"):
 		var opts := _arg_parts(arg, "--buero")
 		if opts.has("pruefen"):
@@ -4574,6 +4579,91 @@ func _debug_office_check() -> bool:
 	]
 	for i in steps.size():
 		get_tree().create_timer(1.0 + i).timeout.connect(steps[i])
+	return true
+
+
+## Debug --kernschutz (Spielkonzept 6.17, 4.33; ZIM-120): Geschützt sind Bruno, Edna, Mila, Marion, Liesel und Oskar,
+## nicht Hugo und nicht die übrigen Gäste; Geschützte überleben jeden Angriff (Wounds.survives, der Leviathan packt –
+## Kratzer, der Lakengeist würgt im Schlaf – Würgemale) und werden nicht verurteilt. Dann endet der Schutz: Bruno über
+## die Marke als Schlüssel (Hauptsicherung, ZIM-4), Mila über die Marke als Notiz (Skizze, ZIM-8), Edna und Marion per
+## Debug (Marion zudem nach Halloween) – Marion ist dann verurteilbar. Danach ist alles wie vorher. Meldet
+## „[Kernschutz] … ok“ bzw. „FEHLER“, zuletzt „[Kernschutz] Prüfung fertig“.
+func _debug_core_protection() -> bool:
+	var social := Game.social
+	var check := func(text: String, ok: bool) -> void:
+		print("[Kernschutz] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	var lead := func(household: String) -> Guest:
+		for guest in social.guests:
+			var g: Guest = guest
+			if not g.is_child() and String(g.profile.get("household", "")) == household:
+				return g
+		return null
+	get_tree().create_timer(1.0).timeout.connect(func() -> void:
+		CoreRoles.forced_done.clear()
+		var core := {"Bruno": social.guest_by_id("bruno"), "Edna": social.guest_by_id("edna"),
+			"Mila": social.guest_by_id("mila"), "Marion": lead.call("H22"), "Liesel": lead.call("H26"),
+			"Oskar": lead.call("H39")}
+		for who: String in core:
+			var g: Guest = core[who]
+			check.call("%s geschützt" % who, g != null and not g.dead and g.is_protected())
+		var hugo: Guest = lead.call(LeviathanName.HUGO)
+		check.call("Hugo nicht geschützt (Ersatzweg Liesel)", hugo != null and not hugo.is_protected())
+		var others := social.living_guests().filter(func(g: Guest) -> bool:
+			return not g.is_child() and CoreRoles.role_of(g) == "")
+		check.call("übrige %d Gäste nicht geschützt" % others.size(), not others.is_empty()
+			and others.all(func(g: Guest) -> bool: return not g.is_protected()))
+		var bruno: Guest = core["Bruno"]
+		var marion: Guest = core["Marion"]
+		var liesel: Guest = core["Liesel"]
+		if bruno == null or marion == null or liesel == null:
+			print("[Kernschutz] Prüfung fertig")
+			return
+		var always := true
+		for i in 50:
+			always = always and Wounds.survives(bruno)
+		check.call("überlebt jeden Angriff (50 ×)", always)
+		var d := Game.director
+		var left := d.victims_left
+		d.skipping = true   # ohne Monster in der Welt: nur Zugriff und Folgen (kill_guest)
+		d.victims_left = 1
+		d.kill_guest(bruno, null)
+		d.skipping = false
+		d.victims_left = left
+		check.call("Leviathan: Bruno lebt mit Kratzern", not bruno.dead and bruno.wound == "scratch")
+		social.hauntings._resolve_asleep(liesel, null, true)
+		check.call("Lakengeist im Schlaf: Liesel lebt mit Würgemalen", not liesel.dead and liesel.wound == "choke")
+		var room := String(marion.home["no"])
+		check.call("Marion nicht verurteilt", d._condemned_in(room) != marion)
+		check.call("Marion bis Halloween", not CoreRoles.role_done("marion", Calendar.HALLOWEEN)
+			and CoreRoles.role_done("marion", Calendar.HALLOWEEN + 1))
+		Game.player.add_key(CoreRoles.MARKS["bruno"])
+		check.call("Hauptsicherung beim Spieler: Bruno ungeschützt", not bruno.is_protected())
+		Game.player.keyring.erase(CoreRoles.MARKS["bruno"])
+		var mila: Guest = core["Mila"]
+		var nb := Game.notebook
+		var owned := nb.owned
+		nb.owned = true
+		nb.add_note(CoreRoles.MARKS["mila"], "Mila hat mir ihre Skizze gezeigt.")
+		check.call("Skizze gezeigt: Mila ungeschützt", mila != null and not mila.is_protected())
+		for i in range(nb.notes.size() - 1, -1, -1):
+			if nb.notes[i]["id"] == CoreRoles.MARKS["mila"]:
+				nb.notes.remove_at(i)
+		nb.owned = owned
+		var edna: Guest = core["Edna"]
+		CoreRoles.forced_done["edna"] = true
+		check.call("Bedrohung vorbei: Edna ungeschützt", edna != null and not edna.is_protected())
+		CoreRoles.forced_done["marion"] = true
+		var alone := social.living_guests().filter(func(g: Guest) -> bool:
+			return String(g.home["no"]) == room and not g.is_child()).size() == 1
+		check.call("Rolle erfüllt: Marion verurteilbar", not marion.is_protected()
+			and (d._condemned_in(room) == marion or not alone))
+		var lost := false
+		for i in 200:
+			lost = lost or not Wounds.survives(marion)
+		check.call("Rolle erfüllt: normales Überleben (200 ×)", lost)
+		CoreRoles.forced_done.clear()
+		check.call("danach wieder wie vorher", bruno.is_protected() and mila.is_protected() and marion.is_protected())
+		print("[Kernschutz] Prüfung fertig"))
 	return true
 
 

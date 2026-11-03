@@ -78,10 +78,10 @@ static func data(kind: String) -> Dictionary:
 	return KINDS.get(kind, {})
 
 
-## Überlebt er? (Monster, Kürbismann – beim Lakengeist entscheidet SheetGhost über das Losreißen.) Kernfiguren
-## überleben jeden Angriff (Spielkonzept 4.33, 6.17).
+## Überlebt er? (Monster, Kürbismann – beim Lakengeist entscheidet SheetGhost über das Losreißen.) Geschützte
+## Kernfiguren überleben jeden Angriff, bis ihre Rolle erfüllt ist (Spielkonzept 4.33, 6.17, CoreRoles).
 static func survives(guest: Guest = null) -> bool:
-	if guest != null and guest.is_core():
+	if guest != null and guest.is_protected():
 		return true
 	return randf() < SURVIVE
 

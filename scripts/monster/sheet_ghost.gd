@@ -71,7 +71,7 @@ const ESCAPE_GAIN := 0.16             ## je Richtungswechsel
 const ESCAPE_GRIP := 0.72             ## so viel zieht der Griff je Sekunde zurück
 const ESCAPE_GRIP_STAGE := 0.06       ## ab dem 4. Mal je Mal fester (höchstens +0,3)
 ## Gäste reißen sich nur selten los: so viel + Mut × so viel
-const GUEST_ESCAPE := Vector2(0.1, 0.2)   ## 2026-10-25: im Mittel etwa 2 von 10 (Spielkonzept 6.17), vorher 0,3 + 0,2 × Mut; Kernfiguren immer
+const GUEST_ESCAPE := Vector2(0.1, 0.2)   ## 2026-10-25: im Mittel etwa 2 von 10 (Spielkonzept 6.17), vorher 0,3 + 0,2 × Mut; geschützte Kernfiguren immer
 ## Schrank: so lange wartet er vor den Türen, dann fliegt er mit dieser Chance hinein (sonst gibt er auf)
 const LURK_TIME := Vector2(20.0, 35.0)
 const FLY_IN_CHANCE := 0.4
@@ -1023,8 +1023,8 @@ func _grab() -> void:
 		# Mutige reißen sich eher los (ein Gast zappelt nicht nach Anleitung)
 		var guest := _victim as Guest
 		guest.ghost_grab(global_position + Vector3.UP * HANDS_Y)
-		_escape_at = ESCAPE_TIME * randf_range(0.3, 0.9) if _haunt != "kill" and (guest.is_core() \
-				or randf() < GUEST_ESCAPE.x + GUEST_ESCAPE.y * float(guest.profile["brave"])) else -1.0
+		_escape_at = ESCAPE_TIME * randf_range(0.3, 0.9) if guest.is_protected() or (_haunt != "kill" \
+				and randf() < GUEST_ESCAPE.x + GUEST_ESCAPE.y * float(guest.profile["brave"])) else -1.0   # geschützt: immer (6.17)
 		if Game.player.global_position.distance_to(guest.global_position) < 12.0:
 			Game.play_sound("gasp", 0.6)
 		Game.shot_event("strangle", 20)

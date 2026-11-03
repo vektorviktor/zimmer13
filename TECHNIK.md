@@ -1159,7 +1159,7 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
   Deko nicht hält (`is_blocked`), schwächste zuerst, `DEMAND_DOORS`; langes Flackern. Tür für Tür bis die Opferzahl
   erreicht ist.
 - **Opfer** (`kill_guest`): geholt wird nur, wen der Modus will (sonst `_scare_guest`); 20 % überleben verletzt
-  (`Wounds.survives`, Kernfiguren immer) – zählt trotzdem als Opfer; der Verletzte kommt in `_spared`. **Den Spieler
+  (`Wounds.survives`, geschützte Kernfiguren immer – `Guest.is_protected()`) – zählt trotzdem als Opfer; der Verletzte kommt in `_spared`. **Den Spieler
   tötet es immer** (außer harmlos). Gespeichert: Plan, Modus, Verurteilter (Gast-ID/„player“), `raids`, `demands`,
   `_lure`, Restzeiten (Speicherformat 55). Debug `--mode=…`, `--plan`, `--warn`, `--doll`, `--attacks=n` (Raubzüge
   bisher); `--trace` zeigt `[Plan]`, `[Aufbruch]`, `[Raubzug]`, `[Urteil]`, `[Anforderung]`, `[Geholt]`,
@@ -1190,7 +1190,7 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
   `_reappear` beim nächsten Urteil. `DoorContest.on_doll_placed` schreibt das erste Urteil ins Tagebuch.
 - Gespeichert unter `doll` (Lage, Drehung, `verdict`, `at_room`, `pending`, `gone`).
 - **Frist und Urteil** (`MonsterDirector`): Ist das nächste Urteil im Plan näher als sein `lead` (`DOLL_LEAD`),
-  `_place_doll()`: `_judge(_weakest_door())`, Grollen. `_weakest_door()`: unter `judgeable_rooms()` (Zimmer 13 und Zimmer mit einem Erwachsenen, der keine Kernfigur ist) die mit
+  `_place_doll()`: `_judge(_weakest_door())`, Grollen. `_weakest_door()`: unter `judgeable_rooms()` (Zimmer 13 und Zimmer mit einem Erwachsenen, der keine geschützte Kernfigur ist, `is_protected`) die mit
   der wenigsten Deko (Gleichstand `DOLL_DECO_TIE`, die bisherige Tür bleibt), dann die dunkelste (`DOLL_LIGHT_TIE`),
   dann Zufall; alle `DOLL_RECHECK` neu (Nachbessern). Beim Aufbruch `_condemned_in(zimmer)`: der Spieler bzw. der
   Bewohner mit der höchsten `Guest.weakness()`. **Grollen:** `SynthAudio.rumble` steigt bis zum Ende der Frist.
@@ -1484,7 +1484,16 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 - **Überlebende & Verletzungen** (`guests/wounds.gd`, `Wounds` – nur Daten und Sätze, Zustand im Gast; Spielkonzept
   6.17): `Wounds.survives(gast)` (20 %, `SURVIVE`) in `MonsterDirector.kill_guest` (zählt dann nicht als Opfer) und
   `PumpkinMan._hit`; der Lakengeist verwundet beim Losreißen (`SheetGhost.GUEST_ESCAPE`, im Mittel ebenso 20 %).
-  **Kernfiguren** (`Guest.is_core()`: Profil aus `GuestProfiles.ALL`) überleben jeden Angriff, auch im Puppenzimmer. `Guest.wound_by(art, angreifer)` setzt Wunde, Heilzeit, Bettruhe
+  **Geschützte Kernfiguren** (`Guest.is_protected()` → `CoreRoles.is_protected`, ZIM-120) überleben jeden Angriff –
+  Leviathan, Kürbismann, Lakengeist (auch beim geplanten Würgen der Heimsuchung im Schlaf, `Hauntings._resolve_asleep`)
+  – und werden nicht verurteilt (`MonsterDirector._condemned_in`), aber nur, **bis ihre Rolle erfüllt ist**:
+  `CoreRoles.ROLES` (Gast-ID bzw. fester Haushalt → Rolle: Bruno, Edna, Mila mit Profil, Marion H22, Liesel H26,
+  Oskar H39; Hugo nicht, Ersatzweg Liesel), `role_done(rolle)` liest nur schon Gespeichertes: eine Marke aus
+  `CoreRoles.MARKS` als Schlüssel am Bund (`Player.has_key`) oder als Notiz (`Notebook.has_note`) – `hauptsicherung`
+  (Bruno, setzt ZIM-4), `edna_bedrohung` (ZIM-5), `milas_skizze` (ZIM-8), noch von niemandem gesetzt –, Marion bis
+  Halloween (`Calendar.raw_day_of` > 31), Liesel und Oskar vorerst immer. Nichts Neues im Spielstand. `Guest.is_core()`
+  (Profil aus `GuestProfiles.ALL`) bleibt für Bitten, Startdeko und Tagebuch. Debug `--kernschutz` (setzt
+  `CoreRoles.forced_done`, nicht gespeichert), Rauchtest `kernschutz`. `Guest.wound_by(art, angreifer)` setzt Wunde, Heilzeit, Bettruhe
   (`_go_to_bed`, `in_sickbed()` – ansprechbar), Blutspur (`_bleeding`), `wound_facts` und erzählt es weiter
   (`_spread_wound_news`). Heiser: `Game.sound_at("wheeze")` (eigener `VOICES`-Eintrag aus `breath.wav`). Besuch am
   Krankenbett: `DialogUI._wound_visit`. Gespeichert je Gast: `wound`, `wound_left`, `wound_bed`, `wound_facts`,
@@ -2306,7 +2315,7 @@ anderes versetzt (Bett, Versteck), bleibt er dort. **Nicht gespeichert:** `SaveM
   `SALT` im Plan steht). Debug `--salz[=…]`, Rauchtest `salz`.
 - **Gäste mit „kreisenden Händen“, Ednas Salz** (Spielkonzept 5.13, 2026-11-03; `guests/hauntings.gd` `Hauntings`, Kind
   von Social, `Game.social.hauntings`): `chosen()` = IDs der zwei Gäste – erwachsene Hausbewohner ohne Kernrolle und ohne
-  Kernfigur im Zimmer, nicht Gustav, mit Fenster (Vorhang) oder Fenstertür (`window_of`), sortiert nach
+  Schutzrolle (`CoreRoles.role_of`, fest, nicht nach Fortschritt) und ohne Kernfigur im Zimmer, nicht Gustav, mit Fenster (Vorhang) oder Fenstertür (`window_of`), sortiert nach
   `hash([gen_seed, "kreisen"])` (in jedem Spiel dieselben, kein Zufall im Generator). `sign_day(i)` würfelt aus
   `Social.night_seed` den Tag S in `DAYS[i]` (erste bzw. zweite Monatshälfte), `visit_window(i, tag)` die Uhrzeit
   (`HOUR`, bis `LAST_HOUR`) der Nacht danach. Alle `SCAN` s (`_check`, erst nach dem ersten Angriff): in der Nacht nach S

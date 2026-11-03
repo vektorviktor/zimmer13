@@ -111,6 +111,7 @@ const COMMANDS := {
 	"atlas": ["[a,b,c,d]", "Plätze je Quadrant des Schattenatlas (1, 4, 16, 64, 256; Godot 4,4,16,64) – ohne Wert die nächste Aufteilung (wie F11)"],
 	"bericht": ["[s]", "Lichtbericht in s Sekunden (Standard 1) nach user://berichte/ – Bild und Text (wie F4)"],
 	"nohud": ["", "HUD aus/ein (für Screenshots)"],
+	"kernschutz": ["", "Prüfung: Schutz der Kernfiguren, bis ihre Rolle erfüllt ist (6.17) – „[Kernschutz] … ok/FEHLER“"],
 	"fotomodus": ["[pruefen]", "freie Kamera durch Wände (wie F12), Zeit steht, der Spieler bleibt stehen"],
 	"static-eg": ["[=pfad]", "Erdgeschoss als statische Szene speichern (Wände, Böden, Decken, Lampen – Standard res://temp/eg_static.scn)"],
 	"debug": ["", "Debug-Werte einblenden"],

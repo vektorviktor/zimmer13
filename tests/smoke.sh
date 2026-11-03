@@ -117,8 +117,8 @@ judge() {
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
 		problems+=" kein Lichtbericht"
 	fi
-	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\)\] .*FEHLER" "$log"; then
-		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\)\] .*FEHLER' "$log" | head -1))"
+	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\)\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\)\] .*FEHLER' "$log" | head -1))"
 	fi
 	if [[ "$name" == *--stahlspinde=pruefen* ]] && ! grep -q "^\[Stahlspind\] Prüfung fertig" "$log"; then
 		problems+=" Stahlspind-Prüfung nicht fertig"
@@ -128,6 +128,9 @@ judge() {
 	fi
 	if [[ "$name" == *--buero=pruefen* ]] && ! grep -q "^\[Büro\] Prüfung fertig" "$log"; then
 		problems+=" Büro-Prüfung nicht fertig"
+	fi
+	if [[ "$name" == *--kernschutz* ]] && ! grep -q "^\[Kernschutz\] Prüfung fertig" "$log"; then
+		problems+=" Kernschutz-Prüfung nicht fertig"
 	fi
 	if [[ "$name" == *--albtraummodus=pruefen* ]] && ! grep -q "^\[Albtraum\] Prüfung fertig" "$log"; then
 		problems+=" Albtraum-Prüfung nicht fertig"
@@ -229,6 +232,7 @@ done <<'LIST'
 500|kraehen,ring,speichern|--kraehen=dachnest --savetest --trace
 2400|masken,kuerbismann|--maske=pumpkin --pumpkin=jagd --trace
 1500|monster,gaeste,tod|--kill=mila --trace
+300|kernschutz,gaeste,urteil|--kernschutz --trace
 900|gaeste,tod,ui|--console=kill=Emil,leiche,blut,hin;guests --trace
 900|gaeste,tod|--kill=emilhartung,weg,blut --trace
 900|gaeste,tod,friedhof|--console=relation=alle,90;drunk=2,alle;kill=alle,leiche --trace

@@ -4688,7 +4688,7 @@ Das gilt nur für Gäste (der Spieler stirbt, 8.7); Kinder sind ohnehin nie Opfe
 nicht als Opfer – das Monster bleibt hungrig (4.10). Ausnahme ist das **Urteil**: Überlebt der Verurteilte, ist es
 vorbei (4.33).
 
-**Schutz auf Zeit (entschieden 2026-10-30, ZIM-120, noch nicht umgesetzt):** Der Schutz endet nach Fortschritt, nicht
+**Schutz auf Zeit (entschieden 2026-10-30, ZIM-120, gebaut 2026-11-03):** Der Schutz endet nach Fortschritt, nicht
 nach Datum – wer langsam spielt, verliert eine Figur nicht, bevor sie ihre Rolle hatte. Er bleibt unsichtbar: Geschützte
 werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe wie für alle Gäste.
 - **Bruno:** bis der Spieler die Hauptsicherung hat, gleich wie (7.4). Dann ist er Mitwisser – und die will das Monster (2.3).
@@ -4699,6 +4699,13 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 - **Mila:** bis sie dem Spieler ihre Skizze des alten Herrn gezeigt hat (um den 18., HANDLUNG M15c, 2026-11-03).
 - **Weitere Figuren:** Schutz nur, wenn es ohne die Figur keinen Weg weiter gibt; sonst ein Ersatzweg (Hugo → Liesel,
   4.32; Edna → ihr Wissen als Notiz in Zimmer 003). Offen: Ersatzwege für Liesel und Oskar.
+- *Gebaut 2026-11-03 (ZIM-120):* Eine Abfrage „geschützt?“ je Figur gilt für alle Angriffe (Leviathan, Kürbismann,
+  Lakengeist, auch die geplante Heimsuchung 5.13) und das Urteil (4.33). Das Ende liest nur schon Gespeichertes (eine
+  Marke als Schlüssel oder Notiz) – nichts Neues im Spielstand. Noch ohne Ende, weil der Fortschritt fehlt: Bruno
+  (Hauptsicherung, ZIM-4), Edna (Bedrohung, ZIM-5), Mila (Skizze, ZIM-8) – sie setzen nur noch die Marke. Marion bis
+  Halloween. **Kleinste Lösung, bis ihre Ersatzwege entschieden sind:** Liesel und Oskar bleiben geschützt (vorher
+  waren sie es gar nicht, Marion auch nicht). Hugo ist nicht geschützt. Die beiden Gäste mit kreisenden Händen (5.13)
+  sind nie eine dieser Figuren – sonst würde der zweite nie gewürgt.
 
 | Angreifer | Was er überlebt | Verletzung | Folgen |
 |-----------|-----------------|------------|--------|

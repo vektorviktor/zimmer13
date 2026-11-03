@@ -601,7 +601,7 @@ func debug_show(what: String) -> void:
 		for other in Game.social.living_guests():
 			if victims.size() >= 2:
 				break
-			if not other.is_child() and not other.is_core():   # Kernfiguren sterben nie (4.33)
+			if not other.is_child() and not other.is_protected():   # geschützte Kernfiguren sterben nicht (6.17)
 				victims.append(other)
 	var stand: Vector3 = spot["pos"] + (spot["front"] as Vector3) * 2.5 if not spot.is_empty() else slots[0]["pos"]
 	var front: Vector3 = spot["front"] if not spot.is_empty() else Vector3.RIGHT
@@ -611,7 +611,7 @@ func debug_show(what: String) -> void:
 		d.guest_slain(g, "ghost")
 	if what == "trauerfeier":
 		for other in Game.social.living_guests():
-			if not other.is_child() and not other.is_core() and not other in victims:
+			if not other.is_child() and not other.is_protected() and not other in victims:
 				other.die("monster")   # vermisst – kein Schrei, keine Meldung
 				_refresh_missing()
 				break

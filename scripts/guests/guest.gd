@@ -395,9 +395,16 @@ func is_child() -> bool:
 	return bool(profile.get("child", false))
 
 
-## Kernfigur (Spielkonzept 6.0) – handgeschriebenes Profil statt erzeugtem; überlebt jeden Angriff (4.33, 6.17).
+## Kernfigur (Spielkonzept 6.0) – handgeschriebenes Profil statt erzeugtem. Ob sie Angriffe überlebt, sagt
+## is_protected (4.33, 6.17).
 func is_core() -> bool:
 	return GuestProfiles.ALL.has(id)
+
+
+## Geschützt, bis seine Rolle erfüllt ist (Spielkonzept 6.17, ZIM-120): überlebt jeden Angriff verletzt, wird nicht
+## verurteilt (4.33). Kernfiguren mit Profil und Marion, Liesel, Oskar aus den festen Haushalten – siehe CoreRoles.
+func is_protected() -> bool:
+	return CoreRoles.is_protected(self)
 
 
 ## Seine Stimme für SynthAudio.play_shot: "voice" ("m", "f", "child"), "pick" (immer dieselbe Aufnahme),
