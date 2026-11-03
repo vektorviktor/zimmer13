@@ -6,7 +6,8 @@ bzw. idealerweise erreicht und was jeder freischaltet. Entschieden wird weiter i
 YouTrack (Projekt ZIM, Zustand „Submitted“).
 
 **Status je Meilenstein:** **fest** = im Spielkonzept entschieden · **Anker** = als Eckpunkt gesetzt, Ausgestaltung
-offen · **Kandidat** = Vorschlag, noch nicht entschieden.
+offen · **vorgemerkt** = im Spielkonzept als Idee festgehalten, Einzelheiten noch nicht entschieden · **Kandidat** =
+Vorschlag, noch nicht entschieden · **offen** = bewusst nicht entschieden (Ticket genannt).
 
 Angelegt 2026-10-25.
 
@@ -59,8 +60,10 @@ keiner von ihnen wird je darüber sprechen.
 | Nr | Meilenstein | Wann (optimal) | Status | Zeigt auf / schaltet frei |
 |----|-------------|----------------|--------|---------------------------|
 | M9 | **Hauptsicherung:** Spind des Hausmeisters aufgebrochen (Nacht 5), Aushang der Direktion, Gerüchte → **Bruno** (K3) | ab 6.10., 2. Woche | fest (7.4, 2026-10-30) | Sicherungskasten im UG |
+| M9a | **Sekretariat:** das **Foto 2005** in der offenen Schreibtischschublade (Glas gesprungen); in der zweiten Schublade mit Zahlenschloss der **Generalschlüssel** – Code 1990, die erste Ernte, aus dem Gästebuch, eine Ziffer aus Milas Nachtpartie (6.14) | 6.–10.10. (Brunos Schlüssel, K3) | fest (2.10, ZIM-6), Code: Vorschlag | Foto 2005 → Fährte zum Schlüssel (M11b); Generalschlüssel öffnet jede Zimmertür (6.19) |
 | M10 | Bremse lösen im Maschinenraum (laut, neben dem schlafenden Monster) | 2. Woche | fest (7.4) | Aufzug fährt |
 | M11 | **Erste Fahrt:** Die Kabine fährt ohne Knopf allein nach U2 – Lager, Fundsachen-Koffer; danach baut Hugo den Knopf für U2 ein und erzählt davon | bis 14.10. | fest (7.4), Inhalt: Kandidat (K5) | Namen der Warnungszettel als Koffer; Edna (K5) |
+| M11b | **Fährte zum Schlüssel** (K6): Bleistiftnotiz in Zimmer 18 „R. hat ihn.“ – zuerst denkt man an Walter **R**uprecht in 014, eine falsche Fährte (erst seit 2023 hier, auf keinem alten Foto); das Gästebuch zeigt 2005 und 2008 „Rudolf Hain“ in 014, 2005 ohne Kreuz, 2008 mit; das Foto 2005 aus dem Sekretariat (M9a) zeigt ihn scharf neben zwei verwischten Gesichtern, 2008 an der Fotowand verwischt; Oskars Erinnerung („Einer hat das Tor aufgemacht.“) | ab M8, vor M18 | fest (2.10), Texte: Vorschlag | Rudolf Hains Koffer bei den Fundsachen in U2 (M18) |
 
 ### Akt IV – Der Hausmeister (15.–22. Oktober) · **Anker 3**
 
@@ -81,7 +84,7 @@ keiner von ihnen wird je darüber sprechen.
 | M16 | Großes Schmücken täglich, Kostüme ab dem 25. | 24.–30.10. | fest (2.4, 5.9) | Laken im Flur: Gast oder Geist? |
 | M16a | **Marion offenbart sich selbst**, wenn man sie bis dahin nicht entlarvt hat – nur noch eine Woche | 24.10. abends | fest (2.8), Datum: Vorschlag | Marions Auftrag, mit weniger Zeit |
 | M17 | Die Leviathanmauer bleibt offen – U2 gehört dem Monster | ~25.10. | fest (7.4) | Lager und alter Heizkeller werden gefährlich |
-| M18 | **Den Schlüssel holen** – mit Hilfe der Gäste (K6) | 28.–31.10. | Kandidat | Haupteingang |
+| M18 | **Den Schlüssel holen** – aus Rudolf Hains Koffer bei den Fundsachen in U2 (K6) | offen (ZIM-22) | Fundort fest (2.10), Zeitpunkt und Weg offen | Haupteingang |
 
 ### Akt VI – Halloween (31. Oktober) · **Anker 4**
 
@@ -110,21 +113,27 @@ flowchart TD
   M8 --> M10[M10 Bremse]
   M9 --> M11[M11 U2, Koffer]
   M10 --> M11
+  M9 -.->|Brunos Schlüssel| M9a[M9a Sekretariat: Foto 2005, Generalschlüssel]
+  M8 --> M11b[M11b Fährte zum Schlüssel]
+  M6 --> M11b
+  M9a --> M11b
   M6 --> M13[M13 Marion entlarven]
   M7 --> M12[M12 Kesselbuch]
   M12 --> M13
   M13 -.->|sonst 24.10.| M16a[M16a Marion offenbart sich]
-  M11 --> M15[M15 Edna]
+  T20([um den 20.10.]) --> M15[M15 Edna]
   M11 --> M15a[M15a Seine Sachen]
   M14[M14 Kürbismann erlösen] --> M15b[M15b Büro: Vertrag]
   M11 -.->|Josefs Bund| M15b
-  M11 --> M15c[M15c Milas Skizze]
+  T18([um den 18.10.]) --> M15c[M15c Milas Skizze]
   M13 --> M19a[M19a Ritual]
   M16a --> M19a
   M15a --> M19a
   M15b --> M19a
   M19a -.->|nicht erlöst| M20[M20 Letzter Angriff]
   M15 --> M18[M18 Schlüssel holen]
+  M11b --> M18
+  M11 --> M18
   M18 --> M21[M21 Haupteingang: alle hinaus]
   M19a --> M21
   M20 --> M21
@@ -134,7 +143,7 @@ flowchart TD
 
 ---
 
-## 3. Kandidaten im Detail
+## 3. Stränge im Detail
 
 ### K1 – Das Kreuz im Register (Akt II) · fest (2.9)
 - Man kommt hin über Gustavs letzten Satz („Morgen früh gehe ich als Erstes zur Direktion und …“, 2.6, 2.9).
@@ -149,9 +158,7 @@ flowchart TD
   wird zur Chronik des Oktobers.
 
 ### K2 – Erster Abstieg (Akt II) · fest (2.9)
-- ~~Nach Gustav ist das Monster **satt** (4.10) – das ist das sichere Zeitfenster.~~ Seit 4.33 senkt Sättigung nur die
-  Dreistigkeit. **Das Fenster ist der Suchtrupp** (K8): Solange er an der Kellertür wartet, patrouilliert der Leviathan
-  nicht. Die Schleifspur aus 020 zeigt in Richtung Treppenhaus Ost, Gäste reden vom Keller („Da unten soll es schlafen.“).
+- **Das Fenster ist der Suchtrupp** (K8): Solange er an der Kellertür wartet, patrouilliert der Leviathan nicht (4.33). Die Schleifspur aus 020 zeigt in Richtung Treppenhaus Ost, Gäste reden vom Keller („Da unten soll es schlafen.“).
 - Bis zum ersten Angriff hängen Vorhängeschlösser an den Kellerzugängen; das Monster hat in der Nacht der
   Siegerehrung das östliche aufgebrochen (7.4). Der Weg führt also über das Treppenhaus Ost.
 - An der **Leviathanmauer** im Heizraum liegt **Gustavs Brille** – der Grund, hinunterzugehen (K8).
@@ -192,14 +199,14 @@ flowchart TD
   Hat man es bis zum **24. Oktober** nicht geschafft, klopft sie selbst an Zimmer 13. Wer früh dran ist, hat Wochen,
   wer wartet, eine Woche, in der U2 schon dem Monster gehört.
 - **Ihr Auftrag** (2.8): seine Sachen aus dem Lager (Taschenuhr), der Vertrag aus dem Büro der Direktion (Schlüsselbund aus der
-  Jeansjacke des Kürbismanns, Vorschlag: Liesels Auftrag führt in Marions). Die Werkstatt entfällt (2026-10-27).
+  Jeansjacke des Kürbismanns, Vorschlag: Liesels Auftrag führt in Marions – oder Josefs Bund vom alten Kessel, 2.8).
 - **Das Ritual in der Halloween-Nacht:** im alten Heizkeller (U2) den Vertrag ins Feuer von 1987, Marion ruft ihn mit
   seinen Sachen – er geht ins Feuer, und es erlischt. Kein letzter Angriff.
 - **Marion bleibt** (fest, 2.8): Sie kommt so oder so nicht hinaus – am letzten Tag bleibt sie freiwillig bei ihrem
   Vater. Wie man ihr hilft, entscheidet nur, ob er erlöst ist, nicht, ob sie lebt. Erlöst: Sie geht mit ihm ins
   Feuer und lässt die Taschenuhr zurück. Nicht erlöst: Sie bleibt in der Lobby sitzen – „Ich warte auf ihn.“
 - **Scheitern:** nicht erlöst → letztes Urteil und letzter Angriff; Vertrag verbrannt, aber nicht erlöst → frei und
-  ohne Warnung; ~~Marion tot → keine Erlösung, nur ihr Brief~~ (entfällt 2026-10-25: Kernfiguren sterben nicht).
+  ohne Warnung. Marion stirbt nicht vorher (Kernfigur, 6.17).
 - **Warum stark:** Der Wendepunkt der Ermittlung wird zum großen Auftrag der zweiten Monatshälfte, verbindet drei
   Anker (Heizraum, Aufzug/Lager, Halloween) und den Kürbismann-Strang – und belohnt, wer früh ermittelt.
 
@@ -226,11 +233,12 @@ flowchart TD
 ### K6 – Der Haupteingang an Halloween (Akt VI, Anker 4)
 - **Fest (2.7):** Mit dem Schlüssel öffnet sich der Haupteingang, und alle, die bis zum 31. überlebt haben, kommen
   hinaus. Danach spricht keiner darüber.
-- **Der Schlüssel** muss verdient werden, auf einem von mehreren Wegen (2.3) – Kandidaten:
-  - im **Fundsachen-Koffer in U2** (7.4) – „ES lag daneben“ (Warnungszettel 2011), spät im Monat im Revier des
-    Monsters; „Du brauchst die anderen“: einer lenkt ab, einer hält Wache (2.1);
-  - ~~in der Tasche der Jeansjacke des Kürbismanns~~ – dort steckt jetzt der Schlüsselbund fürs Büro der Direktion (K4);
-  - von **Edna**, die weiß, wie es 1987 ging (K5).
+- **Der Schlüssel – Fundort fest (2.10, 2026-10-30):** im **Koffer Rudolf Hains** bei den Fundsachen in U2 (7.4), mit
+  Namensschild und seinem Zettel von 2008 („Ich weiß nicht mehr, woher ich ihn habe. Aber ich darf ihn nicht
+  hergeben.“). Rudolf Hain trug ihn 2005 hinaus, brachte ihn 2008 ohne Erinnerung zurück und starb in jener Ernte. Die
+  Fährte dorthin: M11b.
+- **Offen (ZIM-22):** ab wann der Schlüssel greifbar ist und wie man ihn holt (Lagerzugang, Revier des Monsters, Hilfe
+  der Gäste) – nicht entschieden.
 - **Fest (2.7):** Kein Einsammeln – alle Lebenden kommen in die Lobby und gehen gemeinsam schweigend ins erste
   Morgengrauen. Ohne Schlüssel stirbt jeder, der noch drin ist, auch der Spieler; keine Zeitschleife.
 - **Fest (2.7, 2026-10-26):** Die Mitternachtsglocke löst eins von drei Enden aus (M21, M21a, M21b), das Gruppenfoto
@@ -255,20 +263,3 @@ flowchart TD
     das 1987 nicht hinauskam – das Kichern verstummt.
 - **Warum stark:** gibt dem Kürbismann-Strang eine Auftraggeberin statt eines Zufallsfunds und zeigt das Schweigen
   der Überlebenden von der anderen Seite – Schuld statt Angst.
-- *Früher K7: Marion als eines der Kinder – entfällt, Marion bleibt die Suchende.*
-
----
-
-## 4. Offene Fragen
-
-- ~~**Büro der Direktion:** Wo liegt es, und gibt es einen zweiten Weg hinein, falls der Kürbismann nicht erlöst wird (2.8)?~~
-  → im OG hinter dem Sekretariat (ZIM-150); zweiter Weg: Josefs Schlüsselbund am alten Kessel in U2 (2.8, 2026-11-03).
-  Das Sekretariat öffnet Brunos Schlüssel (K3), den Generalschlüssel darin eine Schublade mit Zahlenschloss (2.10).
-- ~~**Lücke 16.–22. Oktober:** Reicht Ednas Bedrohung (K5) als Anker, oder braucht es dort einen zweiten festen Moment?~~
-  → Ednas Bedrohung (M15) ist fest, dazu Milas Skizze (M15c) als zweiter Moment (2026-11-03).
-- ~~**Mila Hellwig** hat noch keine Rolle im Geheimnis.~~ → Sie sieht und zeichnet den alten Herrn (M15c); ihre
-  Herzensbitte ist die Nachtpartie, die er jede Nacht auf dem Schachbrett weiterspielt (Spielkonzept 6.14, 2026-11-03).
-- ~~**Lore:** Der Warnungszettel von **Oktober 1987** beschreibt das Monster schon vor dem Kesselbrand an Halloween 1987.~~
-  → Es war 1987 formlos – Hitze, Atem in den Rohren, Gäste, die fehlten; so beschreibt es Ednas Zettel. Erst Josef gab
-  ihm Gestalt, seit der ersten Ernte 1990 holt es als Leviathan (Spielkonzept 2.3, 2.10, 2026-11-03). Woher es kommt,
-  bleibt offen.

@@ -11,7 +11,7 @@
 - [2. Genre & Stimmung](#2-genre--stimmung)
   - [2.1 Zeit & Dramaturgie: Vom 1. Oktober bis Halloween (entschieden 2026-10-10)](#21-zeit--dramaturgie-vom-1-oktober-bis-halloween-entschieden-2026-10-10)
   - [2.2 Scheitern als Zeitschleife – mit eigenen Zetteln (vorgemerkt 2026-10-11, verworfen 2026-10-25)](#22-scheitern-als-zeitschleife--mit-eigenen-zetteln-vorgemerkt-2026-10-11-verworfen-2026-10-25)
-  - [2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)](#23-fortschritt--geheimnis-vorgemerkt-2026-10-11)
+  - [2.3 Fortschritt & Geheimnis (entschieden 2026-10-11)](#23-fortschritt--geheimnis-entschieden-2026-10-11)
   - [2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21, umgesetzt 2026-10-23)](#24-tagesuhr--tagesablauf-entschieden-2026-10-21-umgesetzt-2026-10-23)
   - [2.5 Der Anfang: Türschmuck-Wettbewerb (entschieden und umgesetzt 2026-10-23)](#25-der-anfang-türschmuck-wettbewerb-entschieden-und-umgesetzt-2026-10-23)
   - [2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)](#26-das-erste-opfer-gustav-peters-entschieden-2026-10-25)
@@ -26,7 +26,7 @@
   - [3.3 Truhen](#33-truhen)
   - [3.4 Verstecken (inspiriert von Roblox *Doors*)](#34-verstecken-inspiriert-von-roblox-doors)
   - [3.5 Kommoden im Flur (entschieden und umgesetzt 2026-10-14)](#35-kommoden-im-flur-entschieden-und-umgesetzt-2026-10-14)
-  - [3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24)](#36-schlaf--müdigkeit-vorgemerkt-2026-10-19-schlafdauer-und-zeitsprung-umgesetzt-2026-10-24)
+  - [3.6 Schlaf & Müdigkeit (entschieden 2026-10-19, gebaut 2026-10-27)](#36-schlaf--müdigkeit-entschieden-2026-10-19-gebaut-2026-10-27)
   - [3.7 Trinken an der Bar (entschieden 2026-10-19)](#37-trinken-an-der-bar-entschieden-2026-10-19)
   - [3.8 Kochen in der Küche (entschieden 2026-10-21)](#38-kochen-in-der-küche-entschieden-2026-10-21)
   - [3.9 Spielerfigur und Charaktererstellung (entschieden und umgesetzt 2026-10-23)](#39-spielerfigur-und-charaktererstellung-entschieden-und-umgesetzt-2026-10-23)
@@ -158,9 +158,9 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Inspirationen (Richtung):** Andeutungs-Horror à la „Alien: Isolation“ (Bedrohung präsent, aber selten sichtbar), Retro-Hotel-Atmosphäre à la „The Shining“, soziale Dynamik ähnlich „Animal Crossing“-Beziehungen – nur mit Paranoia.
 
 ### 2.1 Zeit & Dramaturgie: Vom 1. Oktober bis Halloween (entschieden 2026-10-10)
-> Im Prototyp umgesetzt: Kalender mit Tagesuhr (2.4), friedlicher Anfang, erster Angriff bei der **Siegerehrung am
-> 2. Oktober um 20 Uhr in der Lobby** (2.5, wartet auf den Spieler, spätestens um 22 Uhr), harmlos bleibt es etwa
-> **anderthalb Spieltage** (neun Aufbrüche). Noch offen: Schlüssel an Halloween und das Scheitern.
+> Stand: entschieden 2026-10-10 · gebaut 2026-10-23 (Kalender mit Tagesuhr 2.4, friedlicher Anfang, erster Angriff
+> bei der **Siegerehrung am 2. Oktober um 20 Uhr in der Lobby**, 2.5 – wartet auf den Spieler, spätestens um 22 Uhr),
+> harmlose Raubzüge 2026-10-27 (4.33) · offen: ab wann der Schlüssel greifbar ist (ZIM-22), Ablauf der Halloween-Nacht.
 
 - **Kalender:** Das Spiel beginnt am **1. Oktober**. Die Zeit läuft durchgängig und wird in **Ingame-Tagen** gezählt. Draußen ist **immer Nacht** – der „Tag“ ist nur die Zähleinheit, kein Wechsel von Hell und Dunkel.
 - **Tageslänge: 24 Minuten Echtzeit** (24 Stunden = 24 Minuten) → 31 Tage ≈ 12½ Stunden, mit Uhrzeit und
@@ -168,51 +168,26 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Datum sichtbar:** Abreißkalender an der Wand von Zimmer 13, im Spielmenü und kurz eingeblendet, wenn ein neuer Tag beginnt. Spielstände zeigen das Ingame-Datum.
 - **Der friedliche Anfang:** Zu Beginn wirkt alles wie ein **gemütliches Hotel-Party-Spiel** – Gäste kennenlernen, Deko basteln, Kürbisse ziehen, Würfeln, Feiern. Keine Vorwarnung, kein Rauschen, nichts Bedrohliches. Auch Einführungstext und Gäste deuten nichts an. Der Spieler soll glauben, es sei ein friedliches Halloween-Spiel. Den Faden dafür gibt seit 2026-10-23 der **Türschmuck-Wettbewerb** (2.5).
 - **Der erste Angriff bricht das – am Abend des 2. Oktober bei der Siegerehrung des Wettbewerbs in der Lobby (2.5):** Alle stehen um die Puppe, sie steigt auf und löst sich in Rauch auf, dann geht das Licht aus, Stille, Rauschen. Ab jetzt ist es nicht mehr friedlich. Währenddessen holt es den ersten Gast, **Gustav Peters** (2.6, entschieden 2026-10-25).
-- **Danach holen die ersten Angriffe noch keinen Gast** (neun Aufbrüche, etwa anderthalb Spieltage; Gustav ist die eine Ausnahme, 2.6): Es erschreckt sie nur – man sieht es und weiß: Es ist real. Erst danach holt es Gäste. **Den Spieler tötet es von Anfang an**, wenn es ihn erwischt (4.17). **Neu (2026-10-25, 4.33):** Die harmlosen
-  Angriffe sind die **ersten drei Raubzüge** – sie brechen kurz vor dem Zugriff ab, auch beim Spieler.
-- **Halloween (31. Oktober):** In einem Zimmer **taucht ein Schlüssel auf** – der Weg hinaus. Es ist **sehr schwer**, an ihn heranzukommen.
-
-**Ideen zum Schlüssel (Auswahl offen)**
-- Er liegt **im Keller, im Versteck des Monsters** – und es ist gerade dort.
-- Er liegt in **Zimmer 18**, das seit Spielbeginn verschlossen ist; dafür braucht man vorher Hilfe.
-- Er erscheint in einem **zufälligen Zimmer** – und das Monster weiß es auch.
-- **Man braucht die Gäste:** einer lenkt ab, einer hält Wache – belohnt gute Beziehungen.
-- Er liegt im **Lager in U2**, in einem Koffer früherer Gäste – erreichbar nur mit dem reparierten Fahrstuhl (7.4).
-
-**Ideen für das Scheitern (Auswahl offen)**
-- ~~**Zeitschleife:** Nach Halloween beginnt alles wieder am 1. Oktober – nur schlimmer. Ausgearbeitet in 2.2.~~
-- ~~**Das Hotel behält einen:** schlechtes Ende.~~
-- **Entschieden 2026-10-25 (2.7):** Ohne Schlüssel stirbt jeder, der noch im Hotel ist – auch der Spieler. Keine
-  Zeitschleife.
+- **Danach sind die ersten drei Raubzüge harmlos** (4.33, entschieden 2026-10-25; Gustav, 2.6, ist das eine Opfer
+  davor): Das Monster bricht kurz vor dem Zugriff ab und verschwindet, auch beim Spieler – man sieht es und weiß: Es ist
+  real. Urteile, Snacks und alle späteren Raubzüge holen Gäste; **den Spieler tötet es dabei von Anfang an**, wenn es
+  ihn erwischt.
+- **Halloween (31. Oktober):** Der **Schlüssel** öffnet um Mitternacht den Haupteingang für alle Überlebenden (2.7). Er
+  liegt im Koffer Rudolf Hains bei den Fundsachen in U2 (2.10, entschieden 2026-10-30) – es ist **sehr schwer**, an ihn
+  heranzukommen. Ab wann er greifbar ist, ist offen (ZIM-22).
+- **Ohne Schlüssel** stirbt jeder, der noch im Hotel ist – auch der Spieler (2.7, entschieden 2026-10-25).
 
 ### 2.2 Scheitern als Zeitschleife – mit eigenen Zetteln (vorgemerkt 2026-10-11, verworfen 2026-10-25)
-> **Verworfen (2026-10-25, 2.7):** Es gibt keine Zeitschleife. Wer an Halloween nicht hinauskommt, stirbt. Der
-> Abschnitt bleibt als Archiv stehen; Verweise darauf gelten nicht mehr.
->
-> Favorit für das Scheitern. Noch nicht umgesetzt.
+Verworfen: Zeitschleife – wer an Halloween nicht hinauskommt, wacht am 1. Oktober in Zimmer 13 wieder auf und findet
+eigene Zettel aus dem letzten Durchgang (2026-10-25, weil das Ende nach 2.7 endgültig sein soll: Ohne Schlüssel stirbt
+jeder). Verweise auf 2.2 gelten nicht mehr.
 
-**Grundidee:** Wer an Halloween nicht entkommt, wacht wieder am **1. Oktober in Zimmer 13** auf. Kurz vor dem Ende darf man **Zettel für den nächsten Durchgang** schreiben – und wird so selbst zu einem der „früheren Gäste“, deren Warnungszettel man die ganze Zeit gefunden hat (4.13).
-
-**Ablauf**
-- **Auslöser:** Die Nacht des 31. Oktober endet, ohne dass man das Hotel verlassen hat. (Tod bleibt: letzten Spielstand laden, 8.)
-- **Die letzte Seite:** In der letzten Stunde vor dem Ende bietet das **Tagebuch in Zimmer 13** eine zusätzliche Seite an: *„Für den, der nach mir kommt.“* Man schreibt **bis zu drei Zettel** (kurzer Freitext, ca. 140 Zeichen; alternativ Bausteine wie „Traue nicht …“, „Der Schlüssel liegt …“). Wer es nicht rechtzeitig zum Tagebuch schafft, hinterlässt nichts.
-- **Neuer Durchgang:** Die eigenen Zettel liegen **zwischen den alten Warnungszetteln** – unter Matratzen, im Keller, hinter Bildern –, ohne Jahreszahl und mit „Zimmer 13“ unterschrieben. Man findet sie nicht sofort wieder; sie tauchen nach und nach auf, wie die anderen auch.
-- **„Nur schlimmer“:** Das Monster startet mit etwas höherer Dreistigkeit (4.9), die Ruhephasen sind von Anfang an kürzer, und der friedliche Anfang (2.1) ist um einen Tag kürzer. Pro Durchgang ein wenig, damit eine Schleife kein Strafmarathon wird.
-- **Spielstände:** Die Schleife gilt für alle Stände eines Durchgangs – setzt sie ein, werden die alten zu
-  „Erinnerungen“, nicht mehr ladbar (8.10).
-- **Das Hotel erinnert sich:** Kratzspuren und Kerzenstummel der letzten Schleife sind noch da. Einzelne Gäste haben ein **Déjà-vu** („Kennen wir uns?“, „Du warst doch letztes Jahr schon hier …“). Wer im letzten Durchgang gestorben ist, sagt manchmal einen Satz, den er damals gesagt hat.
-
-**Warum das gut passt**
-- Verbindet drei offene Fäden auf einmal: **Scheitern** (2.1), **Warnungszettel** (4.13) und **Story** (offene Frage 4).
-- Der Spieler gibt sein Wissen selbst weiter, statt dass das Spiel es ihm erklärt.
-- **Twist-Option:** Einer der festen Warnungszettel von 1987–2019 ist in derselben Handschrift geschrieben und mit „Zimmer 13“ unterschrieben. Man versteht erst nach der ersten Schleife, was das bedeutet.
-
-**Zu klären**
-- Was bleibt erhalten? Vorschlag: nur Zettel, Spuren und Déjà-vu – **kein** Geld, keine Gegenstände, der Fahrstuhl (7.4) ist wieder kaputt.
-- Gibt es nach mehreren Schleifen ein Ende, oder endet es nur durch Flucht?
-
-### 2.3 Fortschritt & Geheimnis (vorgemerkt 2026-10-11)
-> Noch nicht umgesetzt. Gibt dem Spiel eine Richtung: Bisher überlebt man, kommt aber nirgendwohin. Verbindet Story (offene Frage 4), Warnungszettel (4.13), Fahrstuhl & U2 (7.4) und die Gäste (6).
+### 2.3 Fortschritt & Geheimnis (entschieden 2026-10-11)
+> Stand: entschieden 2026-10-11 · gebaut: Hotelregister und Notizbuch des Hausmeisters (2026-10-28), Büro der Direktion
+> mit Porträt (2026-11-01, ZIM-150/151), Sekretariat mit Generalschlüssel (2026-11-03, ZIM-6) · offen: Vertrag,
+> Kesselbuch, Personalakte, Zeitungsausschnitt, U2 mit Lager und altem Heizkeller (7.4).
+> Gibt dem Spiel eine Richtung, weil man sonst nur überlebt und nirgendwohin kommt. Verbindet Story, Warnungszettel
+> (4.13), Fahrstuhl & U2 (7.4) und die Gäste (6).
 
 **Grundidee:** Nicht alle Bereiche des Hotels sind von Anfang an erreichbar. Einige sind verschlossen und müssen **verdient** werden. Hinter ihnen liegt nach und nach ein **großes Geheimnis**: warum man hier ist, was das Monster ist, was das Hotel mit den früheren Gästen zu tun hat. Man erfährt es aus **Dokumenten** und von **Mitwissern** – Gästen, die mehr wissen, als sie sagen.
 
@@ -231,27 +206,26 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Kandidaten für Sperrbereiche:** Zimmer 18 · Personaltrakt bzw. Büro der Direktion · U2 (7.4) · Dachboden oder Turm.
 
 **Das Geheimnis: Das Abkommen und Josef, der Hausmeister (entschieden 2026-10-11; bis 2026-10-30 „der Heizer“, 2.11)**
-- **Das Abkommen:** Der **alte Herr** – Gründer und Direktor des Hotels (2.10) – hat **1987** für sich und seine Familie einen Handel mit dem geschlossen, was unter dem Hotel lebt. ~~Jedes Jahr~~ **Alle drei Jahre** (2026-10-30, 2.10) gibt es eine **Halloween-Woche mit Gästen** – die „Ernte“ –, und es darf sich nehmen, wen es will. Dafür besteht das Hotel weiter, und die Familie lebt. Die Gäste werden eingeladen, ohne es zu wissen. Das Hotel ist ab dem 1. Oktober verschlossen.
+- **Das Abkommen:** Der **alte Herr** – Gründer und Direktor des Hotels (2.10) – hat **1987** für sich und seine Familie einen Handel mit dem geschlossen, was unter dem Hotel lebt. **Alle drei Jahre** (2.10) gibt es eine **Halloween-Woche mit Gästen** – die „Ernte“ –, und es darf sich nehmen, wen es will. Dafür besteht das Hotel weiter, und die Familie lebt. Die Gäste werden eingeladen, ohne es zu wissen. Das Hotel ist ab dem 1. Oktober verschlossen.
 - **Josef, der Hausmeister – das erste Opfer:** Halloween 1987 kam es im **alten Heizkeller** (heute U2, 7.4) zum Unglück (Kesselbrand). Der Hausmeister, der auch den Kessel befeuerte, blieb beim Feuer, um andere hinauszubringen. Das Personal schloss die Tür hinter ihm ab – den Schlüssel drehte der Page (2.11) –, so wurde das Abkommen besiegelt. **Er ist zu dem geworden, was es jetzt verlangt.** Das Personal hält ihn seitdem mit Gästen ruhig und hinter der **Leviathanmauer** (7.4); das Hotel lässt ihn nur für ein paar Minuten hinaus und zwingt ihn immer wieder in den alten Heizkeller zurück. Bevor er starb, schrieb er die **UV-Schrift von 1987 im Heizraum** (7.9, mit „J. A.“ gezeichnet – geändert 2026-10-25: der älteste Warnungszettel eines Gastes stammt von Edna, 2.7); sein **Kesselbuch** liegt in seinem Spind im Heizraum (7.4). **Er hieß Josef Ahrend** (entschieden 2026-10-24) – derselbe Name in Kesselbuch und Personalakte, die Initialen unter der UV-Schrift.
 - **Was das erklärt:**
   - **Deko schützt**, weil sie einmal Teil des Rituals war: Wer schmückt, gilt als *Gastgeber*, nicht als *Gabe*. Und weil sie ihn an das Fest erinnert, das er retten wollte – in geschmückten Bereichen zögert er.
-  - **Die Puppe** (5.5) ist die Jury des Abkommens: Sie bestimmt vor jedem Angriff, wer am wenigsten schmückt und
+  - **Die Puppe** (5.5) ist die Jury des Abkommens: Sie bestimmt vor jedem Urteil (4.33), wer am wenigsten schmückt und
     damit „angeboten“ wird – vor dessen Tür liegt sie, und dort stirbt jemand. **Herkunft (2026-10-27):** Sie war das
     Geschenk Josefs an Marion, ist 1987 mit verbrannt und seitdem an ihn gebunden (5.5).
   - **Kerzen gehen aus**, wenn er vorbeikommt: das Feuer, das ihn getötet hat.
   - **Das Hotel behält jeden, der dort stirbt** (entschieden 2026-10-21, 4.20): Josef als das Monster, der
     Rezeptionist von 1987 als Kürbismann (4.19), die Verschwundenen als Lakengeist (4.18).
-  - **Die Leviathanmauer schließt immer später** (7.4, 4.8): Das Abkommen hält ~~jedes Jahr~~ mit jeder Ernte (2.10) schlechter.
-  - **Der Schlüssel an Halloween** (2.1) öffnet den Haupteingang für **alle, die bis zum 31. überlebt haben** (2.7, entschieden 2026-10-25; vorher „für genau einen“). Wen man im Lauf des Monats verliert oder opfert (4.11), der fehlt beim Hinausgehen. **Fundort (2026-10-30, 2.10):** der Koffer des Schlüsselträgers von 2005 bei den Fundsachen in U2.
+  - **Die Leviathanmauer schließt immer später** (7.4, 4.8): Das Abkommen hält mit jeder Ernte (2.10) schlechter.
+  - **Der Schlüssel an Halloween** (2.1) öffnet den Haupteingang für **alle, die bis zum 31. überlebt haben** (2.7, entschieden 2026-10-25). Wen man im Lauf des Monats verliert oder opfert (4.11), der fehlt beim Hinausgehen. **Fundort (2026-10-30, 2.10):** der Koffer des Schlüsselträgers von 2005 bei den Fundsachen in U2.
 - **Zwei Arten von Mitwissern:**
-  - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): ~~der **Erbe der Familie**, als uralter Dauergast getarnt, der das Abkommen am Laufen hält~~ (ersetzt 2026-10-30: der **alte Herr**, Gründer und Direktor, nur auf den Fotos zu sehen, 2.10); der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht. **Seit 2026-10-30:** Er ist heute der **Hausmeister** – der einzige Lebende der Besetzung von 1987, nie zu sehen (2.11).
-  - **Angehörige, die suchen:** die **Tochter des früheren Hausmeisters**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht dasselbe wie der Spieler – Verbündete oder Konkurrentin um den einen Schlüssel. **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer Josefs Personalakte kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
+  - **Täter, die schweigen** (keine eigenen Figuren, nur über Dokumente und Notizen, entschieden 2026-10-21): der **alte Herr**, Gründer und Direktor, nur auf den Fotos zu sehen (2.10, 2026-10-30); der **Page von 1987**, der die Tür abgeschlossen hat und heute verbittert ist – seine Schuld hält ihn hier, er ist der wahrscheinlichste, der bricht. Er ist heute der **Hausmeister** – der einzige Lebende der Besetzung von 1987, nie zu sehen (2.11, 2026-10-30).
+  - **Angehörige, die suchen:** die **Tochter des früheren Hausmeisters**, nicht zufällig Gast in diesem Jahr – die **vierte Kernfigur** (6.0, entschieden 2026-10-21). Sie sucht die Wahrheit über ihren Vater – eine **Verbündete, die nicht mit hinaus will** (2.8). **Marion Teske, geb. Ahrend** (entschieden 2026-10-24), um 1975 geboren – 1987 war sie zwölf. An ihrer Tür steht „Marion Teske“, im **Hotelregister „geb. Ahrend“**: Wer Josefs Personalakte kennt und das Register liest, erkennt sie. Sie wohnt in **Zimmer 001** (6.20).
 - **Beweise und Orte:** **Vertrag** im Büro der Direktion (Sperrbereich) · **Gästebuch/Hotelregister** mit Kreuzen neben Namen seit 1987 (umgesetzt 2026-10-28: aufgeschlagen auf der Rezeption, 2.9) · **Zeitungsausschnitt** „Brand im Grandhotel – ein Toter“ · **Personalakte** Josefs mit Foto (die Statur passt) · **Kesselbuch** in Josefs Spind · der **alte Heizkeller** in U2 · die Koffer früherer Gäste im Lager (7.4).
 - **Enden (Vorschlag):**
   - **Flucht:** mit dem Schlüssel hinaus – mit allen Überlebenden (2.7).
   - **Das Abkommen brechen:** den Vertrag im Feuer von 1987 verbrennen (alter Heizkeller, 7.4). Er ist nicht mehr gebunden – ob das gut ist, bleibt offen. **Seit 2026-10-25 Teil von Marions Auftrag (2.8).**
-  - **Ihn erlösen:** ~~seine Sachen aus dem Fundsachen-Koffer zurückbringen und den Kessel ein letztes Mal anzünden – mitten in seinem Revier.~~ Seit 2026-10-25 **Marions Auftrag (2.8):** seine Sachen, der verbrannte Vertrag und Marions Stimme – das Feuer von 1987 geht aus.
-- ~~**Andeutungs-Twist:** ein Warnungszettel in der Handschrift des Spielers (2.2) – nie erklärt.~~ (Zeitschleife verworfen, 2.7)
+  - **Ihn erlösen:** seit 2026-10-25 **Marions Auftrag (2.8):** seine Sachen, der verbrannte Vertrag und Marions Stimme – das Feuer von 1987 geht aus.
 
 **Das Geheimnis in Schichten** – man setzt es zusammen, statt es zu lesen:
 1. **Gerücht:** Gäste erzählen Halbwahres (Berichte, Telefon, 4.13/4.14).
@@ -262,7 +236,7 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 **Mitwisser**
 - **Wenige Gäste wissen mehr**, als sie sagen. Sie schweigen aus Angst, Schuld oder Eigennutz.
 - **Zum Reden bringt man sie mit Beziehung *und* Beweis**, nicht mit Beziehung allein.
-- **Sie können lügen.** ~~Und sterben~~ – seit 2026-10-25 überleben **Kernfiguren jeden Angriff** verletzt (6.17) – seit 2026-10-30 nur, bis ihre Rolle erfüllt ist.
+- **Sie können lügen.** **Kernfiguren** überleben jeden Angriff verletzt, bis ihre Rolle erfüllt ist (6.17, 2026-10-25/30).
   Holt das Monster einen anderen Mitwisser, ist sein Wissen weg – oder es liegt nur noch als Notiz in seinem Zimmer. Gäste zu schützen (oder zu opfern, 4.11) bekommt dadurch Gewicht.
 - Idee: Das Monster **will gerade die Mitwisser**. Wen man beschützt, entscheidet dann auch, was man erfahren kann.
 
@@ -270,21 +244,19 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 - **Jedes Dokument zeigt auf etwas** – einen Ort, eine Person, einen Code. Lore, die nur Sammelgut ist, liest niemand.
 - **Arten:** Gästebuch und Hotelregister (Namen, Daten), Zeitungsausschnitte, Briefe, Personalakten, Baupläne (als neue Kartenblätter), Notizbuch des Hausmeisters und Kesselbuch Josefs (7.4), die Warnungszettel früherer Gäste (4.13) als roter Faden, die Koffer im Lager (7.4).
 - **Kein Inventar, kein Questmenü:** Dokumente liest man vor Ort (oder steckt sie ein wie Kartenblätter, 3.2). Was ein Dokument verrät, notiert der Spieler-Charakter als eine Zeile mit Quelle im **Notizbuch** (Lesezeichen „Notizen“, 3.10), ebenso Gerüchte – mit dem, von dem sie stammen, ohne zu sagen, ob sie stimmen. Wendepunkte der Ermittlung (ein Mitwisser bricht sein Schweigen) schreibt er ins **Tagebuch** (3.10, 8.5).
-- ~~**Zeitschleife (2.2):** Die Welt setzt sich zurück, Wissen kann bleiben – über die eigenen Zettel. Codes, Namen und wer lügt, gibt man sich selbst weiter. So wird jeder Durchgang schneller und tiefer, auch wenn man scheitert.~~ (verworfen, 2.7)
+
+**Das Ding unter dem Hotel** (entschieden 2026-11-03, ZIM-9): **Es war formlos.** 1987 hatte es keine Gestalt – Hitze,
+Atem in den Rohren, Gäste, die fehlten; so beschreibt es Ednas Zettel von Oktober 1987 (2.7, gebaut 2026-11-03). Erst
+Josef gab ihm in der Nacht zu Allerheiligen Gestalt (seit der ersten Ernte 1990 holt es als Leviathan, 2.10). Woher es
+kommt, bleibt bewusst offen.
 
 **Zu klären**
-- ~~**Was ist das Ding unter dem Hotel** vor dem Abkommen gewesen – bleibt das bewusst offen?~~ – entschieden
-  2026-11-03 (ZIM-9): **Es war formlos.** 1987 hatte es keine Gestalt – Hitze, Atem in den Rohren, Gäste, die fehlten.
-  Genau das beschreibt Ednas Zettel von Oktober 1987 (2.7), kein Wesen. Erst Josef gab ihm in der Nacht zu
-  Allerheiligen Gestalt (seit der ersten Ernte 1990 holt es als Leviathan, 2.10). Woher es kommt, bleibt bewusst offen.
-  *Umgesetzt 2026-11-03:* Ednas Zettel: „Jetzt wird es nachts warm vor meiner Tür, und in den Rohren atmet etwas.
-  Gesehen hat es keiner. Aber beim Frühstück fehlen jeden Tag mehr.“
 - Wie viel erfährt man **vor dem ersten Angriff** (2.1)? Vorschlag: nichts, was den friedlichen Anfang verrät – höchstens das Gästebuch.
 - **Wie viele Sperrbereiche** für den Anfang? Vorschlag: drei bis vier (siehe Kandidaten oben).
-- Wie hängt das Geheimnis mit dem **Schlüssel an Halloween** (2.1) zusammen – ist die Wahrheit Voraussetzung für die Flucht, oder ein eigenes, besseres Ende?
 
 ### 2.4 Tagesuhr & Tagesablauf (entschieden 2026-10-21, umgesetzt 2026-10-23)
-> **Umgesetzt (2026-10-23)** wie unten, mit diesen Entscheidungen aus der Durchsprache am selben Tag:
+> Stand: entschieden 2026-10-21 · gebaut 2026-10-23 wie unten, mit diesen Entscheidungen aus der Durchsprache am
+> selben Tag:
 > - **Anreise am 1. Oktober um 15 Uhr**; das Kalenderblatt wechselt um Mitternacht, mitten in der Nachtruhe. Die
 >   erste Nacht kommt nach gut 8 Minuten.
 > - **Nachtruhe** 23–6 Uhr, Beginn und Ende je Nacht ± ½ Stunde. Eine Feier oder Schmück-Aktion, die noch läuft,
@@ -292,19 +264,14 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
 > - **Phasen:** Morgens zieht es die Gäste in Küche und Garten, abends an die Bar und in die Lobby, die Zimmer sind
 >   fast leer. Spontane Feiern gibt es nur abends; zum Schmücken und zur Deko-Suche rufen die Gäste nur tagsüber auf
 >   (der Spieler jederzeit). Das große Schmücken kommt in Spieltagen (anfangs alle 2½–3½ Tage, ab dem 24. täglich).
-> - **Monster:** Ruhe- und Aktivphasen bleiben in Echtzeit – es ist ständig präsent (4.13) und bricht etwa sechsmal am
->   Tag auf. Die **Angriffschance je Aufbruch ist deshalb klein** (4.17), damit es nicht zu oft angreift; die übrigen
->   Aufbrüche sind Umsehen. Ebenso eskaliert Gerede nur selten (3 %). Harmlos ist es neun Aufbrüche lang (etwa
->   anderthalb Tage).
-> - **Dreistigkeit** steigt in Spieltagen (Werte 4.9); der **Deko-Anspruch** steigt in Spieltagen (5.10). Die Vereinfachung aus 4.9 kommt
->   eigens.
+> - **Monster:** Seine Auftritte folgen dem Plan der vier Modi (4.33), nicht der Uhr der Gäste. Die **Dreistigkeit**
+>   steigt in Spieltagen (+2,7 je Tag, 4.9), ebenso der **Deko-Anspruch** (5.10).
 > - **Bleiben in Sekunden:** Batterie 5 Minuten Licht (etwa ein Abend, sonst wären Batterien kaum noch knapp), Rausch
 >   5 und Kater 4 Spielstunden, Kürbiswachstum (3c, entscheidet sich mit 5.10), UV-Spuren 15 Spielstunden.
-> - **Nächte ohne Schlaf** zählen bis drei (Lakengeist sicher im Flur, 4.18), bis die Wachzeit (3.6) sie ersetzt. Der
->   Spieler schläft jederzeit 1–8 Stunden, die Nächte zählen anteilig (3.6).
+> - **Schlaf und Wachzeit** des Spielers: 3.6.
 > - **Uhrzeit sichtbar:** Wanduhr in der Lobby, Abreißkalender in Zimmer 13 und Spielmenü.
 
-**Warum:** Das Konzept braucht Uhrzeiten („die letzte Stunde“ 2.2, Mitternachtsglocke 7.8, „Die Bar schließt um
+**Warum:** Das Konzept braucht Uhrzeiten (Mitternachtsglocke 7.8, „Die Bar schließt um
 Mitternacht“ 5.9), und den Tagesablauf der Gäste (6.6) soll man lernen können. Kalendertag und Nachtruhe hängen deshalb
 an einer Uhr.
 
@@ -327,24 +294,22 @@ an einer Uhr.
   7.1), nachts schlafen alle.
 - **Feste Nachtruhe mit Streuung:** Beginn und Ende schwanken um ± eine halbe Stunde, damit sie nicht auf die Sekunde
   vorhersagbar ist. Eine Nachtruhe dauert damit rund 7 Minuten Echtzeit.
-- **Nur für die Gäste.** Der **Spieler** darf so lange wach bleiben, wie er will – mit den Nachteilen der Wachzeit
-  (3.6). Schläft er im eigenen Bett, läuft die Zeit fünfmal so schnell – so lange, wie er gewählt hat; in der
-  Nachtruhe springt sie (Zeitsprung, 3.6).
-- **Das Monster bleibt unberechenbar:** Seine Aktivphasen bleiben zufällig, die ständige Präsenz (4.13) gilt weiter.
-  Fest wird nur der Rhythmus der Menschen – der Alltag wird planbar, der Horror nicht.
+- **Nur für die Gäste.** Der **Spieler** schläft und wacht, wann er will – Wachzeit, Schlafdauer und Zeitsprung: 3.6.
+- **Das Monster bleibt unberechenbar:** Tage und Uhrzeiten der Modi schwanken je Spiel (4.33), dazwischen ist es ohne
+  Körper präsent (4.13). Fest wird nur der Rhythmus der Menschen – der Alltag wird planbar, der Horror nicht.
 
 **Was daraus folgt**
 - **Die Nacht ist jeden Tag die gefährliche Zeit:** Alle schlafen, keine Zeugen, der Lakengeist kommt in den Flur
   (4.18) – jetzt zu einer Zeit, auf die man sich vorbereiten kann.
 - **Anker für Uhrzeiten:** Durchsagen (5.9), Glocke (7.8), Öffnungszeiten der Bar, Fristen bei Aufträgen („vor der
   Nachtruhe“, 6.14).
-- **Halloween** bekommt einen Zeitpunkt: das Fest am Abend des 31., danach die letzte Nacht. Wie das Ende abläuft,
-  bleibt offen (2.1, 2.2).
+- **Halloween** bekommt einen Zeitpunkt: das Fest am Abend des 31., danach die letzte Nacht bis zur
+  Mitternachtsglocke (2.7).
 
 **Zeiteinheiten** – Faustregel für neue Werte: was dem Rhythmus des Hotels folgt (Wachstum, Rausch, Kater, Nachschub),
 in Spielstunden; was im Moment passiert (Flackern, Jagd, Kochen, Hypnose, Losreißen), in Sekunden; die Steigerung des
 Monsters (Dreistigkeit, Anspruch) in Tagen. In Spieltagen zählen u. a. Heilung (6.17), Zerfall der Beziehung (6.3),
-Plaudern, Kostüme ab dem 25., Ruhephasen (4.13) und die Schmück-Häufigkeit (5.9).
+Plaudern, Kostüme ab dem 25., der Plan der Modi (4.33) und die Schmück-Häufigkeit (5.9).
 
 **Zu klären**
 - Ob die Uhrzeiten der Phasen so passen – im Spiel prüfen.
@@ -391,7 +356,7 @@ wirkt wie eine Sandbox.
 
 **Der Wettbewerb**
 - **Das Hotel ruft ihn aus:** im Willkommensbrief, auf dem Aushangbrett und mit Durchsagen (5.9). Personal sieht man
-  nie (Betriebsferien, nur der Hausmeister bleibt – 2.11) – die unsichtbare Hotelleitung ist das Abkommen (2.3), das jedes Jahr dasselbe veranstaltet.
+  nie (Betriebsferien, nur der Hausmeister bleibt – 2.11) – die unsichtbare Hotelleitung ist das Abkommen (2.3), das jede Ernte dasselbe veranstaltet (2.10).
 - **Die Jury ist die Puppe** (5.5). Sie sitzt bis zur Siegerehrung auf dem Lobby-Sofa, mit einem kleinen Schild „Jury“.
   Kinder nehmen sie vorher **nicht** mit.
 - **Bis dahin** (1. Oktober 15 Uhr bis 2. Oktober 20 Uhr, knapp 30 Minuten): Deko besorgen und an die Tür bringen –
@@ -413,9 +378,9 @@ wirkt wie eine Sandbox.
   verstummen und schauen ebenfalls hin.
 - **Die Puppe steht auf**, hebt ab, schwebt einen Moment über dem Sofa und **löst sich in einer Rauchwolke auf** (7.6).
   Das ist das **einzige Mal**, dass sie sich vor den Augen des Spielers bewegt (5.5).
-- **Direkt danach** geht das Licht aus, Stille, Rauschen – das Monster steht in der dunklen Ecke der Lobby. Weiter wie
-  beim ersten Angriff in 2.1. **Neu entschieden 2026-10-25 (2.6), gebaut 2026-10-26:** Das Monster zeigt sich nicht;
-  während alle zur Puppe schauen, holt es Gustav Peters in Zimmer 020.
+- **Direkt danach** geht das Licht aus, Stille, Rauschen, die Gäste schreien. **Das Monster zeigt sich nicht:** Während
+  alle zur Puppe schauen, holt es Gustav Peters in Zimmer 020 (2.6, entschieden 2026-10-25, gebaut 2026-10-26). Sehen
+  kann man es erst bei den harmlosen Raubzügen danach (2.1, 4.33).
 
 **Die Regel danach**
 1. **Der Aushang wechselt** – das trägt die Regel. Nach dem Angriff hängt am Brett derselbe Zettel in derselben
@@ -427,8 +392,8 @@ wirkt wie eine Sandbox.
    (5.5). Für Spieler, die nicht am Brett vorbeikommen.
 3. **Die Bestätigung:** Beim ersten Urteil sagt der Gast es laut („Bei mir sitzt die Puppe …“, 5.5), und die Spielfigur
    notiert es im Tagebuch.
-- **Die harmlose Phase ist die Lernzeit:** Die nächsten Angriffe holen noch keinen Gast (2.1), die Puppe urteilt aber
-  schon (5.5). Ein- oder zweimal sieht man die Regel, bevor jemand vor der Puppentür stirbt – wie beim Flacker-Signal
+- **Die harmlose Phase ist die Lernzeit:** Die ersten drei Raubzüge holen noch keinen Gast (2.1, 4.33), die Puppe
+  urteilt aber schon (5.5). Ein- oder zweimal sieht man die Regel, bevor jemand vor der Puppentür stirbt – wie beim Flacker-Signal
   (4.17).
 
 **Die Texte** (entschieden 2026-10-23) – das Hotel spricht förmlich und etwas altmodisch, immer gezeichnet „Die
@@ -515,15 +480,11 @@ Die UV-Zeile führt zum Abkommen (2.3), ohne es zu erklären. Nicht „Zimmer 01
 
 Zimmernummer eingesetzt; der zweite Satz richtet sich danach, wie viel dort tatsächlich hing.
 
-**Zu klären**
-- ~~**Zeitschleife (2.2):** Rückt die Siegerehrung im nächsten Durchgang vor?~~ (Zeitschleife verworfen, 2.7)
-
 ### 2.6 Das erste Opfer: Gustav Peters (entschieden 2026-10-25)
-> Umgesetzt 2026-10-26 (`Grinch`, `MonsterDirector.first_attack_unseen`). Ändert die Siegerehrung (2.5): Das Monster
-> zeigt sich dort nicht mehr, sondern holt währenddessen Gustav in seinem Zimmer. Bisher holten die ersten Angriffe
-> keinen Gast (2.1) – Gustav ist die eine Ausnahme. Dazu 2026-10-26 entschieden und gebaut: **Der Grinch im Hotel**
-> (unten) – er hasst alle, macht im Partyraum das Licht aus, verdirbt die Stimmung, zerstört Deko, wirft mit Sachen
-> und schlägt zu.
+> Stand: entschieden 2026-10-25 · gebaut 2026-10-26 (`Grinch`, `MonsterDirector.first_attack_unseen`), dazu **Der
+> Grinch im Hotel** (unten, entschieden und gebaut 2026-10-26) · offen: die Vorschläge unten. Das Monster zeigt sich
+> bei der Siegerehrung (2.5) nicht, sondern holt währenddessen Gustav in seinem Zimmer – das eine Opfer vor den
+> harmlosen Raubzügen (2.1, 4.33).
 
 **Warum:** Der erste Tod trifft eine Figur, die man kennt, und erzählt die Regel des Wettbewerbs als Geschichte: Wer vor
 seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür selbst leergeräumt. Sein Tagebuch lehrt
@@ -545,7 +506,7 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 - Wie in 2.5: Die Gäste stehen um die Puppe, der Blick des Spielers wird zu ihr gezogen, sie steigt auf und löst sich
   in Rauch auf. Im Partyraum läuft dabei Musik.
 - **Während alle zur Puppe schauen, holt das Monster Gustav.** Es wird dabei **gar nicht gesehen** – weder bei ihm noch
-  in der Lobby; die dunkle Gestalt in der Lobbyecke (2.5) entfällt.
+  in der Lobby.
 - Dann geht das Licht aus, Stille, Rauschen, die Gäste schreien. **Gustav hört das nicht mehr** – sein letzter Satz
   bricht vorher ab. Die Reihenfolge ist wichtig für das Tagebuch: Er schreibt noch über die Feier, nicht über den Schrei.
 - **Man schafft es nicht rechtzeitig:** Wenn der Spieler sich wieder bewegen kann, ist es vorbei.
@@ -589,8 +550,6 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
   bzw. Gesprächsthema.
 
 **Vorschläge (noch nicht entschieden)**
-- **Sättigung erklärt die harmlose Phase:** Das Monster hat gefressen (4.10) – darum holen die nächsten Aufbrüche
-  noch keinen Gast (2.1), die Lernzeit der Puppe (2.5) bleibt.
 - **Ruß in den Fingerabdrücken:** Blut mit Ruß bzw. Asche (das Monster hinterlässt schon Asche) – eine stille erste
   Spur zu Josef und zum Kesselbrand (2.3). Marion Teske fällt es vielleicht auf.
 - **Wohin die Deko ging:** Er schreibt, wohin er sie geschafft hat, etwa in den Müllschlucker (7.10) – dann liegt die
@@ -641,8 +600,8 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 - **Man erfährt es spät:** Kein Schrei, keine Meldung. Bis der Spieler Zimmer 020 betritt oder das Tagebuch liest,
   reden Gäste in seiner Nähe darüber („Bei Herrn Peters steht die Tür offen.“, Kind: „Der Grinch ist weg.“); dann
   kommt es ins Tagebuch des Spielers (statt des gewöhnlichen „erster Toter“), sein Tagebuch ins Notizbuch.
-- **Am Ende der Spur** liegt ein Kleidungsstück (6.7) – der Vorschlag mit dem Hausschuh. Danach ist das Monster satt
-  (4.10, Vorschlag „Sättigung“), Gustav zählt als erster Aufbruch der harmlosen Phase.
+- **Am Ende der Spur** liegt ein Kleidungsstück (6.7) – der Vorschlag mit dem Hausschuh. Gustav zählt als Opfer
+  (Abzug auf die Dreistigkeit, 4.10); die harmlosen Raubzüge (4.33) kommen erst danach.
 - In der Lobby fragen Gäste bei der Versammlung: „Wo ist eigentlich Herr Peters?“
 
 **Zu klären**
@@ -650,9 +609,9 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
   Puppenzimmer, 5.5)?~~ Gebaut 2026-10-26: ja, er stirbt mit (bei Bedarf ändern).
 
 ### 2.7 Das Ende an Halloween: Alle Überlebenden kommen hinaus (entschieden 2026-10-25)
-> Noch nicht umgesetzt. Ersetzt „Der Schlüssel öffnet die Tür für genau einen“ aus 2.3 – dort stand zugleich „Das
-> Hotel behält immer einen“ und beim Ende „Flucht“ „jemand bleibt zurück“. Ablauf des ganzen Durchlaufs:
-> [HANDLUNG.md](HANDLUNG.md).
+> Stand: entschieden 2026-10-25, Enden 2026-10-26, Epilog 2026-11-03 · gebaut: noch nicht · offen: Ablauf der
+> Halloween-Nacht (Fest, Ritual, letztes Urteil, Glocke). Alle statt „genau einer“, weil 2.3 sich widersprach („Das
+> Hotel behält immer einen“, „jemand bleibt zurück“). Ablauf des ganzen Durchlaufs: [HANDLUNG.md](HANDLUNG.md).
 
 **Entschieden**
 - **Besorgt der Spieler den Schlüssel, öffnet er an Halloween den Haupteingang – und alle, die bis zum 31. Oktober
@@ -663,7 +622,7 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
   gehen gemeinsam hinaus. **Schlussbild:** Draußen ist zum ersten Mal keine Nacht mehr (2.1) – die Überlebenden gehen
   schweigend ins Morgengrauen.
 - **Ohne Schlüssel stirbt jeder, der noch drin ist** – auch der Spieler. Am Ende fällt das Monster bzw. das Hotel über
-  alle her; das lässt sich nicht verhindern. **Es gibt keine Zeitschleife** (2.2 verworfen). Ältere Spielstände bleiben
+  alle her; das lässt sich nicht verhindern. **Es gibt keine Zeitschleife** (2.2). Ältere Spielstände bleiben
   ladbar wie sonst (8.10).
 
 **Die drei Enden (entschieden 2026-10-26, noch nicht umgesetzt)** – je eine Zwischensequenz (seit 2026-10-30 Standbilder mit Text, 2.10), ausgelöst von der
@@ -682,17 +641,17 @@ bleiben leer.
    rütteln, schlagen dagegen; im Hintergrund holt der Leviathan in der Lobby einen nach dem anderen. Zuletzt steht er
    vor dem Spieler – und holt auch ihn.
 3. **Ohne Schlüssel, der Leviathan erlöst – der Spieler wird der neue Hausmeister.** Das Abkommen von 1987 (2.3) braucht ein
-   Monster; seit ~~1988~~ 1990 (der ersten Ernte, 2.10) ist es Josef, den man an Halloween einschloss (2.8). Ist Josef Ahrend erlöst und der Schlüssel
+   Monster; seit 1990 (der ersten Ernte, 2.10) ist es Josef, den man an Halloween einschloss (2.8). Ist Josef Ahrend erlöst und der Schlüssel
    fehlt, nimmt das Hotel den Spieler an seine Stelle: Das Tor bleibt zu, kein Angriff, Stille. Die Lampen in der Lobby
    gehen eine nach der anderen aus, unten flammt das Feuer von 1987 wieder auf, das seit dem Ritual erloschen war, die Rohre werden heiß. Der Blick
    wechselt: Der Spieler sieht jetzt mit den Augen des Monsters (verzerrt, flackernd) – er **ist** der Leviathan – und
    frisst die Gäste in der Lobby **Stück für Stück**, einen nach dem anderen. Das Bild wird dunkel.
    - **Warum so:** Die Erlösung bleibt etwas wert und ist doch kein Trostpreis – ohne Schlüssel kommt keiner hinaus,
-     und es ist das bitterste der drei Enden, weil der Spieler es selbst tut. Es erklärt, warum es jedes Jahr wieder
+     und es ist das bitterste der drei Enden, weil der Spieler es selbst tut. Es erklärt, warum es jede Ernte wieder
      ein Monster gibt.
 
-**Zu den Enden noch offen**
-- Ein **Epilog ~~im nächsten Jahr~~ zur nächsten Ernte 2029** – **entschieden 2026-11-03 (ZIM-10): nach jedem Ende,
+**Zu den Enden, später entschieden**
+- Ein **Epilog zur nächsten Ernte 2029** – **entschieden 2026-11-03 (ZIM-10): nach jedem Ende,
   je eigene Variante**, Standbilder mit Text (2.10). Am 1. Oktober 2029 kommen neue Gäste an:
   - **1a** (Schlüssel, vergessen): an der Fotowand (5.14) das Foto 2026 mit den Überlebenden scharf; in Zimmer 13 liegt
     ein Warnungszettel in der Schrift des Spielers – die eine Zeile, die im Notizbuch übrig blieb (2.10).
@@ -700,13 +659,12 @@ bleiben leer.
   - **2** (er holt alle): das Foto 2026 mit lauter verwischten Gesichtern, nur der alte Herr ist scharf (2.10).
   - **3** (der Spieler wird der Leviathan): neue Gäste, und unten brennt das Feuer von 1987.
   - **Vampir** (unten): er wartet auf dem Dachboden.
-- ~~**Wer selbst zum Vampir geworden ist** (4.22), kann bei Ende 1 nicht ins Licht – braucht ein eigenes Ende.~~ –
-  entschieden 2026-11-03 (ZIM-10): Er **bleibt drinnen** – das Tor fällt zwischen ihm und den anderen zu, er bleibt bei
-  den Bedrohungen. Im **Epilog 2029** ist er die Bedrohung auf dem Dachboden (4.22).
-- ~~**Lässt sich die Sequenz steuern** (den Schlüssel selbst drehen, in Ende 3 selbst zugreifen) oder läuft sie ganz
-  von allein ab?~~ → läuft von allein, Standbilder mit Text (2.10, 2026-10-30).
-- ~~Wie wird das Fressen in Ende 3 gezeigt, ohne die Altersempfehlung (ab 16) zu sprengen – Schnitte, Schatten, Ton?~~ –
-  entschieden 2026-11-03 (ZIM-10): **nur Text** – schwarze Bilder mit wenigen Sätzen, kein Bild vom Fressen.
+- **Wer selbst zum Vampir geworden ist** (4.22, entschieden 2026-11-03, ZIM-10), **bleibt drinnen** – das Tor fällt
+  zwischen ihm und den anderen zu, er bleibt bei den Bedrohungen. Im **Epilog 2029** ist er die Bedrohung auf dem
+  Dachboden (4.22).
+- **Die Sequenzen laufen von allein**, Standbilder mit Text (2.10, 2026-10-30).
+- **Das Fressen in Ende 3** zeigt nur Text (2026-11-03, ZIM-10) – schwarze Bilder mit wenigen Sätzen, kein Bild vom
+  Fressen, wegen der Altersempfehlung ab 16.
 - **Edna Wiegand war 1987 als Erwachsene im Hotel und kam hinaus.** Sie schrieb den Warnungszettel von Oktober
   1987 („E. K., Zimmer 017“), im Register steht sie mit Geburtsnamen „geb. Kessler“. Sie bleibt alt. Dass sie und Liesel
   sich erinnern, liegt daran, dass das Abkommen 1987 noch nicht galt (2.10).
@@ -732,26 +690,20 @@ bleiben leer.
   Retten zählt“) beantwortet.
 - **Opfern (4.11) bleibt eine Entscheidung im Lauf des Monats,** nicht mehr am Ende: Wen man bis zum 31. verliert, der
   fehlt beim Hinausgehen.
-- **Das Schweigen erklärt das Hotel:** Darum wirkt die Einladung jedes Jahr („Wie jedes Jahr“, 2.5), darum warnt draußen
+- **Das Schweigen erklärt das Hotel:** Darum wirkt die Einladung jede Ernte wieder (2.10), darum warnt draußen
   niemand, darum musste Marion selbst kommen, um zu erfahren, was 1987 geschah (2.3). Gäste wie Oskar Pohl, der meint,
-  schon einmal hier gewesen zu sein, und sich an nichts erinnert (H39), können Überlebende früherer Jahre sein.
+  schon einmal hier gewesen zu sein, und sich an nichts erinnert (H39), können Überlebende früherer Ernten sein.
   **Entschieden 2026-10-30 (2.10):** Oskar hat 2005 überlebt und fängt an, sich zu erinnern – darum hat ihn das Hotel
   wieder eingeladen.
 - **Die Warnungszettel** stammen von denen, die es nicht hinausgeschafft haben (4.13) – und von Überlebenden wie Edna,
   solange sie noch drin waren.
-- **In Jahren ohne Schlüssel** kam niemand hinaus. Ihre Koffer stehen im Lager (7.4).
-
-**Zu klären** (je mit Vorschlag)
-- **Wird das Monster erlöst, oder bleibt es das Monster?** → **Marions Auftrag, 2.8** (entschieden 2026-10-25). Davon
-  hängt das **letzte Urteil der Puppe** (5.5) ab.
-- ~~**Zeitpunkt der Öffnung:** mit der Mitternachtsglocke (7.8) oder nach dem Gruppenfoto?~~ → Mitternachtsglocke,
-  das Gruppenfoto kommt danach draußen (die drei Enden, oben, 2026-10-26).
-- ~~**Die anderen Enden aus 2.3** (Abkommen brechen)~~ – in Marions Auftrag aufgegangen (2.8).
-- **Vampir (4.22):** Wer zum Vampir geworden ist, kann nicht ins Morgengrauen – passt zu seinem eigenen, dunklen Ende.
+- **In Ernten ohne Schlüssel** kam niemand hinaus. Ihre Koffer stehen im Lager (7.4).
+- **Ob das Monster erlöst wird,** entscheidet Marions Auftrag (2.8); davon hängt das **letzte Urteil der Puppe** (5.5) ab.
 
 ### 2.8 Josef erlösen – Marions Auftrag (entschieden 2026-10-25)
-> Noch nicht umgesetzt. Fasst die Enden „Ihn erlösen“ und „Das Abkommen brechen“ aus 2.3 zu einem Auftrag zusammen.
-> Ablauf im Durchlauf: [HANDLUNG.md](HANDLUNG.md).
+> Stand: entschieden 2026-10-25 · gebaut: Büro der Direktion (2026-11-01, ZIM-150), Josefs Bund an einem Zwischenort
+> (2026-11-03, ZIM-6) · offen: Marion, Vertrag, Ritual, U2. Fasst die Enden „Ihn erlösen“ und „Das Abkommen brechen“
+> aus 2.3 zu einem Auftrag zusammen. Ablauf im Durchlauf: [HANDLUNG.md](HANDLUNG.md).
 
 **Warum:** Die Hauptgeschichte braucht eine Antwort darauf, ob das Monster das Monster bleibt. Die Antwort kommt von dem
 Menschen, der ihn am besten kannte – seiner Tochter. Wie beim Kürbismann (4.21) gilt: Fluch, Fundstück, Ritual – nur
@@ -765,8 +717,8 @@ größer, mitten in seinem Revier.
   1. **Marion ruft ihn** – ihre Stimme ist der Kern; ohne sie geht es nicht.
   2. **Seine Sachen** aus den Fundsachen im Lager (U2, 7.4) zu ihm bringen.
   3. **Das Abkommen brechen:** den Vertrag aus dem Büro der Direktion (2.3) in seinem Feuer verbrennen.
-  4. ~~**Die Tür öffnen, die man 1987 hinter ihm abschloss** – die Werkstatt im Tiefkeller (2.3).~~ Gestrichen
-     2026-10-27 zugunsten des alten Heizkellers (7.4): Dort brennt sein Feuer, dort endet das Ritual.
+  - Verworfen: die Werkstatt im Tiefkeller als vierter Teil (2026-10-27, weil sein Feuer im alten Heizkeller brennt
+    und das Ritual dort endet, 7.4).
 - **Die Erlösung ist Kür:** Hinaus kommt man mit dem Schlüssel allein (2.7). Die Erlösung entscheidet nur über den
   **letzten Angriff** – ist er nicht erlöst, urteilt die Puppe am 31. ein letztes Mal, und das Monster greift vor der
   Öffnung noch einmal an; ist er erlöst, bleibt die letzte Nacht ruhig.
@@ -794,11 +746,11 @@ größer, mitten in seinem Revier.
   man suchen soll (Vorschlag: seine **Taschenuhr** – „Er hat sie mir immer ans Ohr gehalten“ –, dazu Mütze und ein Foto
   von ihr). Erreichbar erst mit dem reparierten Aufzug (Anker 2, 7.4).
 - **Der Vertrag:** liegt im **Büro der Direktion** (Sperrbereich, 2.3). Ihn allein zu verbrennen ist gefährlich (unten).
-- ~~**Die Werkstatt**~~ (gestrichen 2026-10-27): Ihren Platz nimmt der **alte Heizkeller** in U2 ein (7.4) – der
-  Kesselraum, in dem er 1987 verbrannte. **Dort brennt das Feuer noch immer**, er heizt von dort das Hotel.
+- **Der alte Heizkeller** in U2 (7.4) – der Kesselraum, in dem er 1987 verbrannte. **Dort brennt das Feuer noch
+  immer**, er heizt von dort das Hotel.
 - **Schlüssel** (Vorschlag): Der Rezeptionist hatte die Schlüssel des Hauses. Sein **Schlüsselbund steckt in der
   Jeansjacke des Kürbismanns** (4.21) – wer ihn erlöst, kommt ins Büro der Direktion und damit an den Vertrag. So führt
-  Liesels Auftrag (2.7) in Marions. (Der Werkstattschlüssel entfällt mit der Werkstatt, 2026-10-27.)
+  Liesels Auftrag (2.7) in Marions.
 - **Zweiter Weg ins Büro (entschieden 2026-11-03, ZIM-6):** für den, der den Kürbismann nicht erlöst – schwer und erst
   ab der Mitte der Geschichte. **Josefs Schlüsselbund:** Als Hausmeister hatte Josef 1987 alle Schlüssel des Hauses am
   Gürtel, auch den zum Büro, und das Hotel hat seitdem kein Schloss getauscht. Der Bund **hängt am alten Kessel im
@@ -833,19 +785,16 @@ größer, mitten in seinem Revier.
 - *Vorschläge:*
 - **Vertrag verbrannt, aber nicht erlöst** (Sachen fehlen): Er ist **frei, aber nicht erlöst** – der
   letzte Angriff kommt ohne Puppe und ohne Warnung. Die dunkle Seite von „Abkommen brechen“ (2.3).
-- ~~**Marion stirbt vorher:** Ohne ihre Stimme keine Erlösung, nur ihr Brief in Zimmer 001.~~ Entfällt (2026-10-25):
-  Marion ist bis Halloween geschützt (6.17). Der Brief ist gestrichen (2026-10-27).
+- **Marion stirbt nicht vorher:** Sie ist bis Halloween geschützt (6.17, 2026-10-25).
 
 **Zu klären**
-- ~~Wo liegt das Büro der Direktion~~ *(Lage 2026-11-01: im Obergeschoss, im Plan gemalt, nur durchs Sekretariat zu
-  erreichen – als Innenraum gebaut, ZIM-150)*. Offen: Gibt es einen zweiten Weg hinein, falls der Kürbismann nicht
-  erlöst wird, und wie ist es verschlossen (ZIM-6)?
 - **Wie das Lager aufgeht** (7.4 offen) – auch mit dem Schlüsselbund?
 - **Lakengeist:** Bleibt er nach der Erlösung, oder werden die Verschwundenen mit frei?
 
 ### 2.9 Wo ist Herr Peters? – Doris' Suche (entschieden 2026-10-26)
-> Noch nicht gebaut. Der Bogen zwischen Gustavs Tod (2.6, M4) und dem ersten Abstieg (M7): Er gibt dem Weg in den
-> Keller einen Grund. Ablauf in [HANDLUNG.md](HANDLUNG.md) (M5a–M7b). Mit „Vorschlag“ markierte Punkte sind aus der
+> Stand: entschieden 2026-10-26 · gebaut: Mitteilung am Brett (2026-10-27), Hotelregister (2026-10-28), Klingel
+> (2026-11-02, ZIM-146) · offen: Doris' Bitte, Suchtrupp, Brille. Der Bogen zwischen Gustavs Tod
+> (2.6, M4) und dem ersten Abstieg (M7): Er gibt dem Weg in den Keller einen Grund. Ablauf in [HANDLUNG.md](HANDLUNG.md) (M5a–M7b). Mit „Vorschlag“ markierte Punkte sind aus der
 > Durchsprache noch nicht bestätigt.
 
 **Grundidee:** Gustav ist tot (2.6) – aber die Gäste wissen es noch nicht. Der Bogen erzählt die Hoffnung, dass er noch
@@ -952,17 +901,14 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 **Im Plan:** Die Leviathanmauer (früher Gitter) im Heizraum hat die Farbe **#9c5a5a** (7.4); der Nutzer malt sie.
 
 **Zu klären**
-- ~~**Was hinter dem Gitter liegt**~~ – geklärt 2026-10-27: Das Gitter wird zur **Leviathanmauer**, hinter der es
-  hinunter in den alten Heizkeller (U2) geht (7.4). Wo sie im Heizraum sitzt, malt der Nutzer neu; beim Bau Eintrag
-  für #9c5a5a in `PLANFARBEN.md` (steht dort seit 31.10.), `build_map.py` liest sie aus `Ausstattung` als Strich auf der Wand.
 - Uhrzeiten des Suchtrupps; Inhalt der Blechdose (eigener Gegenstand oder nur ihr Inhalt?); liegt 033 wirklich gegenüber
   von 020 (im Plan prüfen)?
-- Was, wenn Doris vorher stirbt (sie ist keine Kernfigur)? Vorschlag: In der harmlosen Phase kann sie es nicht – die
-  ersten Angriffe holen niemanden (2.1).
+- Was, wenn Doris vorher stirbt (sie ist keine Kernfigur)? Harmlos sind nur die ersten drei Raubzüge (4.33) – ein
+  Urteil kann sie schon vor dem 4.10. treffen.
 
 ### 2.10 Die Ernte: alle drei Jahre (entschieden 2026-10-30)
-> Noch nicht umgesetzt, außer an der Fotowand (2026-11-03, ZIM-133): die 14 Erntejahre und der Fleck von 2005; Motive
-> und alles Übrige in ZIM-117. Ändert 2.3 („jedes Jahr“, der Erbe), 2.6 (Walter), 2.7 (Vergessen, Ende 1), 5.14 (Fotowand)
+> Stand: entschieden 2026-10-30 · gebaut: Fotowand mit den 14 Erntejahren und dem Fleck von 2005 (2026-11-03,
+> ZIM-133), Sekretariat mit Generalschlüssel (2026-11-03, ZIM-6) · offen: Motive und alles Übrige (ZIM-117). Ändert 2.3 („jedes Jahr“, der Erbe), 2.6 (Walter), 2.7 (Vergessen, Ende 1), 5.14 (Fotowand)
 > und 7.4 (Zimmer 18: 2003 → 2005, Fundsachen). Anlass: Die Fotowand hängt 14 Rahmen mit Lücken, das Konzept sagte
 > „jedes Jahr seit 1987“ – und nach 2.7 sterben ohne Schlüssel alle, nicht ein paar je Jahr. **Am selben Tag
 > ergänzt:** Ankunftsfoto statt Foto beim Fest, Rudolf Hain, das Sekretariat, Standbilder mit Text für erzählte Szenen.
@@ -998,7 +944,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - **Das Foto von 2005 fehlt an der Wand:** Wo es hing, ist nur ein hellerer **Fleck auf der Tapete** mit leerem Nagel.
   Die Direktion hat es abgenommen, weil darauf Überlebende scharf zu sehen sind. Es liegt im **Sekretariat**, leicht zu
   finden: in einer nicht abgeschlossenen Schreibtischschublade, das Glas im Rahmen gesprungen. Das Sekretariat ist das
-  Vorzimmer des Büros der Direktion, aber **kein Sperrbereich** – im Plan fehlt es noch (malt der Nutzer).
+  Vorzimmer des Büros der Direktion (OG, ZIM-150), aber **kein Sperrbereich**.
 - **Zugang zum Sekretariat (entschieden 2026-11-03, ZIM-6):** Die Tür ist verschlossen und öffnet sich **um den 6. bis
   10. Tag** über Brunos Strang (HANDLUNG K3): Im Spind des Hausmeisters, den Bruno in der fünften Nacht aufbricht, hing
   neben der Hauptsicherung auch der **Sekretariatsschlüssel**, und Bruno behält beides. Ab dem 6.10. geht das Gerücht
@@ -1101,7 +1047,6 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - „seit 1988 ist es der Heizer“ → seit 1990 (2.7); Fundsachen-Koffer bis 2023 statt 2019 (7.4).
 
 **Zu klären**
-- ~~Lage des Sekretariats im Plan~~ *(2026-11-01: im OG vor dem Büro der Direktion, gemalt und gebaut, ZIM-150)*.
 - Welche Zeile im Notizbuch bleibt in Ende 1a?
 - Bildfolgen im Einzelnen: wie viele Bilder je Szene, Texte, Tönung.
 
@@ -1149,7 +1094,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   Nutzer malt ihn). Im Spind liegt jede Ernte die Hauptsicherung des Aufzugs – bis Bruno ihn aufbricht (7.4).
 - **Sein Notizbuch** (7.4) gab er 2005 den Gästen aus 13 und 018, dazu den Schaltschlüssel – sein erster Bruch. Beide
   wurden geholt, danach traute er sich nicht mehr. 2026 ist seine zweite Chance („der wahrscheinlichste, der bricht“,
-  2.3). Wie er bricht, ist offen – Kandidat: der zweite Weg ins Büro der Direktion (2.8, ZIM-6).
+  2.3). Wie er bricht, ist offen.
 - **Betriebsferien:** Zwischen den Ernten läuft das Hotel mit Personal (2.10). Im Ernte-Oktober hängt im Personaltrakt
   (Wortlaut bestätigt 2026-11-03) *„Oktober: Betriebsferien. Das Haus bleibt besetzt: Hausmeister.“* – darum sieht man kein
   Personal (2.5).
@@ -1312,75 +1257,53 @@ Verstecke dienen nicht nur zur Flucht, sondern auch dazu, das Monster **gezielt 
   (2,10 m, zwei Unterschränke, Mittelschublade, grüne Lederauflage in DIN A1 mit Goldprägung), im Sekretariat ein schlichterer
   (1,40 m, ein Unterschrank) – beide selbst gebaut im Look der Kommode. Die Schubladen gehen auf wie die der Kommoden,
   enthalten aber **nur Festes** aus der Handlung (z. B. das Foto von 2005 im Sekretariat, 2.10), sonst sind sie leer.
-  Die Schlüsselschilder sind vorerst Zier; **abschließbare Schubladen** und ihre Schlüssel kommen mit ZIM-6.
+  Die Schlüsselschilder sind Zier; abschließbar ist nur die Schublade mit **Zahlenschloss** im Sekretariat
+  (Generalschlüssel, gebaut 2026-11-03, ZIM-6, 2.10).
 
-### 3.6 Schlaf & Müdigkeit (vorgemerkt 2026-10-19, Schlafdauer und Zeitsprung umgesetzt 2026-10-24, Wachzeit, fremde Betten, Sprung am Tag und Gäste wecken umgesetzt 2026-10-27)
+### 3.6 Schlaf & Müdigkeit (entschieden 2026-10-19, gebaut 2026-10-27)
+> Stand: entschieden 2026-10-19 · gebaut 2026-10-24 (Schlafdauer, Zeitsprung) und 2026-10-27 (Wachzeit, fremde Betten,
+> Sprung am Tag, Gäste wecken) · offen: Tuning im Spiel.
+
 Müdigkeit fließt in die **Schwäche** ein, nach der sich der Lakengeist seine Opfer sucht (4.18). Die feste Nachtruhe
 gilt nur für die Gäste (2.4) – der Spieler bleibt wach, so lange er will, und schläft, wann er will.
 
-> **Umgesetzt (2026-10-27): Gäste wecken.** Am Bett eines schlafenden Gastes („… wecken [E]“, rütteln) oder durch
-> Klopfen an seiner Tür (schlafen alle, wacht einer auf). Was er davon hält, hängt am **Grund**: **Gefahr** – das
-> Monster unterwegs im selben Geschoss oder näher als 25 m, eine echte Flackerwelle, der Lakengeist geht um, der
-> Kürbismann ist im Haus oder angekündigt – macht ihn **dankbar** (Beziehung +6); er steht auf, macht Licht und
-> bleibt **1–2 Spielstunden wach** im Zimmer – so lange ist er ein Zeuge gegen den Geist. **Ohne Grund** sinkt die
-> Beziehung um 5 (bei Freunden um 2), er ist **2 Spielstunden gereizt** (spricht nicht, nimmt nichts an, „gereizt“ im
-> Hinweis) und legt sich nach 20–40 s wieder hin. **Falscher Alarm** – es läuft nur eine Halluzination (Rauschen,
-> falsche Flackerwelle) – kostet 8 und **Vertrauen**: 6 Spielstunden lang glaubt er einem Wecken nicht, auch wenn es
-> dann echt ist (kein Dank). **Feuer ist bewusst kein Grund** (entschieden 2026-11-03): brennende Deko (5.11) lodert
-> nur Sekunden. Debug: `--wecken=id[,gefahr|halluzination|klopfen]`.
-
-> **Umgesetzt (2026-10-27): Wachzeit, Stufen, fremde Betten, Sprung am Tag.** Die Nächte ohne Schlaf sind ersetzt: Es
-> zählt die **Wachzeit in Spielstunden, von Anfang an** (Ankunft ausgeschlafen). Schlaf senkt sie anteilig – sechs
-> Stunden auf null, eine um ein Sechstel; Kaffee zählt den Schlaf halb, Tee mehr (3.11/3.12) und überdeckt 12 Stunden.
-> **Stufen:** ab **16 h** müde (Gedanke, Gähnen, die Augen fallen kurz zu), ab **24 h** übermüdet (Halluzinationen,
-> etwas mehr Schwäche – der Lakengeist kommt öfter –, Ausdauer, Luft, Hypnose und Griff zehren stärker, der Schock
-> klingt langsamer ab), ab **36 h** Sekundenschlaf (eine halbe Sekunde schwarz, auch auf der Flucht), ab der
-> **Schwelle** sicher im Flur – **je Spiel zufällig zwischen 48 und 72 Stunden** (entschieden 2026-10-27). Keine
-> Anzeige. Die Sicht verschwimmt ab 16 h, bis zur Schwelle voll. **Ausgeschlafen** nach einer ganzen Mütze Schlaf, vier
-> Spielstunden lang (4 min): das Gegenteil von übermüdet. **Fremde Betten:** Am fremden Bett dreht man das Mausrad
-> hoch, sonst setzt man sich auf die Kante. Freies Bett wie oben (das Zimmer würfelt beim Einbruch nach dem Raubzug mit, keine eigene
-> Deko); Gäste reagieren wie oben, Verfeindete klauen 3–8 Münzen (man merkt es beim Aufwachen) oder schlagen; wer
-> geweckt wurde und liegen bleibt, fliegt hinaus. **Sprung am Tag:** wie nachts, solange keine Feier, kein Schmücken
-> und keine Siegerehrung läuft, bis zur Nachtruhe und bis kurz vor den nächsten Auftritt des Monsters (der am Tag also
-> immer echt bleibt); danach stehen die Gäste, wo ihr Tagesablauf sie hinschickt. Debug: `--awake=h[,sicher]`,
-> `--sleep=tag[,h]`, `--fremdbett=id[,beziehung]`, `--fremdbett=frei[,h]`.
->
-> **Umgesetzt (2026-10-24): Schlafdauer wählen.** Am eigenen Bett stellt man mit dem **Mausrad** ein, wie lange man
-> schläft – **1 bis 8 Stunden**, voreingestellt **eine** (nach jedem Schlaf wieder). Schlafen geht **jederzeit**; wer
-> schläft, wenn die Nachtruhe endet, schläft weiter. Sind die Stunden um, steht man auf. Geweckt wird man von Monster
-> in der Nähe und Geräuschen. Die **Nächte ohne Schlaf zählen anteilig** – eine Vorstufe zur Wachzeit unten: **Sechs
-> Stunden** sind ganz ausgeschlafen (die Schuld fällt auf null), weniger baut sie anteilig ab (eine Stunde um ein
-> Sechstel). Am Ende jeder Nachtruhe kommt hinzu, was seit der letzten an sechs Stunden fehlte (gar nicht geschlafen:
-> eine ganze Nacht). Wer jede Nacht nur eine Stunde schläft, ist nach etwa fünf solchen Nächten so müde wie nach drei
-> durchwachten; mit drei Stunden pendelt es sich bei einer Nacht ein, mit vier bei einer halben. Kater gibt es ab zwei
-> Stunden Schlaf im Rausch (3.7). Debug: `--sleep=bett[,h]`.
->
-> **Umgesetzt (2026-10-20): verschwommene Sicht.** Jede Nacht ohne Schlaf macht die Sicht unschärfer – nach einer
-> Nacht ein Hauch, nach drei deutlich. Sie wird in langsamen Schüben schlimmer und wieder etwas klarer, als fielen
-> einem die Augen zu. Mit Kater ist die Sicht noch leicht getrübt (3.7). Debug: `--awake=n`.
-
-**Ziel (gebaut 2026-10-27 – siehe oben)**
-- **Wachzeit statt Nächte zählen:** Statt „Nächte ohne Schlaf“ zählt die **Zeit seit dem letzten Schlaf** in
-  **Spielstunden** (2.4). Schlaf senkt sie je nach Dauer – eine ganze Nachtruhe auf null, wer früh geweckt wird, ist
-  nur halb erholt. Die verschwommene Sicht hängt dann auch daran.
-- **Stufen** (Vorschlag): ab ~**16 Stunden** wach **müde** (Gedanke, Gähnen, die Augen fallen kurz zu) ·
-  ab ~**24 Stunden** **übermüdet** (Halluzinationen wie in 4.13/6.8, der Lakengeist kommt deutlich öfter, Werte
-  schlechter) · nach **48–72 Stunden ohne Schlaf** kommt der Lakengeist **sicher in den Flur**, sobald man dort allein
-  ist. Keine Anzeige – man merkt es am Körper (wie die Ausdauer, 3.1). Vielleicht bei starker Übermüdung
-  **Sekundenschlaf**: die Augen fallen eine halbe Sekunde zu, auch auf der Flucht.
-- **Ausgeschlafen** (einige Minuten nach einer ganzen Nachtruhe): mehr Ausdauer, länger Luft anhalten, Schock baut
-  schneller ab, die Hypnose des Geists ist schwächer, Losreißen leichter. Übermüdet umgekehrt.
-- **In fremden Betten schlafen:**
-  - **Freies Bett** (leeres Zimmer): geht, aber das Zimmer ist fremd – keine Deko vor der Tür, das Monster biegt
-    eher ab.
-  - **Bett eines Gastes:** Er kommt zur Nachtruhe heim und findet dich. **Freunde** stört das nicht – sie legen sich
-    woanders hin, gute Freunde **halten vielleicht Wache** (ein wacher Zeuge vertreibt den Geist). **Neutrale bis
-    genervte** Gäste wecken dich, die Beziehung sinkt, das Gerücht „hat in meinem Bett geschlafen“ geht herum.
-    **Verfeindete** wecken dich unsanft, schlagen zu – oder beklauen dich im Schlaf.
-- **Gäste wecken:** macht sie unglücklich (Beziehung sinkt, bei Freunden weniger; eine Weile gereizt). **Mit gutem
-  Grund** – das Monster ist wirklich nah, es flackert – sind sie dankbar (Beziehung steigt); ein **falscher Alarm**
-  (etwa aus einer Halluzination) kostet Vertrauen. Ein geweckter Gast ist auch ein Zeuge gegen den Geist, schläft
-  aber bald wieder ein.
+**So ist es gebaut**
+- **Wachzeit** in Spielstunden, **von Anfang an** (Ankunft ausgeschlafen; entschieden 2026-10-27). Keine Anzeige – man
+  merkt es am Körper (wie die Ausdauer, 3.1).
+- **Stufen:** ab **16 h** müde (Gedanke, Gähnen, die Augen fallen kurz zu) · ab **24 h** übermüdet (Halluzinationen wie
+  in 4.13/6.8, etwas mehr Schwäche – der Lakengeist kommt öfter –, Ausdauer, Luft, Hypnose und Griff zehren stärker,
+  der Schock klingt langsamer ab) · ab **36 h** Sekundenschlaf (eine halbe Sekunde schwarz, auch auf der Flucht) · ab
+  der **Schwelle** kommt der Lakengeist sicher in den Flur, sobald man dort allein ist – **je Spiel zufällig zwischen 48
+  und 72 Stunden** (entschieden 2026-10-27, gespeichert).
+- **Sicht:** verschwimmt ab 16 h, bis zur Schwelle voll – in langsamen Schüben schlimmer und wieder etwas klarer, als
+  fielen einem die Augen zu. Mit Kater ist sie noch leicht getrübt (3.7).
+- **Schlafdauer:** Am eigenen Bett stellt man mit dem **Mausrad** **1 bis 8 Stunden** ein, voreingestellt **eine** (nach
+  jedem Schlaf wieder). Schlafen geht **jederzeit**; wer schläft, wenn die Nachtruhe endet, schläft weiter. Geweckt wird
+  man von Monster in der Nähe und Geräuschen. **Sechs Stunden** setzen die Wachzeit auf null, weniger senkt sie anteilig
+  (eine Stunde um ein Sechstel); Kaffee zählt den Schlaf halb, Tee mehr (3.11, 3.12). Kater gibt es ab zwei Stunden
+  Schlaf im Rausch (3.7).
+- **Ausgeschlafen** nach sechs Stunden Schlaf, vier Spielstunden lang: mehr Ausdauer, länger Luft anhalten, Schock baut
+  schneller ab, Hypnose und Griff des Geists zehren weniger – das Gegenteil von übermüdet.
+- **Fremde Betten:** Am fremden Bett dreht man das Mausrad hoch, sonst setzt man sich auf die Kante.
+  - **Freies Bett** (leeres Zimmer): geht, aber keine eigene Deko vor der Tür, und das Zimmer würfelt beim Einbruch
+    nach dem Raubzug mit (4.33).
+  - **Bett eines Gastes:** Er kommt zur Nachtruhe heim und findet dich. **Freunde** legen sich woanders hin, gute
+    Freunde **halten vielleicht Wache** (ein wacher Zeuge vertreibt den Geist). **Neutrale bis genervte** Gäste und
+    Kinder wecken dich, die Beziehung sinkt, das Gerücht „hat in meinem Bett geschlafen“ geht herum; wer schon einmal
+    geweckt wurde und liegen bleibt, fliegt hinaus. **Verfeindete** klauen 3–8 Münzen (man merkt es beim Aufwachen)
+    oder schlagen einen wach.
+- **Gäste wecken:** am Bett eines schlafenden Gastes („… wecken [E]“, rütteln) oder durch Klopfen an seiner Tür
+  (schlafen alle, wacht einer auf). Was er davon hält, hängt am **Grund**:
+  - **Gefahr** – das Monster unterwegs im selben Geschoss oder näher als 25 m, eine echte Flackerwelle, der Lakengeist
+    geht um, der Kürbismann ist im Haus oder angekündigt – macht ihn **dankbar** (Beziehung +6); er steht auf, macht
+    Licht und bleibt **1–2 Spielstunden wach** im Zimmer – so lange ist er ein Zeuge gegen den Geist.
+  - **Ohne Grund** sinkt die Beziehung um 5 (bei Freunden um 2), er ist **2 Spielstunden gereizt** (spricht nicht,
+    nimmt nichts an, „gereizt“ im Hinweis) und legt sich nach 20–40 s wieder hin.
+  - **Falscher Alarm** – es läuft nur eine Halluzination (Rauschen, falsche Flackerwelle) – kostet 8 und
+    **Vertrauen**: 6 Spielstunden lang glaubt er einem Wecken nicht, auch wenn es dann echt ist (kein Dank).
+  - **Feuer ist bewusst kein Grund** (entschieden 2026-11-03), weil brennende Deko (5.11) nur Sekunden lodert.
+- **Debug:** `--awake=h[,sicher]`, `--sleep=bett[,h]`, `--sleep=tag[,h]`, `--fremdbett=id[,beziehung]`,
+  `--fremdbett=frei[,h]`, `--wecken=id[,gefahr|halluzination|klopfen]`.
 
 **Zeitsprung beim Schlafen (entschieden und umgesetzt 2026-10-24)**
 
@@ -1390,9 +1313,8 @@ lang – Gäste sprängen 1,4 m (ferne über 4 m) je Schritt, das Monster stünd
 - **So fühlt es sich an:** Augen zu, dunkel, gedämpfte Geräusche, leises Ticken, die Uhrzeit läuft sichtbar mit –
   etwa **eine halbe Sekunde je Stunde** (8 Stunden ≈ 4 s), mit [E] abbrechbar. Kein Ladebildschirm-Gefühl.
 - **Was nur an der Zeit hängt, rechnet nach:** Uhr, Kürbisse, Fäulnis, Nachwachsen (5.10), Rausch, Kater, Schock.
-- **Das Monster lebt im Sprung weiter:** Gewürfelt wird mit seinem eigenen Zeitplan – Aufbrüche, Absichten, die Puppe,
-  der Weg zur Puppentür, das Abbiegen in Zimmer und das Aufreißen von Verstecken laufen nach denselben Regeln, nur ohne
-  zu gehen, mit Opfern. Es kommt zu einem, wenn sein Weg zu Zimmer 13 führt (Puppe davor oder Zimmer 13 als Ziel und
+- **Das Monster lebt im Sprung weiter:** Gewürfelt wird mit seinem Plan der Modi (4.33) – die Puppe, der Weg zur
+  Puppentür, aufgebrochene Türen und aufgerissene Verstecke laufen nach denselben Regeln, nur ohne zu gehen, mit Opfern. Es kommt zu einem, wenn sein Weg zu Zimmer 13 führt (Puppe davor oder Zimmer 13 als Ziel und
   die Deko hält nicht) – oder wenn man hörte, was es tut (ein Schrei, ein aufgerissenes Versteck in der Nähe): Dann ist
   es ab da wirklich unterwegs, und der Sprung endet **5 s vor dem Ziel**; man schreckt in normalem Tempo hoch. **Kein
   Tod im Schlaf ohne Chance zu reagieren.**
@@ -1403,8 +1325,10 @@ lang – Gäste sprängen 1,4 m (ferne über 4 m) je Schritt, das Monster stünd
   dass man es hört, bekommt keine Meldung und keine Totenglocke – man findet Blut, das Kleidungsstück, aufgerissene
   Verstecke, verängstigte Gäste, das Notizbuch und das Tagebuch (6.12). So hat Schlafen Gewicht und ist kein sicheres
   Vorspulen.
-- **Nachts und am Tag** wird gesprungen (am Tag seit 2026-10-27, siehe oben). Endet die Nachtruhe, endet der
-  Nachtsprung und es geht als Tagessprung weiter; Reste unter einer Spielminute schläft man im Zeitraffer ×5.
+- **Nachts und am Tag** wird gesprungen (am Tag seit 2026-10-27): am Tag, solange keine Feier, kein Schmücken und keine
+  Siegerehrung läuft, bis zur Nachtruhe und bis kurz vor den nächsten Auftritt des Monsters (der am Tag also immer echt
+  bleibt); danach stehen die Gäste, wo ihr Tagesablauf sie hinschickt. Endet die Nachtruhe, endet der Nachtsprung und
+  es geht als Tagessprung weiter; Reste unter einer Spielminute schläft man im Zeitraffer ×5.
 - **Was weckt:** die Mitternachtsglocke (7.8, auch im Zeitraffer) und das Telefon in Zimmer 13 (nachts die unheimlichen
   Anrufe) – wer durchschlafen will, legt den Hörer daneben (4.14). Durchsagen gibt es nachts keine, die Siegerehrung
   liegt am Abend.
@@ -1412,10 +1336,6 @@ lang – Gäste sprängen 1,4 m (ferne über 4 m) je Schritt, das Monster stünd
   Ein guter Freund hält sie auf Bitte (gebaut 2026-11-02, ZIM-62, Einzelheiten in 6.18 Punkt 4).
 - **Spannung der Nacht (2.4):** Die Nacht bleibt die gefährliche Zeit nur, wenn der Sprung so gefährlich ist, dass
   Wachbleiben und Schlafen beide ihren Preis haben – Tuning im Spiel.
-
-**Entschieden (2026-10-27)**
-- **Schwelle:** zufällig zwischen 48 und 72 Stunden je Spiel (gespeichert).
-- **Ab wann:** Die Wachzeit zählt von Anfang an, nicht erst nach dem ersten Angriff.
 
 ### 3.7 Trinken an der Bar (entschieden 2026-10-19)
 An der Bar kann man **etwas trinken** (kostet Geld) – und betrunken werden. Rausch fließt in die **Schwäche** ein,
@@ -1528,7 +1448,7 @@ an Lampen und Kerzen.
 > früherer Gäste verraten (auch die UV-Zeile), Einladungen zur Feier und zum Schmücken am Telefon, der Anruf eines
 > Toten. Tagebuch: Ankunft, Siegerehrung (mit oder ohne den Spieler), erstes Urteil, erster Toter, erster Diebstahl,
 > Lakengeist, Kürbismann; die fremde Zeile (4.13) steht beim Aufschreiben darunter; „Im Tagebuch blättern“ am
-> Schreibtisch. Beim Bauen festgelegt: Unter einer Aufgabe steht klein *„Edna · Zi. 021 · vor der Nachtruhe“*, das
+> Schreibtisch. Beim Bauen festgelegt: Unter einer Aufgabe steht klein *„Edna · Zi. 003 · vor der Nachtruhe“*, das
 > Kreuz direkt hinter dem Namen; der Tageskopf ohne Wochentag (das Spiel hat kein Jahr). Die Seiten sind
 > **ungeschattet** – beleuchtet war die Schrift grau auf grau, und so liest man auch im Dunkeln. Eine Seite fasst
 > 14 Zeilen, groß genug für 480 × 270. Noch offen: Gerüchte im Gespräch (es gibt noch kein System, das sie trägt).
@@ -1571,7 +1491,7 @@ zwei Bücher mit klar getrennten Rollen:
 - **Fortlaufend in der Reihenfolge, in der man sie bekommt** – nichts wird umsortiert, nichts hervorgehoben. Jeder
   Spieltag beginnt mit einem Tageskopf (*„3. Oktober“*).
 - **Eine Zeile je Aufgabe:** was, von wem mit **Zimmernummer** (bei 67 Gästen findet man sonst niemanden) und die
-  Frist, falls es eine gibt – *„Kerze bringen“*, darunter klein *„Edna · Zi. 021 · vor der Nachtruhe“*.
+  Frist, falls es eine gibt – *„Kerze bringen“*, darunter klein *„Edna · Zi. 003 · vor der Nachtruhe“*.
 - **Eingetragen beim Annehmen.** Eine abgelehnte Bitte kommt nicht hinein.
 - **Drei Enden:**
   - **Erledigt:** durchgestrichen – sobald die Figur es merkt (der Gast bedankt sich, die Szene ist vorbei), nicht
@@ -1617,11 +1537,11 @@ zwei Bücher mit klar getrennten Rollen:
 Gegen Müdigkeit (3.6) hilft sonst nur Schlaf. Kaffee **überdeckt** sie – er baut sie nicht ab. So bleibt die
 Nacht gefährlich (2.4): Wer wach bleibt, zahlt später. Zugleich das Alkoholfreie für Erwachsene (3.7).
 
-- **Wirkung:** Eine Tasse wirkt **3 Spielstunden**. So lange fühlt man sich, als hätte man **eine Nacht weniger**
-  Schlaf nachzuholen – Sicht und Schwäche (Lakengeist, 4.18) wie ausgeruhter. Die Schuld selbst läuft weiter. Weitere
-  Tassen verlängern die Wirkung nur, sie überdecken nicht mehr.
-- **Das Tief:** Lässt die Wirkung nach, kommt die Müdigkeit **eine Spielstunde lang schwerer** zurück (eine halbe
-  Nacht mehr). Wer da schon schläft, verschläft es.
+- **Wirkung:** Eine Tasse wirkt **3 Spielstunden** und **überdeckt 12 Wachstunden** (3.6) – Sicht und Schwäche
+  (Lakengeist, 4.18) wie ausgeruhter. Die Wachzeit selbst läuft weiter. Weitere Tassen verlängern die Wirkung nur, sie
+  überdecken nicht mehr.
+- **Das Tief:** Lässt die Wirkung nach, kommt die Müdigkeit **eine Spielstunde lang schwerer** zurück (**+6 Wachstunden**).
+  Wer da schon schläft, verschläft es.
 - **Schlecht schlafen:** Solange der Kaffee wirkt, zählt Schlaf **nur halb** – erst Kaffee, dann ins Bett, bringt wenig.
 - **Zu viel:** Ab der **dritten Tasse** kurz hintereinander zittert die Hand (der Gegenstand darin bebt), man hört sein
   Herz klopfen, und beim Mäxchen verrät das Zittern den Bluff wie im Rausch (3.7). Es legt sich, wenn der Kaffee
@@ -2081,8 +2001,8 @@ man tun muss.
 - **Täuschung** (entschieden 2026-10-17, nicht gebaut): Selten zuckt das Licht nur kurz, obwohl mehr kommt – je
   dreister es ist, desto öfter (Vorschlag: höchstens jedes fünfte Mal, nie bei den harmlosen Raubzügen). Ob das unter
   den Modi gilt, ist offen – 4.33 nennt sie nicht.
-- **Für den Spieler** gilt jedes Signal: Erwischt es ihn, stirbt er – immer, auch bei den harmlosen Raubzügen
-  (entschieden 2026-10-22).
+- **Für den Spieler** gilt jedes Signal: Erwischt es ihn, stirbt er. Nur die drei harmlosen Raubzüge (4.33) brechen
+  auch vor ihm ab, gut 2,5 m vor dem Zugriff.
 
 **Drumherum**
 - **Gäste reagieren** (entschieden und umgesetzt 2026-10-22, 5.5): Sobald die Welle sie erreicht, bringen sich alle in
@@ -2125,17 +2045,17 @@ Lampe verzögert nach `wave_delay` (vom Heizkeller über das Treppenhaus), dazu 
 >   ständig zurück; in 3 s schafft man es erst mit etwa 6–7 Wechseln je Sekunde, ab dem 4. Mal greift er noch fester zu.
 >   Gäste reißen sich nur noch mit 5 % + 20 % × Mut los.
 > - **Verstecken im Schrank:** Er verschwindet nicht, sondern wartet **20–35 s vor den Schranktüren** (rüttelt,
->   flüstert). Wer herauskommt, wird sofort gepackt. Danach fliegt er mit **40 %** (ab dem 6. Mal **75 %**, +10 % je
->   Nacht ohne Schlaf) **hinein** und würgt im Schrank – sonst gibt er auf. Luft anhalten senkt die Chance (bis zur
+>   flüstert). Wer herauskommt, wird sofort gepackt. Danach fliegt er mit **40 %** (ab dem 6. Mal **75 %**, bei voller
+>   Schwäche +30 %) **hinein** und würgt im Schrank – sonst gibt er auf. Luft anhalten senkt die Chance (bis zur
 >   Hälfte), Keuchen verrät einen sofort. Zeugen vertreiben ihn auch hier. Nur ab dem 3. Mal (wenn er ohnehin
 >   hereinkäme) und nur am Schrank – unterm Bett verschwindet er.
 > - **Schlafen:** im eigenen Bett (Zimmer 13), Dauer und Zeitsprung siehe 3.6. Zu Schlafenden kommt er nie (das Bett
 >   ist ein Versteck); das Monster kann einen im Bett finden.
-> - **Schlafmangel:** Am Ende jeder Nachtruhe (nach dem ersten Angriff) wächst die Zahl der Nächte ohne Schlaf um das,
->   was an sechs Stunden Schlaf fehlte (3.6).
->   Je Nacht kommt er häufiger (+10 % am Fenster, kürzere Pause, öfter im Flur), ab **2** Nächten auch vor dem
->   6. Mal im Flur, ab **3** Nächten **sicher im Flur**, sobald man dort allein ist – auch ohne Nachtruhe. Zeugen
->   vertreiben ihn weiterhin. Schlaf baut den Zähler ab (3.6). Debug: `--awake=n`, `--ghost=schrank`, `--sleep=bett`.
+> - **Schlafmangel** zählt über die Wachzeit (3.6): Ab 16 Stunden wach wächst die Schwäche, bis sie bei der je Spiel
+>   gewürfelten Grenze von 48–72 Stunden voll ist; übermüdet kommt etwas dazu. Je müder, desto häufiger kommt er (am
+>   Fenster, kürzere Pause, öfter im Flur), ab ⅔ Schwäche auch vor dem 6. Mal im Flur, an der Grenze **sicher im
+>   Flur**, sobald man dort allein ist – auch ohne Nachtruhe. Zeugen vertreiben ihn weiterhin. Schlaf setzt die
+>   Wachzeit zurück (3.6). Debug: `--awake=n`, `--ghost=schrank`, `--sleep=bett`.
 > - **Häufig und schnell (2026-10-18):** Beim Betreten eines dunklen Raums mit offenem Vorhang kommt er mit **70 %**;
 >   wer darin **bleibt**, für den wird alle **6 s** neu gewürfelt (**25 %**). Pause nach einem Besuch **45 s**, er
 >   schwebt mit 1,6 m/s heran und kommt mit 1,1 m/s herein. Gilt auch für Gäste.
@@ -2210,7 +2130,7 @@ Von **0 bis 1 Uhr** (2.4) zieht er durch die **Flure**, jede Nacht – wie alles
   seine Stufen am Fenster (Tabelle oben) bleiben davon unberührt.
 - **Nur Flure, keine Zimmer:** In den Zimmern gilt weiter die Regel am Fenster. Wer um 0 Uhr mit Licht im Zimmer
   ist, ist sicher – man kann rechtzeitig drinnen sein oder die Minute bewusst riskieren.
-- **Die anderen Flur-Regeln bleiben** (ab dem 6. Mal, Schwäche, Nächte ohne Schlaf, Tag 10) und wirken in der
+- **Die anderen Flur-Regeln bleiben** (ab dem 6. Mal, Schwäche samt Müdigkeit, Tag 10) und wirken in der
   Geisterstunde mit: Greift eine davon, dreht sich der umherziehende Geist zu einem um.
 - **Zeugen** vertreiben ihn wie sonst; um 0 Uhr schlafen fast alle. Die Bar schließt um Mitternacht (5.9) –
   angetrunkene Gäste auf dem Heimweg sind schwach und mitten in der Geisterstunde unterwegs. Ab dem 25. stehen
@@ -2233,10 +2153,10 @@ Der Geist achtet darauf, wer **schwach und ängstlich** ist. Spieler und Gäste 
 - Ab einer **Schwelle** kommt er auch **in den Flur**, sobald man dort allein ist – egal ob man übermüdet,
   betrunken oder verängstigt ist.
 - So gilt für Müdigkeit, Alkohol, Trauer und Kinder **eine** Regel statt vieler Sonderfälle.
-- **Umgesetzt (2026-10-19):** Schwäche 0–1. Spieler: je Nacht ohne Schlaf ⅓, Rausch (betrunken, ab dem 3. Glas, allein schon ganz schwach), halber Schock,
+- **Umgesetzt (2026-10-19):** Schwäche 0–1. Spieler: Müdigkeit von 16 Stunden wach bis zur Grenze (48–72 h) 0 bis 1, übermüdet +0,15, Rausch (betrunken, ab dem 3. Glas, allein schon ganz schwach), halber Schock,
   frische Trauer bis 0,3, Kater 0,2. Gäste: Angst × 0,6 plus Rausch. Volle Schwäche bringt bis zu +30 % Chance und
   eine viermal kürzere Pause; ab **⅔** kommt er auch vor dem 6. Mal in den Flur, ab **1** sicher, sobald man dort
-  allein ist. Zwei bzw. drei Nächte ohne Schlaf ergeben genau diese Schwellen; nach drei Gläsern kommt er etwa eine Minute lang sicher
+  allein ist. Nach drei Gläsern kommt er etwa eine Minute lang sicher
   in den Flur, nach zwei auch früher, wenn alle schlafen.
 
 **Herkunft:** die Verschwundenen – mit jedem geholten Gast häufiger (4.20).
