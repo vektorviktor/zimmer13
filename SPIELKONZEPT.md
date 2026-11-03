@@ -3275,8 +3275,9 @@ ihm.
 > Kiste, sonst Gebasteltes. **Diebstahl:** Haben die Kisten ohne Nachschub höchstens noch ein Viertel ihres Vorrats, klaut
 > ein Gast mit Angst (ab 25), schwacher eigener Tür und ohne Starkes im Koffer höchstens einmal am Tag (Chance 35 % ×
 > 0,5 + Gier) ein starkes Stück von einer fremden Tür, die hält, und stellt es vor seine – nie bei Freunden, Familie
-> oder Mitbewohnern, nie vom Spieler und nicht vor dessen Augen. Was der Diebstahl für Freundschaften bedeutet, bleibt
-> mit „Streit unter Gästen“ (6.16) offen; die Bestohlenen merken nur wie bisher, dass Deko fehlt.
+> oder Mitbewohnern, nie vom Spieler und nicht vor dessen Augen. **Folgen (entschieden und umgesetzt 2026-11-03,
+> ZIM-33):** Sieht der Bestohlene den Dieb oder erzählt es ihm ein Freund, gibt es Streit (6.16); sonst merkt er nur wie
+> bisher, dass Deko fehlt.
 
 **Warum**
 - **Knapp statt nachwachsend:** Wächst jede Quelle nach und schmückt sich das Hotel selbst (5.9), wartet man einfach –
@@ -4393,8 +4394,10 @@ Zimmer und Frist, erledigte durchgestrichen –, der Gast erinnert beim nächste
   stehen, mit einem Kreuz neben dem Namen („Ich hatte es ihm versprochen“) – ein kleiner Stich Schuld (6.8).
 - **Falsche Aufträge:** Feinde schicken einen bewusst in Gefahr („Hol meinen Schlüssel aus dem Keller“) – das
   Gegenstück dazu, wie man selbst Gäste in den Keller lockt (4.11).
-- **Offen:** wie viele Aufträge gleichzeitig; ob man ablehnen kann, ohne dass die Beziehung sinkt. Fest steht
-  (3.10): Ins Notizbuch kommt ein Auftrag erst beim Annehmen, eine abgelehnte Bitte gar nicht.
+- **Gleichzeitig und Ablehnen (gebaut 2026-10-26, bestätigt 2026-11-03):** höchstens drei kleine Bitten zugleich,
+  dazu je Gast seine Herzensbitte; Ablehnen kostet nichts, bei Freunden −1 (siehe „Zahlen“ oben). Ins Notizbuch kommt
+  ein Auftrag erst beim Annehmen, eine abgelehnte Bitte gar nicht (3.10).
+- **Überbringen – zwei Verfeindete versöhnen (gebaut 2026-11-03):** als Vermitteln im Streit unter Gästen (6.16).
 
 ### 6.16 Freundschaften unter Gästen (entschieden 2026-10-21)
 Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gutes über dich.
@@ -4410,9 +4413,18 @@ Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gute
 - **Ruf:** Was man mit einem Gast zusammen tut (Deko suchen), erzählt er seinen Freunden ebenfalls (+3).
 - Gast-Freundschaften stehen im Spielstand (Zähler je Paar); Familie und Nachbarn ergeben sich aus dem Hotel.
 - **Freunde schmücken die Türen ihrer Freunde mit** (5.10, entschieden 2026-10-21), auch Zimmer 13.
-- **Offen:** Streit unter Gästen (Freundschaften, die zerbrechen – ein Anfang ist Diebstahl unter Gästen bei
-  Knappheit, 5.10; der Diebstahl selbst ist seit 2026-10-28 gebaut, ohne Folgen für Freundschaften). Gutes und
-  Schlechtes über dich laufen über dasselbe Netz (6.18, 1).
+- **Streit unter Gästen (entschieden und umgesetzt 2026-11-03, ZIM-33):** Freundschaften, die zerbrechen. Auslöser
+  ist ein **Diebstahl unter Gästen** (Knappheit oder Panik, 5.10): Sieht der Bestohlene den Dieb – oder hat es ein
+  Freund von ihm gesehen und erzählt es ihm beim nächsten Treffen (Freundesnetz, 6.18, 1; eine Station) –, sind beide
+  **verfeindet**. Treffen sie sich danach (bis 7 m, einer sieht den anderen), gibt es einen **lauten Wortwechsel**: vier
+  Sätze abwechselnd als Sprechblasen, jeder ist Lärm über etwa **10 m** (lockt das Monster wie anderer Lärm). Danach
+  **meiden sie sich**: Kommen sie sich näher als 4 m, dreht einer ab und geht nach Hause („Pff.“). Gefragt, was er vom
+  anderen hält, sagt der Bestohlene, warum. **Versöhnung:** Der Spieler **vermittelt** – im Gespräch mit einem der beiden
+  „Wollt ihr euch nicht wieder vertragen?“ (wer dich nicht mindestens neutral sieht: „Halt du dich da raus.“); dann
+  richtet er dem anderen die Entschuldigung aus (Art „Überbringen“, 6.14, im Notizbuch ohne Frist, zählt nicht zu den
+  kleinen Bitten). Der Streit ist vorbei, der Auftraggeber dankt wie bei einer kleinen Bitte. Sonst **verblasst** der
+  Streit nach **drei Spieltagen**. Waren beide schon vorher verfeindet (Streich, 6.13), bleibt diese Feindschaft. Gutes
+  und Schlechtes über dich laufen über dasselbe Netz (6.18, 1).
 - **Feindschaften (2026-10-22):** Ein erster Anfang sind die Streiche der Kinder (6.13): Wer verpetzt bekommt, wessen
   Kind ihm einen Kürbis vor die Tür geworfen hat, ist mit dessen Eltern **verfeindet** – Verfeindete sind keine
   Freunde mehr, auch nicht als Zimmernachbarn.

@@ -7,7 +7,9 @@ extends Node
 ##     Lieblingskürbis (5.8, geschnitzt nur bei schnitzbaren Sorten; er stellt ihn vor seine Tür), abends eine Kerze,
 ##     morgens Kaffee, Kinder Süßes, sonst etwas, das er mag. Frist: bis zum Ende des Spieltags, zählen zum Budget.
 ## Arten: item (bringen – erfüllt beim Schenken, DialogUI._gift), escort (zur Bar begleiten), message (einem Freund
-## etwas ausrichten – Anlass im Gespräch mit ihm), game (eine Partie – erfüllt am Ende eines Spiels).
+## etwas ausrichten – Anlass im Gespräch mit ihm), game (eine Partie – erfüllt am Ende eines Spiels), reconcile (Streit
+## unter Gästen, 6.16: die Entschuldigung an den anderen überbringen – wie message, aber vom Spieler angestoßen, ohne Frist
+## und außerhalb der kleinen Bitten; GuestQuarrels).
 ## Der Gast fragt von sich aus (offer_for, Chance OFFER_CHANCE) oder auf „Kann ich dir irgendwie helfen?“. Angenommen →
 ## Notizbuch (3.10); abgelehnt kostet nichts, bei Freunden ein wenig. Kind von Social, erreichbar über
 ## Game.social.requests. Gespeichert unter social.requests.
@@ -94,6 +96,11 @@ const THINGS := {Item.Kind.CANDLE: "Eine Kerze", Item.Kind.LEAVES: "Ein bisschen
 	Item.Kind.SWEETS: "Süßigkeiten", Item.Kind.TEA: "Ein Tee", Item.Kind.COFFEE: "Ein Kaffee", Item.Kind.SODA_CAN: "Eine Limo",
 	Item.Kind.BROOM: "Ein Hexenbesen", Item.Kind.APPLE: "Ein Apfel"}
 const GAME_NAMES := {"dice": "Mäxchen", "chess": "Schach", "darts": "Darts"}
+## Vermitteln im Streit (6.16, GuestQuarrels): Zeile im Notizbuch, was du ausrichtest, Antwort, Dank
+const RECONCILE := {"kind": "reconcile", "task": "{target} ausrichten: {name} will sich wieder vertragen",
+	"say": "{giver} lässt ausrichten: Lass uns den Streit begraben.",
+	"reply": "Das sagt {giver}? … Na gut. Schwamm drüber.",
+	"thanks": "Ihr habt das geklärt? Danke. Der Streit lag mir schwer im Magen."}
 const REMIND := ["Denkst du noch an meine Bitte?", "Und – hast du an mich gedacht? Kein Stress.",
 	"Du weißt noch, worum ich dich gebeten hab?"]
 
@@ -153,13 +160,13 @@ func accept(g: Guest, req: Dictionary) -> String:
 	active.append(req)
 	if req["heart"]:
 		hearts[g.id] = "open"
-	else:
+	elif req["kind"] != "reconcile":
 		if _small_day != Calendar.today():
 			_small_day = Calendar.today()
 			_small_today = 0
 		_small_today += 1
 	if Game.notebook:
-		Game.notebook.add_task(req["id"], req["task"], "", g, "" if req["heart"] else "heute")
+		Game.notebook.add_task(req["id"], req["task"], "", g, "" if req["heart"] or req["kind"] == "reconcile" else "heute")
 	if Game.tracing:
 		print("[Bitte] %s: %s angenommen (%s)" % [g.display_name, req["task"], req["kind"]])
 	if req["kind"] == "escort":
@@ -233,7 +240,7 @@ func on_game_played(g: Guest, game: String) -> void:
 ## Ausrichten: Anlass im Gespräch mit dem Empfänger – die Bitte, deren Nachricht an ihn geht ({} = keine)
 func message_for(target: Guest) -> Dictionary:
 	for req in active:
-		if req["kind"] == "message" and req["target"] == target.id and not req["told"]:
+		if req["kind"] in ["message", "reconcile"] and req["target"] == target.id and not req["told"]:
 			return req
 	return {}
 
@@ -243,6 +250,8 @@ func deliver(target: Guest, req: Dictionary) -> String:
 	req["told"] = true
 	Game.social.change_relation(target, 2.0)
 	var giver := Game.social.guest_by_id(String(req["guest"]))
+	if giver and req["kind"] == "reconcile":
+		Game.social.quarrels.reconcile(giver, target)
 	if giver and Game.social.pals:
 		Game.social.pals.note(giver, target)
 	return _fill(String(req["reply"]), giver, target)
@@ -296,7 +305,7 @@ func _fits(req: Dictionary, item: Item) -> bool:
 ## Kleine Bitten gelten nur bis zum Ende des Spieltags: „zu spät“, er ist ein wenig enttäuscht.
 func _end_of_day() -> void:
 	for req in active.duplicate():
-		if req["heart"] or req["told"]:
+		if req["heart"] or req["told"] or req["kind"] == "reconcile":
 			continue
 		active.erase(req)
 		if Game.notebook:
@@ -323,7 +332,8 @@ func _small_allowed(g: Guest) -> bool:
 	if Social.tier(g) < SMALL_TIER:
 		return false
 	var today_count := _small_today if _small_day == Calendar.today() else 0
-	return today_count < SMALL_PER_DAY and active.filter(func(r: Dictionary) -> bool: return not r["heart"]).size() < MAX_SMALL
+	return today_count < SMALL_PER_DAY and active.filter(func(r: Dictionary) -> bool:
+		return not r["heart"] and r["kind"] != "reconcile").size() < MAX_SMALL
 
 
 ## Seine Herzensbitte: Kernfigur eigene, sonst nach Charakter. Kein Zufall – aus Charakter und ID (Spielstände).
@@ -338,6 +348,16 @@ func make_heart(g: Guest) -> Dictionary:
 		if target == null:   # niemand da, dem er etwas ausrichten könnte: dann wie ein Bastler
 			return _base(g, HEART["Bastler"], true)
 		req["target"] = target.id
+	_fill_texts(g, req)
+	return req
+
+
+## Vermitteln (6.16): g will sich mit other vertragen – du richtest es other aus ({} = er hat schon eine offene Bitte).
+func make_reconcile(g: Guest, other: Guest) -> Dictionary:
+	if own_request(g):
+		return {}
+	var req := _base(g, RECONCILE, false)
+	req["target"] = other.id
 	_fill_texts(g, req)
 	return req
 

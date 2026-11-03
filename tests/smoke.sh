@@ -383,6 +383,11 @@ done <<'LIST'
 600|netz,gaeste|--netz=mila,edna,bruno,lob --trace
 400|budget,gaeste,beziehungen|--budget=edna --trace
 300|neid,gaeste,beziehungen|--day=5 --neid --trace
+600|streit,gaeste,beziehungen|--streit=bruno,edna,gesehen --trace
+400|streit,gaeste|--streit=bruno,edna,freund --trace
+300|streit,gaeste,bitten|--streit=bruno,edna,versoehnen --trace
+300|streit,gaeste|--streit=bruno,edna,verblassen --trace
+600|streit,speichern|--streit=bruno,edna,halten --savetest
 600|budget,speichern|--budget=edna --savetest
 2000|spieler|--sprint --trace
 600|gespraech,gaeste|--gespraech=frage,night,bruno,2 --trace

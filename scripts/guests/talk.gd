@@ -694,6 +694,8 @@ func opinion(g: Guest, other: Guest) -> String:
 	var first := ""
 	if g.has_stance("distrusts:" + other.id):
 		first = "%s? Dem trau ich nicht mehr. Du weißt ja, warum." % name
+	elif Game.social.quarrels.stole_from(other, g):   # Streit nach einem Diebstahl (6.16)
+		first = "%s? Hat mir Deko von der Tür geklaut. Mit %s bin ich fertig." % [name, name]
 	elif Game.social.pals.are_feuding(g, other):
 		first = "%s? Sprich mir nicht von %s." % [name, name]
 	elif other.parent_guest() == g or g.parent_guest() == other or g.housemate_of(other):

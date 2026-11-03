@@ -289,6 +289,7 @@ var _anim := 0.0
 var _dance := -1   ## Index in DANCES bzw. GuestBody.DANCES, -1 = tanzt gerade nicht
 var _dance_timer := 0.0
 var _game_look := Vector3.ZERO
+var _argue_look := Vector3.INF   ## Streit (6.16): steht und sieht den anderen an, solange er wartet (hold_argument)
 var _stuck_time := 0.0
 var _last_pos := Vector3.ZERO
 var _stall_pos := Vector3.ZERO   ## Festgefahren: hier stand er, als er zuletzt vorankam …
@@ -1116,6 +1117,8 @@ func _physics_process(delta: float) -> void:
 		State.IDLE:
 			if not _keep_space(delta):
 				_stop(delta)
+				if _argue_look.is_finite():
+					_face(_argue_look, delta)
 			_timer -= delta
 			_steal_timer -= delta
 			if _steal_timer <= 0.0:
@@ -1574,8 +1577,20 @@ func after_woken(alert: bool) -> void:
 
 func _set_idle(duration: float) -> void:
 	_romp = false
+	_argue_look = Vector3.INF
 	state = State.IDLE
 	_timer = duration
+
+
+## Streit unter Gästen (Spielkonzept 6.16, GuestQuarrels): stehen bleiben und zu look sehen, solange der Wortwechsel dauert.
+func hold_argument(look: Vector3, duration: float) -> void:
+	_set_idle(duration)
+	_argue_look = look
+
+
+## Nach Hause gehen (einem Streitgegner ausweichen, GuestQuarrels).
+func walk_home() -> void:
+	_walk_to(_room_point(), State.WALK)
 
 
 func _next_activity() -> void:

@@ -1537,6 +1537,22 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
     nach `NET_STATIONS` (2) ist Schluss, jeder hört eine Nachricht nur einmal (`_net_known`), nach `NET_TIME` (ein
     Spieltag) ist sie vergessen. Dieselbe Stärke nutzt `Talk._pass_on` für die Angst aus weitererzählten Geschichten.
     Nicht gespeichert (wie früher das Gerede). Debug `--netz=a,b,c[,lob]`, Stichwort „netz“, `--trace` „[Netz]“.
+- **Streit unter Gästen** (`guests/quarrels.gd`, `GuestQuarrels`, Spielkonzept 6.16; 2026-11-03, ZIM-33): Kind von
+  Social, `Game.social.quarrels`. `Social.on_guest_stole` → `on_theft(Dieb, Bestohlener)` bei Diebstahl unter Gästen
+  (`DecoPlan.steal_when_scarce` und Panik-Diebstahl, nicht im Haushalt): sieht der Bestohlene den Dieb
+  (`Guest.can_see_actor`), gleich `_discover`, sonst merken sich bis zu `NEWS_WITNESSES` wache Freunde des Bestohlenen
+  (`GuestPals.are_pals`), die den Dieb sehen, die Nachricht in `_news` (bis `NEWS_TIME`) und erzählen sie beim Treffen
+  (`TELL_RANGE`, beide `GuestPals._free`). `_discover` → `active[GuestPals.key]` = {thief, victim, day, argued, keep}
+  und `pals.add_feud`. `_update_meetings` (alle `SCAN`, nicht im Schlaf): beide frei, bis `ARGUE_RANGE`, einer sieht
+  den anderen → Wortwechsel (`_start_argument`: wer frei und ohne etwas in der Hand ist, bleibt stehen und sieht den
+  anderen an, `Guest.hold_argument`; `_argue_step` vier Sätze im Abstand `LINE_GAP`, je Satz `Game.noise("quarrel")`,
+  10 m); danach unter `AVOID_RANGE` → `_avoid`: einer geht nach Hause (`Guest.walk_home`), je Gast höchstens alle
+  `AVOID_COOLDOWN`. Ende über `_end`: `reconcile` (aus `GuestRequests.deliver`) oder `_fade` nach `FADE_DAYS`
+  Spieltagen (beim Tageswechsel, daher auch nach dem Zeitsprung im Schlaf); `keep` (schon vorher verfeindet) lässt
+  `pals.feuds` stehen. Vermitteln: Anlass `DialogUI._mediate` (`partner_of`, nur ohne eigene Bitte und ab „neutral“) →
+  `GuestRequests.make_reconcile` + `accept`. `Talk.opinion` nennt den Diebstahl (`stole_from`). Gespeichert unter
+  `social.quarrels` (`active`, Version 67), nicht `_news` und kein laufender Wortwechsel. Debug
+  `--streit=dieb,opfer[,gesehen|freund|versoehnen|verblassen|halten]`, Stichwort „streit“, `--trace` „[Streit]“.
 - **Gespräche** (`guests/talk.gd`, `Talk`, Spielkonzept 6.9): Die Knöpfe baut `DialogUI` (`_show_main`, Optionen in
   einem `ScrollContainer`), die Logik liegt in `Talk`: Anlässe (`_occasions()`), Erlebnisse des Spielers (`log`,
   `_scan_sights`), Gedächtnis je Gast (`Guest.claims`, höchstens `MAX_CLAIMS`), Erzählen/Lügen (`tell`, `_believes`,
@@ -1546,7 +1562,7 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `Talk.friendly` (Tagesbudget wie Plaudern). Gespeichert je Gast `claims`, `stances`; `social.talk` = `log`, `next_id`,
   `suspects`, `deaths`. Debug `--gespraech=frage|erlebnis|luege,…`, `--trace` `[Gespräch]`.
 - **Bitten** (`guests/requests.gd`, `GuestRequests`, Spielkonzept 6.14): Eine Bitte ist ein Dictionary (`kind` = `item`,
-  `escort`, `message`, `game`; `heart`; `item`/`variety`, `target`, `game`, `money`; Texte `ask`, `task`, `thanks`,
+  `escort`, `message`, `game`, `reconcile`; `heart`; `item`/`variety`, `target`, `game`, `money`; Texte `ask`, `task`, `thanks`,
   `say`, `reply`). **Herzensbitte** je Gast einmal (`hearts`: offen/erfüllt), aus `CORE` (Kernfiguren) bzw. `HEART`
   nach `Talk.temper` – ohne Zufall, Plaudertaschen wählen den Empfänger fest aus der ID (`_message_target`).
   **Kleine Bitten** nach Lage (`_make_small`: Kind → Süßes, kahle Tür des Haushaltsvorstands → Lieblingskürbis, abends
@@ -1556,7 +1572,9 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   (`Notebook.add_task` mit der Bitte-ID) bzw. `decline`. Erfüllen: `on_gift` aus `DialogUI._gift` (Kürbis →
   `Guest.gift_to_door`: `_carry_gift_home` geht mit `PLACE_DECO` vor die Tür), `on_game_played` aus Würfel-, Schach-
   und Dartspiel, Begleiten (`start_escort` = `start_follow`, `_check_escort`: an der Bar), Ausrichten als Anlass beim
-  Empfänger (`message_for`/`deliver`), der Auftraggeber dankt beim nächsten Gespräch (`thanks_on_greet`). `_complete`:
+  Empfänger (`message_for`/`deliver`), der Auftraggeber dankt beim nächsten Gespräch (`thanks_on_greet`).
+  `reconcile` (Vermitteln im Streit, `make_reconcile`, `RECONCILE`) läuft wie `message`, ohne Frist, zählt nicht zu
+  `SMALL_PER_DAY`/`MAX_SMALL`; `deliver` ruft `GuestQuarrels.reconcile`. `_complete`:
   Herzensbitte `HEART_REWARD` direkt (außerhalb des Budgets), kleine über `Talk.friendly`, dazu `pals.praise`.
   Gespeichert unter `social.requests` (`active`, `hearts`, Tageszähler). Debug `--bitte=gast[,art[,annehmen|erfuellen]]`,
   `--trace` `[Bitte]`.

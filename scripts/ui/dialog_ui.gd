@@ -357,6 +357,10 @@ func _occasions() -> Array[Dictionary]:
 	var message := Game.social.requests.message_for(guest)   # etwas ausrichten (6.14)
 	if not message.is_empty():
 		add.call("msg:" + String(message["id"]), String(message["say"]), _deliver.bind(message))
+	var partner := Game.social.quarrels.partner_of(guest)   # Streit vermitteln (6.16)
+	if partner and message.is_empty() and not Game.social.requests.own_request(guest):
+		add.call("peace:" + partner.id, "Wollt ihr euch nicht wieder vertragen – du und %s?" % partner.display_name,
+			_mediate.bind(partner))
 	var fresh := talk.untold(guest)
 	if not fresh.is_empty():
 		add.call("tell:%d" % int(fresh[0]["id"]), talk.tell_label(fresh[0]), _tell_story.bind(fresh[0]))
@@ -568,6 +572,19 @@ func _escort() -> void:
 ## Etwas ausrichten (6.14): der Empfänger antwortet, der Auftraggeber dankt beim nächsten Gespräch.
 func _deliver(req: Dictionary) -> void:
 	_say(Game.social.requests.deliver(guest, req))
+	_show_main()
+
+
+## Streit vermitteln (6.16): Er will sich vertragen – du richtest es dem anderen aus (Bitte „reconcile“, 6.14). Wer dich
+## nicht leiden kann, lässt dich nicht vermitteln.
+func _mediate(other: Guest) -> void:
+	var requests := Game.social.requests
+	var req := requests.make_reconcile(guest, other) if Social.tier(guest) >= Social.Tier.NEUTRAL else {}
+	if req.is_empty() or not is_instance_valid(other):
+		_say(GuestQuarrels.PEACE_REFUSE)
+	else:
+		requests.accept(guest, req)
+		_say(Game.social.quarrels.peace_line(guest, other))
 	_show_main()
 
 

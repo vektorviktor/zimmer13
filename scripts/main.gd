@@ -91,6 +91,10 @@ extends Node3D
 ##                               Beziehungsbudget, Geschenke nach Wert, Beruhigen und Vergebung durch (--trace „[Budget]“)
 ##   --neid[=id]                 Neid der Türnachbarn (6.18, 5): Kisten leer, vier Kürbisse vor Zimmer 13 – ein Morgen läuft,
 ##                               dann Untergrenze, Freund, spitzer Satz beim Vorbeigehen und im Gespräch (--trace „[Neid]“)
+##   --streit=dieb,opfer[,gesehen|freund|versoehnen|verblassen|halten]  Streit unter Gästen nach einem Diebstahl (6.16):
+##                               beide stehen vor dir; gesehen – Opfer sieht es, Wortwechsel, danach meiden; freund – ein
+##                               Freund erzählt es ihm; versoehnen – du vermittelst; verblassen – nach 3 Tagen; halten – nur
+##                               ein Streit (für --savetest). Meldet „[Streit] … ok“ bzw. „FEHLER“ (mit --trace mehr)
 ##   --call=id[,panik]|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast – mit ,panik ein Panikanruf –,
 ##                               Atmen, Verschwundener, vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --gastanruf=id[,panik]      Gäste telefonieren (4.14): der Gast steht daheim, kennt eine frische Geschichte und ruft
@@ -2060,6 +2064,8 @@ func run_debug(arg: String) -> bool:
 		_debug_net(_arg_parts(arg, "--netz"))
 	elif arg.begins_with("--budget="):
 		_debug_budget(_arg_parts(arg, "--budget"))
+	elif arg.begins_with("--streit="):
+		Game.social.quarrels.debug(_arg_parts(arg, "--streit"))
 	elif arg == "--neid" or arg.begins_with("--neid="):
 		_debug_envy(_arg_parts(arg, "--neid"))
 	elif arg == "--knock":

@@ -264,6 +264,7 @@ var break_in: BreakIn                   ## Racheakt: Erzfeind bricht in Zimmer 1
 var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept 5.9)
 var talk: Talk                           ## Erzählen, Lügen, Fragen, Gedächtnis der Gäste (Spielkonzept 6.9)
 var requests: GuestRequests              ## Bitten der Gäste (Spielkonzept 6.14)
+var quarrels: GuestQuarrels              ## Streit unter Gästen nach einem Diebstahl (Spielkonzept 6.16)
 var grinch: Grinch                       ## Gustav Peters, der „Halloween-Grinch“, und sein Ende (Spielkonzept 2.6)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
@@ -428,6 +429,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	requests = GuestRequests.new()   # Bitten der Gäste (6.14)
 	requests.name = "Requests"
 	add_child(requests)
+	quarrels = GuestQuarrels.new()   # Streit unter Gästen nach einem Diebstahl (6.16)
+	quarrels.name = "Quarrels"
+	add_child(quarrels)
 	grinch = Grinch.new()   # Gustav Peters (2.6)
 	grinch.name = "Grinch"
 	add_child(grinch)
@@ -1034,6 +1038,8 @@ func on_guest_stole_bulb(guest: Guest, lamp: Lamp, room_id: String) -> void:
 func on_guest_stole(guest: Guest, item: Item, victim: String) -> void:
 	if victim == "player":
 		add_deed(guest, "revenge")
+	elif victim != "" and quarrels:   # unter Gästen: sieht es der Bestohlene oder ein Freund – Streit (6.16)
+		quarrels.on_theft(guest, guest_by_id(victim))
 	if victim == "player" and Game.player and Game.director.player_can_see(guest.global_position + Vector3.UP * 1.4) \
 			and Game.player.global_position.distance_to(guest.global_position) < 15.0:
 		Game.say("%s klaut deine Deko (%s)!" % [guest.display_name, item.display_name], 4.0)

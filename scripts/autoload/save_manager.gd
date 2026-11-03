@@ -134,7 +134,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     vollen Tagesbudgets
 ## 66: Tagebuch beim Einbruch (Spielkonzept 8.9, 6.19; ZIM-54): je Tagebucheintrag „who“ (Gast-ID, um den es bei einer
 ##     dunklen Tat geht) – ältere Stände laden weiter, ihre Einträge nennen niemanden (ein Einbrecher erfährt nichts)
-const VERSION := 66
+## 67: Streit unter Gästen (Spielkonzept 6.16, ZIM-33): social.quarrels – je Paar Dieb, Bestohlener, Spieltag,
+##     Wortwechsel gewesen, schon vorher verfeindet; ältere Stände laden weiter, ohne Streit
+const VERSION := 67
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -646,6 +648,7 @@ func collect() -> Dictionary:
 		"pals": social.pals.save_state(),
 		"talk": social.talk.save_state(),
 		"requests": social.requests.save_state(),
+		"quarrels": social.quarrels.save_state(),
 		"access": social.access.save_state(),
 	}
 	var director := Game.director
@@ -949,6 +952,7 @@ func apply(data: Dictionary) -> void:
 	social.pals.load_state(sd.get("pals", {}))
 	social.talk.load_state(sd.get("talk", {}))
 	social.requests.load_state(sd.get("requests", {}))
+	social.quarrels.load_state(sd.get("quarrels", {}))
 	social.access.load_state(sd.get("access", {}))
 	if Game.doll:
 		Game.doll.load_state(data.get("doll", {}))

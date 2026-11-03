@@ -8,7 +8,8 @@ extends Node
 ##   befreundet sind.
 ## - **Klauen:** Sind die Kisten fast leer, hat ein ängstlicher Gast nichts Starkes mehr im Koffer und hält seine Tür nicht,
 ##   holt er sich ein starkes Stück von einer gut geschmückten fremden Tür (steal_when_scarce, aus Guest._try_steal) –
-##   nie von Freunden, Familie oder Mitbewohnern, nie vom Spieler. Folgen für Freundschaften (Streit, 6.16) sind offen.
+##   nie von Freunden, Familie oder Mitbewohnern, nie vom Spieler. Sieht es der Bestohlene oder ein Freund, gibt es
+##   Streit (6.16, GuestQuarrels über Social.on_guest_stole).
 ## Nichts davon wird gespeichert – nach dem Laden zählen nur Angst, Deko und Kisten.
 
 ## Pause zwischen zwei geplanten Gängen am Monatsanfang bzw. an Halloween (s), so viele zugleich, je Gast am Spieltag
