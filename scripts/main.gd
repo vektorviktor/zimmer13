@@ -242,10 +242,11 @@ extends Node3D
 ##   --spinne[=gesicht|schublade] Spinnen (4.23): acht krabbeln sofort vor dir · gesicht: eine springt
 ##                               dir ins Gesicht – Maus schnell hin und her schüttelt sie ab, sonst beißt sie (wie ein Glas) ·
 ##                               schublade: die nächste Schublade hat eine – beide: der erste Angriff gilt als geschehen
-##   --fledermaus[=tag|schwarm|dachboden]  Fledermäuse (4.22): du stehst im Garten vor einem Baum und siehst hinauf –
+##   --fledermaus[=tag|schwarm|dachboden|biss]  Fledermäuse (4.22): du stehst im Garten vor einem Baum und siehst hinauf –
 ##                               21 Uhr, sie kreisen · tag: 12 Uhr, sie hängen in der Krone · schwarm: wie tag, nach 3 s
 ##                               fliegen sie auf · dachboden: 12 Uhr auf dem Dachboden neben einem Pfosten, sie hängen
-##                               unter dem Balkenkreuz (Licht oder Rennen scheucht sie auf)
+##                               unter dem Balkenkreuz (Licht oder Rennen scheucht sie auf) · biss: 21 Uhr, nach 1,5 s
+##                               stürzt sich eine herab und beißt dich (Schwäche, das Bild pulsiert)
 ##   --sleep[=bett[,h]]          Nachtruhe sofort beginnen – die Uhr springt auf ihren Beginn (Gäste gehen ins Bett) · bett: alle liegen sofort,
 ##                               du schläfst im Bett von Zimmer 13, h Stunden (1–8, Standard 1; 3.6) – in der Nachtruhe
 ##                               springt die Zeit (mit --uhr=1:10 nach Mitternacht beginnen, sonst weckt die Glocke)
@@ -776,6 +777,7 @@ func _process(delta: float) -> void:
 	if _post and Game.player:   # verschwommene Sicht (Spielkonzept 3.6/3.7)
 		_post.set_shader_parameter("blur", maxf(Game.player.sight_blur, Game.player.intro_blur))
 		_post.set_shader_parameter("warp", Game.player.sight_warp)
+		_post.set_shader_parameter("dark", Game.player.sight_dark)
 		_post.set_shader_parameter("blur_time", _sky_time)
 	if _autoplay and Engine.get_process_frames() % 100 == 0 and Game.dice.active:
 		print("[Mäxchen] " + Game.dice.debug_press_random())

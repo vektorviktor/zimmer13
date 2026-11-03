@@ -149,6 +149,19 @@ const SIGHT_TIRED := 0.7
 const SIGHT_DRUNK_FROM := 0.25
 const SIGHT_HANGOVER := 0.12
 const SIGHT_FADE := 0.5
+## Fledermausbiss (Spielkonzept 4.22, Entscheidung 3.11.): frisch so viel Schwäche, die Wunde heilt gleichmäßig in zwei bis
+## drei Spieltagen (BITE_HEAL, Spielsekunden). Das Bild pulsiert wie ein Herzschlag (BITE_BEAT Schläge je Sekunde): dunkler
+## (BITE_DARK) und unscharf (BITE_BLUR) – die ersten BITE_FRESH s stark, danach so stark, wie die Wunde noch offen ist
+## (hoch BITE_SIGHT_POW, klingt also mit der Schwäche ab). Einstellungen: bite_pulse schwächt nur das Pulsieren, nicht
+## die Dunkelheit (4.4). Der Schreck zählt als Schock.
+const BITE_WEAK := 0.5
+const BITE_HEAL := Vector2(2.0 * Calendar.DAY_SECONDS, 3.0 * Calendar.DAY_SECONDS)
+const BITE_BEAT := 1.2
+const BITE_DARK := 0.45
+const BITE_BLUR := 0.45
+const BITE_FRESH := 90.0
+const BITE_SIGHT_POW := 2.0
+const BITE_SHOCK := 0.25
 ## Im Sitzen (Spielkonzept 3.1): so weit dreht sich der Blick höchstens zur Seite – 180° nach vorn
 const SIT_TURN := PI / 2.0
 
@@ -221,6 +234,9 @@ var caffeine := 0.0    ## Koffeinspiegel in Tassen – ab COFFEE_JITTER zittert 
 var tea := 0.0         ## so viele Spielsekunden schläft man nach einem Tee noch besser (3.12)
 var sight_blur := 0.0   ## verschwommene Sicht (0..1) aus Müdigkeit und Rausch – Post-Shader `blur` (3.6/3.7)
 var sight_warp := 0.0   ## Wabern und Doppelbild im Rausch (0..1) – Post-Shader `warp`
+var sight_dark := 0.0   ## Abdunkeln nach dem Fledermausbiss (0..1), pulsiert – Post-Shader `dark` (4.22)
+var bite := 0.0         ## Bisswunde einer Fledermaus: so viele Spielsekunden heilt sie noch (4.22)
+var bite_heal := 0.0    ## so lange heilt diese Wunde insgesamt – bite / bite_heal ist, wie offen sie noch ist
 var seat: Seat          ## sitzt auf diesem Möbel (3.1) – Platz in _seat_spot
 ## Größe der Figur (Spielkonzept 3.9) – Kapsel, Augenhöhe und Hocken im Verhältnis zu HEIGHT
 var body_height := HEIGHT
@@ -1125,13 +1141,34 @@ func drink(quiet: bool = false) -> void:
 
 
 ## Wie angreifbar der Spieler gerade ist (0..1) – danach sucht sich der Lakengeist seine Opfer (4.18):
-## Schlafmangel (wie er sich anfühlt, tiredness), Rausch, Schock, frische Trauer und Kater zählen zusammen.
+## Schlafmangel (wie er sich anfühlt, tiredness), Rausch, Schock, frische Trauer, Kater und ein Fledermausbiss zählen zusammen.
 func weakness() -> float:
 	var grief := 0.0
 	if Game.director:
 		grief = clampf(Game.director.grief / MonsterDirector.GRIEF_TIME, 0.0, 1.0)
 	return clampf(tired_weakness() + drunk * WEAK_DRUNK + shock * WEAK_SHOCK + grief * WEAK_GRIEF
-		+ (WEAK_HANGOVER if hangover > 0.0 else 0.0), 0.0, 1.0)
+		+ (WEAK_HANGOVER if hangover > 0.0 else 0.0) + bite_share() * BITE_WEAK, 0.0, 1.0)
+
+
+## Wie offen die Bisswunde noch ist (1 frisch, 0 verheilt oder keine).
+func bite_share() -> float:
+	return clampf(bite / bite_heal, 0.0, 1.0) if bite_heal > 0.0 else 0.0
+
+
+## Eine Fledermaus beißt dich in den Hals (Spielkonzept 4.22): Schwäche +BITE_WEAK, heilt in zwei bis drei Spieltagen.
+## Töten kann sie nicht. Ruck, Schreck, roter Blitz und ein kurzer Satz (Flügelschlag und Untertitel: Bats).
+func bat_bite() -> void:
+	if dead:
+		return
+	bite_heal = randf_range(BITE_HEAL.x, BITE_HEAL.y)
+	bite = bite_heal
+	_kick = maxf(_kick, 0.06)
+	add_shock(BITE_SHOCK, false)
+	Game.say("Au! Am Hals … sie hat mich gebissen.", 3.0)
+	if Game.hud:
+		Game.hud.flash_hurt(0.3)
+	if Game.tracing:
+		print("[Fledermäuse] Biss – heilt in %.1f Spieltagen, Schwäche %.2f" % [bite_heal / Calendar.DAY_SECONDS, weakness()])
 
 
 func _update_drunk(delta: float) -> void:
@@ -1286,6 +1323,7 @@ func _sleep_credit(dt: float) -> float:
 
 ## Verschwommene Sicht (Spielkonzept 3.6/3.7): je länger wach (ab TIRED_FROM), desto unschärfer, in Schüben, als fielen die Augen
 ## zu; im Rausch angetrunken leicht, betrunken deutlich, pulsierend, dazu Wabern und Doppelbild; Kater ein Hauch.
+## Nach einem Fledermausbiss (4.22) dunkel und unscharf, im Herzschlag dunkler und wieder heller.
 func _update_sight(delta: float) -> void:
 	var t := _drunk_time
 	var tired := _tired_share() * SIGHT_TIRED
@@ -1293,8 +1331,22 @@ func _update_sight(delta: float) -> void:
 	var tipsy := pow(clampf((drunk - SIGHT_DRUNK_FROM) / (BarTap.ENOUGH - SIGHT_DRUNK_FROM), 0.0, 1.0), 1.5)
 	tipsy *= 0.75 + 0.25 * sin(t * 0.9)
 	var sore := (SIGHT_HANGOVER * (0.7 + 0.3 * sin(t * 0.6))) if hangover > 0.0 else 0.0
-	sight_blur = move_toward(sight_blur, clampf(tired + tipsy + sore, 0.0, 1.0), delta * SIGHT_FADE)
+	var bitten := _bite_sight()
+	sight_blur = move_toward(sight_blur, clampf(tired + tipsy + sore + bitten * BITE_BLUR, 0.0, 1.0), delta * SIGHT_FADE)
 	sight_warp = move_toward(sight_warp, BarTap.sway(drunk), delta * SIGHT_FADE)
+	# Herzschlag: zwei Schläge kurz hintereinander, dann Pause – im Schlag dunkler
+	var beat := fmod(t * BITE_BEAT, 1.0)
+	var pulse := exp(-pow((beat - 0.08) / 0.06, 2.0)) + 0.6 * exp(-pow((beat - 0.32) / 0.06, 2.0))
+	sight_dark = bitten * BITE_DARK * (0.55 + 0.45 * pulse * Settings.bite_pulse)
+
+
+## Stärke des Bildeffekts nach dem Biss (0..1): frisch BITE_FRESH s lang voll, dann wie offen die Wunde noch ist.
+func _bite_sight() -> float:
+	var share := bite_share()
+	if share <= 0.0:
+		return 0.0
+	var fresh := clampf(1.0 - (bite_heal - bite) / BITE_FRESH, 0.0, 1.0)
+	return clampf(0.4 * fresh + 0.6 * pow(share, BITE_SIGHT_POW), 0.0, 1.0)
 
 
 ## Im Rausch: der Blick schwankt und driftet, beim Gehen stolpert man manchmal – das hört man (4.15).
@@ -1324,6 +1376,7 @@ func _update_injury(delta: float) -> void:
 	_ram_cooldown -= delta
 	_confirm_time -= delta
 	injury = maxf(0.0, injury - delta / INJURY_HEAL_TIME)
+	bite = maxf(0.0, bite - delta)
 	_kick = move_toward(_kick, 0.0, delta * 0.25)
 	head.rotation.z = sin(_drunk_time * 30.0) * _kick + _drunk_roll()   # Spielzeit, nicht Systemzeit
 	# Blutstropfen beim Gehen – eine Spur, der man folgen kann (4.13)
@@ -2152,6 +2205,7 @@ func skip_time(dt: float) -> void:
 	drunk = maxf(0.0, drunk - dt / BarTap.SOBER_TIME)
 	hangover = maxf(0.0, hangover - dt)
 	injury = maxf(0.0, injury - dt / INJURY_HEAL_TIME)
+	bite = maxf(0.0, bite - dt)
 	stamina = minf(1.0, stamina + dt / STAMINA_REST_TIME)
 	if sleeping:
 		var credit := _sleep_credit(dt)

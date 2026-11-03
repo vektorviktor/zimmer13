@@ -27,6 +27,7 @@ var key_bindings := {}           ## Tastenbelegung: nur Abweichungen vom Standar
 # Barrierefreiheit
 var flicker_intensity := 1.0     ## Flackern und Bildrauschen (0,2 … 1)
 var look_pull := 1.0             ## Blickzug des Lakengeists (0,2 … 1; Spielkonzept 4.18, 4.24) – unter 1 nur sanft gelenkt
+var bite_pulse := 1.0            ## Pulsieren des Bildes nach dem Fledermausbiss (0,2 … 1; Spielkonzept 4.22) – dunkel bleibt es
 var subtitles := false
 var spider_blobs := false        ## Arachnophobie: Spinnen als schlichte Kugeln ohne Beine (Spielkonzept 4.23)
 var warning_shown := false       ## Hinweis zur Lichtempfindlichkeit schon gezeigt
@@ -34,7 +35,7 @@ var age_notice_shown := false    ## Hinweis mit Altersempfehlung schon gezeigt
 
 const KEYS := ["gamma", "vsync", "fov", "reflections", "graphics",
 	"master_volume", "music_volume", "effects_volume", "mouse_sensitivity", "invert_y",
-	"crouch_toggle", "key_bindings", "flicker_intensity", "look_pull", "subtitles", "spider_blobs", "warning_shown", "age_notice_shown"]
+	"crouch_toggle", "key_bindings", "flicker_intensity", "look_pull", "bite_pulse", "subtitles", "spider_blobs", "warning_shown", "age_notice_shown"]
 
 ## Grafikstufen (Spielkonzept 8.4, ZIM-94). Hoch ist der Stand vom 3.11.2026 (RTX 4060 Laptop, 1080p mit 30 FPS),
 ## Niedrig zielt auf neuere Onboard-Grafik (30 FPS). Fenster und RenderingServer stellt apply() ein, Umgebung, Mond und

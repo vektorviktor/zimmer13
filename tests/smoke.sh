@@ -202,6 +202,7 @@ done <<'LIST'
 600|tiere|--fledermaus --trace
 600|tiere|--fledermaus=schwarm --trace
 600|tiere,dachboden|--fledermaus=dachboden --flashlight --trace
+600|tiere,biss,speichern|--fledermaus=biss --savetest --trace
 600|tiere|--tp=keller --spinne --trace
 600|tiere|--spinne=schublade --trace
 1500|monster|--lure --trace

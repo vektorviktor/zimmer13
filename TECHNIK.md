@@ -2235,11 +2235,19 @@ Spielkonzept 2.5)
   dem NavMesh erzeugt (nicht darin, keine Kollision, nicht gespeichert), fester Zufall (`SEED`), nur wo `is_lawn` und
   frei von Bäumen, Beeten, Gegenständen. `MultiMeshInstance3D` je Kachel mit `visibility_range_end`. Wind über
   `wind_time` (steht in der Pause); `pushers` (Figuren, Gegenstände) drücken das Gras weg.
-- **Fledermäuse** (`world/bats.gd`, `shaders/psx_bat.gdshader`, Spielkonzept 4.22 ohne Biss und Vampir): ein
+- **Fledermäuse** (`world/bats.gd`, `shaders/psx_bat.gdshader`, Spielkonzept 4.22 ohne Vampir): ein
   `MultiMeshInstance3D`, Daten in Arrays; Flügelschlag im Shader über `INSTANCE_CUSTOM` (vom Skript – steht in der
   Pause). Schlafbäume aus `LevelBuilder.tree_spots`; abends und nachts fliegen sie, nie über das Haus. Scheu vor
   Bedrohungen und lautem Lärm (`Game.noise` → `Bats.on_noise`) – flattern auf (Lärm `bats`). Nicht gespeichert. Debug
-  `--fledermaus[=tag|schwarm|dachboden]`.
+  `--fledermaus[=tag|schwarm|dachboden|biss]`.
+  **Biss** (ZIM-29, Entscheidung 3.11.): in `_look_around` (nur wenn der Spieler draußen ist) nachts nach
+  `MonsterDirector.first_attack_done` mit `BITE_RATE` je Sekunde `_start_bite` – die nächste `FLY` höchstens `BITE_NEAR`
+  waagrecht wird `Mode.BITE` (nie mehr als eine, nicht bei offener Wunde, im Versteck oder im Schlaf), fliegt ohne
+  Zittern und unter `MIN_Y` zum Hals (`BITE_NECK` unter der Kamera); ab `BITE_REACH` `_bite` → `Player.bat_bite`,
+  Flügelschlag mit Untertitel, dann `_flee_from`. Nach `BITE_TIME` oder wenn der Spieler hineingeht/sich versteckt,
+  dreht sie ab. `Player.bat_bite`: `bite = bite_heal` = 2–3 Spieltage (`BITE_HEAL`), Schock, Ruck, roter Blitz;
+  `weakness()` + `bite_share()` × `BITE_WEAK` (0,5); `bite` sinkt mit `delta` und in `skip_time`. Gespeichert:
+  `player.bite`, `bite_heal` (Version 69). Gäste beißen sie noch nicht; der Vampir ist ZIM-49.
   **Dachboden:** `LevelBuilder.attic_beams` ({pos, arms}) aus `_attic_beams`; `ATTIC_COUNT` Fledermäuse ab Index `COUNT`
   in Kolonien an zufälligen Pfosten (Gruppe `_trees.size() + k`, `_roost_center` = Balkenkreuz), hängen unter einem Arm.
   Aufgeschreckt (`_flutter`) kreisen sie in der Kammer um den Pfosten (Halbmesser nach dem kürzesten Arm, unter den
@@ -2626,8 +2634,12 @@ Glocke, dafür eine Sammelmeldung.
   Lampe ihn beleuchtet, plus Glanzpunkt – das Environment spiegelt nichts, SSR taugt für dünne Rohre nicht.
 - **Post-FX** (`shaders/psx_post.gdshader`, `CanvasLayer` 5 unter der Bedienoberfläche): Gamma, Rauschen,
   Flackern, dazu **verschwommene Sicht** (Spielkonzept 3.6/3.7): `Player._update_sight` setzt `sight_blur` (Müdigkeit
-  über `tiredness()`, Rausch, Kater) und `sight_warp`; `main._process` reicht sie mit `blur_time` (steht in der Pause)
-  an den Shader – Scheibe aus Abtastungen über eine Mip-Stufe der Screen-Textur.
+  über `tiredness()`, Rausch, Kater, Fledermausbiss) und `sight_warp`; `main._process` reicht sie mit `blur_time`
+  (steht in der Pause) an den Shader – Scheibe aus Abtastungen über eine Mip-Stufe der Screen-Textur. Nach dem
+  **Fledermausbiss** (4.22) setzt `_update_sight` zusätzlich `sight_dark` (Shader `dark`, multipliziert das Bild):
+  Stärke `_bite_sight` (die ersten `BITE_FRESH` s voll, dann `bite_share()` hoch `BITE_SIGHT_POW`), Herzschlag aus zwei
+  Gauß-Spitzen je `1 / BITE_BEAT` s; `Settings.bite_pulse` (Einstellung „Pulsieren nach Biss“, 0,2 … 1) dämpft nur
+  den pulsierenden Anteil, die Grunddunkelheit bleibt (4.4).
 - **Engerer Blick unter Stress** (Spielkonzept 4.13): `MonsterDirector.player_stress` (geglättet, schnell hoch
   `STRESS_RISE`, langsam runter `STRESS_FALL`) aus Bedrohung, Versteck-Stress, Schock, Jagd = 1. `_update_effects`
   setzt damit `vignette` (`VIGNETTE` + `STRESS_VIGNETTE` × Stress), `Player._update_dread` verkleinert den Blickwinkel

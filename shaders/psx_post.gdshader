@@ -1,6 +1,7 @@
 // Vollbild-Effekt: Gamma, Rauschen, Bild-Flackern
 // und Zeilenversatz, die der MonsterDirector bei Erscheinen des Monsters hochregelt.
-// Müde oder im Rausch verschwimmt die Sicht (blur, warp – setzt main._process aus Player.sight_blur/sight_warp).
+// Müde oder im Rausch verschwimmt die Sicht (blur, warp – setzt main._process aus Player.sight_blur/sight_warp),
+// nach einem Fledermausbiss wird sie dunkel (dark aus Player.sight_dark).
 shader_type canvas_item;
 
 uniform sampler2D screen_tex : hint_screen_texture, filter_nearest;
@@ -14,6 +15,7 @@ uniform float gamma = 1.0;   // Einstellungen → Helligkeit
 uniform float blur = 0.0;    // Unschärfe 0..1 (Müdigkeit, Rausch – Spielkonzept 3.6/3.7)
 uniform float warp = 0.0;    // Wabern und Doppelbild im Rausch 0..1
 uniform float blur_time = 0.0;   // Spielzeit fürs Wabern (steht in der Pause)
+uniform float dark = 0.0;    // Abdunkeln nach dem Fledermausbiss 0..1, pulsiert wie ein Herzschlag (Spielkonzept 4.22)
 uniform float dream = 0.0;   // Albtraum von 1987 (Spielkonzept 4.29): verblichenes Foto in Rauchorange, dunkler Rand; über 1 weiß
 
 const float BLUR_RADIUS = 0.012;   // Radius bei blur = 1, Anteil der Bildhöhe
@@ -62,6 +64,8 @@ void fragment() {
 	col += roll * n2 * 0.15;
 	// Bild-Flackern
 	col *= 1.0 - flicker;
+	// Biss: dunkler im Herzschlag
+	col *= 1.0 - dark;
 	// Helligkeit (vor der Vignette)
 	col = pow(max(col, vec3(0.0)), vec3(1.0 / gamma));
 	// Albtraum: entsättigt wie ein altes Foto, warm getönt, Rand dunkler und unruhig

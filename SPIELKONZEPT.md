@@ -2442,8 +2442,15 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 > **Fledermäuse umgesetzt (2026-10-23), ohne Biss:** draußen in den Bäumen des Gartens – tagsüber hängen sie schlafend am unteren Rand der Krone, abends und nachts kreisen sie zackig um die Kronen. **Dachboden (2026-10-27):** tagsüber kleine Kolonien unter den Balkenkreuzen der Stützbalken; aufgeschreckt flattern sie in der Kammer um den Pfosten und hängen sich wieder hin, nachts sind sie draußen.
 > Scheu, Frühwarnung (sie fliehen vor Monster, Kürbismann und Lakengeist) und der Schwarm als Lärm wie unten
 > vorgeschlagen; wie nah man ihrem Baum kommen darf, hängt an der Auffälligkeit (4.15: Licht, Rennen, Ducken), laute
-> Geräusche wecken sie. Biss, Vampir und Knoblauch/Kreuz kommen mit den offenen Fragen unten. Debug:
-> `--fledermaus[=tag|schwarm|dachboden]`.
+> Geräusche wecken sie. Vampir und Knoblauch/Kreuz kommen mit den offenen Fragen unten. Debug:
+> `--fledermaus[=tag|schwarm|dachboden|biss]`.
+> **Fledermausbiss entschieden und umgesetzt (2026-11-03, ZIM-29):** als eigener Schritt vor dem Vampir. Draußen
+> stürzt sich abends oder nachts selten eine kreisende Fledermaus auf den Spieler, beißt in den Hals und fliegt davon –
+> erst nach dem ersten Angriff, nie im Dachgeschoss, nie im Versteck oder Schlaf, und nicht, solange die Wunde noch
+> offen ist. Schwäche **+0,5**, die Wunde heilt gleichmäßig in **2–3 Spieltagen**; ein Fledermausbiss **tötet nie**.
+> Das Bild wird dunkel und unscharf und pulsiert wie ein Herzschlag – direkt nach dem Biss stark, dann klingt es mit der
+> Wunde ab; die Einstellung „Pulsieren nach Biss“ schwächt das Pulsieren (wie das Flackern, 8.4), die Dunkelheit bleibt.
+> Die Bisswunde wird gespeichert. Noch nicht: Gäste beißen, Verwandlung und „hereinbitten“ (mit dem Vampir, ZIM-49).
 
 **Fledermäuse**
 - Echte Fledermäuse im **Dachgeschoss** und **draußen**. Meist sind sie **scheu** und fliegen vom Spieler weg.
@@ -2460,12 +2467,13 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
   - **Im Dachgeschoss kein Biss** – dort bleibt es still und ohne eigene Bedrohung (4.20, 4.21); gebissen wird draußen.
 
 **Der Biss**
-- Wer gebissen wird, wird **schwach** – Vorschlag: Schwäche **+0,5** (4.18), die Wunde heilt in zwei bis drei
-  Spieltagen (6.17). Damit kommt auch der **Lakengeist wahrscheinlicher und schneller** – ohne Sonderregel.
+- Wer gebissen wird, wird **schwach** – Schwäche **+0,5** (4.18), die Wunde heilt in zwei bis drei
+  Spieltagen (6.17; entschieden 2026-11-03). Damit kommt auch der **Lakengeist wahrscheinlicher und schneller** – ohne Sonderregel.
 - **Das Bild:** Nach dem Biss wird der Bildschirm abwechselnd **dunkler und heller**, ist ziemlich **dunkel und
-  verschwommen**. Vorschlag: direkt nach dem Biss stark, wie ein Herzschlag, dann klingt es mit der Schwäche ab;
-  abschwächbar in den Einstellungen (wie das Flackern, 8.4) – Dunkelheit ist Spielmechanik (4.4).
-- **Wer im schwachen Zustand gebissen wird, stirbt.**
+  verschwommen** – direkt nach dem Biss stark, wie ein Herzschlag, dann klingt es mit der Schwäche ab; abschwächbar in
+  den Einstellungen (wie das Flackern, 8.4) – Dunkelheit ist Spielmechanik (4.4) (entschieden 2026-11-03).
+- **Wer im schwachen Zustand gebissen wird, stirbt** – das gilt für den Vampir; ein **Fledermausbiss tötet nie**
+  (2026-11-03).
 - **Gäste** genauso: Gebissene haben **Bissmale am Hals** und sind blass (Eintrag für 6.17); zweimal gebissen bleiben sie
   als blasse Leiche liegen.
 

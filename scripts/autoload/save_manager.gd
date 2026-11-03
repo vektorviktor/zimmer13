@@ -138,7 +138,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     Wortwechsel gewesen, schon vorher verfeindet; ältere Stände laden weiter, ohne Streit
 ## 68: Kisten ohne Nachschub über den Monat verteilt (Spielkonzept 5.10, ZIM-81): resources.guest_taken (so viele Stück
 ##     haben Gäste genommen) – ältere Stände laden weiter und zählen alles Fehlende als von Gästen genommen
-const VERSION := 68
+## 69: Fledermausbiss (Spielkonzept 4.22; ZIM-29): player.bite und bite_heal (Bisswunde, Spielsekunden) – ältere Stände
+##     laden weiter, ungebissen
+const VERSION := 69
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -586,7 +588,7 @@ func collect() -> Dictionary:
 		"visited": visited.duplicate(),
 		"player": {
 			"pos": _v(stand if stand != Vector3.INF else p.global_position), "yaw": p.rotation.y, "pitch": p.head.rotation.x,
-			"crouch": p.crouching, "shock": p.shock, "injury": p.injury,
+			"crouch": p.crouching, "shock": p.shock, "injury": p.injury, "bite": p.bite, "bite_heal": p.bite_heal,
 			"awake_time": p.awake_time, "sure_awake": p.sure_awake, "rested": p.rested,
 			"drunk": p.drunk, "hangover": p.hangover, "disguised": p.disguised, "mask": p.mask,
 			"coffee": p.coffee, "coffee_low": p.coffee_low, "caffeine": p.caffeine, "tea": p.tea,
@@ -907,6 +909,8 @@ func apply(data: Dictionary) -> void:
 	p.sure_awake = float(pd.get("sure_awake", p.sure_awake))
 	p.rested = float(pd.get("rested", 0.0))
 	p.injury = float(pd.get("injury", 0.0))
+	p.bite = float(pd.get("bite", 0.0))
+	p.bite_heal = float(pd.get("bite_heal", 0.0))
 	p.drunk = float(pd.get("drunk", 0.0))
 	p.hangover = float(pd.get("hangover", 0.0))
 	p.coffee = float(pd.get("coffee", 0.0))

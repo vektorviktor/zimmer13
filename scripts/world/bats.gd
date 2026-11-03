@@ -10,11 +10,13 @@ extends Node3D
 ## Licht, Rennen, Lärm oder eine Bedrohung schrecken sie auf, dann flattern sie eine Weile in der Kammer um den Pfosten
 ## und hängen sich wieder hin. Nachts sind sie draußen (oben nicht zu sehen) – gewechselt wird nur, solange der Spieler
 ## nicht im Dachgeschoss ist. Dort beißen sie nie (4.22).
+## Biss (4.22, Entscheidung 3.11.): Draußen stürzt sich selten eine kreisende Fledermaus auf den Spieler, beißt ihn in den
+## Hals (Player.bat_bite: Schwäche, Bild pulsiert) und fliegt davon – erst nach dem ersten Angriff, nie tödlich.
 ## Ein MultiMesh (shaders/psx_bat.gdshader), Flug und Flügelschlag rechnet das Skript – in der Pause steht alles.
-## Noch nicht: Biss und Vampir.
-## Nicht gespeichert: Nach dem Laden hängen bzw. fliegen sie, wie es die Uhrzeit will.
+## Noch nicht: Gäste beißen, Vampir (ZIM-49).
+## Nicht gespeichert: Nach dem Laden hängen bzw. fliegen sie, wie es die Uhrzeit will (die Bisswunde trägt der Spieler).
 
-enum Mode { ROOST, FLY, HOME, FLEE, OUT }   ## OUT: vom Dachboden ausgeflogen (nachts)
+enum Mode { ROOST, FLY, HOME, FLEE, OUT, BITE }   ## OUT: vom Dachboden ausgeflogen (nachts) · BITE: Sturz auf den Spieler
 
 const COUNT := 36                    ## draußen; dazu die auf dem Dachboden
 ## Dachboden: so viele, in Kolonien zu je ATTIC_COLONY an zufälligen Pfosten; nicht näher am Pfosten als ATTIC_ARM_GAP
@@ -58,6 +60,16 @@ const NOISE_PAUSE := 4.0             ## je Baum höchstens so oft Lärm
 ## Ausflug am Abend und Heimkehr am Morgen: gestaffelt über so viele Sekunden (eine Spielstunde)
 const STAGGER := 60.0
 const SETTLE_PAUSE := Vector2(20.0, 50.0)   ## nach dem Aufschrecken am Tag so lange, bis sie wieder hängen
+## Biss: Steht der Spieler abends oder nachts draußen (nicht im Versteck), ist der erste Angriff geschehen und die letzte
+## Bisswunde verheilt, stürzt sich im Schnitt alle 1 / BITE_RATE s, die eine kreisende Fledermaus höchstens BITE_NEAR
+## (waagrecht) entfernt ist, die nächste herab – mit BITE_SPEED zum Hals; ab BITE_REACH beißt sie. Erreicht sie ihn nicht
+## in BITE_TIME s (er geht hinein, versteckt sich), dreht sie ab.
+const BITE_RATE := 1.0 / 900.0
+const BITE_NEAR := 12.0
+const BITE_SPEED := 7.0
+const BITE_REACH := 0.35
+const BITE_TIME := 6.0
+const BITE_NECK := 0.2               ## Hals: so weit unter den Augen
 const DEBUG_STAND := 13.0
 
 var _builder: LevelBuilder
@@ -87,6 +99,7 @@ var _noise_at := {}                  ## Baum → Spielzeit des letzten Lärms
 var _check := 0.0
 var _night := false
 var _debug_flush := -1.0             ## Debug (--fledermaus=schwarm): in so vielen Sekunden fliegen sie vom ersten Baum auf
+var _debug_bite := -1.0              ## Debug (--fledermaus=biss): in so vielen Sekunden stürzt sich eine herab
 
 
 func setup(builder: LevelBuilder) -> void:
@@ -263,7 +276,7 @@ func _physics_process(delta: float) -> void:
 	if night != _night:   # Ausflug bzw. Heimkehr, gestaffelt
 		_night = night
 		for i in _n:
-			if _mode[i] != Mode.FLEE and not (_is_attic(i) and _mode[i] == Mode.FLY):   # Aufgeschreckte flattern zu Ende
+			if _mode[i] not in [Mode.FLEE, Mode.BITE] and not (_is_attic(i) and _mode[i] == Mode.FLY):   # Aufgeschreckte flattern zu Ende
 				_timer[i] = randf() * STAGGER
 	_check -= delta
 	if _check <= 0.0:
@@ -275,6 +288,10 @@ func _physics_process(delta: float) -> void:
 			# der Baum, auf den du siehst – aufgescheucht von hinten, damit der Schwarm über dich hinwegzieht
 			var base: Vector3 = _trees[0]["pos"]
 			_flush(0, base * 2.0 - Game.player.global_position, true)
+	if _debug_bite >= 0.0:
+		_debug_bite -= delta
+		if _debug_bite < 0.0 and not _start_bite():
+			Game.say("Fledermäuse: Keine kreisende in der Nähe.", 2.5)
 	for i in _n:
 		_step(i, delta)
 		_draw(i)
@@ -316,15 +333,27 @@ func _step(i: int, delta: float) -> void:
 			if _timer[i] <= 0.0:   # danach kreisen – am Tag nur eine Weile, dann heim
 				_mode[i] = Mode.FLY
 				_timer[i] = 0.0 if _night else randf_range(SETTLE_PAUSE.x, SETTLE_PAUSE.y)
+		Mode.BITE:
+			var player := Game.player
+			if player == null or player.dead or player.hiding or player.sleeping or _timer[i] <= 0.0 \
+					or not _outdoor(player.global_position):
+				_flee_from(i, player.global_position if player else _pos[i] + Vector3.DOWN)
+				return
+			var neck := player.camera.global_position + Vector3.DOWN * BITE_NECK
+			var to := neck - _pos[i]
+			if to.length() < BITE_REACH:
+				_bite(i, player, neck)
+				return
+			want = to.normalized() * BITE_SPEED
 	_jitter_t[i] -= delta
 	if _jitter_t[i] <= 0.0:
 		_jitter_t[i] = randf_range(JITTER_EVERY.x, JITTER_EVERY.y)
 		_jitter[i] = Vector3(randf_range(-1, 1), randf_range(-0.6, 0.6), randf_range(-1, 1)) * JITTER * (ATTIC_JITTER if attic else 1.0)
-	if mode != Mode.HOME:
+	if mode != Mode.HOME and mode != Mode.BITE:
 		want += _jitter[i]
 	var p := _pos[i]
 	# draußen bleiben: unterhalb der Dächer nicht über das Haus, sondern hinauf und zurück zur Bahn
-	if not attic and p.y < ROOF_CLEAR and not _outdoor(p + _vel[i] * 0.4):
+	if not attic and mode != Mode.BITE and p.y < ROOF_CLEAR and not _outdoor(p + _vel[i] * 0.4):
 		var back := _center[i] - p
 		back.y = 0.0
 		want = back.normalized() * FLY_SPEED.y + Vector3.UP * 3.0
@@ -335,7 +364,7 @@ func _step(i: int, delta: float) -> void:
 		var flat := Vector2(p.x - c.x, p.z - c.z).limit_length(_radius[i] + 0.3)
 		p = Vector3(c.x + flat.x, clampf(p.y, c.y + 0.5, c.y + LevelBuilder.ATTIC_BEAM_BOTTOM), c.z + flat.y)
 	else:
-		p.y = clampf(p.y, MIN_Y if mode != Mode.HOME else 0.0, MAX_Y)
+		p.y = clampf(p.y, MIN_Y if mode != Mode.HOME and mode != Mode.BITE else 0.0, MAX_Y)
 	_pos[i] = p
 	_phase[i] = fmod(_phase[i] + TAU * FLAP_RATE * delta, TAU)
 
@@ -411,6 +440,39 @@ func _look_around() -> void:
 	for i in COUNT:
 		if _mode[i] in [Mode.FLY, Mode.HOME] and eye.distance_to(_pos[i]) < SHY_RANGE:
 			_flee_from(i, eye, SHY_TIME)
+	if _night and Game.director and Game.director.first_attack_done and randf() < BITE_RATE * CHECK_EVERY:
+		_start_bite()
+
+
+# --- Biss (4.22) ----------------------------------------------------------------------------------
+
+## Die nächste kreisende Fledermaus (höchstens BITE_NEAR waagrecht) stürzt sich auf den Spieler – nicht, solange er im
+## Versteck liegt, schläft oder seine Bisswunde noch offen ist, und immer nur eine. false: keine da.
+func _start_bite() -> bool:
+	var player := Game.player
+	if player == null or player.dead or player.hiding or player.sleeping or player.bite > 0.0 or Mode.BITE in _mode:
+		return false
+	var best := -1
+	var best_d := BITE_NEAR
+	for i in COUNT:
+		var d := _flat(_pos[i], player.global_position)
+		if _mode[i] == Mode.FLY and d < best_d:
+			best = i
+			best_d = d
+	if best < 0:
+		return false
+	_mode[best] = Mode.BITE
+	_timer[best] = BITE_TIME
+	if Game.tracing:
+		print("[Fledermäuse] eine stürzt sich auf dich (%.1f m)" % best_d)
+	return true
+
+
+## Am Hals: Biss (Player.bat_bite), Flügelschlag mit Untertitel, und sie fliegt davon.
+func _bite(i: int, player: Player, neck: Vector3) -> void:
+	player.bat_bite()
+	Game.play_sound("flutter", 0.6, neck, null, "[Flügelschlagen – eine Fledermaus beißt zu]")
+	_flee_from(i, neck)
 
 
 ## Alle, die an Baum t hängen, fliegen auf – weg von `from`. Ein Schwarm flattert hörbar (Lärm, je Baum gedrosselt).
@@ -485,7 +547,8 @@ func _flat(a: Vector3, b: Vector3) -> float:
 ## (nachts in den Himmel über der Krone, tags auf ihren unteren Rand). Ohne Wert ist es 21 Uhr (sie kreisen), tag:
 ## 12 Uhr (sie hängen), schwarm: 12 Uhr, nach 3 s fliegen sie auf – wie von der anderen Seite des Baums aufgeschreckt,
 ## über dich hinweg. dachboden: 12 Uhr, du stehst auf dem Dachboden neben einem Pfosten mit Kolonie und siehst zum
-## Balkenkreuz hinauf (Taschenlampe an oder rennen scheucht sie auf).
+## Balkenkreuz hinauf (Taschenlampe an oder rennen scheucht sie auf). biss: wie ohne Wert, nach 1,5 s stürzt sich die nächste
+## herab und beißt dich (auch vor dem ersten Angriff).
 func debug_show(what: String) -> void:
 	if what == "dachboden":
 		_debug_attic()
@@ -493,9 +556,10 @@ func debug_show(what: String) -> void:
 	if _trees.is_empty():
 		Game.say("Fledermäuse: Draußen steht kein Baum.", 2.5)
 		return
+	var evening := what in ["", "biss"]
 	var day := Calendar.day_of(Game.director.elapsed)
-	Game.director.elapsed = maxf(Game.director.elapsed, Calendar.at(day, 21.0 if what == "" else 12.0))
-	if what != "" and Calendar.hour_of(Game.director.elapsed) >= 18.0:
+	Game.director.elapsed = maxf(Game.director.elapsed, Calendar.at(day, 21.0 if evening else 12.0))
+	if not evening and Calendar.hour_of(Game.director.elapsed) >= 18.0:
 		Game.director.elapsed = Calendar.at(day + 1, 12.0)
 	_night = _active_time()
 	for i in COUNT:
@@ -519,6 +583,8 @@ func debug_show(what: String) -> void:
 	player.head.rotation.x = clampf(atan2(look.y, Vector2(look.x, look.z).length()), -1.2, 1.2)
 	if what == "schwarm":
 		_debug_flush = 3.0
+	elif what == "biss":
+		_debug_bite = 1.5
 
 
 func _debug_attic() -> void:
