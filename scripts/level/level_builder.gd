@@ -4667,6 +4667,19 @@ func _garden_beds() -> void:
 		_bed_mounds.append(bed)
 		garden_beds.append(rect)
 		garden_spots.append(Vector3((x0 + x1) / 2.0, 0, z + 1.0))
+		if Game.tracing:
+			print("[Beete] Erdwall %s mit %d Pflanzen" % [rect, xs.size()])
+	for plant in root.get_children():   # schon von _fittings gesetzt
+		if plant is PumpkinPlant:
+			plant.position.y = _bed_height(Vector2(plant.position.x, plant.position.z)) - 0.01
+
+
+## Höhe der Erde an p (x, z) auf einem Kürbisbeet, sonst 0.
+func _bed_height(p: Vector2) -> float:
+	for bed in _bed_mounds:
+		if bed.rect.has_point(p):
+			return bed.height(p)
+	return 0.0
 
 
 ## Baum Nummer index aus TREE_MODELS (der Reihe nach, je um TREE_TURN gedreht). Kollision nur am Stamm, unter der
@@ -4699,19 +4712,6 @@ func _tree(pos: Vector3, index: int) -> void:
 	var colors: Array[Color] = [Color(0.6, 0.25, 0.05), Color(0.7, 0.4, 0.08), Color(0.45, 0.12, 0.05)]
 	var offsets: Array[Vector3] = [Vector3(0, height / 2.0, 0), Vector3(radius * 0.35, height / 2.0 - 0.6, radius * 0.2), Vector3(-radius * 0.3, height / 2.0 - 0.4, -radius * 0.25)]
 	for i in 3:
-		if Game.tracing:
-			print("[Beete] Erdwall %s mit %d Pflanzen" % [rect, xs.size()])
-	for plant in root.get_children():   # schon von _fittings gesetzt
-		if plant is PumpkinPlant:
-			plant.position.y = _bed_height(Vector2(plant.position.x, plant.position.z)) - 0.01
-
-
-## Höhe der Erde an p (x, z) auf einem Kürbisbeet, sonst 0.
-func _bed_height(p: Vector2) -> float:
-	for bed in _bed_mounds:
-		if bed.rect.has_point(p):
-			return bed.height(p)
-	return 0.0
 		Geo.mesh(trunk, Geo.sphere(radius * (0.7 - i * 0.12), radius * (0.9 - i * 0.12), 8, 4), Mat.psx(colors[i]), offsets[i])
 
 
