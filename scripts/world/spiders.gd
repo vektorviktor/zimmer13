@@ -243,7 +243,7 @@ func _floor_spot_near(p: Vector3, dist: Vector2, unseen: bool) -> Vector3:
 		if absf(q.y - p.y) > 1.2 or Vector2(q.x - p.x, q.z - p.z).length() < dist.x * 0.7:
 			continue
 		var f := _floor_at(q)
-		if f == Vector3.INF or Game.social.builder.is_safe(f):
+		if f == Vector3.INF:
 			continue
 		if unseen and Game.director and Game.director.player_can_see(f + Vector3.UP * 0.05):
 			continue

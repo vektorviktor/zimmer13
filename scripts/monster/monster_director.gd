@@ -350,8 +350,6 @@ func pressure_at(p: Vector3, chasing: bool = false) -> float:
 
 
 func deterrence_at(p: Vector3) -> float:
-	if _builder and _builder.is_safe(p):
-		return INF   # Katzenraum (Spielkonzept 7.7): dort hinein kommt es nie, wer drinsteht, ist geschützt
 	var light := light_at(p + Vector3.UP)
 	return deco_strength_at(p) / (demand() * _household_factor(p)) \
 		+ light * LIGHT_DETERRENCE * maxf(0.0, 1.0 - effective_boldness() / 120.0)

@@ -414,12 +414,12 @@ func _refresh_windows() -> void:
 	_dark.clear()
 
 
-## Kann er zum Spieler kommen? Nicht zu Toten, Versteckten, im Gespräch und im Katzenraum (Spielkonzept 7.7) – und nicht
-## in Zimmer 13, solange dort die Dusche läuft: Der Moment im Bad wartet auf ihn (4.24).
+## Kann er zum Spieler kommen? Nicht zu Toten, Versteckten und im Gespräch – und nicht in Zimmer 13, solange dort die
+## Dusche läuft: Der Moment im Bad wartet auf ihn (4.24). Der Katzenraum schützt nicht mehr (7.7, ZIM-38).
 func _player_free(player: Player) -> bool:
 	if Game.shower_scare and Game.shower_scare.reserves(player):
 		return false
-	return not (player.dead or player.hiding != null or player.in_dialog or Game.social.builder.is_safe(player.global_position))
+	return not (player.dead or player.hiding != null or player.in_dialog)
 
 
 ## Dunkles Fenster in der Nähe des Spielers: beim Betreten würfeln, beim Bleiben alle STAY_EVERY Sekunden.
@@ -459,8 +459,7 @@ func _check_guests() -> void:
 		var g: Guest = guest
 		if _force_guest != null and g != _force_guest:
 			continue   # Debug: nur zu diesem Gast
-		if g.dead or g.hiding != null or g.state in [Guest.State.TALKING, Guest.State.MINIGAME, Guest.State.SLEEP, Guest.State.KNOCK, Guest.State.SHELTER] \
-				or Game.social.builder.is_safe(g.global_position):
+		if g.dead or g.hiding != null or g.state in [Guest.State.TALKING, Guest.State.MINIGAME, Guest.State.SLEEP, Guest.State.KNOCK, Guest.State.SHELTER]:
 			_guest_windows.erase(g.id)
 			continue
 		var eye := _eye_of(g)

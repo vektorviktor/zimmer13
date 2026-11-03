@@ -873,7 +873,7 @@ Lobby-/Bar-/Garten-/Feier-Punkte, `party_corner`, `stairwell_point`, `game_table
 `cat_perches`, `tree_spots`, `room_spot(no)` (Debug-Teleport). Abfragen (alle Stockwerke, nach der Höhe – Punkte am
 Boden abfragen): `in_lobby(p)`, `in_area(p, id)`, `is_outdoor(p)` (auch Balkone), `in_corridor(p)` (Flur nach Grundriss,
 ohne Lobby und Galerien), `room_at(p)` (Raum-ID wie bei Fenstern und Schaltern, leer auf Podesten), `home_room_at(p)`
-(Bad zählt zum Zimmer), `is_safe(p)` (Katzenraum), `cellar_center()`.
+(Bad zählt zum Zimmer), `cellar_center()`.
 
 **NavMesh** wird in `main._bake_navigation` zur Laufzeit gebacken (nur Ebene 1). `--navcheck` misst Bau- und Backzeit
 und prüft die Wege zu allen wichtigen Orten (ohne Suchgrenze wie das Monster). `--navcheck=tueren` prüft, ob das
@@ -979,8 +979,8 @@ außer dem Fragenden selbst, und der Albtraum – fragen nur noch Szenen und Ruh
   macht eine Stelle heiß oder verschmilzt mit einer unter `HOT_MERGE`; `curiosity_at(p)` = `CURIOSITY_BASE` + Hitze der
   Stellen auf demselben Stockwerk (voll bis `HOT_CORE`, auslaufend bis `HOT_RADIUS`). `_cool_down(dt)` lässt Hitze
   (`HOT_HALF_LIFE`) und Boni abklingen, je Frame und im Zeitsprung. Gespeichert in `save_state` (Speicherformat 53).
-- `pressure_at(p)` aus Dreistigkeit und Neugier, `deterrence_at(p)` aus Deko / `demand()` plus Licht allein,
-  im Katzenraum unendlich (`LevelBuilder.is_safe`). Deko zählt nur auf demselben Stockwerk, mit `Item.deco_value()`;
+- `pressure_at(p)` aus Dreistigkeit und Neugier, `deterrence_at(p)` aus Deko / `demand()` plus Licht allein
+  (überall, auch im Katzenraum – er schützt nicht mehr, ZIM-38). Deko zählt nur auf demselben Stockwerk, mit `Item.deco_value()`;
   Füllmaterial (`Item.is_filler()`) zusammen höchstens `FILLER_CAP` je Stelle (`_deco_strength`, auch für die Puppe).
   `is_blocked` / `is_protected`.
 - **Schutzkreis = Lichtschein** (5.10, Stufe 2, `_deco_share`): Deko mit Licht zählt bis `Item.glow_reach()`
@@ -2498,7 +2498,7 @@ Spielkonzept 2.5)
 (`monster/sheet_ghost.gd`, `shaders/psx_ghost.gdshader`, Spielkonzept 4.18)
 - `Game.ghost`, eigener Knoten, **kein NavMesh und keine Kollision** (schwebt durch Glas und Vorhang). Erscheint an
   dunklen Außenfenstern mit offenem Vorhang (`_window_near()`) und an Fenstertüren (Gruppe `french_doors`, `Door.room_id`,
-  `Door.outward`), nicht in Gesellschaft, nicht im Katzenraum, erst nach dem ersten Angriff (4.20); im Erdgeschoss nur mit `GROUND_SHARE`
+  `Door.outward`), nicht in Gesellschaft, erst nach dem ersten Angriff (4.20); im Erdgeschoss nur mit `GROUND_SHARE`
   (⅓) der Chancen (`_floor_share`, Aufholen bleibt sicher; Flur-Regeln dort noch voll). `visits`
   = Stufe (gespeichert unter `ghost`; laufende Auftritte nicht).
 - Zustände `APPROACH → HOVER → ENTER → STRANGLE`, dazu `LURK → FLY_IN` am Schrank, `DOOR` vor der Tür, `PATROL` in der

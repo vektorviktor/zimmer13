@@ -5731,16 +5731,6 @@ func room_spot(no: String) -> Dictionary:
 	return _room_spots.get(no, {})
 
 
-## Sicher vor allem (Spielkonzept 7.7): der Katzenraum – Monster und Lakengeist kommen nicht hinein.
-func is_safe(p: Vector3) -> bool:
-	var level := _level_of(p.y)
-	if level < 0:
-		return false
-	return _on_floor(level, func() -> bool:
-		var place := _place_at(Vector2(p.x, p.z))
-		return not place.is_empty() and place["kind"] == "cat_room")
-
-
 # --- Bausteine ------------------------------------------------------------------------------------
 
 ## Wand entlang X bei z. Öffnungen als Vector4(Mitte x, Breite, Oberkante, Unterkante).

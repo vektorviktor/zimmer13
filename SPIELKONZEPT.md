@@ -2388,7 +2388,7 @@ viel.
 **5. Der friedliche Anfang bleibt friedlich:** Der Lakengeist kommt **erst nach dem ersten Angriff** des Monsters
 (2.1).
 
-**Der Katzenraum ist kein Schutzraum (entschieden 2026-11-03, ZIM-38, noch nicht gebaut):** ein Raum mit Katzen wie
+**Der Katzenraum ist kein Schutzraum (entschieden und gebaut 2026-11-03, ZIM-38):** ein Raum mit Katzen wie
 jeder andere – Monster, Lakengeist und Kürbismann kommen hinein. ~~Vertagt (2026-10-21): 7.7 versprach, er sei vor
 allem sicher; Monster und Lakengeist kamen nicht hinein, der Kürbismann schon, und Ausharren dort war die stärkste
 Strategie.~~
@@ -5465,7 +5465,7 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
 > **Umgesetzt (2026-10-20):** Das Obergeschoss steht im Spiel: Zimmer mit Bädern, Balkonen mit Geländern, Suiten über
 > Verbindungstüren; Galerien mit Geländer um die Lufträume von Lobby und Partyraum; Bibliothek offen. Zimmer ohne
 > Schalter im Plan bekommen einen neben der Tür. **Katzenraum:** acht Kratzbäume, vier eigene Katzen (Luna, Fussel,
-> Tiger, Mausi), Monster und Lakengeist kommen nicht hinein bzw. zu niemandem, der drin ist (fällt weg, 2026-11-03). Das Kartenblatt
+> Tiger, Mausi), ~~Monster und Lakengeist kommen nicht hinein bzw. zu niemandem, der drin ist~~ (entfernt 2026-11-03, ZIM-38). Das Kartenblatt
 > „Obergeschoss“ zeigt das ganze Stockwerk und liegt an der Rezeption.
 > **Treppenhäuser (entschieden 2026-10-20):** Was auf der Ebene eines Stockwerks an der Wand gegenüber der
 > Treppenhaustür hängt, sitzt über dem Wendepodest – eine halbe Etage höher. Gilt für jedes Treppenhaus in jeder
