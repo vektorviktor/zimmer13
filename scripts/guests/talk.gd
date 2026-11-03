@@ -653,6 +653,9 @@ func greeting(g: Guest) -> String:
 	if g.has_stance("promise_broken"):
 		g.clear_stance("promise_broken")
 		return "Du hast versprochen, mit mir zu spielen! Du hast es vergessen."
+	if g.has_stance("envy"):
+		g.clear_stance("envy")   # Neid auf Zimmer 13 (6.18, 5): der spitze Satz einmal am Tag
+		return Social.ENVY_LINES.pick_random()
 	return ""
 
 

@@ -4448,7 +4448,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 ### 6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)
 > Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19; Wache halten,
 > 2026-11-02, ZIM-62; das Freundesnetz als Kanal (1), 2026-11-03, ZIM-159; die Beziehung nicht erschleichen (5) ohne Neid,
-> 2026-11-03, ZIM-163). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> 2026-11-03, ZIM-163; Neid, 2026-11-03, ZIM-164). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
@@ -4543,6 +4543,14 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 - **Neid** – Schlechtes, das nicht vom Spieler ausgeht: Ist Zimmer 13 in der Knappheit (5.10) sichtbar besser
   geschmückt als die Nachbartüren, werden schlecht geschmückte Nachbarn neidisch – die Beziehung sinkt langsam,
   Wütende klauen. Die Paranoia kommt aus dem Mangel.
+  *Entschieden 2026-11-03, gebaut 2026-11-03 (ZIM-164):* **−2 Beziehung je Spieltag** (am Morgen) und neidischem
+  Nachbarn, **höchstens bis „wütend“** – danach klaut er nach der Regel für Wütende (6.3). **„Sichtbar besser
+  geschmückt“:** In der Knappheit (5.10) hat Zimmer 13 mindestens **doppelt so viel Abschreckung** wie die Tür des
+  Nachbarn, und dessen Tür **hält nicht** (Maß aus 5.10; Licht zählt mit – brennende Deko vor 13, deren Schein bis zu
+  seiner Tür reicht, schützt ihn mit und macht weniger neidisch). Neidisch werden nur **Türnachbarn** (Tür auf
+  demselben Stockwerk, bis 6,5 m wie bei 6.16), die **nicht mit dir befreundet** sind; Kinder nicht (Bau-Entscheidung).
+  Der Neid zeigt sich einmal am Tag mit einem **spitzen Satz** – beim Vorbeigehen oder zu Gesprächsbeginn („Woher hast
+  du das alles?“). Gemessen wird nur am Morgen.
 
 > **Entschieden 2026-11-03, umgesetzt 2026-11-03 (ZIM-163)** – alles außer Neid (ZIM-164):
 > - **Gespräche je Tag nach Stufe** (Gespräch und Telefon zusammen): genervt und wütend **2**, nach drei Antworten
@@ -4564,7 +4572,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 > - Nicht gebaut: „Wohlgesinnte reden über mehr Themen“, „Verärgerte bieten weniger Optionen“ – nur Zahl und
 >   Abbruch der Gespräche.
 
-**Zu klären:** wie stark Neid ist (ZIM-164) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
+**Zu klären:** wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 
 ### 6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht

@@ -89,6 +89,8 @@ extends Node3D
 ##                               Stationen weit, je Station halb so stark (--trace „[Netz]“)
 ##   --budget=id                 Beziehung nicht erschleichen (6.18, 5): spielt mit dem Gast Gesprächsbereitschaft, Abbruch,
 ##                               Beziehungsbudget, Geschenke nach Wert, Beruhigen und Vergebung durch (--trace „[Budget]“)
+##   --neid[=id]                 Neid der Türnachbarn (6.18, 5): Kisten leer, vier Kürbisse vor Zimmer 13 – ein Morgen läuft,
+##                               dann Untergrenze, Freund, spitzer Satz beim Vorbeigehen und im Gespräch (--trace „[Neid]“)
 ##   --call=id[,panik]|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast – mit ,panik ein Panikanruf –,
 ##                               Atmen, Verschwundener, vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --gastanruf=id[,panik]      Gäste telefonieren (4.14): der Gast steht daheim, kennt eine frische Geschichte und ruft
@@ -2047,6 +2049,8 @@ func run_debug(arg: String) -> bool:
 		_debug_net(_arg_parts(arg, "--netz"))
 	elif arg.begins_with("--budget="):
 		_debug_budget(_arg_parts(arg, "--budget"))
+	elif arg == "--neid" or arg.begins_with("--neid="):
+		_debug_envy(_arg_parts(arg, "--neid"))
 	elif arg == "--knock":
 		# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
 		Game.director.first_attack_done = true
@@ -3296,6 +3300,94 @@ func _debug_budget(parts: PackedStringArray) -> void:
 		Game.social._update_forgiveness()
 		check.call("frische Tat: keine Vergebung", Game.social.deed(g, "hostile") == Social.FEUD_HOSTILE - 1)
 		g.relation = 0.0)
+
+
+## --neid[=id]: Neid der Türnachbarn (Spielkonzept 6.18, 5) – Kisten leer, vier erloschene Kürbisse vor Zimmer 13, die Deko vor der Tür
+## des Nachbarn (id oder der erste erwachsene Türnachbar) ist weg. Er steht vor dir; nach 2 s laufen die Regeln durch und
+## jede meldet „[Neid] … ok“ bzw. „FEHLER“.
+func _debug_envy(parts: PackedStringArray) -> void:
+	var social := Game.social
+	var dir := Game.director
+	var mine: Vector3 = dir.rooms[LevelBuilder.PLAYER_ROOM]["door_front"]
+	var g: Guest = null
+	for other: Guest in social.living_guests():
+		var no := String(other.home.get("no", ""))
+		if other.is_child() or no == LevelBuilder.PLAYER_ROOM or not dir.rooms.has(no) \
+				or (parts[0] != "" and other != social.find_guest(parts[0])):
+			continue
+		var front: Vector3 = dir.rooms[no]["door_front"]
+		if absf(front.y - mine.y) < 1.0 and front.distance_to(mine) < GuestPals.NEIGHBOR_RANGE:
+			g = other
+			break
+	if g == null:
+		print("[Neid] Debug: kein erwachsener Türnachbar von Zimmer 13%s" % ((" namens " + parts[0]) if parts[0] != "" else ""))
+		return
+	var no := String(g.home["no"])
+	var room: Dictionary = dir.rooms[no]
+	var front: Vector3 = room["door_front"]
+	for node in get_tree().get_nodes_in_group("resource_spots"):
+		var spot := node as ResourceSpot
+		if spot.runs_out():
+			spot.uses = 0
+	for node in get_tree().get_nodes_in_group("items"):
+		var item := node as Item
+		if item.deco_strength > 0.0 and not item.is_held and item.global_position.distance_to(front) < DecoPlan.LOOT_REACH:
+			item.queue_free()
+	var along: Vector3 = dir.rooms[LevelBuilder.PLAYER_ROOM]["along"]
+	for side in [-0.9, -0.5, 0.5, 0.9]:
+		var pumpkin := Item.create(Item.Kind.CARVED_PUMPKIN)
+		pumpkin.owner_id = "player"
+		Game.player.get_parent().add_child(pumpkin)
+		pumpkin.global_position = mine + along * side + Vector3.UP * 0.05
+		pumpkin.blow_out()   # ohne Schein zählen sie nur an Tür 13 (5.10) – sonst schützt ihr Licht auch den Nachbarn
+	var p := Game.player
+	g.global_position = p.global_position - p.global_transform.basis.z * 1.5
+	g._set_idle(60.0)
+	print("[Neid] Debug: %s (Zimmer %s) ist Türnachbar von 13" % [g.display_name, String(room["sign"])])
+	get_tree().create_timer(2.0, false).timeout.connect(func() -> void:
+		var check := func(what: String, ok: bool) -> void:
+			print("[Neid] %s: %s" % [what, "ok" if ok else "FEHLER"])
+		# Seine Tür muss schwach sein (früh im Monat ist das Monster zahm): Druck erhöhen, bis sie nicht mehr hält
+		for i in 30:
+			if social.decorating.plan.weak(no):
+				break
+			dir.add_boldness(10.0)
+		print("[Neid] Abschreckung 13 %.2f, Zimmer %s %.2f, hält nicht: %s, Knappheit: %s" % [dir.deterrence_at(mine), no,
+			dir.deterrence_at(front), social.decorating.plan.weak(no), social.decorating.plan.scarce()])
+		# Ein Morgen: −2
+		g.relation = 0.0
+		g.clear_stance("envy")
+		social._envy_day = Calendar.today() - 1
+		social._update_envy()
+		check.call("ein Morgen: %.0f" % g.relation, g.relation == -Social.ENVY_DAILY and g.has_stance("envy"))
+		# Zeitsprung über zwei Morgen: −4 (ab dem 2. Spieltag, davor gibt es keine zwei Morgen)
+		if Calendar.today() >= 2:
+			g.relation = 0.0
+			social._envy_day = Calendar.today() - 2
+			social._update_envy()
+			check.call("zwei Morgen: %.0f" % g.relation, g.relation == -2.0 * Social.ENVY_DAILY)
+		# Höchstens bis „wütend“
+		g.relation = -29.0
+		social._envy_day = Calendar.today() - 1
+		social._update_envy()
+		check.call("Untergrenze: %.0f (%s)" % [g.relation, Social.relation_word(g.relation)],
+			g.relation == Social.ENVY_FLOOR and Social.tier(g) == Social.Tier.ANGRY)
+		social._envy_day = Calendar.today() - 1
+		social._update_envy()
+		check.call("nicht tiefer als wütend", g.relation == Social.ENVY_FLOOR)
+		# Befreundete sind nicht neidisch
+		g.relation = 60.0
+		check.call("Freund nicht neidisch", not g in social.envious_neighbors())
+		# Im Gespräch
+		g.relation = 0.0
+		g.set_stance("envy", Calendar.DAY_SECONDS)
+		var line := social.talk.greeting(g)
+		check.call("im Gespräch: „%s“" % line, line in Social.ENVY_LINES and not g.has_stance("envy"))
+		# Beim Vorbeigehen
+		g.set_stance("envy", Calendar.DAY_SECONDS)
+		g._set_idle(60.0)
+		get_tree().create_timer(3.0, false).timeout.connect(func() -> void:
+			check.call("beim Vorbeigehen", not g.has_stance("envy"))))
 
 
 ## --decorate[=…]: Schmück-Aktion bzw. allein schmückender Gast (Spielkonzept 5.9), mit „hin“ steht der Spieler davor.

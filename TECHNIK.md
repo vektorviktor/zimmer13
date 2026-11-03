@@ -1255,6 +1255,14 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   Spieltag ohne Tat seit dem Vortag (`Guest.hostile_day`, gesetzt in `add_deed`) `hostile` −1; fehlt dann die
   Bedingung für „stark verfeindet“, springt der Wert auf −79. `_forgive_day` nicht gespeichert (nach dem Laden ab
   heute). Debug `--budget=id`, Szenario mit Stichwort „budget“.
+  Neid (ZIM-164) `Social._update_envy` im selben Takt, einmal je neuem Spieltag (`_envy_day`, nicht gespeichert;
+  mehrere Morgen zählen einzeln): `envious_neighbors()` misst nur dann – Knappheit (`DecoPlan.scarce`), Abschreckung
+  vor 13 (`MonsterDirector.deterrence_at`, > 0) mindestens `ENVY_RATIO` × die der Nachbartür und die hält nicht
+  (`DecoPlan.weak`); Türnachbar = Erwachsener, Tür auf demselben Stockwerk bis `GuestPals.NEIGHBOR_RANGE`, Stufe unter
+  „befreundet“; jede Tür einmal gemessen. Folge: Beziehung −`ENVY_DAILY`, nicht unter `ENVY_FLOOR` (−30, „wütend“ –
+  ab da klaut er nach `Guest._try_steal`), Haltung „envy“ für einen Spieltag (wird mit `stances` gespeichert). Den
+  spitzen Satz (`ENVY_LINES`) sagt er einmal: beim Vorbeigehen (`_envy_remark`, im 2-s-Takt, bis
+  `ENVY_REMARK_RANGE`) oder zu Gesprächsbeginn (`Talk.greeting`). Debug `--neid[=id]`, Szenario mit Stichwort „neid“.
 - **Spieler schlägt und rammt** (`player.gd`): Linksklick schlägt, wenn `_punch_target()` einen Gast im Fokus hat
   (außer bei „wütend“ erst nach Nachfrage) → `Social.on_player_punched`; Rennen gegen einen Gast (`_check_ram`) →
   `on_player_rammed`; ein Wurf trifft (3.13) → `on_player_threw_at`: `THROWN_AT` bzw. mit Zerplatzendem

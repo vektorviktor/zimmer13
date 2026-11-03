@@ -21,6 +21,15 @@ const FEUD_HOSTILE := 4
 const FEUD_REVENGE := 1
 ## Für „guter Freund“ zählt ein Geschenk erst ab diesem Preis – Füllmaterial und roher Kürbis nie (6.18, 5; 2026-11-03)
 const BOND_GIFT_PRICE := 5
+## Neid (6.18, 5; 2026-11-03): je Morgen und neidischem Türnachbarn so viel Beziehung weniger, höchstens bis „wütend“;
+## neidisch, wenn Zimmer 13 in der Knappheit mindestens ENVY_RATIO-mal so viel Abschreckung hat wie seine Tür
+const ENVY_DAILY := 2.0
+const ENVY_FLOOR := -30.0
+const ENVY_RATIO := 2.0
+## Der spitze Satz beim Vorbeigehen: bis so weit vom Spieler
+const ENVY_REMARK_RANGE := 3.5
+const ENVY_LINES := ["Woher hast du das alles?", "Schöne Tür. Woher hast du das alles, wenn die Kisten leer sind?",
+	"Bei dir hängt ja alles voll. Und unsereins hat nichts mehr.", "Na, Zimmer 13 kann sich ja sicher fühlen."]
 ## Ohne Kontakt wandern die Extreme zurück – so viele Punkte pro Sekunde (1,2 je Spieltag, 2.4)
 const DRIFT := 1.2 / Calendar.DAY_SECONDS
 ## Gute Freunde besuchen Zimmer 13 (Abstand zwischen zwei Besuchen), Erzfeinde lauern dir auf
@@ -304,6 +313,7 @@ var _next_guest := 1                     ## laufende Nummer für IDs erzeugter G
 var _visit_cooldown := 200.0
 var _feud_timer := 2.0
 var _forgive_day := -1   ## Vergebung (6.18, 5): bis zu diesem Tag gezählt (nicht gespeichert, nach dem Laden ab heute)
+var _envy_day := -1      ## Neid (6.18, 5): bis zu diesem Tag gezählt (nicht gespeichert, nach dem Laden ab heute)
 var _trick_cooldown := 240.0
 var _trick: Dictionary = {}              ## Süßes oder Saures an der offenen Tür: {guest, time}
 var _round_cooldown := 120.0
@@ -806,6 +816,70 @@ func _update_forgiveness() -> void:
 			print("[Budget] Vergebung: %s – noch %d feindselige Taten (%s)" % [guest.display_name, deed(guest, "hostile"),
 				relation_word(guest.relation)])
 	_forgive_day = today
+
+
+## Neid (6.18, 5; entschieden 2026-11-03): Jeden Morgen verlieren neidische Türnachbarn von Zimmer 13 (envious_neighbors)
+## ENVY_DAILY Beziehung, höchstens bis „wütend“ – danach klauen sie wie jeder Wütende (Guest._try_steal). Den spitzen
+## Satz sagen sie einmal am Tag (Haltung „envy“, _envy_remark bzw. Talk.greeting). Mehrere Tage auf einmal (Zeitsprung)
+## zählen einzeln. Gemessen wird nur am Morgen (ZIM-124: nichts im Takt).
+func _update_envy() -> void:
+	var today := Calendar.today()
+	if _envy_day < 0 or today < _envy_day:
+		_envy_day = today
+		return
+	if today == _envy_day:
+		return
+	var mornings := today - _envy_day
+	_envy_day = today
+	for guest in envious_neighbors():
+		var before := guest.relation
+		if before > ENVY_FLOOR:
+			guest.relation = maxf(before - ENVY_DAILY * mornings, ENVY_FLOOR)
+			_announce_tier(guest, tier_of(before), tier_of(guest.relation))
+		guest.set_stance("envy", Calendar.DAY_SECONDS)
+		if Game.tracing:
+			print("[Neid] %s ist neidisch auf Zimmer 13: %.0f (%s)" % [guest.display_name, guest.relation,
+				relation_word(guest.relation)])
+
+
+## Neidische Türnachbarn (6.18, 5): Erwachsene mit Tür auf demselben Stockwerk bis GuestPals.NEIGHBOR_RANGE von der
+## Tür von Zimmer 13, nicht mit dir befreundet; in der Knappheit (DecoPlan.scarce) hat 13 mindestens ENVY_RATIO-mal so
+## viel Abschreckung (5.10) wie ihre Tür, und ihre Tür hält nicht (DecoPlan.weak).
+func envious_neighbors() -> Array[Guest]:
+	var result: Array[Guest] = []
+	var dir := Game.director
+	if dir == null or not dir.rooms.has(LevelBuilder.PLAYER_ROOM) or not decorating.plan.scarce():
+		return result
+	var mine: Vector3 = dir.rooms[LevelBuilder.PLAYER_ROOM]["door_front"]
+	var own := dir.deterrence_at(mine)
+	if own <= 0.0:
+		return result
+	var envious := {}   # Zimmer → neidisch? (jede Tür einmal messen)
+	for guest: Guest in living_guests():
+		var no := String(guest.home.get("no", ""))
+		if no == LevelBuilder.PLAYER_ROOM or not dir.rooms.has(no) or guest.is_child() or tier(guest) >= Tier.FRIEND:
+			continue
+		if not envious.has(no):
+			var front: Vector3 = dir.rooms[no]["door_front"]
+			envious[no] = absf(front.y - mine.y) < 1.0 and front.distance_to(mine) < GuestPals.NEIGHBOR_RANGE \
+				and own >= dir.deterrence_at(front) * ENVY_RATIO and decorating.plan.weak(no)
+		if envious[no]:
+			result.append(guest)
+	return result
+
+
+## Der spitze Satz beim Vorbeigehen (6.18, 5): einmal am Tag, wenn ein Neidischer dir nahe kommt.
+func _envy_remark() -> void:
+	var p := Game.player
+	if p == null or p.dead or p.in_dialog or p.sleeping or p.hiding:
+		return
+	for guest: Guest in living_guests():
+		if guest.stances.has("envy") and guest.state in [Guest.State.IDLE, Guest.State.WALK] \
+				and absf(guest.global_position.y - p.global_position.y) < 1.5 \
+				and guest.global_position.distance_to(p.global_position) < ENVY_REMARK_RANGE and guest.has_stance("envy"):
+			guest.clear_stance("envy")
+			guest.say(ENVY_LINES.pick_random())
+			return
 
 
 ## Stark verfeindet: du warst oft feindselig – und er hat sich schon gerächt.
@@ -2138,6 +2212,8 @@ func _update_bonds(delta: float) -> void:
 		_feud_timer = 2.0
 		_update_feuds()
 		_update_forgiveness()
+		_update_envy()
+		_envy_remark()
 
 
 ## Gute Freunde klopfen ab und zu an Zimmer 13 – nur, wenn du drin bist und es ruhig ist.
