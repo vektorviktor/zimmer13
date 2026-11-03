@@ -2299,7 +2299,7 @@ func search_points_near(center: Vector3) -> Array[Dictionary]:
 
 
 func player_can_see(p: Vector3) -> bool:
-	var cam := Game.player.camera
+	var cam := Game.player.view_camera()   # durch den Türspion: was dort im Bild ist (7.17)
 	return cam.is_position_in_frustum(p) and Senses.clear_line(_monster.get_world_3d(), cam.global_position, p)
 
 

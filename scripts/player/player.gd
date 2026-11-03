@@ -276,6 +276,7 @@ var _look_lag := Vector2.ZERO   ## im Rausch: Mausbewegung, der die Sicht noch n
 var _drunk_time := 0.0
 var _sleep_drunk := 0.0         ## höchster Rausch in diesem Schlaf → Kater
 var _seat_spot: Marker3D
+var _peephole: PeepholeView     ## Blick durch den Türspion (7.17)
 var _sit_turn := 0.0            ## Blick gegenüber der Sitzrichtung, höchstens ±SIT_TURN
 
 
@@ -329,6 +330,8 @@ func _ready() -> void:
 	_ray.collision_mask = 1 | 2 | 4 | 64 | 128 | 256 | HotelWindow.LAYER_BLOCK | HotelCat.LAYER
 	_ray.add_exception(self)
 	camera.add_child(_ray)
+	_peephole = PeepholeView.new()
+	add_child(_peephole)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
@@ -890,6 +893,20 @@ func stand_position() -> Vector3:
 
 
 ## Ziel des Blicks (Strahl in Reichweite), sonst die eigene Lage – Sitzmöbel wählen den nächsten Platz dazu.
+## Durch den Spion einer Zimmertür sehen (Door.interact, Spielkonzept 7.17).
+func peep(door: Door) -> void:
+	_peephole.start(door)
+
+
+func is_peeping() -> bool:
+	return _peephole != null and _peephole.is_active()
+
+
+## Wodurch der Spieler gerade sieht: die eigene Kamera – oder die im Flur, solange er durch den Spion schaut.
+func view_camera() -> Camera3D:
+	return _peephole.camera if is_peeping() else camera
+
+
 func aim_point() -> Vector3:
 	return _ray.get_collision_point() if _ray.is_colliding() else global_position
 

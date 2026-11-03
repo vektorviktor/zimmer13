@@ -32,6 +32,7 @@ var charge := START_CHARGE
 var has_uv := false
 var uv_mode := false
 var on := false
+var masked := false   ## abgeblendet (Blick durch den Türspion, 7.17) – an bleibt an, nur der Strahl fehlt
 
 var _beam: SpotLight3D
 var _lens: ShaderMaterial
@@ -118,6 +119,11 @@ func toggle() -> void:
 
 
 ## [R]: zwischen normalem Licht und UV umschalten
+func set_masked(value: bool) -> void:
+	masked = value
+	_apply_light()
+
+
 func switch_mode() -> void:
 	if not has_uv:
 		Game.say("Die Lampe hat nur normales Licht.")
@@ -193,7 +199,7 @@ func _update_level(delta: float) -> void:
 func _apply_light() -> void:
 	if _beam == null:
 		return
-	_beam.visible = on
+	_beam.visible = on and not masked
 	if uv_mode:
 		_beam.light_color = UV_COLOR
 		_beam.light_energy = 1.6 * _level

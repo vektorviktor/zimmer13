@@ -55,6 +55,8 @@ var rooms: LightRooms
 ## Eine Tür geht auf oder zu (Door.set_open): im nächsten Bild neu bestimmen, nicht erst nach INTERVAL – sonst käme
 ## das Licht durch den Spalt sichtbar zu spät
 static var wake := false
+## Statt von der Kamera aus von hier zählen (Blick durch den Türspion, PeepholeView) – INF = Kamera
+static var view_from := Vector3.INF
 ## Debug (--nur-stockwerk): nur das Stockwerk der Kamera zeichnen, die übrigen ausblenden (im Freien alle) – um zu
 ## messen, was das Ausblenden ganzer Stockwerke brächte. Gäste, Gegenstände und Aufzüge (unter Main) bleiben.
 var floors_only := false:
@@ -144,7 +146,7 @@ func _process(delta: float) -> void:
 	var cam := get_viewport().get_camera_3d()
 	if cam == null:
 		return
-	var origin := cam.global_position
+	var origin := cam.global_position if view_from == Vector3.INF else view_from
 	if floors_only and rooms:
 		_show_floors(rooms.camera_floor(origin))
 	var reach := rooms.reach(origin) if rooms else PackedByteArray()

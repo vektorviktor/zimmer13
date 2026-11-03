@@ -40,6 +40,15 @@ const PLATE_Y := 1.68
 const PLATE_FACE := 0.03
 const PLATE_METALLIC := 0.55
 const PLATE_RANGE := 16.0
+## Türspion (Spielkonzept 7.17): so nah am Spion muss man von innen zielen (m in der Blattebene), so weit darf das
+## Auge höchstens vor dem Blatt sein; Lichtpunkt außen (Radius, vor der Mitte des Blatts), ab welchem Licht drinnen
+## (MonsterDirector.light_at, 0,6 m hinter dem Spion) und bis zu welcher Entfernung man ihn sieht
+const PEEP_AIM := 0.12
+const PEEP_REACH := 1.0
+const PEEP_DOT_R := 0.009
+const PEEP_DOT_FACE := 0.0425
+const PEEP_LIT := 0.2
+const PEEP_DOT_RANGE := 7.0
 
 var width := 1.2
 var height := 2.1
@@ -81,6 +90,10 @@ var _bodies: Array[Node3D] = []
 var _dirs: Array[float] = []   ## je Flügel: +1 = Blatt nach +X vom Scharnier, −1 = nach −X
 var _tween: Tween
 var _plate := []   ## add_room_number vor dem Einhängen: [Zimmer, Aufschrift, Flurpunkt]
+var _peep_side := 0.0   ## Zimmertür mit Spion: Seite des Flurs in lokalem Z (±1), sonst 0
+var _peep_dot: MeshInstance3D   ## Lichtpunkt in der Linse auf der Flurseite (update_lenses)
+static var _dot_mat: StandardMaterial3D
+static var _lit_dots: Array[Door] = []
 
 ## Türen nach Feldern im Grundriss (Kantenlänge CELL), für Gäste, die laufend die Türen in ihrer Nähe
 ## abfragen (near). Türen bewegen sich nicht; das Raster entsteht beim ersten Abfragen nach dem Bau neu.
@@ -259,6 +272,10 @@ func get_icon(_player: Player) -> String:
 
 
 func _prompt(player: Player) -> String:
+	if player.is_peeping():
+		return ""
+	if aims_at_peephole(player):
+		return "Durch den Spion sehen [E]"
 	if broken:
 		return "Reparieren [E]" if _holding(player, Item.Kind.TOOLBOX) else "Aufgebrochen"
 	if locked and not _inside(player):
@@ -275,6 +292,9 @@ func _prompt(player: Player) -> String:
 
 
 func interact(player: Player) -> void:
+	if aims_at_peephole(player):
+		player.peep(self)   # leise (7.17)
+		return
 	if broken:
 		if _holding(player, Item.Kind.TOOLBOX):
 			_work(player, Item.Kind.TOOLBOX, REPAIR_TIME, "Du richtest Schloss und Zarge …", _repaired)
@@ -480,6 +500,8 @@ func add_room_number(no: String, label: String, corridor: Vector3) -> void:
 	var cx := dir * (0.01 + (width - 0.02) / 2.0)
 	var peep := Geo.mesh(body, parts["peephole"][0], parts["peephole"][1], Vector3(cx, PEEPHOLE_Y, 0))
 	peep.scale = Vector3(dir, 1.0, -side)
+	_peep_side = side
+	_add_peep_dot(body, Vector3(cx, PEEPHOLE_Y, side * PEEP_DOT_FACE), side)
 	var holder := Node3D.new()
 	holder.position = Vector3(cx, PLATE_Y, side * PLATE_FACE)
 	holder.rotation.y = 0.0 if side > 0.0 else PI   # Vorderseite der Plakette ist +Z
@@ -487,6 +509,71 @@ func add_room_number(no: String, label: String, corridor: Vector3) -> void:
 	var m := Geo.mesh(holder, RoomPlate.mesh(no, label), _plate_material(), Vector3.ZERO)
 	m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	m.visibility_range_end = PLATE_RANGE
+
+
+## Lichtpunkt in der Linse des Spions (7.17): eine kleine leuchtende Scheibe vor dem dunklen Glas, nur sichtbar, wenn
+## drinnen Licht brennt (update_lenses) – ein gemeinsames Material, kein Schatten.
+func _add_peep_dot(body: Node3D, at: Vector3, side: float) -> void:
+	if _dot_mat == null:
+		_dot_mat = StandardMaterial3D.new()
+		_dot_mat.albedo_color = Color(0.05, 0.04, 0.03)
+		_dot_mat.emission_enabled = true
+		_dot_mat.emission = Color(1.0, 0.8, 0.52)
+		_dot_mat.emission_energy_multiplier = 1.6
+		_dot_mat.roughness = 0.08
+		_dot_mat.metallic_specular = 0.9
+	var disc := CylinderMesh.new()
+	disc.top_radius = PEEP_DOT_R
+	disc.bottom_radius = PEEP_DOT_R
+	disc.height = 0.001
+	disc.radial_segments = 12
+	disc.rings = 1
+	_peep_dot = Geo.mesh(body, disc, _dot_mat, at)
+	_peep_dot.rotation.x = PI / 2.0 * side
+	_peep_dot.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_peep_dot.visibility_range_end = PEEP_DOT_RANGE
+	_peep_dot.visible = false
+
+
+## Spion von innen anvisiert (7.17)? Tür zu, Spieler auf der Zimmerseite höchstens PEEP_REACH vor dem Blatt, Blick
+## höchstens PEEP_AIM neben der Linse.
+func aims_at_peephole(player: Player) -> bool:
+	if _peep_side == 0.0 or broken or lets_light():
+		return false
+	var eye := to_local(player.camera.global_position)
+	if eye.z * _peep_side > 0.0 or absf(eye.z) > PEEP_REACH:
+		return false
+	var aim := to_local(player.aim_point())
+	return Vector2(aim.x - width / 2.0, aim.y - PEEPHOLE_Y).length() < PEEP_AIM
+
+
+## Mitte des Spions in der Blattebene (global) und waagerecht zum Flur hin.
+func peephole_point() -> Vector3:
+	return global_transform * Vector3(width / 2.0, PEEPHOLE_Y, 0.0)
+
+
+func corridor_dir() -> Vector3:
+	return (global_transform.basis * Vector3(0, 0, _peep_side)).normalized()
+
+
+## Lichtpunkte der Spione um pos (PeepholeView, alle LENS_EVERY s): leuchtet, wo drinnen Licht brennt und die Tür zu
+## ist; weiter weg wieder aus.
+static func update_lenses(pos: Vector3) -> void:
+	var d := Game.director
+	var lit: Array[Door] = []
+	if d != null:
+		for door: Door in near(pos):
+			if door._peep_dot == null or door.lets_light() or door.broken:
+				continue
+			var inside := door.global_transform * Vector3(door.width / 2.0, PEEPHOLE_Y, -door._peep_side * 0.6)
+			if d.light_at(inside) > PEEP_LIT:
+				lit.append(door)
+	for door in _lit_dots:
+		if is_instance_valid(door) and not door in lit:
+			door._peep_dot.visible = false
+	for door in lit:
+		door._peep_dot.visible = true
+	_lit_dots = lit
 
 
 ## Messing aller Plaketten (Spielkonzept 9.2): Satz aus tools/room_plate.gd über die UVs gespannt

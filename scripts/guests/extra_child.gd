@@ -64,6 +64,8 @@ func _build() -> void:
 		Geo.mesh(self, Geo.sphere(0.025, 0.035, 6, 3), Mat.psx(Color(0.02, 0.02, 0.02)), Vector3(side * 0.06, HEIGHT - 0.18, -0.155))
 		Geo.mesh(self, Geo.box(Vector3(0.08, 0.06, 0.15)), Mat.psx(Color(0.2, 0.12, 0.07)), Vector3(side * 0.08, 0.03, -0.05))   # Schuhe
 	Geo.add_box_shape(self, Vector3(0.5, HEIGHT, 0.5), Vector3(0, HEIGHT / 2.0, 0))
+	for v in find_children("*", "VisualInstance3D", true, false):
+		(v as VisualInstance3D).layers = PeepholeView.HIDDEN_LAYER   # im Türspion nur das echte Kind (7.17)
 
 
 ## Vergilbtes Leinen mit Stockflecken und einem ausgefransten Saum.
@@ -139,7 +141,7 @@ func _process(delta: float) -> void:
 	_time += delta
 	_sheet.rotation.z = sin(_time * 0.7) * 0.015
 	var d := Game.director
-	var seen := d.player_can_see(global_position + Vector3.UP * 0.7)
+	var seen := d.player_can_see(global_position + Vector3.UP * 0.7) and not Game.player.is_peeping()   # im Spion fehlt es
 	_seen = _seen or seen
 	var kid_gone := _kid == null or not is_instance_valid(_kid) or _kid.dead \
 		or _kid.global_position.distance_to(global_position) > 4.0

@@ -16,6 +16,8 @@ enum State { IDLE, WALK, CARRY_HOME, PLACE_DECO, HARVEST, STEAL, HIDE_GO, HIDING
 	FOLLOW, VISIT, ATTACK, STAGGER, DECORATE, SEARCH, EAT, WATCH }
 
 const WALK_SPEED := 1.4
+## Panik-Klopfen an Zimmer 13: so lange zur Tür sehen, so lange über die Schulter in den Flur (s)
+const KNOCK_GLANCE := Vector2(2.6, 1.1)
 const DART_THROW_TIME := 0.55   ## Wurfbewegung beim Darts (throw_dart_pose)
 ## Detailstufe (Leistung bei vielen Gästen): Wer nicht im Blickfeld und weiter als LOD_RANGE vom Spieler ist (oder
 ## weiter als LOD_FAR), rechnet nur jedes LOD_STEP-te Physikbild – mit der aufgesammelten Zeit und entsprechend
@@ -307,6 +309,7 @@ var _shock_style := ""
 var _entranced := false    ## vom Lakengeist hypnotisiert – bleibt stehen, bis er weg ist
 var _door_trance := 0.0    ## Lakengeist vor der Tür: so lange starrt er noch hin, dann geht er aufmachen
 var _knock_face := Vector3.INF   ## beim Klopfen dorthin sehen (Tür); INF: wie vor Zimmer 13
+var _knock_glance := 0.0   ## Panik-Klopfen: Zeit fürs Umdrehen über die Schulter (im Spion zu sehen, 7.17)
 var _hurt_time := 0.0      ## geschlagen: humpelt so lange langsamer
 var _bump_cooldown := 0.0
 var _push := Vector3.ZERO  ## Rückstoß beim Stolpern
@@ -1043,7 +1046,13 @@ func _physics_process(delta: float) -> void:
 		State.KNOCK:
 			# klopft an eine Tür (meist Zimmer 13) und wartet, dass jemand aufmacht
 			_stop(delta)
-			_face(_knock_face if _knock_face != Vector3.INF else _target + Vector3(0, 0, 1.0), delta)
+			var face := _knock_face if _knock_face != Vector3.INF else _target + Vector3(0, 0, 1.0)
+			if _knock_face == Vector3.INF:
+				# in Panik: alle paar Sekunden dreht er sich nach dem Flur um
+				_knock_glance += delta
+				if fmod(_knock_glance, KNOCK_GLANCE.x + KNOCK_GLANCE.y) > KNOCK_GLANCE.x:
+					face = global_position * 2.0 - face
+			_face(face, delta)
 			return
 		State.SHELTER:
 			# Schutz in Zimmer 13 gefunden – eine Weile bleiben

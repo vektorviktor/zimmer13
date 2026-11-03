@@ -5414,6 +5414,33 @@ Dachform (4.21).
 - **Küche:** Boden aus hellen 15-cm-Fliesen im Halbverband (`Tiles136B`), Wände bis unter die Decke mit hellblauen
   15-cm-Fliesen (`Tiles133B`, keine Vertäfelung), Decke gestrichen wie in den Bädern. Texturen vom Nutzer gewählt.
 
+### 7.17 Türspion (entschieden 2026-11-03, umgesetzt 2026-11-03, ZIM-166)
+
+Der Spion an den Zimmertüren (7.5, Messingteil aus `build_room_door.py`) funktioniert – vor allem fürs Klopfen an
+Zimmer 13 (4.13): echter Gast oder falsche Stimme, ohne gleich aufzumachen.
+
+- **Umfang:** alle Zimmertüren, jeweils von innen – auch fremde Zimmer (Unterschlupf, fremde Betten, 6.19).
+- **Bedienung:** von innen auf den Spion zielen (kleiner Bereich auf Augenhöhe) → [E] „Durch den Spion sehen“; auf die
+  Klinke zielen öffnet wie bisher. Bewegen, [E] oder Esc beendet das Hinsehen. Durchsehen macht keinen Lärm.
+- **Bild:** Kamera im Flur vor der Tür, Fischauge, runder Ausschnitt mit Messingrand, leichte Unschärfe und Vignette.
+  Ein kleines Bild (512²), das nur gerendert wird, solange man hinsieht; das Zimmer dahinter zeichnet dann nicht.
+  Bildwinkel **150°** statt der angedachten ~160° – bei der niedrigen Auflösung bliebe die Mitte sonst zu grob, und
+  wer vor der Tür steht, soll erkennbar sein (entschieden beim Bauen 2026-11-03).
+- **Licht zählt:** Ist der Flur dunkel, ist kaum etwas zu erkennen; die Taschenlampe nützt durchs Glas nicht (Blendung –
+  sie ist beim Hinsehen abgeblendet).
+- **Klopfen (4.13): Der Spion verrät, kostet aber Zeit.** Ein echter Gast steht panisch im Bild und dreht sich alle
+  paar Sekunden nach dem Flur um; bei der falschen Stimme ist der Flur leer. Das Hinsehen läuft von der Wartezeit ab –
+  wer zu lange schaut, lässt den Gast draußen. Bei dunklem Flur hilft der Spion nicht.
+- **Kind zu viel (4.31):** Im Spion ist nur ein Kind zu sehen; das zweite steht erst da, wenn man öffnet.
+- **Leviathan:** Durch den Spion gesehen zählt als Sichtung (4.5) – dort zählt das ganze runde Bild, nicht nur die
+  Mitte des Blicks. **Selten** beugt er sich an die Linse und ein Auge füllt das Bild (Schreck, kein Gore): nur wenn er
+  höchstens 3 m vor der Tür steht, die Neugier dort mindestens 70 ist und man schon 1 s hinsieht; dann einmal je
+  Hinsehen mit 20 %, höchstens einmal am Spieltag (nicht gespeichert). Danach steht er vor der Tür und weiß, dass du da
+  bist; der Schreck geht ins Gemüt (Schock).
+- **Von außen:** nur ein Lichtpunkt in der Linse – er verrät, ob drinnen Licht brennt (hilft beim Klopfen an fremden
+  Zimmern, 6.19).
+- **Später:** Gäste schauen selbst durch den Spion, bevor sie dem Spieler öffnen (6.19, vgl. ZIM-162).
+
 ## 8. Menüs, Speichern & Laden
 
 > Stand: 2026-10-10 · im Prototyp umgesetzt · Ausbau-Ideen siehe 8.9

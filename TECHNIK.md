@@ -376,7 +376,8 @@ Main (Node3D, main.gd)
 | 12 | 2048 | Trittflächen der Treppenstufen (`LevelBuilder.LAYER_TREAD`) | blockiert niemanden; nur für Spuren (`Traces.surface_below`) |
 
 **Sichtebenen** (render layers, nicht Kollision): 11 = Discokugel (`DiscoBall.LAYER`), 15 = Schatten vom Bau
-(`ShadowBudget.LAYER`), 18 = Schattenkopie der Spielerfigur (`PlayerBody.SHADOW_LAYER`), 19 = Spielerfigur
+(`ShadowBudget.LAYER`), 17 = was der Türspion nicht zeigt (`PeepholeView.HIDDEN_LAYER`, das Kind zu viel),
+18 = Schattenkopie der Spielerfigur (`PlayerBody.SHADOW_LAYER`), 19 = Spielerfigur
 (`PlayerBody.LAYER`, fehlt in der `cull_mask` der Spielerkamera), 20 = Spiegelflächen (`Mirror.LAYER`, fehlt in der
 der Spiegelkameras). Lichter, die die Kamera nach dem Grundriss nicht erreicht (`LightRooms`, 8 „Licht“), bekommen
 von `ShadowBudget` `light_cull_mask` 0 und keinen Schatten; die eigenen Werte liegen solange in den Metas
@@ -1667,6 +1668,21 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   ohne Schattenwurf in Glashalteleisten, Drücker und Bänder der Zimmertür (`_add_fittings`), Rahmen `DoorCasing`; Ebene 2
   wie eine Holztür (Sicht zu, Handabdrücke ja). Spuren über `attach_mark(mark, seite, at)`. Zustände `locked`, `broken`, angelehnt
   (`set_ajar`), Zimmerzugang siehe 6.
+- **Türspion** (`player/peephole_view.gd`, `PeepholeView` als Kind des Spielers, `shaders/peephole_view.gdshader`,
+  Spielkonzept 7.17): `add_room_number` merkt sich die Flurseite (`_peep_side`) und setzt vor die Linse den Lichtpunkt
+  (`_peep_dot`, Scheibe mit gemeinsamem Leuchtmaterial, `PEEP_DOT_RANGE`). `Door.aims_at_peephole` – Tür zu, Auge auf der
+  Zimmerseite höchstens `PEEP_REACH` vor dem Blatt, `aim_point` höchstens `PEEP_AIM` neben der Linse – macht aus [E]
+  `Player.peep`. Die Kamera (Bildwinkel `CAM_FOV`) steht `CAM_OUT` vor dem Blatt im Flur und malt in ein SubViewport
+  `PX`², das nur beim Hinsehen `UPDATE_ALWAYS` ist; der Shader rechnet stereografisch auf `FIELD` um (Messingrand,
+  5-Tap-Unschärfe, Vignette) und dunkelt nach `MonsterDirector.light_at` vor der Linse ab (`DARK`…`BRIGHT`).
+  Beim Hinsehen: Spielerkamera `cull_mask` 0, `ShadowBudget.view_from` = Spionkamera (sonst wären die Flurlichter
+  hinter der geschlossenen Tür aus), Taschenlampe `Flashlight.set_masked`, `_input` schluckt Maus, [E] und Esc;
+  Bewegen, Dialog, Verstecken, Würgen, offene Tür oder `LEAVE_DIST` beenden. `Player.view_camera()` ist dann die
+  Spionkamera – `MonsterDirector.player_can_see` und `Monster._update_noticed` (dort das ganze Bild statt der
+  Blickmitte) sehen hindurch, Sichtung 4.5 inklusive. Auge (`EYE_*`): einmal je Hinsehen gewürfelt, höchstens einmal
+  am Spieltag (`_eye_day`, nicht gespeichert); er steht danach dicht vor der Tür, `noticed`. Ohne Hinsehen prüft
+  `PeepholeView` alle `LENS_EVERY` s `Door.update_lenses` (Türen aus `Door.near`, Licht 0,6 m hinter dem Spion).
+  Panik-Klopfen: `Guest.KNOCK_GLANCE` (umdrehen über die Schulter). Nichts davon wird gespeichert.
 - **Verstecke** (`hide_spot.gd`): `occupant` reserviert; `seen_entering` = Todesurteil; `checked` als Spur;
   `own_bed` = Bett in Zimmer 13, `room_no` = Zimmer jedes Betts (fremde Betten, 3.6); `rattle()`/`burst_open()` für den Lakengeist; Betten mit `bed_size`, `head_x`,
   `partner`. Zerwühlt verschiebt `set_checked` die Bettdecke.

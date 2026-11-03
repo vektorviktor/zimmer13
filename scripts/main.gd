@@ -50,6 +50,9 @@ extends Node3D
 ##   --zettel                    erster Angriff gilt als geschehen, der Warnungszettel von 1999 liegt hinter der Tür von
 ##                               Zimmer 13, du stehst davor (2.5)
 ##   --knock [--knock-fake] [--answer]   Klopfen an Zimmer 13 (falsche Stimme / Tür öffnen)
+##   --spion[=leer|echt|falsch|auge]   vor der Tür von Zimmer 13 durch den Spion sehen (7.17), nach 6 s wieder [E] –
+##                               echt/falsch: dabei klopft es (Gast bzw. falsche Stimme), auge: der Leviathan steht davor
+##                               und beugt sich an die Linse
 ##   --prank=art[,zimmer]        Streich (6.13): das erste Kind mit Eltern steht vor der Tür (Standard Zimmer 13) und
 ##                               spielt ihn – leaves, topple (Kürbis steht daneben), pumpkin, candle (steht damit in der Hand
 ##                               2 m davor und wirft), fire (brennende Kerze, daneben Laub und Lakengespenst, 5.11)
@@ -930,6 +933,68 @@ static func _arg_value(arg: String, name: String, default := "") -> String:
 ## Wert eines Debug-Befehls, an den Kommas geteilt (ohne Wert: default bzw. ein leeres Stück).
 static func _arg_parts(arg: String, name: String, default := "") -> PackedStringArray:
 	return _arg_value(arg, name, default).split(",")
+
+
+## --spion[=leer|echt|falsch|auge] (7.17): Spieler steht in Zimmer 13 vor der Tür und zielt auf den Spion, nach 1 s [E].
+## echt/falsch: dabei klopft es (wie --knock), auge: der Leviathan steht seitlich im Flur und beugt sich an die Linse.
+## Ohne auge drückt er nach 6 s noch einmal [E] (Hinsehen endet).
+func _debug_peephole(what: String) -> void:
+	var info: Dictionary = Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]
+	var door: Door = info["door"]
+	var p := Game.player
+	var out := door.corridor_dir()
+	p.global_position = Vector3(door.peephole_point().x, door.global_position.y + 0.05, door.peephole_point().z) - out * 0.55
+	p.rotation.y = atan2(out.x, out.z) + PI
+	p.head.rotation.x = 0.0
+	Game.director.first_attack_done = true
+	var front: Vector3 = info["door_front"]
+	match what:
+		"echt", "falsch":
+			door.locked = true   # sonst öffnete das Monster sie im Vorbeigehen (Monster._open_doors)
+			Game.monster.spawn_at(Game.social.builder.wander_points[8] + Vector3(0, 0.05, 0))
+			Game.social._knock_cooldown = 0.2
+			Game.social.debug_fake_knock = what == "falsch"
+			Game.social.debug_real_knock = what == "echt"
+		"auge":
+			door.locked = true   # unverschlossen öffnete es sie im Vorbeigehen (Monster._open_doors)
+			Game.director.add_curiosity(front, 60.0)
+			PeepholeView.debug_eye = true
+	Door.update_lenses(p.global_position)
+	if Game.tracing:
+		print("[Spion] Lichtpunkte in der Nähe: %d" % Door._lit_dots.size())
+	get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+		var eye := p.camera.global_position
+		var to := door.peephole_point() - eye
+		p.head.rotation.x = atan2(to.y, Vector2(to.x, to.z).length())
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		if Game.tracing:
+			print("[Spion] Hinweis: %s" % door.get_prompt(p))
+		if door.aims_at_peephole(p):
+			door.interact(p)
+		else:
+			print("[Spion] FEHLER: Spion nicht anvisiert")
+			p.peep(door)
+		if what == "auge":
+			# erst jetzt, seitlich im Flur und starrend – sonst risse es die Tür auf, bevor man hinsieht
+			Game.monster.spawn_at(front + out.cross(Vector3.UP) * 2.0 + Vector3(0, 0.05, 0))
+			Game.monster.stare()
+		if Game.tracing:
+			print("[Spion] SubViewport an: %s, Spielerkamera aus: %s" % [p.view_camera() != p.camera, p.camera.cull_mask == 0]))
+	if what == "auge":
+		get_tree().create_timer(5.0, false).timeout.connect(func() -> void:
+			if Game.tracing:
+				print("[Spion] Leviathan bemerkt: %s, schaut noch: %s" % [Game.monster.noticed, p.is_peeping()]))
+		return
+	get_tree().create_timer(6.0, false).timeout.connect(func() -> void:
+		var ev := InputEventAction.new()
+		ev.action = "interact"
+		ev.pressed = true
+		Input.parse_input_event(ev)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		if Game.tracing:
+			print("[Spion] nach [E]: schaut noch: %s, Spielerkamera zurück: %s" % [p.is_peeping(), p.camera.cull_mask != 0]))
 
 
 ## --gedraenge (ZIM-155): Paare stehender Gäste enger als Guest.PERSONAL_SPACE und Belegung der festen Plätze.
@@ -1954,6 +2019,8 @@ func run_debug(arg: String) -> bool:
 			# nach 4 s öffnet der Spieler die Tür
 			get_tree().create_timer(4.0).timeout.connect(func() -> void:
 				(Game.social.builder.rooms[LevelBuilder.PLAYER_ROOM]["door"] as Door).set_open(true))
+	elif _is_arg(arg, "--spion"):
+		_debug_peephole(_arg_value(arg, "--spion", "leer"))
 	elif arg.begins_with("--gastanruf="):
 		get_tree().create_timer(1.0).timeout.connect(Game.phones.debug_guest_call.bind(_arg_parts(arg, "--gastanruf")))
 	elif arg.begins_with("--call=") or arg.begins_with("--dial="):

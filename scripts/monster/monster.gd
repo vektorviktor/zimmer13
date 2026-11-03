@@ -396,11 +396,13 @@ func _update_noticed(delta: float) -> void:
 	var p := Game.player
 	if p == null or p.dead:
 		return
-	var cam := p.camera
+	var cam := p.view_camera()
 	var head_pos := global_position + Vector3.UP * 1.7
 	var to := head_pos - cam.global_position
-	var looking := to.length() < 22.0 \
-		and (-cam.global_transform.basis.z).dot(to.normalized()) > 0.93 \
+	# durch den Türspion (7.17) zählt das ganze runde Bild, sonst nur die Mitte des Blicks
+	var in_view := cam.is_position_in_frustum(head_pos) if p.is_peeping() \
+		else (-cam.global_transform.basis.z).dot(to.normalized()) > 0.93
+	var looking := to.length() < 22.0 and in_view \
 		and Senses.clear_line(get_world_3d(), cam.global_position, head_pos, self)
 	_look_timer = _look_timer + delta if looking else maxf(0.0, _look_timer - delta)
 	if _look_timer > 0.8:
@@ -580,7 +582,7 @@ func _check_seen(delta: float) -> void:
 		_seen_timer = 0.0
 		return
 	var head := global_position + Vector3.UP * 1.6
-	if head.distance_to(p.camera.global_position) > 6.0 and Game.director.player_can_see(head):
+	if head.distance_to(p.view_camera().global_position) > 6.0 and Game.director.player_can_see(head):
 		_seen_timer += delta
 		if _seen_timer > SEEN_BEFORE_SLINK:
 			_seen_timer = 0.0

@@ -296,6 +296,7 @@ var night_seed := randi()                ## Streuung der Nachtruhe je Nacht – 
 var _knock: Dictionary = {}
 var _knock_cooldown := 90.0
 var debug_fake_knock := false
+var debug_real_knock := false   ## --spion=echt: sicher ein echter Gast
 var _world: Node3D
 var _arrival_timer := -1.0
 var _next_guest := 1                     ## laufende Nummer für IDs erzeugter Gäste
@@ -1994,12 +1995,13 @@ func _update_knocking(delta: float) -> void:
 	if _knock_cooldown > 0.0 or not director.first_attack_done or p == null or p.dead:
 		return
 	var door: Door = builder.rooms[LevelBuilder.PLAYER_ROOM]["door"]
-	if door.is_open or director.zone_name_at(p.global_position) != "Zimmer 13":
+	# am Spion (7.17) steht man so dicht an der Tür, dass die Zone schon zum Flur zählt
+	if door.is_open or (director.zone_name_at(p.global_position) != "Zimmer 13" and not p.is_peeping()):
 		return
 	if not Game.monster.is_active() or Game.monster.global_position.distance_to(door.center()) > 28.0:
 		return
 	_knock_cooldown = randf_range(KNOCK_COOLDOWN.x, KNOCK_COOLDOWN.y)
-	var fake := debug_fake_knock or randf() < FAKE_KNOCK_CHANCE
+	var fake := debug_fake_knock or (not debug_real_knock and randf() < FAKE_KNOCK_CHANCE)
 	var guest: Guest = null
 	if not fake:
 		# auch Versteckte: Sie halten es nicht mehr aus und rennen zu deiner Tür

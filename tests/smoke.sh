@@ -226,6 +226,10 @@ done <<'LIST'
 1800|zimmerzugang,gaeste|--einbruch=bruno,eigen --trace
 300|feinde,zimmerzugang|--feind=bruno,tuer --trace
 300|feinde,gaeste|--feind=bruno,versteck --trace
+300|spion|--spion --trace
+300|spion,gaeste|--spion=echt --trace
+300|spion|--spion=falsch --trace
+300|spion,monster|--spion=auge --trace
 600|kerzen,abbrennen,speichern|--abbrennen=0.5 --savetest
 600|streiche,kuerbis|--prank=pumpkin,111 --trace
 600|werfen,kuerbis,speichern|--pos=-6,0,-21,180,-25 --wurf --savetest --trace
