@@ -36,7 +36,7 @@ mkdir -p build && "/c/Users/vikto/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_
 ```
 
 Ergebnis: `build/Zimmer13.exe` (ignoriert von Git), läuft ohne weitere Dateien. Die Debug-Startparameter
-funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F3/F5/F6/F7/F9/F10) sind im Export ebenfalls aktiv.
+funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F2/F3/F4/F5/F6/F7/F9/F10/F11) sind im Export ebenfalls aktiv.
 
 ## Steuerung
 
@@ -58,12 +58,15 @@ Standardbelegung – umbelegen in den Einstellungen unter „Steuerung“ (fest 
 | Tab (halten) · Linksklick / Mausrad · Rechtsklick | Notizbuch und Kartenblätter ansehen · weiterblättern · nächstes Lesezeichen (Karte, Aufgaben, Notizen, Gesehen) |
 | F (halten) | Kompass ansehen |
 | Linksklick · R | Taschenlampe in der Hand: an/aus · normales Licht ↔ UV (mit UV-Aufsatz) · Getränkedose in der Hand: trinken · Kerze (Kürbis, Totenkopf) in der Hand: auspusten bzw. anzünden (Streichholzschachtel in der Tasche) · R auf eine brennende Kerze: auspusten · beim Darts: halten = ruhig zielen, loslassen = werfen |
+| F2 | Debug: Lichtdiagnose weiterschalten – aus → Position (x/y/z, Kompass, Neigung, Stockwerk, Raum, Lichtbereich und die Zeile `--pos=…` zum Nachstellen) → dazu Licht: Lampen gesamt/an/gezeigt/mit Schatten, Lichter mit Schatten im Blickfeld gegen die Plätze im Schattenatlas (ein Punktlicht braucht zwei), geschätzte Belegung, Bereich der Kamera, letzte Wechsel mit Grund und der Leck-Zeiger: alle Lampen, die bis zur Stelle unter dem Fadenkreuz reichen, rot = gezeigt, aber verdeckt |
 | F3 | Debug: versteckte Monster-Werte und die letzten Lärmereignisse |
+| F4 | Debug: Lichtbericht – Bild und Text mit allem aus der Lichtdiagnose, allen Lichtern mit Schatten im Blickfeld und den letzten 60 Wechseln nach `user://berichte/bericht_<Datum>_<Uhrzeit>` (Pfad in der Konsole) |
 | F5 | Debug: sofort ein Raubzug (wenn das Monster gerade ruht; nicht harmlos) |
 | F6 | Debug-Menü, pausiert, scrollbar (Mausrad, ↑/↓ + Enter, Bild↑/↓, 1–9 für die ersten Orte): Teleport-Liste (Zimmer 13, Lobby, Kompass-Zimmer, Keller, Partyraum, Katzenraum, Bibliothek, Kellergang …), Lakengeist zum 1.–4. Mal am Fenster bzw. an der Fenstertür des Raums, in dem du stehst, bzw. knapp 20 m vor dir im Flur (ohne Sprung; ohne Außenfenster bzw. Flur nur eine Meldung) · wo die Debug-Konsole geht, dazu alle ihre Befehle nach Gruppen (Monster, Kürbismann, Wettbewerb, Gäste, Spiele, Feiern & Deko, Telefon, Zeit & Schlaf, Welt, Spieler, Speichern & Ansicht) – Befehle mit Werten öffnen eine Eingabezeile mit dem Format, Enter führt aus wie in der Konsole (ohne help, clear, navcheck) |
 | F7 | Debug: Monster kommt zu dir, als hätte es dich gehört (ruht es, erscheint es ~25 m entfernt; jedes Drücken lenkt es zu deiner neuen Stelle; harmlos wie bei F5, solange nicht `--attacks=10`) |
 | F9 | Debug: Kürbismann kommt übers Lobbydach (springt vor der Gartentür in den Garten, sucht die Lobby ab) und jagt alle, die gerade Spaß haben, und dich (auch ohne Feier und vor dem ersten Angriff) |
 | F10 | Bilder pro Sekunde und Bildzeit rechts oben ein/aus |
+| F11 | Debug: nächste Aufteilung des Schattenatlas (4/4/16/64 = Godot, 16/16/16/16, 4/4/64/64, 64/64/64/64 Plätze je Quadrant) – zum Prüfen, ob ein Leck an der Auflösung oder an der Zahl der Plätze liegt |
 | ^ oder F1 | Debug-Konsole: Startparameter im Spiel tippen, ohne `--` (z. B. `shock edna,ghost3`, `tp lobby`, `guests`, `help`) – pausiert, ↑/↓ frühere Eingaben, Tab ergänzt · nur im Editor bzw. Debug-Build oder mit `--debug` |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel; dort unter „Hilfe“ die Tasten und ein paar Grundlagen |
 
@@ -603,6 +606,9 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--meshes` | verschiedene Meshes und Flächen in der Szene zählen (jede Fläche belegt Puffer auf der Grafikkarte; zu viele bringen manche Onboard-Grafik zum Absturz), ausgeben und beenden |
 | `--nur-stockwerk` | nur das Stockwerk der Kamera zeichnen, die übrigen ausblenden (im Freien alle) – mit `--perf` messen, was das Ausblenden brächte; in der Konsole erneut: aus |
 | `--grafik=niedrig` · `--grafik=mittel` · `--grafik=hoch` | Grafikstufe (8.4) nur für die Sitzung setzen, samt Spiegelungen der Stufe – nichts wird gespeichert; Werte in TECHNIK.md 8 „Grafikstufen“ |
+| `--lichtdiagnose` · `--lichtdiagnose=position` · `--lichtdiagnose=licht` · `--lichtdiagnose=aus` | Lichtdiagnose wie F2 (ohne Wert weiterschalten) |
+| `--atlas` · `--atlas=a,b,c,d` | Plätze je Quadrant des Schattenatlas (je 1, 4, 16, 64, 256 oder 1024; Godot 4,4,16,64) – ohne Wert die nächste Aufteilung wie F11 |
+| `--bericht` · `--bericht=s` | Lichtbericht wie F4 nach s Sekunden (Standard 1) |
 | `--schatten-bias=b` · `--schatten-bias=b,n` | Bias (und Normal Bias) aller Lampen setzen, ohne Wert der Standard (`ShadowBudget.BIAS` 0,03; Godot: 0,1 bzw. 1,0) – kleiner: Schatten liegen enger an, kein Licht durch Fugen; zu klein (0): Flecken auf Flächen |
 | `--static-eg` · `--static-eg=pfad` | Erdgeschoss als statische Szene speichern (Standard `res://temp/eg_static.scn`), dann beenden: Wände mit Öffnungen, Böden, Decken mit echten Materialien, alle eingeschalteten Lampen (ohne Flackern, alle mit Schatten), Umgebung und Mond – keine Türen, Fenster, Möbel, Kerzen, keine Spiellogik. Im Editor öffnen und mit F6 starten: WASD, Maus, Umschalt rennt, Leertaste springt, Esc gibt die Maus frei. Daneben `eg_static.glb` und `eg_static_lampen.json` für den Engine-Vergleich (ZIM-121) |
 | `--bench` · `--bench=pfad` | nur in der statischen Szene (`godot --path . --resolution 1920x1080 [--gpu-index 1] res://temp/eg_static.scn -- --bench --bg`): Messlauf über die festen Messpunkte ohne VSync, Bildzeiten nach `temp/bench_godot.csv`, Übersicht je Punkt in der Konsole, dann Ende |

@@ -1811,7 +1811,8 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   Normal Bias, Atlasgröße und Filter änderten daran kaum etwas (verglichen 31.10.). Abgleichen: `--schatten-bias`.
 - **Geprüft und verworfen:** Paraboloid-Schatten (verbiegen große Wandflächen, lassen Licht in Flecken durch), größerer
   Schattenatlas 8192 (deutlich teurer). Godot 4.7 rendert Punktlicht-Schatten jedes Bild neu, auch ohne Bewegung; die
-  CPU-Zeit hängt an der Zahl der Schattenlampen, nicht der Meshes. Der Atlas hat 88 Plätze.
+  CPU-Zeit hängt an der Zahl der Schattenlampen, nicht der Meshes. Der Atlas hat 88 Plätze (Quadranten 4/4/16/64) –
+  ein Punktlicht belegt zwei nebeneinander, es passen also nur 44 Punktlichter (Godot-Quelltext, 3.11.).
 - **Abschalten nach Grundriss:** Lichter (`lamps` und `light_source`), die die Kamera nicht erreicht, schaltet
   `ShadowBudget` für die Darstellung ab (`light_cull_mask` 0, kein Schatten; eigene Werte in den Metas
   `hidden_mask`/`hidden_shadow`) – sie konkurrierten sonst um die Atlasplätze, und wer keinen bekommt, scheint durch
@@ -1831,6 +1832,20 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   (`LightRooms.passages_near`, Bits hinauf/hinab, gemerkt in der Meta `light_passages`). Steht die Kamera bis
   `ShadowBudget.STAIR_NEAR` an einer, zählt das ganze Nachbarstockwerk in diese Richtung (Treppe, unter der Galerie);
   im Freien gilt die Regel nicht.
+- **Lichtdiagnose** (`util/light_diag.gd`, ZIM-169, auch im Export): F2 schaltet aus → Position → Position und Licht,
+  F4 schreibt einen Bericht (`user://berichte/bericht_<Datum>_<Uhrzeit>.txt/.png`, Pfad in der Konsole), F11 die
+  nächste Aufteilung des Atlas (`ATLAS_PRESETS`; `--atlas=a,b,c,d` setzt `Viewport.positional_shadow_atlas_quad_*`).
+  Position wie `--pos` (Füße, `rotation.y`, Neigung des Kopfs), Kompass im Uhrzeigersinn ab Norden (−Z). Licht: alle
+  `Light3D` außer gerichteten (einmal gesammelt, dann `node_added`), Lichter mit Schatten im Blickfeld (Kugel gegen
+  Frustum, ohne ausgeblendete) gegen die Plätze. Godot verrät nicht, wer welchen Platz hat; `_estimate` rechnet nach
+  seiner Regel den Bestfall: Wunschgröße = nächste Zweierpotenz von halbem Atlas × coverage (doppelte Reichweite auf
+  der Near-Ebene / halbe Breite + Höhe der Near-Ebene), höchstens der größte Platz; passt keiner, ein kleinerer.
+  Godot geht dagegen in der Reihenfolge der Szene vor, nimmt ohne freien Platz den am längsten ungenutzten und behält
+  einen Platz eine Weile – entfernte Lampen können so große Plätze halten, nahe bekommen kleine. Das Protokoll der
+  Wechsel führt `ShadowBudget` selbst (`changes`, `Why`, erst ab dem zweiten Durchgang; „Kamera in keinem Bereich“
+  einmal statt je Licht, gezählt in `no_region_count`). Leck-Zeiger: Strahl vom Fadenkreuz (ohne klares Glas), dann
+  zu jeder eingeschalteten Lampe in Reichweite (Ebenen 1, 2, 5, 9, 10; `LAMP_GAP` vor der Lampe Schluss) – gezeigt
+  und verdeckt = rot, ihr Schatten muss das Leck halten. Rauchtest-Stichwort „licht“.
 - Jeder Raum hat mindestens eine Wandleuchte, sonst schaltet sein Schalter nichts. **Helligkeit nachjustieren:**
   `Lamp.BRIGHTNESS`/`REACH` für alle gemeinsam, sonst `WALL_LAMP_ENERGY` (Wandleuchten mit Fächer dazu `Lamp.FAN_REST`/`FAN_BOOST`), `ROOM_LAMP_ENERGY`, `CANDLE_ENERGY`, die
   Deckenfarben (`CEILING_SHADE` …), Umgebungslicht und Mond (`main._setup_environment`).

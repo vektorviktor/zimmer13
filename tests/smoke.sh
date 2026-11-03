@@ -95,6 +95,11 @@ judge() {
 	if grep -q "^\[Zierleiste\] FEHLER" "$log"; then
 		problems+=" $(grep -c '^\[Zierleiste\] FEHLER' "$log")× Zierleiste falsch"
 	fi
+	if grep -q "^\[Lichtdiagnose\] FEHLER" "$log"; then
+		problems+=" $(grep '^\[Lichtdiagnose\] FEHLER' "$log" | head -1 | sed 's/^\[Lichtdiagnose\] FEHLER //')"
+	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
+		problems+=" kein Lichtbericht"
+	fi
 	if [ -n "$problems" ]; then
 		printf 'fail\tFEHLER  %s:%s   (%s)\n' "$name" "$problems" "$log"
 	elif [ "$code" != 0 ]; then
@@ -259,6 +264,7 @@ done <<'LIST'
 300|schwelle,level|--schwelle --trace
 300|zierleiste,level,grafik|--zierleiste --trace
 300|fenstertuer,lakengeist,level,grafik|--fenstertuer --trace
+400|licht,grafik|--tp=lobby --lichtdiagnose=licht --atlas --atlas=4,4,16,64 --bericht=2
 300|zierleiste|--zierleiste=speisesaal
 300|grafik|--grafik=niedrig --menu=settings
 300|grafik|--grafik=mittel --trace

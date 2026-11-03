@@ -248,6 +248,12 @@ extends Node3D
 ##                               Messen mit --perf, was das Ausblenden brächte (ShadowBudget.floors_only); erneut: aus
 ##   --schatten-bias=b[,n]       Bias (und Normal Bias) aller Lampen setzen – zum Abgleichen im Spiel; ohne Wert der
 ##                               Standard ShadowBudget.BIAS
+##   --lichtdiagnose[=position|licht|aus]  Lichtdiagnose (LightDiag, wie F2): Position im Format von --pos, Kompass,
+##                               Stockwerk, Raum, Lichtbereich · licht: dazu Lampen, Belegung des Schattenatlas (Schätzung),
+##                               letzte Wechsel von ShadowBudget und Leck-Zeiger am Fadenkreuz – ohne Wert weiterschalten
+##   --atlas[=a,b,c,d]           Plätze je Quadrant des Schattenatlas (Godot 4,4,16,64) – ohne Wert die nächste Aufteilung
+##                               aus LightDiag.ATLAS_PRESETS (wie F11)
+##   --bericht[=s]               Lichtbericht nach s Sekunden (Standard 1): Bild und Text nach user://berichte/ (wie F4)
 ##   --grafik=niedrig|mittel|hoch  Grafikstufe (8.4) nur für die Sitzung setzen, samt Spiegelungen der Stufe – nichts wird
 ##                               gespeichert
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
@@ -665,6 +671,11 @@ func _ready() -> void:
 		console.setup(func(arg: String) -> bool:
 			Game.achievements.cheated()   # wer in der Konsole tippt, schaltet nur noch für diese Sitzung frei (8.11)
 			return run_debug(arg))
+	var diag := LightDiag.new()   # F2/F4/F11: Position, Lichtanzeige, Bericht, Schattenatlas (ZIM-169)
+	diag.name = "LightDiag"
+	diag.shadows = $ShadowBudget
+	diag.builder = builder
+	add_child(diag)
 
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--perf" or arg.begins_with("--perf="):
@@ -1276,6 +1287,32 @@ func run_debug(arg: String) -> bool:
 			return false
 		Settings.set_graphics(level, false)
 		Game.say("Grafikstufe: %s" % Settings.graphics_level()["name"], 2.0)
+	elif _is_arg(arg, "--lichtdiagnose"):
+		var diag := get_node_or_null("LightDiag") as LightDiag
+		var m := ["", "position", "licht", "aus"].find(_arg_value(arg, "--lichtdiagnose"))
+		if diag == null or m < 0:
+			return false
+		diag.mode = (diag.mode + 1) % 3 if m == 0 else m % 3
+	elif _is_arg(arg, "--atlas"):
+		var diag := get_node_or_null("LightDiag") as LightDiag
+		if diag == null:
+			return false
+		var value := _arg_value(arg, "--atlas")
+		if value == "":
+			diag.next_atlas()
+		else:
+			var counts := []
+			for part in _arg_parts(arg, "--atlas"):
+				if not part.is_valid_int():
+					return false
+				counts.append(part.to_int())
+			return diag.set_atlas(counts)
+	elif _is_arg(arg, "--bericht"):
+		var diag := get_node_or_null("LightDiag") as LightDiag
+		if diag == null:
+			return false
+		var seconds := maxf(0.0, _arg_value(arg, "--bericht", "1").to_float())
+		get_tree().create_timer(seconds, false).timeout.connect(func() -> void: diag.report())
 	elif arg == "--fps":
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg == "--nohud":

@@ -37,6 +37,13 @@ const STAIR_NEAR := 3.0
 ## und an Fugen dünner Bretter lief Licht als helle Linie durch. 0: Flecken auf Flächen. Der Normal Bias (1,0) ändert
 ## daran kaum etwas und bleibt (Debug --schatten-bias)
 const BIAS := 0.03
+## So viele Wechsel (Licht gezeigt/abgeschaltet) behält das Protokoll für die Lichtdiagnose (LightDiag, ZIM-169)
+const CHANGES_KEPT := 60
+## Gründe im Protokoll (Index = Why)
+const WHY_TEXT := ["ohne Bereiche", "Licht in keinem Bereich", "Bereich erreichbar", "Bereich durch Fenster/Glas",
+	"Bereich nicht erreichbar", "anderes Stockwerk, Kamera an Treppe/Luftraum",
+	"anderes Stockwerk, Schein reicht bis Treppe/Luftraum", "anderes Stockwerk", "Kamera in keinem Bereich – alles an"]
+enum Why { NO_ROOMS, NO_REGION, REACHED, WINDOW, CLOSED, STAIR_CAM, STAIR_LIGHT, OTHER_FLOOR, NO_CAM_REGION }
 
 
 ## Debug (--schatten-bias): Bias und wahlweise Normal Bias aller Lampen setzen (normal < 0: unverändert)
@@ -70,6 +77,15 @@ var floors_only := false:
 		wake = true
 		if not value:
 			_show_floors(-1)
+## Für die Lichtdiagnose: Wechsel [Uhr, Licht, gezeigt, Why], die letzten CHANGES_KEPT; wie oft die Kamera in keinem
+## Bereich lag (dann gilt alles als erreichbar) und wann zuletzt – Uhr in Sekunden seit dem Start (über delta)
+var changes: Array = []
+var no_region_count := 0
+var no_region_at := -1.0
+var clock := 0.0
+var _no_region := false
+## Erst nach dem ersten Durchgang protokollieren – sonst stünde dort jedes Licht, das beim Start abgeschaltet wird
+var _logging := false
 var _timer := 0.0
 ## Stockwerk der Kamera für die Lichter anderer Stockwerke (−1: keine Einschränkung), seine Ebene und die Treppen
 ## und Lufträume bis STAIR_NEAR an ihr (Bits wie LightRooms.passages_near)
@@ -141,6 +157,7 @@ static func merge(parts: Array[Node], parent: Node3D) -> void:
 
 
 func _process(delta: float) -> void:
+	clock += delta
 	_timer -= delta
 	if wake:
 		wake = false
@@ -155,6 +172,12 @@ func _process(delta: float) -> void:
 	if floors_only and rooms:
 		_show_floors(rooms.camera_floor(origin))
 	var reach := rooms.reach(origin) if rooms else PackedByteArray()
+	var lost := rooms != null and reach.is_empty()
+	if lost and not _no_region:
+		no_region_count += 1
+		no_region_at = clock
+		_log(null, true, Why.NO_CAM_REGION)
+	_no_region = lost
 	_cam_floor = -1
 	if not reach.is_empty():
 		_cam_floor = rooms.camera_floor(origin)
@@ -185,6 +208,7 @@ func _process(delta: float) -> void:
 		if node is Light3D and not node.is_in_group("lamps"):
 			_show(node, reach)
 	candidates.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	_logging = true
 	for i in candidates.size():
 		var light: OmniLight3D = candidates[i][1]
 		var mask := ALL if i < full else LAYER
@@ -225,6 +249,9 @@ func _show_floors(keep: int) -> void:
 ## Der Bereich wird neu bestimmt, wenn sich das Licht um mehr als MOVE bewegt hat.
 func _show(light: Light3D, reach: PackedByteArray) -> bool:
 	var shown := true
+	var why := Why.NO_CAM_REGION
+	if rooms == null:
+		why = Why.NO_ROOMS
 	if not reach.is_empty():
 		var p := light.global_position
 		if not light.has_meta("light_room") or (light.get_meta("light_room_at") as Vector3).distance_squared_to(p) > MOVE * MOVE:
@@ -240,6 +267,14 @@ func _show(light: Light3D, reach: PackedByteArray) -> bool:
 			light.set_meta("light_passages", rooms.passages_near(lf, Vector2(p.x, p.z), light_range) if lf >= 0 else 3)
 		var region: int = light.get_meta("light_room")
 		shown = region < 0 or reach[region] != 0
+		if region < 0:
+			why = Why.NO_REGION
+		elif reach[region] == 0:
+			why = Why.CLOSED
+		elif reach[region] == 1:
+			why = Why.REACHED
+		else:
+			why = Why.WINDOW
 		var fi: int = light.get_meta("light_floor")
 		if shown and _cam_floor >= 0 and fi >= 0 and fi != _cam_floor:
 			# anderes Stockwerk: nur durch eine Treppe oder einen Luftraum zur Kamera hin
@@ -247,15 +282,33 @@ func _show(light: Light3D, reach: PackedByteArray) -> bool:
 			var toward := 2 if level > _cam_level else 1
 			var beside := absi(level - _cam_level) == 1 and (_cam_passages & (1 if level > _cam_level else 2)) != 0
 			shown = beside or (int(light.get_meta("light_passages")) & toward) != 0
+			if beside:
+				why = Why.STAIR_CAM
+			elif shown:
+				why = Why.STAIR_LIGHT
+			else:
+				why = Why.OTHER_FLOOR
 	if shown:
 		if light.has_meta("hidden_mask"):
 			light.light_cull_mask = light.get_meta("hidden_mask")
 			light.shadow_enabled = light.get_meta("hidden_shadow")
 			light.remove_meta("hidden_mask")
 			light.remove_meta("hidden_shadow")
+			_log(light, true, why)
 	elif not light.has_meta("hidden_mask"):
 		light.set_meta("hidden_mask", light.light_cull_mask)
 		light.set_meta("hidden_shadow", light.shadow_enabled)
 		light.light_cull_mask = 0
 		light.shadow_enabled = false
+		_log(light, false, why)
 	return shown
+
+
+## Wechsel fürs Protokoll der Lichtdiagnose (light null: die Kamera selbst). Liegt die Kamera in keinem Bereich,
+## steht nur das einmal darin, nicht jedes Licht, das deshalb angeht.
+func _log(light: Light3D, shown: bool, why: Why) -> void:
+	if not _logging or (light != null and why == Why.NO_CAM_REGION):
+		return
+	changes.append([clock, light, shown, why])
+	if changes.size() > CHANGES_KEPT:
+		changes.pop_front()

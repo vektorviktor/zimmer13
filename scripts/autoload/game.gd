@@ -388,6 +388,9 @@ func _setup_input() -> void:
 	_bind_keys("debug_lure", [KEY_F7])
 	_bind_keys("debug_pumpkin", [KEY_F9])   # Kürbismann im Garten (F8 stoppt im Godot-Editor das Spiel)
 	_bind_keys("debug_fps", [KEY_F10])      # Bilder pro Sekunde (Hud)
+	_bind_keys("debug_diag", [KEY_F2])      # Lichtdiagnose: aus → Position → Position und Licht (LightDiag)
+	_bind_keys("debug_report", [KEY_F4])    # Lichtbericht nach user://berichte/ (LightDiag)
+	_bind_keys("debug_atlas", [KEY_F11])    # nächste Aufteilung des Schattenatlas (LightDiag)
 	_bind_keys("debug_console", [KEY_QUOTELEFT, KEY_F1])   # [^] auf deutscher Tastatur
 	_bind_keys("pause", [KEY_ESCAPE])
 	_bind_mouse("hold_breath", MOUSE_BUTTON_RIGHT)
