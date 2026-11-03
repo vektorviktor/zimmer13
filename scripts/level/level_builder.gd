@@ -262,6 +262,14 @@ const ROOF_BRACKET_PAIR := 1.6
 const ROOF_BRACKET_GAP := 0.32
 const ROOF_BRACKET_W := 0.09
 const ROOF_BRACKET_MARGIN := 0.45
+## Ziergiebel über dem Haupteingang (ZIM-172): Attika (Breite, Höhe, Tiefe – hinten bis in die Schräge), so weit vor der
+## Wand, Höhe des Giebeldreiecks, Radius des Rundfensters
+const ENTRANCE_GABLE := Vector3(3.6, 1.3, 1.3)
+const ENTRANCE_GABLE_FRONT := 0.3
+const ENTRANCE_GABLE_RISE := 0.8
+const ENTRANCE_GABLE_OCULUS := 0.36
+## Flachdächer (_flat_roofs): so große Deckenstücke werden einzeln geprüft, ob über ihnen ein Stockwerk steht
+const FLAT_ROOF_CELL := 1.0
 ## Firstgitter (ZIM-171): Feld (Breite, Höhe) wie tools/build_cresting.py, Eckpfosten (ohne Spitze), Eisen, ab hier
 ## ausgeblendet (m)
 const ROOF_CRESTING := Vector2(0.4, 0.5)
@@ -867,6 +875,7 @@ func build() -> void:
 			_attic_floor(uppers[i], i + 1)
 		else:
 			_upper_floor(uppers[i], i + 1)
+	_flat_roofs()
 	_lower_floor(lower)
 	_elevators()
 	light_rooms.finish()
@@ -4722,6 +4731,7 @@ func _attic_floor(plan: Dictionary, level: int) -> void:
 	_attic_slopes()
 	_roof_cornice()
 	_roof_cresting()
+	_entrance_gable()
 	_attic_beams()
 	_furniture()
 	_rugs()
@@ -4922,37 +4932,239 @@ func _attic_slopes() -> void:
 func _roof_cornice() -> void:
 	var kit := Cornice.new(ATTIC_KNEE, true)
 	for e: Dictionary in _eaves:
-		var horizontal: bool = e["horizontal"]
-		var inward := float(e["inward"])
-		var face := float(e["fixed"]) - inward * T / 2.0
-		var ends := [float(e["from"]) - T / 2.0, float(e["to"]) + T / 2.0]
-		var mitre := [false, false]
-		for k in 2:
-			var o := _eave_across(e, k)
-			if not o.is_empty():
-				ends[k] = float(o["fixed"]) - float(o["inward"]) * T / 2.0
-				mitre[k] = is_equal_approx(float(o["inward"]), 1.0 if k == 0 else -1.0)
-		var origin := Vector3(0, 0, face) if horizontal else Vector3(face, 0, 0)
-		var along := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
-		var out := Vector3(0, 0, -inward) if horizontal else Vector3(-inward, 0, 0)
-		kit.add_run(origin, along, out, ends[0], ends[1], ROOF_CORNICE_SIZE, mitre[0], mitre[1])
-		var span: float = ends[1] - ends[0] - 2.0 * ROOF_BRACKET_MARGIN
-		if span < 0.0:
-			continue
-		var pairs := floori(span / ROOF_BRACKET_PAIR) + 1
-		var start: float = (ends[0] + ends[1]) / 2.0 - (pairs - 1) * ROOF_BRACKET_PAIR / 2.0
-		for i in pairs:
-			for side: float in [-0.5, 0.5]:
-				kit.add_bracket(origin, along, out, start + i * ROOF_BRACKET_PAIR + side * ROOF_BRACKET_GAP,
-					ROOF_CORNICE_SIZE, ROOF_BRACKET_W)
+		_eave_trim(kit, e, _eaves, 0.0)
 	kit.finish(root, true, "Kranzgesims")
 
 
-## Die Traufe, die am Ende k (0 = from, 1 = to) der Traufe e quer anstößt, sonst {}. Ihre Innenseite zeigt an einer
-## Außenecke zurück über e (inward = −Richtung des Endes), an einer Innenecke von e weg.
-func _eave_across(e: Dictionary, k: int) -> Dictionary:
+## Gesims und Konsolen einer Traufe e (wie _eaves; inward zeigt nach innen) auf Höhe base: bis an die Außenfläche der
+## quer anstoßenden Traufe aus list – an Außenecken auf Gehrung, an Innenecken durchdringen sich die Profile –, ohne
+## Nachbarn mit Stirnseite.
+func _eave_trim(kit: Cornice, e: Dictionary, list: Array, base: float) -> void:
+	var horizontal: bool = e["horizontal"]
+	var inward := float(e["inward"])
+	var face := float(e["fixed"]) - inward * T / 2.0
+	var ends := [float(e["from"]) - T / 2.0, float(e["to"]) + T / 2.0]
+	var mitre := [false, false]
+	for k in 2:
+		var o := _eave_across(e, k, list)
+		if not o.is_empty():
+			ends[k] = float(o["fixed"]) - float(o["inward"]) * T / 2.0
+			mitre[k] = is_equal_approx(float(o["inward"]), 1.0 if k == 0 else -1.0)
+	var origin := Vector3(0, base, face) if horizontal else Vector3(face, base, 0)
+	var along := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
+	var out := Vector3(0, 0, -inward) if horizontal else Vector3(-inward, 0, 0)
+	kit.add_run(origin, along, out, ends[0], ends[1], ROOF_CORNICE_SIZE, mitre[0], mitre[1])
+	var span: float = ends[1] - ends[0] - 2.0 * ROOF_BRACKET_MARGIN
+	if span < 0.0:
+		return
+	var pairs := floori(span / ROOF_BRACKET_PAIR) + 1
+	var start: float = (ends[0] + ends[1]) / 2.0 - (pairs - 1) * ROOF_BRACKET_PAIR / 2.0
+	for i in pairs:
+		for side: float in [-0.5, 0.5]:
+			kit.add_bracket(origin, along, out, start + i * ROOF_BRACKET_PAIR + side * ROOF_BRACKET_GAP,
+				ROOF_CORNICE_SIZE, ROOF_BRACKET_W)
+
+
+## Flachdächer (Spielkonzept 7.10, ZIM-147): Wo über einem Innenraum von EG oder OG kein Stockwerk mehr kommt
+## (Poolhalle …), liegt Schiefer auf der Decke (bis über die Außenwände) und auf jeder Außenwand darunter das
+## Kranzgesims mit Konsolen wie am Mansarddach, oben bündig mit dem Schiefer. Nach allen oberen Stockwerken: Erst im
+## Stockwerk selbst Traufen und Deckenstücke abtasten, dann im Stockwerk darüber prüfen, ob dort etwas steht.
+func _flat_roofs() -> void:
+	for lvl in _floors.size() - 1:
+		_use(_floors[lvl])
+		var base: float = _base_y
+		var eaves: Array = []   # wie _eaves, dazu "probe": je Schritt ein Punkt innen
+		for w in _map["walls"]:
+			var a := _v2(w["a"])
+			var b := _v2(w["b"])
+			var horizontal := is_equal_approx(a.y, b.y)
+			var along := Vector2(1, 0) if horizontal else Vector2(0, 1)
+			var side := Vector2(0, 1) if horizontal else Vector2(1, 0)
+			var s0 := a.x if horizontal else a.y
+			var s1 := b.x if horizontal else b.y
+			var steps := maxi(1, roundi((s1 - s0) / GRID))
+			for i in steps:
+				var p := a + along * (i + 0.5) * (s1 - s0) / steps
+				var inside_minus := _indoor_at(p - side * 0.3)
+				var inside_plus := _indoor_at(p + side * 0.3)
+				if inside_minus == inside_plus:
+					continue
+				var inward := 1.0 if inside_plus else -1.0
+				eaves.append({"horizontal": horizontal, "fixed": a.y if horizontal else a.x, "inward": inward,
+					"from": s0 + i * (s1 - s0) / steps, "to": s0 + (i + 1) * (s1 - s0) / steps,
+					"probe": p + side * inward * 0.5})
+		var cells: Array[Rect2] = []   # Deckenstücke von FLAT_ROOF_CELL, die oben frei sein könnten
+		var holes: Array[Rect2] = []
+		for rc in _map["open_above"]:
+			holes.append(_rect(rc))
+		for r in _map["regions"]:
+			if bool(r["outdoor"]) or String(r["kind"]) == "elevator":
+				continue
+			for rc in r["rects"]:
+				for piece in _subtract(_rect(rc), holes):
+					var nx := maxi(1, ceili(piece.size.x / FLAT_ROOF_CELL))
+					var nz := maxi(1, ceili(piece.size.y / FLAT_ROOF_CELL))
+					for ix in nx:
+						for iz in nz:
+							cells.append(Rect2(piece.position + piece.size * Vector2(ix, iz) / Vector2(nx, nz),
+								piece.size / Vector2(nx, nz)))
+		_use(_floors[lvl + 1])
+		var voids: Array[Rect2] = []
+		for rc in _map.get("voids", []):
+			voids.append(_rect(rc))
+		var covered := func(p: Vector2) -> bool:
+			if not _place_at(p).is_empty():
+				return true
+			for v in voids:
+				if v.has_point(p):
+					return true
+			return false
+		# Traufen: freie Schritte zu Läufen je Wandlinie zusammenfassen
+		var runs: Array = []
+		for e: Dictionary in eaves:
+			if covered.call(e["probe"]):
+				continue
+			var last: Dictionary = runs[-1] if not runs.is_empty() else {}
+			if not last.is_empty() and last["horizontal"] == e["horizontal"] and is_equal_approx(float(last["fixed"]), float(e["fixed"])) \
+					and is_equal_approx(float(last["inward"]), float(e["inward"])) and absf(float(last["to"]) - float(e["from"])) < 0.01:
+				last["to"] = e["to"]
+			else:
+				runs.append(e.duplicate())
+		var free_cells: Array[Rect2] = []
+		for c in cells:
+			if not covered.call(c.get_center()):
+				free_cells.append(c)
+		if not free_cells.is_empty():   # ein Mesh, jedes Stück T über den Rand (bis über die Außenwand)
+			var st := SurfaceTool.new()
+			for c in free_cells:
+				var g := c.grow(T)
+				st.append_from(Geo.box(Vector3(g.size.x, 0.04, g.size.y)), 0,
+					Transform3D(Basis(), Vector3(g.get_center().x, base + H + 0.22, g.get_center().y)))
+			var roof := Geo.mesh(root, st.commit(), _attic_roof, Vector3.ZERO)
+			roof.name = "Flachdach"
+		var kit := Cornice.new(H + 0.24, true)
+		for e: Dictionary in runs:
+			_eave_trim(kit, e, runs, base)
+		kit.finish(root, true, "Kranzgesims")
+
+
+## Ziergiebel über dem Haupteingang (Spielkonzept 7.10, ZIM-172): auf dem Kranzgesims der Traufe darüber eine hell
+## gestrichene Attika (ENTRANCE_GABLE: Breite, Höhe, Tiefe – reicht hinten in die Schräge), darauf ein Dreiecksgiebel
+## mit Gesims an den Schrägen, vorn ein Rundfenster (dunkel, wie blind verglast), im Scheitel eine eiserne Spitze.
+## Lage aus dem Haupteingang des Erdgeschossplans. Im Dachgeschoss nach _roof_cornice.
+func _entrance_gable() -> void:
+	var eg: Dictionary = _floors[0]["map"]
+	for w in eg["walls"]:
+		for o in w.get("openings", []):
+			if o["kind"] != "main_entrance":
+				continue
+			var a := _v2(w["a"])
+			var horizontal := is_equal_approx(a.y, float(w["b"][1]))
+			var along2 := (_v2(w["b"]) - a).normalized()
+			var c := a + along2 * (float(o["at"]) + float(o["width"]) / 2.0)
+			var s := c.x if horizontal else c.y
+			var line := c.y if horizontal else c.x
+			for e: Dictionary in _eaves:
+				if e["horizontal"] != horizontal or absf(float(e["fixed"]) - line) > 0.3 \
+						or s < float(e["from"]) or s > float(e["to"]):
+					continue
+				var out := Vector3(0, 0, -float(e["inward"])) if horizontal else Vector3(-float(e["inward"]), 0, 0)
+				var along := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
+				var face := Vector3(c.x, 0, float(e["fixed"])) if horizontal else Vector3(float(e["fixed"]), 0, c.y)
+				face += out * T / 2.0
+				_gable_at(face + Vector3.UP * (ATTIC_KNEE + Cornice.INSET * ROOF_CORNICE_SIZE), along, out)
+				return
+
+
+## Attika mit Giebel (siehe _entrance_gable): base = Mitte der Vorderkante der Wand oben auf dem Gesims.
+func _gable_at(base: Vector3, along: Vector3, out: Vector3) -> void:
+	var stucco := Cornice.material()
+	var iron := Mat.metal(ROOF_CRESTING_IRON)
+	var size := ENTRANCE_GABLE
+	var front := ENTRANCE_GABLE_FRONT   # so weit vor der Wand steht die Attika
+	var holder := Node3D.new()
+	holder.transform = Transform3D(Basis(along, Vector3.UP, out), base)   # lokal: x längs, y hinauf, z hinaus
+	root.add_child(holder)
+	var z_mid := front - size.z / 2.0
+	var box := func(sz: Vector3, pos: Vector3, mat: Material) -> MeshInstance3D:
+		var mi := Geo.mesh(holder, Geo.box(sz), mat, pos)
+		structure_parts.append(mi)
+		return mi
+	box.call(Vector3(size.x, size.y, size.z), Vector3(0, size.y / 2.0, z_mid), stucco)
+	# Sockelband und Abschlussgesims der Attika (etwas vorstehend)
+	box.call(Vector3(size.x + 0.08, 0.1, size.z + 0.08), Vector3(0, 0.05, z_mid + 0.04), stucco)
+	box.call(Vector3(size.x + 0.16, 0.12, size.z + 0.16), Vector3(0, size.y - 0.06, z_mid + 0.08), stucco)
+	# Giebeldreieck als Prisma, an den Schrägen je eine vorstehende Leiste
+	var rise := ENTRANCE_GABLE_RISE
+	var half := size.x / 2.0 + 0.08
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var z0 := z_mid - size.z / 2.0
+	var z1 := z_mid + size.z / 2.0 + 0.08
+	var tri := func(p0: Vector3, p1: Vector3, p2: Vector3) -> void:
+		var n := (p1 - p0).cross(p2 - p0).normalized()
+		for p: Vector3 in [p0, p2, p1]:   # Godot: im Uhrzeigersinn von vorn
+			st.set_normal(-n)
+			st.set_uv(Vector2(p.x, p.y))
+			st.add_vertex(p)
+	var y0 := size.y
+	var l0 := Vector3(-half, y0, z1)
+	var r0 := Vector3(half, y0, z1)
+	var t0 := Vector3(0, y0 + rise, z1)
+	var lb := Vector3(-half, y0, z0)
+	var rb := Vector3(half, y0, z0)
+	var tb := Vector3(0, y0 + rise, z0)
+	tri.call(l0, r0, t0)    # vorn
+	tri.call(rb, lb, tb)    # hinten
+	for q: Array in [[l0, t0, tb, lb], [t0, r0, rb, tb]]:   # Schrägen
+		tri.call(q[0], q[1], q[2])
+		tri.call(q[0], q[2], q[3])
+	var prism := Geo.mesh(holder, st.commit(), stucco, Vector3.ZERO)
+	structure_parts.append(prism)
+	var slope := atan2(rise, half)
+	var rake_len := Vector2(half, rise).length() + 0.1
+	for side: float in [-1.0, 1.0]:
+		var rake := box.call(Vector3(rake_len, 0.1, 0.12), Vector3(side * half / 2.0, y0 + rise / 2.0 + 0.04, z1 + 0.02), stucco) as MeshInstance3D
+		rake.rotation.z = -side * slope
+	# Rundfenster vorn (dunkle Scheibe in einem Ring), eiserne Spitze im Scheitel
+	var ring := TorusMesh.new()
+	ring.inner_radius = ENTRANCE_GABLE_OCULUS - 0.06
+	ring.outer_radius = ENTRANCE_GABLE_OCULUS
+	ring.rings = 24
+	ring.ring_segments = 8
+	var ring_mi := Geo.mesh(holder, ring, stucco, Vector3(0, size.y * 0.5, front + 0.01))
+	ring_mi.rotation.x = PI / 2.0
+	var pane := CylinderMesh.new()
+	pane.top_radius = ENTRANCE_GABLE_OCULUS - 0.05
+	pane.bottom_radius = pane.top_radius
+	pane.height = 0.02
+	pane.radial_segments = 24
+	var pane_mi := Geo.mesh(holder, pane, Mat.glass(), Vector3(0, size.y * 0.5, front - 0.02))
+	pane_mi.rotation.x = PI / 2.0
+	var spike := CylinderMesh.new()
+	spike.top_radius = 0.0
+	spike.bottom_radius = 0.06
+	spike.height = 0.5
+	spike.radial_segments = 4
+	Geo.mesh(holder, spike, iron, Vector3(0, y0 + rise + 0.25, z1 - 0.06))
+
+
+## Ist p ein Innenraum (nicht Garten, Terrasse, Balkon, außerhalb)? Im gerade benutzten Stockwerk.
+func _indoor_at(p: Vector2) -> bool:
+	var place := _place_at(p)
+	if place.is_empty():
+		return false
+	var region: Dictionary = place["region"]
+	if region.is_empty():
+		return not String(place["kind"]) in ["garden", "terrace", "balcony"]
+	return not bool(region.get("outdoor", false))
+
+
+## Die Traufe, die am Ende k (0 = from, 1 = to) der Traufe e quer anstößt, sonst {} (aus list, sonst _eaves). Ihre
+## Innenseite zeigt an einer Außenecke zurück über e (inward = −Richtung des Endes), an einer Innenecke von e weg.
+func _eave_across(e: Dictionary, k: int, list: Array = []) -> Dictionary:
 	var s_end := float(e["from"]) if k == 0 else float(e["to"])
-	for o: Dictionary in _eaves:
+	for o: Dictionary in (list if not list.is_empty() else _eaves):
 		if o["horizontal"] != e["horizontal"] and absf(float(o["fixed"]) - s_end) <= T \
 				and float(e["fixed"]) >= float(o["from"]) - T and float(e["fixed"]) <= float(o["to"]) + T:
 			return o

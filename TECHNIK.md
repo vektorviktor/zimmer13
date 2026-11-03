@@ -852,7 +852,15 @@ Innenecken durchdringen sich die Profile. **Firstgitter** (`_roof_cresting`, ZIM
 an Außenecken ein Pfosten mit vierseitiger Spitze; ab `ROOF_CRESTING_RANGE` ausgeblendet. Karten aus
 `tools/build_cresting.py` (Form als Linien, Bögen, Spitzen in Metern → Höhenkarte → Normal Map, Rost, Rauheit);
 `Mat.cresting()` setzt die Mipmaps aus dem Streifen im Farbbild zusammen – jede Stufe hält die Deckung der ersten,
-sonst verschwänden die Stäbe unter der Schwelle (Alpha Scissor 0,4, Alpha to Coverage, beidseitig).
+sonst verschwänden die Stäbe unter der Schwelle (Alpha Scissor 0,4, Alpha to Coverage, beidseitig). Gesims und
+Konsolen einer Traufe baut `_eave_trim` (auch für die Flachdächer). **Ziergiebel** über dem Haupteingang
+(`_entrance_gable`/`_gable_at`, ZIM-172): Lage aus dem Haupteingang des EG-Plans, auf dem Gesims der Traufe darüber
+eine Attika `ENTRANCE_GABLE` (hinten bis in die Schräge) mit Sockelband, Abschlussgesims, Dreiecksgiebel mit Leisten an
+den Schrägen, Rundfenster und eiserner Spitze, im Stuck der Zierleiste. **Flachdächer** (`_flat_roofs`, nach allen
+oberen Stockwerken): Wo über einem Innenraum von EG oder OG nichts mehr steht (Poolhalle) – erst im Stockwerk
+Außenwände (`_indoor_at` auf beiden Seiten) und Deckenstücke von `FLAT_ROOF_CELL` abtasten, dann im Stockwerk
+darüber prüfen (Ort oder Luftraum) –, liegt Schiefer auf der Decke (ein Mesh „Flachdach“, T über den Rand) und auf
+den Außenwänden das Kranzgesims mit Konsolen, oben bündig auf H + 0,24.
 **Dachfenster** (`roof_window` auf der Außenwand) sitzen in der Schräge darüber (`_roof_window`), mit kaltem Lichtkegel
 von außen (`ATTIC_SHAFT_*`, `AtticHaze` regelt ihn mit dem Mond). **Türen:** Kniestocktür-Modell, `ATTIC_DOOR_H` (2,1 m) hoch,
 unter einer Schräge nur so hoch, dass `ATTIC_DOOR_HEAD` bis zu ihr bleibt (`_attic_openings` → `o["height"]`, darum
