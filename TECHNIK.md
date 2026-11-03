@@ -2353,7 +2353,8 @@ Spielkonzept 3.2)
   `REGISTER_SHIFT` neben der Mitte, +Z zu den Gästen), `Game.register`. [E] → `Menus.open_register` (Doppelseite,
   blättern baut den Bogen neu wie das Tagebuch). `pages()`: die Jahre 1987–2025 einmal gesetzt (`_old_rows`: fester
   Seed je Jahr, Kreuze = `PhotoWall.TAKEN`, Zimmer aus `rooms` ohne 13/18, Vornamen nach `ERA_YEAR`, keine Nachnamen der
-  heutigen Haushalte, `FIXED` = Edna 1987 in 017), dann Oktober 2026 frisch aus `builder.households` und
+  heutigen Haushalte, `FIXED` = Warnungszettel und Fundsachen-Koffer: Edna und Heinrich Brehm 1987, Clara Vogt,
+  Martin Ebert und Rudolf Hain 2005, Hain 2008 – ihre Kreuze zählen zu `TAKEN`), dann Oktober 2026 frisch aus `builder.households` und
   `Game.social.guests` (Mitglied über `profile["member"]`, Name `LevelBuilder.door_name`, `BIRTH_NAMES`). Der laufende
   Oktober beginnt auf einer linken Seite. `RegisterView.paginate` verteilt Jahresblöcke auf `ROWS` Zeilen (ein Jahr
   bricht nur, wenn es allein nicht passt); Kreuze zeichnet `_draw_page` wie `NotebookPage` (Zeile `crosses` = Zeichen

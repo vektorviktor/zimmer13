@@ -3,12 +3,15 @@ extends StaticBody3D
 ## Das Hotelregister auf der Rezeption (Spielkonzept 2.3, 2.9; HANDLUNG K1, M6): ein aufgeschlagenes Buch, fest, nicht
 ## tragbar. [E] liest es vor Ort (Menus.open_register, RegisterView): aufgeschlagen beim laufenden Oktober, zurück bis 1987.
 ##   · Oktober 2026: je Haushalt eine Zeile mit Zimmer und Namen wie an der Tür (LevelBuilder.door_name, 6.20), dazu
-##     „geb. Ahrend“ bei Marion Teske (2.3) und „geb. K…“ bei Edna Wiegand (2.7, voller Geburtsname offen). Wer tot ist,
+##     „geb. Ahrend“ bei Marion Teske (2.3) und „geb. Kessler“ bei Edna Wiegand (2.7). Zimmer 13 steht nicht darin – die
+##     Spielfigur hat keinen Namen (Entscheidung 3.11.). Wer tot ist,
 ##     bekommt ein Kreuz hinter dem Namen – erst am Morgen danach ab CROSS_HOUR, wie die Mitteilung am Brett: Gustav am
 ##     Morgen nach der Siegerehrung, jeder weitere Tod seins. Niemand hat es eingetragen – Personal sieht man nie (2.5).
 ##   · Davor jeder Oktober seit 1987 mit ein paar Zeilen und Kreuzen: so viele, wie auf dem Gruppenfoto des Jahres
-##     verwischt sind (PhotoWall.TAKEN), sonst gewürfelt. Namen und Zimmer aus festem Seed je Jahr; Edna steht 1987 mit
-##     ihrem Geburtsnamen in Zimmer 017 (Warnungszettel „E. K.“). Zimmer 13 und 18 bleiben frei (2003 offen, 7.4).
+##     verwischt sind (PhotoWall.TAKEN), sonst gewürfelt. Fest (FIXED), wer einen Warnungszettel oder Koffer hat: Edna
+##     1987 mit ihrem Geburtsnamen in Zimmer 017 (Warnungszettel „E. K.“), ihr Verlobter Heinrich Brehm in 042 mit Kreuz;
+##     2005 Clara Vogt in 13 und Martin Ebert in 018 mit Kreuz, Rudolf Hain in 014 – 2008 mit Kreuz (2.10, 7.4). Die
+##     übrigen Namen und Zimmer aus festem Seed je Jahr; 13 und 18 würfelt kein Jahr.
 ## Nichts davon wird gespeichert: Wer tot ist, steht im Spielstand. Den Todeszeitpunkt merkt sich das Register nur in
 ## der laufenden Sitzung (on_guest_died) – nach dem Laden gilt jeder Tote als eingetragen. Gustav steht immer ab dem
 ## Morgen nach der Siegerehrung drin (dann ist er gestorben, das braucht keinen Zeitpunkt). Gelesen: neue Kreuze und die alten Jahre als Notiz ins Notizbuch (3.10). Erreichbar über Game.register.
@@ -18,9 +21,15 @@ const CROSS_HOUR := 6.0
 const FIRST_YEAR := 1987
 const YEAR := 2026
 ## Geburtsnamen im Register hinter dem Namen an der Tür (2.3, 2.7, 6.20)
-const BIRTH_NAMES := {"Marion Teske": "Ahrend", "Edna Wiegand": "K…"}
-## Feste Zeilen früherer Jahre (Zimmer, Name) – und deren Zimmer würfelt das Jahr nicht noch einmal
-const FIXED := {1987: [["017", "Edna K…"]]}
+const BIRTH_NAMES := {"Marion Teske": "Ahrend", "Edna Wiegand": "Kessler"}
+## Feste Zeilen früherer Jahre (Zimmer wie am Schild, Name, Kreuz): wer einen Warnungszettel (4.13) oder einen Koffer
+## bei den Fundsachen (7.4) hat (2.3, Entscheidung 3.11.). Deren Zimmer würfelt das Jahr nicht noch einmal, ihre Kreuze
+## zählen zu denen vom Foto des Jahres.
+const FIXED := {
+	1987: [["017", "Edna Kessler", false], ["042", "Heinrich Brehm", true]],
+	2005: [["13", "Clara Vogt", true], ["018", "Martin Ebert", true], ["014", "Rudolf Hain", false]],
+	2008: [["014", "Rudolf Hain", true]],
+}
 ## Zimmer, die ein Jahr nicht würfelt (Warnungszettel „M. B., Zi. 021, 1999“)
 const SKIP_ROOMS := {1999: ["021"]}
 ## Zeilen je früherem Jahr ohne Kreuz
@@ -209,7 +218,13 @@ func _old_rows(year: int) -> Array:
 	var free := _old_rooms()
 	var picked: Array = []
 	for fixed: Array in FIXED.get(year, []):
-		picked.append(RegisterView.row(String(fixed[0]), String(fixed[1])))
+		var row := RegisterView.row(String(fixed[0]), String(fixed[1]))
+		if fixed[2]:
+			crosses -= 1
+			count -= 1
+			row["crosses"].append(String(row["t"]).length())
+			row["t"] += "   "
+		picked.append(row)
 		free.erase(String(fixed[0]))
 	for skip: String in SKIP_ROOMS.get(year, []):
 		free.erase(skip)

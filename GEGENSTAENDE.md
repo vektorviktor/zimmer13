@@ -69,7 +69,7 @@ Stand: 2026-11-03.
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
 | Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | gebaut | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
-| Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. K…“ – wird „geb. Kessler“, ZIM-7) | Rezeption | 2.3, K1, M6, M13 |
+| Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. Kessler“, feste Namen 1987/2005/2008, ZIM-7) | Rezeption | 2.3, K1, M6, M13 |
 | Notizbuch des Hausmeisters | – (festes Buch, `CaretakerBook`) | gebaut 28.10. – vier Seiten, gelesen: drei Aufgaben im Notizbuch; Texte Vorschlag (Sicherung im Spind seit 30.10.) | **Hauptgeschichte** (drei Mängel am Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
 | Kesselbuch Josefs | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Josefs Spind im Heizraum | 2.3, 7.4, M12 |
 | Personalakte Josefs | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |

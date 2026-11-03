@@ -277,6 +277,8 @@ Ein 3D-First-Person-Horrorspiel. Der Spieler ist in einem alten Hotel eingeschlo
   2026-11-03 (ZIM-9): **Es war formlos.** 1987 hatte es keine Gestalt – Hitze, Atem in den Rohren, Gäste, die fehlten.
   Genau das beschreibt Ednas Zettel von Oktober 1987 (2.7), kein Wesen. Erst Josef gab ihm in der Nacht zu
   Allerheiligen Gestalt (seit der ersten Ernte 1990 holt es als Leviathan, 2.10). Woher es kommt, bleibt bewusst offen.
+  *Umgesetzt 2026-11-03:* Ednas Zettel: „Jetzt wird es nachts warm vor meiner Tür, und in den Rohren atmet etwas.
+  Gesehen hat es keiner. Aber beim Frühstück fehlen jeden Tag mehr.“
 - Wie viel erfährt man **vor dem ersten Angriff** (2.1)? Vorschlag: nichts, was den friedlichen Anfang verrät – höchstens das Gästebuch.
 - **Wie viele Sperrbereiche** für den Anfang? Vorschlag: drei bis vier (siehe Kandidaten oben).
 - Wie hängt das Geheimnis mit dem **Schlüssel an Halloween** (2.1) zusammen – ist die Wahrheit Voraussetzung für die Flucht, oder ein eigenes, besseres Ende?
@@ -704,7 +706,7 @@ bleiben leer.
 - ~~Wie wird das Fressen in Ende 3 gezeigt, ohne die Altersempfehlung (ab 16) zu sprengen – Schnitte, Schatten, Ton?~~ –
   entschieden 2026-11-03 (ZIM-10): **nur Text** – schwarze Bilder mit wenigen Sätzen, kein Bild vom Fressen.
 - **Edna Wiegand war 1987 als Erwachsene im Hotel und kam hinaus.** Sie schrieb den Warnungszettel von Oktober
-  1987 („E. K., Zimmer 017“), im Register steht sie mit Geburtsnamen „geb. K…“. Sie bleibt alt. Dass sie und Liesel
+  1987 („E. K., Zimmer 017“), im Register steht sie mit Geburtsnamen „geb. Kessler“. Sie bleibt alt. Dass sie und Liesel
   sich erinnern, liegt daran, dass das Abkommen 1987 noch nicht galt (2.10).
   **Entschieden 2026-11-03 (ZIM-5, ZIM-7):** Sie hieß **Edna Kessler**. Der Mann aus **042**, der 1987 durch seine
   Terrassentür floh und nicht hinauskam, war ihr **Verlobter Heinrich Brehm** (HANDLUNG K5); sein Koffer steht bei den
@@ -863,16 +865,19 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - Gustavs abgebrochener letzter Satz (2.6) zeigt zur **Rezeption**. Dort ist niemand, nur die Klingel. Im
   **Hotelregister** steht ein frisches Kreuz neben „Gustav Peters“ (M6, HANDLUNG K1). *Umgesetzt 2026-10-28:* ein
   aufgeschlagenes Buch auf der Rezeption, [E] liest es. Oktober 2026 nennt je Haushalt Zimmer und Namen wie an der Tür
-  (6.20), dazu „geb. Ahrend“ und „geb. K…“; jeder Tote bekommt sein Kreuz **am Morgen danach ab 6 Uhr** (wie die
+  (6.20), dazu „geb. Ahrend“ und „geb. Kessler“; jeder Tote bekommt sein Kreuz **am Morgen danach ab 6 Uhr** (wie die
   Mitteilung), Gustav also am 3. Oktober. Zurückblättern zeigt jeden Oktober seit 1987 mit ein paar Zeilen und so vielen
   Kreuzen, wie auf dem Gruppenfoto des Jahres Gesichter verwischt sind (5.14) – **geändert 2026-10-30 (2.10):** Kreuze
-  nur in Erntejahren, ohne Schlüssel die ganze Seite, dazu die Überlebenden von 2005 und ihre Rückkehr; Edna steht 1987 als „Edna K…“ in
+  nur in Erntejahren, ohne Schlüssel die ganze Seite, dazu die Überlebenden von 2005 und ihre Rückkehr; Edna steht 1987 als „Edna Kessler“ in
   Zimmer 017. ~~Die Namen früherer Jahre sind erfunden (Vorschlag).~~ **Entschieden 2026-11-03 (ZIM-7):** Wer einen Koffer
   bei den Fundsachen (7.4) oder einen Warnungszettel (4.13) hat, bekommt einen **festen Namen** im Register, mit Kreuz,
   wenn er starb – z. B. 1987 Heinrich Brehm in 042, 2005 Clara Vogt in 13 und Martin Ebert in 018 (2.10); die übrigen
   bleiben gewürfelt. Ednas Geburtsname ist **Kessler** – statt des Platzhalters „geb. K…“ steht 2026 „geb. Kessler“,
   1987 „Edna Kessler“ in 017 (wie „geb. Ahrend“ bei Marion). **Zimmer 13 steht 2026
-  nicht im Register** – die Spielfigur hat keinen Namen. Gelesen: ein neues Kreuz und die alten Jahre je als
+  nicht im Register** – die Spielfigur hat keinen Namen. *Umgesetzt 2026-11-03:* feste Zeilen 1987 Edna
+  Kessler (017) und Heinrich Brehm (042 †), 2005 Clara Vogt (13 †), Martin Ebert (018 †) und Rudolf Hain (014), 2008
+  Hain (014 †); ihre Kreuze zählen zu denen vom Foto. „M. B.“ (1999, 021) hat noch keinen ausgeschriebenen Namen – das
+  Zimmer bleibt 1999 leer. Gelesen: ein neues Kreuz und die alten Jahre je als
   Notiz im Notizbuch (3.10).
   *Klingel umgesetzt 2026-11-02 (ZIM-146):* Tischklingel aus Messing auf schwarzem Fuß neben dem Register, [E]
   schlägt sie an – heller Ton, Lärm 10 m (das Monster wird neugierig), niemand kommt (ein Gedanke).

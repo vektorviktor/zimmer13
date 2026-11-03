@@ -206,7 +206,7 @@ flowchart TD
 ### K5 – Edna, die 1987 hinauskam (Akt III–V)
 - **Fest (2.7):** Edna Wiegand war 1987 als Erwachsene im Hotel und gehört zu denen, die damals hinauskamen – und
   geschwiegen haben. Sie schrieb den ältesten Warnungszettel („E. K., Zimmer 017“); im Register steht sie mit
-  Geburtsnamen „geb. Kessler“ (dasselbe Muster wie bei Marion; bisher Platzhalter „geb. K…“). Deshalb ihre Kerzen, deshalb versteckt sie sich beim ersten
+  Geburtsnamen „geb. Kessler“ (dasselbe Muster wie bei Marion). Deshalb ihre Kerzen, deshalb versteckt sie sich beim ersten
   Flackern (6.0).
 - **Fest (2026-11-03, ZIM-5/7):** Sie hieß **Edna Kessler**. Im Lager (M11) steht der Koffer ihres **Verlobten Heinrich
   Brehm** von 1987 – der, der damals nicht mit hinauskam. Sie ist zurückgekommen, weil sie das Schweigen nicht mehr

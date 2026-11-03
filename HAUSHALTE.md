@@ -58,7 +58,7 @@ im Spiel.** Fest sind die Anzahlen je Haushaltsart; alles andere (Namen, Paare, 
 
 | Nr | Haushalt | Zimmer | Gast | Betten | Idee |
 |----|----------|--------|------|--------|------|
-| H19 | Edna Wiegand (Kernfigur) | 003 · 68 m² | Edna (alt, eigenes Profil) | 1 | 6.0 – war 1987 schon hier und kam hinaus, schrieb den Zettel „E. K.“; im Register „geb. K…“ (2.7) |
+| H19 | Edna Wiegand (Kernfigur) | 003 · 68 m² | Edna (alt, eigenes Profil) | 1 | 6.0 – war 1987 schon hier und kam hinaus, schrieb den Zettel „E. K.“; im Register „geb. Kessler“ (2.7) |
 | H20 | Bruno Kaminski (Kernfigur) | 102 · 68 m² | Bruno (mittel, eigenes Profil) | 1 | 6.0 |
 | H21 | Mila Hellwig (Kernfigur) | 021 · 68 m² | Mila (jung, eigenes Profil) | 1 | 6.0 |
 | H22 | Marion Teske (Kernfigur) | 001 · 68 m² | Marion (mittel, eigenes Profil) | 1 | Tochter des früheren Hausmeisters Josef Ahrend (2.3) – im Register „geb. Ahrend“; sucht, was 1987 geschah, und will ihren Vater erlösen (Auftraggeberin, 2.8); bleibt am 31. freiwillig im Hotel |
