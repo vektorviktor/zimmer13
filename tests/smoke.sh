@@ -95,6 +95,9 @@ judge() {
 	if grep -q "^\[Zugleich\] .*FEHLER" "$log"; then
 		problems+=" $(grep -c '^\[Zugleich\] .*FEHLER' "$log")× Bedrohungen zugleich falsch"
 	fi
+	if grep -q "^\[Aufzug\] Dachgeschoss: FEHLER" "$log"; then
+		problems+=" Aufzug im Dachgeschoss falsch"
+	fi
 	if grep -q "^\[Zierleiste\] FEHLER" "$log"; then
 		problems+=" $(grep -c '^\[Zierleiste\] FEHLER' "$log")× Zierleiste falsch"
 	fi
@@ -184,6 +187,7 @@ done <<'LIST'
 3000|monster,modi,raubzug,dachboden|--dachboden=raubzug --trace
 1500|monster,modi,raubzug|--pos=31.5,0,-8 --mode=raubzug --frist=5 --day=8 --trace
 3000|monster,modi,urteil,aufzug|--aufzug=urteil --trace
+2400|aufzug,dachboden,speichern|--aufzug=dach --savetest --trace
 900|modi,urteil,navmesh|--navcheck=tueren
 3000|puppe,monster|--doll --trace
 2400|puppe,monster|--doll=10,13 --trace

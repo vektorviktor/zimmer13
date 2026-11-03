@@ -157,10 +157,13 @@ extends Node3D
 ##   --verwaschen[=schleier]     es regnet sofort, Blut, Wachs und Kürbismatsch draußen verlaufen zehnmal so schnell (4.13,
 ##                               RainVeil) – schleier: sofort ganz; z. B. mit
 ##                               --pos=45,0.1,-37 --fall=5,giant --verwaschen --trace
-##   --aufzug[=innen|offen|fahrt|urteil]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht (innen:
-##                               in der Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt: in der
-##                               Kabine, sie fährt gleich ins oberste Stockwerk · urteil: in der Kabine, nach 3 s ein Urteil
-##                               über Zimmer 13 (4.33), die Kabine pendelt alle 10 s – das Monster wartet an der Haltestelle)
+##   --aufzug[=innen|offen|fahrt|urteil|dach]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht
+##                               (innen: in der Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt:
+##                               in der Kabine, sie fährt gleich ins oberste Stockwerk, das sie anfährt · urteil: in der
+##                               Kabine, nach 3 s ein Urteil über Zimmer 13 (4.33), die Kabine pendelt alle 10 s – das
+##                               Monster wartet an der Haltestelle · dach: vor die Tür im Dachgeschoss, nach 1 s Ruf von
+##                               oben, schaltet den Halt frei (7.10), nach 30 s „[Aufzug] Dachgeschoss: …“; ohne Halt oben
+##                               im Plan nur die Meldung)
 ##   --sitzen[=sofa|bank|stuhl|sessel|bett|klo]   aufs nächste Sitzmöbel dieser Art setzen (3.1), erster Platz – ohne Angabe Sofa
 ##   --tuer=zimmer[,innen|bad]   vor die Tür dieses Zimmers stellen (Nummer wie am Schild), Blick auf die Tür (6.19);
 ##                               innen: von drinnen auf ihre Bandseite, bad: im Bad auf die Badtür
@@ -1331,6 +1334,8 @@ func run_debug(arg: String) -> bool:
 		if lifts.is_empty():
 			return false
 		var how := _arg_value(arg, "--aufzug")
+		if how == "dach":
+			return _debug_lift_attic(lifts[0])
 		var at := lifts[0].spot(how in ["innen", "fahrt", "urteil"])
 		TeleportUI.place_player(at[0], at[1])
 		if how == "offen":
@@ -2759,6 +2764,27 @@ func _nav_check_doors() -> void:
 	print("[navcheck] %d bewohnte Türen geprüft" % rooms.size())
 	print("[navcheck] alles erreichbar" if bad == 0 else "[navcheck] %d Orte unerreichbar" % bad)
 	get_tree().quit()
+
+
+## Debug --aufzug=dach (Spielkonzept 7.10, ZIM-42): vor die Aufzugtür im Dachgeschoss, nach 1 s Ruf von oben – das
+## schaltet den Halt frei, die Kabine kommt; nach 30 s Prüfung „[Aufzug] Dachgeschoss: …“. Ohne Halt oben im Plan nur
+## die Meldung, man bleibt stehen.
+func _debug_lift_attic(lift: Elevator) -> bool:
+	var top := lift.attic.find(true)
+	if top < 0:
+		print("[Aufzug] Dachgeschoss: kein Halt – im Plan „DG“ fehlen Schacht und Aufzugtür")
+		Game.say("Der Aufzug hat im Dachgeschoss keinen Halt (Plan).", 4.0)
+		return true
+	var at := lift.waiting_spot(top, 1.5)
+	TeleportUI.place_player(at[0], at[1] - at[0])
+	get_tree().create_timer(1.0).timeout.connect(func() -> void:
+		var before := lift.serves(top)
+		lift.call_from(top)
+		get_tree().create_timer(30.0).timeout.connect(func() -> void:
+			var ok := not before and lift.unlocked and lift.next_stop() == top and not lift.moving()
+			print("[Aufzug] Dachgeschoss: %s (vorher gesperrt %s, frei %s, Halt %s)" % ["ok" if ok else "FEHLER",
+				not before, lift.unlocked, lift.next_stop()])))
+	return true
 
 
 ## Debug (--dachboden=urteil, --aufzug=urteil): nach 1 s ein Urteil über Zimmer 13 in 2 s (4.33).

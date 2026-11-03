@@ -159,7 +159,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     das alte Feld wird übergangen
 ## 76: Ehering im Dachnest (Spielkonzept 4.25, 6.14; ZIM-50): neue Art Item.Kind.RING, omens.crows.roof_nest (Inhalt des
 ##     Dachnests), social.requests.rare (erfüllte seltene Bitten) – ältere Stände laden weiter, der Ring liegt im Nest
-const VERSION := 76
+## 77: Halt des Aufzugs im Dachgeschoss freigeschaltet (Spielkonzept 7.10; ZIM-42: elevators.unlocked) – ältere Stände
+##     laden weiter, der Halt ist dann noch gesperrt
+const VERSION := 77
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0

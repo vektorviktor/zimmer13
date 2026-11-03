@@ -11,6 +11,10 @@ extends Node3D
 ## „Tür zu“ nebeneinander, darunter der Alarmknopf. Motor und Glocke machen an Abfahrt und Ziel Lärm (7.4).
 ## Ein toter Schacht (working = false; 7.10: der Weg des Monsters) hat dieselben Türen, Anzeigen und Rufknöpfe, aber
 ## keine Kabine – seine Anzeige wandert ab und zu von selbst.
+## Halt im Dachgeschoss (7.10, ZIM-42): eine Abkürzung – anfangs fährt die Kabine nicht hinauf, ihr Knopf „D“ rührt sich
+## nicht. Wer über die Treppe West und die Kniestocktür oben ist und dort einmal ruft, schaltet den Halt dauerhaft frei
+## (unlocked, im Spielstand). Niemand sonst fährt mit; der Ruf des Monsters an der Haltestelle (call_cabin) schaltet
+## nichts frei.
 ## Rahmen: Ursprung = Mitte der Türöffnung auf der Wandmittellinie in Höhe des EG-Bodens, lokal +Z aus dem Schacht
 ## (vor die Tür), +X von dort aus gesehen rechts. Gebaut von LevelBuilder._elevators.
 
@@ -92,6 +96,8 @@ enum Do { CALL, FLOOR, OPEN, CLOSE, ALARM }
 var working := true
 var stops: Array[float] = []      ## Bodenhöhen der Halte (Welt-y), von unten nach oben
 var levels: Array[int] = []       ## Stockwerk je Halt (−1 Untergeschoss, 0 EG, 1 …)
+var attic: Array[bool] = []       ## je Halt: im Dachgeschoss – angefahren erst, wenn freigeschaltet (7.10)
+var unlocked := false             ## Halt im Dachgeschoss freigeschaltet (einmal von oben gerufen)
 var opening := Vector2(2.5, 2.4)  ## Öffnung im Plan: Breite, Höhe
 var shaft := Rect2()              ## Schacht innen, lokal (x, z)
 
@@ -151,12 +157,15 @@ class Push extends StaticBody3D:
 		elevator.press(self)
 
 
-func setup(p_working: bool, p_stops: Array[float], p_levels: Array[int], p_opening: Vector2, p_shaft: Rect2) -> Elevator:
+func setup(p_working: bool, p_stops: Array[float], p_levels: Array[int], p_opening: Vector2, p_shaft: Rect2,
+		p_attic: Array[bool] = []) -> Elevator:
 	working = p_working
 	stops = p_stops
 	levels = p_levels
 	opening = p_opening
 	shaft = p_shaft
+	attic = p_attic.duplicate()
+	attic.resize(stops.size())
 	return self
 
 
@@ -548,6 +557,8 @@ func prompt(push: Push) -> String:
 		Do.CALL:
 			return "Aufzug rufen [E]"
 		Do.FLOOR:
+			if working and not serves(push.stop):
+				return "%s – Knopf „%s“ rührt sich nicht" % [_floor_name(push.stop), _label(push.stop)]
 			return "%s [E]  – Knopf „%s“" % [_floor_name(push.stop), _label(push.stop)]
 		Do.OPEN:
 			return "Tür öffnen [E]"
@@ -560,13 +571,16 @@ func prompt(push: Push) -> String:
 
 func press(push: Push) -> void:
 	Game.play_sound("blip", 0.25)
-	if not working:   # toter Schacht: der Knopf leuchtet kurz, sonst nichts
+	if not working or (push.action == Do.FLOOR and not serves(push.stop)):
+		# toter Schacht, Dachgeschoss noch nicht freigeschaltet: der Knopf leuchtet kurz, sonst nichts
 		_flash[_button_mats[push.stop]] = 1.2
 		_set_glow(_button_mats[push.stop], true)
 		return
 	match push.action:
-		Do.CALL, Do.FLOOR:
-			_request(push.stop, push.action == Do.FLOOR)
+		Do.CALL:
+			call_from(push.stop)
+		Do.FLOOR:
+			_request(push.stop, true)
 		Do.OPEN:
 			_flash[_open_mat] = 0.4
 			_set_glow(_open_mat, true)
@@ -596,6 +610,28 @@ func _request(i: int, inside: bool) -> void:
 	_set_glow(_button_mats[i], true)
 	if inside and _door > 0.0:
 		_hold = minf(_hold, DOOR_HOLD_CHOSEN)
+
+
+## Der Spieler ruft die Kabine am Halt i (Rufknopf; Debug --aufzug=dach) – im Dachgeschoss schaltet das frei.
+func call_from(i: int) -> void:
+	if not serves(i):
+		unlock()
+	_request(i, false)
+
+
+## Fährt die Kabine den Halt i an? Alle außer dem Dachgeschoss, das erst nach dem ersten Ruf von oben (7.10).
+func serves(i: int) -> bool:
+	return unlocked or not attic[i]
+
+
+## Halt im Dachgeschoss dauerhaft freischalten (7.10): der erste Ruf von oben – Fortschritt, Autosave (8.10).
+func unlock() -> void:
+	if unlocked or not attic.has(true):
+		return
+	unlocked = true
+	if Game.tracing:
+		print("[Aufzug] Halt im Dachgeschoss freigeschaltet")
+	SaveManager.on_progress("Aufzug hält im Dachgeschoss")
 
 
 func _set_glow(mat: ShaderMaterial, on: bool) -> void:
@@ -760,8 +796,10 @@ func _ghost(delta: float) -> void:
 # --- Namen ------------------------------------------------------------------------------------------------------
 
 ## Beschriftung des Halts i auf Anzeige und Knopf: U (Untergeschoss), 0 (Erdgeschoss), 1 … (Obergeschosse),
-## T (Tiefkeller, 7.4).
+## D (Dachgeschoss, 7.10), T (Tiefkeller, 7.4).
 func _label(i: int) -> String:
+	if attic[i]:
+		return "D"
 	var level := levels[i]
 	if level < -1:
 		return "T"
@@ -769,6 +807,8 @@ func _label(i: int) -> String:
 
 
 func _floor_name(i: int) -> String:
+	if attic[i]:
+		return "Dachgeschoss"
 	var level := levels[i]
 	if level < -1:
 		return "Tiefkeller"
@@ -786,9 +826,12 @@ func open_doors() -> void:
 	_hold = DEBUG_HOLD
 
 
-## Fahrt ins oberste Stockwerk (bzw. ins EG, wenn sie schon oben steht) wählen (Debug: --aufzug=fahrt).
+## Fahrt ins oberste Stockwerk, das sie anfährt (bzw. ins EG, wenn sie schon oben steht), wählen (Debug: --aufzug=fahrt).
 func ride_to_top() -> void:
-	_request(stops.size() - 1 if _at != stops.size() - 1 else maxi(0, levels.find(0)), true)
+	var top := stops.size() - 1
+	while top > 0 and not serves(top):
+		top -= 1
+	_request(top if _at != top else maxi(0, levels.find(0)), true)
 
 
 ## Steht pos (Welt, Füße) in der Kabine dieses Aufzugs?
@@ -817,9 +860,10 @@ func waiting_spot(i: int, out: float = 1.2) -> Array[Vector3]:
 
 
 ## Den Rufknopf am Halt i drücken (Spielkonzept 4.33: das Monster an der Haltestelle) – steht die Kabine dort mit
-## geschlossener Tür, geht sie auf.
+## geschlossener Tür, geht sie auf. Schaltet das Dachgeschoss nicht frei (7.10: das kann nur der Spieler).
 func call_cabin(i: int) -> void:
-	_request(i, false)
+	if serves(i):
+		_request(i, false)
 
 
 ## Wo man steht und wohin man schaut (Welt) – vor der Tür am Halt der Kabine oder darin mit Blick aufs Bedienfeld
@@ -837,11 +881,12 @@ func save_state() -> Dictionary:
 	var queue := _queue.duplicate()
 	if _target >= 0:
 		queue.push_front(_target)
-	return {"y": _cab_y, "queue": queue, "open": _door > 0.5 and _door_dir >= 0}
+	return {"y": _cab_y, "queue": queue, "open": _door > 0.5 and _door_dir >= 0, "unlocked": unlocked}
 
 
 ## Kabine an die gespeicherte Höhe; war sie unterwegs, fährt sie zum Ziel weiter.
 func load_state(d: Dictionary) -> void:
+	unlocked = bool(d.get("unlocked", false))
 	_cab_y = float(d.get("y", stops[maxi(0, levels.find(0))]))
 	cabin.position.y = _cab_y - position.y
 	_queue.clear()

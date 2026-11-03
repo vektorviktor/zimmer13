@@ -9,7 +9,7 @@ extends CanvasLayer
 
 ## Befehl → [Werte, Beschreibung]. Neuer Startparameter → auch hier eintragen (Tab, help).
 const COMMANDS := {
-	"aufzug": ["[innen|offen|fahrt]", "vor den Aufzug stellen (innen: in die Kabine, Blick aufs Bedienfeld · offen: Tür geht auf · fahrt: in der Kabine nach oben)"],
+	"aufzug": ["[innen|offen|fahrt|dach]", "vor den Aufzug stellen (innen: in die Kabine, Blick aufs Bedienfeld · offen: Tür geht auf · fahrt: in der Kabine nach oben · dach: im Dachgeschoss rufen, schaltet den Halt frei)"],
 	"sitzen": ["[sofa|bank|stuhl|bett|klo]", "aufs nächste Sitzmöbel dieser Art setzen (3.1) – ohne Angabe Sofa"],
 	"tuer": ["zimmer", "vor die Tür dieses Zimmers stellen (6.19)"],
 	"werkzeug": ["brecheisen|kasten|schluessel", "Brecheisen/Werkzeugkasten in die Hand bzw. Generalschlüssel an den Bund (6.19)"],

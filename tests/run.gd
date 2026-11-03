@@ -4,7 +4,7 @@ extends Node
 ## Aufruf: Godot --headless --path . res://tests/run.tscn [-- math_checks save_rules] (ohne Namen: alle)
 
 const TESTS := ["math_checks", "save_rules", "bag_checks", "notebook_checks", "throw_checks", "darts_checks", "leviathan_checks",
-	"mode_checks", "key_checks", "bar_games_checks"]
+	"mode_checks", "key_checks", "bar_games_checks", "elevator_checks"]
 
 
 func _ready() -> void:

@@ -813,6 +813,12 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     `AnimatableBody3D` auf Ebene 2; die Kabinentür ist nur Optik, solange sie zu ist, schließt `_doorway` die Öffnung.
     Lichtschranke `_in_doorway`.
   - Für das Monster beim Urteil (4.33): `carries(pos)`, `moving()`, `next_stop()`, `waiting_spot(i)`, `call_cabin(i)`.
+  - **Halt im Dachgeschoss** (Spielkonzept 7.10, ZIM-42): `_elevators()` gibt je Halt `attic` mit (Aufzugtür im Plan
+    „DG“); dort Beschriftung „D“. `serves(i)` ist dort falsch, bis der Spieler oben ruft (`call_from` → `unlock()`,
+    `unlocked` im Spielstand, `SaveManager.on_progress`). Vorher leuchtet Knopf „D“ nur kurz, `ride_to_top` endet im
+    obersten offenen Halt, `call_cabin` (Monster) schaltet nichts frei. **Der Plan hat oben noch keinen Schacht und
+    keine Aufzugtür** – heute hält der Aufzug dort also gar nicht; geprüft wird an einem Probe-Aufzug
+    (`tests/elevator_checks.gd` in `tests/run.tscn`), im Hotel mit `--aufzug=dach` (meldet, ob ein Halt oben existiert).
   - Ablauf in `_physics_process` (Warteschlange `_queue`); Lärm `elevator`, `elevator_bell` (machen das Monster
     neugierig), `elevator_alarm`. Gäste und Monster benutzen ihn nicht (beim Urteil wartet das Monster an der
     Haltestelle, s. u.); die Reparatur (Spielkonzept 7.4) fehlt.
@@ -1800,8 +1806,9 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
 - **Autosave-Auslöser (Spielkonzept 8.10)** – nur noch drei, nicht mehr Tod eines Gastes, Ende einer Feier oder
   aufgeschlossene Türen:
   - **Fortschritt:** `SaveManager.on_progress(grund)` – der Aufruf für alle Systeme, die einen großen Schritt erkennen
-    (Aufzug repariert, Kürbismann erlöst, Fluchtweg …); einmal je Ereignis rufen. Heute hängt daran nur
-    `Player.add_key` → `on_key(id)`: Schlüssel aus `PROGRESS_KEYS` (`zimmer_18`, `dachboden`, Schaltschlüssel `aufzug`). Debug `--fortschritt`.
+    (Aufzug repariert, Kürbismann erlöst, Fluchtweg …); einmal je Ereignis rufen. Heute hängen daran
+    `Player.add_key` → `on_key(id)`: Schlüssel aus `PROGRESS_KEYS` (`zimmer_18`, `dachboden`, Schaltschlüssel `aufzug`),
+    und `Elevator.unlock()` (Halt im Dachgeschoss freigeschaltet, 7.10). Debug `--fortschritt`.
   - **Neuer Bereich:** `NEW_AREAS` (Dachboden, U2, Sperrbereiche – bisher Zimmer 018), erster Besuch je Spiel in
     `visited` (gespeichert). `_area_at` nimmt den Zonennamen, im Dachgeschoss „Dachboden“ (dessen Flurzonen heißen wie
     im OG; Bodenhöhe aus `LevelBuilder.attic_beams`).

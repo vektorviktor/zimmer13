@@ -1958,9 +1958,11 @@ func _elevators() -> void:
 		var ref: Dictionary = list[0]
 		var stops: Array[float] = []
 		var levels: Array[int] = []
+		var attic: Array[bool] = []   # Halt im Dachgeschoss: erst nach dem ersten Ruf von oben (7.10)
 		for o: Dictionary in list:
 			stops.append(float(o["y"]))
 			levels.append(int(o["level"]))
+			attic.append(bool(o["attic"]))
 			if int(o["level"]) == 0:
 				ref = o
 		var c: Vector2 = ref["center"]
@@ -1972,7 +1974,7 @@ func _elevators() -> void:
 			var corner := r.position + r.size * Vector2(k & 1, k >> 1)
 			var p := frame.affine_inverse() * Vector3(corner.x, 0, corner.y)
 			local = Rect2(p.x, p.z, 0, 0) if k == 0 else local.expand(Vector2(p.x, p.z))
-		var lift := Elevator.new().setup(elevators.is_empty(), stops, levels, ref["size"], local)
+		var lift := Elevator.new().setup(elevators.is_empty(), stops, levels, ref["size"], local, attic)
 		lift.name = "Aufzug_%d" % (elevators.size() + 1)
 		lift.transform = frame
 		world.add_child(lift)
@@ -2036,7 +2038,7 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 		var to_shaft := side if _kind_at(c + side * 0.5) == "elevator" else -side
 		var shaft := _place_at(c + to_shaft * 0.5)
 		_elevator_doors.append({"center": c, "out": -to_shaft, "size": Vector2(width, _opening_vec(o, 0.0).z),
-			"y": _base_y, "level": _level, "shaft": _bounds(shaft["rects"]) if not shaft.is_empty() else Rect2()})
+			"y": _base_y, "level": _level, "attic": _attic, "shaft": _bounds(shaft["rects"]) if not shaft.is_empty() else Rect2()})
 		light_rooms.window(c, side)
 		return
 	var wide := width >= 1.5

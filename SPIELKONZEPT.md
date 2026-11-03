@@ -5269,7 +5269,7 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 > erschreckt Gäste. **Aufzug 1 fährt schon jetzt** – die Reparatur unten kommt später als Sperre davor. **Aufzug 2 ist
 > tot** (7.10), sieht aber gleich aus; seine Anzeige wandert ab und zu ohne Kabine. Noch offen: Notruftelefon, Halt in
 > U2. Gäste und Monster fahren nicht mit, das Dachgeschoss wird als Abkürzung freigeschaltet (entschieden 2026-11-03,
-> 7.10).
+> 7.10; Logik gebaut 2026-11-03, der Halt oben fehlt noch im Plan).
 >
 > **Noch nicht gebaut:** die Reparatur und **U2** (bisher „Tiefkeller“, umbenannt 2026-10-27; Plan steht aus).
 > **Heizraum** (7.9) und **Maschinenraum** liegen im Untergeschoss (U1). Die Ordnung von Keller und U2 – Schlösser,
@@ -5744,12 +5744,19 @@ Ebene sein); U2 gehört allein dem Monster.
 **Leere Räume** (Speisesaal, Toiletten, Technikraum, Kühlräume, Bibliothek, Balkone …): werden beim Neuzeichnen des
 Plans **einzeln entschieden** (2026-10-21) – je Raum, ob er eine Funktion bekommt, als Atmosphäre bleibt oder entfällt.
 
-**Aufzug im Dachgeschoss und Mitfahrer (entschieden 2026-11-03, ZIM-42, noch nicht gebaut)**
+**Aufzug im Dachgeschoss und Mitfahrer (entschieden 2026-11-03, ZIM-42; Logik gebaut 2026-11-03, Halt fehlt im Plan)**
 - **Halt im Dachgeschoss als Abkürzung:** Anfangs hält der Aufzug oben nicht. Wer über die Treppe West und die
   Kniestocktür (4.21) hinaufgekommen ist und ihn **einmal von oben bedient** (Rufknopf am Dachgeschoss), schaltet den
   Halt frei – danach fährt er dauerhaft auch dorthin. Das Kniestock-Rätsel bleibt so der erste Weg hinauf.
 - **Niemand fährt mit:** Gäste nehmen die Treppe, das Monster fährt nicht Aufzug; Motor und Glocke locken es nur an
   (wie gebaut, 7.4).
+- **Gebaut (2026-11-03):** Der Halt oben heißt auf Anzeige und Bedienfeld **„D“**. Vor dem Freischalten gibt es ihn
+  schon (vierte Lampe, vierter Knopf), der Knopf leuchtet nur kurz auf („rührt sich nicht“); der Rufknopf oben holt die
+  Kabine und schaltet frei – das ist Fortschritt (Autosave, 8.10) und steht im Spielstand. Wartet das Monster beim
+  Urteil an einer Haltestelle (4.33), drückt sein Ruf oben nichts frei. **Noch nicht im Spiel:** Der Plan „DG“ hat
+  über dem Schacht keinen Schacht und keine Aufzugtür (dort liegt offener Dachboden, direkt an der Nordwand mit
+  Kniestock und Schräge) – erst wenn der Zeichner beides setzt, hält der Aufzug oben. Dann zu prüfen: Portal und
+  Lampenanzeige (heute bis etwa 2,6 m) unter der Decke des Dachgeschosses (2,2 m, ZIM-170: 2,4 m), Kabine 2,5 m hoch.
 
 **Dach: Mansarddach mit Schiefer, Kranzgesims und Firstgitter (entschieden 2026-11-03, ZIM-43, ZIM-147)**
 - **Warum:** Vom Garten aus wirkte das Hotel wie eine Kiste mit Flachdach – die flache Schräge der Zwischenlösung
