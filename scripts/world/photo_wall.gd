@@ -1,31 +1,39 @@
 class_name PhotoWall
 extends Node3D
-## Die Gruppenfotos an der Lobbywand (Spielkonzept 5.14): Jedes Jahr seit 1987 ein Halloween-Foto der Gäste vor dem
-## Haupteingang, in Holzrahmen nebeneinander – alte vergilbt, neue farbig. Daneben ein leerer Rahmen „Halloween 2026“.
+## Die Gruppenfotos an der Lobbywand (Spielkonzept 5.14): Jede Ernte seit 1987, alle drei Jahre (2.10), ein Halloween-Foto
+## der Gäste vor dem Haupteingang in Holzrahmen – alte vergilbt, neue farbig, zuletzt ein leerer Rahmen „Halloween 2026“.
+## Wo das Foto von 2005 hing, ist nur ein hellerer Fleck auf der Tapete mit leerem Nagel (BarePatch).
 ## Zeichnung im Code (Image, je Jahr fester Zufall): Fassade, zwei Reihen Gäste; wer in jenem Oktober geholt wurde, ist
 ## verwischt, als hätte er sich bewegt. Ein Gesicht ist auf jedem Foto und altert nie: hinten rechts der weißhaarige alte
 ## Herr mit Gehstock – der Erbe der Familie, als uralter Dauergast getarnt (2.3). Wer genug Fotos ansieht, merkt es
 ## (Notizbuch). Auf 1987 außerdem ein Mädchen mit Zöpfen (Marion), ein Mann im Kittel (Josef, der Hausmeister), eine junge Frau
 ## (Edna) und ein großes Mädchen (Liesel) – die Indiz-Stufe für Marion, Edna und Liesel (2.3, 2.7).
-## Ort: Ausstattung „Fotowand“ im Plan, bis dahin WALL (Westwand der Lobby, nördlich der Wandlampe).
+## Ort (ZIM-133): Ausstattung „Fotowand“ im Plan, je Punkt eine Position mit zwei Rahmen übereinander; die Jahre
+## spaltenweise von links nach rechts, oben jeweils das ältere. Ohne Planeintrag an WALL.
 ## Nicht gespeichert; was man gesehen hat, steht im Notizbuch.
 
-## Bis der Plan einen Platz hat: Westwand der Lobby, von z0 bis z1, Bilder nach +X
+## Ohne Planeintrag: Westwand der Lobby, Positionen von z0 bis z1, Bilder nach +X
 const WALL := {"x": -7.4, "z0": -27.3, "z1": -21.3}
-const YEARS := [1987, 1988, 1990, 1993, 1996, 1999, 2003, 2007, 2011, 2015, 2019, 2023, 2025, 2026]
-const ROWS_Y := [2.02, 1.48]
+## Die Ernten (Spielkonzept 2.10): 1987 + 13 × 3 = 2026
+const YEARS := [1987, 1990, 1993, 1996, 1999, 2002, 2005, 2008, 2011, 2014, 2017, 2020, 2023, 2026]
+## Hängt nicht an der Wand – das Foto liegt im Sekretariat (2.10, ZIM-117)
+const MISSING := 2005
+## Oberkanten der Rahmen über dem Boden: obere und untere Reihe einer Position (ZIM-133)
+const TOPS := [1.90, 1.40]
+const GAP := 0.005                ## Abstand der Rahmenrückseite von der Wand
 const PHOTO := Vector2(0.4, 0.3)
 const FRAME := 0.04               ## Breite der Leiste (= PhotoFrame.PROFILE außen)
 const W := 160
 const H := 120
 ## So viele waren in jenem Oktober verschwunden (verwischt auf dem Bild)
-const TAKEN := {1987: 3, 1988: 2, 1990: 2, 1993: 3, 1996: 1, 1999: 2, 2003: 2, 2007: 3, 2011: 2, 2015: 1, 2019: 3, 2023: 2,
-	2025: 2}
+## Platzhalter bis zu den Motiven nach 2.10 (ZIM-117)
+const TAKEN := {1987: 3, 1990: 2, 1993: 3, 1996: 1, 1999: 2, 2002: 2, 2005: 2, 2008: 3, 2011: 2, 2014: 1, 2017: 3, 2020: 2,
+	2023: 2}
 const HEIR_SEEN := 4              ## so viele Fotos angesehen (mit 1987 und einem neuen) – dann fällt er auf
 const TEXTS := {
 	1987: "Halloween 1987. Vorn ein Mädchen mit Zöpfen, vielleicht zwölf, daneben ein großes Mädchen mit Pony und eine junge Frau mit dunklem Haar. Ganz links, halb abgeschnitten, ein Mann im grauen Arbeitskittel, Ruß im Gesicht. Hinten rechts ein alter Herr mit weißem Haar und Gehstock. Drei Gesichter sind verwischt.",
-	1988: "Halloween 1988. Weniger Gäste als im Jahr davor, niemand lächelt. Hinten rechts der alte Herr mit dem Gehstock.",
-	2025: "Halloween 2025, farbig und scharf. Zwei Gesichter sind trotzdem verwischt. Hinten rechts, mit Gehstock und weißem Haar: der alte Herr – genau wie 1987.",
+	1990: "Halloween 1990. Weniger Gäste als 1987, niemand lächelt. Hinten rechts der alte Herr mit dem Gehstock.",
+	2023: "Halloween 2023, farbig und scharf. Zwei Gesichter sind trotzdem verwischt. Hinten rechts, mit Gehstock und weißem Haar: der alte Herr – genau wie 1987.",
 	2026: "Auf der goldenen Plakette steht schon „2026“. Der Rahmen ist leer.",
 }
 const NOTE_1987 := "Auf dem Gruppenfoto von 1987 in der Lobby: ein Mädchen mit Zöpfen, ein großes Mädchen, eine junge Frau – und ganz links ein Mann im Kittel mit Ruß im Gesicht."
@@ -33,20 +41,39 @@ const NOTE_HEIR := "Auf jedem Gruppenfoto seit 1987 steht hinten rechts derselbe
 
 var _pictures := {}               ## Jahr → ImageTexture
 var _seen := {}                   ## Jahr → angesehen
+var _spots: Array[Transform3D] = []   ## Positionen von links nach rechts: Wandfläche am Boden, +Z in den Raum
+
+
+## Positionen aus dem Plan (LevelBuilder.planned, ZIM-133), von links nach rechts gesehen; ohne Planeintrag WALL.
+func setup(builder: LevelBuilder) -> PhotoWall:
+	var columns := ceili(YEARS.size() / 2.0)
+	for p: Dictionary in builder.planned.get("photo_wall", []):
+		var out: Vector2 = p["out"]
+		_spots.append(Transform3D(Basis(Vector3.UP, atan2(out.x, out.y)), p["at"]))
+	if _spots.is_empty():
+		var step: float = (float(WALL["z1"]) - float(WALL["z0"])) / (columns - 1)
+		for col in columns:
+			_spots.append(Transform3D(Basis(Vector3.UP, PI / 2.0), Vector3(float(WALL["x"]), 0, float(WALL["z0"]) + col * step)))
+	elif _spots.size() != columns:
+		push_warning("Gebäudeplan: Fotowand hat %d Positionen, gebraucht werden %d" % [_spots.size(), columns])
+	var right := func(t: Transform3D) -> float: return t.origin.dot(Vector3.UP.cross(t.basis.z))   # Blick zur Wand
+	_spots.sort_custom(func(a: Transform3D, b: Transform3D) -> bool: return right.call(a) < right.call(b))
+	return self
 
 
 func _ready() -> void:
-	var per_row := ceili(YEARS.size() / 2.0)
-	var step: float = (float(WALL["z1"]) - float(WALL["z0"])) / (per_row - 1)
-	for i in YEARS.size():
+	for i in mini(YEARS.size(), _spots.size() * 2):
 		var year: int = YEARS[i]
-		var row := i / per_row
-		var col := i % per_row
+		var t := _spots[i / 2].translated_local(Vector3(0, TOPS[i % 2] - PHOTO.y / 2.0 - FRAME, GAP))
+		if year == MISSING:
+			var patch := BarePatch.new()
+			patch.transform = t
+			add_child(patch)
+			continue
 		var frame := PhotoFrame.new()
 		frame.year = year
 		frame.wall = self
-		frame.position = Vector3(float(WALL["x"]) + 0.02, ROWS_Y[row], float(WALL["z0"]) + col * step)
-		frame.rotation.y = PI / 2.0   # +Z in die Lobby
+		frame.transform = t
 		frame.rotation.z = sin(year * 1.7) * 0.025   # nie ganz gerade
 		add_child(frame)
 		if year != 2026:
@@ -438,9 +465,76 @@ class PhotoFrame extends StaticBody3D:
 		wall.look_at_photo(year)
 
 
+## Wo das Foto von 2005 hing (Spielkonzept 2.10): die Tapete darunter ist heller geblieben (Decal, weicher Rand),
+## oben in der Mitte steckt der leere Nagel. Ursprung Mitte des fehlenden Rahmens an der Wand, +Z in den Raum.
+class BarePatch extends StaticBody3D:
+	const NAIL_Y := 0.12              ## Nagel über der Mitte
+	const TEX := Vector2i(512, 384)
+	## So viel heller als die vergilbte Tapete ringsum – die Mischung ist linear, wenig Deckkraft reicht
+	const BRIGHTER := Color(1.0, 0.95, 0.88, 0.05)
+
+	static var _tex: ImageTexture
+	static var _nail_mat: StandardMaterial3D
+
+	func _ready() -> void:
+		collision_layer = 4
+		collision_mask = 0
+		set_meta("interactable", self)
+		var size := PhotoWall.PHOTO + Vector2.ONE * PhotoWall.FRAME * 2.0
+		var d := Decal.new()
+		d.size = Vector3(size.x, 0.1, size.y)
+		d.position = Vector3(0, 0, -PhotoWall.GAP)
+		d.rotation.x = PI / 2.0   # projiziert entlang -Y, also auf die Wand
+		d.texture_albedo = _texture()
+		d.modulate = BRIGHTER
+		d.upper_fade = 0.1
+		d.lower_fade = 0.1
+		add_child(d)
+		var shank := Geo.mesh(self, Geo.cylinder(0.0014, 0.02, 8), _nail_material(), Vector3(0, NAIL_Y, 0.002))
+		shank.rotation.x = PI / 2.0 - 0.35   # schräg nach unten eingeschlagen
+		var head := Geo.mesh(self, Geo.cylinder(0.0035, 0.0012, 12), _nail_material(), Vector3(0, NAIL_Y + 0.0034, 0.0114))
+		head.rotation.x = PI / 2.0 - 0.35
+		Geo.add_box_shape(self, Vector3(size.x, size.y, 0.02), Vector3(0, 0, 0.0))
+
+	func get_prompt(_player: Player) -> String:
+		return "Heller Fleck auf der Tapete – hier hing ein Bild, der Nagel steckt noch"
+
+	func interact(_player: Player) -> void:
+		pass
+
+	## Weiß mit weichem, leicht unregelmäßigem Rand – wie der Rahmen die Tapete vor Licht und Rauch geschützt hat
+	static func _texture() -> ImageTexture:
+		if _tex:
+			return _tex
+		var img := Image.create(TEX.x, TEX.y, false, Image.FORMAT_RGBA8)
+		var noise := FastNoiseLite.new()
+		noise.seed = 2005
+		noise.frequency = 0.02
+		var soft := 10.0   # Pixel weicher Rand
+		for y in TEX.y:
+			for x in TEX.x:
+				var edge := minf(minf(x + 0.5, TEX.x - x - 0.5), minf(y + 0.5, TEX.y - y - 0.5))
+				var a := clampf((edge - 2.0 + noise.get_noise_2d(x, y) * 3.0) / soft, 0.0, 1.0)
+				a *= 0.9 + 0.1 * noise.get_noise_2d(x * 3.0 + 400.0, y * 3.0)   # nicht ganz gleichmäßig
+				img.set_pixel(x, y, Color(1, 1, 1, a))
+		img.generate_mipmaps()
+		_tex = ImageTexture.create_from_image(img)
+		return _tex
+
+	static func _nail_material() -> StandardMaterial3D:
+		if not _nail_mat:
+			_nail_mat = StandardMaterial3D.new()
+			_nail_mat.albedo_color = Color(0.32, 0.3, 0.28)
+			_nail_mat.metallic = 0.85
+			_nail_mat.roughness = 0.5
+		return _nail_mat
+
+
 ## Debug (--fotos[=jahr]): du stehst vor der Fotowand · jahr: das Foto ist gleich aufgeschlagen.
 func debug_show(year: String) -> void:
-	var mid := Vector3(float(WALL["x"]) + 1.6, 0.05, (float(WALL["z0"]) + float(WALL["z1"])) / 2.0)
-	TeleportUI.place_player(mid, Vector3(-1, 0.25, 0))
-	if year.is_valid_int() and YEARS.has(year.to_int()):
+	var a := _spots[0].origin
+	var b := _spots[-1].origin
+	var out := _spots[0].basis.z
+	TeleportUI.place_player((a + b) / 2.0 + out * 2.4 + Vector3.UP * 0.05, -out + Vector3.UP * 0.25)
+	if year.is_valid_int() and YEARS.has(year.to_int()) and year.to_int() != MISSING:
 		get_tree().create_timer(0.5).timeout.connect(look_at_photo.bind(year.to_int()))

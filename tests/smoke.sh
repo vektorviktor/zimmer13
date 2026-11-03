@@ -287,7 +287,8 @@ done <<'LIST'
 1500|halloween,spuk,schlaf|--albtraum --trace
 600|halloween,spuk|--vogelscheuche --trace
 900|halloween,spuk,kinder|--kind-zu-viel --trace
-500|halloween,erinnerung|--fotos=1987 --trace
+500|halloween,erinnerung,fotowand|--fotos=1987 --trace
+300|fotowand|--fotos=2005 --trace
 2400|monster,gaeste,leviathan|--leviathan --trace
 3600|monster,gaeste,leviathan|--leviathan=liesel --trace
 600|monster,leviathan,speichern|--leviathan=benannt --savetest

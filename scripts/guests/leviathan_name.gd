@@ -45,7 +45,7 @@ const ALL_KNOW_AFTER := 1.5 * Calendar.DAY_SECONDS
 ## So oft ersetzt ein eigener Leviathan-Satz einen Satz über das Monster
 const OWN_LINE_CHANCE := 0.3
 ## Der Druck an der Wand: Ausstattung „Leviathan-Druck“ im Plan (ZIM-158, Mitte so hoch wie PRINT_AT), sonst PRINT_AT
-## an der Westwand der Lobby zwischen Aushangbrett und Wandlampe, südlich der Fotowand; Bildmaß
+## an der Westwand der Lobby zwischen Aushangbrett und Wandlampe, gegenüber der Fotowand (ZIM-133); Bildmaß
 const PRINT_PATH := "res://assets/textures/dore_leviathan.jpg"
 const PRINT_AT := Vector3(-7.38, 1.72, -18.3)
 const PRINT_SIZE := Vector2(0.36, 0.455)

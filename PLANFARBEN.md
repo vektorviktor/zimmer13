@@ -226,8 +226,8 @@ Ebene `Ausstattung`, 3×3-Punkt, Wandsachen innen an der Wand.
 | #bf69a2 | Aushangbrett | Lobby (2.5), an der Wand, Mitte 1,55 m; ohne Eintrag an der Westwand (ZIM-158) |
 | #cdacc5 | Wanduhr | 3 m Durchmesser, für die Halle gedacht; Mitte zwischen 3,27 m und der Decke (unter dem Luftraum die der Halle). Ohne Eintrag über dem Haupteingang (ZIM-158) |
 | #462a3a | Krähennest | auf einen Baum: das Nest sitzt im nächsten Baum (4.25); ohne Eintrag im Baum gegenüber der Gartentür von 042 (ZIM-158) |
-| #9712d9 | Leviathan-Druck | Dorés Druck, den Hugo aufhängt (4.32), an der Wand, Mitte 1,72 m; ohne Eintrag an der Lobby-Westwand südlich der Fotowand (ZIM-158) |
-| #b24db2 | Fotowand | je Punkt eine Position mit 2 Rahmen übereinander (Oberkanten 1,40 m und 1,90 m), Punkte im 1-m-Abstand; noch nicht gebaut (ZIM-133) |
+| #9712d9 | Leviathan-Druck | Dorés Druck, den Hugo aufhängt (4.32), an der Wand, Mitte 1,72 m; ohne Eintrag an der Lobby-Westwand, wo bis 3.11. die Fotowand hing (ZIM-158) |
+| #b24db2 | Fotowand | je Punkt bzw. Strich eine Position mit 2 Rahmen übereinander (Oberkanten 1,40 m und 1,90 m), Punkte im 1-m-Abstand; Jahre spaltenweise von links nach rechts, oben das ältere (ZIM-133) |
 | #962c58 | Dartscheibe | an der Wand, Abwurflinie und Stehtisch davor; nur eine im Haus – ohne Planeintrag hängt sie hinten in der Nische der Bar |
 
 ## Gegenstände
@@ -292,7 +292,7 @@ den alten festen Platz – gemalt, wandert es dorthin.
 
 | Objekt | Ohne Planeintrag | Planeintrag | Stand |
 |---|---|---|---|
-| Fotowand | Lobby-Westwand (`photo_wall.gd` WALL) | Ausstattung: Fotowand | im Plan gemalt, Bau offen (ZIM-133) |
+| Fotowand | Lobby-Westwand (`photo_wall.gd` WALL) | Ausstattung: Fotowand | im Plan (Lobby-Ostwand), gebaut 3.11. (ZIM-133) |
 | Dartscheibe mit Linie und Stehtisch | Nische an der Südwand der Bar (`DART_FALLBACK`) | Ausstattung: Dartscheibe | **Ersatzplatz aktiv** |
 | Dartpfeile | auf dem Stehtisch an der Scheibe | Gegenstand: Dartpfeile | Ersatzplatz aktiv |
 | Jackpot-Automat | Bar-Nordwand nördlich der Glastür (`SLOT_FALLBACK`) | Möbel: Spielautomat | Ersatzplatz aktiv |
@@ -305,7 +305,7 @@ den alten festen Platz – gemalt, wandert es dorthin.
 | Salz (3 Packungen) | rechtes Ende der Küchenzeile | Gegenstand: Salz | Ersatzplatz aktiv |
 | Teppich vor der Rezeption | fest 6 × 8 m bei (0, −5) | Teppich: Teppich (in der Lobby) | Ersatzplatz aktiv |
 | Aushangbrett | Lobby-Westwand, z −16,6 | Ausstattung: Aushangbrett | Ersatzplatz aktiv |
-| Leviathan-Druck (Doré) | Lobby-Westwand südlich der Fotowand (`leviathan_name.gd` PRINT_AT) | Ausstattung: Leviathan-Druck | Ersatzplatz aktiv – neben die Fotowand malen |
+| Leviathan-Druck (Doré) | Lobby-Westwand gegenüber der Fotowand (`leviathan_name.gd` PRINT_AT) | Ausstattung: Leviathan-Druck | Ersatzplatz aktiv – neben die Fotowand malen |
 | Wanduhr | über dem Haupteingang | Ausstattung: Wanduhr | Ersatzplatz aktiv |
 | Krähennest | im Baum gegenüber der Gartentür von Zimmer 042 | Ausstattung: Krähennest | Ersatzplatz aktiv |
 | Barhocker | 6 vor der Theke | Möbel: Barhocker | Ersatzplatz aktiv |

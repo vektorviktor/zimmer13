@@ -922,7 +922,8 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   ersten Angriffe holen niemanden (2.1).
 
 ### 2.10 Die Ernte: alle drei Jahre (entschieden 2026-10-30)
-> Noch nicht umgesetzt. Ändert 2.3 („jedes Jahr“, der Erbe), 2.6 (Walter), 2.7 (Vergessen, Ende 1), 5.14 (Fotowand)
+> Noch nicht umgesetzt, außer an der Fotowand (2026-11-03, ZIM-133): die 14 Erntejahre und der Fleck von 2005; Motive
+> und alles Übrige in ZIM-117. Ändert 2.3 („jedes Jahr“, der Erbe), 2.6 (Walter), 2.7 (Vergessen, Ende 1), 5.14 (Fotowand)
 > und 7.4 (Zimmer 18: 2003 → 2005, Fundsachen). Anlass: Die Fotowand hängt 14 Rahmen mit Lücken, das Konzept sagte
 > „jedes Jahr seit 1987“ – und nach 2.7 sterben ohne Schlüssel alle, nicht ein paar je Jahr. **Am selben Tag
 > ergänzt:** Ankunftsfoto statt Foto beim Fest, Rudolf Hain, das Sekretariat, Standbilder mit Text für erzählte Szenen.
@@ -3460,7 +3461,10 @@ Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gest
 > 2026 hängt es ab dem 2. Oktober im Rahmen und verwischt mit jedem Toten. Ohne Schlüssel ist jedes Gesicht
 > verwischt außer dem des alten Herrn; scharf sind 1987 und 2005 die Überlebenden. **Das Foto von 2005 fehlt** (Fleck
 > auf der Tapete) und muss erst gefunden werden. Der alte Herr (Gründer und Direktor),
-> nicht der Erbe. Im Code stehen noch die alten Jahre (1988, 2003, 2007, 2015, 2019, 2025) und 1–3 Verwischte je Foto.
+> nicht der Erbe. ~~Im Code stehen noch die alten Jahre (1988, 2003, 2007, 2015, 2019, 2025) und 1–3 Verwischte je Foto.~~
+> **Umgesetzt 2026-11-03 (ZIM-133):** die 14 Erntejahre und an der Stelle von 2005 ein hellerer Fleck mit leerem Nagel.
+> Noch offen (ZIM-117): alle Gesichter verwischt außer dem alten Herrn und den Überlebenden, das Ankunftsfoto 2026 im
+> Rahmen, das Foto von 2005 im Sekretariat; die Fotos bleiben Platzhalter bis zu echten Bildern (ZIM-135).
 
 ~~Jedes Jahr seit 1987~~ Jede Ernte (2.10) ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, bei der Ankunft, in
 Holzrahmen nebeneinander – alte vergilbt, neue farbig; daneben ein leerer Rahmen „Halloween 2026“.
@@ -3470,7 +3474,12 @@ Holzrahmen nebeneinander – alte vergilbt, neue farbig; daneben ein leerer Rahm
   der Familie (2.3)~~ der alte Herr, Gründer und Direktor, nur auf den Fotos zu sehen (2.10). Wer genug Fotos ansieht, merkt es (Notizbuch).
 - Auf 1987 außerdem Marion als Mädchen mit Zöpfen, Josef im Hausmeisterkittel, Edna jung und Liesel – die Indiz-Stufe für
   Marion, Edna und Liesel (2.3, 2.7).
-- Ort: Ausstattung „Fotowand“ im Plan, bis dahin Westwand der Lobby. Debug: `--fotos`.
+- ~~Ort: Ausstattung „Fotowand“ im Plan, bis dahin Westwand der Lobby.~~ **Ort (Nutzer 2026-10-31, gebaut 2026-11-03,
+  ZIM-133):** an der Ostwand der Lobby, hinter der der Partyraum liegt, 7 m lang. Jeder Punkt „Fotowand“ im Plan ist
+  eine Position mit **zwei Rahmen übereinander**, Oberkanten auf 1,40 m und 1,90 m: 7 Positionen, 14 Rahmen. **Reihenfolge
+  (entschieden 2026-11-03):** spaltenweise von links nach rechts, oben jeweils das ältere Jahr – links oben 1987, rechts
+  unten der leere Rahmen 2026. Wo 2005 hängen müsste (vierte Spalte oben), ist ein hellerer Fleck auf der Tapete mit
+  leerem Nagel. Dorés Druck (4.32) bleibt vorerst auf seinem Platz an der Westwand. Debug: `--fotos`.
 - **Rahmen (gebaut 2026-11-02, ZIM-134):** Fotos 40 × 30 cm in profilierter Holzleiste (Holz der Vertäfelung) hinter
   Glas mit Staub und Schlieren; auf der unteren Leiste eine goldene Plakette mit eingraviertem Jahr, das Messingschild
   unter dem Bild entfällt. Für das Foto von 2005 (2.10) gibt es das Glas mit Sprung.

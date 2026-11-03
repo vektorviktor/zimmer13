@@ -2309,7 +2309,12 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   `MonsterDirector.other_threat_active`, kein Zeitsprung, `SaveManager.can_save` gesperrt.
 - **`Scarecrow`:** Lage aus dem Kalender (`FAR` → Lobby-Gartentür), springt nur ungesehen. Grundkörper.
 - **`ExtraChild`:** beim Süßes oder Saures an 13, höchstens einmal je Spieltag, `MAX_VISITS`.
-- **`PhotoWall`** (Fotos als `Image` im Code, je Jahr fester Zufall, mit Mipmaps). `PhotoFrame` (ZIM-134): Leiste
+- **`PhotoWall`** (Fotos als `Image` im Code, je Jahr fester Zufall, mit Mipmaps). Ort (ZIM-133): `setup(builder)` holt
+  die Punkte „Fotowand“ aus `LevelBuilder.planned` (je Punkt eine Position, Wandfläche und Blick aus `_plan_wall`),
+  sortiert sie von links nach rechts (Blick zur Wand) und hängt `YEARS` spaltenweise, oben das ältere Jahr; Oberkanten
+  `TOPS`, Rahmen `GAP` vor der Wand. Ohne Planeintrag 7 Positionen an `WALL`, bei anderer Zahl eine Warnung. `MISSING`
+  (2005) wird `BarePatch`: `Decal` (weißer Fleck mit weichem Rand 512×384, Mipmaps, `BRIGHTER` – geringe Deckkraft, die
+  Mischung ist linear), schräger Nagel, nur Hinweis ohne [E]. `PhotoFrame` (ZIM-134): Leiste
   aus `PROFILE` (u quer, z aus der Wand) ringsum auf Gehrung gezogen, ein Mesh für alle Rahmen, UVs in Metern längs
   jeder Leiste für `Mat.hotel_wood`; Knicke unter `CREASE_DEG` rund schattiert. Glas (`glass_material(cracked)`) als
   `StandardMaterial3D` mit Alpha und Rauheit aus einem beim ersten Bau gerechneten Bild (256², mit Sprung 512²), kein
@@ -2325,7 +2330,7 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   (`flavor`) sind es Brotkrumen – Vorrat `ResourceSpot` mit `with_extra("brot")` auf der Küchenzeile (`BREAD_OFFSET`).
 - **Ort aus dem Plan** (ZIM-158): Puppenhaus, Apfelbottich, Sicherungskasten, Krähennest über
   `LevelBuilder.planned_at`, sonst feste Ausweichplätze (`FALLBACK`/`SPOT`) im jeweiligen Skript. Ohne Planfarbe
-  noch Rattenkönig (ruht) und Fotowand (`WALL`, ZIM-133).
+  noch Rattenkönig (ruht). Die Fotowand liest alle ihre Punkte (`PhotoWall.setup`, ZIM-133).
 - **Gespeichert** (Speicherstand 49) unter `omens`: `crows`, `mirrors`, `power`, `nightmare`, `extra_child`
   (`SaveManager._collect_omens`/`_apply_omens`); alles andere wird aus Toten, Kalender oder Gegenständen abgeleitet.
 - Debug: `--kraehen`, `--ratten`, `--hund`, `--kesselkatze`, `--spiegel`, `--strom`, `--albtraum`,

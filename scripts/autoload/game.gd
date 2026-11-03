@@ -51,7 +51,7 @@ var power_cut: PowerCut            ## Stromausfall im Gewitter (Spielkonzept 4.2
 var nightmare: Nightmare           ## der Albtraum von 1987 (Spielkonzept 4.29)
 var scarecrow: Scarecrow           ## die Vogelscheuche, die näher kommt (Spielkonzept 4.30)
 var extra_child: ExtraChild        ## das Kind zu viel beim Süßes oder Saures (Spielkonzept 4.31)
-var photo_wall: PhotoWall          ## Gruppenfotos 1987–2025 in der Lobby (Spielkonzept 5.14)
+var photo_wall: PhotoWall          ## Gruppenfotos der Ernten 1987–2026 in der Lobby (Spielkonzept 5.14)
 var cemetery: Cemetery             ## Friedhof mit Gräbern und Gedenkstätte (Spielkonzept 5.15)
 var register: HotelRegister        ## Hotelregister auf der Rezeption, Kreuze neben den Toten (Spielkonzept 2.3)
 var leviathan_name: LeviathanName  ## erste bestätigte Sichtung, Hugos Druck, der Name Leviathan (Spielkonzept 4.32)

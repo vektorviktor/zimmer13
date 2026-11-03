@@ -3101,7 +3101,7 @@ func _fittings() -> void:
 			"dartboard":   # Darts (Spielkonzept 6.10): Scheibe an der Wand, Linie und Stehtisch davor, Pfeile darauf
 				_dartboard(o)
 			# Nur merken (planned, ZIM-158) – gebaut wird später an ihrer Stelle, ohne Planeintrag am alten Platz
-			"mask_board", "fuse_box", "notice_board", "wall_clock", "leviathan_print":
+			"mask_board", "fuse_box", "notice_board", "wall_clock", "leviathan_print", "photo_wall":
 				_plan_wall(o)
 			"apple_tub", "crow_nest":
 				_plan(kind, p, Vector2(0, 1))

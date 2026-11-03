@@ -157,6 +157,7 @@ FITTINGS = {
 	"Ausstattung: Sicherungskasten": "fuse_box", "Ausstattung: Aushangbrett": "notice_board",
 	"Ausstattung: Wanduhr": "wall_clock", "Ausstattung: Krähennest": "crow_nest",
 	"Ausstattung: Leviathan-Druck": "leviathan_print",
+	"Ausstattung: Fotowand": "photo_wall",   # 3.11.: je Strich eine Position mit 2 Rahmen übereinander (ZIM-133)
 }
 ## Teppiche → Art (LevelBuilder.RUG_TEXTURES)
 RUGS = {"Teppich: Läufer": "runner", "Teppich: Teppich": "rug"}   # Teppich: 2.11. (ZIM-158)

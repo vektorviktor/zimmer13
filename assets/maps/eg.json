@@ -14039,6 +14039,62 @@
 			"wall": "west"
 		},
 		{
+			"kind": "photo_wall",
+			"pos": [
+				7.35,
+				-23.5
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "photo_wall",
+			"pos": [
+				7.35,
+				-22.5
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "photo_wall",
+			"pos": [
+				7.35,
+				-21.5
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "photo_wall",
+			"pos": [
+				7.35,
+				-20.5
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "photo_wall",
+			"pos": [
+				7.35,
+				-19.5
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "photo_wall",
+			"pos": [
+				7.35,
+				-18.5
+			],
+			"wall": "east"
+		},
+		{
+			"kind": "photo_wall",
+			"pos": [
+				7.35,
+				-17.5
+			],
+			"wall": "east"
+		},
+		{
 			"kind": "pool_shower",
 			"pos": [
 				32.5,
