@@ -2371,9 +2371,10 @@ viel.
 **5. Der friedliche Anfang bleibt friedlich:** Der Lakengeist kommt **erst nach dem ersten Angriff** des Monsters
 (2.1).
 
-**Vertagt (2026-10-21): der Katzenraum.** 7.7 verspricht, er sei vor allem sicher; tatsächlich kommen Monster und
-Lakengeist nicht hinein, der Kürbismann schon. Zugleich ist Ausharren dort die stärkste Strategie. Bis zur eigenen
-Runde bleibt es, wie es ist.
+**Der Katzenraum ist kein Schutzraum (entschieden 2026-11-03, ZIM-38, noch nicht gebaut):** ein Raum mit Katzen wie
+jeder andere – Monster, Lakengeist und Kürbismann kommen hinein. ~~Vertagt (2026-10-21): 7.7 versprach, er sei vor
+allem sicher; Monster und Lakengeist kamen nicht hinein, der Kürbismann schon, und Ausharren dort war die stärkste
+Strategie.~~
 
 **Zu klären:** Hörweite zwischen den Bedrohungen (30 m?) · ob die leiernde Musik als Lärm zählt (im ganzen Haus würde
 sie das Monster überall hinlocken – Vorschlag: nein) · was passiert, wenn eine Verfolgung auf eine Ebene führt, auf der
@@ -2434,7 +2435,8 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 > **Gebaut 2026-10-24 nach dem Plan des Zeichners** (Fläche „Dachboden“ #404262): Das ganze Dachgeschoss ist Dachboden.
 > Statt einer Kette in fester Reihenfolge ist der Westflügel ein **Gewirr aus Kammern** (je 6 × 6 m, viele Türen, keine
 > Nummern), Mitte und Ostflügel sind große offene Böden. Hinauf führt eine **steile Treppe im Treppenhaus West** vom
-> Obergeschoss zur verschlossenen Kniestocktür; der Aufzug hält (noch) nicht oben. Der Kopf liegt auf dem roten Kreuz
+> Obergeschoss zur verschlossenen Kniestocktür; der Aufzug hält erst oben, wenn man ihn einmal von dort bedient hat
+> (Abkürzung, 7.10, ZIM-42). Der Kopf liegt auf dem roten Kreuz
 > des Plans (Kammer im Südwesten). Aussehen: grobe Bohlen an Boden, Wänden und Decke (2,2 m), **alle Türen 2,1 m** wie
 > im übrigen Hotel (bis 27.10. 1,65 m, nur geduckt), in jeder Kammer ein **Stützbalken** mit Balkenkreuz auf knapp 2 m und Kopfbändern unter 45°, an den
 > Außenwänden ein Kniestock (1,3 m) mit **Dachschräge** und **Fenstern mit Holzkreuz**, durch die kaltes Licht fällt,
@@ -2687,7 +2689,9 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
   6.19 (7), ist noch nicht gebaut). Debug: `--kraehen=gunst|stehlen|nest|werfen|futter|schluessel`.
 - **Nest am Dach (nicht gebaut):** direkt vor einem **Dachfenster** im Dachgeschoss, mit ausgestrecktem Arm zu erreichen – kein
   Klettern auf dem Dach. Darin liegt der **Ring** eines Gastes: Er hat ihn draußen auf einem Tisch liegen lassen, eine
-  Krähe hat ihn geholt. Wessen Ring und welcher Auftrag: offen (ZIM-50).
+  Krähe hat ihn geholt. **Entschieden 2026-11-03 (ZIM-50):** Es ist der **Ehering** eines verheirateten Gastes. Der
+  Gast bittet zuerst – seltene Bitte „Wiederfinden“ (6.14) – und erwähnt, dass draußen Krähen um den Tisch waren.
+  Lohn: Freundschaft und ein kleines Geschenk. Welcher Gast: beim Bau aus den Haushalten (6.20) wählen.
 
 **Zu klären**
 - **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (ZIM-100).
@@ -2811,6 +2815,12 @@ Ermangelung eines echten.
 - **Marion** (2.8) hört, wie man ihren Vater nennt. Sie sagt nichts und geht hinaus – ein leiser Hinweis für alle,
   die sie beobachten (M13).
 - **Stirbt Hugo vor der ersten Sichtung**, gibt Liesel dem Monster den Namen, über das Buch Hiob statt über den Druck.
+
+**Das Foto (entschieden 2026-11-03, ZIM-101, noch nicht gebaut)**
+- **Paula Jansen** (H30), die über das Hotel schreibt, fotografiert den Leviathan beim **ersten Angriff, den sie
+  mitbekommt** – das erste echte Bild statt Gerücht und Druck.
+- Das Foto hängt danach an der **Fotowand** (5.14), man kann es ansehen ([E]); die **Skeptiker werden still**.
+- Stirbt Paula vorher, gibt es kein Foto (Vorschlag).
 
 ### 4.33 Die vier Modi des Leviathan (entschieden 2026-10-25)
 > **Umgesetzt (2026-10-27):** Plan der Modi je Spiel, alle vier Modi, Kellerrunde, Geräusche ohne Körper, Notausgang
@@ -3591,6 +3601,8 @@ Benutzen geht nicht; beim Ansehen nur ein Hinweis: „Die Erde ist schon gelocke
 - Die Gedenktafel trägt **nur die Vermissten**; vor ihr steht **je Vermisstem eine Grabkerze**. Die Beerdigten haben
   ihr Grablicht am Kreuz. Gedenken ([E] an der Gedenkstätte oder vor einem Grab) bleibt wie am Lobbytischchen: einmal
   je Spieltag spürbar weniger Schock.
+- **Kein eigenes Grab und kein Gedenkstein je Vermisstem** (verworfen 2026-11-03, ZIM-103): Die Gedenktafel mit einer
+  Kerze je Name genügt.
 - **Die Grablichter gehen nie aus (geändert 2026-10-25)** – kein Warnsignal, nichts anzuzünden.
 - **Gespeichert:** die Gräber (Platz, Gast, Todestag, selbst beerdigt) und anstehende Trauerfeiern; Tafel und Lichter
   ergeben sich aus den Toten. Debug: `--beerdigen[=gast]`, `--trauerfeier`.
@@ -5130,8 +5142,9 @@ Alle drei sind **interaktive Objekte** mit derselben Schnittstelle `interact(act
 > eine Deckenleuchte, links ein **Bedienfeld** aus Messing (drei Etagenknöpfe untereinander, darunter Tür auf / Tür zu,
 > darunter Alarm). Motor und Glocke an Abfahrt und Ziel machen das Monster neugierig, der **Alarm** ist laut und
 > erschreckt Gäste. **Aufzug 1 fährt schon jetzt** – die Reparatur unten kommt später als Sperre davor. **Aufzug 2 ist
-> tot** (7.10), sieht aber gleich aus; seine Anzeige wandert ab und zu ohne Kabine. Noch offen: Gäste und Monster im
-> Aufzug (Falle, Nothalt), Notruftelefon, Halt in U2 und im Dachgeschoss.
+> tot** (7.10), sieht aber gleich aus; seine Anzeige wandert ab und zu ohne Kabine. Noch offen: Notruftelefon, Halt in
+> U2. Gäste und Monster fahren nicht mit, das Dachgeschoss wird als Abkürzung freigeschaltet (entschieden 2026-11-03,
+> 7.10).
 >
 > **Noch nicht gebaut:** die Reparatur und **U2** (bisher „Tiefkeller“, umbenannt 2026-10-27; Plan steht aus).
 > **Heizraum** (7.9) und **Maschinenraum** liegen im Untergeschoss (U1). Die Ordnung von Keller und U2 – Schlösser,
@@ -5363,10 +5376,9 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   letzten Minute lässt es nach; keine Verletzung als Wert, kein Blut. Die Bedrohungen springen nicht hinterher, sie
   nehmen die Treppe, und die Verfolgung bricht ab wie an einer Treppe (4.20: der Balkon gehört zum Obergeschoss, der
   Garten zum Erdgeschoss). Fehlt im Plan ein Balkon, kann man dort auch nicht hinüber.
-- **Katzenraum** über der Bar: mit **Kratzbäumen** und **mehr Katzen** als nur den dreien von 6.11. Er ist der
-  **einzige Raum, in dem man wirklich vor allem sicher ist** – Katzen waren immer lieb: Monster und Lakengeist
-  kommen nicht hinein. *Der Kürbismann kommt doch hinein, und Ausharren dort ist die stärkste Strategie – vertagt
-  (4.20).*
+- **Katzenraum** über der Bar: mit **Kratzbäumen** und **mehr Katzen** als nur den dreien von 6.11. **Kein
+  Schutzraum** (entschieden 2026-11-03, ZIM-38, 4.20): Alle Bedrohungen kommen hinein. ~~Er ist der einzige Raum, in
+  dem man wirklich vor allem sicher ist – Monster und Lakengeist kommen nicht hinein.~~
 - **Bibliothek** im Westflügel (ca. 40 × 18 m) über dem Küchenblock.
   **Bücherregale (entschieden und gebaut 2026-11-01, ZIM-152):** im Look der Kommode im Flur, offene Fächer mit 4 oder
   5 Ebenen (2,10 bzw. 2,56 m hoch, Fächer 46 cm – Wunsch des Nutzers: 4 Ebenen = 2,10 m), Zwischenwände etwa alle 1 oder 2 m – je Kombination eine Planfarbe, Länge frei; geht
@@ -5390,12 +5402,12 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
     laufendes Wasser ist Lärm und übertönt zugleich. Wer oben mit Bad wohnt, ist wohlhabender – Gerede und Neid (6.2).
   - **Mehrbettzimmer** (6.20): Paare sind wach füreinander Zeugen (der Lakengeist bleibt weg), schlafend nicht.
     Verschwindet einer, bleibt der andere als Zeuge und Trauernder zurück (4.18).
-  - **Katzenraum:** Verängstigte Gäste flüchten dorthin; wer sich dort versteckt, verliert nur Zeit (Speichern
-    weiter nur in Zimmer 13, die Woche läuft weiter).
+  - ~~**Katzenraum:** Verängstigte Gäste flüchten dorthin; wer sich dort versteckt, verliert nur Zeit (Speichern
+    weiter nur in Zimmer 13, die Woche läuft weiter).~~ Entfällt mit dem Schutz (2026-11-03).
 > **Umgesetzt (2026-10-20):** Das Obergeschoss steht im Spiel: Zimmer mit Bädern, Balkonen mit Geländern, Suiten über
 > Verbindungstüren; Galerien mit Geländer um die Lufträume von Lobby und Partyraum; Bibliothek offen. Zimmer ohne
 > Schalter im Plan bekommen einen neben der Tür. **Katzenraum:** acht Kratzbäume, vier eigene Katzen (Luna, Fussel,
-> Tiger, Mausi), Monster und Lakengeist kommen nicht hinein bzw. zu niemandem, der drin ist. Das Kartenblatt
+> Tiger, Mausi), Monster und Lakengeist kommen nicht hinein bzw. zu niemandem, der drin ist (fällt weg, 2026-11-03). Das Kartenblatt
 > „Obergeschoss“ zeigt das ganze Stockwerk und liegt an der Rezeption.
 > **Treppenhäuser (entschieden 2026-10-20):** Was auf der Ebene eines Stockwerks an der Wand gegenüber der
 > Treppenhaustür hängt, sitzt über dem Wendepodest – eine halbe Etage höher. Gilt für jedes Treppenhaus in jeder
@@ -5550,7 +5562,7 @@ das Geheimnis (2.3: Josef, Kessel, Abkommen) liegt ohnehin unten.
 | **Untergeschoss** | Treppenhäuser, Aufzug | Heizraum, Maschinenraum, Wäscherei, Müllraum (unten) |
 | **Erdgeschoss** | | Lobby, Bar, Partyraum, Küche, Garten, Schwimmbad, Zimmer |
 | **1. Obergeschoss** | | Zimmer, Balkone, Katzenraum (7.7) |
-| **Dachgeschoss** (gebaut 2026-10-24) | steile Treppe im Treppenhaus West bis zur verschlossenen Kniestocktür; der Aufzug hält (noch) nicht oben | ganz **Dachboden** (4.21): im Westflügel ein Gewirr aus Kammern, Mitte und Osten offene Böden; dort der Kopf des Kürbismanns. Weitere Kandidaten: Spinnweben-Zone (5.4), Séance (6.10) |
+| **Dachgeschoss** (gebaut 2026-10-24) | steile Treppe im Treppenhaus West bis zur verschlossenen Kniestocktür; der Aufzug hält oben erst als freigeschaltete Abkürzung (7.10) | ganz **Dachboden** (4.21): im Westflügel ein Gewirr aus Kammern, Mitte und Osten offene Böden; dort der Kopf des Kürbismanns. Weitere Kandidaten: Spinnweben-Zone (5.4), Séance (6.10) |
 
 **Jede Ebene hat einen Hausherrn.** Weil jede Bedrohung ihr eigenes Lockmittel hat – das Monster die Dunkelheit,
 der Lakengeist Fenster und Schwäche, der Kürbismann den Spaß –, ergibt sich eine Ordnung, die der Spieler lernen kann:
@@ -5588,8 +5600,14 @@ voneinander; U2 gehört allein dem Monster.
 **Leere Räume** (Speisesaal, Toiletten, Technikraum, Kühlräume, Bibliothek, Balkone …): werden beim Neuzeichnen des
 Plans **einzeln entschieden** (2026-10-21) – je Raum, ob er eine Funktion bekommt, als Atmosphäre bleibt oder entfällt.
 
-**Zu klären:** Plan für U2 · ob der Aufzug im Dachgeschoss hält (4.21) · die
-Dachform (4.21).
+**Aufzug im Dachgeschoss und Mitfahrer (entschieden 2026-11-03, ZIM-42, noch nicht gebaut)**
+- **Halt im Dachgeschoss als Abkürzung:** Anfangs hält der Aufzug oben nicht. Wer über die Treppe West und die
+  Kniestocktür (4.21) hinaufgekommen ist und ihn **einmal von oben bedient** (Rufknopf am Dachgeschoss), schaltet den
+  Halt frei – danach fährt er dauerhaft auch dorthin. Das Kniestock-Rätsel bleibt so der erste Weg hinauf.
+- **Niemand fährt mit:** Gäste nehmen die Treppe, das Monster fährt nicht Aufzug; Motor und Glocke locken es nur an
+  (wie gebaut, 7.4).
+
+**Zu klären:** Plan für U2 · die Dachform (4.21).
 
 ### 7.11 Pool-Umkleiden: Spinde und Bänke (entschieden und umgesetzt 2026-10-31, ZIM-145)
 
@@ -6012,7 +6030,7 @@ Müdigkeit, Lichtschalter, Aufträge der Gäste, Erfolge, Masken teils).
    Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
 3. U2 planen und bauen, Fahrstuhl reparieren (ein Schacht), Lager (7.4, 7.10) · Maschinen- und Müllraum im
    Untergeschoss · Gäste gehen mit Grund hinunter (7.10)
-4. Drei Bedrohungen: eine je Ebene und außer Hörweite, gleiche Sicht für den Kürbismann (4.20) · vertagt: Katzenraum
+4. Drei Bedrohungen: eine je Ebene und außer Hörweite, gleiche Sicht für den Kürbismann (4.20) · Katzenraum kein Schutzraum mehr (ZIM-38)
 5. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter der
    Leviathanmauer (ab etwa Tag 15), Ritual, Schädel/Axt/Jeansjacke als Deko (4.21)
 6. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
