@@ -46,12 +46,13 @@ const GRAVEL_TEX := "res://assets/textures/Gravel022/Gravel022_basecolor.jpg"
 const GRAVEL_NORMAL := "res://assets/textures/Gravel022/Gravel022_normalogl.jpg"
 const GRAVEL_METERS := 1.5
 const GRAVEL_NORMAL_STRENGTH := 1.5
-## Randsteine an den Kieswegen (Curbs, ZIM-173): vorerst der Terrazzo der Säulen, aufgehellt und stumpf, mit
-## deren Poren – ein Granit-Set fehlt noch
-const CURB_TEX := "res://assets/textures/TerrazzoDark_01/TerrazzoDark_01_basecolor.jpg"
-const CURB_METERS := 0.6
-const CURB_TINT := Color(2.3, 2.5, 2.75)
-const CURB_PORES_STRENGTH := 1.0
+## Randsteine an den Kieswegen (Curbs, ZIM-173): Granite002B (ambientCG, CC0, grau-weiß gesprenkelt, rau), Farbbild
+## und Normal Map je 1024², CURB_METERS je Kachel, leicht vergraut (draußen verwittert), stumpf – nass glänzt er
+const CURB_TEX := "res://assets/textures/Granite002B/Granite002B_2K-JPG_Color.jpg"
+const CURB_NORMAL := "res://assets/textures/Granite002B/Granite002B_2K-JPG_NormalGL.jpg"
+const CURB_METERS := 0.4
+const CURB_TINT := Color(0.66, 0.7, 0.76)
+const CURB_NORMAL_STRENGTH := 1.5
 ## Holzdeck auf Terrassen und Balkonen (Deck, ZIM-127): so tief liegt die dunkle Platte unter der Oberkante der Bretter,
 ## Fuge zur Hauswand und zur Hecke bzw. zum Geländer
 const DECK_DROP := 0.04
@@ -1135,10 +1136,8 @@ func _materials() -> void:
 	_deck_under = Mat.psx(Color(0.07, 0.06, 0.05), "concrete", 1.0, Color.BLACK, 0.0, false)
 	_deck_under.set_meta("floor", "wood")
 	Mat.wettable(_gravel, WET_GLOSS.z)
-	_curb = Mat.photo(CURB_TEX, CURB_METERS, PILLAR_PORES, "", 0.0, CURB_TINT).duplicate()
-	_curb.set_shader_parameter("normal_tiling", CURB_METERS / PILLAR_PORES_METERS)
-	_curb.set_shader_parameter("normal_strength", CURB_PORES_STRENGTH)
-	_curb.set_shader_parameter("cavity", PILLAR_PORES_CAVITY)
+	_curb = Mat.photo(CURB_TEX, CURB_METERS, CURB_NORMAL, "", 0.0, CURB_TINT).duplicate()
+	_curb.set_shader_parameter("normal_strength", CURB_NORMAL_STRENGTH)
 	Mat.wettable(_curb, WET_GLOSS.y)
 	_ceramic = Mat.psx(Color(0.88, 0.88, 0.86))
 	_doormat = Mat.psx(Color(0.4, 0.3, 0.18))

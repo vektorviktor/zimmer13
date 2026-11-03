@@ -262,6 +262,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `Tiles133B` (ambientCG, CC0) | Küchenwände bis unter die Decke (Haut der Seite `kitchen`, `_kitchen_tiles`; ohne Vertäfelung) | hellblaue 15-cm-Fliesen, 1,8 m, AO eingebacken |
 | `WoodFloor014` (ambientCG, CC0) | Speisesaal, Boden (`_dining_floor`, `DINING_ROOM`; Wände bleiben tapeziert) | Fischgrätparkett, Stäbe 7,5 × 30 cm, `DINING_FLOOR_METERS` 1,2 m; AO-Karte einfarbig, verworfen |
 | `Gravel022` (ambientCG, CC0) | Kieswege (`gravel`) | grauer Kies, `GRAVEL_METERS` 1,5 m, AO eingebacken, `GRAVEL_NORMAL_STRENGTH` 1,5; Rauheit verworfen (glänzte trocken) |
+| `Granite002B` (ambientCG, CC0) | Randsteine (`Curbs`, `_curb`) | grau-weiß gesprenkelt, rau; `CURB_METERS` 0,4 m, kühl abgedunkelt (`CURB_TINT`, sonst im Abendlicht beige), `CURB_NORMAL_STRENGTH` 1,5; kein AO im Set, Rauheit weggelassen (stumpf) |
 | `StoneFloor_02` | Außenwände (Haut der Seite `outside`, `_facade`) | |
 | `Wood_Panels_01` | alle Holzdecken (`_ceiling`, `_room_ceiling`), Aufzugskabine | aufgehellt `CEILING_SHADE`/`ROOM_CEILING_SHADE` |
 | `WoodenFloor_03` | alle Holzböden (`_wood_floor`) | |
@@ -794,8 +795,8 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   `SAMPLE`-Schritten abgetastet, Läufe wo daneben Rasen ist; Steine auf der Rasenseite (Weg bleibt so breit wie im
   Plan). Außenecken: Lauf entlang x über die Ecke verlängert; Innenecken/Kreuzungen: Läufe entlang z an denen
   entlang x gekürzt. Je Lauf Steine `LENGTH` mit Fuge, Höhe/Neigung/Drehung gestreut, `SUNK_CHANCE` abgesackt
-  (fester Zufall). `SurfaceTool` je Kachel, keine Kollision, nicht im NavMesh. Material `_curb`: vorerst
-  `TerrazzoDark_01` aufgehellt mit den Poren der Säulen (`CURB_*`), nass glänzend wie Stein.
+  (fester Zufall). `SurfaceTool` je Kachel, keine Kollision, nicht im NavMesh. Material `_curb`: Granit
+  `Granite002B` (`CURB_*`), nass glänzend wie Stein.
 - **Schrift im Haus:** Schilder über den Türen (Zimmernummern, BAR, PARTY, GARTEN, POOL, TREPPENHAUS, AUSGANG) sind
   seit 31.10. weg; beschriftet sind nur die Gästezimmertüren (Messingplakette, `RoomPlate`) und der Aufzug. Buchstaben als `TextMesh` bekommen Licht wie alles andere. Schrift Cinzel Bold (SIL OFL 1.1,
   `assets/fonts/OFL.txt`), gebaut von `tools/build_font.py`: TextMesh verträgt keine überlappenden Konturen, deshalb
