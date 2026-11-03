@@ -129,7 +129,10 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     übergangen
 ## 64: Bestenlisten der Videoautomaten (Gruppe arcades, ZIM-72): je Gerät die Einträge [Kürzel, Punkte, wer] –
 ##     ohne Eintrag stehen nur die alten Einträge von früher darin
-const VERSION := 64
+## 65: Beziehung nicht erschleichen (Spielkonzept 6.18, 5; ZIM-163): je Gast talk_day, talks_today, filler_day,
+##     hostile_day, an Gegenständen „got“ (von wem bekommen) – ältere Stände laden weiter, ohne Markierung und mit
+##     vollen Tagesbudgets
+const VERSION := 65
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -618,6 +621,7 @@ func collect() -> Dictionary:
 			"corpse": g.corpse, "buried": g.buried, "ghost_visits": g.ghost_visits, "seen": g.seen_sights, "experiences": g.experiences,
 			"drunk": g.drunk,
 			"deeds": g.deeds, "chat_day": g.chat_day, "chats_today": g.chats_today,
+			"talk_day": g.talk_day, "talks_today": g.talks_today, "filler_day": g.filler_day, "hostile_day": g.hostile_day,
 			"wound": g.wound, "wound_left": g.wound_left, "wound_bed": g.wound_bed, "wound_facts": g.wound_facts,
 			"wound_told": g.wound_told, "wound_visited": g.wound_visited,
 			"claims": g.claims, "stances": g.stances,
@@ -700,10 +704,13 @@ func _collect_group(group: String, fn: Callable) -> Array:
 
 func _item_data(item: Item) -> Dictionary:
 	var e := item.global_rotation
-	return {
+	var d := {
 		"kind": int(item.kind), "extra": item.create_extra(), "pos": _v(item.global_position),
 		"rot": _v(e), "owner": item.owner_id, "lit": item.lit, "hung": item.hung,
 	}
+	if item.got_from != "":
+		d["got"] = item.got_from
+	return d
 
 
 ## Gegenstand in der Tasche: ohne Lage – er liegt beim Spieler
@@ -830,6 +837,10 @@ func apply(data: Dictionary) -> void:
 		g.deeds = (d.get("deeds", {}) as Dictionary).duplicate()
 		g.chat_day = int(d.get("chat_day", 0))
 		g.chats_today = int(d.get("chats_today", 0))
+		g.talk_day = int(d.get("talk_day", 0))
+		g.talks_today = int(d.get("talks_today", 0))
+		g.filler_day = int(d.get("filler_day", 0))
+		g.hostile_day = int(d.get("hostile_day", 0))
 		g.wound = String(d.get("wound", ""))
 		g.wound_left = float(d.get("wound_left", 0.0))
 		g.wound_bed = float(d.get("wound_bed", 0.0))
@@ -932,6 +943,7 @@ func apply(data: Dictionary) -> void:
 	social.sleep_active = bool(sd.get("sleep_active", false))
 	social.night_seed = int(sd.get("night_seed", social.night_seed))
 	social._arrival_timer = float(sd.get("arrival_timer", -1.0))
+	social._forgive_day = -1   # Vergebung zählt ab dem geladenen Tag (6.18, 5)
 	social.pals.load_state(sd.get("pals", {}))
 	social.talk.load_state(sd.get("talk", {}))
 	social.requests.load_state(sd.get("requests", {}))
@@ -963,6 +975,7 @@ func _apply_group(group: String, list: Array, fn: Callable) -> void:
 func _make_item(entry: Dictionary) -> Item:
 	var item := Item.create(int(entry["kind"]) as Item.Kind, String(entry.get("extra", "")))
 	item.owner_id = String(entry.get("owner", ""))
+	item.got_from = String(entry.get("got", ""))
 	if item.has_wick():   # brennt oder nicht (Spielkonzept 5.12); in Kürbis und Totenkopf sagt der Zusatz, ob eine Kerze steckt
 		if bool(entry.get("lit", false)) and not item.lit:
 			item.light_up(false)

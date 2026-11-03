@@ -135,6 +135,8 @@ const BAR_DRINK := 0.7
 ## Spieler unter dem Bettlaken (5.9): so dunkel (Director.light_at), dass er einen Gast wirklich erschreckt – und so sehr
 const DISGUISE_DARK := 0.25
 const DISGUISE_FRIGHT := 20.0
+## Hat der Spieler ihm selbst Angst gemacht, bringt Beruhigen so lange keine Beziehung (Spielkonzept 6.18, 5)
+const STOKED_TIME := 2.0 * Calendar.HOUR
 const WEAK_FEAR := 0.6
 const HIT_FLEE_LINES := ["Hilfe! Der ist verrückt!", "Lass mich in Ruhe!", "Au! Hör auf!"]
 const DECO_KINDS := [Item.Kind.CARVED_PUMPKIN, Item.Kind.SKULL, Item.Kind.SHEET_GHOST, Item.Kind.LIGHT_STRING, Item.Kind.BROOM,
@@ -208,7 +210,13 @@ var experiences: Array = []
 ## Taten zwischen ihm und dem Spieler (6.3): games, gifts_to, gifts_from, hostile, revenge
 var deeds := {}
 var chat_day := 0            ## Tag des letzten Plauderns
-var chats_today := 0         ## nur die ersten zwei Plaudereien am Tag zählen voll
+var chats_today := 0         ## Beziehungsbudget (6.18, 5): nur die ersten zwei freundlichen Gesten am Tag zählen voll
+var talk_day := 0            ## Gesprächsbereitschaft (6.18, 5): Tag der letzten Gespräche …
+var talks_today := 0         ## … und so viele davon (Gespräch und Telefon zusammen, Talk.talks_left)
+var filler_day := 0          ## Tag, an dem er zuletzt Füllmaterial geschenkt bekam (Erwachsene, 6.18, 5)
+var hostile_day := 0         ## Tag der letzten feindseligen Tat des Spielers (Vergebung, 6.18, 5)
+## Spielzeit, zu der der Spieler ihm zuletzt selbst Angst gemacht hat (Beruhigen, 6.18, 5) – nicht gespeichert
+var stoked_at := -INF
 var attack_cooldown := 0.0
 var threatened := false      ## hat dir schon gedroht – beim nächsten Mal schlägt er zu
 var sleepless := false       ## Kind, das in dieser Nachtruhe nicht schlafen kann (Spielkonzept 6.13)
@@ -716,6 +724,16 @@ func enter_shelter(room_center: Vector3) -> void:
 	_timer = randf_range(25.0, 45.0)
 	fear = maxf(0.0, fear - 30.0)
 	state = State.SHELTER
+
+
+## Der Spieler hat ihm selbst Angst gemacht (Monster-Gespräch, Schauergeschichte, Schlag, Laken im Dunkeln): Beruhigen
+## bringt dann STOKED_TIME lang keine Beziehung (Spielkonzept 6.18, 5).
+func scared_by_player() -> void:
+	stoked_at = Game.director.elapsed if Game.director else 0.0
+
+
+func stoked_recently() -> bool:
+	return Game.director != null and Game.director.elapsed - stoked_at < STOKED_TIME
 
 
 ## Harmloser Angriff: zu Tode erschrocken, aber nicht geholt – rennt davon. Ist er verletzt (auch gerade eben beim
@@ -3424,6 +3442,7 @@ func _notice_disguise(delta: float) -> void:
 		say("Ein Gespenst! Hihi – buuuh!")
 	elif Game.director and Game.director.light_at(p.global_position + Vector3.UP) < DISGUISE_DARK:
 		fear = minf(100.0, fear + DISGUISE_FRIGHT * (1.2 - float(profile["brave"])))
+		scared_by_player()
 		say("Aaah! … Ach so, nur ein Kostüm. Wer ist da drunter?")
 	else:
 		say("Huch! … Ach, ein Kostüm.")

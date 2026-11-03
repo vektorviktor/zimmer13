@@ -14,6 +14,17 @@ extends Node
 ##     Angst nach dem Tratsch des Erzählers und je Station halb so stark (Freundesnetz, 6.18, 1; GuestPals.net_strength).
 ## Gespeichert: log, Zähler, Verdacht nach Einbrüchen (social.talk); je Gast claims und stances.
 
+## Beziehungsbudget (6.18, 5): so viele freundliche Gesten am Spieltag zählen voll (Plaudern, Beruhigen, Monster-Gespräch,
+## Telefon, Anlässe zusammen), jede weitere nur noch zu diesem Anteil
+const FULL_PER_DAY := 2
+const OVER_BUDGET := 0.15
+## Gesprächsbereitschaft (6.18, 5; entschieden 2026-11-03): so viele Gespräche am Spieltag (Gespräch und Telefon
+## zusammen) – ab „nett“, bei Kindern und ab „verfeindet“ (nur Entschuldigen) ohne Grenze. Verärgerte brechen nach
+## SHORT_TALK Antworten ab.
+const TALKS_PER_DAY := {Social.Tier.ANGRY: 2, Social.Tier.ANNOYED: 2, Social.Tier.NEUTRAL: 4}
+const SHORT_TALK := 3
+const BUSY_LINES := ["Ich hab zu tun.", "Nicht schon wieder. Ich hab zu tun.", "Jetzt nicht. Ich hab zu tun."]
+
 ## Geschichten über Spuk (mit Ort) und über Funde – Spieler-Erlebnisse und Lügen
 const SPOOK := ["monster", "ghost", "pumpkin"]
 const STORIES := ["monster", "ghost", "pumpkin", "corpse", "blood", "ghost_visit", "attic"]
@@ -269,14 +280,40 @@ func said(g: Guest, topic: String) -> Dictionary:
 	return {}
 
 
-## Freundliche Geste (6.18): zählt am Spieltag nur CHATS_PER_DAY-mal voll – mit Plaudern zusammen.
+## Freundliche Geste (Beziehungsbudget, 6.18, 5): zählt am Spieltag nur FULL_PER_DAY-mal voll – Plaudern, Beruhigen,
+## Monster-Gespräch, Telefon und Anlässe zusammen; danach bringt sie kaum noch etwas. Am Morgen ist es wieder voll.
 func friendly(g: Guest, amount: float) -> void:
 	var today := Calendar.today()
 	if g.chat_day != today:
 		g.chat_day = today
 		g.chats_today = 0
 	g.chats_today += 1
-	Game.social.change_relation(g, amount if g.chats_today <= DialogUI.CHATS_PER_DAY else amount * 0.15)
+	Game.social.change_relation(g, amount if g.chats_today <= FULL_PER_DAY else amount * OVER_BUDGET)
+
+
+## Gesprächsbereitschaft (6.18, 5): so viele Gespräche hat er heute noch (-1 = ohne Grenze).
+func talks_left(g: Guest) -> int:
+	var limit := -1 if g.is_child() else int(TALKS_PER_DAY.get(Social.tier(g), -1))
+	if limit < 0:
+		return -1
+	return maxi(0, limit - (g.talks_today if g.talk_day == Calendar.today() else 0))
+
+
+## Ein Gespräch beginnt (von Angesicht oder am Telefon): false, wenn er heute schon genug mit dir geredet hat.
+func start_talk(g: Guest) -> bool:
+	if talks_left(g) == 0:
+		return false
+	var today := Calendar.today()
+	if g.talk_day != today:
+		g.talk_day = today
+		g.talks_today = 0
+	g.talks_today += 1
+	return true
+
+
+## Verärgerte (genervt, wütend) brechen nach SHORT_TALK Antworten ab („Ich hab zu tun.“, 6.18, 5).
+static func cuts_short(g: Guest, steps: int) -> bool:
+	return steps >= SHORT_TALK and not g.is_child() and Social.tier(g) in [Social.Tier.ANNOYED, Social.Tier.ANGRY]
 
 
 # --- Erzählen und Lügen -----------------------------------------------------------------------
@@ -337,6 +374,7 @@ func _believed(g: Guest, claim: Dictionary, keys: Dictionary) -> String:
 		return _fill(THIEF_BELIEVE.pick_random(), g, keys)
 	var shared := g.remembers(String(SAME_EXPERIENCE.get(kind, "-")))
 	g.fear = minf(100.0, g.fear + STORY_FEAR * (1.2 - float(g.profile["brave"])) * (CHILD_FEAR if g.is_child() else 1.0))
+	g.scared_by_player()
 	claim["stance"] = "wary"
 	g.clear_stance("careless")
 	g.set_stance("wary", STANCE_TIME)
@@ -510,6 +548,7 @@ func answer(g: Guest, question: Dictionary, key: String) -> Dictionary:
 				g.clear_stance("careless")
 				g.set_stance("wary", STANCE_TIME)
 				g.fear = minf(100.0, g.fear + 10.0 * (1.2 - float(g.profile["brave"])))
+				g.scared_by_player()
 				line = "Ich wusste es. Ich bleib heute in der Nähe meines Zimmers." if t != "Skeptiker" else "Hm. Gut zu wissen."
 				friendly(g, 2.0)
 			elif key == "nothing":

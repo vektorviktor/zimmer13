@@ -3697,7 +3697,7 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 | **Verfeindet** | −80 … −55 | Redet nur noch, wenn du dich entschuldigst; lügt am Telefon |
 | **Stark verfeindet** | ≤ −80 | Nur mit Taten (unten). Droht dir und **schlägt zu**, wenn er dich allein erwischt |
 
-- **Langsamer nach oben:** Je besser man schon steht, desto weniger bringt jede nette Tat (bei 50 gut die Hälfte). Plaudern zählt pro Tag nur zweimal voll, danach kaum noch – das soll für alle freundlichen Gesten zusammen gelten, dazu eine Gesprächsbereitschaft nach Stufe (6.18).
+- **Langsamer nach oben:** Je besser man schon steht, desto weniger bringt jede nette Tat (bei 50 gut die Hälfte). Alle freundlichen Gesten zusammen zählen pro Tag nur zweimal voll, danach kaum noch; dazu eine Gesprächsbereitschaft nach Stufe (6.18, 5; gebaut 2026-11-03).
 - **Die Extreme brauchen Taten, nicht nur Punkte:**
   - **Guter Freund:** mindestens 3 gemeinsame Partien (Mäxchen oder Schach), 2 Geschenke an ihn **und** 1 Gegenstand von ihm (Deko geschenkt bekommen oder gekauft) – Austausch in beide Richtungen. Bis dahin bleibt er bei „befreundet“ stehen.
   - **Stark verfeindet:** mindestens 4 feindselige Taten von dir (Deko klauen, beleidigen, rammen, schlagen) **und** er hat sich mindestens einmal gerächt (dich bestohlen, angerempelt oder geschlagen). Bis dahin bleibt er bei „verfeindet“.
@@ -3712,13 +3712,15 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 - **Geld** als Währung (einziger abstrakter Besitz, siehe 3.2) – Kaufen und Verkaufen von Deko & Gegenständen.
 - Zusätzlich **Tausch** (Gegenstand gegen Gegenstand) und **Gefallen**.
 - Handel ist physisch: Der Spieler muss den Gegenstand in der Hand zum Gast bringen bzw. bekommt ihn in die Hand gedrückt.
+- Was man von einem Gast gekauft (oder erbeten) hat, nimmt er als Geschenk nicht zurück – Schenken und Zurückkaufen
+  bringt keine Beziehung (6.18, 5; 2026-11-03).
 - Offen: Woher kommt Geld? (Startgeld, Fundstücke, Verkauf von Kürbissen, Aufträge für Gäste?)
 - Gäste haben Bedürfnisse/Wünsche (z. B. „Ich brauche Batterien“, „Bring mir etwas aus der Küche“).
 
 ### 6.5 Panik
 - Gäste können **vom Monster erfahren** (eigene Sichtung, Gerüchte, Gespräch mit dem Spieler).
 - Ein Gast in **Panik**: rennt umher, schließt sich ein (Feinde schließen auch vor dem Spieler ab, 6.18), handelt nicht, macht Lärm, plündert evtl. Deko anderer, um sich selbst zu schützen.
-- Spieler kann Gäste **beruhigen** (Gespräch, Deko schenken) → Beziehung ↑.
+- Spieler kann Gäste **beruhigen** (Gespräch, Deko schenken) → Beziehung ↑ – nicht, wenn er die Angst kurz vorher selbst geschürt hat (6.18, 5).
 - **Über Erfahrungen sprechen:** liefert Hinweise (wo es gesehen wurde, was es mag/meidet), aber das Monster hört evtl. mit (4.7).
 
 ### 6.6 Gäste-KI & Pathfinding
@@ -4432,7 +4434,8 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 
 ### 6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)
 > Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19; Wache halten,
-> 2026-11-02, ZIM-62; das Freundesnetz als Kanal (1), 2026-11-03, ZIM-159). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> 2026-11-02, ZIM-62; das Freundesnetz als Kanal (1), 2026-11-03, ZIM-159; die Beziehung nicht erschleichen (5) ohne Neid,
+> 2026-11-03, ZIM-163). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
@@ -4528,8 +4531,27 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   geschmückt als die Nachbartüren, werden schlecht geschmückte Nachbarn neidisch – die Beziehung sinkt langsam,
   Wütende klauen. Die Paranoia kommt aus dem Mangel.
 
-**Zu klären:** Zahlen (Gespräche je Stufe, Mindestwert eines Geschenks, wie schnell Vergebung wirkt, wie stark Neid
-ist) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
+> **Entschieden 2026-11-03, umgesetzt 2026-11-03 (ZIM-163)** – alles außer Neid (ZIM-164):
+> - **Gespräche je Tag nach Stufe** (Gespräch und Telefon zusammen): genervt und wütend **2**, nach drei Antworten
+>   brechen sie ab („Ich hab zu tun.“, am Telefon legen sie auf); neutral **4**; ab „nett“ **ohne Grenze**, Freunde
+>   weisen nie ab. Kinder ohne Grenze. Wer in Panik ist, redet trotzdem (zum Beruhigen); ist das Monster unterwegs,
+>   kann man auch einen Abweisenden noch warnen. Ab „verfeindet“ bleibt wie bisher nur das Entschuldigen.
+> - **Beziehungsbudget:** Plaudern (auch am Telefon), Beruhigen, Monster-Gespräch, Anlässe und kleine Bitten zählen
+>   zusammen zweimal am Tag voll, danach zu 15 %.
+> - **Geschenke:** Für „guter Freund“ zählt ein Geschenk erst **ab Preis 5**; Füllmaterial und ein roher Kürbis zählen
+>   nie. **Füllmaterial an Erwachsene: +1, einmal am Tag je Gast** (danach nichts); Kindern bringt es wie jedes
+>   Geschenk etwas, Passendes für Verletzte (6.17) zählt wie bisher. Was man **vom Gast selbst** hat – gekauft oder
+>   erbeten (6.4) –, nimmt er nicht zurück („Das hast du doch von mir.“).
+> - **Beruhigen:** „Kurz vorher selbst geschürt“ heißt **2 Spielstunden** (Bau-Entscheidung): nach Monster-Gespräch,
+>   geglaubter Schauergeschichte, „schlechte Nacht“-Antwort, Schlag oder Erschrecken unter dem Laken (5.9) nimmt
+>   Beruhigen die Angst, bringt aber keine Beziehung.
+> - **Vergebung:** Jeden Morgen (neuer Spieltag) ohne neue feindselige Tat sinkt die Zahl der feindseligen Taten um 1 –
+>   nach ~3–5 Tagen ist er aus „stark verfeindet“ heraus (dann „verfeindet“). Keine Drift Richtung neutral; der
+>   langsame Zerfall der Extreme (6.3) bleibt.
+> - Nicht gebaut: „Wohlgesinnte reden über mehr Themen“, „Verärgerte bieten weniger Optionen“ – nur Zahl und
+>   Abbruch der Gespräche.
+
+**Zu klären:** wie stark Neid ist (ZIM-164) · wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
 
 ### 6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht

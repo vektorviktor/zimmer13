@@ -19,6 +19,8 @@ const BOND_GIFTS_TO := 2
 const BOND_GIFTS_FROM := 1
 const FEUD_HOSTILE := 4
 const FEUD_REVENGE := 1
+## Für „guter Freund“ zählt ein Geschenk erst ab diesem Preis – Füllmaterial und roher Kürbis nie (6.18, 5; 2026-11-03)
+const BOND_GIFT_PRICE := 5
 ## Ohne Kontakt wandern die Extreme zurück – so viele Punkte pro Sekunde (1,2 je Spieltag, 2.4)
 const DRIFT := 1.2 / Calendar.DAY_SECONDS
 ## Gute Freunde besuchen Zimmer 13 (Abstand zwischen zwei Besuchen), Erzfeinde lauern dir auf
@@ -301,6 +303,7 @@ var _arrival_timer := -1.0
 var _next_guest := 1                     ## laufende Nummer für IDs erzeugter Gäste
 var _visit_cooldown := 200.0
 var _feud_timer := 2.0
+var _forgive_day := -1   ## Vergebung (6.18, 5): bis zu diesem Tag gezählt (nicht gespeichert, nach dem Laden ab heute)
 var _trick_cooldown := 240.0
 var _trick: Dictionary = {}              ## Süßes oder Saures an der offenen Tür: {guest, time}
 var _round_cooldown := 120.0
@@ -762,6 +765,8 @@ func change_relation(guest: Guest, amount: float, cap: float = 100.0) -> void:
 
 func add_deed(guest: Guest, key: String, count: int = 1) -> void:
 	guest.deeds[key] = int(guest.deeds.get(key, 0)) + count
+	if key == "hostile":
+		guest.hostile_day = Calendar.today()   # Vergebung beginnt von vorn (6.18, 5)
 
 
 func deed(guest: Guest, key: String) -> int:
@@ -772,6 +777,35 @@ func deed(guest: Guest, key: String) -> int:
 func can_be_good_friend(guest: Guest) -> bool:
 	return deed(guest, "games") >= BOND_GAMES and deed(guest, "gifts_to") >= BOND_GIFTS_TO \
 		and deed(guest, "gifts_from") >= BOND_GIFTS_FROM
+
+
+## Zählt das Geschenk für „guter Freund“ (6.18, 5)? Ab BOND_GIFT_PRICE, kein Füllmaterial, kein roher Kürbis.
+static func bond_gift(item: Item) -> bool:
+	return item.price() >= BOND_GIFT_PRICE and not item.is_filler() and item.kind != Item.Kind.PUMPKIN
+
+
+## Vergebung (6.18, 5; entschieden 2026-11-03): Jeden Morgen ohne neue feindselige Tat sinkt deeds.hostile um 1 –
+## nach ein paar Tagen ist er aus „stark verfeindet“ heraus (bleibt „verfeindet“). Kein Drift Richtung neutral; der
+## Zerfall der Extreme (_update_bonds) läuft wie bisher. Mehrere Tage auf einmal (Zeitsprung) zählen einzeln.
+func _update_forgiveness() -> void:
+	var today := Calendar.today()
+	if _forgive_day < 0 or today < _forgive_day:
+		_forgive_day = today
+		return
+	if today == _forgive_day:
+		return
+	for guest in guests:
+		var mornings := today - maxi(_forgive_day, guest.hostile_day + 1)
+		if guest.dead or mornings <= 0 or deed(guest, "hostile") <= 0:
+			continue
+		guest.deeds["hostile"] = maxi(0, deed(guest, "hostile") - mornings)
+		if guest.relation <= -80.0 and not can_be_strong_enemy(guest):
+			guest.relation = -79.0
+			_announce_tier(guest, Tier.STRONG_ENEMY, Tier.ENEMY)
+		if Game.tracing:
+			print("[Budget] Vergebung: %s – noch %d feindselige Taten (%s)" % [guest.display_name, deed(guest, "hostile"),
+				relation_word(guest.relation)])
+	_forgive_day = today
 
 
 ## Stark verfeindet: du warst oft feindselig – und er hat sich schon gerächt.
@@ -2103,6 +2137,7 @@ func _update_bonds(delta: float) -> void:
 	if _feud_timer <= 0.0:
 		_feud_timer = 2.0
 		_update_feuds()
+		_update_forgiveness()
 
 
 ## Gute Freunde klopfen ab und zu an Zimmer 13 – nur, wenn du drin bist und es ruhig ist.
@@ -2596,6 +2631,7 @@ func on_player_punched(guest: Guest, dir: Vector3) -> void:
 	involved.append_array(witnesses)
 	_spread_gossip(-6.0, involved)
 	guest.stagger(dir * 3.5, true)
+	guest.scared_by_player()   # Beruhigen bringt dann eine Weile nichts (6.18, 5)
 
 
 ## Der Spieler rennt einen Gast um.

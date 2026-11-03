@@ -13,8 +13,8 @@ const GIFT_COOLDOWN := 150.0
 const NO_GIFT := [Item.Kind.KEY, Item.Kind.CHESS_BOARD, Item.Kind.DICE_CUP, Item.Kind.DARTS, Item.Kind.BAR_GAME]
 ## Gebratener Kürbis als Geschenk (Spielkonzept 3.8): so viel weniger Angst
 const ROAST_CALM := 20.0
-## Plaudern zählt am Tag nur so oft voll (6.3), danach kaum noch
-const CHATS_PER_DAY := 2
+## Füllmaterial an Erwachsene (6.18, 5): so viel Beziehung, nur einmal am Tag je Gast
+const FILLER_GIFT := 1.0
 ## Entschuldigen kostet je nach Stufe (verfeindet / stark verfeindet)
 const APOLOGY_PRICE := {Social.Tier.ENEMY: 5, Social.Tier.STRONG_ENEMY: 15}
 ## Anlässe (6.9): höchstens so viele oben im Menü; „Was hältst du von …?“ für Gäste bis so weit weg
@@ -36,6 +36,7 @@ var _woken := false
 var _scroll: ScrollContainer
 var _question := {}     ## Frage des Gastes, auf die du gerade antwortest (Talk.pick_question)
 var _done := {}         ## "gast|anlass" → Spieltag: Anlass schon genutzt (nicht gespeichert)
+var _steps := 0         ## so oft kam das Hauptmenü in diesem Gespräch – Verärgerte brechen ab (Talk.cuts_short)
 
 
 func _ready() -> void:
@@ -81,6 +82,11 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 	var to := guest.global_position - Game.player.global_position
 	Game.player.rotation.y = atan2(-to.x, -to.z)
 	Game.player.head.rotation.x = -0.05
+	_steps = 0
+	# Gesprächsbereitschaft (6.18, 5): Verärgerte reden nur ein paarmal am Tag mit dir – in Panik immer
+	if not Game.social.talk.start_talk(guest) and guest.fear < 60.0:
+		_busy()
+		return
 	# Wer etwas Schlimmes erlebt hat, erzählt zuerst davon (Spielkonzept 6.12) – das Monster hört mit (4.7)
 	var experience := guest.untold_experience()
 	var greeting_only := false   # nur ein Gruß des Verletzten – danach passt „X hat mir von dir erzählt“ noch
@@ -200,6 +206,18 @@ func open_door(p_guest: Guest, door: Door, woken: bool) -> void:
 	_option("Schon gut.", _door_close)
 
 
+## Heute schon genug geredet (6.18, 5): nur noch warnen, wenn es unterwegs ist.
+func _busy() -> void:
+	_clear()
+	_name.text = "%s – %s" % [guest.display_name, Social.relation_word(guest.relation)]
+	_say(Talk.BUSY_LINES.pick_random())
+	if Game.monster and Game.monster.is_active() and guest.hiding == null:
+		_option("Versteck dich! Es ist unterwegs!", _warn)
+	_option("Tschüss", close)
+	if Game.tracing:
+		print("[Budget] %s redet heute nicht mehr (%s)" % [guest.display_name, Social.relation_word(guest.relation)])
+
+
 ## Läuft gerade ein Gespräch an der Tür? (Debug --klopfen)
 func at_door() -> bool:
 	return _door != null
@@ -258,6 +276,11 @@ func _process(_delta: float) -> void:
 func _show_main() -> void:
 	_clear()
 	_name.text = "%s – %s" % [guest.display_name, Social.relation_word(guest.relation)]
+	if Talk.cuts_short(guest, _steps):   # Verärgerte brechen früh ab (6.18, 5)
+		_text.text += " „%s“" % Talk.BUSY_LINES.pick_random()
+		_option("Tschüss", close)
+		return
+	_steps += 1
 	var player := Game.player
 	if guest.fear >= 60.0:
 		_option("Beruhigen", _calm)
@@ -821,24 +844,20 @@ func _chat() -> void:
 	_show_main()
 
 
-## Plaudern zählt für die Beziehung (6.3) – false, solange die Pause seit dem letzten Plaudern läuft.
+## Plaudern zählt für die Beziehung (6.3) – im Beziehungsbudget (Talk.friendly, 6.18, 5); false, solange die Pause
+## seit dem letzten Plaudern läuft.
 func _count_chat() -> bool:
 	if guest.chat_cooldown > 0.0:
 		return false
 	guest.chat_cooldown = CHAT_COOLDOWN
-	var today := Calendar.today()
-	if guest.chat_day != today:
-		guest.chat_day = today
-		guest.chats_today = 0
-	guest.chats_today += 1
-	Game.social.change_relation(guest, 6.0 if guest.chats_today <= CHATS_PER_DAY else 1.0)
+	Game.social.talk.friendly(guest, 6.0)
 	return true
 
 
 ## Vor dem ersten Angriff: alles wirkt harmlos (Spielkonzept 2.1).
 func _talk_odd() -> void:
 	_say(guest.line("odd"))
-	Game.social.change_relation(guest, 1.0)
+	Game.social.talk.friendly(guest, 1.0)
 	_show_main()
 
 
@@ -861,17 +880,25 @@ func _talk_monster() -> void:
 	_show_main()
 
 
-## Über das Monster reden: Beziehung ↑, Angst ↑, und das Monster hört mit (4.7)
+## Über das Monster reden: Beziehung ↑ (im Beziehungsbudget, 6.18, 5), Angst ↑ – die hat dann der Spieler geschürt –,
+## und das Monster hört mit (4.7)
 func _monster_talked() -> void:
-	Game.social.change_relation(guest, 3.0)
+	Game.social.talk.friendly(guest, 3.0)
 	guest.fear = minf(100.0, guest.fear + 12.0 * (1.2 - float(guest.profile["brave"])))
+	guest.scared_by_player()
 	Game.social.on_monster_talk(guest)
 
 
-## Geschenk aus der Hand oder aus der Tasche
+## Geschenk aus der Hand oder aus der Tasche. Nach Wert (6.18, 5): Füllmaterial bringt Erwachsenen nur einmal am Tag
+## FILLER_GIFT, für „guter Freund“ zählt nur ein Geschenk nach Social.bond_gift, und was man von ihm selbst hat,
+## nimmt er nicht zurück.
 func _gift(item: Item) -> void:
 	if guest.is_child() and item.kind == Item.Kind.COFFEE:
 		_say("Kaffee? Den darf ich nicht trinken.")   # Kinder trinken nie Kaffee (6.13, 3.11)
+		_show_main()
+		return
+	if item.got_from == guest.id:
+		_say("Das hast du doch von mir. Behalt es ruhig.")
 		_show_main()
 		return
 	Game.social.access.on_gift(guest)   # ein versprochenes Geschenk (6.19)
@@ -889,8 +916,17 @@ func _gift(item: Item) -> void:
 		fitting = Wounds.fitting(guest.wound, item, guest.in_sickbed())
 		bonus = bonus * Wounds.GIFT_FACTOR + (Wounds.FITTING if fitting else 0.0)
 		guest.speed_healing(Wounds.GIFT_HEAL)
+	# Füllmaterial (Laub liegt gratis herum): Erwachsenen nur einmal am Tag ein bisschen – Passendes für Verletzte bleibt
+	var filler := item.is_filler() and not guest.is_child() and not fitting
+	if filler:
+		bonus = FILLER_GIFT if guest.filler_day != Calendar.today() else 0.0
+		guest.filler_day = Calendar.today()
 	Game.social.change_relation(guest, bonus)
-	Game.social.add_deed(guest, "gifts_to", Wounds.GIFT_DEEDS if guest.wound != "" else 1)
+	if Social.bond_gift(item):
+		Game.social.add_deed(guest, "gifts_to", Wounds.GIFT_DEEDS if guest.wound != "" else 1)
+	if Game.tracing:
+		print("[Budget] Geschenk %s an %s: +%.1f%s" % [item.display_name, guest.display_name, bonus,
+			", zählt für guter Freund" if Social.bond_gift(item) else ""])
 	# Er nimmt es in die Hand und trägt es heim bzw. isst es (6.17); mit vollen Händen wandert es gleich in den Vorrat
 	if not guest.receive_gift(Game.player.give_away(item)):
 		if item.deco_strength > 0.0:
@@ -907,6 +943,8 @@ func _gift(item: Item) -> void:
 			else "Eine Kerze … dann ist es heute Nacht nicht ganz dunkel. Danke.")
 	elif favorite:
 		_say("Ein %s! Mein Lieblingskürbis – woher wusstest du das?" % fav_name)
+	elif filler:
+		_say("Danke. Davon liegt ja zum Glück genug herum." if bonus > 0.0 else "Noch mehr davon? … Na gut.")
 	elif is_pumpkin and randf() < 0.6:
 		_say("%s Mein Lieblingskürbis ist ja der %s." % [guest.line("thanks"), fav_name])   # ein Hinweis für das nächste Mal
 	else:
@@ -940,7 +978,9 @@ func _ask_deco() -> void:
 		else:
 			guest.stock[kind] = int(guest.stock[kind]) - 1
 			guest.gift_cooldown = GIFT_COOLDOWN
-			Game.player.receive_item(guest.stock_item(kind))
+			var given := guest.stock_item(kind)
+			given.got_from = guest.id   # zurückschenken zählt nicht (6.18, 5)
+			Game.player.receive_item(given)
 			Game.social.add_deed(guest, "gifts_from")
 			_say(guest.line("give_deco"))
 	_show_main()
@@ -975,9 +1015,14 @@ func _round() -> void:
 	_show_main()
 
 
+## Beruhigen (6.18, 5): Beziehung nur im Beziehungsbudget und nur, wenn der Spieler die Angst nicht selbst kurz
+## vorher geschürt hat (Guest.STOKED_TIME).
 func _calm() -> void:
 	guest.fear = maxf(0.0, guest.fear - 40.0)
-	Game.social.change_relation(guest, 4.0)
+	if not guest.stoked_recently():
+		Game.social.talk.friendly(guest, 4.0)
+	elif Game.tracing:
+		print("[Budget] %s beruhigt – die Angst hast du selbst geschürt, keine Beziehung" % guest.display_name)
 	_say(guest.line("calm"))
 	_show_main()
 
@@ -1060,7 +1105,9 @@ func _buy(kind: int) -> void:
 	guest.stock[kind] = int(guest.stock[kind]) - 1
 	Game.social.change_relation(guest, 1.0)
 	Game.social.add_deed(guest, "gifts_from")
-	Game.player.receive_item(guest.stock_item(kind))
+	var bought := guest.stock_item(kind)
+	bought.got_from = guest.id   # Schenken und Zurückkaufen zählt nicht (6.18, 5)
+	Game.player.receive_item(bought)
 	_say("Gute Wahl.")
 	_show_trade()
 

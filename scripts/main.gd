@@ -87,6 +87,8 @@ extends Node3D
 ##   --netz=gast1,gast2,gast3[,lob]  Freundesnetz (6.18, 1): gast1 hat sich über dich zu beklagen (mit lob: lobt dich),
 ##                               gast2 ist sein Freund, gast3 der von gast2 – alle drei stehen vor dir; es läuft zwei
 ##                               Stationen weit, je Station halb so stark (--trace „[Netz]“)
+##   --budget=id                 Beziehung nicht erschleichen (6.18, 5): spielt mit dem Gast Gesprächsbereitschaft, Abbruch,
+##                               Beziehungsbudget, Geschenke nach Wert, Beruhigen und Vergebung durch (--trace „[Budget]“)
 ##   --call=id[,panik]|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast – mit ,panik ein Panikanruf –,
 ##                               Atmen, Verschwundener, vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --gastanruf=id[,panik]      Gäste telefonieren (4.14): der Gast steht daheim, kennt eine frische Geschichte und ruft
@@ -2030,6 +2032,8 @@ func run_debug(arg: String) -> bool:
 		_debug_pals(_arg_parts(arg, "--pals"))
 	elif arg.begins_with("--netz="):
 		_debug_net(_arg_parts(arg, "--netz"))
+	elif arg.begins_with("--budget="):
+		_debug_budget(_arg_parts(arg, "--budget"))
 	elif arg == "--knock":
 		# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
 		Game.director.first_attack_done = true
@@ -3176,6 +3180,109 @@ func _debug_net(parts: PackedStringArray) -> void:
 	get_tree().create_timer(20.0, false).timeout.connect(func() -> void:
 		if Game.tracing:
 			print("[Netz] warten noch auf ein Treffen: %d" % pals.net_pending()))
+
+
+## --budget=id: Beziehung nicht erschleichen (Spielkonzept 6.18, 5) – der Gast steht vor dir, nach 2 s laufen die Regeln
+## nacheinander durch und jede meldet „[Budget] … ok“ bzw. „FEHLER“.
+func _debug_budget(parts: PackedStringArray) -> void:
+	var g := Game.social.find_guest(parts[0]) if not parts.is_empty() else null
+	if g == null or g.is_child():
+		Game.say("--budget: einen erwachsenen Gast angeben, z. B. --budget=edna", 3.0)
+		return
+	var p := Game.player
+	g.global_position = p.global_position - p.global_transform.basis.z * 1.5
+	g._set_idle(60.0)
+	get_tree().create_timer(2.0, false).timeout.connect(func() -> void:
+		var talk := Game.social.talk
+		var ui := Game.dialog
+		var check := func(what: String, ok: bool) -> void:
+			print("[Budget] %s: %s" % [what, "ok" if ok else "FEHLER"])
+		# Gesprächsbereitschaft: neutral 4 Gespräche, das fünfte nicht
+		g.relation = 0.0
+		g.fear = 0.0
+		var opened := 0
+		for i in 5:
+			var before := g.talks_today if g.talk_day == Calendar.today() else 0
+			ui.open(g)
+			opened += 1 if g.talks_today > before else 0
+			ui.close()
+		check.call("neutral redet %d-mal am Tag" % opened, opened == 4)
+		# Verärgert: 2 Gespräche, nach drei Antworten bricht er ab
+		g.relation = -20.0
+		g.talk_day = 0
+		ui.open(g)
+		for i in Talk.SHORT_TALK + 1:
+			ui._show_main()
+		check.call("genervt bricht ab", ui._buttons.size() == 1)
+		ui.close()
+		ui.open(g)
+		ui.close()
+		check.call("genervt hat nur 2 Gespräche", talk.talks_left(g) == 0)
+		# Freunde ohne Grenze
+		g.relation = 35.0
+		check.call("freundlich ohne Grenze", talk.talks_left(g) == -1)
+		# Beziehungsbudget: zwei Gesten voll, die dritte kaum
+		g.relation = 0.0
+		g.chat_day = 0
+		var gains: Array[float] = []
+		for i in 3:
+			var r := g.relation
+			talk.friendly(g, 6.0)
+			gains.append(g.relation - r)
+		check.call("Budget %.1f / %.1f / %.1f" % gains, gains[2] < gains[1] * 0.3)
+		# Geschenke nach Wert
+		g.relation = 0.0
+		g.deeds.erase("gifts_to")
+		g.filler_day = 0
+		ui.guest = g
+		var leaves_gain: Array[float] = []
+		for i in 2:
+			var leaves := Item.create(Item.Kind.LEAVES)
+			p.receive_item(leaves)
+			var r := g.relation
+			ui._gift(leaves)
+			leaves_gain.append(g.relation - r)
+		check.call("Laub +%.1f, dann +%.1f" % leaves_gain, leaves_gain[0] > 0.0 and leaves_gain[0] <= 1.0 and leaves_gain[1] == 0.0)
+		check.call("Laub zählt nicht für guter Freund", Game.social.deed(g, "gifts_to") == 0)
+		var skull := Item.create(Item.Kind.SKULL)
+		p.receive_item(skull)
+		ui._gift(skull)
+		check.call("Totenkopf zählt für guter Freund", Game.social.deed(g, "gifts_to") == 1)
+		var own := Item.create(Item.Kind.SKULL)
+		own.got_from = g.id
+		p.receive_item(own)
+		var r0 := g.relation
+		ui._gift(own)
+		check.call("bei ihm Gekauftes nimmt er nicht", g.relation == r0 and Game.social.deed(g, "gifts_to") == 1 and (p.held == own or own.in_bag))
+		p.give_away(own).queue_free()
+		ui.guest = null
+		# Beruhigen nach selbst geschürter Angst
+		ui.open(g)
+		g.chat_day = 0
+		ui._monster_talked()
+		g.fear = 50.0
+		var r1 := g.relation
+		ui._calm()
+		check.call("geschürt: Beruhigen ohne Beziehung", g.relation == r1)
+		g.stoked_at = -INF
+		g.fear = 50.0
+		ui._calm()
+		check.call("sonst mit Beziehung", g.relation > r1)
+		ui.close()
+		# Vergebung: ein Morgen ohne Tat – aus „stark verfeindet“ heraus
+		g.deeds["hostile"] = Social.FEUD_HOSTILE
+		g.deeds["revenge"] = Social.FEUD_REVENGE
+		g.relation = -90.0
+		g.hostile_day = Calendar.today() - 5
+		Game.social._forgive_day = Calendar.today() - 1
+		Game.social._update_forgiveness()
+		check.call("Vergebung: %d Taten, %s" % [Game.social.deed(g, "hostile"), Social.relation_word(g.relation)],
+			Game.social.deed(g, "hostile") == Social.FEUD_HOSTILE - 1 and Social.tier(g) == Social.Tier.ENEMY)
+		g.hostile_day = Calendar.today()
+		Game.social._forgive_day = Calendar.today() - 1
+		Game.social._update_forgiveness()
+		check.call("frische Tat: keine Vergebung", Game.social.deed(g, "hostile") == Social.FEUD_HOSTILE - 1)
+		g.relation = 0.0)
 
 
 ## --decorate[=…]: Schmück-Aktion bzw. allein schmückender Gast (Spielkonzept 5.9), mit „hin“ steht der Spieler davor.

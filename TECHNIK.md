@@ -1230,7 +1230,23 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `change_relation` dämpft Zuwächse und deckelt, solange die Taten fehlen: `Guest.deeds` (`games`, `gifts_to`,
   `gifts_from`, `hostile`, `revenge`; `add_deed`) gegen `BOND_*`/`FEUD_*`. `_update_bonds`: Zerfall, Besuche
   (`Guest.start_visit` → `on_visit_arrived`), Erzfeinde (`_update_feuds`: Drohung, dann `Guest.start_attack`).
-  Plaudern zählt je Spieltag `CHATS_PER_DAY` mal voll.
+- **Beziehung nicht erschleichen** (Spielkonzept 6.18, 5; 2026-11-03): Beziehungsbudget `Talk.friendly` – alle
+  freundlichen Gesten (Plaudern im Gespräch und am Telefon, Beruhigen, Monster-Gespräch, Anlässe, kleine Bitten)
+  zählen je Spieltag `Talk.FULL_PER_DAY` mal voll, danach × `OVER_BUDGET` (`Guest.chat_day`/`chats_today`).
+  Gesprächsbereitschaft: `Talk.start_talk` beim Öffnen (`DialogUI.open`, `PhoneCalls._guest_answers`) zählt
+  `Guest.talk_day`/`talks_today` gegen `TALKS_PER_DAY` (genervt/wütend 2, neutral 4, sonst und bei Kindern frei;
+  in Panik redet er trotzdem) – sonst „Ich hab zu tun.“ (`DialogUI._busy`, nur Warnen bleibt). `Talk.cuts_short`:
+  Verärgerte brechen nach `SHORT_TALK` Hauptmenüs ab (`DialogUI._steps`, am Telefon `_talk["steps"]`).
+  Geschenke (`DialogUI._gift`): Füllmaterial (`Item.is_filler`) bringt Erwachsenen `FILLER_GIFT` einmal am Tag
+  (`Guest.filler_day`; Passendes für Verletzte ausgenommen), `gifts_to` nur nach `Social.bond_gift` (Preis ≥
+  `BOND_GIFT_PRICE`, kein Füllmaterial, kein roher Kürbis); `Item.got_from` (beim Kaufen und „Deko erbitten“ gesetzt,
+  gespeichert als „got“) – das nimmt er nicht zurück. Beruhigen (`_calm`, Telefon-Panik) nur mit Beziehung, wenn
+  `Guest.stoked_recently()` falsch ist: `scared_by_player()` setzt `stoked_at` bei Monster-Gespräch, geglaubter
+  Geschichte, „schlechte Nacht“-Antwort, Schlag und Laken im Dunkeln; gilt `Guest.STOKED_TIME` (2 Spielstunden,
+  nicht gespeichert). Vergebung `Social._update_forgiveness` (im 2-s-Takt von `_update_bonds`): an jedem neuen
+  Spieltag ohne Tat seit dem Vortag (`Guest.hostile_day`, gesetzt in `add_deed`) `hostile` −1; fehlt dann die
+  Bedingung für „stark verfeindet“, springt der Wert auf −79. `_forgive_day` nicht gespeichert (nach dem Laden ab
+  heute). Debug `--budget=id`, Szenario mit Stichwort „budget“.
 - **Spieler schlägt und rammt** (`player.gd`): Linksklick schlägt, wenn `_punch_target()` einen Gast im Fokus hat
   (außer bei „wütend“ erst nach Nachfrage) → `Social.on_player_punched`; Rennen gegen einen Gast (`_check_ram`) →
   `on_player_rammed`; ein Wurf trifft (3.13) → `on_player_threw_at`: `THROWN_AT` bzw. mit Zerplatzendem
@@ -2368,7 +2384,8 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   weiter wie `_update_spread` (`_try_pass`), nur ohne `TELL_RANGE`. **Panik:** `_panicky` (Angst ≥ `PANIC_FROM`,
   Mut < `PANIC_BRAVE`) ruft zuerst und auch in der Nachtruhe, Pause `PANIC_COOLDOWN`, zur Not den nächsten Nachbarn,
   der abnimmt; Angst steckt an (`PANIC_FEAR`), der Anrufer wird ruhiger. Eingehend für Zimmer 13 Art `"panic"`
-  (beruhigen: Angst −25, `Talk.friendly` 1,5). Debug `--gastanruf`, `--call=id,panik`. Telefonzentrale fehlt (4.14).
+  (beruhigen: Angst −25, `Talk.friendly` 1,5, nicht nach selbst geschürter Angst; Plaudern am Telefon ebenfalls über
+  `Talk.friendly`, Gespräche zählen zur Gesprächsbereitschaft, 6.18, 5). Debug `--gastanruf`, `--call=id,panik`. Telefonzentrale fehlt (4.14).
 - **Spieltische** (`minigames/`): `TableMatch` (CanvasLayer 15) = Basis von `DiceMatch`, `ChessMatch`, `DartMatch` und `BowlingMatch`
   (Hooks `_table`, `_gear`, `_on_seated`, `_update_game`, `_stop`, `_take_places`/`_leave_places` – Standard: hinsetzen,
   Maus frei); Einsätze über `TableStakes`. Ob gerade eins läuft: `Game.table_game_active()` (Autosave, Herausforderungen,

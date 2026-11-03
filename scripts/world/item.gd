@@ -222,6 +222,8 @@ var coin_value := 0
 var is_held := false
 ## Besitzer: "" = niemand, "player" oder die ID eines Gastes
 var owner_id := ""
+## Vom Gast mit dieser ID gekauft oder geschenkt bekommen – ihm zurückgeschenkt zählt es nicht (Spielkonzept 6.18, 5)
+var got_from := ""
 var lit := false
 var light: FlickerLight
 ## Geschnitzter Kürbis, Totenkopf: Es steckt eine Kerze darin – brennend oder erloschen (Spielkonzept 5.12)

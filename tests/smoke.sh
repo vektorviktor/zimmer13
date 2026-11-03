@@ -371,6 +371,8 @@ done <<'LIST'
 600|gaeste,beziehungen|--pals=edna,bruno --trace
 600|netz,gaeste,beziehungen|--netz=mila,edna,bruno --trace
 600|netz,gaeste|--netz=mila,edna,bruno,lob --trace
+400|budget,gaeste,beziehungen|--budget=edna --trace
+600|budget,speichern|--budget=edna --savetest
 2000|spieler|--sprint --trace
 600|gespraech,gaeste|--gespraech=frage,night,bruno,2 --trace
 600|gespraech,gaeste|--gespraech=frage,brave,edna,1 --trace

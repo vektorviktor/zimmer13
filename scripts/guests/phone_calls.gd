@@ -298,7 +298,8 @@ func _take_incoming(call: Dictionary) -> void:
 			ui.show_page("%s – %s" % [title, guest.display_name], "„%s“" % _line(guest, "panic"), [
 				["Beruhig dich. Schließ ab und bleib, wo du bist.", func() -> void:
 					guest.fear = maxf(0.0, guest.fear - 25.0)
-					Game.social.talk.friendly(guest, 1.5)   # am Telefon halb so viel wie Trösten (6.9)
+					if not guest.stoked_recently():   # selbst geschürt: keine Beziehung (6.18, 5)
+						Game.social.talk.friendly(guest, 1.5)   # am Telefon halb so viel wie Trösten (6.9)
 					hang_up()],
 				["Auflegen", hang_up],
 			])
@@ -510,10 +511,14 @@ func _guest_answers(guest: Guest) -> void:
 		key = "answer_enemy"
 	elif Social.tier(guest) >= Social.Tier.FRIEND:
 		key = "answer_friend"
-	_talk = {"guest": guest, "since": _time, "chose": false}
+	_talk = {"guest": guest, "since": _time, "chose": false, "steps": 0}
 	if key == "answer_panic":
 		# keine Zeit zum Reden – er legt selbst auf
 		ui.show_page(_talk_title(guest), "„%s“" % _line(guest, key), [["Auflegen", hang_up]])
+		_talk["chose"] = true
+		return
+	if not Game.social.talk.start_talk(guest):   # Gesprächsbereitschaft (6.18, 5): heute schon genug geredet
+		ui.show_page(_talk_title(guest), "„%s“ *legt auf*" % Talk.BUSY_LINES.pick_random(), [["Auflegen", hang_up]])
 		_talk["chose"] = true
 		return
 	_show_talk(guest, "„%s“" % _line(guest, key))
@@ -526,6 +531,10 @@ func _talk_title(guest: Guest) -> String:
 ## Gespräch am Telefon: weniger als von Angesicht zu Angesicht (Beziehung halb so stark),
 ## aber dafür muss niemand in den dunklen Flur.
 func _show_talk(guest: Guest, text: String) -> void:
+	if Talk.cuts_short(guest, int(_talk.get("steps", 0))):   # Verärgerte brechen früh ab (6.18, 5)
+		ui.show_page(_talk_title(guest), "%s „%s“ *legt auf*" % [text, Talk.BUSY_LINES.pick_random()], [["Auflegen", hang_up]])
+		return
+	_talk["steps"] = int(_talk.get("steps", 0)) + 1
 	var options: Array = [["Plaudern", _phone_chat.bind(guest)]]
 	if Game.director.first_attack_done:
 		options.append(["Hast du es gesehen?", _phone_ask.bind(guest)])
@@ -544,7 +553,7 @@ func _phone_chat(guest: Guest) -> void:
 		_show_talk(guest, "„Lass uns später weiterreden.“")
 		return
 	guest.chat_cooldown = DialogUI.CHAT_COOLDOWN
-	Game.social.change_relation(guest, 3.0)
+	Game.social.talk.friendly(guest, 3.0)   # mit dem Plaudern von Angesicht in einem Budget (6.18, 5)
 	_show_talk(guest, "„%s“" % guest.line("smalltalk"))
 
 
