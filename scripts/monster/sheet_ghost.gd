@@ -1308,6 +1308,8 @@ func _spawn_chance(victim: Node3D, window: Node3D) -> float:
 ## Anteil der Chance an diesem Fenster bzw. dieser Fenstertür: im Obergeschoss die volle, im Erdgeschoss GROUND_SHARE
 ## (Spielkonzept 4.20) – auch neben einer anderen Bedrohung.
 func _floor_share(window: Node3D) -> float:
+	if window == null:   # Spieler hat das Fenster verlassen – es wird ohnehin nicht gewürfelt
+		return 1.0
 	return GROUND_SHARE if window.global_position.y < LevelBuilder.UP_Y - 1.0 else 1.0
 
 
