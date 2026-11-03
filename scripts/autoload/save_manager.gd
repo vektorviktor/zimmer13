@@ -142,7 +142,11 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     laden weiter, ungebissen
 ## 70: Humpeln nach dem Sprung vom Balkon (Spielkonzept 7.7, ZIM-36): player.limp (Spielsekunden) – ältere Stände laden
 ##     weiter, ohne Humpeln
-const VERSION := 70
+## 71: Jeder Tod hat eine Ursache (Spielkonzept 6.18, 2; ZIM-160): social.deaths – offene Ursachen je Gast (causes) und
+##     die Toten mit Ursache, Schuld und Gedenken (records); an Gegenständen „taken“ (wem der Spieler sie genommen hat,
+##     Meta taken_from); director.grief entfällt (Schock und Trauer sind ein Wert) – ältere Stände laden weiter, ohne
+##     Ursachen und Schuld
+const VERSION := 71
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -658,6 +662,7 @@ func collect() -> Dictionary:
 		"talk": social.talk.save_state(),
 		"requests": social.requests.save_state(),
 		"quarrels": social.quarrels.save_state(),
+		"deaths": social.deaths.save_state(),
 		"access": social.access.save_state(),
 	}
 	var director := Game.director
@@ -725,6 +730,8 @@ func _item_data(item: Item) -> Dictionary:
 	}
 	if item.got_from != "":
 		d["got"] = item.got_from
+	if item.has_meta("taken_from"):   # solange die Deko fehlt, zählt der Diebstahl als Ursache (6.18, 2)
+		d["taken"] = String(item.get_meta("taken_from"))
 	return d
 
 
@@ -967,6 +974,7 @@ func apply(data: Dictionary) -> void:
 	social.talk.load_state(sd.get("talk", {}))
 	social.requests.load_state(sd.get("requests", {}))
 	social.quarrels.load_state(sd.get("quarrels", {}))
+	social.deaths.load_state(sd.get("deaths", {}))
 	social.access.load_state(sd.get("access", {}))
 	if Game.doll:
 		Game.doll.load_state(data.get("doll", {}))
@@ -996,6 +1004,8 @@ func _make_item(entry: Dictionary) -> Item:
 	var item := Item.create(int(entry["kind"]) as Item.Kind, String(entry.get("extra", "")))
 	item.owner_id = String(entry.get("owner", ""))
 	item.got_from = String(entry.get("got", ""))
+	if entry.has("taken"):
+		item.set_meta("taken_from", String(entry["taken"]))
 	if item.has_wick():   # brennt oder nicht (Spielkonzept 5.12); in Kürbis und Totenkopf sagt der Zusatz, ob eine Kerze steckt
 		if bool(entry.get("lit", false)) and not item.lit:
 			item.light_up(false)

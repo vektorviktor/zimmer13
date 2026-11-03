@@ -1557,6 +1557,27 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `GuestRequests.make_reconcile` + `accept`. `Talk.opinion` nennt den Diebstahl (`stole_from`). Gespeichert unter
   `social.quarrels` (`active`, Version 67), nicht `_news` und kein laufender Wortwechsel. Debug
   `--streit=dieb,opfer[,gesehen|freund|versoehnen|verblassen|halten]`, Stichwort „streit“, `--trace` „[Streit]“.
+- **Ursache jedes Todes** (`guests/deaths.gd`, `GuestDeaths`, Spielkonzept 6.18, 2; 6.8; 2026-11-03, ZIM-160): Kind von
+  Social, `Game.social.deaths`. `note(Gast, Art)` merkt eine Ursache in `causes[id][Art]` = {at, until, knowers (wer
+  den Spieler dabei sieht und erkennt)}: `theft` (`Social.on_player_took`, auch Birnen – `until` −1, gilt solange
+  `deco_missing`: ein Gegenstand mit Meta `taken_from` = id liegt nicht wieder bis `HONOR_RANGE` vor seiner Tür),
+  `knock` (`Social._knock_ignored`), `phone` (`PhoneCalls._update_outgoing` beim ersten Klingeln, `note_room`), `escort`
+  (`Guest.start_follow`, nicht beim Anschließen von selbst: `by_player`), `light` (`LightSwitch.interact`, `note_room`)
+  – diese vier bis `night_end` (nächstes `NIGHT_END` = 6 Uhr). `cause_of` nimmt die frischeste gültige, sonst
+  „careless“ aus der Talk-Haltung; `on_guest_died` (aus `Social.on_guest_died`) setzt sonst `doll`, wenn
+  `MonsterDirector.doom_room` sein Zimmer ist (ohne Schuld), schreibt `records` {id, name, day, at, cause, guilt,
+  honored} und gibt `Player.add_shock(SHOCK_BASE + Freund SHOCK_BOND × Beziehung + Schuld SHOCK_GUILT)`. Bei Schuld
+  `_tell`: Zeugen und Haushalt verlieren Beziehung (`WITNESS_RELATION` als Freund des Toten, sonst `KNOWER_RELATION`),
+  der mit dem meisten Tratsch erzählt es per `GuestPals.spread_with_affected` (Freunde des Erzählers `NET_RELATION`,
+  Freunde des Toten direkt `FRIEND_RELATION`). `Social._update_memorials` (alle 2 s) ruft `update_honor` (Licht mit
+  `owner_id` „player“ vor seiner Tür → `honor`: Schock −`HONOR_SHOCK`, Freunde +`HONOR_RELATION`, einmal je Toter)
+  und setzt `Player.shock_recovery` × `GUILT_RECOVERY`, solange `open_guilt` (Schuld ohne Licht, jünger als
+  `GUILT_DAYS`). `last_dead` (der zuletzt Gestorbene) nennt `PhoneCalls._creepy_call`, `Social._update_knocking` (falsches
+  Klopfen) und `MirrorOmens._last_dead`. **Schock und Trauer ein Wert:** `MonsterDirector.grief`/`GRIEF_TIME` sind
+  weg; Halluzinationen ab `MonsterDirector.HALLUCINATION_SHOCK`; `Player._fade_shock` (auch in `skip_time`) lässt den
+  Schock in zwei Teilen verfliegen (`SHOCK_TAU`, `SHOCK_FADE`, geschlossene Form). Gespeichert unter `social.deaths`
+  (offene Ursachen und die Toten) und an Gegenständen „taken“ (Version 71). Debug `--schuld=id[,ursache]`, Stichwort „schuld“,
+  `--trace` „[Ursache]“, „[Gedenken]“.
 - **Gespräche** (`guests/talk.gd`, `Talk`, Spielkonzept 6.9): Die Knöpfe baut `DialogUI` (`_show_main`, Optionen in
   einem `ScrollContainer`), die Logik liegt in `Talk`: Anlässe (`_occasions()`), Erlebnisse des Spielers (`log`,
   `_scan_sights`), Gedächtnis je Gast (`Guest.claims`, höchstens `MAX_CLAIMS`), Erzählen/Lügen (`tell`, `_believes`,
@@ -2303,7 +2324,7 @@ Spielkonzept 2.5)
   `gripped`, gehen weder [E] noch die Versteck-Zeitgrenze. **Schrank:** wartet davor und rüttelt (`HideSpot.rattle()`),
   fliegt hinein (`burst_open()`, Lärm `rattle` – nicht `hide_burst`, lockt das Monster nicht). Unterm Bett verschwindet er.
 - **Flur** (`_in_hall` → `LevelBuilder.in_corridor()`): wenn alle schlafen und der Spieler im Flur steht.
-  **Schwäche** (`Player.weakness()`, `Guest.weakness()`) aus Müdigkeit, Rausch, Schock, Trauer, Kater – macht alles
+  **Schwäche** (`Player.weakness()`, `Guest.weakness()`) aus Müdigkeit, Rausch, Schock (mit der Trauer ein Wert), Kater, Biss – macht alles
   wahrscheinlicher. **Gäste als Opfer** (`_check_guests()`, `ghost_grab()` → `GHOSTED`); Kinder würgt er nie.
 - **Vor der Tür** (Spielkonzept 5.6): aufgehängte Lakengespenster an einer Zimmertür rufen ihn (`_check_doors()`),
   er wartet lautlos, zieht den Blick des Spielers durch die Wand bzw. lässt einen Gast öffnen (`door_trance`).

@@ -199,22 +199,21 @@ func _pick_incoming() -> Dictionary:
 	return {}
 
 
-## Die unheimliche Variante: Atmen aus einem leeren Zimmer, die Stimme eines Verschwundenen –
-## oder es steht gerade vor deiner Tür.
+## Die unheimliche Variante: Atmen aus einem leeren Zimmer, die Stimme eines Verschwundenen – immer des zuletzt
+## Gestorbenen (Spielkonzept 6.18, 2; GuestDeaths.last_dead) – oder es steht gerade vor deiner Tür.
 func _creepy_call() -> Dictionary:
 	var door_front: Vector3 = Game.director.player_door_front
 	if Game.monster.is_active() and Game.monster.global_position.distance_to(door_front) < 6.0:
 		return {"kind": "creepy", "variant": "door", "room": LevelBuilder.PLAYER_ROOM}
-	var dead: Array = Game.social.guests.filter(func(g: Guest) -> bool: return g.dead)
-	if not dead.is_empty() and (_grieving() or randf() < 0.3):
-		var ghost: Guest = dead[randi() % dead.size()]
+	var ghost := Game.social.deaths.last_dead()
+	if ghost and (_grieving() or randf() < 0.3):
 		return {"kind": "creepy", "variant": "dead", "guest": ghost, "room": ghost.home["no"]}
 	return {"kind": "creepy", "variant": "breath", "room": _empty_room()}
 
 
-## Trauer oder Halluzinationen: Dann ruft öfter … etwas anderes an.
+## Trauer (Schock, ein Wert: 6.18, 2) oder Halluzinationen: Dann ruft öfter … etwas anderes an.
 func _grieving() -> bool:
-	return Game.director.grief > 0.0 or Game.director.is_hallucinating()
+	return (Game.player and Game.player.shock > MonsterDirector.HALLUCINATION_SHOCK) or Game.director.is_hallucinating()
 
 
 ## Ein Zimmer, in dem niemand wohnt – am liebsten das abgeschlossene Zimmer 018.
@@ -500,6 +499,8 @@ func _update_outgoing(delta: float) -> void:
 	_outgoing["rings"] = rings + 1
 	_outgoing["next"] = RING_INTERVAL
 	_ring(target)
+	if rings == 0:   # sein Telefon klingeln lassen: Ursache bis zum Ende der Nacht (6.18, 2)
+		Game.social.deaths.note_room(target.room_id, "phone")
 	ui.set_text("Es klingelt …" + " tuuut".repeat(rings + 1))
 
 

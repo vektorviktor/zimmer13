@@ -166,9 +166,10 @@ const VIGNETTE := 0.6
 const STRESS_VIGNETTE := 1.2
 const STRESS_RISE := 1.5
 const STRESS_FALL := 0.25
-## Halluzination: mittlere Sekunden zwischen zwei Rausch-Anfällen nach einem Todesfall
+## Halluzination: mittlere Sekunden zwischen zwei Rausch-Anfällen unter Schock (auch Trauer, ein Wert: 6.8, 6.18)
 const HALLUCINATION_EVERY := 70.0
-const GRIEF_TIME := 900.0
+## Ab so viel Schock (Trauer) halluziniert der Spieler (Spielkonzept 6.18, 2)
+const HALLUCINATION_SHOCK := 0.15
 ## UV-Licht (Spielkonzept 4.16): so lange muss es im Kegel stehen – mit jedem Mal länger
 const UV_REPEL_TIME := 1.0
 const UV_HABITUATION := 0.5
@@ -209,7 +210,6 @@ var first_attack_done := false
 var attacks := 0            ## Auftritte seit dem ersten Angriff (alle Modi und Kellerrunden)
 var raids := 0              ## Raubzüge bisher – die ersten HARMLESS_RAIDS sind harmlos (4.33)
 var demands := 0            ## Anforderungen bisher
-var grief := 0.0            ## Sekunden „Trauerzeit“ nach einem Todesfall → Halluzinationen
 var strange_diary := false  ## im Tagebuch steht beim nächsten Mal eine fremde Zeile
 ## Bedrohung beim Spieler (0..1) – Rauschen, Brummen
 var player_threat := 0.0
@@ -312,7 +312,6 @@ func _physics_process(delta: float) -> void:
 		if first_attack_done:
 			boldness += BOLDNESS_PER_DAY * delta / Calendar.DAY_SECONDS
 		satiation = maxf(0.0, satiation - 0.1 * delta)
-		grief = maxf(0.0, grief - delta)
 		_cool_down(delta)
 		_zone_timer -= delta
 		if _zone_timer <= 0.0:
@@ -639,7 +638,6 @@ func first_attack_unseen(victim: Guest) -> void:
 			print("[Geholt] %s in Zimmer %s – ungesehen (erster Angriff)" % [victim.display_name, no])
 		if Game.social and Game.social.grinch:
 			Game.social.grinch.taken(victim)
-		grief = GRIEF_TIME
 		on_guest_taken()
 		var p := Game.player
 		if p and not p.dead and _builder.room_at(p.global_position) == no:
@@ -1251,7 +1249,6 @@ func _judgment_escape() -> void:
 	var cloth := Item.create(Item.Kind.CLOTHING, g.id)
 	_monster.get_parent().add_child(cloth)
 	cloth.global_position = Vector3(where.x, where.y + 0.05, where.z)
-	grief = GRIEF_TIME
 	on_guest_taken()
 	_judged = true
 	if Game.social:
@@ -1899,7 +1896,6 @@ func kill_guest(guest, spot: HideSpot) -> void:
 		var cloth := Item.create(Item.Kind.CLOTHING, guest.id)
 		_monster.get_parent().add_child(cloth)
 		cloth.global_position = Vector3(where.x + 0.4, where.y + 0.05, where.z + 0.2)
-		grief = GRIEF_TIME
 		on_guest_taken()
 		if Game.tracing:
 			print("[Geholt] %s (%s) · noch %d Opfer" % [guest.display_name, MODE_NAMES[mode], victims_left])
@@ -1989,7 +1985,6 @@ func skip(dt: float) -> String:
 	if first_attack_done:
 		boldness += BOLDNESS_PER_DAY * dt / Calendar.DAY_SECONDS
 	satiation = maxf(0.0, satiation - 0.1 * dt)
-	grief = maxf(0.0, grief - dt)
 	_cool_down(dt)
 	if not first_attack_done or _monster.is_active():
 		return ""
@@ -2107,7 +2102,8 @@ func is_hallucinating() -> bool:
 	return _hallucination > 0.0
 
 
-## Halluzination nach einem Todesfall, unter Schock, betrunken (3.7) oder übermüdet (3.6): Rauschen ohne Monster.
+## Halluzination unter Schock – nach einem Todesfall ist das die Trauer (ein Wert, 6.18, 2) –, betrunken (3.7) oder
+## übermüdet (3.6): Rauschen ohne Monster.
 func _update_hallucination(delta: float) -> void:
 	if _hallucination > 0.0:
 		_hallucination -= delta
@@ -2116,7 +2112,7 @@ func _update_hallucination(delta: float) -> void:
 	if p == null or p.dead:
 		return
 	var drunk := p.drunk >= BarTap.DRUNK
-	if (grief > 0.0 or p.shock > 0.15 or drunk or p.overtired()) and randf() < delta / HALLUCINATION_EVERY * (1.0 + (p.drunk if drunk else 0.0)):
+	if (p.shock > HALLUCINATION_SHOCK or drunk or p.overtired()) and randf() < delta / HALLUCINATION_EVERY * (1.0 + (p.drunk if drunk else 0.0)):
 		_hallucination = randf_range(6.0, 11.0)
 		if not _monster.is_active() and randf() < FAKE_SIGNAL_CHANCE:   # langes Flackern – und nichts kommt
 			_start_wave(spawn_points[0], 2, true)
@@ -2396,7 +2392,7 @@ func threat_at(pos: Vector3) -> float:
 func save_state() -> Dictionary:
 	return {
 		"first_attack_done": first_attack_done, "attacks": attacks, "raids": raids, "demands": demands,
-		"grief": grief, "strange_diary": strange_diary, "phase": int(phase),
+		"strange_diary": strange_diary, "phase": int(phase),
 		"haunt_timer": _haunt_timer, "uv_count": uv_count, "monster_active": _monster.is_active(),
 		"monster_pos": [_monster.global_position.x, _monster.global_position.y, _monster.global_position.z],
 		# Plan der Modi (4.33) und der laufende Auftritt – ein angefangenes Zimmer kommt wieder an den Anfang
@@ -2436,7 +2432,6 @@ func load_state(d: Dictionary) -> void:
 	attacks = int(d.get("attacks", 0))
 	raids = int(d.get("raids", 0))
 	demands = int(d.get("demands", 0))
-	grief = float(d.get("grief", 0.0))
 	strange_diary = bool(d.get("strange_diary", false))
 	_haunt_timer = float(d.get("haunt_timer", 120.0))
 	uv_count = int(d.get("uv_count", 0))

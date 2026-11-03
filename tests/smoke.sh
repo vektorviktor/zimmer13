@@ -396,6 +396,16 @@ done <<'LIST'
 300|streit,gaeste,bitten|--streit=bruno,edna,versoehnen --trace
 300|streit,gaeste|--streit=bruno,edna,verblassen --trace
 600|streit,speichern|--streit=bruno,edna,halten --savetest
+300|schuld,tod,gaeste|--schuld=edna,licht --trace
+300|schuld,tod|--schuld=bruno,diebstahl --trace
+300|schuld,tod|--schuld=edna,zurueck --trace
+300|schuld,tod|--schuld=edna,abgelaufen --trace
+300|schuld,tod|--schuld=mila,begleiten --trace
+300|schuld,tod|--schuld=edna,keine --trace
+300|schuld,tod,telefon|--schuld=bruno,telefon --trace
+300|schuld,tod|--schuld=edna,sorglos --trace
+300|schuld,tod,friedhof|--schuld=edna,gedenken --trace
+600|schuld,speichern|--schuld=edna,halten --savetest
 600|budget,speichern|--budget=edna --savetest
 2000|spieler|--sprint --trace
 600|gespraech,gaeste|--gespraech=frage,night,bruno,2 --trace

@@ -15,7 +15,8 @@ extends Node
 ## erfährt er und erzählt es übers Freundesnetz weiter; die Betroffenen (der Bestohlene bzw. Freunde und Familie des
 ## Toten) sucht er selbst auf, sie trifft es härter (GuestPals.spread_with_affected). Jeden Eintrag nur einmal je Gast.
 ## Läuft über den Besuchsablauf (start_visit, Social.on_visit_arrived fragt on_arrived). Kind von Social:
-## Game.social.break_in. Nicht gespeichert (ein Einbruch im Gang fällt beim Laden aus, „taken_from“ ebenso).
+## Game.social.break_in. Nicht gespeichert (ein Einbruch im Gang fällt beim Laden aus); „taken_from“ speichert der
+## Spielstand seit Version 71 mit (GuestDeaths: Diebstahl als Todesursache, solange die Deko fehlt).
 
 const SCAN := 10.0
 ## Je Blick auf einen freien Erzfeind; je Gast höchstens einmal am Tag, für alle zusammen höchstens alle GAP s

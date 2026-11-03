@@ -116,13 +116,17 @@ const STUMBLE_RATE := 0.25
 const HANGOVER_TIME := 240.0
 const HANGOVER_DRAIN := 1.4
 ## Schwäche (Spielkonzept 4.18): Wachzeit bis sure_awake macht ganz schwach (tired_weakness), betrunken
-## (BarTap.DRUNK, ab dem 3. Glas) ebenso; so viel zählen Schock, Trauer (frisch) und Kater
+## (BarTap.DRUNK, ab dem 3. Glas) ebenso; so viel zählen Schock (mit der Trauer ein Wert, 6.18, 2) und Kater
 ## Unter dem Bettlaken (Spielkonzept 5.9) erkennen Gäste den Spieler nur aus dieser Nähe
 const RECOGNIZE_RANGE := 1.5
 const WEAK_DRUNK := 1.0 / BarTap.DRUNK
 const WEAK_SHOCK := 0.5
-const WEAK_GRIEF := 0.3
 const WEAK_HANGOVER := 0.2
+## Schock und Trauer sind ein Wert (Spielkonzept 6.8, 6.18, 2; 2026-11-03): Er verfliegt in zwei Teilen – der starke
+## Schock in etwa SHOCK_TAU s auf ein Drittel, der Rest (die Trauer) mit SHOCK_FADE je Sekunde; ganz vorbei ist voller
+## Schock nach gut 7 Spielminuten (bisher 3, die Trauer lief getrennt 15 Minuten).
+const SHOCK_TAU := 180.0
+const SHOCK_FADE := 1.0 / 1800.0
 ## Kaffee (Spielkonzept 3.11): eine Tasse wirkt so viele Spielsekunden (= Spielminuten) und überdeckt so viel Wachzeit
 ## (Spielsekunden); danach kommt das Tief so lange mit so viel mehr Müdigkeit. Solange er wirkt, zählt Schlaf nur so viel.
 ## Jede Tasse hebt den Koffeinspiegel um 1, er sinkt um 1 je COFFEE_FADE s – ab COFFEE_JITTER zittert man
@@ -971,11 +975,20 @@ func add_shock(amount: float, guilt: bool) -> void:
 		Game.say("Das war deine Schuld …", 4.0)
 
 
+## Schock (und Trauer) verfliegen über dt Sekunden – auch im Zeitsprung genau (geschlossene Form von
+## ds/dt = −(s / SHOCK_TAU + SHOCK_FADE) × Erholung; Gedenken, Feier und offene Schuld ändern die Erholung, Social).
+func _fade_shock(dt: float) -> void:
+	if shock <= 0.0:
+		return
+	var off := SHOCK_FADE * SHOCK_TAU
+	shock = maxf(0.0, (shock + off) * exp(-dt * shock_recovery / strain() / SHOCK_TAU) - off)
+
+
 func _update_shock(delta: float) -> void:
 	if shock <= 0.0:
 		camera.rotation = Vector3.ZERO
 		return
-	shock = maxf(0.0, shock - delta / 180.0 * shock_recovery / strain())
+	_fade_shock(delta)
 	# Zittern
 	camera.rotation = Vector3(randf_range(-1, 1), randf_range(-1, 1), randf_range(-1, 1)) * shock * 0.008
 	# Zittrige Hände: ab und zu fällt etwas herunter
@@ -1164,12 +1177,9 @@ func drink(quiet: bool = false) -> void:
 
 
 ## Wie angreifbar der Spieler gerade ist (0..1) – danach sucht sich der Lakengeist seine Opfer (4.18):
-## Schlafmangel (wie er sich anfühlt, tiredness), Rausch, Schock, frische Trauer, Kater und ein Fledermausbiss zählen zusammen.
+## Schlafmangel (wie er sich anfühlt, tiredness), Rausch, Schock (mit der Trauer), Kater und ein Fledermausbiss zählen zusammen.
 func weakness() -> float:
-	var grief := 0.0
-	if Game.director:
-		grief = clampf(Game.director.grief / MonsterDirector.GRIEF_TIME, 0.0, 1.0)
-	return clampf(tired_weakness() + drunk * WEAK_DRUNK + shock * WEAK_SHOCK + grief * WEAK_GRIEF
+	return clampf(tired_weakness() + drunk * WEAK_DRUNK + shock * WEAK_SHOCK
 		+ (WEAK_HANGOVER if hangover > 0.0 else 0.0) + bite_share() * BITE_WEAK, 0.0, 1.0)
 
 
@@ -2299,7 +2309,7 @@ func sleep_left() -> float:
 ## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): was sonst je Bild abklingt oder sich
 ## erholt, um dt auf einmal; der Schlaf zählt mit.
 func skip_time(dt: float) -> void:
-	shock = maxf(0.0, shock - dt / 180.0 * shock_recovery / strain())
+	_fade_shock(dt)
 	drunk = maxf(0.0, drunk - dt / BarTap.SOBER_TIME)
 	hangover = maxf(0.0, hangover - dt)
 	injury = maxf(0.0, injury - dt / INJURY_HEAL_TIME)

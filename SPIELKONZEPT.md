@@ -3794,8 +3794,8 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 
 ### 6.8 Schock & Trauer (großteils umgesetzt)
 > **Umgesetzt:** Schock nach Beziehung, Zittern, Fallenlassen, kürzeres Verstecken, „Angst riecht“, Halluzinationen,
-> Anrufe Toter, Gedenkkerze, Feier. **Entschieden 2026-10-21, noch nicht gebaut:** Schock und Trauer werden ein Wert,
-> Schuld folgt aus der Ursache jedes Todes, und die Freunde des Toten trauern mit – siehe 6.18 (2).
+> Anrufe Toter, Gedenkkerze, Feier. **Entschieden 2026-10-21, gebaut 2026-11-03 (ZIM-160):** Schock und Trauer sind
+> ein Wert, Schuld folgt aus der Ursache jedes Todes – siehe 6.18 (2). Die Trauer der Freunde des Toten: 6.12/ZIM-41.
 
 Stirbt ein Gast, mit dem man **gut befreundet** war, erleidet der Spieler einen **Schock** mit einem Malus. Stärke abhängig vom Beziehungswert.
 
@@ -4492,7 +4492,8 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 ### 6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)
 > Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19; Wache halten,
 > 2026-11-02, ZIM-62; das Freundesnetz als Kanal (1), 2026-11-03, ZIM-159; die Beziehung nicht erschleichen (5) ohne Neid,
-> 2026-11-03, ZIM-163; Neid, 2026-11-03, ZIM-164). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> 2026-11-03, ZIM-163; Neid, 2026-11-03, ZIM-164; jeder Tod hat eine Ursache (2) ohne die Kerzen der Gäste,
+> 2026-11-03, ZIM-160). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
@@ -4527,6 +4528,24 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   zum Spieler stark.
 - **Gedenken:** Eine Kerze vor seiner Tür senkt Schuld und Schock und bringt *seinen Freunden* Beziehung. Gäste zünden
   dort auch selbst Kerzen an – ein sichtbarer Gedenkort. Hinterlässt er eine Leiche, kommt das Grab dazu (5.15).
+- *Entschieden 2026-11-03, gebaut 2026-11-03 (ZIM-160):*
+  - **Wie lange eine Ursache zählt:** Diebstahl (Deko oder Birne), solange sie fehlt – liegt sie wieder vor seiner Tür
+    oder hat er sie sich zurückgeholt, nicht mehr. Klopfen ignoriert, sein Telefon klingeln lassen, mitgenommen (nicht,
+    wenn er sich von selbst anschließt) und Licht in seinem Zimmer ausgemacht: bis zum Ende derselben Nacht (6 Uhr).
+    „Sorglos“ (6.9), solange er es glaubt. Gilt mehreres, zählt das Frischeste. **Puppe:** Legen kann der Spieler sie
+    nicht (5.5) – stirbt jemand durch ihr Urteil, ist das seine Ursache, aber ohne Schuld.
+  - **Ein Wert:** Jeder Tod gibt einen kleinen Grundwert Schock (0,2), ein Freund bis 0,8 mehr nach Beziehung, Schuld
+    0,35 dazu. Der Schock verfliegt in zwei Teilen: der starke schnell (wie bisher), der Rest – die Trauer – langsam;
+    voller Schock ist nach gut 7 Spielminuten vorbei. Halluzinationen kommen ab 0,15 (die eigene Trauerzeit von 15
+    Minuten nach jedem Tod entfällt). Offene Schuld lässt ihn halb so schnell verfliegen, bis eine Kerze brennt oder
+    drei Spieltage um sind.
+  - **Halluzinationen** (Anruf, falsches Klopfen, Gestalt im Spiegel) tragen immer den Namen des zuletzt Gestorbenen.
+  - **Freunde erfahren es:** Die Ursache kennen, wer dich dabei gesehen hat, und sein Haushalt. Sie mögen dich weniger
+    (Freund des Toten −30, sonst −10); der Gesprächigste erzählt es übers Netz (1): seinen Freunden wie eine Klage
+    (−10 × Tratsch), den Freunden des Toten direkt (−25).
+  - **Gedenken:** Ein Licht von dir vor seiner Tür (Kerze, Kürbis mit Kerze) ehrt ihn einmal: Schock −0,25, Schuld
+    gesühnt, seine Freunde +10. Wie bisher heilt jedes Licht dort den Schock dreimal so schnell. Die Kerzen der Gäste
+    am Gedenkort kommen mit ZIM-41.
 
 **3. Schwere Momente: empfindlicher Zustand und Wünsche** (verallgemeinert 6.17, erste Form von 6.14)
 - **Zustände:** verletzt (6.17) · trauernd (ein Freund ist gestorben) · verwaist (6.13) · nach einem Angriff des

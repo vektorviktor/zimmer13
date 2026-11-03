@@ -1202,14 +1202,17 @@ func is_following() -> bool:
 	return state == State.FOLLOW or (state == State.TALKING and _resume_follow > 0.0)
 
 
-## Mitkommen: bleibt etwa FOLLOW_GAP hinter dir, rennt, wenn du davonläufst.
-func start_follow(duration: float = 120.0) -> void:
+## Mitkommen: bleibt etwa FOLLOW_GAP hinter dir, rennt, wenn du davonläufst. by_player: Der Spieler hat ihn mitgenommen
+## (nicht von selbst angeschlossen) – Ursache bis zum Ende der Nacht (6.18, 2).
+func start_follow(duration: float = 120.0, by_player: bool = true) -> void:
 	if dead or hiding:
 		return
 	if state == State.PARTY:
 		leave_party()
 	_timer = duration
 	state = State.FOLLOW
+	if by_player and Game.social:
+		Game.social.deaths.note(self, "escort")
 
 
 func stop_follow(text: String = "") -> void:
@@ -1636,7 +1639,7 @@ func _next_activity() -> void:
 	if Social.tier(self) == Social.Tier.GOOD_FRIEND and p and not p.dead and p.hiding == null and randf() < 0.25 \
 			and p.global_position.distance_to(global_position) < 6.0 and can_see_actor(p) and p.recognized_by(self):
 		say("Ich komm ein Stück mit.")
-		start_follow(60.0)
+		start_follow(60.0, false)
 		return
 	if is_child() and _child_approach():
 		return

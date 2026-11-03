@@ -97,6 +97,11 @@ extends Node3D
 ##                               beide stehen vor dir; gesehen – Opfer sieht es, Wortwechsel, danach meiden; freund – ein
 ##                               Freund erzählt es ihm; versoehnen – du vermittelst; verblassen – nach 3 Tagen; halten – nur
 ##                               ein Streit (für --savetest). Meldet „[Streit] … ok“ bzw. „FEHLER“ (mit --trace mehr)
+##   --schuld=id[,klopfen|telefon|licht|begleiten|diebstahl|sorglos|keine|abgelaufen|zurueck|gedenken|halten]  Jeder Tod
+##                               hat eine Ursache (6.18, 2): Gast und ein Freund als Zeuge vor dir, du tust ihm die Ursache
+##                               an (Standard licht), er stirbt – prüft Ursache, Schuld, Schock, Halluzinationsname, Zeuge;
+##                               keine/abgelaufen/zurueck ohne Schuld, gedenken mit Kerze vor seiner Tür, halten für
+##                               --savetest. Meldet „[Schuld] … ok“ bzw. „FEHLER“
 ##   --call=id[,panik]|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast – mit ,panik ein Panikanruf –,
 ##                               Atmen, Verschwundener, vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --gastanruf=id[,panik]      Gäste telefonieren (4.14): der Gast steht daheim, kennt eine frische Geschichte und ruft
@@ -2090,6 +2095,9 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(1.0, false).timeout.connect(_debug_boxes)
 	elif arg.begins_with("--streit="):
 		Game.social.quarrels.debug(_arg_parts(arg, "--streit"))
+	elif _is_arg(arg, "--schuld"):
+		var guilt_parts := _arg_parts(arg, "--schuld")
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.deaths.debug(guilt_parts))
 	elif arg == "--neid" or arg.begins_with("--neid="):
 		_debug_envy(_arg_parts(arg, "--neid"))
 	elif arg == "--knock":

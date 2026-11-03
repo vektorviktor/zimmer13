@@ -121,6 +121,8 @@ func get_prompt(_player: Player) -> String:
 
 func interact(_player: Player) -> void:
 	set_on(not on)
+	if not on and Game.social:   # bei einem Gast das Licht aus: Ursache bis zum Ende der Nacht (6.18, 2)
+		Game.social.deaths.note_room(room_id, "light")
 
 
 func _update_visual() -> void:

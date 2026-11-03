@@ -266,9 +266,13 @@ func _update_figure(delta: float) -> void:
 		_body = null
 
 
+## Der zuletzt Gestorbene (6.18, 2) – ein Kind nicht, dann der letzte tote Erwachsene.
 func _last_dead() -> Guest:
 	if Game.social == null:
 		return null
+	var last := Game.social.deaths.last_dead()
+	if last and not last.is_child():
+		return last
 	var best: Guest = null
 	for g in Game.social.guests:
 		var guest := g as Guest

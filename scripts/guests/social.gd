@@ -268,6 +268,7 @@ var search: DecoSearch                   ## Deko-Suche mit Gästen (Spielkonzept
 var talk: Talk                           ## Erzählen, Lügen, Fragen, Gedächtnis der Gäste (Spielkonzept 6.9)
 var requests: GuestRequests              ## Bitten der Gäste (Spielkonzept 6.14)
 var quarrels: GuestQuarrels              ## Streit unter Gästen nach einem Diebstahl (Spielkonzept 6.16)
+var deaths: GuestDeaths                  ## Jeder Tod hat eine Ursache: Schuld, Schock, Gedenken (Spielkonzept 6.18, 2)
 var grinch: Grinch                       ## Gustav Peters, der „Halloween-Grinch“, und sein Ende (Spielkonzept 2.6)
 var party_active := false
 var party_host := ""            ## "player" oder Gast-ID
@@ -435,6 +436,9 @@ func setup(p_builder: LevelBuilder, world: Node3D) -> void:
 	quarrels = GuestQuarrels.new()   # Streit unter Gästen nach einem Diebstahl (6.16)
 	quarrels.name = "Quarrels"
 	add_child(quarrels)
+	deaths = GuestDeaths.new()   # Ursache jedes Todes, Schuld, Gedenken (6.18, 2)
+	deaths.name = "Deaths"
+	add_child(deaths)
 	grinch = Grinch.new()   # Gustav Peters (2.6)
 	grinch.name = "Grinch"
 	add_child(grinch)
@@ -924,6 +928,7 @@ func on_player_took(item: Item) -> void:
 	_thefts[owner_guest.id] = _time
 	add_deed(owner_guest, "hostile")
 	item.set_meta("taken_from", owner_guest.id)   # das holt er sich beim Einbruch zurück (BreakIn, 6.19)
+	deaths.note(owner_guest, "theft")   # Ursache, solange die Deko fehlt (6.18, 2)
 	if Game.diary:   # eine dunkle Tat – Meilenstein im Tagebuch (3.10), Gäste können es dort lesen (8.9)
 		Game.diary.note("first_theft", "Ich habe %s etwas weggenommen. Ich brauche es dringender, rede ich mir ein." % owner_guest.display_name,
 			owner_guest.id)
@@ -1130,11 +1135,8 @@ func on_guest_died(guest: Guest, cause: String = "monster", quiet: bool = false)
 				_leave_note(w, DEATH_NOTES, w.home["door_front"], dead_name))
 	if party_active and party_host == guest.id:
 		end_party("")
-	# Schock, wenn es ein Freund war – stärker, wenn man ihn vorher bestohlen hat (Schuld)
-	if tier(guest) >= Tier.FRIEND and Game.player:
-		var guilt := _thefts.has(guest.id) and _time - float(_thefts[guest.id]) < 600.0
-		var amount := clampf(guest.relation / 100.0, 0.5, 1.0) * (1.5 if guilt else 1.0)
-		Game.player.add_shock(amount, guilt)
+	# Ursache, Schuld, Schock und Trauer (ein Wert), Freunde erfahren es (6.18, 2)
+	deaths.on_guest_died(guest)
 
 
 func find_hide_spot(guest: Guest) -> HideSpot:
@@ -1947,18 +1949,20 @@ func _process(delta: float) -> void:
 		record_player.fade_to(target, delta)   # oder eines der MP3-Stücke
 
 
-## Gedenken: Brennt ein Licht vor der Tür eines verschwundenen Freundes, heilt der Schock schneller.
+## Gedenken: Brennt ein Licht vor der Tür eines verschwundenen Freundes, heilt der Schock schneller; ein Licht des
+## Spielers ehrt den Toten (GuestDeaths.update_honor). Offene Schuld lässt den Schock langsamer verfliegen (6.18, 2).
 func _update_memorials() -> void:
 	var p := Game.player
 	if p == null:
 		return
-	var mult := 1.0
+	deaths.update_honor()
+	var mult := GuestDeaths.GUILT_RECOVERY if deaths.open_guilt() else 1.0
 	if not _memorial_doors.is_empty():
 		for node in get_tree().get_nodes_in_group("items"):
 			var item := node as Item
 			if item.lit and not item.is_held and _memorial_doors.any(func(door_front: Vector3) -> bool:
 					return item.global_position.distance_to(door_front) < 2.5):
-				mult = 3.0
+				mult *= 3.0
 				break
 	if party_active and builder.in_area(p.global_position, "partyraum"):
 		mult = maxf(mult, 2.0)
@@ -2116,11 +2120,10 @@ func _update_knocking(delta: float) -> void:
 		else:
 			guest = candidates[randi() % candidates.size()]
 	if fake:
-		# Am liebsten die Stimme eines Verschwundenen – sonst die eines Gastes (der woanders ist)
-		var voices: Array = guests.filter(func(g: Guest) -> bool: return g.dead)
-		if voices.is_empty():
-			voices = guests.duplicate()
-		guest = voices[randi() % voices.size()]
+		# Die Stimme des zuletzt Gestorbenen (6.18, 2) – sonst die eines Gastes (der woanders ist)
+		guest = deaths.last_dead()
+		if guest == null:
+			guest = guests[randi() % guests.size()]
 	_knock = {"guest": guest, "fake": fake, "time": 0.0, "next": 0.0, "said": 0}
 	if not fake:
 		guest.start_knock(builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"])
@@ -2190,6 +2193,7 @@ func _knock_ignored(guest: Guest, fake: bool) -> void:
 		if Game.traces:
 			Game.traces.add_door_scratch(builder.rooms[LevelBuilder.PLAYER_ROOM]["door"], builder.rooms[LevelBuilder.PLAYER_ROOM]["door_front"] + Vector3(0, 0, -1.0))
 		return
+	deaths.note(guest, "knock")   # Ursache bis zum Ende der Nacht (6.18, 2)
 	if Game.director.is_harmless() or not Game.director.may_hunt(guest) or guest.is_child() or randf() < 0.5:
 		Game.noise("scream", guest.global_position, guest)
 		guest.scared_by_monster()

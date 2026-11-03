@@ -962,14 +962,13 @@ func _free(g: Guest) -> bool:
 
 # --- Ereignisse -------------------------------------------------------------------------------
 
-## Ein Gast ist gestorben: Hatte er „sorglos“ von dir (Schuld, 6.8)? Seine Freunde trauern; Lügen über seinen Tod
-## sind jetzt wahr; wer „da war nichts“ gehört hat, erfährt bald die Wahrheit.
+## Ein Gast ist gestorben: Hatte er „sorglos“ von dir (Schuld, 6.8 – Schock und Schock-Schuld rechnet GuestDeaths)?
+## Seine Freunde trauern; Lügen über seinen Tod sind jetzt wahr; wer „da war nichts“ gehört hat, erfährt bald die Wahrheit.
 func on_guest_died(dead: Guest) -> void:
 	deaths.append(_now())
 	if deaths.size() > 20:
 		deaths.pop_front()
 	if dead.has_stance("careless") and Game.player:
-		Game.player.add_shock(0.6, true)
 		if Game.diary:
 			Game.diary.note("careless_death", "Ich habe %s gesagt, da sei nichts. Jetzt ist %s tot." % [dead.display_name, dead.display_name],
 				dead.id)
