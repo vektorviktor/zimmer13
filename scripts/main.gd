@@ -107,6 +107,12 @@ extends Node3D
 ##                               Kerze aus seinem Vorrat hin · ohne: ohne Feuer keine Kerze · wunsch: Trauerwunsch, du
 ##                               stellst ein Licht auf, er dankt · halten:
 ##                               gleich mit Kerze vor der Tür (für --savetest). Meldet „[Trauer] … ok“ bzw. „FEHLER“
+##   --zustand=art[,gast[,erfuellen|verfallen|halten]]  Schwere Momente (6.18, 3): art puppe, geist, verletzt, waise
+##                               (seine Eltern sterben) oder katze (sie verschleppt sein Laub) – der Gast (Standard: ein
+##                               passender ohne Kernrolle) steht vor dir; prüft Zustand, doppelte Beziehung, passendes
+##                               Geschenk, Begrüßung und Wunsch (Kernfiguren eigener), angenommen · erfuellen: du
+##                               erfüllst ihn · verfallen: der Zustand endet, still gestrichen · halten: bleibt offen
+##                               (für --savetest). Meldet „[Wunsch] … ok“ bzw. „FEHLER“
 ##   --call=id[,panik]|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast – mit ,panik ein Panikanruf –,
 ##                               Atmen, Verschwundener, vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --gastanruf=id[,panik]      Gäste telefonieren (4.14): der Gast steht daheim, kennt eine frische Geschichte und ruft
@@ -2122,6 +2128,9 @@ func run_debug(arg: String) -> bool:
 	elif _is_arg(arg, "--trauer"):
 		var grief_parts := _arg_parts(arg, "--trauer")
 		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.mourning.debug(grief_parts))
+	elif _is_arg(arg, "--zustand"):
+		var tender_parts := _arg_parts(arg, "--zustand")
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.requests.debug_tender(tender_parts))
 	elif _is_arg(arg, "--schuld"):
 		var guilt_parts := _arg_parts(arg, "--schuld")
 		get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.deaths.debug(guilt_parts))

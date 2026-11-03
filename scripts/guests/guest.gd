@@ -410,6 +410,7 @@ func wound_by(kind: String, attacker: Node3D = null) -> void:
 	wound_bed = float(d["bed"])
 	wound_told = 0
 	wound_visited = false
+	Game.social.requests.forget_granted(self, "wound")   # neue Verletzung, neuer Wunsch (6.18 Punkt 3)
 	_bleeding = maxf(_bleeding, float(d["bleed"]))
 	fear = maxf(fear, 50.0)   # erschüttert, aber ansprechbar (Panik ab 60)
 	var zone := Game.director.zone_name_at(global_position) if Game.director else ""

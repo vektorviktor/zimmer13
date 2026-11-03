@@ -4581,6 +4581,19 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
     nach dem Geist (Angst im Dunkeln), Deko nach der Puppe, Süßes oder Limo für Waisen, für Verletzte wie in 6.17. Eigene
     Begrüßung je Zustand. Besuche: Wer als Freund in der Trauer nie vorbeikam, kränkt ihn (−6, wie nach der Heilung);
     wer da war, dem dankt er danach.
+  - **Wünsche, fest je Zustand:** Kerze für den Toten (Trauer, ZIM-41) · Deko für die Tür nach der Puppe – er stellt
+    sie gleich davor · etwas Warmes ans Bett bei Verletzten: **gebratener Kürbis oder Tee** (Lücke: die Kürbissuppe
+    aus 3.8 lässt sich nicht tragen; eine Schale zum Mitnehmen wäre ein neuer Gegenstand) · eine Katze zum Trösten bei
+    Waisen und nach dem Lakengeist – du trägst sie auf dem Arm zu ihm · die Deko zurück, die eine Katze verschleppt hat
+    (kein Zustand, ein Spieltag lang; wer das Stück findet und aufhebt, klaut nicht mehr). **Kernfiguren** (Edna,
+    Bruno, Mila) wünschen sich nach der Puppe, nach dem Geist und verletzt etwas Eigenes: Edna einen Kamillentee, Bruno
+    eine Lichterkette, Mila etwas Süßes. Je Zustand ein Wunsch, wie der Trauerwunsch außerhalb der kleinen Bitten und
+    ohne Frist; Trauer geht vor, dann Puppe, Geist, verletzt, verwaist, verschleppte Deko.
+  - **Erfüllt:** Beziehung +8 (im Zustand doppelt), er erzählt es seinen Freunden (Lob übers Netz, 1).
+    **Unerfüllt:** verfällt still mit dem Zustand und wird im Notizbuch gestrichen, ohne Malus.
+  - **Nicht gebaut:** Kränkung durch fehlende Besuche nur bei Verletzung und Trauer – nicht bei den Zuständen bis zum
+    Morgen und nicht bei Waisen (bis Halloween gibt es kein Ende, an dem man es merkt). Kinder bekommen keinen
+    Puppen-Zustand (sie bemerken die Puppe nicht, 5.5).
 
 **4. Freundschaft schützt** (dazu: Freunde schmücken deine Tür mit, 5.10)
 - **Zuflucht:** Wirst du gejagt und klopfst bei einem **befreundeten** Gast, macht er auf – das Gegenstück zum Klopfen

@@ -1604,7 +1604,10 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   Puppe, `ORPHAN_GIFTS`, sonst `Wounds.fitting`), `GIFT_DEEDS`; eigene Begrüßung `greet` (vor dem Standardgruß).
   Besuche: `on_visit` (aus `DialogUI.open`) setzt `visited` in der Trauer-Haltung; `Guest.prune_stances` ruft beim Ende
   der Trauer `on_grief_ended` – nie besucht und befreundet: `NEGLECT`, Notiz `grief_neglect`, sonst `grief_visited`
-  (in `Guest.wound_note`, Satz `note_line`). Die Haltungen stehen mit dem Gast im Spielstand.
+  (in `Guest.wound_note`, Satz `note_line`). Die Haltungen stehen mit dem Gast im Spielstand. Ohne empfindlichen Zustand:
+  `cat_took()` aus `HotelCat._arrive` (Beute eines Gastes) – Haltung „cat_took“ (`kind`, `cat`, `CAT_TOOK_TIME`), Meta
+  „cat_took“ am Stück (gespeichert, Version 73); wer es aufhebt, klaut nicht (`Player.try_pick_up`). Wünsche:
+  `GuestRequests` (unten, „Wünsche aus schweren Momenten“).
 - **Gespräche** (`guests/talk.gd`, `Talk`, Spielkonzept 6.9): Die Knöpfe baut `DialogUI` (`_show_main`, Optionen in
   einem `ScrollContainer`), die Logik liegt in `Talk`: Anlässe (`_occasions()`), Erlebnisse des Spielers (`log`,
   `_scan_sights`), Gedächtnis je Gast (`Guest.claims`, höchstens `MAX_CLAIMS`), Erzählen/Lügen (`tell`, `_believes`,
@@ -1630,6 +1633,18 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   Herzensbitte `HEART_REWARD` direkt (außerhalb des Budgets), kleine über `Talk.friendly`, dazu `pals.praise`.
   Gespeichert unter `social.requests` (`active`, `hearts`, Tageszähler). Debug `--bitte=gast[,art[,annehmen|erfuellen]]`,
   `--trace` `[Bitte]`.
+  **Wünsche aus schweren Momenten** (ZIM-161, `Tender`): Feld `state` (Zustand, mit dem der Wunsch verfällt).
+  `offer_for` fragt nach dem Trauerwunsch `tender_state` (erster Zustand nach `Tender.ORDER`, dessen Wunsch in diesem
+  Zustand nicht schon erfüllt ist – `granted` je Gast und Zustand mit `Tender.instance`; Katzen müssen da sein,
+  verschlepptes Stück noch da) → `make_tender` (`Tender.WISHES`, Kinder `…_child`, Kernfiguren `Tender.CORE` für Puppe,
+  Geist, verletzt). Arten `door_deco` (Deko, `gift_to_door`), `soup` (`Tender.WARM_FOOD` – die Suppe lässt sich nicht
+  tragen), `deco_back` (Meta `cat_took` = er, wird beim Zurückgeben entfernt), `cat` (`_check_cat`: Spieler trägt eine
+  Katze näher als `Tender.CAT_RANGE` heran) und `item` (Kernfiguren). Alle außerhalb der kleinen Bitten
+  (`_outside_small`), ohne Frist. `_check_state` (alle `STATE_SCAN`) streicht ihn still, wenn der Zustand endet.
+  `_complete`: `TENDER_REWARD` über `Talk.friendly` (im Zustand doppelt), `TENDER_PRAISE`, `_grant`. Verletzte
+  (`DialogUI.open`) fragen nach dem Gruß mit `offer_for(…, tender_only)`; `Guest.wound_by` → `forget_granted`.
+  Gespeichert: `state` je Bitte, `granted` (Version 73). Debug `--zustand=art[,gast[,erfuellen|verfallen|halten]]`,
+  Stichwort „zustand“, `--trace` „[Wunsch]“, „[Zustand]“.
 
 ### Kochen (`world/stove.gd`, `Stove`, `Game.kitchen`, Spielkonzept 3.8)
 Herd auf der Plan-Ausstattung „stove“. `phase`: `empty` → `raw` (`dish_for`) → Messer → `cooking` (Spielzeit über

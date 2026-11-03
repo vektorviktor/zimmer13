@@ -1549,8 +1549,8 @@ func try_pick_up(item: Item) -> void:
 	if carried_cat and not item.goes_to_pocket():
 		Game.say("Erst %s absetzen [G]." % carried_cat.display_name)
 		return
-	if item.owner_id != "" and item.owner_id != "player" and Game.social:
-		Game.social.on_player_took(item)
+	if item.owner_id != "" and item.owner_id != "player" and Game.social and not item.has_meta("cat_took"):
+		Game.social.on_player_took(item)   # was eine Katze verschleppt hat, findet man nur (6.18, 3)
 	if item.goes_to_pocket():
 		_pocket(item)
 		return

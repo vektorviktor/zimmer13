@@ -412,6 +412,15 @@ done <<'LIST'
 1000|trauer,gaeste|--trauer=bruno,ohne --trace
 300|trauer,bitten|--trauer=edna,wunsch --trace
 600|trauer,speichern|--trauer=edna,halten --savetest
+1600|zustand,bitten,puppe|--zustand=puppe --trace
+300|zustand,bitten,kernfiguren|--zustand=puppe,edna --trace
+300|zustand,bitten,lakengeist,katzen|--zustand=geist --trace
+300|zustand,bitten,verletzt|--zustand=verletzt --trace
+300|zustand,bitten,kinder,katzen|--zustand=waise --trace
+300|zustand,bitten,katzen|--zustand=katze --trace
+300|zustand,bitten|--zustand=puppe,,verfallen --trace
+300|zustand,bitten,verletzt|--zustand=verletzt,,verfallen --trace
+600|zustand,speichern|--zustand=katze,,halten --savetest
 600|budget,speichern|--budget=edna --savetest
 2000|spieler|--sprint --trace
 600|gespraech,gaeste|--gespraech=frage,night,bruno,2 --trace

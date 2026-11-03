@@ -56,7 +56,7 @@ const NOTE_LINES := {
 
 ## Wünsche je Zustand. kind: door_deco (irgendeine Deko, er stellt sie vor die Tür), cat (eine Katze herantragen),
 ## soup (etwas Warmes: WARM_FOOD), deco_back (das verschleppte Stück zurück). Platzhalter wie GuestRequests._fill_texts,
-## dazu {cat} und {thing} (deco_back).
+## dazu {cat}, {thing} und {what} (deco_back).
 const WISHES := {
 	"doll": {"kind": "door_deco", "task": "Deko für {name}s Tür (die Puppe saß davor)",
 		"ask": "Die Puppe saß vor meiner Tür … Bringst du mir etwas für die Tür? Irgendwas Helles. Hauptsache, sie sieht nicht mehr so verlassen aus.",
@@ -72,12 +72,13 @@ const WISHES := {
 	"wound": {"kind": "soup", "task": "Etwas Warmes aus der Küche zu {name} (gebratener Kürbis oder Tee)",
 		"ask": "Ich fühl mich wie gerädert. Bringst du mir was Warmes aus der Küche? Einen gebratenen Kürbis oder einen Tee – irgendwas.",
 		"thanks": "Warm … das tut so gut. Danke, dass du an mich denkst."},
-	"cat_took": {"kind": "deco_back", "task": "{name} {thing} zurückbringen ({cat} hat es verschleppt)",
-		"ask": "{cat} hat mir {thing} weggeschleppt. Wenn du es irgendwo findest – bringst du es mir zurück?",
+	"cat_took": {"kind": "deco_back", "task": "{name} {what} zurückbringen ({cat} hat es verschleppt)",
+		"ask": "{cat} hat mir {thing} weggeschleppt. Wenn du das irgendwo findest – bringst du's mir zurück?",
 		"thanks": "Da ist es ja wieder! Danke. Und dieser Katze sag ich was."},
 }
 ## Was die Katze verschleppt (HotelCat.GIFT_KINDS) – als Satzteil
 const THINGS := {Item.Kind.LEAVES: "mein Herbstlaub", Item.Kind.COBWEB: "meine Spinnweben", Item.Kind.CANDLE: "meine Kerze"}
+const THINGS_TASK := {Item.Kind.LEAVES: "das Herbstlaub", Item.Kind.COBWEB: "die Spinnweben", Item.Kind.CANDLE: "die Kerze"}
 ## Kernfiguren (6.0): eigener Wunsch statt Deko, Katze oder Warmem (Puppe, Lakengeist, verletzt) – ein Gegenstand
 const CORE := {
 	"edna": {"kind": "item", "item": Item.Kind.TEA, "task": "Edna einen Kamillentee bringen",

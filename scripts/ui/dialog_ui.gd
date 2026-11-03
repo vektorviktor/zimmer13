@@ -107,6 +107,8 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 			offer = requests.offer_for(guest)
 		if remembered == "" and thanks == "" and offer.is_empty():
 			_question = talk.pick_question(guest, force_question)
+	elif witness == "" and guest.wound != "" and guest.wound_note == "" and guest.fear < 60.0:
+		offer = requests.offer_for(guest, false, true)   # verletzt: nur sein Wunsch (6.18 Punkt 3)
 	if witness != "":
 		_say(witness)   # Überlebender (6.17): bei jedem Gespräch ein neues Detail, alles stimmt
 		Game.social.on_monster_talk(guest)
@@ -118,6 +120,8 @@ func open(p_guest: Guest, force_question: String = "") -> void:
 		experience = {"told": true}
 	elif guest.wound != "":
 		_say(Wounds.GREET[guest.wound].pick_random())
+		if not offer.is_empty():
+			_text.text += " „%s“" % String(offer["ask"])
 		experience = {"told": true}
 		greeting_only = true
 	elif not experience.is_empty():

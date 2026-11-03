@@ -149,7 +149,11 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 72: Trauer der Gäste (Spielkonzept 6.12; ZIM-41): an Gegenständen „memorial“ (Gedenkkerze eines Freundes für diesen
 ##     Toten – niemand klaut sie); die Trauer selbst steht in der Haltung „grieving“ (id, visits, next, lit) – ältere
 ##     Stände laden weiter, ihre Trauernden gehen nicht zum Gedenkort (ohne ID des Toten)
-const VERSION := 72
+## 73: Schwere Momente (Spielkonzept 6.18, 3; ZIM-161): Bitten mit „state“ (der Zustand, mit dem der Wunsch verfällt),
+##     social.requests.granted (erfüllte Wünsche je Gast und Zustand), an Gegenständen „cat_took“ (von einer Katze
+##     verschleppt – wem es gehört); die Zustände selbst stehen in den Haltungen (after_ghost, doll_door, cat_took) –
+##     ältere Stände laden weiter, ohne Wünsche aus schweren Momenten
+const VERSION := 73
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -737,6 +741,8 @@ func _item_data(item: Item) -> Dictionary:
 		d["taken"] = String(item.get_meta("taken_from"))
 	if item.has_meta("memorial"):   # Gedenkkerze eines Freundes (6.12)
 		d["memorial"] = String(item.get_meta("memorial"))
+	if item.has_meta("cat_took"):   # von einer Katze verschleppt – der Besitzer wünscht es sich zurück (6.18, 3)
+		d["cat_took"] = String(item.get_meta("cat_took"))
 	return d
 
 
@@ -1013,6 +1019,8 @@ func _make_item(entry: Dictionary) -> Item:
 		item.set_meta("taken_from", String(entry["taken"]))
 	if entry.has("memorial"):
 		item.set_meta("memorial", String(entry["memorial"]))
+	if entry.has("cat_took"):
+		item.set_meta("cat_took", String(entry["cat_took"]))
 	if item.has_wick():   # brennt oder nicht (Spielkonzept 5.12); in Kürbis und Totenkopf sagt der Zusatz, ob eine Kerze steckt
 		if bool(entry.get("lit", false)) and not item.lit:
 			item.light_up(false)

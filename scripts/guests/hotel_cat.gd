@@ -533,6 +533,7 @@ func _arrive() -> void:
 			if is_instance_valid(item) and not item.is_held and item.global_position.distance_to(global_position) < 0.8:
 				if Game.social:
 					Game.social.cat_thefts[item.owner_id] = display_name
+					Tender.cat_took(Game.social.guest_by_id(item.owner_id), item, display_name)   # Wunsch: zurück (6.18, 3)
 				_carry(item)
 				_head_home()
 			else:

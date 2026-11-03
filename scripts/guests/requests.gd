@@ -12,6 +12,11 @@ extends Node
 ## und außerhalb der kleinen Bitten; GuestQuarrels), memorial (Trauerwunsch, 6.12, 6.18 Punkt 3: eine Kerze für den Toten
 ## vor seine Tür – solange er trauert, außerhalb der kleinen Bitten; erfüllt durch GuestDeaths.honor, Dank beim nächsten
 ## Gespräch; endet die Trauer vorher, verfällt der Wunsch still und wird im Notizbuch gestrichen).
+## Wünsche aus schweren Momenten (6.18 Punkt 3, ZIM-161, Tender): je Zustand fest – Deko für die Tür (door_deco, nach der
+## Puppe), eine Katze zum Trösten (cat, nach dem Lakengeist und für Waisen), etwas Warmes ans Bett (soup, verletzt), die
+## verschleppte Deko zurück (deco_back); Kernfiguren eigene (Tender.CORE, Art item). Feld „state“: Endet der Zustand,
+## verfällt der Wunsch still und wird im Notizbuch gestrichen. Wie memorial außerhalb der kleinen Bitten, ohne Frist;
+## je Zustand einmal (granted). Erfüllt: Beziehung ↑ (TENDER_REWARD, im schweren Moment doppelt), er erzählt es weiter.
 ## Der Gast fragt von sich aus (offer_for, Chance OFFER_CHANCE) oder auf „Kann ich dir irgendwie helfen?“. Angenommen →
 ## Notizbuch (3.10); abgelehnt kostet nichts, bei Freunden ein wenig. Kind von Social, erreichbar über
 ## Game.social.requests. Gespeichert unter social.requests.
@@ -27,12 +32,17 @@ const SMALL_TIER := Social.Tier.NEUTRAL
 const SMALL_REWARD := 6.0
 const SMALL_PRAISE := 1.5
 ## Bitten außerhalb der kleinen (ohne Frist, nicht in SMALL_PER_DAY/MAX_SMALL)
-const OUTSIDE_SMALL := ["reconcile", "memorial"]
+const OUTSIDE_SMALL := ["reconcile", "memorial", "door_deco", "cat", "soup", "deco_back"]
 ## Verpasst (Ende des Spieltags) bzw. abgelehnt als Freund
 const MISSED := -2.0
 const DECLINED_FRIEND := -1.0
 ## So oft fragt er von sich aus zu Beginn eines Gesprächs (Herzensbitte, kleine Bitte)
-const OFFER_CHANCE := {"heart": 0.6, "small": 0.35, "memorial": 0.7}
+const OFFER_CHANCE := {"heart": 0.6, "small": 0.35, "memorial": 0.7, "tender": 0.7}
+## Wunsch aus einem schweren Moment erfüllt: so viel Beziehung (im Zustand doppelt), so viel Lob bei seinen Freunden
+const TENDER_REWARD := 8.0
+const TENDER_PRAISE := 2.5
+## So oft wird geprüft, ob ein Zustand vorbei ist (Spielsekunden)
+const STATE_SCAN := 1.0
 ## Ein Begleiter für die Bitte „zur Bar“ kommt so lange mit (s)
 const ESCORT_TIME := 300.0
 
@@ -119,6 +129,8 @@ const REMIND := ["Denkst du noch an meine Bitte?", "Und – hast du an mich geda
 var active: Array[Dictionary] = []
 ## Gast-ID → "done" (erfüllt) bzw. "open" (angenommen) – jeder bekommt seine Herzensbitte nur einmal
 var hearts := {}
+## Gast-ID → {Zustand: Tender.instance} – diesen Wunsch hat er in diesem Zustand schon erfüllt bekommen
+var granted := {}
 var _small_day := -1
 var _small_today := 0
 var _next_id := 1
@@ -126,9 +138,10 @@ var _offered := {}    ## Gast-ID → Spieltag: heute schon gefragt (nicht gespei
 var _reminded := {}   ## Gast-ID → Spieltag: heute schon erinnert (nicht gespeichert)
 var _day := -1
 var _forced := ""     ## --bitte: diese Bitte stellt der nächste Gast sicher (herz, kerze, kuerbis …)
+var _state_scan := 0.0
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if Game.social == null or Game.director == null:
 		return
 	var today := Calendar.today()
@@ -136,18 +149,26 @@ func _process(_delta: float) -> void:
 		if _day >= 0:
 			_end_of_day()
 		_day = today
+	_state_scan -= delta
+	var scan := _state_scan <= 0.0
+	if scan:
+		_state_scan = STATE_SCAN
 	for req in active.duplicate():
 		if req["kind"] == "escort":
 			_check_escort(req)
 		elif req["kind"] == "memorial" and not req["told"]:
 			_check_memorial(req)
+		elif scan and req["state"] != "" and not _check_state(req):
+			continue
+		elif req["kind"] == "cat":
+			_check_cat(req)
 
 
 # --- Fragen, Annehmen, Ablehnen ----------------------------------------------------------------
 
 ## Bitte, die er zu Beginn des Gesprächs von sich aus stellt ({} = keine). asked: der Spieler hat gefragt
-## („Kann ich dir irgendwie helfen?“) – dann ohne Zufall.
-func offer_for(g: Guest, asked: bool = false) -> Dictionary:
+## („Kann ich dir irgendwie helfen?“) – dann ohne Zufall. tender_only: nur ein Wunsch aus dem schweren Moment (verletzt).
+func offer_for(g: Guest, asked: bool = false, tender_only: bool = false) -> Dictionary:
 	if g.dead or Grinch.is_grinch(g) or own_request(g) or (not asked and _forced == "" and int(_offered.get(g.id, -1)) == Calendar.today()):
 		return {}
 	var req := {}
@@ -156,8 +177,13 @@ func offer_for(g: Guest, asked: bool = false) -> Dictionary:
 		_forced = ""
 		return req
 	var dead := _memorial_for(g)
+	var state := tender_state(g)
 	if dead and (asked or randf() < float(OFFER_CHANCE["memorial"])):   # Trauer geht vor (6.18, 3)
 		req = make_memorial(g, dead)
+	elif state != "" and (asked or randf() < float(OFFER_CHANCE["tender"])):   # dann die übrigen schweren Momente
+		req = make_tender(g, state)
+	elif tender_only:
+		pass
 	elif _heart_open_to(g) and (asked or randf() < float(OFFER_CHANCE["heart"])):
 		req = make_heart(g)
 	elif _small_allowed(g) and (asked or randf() < float(OFFER_CHANCE["small"])):
@@ -175,13 +201,13 @@ func accept(g: Guest, req: Dictionary) -> String:
 	active.append(req)
 	if req["heart"]:
 		hearts[g.id] = "open"
-	elif not req["kind"] in OUTSIDE_SMALL:
+	elif not _outside_small(req):
 		if _small_day != Calendar.today():
 			_small_day = Calendar.today()
 			_small_today = 0
 		_small_today += 1
 	if Game.notebook:
-		Game.notebook.add_task(req["id"], req["task"], "", g, "" if req["heart"] or req["kind"] in OUTSIDE_SMALL else "heute")
+		Game.notebook.add_task(req["id"], req["task"], "", g, "" if req["heart"] or _outside_small(req) else "heute")
 	if Game.tracing:
 		print("[Bitte] %s: %s angenommen (%s)" % [g.display_name, req["task"], req["kind"]])
 	if req["kind"] == "escort":
@@ -234,10 +260,27 @@ func thanks_on_greet(g: Guest) -> String:
 ## stellt ihn vor seine Tür (Guest.gift_to_door).
 func on_gift(g: Guest, item: Item) -> String:
 	var req := request_of(g)
-	if req.is_empty() or req["kind"] != "item" or not _fits(req, item):
+	if req.is_empty():
 		return ""
-	if int(req["item"]) in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN]:
-		g.gift_to_door = true
+	match String(req["kind"]):
+		"item":
+			if not _fits(req, item):
+				return ""
+			if int(req["item"]) in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN]:
+				g.gift_to_door = true
+		"door_deco":   # nach der Puppe: irgendeine Deko – sie kommt gleich vor seine Tür
+			if item.deco_strength <= 0.0 or item.kind in Guest.FOOD_GIFTS:
+				return ""
+			g.gift_to_door = true
+		"soup":   # verletzt: etwas Warmes aus der Küche
+			if not item.kind in Tender.WARM_FOOD:
+				return ""
+		"deco_back":   # genau das Stück, das die Katze verschleppt hat
+			if String(item.get_meta("cat_took", "")) != g.id:
+				return ""
+			item.remove_meta("cat_took")
+		_:
+			return ""
 	return _complete(g, req)
 
 
@@ -296,6 +339,10 @@ func _complete(g: Guest, req: Dictionary) -> String:
 			Game.achievements.unlock("heart_request")   # Spielkonzept 8.11
 		Game.social.change_relation(g, HEART_REWARD)   # einmalig, außerhalb des Tagesbudgets (6.18, 5)
 		Game.social.pals.praise(g, HEART_PRAISE)
+	elif req["state"] != "":   # Wunsch aus einem schweren Moment (6.18, 3): zählt im Zustand doppelt, er erzählt es weiter
+		_grant(g, String(req["state"]))
+		Game.social.talk.friendly(g, TENDER_REWARD)
+		Game.social.pals.praise(g, TENDER_PRAISE)
 	else:
 		Game.social.talk.friendly(g, SMALL_REWARD)
 		Game.social.pals.praise(g, SMALL_PRAISE)
@@ -320,7 +367,7 @@ func _fits(req: Dictionary, item: Item) -> bool:
 ## Kleine Bitten gelten nur bis zum Ende des Spieltags: „zu spät“, er ist ein wenig enttäuscht.
 func _end_of_day() -> void:
 	for req in active.duplicate():
-		if req["heart"] or req["told"] or req["kind"] in OUTSIDE_SMALL:
+		if req["heart"] or req["told"] or _outside_small(req):
 			continue
 		active.erase(req)
 		if Game.notebook:
@@ -348,7 +395,7 @@ func _small_allowed(g: Guest) -> bool:
 		return false
 	var today_count := _small_today if _small_day == Calendar.today() else 0
 	return today_count < SMALL_PER_DAY and active.filter(func(r: Dictionary) -> bool:
-		return not r["heart"] and not r["kind"] in OUTSIDE_SMALL).size() < MAX_SMALL
+		return not r["heart"] and not _outside_small(r)).size() < MAX_SMALL
 
 
 ## Seine Herzensbitte: Kernfigur eigene, sonst nach Charakter. Kein Zufall – aus Charakter und ID (Spielstände).
@@ -413,6 +460,103 @@ func _check_memorial(req: Dictionary) -> void:
 		Game.notebook.miss_task(String(req["id"]))
 
 
+# --- Wünsche aus schweren Momenten (6.18 Punkt 3, Tender) --------------------------------------
+
+## Zählt nicht zu den kleinen Bitten (ohne Frist, nicht in SMALL_PER_DAY/MAX_SMALL)?
+func _outside_small(req: Dictionary) -> bool:
+	return req["kind"] in OUTSIDE_SMALL or req["state"] != ""
+
+
+## Der schwere Moment, aus dem er sich gerade etwas wünscht ("" = keiner): der erste nach Tender.ORDER, dessen Wunsch
+## er in diesem Zustand noch nicht erfüllt bekommen hat und der sich erfüllen lässt (Katzen da, Stück noch da).
+func tender_state(g: Guest) -> String:
+	for state: String in Tender.ORDER:
+		if not Tender.has_state(g, state) or _granted(g, state):
+			continue
+		if state == "doll" and g.is_child():
+			continue
+		var core := Tender.CORE.has(g.id) and state in Tender.CORE_STATES
+		if not core and state in ["ghost", "orphan"] and get_tree().get_nodes_in_group("cats").is_empty():
+			continue
+		if state == "cat_took" and _cat_loot(g) == null:
+			continue
+		return state
+	return ""
+
+
+## Sein Wunsch in diesem Zustand: Kernfiguren eigene, sonst nach Tender.WISHES (Kinder mit eigenen Sätzen).
+func make_tender(g: Guest, state: String) -> Dictionary:
+	var core := Tender.CORE.has(g.id) and state in Tender.CORE_STATES
+	var src: Dictionary = (Tender.CORE[g.id] if core else Tender.WISHES[state] as Dictionary).duplicate()
+	if not core and g.is_child() and Tender.WISHES.has(state + "_child"):
+		src.merge(Tender.WISHES[state + "_child"], true)
+	var req := _base(g, src, false)
+	req["state"] = state
+	if state == "cat_took":
+		var s: Dictionary = g.stances["cat_took"]
+		var kind := int(s.get("kind", -1))
+		req["item"] = kind
+		for key in ["task", "ask", "thanks"]:
+			req[key] = String(req[key]).replace("{cat}", String(s.get("cat", "Die Katze"))) \
+				.replace("{thing}", String(Tender.THINGS.get(kind, "meine Deko"))) \
+				.replace("{what}", String(Tender.THINGS_TASK.get(kind, "die Deko")))
+	_fill_texts(g, req)
+	return req
+
+
+## Das Stück, das ihm eine Katze verschleppt hat und das es noch gibt (null = keins).
+func _cat_loot(g: Guest) -> Item:
+	for node in get_tree().get_nodes_in_group("items"):
+		if String((node as Item).get_meta("cat_took", "")) == g.id:
+			return node
+	return null
+
+
+func _granted(g: Guest, state: String) -> bool:
+	var states: Dictionary = granted.get(g.id, {})
+	return states.has(state) and String(states[state]) == Tender.instance(g, state)
+
+
+func _grant(g: Guest, state: String) -> void:
+	if not granted.has(g.id):
+		granted[g.id] = {}
+	granted[g.id][state] = Tender.instance(g, state)
+
+
+## Neue Verletzung (Guest.wound_by): Der Wunsch der alten ist vergessen.
+func forget_granted(g: Guest, state: String) -> void:
+	if granted.has(g.id):
+		(granted[g.id] as Dictionary).erase(state)
+
+
+## Katze zum Trösten: Trägst du eine Katze auf dem Arm nah genug heran, ist der Wunsch erfüllt – er krault sie.
+func _check_cat(req: Dictionary) -> void:
+	var p := Game.player
+	if p == null or p.carried_cat == null or p.in_dialog:
+		return
+	var g := Game.social.guest_by_id(String(req["guest"]))
+	if g == null or g.dead or g.global_position.distance_to(p.global_position) > Tender.CAT_RANGE:
+		return
+	var cat: HotelCat = p.carried_cat
+	Game.noise("cat_purr", cat.global_position, cat)
+	g.fear = maxf(0.0, g.fear - Tender.CAT_CALM)
+	g.say(_complete(g, req))
+
+
+## Gilt sein Zustand noch? Sonst verfällt der Wunsch still und wird im Notizbuch gestrichen, ohne Malus – die Kränkung
+## kommt, wenn überhaupt, über die Besuche (Tender.on_grief_ended, Wounds.NEGLECT). false = verfallen.
+func _check_state(req: Dictionary) -> bool:
+	var g := Game.social.guest_by_id(String(req["guest"]))
+	if g and not g.dead and Tender.has_state(g, String(req["state"])):
+		return true
+	active.erase(req)
+	if Game.notebook:
+		Game.notebook.miss_task(String(req["id"]))
+	if Game.tracing and g:
+		print("[Wunsch] %s: „%s“ verfällt – der Zustand ist vorbei" % [g.display_name, req["task"]])
+	return false
+
+
 ## Kleine Bitte nach Lage ({} = gerade keine)
 func _make_small(g: Guest) -> Dictionary:
 	var key := ""
@@ -454,7 +598,7 @@ func _base(g: Guest, src: Dictionary, heart: bool) -> Dictionary:
 		"item": int(src.get("item", -1)), "variety": "", "carved": false, "game": String(src.get("game", "")),
 		"target": "", "money": int(src.get("money", 0)), "task": String(src.get("task", "")),
 		"ask": String(src.get("ask", "")), "thanks": String(src.get("thanks", "")), "say": String(src.get("say", "")),
-		"reply": String(src.get("reply", "")), "day": -1, "told": false}
+		"reply": String(src.get("reply", "")), "day": -1, "told": false, "state": ""}
 
 
 ## Platzhalter: {name} (Auftraggeber), {target}, {giver}, {fav}/{fav_nom} (Sorte im Akkusativ/Nominativ),
@@ -499,7 +643,7 @@ func _message_target(g: Guest) -> Guest:
 
 func save_state() -> Dictionary:
 	return {"active": active.duplicate(true), "hearts": hearts.duplicate(), "small_day": _small_day,
-		"small_today": _small_today, "next_id": _next_id}
+		"small_today": _small_today, "next_id": _next_id, "granted": granted.duplicate(true)}
 
 
 ## Ältere Stände ohne „requests“: keine Bitten
@@ -513,6 +657,13 @@ func load_state(d: Dictionary) -> void:
 	var h: Dictionary = d.get("hearts", {})
 	for id in h:
 		hearts[String(id)] = String(h[id])
+	granted = {}
+	var gr: Dictionary = d.get("granted", {})
+	for id in gr:
+		var states := {}
+		for state in (gr[id] as Dictionary):
+			states[String(state)] = String(gr[id][state])
+		granted[String(id)] = states
 	_small_day = int(d.get("small_day", -1))
 	_small_today = int(d.get("small_today", 0))
 	_next_id = int(d.get("next_id", 1))
@@ -528,7 +679,7 @@ func _base_from(r: Dictionary) -> Dictionary:
 		"carved": bool(r.get("carved", false)), "game": String(r.get("game", "")), "target": String(r.get("target", "")),
 		"money": int(r.get("money", 0)), "task": String(r.get("task", "")), "ask": String(r.get("ask", "")),
 		"thanks": String(r.get("thanks", "")), "say": String(r.get("say", "")), "reply": String(r.get("reply", "")),
-		"day": int(r.get("day", -1)), "told": bool(r.get("told", false))}
+		"day": int(r.get("day", -1)), "told": bool(r.get("told", false)), "state": String(r.get("state", ""))}
 
 
 func reset() -> void:
@@ -603,3 +754,144 @@ func _debug_fulfil(g: Guest) -> void:
 			var target := Game.social.guest_by_id(String(req["target"]))
 			print("[Bitte] %s antwortet: %s" % [target.display_name, deliver(target, req)])
 			print("[Bitte] %s dankt: %s" % [g.display_name, thanks_on_greet(g)])
+
+
+# --- Debug (--zustand) -----------------------------------------------------------------------------
+
+## --zustand=art[,gast[,erfuellen|verfallen|halten]]: Schwere Momente (6.18 Punkt 3, Tender). art: puppe (Puppe vor
+## seiner Tür), geist (vom Lakengeist losgerissen), verletzt (Axtwunde), waise (seine Eltern sterben – ein Kind),
+## katze (eine Katze verschleppt sein Laub). Prüft Zustand, doppelte Beziehung, passendes Geschenk, eigene Begrüßung und
+## den Wunsch (Kernfiguren ihren eigenen); er wird angenommen und · erfuellen (Standard): du erfüllst ihn (Geschenk,
+## Katze auf dem Arm heran, verschlepptes Laub aufheben – kein Diebstahl – und zurückgeben), er dankt, die Beziehung
+## steigt, derselbe Wunsch kommt nicht wieder · verfallen: der Zustand endet, der Wunsch wird still gestrichen ·
+## halten: der Wunsch bleibt offen (für --savetest). Meldet „[Wunsch] … ok“ bzw. „FEHLER“.
+func debug_tender(parts: PackedStringArray) -> void:
+	var social := Game.social
+	var p := Game.player
+	var art := parts[0] if parts.size() > 0 and parts[0] != "" else "puppe"
+	var what := parts[2] if parts.size() > 2 and parts[2] != "" else "erfuellen"
+	if not art in ["puppe", "geist", "verletzt", "waise", "katze"] or not what in ["erfuellen", "verfallen", "halten"]:
+		print("[Wunsch] Debug: --zustand=puppe|geist|verletzt|waise|katze[,gast[,erfuellen|verfallen|halten]]")
+		return
+	var g: Guest = social.find_guest(parts[1]) if parts.size() > 1 and parts[1] != "" else null
+	if g == null:   # ein passender Gast: Kind mit Eltern bzw. ein Erwachsener ohne Kernrolle
+		for other in social.living_guests():
+			var o: Guest = other
+			if Grinch.is_grinch(o) or o.is_core() or (o.is_child() != (art == "waise")) or (art == "waise" and o.parent_guest() == null):
+				continue
+			g = o
+			break
+	if g == null or g.dead:
+		print("[Wunsch] Debug: kein passender Gast")
+		return
+	var check := func(text: String, ok: bool) -> void:
+		print("[Wunsch] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	if Game.notebook:
+		Game.notebook.give(true)   # sonst trägt es nichts ein
+	for req in active.duplicate():
+		if req["guest"] == g.id:
+			active.erase(req)
+	g.relation = 20.0
+	g.fear = 0.0
+	g.global_position = p.global_position + (-p.global_transform.basis.z) * 1.6
+	g._set_idle(30.0)
+	var state: String = {"puppe": "doll", "geist": "ghost", "verletzt": "wound", "waise": "orphan", "katze": "cat_took"}[art]
+	var loot: Item = null
+	match art:
+		"puppe":
+			Tender.doll_door(g)
+		"geist":
+			g.wound_by("choke")
+			g.wound_bed = 0.0   # er bleibt vor dir stehen
+			Tender.after_ghost(g)
+		"verletzt":
+			g.wound_by("axe")
+			g.wound_bed = 0.0   # er bleibt vor dir stehen
+		"waise":
+			var parent := g.parent_guest()
+			for other in social.living_guests():   # der ganze Haushalt der Eltern
+				if other != g and not (other as Guest).is_child() and (other as Guest).housemate_of(g):
+					(other as Guest).die("monster")
+					social.on_guest_died(other, "monster", true)
+			if parent and not parent.dead:
+				parent.die("monster")
+				social.on_guest_died(parent, "monster", true)
+			g.clear_stance("grieving")   # sonst geht der Trauerwunsch vor (eigener Test: --trauer)
+			g.relation = 20.0
+		"katze":
+			loot = Item.create(Item.Kind.LEAVES)
+			social.get_parent().add_child(loot)
+			loot.owner_id = g.id
+			loot.global_position = p.global_position + (-p.global_transform.basis.x) * 1.0 + Vector3(0, 0.05, 0)
+			Tender.cat_took(g, loot, "Minka")
+	print("[Wunsch] Debug: %s – %s (%s)" % [g.display_name, state, what])
+	check.call("Zustand %s" % state, Tender.has_state(g, state))
+	if art != "katze":
+		check.call("empfindlich", Tender.is_tender(g))
+		var before := g.relation
+		social.change_relation(g, 2.0)
+		check.call("zählt doppelt (+%.1f)" % (g.relation - before), g.relation - before > 2.0 * (1.0 - before / 110.0) * 1.5)
+		if art != "verletzt":   # verletzt: Wounds.fitting wie bisher
+			var sample := Item.create({"puppe": Item.Kind.SPIDER, "geist": Item.Kind.CANDLE, "waise": Item.Kind.SWEETS}[art])
+			check.call("passendes Geschenk %s" % sample.display_name, Tender.fitting(g, sample))
+			sample.free()
+			check.call("eigene Begrüßung: „%s“" % Tender.greet(g), Tender.greet(g) != "")
+	var core := Tender.CORE.has(g.id) and state in Tender.CORE_STATES
+	var want: String = "item" if core else String((Tender.WISHES[state] as Dictionary)["kind"])
+	var req := offer_for(g, true)
+	check.call("Wunsch „%s“" % String(req.get("ask", "")), req.get("kind", "") == want and req.get("state", "") == state)
+	if req.is_empty():
+		return
+	accept(g, req)
+	check.call("im Notizbuch: „%s“" % String(req["task"]), Game.notebook == null or Game.notebook.task_state(String(req["id"])) == Notebook.TaskState.OPEN)
+	check.call("zählt nicht zu den kleinen Bitten", _outside_small(req))
+	if what == "halten":
+		return
+	if what == "verfallen":
+		match state:
+			"wound":
+				g._heal()
+			"orphan":
+				print("[Wunsch] Debug: verwaist bleibt bis Halloween – nichts verfällt")
+				return
+			_:
+				g.set_stance({"doll": "doll_door", "ghost": "after_ghost", "cat_took": "cat_took"}[state], 0.5)
+		get_tree().create_timer(STATE_SCAN * 2.0 + 1.0, false).timeout.connect(func() -> void:
+			check.call("verfällt mit dem Zustand", request_of(g).is_empty())
+			check.call("im Notizbuch gestrichen", Game.notebook == null or Game.notebook.task_state(String(req["id"])) == Notebook.TaskState.LATE))
+		return
+	var rel := g.relation
+	var done := func() -> void:
+		check.call("erfüllt", request_of(g).is_empty() and (Game.notebook == null
+			or Game.notebook.task_state(String(req["id"])) == Notebook.TaskState.DONE))
+		check.call("Beziehung steigt (%.1f → %.1f)" % [rel, g.relation], g.relation > rel)
+		check.call("kommt nicht wieder", tender_state(g) != state)
+	if want == "cat":
+		var cats := get_tree().get_nodes_in_group("cats")
+		var cat: HotelCat = cats[0]
+		cat.global_position = p.global_position + Vector3(0.3, 0.05, 0.3)
+		cat.affection = HotelCat.CARRY_TRUST
+		cat.pick_up(p)
+		get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
+			print("[Wunsch] %s mit %s auf dem Arm" % [g.display_name, cat.display_name])
+			done.call())
+		return
+	var gift: Item = loot
+	if art == "katze":
+		var hostile := social.deed(g, "hostile")
+		p.try_pick_up(loot)
+		check.call("Aufheben ist kein Diebstahl", social.deed(g, "hostile") == hostile and not loot.has_meta("taken_from"))
+	else:
+		gift = Item.create(int(req["item"]) if want == "item" else {"door_deco": Item.Kind.SPIDER, "soup": Item.Kind.ROAST_PUMPKIN}[want])
+		p.receive_item(gift)
+	if not Game.dialog.visible:
+		Game.dialog.open(g)
+	Game.dialog.call("_gift", gift)
+	print("[Wunsch] %s sagt: %s" % [g.display_name, Game.dialog._text.text])
+	Game.dialog.close()
+	done.call()
+	if want == "door_deco":   # steht sie vor seiner Tür?
+		get_tree().create_timer(60.0, false).timeout.connect(func() -> void:
+			var front: Vector3 = g.home["door_front"]
+			check.call("Deko vor seiner Tür", is_instance_valid(gift) and not gift.is_held
+				and Vector2(gift.global_position.x - front.x, gift.global_position.z - front.z).length() < 3.0))
