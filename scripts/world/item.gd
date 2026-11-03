@@ -36,7 +36,7 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG, BAR_GAME, GLASS, RING }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG, BAR_GAME, GLASS, RING, FUSE }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -70,11 +70,12 @@ const PRICES := {
 	Kind.BAR_GAME: 2,
 	Kind.GLASS: 1,   # je Sorte: BarTap.SORTS (price)
 	Kind.RING: 0,    # Gerdas Ehering (4.25, ZIM-50) – unverkäuflich
+	Kind.FUSE: 0,    # Hauptsicherung des Aufzugs (7.4, ZIM-14) – das Hotel will sie zurück, Bruno nennt seinen Preis
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
 	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS, Kind.SALT, Kind.MUSIC_BOX, Kind.APPLE,
-	Kind.PUMPKIN_SEEDS, Kind.EGG, Kind.BAR_GAME, Kind.RING]
+	Kind.PUMPKIN_SEEDS, Kind.EGG, Kind.BAR_GAME, Kind.RING, Kind.FUSE]
 ## Spiele aus dem Spieleschrank in der Bar (Spielkonzept 6.10): eine Art, die Sorte steht im Zusatz (flavor) – damit
 ## Item.Kind nicht für jedes Spiel wächst. Die Flasche passt nicht in die Tasche.
 const BAR_GAMES := {"karten": "Kartenspiel", "deckel": "Bierdeckel", "quiz": "Quizkarten", "flasche": "Leere Flasche"}
@@ -1650,6 +1651,18 @@ func _build(extra: String) -> void:
 			band.rings = 24
 			band.ring_segments = 8
 			Geo.mesh(self, band, Mat.metal(Color(0.95, 0.76, 0.36)), Vector3(0, 0.002, 0)).scale = Vector3(1.0, 2.0, 1.0)
+		Kind.FUSE:
+			# Hauptsicherung des Aufzugs (Spielkonzept 7.4, ZIM-14): schwerer Keramikkörper mit Messingkappen, am Schild
+			# „AUFZUG“ – liegt quer (Achse X); eingesetzt am Sicherungskasten im Untergeschoss (PowerCut.FuseBox)
+			display_name = "Hauptsicherung („AUFZUG“)"
+			mass = 0.4
+			size = Vector3(0.14, 0.05, 0.05)
+			var body := Geo.mesh(self, Geo.cylinder(0.022, 0.1, 10), Mat.psx(Color(0.9, 0.88, 0.82)), Vector3(0, 0.024, 0))
+			body.rotation.z = PI / 2.0
+			for side: float in [-1.0, 1.0]:
+				var cap := Geo.mesh(self, Geo.cylinder(0.024, 0.02, 10), Mat.metal(GrandStair.BRASS), Vector3(side * 0.06, 0.024, 0))
+				cap.rotation.z = PI / 2.0
+			Geo.mesh(self, Geo.box(Vector3(0.05, 0.002, 0.02)), Mat.psx(Color(0.85, 0.75, 0.1)), Vector3(0, 0.047, 0))   # Schild
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)

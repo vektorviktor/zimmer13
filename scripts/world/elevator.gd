@@ -15,6 +15,14 @@ extends Node3D
 ## nicht. Wer über die Treppe West und die Kniestocktür oben ist und dort einmal ruft, schaltet den Halt dauerhaft frei
 ## (unlocked, im Spielstand). Niemand sonst fährt mit; der Ruf des Monsters an der Haltestelle (call_cabin) schaltet
 ## nichts frei.
+## Reparatur (7.4, ZIM-14): die drei Mängel aus dem Notizbuch des Hausmeisters – Schaltschlüssel in den Schlüsselschalter
+## unten im Bedienfeld (Push Do.KEY), Hauptsicherung in den Sicherungskasten (PowerCut.FuseBox), Bremse am Antrieb mit
+## der Kurbel lösen (LiftDrive). fix() hakt je Teil ab und streicht die Aufgabe im Notizbuch (CaretakerBook.fixed).
+## Mit Sperre (repair_lock) steht die Kabine bis dahin im EG mit offener Tür und dunkel; die Knöpfe sagen, was fehlt.
+## Sind alle drei behoben, geht das Licht an, ein „Ding“, Meilenstein und Autosave – und steigt man das nächste Mal
+## ein, schließt sie und fährt ohne Zutun zum untersten Halt (first_ride; dort kommt später U2 hin). Die Sperre ist aus
+## (REPAIR_LOCK), bis die Hauptsicherung ins Spiel kommt (ZIM-4): bis dahin fährt der Aufzug wie bisher, die Teile lassen
+## sich trotzdem beheben und abhaken. Debug --aufzug=reparatur schaltet sie für den Lauf ein.
 ## Rahmen: Ursprung = Mitte der Türöffnung auf der Wandmittellinie in Höhe des EG-Bodens, lokal +Z aus dem Schacht
 ## (vor die Tür), +X von dort aus gesehen rechts. Gebaut von LevelBuilder._elevators.
 
@@ -53,10 +61,11 @@ const LAMP_ON := Color(1.0, 0.72, 0.38)
 ## Rufknopf neben der Tür: Höhe der Mitte, Abstand vom Portal
 const CALL_Y := 1.1
 const CALL_GAP := 0.12
-## Bedienfeld (links in der Kabine): Mitte so weit hinter der Kabinenfront, Ober- und Unterkante, Breite
+## Bedienfeld (links in der Kabine): Mitte so weit hinter der Kabinenfront, Ober- und Unterkante (Platz für vier
+## Etagenknöpfe und den Schlüsselschalter), Breite
 const PANEL_Z := 0.65
 const PANEL_TOP := 1.56
-const PANEL_BOTTOM := 1.02
+const PANEL_BOTTOM := 0.95
 const PANEL_W := 0.17
 const BUTTON_R := 0.019        ## Knopf (Elfenbein bzw. gelb), darum ein Messingring
 const BUTTON_EM := 0.03
@@ -90,14 +99,25 @@ const GHOST_STEP := Vector2(4.0, 6.0)
 const GHOST_HOLD := Vector2(6.0, 15.0)
 const GHOST_DING := 0.3
 const DOOR_COLOR := Color(0.6, 0.48, 0.32)   ## Türblätter: dunkle Bronze
+## Reparatur (7.4): Sperre an? Aus, bis die Hauptsicherung ins Spiel kommt (ZIM-4). Die drei Teile in Notizbuch-Reihenfolge.
+const REPAIR_LOCK := false
+const REPAIR_PARTS: Array[String] = ["key", "fuse", "brake"]
+## Erste Fahrt nach der Reparatur: so lange steht man in der Kabine, dann schließt sie und fährt allein hinunter
+const FIRST_RIDE_DELAY := 2.0
+## Schlüsselschalter unten im Bedienfeld: Abstand unter dem Alarmknopf, Radius der Messingscheibe
+const KEY_SWITCH_GAP := 0.075
+const KEY_SWITCH_R := 0.016
 
-enum Do { CALL, FLOOR, OPEN, CLOSE, ALARM }
+enum Do { CALL, FLOOR, OPEN, CLOSE, ALARM, KEY }
 
 var working := true
 var stops: Array[float] = []      ## Bodenhöhen der Halte (Welt-y), von unten nach oben
 var levels: Array[int] = []       ## Stockwerk je Halt (−1 Untergeschoss, 0 EG, 1 …)
 var attic: Array[bool] = []       ## je Halt: im Dachgeschoss – angefahren erst, wenn freigeschaltet (7.10)
 var unlocked := false             ## Halt im Dachgeschoss freigeschaltet (einmal von oben gerufen)
+var repair_lock := REPAIR_LOCK    ## Reparatur als Sperre (7.4) – Debug --aufzug=reparatur
+var repaired: Array[String] = []  ## behobene Mängel aus REPAIR_PARTS (im Spielstand)
+var first_ride := false           ## repariert, die erste Fahrt allein nach unten steht noch aus (im Spielstand)
 var opening := Vector2(2.5, 2.4)  ## Öffnung im Plan: Breite, Höhe
 var shaft := Rect2()              ## Schacht innen, lokal (x, z)
 
@@ -142,6 +162,9 @@ var _ghost_path: Array[int] = []
 var _rng := RandomNumberGenerator.new()
 
 var _mirror: Mirror
+var _cab_lamp: Lamp
+var _key_in: Node3D       ## Schaltschlüssel im Schlüsselschalter (sichtbar, sobald gesteckt)
+var _first_wait := 0.0    ## so lange steht der Spieler schon in der Kabine (erste Fahrt)
 
 
 ## Ein Knopf (Ruf-, Etagen-, Tür- oder Alarmknopf): interagierbar, alles Weitere entscheidet der Aufzug.
@@ -192,6 +215,7 @@ func _ready() -> void:
 		_cab_y = stops[_at]
 		_build_cabin()
 		_show(_at)
+		_show_repair()
 	else:
 		_ghost_timer = _rng.randf_range(GHOST_PAUSE.x, GHOST_PAUSE.y) * 0.3
 
@@ -405,9 +429,9 @@ func _build_cabin() -> void:
 	_rails()
 	_mirror_wall()
 	_panel()
-	var lamp := Lamp.new().setup(Lamp.Style.FLUSH, "aufzug", LAMP_ENERGY, LAMP_RANGE, false)
-	lamp.position = Vector3(0, CAB_H, mid_z + len_in * 0.15)
-	cabin.add_child(lamp)
+	_cab_lamp = Lamp.new().setup(Lamp.Style.FLUSH, "aufzug", LAMP_ENERGY, LAMP_RANGE, false)
+	_cab_lamp.position = Vector3(0, CAB_H, mid_z + len_in * 0.15)
+	cabin.add_child(_cab_lamp)
 
 
 ## Drei Messinghandläufe (links, rechts, hinten) wie die Rohre der Rezeption: am Ende im Viertelbogen zur Wand, dort
@@ -522,6 +546,33 @@ func _panel() -> void:
 	y -= 0.1
 	var alarm := _button(holder, Vector3(0, y, 0.012), Do.ALARM, -1, _alarm_mat, "")
 	_bell(alarm)
+	_key_switch(holder, Vector3(0, y - KEY_SWITCH_GAP, 0.012))
+
+
+## Schlüsselschalter (7.4) unter dem Alarmknopf: Messingscheibe mit dunklem Zylinder und Schlitz; steckt der
+## Schaltschlüssel, ragt sein Griff quer heraus (gedreht).
+func _key_switch(holder: Node3D, pos: Vector3) -> void:
+	var push := Push.new()
+	push.elevator = self
+	push.action = Do.KEY
+	push.collision_layer = 4
+	push.collision_mask = 0
+	push.set_meta("interactable", push)
+	push.position = pos
+	holder.add_child(push)
+	var rim := Geo.mesh(push, Geo.cylinder(KEY_SWITCH_R, 0.006, 12), _brass, Vector3(0, 0, 0.003))
+	rim.rotation.x = PI / 2.0
+	var core := Geo.mesh(push, Geo.cylinder(KEY_SWITCH_R * 0.55, 0.008, 10), Mat.metal(Color(0.3, 0.3, 0.32)), Vector3(0, 0, 0.005))
+	core.rotation.x = PI / 2.0
+	Geo.mesh(push, Geo.box(Vector3(0.002, 0.009, 0.002)), Mat.psx(Color(0.05, 0.05, 0.05)), Vector3(0, 0, 0.0095))   # Schlitz
+	_key_in = Node3D.new()
+	_key_in.position = Vector3(0, 0, 0.01)
+	_key_in.visible = false
+	push.add_child(_key_in)
+	var steel := Mat.metal(Color(0.72, 0.73, 0.76))
+	Geo.mesh(_key_in, Geo.box(Vector3(0.004, 0.003, 0.016)), steel, Vector3(0, 0, 0.008))   # Schaft
+	Geo.mesh(_key_in, Geo.box(Vector3(0.026, 0.004, 0.018)), steel, Vector3(0, 0, 0.022))   # Griff, quer = gedreht
+	Geo.add_box_shape(push, Vector3(KEY_SWITCH_R * 2.4, KEY_SWITCH_R * 2.4, 0.03), Vector3(0, 0, 0.012))
 
 
 ## Zwei Dreiecke auf einem Türknopf: auseinander (auf) oder aufeinander zu (zu).
@@ -553,6 +604,15 @@ func _bell(push: Node3D) -> void:
 # --- Knöpfe -----------------------------------------------------------------------------------------------------
 
 func prompt(push: Push) -> String:
+	if push.action == Do.KEY:
+		if "key" in repaired:
+			return "Schlüsselschalter – der Schaltschlüssel steckt"
+		if Game.player and Game.player.has_key(CaretakerBook.KEY_ID):
+			return "Schaltschlüssel einstecken und drehen [E]"
+		return "Schlüsselschalter – ohne Schlüssel rührt sich das Bedienfeld nicht"
+	if working and not runs() and push.action in [Do.CALL, Do.FLOOR]:
+		var what := "Aufzug rufen" if push.action == Do.CALL else _floor_name(push.stop)
+		return "%s – %s" % [what, _stuck_text(push.action == Do.FLOOR)]
 	match push.action:
 		Do.CALL:
 			return "Aufzug rufen [E]"
@@ -570,7 +630,15 @@ func prompt(push: Push) -> String:
 
 
 func press(push: Push) -> void:
+	if push.action == Do.KEY:
+		if not "key" in repaired and Game.player and Game.player.has_key(CaretakerBook.KEY_ID):
+			Game.play_sound("fuse", 0.4)
+			fix("key")
+		return
 	Game.play_sound("blip", 0.25)
+	if working and not runs():
+		_press_stuck(push)
+		return
 	if not working or (push.action == Do.FLOOR and not serves(push.stop)):
 		# toter Schacht, Dachgeschoss noch nicht freigeschaltet: der Knopf leuchtet kurz, sonst nichts
 		_flash[_button_mats[push.stop]] = 1.2
@@ -596,6 +664,29 @@ func press(push: Push) -> void:
 				_alarm = ALARM_TIME
 				_set_glow(_alarm_mat, true)
 				Game.noise("elevator_alarm", cabin.global_position + Vector3(0, 1.2, 0), Game.player)
+
+
+## Ein Knopf, solange der Aufzug nicht repariert ist (7.4): ohne Hauptsicherung bleibt alles dunkel, ohne Schaltschlüssel
+## rührt sich das Bedienfeld nicht (der Rufknopf draußen leuchtet), sonst leuchtet der Knopf kurz – und fehlt nur noch
+## die Bremse, brummt der Motor an, aber die Kabine rührt sich nicht.
+func _press_stuck(push: Push) -> void:
+	if not "fuse" in repaired or (not "key" in repaired and push.action != Do.CALL):
+		return
+	var mat: ShaderMaterial = _button_mats[push.stop] if push.stop >= 0 else \
+		{Do.OPEN: _open_mat, Do.CLOSE: _close_mat, Do.ALARM: _alarm_mat}.get(push.action, _open_mat)
+	_flash[mat] = 1.2
+	_set_glow(mat, true)
+	if "key" in repaired and push.action in [Do.CALL, Do.FLOOR]:
+		Game.sound_at("motor", cabin.global_position + Vector3(0, 1.2, 0), MOTOR_RANGE * 0.6)
+
+
+## Woran es liegt, dass die Kabine nicht fährt – in der Reihenfolge, in der man es merkt (7.4); inside: Etagenknopf.
+func _stuck_text(inside: bool) -> String:
+	if not "fuse" in repaired:
+		return "kein Strom, nichts leuchtet"
+	if not "key" in repaired:
+		return "ohne Schaltschlüssel rührt sich das Bedienfeld nicht" if inside else "der Knopf leuchtet, sonst rührt sich nichts"
+	return "der Motor brummt, aber die Kabine rührt sich nicht"
 
 
 ## Etage gewünscht (Ruf- oder Etagenknopf). Steht die Kabine schon dort, geht die Tür auf.
@@ -634,6 +725,87 @@ func unlock() -> void:
 	SaveManager.on_progress("Aufzug hält im Dachgeschoss")
 
 
+# --- Reparatur (7.4) --------------------------------------------------------------------------------------------
+
+## Fährt die Kabine? Ohne Sperre immer, mit ihr erst, wenn alle drei Mängel behoben sind.
+func runs() -> bool:
+	return not repair_lock or repaired.size() == REPAIR_PARTS.size()
+
+
+## Ein Mangel ist behoben („key“, „fuse“, „brake“): abhaken, im Notizbuch streichen. Der letzte setzt den Aufzug in
+## Gang – mit Sperre Licht, „Ding“, Meilenstein und Autosave, dann die erste Fahrt (first_ride).
+func fix(part: String) -> void:
+	if part in repaired or not part in REPAIR_PARTS:
+		return
+	var was := runs()
+	repaired.append(part)
+	CaretakerBook.fixed(part)
+	if Game.tracing:
+		print("[Aufzug] Reparatur: %s behoben (%d von %d)" % [part, repaired.size(), REPAIR_PARTS.size()])
+	_show_repair()
+	if was or not runs():
+		return
+	first_ride = true
+	_hold = DOOR_HOLD   # die Tür stand offen, jetzt schließt sie wie sonst
+	Game.sound_at("ding", cabin.global_position + Vector3(0, 1.2, 0), MOTOR_RANGE)
+	if Game.diary:
+		Game.diary.note("lift_running", "Der Aufzug fährt wieder. Das Licht in der Kabine ging an, dann ein Ding – als hätte er gewartet.")
+	SaveManager.on_progress("Aufzug fährt wieder")
+
+
+## Für alle fahrenden Aufzüge: Mangel part behoben (Sicherungskasten, Antrieb).
+static func fix_all(tree: SceneTree, part: String) -> void:
+	for lift: Elevator in tree.get_nodes_in_group("elevators"):
+		lift.fix(part)
+
+
+## Ist part an einem fahrenden Aufzug behoben?
+static func part_fixed(tree: SceneTree, part: String) -> bool:
+	return tree.get_nodes_in_group("elevators").any(func(lift: Elevator) -> bool: return part in lift.repaired)
+
+
+## Sperre an oder aus (Debug --aufzug=reparatur): an – die Kabine steht mit offener Tür, bis sie repariert ist.
+func set_repair_lock(on: bool) -> void:
+	repair_lock = on
+	_show_repair()
+
+
+## Licht in der Kabine und Schaltschlüssel im Schalter nach dem Stand der Reparatur; steht sie still, die Tür offen.
+func _show_repair() -> void:
+	if _key_in:
+		_key_in.visible = "key" in repaired
+	if _cab_lamp:
+		_cab_lamp.switched_on = runs()
+		_cab_lamp.apply_state()
+	if not runs() and _at >= 0:
+		_door = 1.0
+		_door_dir = 0
+		_apply_doors()
+
+
+## Erste Fahrt (7.4): steht der Spieler eine Weile in der stehenden Kabine, schließt sie und fährt ohne Zutun zum
+## untersten Halt – auch wenn er einen anderen Knopf gedrückt hat. Steht sie schon dort, entfällt sie.
+func _first_ride(delta: float) -> void:
+	if _target >= 0 or _at < 0 or Game.player == null or not carries(Game.player.global_position):
+		_first_wait = 0.0
+		return
+	_first_wait += delta
+	if _first_wait < FIRST_RIDE_DELAY:
+		return
+	first_ride = false
+	_first_wait = 0.0
+	if _at == 0:
+		return
+	for i in _queue:
+		_lit[i] = false
+		_set_glow(_button_mats[i], false)
+	_queue.clear()
+	_queue.append(0)
+	_hold = 0.0
+	if Game.tracing:
+		print("[Aufzug] erste Fahrt nach der Reparatur: allein nach „%s“" % _label(0))
+
+
 func _set_glow(mat: ShaderMaterial, on: bool) -> void:
 	mat.set_shader_parameter("emission_energy", 2.2 if on else 0.0)
 
@@ -641,8 +813,10 @@ func _set_glow(mat: ShaderMaterial, on: bool) -> void:
 # --- Ablauf -----------------------------------------------------------------------------------------------------
 
 func _physics_process(delta: float) -> void:
-	if not working:
+	if not working or not runs():
 		return
+	if first_ride:
+		_first_ride(delta)
 	if _alarm > 0.0:
 		_alarm -= delta
 		if _alarm <= 0.0:
@@ -679,6 +853,8 @@ func _process(delta: float) -> void:
 		for i in stops.size():
 			if absf(stops[i] - _cab_y) < absf(stops[nearest] - _cab_y):
 				nearest = i
+		if not runs() and not "fuse" in repaired:
+			nearest = -1   # ohne Hauptsicherung bleibt die Anzeige dunkel
 		if nearest != _shown:
 			_show(nearest)
 	else:
@@ -828,6 +1004,8 @@ func open_doors() -> void:
 
 ## Fahrt ins oberste Stockwerk, das sie anfährt (bzw. ins EG, wenn sie schon oben steht), wählen (Debug: --aufzug=fahrt).
 func ride_to_top() -> void:
+	if not runs():
+		return
 	var top := stops.size() - 1
 	while top > 0 and not serves(top):
 		top -= 1
@@ -862,7 +1040,7 @@ func waiting_spot(i: int, out: float = 1.2) -> Array[Vector3]:
 ## Den Rufknopf am Halt i drücken (Spielkonzept 4.33: das Monster an der Haltestelle) – steht die Kabine dort mit
 ## geschlossener Tür, geht sie auf. Schaltet das Dachgeschoss nicht frei (7.10: das kann nur der Spieler).
 func call_cabin(i: int) -> void:
-	if serves(i):
+	if serves(i) and runs():
 		_request(i, false)
 
 
@@ -881,12 +1059,18 @@ func save_state() -> Dictionary:
 	var queue := _queue.duplicate()
 	if _target >= 0:
 		queue.push_front(_target)
-	return {"y": _cab_y, "queue": queue, "open": _door > 0.5 and _door_dir >= 0, "unlocked": unlocked}
+	return {"y": _cab_y, "queue": queue, "open": _door > 0.5 and _door_dir >= 0, "unlocked": unlocked,
+		"repaired": repaired.duplicate(), "first_ride": first_ride}
 
 
 ## Kabine an die gespeicherte Höhe; war sie unterwegs, fährt sie zum Ziel weiter.
 func load_state(d: Dictionary) -> void:
 	unlocked = bool(d.get("unlocked", false))
+	repaired.clear()
+	for part in d.get("repaired", []):
+		if String(part) in REPAIR_PARTS and not String(part) in repaired:
+			repaired.append(String(part))
+	first_ride = bool(d.get("first_ride", false))
 	_cab_y = float(d.get("y", stops[maxi(0, levels.find(0))]))
 	cabin.position.y = _cab_y - position.y
 	_queue.clear()
@@ -909,3 +1093,4 @@ func load_state(d: Dictionary) -> void:
 		_door = 1.0
 		_hold = DOOR_HOLD
 	_apply_doors()
+	_show_repair()

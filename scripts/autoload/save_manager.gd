@@ -165,7 +165,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 78: Kesselkatze als Führerin (Spielkonzept 4.26; ZIM-99): „boiler_cat“ (found: gefundene Story-Punkte ohne eigenen
 ##     Zustand, night: Nacht ihres letzten Auftauchens) – ältere Stände laden weiter, UV-Schriften gelten als ungefunden
 ## 79: Albtraum-Modus (Spielkonzept 8.9; ZIM-80): „nightmare_mode“ – ältere Stände laden weiter, als normales Spiel
-const VERSION := 79
+## 80: Reparatur des Aufzugs (Spielkonzept 7.4; ZIM-14): neue Art Item.Kind.FUSE, elevators.repaired (behobene Mängel)
+##     und elevators.first_ride – ältere Stände laden weiter, nichts ist behoben
+const VERSION := 80
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0

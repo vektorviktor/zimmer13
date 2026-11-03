@@ -5329,6 +5329,15 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
   Besorgen muss man ihn nicht.
 - **Belohnung beim ersten Start:** Das Licht in der Kabine geht an, ein „Ding“ – und **die erste Fahrt geht ohne Zutun
   nach U2**, obwohl es keinen Knopf dafür gibt.
+- *Umgesetzt 2026-11-03 (ZIM-14, Entscheidung des Nutzers: bauen, Sperre noch aus):* Schaltschlüssel in einen
+  Schlüsselschalter unten im Bedienfeld, Hauptsicherung (Gegenstand) ins Fach „AUFZUG“ am Sicherungskasten im
+  Maschinenraum, Bremse am **Aufzugsantrieb** (neue Planfarbe, bis dahin an der Nordwand des Maschinenraums) mit der
+  Kurbel: [E] halten, 20 s, quietscht alle 1,6 s (18 m, hört auch das ruhende Monster); Loslassen unterbricht, der
+  Fortschritt bleibt in der Sitzung. Jeder Teil wird im Notizbuch gestrichen. Vor der Reparatur steht die Kabine im
+  EG mit offener Tür und dunkel; ohne Sicherung leuchtet nichts, ohne Schlüssel rührt sich das Bedienfeld nicht, ohne
+  Bremse brummt nur der Motor. Danach Licht, „Ding“, Tagebuch, Autosave – und beim nächsten Einsteigen fährt sie nach
+  2 s allein zum **untersten Halt** (heute „U“, später U2). **Die Sperre ist aus**, bis die Hauptsicherung über den
+  Spind und Bruno ins Spiel kommt (ZIM-4); bis dahin fährt der Aufzug wie bisher. Hugos Szene danach fehlt noch.
 - **Danach repariert Hugo Stein den Aufzug** (2026-10-27): Der Knopf für U2 ist wieder da. Hugo kommt nach der
   Reparatur selbst auf den Spieler zu und erzählt davon (Text offen). **Entwurf (2026-11-03, ZIM-12, Vorschlag):**
   > Der Knopf für ganz unten – hab ihn wieder eingesetzt. Lag hinten im Bedienfeld, rausgedreht, und die Schrift

@@ -172,9 +172,11 @@ func debug(what: String) -> void:
 
 
 ## Der Sicherungskasten im Untergeschoss: grauer Blechkasten mit Hebel. Ort: Ausstattung „Sicherungskasten“ im Plan, bis
-## dahin PowerCut.FUSE_FALLBACK.
+## dahin PowerCut.FUSE_FALLBACK. Links unten das Fach „AUFZUG“ für die Hauptsicherung (7.4, ZIM-14): leer, bis man sie
+## einsetzt (Item.Kind.FUSE aus Hand oder Tasche) – das ist einer der drei Mängel am Aufzug (Elevator.fix).
 class FuseBox extends StaticBody3D:
 	var _lever: Node3D
+	var _lift_fuse: Node3D   ## eingesetzte Hauptsicherung im Fach „AUFZUG“
 
 	func _ready() -> void:
 		collision_layer = 4
@@ -188,18 +190,40 @@ class FuseBox extends StaticBody3D:
 		_lever.position = Vector3(0.14, -0.05, 0.17)
 		add_child(_lever)
 		Geo.mesh(_lever, Geo.box(Vector3(0.03, 0.12, 0.03)), Mat.psx(Color(0.6, 0.1, 0.08)), Vector3(0, 0.05, 0.02))
+		# Fach „AUFZUG“: zwei Messingklemmen auf dunkler Leiste, darüber das Schild; die Sicherung liegt quer dazwischen
+		Geo.mesh(self, Geo.box(Vector3(0.16, 0.05, 0.012)), Mat.psx(Color(0.12, 0.12, 0.12)), Vector3(-0.09, -0.18, 0.176))
+		for side: float in [-1.0, 1.0]:
+			Geo.mesh(self, Geo.box(Vector3(0.016, 0.04, 0.02)), Mat.metal(GrandStair.BRASS), Vector3(-0.09 + side * 0.065, -0.18, 0.186))
+		Geo.mesh(self, Geo.box(Vector3(0.07, 0.022, 0.004)), Mat.psx(Color(0.85, 0.75, 0.1)), Vector3(-0.09, -0.125, 0.172))
+		_lift_fuse = Node3D.new()
+		_lift_fuse.position = Vector3(-0.09, -0.18, 0.2)
+		add_child(_lift_fuse)
+		var body := Geo.mesh(_lift_fuse, Geo.cylinder(0.018, 0.1, 10), Mat.psx(Color(0.9, 0.88, 0.82)), Vector3.ZERO)
+		body.rotation.z = PI / 2.0
+		for side: float in [-1.0, 1.0]:
+			var cap := Geo.mesh(_lift_fuse, Geo.cylinder(0.02, 0.016, 10), Mat.metal(GrandStair.BRASS), Vector3(side * 0.058, 0, 0))
+			cap.rotation.z = PI / 2.0
 		Geo.add_box_shape(self, Vector3(0.45, 0.6, 0.2), Vector3(0, 0, 0.1))
 
 	func _process(_delta: float) -> void:
 		var down := Game.power_cut != null and Game.power_cut.off
 		_lever.rotation.x = 0.9 if down else -0.4
+		_lift_fuse.visible = Elevator.part_fixed(get_tree(), "fuse")
 
-	func get_prompt(_player: Player) -> String:
+	func get_prompt(player: Player) -> String:
 		if Game.power_cut and Game.power_cut.off:
 			return "Sicherung einlegen [E]"
+		if not Elevator.part_fixed(get_tree(), "fuse"):
+			if player.has_kind(Item.Kind.FUSE):
+				return "Hauptsicherung ins Fach „AUFZUG“ einsetzen [E]"
+			return "Sicherungskasten – das Fach „AUFZUG“ ist leer"
 		return "Sicherungskasten"
 
 	func interact(player: Player) -> void:
 		if Game.power_cut and Game.power_cut.off:
 			Game.noise("fuse", global_position, player)
 			Game.power_cut.restore(true)
+		elif not Elevator.part_fixed(get_tree(), "fuse") and player.consume_kind(Item.Kind.FUSE):
+			Game.noise("fuse", global_position, player)
+			Game.say("Die Hauptsicherung rastet ein. Irgendwo im Schacht klickt ein Relais.", 3.5)
+			Elevator.fix_all(get_tree(), "fuse")

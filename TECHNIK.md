@@ -836,7 +836,26 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     (`tests/elevator_checks.gd` in `tests/run.tscn`), im Hotel mit `--aufzug=dach` (meldet, ob ein Halt oben existiert).
   - Ablauf in `_physics_process` (Warteschlange `_queue`); Lärm `elevator`, `elevator_bell` (machen das Monster
     neugierig), `elevator_alarm`. Gäste und Monster benutzen ihn nicht (beim Urteil wartet das Monster an der
-    Haltestelle, s. u.); die Reparatur (Spielkonzept 7.4) fehlt.
+    Haltestelle, s. u.).
+  - **Reparatur** (Spielkonzept 7.4, ZIM-14): `repaired` (Teile aus `REPAIR_PARTS`: `key`, `fuse`, `brake`, im
+    Spielstand) und `fix(part)` – hakt ab, streicht die Aufgabe (`CaretakerBook.fixed`); `fix_all`/`part_fixed` für
+    alle fahrenden Schächte. Teile: Schlüsselschalter unten im Bedienfeld (`_key_switch`, Push `Do.KEY`, Schaltschlüssel
+    am Bund), Fach „AUFZUG“ am Sicherungskasten (`PowerCut.FuseBox`, `Item.Kind.FUSE` aus Hand oder Tasche),
+    Kurbel am Antrieb (`world/lift_drive.gd` `LiftDrive`, s. u.). `runs()`: ohne Sperre immer, mit Sperre
+    (`repair_lock`) erst nach allen drei – bis dahin keine Bewegung (`_physics_process` kehrt um), Kabine im EG mit
+    offener Tür und dunkel (`_show_repair`: Kabinenlampe, Schlüssel im Schalter), Anzeige ohne Sicherung dunkel,
+    Knöpfe sagen, was fehlt (`_stuck_text`, `_press_stuck`: ohne Sicherung nichts, ohne Schlüssel nur der Rufknopf,
+    ohne Bremse brummt der Motor), `call_cabin` und `ride_to_top` tun nichts. Der letzte Teil: Licht, „Ding“,
+    Tagebuch `lift_running`, `SaveManager.on_progress`, `first_ride` (im Spielstand): steht der Spieler
+    `FIRST_RIDE_DELAY` s in der stehenden Kabine, fährt sie allein zum untersten Halt (`_first_ride`; mit U2 dann dorthin).
+    **`REPAIR_LOCK` ist aus**, bis die Hauptsicherung ins Spiel kommt (ZIM-4) – bis dahin fährt der Aufzug wie bisher,
+    die Teile lassen sich trotzdem beheben. Geprüft am Probe-Aufzug (`tests/elevator_checks.gd`) und mit
+    `--aufzug=reparatur` (Sperre an, alle drei Teile, erste Fahrt; Prüfungen `[Aufzug] Reparatur … ok/FEHLER`).
+  - **Antrieb** (`LiftDrive`, `LiftDrive.place` aus `main.gd`): Sockel, Motor, Bremstrommel mit rostigem Band, Hebel,
+    vorn die Kurbel; Ausstattung „Aufzugsantrieb“ im Plan (`lift_drive`, `PLANNED_ONCE`, `_plan_wall`), sonst
+    `FALLBACK` im Maschinenraum. [E] startet, Halten dreht (`Input.is_action_pressed`, höchstens `REACH` m),
+    `crank(delta)` bis `CRANK_TIME` (20 s), Lärm `lift_brake` (18 m, hört auch das ruhende Monster) alle `NOISE_EVERY` s.
+    Fortschritt nur in der Sitzung (nicht gespeichert, keine neue Gruppe).
 - **Pool** (`_pool`): Becken mit Fototextur-Fliesen, Einstiegstreppen (`_flight(…, step_h)` – Stufen auf dem
   Fliesenraster), Handlauf `HANDRAIL_MODEL`. Darüber die Holzdecke (dicht auch gegen Regen). **Unterwasserlampen**
   (`Lamp.Style.POOL`, „Licht: Unterwasserlampe“ in der nächsten Beckenwand, sonst `POOL_LAMPS_PER_SIDE` je Längswand; ohne Birne – `has_socket()` falsch, Gäste klauen nichts) laufen durch den

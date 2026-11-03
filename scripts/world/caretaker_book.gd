@@ -4,7 +4,7 @@ extends StaticBody3D
 ## tragbar. [E] liest sie vor Ort (Menus.open_pages): die drei Mängel am Aufzug, Notizen des Hausmeisters und dahinter
 ## in Bleistift die des Gastes von 2003, der das Buch an sich genommen hat. Gelesen: Die Figur schreibt die drei Mängel
 ## als drei Zeilen unter „Aufgaben“ ins eigene Notizbuch (3.10) – gespeichert ist das nur dort, ein zweites Lesen
-## schreibt nichts doppelt. Durchgestrichen wird je Mangel mit fixed(), sobald die Reparatur gebaut ist (7.4, offen).
+## schreibt nichts doppelt. Durchgestrichen wird je Mangel mit fixed(), sobald er behoben ist (Elevator.fix, ZIM-14).
 ## furnish() legt das Buch, den Schaltschlüssel (Item.Kind.KEY „aufzug“) und den UV-Aufsatz (4.16) auf den Tisch des
 ## Zimmers. Zimmer 18 bleibt zu, bis man den Schlüssel von der Leviathanmauer hat. Texte: Vorschlag (7.4).
 
@@ -110,7 +110,7 @@ func read() -> void:
 		Game.notebook.add_task(TASKS[part][0], TASKS[part][1], TASK_BY)
 
 
-## Ein Mangel ist behoben („key“, „fuse“, „brake“): in Notizbuch durchgestrichen. Für die Reparatur (7.4, noch nicht gebaut).
+## Ein Mangel ist behoben („key“, „fuse“, „brake“): im Notizbuch durchgestrichen (Elevator.fix, 7.4).
 static func fixed(part: String) -> void:
 	if Game.notebook and TASKS.has(part):
 		Game.notebook.finish_task(TASKS[part][0])

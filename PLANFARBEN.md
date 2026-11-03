@@ -227,6 +227,7 @@ Ebene `Ausstattung`, 2×2- oder 3×3-Punkt, Wandsachen innen an der Wand.
 | #6f2a6f | Maskenboard | Zimmer 13: Mitte des Maskenboards (5.19, 4 × 2 Stifte, 1,32 m breit), an der Wand; ohne Eintrag an der längsten freien Wand (ZIM-158) |
 | #d3697b | Apfelbottich | Partyraum (6.21), nur einer; ohne Eintrag in der Südostecke (ZIM-158) |
 | #a286b6 | Sicherungskasten | Untergeschoss (4.28), an der Wand, Mitte 1,45 m; ohne Eintrag an der Nordwand des Maschinenraums (ZIM-158) |
+| #6a7f5c | Aufzugsantrieb | Maschinenraum im UG (7.4): Punkt an der Wand = Mitte der Rückseite; Motor und Bremstrommel auf Sockel 1,3 × 0,7 m, Kurbel zeigt in den Raum. Ohne Eintrag an der Nordwand des Maschinenraums östlich des Sicherungskastens (ZIM-14) |
 | #bf69a2 | Aushangbrett | Lobby (2.5), an der Wand, Mitte 1,55 m; ohne Eintrag an der Westwand (ZIM-158) |
 | #cdacc5 | Wanduhr | 3 m Durchmesser, für die Halle gedacht; Mitte zwischen 3,27 m und der Decke (unter dem Luftraum die der Halle). Ohne Eintrag über dem Haupteingang (ZIM-158) |
 | #462a3a | Krähennest | auf einen Baum: das Nest sitzt im nächsten Baum (4.25); ohne Eintrag im Baum gegenüber der Gartentür von 042 (ZIM-158) |
@@ -306,6 +307,7 @@ den alten festen Platz – gemalt, wandert es dorthin.
 | Puppenhaus | Mitte der Bibliothek im OG (`doll_house.gd` SPOT) | Möbel: Puppenhaus | Ersatzplatz aktiv |
 | Rattenkönig | Wandbord Nordwand Müllraum UG (`rat_king.gd`) | fehlt | ZIM-84, ruht |
 | Sicherungskasten | Nordwand Maschinenraum UG (`power_cut.gd` FUSE_FALLBACK) | Ausstattung: Sicherungskasten | Ersatzplatz aktiv |
+| Aufzugsantrieb mit Kurbel | Nordwand Maschinenraum UG östlich des Sicherungskastens (`lift_drive.gd` FALLBACK) | Ausstattung: Aufzugsantrieb | Ersatzplatz aktiv |
 | Salz (3 Packungen) | rechtes Ende der Küchenzeile | Gegenstand: Salz | Ersatzplatz aktiv |
 | Teppich vor der Rezeption | fest 6 × 8 m bei (0, −5) | Teppich: Teppich (in der Lobby) | Ersatzplatz aktiv |
 | Aushangbrett | Lobby-Westwand, z −16,6 | Ausstattung: Aushangbrett | Ersatzplatz aktiv |

@@ -98,6 +98,7 @@ const NOISE := {
 	"elevator":   {"range": 14.0, "sound": "motor",  "volume": 0.5},
 	"elevator_bell": {"range": 14.0, "sound": "ding", "volume": 0.6},
 	"elevator_alarm": {"range": 30.0, "sound": "alarm", "volume": 1.0, "alarm": true},
+	"lift_brake": {"range": 18.0, "sound": "creak", "volume": 0.9, "caption": "[Metall quietscht – eine Kurbel im Keller]"},    ## Bremse am Antrieb lösen (ZIM-14) – das ruhende Monster hört es
 	## Vorzeichen und Spuk (Spielkonzept 4.25–4.28, 5.17, 6.21)
 	"crows":      {"range": 10.0, "sound": "caw",    "volume": 0.6},    ## aufgescheuchter Krähentrupp
 	"crow":       {"range": 14.0, "sound": "caw",    "volume": 0.75},   ## eine Krähe krächzt dich an (Groll) – das Monster hört es

@@ -161,6 +161,7 @@ FITTINGS = {
 	"Ausstattung: Sicherungskasten": "fuse_box", "Ausstattung: Aushangbrett": "notice_board",
 	"Ausstattung: Wanduhr": "wall_clock", "Ausstattung: Krähennest": "crow_nest",
 	"Ausstattung: Leviathan-Druck": "leviathan_print",
+	"Ausstattung: Aufzugsantrieb": "lift_drive",   # 3.11.: Motor, Bremse und Kurbel im Maschinenraum (ZIM-14)
 	"Ausstattung: Fotowand": "photo_wall",   # 3.11.: je Strich eine Position mit 2 Rahmen übereinander (ZIM-133)
 }
 ## Teppiche → Art (LevelBuilder.RUG_TEXTURES)

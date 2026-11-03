@@ -98,6 +98,12 @@ judge() {
 	if grep -q "^\[Aufzug\] Dachgeschoss: FEHLER" "$log"; then
 		problems+=" Aufzug im Dachgeschoss falsch"
 	fi
+	if grep -q "^\[Aufzug\] Reparatur .*FEHLER" "$log"; then
+		problems+=" Aufzug-Reparatur: $(grep -c '^\[Aufzug\] Reparatur .*FEHLER' "$log")× falsch ($(grep -h '^\[Aufzug\] Reparatur .*FEHLER' "$log" | head -1 | sed 's/^\[Aufzug\] Reparatur //'))"
+	fi
+	if grep -q "^\[Aufzug\] Reparatur vorher" "$log" && ! grep -q "^\[Aufzug\] Reparatur: fertig" "$log"; then
+		problems+=" Aufzug-Reparatur nicht zu Ende gelaufen"
+	fi
 	if grep -q "^\[Zierleiste\] FEHLER" "$log"; then
 		problems+=" $(grep -c '^\[Zierleiste\] FEHLER' "$log")× Zierleiste falsch"
 	fi
@@ -198,6 +204,7 @@ done <<'LIST'
 1500|monster,modi,raubzug|--pos=31.5,0,-8 --mode=raubzug --frist=5 --day=8 --trace
 3000|monster,modi,urteil,aufzug|--aufzug=urteil --trace
 2400|aufzug,dachboden,speichern|--aufzug=dach --savetest --trace
+2700|aufzug,reparatur,speichern|--aufzug=reparatur --savetest --trace
 900|modi,urteil,navmesh|--navcheck=tueren
 3000|puppe,monster|--doll --trace
 2400|puppe,monster|--doll=10,13 --trace

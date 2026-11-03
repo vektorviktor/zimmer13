@@ -413,7 +413,7 @@ const CABINET_FALLBACK := {"kind": "game_cabinet", "pos": [-7.7, -13.2], "wall":
 const SLOT_FALLBACK := {"kind": "slot_machine", "pos": [-8.0, -18.75], "wall": "north"}
 ## Plätze aus dem Plan (planned, ZIM-158), die es nur einmal gibt – ein zweiter Punkt gilt nicht
 const PLANNED_ONCE: Array[String] = ["doll_house", "apple_tub", "fuse_box", "notice_board", "wall_clock", "crow_nest",
-	"leviathan_print", "mask_board", "disco_ball"]
+	"leviathan_print", "mask_board", "disco_ball", "lift_drive"]
 ## Videoautomaten (Spielkonzept 6.10, 28.10.) aus dem Plan der Reihe nach: welches Spiel darauf läuft
 const ARCADE_GAMES: Array[String] = ["deadra", "ghost_hotel"]
 const COMPASS_ROOM := "026"
@@ -3282,7 +3282,7 @@ func _fittings() -> void:
 			"dartboard":   # Darts (Spielkonzept 6.10): Scheibe an der Wand, Linie und Stehtisch davor, Pfeile darauf
 				_dartboard(o)
 			# Nur merken (planned, ZIM-158) – gebaut wird später an ihrer Stelle, ohne Planeintrag am alten Platz
-			"mask_board", "fuse_box", "notice_board", "wall_clock", "leviathan_print", "photo_wall":
+			"mask_board", "fuse_box", "notice_board", "wall_clock", "leviathan_print", "photo_wall", "lift_drive":
 				_plan_wall(o)
 			"apple_tub", "crow_nest":
 				_plan(kind, p, Vector2(0, 1))

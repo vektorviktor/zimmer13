@@ -55,7 +55,44 @@ func run() -> bool:
 	for n in [lift, again, old, plain]:
 		n.free()
 	print("[Aufzug] Dachgeschoss: %s" % ("alles richtig" if _ok else "FEHLER"))
+	_repair()
 	return _ok
+
+
+## Reparatur als Sperre (Spielkonzept 7.4, ZIM-14): ohne Sperre fährt er wie bisher, mit ihr erst nach allen drei
+## Teilen; davor nimmt kein Knopf etwas an, der Ruf des Monsters auch nicht. Speichern und Laden behalten den Stand.
+func _repair() -> void:
+	var lift := _probe(false)
+	_check(lift.runs(), "ohne Sperre steht der Aufzug")
+	lift.set_repair_lock(true)
+	_check(not lift.runs() and lift._door >= 1.0, "mit Sperre: fährt %s, Tür %.1f" % [lift.runs(), lift._door])
+	_check(lift.prompt(_push(lift, Elevator.Do.FLOOR, 2)).contains("kein Strom"), "Hinweis ohne Strom fehlt")
+	lift.press(_push(lift, Elevator.Do.FLOOR, 2))
+	lift.call_cabin(0)
+	_check(lift._queue.is_empty(), "Knopf oder Ruf vor der Reparatur angenommen")
+	for part: String in ["fuse", "key"]:
+		lift.fix(part)
+	_check(lift.prompt(_push(lift, Elevator.Do.FLOOR, 2)).contains("Motor brummt"), "Hinweis ohne Bremse fehlt")
+	_check(not lift.runs() and not lift.first_ride, "läuft schon ohne Bremse")
+	lift.fix("brake")
+	lift.fix("brake")
+	_check(lift.runs() and lift.first_ride and lift.repaired.size() == 3, "nach der Reparatur: fährt %s, erste Fahrt %s, %s"
+		% [lift.runs(), lift.first_ride, lift.repaired])
+	lift.press(_push(lift, Elevator.Do.FLOOR, 2))
+	_run(lift)
+	_check(lift._at == 2, "nach der Reparatur endet die Fahrt an Halt %d" % lift._at)
+
+	var again := _probe(false)
+	again.set_repair_lock(true)
+	again.load_state(lift.save_state())
+	_check(again.runs() and again.first_ride, "nach dem Laden: fährt %s, erste Fahrt %s" % [again.runs(), again.first_ride])
+	var old := _probe(false)
+	old.set_repair_lock(true)
+	old.load_state({"y": 0.0, "queue": [], "open": false, "repaired": ["key", "bremse", "key"]})
+	_check(old.repaired == ["key"] and not old.runs(), "alter bzw. falscher Stand: %s" % [old.repaired])
+	for n in [lift, again, old]:
+		n.free()
+	print("[Aufzug] Reparatur: %s" % ("alles richtig" if _ok else "FEHLER"))
 
 
 ## Probe-Aufzug weit weg vom Ursprung: Halte U, 0, 1 und (with_attic) das Dachgeschoss oben.

@@ -194,6 +194,7 @@ const HEARD_TEXT := {
 	"hide_burst": "Ein Schrank ist aufgerissen worden", "bulb_burst": "Eine Glühbirne ist geplatzt",
 	"cat_cry": "Eine Katze hat jämmerlich geweint", "axe_swing": "Etwas hat durch die Luft gesaust, dann ein dumpfer Schlag",
 	"pumpkin_land": "Etwas Schweres ist vom Dach gefallen", "elevator_alarm": "Im Aufzug hat jemand Alarm geläutet",
+	"lift_brake": "Unten im Keller hat Metall gequietscht, endlos, wie eine Kurbel",
 }
 const HEARD_LINES := [
 	"Hast du das auch gehört? %s – bei %s.",

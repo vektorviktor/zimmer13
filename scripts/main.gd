@@ -160,13 +160,15 @@ extends Node3D
 ##   --verwaschen[=schleier]     es regnet sofort, Blut, Wachs und Kürbismatsch draußen verlaufen zehnmal so schnell (4.13,
 ##                               RainVeil) – schleier: sofort ganz; z. B. mit
 ##                               --pos=45,0.1,-37 --fall=5,giant --verwaschen --trace
-##   --aufzug[=innen|offen|fahrt|urteil|dach]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht
+##   --aufzug[=innen|offen|fahrt|urteil|dach|reparatur]   vor den fahrenden Aufzug (7.4) an den Halt stellen, wo die Kabine steht
 ##                               (innen: in der Kabine mit Blick aufs Bedienfeld · offen: die Tür geht gleich auf · fahrt:
 ##                               in der Kabine, sie fährt gleich ins oberste Stockwerk, das sie anfährt · urteil: in der
 ##                               Kabine, nach 3 s ein Urteil über Zimmer 13 (4.33), die Kabine pendelt alle 10 s – das
 ##                               Monster wartet an der Haltestelle · dach: vor die Tür im Dachgeschoss, nach 1 s Ruf von
 ##                               oben, schaltet den Halt frei (7.10), nach 30 s „[Aufzug] Dachgeschoss: …“; ohne Halt oben
-##                               im Plan nur die Meldung)
+##                               im Plan nur die Meldung · reparatur: Sperre an, die drei Mängel der Reihe nach beheben
+##                               – Schaltschlüssel, Hauptsicherung, Kurbel –, dann die erste Fahrt allein nach unten, mit
+##                               Prüfungen „[Aufzug] Reparatur … ok/FEHLER“, ZIM-14)
 ##   --sitzen[=sofa|bank|stuhl|sessel|bett|klo]   aufs nächste Sitzmöbel dieser Art setzen (3.1), erster Platz – ohne Angabe Sofa
 ##   --tuer=zimmer[,innen|bad]   vor die Tür dieses Zimmers stellen (Nummer wie am Schild), Blick auf die Tür (6.19);
 ##                               innen: von drinnen auf ihre Bandseite, bad: im Bad auf die Badtür
@@ -766,6 +768,7 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	register.global_transform = builder.register_spot
 	Game.register = register
 	CaretakerBook.furnish(builder)   # Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel, UV-Aufsatz (7.4)
+	LiftDrive.place(builder)   # Maschinenraum: Antrieb des Aufzugs mit der Kurbel für die Bremse (7.4, ZIM-14)
 	var cemetery := Cemetery.new()   # Friedhof westlich des Kürbisfelds (5.15)
 	cemetery.name = "Friedhof"
 	add_child(cemetery)
@@ -1344,6 +1347,8 @@ func run_debug(arg: String) -> bool:
 		var how := _arg_value(arg, "--aufzug")
 		if how == "dach":
 			return _debug_lift_attic(lifts[0])
+		if how == "reparatur":
+			return _debug_lift_repair(lifts[0])
 		var at := lifts[0].spot(how in ["innen", "fahrt", "urteil"])
 		TeleportUI.place_player(at[0], at[1])
 		if how == "offen":
@@ -2799,6 +2804,70 @@ func _debug_lift_attic(lift: Elevator) -> bool:
 			var ok := not before and lift.unlocked and lift.next_stop() == top and not lift.moving()
 			print("[Aufzug] Dachgeschoss: %s (vorher gesperrt %s, frei %s, Halt %s)" % ["ok" if ok else "FEHLER",
 				not before, lift.unlocked, lift.next_stop()])))
+	return true
+
+
+## Debug --aufzug=reparatur (Spielkonzept 7.4, ZIM-14): Sperre an, in die Kabine, das Notizbuch des Hausmeisters gilt
+## als gelesen. Dann der Reihe nach, je 1 s auseinander: Knopf ohne Strom, Schaltschlüssel an den Bund und in den
+## Schalter, Hauptsicherung in die Hand und in den Sicherungskasten, Knopf ohne gelöste Bremse, die Kurbel ganz
+## gedreht – zurück in die Kabine: nach FIRST_RIDE_DELAY fährt sie allein zum untersten Halt. Jede Prüfung meldet
+## „[Aufzug] Reparatur … ok“ bzw. „FEHLER“, zuletzt „[Aufzug] Reparatur: fertig“.
+func _debug_lift_repair(lift: Elevator) -> bool:
+	var drive := get_tree().get_first_node_in_group("lift_drives") as LiftDrive
+	var book := get_tree().get_first_node_in_group("caretaker_books") as CaretakerBook
+	if drive == null or Game.power_cut == null:
+		print("[Aufzug] Reparatur FEHLER: Antrieb oder Sicherungskasten fehlt")
+		return true
+	lift.set_repair_lock(true)
+	Game.notebook.give(true)
+	if book:
+		book.read()
+	var inside := func() -> void:
+		var at := lift.spot(true)
+		TeleportUI.place_player(at[0], at[1])
+	inside.call()
+	var check := func(text: String, ok: bool) -> void:
+		print("[Aufzug] Reparatur %s: %s" % [text, "ok" if ok else "FEHLER"])
+	var push := func(action: Elevator.Do, stop: int) -> void:
+		var p := Elevator.Push.new()
+		p.action = action
+		p.stop = stop
+		lift.press(p)
+		p.free()
+	var top := lift.stops.size() - 1
+	var steps: Array[Callable] = [
+		func() -> void:
+			check.call("vorher steht sie", not lift.runs() and not lift.moving())
+			push.call(Elevator.Do.FLOOR, top)
+			check.call("Knopf ohne Strom", lift.next_stop() != top and not lift.moving()),
+		func() -> void:
+			Game.player.add_key(CaretakerBook.KEY_ID)
+			push.call(Elevator.Do.KEY, -1)
+			check.call("Schaltschlüssel", "key" in lift.repaired and Game.notebook.task_state("lift_key") == Notebook.TaskState.DONE),
+		func() -> void:
+			Game.player.receive_item(Item.create(Item.Kind.FUSE))
+			var box := Game.power_cut.fuse_box
+			var front := box.global_position + box.global_transform.basis.z * 1.0
+			TeleportUI.place_player(Vector3(front.x, LevelBuilder.CELLAR_Y + 0.05, front.z), box.global_position - front)
+			box.interact(Game.player)
+			check.call("Hauptsicherung", "fuse" in lift.repaired and not Game.player.has_kind(Item.Kind.FUSE)),
+		func() -> void:
+			push.call(Elevator.Do.FLOOR, top)
+			check.call("Knopf ohne Bremse", not lift.runs() and not lift.moving()),
+		func() -> void:
+			var front := drive.global_position + drive.global_transform.basis.z * 1.0
+			TeleportUI.place_player(front, drive.global_position - front)
+			for i in int(LiftDrive.CRANK_TIME / 0.5) + 1:
+				drive.crank(0.5)
+			check.call("Bremse", "brake" in lift.repaired and lift.runs() and lift.first_ride
+				and Game.notebook.task_state("lift_brake") == Notebook.TaskState.DONE),
+		inside,
+	]
+	for i in steps.size():
+		get_tree().create_timer(1.0 + i).timeout.connect(steps[i])
+	get_tree().create_timer(steps.size() + 1.0 + Elevator.FIRST_RIDE_DELAY + 25.0).timeout.connect(func() -> void:
+		check.call("erste Fahrt", not lift.first_ride and lift.next_stop() == 0 and not lift.moving())
+		print("[Aufzug] Reparatur: fertig"))
 	return true
 
 
