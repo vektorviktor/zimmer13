@@ -270,6 +270,8 @@ const ENTRANCE_GABLE_RISE := 0.8
 const ENTRANCE_GABLE_OCULUS := 0.36
 ## Flachdächer (_flat_roofs): so große Deckenstücke werden einzeln geprüft, ob über ihnen ein Stockwerk steht
 const FLAT_ROOF_CELL := 1.0
+## Kürzere freie Stücke einer Außenwand bekommen kein Gesims (Reste an Ecken und Wandköpfen)
+const FLAT_ROOF_MIN_RUN := 1.0
 ## Firstgitter (ZIM-171): Feld (Breite, Höhe) wie tools/build_cresting.py, Eckpfosten (ohne Spitze), Eisen, ab hier
 ## ausgeblendet (m)
 const ROOF_CRESTING := Vector2(0.4, 0.5)
@@ -5012,12 +5014,15 @@ func _flat_roofs() -> void:
 		var voids: Array[Rect2] = []
 		for rc in _map.get("voids", []):
 			voids.append(_rect(rc))
+		# Bedeckt, wenn oben ein Ort oder Luftraum liegt – auch knapp daneben: Wände sind dort kein Ort, ein Punkt auf
+		# einer Wand darüber zählte sonst als frei (kurze Stücke Gesims mitten an der Fassade)
 		var covered := func(p: Vector2) -> bool:
-			if not _place_at(p).is_empty():
-				return true
-			for v in voids:
-				if v.has_point(p):
+			for d: Vector2 in [Vector2.ZERO, Vector2(0.3, 0), Vector2(-0.3, 0), Vector2(0, 0.3), Vector2(0, -0.3)]:
+				if not _place_at(p + d).is_empty():
 					return true
+				for v in voids:
+					if v.has_point(p + d):
+						return true
 			return false
 		# Traufen: freie Schritte zu Läufen je Wandlinie zusammenfassen
 		var runs: Array = []
@@ -5030,6 +5035,7 @@ func _flat_roofs() -> void:
 				last["to"] = e["to"]
 			else:
 				runs.append(e.duplicate())
+		runs = runs.filter(func(e: Dictionary) -> bool: return float(e["to"]) - float(e["from"]) >= FLAT_ROOF_MIN_RUN)
 		var free_cells: Array[Rect2] = []
 		for c in cells:
 			if not covered.call(c.get_center()):

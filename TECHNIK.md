@@ -859,7 +859,7 @@ eine Attika `ENTRANCE_GABLE` (hinten bis in die Schräge) mit Sockelband, Abschl
 den Schrägen, Rundfenster und eiserner Spitze, im Stuck der Zierleiste. **Flachdächer** (`_flat_roofs`, nach allen
 oberen Stockwerken): Wo über einem Innenraum von EG oder OG nichts mehr steht (Poolhalle) – erst im Stockwerk
 Außenwände (`_indoor_at` auf beiden Seiten) und Deckenstücke von `FLAT_ROOF_CELL` abtasten, dann im Stockwerk
-darüber prüfen (Ort oder Luftraum) –, liegt Schiefer auf der Decke (ein Mesh „Flachdach“, T über den Rand) und auf
+darüber prüfen (Ort oder Luftraum, auch 0,3 m daneben – Wände sind oben kein Ort, ein Punkt auf ihnen galt sonst als frei; Läufe unter `FLAT_ROOF_MIN_RUN` fallen weg) –, liegt Schiefer auf der Decke (ein Mesh „Flachdach“, T über den Rand) und auf
 den Außenwänden das Kranzgesims mit Konsolen, oben bündig auf H + 0,24.
 **Dachfenster** (`roof_window` auf der Außenwand) sitzen in der Schräge darüber (`_roof_window`), mit kaltem Lichtkegel
 von außen (`ATTIC_SHAFT_*`, `AtticHaze` regelt ihn mit dem Mond). **Türen:** Kniestocktür-Modell, `ATTIC_DOOR_H` (2,1 m) hoch,
