@@ -31,6 +31,11 @@ const VISIT_HELLO := ["Schön hast du's hier. Na ja – für Zimmer 13.", "Ich b
 const THREAT_LINES := ["Komm mir nicht zu nahe. Ich warne dich.", "Noch einmal, und du wirst es bereuen.",
 	"Pass auf, wo du langgehst. Hier ist es dunkel."]
 const ATTACK_LINES := ["Jetzt reicht's!", "Das hast du verdient!", "Hier sieht dich keiner …"]
+## Ein stark Verfeindeter sieht dich ins Versteck gehen (6.18, 4) – je Art des Verstecks
+const BETRAY_LINES := {
+	HideSpot.Type.WARDROBE: ["Da drin ist er! Im Schrank!", "Hier! Im Schrank, da drin ist er!"],
+	HideSpot.Type.BED: ["Da drin ist er! Unterm Bett!", "Hier! Unterm Bett liegt er!"],
+}
 
 const PARTY_DURATION := 90.0
 const PARTY_COOLDOWN := 240.0
@@ -2551,6 +2556,24 @@ func _update_feuds() -> void:
 		g.attack_cooldown = randf_range(ATTACK_COOLDOWN.x, ATTACK_COOLDOWN.y)
 		g.say(ATTACK_LINES.pick_random())
 		g.start_attack()
+		return
+
+
+## Der Spieler geht in ein Versteck (Player.enter_hide): Sieht ihn ein stark Verfeindeter dabei – dieselbe Sicht wie
+## bei Zeugen (4.15), gesehen wird nur das Hineingehen –, ruft er es laut aus, und das ist Lärm (Spielkonzept 6.18, 4).
+## Nur bei diesem Ereignis, nicht je Frame; einer ruft.
+func on_player_hid(spot: HideSpot) -> void:
+	var p := Game.player
+	var at := spot.exit_point.global_position
+	for guest in living_guests():
+		var g: Guest = guest
+		if tier(g) != Tier.STRONG_ENEMY or g.fear >= 60.0 or g.is_asleep() \
+				or not g.can_see_actor(p, at) or not p.recognized_by(g):
+			continue
+		g.say((BETRAY_LINES[spot.type] as Array).pick_random())
+		Game.noise("betray", g.global_position, g)
+		if Game.tracing:
+			print("[Feinde] %s verrät dein Versteck (%s)" % [g.display_name, HideSpot.Type.keys()[spot.type]])
 		return
 
 

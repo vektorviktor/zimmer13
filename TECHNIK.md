@@ -1361,6 +1361,13 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   (`IDLE`/`WALK`), in `SPARE_RANGE` und mit Blick auf dich, gibt ihn – einmal je Haushalt (`spares`, gespeichert), nicht
   in Gefahr oder im Gespräch. Mit ihm kein Hausfriedensbruch (`_watch_trespass`), `_swap_locks` übergeht das Zimmer.
   Sinkt die Freundschaft später, bleibt er am Bund.
+- **Feinde** (6.18, 4; ZIM-162): `_shut_out_enemies` (im 0,5-s-Takt): Gast ab `Social.Tier.ENEMY`, daheim
+  (`room_at`), frei, Tür offen und nicht kaputt, du draußen bis `ENEMY_DOOR_RANGE` – erst dann die Zeugensicht
+  (`Guest.can_see_actor`, `Player.recognized_by`). Er geht zu `door_inside` (`_shutting`, höchstens
+  `ENEMY_DOOR_TIMEOUT`), schlägt die Tür zu, sobald niemand im Schwenkbereich steht, und schließt ab (`_shut_step`).
+  Versteck: `Player.enter_hide` → `Social.on_player_hid`: ein stark Verfeindeter, der das Hineingehen sieht
+  (`can_see_actor(p, at)` wie `Monster.can_see_actor`, Auffälligkeit beim Hineingehen), ruft `BETRAY_LINES` und macht
+  Lärm `betray` (12 m). Nur beim Ereignis, nicht je Frame. Nicht gespeichert. Debug `--feind=id,tuer|versteck`.
 - **Einbruch bei 13** (`guests/break_in.gd`, `BreakIn` als `Social.break_in`): Racheakt eines stark verfeindeten
   Erwachsenen (`Social.Tier.STRONG_ENEMY`), frei, je Gast einmal am Tag, für alle zusammen höchstens alle `GAP`; nur,
   wenn der Spieler nicht in Zimmer 13 ist (`_player_inside`, auch vor dem Aufbrechen geprüft), nicht in Nachtruhe oder

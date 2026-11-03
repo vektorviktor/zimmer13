@@ -224,6 +224,8 @@ done <<'LIST'
 600|zimmerzugang|--day=3 --uhr=2:00 --schluesseldieb=021,tausch --trace
 400|zimmerzugang,speichern|--zweitschluessel=edna --savetest --trace
 1800|zimmerzugang,gaeste|--einbruch=bruno,eigen --trace
+300|feinde,zimmerzugang|--feind=bruno,tuer --trace
+300|feinde,gaeste|--feind=bruno,versteck --trace
 600|kerzen,abbrennen,speichern|--abbrennen=0.5 --savetest
 600|streiche,kuerbis|--prank=pumpkin,111 --trace
 600|werfen,kuerbis,speichern|--pos=-6,0,-21,180,-25 --wurf --savetest --trace

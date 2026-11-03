@@ -780,13 +780,14 @@ func leave_party() -> void:
 
 
 ## Sieht dieser Gast den Akteur? 5 m × Auffälligkeit, 180°, abgelenkt ×0,6 (Spielkonzept 4.15).
-## Für Zeugen beim Diebstahl.
-func can_see_actor(actor) -> bool:
-	if dead or hiding or actor == null or actor.dead or actor.hiding != null:
+## Für Zeugen beim Diebstahl. at: Der Akteur geht dort gerade in ein Versteck (wie beim Monster, 3.4) – Feinde (6.18).
+func can_see_actor(actor, at: Vector3 = Vector3.INF) -> bool:
+	var entering := at != Vector3.INF
+	if dead or hiding or actor == null or actor.dead or (actor.hiding != null and not entering):
 		return false
 	var base := Senses.GUEST_SIGHT * (Senses.DISTRACTED if is_distracted() else 1.0)
 	return Senses.can_see(self, global_position + Vector3.UP * 1.6, -global_transform.basis.z,
-		base, Senses.GUEST_FOV_DOT, actor)
+		base, Senses.GUEST_FOV_DOT, actor, 0.0, entering, at)
 
 
 ## Abgelenkt: im Gespräch, beim Würfeln, auf der Feier, in Panik.

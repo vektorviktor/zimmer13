@@ -1878,6 +1878,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | Atmen im Versteck | – | angehaltener Atem senkt die Chance, entdeckt zu werden (×0,35) |
 | Keuchen außer Atem (3.1) | 4 m alle 1,5 s | im Versteck zudem ×1,8 Chance, entdeckt zu werden |
 | Klopfen an eine Tür | 8 m | |
+| Feind ruft dein Versteck aus („Da drin ist er!“) | 12 m | 6.18 (4) |
 | Telefon klingelt | 18 m | 4.14 |
 | Tischklingel an der Rezeption | 10 m | 2.9, ZIM-146 |
 | Hörer abnehmen, auflegen, daneben legen | 2 m | |
@@ -4488,6 +4489,14 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   zurück, solange du liegst. Nicht gespeichert: Nach dem Laden ist keine Wache da.
 - **Feinde:** schließen ihre Tür ab, wenn sie dich kommen sehen (6.5). Sieht ein **stark Verfeindeter** dich ins
   Versteck gehen, ruft er es laut aus („Da drin ist er!“) – Lärm (4.15).
+  *Entschieden 2026-11-03, gebaut 2026-11-03 (ZIM-162):* Feinde sehen dich mit **derselben Sichtprüfung wie Zeugen**
+  (Sichtlinie, gleiche Reichweite, 4.15; erkannt nach 5.9). **Tür:** Daheim ist die Tür ohnehin zu und abgeschlossen
+  (6.19, 1), und durch eine geschlossene sieht keiner. Steht sie aber offen (offen gelassen, von dir von innen oder mit
+  seinem Schlüssel geöffnet) und sieht ein Gast ab „verfeindet“ dich draußen bis 8 m vor der Tür, geht er hin, schlägt
+  sie zu und schließt ab („Verschwinde!“). Stehst du schon im Türblatt, wartet er höchstens 8 s. **Versteck:** Ein stark
+  Verfeindeter, der dich hineingehen sieht (wie beim Monster nur das Hineingehen, 3.4), ruft es aus („Da drin ist er!
+  Im Schrank!“) – Lärm 12 m (4.15); das Monster sieht dann nach, wie bei jedem Lärm. Kinder zählen mit, wenn sie so
+  weit verfeindet sind. Nicht gespeichert (der Weg zur Tür ist nach dem Laden vergessen).
 
 **5. Die Beziehung lässt sich nicht erschleichen**
 - **Warum:** Geschenke ohne Pause (Laub liegt gratis herum), Schenken und Zurückkaufen, endlose Monster-Gespräche und

@@ -262,6 +262,8 @@ extends Node3D
 ##   --relation=id,wert          Beziehung setzen (−100 … 100); ab ±80 werden die nötigen Taten mit eingetragen (6.3)
 ##   --einbruch=id[,eigen]       Gast ist stark verfeindet und bricht gleich in Zimmer 13 ein (6.19), du stehst im Flur
 ##                               mit Blick auf die Tür · eigen: in Zimmer 13 liegt etwas, das du ihm genommen hast
+##   --feind=id[,tuer|versteck]  Feinde (6.18): tuer – verfeindet, daheim bei offener Tür, du davor, er schließt ab ·
+##                               versteck – stark verfeindet, sieht dich in Zimmer 13 in den Schrank steigen und ruft es aus
 ##   --zweitschluessel=id        mit dem Gast gut befreundet (mit den Taten, 6.3), er steht vor dir und gibt dir gleich
 ##                               den Zweitschlüssel seines Zimmers (6.19)
 ##   --follow=id · --visit=id    Gast kommt mit (steht hinter dir) · Gast geht zu Zimmer 13 und klopft an
@@ -1456,6 +1458,12 @@ func run_debug(arg: String) -> bool:
 			foe.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
 			get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
 				Game.social.break_in.debug(foe, parts.size() > 1 and parts[1] == "eigen"))
+	elif arg.begins_with("--feind="):
+		var parts := _arg_parts(arg, "--feind")
+		var foe := _guest(parts[0])
+		if foe:
+			var what := parts[1] if parts.size() > 1 else "tuer"
+			get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.access.debug_enemy(foe, what))
 	elif arg.begins_with("--zweitschluessel="):
 		var friend := _guest(_arg_value(arg, "--zweitschluessel"))
 		if friend:

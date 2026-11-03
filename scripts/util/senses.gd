@@ -87,6 +87,7 @@ const NOISE := {
 	"axe_swing":  {"range": 20.0, "sound": "",       "volume": 0.0, "alarm": true},   ## Kürbismann schlägt zu (4.19) – Ton spielt er selbst (3D)
 	"pumpkin_land": {"range": 16.0, "sound": "thud", "volume": 1.0, "alarm": true, "caption": "[Ein schwerer Aufprall im Garten]"},   ## Kürbismann springt vom Lobbydach in den Garten (4.19)
 	"laugh":      {"range": 8.0,  "sound": "",       "volume": 0.0},    ## Kinder lachen beim Toben und auf Feiern (6.13)
+	"betray":     {"range": 12.0, "sound": "",       "volume": 0.0},    ## Feind ruft dein Versteck aus (6.18) – der Satz steht als Meldung
 	## Aufzug (7.4): Motor an der Abfahrt, Glocke am Ziel – beide machen das Monster neugierig; Alarmknopf in der Kabine
 	"elevator":   {"range": 14.0, "sound": "motor",  "volume": 0.5},
 	"elevator_bell": {"range": 14.0, "sound": "ding", "volume": 0.6},

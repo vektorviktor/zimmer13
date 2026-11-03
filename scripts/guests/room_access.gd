@@ -74,10 +74,17 @@ const OLD_KEY := "alt_"
 const GENERAL_KEY := "general"
 ## Zweitschlüssel: so nah (m) muss der gute Freund dir begegnen
 const SPARE_RANGE := 3.0
+## Feinde schließen ab, wenn sie dich kommen sehen (6.18, 4): so nah (m) an ihrer Tür musst du sein; so nah an der Tür
+## (von innen) schlägt er sie zu, so lange (s) darf der Weg dorthin dauern
+const ENEMY_DOOR_RANGE := 8.0
+const ENEMY_DOOR_REACH := 1.5
+const ENEMY_DOOR_TIMEOUT := 8.0
+const SHUT_LINES := ["Bleib mir vom Leib!", "Hier kommst du nicht rein.", "Verschwinde!"]
 
 var visit := {}       ## laufender Besuch: {room, host, door, start, until, promise, panic, warned}
 var _pending := {}    ## Geklopft, jemand kommt an die Tür: {door, guest, time, woken}
 var _tries := {}      ## Gast-ID → Zeitpunkt des letzten Versuchs (Game.director.elapsed)
+var _shutting := {}   ## Feind → Zeitpunkt: unterwegs zur eigenen Tür, um sie vor dir abzuschließen (nicht gespeichert)
 var _caught := {}     ## Zimmer → Zeitpunkt des letzten Hausfriedensbruchs
 var _check := 0.0
 var _repaired := {}   ## Tür → Tag der letzten Reparatur mit Dank
@@ -151,6 +158,7 @@ func _process(delta: float) -> void:
 		_morning_repairs()
 		_swap_locks()
 		_offer_spares()
+		_shut_out_enemies()
 
 
 ## Jemand kommt an die Tür: angekommen (oder nach ANSWER_TIMEOUT) öffnet er einen Spalt, und das Gespräch beginnt.
@@ -546,6 +554,104 @@ func load_state(d: Dictionary) -> void:
 	spares = {}
 	for no in d.get("spares", []):
 		spares[String(no)] = true
+
+
+# --- Feinde (6.18, 4) -----------------------------------------------------------------------------------------------
+
+## Feinde schließen ab, wenn sie dich kommen sehen: Ist ein Feind (ab „verfeindet“) daheim, seine Tür offen, und sieht
+## er dich draußen bis ENEMY_DOOR_RANGE vor der Tür (Sicht wie bei Zeugen, 4.15), geht er hin, schlägt sie zu und
+## schließt ab. Sonst ist die Tür eines Daheimgebliebenen ohnehin zu und abgeschlossen (6.19, 1), und durch eine
+## geschlossene sieht er nicht – das hier fängt die Lücken: offen gelassen (Gedränge), von dir von innen oder mit
+## seinem Schlüssel geöffnet.
+## Billig für alle Gäste: zuerst Tür und Abstand, die Sicht nur für die wenigen, bei denen beides passt (ZIM-124).
+func _shut_out_enemies() -> void:
+	var p := Game.player
+	var social := _social()
+	for g in _shutting.keys():
+		_shut_step(g)
+	if p == null or p.dead or p.sleeping:
+		return
+	var player_room = null   # erst ausrechnen, wenn eine Tür in Frage kommt
+	for g in social.living_guests():
+		var foe: Guest = g
+		if _shutting.has(foe) or Social.tier(foe) > Social.Tier.ENEMY:
+			continue
+		var door: Door = foe.home.get("door")
+		if door == null or door.broken or (door.locked and not door.is_open) \
+				or p.global_position.distance_to(door.center()) > ENEMY_DOOR_RANGE:
+			continue
+		var no := String(foe.home["no"])
+		if player_room == null:
+			player_room = social.builder.home_room_at(p.global_position)
+		if player_room == no or social.builder.room_at(foe.global_position) != no \
+				or not foe.state in [Guest.State.IDLE, Guest.State.WALK] or foe.fear >= 60.0 or foe.hiding \
+				or (not _pending.is_empty() and _pending["guest"] == foe):
+			continue
+		if not foe.can_see_actor(p) or not p.recognized_by(foe):
+			continue
+		_shutting[foe] = _now()
+		if Game.tracing:
+			print("[Feinde] %s sieht dich auf Zimmer %s zukommen" % [foe.display_name, no])
+		if foe.global_position.distance_to(foe.home["door_inside"]) > ENEMY_DOOR_REACH:
+			foe._walk_to(foe.home["door_inside"], Guest.State.WALK)
+		_shut_step(foe)
+
+
+## Unterwegs zur eigenen Tür: angekommen, schlägt er sie zu (steht keiner im Schwenkbereich) und schließt ab.
+func _shut_step(g) -> void:
+	if not is_instance_valid(g) or g.dead or _now() - float(_shutting[g]) > ENEMY_DOOR_TIMEOUT:
+		_shutting.erase(g)
+		return
+	var foe: Guest = g
+	var door: Door = foe.home.get("door")
+	if door == null or door.broken or not door.is_open:
+		_shutting.erase(g)   # schon zu (oder kaputt)
+		return
+	if foe.global_position.distance_to(foe.home["door_inside"]) > ENEMY_DOOR_REACH or foe._someone_in_swing(door):
+		return   # noch unterwegs, oder du (oder jemand) stehst schon in der Tür – er wartet, bis die Zeit um ist
+	door.set_open(false, true, false, foe)   # zugeschlagen
+	door.locked = true
+	_shutting.erase(g)
+	foe.say(SHUT_LINES.pick_random())
+	if Game.tracing:
+		print("[Feinde] %s schließt die Tür von Zimmer %s vor dir ab" % [foe.display_name, door.room_no])
+
+
+
+## --feind=id,tuer|versteck (6.18, 4): tuer – der Gast ist verfeindet und steht in seinem Zimmer, die Tür offen, du
+## draußen davor; versteck – er ist stark verfeindet, steht in Zimmer 13 hinter dir, und du steigst gleich in den Schrank.
+func debug_enemy(foe: Guest, what: String) -> void:
+	var social := _social()
+	if what == "versteck":
+		foe.relation = -90.0   # stark verfeindet (6.3), mit den nötigen Taten
+		foe.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
+		var spot: HideSpot = null
+		for s: HideSpot in social.builder.rooms[LevelBuilder.PLAYER_ROOM]["spots"]:
+			if s.type == HideSpot.Type.WARDROBE and s.occupant == null:
+				spot = s
+		if spot == null:
+			print("[Feinde] Debug: kein freier Schrank in Zimmer 13")
+			return
+		var at := spot.exit_point.global_position
+		var out := (at - spot.global_position) * Vector3(1, 0, 1)
+		TeleportUI.place_player(at, -out)
+		foe.global_position = at + out.normalized() * 2.0 + Vector3.UP * 0.05
+		foe.rotation.y = atan2(out.x, out.z)   # schaut zum Schrank
+		foe._set_idle(10.0)
+		print("[Feinde] Debug: %s (%s) sieht dich in den Schrank steigen" % [foe.display_name, Social.relation_word(foe.relation)])
+		get_tree().create_timer(0.5, false).timeout.connect(func() -> void: Game.player.enter_hide(spot))
+		return
+	foe.relation = -60.0   # verfeindet (6.3)
+	var info: Dictionary = social.builder.rooms[String(foe.home["no"])]
+	var door: Door = info["door"]
+	var into: Vector3 = info["into"]
+	door.locked = false
+	door.set_open(true, false, true)
+	foe.global_position = (foe.home["door_inside"] as Vector3) + into * 0.8 + Vector3.UP * 0.05   # ein Stück im Zimmer
+	foe.rotation.y = atan2(into.x, into.z)   # schaut zur Tür
+	foe._set_idle(10.0)
+	TeleportUI.place_player(info["door_front"] - into * 0.9, into)
+	print("[Feinde] Debug: %s (%s) daheim in Zimmer %s, Tür offen" % [foe.display_name, Social.relation_word(foe.relation), door.room_no])
 
 
 # --- Zweitschlüssel (4) ---------------------------------------------------------------------------------------------

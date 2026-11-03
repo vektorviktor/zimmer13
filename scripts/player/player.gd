@@ -2025,6 +2025,8 @@ func enter_hide(spot: HideSpot) -> void:
 		Game.hud.set_hide_mode(1 if spot.type == HideSpot.Type.WARDROBE else 2)
 	if Game.director:
 		Game.director.on_actor_hid(spot, self)
+	if Game.social:
+		Game.social.on_player_hid(spot)   # stark Verfeindete verraten das Versteck (6.18)
 
 
 func exit_hide() -> void:
