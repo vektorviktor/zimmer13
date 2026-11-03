@@ -298,6 +298,9 @@ var _chess_timer := 40.0
 var _darts_watched := {}                 ## Gast-ID → du weißt, wie sicher er Darts wirft
 var _dart_game := {}                     ## laufendes Darts zweier Gäste an der Bar
 var _dart_timer := 35.0
+var _pub_game := {}                      ## Schocken oder Armdrücken zweier Gäste am zweiten Würfeltisch (ZIM-73)
+var _pub_timer := 30.0
+var debug_pub_game := ""                 ## --gastspiel: dieses Spiel sofort, sicher und kurz
 ## Spuren, von denen die Gäste erzählen: {kind, zone, time}
 var _reports: Array[Dictionary] = []
 ## Hotelkatzen (6.11): Gast-ID → Name der Katze, die ihm etwas weggetragen hat; ob schon eine geweint hat
@@ -338,6 +341,20 @@ const DART_LINES := [
 	"%s: „Ha, Bull!“ – %s verdreht die Augen.",
 	"Der Pfeil von %s prallt an der Wand ab. %s lacht.",
 	"%s zieht die Pfeile aus der Scheibe. %s rechnet laut nach.",
+]
+
+const SCHOCKEN_LINES := [
+	"%s: „Schock aus!“ – %s schiebt fluchend die Deckel rüber.",
+	"%s knallt den Becher auf den Tisch. %s lupft ihn vorsichtig.",
+	"%s: „Drei Einsen? Glück gehabt.“ – %s grinst.",
+	"Würfel klappern am Würfeltisch. %s zählt die Deckel, %s zählt mit.",
+]
+
+const ARM_LINES := [
+	"%s und %s haken die Hände ein. Der Tisch knarzt.",
+	"%s läuft rot an. %s presst die Zähne zusammen.",
+	"%s: „Ellbogen bleibt unten!“ – %s schnaubt.",
+	"Ein dumpfer Schlag auf den Tisch. %s reibt sich das Handgelenk, %s lacht.",
 ]
 
 const BAR_LINES := [
@@ -1629,12 +1646,15 @@ func queue_rematch(guest: Guest) -> void:
 		_rematches.append(guest)
 
 
-## game: "dice" (Mäxchen an der Bar), "chess" (Schach in der Lobby) oder "darts" (Scheibe in der Bar)
+## game: "dice" (Mäxchen an der Bar), "chess" (Schach in der Lobby), "darts" (Scheibe in der Bar) oder ein
+## Barspiel (BarMatch.GAMES)
 func challenge(guest: Guest, game: String = "dice") -> void:
 	guest.challenge_time = 30.0
 	guest.challenge_cooldown = 240.0
 	guest.challenge_game = game
-	if game == "darts":
+	if Game.bar_games.has(game):
+		guest.say(BarMatch.line_of(guest, game, "challenge"))
+	elif game == "darts":
 		guest.say(DartMatch.line_of(guest, "darts_challenge"))
 	else:
 		guest.say(guest.line("chess_challenge" if game == "chess" else "challenge"))
@@ -1665,6 +1685,7 @@ func _update_challenges(delta: float) -> void:
 	if p == null or p.in_dialog or Game.table_game_active() \
 			or not Game.director.is_quiet(p.global_position, 25.0):
 		return
+	var in_bar := builder.in_area(p.global_position, "bar")
 	for guest in living_guests():
 		var g: Guest = guest
 		if g.challenge_cooldown > 0.0 or g.challenge_time > 0.0 or g.fear >= 40.0:
@@ -1677,8 +1698,15 @@ func _update_challenges(delta: float) -> void:
 			_rematches.erase(g)
 			continue
 		if g in _rematches:
+			var bar_game: BarMatch = Game.bar_games.get(g.challenge_game)
+			if bar_game and not (in_bar and bar_game.can_challenge(g)):
+				continue   # Revanche beim Barspiel erst, wenn du wieder in der Bar bist
 			_rematches.erase(g)
 			challenge(g, g.challenge_game)
+			return
+		var favorite := bar_challenge(g, in_bar)
+		if favorite != "" and randf() < 0.25:
+			challenge(g, favorite)
 			return
 		var dice: Dictionary = g.profile["dice"]
 		var chess := ChessMatch.chess_profile(g)
@@ -1694,6 +1722,93 @@ func _update_challenges(delta: float) -> void:
 		if dice["likes"] and tier(g) >= Tier.FRIENDLY and randf() < 0.25:
 			challenge(g)
 			return
+
+
+## Fordert der Gast dich zu seinem Lieblings-Barspiel heraus (Spielkonzept 6.10, Entscheidung 3.11.)? Nur Freunde
+## und stolze Gäste, nur wenn du in der Bar bist und der Würfeltisch frei ist. Gibt das Spiel zurück oder "" –
+## ohne die Chance, die würfelt _update_challenges.
+func bar_challenge(g: Guest, in_bar: bool) -> String:
+	if not in_bar or Game.bar_games.is_empty():
+		return ""
+	var friend := tier(g) >= Tier.FRIEND
+	if not friend and (tier(g) < Tier.NEUTRAL or float(g.profile["dice"]["pride"]) <= BarMatch.PROUD):
+		return ""
+	var favorite := BarMatch.favorite_of(g)
+	if favorite == "" or not (Game.bar_games[favorite] as BarMatch).can_challenge(g):
+		return ""
+	return favorite
+
+
+## Gäste spielen untereinander Schocken und Armdrücken am zweiten Würfeltisch (Spielkonzept 6.10, Entscheidung
+## 3.11.) – wer beides mag; Armdrücken keine Kinder, Schocken nur mit dem Becher am Tisch. Zuschauen ist nur
+## Stimmung: Sätze vom Tisch, wer gewinnt, ein stolzer Verlierer murrt – nichts zu lernen, nichts gespeichert.
+func _update_pub_game(delta: float) -> void:
+	if Game.bar_games.is_empty():
+		return
+	var schocken: BarMatch = Game.bar_games["schocken"]
+	var table := schocken.table
+	if table == null:
+		return
+	if _pub_game.is_empty():
+		_pub_timer -= delta
+		if _pub_timer > 0.0:
+			return
+		_pub_timer = 30.0
+		if table.busy or not Game.director.is_quiet(table.global_position, 25.0):
+			return
+		var game := "schocken" if schocken.has_gear(null) and randf() < 0.6 else "armdruecken"
+		if debug_pub_game in BarMatch.GUEST_GAMES:
+			game = debug_pub_game
+		var debug := debug_pub_game != ""   # --gastspiel: die beiden am Tisch, ob sie wollen oder nicht
+		var pair := _seat_pair(table, 1.0 if debug else 0.3, func(g: Guest) -> bool:
+			var wants: bool = g.global_position.distance_to(table.global_position) < 4.0 if debug \
+				else BarMatch.profile_of(g, game)["likes"]
+			return wants and (game == "schocken" or not g.is_child()))
+		if pair.is_empty():
+			return
+		var length := randf_range(40.0, 70.0) if game == "schocken" else randf_range(20.0, 35.0)
+		_pub_game = {"game": game, "a": pair[0], "b": pair[1], "time": 0.0, "talk": 5.0, "watch": 0.0,
+			"length": 12.0 if debug else length}
+		if Game.tracing:
+			print("[Gastspiel] %s: %s gegen %s am Würfeltisch" % [BarMatch.GAMES[game], pair[0].display_name, pair[1].display_name])
+		return
+	if _pair_broken(_pub_game, table):
+		_end_pub_game(false)
+		return
+	if not (_pub_game["a"].seated and _pub_game["b"].seated):
+		return
+	var dist := _pair_time(_pub_game, table, delta)
+	var schock := String(_pub_game["game"]) == "schocken"
+	_pub_game["talk"] = float(_pub_game["talk"]) - delta
+	if float(_pub_game["talk"]) <= 0.0:
+		_pub_game["talk"] = randf_range(9.0, 14.0)
+		Game.noise("dice" if schock else "arm_slam", table.global_position)
+		if dist < 7.0:
+			_pair_line(_pub_game, SCHOCKEN_LINES if schock else ARM_LINES)
+	if float(_pub_game["time"]) > float(_pub_game["length"]):
+		_end_pub_game(true)
+
+
+func _end_pub_game(completed: bool) -> void:
+	var ga: Guest = _pub_game["a"]
+	var gb: Guest = _pub_game["b"]
+	var game := String(_pub_game["game"])
+	var table: GameTable = (Game.bar_games[game] as BarMatch).table
+	if completed:
+		# Wer es besser kann, gewinnt meistens
+		var sa := float(BarMatch.profile_of(ga, game)["skill"]) + randf_range(-0.3, 0.3)
+		var sb := float(BarMatch.profile_of(gb, game)["skill"]) + randf_range(-0.3, 0.3)
+		var winner := ga if sa >= sb else gb
+		var loser := gb if winner == ga else ga
+		pals.note(ga, gb)   # zusammen gespielt (6.16)
+		if Game.tracing:
+			print("[Gastspiel] %s gewinnt gegen %s (zugesehen %.0f s)" % [winner.display_name, loser.display_name, float(_pub_game["watch"])])
+		if Game.player and Game.player.global_position.distance_to(table.global_position) < 7.0:
+			Game.say("%s gewinnt beim %s gegen %s." % [winner.display_name, BarMatch.GAMES[game], loser.display_name], 3.5)
+			if float(loser.profile["dice"]["pride"]) > BarMatch.PROUD:
+				loser.say("Revanche! Gleich nochmal.")
+	_release_pair(_pub_game, table)
+	_pub_game = {}
 
 
 ## Gäste würfeln auch untereinander – Zuschauen verrät ihre Ticks beim Bluffen.
@@ -1937,6 +2052,7 @@ func _process(delta: float) -> void:
 	_update_bar_game(delta)
 	_update_chess_game(delta)
 	_update_dart_game(delta)
+	_update_pub_game(delta)
 	_update_challenges(delta)
 	_update_sleep(delta)
 	_update_bonds(delta)

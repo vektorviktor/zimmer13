@@ -266,6 +266,8 @@ done <<'LIST'
 3000|spiele,barspiele|--bargame=schocken --autoplay --trace
 1500|spiele,barspiele,speichern|--zinken=bar --bargame=schocken --autoplay --savetest --trace
 1500|barspiele|--bargame=armdruecken --autoplay --trace
+700|spiele,barspiele,gaeste|--gastspiel --trace
+700|barspiele,gaeste|--gastspiel=armdruecken --trace
 2000|barspiele|--bargame=bierdeckel --autoplay --trace
 1500|barspiele|--bargame=trinkduell --autoplay --trace
 2000|barspiele|--bargame=siebzehn --autoplay --trace

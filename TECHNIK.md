@@ -1247,7 +1247,7 @@ Der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`, `living_
 `find_guest()` – auch nach Namen, da nur die Kernfiguren ihren Namen als ID haben),
 Beziehungen (`change_relation`), Gerede über das Freundesnetz (`_spread_gossip` → `GuestPals.spread`), Diebstahl mit Zeugen, Reservierung von Verstecken
 (`find_hide_spot` / `release_hide_spot(spot, gast)` – der Gast gibt sie auch frei, wenn sein Weg abbricht oder er stirbt,
-sonst bleibt das Versteck für alle gesperrt), Feiern, Herausforderungen (`challenge`), Gäste-Mäxchen und -Schach,
+sonst bleibt das Versteck für alle gesperrt), Feiern, Herausforderungen (`challenge`), Gäste-Mäxchen, -Schach, -Darts, -Schocken und -Armdrücken,
 Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Zettel, Nachrücker (`START_GUESTS`,
 `MIN_GUESTS`; Nachrücker sind immer Erwachsene). Teilsysteme hängen als Kinder an Social (`Game.social.tidying`,
 `pranks`, `decorating`, `search`, `pals`, `talk`, `access`, `requests`).
@@ -2672,7 +2672,16 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   `Player.drink`/`Guest.drink`), `SeventeenFourMatch` (Skatblatt, `hand_value`), `PubQuizMatch` (`TRIVIA` + Fragen aus
   den lebenden Gästen: Zimmer, `likes`, Anzahl), `TruthDareMatch` (ohne Einsatz, `report_line`, Lärm `singing`).
   `Game.bar_games` (id → Spiel), in `table_game_active`. Dialog: „Ein Barspiel spielen …“ nur in der Fläche `bar`.
-  Noch nicht: Gäste untereinander, Herausforderungen, Zuschauen. **Spielgerät:** `Item.Kind.BAR_GAME` mit Sorte in
+  **Gäste untereinander und Herausforderungen** (ZIM-73, Entscheidung 3.11.): `Social._update_pub_game` setzt alle
+  30 s mit Chance 0,3 zwei freie Gäste (`_seat_pair`) an den Tisch von `bar_games["schocken"]` – nur
+  `BarMatch.GUEST_GAMES` (Schocken mit Becher am Tisch, sonst Armdrücken, das ohne Kinder), wer das Spiel mag; 40–70
+  bzw. 20–35 s, Lärm `dice` bzw. `arm_slam`, Sätze `SCHOCKEN_LINES`/`ARM_LINES`, der Bessere (`profile_of` skill)
+  gewinnt meist, `pals.note`; zuschauen ist nur Stimmung (kein Wissen, nichts gespeichert). `_update_challenges`:
+  `bar_challenge(g, in_bar)` – Freunde (`Tier.FRIEND`) und Stolze (`pride` > `BarMatch.PROUD`, ab neutral) fordern
+  nur in der Fläche `bar` zu `BarMatch.favorite_of` heraus (das Spiel, das sie mögen und am besten können, fest aus
+  `profile_of`), wenn `can_challenge` (Tisch frei; Spielgerät darf fehlen – `why_not` sagt es beim Annehmen).
+  Verliert ein stolzer Gast, stellt `_finish` die Revanche ein (`queue_rematch`, `challenge_game` = Spiel); sie kommt
+  erst, wenn du in der Bar bist. `challenge_game` wird nicht gespeichert. **Spielgerät:** `Item.Kind.BAR_GAME` mit Sorte in
   `flavor` (`Item.BAR_GAMES`: karten, deckel, quiz, flasche – die Flasche passt nicht in die Tasche). **Spieleschrank**
   `GameCabinet` (Gruppe `chests`, gespeichert wie eine Truhe; `holds` für `Social.is_in_closed_chest`) mit den vier
   Spielen und einem zweiten Würfelbecher (`CONTENTS`). **Spielautomat** `SlotMachine` (Walzen als `Label3D`, Gewichte

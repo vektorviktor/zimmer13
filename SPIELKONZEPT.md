@@ -4120,8 +4120,19 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
   bei Mäxchen. Abbruch bei Vorwarnung wie überall.
 - **Spielautomat** neben dem Schrank: 1 Geld, drei Gleiche zahlen (Siebenen 20), zwei Gleiche geben den Einsatz
   zurück, drei Augen starren nur – im Mittel kommen 0,69 je Geld zurück. Laut; läuft nachts ab und zu von selbst an.
-- Noch offen: Gäste spielen die neuen Spiele untereinander, Herausforderungen, Zuschauen; Billard, Kicker; Bowling
-  gegen Gäste (unten).
+- Noch offen: Billard, Kicker; Bowling gegen Gäste (unten).
+
+> **Gäste untereinander, Herausforderungen (entschieden 2026-11-03, umgesetzt 2026-11-03, ZIM-73):** Gäste spielen
+> untereinander **nur Schocken und Armdrücken** (dazu Schach, Darts und Mäxchen wie bisher) – am zweiten Würfeltisch,
+> wer das Spiel mag; Schocken nur mit dem Becher am Tisch, beim Armdrücken keine Kinder (kleinste Lösung, Kraft).
+> Der Bessere gewinnt meist, ein stolzer Verlierer murrt. **Zuschauen ist nur Stimmung:** Sätze vom Tisch und wer
+> gewinnt – kein Vorteil, nichts gespeichert. Trinkduell, Bierdeckel-Turm, Quiz und Wahrheit oder Pflicht spielen
+> Gäste nicht untereinander. **Herausfordern:** Nur **Freunde** (befreundet und mehr) und **stolze** Gäste (ab neutral)
+> fordern dich heraus, wenn du **in der Bar** bist, und zwar mit ihrem **Lieblings-Barspiel** – dem Spiel, das sie
+> mögen und am besten können (fest aus Lust und Können, kein neuer Zufall); andere Gäste nicht. Fehlt das Spiel am
+> Tisch, sagt der Gast es beim Annehmen – du holst es aus dem Spieleschrank. Verliert ein **stolzer** Gast ein
+> Barspiel gegen dich, will er Revanche – die fordert er erst, wenn du wieder in der Bar bist. Kinder spielen auch
+> herausgefordert nur zum Spaß.
 
 > **Bowling allein (entschieden und umgesetzt 2026-11-01, ZIM-71):** [E] am Kugelständer startet das Spiel – man
 > steht **mittig im Anlauf**, eine Kugel aus dem Ständer in der Hand. Eine Kugel **mitnehmen geht nicht**: Die Kugeln

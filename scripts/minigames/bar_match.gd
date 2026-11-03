@@ -20,7 +20,13 @@ const LINES := {
 	"no": ["Nein, jetzt nicht.", "Keine Lust auf %s.", "Vielleicht später."],
 	"win": ["Gewonnen!", "Ha! Das war meins.", "Tja. Übung macht den Meister."],
 	"lose": ["Gut gespielt.", "Na schön, du hast gewonnen.", "Revanche, irgendwann."],
+	"challenge": ["Na, Lust auf %s? Ich fordere dich heraus.", "Eine Runde %s am Würfeltisch? Komm schon.",
+		"%s – du gegen mich. Traust du dich?"],
 }
+## Diese Barspiele spielen Gäste auch untereinander (Entscheidung 3.11.) – die übrigen nur mit dem Spieler
+const GUEST_GAMES := ["schocken", "armdruecken"]
+## Ab diesem Stolz will ein Gast nach einer Niederlage Revanche und fordert dich von sich aus heraus (wie Mäxchen)
+const PROUD := 0.5
 
 var table: GameTable
 var id := ""
@@ -101,6 +107,23 @@ static func profile_of(guest: Guest, game: String) -> Dictionary:
 		"pride": float(guest.profile["dice"]["pride"])}
 
 
+## Lieblings-Barspiel des Gastes (Spielkonzept 6.10, Entscheidung 3.11.): unter den Spielen, die er mag, das, was er
+## am besten kann – fest aus profile_of, also aus Profil bzw. Gast-ID. "" = er mag keins. Kinder nichts nur für
+## Erwachsene.
+static func favorite_of(guest: Guest) -> String:
+	var best := ""
+	var best_skill := -1.0
+	for game: String in GAMES:
+		var match_ui: BarMatch = Game.bar_games.get(game)
+		if match_ui and match_ui.adults_only and guest.is_child():
+			continue
+		var prof := profile_of(guest, game)
+		if bool(prof["likes"]) and float(prof["skill"]) > best_skill:
+			best = game
+			best_skill = float(prof["skill"])
+	return best
+
+
 ## Satz des Gastes zum Spiel: eigener („schocken_yes“) oder allgemeiner aus LINES.
 static func line_of(guest: Guest, game: String, key: String) -> String:
 	var lines: Dictionary = guest.profile["lines"]
@@ -179,6 +202,13 @@ func why_not(p_guest: Guest) -> String:
 	return _guest_unwilling(p_guest)
 
 
+## Darf der Gast dich gerade dazu herausfordern? Tisch frei, kein Spiel am Laufen, nichts nur für Erwachsene bei
+## Kindern. Das Spielgerät darf fehlen – das holst du dann aus dem Spieleschrank (why_not sagt es beim Annehmen).
+func can_challenge(p_guest: Guest) -> bool:
+	return not active and table != null and not table.busy and not Game.table_game_active() \
+		and not (adults_only and p_guest.is_child())
+
+
 ## stake: {"money": int, "item": bool}
 func start(p_guest: Guest, stake: Dictionary) -> void:
 	_reset()
@@ -200,6 +230,10 @@ func _finish(result: int, close := false, extra := "") -> void:
 	if result > 0:
 		change -= float(prof["pride"]) * 8.0               # Stolz gekränkt
 		line = line_of(guest, id, "lose")
+		if float(prof["pride"]) > PROUD:                   # stolze Gäste wollen Revanche – in der Bar (Social)
+			guest.challenge_cooldown = randf_range(90.0, 150.0)
+			guest.challenge_game = id
+			Game.social.queue_rematch(guest)
 		_stakes.take_for_player()
 	elif result < 0:
 		line = line_of(guest, id, "win")

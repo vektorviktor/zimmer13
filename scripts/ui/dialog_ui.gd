@@ -306,7 +306,8 @@ func _show_main() -> void:
 	for occasion in _occasions().slice(0, MAX_OCCASIONS):
 		_option(String(occasion["label"]), _occasion.bind(String(occasion["key"]), occasion["call"]))
 	if guest.challenge_time > 0.0:
-		_option("Herausforderung annehmen (%s)" % {"chess": "Schach", "darts": "Darts"}.get(guest.challenge_game, "Mäxchen"),
+		_option("Herausforderung annehmen (%s)" % BarMatch.GAMES.get(guest.challenge_game,
+			{"chess": "Schach", "darts": "Darts"}.get(guest.challenge_game, "Mäxchen")),
 			_show_stakes.bind(guest.challenge_game))
 	if Game.social.search.has_offer(guest):
 		_option("Klar, ich such mit!", _search)   # er hat gefragt, ob du mitkommst (5.9)

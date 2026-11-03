@@ -402,7 +402,9 @@ extends Node3D
 ##   --bargame=spiel[,id]        sofort ein Barspiel am Würfeltisch gegen den Gast (Standard bruno, Einsatz 3 Geld):
 ##                               schocken, armdruecken, bierdeckel, trinkduell, siebzehn, quiz, wahrheit – das Spiel
 ##                               aus dem Schrank liegt dann gleich auf dem Tisch (Spielkonzept 6.10)
-##   --challenge=id[,chess|darts]  Gast fordert dich heraus (Mäxchen, Schach bzw. Darts)
+##   --challenge=id[,chess|darts|barspiel]  Gast fordert dich heraus (Mäxchen, Schach, Darts bzw. ein Barspiel)
+##   --gastspiel[=schocken|armdruecken]  zwei Gäste spielen am zweiten Würfeltisch (6.10, ZIM-73), danach Prüfungen
+##                               der Herausforderungen zum Lieblings-Barspiel („[Gastspiel] … ok“ bzw. „FEHLER“)
 ##   --autoplay                  Mäxchen-Antworten, Schachzüge, Dart- bzw. Bowlingwürfe automatisch wählen
 ##   --shot=pfad.png             Screenshot speichern und beenden
 ##   --frames=n                  Frames bis zum Screenshot (Standard 120)
@@ -1851,7 +1853,7 @@ func run_debug(arg: String) -> bool:
 		var challenger := _guest(parts[0])
 		if challenger:
 			var game := parts[1] if parts.size() > 1 else "dice"
-			Game.social.challenge(challenger, game if game in ["chess", "darts"] else "dice")
+			Game.social.challenge(challenger, game if game in ["chess", "darts"] or Game.bar_games.has(game) else "dice")
 	elif arg == "--autoplay":
 		_autoplay = true
 	elif arg.begins_with("--cat="):
@@ -2173,6 +2175,8 @@ func run_debug(arg: String) -> bool:
 		_debug_trade(_arg_parts(arg, "--handel"))
 	elif _is_arg(arg, "--glas"):
 		_debug_glass(_arg_value(arg, "--glas"))
+	elif _is_arg(arg, "--gastspiel"):
+		_debug_pub_game(_arg_value(arg, "--gastspiel", "schocken"))
 	elif _is_arg(arg, "--gastsitzen"):
 		_debug_guest_sit(_arg_parts(arg, "--gastsitzen", "sofa"))
 	elif arg == "--kisten":
@@ -3488,6 +3492,78 @@ func _debug_glass(what: String) -> void:
 		get_tree().create_timer(15.0, false).timeout.connect(func() -> void:   # er hält es 8–14 s (Guest.receive_gift)
 			check.call("%s hat das Glas getrunken (Rausch %.2f → %.2f)" % [fan.display_name, drunk_before, fan.drunk],
 				fan.drunk > drunk_before and not (is_instance_valid(glass) and glass.is_inside_tree()))))
+
+
+## --gastspiel[=schocken|armdruecken]: Gäste spielen untereinander (Spielkonzept 6.10, ZIM-73). Zwei Erwachsene
+## stehen am zweiten Würfeltisch, du daneben in der Bar; sie setzen sich und spielen kurz (12 s). Danach Prüfungen der
+## Herausforderungen: Freund und stolzer Gast fordern mit dem Lieblings-Barspiel, ein anderer nicht, außerhalb der Bar
+## keiner. Jede meldet „[Gastspiel] … ok“ bzw. „FEHLER“.
+func _debug_pub_game(game: String) -> void:
+	if not game in BarMatch.GUEST_GAMES:
+		Game.say("--gastspiel: " + ", ".join(BarMatch.GUEST_GAMES), 3.0)
+		return
+	var social := Game.social
+	var bar_game: BarMatch = Game.bar_games[game]
+	var table := bar_game.table
+	var check := func(what: String, ok: bool) -> void:
+		print("[Gastspiel] %s: %s" % [what, "ok" if ok else "FEHLER"])
+	var adults: Array = social.living_guests().filter(func(g: Guest) -> bool:
+		return not g.is_child() and not g.invited and g.state == Guest.State.IDLE)
+	if adults.size() < 2:
+		print("[Gastspiel] zu wenige freie Erwachsene")
+		return
+	var ga: Guest = adults[0]
+	var gb: Guest = adults[1]
+	for g: Guest in [ga, gb]:
+		g.fear = 0.0
+		g.global_position = (table.player_seat.global_position if g == ga else table.guest_seat.global_position) 			+ Vector3(0.0, 0.05, 0.9)
+		g._set_idle(60.0)
+	if game == "schocken" and not bar_game.has_gear(null):
+		var cup := Item.create(Item.Kind.DICE_CUP)
+		add_child(cup)
+		cup.global_position = table.top_center() + Vector3(-0.15, 0.02, 0.0)
+	var side := table.global_basis.x.normalized()
+	TeleportUI.place_player(table.global_position + side * 3.0, -side)
+	social.debug_pub_game = game
+	social._pub_timer = 0.0
+	get_tree().create_timer(4.0, false).timeout.connect(func() -> void:
+		check.call("%s läuft" % BarMatch.GAMES[game], String(social._pub_game.get("game", "")) == game)
+		check.call("Tisch belegt", table.busy)
+		check.call("beide spielen", ga.state == Guest.State.MINIGAME and gb.state == Guest.State.MINIGAME)
+		social.debug_pub_game = "")
+	get_tree().create_timer(24.0, false).timeout.connect(func() -> void:
+		check.call("Partie vorbei, Tisch frei", social._pub_game.is_empty() and not table.busy)
+		check.call("beide wieder frei", ga.state != Guest.State.MINIGAME and gb.state != Guest.State.MINIGAME)
+		var in_bar := social.builder.in_area(Game.player.global_position, "bar")
+		check.call("Spieler steht in der Bar", in_bar)
+		# Herausforderungen zum Lieblings-Barspiel (ohne Chance)
+		var fan: Guest = null
+		var plain: Guest = null
+		var proud: Guest = null
+		for g: Guest in social.living_guests():
+			if BarMatch.favorite_of(g) == "":
+				continue
+			var pride := float(g.profile["dice"]["pride"])
+			if fan == null:
+				fan = g
+			elif plain == null and pride <= BarMatch.PROUD:
+				plain = g
+			elif proud == null and pride > BarMatch.PROUD:
+				proud = g
+		if fan == null or plain == null or proud == null:
+			print("[Gastspiel] keine passenden Gäste für die Herausforderungen")
+			return
+		var favorite := BarMatch.favorite_of(fan)
+		fan.relation = 60.0
+		plain.relation = 0.0
+		proud.relation = 0.0
+		check.call("Freund %s fordert zu %s" % [fan.display_name, BarMatch.GAMES[favorite]],
+			social.bar_challenge(fan, true) == favorite)
+		check.call("außerhalb der Bar nicht", social.bar_challenge(fan, false) == "")
+		check.call("stolzer Gast %s fordert" % proud.display_name, social.bar_challenge(proud, true) == BarMatch.favorite_of(proud))
+		check.call("neutraler %s fordert nicht" % plain.display_name, social.bar_challenge(plain, true) == "")
+		social.challenge(fan, favorite)
+		check.call("Herausforderung steht", fan.challenge_time > 0.0 and fan.challenge_game == favorite))
 
 
 ## --gastsitzen[=art[,id]]: Ein Gast wartet vor dem Sitzmöbel dieser Art, das der Lobby am nächsten ist, und setzt sich
