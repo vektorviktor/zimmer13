@@ -117,6 +117,11 @@ const JUDGMENT_REACH_PLAYER := 60.0
 const ATTIC_WARN := Vector2(3.0, 5.0)
 const ATTIC_STEP := 0.7
 const ATTIC_DUST := 0.9
+## Notausgang beim Raubzug (4.33, 3.): Erreicht es den Spieler so lange nicht (er steht offen, nicht versteckt, nicht
+## in Zimmer 13, nicht im Aufzug), erscheint es ungesehen 1–2 Räume neben ihm – mit so langer Warnung (s), dass
+## Fliehen und Verstecken noch gehen
+const RAID_REACH := 120.0
+const RAID_WARN := Vector2(8.0, 10.0)
 ## Nach dem Urteil greift es nur noch an, wer ihm so nah in den Weg tritt
 const IN_THE_WAY := 1.8
 ## Snack: so lange auf der Etage des Spielers, davon zuerst so lange auf ihn zu
@@ -232,11 +237,13 @@ var _route: Array[String] = []
 var _raid_kills := 0
 var _raiding := false            ## unterwegs zu Türen, die es aufbricht (bis die letzte durchsucht ist)
 var _judged := false             ## das Urteil ist vollstreckt – danach greift es nur an, wer ihm in den Weg tritt
-var _reach_timer := 0.0          ## so lange ist es schon hinter dem Verurteilten her
+var _reach_timer := 0.0          ## so lange ist es schon hinter dem Verurteilten (Raubzug: dem Spieler) her
 var _lift_wait := false          ## wartet an der Haltestelle des Aufzugs, in dem der Verurteilte fährt (4.33)
-var _attic := {}                 ## Notausgang auf dem Dachboden, läuft: {"t", "end", "door", "from", "to", "step"}
+## Notausgang mit Warnung, läuft (Dachboden oder neben dem Spieler): {"t", "end", "door" (null = keine), "from", "to",
+## "step", "steps" (Untertitel der Schritte)}
+var _approach := {}
 var _door_reach := {}            ## Zimmer → seine Tür ist vom Keller aus erreichbar (NavMesh, einmal je Zimmer)
-var debug_reach := -1.0          ## --dachboden=urteil: Frist bis zum Notausgang (s) statt JUDGMENT_REACH(_PLAYER)
+var debug_reach := -1.0          ## --frist, --dachboden=urteil: Frist bis zum Notausgang (s) statt JUDGMENT_REACH(_PLAYER)/RAID_REACH
 var _mode_left := 0.0            ## Restzeit von Snack, Raubzug-Suche und Kellerrunde
 var _rush_left := 0.0            ## Snack: noch so lange geradewegs auf den Spieler zu
 var _sense_timer := 0.0          ## Raubzug: bis es den Spieler wieder anpeilt
@@ -853,7 +860,7 @@ func _begin_mode(m: Mode) -> void:
 	_judged = false
 	_reach_timer = 0.0
 	_lift_wait = false
-	_attic = {}
+	_approach = {}
 	_no_break_in = false
 	_checked_spot = null
 	_uv_driven = false
@@ -922,8 +929,8 @@ func _update_mode(delta: float) -> void:
 				_finish_raid()
 				_monster.go_home()   # anders gestorben – das Urteil ist hinfällig
 				return
-			if not _attic.is_empty():
-				_update_attic(delta)
+			if not _approach.is_empty():
+				_update_approach(delta)
 				return
 			if not _raiding and _wait_for_lift():
 				return   # fährt er Aufzug, wartet es an der Haltestelle – die Frist des Notausgangs ruht (4.33, 2.)
@@ -945,8 +952,19 @@ func _update_mode(delta: float) -> void:
 				if _mode_left < -RAID_OVERTIME:
 					_give_up()
 				return
+			if not _approach.is_empty():
+				_update_approach(delta)
+				return
 			_distracted -= delta
-			if _mode_left <= 0.0 and not chasing:
+			# Notausgang (4.33, 3.): Steht der Spieler offen da, läuft die Frist – und die Suche endet nicht, solange er
+			# es tut (Balkon und Dachboden sind kein Freifahrtschein); abgelenkt oder vertrieben ruht sie
+			var exposed := player_exposed()
+			if exposed and _distracted <= 0.0 and not _uv_driven:
+				_reach_timer += delta
+				if _reach_timer > (debug_reach if debug_reach >= 0.0 else RAID_REACH):
+					_raid_escape()
+					return
+			if _mode_left <= 0.0 and not chasing and (not exposed or _mode_left < -RAID_OVERTIME):
 				_end_raid_search()
 			elif _distracted <= 0.0 and not chasing:
 				_sense(true)
@@ -992,6 +1010,13 @@ func foreign_sleep_room() -> String:
 ## Zählt als „nicht gefunden“: Der Spieler ist in seinem Zimmer (4.33, Raubzug).
 func player_safe() -> bool:
 	return Game.player != null and _builder != null and _builder.room_at(Game.player.global_position) == LevelBuilder.PLAYER_ROOM
+
+
+## Steht der Spieler offen da (Raubzug, 4.33, 3.)? Nicht versteckt, nicht in Zimmer 13, nicht im Aufzug – dann läuft
+## die Frist bis zum Notausgang, und die Suche endet nicht.
+func player_exposed() -> bool:
+	var p := Game.player
+	return p != null and not p.dead and p.hiding == null and not player_safe() and lift_with(p) == null
 
 
 ## Ende der Suche beim Raubzug: Hat es den Spieler gejagt, wurde es abgelenkt oder vertrieben, oder war es harmlos,
@@ -1065,10 +1090,10 @@ func lift_with(actor) -> Elevator:
 
 
 ## Notausgang auf dem Dachboden (4.33, 3a, Hauptfall): Unten knarrt die Kniestocktür, Schritte kommen über die Bohlen,
-## Staub rieselt aus einer Kammertür – nach ATTIC_WARN s stößt es sie geduckt auf und fällt über den Spieler her. Bis
-## dahin wartet es ungesehen in einer Kammer 1–2 Türen neben ihm (AtticSpook.ambush_spot). false = der Spieler ist
-## nicht oben oder es gibt dort keine solche Kammer.
-func _start_attic_scene() -> bool:
+## Staub rieselt aus einer Kammertür – nach warn s (Urteil ATTIC_WARN, Raubzug RAID_WARN) stößt es sie geduckt auf und
+## fällt über den Spieler her. Bis dahin wartet es ungesehen in einer Kammer 1–2 Türen neben ihm
+## (AtticSpook.ambush_spot). false = der Spieler ist nicht oben oder es gibt dort keine solche Kammer.
+func _start_attic_scene(warn: Vector2) -> bool:
 	var spook := _builder.attic_spook if _builder else null
 	var p := Game.player
 	if spook == null or spook.room_at(p.global_position) < 0:
@@ -1081,43 +1106,72 @@ func _start_attic_scene() -> bool:
 	for d in _builder.attic_doors:   # die Kniestocktür auf dieser Höhe
 		if absf(d.global_position.y - p.global_position.y) < 1.5:
 			knee = d.center()
-	push_warning("[Urteil] Notausgang auf dem Dachboden: Das Monster kommt durch eine Kammertür")
+	push_warning("[%s] Notausgang auf dem Dachboden: Das Monster kommt durch eine Kammertür" % MODE_NAMES[mode])
 	_monster.hide_at(spot["pos"], door.center())
-	_attic = {"t": 0.0, "end": randf_range(ATTIC_WARN.x, ATTIC_WARN.y), "door": door, "from": knee, "to": spot["pos"],
-		"step": 0.0}
+	_approach = {"t": 0.0, "end": randf_range(warn.x, warn.y), "door": door, "from": knee, "to": spot["pos"],
+		"step": 0.0, "steps": "[Schwere Schritte über die Bohlen]"}
 	Game.play_sound("creak", 0.7, knee, null, "[Unten knarrt die Kniestocktür]")
 	if Game.tracing:
-		print("[Urteil] Notausgang Dachboden: Kniestocktür knarrt, Angriff in %.1f s durch die Tür @ %s" % [
-			_attic["end"], door.center().snapped(Vector3.ONE * 0.1)])
+		print("[%s] Notausgang Dachboden: Kniestocktür knarrt, Angriff in %.1f s durch die Tür @ %s" % [
+			MODE_NAMES[mode], _approach["end"], door.center().snapped(Vector3.ONE * 0.1)])
 	return true
 
 
-## Ablauf der Dachboden-Szene: Schritte, Staub, dann der Angriff. Sieht es den Spieler schon vorher (er kam herein),
-## jagt es gleich.
-func _update_attic(delta: float) -> void:
-	var t: float = _attic["t"] + delta
-	var end: float = _attic["end"]
-	var door: Door = _attic["door"]
-	_attic["t"] = t
+## Notausgang beim Raubzug außerhalb des Dachbodens (4.33, 3.): Es wartet ungesehen 1–2 Räume neben dem Spieler
+## (5–12 m); weiter draußen knarrt eine Tür, schwere Schritte kommen näher – nach RAID_WARN s fällt es über ihn her.
+## Bis dahin kann er fliehen oder sich verstecken.
+func _start_near_scene(warn: Vector2) -> void:
+	var p := Game.player
+	var at := _point_near_unseen(p.global_position, Vector2(5.0, 12.0))
+	var away := Vector3(at.x - p.global_position.x, 0.0, at.z - p.global_position.z)
+	var from := at + (away.normalized() if away.length() > 0.1 else Vector3.FORWARD) * 8.0
+	push_warning("[%s] Notausgang: Das Monster erscheint neben dem Spieler" % MODE_NAMES[mode])
+	_monster.hide_at(at, p.global_position)
+	_approach = {"t": 0.0, "end": randf_range(warn.x, warn.y), "door": null, "from": from, "to": at, "step": 0.0,
+		"steps": "[Schwere Schritte kommen näher]"}
+	Game.play_sound("creak", 0.7, from, null, "[Irgendwo knarrt eine Tür]")
+	if Game.tracing:
+		print("[%s] Notausgang: es wartet %.1f m neben dem Spieler, Angriff in %.1f s @ %s" % [MODE_NAMES[mode],
+			at.distance_to(p.global_position), _approach["end"], at.snapped(Vector3.ONE * 0.1)])
+
+
+## Ablauf der Szene mit Warnung: Schritte, Staub (nur an einer Kammertür), dann der Angriff. Sieht es den Spieler
+## schon vorher (er kam heran), jagt es gleich.
+func _update_approach(delta: float) -> void:
+	var t: float = _approach["t"] + delta
+	var end: float = _approach["end"]
+	var door: Door = _approach["door"]
+	_approach["t"] = t
 	if not _monster.waiting():
-		_attic = {}
+		_approach = {}
 		return
-	if t >= 1.0 and t < end - ATTIC_DUST and t - float(_attic["step"]) >= ATTIC_STEP:
+	if t >= 1.0 and t < end - ATTIC_DUST and t - float(_approach["step"]) >= ATTIC_STEP:
 		var k := clampf((t - 1.0) / maxf(0.1, end - ATTIC_DUST - 1.0), 0.0, 1.0)
-		var at: Vector3 = (_attic["from"] as Vector3).lerp(_attic["to"], k)
-		var first := float(_attic["step"]) == 0.0
-		Game.play_sound("thud", 0.3 + 0.3 * k, at, null, "[Schwere Schritte über die Bohlen]" if first else "")
-		_attic["step"] = t
-	if t >= end - ATTIC_DUST and not _attic.has("dust"):
-		_attic["dust"] = true
-		if _builder.attic_spook:
-			_builder.attic_spook.dust(door)
-		Game.play_sound("creak", 0.5, door.center(), null, "[Etwas drückt gegen die Tür]")
+		var at: Vector3 = (_approach["from"] as Vector3).lerp(_approach["to"], k)
+		var first := float(_approach["step"]) == 0.0
+		Game.play_sound("thud", 0.3 + 0.3 * k, at, null, String(_approach["steps"]) if first else "")
+		_approach["step"] = t
+	if t >= end - ATTIC_DUST and not _approach.has("dust"):
+		_approach["dust"] = true
+		if door != null:
+			if _builder.attic_spook:
+				_builder.attic_spook.dust(door)
+			Game.play_sound("creak", 0.5, door.center(), null, "[Etwas drückt gegen die Tür]")
+		else:
+			Game.play_sound("creak", 0.5, _approach["to"], null, "[Ganz nah]")
 	if t >= end:
-		_attic = {}
+		_approach = {}
 		if Game.tracing:
-			print("[Urteil] Notausgang Dachboden: es stößt die Tür auf")
+			print("[%s] Notausgang: %s" % [MODE_NAMES[mode], "es stößt die Tür auf" if door != null else "es greift an"])
 		_monster.ambush(_monster.global_position, Game.player)
+
+
+## Notausgang beim Raubzug (4.33, 3.): Den offen stehenden Spieler erreicht es nicht – es erscheint ungesehen 1–2
+## Räume (auf dem Dachboden Kammern) neben ihm, mit langer Warnung. Fliehen und Verstecken gehen noch.
+func _raid_escape() -> void:
+	_reach_timer = 0.0
+	if not _start_attic_scene(RAID_WARN):
+		_start_near_scene(RAID_WARN)
 
 
 ## Kommt das Monster vom Keller aus (spawn_points[0]) auf dem NavMesh bis pos? Wie --navcheck: Der nächste Punkt des
@@ -1169,7 +1223,7 @@ func _give_up() -> void:
 func _judgment_escape() -> void:
 	_reach_timer = 0.0
 	if condemned == Game.player:
-		if _start_attic_scene():
+		if _start_attic_scene(ATTIC_WARN):
 			return
 		var p := Game.player
 		var at := _point_near_unseen(p.global_position, Vector2(5.0, 12.0))

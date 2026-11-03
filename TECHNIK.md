@@ -998,10 +998,11 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
     Kabine dort zu, drückt es den Rufknopf (`call_cabin`). Solange die Kabine fährt oder es wartet, ruht die Frist
     (`_reach_timer`); in die Kabine (kein NavMesh) geht es geradeaus (`Monster._step_straight`). **Dachboden**
     (`_start_attic_scene`, Spieler in einem Raum von `AtticSpook`): `ambush_spot` wählt eine Kammer 1–2 Türen weiter,
-    die er nicht sieht (lieber eine, deren Tür er nicht ansieht); `Monster.hide_at` dort, dann `_update_attic`:
-    Kniestocktür knarrt, Schritte (`thud`) alle `ATTIC_STEP` s, `ATTIC_DUST` s vor Schluss Staub (`AtticSpook.dust`),
-    nach `ATTIC_WARN` s `ambush` – es stößt die Tür geduckt auf. Sieht es ihn vorher, jagt es gleich. Debug
-    `--dachboden=urteil`, `--aufzug=urteil` (`debug_reach`, `SheetGhost.debug_rest`), `--navcheck=tueren`.
+    die er nicht sieht (lieber eine, deren Tür er nicht ansieht); `Monster.hide_at` dort, dann `_update_approach`
+    (Szene in `_approach`, auch beim Raubzug): Kniestocktür knarrt, Schritte (`thud`) alle `ATTIC_STEP` s, `ATTIC_DUST` s
+    vor Schluss Staub (`AtticSpook.dust`), nach `ATTIC_WARN` s (Raubzug `RAID_WARN`) `ambush` – es stößt die Tür geduckt
+    auf. Sieht es ihn vorher, jagt es gleich. Debug `--dachboden=urteil`, `--aufzug=urteil` (`debug_reach`,
+    `SheetGhost.debug_rest`), `--frist=s`, `--navcheck=tueren`.
 - **Snack** (`Mode.SNACK`): erscheint ungesehen auf der Etage des Spielers (`_floor_spawn`, nah an der stärksten
   Lockung `_lure`), Zucken; `SNACK_RUSH` lang auf den Spieler zu (`_sense`, `Monster.track`), dann umherstreifen auf
   dieser Etage, `SNACK_TIME` lang. Ein Opfer, dann heim.
@@ -1011,7 +1012,13 @@ NavMesh-Punkt ~`LURE_DISTANCE` vom Spieler (zählt als erster Angriff), dann `in
   (`on_noise` mit `Item` als Quelle) oder wurde es mit UV vertrieben (`_no_break_in`, `_uv_driven`), geht es heim –
   sonst `_plan_break_in()`: eine der schwächsten bewohnten Türen (`RAID_WEAK_SHARE`), hinter der jemand ist, ein Opfer.
   Die ersten `HARMLESS_RAIDS` sind harmlos (`is_harmless()`): `Monster._abort()` kurz vor dem Zugriff
-  (`HARMLESS_ABORT`), kein Einbruch.
+  (`HARMLESS_ABORT`), kein Einbruch. **Notausgang** (4.33, 3., ZIM-27): Solange der Spieler offen dasteht
+  (`player_exposed()`: nicht versteckt, nicht in Zimmer 13, nicht im Aufzug), endet die Suche nicht (höchstens
+  `RAID_OVERTIME` nach `RAID_TIME`), und `_reach_timer` zählt – nicht, solange es einem Wurf folgt oder vertrieben ist.
+  Nach `RAID_REACH` (`debug_reach`) `_raid_escape()`: auf dem Dachboden `_start_attic_scene(RAID_WARN)`, sonst
+  `_start_near_scene`: `hide_at` an `_point_near_unseen` (5–12 m, ungesehen), Tür knarrt 8 m weiter draußen, Schritte
+  kommen näher, nach `RAID_WARN` s `ambush`; danach Jagd wie sonst (verliert ihn, wenn er sich versteckt oder flieht,
+  kein Einbruch). Debug `--frist=s`, `--dachboden=raubzug`.
 - **Anforderung** (`Mode.DEMAND`, `demands`): `_draw_victims()` (1–7, ∝ 1/n²), `_demand_doors()`: bewohnte Türen, deren
   Deko nicht hält (`is_blocked`), schwächste zuerst, `DEMAND_DOORS`; langes Flackern. Tür für Tür bis die Opferzahl
   erreicht ist.
@@ -1074,7 +1081,7 @@ Wechsel nur über `_set_state()` (setzt Zustands-Timer zurück). Von außen: `st
 - **Rückzug (`RETREAT`) nur:** Ende des Auftritts (`go_home`), nach einem Opfer (`after_feeding`), UV, harmloser
   Raubzug (`_abort`). Nach einem Schreck `after_scare(opfer)` → `SLINK` (nicht auf dem Rückweg); das Opfer steht bis
   zum nächsten Auftritt in `_spared`. Von außen außerdem `track(pos)` (Peilen), `replan()` (neues Ziel vom Director),
-  `ambush(pos, akteur)` (Notausgang beim Urteil), `wait_at(pos, blick)` (`WAIT`: hingehen, stehen, wer gemeint ist und
+  `ambush(pos, akteur)` (Notausgang beim Urteil und Raubzug), `wait_at(pos, blick)` (`WAIT`: hingehen, stehen, wer gemeint ist und
   näher als `WAIT_SEE` kommt, wird gejagt; Türen öffnet es dabei nicht) und `hide_at` (ungesehen dorthin versetzen).
 - **Ducken:** unter Türen (`_near_door`) halb, an niedrigen Türen (`_low_door`, Dachboden unter der Schräge) tiefer.
 - Tempo `WALK_SPEED`, `SEARCH_SPEED`, `CHASE_SPEED` – jagend weit schneller als der rennende Spieler.

@@ -140,7 +140,9 @@ extends Node3D
 ##                               · treppe: im OG1 an den Fuß der Dachbodentreppe · blitz: in die Kammer, Gewitter, nach 3 s
 ##                               ein Blitz, der dich sicher um 90° dreht (Spuk, --shot-on=attic_turn) · urteil: in die Kammer,
 ##                               nach 3 s ein Urteil über Zimmer 13, Notausgang 5 s nach dem Aufbruch der Tür – die
-##                               Dachboden-Szene (4.33, 3a: Kniestocktür, Schritte, Staub, es stößt eine Kammertür auf)
+##                               Dachboden-Szene (4.33, 3a: Kniestocktür, Schritte, Staub, es stößt eine Kammertür auf) ·
+##                               raubzug: in die Kammer, nach 3 s ein Raubzug, Notausgang nach 5 s offen – dieselbe Szene
+##                               mit langer Warnung (8–10 s)
 ##   --buero[=sekretariat,auf]   ins Büro der Direktion (OG, ZIM-150) vor den Schreibtisch, mit sekretariat ins Sekretariat
 ##                               vor dessen Schreibtisch (ZIM-154) – steht keiner im Plan, kommt einer zum Ansehen in die
 ##                               Mitte des Raums; auf: alle Schubladen aufgezogen, in die erste ein Gegenstand; Blick
@@ -265,6 +267,9 @@ extends Node3D
 ##   --mode=urteil|snack|raubzug|harmlos|anforderung|keller[,s]  dieser Modus des Leviathan (4.33) in s Sekunden
 ##                               (Standard 0) · urteil wie --doll · raubzug nicht harmlos, harmlos wie der erste ·
 ##                               keller: Runde im Keller; mit --trace „[Aufbruch]“
+##   --frist=s                   Frist bis zum Notausgang des Leviathan (4.33) in s statt 60 s (Urteil gegen dich), 120 s
+##                               (Urteil gegen einen Gast, Raubzug: so lange stehst du offen da) – mit --mode=raubzug
+##                               erscheint es danach 1–2 Räume neben dir, 8–10 s Warnung
 ##   --plan                      mit --trace: den Plan der Modi gleich würfeln und ausgeben (der erste Angriff gilt als geschehen)
 ##   --bold=n                    Dreistigkeit setzen (ohne Obergrenze, Anforderung ab 55, 4.33)
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
@@ -1051,6 +1056,9 @@ func run_debug(arg: String) -> bool:
 				Game.director.raids = 0
 			else:
 				Game.director.debug_start(m as MonsterDirector.Mode, seconds))
+	elif arg.begins_with("--frist="):
+		# Frist bis zum Notausgang (4.33): Urteil und Raubzug in s statt 60/120 s
+		Game.director.debug_reach = maxf(0.0, _arg_value(arg, "--frist").to_float())
 	elif arg == "--plan":
 		Game.director.first_attack_done = true
 		Game.director._make_plan()
@@ -1347,6 +1355,11 @@ func run_debug(arg: String) -> bool:
 				if where == "urteil":
 					_debug_judgment_on_13()
 					Game.director.debug_reach = 5.0
+				if where == "raubzug":   # Raubzug (nicht harmlos), Notausgang nach 5 s offen auf dem Dachboden (4.33, 3.)
+					Game.ghost.debug_rest(600.0)
+					Game.director.debug_reach = 5.0
+					get_tree().create_timer(1.0).timeout.connect(func() -> void:
+						Game.director.debug_start(MonsterDirector.Mode.RAID, 2.0))
 				if where == "blitz" and builder.attic_spook:
 					builder.attic_spook.forced = true
 					if Game.weather.kind != Weather.Kind.STORM:

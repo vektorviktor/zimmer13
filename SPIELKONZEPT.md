@@ -2287,7 +2287,7 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
 
   | Ebene | Monster | Lakengeist | Kürbismann |
   |-------|---------|------------|------------|
-  | **Dachgeschoss** | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden (4.21); **Ausnahme:** beim Urteil gegen den Spieler erscheint es dort 1–2 Kammern neben ihm (Notausgang, 4.33) | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden | erscheint nicht, verfolgt einen hinauf, aber **nie in den Dachboden** (4.21) |
+  | **Dachgeschoss** | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden (4.21); **Ausnahme:** beim Urteil gegen den Spieler und beim Raubzug erscheint es dort 1–2 Kammern neben ihm (Notausgang, 4.33) | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden | erscheint nicht, verfolgt einen hinauf, aber **nie in den Dachboden** (4.21) |
   | **Obergeschoss** | ja | **ja** (zu Hause) | ja |
   | **Erdgeschoss** | ja | **ja**, solange dort keine andere Bedrohung ist | **ja** (zu Hause, kommt übers Lobbydach) |
   | **Untergeschoss** | **ja** (zu Hause) | erscheint nicht, verfolgt einen aber durchs Treppenhaus hinunter | ja |
@@ -2295,9 +2295,9 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
 
 - „ja“ heißt: darf dort unterwegs sein, solange die Ebene frei ist. **Erscheinen** tut das Monster im Untergeschoss
   (Ruhephase im Heizraum), der Lakengeist an Fenstern und in Fluren von Obergeschoss und Erdgeschoss (4.18), der
-  Kürbismann übers Lobbydach (4.19). **Ausnahme (2026-10-26):** Kommt das Monster beim Urteil gegen den Spieler nicht
-  rechtzeitig an ihn heran, erscheint es auf jeder Ebene 1–2 Räume neben ihm – auch im Dachgeschoss (Notausgang für den
-  Spieler, 4.33). Für die Belegung der Ebene gilt dann dasselbe wie sonst.
+  Kürbismann übers Lobbydach (4.19). **Ausnahme (2026-10-26, Raubzug 2026-11-03):** Kommt das Monster beim Urteil
+  gegen den Spieler oder beim Raubzug nicht rechtzeitig an ihn heran, erscheint es auf jeder Ebene 1–2 Räume neben ihm –
+  auch im Dachgeschoss (Notausgang für den Spieler, 4.33). Für die Belegung der Ebene gilt dann dasselbe wie sonst.
 - **Der Lakengeist bevorzugt das Obergeschoss:** Dort kommt er mit der vollen Chance (4.18); im Erdgeschoss mit etwa
   **einem Drittel** davon und **nur an Außenfenstern**. Lakengespenster an einer Tür (5.6) ziehen ihn auf beiden
   Ebenen an.
@@ -2766,8 +2766,8 @@ Ermangelung eines echten.
 > Boni aus Gerede, Lärm und Licht aus je höchstens einmal je Spielstunde. Dazu gegen Fehlverhalten (1., 2., 3a., 5.):
 > Puppe nur vor Türen, die das Monster vom Keller aus erreicht; der Verurteilte geht ab dem Aufbruch nicht mehr an
 > unerreichbare Orte; fährt er Aufzug, wartet es an der Haltestelle; die Dachboden-Szene (Kniestocktür, Schritte,
-> Staub, geduckt durch eine Kammertür); Rauchtest `--navcheck=tueren`. Noch offen (ZIM-47, ZIM-27): Balltage, Suchtrupp,
-> längere Frist beim Raubzug (3a., offen); das Tuning ist nur headless geprüft.
+> Staub, geduckt durch eine Kammertür); Rauchtest `--navcheck=tueren`. Noch offen (ZIM-47): Balltage, Suchtrupp; das Tuning ist
+> nur headless geprüft. **Umgesetzt (2026-11-03, ZIM-27):** Notausgang auch beim Raubzug (3.).
 > **Ersetzt** die drei Absichten aus 4.17 (Umsehen, einen holen, Raubzug mit n Opfern) und die
 > „fünf Türen unterwegs“ aus 5.5. Das Flackersignal aus 4.17 bleibt, bekommt aber je Modus eine neue Bedeutung. Mit
 > „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht bestätigt.
@@ -2845,7 +2845,7 @@ ganzen Hotels.
        sich beim Urteil nur vorher: nachbessern, bis man nicht mehr der Schwächste ist.
      - **Höhe:** Unter die Decke des Dachbodens (2,2 m) passt es gerade eben aufrecht – ducken muss es sich nur an den
        Türen.
-     - **Offen:** ob dasselbe mit längerer Frist auch beim Raubzug gilt (dem man entkommen kann).
+     - **Beim Raubzug** (entschieden 2026-11-03) gilt dasselbe mit längerer Frist und langer Warnung, siehe 3.
   4. **Stirbt das Ziel vorher anders** (Kürbismann, Lakengeist), springt die Puppe zur nächstschwächsten Tür; das
      Urteil bleibt.
   5. **Rauchtest:** ein Szenario, das prüft, ob jede bewohnte Tür vom Keller aus erreichbar ist.
@@ -2869,6 +2869,14 @@ ganzen Hotels.
   auf sich aufmerksam (Lärm, Keuchen, 4.15), reißt ihn das Monster aus dem Versteck. Erwischt es ihn, stirbt er.
 - **Findet es den Spieler nicht**, bricht es eine **zufällige Tür mit wenig Deko** auf und holt einen Gast daraus
   (20 % Überleben).
+- **Notausgang (entschieden 2026-11-03, wie beim Urteil, 1. 3a.):** Kein Ort ist ein Freifahrtschein – auch nicht
+  Balkon oder Dachboden. Steht der Spieler offen da (nicht versteckt, nicht in Zimmer 13, nicht im fahrenden Aufzug)
+  und erreicht ihn das Monster **2 Minuten** lang nicht, erscheint es ungesehen **1–2 Räume neben ihm** (auf dem
+  Dachboden 1–2 Kammern, mit der Szene aus 3a.). Solange er offen dasteht, endet die Suche nicht; die Frist ruht,
+  solange es einem Wurf folgt oder vertrieben ist. **Lange Warnung: 8–10 s** zwischen dem ersten Geräusch (eine Tür
+  knarrt weiter draußen, Schritte kommen näher) und dem Angriff. **Fliehen und Verstecken bleiben möglich** – anders
+  als beim Urteil; danach jagt es ihn wie sonst und verliert ihn, wenn er außer Sicht ist. Einen Einbruch gibt es
+  danach nicht mehr (es hat ihn gefunden).
 - **Verhindern:** Man kann es **ablenken** (Geräusche, Werfen, 3.13) oder mit **UV vertreiben** (4.16). Gelingt das,
   stirbt niemand. Ob überhaupt jemand stirbt, liegt also allein am Geschick und an den Entscheidungen des Spielers.
 - **Die ersten drei Raubzüge** (sie zählen zu den 10–13) sind **harmlos**: Kurz vor dem Zugriff bricht es ab und

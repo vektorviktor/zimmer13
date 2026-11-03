@@ -163,6 +163,8 @@ done <<'LIST'
 1500|monster,modi|--mode=keller --day=6 --trace
 900|monster,modi,speichern|--plan --mode=anforderung,30 --day=12 --savetest --trace
 3000|monster,modi,urteil,dachboden|--dachboden=urteil --trace
+3000|monster,modi,raubzug,dachboden|--dachboden=raubzug --trace
+1500|monster,modi,raubzug|--pos=31.5,0,-8 --mode=raubzug --frist=5 --day=8 --trace
 3000|monster,modi,urteil,aufzug|--aufzug=urteil --trace
 900|modi,urteil,navmesh|--navcheck=tueren
 3000|puppe,monster|--doll --trace
