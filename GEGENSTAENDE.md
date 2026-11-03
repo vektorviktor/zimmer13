@@ -77,8 +77,8 @@ Stand: 2026-10-28.
 
 | Gegenstand | Code | Stand | Handlung | Wozu | Konzept |
 |---|---|---|---|---|---|
-| Kürbis (Sorten bis Riesenkürbis) | `PUMPKIN` | gebaut | – | Deko, schnitzen, braten, werfen; betäubt den Kürbismann · als Lieblingskürbis erbeten (Bitte, 6.14) | 5.8, 4.21 |
-| Geschnitzter Kürbis | `CARVED_PUMPKIN` | gebaut | – | Deko, mit Kerze Licht · Brunos Herzensbitte, Lieblingskürbis geschnitzt (6.14) | 5.4 |
+| Kürbis (Sorten bis Riesenkürbis) | `PUMPKIN` | gebaut | – | Deko, schnitzen, braten, werfen; große Sorten betäuben den Kürbismann gezeigt etwa 5 s · als Lieblingskürbis erbeten (Bitte, 6.14) | 5.8, 4.21 |
+| Geschnitzter Kürbis | `CARVED_PUMPKIN` | gebaut | – | Deko, mit Kerze Licht; betäubt den Kürbismann gezeigt etwa 5 s · Brunos Herzensbitte, Lieblingskürbis geschnitzt (6.14) | 5.4, 4.21 |
 | Zierkürbis | `MINI_PUMPKIN` | gebaut | – | kleine Deko, passt in die Tasche | 5.8 |
 | Kerze | `CANDLE` | gebaut (Abbrennen 27.10.) | – | Licht, geht aus, anzünden, brennt in etwa einem Spieltag ab · Ednas Herzensbitte, kleine Bitte am Abend (6.14) | 5.12 |
 | Lakengespenst | `SHEET_GHOST` | gebaut | – | Deko zum Aufhängen; lockt den Lakengeist | 5.6 |

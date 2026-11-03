@@ -2347,8 +2347,9 @@ sie das Monster überall hinlocken – Vorschlag: nein) · was passiert, wenn ei
 schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe ab).
 
 ### 4.21 Den Kürbismann aufhalten – und erlösen (entschieden 2026-10-21)
-> Noch nicht umgesetzt (außer dem Dachboden, 4.). Nutzt das Sozialsystem (6.18): Allein kann man ihn nur kurz
-> aufhalten, mit Freunden lange genug, um ihn zu erlösen.
+> Umgesetzt: der Dachboden (4.) und das Betäuben durch den Spieler allein (1., 2026-11-03). Hilfe der Gäste (2.) und
+> Erlösen (3.) fehlen noch. Nutzt das Sozialsystem (6.18): Allein kann man ihn nur kurz aufhalten, mit Freunden lange
+> genug, um ihn zu erlösen.
 
 **1. Betäuben: einen Kürbis zeigen** (entschieden 2026-10-25)
 - **Hält man ihm einen Kürbis entgegen,** sodass er ihn sieht, **ist er betäubt** – immer, kein Würfeln. Er bleibt
@@ -2357,8 +2358,15 @@ schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe 
 - **Allein hält das nur sehr kurz** – genug zum Fliehen oder um einen Gast aus seiner Reichweite zu holen.
 - **Woher der Kürbis kommt:** aus den Beeten (dort, wo er landet, 4.19) oder von einer Tür – bei Knappheit (5.10)
   eine echte Entscheidung: meine Deko oder die des Nachbarn?
-- **Offen:** wie lange „sehr kurz“ ist, aus welcher Entfernung das Zeigen wirkt und welche Kürbisse zählen (nur große,
-  jede Sorte, auch geschnitzte, der Zierkürbis aus der Tasche?).
+- **Entschieden (2026-11-03), gilt für den Spieler allein** (Helfer und Ritual: 2., 3.):
+  - **Dauer:** etwa **5 Sekunden**.
+  - **Auslöser:** Kürbis in der Hand, **höchstens etwa 5 m** entfernt, der Spieler sieht zu ihm hin – und **er sieht den
+    Spieler** (Blickkegel wie beim Monster, Grundweite 12 m – bei 5 m reicht auch Dunkelheit).
+  - **Welche Kürbisse:** **große und geschnitzte**, auch mit brennender Kerze. **Nicht:** Zierkürbis, Kürbisbrei,
+    gebratener Kürbis – und die kleinen Sorten (Hokkaido, Butternut, Türkenturban).
+  - **Wiederholung:** Derselbe Kürbis wirkt **je Auftritt einmal**, ein zweiter wirkt erneut.
+  - **Ergänzt beim Bauen (2026-11-03):** wirkt auch, während er ausholt, solange das Beil noch nicht fällt. Danach jagt
+    er weiter wie vorher; „je Begegnung“ = je Auftritt im Hotel.
 
 **2. Hilfe der Gäste**
 - **Gute Freunde** in der Nähe holen sich von selbst einen Kürbis, kommen dazu und halten ihn ihm entgegen.

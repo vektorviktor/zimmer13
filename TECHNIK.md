@@ -1139,10 +1139,16 @@ Dritte Bedrohung, eigener Akteur (`CharacterBody3D`, Kollisionsbit 32 wie das Mo
   Ton: `PumpkinMan.HIT_SOUND` am Kürbismann, Lärm `axe_swing`; das Opfer schreit beim Ausholen, der Treffer bricht
   ab (`SynthAudio.cut_voice`). Gäste mit Sicht: `Guest.see_pumpkin()`. `MonsterDirector.is_quiet` ist dort falsch, wo
   er jagt – Feier, Partien, Süßes oder Saures enden damit von selbst.
-- **Den Kürbismann aufhalten** (Spielkonzept 4.21): bisher liegt nur sein Kopf (`Item.Kind.PUMPKIN_HEAD`) im
-  Dachgeschoss (4, „Dachgeschoss“), die Mechanik fehlt.
+- **Den Kürbismann aufhalten** (Spielkonzept 4.21, 1): `_check_shown()` jedes Bild, solange er jagt (auch beim
+  Ausholen, bis der Treffer fällt): hält der Spieler einen Kürbis, der `stops_him()` (`CARVED_PUMPKIN` oder großer
+  `PUMPKIN`, `Item.is_large`), steht höchstens `SHOW_RANGE` (5 m) weit weg, sieht in `SHOW_DOT` zu ihm hin (zur Stelle
+  seiner Körperachse, die der Blick kreuzt) und sieht er den Spieler (`Senses.can_see` mit Grundweite `SHOW_SIGHT`
+  12 m und `MONSTER_FOV_DOT`), geht er in `STUNNED`: `STUN_TIME` (5 s) still, Ende über `_resume()` (wie nach dem
+  Schlag). Jeder Kürbis wirkt je Auftritt einmal (`_shown`, Instanz-IDs, in `start_hunt` geleert). Helfer und Ritual
+  fehlen (ZIM-20); sein Kopf (`Item.Kind.PUMPKIN_HEAD`) liegt im Dachgeschoss (4, „Dachgeschoss“).
 - Nicht gespeichert. Debug: F9 bzw. `--pumpkin=dach` (Aktion `debug_pumpkin` – **nicht F8**, das stoppt im Editor
-  das laufende Spiel), `--pumpkin=garten`, `--pumpkin=jagd[,gast]`, `--shot-on=pumpkin|pumpkin_roof|pumpkin_edge|
+  das laufende Spiel), `--pumpkin=garten`, `--pumpkin=jagd[,gast]`, `--pumpkin=zeigen[,was]` (`debug_show`, Lobby,
+  der Spieler dreht sich laufend zu ihm; Szenarien mit Stichwort „zeigen“), `--shot-on=pumpkin|pumpkin_roof|pumpkin_edge|
   pumpkin_leap|pumpkin_land|pumpkin_lobby`; `--pumpkin[=anim]` stellt eine Testfigur ohne Verhalten auf.
 
 ## 6. Gäste & Soziales

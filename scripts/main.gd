@@ -333,6 +333,9 @@ extends Node3D
 ##   --pumpkin=jagd[,gast]       Kürbismann (Spielkonzept 4.19) kommt übers Lobbydach und jagt dich bzw. den Gast
 ##   --pumpkin=dach              wie F9: Kürbismann klettert übers Lobbydach, springt in den Garten, sucht die Lobby ab
 ##   --pumpkin=garten            Kürbismann gleich an den Kürbisbeeten im Garten (ohne Dach), jagt alle mit Spaß und dich
+##   --pumpkin=zeigen[,was]      Kürbismann erscheint in der Lobby gut 5 m vor dir und jagt dich, du hältst einen Kürbis
+##                               (4.21, 1): geschnitzt (Standard), kerze, eine Sorte (halloween, hokkaido …), mini, brei,
+##                               braten – oder zwei (nach der ersten Betäubung ein zweiter geschnitzter in die Hand)
 ##   --talk=id                   direkt ein Gespräch mit dem Gast öffnen
 ##   --gespraech=frage,id,gast[,n]   Gespräch, in dem der Gast diese Frage stellt (6.9: ghosts, night, contest, room,
 ##                               brave, play, escort), mit n gleich die n-te Antwort
@@ -1768,6 +1771,8 @@ func run_debug(arg: String) -> bool:
 		get_tree().create_timer(0.5, false).timeout.connect(Game.pumpkin.debug_garden)   # NavMesh muss erst stehen
 	elif arg.begins_with("--pumpkin=jagd"):
 		_debug_pumpkin_hunt(_arg_value(arg, "--pumpkin").trim_prefix("jagd").trim_prefix(","))
+	elif arg.begins_with("--pumpkin=zeigen"):
+		_debug_pumpkin_show(_arg_value(arg, "--pumpkin").trim_prefix("zeigen").trim_prefix(","))
 	elif _is_arg(arg, "--pumpkin"):
 		PumpkinMan.spawn_in_front_of(Game.player, _arg_value(arg, "--pumpkin", "walk"))
 	elif arg == "--wallblood" or arg == "--wallblood=smear":
@@ -2837,6 +2842,42 @@ func _debug_pumpkin_hunt(id: String) -> void:
 			return
 	if not Game.pumpkin.debug_hunt(target):
 		Game.say("Kürbismann: kein Platz zum Erscheinen")
+
+
+## --pumpkin=zeigen[,was]: Der Kürbismann erscheint in der Lobby vor dir und jagt dich, du hältst ihm einen Kürbis
+## entgegen (Spielkonzept 4.21, 1). was: geschnitzt (Standard, ohne Kerze), kerze, eine Sorte aus PumpkinKinds, mini,
+## brei, braten (die drei wirken nicht) oder zwei (nach der ersten Betäubung ein zweiter geschnitzter).
+func _debug_pumpkin_show(what: String) -> void:
+	var kinds := {"": [Item.Kind.CARVED_PUMPKIN, "unlit"], "geschnitzt": [Item.Kind.CARVED_PUMPKIN, "unlit"],
+		"zwei": [Item.Kind.CARVED_PUMPKIN, "unlit"], "kerze": [Item.Kind.CARVED_PUMPKIN, ""],
+		"mini": [Item.Kind.MINI_PUMPKIN, ""], "brei": [Item.Kind.PUMPKIN_MUSH, ""], "braten": [Item.Kind.ROAST_PUMPKIN, ""]}
+	if not kinds.has(what) and not PumpkinKinds.DATA.has(what):
+		Game.say("Zeigen: geschnitzt, kerze, mini, brei, braten, zwei oder eine Sorte (%s)" % ", ".join(PumpkinKinds.ORDER), 3.0)
+		return
+	var tries := 0
+	while true:   # NavMesh muss erst synchronisiert sein
+		await get_tree().create_timer(0.5, false).timeout
+		if Game.pumpkin.debug_show():
+			break
+		tries += 1
+		if tries >= 20:
+			Game.say("Kürbismann: kein Platz zum Erscheinen")
+			return
+	var pick: Array = kinds.get(what, [Item.Kind.PUMPKIN, what])
+	Game.player.drop_held()
+	Game.player.receive_item(Item.create(pick[0], pick[1]))
+	var stuns := 0
+	var was := false
+	while Game.pumpkin.in_house() and not Game.game_over:
+		_face_toward(Game.pumpkin.global_position)   # du siehst ihn an
+		var now: bool = Game.pumpkin.stunned()
+		if now and not was:
+			stuns += 1
+		elif was and not now and what == "zwei" and stuns == 1:
+			Game.player.drop_held()   # der erste wirkt nicht mehr – der zweite schon
+			Game.player.receive_item(Item.create(Item.Kind.CARVED_PUMPKIN, "unlit"))
+		was = now
+		await get_tree().physics_frame
 
 
 ## --search[=gast][,mit]: Deko-Suche (Spielkonzept 5.9) – mit „mit“ geht der Spieler mit (folgt ihm von selbst).

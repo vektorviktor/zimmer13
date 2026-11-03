@@ -180,6 +180,9 @@ done <<'LIST'
 1200|monster,kuerbismann,despawn|--warn --pumpkin=ankündigung --console=despawn --trace
 900|lakengeist,despawn|--ghost=3 --console=despawn --trace
 3000|kuerbismann|--pumpkin=jagd --trace
+600|kuerbismann,zeigen|--pumpkin=zeigen,kerze --trace
+600|kuerbismann,zeigen|--pumpkin=zeigen,zwei --trace
+300|kuerbismann,zeigen|--pumpkin=zeigen,brei --trace
 3000|kuerbismann,gaeste|--pumpkin=jagd,edna --trace
 2000|schnell,lakengeist|--ghost=3 --trace
 2000|lakengeist,verstecke|--ghost=schrank --trace

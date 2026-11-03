@@ -17,9 +17,12 @@ extends NavWalker
 ## er in der GLB, bleibt er kurz stehen und holt aus. Klettern (CLIMB_ANIM) und Landen (LAND_ANIM) nimmt er, sobald
 ## es sie in der GLB gibt – bis dahin klettert er mit Gehbewegungen und bleibt nach dem Aufprall kurz stehen.
 ## Debug: --pumpkin[=anim] stellt eine Testfigur vor dich, --pumpkin=jagd[,gast] jagt (kommt auch übers Dach),
-## F9 bzw. --pumpkin=dach lässt ihn übers Lobbydach kommen, --pumpkin=garten gleich an den Kürbisbeeten erscheinen.
+## Aufhalten (4.21, 1): Hält der Spieler ihm einen großen oder geschnitzten Kürbis entgegen, steht er STUN_TIME wie
+## gebannt still (_check_shown) – jeder Kürbis einmal je Auftritt.
+## F9 bzw. --pumpkin=dach lässt ihn übers Lobbydach kommen, --pumpkin=garten gleich an den Kürbisbeeten erscheinen,
+## --pumpkin=zeigen[,was] stellt ihn in der Lobby vor dich, mit einem Kürbis in der Hand.
 
-enum State { INACTIVE, TEST, STALK, CHASE, SEARCH, STRIKE, ROAM, LEAVE, CLIMB, ROOF, LEAP, LAND, LOBBY }
+enum State { INACTIVE, TEST, STALK, CHASE, SEARCH, STRIKE, ROAM, LEAVE, CLIMB, ROOF, LEAP, LAND, LOBBY, STUNNED }
 
 const MODEL := "res://assets/models/pumpkin_man.glb"
 ## Beim Schlag (Dragon Studio, „sword slice“ – Datei dragon-studio-sword-slice-393847)
@@ -112,6 +115,11 @@ const LAND_ANIM := "land"            ## Mixamo-Landung (…/land.fbx) – fehlt 
 const LOBBY_STOPS: Array[Vector3] = [Vector3(6.3, 0, -15.0), Vector3(0.0, 0, -9.0), Vector3(1.5, 0, -3.5)]
 const LOBBY_LOOK := 2.5              ## so lange sieht er sich an jedem Halt um
 const LOOK_EVERY := 0.4              ## so oft sieht er beim Absuchen nach, ob jemand da ist
+## Einen Kürbis zeigen (Spielkonzept 4.21, 1, entschieden 2026-11-03): nur der Spieler allein, Helfer erst mit dem Ritual
+const SHOW_RANGE := 5.0              ## so nah muss der Spieler mit dem Kürbis in der Hand stehen …
+const SHOW_DOT := 0.9                ## … so genau zu ihm hinsehen (Kosinus zur Blickrichtung, etwa 25°) …
+const SHOW_SIGHT := 12.0             ## … und er den Spieler sehen (Grundweite für Senses.can_see, mit Blickkegel)
+const STUN_TIME := 5.0               ## so lange steht er wie gebannt
 
 var state := State.INACTIVE
 
@@ -151,6 +159,7 @@ var _ground_y := 0.0          ## … und des Gartens davor
 var _at_edge := false         ## steht an der Dachkante
 var _lobby_left: Array[Vector3] = []   ## Halte in der Lobby, die er noch absuchen will
 var _look := 0.0
+var _shown := {}              ## Instanz-IDs der Kürbisse, die ihn bei diesem Auftritt schon betäubt haben
 
 
 ## Testfigur vor den Spieler stellen, Blick zu ihm – ersetzt eine schon stehende. Ohne Verhalten.
@@ -235,7 +244,12 @@ func play(anim: String) -> bool:
 
 ## Jagt er gerade (dann ist es nirgends ruhig, wo er ist – MonsterDirector.is_quiet)?
 func is_hunting() -> bool:
-	return state in [State.STALK, State.CHASE, State.SEARCH, State.STRIKE, State.ROAM, State.LAND, State.LOBBY]
+	return state in [State.STALK, State.CHASE, State.SEARCH, State.STRIKE, State.ROAM, State.LAND, State.LOBBY, State.STUNNED]
+
+
+## Steht er gerade wie gebannt vor einem gezeigten Kürbis (Spielkonzept 4.21, 1)?
+func stunned() -> bool:
+	return state == State.STUNNED
 
 
 ## Ist er noch draußen auf dem Weg übers Dach (klettert, geht, springt)? Dann läuft seine Zeit im Hotel noch nicht.
@@ -269,9 +283,10 @@ func _physics_process(delta: float) -> void:
 	if not arriving():
 		_hunt_left -= delta
 	_timer -= delta
-	if _hunt_left <= 0.0 and state != State.LEAVE and state != State.STRIKE:
+	if _hunt_left <= 0.0 and state not in [State.LEAVE, State.STRIKE, State.STUNNED]:
 		_start_leave()   # keine Lust mehr
 	_open_doors()
+	_check_shown()
 	_scan -= delta
 	if _scan <= 0.0:
 		_scan = 0.5
@@ -299,6 +314,8 @@ func _physics_process(delta: float) -> void:
 			_land(delta)
 		State.LOBBY:
 			_lobby(delta)
+		State.STUNNED:
+			_stunned(delta)
 
 
 # --- Erscheinen ---------------------------------------------------------------
@@ -525,6 +542,7 @@ func start_hunt(actors: Array[Node3D], at: Vector3 = Vector3.INF) -> bool:
 	guarantee_at = guarantee_at.filter(func(t) -> bool: return Calendar.day_of(float(t)) != today)   # heute schon da
 	_kills = 0
 	_scared.clear()
+	_shown.clear()   # neuer Auftritt: jeder Kürbis wirkt wieder
 	_hunt_left = randf_range(HUNT_TIME.x, HUNT_TIME.y)
 	visible = true
 	velocity = Vector3.ZERO
@@ -1012,18 +1030,24 @@ func _strike(delta: float) -> void:
 		_hit_done = true
 		_hit()
 	if _timer <= 0.0 and state == State.STRIKE:
-		if _hunt_left <= 0.0:
-			_start_leave()
-		elif _can_hunt(_victim):
-			if _sees(_victim):
-				_start_chase()   # daneben oder jemand im Weg – weiter hinter dem Opfer her
-			else:
-				state = State.STALK
-		elif not _lobby_left.is_empty():
-			state = State.LOBBY   # wer im Weg stand, ist erledigt – weiter die Lobby absuchen
-			_timer = -1.0
+		_resume()
+
+
+## Weiter nach Schlag oder Betäubung: hinter dem Opfer her (daneben oder jemand im Weg), sonst die Lobby weiter
+## absuchen oder der Nächste – oder gehen, wenn seine Zeit um ist.
+func _resume() -> void:
+	if _hunt_left <= 0.0:
+		_start_leave()
+	elif _can_hunt(_victim):
+		if _sees(_victim):
+			_start_chase()
 		else:
-			_next_victim()
+			state = State.STALK
+	elif not _lobby_left.is_empty():
+		state = State.LOBBY
+		_timer = -1.0
+	else:
+		_next_victim()
 
 
 ## Der Schlag: Wer noch in Reichweite ist, stirbt. Der Spieler kann im letzten Moment wegrennen.
@@ -1056,6 +1080,57 @@ func _hit() -> void:
 		if Game.tracing:
 			print("[Kürbismann] erschlägt den Spieler")
 		Game.director.player_slain("pumpkin")
+
+
+# --- Aufhalten ---------------------------------------------------------------------
+
+## Zählt der Gegenstand als Kürbis, der ihn bannt (Spielkonzept 4.21, 1)? Große und geschnitzte, auch mit Kerze –
+## nicht Zierkürbis, Brei oder gebratener (entschieden 2026-11-03).
+static func stops_him(item: Item) -> bool:
+	return item != null and is_instance_valid(item) \
+		and (item.kind == Item.Kind.CARVED_PUMPKIN or (item.kind == Item.Kind.PUMPKIN and item.is_large))
+
+
+## Hält der Spieler ihm einen Kürbis entgegen – in der Hand, höchstens SHOW_RANGE weit, Blick auf ihn – und sieht er
+## den Spieler, ist er betäubt. Immer, kein Würfeln; nur nicht mehr, wenn das Beil schon fällt. Derselbe Kürbis wirkt
+## je Auftritt einmal (_shown), ein zweiter wirkt erneut.
+func _check_shown() -> void:
+	if state == State.STUNNED or not is_hunting() or (state == State.STRIKE and _hit_done):
+		return
+	var p := Game.player
+	var item := p.held
+	if not stops_him(item) or _shown.has(item.get_instance_id()) or not _can_hunt(p) \
+			or p.global_position.distance_to(global_position) > SHOW_RANGE:
+		return
+	# Blick auf ihn: zur Stelle seiner Körperachse, in deren Höhe der Blick sie kreuzt (Füße bis Kopf)
+	var cam := p.camera.global_position
+	var look := -p.camera.global_basis.z
+	var flat := Vector2(global_position.x - cam.x, global_position.z - cam.z).length()
+	var cross_y := cam.y + look.y * flat / maxf(Vector2(look.x, look.z).length(), 0.05)
+	var aim := Vector3(global_position.x, clampf(cross_y, global_position.y + 0.3, global_position.y + HEAD_HEIGHT + 0.2),
+		global_position.z)
+	if look.dot((aim - cam).normalized()) < SHOW_DOT:
+		return
+	var eye := global_position + Vector3.UP * HEAD_HEIGHT
+	if not Senses.can_see(self, eye, -global_basis.z, SHOW_SIGHT, Senses.MONSTER_FOV_DOT, p):
+		return
+	_shown[item.get_instance_id()] = true
+	state = State.STUNNED
+	_timer = STUN_TIME
+	velocity = Vector3.ZERO
+	_animate("walk", 0.0)   # er bleibt wie gebannt stehen
+	Game.caption("[Der Kürbismann erstarrt vor dem Kürbis]")
+	if Game.tracing:
+		print("[Kürbismann] betäubt von %s" % item.display_name)
+
+
+func _stunned(delta: float) -> void:
+	_stop(delta)
+	if _timer <= 0.0:
+		Game.caption("[Der Kürbismann regt sich wieder]")
+		if Game.tracing:
+			print("[Kürbismann] wacht auf")
+		_resume()
 
 
 # --- Gehen ----------------------------------------------------------------------
@@ -1167,6 +1242,20 @@ func debug_garden() -> void:
 		spot = NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, garden[0]["center"])
 	if start_hunt(actors, spot):
 		Game.say("Kürbismann an den Kürbisbeeten", 2.0)
+
+
+## --pumpkin=zeigen: Der Spieler steht in der Lobby vor dem Haupteingang, Blick zur Mitte; dort erscheint er (gut 5 m
+## weit) und jagt ihn – zum Zeigen eines Kürbisses (4.21, 1). false = NavMesh in der Lobby noch nicht fertig.
+func debug_show() -> bool:
+	var spot := NavigationServer3D.map_get_closest_point(get_world_3d().navigation_map, LOBBY_STOPS[1])
+	if spot.distance_to(LOBBY_STOPS[1]) > 3.0:
+		return false
+	if in_house():
+		_deactivate()
+	TeleportUI.place_player(LOBBY_STOPS[2], spot - LOBBY_STOPS[2])
+	_forced = Game.player
+	var marked: Array[Node3D] = [Game.player]
+	return start_hunt(marked, spot)
 
 
 ## --pumpkin=jagd[,gast]: Er kommt übers Dach und jagt den Spieler bzw. den Gast (auch ohne Spaß und vor dem
