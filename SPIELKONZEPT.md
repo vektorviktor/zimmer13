@@ -104,6 +104,7 @@
   - [6.12 Schreck & Erlebnisse (entschieden und umgesetzt 2026-10-18)](#612-schreck--erlebnisse-entschieden-und-umgesetzt-2026-10-18)
   - [6.13 Kinder (entschieden und umgesetzt 2026-10-19)](#613-kinder-entschieden-und-umgesetzt-2026-10-19)
   - [6.14 Aufträge von Gästen (vorgemerkt 2026-10-20, entschieden 2026-10-26)](#614-aufträge-von-gästen-vorgemerkt-2026-10-20-entschieden-2026-10-26)
+  - [6.15 entfallen](#615-entfallen)
   - [6.16 Freundschaften unter Gästen (entschieden 2026-10-21)](#616-freundschaften-unter-gästen-entschieden-2026-10-21)
   - [6.17 Überlebende & Verletzungen (entschieden 2026-10-21)](#617-überlebende--verletzungen-entschieden-2026-10-21)
   - [6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)](#618-das-sozialsystem-verknüpft-entschieden-2026-10-21)
@@ -2043,7 +2044,7 @@ Lampe verzögert nach `wave_delay` (vom Heizkeller über das Treppenhaus), dazu 
 > **Gefährlicher und hartnäckiger (entschieden und umgesetzt 2026-10-18):**
 > - **Losreißen ist die seltene Ausnahme:** Ein Balken füllt sich mit jedem Richtungswechsel, der Griff zieht ihn
 >   ständig zurück; in 3 s schafft man es erst mit etwa 6–7 Wechseln je Sekunde, ab dem 4. Mal greift er noch fester zu.
->   Gäste reißen sich nur noch mit 5 % + 20 % × Mut los.
+>   Gäste reißen sich nur noch mit 10 % + 20 % × Mut los (6.12).
 > - **Verstecken im Schrank:** Er verschwindet nicht, sondern wartet **20–35 s vor den Schranktüren** (rüttelt,
 >   flüstert). Wer herauskommt, wird sofort gepackt. Danach fliegt er mit **40 %** (ab dem 6. Mal **75 %**, bei voller
 >   Schwäche +30 %) **hinein** und würgt im Schrank – sonst gibt er auf. Luft anhalten senkt die Chance (bis zur
@@ -3793,7 +3794,7 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
 
 - **Langsamer nach oben:** Je besser man schon steht, desto weniger bringt jede nette Tat (bei 50 gut die Hälfte). Alle freundlichen Gesten zusammen zählen pro Tag nur zweimal voll, danach kaum noch; dazu eine Gesprächsbereitschaft nach Stufe (6.18, 5; gebaut 2026-11-03).
 - **Die Extreme brauchen Taten, nicht nur Punkte:**
-  - **Guter Freund:** mindestens 3 gemeinsame Partien (Mäxchen oder Schach), 2 Geschenke an ihn **und** 1 Gegenstand von ihm (Deko geschenkt bekommen oder gekauft) – Austausch in beide Richtungen. Bis dahin bleibt er bei „befreundet“ stehen.
+  - **Guter Freund:** mindestens 3 gemeinsame Partien (jedes Spiel gegen ihn aus 6.10: Mäxchen, Schach, Darts, alle Barspiele samt Wahrheit oder Pflicht; nicht Bowling und Automaten, die spielt man allein), 2 Geschenke an ihn **und** 1 Gegenstand von ihm (Deko geschenkt bekommen oder gekauft) – Austausch in beide Richtungen. Bis dahin bleibt er bei „befreundet“ stehen.
   - **Stark verfeindet:** mindestens 4 feindselige Taten von dir (Deko klauen, beleidigen, rammen, schlagen) **und** er hat sich mindestens einmal gerächt (dich bestohlen, angerempelt oder geschlagen). Bis dahin bleibt er bei „verfeindet“.
 - **Zerfall:** Oberhalb von „befreundet“ und unterhalb von „verfeindet“ wandert der Wert ohne Kontakt langsam zurück (gut 1 Punkt pro Tag). Feindselige Taten verblassen über Tage (Vergebung, 6.18).
 - **Rammen:** Rennst du in einen Gast, stolpert er – Beziehung ↓, Zeugen merken es. Wütende Gäste rempeln dich ihrerseits im Vorbeigehen an (du wirst weggeschubst).
@@ -3831,7 +3832,7 @@ Inhalt (eigene Sätze, Geschichte, Aufträge) wird nach dieser Rangfolge gebaut:
   Ausgaben: Kaufen bei Gästen (Grundpreis × 0,9–1,7 × 0,7–1), Bar, Kaffee, Tee, Dosen, Automaten je 1, eine Runde 2,
   Bestechen 3, Entschuldigen 5 / 15, verlorene Einsätze; der Spielautomat gibt im Mittel 0,69 je Geld zurück. Gefundenes
   Geld trägt also die ersten Tage (≈ 55), danach kommen ≈ 3–8 je Tag von selbst – mehr nur über Handel und Spiele.
-- Gäste haben Bedürfnisse/Wünsche (z. B. „Ich brauche Batterien“, „Bring mir etwas aus der Küche“).
+- Gäste haben Bedürfnisse/Wünsche – die Bitten in 6.14.
 
 ### 6.5 Panik
 - Gäste können **vom Monster erfahren** (eigene Sichtung, Gerüchte, Gespräch mit dem Spieler).
@@ -3975,7 +3976,7 @@ mitnehmen · „Ich mag Kürbissuppe“ → er bringt dir welche · Wache halten
 Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um sich anzufreunden, um Zeit zu überbrücken oder **um einen Einsatz** (Geld, Deko, sogar Einrichtungsgegenstände).
 
 **Grundregeln**
-- **Spiele sind physisch an Orte gebunden:** Ohne Schachbrett kein Schach. Das Brett steht irgendwo im Hotel (z. B. Bibliothek / Salon), die Karten liegen im Speisesaal, die Würfel an der Bar.
+- **Spiele sind physisch an Orte gebunden:** Ohne Schachbrett kein Schach. Das Brett steht in der Lobby, die Würfel und der Spieleschrank mit Karten und den kleinen Barspielen sind in der Bar.
 - Spielgeräte sind **normale Gegenstände** (3.2): Man kann das Schachbrett **wegtragen** – z. B. ins eigene, helle Zimmer, um dort sicher zu spielen. Man kann es aber auch **klauen** oder verstecken, damit ein Gast „seinen“ Spieltisch verliert.
 - **Fehlende Teile:** Idee – dem Schachbrett fehlt anfangs die Dame. Sie liegt irgendwo im Hotel (vielleicht im Keller …). Notfalls tut es eine Kerze als Ersatzfigur.
 - Jeder Gast hat **Lieblingsspiele** und eine **Spielstärke**. Wer mit jemandem dessen Lieblingsspiel spielt, gewinnt schneller seine Sympathie.
@@ -4003,19 +4004,17 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 
 **Vorschläge für weitere Minispiele**
 
-> **Umfang (entschieden 2026-10-21):** Neben Mäxchen und Schach sind **Darts** (seit 25.10. umgesetzt, unten) und das
-> **Kürbis-Schnitz-Duell** als Nächstes vorgemerkt. Alles andere in dieser Tabelle und in den Ideen darunter (Möbel als Einsatz, Wettschulden,
-> Turniere …) ist **eingefroren** – eine Ideensammlung, nicht geplant.
+> **Umfang (entschieden 2026-10-21):** Neben Mäxchen und Schach sind **Darts** (gebaut 25.10., unten) und das
+> **Kürbis-Schnitz-Duell** vorgemerkt. Alles andere in dieser Tabelle und in den Ideen darunter (Möbel als Einsatz, Wettschulden,
+> Turniere …) ist **eingefroren** – eine Ideensammlung, nicht geplant. Den Stand je Spiel zeigt die Tabelle.
 >
-> **Mehr Barspiele (entschieden 2026-10-28, Einzelheiten noch zu besprechen):** Aufgenommen werden **Kniffel,
-> Spielautomat, Armdrücken, Bierdeckel-Turm, Trinkduell, Wahrheit oder Pflicht, Kneipenquiz, Billard, Karten, Kicker
-> und Bowling**. Damit ist das Einfrieren für diese Spiele aufgehoben; Schnitz-Duell bleibt vorgemerkt.
-> **Abgelehnt:** Fünf-Finger-Filet (Messerspiel) – zu makaber, würde die Altersfreigabe hochtreiben.
-> **Kniffel → Schocken** (echte Schocken-Regeln: drei Würfel, Bierdeckel aus der Mitte; kein Markenname).
+> **Mehr Barspiele (entschieden 2026-10-28):** Aufgenommen werden **Schocken** (echte Schocken-Regeln: drei Würfel,
+> Bierdeckel aus der Mitte; kein Markenname), **Spielautomat, Armdrücken, Bierdeckel-Turm, Trinkduell, Wahrheit oder
+> Pflicht, Kneipenquiz, Billard, Karten, Kicker und Bowling**; Schnitz-Duell bleibt vorgemerkt.
+> Verworfen: Fünf-Finger-Filet (Messerspiel, 2026-10-28) – zu makaber, würde die Altersfreigabe hochtreiben.
 > **Spieleschrank in der Bar:** Die kleinen Spiele (Karten, Bierdeckel, Quizkarten, Flasche …) liegen als normale
-> Gegenstände in einem Spieleschrank und werden dort herausgeholt – bis er im Plan steht, steht er wie die Dartscheibe
-> an einer festen Stelle in der Bar. **Billard, Kicker und Bowling** zeichnet der Nutzer später in die Karte ein; sie
-> werden erst danach gebaut.
+> Gegenstände in einem Spieleschrank und werden dort herausgeholt. **Billard und Kicker** zeichnet der Nutzer später in
+> die Karte ein; sie werden erst danach gebaut.
 >
 > **Bar neu gezeichnet, Videoautomaten (entschieden 2026-10-28):** Im Plan stehen jetzt die **Bowlingbahn** (lange
 > blassbraune Strecke links, rote Linie = Foullinie, dahinter der Anlauf), der **Spieleschrank** (Ecke unten rechts)
@@ -4030,7 +4029,6 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 >
 > Die beiden Videoautomaten stehen **zusätzlich** zum Jackpot-Automaten (einarmiger Bandit), der in die Ecke oben
 > rechts kommt; die Dartscheibe hängt in der **Nische neben der Bowlingbahn**, damit niemand Pfeile abbekommt.
-> ~~Noch offen: ob eine Runde **Geld** kostet; **Bestenliste** mit Gästen; wie **laut** die Videoautomaten sind.~~
 >
 > **Videoautomaten spielbar (entschieden und gebaut 2026-11-02, ZIM-72):**
 > - **Geld:** Eine Runde kostet **1 Geld**, zu gewinnen gibt es nichts (wie beim Jackpot-Automaten ein Geldfresser).
@@ -4056,36 +4054,36 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 > Lakengespenster hinterher. Schild hinterleuchtet, Rahmen und Bedienfeld mit Figuren der Spiele; Joystick und Knöpfe
 > in den Spielfarben.
 
-| Spiel | Ort / Gegenstand | Besonderheit | Lärm |
-|-------|------------------|--------------|------|
-| **Schach** | Schachbrett (Bibliothek/Salon) | Ruhiges Duell, lange Partien, viel Zeit für Gespräche. Gäste mit unterschiedlicher Stärke. | leise |
-| **Dame / Mühle** | Rückseite des Schachbretts, Spieleschrank | Kürzere Alternative für Gäste, die kein Schach können | leise |
-| **Kartenspiel** (z. B. Poker, Mau-Mau, Schwarzer Peter) | Kartendeck im Speisesaal | **Mehrere Gäste gleichzeitig**, Bluffen, Schummeln möglich, guter Ort für Gerüchte | mittel–laut |
-| **Würfeln / Knobeln** | Würfelbecher an der Bar | Schnelle Glücksrunden um kleine Einsätze, ideal für Geld | laut |
-| **Mikado** | Stäbchen in einer Schublade | Ruhige Hand nötig → mit **Schock-Malus „zittrige Hände“ (6.8)** kaum gewinnbar | leise |
-| **Darts / Billard** | Bar / Salon | Geschick-Spiel, Lärm durch Treffer bzw. Kugeln | mittel |
-| **Äpfelfischen** | Wasserbottich in der Küche, Äpfel aus dem Garten | Typisch Halloween, gut für Feiern (7.1); Kopf im Wasser = nichts hören und sehen … | mittel |
-| **Kürbis-Schnitz-Duell** | Küche / Lobby | Wer schnitzt den gruseligsten Kürbis? Puppe (5.5) oder Gäste als Jury. Gewinner-Kürbis ist zugleich starke Deko | leise |
-| **Gruselgeschichten-Runde** | Kamin in der Lobby | Reihum erzählen, beste Geschichte gewinnt. Starker Beziehungs-Bonus – aber **Gerede über Monster** lockt es an (4.7) | mittel |
-| **Ouija-Brett / Séance** | Dachboden, verschlossener Schrank | Hochriskant: liefert **echte Hinweise** (Ausgang, Monster, Story) – aber Dreistigkeit ↑↑. Halluzinationen möglich | leise, aber … |
-| **Mutprobe** | – (Dialog) | „Wer holt eine Spinnwebe aus dem Keller?“ Gewinner bekommt Einsatz + Respekt; beide Spieler sind in Gefahr | – |
-| **Kniffel** | Würfelbecher an der Bar | Fünf Würfel, Wertungsblock; mehrere Spieler an einem Tisch | laut |
-| **Spielautomat** | Bar | Allein, kostet Geld, Gewinne klimpern | laut |
-| **Armdrücken** | Würfeltisch / Stehtisch | Kraft gegen Schwäche (4.18); stolze Gäste wollen Revanche | mittel |
-| **Bierdeckel-Turm** | Theke | Ruhige Hand – Zittern (Kaffee, Schock, Rausch) macht es schwer; Einsturz = Lärm | leise → laut |
-| **Trinkduell** | Theke | Wer zuerst schwankt, verliert; hängt am Rausch (3.7) | mittel |
-| **Wahrheit oder Pflicht** | Flasche an der Bar | Wahrheit verrät Geheimnisse (6.9), Pflicht = Mutproben | mittel |
-| **Kneipenquiz** | Bar | Fragen zu Hotel und Gästen – Erkunden zahlt sich aus | mittel |
-| **Kicker** | Bar / Partyraum | Zwei gegen zwei möglich | laut |
-| **Bowling** | Bahn (Ort offen) | Kugel und Pins; langer Raum nötig | laut |
-| **Versteckspiel** | ganzes Stockwerk | Mit Gästen spielerisch Verstecke ausprobieren – bis man merkt, dass einer der Suchenden kein Gast ist | leise |
+| Spiel | Stand | Ort / Gegenstand | Besonderheit | Lärm |
+|-------|-------|------------------|--------------|------|
+| **Schach** | gebaut | Schachbrett, Schachtisch in der Lobby | Ruhiges Duell, lange Partien, viel Zeit für Gespräche. Gäste mit unterschiedlicher Stärke. | leise |
+| **Dame / Mühle** | eingefroren | Rückseite des Schachbretts | Kürzere Alternative für Gäste, die kein Schach können | leise |
+| **Kartenspiel** | gebaut: 17 und 4; Poker, Mau-Mau, Schwarzer Peter eingefroren | Skatblatt im Spieleschrank (Bar) | Bluffen, Schummeln möglich (Karte aus dem Ärmel) | mittel–laut |
+| **Würfeln: Mäxchen** | gebaut | Würfelbecher am Würfeltisch in der Bar | Schnelle Glücksrunden um kleine Einsätze, ideal für Geld | laut |
+| **Schocken** | gebaut | zweiter Würfelbecher und Bierdeckel aus dem Spieleschrank, zweiter Würfeltisch (Bar) | Drei Würfel, Deckel aus der Mitte | laut |
+| **Mikado** | eingefroren | Stäbchen in einer Schublade | Ruhige Hand nötig → mit **Schock-Malus „zittrige Hände“ (6.8)** kaum gewinnbar | leise |
+| **Darts** | gebaut | Scheibe in der Nische neben der Bowlingbahn (Bar), Dartpfeile | Geschick-Spiel, Lärm durch Treffer | mittel |
+| **Billard** | vorgemerkt (erst, wenn es im Plan steht) | Bar | Geschick-Spiel, Lärm durch Kugeln | mittel |
+| **Apfeltauchen** | gebaut (6.21) | Holzbottich im Partyraum | Typisch Halloween, gut für Feiern (7.1); Kopf im Wasser = nichts hören und sehen … | mittel |
+| **Kürbis-Schnitz-Duell** | vorgemerkt | Küche / Lobby | Wer schnitzt den gruseligsten Kürbis? Puppe (5.5) oder Gäste als Jury. Gewinner-Kürbis ist zugleich starke Deko | leise |
+| **Gruselgeschichten-Runde** | eingefroren (vgl. Gruselgeschichten-Abend, 5.9) | Kamin in der Lobby | Reihum erzählen, beste Geschichte gewinnt. Starker Beziehungs-Bonus – aber **Gerede über Monster** lockt es an (4.7) | mittel |
+| **Ouija-Brett / Séance** | eingefroren | Dachboden, verschlossener Schrank | Hochriskant: liefert **echte Hinweise** (Ausgang, Monster, Story) – aber Dreistigkeit ↑↑. Halluzinationen möglich | leise, aber … |
+| **Mutprobe** | eingefroren | – (Dialog) | „Wer holt eine Spinnwebe aus dem Keller?“ Gewinner bekommt Einsatz + Respekt; beide Spieler sind in Gefahr | – |
+| **Spielautomat** | gebaut | Jackpot-Automat in der Bar | Allein, kostet Geld, Gewinne klimpern | laut |
+| **Videoautomaten** (Deadra, Ghost Hotel) | gebaut | Bar | Allein, 1 Geld je Runde, Bestenliste mit Gästen | mittel |
+| **Armdrücken** | gebaut | zweiter Würfeltisch (Bar) | Kraft gegen Schwäche (4.18); stolze Gäste wollen Revanche | mittel |
+| **Bierdeckel-Turm** | gebaut | Bierdeckel aus dem Spieleschrank, zweiter Würfeltisch (Bar) | Ruhige Hand – Zittern (Kaffee, Schock, Rausch, Müdigkeit) macht es schwer; Einsturz = Lärm | leise → laut |
+| **Trinkduell** | gebaut | zweiter Würfeltisch (Bar) | Wer zuerst schwankt, verliert; hängt am Rausch (3.7); nichts für Kinder | mittel |
+| **Wahrheit oder Pflicht** | gebaut | Flasche aus dem Spieleschrank (Bar) | Wahrheit verrät Erlebtes (6.9), Pflichten: singen, trinken, Münze, Witz | mittel |
+| **Kneipenquiz** | gebaut | Quizkarten aus dem Spieleschrank (Bar) | Fragen zu Halloween, Hotel und Gästen – Erkunden zahlt sich aus | mittel |
+| **Kicker** | vorgemerkt (erst, wenn er im Plan steht) | Bar / Partyraum | Zwei gegen zwei möglich | laut |
+| **Bowling** | gebaut: allein, ein Frame; ganzes Spiel und gegen Gäste offen | Bowlingbahn in der Bar | Kugel und Pins | laut |
+| **Versteckspiel** | eingefroren (Vorschlag mit Kindern: 6.13) | ganzes Stockwerk | Mit Gästen spielerisch Verstecke ausprobieren – bis man merkt, dass einer der Suchenden kein Gast ist | leise |
 
 **Spielerische Nebenwirkungen (Ideen)**
 - **Ruf als Spieler:** Wer oft gewinnt, wird zum „Champion“ – manche Gäste meiden ihn, andere fordern ihn heraus.
 - **Turnier bei Feiern (7.1):** Schachturnier oder Kartenrunde als Teil einer Feier, Hauptpreis z. B. eine Vogelscheuche.
 - **Herausforderungen durch Gäste:** Ein Gast fordert den Spieler aktiv heraus („Revanche!“) – Ablehnen kostet ein wenig Beziehung.
-- **Hotel-Spieleschrank:** Ein abschließbarer Schrank in der Lobby mit Spielen; der Schlüssel ist selbst ein begehrter Gegenstand.
-
 **Umsetzungsstand (2026-10-10): Mäxchen an der Hotelbar**
 - **Hotelbar** neben der Lobby: Theke, Flaschen, Würfeltisch mit zwei Hockern. Der **Würfelbecher** ist ein normaler Gegenstand – ohne Becher am Tisch kein Spiel (man kann ihn wegtragen).
 - **Regeln:** verdeckt würfeln, ansagen (wahr oder geblufft), glauben oder aufdecken; Mäxchen (21) > Pasch > Rest; Best-of-3.
@@ -4095,7 +4093,7 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - **Beziehung:** fair spielen ↑, Lieblingsspiel ↑↑, gewinnen gegen Stolze ↓, knapp verlieren ↑, absichtlich verlieren: bemerkt ↓ / unbemerkt ↑.
 - **Schummeln:** gezinkte Würfel (Zimmer 17) in den Becher schmuggeln → „Gezinkt nachwürfeln“; erwischt: Beziehung ↓↓, Gerücht, Gast nimmt den ganzen Einsatz.
 - **Monster:** jeder Wurf macht Lärm (Neugier ↑ an der Bar); am Tisch ist man konzentriert → Flackern/Rauschen nur halb so stark sichtbar; bei langem Flackern springt der Gast auf (Mutige später) – die Einsätze bleiben liegen und gehören niemandem mehr.
-- Noch offen: weitere Spiele (Schnitz-Duell, oben; Darts siehe unten).
+- Weitere Spiele: Tabelle oben.
 
 **Umsetzungsstand (entschieden und umgesetzt 2026-10-18): Schach in der Lobby** – „wie Mäxchen“
 - **Schachtisch** in der Lobby (vorn rechts, unter dem Gartenfenster), zwei Hocker. Das **Schachbrett** ist ein
@@ -4119,7 +4117,7 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 - Noch offen: die fehlende Dame als Suche (Idee oben), Dame/Mühle auf der Rückseite, Schachturnier bei Feiern.
 
 **Umsetzungsstand (umgesetzt 2026-10-28): Barspiele und Spieleschrank** – „wie Mäxchen“
-- **Spieleschrank** an der Ostwand der Bar (bis er im Plan steht): Kartenspiel, Bierdeckel, Quizkarten, leere Flasche
+- **Spieleschrank** in der Bar (Stelle aus dem Plan): Kartenspiel, Bierdeckel, Quizkarten, leere Flasche
   und ein zweiter Würfelbecher liegen darin. Gespielt wird am **zweiten Würfeltisch** – ohne das Spiel am Tisch kein
   Spiel. Gast einladen: „Ein Barspiel spielen …“ (nur in der Bar).
 - **Schocken** (drei Würfel, bis zu drei Würfe, eine Hälfte mit 13 Deckeln, Schock aus beendet sie; gezinkte Würfel
@@ -4138,8 +4136,9 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 > **Gäste untereinander, Herausforderungen (entschieden 2026-11-03, umgesetzt 2026-11-03, ZIM-73):** Gäste spielen
 > untereinander **nur Schocken und Armdrücken** (dazu Schach, Darts und Mäxchen wie bisher) – am zweiten Würfeltisch,
 > wer das Spiel mag; Schocken nur mit dem Becher am Tisch, beim Armdrücken keine Kinder (kleinste Lösung, Kraft).
-> Der Bessere gewinnt meist, ein stolzer Verlierer murrt. **Zuschauen ist nur Stimmung:** Sätze vom Tisch und wer
-> gewinnt – kein Vorteil, nichts gespeichert. Trinkduell, Bierdeckel-Turm, Quiz und Wahrheit oder Pflicht spielen
+> Der Bessere gewinnt meist, ein stolzer Verlierer murrt. **Zuschauen ist bei den neuen Barspielen (Schocken,
+> Armdrücken) nur Stimmung:** Sätze vom Tisch und wer gewinnt – kein Vorteil, nichts gespeichert. Bei Mäxchen, Schach
+> und Darts verrät Zuschauen weiter Ticks bzw. Stärke (oben). Trinkduell, Bierdeckel-Turm, Quiz und Wahrheit oder Pflicht spielen
 > Gäste nicht untereinander. **Herausfordern:** Nur **Freunde** (befreundet und mehr) und **stolze** Gäste (ab neutral)
 > fordern dich heraus, wenn du **in der Bar** bist, und zwar mit ihrem **Lieblings-Barspiel** – dem Spiel, das sie
 > mögen und am besten können (fest aus Lust und Können, kein neuer Zufall); andere Gäste nicht. Fehlt das Spiel am
@@ -4212,7 +4211,8 @@ Neben Reden und Handeln kann man mit Gästen **kleine Spiele spielen** – um si
 > der Lakengeist zupackt, springt sie herunter. Naht das Monster, faucht sie, kratzt (ein kleiner Schreck) und
 > flieht – auch auf dem Arm ist sie eine Frühwarnung.
 > **Noch nicht:** Heizkeller als Liegeplatz.
-- **Drei Katzen gehören zum Hotel** – eine alte, eine scheue, eine neugierige (oben).
+- **Sieben Katzen gehören zum Hotel:** die drei oben – eine alte, eine scheue, eine neugierige – und vier im
+  Katzenraum im Obergeschoss (Luna, Fussel, Tiger, Mausi, 7.7).
 - **Sie laufen frei durchs Hotel:** NavMesh wie die Gäste, eigene Lieblingsplätze (Rezeption, Sofa in der
   Lobby, warm in der Küche, Fensterbank, Heizkeller), schlafen viel, schlüpfen durch offene Türen.
 - **Streicheln:** Spieler und Gäste können sie streicheln („Streicheln [E]“). Wer gestreichelt wird,
@@ -4273,7 +4273,7 @@ einmal vor. Wie jedes Gespräch über das Monster hört es mit (4.7).
   Zimmer), kommt er mit derselben Chance – mit **eigenem Zähler je Gast** (1. Mal heranschweben, 2. Handabdrücke
   und Hypnose, ab 3. herein und würgen, ab 4. durch den Vorhang). Der Zähler des Spielers bleibt davon unberührt.
 - Ab der Hypnose bleibt der Gast **gebannt stehen**, statt wegzulaufen.
-- **Würgen:** Mutige reißen sich eher los (5 % + 20 % × Mut) und rennen in Panik davon, sonst **stirbt der Gast und
+- **Würgen:** Mutige reißen sich eher los (10 % + 20 % × Mut, im Mittel etwa 2 von 10 wie 6.17) und rennen in Panik davon, sonst **stirbt der Gast und
   bleibt als Leiche liegen**. Im Hotel hört man nur ein abbrechendes Röcheln.
 - **Zeugen** vertreiben ihn wie beim Spieler – bei einem Gast zählt **auch der Spieler** als Zeuge. Wer ihn so
   sieht, erschrickt ebenfalls.
@@ -4300,7 +4300,8 @@ mit Trauerfeier am Grab.
 > **Im Prototyp umgesetzt (2026-10-19):** dreizehn Kinder (6–11 Jahre) im Zimmer ihrer Eltern (6.20), eigene Namen und
 > Sätze („Mama“/„Papa“), ab und zu ein Schach-Wunderkind. Alles unter „Kinder und die bestehenden Systeme“ – bis auf
 > die Lücken unten. Modelle: alle vier Grundkörper (unten).
-> **Noch nicht:** Das Geheimnis (2.3) gibt es noch nicht – deshalb keine Funde in engen Ecken. Der Lakengeist erschreckt Kinder am Fenster,
+> **Noch nicht:** Funde der Kinder in engen Ecken (das Geheimnis, 2.3, ist entschieden, die Kinderfunde sind nicht
+> gebaut). Der Lakengeist erschreckt Kinder am Fenster,
 > noch nicht im Flur. Waisen wenden sich noch keinem Gast zu (unten); dem Spieler schließen sie sich seit
 > 2026-10-25 nicht mehr an. „Erzählt es allen“ heißt
 > vorerst: den Eltern und den Erwachsenen in der Nähe.
@@ -4521,10 +4522,14 @@ Zimmer und Frist, erledigte durchgestrichen –, der Gast erinnert beim nächste
   ein Auftrag erst beim Annehmen, eine abgelehnte Bitte gar nicht (3.10).
 - **Überbringen – zwei Verfeindete versöhnen (gebaut 2026-11-03):** als Vermitteln im Streit unter Gästen (6.16).
 
+### 6.15 entfallen
+Verworfen: Freitext-Gespräche über ein lokales Sprachmodell (Prototyp 2026-10-20, gestrichen 2026-10-21) – Gespräche
+laufen nur über das Menü (6.9). Die Nummer bleibt frei, damit Verweise stabil bleiben.
+
 ### 6.16 Freundschaften unter Gästen (entschieden 2026-10-21)
 Gäste freunden sich auch **miteinander** an – und Freunde erzählen sich Gutes über dich.
 - **Wie Gäste Freunde werden:** durch gemeinsame Taten – zusammen schmücken (5.9), Deko suchen, Kürbissuppe essen
-  (3.8), Mäxchen oder Schach spielen (6.10), feiern (7.1) und an der Bar trinken (3.7). Jede gemeinsame Tat zählt;
+  (3.8), miteinander spielen (Mäxchen, Schach, Darts, Schocken, Armdrücken; 6.10), feiern (7.1) und an der Bar trinken (3.7). Jede gemeinsame Tat zählt;
   ab **drei** sind zwei Gäste Freunde. **Familie** (Kinder und ihre Eltern, 6.13) und **Zimmernachbarn** (Tür an
   Tür) sind es von Anfang an.
 - **Weitererzählen:** Ist ein Gast mit dir mindestens **„befreundet“** und trifft einen seiner Freunde (beide wach,
@@ -4605,27 +4610,25 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   lassen sich nicht verschenken (entschieden 2026-10-21).
 
 ### 6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)
-> Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19; Wache halten,
-> 2026-11-02, ZIM-62; das Freundesnetz als Kanal (1), 2026-11-03, ZIM-159; die Beziehung nicht erschleichen (5) ohne Neid,
-> 2026-11-03, ZIM-163; Neid, 2026-11-03, ZIM-164; jeder Tod hat eine Ursache (2), 2026-11-03, ZIM-160, mit den Kerzen
-> der Gäste und dem Wunsch „eine Kerze für den Toten“ aus (3), 2026-11-03, ZIM-41, 6.12;
-> schwere Momente (3), 2026-11-03, ZIM-161). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> Stand: entschieden 2026-10-21, Einzelheiten 2026-11-03 · gebaut 2026-11-02/03 (ZIM-62, ZIM-159 bis ZIM-164, ZIM-41;
+> Warnen im Gespräch 6.9, Zuflucht und Einlass 6.19) · offen: Warnen am Telefon und als Ruf (4), Themen und Optionen
+> nach Stufe (5), Kränkung durch fehlende Besuche bei den Zuständen bis zum Morgen und bei Waisen (3).
+>
+> Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
 **1. Ein Kanal fürs Weitersagen: das Freundesnetz**
 - Alles läuft über das Netz aus **Freunden, Familie und Zimmernachbarn** (6.16) – Lob, Klagen (Diebstahl,
-  Schlag, Beleidigung, Puppe vor die Tür gelegt), Monster-Wissen (Erlebnisse 6.12, Zeugenaussagen 6.17) und
+  Schlag, Beleidigung), Monster-Wissen (Erlebnisse 6.12, Zeugenaussagen 6.17) und
   Todesnachrichten. Erzählt wird, wenn sich zwei Freunde treffen.
 - **Stärke:** nach dem Tratsch des **Erzählers** (Mila verbreitet am stärksten, 6.0); bei jedem Weitererzählen halb so
   stark, nach **höchstens zwei Stationen** ist Schluss.
 - **Zeugen** reagieren sofort; petzende Kinder (6.13) sind der Fall „Familie“.
-- ~~**Freunde suchen einander auf:** zusammen an die Bar, an den Schachtisch, zum Schmücken – es entstehen sichtbare
-  Grüppchen, man sieht, wo Gerede entlangläuft.~~ **Gestrichen (2026-11-03).** Sichtbar wird das Gerede nur, weil der
-  Erzähler beim Treffen einen Satz sagt und der andere antwortet.
+- Sichtbar wird das Gerede nur, weil der Erzähler beim Treffen einen Satz sagt und der andere antwortet.
+  Verworfen: Freunde suchen einander gezielt auf und bilden sichtbare Grüppchen an Bar und Schachtisch (2026-11-03).
 - **Gebaut (2026-11-03, ZIM-159):** Lob und Klagen über den Spieler und aufgeflogene Lügen (6.9) laufen nur über die
-  Freunde der Erzähler (Opfer, Zeugen) und werden erst erzählt, wenn sich die beiden treffen; früher bekam jeder Gast
-  das Gerede nach seinem eigenen Tratsch ab. Stärke = Tratsch des Erzählers, an der zweiten Station × ½; jeder hört
+  Freunde der Erzähler (Opfer, Zeugen) und werden erst erzählt, wenn sich die beiden treffen. Stärke = Tratsch des Erzählers, an der zweiten Station × ½; jeder hört
   eine Nachricht nur einmal, nach einem Spieltag ohne Treffen ist sie vergessen. Weitererzählte Geschichten (6.9)
   machen nach derselben Regel Angst. Monster-Wissen über Zeugenaussagen (6.17) und Todesnachrichten bleiben bei 2
   (ZIM-160) und 3 (ZIM-41), die den Kanal nutzen.
@@ -4633,9 +4636,10 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   Gast schadet mehr als ein Einzelgänger.
 
 **2. Jeder Tod hat eine Ursache** (6.8)
-- **Jeder Tod merkt sich, wie es dazu kam:** Klopfen an Zimmer 13 ignoriert (4.13) · Puppe vor seine Tür gelegt (5.5) ·
+- **Jeder Tod merkt sich, wie es dazu kam:** Klopfen an Zimmer 13 ignoriert (4.13) ·
   sein Telefon kurz vorher klingeln lassen (4.14) · als Begleiter mitgenommen (6.3) · Deko oder Birne von ihm geklaut ·
-  Licht bei ihm ausgemacht (4.11). Daraus ergibt sich die **Schuld** des Spielers an *diesem* Toten.
+  Licht bei ihm ausgemacht (4.11). Daraus ergibt sich die **Schuld** des Spielers an *diesem* Toten. Das Urteil der
+  Puppe (5.5) ist eine Ursache ohne Schuld – legen kann der Spieler sie nicht.
 - **Ein Wert für den Spieler:** Schock und Trauer werden eins – bei allen drei Bedrohungen, stärker nach Beziehung und
   Schuld.
 - **Halluzinationen haben einen Namen:** Stimme am Telefon und falsches Klopfen (4.13, 4.14) kommen von dem Toten, mit
@@ -4648,12 +4652,10 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   - **Wie lange eine Ursache zählt:** Diebstahl (Deko oder Birne), solange sie fehlt – liegt sie wieder vor seiner Tür
     oder hat er sie sich zurückgeholt, nicht mehr. Klopfen ignoriert, sein Telefon klingeln lassen, mitgenommen (nicht,
     wenn er sich von selbst anschließt) und Licht in seinem Zimmer ausgemacht: bis zum Ende derselben Nacht (6 Uhr).
-    „Sorglos“ (6.9), solange er es glaubt. Gilt mehreres, zählt das Frischeste. **Puppe:** Legen kann der Spieler sie
-    nicht (5.5) – stirbt jemand durch ihr Urteil, ist das seine Ursache, aber ohne Schuld.
+    „Sorglos“ (6.9), solange er es glaubt. Gilt mehreres, zählt das Frischeste.
   - **Ein Wert:** Jeder Tod gibt einen kleinen Grundwert Schock (0,2), ein Freund bis 0,8 mehr nach Beziehung, Schuld
     0,35 dazu. Der Schock verfliegt in zwei Teilen: der starke schnell (wie bisher), der Rest – die Trauer – langsam;
-    voller Schock ist nach gut 7 Spielminuten vorbei. Halluzinationen kommen ab 0,15 (die eigene Trauerzeit von 15
-    Minuten nach jedem Tod entfällt). Offene Schuld lässt ihn halb so schnell verfliegen, bis eine Kerze brennt oder
+    voller Schock ist nach gut 7 Spielminuten vorbei. Halluzinationen kommen ab 0,15. Offene Schuld lässt ihn halb so schnell verfliegen, bis eine Kerze brennt oder
     drei Spieltage um sind.
   - **Halluzinationen** (Anruf, falsches Klopfen, Gestalt im Spiegel) tragen immer den Namen des zuletzt Gestorbenen.
   - **Freunde erfahren es:** Die Ursache kennen, wer dich dabei gesehen hat, und sein Haushalt. Sie mögen dich weniger
@@ -4692,15 +4694,16 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
     **Unerfüllt:** verfällt still mit dem Zustand und wird im Notizbuch gestrichen, ohne Malus.
   - **Nicht gebaut:** Kränkung durch fehlende Besuche nur bei Verletzung und Trauer – nicht bei den Zuständen bis zum
     Morgen und nicht bei Waisen (bis Halloween gibt es kein Ende, an dem man es merkt). Kinder bekommen keinen
-    Puppen-Zustand (sie bemerken die Puppe nicht, 5.5).
+    Puppen-Zustand: Kinder fürchten die Puppe nicht – sie ist ihr Spielzeug (5.5, 6.13).
 
 **4. Freundschaft schützt** (dazu: Freunde schmücken deine Tür mit, 5.10)
 - **Zuflucht:** Wirst du gejagt und klopfst bei einem **befreundeten** Gast, macht er auf – das Gegenstück zum Klopfen
   an Zimmer 13 (4.13). Feinde machen nicht auf. Verallgemeinert in 6.19 (Klopfen und Einlass überhaupt).
-- **Warnen:** neue Aktion im Gespräch oder am Telefon, solange es flackert: „Versteck dich!“ – dazu als **Ruf** an alle
-  in Hörweite („Versteckt euch!“; beim Kürbismann „Holt Kürbisse!“, 4.21). Der Gast versteckt sich.
+- **Warnen:** Aktion im Gespräch, solange es flackert: „Versteck dich!“ (gebaut, 6.9). Der Gast versteckt sich.
   Kam wirklich etwas, steigt die Beziehung deutlich (die „Hilfe bei Monster-Ereignissen“ aus 6.2); ein falscher Alarm
   (z. B. aus einer Halluzination) kostet Vertrauen (wie 3.6).
+  **Offen (nicht entschieden, ob es noch kommt):** Warnen am Telefon und als **Ruf** an alle in Hörweite („Versteckt
+  euch!“; beim Kürbismann „Holt Kürbisse!“, 4.21).
 - **Wache halten:** Gute Freunde bleiben auf Bitte in Zimmer 13, während du schläfst – ein wacher Zeuge vertreibt den
   Lakengeist (4.18, 3.6). *Gebaut 2026-11-02 (ZIM-62):* Bitte „Könntest du … Wache halten, während ich schlafe?“ nur
   bei „guter Freund“, Erwachsenen; Absage bei Angst ab 40, Verletzung, wenn schon ein anderer wacht oder er in den
@@ -4772,8 +4775,6 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 > - Nicht gebaut: „Wohlgesinnte reden über mehr Themen“, „Verärgerte bieten weniger Optionen“ – nur Zahl und
 >   Abbruch der Gespräche.
 
-**Zu klären:** wie lange eine Ursache „frisch“ genug ist, um als Schuld zu zählen.
-
 ### 6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht
 > durchkommen (zu lange jemand im Weg); der Reparaturdank bleibt einmal je Tür und Tag (+8 je Erwachsenem), ohne
@@ -4809,8 +4810,8 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   sie manchmal einen Spalt offen).
 - **Offen steht eine Tür nur,** wenn gerade jemand hindurchgeht, wenn der Gast in Panik geflohen ist (6.5), wenn das
   Monster sie aufgerissen hat oder wenn sie kaputt ist (5).
-- **Unbewohnte Zimmer schließt das Hotel ab.** Hinein kommt man mit dem **Generalschlüssel** von der Rezeption
-  (schwer zu bekommen, ein Wagnis nach 2.3) oder durch Aufbrechen. Verfallene und verlassene Zimmer bleiben offen.
+- **Unbewohnte Zimmer schließt das Hotel ab.** Hinein kommt man mit dem **Generalschlüssel** aus dem
+  Sekretariat (2.10; schwer zu bekommen) oder durch Aufbrechen. Verfallene und verlassene Zimmer bleiben offen.
   Ausnahme: die **versiegelten Zimmer** von 1987 (7).
 - **Gilt auch umgekehrt:** Gäste klopfen an Zimmer 13 und kommen nur mit Erlaubnis, durch eine offene Tür oder mit
   einem Schlüssel hinein (sie lesen sonst das Tagebuch, 3.10). Sehr wütende Gäste können auch bei dir einbrechen – mit Lärm und Zeugen wie
@@ -4818,7 +4819,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   Zimmer ist. Er bricht laut auf (Tür danach kaputt, 5), nimmt sich zurück, was der Spieler ihm genommen hat – sonst ein
   Stück Deko oder Geld –, und liest das Tagebuch.
 - **Stirbt ein ganzer Haushalt** (entschieden 2026-10-26), schließt das Hotel sein Zimmer ab wie ein unbewohntes. Ist die
-  Tür kaputt, bleibt sie es und steht offen – der Gedenkort aus 6.18 (2). Nachrücker ziehen nur in leere Zimmer.
+  Tür kaputt, bleibt sie es und steht offen – der Gedenkort aus 6.18 (2). Es ziehen keine neuen Gäste nach (6.0).
 
 **2. Klopfen**
 - An einer verschlossenen Zimmertür heißt [E] **„Klopfen“** (Lärm, 8 m, 4.15).
@@ -4939,37 +4940,26 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
     6.18, 2). Der Spieler braucht mit Werkzeug 6 s: +8 Beziehung, weitererzählt.
 
 ### 6.20 Haushalte (entschieden 2026-10-24)
-> **Umgesetzt (2026-10-24)** wie unten (HAUSHALTE.md → assets/data/households.json, beim Start neu eingelesen).
+> Stand: entschieden 2026-10-24 · gebaut 2026-10-24 (HAUSHALTE.md → assets/data/households.json, beim Start neu
+> eingelesen).
 >
-> Wer mit wem wohnt, entscheidet, wer eine Tür öffnen darf (6.19).
+> Wer mit wem wohnt, entscheidet, wer eine Tür öffnen darf (6.19). **Alle Zahlen** – Haushalte je Art, Erwachsene und
+> Kinder, Betten, Zimmer im Plan, Außenzugänge – stehen nur in **[HAUSHALTE.md](HAUSHALTE.md)**; hier stehen die Regeln.
 
-- **67 Gäste = 54 Erwachsene + 13 Kinder in 39 Haushalten** (die Gesamtzahl aus 6.0 bleibt):
-
-| Haushalt | Anzahl | Erwachsene | Kinder | Betten je Zimmer |
-|----------|--------|------------|--------|------------------|
-| Eltern + 2 Kinder | 3 | 6 | 6 | Doppelbett + 2 (oder Suite) |
-| Eltern + 1 Kind | 3 | 6 | 3 | Doppelbett + 1 |
-| Ein Elternteil + 2 Kinder | 1 | 1 | 2 | 3 |
-| Ein Elternteil + 1 Kind | 2 | 2 | 2 | 2 |
-| Paar ohne Kinder | 9 | 18 | – | Doppelbett |
-| Allein | 21 | 21 | – | 1 (darunter die vier Kernfiguren) |
-
+- **Die Gesamtzahl aus 6.0 bleibt**, aufgeteilt in feste Haushalte: Familien, Alleinerziehende, Paare, Alleinstehende
+  (darunter die vier Kernfiguren).
 - **Kinder wohnen nie allein,** sondern im Zimmer ihrer Eltern (6.13) – dort stehen entsprechend mehr Betten.
-- **Alles fest:** Jeder Haushalt wird von Hand festgelegt – Zusammensetzung, Namen, Generation, Charakter. Entwurf zum
-  Bearbeiten: **[HAUSHALTE.md](HAUSHALTE.md)** (H01–H39, mit Vorschlägen für die zentralen Gäste).
-- **Zimmerbedarf:** 3 Zimmer mit vier Betten, 4 mit drei, 9 mit Doppelbett, 2 mit zwei Betten, 21 Einzelzimmer, dazu
-  Zimmer 13 – **40 bewohnte**. Der überarbeitete Plan (`map_a.aseprite`, 2026-10-24) hat **81 Zimmer** (EG 48, OG1 33):
-  40 bewohnt, 4 Sonderzimmer (verlassen, abgeschlossen, zwei verfallene), **37 unbewohnt** und vom Hotel abgeschlossen
-  (6.19).
+- **Alles fest:** Jeder Haushalt wird von Hand festgelegt – Zusammensetzung, Namen, Generation, Charakter – in
+  **[HAUSHALTE.md](HAUSHALTE.md)** (H01–H39, mit Vorschlägen für die zentralen Gäste).
+- **Zimmer, die kein Haushalt bewohnt,** schließt das Hotel ab (6.19); dazu kommen Sonderzimmer und die versiegelten
+  Zimmer (6.19 (7)).
 - **Folgen:** Partner gehören zur Familie im Freundesnetz (6.16). Stirbt einer, bleibt der andere als Zeuge und
   Trauernder im selben Zimmer (6.18, 2); wache Partner sind füreinander Zeugen, der Lakengeist bleibt weg (Idee
   „Mehrbettzimmer“, 7.7).
 - **Zimmer zugeordnet (2026-10-24) nach Größe:** Familien in die 103-m²-Zimmer (alle im OG1), Haushalte zu zweit in
   80–103 m² (die alten Paare im EG, ohne Treppe), die Kernfiguren in 68-m²-Zimmer (drei um Zimmer 13 – Zimmernachbarn, 6.16 –, Bruno im OG1),
-  die übrigen Alleinstehenden in die kleinen 34-m²-Zimmer im EG. Danach fünf Tausche zugunsten von **Terrasse und
-  Balkon** (41 Zimmer haben einen Außenzugang, 17 davon bewohnt): eine Familie ins 103-m²-Zimmer mit Balkon,
-  zwei Paare in 68-m²-Zimmer mit Balkon, zwei Alleinstehende in kleine Zimmer mit Terrasse. Weitere Tausche vom Zeichner stehen nur in HAUSHALTE.md. Liste in **[HAUSHALTE.md](HAUSHALTE.md)**
-  („Zimmerliste“). Die Nummern sind **Platzhalter** und werden noch ausgetauscht – die Zuordnung hängt an der
+  die übrigen Alleinstehenden in die kleinen 34-m²-Zimmer im EG. Danach Tausche zugunsten von **Terrasse und
+  Balkon**. Liste in **[HAUSHALTE.md](HAUSHALTE.md)** („Zimmerliste“). Die Nummern sind **Platzhalter** und werden noch ausgetauscht – die Zuordnung hängt an der
   **Stelle** im Plan (Lage, Größe, Mitte in Pixeln), nicht an der Nummer. Nur Zimmer 13 bleibt.
 - **Nachnamen** (entschieden 2026-10-24) erscheinen **beim Hinsehen an der Tür** (im
   Hinweis, kein Schild an der Wand) und im **Hotelregister** (2.3): bei mehreren Personen der Nachname („Brandt“),
@@ -4988,15 +4978,16 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
 - **Kinder mit zwei Eltern:** Je Kind bestimmt der Seed ein Elternteil; von ihm erbt es mit 70 % die Haarfarbe
   (Geschwister können verschieden aussehen). Der **Hautton** liegt zwischen beiden Eltern (Mittel der acht Stufen,
   zufällig gerundet).
-- **Eine Tür je Haushalt** (39 Türen):
+- **Eine Tür je Haushalt:**
   - **Startdeko** der Erwachsenen zusammengelegt, höchstens drei Stück an der Tür. Jeder Erwachsene behält seinen
     eigenen Vorrat und schmückt damit dieselbe Tür.
   - **Anspruch des Monsters** (4.8, 5.10) je Tür × (1 + 0,35 je weiteren Erwachsenen) – ein Paar ×1,35. Kinder zählen
     nicht (nie Opfer). Mehr Leute bringen mehr Deko, sind aber auch mehr Beute.
   - **Kisten** (5.10): „höchstens ein Stück am Spieltag“ gilt schon je Kiste für alle Gäste zusammen – bleibt so.
   - **Angriff** (5.5: bis zu fünf Türen, Opferzahl) und **Wettbewerb** (2.5) bleiben; nachstellen im Probespiel.
-- **Nachnamen der Kernfiguren:** **Edna Wiegand**, **Bruno Kaminski**, **Mila Hellwig**; die Tochter des früheren Hausmeisters heißt
-  **Marion Teske, geb. Ahrend** (2.3) – an der Tür „Marion Teske“, im Hotelregister mit „geb. Ahrend“.
+- **Nachnamen der Kernfiguren:** **Edna Wiegand, geb. Kessler** (2.7), **Bruno Kaminski**, **Mila Hellwig**; die
+  Tochter des früheren Hausmeisters heißt **Marion Teske, geb. Ahrend** (2.3). An der Tür steht der Ehename, im
+  Hotelregister der Geburtsname dazu.
 
 ### 6.21 Apfeltauchen im Partyraum (entschieden und umgesetzt 2026-10-25)
 Ein Holzbottich mit Wasser und schwimmenden Äpfeln. Mit leeren Händen [E]: Man beugt sich darüber und taucht mit

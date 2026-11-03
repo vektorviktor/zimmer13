@@ -1,7 +1,9 @@
-# Haushalte – Entwurf zum Bearbeiten
+# Haushalte
 
-Gehört zu [SPIELKONZEPT.md](SPIELKONZEPT.md) 6.20 (Haushalte) und 6.19 (Zimmerzugang). **Entwurf vom 2026-10-24, noch nicht
-im Spiel.** Fest sind die Anzahlen je Haushaltsart; alles andere (Namen, Paare, Charaktere, Ideen) darf geändert werden.
+Gehört zu [SPIELKONZEPT.md](SPIELKONZEPT.md) 6.20 (Haushalte) und 6.19 (Zimmerzugang). **Im Spiel seit 2026-10-24,
+Quelle für `assets/data/households.json`** (siehe unten). Hier stehen die Zahlen (Haushalte, Zimmer, Außenzugänge),
+6.20 nur die Regeln. Fest sind die Anzahlen je Haushaltsart; alles andere (Namen, Paare, Charaktere, Ideen) darf
+geändert werden.
 
 - **67 Gäste = 54 Erwachsene + 13 Kinder in 39 Haushalten.** Kinder wohnen immer bei ihren Eltern.
 - **Generation** wie bei den Grundkörpern (6.0): jung / mittel / alt. Die Vornamen stammen aus den Listen in
@@ -96,7 +98,7 @@ im Spiel.** Fest sind die Anzahlen je Haushaltsart; alles andere (Namen, Paare, 
 - **Geschlecht:** 25 Männer, 29 Frauen.
 - **Charaktere** (ohne die vier Kernfiguren): ängstlich 9, geschäftstüchtig 8, Plaudertasche 9, Skeptiker 8, Bastler 9, Griesgram 7.
 - **Zimmer:** 3 mit vier Betten, 4 mit drei, 9 mit Doppelbett, 2 mit zwei Betten, 21 Einzelzimmer – dazu Zimmer 13.
-  Mit Sonderzimmern und Reserve rund 55 (6.20).
+  Im Plan sind es 81 Zimmer, die übrigen stehen leer oder sind Sonderzimmer (Zimmerliste unten).
 
 ## Zimmerliste (Platzhalter → Stelle)
 
@@ -122,7 +124,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 015 | EG Ost, Nordflügel | 57 m² | – | – | 1479, 199 | unbewohnt, abgeschlossen |
 | 016 | EG Ost, Nordflügel | 34 m² | – | – | 1399, 199 | H33 Emil Hartung |
 | 017 | EG Ost, Nordflügel | 45 m² | – | – | 1329, 199 | verlassen, dunkel (bisher „17“: Kellerskizze, UV-Schrift) |
-| 018 | EG Ost, innen | 34 m² | – | Terrasse | 959, 299 | abgeschlossen (bisher „18“: Schaltschlüssel, Notizbuch) |
+| 018 | EG Ost, innen | 34 m² | – | Terrasse | 959, 299 | abgeschlossen (bisher „18“: Schaltschlüssel, Notizbuch) – versiegelt seit 2005 (6.19 (7), Schlüssel 7.4) |
 | 019 | EG Ost, innen | 34 m² | – | Terrasse | 959, 359 | H35 Theo Busch |
 | 020 | EG Ost, innen | 34 m² | – | Terrasse | 959, 419 | H25 Gustav Peters |
 | 021 | EG Ost, innen | 68 m² | ja | Terrasse | 1059, 549 | H21 Mila Hellwig (Kernfigur) |
@@ -142,7 +144,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 035 | EG West, Südseite | 103 m² | ja | – | 209, 739 | H17 Paar Nowak |
 | 036 | EG West, Südseite | 80 m² | ja | – | 63, 725 | H11 Ehepaar Lorenz |
 | 037 | EG West, innen | 103 m² | ja | – | 49, 579 | unbewohnt, abgeschlossen |
-| 038 | EG West, Nordflügel | 68 m² | ja | – | 79, 199 | unbewohnt, abgeschlossen |
+| 038 | EG West, Nordflügel | 68 m² | ja | – | 79, 199 | versiegelt seit 1987 (6.19 (7), Schlüssel im Bilderrahmen im Flur, Hinweis im Brief) |
 | 039 | EG West, Nordflügel | 68 m² | ja | – | 199, 199 | H37 Sami Haddad |
 | 040 | EG West, Nordflügel | 68 m² | ja | – | 399, 199 | unbewohnt, abgeschlossen |
 | 041 | EG West, Nordflügel | 92 m² | ja | Terrasse | 539, 199 | H12 Ehepaar Schulte |
@@ -184,7 +186,9 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 129 | OG1 West, innen | 103 m² | – | Balkon | 589, 359 | H06 Familie Demir |
 | 130 | OG1 West, innen | 68 m² | ja | Balkon | 149, 549 | H14 Paar Engel |
 | 131 | OG1 West, innen | 68 m² | ja | Balkon | 239, 639 | unbewohnt, abgeschlossen |
-| 132 | OG1 West, innen | 68 m² | ja | Balkon | 399, 639 | unbewohnt, abgeschlossen |
+| 132 | OG1 West, innen | 68 m² | ja | Balkon | 399, 639 | versiegelt seit 1987 (6.19 (7), Schlüssel bei Liesel Brück) |
 | 133 | OG1 West, innen | 68 m² | ja | Balkon | 489, 549 | unbewohnt, abgeschlossen |
 
-**Zusammen:** 81 Zimmer (EG 48, OG1 33) – 39 Haushalte und Zimmer 13 bewohnt, 4 Sonderzimmer (017, 018 und zwei verfallene), **37 unbewohnt** und abgeschlossen. **41 Zimmer haben einen Außenzugang**, davon 18 bewohnt (dazu Zimmer 13).
+**Zusammen:** 81 Zimmer (EG 48, OG1 33) – 39 Haushalte und Zimmer 13 bewohnt, 4 versiegelt (018, 038, 042, 132;
+6.19 (7)), 3 Sonderzimmer (017 und zwei verfallene), **34 unbewohnt** und abgeschlossen. **41 Zimmer haben einen
+Außenzugang**, davon 18 bewohnt (dazu Zimmer 13).
