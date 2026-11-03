@@ -5339,8 +5339,11 @@ Hinweise liefert das **Notizbuch des Hausmeisters**, kein Questmenü. Hat man es
   bleibt hängen) → Aushang und Gerüchte, zuerst falsch: **Magda** schleicht nachts herum, um den „Trick der Direktion“
   zu beweisen (6.20) → Bruno. Einem Dieb etwas zu stehlen passt zu „Wer bestiehlt, wird bestohlen“ (6.2).
 - **Bruno ist bis dahin geschützt** (6.17): Hat der Spieler die Sicherung, ist Bruno Mitwisser und verwundbar.
-- *Vorschläge:* Wer vor der fünften Nacht mit dem **Brecheisen** (6.19) kommt, bricht den Spind selbst auf – laut;
-  dann findet Bruno nichts mehr, und der Aushang gilt dem Spieler. Fehlt Bruno, bricht ein anderer gieriger Gast ein.
+- **Für den Spieler bleibt der Spind zu (entschieden 2026-11-03, 7.18):** kein Brecheisen, und das Zahlenschloss geht
+  für ihn nicht auf – auch nicht mit einem erratenen Code. Sonst hätte man die Hauptsicherung schon am ersten Tag (der
+  Keller ist offen, der Schlüssel zu Zimmer 18 liegt dort), und Brunos Bogen liefe ins Leere. Die Sicherung gibt es nur
+  über Bruno.
+- *Vorschlag:* Fehlt Bruno, bricht ein anderer gieriger Gast ein.
 | **3. Bremse lösen** | **Maschinenraum** im Untergeschoss, nahe dem Heizraum (7.10) | **Lärm:** Die Bremse wird mit einer Kurbel gelöst – E gedrückt halten, ca. 20 Sekunden, laut und quietschend (Neugier ↑ im Untergeschoss – dort, wo das Monster ruht). Loslassen unterbricht, der Fortschritt bleibt. Man steht dabei mit dem Rücken zur Tür. |
 
 - **Tempo:** Realistisch in der zweiten Oktoberwoche, wenn das Monster schon gefährlich ist. Wer früh mutig ist, schafft es eher.
@@ -5948,8 +5951,19 @@ Zimmer 13 (4.13): echter Gast oder falsche Stimme, ohne gleich aufzumachen.
 - **Vorhängeschloss = Zahlenschloss** (Foto): Mit Schloss malt man die zweite Farbe, gemischte Reihen als
   aneinanderstoßende Stücke. Der Code (vier Räder wie im Sekretariat, 2.10) steht je Spind fest; das Schloss kommt ab,
   danach geht die Tür frei. Ohne Schloss gehen die Spinde einfach auf.
-- **Offen:** wo die Codes stehen (Zettel, Notizbuch, Gäste?) und ob das Brecheisen ein Schloss aufbricht (7.4,
-  Vorschlag beim Spind des Hausmeisters); Inhalt der Story-Spinde (Hauptsicherung, Kesselbuch) kommt mit ZIM-4 bzw. 7.4.
+- **Wo die Codes stehen (entschieden 2026-11-03):** Kein Brecheisen, kein Erraten über abgegriffene Ziffern.
+  - **Spind des Hausmeisters:** geht für den Spieler nicht auf, bis Bruno ihn in der fünften Nacht aufbricht (7.4);
+    kein Hinweis auf einen Code. (Zuerst war 3110 mit Hinweis im Notizbuch vorgesehen – verworfen am selben Tag, weil
+    man die Hauptsicherung dann am ersten Tag hätte.)
+  - **Josefs Spind: 2803** – der Geburtstag seiner Tochter Marion (28. März). Marion erzählt es einmal, aber erst nach
+    dem ersten Abstieg (M7, der Spieler hat den Schlüssel zu Zimmer 18) – sonst wäre das Kesselbuch zu früh zu haben.
+    Sie sagt nur „Vater“, nicht Josef: Wessen Tochter sie ist, findet man selbst heraus (2.3).
+  - **Bonusspinde** (braucht man nicht): Ihr Code steht auf einem Zettel, der beliebig weit weg liegen darf, auch auf
+    einem anderen Stockwerk. Er nennt Raum, Lage („der vierte von links“) und Code und landet im Notizbuch.
+  - Im Plan verknüpft über **Slices**: „Spind: Hausmeister“ / „Spind: Josef“ über dem Spind; „Code: <Name>“ zweimal
+    gleich, über dem Spind und über einem Zettel, wahlweise mit vier Ziffern am Ende („Code: Wäschekammer 4471“).
+  - Spinde mit Schloss ohne Slice haben einen festen, nirgends stehenden Code.
+- **Offen:** Inhalt der Story-Spinde (Hauptsicherung, Kesselbuch) kommt mit ZIM-4 bzw. 7.4.
 
 ## 8. Menüs, Speichern & Laden
 

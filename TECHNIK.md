@@ -733,6 +733,14 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     `LevelBuilder._items` legt einen Gegenstand des Plans im Rechteck auf die Hutablage des Spinds darüber
     (`_steel_locker_at`, `index_at`, `shelf_spot`; nur Möbel dieses Stockwerks) und nimmt ihm den Zufallsfund
     (`put_inside`). Gruppe `steel_lockers` (offen, aufgeschlossen, durchsucht), Lärm `locker`/`rattle`/`unlock`.
+    **Codes** (SK 7.18): `_code_slices` je Stockwerk nach `_furniture` – „Spind: <Name>“ über einem Spind setzt
+    `STORY_CODES` (Josef 2803; Hausmeister "" = geht für den Spieler nie auf; `set_code`); „Code: <Name>“ über einem Spind merkt ihn in
+    `code_lockers`, ohne Spind darunter ist es ein Zettel-Slice: `_fittings` baut den „Zettel“ darunter als Codezettel
+    (`WarningNote.setup_code`, Gruppe `code_notes`, immer sichtbar, Text aus `SteelLocker.code_note`: Zone, „der n-te von
+    links“, Code; Notiz „code:<Name>“). `_link_codes` nach allen Stockwerken: Code aus vier Ziffern am Ende eines der
+    beiden Slices, sonst fest aus dem Namen (`code_for_slice`); warnt bei fehlender Hälfte. Spinde ohne Slice: `code_of`
+    aus der Lage. Marions Hinweis auf Josefs Code (`marion_hint`, aus `Talk.greeting` nach dem des Büros): einmal, sobald
+    der Spieler den Schlüssel zu Zimmer 18 hat (M7).
     **Umkleidebank** = `ChangingBench` (`world/changing_bench.gd`): so lang wie im Plan (3 m), 60 cm breit, 50 cm
     hoch, Fußrahmen an den Enden und an jedem Meter (3 m → vier), Längsrohre, fünf Latten – Rohr und Holz aus `GardenFurniture.Parts`, ein
     `Seat` mit Plätzen auf beiden Seiten, ein Mesh je Länge.
@@ -1028,7 +1036,8 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
   über dem EG eine Suite). Ein Zimmer ganz ohne Tür bleibt geschlossen (Hinweis beim Bauen).
 - **Slices:** `Raum: <Name>` benennt eine Fläche (die ganze zusammenhängende; zwei Raum-Slices auf einer Fläche →
   Warnung, der alphabetisch spätere gewinnt), `Bereich: <Name>` → `areas`, `Treppe: <Name>` (**Pivot an der oberen
-  Kante**) und `Treppenhaus: <Name>` → `stairs`, `Objekt: <Name>` (Pivot an der Vorderseite) → `objects`. Treppenhäuser
+  Kante**) und `Treppenhaus: <Name>` → `stairs`, `Objekt: <Name>` (Pivot an der Vorderseite) → `objects`, `Code: <Name>` und `Spind: <Name>` → `code_slices`
+  (`kind` code/story, `name`, `rect`; Stahlspinde, verknüpft im LevelBuilder). Treppenhäuser
   über dem EG brauchen keine eigenen Slices (gleiche ID wie der Schacht im EG). Das Skript baut zuerst das EG, damit die
   Treppenflächen darüber und darunter dem Schacht zugeordnet werden.
 - **Markierungen:** Ein Kreuz in der Farbe `Haupteingang` mitten auf einer Fläche → `{"kind": "cross", "pos"}`.
@@ -2873,7 +2882,8 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
   Optik, keine Spur – Gäste erzählen nicht davon. Flecken am Boden siehe 3 „Spuren auf dem Boden“. Debug
   `--wallblood[=smear]`.
 - **Zettel** (`warning_note.gd`): feste Warnungszettel (`warning_notes`, erst nach dem ersten Angriff sichtbar) und
-  Gäste-Zettel (`guest_notes`, begrenzt); der Zettel „1999“ steht nicht im Plan, `DoorContest` legt ihn.
+  Gäste-Zettel (`guest_notes`, begrenzt); der Zettel „1999“ steht nicht im Plan, `DoorContest` legt ihn. Codezettel der
+  Stahlspinde (`code_notes`, `setup_code`, immer sichtbar, nicht gespeichert – sie kommen aus dem Plan).
 
 ### Telefone, Spieltische
 - **Telefone** (`world/hotel_phone.gd`, `guests/phone_calls.gd`, `ui/phone_ui.gd`): `HotelPhone` auf jedem Zimmertisch

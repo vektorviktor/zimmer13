@@ -41,7 +41,9 @@
 #     Punkte dürfen 2×2 oder 3×3 sein (entschieden 3.11.); CHECK_SIZES schaltet die Prüfung ab.
 #   - Bäume (Fläche „Baum“) markieren nur den Standort, die Größe kommt aus dem Modell.
 #   - Slices (Aseprite-Werkzeug „Slice“) tragen Namen: „Raum: Küche“, „Bereich: Lobby“, „Treppe: Lobby“
-#     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite). Sie gelten im Stockwerk,
+#     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite), „Code: Wäschekammer“ (zweimal
+#     gleich: über einem Spind mit Schloss und über einem Zettel, Code wahlweise dahinter – ZIM-174), „Spind: Josef“
+#     (Story-Spind mit festem Code). Sie gelten im Stockwerk,
 #     in dem ihre Mitte liegt (bei Ebenengruppen: ohne Vorsatz im EG, sonst „OG1 Raum: Bibliothek“).
 #
 # Koordinaten der Ausgabe: Meter, x nach Osten, z nach Süden (Norden = −Z wie in Godot), Ursprung = Mitte
@@ -754,7 +756,7 @@ def build_floor(floor, COL, open_above, eg=None):
 	def slice_rect(s):
 		return m(s["x"], s["y"]) + m(s["x"] + s["w"], s["y"] + s["h"])
 
-	areas, objects, stairs = [], [], []
+	areas, objects, stairs, codes = [], [], [], []
 	room_slice = {}   # id(Fläche) → Name des Raum-Slices, der sie benennt
 	for kind, label, s in slices_of(floor):
 		if kind == "Raum":
@@ -779,6 +781,8 @@ def build_floor(floor, COL, open_above, eg=None):
 			areas.append({"id": slug(label), "name": label, "rect": rect})
 		elif kind == "Objekt":
 			objects.append({"name": label, "rect": slice_rect(s), "facing": pivot_side(s)})
+		elif kind in ("Code", "Spind"):   # Stahlspinde (ZIM-174): verknüpft erst der LevelBuilder (über Stockwerke hinweg)
+			codes.append({"kind": "code" if kind == "Code" else "story", "name": label, "rect": slice_rect(s)})
 		elif kind in ("Treppe", "Treppenhaus"):
 			r = region_for(s, ["stairs"])
 			rect = slice_rect(s)
@@ -796,7 +800,7 @@ def build_floor(floor, COL, open_above, eg=None):
 					print("  Warnung: „Treppe: %s“ ohne Pivot – Richtung nach oben unbekannt" % label)
 			stairs.append(stair)
 		else:
-			print("  Warnung: unbekannte Slice-Art „%s“ (Raum, Bereich, Treppe, Treppenhaus, Objekt)" % kind)
+			print("  Warnung: unbekannte Slice-Art „%s“ (Raum, Bereich, Treppe, Treppenhaus, Objekt, Code, Spind)" % kind)
 	# Andere Stockwerke: Treppenflächen über (oder unter) einem Treppenhaus des EG gehören zu dessen Schacht (gleiche
 	# ID, keine eigenen Slices nötig)
 	for es in (eg or {}).get("stairs", []) if level != 0 else []:
@@ -1157,6 +1161,7 @@ def build_floor(floor, COL, open_above, eg=None):
 		"open_above": open_above,
 		"areas": areas,
 		"objects": objects,
+		"code_slices": codes,
 		"planters": [outer(r["rects"]) for r in take("planter")],
 		"terrace_edges": [r["rects"] for r in take("terrace_edge")],
 		"hedge_arches": [outer(r["rects"]) for r in take("hedge_arch")],

@@ -43,7 +43,7 @@ Stand: 2026-11-03.
 | Gustavs Blechdose | – | geplant (eigener Gegenstand oder nur der Inhalt: offen) | – (Doris' Dank; Faden der Kinder) | Doris gibt sie nach der Brille; darin Süßes, Pappgespenst, Zierkürbis für die Kinder | 2.9, M7a |
 | Kopf des Kürbismanns | `PUMPKIN_HEAD` | **teilweise** – Platzhaltermodell auf dem Dachboden, Ritual fehlt | Nebenstrang (Liesel) | Kürbismann erlösen | 4.21, 2.7, M14 |
 | Hauptsicherung des Aufzugs | `FUSE` | **teilweise** – Gegenstand und Fach „AUFZUG“ am Sicherungskasten gebaut 3.11. (ZIM-14); Spind, Einbruch und Bruno fehlen (ZIM-4), im Spiel bisher nicht zu finden | **Hauptgeschichte** (Aufzug) | jede Ernte im Spind des Hausmeisters (Hausmeisterraum, EG); Bruno bricht ihn in Nacht 5 auf und behält sie als Faustpfand; Sicherungskasten im UG | 7.4, M9, K3 |
-| Spind des Hausmeisters | – (`SteelLocker`) | **teilweise** – Stahlspind gebaut 3.11. (ZIM-174, Plan `#6c7d89`, mit Schloss `#4f5d68`); im Plan steht er noch ohne Schloss und 6 × 6 px, Inhalt und Einbruch fehlen (ZIM-4) | **Hauptgeschichte** (Aufzug) | Hausmeisterraum (`#c4d35b`); Vorhängeschloss, ab Nacht 5 aufgebrochen; Brecheisen öffnet ihn vorher (laut) | 2.11, 7.4 |
+| Spind des Hausmeisters | – (`SteelLocker`) | **teilweise** – Stahlspind gebaut 3.11. (ZIM-174, Plan `#6c7d89`, mit Schloss `#4f5d68`); mit Slice „Spind: Hausmeister“ geht er für den Spieler nicht auf; im Plan steht er noch ohne Schloss, ohne Slice und 6 × 6 px, Inhalt und Einbruch fehlen (ZIM-4) | **Hauptgeschichte** (Aufzug) | Hausmeisterraum (`#c4d35b`); Zahlenschloss, für den Spieler zu, ab Nacht 5 aufgebrochen; kein Brecheisen (3.11.) | 2.11, 7.4, 7.18 |
 | Seine Sachen: Taschenuhr, Mütze, Foto von Marion | – | geplant (Inhalt: Vorschlag) | Nebenstrang (Marion) | Karton „Personal 1987“ im Lager in U2 | 2.8, M15a |
 | Vertrag (das Abkommen) | – | geplant | Nebenstrang (Marion) | Büro der Direktion; im Feuer von 1987 verbrennen | 2.3, 2.8, M15b |
 | Schädel des Kürbismanns | – | geplant | – (Belohnung) | nach der Erlösung; stärkste Deko | 4.21 |
@@ -71,7 +71,7 @@ Stand: 2026-11-03.
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |
 | Hotelregister | – (festes Buch, `HotelRegister`) | gebaut 28.10. – [E] blättert von Oktober 2026 zurück bis 1987; Kreuz am Morgen nach einem Tod | **Hauptgeschichte** (Kreuze, „geb. Ahrend“, „geb. Kessler“, feste Namen 1987/2005/2008, ZIM-7) | Rezeption | 2.3, K1, M6, M13 |
 | Notizbuch des Hausmeisters | – (festes Buch, `CaretakerBook`) | gebaut 28.10. – vier Seiten, gelesen: drei Aufgaben im Notizbuch; Texte Vorschlag (Sicherung im Spind seit 30.10.) | **Hauptgeschichte** (drei Mängel am Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
-| Kesselbuch Josefs | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Josefs Spind im Heizraum | 2.3, 7.4, M12 |
+| Kesselbuch Josefs | – | geplant | **Hauptgeschichte** (Name Ahrend → Marion) | Josefs Spind im Heizraum (Stahlspind mit Zahlenschloss 2803 = Marions Geburtstag, Slice „Spind: Josef“; Marion nennt ihn nach M7 – im Plan fehlt der Spind noch) | 2.3, 7.4, 7.18, M12 |
 | Personalakte Josefs | – | geplant | Hauptgeschichte (Name, Foto) | Büro der Direktion? | 2.3 |
 | Dienstplan vom 31.10.1987 | – | Vorschlag | Hauptgeschichte (der Page am Heizkeller) | Karton „Personal 1987“ oder Sekretariat | 2.11 |
 | Schreibmaschine der Chefsekretärin | – | Vorschlag | Hauptgeschichte (springende Type: Briefe von heute = Vertrag 1987) | Sekretariat | 2.11 |

@@ -38,6 +38,9 @@ var note_id := "1987"
 ## Zettel eines Gastes (statt eines festen Texts aus NOTES) – sofort sichtbar
 var custom_title := ""
 var custom_text := ""
+## Codezettel zu einem Stahlspind (Slice „Code: <Name>“, SK 7.18, ZIM-174) – sofort sichtbar, Text aus
+## SteelLocker.code_note
+var code_name := ""
 
 
 func setup(p_id: String) -> WarningNote:
@@ -52,11 +55,17 @@ func setup_custom(title: String, text: String) -> WarningNote:
 	return self
 
 
+func setup_code(p_name: String) -> WarningNote:
+	note_id = "code:" + p_name
+	code_name = p_name
+	return self
+
+
 func _ready() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	set_meta("interactable", self)
-	add_to_group("guest_notes" if note_id == "" else "warning_notes")
+	add_to_group("guest_notes" if note_id == "" else ("code_notes" if code_name != "" else "warning_notes"))
 	var paper := Geo.mesh(self, Geo.box(Vector3(0.16, 0.004, 0.21)), Mat.psx(Color(0.82, 0.78, 0.66)), Vector3(0, 0.002, 0))
 	paper.rotation.y = randf_range(-0.4, 0.4)
 	Geo.mesh(self, Geo.box(Vector3(0.11, 0.005, 0.005)), Mat.psx(Color(0.25, 0.15, 0.1)), Vector3(0, 0.004, -0.04))
@@ -66,12 +75,13 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	var shown := note_id == "" or (Game.director != null and Game.director.first_attack_done)
+	var always := note_id == "" or code_name != ""
+	var shown := always or (Game.director != null and Game.director.first_attack_done)
 	if shown != visible:
 		visible = shown
 		collision_layer = 4 if shown else 0
-	if note_id == "":
-		set_process(false)   # Zettel eines Gastes: immer sichtbar, nichts mehr zu prüfen
+	if always:
+		set_process(false)   # Zettel eines Gastes, Codezettel: immer sichtbar, nichts mehr zu prüfen
 
 
 func get_prompt(player: Player) -> String:
@@ -79,6 +89,15 @@ func get_prompt(player: Player) -> String:
 
 
 func interact(player: Player) -> void:
+	if code_name != "":   # Codezettel: Ort des Spinds und Code, ins Notizbuch
+		var slip := SteelLocker.code_note(code_name)
+		if slip.is_empty():
+			return
+		if Game.menus:
+			Game.menus.open_note(String(slip["title"]), String(slip["text"]))
+		if Game.notebook:
+			Game.notebook.add_note(note_id, String(slip["jot"]), "Zettel")
+		return
 	var note: Dictionary = NOTES.get(note_id, {}) if note_id != "" else {"title": custom_title, "text": custom_text}
 	if Game.menus and not note.is_empty():
 		var text := String(note["text"])

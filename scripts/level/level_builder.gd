@@ -644,6 +644,12 @@ var party_center := Vector3.ZERO
 var lobby_seats: Array[Vector3] = []
 ## Liegeplätze der Hotelkatzen auf Möbeln (6.11): {"floor": davor auf dem Boden, "top": obendrauf}
 var cat_perches: Array[Dictionary] = []
+## Codezettel (Slices „Code: <Name>“, ZIM-174): Name → {locker, index} des Spinds; dazu die Zettel-Slices des
+## Stockwerks ({name, rect}), die Codes mit Ziffern im Slice und die Namen aller gebauten Codezettel
+var code_lockers := {}
+var _code_notes: Array[Dictionary] = []
+var _slice_codes := {}
+var _code_note_names: Array[String] = []
 var kitchen_spot := Vector3.ZERO
 var kitchen_spots: Array[Vector3] = []   ## Stehplätze der Gäste in der Küche, Raster KITCHEN_SPOT_STEP (ZIM-155)
 var garden_spots: Array[Vector3] = []
@@ -916,6 +922,7 @@ func build() -> void:
 
 
 ## Was jedes Stockwerk aus seinem Plan baut: Wände, Böden und Decken, Zimmer, Einrichtung, Lichter.
+	_link_codes()
 func _build_plan_floor() -> void:
 	for w in _map["walls"]:
 		_build_wall(w)
@@ -930,6 +937,7 @@ func _build_plan_floor() -> void:
 	_rugs()
 	_fittings()
 	_items()
+	_code_slices()
 	_drawer_content(first_furnishing)
 	_note_room_tables(first_furnishing)
 	_note_gardens(first_furnishing)
@@ -3306,6 +3314,14 @@ func _fittings() -> void:
 				if not content.has("note"):
 					push_warning("Gebäudeplan: Zettel bei %s ohne Nummer in CONTENT" % p)
 					continue
+				var code_name := _code_note_at(p)
+				if code_name != "":   # Codezettel zu einem Spind (ZIM-174): immer sichtbar, statt eines Zettels aus CONTENT
+					var slip := WarningNote.new().setup_code(code_name)
+					slip.position = Vector3(p.x, top + 0.01, p.y)
+					slip.rotation.y = _upright_yaw(p)
+					_parent.add_child(slip)
+					_code_note_names.append(code_name)
+					continue
 				var note := _note(String(content["note"]), Vector3(p.x, top + 0.01, p.y))
 				note.rotation.y = _upright_yaw(p)
 			"diary":
@@ -3477,6 +3493,74 @@ func _items() -> void:
 ## Stahlspind dieses Stockwerks, über dem p liegt (null = keiner)
 func _steel_locker_at(p: Vector2) -> SteelLocker:
 	for f in _furnishings:
+## Slices „Code:“ und „Spind:“ dieses Stockwerks (Stahlspinde, SK 7.18): über einem Spind legt „Spind: Josef“ den Story-
+## Code fest (SteelLocker.STORY_CODES), „Code: <Name>“ merkt den Spind für _link_codes; ohne Spind darunter ist es der
+## Zettel-Slice (_fittings). Vier Ziffern am Ende des Namens geben den Code vor.
+func _code_slices() -> void:
+	_check_code_notes()
+	_code_notes.clear()
+	for sl: Dictionary in _map.get("code_slices", []):
+		var rect := _rect(sl["rect"])
+		var c := rect.get_center()
+		var locker := _steel_locker_at(c)
+		var i := locker.index_at((locker.transform.affine_inverse() * Vector3(c.x, 0, c.y)).x) if locker else 0
+		if sl["kind"] == "story":
+			var who := String(sl["name"])
+			if locker == null or not SteelLocker.STORY_CODES.has(who):
+				push_warning("Gebäudeplan: „Spind: %s“ bei %s – %s" % [who, c,
+					"kein Spind darunter" if locker == null else "unbekannt (%s)" % ", ".join(SteelLocker.STORY_CODES.keys())])
+				continue
+			if not locker.locked:
+				push_warning("Gebäudeplan: „Spind: %s“ bei %s hat kein Schloss (Planfarbe „Spind mit Schloss“)" % [who, c])
+			locker.set_code(i, "Spind: " + who, SteelLocker.STORY_CODES[who])
+			continue
+		var parsed := SteelLocker.code_for_slice(String(sl["name"]))
+		var name: String = parsed[0]
+		if String(sl["name"]).strip_edges() != name:
+			_slice_codes[name] = parsed[1]
+		if locker == null:
+			_code_notes.append({"name": name, "rect": rect, "used": false})
+			continue
+		if not locker.locked:
+			push_warning("Gebäudeplan: „Code: %s“ bei %s liegt auf einem Spind ohne Schloss" % [name, c])
+		if code_lockers.has(name):
+			push_warning("Gebäudeplan: „Code: %s“ liegt auf zwei Spinden – der zweite zählt" % name)
+		code_lockers[name] = {"locker": locker, "index": i}
+
+
+## Name des Zettel-Slices „Code:“ über p ("" = keiner)
+func _code_note_at(p: Vector2) -> String:
+	for e in _code_notes:
+		if (e["rect"] as Rect2).grow(0.05).has_point(p):
+			e["used"] = true
+			return e["name"]
+	return ""
+
+
+## Zettel-Slices des zuletzt gebauten Stockwerks, unter denen kein Zettel lag
+func _check_code_notes() -> void:
+	for e in _code_notes:
+		if not e["used"]:
+			push_warning("Gebäudeplan: „Code: %s“ bei %s liegt weder auf einem Spind noch auf einem Zettel" %
+				[e["name"], (e["rect"] as Rect2).get_center()])
+	_code_notes.clear()
+
+
+## Nach allen Stockwerken: Codes der Codezettel an ihre Spinde (Ziffern aus dem Slice oder fest aus dem Namen),
+## Warnung, wo Spind oder Zettel fehlt
+func _link_codes() -> void:
+	_check_code_notes()
+	for name: String in code_lockers:
+		var entry: Dictionary = code_lockers[name]
+		var code: String = _slice_codes.get(name, SteelLocker.code_for_slice(name)[1])
+		(entry["locker"] as SteelLocker).set_code(int(entry["index"]), name, code)
+		if not name in _code_note_names:
+			push_warning("Gebäudeplan: „Code: %s“ – kein Zettel dazu (Slice über einen „Zettel“ legen)" % name)
+	for name in _code_note_names:
+		if not code_lockers.has(name):
+			push_warning("Gebäudeplan: Codezettel „%s“ – kein Spind dazu (Slice über einen „Spind mit Schloss“ legen)" % name)
+
+
 		if f["node"] is SteelLocker and (f["node"] as Node).get_parent() == root and (f["rect"] as Rect2).grow(0.02).has_point(p):
 			return f["node"]
 	return null
@@ -4834,6 +4918,7 @@ func _attic_floor(plan: Dictionary, level: int) -> void:
 	_rugs()
 	_fittings()
 	_items()
+	_code_slices()
 	_lights()
 	_attic_markers()
 	_attic_haze()

@@ -57,7 +57,20 @@ const DIAL_TINT := Color(0.1, 0.1, 0.11)
 const SEED := 1741
 ## Zahlenschloss-Fenster (CodeLockUI)
 const LOCK_TITLE := "Zahlenschloss"
-const LOCK_HINT := "Ein Vorhängeschloss mit Zahlenscheibe, die Ziffern abgegriffen. [Enter] probieren · [Esc] lassen"
+const LOCK_HINT := "Ein Vorhängeschloss mit Zahlenscheibe. [Enter] probieren · [Esc] lassen"
+## Story-Spinde (Slice „Spind: <Name>“ im Plan, SK 7.18): fester Code, "" = geht für den Spieler nie auf. Hausmeister:
+## bleibt zu, bis Bruno ihn in der fünften Nacht aufbricht (7.4, ZIM-4) – sonst hätte man die Hauptsicherung am ersten
+## Tag · Josef: der Geburtstag seiner Tochter Marion, 28. März (sie nennt ihn nach dem ersten Abstieg, marion_hint –
+## ohne Josef zu nennen: wessen Tochter sie ist, findet man selbst heraus, 2.3)
+const STORY_CODES := {"Hausmeister": "", "Josef": "2803"}
+## Marion erzählt von Josefs Code erst nach dem ersten Abstieg (HANDLUNG M7: Schlüssel zu Zimmer 18 gefunden)
+const MARION_AFTER_KEY := "zimmer_18"
+const MARION_NOTE_ID := "josef_code"
+const MARION_LINE := "Vater hat für jedes Schloss dieselbe Zahl genommen – meinen Geburtstag, den achtundzwanzigsten März. Den vergesse ich nie, hat er gesagt."
+const MARION_NOTE := "Marion: Ihr Vater nahm für jedes Schloss dieselbe Zahl – ihren Geburtstag, den 28. März."
+## Codezettel (Slice „Code: <Name>“ über Spind und Zettel): Ordnungszahlen für „der vierte von links“
+const ORDINALS := ["erste", "zweite", "dritte", "vierte", "fünfte", "sechste", "siebte", "achte", "neunte", "zehnte",
+	"elfte", "zwölfte"]
 ## Fund beim ersten Öffnen eines Spinds ohne Gegenstand aus dem Plan
 const EMPTY_CHANCE := 0.6
 const COINS_CHANCE := 0.15
@@ -72,6 +85,9 @@ var locked := false
 var is_open: Array[bool] = []
 var unlocked: Array[bool] = []
 var searched: Array[bool] = []
+## Spind → fester Code (Story-Spind oder Codezettel; ohne Eintrag code_of aus der Lage) und Name des Slices
+var fixed_codes := {}
+var names := {}
 
 var _doors: Array[StaticBody3D] = []
 var _padlocks: Array[Node3D] = []
@@ -128,8 +144,55 @@ func put_inside(i: int) -> void:
 	searched[i] = true
 
 
-## Fester Code des Zahlenschlosses an Spind i: aus der Lage im Hotel, bei jedem Start gleich
+## Code eines Slices im Plan für Spind i festlegen (LevelBuilder._code_slices)
+func set_code(i: int, slice_name: String, code: String) -> void:
+	fixed_codes[i] = code
+	names[i] = slice_name
+
+
+## Code für einen Slice „Code: <Name> [NNNN]“: die vier Ziffern am Ende, sonst fest aus dem Namen
+static func code_for_slice(label: String) -> Array:
+	var parts := label.rsplit(" ", true, 1)
+	if parts.size() == 2 and parts[1].length() == 4 and parts[1].is_valid_int():
+		return [parts[0].strip_edges(), parts[1]]
+	return [label.strip_edges(), "%04d" % (absi(hash([SEED, label.strip_edges()])) % 10000)]
+
+
+## Was der Codezettel name verrät: {title, text, jot} – Ort und Lage des Spinds, Code ({} = kein Spind dazu)
+static func code_note(name: String) -> Dictionary:
+	var builder: LevelBuilder = Game.social.builder if Game.social else null
+	if builder == null or not builder.code_lockers.has(name):
+		return {}
+	var entry: Dictionary = builder.code_lockers[name]
+	var locker: SteelLocker = entry["locker"]
+	var i: int = entry["index"]
+	var where := Game.director.zone_name_at(locker.global_position) if Game.director else ""
+	var spot := "Spind" if where == "" else "Spind im Raum „%s“" % where
+	if locker.count > 1:
+		spot += ", der %s von links" % ORDINALS[mini(i, ORDINALS.size() - 1)]
+	var code := locker.code_of(i)
+	return {"title": "Zettel mit Zahlen",
+		"text": "%s:\n\n%s\n\nNicht wieder vergessen." % [spot, code],
+		"jot": "%s: Zahlenschloss %s" % [spot, code]}
+
+
+## Marion (Haushalt DirectorOffice.MARION_HOUSEHOLD) nennt einmal Josefs Code – erst nach dem ersten Abstieg. "" = nichts.
+static func marion_hint(g: Guest) -> String:
+	if g.is_child() or String(g.profile.get("household", "")) != DirectorOffice.MARION_HOUSEHOLD:
+		return ""
+	if Game.notebook == null or Game.player == null or not Game.player.has_key(MARION_AFTER_KEY):
+		return ""
+	if Game.notebook.has_note(MARION_NOTE_ID):
+		return ""
+	Game.notebook.add_note(MARION_NOTE_ID, MARION_NOTE, g.display_name)
+	return MARION_LINE
+
+
+## Fester Code des Zahlenschlosses an Spind i: aus dem Plan (set_code), sonst aus der Lage im Hotel, bei jedem
+## Start gleich (Bonusspinde ohne Zettel)
 func code_of(i: int) -> String:
+	if fixed_codes.has(i):
+		return fixed_codes[i]
 	var at := global_transform * Vector3(-length() / 2.0 + (i + 0.5) * MODULE, 0, 0)
 	return "%04d" % (absi(hash([SEED, roundi(at.x * 100.0), roundi(at.y * 100.0), roundi(at.z * 100.0)])) % 10000)
 
@@ -164,7 +227,7 @@ func use_door(i: int, player: Player) -> void:
 ## Code probieren (auch Debug). true = offen: das Schloss kommt ab, die Tür geht auf.
 func try_code(i: int, player: Player, code: String) -> bool:
 	var door := _doors[i]
-	if code != code_of(i):
+	if code_of(i) == "" or code != code_of(i):
 		Game.say("Das Schloss rührt sich nicht.", 2.0)
 		Game.noise("rattle", door.global_position, player)
 		return false
@@ -259,7 +322,37 @@ static func _debug_check(tree: SceneTree) -> void:
 		check.call("Schloss ab", not locker._padlocks[0].visible)
 		var state := locker.save_state()
 		check.call("gespeichert", bool(state["unlocked"][0]) and bool(state["open"][0]))
+		# Codezettel: Spind 2 der Reihe wie mit „Code: Probe 4471“ verknüpft (LevelBuilder._code_slices/_link_codes)
+		check.call("Code aus dem Slice-Namen", code_for_slice("Wäschekammer 4471") == ["Wäschekammer", "4471"]
+			and code_for_slice("Wäschekammer")[1] == code_for_slice("Wäschekammer")[1] and code_for_slice("Wäschekammer")[1].length() == 4)
+		Game.social.builder.code_lockers["Probe"] = {"locker": locker, "index": 1}
+		locker.set_code(1, "Probe", "4471")
+		var slip := code_note("Probe")
+		check.call("Codezettel nennt Lage und Code", String(slip.get("text", "")).contains("4471")
+			and String(slip.get("text", "")).contains("zweite von links"))
+		check.call("Story-Code", STORY_CODES["Josef"] == "2803")
+		locker.set_code(1, "Spind: Hausmeister", STORY_CODES["Hausmeister"])
+		check.call("Spind des Hausmeisters geht nicht auf", not locker.try_code(1, player, "3110")
+			and not locker.try_code(1, player, "0000") and locker.padlocked(1))
 		break
+	var marion: Guest = null
+	for node in Game.social.living_guests():
+		var g: Guest = node
+		if not g.is_child() and String(g.profile.get("household", "")) == DirectorOffice.MARION_HOUSEHOLD:
+			marion = g
+	if marion:
+		if not Game.notebook.owned:
+			Game.notebook.give(true)   # ohne Notizbuch merkt sich die Figur nichts (3.10)
+		var had := player.keyring.has(MARION_AFTER_KEY)
+		player.keyring.erase(MARION_AFTER_KEY)
+		check.call("Marion vor dem ersten Abstieg still", marion_hint(marion) == "")
+		player.keyring.append(MARION_AFTER_KEY)   # ohne add_key: kein Autosave
+		check.call("Marion nennt Josefs Code", marion_hint(marion) == MARION_LINE and Game.notebook.has_note(MARION_NOTE_ID))
+		check.call("Marion nur einmal", marion_hint(marion) == "")
+		if not had:
+			player.keyring.erase(MARION_AFTER_KEY)
+	else:
+		print("[Stahlspind] Marion nicht im Hotel – Hinweis nicht geprüft")
 	print("[Stahlspind] Prüfung fertig")
 
 

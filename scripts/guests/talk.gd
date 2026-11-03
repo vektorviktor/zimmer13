@@ -667,8 +667,10 @@ func greeting(g: Guest) -> String:
 		g.clear_stance("envy")   # Neid auf Zimmer 13 (6.18, 5): der spitze Satz einmal am Tag
 		return Social.ENVY_LINES.pick_random()
 	if Game.director_office:
-		return Game.director_office.marion_hint(g)   # Marion: Josefs Schlüsselbund (2.8, ZIM-6)
-	return ""
+		var bund := Game.director_office.marion_hint(g)   # Marion: Josefs Schlüsselbund (2.8, ZIM-6)
+		if bund != "":
+			return bund
+	return SteelLocker.marion_hint(g)   # Marion: Josefs Zahlenschloss nach dem ersten Abstieg (7.18, ZIM-174)
 
 
 # --- Sag mal … ---------------------------------------------------------------------------------

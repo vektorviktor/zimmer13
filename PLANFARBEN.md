@@ -33,6 +33,11 @@ Legende.** Beide lesen und schreiben hier. Aus ihr entstehen automatisch:
   `Objekt: <Name>` (Pivot an der Vorderseite). Ein `Raum`-Slice benennt die ganze zusammenhängende Fläche gleicher
   Farbe, auf der er liegt – **je Fläche nur ein Raum-Slice** (fällt eine Wand weg, verschmelzen zwei Räume; der
   übrige Slice muss dann weg, sonst gewinnt der alphabetisch spätere Name).
+- **Slices für Stahlspinde** (SK 7.18, ZIM-174): `Spind: Hausmeister` (geht für den Spieler nie auf) bzw. `Spind: Josef`
+  (Code 2803) über dem Spind mit Schloss. `Code: <Name>` zweimal mit gleichem Namen – über einem „Spind mit Schloss“ (in einer Reihe über
+  genau dessen 5 × 5 px) und über einem „Zettel“, beliebig weit weg, auch auf einem anderen Stockwerk; der Zettel nennt
+  dann Raum, Lage und Code. Vier Ziffern am Ende (`Code: Wäschekammer 4471`, auf einem der beiden) geben den Code vor,
+  sonst kommt er fest aus dem Namen. Fehlt eine Hälfte, warnt der Bau.
 
 Mehr Einzelheiten: TECHNIK.md 4 „Gebäudeplan“.
 
