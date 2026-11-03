@@ -40,12 +40,12 @@ const HOUSEHOLD_SOURCES := ["res://HAUSHALTE.md", "res://tools/build_households.
 const CELLAR_WALL_TEX := "res://assets/textures/Concrete_WoodPattern_01/Concrete_WoodPattern_01_Base_Color.jpg"
 const CELLAR_WALL_NORMAL := "res://assets/textures/Concrete_WoodPattern_01/Concrete_WoodPattern_01_Normal.jpg"
 const CELLAR_WALL_METERS := 3.0
-## Kieswege im Garten (Plan map_a, Fläche „Kiesweg“): Kopfsteine in Moos (StoneWall_01, Farbbild mit eingebackener
-## AO + Normal Map, verstärkt – sonst wirken sie flach), Steine 10–18 cm
-const GRAVEL_TEX := "res://assets/textures/StoneWall_01/StoneWall_01_basecolor.jpg"
-const GRAVEL_NORMAL := "res://assets/textures/StoneWall_01/StoneWall_01_normalOGL.jpg"
-const GRAVEL_METERS := 0.5
-const GRAVEL_NORMAL_STRENGTH := 2.0
+## Kieswege im Garten (Plan map_a, Fläche „Kiesweg“, Spielkonzept 7.10): grauer, gemischter Kies (Gravel022, ambientCG,
+## CC0; Farbbild mit eingebackener AO + Normal Map, verstärkt – sonst wirkt er flach), 1,5 m je Kachel wie im Set
+const GRAVEL_TEX := "res://assets/textures/Gravel022/Gravel022_basecolor.jpg"
+const GRAVEL_NORMAL := "res://assets/textures/Gravel022/Gravel022_normalogl.jpg"
+const GRAVEL_METERS := 1.5
+const GRAVEL_NORMAL_STRENGTH := 1.5
 ## Holzdeck auf Terrassen und Balkonen (Deck, ZIM-127): so tief liegt die dunkle Platte unter der Oberkante der Bretter,
 ## Fuge zur Hauswand und zur Hecke bzw. zum Geländer
 const DECK_DROP := 0.04

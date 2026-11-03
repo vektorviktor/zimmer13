@@ -261,7 +261,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `Tiles136B` (ambientCG, CC0) | Küchenboden (`_kitchen_floor`; Küche `KITCHEN_ROOM` über `_look` als „kitchen“) | helle 15-cm-Fliesen im Halbverband, `KITCHEN_TILES_METERS` 1,8 m, AO eingebacken |
 | `Tiles133B` (ambientCG, CC0) | Küchenwände bis unter die Decke (Haut der Seite `kitchen`, `_kitchen_tiles`; ohne Vertäfelung) | hellblaue 15-cm-Fliesen, 1,8 m, AO eingebacken |
 | `WoodFloor014` (ambientCG, CC0) | Speisesaal, Boden (`_dining_floor`, `DINING_ROOM`; Wände bleiben tapeziert) | Fischgrätparkett, Stäbe 7,5 × 30 cm, `DINING_FLOOR_METERS` 1,2 m; AO-Karte einfarbig, verworfen |
-| `StoneWall_01` | Kieswege (`gravel`) | `GRAVEL_NORMAL_STRENGTH` – ohne wirkten sie flach |
+| `Gravel022` (ambientCG, CC0) | Kieswege (`gravel`) | grauer Kies, `GRAVEL_METERS` 1,5 m, AO eingebacken, `GRAVEL_NORMAL_STRENGTH` 1,5; Rauheit verworfen (glänzte trocken) |
 | `StoneFloor_02` | Außenwände (Haut der Seite `outside`, `_facade`) | |
 | `Wood_Panels_01` | alle Holzdecken (`_ceiling`, `_room_ceiling`), Aufzugskabine | aufgehellt `CEILING_SHADE`/`ROOM_CEILING_SHADE` |
 | `WoodenFloor_03` | alle Holzböden (`_wood_floor`) | |
