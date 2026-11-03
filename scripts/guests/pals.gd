@@ -8,7 +8,11 @@ extends Node
 ## Eltern verfeindet (Pranks) – Verfeindete sind keine Freunde, auch nicht als Nachbarn.
 ## Freund meines Feindes (2026-10-22): Wird der Spieler mit einem Gast „befreundet“, erfahren dessen Feinde es nach
 ## RIVAL_DELAY und mögen ihn weniger (RIVAL_AMOUNT) – je Paar einmal.
-## Gespeichert werden die Zähler je Paar (counts) und die verfeindeten Paare (feuds).
+## Freundesnetz als Kanal (Spielkonzept 6.18, 1; 2026-11-03): Lob und Klagen über den Spieler (spread) laufen nur über
+## Freunde, Familie und Zimmernachbarn und werden erzählt, wenn sich zwei davon treffen. Die Stärke richtet sich nach dem
+## Tratsch des Erzählers und halbiert sich je Station, nach NET_STATIONS ist Schluss (net_strength; dieselbe Regel für
+## Geschichten in Talk). Wer keine Freunde hat, hört nichts; was nach NET_TIME keiner erzählt hat, ist vergessen.
+## Gespeichert werden die Zähler je Paar (counts) und die verfeindeten Paare (feuds) – das Netz nicht.
 
 ## Ab so vielen gemeinsamen Taten sind zwei Gäste Freunde
 const PAL_DEEDS := 3
@@ -24,8 +28,13 @@ const RIVAL_AMOUNT := -15.0
 const RIVAL_DELAY := Vector2(20.0, 60.0)
 const RIVAL_LINES := ["Du bist also mit %s befreundet? Na schön.", "Mit %s gibst du dich ab? Dann such dir andere Freunde.",
 	"Ich hab gehört, du und %s … Das merk ich mir."]
-## Ruf (Deko-Suche): was ein Gast seinen Freunden über gemeinsame Taten erzählt, nach dieser Verzögerung
-const PRAISE_DELAY := Vector2(20.0, 60.0)
+## Freundesnetz (6.18, 1): so viele Stationen weit, so lange (Spielzeit) wartet eine Nachricht auf ein Treffen
+const NET_STATIONS := 2
+const NET_TIME := Calendar.DAY_SECONDS
+const NET_BAD_LINES := ["Hast du gehört, was Zimmer 13 gemacht hat?", "Pass bloß auf mit Zimmer 13 …",
+	"Zimmer 13? Da würde ich mich vorsehen, glaub mir.", "Weißt du, was man über Zimmer 13 erzählt?"]
+const NET_CHILD_BAD_LINES := ["Zimmer 13 ist voll gemein!", "Mit Zimmer 13 spiel ich nicht mehr!"]
+const NET_BAD_REPLIES := ["Echt jetzt?", "Na so was.", "Das merk ich mir.", "Hätte ich nicht gedacht."]
 ## Große Gruppen (Feier, großes Schmücken): jeder merkt sich nur so viele andere aus der Gruppe
 const GROUP_PAIRS := 3
 const TELL_LINES := ["Hast du schon mit Zimmer 13 geredet? Echt in Ordnung!", "Zimmer 13 hat mir neulich geholfen. Wirklich nett.",
@@ -44,7 +53,9 @@ var feuds := {}
 var heard := {}
 var _told := {}          ## "id_a|id_b" → Spieltag des letzten Weitererzählens (nicht gespeichert)
 var _rivals := {}        ## "freund|feind" → true: hat es schon erfahren (nicht gespeichert)
-var _queue: Array[Dictionary] = []   ## {guest, amount, delay, from} – Ruf mit Verzögerung
+var _net: Array[Dictionary] = []     ## {teller, hearer, msg, amount, cap, station, until} – wartet aufs Treffen
+var _net_known := {}                 ## Nachricht → {Gast-ID: true}: kennt sie schon (Erzähler, Gehörte)
+var _net_next := 0
 var _scan := TELL_SCAN
 
 
@@ -141,10 +152,44 @@ func pals_of(g: Guest) -> Array[Guest]:
 	return result
 
 
-## Ruf (Spielkonzept 6.16): Der Gast erzählt seinen Freunden etwas Gutes über dich – sie mögen dich etwas mehr.
+## Ruf (Spielkonzept 6.16): Der Gast erzählt seinen Freunden etwas Gutes über dich – sie mögen dich etwas mehr
+## (übers Freundesnetz, 6.18, 1).
 func praise(from: Guest, amount: float) -> void:
-	for pal in pals_of(from):
-		_queue.append({"guest": pal, "amount": amount, "delay": randf_range(PRAISE_DELAY.x, PRAISE_DELAY.y), "from": from.id})
+	spread([from], amount, TELL_CAP)
+
+
+## Stärke einer Nachricht an Station `station` (1 = vom ersten Erzähler) als Faktor: nach dem Tratsch des Erzählers,
+## je Station halb so stark (Spielkonzept 6.18, 1).
+static func net_strength(teller: Guest, station: int) -> float:
+	return float(teller.profile["gossip"]) * pow(0.5, station - 1)
+
+
+## Etwas über den Spieler spricht sich herum (6.18, 1): `tellers` wissen es (Opfer, Zeugen) und erzählen es ihren
+## Freunden, sobald sie sie treffen. amount: Beziehung bei voller Stärke; cap: höchstens bis hierhin (Lob).
+func spread(tellers: Array, amount: float, cap: float = 100.0) -> void:
+	_net_next += 1
+	var known := {}
+	for t in tellers:
+		if is_instance_valid(t) and not t.dead:
+			known[t.id] = true
+	_net_known[_net_next] = known
+	for t in tellers:
+		if is_instance_valid(t) and not t.dead:
+			_net_pass(t, _net_next, amount, cap, 1)
+
+
+## Wie viele Nachrichten noch auf ein Treffen warten (Debug, Tests).
+func net_pending() -> int:
+	return _net.size()
+
+
+func _net_pass(teller: Guest, msg: int, amount: float, cap: float, station: int) -> void:
+	var known: Dictionary = _net_known[msg]
+	var until := _now() + NET_TIME
+	for pal in pals_of(teller):
+		if not known.has(pal.id):
+			_net.append({"teller": teller, "hearer": pal, "msg": msg, "amount": amount, "cap": cap, "station": station,
+				"until": until})
 
 
 func save_state() -> Dictionary:
@@ -174,21 +219,72 @@ func take_heard_line(g: Guest) -> String:
 func _process(delta: float) -> void:
 	if Game.game_over or Game.social == null:
 		return
-	var i := _queue.size() - 1
-	while i >= 0:
-		var entry := _queue[i]
-		entry["delay"] = float(entry["delay"]) - delta
-		if float(entry["delay"]) <= 0.0:
-			var g = entry["guest"]
-			if is_instance_valid(g) and not g.dead and Social.tier(g) > Social.Tier.ENEMY:
-				Game.social.change_relation(g, entry["amount"], TELL_CAP)
-				heard[g.id] = entry["from"]
-			_queue.remove_at(i)
-		i -= 1
 	_scan -= delta
 	if _scan <= 0.0:
 		_scan = TELL_SCAN
-		_update_telling()
+		if not _update_net():
+			_update_telling()
+
+
+func _now() -> float:
+	return Game.director.elapsed if Game.director else 0.0
+
+
+## Freundesnetz: Wer sich trifft, erzählt (einer je Durchgang) – true, wenn erzählt. Vergessenes fällt heraus.
+func _update_net() -> bool:
+	if _net.is_empty():
+		_net_known.clear()
+		return false
+	var now := _now()
+	var asleep := Game.social.sleep_active
+	var told := false
+	var i := _net.size() - 1
+	while i >= 0:
+		var e := _net[i]
+		var a = e["teller"]
+		var b = e["hearer"]
+		if now > float(e["until"]) or not is_instance_valid(a) or not is_instance_valid(b) or a.dead or b.dead \
+				or (_net_known[e["msg"]] as Dictionary).has(b.id):
+			_net.remove_at(i)
+		elif not told and not asleep and _free(a) and _free(b) and a.global_position.distance_to(b.global_position) <= TELL_RANGE:
+			_net.remove_at(i)
+			_net_tell(e)   # hängt hinten an – der Durchgang läuft rückwärts, das stört nicht
+			told = true
+		i -= 1
+	var live := {}
+	for e in _net:
+		live[e["msg"]] = true
+	for msg in _net_known.keys():
+		if not live.has(msg):
+			_net_known.erase(msg)
+	return told
+
+
+func _net_tell(e: Dictionary) -> void:
+	var a: Guest = e["teller"]
+	var b: Guest = e["hearer"]
+	var station := int(e["station"])
+	var base := float(e["amount"])
+	(_net_known[e["msg"]] as Dictionary)[b.id] = true
+	var amount := base * net_strength(a, station)
+	var before := b.relation
+	var good := base > 0.0
+	if good:
+		a.say((CHILD_TELL_LINES if a.is_child() else TELL_LINES).pick_random())
+		if Social.tier(b) > Social.Tier.ENEMY:
+			Game.social.change_relation(b, amount, float(e["cap"]))
+			heard[b.id] = a.id
+	else:
+		a.say((NET_CHILD_BAD_LINES if a.is_child() else NET_BAD_LINES).pick_random())
+		Game.social.change_relation(b, amount)
+	get_tree().create_timer(2.5, false).timeout.connect(func() -> void:
+		if is_instance_valid(b) and not b.dead:
+			b.say((REPLY_LINES if good else NET_BAD_REPLIES).pick_random()))
+	if station < NET_STATIONS:
+		_net_pass(b, int(e["msg"]), base, float(e["cap"]), station + 1)
+	if Game.tracing:
+		print("[Netz] %s erzählt %s (Station %d, Stärke %.2f): %.0f → %.0f" % [a.display_name, b.display_name, station,
+			net_strength(a, station), before, b.relation])
 
 
 ## Wer dich mag, erzählt es Freunden, die er trifft (je Paar einmal am Spieltag).

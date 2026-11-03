@@ -10,7 +10,8 @@ extends Node
 ##     und glaubt dir einen Tag lang nichts.
 ##   · Haltungen verfallen nach STANCE_TIME; „vorsichtig“ und „sorglos“ wirken in Guest (Tagesablauf, Flackern, Hören),
 ##     „misstraut“ in GuestPals.are_pals.
-##   · Weitererzählen: Wer eine Geschichte glaubt, erzählt sie Freunden, die er trifft – höchstens MAX_HOPS weit.
+##   · Weitererzählen: Wer eine Geschichte glaubt, erzählt sie Freunden, die er trifft – höchstens MAX_HOPS weit, die
+##     Angst nach dem Tratsch des Erzählers und je Station halb so stark (Freundesnetz, 6.18, 1; GuestPals.net_strength).
 ## Gespeichert: log, Zähler, Verdacht nach Einbrüchen (social.talk); je Gast claims und stances.
 
 ## Geschichten über Spuk (mit Ort) und über Funde – Spieler-Erlebnisse und Lügen
@@ -399,8 +400,7 @@ func expose(g: Guest, claim: Dictionary, how: String, speak: bool = true, other:
 		"who": Game.social.guest_name(String(claim["who"])), "other": other.display_name if other else "jemand"})
 	if speak:
 		g.say(line)
-	for pal in Game.social.pals.pals_of(g):
-		_queue.append({"guest": pal, "amount": EXPOSED_PALS, "delay": randf_range(20.0, 60.0)})
+	Game.social.pals.spread([g], EXPOSED_PALS)   # übers Freundesnetz (6.18, 1)
 	if Game.tracing:
 		print("[Gespräch] Lüge aufgeflogen (%s): %s – %s, Beziehung %.0f" % [how, g.display_name, claim["topic"], g.relation])
 	return line
@@ -890,7 +890,8 @@ func _pass_on(a: Guest, b: Guest, c: Dictionary) -> void:
 			copy["stance"] = "distrusts:" + String(c["who"])
 			b.set_stance(copy["stance"], STANCE_TIME)
 		else:
-			b.fear = minf(100.0, b.fear + STORY_FEAR * 0.5 * (1.2 - float(b.profile["brave"])))
+			# Stärke nach dem Tratsch des Erzählers, je Station halb so stark (6.18, 1)
+			b.fear = minf(100.0, b.fear + STORY_FEAR * GuestPals.net_strength(a, int(copy["hops"])) * (1.2 - float(b.profile["brave"])))
 			copy["stance"] = "wary"
 			b.clear_stance("careless")
 			b.set_stance("wary", STANCE_TIME)

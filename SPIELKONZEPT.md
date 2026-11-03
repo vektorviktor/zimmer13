@@ -4432,7 +4432,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 
 ### 6.18 Das Sozialsystem verknüpft (entschieden 2026-10-21)
 > Großteils noch nicht umgesetzt (gebaut: Warnen im Gespräch, 6.9; Zuflucht und Einlass, 6.19; Wache halten,
-> 2026-11-02, ZIM-62). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
+> 2026-11-02, ZIM-62; das Freundesnetz als Kanal (1), 2026-11-03, ZIM-159). Knüpft die losen Enden aus 6.2–6.17 zu einem Kreislauf zusammen: Was man tut, spricht sich
 > herum (1), jeder Tod hat eine Ursache (2), schwere Momente erzeugen Wünsche (3), Freundschaft schützt (4), und die
 > Beziehung lässt sich nicht mehr erschleichen (5).
 
@@ -4443,8 +4443,15 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 - **Stärke:** nach dem Tratsch des **Erzählers** (Mila verbreitet am stärksten, 6.0); bei jedem Weitererzählen halb so
   stark, nach **höchstens zwei Stationen** ist Schluss.
 - **Zeugen** reagieren sofort; petzende Kinder (6.13) sind der Fall „Familie“.
-- **Freunde suchen einander auf:** zusammen an die Bar, an den Schachtisch, zum Schmücken – es entstehen sichtbare
-  Grüppchen, man sieht, wo Gerede entlangläuft.
+- ~~**Freunde suchen einander auf:** zusammen an die Bar, an den Schachtisch, zum Schmücken – es entstehen sichtbare
+  Grüppchen, man sieht, wo Gerede entlangläuft.~~ **Gestrichen (2026-11-03).** Sichtbar wird das Gerede nur, weil der
+  Erzähler beim Treffen einen Satz sagt und der andere antwortet.
+- **Gebaut (2026-11-03, ZIM-159):** Lob und Klagen über den Spieler und aufgeflogene Lügen (6.9) laufen nur über die
+  Freunde der Erzähler (Opfer, Zeugen) und werden erst erzählt, wenn sich die beiden treffen; früher bekam jeder Gast
+  das Gerede nach seinem eigenen Tratsch ab. Stärke = Tratsch des Erzählers, an der zweiten Station × ½; jeder hört
+  eine Nachricht nur einmal, nach einem Spieltag ohne Treffen ist sie vergessen. Weitererzählte Geschichten (6.9)
+  machen nach derselben Regel Angst. Monster-Wissen über Zeugenaussagen (6.17) und Todesnachrichten bleiben bei 2
+  (ZIM-160) und 3 (ZIM-41), die den Kanal nutzen.
 - **Folge:** Wer keine Freunde hat, hört nichts. Der Ruf hängt davon ab, *wen* man verärgert – ein gut vernetzter
   Gast schadet mehr als ein Einzelgänger.
 

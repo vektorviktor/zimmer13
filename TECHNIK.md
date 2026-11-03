@@ -456,7 +456,7 @@ Sichtprüfungen (Monster, Zeugen) nutzen `Senses.SIGHT_MASK` (Ebenen 1, 2, 9, 10
     `Weather._update_bell`, Monster nah) oder eine Bedrohung taucht auf.
   - **`skip_time(dt)`** rechnet nach, was sonst je Bild mit `delta` zählt: Player (Schock, Rausch, Kater,
     Verletzung, Ausdauer, Schlaf), Guest (Angst, Rausch, Pausen, Wunde – Restzeiten bleiben bei 0,001, Fälliges meldet
-    das nächste Bild), Social (Beziehungsdrift, Gerede, Nachrücker, Pausen), ResourceSpot und PumpkinPlant (mehrere
+    das nächste Bild), Social (Beziehungsdrift, Nachrücker, Pausen; das Freundesnetz läuft über `MonsterDirector.elapsed`), ResourceSpot und PumpkinPlant (mehrere
     Stufen auf einmal), Item (Kürbismatsch verwäscht), Lamp (Durchbrennen als Wurf über dt), Traces, RainVeil,
     Weather, HotelCat, PumpkinMan, SheetGhost, PhoneCalls (das Telefon in Zimmer 13 klingelt also und weckt). Was an
     der Uhr hängt (Fäulnis, Termine), holt von selbst auf. **Neues System, das mit `delta` über Minuten bis
@@ -1219,7 +1219,7 @@ den Skripten. Hier der Aufbau.
 ### `Social`
 Der Ort für alles zwischen Gästen und Spieler: Gästeliste (`guests`, `living_guests()`, `guest_by_id()`; für Debug
 `find_guest()` – auch nach Namen, da nur die Kernfiguren ihren Namen als ID haben),
-Beziehungen (`change_relation`), Gerüchte mit Verzögerung, Diebstahl mit Zeugen, Reservierung von Verstecken
+Beziehungen (`change_relation`), Gerede über das Freundesnetz (`_spread_gossip` → `GuestPals.spread`), Diebstahl mit Zeugen, Reservierung von Verstecken
 (`find_hide_spot` / `release_hide_spot(spot, gast)` – der Gast gibt sie auch frei, wenn sein Weg abbricht oder er stirbt,
 sonst bleibt das Versteck für alle gesperrt), Feiern, Herausforderungen (`challenge`), Gäste-Mäxchen und -Schach,
 Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Zettel, Nachrücker (`START_GUESTS`,
@@ -1478,7 +1478,15 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   gemeinsame Taten; `note`, `note_group`), `are_pals` (Familie, genug Taten oder Zimmernachbarn – nie bei `feuds`, nicht
   bei Gerücht `distrusts:<id>`), Weitererzählen (`_update_telling`, `heard`), `praise`, Feindschaften (`feuds`,
   `add_feud`), „Freund meines Feindes“ (`on_player_befriended`). Gespeichert: `counts`, `feuds`. Debug
-  `--pals=…`, `--rival=…`.
+  `--pals=…`, `--rival=…`, `--netz=…`.
+  - **Freundesnetz als Kanal** (Spielkonzept 6.18, 1; 2026-11-03): `spread(tellers, amount, cap)` – Lob (`praise`) und
+    Klagen (`Social._spread_gossip`: Schlag, Diebstahl, Einbruch, fremdes Bett, Beleidigung, Schummeln, Eier;
+    aufgeflogene Lügen aus `Talk.expose`) gehen nur an die Freunde (`pals_of`) der Erzähler (Opfer, Zeugen) und warten
+    in `_net` auf ein Treffen (`TELL_RANGE`, beide `_free`, nicht im Schlaf, einer je `TELL_SCAN`, `_update_net` vor
+    `_update_telling`). Wirkung `amount × net_strength(Erzähler, Station)` = Tratsch (`profile.gossip`) × 0,5^(Station−1);
+    nach `NET_STATIONS` (2) ist Schluss, jeder hört eine Nachricht nur einmal (`_net_known`), nach `NET_TIME` (ein
+    Spieltag) ist sie vergessen. Dieselbe Stärke nutzt `Talk._pass_on` für die Angst aus weitererzählten Geschichten.
+    Nicht gespeichert (wie früher das Gerede). Debug `--netz=a,b,c[,lob]`, Stichwort „netz“, `--trace` „[Netz]“.
 - **Gespräche** (`guests/talk.gd`, `Talk`, Spielkonzept 6.9): Die Knöpfe baut `DialogUI` (`_show_main`, Optionen in
   einem `ScrollContainer`), die Logik liegt in `Talk`: Anlässe (`_occasions()`), Erlebnisse des Spielers (`log`,
   `_scan_sights`), Gedächtnis je Gast (`Guest.claims`, höchstens `MAX_CLAIMS`), Erzählen/Lügen (`tell`, `_believes`,

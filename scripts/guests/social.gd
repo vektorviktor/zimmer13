@@ -263,7 +263,6 @@ var _dance_spots := {}          ## Gast-ID → Index in builder.party_spots (fre
 var _party_noise := 0.0
 var _party_cooldown := 150.0
 var _spontaneous_timer := 30.0
-var _gossip: Array[Dictionary] = []      ## {delay, amount}
 var _thefts := {}                        ## Gast-ID → Zeitpunkt des letzten Diebstahls durch den Spieler
 var _noise_annoyed := {}                 ## Gast-ID → Zeitpunkt, an dem ihn zuletzt Lärm vor der Tür geärgert hat
 var _reserved := {}                      ## HideSpot → Guest
@@ -936,12 +935,10 @@ func on_insult(guest: Guest) -> void:
 	_spread_gossip(-3.0, [guest])
 
 
-## Gerüchte verbreiten sich zeitversetzt – je nach Tratschfreude der Gäste.
-func _spread_gossip(amount: float, exclude: Array) -> void:
-	for guest in guests:
-		if guest.dead or guest in exclude:
-			continue
-		_gossip.append({"guest": guest, "amount": amount * float(guest.profile["gossip"]), "delay": randf_range(15.0, 40.0)})
+## Klagen über den Spieler: `tellers` (Opfer, Zeugen – sie haben schon reagiert) erzählen es übers Freundesnetz weiter
+## (GuestPals.spread, Spielkonzept 6.18, 1).
+func _spread_gossip(amount: float, tellers: Array) -> void:
+	pals.spread(tellers, amount)
 
 
 # --- Monster, Tod, Schock ---------------------------------------------------------------
@@ -1241,15 +1238,14 @@ func night_ends_at() -> float:
 	return last.y if now < last.y else night_window(day).y
 
 
-## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Beziehungen, Gerede, Nachrücker und Pausen um dt.
+## Zeitsprung im Schlaf (SleepSkip, Spielkonzept 3.6): Beziehungen, Nachrücker und Pausen um dt (das
+## Freundesnetz rechnet mit MonsterDirector.elapsed, GuestPals).
 func skip_time(dt: float) -> void:
 	for guest in guests:
 		if guest.dead:
 			continue
 		var target := 0.0 if guest.is_child() else clampf(guest.relation, -55.0, 55.0)
 		guest.relation = move_toward(guest.relation, target, DRIFT * (CHILD_DRIFT if guest.is_child() else 1.0) * dt)
-	for entry in _gossip:
-		entry["delay"] = maxf(0.001, float(entry["delay"]) - dt)
 	if _arrival_timer > 0.0:
 		_arrival_timer = maxf(0.001, _arrival_timer - dt)
 	_party_cooldown -= dt
@@ -1809,16 +1805,6 @@ func _release_pair(game: Dictionary, table: GameTable) -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
-	var i := _gossip.size() - 1
-	while i >= 0:
-		var entry := _gossip[i]
-		entry["delay"] = float(entry["delay"]) - delta
-		if float(entry["delay"]) <= 0.0:
-			var guest = entry["guest"]   # nach dem Laden kann der Gast neu erzeugt worden sein
-			if is_instance_valid(guest) and not guest.dead:
-				change_relation(guest, entry["amount"])
-			_gossip.remove_at(i)
-		i -= 1
 	_update_party(delta)
 	_update_arrivals(delta)
 	_update_knocking(delta)

@@ -84,6 +84,9 @@ extends Node3D
 ##                               erfährt es nach 20–60 s (--trace „[Feinde]“)
 ##   --pals=gast1,gast2          Weitererzählen (6.16): gast1 ist mit dir befreundet, beide sind Freunde und stehen vor dir
 ##                               nebeneinander – gast1 erzählt gast2 gleich Gutes über dich (mit --trace: Beziehung)
+##   --netz=gast1,gast2,gast3[,lob]  Freundesnetz (6.18, 1): gast1 hat sich über dich zu beklagen (mit lob: lobt dich),
+##                               gast2 ist sein Freund, gast3 der von gast2 – alle drei stehen vor dir; es läuft zwei
+##                               Stationen weit, je Station halb so stark (--trace „[Netz]“)
 ##   --call=id[,panik]|creepy|dead|door [--answer]  Telefon in Zimmer 13 klingelt (Gast – mit ,panik ein Panikanruf –,
 ##                               Atmen, Verschwundener, vor der Tür) – mit --answer nimmt der Spieler nach 4 s ab
 ##   --gastanruf=id[,panik]      Gäste telefonieren (4.14): der Gast steht daheim, kennt eine frische Geschichte und ruft
@@ -2025,6 +2028,8 @@ func run_debug(arg: String) -> bool:
 			Game.social.change_relation(a, 80.0)
 	elif arg.begins_with("--pals="):
 		_debug_pals(_arg_parts(arg, "--pals"))
+	elif arg.begins_with("--netz="):
+		_debug_net(_arg_parts(arg, "--netz"))
 	elif arg == "--knock":
 		# Klopfen an Zimmer 13 vorbereiten (Spieler steht im Zimmer, Monster ist unterwegs)
 		Game.director.first_attack_done = true
@@ -3137,6 +3142,40 @@ func _debug_pals(parts: PackedStringArray) -> void:
 		g.global_position = p.global_position + forward * 2.5 + side * (0.6 if g == a else -0.6)
 		g._set_idle(30.0)
 	Game.social.pals._scan = 0.5
+
+
+## --netz=gast1,gast2,gast3[,lob]: Klage (bzw. Lob) von gast1 läuft übers Freundesnetz zu gast2 und weiter zu gast3
+## (Spielkonzept 6.18, 1). Alle drei stehen nebeneinander vor dir.
+func _debug_net(parts: PackedStringArray) -> void:
+	var chain: Array[Guest] = []
+	for part in parts:
+		if part != "lob":
+			var g := Game.social.find_guest(part)
+			if g:
+				chain.append(g)
+	if chain.size() < 3:
+		Game.say("--netz: drei Gäste angeben, z. B. --netz=mila,edna,bruno", 3.0)
+		return
+	var pals := Game.social.pals
+	pals.counts[GuestPals.key(chain[0], chain[1])] = GuestPals.PAL_DEEDS
+	pals.counts[GuestPals.key(chain[1], chain[2])] = GuestPals.PAL_DEEDS
+	var p := Game.player
+	var forward := -p.global_transform.basis.z
+	var side := forward.cross(Vector3.UP).normalized()
+	for i in chain.size():
+		var g := chain[i]
+		g.global_position = p.global_position + forward * 2.5 + side * (float(i) - 1.0) * 0.9
+		g.fear = 0.0
+		g._set_idle(60.0)
+	var amount := 6.0 if "lob" in parts else -8.0
+	if Game.tracing:
+		print("[Netz] %s erzählt %s (%.0f): Freunde %s" % [chain[0].display_name, "Lob" if amount > 0.0 else "eine Klage", amount,
+			", ".join(PackedStringArray(pals.pals_of(chain[0]).map(func(g: Guest) -> String: return g.display_name)))])
+	pals.spread([chain[0]], amount, GuestPals.TELL_CAP if amount > 0.0 else 100.0)
+	pals._scan = 0.5
+	get_tree().create_timer(20.0, false).timeout.connect(func() -> void:
+		if Game.tracing:
+			print("[Netz] warten noch auf ein Treffen: %d" % pals.net_pending()))
 
 
 ## --decorate[=…]: Schmück-Aktion bzw. allein schmückender Gast (Spielkonzept 5.9), mit „hin“ steht der Spieler davor.

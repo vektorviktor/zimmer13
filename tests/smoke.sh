@@ -369,6 +369,8 @@ done <<'LIST'
 600|dachboden,wetter|--dachboden=blitz --trace
 400|spieler|--sitzen=bett --trace
 600|gaeste,beziehungen|--pals=edna,bruno --trace
+600|netz,gaeste,beziehungen|--netz=mila,edna,bruno --trace
+600|netz,gaeste|--netz=mila,edna,bruno,lob --trace
 2000|spieler|--sprint --trace
 600|gespraech,gaeste|--gespraech=frage,night,bruno,2 --trace
 600|gespraech,gaeste|--gespraech=frage,brave,edna,1 --trace
