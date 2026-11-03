@@ -803,8 +803,13 @@ größer, mitten in seinem Revier.
   alten Heizkeller (U2)**, im Revier des Monsters – erreichbar mit dem Aufzug (ab etwa dem 14.) oder durch die
   Leviathanmauer (ab etwa Tag 15, 7.4). Den Hinweis geben Marion (*„Vater hatte das ganze Haus am Gürtel.“* – Text
   Vorschlag) oder das Kesselbuch.
+  **Gebaut 2026-11-03 (ZIM-6), mit Zwischenort:** Der Bund öffnet Sekretariat und Büro. Solange es U2 nicht gibt, hängt
+  er ab dem 14. seitlich am Kessel im Heizkeller (UG). Marion sagt ab dem 14. einmal im Gespräch: *„Vater hatte das
+  ganze Haus am Gürtel. Jeden Schlüssel. Man hat ihn nie gefunden – den Bund auch nicht.“* (Vorschlag), die Figur
+  notiert es. Das Kesselbuch und der Bund des Rezeptionisten (4.21) fehlen noch.
 - **Das Büro (2026-11-01, ZIM-150):** im OG, nur durchs Sekretariat zu erreichen, die Tür verschlossen (Schlüsselbund
-  des Rezeptionisten oder Josefs Bund). Es ist ein **Sperrbereich** (2.3), das Sekretariat nicht (2.10).
+  des Rezeptionisten oder Josefs Bund). Es ist ein **Sperrbereich** (2.3), das Sekretariat nicht (2.10). *(Gebaut
+  2026-11-03, ZIM-6: beide Türen abgeschlossen, der erste Besuch im Büro löst einen Autosave aus.)*
 
 **Das Ritual – in der Halloween-Nacht**
 - **Nur in der letzten Nacht** (Vorschlag: vom Fest am Abend bis zur Öffnung des Haupteingangs, 2.7). Vorher sammelt
@@ -996,11 +1001,15 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   10. Tag** über Brunos Strang (HANDLUNG K3): Im Spind des Hausmeisters, den Bruno in der fünften Nacht aufbricht, hing
   neben der Hauptsicherung auch der **Sekretariatsschlüssel**, und Bruno behält beides. Ab dem 6.10. geht das Gerücht
   *„Bruno hat mehr mitgenommen“* (Text Vorschlag); den Schlüssel bekommt man auf seinen Wegen (Freundschaft, Handel,
-  Mäxchen, Klauen, 6.2).
+  Mäxchen, Klauen, 6.2). **Gebaut 2026-11-03 (ZIM-6), mit Zwischenort:** Tür abgeschlossen; solange es Spind und Brunos
+  Strang nicht gibt (ZIM-4), hängt der Schlüssel ab dem 6. an der Wand neben dem Sicherungskasten im Maschinenraum.
+  Das Gerücht kommt mit Brunos Strang.
 - **Der Generalschlüssel liegt im Sekretariat** (entschieden 2026-11-03, ZIM-6; ersetzt „erster Kandidat Büro“ in
   6.19): in einer **zweiten, verschlossenen Schublade** mit **Zahlenschloss** – ein eigener Weg neben der Tür. Der Code
   ist ein Jahr des Abkommens, das man aus Dokumenten zusammensetzt (Vorschlag: **1990**, die erste Ernte, aus dem
-  Gästebuch); eine Ziffer gibt Milas Nachtpartie (6.14). Ermitteln statt Holen.
+  Gästebuch); eine Ziffer gibt Milas Nachtpartie (6.14). Ermitteln statt Holen. **Gebaut 2026-11-03 (ZIM-6):** die
+  obere Schublade im Unterschrank des Sekretariatsschreibtischs, vier Messingräder; [E] öffnet das Schloss, Ziffern
+  tippen, [Enter] probiert. Code 1990; Milas Ziffer fehlt noch (ZIM-8).
 - Das Gruppenfoto beim Fest (5.9) und das Foto draußen vor dem Hotel in Ende 1 (2.7) sind eigene Bilder.
 
 **Das Vergessen**
@@ -4889,9 +4898,8 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 > durchkommen (zu lange jemand im Weg); der Reparaturdank bleibt einmal je Tür und Tag (+8 je Erwachsenem), ohne
 > Tagesbudget (entschieden 2026-11-03, ZIM-54). Brecheisen (Heizkeller) und Werkzeugkasten (Technikraum) stehen im Plan.
 > **Schlüsselschrank entfallen (2026-10-31, gebaut 2026-11-01, ZIM-136):** An seiner Stelle kommt die Fotowand (ZIM-133).
-> Der Generalschlüssel hat bis zum Bau des Sekretariats-Strangs (ZIM-6, entschieden 2026-11-03: Schublade mit
-> Zahlenschloss im Sekretariat, 2.10) keinen Ort im Spiel – Zimmer nur über
-> Einlass, Schlüssel oder Brecheisen; zum Probieren `--werkzeug=schluessel`.
+> Der Generalschlüssel liegt seit 2026-11-03 (gebaut, ZIM-6) im Sekretariat in der Schublade mit Zahlenschloss (2.10);
+> zum Probieren `--werkzeug=schluessel`.
 > **Badtüren (2026-10-28):** Gäste gehen ab und zu in ihr Bad und schließen die Tür hinter sich; ein Schloss gibt es nicht.
 > **Schlüssel stehlen (2026-10-28)** wie in (4): geduckt am Bett des Schlafenden (stehend weckt [E] ihn, 3.6), Folgen bei Zeugen wie beim Deko-Diebstahl; das
 > Schloss ist ab 6 Uhr am Morgen danach getauscht. **Zweitschlüssel (2026-10-28):** Ein erwachsener guter Freund gibt ihn
@@ -5032,7 +5040,7 @@ Ein Kind lässt sich leichter beschwatzen; merken die Eltern es, sind sie wüten
   Scheibe einzuschlagen ist zu billig. Der Schlüssel soll an einem schwer zugänglichen Ort liegen und Mühe kosten –
   erster Kandidat ist das **Büro der Direktion**, in das man erst hineinkommen muss (ZIM-6). **Entschieden 2026-11-03
   (ZIM-6):** Er liegt im **Sekretariat** in einer Schublade mit Zahlenschloss; Tür und Schublade haben getrennte Wege
-  (2.10). Der verglaste
+  (2.10) – gebaut 2026-11-03. Der verglaste
   Schlüsselschrank in der Lobby ist gestrichen (2026-10-31, ZIM-136). Der Schlüssel öffnet jede Zimmertür, außer der Bewohner ist drin und hat den **Riegel**
   vorgeschoben, und außer den versiegelten Zimmern (7). Wer gesehen wird, wie er damit eine fremde Tür aufschließt, gilt als Einbrecher (5), nur ohne Lärm.
 - **Erste Zahlen** (zum Probespielen):

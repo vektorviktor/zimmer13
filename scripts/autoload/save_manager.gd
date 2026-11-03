@@ -178,9 +178,9 @@ const AUTOSAVE_MONSTER_DISTANCE := 25.0
 ## Aufwachen in Zimmer 13 (8.10): so viele Spielsekunden muss der Schlaf in der Nachtruhe gelegen haben
 ## (= Player.SLEEP_MIN, zwei Stunden) – wer nur kurz nachts die Augen zumacht, hat keine Nacht geschlafen
 const NIGHT_SLEEP := 120.0
-## Schlüssel, deren Fund Fortschritt ist (8.10): Zimmer 18 (Sperrbereich 2.3, Aufzug 7.4), Dachboden (4.21) und der
-## Schaltschlüssel des Aufzugs aus Zimmer 18 (7.4)
-const PROGRESS_KEYS := ["zimmer_18", "dachboden", "aufzug"]
+## Schlüssel, deren Fund Fortschritt ist (8.10): Zimmer 18 (Sperrbereich 2.3, Aufzug 7.4), Dachboden (4.21), der
+## Schaltschlüssel des Aufzugs aus Zimmer 18 (7.4), Sekretariat, Josefs Bund und der Generalschlüssel (2.8, 2.10, ZIM-6)
+const PROGRESS_KEYS := ["zimmer_18", "dachboden", "aufzug", "sekretariat", "josefs_bund", "general"]
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
@@ -189,9 +189,9 @@ const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
 var WORLD_FILE := DIR + "world.txt"
 ## Neue Bereiche (8.10): Ihr erster Besuch löst einen Autosave aus – nur Dachboden, U2 (sobald es die Zone gibt, 7.4)
-## und die Sperrbereiche (2.3, bisher Zimmer 18), nicht mehr der Alltag (Lobby, Flure, Keller …). Weitere Sperrbereiche
-## (Personaltrakt, Büro der Direktion) kommen hierher, sobald sie gebaut sind. Namen wie in _area_at.
-const NEW_AREAS := ["Dachboden", "U2", "Zimmer 018"]
+## und die Sperrbereiche (2.3: Zimmer 18, Büro der Direktion – ZIM-6), nicht mehr der Alltag (Lobby, Flure, Keller,
+## Sekretariat …). Weitere Sperrbereiche (Personaltrakt) kommen hierher, sobald sie gebaut sind. Namen wie in _area_at.
+const NEW_AREAS := ["Dachboden", "U2", "Zimmer 018", "Büro der Direktion"]
 
 ## Zeitpunkt (Ticks in ms) des letzten Speicherns oder Ladens in dieser Sitzung
 var last_save_msec := -1

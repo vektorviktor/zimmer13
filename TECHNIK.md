@@ -1503,7 +1503,8 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
 - **Aufbrechen** (Brecheisen, `Door._forcible`, `Door._work`): Tür danach `broken` (offen, `set_open(false)` greift
   nicht) → `RoomAccess.on_forced` (Zeugen, Gerede, `suspects`). Leise mit dem **Generalschlüssel**
   (`RoomAccess.GENERAL_KEY` am Bund, `Door._general_fits`); der Schlüsselschrank in der Lobby ist weg (ZIM-136), der
-  neue Ort offen (ZIM-6) – bis dahin nur über `--werkzeug=schluessel`. `Door.monster_open` macht eine
+  Schlüssel liegt im Schreibtisch des Sekretariats hinter einem Zahlenschloss (`DirectorOffice`, ZIM-6) – im Debug auch
+  über `--werkzeug=schluessel`. `Door.monster_open` macht eine
   abgeschlossene Zimmertür ebenfalls kaputt. **Reparieren** mit Werkzeugkasten (`on_repaired`); am Morgen
   (`_morning_repairs`) repariert jeder Haushalt seine Tür selbst; `LENDER_HOUSEHOLD` leiht seinen Werkzeugkasten.
 - **Schlüssel stehlen** (`RoomAccess.steal_key`): Am Bett, in dem ein Gast in seinem Zimmer schläft (`key_sleeper`,
@@ -1851,7 +1852,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
     (Aufzug repariert, Kürbismann erlöst, Fluchtweg …); einmal je Ereignis rufen. Heute hängen daran
     `Player.add_key` → `on_key(id)`: Schlüssel aus `PROGRESS_KEYS` (`zimmer_18`, `dachboden`, Schaltschlüssel `aufzug`),
     und `Elevator.unlock()` (Halt im Dachgeschoss freigeschaltet, 7.10). Debug `--fortschritt`.
-  - **Neuer Bereich:** `NEW_AREAS` (Dachboden, U2, Sperrbereiche – bisher Zimmer 018), erster Besuch je Spiel in
+  - **Neuer Bereich:** `NEW_AREAS` (Dachboden, U2, Sperrbereiche – Zimmer 018, Büro der Direktion), erster Besuch je Spiel in
     `visited` (gespeichert). `_area_at` nimmt den Zonennamen, im Dachgeschoss „Dachboden“ (dessen Flurzonen heißen wie
     im OG; Bodenhöhe aus `LevelBuilder.attic_beams`).
   - **Aufwachen in Zimmer 13:** `_check_wake` merkt sich beim Einschlafen Zeit und Bett (`HideSpot.own_bed`) und
@@ -2041,13 +2042,32 @@ neuere Onboard-Grafik mit 30 FPS. Die Werte sind Vorschläge, im Spiel nicht gem
   1,40 × 0,75 m, Wange links, Unterschrank rechts, vier Schubladen). Feste Größe, mittig im Rechteck, Rücken an dessen
   Hinterkante. Modell `desk_<fassung>.glb`: Korpus (`carcass`), je Schubladenart Kasten und Beschläge
   (`drawer_s/_l/_c`, `pulls_s/_l/_c`: Unterschrank klein, tief, Mitte; Knöpfe, Schlüsselschild mit schwarzem Loch – nur
-  Zier, Abschließen ZIM-6), `leather`. Lage der Schubladen (von oben: Mittelschublade, dann je Unterschrank von oben,
+  Zier), `leather`. Lage der Schubladen (von oben: Mittelschublade, dann je Unterschrank von oben,
   links zuerst) und Kollisionskästen schreibt das Bauskript nach `desk_<fassung>.json`; Unterschränke und das Gehäuse
   der Mittelschublade bleiben hohl. Holz `Mat.hotel_wood` mit `desk_<fassung>_ao/_normal.png` (Atlas 2048, Furchen und
   Mulden gemalt). Leder: `Mat.pbr_model(desk_direktion_leather)` – Farbe, Goldprägung (Metall im Blau der ORM-Karte)
   und abgegriffene Mitte über die ganze Auflage (DIN A1, 2048 px), dazu als Detail über UV2 (Kachel 10 cm) die Narbung
   (`_leather_grain_albedo` multipliziert, `_leather_grain_normal`), `_leather_mask` hält sie von der Prägung fern; alles
   im Bauskript mit numpy erzeugt (Worley-Zellen, Rauschen), kein Foto. Nur feste Funde (`loot = false`).
+  **Zahlenschloss** (ZIM-6): Im Sekretariat bekommt die Schublade `DirectorOffice.CODE_DRAWER` (1 = obere im
+  Unterschrank) unter dem Schlüsselschild eine Messingplatte mit vier Rädern (`_code_lock`, Messing `Mat.metal`).
+  `code_locked(i)` gilt, bis sie in dieser Sitzung aufgeschlossen (`unlock_code`) oder je aufgezogen wurde (`searched`,
+  also ohne neues Feld im Spielstand); `use_drawer` öffnet dann das Schloss (`DirectorOffice.open_lock`), `_roll` legt
+  hinein den Generalschlüssel.
+- **Büro der Direktion und Sekretariat** (`world/director_office.gd`, ZIM-6, Spielkonzept 2.8, 2.10, 6.19):
+  `Game.director_office`, Knoten in `main.gd`. Türen: `LevelBuilder._opening` schließt jede Tür mit Büro auf einer Seite
+  mit `OFFICE_KEY` („buero“) ab, sonst eine mit Sekretariat mit `SECRETARIAT_KEY` („sekretariat“). Josefs Bund
+  (`JOSEF_KEYS`, „josefs_bund“, eigenes Modell in `Item`: Eisenring, sechs Bartschlüssel) zählt in `Player.has_key` für
+  beide (`JOSEF_OPENS`). `place_due(day)` (alle `CHECK_EVERY` s mit `Calendar.today()`) hängt eingefroren auf, was
+  fällig und nirgends ist – weder am Bund, in einer Hand noch als Gegenstand (`_exists`): ab `SECRETARIAT_DAY` (6.) den
+  Sekretariatsschlüssel neben den Sicherungskasten (`SECRETARIAT_SPOT`, Zwischenort bis Spind und Bruno, ZIM-4), ab
+  `JOSEF_DAY` (14.) Josefs Bund seitlich an den Kessel im Heizkeller (Gruppe `boilers`, `JOSEF_SPOT`, Zwischenort bis
+  U2). Nichts davon ist gespeichert; ein geladener Stand bringt seine Gegenstände mit. Zahlenschloss: `open_lock` →
+  `CodeLockUI` (`ui/code_lock_ui.gd`, wie die Wählseite des Telefons: Ziffern, Enter, Rücktaste, Esc, `enter(code)`
+  für Prüfungen) → `try_code` (`CODE` „1990“). Marions Hinweis: `marion_hint` aus `Talk.greeting`, einmal ab dem 14.
+  (Notiz `josefs_bund` im Notizbuch). Sperrbereich: „Büro der Direktion“ in `SaveManager.NEW_AREAS`; Sekretariat,
+  Josefs Bund und Generalschlüssel in `PROGRESS_KEYS`. Prüfung `--buero=pruefen` („[Büro] … ok/FEHLER“, Stichwort
+  `schluessel`).
 - **Nachttische** (`world/nightstand.gd`, 30.10.): `Nightstand extends Dresser`, Plan „Möbel: Nachttisch“ (5 × 5 px,
   Vorderseite als hellere Zeile). 0,5 × 0,5 m, Höhe `BedModel.POST_TOP` (0,51 m, bündig mit den Bettpfosten). Bretter
   aus heller Eiche über `BedModel.beam` mit eigener Kollisionsform: Deckplatte, Seiten bis zum Boden, Rückwand, Fachboden.

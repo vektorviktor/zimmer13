@@ -8,6 +8,7 @@ extends StaticBody3D
 ## Kerze, zählt für MonsterDirector.light_at, Schatten über ShadowBudget). Der Kegel folgt dem Schein, auch wenn
 ## ShadowBudget ihn abschaltet. Das Feuer brennt immer – Anheizen, Kohle und Ausgehen sind eingefroren (7.4).
 ## Oben auf dem Kessel sitzt der Rohrstutzen (PIPE_TOP), dort setzt LevelBuilder._boiler_pipes an. Nicht gespeichert.
+## Gruppe „boilers“: Seitlich hängt ab dem 14. Josefs Schlüsselbund – Zwischenort, bis es U2 gibt (DirectorOffice).
 ## Ursprung mittig unten, lokale +Z = Feuerklappe.
 
 const MODEL := "res://assets/models/boiler.glb"
@@ -42,6 +43,7 @@ var _sound_target := 0.0
 
 func _ready() -> void:
 	collision_mask = 0
+	add_to_group("boilers")   # Josefs Bund hängt vorläufig hier (DirectorOffice, ZIM-6)
 	var cs := CollisionShape3D.new()
 	var shape := CylinderShape3D.new()
 	shape.radius = RADIUS

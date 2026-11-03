@@ -2108,6 +2108,14 @@ func _opening_object(o: Dictionary, a: Vector2, along: Vector2, side: Vector2, h
 			attic_doors.append(door)
 	if k_minus == "sealed" or k_plus == "sealed":
 		_seal(door, "Abgeschlossen.")
+	elif "office" in [k_minus, k_plus]:   # Büro der Direktion, nur durchs Sekretariat (2.8, ZIM-6: DirectorOffice)
+		door.locked = true
+		door.key_id = DirectorOffice.OFFICE_KEY
+		door.locked_text = "Das Büro der Direktion ist abgeschlossen."
+	elif "secretariat" in [k_minus, k_plus]:   # Sekretariat (2.10, ZIM-6)
+		door.locked = true
+		door.key_id = DirectorOffice.SECRETARIAT_KEY
+		door.locked_text = "Die Tür zum Sekretariat ist abgeschlossen."
 	elif kind == "garden_door" and (k_minus == "outside") != (k_plus == "outside"):
 		# Fenstertür: Der Lakengeist kommt auch hierher (Spielkonzept 4.18)
 		var out := side * (-1.0 if k_minus == "outside" else 1.0)

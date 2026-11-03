@@ -399,6 +399,12 @@ static func key_label(id: String) -> String:
 		return "Alter Messingschlüssel, Anhänger 042"
 	if id.begins_with(LockerBank.KEY_PREFIX):   # Spind in den Pool-Umkleiden (ZIM-145)
 		return LockerBank.key_label(id)
+	if id == DirectorOffice.SECRETARIAT_KEY:   # Büro der Direktion (2.8, 2.10, ZIM-6)
+		return "Schlüssel Sekretariat"
+	if id == DirectorOffice.OFFICE_KEY:
+		return "Schlüssel Büro der Direktion"
+	if id == DirectorOffice.JOSEF_KEYS:
+		return "Josefs Schlüsselbund"
 	if id.begins_with(RoomAccess.OLD_KEY):   # gestohlen, das Schloss ist getauscht (6.19)
 		return "%s (passt nicht mehr)" % key_label(id.substr(RoomAccess.OLD_KEY.length()))
 	return "Schlüssel" if id == "" else "Schlüssel %s" % id.replace("zimmer_", "Zimmer ")
@@ -1289,6 +1295,29 @@ func _build(extra: String) -> void:
 				tag.scale = Vector3(1.5, 1.0, 0.9)
 				var number := Geo.mesh(self, Geo.cylinder(0.018, 0.0012, 12), Mat.psx(Color(0.25, 0.18, 0.08)), Vector3(-0.11, 0.0072, 0.0))
 				number.scale = Vector3(1.6, 1.0, 0.7)   # eingeschlagene Nummer, dunkel angelaufen
+			elif key_id == DirectorOffice.JOSEF_KEYS:
+				# Josefs Bund (2.8): großer Eisenring, daran sechs Bartschlüssel aus Messing und Eisen, rußig angelaufen
+				size = Vector3(0.2, 0.04, 0.14)
+				mass = 0.4
+				var ring := TorusMesh.new()
+				ring.inner_radius = 0.034
+				ring.outer_radius = 0.04
+				ring.rings = 16
+				ring.ring_segments = 6
+				var iron := Mat.metal(Color(0.24, 0.22, 0.2))
+				Geo.mesh(self, ring, iron, Vector3(-0.05, 0.004, 0))
+				for k in 6:
+					var a := deg_to_rad(-75.0 + k * 30.0)   # fächerförmig vom Ring weg
+					var tint := Color(0.5, 0.4, 0.22) if k % 2 == 0 else Color(0.36, 0.34, 0.32)
+					var metal := Mat.metal(tint)
+					var arm := Node3D.new()
+					arm.position = Vector3(-0.05, 0.006 + k * 0.002, 0)
+					arm.rotation.y = a
+					add_child(arm)
+					var shaft := Geo.mesh(arm, Geo.cylinder(0.004, 0.07 + (k % 3) * 0.012, 6), metal, Vector3(0.075, 0, 0))
+					shaft.rotation.z = PI / 2.0
+					Geo.mesh(arm, Geo.cylinder(0.012, 0.004, 10), metal, Vector3(0.042, 0, 0))   # Reide
+					Geo.mesh(arm, Geo.box(Vector3(0.012, 0.004, 0.016)), metal, Vector3(0.1 + (k % 3) * 0.012, 0, 0.008))   # Bart
 			else:
 				Geo.mesh(self, Geo.box(Vector3(0.09, 0.015, 0.02)), gold, Vector3(0.02, 0.01, 0))
 				Geo.mesh(self, Geo.box(Vector3(0.04, 0.02, 0.045)), gold, Vector3(-0.045, 0.01, 0))

@@ -196,6 +196,9 @@ extends Node3D
 ##                               vor dessen Schreibtisch (ZIM-154) – steht keiner im Plan, kommt einer zum Ansehen in die
 ##                               Mitte des Raums; auf: alle Schubladen aufgezogen, in die erste ein Gegenstand; Blick
 ##                               hinten (Besucherseite), links (linker Unterschrank) oder nah (Platte von oben)
+##   --buero=pruefen             Schlösser und Wege ins Sekretariat und Büro (ZIM-6): Türen, Sekretariatsschlüssel am
+##                               Sicherungskasten, Zahlenschloss mit Generalschlüssel, Marions Hinweis, Josefs Bund am
+##                               Kessel – „[Büro] … ok/FEHLER“, zuletzt „[Büro] Prüfung fertig“
 ##   --regale[=nah]              in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
 ##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen);
 ##                               nah: dicht vor die Bücher (ZIM-153); meldet „[Bücher] …“ (Zahl der Bücher und MultiMeshes)
@@ -767,6 +770,10 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	add_child(register)
 	register.global_transform = builder.register_spot
 	Game.register = register
+	var office := DirectorOffice.new()   # Büro der Direktion und Sekretariat: Schlüssel, Zahlenschloss (2.8, 2.10, ZIM-6)
+	office.name = "BueroDerDirektion"
+	add_child(office)
+	Game.director_office = office
 	CaretakerBook.furnish(builder)   # Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel, UV-Aufsatz (7.4)
 	LiftDrive.place(builder)   # Maschinenraum: Antrieb des Aufzugs mit der Kurbel für die Bremse (7.4, ZIM-14)
 	var cemetery := Cemetery.new()   # Friedhof westlich des Kürbisfelds (5.15)
@@ -1449,6 +1456,8 @@ func run_debug(arg: String) -> bool:
 		Game.player.head.rotation.x = deg_to_rad(-12.0)   # die Tür ist niedrig
 	elif _is_arg(arg, "--buero"):
 		var opts := _arg_parts(arg, "--buero")
+		if opts.has("pruefen"):
+			return _debug_office_check()
 		var variant := "sekretariat" if opts.has("sekretariat") else "direktion"
 		var room := "Sekretariat" if variant == "sekretariat" else "Büro der Direktion"
 		var office := Game.social.builder.zones.filter(func(z: Dictionary) -> bool: return z["name"] == room)
@@ -4385,6 +4394,106 @@ func _chair_demo(hall: Rect2) -> Chair:
 			free = ch
 		add_child(ch)
 	return free
+
+
+## Debug --buero=pruefen (Spielkonzept 2.8, 2.10, 6.19; ZIM-6): Sekretariat und Büro sind abgeschlossen; ohne Schlüssel
+## bleibt die Tür zu; der Sekretariatsschlüssel hängt ab dem 6. am Sicherungskasten und schließt auf; die Schublade mit
+## Zahlenschloss bleibt beim falschen Code zu und gibt beim richtigen den Generalschlüssel frei; Marion nennt ab dem 14.
+## Josefs Bund; der Bund hängt dann am Kessel und schließt das Büro auf. Je 1 s auseinander, jede Prüfung meldet
+## „[Büro] … ok“ bzw. „FEHLER“, zuletzt „[Büro] Prüfung fertig“.
+func _debug_office_check() -> bool:
+	var office := Game.director_office
+	var check := func(text: String, ok: bool) -> void:
+		print("[Büro] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	var door_of := func(id: String) -> Door:
+		for node in get_tree().get_nodes_in_group("doors"):
+			if (node as Door).key_id == id:
+				return node
+		return null
+	var key_item := func(id: String) -> Item:
+		for node in get_tree().get_nodes_in_group("items"):
+			var item := node as Item
+			if item.kind == Item.Kind.KEY and item.key_id == id:
+				return item
+		return null
+	var desk: Desk = null
+	for node in get_tree().get_nodes_in_group("desks"):
+		if (node as Desk).variant == "sekretariat":
+			desk = node
+	var secretariat: Door = door_of.call(DirectorOffice.SECRETARIAT_KEY)
+	var room: Door = door_of.call(DirectorOffice.OFFICE_KEY)
+	if secretariat == null or room == null or desk == null:
+		print("[Büro] FEHLER: Tür zum Sekretariat, Bürotür oder Sekretariatsschreibtisch fehlt")
+		print("[Büro] Prüfung fertig")
+		return true
+	Game.notebook.give(true)
+	var steps: Array[Callable] = [
+		func() -> void:
+			var front := secretariat.center() - secretariat.global_transform.basis.z * 1.2
+			TeleportUI.place_player(Vector3(front.x, secretariat.global_position.y + 0.05, front.z), secretariat.center() - front)
+			check.call("Türen abgeschlossen", secretariat.locked and room.locked)
+			secretariat.interact(Game.player)
+			check.call("ohne Schlüssel zu", secretariat.locked and not Game.player.has_key(DirectorOffice.SECRETARIAT_KEY)),
+		func() -> void:
+			office.place_due(DirectorOffice.SECRETARIAT_DAY - 1)
+			check.call("vor dem 6. kein Schlüssel", key_item.call(DirectorOffice.SECRETARIAT_KEY) == null)
+			office.place_due(DirectorOffice.SECRETARIAT_DAY)
+			var key: Item = key_item.call(DirectorOffice.SECRETARIAT_KEY)
+			check.call("Schlüssel am Sicherungskasten", key != null and key.freeze
+				and key.global_position.distance_to(Game.power_cut.fuse_box.global_position) < 1.0)
+			office.place_due(DirectorOffice.SECRETARIAT_DAY)
+			var count := get_tree().get_nodes_in_group("items").filter(func(n: Node) -> bool:
+				return (n as Item).kind == Item.Kind.KEY and (n as Item).key_id == DirectorOffice.SECRETARIAT_KEY).size()
+			check.call("nur einmal", count == 1)
+			if key:
+				key.queue_free()
+			Game.player.add_key(DirectorOffice.SECRETARIAT_KEY)
+			secretariat.interact(Game.player)
+			check.call("Sekretariat aufgeschlossen", not secretariat.locked and room.locked),
+		func() -> void:
+			var front := desk.global_position + desk.global_basis.z * 1.0
+			TeleportUI.place_player(front, desk.global_position - front)
+			var i := desk.code_drawer
+			check.call("Zahlenschloss zu", i == DirectorOffice.CODE_DRAWER and desk.code_locked(i)
+				and desk.drawer_prompt(i, Game.player).begins_with("Zahlenschloss"))
+			desk.use_drawer(i, Game.player)
+			var ui_open := office.lock_ui.visible
+			office.lock_ui.enter("1987")
+			check.call("falscher Code", ui_open and office.lock_ui.visible and desk.code_locked(i) and not desk.is_open[i])
+			office.lock_ui.enter(DirectorOffice.CODE)
+			check.call("richtiger Code", not office.lock_ui.visible and not desk.code_locked(i) and desk.is_open[i]),
+		func() -> void:
+			var key: Item = key_item.call(RoomAccess.GENERAL_KEY)
+			check.call("Generalschlüssel in der Schublade", key != null and key.global_position.distance_to(desk.global_position) < 1.0)
+			var marion: Guest = null
+			for node in Game.social.living_guests():
+				var g: Guest = node
+				if not g.is_child() and String(g.profile.get("household", "")) == DirectorOffice.MARION_HOUSEHOLD:
+					marion = g
+			if marion:
+				check.call("Marion vor dem 14. still", office.marion_hint(marion, DirectorOffice.JOSEF_DAY - 1) == "")
+				check.call("Marion nennt den Bund", office.marion_hint(marion, DirectorOffice.JOSEF_DAY) == DirectorOffice.MARION_LINE
+					and Game.notebook.has_note(DirectorOffice.JOSEF_KEYS))
+				check.call("Marion nur einmal", office.marion_hint(marion, DirectorOffice.JOSEF_DAY) == "")
+			else:
+				print("[Büro] Marion fehlt – Hinweis nicht geprüft"),
+		func() -> void:
+			office.place_due(DirectorOffice.JOSEF_DAY)
+			var bund: Item = key_item.call(DirectorOffice.JOSEF_KEYS)
+			var boiler := get_tree().get_first_node_in_group("boilers") as Node3D
+			check.call("Josefs Bund am Kessel", bund != null and boiler != null
+				and bund.global_position.distance_to(boiler.global_position) < 2.0)
+			check.call("Bürotür ohne Bund zu", not Game.player.has_key(DirectorOffice.OFFICE_KEY))
+			if bund:
+				bund.queue_free()
+			Game.player.add_key(DirectorOffice.JOSEF_KEYS)
+			room.interact(Game.player)
+			check.call("Josefs Bund schließt das Büro auf", not room.locked and Game.player.has_key(DirectorOffice.SECRETARIAT_KEY))
+			print("[Büro] Prüfung fertig"),
+	]
+	for i in steps.size():
+		get_tree().create_timer(1.0 + i).timeout.connect(steps[i])
+	return true
 
 
 ## Bücherregale zum Ansehen (--regale), solange im Plan keins steht: eine Innenecke aus zwei Zeilen mit 5 Ebenen

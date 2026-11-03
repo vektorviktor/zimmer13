@@ -803,9 +803,13 @@ func set_pockets(compass: bool, pages: Array, keys: Array) -> void:
 	_pocket_map.set_content(map_pages, keyring)
 
 
-## Passt ein Schlüssel – am Bund oder (Ausgangsschlüssel) in der Hand?
+## Passt ein Schlüssel – am Bund oder (Ausgangsschlüssel) in der Hand? Josefs Bund schließt Sekretariat und Büro auf
+## (DirectorOffice, 2.8).
 func has_key(id: String) -> bool:
-	return id != "" and (id in keyring or held_key_id() == id)
+	if id == "":
+		return false
+	return id in keyring or held_key_id() == id \
+		or (DirectorOffice.josef_opens(id) and DirectorOffice.JOSEF_KEYS in keyring)
 
 
 # --- Am Spieltisch sitzen -------------------------------------------------------

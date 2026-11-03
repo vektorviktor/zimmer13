@@ -54,6 +54,7 @@ var extra_child: ExtraChild        ## das Kind zu viel beim Süßes oder Saures 
 var photo_wall: PhotoWall          ## Gruppenfotos der Ernten 1987–2026 in der Lobby (Spielkonzept 5.14)
 var cemetery: Cemetery             ## Friedhof mit Gräbern und Gedenkstätte (Spielkonzept 5.15)
 var register: HotelRegister        ## Hotelregister auf der Rezeption, Kreuze neben den Toten (Spielkonzept 2.3)
+var director_office: DirectorOffice  ## Büro der Direktion und Sekretariat: Schlüssel, Zahlenschloss (2.8, 2.10, ZIM-6)
 var leviathan_name: LeviathanName  ## erste bestätigte Sichtung, Hugos Druck, der Name Leviathan (Spielkonzept 4.32)
 var doll_house: DollHouse          ## Puppenhaus in der Bibliothek (Spielkonzept 5.16)
 var pumpkin_faces: PumpkinFaces    ## Kürbisgesichter, die sich verändern (Spielkonzept 5.18)
@@ -202,6 +203,7 @@ func reset() -> void:
 	photo_wall = null
 	cemetery = null
 	register = null
+	director_office = null
 	leviathan_name = null
 	doll_house = null
 	pumpkin_faces = null
