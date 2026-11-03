@@ -1556,8 +1556,8 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   Dieb `STEAL` → `PLACE_DECO` vor die eigene Tür. Erfolglos sucht er erst nach `THEFT_RETRY` wieder. Nichts
   gespeichert. Debug `--schmuckplan=angst|freund|tod|klau[,gast]`, `--trace` `[Schmuckplan]`.
 - **Deko-Suche** (`guests/deco_search.gd`, Spielkonzept 5.9): ein freier Gast (nur tagsüber) geht zu einer
-  erreichbaren `ResourceSpot` (`Decorating._reachable`, `guest_can_take()`), Mutige zu Spinnweben und Keller, manchmal
-  zu zweit; bietet dem Spieler an mitzukommen (`has_offer`, `ask`). Zustand `SEARCH`. Nicht gespeichert. Debug
+  erreichbaren `ResourceSpot` (`Decorating._reachable`, `guest_can_take()`), Mutige auch zu Spinnweben, nie ins UG
+  (`y > -0,5`, wie `Decorating._source_for`; Spielkonzept 7.9, 2026-11-03), manchmal zu zweit; bietet dem Spieler an mitzukommen (`has_offer`, `ask`). Zustand `SEARCH`. Nicht gespeichert. Debug
   `--search[=gast][,mit]`.
 - **Freundschaften unter Gästen** (`guests/pals.gd`, `GuestPals`, Spielkonzept 6.16): `counts` (`"id_a|id_b"` →
   gemeinsame Taten; `note`, `note_group`), `are_pals` (Familie, genug Taten oder Zimmernachbarn – nie bei `feuds`, nicht

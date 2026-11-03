@@ -1741,7 +1741,7 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 | **Licht sabotieren** | Lichtschalter seines Raums ausschalten, **Glühbirnen klauen** (7.3), Kerze auspusten → dunkle Zone; geklaute Birnen machen das eigene Zimmer heller |
 | **Lärm machen** | Wecker / Spieluhr / Radio in seinem Zimmer oder Flur abstellen · etwas dorthin werfen – das Monster geht dem Aufschlag nach (3.13) |
 | **Gerüchte & Panik säen** | Mit dem Gast über das Monster reden → er gerät in Panik, macht Lärm, versteckt sich auffällig |
-| **Ihn in den Keller / Garten schicken** | Per Dialog oder Auftrag in eine dunkle Gefahrenzone locken |
+| **Ihn in den Garten schicken** | Per Dialog oder Auftrag in eine dunkle Gefahrenzone locken – ~~Keller~~: Gäste gehen weder von sich aus noch auf Bitte des Spielers ins UG (Entscheidung 2026-11-03, 7.9) |
 | **Sein Zimmertelefon klingeln lassen** | Klingeln ist Lärm in seinem Zimmer → Neugier ↑ dort (4.14) |
 | ~~**Ihn zum Heizkessel schicken**~~ | ~~Bitten, Kohle nachzulegen~~ – entfällt 2026-10-27: der Kessel im Heizraum ist eine Attrappe (7.4) |
 
@@ -3239,7 +3239,8 @@ ihm.
   >   die Stelle, an der du stehst. Belohnung wie bei den kleinen Aktionen, für jeden Mitmacher.
   >
   > **Deko-Suche mit Gästen (entschieden 2026-10-21):** Gäste gehen auch **auf Deko-Suche**: Laub im Garten,
-  > Dekokiste, Wäschekisten, Kommoden – Mutige auch Spinnweben in dunklen Ecken oder die alte Deko im Keller. Trifft
+  > Dekokiste, Wäschekisten, Kommoden – Mutige auch Spinnweben in dunklen Ecken (~~die alte Deko im Keller~~: Gäste
+  > gehen nicht ins UG, Entscheidung 2026-11-03, 7.9 – die Kellerdeko bleibt dem Spieler). Trifft
   > ein suchender Gast dich, fragt er „Ich geh Deko suchen – kommst du mit?“; du kannst auch selbst fragen
   > („Lass uns zusammen Deko suchen“, ab „nett“). Dann **führt er, du folgst** – er wartet, wenn du zurückfällst, und
   > gibt auf, wenn du ihn ganz verlierst. Am Fundort nimmt er zwei Stück und **gibt dir eins ab** (in die Hand, sonst
@@ -3302,7 +3303,8 @@ ihm.
 >   alte Deko im Heizkeller 10 (Totenköpfe, Besen, Fledermäuse). Gäste nehmen aus jeder Kiste **höchstens ein Stück am
 >   Spieltag** – so leeren sie sich gegen die Monatsmitte, mit dem Spieler schneller. Dekokisten setzt der Zeichner
 >   als „Ausstattung: Dekokiste“ in den Plan; noch steht keine darin (geprüft 2026-11-03, ebenso keine Wäschekiste –
->   bis dahin leert sich nur die alte Deko im Heizkeller).
+>   bis dahin leert sich nur die alte Deko im Heizkeller). Seit 2026-11-03 (7.9) holen Gäste dort nichts mehr – die
+>   alte Deko leert nur noch der Spieler.
 > - **Mengen und Startdeko (entschieden und umgesetzt 2026-11-03, ZIM-81):** Die Mengen 15/8/10 bleiben. **Ohne Zutun
 >   des Spielers sind die Kisten um die Monatsmitte leer:** Die Gäste verteilen ihre Entnahme über den Monat – bis zum
 >   Tag d zusammen höchstens Menge × d / 15 Stück (abgerundet, dazu weiter eins am Tag), am 15. ist die Kiste leer. Was
@@ -5493,7 +5495,10 @@ Draußen ist immer Nacht (2.1) – aber nicht immer dieselbe. Der Himmel (Mond, 
 
 ### 7.9 Untergeschoss (entschieden und umgesetzt 2026-10-20)
 > Ausbau entschieden 2026-10-21 (7.10): Heizraum, Maschinenraum, Wäscherei und Müllraum; darunter kommt
-> U2. Gäste sollen mit Grund hinuntergehen.
+> U2. ~~Gäste sollen mit Grund hinuntergehen.~~ **Entschieden 2026-11-03 (ZIM-58):** Gäste gehen **weder von sich aus
+> noch auf Bitte des Spielers** ins UG. Ausnahmen bleiben ausdrücklich offen (z. B. Ednas Auftrag, spätere Mechaniken)
+> und werden dort jeweils einzeln entschieden. Der Gang mutiger Gäste zur alten Deko im Keller (Deko-Suche, 5.9) ist
+> deshalb entfallen – die Kellerdeko bleibt dem Spieler.
 
 Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
 - **Treppenhäuser:** Die Treppenhäuser führen eigentlich bis U2, sind unterhalb des Untergeschosses aber zugemauert
@@ -5511,7 +5516,7 @@ Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
 - **Technikraum:** zugänglich, aber leer. **Wäscherei:** zugänglich, an beiden Längswänden Waschmaschinen.
 - **Alle anderen Räume** sind verschlossen (rote Türen wie der Haupteingang) und leer; Servicetüren wie oben.
 - **Aufzüge:** auch unten zwei Schachttüren; Aufzug 1 hält hier (7.4).
-- **Gäste** gehen (noch) nicht hinunter (7.10); das Monster streift auch durch die Kellergänge.
+- **Gäste** gehen nicht hinunter (Entscheidung 2026-11-03, oben); das Monster streift auch durch die Kellergänge.
 - **Kartenblatt „Keller“** (Zimmer 017): die handgezeichnete Skizze zeigt jetzt das ganze Untergeschoss, der
   Heizkeller ist rot eingekreist („hier unten schläft es“).
 - **Kessel und Rohre (2026-10-24):** Mittig an der Ostwand des Heizkellers steht ein alter **Kohlekessel**. Seine

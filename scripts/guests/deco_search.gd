@@ -1,9 +1,10 @@
 class_name DecoSearch
 extends Node
 ## Deko-Suche mit Gästen (Spielkonzept 5.9, entschieden 2026-10-21): Gäste ziehen los und suchen Deko – Laub im Garten,
-## Dekokiste, Wäschekisten, Kerzenvorrat; Mutige auch Spinnweben in dunklen Ecken oder die alte Deko im Keller. Trifft ein
-## Suchender den Spieler, fragt er, ob er mitkommt; der Spieler kann auch selbst fragen. Dann führt der Gast, wartet, wenn
-## der Spieler zurückfällt, und teilt am Fundort: ein Stück für ihn, eins für den Spieler. Dafür mag er den Spieler mehr
+## Dekokiste, Wäschekisten, Kerzenvorrat; Mutige auch Spinnweben in dunklen Ecken. Ins UG geht kein Gast, auch nicht mit dem
+## Spieler – die alte Deko im Keller bleibt ihm (Spielkonzept 7.9, Entscheidung 2026-11-03). Trifft ein Suchender den
+## Spieler, fragt er, ob er mitkommt; der Spieler kann auch selbst fragen. Dann führt der Gast, wartet, wenn der Spieler
+## zurückfällt, und teilt am Fundort: ein Stück für ihn, eins für den Spieler. Dafür mag er den Spieler mehr
 ## und erzählt es seinen Freunden (6.16). Manchmal suchen zwei Gäste zusammen und werden dabei Freunde.
 ## Beide Stücke kommen aus dem Vorrat des Fundorts – aus Kisten ohne Nachschub nimmt ein Gast höchstens eins am Tag
 ## (ResourceSpot.guest_consume, Spielkonzept 5.10); ist nichts mehr da, gibt es nichts zu teilen. Nichts davon wird
@@ -15,7 +16,7 @@ const GAP_EARLY := Vector2(100.0, 200.0)
 const GAP_LATE := Vector2(40.0, 90.0)
 const MAX_TRIPS := 3
 const PAIR_CHANCE := 0.3
-## Ab diesem Mut geht ein Gast auch an gefährliche Orte (Spinnweben-Ecken, alte Deko im Keller) – mit dieser Chance
+## Ab diesem Mut geht ein Gast auch an gefährliche Orte (Spinnweben-Ecken) – mit dieser Chance
 const BRAVE := 0.6
 const DANGER_CHANCE := 0.35
 ## Fragen: so nah und sichtbar muss der Spieler sein, so lange gilt die Frage (Antwort im Gespräch)
@@ -33,7 +34,7 @@ const PRAISE := 3.0
 const ASK_LINES := ["Ich geh Deko suchen – kommst du mit?", "Ich such noch Deko für mein Zimmer. Hilfst du mir?",
 	"Kommst du mit? Ich weiß, wo noch Deko liegt."]
 const DANGER_ASK_LINES := ["Ich hol mir Spinnweben aus der dunklen Ecke. Kommst du mit? Allein ist mir das nicht geheuer.",
-	"Im Keller soll alte Deko stehen. Gehst du mit?"]
+	"In der dunklen Ecke hängen dicke Spinnweben. Gehst du mit?"]
 const START_LINES := ["Na dann los – mir nach!", "Super! Komm, hier lang.", "Prima, zu zweit macht's mehr Spaß."]
 const WAIT_LINES := ["Kommst du?", "Hier lang!", "Nicht trödeln!"]
 const SHARE_LINES := ["Hier – eins für dich, eins für mich.", "Schau, gleich zwei! Nimm du das.", "Für dich. Danke fürs Mitkommen!"]
@@ -122,7 +123,8 @@ func start(g: Guest, with_player: bool = false) -> bool:
 	_walk(g, _goal(source))
 	if Game.tracing:
 		var with := "mit dir" if with_player else (("mit " + (entry["partner"] as Guest).display_name) if entry["partner"] else "allein")
-		print("[Deko-Suche] %s sucht bei %s (%s)" % [g.display_name, source.label, with])
+		print("[Deko-Suche] %s sucht bei %s (%s)%s" % [g.display_name, source.label, with,
+			" – im UG: FEHLER" if source.global_position.y < -0.5 else ""])   # nie ins UG (7.9)
 	return true
 
 
@@ -150,13 +152,13 @@ func lead_off(g: Guest) -> void:
 		_walk(g, _trips[g.id]["goal"])
 
 
-## Ein Fundort: der nächste erreichbare von ein paar in der Nähe – Mutige auch Spinnweben und Keller.
+## Ein Fundort: der nächste erreichbare von ein paar in der Nähe – Mutige auch Spinnweben, nie im UG (7.9).
 func _source_for(g: Guest) -> ResourceSpot:
 	var danger := float(g.profile["brave"]) >= BRAVE and not g.is_child() and randf() < DANGER_CHANCE
 	var spots: Array = []
 	for node in get_tree().get_nodes_in_group("resource_spots"):
 		var spot := node as ResourceSpot
-		if _risky(spot) == danger and not spot.kind in [Item.Kind.SODA_CAN, Item.Kind.BULB] and spot.guest_can_take():   # Dosen und Birnen sind keine Deko
+		if spot.global_position.y > -0.5 and _risky(spot) == danger and not spot.kind in [Item.Kind.SODA_CAN, Item.Kind.BULB] and spot.guest_can_take():   # Dosen und Birnen sind keine Deko
 			spots.append(spot)
 	spots.sort_custom(func(a: ResourceSpot, b: ResourceSpot) -> bool:
 		return a.global_position.distance_to(g.global_position) < b.global_position.distance_to(g.global_position))
@@ -168,9 +170,9 @@ func _source_for(g: Guest) -> ResourceSpot:
 	return null
 
 
-## Gefährlicher Fundort: Spinnweben-Ecke oder Keller.
+## Gefährlicher Fundort: Spinnweben-Ecke.
 static func _risky(spot: ResourceSpot) -> bool:
-	return spot.global_position.y < -0.5 or spot.kind == Item.Kind.COBWEB
+	return spot.kind == Item.Kind.COBWEB
 
 
 func _goal(source: ResourceSpot) -> Vector3:
