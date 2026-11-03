@@ -615,6 +615,8 @@ seiner Tür nichts hat, ist das erste Ziel (2.5) – und Gustav hat seine Tür s
 > Vorschlägen auf – die Deko landet aber im Flur, nicht im Müllschlucker.
 - **Er hasst alle**, auch den Spieler (Beziehung höchstens „wütend“). Er sucht Streit: Immer wieder geht er zu jemandem
   hin. Wer ihm über den Weg läuft, bekommt einen Spruch („Halloween. Was für ein Unfug.“).
+- **Nur Doris nicht:** Doris Lange gegenüber ist seine einzige Freundin (2.9) – sie verschont er, ohne Spruch, Wurf
+  oder Streit, und ihre Tür lässt er in Ruhe (gebaut 2026-11-03).
 - **Er verdirbt die Stimmung:** Kinder hören auf zu toben und laufen weinend zu Mama oder Papa, Feiernde verlassen die
   Feier, manche Erwachsene sind danach mit ihm verfeindet (6.16).
 - **Partyraum:** Brennt dort Licht, geht er hinüber und schaltet es aus („Strom kostet Geld“); läuft eine Feier, stellt
@@ -5698,7 +5700,7 @@ Das **Untergeschoss** ist im Gebäudeplan gezeichnet (Gruppe „UG“, 7.5).
   alle 10–30 Sekunden ein- bis dreimal kurz – unabhängig vom Monster (dessen Flackern kommt dazu).
 - **Neu gefasst 2026-10-27 (7.4, noch nicht gebaut):** Der Heizraum ist eine Attrappe über dem alten Heizkeller in U2,
   mit modernem Kessel, Josefs Spind und Leviathanmauer; das Monster ruht unten. Gebaut ist noch der alte Stand:
-- **Heizkeller** (dunkelrot im Plan): das **Versteck des Monsters**. Dort liegen Kisten, das alte Regal, der Schlüssel zu Zimmer 18, Münzen, eine Batterie, der Warnungszettel von 2011, die
+- **Heizkeller** (dunkelrot im Plan): das **Versteck des Monsters**. Dort liegen Kisten, das alte Regal, der Schlüssel zu Zimmer 18 (erst ab der Siegerehrung, wie in 7.4 – gebaut 2026-11-03), Münzen, eine Batterie, der Warnungszettel von 2011, die
   UV-Schrift von 1987, Spinnweben und die Kiste mit alter Deko (5.7), dazu die kaputte Kellerleuchte mit Schalter.
   Der Eingang ist ein schmaler Gang zwischen zwei verschlossenen Kellerräumen.
 - **Technikraum:** zugänglich, aber leer. **Wäscherei:** zugänglich, an beiden Längswänden Waschmaschinen.

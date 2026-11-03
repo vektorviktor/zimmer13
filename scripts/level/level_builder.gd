@@ -720,6 +720,9 @@ var _shafts := {}
 ## Bad → Zimmernummer (Licht und Verschluss gehören zum Zimmer)
 var _bath_owner := {}
 var _cellar_center := Vector3.ZERO
+## Wo der Schlüssel zu Zimmer 18 im Heizkeller liegt (auf der Kiste) – hingelegt erst nach der Siegerehrung
+## (DirectorOffice.place_due, 7.4); INF ohne Heizkeller
+var room18_key_at := Vector3.INF
 ## Jedes Zimmer des Plans, auch verschlossene: Nummer → {pos (Mitte am Boden), look (zur Tür)}
 var _room_spots := {}
 var _upper_plans: Array[Dictionary] = []
@@ -5876,7 +5879,7 @@ func _flight(x: float, z_from: float, z_to: float, y_from: float, y_to: float, w
 
 
 ## Heizkeller im Untergeschoss (Spielkonzept 7.9): Versteck des Monsters, mit allem, was früher im Keller unter dem
-## Treppenhaus lag – Kisten, altes Regal, Schlüssel zu Zimmer 18, Münzen, Batterie, Zettel 2011, UV-Schrift von 1987,
+## Treppenhaus lag – Kisten, altes Regal, Schlüssel zu Zimmer 18 (ab der Siegerehrung, room18_key_at), Münzen, Batterie, Zettel 2011, UV-Schrift von 1987,
 ## Spinnweben, alte Deko (5.7), die kaputte Kellerleuchte und ihr Schalter. Der Eingang liegt laut Plan im Norden
 ## (schmaler Gang zwischen zwei Kellerräumen); die Sachen stehen in der Halle an der Südwand, weg von der Tür. Dazu der
 ## Kohlekessel mittig an der Ostwand (Boiler) und die Rohre (_boiler_pipes).
@@ -5908,7 +5911,7 @@ func _boiler_room() -> void:
 	Geo.solid(root, Vector3(0.6, 0.6, 0.6), Vector3(w + 0.7, 0.3, s - 0.7), _dark_wood)
 	Geo.solid(root, Vector3(0.6, 0.45, 0.6), Vector3(w + 1.45, 0.225, s - 0.6), _dark_wood)
 	Geo.solid(root, Vector3(0.5, 1.6, 1.8), Vector3(w + 0.27, 0.8, c.y + 1.0), _wood)   # altes Regal
-	_item(Item.Kind.KEY, Vector3(e - 0.8, 0.72, s - 0.8), "zimmer_18")
+	room18_key_at = _global(Vector3(e - 0.8, 0.72, s - 0.8))   # Schlüssel zu Zimmer 18: erst nach Gustavs Tod (7.4)
 	_item(Item.Kind.COINS, Vector3(c.x + 1.5, 0.02, n + 1.2), "2")
 	_item(Item.Kind.BATTERY, Vector3(w + 0.3, 1.61, c.y + 1.4))   # auf dem alten Regal
 	_item(Item.Kind.MUSIC_BOX, Vector3(w + 0.28, 1.61, c.y + 0.5))   # Marions Spieluhr (5.17), daneben

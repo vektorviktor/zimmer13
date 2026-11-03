@@ -35,7 +35,7 @@ const ALL := {
 			"greet": ["Oh! Du hast mich erschreckt.", "Guten Abend … falls es Abend ist. Die Uhren hier stehen alle."],
 			"greet_enemy": ["Was willst du denn noch?"],
 			"smalltalk": ["Ich wohne seit Jahren jeden Oktober hier. Aber so still war es noch nie.", "Kerzen beruhigen mich. Ich habe immer welche dabei.", "Früher gab es hier jeden Abend Musik in der Lobby."],
-			"monster": ["Ich habe Schritte gehört … im Keller. Dort ist doch niemand!", "Es mag kein Licht, glaube ich. Ich lasse meine Kerzen immer brennen.", "Wenn die Lampen flackern, verstecke ich mich. Sofort.", "Zuckt das Licht nur kurz, sieht es sich bloß um. Aber wenn es lange flackert … dann hat es Hunger.", "Hörst du das Rauschen auch? Je lauter es wird, desto näher ist es."],
+			"monster": ["Ich habe Schritte gehört … im Keller. Dort ist doch niemand!", "Es mag kein Licht, glaube ich. Ich lasse meine Kerzen immer brennen.", "Wenn die Lampen flackern, verstecke ich mich. Sofort.", "Zuckt das Licht nur kurz, ist es schon ganz nah – dann bloß weg vom Flur. Flackert es länger, sucht es jemanden. Und rauscht es dazu … dann will es viele.", "Hörst du das Rauschen auch? Je lauter es wird, desto näher ist es."],
 			"odd": ["Die Uhren hier stehen alle still. Seltsam, nicht?", "Ich freue mich so auf Halloween! Dieses Jahr schmücke ich meine Tür besonders schön.", "Hast du den Keller gesehen? Ich gehe da nicht hinunter. Zu staubig."],
 			"knock": ["Mach auf! Bitte, mach auf!", "Es ist hinter mir! Lass mich rein!"],
 			"sheltered": ["Danke … danke. Ich bleibe nur kurz, versprochen."],

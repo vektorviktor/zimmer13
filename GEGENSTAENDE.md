@@ -17,7 +17,7 @@ Stand: 2026-11-03.
 
 | Gegenstand | Code | Stand | Handlung | Wozu / wo | Konzept |
 |---|---|---|---|---|---|
-| Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | an der Leviathanmauer im Heizraum (2005 von Martin Ebert aus 018 verloren); öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
+| Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | an der Leviathanmauer im Heizraum (2005 von Martin Ebert aus 018 verloren), bis ZIM-16 auf der Kiste im Heizkeller – erst ab der Siegerehrung; öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
 | Generalschlüssel | Schlüsselbund „general“ | gebaut – Fundort seit 3.11. (ZIM-6) | – | Schlüsselschrank in der Lobby entfallen (ZIM-136); im Schreibtisch des Sekretariats in der zweiten Schublade mit Zahlenschloss (Code 1990, Vorschlag; Milas Ziffer aus der Nachtpartie fehlt, ZIM-8); öffnet jede Zimmertür | 6.19, 2.10 |
 | Zweitschlüssel | Schlüsselbund „zimmer_…“ | gebaut | – | ein guter Freund gibt ihn dir bei der nächsten Begegnung; öffnet sein Zimmer, dort bist du willkommen, bleibt beim Schlosstausch | 6.19, 6.3 |
 | Gestohlener Zimmerschlüssel | Schlüsselbund „zimmer_…“ (getauscht: „alt_zimmer_…“) | gebaut | – | einem schlafenden Gast vom Nachttisch genommen; öffnet sein Zimmer bis zum Morgen danach, dann ist das Schloss getauscht | 6.19 |

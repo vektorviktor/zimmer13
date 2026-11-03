@@ -948,8 +948,10 @@ auf Ebene 5 wie verschlossene Zimmer). Öffnungen in der Farbe des Haupteingangs
 aus **Halogenleuchten** (`_halogen`, `Lamp.Style.HALOGEN`: brennen immer, keine Birne, `FlickerLight.stutter`
 Aussetzer). Zonen `_lower_zones`; Wegpunkte (`_lower_waypoints`) nur in `patrol` fürs Monster – Gäste gehen nicht
 hinunter.
-- **Heizkeller** (`_boiler_room`): Versteck des Monsters, `cellar_center()`, dazu Kisten, Schlüssel 18, Zettel, alte
-  Deko. **Kohlekessel** (`scripts/world/boiler.gd`, `Boiler`, `boiler.glb` aus `tools/build_boiler.py`): Feuerklappe
+- **Heizkeller** (`_boiler_room`): Versteck des Monsters, `cellar_center()`, dazu Kisten, Zettel, alte Deko; der
+  Schlüssel 18 kommt erst nach der Siegerehrung auf die Kiste (`room18_key_at`, gelegt von
+  `DirectorOffice.place_due`, sobald `MonsterDirector.first_attack_done` und er nirgends ist).
+  **Kohlekessel** (`scripts/world/boiler.gd`, `Boiler`, `boiler.glb` aus `tools/build_boiler.py`): Feuerklappe
   (`fire_door`, Ursprung im Scharnier) offen, Glut, Flammen-Partikel; Licht als `SpotLight3D` mit eigenem Schatten im
   Feuerraum – der Kessel selbst begrenzt den Kegel auf die Öffnung – plus schwacher Schein (`FlickerLight` in `lamps`,
   zählt für `light_at`: am Kessel schreckt das Monster etwas zurück). Der Kegel ist kein `light_source` (die Gruppe
@@ -1640,6 +1642,7 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `_tear`. Würfe über `Item.throw_from` mit Gustav als Werfer – Treffer an Gästen meldet `Item._throw_hit` an
   `on_thrown_hit`; den Spieler trifft Geworfenes physikalisch nicht (`THROW_MASK`), daher `_check_player_hit` nach
   der Flugzeit. Schlag gegen Gäste: `stagger` und `_hit_back = false`; gegen den Spieler `Guest.start_attack`.
+  Doris (`H34`, `Grinch.is_friend`) verschont er: kein `_meet` mit ihr, ihre Tür (`_friend_room`) nicht in `_go_wreck`.
   Während der Versammlung (`is_gathering`) geht er heim. `taken`: Tür auf und entriegelt, `Traces.add_drag_trail`,
   `die`, Kleidungsstück, `Social.on_guest_died(g, "unseen")` (keine Meldung, kein „first_death“). Danach Gerede bis
   `found()` (Zimmer 020 betreten oder Tagebuch gelesen → Tagebuch „first_death“). `GustavDiary` (innere Klasse) auf

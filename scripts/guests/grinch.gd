@@ -16,10 +16,14 @@ extends Node
 ## Schleifspur bis 2 m in den Flur Richtung Treppenhaus (Traces.add_drag_trail), kein Schrei. Bis man Zimmer 020 findet,
 ## reden die Gäste darüber; wer es findet, schreibt es ins Tagebuch („first_death“), sein Tagebuch auf dem Tisch
 ## (GustavDiary) ins Notizbuch.
+## Ausnahme ist Doris Lange (FRIEND_HOUSEHOLD), seine einzige Freundin (2.6, 2.9): sie verschont er – kein Streit, kein
+## Wurf, ihre Tür lässt er in Ruhe.
 ## Kind von Social, erreichbar über Game.social.grinch. Nicht gespeichert: Was zählt, steht im Spielstand der Welt
 ## (Gustav tot, Tür, Spuren, Tagebuch des Spielers).
 
 const HOUSEHOLD := "H25"
+## Doris Lange aus 033 gegenüber (HAUSHALTE.md)
+const FRIEND_HOUSEHOLD := "H34"
 const SCAN := 0.5
 ## Deko vor seiner Tür: so nah an der Tür
 const DOOR_RANGE := 2.5
@@ -122,6 +126,19 @@ var _gossip := 20.0
 ## Ist das Gustav Peters? (Haushalt H25, Spielkonzept 2.6)
 static func is_grinch(g: Guest) -> bool:
 	return g != null and not g.is_child() and String(g.profile.get("household", "")) == HOUSEHOLD
+
+
+## Ist das Doris Lange, die er verschont?
+static func is_friend(g: Guest) -> bool:
+	return g != null and not g.is_child() and String(g.profile.get("household", "")) == FRIEND_HOUSEHOLD
+
+
+## Zimmernummer von Doris ("" ohne sie)
+func _friend_room() -> String:
+	for g in Game.social.guests:
+		if is_friend(g):
+			return String((g as Guest).home["no"])
+	return ""
 
 
 func setup(p_builder: LevelBuilder) -> void:
@@ -364,10 +381,11 @@ func _go_door(g: Guest) -> bool:
 ## Fremde Tür auf seinem Stockwerk mit Deko davor (auch Zimmer 13): hin, umwerfen, eins wegwerfen.
 func _go_wreck(g: Guest) -> void:
 	var own := String(g.home["no"])
+	var spared := _friend_room()
 	var doors: Array[String] = []
 	for no: String in builder.rooms:
 		var front: Vector3 = builder.rooms[no]["door_front"]
-		if no == own or absf(front.y - g.global_position.y) > 1.5 or front.distance_to(g.global_position) > WRECK_RANGE:
+		if no == own or no == spared or absf(front.y - g.global_position.y) > 1.5 or front.distance_to(g.global_position) > WRECK_RANGE:
 			continue
 		if not _deco_at(no, WRECK_DOOR).is_empty():
 			doors.append(no)
@@ -484,7 +502,7 @@ func _meet(g: Guest) -> bool:
 		best_d = minf(best_d, MEET_RANGE)
 	for other in Game.social.living_guests():
 		var o: Guest = other
-		if o == g or o.is_asleep() or o.hiding or o.state in [Guest.State.TALKING, Guest.State.MINIGAME] \
+		if o == g or is_friend(o) or o.is_asleep() or o.hiding or o.state in [Guest.State.TALKING, Guest.State.MINIGAME] \
 				or _time - float(_met.get(o.id, -1000.0)) <= MEET_AGAIN:
 			continue
 		var d := g.global_position.distance_to(o.global_position)

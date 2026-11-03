@@ -12,12 +12,16 @@ extends Node
 ##     Rezeptionisten aus der Jeansjacke des Kürbismanns (4.21) ist noch nicht gebaut.
 ##   · Generalschlüssel (6.19): im Schreibtisch des Sekretariats in der Schublade mit Zahlenschloss (Desk.code_drawer),
 ##     Code CODE – ein Jahr des Abkommens, die erste Ernte (Vorschlag). Milas Ziffer aus der Nachtpartie fehlt (ZIM-8).
+##   · Außerdem legt place_due den Schlüssel zu Zimmer 18 erst nach der Siegerehrung (Gustavs Tod) auf die Kiste im
+##     Heizkeller (LevelBuilder.room18_key_at; 7.4: „nach Gustavs Tod“, sein Ort an der Leviathanmauer kommt mit ZIM-16)
+##     – sonst ließe sich die Hauptgeschichte am ersten Tag abkürzen (befunde/BEFUNDE.md Q-02).
 ## Nicht gespeichert: Ob ein Schlüssel schon hängt, steht in den Gegenständen bzw. am Bund (place_due sieht nach).
 ## Erreichbar über Game.director_office.
 
 const SECRETARIAT_KEY := "sekretariat"
 const OFFICE_KEY := "buero"
 const JOSEF_KEYS := "josefs_bund"
+const ROOM18_KEY := "zimmer_18"
 ## Was Josefs Bund aufschließt – das Hotel hat seit 1987 kein Schloss getauscht (2.8); Weiteres (Lager?) ist offen
 const JOSEF_OPENS := [SECRETARIAT_KEY, OFFICE_KEY]
 ## Zahlenschloss im Sekretariat: Code (Spielkonzept 2.10, Vorschlag) und Schublade des Schreibtischs, von oben gezählt
@@ -64,6 +68,11 @@ func place_due(day: int) -> void:
 	var boiler := get_tree().get_first_node_in_group("boilers") as Boiler
 	if day >= JOSEF_DAY and not _exists(JOSEF_KEYS) and boiler:
 		_hang(JOSEF_KEYS, boiler.global_transform, JOSEF_SPOT, PI / 2.0)
+	var spot: Vector3 = Game.social.builder.room18_key_at
+	if Game.director and Game.director.first_attack_done and spot != Vector3.INF and not _exists(ROOM18_KEY):
+		var key := Item.create(Item.Kind.KEY, ROOM18_KEY)
+		Game.social.builder.world.add_child(key)
+		key.position = spot
 
 
 ## Der Schlüssel liegt schon in der Welt, am Bund, in der Hand – oder ein Gast hält ihn.

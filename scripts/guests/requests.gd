@@ -83,7 +83,7 @@ const HEART := {
 	"Griesgram": {"kind": "item", "item": Item.Kind.TEA, "task": "Einen Tee bringen – Kräuter, nicht zu heiß",
 		"ask": "Die Kinder lärmen den ganzen Tag. Bring mir einen Tee, ja? Kräuter. Und nicht zu heiß.",
 		"money": 1, "thanks": "… Danke. Der ist gut. Hier, für den Tee. Sag's keinem."},
-	"Kind": {"kind": "game", "game": "", "task": "Mit {name} spielen – Würfeln, Schach oder Darts",
+	"Kind": {"kind": "game", "game": "", "task": "Mit {name} spielen – Würfeln, Schach oder ein Barspiel",
 		"ask": "Spielst du mit mir? Bitte! Die Großen haben nie Zeit.",
 		"thanks": "Das war toll! Spielen wir morgen wieder?"},
 }
@@ -91,7 +91,7 @@ const HEART := {
 const CORE := {
 	"edna": {"kind": "item", "item": Item.Kind.CANDLE, "task": "Eine Kerze für Ednas Fenster",
 		"ask": "Ach, Liebes … würdest du mir eine Kerze bringen? Für mein Fenster. Damit draußen jemand sieht, dass hier noch Licht ist.",
-		"thanks": "Danke. Mein Mann hat früher immer eine ins Fenster gestellt. Jetzt fühlt es sich wieder an wie zu Hause."},
+		"thanks": "Danke. Heinrich hat früher immer eine ins Fenster gestellt. Jetzt fühlt es sich wieder an wie zu Hause."},
 	"bruno": {"kind": "item", "item": Item.Kind.CARVED_PUMPKIN, "favorite": true, "task": "Bruno einen geschnitzten {fav} bringen",
 		"ask": "Schnitz mir einen {fav}. Einen richtigen, mit Zähnen. Meine sehen alle aus wie Kartoffeln.",
 		"thanks": "Na, sieh mal einer an. Das ist ein Kürbis. Den stell ich vor die Tür."},
