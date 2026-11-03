@@ -12,9 +12,17 @@ const MESSAGE_ICON := 24
 
 const WHITE_FADE := 3.5   ## flash_white: so schnell verblasst der Blitz (Deckkraft je Sekunde)
 const THROW_BAR := 24.0    ## Breite des Kraftbalkens beim Ausholen (Pixel, interne Auflösung, 3.13)
+const NAME_EM := 0.14      ## Gästenamen: Schriftgröße in der Welt (m), wie früher das Label3D (28 × 0,005)
+const NAME_ABOVE := 2.0    ## Gästenamen: so hoch über den Füßen (m)
+const NAME_COLOR := Color(0.9, 0.85, 0.7)
 
 var debug_enabled := false
 var fps_enabled := false          ## Bilder pro Sekunde und Bildzeit rechts oben (F10, --fps)
+
+## Namen über den Gästen (Guest.name_visible): Einblendung statt Label3D, sonst nimmt die Bildschirm-Spiegelung (SSR)
+## sie aus dem Bild mit und malt sie an glänzende Decken und Böden. Zuunterst im HUD – Blenden liegen darüber
+var _names_root: Control
+var _names := {}   ## Guest → Label
 
 var _prompt: Label
 var _prompt_icon: TextureRect   ## Aktions-Symbol über dem Hinweis (IconArt, PROMPT_ICON Pixel)
@@ -74,6 +82,9 @@ const MASK_VIEWS := {
 
 func _ready() -> void:
 	layer = 10
+	_names_root = Control.new()
+	_names_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_names_root)
 	_hide_material = ShaderMaterial.new()
 	_hide_material.shader = load("res://shaders/hide_overlay.gdshader")
 	_hide_overlay = ColorRect.new()
@@ -233,6 +244,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_update_names()
 	if Game.director:
 		var day := Calendar.today()
 		if _day != -1 and day != _day:
@@ -520,6 +532,50 @@ func _on_money_changed(amount: int) -> void:
 
 
 ## Weiße Schrift mit schwarzem Umriss, im HUD (oder unter `parent`).
+## Gästenamen jeden Frame an den Kopf heften: Größe wie ein Schild in der Welt (NAME_EM), verdeckt von Wänden und
+## Türen (Strahl auf Ebene 1 | 16, Gäste und Spieler zählen nicht)
+func _update_names() -> void:
+	var camera := get_viewport().get_camera_3d()
+	for guest: Guest in _names.keys():
+		if not is_instance_valid(guest):
+			_names[guest].queue_free()
+			_names.erase(guest)
+	for guest: Guest in get_tree().get_nodes_in_group("guests"):
+		var label: Label = _names.get(guest)
+		if not guest.name_visible or camera == null:
+			if label:
+				label.visible = false
+			continue
+		var head := guest.global_position + Vector3.UP * NAME_ABOVE
+		var depth := -(camera.global_transform.affine_inverse() * head).z
+		var shown := depth > 0.05
+		if shown:
+			var ray := PhysicsRayQueryParameters3D.create(camera.global_position, head, 1 | 16)
+			shown = camera.get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
+		if not shown:
+			if label:
+				label.visible = false
+			continue
+		if label == null:
+			label = UiKit.plain_label(8, NAME_COLOR, 2)
+			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_names_root.add_child(label)
+			_names[guest] = label
+		# Bildhöhe in HUD-Pixeln: Schrift ganzzahlig, der Rest über scale – so springt die Größe beim Gehen nicht
+		var px := NAME_EM * get_viewport().get_visible_rect().size.y / (2.0 * depth * tan(deg_to_rad(camera.fov) / 2.0))
+		var size := maxi(1, ceili(px))
+		var settings := label.label_settings
+		if label.text != guest.display_name or settings.font_size != size:
+			label.text = guest.display_name
+			settings.font_size = size
+			settings.outline_size = maxi(1, roundi(size * 0.3))
+			label.reset_size()
+		label.scale = Vector2.ONE * (px / size)
+		label.pivot_offset = label.size / 2.0
+		label.position = camera.unproject_position(head) - label.size / 2.0
+		label.visible = true
+
+
 func _label(font_size: int, align: HorizontalAlignment, parent: Node = null) -> Label:
 	var label := UiKit.plain_label(font_size, Color.WHITE, 3)
 	label.horizontal_alignment = align

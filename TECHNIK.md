@@ -228,6 +228,8 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
   Shader-Global `reflections`, das `metallic` mit ausschaltet – sonst wäre der Boden ohne SSR nur dunkler): spiegelt
   nur, was im Bild ist, und rechnet für Nichtmetalle fest mit 4 % – `specular` ändert daran nichts. Sichtbarer wird
   sie über `metallic` und `roughness_scale`. Das Environment spiegelt nichts (kein Himmel in Tapete und Fliesen).
+  Die Spiegelung nimmt alles mit, was im Bild steht, auch Durchsichtiges wie `Label3D` – Gästenamen sind deshalb eine
+  HUD-Einblendung. Holzdecken mit `CEILING_ROUGHNESS_SCALE` matt (sonst spiegelten sie, Entscheidung 3.11.).
 - **Gebackene Verschattung** (`ao_tex`, `use_ao`): multipliziert die Grundfarbe über UV2 – wirkt auch im Lampenlicht.
   Vertäfelung und Türblatt der Zimmertür (`Mat.hotel_wood(ao)`; `Mat.wainscot` dazu mit `instance_shift`: INSTANCE_CUSTOM legt die Holz-UVs je
   MultiMesh-Instanz an die Wand – x Lage, y Versatz je Wandstück, z Streckung mit Vorzeichen, w eigener Ausschnitt der
@@ -2787,7 +2789,8 @@ es verschwindet), Herbstlaub je Baum (unter `world`, nicht `root` – das NavMes
 
 ### UI
 (`ui/`) `UiKit` = Meldezettel-Optik und schlichte Bausteine (`dark_panel`, `option_grid`, `flat_option`,
-`press_number`, `plain_label`); `Hud` Prompt/Meldungen/Debug (F3), Bilder pro Sekunde (F10/`--fps`); `Menus`
+`press_number`, `plain_label`); `Hud` Prompt/Meldungen/Debug (F3), Bilder pro Sekunde (F10/`--fps`), Gästenamen
+(`Guest.name_visible` → `_update_names`: zuunterst, Größe wie 0,14 m in der Welt, Strahl auf Ebene 1 | 16 verdeckt); `Menus`
 pausiert. `TeleportUI` = Debug-Menü (F6): Orte und – nur mit `DebugConsole.enabled()` – alle `DebugConsole.COMMANDS`
 nach `GROUPS`; Ziele aus dem `LevelBuilder`, `_onto_navmesh` rückt auf begehbaren Boden. `DebugConsole` ([^]/F1, nur
 Debug-Build oder `--debug`) = Startparameter im Spiel tippen: `submit()` → `main.run_debug("--name=wert")`. Gäste

@@ -277,7 +277,7 @@ var _costume_check := 0.0
 var _disguise_seen := 0      ## Player.disguise_count, über das er schon gestaunt hat (5.9)
 var _disguise_check := 0.0
 var _arms_free := true       ## Gastmodell: Arme schwingen mit der Laufanimation
-var _label: Label3D
+var name_visible := false    ## Name über dem Kopf zeigen – einblenden tut ihn Hud._update_names (kein Label3D: SSR spiegelt es)
 var _target := Vector3.ZERO
 var _timer := 0.0
 var _steal_item: Item
@@ -960,7 +960,7 @@ func die(cause: String = "monster") -> void:
 	state = State.DEAD
 	_collider.disabled = true
 	collision_layer = 0
-	_label.visible = false
+	name_visible = false
 	for node in get_tree().get_nodes_in_group("items"):
 		var item := node as Item
 		if item.owner_id == id:
@@ -3379,16 +3379,6 @@ func _build_visual() -> void:
 	_hand = Node3D.new()
 	_hand.position = Vector3(0, 1.0, -0.35)
 	_visual.add_child(_hand)
-	_label = Label3D.new()
-	_label.text = display_name
-	_label.font_size = 28
-	_label.pixel_size = 0.005
-	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_label.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	_label.modulate = Color(0.9, 0.85, 0.7)
-	_label.position = Vector3(0, 2.0, 0)
-	_label.visible = false
-	add_child(_label)
 
 
 ## Klötzchenfigur für Gäste ohne Grundkörper
@@ -3548,7 +3538,7 @@ func _make_arm(side: float, coat: Material, skin: Material) -> Node3D:
 func _update_label() -> void:
 	var p := Game.player
 	var d := p.global_position.distance_to(global_position) if p else INF
-	_label.visible = hiding == null and d > 2.2 and d < 7.0 and state != State.TALKING \
+	name_visible = hiding == null and d > 2.2 and d < 7.0 and state != State.TALKING \
 		and not (_costume and _costume.kind == "sheet")   # unter dem Laken: wer ist das? (5.9)
 
 

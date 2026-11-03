@@ -126,7 +126,7 @@ void fragment() {
 		pit = cavity * clamp((1.0 - t.z) * 5.0, 0.0, 1.0);
 	}
 	ALBEDO *= 1.0 - 0.35 * pit;
-	Wet w = wet_surface(ALBEDO, mix((use_roughness ? texture(roughness_tex, uv).r : roughness) * roughness_scale, 1.0, pit),
+	Wet w = wet_surface(ALBEDO, mix(min((use_roughness ? texture(roughness_tex, uv).r : roughness) * roughness_scale, 1.0), 1.0, pit),
 			metallic * reflections, specular, reflections);
 	ALBEDO = w.albedo;
 	ROUGHNESS = w.roughness;

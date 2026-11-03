@@ -68,6 +68,8 @@ const CEILING_NORMAL := "res://assets/textures/Wood_Panels_01/Wood_Panels_01_nor
 const CEILING_ROUGHNESS := "res://assets/textures/Wood_Panels_01/Wood_Panels_01_roughness.jpg"
 const CEILING_METERS := 2.0
 const CEILING_SPECULAR := 0.5
+## Decke matt: die Karte ist im Mittel 0,38 rau, so wirkte die Decke als Spiegel (SSR) – Lampen glänzen nur breit
+const CEILING_ROUGHNESS_SCALE := 2.2
 const CEILING_SHADE := Color(1.2, 1.2, 1.2)
 const ROOM_CEILING_SHADE := Color(1.8, 1.8, 1.8)
 ## Lobbyboden: polierte Marmorplatten (Farbbild, Normal Map, Rauheit), eine Kachel = 4 × 4 Platten à 60 cm
@@ -1038,6 +1040,8 @@ func _materials() -> void:
 	_dark_wood = Mat.psx(Color(0.22, 0.13, 0.08))
 	_ceiling = Mat.photo(CEILING_TEX, CEILING_METERS, CEILING_NORMAL, CEILING_ROUGHNESS, CEILING_SPECULAR, CEILING_SHADE)
 	_room_ceiling = Mat.photo(CEILING_TEX, CEILING_METERS, CEILING_NORMAL, CEILING_ROUGHNESS, CEILING_SPECULAR, ROOM_CEILING_SHADE)
+	for ceiling: ShaderMaterial in [_ceiling, _room_ceiling]:
+		ceiling.set_shader_parameter("roughness_scale", CEILING_ROUGHNESS_SCALE)
 	_hedge = Mat.psx(Color(1, 1, 1), "hedge", 1.0)
 	_carpet = Mat.psx(Color(1, 1, 1), "carpet", 1.0)
 	_wood_floor = Mat.photo(WOOD_FLOOR_TEX, WOOD_FLOOR_METERS, WOOD_FLOOR_NORMAL, WOOD_FLOOR_ROUGHNESS, WOOD_FLOOR_SPECULAR)
