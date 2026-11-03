@@ -1639,10 +1639,11 @@ diesen Dokumenten von jetzt an. „Monster“ meint weiter dasselbe; die Bezeich
 - Es **zeigt sich zufällig** (gewichteter Zufall, siehe unten) – nicht skriptgesteuert und nicht vorhersehbar.
 - **Aussehen** (entschieden 2026-10-11): dürr, mit langen Gliedmaßen, Rippen und Stacheln am Rücken, langgezogenem Schädel, offenem Maul und langer Zunge. Es **geht aufrecht auf den Hinterbeinen** und ist dabei gut zwei Meter groß, gestreckt noch größer. Es kann **auf alle Viere** gehen: zum Schleichen, Lauern und an Verstecken. Unter Türen duckt es sich.
   > Im Prototyp umgesetzt (2026-10-11): Meshy-Modell mit Skelett, Bewegung im Stop-Motion-Stil, Hocke beim Wegschleichen, Lauern und Prüfen von Verstecken.
-- **Eine Bedrohung je Ebene** (entschieden 2026-10-21): Monster, Lakengeist (4.18) und Kürbismann (4.19) sind nie
-  gleichzeitig auf derselben Ebene und nie in Hörweite voneinander (4.20). **Im Prototyp gilt noch „nur eine im
-  Haus“** (umgesetzt 2026-10-20): Ist einer da, warten die anderen, bis er wieder weg ist – das Monster verschiebt
-  seinen Aufbruch, der Lakengeist erscheint nicht, der Kürbismann würfelt erst danach.
+- **Mehrere Bedrohungen zugleich** (geändert 2026-11-03, 4.20, ZIM-48): Monster, Lakengeist (4.18) und Kürbismann
+  (4.19) dürfen gleichzeitig unterwegs sein, auch auf derselben Ebene; wo sie erscheinen, regelt 4.20. ~~Eine
+  Bedrohung je Ebene, außer Hörweite (2026-10-21).~~ **Im Prototyp gilt noch „nur eine im Haus“** (umgesetzt
+  2026-10-20, fällt weg): Ist einer da, warten die anderen, bis er wieder weg ist – das Monster verschiebt seinen
+  Aufbruch, der Lakengeist erscheint nicht, der Kürbismann würfelt erst danach.
 
 ### 4.2 Ankündigung („Manifestation“)
 Es gibt **keine globale Vorwarnung**. Das Monster verrät sich über drei Signale:
@@ -2204,7 +2205,8 @@ Von **0 bis 1 Uhr** (2.4) zieht er durch die **Flure**, jede Nacht – wie alles
 - **Zeugen** vertreiben ihn wie sonst; um 0 Uhr schlafen fast alle. Die Bar schließt um Mitternacht (5.9) –
   angetrunkene Gäste auf dem Heimweg sind schwach und mitten in der Geisterstunde unterwegs. Ab dem 25. stehen
   Bettlaken-Kostüme im Flur (5.9).
-- **Ebenen** (4.20): Er nimmt das Obergeschoss, ist dort schon eine andere Bedrohung, das Erdgeschoss. Solange im Code
+- **Ebenen** (4.20): Er nimmt das Obergeschoss, ~~ist dort schon eine andere Bedrohung, das Erdgeschoss~~ (seit
+  2026-11-03 auch neben einer anderen Bedrohung; das Erdgeschoss mit einem Drittel der Chance). Solange im Code
   noch „nur eine Bedrohung im Haus“ gilt (4.1): Ist das Monster um 0 Uhr unterwegs, beginnt die Geisterstunde erst, wenn
   es wieder ruht (oder fällt aus); läuft sie, verschiebt das Monster seinen Aufbruch.
 
@@ -2310,8 +2312,8 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
 
 ### 4.20 Drei Bedrohungen, ein Hotel (entschieden 2026-10-21)
 > Umgesetzt sind die Ankündigung des Kürbismanns (2., 2026-10-22) und der friedliche Anfang (5., 2026-10-27: der
-> Lakengeist spukt erst nach dem ersten Angriff). Im Prototyp gilt noch „nur eine Bedrohung im Haus“ (4.1), und der
-> Kürbismann sieht nach eigenen Regeln (18 m rundum, Licht und Ducken egal).
+> Lakengeist spukt erst nach dem ersten Angriff). Im Prototyp gilt noch „nur eine Bedrohung im Haus“ (4.1; fällt mit
+> 1. weg, 2026-11-03, ZIM-48), und der Kürbismann sieht nach eigenen Regeln (18 m rundum, Licht und Ducken egal).
 
 **Warum**
 - **„Nur eine im Haus“ verträgt die Steigerung nicht:** Das Monster ist gegen Monatsende den größten Teil der Zeit
@@ -2323,27 +2325,27 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
   will (2).
 - **Der friedliche Anfang** (2.1) soll friedlich bleiben.
 
-**1. Eine Bedrohung je Ebene – und außer Hörweite**
-- **Grundsatz:** Zwei Bedrohungen sind **nie gleichzeitig auf derselben Ebene** und **nie in Hörweite voneinander**
-  (Vorschlag etwa 30 m, auch durch Decken). So können alle drei zugleich unterwegs sein, und an jedem Ort gibt es nur die
-  Signale *einer* Bedrohung: Rauschen ist das Monster, Geisterklang und Flocken der Lakengeist, Schritte und Axt der
-  Kürbismann.
-- **Ebenen wechseln** dürfen alle, solange auf der Ziel-Ebene gerade keine andere Bedrohung ist.
+**1. Ebenen fürs Erscheinen – zusammen unterwegs sein dürfen alle (geändert 2026-11-03, ZIM-48)**
+- **Kein Ausschluss mehr:** Bedrohungen dürfen **gleichzeitig auf derselben Ebene** und in Hörweite voneinander sein,
+  ihre Signale (Rauschen, Geisterklang und Flocken, Schritte und Axt) dürfen sich überlagern. **Ebenen wechseln** dürfen
+  alle jederzeit. Die Tabelle gilt weiter dafür, **wo wer erscheint** und wohin wer darf.
+  ~~Grundsatz (2026-10-21): Zwei Bedrohungen sind nie gleichzeitig auf derselben Ebene und nie in Hörweite voneinander
+  (Vorschlag etwa 30 m); Ebenen wechseln nur, solange auf der Ziel-Ebene keine andere Bedrohung ist.~~
 - **Wo wer erscheint und wohin wer darf:**
 
   | Ebene | Monster | Lakengeist | Kürbismann |
   |-------|---------|------------|------------|
   | **Dachgeschoss** | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden (4.21); **Ausnahme:** beim Urteil gegen den Spieler und beim Raubzug erscheint es dort 1–2 Kammern neben ihm (Notausgang, 4.33) | erscheint nicht, verfolgt einen aber hinauf – auch in den Dachboden | erscheint nicht, verfolgt einen hinauf, aber **nie in den Dachboden** (4.21) |
   | **Obergeschoss** | ja | **ja** (zu Hause) | ja |
-  | **Erdgeschoss** | ja | **ja**, solange dort keine andere Bedrohung ist | **ja** (zu Hause, kommt übers Lobbydach) |
+  | **Erdgeschoss** | ja | **ja** (auch neben einer anderen Bedrohung, 2026-11-03) | **ja** (zu Hause, kommt übers Lobbydach) |
   | **Untergeschoss** | **ja** (zu Hause) | erscheint nicht, verfolgt einen aber durchs Treppenhaus hinunter | ja |
   | **U2** | **nur das Monster** | nie | nie |
 
-- „ja“ heißt: darf dort unterwegs sein, solange die Ebene frei ist. **Erscheinen** tut das Monster im Untergeschoss
+- „ja“ heißt: darf dort unterwegs sein. **Erscheinen** tut das Monster im Untergeschoss
   (Ruhephase im Heizraum), der Lakengeist an Fenstern und in Fluren von Obergeschoss und Erdgeschoss (4.18), der
   Kürbismann übers Lobbydach (4.19). **Ausnahme (2026-10-26, Raubzug 2026-11-03):** Kommt das Monster beim Urteil
   gegen den Spieler oder beim Raubzug nicht rechtzeitig an ihn heran, erscheint es auf jeder Ebene 1–2 Räume neben ihm –
-  auch im Dachgeschoss (Notausgang für den Spieler, 4.33). Für die Belegung der Ebene gilt dann dasselbe wie sonst.
+  auch im Dachgeschoss (Notausgang für den Spieler, 4.33).
 - **Der Lakengeist bevorzugt das Obergeschoss:** Dort kommt er mit der vollen Chance (4.18); im Erdgeschoss mit etwa
   **einem Drittel** davon und **nur an Außenfenstern**. Lakengespenster an einer Tür (5.6) ziehen ihn auf beiden
   Ebenen an.
@@ -2357,7 +2359,8 @@ richtigen Kopf vom Dachboden erlöst man ihn (4.21).
    Untertitel; spricht man sie an, antworten sie nur mit der nächsten Zeile). Ängstliche bekommen Angst und gehen heim,
    die meisten feiern weiter, Betrunkene erst recht. Rot und Melodie bleiben, bis er wieder weg ist; die Kinder hören
    auf, sobald er landet. **In seiner Nähe** leuchten die Lampen **greller und flackern stärker** – wo er ist, kann man
-   sich schlechter verstecken. Solange er sich ankündigt, kommen Monster und Lakengeist nicht, gespeichert wird nicht.
+   sich schlechter verstecken. Solange er sich ankündigt, wird nicht gespeichert. ~~Monster und Lakengeist kommen dann
+   nicht~~ – gestrichen 2026-11-03 (1., ZIM-48): Sie dürfen auch während der Ankündigung kommen.
 2. **Klettern:** Kratzen an der Fassade, dann schwere Schritte auf dem Lobbydach – in Lobby und Partyraum durch die
    Decke zu hören.
 3. **Landung:** der Aufprall (4.19).
@@ -2389,9 +2392,8 @@ jeder andere – Monster, Lakengeist und Kürbismann kommen hinein. ~~Vertagt (2
 allem sicher; Monster und Lakengeist kamen nicht hinein, der Kürbismann schon, und Ausharren dort war die stärkste
 Strategie.~~
 
-**Zu klären:** Hörweite zwischen den Bedrohungen (30 m?) · ob die leiernde Musik als Lärm zählt (im ganzen Haus würde
-sie das Monster überall hinlocken – Vorschlag: nein) · was passiert, wenn eine Verfolgung auf eine Ebene führt, auf der
-schon eine andere Bedrohung ist (Vorschlag: die Verfolgung bricht an der Treppe ab).
+**Entschieden 2026-11-03 (ZIM-48):** Die **leiernde Musik ist kein Lärm** – sie lockt das Monster nicht. Hörweite
+zwischen den Bedrohungen und Verfolgung auf eine belegte Ebene entfallen mit dem Ausschluss (1.).
 
 ### 4.21 Den Kürbismann aufhalten – und erlösen (entschieden 2026-10-21)
 > Umgesetzt: der Dachboden (4.) und das Betäuben durch den Spieler allein (1., 2026-11-03). Hilfe der Gäste (2.) und
@@ -2730,8 +2732,15 @@ Katze?“).
   führen (Anpassung im Code offen).
 - Debug: `--kesselkatze`.
 
-**Zu klären**
-- **Als Mechanik später besprechen** (Nutzer, 2026-10-25): Geisterkatze, Augen im Dunkeln (ZIM-99).
+**Führerin zu den Story-Punkten (entschieden 2026-11-03, ZIM-99, noch nicht gebaut)** – erweitert das Führen oben:
+- **Nicht ständig:** Mit einer gewissen Wahrscheinlichkeit taucht sie auf, wenn ein **noch nicht gefundener
+  Story-Punkt** in der Nähe ist – UV-Schriften, Gegenstände und Dokumente mit wichtigem Bezug zur Geschichte.
+- **Auftauchen:** in der Nähe des Spielers und in seiner Blickrichtung, aber nicht direkt vor ihm. Sie **verharrt eine
+  Weile** an der Stelle und **macht auf sich aufmerksam**, dann geht sie **in Richtung des Story-Punkts**.
+- **Höchstens eine Minute:** Danach **löst sie sich in Rauchschlieren auf** – auch wenn das Ziel noch nicht erreicht ist.
+- *Vorschläge, beim Bau zu bestätigen:* nachts nach dem ersten Angriff wie bisher, aber im ganzen Haus; höchstens einmal
+  je Nacht; aufmerksam machen mit hellen Augen und einem leisen Maunzen; Story-Punkte als eigene Gruppe, ein gefundener
+  Punkt fällt heraus. Das bisherige Führen zu den heißen Rohren und zur UV-Schrift geht darin auf.
 
 ### 4.27 Spiegel: verhängt und mit Gestalt (entschieden und umgesetzt 2026-10-25)
 - **Verhängte Spiegel:** Stirbt ein Gast, verhängt seine Familie die Spiegel im Zimmer mit einem dunklen Tuch – ein
@@ -3721,10 +3730,14 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 
 **Die verbotenen Masken**
 - **„Verboten“ ist keine Hausregel.** Sie sind durch eine **geheimnisvolle Regel** verboten, die erst einmal keiner
-  kennt. Was dahintersteckt, ist offen (ZIM-102).
+  kennt. **Dahinter steckt das Abkommen von 1987** (2.3, entschieden 2026-11-03, ZIM-102): Es sind die Masken vom Ball
+  1987, nach ihnen hat das Hotel seine Dinge geformt. Einen **ersten Hinweis** gibt das **Kesselbuch** (2.3) – dort
+  fehlt aber eine Seite. Die **fehlende Seite** liegt beim **alten Heizkessel** im alten Heizkeller (U2, 7.4); erst sie
+  erklärt es ganz.
 - **Masken täuschen nie:** Keine Bedrohung lässt sich von einer Maske täuschen, auch nicht von ihrer eigenen.
-- **Jede Maske ruft ihre eigene Bedrohung** – und **verärgert** sie. Wer sie trägt, ob Spieler oder Gast, wird zum
-  Ziel.
+- **Nur die vier Bedrohungsmasken** (Leviathan, Kürbismann, Lakengeist, Vampir) **rufen ihre Bedrohung** – und
+  **verärgern** sie. Wer sie trägt, ob Spieler oder Gast, wird zum Ziel. **Die übrigen vier** haben nur eine leichte
+  Wirkung ohne eigene Mechanik (geändert 2026-11-03, ZIM-102; Tabelle).
 - **Man weiß es vorher:** Bei jeder verbotenen Maske liegt am Versteck ein **Zettel** eines früheren Gastes, der sagt,
   was sie anzieht (etwa: „Setz sie nicht auf. Es kam sofort.“). Niemand setzt eine auf, ohne gewarnt zu sein.
 
@@ -3734,10 +3747,10 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 | **Kürbismann** | Dachboden, neben seinem Kopf (4.21) | wird sein Ziel, sobald er im Haus ist; solange sie getragen wird, liegt die Schwelle des Spaßwerts (4.19) **drastisch tiefer** – schon der Grundspaß des Hotels kann ihn rufen (entschieden 2026-10-26) |
 | **Lakengeist** | Wäscherei, in einer Wäschekiste zwischen den Laken der Verschwundenen (4.20) | bei dem steigt **am Abend danach** die Chance auf den Lakengeist (4.18) |
 | **Vampir** | Friedhof im Garten, in einer Gruft (5.15; die Gruft gibt es noch nicht) | lockt den Vampir (4.22, kommt mit ihm) |
-| **Puppe** (Porzellangesicht) | im Puppenhaus (5.16) | vor dessen Tür liegt beim nächsten Urteil die Puppe (5.5) – sehr gefährlich |
-| **Vogelscheuche** (Jutesack) | Geräteschuppen im Garten (gibt es noch nicht) | auf den rückt die Vogelscheuche zu (4.30) |
-| **Krähe** (Schnabel, wie ein Pestdoktor) | auf dem Lobbydach | den hacken die Krähen, sie klauen ihm (4.25) |
-| **Kesselkatze** | bei den Futternäpfen der Hotelkatzen (6.11) | dem folgt die Katze (4.26) – die einzige harmlose |
+| **Puppe** (Porzellangesicht) | im Puppenhaus (5.16) | **Kinder** werden still, flüstern und halten Abstand (2026-11-03; ~~vor dessen Tür liegt beim nächsten Urteil die Puppe~~ – gebaut, fällt weg) |
+| **Vogelscheuche** (Jutesack) | Geräteschuppen im Garten (gibt es noch nicht) | die **Krähen** stehlen und hacken nicht, solange man sie trägt (2026-11-03; ~~auf den rückt die Vogelscheuche zu~~) |
+| **Krähe** (Schnabel, wie ein Pestdoktor) | auf dem Lobbydach | die Krähen werden **zutraulich**: Füttern zählt doppelt für ihre Gunst (4.25; 2026-11-03, ~~den hacken die Krähen, sie klauen ihm~~) |
+| **Kesselkatze** | bei den Futternäpfen der Hotelkatzen (6.11) | die **Hotelkatzen** laufen einem nach und schnurren – nur Stimmung (2026-11-03) |
 
 - **Die Sammlung:** In **Zimmer 13** hängen **acht Haken** an der Wand. Jede gefundene Maske kommt an ihren Haken; ein
   leerer Haken zeigt, was noch fehlt. **Maskenboard (entschieden und gebaut 2026-11-03, ZIM-128):** Die Haken sind
@@ -3754,7 +3767,8 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 - **Sie finden von selbst zurück:** Am Morgen nach dem Ball hängt jede ausgeliehene Maske wieder an ihrem Haken in
   Zimmer 13 – niemand hat sie gebracht. Sie springt nur, wenn man weder Haken noch Träger sieht (wie die Puppe, 5.5),
   auch wenn der Leiher gestorben ist. Das passt zur unbekannten Regel, und man muss nach einem Ball nichts einsammeln.
-- **Wie die Masken zum Spieler und zu den Gästen kommen**, außer über die Verstecke, ist offen (ZIM-102).
+- **Nur über die Verstecke** (entschieden 2026-11-03, ZIM-102): Masken tauchen nicht von selbst auf, Gäste finden
+  keine; zu Gästen kommen sie nur durch Verleihen.
 
 ## 6. Die anderen Gäste (NPCs)
 
@@ -5610,8 +5624,8 @@ der Lakengeist Fenster und Schwäche, der Kürbismann den Spaß –, ergibt sich
 
 Das Monster streift weiter durchs ganze Hotel – nie länger als ein paar Minuten, dann zwingt das Hotel es in den alten
 Heizkeller zurück (7.4) –, aber unten ist es zu Hause. Wer hinuntergeht, weiß, wem er begegnet.
-Wer wohin darf und wo keiner erscheint (Dachgeschoss), regelt 4.20: eine Bedrohung je Ebene, außer Hörweite
-voneinander; U2 gehört allein dem Monster.
+Wer wohin darf und wo keiner erscheint (Dachgeschoss), regelt 4.20 (seit 2026-11-03 dürfen mehrere zugleich auf einer
+Ebene sein); U2 gehört allein dem Monster.
 
 **Räume im Untergeschoss**
 - **Heizraum:** über dem alten Heizkeller, moderner Kessel als Attrappe, Leviathanmauer, Josefs Spind mit dem
@@ -6065,7 +6079,7 @@ Müdigkeit, Lichtschalter, Aufträge der Gäste, Erfolge, Masken teils).
    Fortschritt & Geheimnis: Sperrbereiche, Dokumente, Mitwisser (2.3)
 3. U2 planen und bauen, Fahrstuhl reparieren (ein Schacht), Lager (7.4, 7.10) · Maschinen- und Müllraum im
    Untergeschoss · Gäste gehen mit Grund hinunter (7.10)
-4. Drei Bedrohungen: eine je Ebene und außer Hörweite, gleiche Sicht für den Kürbismann (4.20) · Katzenraum kein Schutzraum mehr (ZIM-38)
+4. Drei Bedrohungen: mehrere zugleich, Erscheinen nach Ebenen, gleiche Sicht für den Kürbismann (4.20, ZIM-48) · Katzenraum kein Schutzraum mehr (ZIM-38)
 5. Kürbismann aufhalten und erlösen: mit gezeigten Kürbissen und gerufenen Helfern betäuben, Schlüssel hinter der
    Leviathanmauer (ab etwa Tag 15), Ritual, Schädel/Axt/Jeansjacke als Deko (4.21)
 6. Sozialsystem verknüpfen: Freundesnetz als einziger Kanal, Tod mit Ursache, schwere Momente mit Wünschen,
