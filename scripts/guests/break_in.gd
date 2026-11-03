@@ -7,7 +7,13 @@ extends Node
 ## genommen hat (Meta „taken_from“ aus Social.on_player_took), sonst ein Stück Deko des Spielers, sonst Geld. Dann
 ## liest er das Tagebuch am Schreibtisch und geht heim. Zählt als seine Rache (Taten „revenge“, 6.3).
 ## Wer zusieht: Sieht der Spieler es, erfährt er, wer es war; Gäste in der Nähe rufen etwas. Sonst merkt der Spieler es
-## beim nächsten Betreten von Zimmer 13 (Tür, was fehlt) – wer es war, bleibt offen.
+## beim nächsten Betreten von Zimmer 13 (Tür, was fehlt) – wer es war, bleibt offen, außer ein Zeuge sagt es ihm.
+## Zeugen (ZIM-54, entschieden 2026-11-03, spiegelt 6.19 (5)): werten es als feindselige Tat des Einbrechers – sie
+## trauen ihm nicht mehr (Haltung „distrusts:<id>“ wie nach einem geglaubten Diebstahl, 6.9; keine Freunde mehr) – und
+## nennen dir beim nächsten Gespräch den Namen (Haltung „saw_break_in“, Talk.greeting; ins Notizbuch).
+## Tagebuch (8.9, ZIM-54): Was aufgeschrieben ist (Diary.dark_entries – bestohlen, sorglos in den Tod geschickt),
+## erfährt er und erzählt es übers Freundesnetz weiter; die Betroffenen (der Bestohlene bzw. Freunde und Familie des
+## Toten) sucht er selbst auf, sie trifft es härter (GuestPals.spread_with_affected). Jeden Eintrag nur einmal je Gast.
 ## Läuft über den Besuchsablauf (start_visit, Social.on_visit_arrived fragt on_arrived). Kind von Social:
 ## Game.social.break_in. Nicht gespeichert (ein Einbruch im Gang fällt beim Laden aus, „taken_from“ ebenso).
 
@@ -23,6 +29,13 @@ const MONEY := 5
 ## Zeugen unter den Gästen: so nah, mit Blick
 const WITNESS_RANGE := 15.0
 const SHOUT_LINES := ["Spinnst du? Das ist Zimmer 13!", "He! Was machst du da an der Tür?!", "Der bricht da ein!"]
+## So lange merkt sich ein Zeuge den Namen fürs nächste Gespräch (s)
+const WITNESS_MEMORY := 3.0 * Calendar.DAY_SECONDS
+## Tagebuch: Gerede übers Netz (wie ein gesehener Schlüsseldiebstahl), die Betroffenen trifft es voll; so lange weiß der
+## Einbrecher, was er gelesen hat (s)
+const DIARY_GOSSIP := -8.0
+const DIARY_AFFECTED := -15.0
+const READ_MEMORY := 31.0 * Calendar.DAY_SECONDS
 
 ## {guest, phase ("go", "force", "take", "read", "leave"), t, item, loot (Text, was fehlt)}
 var job := {}
@@ -33,6 +46,8 @@ var _scan := SCAN
 var _notice := ""
 ## Debug (--einbruch): dieser Gast geht sofort
 var force_id := ""
+## Debug (--einbruch=…,tagebuch): dieser Gast trifft den Einbrecher, sobald der gelesen hat
+var debug_meet: Guest
 
 
 func reset() -> void:
@@ -144,6 +159,7 @@ func _step(delta: float) -> void:
 	elif float(job["t"]) >= READ_TIME:
 		if Game.tracing:
 			print("[Einbruch] %s hat in deinem Tagebuch gelesen" % g.display_name)
+		_read_diary(g)
 		_finish(g)
 
 
@@ -165,19 +181,56 @@ func _force() -> void:
 	_enter()
 
 
-## Wer es sieht: Der Spieler erfährt, wer es war; Gäste rufen etwas.
+## Wer es sieht: Der Spieler erfährt, wer es war; Gäste rufen etwas, trauen ihm nicht mehr und sagen es dir später.
 func _witnesses(g: Guest) -> void:
 	var p := Game.player
 	if p and p.global_position.distance_to(g.global_position) < WITNESS_RANGE + 5.0 \
 			and Game.director.player_can_see(g.global_position + Vector3.UP * 1.4):
 		Game.say("%s bricht in dein Zimmer ein!" % g.display_name, 4.0)
 		_notice = ""
+	var shouted := false
 	for other in Game.social.living_guests():
 		var w: Guest = other
 		if w != g and not w.is_asleep() and w.global_position.distance_to(g.global_position) < WITNESS_RANGE \
 				and w.can_see_actor(g):
-			w.say(SHOUT_LINES.pick_random())
-			return
+			if not shouted:
+				w.say(SHOUT_LINES.pick_random())
+				shouted = true
+			w.set_stance("distrusts:" + g.id, Talk.STANCE_TIME)
+			w.set_stance("saw_break_in", WITNESS_MEMORY, {"who": g.id})
+			if Game.tracing:
+				print("[Einbruch] %s hat es gesehen und traut %s nicht mehr" % [w.display_name, g.display_name])
+
+
+## Er hat das Tagebuch gelesen: Was dort an dunklen Taten steht, erzählt er weiter (8.9) – jeden Eintrag einmal.
+func _read_diary(g: Guest) -> void:
+	if Game.diary == null or not is_instance_valid(Game.diary):
+		return
+	var pals := Game.social.pals
+	for e in Game.diary.dark_entries():
+		var key := "read:" + String(e["id"])
+		if g.has_stance(key):
+			continue
+		g.set_stance(key, READ_MEMORY)
+		var who := Game.social.guest_by_id(String(e["who"]))
+		var affected: Array = []
+		if who and String(e["id"]) == "first_theft":
+			affected.append(who)   # der Bestohlene
+		elif who:
+			affected.append_array(pals.pals_of(who))   # Freunde und Familie des Toten
+		affected.erase(g)
+		pals.spread_with_affected(g, DIARY_GOSSIP, affected, DIARY_AFFECTED)
+		if Game.tracing:
+			print("[Einbruch] %s liest „%s“ und erzählt es weiter – Betroffene: %s" % [g.display_name, e["text"],
+				", ".join(affected.map(func(a: Guest) -> String: return a.display_name))])
+	if debug_meet and is_instance_valid(debug_meet) and not debug_meet.dead:
+		var victim := debug_meet
+		debug_meet = null
+		victim.global_position = g.global_position + g.global_transform.basis.x * 1.2
+		victim._set_idle(30.0)
+		pals._update_net()   # sie treffen sich gleich
+		print("[Einbruch] %s erfährt es vom Einbrecher: %.0f – %s" % [victim.display_name, victim.relation,
+			"ok" if victim.relation <= DIARY_AFFECTED * 0.9 else "FEHLER"])
 
 
 ## Drinnen: zuerst, was der Spieler ihm genommen hat, sonst Deko des Spielers, sonst Geld.
@@ -268,16 +321,40 @@ func _finish(g: Guest) -> void:
 		g._walk_to(g._room_point(), Guest.State.WALK)
 
 
-## --einbruch=id[,eigen]: Er ist stark verfeindet und macht sich gleich auf; du stehst im Flur mit Blick auf die Tür von
-## Zimmer 13. eigen: in Zimmer 13 liegt etwas, das du ihm genommen hast.
-func debug(g: Guest, own: bool) -> void:
+## --einbruch=id[,eigen|tagebuch|zeuge]: Er ist stark verfeindet und macht sich gleich auf; du stehst im Flur mit Blick
+## auf die Tür von Zimmer 13. eigen: in Zimmer 13 liegt etwas, das du ihm genommen hast · tagebuch: im Tagebuch steht,
+## dass du einem anderen Gast etwas genommen hast – der trifft den Einbrecher, sobald der gelesen hat · zeuge: ein anderer
+## Gast steht neben der Tür und sieht zu; 30 s später beginnt ein Gespräch mit ihm (Talk.greeting).
+func debug(g: Guest, what: String) -> void:
 	var info: Dictionary = _builder().rooms[LevelBuilder.PLAYER_ROOM]
 	var front: Vector3 = info["door_front"]
 	var along: Vector3 = info["along"]
 	TeleportUI.place_player(front + along * 4.0 - (info["into"] as Vector3) * 0.3, -along)
 	g.global_position = front - along * 3.0 + Vector3.UP * 0.05
 	g._set_idle(1.0)
-	if own:
+	var other: Guest = null
+	for o in Game.social.living_guests():
+		var cand: Guest = o
+		if cand != g and not cand.is_child() and not cand.housemate_of(g) and String(cand.home["no"]) != LevelBuilder.PLAYER_ROOM:
+			other = cand
+			break
+	if other and what == "tagebuch":
+		Game.diary.note("first_theft", "Ich habe %s etwas weggenommen. Ich brauche es dringender, rede ich mir ein." % other.display_name,
+			other.id)
+		Game.diary.write_pending(false)
+		other.relation = 0.0
+		debug_meet = other
+		print("[Einbruch] Debug: im Tagebuch steht der Diebstahl bei %s" % other.display_name)
+	elif other and what == "zeuge":
+		other.global_position = front + along * 2.0 + Vector3.UP * 0.05
+		other._set_idle(60.0)
+		other.look_at(Vector3(front.x, other.global_position.y, front.z) - along * 0.5)
+		print("[Einbruch] Debug: %s sieht zu" % other.display_name)
+		get_tree().create_timer(30.0, false).timeout.connect(func() -> void:
+			var line := Game.social.talk.greeting(other)
+			print("[Einbruch] Zeuge im Gespräch: „%s“: %s" % [line, "ok" if g.display_name in line \
+				and other.has_stance("distrusts:" + g.id) and not Game.social.pals.are_pals(other, g) else "FEHLER"]))
+	if what == "eigen":
 		var thing := Item.create(Item.Kind.SKULL)
 		thing.owner_id = "player"
 		thing.set_meta("taken_from", g.id)

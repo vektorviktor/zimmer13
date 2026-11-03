@@ -489,7 +489,8 @@ func steal_key(bed: HideSpot) -> void:
 	var social := _social()
 	social.add_deed(owner, "hostile")
 	if Game.diary:   # eine dunkle Tat (3.10), wie Social.on_player_took
-		Game.diary.note("first_theft", "Ich habe %s etwas weggenommen. Ich brauche es dringender, rede ich mir ein." % owner.display_name)
+		Game.diary.note("first_theft", "Ich habe %s etwas weggenommen. Ich brauche es dringender, rede ich mir ein." % owner.display_name,
+			owner.id)
 	if Game.tracing:
 		print("[Zimmer] Schlüssel von Zimmer %s gestohlen (%s schläft), Schloss getauscht am %s um %s" % [no,
 			owner.display_name, Calendar.date_text(float(stolen[no])), Calendar.time_text(float(stolen[no]))])
@@ -525,12 +526,16 @@ func _lock_swap_time() -> float:
 ## Am Morgen nach dem Diebstahl: Der Haushalt merkt es und lässt das Schloss tauschen – der Schlüssel am Bund passt
 ## nicht mehr. Lebt dort niemand mehr, merkt es keiner, und er passt weiter.
 func _swap_locks() -> void:
+	_revoke_spares()
 	for no in stolen.keys():
 		if _now() < float(stolen[no]):
 			continue
 		stolen.erase(no)
 		if spares.has(no):
-			continue   # inzwischen hat ein Freund dir einen Zweitschlüssel gegeben
+			var enemy := _spare_enemy(no)
+			if enemy:
+				_revoke(no, enemy)
+			continue   # sonst: inzwischen hat ein Freund dir einen Zweitschlüssel gegeben bzw. ihr habt euch versöhnt
 		var lead := _social().household_lead(no)
 		var id := _key_of(no)
 		if lead == null or not id in Game.player.keyring:
@@ -540,6 +545,67 @@ func _swap_locks() -> void:
 		lead.say("Mein Zimmerschlüssel ist weg! Ich lass das Schloss austauschen.")
 		if Game.tracing:
 			print("[Zimmer] %s merkt den Diebstahl – Schloss von Zimmer %s getauscht" % [lead.display_name, no])
+
+
+## Zweitschlüssel zurück (ZIM-54, entschieden 2026-11-03): Ist ein Erwachsener des Haushalts mit dir mindestens
+## „verfeindet“, lässt er am nächsten Morgen um LOCK_SWAP_HOUR das Schloss tauschen (über stolen, wie nach einem
+## Diebstahl) und sagt es dir. Habt ihr euch bis dahin versöhnt, bleibt der Schlüssel. Nur über die wenigen
+## Zweitschlüssel (ZIM-124).
+func _revoke_spares() -> void:
+	for no in spares:
+		if not stolen.has(no) and _spare_enemy(no):
+			stolen[no] = _lock_swap_time()
+			if Game.tracing:
+				print("[Zimmer] Zimmer %s: Schloss wird am %s um %s getauscht – verfeindet" % [no,
+					Calendar.date_text(float(stolen[no])), Calendar.time_text(float(stolen[no]))])
+
+
+## Ein Erwachsener des Haushalts, der mit dir mindestens „verfeindet“ ist (null = keiner).
+func _spare_enemy(no: String) -> Guest:
+	for g in _social().living_guests():
+		var guest: Guest = g
+		if String(guest.home["no"]) == no and not guest.is_child() and Social.tier(guest) <= Social.Tier.ENEMY:
+			return guest
+	return null
+
+
+## Das Schloss ist getauscht: Der Zweitschlüssel am Bund passt nicht mehr. Er sagt es dir – gleich, wenn du in der Nähe
+## bist, sonst beim nächsten Gespräch (Haltung „lock_swapped“, Talk.greeting).
+func _revoke(no: String, enemy: Guest) -> void:
+	var id := _key_of(no)
+	spares.erase(no)
+	if id in Game.player.keyring:
+		Game.player.keyring.erase(id)
+		Game.player.add_key(OLD_KEY + id)
+	var line := "Ich hab das Schloss austauschen lassen. Dein Zweitschlüssel passt nicht mehr."
+	if Game.player.global_position.distance_to(enemy.global_position) < 10.0:
+		enemy.say(line)
+	else:
+		enemy.set_stance("lock_swapped", 3.0 * Calendar.DAY_SECONDS, {"line": line})
+	if Game.tracing:
+		print("[Zimmer] %s nimmt den Zweitschlüssel zurück – Schloss von Zimmer %s getauscht" % [enemy.display_name, no])
+
+
+## --zweitschluessel=id,zurueck: Er hat dir den Zweitschlüssel gegeben, jetzt seid ihr verfeindet – das Schloss wird
+## schon 10 s später getauscht; danach meldet „[Zimmer] … ok“ bzw. „FEHLER“.
+func debug_revoke(friend: Guest) -> void:
+	var no := String(friend.home["no"])
+	print("[Zimmer] Debug: Zweitschlüssel am Bund: %s" % ("ja" if spares.has(no) else "nein"))
+	friend.relation = -60.0
+	_revoke_spares()
+	stolen[no] = _now() + 10.0
+	get_tree().create_timer(12.0, false).timeout.connect(func() -> void:
+		var id := _key_of(no)
+		var ok := not spares.has(no) and not id in Game.player.keyring and (OLD_KEY + id) in Game.player.keyring
+		print("[Zimmer] Zweitschlüssel zurück: %s" % ("ok" if ok else "FEHLER"))
+		# versöhnt vor dem Morgen: bleibt
+		give_spare(friend)
+		friend.relation = -60.0
+		_revoke_spares()
+		friend.relation = 0.0
+		stolen[no] = _now()
+		_swap_locks()
+		print("[Zimmer] versöhnt, Schlüssel bleibt: %s" % ("ok" if spares.has(no) and id in Game.player.keyring else "FEHLER")))
 
 
 func save_state() -> Dictionary:

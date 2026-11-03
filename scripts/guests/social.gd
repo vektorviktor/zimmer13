@@ -918,7 +918,8 @@ func on_player_took(item: Item) -> void:
 	add_deed(owner_guest, "hostile")
 	item.set_meta("taken_from", owner_guest.id)   # das holt er sich beim Einbruch zurück (BreakIn, 6.19)
 	if Game.diary:   # eine dunkle Tat – Meilenstein im Tagebuch (3.10), Gäste können es dort lesen (8.9)
-		Game.diary.note("first_theft", "Ich habe %s etwas weggenommen. Ich brauche es dringender, rede ich mir ein." % owner_guest.display_name)
+		Game.diary.note("first_theft", "Ich habe %s etwas weggenommen. Ich brauche es dringender, rede ich mir ein." % owner_guest.display_name,
+			owner_guest.id)
 	var witnesses: Array[Guest] = []
 	var masked: Array[Guest] = []   # sehen es, erkennen unter dem Laken aber niemanden (5.9)
 	for guest in guests:

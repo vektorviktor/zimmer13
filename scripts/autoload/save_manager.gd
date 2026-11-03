@@ -132,7 +132,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 65: Beziehung nicht erschleichen (Spielkonzept 6.18, 5; ZIM-163): je Gast talk_day, talks_today, filler_day,
 ##     hostile_day, an Gegenständen „got“ (von wem bekommen) – ältere Stände laden weiter, ohne Markierung und mit
 ##     vollen Tagesbudgets
-const VERSION := 65
+## 66: Tagebuch beim Einbruch (Spielkonzept 8.9, 6.19; ZIM-54): je Tagebucheintrag „who“ (Gast-ID, um den es bei einer
+##     dunklen Tat geht) – ältere Stände laden weiter, ihre Einträge nennen niemanden (ein Einbrecher erfährt nichts)
+const VERSION := 66
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0

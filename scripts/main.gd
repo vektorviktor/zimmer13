@@ -277,12 +277,15 @@ extends Node3D
 ##   --friend=id                 mit einem Gast befreundet starten (edna, bruno, mila, gast1 …)
 ##   --enemy=id                  mit einem Gast verfeindet starten
 ##   --relation=id,wert          Beziehung setzen (−100 … 100); ab ±80 werden die nötigen Taten mit eingetragen (6.3)
-##   --einbruch=id[,eigen]       Gast ist stark verfeindet und bricht gleich in Zimmer 13 ein (6.19), du stehst im Flur
-##                               mit Blick auf die Tür · eigen: in Zimmer 13 liegt etwas, das du ihm genommen hast
+##   --einbruch=id[,eigen|tagebuch|zeuge]  Gast ist stark verfeindet und bricht gleich in Zimmer 13 ein (6.19), du
+##                               stehst im Flur mit Blick auf die Tür · eigen: in Zimmer 13 liegt etwas, das du ihm genommen
+##                               hast · tagebuch: im Tagebuch steht ein Diebstahl bei einem anderen Gast, der erfährt es vom
+##                               Einbrecher · zeuge: ein Gast sieht neben der Tür zu und nennt später den Namen (--trace)
 ##   --feind=id[,tuer|versteck]  Feinde (6.18): tuer – verfeindet, daheim bei offener Tür, du davor, er schließt ab ·
 ##                               versteck – stark verfeindet, sieht dich in Zimmer 13 in den Schrank steigen und ruft es aus
-##   --zweitschluessel=id        mit dem Gast gut befreundet (mit den Taten, 6.3), er steht vor dir und gibt dir gleich
-##                               den Zweitschlüssel seines Zimmers (6.19)
+##   --zweitschluessel=id[,zurueck]  mit dem Gast gut befreundet (mit den Taten, 6.3), er steht vor dir und gibt dir gleich
+##                               den Zweitschlüssel seines Zimmers (6.19) · zurueck: danach verfeindet ihr euch, 10 s
+##                               später ist das Schloss getauscht (--trace „[Zimmer]“)
 ##   --follow=id · --visit=id    Gast kommt mit (steht hinter dir) · Gast geht zu Zimmer 13 und klopft an
 ##   --attack=id                 Gast steht vor dir und schlägt zu
 ##   --punch=id                  Gast vor dich stellen und ihn schlagen (mit Nachfrage)
@@ -1559,7 +1562,7 @@ func run_debug(arg: String) -> bool:
 			foe.relation = -90.0   # stark verfeindet (6.3), mit den nötigen Taten
 			foe.deeds.merge({"hostile": Social.FEUD_HOSTILE, "revenge": Social.FEUD_REVENGE}, true)
 			get_tree().create_timer(1.0, false).timeout.connect(func() -> void:
-				Game.social.break_in.debug(foe, parts.size() > 1 and parts[1] == "eigen"))
+				Game.social.break_in.debug(foe, parts[1] if parts.size() > 1 else ""))
 	elif arg.begins_with("--feind="):
 		var parts := _arg_parts(arg, "--feind")
 		var foe := _guest(parts[0])
@@ -1567,12 +1570,15 @@ func run_debug(arg: String) -> bool:
 			var what := parts[1] if parts.size() > 1 else "tuer"
 			get_tree().create_timer(1.0, false).timeout.connect(func() -> void: Game.social.access.debug_enemy(foe, what))
 	elif arg.begins_with("--zweitschluessel="):
-		var friend := _guest(_arg_value(arg, "--zweitschluessel"))
+		var parts := _arg_parts(arg, "--zweitschluessel")
+		var friend := _guest(parts[0])
 		if friend:
 			friend.relation = 90.0   # guter Freund (6.3), mit den nötigen Taten
 			friend.deeds.merge({"games": Social.BOND_GAMES, "gifts_to": Social.BOND_GIFTS_TO, "gifts_from": Social.BOND_GIFTS_FROM}, true)
 			_put_in_front(friend, 1.5)
 			friend._set_idle(10.0)
+			if parts.size() > 1 and parts[1] == "zurueck":
+				get_tree().create_timer(4.0, false).timeout.connect(func() -> void: Game.social.access.debug_revoke(friend))
 	elif arg.begins_with("--follow="):
 		var follower := _guest(_arg_value(arg, "--follow"))
 		if follower:

@@ -4576,19 +4576,27 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 
 ### 6.19 Zimmer gehören den Gästen: Klopfen, Einlass, Aufbrechen (entschieden 2026-10-24)
 > **Umgesetzt (2026-10-24)** wie unten, mit diesen Abweichungen: Gäste lassen nur Türen offen, durch die sie nicht
-> durchkommen (zu lange jemand im Weg); das Tagesbudget aus 6.18 (5) für den Reparaturdank gibt es noch nicht (einmal
-> je Tür und Tag gilt; die Zahlen sind in 6.18 zu klären). Brecheisen (Heizkeller) und Werkzeugkasten (Technikraum) stehen im Plan.
+> durchkommen (zu lange jemand im Weg); der Reparaturdank bleibt einmal je Tür und Tag (+8 je Erwachsenem), ohne
+> Tagesbudget (entschieden 2026-11-03, ZIM-54). Brecheisen (Heizkeller) und Werkzeugkasten (Technikraum) stehen im Plan.
 > **Schlüsselschrank entfallen (2026-10-31, gebaut 2026-11-01, ZIM-136):** An seiner Stelle kommt die Fotowand (ZIM-133).
 > Der Generalschlüssel hat bis zur Entscheidung über das Büro der Direktion (ZIM-6) keinen Ort im Spiel – Zimmer nur über
 > Einlass, Schlüssel oder Brecheisen; zum Probieren `--werkzeug=schluessel`.
 > **Badtüren (2026-10-28):** Gäste gehen ab und zu in ihr Bad und schließen die Tür hinter sich; ein Schloss gibt es nicht.
 > **Schlüssel stehlen (2026-10-28)** wie in (4): geduckt am Bett des Schlafenden (stehend weckt [E] ihn, 3.6), Folgen bei Zeugen wie beim Deko-Diebstahl; das
 > Schloss ist ab 6 Uhr am Morgen danach getauscht. **Zweitschlüssel (2026-10-28):** Ein erwachsener guter Freund gibt ihn
-> dir bei der nächsten Begegnung (einmal je Haushalt); damit gilt man dort nicht als Eindringling. Ob er ihn
-> zurückverlangt, wenn die Freundschaft zerbricht, ist offen (er bleibt am Bund). **Einbruch bei 13 (2026-10-28)** als
-> Racheakt wie in (1): ohne Werkzeug zu holen, je Erzfeind höchstens einmal am Tag; ohne Zurückzunehmendes und ohne
-> Deko nimmt er 5 €. Das Tagebuch liest er, ohne dass es Folgen hat (was er dort erfährt, kommt mit 8.9). Was Zeugen
-> unter den Gästen vom Einbrecher halten, ist offen – sie rufen nur.
+> dir bei der nächsten Begegnung (einmal je Haushalt); damit gilt man dort nicht als Eindringling. **Einbruch bei 13
+> (2026-10-28)** als Racheakt wie in (1): ohne Werkzeug zu holen, je Erzfeind höchstens einmal am Tag; ohne
+> Zurückzunehmendes und ohne Deko nimmt er 5 €.
+> **Reste entschieden und gebaut 2026-11-03 (ZIM-54):** **Zweitschlüssel zurück:** Ist ein Erwachsener des Haushalts mit
+> dir ab „verfeindet“, lässt er am nächsten Morgen um 6 Uhr das Schloss tauschen (wie nach einem Diebstahl) und sagt es
+> dir – gleich, wenn du in der Nähe bist, sonst beim nächsten Gespräch; versöhnt ihr euch vorher, bleibt der Schlüssel.
+> **Tagebuch (8.9):** Der Einbrecher erfährt, was aufgeschrieben ist (seit dem letzten Speichern Geschehenes noch nicht) –
+> wen du bestohlen hast, wen du sorglos in den Tod geschickt hast – und erzählt es übers Freundesnetz (6.18, 1) weiter
+> (−8 bei voller Stärke); die **Betroffenen** (der Bestohlene bzw. Freunde und Familie des Toten) sucht er selbst auf,
+> auch wenn sie nicht seine Freunde sind – sie trifft es voll (−15, Bau-Entscheidung). Jeden Eintrag erzählt er einmal.
+> **Zeugen** unter den Gästen werten den Einbruch als feindselige Tat des Einbrechers – sie trauen ihm einen Tag lang
+> nicht (wie nach einem geglaubten Diebstahl, 6.9; keine Freunde mehr) – und nennen dir beim nächsten Gespräch den
+> Namen (ins Notizbuch); das spiegelt (5).
 >
 > Verallgemeinert Zuflucht und Abschließen aus 6.18 (4): Freundschaft öffnet Türen – im
 > wörtlichen Sinn. Zimmer werden sozialer Raum; Verstecke, Diebstahl (6.2) und Birnen (7.3) brauchen erst einen Weg
@@ -4660,7 +4668,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 - Der **Spieler** kann sie mit Werkzeug reparieren: Beziehung zum Besitzer ↑, als Hilfe weitererzählt.
 - **Kein Bonus für eigene Einbrüche:** Das Spiel merkt sich, wer eine Tür aufgebrochen hat – auch wenn kein Gast es
   weiß. Wer seine eigene reparieren will, bekommt nichts dafür (aber auch keinen Malus). Höchstens einmal je Tür und
-  Tag, im Tagesbudget aus 6.18 (5).
+  Tag (+8 je Erwachsenem des Haushalts) – kein eigenes Tagesbudget (entschieden 2026-11-03, ZIM-54).
 
 **7. Versiegelte Zimmer (entschieden 2026-10-25, noch nicht gebaut)**
 - **Einige Zimmer,** die seit Halloween 1987 niemand betreten hat – optionale Secrets. Wer damals darin wohnte,
@@ -5613,6 +5621,7 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 
 ### 8.9 Ausbau-Ideen (später)
 - **Gäste lesen das Tagebuch:** Kommt ein Gast in Zimmer 13 (offene Tür, Schlüssel, Feier), kann er das Tagebuch lesen und so erfahren, wen man bestohlen oder dem Monster „geopfert“ hat (4.11, 6.2) → Abschließen lohnt sich doppelt. Das Tagebuch bleibt dabei fest im Zimmer. Drin steht es erst, wenn man seitdem gespeichert hat (3.10); das Notizbuch am Körper liest niemand.
+  *Gebaut 2026-11-03 für den Einbrecher (6.19, ZIM-54):* erster Diebstahl und sorgloser Tod, weitererzählt übers Freundesnetz. Andere Leser (offene Tür, Schlüssel, Feier) noch nicht.
 - **„Albtraum-Modus“:** ein einziger Slot, der Tod löscht ihn.
 
 ### 8.10 Speicherregel geschärft (entschieden 2026-10-21, umgesetzt 2026-10-28)

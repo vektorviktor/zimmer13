@@ -13,7 +13,11 @@ const PUMPKIN_ENTRY := "Heute war ein Mann im Haus, der statt eines Kopfes einen
 ## Fremde Zeile beim Schreiben (MonsterDirector.strange_diary, 4.13)
 const STRANGE_ENTRY := "Darunter, in fremder Schrift: »Ich sehe dir beim Schreiben zu.«"
 
-## aufgeschrieben: {id, at, text, foreign} – at = MonsterDirector.elapsed, als es geschah
+## Dunkle Taten, die ein Einbrecher beim Lesen erfährt (8.9, ZIM-54): bestohlen, sorglos in den Tod geschickt
+const DARK := ["first_theft", "careless_death"]
+
+## aufgeschrieben: {id, at, text, foreign, who} – at = MonsterDirector.elapsed, als es geschah; who = Gast-ID, um den es
+## geht (dunkle Taten, sonst "")
 var entries: Array[Dictionary] = []
 ## geschehen, aber noch nicht aufgeschrieben
 var pending: Array[Dictionary] = []
@@ -50,13 +54,24 @@ func interact(_player: Player) -> void:
 
 # --- Meilensteine ---------------------------------------------------------------------------
 
-## Ein Wendepunkt ist geschehen – aufgeschrieben wird er beim nächsten Speichern. Jede id nur einmal.
-func note(id: String, text: String) -> void:
+## Ein Wendepunkt ist geschehen – aufgeschrieben wird er beim nächsten Speichern. Jede id nur einmal. who: Gast-ID, um
+## den es geht (dunkle Taten – das liest ein Einbrecher, BreakIn).
+func note(id: String, text: String, who: String = "") -> void:
 	if text == "" or has(id):
 		return
-	pending.append({"id": id, "at": Game.director.elapsed if Game.director else 0.0, "text": text, "foreign": false})
+	pending.append({"id": id, "at": Game.director.elapsed if Game.director else 0.0, "text": text, "foreign": false,
+		"who": who})
 	if Game.tracing:
 		print("[Tagebuch] Meilenstein „%s“ – wird beim nächsten Speichern aufgeschrieben" % id)
+
+
+## Aufgeschriebene dunkle Taten mit Betroffenem (8.9) – was noch aufs nächste Speichern wartet, steht nicht drin.
+func dark_entries() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for e in entries:
+		if String(e["id"]) in DARK and String(e.get("who", "")) != "":
+			result.append(e)
+	return result
 
 
 func has(id: String) -> bool:
@@ -73,7 +88,8 @@ func write_pending(strange: bool) -> int:
 	entries.append_array(pending)
 	pending.clear()
 	if strange:
-		entries.append({"id": "", "at": Game.director.elapsed if Game.director else 0.0, "text": STRANGE_ENTRY, "foreign": true})
+		entries.append({"id": "", "at": Game.director.elapsed if Game.director else 0.0, "text": STRANGE_ENTRY, "foreign": true,
+			"who": ""})
 		count += 1
 	return count
 
@@ -114,7 +130,7 @@ func load_state(d: Dictionary) -> void:
 
 func _entry(e: Dictionary) -> Dictionary:
 	return {"id": String(e.get("id", "")), "at": float(e.get("at", 0.0)), "text": String(e.get("text", "")),
-		"foreign": bool(e.get("foreign", false))}
+		"foreign": bool(e.get("foreign", false)), "who": String(e.get("who", ""))}
 
 
 ## --notizbuch: ein paar aufgeschriebene Einträge zum Nachlesen.
@@ -127,5 +143,5 @@ func debug_fill() -> void:
 	]
 	for s: Array in samples:
 		if not has(String(s[2])):
-			entries.append({"id": s[2], "at": Calendar.at(int(s[0]), float(s[1])), "text": s[3], "foreign": false})
-	entries.append({"id": "", "at": Calendar.at(4, 1.4), "text": STRANGE_ENTRY, "foreign": true})
+			entries.append({"id": s[2], "at": Calendar.at(int(s[0]), float(s[1])), "text": s[3], "foreign": false, "who": ""})
+	entries.append({"id": "", "at": Calendar.at(4, 1.4), "text": STRANGE_ENTRY, "foreign": true, "who": ""})

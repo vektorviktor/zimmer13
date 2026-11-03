@@ -1392,8 +1392,12 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `OLD_KEY` + ID (`Item.key_label`: „passt nicht mehr“). Gespeichert als `social.access` (`save_state`).
 - **Zweitschlüssel** (`_offer_spares`, `give_spare`): Ein erwachsener guter Freund (`Social.Tier.GOOD_FRIEND`), frei
   (`IDLE`/`WALK`), in `SPARE_RANGE` und mit Blick auf dich, gibt ihn – einmal je Haushalt (`spares`, gespeichert), nicht
-  in Gefahr oder im Gespräch. Mit ihm kein Hausfriedensbruch (`_watch_trespass`), `_swap_locks` übergeht das Zimmer.
-  Sinkt die Freundschaft später, bleibt er am Bund.
+  in Gefahr oder im Gespräch. Mit ihm kein Hausfriedensbruch (`_watch_trespass`). Zurück (ZIM-54): `_revoke_spares`
+  (im 0,5-s-Takt, nur über `spares`) – ist ein Erwachsener des Haushalts ab `Social.Tier.ENEMY` (`_spare_enemy`), kommt
+  das Zimmer in `stolen` (nächster Morgen `LOCK_SWAP_HOUR`); `_swap_locks` tauscht dann, wenn er noch verfeindet ist
+  (`_revoke`: aus `spares`, Schlüssel zu `OLD_KEY`; er sagt es, bist du bis 10 m nah, sonst Haltung „lock_swapped“ für
+  `Talk.greeting`), sonst bleibt der Schlüssel. Kein neues Feld (über `stolen`/`spares`). Debug
+  `--zweitschluessel=id,zurueck`.
 - **Feinde** (6.18, 4; ZIM-162): `_shut_out_enemies` (im 0,5-s-Takt): Gast ab `Social.Tier.ENEMY`, daheim
   (`room_at`), frei, Tür offen und nicht kaputt, du draußen bis `ENEMY_DOOR_RANGE` – erst dann die Zeugensicht
   (`Guest.can_see_actor`, `Player.recognized_by`). Er geht zu `door_inside` (`_shutting`, höchstens
@@ -1410,6 +1414,14 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   `MONEY`) → `read` (vor den Schreibtisch, `READ_TIME`) → heim (Deko vor seine Tür, anderes in den Koffer). Bricht ab,
   sobald er aus dem Ablauf fällt. Zeugen: Spieler (`player_can_see`) erfährt den Namen, Gäste rufen; sonst Hinweis beim
   nächsten Betreten (`_notice`). Die Tür repariert nur der Spieler (Zimmer 13 hat keinen Haushalt). Nicht gespeichert.
+  Zeugen unter den Gästen (ZIM-54, `_witnesses`, alle, die es sehen – `can_see_actor`): Haltung `distrusts:<id>`
+  (`Talk.STANCE_TIME`, keine Freunde mehr, `GuestPals.are_pals`) und `saw_break_in` mit `who` (`WITNESS_MEMORY`) →
+  `Talk.greeting` nennt den Namen und schreibt ihn ins Notizbuch. Tagebuch (`_read_diary`, nach `READ_TIME`):
+  `Diary.dark_entries()` (aufgeschriebene Einträge aus `Diary.DARK` mit `who`, gesetzt bei `note(id, text, who)`,
+  gespeichert ab Version 66), je Eintrag einmal (Haltung `read:<id>`, `READ_MEMORY`) →
+  `GuestPals.spread_with_affected`: Netz wie `spread` mit `DIARY_GOSSIP`, dazu Einträge an die Betroffenen
+  (Bestohlener; bei „careless_death“ `pals_of` des Toten) mit `DIARY_AFFECTED` ohne Tratsch-Faktor (`direct`), weiter
+  mit `pass`. Debug `--einbruch=id,tagebuch|zeuge`.
 - **Bad** (`guests/bath_use.gd`, `BathUse` als `Social.bath`): `LevelBuilder._room_baths` legt je Zimmer `baths`
   an ({door, id, spot `BATH_SPOT_DEPTH` hinter der Badtür}). Wer zu Hause herumsteht (`IDLE`, `_is_home`), geht mit
   `CHANCE` je Blick (alle `SCAN` s, höchstens alle `GAP`) über den Besuchsablauf hinein, wenn niemand drin oder auf dem

@@ -53,7 +53,7 @@ var feuds := {}
 var heard := {}
 var _told := {}          ## "id_a|id_b" → Spieltag des letzten Weitererzählens (nicht gespeichert)
 var _rivals := {}        ## "freund|feind" → true: hat es schon erfahren (nicht gespeichert)
-var _net: Array[Dictionary] = []     ## {teller, hearer, msg, amount, cap, station, until} – wartet aufs Treffen
+var _net: Array[Dictionary] = []     ## {teller, hearer, msg, amount, cap, station, until[, direct, pass]} – wartet aufs Treffen
 var _net_known := {}                 ## Nachricht → {Gast-ID: true}: kennt sie schon (Erzähler, Gehörte)
 var _net_next := 0
 var _scan := TELL_SCAN
@@ -178,6 +178,24 @@ func spread(tellers: Array, amount: float, cap: float = 100.0) -> void:
 			_net_pass(t, _net_next, amount, cap, 1)
 
 
+## Wie spread mit einem Erzähler – dazu erzählt er es den Betroffenen (affected) selbst, sobald er sie trifft, auch wenn
+## sie nicht seine Freunde sind: Sie trifft es mit affected_amount, unabhängig von seinem Tratsch; weiter erzählen sie es
+## mit amount wie jeder (Tagebuch beim Einbruch, 6.19, ZIM-54).
+func spread_with_affected(teller: Guest, amount: float, affected: Array, affected_amount: float) -> void:
+	spread([teller], amount)
+	var msg := _net_next
+	var until := _now() + NET_TIME
+	for v in affected:
+		var victim := v as Guest
+		if victim == null or victim.dead or victim == teller:
+			continue
+		for i in range(_net.size() - 1, -1, -1):
+			if _net[i]["msg"] == msg and _net[i]["hearer"] == victim:
+				_net.remove_at(i)   # ist er auch sein Freund: nur die Nachricht an den Betroffenen
+		_net.append({"teller": teller, "hearer": victim, "msg": msg, "amount": affected_amount, "cap": 100.0, "station": 1,
+			"until": until, "direct": true, "pass": amount})
+
+
 ## Wie viele Nachrichten noch auf ein Treffen warten (Debug, Tests).
 func net_pending() -> int:
 	return _net.size()
@@ -266,7 +284,7 @@ func _net_tell(e: Dictionary) -> void:
 	var station := int(e["station"])
 	var base := float(e["amount"])
 	(_net_known[e["msg"]] as Dictionary)[b.id] = true
-	var amount := base * net_strength(a, station)
+	var amount := base if e.get("direct", false) else base * net_strength(a, station)
 	var before := b.relation
 	var good := base > 0.0
 	if good:
@@ -281,7 +299,7 @@ func _net_tell(e: Dictionary) -> void:
 		if is_instance_valid(b) and not b.dead:
 			b.say((REPLY_LINES if good else NET_BAD_REPLIES).pick_random()))
 	if station < NET_STATIONS:
-		_net_pass(b, int(e["msg"]), base, float(e["cap"]), station + 1)
+		_net_pass(b, int(e["msg"]), float(e.get("pass", base)), float(e["cap"]), station + 1)
 	if Game.tracing:
 		print("[Netz] %s erzählt %s (Station %d, Stärke %.2f): %.0f → %.0f" % [a.display_name, b.display_name, station,
 			net_strength(a, station), before, b.relation])

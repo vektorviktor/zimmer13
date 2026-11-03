@@ -653,6 +653,16 @@ func greeting(g: Guest) -> String:
 	if g.has_stance("promise_broken"):
 		g.clear_stance("promise_broken")
 		return "Du hast versprochen, mit mir zu spielen! Du hast es vergessen."
+	if g.has_stance("saw_break_in"):   # Zeuge eines Einbruchs bei 13 (6.19, ZIM-54): er nennt den Namen
+		var who := Game.social.guest_name(String(g.stances["saw_break_in"].get("who", "")))
+		g.clear_stance("saw_break_in")
+		if Game.notebook:
+			Game.notebook.add_note("break_in:" + who, "%s ist in Zimmer 13 eingebrochen." % who, g.display_name)
+		return "Ich hab gesehen, wer bei dir eingebrochen ist: %s! Mit dem bin ich fertig." % who
+	if g.has_stance("lock_swapped"):   # Zweitschlüssel zurück (6.19, ZIM-54)
+		var line := String(g.stances["lock_swapped"].get("line", ""))
+		g.clear_stance("lock_swapped")
+		return line
 	if g.has_stance("envy"):
 		g.clear_stance("envy")   # Neid auf Zimmer 13 (6.18, 5): der spitze Satz einmal am Tag
 		return Social.ENVY_LINES.pick_random()
@@ -959,7 +969,8 @@ func on_guest_died(dead: Guest) -> void:
 	if dead.has_stance("careless") and Game.player:
 		Game.player.add_shock(0.6, true)
 		if Game.diary:
-			Game.diary.note("careless_death", "Ich habe %s gesagt, da sei nichts. Jetzt ist %s tot." % [dead.display_name, dead.display_name])
+			Game.diary.note("careless_death", "Ich habe %s gesagt, da sei nichts. Jetzt ist %s tot." % [dead.display_name, dead.display_name],
+				dead.id)
 		if Game.tracing:
 			print("[Gespräch] %s ist sorglos gestorben – Schuld" % dead.display_name)
 	for pal in Game.social.pals.pals_of(dead):
