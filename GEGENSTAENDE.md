@@ -28,7 +28,9 @@ Stand: 2026-10-28.
 | ~~Werkstattschlüssel~~ | – | gestrichen 2026-10-27 (Werkstatt entfällt zugunsten des alten Heizkellers) | – | – | 2.8, 7.4 |
 | Schlüssel von 1987 (Messinganhänger) | `KEY` „zimmer_042“ | gebaut (Zimmer 042 selbst noch nicht versiegelt) | – (optional; Edna, K5) | im Krähennest im großen Baum gegenüber 042; kommt als Geschenk der Krähen bei hoher Gunst nach Fütterungen an drei Tagen oder fällt beim Wurf ins Nest heraus; schließt Zimmer 042 auf (der Mann, der 1987 nicht hinauskam) | 4.25, 6.19 (7) |
 | Spindschlüssel (Pool-Umkleiden) | `KEY` „spind_NN“ (Bund: „Spindschlüssel N“) | **teilweise** – Spinde 7, 20, 32, 44 schließen damit auf (ZIM-145, `LockerBank.OPENABLE`), Schlüssel liegen noch nirgends | – | Fundorte offen; ohne Modell (Nutzer 31.10.) | – |
-| Schlüssel der übrigen versiegelten Zimmer | – | geplant | – (optional) | je Zimmer ein eigener Weg (Krähen, Freund, Dokument, Wagnis) | 6.19 (7) |
+| Schlüssel der übrigen versiegelten Zimmer | – | geplant | – (optional) | 132 von Liesel (Freund), 038 über einen Brief des Gastes von 1987 (Versteck offen), 018 an der Leviathanmauer | 6.19 (7), ZIM-30 |
+| Familienfoto der Brücks (1987) | – | geplant | – (optional; Liesel) | im versiegelten Zimmer 132; Liesel bringen = Abschluss für sie | 6.19 (7), ZIM-30 |
+| Brief des Gastes aus 038 | – | geplant | – (optional) | nie abgeschickt, nennt das Versteck des Schlüssels zu 038; Ort offen | 6.19 (7), ZIM-30 |
 
 ## 2. Auftrags- und Fundstücke
 
@@ -106,7 +108,8 @@ Stand: 2026-10-28.
 | Werkzeugkasten | `TOOLBOX` | gebaut | – | Türen reparieren | 6.19 |
 | Kompass | `COMPASS` | gebaut | – | Orientierung | 3.2 |
 | Bettlaken | `BED_SHEET` | gebaut | – | selbst verkleiden; Zimmer 13 | 5.9 |
-| Sturmlaterne | – | geplant (Vorschlag) | – (optional) | Licht, das draußen nicht ausgeht; im versiegelten Zimmer 042 | 6.19 (7), 5.12 |
+| Sturmlaterne | – | geplant | – (optional) | Licht, das draußen nicht ausgeht; im versiegelten Zimmer 042 | 6.19 (7), 5.12 |
+| Ölkännchen | – | geplant | – (optional) | eine geölte Tür quietscht nicht mehr (Lärm 4.15), begrenzte Füllung; im versiegelten Zimmer 038 | 6.19 (7), ZIM-30 |
 | Salzpackung | `SALT` | gebaut | – | Salzlinien an Tür und Fenster halten den Lakengeist aus dem Zimmer; drei auf der Küchenzeile; rettet die zwei Gäste mit „kreisenden Händen“ (Edna streut aus eigener Packung, kein Gegenstand) | 5.13 |
 
 ## 6. Essen und Trinken

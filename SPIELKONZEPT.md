@@ -4905,7 +4905,16 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 - **Jedes hat seinen eigenen Schlüssel auf einem eigenen Weg** (Arten aus 2.3): Zeit und Geduld (die Krähen, 4.25),
   Vertrauen (ein Gast als Freund), Wissen (ein Hinweis in einem Dokument), Wagnis (ein Fundort nah am Monster).
 - **Vier Zimmer, je Weg eins** (entschieden 2026-10-26): 042 (Geduld, die Krähen) und je eines für Vertrauen, Wissen
-  und Wagnis. Welche Zimmer, Schlüssel und Gegenstände das sind, ist noch offen.
+  und Wagnis. **Welche (entschieden 2026-11-03, ZIM-30, noch nicht gebaut):**
+
+  | Weg | Zimmer | Schlüssel | Dahinter |
+  |---|---|---|---|
+  | **Geduld** | **042** (EG West, 34 m²) | Krähennest (4.25) | sein Tagebuch, **Sturmlaterne** (bestätigt) |
+  | **Vertrauen** | **132** (OG1 West, 68 m², Bad, Balkon) – das Zimmer von **Liesel Brücks Familie** 1987 | **Liesel** (H26) gibt ihn einem Freund; sie hat ihn 1987 nie abgegeben | das **Familienfoto** von 1987 – bringt man es Liesel, ist es ein Abschluss für sie (kein Werkzeug) |
+  | **Wissen** | **038** (EG West, Nordflügel, 68 m², Bad) | ein **nie abgeschickter Brief** des Gastes von 1987 nennt das Versteck | **Ölkännchen**: eine geölte Tür quietscht nicht mehr (Lärm 4.15), begrenzte Füllung |
+  | **Wagnis** | **018** (EG Ost, 34 m²; versiegelt seit 2005, 7.4) | an der Leviathanmauer im Heizraum | Notizbuch und Schaltschlüssel (Hauptgeschichte) |
+
+  Noch offen: wo der Brief und das Versteck des Schlüssels zu 038 liegen (Vorschlag beim Bau) und wer 038 bewohnte.
 - **Dahinter:** ein **optionaler, nützlicher Gegenstand** und ein Stück 1987 – Staub, ein Kalenderblatt vom Oktober
   1987, ein ungemachtes Bett, persönliche Dinge.
 - **Auch die Terrassentür ist zu:** von innen verriegelt, die Vorhänge seit 1987 zugezogen, die Terrasse davor
@@ -4914,7 +4923,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   nicht mit hinauskam (HANDLUNG.md K5). In jener Nacht floh er durch die Terrassentür in den Garten; darum liegt sein
   Schlüssel im **Krähennest** (4.25) – im großen Baum mitten im Garten, genau gegenüber seiner Terrassentür. Die Nachbarn
   wohnen in 041 (Ehepaar Schulte) und 043 (Zita Fuchs). Drinnen: sein **Tagebuch** (Edna, K5) und als nützlicher
-  Gegenstand eine **Sturmlaterne** (Vorschlag) – ein Licht, das draußen nicht ausgeht (vgl. Kerzen, 5.12).
+  Gegenstand eine **Sturmlaterne** (bestätigt 2026-11-03) – ein Licht, das draußen nicht ausgeht (vgl. Kerzen, 5.12).
 - **Nicht versiegelt** bleiben die Zimmer mit früh wichtigen Dingen, etwa **022** mit der Streichholzschachtel (5.12):
   Brecheisen oder Generalschlüssel genügen. Die versiegelten Zimmer sind die schwerere Stufe darüber.
 
@@ -5884,8 +5893,8 @@ Weil es **kein verstecktes Inventar** gibt (3.2), *ist die Welt der Spielstand*:
 
 ### 8.9 Ausbau-Ideen (später)
 - **Gäste lesen das Tagebuch:** Kommt ein Gast in Zimmer 13 (offene Tür, Schlüssel, Feier), kann er das Tagebuch lesen und so erfahren, wen man bestohlen oder dem Monster „geopfert“ hat (4.11, 6.2) → Abschließen lohnt sich doppelt. Das Tagebuch bleibt dabei fest im Zimmer. Drin steht es erst, wenn man seitdem gespeichert hat (3.10); das Notizbuch am Körper liest niemand.
-  *Gebaut 2026-11-03 für den Einbrecher (6.19, ZIM-54):* erster Diebstahl und sorgloser Tod, weitererzählt übers Freundesnetz. Andere Leser (offene Tür, Schlüssel, Feier) noch nicht.
-- **„Albtraum-Modus“:** ein einziger Slot, der Tod löscht ihn.
+  *Gebaut 2026-11-03 für den Einbrecher (6.19, ZIM-54):* erster Diebstahl und sorgloser Tod, weitererzählt übers Freundesnetz. **Andere Leser (offene Tür, Schlüssel, Feier) gestrichen** (2026-11-03, ZIM-80) – es bleibt beim Einbrecher.
+- **„Albtraum-Modus“** (entschieden 2026-11-03, ZIM-80, noch nicht gebaut): beim neuen Spiel wählbar; ein einziger Slot, der Tod löscht ihn.
 
 ### 8.10 Speicherregel geschärft (entschieden 2026-10-21, umgesetzt 2026-10-28)
 > **Umgesetzt (2026-10-28)** wie unten (die Sperre während Kürbismann und Lakengeist schon seit 2026-10-21), mit diesen
