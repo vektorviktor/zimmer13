@@ -51,7 +51,7 @@ const GRAVEL_NORMAL_STRENGTH := 1.5
 const SOIL_TEX := "res://assets/textures/Ground048/Ground048_basecolor.jpg"
 const SOIL_NORMAL := "res://assets/textures/Ground048/Ground048_normalogl.jpg"
 const SOIL_METERS := 1.4
-const SOIL_TINT := Color(0.92, 0.8, 0.68)   ## wärmer – im kühlen Licht draußen wirkte sie grauviolett
+const SOIL_TINT := Color(0.56, 0.49, 0.42)   ## dunkler und wärmer – im kühlen Licht draußen wirkte sie grauviolett
 const SOIL_NORMAL_STRENGTH := 1.3
 const SOIL_WET_GLOSS := 0.6
 ## Grundfläche eines Kürbisbeets: so weit über die äußeren Pflanzen hinaus, Tiefe quer zur Reihe
