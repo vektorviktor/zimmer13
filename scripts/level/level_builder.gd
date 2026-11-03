@@ -234,14 +234,20 @@ const ENTRANCE_H := 2.8
 ## hoch, dass über dem Sturz noch ATTIC_DOOR_HEAD bis zur Schräge bleibt – dort muss man sich weiter ducken
 const ATTIC_DOOR_H := 2.1
 const ATTIC_DOOR_HEAD := 0.1
-## Dachgeschoss (Spielkonzept 4.21, Plan „DG“, 24.10.): Deckenhöhe, Kniestock (so hoch ist die Außenwand) und wie weit
-## die Dachschräge darüber in den Raum reicht, bis sie die Decke trifft
-const ATTIC_H := 2.2
-const ATTIC_KNEE := 1.3
-const ATTIC_SLOPE := 2.0
-## Dachfenster in der Schräge: von/bis als Anteil der Schräge (unten = Kniestock), Rahmen und Kreuz aus Holz
-const ATTIC_WINDOW := Vector2(0.25, 0.85)
+## Dachgeschoss (Spielkonzept 4.21, 7.10, Plan „DG“, 24.10.): Deckenhöhe, Kniestock (so hoch ist die Außenwand, darauf
+## sitzt außen das Gesims) und wie weit die Schräge in den Raum reicht, bis sie die Decke trifft – das Mansarddach
+## steigt mit 65° (Entscheidung 3.11.)
+const ATTIC_H := 2.4
+const ATTIC_KNEE := 0.5
+const ATTIC_SLOPE := (ATTIC_H - ATTIC_KNEE) / 2.1445069   # tan(65°): 0,89 m
+## Dachfenster in der Schräge: von/bis als Anteil der Schräge (unten = Kniestock), Rahmen und Kreuz aus Holz – bei 65°
+## von knapp 1 m bis gut 2,1 m über dem Boden, man sieht hinaus statt in den Himmel
+const ATTIC_WINDOW := Vector2(0.24, 0.86)
 const ATTIC_WINDOW_BAR := 0.06
+## Sichtbares Gebälk in der Schräge (Entscheidung 3.11.): Sparren etwa so weit auseinander, Querschnitt (Breite, Tiefe);
+## unten eine Fußpfette auf dem Kniestock, oben eine Pfette, wo die Schräge die Decke trifft
+const ATTIC_RAFTER_GAP := 0.9
+const ATTIC_RAFTER := Vector2(0.12, 0.14)
 ## Licht durchs Dachfenster: Kegel (Winkel, Reichweite, Farbe, Anteil im Nebel – der Lichtschacht); Stärke folgt dem Mond
 const ATTIC_SHAFT_ANGLE := 24.0
 const ATTIC_SHAFT_RANGE := 5.0
@@ -253,7 +259,7 @@ const ATTIC_ROOF_COLOR := Color(0.16, 0.15, 0.15)   ## Dachhaut außen
 ## Stützbalken: je Feld von etwa ATTIC_BAY m ein Pfosten in der Mitte, darauf ein Balkenkreuz (Unterkante, Querschnitt)
 ## bis an die Wände, jeder Arm mit einem Kopfband unter 45° (so weit vom Pfosten)
 const ATTIC_BAY := 6.0
-const ATTIC_BEAM_BOTTOM := 1.98
+const ATTIC_BEAM_BOTTOM := 2.12
 const ATTIC_BEAM := 0.2
 const ATTIC_POST := 0.22
 const ATTIC_BRACE := 0.5
@@ -4828,13 +4834,16 @@ func _attic_surfaces() -> void:
 			root.add_child(link)
 
 
-## Dachschrägen über den Traufen: innen Bohlen, außen die Dachhaut, dazwischen die Dachfenster des Plans (Rahmen und
-## Kreuz aus Holz, Glas ohne Schatten – Mondlicht fällt hindurch). Wo eine Schräge endet und daneben Dachboden mit
-## voller Höhe liegt, schließt ein Giebeldreieck den Spalt darüber.
+## Dachschrägen über den Traufen: innen Bohlen auf sichtbaren Sparren (_attic_rafters), außen die Dachhaut, dazwischen
+## die Dachfenster des Plans (Rahmen und Kreuz aus Holz, Glas ohne Schatten – Mondlicht fällt hindurch). Wo eine Schräge
+## endet und daneben Dachboden mit voller Höhe liegt, schließt ein Giebeldreieck den Spalt darüber.
 func _attic_slopes() -> void:
 	var rise := ATTIC_H - ATTIC_KNEE
 	var length := Vector2(ATTIC_SLOPE, rise).length()
 	var frame_wood := Mat.wood(false, ATTIC_BEAM_TINT)
+	var end_wood := Mat.wood(true, ATTIC_BEAM_TINT)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1888
 	for i in _eaves.size():
 		var e: Dictionary = _eaves[i]
 		var horizontal: bool = e["horizontal"]
@@ -4861,7 +4870,9 @@ func _attic_slopes() -> void:
 		var skin := Geo.mesh(holder, Geo.wall_mesh(a0, a1, length, 0.04, windows), _attic_roof, Vector3(0, 0, out * 0.06))
 		structure_parts.append(inner)
 		structure_parts.append(skin)
-		Geo.collider(holder, Vector3(a1 - a0, length, 0.12), Vector3((a0 + a1) / 2.0, length / 2.0, out * 0.02), LAYER_CEILING)
+		# Kollision bis hinter die Sparren, damit man nicht in sie hineinläuft
+		Geo.collider(holder, Vector3(a1 - a0, length, 0.3), Vector3((a0 + a1) / 2.0, length / 2.0, -out * 0.07), LAYER_CEILING)
+		_attic_rafters(holder, a0, a1, length, out, windows, frame_wood, end_wood, rng)
 		for wdw: Vector4 in windows:
 			_roof_window(holder, wdw, out, frame_wood)
 			var below := Vector3(wdw.x, 0, face + inward * (ATTIC_SLOPE + 0.6)) if horizontal \
@@ -4874,6 +4885,38 @@ func _attic_slopes() -> void:
 			var probe := Vector2(beyond, d) if horizontal else Vector2(d, beyond)
 			if _kind_at(probe) == "attic" and _attic_ceiling(probe, i) > ATTIC_H - 0.01:
 				_attic_gable(horizontal, s_end, face, inward)
+
+
+## Sichtbares Gebälk unter einer Schräge (lokal wie _roof_window): Sparren etwa alle ATTIC_RAFTER_GAP m, nicht vor
+## einem Dachfenster, dazu Fußpfette über dem Kniestock und Pfette unter der Decke – ein Mesh (Längs- und Hirnholz).
+func _attic_rafters(holder: Node3D, a0: float, a1: float, length: float, out: float, windows: Array, long: Material,
+		ends: Material, rng: RandomNumberGenerator) -> void:
+	var parts: Array = []   # [Mesh, Transform3D]
+	var z := -out * (0.04 + ATTIC_RAFTER.y / 2.0)   # unter den Bohlen (Innenseite bei −out · 0,04)
+	var piece := func(size: Vector3, grain: int, pos: Vector3) -> void:
+		var m := Geo.grain_box(size, grain, Vector2(2.0, 0.4), 0.3, Vector2(rng.randf(), rng.randf()))
+		parts.append([m, Transform3D(Basis(), pos)])
+	var count := maxi(1, roundi((a1 - a0) / ATTIC_RAFTER_GAP))
+	for k in count + 1:
+		var s := lerpf(a0 + ATTIC_RAFTER.x / 2.0, a1 - ATTIC_RAFTER.x / 2.0, float(k) / count)
+		var free := true
+		for wdw: Vector4 in windows:
+			if absf(s - wdw.x) < wdw.y / 2.0 + ATTIC_RAFTER.x:
+				free = false
+		if free:
+			piece.call(Vector3(ATTIC_RAFTER.x, length, ATTIC_RAFTER.y), 1, Vector3(s, length / 2.0, z))
+	for y: float in [ATTIC_RAFTER.y / 2.0, length - ATTIC_RAFTER.y / 2.0]:
+		piece.call(Vector3(a1 - a0, ATTIC_RAFTER.y, ATTIC_RAFTER.y), 0, Vector3((a0 + a1) / 2.0, y, z))
+	var mesh := ArrayMesh.new()
+	for surface in 2:
+		var st := SurfaceTool.new()
+		for part: Array in parts:
+			st.append_from(part[0], surface, part[1])
+		st.commit(mesh)
+	var mi := Geo.mesh(holder, mesh, null, Vector3.ZERO)
+	mi.set_surface_override_material(0, long)
+	mi.set_surface_override_material(1, ends)
+	structure_parts.append(mi)
 
 
 ## Dachfenster in der Schräge (lokal: x entlang der Traufe, y die Schräge hinauf, out = lokale Z nach außen): Rahmen,

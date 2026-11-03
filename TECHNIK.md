@@ -829,8 +829,10 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
 ### Dachgeschoss (`_attic_floor`, Spielkonzept 4.21)
 Eigener Durchgang statt `_build_plan_floor` (`dg.json`, `_attic` an, Raum-IDs mit `dg_`). Alles aus **groben Bohlen**
 (`Mat.planks`). **Schrägen** (`_attic_eaves`, `_eave_strip`, `_attic_slopes`): Wo eine Wand draußen auf der einen und
-Dachboden auf der anderen Seite hat, ist sie nur Kniestock (`ATTIC_KNEE`) hoch, darüber steigt eine Schräge bis zur
-Decke (Kollision auf Ebene 5). `_attic_ceiling(p)` liefert die Deckenhöhe an jeder Stelle; `_wall_piece` kappt damit
+Dachboden auf der anderen Seite hat, ist sie nur Kniestock (`ATTIC_KNEE`, 0,5 m) hoch, darüber steigt eine Schräge mit
+65° bis zur Decke `ATTIC_H` (2,4 m; Mansarddach, Spielkonzept 7.10, 3.11.; `ATTIC_SLOPE` folgt daraus, Kollision auf
+Ebene 5 bis hinter die Sparren). Darunter sichtbares Gebälk (`_attic_rafters`): Sparren etwa alle `ATTIC_RAFTER_GAP`,
+vor Dachfenstern ausgespart, Fußpfette und Pfette, ein Mesh je Schräge. `_attic_ceiling(p)` liefert die Deckenhöhe an jeder Stelle; `_wall_piece` kappt damit
 jede Wand (`_wall_top`, `_top_breaks`, `_cap_top`, `_wall_box`). Giebeldreiecke schließen Spalte (`_attic_gable`).
 **Dachfenster** (`roof_window` auf der Außenwand) sitzen in der Schräge darüber (`_roof_window`), mit kaltem Lichtkegel
 von außen (`ATTIC_SHAFT_*`, `AtticHaze` regelt ihn mit dem Mond). **Türen:** Kniestocktür-Modell, `ATTIC_DOOR_H` (2,1 m) hoch,

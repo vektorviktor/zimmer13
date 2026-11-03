@@ -2482,8 +2482,10 @@ zwischen den Bedrohungen und Verfolgung auf eine belegte Ebene entfallen mit dem
 - **Unheimlich ohne Gefahr** (Vorschläge): gedämpfte Musik von unten, Regen und Wind auf dem Dach (7.8), man braucht
   die Taschenlampe (4.16); **Möbel unter Laken**, die aussehen wie der Lakengeist – hier ist es nie einer (wie die
   Kostüme, 5.9); Kreidezeichen, ein Kinderschuh, ein Abzählreim der Kinder von 1987.
-- **Hängt an der Dachform:** Wie die Kammern aussehen (Schrägen, Kniestock, Gauben), folgt aus der Dachform, die noch
-  aussteht.
+- **Dachform entschieden (2026-11-03, 7.10):** Mansarddach. Innen wird der Kniestock niedrig (Höhe des Gesimses),
+  die Schräge steigt mit 65° bis zur Decke auf 2,4 m (statt 1,3 m Kniestock, rund 24° und 2,2 m), darunter sichtbares
+  Gebälk. Die Dachfenster stehen fast senkrecht: Man sieht den Horizont und über den Hof das Dach der Gegenseite.
+  Keine Gauben.
 
 ### 4.22 Fledermäuse und der Vampir (vorgemerkt 2026-10-23)
 > Noch nicht umgesetzt. Eine vierte Bedrohung – für sie gilt dieselbe Ebenenregel wie für die anderen drei (4.20).
@@ -2927,8 +2929,8 @@ ganzen Hotels.
      - **Kurze Warnung, kein Entkommen:** etwa 3–5 s zwischen dem ersten Geräusch und dem Angriff (Knarren, Schritte,
        Staub in der Türöffnung) – nur fürs Drama, damit der Tod nicht wie ein Fehler des Spiels wirkt. Retten kann man
        sich beim Urteil nur vorher: nachbessern, bis man nicht mehr der Schwächste ist.
-     - **Höhe:** Unter die Decke des Dachbodens (2,2 m) passt es gerade eben aufrecht – ducken muss es sich nur an den
-       Türen.
+     - **Höhe:** Unter die Decke des Dachbodens (2,2 m, ab dem Mansarddach 2,4 m, 7.10) passt es aufrecht – ducken muss
+       es sich nur an den Türen.
      - **Beim Raubzug** (entschieden 2026-11-03) gilt dasselbe mit längerer Frist und langer Warnung, siehe 3.
   4. **Stirbt das Ziel vorher anders** (Kürbismann, Lakengeist), springt die Puppe zur nächstschwächsten Tür; das
      Urteil bleibt.
@@ -5665,7 +5667,27 @@ Plans **einzeln entschieden** (2026-10-21) – je Raum, ob er eine Funktion beko
 - **Niemand fährt mit:** Gäste nehmen die Treppe, das Monster fährt nicht Aufzug; Motor und Glocke locken es nur an
   (wie gebaut, 7.4).
 
-**Zu klären:** Plan für U2 · die Dachform (4.21).
+**Dach: Mansarddach mit Schiefer, Kranzgesims und Firstgitter (entschieden 2026-11-03, ZIM-43, ZIM-147)**
+- **Warum:** Vom Garten aus wirkte das Hotel wie eine Kiste mit Flachdach – die flache Schräge der Zwischenlösung
+  verschwand hinter der Mauerkrone, keine Traufe, harte Kante gegen den Himmel (Befund ZIM-147). Vorbild ist ein
+  Grand Hotel des späten 19. Jahrhunderts (Strater Hotel, Durango), nur einfacher.
+- **Kranzgesims** auf der Mauerkrone, **hell gestrichen**: paarige Konsolen, darunter ein Fries mit Zahnschnitt, oben
+  Abdeckung mit Rinne. Auch **Lobby und Poolhalle** bekommen das Gesims.
+- **Schieferfläche mit 65°** darüber, Fototextur (Grafik realistisch, 9.2); in ihr sitzen die Dachfenster wie bisher,
+  keine Gauben, keine Türme. Weil sie steil ist, sieht man das Dach jetzt auch von unten. Oben ein **flaches
+  Oberdach**; seine Kante ist die höchste Linie des Hauses.
+- **Firstgitter** auf dieser Kante: gotisch – Spitzbögen, Speerspitzen, rund 50 cm hoch, ein Feld je 0,4 m, an den
+  Ecken Pfosten mit hoher Spitze (rund 90 cm). Nichts Makabres im Gitter, das Unheimliche kommt aus der Form. Bei rund
+  650 m Kante (~1.600 Felder) sind die Felder **ausgeschnittene Karten** mit aus dem Modell gebackenen Karten
+  (~3.200 Dreiecke statt ~400.000 als Profil; näher als 8–10 m kommt man nicht heran, echte Stäbe flimmerten auf
+  Abstand); echte Geometrie nur für Eckpfosten und Ziergiebel.
+- **Ziergiebel** über dem Haupteingang. **Schornsteine** und weitere Ziergiebel an Ecken (Vorschlag): über Planfarben
+  des Zeichners, nicht vom Code gesetzt.
+- **Innen** siehe 4.21: Kniestock in Gesimshöhe, 65°, Decke 2,4 m, sichtbares Gebälk. Das Dachnest (4.25) bleibt vor
+  einem Dachfenster mit ausgestrecktem Arm erreichbar; der Kürbismann läuft übers Lobbydach wie bisher (das Gesims
+  liegt nicht auf seiner Laufebene).
+
+**Zu klären:** Plan für U2.
 
 ### 7.11 Pool-Umkleiden: Spinde und Bänke (entschieden und umgesetzt 2026-10-31, ZIM-145)
 
