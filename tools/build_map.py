@@ -38,6 +38,7 @@
 #   - Größenregeln (ZIM-141): Wo PLANFARBEN.md eine Größe in Pixeln nennt (Wandbreite 2 px, 3×3-Punkte, „21 × 11 px“,
 #     „4 px tief“, Türanschlag 1 px), prüft das Skript die gemalten Flächen dagegen und warnt mit Stockwerk, Ebene,
 #     Farbe und Pixelposition – es bricht nie ab. Möbel dürfen 1 px (10 cm) abweichen, Punkte und Striche nicht.
+#     Seit 3.11. abgeschaltet (CHECK_SIZES), bis entschieden ist, ob Punkte 2×2 oder 3×3 sind.
 #   - Bäume (Fläche „Baum“) markieren nur den Standort, die Größe kommt aus dem Modell.
 #   - Slices (Aseprite-Werkzeug „Slice“) tragen Namen: „Raum: Küche“, „Bereich: Lobby“, „Treppe: Lobby“
 #     (Pivot = oberes Ende), „Treppenhaus: Ost“, „Objekt: Sofa“ (Pivot = Vorderseite). Sie gelten im Stockwerk,
@@ -308,7 +309,8 @@ assert any(n for n, _ in PALETTE), "Keine Farbnamen – Legende %s fehlt (siehe 
 BY_NAME = {n: c for n, c in PALETTE if n}
 NAME_OF = {c: n for n, c in BY_NAME.items()}
 ## Größenregeln der Legende (ZIM-141, plan_legend.sizes); ältere Pläne mit .gpl haben keine
-SIZES = plan_legend.sizes(LEGEND) if LEGEND.endswith(".md") else {}
+CHECK_SIZES = False   ## 3.11.: vorerst aus – der Plan malt Punkte fast überall 2×2, die Legende sagt 3×3
+SIZES = plan_legend.sizes(LEGEND) if CHECK_SIZES and LEGEND.endswith(".md") else {}
 SIZE_TOLERANCE = {"furniture": 1}   ## Möbel dürfen 1 px (10 cm) abweichen, Punkte und Striche nicht
 SIZE_WARNINGS = {}   # (Stockwerk, Ebene, Farbe, gemalt, Regel) → [(x, y)], ausgegeben von report_sizes()
 WALL = BY_NAME[WALL_NAME]

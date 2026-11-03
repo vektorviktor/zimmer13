@@ -922,6 +922,8 @@ Warnungen erscheinen als `push_warning` „build_map: …“; schlägt es fehl, 
   `check_wall_width` die Wandnetze samt Öffnungen (ein Quadrat Wandbreite + 1 ganz in der Wand = zu dick, ein Pixel in
   keinem Quadrat der Wandbreite = zu dünn), die Türanschläge auf ihre Pixelzahl. Nur Warnungen, je Stockwerk, Ebene,
   Farbe und gemalter Größe eine Zeile mit allen Pixelpositionen (`report_sizes`); die Karten bleiben gleich.
+  **Seit 3.11. abgeschaltet** (`CHECK_SIZES = False` → `SIZES` leer), bis entschieden ist, ob Punkte 2×2 (so im Plan)
+  oder 3×3 (so in der Legende) sind; zum Einschalten nur den Schalter umlegen.
 - **Grundriss:** 1 m = 10 px, Wände 2 px, Öffnungen als Farbstriche **auf** der Wandlinie (**Türanschlag**: ein Pixel
   `Türanschlag` statt eines Türpixels an einem Ende, in der Wandhälfte, in die die Tür aufgeht; falsch gesetzt bricht
   das Skript mit Position ab), Flächen als Füllfarben, `Luftraum` = hier kein Boden (darunter `open_above`). Schrift in
