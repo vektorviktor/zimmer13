@@ -103,8 +103,8 @@ judge() {
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
 		problems+=" kein Lichtbericht"
 	fi
-	if grep -q "^\[Maske\] .*FEHLER" "$log"; then
-		problems+=" $(grep -c '^\[Maske\] .*FEHLER' "$log")× Maskenwirkung falsch"
+	if grep -q "^\[\(Maske\|Ring\)\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[\(Maske\|Ring\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\)\] .*FEHLER' "$log" | head -1))"
 	fi
 	if [ -n "$problems" ]; then
 		printf 'fail\tFEHLER  %s:%s   (%s)\n' "$name" "$problems" "$log"
@@ -193,6 +193,8 @@ done <<'LIST'
 600|masken,kraehen|--maske=scarecrow,pruefen --trace
 600|masken,kraehen|--maske=crow,pruefen --trace
 600|masken,katzen|--maske=cat,pruefen --trace
+700|bitten,kraehen,ring|--bitte=gerda,ring,erfuellen --trace
+500|kraehen,ring,speichern|--kraehen=dachnest --savetest --trace
 2400|masken,kuerbismann|--maske=pumpkin --pumpkin=jagd --trace
 1500|monster,gaeste,tod|--kill=mila --trace
 900|gaeste,tod,ui|--console=kill=Emil,leiche,blut,hin;guests --trace

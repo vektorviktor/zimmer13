@@ -157,7 +157,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     Zusatz wie bei den Dosen – ältere Stände laden weiter, ohne Gläser
 ## 75: Puppenmaske entschärft (Spielkonzept 5.19; ZIM-102): director.doll_mask entfällt – ältere Stände laden weiter,
 ##     das alte Feld wird übergangen
-const VERSION := 75
+## 76: Ehering im Dachnest (Spielkonzept 4.25, 6.14; ZIM-50): neue Art Item.Kind.RING, omens.crows.roof_nest (Inhalt des
+##     Dachnests), social.requests.rare (erfüllte seltene Bitten) – ältere Stände laden weiter, der Ring liegt im Nest
+const VERSION := 76
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0

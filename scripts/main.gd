@@ -407,7 +407,8 @@ extends Node3D
 ##   --gespraech=luege,art,gast[,wer]   dem Gast etwas vorlügen (geist, monster, kuerbis, leiche, dieb); bei leiche/dieb
 ##                               kommt der Genannte nach 3 s vorbei – die Lüge fliegt auf (--trace)
 ##   --bitte=gast[,art[,annehmen|erfuellen]]  der Gast stellt seine Bitte (6.14; art: herz – Standard –, kuerbis,
-##                               kerze, kaffee, suess, mag); annehmen: gleich zusagen, erfuellen: auch erfüllen ([Bitte])
+##                               kerze, kaffee, suess, mag, ring – seltene Bitte, nur gerda); annehmen: gleich zusagen,
+##                               erfuellen: auch erfüllen ([Bitte]; ring: aus dem Dachnest holen, „[Ring] … ok“/„FEHLER“)
 ##   --look=id[,pose]            Gast ansehen (ohne Dialog, er bleibt stehen); pose: carry (trägt einen Kürbis),
 ##                               panic (Arme hoch), dance (tanzt), sit (sitzt), walk (geht quer vorbei) –
 ##                               zum Prüfen der Gastmodelle
@@ -446,6 +447,7 @@ extends Node3D
 ##                               darauf, die Zeit fast um, nach 3 s siehst du weg · schluessel: hohe Gunst nach drei Tagen –
 ##                               statt des Futters liegt der Schlüssel von 1987 da
 ##   --kraehen=geschenk          wie futter, Gunst knapp über der Schwelle – es kommt Kleinzeug (Batterie, Streichhölzer, Kerze)
+##   --kraehen=dachnest          unter dem Dachfenster mit dem Krähennest (ZIM-50), Blick hinaus – darin Gerdas Ehering
 ##   --ratten[=welle]            fünf Ratten um dich im Keller (sonst im Heizkeller) · welle: nach 2 s rennen sie davon, als käme
 ##                               das Monster aus dem Heizkeller
 ##   --hund                      nach 1 s heult hinter der Waldkante ein Hund (sonst zufällig alle paar Spielminuten)

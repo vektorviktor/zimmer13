@@ -1690,6 +1690,14 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   Herzensbitte `HEART_REWARD` direkt (außerhalb des Budgets), kleine über `Talk.friendly`, dazu `pals.praise`.
   Gespeichert unter `social.requests` (`active`, `hearts`, Tageszähler). Debug `--bitte=gast[,art[,annehmen|erfuellen]]`,
   `--trace` `[Bitte]`.
+  **Seltene Bitten** (ZIM-50): `rare` (erfüllte Schlüssel, gespeichert, Version 76), Art außerhalb der kleinen Bitten.
+  „ring“ = „Wiederfinden“ (`RING`): nur `is_ring_owner` (Haushalt `RING_HOUSEHOLD` H10, die Frau – Gerda Wagner), ab
+  `RING_DAY`, ab „neutral“, mit `OFFER_CHANCE["ring"]`, angeboten nach den Wünschen aus schweren Momenten und vor der
+  Herzensbitte. `on_gift`: ihr Ring (`is_her_ring`) erfüllt sie – auch ohne offene Bitte (gefunden, bevor sie fragte).
+  `_ring_reward`: Beziehung auf mindestens `RING_FRIEND` (Zuwachs gegen die Abflachung in `change_relation` bemessen),
+  `pals.praise`, nach 1 s eine Kerze aus `stock`, sonst Bonbons; Notiz „ring_back“. `Guest._gift_step` steckt den Ring
+  an (verschwindet) statt ihn heimzutragen. Debug `--bitte=gerda,ring,erfuellen` holt ihn über `RoofNest.interact`
+  und schenkt ihn, `--trace` `[Ring]`.
   **Wünsche aus schweren Momenten** (ZIM-161, `Tender`): Feld `state` (Zustand, mit dem der Wunsch verfällt).
   `offer_for` fragt nach dem Trauerwunsch `tender_state` (erster Zustand nach `Tender.ORDER`, dessen Wunsch in diesem
   Zustand nicht schon erfüllt ist – `granted` je Gast und Zustand mit `Tender.instance`; Katzen müssen da sein,
@@ -2590,7 +2598,15 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   bzw. im Zeitsprung, nach `FOOD_HOURS` unbeobachtet weg (`_eat`): erste Mahlzeit des Tages +0,35, weitere +0,1; ab
   `GIFT_FAVOR` ein Geschenk (`_gift`): Schlüssel ab `KEY_FAVOR` und `KEY_DAYS` Fütterungstagen, sonst Gestohlenes, sonst
   mit `USEFUL_CHANCE` Kleinzeug aus `USEFUL` (Batterie, Streichhölzer, Kerze – kein eigener `Item.Kind`), sonst
-  `COIN_GIFT` Münzen; Debug `--kraehen=geschenk` erzwingt Kleinzeug. Gespeichert unter „omens“ „crows“ (Speicherformat 59). Ratten: Welle weg vom Monster (`WAVE_RANGE`), nur Klang.
+  `COIN_GIFT` Münzen; Debug `--kraehen=geschenk` erzwingt Kleinzeug. Gespeichert unter „omens“ „crows“ (Speicherformat 59).
+  **Dachnest** (`world/roof_nest.gd`, `RoofNest`, ZIM-50): `RoofNest.make` nimmt aus `LevelBuilder.attic_window_spots`
+  das Fenster nächst dem Futtertisch (ohne Tisch das erste) und rechnet aus dem Platz darunter die Schräge nach
+  (`ATTIC_SLOPE`, `ATTIC_KNEE`, `ATTIC_H`, `ATTIC_WINDOW` – kein Eingriff in den LevelBuilder): Nest (`Crows.build_twigs`,
+  wie im Baum, `NEST_SCALE`) außen auf dem unteren Rahmen (`NEST_AT`, `NEST_OUT`), darin ein goldener Ring, solange
+  `Crows.roof_nest` nicht leer ist. Der Körper ist die Griff-Fläche innen vor der Scheibe (`GRIP_SIZE`, Ebene
+  `HotelCat.LAYER` – nur der Spielerstrahl trifft sie); [E] → `Crows.take_from_roof_nest` → in die Hand, Notiz
+  „roof_nest_ring“. `roof_nest` (`{kind, extra}`, Anfang: `Item.Kind.RING`) gespeichert unter „omens“ „crows“
+  (Version 76). `RING` gehört auch zu `SHINY`. Debug `--kraehen=dachnest` (unter dem Fenster, Blick hinaus). Ratten: Welle weg vom Monster (`WAVE_RANGE`), nur Klang.
 - **Hund:** `Weather.howl(delay)`, zufällig alle `HOWL_EVERY` s Spielzeit (`_howl_timer`, im Schlaf nur weitergezählt).
 - **Tiere in der Ferne** (7.8): `DistantAnimals` unter `Weather` (`Weather.animals`), nur Klang (`SynthAudio`: `owl`,
   `owl_kewick`, `caw`, `bark`, `bark_deep`), draußen `*_VOLUME`, drinnen × `Weather.BELL_INSIDE`, im Schlaf nichts.

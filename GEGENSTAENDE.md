@@ -47,7 +47,7 @@ Stand: 2026-10-28.
 | Blutige Axt | – | geplant | – (Belohnung) | nach der Erlösung; an der Tür klaut keiner | 4.21 |
 | Jeansjacke | – | geplant | Nebenstrang (Marion, Schlüsselbund) | nach der Erlösung; Deko | 4.21, 2.8 |
 | Fundsachen-Koffer früherer Gäste | – | geplant | Hauptgeschichte (Lager, K5) | Lager in U2; Namen der Warnungszettel | 7.4, M11 |
-| Ring eines Gastes | – | geplant | – (Gastauftrag, offen) | im Krähennest vor einem Dachfenster | 4.25, ZIM-50 |
+| Goldener Ehering („O. & G. 1976“) | `RING` | gebaut 2026-11-03 | – (seltene Bitte „Wiederfinden“) | Gerda Wagners (H10, Zimmer 007); im Krähennest vor dem Dachfenster nahe dem Futtertisch, durchs aufgeklappte Fenster zu greifen; ihr schenken → Freundschaft und ein kleines Geschenk (Kerze, sonst Bonbons); sie steckt ihn gleich an; draußen abgelegt stehlen ihn die Krähen wieder | 4.25, 6.14, ZIM-50 |
 | ~~Kohle~~ | – | gestrichen 2026-10-27 (Kessel ist Attrappe) | – | – | 7.4 |
 | Bolzenschneider | – | eingefroren | – | Lager aufbrechen | 7.4 |
 

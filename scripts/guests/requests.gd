@@ -18,6 +18,10 @@ extends Node
 ## verschleppte Deko zurück (deco_back); Kernfiguren eigene (Tender.CORE, Art item). Feld „state“: Endet der Zustand,
 ## verfällt der Wunsch still und wird im Notizbuch gestrichen. Wie memorial außerhalb der kleinen Bitten, ohne Frist;
 ## je Zustand einmal (granted). Erfüllt: Beziehung ↑ (TENDER_REWARD, im schweren Moment doppelt), er erzählt es weiter.
+## Seltene Bitten (6.14 „Wiederfinden“): ring – Gerda Wagner (Haushalt RING_HOUSEHOLD) hat ihren Ehering draußen auf
+## einem Tisch liegen lassen, eine Krähe hat ihn ins Nest vor einem Dachfenster getragen (4.25, RoofNest; ZIM-50). Sie
+## fragt ab RING_DAY, einmal im Spiel (rare), ohne Frist; erfüllt beim Schenken – auch wenn man ihn vorher gefunden hat.
+## Lohn: Freundschaft (mindestens „befreundet“) und ein kleines Geschenk.
 ## Der Gast fragt von sich aus (offer_for, Chance OFFER_CHANCE) oder auf „Kann ich dir irgendwie helfen?“. Angenommen →
 ## Notizbuch (3.10); abgelehnt kostet nichts, bei Freunden ein wenig. Kind von Social, erreichbar über
 ## Game.social.requests. Gespeichert unter social.requests.
@@ -33,12 +37,21 @@ const SMALL_TIER := Social.Tier.NEUTRAL
 const SMALL_REWARD := 6.0
 const SMALL_PRAISE := 1.5
 ## Bitten außerhalb der kleinen (ohne Frist, nicht in SMALL_PER_DAY/MAX_SMALL)
-const OUTSIDE_SMALL := ["reconcile", "memorial", "door_deco", "cat", "soup", "deco_back"]
+const OUTSIDE_SMALL := ["reconcile", "memorial", "door_deco", "cat", "soup", "deco_back", "ring"]
 ## Verpasst (Ende des Spieltags) bzw. abgelehnt als Freund
 const MISSED := -2.0
 const DECLINED_FRIEND := -1.0
 ## So oft fragt er von sich aus zu Beginn eines Gesprächs (Herzensbitte, kleine Bitte)
-const OFFER_CHANCE := {"heart": 0.6, "small": 0.35, "memorial": 0.7, "tender": 0.7}
+const OFFER_CHANCE := {"heart": 0.6, "small": 0.35, "memorial": 0.7, "tender": 0.7, "ring": 0.5}
+## Ehering (seltene Bitte „Wiederfinden“, ZIM-50): wessen, ab welchem Spieltag sie fragt, Beziehung danach mindestens so
+## viel (befreundet), dazu so viel Lob bei ihren Freunden
+const RING_HOUSEHOLD := "H10"
+const RING_DAY := 3
+const RING_FRIEND := 55.0
+const RING := {"kind": "ring", "item": Item.Kind.RING,
+	"task": "Den Ehering von {name} wiederfinden – draußen am Tisch saßen Krähen",
+	"ask": "Ach, gut, dass ich dich sehe … Mein Ehering ist weg. Fünfzig Jahre hab ich ihn nicht abgenommen, und dann leg ich ihn einmal draußen auf den Tisch, nur kurz. Als ich wiederkam, saßen lauter Krähen drum herum. Otto darf das nicht erfahren. Hältst du die Augen offen?",
+	"thanks": "Mein Ring! Bei den Krähen war er? Ach, du … Hier, nimm das – und wenn du je etwas brauchst, klopf bei uns. Bei Otto und mir bist du jetzt immer willkommen."}
 ## Wunsch aus einem schweren Moment erfüllt: so viel Beziehung (im Zustand doppelt), so viel Lob bei seinen Freunden
 const TENDER_REWARD := 8.0
 const TENDER_PRAISE := 2.5
@@ -135,6 +148,8 @@ var active: Array[Dictionary] = []
 var hearts := {}
 ## Gast-ID → {Zustand: Tender.instance} – diesen Wunsch hat er in diesem Zustand schon erfüllt bekommen
 var granted := {}
+## Erfüllte seltene Bitten (Schlüssel, etwa „ring“) – jede gibt es nur einmal im Spiel
+var rare: Array = []
 var _small_day := -1
 var _small_today := 0
 var _next_id := 1
@@ -188,6 +203,8 @@ func offer_for(g: Guest, asked: bool = false, tender_only: bool = false) -> Dict
 		req = make_tender(g, state)
 	elif tender_only:
 		pass
+	elif _ring_open_to(g) and (asked or randf() < float(OFFER_CHANCE["ring"])):   # seltene Bitte (ZIM-50)
+		req = make_ring(g)
 	elif _heart_open_to(g) and (asked or randf() < float(OFFER_CHANCE["heart"])):
 		req = make_heart(g)
 	elif _small_allowed(g) and (asked or randf() < float(OFFER_CHANCE["small"])):
@@ -264,9 +281,15 @@ func thanks_on_greet(g: Guest) -> String:
 ## stellt ihn vor seine Tür (Guest.gift_to_door).
 func on_gift(g: Guest, item: Item) -> String:
 	var req := request_of(g)
+	if is_her_ring(g, item) and not rare.has("ring") and (req.is_empty() or req["kind"] != "ring"):
+		_ring_reward(g)   # gefunden, bevor sie gefragt hat: Dank und Lohn wie erbeten
+		return _fill(String(RING["thanks"]), g, null)
 	if req.is_empty():
 		return ""
 	match String(req["kind"]):
+		"ring":
+			if not is_her_ring(g, item):
+				return ""
 		"item":
 			if not _fits(req, item):
 				return ""
@@ -343,6 +366,8 @@ func _complete(g: Guest, req: Dictionary) -> String:
 			Game.achievements.unlock("heart_request")   # Spielkonzept 8.11
 		Game.social.change_relation(g, HEART_REWARD)   # einmalig, außerhalb des Tagesbudgets (6.18, 5)
 		Game.social.pals.praise(g, HEART_PRAISE)
+	elif req["kind"] == "ring":
+		_ring_reward(g)
 	elif req["state"] != "":   # Wunsch aus einem schweren Moment (6.18, 3): zählt im Zustand doppelt, er erzählt es weiter
 		_grant(g, String(req["state"]))
 		Game.social.talk.friendly(g, TENDER_REWARD)
@@ -400,6 +425,51 @@ func _small_allowed(g: Guest) -> bool:
 	var today_count := _small_today if _small_day == Calendar.today() else 0
 	return today_count < SMALL_PER_DAY and active.filter(func(r: Dictionary) -> bool:
 		return not r["heart"] and not _outside_small(r)).size() < MAX_SMALL
+
+
+## Gerda Wagner (Haushalt RING_HOUSEHOLD, die Frau): ihr gehört der Ehering aus dem Dachnest (ZIM-50).
+static func is_ring_owner(g: Guest) -> bool:
+	return g != null and not g.is_child() and String(g.profile.get("household", "")) == RING_HOUSEHOLD \
+		and String(g.profile.get("sex", "")) == "f"
+
+
+static func is_her_ring(g: Guest, item: Item) -> bool:
+	return item != null and item.kind == Item.Kind.RING and is_ring_owner(g)
+
+
+## Seltene Bitte „Wiederfinden“: nur Gerda, ab RING_DAY, ab „neutral“, einmal im Spiel.
+func _ring_open_to(g: Guest) -> bool:
+	return is_ring_owner(g) and not rare.has("ring") and Calendar.today() >= RING_DAY and Social.tier(g) >= SMALL_TIER
+
+
+func make_ring(g: Guest) -> Dictionary:
+	var req := _base(g, RING, false)
+	_fill_texts(g, req)
+	return req
+
+
+## Ehering zurück: Freundschaft (mindestens RING_FRIEND – der Zuwachs wird so bemessen, dass er nach der Abflachung in
+## Social.change_relation reicht), Lob bei ihren Freunden, und gleich darauf ein kleines Geschenk aus ihrem Vorrat (eine
+## Kerze, sonst Bonbons aus der Handtasche).
+func _ring_reward(g: Guest) -> void:
+	rare.append("ring")
+	var damp := 1.0 - clampf(g.relation, 0.0, 100.0) / 110.0
+	Game.social.change_relation(g, maxf(HEART_REWARD, (RING_FRIEND - g.relation) / damp + 0.5))
+	Game.social.pals.praise(g, HEART_PRAISE)
+	Game.social.add_deed(g, "gifts_from")
+	var kind := Item.Kind.SWEETS
+	if int(g.stock.get(Item.Kind.CANDLE, 0)) > 0:
+		g.stock[Item.Kind.CANDLE] = int(g.stock[Item.Kind.CANDLE]) - 1
+		kind = Item.Kind.CANDLE
+	get_tree().create_timer(1.0, false).timeout.connect(func() -> void:   # erst, wenn der Ring aus der Hand ist
+		if Game.player and not Game.player.dead:
+			Game.player.receive_item(Item.create(kind)))
+	if Game.notebook:
+		Game.notebook.add_note("ring_back", "%s hat ihren Ehering wieder. Fünfzig Jahre – und Otto weiß von nichts." % g.display_name,
+			"Zimmer %s" % String(g.home["no"]))
+	if Game.tracing:
+		print("[Ring] %s hat ihren Ehering wieder: Beziehung %.0f (%s), Geschenk %s" % [g.display_name, g.relation,
+			Social.relation_word(g.relation), Item.Kind.keys()[kind]])
 
 
 ## Seine Herzensbitte: Kernfigur eigene, sonst nach Charakter. Kein Zufall – aus Charakter und ID (Spielstände).
@@ -652,7 +722,7 @@ func _message_target(g: Guest) -> Guest:
 
 func save_state() -> Dictionary:
 	return {"active": active.duplicate(true), "hearts": hearts.duplicate(), "small_day": _small_day,
-		"small_today": _small_today, "next_id": _next_id, "granted": granted.duplicate(true)}
+		"small_today": _small_today, "next_id": _next_id, "granted": granted.duplicate(true), "rare": rare.duplicate()}
 
 
 ## Ältere Stände ohne „requests“: keine Bitten
@@ -673,6 +743,7 @@ func load_state(d: Dictionary) -> void:
 		for state in (gr[id] as Dictionary):
 			states[String(state)] = String(gr[id][state])
 		granted[String(id)] = states
+	rare = (d.get("rare", []) as Array).map(func(k) -> String: return String(k))
 	_small_day = int(d.get("small_day", -1))
 	_small_today = int(d.get("small_today", 0))
 	_next_id = int(d.get("next_id", 1))
@@ -698,8 +769,9 @@ func reset() -> void:
 # --- Debug --------------------------------------------------------------------------------------
 
 ## --bitte=gast[,art[,annehmen|erfuellen]]: Der Gast kommt vor dich und stellt seine Bitte (art: herz – Standard –,
-## kuerbis, kerze, kaffee, suess, mag). Mit annehmen sagst du gleich zu, mit erfuellen erfüllst du sie auch
-## (Gegenstand in die Hand und schenken, Partie zählt, Begleiter an der Bar, Nachricht ausgerichtet) – Ausgabe [Bitte].
+## kuerbis, kerze, kaffee, suess, mag; ring – die seltene Bitte, nur Gerda). Mit annehmen sagst du gleich zu, mit
+## erfuellen erfüllst du sie auch (Gegenstand in die Hand und schenken, Partie zählt, Begleiter an der Bar, Nachricht
+## ausgerichtet; ring: aus dem Dachnest holen und schenken, Prüfung „[Ring] … ok“ bzw. „FEHLER“) – Ausgabe [Bitte].
 func debug(parts: PackedStringArray) -> void:
 	var g := Game.social.find_guest(parts[0] if parts.size() > 0 and parts[0] != "" else "edna")
 	if g == null:
@@ -721,9 +793,42 @@ func debug(parts: PackedStringArray) -> void:
 
 
 func _forced_request(g: Guest, what: String) -> Dictionary:
+	if what == "ring":
+		return make_ring(g) if is_ring_owner(g) else {}
 	var key: String = {"kuerbis": "pumpkin", "kerze": "candle", "kaffee": "coffee", "suess": "sweets", "mag": "likes",
 		"glas": "glass"}.get(what, "")
 	return make_heart(g) if key == "" else _small_of(g, key)
+
+
+## Ring-Bitte erfüllen wie im Spiel: unter das Dachfenster, [E] am Nest (RoofNest.interact), ihr schenken.
+func _debug_ring(g: Guest) -> void:
+	var report := func(what: String, ok: bool) -> void:
+		print("[Ring] %s: %s" % [what, "ok" if ok else "FEHLER"])
+	var nest: RoofNest = Game.crows.roof if Game.crows else null
+	report.call("Dachnest gebaut", nest != null)
+	if nest == null:
+		return
+	Game.dialog.close()
+	Game.crows.debug_show("dachnest")
+	report.call("Prompt am Fenster", nest.get_prompt(Game.player).ends_with("[E]"))
+	nest.interact(Game.player)
+	var ring := Game.player.held
+	report.call("Ring in der Hand", ring != null and ring.kind == Item.Kind.RING and ring.display_name.begins_with("Goldener Ehering"))
+	report.call("Dachnest leer", Game.crows.roof_nest.is_empty())
+	if ring == null:
+		return
+	Game.dialog.open(g)
+	Game.dialog.call("_gift", ring)
+	print("[Bitte] %s sagt: %s" % [g.display_name, Game.dialog._text.text])
+	Game.dialog.close()
+	report.call("Bitte erfüllt", request_of(g).is_empty() and rare.has("ring"))
+	report.call("befreundet", Social.tier(g) >= Social.Tier.FRIEND)
+	get_tree().create_timer(2.0, false).timeout.connect(func() -> void:
+		var gift := Game.player.held
+		report.call("kleines Geschenk in der Hand", gift != null and gift.kind in [Item.Kind.CANDLE, Item.Kind.SWEETS]
+			or Game.player.bag.any(func(i: Item) -> bool: return i.kind in [Item.Kind.CANDLE, Item.Kind.SWEETS])))
+	get_tree().create_timer(20.0, false).timeout.connect(func() -> void:
+		report.call("Ring angesteckt (weg)", not is_instance_valid(ring) or ring.is_queued_for_deletion()))
 
 
 func _debug_fulfil(g: Guest) -> void:
@@ -732,6 +837,8 @@ func _debug_fulfil(g: Guest) -> void:
 		print("[Bitte] %s: keine offene Bitte" % g.display_name)
 		return
 	match String(req["kind"]):
+		"ring":
+			_debug_ring(g)
 		"item":
 			var extra := String(req["variety"])
 			if int(req["item"]) == Item.Kind.CARVED_PUMPKIN:

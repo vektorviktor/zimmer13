@@ -2672,7 +2672,7 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
   lauter, drinnen gedämpft, im Schlaf nicht (kein Zeichen nach der Totenglocke, Entscheidung 2026-10-25).
 - Debug: `--kraehen`, `--ratten`, `--hund`.
 
-**Erweiterung: Ruf, Futtertisch und zwei Nester (entschieden 2026-10-25, gebaut 2026-10-28 bis auf das Dachnest)**
+**Erweiterung: Ruf, Futtertisch und zwei Nester (entschieden 2026-10-25, gebaut 2026-10-28, das Dachnest 2026-11-03)**
 > Vorher holten die Krähen nur Münzen, und die flogen fast nie draußen herum (nur aus der Tasche eines Gastes in
 > Panik); was sie holten, wurde gelöscht. Unnachvollziehbar – darum: Was verschwindet, liegt sichtbar irgendwo und kann
 > zurückkommen.
@@ -2705,15 +2705,22 @@ Die Krähen sind seit der Erweiterung unten auch ein Gegenüber, mit dem man han
 - *Gebaut 28.10.:* gestohlen werden Münzen, Schlüssel, Messer und Kompass; ein Wurf ins Nest kostet 0,6 Ruf. Der
   Schlüssel heißt im Spiel „Alter Messingschlüssel, Anhänger 042“ und schließt die Tür von 042 auf (das Versiegeln,
   6.19 (7), ist noch nicht gebaut). Debug: `--kraehen=gunst|stehlen|nest|werfen|futter|schluessel`.
-- **Nest am Dach (nicht gebaut):** direkt vor einem **Dachfenster** im Dachgeschoss, mit ausgestrecktem Arm zu erreichen – kein
+- **Nest am Dach (gebaut 2026-11-03):** direkt vor einem **Dachfenster** im Dachgeschoss, mit ausgestrecktem Arm zu erreichen – kein
   Klettern auf dem Dach. Darin liegt der **Ring** eines Gastes: Er hat ihn draußen auf einem Tisch liegen lassen, eine
   Krähe hat ihn geholt. **Entschieden 2026-11-03 (ZIM-50):** Es ist der **Ehering** eines verheirateten Gastes. Der
   Gast bittet zuerst – seltene Bitte „Wiederfinden“ (6.14) – und erwähnt, dass draußen Krähen um den Tisch waren.
   Lohn: Freundschaft und ein kleines Geschenk. Welcher Gast: beim Bau aus den Haushalten (6.20) wählen.
+  *Gebaut 3.11. (ZIM-50):* Es ist **Gerda Wagner** (H10, Zimmer 007, seit fünfzig Jahren mit Otto verheiratet – Gravur
+  „O. & G. 1976“). Sie bittet ab dem 3. Spieltag, ab „neutral“, einmal im Spiel, ohne Frist („Otto darf das nicht
+  erfahren“). Das Nest sitzt außen auf dem unteren Rahmen des Dachfensters, das dem Futtertisch am nächsten ist (kleinste
+  Lösung, solange die Form des Dachs offen ist), und ist durchs Glas zu sehen; [E] am Fenster klappt es auf, man greift
+  hinaus und hat den Ring in der Hand – leise, ohne Ruf-Folgen. Findet man ihn, bevor sie fragt, dankt sie beim
+  Schenken genauso. Lohn: Beziehung mindestens „befreundet“, Lob bei ihren Freunden, dazu eine Kerze aus ihrem Vorrat
+  (sonst Bonbons); sie steckt den Ring gleich an. Draußen abgelegt holen ihn die Krähen wieder (dann ins Baumnest).
 
 **Zu klären**
 - **Rattenkönig im Glas:** gebaut als Platzhalter, noch nicht entschieden (ZIM-100).
-- **Dachnest:** welches Dachfenster – hängt an der noch offenen Form des Dachs.
+- **Dachnest:** welches Dachfenster – hängt an der noch offenen Form des Dachs (vorerst das nächste zum Futtertisch).
 - **Kerzen der Ratten:** Wohin schleppen sie sie? Dieselbe Frage wie bei den Krähen – ein sichtbares Lager wäre die
   Antwort aus derselben Richtung.
 
@@ -4531,6 +4538,8 @@ Full-body 3D character of a 7-year-old girl, child proportions with a slightly l
 > - **Noch offen:** der Bezug der Kernfiguren-Bitten zum Geheimnis (ihre Rolle darin ist noch nicht geklärt, 6.0),
 >   zentrale Gäste (noch nicht besetzt), Verstecken mit Kindern und Apfeltauchen als „Spielen“, Kuscheltier
 >   wiederfinden, Bitten am Telefon und als Zettel an Zimmer 13.
+> - **Seltene Bitten (gebaut 2026-11-03, ZIM-50):** einmal im Spiel, ohne Frist, außerhalb der kleinen Bitten. Die
+>   erste ist „Wiederfinden“: Gerda Wagners Ehering aus dem Dachnest (4.25).
 
 Gäste bitten den Spieler um Hilfe – kleine Aufgaben, die die bestehenden Systeme nutzen. **Kein Questmenü** (2.3):
 Angenommene Aufträge notiert der Spieler-Charakter im **Notizbuch** unter „Aufgaben“ (3.10) – fortlaufend, mit Name,

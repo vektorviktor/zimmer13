@@ -586,7 +586,7 @@ func receive_gift(item: Item) -> bool:
 		return false
 	_take_into_hand(item)
 	_gift_item = item
-	var food := item.kind in FOOD_GIFTS
+	var food := item.kind in FOOD_GIFTS or GuestRequests.is_her_ring(self, item)
 	_gift_hold = randf_range(8.0, 14.0) if food else randf_range(25.0, 40.0)
 	return true
 
@@ -594,7 +594,7 @@ func receive_gift(item: Item) -> bool:
 ## Nach dem Gespräch: mit dem Geschenk heim (CARRY_HOME legt es in den Vorrat). false = nichts zu tragen.
 ## gift_to_door: der erbetene Lieblingskürbis (6.14) – er stellt ihn gleich vor seine Tür.
 func _carry_gift_home() -> bool:
-	if _gift_item == null or held != _gift_item or _gift_item.kind in FOOD_GIFTS:
+	if _gift_item == null or held != _gift_item or _gift_item.kind in FOOD_GIFTS or GuestRequests.is_her_ring(self, _gift_item):
 		gift_to_door = false
 		return false
 	_gift_item = null
@@ -617,7 +617,11 @@ func _gift_step(delta: float) -> void:
 		return
 	var item := _gift_item
 	_gift_item = null
-	if item.kind in FOOD_GIFTS:
+	if GuestRequests.is_her_ring(self, item):   # ihr Ehering (4.25, ZIM-50): gleich wieder angesteckt
+		held = null
+		item.queue_free()
+		say("So. Da gehört er hin.")
+	elif item.kind in FOOD_GIFTS:
 		held = null
 		item.queue_free()   # aufgegessen
 		if item.kind == Item.Kind.TEA:

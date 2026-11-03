@@ -65,8 +65,8 @@ const WATCH_RANGE := 22.0
 const CAW_EVERY := 6.0
 const SHINY_RANGE := 7.0                   ## so nah muss Glänzendes bei einer Krähe am Boden liegen
 const LOOK_EVERY := 5.0                    ## so oft sehen sie nach Glänzendem und Futter
-## Was sie stehlen (draußen, unbeobachtet) – der Ring eines Gastes gehört zum Dachnest (ZIM-50)
-const SHINY := [Item.Kind.COINS, Item.Kind.KEY, Item.Kind.KNIFE, Item.Kind.COMPASS]
+## Was sie stehlen (draußen, unbeobachtet) – auch Gerdas Ehering, wenn er wieder draußen liegt (dann ins Baumnest)
+const SHINY := [Item.Kind.COINS, Item.Kind.KEY, Item.Kind.KNIFE, Item.Kind.COMPASS, Item.Kind.RING]
 ## Das Nest sitzt im großen Baum gegenüber der Terrassentür dieses Zimmers (6.19 (7)) – darin von Anfang an sein Schlüssel
 const NEST_ROOM := "042"
 const OLD_KEY := "zimmer_042"
@@ -84,6 +84,9 @@ const GLINT_TIME := 0.2                    ## … so lange
 var favor := 0.0
 ## Inhalt des Nests: {kind, extra} je Stück (wie Item.create), was zuerst hineinkam, liegt vorn
 var nest: Array = []
+## Inhalt des Dachnests vor einem Dachfenster (RoofNest, ZIM-50): von Anfang an Gerdas Ehering
+var roof_nest: Array = []
+var roof: RoofNest
 ## Fütterungen: an so vielen verschiedenen Tagen, zuletzt an diesem Spieltag
 var fed_days := 0
 var last_fed_day := -1
@@ -129,6 +132,8 @@ func setup(builder: LevelBuilder) -> void:
 			_trees.append(t)
 	_feed_table = builder.feed_table
 	nest = _first_nest()
+	roof_nest = _first_roof_nest()
+	roof = RoofNest.make(builder, self)
 	if _trees.is_empty():
 		return
 	_build_mesh()
@@ -152,7 +157,7 @@ func skip_time(dt: float) -> void:
 
 func save_state() -> Dictionary:
 	return {"favor": favor, "nest": nest.duplicate(true), "fed_days": fed_days, "last_fed_day": last_fed_day,
-		"food_time": food_time}
+		"food_time": food_time, "roof_nest": roof_nest.duplicate(true)}
 
 
 ## Ältere Stände (vor Speicherformat 59) kennen nur den Groll – das Nest ist dann wie am Anfang.
@@ -162,6 +167,10 @@ func load_state(d: Dictionary) -> void:
 	fed_days = int(d.get("fed_days", 0))
 	last_fed_day = int(d.get("last_fed_day", -1))
 	food_time = float(d.get("food_time", 0.0))
+	# Stände vor Speicherformat 76 kennen das Dachnest nicht – der Ring liegt dann noch darin
+	roof_nest = (d["roof_nest"] as Array).duplicate(true) if d.has("roof_nest") else _first_roof_nest()
+	if roof:
+		roof.update()
 	_update_nest()
 
 
@@ -178,6 +187,18 @@ func _change_favor(by: float, why: String) -> void:
 
 func _first_nest() -> Array:
 	return [{"kind": int(Item.Kind.KEY), "extra": OLD_KEY}]
+
+
+func _first_roof_nest() -> Array:
+	return [{"kind": int(Item.Kind.RING), "extra": ""}]
+
+
+## Mit ausgestrecktem Arm aus dem Dachnest (RoofNest.interact): das erste Stück als neuer Gegenstand.
+func take_from_roof_nest() -> Item:
+	var entry: Dictionary = roof_nest.pop_front()
+	if roof:
+		roof.update()
+	return Item.create(int(entry["kind"]) as Item.Kind, String(entry["extra"]))
 
 
 func _spawn(i: int) -> void:
@@ -625,19 +646,7 @@ func _build_nest() -> void:
 	holder.name = "Kraehennest"
 	add_child(holder)
 	holder.global_position = _nest_pos
-	var twig := Mat.psx(Color(0.27, 0.21, 0.15))
-	var dry := Mat.psx(Color(0.46, 0.38, 0.28))
-	var bowl := Geo.mesh(holder, Geo.sphere(0.24, 0.3, 10, 5), Mat.psx(Color(0.16, 0.12, 0.08)), Vector3(0, -0.04, 0))
-	bowl.scale = Vector3(1.0, 0.55, 1.0)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 1987
-	for i in 56:   # Zweige rund um die Mulde, kreuz und quer, einige stehen heraus
-		var a := rng.randf() * TAU
-		var ring := rng.randf_range(0.14, 0.3)
-		var dir := Vector3(-sin(a) + rng.randf_range(-0.5, 0.5), rng.randf_range(-0.45, 0.45), cos(a) + rng.randf_range(-0.5, 0.5)).normalized()
-		var stick := Geo.mesh(holder, Geo.cylinder(rng.randf_range(0.005, 0.011), rng.randf_range(0.28, 0.6), 4), dry if i % 3 == 0 else twig,
-			Vector3(cos(a) * ring, rng.randf_range(-0.1, 0.08), sin(a) * ring))
-		stick.basis = Basis(Quaternion(Vector3.UP, dir))
+	build_twigs(holder, 1987)
 	_nest_bits = Node3D.new()
 	holder.add_child(_nest_bits)
 	var metal := Mat.metal(Color(0.85, 0.72, 0.42))
@@ -672,6 +681,24 @@ func _build_nest() -> void:
 	_glint.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_glint.visible = false
 	_update_nest()
+
+
+## Mulde und Zweige eines Krähennests um holder (Mitte der Mulde), fester Zufall aus rng_seed – Baum- und Dachnest
+## (RoofNest).
+static func build_twigs(holder: Node3D, rng_seed: int) -> void:
+	var twig := Mat.psx(Color(0.27, 0.21, 0.15))
+	var dry := Mat.psx(Color(0.46, 0.38, 0.28))
+	var bowl := Geo.mesh(holder, Geo.sphere(0.24, 0.3, 10, 5), Mat.psx(Color(0.16, 0.12, 0.08)), Vector3(0, -0.04, 0))
+	bowl.scale = Vector3(1.0, 0.55, 1.0)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = rng_seed
+	for i in 56:   # Zweige rund um die Mulde, kreuz und quer, einige stehen heraus
+		var a := rng.randf() * TAU
+		var ring := rng.randf_range(0.14, 0.3)
+		var dir := Vector3(-sin(a) + rng.randf_range(-0.5, 0.5), rng.randf_range(-0.45, 0.45), cos(a) + rng.randf_range(-0.5, 0.5)).normalized()
+		var stick := Geo.mesh(holder, Geo.cylinder(rng.randf_range(0.005, 0.011), rng.randf_range(0.28, 0.6), 4), dry if i % 3 == 0 else twig,
+			Vector3(cos(a) * ring, rng.randf_range(-0.1, 0.08), sin(a) * ring))
+		stick.basis = Basis(Quaternion(Vector3.UP, dir))
 
 
 func _update_nest() -> void:
@@ -840,8 +867,14 @@ func _gift() -> Item:
 ## futter: vor dem Futtertisch, Brotkrumen darauf, die Zeit ist fast um – sieh weg · schluessel: wie futter, mit hoher
 ## Gunst nach drei Tagen, es kommt der Schlüssel von 1987 · geschenk: wie futter, mit Gunst knapp über der Schwelle,
 ## es kommt Kleinzeug (ZIM-31). Ohne Tisch im Plan steht für futter, schluessel und geschenk ein Ersatztisch vor
-## Zimmer 13 (nur im Debug).
+## Zimmer 13 (nur im Debug) · dachnest: unter dem Dachfenster mit dem Dachnest, Blick hinaus (ZIM-50).
 func debug_show(what: String) -> void:
+	if what == "dachnest":
+		if roof == null:
+			Game.say("Krähen: kein Dachfenster fürs Dachnest.", 2.5)
+			return
+		_look_from(roof.stand.origin + (-roof.stand.basis.z) * 1.1, roof.center.lerp(roof.nest_pos, 0.7))
+		return
 	if _mm == null:
 		Game.say("Krähen: Draußen steht kein Baum.", 2.5)
 		return
