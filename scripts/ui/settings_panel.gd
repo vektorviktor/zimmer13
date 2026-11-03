@@ -13,6 +13,8 @@ var _calibration: Array[ColorRect] = []
 var _key_buttons := {}
 var _capture := []
 var _key_note: Label
+## Haken der Spiegelungen – die Grafikstufe setzt ihn mit
+var _reflections: CheckBox
 
 
 func _ready() -> void:
@@ -32,7 +34,9 @@ func _ready() -> void:
 	_check(list, "Vollbild", "fullscreen")
 	_check(list, "VSync", "vsync")
 	_slider(list, "Sichtfeld (FOV)", "fov", 60.0, 120.0, 1.0)
-	_check(list, "Spiegelungen", "reflections")
+	_graphics_row(list)
+	list.add_child(UiKit.wrap_label("Niedrig für Onboard-Grafik: geringere Auflösung, weniger Schatten, keine Spiegelungen, kürzere Sicht.", 8))
+	_reflections = _check(list, "Spiegelungen", "reflections")
 	list.add_child(UiKit.wrap_label("Marmor, Wasser und Lack spiegeln, was zu sehen ist. Aus, wenn das Spiel ruckelt.", 8))
 
 	_section(list, "Ton")
@@ -157,6 +161,22 @@ func _slider(list: VBoxContainer, text: String, key: String, min_value: float, m
 		Settings.set_value(key, v)
 		if key == "gamma":
 			_update_calibration())
+
+
+## Grafikstufe (Settings.GRAPHICS): wirkt sofort und stellt die Spiegelungen auf den Wert der Stufe.
+func _graphics_row(list: VBoxContainer) -> void:
+	var row := _row(list, "Grafikstufe")
+	var pick := OptionButton.new()
+	pick.add_theme_font_size_override("font_size", 9)
+	pick.get_popup().add_theme_font_size_override("font_size", 9)
+	for level: Dictionary in Settings.GRAPHICS:
+		pick.add_item(level["name"])
+	pick.select(clampi(Settings.graphics, 0, Settings.GRAPHICS.size() - 1))
+	pick.custom_minimum_size = Vector2(120, 0)
+	pick.item_selected.connect(func(i: int) -> void:
+		Settings.set_graphics(i)
+		_reflections.set_pressed_no_signal(Settings.reflections))
+	row.add_child(pick)
 
 
 func _check(list: VBoxContainer, text: String, key: String) -> CheckBox:

@@ -26,8 +26,8 @@ Konstanten im Code, hier nur deren Namen.
   über `MonsterDirector._day_lerp()`.
 - **Node-Klassen** werden mit `XYZ.new().setup(...)` erzeugt (`setup` gibt `self` zurück), danach
   `position`/`rotation` setzen und `add_child`. Gegenstände über die Fabrik `Item.create(kind, extra)`.
-- **Engine:** Godot 4.7 (Forward+), GDScript mit Typangaben. 3D in Fensterauflösung; die Bedienoberfläche ist
-  immer auf 480×270 ausgelegt.
+- **Engine:** Godot 4.7 (Forward+), GDScript mit Typangaben. 3D in Fensterauflösung (auf den Grafikstufen Mittel und
+  Niedrig darunter, siehe 8 „Grafikstufen“); die Bedienoberfläche ist immer auf 480×270 ausgelegt.
 - **Grafik: Maßstab ist der realistische Look** (Spielkonzept 9.2). Neue Materialien, Shader und Modelle: Texturen in
   voller Größe mit Mipmaps und linearem Filter, Normal-/Rauheitskarten, glatte Normalen, Polygonzahl nach Bedarf.
   Ältere Stellen mit kleinen Texturen oder `Closest`-Filter sind kein Vorbild; die Namen `psx_*` und `Mat.psx` sind
@@ -276,7 +276,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 ### Autoloads (`project.godot`)
 | Name | Datei | Aufgabe |
 |------|-------|---------|
-| `Settings` | `scripts/autoload/settings.gd` | Einstellungen, `user://settings.cfg`, Signal `changed`; Vollbild steht nicht in `KEYS` (Start immer im Fenster); `key_bindings` = Abweichungen der Tastenbelegung (`Keys`) |
+| `Settings` | `scripts/autoload/settings.gd` | Einstellungen, `user://settings.cfg`, Signal `changed`; Grafikstufen `GRAPHICS` (8 „Grafikstufen“); Vollbild steht nicht in `KEYS` (Start immer im Fenster); `key_bindings` = Abweichungen der Tastenbelegung (`Keys`) |
 | `Game` | `scripts/autoload/game.gd` | Referenzen auf alle Systeme, Geld, Meldungen, Tastenbelegung, Szenenwechsel, Screenshot-Debug |
 | `SaveManager` | `scripts/autoload/save_manager.gd` | Speichern/Laden, Autosave, Tagebuchsatz |
 
@@ -1616,7 +1616,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   eine Lampe ohne Schatten scheint durch alles hindurch. Damit das bezahlbar ist, werfen die meisten nur Schatten vom
   Bau (`shadow_caster_mask` = `ShadowBudget.LAYER`, Sichtebene 15): Wände, Böden und Decken fasst `ShadowBudget.merge`
   nach dem Bau je Kachel (`TILE`, je Stockwerk) zu unsichtbaren Meshes zusammen, die nur Schatten werfen
-  (`SHADOWS_ONLY`, Knoten „Schattenbau“); Türen liegen selbst auf der Ebene (sie bewegen sich). Die `FULL` nächsten
+  (`SHADOWS_ONLY`, Knoten „Schattenbau“); Türen liegen selbst auf der Ebene (sie bewegen sich). Die `full` nächsten
   Lampen nehmen alles außer den Kacheln (Möbel, Figuren, echte Wände). Der Schatten blendet erst mit dem Licht aus
   (`distance_fade_shadow` = Anfang + Länge der Licht-Ausblendung) – sonst schien es dazwischen durch Wände.
   Bias der Lampen `ShadowBudget.BIAS` (0,03) statt Godots 0,1: mit 0,1 löste sich der Schatten von Möbeln an der
@@ -1657,6 +1657,39 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   6 s messen ohne VSync, Bildzeiten nach `temp/bench_godot.csv`, Übersicht in die Konsole, dann beenden; je Punkt ein
   Bild nach `temp/bench_shots/` (mitten im Einschwingen). Unsichtbare Knoten fliegen vor dem Export raus (sonst verlangt
   das glTF `KHR_node_visibility`, das Unreal ablehnt). MultiMeshes (z. B. Vertäfelung) fehlen im glTF.
+
+### Grafikstufen (Spielkonzept 8.4, ZIM-94)
+Einstellung `Settings.graphics` (Index in `Settings.GRAPHICS`, in `user://settings.cfg`, nicht im Spielstand; ohne
+Eintrag Hoch). Wirkt sofort über `Settings.changed`: Fenster und RenderingServer stellt `Settings.apply` ein, Umgebung,
+Mond und `ShadowBudget.full` `main._apply_settings`, die Sichtweite `Player` (`camera.far` = Sicht +
+`Settings.VIEW_MARGIN` 4 m). Hoch ist der Stand vom 3.11.2026 (Ziel RTX 4060 Laptop, 1080p mit 30 FPS), Niedrig zielt auf
+neuere Onboard-Grafik mit 30 FPS. Die Werte sind Vorschläge, im Spiel nicht gemessen (Debug `--grafik=…`, `--perf`).
+
+| Wert | Niedrig | Mittel | Hoch |
+|------|---------|--------|------|
+| Auflösung der 3D-Ansicht (`scaling_3d_scale`, Modus) | 67 %, FSR 1 | 85 %, FSR 1 | 100 %, bilinear |
+| Schattenatlas der Lampen (`positional_shadow_atlas_size`) | 2048 | 4096 | 4096 |
+| Lampen mit Schatten von allem (`ShadowBudget.full`) | 5 | 8 | 12 |
+| Weiche Schatten (`*_soft_shadow_filter_set_quality`) | sehr niedrig (1) | niedrig (2) | niedrig (2) |
+| Mondschatten: Atlas / Reichweite | 2048 / 25 m | 4096 / 40 m | 4096 / 40 m |
+| Spiegelungen (SSR) beim Wählen / Schritte je Strahl | aus / 64 | an / 96 | an / 128 |
+| SSAO · GI (SDFGI) | aus · aus | aus · aus | aus · aus |
+| Lichtnebel-Raster (`environment_set_volumetric_fog_volume_size`) | 48 | 64 | 64 |
+| Sichtweite: Nebelende (`fog_depth_end`) / Kamera | 40 / 44 m | 52 / 56 m | 66 / 70 m |
+
+- **Spiegelungen:** Die Stufe setzt beim Wählen (`Settings.set_graphics`) den Haken „Spiegelungen“ auf ihren Wert;
+  danach lässt er sich wieder umstellen und gilt (auch auf Niedrig). Die Schritte je Strahl gehören fest zur Stufe.
+  Andere Einzelregler (Helligkeit, Sichtfeld, VSync) berührt die Stufe nicht.
+- **Schatten:** Die 88 Plätze im Atlas bleiben auf jeder Stufe (weniger Plätze: Lampen schienen durch Wände, siehe
+  „Licht“) – nur ihre Auflösung sinkt. Weniger `full`-Lampen heißt: Möbel und Figuren werfen nur nah an der Kamera
+  Schatten, das Licht im Raum bleibt gleich.
+- **SSAO und GI** nutzt das Hotel in keiner Stufe (Umgebungslicht ist eine feste Farbe, `_setup_environment`); die
+  Spalten `ssao`/`sdfgi` machen sie je Stufe schaltbar, falls Hoch sie bekommen soll.
+- **Sichtweite:** Der Nebel wird zum Ende hin schwarz, darum sieht man den Schnitt nicht – auf Niedrig verschwinden
+  Flure und das Monster aber schon nach 40 m im Dunkel. Andere Kameras (Bowling) übernehmen `camera.far` beim Start,
+  der Türspion bleibt bei 40 m.
+- Debug `--grafik=niedrig|mittel|hoch` setzt die Stufe nur für die Sitzung (nichts gespeichert), Szenarien mit
+  Stichwort „grafik“. Headless rendert Godot nichts – der Rauchtest prüft nur, dass das Umschalten ohne Fehler läuft.
 
 ### Fenster, Türen, Verstecke, Kommoden
 - **Fenster** (`hotel_window.gd`): klares Glas / Vorhang (Ebene 10 nur für Sicht & Mond); Milchglas kann die Klasse,

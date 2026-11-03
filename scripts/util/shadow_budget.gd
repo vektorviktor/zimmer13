@@ -5,7 +5,7 @@ extends Node
 ## rendert Punktlicht-Schatten jedes Bild neu (auch wenn sich nichts bewegt), und jedes Mesh kostet je Lampe sechs
 ## Zeichenaufrufe. Darum liegt auf LAYER nicht der Bau selbst, sondern merge(): Wände, Böden und Decken je Kachel
 ## (TILE) zu einem unsichtbaren Mesh zusammengefasst, das nur Schatten wirft. Nur Türen (sie gehen auf und zu) liegen
-## selbst dort (structure). Die FULL Lampen um die Kamera nehmen alles in den Schatten (Möbel, Gäste, die eigene
+## selbst dort (structure). Die full Lampen um die Kamera nehmen alles in den Schatten (Möbel, Gäste, die eigene
 ## Figur) – die Auswahl wird laufend nachgeführt. Wechselt dort eine Lampe, ändern sich nur Möbel- und Figurenschatten,
 ## nicht das Licht im Raum. Es zählt, wie tief die Kamera in ihrer Reichweite steht (Abstand − Reichweite), und wer
 ## schon alles nimmt, behält es mit STICKY Vorsprung – sonst schaltete ein halber Meter vor und zurück hin und her.
@@ -24,7 +24,6 @@ extends Node
 const LAYER := 1 << 14
 ## Kantenlänge einer Kachel (m) – größer: weniger Zeichenaufrufe, aber mehr Dreiecke je Schattenseite
 const TILE := 10.0
-const FULL := 12
 const FULL_DISTANCE := 18.0
 const STICKY := 1.5
 const INTERVAL := 0.25
@@ -50,6 +49,12 @@ static func set_bias(tree: SceneTree, bias: float, normal := -1.0) -> void:
 		if normal >= 0.0:
 			light.shadow_normal_bias = normal
 
+## So viele Lampen um die Kamera werfen Schatten von allem – je Grafikstufe (Settings.GRAPHICS, main._apply_settings)
+static var full := 12:
+	set(value):
+		if value != full:
+			full = value
+			wake = true
 ## Bereiche fürs Licht (LevelBuilder.light_rooms) – ohne sie gelten alle Lichter als erreichbar
 var rooms: LightRooms
 ## Eine Tür geht auf oder zu (Door.set_open): im nächsten Bild neu bestimmen, nicht erst nach INTERVAL – sonst käme
@@ -182,7 +187,7 @@ func _process(delta: float) -> void:
 	candidates.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
 	for i in candidates.size():
 		var light: OmniLight3D = candidates[i][1]
-		var mask := ALL if i < FULL else LAYER
+		var mask := ALL if i < full else LAYER
 		if light.shadow_caster_mask != mask:
 			light.shadow_caster_mask = mask
 

@@ -105,6 +105,7 @@ const COMMANDS := {
 	"noise": ["art", "alle 6 s Lärm am Spieler"],
 	"fps": ["", "Bilder pro Sekunde ein/aus (wie F10)"],
 	"nur-stockwerk": ["", "nur das Stockwerk der Kamera zeichnen, die übrigen ausblenden – ein/aus (zum Messen)"],
+	"grafik": ["niedrig|mittel|hoch", "Grafikstufe (8.4) nur für diese Sitzung, samt Spiegelungen der Stufe"],
 	"schatten-bias": ["[b[,n]]", "Bias (und Normal Bias) aller Lampen – Godot 0,1 bzw. 1,0; ohne Wert der Standard"],
 	"nohud": ["", "HUD aus/ein (für Screenshots)"],
 	"static-eg": ["[=pfad]", "Erdgeschoss als statische Szene speichern (Wände, Böden, Decken, Lampen – Standard res://temp/eg_static.scn)"],

@@ -303,9 +303,11 @@ func _ready() -> void:
 	add_child(_steps)
 	camera = Camera3D.new()
 	camera.fov = Settings.fov
-	Settings.changed.connect(func() -> void: camera.fov = Settings.fov)
+	camera.far = Settings.graphics_level()["view"] + Settings.VIEW_MARGIN   # knapp hinter dem Nebelende der Grafikstufe
+	Settings.changed.connect(func() -> void:
+		camera.fov = Settings.fov
+		camera.far = Settings.graphics_level()["view"] + Settings.VIEW_MARGIN)
 	camera.near = 0.03
-	camera.far = 70.0   # knapp hinter dem Nebelende (main.gd) – weiter sieht man nichts, auch das Monster nicht
 	head.add_child(camera)
 	camera.make_current()
 	camera.cull_mask = 0xFFFFF & ~PlayerBody.LAYER   # den eigenen Körper nur im Spiegel und als Schatten

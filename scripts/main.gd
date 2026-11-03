@@ -198,6 +198,8 @@ extends Node3D
 ##                               Messen mit --perf, was das Ausblenden brächte (ShadowBudget.floors_only); erneut: aus
 ##   --schatten-bias=b[,n]       Bias (und Normal Bias) aller Lampen setzen – zum Abgleichen im Spiel; ohne Wert der
 ##                               Standard ShadowBudget.BIAS
+##   --grafik=niedrig|mittel|hoch  Grafikstufe (8.4) nur für die Sitzung setzen, samt Spiegelungen der Stufe – nichts wird
+##                               gespeichert
 ##   --trace                     Monster-Zustand alle 2 s und jedes Lärmereignis in die Konsole schreiben
 ##   --trace-nav                 mit --trace auch Ziel und Wegfindung jedes Gastes
 ##   --gedraenge                 alle 10 s „[Gedränge]“: wie viele stehende Gäste einander näher als 0,6 m sind und wie
@@ -727,8 +729,17 @@ func _save_start(slot: int) -> void:
 	SaveManager.save_to(slot, DoorContest.ARRIVAL_ENTRY, get_viewport().get_texture().get_image())
 
 
+## Einstellungen auf die Welt: Spiegelungen und die Grafikstufe (Settings.GRAPHICS – Fenster und RenderingServer stellt
+## Settings.apply ein, die Kamera Player)
 func _apply_settings() -> void:
+	var g := Settings.graphics_level()
 	_env.ssr_enabled = Settings.reflections
+	_env.ssr_max_steps = g["ssr_steps"]
+	_env.ssao_enabled = g["ssao"]
+	_env.sdfgi_enabled = g["sdfgi"]
+	_env.fog_depth_end = g["view"]
+	(get_node("Moon") as DirectionalLight3D).directional_shadow_max_distance = g["moon_distance"]
+	ShadowBudget.full = g["full"]
 	if _post:
 		_post.set_shader_parameter("gamma", Settings.gamma)
 
@@ -794,7 +805,7 @@ func _setup_environment() -> void:
 	# der Lobbyboden etwas Metallic (LevelBuilder.LOBBY_FLOOR_MIRROR). Schritte: ein Bildpunkt je Schritt –
 	# mit 64 fanden Strahlen über den Boden die Wände dahinter oft nicht
 	env.ssr_enabled = Settings.reflections   # Einstellungen → Bild → Spiegelungen (_apply_settings)
-	env.ssr_max_steps = 128
+	env.ssr_max_steps = 128   # Hoch – je Grafikstufe in _apply_settings
 	env.ssr_fade_in = 0.15
 	env.ssr_fade_out = 2.0
 	env.ssr_depth_tolerance = 0.2
@@ -808,7 +819,7 @@ func _setup_environment() -> void:
 	env.fog_mode = Environment.FOG_MODE_DEPTH
 	env.fog_density = 1.0
 	env.fog_depth_begin = 4.0
-	env.fog_depth_end = 66.0
+	env.fog_depth_end = 66.0   # Hoch – Sichtweite je Grafikstufe in _apply_settings
 	env.fog_depth_curve = 0.6
 	env.fog_sky_affect = 0.0   # Himmel bleibt hinter dem Nebel sichtbar, Bäume und Dächer stehen schwarz davor
 	# Lichtschein im Dunst: Lampen werfen sichtbare Lichtkegel, dazwischen bleibt es finster
@@ -826,7 +837,7 @@ func _setup_environment() -> void:
 	moon.light_color = Color(0.55, 0.65, 1.0)
 	moon.light_energy = 0.32
 	moon.shadow_enabled = true
-	moon.directional_shadow_max_distance = 40.0
+	moon.directional_shadow_max_distance = 40.0   # je Grafikstufe in _apply_settings
 	moon.rotation = Vector3(deg_to_rad(-55.0), deg_to_rad(-30.0), 0.0)
 	add_child(moon)
 
@@ -1052,6 +1063,12 @@ func run_debug(arg: String) -> bool:
 			return false
 		ShadowBudget.set_bias(get_tree(), parts[0].to_float(), parts[1].to_float() if parts.size() > 1 else -1.0)
 		Game.say("Schatten: Bias %s%s" % [parts[0], (", Normal Bias " + parts[1]) if parts.size() > 1 else ""], 2.0)
+	elif arg.begins_with("--grafik="):
+		var level := ["niedrig", "mittel", "hoch"].find(_arg_value(arg, "--grafik"))
+		if level < 0:
+			return false
+		Settings.set_graphics(level, false)
+		Game.say("Grafikstufe: %s" % Settings.graphics_level()["name"], 2.0)
 	elif arg == "--fps":
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg == "--nohud":

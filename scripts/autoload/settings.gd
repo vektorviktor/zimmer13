@@ -14,6 +14,7 @@ var fullscreen := false          ## wird nicht gespeichert – das Spiel startet
 var vsync := true
 var fov := 90.0                  ## Sichtfeld senkrecht in Grad (60 … 120)
 var reflections := true          ## Spiegelungen auf glatten Flächen (SSR: Lobbymarmor, Pool, Tapetenlack) – kostet Leistung
+var graphics := 2                ## Grafikstufe: Index in GRAPHICS (0 Niedrig, 1 Mittel, 2 Hoch) – set_graphics
 # Ton
 var master_volume := 1.0
 var music_volume := 1.0
@@ -31,9 +32,33 @@ var spider_blobs := false        ## Arachnophobie: Spinnen als schlichte Kugeln 
 var warning_shown := false       ## Hinweis zur Lichtempfindlichkeit schon gezeigt
 var age_notice_shown := false    ## Hinweis mit Altersempfehlung schon gezeigt
 
-const KEYS := ["gamma", "vsync", "fov", "reflections",
+const KEYS := ["gamma", "vsync", "fov", "reflections", "graphics",
 	"master_volume", "music_volume", "effects_volume", "mouse_sensitivity", "invert_y",
 	"crouch_toggle", "key_bindings", "flicker_intensity", "look_pull", "subtitles", "spider_blobs", "warning_shown", "age_notice_shown"]
+
+## Grafikstufen (Spielkonzept 8.4, ZIM-94). Hoch ist der Stand vom 3.11.2026 (RTX 4060 Laptop, 1080p mit 30 FPS),
+## Niedrig zielt auf neuere Onboard-Grafik (30 FPS). Fenster und RenderingServer stellt apply() ein, Umgebung, Mond und
+## Schattenlampen main._apply_settings, die Sichtweite der Spielerkamera Player.
+## scale/fsr: Auflösung der 3D-Ansicht (Anteil der Fensterauflösung; mit FSR 1 hochgerechnet, sonst bilinear) –
+## shadow_atlas: Kantenlänge des Schattenatlas der Lampen (die 88 Plätze bleiben, sonst schienen Lampen durch Wände) –
+## sun_atlas/moon_distance: Mondschatten (Atlas, Reichweite in m) – soft: Godots Filterstufe weicher Schatten
+## (RenderingServer.ShadowQuality) – full: so viele Lampen um die Kamera werfen Schatten von allem (ShadowBudget.full) –
+## ssr/ssr_steps: Spiegelungen beim Wählen der Stufe und Schritte je Strahl (unter 128 finden Strahlen über den Boden
+## die Wände dahinter öfter nicht) – ssao/sdfgi: Umgebungsverdeckung und globale Beleuchtung; das Hotel nutzt beide
+## bisher in keiner Stufe (Umgebungslicht ist eine feste Farbe), die Spalten machen sie je Stufe schaltbar –
+## fog_volume: Rasterweite des Lichtnebels (Godot: 64) – view: Sichtweite in m (Nebelende, Kamera VIEW_MARGIN dahinter).
+const GRAPHICS := [
+	{"name": "Niedrig", "scale": 0.67, "fsr": true, "shadow_atlas": 2048, "sun_atlas": 2048, "moon_distance": 25.0,
+		"soft": 1, "full": 5, "ssr": false, "ssr_steps": 64, "ssao": false, "sdfgi": false, "fog_volume": 48, "view": 40.0},
+	{"name": "Mittel", "scale": 0.85, "fsr": true, "shadow_atlas": 4096, "sun_atlas": 4096, "moon_distance": 40.0,
+		"soft": 2, "full": 8, "ssr": true, "ssr_steps": 96, "ssao": false, "sdfgi": false, "fog_volume": 64, "view": 52.0},
+	{"name": "Hoch", "scale": 1.0, "fsr": false, "shadow_atlas": 4096, "sun_atlas": 4096, "moon_distance": 40.0,
+		"soft": 2, "full": 12, "ssr": true, "ssr_steps": 128, "ssao": false, "sdfgi": false, "fog_volume": 64, "view": 66.0},
+]
+## So weit hinter dem Nebelende (view) endet die Kamera – dahinter sieht man ohnehin nichts, auch das Monster nicht
+const VIEW_MARGIN := 4.0
+## Zuletzt in apply() eingestellte Stufe (Eintrag aus GRAPHICS)
+var _applied_graphics := {}
 
 
 func _ready() -> void:
@@ -76,8 +101,33 @@ func apply() -> void:
 	window.content_scale_size = UI_SIZE
 	window.content_scale_factor = 1.0
 	RenderingServer.global_shader_parameter_set("reflections", 1.0 if reflections else 0.0)   # Spiegelanteil (psx_photo)
+	var g := graphics_level()
+	if g != _applied_graphics:   # nur beim Wechsel – apply() läuft bei jedem Reglerzug
+		_applied_graphics = g
+		window.scaling_3d_mode = Viewport.SCALING_3D_MODE_FSR if g["fsr"] else Viewport.SCALING_3D_MODE_BILINEAR
+		window.scaling_3d_scale = g["scale"]
+		window.positional_shadow_atlas_size = g["shadow_atlas"]
+		RenderingServer.directional_shadow_atlas_set_size(g["sun_atlas"], true)
+		RenderingServer.positional_soft_shadow_filter_set_quality(g["soft"])
+		RenderingServer.directional_soft_shadow_filter_set_quality(g["soft"])
+		RenderingServer.environment_set_volumetric_fog_volume_size(g["fog_volume"], g["fog_volume"])
 	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(master_volume, 0.0001)))
 	changed.emit()
+
+
+## Werte der eingestellten Grafikstufe (GRAPHICS)
+func graphics_level() -> Dictionary:
+	return GRAPHICS[clampi(int(graphics), 0, GRAPHICS.size() - 1)]
+
+
+## Grafikstufe wählen: setzt auch die Spiegelungen auf den Wert der Stufe – der Haken lässt sich danach wieder
+## umstellen und gilt dann. store false: nur für die Sitzung (Debug --grafik).
+func set_graphics(level: int, store := true) -> void:
+	graphics = clampi(level, 0, GRAPHICS.size() - 1)
+	reflections = graphics_level()["ssr"]
+	apply()
+	if store:
+		save_settings()
 
 
 ## Geänderte Tastenbelegung (InputMap) ins Profil übernehmen und speichern.
