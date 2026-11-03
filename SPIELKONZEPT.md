@@ -4883,7 +4883,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   weiß. Wer seine eigene reparieren will, bekommt nichts dafür (aber auch keinen Malus). Höchstens einmal je Tür und
   Tag (+8 je Erwachsenem des Haushalts) – kein eigenes Tagesbudget (entschieden 2026-11-03, ZIM-54).
 
-**7. Versiegelte Zimmer (entschieden 2026-10-25, noch nicht gebaut)**
+**7. Versiegelte Zimmer (entschieden 2026-10-25, gebaut 2026-11-03 bis auf 042 innen und Einrichtung, ZIM-30)**
 - **Einige Zimmer,** die seit Halloween 1987 niemand betreten hat – optionale Secrets. Wer damals darin wohnte,
   kam nicht hinaus oder hat nie wieder darüber gesprochen.
 - **Eine andere Tür, auf einen Blick:** dunkle Eiche, Messingbeschläge, altes Kastenschloss, die Nummer in alter
@@ -4892,7 +4892,7 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
 - **Jedes hat seinen eigenen Schlüssel auf einem eigenen Weg** (Arten aus 2.3): Zeit und Geduld (die Krähen, 4.25),
   Vertrauen (ein Gast als Freund), Wissen (ein Hinweis in einem Dokument), Wagnis (ein Fundort nah am Monster).
 - **Vier Zimmer, je Weg eins** (entschieden 2026-10-26): 042 (Geduld, die Krähen) und je eines für Vertrauen, Wissen
-  und Wagnis. **Welche (entschieden 2026-11-03, ZIM-30, noch nicht gebaut):**
+  und Wagnis. **Welche (entschieden 2026-11-03, ZIM-30; 132 und 038 gebaut 2026-11-03):**
 
   | Weg | Zimmer | Schlüssel | Dahinter |
   |---|---|---|---|
@@ -4906,6 +4906,18 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   wurde er geholt, darum ging der Brief nie hinaus. Der Schlüssel steckt **im Rahmen eines Bildes im Flur vor 038** –
   zu finden erst, wenn man den Brief gelesen hat. Wo der Brief heute liegt, schlägt der Bau an einem Ort vor, den der
   Plan schon zeigt.
+
+  > **Gebaut 2026-11-03 (ZIM-30, SealedRooms):** Die Türen von 042, 132 und 038 haben das alte Schloss (Brecheisen,
+  > Generalschlüssel wie oben), ihre Terrassen- und Balkontüren sind von innen verriegelt und gehen nur von drinnen auf.
+  > Liesel gibt den Schlüssel ab „befreundet“, sobald sie dir begegnet (wie der Zweitschlüssel, 4); das Familienfoto
+  > macht sie zur guten Freundin, steht im Notizbuch und im Tagebuch. **Brief (Ort bestätigt 2026-11-03):** im
+  > Postausgang auf dem Schreibtisch des Sekretariats – er wollte ihn an der Rezeption aufgeben, die Direktion hat ihn
+  > nie abgeschickt. Kleinste Lösungen: Das Ölkännchen reicht für 6 Türen; geölt knarrt nur das Öffnen
+  > nicht mehr, das Schloss fällt hörbar zu. **Offen:** Der Plan zeigt im Flur vor 038 noch kein Bild – bis es dort
+  > gemalt ist, gibt es den Schlüssel von 038 nicht. Einrichtung von 1987 (Staub, Kalenderblatt, Bett) fehlt in allen
+  > drei Zimmern, Foto und Kännchen liegen in der Mitte auf dem Boden; in 042 fehlen Tagebuch und Sturmlaterne; die
+  > Tür ist noch die gewöhnliche Zimmertür (dunkle Eiche, Kastenschloss nur im Hinweistext); im Hotelregister 1987
+  > würfelt das Jahr 038 und 132 noch frei.
 - **Dahinter:** ein **optionaler, nützlicher Gegenstand** und ein Stück 1987 – Staub, ein Kalenderblatt vom Oktober
   1987, ein ungemachtes Bett, persönliche Dinge.
 - **Auch die Terrassentür ist zu:** von innen verriegelt, die Vorhänge seit 1987 zugezogen, die Terrasse davor

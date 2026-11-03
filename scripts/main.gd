@@ -205,6 +205,11 @@ extends Node3D
 ##   --kernschutz                Schutz der Kernfiguren, bis ihre Rolle erfüllt ist (6.17, ZIM-120): wer geschützt ist,
 ##                               Überleben bei Leviathan und Lakengeist, kein Urteil, Ende über die Marken –
 ##                               „[Kernschutz] … ok/FEHLER“, zuletzt „[Kernschutz] Prüfung fertig“
+##   --versiegelt[=132|038|042|brief]  vor die Tür eines versiegelten Zimmers von 1987 (6.19 (7), ZIM-30; ohne Wert 132)
+##                               bzw. vor den Brief aus 038 auf dem Schreibtisch im Sekretariat
+##   --versiegelt=pruefen        altes Schloss (Generalschlüssel, Brecheisen), Fenstertüren verriegelt, Liesels Schlüssel
+##                               und Familienfoto, Brief und Rahmen vor 038 (ohne Bild im Plan ein Probebild), Ölkännchen
+##                               – „[Versiegelt] … ok/FEHLER“, zuletzt „[Versiegelt] Prüfung fertig“
 ##   --regale[=nah]              in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
 ##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen);
 ##                               nah: dicht vor die Bücher (ZIM-153); meldet „[Bücher] …“ (Zahl der Bücher und MultiMeshes)
@@ -790,6 +795,11 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	office.name = "BueroDerDirektion"
 	add_child(office)
 	Game.director_office = office
+	var sealed := SealedRooms.new()   # versiegelte Zimmer von 1987: 042, 132, 038 (6.19 (7), ZIM-30)
+	sealed.name = "VersiegelteZimmer"
+	add_child(sealed)
+	sealed.setup(builder)
+	Game.sealed_rooms = sealed
 	CaretakerBook.furnish(builder)   # Zimmer 18: Notizbuch des Hausmeisters, Schaltschlüssel, UV-Aufsatz (7.4)
 	LiftDrive.place(builder)   # Maschinenraum: Antrieb des Aufzugs mit der Kurbel für die Bremse (7.4, ZIM-14)
 	var cemetery := Cemetery.new()   # Friedhof westlich des Kürbisfelds (5.15)
@@ -1498,6 +1508,8 @@ func run_debug(arg: String) -> bool:
 		Game.player.head.rotation.x = deg_to_rad(-12.0)   # die Tür ist niedrig
 	elif arg == "--kernschutz":
 		return _debug_core_protection()
+	elif _is_arg(arg, "--versiegelt"):
+		return _debug_sealed(_arg_value(arg, "--versiegelt", SealedRooms.TRUST_ROOM))
 	elif _is_arg(arg, "--buero"):
 		var opts := _arg_parts(arg, "--buero")
 		if opts.has("pruefen"):
@@ -4602,6 +4614,148 @@ func _debug_office_check() -> bool:
 	]
 	for i in steps.size():
 		get_tree().create_timer(1.0 + i).timeout.connect(steps[i])
+	return true
+
+
+## Debug --versiegelt[=132|038|042|brief|pruefen] (Spielkonzept 6.19 (7); ZIM-30): vor die Tür eines versiegelten
+## Zimmers, vor den Brief im Sekretariat oder die Prüfung (_debug_sealed_check).
+func _debug_sealed(what: String) -> bool:
+	var sealed := Game.sealed_rooms
+	if what == "pruefen":
+		return _debug_sealed_check()
+	if what == "brief":
+		var letter := sealed.letter()
+		if letter == null:
+			return false
+		var desk := letter.get_parent() as Node3D
+		var front := desk.global_position + desk.global_basis.z * 0.9
+		TeleportUI.place_player(front, letter.global_position - front)
+		Game.player.head.rotation.x = deg_to_rad(-40.0)
+		return true
+	var rooms := Game.social.builder.rooms
+	var no := what.pad_zeros(3)
+	if not no in SealedRooms.ROOMS or not rooms.has(no):
+		return false
+	TeleportUI.place_player(rooms[no]["door_front"], rooms[no]["into"])
+	return true
+
+
+## Debug --versiegelt=pruefen: Die drei Türen haben das alte Schloss (Generalschlüssel und Brecheisen helfen nicht), ihre
+## Fenstertüren sind verriegelt und gehen von innen auf; Liesel gibt den Schlüssel von 132 erst als Freundin, drinnen liegt
+## das Familienfoto, und bringt man es ihr, ist sie danach gute Freundin; der Brief liegt im Sekretariat, erst danach
+## gibt das Bild vor 038 den Schlüssel her (ohne Bild im Plan ein Probebild); in 038 das Ölkännchen – eine geölte Tür
+## knarrt nicht mehr, das letzte Mal Ölen leert es. Das gefundene Kännchen bleibt in der Hand (für --savetest). Meldet
+## „[Versiegelt] … ok“ bzw. „FEHLER“, zuletzt „[Versiegelt] Prüfung fertig“.
+func _debug_sealed_check() -> bool:
+	var sealed := Game.sealed_rooms
+	var builder := Game.social.builder
+	var p := Game.player
+	var check := func(text: String, ok: bool) -> void:
+		print("[Versiegelt] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	var item_in := func(kind: Item.Kind, no: String) -> Item:
+		for node in get_tree().get_nodes_in_group("items"):
+			var item := node as Item
+			if item.kind == kind and not item.is_held and builder.home_room_at(item.global_position) == no:
+				return item
+		return null
+	var take := func(item: Item) -> void:   # aufheben, wo es liegt
+		item.get_parent().remove_child(item)
+		p.receive_item(item)
+	var bolts := func(no: String) -> Array:
+		return get_tree().get_nodes_in_group("french_doors").filter(func(n: Node) -> bool: return (n as Door).bolt_room == no)
+	var liesel: Guest = null
+	for g in Game.social.living_guests():
+		if SealedRooms.is_liesel(g):
+			liesel = g
+	if liesel == null or not builder.rooms.has(SealedRooms.TRUST_ROOM) or not builder.rooms.has(SealedRooms.KNOWLEDGE_ROOM):
+		print("[Versiegelt] FEHLER: Liesel, Zimmer 132 oder 038 fehlt")
+		print("[Versiegelt] Prüfung fertig")
+		return true
+	var door_132: Door = builder.rooms[SealedRooms.TRUST_ROOM]["door"]
+	var door_038: Door = builder.rooms[SealedRooms.KNOWLEDGE_ROOM]["door"]
+	Game.notebook.give(true)
+	var steps: Array[Callable] = [
+		func() -> void:
+			check.call("drei Türen mit altem Schloss", SealedRooms.ROOMS.all(func(no: String) -> bool:
+				var d: Door = builder.rooms[no]["door"] if builder.rooms.has(no) else null
+				return d != null and d.sealed and d.locked and d.key_id == "zimmer_" + no))
+			check.call("Fenstertüren verriegelt (042: %d, 132: %d)" % [bolts.call("042").size(), bolts.call("132").size()],
+				not bolts.call("042").is_empty() and not bolts.call("132").is_empty()
+				and (bolts.call("042") + bolts.call("132")).all(func(d: Door) -> bool: return d.locked and not d.monster_can_open))
+			TeleportUI.place_player(builder.rooms["132"]["door_front"], builder.rooms["132"]["into"])
+			p.add_key(RoomAccess.GENERAL_KEY)
+			door_132.interact(p)
+			check.call("Generalschlüssel passt nicht", door_132.locked and not door_132.is_open)
+			p.keyring.erase(RoomAccess.GENERAL_KEY)
+			p.receive_item(Item.create(Item.Kind.CROWBAR))
+			check.call("kein Aufbrechen angeboten", not "Aufbrechen" in door_132.get_prompt(p))
+			door_132.interact(p)
+			check.call("Brecheisen hilft nicht", door_132.locked and not door_132.broken and not door_132._working)
+			p.consume_held(),
+		func() -> void:
+			liesel.relation = 0.0
+			check.call("Liesel gibt ihn nicht als Bekannte", not sealed.would_give(liesel))
+			liesel.relation = 60.0
+			check.call("Liesel gibt ihn als Freundin", sealed.would_give(liesel))
+			sealed.give_key(liesel)
+			check.call("Schlüssel 132 am Bund", p.has_key("zimmer_132") and not sealed.would_give(liesel)
+				and Item.key_label("zimmer_132") == "Alter Messingschlüssel, Anhänger 132")
+			door_132.interact(p)
+			check.call("132 aufgeschlossen", not door_132.locked)
+			var bolt: Door = bolts.call("132")[0]
+			TeleportUI.place_player(builder.rooms["132"]["center"], builder.rooms["132"]["into"])
+			bolt.interact(p)
+			check.call("Fenstertür geht von innen auf", not bolt.locked),
+		func() -> void:
+			var photo: Item = item_in.call(Item.Kind.FAMILY_PHOTO, "132")
+			check.call("Familienfoto in 132", photo != null)
+			if photo == null:
+				return
+			take.call(photo)
+			check.call("Foto in der Hand", p.held == photo)
+			Game.dialog.open(liesel)
+			Game.dialog.call("_gift", photo)
+			print("[Versiegelt] Liesel sagt: %s" % Game.dialog._text.text)
+			Game.dialog.close()
+			check.call("Liesel hat ihr Foto", p.held == null and photo.is_queued_for_deletion()
+				and Game.notebook.has_note("liesels_foto") and Social.tier(liesel) == Social.Tier.GOOD_FRIEND),
+		func() -> void:
+			var letter := sealed.letter()
+			check.call("Brief im Sekretariat", letter != null and (letter.get_parent() as Desk).variant == "sekretariat")
+			var pic := sealed.frame()
+			if pic == null:
+				print("[Versiegelt] kein Bild im Plan vor 038 – Probebild nur für die Prüfung")
+				pic = sealed.debug_probe_frame()
+			TeleportUI.place_player(builder.rooms["038"]["door_front"], -(builder.rooms["038"]["into"] as Vector3))
+			check.call("vor dem Brief kein Schlüssel im Rahmen", not sealed.frame_ready(pic) and pic.get_prompt(p).begins_with("Bild ansehen"))
+			sealed.read_letter(false)
+			check.call("Brief im Notizbuch", Game.notebook.has_note(SealedRooms.LETTER_NOTE))
+			check.call("danach tasten", pic.get_prompt(p) == "Hinter dem Rahmen tasten [E]")
+			pic.interact(p)
+			check.call("Schlüssel 038 aus dem Rahmen", p.has_key("zimmer_038") and not sealed.frame_ready(pic)),
+		func() -> void:
+			door_038.interact(p)
+			check.call("038 aufgeschlossen", not door_038.locked)
+			p.receive_item(Item.create(Item.Kind.OIL_CAN, "1"))
+			check.call("Ölen angeboten", door_132.get_prompt(p) == "Bänder ölen [E]")
+			door_132.interact(p)
+			check.call("letzter Rest geölt, Kännchen leer", door_132.oiled and p.held == null)
+			var can: Item = item_in.call(Item.Kind.OIL_CAN, "038")
+			check.call("Ölkännchen in 038", can != null)
+			if can == null:
+				return
+			take.call(can)
+			door_038.set_open(false, true, true)
+			door_038.interact(p)
+			check.call("038 geölt, Kännchen noch für %d" % (Item.OIL_DOORS - 1), door_038.oiled and p.held == can
+				and can.oil_left == Item.OIL_DOORS - 1 and can.create_extra() == str(Item.OIL_DOORS - 1))
+			Game.noise_log.clear()
+			door_038.set_open(true, false, false, p)
+			check.call("geölte Tür knarrt nicht", not Game.noise_log.any(func(l: String) -> bool: return " Lärm door " in l))
+			print("[Versiegelt] Prüfung fertig"),
+	]
+	for i in steps.size():
+		get_tree().create_timer(1.0 + i * 0.6).timeout.connect(steps[i])
 	return true
 
 

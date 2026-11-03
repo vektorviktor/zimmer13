@@ -36,7 +36,8 @@ extends RigidBody3D
 
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
-	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG, BAR_GAME, GLASS, RING, FUSE }
+	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG, BAR_GAME, GLASS, RING, FUSE,
+	FAMILY_PHOTO, OIL_CAN }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -71,11 +72,13 @@ const PRICES := {
 	Kind.GLASS: 1,   # je Sorte: BarTap.SORTS (price)
 	Kind.RING: 0,    # Gerdas Ehering (4.25, ZIM-50) – unverkäuflich
 	Kind.FUSE: 0,    # Hauptsicherung des Aufzugs (7.4, ZIM-14) – das Hotel will sie zurück, Bruno nennt seinen Preis
+	Kind.FAMILY_PHOTO: 0,   # Liesels Familienfoto von 1987 aus Zimmer 132 (6.19 (7), ZIM-30) – unverkäuflich
+	Kind.OIL_CAN: 3,        # Ölkännchen aus Zimmer 038 (6.19 (7), ZIM-30)
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
 	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS, Kind.SALT, Kind.MUSIC_BOX, Kind.APPLE,
-	Kind.PUMPKIN_SEEDS, Kind.EGG, Kind.BAR_GAME, Kind.RING, Kind.FUSE]
+	Kind.PUMPKIN_SEEDS, Kind.EGG, Kind.BAR_GAME, Kind.RING, Kind.FUSE, Kind.FAMILY_PHOTO, Kind.OIL_CAN]
 ## Spiele aus dem Spieleschrank in der Bar (Spielkonzept 6.10): eine Art, die Sorte steht im Zusatz (flavor) – damit
 ## Item.Kind nicht für jedes Spiel wächst. Die Flasche passt nicht in die Tasche.
 const BAR_GAMES := {"karten": "Kartenspiel", "deckel": "Bierdeckel", "quiz": "Quizkarten", "flasche": "Leere Flasche"}
@@ -128,6 +131,8 @@ const CROWBAR_MODEL := "res://assets/models/crowbar.glb"
 const MATCHBOX_MODEL := "res://assets/models/matchbox.glb"
 ## Salzpackung (5.13): so viele Linien aus einer vollen Packung
 const SALT_LINES := 4
+## Ölkännchen (6.19 (7), ZIM-30): so viele Türen reicht ein volles
+const OIL_DOORS := 6
 ## Brennendes in der Hand (5.12): Wahrscheinlichkeit je Sekunde, dass es in der Bewegung ausgeht – Rennen im Haus, Gehen
 ## und Rennen draußen; draußen mal (1 + FLAME_WEATHER × Regenstärke), in Kürbis und Totenkopf mal FLAME_SHELTER
 const FLAME_OUT_RUN := 0.08
@@ -254,6 +259,8 @@ var flavor := ""
 var dice_loaded := false   ## Würfelbecher: gezinkte Würfel darin (Mäxchen, Schocken – Spielkonzept 6.10)
 ## Salzpackung (Spielkonzept 5.13): reicht noch für so viele Linien (im Zusatzfeld)
 var salt_left := 0
+## Ölkännchen (Spielkonzept 6.19 (7)): reicht noch für so viele Türen (im Zusatzfeld)
+var oil_left := 0
 
 var _glow_material: ShaderMaterial
 ## Kerze: die Flamme (CandleModel), sichtbar solange sie brennt
@@ -395,8 +402,8 @@ static func key_label(id: String) -> String:
 		return "Generalschlüssel"
 	if id == CaretakerBook.KEY_ID:   # Schaltschlüssel des Aufzugs aus Zimmer 18 (7.4)
 		return "Schaltschlüssel"
-	if id == Crows.OLD_KEY:   # aus dem Krähennest (4.25, 6.19 (7))
-		return "Alter Messingschlüssel, Anhänger 042"
+	if SealedRooms.is_old_key(id):   # versiegelte Zimmer von 1987 – 042 aus dem Krähennest (4.25, 6.19 (7))
+		return "Alter Messingschlüssel, Anhänger %s" % id.trim_prefix("zimmer_")
 	if id.begins_with(LockerBank.KEY_PREFIX):   # Spind in den Pool-Umkleiden (ZIM-145)
 		return LockerBank.key_label(id)
 	if id == DirectorOffice.SECRETARIAT_KEY:   # Büro der Direktion (2.8, 2.10, ZIM-6)
@@ -536,6 +543,8 @@ func create_extra() -> String:
 			return "loaded" if dice_loaded else ""
 		Kind.SALT:
 			return str(salt_left)
+		Kind.OIL_CAN:
+			return str(oil_left)
 		Kind.MASK:
 			return mask_id
 	return ""
@@ -1282,8 +1291,8 @@ func _build(extra: String) -> void:
 			mass = 0.1
 			size = Vector3(0.14, 0.03, 0.05)
 			var gold := Mat.psx(Color(0.72, 0.73, 0.76) if key_id == CaretakerBook.KEY_ID else Color(0.85, 0.68, 0.25))   # Schaltschlüssel: Stahl
-			if key_id == Crows.OLD_KEY:
-				# Schlüssel von 1987 (4.25): Bartschlüssel aus angelaufenem Messing mit ovalem Zimmeranhänger am Ring
+			if SealedRooms.is_old_key(key_id):
+				# Schlüssel von 1987 (4.25, 6.19 (7)): Bartschlüssel aus angelaufenem Messing mit ovalem Zimmeranhänger am Ring
 				size = Vector3(0.2, 0.03, 0.06)
 				var brass := Mat.metal(Color(0.62, 0.48, 0.24))
 				var shaft := Geo.mesh(self, Geo.cylinder(0.006, 0.08, 6), brass, Vector3(0.0, 0.008, 0))
@@ -1692,6 +1701,34 @@ func _build(extra: String) -> void:
 				var cap := Geo.mesh(self, Geo.cylinder(0.024, 0.02, 10), Mat.metal(GrandStair.BRASS), Vector3(side * 0.06, 0.024, 0))
 				cap.rotation.z = PI / 2.0
 			Geo.mesh(self, Geo.box(Vector3(0.05, 0.002, 0.02)), Mat.psx(Color(0.85, 0.75, 0.1)), Vector3(0, 0.047, 0))   # Schild
+		Kind.FAMILY_PHOTO:
+			# Familienfoto der Brücks von 1987 (Spielkonzept 6.19 (7), ZIM-30): Farbabzug im schmalen Holzrahmen hinter Glas,
+			# liegt mit dem Bild nach oben – das Motiv ist Platzhalter wie die Fotowand (ZIM-135)
+			display_name = "Familienfoto („Oktober 1987“)"
+			mass = 0.3
+			size = Vector3(0.15, 0.015, 0.2)
+			Geo.mesh(self, Geo.box(size), Mat.psx(Color(0.32, 0.2, 0.12)), Vector3(0, size.y / 2.0, 0))   # Rahmen
+			Geo.mesh(self, Geo.box(Vector3(0.12, 0.002, 0.17)), Mat.psx(Color(0.93, 0.9, 0.82)), Vector3(0, size.y, 0))   # Rand
+			var rng := RandomNumberGenerator.new()
+			rng.seed = 1987
+			Geo.mesh(self, Geo.box(Vector3(0.1, 0.002, 0.13)), Mat.psx(Color(0.62, 0.5, 0.36)), Vector3(0, size.y + 0.0006, 0.008))
+			for i in 3:   # Vater, Mutter und das Mädchen vor der Fassade, verblasst
+				var tall := 0.075 if i < 2 else 0.06
+				Geo.mesh(self, Geo.box(Vector3(0.018, 0.002, tall)), Mat.psx(Color(0.3, 0.24, 0.2).lightened(rng.randf() * 0.2)),
+					Vector3(-0.025 + i * 0.025, size.y + 0.0012, 0.04 - tall / 2.0))
+		Kind.OIL_CAN:
+			# Ölkännchen (Spielkonzept 6.19 (7), ZIM-30): Weißblech mit langer Tülle, Feinmechaniker-Öl – reicht für
+			# OIL_DOORS Türen (Door._oil)
+			oil_left = clampi(extra.to_int(), 1, OIL_DOORS) if extra.is_valid_int() else OIL_DOORS
+			display_name = _oil_name()
+			mass = 0.2
+			size = Vector3(0.07, 0.11, 0.07)
+			var tin := Mat.metal(Color(0.62, 0.62, 0.58))
+			Geo.mesh(self, Geo.cylinder(0.033, 0.05, 12), tin, Vector3(0, 0.025, 0))
+			Geo.mesh(self, Geo.cylinder(0.02, 0.02, 12), tin, Vector3(0, 0.06, 0))   # Schulter
+			var spout := Geo.mesh(self, Geo.cylinder(0.003, 0.09, 6), tin, Vector3(0.025, 0.09, 0))
+			spout.rotation.z = -0.6
+			Geo.mesh(self, Geo.box(Vector3(0.05, 0.03, 0.002)), Mat.psx(Color(0.7, 0.18, 0.12)), Vector3(0, 0.025, 0.034))   # Etikett
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)
@@ -2665,6 +2702,18 @@ func use_salt() -> bool:
 	salt_left -= 1
 	display_name = _salt_name()
 	return salt_left <= 0
+
+
+## Ölkännchen mit dem, was noch drin ist
+func _oil_name() -> String:
+	return "Ölkännchen" + ("" if oil_left >= OIL_DOORS else (" (fast leer)" if oil_left == 1 else " (noch für %d Türen)" % oil_left))
+
+
+## Eine Tür geölt (Spielkonzept 6.19 (7)): true = das Kännchen ist jetzt leer.
+func use_oil() -> bool:
+	oil_left -= 1
+	display_name = _oil_name()
+	return oil_left <= 0
 
 
 ## Geschnitzt: „Geschnitzter Kürbis“, bei anderen Sorten mit deren Namen

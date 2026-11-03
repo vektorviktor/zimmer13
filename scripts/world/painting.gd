@@ -272,10 +272,15 @@ static func _width(p: Painting) -> float:
 
 
 func get_prompt(_player: Player) -> String:
+	if Game.sealed_rooms and Game.sealed_rooms.frame_ready(self):   # hat man den Brief aus 038 gelesen (6.19 (7))
+		return "Hinter dem Rahmen tasten [E]"
 	return "Bild ansehen [E] – %s" % WORKS[key]["title"]
 
 
-func interact(_player: Player) -> void:
+func interact(player: Player) -> void:
+	if Game.sealed_rooms and Game.sealed_rooms.frame_ready(self):
+		Game.sealed_rooms.take_frame_key(player)
+		return
 	var w: Dictionary = WORKS[key]
 	if Game.menus:
 		var title: String = w["title"] if w["artist"] == "" else "%s: %s" % [w["artist"], w["title"]]

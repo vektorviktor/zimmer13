@@ -144,7 +144,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 035 | EG West, Südseite | 103 m² | ja | – | 209, 739 | H17 Paar Nowak |
 | 036 | EG West, Südseite | 80 m² | ja | – | 63, 725 | H11 Ehepaar Lorenz |
 | 037 | EG West, innen | 103 m² | ja | – | 49, 579 | unbewohnt, abgeschlossen |
-| 038 | EG West, Nordflügel | 68 m² | ja | – | 79, 199 | versiegelt seit 1987 (6.19 (7), Schlüssel im Bilderrahmen im Flur, Hinweis im Brief) |
+| 038 | EG West, Nordflügel | 68 m² | ja | – | 79, 199 | versiegelt seit 1987 (6.19 (7), der Witwer; Schlüssel im Bilderrahmen im Flur, Hinweis im Brief) |
 | 039 | EG West, Nordflügel | 68 m² | ja | – | 199, 199 | H37 Sami Haddad |
 | 040 | EG West, Nordflügel | 68 m² | ja | – | 399, 199 | unbewohnt, abgeschlossen |
 | 041 | EG West, Nordflügel | 92 m² | ja | Terrasse | 539, 199 | H12 Ehepaar Schulte |
@@ -186,7 +186,7 @@ Balkon). Unbewohnte Zimmer schließt das Hotel ab (6.19).
 | 129 | OG1 West, innen | 103 m² | – | Balkon | 589, 359 | H06 Familie Demir |
 | 130 | OG1 West, innen | 68 m² | ja | Balkon | 149, 549 | H14 Paar Engel |
 | 131 | OG1 West, innen | 68 m² | ja | Balkon | 239, 639 | unbewohnt, abgeschlossen |
-| 132 | OG1 West, innen | 68 m² | ja | Balkon | 399, 639 | versiegelt seit 1987 (6.19 (7), Schlüssel bei Liesel Brück) |
+| 132 | OG1 West, innen | 68 m² | ja | Balkon | 399, 639 | versiegelt seit 1987 (6.19 (7), Zimmer von Liesel Brücks Familie, Schlüssel bei Liesel) |
 | 133 | OG1 West, innen | 68 m² | ja | Balkon | 489, 549 | unbewohnt, abgeschlossen |
 
 **Zusammen:** 81 Zimmer (EG 48, OG1 33) – 39 Haushalte und Zimmer 13 bewohnt, 4 versiegelt (018, 038, 042, 132;

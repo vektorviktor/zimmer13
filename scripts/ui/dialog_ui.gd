@@ -935,7 +935,11 @@ func _gift(item: Item) -> void:
 		_show_main()
 		return
 	Game.social.access.on_gift(guest)   # ein versprochenes Geschenk (6.19)
-	var wish := Game.social.requests.on_gift(guest, item)   # darum hat er dich gebeten (6.14) – sein Dank
+	if Game.sealed_rooms and SealedRooms.is_liesels_photo(guest, item):   # ihr Familienfoto aus Zimmer 132 (6.19 (7))
+		_say(Game.sealed_rooms.photo_back(guest, Game.player.give_away(item)))
+		_show_main()
+		return
+	var wish :=Game.social.requests.on_gift(guest, item)   # darum hat er dich gebeten (6.14) – sein Dank
 	var kind := item.kind
 	# Kürbis in seiner Lieblingssorte (Spielkonzept 5.8): freut ihn wie etwas, das er mag, und noch ein bisschen mehr
 	var is_pumpkin := kind in [Item.Kind.PUMPKIN, Item.Kind.CARVED_PUMPKIN, Item.Kind.ROAST_PUMPKIN]

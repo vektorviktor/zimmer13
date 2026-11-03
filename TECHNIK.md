@@ -1566,6 +1566,24 @@ Berichte über Spuren (`note_trace` → `report_line`), Klopfen an Zimmer 13, Ze
   (`_revoke`: aus `spares`, Schlüssel zu `OLD_KEY`; er sagt es, bist du bis 10 m nah, sonst Haltung „lock_swapped“ für
   `Talk.greeting`), sonst bleibt der Schlüssel. Kein neues Feld (über `stolen`/`spares`). Debug
   `--zweitschluessel=id,zurueck`.
+- **Versiegelte Zimmer von 1987** (6.19 (7), ZIM-30; `world/sealed_rooms.gd`, `SealedRooms` als `Game.sealed_rooms`,
+  `setup(builder)` in `main.gd` nach dem Bau): `ROOMS` 042, 132, 038 – Zimmertür `Door.sealed` (dann ist sie nicht
+  `_forcible`: kein Aufbrechen, kein Generalschlüssel; eigene Sätze in `Door.interact`), Schlüssel „zimmer_<Nummer>“ wie
+  sonst; `Item.key_label` und das Messingmodell über `SealedRooms.is_old_key`. Ihre Fenstertüren (`french_doors` mit
+  `room_id` in `ROOMS`) sind abgeschlossen, `monster_can_open = false`, `Door.bolt_room` = Zimmer – `Door._inside` lässt
+  sie nur von dort aus aufgehen. **132:** `_offer_key` im 0,5-s-Takt wie `_offer_spares`, aber ab `KEY_TIER`
+  (`Social.Tier.FRIEND`) und nur Liesel (`is_liesel`, Haushalt H26); gegeben ist er, sobald er am Bund ist. Drinnen
+  `Item.Kind.FAMILY_PHOTO` (`_put_inside`: Zimmertisch, sonst Mitte auf dem Boden); `DialogUI._gift` → `photo_back`:
+  sie behält es nicht in der Hand (frei), Beziehung mindestens `PHOTO_FRIEND`, Angst 0, Notiz und `Diary.note`
+  „liesels_foto“. **038:** `Letter` (fest, Gruppe `sealed_letters`) liegt im Postausgang auf dem Sekretariatstisch
+  (`Desk` „sekretariat“, `LETTER_SPOT`); `read_letter` merkt sich das über die Notiz `LETTER_NOTE` (ohne Notizbuch
+  nur in der Sitzung). `_find_frame`: das nächste `Painting` aus dem Plan bis `FRAME_RANGE` vor der Tür, nicht in 038
+  selbst; `Painting.get_prompt/interact` fragen `frame_ready` und geben mit `take_frame_key` den Schlüssel. Zeigt der
+  Plan dort kein Bild, gibt es den Schlüssel nicht (Warnung „Gebäudeplan: kein Bild …“); `debug_probe_frame` hängt nur
+  für die Prüfung eins. Drinnen `Item.Kind.OIL_CAN` (`oil_left` im Zusatzfeld, `OIL_DOORS`): in der Hand bietet jede
+  nicht aufgebrochene Tür „Bänder ölen“ (`Door._oil`, `use_oil`, leer → `consume_held`); `Door.oiled` (gespeichert in
+  `doors`, VERSION 82) unterdrückt in `set_open` den Lärm „door“ beim Öffnen, „door_close“ bleibt. Debug
+  `--versiegelt[=132|038|042|brief|pruefen]`, Stichwort `versiegelt`.
 - **Feinde** (6.18, 4; ZIM-162): `_shut_out_enemies` (im 0,5-s-Takt): Gast ab `Social.Tier.ENEMY`, daheim
   (`room_at`), frei, Tür offen und nicht kaputt, du draußen bis `ENEMY_DOOR_RANGE` – erst dann die Zeugensicht
   (`Guest.can_see_actor`, `Player.recognized_by`). Er geht zu `door_inside` (`_shutting`, höchstens
@@ -2744,7 +2762,7 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   Zweige, Messing obenauf, Aufblitzen (Billboard, additiv), `StaticBody3D` auf Ebene 1 fängt Würfe – `on_noise` erkennt
   den Aufschlag eines Spielerwurfs bis `NEST_HIT` am Nest (`_nest_hit`: ein Stück fällt, Trupp fliegt auf, Ruf −0,6).
   Inhalt `nest` als `{kind, extra}` (wie `Item.create`), von Anfang an `OLD_KEY` `zimmer_042` – passt ins Schloss der
-  Tür von 042 (das Versiegeln, 6.19 (7), ist nicht gebaut). **Futtertisch** `LevelBuilder.feed_table` (`_note_gardens`:
+  Tür von 042 (versiegelt seit ZIM-30, `SealedRooms` – nur dieser Schlüssel öffnet sie). **Futtertisch** `LevelBuilder.feed_table` (`_note_gardens`:
   Tisch draußen bis `FEED_TABLE_RANGE` an einer Gartentür von Zimmer 13; ohne Tisch im Plan leer, dann gibt es kein
   Füttern). Futter = `PUMPKIN_SEEDS` (Zusatz „brot“ = Brotkrumen) auf dem Tisch; `food_time` zählt alle `LOOK_EVERY` s
   bzw. im Zeitsprung, nach `FOOD_HOURS` unbeobachtet weg (`_eat`): erste Mahlzeit des Tages +0,35, weitere +0,1; ab

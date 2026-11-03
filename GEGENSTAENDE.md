@@ -29,11 +29,11 @@ Stand: 2026-11-04.
 | Sekretariatsschlüssel | Schlüsselbund „sekretariat“ | gebaut 3.11. (ZIM-6) mit **Zwischenort**: ab dem 6. an der Wand neben dem Sicherungskasten im Maschinenraum, bis es Spind und Bruno gibt (ZIM-4) | Nebenstrang (Marion; Generalschlüssel, Foto 2005) | hing neben der Hauptsicherung im Spind des Hausmeisters; Bruno behält ihn ab Nacht 5, zu bekommen über Freundschaft, Handel, Mäxchen, Klauen | 2.10, K3 |
 | Schlüssel zum westlichen Kellerschloss | – | geplant (Ort 2026-11-03, ZIM-12) | – (Abkürzung in den Westteil des Kellers) | Werkzeugkasten im Technikraum (UG) | 7.4 |
 | ~~Werkstattschlüssel~~ | – | gestrichen 2026-10-27 (Werkstatt entfällt zugunsten des alten Heizkellers) | – | – | 2.8, 7.4 |
-| Schlüssel von 1987 (Messinganhänger) | `KEY` „zimmer_042“ | gebaut (Zimmer 042 selbst noch nicht versiegelt) | – (optional; Edna, K5 – Zimmer ihres Verlobten Heinrich Brehm) | im Krähennest im großen Baum gegenüber 042; kommt als Geschenk der Krähen bei hoher Gunst nach Fütterungen an drei Tagen oder fällt beim Wurf ins Nest heraus; schließt Zimmer 042 auf (der Mann, der 1987 nicht hinauskam) | 4.25, 6.19 (7) |
+| Schlüssel von 1987 (Messinganhänger) | `KEY` „zimmer_042“ | gebaut; seit 3.11. ist 042 versiegelt (altes Schloss, Terrassentür verriegelt, ZIM-30) – drinnen noch nichts | – (optional; Edna, K5 – Zimmer ihres Verlobten Heinrich Brehm) | im Krähennest im großen Baum gegenüber 042; kommt als Geschenk der Krähen bei hoher Gunst nach Fütterungen an drei Tagen oder fällt beim Wurf ins Nest heraus; schließt Zimmer 042 auf (der Mann, der 1987 nicht hinauskam) | 4.25, 6.19 (7) |
 | Spindschlüssel (Pool-Umkleiden) | `KEY` „spind_NN“ (Bund: „Spindschlüssel N“) | **teilweise** – Spinde 7, 20, 32, 44 schließen damit auf (ZIM-145, `LockerBank.OPENABLE`), Schlüssel liegen noch nirgends | – | Fundorte offen; ohne Modell (Nutzer 31.10.) | – |
-| Schlüssel der übrigen versiegelten Zimmer | – | geplant | – (optional) | 132 von Liesel (Freund), 038 über einen Brief des Gastes von 1987 (Versteck offen), 018 an der Leviathanmauer | 6.19 (7), ZIM-30 |
-| Familienfoto der Brücks (1987) | – | geplant | – (optional; Liesel) | im versiegelten Zimmer 132; Liesel bringen = Abschluss für sie | 6.19 (7), ZIM-30 |
-| Brief des Gastes aus 038 | – | geplant | – (optional) | nie abgeschickt, nennt das Versteck des Schlüssels zu 038; Ort offen | 6.19 (7), ZIM-30 |
+| Schlüssel der übrigen versiegelten Zimmer | Schlüsselbund „zimmer_132“, „zimmer_038“ (Bund: „Alter Messingschlüssel, Anhänger …“) | gebaut 3.11. (ZIM-30); 038 **teilweise** – der Plan zeigt vor 038 noch kein Bild | – (optional) | 132 gibt Liesel, sobald ihr befreundet seid und sie dir begegnet; 038 steckt im Rahmen des Bildes im Flur vor 038, erst nach dem Brief zu finden; 018 an der Leviathanmauer (eigene Zeile) | 6.19 (7), ZIM-30 |
+| Familienfoto der Brücks (1987) | `FAMILY_PHOTO` | gebaut 3.11. (ZIM-30), Motiv Platzhalter | – (optional; Liesel) | in der Mitte von Zimmer 132 auf dem Boden (Einrichtung fehlt im Plan); Liesel schenken = Abschluss: gute Freundin, Notizbuch, Tagebuch; unverkäuflich | 6.19 (7), ZIM-30 |
+| Brief des Gastes aus 038 | fest (`SealedRooms.Letter`), nicht tragbar | gebaut 3.11. (ZIM-30), Ort bestätigt 3.11. | – (optional) | des Witwers an seine Tochter, nie abgeschickt: im Postausgang auf dem Schreibtisch des Sekretariats; [E] liest ihn, danach im Notizbuch und das Versteck im Rahmen zugänglich | 6.19 (7), ZIM-30 |
 
 ## 2. Auftrags- und Fundstücke
 
@@ -114,7 +114,7 @@ Stand: 2026-11-04.
 | Kompass | `COMPASS` | gebaut | – | Orientierung | 3.2 |
 | Bettlaken | `BED_SHEET` | gebaut | – | selbst verkleiden; Zimmer 13 | 5.9 |
 | Sturmlaterne | – | geplant | – (optional) | Licht, das draußen nicht ausgeht; im versiegelten Zimmer 042 | 6.19 (7), 5.12 |
-| Ölkännchen | – | geplant | – (optional) | eine geölte Tür quietscht nicht mehr (Lärm 4.15), begrenzte Füllung; im versiegelten Zimmer 038 | 6.19 (7), ZIM-30 |
+| Ölkännchen | `OIL_CAN` (Füllstand im Zusatz) | gebaut 3.11. (ZIM-30) | – (optional) | in der Mitte von Zimmer 038; in der Hand [E] an einer Tür: die Bänder knarren beim Öffnen nicht mehr (Lärm 4.15, gespeichert), reicht für 6 Türen, dann weg | 6.19 (7), ZIM-30 |
 | Salzpackung | `SALT` | gebaut | – | Salzlinien an Tür und Fenster halten den Lakengeist aus dem Zimmer; drei auf der Küchenzeile; rettet die zwei Gäste mit „kreisenden Händen“ (Edna streut aus eigener Packung, kein Gegenstand) | 5.13 |
 
 ## 6. Essen und Trinken

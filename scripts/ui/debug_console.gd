@@ -113,6 +113,7 @@ const COMMANDS := {
 	"bericht": ["[s]", "Lichtbericht in s Sekunden (Standard 1) nach user://berichte/ – Bild und Text (wie F4)"],
 	"nohud": ["", "HUD aus/ein (für Screenshots)"],
 	"kernschutz": ["", "Prüfung: Schutz der Kernfiguren, bis ihre Rolle erfüllt ist (6.17) – „[Kernschutz] … ok/FEHLER“"],
+	"versiegelt": ["[132|038|042|brief|pruefen]", "vor ein versiegeltes Zimmer von 1987 bzw. den Brief aus 038 (6.19 (7)) – pruefen: „[Versiegelt] … ok/FEHLER“"],
 	"fotomodus": ["[pruefen]", "freie Kamera durch Wände (wie F12), Zeit steht, der Spieler bleibt stehen"],
 	"static-eg": ["[=pfad]", "Erdgeschoss als statische Szene speichern (Wände, Böden, Decken, Lampen – Standard res://temp/eg_static.scn)"],
 	"debug": ["", "Debug-Werte einblenden"],

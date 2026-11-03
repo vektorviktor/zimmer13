@@ -169,7 +169,10 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ##     und elevators.first_ride – ältere Stände laden weiter, nichts ist behoben
 ## 81: Stahlspinde (Gruppe steel_lockers, ZIM-174): je Reihe offen, aufgeschlossen (Zahlenschloss), durchsucht –
 ##     ohne Eintrag sind alle zu und unberührt
-const VERSION := 81
+## 82: Versiegelte Zimmer 132 und 038 (Spielkonzept 6.19 (7); ZIM-30): neue Arten Item.Kind.FAMILY_PHOTO und OIL_CAN
+##     (Füllstand im Zusatzfeld), doors.oiled (geölte Bänder knarren nicht) – ältere Stände laden weiter, nichts geölt
+##     (82 ist für ZIM-117 reserviert)
+const VERSION := 82
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -739,7 +742,7 @@ func collect() -> Dictionary:
 	data["hide_spots"] = _collect_group("hide_spots", func(n: Node) -> Dictionary: return n.save_state())
 	data["doors"] = _collect_group("doors", func(n: Node) -> Dictionary:
 		return {"open": n.is_open, "locked": n.locked, "broken": n.broken, "by_player": n.broken_by_player,
-			"broken_day": n.broken_day})
+			"broken_day": n.broken_day, "oiled": n.oiled})
 	# Maskenhaken in Zimmer 13 (5.19): je Maske, ob sie hängt – nach der Maske, nicht nach der Reihenfolge
 	var hooks := {}
 	for hook: MaskHook in get_tree().get_nodes_in_group("mask_hooks"):
@@ -835,7 +838,8 @@ func apply(data: Dictionary) -> void:
 			n.set_open(bool(d["open"]), true, true)
 		n.broken = bool(d.get("broken", false))
 		n.broken_by_player = bool(d.get("by_player", false))
-		n.broken_day = int(d.get("broken_day", 0)))
+		n.broken_day = int(d.get("broken_day", 0))
+		n.oiled = bool(d.get("oiled", false)))
 	_apply_group("chests", data.get("chests", []), func(n: Node, d: Dictionary) -> void:
 		n.set_open(bool(d["open"]), true))
 	_apply_group("pumpkin_plants", data.get("plants", []), func(n: Node, d: Dictionary) -> void:

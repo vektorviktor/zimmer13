@@ -55,6 +55,7 @@ var photo_wall: PhotoWall          ## Gruppenfotos der Ernten 1987–2026 in der
 var cemetery: Cemetery             ## Friedhof mit Gräbern und Gedenkstätte (Spielkonzept 5.15)
 var register: HotelRegister        ## Hotelregister auf der Rezeption, Kreuze neben den Toten (Spielkonzept 2.3)
 var director_office: DirectorOffice  ## Büro der Direktion und Sekretariat: Schlüssel, Zahlenschloss (2.8, 2.10, ZIM-6)
+var sealed_rooms: SealedRooms      ## versiegelte Zimmer von 1987: Liesels Schlüssel, Brief, Rahmen (6.19 (7), ZIM-30)
 var leviathan_name: LeviathanName  ## erste bestätigte Sichtung, Hugos Druck, der Name Leviathan (Spielkonzept 4.32)
 var doll_house: DollHouse          ## Puppenhaus in der Bibliothek (Spielkonzept 5.16)
 var pumpkin_faces: PumpkinFaces    ## Kürbisgesichter, die sich verändern (Spielkonzept 5.18)
@@ -204,6 +205,7 @@ func reset() -> void:
 	cemetery = null
 	register = null
 	director_office = null
+	sealed_rooms = null
 	leviathan_name = null
 	doll_house = null
 	pumpkin_faces = null

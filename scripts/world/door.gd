@@ -93,6 +93,13 @@ var resident_name := ""
 var broken := false
 var broken_by_player := false
 var broken_day := 0          ## Tag des Aufbrechens – der Besitzer repariert frühestens am nächsten Morgen
+## Versiegeltes Zimmer von 1987 (Spielkonzept 6.19 (7), SealedRooms): das alte Schloss – Brecheisen und
+## Generalschlüssel helfen nicht, nur der eigene Schlüssel
+var sealed := false
+## Fenstertür eines versiegelten Zimmers: von innen verriegelt – aufmachen kann man sie nur aus diesem Zimmer heraus
+var bolt_room := ""
+## Geölt (Ölkännchen, Spielkonzept 4.15, 6.19 (7)): die Bänder knarren beim Öffnen nicht mehr – gespeichert
+var oiled := false
 var _working := false
 ## Werkzeug an der Tür (6.19): Aufbrechen und Reparieren dauern so lange (s), so nah muss man dabeibleiben (m)
 const FORCE_TIME := 4.0
@@ -169,7 +176,7 @@ func _holding(player: Player, kind: Item.Kind) -> bool:
 
 ## Zimmertür eines Gäste- oder unbewohnten Zimmers – die lässt sich aufbrechen (nicht Zimmer 18, Ausgang, Gesperrtes).
 func _forcible() -> bool:
-	return room_no != "" and monster_can_open and key_id == "zimmer_%s" % room_no
+	return room_no != "" and monster_can_open and not sealed and key_id == "zimmer_%s" % room_no
 
 
 ## Der Generalschlüssel passt – außer, jemand aus dem Zimmer ist drin und hat den Riegel vorgeschoben (6.19).
@@ -223,7 +230,8 @@ func _repaired(player: Player) -> void:
 ## Steht der Spieler im Zimmer hinter dieser Tür (oder in dessen Bad)? Von innen geht eine abgeschlossene Zimmertür
 ## einfach auf – das Schloss hält nur draußen fest, niemand wird eingesperrt.
 func _inside(player: Player) -> bool:
-	return room_no != "" and Game.social != null and Game.social.builder.home_room_at(player.global_position) == room_no
+	var no := room_no if room_no != "" else bolt_room
+	return no != "" and Game.social != null and Game.social.builder.home_room_at(player.global_position) == no
 
 
 ## Bewohntes Gästezimmer: Wer davorsteht, kann klopfen (Spielkonzept 6.19).
@@ -293,6 +301,8 @@ func _prompt(player: Player) -> String:
 		return "Durch den Spion sehen [E]"
 	if broken:
 		return "Reparieren [E]" if _holding(player, Item.Kind.TOOLBOX) else "Aufgebrochen"
+	if _holding(player, Item.Kind.OIL_CAN) and not oiled:
+		return "Bänder ölen [E]"
 	if locked and not _inside(player):
 		if player.has_key(key_id) or _general_fits(player):
 			return "Hände voll" if player.hands_blocked() else "Aufschließen [E]"
@@ -316,6 +326,9 @@ func interact(player: Player) -> void:
 		else:
 			Game.say("Die Tür ist aufgebrochen und schließt nicht mehr. Mit Werkzeug ließe sie sich reparieren.")
 		return
+	if _holding(player, Item.Kind.OIL_CAN) and not oiled:
+		_oil(player)
+		return
 	if locked and _inside(player):
 		locked = false   # von innen: Klinke drücken, die Tür geht auf (abschließen tut der Besitzer wieder)
 	if locked:
@@ -333,6 +346,12 @@ func interact(player: Player) -> void:
 			_work(player, Item.Kind.CROWBAR, FORCE_TIME, "Du setzt das Brecheisen an …", _forced)
 		elif _knockable():
 			Game.social.access.knock(self)   # Gästezimmer: klopfen (Spielkonzept 6.19)
+		elif sealed and _holding(player, Item.Kind.CROWBAR):
+			Game.say("Das Holz gibt nicht nach.")   # das alte Schloss (6.19 (7))
+			Game.noise("rattle", center(), player)
+		elif sealed and player.has_key(RoomAccess.GENERAL_KEY):
+			Game.say("Der Generalschlüssel passt nicht. Das Schloss ist älter als der Schlüssel.")
+			Game.noise("rattle", center(), player)
 		else:
 			Game.say(locked_text)
 			Game.noise("rattle", center(), player)
@@ -342,6 +361,18 @@ func interact(player: Player) -> void:
 		Game.say("Mit vollen Händen geht das nicht.")
 		return
 	set_open(not is_open, false, false, player)
+
+
+## Bänder ölen (Ölkännchen aus Zimmer 038, Spielkonzept 6.19 (7)): leise, ein Schluck aus dem Kännchen; ist es leer,
+## ist es weg.
+func _oil(player: Player) -> void:
+	oiled = true
+	Game.say("Ein paar Tropfen in jedes Band. Die Tür knarrt nicht mehr.", 2.5)
+	if player.held.use_oil():
+		player.consume_held()
+		Game.say("Das Ölkännchen ist leer.", 2.5)
+	elif Game.hud:
+		Game.hud.set_held(player.held.display_name)
 
 
 ## `source`: wer die Tür bewegt (hört das eigene Knarren nicht als Lärm, 4.15).
@@ -357,7 +388,7 @@ func set_open(open: bool, fast: bool = false, quiet: bool = false, source: Node 
 	for i in _pivots.size():
 		var target := open_angle * _dirs[i] if open else 0.0
 		_tween.tween_property(_pivots[i], "rotation:y", target, 0.25 if fast else 0.6).set_trans(Tween.TRANS_SINE)
-	if not quiet:
+	if not quiet and not (open and oiled):   # geölte Bänder knarren nicht mehr (4.15) – das Schloss fällt hörbar zu
 		Game.noise("door" if open else "door_close", center(), source)
 
 
