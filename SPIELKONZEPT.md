@@ -1124,10 +1124,10 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - **Die Ahnungslosen** (Vorschlag): Koch, Zimmermädchen bzw. Wäscherin, vielleicht ein Liftboy. Sie stehen auf dem
   Ankunftsfoto 1987 in Uniform am Rand (wie Josef im Kittel, 5.14), sonst nur auf Papier – etwa die Wäscheliste von
   1987, in der Laken fehlen (Spur zum Lakengeist, 4.18).
-- **Dienstplan vom 31.10.1987** (Vorschlag): wer in der Nacht wo war, beim Pagen „22 Uhr Heizkeller“. Im Karton
+- **Dienstplan vom 31.10.1987** (bestätigt 2026-11-03): wer in der Nacht wo war, beim Pagen „22 Uhr Heizkeller“. Im Karton
   „Personal 1987“ (2.8) oder bei den Personalakten im Sekretariat.
 
-**Die springende Type** (Vorschlag)
+**Die springende Type** (bestätigt 2026-11-03)
 - Die Schreibmaschine der Chefsekretärin steht im Sekretariat, vielleicht mit eingespanntem Blatt. Ein Typenhebel ist
   verbogen: Das „e“ sitzt in jedem Text ein wenig zu hoch – der Fingerabdruck der Maschine. Willkommensbrief 2026,
   die Aushänge der Direktion und der Vertrag von 1987 haben dasselbe „e“.
@@ -1138,7 +1138,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - Nach 1987 bekam der Page **Josefs Stelle** – Lohn und Kette zugleich, vom alten Herrn. Er ist der **einzige Lebende**
   der Besetzung: Das Hotel erledigt das Unheimliche (Kreuze im Register, Fotos, Stimme), er die Handarbeit – den Aufzug
   stilllegen (7.4), Zimmer 18 versiegeln, 2005 die Treppen nach U2 zumauern.
-- **Man sieht ihn nie**, nur Spuren (Vorschlag): eine warme Tasse im Hausmeisterraum, ein nasser Mantel am Haken,
+- **Man sieht ihn nie**, nur Spuren (bestätigt 2026-11-03): eine warme Tasse im Hausmeisterraum, ein nasser Mantel am Haken,
   frisch Repariertes. Der Satz im Albtraum (4.29) – „Die Direktion will heute Nacht keine Störung.“ – ist seine Stimme,
   damals die eines Jungen.
 - **Zwei Spinde:** Josefs Spind steht seit 1987 unberührt im Heizraum (Kesselbuch, 7.4). Der Page hat ihn nie geöffnet
@@ -1149,7 +1149,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   wurden geholt, danach traute er sich nicht mehr. 2026 ist seine zweite Chance („der wahrscheinlichste, der bricht“,
   2.3). Wie er bricht, ist offen – Kandidat: der zweite Weg ins Büro der Direktion (2.8, ZIM-6).
 - **Betriebsferien:** Zwischen den Ernten läuft das Hotel mit Personal (2.10). Im Ernte-Oktober hängt im Personaltrakt
-  (Wortlaut Vorschlag) *„Oktober: Betriebsferien. Das Haus bleibt besetzt: Hausmeister.“* – darum sieht man kein
+  (Wortlaut bestätigt 2026-11-03) *„Oktober: Betriebsferien. Das Haus bleibt besetzt: Hausmeister.“* – darum sieht man kein
   Personal (2.5).
 
 **Zu klären**
@@ -5007,7 +5007,11 @@ werden weiter angegriffen und überleben verletzt; danach gilt für sie dasselbe
   | **Wissen** | **038** (EG West, Nordflügel, 68 m², Bad) | ein **nie abgeschickter Brief** des Gastes von 1987 nennt das Versteck | **Ölkännchen**: eine geölte Tür quietscht nicht mehr (Lärm 4.15), begrenzte Füllung |
   | **Wagnis** | **018** (EG Ost, 34 m²; versiegelt seit 2005, 7.4) | an der Leviathanmauer im Heizraum | Notizbuch und Schaltschlüssel (Hauptgeschichte) |
 
-  Noch offen: wo der Brief und das Versteck des Schlüssels zu 038 liegen (Vorschlag beim Bau) und wer 038 bewohnte.
+  **Entschieden 2026-11-03 (ZIM-30):** 038 bewohnte 1987 ein **älterer Witwer**, allein zur Kur. Der Brief ist an
+  seine **Tochter**: Hier stimme etwas nicht, er habe das Zimmer abgeschlossen und den Schlüssel versteckt. Am 31.10.
+  wurde er geholt, darum ging der Brief nie hinaus. Der Schlüssel steckt **im Rahmen eines Bildes im Flur vor 038** –
+  zu finden erst, wenn man den Brief gelesen hat. Wo der Brief heute liegt, schlägt der Bau an einem Ort vor, den der
+  Plan schon zeigt.
 - **Dahinter:** ein **optionaler, nützlicher Gegenstand** und ein Stück 1987 – Staub, ein Kalenderblatt vom Oktober
   1987, ein ungemachtes Bett, persönliche Dinge.
 - **Auch die Terrassentür ist zu:** von innen verriegelt, die Vorhänge seit 1987 zugezogen, die Terrasse davor
