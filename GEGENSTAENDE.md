@@ -9,7 +9,7 @@ nicht gebaut · **eingefroren** = bewusst zurückgestellt.
 **Handlung:** **Hauptgeschichte** = ohne ihn kein Fortschritt in der Hauptgeschichte (HANDLUNG.md) · **Nebenstrang** =
 trägt einen Auftrag (Kürbismann, Marion) · **–** = Spielmechanik, nicht handlungsrelevant.
 
-Stand: 2026-11-03.
+Stand: 2026-11-04.
 
 ---
 
@@ -17,15 +17,15 @@ Stand: 2026-11-03.
 
 | Gegenstand | Code | Stand | Handlung | Wozu / wo | Konzept |
 |---|---|---|---|---|---|
-| Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | an der Leviathanmauer im Heizraum (2005 von Martin Ebert aus 018 verloren), bis ZIM-16 auf der Kiste im Heizkeller – erst ab der Siegerehrung; öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
+| Schlüssel Zimmer 18 | `KEY` „zimmer_18“ | gebaut | **Hauptgeschichte** (Aufzug) | an der Leviathanmauer im Heizraum (2005 von Martin Ebert aus 018 verloren), bis ZIM-16 auf der Kiste im Heizraum (U1) – erst ab der Siegerehrung; öffnet Zimmer 18 mit Hausmeister-Notizbuch und Schaltschlüssel | 7.4, M7 |
 | Generalschlüssel | Schlüsselbund „general“ | gebaut – Fundort seit 3.11. (ZIM-6) | – | Schlüsselschrank in der Lobby entfallen (ZIM-136); im Schreibtisch des Sekretariats in der zweiten Schublade mit Zahlenschloss (Code 1990, Vorschlag; Milas Ziffer aus der Nachtpartie fehlt, ZIM-8); öffnet jede Zimmertür | 6.19, 2.10 |
 | Zweitschlüssel | Schlüsselbund „zimmer_…“ | gebaut | – | ein guter Freund gibt ihn dir bei der nächsten Begegnung; öffnet sein Zimmer, dort bist du willkommen, bleibt beim Schlosstausch | 6.19, 6.3 |
 | Gestohlener Zimmerschlüssel | Schlüsselbund „zimmer_…“ (getauscht: „alt_zimmer_…“) | gebaut | – | einem schlafenden Gast vom Nachttisch genommen; öffnet sein Zimmer bis zum Morgen danach, dann ist das Schloss getauscht | 6.19 |
 | Dachbodenschlüssel | `KEY` „dachboden“ | **teilweise** – Tür gebaut, Schlüssel fehlt | Nebenstrang (Kürbismann) | hinter der Leviathanmauer, ab etwa Tag 15 | 4.21, M14 |
-| Schlüssel zum Haupteingang | `KEY` „ausgang“ | **teilweise** – Tür gebaut, Schlüssel fehlt (nur in der Hand, nicht am Bund) | **Hauptgeschichte** (Ende) | an Halloween; Fundort offen (K6) | 2.1, 2.7, M18 |
+| Schlüssel zum Haupteingang | `KEY` „ausgang“ | **teilweise** – Tür gebaut, Schlüssel fehlt (nur in der Hand, nicht am Bund) | **Hauptgeschichte** (Ende) | öffnet an Halloween den Haupteingang; liegt in Rudolf Hains Koffer bei den Fundsachen in U2 (2.10, 7.4), ab wann, ist offen (ZIM-22) | 2.1, 2.7, 2.10, 7.4, M18 |
 | Schaltschlüssel (Aufzug) | `KEY` „aufzug“ | gebaut – 28.10. in Zimmer 18, an den Bund; seit 3.11. (ZIM-14) in den Schlüsselschalter im Bedienfeld der Kabine (einer der drei Mängel) | **Hauptgeschichte** (Aufzug) | Tisch in Zimmer 18 | 7.4, M8 |
 | Schlüsselbund des Rezeptionisten | – | geplant (Vorschlag) | Nebenstrang (Marion) | in der Jeansjacke des erlösten Kürbismanns; öffnet das Büro der Direktion | 2.8, M15b |
-| Josefs Schlüsselbund | Schlüsselbund „josefs_bund“ | gebaut 3.11. (ZIM-6) mit **Zwischenort**: ab dem 14. seitlich am Kessel im Heizkeller, bis es U2 gibt | Nebenstrang (Marion) | gehört an den alten Kessel im alten Heizkeller (U2), ab Aufzug oder Leviathanmauer; öffnet Sekretariat und Büro der Direktion – zweiter Weg, wenn der Kürbismann nicht erlöst ist; Hinweis von Marion (gebaut, ab dem 14. im Gespräch) oder im Kesselbuch (fehlt) | 2.8, M15b |
+| Josefs Schlüsselbund | Schlüsselbund „josefs_bund“ | gebaut 3.11. (ZIM-6) mit **Zwischenort**: ab dem 14. seitlich am Kessel im Heizraum (U1), bis es U2 gibt | Nebenstrang (Marion) | gehört an den alten Kessel im alten Heizkeller (U2), ab Aufzug oder Leviathanmauer; öffnet Sekretariat und Büro der Direktion – zweiter Weg, wenn der Kürbismann nicht erlöst ist; Hinweis von Marion (gebaut, ab dem 14. im Gespräch) oder im Kesselbuch (fehlt) | 2.8, M15b |
 | Sekretariatsschlüssel | Schlüsselbund „sekretariat“ | gebaut 3.11. (ZIM-6) mit **Zwischenort**: ab dem 6. an der Wand neben dem Sicherungskasten im Maschinenraum, bis es Spind und Bruno gibt (ZIM-4) | Nebenstrang (Marion; Generalschlüssel, Foto 2005) | hing neben der Hauptsicherung im Spind des Hausmeisters; Bruno behält ihn ab Nacht 5, zu bekommen über Freundschaft, Handel, Mäxchen, Klauen | 2.10, K3 |
 | Schlüssel zum westlichen Kellerschloss | – | geplant (Ort 2026-11-03, ZIM-12) | – (Abkürzung in den Westteil des Kellers) | Werkzeugkasten im Technikraum (UG) | 7.4 |
 | ~~Werkstattschlüssel~~ | – | gestrichen 2026-10-27 (Werkstatt entfällt zugunsten des alten Heizkellers) | – | – | 2.8, 7.4 |
@@ -83,9 +83,9 @@ Stand: 2026-11-03.
 
 | Gegenstand | Code | Stand | Handlung | Wozu | Konzept |
 |---|---|---|---|---|---|
-| Kürbis (Sorten bis Riesenkürbis) | `PUMPKIN` | gebaut | – | Deko, schnitzen, braten, werfen; große Sorten betäuben den Kürbismann gezeigt etwa 5 s · als Lieblingskürbis erbeten (Bitte, 6.14) | 5.8, 4.21 |
-| Geschnitzter Kürbis | `CARVED_PUMPKIN` | gebaut | – | Deko, mit Kerze Licht; betäubt den Kürbismann gezeigt etwa 5 s · Brunos Herzensbitte, Lieblingskürbis geschnitzt (6.14) | 5.4, 4.21 |
-| Zierkürbis | `MINI_PUMPKIN` | gebaut | – | kleine Deko, passt in die Tasche | 5.8 |
+| Kürbis (Sorten bis Riesenkürbis) | `PUMPKIN` | gebaut | – | Deko, schnitzen, braten, werfen; nur große Sorten (Halloween, Weißer, Muskat, Riese) betäuben den Kürbismann gezeigt etwa 5 s, die kleinen nicht · als Lieblingskürbis erbeten (Bitte, 6.14) | 5.8, 4.21 |
+| Geschnitzter Kürbis | `CARVED_PUMPKIN` | gebaut | – | Deko, mit Kerze Licht; betäubt den Kürbismann gezeigt etwa 5 s, auch mit brennender Kerze · Brunos Herzensbitte (bis ZIM-8, dann der Silberstock), Lieblingskürbis geschnitzt (6.14) | 5.4, 4.21 |
+| Zierkürbis | `MINI_PUMPKIN` | gebaut | – | kleine Deko, passt in die Tasche; betäubt den Kürbismann nicht | 5.8, 4.21 |
 | Kerze | `CANDLE` | gebaut (Abbrennen 27.10.) | – | Licht, geht aus, anzünden, brennt in etwa einem Spieltag ab · Ednas Herzensbitte, kleine Bitte am Abend (6.14) | 5.12 |
 | Lakengespenst | `SHEET_GHOST` | gebaut | – | Deko zum Aufhängen; lockt den Lakengeist | 5.6 |
 | Lichterkette | `LIGHT_STRING` | gebaut | – | Deko zum Aufhängen | 5.6 |
@@ -96,7 +96,7 @@ Stand: 2026-11-03.
 | Totenkopf | `SKULL` | gebaut | – | starke Deko, mit Kerze Licht · Herzensbitte der Geschäftstüchtigen, 15 Geld (6.14) | 5.7 |
 | Hexenbesen | `BROOM` | gebaut | – | Deko, lehnt an der Wand | 5.7 |
 | Maske (eigene) | – | geplant | – | für den Maskenball und das Maskenspiel; von Ruth Behrens genäht oder irgendwo gefunden (Gäste-Masken sind keine Gegenstände) | 5.19 |
-| Verbotene Masken (acht: Leviathan, Kürbismann, Lakengeist, Vampir, Puppe, Vogelscheuche, Krähe, Kesselkatze) | `MASK` „pumpkin“, „doll“ | **teilweise** – Kürbismann und Puppe gebaut (Modell, tragen, Wirkung), die übrigen sechs fehlen; Verstecke, Zettel, Verleihen und Trophäen fehlen | – | rufen ihre eigene Bedrohung; Maskenboard mit acht Stiften in Zimmer 13 (leere zeigen nur, wie viele fehlen, nicht welche) – Kürbismann und Puppe hängen vorerst von Anfang an dort; Kürbismann: Spaßschwelle drastisch tiefer, Träger ist sein Ziel · Puppe: nächstes Urteil auf die Tür des Trägers | 5.19 |
+| Verbotene Masken (acht: Leviathan, Kürbismann, Lakengeist, Vampir, Puppe, Vogelscheuche, Krähe, Kesselkatze) | `MASK` „pumpkin“, „doll“ | **teilweise** – im Spiel nur Kürbismann und Puppe (Modell, tragen, Wirkung); Vogelscheuche, Krähe und Kesselkatze mit ihrer leichten Wirkung nur im Debug (`--maske`, ZIM-102); Leviathan, Lakengeist und Vampir fehlen; Verstecke, Zettel, Verleihen und Trophäen fehlen | – | die vier Bedrohungsmasken rufen ihre Bedrohung, die übrigen vier wirken nur leicht; Maskenboard mit acht Stiften in Zimmer 13 (leere zeigen nur, wie viele fehlen, nicht welche) – Kürbismann und Puppe hängen vorerst von Anfang an dort; Kürbismann: Spaßschwelle drastisch tiefer, Träger ist sein Ziel · Puppe: Kinder in der Nähe werden still und halten Abstand · Vogelscheuche: Krähen stehlen nicht und krächzen nicht an · Krähe: Füttern zählt doppelt · Kesselkatze: Hotelkatzen laufen nach | 5.19 |
 
 ## 5. Licht und Werkzeug
 
@@ -149,9 +149,6 @@ Stand: 2026-11-03.
 
 ## Lücken für die Hauptgeschichte
 
-Was die Hauptgeschichte braucht und noch fehlt, in der Reihenfolge des Durchlaufs (HANDLUNG.md):
-1. Gustavs Tagebuch (M4) · Hotelregister (M6) · Gustavs Brille (M7)
-2. Notizbuch des Hausmeisters und Schaltschlüssel (M8) · Hauptsicherung aus dem Spind (M9)
-3. Kesselbuch (M12) · Dachbodenschlüssel (M14)
-4. Seine Sachen, Vertrag, Schlüsselbund (M15a, M15b) – nur für die Erlösung (Kür, 2.8)
-5. Schlüssel zum Haupteingang (M18) – Fundort noch offen
+Keine eigene Liste, damit nichts doppelt gepflegt wird: Was der Hauptgeschichte noch fehlt, sind die Zeilen mit
+Handlung = **Hauptgeschichte** und Stand **geplant** oder **teilweise**; die Reihenfolge des Durchlaufs steht in
+HANDLUNG.md.

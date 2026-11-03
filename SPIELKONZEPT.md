@@ -2332,7 +2332,7 @@ zwischen den Bedrohungen und Verfolgung auf eine belegte Ebene entfallen mit dem
 > genug, um ihn zu erlösen.
 
 **1. Betäuben: einen Kürbis zeigen** (entschieden 2026-10-25)
-- **Hält man ihm einen Kürbis entgegen,** sodass er ihn sieht, **ist er betäubt** – immer, kein Würfeln. Er bleibt
+- **Hält man ihm einen großen oder geschnitzten Kürbis entgegen** (welche genau: unten), sodass er ihn sieht, **ist er betäubt** – immer, kein Würfeln. Er bleibt
   wie gebannt stehen. Der Kürbis bleibt dabei heil.
 - **Er wird nie beworfen oder geschlagen:** Würfe (3.13) und Schläge bewirken bei ihm nichts.
 - **Allein hält das nur sehr kurz** – genug zum Fliehen oder um einen Gast aus seiner Reichweite zu holen.
@@ -2953,22 +2953,33 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 - **Im Flur** → schützt Wege / schafft sichere Zonen
 - Platziert wird ohne eigenes Bausystem: ablegen, an die Wand hängen oder verstreuen ([G], 5.6)
 
-### 5.3 Ideen für Deko-Typen (vorläufig)
+### 5.3 Deko-Typen und ihre Stärke
+> Stand: gebaut 2026-10-20 (5.6–5.8), Zählweise 2026-10-23 und 2026-10-28 (5.10) · offen: Balance der Werte
+> (Spinnweben zählen mehr als Lichterkette, Fledermaus und Spinne).
 
-| Deko             | Herkunft                    | Idee zur Wirkung                          | Seltenheit |
-|------------------|-----------------------------|-------------------------------------------|------------|
-| Geschnitzter Kürbis (Jack-o'-Lantern) | Garten → selbst schnitzen | Starker Schutz **+ Licht**, Kerze kann ausgehen (5.12) | mittel |
-| Ungeschnitzter Kürbis | Garten                  | Schwacher Schutz, Rohstoff / Handelsware   | häufig     |
-| Spinnenweben     | In bestimmten Hotelbereichen einsammeln | An Tür / im Flur aufhängen; Schutz, Frühwarnung (schwingen bei Monsternähe, 5.6) | mittel |
-| Herbstlaub       | Bäume im Garten             | Am Boden auslegen; schwacher Schutz, **raschelt** (verrät Schritte – auch die von Dieben?) | häufig |
-| Kerzen           | Kerzenvorrat in der Küche, Schubladen, Handel | Kleiner Radius, Licht; gehen aus, brennen ab (5.12) | häufig     |
-| Girlande / Lichterkette | Handel                | Schützt Flurabschnitt linear, Licht         | mittel     |
-| Vogelscheuche    | Handel / Belohnung          | Großer Radius                               | selten     |
+Die Werte stehen so im Code (`Item.deco_strength`, Kürbissorten in `PumpkinKinds`). **Wie sie zählen** (5.10): Deko mit
+Licht im eigenen Schein ×1,6, Deko ohne Licht ×0,5 und nur direkt an einer Zimmertür; Füllmaterial an einer Stelle
+zusammen höchstens 20; welke Kürbisse ×0,7, eingefallene ×0,4. **Endlich** heißt: aus Kisten ohne Nachschub, aus Beeten
+einmal am Tag oder aus dem Koffer der Gäste (5.10).
 
-- Gebaut sind außerdem Lakengespenster und Lichterketten (5.6), Fledermausgirlande, Plastikspinne, Totenkopf und
-  Hexenbesen (5.7) und sieben Kürbissorten (5.8). Girlande und Vogelscheuche sind Ideen.
-- **Verfall** (Kürbisse faulen, Laub wird zertreten, Kerzen gehen aus), damit Deko nicht einmal platziert und vergessen
-  wird: 5.10, 5.12.
+| Deko | Stärke | Licht | Art | brennt (5.11) | schwingt (5.6) |
+|------|--------|-------|-----|---------------|----------------|
+| **Geschnitzter Kürbis** | 30 mit brennender Kerze, 20 aus – Weißer ×1,2, Riese ×2,5 | ja | endlich (Beet) | nein | nein |
+| **Große Kürbisse**, ungeschnitzt | Halloween 10, Weißer 12, Muskat 8, Riese 25 (5.8) | nein | endlich (Beet) | nein | nein |
+| **Kleine Kürbissorten** | Hokkaido 4, Butternut 5, Türkenturban 9 | nein | Füllmaterial | nein | nein |
+| **Zierkürbis** | 4 | nein | Füllmaterial | nein | nein |
+| **Kerze** | 8 brennend, 2 aus | ja | Füllmaterial | nein | nein |
+| **Totenkopf** | 26 mit brennender Kerze, 16 ohne | mit Kerze | endlich (Kiste) | nein | nein |
+| **Lichterkette** | 10 | ja | endlich (Kiste) | nein | ja |
+| **Lakengespenst** | 14, mit Zierkürbis in den Händen 18 | nein | endlich (Kiste) | ja | ja |
+| **Hexenbesen** | 15 | nein | endlich (Kiste) | ja | nein – rutscht beim starken Ruck weg (5.7) |
+| **Spinnweben** | 12 | nein | Füllmaterial | ja | ja |
+| **Fledermausgirlande** | 9 | nein | endlich (Kiste) | ja | ja |
+| **Plastikspinne** | 6 | nein | endlich (Kiste) | ja | ja |
+| **Herbstlaub** | 5 | nein | Füllmaterial | ja | nein |
+
+Brennende Deko zählt nicht, angesengte schwächer (5.11). Nicht gebaut sind die Ideen vom Anfang: Girlande und
+Vogelscheuche als Deko und Laub, das raschelt und Schritte verrät.
 
 ### 5.4 Deko selbst herstellen
 
@@ -2996,7 +3007,11 @@ Deko ist **Schutzmittel und Währung** zugleich. Wie knapp sie ist, wie sie wirk
 - Draußen ist immer Nacht (2.1): morgens belebt (Gäste ernten, 2.4), spät ohne Zeugen → Ernten wird zum Risiko-Abwägen.
 
 ### 5.5 Die Puppe – „Halloween-Jury“ (entschieden 2026-10-21, neu gefasst 2026-10-22)
-> **Umgesetzt (2026-10-22):** alles außer „Vorgemerkt“. Die Puppe ist ein Meshy-Modell (Porzellanpuppe mit blonden
+> Stand: entschieden 2026-10-21, neu gefasst 2026-10-22 und 2026-10-25 (4.33) · gebaut 2026-10-22, Wettbewerb
+> 2026-10-23 · offen: „Vorgemerkt“ und „Herkunft“ unten; nach einem Urteil bleibt sie im Code vor der Tür liegen,
+> statt in die Lobby zurückzukehren.
+>
+> **Gebaut:** Die Puppe ist ein Meshy-Modell (Porzellanpuppe mit blonden
 > Locken, rosa Blümchenkleid und blauer Schleife, sitzend ~0,65 m, seit 2026-10-25) und sitzt am Anfang auf einem
 > Lobby-Sofa.
 >
@@ -3017,7 +3032,7 @@ ein Warnungszettel (2.5).
 
 **Das Urteil**
 - **Wann:** nur vor einem **Urteil** (4.33) – 8–12 Mal im Spiel, etwa alle drei Tage. **2–5 Spielstunden vor dem
-  Aufbruch** liegt sie plötzlich vor der Tür (bis 2026-10-25: 1–2 Minuten).
+  Aufbruch** liegt sie plötzlich vor der Tür.
 - **Wen:** nur **bewohnte Türen** – die Zimmer der erwachsenen Gäste und **Zimmer 13**. Keine Flure, keine Lobby, keine
   leeren Zimmer, keine Zimmer, in denen nur Kinder schlafen (sie sind nie Opfer, 6.13).
 - **Wie:** die Tür mit der **wenigsten Deko** (so, wie das Monster sie zählt – im Lichtschein, 5.10). Haben mehrere
@@ -3043,13 +3058,11 @@ ein Warnungszettel (2.5).
   Opfern geht über Diebstahl: Wer dem Nachbarn die Deko klaut, macht ihn zum Schwächsten (4.11).
 
 **Der Angriff** (entschieden 2026-10-22)
-- **Weg:** Vom Keller direkt zur Puppentür. ~~Unterwegs bis zu fünf weitere schwache Türen~~ – die gehören seit
-  2026-10-25 zur **Anforderung** (4.33).
+- **Weg:** Vom Keller direkt zur Puppentür; schwache Türen unterwegs gehören zur **Anforderung** (4.33).
 - **Das Puppenzimmer:** Die Tür fällt **immer**, auch gut geschmückt. Das Monster holt den **Verurteilten** – einen
   Erwachsenen des Zimmers, 4.33 –, auch wenn er sich anderswo versteckt; er überlebt mit **20 %** verletzt. Danach
-  kehrt das Monster in den Keller zurück. ~~Jeder im gewählten Zimmer mit 60 %~~ entfällt.
-- Die Puppe ist eine Warnung, kein Todesurteil – für den, der sie liest **und nachbessert**. Weglaufen hilft seit
-  2026-10-25 nicht mehr.
+  kehrt das Monster in den Keller zurück.
+- Die Puppe ist eine Warnung, kein Todesurteil – für den, der sie liest **und nachbessert**. Weglaufen hilft nicht.
 
 **Kinder**
 - Zwischen den Angriffen (erst nach dem ersten – vorher ist sie die Jury in der Lobby, 2.5) sehen Kinder die Puppe, nehmen sie zum Spielen mit und legen sie gern **vor die Tür ihrer
@@ -3060,18 +3073,16 @@ ein Warnungszettel (2.5).
 **Gäste:** Findet ein Gast sie vor seiner Tür, steigt seine Angst, und er sagt es laut („Bei mir sitzt die Puppe …“).
 Um Deko bitten wird er mit den Wünschen (6.14, 6.18).
 
-**Zwischen den Urteilen** sitzt sie wieder **in der Lobby** (2026-10-25, 4.33) – oder dort, wo ein Kind sie
-hingelegt hat. Am Anfang sitzt sie in
-der Lobby, als Jury des Wettbewerbs (2.5); nach der Siegerehrung ist sie fort, bis sie vor dem nächsten echten Angriff
-vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „eine Bedrohung je Ebene“ (4.1, 4.20).
+**Wo sie zwischen den Urteilen ist** (2026-10-25, 4.33): Am Anfang sitzt sie als Jury des Wettbewerbs in der Lobby
+(2.5); nach der Siegerehrung ist sie fort bis zum ersten Urteil, danach sitzt sie zwischen den Urteilen **in der Lobby**
+– oder dort, wo ein Kind sie hingelegt hat. Sie ist **keine Bedrohung** und zählt nicht zur Regel „eine Bedrohung je
+Ebene“ (4.1, 4.20).
 
 **Vorgemerkt**
 - **Jury beim Schmücken (5.9) und beim Schnitz-Wettbewerb (6.10):** Am Ende eines Großen Schmückens sitzt sie an der
   schönsten Stelle – Ruf für die Mitmacher. Kein Muss.
-- **Das letzte Urteil an Halloween:** ~~„Das Hotel behält immer einen“ – am 31. sitzt sie ein letztes Mal vor
-  einer Tür: bei dem, den das Hotel behält.~~ Seit 2.7 (2026-10-25) kommen alle Überlebenden hinaus. **Entschieden
-  2026-10-25 (2.8):** Ist Josef bis dahin nicht erlöst, urteilt sie am 31. ein letztes Mal, und das Monster greift
-  vor der Öffnung noch einmal an.
+- **Das letzte Urteil an Halloween** (entschieden 2026-10-25, 2.8): Ist Josef bis dahin nicht erlöst, urteilt sie am
+  31. ein letztes Mal, und das Monster greift vor der Öffnung noch einmal an.
 
 **Herkunft (entschieden 2026-10-27, nicht gebaut)**
 - Die Puppe war das **Geschenk Josefs an Marion** (2.3, 2.8). Sie ist 1987 **mit verbrannt** und seitdem an ihn
@@ -3119,7 +3130,7 @@ vor einer Tür liegt. Sie ist **keine Bedrohung** und zählt nicht zur Regel „
 | **Plastikspinne** | Dekokiste, Kommoden | hängt am Faden; wippt immer ein wenig und hüpft bei Unruhe wie ein Jo-Jo |
 | **Totenkopf** | alte Deko im Keller, Bruno | steht auf Boden oder Möbeln; mit einer Kerze darin glimmen die Augen (Licht, stärker als ohne) – wie beim Kürbis, kippt um |
 | **Hexenbesen** | alte Deko im Keller | lehnt an der Wand (groß, beide Hände); beim starken Ruck rutscht er weg und fällt polternd um – noch eine Warnung |
-- **Alte Deko im Keller:** Im Versteck des Monsters steht eine Kiste mit Halloween-Deko früherer Jahre (Totenkopf,
+- **Alte Deko im Keller:** Im Heizraum (U1, 7.4) steht eine Kiste mit Halloween-Deko früherer Jahre (Totenkopf,
   Hexenbesen, Fledermäuse) – der Weg dorthin ist das Risiko (wie bei den Spinnweben, 5.4).
 - Manche Gäste hängen Fledermäuse oder eine Spinne an ihre Tür; Gäste stellen und hängen die neue Deko wie die
   übrige an ihre Tür, Besen lehnen daneben.
@@ -3165,6 +3176,11 @@ nur eine bestimmte Sorte wächst (der Riese nur in seinem eigenen Beet).
   Ernten nimmt er seine Sorte zuerst, und seine eigene Kürbisdeko ist aus dieser Sorte.
 
 ### 5.9 Halloween im Hotel (vorgemerkt 2026-10-20)
+> Stand: vorgemerkt 2026-10-20, Einzelheiten entschieden 2026-10-20 bis 2026-10-23 · gebaut: Schmück-Aktionen, Kostüme
+> und selbst verkleiden (2026-10-20), selbst aufrufen, mehrere zugleich, Großes Schmücken und Deko-Suche (ab
+> 2026-10-21), Durchsagen der Direktion (2.5) · offen: Verkleiden aus Fundstücken, Gruselgeschichten-Abend, Kerze ins
+> Fenster, verzerrte und falsche Durchsagen, Gruppenfoto.
+
 Das Gefühl „Halloween mit lauter Leuten“ soll mit jedem Tag wachsen, bis zum Fest am 31. (2.1) – und der Grusel mit
 ihm.
 - **Das Hotel schmückt sich:** Mit jedem Tag hängt mehr Deko. Gäste tragen Girlanden und Kürbisse sichtbar durch die
@@ -3208,8 +3224,8 @@ ihm.
   >   die Stelle, an der du stehst. Belohnung wie bei den kleinen Aktionen, für jeden Mitmacher.
   >
   > **Deko-Suche mit Gästen (entschieden 2026-10-21):** Gäste gehen auch **auf Deko-Suche**: Laub im Garten,
-  > Dekokiste, Wäschekisten, Kommoden – Mutige auch Spinnweben in dunklen Ecken (~~die alte Deko im Keller~~: Gäste
-  > gehen nicht ins UG, Entscheidung 2026-11-03, 7.9 – die Kellerdeko bleibt dem Spieler). Trifft
+  > Dekokiste, Wäschekisten, Kommoden – Mutige auch Spinnweben in dunklen Ecken. Die alte Deko im Keller bleibt dem
+  > Spieler (Gäste gehen nicht ins UG, 2026-11-03, 7.9). Trifft
   > ein suchender Gast dich, fragt er „Ich geh Deko suchen – kommst du mit?“; du kannst auch selbst fragen
   > („Lass uns zusammen Deko suchen“, ab „nett“). Dann **führt er, du folgst** – er wartet, wenn du zurückfällst, und
   > gibt auf, wenn du ihn ganz verlierst. Am Fundort nimmt er zwei Stück und **gibt dir eins ab** (in die Hand, sonst
@@ -3236,10 +3252,8 @@ ihm.
 - **Verkleiden aus Fundstücken (vorgemerkt 2026-10-23):** Spieler **und Gäste** ziehen sich einfache Verkleidungen
   an – einen **Kürbis als Hut**, **Masken**, **Gespensterlaken** oder andere kleine Gegenstände. Vorschläge: Ein
   geschnitzter, **brennender Kürbis auf dem Kopf leuchtet** – man trägt Licht, das das Monster sieht (4.15).
-  ~~**Masken** sind ein neuer Gegenstand; woher ist offen.~~ Die **Masken** sind entschieden (2026-10-25): Maskenball,
-  eigene Maske und die acht verbotenen Masken stehen in 5.19.
-- ~~**Maskenspiel „Wer steckt dahinter?“ (vorgemerkt 2026-10-23)**~~ – aufgegangen im **Maskenball** (5.19,
-  entschieden 2026-10-25): Es läuft dort den ganzen Ball über, die Regeln von hier gelten weiter.
+  Maskenball, eigene Maske, die acht verbotenen Masken und das Maskenspiel „Wer steckt dahinter?“ stehen in 5.19
+  (entschieden 2026-10-25).
 - **Gruselgeschichten-Abend:** Abends sitzen Gäste bei Kerzen in der Lobby und erzählen Geschichten – mit wenig
   Licht, also nicht ohne Risiko (4.4). Manche Geschichten enthalten **echte Hinweise** auf das Geheimnis (2.3);
   Mitwisser verraten sich dabei. Erzählt der Spieler selbst eine, steigt die Angst der Zuhörer und damit ihre
@@ -3248,8 +3262,8 @@ ihm.
   mag den Spieler mehr – entschieden 2026-10-21, siehe 3.8), die Lobby zusammen schmücken, der Kürbis-Schnitz-Wettbewerb (6.10) mit der Puppe als
   Jury (5.5, vorgemerkt).
 - **Alte Bräuche als Schutz:** eine **Kerze ins Fenster** (hält den Lakengeist vielleicht fern, ohne den Vorhang
-  zuzuziehen), **Salz** vor die Tür (entschieden und umgesetzt 2026-10-25, 5.13), ~~**Rübenlaternen** als ältere
-  Form des Kürbisses~~ (gestrichen 2026-10-25). Sie dürfen nie ganz sicher machen.
+  zuzuziehen), **Salz** vor die Tür (entschieden und umgesetzt 2026-10-25, 5.13). Sie dürfen nie ganz sicher machen.
+  Verworfen: Rübenlaternen als ältere Form des Kürbisses (2026-10-25).
 - **Durchsagen:** Die Rezeption sagt über Lautsprecher an, was im Hotel passiert („Die Bar schließt um
   Mitternacht“, „Feier im Partyraum“, Nachtruhe). Nachts klingen sie verzerrt – und manchmal kommt eine Durchsage,
   die es nicht geben dürfte: der Name eines Verschwundenen, „Zimmer 13 wird erwartet“. Wer spricht da (2.3)? Alle
@@ -3269,11 +3283,10 @@ ihm.
 >   **zusammen höchstens 20** – in den ersten Tagen ein Grundschutz, ab etwa dem 5. reicht es allein nie (bis Stufe 2,
 >   in der Deko ohne Licht ohnehin nur halb zählt).
 > - **Kisten ohne Nachschub:** Dekokiste je 15 (Lichterketten, Fledermäuse, Spinnen), Wäschekiste 8 Lakengespenster,
->   alte Deko im Heizkeller 10 (Totenköpfe, Besen, Fledermäuse). Gäste nehmen aus jeder Kiste **höchstens ein Stück am
->   Spieltag** – so leeren sie sich gegen die Monatsmitte, mit dem Spieler schneller. Dekokisten setzt der Zeichner
->   als „Ausstattung: Dekokiste“ in den Plan; noch steht keine darin (geprüft 2026-11-03, ebenso keine Wäschekiste –
->   bis dahin leert sich nur die alte Deko im Heizkeller). Seit 2026-11-03 (7.9) holen Gäste dort nichts mehr – die
->   alte Deko leert nur noch der Spieler.
+>   alte Deko im Heizraum (U1) 10 (Totenköpfe, Besen, Fledermäuse). Gäste nehmen aus jeder Kiste **höchstens ein Stück
+>   am Spieltag** – so leeren sie sich gegen die Monatsmitte, mit dem Spieler schneller. Dekokisten setzt der Zeichner
+>   als „Ausstattung: Dekokiste“ in den Plan; noch steht keine darin (geprüft 2026-11-03, ebenso keine Wäschekiste).
+>   Aus der alten Deko holen Gäste nichts, weil sie nicht ins UG gehen (2026-11-03, 7.9) – sie leert nur der Spieler.
 > - **Mengen und Startdeko (entschieden und umgesetzt 2026-11-03, ZIM-81):** Die Mengen 15/8/10 bleiben. **Ohne Zutun
 >   des Spielers sind die Kisten um die Monatsmitte leer:** Die Gäste verteilen ihre Entnahme über den Monat – bis zum
 >   Tag d zusammen höchstens Menge × d / 15 Stück (abgerundet, dazu weiter eins am Tag), am 15. ist die Kiste leer. Was
@@ -3284,8 +3297,8 @@ ihm.
 >   (Laub, Spinnweben, Zierkürbisse); Lichterketten oben nur aus dem Koffer. Allein-Schmücken und Deko-Suche
 >   verbrauchen den Vorrat der Fundorte (mit dem Tageslimit der Kisten). Katzen bringen weiter einmal am Tag etwas.
 > - **Große Kürbisse:** Halloween, Weißer und Muskat werden je Beet **einmal am Tag** reif, der Riese alle zwei Tage;
->   ~~**Frost ab dem 25.**: Danach tragen große Beete nicht mehr.~~ Gestrichen 2026-10-25: **Alle Beete tragen bis
->   Halloween.** Kleine Sorten wachsen weiter in Minuten (5.8).
+>   **alle Beete tragen bis Halloween.** Kleine Sorten wachsen weiter in Minuten (5.8). Verworfen: Frost ab dem 25.,
+>   nach dem große Beete nicht mehr tragen (2026-10-25).
 > - **Faulen:** geschnitzte nach 3 Tagen, ungeschnitzte und Zierkürbisse nach 7; ab 60 % der Zeit **welk** (dunkler,
 >   zählt ×0,7), ab 85 % **eingefallen** (gestaucht, ×0,4), dann weg. Schnitzen setzt die Restzeit auf höchstens 3 Tage.
 >   Was im Koffer eines Gastes liegt (nur gezählt), fault nicht.
@@ -3371,11 +3384,8 @@ ihm.
 - **Diebstahl unter Gästen:** Wird es knapp, klauen Gäste auch einander (füllt „Streit unter Gästen“, 6.16). Weil die
   Puppe relativ urteilt, macht jeder Diebstahl jemanden zum Schwächsten.
 
-**Geklärt (2026-11-03, ZIM-81):** Inhalt und Größe der Kisten, wann sie leer sind, Startdeko der Kernfiguren – siehe
-oben „Mengen und Startdeko“.
-
 ### 5.11 Feuer: Deko kann brennen (entschieden 2026-10-22)
-> **Umgesetzt (2026-10-22).**
+> Stand: entschieden 2026-10-22 · gebaut 2026-10-22.
 - **Was brennt:** nur leichte Deko – Laub, Spinnweben, Lakengespenster, Fledermausgirlanden, Plastikspinnen,
   Hexenbesen, Bettlaken. Kürbisse, Totenköpfe, Kerzen und Lichterketten nicht; **Möbel und das Hotel nie**.
 - **Wie es anfängt:** Eine **brennende Kerze**, die ein Kind vor eine Tür wirft (6.13), zündet leichte Deko in der Nähe
@@ -3385,15 +3395,14 @@ oben „Mengen und Startdeko“.
 - **Löschen:** Der Spieler kann brennende Deko austreten [E]; was gelöscht ist, bleibt angesengt erhalten.
 - Brennende Deko zählt nicht als Deko, aber als Licht.
 
-### 5.12 Kerzen: ausgehen, auspusten, anzünden, abbrennen (entschieden und umgesetzt 2026-10-25, Abbrennen 2026-10-27)
-> **Geändert und umgesetzt 2026-10-27:** Kerzen **brennen ab** (siehe „Abbrennen“ unten), und **Gäste zünden an**.
-> Das ersetzt „Unbegrenzt“, „Neue Kerzen brennen nicht“ (für Gäste) und „Gäste zünden nichts an“ von 2026-10-25.
+### 5.12 Kerzen: ausgehen, auspusten, anzünden, abbrennen (entschieden 2026-10-25, Abbrennen 2026-10-27)
+> Stand: entschieden 2026-10-25, Abbrennen und „Gäste zünden an“ 2026-10-27 · gebaut 2026-10-25 und 2026-10-27.
 
 Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick und das Wachs über die Tage (5.10).
 
-- **Unbegrenzt** *(Stand 2026-10-25, wird durch „Abbrennen“ ersetzt)*: Kerzen, Kürbislaternen und Totenköpfe mit Kerze
-  brennen, bis etwas sie ausmacht – das Monster (4.13), eine Katze (6.11), der Spieler, der Wind. Eine ausgegangene
-  Kerze heißt „Kerze (aus)“.
+- **Ausgehen:** Kerzen, Kürbislaternen und Totenköpfe mit Kerze brennen, bis etwas sie ausmacht – das Monster (4.13),
+  eine Katze (6.11), der Spieler, der Wind – oder das Wachs verbraucht ist (Abbrennen, unten). Eine ausgegangene Kerze
+  heißt „Kerze (aus)“.
 - **Auch die festen Kerzen** auf Kommoden, Tischen und Theke (7.3) können ausgehen: Das Monster bläst sie im Vorbeigehen
   aus, der Spieler kann sie auspusten und wieder anzünden. Sie werden mit dem Spielstand gespeichert.
 - **Auspusten:** Brennt, was man in der Hand hält, pustet **Linksklick / R** es aus. Eine Flamme in der Welt (Kerze,
@@ -3415,12 +3424,10 @@ Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick 
 - **Kürbis und Totenkopf:** Eine Kerze stellt man nur **brennend** hinein; eine erloschene Kerze geht nicht („erst
   anzünden“). Ist die Kerze darin ausgegangen, zündet man sie wie eine einzelne Kerze wieder an.
 - **Neue Kerzen brennen nicht:** aus dem Kerzenvorrat in der Küche, aus Schubladen, als Geschenk und aus dem Koffer der
-  Gäste. Nur was zu Spielbeginn schon steht, brennt: die festen Kerzen und die Startdeko der Gäste vor ihren Türen (2.5).
-- **Gäste zünden nichts an** *(Stand 2026-10-25, wird durch „Gäste zünden an“ ersetzt)*. Ihre Kerzen und Kürbisse
-  bleiben dunkel, sobald sie einmal aus sind – das Monster hinterlässt eine Spur dunkler Türen, und wer einem Gast die
-  Kerze wieder anzündet, hat etwas für ihn getan.
-  - Kinder werfen bei ihren Streichen (6.13) nur dann eine **brennende** Kerze, wenn vor der Tür ihrer Familie noch eine
-    brennt – die nehmen sie mit. Sonst fliegt eine kalte aus dem Koffer; Feuer (5.11) gibt es dann keins.
+  Gäste kommen sie erloschen – der Spieler zündet sie an einer Flamme oder mit Streichhölzern an, Gäste wie unter
+  „Gäste zünden an“. Zu Spielbeginn brennen die festen Kerzen und die Startdeko der Gäste vor ihren Türen (2.5).
+- **Kinder** werfen bei ihren Streichen (6.13) nur dann eine **brennende** Kerze, wenn vor der Tür ihrer Familie noch
+  eine brennt – die nehmen sie mit. Sonst fliegt eine kalte aus dem Koffer; Feuer (5.11) gibt es dann keins.
 - **Kein Brandstifter:** Mit Streichhölzern zündet man nur Kerzen an – keine Deko, kein Feuer (5.11).
 - **Gespeichert:** ob eine Kerze brennt, ob in Kürbis und Totenkopf eine erloschene Kerze steckt, und die
   festen Kerzen. Debug: `--bag=kerze,streichhoelzer`.
@@ -3443,7 +3450,7 @@ Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick 
     Die anderen tragen ihre Kerze zu einer brennenden Flamme in der Nähe oder fragen den Spieler nach Feuer – nur mit
     ihrem Spruch, **ohne Eintrag im Notizbuch** (keine kleine Bitte nach 6.14, entschieden 2026-11-03).
   - **Nachts nicht:** In der Nachtruhe schlafen die Gäste; was das Monster ausbläst, bleibt bis zum Morgen dunkel. Die
-    Spur dunkler Türen gibt es also weiter, nur nicht mehr dauerhaft.
+    Spur dunkler Türen gibt es also, aber nur bis zum Morgen.
 - **Nachschub:** Der Kerzenvorrat in der Küche füllt sich **morgens** wieder auf statt laufend: auf **halb so viele
   Kerzen, wie Zimmer bewohnt sind** (wächst und schrumpft mit der Belegung). Wer zu spät kommt, geht leer aus; werden
   Kerzen knapp, klauen Gäste sie einander (5.10). Dazu kommen die Kerzen in den Koffern der Gäste. Der Spieler bedient
@@ -3457,7 +3464,7 @@ Kerzen **gehen aus** – und **brennen ab**. Knapp ist die Flamme im Augenblick 
 
 ### 5.13 Salz vor die Tür (entschieden und umgesetzt 2026-10-25)
 Ein alter Brauch aus 5.9: **Salz über die Schwelle oder auf die Fensterbank** hält den Lakengeist (4.18) aus einem
-Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gestrichen.
+Zimmer fern – nie ganz sicher.
 
 - **Salzpackung** (neuer kleiner Gegenstand, passt in die Tasche): **drei Packungen** auf der Küchenzeile, ohne
   Nachschub (5.10). Eine Packung reicht für **vier Linien**; die leere ist weg.
@@ -3505,27 +3512,24 @@ Zimmer fern – nie ganz sicher. Die Rübenlaternen aus demselben Satz sind gest
 - **Nicht gebaut:** Die Gäste erzählen das Zeichen nur dem Spieler, nicht einander; keine eigene Bitte „Salz vor meine
   Tür“ (die Erzählung ist der Hinweis). Debug `--kreisen[=…]`.
 
-### 5.14 Die Fotowand in der Lobby (entschieden und umgesetzt 2026-10-25)
-> **Geändert 2026-10-30 (2.10), noch nicht umgesetzt:** ein Foto je **Ernte**, alle drei Jahre – 1987, 1990 … 2023 und
-> der leere Rahmen 2026, also genau die 14 Rahmen. Aufgenommen bei der Ankunft am 1. Oktober vor dem Haupteingang;
-> 2026 hängt es ab dem 2. Oktober im Rahmen und verwischt mit jedem Toten. Ohne Schlüssel ist jedes Gesicht
-> verwischt außer dem des alten Herrn; scharf sind 1987 und 2005 die Überlebenden. **Das Foto von 2005 fehlt** (Fleck
-> auf der Tapete) und muss erst gefunden werden. Der alte Herr (Gründer und Direktor),
-> nicht der Erbe. ~~Im Code stehen noch die alten Jahre (1988, 2003, 2007, 2015, 2019, 2025) und 1–3 Verwischte je Foto.~~
-> **Umgesetzt 2026-11-03 (ZIM-133):** die 14 Erntejahre und an der Stelle von 2005 ein hellerer Fleck mit leerem Nagel.
-> Noch offen (ZIM-117): alle Gesichter verwischt außer dem alten Herrn und den Überlebenden, das Ankunftsfoto 2026 im
-> Rahmen, das Foto von 2005 im Sekretariat; die Fotos bleiben Platzhalter bis zu echten Bildern (ZIM-135).
+### 5.14 Die Fotowand in der Lobby (entschieden 2026-10-25, je Ernte ein Foto 2026-10-30)
+> Stand: entschieden 2026-10-25, je Ernte ein Foto 2026-10-30 (2.10) · gebaut 2026-10-25, Rahmen 2026-11-02 (ZIM-134),
+> die 14 Erntejahre mit dem Fleck von 2005 2026-11-03 (ZIM-133) · offen (ZIM-117): alle Gesichter verwischt außer dem
+> alten Herrn und den Überlebenden, das Ankunftsfoto 2026 im Rahmen, das Foto von 2005 im Sekretariat; die Fotos bleiben
+> Platzhalter bis zu echten Bildern (ZIM-135).
 
-~~Jedes Jahr seit 1987~~ Jede Ernte (2.10) ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, bei der Ankunft, in
-Holzrahmen nebeneinander – alte vergilbt, neue farbig; daneben ein leerer Rahmen „Halloween 2026“.
+Jede Ernte (2.10), also alle drei Jahre, ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, aufgenommen bei der
+Ankunft am 1. Oktober: 1987, 1990 … 2023 in Holzrahmen – alte vergilbt, neue farbig –, dazu der Rahmen „Halloween 2026“,
+14 Rahmen. Das Foto von 2026 hängt ab dem 2. Oktober darin. **Das Foto von 2005 fehlt** (Fleck auf der Tapete) und muss
+erst gefunden werden.
 
-- Wer in jenem Oktober geholt wurde, ist **verwischt**, als hätte er sich bewegt.
-- Ein Gesicht ist auf jedem Foto und **altert nie**: hinten rechts der weißhaarige alte Herr mit Gehstock – ~~der Erbe
-  der Familie (2.3)~~ der alte Herr, Gründer und Direktor, nur auf den Fotos zu sehen (2.10). Wer genug Fotos ansieht, merkt es (Notizbuch).
+- Wer in jener Ernte geholt wird, **verwischt**, als hätte er sich bewegt – 2026 mit jedem Toten. In Ernten ohne
+  Schlüssel ist am Ende jedes Gesicht verwischt außer dem des alten Herrn; scharf sind 1987 und 2005 die Überlebenden.
+- Ein Gesicht ist auf jedem Foto und **altert nie**: hinten rechts der weißhaarige alte Herr mit Gehstock, Gründer
+  und Direktor, nur auf den Fotos zu sehen (2.10). Wer genug Fotos ansieht, merkt es (Notizbuch).
 - Auf 1987 außerdem Marion als Mädchen mit Zöpfen, Josef im Hausmeisterkittel, Edna jung und Liesel – die Indiz-Stufe für
   Marion, Edna und Liesel (2.3, 2.7).
-- ~~Ort: Ausstattung „Fotowand“ im Plan, bis dahin Westwand der Lobby.~~ **Ort (Nutzer 2026-10-31, gebaut 2026-11-03,
-  ZIM-133):** an der Ostwand der Lobby, hinter der der Partyraum liegt, 7 m lang. Jeder Punkt „Fotowand“ im Plan ist
+- **Ort (Nutzer 2026-10-31, gebaut 2026-11-03, ZIM-133):** an der Ostwand der Lobby, hinter der der Partyraum liegt, 7 m lang. Jeder Punkt „Fotowand“ im Plan ist
   eine Position mit **zwei Rahmen übereinander**, Oberkanten auf 1,40 m und 1,90 m: 7 Positionen, 14 Rahmen. **Reihenfolge
   (entschieden 2026-11-03):** spaltenweise von links nach rechts, oben jeweils das ältere Jahr – links oben 1987, rechts
   unten der leere Rahmen 2026. Wo 2005 hängen müsste (vierte Spalte oben), ist ein hellerer Fleck auf der Tapete mit
@@ -3607,7 +3611,7 @@ Holzfigur je erwachsenem Gast, dort, wo er gerade ist**; Tote liegen umgekippt i
 
 ### 5.17 Marions Spieluhr (entschieden und umgesetzt 2026-10-25)
 Ein Holzkästchen mit Messingkurbel, im Deckel ein eingebranntes „M.“ – Josef Ahrend hat sie 1987 für seine Tochter
-gekauft. Sie liegt im Heizkeller oben auf dem alten Regal (neuer Gegenstand).
+gekauft. Sie liegt im Heizraum (U1, 7.4) oben auf dem alten Regal.
 
 - **Aufziehen** (Linksklick in der Hand): Das Wiegenlied läuft gut eine Viertelminute und wird am Ende langsamer. Das
   ist **Lärm** – das Monster kommt. Ist es aber nah, **bleibt es stehen und horcht**, auch mitten in der Jagd: Er kennt
@@ -3622,19 +3626,19 @@ Kürbis in der Nähe anders**, wenn man wieder hinsieht – nur, solange man ihn
 Kürbisse ohne Modell bleiben, wie sie sind. Debug: `--fratzen`.
 
 ### 5.19 Der Maskenball und die verbotenen Masken (entschieden 2026-10-25)
-> Löst „Verkleiden aus Fundstücken“ (nur die Masken) und das Maskenspiel aus 5.9 ab. Mit „Vorschlag“ markierte Punkte
-> sind aus der Durchsprache noch nicht bestätigt; was offen ist, steht unten.
-> **Teilweise umgesetzt (2026-10-26):** die acht Haken in Zimmer 13 (seit 2026-11-03 das Maskenboard, s. u.), die
-> Masken **Kürbismann** und **Puppe** als Modell – abnehmen, tragen (Linksklick, Sicht durch ihre Augenlöcher, Gäste
-> erkennen einen nur aus der Nähe), mit [G] abnehmen, zurückhängen – und ihre Wirkung auf den Spieler. Bis es die Verstecke gibt, hängen die beiden
-> **von Anfang an** an ihren Haken. Es fehlen: die übrigen sechs Masken, Verstecke und Zettel, der Ball, Verleihen,
-> Rückkehr an den Haken, Trophäen.
-> **Leichte Wirkungen gebaut (2026-11-03, ZIM-102):** Puppe, Vogelscheuche, Krähe und Kesselkatze wie in der Tabelle,
-> jeweils nur solange man die Maske trägt; die alte Puppenwirkung (Urteil auf den Träger) ist entfernt. Kleinste
-> Lösungen: Kinder „in der Nähe“ = 8 m, Abstand 4 m; „hacken“ gibt es bei den Krähen nicht, die Vogelscheuche nimmt
-> darum das Stehlen und das Ankrächzen weg; doppelt zählt eine Fütterung, wenn man mit der Krähenmaske am Tisch stand,
-> solange das Futter dort lag; Hotelkatzen bis 10 m auf demselben Stockwerk. Vogelscheuche, Krähe und Kesselkatze gibt
-> es noch nicht als Gegenstand (Verstecke fehlen) – nur im Debug. Offen: Kesselbuch mit fehlender Seite (U2, ZIM-15).
+> Stand: entschieden 2026-10-25, leichte Wirkungen 2026-11-03 (ZIM-102) · gebaut 2026-10-26: die acht Haken in
+> Zimmer 13 (seit 2026-11-03 das Maskenboard, s. u.), die Masken **Kürbismann** und **Puppe** als Modell – abnehmen,
+> tragen (Linksklick, Sicht durch ihre Augenlöcher, Gäste erkennen einen nur aus der Nähe), mit [G] abnehmen,
+> zurückhängen – und ihre Wirkung auf den Spieler; 2026-11-03 die leichten Wirkungen von Puppe, Vogelscheuche, Krähe
+> und Kesselkatze · offen: die Masken Leviathan, Lakengeist und Vampir, Vogelscheuche, Krähe und Kesselkatze als
+> Gegenstand (bisher nur im Debug), Verstecke und Zettel, der Ball, Verleihen, Rückkehr an den Haken, Trophäen,
+> Kesselbuch mit fehlender Seite (U2, ZIM-15). Mit „Vorschlag“ markierte Punkte sind aus der Durchsprache noch nicht
+> bestätigt.
+> Bis es die Verstecke gibt, hängen Kürbismann und Puppe **von Anfang an** an ihren Haken. Die leichten Wirkungen
+> gelten nur, solange man die Maske trägt. Kleinste Lösungen: Kinder „in der Nähe“ = 8 m, Abstand 4 m; „hacken“ gibt
+> es bei den Krähen nicht, die Vogelscheuche nimmt darum das Stehlen und das Ankrächzen weg; doppelt zählt eine
+> Fütterung, wenn man mit der Krähenmaske am Tisch stand, solange das Futter dort lag; Hotelkatzen bis 10 m auf
+> demselben Stockwerk.
 
 **Grundidee:** Dreimal im Monat lädt das Hotel zum **Maskenball** in den Partyraum. Alle wollen dort die schönste
 Maske tragen, denn es gibt einen Preis – und die prächtigsten Masken im Haus sind die **verbotenen**: acht Masken der
@@ -3700,10 +3704,13 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 | **Kürbismann** | Dachboden, neben seinem Kopf (4.21) | wird sein Ziel, sobald er im Haus ist; solange sie getragen wird, liegt die Schwelle des Spaßwerts (4.19) **drastisch tiefer** – schon der Grundspaß des Hotels kann ihn rufen (entschieden 2026-10-26) |
 | **Lakengeist** | Wäscherei, in einer Wäschekiste zwischen den Laken der Verschwundenen (4.20) | bei dem steigt **am Abend danach** die Chance auf den Lakengeist (4.18) |
 | **Vampir** | Friedhof im Garten, in einer Gruft (5.15; die Gruft gibt es noch nicht) | lockt den Vampir (4.22, kommt mit ihm) |
-| **Puppe** (Porzellangesicht) | im Puppenhaus (5.16) | **Kinder** werden still, flüstern und halten Abstand (2026-11-03; ~~vor dessen Tür liegt beim nächsten Urteil die Puppe~~ – gebaut, fällt weg) |
-| **Vogelscheuche** (Jutesack) | Geräteschuppen im Garten (gibt es noch nicht) | die **Krähen** stehlen und hacken nicht, solange man sie trägt (2026-11-03; ~~auf den rückt die Vogelscheuche zu~~) |
-| **Krähe** (Schnabel, wie ein Pestdoktor) | auf dem Lobbydach | die Krähen werden **zutraulich**: Füttern zählt doppelt für ihre Gunst (4.25; 2026-11-03, ~~den hacken die Krähen, sie klauen ihm~~) |
+| **Puppe** (Porzellangesicht) | im Puppenhaus (5.16) | **Kinder** werden still, flüstern und halten Abstand (2026-11-03) |
+| **Vogelscheuche** (Jutesack) | Geräteschuppen im Garten (gibt es noch nicht) | die **Krähen** stehlen und hacken nicht, solange man sie trägt (2026-11-03) |
+| **Krähe** (Schnabel, wie ein Pestdoktor) | auf dem Lobbydach | die Krähen werden **zutraulich**: Füttern zählt doppelt für ihre Gunst (4.25; 2026-11-03) |
 | **Kesselkatze** | bei den Futternäpfen der Hotelkatzen (6.11) | die **Hotelkatzen** laufen einem nach und schnurren – nur Stimmung (2026-11-03) |
+
+Verworfen: eigene Mechaniken der vier leichten Masken – Urteil der Puppe auf die Tür des Trägers, Vogelscheuche rückt
+ihm zu, Krähen hacken und bestehlen ihn (2026-11-03, ZIM-102).
 
 - **Die Sammlung:** In **Zimmer 13** hängen **acht Haken** an der Wand. Jede gefundene Maske kommt an ihren Haken; ein
   leerer Haken zeigt, was noch fehlt. **Maskenboard (entschieden und gebaut 2026-11-03, ZIM-128):** Die Haken sind
