@@ -3470,21 +3470,15 @@ func _planned_here(kind: String, area := Rect2()) -> Array:
 		return int(p["level"]) == _level and (not area.has_area() or area.has_point(p["pos"])))
 
 
-## Maskensammlung (Spielkonzept 5.19): acht Haken (MaskHook) nebeneinander, die Mitte am Punkt „Maskenboard“ im Plan
-## (ZIM-158). Ohne ihn an der längsten freien Wand von Zimmer 13 – frei heißt ohne Tür und Fenster, ohne Möbel davor
-## und ohne Wandsache (Schalter, Telefon, Lampe).
+## Maskensammlung (Spielkonzept 5.19): das Maskenboard (MaskBoard, ZIM-128) mit acht Stiften, die Mitte am Punkt
+## „Maskenboard“ im Plan (ZIM-158). Ohne ihn an der längsten freien Wand von Zimmer 13 – frei heißt ohne Tür und
+## Fenster, ohne Möbel davor und ohne Wandsache (Schalter, Telefon, Lampe).
 func _mask_hooks() -> void:
 	var board := _planned_here("mask_board")
 	if not board.is_empty():
 		var out: Vector2 = board[0]["out"]
-		var right := Vector2(out.y, -out.x)   # von vorn gesehen von links nach rechts
-		var count := MaskModel.ORDER.size()
-		for i in count:
-			var face: Vector2 = (board[0]["pos"] as Vector2) + right * (i - (count - 1) / 2.0) * MaskHook.SPACING
-			var hook := MaskHook.new().setup(MaskModel.ORDER[i])
-			hook.position = Vector3(face.x, MaskHook.HEIGHT, face.y) + Vector3(out.x, 0, out.y) * 0.035
-			hook.rotation.y = atan2(out.x, out.y)
-			root.add_child(hook)
+		var face: Vector2 = board[0]["pos"]
+		_mask_board(face, out)
 		return
 	var info := {}
 	for r in _map["rooms"]:
@@ -3497,22 +3491,21 @@ func _mask_hooks() -> void:
 			if not span.is_empty() and (best.is_empty() or float(span["length"]) > float(best["length"])):
 				best = span
 	if best.is_empty() or float(best["length"]) < MASK_WALL_MIN:
-		push_warning("Gebäudeplan: Zimmer %s hat keine %.1f m freie Wand für die Maskenhaken" % [PLAYER_ROOM, MASK_WALL_MIN])
+		push_warning("Gebäudeplan: Zimmer %s hat keine %.1f m freie Wand für das Maskenboard" % [PLAYER_ROOM, MASK_WALL_MIN])
 		return
-	var count := MaskModel.ORDER.size()
-	var spacing := minf(MaskHook.SPACING, float(best["length"]) / count)
 	var dir := _dir(best["side"])
 	var middle := (float(best["from"]) + float(best["to"])) / 2.0
-	var rightward := signf(-dir.y if best["horizontal"] else dir.x)   # von vorn gesehen von links nach rechts
-	for i in count:
-		var along := middle + (i - (count - 1) / 2.0) * spacing * rightward
-		var line := float(best["line"])
-		var p := Vector2(along, line) if best["horizontal"] else Vector2(line, along)
-		var face: Vector2 = _on_wall(p - dir * 0.2, best["side"], 0.6).get("pos", p)
-		var hook := MaskHook.new().setup(MaskModel.ORDER[i])
-		hook.position = Vector3(face.x, MaskHook.HEIGHT, face.y) - Vector3(dir.x, 0, dir.y) * 0.035
-		hook.rotation.y = atan2(-dir.x, -dir.y)
-		root.add_child(hook)
+	var line := float(best["line"])
+	var p := Vector2(middle, line) if best["horizontal"] else Vector2(line, middle)
+	_mask_board(_on_wall(p - dir * 0.2, best["side"], 0.6).get("pos", p), -dir)
+
+
+## Maskenboard mittig an der Wandstelle face, Vorderseite nach out
+func _mask_board(face: Vector2, out: Vector2) -> void:
+	var b := MaskBoard.new()
+	b.position = Vector3(face.x, MaskBoard.BOTTOM, face.y)
+	b.rotation.y = atan2(out.x, out.y)
+	root.add_child(b)
 
 
 ## Längstes freies Stück an der Seite side eines Zimmerrechtecks (_mask_hooks): {side, horizontal, line, from, to,

@@ -76,6 +76,7 @@ Gemeinsame Regeln:
 | `bench.glb` | Parkbänke draußen, `_bench` | `build_bench.py`, Sketchfab (Decoratopia, CC-BY) | Kollision aus `BENCH_SEAT` und Lehne; drinnen bleibt der Holzkasten |
 | `armchair.glb` | Ledersessel am Schreibtisch, `Armchair` | `build_armchair.py`, Sketchfab (VoGAn, CC-BY) | volles PBR-Set mit Verdeckung im Rot von `armchair_orm.png`; Leder beim Bauen rot gefärbt (Helligkeit bleibt, Beine per UV-Maske und helle Nieten ausgespart); Kollision Unterbau, Lehne, Armlehnen; ein Sitzplatz „sessel“; in `_furnishings` als `armchair` |
 | `chair.glb` | Stuhl (Planfarbe „Stuhl“), `Chair` | `build_chair.py` (Blender, Möbelbausatz, ohne Vorlage) | 286 Dreiecke; zwei Teile `frame` (Holz, `Mat.hotel_wood`) und `cushion` (Stoff `Fabric_Pattern_08` getönt, `mesh_uv`); beide mit `chair_ao.png` über UV2, Normale aus dem Mesh; Maße gibt das Skript aus (`Chair.SIZE`, `SEAT_H`, Lehne `BACK_*_Z`) |
+| `mask_board.glb` + `textures/mask_board_ao.png` | Maskenboard in Zimmer 13, `MaskBoard`/`MaskHook` (ZIM-128) | `build_mask_board.py` (Blender, Möbelbausatz, ohne Vorlage) | Teile `board` (Füllung mit senkrechter Faser, Rahmenleiste mit Profil `PROFILE` auf Gehrung) und `peg` (ein gedrechselter Stift, 12° nach oben, Ursprung auf der Füllung, `MaskHook` setzt ihn achtmal); beide `Mat.hotel_wood` mit der Verschattung über UV2 (Atlas 1024², Mipmaps; Board automatisch abgewickelt, Stift als Streifen von Hand – die automatische Abwicklung zerlegte den Drehkörper in Inseln mit Nähten), Normale aus dem Mesh; gebacken mit allen acht Stiften als Schattenwerfer. Maße und Plätze in `MaskBoard` = Bauskript |
 | `room_table.glb` | Tischgruppen in Zimmern, `_room_table` | `build_room_table.py`, Sketchfab (MaX3Dd, CC-BY) | immer zwei Stühle gegenüber; Plan-Stühle im Umkreis `ROOM_CHAIR_REACH` fallen weg |
 | `washbasin`, `shower`, `toilet`, `bar_counter`, `back_bar`, `bar_stool` | Bad und Bar | `build_fixtures.py`, Rohmodelle des Nutzers | Flächen nach Namen (`_fixture_materials`); siehe unten „Bad und Bar“ |
 | `flashlight.glb` | `Flashlight` | `build_flashlight.py`, Sketchfab (Onur, CC-BY) | Glas `lens` bekommt das Lampenmaterial; Kegel an `Flashlight.LENS` |
@@ -1951,13 +1952,17 @@ Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, W
   eigenen Bett): `put_on_sheet()`/`take_off_sheet()`, Overlay `shaders/sheet_overlay.gdshader`;
   `Player.recognized_by(guest)` prüfen überall, wo Gäste den Spieler erkennen (Diebstahl, Angriff, Zeugen, Rempeln …).
   Gespeichert: `player.disguised`. Debug `--costumes[=art]`, `--disguise`.
-- **Verbotene Masken** (Spielkonzept 5.19; `world/mask_model.gd` `MaskModel`, `world/mask_hook.gd` `MaskHook`, `item.gd`
+- **Verbotene Masken** (Spielkonzept 5.19; `world/mask_model.gd` `MaskModel`, `world/mask_board.gd` `MaskBoard`,
+  `world/mask_hook.gd` `MaskHook`, `item.gd`
   `MASK` mit `mask_id` im Zusatzfeld; `player.gd` `mask`, `put_on_mask`, `take_off_mask`): `MaskModel.ORDER` = die acht
-  in der Reihenfolge der Haken, `SIZES` = die mit Modell (Kürbismann, Puppe). **Haken:** `LevelBuilder._mask_hooks`
-  hängt acht `MaskHook` an die längste freie Wand von Zimmer 13 (`_free_wall`: ohne Öffnungen, Möbel, Wandsachen bis
-  0,6 m davor; `MASK_WALL_MARGIN`, `MASK_WALL_MIN`), von vorn gelesen von links nach rechts – ein Platz im Plan fehlt
-  noch. Jeder Haken hat ein Schildchen (`Label3D`) und zeigt seine Maske, solange `hanging`; [E] nimmt sie in die Hand,
-  mit ihr in der Hand hängt [E] sie zurück (nur an den eigenen Haken). Masken mit Modell hängen von Anfang an.
+  in der Reihenfolge der Stifte, `SIZES` = die mit Modell (Kürbismann, Puppe). **Board (ZIM-128):**
+  `LevelBuilder._mask_hooks` hängt ein `MaskBoard` (1,32 × 0,96 m, Unterkante `BOTTOM` 1,0 m) mittig an den Plan-
+  punkt „Maskenboard“ oder ohne ihn an die längste freie Wand von Zimmer 13 (`_free_wall`: ohne Öffnungen, Möbel,
+  Wandsachen bis 0,6 m davor; `MASK_WALL_MARGIN`, `MASK_WALL_MIN`). Das Board setzt acht `MaskHook` auf `SLOTS`
+  (4 × 2, obere Reihe zuerst, von vorn gelesen von links nach rechts). Jeder Stift zeigt seine Maske, solange
+  `hanging`; kein Schild – der leere Stift heißt nur „Leerer Stift“, mit einer fremden Maske in der Hand „Hier gehört
+  sie nicht hin“ (welche fehlt, verrät nichts). [E] nimmt sie in die Hand, mit ihr in der Hand hängt [E] sie zurück
+  (nur an den eigenen Stift). Masken mit Modell hängen von Anfang an.
   **Tragen:** Linksklick mit der Maske in der Hand, [G] mit leeren Händen nimmt sie ab (nicht zusammen mit dem Laken);
   Overlay `shaders/mask_overlay.gdshader` (`Hud.MASK_VIEWS`: Innenfarbe, Stern- oder Mandelaugen); `recognized_by`
   wie unter dem Laken. **Wirkung:** Kürbismann `PumpkinMan.threshold()` = `MASK_THRESHOLD` statt `FUN_THRESHOLD`, in

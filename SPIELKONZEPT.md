@@ -3555,9 +3555,9 @@ Kürbisse ohne Modell bleiben, wie sie sind. Debug: `--fratzen`.
 ### 5.19 Der Maskenball und die verbotenen Masken (entschieden 2026-10-25)
 > Löst „Verkleiden aus Fundstücken“ (nur die Masken) und das Maskenspiel aus 5.9 ab. Mit „Vorschlag“ markierte Punkte
 > sind aus der Durchsprache noch nicht bestätigt; was offen ist, steht unten.
-> **Teilweise umgesetzt (2026-10-26):** die acht Haken in Zimmer 13 mit Namensschildchen, die Masken **Kürbismann** und
-> **Puppe** als Modell – abnehmen, tragen (Linksklick, Sicht durch ihre Augenlöcher, Gäste erkennen einen nur aus der
-> Nähe), mit [G] abnehmen, zurückhängen – und ihre Wirkung auf den Spieler. Bis es die Verstecke gibt, hängen die beiden
+> **Teilweise umgesetzt (2026-10-26):** die acht Haken in Zimmer 13 (seit 2026-11-03 das Maskenboard, s. u.), die
+> Masken **Kürbismann** und **Puppe** als Modell – abnehmen, tragen (Linksklick, Sicht durch ihre Augenlöcher, Gäste
+> erkennen einen nur aus der Nähe), mit [G] abnehmen, zurückhängen – und ihre Wirkung auf den Spieler. Bis es die Verstecke gibt, hängen die beiden
 > **von Anfang an** an ihren Haken. Es fehlen: die übrigen sechs Masken, Verstecke und Zettel, der Ball, Verleihen,
 > Rückkehr an den Haken, Trophäen.
 
@@ -3627,7 +3627,12 @@ meisten Beliebtheit und zugleich einer der gefährlichsten.
 | **Kesselkatze** | bei den Futternäpfen der Hotelkatzen (6.11) | dem folgt die Katze (4.26) – die einzige harmlose |
 
 - **Die Sammlung:** In **Zimmer 13** hängen **acht Haken** an der Wand. Jede gefundene Maske kommt an ihren Haken; ein
-  leerer Haken zeigt, was noch fehlt. Die Sammlung ist das **Sammelziel** des Spiels: jede Maske eine **Bronze-
+  leerer Haken zeigt, was noch fehlt. **Maskenboard (entschieden und gebaut 2026-11-03, ZIM-128):** Die Haken sind
+  ein Board aus dem dunklen Holz der Vertäfelung mit Rahmenleiste, darauf 4 × 2 gedrechselte Holzstifte, leicht nach
+  oben geneigt – keine Messinghaken, **keine Namensschilder**. Fehlende Masken zeigen sich nur an leeren Stiften: Man
+  sieht, **wie viele** fehlen, nicht welche – kein Eintrag im Notizbuch, kein Umriss. Jede Maske passt weiter nur an
+  ihren eigenen Stift (Umhängen gestrichen 2026-10-31); hält man eine Maske an einen fremden leeren Stift, heißt es nur
+  „Hier gehört sie nicht hin“ (kleinste Lösung ohne Schild, 2026-11-03). Die Sammlung ist das **Sammelziel** des Spiels: jede Maske eine **Bronze-
   Trophäe**, das ganze Set eine **goldene** (8.11).
 - **Verleihen, nicht verschenken:** Man kann eine verbotene Maske einem Gast **leihen** – zum Ball, wo sie gute
   Chancen auf den Preis hat. Der Gast ruft dann ihre Bedrohung zu sich. Das ist ein Werkzeug, auch gegen Feinde

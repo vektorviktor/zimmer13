@@ -314,7 +314,7 @@ extends Node3D
 ##   --costumes[=art]            alle Gäste sofort verkleidet (sonst ab dem 25.): jeder sein Kostüm, art = sheet|witch|
 ##                               pumpkin|cape für alle gleich (5.9)
 ##   --disguise                  Bettlaken übergeworfen (5.9): Sicht durch Augenlöcher, Gäste erkennen dich nur aus der Nähe
-##   --maske[=id]                verbotene Masken (5.19): vor den Haken in Zimmer 13 stehen · id (pumpkin|doll): diese
+##   --maske[=id]                verbotene Masken (5.19): vor dem Maskenboard in Zimmer 13 stehen · id (pumpkin|doll): diese
 ##                               Maske gleich aufgesetzt (Kürbismann: Spaßschwelle tief, Puppe: nächstes Urteil auf 13)
 ##   --drunk=n[,gast]            n Gläser getrunken (du, mit Gast: er) – ab 2 angetrunken, ab 3 betrunken (3.7)
 ##   --weather=klar|regen|gewitter|blitz|gestalt|blut   Wetter sofort in voller Stärke (7.8) · blitz: gleich ein Blitz
@@ -2885,12 +2885,12 @@ func _debug_cook(parts: PackedStringArray) -> void:
 	Game.player.head.rotation.x = deg_to_rad(-25.0)
 
 
-## --maske[=id]: Vor die Maskenhaken in Zimmer 13 (Spielkonzept 5.19), Blick darauf; mit id die Maske vom Haken
+## --maske[=id]: Vor das Maskenboard in Zimmer 13 (Spielkonzept 5.19), Blick darauf; mit id die Maske vom Stift
 ## gleich aufgesetzt.
 func _debug_masks(id: String) -> void:
 	var hooks := get_tree().get_nodes_in_group("mask_hooks")
 	if hooks.is_empty():
-		Game.say("Keine Maskenhaken in Zimmer 13.", 3.0)
+		Game.say("Kein Maskenboard in Zimmer 13.", 3.0)
 		return
 	var first := hooks[0] as Node3D
 	var last := hooks[hooks.size() - 1] as Node3D

@@ -220,7 +220,7 @@ Ebene `Ausstattung`, 3×3-Punkt, Wandsachen innen an der Wand.
 | #8d1b98 | Bodenablauf | Duschen am Pool: Punkt = Mitte des Rosts (15 × 15 cm Edelstahl), am besten in der Raummitte (ZIM-144) |
 | #7e2552 | Tagebuch | |
 | #aa417e | Dekokiste | |
-| #6f2a6f | Maskenboard | Zimmer 13: Mitte der acht Maskenhaken (5.19), an der Wand; ohne Eintrag an der längsten freien Wand (ZIM-158) |
+| #6f2a6f | Maskenboard | Zimmer 13: Mitte des Maskenboards (5.19, 4 × 2 Stifte, 1,32 m breit), an der Wand; ohne Eintrag an der längsten freien Wand (ZIM-158) |
 | #d3697b | Apfelbottich | Partyraum (6.21), nur einer; ohne Eintrag in der Südostecke (ZIM-158) |
 | #a286b6 | Sicherungskasten | Untergeschoss (4.28), an der Wand, Mitte 1,45 m; ohne Eintrag an der Nordwand des Maschinenraums (ZIM-158) |
 | #bf69a2 | Aushangbrett | Lobby (2.5), an der Wand, Mitte 1,55 m; ohne Eintrag an der Westwand (ZIM-158) |
@@ -297,7 +297,7 @@ den alten festen Platz – gemalt, wandert es dorthin.
 | Dartpfeile | auf dem Stehtisch an der Scheibe | Gegenstand: Dartpfeile | Ersatzplatz aktiv |
 | Jackpot-Automat | Bar-Nordwand nördlich der Glastür (`SLOT_FALLBACK`) | Möbel: Spielautomat | Ersatzplatz aktiv |
 | Spieleschrank | Bar-Ostwand (`CABINET_FALLBACK`) | Möbel: Spieleschrank | steht im Plan – Ersatz greift nicht |
-| Maskensammlung (8 Haken) | längste freie Wand in Zimmer 13 | Ausstattung: Maskenboard | Ersatzplatz aktiv; Board 4 × 2 in ZIM-128 |
+| Maskensammlung (Board 4 × 2) | längste freie Wand in Zimmer 13 | Ausstattung: Maskenboard | Ersatzplatz aktiv |
 | Apfelbottich | Südostecke Partyraum (`apple_tub.gd` SPOT) | Ausstattung: Apfelbottich | Ersatzplatz aktiv |
 | Puppenhaus | Mitte der Bibliothek im OG (`doll_house.gd` SPOT) | Möbel: Puppenhaus | Ersatzplatz aktiv |
 | Rattenkönig | Wandbord Nordwand Müllraum UG (`rat_king.gd`) | fehlt | ZIM-84, ruht |
