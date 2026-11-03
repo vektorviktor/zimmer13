@@ -65,7 +65,7 @@ Stand: 2026-11-03.
 | Aushangbrett (Wettbewerb, Hausordnung) | `NoticeBoard` | gebaut | **Hauptgeschichte** (Regel der Puppe) | Lobby | 2.5, M5 |
 | Warnungszettel 1987–2019 | `WarningNote` | gebaut (sechs Zettel) | Hauptgeschichte (Hinweise; 1987 = Edna) | verteilt; je eine UV-Zeile | 4.13, 2.5, 2.7 |
 | Kartenblätter (EG, OG, Keller) | `MAP` | gebaut | – (Orientierung; Keller: „hier unten schläft es“) | Keller-Skizze in Zimmer 017 | 3.2, 7.9 |
-| UV-Schrift an Wänden (Josef 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18 (dazu Hinweise von 13 und 018 aus 2005: Entwürfe in 7.4 – Zimmer 13, Fleck an der Fotowand, Leviathanmauer) | 4.16, 2.3, 7.4 |
+| UV-Schrift an Wänden (Josef 1987, „J. A.“) | `UvMark` | teilweise (Texte teils neu zu fassen) | Hauptgeschichte (Name Ahrend) | Heizraum, Zimmer 017, Zimmer 18, Zimmer 13 (Claras Botschaft an Martin, 2005, ZIM-37; weitere Hinweise von 13 und 018: Entwürfe in 7.4 – Fleck an der Fotowand, Leviathanmauer) | 4.16, 2.3, 7.4 |
 | Gustavs Tagebuch | – | gebaut 26.10. (fest auf dem Tisch, wächst mit den Tagen) | **Hauptgeschichte** (Regel, Zug zum Keller) | Zimmer 020, nach der Siegerehrung | 2.6, M4 |
 | Mitteilung „Herr Peters ist abgereist“ | `NoticeBoard` | gebaut | Hauptgeschichte (Lüge der Direktion) | Aushangbrett, 3.10. morgens | 2.9, M6 |
 | Doris' Brief | – | geplant | – (Schuld, wenn man ihre Aufgabe nicht erfüllt) | Tisch in Zimmer 033, ab 4.10., 20 Uhr | 2.9, M7b |

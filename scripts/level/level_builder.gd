@@ -429,10 +429,13 @@ const OPEN_WINGS := ["ost", "west"]
 const OPEN_WINGS_UPPER := ["ost", "west"]
 
 ## Inhalt, der nicht im Plan steht, je Raum-ID (Zimmernummer oder Bereich): Münzbetrag (ohne Eintrag 1),
-## Kartenblatt, Zettel-Nummer (Spielkonzept 4.12) und UV-Schrift (4.16) der Objekte in diesem Raum; „drawer“ = Item.Kind
+## Kartenblatt, Zettel-Nummer (Spielkonzept 4.12) und UV-Schrift (4.16, „uv_size“ = Pixelgröße statt der von UvMark) der
+## Objekte in diesem Raum; „drawer“ = Item.Kind
 ## für die oberste Schublade der Kommode im Raum (_drawer_content).
 const CONTENT := {
-	"013": {"coins": "3", "map": "eg", "uv": "DU WARST SCHON\nEINMAL HIER"},
+	# Clara Vogt an Martin Ebert in 018, 2005 (Spielkonzept 7.4, ZIM-37) – schmal und kleiner, links steht die Badtür
+	"013": {"coins": "3", "map": "eg", "uv_size": 0.003,
+		"uv": "M. –\nES HÖRT ZU,\nWENN MAN REDET.\nSCHREIB ES AUF,\nSAG ES NICHT. C."},
 	"014": {"note": "2003"},
 	"017": {"coins": "2", "map": "keller", "note": "1987",
 		"uv": "ICH HABE ES GEBLENDET.\nJETZT KENNT ES MEINE TÜR.\n– E. K."},
@@ -3234,11 +3237,12 @@ func _fittings() -> void:
 				_resource_web(at.at(COBWEB_Y), at.yaw())
 			"uv_writing":
 				var at := _wall_spot(o, WALL_GAP)
-				var text := String(CONTENT.get(_room_id_at(at.inside), {}).get("uv", ""))
+				var room_content: Dictionary = CONTENT.get(_room_id_at(at.inside), {})
+				var text := String(room_content.get("uv", ""))
 				if text == "":
 					push_warning("Gebäudeplan: UV-Schrift bei %s ohne Text in CONTENT" % p)
 					continue
-				_uv_writing(text, at.at(UV_Y), at.yaw())
+				_uv_writing(text, at.at(UV_Y), at.yaw(), float(room_content.get("uv_size", 0.0)))
 			"calendar":
 				var at := _wall_spot(o, WALL_GAP)
 				var calendar := Calendar.new()
@@ -6276,9 +6280,9 @@ func _halogen(p: Vector2, axis: String, length: float, room_id: String, broken: 
 
 
 ## Schrift, die nur unter UV-Licht leuchtet (Spielkonzept 4.16); yaw (Bogenmaß) dreht die Schrift
-## (lokale +Z) von der Wand weg in den Raum.
-func _uv_writing(text: String, pos: Vector3, yaw: float) -> void:
-	var mark := UvMark.new().setup_text(text)
+## (lokale +Z) von der Wand weg in den Raum, pixel_size > 0 ersetzt die Schriftgröße von UvMark.
+func _uv_writing(text: String, pos: Vector3, yaw: float, pixel_size: float = 0.0) -> void:
+	var mark := UvMark.new().setup_text(text, pixel_size) if pixel_size > 0.0 else UvMark.new().setup_text(text)
 	mark.position = pos
 	mark.rotation.y = yaw
 	_parent.add_child(mark)

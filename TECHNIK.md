@@ -722,7 +722,8 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     `VendingMachine`. Jedes Möbel landet mit Oberkante in `_furnishings` – `_top_at(p)` liefert die Höhe, auf der
     Kerzen, Telefone, Zettel und Gegenstände stehen.
   - `_fittings`: Wandsachen (Schalter, Bild, Spinnwebe, UV-Schrift, Kalender) über `_wall_spot` an die Wandfläche
-    (`_on_wall`), Höhen als Konstanten (`SWITCH_Y` …). Telefon, Zettel, Tagebuch und Vorräte auf dem Möbel darunter,
+    (`_on_wall`), Höhen als Konstanten (`SWITCH_Y` …); der UV-Text kommt aus `CONTENT[raum]["uv"]`, eine eigene
+    Schriftgröße aus `"uv_size"` (Zimmer 13 neben der Badtür, ZIM-37). Telefon, Zettel, Tagebuch und Vorräte auf dem Möbel darunter,
     Kürbispflanzen mit der Sorte aus der Palettenfarbe (`pumpkin_plant:<sorte>`).
     **Duschplatz** am Pool = `PoolShower` (`world/pool_shower.gd`, ZIM-144, Fotos 1.11.): Ursprung am Boden auf der
     Wandfläche (`POOL_SHOWER_GAP` 2 mm davor), alles Code-Geometrie in `Mat.metal()` wie die Badarmaturen. Drücker als

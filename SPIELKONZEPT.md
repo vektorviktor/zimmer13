@@ -2027,13 +2027,13 @@ Der Spieler kann – bewusst und moralisch fragwürdig – das Monster **auf and
 
 **UV zeigt Verborgenes**
 - **Fußspuren des Monsters** leuchten unter UV noch lange, nachdem sie für das Auge verblasst sind (15 Spielstunden, 2.4).
-- **Schrift an Wänden**, nur unter UV: ~~in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2)~~, in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, Josef), in Zimmer 18 (~~„Nur einer kommt hinaus“~~ – seit 2.7 neu zu fassen, etwa „Nur wer lebt, kommt hinaus“).
+- **Schrift an Wänden**, nur unter UV: ~~in Zimmer 13 („Du warst schon einmal hier“ – Andeutung zur Zeitschleife, 2.2)~~ – dort seit 2026-11-03 Claras Botschaft an Martin (7.4, ZIM-37), in Zimmer 17 (E. K. hat es geblendet), im Keller (1987, Josef), in Zimmer 18 (~~„Nur einer kommt hinaus“~~ – seit 2.7 neu zu fassen, etwa „Nur wer lebt, kommt hinaus“).
 - **Jeder Warnungszettel** hat eine unsichtbare zweite Zeile, die man nur mit eingeschaltetem UV-Licht liest – Hinweise auf das Abkommen und Josef (2.3).
 - **Warum UV?** Bewusst offen. Gäste und Zettel deuten an, dass es „dieses Licht hasst“ – eine Erklärung im Geheimnis (2.3) ist möglich, aber nicht nötig.
 
 **Zu klären**
 - Gäste mit eigener Taschenlampe (Bitte „Ich habe kein Licht mehr“, „Ich brauche Batterien“, 4.14/6.4)?
-- Zeigt UV später auch weggewischte Spuren an Zimmer 13?
+- ~~Zeigt UV später auch weggewischte Spuren an Zimmer 13?~~ **Entschieden und umgesetzt 2026-11-03 (ZIM-37):** UV zeigt in Zimmer 13 die Botschaft von Clara Vogt (13, 2005) an Martin Ebert (018), Text und Ort in 7.4.
 
 ### 4.17 Angriffsabsicht & Flacker-Signal (entschieden 2026-10-17)
 > **Neu gefasst (2026-10-25, 4.33):** Die drei Absichten, die Opferzahl je Aufbruch und „vom UV vertrieben → mindestens
@@ -5400,7 +5400,8 @@ Ersetzt die widersprüchlichen Fassungen von Gitter, Heizkeller, Werkstatt und T
   dass sie es vielleicht nicht schaffen – die Zeichen sollten spätere Jahre warnen. Texte und Orte offen (Zimmer 18
   hat schon UV-Schrift, 4.16). **Namen (entschieden 2026-11-03, ZIM-7):** in 13 wohnte **Clara Vogt**, in 018 **Martin
   Ebert**. **Entwurf Texte und Orte (ZIM-12, Vorschlag):**
-  - **Zimmer 13**, innen an der Badezimmertür – der Spieler schläft also seit dem 1. neben ihr: *„M. – es hört zu, wenn
+  - **Zimmer 13** (umgesetzt 2026-11-03, ZIM-37), an der Wand neben der Badezimmertür, wo der Plan die UV-Schrift
+    zeigt – der Spieler schläft also seit dem 1. neben ihr: *„M. – es hört zu, wenn
     man redet. Schreib es auf, sag es nicht. C.“*
   - **Lobby, unter dem Fleck des Fotos 2005** (2.10): *„Wir waren hier. Oktober 2005. C. V. · M. E.“*
   - **Heizraum, an der Leviathanmauer:** *„Licht hält es auf. Nicht lange. Lauf, solange es blinzelt.“*
