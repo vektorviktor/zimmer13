@@ -400,6 +400,10 @@ done <<'LIST'
 600|bar,speichern|--glas=halten --savetest --trace
 400|bar,bitten|--bitte=bruno,glas,erfuellen --trace
 600|bar,bitten,speichern|--bitte=bruno,glas,annehmen --savetest --trace
+400|sitzen,gaeste|--gastsitzen --trace
+400|sitzen,gaeste|--gastsitzen=stuhl --trace
+400|sitzen,gaeste|--gastsitzen=bank,bruno --trace
+400|sitzen,speichern|--gastsitzen=sessel --savetest
 300|neid,gaeste,beziehungen|--day=5 --neid --trace
 600|streit,gaeste,beziehungen|--streit=bruno,edna,gesehen --trace
 400|streit,gaeste|--streit=bruno,edna,freund --trace

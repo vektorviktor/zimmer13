@@ -132,6 +132,14 @@ const HIT_BACK_LINES := ["Na warte!", "Das wirst du bereuen!", "Jetzt reicht's m
 ## An der Bar (Spielkonzept 3.7): so oft trinkt ein Gast etwas, wenn er dort ankommt; so viel zählt Angst
 ## (0..100 → 0..1) für die Schwäche, nach der sich der Lakengeist seine Opfer sucht (4.18)
 const BAR_DRINK := 0.7
+## Hinsetzen beim Warten und nach Gesprächen (Spielkonzept 3.1, entschieden 2026-11-03): so oft, so lange (Spielsekunden,
+## 1–3 Spielminuten), so weit (waagerecht) liegt der freie Platz höchstens, so lange darf der Weg dorthin dauern
+const SIT_CHANCE := 0.5
+const SIT_TIME := Vector2(60.0, 180.0)
+const SIT_RANGE := 5.0
+const SIT_WALK_TIME := 12.0
+## Darauf setzen sich Gäste – keine Bettkanten (fremde Zimmer, Verstecke) und keine Toiletten
+const SIT_KINDS := ["sofa", "sessel", "bank", "stuhl"]
 ## Spieler unter dem Bettlaken (5.9): so dunkel (Director.light_at), dass er einen Gast wirklich erschreckt – und so sehr
 const DISGUISE_DARK := 0.25
 const DISGUISE_FRIGHT := 20.0
@@ -196,6 +204,13 @@ var expected_deco := 0      ## so viel eigene Deko sollte vor der Tür stehen
 var money := 0
 var seated := false          ## sitzt am Spieltisch (bzw. steht beim Darts an der Linie)
 var game_stand := false      ## Darts: steht statt zu sitzen (Spielkonzept 6.10)
+## Sitzmöbel beim Warten (Spielkonzept 3.1): Platz, auf den er zugeht bzw. auf dem er sitzt (null = keiner) – nicht
+## gespeichert, geladen wird stehend
+var _sit_seat: Seat
+var _sit_spot: Marker3D
+var _sitting := false        ## sitzt schon (sonst auf dem Weg dorthin)
+var _sit_from := Vector3.ZERO  ## hier stand er davor – dort steht er wieder auf
+var _sit_walk := 0.0         ## so lange darf der Weg zum Platz noch dauern
 var _dart_throw := 0.0       ## > 0: Wurfbewegung läuft (Sekunden)
 var challenge_time := 0.0    ## > 0: hat dich gerade herausgefordert (Sekunden bis es verfällt)
 var challenge_cooldown := 0.0
@@ -687,8 +702,11 @@ func end_talk() -> void:
 		_timer = _resume_follow   # ein Begleiter kommt nach dem Gespräch weiter mit
 		_resume_follow = 0.0
 		state = State.FOLLOW
+	elif _sitting and talk_prev == State.IDLE:
+		state = State.IDLE   # bleibt sitzen, die Sitzzeit läuft weiter (Spielkonzept 3.1)
 	elif not _carry_gift_home():
 		_set_idle(randf_range(2.0, 5.0))
+		consider_seat()
 
 
 func say(text: String) -> void:
@@ -1025,6 +1043,8 @@ func _physics_process(delta: float) -> void:
 	delta = _lod_time
 	_lod_time = 0.0
 	_lod_frame = 0
+	if _sit_spot and ((state != State.IDLE and state != State.TALKING) or singing):
+		_leave_seat()   # Spiel, Flucht, Versteck, Schreck, Stoß …: erst aufstehen (Spielkonzept 3.1)
 	_animate(delta)
 	_update_label()
 	_update_costume(delta)
@@ -1057,9 +1077,10 @@ func _physics_process(delta: float) -> void:
 		return
 	match state:
 		State.TALKING:
-			_stop(delta)
-			if Game.player:
-				_face(Game.player.global_position, delta)
+			if not _sitting:   # sitzend redet er vom Platz aus (ohne Kollision kein _stop – er fiele durch den Boden)
+				_stop(delta)
+				if Game.player:
+					_face(Game.player.global_position, delta)
 			return
 		State.HIDING:
 			_hiding_step(delta)
@@ -1122,7 +1143,9 @@ func _physics_process(delta: float) -> void:
 		_switch = null   # etwas anderes kam dazwischen
 	match state:
 		State.IDLE:
-			if not _keep_space(delta):
+			if _sit_spot:
+				_sit_step(delta)
+			elif not _keep_space(delta):
 				_stop(delta)
 				if _argue_look.is_finite():
 					_face(_argue_look, delta)
@@ -1587,6 +1610,7 @@ func after_woken(alert: bool) -> void:
 
 
 func _set_idle(duration: float) -> void:
+	_leave_seat()
 	_romp = false
 	_argue_look = Vector3.INF
 	state = State.IDLE
@@ -1597,6 +1621,110 @@ func _set_idle(duration: float) -> void:
 func hold_argument(look: Vector3, duration: float) -> void:
 	_set_idle(duration)
 	_argue_look = look
+
+
+## Wartet er (angekommen, nach einem Gespräch mit dir oder einem Freund): mit SIT_CHANCE auf den nächsten freien Platz
+## eines Sitzmöbels in SIT_RANGE setzen, für SIT_TIME (Spielkonzept 3.1). Nur bei diesem Anlass gesucht, nie je Bild
+## (ZIM-124). force: ohne Würfeln (Debug --gastsitzen).
+func consider_seat(force := false) -> bool:
+	if _sit_spot or state != State.IDLE or dead or hiding or _resting or _argue_look.is_finite() or fear >= 60.0:
+		return false
+	if Game.social.sleep_active or (Game.monster and Game.monster.is_active()):
+		return false
+	if not force and randf() >= SIT_CHANCE:
+		return false
+	var found := _find_seat()
+	if found.is_empty():
+		return false
+	_sit_seat = found[0]
+	_sit_spot = found[1]
+	_sit_walk = SIT_WALK_TIME
+	return true
+
+
+## Nächster freier Platz [Seat, Marker3D] in SIT_RANGE auf diesem Stockwerk, von dem aus man vor ihm stehen kann
+## (Blick dorthin frei, keine Wand dazwischen) – [] = keiner.
+func _find_seat() -> Array:
+	var here := global_position
+	var options: Array = []
+	for node in get_tree().get_nodes_in_group("seats"):
+		var s := node as Seat
+		if not s.kind in SIT_KINDS:
+			continue
+		var at := s.global_position
+		if absf(at.y - here.y) > 1.5 or Vector2(at.x - here.x, at.z - here.z).length() > SIT_RANGE + 1.5:
+			continue
+		var m := s.free_spot(here)
+		if m == null:
+			continue
+		var d := Vector2(m.global_position.x - here.x, m.global_position.z - here.z).length()
+		if d <= SIT_RANGE:
+			options.append([d, s, m])
+	options.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	var space := get_world_3d().direct_space_state
+	for o: Array in options.slice(0, 3):
+		var front := _seat_front(o[1], o[2])
+		var ray := PhysicsRayQueryParameters3D.create(here + Vector3.UP, front + Vector3.UP, 1, [get_rid()])
+		if space.intersect_ray(ray).is_empty():
+			return [o[1], o[2]]
+	return []
+
+
+## Vor dem Platz, wo man sich hinsetzt und wieder aufsteht.
+func _seat_front(s: Seat, m: Marker3D) -> Vector3:
+	return m.global_position - m.global_basis.z * s.stand_out
+
+
+## Zum Platz gehen, dort hinsetzen; Nachtruhe, Monster und Panik lassen ihn aufstehen (_timer = 0 → _next_activity).
+func _sit_step(delta: float) -> void:
+	if not is_instance_valid(_sit_spot):
+		_leave_seat()
+		return
+	if _sitting:
+		velocity = Vector3.ZERO   # ohne Kollision kein move_and_slide
+		if Game.social.sleep_active or fear >= 60.0 or (Game.monster and Game.monster.is_active()):
+			_timer = 0.0
+		return
+	_sit_walk -= delta
+	if _sit_walk <= 0.0 or not _sit_seat.is_free(_sit_spot, self):
+		_leave_seat()   # zu weit oder besetzt – er wartet im Stehen
+		return
+	if _move_to(_seat_front(_sit_seat, _sit_spot), WALK_SPEED, delta):
+		_sit_from = global_position
+		_sitting = true
+		_collider.disabled = true
+		velocity = Vector3.ZERO
+		global_position = _sit_spot.global_position
+		rotation.y = _sit_spot.global_rotation.y
+		_timer = randf_range(SIT_TIME.x, SIT_TIME.y)
+		if Game.tracing:
+			print("[Gastsitzen] %s setzt sich (%s) für %.0f s" % [display_name, _sit_seat.kind, _timer])
+
+
+## Vom Platz aufstehen (dahin, wo er davor stand) bzw. den Weg dorthin aufgeben. Hat ihn schon jemand anders
+## versetzt (Bett, Versteck), bleibt er, wo er ist.
+func _leave_seat() -> void:
+	if _sitting:
+		if is_instance_valid(_sit_spot) and Vector2(global_position.x - _sit_spot.global_position.x,
+				global_position.z - _sit_spot.global_position.z).length() < 0.05:
+			global_position = _sit_from
+		if hiding == null and not dead:
+			_collider.disabled = false
+		if Game.tracing:
+			print("[Gastsitzen] %s steht auf (%s)" % [display_name, State.keys()[state]])
+	_sitting = false
+	_sit_seat = null
+	_sit_spot = null
+
+
+## Sitzt er auf einem Sitzmöbel (nicht am Spieltisch)?
+func is_sitting() -> bool:
+	return _sitting
+
+
+## Wo er stünde – sitzend der Platz davor (Spielstand: geladen wird stehend).
+func stand_point() -> Vector3:
+	return _sit_from if _sitting else global_position
 
 
 ## Nach Hause gehen (einem Streitgegner ausweichen, GuestQuarrels).
@@ -1711,6 +1839,7 @@ func _arrive() -> void:
 				if fear < 30.0 and float(profile["brave"]) >= 0.4 and not remembers("ghost") and not is_child() and randf() < 0.3:
 					_resting = true
 					_set_room_light(false)
+			consider_seat()   # wartet hier – vielleicht auf einen freien Platz in der Nähe (3.1)
 		State.CARRY_HOME:
 			stow_held()
 			_set_idle(randf_range(8.0, 20.0))
@@ -3488,7 +3617,8 @@ func _animate(delta: float) -> void:
 	if _body and visible:
 		# unter dem Laken hängen die Arme still, sonst schwingen sie beim Gehen heraus (Tanzen darf man sie sehen)
 		var arms_free := _arms_free and not (_costume and _costume.kind == "sheet")
-		_body.animate(delta, speed, running, [_arm_l, _arm_r], arms_free, state == State.MINIGAME and seated and not game_stand)
+		_body.animate(delta, speed, running, [_arm_l, _arm_r], arms_free,
+			_sitting or (state == State.MINIGAME and seated and not game_stand))
 	if _costume and visible:
 		_costume.follow(_head_point(), _visual.global_basis)
 
@@ -3505,6 +3635,11 @@ func _pose(delta: float, speed: float) -> void:
 	_visual.rotation = Vector3.ZERO
 	_arm_l.rotation.z = 0.0
 	_arm_r.rotation.z = 0.0
+	if _sitting:
+		_visual.position.y = -(_body.sit_drop() if _body else 0.35)   # auf dem Sitzmöbel, Hände im Schoß (3.1)
+		_arm_l.rotation.x = -0.5
+		_arm_r.rotation.x = -0.5 + sin(_anim * 1.3) * 0.03
+		return
 	if hiding == null and state in [State.IDLE, State.WALK, State.TALKING, State.PARTY]:
 		_visual.rotation.z = sin(_anim * 1.9) * 0.07 * BarTap.sway(drunk)   # im Rausch schwankt er (3.7)
 	if state in [State.SHOCKED, State.GHOSTED]:

@@ -95,6 +95,8 @@ extends Node3D
 ##                               Glas kaufen und austrinken, Rotwein einem Weinfreund schenken (er trinkt es), ein Kind lehnt
 ##                               ab, die Bitte „ein Glas von der Bar“. Meldet „[Glas] … ok“ bzw. „FEHLER“. halten: nur ein
 ##                               Glas Rotwein in die Hand (für --savetest)
+##   --gastsitzen[=sofa|bank|stuhl|sessel[,id]]   Gäste setzen sich (3.1, ZIM-148): Gast (Standard edna) vor dem Sitzmöbel
+##                               dieser Art nahe der Lobby setzt sich, nach 7 s Panik – er steht auf („[Gastsitzen] … ok“)
 ##   --neid[=id]                 Neid der Türnachbarn (6.18, 5): Kisten leer, vier Kürbisse vor Zimmer 13 – ein Morgen läuft,
 ##                               dann Untergrenze, Freund, spitzer Satz beim Vorbeigehen und im Gespräch (--trace „[Neid]“)
 ##   --kisten                    Knappheit (5.10): rechnet je Kiste ohne Nachschub den Monat durch (ohne Spieler leer um den 15.,
@@ -2134,6 +2136,8 @@ func run_debug(arg: String) -> bool:
 		_debug_trade(_arg_parts(arg, "--handel"))
 	elif _is_arg(arg, "--glas"):
 		_debug_glass(_arg_value(arg, "--glas"))
+	elif _is_arg(arg, "--gastsitzen"):
+		_debug_guest_sit(_arg_parts(arg, "--gastsitzen", "sofa"))
 	elif arg == "--kisten":
 		get_tree().create_timer(1.0, false).timeout.connect(_debug_boxes)
 	elif arg.begins_with("--streit="):
@@ -3445,6 +3449,43 @@ func _debug_glass(what: String) -> void:
 		get_tree().create_timer(15.0, false).timeout.connect(func() -> void:   # er hält es 8–14 s (Guest.receive_gift)
 			check.call("%s hat das Glas getrunken (Rausch %.2f → %.2f)" % [fan.display_name, drunk_before, fan.drunk],
 				fan.drunk > drunk_before and not (is_instance_valid(glass) and glass.is_inside_tree()))))
+
+
+## --gastsitzen[=art[,id]]: Ein Gast wartet vor dem Sitzmöbel dieser Art, das der Lobby am nächsten ist, und setzt sich
+## (ohne Würfeln, Spielkonzept 3.1); nach 4 s Prüfungen im Sitzen, nach 7 s Panik – er steht auf. Jede meldet
+## „[Gastsitzen] … ok“ bzw. „FEHLER“. Mit --savetest (nach 6 s) wird sitzend gespeichert.
+func _debug_guest_sit(parts: PackedStringArray) -> void:
+	var want := parts[0]
+	var g := Game.social.find_guest(parts[1] if parts.size() > 1 else "edna")
+	var lobby := Game.social.builder.lobby_center
+	var seat: Seat = null
+	for node in get_tree().get_nodes_in_group("seats"):
+		var s := node as Seat
+		if s.kind == want and (seat == null or s.global_position.distance_to(lobby) < seat.global_position.distance_to(lobby)):
+			seat = s
+	if g == null or seat == null or not want in Guest.SIT_KINDS:
+		Game.say("--gastsitzen: Art aus %s, Gast als id – z. B. --gastsitzen=stuhl,edna" % ", ".join(Guest.SIT_KINDS), 3.0)
+		return
+	var spot: Marker3D = seat.spots[0]
+	var fwd := -spot.global_basis.z
+	var front := spot.global_position + fwd * seat.stand_out
+	g.global_position = front + fwd * 0.8
+	TeleportUI.place_player(front + fwd * 3.0, -fwd)
+	g._set_idle(60.0)
+	var check := func(what: String, ok: bool) -> void:
+		print("[Gastsitzen] %s: %s" % [what, "ok" if ok else "FEHLER"])
+	check.call("%s sucht sich einen Platz (%s)" % [g.display_name, want], g.consider_seat(true))
+	get_tree().create_timer(4.0, false).timeout.connect(func() -> void:
+		var at: Marker3D = g._sit_spot
+		check.call("sitzt", g.is_sitting())
+		check.call("Platz für andere besetzt", at != null and not g._sit_seat.is_free(at))
+		check.call("Sitzzeit 1–3 Spielminuten (noch %.0f s)" % g._timer, g._timer > 50.0 and g._timer <= Guest.SIT_TIME.y)
+		check.call("gespeichert wird stehend vor dem Platz", at != null and g.stand_point().distance_to(at.global_position) > 0.3))
+	get_tree().create_timer(7.0, false).timeout.connect(func() -> void:
+		g.fear = 80.0)
+	get_tree().create_timer(8.5, false).timeout.connect(func() -> void:
+		check.call("Panik: steht auf (%s)" % Guest.State.keys()[g.state], not g.is_sitting() and g._sit_spot == null)
+		check.call("Kollision wieder an", not g._collider.disabled))
 
 
 ## --budget=id: Beziehung nicht erschleichen (Spielkonzept 6.18, 5) – der Gast steht vor dir, nach 2 s laufen die Regeln

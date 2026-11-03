@@ -1958,6 +1958,23 @@ den Möbelkörper und setzt dessen `interactable` (außer der Körper hat schon 
 Sitzrichtung (± `SIT_TURN`). `stand_position()` sucht einen Platz für die Kapsel mit freiem Strahl (nie durch die
 Wand); `leave_seat(true)` (vor Stoß, Verstecken, Spieltisch, Teleport, Laden, Würgen) steht notfalls vor dem Platz auf.
 **Gespeichert** wird `pos` = `stand_position()` – geladen wird stehend. Debug `--sitzen[=…]`.
+`_taken` zählt Katzen, Puppe, Gäste (nicht im Versteck) und den sitzenden Spieler; `is_free(platz, außer)` lässt den
+Gast auf dem Weg dorthin aus.
+
+**Gäste setzen sich** (`guest.gd` `consider_seat`/`_find_seat`/`_sit_step`/`_leave_seat`, ZIM-148, 2026-11-03): nur bei
+einem Anlass gesucht, nie je Bild (ZIM-124) – angekommen und wartend (`_arrive` WALK), nach einem Gespräch mit dem
+Spieler (`end_talk`) und nach einem Freundesgespräch (`Pals._sit_down_for_talk` nach `_tell`/`_net_tell`). Mit
+`SIT_CHANCE` (globales `randf()`, nicht `GuestGenerator.make`) der nächste freie Platz der Arten `SIT_KINDS` (Sofa,
+Sessel, Bank, Stuhl – keine Bettkanten, keine Toiletten) in `SIT_RANGE` auf demselben Stockwerk; von den drei nächsten
+der erste mit freiem Strahl zum Stehplatz davor (`_seat_front`, Ebene 1). Der Gast bleibt in `State.IDLE`: Er geht vor
+den Platz (höchstens `SIT_WALK_TIME`, ist er besetzt, bleibt er stehen), merkt sich dort `_sit_from`, setzt sich mit
+abgeschalteter Kollision auf den Marker und wartet `SIT_TIME` (`_timer`); Pose wie am Spieltisch (`sit_drop`, Beine
+über `GuestBody.animate(…, sitting)`), Hände im Schoß. Im Gespräch bleibt er sitzen (kein `_stop`, kein Drehen) und
+sitzt danach weiter. **Aufstehen** (`_leave_seat`, zurück auf `_sit_from`, Kollision an): jeder Zustand außer IDLE und
+TALKING (Wächter vorn in `_physics_process` – Spiel, Flucht, Versteck, Schreck, Stoß, Feier), Singen, `_set_idle`;
+Nachtruhe, Monster und Panik (Angst ≥ 60) setzen im Sitzen `_timer` auf 0 → `_next_activity`. Hat ihn schon etwas
+anderes versetzt (Bett, Versteck), bleibt er dort. **Nicht gespeichert:** `SaveManager` nimmt `stand_point()`
+(sitzend `_sit_from`), geladen wird stehend; Speicherformat unberührt. Debug `--gastsitzen[=art[,id]]`.
 
 ### Ausdauer, Schritte
 - **Ausdauer** (`player.gd` `_update_stamina`, `exertion()`; Spielkonzept 3.1): nicht im HUD, nicht gespeichert.

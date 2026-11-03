@@ -300,6 +300,7 @@ func _net_tell(e: Dictionary) -> void:
 			b.say((REPLY_LINES if good else NET_BAD_REPLIES).pick_random()))
 	if station < NET_STATIONS:
 		_net_pass(b, int(e["msg"]), float(e.get("pass", base)), float(e["cap"]), station + 1)
+	_sit_down_for_talk(a, b)
 	if Game.tracing:
 		print("[Netz] %s erzählt %s (Station %d, Stärke %.2f): %.0f → %.0f" % [a.display_name, b.display_name, station,
 			net_strength(a, station), before, b.relation])
@@ -341,3 +342,10 @@ func _tell(a: Guest, b: Guest) -> void:
 			b.say(REPLY_LINES.pick_random()))
 	if Game.tracing:
 		print("[Freunde] %s erzählt %s Gutes über dich: %.0f → %.0f" % [a.display_name, b.display_name, before, b.relation])
+	_sit_down_for_talk(a, b)
+
+
+## Wer sich unterhält und gerade wartet, setzt sich vielleicht dazu (Spielkonzept 3.1).
+func _sit_down_for_talk(a: Guest, b: Guest) -> void:
+	for g in [a, b]:
+		(g as Guest).consider_seat()

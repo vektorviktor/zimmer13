@@ -67,13 +67,22 @@ func free_spot(near: Vector3) -> Marker3D:
 	return best
 
 
-## Sitzt oder liegt dort schon jemand – Gast, Katze, die Puppe?
-func _taken(m: Marker3D) -> bool:
+## Ist der Platz frei – außer für `except` (ein Gast auf dem Weg dorthin, Spielkonzept 3.1)?
+func is_free(m: Marker3D, except: Node = null) -> bool:
+	return not _taken(m, except)
+
+
+## Sitzt oder liegt dort schon jemand – Gast, Katze, die Puppe, der sitzende Spieler?
+func _taken(m: Marker3D, except: Node = null) -> bool:
 	var at := m.global_position
 	var others: Array = get_tree().get_nodes_in_group("cats") + get_tree().get_nodes_in_group("jury_doll")
 	if Game.social:
 		others += Game.social.living_guests().filter(func(g: Guest) -> bool: return g.hiding == null)   # nicht unterm Bett
+	if Game.player and Game.player.seat:
+		others.append(Game.player)
 	for node in others:
+		if node == except:
+			continue
 		var p := (node as Node3D).global_position
 		if Vector2(p.x - at.x, p.z - at.z).length() < BLOCK_RANGE and absf(p.y - at.y) < 1.2:
 			return true

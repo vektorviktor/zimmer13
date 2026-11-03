@@ -1170,6 +1170,18 @@ schaut. Belegt ist ein Platz, wenn dort die Katze schläft, die Puppe sitzt oder
 - **Nicht dabei:** die Hocker an Spiel- und Schachtisch (nur für Partien, 6.10). Sitzen ist kein Versteck und still;
   man erholt sich wie im Stehen. Gespeichert wird die Stelle, an der man aufstünde – geladen wird stehend.
 
+**Gäste setzen sich (entschieden 2026-11-03, umgesetzt 2026-11-03, ZIM-148):** Gäste setzen sich, wenn sie irgendwo
+**warten** (angekommen an ihrem Ziel) oder sich **unterhalten** haben (mit dem Spieler oder ein Freund mit einem anderen)
+und ein freier Platz in der Nähe ist: mit **50 % Chance für 1–3 Spielminuten**. Sitzpose wie am Spieltisch.
+- **Was:** Sofas, Sessel, Bänke (auch die Umkleidebank) und Stühle (auch die Speisesaalstühle) – was der Plan an
+  Sitzmöbeln hat; fehlen welche, ergänzt sie der Code nicht. **Nicht:** Bettkanten (fremde Zimmer, Betten sind
+  Verstecke) und Toiletten – kleinste Lösung beim Bau, sonst nicht entschieden.
+- **Nähe:** höchstens 5 m, gleiches Stockwerk, keine Wand zwischen ihm und dem Platz. Ist der Platz besetzt, wenn er
+  ankommt (Spieler, Katze, Puppe, ein anderer Gast), bleibt er stehen.
+- **Vorrang:** Monster, Panik, Flucht und Nachtruhe – aufstehen und weg. Ebenso jede andere Aufgabe (Spieltisch, Feier,
+  Stoß, Schreck). Spricht der Spieler ihn an, bleibt er sitzen.
+- **Nicht gespeichert:** Nach dem Laden steht der Gast vor seinem Platz.
+
 ### 3.2 Kein verstecktes Inventar – Hände und Tasche
 - **Es gibt kein verstecktes Inventar.** Jeder Gegenstand (Deko, Schlüssel, Kerze, Messer, Gießkanne, Puppe …) existiert physisch in der Welt und wird **einzeln in den Händen** getragen.
 - **Einzige Ausnahme: Geld.** Geld ist ein reiner Zahlenwert, den der Spieler besitzt (Anzeige z. B. dezent im HUD oder beim Handeln).

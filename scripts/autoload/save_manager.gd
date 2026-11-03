@@ -628,7 +628,7 @@ func collect() -> Dictionary:
 	var alive: Array = []
 	for guest in Game.social.guests:
 		var g: Guest = guest
-		var pos := g.global_position
+		var pos := g.stand_point()   # sitzend: der Platz davor – Sitzen wird nicht gespeichert (Spielkonzept 3.1)
 		var yaw := g.rotation.y
 		if g.hiding:
 			pos = g.hiding.exit_point.global_position
