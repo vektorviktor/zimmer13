@@ -594,6 +594,49 @@ static func pbr_model(base: String, metallic: float = 1.0) -> StandardMaterial3D
 	return _cache[key]
 
 
+## Firstgitter am Mansarddach (Spielkonzept 7.10, ZIM-171): ausgeschnittene Karte, beidseitig, mit Normal Map und
+## Rauheit aus tools/build_cresting.py. Das Farbbild bringt seine Mipmaps als Streifen mit (Stufe 0 links, jede nächste
+## halb so groß daneben) – jede hält die Deckung der ersten, sonst verschwänden die dünnen Stäbe mit dem Abstand.
+const CRESTING_TEX := "res://assets/textures/cresting_albedo.png"
+const CRESTING_NORMAL := "res://assets/textures/cresting_normal.png"
+const CRESTING_ROUGH := "res://assets/textures/cresting_rough.png"
+const CRESTING_SCISSOR := 0.4   ## = THRESHOLD in tools/build_cresting.py
+
+
+static func cresting() -> StandardMaterial3D:
+	if not _cache.has("cresting"):
+		var strip := (load(CRESTING_TEX) as Texture2D).get_image()
+		strip.decompress()
+		strip.convert(Image.FORMAT_RGBA8)
+		var h := strip.get_height()
+		var w := (strip.get_width() + 1) / 2   # Stufe 0: 512 bei 1023 Streifenbreite
+		var data := PackedByteArray()
+		var x := 0
+		var lw := w
+		var lh := h
+		while true:
+			data.append_array(strip.get_region(Rect2i(x, 0, lw, lh)).get_data())
+			if lw == 1 and lh == 1:
+				break
+			x += lw
+			lw = maxi(1, lw / 2)
+			lh = maxi(1, lh / 2)
+		var img := Image.create_from_data(w, h, true, Image.FORMAT_RGBA8, data)
+		var m := StandardMaterial3D.new()
+		m.albedo_texture = ImageTexture.create_from_image(img)
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+		m.alpha_scissor_threshold = CRESTING_SCISSOR
+		m.alpha_antialiasing_mode = BaseMaterial3D.ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE
+		m.cull_mode = BaseMaterial3D.CULL_DISABLED
+		m.normal_enabled = true
+		m.normal_texture = _mipmapped(CRESTING_NORMAL, true)
+		m.roughness_texture = _mipmapped(CRESTING_ROUGH, false)
+		m.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+		m.metallic = 0.6
+		_cache["cresting"] = m
+	return _cache["cresting"]
+
+
 ## Textur mit Mipmaps (normal: gemittelte Normalen wieder auf Länge 1)
 static func _mipmapped(path: String, normal: bool) -> ImageTexture:
 	var img := (load(path) as Texture2D).get_image()

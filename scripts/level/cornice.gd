@@ -35,11 +35,14 @@ static var _mat: ShaderMaterial
 
 var _top: float
 var _cells := {}   # Vector2i(Zelle x, Zelle z) → {"v", "n", "uv", "i"}
+var _cap := false
 
 
-## top = Höhe der Decke über dem Boden des Stockwerks.
-func _init(top: float) -> void:
+## top = Höhe der Decke über dem Boden des Stockwerks. cap: oben eine Abdeckung über die ganze Ausladung (draußen am
+## Dach, wo keine Decke das Profil schließt).
+func _init(top: float, cap := false) -> void:
 	_top = top
+	_cap = cap
 
 
 ## Umriss des Gesimses bei Größe 1 als (Abstand vor der Wand, Höhe zur Decke) von der Unterkante in der Wand bis in die
@@ -113,26 +116,86 @@ func add_corner(corner: Vector3, na: Vector3, nb: Vector3, la: float, lb: float,
 		add_run(corner, -na, nb, 0.0, lb, sa if sa > 0.0 else sb, sa > 0.0)
 
 
-## Baut je Zelle ein Mesh unter parent.
-func finish(parent: Node3D) -> void:
+## Konsole unter dem Gesims bei t entlang der Wand (wie add_run), width breit (m, nicht skaliert): Seitenansicht
+## bracket_outline() × size, gerade herausgezogen. Fürs Kranzgesims am Dach (LevelBuilder._roof_cornice).
+func add_bracket(origin: Vector3, along: Vector3, out: Vector3, t: float, size: float, width: float) -> void:
+	var c := _cell(origin + along * t)
+	var verts: Array = c["v"]
+	var normals: Array = c["n"]
+	var uvs: Array = c["uv"]
+	var idx: Array = c["i"]
+	var outline := bracket_outline()
+	for k in outline.size():
+		outline[k] *= size
+	var at := func(p: Vector2, s: float) -> Vector3:
+		return origin + along * s + out * p.x + Vector3.UP * (_top + p.y)
+	var tris := Geometry2D.triangulate_polygon(outline)
+	for side: float in [-1.0, 1.0]:   # Wangen
+		var first := verts.size()
+		var s := t + side * width / 2.0
+		for p in outline:
+			verts.append(at.call(p, s))
+			normals.append(along * side)
+			uvs.append(Vector2(p.x, p.y) / ALONG)
+		for k in range(0, tris.size(), 3):
+			_tri(idx, verts, [first + tris[k], first + tris[k + 1], first + tris[k + 2]], along * side)
+	for k in outline.size():   # Rücken, ringsum
+		var p0 := outline[k]
+		var p1 := outline[(k + 1) % outline.size()]
+		var d := p1 - p0
+		var n2 := Vector2(d.y, -d.x).normalized()
+		if Geometry2D.is_point_in_polygon((p0 + p1) / 2.0 + n2 * 0.001, outline):
+			n2 = -n2
+		var n := out * n2.x + Vector3.UP * n2.y
+		var first := verts.size()
+		for p: Vector2 in [p0, p1]:
+			for s: float in [t - width / 2.0, t + width / 2.0]:
+				verts.append(at.call(p, s))
+				normals.append(n)
+				uvs.append(Vector2(s, p.y) / ALONG)
+		_quad(idx, verts, [first, first + 1, first + 3, first + 2], n)
+
+
+## Seitenansicht einer Konsole bei Größe 1 als (vor der Wand, Höhe zur Oberkante), gegen den Uhrzeigersinn: unten ein
+## Zapfen an der Wand, eine Volute nach außen unter die Deckplatte. Steckt oben im Gesims.
+static func bracket_outline() -> PackedVector2Array:
+	var p := PackedVector2Array([Vector2(-INSET, -0.2), Vector2(0.012, -0.2)])
+	for i in range(1, 7):   # unten eingerollt
+		var a := PI * i / 6.0
+		p.append(Vector2(0.018 + 0.008 * sin(a), -0.192 - 0.008 * cos(a)))
+	for i in range(1, 9):   # Hals, hohl geschwungen bis unter die Deckplatte
+		var u := float(i) / 8.0
+		p.append(Vector2(0.026 + 0.064 * u * u, -0.184 + 0.15 * u))
+	p.append_array([Vector2(0.094, -0.026), Vector2(0.094, -0.014), Vector2(-INSET, -0.014)])
+	return p
+
+
+## Baut je Zelle ein Mesh unter parent mit diesem Namen (die Prüfung der Zierleiste sucht „Zierleiste“); shadows:
+## Schatten werfen (draußen im Mondlicht, am Dach).
+func finish(parent: Node3D, shadows := false, label := "Zierleiste") -> void:
 	for key: Vector2i in _cells:
 		var c: Dictionary = _cells[key]
 		var m := Geo.add_surface(ArrayMesh.new(), PackedVector3Array(c["v"]), PackedVector3Array(c["n"]),
 			PackedInt32Array(c["i"]), PackedVector2Array(c["uv"]))
 		var mi := Geo.mesh(parent, m, material(), Vector3.ZERO)
-		mi.name = "Zierleiste"
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.name = label
+		if not shadows:
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_cells.clear()
+
+
+## Mesh-Daten der Zelle um p.
+func _cell(p: Vector3) -> Dictionary:
+	var key := Vector2i(floori(p.x / CELL), floori(p.z / CELL))
+	if not _cells.has(key):
+		_cells[key] = {"v": [], "n": [], "uv": [], "i": []}
+	return _cells[key]
 
 
 ## Gezogenes Stück von a bis b; Enden end_a/end_b: 0 offen (Zellgrenze), 1 Gehrung, 2 Stirnseite.
 func _piece(origin: Vector3, along: Vector3, out: Vector3, a: float, b: float, size: float, end_a: int,
 		end_b: int) -> void:
-	var mid := origin + along * (a + b) / 2.0
-	var key := Vector2i(floori(mid.x / CELL), floori(mid.z / CELL))
-	if not _cells.has(key):
-		_cells[key] = {"v": [], "n": [], "uv": [], "i": []}
-	var c: Dictionary = _cells[key]
+	var c := _cell(origin + along * (a + b) / 2.0)
 	var verts: Array = c["v"]
 	var normals: Array = c["n"]
 	var uvs: Array = c["uv"]
@@ -169,6 +232,14 @@ func _piece(origin: Vector3, along: Vector3, out: Vector3, a: float, b: float, s
 				normals.append(out * n.x + Vector3.UP * n.y)
 				uvs.append(Vector2(t / ALONG, arc[j] / total))
 		_quad(idx, verts, [first, first + 1, first + 3, first + 2], out * seg_n[k].x + Vector3.UP * seg_n[k].y)
+	if _cap:   # Abdeckung oben, von der Vorderkante bis in die Wand
+		var first := verts.size()
+		for p: Vector2 in [pts[-1], Vector2(-INSET, INSET) * size]:
+			for t: float in [a - p.x if end_a == 1 else a, b + p.x if end_b == 1 else b]:
+				verts.append(at.call(p, t))
+				normals.append(Vector3.UP)
+				uvs.append(Vector2(t / ALONG, p.x))
+		_quad(idx, verts, [first, first + 1, first + 3, first + 2], Vector3.UP)
 	# Stirnseiten: das Profil, geschlossen über die Ecke von Wand und Decke
 	var outline := PackedVector2Array(pts)
 	outline.append(Vector2(-INSET, INSET) * size)

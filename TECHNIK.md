@@ -834,6 +834,19 @@ Dachboden auf der anderen Seite hat, ist sie nur Kniestock (`ATTIC_KNEE`, 0,5 m)
 Ebene 5 bis hinter die Sparren). Darunter sichtbares Gebälk (`_attic_rafters`): Sparren etwa alle `ATTIC_RAFTER_GAP`,
 vor Dachfenstern ausgespart, Fußpfette und Pfette, ein Mesh je Schräge. `_attic_ceiling(p)` liefert die Deckenhöhe an jeder Stelle; `_wall_piece` kappt damit
 jede Wand (`_wall_top`, `_top_breaks`, `_cap_top`, `_wall_box`). Giebeldreiecke schließen Spalte (`_attic_gable`).
+**Außen** (Mansarddach, Spielkonzept 7.10, ZIM-147/171): Schiefer `RoofingTiles001` (`SLATE_*`, `Mat.photo`) – auf der
+Schräge in Modellkoordinaten (`_attic_slate`, Reihen laufen die Schräge hinauf), die außen bis unter die Kante des
+Oberdachs reicht (ATTIC_H + 0,24 – sonst sah man die Stirn der Decke als hellen Streifen), oben flach in
+Weltkoordinaten (`_attic_roof`). **Kranzgesims** (`_roof_cornice`): das Profil der Zierleiste (`Cornice`) in
+`ROOF_CORNICE_SIZE` × 4 (48 cm hoch, 40 cm Ausladung) auf dem Kniestock, mit Abdeckung (`Cornice.new(top, cap)`) und
+Schatten, darunter Konsolenpaare (`Cornice.add_bracket`, Seitenansicht `bracket_outline()`, `ROOF_BRACKET_*`). Jedes
+Stück läuft bis an die Außenfläche der quer anstoßenden Traufe (`_eave_across`): an Außenecken auf Gehrung, an
+Innenecken durchdringen sich die Profile. **Firstgitter** (`_roof_cresting`, ZIM-171): je Feld `ROOF_CRESTING` (0,4 ×
+0,5 m) eine ausgeschnittene Karte auf der Oberkante der Schräge, ein Mesh je Traufe, Felder auf die Länge gestreckt,
+an Außenecken ein Pfosten mit vierseitiger Spitze; ab `ROOF_CRESTING_RANGE` ausgeblendet. Karten aus
+`tools/build_cresting.py` (Form als Linien, Bögen, Spitzen in Metern → Höhenkarte → Normal Map, Rost, Rauheit);
+`Mat.cresting()` setzt die Mipmaps aus dem Streifen im Farbbild zusammen – jede Stufe hält die Deckung der ersten,
+sonst verschwänden die Stäbe unter der Schwelle (Alpha Scissor 0,4, Alpha to Coverage, beidseitig).
 **Dachfenster** (`roof_window` auf der Außenwand) sitzen in der Schräge darüber (`_roof_window`), mit kaltem Lichtkegel
 von außen (`ATTIC_SHAFT_*`, `AtticHaze` regelt ihn mit dem Mond). **Türen:** Kniestocktür-Modell, `ATTIC_DOOR_H` (2,1 m) hoch,
 unter einer Schräge nur so hoch, dass `ATTIC_DOOR_HEAD` bis zu ihr bleibt (`_attic_openings` → `o["height"]`, darum

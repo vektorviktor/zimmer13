@@ -60,6 +60,13 @@ const FACADE_TEX := "res://assets/textures/StoneFloor_02/StoneFloor_02_basecolor
 const FACADE_NORMAL := "res://assets/textures/StoneFloor_02/StoneFloor_02_normalOGL.jpg"
 const FACADE_METERS := 2.0
 const FACADE_NORMAL_STRENGTH := 2.0
+## Dachdeckung des Mansarddachs (Spielkonzept 7.10, 3.11.): alter Fischschuppen-Schiefer (RoofingTiles001, ambientCG,
+## CC0), eine Kachel ≈ 7 Reihen à knapp 30 cm; leichter Glanz (Rauheit 0,4–1)
+const SLATE_TEX := "res://assets/textures/RoofingTiles001/RoofingTiles001_2K-JPG_Color.jpg"
+const SLATE_NORMAL := "res://assets/textures/RoofingTiles001/RoofingTiles001_2K-JPG_NormalGL.jpg"
+const SLATE_ROUGHNESS := "res://assets/textures/RoofingTiles001/RoofingTiles001_2K-JPG_Roughness.jpg"
+const SLATE_METERS := 2.0
+const SLATE_SPECULAR := 0.35
 ## Holzdecken (Flure, Hallen, Treppenhäuser, Zimmer): dunkle Kassettendecke mit Schnitzwerk (Wood_Panels_01,
 ## Farbbild mit eingebackener AO, Normal Map, Rauheit – lackiert), eine Kachel = 2 × 2 Kassetten à 1 m.
 ## Das Farbbild ist dunkler als die frühere TexGen-Holzdecke – aufgehellt, in den Fluren weniger (Spielkonzept 7.3)
@@ -248,6 +255,19 @@ const ATTIC_WINDOW_BAR := 0.06
 ## unten eine Fußpfette auf dem Kniestock, oben eine Pfette, wo die Schräge die Decke trifft
 const ATTIC_RAFTER_GAP := 0.9
 const ATTIC_RAFTER := Vector2(0.12, 0.14)
+## Kranzgesims auf dem Kniestock (Spielkonzept 7.10, 3.11.): das Profil der Zierleiste (Cornice) so viel größer – 48 cm
+## hoch, 40 cm Ausladung –, darunter paarige Konsolen: so weit von Paar zu Paar, Abstand im Paar, Breite, Rand an Enden
+const ROOF_CORNICE_SIZE := 4.0
+const ROOF_BRACKET_PAIR := 1.6
+const ROOF_BRACKET_GAP := 0.32
+const ROOF_BRACKET_W := 0.09
+const ROOF_BRACKET_MARGIN := 0.45
+## Firstgitter (ZIM-171): Feld (Breite, Höhe) wie tools/build_cresting.py, Eckpfosten (ohne Spitze), Eisen, ab hier
+## ausgeblendet (m)
+const ROOF_CRESTING := Vector2(0.4, 0.5)
+const ROOF_CRESTING_POST := 0.72
+const ROOF_CRESTING_IRON := Color(0.2, 0.19, 0.19)
+const ROOF_CRESTING_RANGE := 90.0
 ## Licht durchs Dachfenster: Kegel (Winkel, Reichweite, Farbe, Anteil im Nebel – der Lichtschacht); Stärke folgt dem Mond
 const ATTIC_SHAFT_ANGLE := 24.0
 const ATTIC_SHAFT_RANGE := 5.0
@@ -255,7 +275,6 @@ const ATTIC_SHAFT_COLOR := Color(0.62, 0.72, 1.0)
 const ATTIC_SHAFT_FOG := 3.0
 const ATTIC_PLANK_TINT := Color(0.62, 0.6, 0.58)   ## grobe Bohlen, alt und grau
 const ATTIC_BEAM_TINT := Color(0.5, 0.45, 0.4)
-const ATTIC_ROOF_COLOR := Color(0.16, 0.15, 0.15)   ## Dachhaut außen
 ## Stützbalken: je Feld von etwa ATTIC_BAY m ein Pfosten in der Mitte, darauf ein Balkenkreuz (Unterkante, Querschnitt)
 ## bis an die Wände, jeder Arm mit einem Kopfband unter 45° (so weit vom Pfosten)
 const ATTIC_BAY := 6.0
@@ -751,6 +770,7 @@ var _cellar_floor: Material
 var _cellar_ceiling: Material
 var _attic_planks: Material
 var _attic_roof: Material
+var _attic_slate: Material
 
 
 func _init(p_root: Node3D, p_world: Node3D) -> void:
@@ -1101,7 +1121,9 @@ func _materials() -> void:
 	_cellar_ceiling = Mat.psx(Color(0.5, 0.5, 0.5), "concrete", 0.5)
 	_attic_planks = Mat.planks(ATTIC_PLANK_TINT)
 	_attic_planks.set_meta("floor", "wood")
-	_attic_roof = Mat.psx(ATTIC_ROOF_COLOR, "concrete", 1.0)
+	# Schiefer: oben flach in Weltkoordinaten, auf der Schräge in ihren eigenen (die Reihen laufen die Schräge hinauf)
+	_attic_roof = Mat.photo(SLATE_TEX, SLATE_METERS, SLATE_NORMAL, SLATE_ROUGHNESS, SLATE_SPECULAR)
+	_attic_slate = Mat.photo(SLATE_TEX, SLATE_METERS, SLATE_NORMAL, SLATE_ROUGHNESS, SLATE_SPECULAR, Color(1, 1, 1), true)
 
 
 # --- Plan: Flächen nachschlagen --------------------------------------------------------------------
@@ -4696,6 +4718,8 @@ func _attic_floor(plan: Dictionary, level: int) -> void:
 		_build_wall(w)
 	_attic_surfaces()
 	_attic_slopes()
+	_roof_cornice()
+	_roof_cresting()
 	_attic_beams()
 	_furniture()
 	_rugs()
@@ -4867,7 +4891,9 @@ func _attic_slopes() -> void:
 			if absf((p.y if horizontal else p.x) - float(e["fixed"])) < 0.2 and s > a0 and s < a1:
 				windows.append(Vector4(s, wdw["width"], ATTIC_WINDOW.y * length, ATTIC_WINDOW.x * length))
 		var inner := Geo.mesh(holder, Geo.wall_mesh(a0, a1, length, 0.04, windows), _attic_planks, Vector3(0, 0, -out * 0.02))
-		var skin := Geo.mesh(holder, Geo.wall_mesh(a0, a1, length, 0.04, windows), _attic_roof, Vector3(0, 0, out * 0.06))
+		# außen bis unter die Kante des Oberdachs (ATTIC_H + 0,24), sonst sähe man die Stirn der Decke
+		var skin_len := length * (rise + 0.24) / rise
+		var skin := Geo.mesh(holder, Geo.wall_mesh(a0, a1, skin_len, 0.04, windows), _attic_slate, Vector3(0, 0, out * 0.06))
 		structure_parts.append(inner)
 		structure_parts.append(skin)
 		# Kollision bis hinter die Sparren, damit man nicht in sie hineinläuft
@@ -4885,6 +4911,106 @@ func _attic_slopes() -> void:
 			var probe := Vector2(beyond, d) if horizontal else Vector2(d, beyond)
 			if _kind_at(probe) == "attic" and _attic_ceiling(probe, i) > ATTIC_H - 0.01:
 				_attic_gable(horizontal, s_end, face, inward)
+
+
+## Kranzgesims außen auf dem Kniestock jeder Traufe (Spielkonzept 7.10): das Profil der Zierleiste in
+## ROOF_CORNICE_SIZE, oben abgedeckt, darunter Konsolenpaare. Ein Stück läuft bis an die Außenfläche der quer
+## anstoßenden Traufe – an Außenecken auf Gehrung, an Innenecken durchdringen sich beide Profile –, ohne Nachbarn
+## endet es mit Stirnseite. Wirft Schatten (Mond).
+func _roof_cornice() -> void:
+	var kit := Cornice.new(ATTIC_KNEE, true)
+	for e: Dictionary in _eaves:
+		var horizontal: bool = e["horizontal"]
+		var inward := float(e["inward"])
+		var face := float(e["fixed"]) - inward * T / 2.0
+		var ends := [float(e["from"]) - T / 2.0, float(e["to"]) + T / 2.0]
+		var mitre := [false, false]
+		for k in 2:
+			var o := _eave_across(e, k)
+			if not o.is_empty():
+				ends[k] = float(o["fixed"]) - float(o["inward"]) * T / 2.0
+				mitre[k] = is_equal_approx(float(o["inward"]), 1.0 if k == 0 else -1.0)
+		var origin := Vector3(0, 0, face) if horizontal else Vector3(face, 0, 0)
+		var along := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
+		var out := Vector3(0, 0, -inward) if horizontal else Vector3(-inward, 0, 0)
+		kit.add_run(origin, along, out, ends[0], ends[1], ROOF_CORNICE_SIZE, mitre[0], mitre[1])
+		var span: float = ends[1] - ends[0] - 2.0 * ROOF_BRACKET_MARGIN
+		if span < 0.0:
+			continue
+		var pairs := floori(span / ROOF_BRACKET_PAIR) + 1
+		var start: float = (ends[0] + ends[1]) / 2.0 - (pairs - 1) * ROOF_BRACKET_PAIR / 2.0
+		for i in pairs:
+			for side: float in [-0.5, 0.5]:
+				kit.add_bracket(origin, along, out, start + i * ROOF_BRACKET_PAIR + side * ROOF_BRACKET_GAP,
+					ROOF_CORNICE_SIZE, ROOF_BRACKET_W)
+	kit.finish(root, true, "Kranzgesims")
+
+
+## Die Traufe, die am Ende k (0 = from, 1 = to) der Traufe e quer anstößt, sonst {}. Ihre Innenseite zeigt an einer
+## Außenecke zurück über e (inward = −Richtung des Endes), an einer Innenecke von e weg.
+func _eave_across(e: Dictionary, k: int) -> Dictionary:
+	var s_end := float(e["from"]) if k == 0 else float(e["to"])
+	for o: Dictionary in _eaves:
+		if o["horizontal"] != e["horizontal"] and absf(float(o["fixed"]) - s_end) <= T \
+				and float(e["fixed"]) >= float(o["from"]) - T and float(e["fixed"]) <= float(o["to"]) + T:
+			return o
+	return {}
+
+
+## Firstgitter auf der Oberkante jeder Schräge, wo sie aufs Oberdach trifft (Spielkonzept 7.10, ZIM-171): je Feld von
+## etwa ROOF_CRESTING.x eine ausgeschnittene Karte (Mat.cresting), ein Mesh je Traufe, bis an die Kante der quer
+## anstoßenden Schräge; an Außenecken ein Pfosten mit hoher Spitze. Ab ROOF_CRESTING_RANGE m ausgeblendet.
+func _roof_cresting() -> void:
+	var y0 := ATTIC_H + 0.24   # Oberkante des Oberdachs
+	var d := ATTIC_SLOPE * (ATTIC_H - ATTIC_KNEE + 0.24) / (ATTIC_H - ATTIC_KNEE)   # Oberkante der Schräge von innen
+	var iron := Mat.metal(ROOF_CRESTING_IRON)
+	for e: Dictionary in _eaves:
+		var horizontal: bool = e["horizontal"]
+		var inward := float(e["inward"])
+		var line := float(e["fixed"]) + inward * (T / 2.0 + d)
+		var ends := [float(e["from"]) - T / 2.0, float(e["to"]) + T / 2.0]
+		for k in 2:
+			var o := _eave_across(e, k)
+			if o.is_empty():
+				continue
+			ends[k] = float(o["fixed"]) + float(o["inward"]) * (T / 2.0 + d)
+			var convex := is_equal_approx(float(o["inward"]), 1.0 if k == 0 else -1.0)
+			if convex and horizontal:   # Eckpfosten, je Ecke einmal
+				var c := Vector3(ends[k], y0, line)
+				Geo.mesh(root, Geo.box(Vector3(0.05, ROOF_CRESTING_POST, 0.05)), iron, c + Vector3.UP * ROOF_CRESTING_POST / 2.0)
+				var tip := CylinderMesh.new()
+				tip.top_radius = 0.0
+				tip.bottom_radius = 0.05
+				tip.height = 0.18
+				tip.radial_segments = 4
+				tip.rings = 1
+				var tip_mi := Geo.mesh(root, tip, iron, c + Vector3.UP * (ROOF_CRESTING_POST + 0.09))
+				tip_mi.rotation.y = PI / 4.0
+		var length: float = ends[1] - ends[0]
+		if length < ROOF_CRESTING.x / 2.0:
+			continue
+		var n := maxi(1, roundi(length / ROOF_CRESTING.x))
+		var field := length / n
+		var verts := PackedVector3Array()
+		var normals := PackedVector3Array()
+		var uvs := PackedVector2Array()
+		var idx := PackedInt32Array()
+		var normal := Vector3(0, 0, -inward) if horizontal else Vector3(-inward, 0, 0)
+		var at := func(s: float, y: float) -> Vector3:
+			return Vector3(s, y, line) if horizontal else Vector3(line, y, s)
+		for i in n:
+			var s0: float = ends[0] + i * field
+			var first := verts.size()
+			for c: Vector2 in [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
+				verts.append(at.call(s0 + c.x * field, y0 + c.y * ROOF_CRESTING.y))
+				normals.append(normal)
+				uvs.append(Vector2(c.x, 1.0 - c.y))
+			idx.append_array([first, first + 1, first + 2, first, first + 2, first + 3])
+		var mi := Geo.mesh(root, Geo.add_surface(ArrayMesh.new(), verts, normals, idx, uvs), Mat.cresting(), Vector3.ZERO)
+		mi.name = "Firstgitter"
+		mi.visibility_range_end = ROOF_CRESTING_RANGE
+		mi.visibility_range_end_margin = 10.0
+		mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 
 
 ## Sichtbares Gebälk unter einer Schräge (lokal wie _roof_window): Sparren etwa alle ATTIC_RAFTER_GAP m, nicht vor
