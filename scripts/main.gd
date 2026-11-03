@@ -244,6 +244,8 @@ extends Node3D
 ##                               mit --trace stehen „außer Atem“ und „beruhigt“ in der Konsole
 ##   --fps                       Bilder pro Sekunde einblenden (wie F10)
 ##   --nohud                     HUD ausblenden (Geld, Hinweise, Fadenkreuz) – für Screenshots
+##   --fotomodus[=pruefen]       Fotomodus (wie F12): freie Kamera durch Wände, Zeit steht, der Spieler bleibt stehen –
+##                               pruefen: an, fliegen, Zeit, Esc, aus, Enter; meldet „[Fotomodus] … ok/FEHLER“
 ##   --debug                     Debug-Werte einblenden
 ##   --nointro                   ohne den Gedanken an den Brief beim Start (2.5)
 ##   --figur[=schnell]           Erwachen am Waschbecken und Charaktererstellung (3.9) wie bei einem neuen Spiel –
@@ -699,6 +701,10 @@ func _ready() -> void:
 	diag.shadows = $ShadowBudget
 	diag.builder = builder
 	add_child(diag)
+	var photo := PhotoMode.new()   # F12: freie Kamera durch Wände, der Spieler bleibt stehen
+	photo.name = "PhotoMode"
+	photo.shadows = $ShadowBudget
+	add_child(photo)
 
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--perf" or arg.begins_with("--perf="):
@@ -1345,6 +1351,14 @@ func run_debug(arg: String) -> bool:
 		Game.hud.fps_enabled = not Game.hud.fps_enabled
 	elif arg == "--nohud":
 		Game.hud.visible = not Game.hud.visible
+	elif _is_arg(arg, "--fotomodus"):
+		var photo := get_node_or_null("PhotoMode") as PhotoMode
+		if photo == null:
+			return false
+		if _arg_value(arg, "--fotomodus") == "pruefen":
+			_debug_photo_check(photo)
+		else:
+			get_tree().create_timer(0.5).timeout.connect(photo.start)
 	elif arg.begins_with("--tp="):
 		return _debug_teleport(_arg_value(arg, "--tp"))
 	elif _is_arg(arg, "--aufzug"):
@@ -4394,6 +4408,68 @@ func _chair_demo(hall: Rect2) -> Chair:
 			free = ch
 		add_child(ch)
 	return free
+
+
+## Debug --fotomodus=pruefen: F12 schaltet die freie Kamera ein (eigene Kamera aktuell, Spieler abgeschaltet, Zeit
+## steht), sie fliegt nach vorn und durch den Boden nach unten, ohne dass sich der Spieler rührt, [T] lässt die Zeit
+## laufen, Esc beendet ohne Spielmenü, F12 beendet mit der Spielerkamera und dem Spieler an alter Stelle, Enter setzt
+## ihn unter die Kamera. Je ½ s auseinander, „[Fotomodus] … ok/FEHLER“, zuletzt „[Fotomodus] Prüfung fertig“.
+func _debug_photo_check(photo: PhotoMode) -> void:
+	var p := Game.player
+	var check := func(text: String, ok: bool) -> void:
+		print("[Fotomodus] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	var press := func(key: Key) -> void:
+		for down in [true, false]:
+			var event := InputEventKey.new()
+			event.physical_keycode = key
+			event.pressed = down
+			Input.parse_input_event(event)
+	var at := {}
+	var steps: Array[Callable] = [
+		func() -> void:
+			at["player"] = p.global_position
+			press.call(KEY_F12),
+		func() -> void:
+			check.call("an", photo.active and get_viewport().get_camera_3d() == photo.camera
+				and p.process_mode == Node.PROCESS_MODE_DISABLED and get_tree().paused)
+			at["cam"] = photo.camera.global_position
+			photo.fly(Vector3(0, 0, -1), 2.0)
+			photo.fly(Vector3(0, -1, 0), 1.0),
+		func() -> void:
+			var moved: Vector3 = photo.camera.global_position - at["cam"]
+			check.call("fliegt (vorn %.1f m, unten %.1f m)" % [Vector2(moved.x, moved.z).length(), -moved.y],
+				absf(Vector2(moved.x, moved.z).length() - 2.0 * PhotoMode.SPEED) < 0.5
+				and absf(moved.y + PhotoMode.SPEED) < 0.01)
+			check.call("Spieler steht", p.global_position.distance_to(at["player"]) < 0.01)
+			press.call(KEY_T),
+		func() -> void:
+			check.call("Zeit läuft", photo.time_runs and not get_tree().paused and p.process_mode == Node.PROCESS_MODE_DISABLED)
+			press.call(KEY_ESCAPE),
+		func() -> void:
+			check.call("Esc beendet ohne Menü", not photo.active and not Game.menus.is_open()
+				and get_viewport().get_camera_3d() == p.camera and not get_tree().paused)
+			press.call(KEY_F12),
+		func() -> void:
+			photo.fly(Vector3(1, 0, 0), 3.0)
+			press.call(KEY_F12),
+		func() -> void:
+			check.call("F12 beendet", not photo.active and get_viewport().get_camera_3d() == p.camera
+				and p.process_mode == Node.PROCESS_MODE_INHERIT and not get_tree().paused)
+			check.call("Spieler an alter Stelle", Vector2(p.global_position.x - at["player"].x,
+				p.global_position.z - at["player"].z).length() < 0.3)
+			press.call(KEY_F12),
+		func() -> void:
+			photo.fly(Vector3(0, 0, -1), 0.5)
+			at["cam"] = photo.camera.global_position
+			press.call(KEY_ENTER),
+		func() -> void:
+			var eye := p.global_position + Vector3(0, Player.EYE_HEIGHT, 0)
+			check.call("Enter setzt den Spieler an die Kamera (%.2f m daneben)" % eye.distance_to(at["cam"]),
+				not photo.active and eye.distance_to(at["cam"]) < 0.3)
+			print("[Fotomodus] Prüfung fertig"),
+	]
+	for i in steps.size():
+		get_tree().create_timer(1.0 + 0.5 * i).timeout.connect(steps[i])
 
 
 ## Debug --buero=pruefen (Spielkonzept 2.8, 2.10, 6.19; ZIM-6): Sekretariat und Büro sind abgeschlossen; ohne Schlüssel

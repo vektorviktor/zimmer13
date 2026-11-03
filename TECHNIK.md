@@ -2971,6 +2971,16 @@ vorher die IDs ein (`Social.find_guest`), `main.gd` sucht ebenfalls mit `find_gu
 je lebendem Gast auf, `kill` direkt über `_debug_kill(…, quiet)` – `Social.on_guest_died(…, quiet)` ohne Meldung und
 Glocke, dafür eine Sammelmeldung.
 
+`PhotoMode` (`util/photo_mode.gd`, F12, `--fotomodus`) = freie Kamera durch Wände: eigene `Camera3D` (Lage und
+Blick der aktuellen Kamera, `NEAR` 2 cm, `cull_mask` mit `PlayerBody.LAYER`), `make_current()`; der Spieler bekommt
+`PROCESS_MODE_DISABLED` (steht, keine Eingaben), der Baum pausiert. `PhotoMode` läuft immer (`_input` vor Menüs, Esc
+beendet statt Spielmenü), `ShadowBudget` für die Dauer ebenfalls – es zählt ab `get_camera_3d()`, also ab der freien
+Kamera. [T] hebt nur die Pause auf (Spieler bleibt aus), `_process` setzt sie wieder, falls ein Debug-Fenster sie beim
+Schließen aufgehoben hat. Fliegen über die umbelegbaren Bewegungsaktionen plus E/Q, Tempo in echter Bildzeit (keine
+Spielzeit). Beim Beenden die vorige Kamera, Pause, Hud und Prozessmodus zurück; [Enter] setzt den Spieler vorher mit
+`TeleportUI.place_player` unter die Kamera. Startet nicht über pausierten Menüs; `Achievements.cheated()`.
+Prüfung `--fotomodus=pruefen` (Tasten per `Input.parse_input_event`), Rauchtest `fotomodus`.
+
 ### Tastenbelegung (`util/keys.gd`, `Keys`, Spielkonzept 8.4)
 - **Standard** legt `Game._setup_input` in der InputMap an (physische Tasten, also unabhängig vom Tastaturlayout),
   danach `Keys.apply_saved(Settings.key_bindings)`: merkt beim ersten Mal den Standard und setzt die Abweichungen aus
@@ -3007,7 +3017,7 @@ Glocke, dafür eine Sammelmeldung.
   brennender geschnitzter Kürbis am Boden vor Zimmer 13 (`door_front`). Nach dem eigenen Tod schaltet nichts mehr frei.
 - **Profil statt Spielstand:** `user://achievements.cfg` (Abschnitt `unlocked`, ID → Unix-Zeit). Nichts davon steht im
   Spielstand, am Speicherformat ändert es nichts. `debug` = nur für die Sitzung freischalten, nicht schreiben: headless
-  (beginnt leer), Startparameter außer `HARMLESS_ARGS`, Debug-Konsole, F5/F6/F7/F9 (`cheated()`).
+  (beginnt leer), Startparameter außer `HARMLESS_ARGS`, Debug-Konsole, F5/F6/F7/F9/F12 (`cheated()`).
 - **Einblendung:** `CanvasLayer` 35 (über Menü und Sterbebildschirm), läuft in der Pause weiter; eine Karte zur Zeit
   aus `_queue`, Tween herein (`SLIDE_TIME`), `SHOW_TIME` stehen, hinaus. `medal()` (Symbol auf dunklem Grund, Rahmen in
   der Stufenfarbe, gesperrt grau) nutzt auch die Seite „Erfolge“ im Spielmenü (`Menus._show_achievements`). Klang

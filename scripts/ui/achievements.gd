@@ -6,7 +6,7 @@ extends CanvasLayer
 ## Neu freigeschaltet: Karte gleitet oben rechts herein, bleibt SHOW_TIME s und gleitet nach rechts hinaus – oben der
 ## Name, darunter Symbol und Beschreibung, Rahmen in der Farbe der Stufe; mehrere nacheinander.
 ## Gespeichert wird nicht im Spielstand, sondern im Profil (PATH): Erfolge bleiben über neue Spiele, Tod und Laden.
-## Debug-Starts (Parameter außer HARMLESS_ARGS) und Debug-Eingriffe (Konsole, F5/F6/F7/F9 → cheated()) schalten nur
+## Debug-Starts (Parameter außer HARMLESS_ARGS) und Debug-Eingriffe (Konsole, F5/F6/F7/F9/F12 → cheated()) schalten nur
 ## für diese Sitzung frei, ohne zu schreiben; headless beginnt leer. Geheime Erfolge zeigt das Spielmenü gesperrt als
 ## „???“ – alles, was den friedlichen Anfang (2.1) oder die Bedrohungen verraten würde.
 
@@ -116,7 +116,7 @@ func unlock(id: String) -> void:
 		print("[Erfolg] %s (%s)%s" % [LIST[id]["name"], TIER_NAMES[LIST[id]["tier"]], " – nur Sitzung" if debug else ""])
 
 
-## Debug-Eingriff (Konsole, F5/F6/F7/F9): ab jetzt nichts mehr ins Profil schreiben.
+## Debug-Eingriff (Konsole, F5/F6/F7/F9/F12): ab jetzt nichts mehr ins Profil schreiben.
 func cheated() -> void:
 	if not debug and Game.tracing:
 		print("[Erfolg] Debug-Eingriff – Erfolge gelten nur noch für diese Sitzung")

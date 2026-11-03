@@ -117,8 +117,11 @@ judge() {
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
 		problems+=" kein Lichtbericht"
 	fi
-	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\)\] .*FEHLER" "$log"; then
-		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\)\] .*FEHLER' "$log" | head -1))"
+	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Fotomodus\)\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Fotomodus\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Fotomodus\)\] .*FEHLER' "$log" | head -1))"
+	fi
+	if [[ "$name" == *--fotomodus=pruefen* ]] && ! grep -q "^\[Fotomodus\] Prüfung fertig" "$log"; then
+		problems+=" Fotomodus-Prüfung nicht fertig"
 	fi
 	if [[ "$name" == *--buero=pruefen* ]] && ! grep -q "^\[Büro\] Prüfung fertig" "$log"; then
 		problems+=" Büro-Prüfung nicht fertig"
@@ -170,6 +173,7 @@ done <<'LIST'
 400|buero,spieler|--sitzen=sessel --trace
 400|buero|--buero=sekretariat,auf --trace
 400|buero,schluessel|--buero=pruefen --trace
+400|fotomodus|--fotomodus=pruefen
 400|regale|--regale --trace
 400|regale,buecher|--regale=nah --trace
 400|stuhl|--stuhl --trace

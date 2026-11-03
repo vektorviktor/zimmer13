@@ -36,7 +36,7 @@ mkdir -p build && "/c/Users/vikto/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_
 ```
 
 Ergebnis: `build/Zimmer13.exe` (ignoriert von Git), läuft ohne weitere Dateien. Die Debug-Startparameter
-funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F2/F3/F4/F5/F6/F7/F9/F10/F11) sind im Export ebenfalls aktiv.
+funktionieren auch dort (`Zimmer13.exe -- --trace`); die F-Tasten (F2/F3/F4/F5/F6/F7/F9/F10/F11/F12) sind im Export ebenfalls aktiv.
 
 ## Steuerung
 
@@ -67,6 +67,7 @@ Standardbelegung – umbelegen in den Einstellungen unter „Steuerung“ (fest 
 | F9 | Debug: Kürbismann kommt übers Lobbydach (springt vor der Gartentür in den Garten, sucht die Lobby ab) und jagt alle, die gerade Spaß haben, und dich (auch ohne Feier und vor dem ersten Angriff) |
 | F10 | Bilder pro Sekunde und Bildzeit rechts oben ein/aus |
 | F11 | Debug: nächste Aufteilung des Schattenatlas (4/4/16/64 = Godot, 16/16/16/16, 4/4/64/64, 64/64/64/64 Plätze je Quadrant) – zum Prüfen, ob ein Leck an der Auflösung oder an der Zahl der Plätze liegt |
+| F12 | Debug: Fotomodus – freie Kamera, fliegt durch Wände, Böden und Decken; der Spieler bleibt stehen, wo er war, die eigene Figur ist zu sehen. Maus schaut, WASD fliegt in Blickrichtung, Leertaste/E hoch, Strg/Q runter, Umschalt ×4, Alt ×¼, Mausrad Grundtempo (0,25–48 m/s, Start 3) · Zeit steht, [T] lässt sie laufen (das Monster kann dich dann holen) · [H] Hud und Hinweis aus · unten links Tempo und Lage x/y/z · Enter setzt den Spieler unter die Kamera und beendet · F12 oder Esc zurück. Nicht über offenen Menüs; schaltet Erfolge für die Sitzung ab |
 | ^ oder F1 | Debug-Konsole: Startparameter im Spiel tippen, ohne `--` (z. B. `shock edna,ghost3`, `tp lobby`, `guests`, `help`) – pausiert, ↑/↓ frühere Eingaben, Tab ergänzt · nur im Editor bzw. Debug-Build oder mit `--debug` |
 | Esc | Fenster schließen (Gespräch, Tagebuch) bzw. Spielmenü – pausiert das Spiel; dort unter „Hilfe“ die Tasten und ein paar Grundlagen |
 
@@ -603,6 +604,7 @@ Nach `--` an Godot übergeben, z. B. `--path . -- --trace --warn`. Alle Aktionen
 | `--wache` · `--wache=id` | Wache in Zimmer 13 (Spielkonzept 6.18, ZIM-62): Der Gast (Standard Edna) ist guter Freund, steht in Zimmer 13 und kommt mit – legst du dich ins Bett (`--sleep=bett`), hält er Wache; mit `--day=10 --uhr=1:10 --hoerer` weckt er dich, wenn das Monster kommt; `--trace`: `[Wache] …` |
 | `--fps` | Bilder pro Sekunde einblenden (wie F10) |
 | `--nohud` | HUD ausblenden (Geld, Hinweise, Fadenkreuz) – für Screenshots |
+| `--fotomodus` · `--fotomodus=pruefen` | Fotomodus wie F12 (nach ½ s) · pruefen: an, fliegen, Zeit laufen lassen, Esc, aus, Enter – meldet „[Fotomodus] … ok/FEHLER“ |
 | `--nointro` · `--debug` · `--trace-nav` | ohne den Gedanken an den Brief beim Start · Debug-Werte · mit `--trace` auch die Wegfindung der Gäste |
 | `--figur` · `--figur=schnell` | Erwachen am Waschbecken und Charaktererstellung wie bei einem neuen Spiel (sonst starten Debug-Läufe mit der Standardfigur: Mann, 1,80 m) · schnell: gleich der Bogen vor dem Spiegel |
 | `--perf` · `--perf=60` | jeden Frame Zeiten (Frame, Skripte, Physik, Navigation, Rendern CPU/GPU) und Zeichenaufrufe nach `temp/perf.csv`, Ende nach 20 bzw. n s – für Ruckler (Skripte und Physik: Höchstwert der letzten Sekunde, im Fenster samt Rendern und VSync; reine Skriptzeit je Bild in `script_ms`/`physics_script_ms`). Welche Funktion: `-d --profiling` vor `--path` (Godots Skriptprofiler, Ausgabe in der Konsole) |

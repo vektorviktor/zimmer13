@@ -26,7 +26,7 @@ const GROUPS := [
 	["Zeit & Schlaf", ["time", "day", "uhr", "sleep", "hoerer"]],
 	["Welt", ["weather", "wallblood", "pool", "splash", "rot"]],
 	["Spieler", ["pocket", "flashlight", "bag", "deco", "show", "sprint", "winded", "disguise", "drunk", "cat"]],
-	["Speichern & Ansicht", ["save", "load", "savetest", "menu", "fps", "psx", "no-psx", "debug", "trace"]],
+	["Speichern & Ansicht", ["save", "load", "savetest", "menu", "fps", "fotomodus", "psx", "no-psx", "debug", "trace"]],
 ]
 ## Nicht im Menü: nur in der Konsole sinnvoll (help, clear) bzw. beendet das Spiel (navcheck)
 const HIDDEN := ["help", "clear", "navcheck"]
