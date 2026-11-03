@@ -131,6 +131,10 @@ const DINING_FLOOR_NORMAL := "res://assets/textures/WoodFloor014/WoodFloor014_no
 const DINING_FLOOR_ROUGHNESS := "res://assets/textures/WoodFloor014/WoodFloor014_roughness.jpg"
 const DINING_FLOOR_METERS := 1.2
 const DINING_ROOM := "speisesaal"
+## Wandseiten mit Zierleiste (_cornice_size, ZIM-131): Gästezimmer, Flure, Gesellschaftsräume; Lobby und Speisesaal
+## bekommen die große
+const CORNICE_KINDS: Array[String] = ["room", "corridor", "bar", "party", "library", "cat_room", "bowling_lane",
+	"foul_line"]
 ## Wände der Poolhalle: Riemchen aus Naturstein (Farbbild mit eingebackener AO – das Muster steckt im Set fast nur in
 ## AO und Normal Map –, Normal Map), eine Kachel = 6 Spalten × ~22 Reihen, also Steine à ~50 × 14 cm
 const POOL_WALL_TEX := "res://assets/textures/Stone_EngraveWall_01/Stone_EngraveWall_01_basecolor.jpg"
@@ -677,6 +681,9 @@ var _wall_index: Array[Dictionary] = []
 var _wainscot_runs: Array[Dictionary] = []   ## Wandseiten mit Vertäfelung (_note_wainscot), je Stockwerk
 var _post_spans: Array[Dictionary] = []      ## Holzpfeiler und Eckstücke an waagerechten Wänden: z, Bereich in x (_corner_posts)
 var _wainscot_corners: Array = []   ## Eckstücke der Vertäfelung (_wainscot_corner): Ecke, Normalen A und B, Längen
+var _cornice_runs: Array[Dictionary] = []   ## Wandseiten mit Zierleiste (_note_cornice), je Stockwerk
+var _cornice_corners: Array = []   ## Außenecken der Zierleiste (_wainscot_corner): wie oben, dazu Größe A und B
+var _cornice_spans: Array[Dictionary] = []   ## dort enden die Zierleisten vor ihrem Eckstück: z, Bereich in x
 ## Wandstöße für _joint_depth/_joints_on (siehe _index_joints)
 var _faces := {}
 var _ends := {}
@@ -851,6 +858,7 @@ func _build_plan_floor() -> void:
 		_build_wall(w)
 	_corner_posts()
 	_wainscot()
+	_cornice()
 	_floors_and_ceilings()
 	for info in _map["rooms"]:
 		_room(info)
@@ -932,6 +940,9 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 	_wainscot_runs = []
 	_post_spans = []
 	_wainscot_corners = []
+	_cornice_runs = []
+	_cornice_corners = []
+	_cornice_spans = []
 	_faces = {}
 	_ends = {}
 	_furnishings = []
@@ -954,7 +965,7 @@ func _begin_floor(plan: Dictionary, level: int) -> void:
 		_halls = []
 		for rc in _map["open_above"]:
 			var r := _rect(rc)
-			_halls.append({"rect": r, "kind": _kind_at(r.get_center())})
+			_halls.append({"rect": r, "kind": _kind_at(r.get_center()), "id": _room_id_at(r.get_center())})
 
 
 ## Zustand des geladenen Stockwerks (für _use).
@@ -1354,6 +1365,9 @@ func _build_wall(w: Dictionary) -> void:
 			var half := float(w.get("thickness", T)) / 2.0
 			_note_wainscot(horizontal, fixed, half, -1.0, p0, p1, mine, minus[i])
 			_note_wainscot(horizontal, fixed, half, 1.0, p0, p1, mine, plus[i])
+			var mid := Vector2((p0 + p1) / 2.0, fixed) if horizontal else Vector2(fixed, (p0 + p1) / 2.0)
+			_note_cornice(horizontal, fixed, half, -1.0, p0, p1, _cornice_size(minus[i], mid - side * 0.3))
+			_note_cornice(horizontal, fixed, half, 1.0, p0, p1, _cornice_size(plus[i], mid + side * 0.3))
 		_wall_index.append({"horizontal": horizontal, "at": fixed, "from": p0, "to": p1,
 			"half": float(w.get("thickness", T)) / 2.0})
 	for o in openings:
@@ -1467,14 +1481,22 @@ func _wainscot_corner(end: Vector2, ex: float, half: float) -> void:
 	for s: float in [-1.0, 1.0]:
 		if _vertical_at(end.x - ex * half, end.y + s * half):   # Innenecke
 			continue
-		if not (_wainscoted(_wall_side_kind(Vector2(end.x - ex * 0.3, end.y + s * 0.3)))
-				and _wainscoted(_wall_side_kind(Vector2(end.x + ex * 0.3, end.y + s * 0.3)))):
-			continue
+		var face := Vector2(end.x - ex * 0.3, end.y + s * 0.3)   # vor der Wandseite
+		var head := Vector2(end.x + ex * 0.3, end.y + s * 0.3)   # vor dem Kopf
 		var across := 2.0 * half if _vertical_at(end.x - ex * half, end.y - s * half) else half
-		_wainscot_corners.append([Vector3(end.x, 0, end.y + s * half), Vector3(0, 0, s), Vector3(ex, 0, 0),
-			Wainscot.CORNER, across])
+		var corner := Vector3(end.x, 0, end.y + s * half)
 		var cut := Vector2(end.x - ex * Wainscot.CORNER, end.x)
-		_post_spans.append({"z": end.y, "span": Vector2(minf(cut.x, cut.y), maxf(cut.x, cut.y))})
+		var span := {"z": end.y, "span": Vector2(minf(cut.x, cut.y), maxf(cut.x, cut.y))}
+		# Zierleiste (Cornice): eigenes Eckstück, auch wo nur eine Seite eine trägt oder die Vertäfelung fehlt
+		var size_a := _cornice_size(_wall_side_kind(face), face)
+		var size_b := _cornice_size(_wall_side_kind(head), head)
+		if size_a > 0.0 or size_b > 0.0:
+			_cornice_corners.append([corner, Vector3(0, 0, s), Vector3(ex, 0, 0), Wainscot.CORNER, across, size_a, size_b])
+			_cornice_spans.append(span)
+		if not (_wainscoted(_wall_side_kind(face)) and _wainscoted(_wall_side_kind(head))):
+			continue
+		_wainscot_corners.append([corner, Vector3(0, 0, s), Vector3(ex, 0, 0), Wainscot.CORNER, across])
+		_post_spans.append(span)
 
 
 ## Profil des Pfeilersockels um den Schaft der halben Breite s: Block, Fase, Stufe, Karnies (oben hohl, unten voll)
@@ -1534,6 +1556,60 @@ func _wainscoted(kind: String) -> bool:
 			return false
 		kind = kind.trim_prefix("hall:")
 	return kind not in ["stairs", "elevator", "sealed"] and _wall_material(kind) != null
+
+
+## Wandseite für die Zierleiste merken (ZIM-131): wie _note_wainscot, Größe size aus _cornice_size (0 = keine).
+func _note_cornice(horizontal: bool, fixed: float, half: float, side: float, p0: float, p1: float, size: float) -> void:
+	if size > 0.0:
+		_cornice_runs.append({"horizontal": horizontal, "fixed": fixed, "half": half, "side": side, "from": p0,
+			"to": p1, "size": size})
+
+
+## Größe der Zierleiste an der Wandseite der Art kind (_wall_side_kind) am Ort p (Entscheidung 3.11.): Cornice.GRAND
+## in Lobby und Speisesaal, 1 in Fluren, Gesellschaftsräumen und Gästezimmern, sonst 0 – nicht in Bädern, Betriebs-
+## räumen, Treppenhäusern, Keller und Dachgeschoss. An einem Luftraum erst im OG unter dessen Decke.
+func _cornice_size(kind: String, p: Vector2) -> float:
+	if _level < 0 or _attic:
+		return 0.0
+	var id := _room_id_at(p)
+	if kind.begins_with("hall:"):
+		if _level == 0:
+			return 0.0   # die Wand läuft weiter bis unter die Decke im OG
+		kind = kind.trim_prefix("hall:")
+		for hall in _halls:
+			if (hall["rect"] as Rect2).has_point(p):
+				id = String(hall["id"])
+	if kind == "lobby" or (kind == "service" and id == DINING_ROOM):
+		return Cornice.GRAND
+	return 1.0 if kind in CORNICE_KINDS else 0.0
+
+
+## Zierleiste der gemerkten Wandseiten (Cornice): freie Stücke zwischen anstoßenden Wänden, Holzpfeilern und den
+## Eckstücken an Wandköpfen wie bei der Vertäfelung; Türen und Fenster reichen nicht bis unter die Leiste.
+func _cornice() -> void:
+	if _cornice_runs.is_empty() and _cornice_corners.is_empty():
+		return
+	var kit := Cornice.new(H)
+	for run in _cornice_runs:
+		var horizontal: bool = run["horizontal"]
+		var side: float = run["side"]
+		var fixed := float(run["fixed"])
+		var face := fixed + side * float(run["half"])
+		var free: Array[Vector2] = [Vector2(run["from"], run["to"])]
+		for blk in _wainscot_blocks(horizontal, face, side, fixed):
+			free = _cut_span(free, blk)
+		if horizontal:
+			for span in _cornice_spans:
+				if absf(float(span["z"]) - fixed) < 0.01:
+					free = _cut_span(free, span["span"])
+		var origin := Vector3(0, 0, face) if horizontal else Vector3(face, 0, 0)
+		var along := Vector3(1, 0, 0) if horizontal else Vector3(0, 0, 1)
+		var out := Vector3(0, 0, side) if horizontal else Vector3(side, 0, 0)
+		for f in free:
+			kit.add_run(origin, along, out, f.x, f.y, float(run["size"]))
+	for c: Array in _cornice_corners:
+		kit.add_corner(c[0], c[1], c[2], c[3], c[4], c[5], c[6])
+	kit.finish(root)
 
 
 ## Vertäfelung der gemerkten Wandseiten (Wainscot): freie Stücke zwischen anstoßenden Wänden, Türen (bis unter die

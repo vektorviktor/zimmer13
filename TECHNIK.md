@@ -273,6 +273,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `frosted_glass_normal.png`, `frosted_glass_rough.png` (eigenes Set) | Milchglas (`Mat.frosted_glass`: Milchglastüren) | Aus `tools/frosted_glass.gd` (fester Startwert), nahtlos: satiniertes Glas – feine Ätzkörnung (0,35 mm) und flache Walzwellen als Normal Map, Rauheit um 0,42 mit geätzten Flecken; Farbe mit Deckkraft 0,8 und Gegenlicht (`backlight`) im Material, dreiseitig in Modellkoordinaten, Kachel 0,12 m |
 | `switch_plate*.png` (eigenes Set) | Lichtschalter (`LightSwitch`): Platte, Kanten und Wippe | Altmessing mit Kordelrand, Rille, Schlitzschrauben, Bürstung und Patina – Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/switch_plate.gd` (fester Startwert); über die UVs gespannt (`mesh_uv`, Platte `_plate()` mit eigener Vorderseite, Kanten und Wippe aus `PLAIN_UV`), `METALLIC`. Plastisch sind nur Platte, schwarzer Rahmen und die eckige Wippe |
 | `door_strip*.png` (eigenes Set) | Übergangsschiene unter den Türen (`DoorStrip`, ZIM-132) | Dasselbe Altmessing wie `switch_plate*.png` (Farben, Bürstriefen, Patina aus `tools/door_strip.gd`, fester Startwert), aber 128 × 1024 für 40 × 320 mm (3,2 px/mm): quer das abgewickelte Profil – Mitte blank gelaufen, Patina zu den Kanten, Schmutz in der Fuge –, längs die Bürstriefen und feine Kratzer quer von den Schuhen. Längs nahtlos (alles Rauschen auf einem Zylinder gelesen), über die UVs gespannt (`mesh_uv`), `METALLIC` wie die Schalter |
+| `cornice*.png` (eigenes Set) | Zierleiste oben an den Wänden (`Cornice`, ZIM-131) | Elfenbein gestrichener Stuck aus `tools/cornice_stucco.gd` (fester Startwert), 1024 × 512: längs 1 m (1 mm/px, nahtlos – Rauschen auf einem Zylinder), quer das abgewickelte Profil `Cornice.profile()` (Zeile = Anteil der Bogenlänge, ~0,4 mm/px). Wolkige, stellenweise vergilbte Farbe, Pinselstriche längs, Verschattung und Staub in Kehlen und Stufen aus dem Profil gerechnet (offener Winkel je Punkt, über 2,5 mm geglättet, höchstens bis 0,35 offen – sonst flimmern die Millimeterstufen), Craquelé in Flecken (Zellrauschen, dunkel und rau), wenige abgeplatzte Stellen mit Gips und Farbkante; Normal Map aus der Höhe, Rauheit 0,55–0,9. Über die UVs gespannt (`mesh_uv`), die große Leiste nimmt dieselben Karten |
 
 ## 2. Aufbau zur Laufzeit
 
@@ -623,6 +624,26 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
   Kollisionskasten je Stück (bis 12 mm vor der Wand, ein Körper je Stockwerk mit Meta „wainscot“): Flecken, Eier und
   Deko landen auf dem Brett; das Rinnsal eines Wandflecks läuft darunter vor der Brüstungsleiste (`RAIL_FRONT`,
   `TraceMark._spread_wall`). Achtung `Vector4` rechnet in 32 Bit – die Brüstung 0,9 kommt als 0,8999… an.
+- **Zierleiste** (`level/cornice.gd`, ZIM-131, Spielkonzept 7.2, entschieden 3.11.): gestuftes Kranzgesims aus
+  elfenbein gestrichenem Stuck unter der Decke – Plättchen, Rundstab, Hohlkehle, Viertelstab, Deckplatte –,
+  `Cornice.HEIGHT` 12 cm hoch, `DEPTH` 10 cm Ausladung, in Lobby und Speisesaal `GRAND` × 1,6 (19 cm). Kein Modell aus
+  Blender: `Cornice.profile()` wird beim Bau entlang der Wände gezogen. `_build_wall` merkt die Wandseiten wie für die
+  Vertäfelung (`_note_cornice`, Größe aus `_cornice_size`): Gästezimmer, Flure und Gesellschaftsräume
+  (`CORNICE_KINDS`), Lobby und Speisesaal groß; nicht Bäder, Betriebsräume, Treppenhäuser, Aufzüge, verschlossene
+  Zimmer, Keller, Dachgeschoss. An Lufträumen erst im OG unter dessen Decke (`_halls` merkt dafür die Fläche des EG).
+  `_cornice` zieht dieselben Unterbrechungen ab (`_wainscot_blocks`: anstoßende Wände, Holzpfeiler – dort endet die
+  Leiste am Kapitell); Türen und Fenster reichen nicht hinauf. **Gehrung:** An Innenecken laufen beide Stücke bis an die
+  Wand – zwei gleiche Profile, die sich rechtwinklig durchdringen, schneiden sich genau auf der Gehrung (das Profil hat
+  je Höhe genau einen Abstand vor der Wand). An Außenecken der Wandköpfe ohne Pfeiler meldet `_wainscot_corner` ein
+  Eckstück (`_cornice_corners`, `Cornice.add_corner`, auch wo die Vertäfelung fehlt): jeder Punkt des Profils läuft um
+  seinen eigenen Abstand über die Ecke. Sonst enden die Stücke gerade mit Stirnseite (`Geometry2D.triangulate_polygon`).
+  Das Profil beginnt 3 mm in der Wand und endet 3 mm in der Decke – keine Fläche liegt auf einer anderen; den gemalten
+  Fries der Tapete deckt die Leiste ab. Ein Mesh je 16-m-Zelle und Stockwerk (an den Zellgrenzen geteilt, ~38 je
+  Stockwerk, ~78 000 Dreiecke), ohne Schatten und Kollision, nicht im Spielstand; Material `Mat.photo` mit den Karten
+  `cornice*.png` über die Mesh-UVs (u = Meter längs, v = Anteil der Bogenlänge, siehe 1 „Texturen“). Ohne
+  Kantenglättung flimmerten die Unterseiten der Plättchen (wenige Millimeter) als gestrichelte dunkle Linien: Abschnitte
+  bis `SOFT_STEP` nehmen die Normale ihrer Nachbarn. Debug `--zierleiste[=flur|zimmer|lobby|speisesaal]`, mit
+  `--trace` Stücke je Stockwerk; Leisten im Keller, Dachgeschoss oder außerhalb der Höhe meldet der Rauchtest als Fehler.
 - **Böden** (`_floor`): ein `Geo.solid` je Planrechteck, Textur in Weltkoordinaten (das Muster läuft über die Stöße).
   Ein Flurrechteck, das in die Lobby ragt, wird an deren Rand geteilt. Verschlossene Zimmer haben einen Boden auf der
   Ebene der Decken (5) – nicht im NavMesh, sonst planten Gäste und Monster Wege durch gesperrte Türen.

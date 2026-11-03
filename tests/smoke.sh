@@ -92,6 +92,9 @@ judge() {
 	if grep -q "^\[Schwelle\] [0-9]* Türen, [1-9][0-9]* Hälften ohne Boden" "$log"; then
 		problems+=" $(grep -o '[0-9]* Hälften ohne Boden' "$log") unter Türen"
 	fi
+	if grep -q "^\[Zierleiste\] FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[Zierleiste\] FEHLER' "$log")× Zierleiste falsch"
+	fi
 	if [ -n "$problems" ]; then
 		printf 'fail\tFEHLER  %s:%s   (%s)\n' "$name" "$problems" "$log"
 	elif [ "$code" != 0 ]; then
@@ -249,6 +252,8 @@ done <<'LIST'
 300|spion|--spion=falsch --trace
 300|spion,monster|--spion=auge --trace
 300|schwelle,level|--schwelle --trace
+300|zierleiste,level,grafik|--zierleiste --trace
+300|zierleiste|--zierleiste=speisesaal
 300|grafik|--grafik=niedrig --menu=settings
 300|grafik|--grafik=mittel --trace
 300|grafik,ui|--grafik=hoch --menu=settings

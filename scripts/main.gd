@@ -55,6 +55,8 @@ extends Node3D
 ##                               und beugt sich an die Linse
 ##   --schwelle[=flur|zimmer|nah]   Tür von Zimmer 13 offen, du siehst auf die Messingschiene darunter (ZIM-132);
 ##                               mit --trace: unter wie vielen Türen kein Boden liegt
+##   --zierleiste[=flur|zimmer|lobby|speisesaal]   Blick schräg hinauf in eine Ecke mit Zierleiste (ZIM-131);
+##                               mit --trace: Stücke und Dreiecke je Stockwerk, Leisten in Keller/Dachgeschoss als Fehler
 ##   --prank=art[,zimmer]        Streich (6.13): das erste Kind mit Eltern steht vor der Tür (Standard Zimmer 13) und
 ##                               spielt ihn – leaves, topple (Kürbis steht daneben), pumpkin, candle (steht damit in der Hand
 ##                               2 m davor und wirft), fire (brennende Kerze, daneben Laub und Lakengespenst, 5.11)
@@ -1046,6 +1048,58 @@ func _debug_threshold(where: String) -> void:
 						print("[Schwelle] kein Boden bei %s (%s)" % [at_side.snapped(Vector3.ONE * 0.01),
 							d.room_no if d.room_no != "" else d.room_id])
 			print("[Schwelle] %d Türen, %d Hälften ohne Boden darunter" % [doors.size(), missing]))
+
+
+## --zierleiste[=flur|zimmer|lobby|speisesaal] (ZIM-131): Blick schräg hinauf in eine Ecke mit Zierleiste – vor
+## Zimmer 13 den Flur entlang, im Zimmer in die hintere Ecke, in Lobby und Speisesaal (große Leiste) aus 4,5 m in die
+## Nordwestecke (über einem Luftraum unter der Decke des OG). Mit --trace: Stücke und Dreiecke je Stockwerk; Leisten im
+## Keller oder Dachgeschoss oder außerhalb der Höhe unter der Decke melden „[Zierleiste] FEHLER“.
+func _debug_cornice(where: String) -> void:
+	var b := Game.social.builder
+	var info: Dictionary = b.rooms[LevelBuilder.PLAYER_ROOM]
+	var p := Game.player
+	var at: Vector3 = info["door_front"]
+	var into: Vector3 = info["into"]
+	var along: Vector3 = info["along"]
+	var target := at + along * 4.0 - into * 1.2
+	var top := LevelBuilder.H
+	match where:
+		"zimmer":
+			at = (info["center"] as Vector3) - into * 0.5
+			target = at + into * 4.0 + along * 4.0
+		"lobby", "speisesaal":
+			var r: Rect2 = b._lobby if where == "lobby" else b._named[LevelBuilder.DINING_ROOM]
+			target = Vector3(r.position.x, 0.0, r.position.y)
+			at = target + Vector3(1.0, 0.0, 1.0).normalized() * 4.5
+			for hall in b._halls:
+				if (hall["rect"] as Rect2).grow(0.5).has_point(Vector2(target.x, target.z)):
+					top += LevelBuilder.UP_Y
+	target.y = at.y + top - Cornice.HEIGHT
+	p.global_position = at + Vector3(0, 0.05, 0)
+	var flat := Vector3(target.x - at.x, 0.0, target.z - at.z)
+	p.rotation.y = atan2(-flat.x, -flat.z)
+	p.head.rotation.x = atan2(target.y - p.camera.global_position.y, flat.length())
+	if not Game.tracing:
+		return
+	get_tree().create_timer(0.5).timeout.connect(func() -> void:
+		var counts := {}
+		var wrong := 0
+		for node in b.root.find_children("*Zierleiste*", "MeshInstance3D", true, false):
+			var mi := node as MeshInstance3D
+			var storey := String(mi.get_parent().name) if mi.get_parent() != b.root else "Erdgeschoss"
+			if not counts.has(storey):
+				counts[storey] = Vector2i.ZERO
+			counts[storey] += Vector2i(1, mi.mesh.surface_get_array_index_len(0) / 3)
+			var box := mi.mesh.get_aabb()
+			var low := LevelBuilder.H - Cornice.HEIGHT * Cornice.GRAND - 0.01
+			if storey in ["Untergeschoss", "Dachgeschoss"] or box.position.y < low or box.end.y > LevelBuilder.H + 0.01:
+				wrong += 1
+				print("[Zierleiste] FEHLER: Stück in %s, Höhe %.3f … %.3f" % [storey, box.position.y, box.end.y])
+		for storey: String in counts:
+			print("[Zierleiste] %s: %d Stücke, %d Dreiecke" % [storey, counts[storey].x, counts[storey].y])
+		if counts.is_empty():
+			print("[Zierleiste] FEHLER: keine Zierleiste gebaut")
+		print("[Zierleiste] %d Stücke außerhalb" % wrong))
 
 
 func _debug_peephole(what: String) -> void:
@@ -2209,6 +2263,8 @@ func run_debug(arg: String) -> bool:
 		_debug_peephole(_arg_value(arg, "--spion", "leer"))
 	elif _is_arg(arg, "--schwelle"):
 		_debug_threshold(_arg_value(arg, "--schwelle", "flur"))
+	elif _is_arg(arg, "--zierleiste"):
+		_debug_cornice(_arg_value(arg, "--zierleiste", "flur"))
 	elif arg.begins_with("--gastanruf="):
 		get_tree().create_timer(1.0).timeout.connect(Game.phones.debug_guest_call.bind(_arg_parts(arg, "--gastanruf")))
 	elif arg.begins_with("--call=") or arg.begins_with("--dial="):

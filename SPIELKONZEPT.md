@@ -5035,6 +5035,10 @@ Großzügige, etwas überdimensionierte Architektur – der Spieler soll sich kl
   > Passstücken an den Enden; unter Fenstern ohne Brüstungsleiste. Als Nächstes vorgesehen: kleine Details als
   > Decals (Flecken, Nagellöcher, hellere Stellen alter Bilder), Kabel als dünne Geometrie, weitere Tapetenmuster je
   > Stockwerk.
+  > **Entschieden (2026-11-03, ZIM-131): Zierleiste oben.** Unten Holz, oben hell wie im klassischen Grandhotel: ein
+  > gestuftes Kranzgesims aus elfenbein gestrichenem Stuck, 12 cm hoch, in Lobby und Speisesaal größer (19 cm). In
+  > Fluren, Lobby, Gesellschaftsräumen und Gästezimmern; nicht in Bädern, Betriebsräumen, Treppenhäusern, Keller und
+  > Dachgeschoss. An Lufträumen sitzt sie erst unter der Decke des OG. Ecken auf Gehrung. Gebaut 3.11.
 - **Eingeschlossen:** Ausgänge verriegelt – das Hotel ist ab dem 1. Oktober verschlossen (2.3); harmlos erklärt durch
   die Hausordnung (2.5).
 
