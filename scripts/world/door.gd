@@ -15,7 +15,8 @@ const COLLISION_DEPTH := 0.2
 ## GARDEN/ENTRANCE: Fenstertür nach draußen aus tools/build_french_door.py (ZIM-126) – Garten-, Terrassen- und
 ## Balkontüren mit 2 × 5 Glasfeldern, der Haupteingang mit Kassette unten und 3 × 4 Glasfeldern; Holz, Zarge und
 ## Beschläge wie an der Zimmertür, Glas wie an den Fenstern (Mat.glass). Ob man hindurchsieht, regelt weiter glass.
-enum Look { PLAIN, HOTEL, ATTIC, FROSTED, GARDEN, ENTRANCE }
+## GLAZED: Doppel-Glastür im Haus (Lobby, Bar …; Planfarbe „Doppel-Glastür“) – die Gartentür ohne Wetterschenkel.
+enum Look { PLAIN, HOTEL, ATTIC, FROSTED, GARDEN, ENTRANCE, GLAZED }
 const HOTEL_MODEL := "res://assets/models/door_room.glb"
 const ATTIC_MODEL := "res://assets/models/door_attic.glb"
 const FRENCH_MODEL := "res://assets/models/door_french.glb"
@@ -25,6 +26,12 @@ const HOTEL_LEAF := Vector2(1.18, 2.08)
 const ATTIC_LEAF := Vector2(0.78, 1.55)
 const GARDEN_LEAF := Vector2(1.08, 2.38)
 const ENTRANCE_LEAF := Vector2(1.48, 2.78)
+## Fenstertür: Rahmen, der beim Strecken sein Maß behält (Seitenfries, Sockel bis unter das erste Glasfeld, oberer
+## Riegel; wie im Skript) – nur Glasfelder und Sprossen dazwischen wachsen oder schrumpfen, der Drücker sitzt mitten
+## auf dem Seitenfries
+const FRENCH_FRAME := {"garden": Vector3(0.11, 0.22, 0.11), "entrance": Vector3(0.14, 1.12, 0.14)}
+## Doppeltür: Luft zwischen den Flügeln (m, beide zusammen) – sonst 1 cm zur Zarge
+const MEETING_GAP := 0.003
 ## Klinke: Abstand der Drückerachse von der Schlosskante und Höhe über dem Boden
 const HANDLE_INSET := 0.1
 const HANDLE_HEIGHT := 1.04
@@ -108,7 +115,8 @@ const CELL := 4.0
 static var _all: Array[Door] = []
 static var _cells := {}
 static var _dirty := true
-## Teile der Modelle (Pfad → {Name: [Mesh, Material]}), einmal geladen für alle Türen
+## Teile der Modelle (Pfad → {Name: [Mesh, Material]}), einmal geladen für alle Türen; dazu die auf Blattgröße
+## gebrachten Fenstertüren (_fit_french)
 static var _models := {}
 
 
@@ -126,7 +134,7 @@ func setup(p_width: float, p_height: float, p_open_angle_deg: float, p_double: b
 func _ready() -> void:
 	add_to_group("doors")
 	# Zarge und Bekleidung: zur Zimmertür ihr eigener Rahmen im Holz des Blatts, sonst der Craftsman-Rahmen
-	if look in [Look.HOTEL, Look.FROSTED, Look.GARDEN, Look.ENTRANCE]:
+	if look in [Look.HOTEL, Look.FROSTED, Look.GARDEN, Look.ENTRANCE, Look.GLAZED]:
 		add_child(DoorCasing.new().setup(width, height, COLLISION_DEPTH))
 		open_angle = signf(open_angle) * minf(absf(open_angle), HOTEL_MAX_ANGLE)
 	else:
@@ -404,19 +412,10 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 	pivot.add_child(body)
 	_bodies.append(body)
 	_dirs.append(dir)
-	var leaf_size := Vector3(leaf_width - 0.02, height - 0.02, 0.06)
-	var cx := dir * leaf_width / 2.0
-	var french := look in [Look.GARDEN, Look.ENTRANCE]
-	if french:
+	var leaf_size := Vector3(leaf_width - (0.01 + MEETING_GAP / 2.0 if double else 0.02), height - 0.02, 0.06)
+	var cx := dir * (0.01 + leaf_size.x / 2.0)
+	if look in [Look.GARDEN, Look.ENTRANCE, Look.GLAZED]:
 		_add_french_leaf(body, leaf_size, dir)
-	elif glass:
-		var frame := Mat.psx(Color(0.85, 0.85, 0.8))
-		Geo.mesh(body, Geo.box(Vector3(leaf_width - 0.2, height - 0.2, 0.02)), Mat.glass(), Vector3(cx, height / 2.0, 0))
-		Geo.mesh(body, Geo.box(Vector3(leaf_width - 0.02, 0.1, 0.06)), frame, Vector3(cx, 0.05, 0))
-		Geo.mesh(body, Geo.box(Vector3(leaf_width - 0.02, 0.1, 0.06)), frame, Vector3(cx, height - 0.05, 0))
-		Geo.mesh(body, Geo.box(Vector3(0.1, height - 0.02, 0.06)), frame, Vector3(dir * 0.05, height / 2.0, 0))
-		Geo.mesh(body, Geo.box(Vector3(0.1, height - 0.02, 0.06)), frame, Vector3(dir * (leaf_width - 0.06), height / 2.0, 0))
-		Geo.mesh(body, Geo.box(Vector3(leaf_width - 0.02, 0.05, 0.05)), frame, Vector3(cx, height * 0.55, 0))
 	elif look == Look.PLAIN:
 		Geo.mesh(body, Geo.box(leaf_size), Mat.psx(Color(0.3, 0.17, 0.1)), Vector3(cx, height / 2.0, 0))
 		# Kassetten als Relief
@@ -430,7 +429,7 @@ func _make_leaf(origin: Vector3, leaf_width: float, dir: float) -> Node3D:
 	# Kollision so tief wie die Wand: Ein dünnes Türblatt bildet eine Nische, in der die
 	# Spielerkapsel beim schrägen Entlanglaufen an der Wand hängenbleibt.
 	Geo.add_box_shape(body, Vector3(leaf_size.x, leaf_size.y, COLLISION_DEPTH), Vector3(cx, height / 2.0, 0))
-	if (glass or look == Look.PLAIN) and not french:
+	if look == Look.PLAIN:
 		var brass := Mat.psx(Color(0.8, 0.65, 0.25))
 		for z in [0.05, -0.05]:
 			Geo.mesh(body, Geo.sphere(0.035, 0.07, 6, 3), brass, Vector3(dir * (leaf_width - 0.1), 1.0, z))
@@ -482,26 +481,74 @@ func _add_frosted_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
 	_add_fittings(body, leaf_size, dir)
 
 
-## Fenstertür (Look.GARDEN/ENTRANCE): Blatt und Scheiben aus FRENCH_MODEL auf die Blattgröße gestreckt, bei dir = −1
-## gespiegelt; Drücker und Bänder der Zimmertür. Die Scheiben werfen keinen Schatten (wie an den Fenstern).
+## Fenstertür (Look.GARDEN/ENTRANCE/GLAZED): Blatt und Scheiben aus FRENCH_MODEL auf die Blattgröße gebracht
+## (_fit_french, der Rahmen bleibt), bei dir = −1 gespiegelt; Drücker mitten auf dem Seitenfries, Bänder der Zimmertür.
+## Die Scheiben werfen keinen Schatten (wie an den Fenstern).
 func _add_french_leaf(body: Node3D, leaf_size: Vector3, dir: float) -> void:
 	var parts := _model_parts(FRENCH_MODEL)
-	var v := "garden" if look == Look.GARDEN else "entrance"
-	var ref := GARDEN_LEAF if look == Look.GARDEN else ENTRANCE_LEAF
+	var v: String = {Look.GARDEN: "garden", Look.GLAZED: "glazed", Look.ENTRANCE: "entrance"}[look]
+	var ref := ENTRANCE_LEAF if look == Look.ENTRANCE else GARDEN_LEAF
+	var frame: Vector3 = FRENCH_FRAME["entrance" if look == Look.ENTRANCE else "garden"]
+	var size := Vector2(leaf_size.x, leaf_size.y)
 	for part in ["leaf_", "glass_"]:
-		var mi := Geo.mesh(body, parts[part + v][0], parts[part + v][1], Vector3(dir * 0.01, 0.01, 0))
-		mi.scale = Vector3(dir * leaf_size.x / ref.x, leaf_size.y / ref.y, 1.0)
+		var mi := Geo.mesh(body, _fit_french(parts[part + v][0], ref, size, frame), parts[part + v][1],
+			Vector3(dir * 0.01, 0.01, 0))
+		mi.scale.x = dir
 		if part == "glass_":
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_add_fittings(body, leaf_size, dir)
+	_add_fittings(body, leaf_size, dir, frame.x / 2.0)
 
 
-## Drücker und Bänder der Zimmertür (aus HOTEL_MODEL, ungestreckt)
-func _add_fittings(body: Node3D, leaf_size: Vector3, dir: float) -> void:
+## Fenstertür auf die Blattgröße size: Punkte im Rahmen (frame: Seitenfries, Sockel, oberer Riegel) behalten ihren
+## Abstand zur nächsten Blattkante, dazwischen wird gleichmäßig gestreckt und die Normalen der Fasen dort nachgezogen.
+## Je Modellteil und Größe einmal gebaut.
+static func _fit_french(src: Mesh, ref: Vector2, size: Vector2, frame: Vector3) -> Mesh:
+	if size.is_equal_approx(ref):
+		return src
+	var key := "%d:%.4f:%.4f" % [src.get_instance_id(), size.x, size.y]
+	if _models.has(key):
+		return _models[key]
+	var k := Vector2((size.x - 2.0 * frame.x) / (ref.x - 2.0 * frame.x),
+		(size.y - frame.y - frame.z) / (ref.y - frame.y - frame.z))
+	var out := ArrayMesh.new()
+	for s in src.get_surface_count():
+		var arrays := src.surface_get_arrays(s)
+		var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+		for i in verts.size():
+			var p := verts[i]
+			var n := normals[i]
+			if p.x >= frame.x - 1e-4 and p.x <= ref.x - frame.x + 1e-4:
+				n.x /= k.x
+			if p.y >= frame.y - 1e-4 and p.y <= ref.y - frame.z + 1e-4:
+				n.y /= k.y
+			verts[i] = Vector3(_stretch(p.x, frame.x, frame.x, ref.x, size.x),
+				_stretch(p.y, frame.y, frame.z, ref.y, size.y), p.z)
+			normals[i] = n.normalized()
+		arrays[Mesh.ARRAY_VERTEX] = verts
+		arrays[Mesh.ARRAY_NORMAL] = normals
+		out.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	_models[key] = out
+	return out
+
+
+## Lage p auf einer Achse der Länge ref, gebracht auf Länge to: bis a vom Anfang und ab b vor dem Ende fest, dazwischen
+## gleichmäßig gestreckt
+static func _stretch(p: float, a: float, b: float, ref: float, to: float) -> float:
+	if p <= a:
+		return p
+	if p >= ref - b:
+		return p + to - ref
+	return a + (p - a) * (to - a - b) / (ref - a - b)
+
+
+## Drücker und Bänder der Zimmertür (aus HOTEL_MODEL, ungestreckt); Drückerachse inset vor der Schlosskante
+func _add_fittings(body: Node3D, leaf_size: Vector3, dir: float, inset := HANDLE_INSET) -> void:
 	var parts := _model_parts(HOTEL_MODEL)
 	var handle := Geo.mesh(body, parts["handle"][0], parts["handle"][1],
-		Vector3(dir * (leaf_size.x + 0.01 - HANDLE_INSET), HANDLE_HEIGHT, 0))
-	handle.scale.x = dir   # Drücker zeigt zum Scharnier
+		Vector3(dir * (leaf_size.x + 0.01 - inset), HANDLE_HEIGHT, 0))
+	handle.rotation.y = 0.0 if dir > 0.0 else PI   # Drücker zeigt zum Scharnier (gedreht, nicht gespiegelt: gespiegelt
+	# wirkte das Messing schwarz)
 	for at in HINGE_AT:
 		var hinge := Geo.mesh(body, parts["hinge"][0], parts["hinge"][1], Vector3(dir * 0.01, 0.01 + at * leaf_size.y, 0))
 		hinge.scale.x = dir

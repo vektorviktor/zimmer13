@@ -60,7 +60,8 @@ extends Node3D
 ##                               und beugt sich an die Linse
 ##   --schwelle[=flur|zimmer|nah]   Tür von Zimmer 13 offen, du siehst auf die Messingschiene darunter (ZIM-132);
 ##                               mit --trace: unter wie vielen Türen kein Boden liegt
-##   --fenstertuer[=innen|aussen|eingang]   vor die Gartentür von Zimmer 13 (von innen bzw. außen) oder den Haupteingang
+##   --fenstertuer[=innen|aussen|eingang|glastuer]   vor die Gartentür von Zimmer 13 (von innen bzw. außen), den
+##                                          Haupteingang oder die Doppel-Glastür zur Bar
 ##                               (aus der Lobby), Blick auf die Fenstertür (ZIM-126); mit --trace: Prüfung aller Außentüren
 ##   --zierleiste[=flur|zimmer|lobby|speisesaal]   Blick schräg hinauf in eine Ecke mit Zierleiste (ZIM-131);
 ##                               mit --trace: Stücke und Dreiecke je Stockwerk, Leisten in Keller/Dachgeschoss als Fehler
@@ -1110,17 +1111,24 @@ func _debug_threshold(where: String) -> void:
 			print("[Schwelle] %d Türen, %d Hälften ohne Boden darunter" % [doors.size(), missing]))
 
 
-## --fenstertuer[=innen|aussen|eingang] (ZIM-126): Spieler 2,6 m vor der Gartentür von Zimmer 13 (sonst der ersten
-## Fenstertür) im Zimmer bzw. draußen, oder 4 m vor dem Haupteingang in der Lobby, Blick auf die Tür. Mit --trace: jede
-## Fenstertür (french_doors) muss Look.GARDEN mit Glas sein, der Haupteingang Look.ENTRANCE – sonst
+## --fenstertuer[=innen|aussen|eingang|glastuer] (ZIM-126): Spieler 2,6 m vor der Gartentür von Zimmer 13 (sonst der
+## ersten Fenstertür) im Zimmer bzw. draußen, 4 m vor dem Haupteingang in der Lobby oder 2,6 m vor der Doppel-Glastür,
+## die der Bar am nächsten ist (Lobbyseite), Blick auf die Tür. Mit --trace: jede Fenstertür (french_doors) muss
+## Look.GARDEN mit Glas sein, der Haupteingang Look.ENTRANCE, jede andere Glastür Look.GLAZED – sonst
 ## „[Fenstertuer] FEHLER“.
 func _debug_french_door(where: String) -> void:
 	var door: Door
 	for node in get_tree().get_nodes_in_group("doors"):
+	var bar: Rect2 = Game.social.builder._named.get("bar", Rect2())
+	var near_bar := func(d: Door) -> float:
+		return Vector2(d.center().x, d.center().z).distance_to(bar.get_center())
 		var d := node as Door
 		if where == "eingang" and d.key_id == "ausgang":
 			door = d
-		elif where != "eingang" and d.is_in_group("french_doors") and (door == null or d.room_id == LevelBuilder.PLAYER_ROOM):
+		elif where == "glastuer":
+			if d.look == Door.Look.GLAZED and (door == null or near_bar.call(d) < near_bar.call(door)):
+				door = d
+		elif where in ["innen", "aussen"] and d.is_in_group("french_doors") and (door == null or d.room_id == LevelBuilder.PLAYER_ROOM):
 			door = d
 	if door == null:
 		push_error("--fenstertuer: keine passende Tür im Plan")
@@ -1129,12 +1137,15 @@ func _debug_french_door(where: String) -> void:
 	var out := door.outward if door.outward != Vector3.ZERO else -door.global_transform.basis.z
 	var side := out if where == "aussen" else -out
 	var at := door.center()
+	if where == "glastuer":   # von der Seite, die von der Bar abgewandt ist
+		var c := door.center()
+		side = out if Vector2(out.x, out.z).dot(Vector2(c.x, c.z) - bar.get_center()) > 0.0 else -out
 	var p := Game.player
 	p.global_position = Vector3(at.x, door.global_position.y, at.z) + side * (4.0 if where == "eingang" else 2.6) 		+ Vector3(0, 0.05, 0)
 	p.rotation.y = atan2(side.x, side.z)
 	p.head.rotation.x = deg_to_rad(-2.0)
 	if Game.tracing:
-		var counts := {"garden": 0, "entrance": 0, "errors": 0}
+		var counts := {"garden": 0, "entrance": 0, "glazed": 0, "errors": 0}
 		for node in get_tree().get_nodes_in_group("doors"):
 			var d := node as Door
 			var bad := ""
@@ -1143,12 +1154,15 @@ func _debug_french_door(where: String) -> void:
 			elif d.key_id == "ausgang" and d.look != Door.Look.ENTRANCE:
 				bad = "Haupteingang ohne Modell"
 			if bad != "":
+			elif d.glass and not d.look in [Door.Look.GARDEN, Door.Look.ENTRANCE, Door.Look.GLAZED]:
+				bad = "Glastür ohne Modell"
 				counts["errors"] += 1
 				print("[Fenstertuer] FEHLER %s bei %s" % [bad, d.global_position.snapped(Vector3.ONE * 0.01)])
 			counts["garden"] += int(d.look == Door.Look.GARDEN)
 			counts["entrance"] += int(d.look == Door.Look.ENTRANCE)
-		print("[Fenstertuer] %d Gartentüren, %d Haupteingang, %d Fehler" % [counts["garden"], counts["entrance"],
-			counts["errors"]])
+			counts["glazed"] += int(d.look == Door.Look.GLAZED)
+		print("[Fenstertuer] %d Gartentüren, %d Haupteingang, %d Glastüren, %d Fehler" % [counts["garden"],
+			counts["entrance"], counts["glazed"], counts["errors"]])
 
 
 ## --zierleiste[=flur|zimmer|lobby|speisesaal] (ZIM-131): Blick schräg hinauf in eine Ecke mit Zierleiste – vor

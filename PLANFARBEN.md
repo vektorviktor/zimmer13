@@ -119,7 +119,7 @@ Striche auf der Wandlinie.
 | #3bf316 | Tür Flur | Zimmertüren; wohin sie führen, liest das Skript beiderseits (Bad, Verbindungstür, Flur) |
 | #0bcb4b | Tür Terrasse | Fenstertür nach draußen |
 | #3994ef | Fenster | |
-| #11d4a4 | Doppel-Glastür | |
+| #11d4a4 | Doppel-Glastür | im Haus (Lobby, Bar …): Holz und Sprossen der Gartentür, ohne Wetterschenkel |
 | #a6af79 | Betriebstür | |
 | #5ae287 | Milchglastür | Pool, Duschen, Umkleiden: Holzrahmen mit Milchglas, hält den Blick auf wie eine Holztür |
 | #2d7633 | Aufzugtür | |

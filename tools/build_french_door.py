@@ -1,6 +1,7 @@
 # Baut die Fenstertür nach draußen (ZIM-126, Entscheidung 3.11.: selbst gebaut, Door.Look, Spielkonzept 9.2) – ein
-# Modell in zwei Varianten, beide als Flügel einer Doppeltür:
+# Modell in drei Varianten, alle als Flügel einer Doppeltür:
 #   „garden“    Garten-, Terrassen- und Balkontüren: Rahmen mit Sockel, darin 2 × 5 Glasfelder zwischen Sprossen
+#   „glazed“    Doppel-Glastür im Haus (Lobby, Bar …): wie „garden“, ohne Wetterschenkel
 #   „entrance“  Haupteingang: unten eine Kassette wie an der Zimmertür, darüber Kämpfer und 3 × 4 Glasfelder
 # Glas wegen des Lakengeists (Spielkonzept 4.18), Holz wie Zimmertür, Vertäfelung und Türrahmen (Mat.hotel_wood).
 #
@@ -8,7 +9,7 @@
 # Glasfelder haben auf beiden Seiten eine 45°-Fase zur Laibung, die Laibung geht durch bis zur Scheibe in der
 # Mittelebene; Sprossen laufen in voller Blattdicke, an den Kreuzungen treffen sich die Fasen auf Gehrung (wie beim
 # Schreiner). Die Kassette des Haupteingangs hat das Profil der Zimmertür. Außen (−Z, gegenüber der Aufgehseite) sitzt
-# unten ein Wetterschenkel. Low Poly (Blatt ≈ 500–700 Dreiecke).
+# unten ein Wetterschenkel (nicht an der Glastür im Haus). Low Poly (Blatt ≈ 500–700 Dreiecke).
 #
 # Wie die Zimmertür: Das Blatt trägt kein Material, sondern zwei UV-Sätze – UVMap in Metern für das Holzfoto (Faser je
 # Stück: Seitenfriese und senkrechte Sprossen senkrecht, Riegel, Querstreben und Wetterschenkel waagerecht, die
@@ -74,6 +75,7 @@ VARIANTS["garden"] = {
 	"cols": lines(0.0, [("S", 0.11)] + [(k if k == "G" else "M", l) for k, l in glazed(2, _w - 0.22)] + [("S", 0.11)], _w),
 	"rows": lines(0.0, [("R", 0.22)] + glazed(5, _h - 0.33) + [("R", 0.11)], _h),
 }
+VARIANTS["glazed"] = dict(VARIANTS["garden"], weather=False)   # gleiche Größe (Door.GARDEN_LEAF)
 _w, _h = 1.48, 2.78       # 3-m-Haupteingang, 2,8 m hoch (Door.ENTRANCE_LEAF)
 VARIANTS["entrance"] = {
 	"leaf": (_w, _h),
@@ -205,6 +207,8 @@ def build_leaf(v, spec):
 		f = bm.faces.new((front[i][j], back[i][j], back[i2][j2], front[i2][j2]))
 		uv(f, ("edge", k), i == i2)
 	bmesh.ops.recalc_face_normals(bm, faces=bm.faces)   # Blatt ist geschlossen
+	if not spec.get("weather", True):
+		return finish(bm, "leaf_" + v), glass_panes(v, glass)
 	# Wetterschenkel außen (−Z): Querschnitt entlang x gezogen, ohne Rückseite (liegt auf dem Blatt); offen, daher
 	# jede Fläche ausdrücklich nach außen gedreht
 	zb = -THICK / 2.0
@@ -229,9 +233,11 @@ def build_leaf(v, spec):
 		f = bm.faces.new(vs)
 		uv(f, ("weather",), False)
 		outward(f, (sx, 0.0, 0.0))
-	leaf = finish(bm, "leaf_" + v)
+	return finish(bm, "leaf_" + v), glass_panes(v, glass)
 
-	# Scheiben in der Mittelebene, so groß wie die Laibung
+
+def glass_panes(v, glass):
+	"""Scheiben in der Mittelebene, so groß wie die Laibung"""
 	gb = bmesh.new()
 	guv = gb.loops.layers.uv.new("UVMap")   # Meter (der Import braucht UVs für die Tangenten)
 	for pts in glass:
@@ -242,7 +248,7 @@ def build_leaf(v, spec):
 	for f in gb.faces:   # Vorderseite nach +Z (Blender −Y)
 		if f.normal.y > 0:
 			f.normal_flip()
-	return leaf, finish(gb, "glass_" + v)
+	return finish(gb, "glass_" + v)
 
 
 objs = {v: build_leaf(v, spec) for v, spec in VARIANTS.items()}
