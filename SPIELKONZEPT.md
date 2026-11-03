@@ -1143,7 +1143,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
   damals die eines Jungen.
 - **Zwei Spinde:** Josefs Spind steht seit 1987 unberührt im Heizraum (Kesselbuch, 7.4). Der Page hat ihn nie geöffnet
   und sich einen eigenen in den **Hausmeisterraum** gestellt – erklärt wird das nicht; wer beide sieht, merkt es.
-- **Der Hausmeisterraum** liegt im EG, die Küche ist dafür halbiert (Plan: Fläche `#c4d35b`, Spind `#747567`; der
+- **Der Hausmeisterraum** liegt im EG, die Küche ist dafür halbiert (Plan: Fläche `#c4d35b`, Spind `#6c7d89`, 7.18; der
   Nutzer malt ihn). Im Spind liegt jede Ernte die Hauptsicherung des Aufzugs – bis Bruno ihn aufbricht (7.4).
 - **Sein Notizbuch** (7.4) gab er 2005 den Gästen aus 13 und 018, dazu den Schaltschlüssel – sein erster Bruch. Beide
   wurden geholt, danach traute er sich nicht mehr. 2026 ist seine zweite Chance („der wahrscheinlichste, der bricht“,
@@ -5922,6 +5922,23 @@ Zimmer 13 (4.13): echter Gast oder falsche Stimme, ohne gleich aufzumachen.
 - **Von außen:** nur ein Lichtpunkt in der Linse – er verrät, ob drinnen Licht brennt (hilft beim Klopfen an fremden
   Zimmern, 6.19).
 - **Später:** Gäste schauen selbst durch den Spion, bevor sie dem Spieler öffnen (6.19, vgl. ZIM-162).
+
+### 7.18 Stahlspinde (entschieden und umgesetzt 2026-11-03, ZIM-174)
+
+- **Wofür:** Lager, Hausmeisterraum (der **Spind des Hausmeisters**, 2.11, 7.4) und Heizraum (**Josefs Spind**, 7.4) –
+  eine Planfarbe „Spind“ `#6c7d89` für alle (`#747567` war ein Schreibfehler), dazu „Spind mit Schloss“ `#4f5d68`.
+- **Nach Fotos des Nutzers:** 50 × 50 cm, 1,80 m hoch, **ohne Füße**. Korpus und Rahmen aus angelaufenem
+  **verzinktem Blech**, Türen **blau lackiert**, leicht rau und nur stellenweise glänzend (angelaufen), oben
+  **Lüftungsschlitze nur in der Textur**. Innen eine Hutablage, rechts an der Tür eine Rosette mit Öse.
+- **Einzeln oder als Reihe:** ein 5 × 5-px-Rechteck ist ein Spind, ein längeres eine Reihe mit gemeinsamen
+  Zwischenwänden (30 × 5 px = 6). Rücken an die nächste Wand. **Gegenstände im Plan** liegen im Spind, über dem sie
+  gemalt sind, auf der Hutablage – bei 180 cm von links (von vorn gesehen) in Spind 4. Die übrigen haben beim ersten
+  Öffnen manchmal einen kleinen Fund (Kerze, Batterie, Glühbirne, Münzen …), meist sind sie leer.
+- **Vorhängeschloss = Zahlenschloss** (Foto): Mit Schloss malt man die zweite Farbe, gemischte Reihen als
+  aneinanderstoßende Stücke. Der Code (vier Räder wie im Sekretariat, 2.10) steht je Spind fest; das Schloss kommt ab,
+  danach geht die Tür frei. Ohne Schloss gehen die Spinde einfach auf.
+- **Offen:** wo die Codes stehen (Zettel, Notizbuch, Gäste?) und ob das Brecheisen ein Schloss aufbricht (7.4,
+  Vorschlag beim Spind des Hausmeisters); Inhalt der Story-Spinde (Hauptsicherung, Kesselbuch) kommt mit ZIM-4 bzw. 7.4.
 
 ## 8. Menüs, Speichern & Laden
 

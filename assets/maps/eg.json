@@ -13172,6 +13172,15 @@
 			"facing": "south"
 		},
 		{
+			"kind": "steel_locker",
+			"rect": [
+				-61.5,
+				-37.9,
+				-60.9,
+				-37.3
+			]
+		},
+		{
 			"kind": "stove",
 			"rect": [
 				-57.3,

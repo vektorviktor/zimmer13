@@ -37,7 +37,7 @@ uniform bool object_uv = false;
 uniform bool mesh_uv = false;
 // Gebackene Verschattung über den zweiten UV-Satz (Vertäfelung, tools/build_wainscot.py): multipliziert die
 // Grundfarbe, wirkt also auch im Lampenlicht (Godots AO wirkt nur aufs Umgebungslicht, das im Hotel fast null ist)
-uniform sampler2D ao_tex : hint_default_white, filter_linear, repeat_disable;
+uniform sampler2D ao_tex : hint_default_white, filter_linear_mipmap, repeat_disable;
 uniform bool use_ao = false;
 // Gebackene Normale über UV2 im Objektraum (Möbel, tools/furniture_kit.py): ersetzt die Normale des Meshs, darin
 // gemalt sind Formen, die nicht modelliert sind (Furchen, Lamellen). Die Holz-Normal-Map wirkt darauf weiter.

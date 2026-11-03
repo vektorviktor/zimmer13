@@ -136,6 +136,8 @@ FURNITURE = {
 	"Möbel: Gartentisch": "garden_table", "Möbel: Gartenstuhl": "garden_chair",
 	# Pool-Umkleiden (31.10., ZIM-145): Spindblock 36 × 9 px mit hellerer Zeile, Bank in der Mitte ohne Vorderseite
 	"Möbel: Spindblock": "locker_bank", "Möbel: Umkleidebank": "changing_bench",
+	# 3.11.: Stahlspinde (ZIM-174), 5 × 5 px je Spind, längere Rechtecke eine Reihe; ohne Vorderseite an die nächste Wand
+	"Möbel: Spind": "steel_locker", "Möbel: Spind mit Schloss": "steel_locker_lock",
 	# 2.11.: bisher feste Plätze im Code (ZIM-158) – ohne Planeintrag bleibt der alte Platz
 	"Möbel: Spielautomat": "slot_machine", "Möbel: Puppenhaus": "doll_house", "Möbel: Barhocker": "bar_stool",
 }

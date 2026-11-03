@@ -2763,6 +2763,24 @@ func _furniture() -> void:
 				yaw = 0.0 if rect.size.x >= rect.size.y else PI / 2.0
 				node = ChangingBench.make(maxf(rect.size.x, rect.size.y))
 				top = ChangingBench.HEIGHT
+			"steel_locker", "steel_locker_lock":
+				# Stahlspinde (ZIM-174): Rücken an die Wand, je 50 cm entlang der langen Seite ein Spind; Gegenstände des
+				# Plans darüber legt _items in den Spind (_steel_locker_at)
+				if String(f.get("facing", "")) == "":
+					front = _back_to_wall(rect, front)
+				yaw = atan2(front.x, front.y)
+				var deep := _depth_of(rect, front)
+				var long := rect.size.x + rect.size.y - deep
+				var locker := SteelLocker.new()
+				locker.count = maxi(1, roundi(long / SteelLocker.MODULE))
+				locker.locked = kind == "steel_locker_lock"
+				if absf(locker.length() - long) > 0.05 or absf(deep - SteelLocker.DEPTH) > 0.15:
+					push_warning("Gebäudeplan: Spind bei %s ist %.2f × %.2f m, gebaut wird er %.2f × %.2f m" %
+						[c, long, deep, locker.length(), SteelLocker.DEPTH])
+				var at := c + front * (SteelLocker.WALL_CLEAR + SteelLocker.DEPTH / 2.0 - deep / 2.0)
+				pos = Vector3(at.x, 0, at.y)
+				node = locker
+				top = SteelLocker.HEIGHT
 			"trash_can":
 				# fest 50 × 50 cm (TrashCan), mittig auf dem Platz im Plan, aber nicht in der Wand
 				c = _clear_of_walls(c, TrashCan.SIZE / 2.0 + TrashCan.WALL_GAP)
@@ -3445,7 +3463,21 @@ func _items() -> void:
 				extra = String(content.get("map", "eg"))
 			Item.Kind.KEY:
 				extra = String(content.get("key", ""))
+		var locker := _steel_locker_at(p)
+		if locker:   # im Spind darüber auf der Hutablage (ZIM-174)
+			var i := locker.index_at((locker.transform.affine_inverse() * Vector3(p.x, 0, p.y)).x)
+			locker.put_inside(i)
+			_item(kind, locker.transform * locker.shelf_spot(i), extra)
+			continue
 		_item(kind, Vector3(p.x, _top_at(p) + 0.02, p.y), extra)
+
+
+## Stahlspind dieses Stockwerks, über dem p liegt (null = keiner)
+func _steel_locker_at(p: Vector2) -> SteelLocker:
+	for f in _furnishings:
+		if f["node"] is SteelLocker and (f["node"] as Node).get_parent() == root and (f["rect"] as Rect2).grow(0.02).has_point(p):
+			return f["node"]
+	return null
 
 
 ## Den ersten Tisch je Zimmer merken (room_tables). Nur Möbel ab first (dieses Stockwerk).

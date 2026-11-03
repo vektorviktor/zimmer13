@@ -167,7 +167,9 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 79: Albtraum-Modus (Spielkonzept 8.9; ZIM-80): „nightmare_mode“ – ältere Stände laden weiter, als normales Spiel
 ## 80: Reparatur des Aufzugs (Spielkonzept 7.4; ZIM-14): neue Art Item.Kind.FUSE, elevators.repaired (behobene Mängel)
 ##     und elevators.first_ride – ältere Stände laden weiter, nichts ist behoben
-const VERSION := 80
+## 81: Stahlspinde (Gruppe steel_lockers, ZIM-174): je Reihe offen, aufgeschlossen (Zahlenschloss), durchsucht –
+##     ohne Eintrag sind alle zu und unberührt
+const VERSION := 81
 const MIN_VERSION := 55
 const SLOTS := 3
 const AUTOSAVE := 0
@@ -184,7 +186,8 @@ const PROGRESS_KEYS := ["zimmer_18", "dachboden", "aufzug", "sekretariat", "jose
 ## Gruppen fester Welt-Objekte, die nach Reihenfolge gespeichert werden; bei COUNT_ONLY zählt nur die Anzahl
 ## (Katzen beginnen nicht immer am selben Platz)
 const WORLD_GROUPS := ["doors", "chests", "pumpkin_plants", "resource_spots", "lamp_fixtures", "light_switches",
-	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "fixed_candles", "locker_banks", "arcades"]
+	"windows", "hide_spots", "phones", "dressers", "cats", "elevators", "fixed_candles", "locker_banks", "arcades",
+	"steel_lockers"]
 const COUNT_ONLY := ["cats"]
 ## Fingerabdruck des zuletzt gebauten Hotels – für die Slot-Übersicht, bevor ein Hotel steht
 var WORLD_FILE := DIR + "world.txt"
@@ -756,6 +759,7 @@ func collect() -> Dictionary:
 	data["phones"] = _collect_group("phones", func(n: Node) -> Dictionary: return n.save_state())
 	data["dressers"] = _collect_group("dressers", func(n: Node) -> Dictionary: return n.save_state())
 	data["locker_banks"] = _collect_group("locker_banks", func(n: Node) -> Dictionary: return n.save_state())
+	data["steel_lockers"] = _collect_group("steel_lockers", func(n: Node) -> Dictionary: return n.save_state())
 	data["arcades"] = _collect_group("arcades", func(n: Node) -> Dictionary: return n.save_state())
 	data["cats"] = _collect_group("cats", func(n: Node) -> Dictionary: return n.save_state())
 	data["elevators"] = _collect_group("elevators", func(n: Node) -> Dictionary: return n.save_state())
@@ -859,6 +863,8 @@ func apply(data: Dictionary) -> void:
 	_apply_group("dressers", data.get("dressers", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if data.has("locker_banks"):   # ältere Stände: alle Spinde zu
 		_apply_group("locker_banks", data["locker_banks"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
+	if data.has("steel_lockers"):   # ältere Stände: alle Stahlspinde zu
+		_apply_group("steel_lockers", data["steel_lockers"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	if data.has("arcades"):   # ältere Stände: nur die alten Einträge
 		_apply_group("arcades", data["arcades"], func(n: Node, d: Dictionary) -> void: n.load_state(d))
 	_apply_group("elevators", data.get("elevators", []), func(n: Node, d: Dictionary) -> void: n.load_state(d))

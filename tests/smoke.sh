@@ -117,8 +117,11 @@ judge() {
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
 		problems+=" kein Lichtbericht"
 	fi
-	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Fotomodus\)\] .*FEHLER" "$log"; then
-		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Fotomodus\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Fotomodus\)\] .*FEHLER' "$log" | head -1))"
+	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\)\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\)\] .*FEHLER' "$log" | head -1))"
+	fi
+	if [[ "$name" == *--stahlspinde=pruefen* ]] && ! grep -q "^\[Stahlspind\] Prüfung fertig" "$log"; then
+		problems+=" Stahlspind-Prüfung nicht fertig"
 	fi
 	if [[ "$name" == *--fotomodus=pruefen* ]] && ! grep -q "^\[Fotomodus\] Prüfung fertig" "$log"; then
 		problems+=" Fotomodus-Prüfung nicht fertig"
@@ -345,6 +348,8 @@ done <<'LIST'
 1700|halloween,tiere,kesselkatze|--kesselkatze=pruefen --trace
 400|spinde|--spinde=offen --trace
 400|spinde,speichern|--spinde=offen --savetest
+400|spinde,stahlspinde|--stahlspinde=pruefen --trace
+400|stahlspinde,speichern|--stahlspinde=offen --savetest
 400|duschen|--duschen=an --trace
 400|automaten|--automaten=seite --trace
 2000|automaten,spiele|--automaten=deadra --autoplay --trace

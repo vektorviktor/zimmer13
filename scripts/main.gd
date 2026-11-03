@@ -38,6 +38,8 @@ extends Node3D
 ##   --brief                     an den Schreibtisch in Zimmer 13, Blick auf den Willkommensbrief (2.5)
 ##   --spinde[=offen]            vor den ersten Spindblock der Pool-Umkleiden (ZIM-145) – offen: alle Spinde, die
 ##                               aufgehen, sind offen (auch die mit Schlüssel)
+##   --stahlspinde[=offen|pruefen] vor die Stahlspinde (ZIM-174; ohne Plan eine Probereihe im Lager), Codes ins
+##                               Protokoll – offen: alle offen · pruefen: Spind bei 180 cm, falscher/richtiger Code
 ##   --duschen[=an]              vor den ersten Duschplatz am Pool (Drücker, Ablage, Duschkopf; ZIM-144) – an: Wasser läuft
 ##   --automaten[=seite]         vor die beiden Videoautomaten der Bar (Deadra, Ghost Hotel; 6.10) – seite: schräg
 ##                               von der Seite (Seitenbilder); deadra|hotel: Münze einwerfen und spielen (mit
@@ -2282,6 +2284,9 @@ func run_debug(arg: String) -> bool:
 	elif _is_arg(arg, "--spinde"):
 		var open := _arg_value(arg, "--spinde") == "offen"
 		get_tree().create_timer(0.5).timeout.connect(func() -> void: LockerBank.debug_show(get_tree(), open))
+	elif _is_arg(arg, "--stahlspinde"):
+		var mode := _arg_value(arg, "--stahlspinde")
+		get_tree().create_timer(0.5).timeout.connect(func() -> void: SteelLocker.debug_show(get_tree(), mode))
 	elif _is_arg(arg, "--duschen"):
 		var water := _arg_value(arg, "--duschen") == "an"
 		get_tree().create_timer(0.5).timeout.connect(PoolShower.debug_show.bind(get_tree(), water))

@@ -179,7 +179,8 @@ Ebene `Möbel`, Rechteck in der Grundfläche. Vorderseite = Randzeile in der hel
 | #bf2263 | Videoautomat | | ohne Vorderseite – mit dem Rücken an die nächste Wand |
 | #aa4f41 | Spieleschrank | | ohne Vorderseite – mit dem Rücken an die nächste Wand |
 | #5a2b5a | Nachttisch | #833f83 | 5 × 5 px neben dem Bett |
-| #6c7d89 | Spind | | des Hausmeisters (Spielkonzept 2.11, 7.4); noch nicht gebaut (ZIM-4) |
+| #6c7d89 | Spind | | Stahlspind 50 × 50 cm (5 × 5 px), 1,80 m hoch; ein längeres Rechteck ist eine Reihe (30 × 5 px = 6 Spinde), Länge in 5-px-Schritten. Ohne Vorderseite mit dem Rücken an die nächste Wand (Strich „Vorderseite“ geht auch). Ein Gegenstand im Rechteck liegt auf der Hutablage des Spinds darüber (bei 180 cm von links: Spind 4). Lager, Hausmeisterraum (Spind des Hausmeisters, ZIM-4), Heizraum (Josefs Spind) (ZIM-174) |
+| #4f5d68 | Spind mit Schloss | | wie „Spind“, jede Tür mit Zahlenschloss (Code je Spind fest, Fundorte offen). Gemischte Reihen als aneinanderstoßende Stücke malen (ZIM-174) |
 | #2e7d5b | Gartentisch | | 8 × 8 px, Aluminium und Holzlatten, ohne Vorderseite; leicht gedreht – der Tisch nächst der Gartentür von 13 ist der Futtertisch der Krähen |
 | #4f7a3a | Gartenstuhl | #6aa34e | 5 × 6 px, Aluminium und Textilgewebe, einzeln gesetzt; leicht gedreht und versetzt |
 | #734c45 | Spindblock | #99655c | 36 × 9 px in den Pool-Umkleiden: Sockel mit Sitzfläche vorn, 12 Spinde (6 × 2) und rechts ein Regal 3 × 2; Rücken zur Wand. Nummern fortlaufend, Blöcke von West nach Ost, im Raum „links unten“ zuerst (ZIM-145) |

@@ -271,6 +271,7 @@ UVs des Meshs (Holz mit Faserrichtung, `Geo.grain_box`).
 | `Fabric_Pattern_08` | Laken und Kissen (`BedModel.FABRIC_METERS`, Modellkoordinaten) | |
 | `TerrazzoDark_01` | Säulen der Lobby (`_pillar`), Platte des Couchtischs (`_coffee_table`) | Säulen mit Poren: eigene Normal Map aus `tools/pore_map.gd` (etwa eine je 2 cm², fester Startwert), feiner gekachelt über psx_photo `normal_tiling`; `cavity` macht die Porenwände dunkler und rauer (`PILLAR_PORES_*`) |
 | `garden_coat*.png`, `garden_fabric*.png` (eigene Sets) | Gartenmöbel (`GardenFurniture`) | Aus `tools/garden_furniture.gd` (fester Startwert), nahtlos. Pulverlack anthrazit, seidenmatt (Rauheit 0,58), Orangenhaut und feines Korn als Normal Map, in Weltkoordinaten, Kachel 0,25 m. Textilgewebe grau in Leinwandbindung (64 Fäden je 10 cm), jeder Faden etwas heller oder dunkler, kleine dunkle Löcher dazwischen, über die UVs in Metern, Kachel 0,1 m |
+| `steel_paint*.png`, `galvanized*.png`, `steel_locker_louvre_ao/_d.png` (eigene Sets) | Stahlspinde (`SteelLocker`) | Aus `tools/steel_locker_tex.gd` (fester Startwert), je 1024², nahtlos. Lack: Blau mit Orangenhaut (3 mm), stumpfe Wolken nur leicht kreidiger, Rauheit 0,34–0,78, wenige Kratzer bis aufs Blech, Kachel 0,5 m in Modellkoordinaten (die Tür dreht sich; je Tür ein anderer Ausschnitt, das Mesh liegt verschoben). Zink: Zinkblumen als nahtlose Voronoi-Zellen (11 mm, je Zelle Helligkeit, Rauheit und Neigung direkt in die Normale), stumpfe Flecken, Walzspuren, Kachel 0,6 m in Weltkoordinaten, Metallic 0,3. Schlitze: 512 × 2048 über die Türfront (UV2), Verschattung als `ao_tex` und Normale im Objektraum als `detail_tex` (`psx_photo`, beide mit Mipmaps – `ao_tex` filtert seit ZIM-174 mit Mipmaps) |
 | `locker_melamine*.png` (eigenes Set) | Spindblöcke (`LockerBank`) | Aus `tools/locker_melamine.gd` (fester Startwert), nahtlos. Melamin neutral grau mit feiner Perlstruktur und leichten Wolken, Rauheit 0,55, in Weltkoordinaten, Kachel 0,2 m; `LockerBank` tönt es fast schwarz (Korpus, Schloss), anthrazit (Regal, Sockel) und weiß (innen) |
 | `trash_brass*.png`, `trash_coat*.png` (eigene Sets) | Mülleimer (`TrashCan`) | Aus `tools/trash_can.gd` (fester Startwert), nahtlos, über die UVs in Metern, Kachel 0,25 m: Messing gebürstet entlang u in den Farben der Plaketten – Riefen in mehreren Breiten, entlang lang gezogen, und einzelne tiefere; Farbe und Rauheit folgen den Riefen, keine Flecken; `METALLIC` wie die Plaketten (`BRASS_METALLIC`). Lack fast schwarz, seidenmatt (Rauheit 0,38), Orangenhaut als Normal Map – das Innere im Lack, dunkler |
 | `room_plate*.png` (eigenes Set) | Zimmerplaketten (`RoomPlate`, `Door.add_room_number`) | Ziffernsatz 1024²: Zellen für Schraube links/rechts, Füller, Ziffern 0–9 (Cinzel, Tinte aus den Dreiecken eines `TextMesh` gerastert) den Abdruck der abgefallenen Null (013 → „13“: blanker Schatten, Kleberand, zwei Stiftlöcher) und ein Band mit der Kordel (2,6 mm, gedreht wie am Lichtschalter), je Zelle 4 mm Rand gegen Mipmap-Übersprechen. Farbe, Normal Map und Rauheit aus einer Höhenkarte von `tools/room_plate.gd`: Platte gebürstet wie die Lichtschalter, Ziffern erhaben (Fuß 0,3 mm, Rundung 1,1 mm) und poliert, Schmutz am Fuß. Die Vorderseite der Platte (140 × 74 mm, 3 mm, 45°-Fase) ist ein Streifen aus Zellen-Vierecken – Schraube, Füller, Ziffern, Füller, Schraube –, die Füller werden gestreckt; drumherum ein Rahmen aus vier Trapezen auf Gehrung, unverzerrt aus dem Kordelband geschnitten; Bürstung und Anlauf hängen nur von der Höhe in der Zelle ab, damit die Stöße unsichtbar bleiben. `METALLIC` `Door.PLATE_METALLIC`. Lage der Zellen rechnen Werkzeug und Spiel gleich aus (`RoomPlate.layout()`) – nach Änderungen an Maßen oder Schrift das Werkzeug neu laufen lassen |
@@ -717,6 +718,17 @@ vom Fingerabdruck abgelehnt, zu tun ist nichts.
     aufgehen, steht in `LockerBank.OPENABLE` (frei oder mit `KEY` „spind_NN“, Bund-Beschriftung „Spindschlüssel N“);
     die übrigen rütteln nur. Beim ersten Öffnen ein Fund wie in der Kommode (Schlüsselspinde nie leer), Spinne wie bei
     der Schublade. Gruppe `locker_banks` (offen, aufgeschlossen, durchsucht). Hinweis „Spind N · …“, Lärm `locker`.
+    **Stahlspind** = `SteelLocker` (`world/steel_locker.gd`, ZIM-174, Fotos 3.11., SK 7.18): Planfarben „Spind“ (`steel_locker`)
+    und „Spind mit Schloss“ (`steel_locker_lock`). `count` = lange Seite / `MODULE` (50 cm), Tiefe 50 cm, Höhe 1,80 m, ohne
+    Füße; ohne Vorderseite Rücken an die nächste Wand (`_back_to_wall`), `WALL_CLEAR` davor. Ein Mesh je Reihe aus
+    Zinkblech (Seiten- und Zwischenwände, Rückwand, Decke, Boden über der Sockelblende, Hutablage `SHELF_Y` mit Kante,
+    Rahmen vorn – an Zwischenwänden doppelt breit), jedes Blech mit gleichem Kollisionskasten. Türen eigene Körper mit
+    Scharnier links (100°): gerundeter Kasten im Lack, davor die Front mit UV2 für die Schlitze, Rosette und Öse rechts
+    (`HASP_AT`), mit Schloss dazu ein Zahlenschloss (Bügel aus Stücken, Gehäuse, Scheibe, Knopf). Mit Schloss öffnet [E]
+    `CodeLockUI` (eines je Reihe); Code je Spind fest aus der Lage (`code_of`), richtig → Schloss weg (`unlock`), Tür auf.
+    `LevelBuilder._items` legt einen Gegenstand des Plans im Rechteck auf die Hutablage des Spinds darüber
+    (`_steel_locker_at`, `index_at`, `shelf_spot`; nur Möbel dieses Stockwerks) und nimmt ihm den Zufallsfund
+    (`put_inside`). Gruppe `steel_lockers` (offen, aufgeschlossen, durchsucht), Lärm `locker`/`rattle`/`unlock`.
     **Umkleidebank** = `ChangingBench` (`world/changing_bench.gd`): so lang wie im Plan (3 m), 60 cm breit, 50 cm
     hoch, Fußrahmen an den Enden und an jedem Meter (3 m → vier), Längsrohre, fünf Latten – Rohr und Holz aus `GardenFurniture.Parts`, ein
     `Seat` mit Plätzen auf beiden Seiten, ein Mesh je Länge.
@@ -1835,7 +1847,7 @@ Zustände `IDLE, WALK, SLEEP, FLEE, WAIT_DOOR, PET, FOLLOW, GIFT, FETCH, CARRIED
   Gast-IDs bezieht. Dann Welt → Director-Werte → Gäste → Gegenstände → Spieler (`look` zuerst über `Player.set_look`,
   dann Hand, Tasche `bag` über `Player.set_bag`) → Soziales → Monster zuletzt.
 - Speicherbare Welt-Objekte bieten `save_state() -> Dictionary` / `load_state(d)` (HideSpot, Lamp, HotelPhone,
-  LightSwitch, HotelWindow, Dresser, LockerBank, Elevator, FixedCandle …) oder werden in `collect()` direkt ausgelesen
+  LightSwitch, HotelWindow, Dresser, LockerBank, SteelLocker, Elevator, FixedCandle …) oder werden in `collect()` direkt ausgelesen
   (Door, Chest, Plant, Resource). Neues Objekt mit Zustand: Gruppe + Eintrag in `collect()` und `apply()` + `WORLD_GROUPS`.
 - Beim Laden `d.get(key, standard)` verwenden, damit fehlende Schlüssel nicht abstürzen.
 - **Nicht gespeichert**, beim Laden zurückgesetzt (`apply` ganz am Anfang): `Decorating`, `DecoSearch`, `Stove`,
