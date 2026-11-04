@@ -13,6 +13,12 @@ extends Node
 ##   · Der Spieler kennt den Namen, wenn er dabei war, ihn in seiner Nähe hört oder den Druck ansieht: Notizbuch und
 ##     Tagebuch übernehmen ihn, seine Erzähl-Knöpfe auch (Talk.tell_label).
 ##   · Der Druck hängt danach neben der Fotowand (5.14), [E] sieht ihn an.
+##   · Das Foto (ZIM-101): Paula Jansen (H30) fotografiert ihn beim ersten Angriff, den sie mitbekommt – das Monster
+##     packt oder erschreckt einen Gast (MonsterDirector.kill_guest) und sie sieht es (PHOTO_SIGHT, freie Sicht) oder
+##     hört den Schrei (Senses wie Social.on_alarm), bzw. sie war es selbst und lebt. Das zählt auch als ihre Sichtung.
+##     Im nächsten ruhigen Moment nach PIN_AFTER heftet sie das Sofortbild an die Fotowand (PhotoWall.pin_snapshot),
+##     [E] sieht es an; von da an sind die Skeptiker still (SILENCED, Talk._believes, kein Einwand in Hugos Szene).
+##     Stirbt Paula vorher, gibt es kein Foto. Das Bild ist ein Platzhalter (PhotoWall.draw_leviathan_photo, ZIM-135).
 ## Erreichbar über Game.leviathan_name; gespeichert unter „leviathan“.
 ## Offen (Vorschläge in 4.32): Liesels Abendgebet, Marion, die hinausgeht – beides gibt es im Spiel noch nicht.
 
@@ -52,6 +58,27 @@ const PRINT_SIZE := Vector2(0.36, 0.455)
 const PRINT_TABLE_SIZE := Vector2(0.24, 0.3)
 const PRINT_TITLE := "Gustave Doré: Die Zerstörung des Leviathan"
 const PRINT_TEXT := "Ein Holzstich aus einer alten Bibel, 1865. Ein Ungeheuer windet sich in der Brandung – Zacken am Rücken, ein langer Schädel, das Maul offen. Hugo hat es hier aufgehängt; unten am Rand steht in seiner Schrift: »Der Leviathan. Hiob 40.«"
+
+## Das Foto (ZIM-101): Paulas Haushalt, so weit sieht sie einen Angriff, so lange danach heftet sie es an
+const PAULA := "H30"
+const PHOTO_SIGHT := 15.0
+const PIN_AFTER := 0.5 * Calendar.HOUR
+const PAULA_SNAP := "Halt still … Ich hab's! Ich hab es auf dem Bild!"
+const PHOTO_TITLE := "Paulas Sofortbild"
+const PHOTO_PROMPT := "Sofortbild ansehen [E] – mit einer Reißzwecke angeheftet"
+const PHOTO_TEXT := "Ein Sofortbild, schief an die Wand geheftet. Ein dunkler Flur im Blitzlicht, vorn alles überstrahlt. Mitten im Bild eine lange, dünne Gestalt, verwischt, als wäre sie gerade losgesprungen – Zacken am Rücken, ein langer Schädel, ein Lichtpunkt, wo ein Auge sein müsste. Unten auf dem weißen Rand, in Paulas Schrift: »%s – P. J., %s«"
+const PHOTO_CAPTION := "Es ist echt."
+const PHOTO_CAPTION_NAMED := "Der Leviathan. Er ist echt."
+const NOTE_PHOTO := "Paula Jansen hat es fotografiert. Das Sofortbild hängt an der Fotowand – unscharf, aber da ist etwas. Die Skeptiker sagen seitdem nichts mehr."
+const NOTE_PHOTO_NAMED := "Paula Jansen hat den Leviathan fotografiert. Das Sofortbild hängt an der Fotowand – unscharf, aber er ist es. Die Skeptiker sagen seitdem nichts mehr."
+const DIARY_PHOTO := "Paula hat ein Foto davon gemacht. Unscharf, aber jetzt kann es keiner mehr wegreden."
+## Zweifel-Sätze der Skeptiker (GuestGenerator) → was sie sagen, seit das Foto hängt
+const SILENCED := {
+	"Es gibt für alles eine Erklärung. Ich hab sie nur noch nicht gefunden.":
+		"Ich hab Paulas Foto gesehen. Ich … sag dazu lieber nichts mehr.",
+	"Ich führe Buch: Wann das Licht flackert, wo es rauscht. Da steckt ein Muster drin.":
+		"Ich hab aufgehört, Buch zu führen. Seit dem Foto.",
+}
 
 ## Szene: [Sprecher, Satz] – Sprecher hugo, liesel, witness, skeptic; fehlt er, entfällt der Satz
 const SCENE_HUGO := [
@@ -165,6 +192,9 @@ var _sheet: PrintSheet      ## Druck auf dem Tisch bzw. an der Wand
 var _tell := TELL_SCAN
 var _check := 1.0
 var _debug_now := false     ## Debug: Hugo wartet nicht auf den Abend
+var photo_at := -1.0        ## wann Paula den Angriff fotografiert hat (MonsterDirector.elapsed), -1 = noch nicht
+var photo_pinned := false   ## das Foto hängt an der Fotowand – die Skeptiker sind still
+var _photo_check := 1.0
 
 
 func setup(builder: LevelBuilder) -> LeviathanName:
@@ -227,6 +257,11 @@ func _gather_time() -> float:
 func _process(delta: float) -> void:
 	if Game.game_over or Game.director == null or Game.social == null:
 		return
+	if photo_at >= 0.0 and not photo_pinned:
+		_photo_check -= delta
+		if _photo_check <= 0.0:
+			_photo_check = 1.0
+			_photo_step()
 	match stage:
 		Stage.NONE:
 			_check -= delta
@@ -383,8 +418,8 @@ func _scene_step(delta: float) -> void:
 	var speaker: Guest = _cast["lead"] if who in ["hugo", "liesel"] else _cast.get(who)
 	if who == "witness" and speaker == _cast["lead"]:
 		text = HUGO_WITNESS
-	if speaker == null or not is_instance_valid(speaker) or speaker.dead:
-		_line_t = 0.5
+	if speaker == null or not is_instance_valid(speaker) or speaker.dead or (who == "skeptic" and photo_pinned):
+		_line_t = 0.5   # fehlt – oder Paulas Foto hängt schon und der Skeptiker schweigt (ZIM-101)
 		return
 	speaker.say(text)
 	if _player_here():
@@ -477,6 +512,8 @@ func _free(g: Guest) -> bool:
 
 ## Guest.line: Wer den Namen kennt, sagt „der Leviathan“ statt „es“ – manchmal einen eigenen Satz.
 func speak(g: Guest, key: String, text: String) -> String:
+	if photo_pinned and SILENCED.has(text):
+		text = SILENCED[text]   # Paulas Foto hängt (ZIM-101)
 	if g.is_child() or not knows(g):
 		return text
 	if key == "monster" and randf() < OWN_LINE_CHANCE:
@@ -518,6 +555,94 @@ func look_at_print() -> void:
 		Game.menus.open_photo(PRINT_TITLE, PrintSheet.texture(), PRINT_TEXT)
 
 
+# --- Das Foto (ZIM-101) ---------------------------------------------------------------------
+
+func _paula() -> Guest:
+	for node in Game.social.living_guests():
+		var g: Guest = node
+		if not g.is_child() and String(g.profile.get("household", "")) == PAULA:
+			return g
+	return null
+
+
+## Das Monster hat einen Gast gepackt oder erschreckt (MonsterDirector.kill_guest, aufgeschoben bis nach dem Ausgang,
+## at: wo der Gast war). Bekommt Paula es mit, fotografiert sie es – nur beim ersten Mal.
+func on_attack(victim: Guest, at: Vector3) -> void:
+	if photo_at >= 0.0 or Game.director == null or Game.director.skipping or Game.social == null:
+		return
+	var paula := _paula()
+	if paula != null and notices_attack(paula, victim, at, Game.monster.global_position):
+		_take_photo(paula)
+
+
+## Bekommt Paula den Angriff mit? Selbst gepackt und am Leben, gesehen (frei, PHOTO_SIGHT) oder den Schrei gehört
+## (wie Social.on_alarm: halbe Reichweite, gedämpft durch Wände und Türen). Versteckt bekommt sie nichts zu fassen.
+func notices_attack(paula: Guest, victim: Guest, at: Vector3, monster_at: Vector3) -> bool:
+	if paula.dead:
+		return false
+	if paula == victim:
+		return true
+	if paula.hiding:
+		return false
+	var world := paula.get_world_3d()
+	var eye := paula.global_position + Vector3.UP * paula.eye_height()
+	var head := monster_at + Vector3.UP * 1.7
+	if eye.distance_to(head) <= PHOTO_SIGHT and Senses.clear_line(world, eye, head, paula):
+		return true
+	var reach := float(Senses.NOISE["scream"]["range"]) * Senses.GUEST_HEARING
+	var d := eye.distance_to(at)
+	return d <= reach and d <= Senses.audible_range(world, at, eye, reach, d)
+
+
+func _take_photo(paula: Guest) -> void:
+	photo_at = Game.director.elapsed
+	_photo_check = 1.0
+	paula.say(PAULA_SNAP)
+	on_sighting(paula)   # sie hat es gesehen – lebt sie danach noch, ist es eine bestätigte Sichtung (4.32)
+	if Game.tracing:
+		print("[Leviathan] %s fotografiert den Angriff (%s)" % [paula.display_name, Calendar.date_text(photo_at)])
+
+
+## Im nächsten ruhigen Moment nach PIN_AFTER heftet Paula das Foto an die Fotowand. Ist sie vorher gestorben, ist es fort.
+func _photo_step() -> void:
+	if _paula() == null:
+		photo_at = -1.0   # Paula ist tot – kein Foto, und es macht keiner mehr eins
+		if Game.tracing:
+			print("[Leviathan] Paula ist tot – ihr Foto ist fort")
+		return
+	if Game.director.elapsed - photo_at >= PIN_AFTER and _quiet():
+		photo_pinned = true
+		_show_photo()
+		if Game.tracing:
+			print("[Leviathan] Paulas Foto hängt an der Fotowand – die Skeptiker sind still")
+
+
+func _show_photo() -> void:
+	if Game.photo_wall:
+		Game.photo_wall.pin_snapshot(photo_texture(), PHOTO_PROMPT, look_at_photo)
+
+
+static var _photo_tex: ImageTexture
+
+static func photo_texture() -> Texture2D:
+	if _photo_tex == null:
+		var img := PhotoWall.draw_leviathan_photo()
+		img.generate_mipmaps()
+		_photo_tex = ImageTexture.create_from_image(img)
+	return _photo_tex
+
+
+func look_at_photo() -> void:
+	var named := player_knows or stage == Stage.NAMED
+	var text := PHOTO_TEXT % [PHOTO_CAPTION_NAMED if stage == Stage.NAMED else PHOTO_CAPTION, Calendar.date_text(photo_at)]
+	if Game.menus:
+		Game.menus.open_photo(PHOTO_TITLE, photo_texture(), text)
+	if Game.notebook:
+		Game.notebook.add_note("leviathan_photo", NOTE_PHOTO_NAMED if named else NOTE_PHOTO, "Fotowand")
+	if Game.diary:
+		Game.diary.note("leviathan_photo", DIARY_PHOTO)
+
+
 # --- Speichern & Debug ----------------------------------------------------------------------
 
 func save_state() -> Dictionary:
@@ -525,7 +650,7 @@ func save_state() -> Dictionary:
 	if s in [Stage.GATHERING, Stage.SCENE]:
 		s = Stage.SEEN   # die Versammlung beginnt nach dem Laden neu
 	return {"stage": int(s), "witness": witness, "seen_at": seen_at, "namer": namer, "named_at": named_at,
-		"knowers": knowers.keys(), "player_knows": player_knows}
+		"knowers": knowers.keys(), "player_knows": player_knows, "photo_at": photo_at, "photo_pinned": photo_pinned}
 
 
 func load_state(d: Dictionary) -> void:
@@ -543,6 +668,14 @@ func load_state(d: Dictionary) -> void:
 	for id in d.get("knowers", []):
 		knowers[String(id)] = true
 	player_knows = bool(d.get("player_knows", false))
+	photo_at = float(d.get("photo_at", -1.0))
+	photo_pinned = bool(d.get("photo_pinned", false))
+	if photo_pinned:
+		_show_photo()
+	elif Game.photo_wall:
+		for n in Game.photo_wall.get_children():
+			if n is PhotoWall.Snapshot:
+				n.queue_free()
 	if stage == Stage.NAMED and namer == HUGO:
 		_sheet = _place_on_table()
 		_sheet.hang(print_at)
@@ -640,3 +773,98 @@ class PrintSheet extends StaticBody3D:
 
 	func interact(_player: Player) -> void:
 		owner_system.look_at_print()
+
+
+## --leviathanfoto[=haengt|pruefen] (ZIM-101): Paula hat eben einen Angriff fotografiert, im nächsten ruhigen Moment
+## nach PIN_AFTER hängt es – du vor der Fotowand · haengt: es hängt schon und ist gleich aufgeschlagen · pruefen:
+## _check_photo.
+func debug_photo(value: String) -> void:
+	if Game.photo_wall:
+		Game.photo_wall.debug_show("")
+	if value == "pruefen":
+		_check_photo()
+		return
+	var paula := _paula()
+	if paula == null:
+		push_warning("--leviathanfoto: Paula Jansen (H30) ist nicht im Hotel")
+		return
+	_take_photo(paula)
+	if value == "haengt":
+		photo_pinned = true
+		_show_photo()
+		get_tree().create_timer(0.5).timeout.connect(look_at_photo)
+
+
+## Prüfung des Fotos (ZIM-101): wann Paula einen Angriff mitbekommt, das Foto an der Fotowand ohne einen Rahmen zu
+## verdecken, die Skeptiker vorher und nachher, Speichern, und dass es ohne Paula keins gibt. Meldet
+## „[Leviathanfoto] … ok“ bzw. „FEHLER“, zuletzt „[Leviathanfoto] Prüfung fertig“.
+func _check_photo() -> void:
+	var check := func(text: String, ok: bool) -> void:
+		print("[Leviathanfoto] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	var paula := _paula()
+	check.call("Paula Jansen da, Skeptikerin", paula != null and Talk.temper(paula) == "Skeptiker")
+	if paula == null:
+		print("[Leviathanfoto] Prüfung fertig")
+		return
+	var other: Guest = null
+	for node in Game.social.living_guests():
+		if node != paula and not (node as Guest).is_child():
+			other = node
+			break
+	var here := paula.global_position
+	var far := here + Vector3(300.0, 0.0, 300.0)
+	check.call("Angriff weit weg: merkt sie nicht", not notices_attack(paula, other, far, far))
+	var near := here + Vector3(0.3, 0.0, 0.0)
+	check.call("Angriff neben ihr: merkt sie", notices_attack(paula, other, near, near))
+	var doubt: String = SILENCED.keys()[0]
+	check.call("vorher zweifeln Skeptiker", speak(paula, "smalltalk", doubt) == doubt
+		and not Game.social.talk._believes(paula, "monster", "", false))
+	on_attack(paula, here)   # selbst angegriffen und am Leben
+	var taken := photo_at
+	check.call("Foto gemacht, zählt als Sichtung", taken >= 0.0 and (_pending.has(paula.id) or stage != Stage.NONE))
+	on_attack(paula, here)
+	check.call("nur beim ersten Angriff", photo_at == taken)
+	photo_at = Game.director.elapsed - PIN_AFTER - 1.0
+	_photo_step()
+	var snaps := Game.photo_wall.get_children().filter(func(n: Node) -> bool:
+		return n is PhotoWall.Snapshot and not n.is_queued_for_deletion())
+	check.call("hängt im ruhigen Moment an der Fotowand", photo_pinned and snaps.size() == 1)
+	if snaps.size() == 1:
+		var snap: Node3D = snaps[0]
+		var free := true
+		var outer := PhotoWall.PHOTO + Vector2.ONE * PhotoWall.FRAME * 2.0
+		for n in Game.photo_wall.get_children():
+			if n is PhotoWall.PhotoFrame or n is PhotoWall.BarePatch:
+				var p: Vector3 = (n as Node3D).global_transform.affine_inverse() * snap.global_position
+				if absf(p.x) < (outer.x + PhotoWall.Snapshot.SIZE.x) / 2.0 and absf(p.y) < (outer.y + PhotoWall.Snapshot.SIZE.y) / 2.0:
+					free = false
+					print("[Leviathanfoto] überdeckt %s" % n.name)
+		check.call("verdeckt keinen Rahmen und keinen Fleck", free)
+		var on_wall: float = (snap.global_position - Game.photo_wall.pin_spot().origin).length()
+		check.call("an pin_spot (%.2f m)" % on_wall, on_wall < 0.01)
+	check.call("danach sind Skeptiker still", speak(paula, "smalltalk", doubt) == SILENCED[doubt]
+		and Game.social.talk._believes(paula, "monster", "", false))
+	var saved := save_state()
+	load_state(saved)
+	snaps = Game.photo_wall.get_children().filter(func(n: Node) -> bool:
+		return n is PhotoWall.Snapshot and not n.is_queued_for_deletion())
+	check.call("Speichern: hängt nach dem Laden", bool(saved.get("photo_pinned", false)) and photo_pinned and snaps.size() == 1)
+	if Game.notebook and not Game.notebook.owned:
+		Game.notebook.give(true)   # ohne Notizbuch wird nichts notiert
+	look_at_photo()
+	check.call("Notiz beim Ansehen", Game.notebook == null or Game.notebook.has_note("leviathan_photo"))
+	var img := PhotoWall.draw_leviathan_photo()
+	var dark := 0
+	for y in range(30, 90):
+		if img.get_pixel(104, y).get_luminance() < 0.12:
+			dark += 1
+	check.call("Bild: dunkle Gestalt in der Mitte (%d/60)" % dark, dark > 30)
+	# Ohne Paula kein Foto
+	load_state({})
+	paula.die("unseen")
+	on_attack(other, other.global_position)
+	check.call("Paula tot: kein Foto", photo_at < 0.0)
+	photo_at = Game.director.elapsed
+	_photo_step()
+	check.call("Paula tot vor dem Anheften: Foto fort", photo_at < 0.0 and not photo_pinned)
+	print("[Leviathanfoto] Prüfung fertig")

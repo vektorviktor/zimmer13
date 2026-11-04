@@ -79,6 +79,7 @@ Stand: 2026-11-04.
 | Aushang „Eigentum entwendet“ | `NoticeBoard` | geplant | Hauptgeschichte (Sicherung) | Aushangbrett, 6.10. morgens | 7.4, K3 |
 | Zeitungsausschnitt „Brand im Grandhotel“ | – | geplant | Hauptgeschichte (Indiz) | offen | 2.3 |
 | Dorés „Die Zerstörung des Leviathan“ | – (fester Druck, `LeviathanName.PrintSheet`) | **gebaut** – echter Holzstich (gemeinfrei), [E] ansehen | – (gibt dem Monster seinen Namen) | Hugo Steins Koffer → Couchtisch der Lobby → Westwand der Lobby neben dem Aushangbrett | 4.32 |
+| Paulas Sofortbild vom Leviathan | – (festes Foto, `PhotoWall.Snapshot`) | gebaut 4.11. (ZIM-101) – Bild ist Platzhalter bis ZIM-135, [E] ansehen | – (die Skeptiker werden still) | Paula Jansen fotografiert den ersten Angriff, den sie mitbekommt → mit Reißzwecke an der Fotowand zwischen den beiden rechten Spalten; stirbt sie vorher, gibt es keins | 4.32, 5.14 |
 
 ## 4. Deko
 

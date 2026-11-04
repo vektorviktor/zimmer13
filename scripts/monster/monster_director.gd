@@ -1858,6 +1858,8 @@ func on_guest_taken() -> void:
 func kill_guest(guest, spot: HideSpot) -> void:
 	if guest == null or not is_instance_valid(guest) or guest.dead or guest.is_child():
 		return
+	if Game.leviathan_name:   # Paula fotografiert den ersten Angriff, den sie mitbekommt – nach dem Ausgang (ZIM-101)
+		Game.leviathan_name.on_attack.call_deferred(guest, guest.global_position)
 	var raided := in_raid_room(spot.global_position if spot != null else guest.global_position)
 	var takes: bool = guest == condemned if mode == Mode.JUDGMENT else (raided or mode in [Mode.SNACK, Mode.PATROL, Mode.NONE])
 	if not takes or is_harmless() or victims_left <= 0:

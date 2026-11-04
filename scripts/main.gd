@@ -496,6 +496,9 @@ extends Node3D
 ##                               Gustavs Kreuz; „[Fotowand] … ok/FEHLER“, zuletzt „[Fotowand] Prüfung fertig“
 ##   --leviathan[=benannt|liesel] erste bestätigte Sichtung: Hugo holt Dorés Druck, du am Couchtisch der Lobby (4.32) ·
 ##                               benannt: schon geschehen, du vor dem Druck an der Wand · liesel: Hugo ist tot
+##   --leviathanfoto[=haengt|pruefen] Paula hat eben einen Angriff fotografiert, gleich hängt das Foto (ZIM-101), du vor
+##                               der Fotowand · haengt: es hängt schon, aufgeschlagen · pruefen: wann Paula es mitbekommt,
+##                               Platz an der Wand, Skeptiker, Speichern, ohne Paula kein Foto; „[Leviathanfoto] … ok/FEHLER“
 ##   --beerdigen[=gast]          ein erwürgter Gast liegt vor der Gedenkstätte auf dem Friedhof – [E] beerdigt ihn
 ##   --trauerfeier               zwei Gäste liegen seit gestern, 20 s vor der Totenglocke (9:30), du an der Gedenkstätte
 ##   --puppenhaus[=urteil]       vor das Puppenhaus in der Bibliothek · urteil: die Puppe urteilt gleich (die kleine weiß es zuerst)
@@ -2682,6 +2685,8 @@ func _debug_omens(arg: String) -> bool:
 			Game.photo_wall.debug_show(value)
 		"--leviathan":
 			get_tree().create_timer(1.0).timeout.connect(Game.leviathan_name.debug.bind(value))
+		"--leviathanfoto":
+			get_tree().create_timer(1.0).timeout.connect(Game.leviathan_name.debug_photo.bind(value))
 		"--beerdigen":
 			Game.cemetery.debug_show("beerdigen," + value)
 		"--trauerfeier":

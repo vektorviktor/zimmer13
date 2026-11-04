@@ -117,8 +117,8 @@ judge() {
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
 		problems+=" kein Lichtbericht"
 	fi
-	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\)\] .*FEHLER" "$log"; then
-		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\)\] .*FEHLER' "$log" | head -1))"
+	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\)\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\)\] .*FEHLER' "$log" | head -1))"
 	fi
 	if [[ "$name" == *--stahlspinde=pruefen* ]] && ! grep -q "^\[Stahlspind\] Prüfung fertig" "$log"; then
 		problems+=" Stahlspind-Prüfung nicht fertig"
@@ -137,6 +137,9 @@ judge() {
 	fi
 	if [[ "$name" == *--versiegelt=pruefen* ]] && ! grep -q "^\[Versiegelt\] Prüfung fertig" "$log"; then
 		problems+=" Versiegelt-Prüfung nicht fertig"
+	fi
+	if [[ "$name" == *--leviathanfoto=pruefen* ]] && ! grep -q "^\[Leviathanfoto\] Prüfung fertig" "$log"; then
+		problems+=" Leviathanfoto-Prüfung nicht fertig"
 	fi
 	if [[ "$name" == *--albtraummodus=pruefen* ]] && ! grep -q "^\[Albtraum\] Prüfung fertig" "$log"; then
 		problems+=" Albtraum-Prüfung nicht fertig"
@@ -383,6 +386,9 @@ done <<'LIST'
 2400|monster,gaeste,leviathan|--leviathan --trace
 3600|monster,gaeste,leviathan|--leviathan=liesel --trace
 600|monster,leviathan,speichern|--leviathan=benannt --savetest
+600|leviathan,leviathanfoto,fotowand,skeptiker|--leviathanfoto=pruefen --trace
+1000|leviathan,leviathanfoto,fotowand|--leviathanfoto --trace
+600|leviathan,leviathanfoto,speichern|--leviathanfoto=haengt --savetest
 900|halloween,erinnerung,friedhof|--beerdigen=jetzt --trace
 600|halloween,erinnerung,friedhof,speichern|--beerdigen=jetzt --savetest
 1500|halloween,erinnerung,friedhof|--trauerfeier --trace

@@ -2828,7 +2828,8 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   ID `photo_heir`. Prüfung `--fotos=pruefen` („[Fotowand] … ok/FEHLER“, Stichwort `ernte`). Ort (ZIM-133): `setup(builder)` holt
   die Punkte „Fotowand“ aus `LevelBuilder.planned` (je Punkt eine Position, Wandfläche und Blick aus `_plan_wall`),
   sortiert sie von links nach rechts (Blick zur Wand) und hängt `YEARS` spaltenweise, oben das ältere Jahr; Oberkanten
-  `TOPS`, Rahmen `GAP` vor der Wand. Ohne Planeintrag 7 Positionen an `WALL`, bei anderer Zahl eine Warnung. `MISSING`
+  `TOPS`, Rahmen `GAP` vor der Wand. Ohne Planeintrag 7 Positionen an `WALL`, bei anderer Zahl eine Warnung. Paulas
+  Sofortbild (ZIM-101, `LeviathanName`): `pin_spot`, `pin_snapshot`, `Snapshot`, `draw_leviathan_photo`. `MISSING`
   (2005) wird `BarePatch`: `Decal` (weißer Fleck mit weichem Rand 512×384, Mipmaps, `BRIGHTER` – geringe Deckkraft, die
   Mischung ist linear), schräger Nagel, nur Hinweis ohne [E]. `PhotoFrame` (ZIM-134): Leiste
   aus `PROFILE` (u quer, z aus der Wand) ringsum auf Gehrung gezogen, ein Mesh für alle Rahmen, UVs in Metern längs
@@ -2875,9 +2876,20 @@ Je ein Knoten unter `main` (eingehängt in `main._ready()`, Referenz in `Game`),
   (`Talk.tell_label`, `DialogUI._show_lie`); Zettel `Social.SIGHT_NOTES_NAMED`.
 - **Spieler:** `learn()` – in der Lobby bei der Szene, ein Satz mit dem Namen in `HEAR_RANGE` (`_heard`) oder den Druck
   ansehen (`Menus.open_photo`): Notiz `leviathan`, Tagebuch-Meilenstein `leviathan`.
+- **Paulas Foto (ZIM-101):** `MonsterDirector.kill_guest` (packen wie erschrecken) ruft `on_attack(gast, ort)` per
+  `call_deferred` – also nach dem Ausgang. Paula ist Haushalt `PAULA` (`H30`); `notices_attack`: selbst angegriffen und
+  am Leben, sonst nicht versteckt und Sichtlinie zum Kopf des Monsters bis `PHOTO_SIGHT` oder den Schrei gehört
+  (`Senses.audible_range`, Reichweite wie `Social.on_alarm`). Nur einmal (`photo_at`), nicht im Zeitsprung; zählt als
+  `on_sighting(paula)`. `_photo_step` (jede Sekunde): Paula tot → `photo_at = -1`, kein Foto; sonst nach `PIN_AFTER` im
+  nächsten `_quiet()` `photo_pinned` und `PhotoWall.pin_snapshot` (Sofortbild `PhotoWall.Snapshot`, Bild
+  `draw_leviathan_photo`, Platz `pin_spot`: zwischen den beiden rechten Spalten auf halber Höhe, ist die Lücke zu
+  schmal, rechts daneben). [E] → `look_at_photo`: Notiz und Tagebuch `leviathan_photo`. Skeptiker still: `speak`
+  ersetzt Sätze aus `SILENCED` (auch `leviathan_checks`), `Talk._believes` – Skeptiker glauben Monster-Geschichten,
+  in Hugos Szene entfällt der Einwand des Skeptikers.
 - **Gespeichert** (Speicherstand 54) unter `leviathan`: Stufe (Versammlung/Szene als `SEEN` – beginnt neu), Zeuge,
-  Zeiten, Benenner, `knowers`, `player_knows`. Unbestätigte Sichtungen nicht. Debug `--leviathan[=benannt|liesel]`,
-  Rauchtest-Stichwort `leviathan`.
+  Zeiten, Benenner, `knowers`, `player_knows`; seit 84 `photo_at`, `photo_pinned`. Unbestätigte Sichtungen nicht. Debug
+  `--leviathan[=benannt|liesel]`, Rauchtest-Stichwort `leviathan`; `--leviathanfoto[=haengt|pruefen]` („[Leviathanfoto]
+  … ok/FEHLER“), Stichwort `leviathanfoto`.
 
 ### Friedhof (Spielkonzept 5.15)
 - **Plan:** `Möbel: Grab` (2 × 1 m, hellere Zeile `… Vorderseite` = Fußende, gegenüber das Kopfende mit dem Kreuz),
@@ -3299,7 +3311,7 @@ selbst; in `TeleportUI.GROUPS` einsortieren (sonst „Sonstiges“). Für den Ra
     `Door.near`. `bag_checks`: Tasche ohne Hotel. `notebook_checks`: Notizbuch und Tagebuch ohne Hotel.
     `throw_checks`: Abwurftempo und langer Spritzer im Zusatzfeld (Spielkonzept 3.13). `darts_checks`: Felder der
     Dartscheibe, Zielpunkte, Zielwahl der Gäste, 301-Regeln und eine Simulation der Aufnahmen je Treffsicherheit.
-    `leviathan_checks`: jeder Satz in `LeviathanName.RENAMED` steht wörtlich bei den Gäste-Sätzen (4.32).
+    `leviathan_checks`: jeder Satz in `LeviathanName.RENAMED` und `SILENCED` steht wörtlich bei den Gäste-Sätzen (4.32).
   - Schach ohne Autoloads mit `-s`: `-s res://tests/chess_perft.gd` (Zuggenerierung) bzw. `…/chess_ai_speed.gd`.
   - Sonst Prüfung über Debug-Parameter, Konsole und Screenshots.
 

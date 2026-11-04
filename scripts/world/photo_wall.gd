@@ -818,3 +818,143 @@ func _check_harvest() -> void:
 		check.call("Gustav verwischt", gustav != null and Game.register.is_crossed(gustav) and _blurred_now >= 1)
 		look_at_photo(CURRENT)
 		print("[Fotowand] Prüfung fertig"))
+
+
+# --- Paulas Foto vom Leviathan (Spielkonzept 4.32, ZIM-101) ----------------------------------------
+
+## Platz für ein angeheftetes Foto: in der Lücke zwischen den beiden rechten Spalten, auf halber Höhe zwischen den
+## Reihen – so bleibt jede Ernte an ihrem Platz. Ist die Lücke zu schmal, rechts neben der letzten Spalte. Ursprung
+## Mitte des Fotos vor der Wand, +Z in den Raum.
+func pin_spot() -> Transform3D:
+	var last := _spots[-1]
+	var right := Vector3.UP.cross(last.basis.z)
+	var mid := (TOPS[0] + TOPS[1]) / 2.0 - PHOTO.y / 2.0 - FRAME
+	var outer := PHOTO.x + FRAME * 2.0
+	var at := last.origin + right * (outer / 2.0 + Snapshot.SIZE.x / 2.0 + 0.06)
+	if _spots.size() >= 2:
+		var before := _spots[-2]
+		if before.origin.distance_to(last.origin) - outer >= Snapshot.SIZE.x + 0.08:
+			at = (before.origin + last.origin) / 2.0
+	return Transform3D(last.basis, at + Vector3.UP * mid + last.basis.z * GAP)
+
+
+## Heftet ein Foto an die Wand (pin_spot); ein schon angeheftetes wird ersetzt. look: [E] daran.
+func pin_snapshot(picture: Texture2D, prompt: String, look: Callable) -> Snapshot:
+	for n in get_children():
+		if n is Snapshot:
+			n.queue_free()
+	var snap := Snapshot.new()
+	snap.prompt = prompt
+	snap.look = look
+	snap.transform = pin_spot()
+	snap.rotation.z = -0.06   # schief angeheftet
+	add_child(snap)
+	snap.build(picture)
+	return snap
+
+
+## Das Foto vom Leviathan – Platzhalter bis zu den echten Bildern (ZIM-135): ein dunkler Flur im Blitzlicht, vorn
+## überstrahlt, mitten im Bild eine lange, dünne Gestalt mit Zacken am Rücken und langem Schädel, waagerecht
+## verwischt, als spränge sie gerade davon. Kein Blut, kein Opfer im Bild (Altersfreigabe). Fest gewürfelt.
+static func draw_leviathan_photo() -> Image:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4032
+	var img := Image.create(W, H, false, Image.FORMAT_RGB8)
+	var vanish := Vector2(W * 0.56, H * 0.46)
+	for row in H:
+		for col in W:
+			var c := Color(0.05, 0.055, 0.06)                           # Wand im Dunkeln
+			var below := float(row) - vanish.y
+			if below > absf(col - vanish.x) * 0.55:
+				c = Color(0.1, 0.085, 0.07).lerp(Color(0.2, 0.16, 0.12), clampf(below / 50.0, 0.0, 1.0))   # Teppich
+			elif absf(col - vanish.x) < 6.0 and absf(row - vanish.y + 4.0) < 9.0:
+				c = Color(0.28, 0.2, 0.1)                               # Tür am Ende, schwaches Licht
+			var flash := Vector2(col - W * 0.45, (row - H * 0.85) * 1.4).length() / W
+			c = c.lerp(Color(0.85, 0.82, 0.74), clampf(0.55 - flash, 0.0, 0.55))   # Blitz, vorn überstrahlt
+			img.set_pixel(col, row, c)
+	# Gestalt als Maske: Rumpf vornübergebeugt, langer Schädel nach links, dünne Arme, Zacken am Rücken
+	var mask: Array[float] = []   # Array, kein Packed-Array: die Lambda muss dasselbe beschreiben
+	mask.resize(W * H)
+	mask.fill(0.0)
+	var blot := func(cx: float, cy: float, rx: float, ry: float) -> void:
+		for row in range(int(cy - ry), int(cy + ry) + 1):
+			for col in range(int(cx - rx), int(cx + rx) + 1):
+				if col >= 0 and row >= 0 and col < W and row < H and pow((col - cx) / rx, 2) + pow((row - cy) / ry, 2) <= 1.0:
+					mask[row * W + col] = 1.0
+	for i in 30:   # Rumpf, vornübergebeugt, die Brust breiter, unten dünn
+		var y := 38.0 + i * 2.2
+		blot.call(106.0 + (y - 70.0) * 0.32 + sin(i * 0.5) * 0.8, y, maxf(3.0, 8.5 - absf(i - 8.0) * 0.28), 2.0)
+	for i in 8:                        # Hals nach vorn
+		blot.call(97.0 - i * 0.9, 38.0 - i * 0.5, 3.0, 2.0)
+	blot.call(86.0, 33.0, 13.0, 4.0)   # langer Schädel
+	blot.call(75.0, 36.5, 5.0, 1.8)    # offenes Maul, Unterkiefer
+	for i in 26:                       # vorderer Arm, nach vorn gestreckt, Finger lang
+		blot.call(96.0 - i * 1.1, 47.0 + i * 1.5 + pow(i / 26.0, 2) * 6.0, 1.4, 1.4)
+	for i in 24:                       # hinterer Arm hängt
+		blot.call(108.0 - i * 0.25, 50.0 + i * 2.2, 1.2, 1.2)
+	for i in 9:                        # Zacken am Rücken
+		var y := 36.0 + i * 6.0
+		var x := 113.0 + (y - 70.0) * 0.32 + maxf(0.0, 4.0 - absf(i - 2.0) * 1.2)
+		for k in 7:
+			blot.call(x + k * 0.9, y - k * 0.6, maxf(0.6, 1.8 - k * 0.25), 0.8)
+	var smear := 34
+	for row in H:
+		for col in W:
+			var a := mask[row * W + col] * 0.8
+			for k in range(1, smear):   # Bewegung: nach rechts nachgezogen, mit einem zweiten, schwächeren Bild
+				if col - k >= 0:
+					var m: float = mask[row * W + col - k]
+					a = maxf(a, m * (0.7 * (1.0 - float(k) / smear) + (0.25 if k > 14 and k < 20 else 0.0)))
+			if a > 0.0:
+				img.set_pixel(col, row, img.get_pixel(col, row).lerp(Color(0.02, 0.02, 0.025), a))
+	_disc(img, Vector2(83.0, 31.0), 0.8, Color(0.75, 0.72, 0.6))   # ein Lichtpunkt im Auge, mehr nicht
+	for row in H:   # Sofortbildfilm: grünstichig, Körnung, Ecken dunkel
+		for col in W:
+			var c := img.get_pixel(col, row)
+			c = Color(c.r * 0.92, c.g * 1.02 + 0.01, c.b * 0.98 + 0.012) * (1.0 + rng.randf_range(-0.09, 0.09))
+			var d := Vector2(col - W / 2.0, row - H / 2.0) / Vector2(W, H)
+			img.set_pixel(col, row, (c * (1.0 - d.length_squared() * 1.6)).clamp())
+	return img
+
+
+## Ein Sofortbild mit Reißzwecke an der Wand: weißer Rand, unten breiter, das Bild vorn. [E] ruft look.
+## Ursprung Mitte des Fotos an der Wand, Bild nach +Z.
+class Snapshot extends StaticBody3D:
+	const IMAGE := Vector2(0.12, 0.09)
+	const BORDER := 0.008
+	const CHIN := 0.024               ## unterer Rand
+	const SIZE := Vector2(IMAGE.x + BORDER * 2.0, IMAGE.y + BORDER + CHIN)
+	const THICK := 0.0015
+
+	var prompt := ""
+	var look: Callable
+
+	func build(picture: Texture2D) -> void:
+		collision_layer = 4
+		collision_mask = 0
+		set_meta("interactable", self)
+		var paper := StandardMaterial3D.new()
+		paper.albedo_color = Color(0.9, 0.89, 0.85)
+		paper.roughness = 0.7
+		var shift := (CHIN - BORDER) / 2.0   # Bild sitzt über der Mitte
+		Geo.mesh(self, Geo.box(Vector3(SIZE.x, SIZE.y, THICK)), paper, Vector3(0, 0, THICK / 2.0))
+		var m := StandardMaterial3D.new()
+		m.albedo_texture = picture
+		m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+		m.roughness = 0.35   # glänzende Filmschicht
+		var q := QuadMesh.new()
+		q.size = IMAGE
+		Geo.mesh(self, q, m, Vector3(0, shift, THICK + 0.0004))
+		var tack := StandardMaterial3D.new()
+		tack.albedo_color = Color(0.62, 0.08, 0.06)
+		tack.roughness = 0.35
+		var head := Geo.mesh(self, Geo.cylinder(0.0055, 0.003, 14), tack, Vector3(0, SIZE.y / 2.0 - 0.006, THICK + 0.0015))
+		head.rotation.x = PI / 2.0
+		Geo.add_box_shape(self, Vector3(SIZE.x, SIZE.y, 0.02), Vector3(0, 0, 0.01))
+
+	func get_prompt(_player: Player) -> String:
+		return prompt
+
+	func interact(_player: Player) -> void:
+		if look.is_valid():
+			look.call()

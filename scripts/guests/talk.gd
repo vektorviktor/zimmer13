@@ -404,6 +404,8 @@ func _believes(g: Guest, kind: String, who_id: String, contradicted: bool) -> bo
 		return true
 	if g.remembers(String(SAME_EXPERIENCE.get(kind, "-"))):
 		return true
+	if kind == "monster" and temper(g) == "Skeptiker" and Game.leviathan_name and Game.leviathan_name.photo_pinned:
+		return true   # Paulas Foto hängt an der Fotowand – die Skeptiker sind still (4.32, ZIM-101)
 	var chance: float = {"Skeptiker": 0.0, "Griesgram": 0.5, "geschäftstüchtig": 0.75}.get(temper(g), 0.9)
 	if temper(g) == "Skeptiker" and kind in ["corpse", "blood"]:
 		chance = 0.6

@@ -2789,7 +2789,13 @@ Ermangelung eines echten.
   die sie beobachten (M13).
 - **Stirbt Hugo vor der ersten Sichtung**, gibt Liesel dem Monster den Namen, über das Buch Hiob statt über den Druck.
 
-**Das Foto (entschieden 2026-11-03, ZIM-101, noch nicht gebaut)**
+**Das Foto (entschieden 2026-11-03, ZIM-101, gebaut 2026-11-04)**
+> Gebaut als **Sofortbild** mit Reißzwecke an der Fotowand, zwischen den beiden rechten Spalten (die Ernten bleiben an
+> ihrem Platz); Bild ist Platzhalter bis ZIM-135. Kleinste Lösungen (Vorschlag): **Mitbekommen** heißt, der Leviathan
+> packt oder erschreckt einen Gast, und Paula sieht es oder hört den Schrei wie andere Gäste – oder sie war es selbst und
+> lebt; es zählt auch als Sichtung (Benennung oben). Sie heftet es eine halbe Spielstunde später im nächsten ruhigen
+> Moment an; **stirbt sie vorher, ist es fort**. **Still** heißt: Skeptiker glauben Monster-Geschichten, ihre
+> Zweifel-Sätze fallen weg, in Hugos Szene entfällt der Einwand.
 - **Paula Jansen** (H30), die über das Hotel schreibt, fotografiert den Leviathan beim **ersten Angriff, den sie
   mitbekommt** – das erste echte Bild statt Gerücht und Druck.
 - Das Foto hängt danach an der **Fotowand** (5.14), man kann es ansehen ([E]); die **Skeptiker werden still**.
@@ -3522,7 +3528,8 @@ Zimmer fern – nie ganz sicher.
 > Stand: entschieden 2026-10-25, je Ernte ein Foto 2026-10-30 (2.10) · gebaut 2026-10-25, Rahmen 2026-11-02 (ZIM-134),
 > die 14 Erntejahre mit dem Fleck von 2005 2026-11-03 (ZIM-133), alle Gesichter verwischt außer dem alten Herrn und den
 > Überlebenden, das Ankunftsfoto 2026 im Rahmen, das Foto von 2005 im Sekretariat 2026-11-03 (ZIM-117) · offen: die Fotos
-> bleiben Platzhalter bis zu echten Bildern (ZIM-135).
+> bleiben Platzhalter bis zu echten Bildern (ZIM-135). Paulas Sofortbild vom Leviathan (4.32) zwischen den beiden rechten
+> Spalten, gebaut 2026-11-04 (ZIM-101).
 
 Jede Ernte (2.10), also alle drei Jahre, ein Halloween-Gruppenfoto der Gäste vor dem Haupteingang, aufgenommen bei der
 Ankunft am 1. Oktober: 1987, 1990 … 2023 in Holzrahmen – alte vergilbt, neue farbig –, dazu der Rahmen „Halloween 2026“,
