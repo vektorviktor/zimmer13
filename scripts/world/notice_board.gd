@@ -48,6 +48,7 @@ func pin(id: String, at: Vector2, size: Vector2, headline: String, body: String,
 	sheet.position = Vector3(at.x, at.y, DEPTH + 0.004)
 	sheet.rotation.z = deg_to_rad(float(posmod(id.hash(), 5) - 2) * 0.8)   # leicht schief angeheftet
 	sheet.show_text(size, headline, body, title, text)
+	sheet.doc_id = "aushang_" + id   # Mitteilungen der Direktion: getippt mit der springenden Type (2.11)
 	sheet.jot_id = jot_id
 	sheet.jot = jot
 
@@ -130,13 +131,17 @@ static func _label(text: String, px: int, font: Font = null) -> Label3D:
 
 
 ## Ein Blatt Papier an der Tafel: Überschrift und Text im Raum (beleuchtet wie alles andere), [E] liest es ganz.
+## Auch einzeln an Wand oder in Schublade (DirectorOffice: Betriebsferien, Dienstplan) – dann prompt und jot_from setzen.
 class Sheet:
 	extends StaticBody3D
 
 	var title := ""
 	var text := ""
+	var doc_id := ""   ## getippt von der Maschine der Chefsekretärin (DirectorOffice.read_typed) – "" = gewöhnlich
+	var prompt := "Aushang lesen [E]"
 	var jot_id := ""
 	var jot := ""
+	var jot_from := "Brett in der Lobby"
 	var _paper: MeshInstance3D
 	var _head: Label3D
 	var _body: Label3D
@@ -170,10 +175,12 @@ class Sheet:
 		add_child(_body)
 
 	func get_prompt(_player: Player) -> String:
-		return "Aushang lesen [E]"
+		return prompt
 
 	func interact(_player: Player) -> void:
-		if Game.menus:
-			Game.menus.open_note(title, text)
 		if Game.notebook and jot != "":
-			Game.notebook.add_note(jot_id, jot, "Brett in der Lobby")
+			Game.notebook.add_note(jot_id, jot, jot_from)
+		if doc_id != "" and Game.director_office:
+			Game.director_office.read_typed(doc_id, title, text)
+		elif Game.menus:
+			Game.menus.open_note(title, text)

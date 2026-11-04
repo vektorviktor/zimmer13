@@ -114,6 +114,18 @@ func open_note(title: String, text: String) -> void:
 	back.grab_focus.call_deferred()
 
 
+## Getipptes von der Maschine der Chefsekretärin lesen (Spielkonzept 2.11): wie open_note, das „e“ springt (TypedPage).
+func open_typed(title: String, text: String) -> void:
+	_open()
+	var box := _new_sheet("note", title, 260.0)
+	var page := TypedPage.make(text, 9, UiKit.INK)
+	box.add_child(page)
+	TypedPage.slant(page)
+	var back := UiKit.button("Weglegen", close)
+	box.add_child(back)
+	back.grab_focus.call_deferred()
+
+
 ## Ein Heft mit mehreren Seiten lesen (Notizbuch des Hausmeisters, 7.4): je Seite ein Text, blättern mit den Knöpfen.
 func open_pages(title: String, pages: Array, page: int = 0) -> void:
 	_open()

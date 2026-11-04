@@ -744,7 +744,9 @@ class Letter:
 		return "Brief lesen [E]"
 
 	func interact(_player: Player) -> void:
-		if Game.menus:
+		if Game.director_office:   # getippt mit der springenden Type (2.11)
+			Game.director_office.read_typed(DirectorOffice.WELCOME_DOC, LETTER_TITLE, LETTER_TEXT)
+		elif Game.menus:
 			Game.menus.open_note(LETTER_TITLE, LETTER_TEXT)
 		if contest:
 			contest.on_letter_read()

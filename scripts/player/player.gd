@@ -457,6 +457,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		MusicBox.wind(held, self)   # Spieluhr aufziehen (5.17)
 	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.APPLE and not hiding:
 		eat_apple()
+	elif event.is_action_pressed("use_item") and held and held.kind == Item.Kind.CONTRACT and Game.director_office:
+		Game.director_office.read_contract()   # Vertrag von 1987 lesen (2.3, ZIM-21)
 	elif event.is_action_pressed("use_item") or event.is_action_pressed("light_mode"):
 		_use_flashlight(event.is_action_pressed("light_mode"))
 
@@ -2071,6 +2073,8 @@ func _update_focus() -> void:
 				text = "Spieluhr aufziehen [Linksklick]" if not MusicBox.playing(held) else "Die Spieluhr spielt …"
 			elif held.kind == Item.Kind.APPLE:
 				text = "Apfel essen [Linksklick]"
+			elif held.kind == Item.Kind.CONTRACT:
+				text = "Vertrag lesen [Linksklick]"
 		if held and held.kind == Item.Kind.SALT and hiding == null:
 			var salt := salt_spot()
 			if not salt.is_empty():

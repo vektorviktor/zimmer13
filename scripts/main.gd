@@ -210,6 +210,12 @@ extends Node3D
 ##   --versiegelt=pruefen        altes Schloss (Generalschlüssel, Brecheisen), Fenstertüren verriegelt, Liesels Schlüssel
 ##                               und Familienfoto, Brief und Rahmen vor 038 (ohne Bild im Plan ein Probebild), Ölkännchen
 ##                               – „[Versiegelt] … ok/FEHLER“, zuletzt „[Versiegelt] Prüfung fertig“
+##   --schreibmaschine[=vertrag|dienstplan|aushang|lesen]  vor die Schreibmaschine der Chefsekretärin im Sekretariat
+##                               (2.11, ZIM-119), vor die offene Mittelschublade im Büro mit dem Vertrag (ZIM-21), vor
+##                               die offene Hängeregistratur mit dem Dienstplan, vor den Aushang Betriebsferien bzw.
+##                               das Vertragsblatt offen (springendes „e“ ansehen)
+##   --schreibmaschine=pruefen   springendes „e“, Notiz nach Willkommensbrief und Maschine, Aushänge, Dienstplan, Vertrag
+##                               in der Hand – „[Type] … ok/FEHLER“, zuletzt „[Type] Prüfung fertig“
 ##   --regale[=nah]              in die Bibliothek (OG, ZIM-152) schräg vor das erste Bücherregal – steht keins im Plan,
 ##                               kommen zum Ansehen eine Innenecke (5 Ebenen, 1 m und 2 m) und eine freie Zeile (4 Ebenen);
 ##                               nah: dicht vor die Bücher (ZIM-153); meldet „[Bücher] …“ (Zahl der Bücher und MultiMeshes)
@@ -797,6 +803,7 @@ func _setup_omens(builder: LevelBuilder) -> void:
 	var office := DirectorOffice.new()   # Büro der Direktion und Sekretariat: Schlüssel, Zahlenschloss (2.8, 2.10, ZIM-6)
 	office.name = "BueroDerDirektion"
 	add_child(office)
+	office.setup(builder)   # Schreibmaschine im Sekretariat, Aushang Betriebsferien (2.11, ZIM-119)
 	Game.director_office = office
 	var sealed := SealedRooms.new()   # versiegelte Zimmer von 1987: 042, 132, 038 (6.19 (7), ZIM-30)
 	sealed.name = "VersiegelteZimmer"
@@ -1513,6 +1520,8 @@ func run_debug(arg: String) -> bool:
 		return _debug_core_protection()
 	elif _is_arg(arg, "--versiegelt"):
 		return _debug_sealed(_arg_value(arg, "--versiegelt", SealedRooms.TRUST_ROOM))
+	elif _is_arg(arg, "--schreibmaschine"):
+		return _debug_typewriter(_arg_value(arg, "--schreibmaschine", "maschine"))
 	elif _is_arg(arg, "--buero"):
 		var opts := _arg_parts(arg, "--buero")
 		if opts.has("pruefen"):
@@ -4761,6 +4770,150 @@ func _debug_sealed_check() -> bool:
 	]
 	for i in steps.size():
 		get_tree().create_timer(1.0 + i * 0.6).timeout.connect(steps[i])
+	return true
+
+
+## Debug --schreibmaschine[=vertrag|dienstplan|aushang|lesen|pruefen] (Spielkonzept 2.10, 2.11; ZIM-21, ZIM-119): vor
+## die Schreibmaschine im Sekretariat, vor den Direktionsschreibtisch mit offener Mittelschublade (Vertrag), vor den
+## Sekretariatsschreibtisch mit offener Hängeregistratur (Dienstplan), vor den Aushang Betriebsferien bzw. das
+## Vertragsblatt zum Lesen offen.
+func _debug_typewriter(what: String) -> bool:
+	var office := Game.director_office
+	if what == "pruefen":
+		return _debug_typewriter_check()
+	if what == "lesen":   # das Vertragsblatt offen: das „e“ sitzt zu hoch, „alle drei Jahre“ von Hand
+		get_tree().create_timer(0.5).timeout.connect(office.read_contract)
+		return true
+	var target: Node3D = office.typewriter
+	var drawer := -1
+	if what == "vertrag":
+		target = _desk_of("direktion")
+		drawer = DirectorOffice.CONTRACT_DRAWER
+	elif what == "dienstplan":
+		target = _desk_of("sekretariat")
+		drawer = DirectorOffice.FILES_DRAWER
+	elif what == "aushang":
+		target = office.leave_notice
+	if target == null:
+		return false
+	if drawer >= 0:
+		(target as Desk).use_drawer(drawer, Game.player)
+	var front := target.global_basis.z
+	var at := target.global_position + front * (0.9 if what == "aushang" else 1.1)
+	if what == "aushang":
+		at.y = office.leave_door.global_position.y
+	TeleportUI.place_player(at, -front)
+	Game.player.head.rotation.x = deg_to_rad(0.0 if what == "aushang" else -45.0)
+	return true
+
+
+## Schreibtisch einer Fassung (Desk.variant) – null, wenn der Plan keinen zeigt
+func _desk_of(variant: String) -> Desk:
+	for node in get_tree().get_nodes_in_group("desks"):
+		if (node as Desk).variant == variant:
+			return node
+	return null
+
+
+## Debug --schreibmaschine=pruefen: Das „e“ springt im Getippten, nicht in Handschrift und Beschreibung; die Maschine
+## steht auf dem Sekretariatstisch; erst Willkommensbrief, dann das Blatt in der Maschine – danach steht die Notiz zur
+## springenden Type im Notizbuch; die Aushänge der Lobby und der Aushang Betriebsferien (Wortlaut, Flurseite neben der
+## Tür des Hausmeisterraums) sind getippt; Dienstplan bei den Personalakten, Vertrag in der Mittelschublade des Büros,
+## lesbar in der Hand. Der Vertrag bleibt in der Hand (für --savetest). Meldet „[Type] … ok“ bzw. „FEHLER“, zuletzt
+## „[Type] Prüfung fertig“.
+func _debug_typewriter_check() -> bool:
+	var office := Game.director_office
+	var p := Game.player
+	var check := func(text: String, ok: bool) -> void:
+		print("[Type] %s: %s" % [text, "ok" if ok else "FEHLER"])
+	var secretary := _desk_of("sekretariat")
+	var director := _desk_of("direktion")
+	Game.notebook.give(true)
+	var steps: Array[Callable] = [
+		func() -> void:
+			var welcome := DoorContest.LETTER_TEXT
+			check.call("„e“ springt im Willkommensbrief (%d)" % TypedPage.raised_count(welcome),
+				TypedPage.raised_count(welcome) == welcome.count("e") and welcome.count("e") > 0)
+			check.call("Handschrift und Beschreibung ohne",
+				TypedPage.raised_count("[hand]eee[/hand] [note]ee[/note] e[s]e[/s]") == 2
+				and "[s]" in TypedPage.bbcode("[s]x[/s]") and "[lb]" in TypedPage.bbcode("[x]"))
+			check.call("Schreibmaschine auf dem Sekretariatstisch", office.typewriter != null and secretary != null
+				and office.typewriter.get_parent() == secretary
+				and absf(office.typewriter.position.y - Desk.dims("sekretariat").y) < 0.01)
+			var board: NoticeBoard = Game.contest.board if Game.contest else null
+			var sheets: Array = board.get_children().filter(func(n: Node) -> bool: return n is NoticeBoard.Sheet) if board else []
+			check.call("Aushänge der Lobby getippt (%d)" % sheets.size(), not sheets.is_empty()
+				and sheets.all(func(n: Node) -> bool: return (n as NoticeBoard.Sheet).doc_id.begins_with("aushang_"))),
+		func() -> void:
+			var letters := get_tree().get_nodes_in_group("contest_letters")
+			if not letters.is_empty():
+				letters[0].interact(p)   # wie im Spiel: Brief lesen, DoorContest merkt es sich
+			check.call("Leseblatt mit springendem „e“ offen", Game.menus.is_open()
+				and Game.menus.find_children("*", "RichTextLabel", true, false).size() > 0)
+			Game.menus.close()
+			check.call("nach dem Brief allein noch keine Notiz", not Game.notebook.has_note(DirectorOffice.JUMP_NOTE))
+			if office.typewriter:
+				office.typewriter.interact(p)
+				Game.menus.close()
+			check.call("Blatt in der Maschine notiert", Game.notebook.has_note(DirectorOffice.MACHINE_DOC))
+			check.call("Notiz „Das ‚e‘ springt“", Game.notebook.has_note(DirectorOffice.JUMP_NOTE)),
+		func() -> void:
+			var notice := office.leave_notice
+			check.call("Aushang Betriebsferien hängt", notice != null and notice.text == DirectorOffice.LEAVE_TEXT
+				and notice.doc_id == DirectorOffice.LEAVE_DOC)
+			if notice == null:
+				return
+			var door := office.leave_door
+			var mid := door.global_position + door.global_basis.x * door.width / 2.0
+			var locker := office._caretaker_locker()
+			var face := notice.global_basis.z
+			var high := notice.global_position.y - door.global_position.y
+			check.call("Betriebsferien auf der Flurseite, %.2f m hoch" % high, face.dot(notice.global_position - mid) > 0.05
+				and face.dot(locker.global_position - mid) < 0.0 and absf(high - DirectorOffice.LEAVE_HEIGHT) < 0.05)
+			notice.interact(p)
+			Game.menus.close()
+			check.call("Betriebsferien notiert", Game.notebook.has_note(DirectorOffice.LEAVE_DOC)),
+		func() -> void:
+			var roster: NoticeBoard.Sheet = null
+			if secretary:
+				for n in secretary.find_children("*", "", true, false):
+					if n is NoticeBoard.Sheet and (n as NoticeBoard.Sheet).doc_id == DirectorOffice.ROSTER_DOC:
+						roster = n
+			check.call("Dienstplan bei den Personalakten", roster != null and "22 Uhr Heizkeller" in roster.text)
+			if roster:
+				roster.interact(p)
+				Game.menus.close()
+			check.call("Dienstplan notiert", Game.notebook.has_note(DirectorOffice.ROSTER_DOC))
+			check.call("Vertrag fest im Büro", director != null
+				and director.fixed.get(DirectorOffice.CONTRACT_DRAWER) == Item.Kind.CONTRACT)
+			if director:
+				director.use_drawer(DirectorOffice.CONTRACT_DRAWER, p),
+		func() -> void:
+			var item: Item = null
+			for node in get_tree().get_nodes_in_group("items"):
+				if (node as Item).kind == Item.Kind.CONTRACT:
+					item = node
+			check.call("Vertrag in der Mittelschublade", item != null and director != null
+				and item.global_position.distance_to(director.global_position) < 1.5)
+			if item == null:
+				print("[Type] Prüfung fertig")
+				return
+			check.call("Vertrag „alle drei Jahre“, 1987, unverkäuflich, passt in die Tasche",
+				"[s]alljährlich[/s] [hand]alle drei Jahre[/hand]" in DirectorOffice.CONTRACT_TEXT
+				and "31. Oktober 1987" in DirectorOffice.CONTRACT_TEXT and item.price() == 0 and item.kind in Item.POCKET_KINDS)
+			item.get_parent().remove_child(item)
+			p.receive_item(item)
+			check.call("Vertrag in der Hand", p.held == item)
+			var ev := InputEventAction.new()
+			ev.action = "use_item"
+			ev.pressed = true
+			p._unhandled_input(ev)
+			check.call("Vertrag mit Linksklick gelesen", Game.menus.is_open() and Game.notebook.has_note(DirectorOffice.CONTRACT_DOC))
+			Game.menus.close()
+			print("[Type] Prüfung fertig"),
+	]
+	for i in steps.size():
+		get_tree().create_timer(1.0 + i * 0.8).timeout.connect(steps[i])
 	return true
 
 

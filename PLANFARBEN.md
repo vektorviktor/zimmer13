@@ -345,7 +345,9 @@ oder richten sich nach Fläche und Möbeln.
 | Zimmer 13 | Laken auf dem Bett, Warnzettel 1999 hinter der Tür, Spielerstart in der Mitte |
 | Zimmer 18 | Notizbuch, Schaltschlüssel, UV-Aufsatz auf dem Tisch |
 | Zimmer 022 | Streichholzschachtel in der obersten Schublade der ersten Kommode im Plan (`CONTENT["022"]`, ZIM-85), ohne Kommode auf dem Tisch |
-| Sekretariat | Generalschlüssel in der zweiten Schublade des Sekretariatsschreibtischs, hinter dem Zahlenschloss (ZIM-6) |
+| Sekretariat | Generalschlüssel in der zweiten Schublade des Sekretariatsschreibtischs, hinter dem Zahlenschloss (ZIM-6); Schreibmaschine auf der Platte zwischen Postausgang und Lampe (`DirectorOffice.MACHINE_SPOT`), Personalakten mit dem Dienstplan in der untersten Schublade (ZIM-119) |
+| Büro der Direktion | Vertrag von 1987 in der Mittelschublade des Schreibtischs (`DirectorOffice.CONTRACT_DRAWER`, ZIM-21) |
+| Aushang Betriebsferien | Personalflur: neben der Tür, die dem Spind des Hausmeisters am nächsten ist, auf der Seite ohne Spind (Slice „Spind: Hausmeister“, solange der fehlt der einzige Stahlspind im EG; ZIM-119) |
 | Sekretariatsschlüssel | Zwischenort ab dem 6.: an der Wand links neben dem Sicherungskasten (`DirectorOffice.SECRETARIAT_SPOT`) – kommt in Brunos Strang (Spind, ZIM-4) |
 | Josefs Schlüsselbund | Zwischenort ab dem 14.: seitlich am Kessel im Heizkeller (`DirectorOffice.JOSEF_SPOT`) – kommt an den alten Kessel in U2 |
 | Monster-Startpunkte | Heizkeller, Zimmer 017, Garten |

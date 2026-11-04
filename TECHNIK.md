@@ -2138,6 +2138,27 @@ neuere Onboard-Grafik mit 30 FPS. Die Werte sind Vorschläge, im Spiel nicht gem
   (Notiz `josefs_bund` im Notizbuch). Sperrbereich: „Büro der Direktion“ in `SaveManager.NEW_AREAS`; Sekretariat,
   Josefs Bund und Generalschlüssel in `PROGRESS_KEYS`. Prüfung `--buero=pruefen` („[Büro] … ok/FEHLER“, Stichwort
   `schluessel`).
+- **Springende Type, Vertrag, Personal von 1987** (`DirectorOffice`, `ui/typed_page.gd`, `world/typewriter.gd`;
+  ZIM-21, ZIM-119, Spielkonzept 2.10, 2.11): Alles Getippte der Chefsekretärin geht über `read_typed(id, title, text,
+  jot, jot_from)` → `Menus.open_typed` → `TypedPage.make`: ein `RichTextLabel` statt `UiKit.wrap_label`, jedes „e“ in
+  `[hoch]` (eigener `RichTextEffect` `TypedPage.JumpingE`, `RAISE` Pixel nach oben). Auszeichnung im Text: `[hand]`
+  (Handschrift: Tinte `HAND_INK`, schräg über eine `FontVariation` aus der Schrift des Blatts, `slant` erst im Baum),
+  `[note]` (Beschreibung, blass), `[s]` durchgestrichen; andere Klammern werden zu `[lb]`. Getippt sind der
+  Willkommensbrief (`DoorContest.Letter`, `WELCOME_DOC`), jedes Blatt am Lobbybrett (`NoticeBoard.pin` setzt
+  `Sheet.doc_id` „aushang_<id>“), der Aushang Betriebsferien, das Blatt in der Maschine, der Dienstplan und der
+  Vertrag. `NoticeBoard.Sheet` dient auch einzeln (`prompt`, `jot_from`). Notiz `JUMP_NOTE`, sobald der
+  Willkommensbrief gelesen ist (`DoorContest.letter_read` oder dieser Brief) und eine der `OLD_DOCS`-Notizen
+  (Maschine, Dienstplan, Vertrag – ihre IDs sind zugleich die Notiz-IDs) im Notizbuch steht; nichts Eigenes im
+  Spielstand. `setup(builder)` (nach `add_child`, in `main.gd`) stellt die `Typewriter` (Platzhalter aus Grundkörpern,
+  [E] liest `MACHINE_TEXT`) auf den Sekretariatstisch (`MACHINE_SPOT`) und hängt den Aushang (`LEAVE_TEXT`) neben die
+  Tür, die dem Spind des Hausmeisters am nächsten ist (`LEAVE_RANGE`), auf die Seite ohne Spind und gegenüber dem
+  Scharnier (`leave_door`, `leave_notice`). Den Spind findet `_caretaker_locker` über den Slice `CARETAKER_LOCKER`,
+  solange der im Plan fehlt als einzigen Stahlspind im EG (`GROUND_SPAN`); sonst Warnung, kein Aushang. Den Rest legt
+  `Desk._build`: im Sekretariat in `FILES_DRAWER` Hängeordner und flach obenauf den Dienstplan (`_staff_files`,
+  `_roll_loot` sagt `FILES_LINE` statt „Leer.“), im Büro `fixed[CONTRACT_DRAWER]` = `Item.Kind.CONTRACT` (Mittelschublade).
+  Der Vertrag ist ein Gegenstand (Tasche, unverkäuflich), in der Hand liest ihn `use_item` (`Player` →
+  `read_contract`). Die Spuren des Hausmeisters (Tasse, Mantel) fehlen, weil der Kartenbau den Hausmeisterraum noch
+  nicht baut. Prüfung `--schreibmaschine=pruefen` („[Type] … ok/FEHLER“, Stichwort `schreibmaschine`).
 - **Nachttische** (`world/nightstand.gd`, 30.10.): `Nightstand extends Dresser`, Plan „Möbel: Nachttisch“ (5 × 5 px,
   Vorderseite als hellere Zeile). 0,5 × 0,5 m, Höhe `BedModel.POST_TOP` (0,51 m, bündig mit den Bettpfosten). Bretter
   aus heller Eiche über `BedModel.beam` mit eigener Kollisionsform: Deckplatte, Seiten bis zum Boden, Rückwand, Fachboden.

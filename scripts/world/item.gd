@@ -37,7 +37,7 @@ extends RigidBody3D
 enum Kind { PUMPKIN, CARVED_PUMPKIN, CANDLE, KEY, COBWEB, LEAVES, COINS, KNIFE, DICE_CUP, LOADED_DICE, BULB, CLOTHING, COMPASS, MAP, FLASHLIGHT, BATTERY, UV_FILTER, CHESS_BOARD, SWEETS, SHEET_GHOST, LIGHT_STRING, MINI_PUMPKIN,
 	BAT_GARLAND, SPIDER, SKULL, BROOM, BED_SHEET, ROAST_PUMPKIN, SODA_CAN, PUMPKIN_MUSH, CROWBAR, TOOLBOX, COFFEE,
 	PUMPKIN_HEAD, TEA, MATCHBOX, DARTS, SALT, MUSIC_BOX, APPLE, MASK, PUMPKIN_SEEDS, EGG, BAR_GAME, GLASS, RING, FUSE,
-	FAMILY_PHOTO, OIL_CAN }
+	FAMILY_PHOTO, OIL_CAN, CONTRACT }
 
 const LAYER := 4
 const MASK := 1 | 2 | 4 | 16 | 64 | 256
@@ -74,11 +74,13 @@ const PRICES := {
 	Kind.FUSE: 0,    # Hauptsicherung des Aufzugs (7.4, ZIM-14) – das Hotel will sie zurück, Bruno nennt seinen Preis
 	Kind.FAMILY_PHOTO: 0,   # Liesels Familienfoto von 1987 aus Zimmer 132 (6.19 (7), ZIM-30) – unverkäuflich
 	Kind.OIL_CAN: 3,        # Ölkännchen aus Zimmer 038 (6.19 (7), ZIM-30)
+	Kind.CONTRACT: 0,       # Vertrag von 1987 aus dem Büro der Direktion (2.3, 2.8, ZIM-21) – unverkäuflich
 }
 ## Kleines, das in die Tasche passt (Spielkonzept 3.2) – eine Kerze nur, wenn sie nicht brennt (fits_pocket)
 const POCKET_KINDS := [Kind.SWEETS, Kind.SODA_CAN, Kind.MINI_PUMPKIN, Kind.CANDLE, Kind.KNIFE, Kind.BATTERY, Kind.BULB,
 	Kind.UV_FILTER, Kind.DICE_CUP, Kind.LOADED_DICE, Kind.MATCHBOX, Kind.DARTS, Kind.SALT, Kind.MUSIC_BOX, Kind.APPLE,
-	Kind.PUMPKIN_SEEDS, Kind.EGG, Kind.BAR_GAME, Kind.RING, Kind.FUSE, Kind.FAMILY_PHOTO, Kind.OIL_CAN]
+	Kind.PUMPKIN_SEEDS, Kind.EGG, Kind.BAR_GAME, Kind.RING, Kind.FUSE, Kind.FAMILY_PHOTO, Kind.OIL_CAN,
+	Kind.CONTRACT]
 ## Spiele aus dem Spieleschrank in der Bar (Spielkonzept 6.10): eine Art, die Sorte steht im Zusatz (flavor) – damit
 ## Item.Kind nicht für jedes Spiel wächst. Die Flasche passt nicht in die Tasche.
 const BAR_GAMES := {"karten": "Kartenspiel", "deckel": "Bierdeckel", "quiz": "Quizkarten", "flasche": "Leere Flasche"}
@@ -1729,6 +1731,26 @@ func _build(extra: String) -> void:
 			var spout := Geo.mesh(self, Geo.cylinder(0.003, 0.09, 6), tin, Vector3(0.025, 0.09, 0))
 			spout.rotation.z = -0.6
 			Geo.mesh(self, Geo.box(Vector3(0.05, 0.03, 0.002)), Mat.psx(Color(0.7, 0.18, 0.12)), Vector3(0, 0.025, 0.034))   # Etikett
+		Kind.CONTRACT:
+			# Der Vertrag von 1987 (Spielkonzept 2.3, 2.10; ZIM-21): drei Bogen, mit roter Kordel geheftet, unten rotes
+			# Siegelwachs – liegt flach, Kopf nach -Z. Lesen mit Linksklick (DirectorOffice.read_contract); er soll im
+			# Ritual ins Feuer im alten Heizkeller (2.8, noch nicht gebaut)
+			display_name = "Vertrag von 1987"
+			mass = 0.1
+			size = Vector3(0.21, 0.008, 0.297)
+			for i in 3:   # Bogen, leicht gegeneinander verschoben
+				var leaf := Geo.mesh(self, Geo.box(Vector3(size.x, 0.0015, size.z)), Mat.psx(Color(0.9, 0.86, 0.74).darkened(i * 0.04)),
+					Vector3(0.002 * i, 0.00075 + (2 - i) * 0.0016, 0.002 * i))
+				leaf.rotation.y = (i - 1) * 0.012
+			var ink := Mat.psx(Color(0.15, 0.12, 0.1))
+			Geo.mesh(self, Geo.box(Vector3(0.08, 0.0006, 0.008)), ink, Vector3(0, 0.0052, -0.12))   # Überschrift
+			for i in 9:
+				Geo.mesh(self, Geo.box(Vector3(0.16 - (0.05 if i % 3 == 2 else 0.0), 0.0006, 0.003)), ink,
+					Vector3(-0.005, 0.0052, -0.095 + i * 0.019))
+			var wax := Mat.psx(Color(0.55, 0.06, 0.05))
+			Geo.mesh(self, Geo.cylinder(0.018, 0.004, 14), wax, Vector3(0.055, 0.007, 0.115))   # Siegel
+			Geo.mesh(self, Geo.box(Vector3(0.004, 0.002, 0.05)), wax, Vector3(-0.098, 0.0056, -0.12))   # Kordel an der Heftung
+			Geo.mesh(self, Geo.box(Vector3(0.05, 0.0006, 0.002)), Mat.psx(Color(0.1, 0.1, 0.2)), Vector3(-0.04, 0.0052, 0.112))   # Unterschrift
 		Kind.PUMPKIN_HEAD:
 			# Der richtige Kopf des Kürbismanns (Spielkonzept 4.21): von den Kindern 1987 auf dem Dachboden versteckt,
 			# vertrocknet, das Haar noch dran – Platzhalter bis zum Modell; damit erlöst man ihn später (Ritual)

@@ -117,8 +117,8 @@ judge() {
 	elif [[ "$name" == *--bericht* ]] && ! grep -q "^\[Lichtdiagnose\] Bericht gespeichert" "$log"; then
 		problems+=" kein Lichtbericht"
 	fi
-	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\)\] .*FEHLER" "$log"; then
-		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\)\] .*FEHLER' "$log" | head -1))"
+	if grep -q "^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\|Type\)\] .*FEHLER" "$log"; then
+		problems+=" $(grep -c '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\|Type\)\] .*FEHLER' "$log")× Prüfung falsch ($(grep -h '^\[\(Maske\|Ring\|Albtraum\|Büro\|Stahlspind\|Fotomodus\|Kernschutz\|Fotowand\|Versiegelt\|Leviathanfoto\|Type\)\] .*FEHLER' "$log" | head -1))"
 	fi
 	if [[ "$name" == *--stahlspinde=pruefen* ]] && ! grep -q "^\[Stahlspind\] Prüfung fertig" "$log"; then
 		problems+=" Stahlspind-Prüfung nicht fertig"
@@ -140,6 +140,9 @@ judge() {
 	fi
 	if [[ "$name" == *--leviathanfoto=pruefen* ]] && ! grep -q "^\[Leviathanfoto\] Prüfung fertig" "$log"; then
 		problems+=" Leviathanfoto-Prüfung nicht fertig"
+	fi
+	if [[ "$name" == *--schreibmaschine=pruefen* ]] && ! grep -q "^\[Type\] Prüfung fertig" "$log"; then
+		problems+=" Type-Prüfung nicht fertig"
 	fi
 	if [[ "$name" == *--albtraummodus=pruefen* ]] && ! grep -q "^\[Albtraum\] Prüfung fertig" "$log"; then
 		problems+=" Albtraum-Prüfung nicht fertig"
@@ -190,6 +193,9 @@ done <<'LIST'
 400|buero,schluessel|--buero=pruefen --trace
 500|versiegelt,zimmerzugang,schluessel|--versiegelt=pruefen --trace
 600|versiegelt,speichern|--versiegelt=pruefen --savetest
+400|schreibmaschine,buero|--schreibmaschine=pruefen --trace
+600|schreibmaschine,speichern|--schreibmaschine=pruefen --savetest
+400|schreibmaschine|--schreibmaschine=aushang --trace
 400|fotomodus|--fotomodus=pruefen
 400|regale|--regale --trace
 400|regale,buecher|--regale=nah --trace

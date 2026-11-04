@@ -11,7 +11,9 @@ extends Dresser
 ## Schublade (DirectorOffice.CODE_DRAWER) ein Zahlenschloss mit vier Rädern unter dem Schild: zu, bis der Code stimmt
 ## (DirectorOffice.open_lock), darin der Generalschlüssel (Spielkonzept 2.10, 6.19; ZIM-6). Aufgegangen ist sie, sobald
 ## sie einmal aufgezogen wurde (searched) – kein eigenes Feld im Spielstand. In der Mittelschublade
-## (DirectorOffice.PHOTO_DRAWER) liegt fest das Foto von 2005 mit gesprungenem Glas (PhotoWall.found_photo, 2.10, ZIM-117).
+## (DirectorOffice.PHOTO_DRAWER) liegt fest das Foto von 2005 mit gesprungenem Glas (PhotoWall.found_photo, 2.10, ZIM-117),
+## in der untersten (DirectorOffice.FILES_DRAWER) hängen Personalakten, obenauf der Dienstplan vom 31.10.1987 (2.11,
+## ZIM-119). Im Büro liegt in der Mittelschublade (DirectorOffice.CONTRACT_DRAWER) der Vertrag von 1987 (fixed, ZIM-21).
 ## Lage der Schubladen und Kollision kommen aus <Modell>.json (Bauskript). Ursprung mittig auf dem Boden, +Z = vorn.
 
 const DESK_MODEL := "res://assets/models/desk_%s.glb"
@@ -30,6 +32,10 @@ const LOCK_WHEEL := Vector2(0.009, 0.0075)   # Radius, Breite
 const LOCK_PITCH := 0.011
 const LOCK_PLATE := Vector3(0.056, 0.024, 0.004)
 const LOCK_DROP := 0.036
+## Hängeregistratur (nur Sekretariat): so viele Ordner, Pappe; Dienstplan A4
+const FILE_COUNT := 7
+const FILE_TINT := Color(0.62, 0.5, 0.3)
+const ROSTER_SIZE := Vector2(0.21, 0.297)
 
 var variant := "direktion"
 ## Schublade mit Zahlenschloss (von oben gezählt), -1 = keine
@@ -94,7 +100,10 @@ func _build() -> void:
 		var d: Dictionary = lay["drawers"][code_drawer]
 		_code_lock(_drawers[code_drawer], Vector3(0, float(d["h"]) / 2.0 - LOCK_DROP, front_z))
 		_found_photo(_drawers[DirectorOffice.PHOTO_DRAWER], lay["drawers"][DirectorOffice.PHOTO_DRAWER], back, lift + wall)
+	if variant == "sekretariat" and lay["drawers"].size() > DirectorOffice.FILES_DRAWER:
+		_staff_files(_drawers[DirectorOffice.FILES_DRAWER], lay["drawers"][DirectorOffice.FILES_DRAWER], back, lift + wall)
 	if variant == "direktion":
+		fixed[DirectorOffice.CONTRACT_DRAWER] = Item.Kind.CONTRACT
 		var chair := Armchair.new()
 		chair.position = Vector3(0, 0, size.z / 2.0 + CHAIR_GAP + Armchair.SEAT_FRONT_Z)
 		chair.rotation.y = PI
@@ -129,6 +138,32 @@ func _found_photo(drawer: Node3D, d: Dictionary, back: float, floor_y: float) ->
 	drawer.add_child(frame)
 
 
+## Hängeregistratur (Sekretariat): Hängeordner quer zur Schublade, obenauf flach der Dienstplan (NoticeBoard.Sheet,
+## getippt) – fährt als Kind der Schublade mit.
+func _staff_files(drawer: Node3D, d: Dictionary, back: float, floor_y: float) -> void:
+	var out := _vec(d["tray_out"])
+	var tall := minf(out.y - 0.02, 0.14)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1987
+	for k in FILE_COUNT:
+		var tint := FILE_TINT.lerp(FILE_TINT.darkened(0.35), rng.randf())
+		Geo.mesh(drawer, Geo.box(Vector3(out.x - 0.02, tall, 0.004)), Mat.psx(tint),
+			Vector3(0, floor_y + tall / 2.0, back - 0.04 - k * (out.z - 0.08) / (FILE_COUNT - 1)))
+	var roster := NoticeBoard.Sheet.new()
+	roster.name = "Dienstplan1987"
+	roster.doc_id = DirectorOffice.ROSTER_DOC
+	roster.prompt = "Dienstplan lesen [E]"
+	roster.jot_id = DirectorOffice.ROSTER_DOC
+	roster.jot = DirectorOffice.ROSTER_JOT
+	roster.jot_from = "Sekretariat"
+	roster.show_text(ROSTER_SIZE, "", "DIENSTPLAN
+Samstag, 31. Oktober 1987", DirectorOffice.ROSTER_TITLE,
+		DirectorOffice.ROSTER_TEXT)
+	drawer.add_child(roster)
+	roster.position = Vector3(0.01, floor_y + tall + 0.003, back - out.z / 2.0)
+	roster.rotation = Vector3(-PI / 2.0, 0.0, -0.03)   # Text nach oben, Kopf nach hinten, leicht schief
+
+
 ## Ist die Schublade i noch mit dem Zahlenschloss zu?
 func code_locked(i: int) -> bool:
 	return i == code_drawer and not _code_open and not searched[i]
@@ -156,9 +191,12 @@ func use_drawer(i: int, player: Player) -> void:
 		Game.director_office.open_lock(self, i, player)
 
 
-## Das Foto liegt schon darin – kein „Leer.“ beim ersten Aufziehen.
+## Das Foto liegt schon darin – kein „Leer.“ beim ersten Aufziehen; bei den Personalakten ein Satz dazu.
 func _roll_loot(i: int) -> void:
 	if variant == "sekretariat" and i == DirectorOffice.PHOTO_DRAWER:
+		return
+	if variant == "sekretariat" and i == DirectorOffice.FILES_DRAWER:
+		Game.say(DirectorOffice.FILES_LINE, 3.0)
 		return
 	super._roll_loot(i)
 

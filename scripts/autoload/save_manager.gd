@@ -172,6 +172,8 @@ var DIR := "user://saves_headless/" if DisplayServer.get_name() == "headless" or
 ## 82: Versiegelte Zimmer 132 und 038 (Spielkonzept 6.19 (7); ZIM-30): neue Arten Item.Kind.FAMILY_PHOTO und OIL_CAN
 ##     (Füllstand im Zusatzfeld), doors.oiled (geölte Bänder knarren nicht) – ältere Stände laden weiter, nichts geölt
 ##     (82 ist für ZIM-117 reserviert)
+## 83: Vertrag von 1987 (Spielkonzept 2.3, 2.10; ZIM-21): neue Art Item.Kind.CONTRACT, liegt fest in der Mittelschublade
+##     des Direktionsschreibtischs – ältere Stände laden weiter; war die Schublade dort schon offen, fehlt er
 ## 84: Paulas Foto vom Leviathan (Spielkonzept 4.32; ZIM-101): leviathan.photo_at (wann sie den Angriff fotografiert hat)
 ##     und leviathan.photo_pinned (hängt an der Fotowand) – ältere Stände laden weiter, ohne Foto
 const VERSION := 84

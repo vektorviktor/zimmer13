@@ -185,8 +185,9 @@ jeder). Verweise auf 2.2 gelten nicht mehr.
 
 ### 2.3 Fortschritt & Geheimnis (entschieden 2026-10-11)
 > Stand: entschieden 2026-10-11 · gebaut: Hotelregister und Notizbuch des Hausmeisters (2026-10-28), Büro der Direktion
-> mit Porträt (2026-11-01, ZIM-150/151), Sekretariat mit Generalschlüssel (2026-11-03, ZIM-6) · offen: Vertrag,
-> Kesselbuch, Personalakte, Zeitungsausschnitt, U2 mit Fundsachenlager und altem Heizkeller (7.4).
+> mit Porträt (2026-11-01, ZIM-150/151), Sekretariat mit Generalschlüssel (2026-11-03, ZIM-6), Vertrag in der
+> Mittelschublade im Büro (2026-11-04, ZIM-21, Text Vorschlag) · offen: Kesselbuch, Personalakte, Zeitungsausschnitt, U2
+> mit Fundsachenlager und altem Heizkeller (7.4).
 > Gibt dem Spiel eine Richtung, weil man sonst nur überlebt und nirgendwohin kommt. Verbindet Story, Warnungszettel
 > (4.13), Fahrstuhl & U2 (7.4) und die Gäste (6).
 
@@ -703,7 +704,8 @@ bleiben leer.
 
 ### 2.8 Josef erlösen – Marions Auftrag (entschieden 2026-10-25)
 > Stand: entschieden 2026-10-25 · gebaut: Büro der Direktion (2026-11-01, ZIM-150), Josefs Bund an einem Zwischenort
-> (2026-11-03, ZIM-6) · offen: Marion, Vertrag, Ritual, U2. Fasst die Enden „Ihn erlösen“ und „Das Abkommen brechen“
+> (2026-11-03, ZIM-6), der Vertrag als Gegenstand (2026-11-04, ZIM-21 – kann ins Feuer, sobald es das Ritual gibt) ·
+> offen: Marion, Ritual, U2. Fasst die Enden „Ihn erlösen“ und „Das Abkommen brechen“
 > aus 2.3 zu einem Auftrag zusammen. Ablauf im Durchlauf: [HANDLUNG.md](HANDLUNG.md).
 
 **Warum:** Die Hauptgeschichte braucht eine Antwort darauf, ob das Monster das Monster bleibt. Die Antwort kommt von dem
@@ -914,7 +916,7 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 > Rahmen und mit den Kreuzen verwischt, Foto 2005 in der Mittelschublade im Sekretariat, Sekretariat mit Generalschlüssel,
 > Gästebuch (Kreuze nur in Erntejahren, Überlebende von 2005 und ihre Rückkehr – Namen außer Hain und Pohl Vorschlag),
 > Warnungszettel 1993/2005/2020, Bleistiftnotiz in Zimmer 18, Walter und Oskar (Texte Vorschlag) · offen: Hains Koffer in
-> U2 (ZIM-15), Vertrag (ZIM-21), Standbild-Folgen und Enden (ZIM-24, ZIM-10). Ändert 2.3 („jedes Jahr“, der Erbe), 2.6
+> U2 (ZIM-15), Standbild-Folgen und Enden (ZIM-24, ZIM-10); Vertrag mit „alle drei Jahre“ gebaut 2026-11-04 (ZIM-21). Ändert 2.3 („jedes Jahr“, der Erbe), 2.6
 > (Walter), 2.7 (Vergessen, Ende 1), 5.14 (Fotowand)
 > und 7.4 (Zimmer 18: 2003 → 2005, Fundsachen). Anlass: Die Fotowand hängt 14 Rahmen mit Lücken, das Konzept sagte
 > „jedes Jahr seit 1987“ – und nach 2.7 sterben ohne Schlüssel alle, nicht ein paar je Jahr. **Am selben Tag
@@ -1058,7 +1060,13 @@ die Bitte nicht erfüllt, verantwortet den zweiten Tod.
 - Bildfolgen im Einzelnen: wie viele Bilder je Szene, Texte, Tönung.
 
 ### 2.11 Das Personal von 1987 und der Hausmeister (entschieden 2026-10-30)
-
+> Stand: entschieden 2026-10-30, bestätigt 2026-11-03 · gebaut 2026-11-04 (ZIM-119): Schreibmaschine im Sekretariat
+> (Platzhalter, eingespannt der Anfang eines Willkommensbriefs – Vorschlag), springendes „e“ in Willkommensbrief,
+> Aushängen, Dienstplan und Vertrag; die Notiz kommt, sobald der Willkommensbrief und eins der Blätter aus Sekretariat
+> oder Büro gelesen sind (kleinste Lösung: zwei Aushänge im selben Haus wären nichts Auffälliges); Aushang Betriebsferien
+> im Personalflur neben der Tür des Hausmeisterraums; Dienstplan (Wortlaut Vorschlag, nur Rollen und Josef) in der
+> untersten Schublade im Sekretariat bei den Personalakten · offen: Spuren des Hausmeisters (der Plan zeigt den
+> Hausmeisterraum, der Kartenbau baut ihn noch nicht – ZIM-4), Spind, Namen, Wäscheliste.
 > **Josef war Hausmeister, kein Heizer.** Einen eigenen Heizer hatte das Haus nicht; der Hausmeister befeuerte auch den
 > alten Kessel. In Doku und Spieltexten heißt er **„Josef“** oder **„der frühere Hausmeister“** – nie „der alte
 > Hausmeister“, das beißt sich mit dem alten Herrn (2.10). Heizraum, Heizkeller, Kesselbuch, Kesselkatze und das Feuer
